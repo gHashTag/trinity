@@ -923,6 +923,29 @@
       }
     ]
   },
+  "sacredFormula": {
+    "title": "Движок Священной Формулы",
+    "formula": "V = n &times; 3<sup>k</sup> &times; &pi;<sup>m</sup> &times; &phi;<sup>p</sup> &times; e<sup>q</sup>",
+    "description": "Детектор целочисленных отношений: каждая физическая константа — точка в решётке, натянутой на {1, log(3), log(\u03c0), log(\u03c6)} над \u2124.",
+    "inputPlaceholder": "Введите любое положительное число...",
+    "decompose": "Разложить",
+    "computing": "Вычисление...",
+    "target": "Цель",
+    "exact": "ТОЧНО",
+    "close": "БЛИЗКО",
+    "approx": "ПРИБЛ.",
+    "predictionsTitle": "Священные Экстраполяции",
+    "predictionsDisclaimer": "НЕ установленная физика — только экспериментальная математика",
+    "categories": {
+      "all": "Все",
+      "particle_physics": "Физика Частиц",
+      "quantum": "Квантовая",
+      "cosmology": "Космология",
+      "quantum_gravity": "Квантовая Гравитация"
+    },
+    "chevrons": { "n": "n", "k": "3\u207a", "m": "\u03c0\u207a", "p": "\u03c6\u207a", "q": "e\u207a" },
+    "error": "ошиб"
+  },
   "stickyCta": {
     "invest": "Инвестировать",
     "calculator": "Калькулятор Экономии"

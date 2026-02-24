@@ -900,6 +900,29 @@
       }
     ]
   },
+  "sacredFormula": {
+    "title": "Motor de F\u00f3rmula Sagrada",
+    "formula": "V = n &times; 3<sup>k</sup> &times; &pi;<sup>m</sup> &times; &phi;<sup>p</sup> &times; e<sup>q</sup>",
+    "description": "Detecci\u00f3n de relaciones enteras: cada constante f\u00edsica como un punto en la ret\u00edcula generada por {1, log(3), log(\u03c0), log(\u03c6)} sobre \u2124.",
+    "inputPlaceholder": "Ingrese cualquier n\u00famero positivo...",
+    "decompose": "Descomponer",
+    "computing": "Calculando...",
+    "target": "Objetivo",
+    "exact": "EXACTO",
+    "close": "CERCANO",
+    "approx": "APROX.",
+    "predictionsTitle": "Extrapolaciones Sagradas",
+    "predictionsDisclaimer": "NO es f\u00edsica establecida \u2014 solo matem\u00e1ticas experimentales",
+    "categories": {
+      "all": "Todos",
+      "particle_physics": "F\u00edsica de Part\u00edculas",
+      "quantum": "Cu\u00e1ntica",
+      "cosmology": "Cosmolog\u00eda",
+      "quantum_gravity": "Gravedad Cu\u00e1ntica"
+    },
+    "chevrons": { "n": "n", "k": "3\u207a", "m": "\u03c0\u207a", "p": "\u03c6\u207a", "q": "e\u207a" },
+    "error": "error"
+  },
   "stickyCta": {
     "invest": "Invertir Ahora",
     "calculator": "Calculadora de Ahorro"
