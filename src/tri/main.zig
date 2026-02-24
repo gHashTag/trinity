@@ -233,6 +233,9 @@ pub fn main() !void {
         .math_verify => math_mod.runMathVerifyCommand(),
         .math_bench => math_mod.runMathBenchCommand(),
         .math_compare => math_mod.runMathCompareCommand(cmd_args),
+        // Cycle 91: Sacred Language Model
+        .embed => commands.runEmbedCommand(allocator, cmd_args),
+        .sacred_search => commands.runSacredSearchCommand(allocator, cmd_args),
         // Cycle 84: $TRI Rewards
         .rewards => commands.runRewardsCommand(allocator, cmd_args),
         // Cycle 85: Dashboard
