@@ -647,6 +647,13 @@ pub fn runMathCommand(args: []const []const u8) void {
         runQGSimCommand(sub_args);
     } else if (std.mem.eql(u8, sub, "marketplace") or std.mem.eql(u8, sub, "market") or std.mem.eql(u8, sub, "tri-market")) {
         runMarketplaceCommand(sub_args);
+        // --- Cycle 90 v3.3: Universe + String Theory + DeFi ---
+    } else if (std.mem.eql(u8, sub, "universe") or std.mem.eql(u8, sub, "multiverse") or std.mem.eql(u8, sub, "cosmo-sim")) {
+        runUniverseCommand(sub_args);
+    } else if (std.mem.eql(u8, sub, "string-theory") or std.mem.eql(u8, sub, "strings") or std.mem.eql(u8, sub, "calabi-yau")) {
+        runStringTheoryCommand(sub_args);
+    } else if (std.mem.eql(u8, sub, "defi") or std.mem.eql(u8, sub, "yield") or std.mem.eql(u8, sub, "pools")) {
+        runDefiCommand(sub_args);
     } else {
         std.debug.print("{s}Unknown math subcommand: {s}{s}\n", .{ RED, sub, RESET });
         printMathHelp();
@@ -3083,7 +3090,7 @@ fn runUniverseCommand(args: []const []const u8) void {
             const epsilon = 0.001 * (1.0 + fn_e * 0.015);
             const phi_field = 3.0 * PHI - fn_e * 0.05;
             const color = if (n_e >= 60) GOLDEN else GREEN;
-            std.debug.print("  {s}{d:>5}   {d:>12.2e}   {d:>10.2e}   {d:>8.5}    {d:>8.4}{s}\n", .{
+            std.debug.print("  {s}{d:>5}   {e:>12.2}   {e:>10.2}   {d:>8.5}    {d:>8.4}{s}\n", .{
                 color, n_e, scale, hubble, epsilon, phi_field, RESET,
             });
         }
@@ -3132,7 +3139,7 @@ fn runUniverseCommand(args: []const []const u8) void {
 
         for (epochs, 0..) |epoch, i| {
             const color = if (i == 11) GOLDEN else if (i == 12) RED else if (i < 4) CYAN else GREEN;
-            std.debug.print("  {s}  {s:<14s} {s:<14s} {s:<12s} {s}{s}\n", .{
+            std.debug.print("  {s}  {s:<14} {s:<14} {s:<12} {s}{s}\n", .{
                 color, epoch.name, epoch.time, epoch.temp, epoch.desc, RESET,
             });
             if (i < epochs.len - 1) {
@@ -3241,7 +3248,7 @@ fn runStringTheoryCommand(args: []const []const u8) void {
             const anthropic = if (@abs(lam) < 1.0e-120 and @abs(lam) > 0) " YES" else "  no";
             const color = if (@abs(lam) < 1.0e-120 and @abs(lam) > 0) GOLDEN else if (susy_arr[i]) GREEN else GRAY;
             const s_str: []const u8 = if (susy_arr[i]) "yes" else " no";
-            std.debug.print("  {s}{d:>2}  {d:>14.3e}   {s}   {d:>5}   {d:>3}   {s}{s}\n", .{
+            std.debug.print("  {s}{d:>2}  {e:>14.3}   {s}   {d:>5}   {d:>3}   {s}{s}\n", .{
                 color, i + 1, lam, s_str, mod_arr[i], flux_arr[i], anthropic, RESET,
             });
         }
@@ -3325,7 +3332,7 @@ fn runDefiCommand(args: []const []const u8) void {
             const conf = if (dev < 0.01) @as(f64, 99.9) else if (dev < 0.1) @as(f64, 95.0) else if (dev < 1.0) @as(f64, 80.0) else @as(f64, 50.0);
             const status: []const u8 = if (dev < 0.1) "VERIFIED" else if (dev < 1.0) "  OK    " else "TENSION ";
             const color = if (dev < 0.01) GOLDEN else if (dev < 0.1) GREEN else if (dev < 1.0) CYAN else RED;
-            std.debug.print("  {s}{s:<12s}  {d:>12.6}  {d:>12.6}  {d:>6.3}%%  {d:>5.1}%%  {s}{s}\n", .{
+            std.debug.print("  {s}{s:<12}  {d:>12.6}  {d:>12.6}  {d:>6.3}%%  {d:>5.1}%%  {s}{s}\n", .{
                 color, o.name, o.sacred, o.market, dev, conf, status, RESET,
             });
         }
