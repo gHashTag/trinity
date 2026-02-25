@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// formula_discovery v3.5.0 - Generated from .vibee specification
+//  v - Generated from .vibee specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Священная формула: V = n × 3^k × π^m × φ^p × e^q
@@ -17,45 +17,16 @@ const math = std.math;
 // КОНСТАНТЫ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub const PHI: f64 = 1.618033988749895;
-
-pub const PI: f64 = 3.141592653589793;
-
-pub const E: f64 = 2.718281828459045;
-
-pub const TRINITY: f64 = 3;
-
-pub const MAX_FORMULA_DEPTH: f64 = 6;
-
-pub const POPULATION_SIZE: f64 = 64;
-
-pub const MUTATION_RATE: f64 = 0.0382;
-
 // Базовые φ-константы (Sacred Formula)
+pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
+pub const TRINITY: f64 = 3.0;
 pub const SQRT5: f64 = 2.2360679774997896;
 pub const TAU: f64 = 6.283185307179586;
+pub const PI: f64 = 3.141592653589793;
+pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// ТИПЫ
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/// AST node for mathematical formula
-pub const FormulaNode = struct {
-    op: []const u8,
-    left_idx: i64,
-    right_idx: i64,
-    depth: i64,
-};
-
-/// A discovered mathematical relationship
-pub const DiscoveredFormula = struct {
-    formula_id: i64,
-    expression: []const u8,
-    error_pct: f64,
-};
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // ПАМЯТЬ ДЛЯ WASM
@@ -133,109 +104,9 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 // BEHAVIOR FUNCTIONS - Generated from behaviors
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Set of sacred constants
-/// When: Engine runs autonomous formula search
-/// Then: Return list of discovered formulas
-pub fn discover_formulas() anyerror!void {
-// TODO: implement — Return list of discovered formulas
-    // Add 'implementation:' field in .vibee spec to provide real code.
-}
-
-/// Current population of formula candidates
-/// When: Genetic evolution step executes
-/// Then: Return next generation with mutations
-pub fn evolve_population() f32 {
-// TODO: implement — Return next generation with mutations
-    // Add 'implementation:' field in .vibee spec to provide real code.
-}
-
-/// Formula AST and target constant
-/// When: Fitness evaluation is triggered
-/// Then: Return fitness score
-pub fn evaluate_formula_fitness() f32 {
-// TODO: implement — Return fitness score
-    // Add 'implementation:' field in .vibee spec to provide real code.
-}
-
-/// All pairs of sacred constants
-/// When: User requests correlation analysis
-/// Then: Return correlation matrix with formulas
-pub fn compute_cross_correlations(self: *@This()) anyerror!void {
-// Compute: Return correlation matrix with formulas
-    const result: f64 = PHI_INV; // 0.618 default
-    _ = result;
-}
-
-/// Current autonomous search progress
-/// When: User requests progress
-/// Then: Return SearchState with metrics
-pub fn search_state_snapshot() anyerror!void {
-// Retrieve: Return SearchState with metrics
-    const query = @as([]const u8, "search_query");
-    const relevance: f64 = if (query.len > 0) 0.85 else 0.0;
-    _ = relevance;
-}
-
-/// Completed evolution steps
-/// When: User requests history
-/// Then: Return list of EvolutionStep entries
-pub fn evolution_history() anyerror!void {
-// TODO: implement — Return list of EvolutionStep entries
-    // Add 'implementation:' field in .vibee spec to provide real code.
-}
-
 // ═══════════════════════════════════════════════════════════════════════════════
 // TESTS - Generated from behaviors and test_cases
 // ═══════════════════════════════════════════════════════════════════════════════
-
-test "discover_formulas_behavior" {
-// Given: Set of sacred constants
-// When: Engine runs autonomous formula search
-// Then: Return list of discovered formulas
-// Test discover_formulas: verify behavior is callable (compile-time check)
-_ = discover_formulas;
-}
-
-test "evolve_population_behavior" {
-// Given: Current population of formula candidates
-// When: Genetic evolution step executes
-// Then: Return next generation with mutations
-// Test evolve_population: verify behavior is callable (compile-time check)
-_ = evolve_population;
-}
-
-test "evaluate_formula_fitness_behavior" {
-// Given: Formula AST and target constant
-// When: Fitness evaluation is triggered
-// Then: Return fitness score
-// Test evaluate_formula_fitness: verify returns a float in valid range
-// TODO: Add specific test for evaluate_formula_fitness
-_ = evaluate_formula_fitness;
-}
-
-test "compute_cross_correlations_behavior" {
-// Given: All pairs of sacred constants
-// When: User requests correlation analysis
-// Then: Return correlation matrix with formulas
-// Test compute_cross_correlations: verify behavior is callable (compile-time check)
-_ = compute_cross_correlations;
-}
-
-test "search_state_snapshot_behavior" {
-// Given: Current autonomous search progress
-// When: User requests progress
-// Then: Return SearchState with metrics
-// Test search_state_snapshot: verify behavior is callable (compile-time check)
-_ = search_state_snapshot;
-}
-
-test "evolution_history_behavior" {
-// Given: Completed evolution steps
-// When: User requests history
-// Then: Return list of EvolutionStep entries
-// Test evolution_history: verify behavior is callable (compile-time check)
-_ = evolution_history;
-}
 
 test "phi_constants" {
     try std.testing.expectApproxEqAbs(PHI * PHI_INV, 1.0, 1e-10);

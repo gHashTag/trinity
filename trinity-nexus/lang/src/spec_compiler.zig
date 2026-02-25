@@ -267,7 +267,7 @@ pub const SpecCompiler = struct {
         }
 
         // Function signature
-        try self.writeFmt("pub fn {s}() !void {{\n", .{b.name});
+        try self.writeFmt("pub fn {s}() !void {{\n", .{sanitizeIdent(b.name)});
         self.indent += 1;
 
         try self.writeIndent();
@@ -302,14 +302,14 @@ pub const SpecCompiler = struct {
 
         for (behaviors) |b| {
             for (b.test_cases.items) |tc| {
-                try self.writeTest(&tc, b.name);
+                try self.writeTest(&tc, sanitizeIdent(b.name));
                 self.tests_generated += 1;
             }
         }
     }
 
     fn writeTest(self: *Self, tc: *const TestCase, behavior_name: []const u8) !void {
-        try self.writeFmt("test \"{s}\" {{\n", .{tc.name});
+        try self.writeFmt("test \"{s}\" {{\n", .{sanitizeIdent(tc.name)});
         self.indent += 1;
 
         try self.writeIndent();
@@ -374,6 +374,28 @@ pub const SpecCompiler = struct {
 
     fn newline(self: *Self) !void {
         try self.buffer.append('\n');
+    }
+
+    /// Sanitize name for use as Zig identifier
+    /// Converts hyphens to underscores and removes invalid characters
+    fn sanitizeIdent(name: []const u8) []const u8 {
+        var result: [256]u8 = undefined;
+        var result_len: usize = 0;
+        for (name) |c| {
+            // Replace hyphens with underscores
+            if (c == '-') {
+                result[result_len] = '_';
+                result_len += 1;
+            }
+            // Keep alphanumeric and underscores
+            else if ((c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or
+                       (c >= '0' and c <= '9') or c == '_')
+            {
+                result[result_len] = c;
+                result_len += 1;
+            }
+        }
+        return result[0..result_len];
     }
 
     pub fn getStats(self: *const Self) Stats {

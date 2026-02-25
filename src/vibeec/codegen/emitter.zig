@@ -1458,7 +1458,7 @@ pub const ZigCodeGen = struct {
             } else {
                 // Body only — wrap in inferred signature
                 const sig = inferSignatureFromSpec(b.given, b.then, b.name);
-                try self.builder.writeFmt("pub fn {s}({s}) {s} {{\n", .{ b.name, sig.params, sig.ret });
+                try self.builder.writeFmt("pub fn {s}({s}) {s} {{\n", .{ sanitizeIdent(b.name), sig.params, sig.ret });
                 self.builder.incIndent();
                 try self.builder.writeLine(b.implementation);
                 self.builder.decIndent();
@@ -1467,13 +1467,51 @@ pub const ZigCodeGen = struct {
         } else {
             // No implementation — use pattern matching or auto-body
             const sig = inferSignatureFromSpec(b.given, b.then, b.name);
-            try self.builder.writeFmt("pub fn {s}({s}) {s} {{\n", .{ b.name, sig.params, sig.ret });
+            try self.builder.writeFmt("pub fn {s}({s}) {s} {{\n", .{ sanitizeIdent(b.name), sig.params, sig.ret });
             self.builder.incIndent();
             try self.generateRealBody(b);
             self.builder.decIndent();
             try self.builder.writeLine("}");
         }
         try self.builder.newline();
+    }
+
+    /// Sanitize name for use as Zig identifier
+    /// Converts hyphens to underscores and removes invalid characters
+    /// Also handles UTF-8 continuation bytes
+    fn sanitizeIdent(name: []const u8) []const u8 {
+        var result: [256]u8 = undefined;
+        var result_len: usize = 0;
+
+        // First pass: remove hyphens and invalid ASCII chars
+        for (name) |c| {
+            // Replace hyphens with underscores
+            if (c == '-') {
+                result[result_len] = '_';
+                result_len += 1;
+            }
+            // Keep alphanumeric and underscores
+            else if ((c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or
+                       (c >= '0' and c <= '9') or c == '_')
+            {
+                result[result_len] = c;
+                result_len += 1;
+            }
+        }
+
+        // Second pass: remove UTF-8 continuation bytes (0x80-0xBF)
+        var i: usize = 0;
+        var j: usize = 1;
+        while (i < result_len) : (i += 1) {
+            if (j < result_len and result[j - 1] == 0x80) {
+                // Skip continuation bytes
+                j += 1;
+            } else {
+                result[j - 1] = result[j];
+            }
+        }
+
+        return result[0 .. i];
     }
 
     /// Generate real function body from behavior given/when/then fields

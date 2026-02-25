@@ -127,6 +127,7 @@ pub const Command = enum {
     spawn_demo,
     spawn_bench,
     // Distributed Multi-Node Agents (Cycle 37)
+    multi_cluster,    // Emergency stub for Cycle #97
     cluster_demo,
     cluster_bench,
     // Adaptive Work-Stealing Scheduler (Cycle 39)
@@ -801,6 +802,8 @@ pub fn parseCommand(arg: []const u8) Command {
     // Streaming Multi-Modal Pipeline (Cycle 38)
     if (std.mem.eql(u8, arg, "stream-demo") or std.mem.eql(u8, arg, "stream") or std.mem.eql(u8, arg, "pipeline")) return .stream_demo;
     if (std.mem.eql(u8, arg, "stream-bench") or std.mem.eql(u8, arg, "pipeline-bench")) return .stream_bench;
+    // Multi-Cluster Federation (Cycle 97)
+    if (std.mem.eql(u8, arg, "multi-cluster")) return .multi_cluster;
     // Local Vision
     if (std.mem.eql(u8, arg, "vision-demo") or std.mem.eql(u8, arg, "vision") or std.mem.eql(u8, arg, "eye")) return .vision_demo;
     if (std.mem.eql(u8, arg, "vision-bench") or std.mem.eql(u8, arg, "eye-bench")) return .vision_bench;
