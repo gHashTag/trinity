@@ -266,8 +266,10 @@ pub const SpecCompiler = struct {
             try self.writeFmt("/// PAS Pattern: {s}\n", .{b.pas_pattern});
         }
 
-        // Function signature
-        try self.writeFmt("pub fn {s}() !void {{\n", .{sanitizeIdent(b.name)});
+        // Function signature - write sanitized name directly to buffer
+        try self.write("pub fn ");
+        try self.writeSanitizedIdent(b.name);
+        try self.writeLine("() !void {");
         self.indent += 1;
 
         try self.writeIndent();
@@ -309,7 +311,9 @@ pub const SpecCompiler = struct {
     }
 
     fn writeTest(self: *Self, tc: *const TestCase, behavior_name: []const u8) !void {
-        try self.writeFmt("test \"{s}\" {{\n", .{sanitizeIdent(tc.name)});
+        try self.write("test \"");
+        try self.writeSanitizedIdent(tc.name);
+        try self.writeLine("\" {");
         self.indent += 1;
 
         try self.writeIndent();
@@ -376,8 +380,31 @@ pub const SpecCompiler = struct {
         try self.buffer.append('\n');
     }
 
+    /// Write raw string to buffer (no indent or newline)
+    fn write(self: *Self, str: []const u8) !void {
+        try self.buffer.appendSlice(str);
+    }
+
+    /// Write sanitized identifier directly to buffer
+    /// Converts hyphens to underscores and removes invalid characters
+    fn writeSanitizedIdent(self: *Self, name: []const u8) !void {
+        for (name) |c| {
+            // Replace hyphens with underscores
+            if (c == '-') {
+                try self.buffer.append('_');
+            }
+            // Keep alphanumeric and underscores
+            else if ((c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or
+                       (c >= '0' and c <= '9') or c == '_')
+            {
+                try self.buffer.append(c);
+            }
+        }
+    }
+
     /// Sanitize name for use as Zig identifier
     /// Converts hyphens to underscores and removes invalid characters
+    /// NOTE: This returns a stack-allocated slice - use writeSanitizedIdent instead
     fn sanitizeIdent(name: []const u8) []const u8 {
         var result: [256]u8 = undefined;
         var result_len: usize = 0;
