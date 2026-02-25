@@ -1,0 +1,126 @@
+name: autonomous_evolution
+version: "4.1.0"
+language: zig
+module: autonomous_evolution
+
+types:
+  EvolutionParameters:
+    fields:
+      population_size: i32
+      mutation_rate: f64
+      crossover_rate: f64
+      selection_pressure: f64
+      elitism_rate: f64
+      convergence_threshold: f64
+
+  SelfEvolvingFormula:
+    fields:
+      formula_id: i64
+      expression: String
+      fitness: f64
+      generation: i32
+      self_improvements: i32
+      last_improved_at: i64
+
+  EvolutionStrategy:
+    fields:
+      name: String
+      parameters: String
+      success_rate: f64
+      avg_improvement: f64
+
+  AutonomousEvolutionState:
+    fields:
+      current_generation: i64
+      best_fitness: f64
+      convergence_status: String
+      active_strategy: String
+      population: String
+      mutation_history: String
+      auto_adjustments: i32
+
+  MutationPattern:
+    fields:
+      pattern_type: String
+      frequency: f64
+      success_rate: f64
+      sacred_factor: f64
+
+  LearningSignal:
+    fields:
+      signal_type: String
+      strength: f64
+      action_taken: String
+      action_result: f64
+
+behaviors:
+  - name: initialize_evolution
+    given: EvolutionParameters
+    when: Starting new autonomous evolution
+    then: Create initial population and state
+
+  - name: evolve_generation
+    given: Current AutonomousEvolutionState
+    when: Evolution step executes
+    then: Apply selection mutation crossover return new generation
+
+  - name: detect_convergence
+    given: Last N generations fitness
+    when: Convergence check triggered
+    then: Return convergence status
+
+  - name: switch_strategy
+    given: Current convergence status
+    when: Strategy underperforms or stagnates
+    then: Switch to new EvolutionStrategy
+
+  - name: auto_tune_parameters
+    given: Recent fitness improvements
+    when: Evolution performance degrades
+    then: Adjust EvolutionParameters autonomously
+
+  - name: generate_mutation
+    given: SelfEvolvingFormula
+    when: Mutation applied
+    then: Apply MutationPattern and return modified formula
+
+  - name: record_learning_signal
+    given: LearningSignal
+    when: Learning event occurs
+    then: Add to mutation history and adjust patterns
+
+  - name: get_evolution_summary
+    given: AutonomousEvolutionState
+    when: Summary requested
+    then: Return JSON with full evolution statistics
+
+  - name: autonomous_loop
+    given: No parameters
+    when: Autonomous mode started
+    then: Continuously evolve detect convergence self-tune
+
+  - name: export_evolution_state
+    given: AutonomousEvolutionState
+    when: State export requested
+    then: Serialize to JSON for persistence
+
+  - name: import_evolution_state
+    given: JSON string
+    when: State import requested
+    then: Deserialize and restore AutonomousEvolutionState
+
+  - name: evaluate_population_fitness
+    given: Population array and fitness function
+    when: New generation created
+    then: Compute fitness for all formulas return sorted
+
+settings:
+  default_population_size: 64
+  default_mutation_rate: 0.0382
+  default_crossover_rate: 0.0618
+  default_selection_pressure: 1.618
+  default_elitism_rate: 0.333
+  convergence_window: 10
+  stagnation_threshold: 0.00001
+  strategy_switch_threshold: 0.05
+  max_auto_tunings: 100
