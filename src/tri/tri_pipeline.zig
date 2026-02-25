@@ -20,8 +20,7 @@ const GRAY = colors.GRAY;
 const RED = colors.RED;
 const CYAN = colors.CYAN;
 const RESET = colors.RESET;
-
-// ═══════════════════════════════════════════════════════════════════════════════
+const YELLOW = colors.YELLOW;
 // GOLDEN CHAIN PIPELINE COMMANDS
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -312,7 +311,7 @@ fn printPlanHelp() void {
     std.debug.print("{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
 }
 
-fn printPlanList(allocator: std.mem.Allocator) void {
+fn printPlanList() void {
     std.debug.print("\n{s}Existing VIBEE Specifications{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
 
