@@ -54,7 +54,7 @@ pub const TestGenerator = struct {
             if (added_tests.contains(b.name)) continue;
             added_tests.put(b.name, {}) catch continue;
 
-            try self.builder.writeFmt("test \"{s}_behavior\" {{\n", .{b.name});
+            try self.builder.writeFmt("test \"{s}_behavior\" {{\n", .{sanitizeIdent(b.name)});
             self.builder.incIndent();
             try self.builder.writeFmt("// Given: {s}\n", .{b.given});
             try self.builder.writeFmt("// When: {s}\n", .{b.when});
@@ -97,7 +97,7 @@ pub const TestGenerator = struct {
         for (test_cases) |tc| {
             if (tc.name.len == 0) continue;
 
-            try self.builder.writeFmt("test \"{s}\" {{\n", .{tc.name});
+            try self.builder.writeFmt("test \"{s}\" {{\n", .{sanitizeIdent(tc.name)});
             self.builder.incIndent();
             try self.builder.writeFmt("// Given: {s}\n", .{tc.input});
             try self.builder.writeFmt("// Expected: {s}\n", .{tc.expected});
@@ -352,6 +352,44 @@ pub const TestGenerator = struct {
             if (std.mem.indexOf(u8, haystack, kw_buf[0..keyword.len]) != null) return true;
         }
         return false;
+    }
+
+    /// Sanitize name for use as Zig identifier
+    /// Converts hyphens to underscores and removes invalid characters
+    /// Also handles UTF-8 continuation bytes (0x80-0xBF)
+    fn sanitizeIdent(name: []const u8) []const u8 {
+        var result: [256]u8 = undefined;
+        var result_len: usize = 0;
+
+        // First pass: remove hyphens and invalid ASCII chars
+        for (name) |c| {
+            // Replace hyphens with underscores
+            if (c == '-') {
+                result[result_len] = '_';
+                result_len += 1;
+            }
+            // Keep alphanumeric and underscores
+            else if ((c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or
+                       (c >= '0' and c <= '9') or c == '_')
+            {
+                result[result_len] = c;
+                result_len += 1;
+            }
+        }
+
+        // Second pass: remove UTF-8 continuation bytes (0x80-0xBF)
+        var i: usize = 0;
+        var j: usize = 1;
+        while (i < result_len) : (i += 1) {
+            if (j < result_len and result[j - 1] == 0x80) {
+                // Skip continuation bytes
+                j += 1;
+            } else {
+                result[j - 1] = result[j];
+            }
+        }
+
+        return result[0 .. i];
     }
 
     pub fn generateKnownTestAssertion(self: *Self, name: []const u8, then_clause: []const u8) !void {
