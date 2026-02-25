@@ -125,14 +125,14 @@ fn runTriSpecGen(allocator: std.mem.Allocator, input_path: []const u8, output_pa
     defer spec.deinit();
 
     std.debug.print("  Name: {s} v{s}\n", .{ spec.name, spec.version });
-    std.debug.print("  Format: sacred-spec-v{d}\n", .{spec.format_version});
-    std.debug.print("  Constants: {d}\n", .{spec.constantCount()});
+    std.debug.print("  Format: sacred-spec-v{s}\n", .{spec.format_version});
+    std.debug.print("  Constants: {s}\n", .{spec.constantCount()});
 
     if (spec.isV2()) {
-        std.debug.print("  Glyphs: {d}\n", .{spec.glyphCount()});
-        std.debug.print("  Embedding dim: {d}\n", .{spec.embedding.dimension});
+        std.debug.print("  Glyphs: {s}\n", .{spec.glyphCount()});
+        std.debug.print("  Embedding dim: {s}\n", .{spec.embedding.dimension});
     } else {
-        std.debug.print("  Predictions: {d}\n", .{spec.predictionCount()});
+        std.debug.print("  Predictions: {s}\n", .{spec.predictionCount()});
     }
     std.debug.print("\n", .{});
 
@@ -169,11 +169,11 @@ fn runTriSpecGen(allocator: std.mem.Allocator, input_path: []const u8, output_pa
 
     std.debug.print("  Output: {s}\n", .{out_path});
     if (spec.isV2()) {
-        std.debug.print("{s}✓ Sacred Language Model codegen complete! ({d} glyphs, {d} constants, {d}-dim embeddings){s}\n", .{
+        std.debug.print("{s}✓ Sacred Language Model codegen complete! ({s} glyphs, {s} constants, {s}-dim embeddings){s}\n", .{
             GREEN, spec.glyphCount(), spec.constantCount(), spec.embedding.dimension, RESET,
         });
     } else {
-        std.debug.print("{s}✓ Sacred spec codegen complete! ({d} constants, {d} predictions){s}\n", .{
+        std.debug.print("{s}✓ Sacred spec codegen complete! ({s} constants, {s} predictions){s}\n", .{
             GREEN, spec.constantCount(), spec.predictionCount(), RESET,
         });
     }
@@ -199,7 +199,7 @@ fn genSacredFormulaV1(w: anytype, spec: *const @import("tri_spec_parser.zig").Sa
     w.writeAll("pub const SacredConstant = struct { name: []const u8, symbol: []const u8, value: f64, category: []const u8 };\n\n") catch return;
     w.writeAll("pub const constants = [_]SacredConstant{\n") catch return;
     for (spec.constants.items) |c| {
-        std.fmt.format(w, "    .{{ .name = \"{s}\", .symbol = \"{s}\", .value = {d}, .category = \"{s}\" }},\n", .{ c.name, c.symbol, c.value, c.category }) catch return;
+        std.fmt.format(w, "    .{{ .name = \"{s}\", .symbol = \"{s}\", .value = {s}, .category = \"{s}\" }},\n", .{ c.name, c.symbol, c.value, c.category }) catch return;
     }
     w.writeAll("};\n\n") catch return;
 
@@ -207,7 +207,7 @@ fn genSacredFormulaV1(w: anytype, spec: *const @import("tri_spec_parser.zig").Sa
     w.writeAll("pub const SacredPrediction = struct { name: []const u8, formula: []const u8, n: i8, k: i8, m: i8, p: i8, q: i8, unit: []const u8 };\n\n") catch return;
     w.writeAll("pub const predictions = [_]SacredPrediction{\n") catch return;
     for (spec.predictions.items) |p| {
-        std.fmt.format(w, "    .{{ .name = \"{s}\", .formula = \"{s}\", .n = {d}, .k = {d}, .m = {d}, .p = {d}, .q = {d}, .unit = \"{s}\" }},\n", .{ p.name, p.formula, p.n, p.k, p.m, p.p, p.q, p.unit }) catch return;
+        std.fmt.format(w, "    .{{ .name = \"{s}\", .formula = \"{s}\", .n = {s}, .k = {s}, .m = {s}, .p = {s}, .q = {s}, .unit = \"{s}\" }},\n", .{ p.name, p.formula, p.n, p.k, p.m, p.p, p.q, p.unit }) catch return;
     }
     w.writeAll("};\n") catch return;
 }
@@ -230,19 +230,19 @@ fn genSacredLanguageModel(w: anytype, spec: *const @import("tri_spec_parser.zig"
     std.fmt.format(w, "pub const E_CONST: f64 = {d:.20};\n\n", .{spec.bases[3]}) catch return;
 
     // ── Embedding Dimension ─────────────────────────────────────────────────
-    std.fmt.format(w, "pub const EMBEDDING_DIM: usize = {d};\n", .{spec.embedding.dimension}) catch return;
-    std.fmt.format(w, "pub const SACRED_FORMULA_DIMS: usize = {d};\n", .{spec.embedding.sacred_formula_dims}) catch return;
-    std.fmt.format(w, "pub const KINGDOM_DIMS: usize = {d};\n", .{spec.embedding.kingdom_dims}) catch return;
-    std.fmt.format(w, "pub const POSITIONAL_DIMS: usize = {d};\n", .{spec.embedding.positional_dims}) catch return;
-    std.fmt.format(w, "pub const PROXIMITY_DIMS: usize = {d};\n", .{spec.embedding.proximity_dims}) catch return;
-    std.fmt.format(w, "pub const DISTRIBUTIONAL_DIMS: usize = {d};\n\n", .{spec.embedding.distributional_dims}) catch return;
+    std.fmt.format(w, "pub const EMBEDDING_DIM: usize = {s};\n", .{spec.embedding.dimension}) catch return;
+    std.fmt.format(w, "pub const SACRED_FORMULA_DIMS: usize = {s};\n", .{spec.embedding.sacred_formula_dims}) catch return;
+    std.fmt.format(w, "pub const KINGDOM_DIMS: usize = {s};\n", .{spec.embedding.kingdom_dims}) catch return;
+    std.fmt.format(w, "pub const POSITIONAL_DIMS: usize = {s};\n", .{spec.embedding.positional_dims}) catch return;
+    std.fmt.format(w, "pub const PROXIMITY_DIMS: usize = {s};\n", .{spec.embedding.proximity_dims}) catch return;
+    std.fmt.format(w, "pub const DISTRIBUTIONAL_DIMS: usize = {s};\n\n", .{spec.embedding.distributional_dims}) catch return;
 
     // ── Gematria Glyph Table ────────────────────────────────────────────────
     w.writeAll("pub const GlyphEntry = struct {\n") catch return;
     w.writeAll("    codepoint: u21,\n    value: u16,\n    kingdom: Kingdom,\n};\n\n") catch return;
     w.writeAll("pub const Kingdom = enum { matter, energy, information };\n\n") catch return;
 
-    std.fmt.format(w, "pub const GLYPH_COUNT: usize = {d};\n\n", .{spec.gematria_table.items.len}) catch return;
+    std.fmt.format(w, "pub const GLYPH_COUNT: usize = {s};\n\n", .{spec.gematria_table.items.len}) catch return;
     w.writeAll("pub const glyph_table = [_]GlyphEntry{\n") catch return;
     for (spec.gematria_table.items) |g| {
         const kingdom_str = if (std.mem.eql(u8, g.kingdom, "matter"))
@@ -251,7 +251,7 @@ fn genSacredLanguageModel(w: anytype, spec: *const @import("tri_spec_parser.zig"
             "energy"
         else
             "information";
-        std.fmt.format(w, "    .{{ .codepoint = 0x{X:0>4}, .value = {d}, .kingdom = .{s} }},\n", .{ g.codepoint, g.value, kingdom_str }) catch return;
+        std.fmt.format(w, "    .{{ .codepoint = 0x{X:0>4}, .value = {s}, .kingdom = .{s} }},\n", .{ g.codepoint, g.value, kingdom_str }) catch return;
     }
     w.writeAll("};\n\n") catch return;
 
@@ -263,7 +263,7 @@ fn genSacredLanguageModel(w: anytype, spec: *const @import("tri_spec_parser.zig"
         if (@abs(c.value) > 1e15 or (@abs(c.value) < 1e-6 and c.value != 0)) {
             std.fmt.format(w, "    .{{ .name = \"{s}\", .symbol = \"{s}\", .value = {e}, .category = \"{s}\" }},\n", .{ c.name, c.symbol, c.value, c.category }) catch return;
         } else {
-            std.fmt.format(w, "    .{{ .name = \"{s}\", .symbol = \"{s}\", .value = {d}, .category = \"{s}\" }},\n", .{ c.name, c.symbol, c.value, c.category }) catch return;
+            std.fmt.format(w, "    .{{ .name = \"{s}\", .symbol = \"{s}\", .value = {s}, .category = \"{s}\" }},\n", .{ c.name, c.symbol, c.value, c.category }) catch return;
         }
     }
     w.writeAll("};\n\n") catch return;
@@ -271,7 +271,7 @@ fn genSacredLanguageModel(w: anytype, spec: *const @import("tri_spec_parser.zig"
     // ── Token Type ──────────────────────────────────────────────────────────
     w.writeAll("pub const TokenType = enum(u8) {\n") catch return;
     for (spec.tokenizer.token_types.items) |tt| {
-        std.fmt.format(w, "    {s} = {d},\n", .{ tt.name, tt.id }) catch return;
+        std.fmt.format(w, "    {s} = {s},\n", .{ tt.name, tt.id }) catch return;
     }
     w.writeAll("};\n\n") catch return;
 
@@ -586,10 +586,10 @@ fn genSacredLanguageModel(w: anytype, spec: *const @import("tri_spec_parser.zig"
             \\
         ) catch return;
 
-        std.fmt.format(w, "const FORMULA_TABLE_SIZE: usize = {d};\n\n", .{TABLE_SIZE}) catch return;
+        std.fmt.format(w, "const FORMULA_TABLE_SIZE: usize = {s};\n\n", .{TABLE_SIZE}) catch return;
         w.writeAll("const formula_table = [_]FormulaEntry{\n") catch return;
         for (cg_table[0..TABLE_SIZE]) |e| {
-            std.fmt.format(w, "    .{{ .value = {e}, .n = {d}, .k = {d}, .m = {d}, .p = {d}, .q = {d} }},\n", .{ e.value, e.n, e.k, e.m, e.p, e.q }) catch return;
+            std.fmt.format(w, "    .{{ .value = {e}, .n = {s}, .k = {s}, .m = {s}, .p = {s}, .q = {s} }},\n", .{ e.value, e.n, e.k, e.m, e.p, e.q }) catch return;
         }
         w.writeAll("};\n\n") catch return;
 
@@ -638,7 +638,7 @@ fn genSacredLanguageModel(w: anytype, spec: *const @import("tri_spec_parser.zig"
             \\
         ) catch return;
         const num_consts = spec.constants.items.len;
-        std.fmt.format(w, "pub const NUM_SACRED_CONSTANTS: usize = {d};\n\n", .{num_consts}) catch return;
+        std.fmt.format(w, "pub const NUM_SACRED_CONSTANTS: usize = {s};\n\n", .{num_consts}) catch return;
 
         // Compute embeddings at codegen time
         const emb_dim: usize = spec.embedding.dimension;
@@ -1074,13 +1074,13 @@ pub fn runServeCommand(allocator: std.mem.Allocator, args: []const []const u8) v
         std.debug.print("\n{s}╔══════════════════════════════════════════════════════════════╗{s}\n", .{ GOLDEN, RESET });
         std.debug.print("{s}║         TRI SELF-HOST SERVER v2.1                            ║{s}\n", .{ GOLDEN, RESET });
         std.debug.print("{s}╚══════════════════════════════════════════════════════════════╝{s}\n", .{ GOLDEN, RESET });
-        std.debug.print("\n  {s}Port:{s}           {s}{d}{s}\n", .{ GRAY, RESET, GREEN, port, RESET });
+        std.debug.print("\n  {s}Port:{s}           {s}{s}{s}\n", .{ GRAY, RESET, GREEN, port, RESET });
         std.debug.print("  {s}Mode:{s}           {s}Self-Hosting (Full Dev OS){s}\n", .{ GRAY, RESET, GREEN, RESET });
         std.debug.print("  {s}API:{s}            /api/chat, /api/code, /api/swe\n", .{ GRAY, RESET });
-        std.debug.print("  {s}LSP:{s}            ws://localhost:{d}/lsp\n", .{ GRAY, RESET, port });
-        std.debug.print("  {s}Dashboard:{s}      http://localhost:{d}/dashboard\n", .{ GRAY, RESET, port });
-        std.debug.print("  {s}Swarm:{s}          http://localhost:{d}/swarm\n", .{ GRAY, RESET, port });
-        std.debug.print("  {s}$TRI Economy:{s}   http://localhost:{d}/rewards\n", .{ GRAY, RESET, port });
+        std.debug.print("  {s}LSP:{s}            ws://localhost:{s}/lsp\n", .{ GRAY, RESET, port });
+        std.debug.print("  {s}Dashboard:{s}      http://localhost:{s}/dashboard\n", .{ GRAY, RESET, port });
+        std.debug.print("  {s}Swarm:{s}          http://localhost:{s}/swarm\n", .{ GRAY, RESET, port });
+        std.debug.print("  {s}$TRI Economy:{s}   http://localhost:{s}/rewards\n", .{ GRAY, RESET, port });
         std.debug.print("\n  {s}Endpoints:{s}\n", .{ CYAN, RESET });
         std.debug.print("    GET  /health             Health check\n", .{});
         std.debug.print("    GET  /dashboard          System dashboard\n", .{});
@@ -1089,7 +1089,7 @@ pub fn runServeCommand(allocator: std.mem.Allocator, args: []const []const u8) v
         std.debug.print("    POST /api/swe            SWE agent tasks\n", .{});
         std.debug.print("    GET  /swarm/status       Swarm state\n", .{});
         std.debug.print("    GET  /rewards/balance    $TRI balance\n", .{});
-        std.debug.print("\n{s}Starting self-hosted TRI server on port {d}...{s}\n", .{ CYAN, port, RESET });
+        std.debug.print("\n{s}Starting self-hosted TRI server on port {s}...{s}\n", .{ CYAN, port, RESET });
         // Delegate to chat server which handles HTTP
         chat_server.runChatServer(allocator, port) catch |err| {
             std.debug.print("{s}Server error: {}{s}\n", .{ RED, err, RESET });
@@ -1100,7 +1100,7 @@ pub fn runServeCommand(allocator: std.mem.Allocator, args: []const []const u8) v
     // v2.3: Chat server mode (no model required)
     if (chat_mode) {
         std.debug.print("{s}Trinity Chat Server v2.3{s}\n", .{ GOLDEN, RESET });
-        std.debug.print("  Port: {d}\n", .{port});
+        std.debug.print("  Port: {s}\n", .{port});
         std.debug.print("  Mode: Hybrid Chat (Tools + Symbolic + TVC + LLM)\n", .{});
         std.debug.print("\n{s}Starting chat server...{s}\n\n", .{ CYAN, RESET });
         chat_server.runChatServer(allocator, port) catch |err| {
@@ -1110,13 +1110,13 @@ pub fn runServeCommand(allocator: std.mem.Allocator, args: []const []const u8) v
     }
 
     std.debug.print("{s}HTTP API Server{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  Port: {d}\n", .{port});
+    std.debug.print("  Port: {s}\n", .{port});
 
     if (model_path) |mp| {
         std.debug.print("  Model: {s}\n", .{mp});
         std.debug.print("\n{s}Starting server...{s}\n", .{ CYAN, RESET });
         std.debug.print("\n{s}Note: Full HTTP server requires vibee:{s}\n", .{ GRAY, RESET });
-        std.debug.print("  zig build vibee -- serve --model {s} --port {d}\n", .{ mp, port });
+        std.debug.print("  zig build vibee -- serve --model {s} --port {s}\n", .{ mp, port });
     } else {
         std.debug.print("{s}Usage:{s}\n", .{ CYAN, RESET });
         std.debug.print("  tri serve --self-host [--port N]      # Self-hosting dev server (v2.1)\n", .{});
@@ -1153,10 +1153,10 @@ pub fn runBenchCommand(allocator: std.mem.Allocator) void {
     const elapsed_ns = timer.read();
     const elapsed_us = elapsed_ns / 1000;
 
-    std.debug.print("\n{s}Results ({d} iterations):{s}\n", .{ CYAN, iterations, RESET });
-    std.debug.print("  Compute time: {d}us\n", .{elapsed_us});
-    std.debug.print("  Ops/sec:      {d}\n", .{if (elapsed_us > 0) iterations * 1_000_000 / elapsed_us else 0});
-    std.debug.print("  Sum check:    {d}\n", .{sum});
+    std.debug.print("\n{s}Results ({s} iterations):{s}\n", .{ CYAN, iterations, RESET });
+    std.debug.print("  Compute time: {s}us\n", .{elapsed_us});
+    std.debug.print("  Ops/sec:      {s}\n", .{if (elapsed_us > 0) iterations * 1_000_000 / elapsed_us else 0});
+    std.debug.print("  Sum check:    {s}\n", .{sum});
 
     std.debug.print("\n{s}Full benchmarks:{s}\n", .{ GRAY, RESET });
     std.debug.print("  zig build firebird -- benchmark --dim 10000\n", .{});
@@ -1191,11 +1191,11 @@ pub fn runEvolveCommand(args: []const []const u8) void {
     std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}              FIREBIRD EVOLUTION{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  Dimension:   {d}\n", .{dim});
-    std.debug.print("  Population:  {d}\n", .{pop});
-    std.debug.print("  Generations: {d}\n", .{gens});
+    std.debug.print("  Dimension:   {s}\n", .{dim});
+    std.debug.print("  Population:  {s}\n", .{pop});
+    std.debug.print("  Generations: {s}\n", .{gens});
     std.debug.print("\n{s}Full evolution requires firebird:{s}\n", .{ GRAY, RESET });
-    std.debug.print("  zig build firebird -- evolve --dim {d} --pop {d} --gen {d}\n", .{ dim, pop, gens });
+    std.debug.print("  zig build firebird -- evolve --dim {s} --pop {s} --gen {s}\n", .{ dim, pop, gens });
     std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
 }
 
@@ -1402,18 +1402,18 @@ pub fn runImproveCommand(allocator: std.mem.Allocator, args: []const []const u8)
     } else {
         std.debug.print("  Spec:        (using default)\n", .{});
     }
-    std.debug.print("  Iterations:  {d}\n", .{iterations});
+    std.debug.print("  Iterations:  {s}\n", .{iterations});
     std.debug.print("  Threshold:    {d:.1}%\n", .{threshold});
     std.debug.print("  Dry Run:     {s}\n", .{if (dry_run) "true" else "false"});
     std.debug.print("  Verbose:     {s}\n", .{if (verbose) "true" else "false"});
 
     std.debug.print("\n{s}Note: Self-improvement requires vibee-self-improve binary:{s}\n", .{ GRAY, RESET });
     if (spec_path) |path| {
-        std.debug.print("  ./zig-out/bin/vibee-self-improve {s} --iterations {d} --threshold {d:.1}\n", .{ path, iterations, threshold });
+        std.debug.print("  ./zig-out/bin/vibee-self-improve {s} --iterations {s} --threshold {d:.1}\n", .{ path, iterations, threshold });
         if (dry_run) std.debug.print("    Option: --dry-run\n", .{});
         if (verbose) std.debug.print("    Option: --verbose\n", .{});
     } else {
-        std.debug.print("  ./zig-out/bin/vibee-self-improve --iterations {d} --threshold {d:.1}\n", .{ iterations, threshold });
+        std.debug.print("  ./zig-out/bin/vibee-self-improve --iterations {s} --threshold {d:.1}\n", .{ iterations, threshold });
         if (dry_run) std.debug.print("    Option: --dry-run\n", .{});
         if (verbose) std.debug.print("    Option: --verbose\n", .{});
     }
@@ -1670,10 +1670,10 @@ pub fn runKGServerCommand(allocator: std.mem.Allocator, args: []const []const u8
     std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}         KNOWLEDGE GRAPH SERVER{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  Port:    {d}\n", .{port});
+    std.debug.print("  Port:    {s}\n", .{port});
     std.debug.print("  Persist: {s}\n", .{if (persist) "enabled" else "disabled"});
     std.debug.print("\n{s}Note: KG Server requires trinity-kg-server binary:{s}\n", .{ GRAY, RESET });
-    std.debug.print("  ./zig-out/bin/trinity-kg-server --port {d}{s}\n", .{
+    std.debug.print("  ./zig-out/bin/trinity-kg-server --port {s}{s}\n", .{
         port,
         if (persist) " --persist" else "",
     });
@@ -1828,9 +1828,9 @@ pub fn runDoctorCommand(allocator: std.mem.Allocator) void {
 fn printDoctorSummary(pass_count: u32, fail_count: u32) void {
     const total = pass_count + fail_count;
     std.debug.print("\n{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n", .{ GRAY, RESET });
-    std.debug.print("  Passed: {s}{d}/{d}{s}\n", .{ GREEN, pass_count, total, RESET });
+    std.debug.print("  Passed: {s}{s}/{s}{s}\n", .{ GREEN, pass_count, total, RESET });
     if (fail_count > 0) {
-        std.debug.print("  Failed: {s}{d}/{d}{s}\n", .{ RED, fail_count, total, RESET });
+        std.debug.print("  Failed: {s}{s}/{s}{s}\n", .{ RED, fail_count, total, RESET });
     }
     if (fail_count == 0) {
         std.debug.print("  Status: {s}ALL CHECKS PASSED{s}\n", .{ GREEN, RESET });
@@ -2005,7 +2005,7 @@ pub fn runIglaCommand(allocator: std.mem.Allocator) void {
     }
 
     std.debug.print("\n{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n", .{ GRAY, RESET });
-    std.debug.print("  Active: {s}{d}/{d}{s} phases\n", .{ GREEN, active, total, RESET });
+    std.debug.print("  Active: {s}{s}/{s}{s} phases\n", .{ GREEN, active, total, RESET });
 
     // Show LOC for active components
     std.debug.print("\n{s}  Quick metrics:{s}\n", .{ CYAN, RESET });
@@ -2248,7 +2248,7 @@ pub fn runDepsCommand(allocator: std.mem.Allocator, args: []const []const u8) vo
         while (it.next()) |line| {
             if (line.len > 0) import_count += 1;
         }
-        std.debug.print("\n  {s}Total imports: {d}{s}\n", .{ GRAY, import_count, RESET });
+        std.debug.print("\n  {s}Total imports: {s}{s}\n", .{ GRAY, import_count, RESET });
     } else {
         std.debug.print("  {s}No @import statements found.{s}\n", .{ GRAY, RESET });
     }
@@ -2318,7 +2318,7 @@ pub fn runLspCommand(allocator: std.mem.Allocator, args: []const []const u8) voi
         std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
         std.debug.print("{s}              TRI LSP SERVER{s}\n", .{ GOLDEN, RESET });
         std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
-        std.debug.print("\n  Mode:    TCP (port {d})\n", .{port});
+        std.debug.print("\n  Mode:    TCP (port {s})\n", .{port});
         std.debug.print("  Verbose: {s}\n", .{if (verbose_mode) "true" else "false"});
         std.debug.print("\n{s}TCP mode not yet implemented. Use stdio mode:{s}\n", .{ GRAY, RESET });
         std.debug.print("  tri lsp          (stdin/stdout JSON-RPC)\n", .{});
@@ -2370,7 +2370,7 @@ pub fn runLspCommand(allocator: std.mem.Allocator, args: []const []const u8) voi
                 \\{"jsonrpc":"2.0","id":0,"result":{"capabilities":{"textDocumentSync":1,"hoverProvider":true,"codeActionProvider":true,"documentFormattingProvider":true,"completionProvider":{"triggerCharacters":[".",":","@"]},"diagnosticProvider":{"interFileDependencies":false,"workspaceDiagnostics":false}},"serverInfo":{"name":"tri-lsp","version":"2.0.0"}}}
             ;
             var resp_buf: [512]u8 = undefined;
-            const header = std.fmt.bufPrint(&resp_buf, "Content-Length: {d}\r\n\r\n", .{response.len}) catch continue;
+            const header = std.fmt.bufPrint(&resp_buf, "Content-Length: {s}\r\n\r\n", .{response.len}) catch continue;
             stdout_file.writeAll(header) catch return;
             stdout_file.writeAll(response) catch return;
         } else if (std.mem.indexOf(u8, body, "\"initialized\"") != null) {
@@ -2380,7 +2380,7 @@ pub fn runLspCommand(allocator: std.mem.Allocator, args: []const []const u8) voi
                 \\{"jsonrpc":"2.0","id":1,"result":null}
             ;
             var resp_buf: [256]u8 = undefined;
-            const header = std.fmt.bufPrint(&resp_buf, "Content-Length: {d}\r\n\r\n", .{response.len}) catch continue;
+            const header = std.fmt.bufPrint(&resp_buf, "Content-Length: {s}\r\n\r\n", .{response.len}) catch continue;
             stdout_file.writeAll(header) catch return;
             stdout_file.writeAll(response) catch return;
         } else if (std.mem.indexOf(u8, body, "\"textDocument/didOpen\"") != null or
@@ -2499,7 +2499,7 @@ fn publishDiagnostics(allocator: std.mem.Allocator, stdout_file: std.fs.File, ur
             diag_len += 1;
         }
         var msg_buf: [128]u8 = undefined;
-        const msg = std.fmt.bufPrint(&msg_buf, "{{\"range\":{{\"start\":{{\"line\":0,\"character\":0}},\"end\":{{\"line\":0,\"character\":1}}}},\"severity\":2,\"source\":\"tri-lsp\",\"message\":\"{d} @panic call(s) — consider error returns\"}}", .{panic_count}) catch return;
+        const msg = std.fmt.bufPrint(&msg_buf, "{{\"range\":{{\"start\":{{\"line\":0,\"character\":0}},\"end\":{{\"line\":0,\"character\":1}}}},\"severity\":2,\"source\":\"tri-lsp\",\"message\":\"{s} @panic call(s) — consider error returns\"}}", .{panic_count}) catch return;
         if (diag_len + msg.len < diag_buf.len - 2) {
             @memcpy(diag_buf[diag_len .. diag_len + msg.len], msg);
             diag_len += msg.len;
@@ -2516,7 +2516,7 @@ fn publishDiagnostics(allocator: std.mem.Allocator, stdout_file: std.fs.File, ur
     const notification = std.fmt.bufPrint(&notif_buf, "{{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/publishDiagnostics\",\"params\":{{\"uri\":\"{s}\",\"diagnostics\":{s}}}}}", .{ uri, diag_buf[0..diag_len] }) catch return;
 
     var hdr_buf: [128]u8 = undefined;
-    const hdr = std.fmt.bufPrint(&hdr_buf, "Content-Length: {d}\r\n\r\n", .{notification.len}) catch return;
+    const hdr = std.fmt.bufPrint(&hdr_buf, "Content-Length: {s}\r\n\r\n", .{notification.len}) catch return;
     stdout_file.writeAll(hdr) catch return;
     stdout_file.writeAll(notification) catch return;
 }
@@ -2524,9 +2524,9 @@ fn publishDiagnostics(allocator: std.mem.Allocator, stdout_file: std.fs.File, ur
 /// Send hover response with TRI LSP info
 fn sendHoverResponse(stdout_file: std.fs.File, req_id: i64) void {
     var resp_buf: [512]u8 = undefined;
-    const response = std.fmt.bufPrint(&resp_buf, "{{\"jsonrpc\":\"2.0\",\"id\":{d},\"result\":{{\"contents\":{{\"kind\":\"markdown\",\"value\":\"**TRI LSP** v2.0.0\\n\\nTrinity Language Server\\n\\nDiagnostics | Code Actions | Completions | Formatting\\n\\n`phi^2 + 1/phi^2 = 3`\"}}}}}}", .{req_id}) catch return;
+    const response = std.fmt.bufPrint(&resp_buf, "{{\"jsonrpc\":\"2.0\",\"id\":{s},\"result\":{{\"contents\":{{\"kind\":\"markdown\",\"value\":\"**TRI LSP** v2.0.0\\n\\nTrinity Language Server\\n\\nDiagnostics | Code Actions | Completions | Formatting\\n\\n`phi^2 + 1/phi^2 = 3`\"}}}}}}", .{req_id}) catch return;
     var hdr_buf: [128]u8 = undefined;
-    const hdr = std.fmt.bufPrint(&hdr_buf, "Content-Length: {d}\r\n\r\n", .{response.len}) catch return;
+    const hdr = std.fmt.bufPrint(&hdr_buf, "Content-Length: {s}\r\n\r\n", .{response.len}) catch return;
     stdout_file.writeAll(hdr) catch return;
     stdout_file.writeAll(response) catch return;
 }
@@ -2536,14 +2536,14 @@ fn sendCodeActions(stdout_file: std.fs.File, req_id: i64, uri: []const u8) void 
     // Offer "Format with zig fmt" and "Run tri autofix" as code actions
     var resp_buf: [2048]u8 = undefined;
     const response = std.fmt.bufPrint(&resp_buf,
-        \\{{"jsonrpc":"2.0","id":{d},"result":[
+        \\{{"jsonrpc":"2.0","id":{s},"result":[
         \\{{"title":"Format with zig fmt","kind":"source.fixAll","command":{{"title":"zig fmt","command":"tri.zigFmt","arguments":["{s}"]}}}},
         \\{{"title":"Run tri autofix","kind":"quickfix","command":{{"title":"tri autofix","command":"tri.autofix","arguments":["{s}"]}}}},
         \\{{"title":"Run tri lint","kind":"source.organizeImports","command":{{"title":"tri lint","command":"tri.lint","arguments":["{s}"]}}}}
         \\]}}
     , .{ req_id, uri, uri, uri }) catch return;
     var hdr_buf: [128]u8 = undefined;
-    const hdr = std.fmt.bufPrint(&hdr_buf, "Content-Length: {d}\r\n\r\n", .{response.len}) catch return;
+    const hdr = std.fmt.bufPrint(&hdr_buf, "Content-Length: {s}\r\n\r\n", .{response.len}) catch return;
     stdout_file.writeAll(hdr) catch return;
     stdout_file.writeAll(response) catch return;
 }
@@ -2552,7 +2552,7 @@ fn sendCodeActions(stdout_file: std.fs.File, req_id: i64, uri: []const u8) void 
 fn sendCompletions(stdout_file: std.fs.File, req_id: i64) void {
     var resp_buf: [4096]u8 = undefined;
     const response = std.fmt.bufPrint(&resp_buf,
-        \\{{"jsonrpc":"2.0","id":{d},"result":{{"isIncomplete":false,"items":[
+        \\{{"jsonrpc":"2.0","id":{s},"result":{{"isIncomplete":false,"items":[
         \\{{"label":"const","kind":14,"detail":"Zig keyword","insertText":"const "}},
         \\{{"label":"var","kind":14,"detail":"Zig keyword","insertText":"var "}},
         \\{{"label":"fn","kind":14,"detail":"Zig keyword","insertText":"fn "}},
@@ -2583,7 +2583,7 @@ fn sendCompletions(stdout_file: std.fs.File, req_id: i64) void {
         \\]}}}}
     , .{req_id}) catch return;
     var hdr_buf: [128]u8 = undefined;
-    const hdr = std.fmt.bufPrint(&hdr_buf, "Content-Length: {d}\r\n\r\n", .{response.len}) catch return;
+    const hdr = std.fmt.bufPrint(&hdr_buf, "Content-Length: {s}\r\n\r\n", .{response.len}) catch return;
     stdout_file.writeAll(hdr) catch return;
     stdout_file.writeAll(response) catch return;
 }
@@ -2605,9 +2605,9 @@ fn sendFormatting(allocator: std.mem.Allocator, stdout_file: std.fs.File, req_id
     }) catch {
         // Send empty edits on error
         var resp_buf: [256]u8 = undefined;
-        const response = std.fmt.bufPrint(&resp_buf, "{{\"jsonrpc\":\"2.0\",\"id\":{d},\"result\":[]}}", .{req_id}) catch return;
+        const response = std.fmt.bufPrint(&resp_buf, "{{\"jsonrpc\":\"2.0\",\"id\":{s},\"result\":[]}}", .{req_id}) catch return;
         var hdr_buf: [128]u8 = undefined;
-        const hdr = std.fmt.bufPrint(&hdr_buf, "Content-Length: {d}\r\n\r\n", .{response.len}) catch return;
+        const hdr = std.fmt.bufPrint(&hdr_buf, "Content-Length: {s}\r\n\r\n", .{response.len}) catch return;
         stdout_file.writeAll(hdr) catch return;
         stdout_file.writeAll(response) catch return;
         return;
@@ -2615,9 +2615,9 @@ fn sendFormatting(allocator: std.mem.Allocator, stdout_file: std.fs.File, req_id
 
     // zig fmt modifies in-place; the editor will reload. Return empty edit array (file already formatted)
     var resp_buf: [256]u8 = undefined;
-    const response = std.fmt.bufPrint(&resp_buf, "{{\"jsonrpc\":\"2.0\",\"id\":{d},\"result\":[]}}", .{req_id}) catch return;
+    const response = std.fmt.bufPrint(&resp_buf, "{{\"jsonrpc\":\"2.0\",\"id\":{s},\"result\":[]}}", .{req_id}) catch return;
     var hdr_buf: [128]u8 = undefined;
-    const hdr = std.fmt.bufPrint(&hdr_buf, "Content-Length: {d}\r\n\r\n", .{response.len}) catch return;
+    const hdr = std.fmt.bufPrint(&hdr_buf, "Content-Length: {s}\r\n\r\n", .{response.len}) catch return;
     stdout_file.writeAll(hdr) catch return;
     stdout_file.writeAll(response) catch return;
 }
@@ -2808,13 +2808,13 @@ fn runRewardsStake(allocator: std.mem.Allocator, args: []const []const u8) void 
 
     std.debug.print("  {s}Staking:{s}      {d:.1} $TRI\n", .{ GRAY, RESET, amount });
     std.debug.print("  {s}Tier:{s}         {s}{s}{s}\n", .{ GRAY, RESET, GOLDEN, tier, RESET });
-    std.debug.print("  {s}Tier Level:{s}   n={d}\n", .{ GRAY, RESET, tier_n });
-    std.debug.print("  {s}Multiplier:{s}   {s}phi^{d} = {d:.3}x{s}\n", .{ GRAY, RESET, GREEN, tier_n, multiplier, RESET });
+    std.debug.print("  {s}Tier Level:{s}   n={s}\n", .{ GRAY, RESET, tier_n });
+    std.debug.print("  {s}Multiplier:{s}   {s}phi^{s} = {d:.3}x{s}\n", .{ GRAY, RESET, GREEN, tier_n, multiplier, RESET });
 
     if (amount < 50) {
         std.debug.print("\n  {s}Minimum stake: 50 $TRI for Bronze tier (phi^1){s}\n", .{ RED, RESET });
     } else {
-        std.debug.print("\n  {s}Stake active! All earnings multiplied by phi^{d} = {d:.3}x{s}\n", .{ GREEN, tier_n, multiplier, RESET });
+        std.debug.print("\n  {s}Stake active! All earnings multiplied by phi^{s} = {d:.3}x{s}\n", .{ GREEN, tier_n, multiplier, RESET });
         // Show next tier upgrade hint
         if (amount < 200) {
             std.debug.print("  {s}Next tier: Silver (200 $TRI) -> phi^2 = {d:.3}x{s}\n", .{ GRAY, PHI * PHI, RESET });
@@ -2914,7 +2914,7 @@ fn runSwarmStatus(allocator: std.mem.Allocator) void {
     if (changes == 0) {
         std.debug.print("  {s}Working Tree:{s}   {s}Clean{s}\n", .{ GRAY, RESET, GREEN, RESET });
     } else {
-        std.debug.print("  {s}Working Tree:{s}   {s}{d} changed file(s){s}\n", .{ GRAY, RESET, GOLDEN, changes, RESET });
+        std.debug.print("  {s}Working Tree:{s}   {s}{s} changed file(s){s}\n", .{ GRAY, RESET, GOLDEN, changes, RESET });
     }
 
     // Last commit timestamp
@@ -3121,7 +3121,7 @@ pub fn runAutofixCommand(allocator: std.mem.Allocator, args: []const []const u8)
 
     const nl_fixed = std.mem.count(u8, nl_result.stdout, "\n");
     if (nl_fixed > 0) {
-        std.debug.print("    {s}✓ Added final newline to {d} file(s){s}\n", .{ GREEN, nl_fixed, RESET });
+        std.debug.print("    {s}✓ Added final newline to {s} file(s){s}\n", .{ GREEN, nl_fixed, RESET });
         fixes_applied += 1;
     } else {
         std.debug.print("    {s}✓ All files already have final newline{s}\n", .{ GREEN, RESET });
@@ -3144,7 +3144,7 @@ pub fn runAutofixCommand(allocator: std.mem.Allocator, args: []const []const u8)
     if (fmt_result.term.Exited == 0) {
         if (fmt_result.stdout.len > 0) {
             const fmt_count = std.mem.count(u8, fmt_result.stdout, "\n");
-            std.debug.print("    {s}✓ Formatted {d} file(s){s}\n", .{ GREEN, fmt_count, RESET });
+            std.debug.print("    {s}✓ Formatted {s} file(s){s}\n", .{ GREEN, fmt_count, RESET });
         } else {
             std.debug.print("    {s}✓ All files already formatted{s}\n", .{ GREEN, RESET });
         }
@@ -3158,7 +3158,7 @@ pub fn runAutofixCommand(allocator: std.mem.Allocator, args: []const []const u8)
     }
 
     std.debug.print("\n{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n", .{ GRAY, RESET });
-    std.debug.print("  Fixes applied: {s}{d}/3{s}\n", .{ GREEN, fixes_applied, RESET });
+    std.debug.print("  Fixes applied: {s}{s}/3{s}\n", .{ GREEN, fixes_applied, RESET });
     std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ GOLDEN, RESET });
 }
 
@@ -3196,7 +3196,7 @@ pub fn runLintCommand(allocator: std.mem.Allocator, args: []const []const u8) vo
         std.debug.print("    {s}✓ All files properly formatted{s}\n", .{ GREEN, RESET });
     } else {
         const unformatted = std.mem.count(u8, fmt_result.stdout, "\n");
-        std.debug.print("    {s}⚠ {d} file(s) need formatting{s}\n", .{ RED, unformatted, RESET });
+        std.debug.print("    {s}⚠ {s} file(s) need formatting{s}\n", .{ RED, unformatted, RESET });
         if (fmt_result.stdout.len > 0) {
             // Show first few
             var line_it = std.mem.splitScalar(u8, fmt_result.stdout, '\n');
@@ -3208,7 +3208,7 @@ pub fn runLintCommand(allocator: std.mem.Allocator, args: []const []const u8) vo
                 }
             }
             if (unformatted > 5) {
-                std.debug.print("      {s}... and {d} more{s}\n", .{ GRAY, unformatted - 5, RESET });
+                std.debug.print("      {s}... and {s} more{s}\n", .{ GRAY, unformatted - 5, RESET });
             }
         }
         warnings += @intCast(unformatted);
@@ -3224,7 +3224,7 @@ pub fn runLintCommand(allocator: std.mem.Allocator, args: []const []const u8) vo
     const panic_str = runShellCount(allocator, "grep -rn '@panic' --include='*.zig' src/ 2>/dev/null | wc -l");
     const panic_count = std.fmt.parseInt(u32, panic_str, 10) catch 0;
     if (panic_count > 0) {
-        std.debug.print("    {s}⚠ {d} @panic call(s) — consider error returns{s}\n", .{ RED, panic_count, RESET });
+        std.debug.print("    {s}⚠ {s} @panic call(s) — consider error returns{s}\n", .{ RED, panic_count, RESET });
         warnings += panic_count;
     } else {
         std.debug.print("    {s}✓ No @panic calls{s}\n", .{ GREEN, RESET });
@@ -3235,10 +3235,10 @@ pub fn runLintCommand(allocator: std.mem.Allocator, args: []const []const u8) vo
     const dbg_str = runShellCount(allocator, "grep -rn 'std.debug.print' --include='*.zig' src/ 2>/dev/null | grep -v 'src/tri/' | grep -v 'src/vibeec/' | wc -l");
     const dbg_count = std.fmt.parseInt(u32, dbg_str, 10) catch 0;
     if (dbg_count > 50) {
-        std.debug.print("    {s}⚠ {d} debug.print in library code{s}\n", .{ RED, dbg_count, RESET });
+        std.debug.print("    {s}⚠ {s} debug.print in library code{s}\n", .{ RED, dbg_count, RESET });
         warnings += 1;
     } else {
-        std.debug.print("    {s}✓ {d} debug.print in library code (acceptable){s}\n", .{ GREEN, dbg_count, RESET });
+        std.debug.print("    {s}✓ {s} debug.print in library code (acceptable){s}\n", .{ GREEN, dbg_count, RESET });
     }
 
     // 5. Empty catch blocks
@@ -3246,7 +3246,7 @@ pub fn runLintCommand(allocator: std.mem.Allocator, args: []const []const u8) vo
     const catch_str = runShellCount(allocator, "grep -rn 'catch {}' --include='*.zig' src/ 2>/dev/null | wc -l");
     const catch_count = std.fmt.parseInt(u32, catch_str, 10) catch 0;
     if (catch_count > 0) {
-        std.debug.print("    {s}⚠ {d} empty catch {{}} block(s){s}\n", .{ RED, catch_count, RESET });
+        std.debug.print("    {s}⚠ {s} empty catch {{}} block(s){s}\n", .{ RED, catch_count, RESET });
         warnings += catch_count;
     } else {
         std.debug.print("    {s}✓ No empty catch blocks{s}\n", .{ GREEN, RESET });
@@ -3268,10 +3268,10 @@ fn runShellCount(allocator: std.mem.Allocator, cmd: []const u8) []const u8 {
 fn printLintSummary(warnings: u32, errors: u32) void {
     std.debug.print("\n{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n", .{ GRAY, RESET });
     if (errors > 0) {
-        std.debug.print("  Errors:   {s}{d}{s}\n", .{ RED, errors, RESET });
+        std.debug.print("  Errors:   {s}{s}{s}\n", .{ RED, errors, RESET });
     }
     if (warnings > 0) {
-        std.debug.print("  Warnings: {s}{d}{s}\n", .{ RED, warnings, RESET });
+        std.debug.print("  Warnings: {s}{s}{s}\n", .{ RED, warnings, RESET });
     }
     if (errors == 0 and warnings == 0) {
         std.debug.print("  Status: {s}CLEAN — no issues found{s}\n", .{ GREEN, RESET });
@@ -3453,7 +3453,7 @@ pub fn runImproveAllCommand(allocator: std.mem.Allocator, args: []const []const 
     const before_ok = countInOutput(check1.stderr, "[OK]") + countInOutput(check1.stdout, "[OK]");
     const before_total = before_violations + before_warnings + before_ok;
 
-    std.debug.print("  Files: {d}  Violations: {s}{d}{s}  Warnings: {s}{d}{s}  OK: {s}{d}{s}\n\n", .{
+    std.debug.print("  Files: {s}  Violations: {s}{s}{s}  Warnings: {s}{s}{s}  OK: {s}{s}{s}\n\n", .{
         before_total,
         RED,
         before_violations,
@@ -3498,7 +3498,7 @@ pub fn runImproveAllCommand(allocator: std.mem.Allocator, args: []const []const 
 
     // Step 3: Regenerate WARN files
     if (before_warnings > 0) {
-        std.debug.print("{s}[Step 3/4]{s} Regenerating {d} warning file(s) from specs...\n", .{ CYAN, RESET, before_warnings });
+        std.debug.print("{s}[Step 3/4]{s} Regenerating {s} warning file(s) from specs...\n", .{ CYAN, RESET, before_warnings });
         if (dry_run) {
             std.debug.print("  {s}[DRY RUN]{s} Would regenerate files with outdated specs\n\n", .{ GOLDEN, RESET });
         } else {
@@ -3536,7 +3536,7 @@ pub fn runImproveAllCommand(allocator: std.mem.Allocator, args: []const []const 
         const specs_created = if (before_violations > after_violations) before_violations - after_violations else 0;
         const warns_fixed = if (before_warnings > after_warnings) before_warnings - after_warnings else 0;
 
-        std.debug.print("  Violations: {s}{d}{s}  Warnings: {s}{d}{s}\n\n", .{
+        std.debug.print("  Violations: {s}{s}{s}  Warnings: {s}{s}{s}\n\n", .{
             if (after_violations == 0) GREEN else RED,  after_violations, RESET,
             if (after_warnings == 0) GREEN else GOLDEN, after_warnings,   RESET,
         });
@@ -3561,14 +3561,14 @@ fn printImproveAllSummary(total: usize, viol_before: usize, viol_after: usize, w
     std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}              IMPROVE-ALL REPORT{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  Files scanned:    {d}\n", .{total});
-    std.debug.print("  Violations:       {d} -> {s}{d}{s}\n", .{ viol_before, if (viol_after == 0) GREEN else RED, viol_after, RESET });
-    std.debug.print("  Warnings:         {d} -> {s}{d}{s}\n", .{ warn_before, if (warn_after == 0) GREEN else GOLDEN, warn_after, RESET });
+    std.debug.print("  Files scanned:    {s}\n", .{total});
+    std.debug.print("  Violations:       {s} -> {s}{s}{s}\n", .{ viol_before, if (viol_after == 0) GREEN else RED, viol_after, RESET });
+    std.debug.print("  Warnings:         {s} -> {s}{s}{s}\n", .{ warn_before, if (warn_after == 0) GREEN else GOLDEN, warn_after, RESET });
     if (specs_created > 0) {
-        std.debug.print("  Specs created:    {s}{d}{s}\n", .{ GREEN, specs_created, RESET });
+        std.debug.print("  Specs created:    {s}{s}{s}\n", .{ GREEN, specs_created, RESET });
     }
     if (warns_fixed > 0) {
-        std.debug.print("  Warns resolved:   {s}{d}{s}\n", .{ GREEN, warns_fixed, RESET });
+        std.debug.print("  Warns resolved:   {s}{s}{s}\n", .{ GREEN, warns_fixed, RESET });
     }
 
     const ok_after = if (total > viol_after + warn_after) total - viol_after - warn_after else 0;
@@ -3577,7 +3577,7 @@ fn printImproveAllSummary(total: usize, viol_before: usize, viol_after: usize, w
     if (viol_after == 0 and warn_after == 0) {
         std.debug.print("\n  {s}[PASS]{s} 100%% VIBEE-first compliance achieved!\n", .{ GREEN, RESET });
     } else {
-        std.debug.print("\n  Compliance: {d}%%\n", .{pct});
+        std.debug.print("\n  Compliance: {s}%%\n", .{pct});
     }
     std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
 }
@@ -3653,7 +3653,7 @@ pub fn runFullAutonomousCommand(allocator: std.mem.Allocator) void {
     std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}                    UNIFIED VERDICT{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  Steps passed: {s}{d}/{d}{s}\n", .{
+    std.debug.print("  Steps passed: {s}{s}/{s}{s}\n", .{
         if (total_pass == total_steps) GREEN else RED,
         total_pass,
         total_steps,
@@ -3664,7 +3664,7 @@ pub fn runFullAutonomousCommand(allocator: std.mem.Allocator) void {
         std.debug.print("\n  {s}[ALL PASS]{s} System fully autonomous and operational.\n", .{ GREEN, RESET });
         std.debug.print("  {s}VIBEE-first: 100%%  |  Build: clean  |  Math: verified{s}\n", .{ GREEN, RESET });
     } else {
-        std.debug.print("\n  {s}[PARTIAL]{s} {d} step(s) need attention.\n", .{ RED, RESET, total_steps - total_pass });
+        std.debug.print("\n  {s}[PARTIAL]{s} {s} step(s) need attention.\n", .{ RED, RESET, total_steps - total_pass });
     }
 
     std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
@@ -3838,7 +3838,7 @@ pub fn runImproveLoopCommand(allocator: std.mem.Allocator, args: []const []const
     std.debug.print("{s}╚══════════════════════════════════════════════════════════════╝{s}\n", .{ GREEN, RESET });
 
     std.debug.print("\n{s}┌─ LOOP CONFIGURATION ──────────────────────────────────────┐{s}\n", .{ CYAN, RESET });
-    std.debug.print("  {s}Iterations:{s}     {s}{d}{s}\n", .{ GRAY, RESET, GREEN, iterations, RESET });
+    std.debug.print("  {s}Iterations:{s}     {s}{s}{s}\n", .{ GRAY, RESET, GREEN, iterations, RESET });
     std.debug.print("  {s}Strategy:{s}       Analyze → Suggest → Patch → Verify\n", .{ GRAY, RESET });
     std.debug.print("  {s}Threshold:{s}      95.0%% quality score\n", .{ GRAY, RESET });
     std.debug.print("  {s}Auto-commit:{s}    {s}Enabled{s} (on passing iteration)\n", .{ GRAY, RESET, GREEN, RESET });
@@ -3848,7 +3848,7 @@ pub fn runImproveLoopCommand(allocator: std.mem.Allocator, args: []const []const
     const PHI: f64 = 1.6180339887;
     var quality: f64 = 73.5;
     for (1..iterations + 1) |i| {
-        std.debug.print("\n  {s}--- Iteration {d}/{d} ---{s}\n", .{ GOLDEN, i, iterations, RESET });
+        std.debug.print("\n  {s}--- Iteration {s}/{s} ---{s}\n", .{ GOLDEN, i, iterations, RESET });
         std.debug.print("  {s}[analyze]{s}  Scanning codebase... ", .{ CYAN, RESET });
 
         // Quality improves by phi-scaled increments
@@ -3857,7 +3857,7 @@ pub fn runImproveLoopCommand(allocator: std.mem.Allocator, args: []const []const
         if (quality > 99.9) quality = 99.9;
 
         std.debug.print("{d:.1}%% quality\n", .{quality});
-        std.debug.print("  {s}[suggest]{s}  Found {d} improvement(s)\n", .{ CYAN, RESET, iterations + 2 - @as(u32, @intCast(i)) });
+        std.debug.print("  {s}[suggest]{s}  Found {s} improvement(s)\n", .{ CYAN, RESET, iterations + 2 - @as(u32, @intCast(i)) });
         std.debug.print("  {s}[patch]{s}   Applied fixes\n", .{ CYAN, RESET });
 
         if (quality >= 95.0) {
@@ -3869,7 +3869,7 @@ pub fn runImproveLoopCommand(allocator: std.mem.Allocator, args: []const []const
 
     std.debug.print("\n{s}┌─ RESULT ───────────────────────────────────────────────────┐{s}\n", .{ GREEN, RESET });
     std.debug.print("  {s}Final Quality:{s}  {s}{d:.1}%%{s}\n", .{ GRAY, RESET, GREEN, quality, RESET });
-    std.debug.print("  {s}Iterations:{s}     {d}\n", .{ GRAY, RESET, iterations });
+    std.debug.print("  {s}Iterations:{s}     {s}\n", .{ GRAY, RESET, iterations });
     std.debug.print("  {s}Status:{s}         {s}Converged{s}\n", .{ GRAY, RESET, GREEN, RESET });
     std.debug.print("  {s}Phi-scaling:{s}    Each iteration improves by (100-q)/phi\n", .{ GRAY, RESET });
     std.debug.print("{s}└────────────────────────────────────────────────────────────┘{s}\n", .{ GREEN, RESET });
@@ -3944,7 +3944,7 @@ pub fn runOmegaCommand(allocator: std.mem.Allocator) void {
     const total: u32 = @intCast(checks.len);
     const pct: u32 = if (total > 0) (pass_count * 100) / total else 0;
     std.debug.print("\n{s}┌─ OMEGA VERDICT ────────────────────────────────────────────┐{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  Subsystems: {s}{d}/{d}{s} ({d}%%)\n", .{
+    std.debug.print("  Subsystems: {s}{s}/{s}{s} ({s}%%)\n", .{
         if (pass_count == total) GREEN else RED,
         pass_count,
         total,
@@ -3954,7 +3954,7 @@ pub fn runOmegaCommand(allocator: std.mem.Allocator) void {
     if (pass_count == total) {
         std.debug.print("  Status: {s}OMEGA ACTIVE — Full Autonomous Universe{s}\n", .{ GREEN, RESET });
     } else {
-        std.debug.print("  Status: {s}PARTIAL — {d} subsystem(s) need attention{s}\n", .{ RED, total - pass_count, RESET });
+        std.debug.print("  Status: {s}PARTIAL — {s} subsystem(s) need attention{s}\n", .{ RED, total - pass_count, RESET });
     }
     std.debug.print("{s}└────────────────────────────────────────────────────────────┘{s}\n", .{ GOLDEN, RESET });
 
@@ -5089,7 +5089,7 @@ fn runInfinityConverge() void {
         a = b;
         b = temp;
         if (i >= 5) {
-            std.debug.print("    F({d})/F({d}) = {d:.10}\n", .{ i + 2, i + 1, ratio });
+            std.debug.print("    F({s})/F({s}) = {d:.10}\n", .{ i + 2, i + 1, ratio });
         }
     }
     std.debug.print("    {s}Converges to phi = 1.6180339887...{s}\n", .{ GOLDEN, RESET });
@@ -5133,7 +5133,7 @@ pub fn runApotheosisCommand(allocator: std.mem.Allocator) void {
     };
     for (levels) |lvl| {
         const color = if (lvl.num == 9) GOLDEN else GREEN;
-        std.debug.print("  {s}{d}. {s: <16}{s} phi^n = {d: >12.2}  [{s}{s}{s}]\n", .{
+        std.debug.print("  {s}{s}. {s: <16}{s} phi^n = {d: >12.2}  [{s}{s}{s}]\n", .{
             color, lvl.num, lvl.name, RESET, lvl.power, color, lvl.status, RESET,
         });
     }
@@ -5349,7 +5349,7 @@ fn runConvergenceProof() void {
         a = b;
         b = temp;
         if (i >= 15) {
-            std.debug.print("    F({d})/F({d}) = {d:.15}\n", .{ i + 2, i + 1, ratio });
+            std.debug.print("    F({s})/F({s}) = {d:.15}\n", .{ i + 2, i + 1, ratio });
         }
     }
 
@@ -5745,10 +5745,10 @@ pub fn runEmbedCommand(allocator: std.mem.Allocator, args: []const []const u8) v
 
     std.debug.print("{s}Sacred Language Model — Embed{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  Input: \"{s}\"\n", .{input_text});
-    std.debug.print("  Spec: {s} v{s} ({d} glyphs, {d} constants)\n", .{
+    std.debug.print("  Spec: {s} v{s} ({s} glyphs, {s} constants)\n", .{
         spec.name, spec.version, spec.glyphCount(), spec.constantCount(),
     });
-    std.debug.print("  Embedding dim: {d}\n\n", .{spec.embedding.dimension});
+    std.debug.print("  Embedding dim: {s}\n\n", .{spec.embedding.dimension});
 
     // Tokenize
     std.debug.print("{s}Tokens:{s}\n", .{ CYAN, RESET });
@@ -5773,8 +5773,8 @@ pub fn runEmbedCommand(allocator: std.mem.Allocator, args: []const []const u8) v
 
             // Find sacred formula fit
             const fit = findBestFormulaFit(num_val, spec.bases);
-            std.debug.print("  [{d}] {s}NUMBER{s} \"{s}\" → gematria={d}\n", .{ token_count, CYAN, RESET, num_str, num_val });
-            std.debug.print("       Formula: {d}*3^{d}*pi^{d}*phi^{d}*e^{d} = {d:.6} (err={d:.4}%)\n", .{
+            std.debug.print("  [{s}] {s}NUMBER{s} \"{s}\" → gematria={s}\n", .{ token_count, CYAN, RESET, num_str, num_val });
+            std.debug.print("       Formula: {s}*3^{s}*pi^{s}*phi^{s}*e^{s} = {d:.6} (err={d:.4}%)\n", .{
                 fit.n, fit.k, fit.m, fit.p, fit.q, fit.computed, fit.error_pct,
             });
 
@@ -5807,8 +5807,8 @@ pub fn runEmbedCommand(allocator: std.mem.Allocator, args: []const []const u8) v
             }
 
             const fit = findBestFormulaFit(word_gem, spec.bases);
-            std.debug.print("  [{d}] {s}WORD{s}   \"{s}\" → gematria={d}\n", .{ token_count, GREEN, RESET, word, word_gem });
-            std.debug.print("       Formula: {d}*3^{d}*pi^{d}*phi^{d}*e^{d} = {d:.6} (err={d:.4}%)\n", .{
+            std.debug.print("  [{s}] {s}WORD{s}   \"{s}\" → gematria={s}\n", .{ token_count, GREEN, RESET, word, word_gem });
+            std.debug.print("       Formula: {s}*3^{s}*pi^{s}*phi^{s}*e^{s} = {d:.6} (err={d:.4}%)\n", .{
                 fit.n, fit.k, fit.m, fit.p, fit.q, fit.computed, fit.error_pct,
             });
 
@@ -5826,7 +5826,7 @@ pub fn runEmbedCommand(allocator: std.mem.Allocator, args: []const []const u8) v
                 // Check against gematria table
                 for (spec.gematria_table.items) |g| {
                     if (g.codepoint == cp or g.codepoint + 1 == cp) {
-                        std.debug.print("  [{d}] {s}GLYPH{s}  \"{s}\" → codepoint=0x{X:0>4} value={d} kingdom={s}\n", .{
+                        std.debug.print("  [{s}] {s}GLYPH{s}  \"{s}\" → codepoint=0x{X:0>4} value={s} kingdom={s}\n", .{
                             token_count, GOLDEN, RESET, bytes, cp, g.value, g.kingdom,
                         });
                         total_gematria += g.value;
@@ -5843,14 +5843,14 @@ pub fn runEmbedCommand(allocator: std.mem.Allocator, args: []const []const u8) v
     }
 
     std.debug.print("\n{s}Summary:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  Tokens:         {d}\n", .{token_count});
-    std.debug.print("  Total gematria: {d}\n", .{total_gematria});
-    std.debug.print("  Embedding dim:  {d}\n", .{spec.embedding.dimension});
+    std.debug.print("  Tokens:         {s}\n", .{token_count});
+    std.debug.print("  Total gematria: {s}\n", .{total_gematria});
+    std.debug.print("  Embedding dim:  {s}\n", .{spec.embedding.dimension});
 
     // Find formula for total
     if (total_gematria > 0) {
         const total_fit = findBestFormulaFit(total_gematria, spec.bases);
-        std.debug.print("  Total formula:  {d}*3^{d}*pi^{d}*phi^{d}*e^{d} = {d:.6} (err={d:.4}%)\n", .{
+        std.debug.print("  Total formula:  {s}*3^{s}*pi^{s}*phi^{s}*e^{s} = {d:.6} (err={d:.4}%)\n", .{
             total_fit.n, total_fit.k, total_fit.m, total_fit.p, total_fit.q, total_fit.computed, total_fit.error_pct,
         });
     }
@@ -5902,7 +5902,7 @@ pub fn runSacredSearchCommand(allocator: std.mem.Allocator, args: []const []cons
     // Find best formula fit for target
     const fit = findBestFormulaFit(if (target > 0) @intFromFloat(@min(target, 65535.0)) else 0, spec.bases);
     std.debug.print("{s}Best Formula Fit:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  V = {d} * 3^{d} * pi^{d} * phi^{d} * e^{d}\n", .{ fit.n, fit.k, fit.m, fit.p, fit.q });
+    std.debug.print("  V = {s} * 3^{s} * pi^{s} * phi^{s} * e^{s}\n", .{ fit.n, fit.k, fit.m, fit.p, fit.q });
     std.debug.print("  Computed: {d:.10}\n", .{fit.computed});
     std.debug.print("  Error:    {d:.6}%\n\n", .{fit.error_pct});
 
@@ -5948,7 +5948,7 @@ pub fn runSacredSearchCommand(allocator: std.mem.Allocator, args: []const []cons
     for (0..best_count) |bi| {
         const b = best[bi];
         const marker: []const u8 = if (b.distance < 1.0) " <<<" else "";
-        std.debug.print("  {d}. {s} ({s}) = {d:.6}  distance={d:.4}%{s}\n", .{
+        std.debug.print("  {s}. {s} ({s}) = {d:.6}  distance={d:.4}%{s}\n", .{
             bi + 1, b.name, b.symbol, b.value, b.distance, marker,
         });
     }
@@ -5956,7 +5956,7 @@ pub fn runSacredSearchCommand(allocator: std.mem.Allocator, args: []const []cons
     // Find gematria glyph decomposition (greedy, largest-first)
     if (target > 0 and target < 10000) {
         const int_target: u32 = @intFromFloat(target);
-        std.debug.print("\n{s}Gematria Decomposition ({d}):{s}\n  ", .{ CYAN, int_target, RESET });
+        std.debug.print("\n{s}Gematria Decomposition ({s}):{s}\n  ", .{ CYAN, int_target, RESET });
         var remaining = int_target;
         var glyph_count: usize = 0;
         const table = spec.gematria_table.items;
@@ -5972,7 +5972,7 @@ pub fn runSacredSearchCommand(allocator: std.mem.Allocator, args: []const []cons
             }
             if (best_idx) |bi| {
                 if (glyph_count > 0) std.debug.print(" + ", .{});
-                std.debug.print("{s}({d})", .{ table[bi].glyph, table[bi].value });
+                std.debug.print("{s}({s})", .{ table[bi].glyph, table[bi].value });
                 remaining -= table[bi].value;
                 glyph_count += 1;
             } else break;
@@ -6035,7 +6035,7 @@ pub fn runSacredReasonCommand(allocator: std.mem.Allocator, args: []const []cons
     // Formula fit (brute-force)
     const fit = findBestFormulaFit(if (target > 0) @intFromFloat(@min(target, 65535.0)) else 0, spec.bases);
     std.debug.print("{s}1. Sacred Formula Fit:{s}\n", .{ CYAN, RESET });
-    std.debug.print("   V = {d} * 3^{d} * pi^{d} * phi^{d} * e^{d}\n", .{ fit.n, fit.k, fit.m, fit.p, fit.q });
+    std.debug.print("   V = {s} * 3^{s} * pi^{s} * phi^{s} * e^{s}\n", .{ fit.n, fit.k, fit.m, fit.p, fit.q });
     std.debug.print("   Computed: {d:.10}  Error: {d:.6}%\n\n", .{ fit.computed, fit.error_pct });
 
     // Kingdom
@@ -6074,7 +6074,7 @@ pub fn runSacredReasonCommand(allocator: std.mem.Allocator, args: []const []cons
         for (0..@min(cw_count, 5)) |ci| {
             const cw = cw_buf[ci];
             const marker: []const u8 = if (ci == 0) " <<<" else "";
-            std.debug.print("   {d}. {s} ({s}) = {d:.6}  weight={d:.4}{s}\n", .{
+            std.debug.print("   {s}. {s} ({s}) = {d:.6}  weight={d:.4}{s}\n", .{
                 ci + 1, cw.name, cw.symbol, cw.value, cw.weight, marker,
             });
         }
@@ -6083,7 +6083,7 @@ pub fn runSacredReasonCommand(allocator: std.mem.Allocator, args: []const []cons
     // Glyph decomposition
     if (target > 0 and target < 10000) {
         const int_target: u32 = @intFromFloat(target);
-        std.debug.print("\n{s}4. Gematria Decomposition ({d}):{s}\n   ", .{ CYAN, int_target, RESET });
+        std.debug.print("\n{s}4. Gematria Decomposition ({s}):{s}\n   ", .{ CYAN, int_target, RESET });
         var remaining = int_target;
         var glyph_count: usize = 0;
         const table = spec.gematria_table.items;
@@ -6098,7 +6098,7 @@ pub fn runSacredReasonCommand(allocator: std.mem.Allocator, args: []const []cons
             }
             if (best_idx) |bi| {
                 if (glyph_count > 0) std.debug.print(" + ", .{});
-                std.debug.print("{s}({d})", .{ table[bi].glyph, table[bi].value });
+                std.debug.print("{s}({s})", .{ table[bi].glyph, table[bi].value });
                 remaining -= table[bi].value;
                 glyph_count += 1;
             } else break;
@@ -6174,10 +6174,10 @@ pub fn runSacredCompareCommand(allocator: std.mem.Allocator, args: []const []con
     const fit_a = findBestFormulaFit(if (a > 0) @intFromFloat(@min(a, 65535.0)) else 0, spec.bases);
     const fit_b = findBestFormulaFit(if (b > 0) @intFromFloat(@min(b, 65535.0)) else 0, spec.bases);
 
-    std.debug.print("{s}Formula A:{s} {d}*3^{d}*pi^{d}*phi^{d}*e^{d} = {d:.6} (err={d:.4}%)\n", .{
+    std.debug.print("{s}Formula A:{s} {s}*3^{s}*pi^{s}*phi^{s}*e^{s} = {d:.6} (err={d:.4}%)\n", .{
         CYAN, RESET, fit_a.n, fit_a.k, fit_a.m, fit_a.p, fit_a.q, fit_a.computed, fit_a.error_pct,
     });
-    std.debug.print("{s}Formula B:{s} {d}*3^{d}*pi^{d}*phi^{d}*e^{d} = {d:.6} (err={d:.4}%)\n\n", .{
+    std.debug.print("{s}Formula B:{s} {s}*3^{s}*pi^{s}*phi^{s}*e^{s} = {d:.6} (err={d:.4}%)\n\n", .{
         CYAN, RESET, fit_b.n, fit_b.k, fit_b.m, fit_b.p, fit_b.q, fit_b.computed, fit_b.error_pct,
     });
 
@@ -6257,10 +6257,10 @@ pub fn runSacredChainCommand(allocator: std.mem.Allocator, args: []const []const
         };
     }
 
-    std.debug.print("{s}Sacred Chain — {d} values{s}\n", .{ GOLDEN, count, RESET });
+    std.debug.print("{s}Sacred Chain — {s} values{s}\n", .{ GOLDEN, count, RESET });
     for (0..count) |i| {
         const kingdom_str: []const u8 = if (values[i] >= 100) "I" else if (values[i] >= 10) "E" else "M";
-        std.debug.print("  [{d}] {d:.6} ({s})\n", .{ i + 1, values[i], kingdom_str });
+        std.debug.print("  [{s}] {d:.6} ({s})\n", .{ i + 1, values[i], kingdom_str });
     }
     std.debug.print("\n", .{});
 
@@ -6303,7 +6303,7 @@ pub fn runSacredChainCommand(allocator: std.mem.Allocator, args: []const []const
     }
 
     const coherence = if (pairs > 0) total_score / @as(f64, @floatFromInt(pairs)) else 0;
-    std.debug.print("\n{s}Chain Coherence:{s} {d:.4} ({d} pairs)\n", .{ GOLDEN, RESET, coherence, pairs });
+    std.debug.print("\n{s}Chain Coherence:{s} {d:.4} ({s} pairs)\n", .{ GOLDEN, RESET, coherence, pairs });
 
     // Find common exponent patterns
     std.debug.print("\n{s}Exponent Patterns:{s}\n", .{ CYAN, RESET });
@@ -6318,7 +6318,7 @@ pub fn runSacredChainCommand(allocator: std.mem.Allocator, args: []const []const
         p_sum += fit.p;
         q_sum += fit.q;
     }
-    std.debug.print("  Sum of k (3): {d}  m (pi): {d}  p (phi): {d}  q (e): {d}\n", .{ k_sum, m_sum, p_sum, q_sum });
+    std.debug.print("  Sum of k (3): {s}  m (pi): {s}  p (phi): {s}  q (e): {s}\n", .{ k_sum, m_sum, p_sum, q_sum });
     if (k_sum == 0 and m_sum == 0 and p_sum == 0 and q_sum == 0) {
         std.debug.print("  >>> Perfect balance — all exponents cancel out!\n", .{});
     }
@@ -6361,8 +6361,8 @@ pub fn runSacredBenchCommand(allocator: std.mem.Allocator) void {
     }
     const bf_avg_ns = bf_total / bf_iters;
     const bf_avg_us = @as(f64, @floatFromInt(bf_avg_ns)) / 1000.0;
-    std.debug.print("  {d} iterations x {d} constants = {d} total fits\n", .{ bf_iters, targets.len, bf_iters * targets.len });
-    std.debug.print("  Average per batch of {d}: {d:.1} us\n", .{ targets.len, bf_avg_us });
+    std.debug.print("  {s} iterations x {s} constants = {s} total fits\n", .{ bf_iters, targets.len, bf_iters * targets.len });
+    std.debug.print("  Average per batch of {s}: {d:.1} us\n", .{ targets.len, bf_avg_us });
     std.debug.print("  Average per fit: {d:.1} us\n\n", .{bf_avg_us / @as(f64, @floatFromInt(targets.len))});
 
     // Benchmark: embedding computation
@@ -6389,18 +6389,18 @@ pub fn runSacredBenchCommand(allocator: std.mem.Allocator) void {
         const target_u32: u32 = if (t > 0) @intFromFloat(@min(t, 65535.0)) else 0;
         const fit = findBestFormulaFit(target_u32, spec.bases);
         const marker: []const u8 = if (fit.error_pct < 1.0) "EXACT" else if (fit.error_pct < 5.0) "CLOSE" else "APPROX";
-        std.debug.print("  {d:>10.4} → {d}*3^{d}*pi^{d}*phi^{d}*e^{d} = {d:.6} err={d:.4}% [{s}]\n", .{
+        std.debug.print("  {d:>10.4} → {s}*3^{s}*pi^{s}*phi^{s}*e^{s} = {d:.6} err={d:.4}% [{s}]\n", .{
             t, fit.n, fit.k, fit.m, fit.p, fit.q, fit.computed, fit.error_pct, marker,
         });
     }
 
     // Summary
     std.debug.print("\n{s}Summary:{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  Formula fit:     {d:.1} us/fit (brute-force, {d} iterations)\n", .{ bf_avg_us / @as(f64, @floatFromInt(targets.len)), 35721 });
+    std.debug.print("  Formula fit:     {d:.1} us/fit (brute-force, {s} iterations)\n", .{ bf_avg_us / @as(f64, @floatFromInt(targets.len)), 35721 });
     std.debug.print("  Embedding:       {d:.1} us/embed (64-dim, L2-normalized)\n", .{emb_avg_us / @as(f64, @floatFromInt(targets.len))});
-    std.debug.print("  Constants:       {d}\n", .{spec.constants.items.len});
-    std.debug.print("  Gematria glyphs: {d}\n", .{spec.gematria_table.items.len});
-    std.debug.print("  Spec version:    {s} (format v{d})\n", .{ spec.version, spec.format_version });
+    std.debug.print("  Constants:       {s}\n", .{spec.constants.items.len});
+    std.debug.print("  Gematria glyphs: {s}\n", .{spec.gematria_table.items.len});
+    std.debug.print("  Spec version:    {s} (format v{s})\n", .{ spec.version, spec.format_version });
 
     std.debug.print("\n{s}Note:{s} v1.1 generated code uses comptime sorted table + binary search\n", .{ GRAY, RESET });
     std.debug.print("for ~100x speedup. Run 'tri gen specs/tri/sacred/sacred_language_model.tri'\n", .{});
@@ -6504,4 +6504,41 @@ fn computeMiniEmbedding(gematria_value: u32, glyph_index: ?u8, fit: FormulaFit, 
     }
 
     return vec;
+}
+
+pub fn runMultiClusterCommand(allocator: std.mem.Allocator, args: []const []const u8) void {
+    _ = allocator;
+    if (args.len == 0) {
+        std.debug.print("{s}TRI Multi-Cluster Federation v3.0{s}\n", .{GREEN, RESET});
+        std.debug.print("{s}Subcommands available:{s}\n", .{GOLDEN, RESET});
+        std.debug.print("  initialize       Initialize federation coordinator\n");
+        std.debug.print("  status         Query all registered nodes\n");
+        std.debug.print("  federate      Start federation mode\n");
+        std.debug.print("  shutdown        Shutdown federation\n");
+        return;
+    }
+
+    const subcmd = if (args.len > 1) args[1] else "";
+
+    if (std.mem.eql(u8, subcmd, "initialize")) {
+        std.debug.print("{s}[INFO] Initialize federation coordinator{s}\n", .{CYAN, RESET});
+        std.debug.print("  Full implementation in Cycle #98.\n", .{});
+        // Placeholder - real implementation pending
+        return;
+    } else if (std.mem.eql(u8, subcmd, "status")) {
+        std.debug.print("{s}[INFO] Querying all registered nodes{s}\n", .{CYAN, RESET});
+        // Placeholder - real implementation pending
+        return;
+    } else if (std.mem.eql(u8, subcmd, "federate")) {
+        std.debug.print("{s}[INFO] Starting federation mode{s}\n", .{CYAN, RESET});
+        // Placeholder - real implementation pending
+        return;
+    } else if (std.mem.eql(u8, subcmd, "shutdown")) {
+        std.debug.print("{s}[INFO] Shutting down federation{s}\n", .{CYAN, RESET});
+        // Placeholder - real implementation pending
+        return;
+    } else {
+        std.debug.print("{s}[ERROR] Unknown multi-cluster subcommand: {s}{s}\n", .{RED, RESET, subcmd});
+        std.debug.print("Use 'tri multi-cluster --help' for available commands.{s}\n", .{RESET});
+    }
 }

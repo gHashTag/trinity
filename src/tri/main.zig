@@ -82,6 +82,7 @@ pub fn main() !void {
         .pipeline => pipeline.runPipelineCommand(allocator, cmd_args),
         .decompose => pipeline.runDecomposeCommand(allocator, cmd_args),
         .plan => pipeline.runPlanCommand(allocator, cmd_args),
+        .multi_cluster => commands.runMultiClusterCommand(allocator, cmd_args),
         .verify => pipeline.runVerifyCommand(allocator),
         .verdict => pipeline.runVerdictCommand(allocator),
         // TVC (Distributed Learning)
