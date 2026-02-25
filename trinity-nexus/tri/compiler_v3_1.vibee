@@ -1,0 +1,175 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: parse_string_interpolation
+    given: Input data provided
+    when: parse_string_interpolation function called
+    then: Result returned
+  - name: test_parse_string_interpolation
+  - name: parse_string_parts
+    given: Input data provided
+    when: parse_string_parts function called
+    then: Result returned
+  - name: test_parse_string_parts
+  - name: parse_interpolation
+    given: Input data provided
+    when: parse_interpolation function called
+    then: Result returned
+  - name: test_parse_interpolation
+  - name: parse_literal_until_brace
+    given: Input data provided
+    when: parse_literal_until_brace function called
+    then: Result returned
+  - name: test_parse_literal_until_brace
+  - name: parse_simple_expr
+    given: Input data provided
+    when: parse_simple_expr function called
+    then: Result returned
+  - name: test_parse_simple_expr
+  - name: parse_error_propagation
+    given: Input data provided
+    when: parse_error_propagation function called
+    then: Result returned
+  - name: test_parse_error_propagation
+  - name: parse_result_pipeline
+    given: Input data provided
+    when: parse_result_pipeline function called
+    then: Result returned
+  - name: test_parse_result_pipeline
+  - name: generate
+    given: Input data provided
+    when: generate function called
+    then: Result returned
+  - name: test_generate
+  - name: generate_string_interpolation
+    given: Input data provided
+    when: generate_string_interpolation function called
+    then: Result returned
+  - name: test_generate_string_interpolation
+  - name: generate_error_propagation
+    given: Input data provided
+    when: generate_error_propagation function called
+    then: Result returned
+  - name: test_generate_error_propagation
+  - name: generate_result_pipeline
+    given: Input data provided
+    when: generate_result_pipeline function called
+    then: Result returned
+  - name: test_generate_result_pipeline
+  - name: generate_case
+    given: Input data provided
+    when: generate_case function called
+    then: Result returned
+  - name: test_generate_case
+  - name: generate_branch
+    given: Input data provided
+    when: generate_branch function called
+    then: Result returned
+  - name: test_generate_branch
+  - name: generate_pattern
+    given: Input data provided
+    when: generate_pattern function called
+    then: Result returned
+  - name: test_generate_pattern
+  - name: optimize
+    given: Input data provided
+    when: optimize function called
+    then: Result returned
+  - name: test_optimize
+  - name: all_literals
+    given: Input data provided
+    when: all_literals function called
+    then: Result returned
+  - name: test_all_literals
+  - name: concat_literals
+    given: Input data provided
+    when: concat_literals function called
+    then: Result returned
+  - name: test_concat_literals
+  - name: optimize_part
+    given: Input data provided
+    when: optimize_part function called
+    then: Result returned
+  - name: test_optimize_part
+  - name: optimize_branch
+    given: Input data provided
+    when: optimize_branch function called
+    then: Result returned
+  - name: test_optimize_branch
+  - name: compile
+    given: Input data provided
+    when: compile function called
+    then: Result returned
+  - name: test_compile
+  - name: uses_v3_1_features
+    given: Input data provided
+    when: uses_v3_1_features function called
+    then: Result returned
+  - name: test_uses_v3_1_features
+
+types:
+  parse_string_interpolation:
+    description: Auto-generated
+
+  parse_string_parts:
+    description: Auto-generated
+
+  parse_interpolation:
+    description: Auto-generated
+
+  parse_literal_until_brace:
+    description: Auto-generated
+
+  parse_simple_expr:
+    description: Auto-generated
+
+  parse_error_propagation:
+    description: Auto-generated
+
+  parse_result_pipeline:
+    description: Auto-generated
+
+  generate:
+    description: Auto-generated
+
+  generate_string_interpolation:
+    description: Auto-generated
+
+  generate_error_propagation:
+    description: Auto-generated
+
+  generate_result_pipeline:
+    description: Auto-generated
+
+  generate_case:
+    description: Auto-generated
+
+  generate_branch:
+    description: Auto-generated
+
+  generate_pattern:
+    description: Auto-generated
+
+  optimize:
+    description: Auto-generated
+
+  all_literals:
+    description: Auto-generated
+
+  concat_literals:
+    description: Auto-generated
+
+  optimize_part:
+    description: Auto-generated
+
+  optimize_branch:
+    description: Auto-generated
+
+  compile:
+    description: Auto-generated
+
+  uses_v3_1_features:
+    description: Auto-generated

@@ -1,0 +1,122 @@
+name: agent_interaction
+version: "1.0.0"
+language: zig
+module: agent_interaction
+description: Agent interaction patterns - channels, shared state, and reactive streams
+
+types:
+  Channel:
+    description: Communication channel between agents
+    fields:
+      id: String
+      name: String
+      capacity: Int
+      message_count: Int
+      subscribers: List<String>
+      closed: Bool
+
+  SharedState:
+    description: Shared state between agents
+    fields:
+      id: String
+      name: String
+      data: Map<String, String>
+      version: Int
+      locked_by: String
+      watchers: List<String>
+
+  Stream:
+    description: Reactive data stream
+    fields:
+      id: String
+      name: String
+      type: String
+      buffer_size: Int
+      subscribers: List<String>
+      active: Bool
+
+  Event:
+    description: Event in stream
+    fields:
+      id: String
+      stream_id: String
+      type: String
+      data: Map<String, String>
+      timestamp: String
+
+  Lock:
+    description: Distributed lock
+    fields:
+      id: String
+      resource: String
+      holder: String
+      acquired_at: String
+      expires_at: String
+
+behaviors:
+  - name: channel_operations
+  - name: create_channel
+  - name: name
+  - name: capacity
+  - name: subscribe_channel
+  - name: channel_id
+  - name: agent_id
+  - name: publish_to_channel
+  - name: channel_id
+  - name: message
+  - name: receive_from_channel
+  - name: channel_id
+  - name: agent_id
+  - name: close_channel
+  - name: channel_id
+  - name: shared_state_operations
+  - name: create_shared_state
+  - name: name
+  - name: initial_data
+  - name: read_shared_state
+  - name: state_id
+  - name: update_shared_state
+  - name: state_id
+  - name: updates
+  - name: watch_shared_state
+  - name: state_id
+  - name: agent_id
+  - name: stream_operations
+  - name: create_stream
+  - name: name
+  - name: stream_type
+  - name: buffer_size
+  - name: subscribe_stream
+  - name: stream_id
+  - name: agent_id
+  - name: emit_event
+  - name: stream_id
+  - name: event_type
+  - name: data
+  - name: close_stream
+  - name: stream_id
+  - name: lock_operations
+  - name: acquire_lock
+  - name: resource
+  - name: agent_id
+  - name: timeout_ms
+  - name: release_lock
+  - name: lock_id
+  - name: check_lock
+  - name: resource
+  - name: create_channel
+  - name: subscribe_channel
+  - name: publish_to_channel
+  - name: receive_from_channel
+  - name: close_channel
+  - name: create_shared_state
+  - name: read_shared_state
+  - name: update_shared_state
+  - name: watch_shared_state
+  - name: create_stream
+  - name: subscribe_stream
+  - name: emit_event
+  - name: close_stream
+  - name: acquire_lock
+  - name: release_lock
+  - name: check_lock

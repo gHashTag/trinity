@@ -1,0 +1,39 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: handle_plugin_request
+    given: Input data provided
+    when: handle_plugin_request function called
+    then: Result returned
+  - name: test_handle_plugin_request
+  - name: serve_plugin_dashboard
+    given: Input data provided
+    when: serve_plugin_dashboard function called
+    then: Result returned
+  - name: test_serve_plugin_dashboard
+  - name: serve_plugin_page
+    given: Input data provided
+    when: serve_plugin_page function called
+    then: Result returned
+  - name: test_serve_plugin_page
+  - name: serve_text
+    given: Input data provided
+    when: serve_text function called
+    then: Result returned
+  - name: test_serve_text
+
+types:
+  handle_plugin_request:
+    description: Auto-generated
+
+  serve_plugin_dashboard:
+    description: Auto-generated
+
+  serve_plugin_page:
+    description: Auto-generated
+
+  serve_text:
+    description: Auto-generated

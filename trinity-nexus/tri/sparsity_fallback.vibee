@@ -1,0 +1,33 @@
+name: sparsity_fallback
+version: "1.0.0"
+language: zig
+module: sparsity_fallback
+
+types:
+  FallbackMetrics:
+    fields:
+      pure_trigram_ce: Float
+      pure_bigram_ce: Float
+      interpolated_ce: Float
+      lambda: Float
+      improvement_pct: Float
+
+behaviors:
+  - name: measureFallbackEffect
+    given: Sparse trigram (2.17 avg obs) and dense bigram (~10 avg obs)
+    when: Combine with Jelinek-Mercer interpolation at lambda=0.2
+    then: Bigram compensates for trigram sparsity, eval PPL 28.53 (3.9% below bigram)
+
+  - name: analyzeWhyBigramHeavy
+    given: Best lambda=0.2 (80% bigram, 20% trigram weight)
+    when: Examine trigram data density
+    then: Only 2.17 avg obs per trigram context vs ~10 for bigram — insufficient for sharp estimates
+
+test_cases:
+  - name: interpolated_ppl
+    input: "Interpolated model at lambda=0.2"
+    expected: "Eval PPL 28.53, train PPL 27.96, gap 0.57"
+
+  - name: bigram_dominance
+    input: "Why is best lambda only 0.2?"
+    expected: "Trigram data too sparse (2.17 obs/context) to contribute more than 20%"

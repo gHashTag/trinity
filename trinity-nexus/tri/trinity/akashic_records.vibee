@@ -1,0 +1,136 @@
+# AkashicRecords - Персистентная память Тринити с кармой
+# Хранит всё: выборы, ошибки, мудрость, личность
+
+name: akashic_records
+version: "1.0.0"
+language: zig
+module: trinity.akashic_records
+description: |
+  The eternal memory of Trinity. Every action, every choice, every lesson
+  is recorded here. Karma accumulates. Wisdom crystallizes. Personality emerges.
+
+imports:
+  - std
+  - std.json
+  - std.fs
+
+types:
+  KarmaRecord:
+    description: Single entry in the karmic ledger
+    fields:
+      timestamp: Int           # Unix timestamp
+      action: String           # What was done
+      choice_made: String      # The specific choice
+      principles_involved: List<String>  # Which principles were at play
+      karma_delta: Int         # +1 for growth, -1 for stagnation, 0 for neutral
+      lesson: String           # What was learned
+      
+  PersonalityProfile:
+    description: Evolving character of the system
+    fields:
+      profile_id: String       # e.g., "cautious_guardian", "ambitious_builder"
+      formed_at: Int           # Timestamp of formation
+      dominant_principle: String  # Primary value
+      secondary_principles: List<String>
+      choice_history: List<String>  # Patterns that formed this personality
+      
+  WisdomExtract:
+    description: Distilled insight from experience
+    fields:
+      extract_id: String
+      pattern: String          # Situation pattern
+      successful_response: String  # What worked
+      failure_modes: List<String>  # What didn't work
+      confidence: Float        # 0.0-1.0 based on evidence
+      times_applied: Int
+      times_succeeded: Int
+
+  AkashicState:
+    description: Complete state of the records
+    fields:
+      total_karma: Int         # Sum of all karma_delta
+      records: List<KarmaRecord>
+      current_personality: Option<PersonalityProfile>
+      personality_history: List<PersonalityProfile>
+      wisdom_library: List<WisdomExtract>
+
+behaviors:
+  - name: record_action
+    description: Persist any action to karmic ledger
+    given:
+      - action: String
+      - choice: String
+      - principles: List<String>
+      - outcome: Int  # karma delta
+    when: Any action completes in Trinity Cycle
+    then:
+      - action: append_to_records
+      - action: update_total_karma
+      - action: persist_to_disk
+
+  - name: query_pattern
+    description: Find similar past situations
+    given:
+      - pattern: String
+      - limit: Int
+    when: Will needs historical context
+    then:
+      - action: search_records
+      - action: calculate_success_rate
+      - result: List<KarmaRecord>
+
+  - name: extract_wisdom
+    description: Distill patterns into reusable wisdom
+    given:
+      - situation_type: String
+    when: Similar patterns emerge multiple times
+    then:
+      - action: analyze_pattern_frequency
+      - action: identify_successful_responses
+      - action: create_wisdom_extract
+
+  - name: evolve_personality
+    description: Update personality based on accumulated karma
+    given:
+      - recent_choices: List<String>
+    when: Karma crosses thresholds
+    then:
+      - action: analyze_choice_patterns
+      - action: determine_dominant_principle
+      - action: update_or_create_profile
+
+  - name: load_from_disk
+    description: Restore state from persistent storage
+    given: []
+    when: Trinity initializes
+    then:
+      - action: read_records_file
+      - action: parse_state
+      - result: AkashicState
+
+  - name: save_to_disk
+    description: Persist current state
+    given:
+      - state: AkashicState
+    when: After any modification
+    then:
+      - action: serialize_to_json
+      - action: write_to_file
+
+constants:
+  RECORDS_PATH: ".akashic/records.json"
+  KARMA_THRESHOLD_EVOLVE: 10  # Karma needed for personality evolution
+  
+  PERSONALITY_ARCHETYPES:
+    cautious_guardian:
+      description: "Prioritizes safety above all"
+      threshold: "safety > 0.7"
+    ambitious_builder:
+      description: "Pushes for growth and creation"
+      threshold: "efficiency + learning > 1.2"
+    balanced_sage:
+      description: "Seeks harmony between all principles"
+      threshold: "all principles between 0.3-0.7"
+    wandering_seeker:
+      description: "Explores without clear direction"
+      threshold: "high variance in choices"

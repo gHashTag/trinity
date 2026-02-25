@@ -1,0 +1,50 @@
+name: hybrid_chain_capacity
+version: "1.0.0"
+language: zig
+module: hybrid_chain_capacity
+description: "Level 11.7 — Chain composition + capacity stress test: bipolar exact chains and ternary superposition capacity"
+
+constants:
+  DIM: 1024
+  MAX_HOPS: 4
+  SUPERPOSITION_SIZE: 10
+
+types:
+  ChainCapacityResult:
+    fields:
+      hops: Int
+      accuracy: Float
+      sim: Float
+      description: "Result of chain composition at a given hop depth. For bipolar chains, sim should be 1.0 at all hops. For ternary superposition, accuracy measures recall rate from bundled items."
+
+  SuperpositionResult:
+    fields:
+      bundle_size: Int
+      recall_rate: Float
+      avg_similarity: Float
+      description: "Result of superposition capacity test. Measures how many items can be bundled together while maintaining reliable recall (similarity above random threshold)."
+
+  HybridCapacityResult:
+    fields:
+      chain_hops: Int
+      chain_sim: Float
+      bundle_size: Int
+      bundle_recall: Float
+      combined_accuracy: Float
+      description: "Combined result showing bipolar chain performance and ternary superposition capacity working together in a single hybrid pipeline."
+
+behaviors:
+  - name: bipolarExactChains
+    given: MAX_HOPS=4 bipolar vectors forming a composition chain
+    when: Bind all vectors into a chain (v1 * v2 * v3 * v4), then unbind sequentially from the left to recover the final vector at each hop depth (1, 2, 3, 4)
+    then: Recovery similarity = 1.0 at every hop depth due to bipolar exact self-inverse, zero degradation from hop 1 through hop 4, confirming lossless multi-hop composition
+
+  - name: ternarySuperpositionCapacity
+    given: SUPERPOSITION_SIZE=10 random ternary vectors bundled via majority vote
+    when: Bundle increasing numbers of items (2, 3, 4, ..., 10) into a superposition vector, then test recall by computing similarity of each original item against the bundle
+    then: Recall rate remains above 0.9 for bundles up to 5 items, degrades gracefully from 5-10 items as zero trits provide noise absorption, similarity threshold for reliable recall is approximately 1/sqrt(DIM)
+
+  - name: hybridBestOfBoth
+    given: A task requiring both multi-hop chain composition (MAX_HOPS=4) and superposition storage (SUPERPOSITION_SIZE=10)
+    when: Use bipolar encoding for the chain composition phase (bind/unbind relations exactly), then convert recovered vectors to ternary encoding for the superposition phase (bundle multiple results via majority vote), measure combined accuracy
+    then: Chain phase achieves sim=1.0 at all 4 hops (bipolar exactness), superposition phase achieves recall >= 0.9 for reasonable bundle sizes (ternary robustness), combined pipeline outperforms any single-encoding approach by using each encoding where it excels

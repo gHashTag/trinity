@@ -1,0 +1,102 @@
+name: mcp_sales
+version: "1.0.0"
+language: zig
+module: mcp_sales
+description: Sales and CRM MCP tools for lead management and deal tracking
+
+types:
+  CRMConfig:
+    description: CRM service configuration
+    fields:
+      provider: String
+      api_key: String
+      domain: String
+
+  Lead:
+    description: Sales lead
+    fields:
+      id: String
+      name: String
+      email: String
+      phone: String
+      company: String
+      status: String
+      source: String
+      created_at: String
+
+  Deal:
+    description: Sales deal/opportunity
+    fields:
+      id: String
+      title: String
+      value: Float
+      currency: String
+      stage: String
+      probability: Float
+      expected_close_date: String
+      contact_id: String
+
+  Contact:
+    description: CRM contact
+    fields:
+      id: String
+      first_name: String
+      last_name: String
+      email: String
+      phone: String
+      company: String
+      title: String
+
+  Activity:
+    description: Sales activity
+    fields:
+      id: String
+      type: String
+      subject: String
+      description: String
+      contact_id: String
+      deal_id: String
+      completed_at: String
+
+  Pipeline:
+    description: Sales pipeline
+    fields:
+      id: String
+      name: String
+      stages: List<String>
+      total_value: Float
+      deal_count: Int
+
+behaviors:
+  - name: lead_management
+  - name: create_lead
+  - name: config
+  - name: lead
+  - name: update_lead
+  - name: config
+  - name: lead_id
+  - name: lead
+  - name: convert_lead
+  - name: config
+  - name: lead_id
+  - name: deal_management
+  - name: create_deal
+  - name: config
+  - name: deal
+  - name: update_deal_stage
+  - name: config
+  - name: deal_id
+  - name: stage
+  - name: get_pipeline
+  - name: config
+  - name: activity_tracking
+  - name: log_activity
+  - name: config
+  - name: activity
+  - name: create_lead
+  - name: update_lead
+  - name: convert_lead
+  - name: create_deal
+  - name: update_deal_stage
+  - name: get_pipeline
+  - name: log_activity

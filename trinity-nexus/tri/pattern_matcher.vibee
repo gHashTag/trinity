@@ -1,0 +1,127 @@
+# ============================================================================
+# Pattern Matcher - Top-K Pattern Selection for Improved Accuracy
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: pattern_matcher
+version: "1.0.0"
+language: zig
+module: pattern_matcher
+
+description: |
+  Pattern matching engine with top-k selection for improved accuracy.
+  Uses VSA similarity search with configurable k parameter.
+  Targets 95%+ accuracy on code generation tasks.
+
+constants:
+  DEFAULT_TOP_K: 10
+  MIN_SIMILARITY_THRESHOLD: 0.5
+  MAX_PATTERNS: 1000
+  PATTERN_DIMENSION: 1024
+  CACHE_SIZE: 256
+
+types:
+  PatternType:
+    description: "Category of pattern"
+    enum:
+      - code_snippet
+      - chat_response
+      - reasoning_step
+      - template
+
+  Pattern:
+    description: "A stored pattern with embedding"
+    fields:
+      id: Int
+      pattern_type: PatternType
+      content: String
+      embedding: List<Float>
+      frequency: Int
+      accuracy: Float
+
+  TopKResult:
+    description: "Result of top-k pattern search"
+    fields:
+      pattern: Pattern
+      similarity: Float
+      rank: Int
+
+  PatternMatchConfig:
+    description: "Configuration for pattern matching"
+    fields:
+      top_k: Int
+      min_similarity: Float
+      pattern_types: List<PatternType>
+      use_cache: Bool
+
+  PatternStats:
+    description: "Statistics for pattern matching"
+    fields:
+      total_patterns: Int
+      cache_hits: Int
+      cache_misses: Int
+      avg_similarity: Float
+      avg_latency_ms: Float
+
+behaviors:
+  - name: init
+    given: PatternMatchConfig with top_k and thresholds
+    when: Creating pattern matcher instance
+    then: Return initialized matcher with empty pattern store
+
+  - name: addPattern
+    given: Pattern content and type
+    when: Learning new pattern
+    then: Store pattern with VSA embedding
+
+  - name: findTopK
+    given: Query content and k value
+    when: Searching for similar patterns
+    then: Return top-k most similar patterns sorted by similarity
+
+  - name: computeSimilarity
+    given: Two pattern embeddings
+    when: Comparing patterns
+    then: Return cosine similarity in range [-1, 1]
+
+  - name: updateFrequency
+    given: Pattern ID and usage count
+    when: Pattern is used successfully
+    then: Increment frequency for ranking boost
+
+  - name: prunePatterns
+    given: Max patterns limit
+    when: Store exceeds limit
+    then: Remove lowest frequency patterns
+
+  - name: getStats
+    given: Pattern matcher state
+    when: Statistics requested
+    then: Return PatternStats with metrics
+
+  - name: cacheResult
+    given: Query hash and results
+    when: Caching enabled
+    then: Store results in LRU cache
+
+test_cases:
+  - name: top_k_returns_k_results
+    given: "100 patterns, k=10"
+    expected: "Returns exactly 10 results"
+
+  - name: results_sorted_by_similarity
+    given: "Query with varying similarities"
+    expected: "Results sorted descending by similarity"
+
+  - name: frequency_boost_ranking
+    given: "Two patterns with same similarity"
+    expected: "Higher frequency pattern ranked first"
+
+  - name: cache_improves_latency
+    given: "Same query twice"
+    expected: "Second query faster (cache hit)"
+
+  - name: prune_removes_low_frequency
+    given: "1001 patterns, limit 1000"
+    expected: "Lowest frequency pattern removed"

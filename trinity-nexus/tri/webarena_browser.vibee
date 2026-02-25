@@ -1,0 +1,268 @@
+# WebArena Browser Integration Specification
+# Real browser automation via Playwright bridge
+# φ² + 1/φ² = 3 = TRINITY
+
+name: webarena_browser
+version: "1.0.0"
+language: zig
+module: webarena_browser
+
+constants:
+  PHI: 1.6180339887
+  TRINITY: 3
+  
+  # Browser settings
+  VIEWPORT_WIDTH: 1280
+  VIEWPORT_HEIGHT: 720
+  MAX_STEPS: 30
+  
+  # Timing (human-like, φ-based)
+  MIN_DELAY_MS: 500
+  MAX_DELAY_MS: 2000
+  PHI_DELAY_FACTOR: 1.618
+  
+  # Fingerprint targets
+  FINGERPRINT_SIMILARITY_TARGET: 0.90
+  DETECTION_THRESHOLD_STEALTH: 0.05
+  DETECTION_THRESHOLD_BASELINE: 0.25
+  
+  # Evolution parameters
+  EVOLUTION_GENERATIONS: 20
+  MUTATION_RATE: 0.0382  # 1/φ³
+
+types:
+  # Browser action types
+  ActionType:
+    enum:
+      - none
+      - click
+      - type_text
+      - scroll
+      - hover
+      - goto
+      - go_back
+      - go_forward
+      - press_key
+      - select_option
+      - stop
+
+  # Action to send to browser
+  BrowserAction:
+    fields:
+      action_type: ActionType
+      element_id: Option<Int>
+      text: Option<String>
+      url: Option<String>
+      coords: Option<Tuple<Int, Int>>
+      key: Option<String>
+
+  # DOM element from accessibility tree
+  DOMElement:
+    fields:
+      id: Int
+      tag: String
+      role: String
+      text: String
+      bounds: Tuple<Int, Int, Int, Int>
+      clickable: Bool
+      focusable: Bool
+
+  # Browser state snapshot
+  BrowserState:
+    fields:
+      url: String
+      title: String
+      accessibility_tree: String
+      screenshot_base64: Option<String>
+      elements: List<DOMElement>
+      viewport: Tuple<Int, Int>
+
+  # Task configuration (from WebArena JSON)
+  TaskConfig:
+    fields:
+      task_id: Int
+      sites: List<String>
+      intent: String
+      start_url: String
+      require_login: Bool
+      eval_types: List<String>
+      reference_answers: String
+
+  # Task execution result
+  TaskResult:
+    fields:
+      task_id: Int
+      success: Bool
+      steps_taken: Int
+      time_ms: Int
+      final_answer: Option<String>
+      error: Option<String>
+      detected: Bool
+
+  # Fingerprint state
+  FingerprintState:
+    fields:
+      similarity: Float
+      canvas_noise: List<Float>
+      webgl_vendor: String
+      webgl_renderer: String
+      audio_noise: Float
+      navigator_props: Map<String, String>
+
+  # Bridge connection state
+  BridgeState:
+    fields:
+      connected: Bool
+      process_id: Option<Int>
+      socket_path: Option<String>
+      fingerprint: FingerprintState
+
+behaviors:
+  - name: connect_browser
+    given: Bridge configuration with stealth flag
+    when: Need to start browser automation
+    then: Spawn Playwright process, establish JSON-RPC connection
+
+  - name: disconnect_browser
+    given: Active browser connection
+    when: Task complete or error
+    then: Close connection, terminate Playwright process
+
+  - name: inject_fingerprint
+    given: Connected browser with stealth enabled
+    when: Before first navigation
+    then: Inject canvas/webgl/audio spoofing scripts
+
+  - name: evolve_fingerprint
+    given: Detection risk or periodic check
+    when: Fingerprint similarity drops below target
+    then: Run genetic evolution to improve similarity
+
+  - name: execute_action
+    given: BrowserAction and connected browser
+    when: Agent decides next action
+    then: Send action via JSON-RPC, wait for response with φ-delay
+
+  - name: get_state
+    given: Connected browser
+    when: Need current page state for planning
+    then: Query accessibility tree, screenshot, return BrowserState
+
+  - name: check_detection
+    given: Current fingerprint state
+    when: After each action
+    then: Evaluate detection probability, trigger evolution if needed
+
+  - name: run_task
+    given: TaskConfig and max steps
+    when: Running WebArena task
+    then: Execute actions until success/failure/max_steps
+
+  - name: evaluate_result
+    given: Final state and reference answers
+    when: Task execution complete
+    then: Compare output with expected, return success/failure
+
+functions:
+  # Initialize browser bridge
+  init_bridge:
+    params:
+      - stealth: Bool
+      - seed: Int
+    returns: BridgeState
+    description: Create browser bridge with optional stealth
+
+  # Connect to Playwright
+  connect:
+    params:
+      - bridge: BridgeState
+    returns: Bool
+    description: Establish connection to Playwright process
+
+  # Execute single action
+  execute:
+    params:
+      - bridge: BridgeState
+      - action: BrowserAction
+    returns: Bool
+    description: Send action to browser, return success
+
+  # Get current state
+  get_state:
+    params:
+      - bridge: BridgeState
+    returns: BrowserState
+    description: Query browser for current page state
+
+  # Run complete task
+  run_task:
+    params:
+      - bridge: BridgeState
+      - config: TaskConfig
+      - max_steps: Int
+    returns: TaskResult
+    description: Execute task from start to completion
+
+  # Batch run tasks
+  run_batch:
+    params:
+      - bridge: BridgeState
+      - configs: List<TaskConfig>
+      - max_steps: Int
+    returns: List<TaskResult>
+    description: Run multiple tasks sequentially
+
+test_cases:
+  - name: bridge_connect
+    input: "stealth=true, seed=42"
+    expected: "connected=true, fingerprint.similarity > 0.80"
+
+  - name: action_execution
+    input: "click action on element 42"
+    expected: "action executed, step_count incremented"
+
+  - name: fingerprint_evolution
+    input: "10 generations"
+    expected: "similarity increased"
+
+  - name: stealth_reduces_detection
+    input: "stealth vs baseline"
+    expected: "stealth.detection < baseline.detection"
+
+# Protocol specification for Playwright communication
+protocol:
+  name: PlaywrightBridge
+  transport: JSON-RPC over Unix socket
+  
+  messages:
+    - name: connect
+      request: { headless: bool, viewport: { width: int, height: int } }
+      response: { success: bool, session_id: string }
+    
+    - name: navigate
+      request: { url: string }
+      response: { success: bool, final_url: string }
+    
+    - name: click
+      request: { element_id: int }
+      response: { success: bool }
+    
+    - name: type
+      request: { element_id: int, text: string }
+      response: { success: bool }
+    
+    - name: get_state
+      request: {}
+      response: { url: string, title: string, accessibility_tree: string }
+    
+    - name: inject_script
+      request: { script: string }
+      response: { success: bool, result: any }
+    
+    - name: screenshot
+      request: { format: string }
+      response: { data: string }
+    
+    - name: close
+      request: {}
+      response: { success: bool }

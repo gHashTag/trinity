@@ -1,0 +1,97 @@
+name: tri_igla_commands
+version: "1.0.0"
+language: zig
+module: tri_igla_commands
+
+types:
+  IglaMode:
+    fields:
+      name: String
+      description: String
+
+  IglaChatConfig:
+    fields:
+      model_path: String
+      temperature: Float
+      max_tokens: Int
+      stream: Bool
+
+  IglaCoderConfig:
+    fields:
+      task: String
+      output_path: String
+      context: String
+      language: String
+
+  IglaSWEConfig:
+    fields:
+      repo_path: String
+      task: String
+      mode: String
+      depth: Int
+
+behaviors:
+  - name: display_igla_help
+    given: User calls 'igla' command
+    when: Command is executed with no arguments or --help flag
+    then: Display comprehensive IGLA help information including all available subcommands and their descriptions
+
+  - name: show_igla_info
+    given: User calls 'igla' with --info flag
+    when: Command is executed
+    then: Display IGLA version, configuration, capabilities, and loaded models
+
+  - name: start_igla_chat
+    given: User calls 'igla-chat' with optional model path and configuration
+    when: Chat session is initialized with specified model and parameters
+    then: Launch interactive chat interface with IGLA using streaming or batch mode as configured
+
+  - name: process_igla_chat_message
+    given: User enters a message in igla-chat session
+    when: Message is processed through the IGLA model
+    then: Return model response with streaming output if enabled, display complete response
+
+  - name: execute_igla_coder
+    given: User calls 'igla-coder' with task description and optional output path
+    when: Coder analyzes task and generates code with specified language context
+    then: Write generated code to output file or display to stdout, include imports and structure
+
+  - name: analyze_code_context
+    given: igla-coder receives task with context parameter
+    when: Context is parsed and integrated with task description
+    then: Generate code that respects existing codebase structure and patterns
+
+  - name: run_igla_swe
+    given: User calls 'igla-swe' with repository path and task
+    when: SWE agent analyzes repository structure and task requirements
+    then: Execute software engineering workflow: analyze → plan → implement → test
+
+  - name: swe_code_analysis
+    given: igla-swe mode is set to 'analyze'
+    when: SWE agent scans repository for patterns, issues, and opportunities
+    then: Output detailed analysis report with recommendations
+
+  - name: swe_code_generation
+    given: igla-swe mode is set to 'generate'
+    when: SWE agent implements changes based on task description
+    then: Generate and apply patches to repository with proper formatting and imports
+
+  - name: swe_refactoring
+    given: igla-swe mode is set to 'refactor'
+    when: SWE agent identifies refactoring opportunities
+    then: Apply structural improvements while preserving functionality
+
+  - name: swe_testing
+    given: igla-swe mode includes test generation
+    when: SWE agent generates test cases for implemented changes
+    then: Create test files with comprehensive coverage of modified code
+
+  - name: validate_igla_config
+    given: IGLA command is executed with configuration parameters
+    when: Configuration is validated against model capabilities
+    then: Proceed with command or display error if configuration is invalid
+
+  - name: handle_igla_errors
+    given: An error occurs during IGLA command execution
+    when: Error is caught and analyzed
+    then: Display user-friendly error message with suggested fixes or recovery steps

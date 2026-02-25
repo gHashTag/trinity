@@ -1,0 +1,59 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: add_comment
+    given: User wants to comment on a video
+    when: Comment is validated and added to storage
+    then: Comment created with ID, timestamp, and zero likes
+  - name: add_comment_success
+  - name: add_comment_empty_video_id
+  - name: add_comment_empty_user_id
+  - name: add_comment_empty_text
+  - name: add_comment_text_too_long
+  - name: add_comment_video_not_found
+  - name: get_comments
+    given: Video has comments
+    when: Comments are retrieved with pagination
+    then: List of comments returned, sorted by date (newest first)
+  - name: get_comments_success
+  - name: get_comments_pagination
+  - name: get_comments_empty_video_id
+  - name: get_comments_negative_limit
+  - name: get_comments_limit_exceeds_max
+  - name: get_comments_video_not_found
+  - name: add_comment
+  - name: get_comments
+
+types:
+  new:
+    description: Create empty storage
+
+  add_comment:
+    description: Add comment to storage
+
+  get_comment:
+    description: Get comment by ID
+
+  delete_comment:
+    description: Delete comment
+
+  list_all_comments:
+    description: Get all comments
+
+  list_comments_by_video:
+    description: Get comments for a video (sorted newest first)
+
+  list_comments_by_user:
+    description: Get comments by user
+
+  count_comments:
+    description: Count total comments
+
+  count_comments_by_video:
+    description: Count comments for a video
+
+  with_sample_data:
+    description: Create storage with 5 sample comments

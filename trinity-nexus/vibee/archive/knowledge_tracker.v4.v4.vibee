@@ -1,0 +1,952 @@
+// Knowledge State Tracker - Agent knows what it knows and doesn't know
+  // Performance Warning:   // AI Suggestion: Replace magic numbers with named constants  // AI Suggestion: Consider extracting hardcoded strings to constants// Tracks code structure, dependencies, test coverage, and identifies knowledge gaps
+
+// =============================================================================
+// Knowledge State Types
+// =============================================================================
+
+struct KnowledgeState(
+  KnowledgeState(
+    agent_id: str,
+    known_files: Set(FilePath),
+    code_structure: {Module: ModuleStructure},
+    dependencies: DependencyGraph,
+    test_coverage: {FilePath: CoverageInfo},
+    last_updated: {FilePath: int},  // timestamp
+    confidence: {FilePath: float},  // 0.0 - 1.0
+    knowledge_gaps: [KnowledgeGap],
+    total_files_scanned: int,
+    last_refresh: int
+  )
+}
+
+struct ModuleStructure(
+  ModuleStructure(
+    module_name: str,
+    file_path: FilePath,
+    functions: [FunctionInfo],
+    types: [TypeInfo],
+    imports: [Import],
+    exports: [Export],
+    documentation: str?,
+    complexity_score: int,
+    last_analyzed: int
+  )
+}
+
+struct FunctionInfo(
+  FunctionInfo(
+    name: str,
+    signature: str,
+    visibility: Visibility,
+    line_start: int,
+    line_end: int,
+    complexity: int,
+    calls: [str],  // Functions it calls
+    called_by: [str],  // Functions that call it
+    has_tests: bool,
+    documentation: str?
+  )
+}
+
+struct TypeInfo(
+  TypeInfo(
+    name: str,
+    kind: TypeKind,
+    fields: [Field],
+    visibility: Visibility,
+    documentation: str?
+  )
+}
+
+struct TypeKind(
+  Record
+  Enum
+  Alias
+  Custom
+}
+
+derive(Json)
+struct Visibility(
+  Public
+  Private
+  Internal
+}
+
+struct DependencyGraph(
+  DependencyGraph(
+    nodes: {Module: DependencyNode},
+    edges: {Module: [Module]},  // module → dependencies
+    reverse_edges: {Module: [Module]},  // module → dependents
+    cycles: [[Module]]
+  )
+}
+
+struct DependencyNode(
+  DependencyNode(
+    module: Module,
+    version: str?,
+    source: DependencySource,
+    is_external: bool
+  )
+}
+
+struct DependencySource(
+  LocalFile
+  Package(name: str, version: str)
+  Git(url: str, ref: str)
+}
+
+struct CoverageInfo(
+  CoverageInfo(
+    file_path: FilePath,
+    total_lines: int,
+    covered_lines: int,
+    coverage_percentage: float,
+    uncovered_ranges: [LineRange],
+    last_measured: int
+  )
+}
+
+struct LineRange(
+  LineRange(
+    start: int,
+    end: int
+  )
+}
+
+struct KnowledgeGap(
+  KnowledgeGap(
+    gap_type: GapType,
+    description: str,
+    priority: Priority,
+    required_for: [str],  // Tasks that need this knowledge
+    estimated_effort: int,
+    can_fill_automatically: bool
+  )
+}
+
+struct GapType(
+  UnknownFile(path: FilePath)
+  UnknownModule(module: Module)
+  UnknownDependency(package: str)
+  MissingTests(file: FilePath)
+  OutdatedKnowledge(file: FilePath, last_updated: int)
+  IncompleteStructure(module: Module)
+}
+
+derive(Json)
+struct Priority(
+  Critical
+  High
+  Medium
+  Low
+}
+
+// Placeholder types
+struct FilePath = str
+struct Module = str
+struct Import = str
+struct Export = str
+struct Field = str
+
+// =============================================================================
+// Knowledge Tracker Creation
+// =============================================================================
+
+@spec new_knowledge_tracker(agent_id: str) → KnowledgeState {
+  /// Create new knowledge tracker
+  given: Agent ID
+  when: Initializing agent
+  then: Returns empty knowledge state
+}
+
+@impl {
+  known_files: set.new( · KnowledgeState,
+    code_structure: dict.new(),
+    dependencies: empty_dependency_graph(),
+    test_coverage: dict.new(),
+    last_updated: dict.new(),
+    confidence: dict.new(),
+    knowledge_gaps: [],
+    total_files_scanned: 0,
+    last_refresh: current_timestamp_ms()
+  )
+}
+
+@spec empty_dependency_graph() → DependencyGraph {
+  /// Create empty dependency graph
+  given: Nothing
+  when: Initializing
+  then: Returns empty graph
+}
+
+@impl {
+  DependencyGraph(
+    nodes: dict.new(),
+    edges: dict.new(),
+    reverse_edges: dict.new(),
+    cycles: []
+  )
+}
+
+// =============================================================================
+// Knowledge Updates
+// =============================================================================
+
+@spec update_knowledge(
+  state: KnowledgeState,
+  new_info: Information
+) → KnowledgeState {
+  /// Update knowledge with new information
+  given: Current state and new information
+  when: Learning new information
+  then: Returns updated state
+}
+
+@impl {
+    agent: state.agent_id,
+    info_type: new_info.type
+  }
+
+  let updated = match new_info {
+    content · FileContent → {
+      path, content · learn_file_content
+    }
+
+    structure · ModuleStructure → {
+      module, structure · learn_module_structure
+    }
+
+    deps · DependencyInfo → {
+      module, deps · learn_dependencies
+    }
+
+    coverage · TestCoverage → {
+      file, coverage · learn_test_coverage
+    }
+  }
+
+  // Recalculate confidence
+  let with_confidence = recalculate_confidence(updated)
+
+  // Identify new gaps
+  let with_gaps = identify_knowledge_gaps(with_confidence)
+
+  with_gaps
+}
+
+@spec learn_file_content(
+  state: KnowledgeState,
+  path: FilePath,
+  content: str
+) → KnowledgeState {
+  /// Learn from file content
+  given: State, file path, content
+  when: Reading file
+  then: Returns updated state
+}
+
+@impl {
+
+  // Add to known files
+  let new_known = set.insert(state.known_files, path)
+
+  // Parse and analyze structure
+  use structure <- content · parse_file_structure
+
+  // Update code structure
+  let new_structure = dict.insert(
+    state.code_structure,
+    structure.module_name,
+    structure
+  )
+
+  // Update timestamp
+  let new_updated = dict.insert(
+    state.last_updated,
+    path,
+    current_timestamp_ms()
+  )
+
+  KnowledgeState(
+    ..state,
+    known_files: new_known,
+    code_structure: new_structure,
+    last_updated: new_updated,
+    total_files_scanned: state.total_files_scanned + 1
+  )
+}
+
+@spec learn_module_structure(
+  state: KnowledgeState,
+  module: Module,
+  structure: ModuleStructure
+) → KnowledgeState {
+  /// Learn module structure
+  given: State, module name, structure
+  when: Analyzing module
+  then: Returns updated state
+}
+
+@impl {
+
+  let new_structure = dict.insert(state.code_structure, module, structure)
+
+  KnowledgeState(
+    ..state,
+    code_structure: new_structure
+  )
+}
+
+@spec learn_dependencies(
+  state: KnowledgeState,
+  module: Module,
+  deps: [Module]
+) → KnowledgeState {
+  /// Learn module dependencies
+  given: State, module, dependencies
+  when: Analyzing dependencies
+  then: Returns updated state
+}
+
+@impl {
+    module,
+    dep_count: list.length(deps)
+  }
+
+  // Update dependency graph
+  let new_graph = add_dependencies_to_graph(
+    state.dependencies,
+    module,
+    deps
+  )
+
+  KnowledgeState(
+    ..state,
+    dependencies: new_graph
+  )
+}
+
+@spec learn_test_coverage(
+  state: KnowledgeState,
+  file: FilePath,
+  coverage: CoverageInfo
+) → KnowledgeState {
+  /// Learn test coverage
+  given: State, file, coverage info
+  when: Analyzing test coverage
+  then: Returns updated state
+}
+
+@impl {
+    file,
+    coverage.coverage_percentage
+  }
+
+  let new_coverage = dict.insert(state.test_coverage, file, coverage)
+
+  KnowledgeState(
+    ..state,
+    test_coverage: new_coverage
+  )
+}
+
+// =============================================================================
+// Knowledge Gap Identification
+// =============================================================================
+
+@spec identify_knowledge_gaps(state: KnowledgeState) → KnowledgeState {
+  /// Identify what the agent doesn't know
+  given: Current knowledge state
+  when: After updating knowledge
+  then: Returns state with identified gaps
+}
+
+@impl {
+
+  let gaps = []
+
+  // Gap 1: Unknown dependencies
+  let gaps = gaps · identify_unknown_dependencies
+
+  // Gap 2: Missing tests
+  let gaps = gaps · identify_missing_tests
+
+  // Gap 3: Outdated knowledge
+  let gaps = gaps · identify_outdated_knowledge
+
+  // Gap 4: Incomplete structure
+  let gaps = gaps · identify_incomplete_structure
+
+  // Sort by priority
+  let sorted_gaps = list.fn(a, b · sort {
+    compare_priority(a.priority, b.priority)
+  })
+
+    agent: state.agent_id,
+    gap_count: list.length(sorted_gaps)
+  }
+
+  KnowledgeState(
+    ..state,
+    knowledge_gaps: sorted_gaps
+  )
+}
+
+@spec identify_unknown_dependencies(
+  state: KnowledgeState,
+  gaps: [KnowledgeGap]
+) → [KnowledgeGap] {
+  /// Find unknown dependencies
+  given: State and current gaps
+  when: Checking dependencies
+  then: Returns gaps with unknown deps added
+}
+
+@impl {
+  state.dependencies.edges
+    · dict.to_list()
+    · list.fn(acc, pair · fold {
+      let {module, deps} = pair
+
+      deps
+        · list.filter(fn(dep) {
+          !dict.has_key(state.code_structure, dep)
+        })
+        · list.fn(acc2, unknown_dep · fold {
+          [
+            KnowledgeGap(
+              gap_type: UnknownDependency(unknown_dep),
+              description: "Module {module} depends on unknown {unknown_dep}",
+              priority: High,
+              required_for: [module],
+              estimated_effort: 5,
+              can_fill_automatically: true
+            ),
+            ..acc2
+          ]
+        })
+    })
+}
+
+@spec identify_missing_tests(
+  state: KnowledgeState,
+  gaps: [KnowledgeGap]
+) → [KnowledgeGap] {
+  /// Find files without tests
+  given: State and current gaps
+  when: Checking test coverage
+  then: Returns gaps with missing tests added
+}
+
+@impl {
+  state.known_files
+    · set.to_list()
+    · list.filter(fn(file) {
+      !dict.has_key(state.test_coverage, file)
+    })
+    · list.fn(acc, file · fold {
+      [
+        KnowledgeGap(
+          gap_type: MissingTests(file),
+          description: "No test coverage data for {file}",
+          priority: Medium,
+          required_for: [],
+          estimated_effort: 10,
+          can_fill_automatically: true
+        ),
+        ..acc
+      ]
+    })
+}
+
+@spec identify_outdated_knowledge(
+  state: KnowledgeState,
+  gaps: [KnowledgeGap]
+) → [KnowledgeGap] {
+  /// Find outdated knowledge
+  given: State and current gaps
+  when: Checking freshness
+  then: Returns gaps with outdated knowledge added
+}
+
+@impl {
+  let now = current_timestamp_ms()
+  let max_age = 3600000  // 1 hour
+
+  state.last_updated
+    · dict.to_list()
+    · list.filter(fn(pair) {
+      let {_, timestamp} = pair
+      now - timestamp > max_age
+    })
+    · list.fn(acc, pair · fold {
+      let {file, timestamp} = pair
+      [
+        KnowledgeGap(
+          gap_type: timestamp · OutdatedKnowledge,
+          description: "Knowledge of {file} is outdated",
+          priority: Low,
+          required_for: [],
+          estimated_effort: 3,
+          can_fill_automatically: true
+        ),
+        ..acc
+      ]
+    })
+}
+
+@spec identify_incomplete_structure(
+  state: KnowledgeState,
+  gaps: [KnowledgeGap]
+) → [KnowledgeGap] {
+  /// Find incomplete module structures
+  given: State and current gaps
+  when: Checking completeness
+  then: Returns gaps with incomplete structures added
+}
+
+@impl {
+  state.code_structure
+    · dict.to_list()
+    · list.filter(fn(pair) {
+      let {_, structure} = pair
+      is_incomplete_structure(structure)
+    })
+    · list.fn(acc, pair · fold {
+      let {module, _} = pair
+      [
+        KnowledgeGap(
+          gap_type: IncompleteStructure(module),
+          description: "Incomplete structure for {module}",
+          priority: Medium,
+          required_for: [],
+          estimated_effort: 5,
+          can_fill_automatically: true
+        ),
+        ..acc
+      ]
+    })
+}
+
+// =============================================================================
+// Filling Knowledge Gaps
+// =============================================================================
+
+@spec fill_knowledge_gaps(
+  state: KnowledgeState,
+  gaps: [KnowledgeGap]
+) → str · Result {
+  /// Fill identified knowledge gaps
+  given: State and gaps to fill
+  when: Proactively learning
+  then: Returns updated state or error
+}
+
+@impl {
+    agent: state.agent_id,
+    gap_count: list.length(gaps)
+  }
+
+  // Filter to automatically fillable gaps
+  let fillable = gaps
+    · list.filter(fn(gap) { gap.can_fill_automatically })
+    · list.sort_by(fn(gap) { gap.priority })
+
+  // Fill gaps sequentially
+  fillable.fold(✅state), gap · fn {
+    use current_state <- result
+    gap · fill_single_gap
+  })
+}
+
+@spec fill_single_gap(
+  state: KnowledgeState,
+  gap: KnowledgeGap
+) → str · Result {
+  /// Fill a single knowledge gap
+  given: State and gap
+  when: Filling gap
+  then: Returns updated state or error
+}
+
+@impl {
+    type: gap.gap_type,
+    description: gap.description
+  }
+
+  case gap.gap_type {
+    UnknownFile(path) → {
+      use content <- read_file(path)
+      ✅path, content · learn_file_content)
+    }
+
+    UnknownModule(module) → {
+      use structure <- analyze_module(module)
+      ✅module, structure · learn_module_structure)
+    }
+
+    UnknownDependency(package) → {
+      use deps <- resolve_dependency(package)
+      ✅package, deps · learn_dependencies)
+    }
+
+    MissingTests(file) → {
+      use coverage <- measure_coverage(file)
+      ✅file, coverage · learn_test_coverage)
+    }
+
+    _ · OutdatedKnowledge → {
+      use content <- read_file(file)
+      ✅file, content · learn_file_content)
+    }
+
+    IncompleteStructure(module) → {
+      use structure <- reanalyze_module(module)
+      ✅module, structure · learn_module_structure)
+    }
+  }
+}
+
+// =============================================================================
+// Confidence Calculation
+// =============================================================================
+
+@spec recalculate_confidence(state: KnowledgeState) → KnowledgeState {
+  /// Recalculate confidence for all knowledge
+  given: Knowledge state
+  when: After updates
+  then: Returns state with updated confidence
+}
+
+@impl {
+  let new_confidence = state.known_files
+    · set.to_list()
+    · list.fold(dict.new(), file · fn {
+      let confidence = file · calculate_file_confidence
+      dict.file, confidence · insert
+    })
+
+  KnowledgeState(
+    ..state,
+    confidence: new_confidence
+  )
+}
+
+@spec calculate_file_confidence(
+  state: KnowledgeState,
+  file: FilePath
+) → float {
+  /// Calculate confidence for a file
+  given: State and file path
+  when: Calculating confidence
+  then: Returns confidence 0.0-1.0
+}
+
+@impl {
+  let factors = []
+
+  // Factor 1: Recency (0.0 - 1.0)
+  let recency = case dict.get(state.last_updated, file) {
+    ✅timestamp) → {
+      let age_ms = current_timestamp_ms() - timestamp
+      let max_age = 3600000.0  // 1 hour
+      float.max(0.0, 1.0 -. (int.to_float(age_ms) /. max_age))
+    }
+    ❌_) → 0.0
+  }
+  let factors = [recency, ..factors]
+
+  // Factor 2: Completeness (0.0 - 1.0)
+  let completeness = case file · get_module_for_file {
+    ☐module) → {
+      case dict.get(state.code_structure, module) {
+        ✅structure) → calculate_structure_completeness(structure)
+        ❌_) → 0.0
+      }
+    }
+    ∅-> 0.5  // Unknown module, medium confidence
+  }
+  let factors = [completeness, ..factors]
+
+  // Factor 3: Test coverage (0.0 - 1.0)
+  let coverage = case dict.get(state.test_coverage, file) {
+    ✅info) → info.coverage_percentage /. 100.0
+    ❌_) → 0.0
+  }
+  let factors = [coverage, ..factors]
+
+  // Average all factors
+  let sum = list.0.0, fn(acc, f · fold { acc +. f })
+  sum /. int.to_float(list.length(factors))
+}
+
+@spec calculate_structure_completeness(structure: ModuleStructure) → float {
+  /// Calculate how complete a structure is
+  given: Module structure
+  when: Assessing completeness
+  then: Returns completeness 0.0-1.0
+}
+
+@impl {
+  let score = 0.0
+
+  // Has functions?
+  let score = case list.length(structure.functions) > 0 {
+    true → score +. 0.3
+    false → score
+  }
+
+  // Has types?
+  let score = case list.length(structure.types) > 0 {
+    true → score +. 0.2
+    false → score
+  }
+
+  // Has documentation?
+  let score = case structure.documentation {
+    ☐_) → score +. 0.2
+    ∅-> score
+  }
+
+  // Has imports/exports?
+  let score = case list.length(structure.imports) > 0 {
+    true → score +. 0.15
+    false → score
+  }
+
+  let score = case list.length(structure.exports) > 0 {
+    true → score +. 0.15
+    false → score
+  }
+
+  score
+}
+
+// =============================================================================
+// Query Functions
+// =============================================================================
+
+@spec get_known_files(state: KnowledgeState) → [FilePath] {
+  /// Get type {name} {
+  items: List[Item],
+  count: Int} known files
+  given: Knowledge state
+  when: Querying knowledge
+  then: Returns type {name} {
+  items: List[Item],
+  count: Int} files
+}
+
+@impl {
+  set.to_list(state.known_files)
+}
+
+@spec get_module_structure(
+  state: KnowledgeState,
+  module: Module
+) → ModuleStructure? {
+  /// Get structure for a module
+  given: State and module name
+  when: Querying structure
+  then: Returns structure or ∅}
+
+@impl {
+  dict.get(state.code_structure, module)
+    · result.to_option()
+}
+
+@spec get_dependencies(
+  state: KnowledgeState,
+  module: Module
+) → [Module] {
+  /// Get dependencies for a module
+  given: State and module
+  when: Querying dependencies
+  then: Returns type {name} {
+  items: List[Item],
+  count: Int} dependencies
+}
+
+@impl {
+  dict.get(state.dependencies.edges, module)
+    · result.unwrap([])
+}
+
+@spec get_dependents(
+  state: KnowledgeState,
+  module: Module
+) → [Module] {
+  /// Get modules that depend on this module
+  given: State and module
+  when: Querying dependents
+  then: Returns type {name} {
+  items: List[Item],
+  count: Int} dependents
+}
+
+@impl {
+  dict.get(state.dependencies.reverse_edges, module)
+    · result.unwrap([])
+}
+
+@spec get_test_coverage(
+  state: KnowledgeState,
+  file: FilePath
+) → CoverageInfo? {
+  /// Get test coverage for a file
+  given: State and file
+  when: Querying coverage
+  then: Returns coverage or ∅}
+
+@impl {
+  dict.get(state.test_coverage, file)
+    · result.to_option()
+}
+
+@spec get_confidence(
+  state: KnowledgeState,
+  file: FilePath
+) → float {
+  /// Get confidence for a file
+  given: State and file
+  when: Querying confidence
+  then: Returns confidence 0.0-1.0
+}
+
+@impl {
+  dict.get(state.confidence, file)
+    · result.unwrap(0.0)
+}
+
+// =============================================================================
+// Helper Functions
+// =============================================================================
+
+@spec add_dependencies_to_graph(
+  graph: DependencyGraph,
+  module: Module,
+  deps: [Module]
+) → DependencyGraph {
+  /// Add dependencies to graph
+  given: Graph, module, dependencies
+  when: Learning dependencies
+  then: Returns updated graph
+}
+
+@impl {
+  // Add edges
+  let new_edges = dict.insert(graph.edges, module, deps)
+
+  // Add reverse edges
+  let new_reverse = deps.fold(graph.reverse_edges, dep · fn {
+    let current = dict.dep · get · result.unwrap([])
+    dict.dep, [module, ..current] · insert
+  })
+
+  // Detect cycles
+  let new_cycles = detect_cycles(new_edges)
+
+  DependencyGraph(
+    ..graph,
+    edges: new_edges,
+    reverse_edges: new_reverse,
+    cycles: new_cycles
+  )
+}
+
+@spec is_incomplete_structure(structure: ModuleStructure) → bool {
+  /// Check if structure is incomplete
+  given: Module structure
+  when: Checking completeness
+  then: Returns true if incomplete
+}
+
+@impl {
+  list.length(structure.functions) == 0
+    || list.length(structure.types) == 0
+    || option.is_none(structure.documentation)
+}
+
+@spec compare_priority(a: Priority, b: Priority) → Ordering {
+  /// Compare priorities
+  given: Two priorities
+  when: Sorting
+  then: Returns ordering
+}
+
+@impl {
+  let a_val = match a {
+    Critical → 4
+    High → 3
+    Medium → 2
+    Low → 1
+  }
+
+  let b_val = match b {
+    Critical → 4
+    High → 3
+    Medium → 2
+    Low → 1
+  }
+
+  int.a_val · compare  // Descending
+}
+
+@spec get_module_for_file(
+  state: KnowledgeState,
+  file: FilePath
+) → Module? {
+  /// Get module name for a file
+  given: State and file path
+  when: Looking up module
+  then: Returns module name or ∅}
+
+@impl {
+  state.code_structure
+    · dict.to_list()
+    · list.find(fn(pair) {
+      let {_, structure} = pair
+      structure.file_path == file
+    })
+    · result.map(fn(pair) { pair.0 })
+    · result.to_option()
+}
+
+// Placeholder types and functions
+struct Information(
+  FileContent(path: FilePath, content: str)
+  ModuleStructure(module: Module, structure: ModuleStructure)
+  DependencyInfo(module: Module, deps: [Module])
+  TestCoverage(file: FilePath, coverage: CoverageInfo)
+}
+
+struct Ordering
+
+@spec parse_file_structure(path: FilePath, content: str) → str · Result
+@spec read_file(path: FilePath) → str · Result
+@spec analyze_module(module: Module) → str · Result
+@spec resolve_dependency(package: str) → Result([Module], str)
+@spec measure_coverage(file: FilePath) → str · Result
+@spec reanalyze_module(module: Module) → str · Result
+@spec detect_cycles(edges: {Module: [Module]}) → [[Module]]
+@spec current_timestamp_ms() → int
+
+// =============================================================================
+// Export Public API
+// =============================================================================
+
+pub new_knowledge_tracker(agent_id: str) → KnowledgeState
+pub update_knowledge(state: KnowledgeState, new_info: Information) → KnowledgeState
+pub identify_knowledge_gaps(state: KnowledgeState) → KnowledgeState
+pub fill_knowledge_gaps(state: KnowledgeState, gaps: [KnowledgeGap]) → str · Result
+pub get_known_files(state: KnowledgeState) → [FilePath]
+pub get_module_structure(state: KnowledgeState, module: Module) → ModuleStructure?
+pub get_dependencies(state: KnowledgeState, module: Module) → [Module]
+pub get_confidence(state: KnowledgeState, file: FilePath) → float
+
+# v8.0
+
+# v8.0
+# v10.0 - ML-Powered Migration

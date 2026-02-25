@@ -1,0 +1,243 @@
+name: migrator_v5
+version: "1.0.0"
+language: zig
+module: migrator_v5
+description: Auto-generated from Gleam code with generic types support
+
+behaviors:
+  - name: migration_rules
+    given: Input data provided
+    when: migration_rules function called
+    then: Result returned
+    returns: []const T
+    test_cases:
+      - name: test_migration_rules
+        input: {}
+        expected: {}
+
+  - name: migrate
+    given: Input data provided
+    when: migrate function called
+    then: Result returned
+    params: source: String
+    returns: MigrationResult
+    test_cases:
+      - name: test_migrate
+        input: {}
+        expected: {}
+
+  - name: apply_rule
+    given: Input data provided
+    when: apply_rule function called
+    then: Result returned
+    params: source: String, rule: MigrationRule
+    returns: []const u8
+    test_cases:
+      - name: test_apply_rule
+        input: {}
+        expected: {}
+
+  - name: smart_remove_types
+    given: Input data provided
+    when: smart_remove_types function called
+    then: Result returned
+    params: source: String
+    returns: []const u8
+    test_cases:
+      - name: test_smart_remove_types
+        input: {}
+        expected: {}
+
+  - name: smart_compact_types
+    given: Input data provided
+    when: smart_compact_types function called
+    then: Result returned
+    params: source: String
+    returns: []const u8
+    test_cases:
+      - name: test_smart_compact_types
+        input: {}
+        expected: {}
+
+  - name: compact_type_definition
+    given: Input data provided
+    when: compact_type_definition function called
+    then: Result returned
+    params: line: String
+    returns: []const u8
+    test_cases:
+      - name: test_compact_type_definition
+        input: {}
+        expected: {}
+
+  - name: validate_migration
+    given: Input data provided
+    when: validate_migration function called
+    then: Result returned
+    params: result: MigrationResult
+    returns: !T
+    test_cases:
+      - name: test_validate_migration
+        input: {}
+        expected: {}
+
+  - name: generate_report
+    given: Input data provided
+    when: generate_report function called
+    then: Result returned
+    params: result: MigrationResult
+    returns: []const u8
+    test_cases:
+      - name: test_generate_report
+        input: {}
+        expected: {}
+
+  - name: migrate_file
+    given: Input data provided
+    when: migrate_file function called
+    then: Result returned
+    params: path: String
+    returns: !T
+    test_cases:
+      - name: test_migrate_file
+        input: {}
+        expected: {}
+
+  - name: migrate_directory
+    given: Input data provided
+    when: migrate_directory function called
+    then: Result returned
+    params: path: String
+    returns: !T
+    test_cases:
+      - name: test_migrate_directory
+        input: {}
+        expected: {}
+
+  - name: migrate_project
+    given: Input data provided
+    when: migrate_project function called
+    then: Result returned
+    params: root: String
+    returns: !T
+    test_cases:
+      - name: test_migrate_project
+        input: {}
+        expected: {}
+
+  - name: example_migration
+    given: Input data provided
+    when: example_migration function called
+    then: Result returned
+    returns: void
+    test_cases:
+      - name: test_example_migration
+        input: {}
+        expected: {}
+
+  - name: parallel_map<T, U>
+    given: Input data provided
+    when: parallel_map<T, U> function called
+    then: Result returned
+    params: items: List<T>, f: T -> U
+    returns: U): List<U> =
+    test_cases:
+      - name: test_parallel_map<T, U>
+        input: {}
+        expected: {}
+
+  - name: int_to_float
+    given: Input data provided
+    when: int_to_float function called
+    then: Result returned
+    params: x: Int
+    returns: f64
+    test_cases:
+      - name: test_int_to_float
+        input: {}
+        expected: {}
+
+  - name: int_to_string
+    given: Input data provided
+    when: int_to_string function called
+    then: Result returned
+    params: x: Int
+    returns: []const u8
+    test_cases:
+      - name: test_int_to_string
+        input: {}
+        expected: {}
+
+  - name: float_to_string
+    given: Input data provided
+    when: float_to_string function called
+    then: Result returned
+    params: x: Float
+    returns: []const u8
+    test_cases:
+      - name: test_float_to_string
+        input: {}
+        expected: {}
+
+types:
+  MigrationRule:
+    definition: pub type MigrationRule {
+  MigrationResult:
+    definition: pub type MigrationResult {
+  Change:
+    definition: pub type Change {
+
+functions:
+  - name: migration_rules
+    returns: []const T
+  - name: migrate
+    params: source: String
+    returns: MigrationResult
+  - name: apply_rule
+    params: source: String, rule: MigrationRule
+    returns: []const u8
+  - name: smart_remove_types
+    params: source: String
+    returns: []const u8
+  - name: smart_compact_types
+    params: source: String
+    returns: []const u8
+  - name: compact_type_definition
+    params: line: String
+    returns: []const u8
+  - name: validate_migration
+    params: result: MigrationResult
+    returns: !T
+  - name: generate_report
+    params: result: MigrationResult
+    returns: []const u8
+  - name: migrate_file
+    params: path: String
+    returns: !T
+  - name: migrate_directory
+    params: path: String
+    returns: !T
+  - name: migrate_project
+    params: root: String
+    returns: !T
+  - name: example_migration
+    returns: void
+  - name: parallel_map<T, U>
+    params: items: List<T>, f: T -> U
+    returns: U): List<U> =
+  - name: int_to_float
+    params: x: Int
+    returns: f64
+  - name: int_to_string
+    params: x: Int
+    returns: []const u8
+  - name: float_to_string
+    params: x: Float
+    returns: []const u8
+
+imports:
+  - gleam/string
+  - gleam/list
+  - gleam/result
+  - gleam/regexp
+  - gleam/option.{type

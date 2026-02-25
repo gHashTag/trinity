@@ -1,0 +1,386 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# STREAMING LOADER - Memory-Efficient Model Loading
+# Load large models (7B+) without OOM via chunked/lazy loading
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# This is the SINGLE SOURCE OF TRUTH for streaming model loading.
+# Enables loading 70B+ models on systems with limited RAM.
+#
+# Key techniques:
+#   - Memory-mapped file I/O (mmap)
+#   - Lazy layer loading (load on demand)
+#   - Chunked tensor streaming
+#   - LRU cache for frequently accessed layers
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: streaming_loader
+version: "1.0.0"
+language: zig
+module: streaming_loader
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+config:
+  # Memory limits
+  MAX_RESIDENT_LAYERS: 4        # Max layers in memory at once
+  CHUNK_SIZE: 16777216          # 16MB chunks for streaming
+  MMAP_THRESHOLD: 104857600     # 100MB - use mmap above this
+  
+  # Cache settings
+  LRU_CACHE_SIZE: 8             # Number of layers in LRU cache
+  PREFETCH_LAYERS: 2            # Prefetch next N layers
+  
+  # File format
+  TRI_MAGIC: 0x54524933         # "TRI3"
+  TRI_VERSION: 2
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  # Streaming loader configuration
+  StreamConfig:
+    fields:
+      max_resident_layers: Int
+      chunk_size: Int
+      use_mmap: Bool
+      prefetch_enabled: Bool
+      cache_size: Int
+      
+  # Layer metadata (stored in header, not loaded)
+  LayerMeta:
+    fields:
+      layer_idx: Int
+      file_offset: Int          # Byte offset in file
+      compressed_size: Int      # Size on disk
+      uncompressed_size: Int    # Size in memory
+      is_loaded: Bool
+      last_access: Int          # Timestamp for LRU
+      
+  # Memory-mapped region
+  MmapRegion:
+    fields:
+      ptr: Object               # Pointer to mapped memory
+      size: Int
+      file_offset: Int
+      is_mapped: Bool
+      
+  # LRU cache entry
+  CacheEntry:
+    fields:
+      layer_idx: Int
+      data: Object              # Pointer to layer data
+      access_count: Int
+      last_access: Int
+      
+  # Streaming model handle
+  StreamingModel:
+    fields:
+      file_path: String
+      file_handle: Object
+      mmap_region: Option<Object>
+      header: Object
+      layer_metas: List<Object>
+      cache: List<Object>       # LRU cache
+      config: Object
+      
+  # Load result with timing
+  LoadResult:
+    fields:
+      success: Bool
+      load_time_ms: Float
+      memory_used: Int
+      layers_loaded: Int
+      cache_hits: Int
+      cache_misses: Int
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS - File Operations
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # INITIALIZATION
+  # ─────────────────────────────────────────────────────────────────────────────
+  
+  - name: open_streaming
+    given: File path to .tri model
+    when: Starting model load
+    then: |
+      1. Open file handle (read-only)
+      2. Read file size
+      3. If size > MMAP_THRESHOLD:
+         - Create mmap region for entire file
+         - Set use_mmap = true
+      4. Read TRI header (first 256 bytes)
+      5. Verify magic and version
+      6. Parse layer metadata table
+      7. Initialize LRU cache (empty)
+      8. Return StreamingModel handle
+    memory: O(header_size + metadata_size) - NOT full model
+    
+  - name: close_streaming
+    given: StreamingModel handle
+    when: Done with model
+    then: |
+      1. Flush any pending writes
+      2. Unmap mmap region if used
+      3. Free all cached layers
+      4. Close file handle
+      5. Free metadata
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # MEMORY MAPPING
+  # ─────────────────────────────────────────────────────────────────────────────
+  
+  - name: mmap_file
+    given: File handle, size
+    when: File size > MMAP_THRESHOLD
+    then: |
+      1. Call mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0)
+      2. If mmap fails, fall back to read()
+      3. Store MmapRegion in model handle
+      4. Enable direct pointer access to file data
+    benefits: |
+      - OS handles paging automatically
+      - No explicit read() calls needed
+      - Kernel prefetches pages
+      - Shared across processes
+      
+  - name: mmap_layer_region
+    given: Layer metadata, mmap base
+    when: Accessing layer data
+    then: |
+      ptr = mmap_base + layer.file_offset
+      Return slice [ptr..ptr+layer.compressed_size]
+    complexity: O(1) - just pointer arithmetic
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # LAZY LAYER LOADING
+  # ─────────────────────────────────────────────────────────────────────────────
+  
+  - name: load_layer_lazy
+    given: Layer index, StreamingModel
+    when: Layer needed for inference
+    then: |
+      1. Check LRU cache for layer
+         - If found: update access time, return cached
+      2. If cache full:
+         - Evict least recently used layer
+         - Free evicted layer memory
+      3. Load layer from file:
+         - If mmap: get pointer directly
+         - Else: seek + read chunk
+      4. Decompress if needed (ternary unpacking)
+      5. Add to LRU cache
+      6. Return layer data
+    cache_policy: LRU (Least Recently Used)
+    
+  - name: evict_lru_layer
+    given: LRU cache
+    when: Cache full and new layer needed
+    then: |
+      1. Find entry with oldest last_access
+      2. Free layer data memory
+      3. Remove from cache
+      4. Return freed slot
+    complexity: O(cache_size) - linear scan
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # PREFETCHING
+  # ─────────────────────────────────────────────────────────────────────────────
+  
+  - name: prefetch_layers
+    given: Current layer index, StreamingModel
+    when: After loading a layer
+    then: |
+      For i in 1..PREFETCH_LAYERS:
+        next_idx = current + i
+        If next_idx < num_layers and not in cache:
+          - Spawn async load task
+          - Add to prefetch queue
+    benefits: |
+      - Hides I/O latency
+      - Sequential access pattern optimized
+      - Reduces cache misses
+      
+  - name: prefetch_worker
+    given: Prefetch queue, StreamingModel
+    when: Background thread
+    then: |
+      While queue not empty:
+        layer_idx = queue.pop()
+        If not in cache:
+          load_layer_lazy(layer_idx)
+    threading: Single background thread
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # CHUNKED READING
+  # ─────────────────────────────────────────────────────────────────────────────
+  
+  - name: read_chunked
+    given: File handle, offset, size
+    when: Reading large tensor without mmap
+    then: |
+      total_read = 0
+      While total_read < size:
+        chunk = min(CHUNK_SIZE, size - total_read)
+        bytes = read(fd, buffer + total_read, chunk)
+        total_read += bytes
+      Return buffer
+    benefits: |
+      - Avoids large single allocations
+      - Better memory locality
+      - Can be interrupted/cancelled
+      
+  - name: stream_tensor
+    given: Tensor metadata, output buffer
+    when: Loading single tensor
+    then: |
+      1. Seek to tensor offset
+      2. Read in CHUNK_SIZE increments
+      3. Decompress each chunk (if compressed)
+      4. Copy to output buffer
+      5. Return total bytes read
+    memory: O(CHUNK_SIZE) working memory
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # INFERENCE INTEGRATION
+  # ─────────────────────────────────────────────────────────────────────────────
+  
+  - name: get_layer_weights
+    given: Layer index, weight type (wq/wk/wv/wo/gate/up/down)
+    when: Attention or MLP forward pass
+    then: |
+      1. Ensure layer is loaded (load_layer_lazy)
+      2. Return pointer to specific weight tensor
+      3. Update access statistics
+    complexity: O(1) if cached, O(layer_size) if loading
+    
+  - name: forward_with_streaming
+    given: Input tokens, StreamingModel
+    when: Running inference
+    then: |
+      For each layer in 0..num_layers:
+        1. Load layer (lazy, may hit cache)
+        2. Run attention forward
+        3. Run MLP forward
+        4. Prefetch next layers
+        5. (Optional) Evict old layers if memory pressure
+      Return output logits
+    memory: O(MAX_RESIDENT_LAYERS * layer_size)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MEMORY ANALYSIS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+memory_analysis:
+  # Example: Llama-3-8B with streaming
+  llama_8b:
+    total_model_size: "1.9 GB (ternary)"
+    layer_size: "~60 MB"
+    num_layers: 32
+    
+    without_streaming:
+      memory_required: "1.9 GB"
+      load_time: "~5 seconds"
+      
+    with_streaming_4_layers:
+      memory_required: "~300 MB (4 layers + overhead)"
+      initial_load: "~0.5 seconds (header + first 4 layers)"
+      per_layer_load: "~50 ms (if not cached)"
+      
+  # Example: Llama-3-70B with streaming
+  llama_70b:
+    total_model_size: "~16 GB (ternary)"
+    layer_size: "~200 MB"
+    num_layers: 80
+    
+    without_streaming:
+      memory_required: "16 GB"
+      load_time: "~30 seconds"
+      
+    with_streaming_4_layers:
+      memory_required: "~1 GB (4 layers + overhead)"
+      initial_load: "~2 seconds"
+      per_layer_load: "~100 ms (if not cached)"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+tests:
+  - name: test_open_streaming
+    description: Open model file and parse header
+    input: Valid .tri file
+    expected: StreamingModel with correct metadata
+    
+  - name: test_mmap_large_file
+    description: Memory map file > 100MB
+    input: Large .tri file
+    expected: MmapRegion created successfully
+    
+  - name: test_lazy_load_layer
+    description: Load layer on demand
+    input: Layer index 0
+    expected: Layer data loaded, added to cache
+    
+  - name: test_lru_eviction
+    description: Evict oldest layer when cache full
+    input: Load MAX_RESIDENT_LAYERS + 1 layers
+    expected: First layer evicted
+    
+  - name: test_prefetch
+    description: Prefetch next layers
+    input: Load layer 0
+    expected: Layers 1, 2 prefetched
+    
+  - name: test_chunked_read
+    description: Read large tensor in chunks
+    input: 100MB tensor
+    expected: Correct data, peak memory < CHUNK_SIZE * 2
+    
+  - name: test_cache_hit
+    description: Cache hit returns immediately
+    input: Load same layer twice
+    expected: Second load is O(1)
+    
+  - name: test_memory_limit
+    description: Stay within memory limit
+    input: 70B model, 1GB limit
+    expected: Never exceed limit
+    
+  - name: test_forward_streaming
+    description: Full forward pass with streaming
+    input: Prompt tokens
+    expected: Correct output, memory bounded
+    
+  - name: test_concurrent_access
+    description: Multiple threads accessing layers
+    input: Parallel layer requests
+    expected: No race conditions, correct data
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# INTEGRATION POINTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+integration:
+  trinity_format:
+    file: src/vibeec/trinity_format.zig
+    functions: [TriHeader, loadTri]
+    
+  gguf_model:
+    file: src/vibeec/gguf_model.zig
+    functions: [FullModel, LayerWeights]
+    
+  bitnet_pipeline:
+    file: src/vibeec/bitnet_pipeline.zig
+    functions: [Attention, MLP, BitNetLayer]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3
+# ═══════════════════════════════════════════════════════════════════════════════

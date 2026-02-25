@@ -1,0 +1,427 @@
+# ============================================================================
+# Multi-Modal Multi-Agent Orchestration - Cycle 33
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: mm_multiagent_orchestration
+version: "1.0.0"
+language: zig
+module: mm_multiagent_orchestration
+
+description: |
+  Multi-Modal Multi-Agent Orchestration — Unified system combining all 5 modalities
+  (text, vision, voice, code, tools) with multi-agent collaboration (coordinator +
+  specialists) into a single orchestrated pipeline. Cycle 33 culmination: agents
+  process simultaneous multi-modal inputs, share cross-modal context via VSA
+  blackboard, and produce multi-modal outputs collaboratively.
+
+  Architecture:
+    Multi-Modal Input Router:
+      Simultaneous inputs (text + image + audio + code + tool request)
+      → Modality classifier → Route to appropriate specialist agents
+
+    Cross-Modal Agent Mesh:
+      CodeAgent ←→ VisionAgent (code from images)
+      VisionAgent ←→ VoiceAgent (describe images by voice)
+      VoiceAgent ←→ CodeAgent (voice to code)
+      DataAgent ←→ all (file I/O for any modality)
+      SystemAgent ←→ all (execution for any agent)
+
+    Unified Cross-Modal Blackboard:
+      Each agent writes modality-tagged entries
+      Any agent can read any modality's output
+      Cross-modal fusion: bundle(text_entries, vision_entries, voice_entries, ...)
+      Agents can REQUEST cross-modal data from other specialists
+
+    Multi-Modal Workflow Patterns:
+      MM-Pipeline: text→vision→voice (sequential cross-modal)
+      MM-Fan-out: text+image+audio simultaneously to 3 agents
+      MM-Fusion: all agent outputs merged into unified multi-modal response
+      MM-Chain: voice→STT→code_gen→test→TTS_result
+      MM-Debate: CodeAgent vs VisionAgent approach, Coordinator picks
+
+    Example: "Look at image, listen to voice, write code, execute"
+      1. Coordinator receives multi-modal input (image + audio + text)
+      2. Fan-out: VisionAgent(image) | VoiceAgent(audio) | CodeAgent(text context)
+      3. VisionAgent writes scene description to blackboard
+      4. VoiceAgent writes transcript to blackboard
+      5. CodeAgent reads both, generates code matching description + voice command
+      6. SystemAgent executes generated code
+      7. VoiceAgent synthesizes result summary as speech
+      8. Coordinator merges: code + execution result + audio response
+
+  Safety:
+    - Max agents: 8
+    - Max modalities per request: 5
+    - Max cross-modal hops: 4
+    - Max orchestration rounds: 20
+    - All processing local
+
+constants:
+  VSA_DIMENSION: 10000
+  MAX_AGENTS: 8
+  MAX_MODALITIES: 5
+  MAX_CROSS_MODAL_HOPS: 4
+  MAX_ROUNDS: 20
+  MAX_MESSAGES: 1000
+  FUSION_THRESHOLD: 0.30
+  CONSENSUS_THRESHOLD: 0.60
+  CROSS_MODAL_SIMILARITY_MIN: 0.35
+  MM_PIPELINE_MAX_STAGES: 6
+
+types:
+  Modality:
+    enum:
+      - text
+      - vision
+      - voice
+      - code
+      - tool
+
+  MMAgentRole:
+    enum:
+      - mm_coordinator
+      - mm_code_agent
+      - mm_vision_agent
+      - mm_voice_agent
+      - mm_data_agent
+      - mm_system_agent
+
+  MMInput:
+    fields:
+      text: Option<String>
+      image: Option<List<Int>>
+      audio: Option<List<Float>>
+      code: Option<String>
+      tool_request: Option<String>
+      active_modalities: List<Modality>
+      num_modalities: Int
+
+  MMOutput:
+    fields:
+      text: Option<String>
+      audio: Option<List<Float>>
+      code: Option<String>
+      tool_result: Option<String>
+      vision_desc: Option<String>
+      modalities_used: List<Modality>
+
+  CrossModalRequest:
+    fields:
+      requester: MMAgentRole
+      target_agent: MMAgentRole
+      source_modality: Modality
+      target_modality: Modality
+      content_key: String
+      priority: Int
+
+  CrossModalEntry:
+    fields:
+      agent: MMAgentRole
+      modality: Modality
+      key: String
+      value: String
+      hv: Option<List<Int>>
+      timestamp_ms: Int
+      cross_refs: List<String>
+
+  MMBlackboard:
+    fields:
+      entries: List<CrossModalEntry>
+      cross_modal_links: Int
+      total_entries: Int
+      modalities_present: List<Modality>
+
+  MMWorkflowPattern:
+    enum:
+      - mm_pipeline
+      - mm_fan_out
+      - mm_fusion
+      - mm_chain
+      - mm_debate
+
+  MMAssignment:
+    fields:
+      agent: MMAgentRole
+      input_modalities: List<Modality>
+      output_modalities: List<Modality>
+      task: String
+      cross_modal_deps: List<String>
+      status: String
+      quality: Float
+
+  MMOrchPlan:
+    fields:
+      goal: String
+      input: MMInput
+      workflow: MMWorkflowPattern
+      assignments: List<MMAssignment>
+      cross_modal_graph: List<CrossModalRequest>
+      estimated_rounds: Int
+
+  MMRoundResult:
+    fields:
+      round: Int
+      agents_active: Int
+      cross_modal_transfers: Int
+      modalities_processed: List<Modality>
+      quality: Float
+
+  MMOrchResult:
+    fields:
+      goal: String
+      success: Bool
+      output: MMOutput
+      rounds: Int
+      messages: Int
+      agents_used: List<MMAgentRole>
+      modalities_in: List<Modality>
+      modalities_out: List<Modality>
+      cross_modal_transfers: Int
+      conflicts_resolved: Int
+      avg_quality: Float
+      duration_ms: Int
+
+  MMOrchestratorConfig:
+    fields:
+      max_agents: Int
+      max_rounds: Int
+      max_modalities: Int
+      max_cross_hops: Int
+      fusion_threshold: Float
+      auto_cross_modal: Bool
+      verbose: Bool
+
+  MMOrchestrator:
+    fields:
+      config: MMOrchestratorConfig
+      agents: List<MMAgentRole>
+      blackboard: MMBlackboard
+      plan: Option<MMOrchPlan>
+      history: List<MMRoundResult>
+
+behaviors:
+  - name: classify_input_modalities
+    given: Raw multi-modal input (text + image + audio + code + tool)
+    when: Router detects active modalities
+    then: Returns MMInput with classified modalities
+
+  - name: plan_mm_orchestration
+    given: MMInput and goal string
+    when: Coordinator creates cross-modal execution plan
+    then: Returns MMOrchPlan with agent assignments and cross-modal graph
+
+  - name: route_to_specialists
+    given: MMOrchPlan with assignments
+    when: Coordinator dispatches modality-specific work
+    then: Each specialist receives its modality input and cross-modal dependencies
+
+  - name: process_cross_modal_request
+    given: CrossModalRequest from one agent to another
+    when: Agent needs data from another modality
+    then: Target agent provides cross-modal data via blackboard
+
+  - name: write_mm_blackboard
+    given: Agent result with modality tag
+    when: Agent stores cross-modal output
+    then: Entry added with modality, cross-references to related entries
+
+  - name: read_cross_modal
+    given: Agent role and target modality
+    when: Agent reads another modality's output from blackboard
+    then: Returns cross-modal data matching filter
+
+  - name: fuse_mm_outputs
+    given: All agent outputs from blackboard
+    when: Coordinator merges cross-modal results
+    then: Returns MMOutput with unified multi-modal response
+
+  - name: run_mm_pipeline
+    given: Sequence of cross-modal stages
+    when: Executing sequential cross-modal chain
+    then: Each stage transforms modality and passes to next
+
+  - name: run_mm_fan_out
+    given: Multi-modal input to parallel agents
+    when: Executing parallel multi-modal processing
+    then: All agents process simultaneously, results on blackboard
+
+  - name: run_mm_fusion
+    given: All agent results
+    when: Merging multi-modal outputs into unified response
+    then: Returns fused multi-modal output
+
+  - name: run_mm_orchestration
+    given: MMOrchestrator, goal, and multi-modal input
+    when: Full multi-modal multi-agent loop
+    then: Classify → plan → route → execute → cross-modal → fuse → deliver
+
+  - name: get_mm_report
+    given: MMOrchestrator after execution
+    when: Retrieving full execution report
+    then: Returns MMOrchResult with cross-modal metrics
+
+tests:
+  # Input Classification (3)
+  - name: classify_text_only
+    category: input
+    input: "text: 'hello world', no image/audio"
+    expected: "MMInput{modalities:[text], num:1}"
+    description: Classify single-modality text input
+
+  - name: classify_dual_modal
+    category: input
+    input: "text + image (256x256)"
+    expected: "MMInput{modalities:[text,vision], num:2}"
+    description: Classify dual-modality input
+
+  - name: classify_full_5modal
+    category: input
+    input: "text + image + audio + code + tool"
+    expected: "MMInput{modalities:[text,vision,voice,code,tool], num:5}"
+    description: Classify all 5 modalities present
+
+  # Cross-Modal Planning (4)
+  - name: plan_text_to_voice
+    category: planning
+    input: "text input, goal: speak it"
+    expected: "Plan{workflow:mm_pipeline, code→voice}"
+    description: Plan text-to-speech cross-modal pipeline
+
+  - name: plan_vision_voice_code
+    category: planning
+    input: "image+audio, goal: write code"
+    expected: "Plan{workflow:mm_fan_out, vision+voice→code}"
+    description: Plan multi-modal input to code output
+
+  - name: plan_full_multimodal
+    category: planning
+    input: "5 modalities, goal: unified response"
+    expected: "Plan{workflow:mm_fusion, 5 agents}"
+    description: Plan full 5-modality orchestration
+
+  - name: plan_cross_chain
+    category: planning
+    input: "voice→text→code→test→voice"
+    expected: "Plan{workflow:mm_chain, 4 stages}"
+    description: Plan cross-modal chain pipeline
+
+  # Cross-Modal Transfer (4)
+  - name: vision_to_text
+    category: cross_modal
+    input: "VisionAgent scene desc → CodeAgent"
+    expected: "CodeAgent reads vision output from blackboard"
+    description: Vision to text cross-modal transfer
+
+  - name: voice_to_code
+    category: cross_modal
+    input: "VoiceAgent transcript → CodeAgent"
+    expected: "CodeAgent reads voice transcript"
+    description: Voice to code cross-modal transfer
+
+  - name: code_to_voice
+    category: cross_modal
+    input: "CodeAgent output → VoiceAgent TTS"
+    expected: "VoiceAgent speaks code result"
+    description: Code to voice cross-modal transfer
+
+  - name: triple_cross_modal
+    category: cross_modal
+    input: "vision→text→code (3 hops)"
+    expected: "3 cross-modal transfers completed"
+    description: Triple cross-modal transfer chain
+
+  # Blackboard (3)
+  - name: mm_blackboard_write
+    category: blackboard
+    input: "VisionAgent writes scene with modality:vision"
+    expected: "Entry{agent:vision, modality:vision, value:scene}"
+    description: Write modality-tagged entry
+
+  - name: mm_blackboard_cross_read
+    category: blackboard
+    input: "CodeAgent reads modality:vision entries"
+    expected: "Returns vision entries from other agents"
+    description: Cross-modal read from blackboard
+
+  - name: mm_blackboard_fuse
+    category: blackboard
+    input: "Entries from 5 agents, 5 modalities"
+    expected: "Fused HV preserves all modalities"
+    description: Fuse all modality entries into unified context
+
+  # Full Orchestration (6)
+  - name: orch_text_to_speech
+    category: orchestration
+    input: "text: 'hello', goal: speak"
+    expected: "Result{in:[text], out:[voice], success}"
+    description: Text input → voice output orchestration
+
+  - name: orch_image_describe_speak
+    category: orchestration
+    input: "image: sunset.png, goal: describe by voice"
+    expected: "Result{in:[vision], out:[text,voice], cross:2}"
+    description: Image → describe → speak orchestration
+
+  - name: orch_voice_to_code_exec
+    category: orchestration
+    input: "audio: 'write sort fn', goal: generate and run"
+    expected: "Result{in:[voice], out:[code,tool], cross:3}"
+    description: Voice → code → execute orchestration
+
+  - name: orch_dual_input
+    category: orchestration
+    input: "text+image, goal: code from both"
+    expected: "Result{in:[text,vision], out:[code], agents:3}"
+    description: Dual-modal input → code orchestration
+
+  - name: orch_full_5modal
+    category: orchestration
+    input: "text+image+audio+code+tool"
+    expected: "Result{in:5, out:3+, agents:5, success}"
+    description: Full 5-modal multi-agent orchestration
+
+  - name: orch_cross_chain
+    category: orchestration
+    input: "voice→STT→code→test→TTS"
+    expected: "Result{chain:4, cross_modal:4, success}"
+    description: Cross-modal chain orchestration
+
+  # Conflict & Quality (3)
+  - name: mm_conflict_resolve
+    category: conflict
+    input: "CodeAgent vs VisionAgent on approach"
+    expected: "Resolved via cross-modal consensus"
+    description: Cross-modal conflict resolution
+
+  - name: mm_quality_gate
+    category: conflict
+    input: "Cross-modal output quality 0.35"
+    expected: "Below threshold → retry cross-modal"
+    description: Quality gate triggers cross-modal retry
+
+  - name: mm_reassign_modality
+    category: conflict
+    input: "VoiceAgent fails on TTS task"
+    expected: "Reassign: text fallback output"
+    description: Modality fallback on agent failure
+
+  # Performance (3)
+  - name: mm_classify_throughput
+    category: performance
+    input: "1000 multi-modal inputs"
+    expected: ">5000 classif/sec"
+    description: Input classification throughput
+
+  - name: mm_cross_modal_throughput
+    category: performance
+    input: "1000 cross-modal transfers"
+    expected: ">3000 xfer/sec"
+    description: Cross-modal transfer throughput
+
+  - name: mm_orchestration_latency
+    category: performance
+    input: "2-modal 2-agent orchestration"
+    expected: "<100ms overhead"
+    description: Multi-modal orchestration overhead

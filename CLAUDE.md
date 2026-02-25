@@ -34,6 +34,54 @@ zig fmt src/                 # Format Zig code
 
 ---
 
+## TRI COMMANDER
+
+TRI COMMANDER is the primary human-AI interface for Trinity development — a tmux-based chat dashboard with sacred mathematics.
+
+**Launch:**
+```bash
+bash bin/ralph-dashboard-v4      # Start tmux dashboard
+tmux attach -t ralph               # Attach to running session
+```
+
+**Interface Layout:**
+| Window | Key | Purpose |
+|--------|-----|---------|
+| HOME | `Ctrl+b 0` | Chat interface with AI (▲ user, ▼ agent) |
+| Loop | `Ctrl+b 1` | Development cycle status |
+| Tasks | `Ctrl+b 2` | Task queue and progress |
+| Memory | `Ctrl+b 3` | Success history + regression patterns |
+| Log | `Ctrl+b 4` | Real-time logs |
+
+**Trit Pyramid Banner (4 levels):**
+```
+                    +1
+                   -1 +1
+                  +1  0 +1
+                 -1 +1 +1 -1
+             ═════════════════════
+            ▐ T R I N I T Y ▌  φ² + 1/φ² = 3
+             ═════════════════════
+
+    Trit:  -1   0   +1    |  Base: 3  |  φ = 1.6180339...
+    μ = φ^(-4) = 0.0382   |  χ = 0.0618  |  σ = φ  |  ε = 1/3
+    Lucas: 2,1,3,4,7,11,18,29,47,76,123
+```
+
+**Keyboard Shortcuts:**
+- `Ctrl+b 0-4` — Switch windows
+- `Ctrl+b d` — Detach (keep running in background)
+- `Ctrl+b [` — Scroll/copy mode (q to exit, arrows to scroll)
+- `Ctrl+b c` — Create new window
+- `Ctrl+b ,` — Rename window
+
+**Trit Symbols:**
+- `▲` = +1 (positive trit) — User input
+- `▼` = -1 (negative trit) — AI response
+- `●` = 0 (zero trit) — System/neutral
+
+---
+
 ## Architecture
 
 ### Core VSA System (src/)
@@ -178,6 +226,134 @@ zig build vibee -- help                     # Show all commands
 # Or use the built binary directly
 ./zig-out/bin/vibee gen <spec.vibee>
 ./zig-out/bin/vibee chat --model <path>
+```
+
+---
+
+## TRI CLI Commands (v8.27 - STRICT MODE)
+
+**TRI** is the Unified Trinity Command Line Interface — the primary orchestrator for all development workflows.
+
+```bash
+# Build and run
+zig build tri                    # Build TRI binary
+./zig-out/bin/tri                # Interactive REPL mode
+./zig-out/bin/tri <command>      # Run specific command
+./zig-out/bin/tri help           # Show all commands
+```
+
+### Core Commands (Link 1-6)
+
+| Command | Description | Link |
+|---------|-------------|------|
+| `tri chat [--stream] <msg>` | Interactive chat (vision + voice + tools) | - |
+| `tri code [--stream] <prompt>` | Generate code with typing effect | - |
+| `tri gen <spec.vibee>` | Compile VIBEE spec to Zig/Verilog | - |
+| `tri pipeline run <task>` | Execute 17-link Golden Chain (incl TVC) | 0-17 |
+| `tri decompose <task>` | Break task into sub-tasks (Link 4) | 4 |
+| `tri plan <task>` | Generate implementation plan (Link 5) | 5 |
+| `tri spec_create <name>` | Create .vibee spec template (Link 6) | 6 |
+| `tri loop-decide [mode]` | Loop decision: CONTINUE/EXIT (Link 17) | 17 |
+
+### Verification Commands (Link 7-13)
+
+| Command | Description |
+|---------|-------------|
+| `tri verify` | Run tests + benchmarks (Links 7-11) |
+| `tri bench` | Run performance benchmarks |
+| `tri verdict` | Generate toxic verdict (Link 14) |
+
+### SWE Agent Commands
+
+| Command | Description |
+|---------|-------------|
+| `tri fix <file>` | Detect and fix bugs |
+| `tri explain <file\|prompt>` | Explain code or concept |
+| `tri test <file>` | Generate tests |
+| `tri doc <file>` | Generate documentation |
+| `tri refactor <file>` | Suggest refactoring |
+| `tri reason <prompt>` | Chain-of-thought reasoning |
+
+### Git Commands
+
+| Command | Description |
+|---------|-------------|
+| `tri status` | Git status --short |
+| `tri diff` | Git diff |
+| `tri log` | Git log --oneline -10 |
+| `tri commit <message>` | Git add -A && commit |
+
+### TVC (Distributed Learning)
+
+| Command | Description |
+|---------|-------------|
+| `tri tvc-demo` | Run TVC chat demo (distributed learning) |
+| `tri tvc-stats` | Show TVC corpus statistics |
+
+### Demo & Benchmark Commands
+
+Each cycle has `-demo` and `-bench` variants:
+
+| Cycle | Commands | Description |
+|-------|----------|-------------|
+| Multi-Agent | `tri agents-demo`, `tri agents-bench` | Coordination |
+| Long Context | `tri context-demo`, `tri context-bench` | Sliding window |
+| RAG | `tri rag-demo`, `tri rag-bench` | Retrieval |
+| Voice I/O | `tri voice-demo`, `tri voice-bench` | STT+TTS |
+| Code Sandbox | `tri sandbox-demo`, `tri sandbox-bench` | Safe execution |
+| Streaming | `tri stream-demo`, `tri stream-bench` | Multi-modal pipeline |
+| Vision | `tri vision-demo`, `tri vision-bench` | Image analysis |
+| Fine-tuning | `tri finetune-demo`, `tri finetune-bench` | Model adaptation |
+| Multi-Modal | `tri multimodal-demo`, `tri multimodal-bench` | Unified |
+| Tool Use | `tri tooluse-demo`, `tri tooluse-bench` | Tools from any modality |
+| Unified Agent | `tri unified-demo`, `tri unified-bench` | All capabilities |
+| Autonomous | `tri auto-demo`, `tri auto-bench` | Self-directed |
+| Orchestration | `tri orch-demo`, `tri orch-bench` | Coordinator+specialists |
+| MM Orchestration | `tri mmo-demo`, `tri mmo-bench` | Multi-modal agents |
+| Memory | `tri memory-demo`, `tri memory-bench` | Cross-modal learning |
+| Persistent | `tri persist-demo`, `tri persist-bench` | Disk serialization |
+| Spawn | `tri spawn-demo`, `tri spawn-bench` | Dynamic agents |
+| Cluster | `tri cluster-demo`, `tri cluster-bench` | Multi-node |
+| Work-Stealing | `tri worksteal-demo`, `tri worksteal-bench` | Adaptive scheduler |
+| Plugin | `tri plugin-demo`, `tri plugin-bench` | Extension system |
+| Comms | `tri comms-demo`, `tri comms-bench` | Communication protocol |
+| Observe | `tri observe-demo`, `tri observe-bench` | Observability |
+| Consensus | `tri consensus-demo`, `tri consensus-bench` | Coordination |
+| Spec Exec | `tri specexec-demo`, `tri specexec-bench` | Speculative execution |
+| Governor | `tri governor-demo`, `tri governor-bench` | Resource governor |
+| Fed Learn | `tri fedlearn-demo`, `tri fedlearn-bench` | Federated learning |
+| Event Src | `tri eventsrc-demo`, `tri eventsrc-bench` | Event sourcing |
+| Cap Sec | `tri capsec-demo`, `tri capsec-bench` | Capability security |
+| DTXN | `tri dtxn-demo`, `tri dtxn-bench` | Distributed transactions |
+| Cache | `tri cache-demo`, `tri cache-bench` | Adaptive caching |
+| Contract | `tri contract-demo`, `tri contract-bench` | Agent negotiation |
+| Workflow | `tri workflow-demo`, `tri workflow-bench` | Temporal workflows |
+
+### Sacred Mathematics (v2.0)
+
+| Command | Description |
+|---------|-------------|
+| `tri math` | Sacred math dispatcher |
+| `tri constants` | Show φ, π, e, μ, χ, σ, ε... |
+| `tri phi <n>` | Compute φⁿ |
+| `tri fib <n>` | Fibonacci with BigInt |
+| `tri lucas <n>` | Lucas L(n) — L(2)=3=TRINITY |
+| `tri spiral <n>` | φ-spiral coordinates |
+
+### Info Commands
+
+| Command | Description |
+|---------|-------------|
+| `tri info` | System information |
+| `tri version` | Show version |
+| `tri help` | This help message |
+
+### Sacred Logging
+
+All TRI CLI calls are logged to `trinity-nexus/.ralph/sacred_tool_calls.log`:
+```
+[φ] 1 | tri spec-create test_module
+[φ] 2 | tri loop-decide auto
 ```
 
 ---

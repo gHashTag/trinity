@@ -1,0 +1,908 @@
+# SWE Agent - Software Engineering Agent Core
+  // AI Suggestion: Replace magic numbers with named constants  // AI Suggestion: Consider extracting hardcoded strings to constants# Aider/Claude Code inspired agent in VIBEE DSL
+  // Performance Warning:   // AI Suggestion: Code is deeply nested, consider refactoring# Part of VIBEE - AGI Open Source Framework
+
+import "../cli_ui/ansi.vibee" as ansi
+import "../cli_ui/style.vibee" as style
+import "../cli_ui/terminal.vibee" as terminal
+import "../cli_ui/prompt.vibee" as prompt
+import "../cli_ui/spinner.vibee" as spinner
+import "../cli_ui/logo.vibee" as logo
+import "../llm/hybrid_llm.vibee" as llm
+
+# =============================================================================
+# AGENT MODES
+# =============================================================================
+
+let AGENT_MODES = const({
+  "chat": {
+    "name": "Chat",
+    "description": "Interactive conversation with code assistance",
+    "icon": "💬",
+    "system_suffix": "Explain your reasoning and provide helpful context."
+  },
+  "code": {
+    "name": "Code",
+    "description": "Code-only responses, minimal explanations",
+    "icon": "💻",
+    "system_suffix": "Respond only with code. No explanations unless asked."
+  },
+  "architect": {
+    "name": "Architect",
+    "description": "High-level design and planning",
+    "icon": "🏗️",
+    "system_suffix": "Focus on architecture, design patterns, and high-level structure. Create detailed plans before implementation."
+  },
+  "review": {
+    "name": "Review",
+    "description": "Code review and suggestions",
+    "icon": "🔍",
+    "system_suffix": "Review code for bugs, security issues, performance problems, and style. Be thorough but constructive."
+  },
+  "debug": {
+    "name": "Debug",
+    "description": "Debugging assistance",
+    "icon": "🐛",
+    "system_suffix": "Help debug issues systematically. Ask clarifying questions. Suggest diagnostic steps."
+  }
+}
+
+let AGENT_COMMANDS = const({
+  "/help": "Show available commands",
+  "/mode <name>": "Switch agent mode (chat, code, architect, review, debug)",
+  "/clear": "Clear conversation history",
+  "/context": "Show current context (repo map, constitution)",
+  "/map": "Regenerate and display repository map",
+  "/spec": "Check @spec coverage in codebase",
+  "/commit": "Create a git commit with AI-generated message",
+  "/diff": "Show uncommitted changes",
+  "/add <file>": "Add file to agent context",
+  "/drop <file>": "Remove file from context",
+  "/undo": "Undo last code change",
+  "/save": "Save conversation to file",
+  "/load <file>": "Load conversation from file",
+  "/config": "Show/edit agent configuration",
+  "/quit": "Exit agent"
+}
+
+# =============================================================================
+# AGENT STATE
+# =============================================================================
+
+tool create_agent:
+  desc: "Create a new SWE agent instance"
+  @spec "Creates agent": mode != "" → result.mode == mode
+  @spec "Uses default mode": mode == "" → result.mode == "chat"
+
+  mode: str = "chat" one_of("chat", "code", "architect", "review", "debug")
+  lang: str = "en" one_of("en", "ru")
+  llm_chain: map = nil
+  budget: map = nil
+  auto_commit: bool = false
+  verbose: bool = false
+
+  → {
+    # Load constitution if exists
+    constitution = load_constitution()
+
+    # Generate repo map
+    repo_map = generate_repo_map(".")
+
+    # Create LLM chain
+    chain = case llm_chain:
+      nil → llm.create_fallback_chain()
+      c → c {
+      id: generate_id(),
+      mode,
+      lang,
+      constitution,
+      repo_map,
+      context_files: [],
+      history: [],
+      llm_chain,
+      budget,
+      auto_commit,
+      verbose,
+      created_at: now_ms()
+    }
+  }
+
+# =============================================================================
+# MAIN AGENT LOOP
+# =============================================================================
+
+tool run_agent:
+  desc: "Start the interactive SWE agent REPL"
+  @spec "Runs agent": mode != "" → result.exit_code == 0
+
+  mode: str = "chat"
+  lang: str = "en"
+  single_shot: str = ""
+
+  → {
+    # Create agent
+    agent = lang · create_agent
+
+    # Show welcome
+    show_welcome(agent)
+
+    # Single-shot mode or interactive
+    case single_shot:
+      "" → run_repl(agent)
+      query → {
+        result = query · process_query
+        terminal.println(result.response)
+        { exit_code: 0, response: result.response }
+      }
+  }
+
+run_repl(agent: map) → map:
+  # Show prompt
+  show_prompt(agent)
+
+  # Read input
+  input = terminal.read_line()
+
+  case input:
+    "" → run_repl(agent)
+    "/quit" | "/exit" | "/q" → {
+      terminal.println("")
+      terminal.println(ansi.vibee_muted("Goodbye! 👋"))
+      { exit_code: 0 }
+    }
+    cmd if "/" · starts_with → {
+      # Process command
+      result = cmd · process_command
+      run_repl(result.agent)
+    }
+    query → {
+      # Process natural language query
+      result = query · process_query
+
+      # Show response
+      terminal.println("")
+      terminal.println(result.response)
+      terminal.println("")
+
+      # Update history
+      updated_agent = {agent..., history: [
+          ...agent.history,
+          { role: "type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}", content: query },
+          { role: "assistant", content: result.response }
+        ]
+      }
+
+      run_repl(updated_agent)
+    }
+
+# =============================================================================
+# QUERY PROCESSING
+# =============================================================================
+
+process_query(agent: map, query: str) → map:
+  # Build system prompt
+  system = build_system_prompt(agent)
+
+  # Build context
+  context = build_context(agent)
+
+  # Prepare messages
+  messages = [
+    ...agent.history,
+    { role: "type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}", content: "\n\n {query}{context}" }
+  ]
+
+  # Show thinking indicator
+  spinner_id = spinner.spinner_start(
+    t(agent.lang, "agent", "thinking"),
+    style: "vibee"
+  ).id
+
+  # Call LLM
+  result = llm.chain: agent.llm_chain,
+    system,
+    budget: agent.budget,
+    show_provider: agent.verbose,
+    verbose: agent.verbose
+   · hybrid_chat
+
+  spinner.status: "none" · spinner_stop
+
+  case result.success:
+    true → {
+      response = result.content
+
+      # Handle code blocks - apply changes if detected
+      case detect_code_changes(response):
+        { has_changes: true, changes } → {
+          apply_result = changes · apply_code_changes
+          case apply_result.applied:
+            true → {
+              terminal.println(ansi.vibee_success("Applied {to_string}"(length(changes)) + " code changes"))
+              case agent.auto_commit:
+                true → query · auto_commit_changes
+                false → nil
+            }
+            false → nil
+        }
+        _ → nil { success: true, response, agent }
+    }
+    false → {
+      { success: false, response: ansi.vibee_error("Error: {result}".error), agent }
+    }
+
+# =============================================================================
+# COMMAND PROCESSING
+# =============================================================================
+
+process_command(agent: map, cmd: str) → map:
+  parts = split(trim(cmd), " ")
+  command = parts[0]
+  args = 1 · drop
+
+  case command:
+    "/help" → {
+      show_help(agent)
+      { agent }
+    }
+    "/mode" → {
+      new_mode = args[0] ?? "chat"
+      case AGENT_MODES[new_mode]:
+        nil → {
+          terminal.println(ansi.vibee_error("Unknown mode: {new_mode}"))
+          terminal.println(ansi.vibee_muted("Available: chat, code, architect, review, debug"))
+          { agent }
+        }
+        mode_info → {
+          terminal.println(ansi.vibee_success("Switched to {mode_info}"." {mode_info}{icon}"." mode {name}"))
+          { agent: {agent..., mode: new_mode } }
+        }
+    }
+    "/clear" → {
+      terminal.clear()
+      show_welcome(agent)
+      { agent: {agent..., history: [] } }
+    }
+    "/context" → {
+      show_context(agent)
+      { agent }
+    }
+    "/map" → {
+      spinner_id = spinner.spinner_start("Generating repo map...", style: "dots").id
+      new_map = generate_repo_map(".")
+      spinner.message: "Repo map generated" · spinner_success
+      show_repo_map(new_map)
+      { agent: {agent..., repo_map: new_map } }
+    }
+    "/spec" → {
+      check_spec_coverage(agent)
+      { agent }
+    }
+    "/commit" → {
+      args · create_commit
+      { agent }
+    }
+    "/diff" → {
+      show_diff(agent)
+      { agent }
+    }
+    "/add" → {
+      file = " " · join
+      file · add_context_file
+    }
+    "/drop" → {
+      file = " " · join
+      { agent: {agent..., context_files: filter(agent.context_files, { it != file } } }
+    }
+    "/config" → {
+      show_config(agent)
+      { agent }
+    }
+    _ → {
+      terminal.println(ansi.vibee_warning("Unknown command: {command}"))
+      terminal.println(ansi.vibee_muted("Type /help for available commands"))
+      { agent }
+    }
+
+# =============================================================================
+# SYSTEM PROMPT BUILDING
+# =============================================================================
+
+build_system_prompt(agent: map) → str:
+  mode_info = AGENT_MODES[agent.mode]
+
+  base = """
+You are VIBEE, an expert AI software engineering assistant.
+You help developers write, understand, debug, and improve code.
+
+## Your Capabilities:
+- Understand and navigate codebases
+- Write clean, efficient, well-tested code
+- Debug issues and suggest fixes
+- Explain complex concepts clearly
+- Follow project conventions and best practices
+
+## Current Mode: ""{mode_info}"."{name}""
+""{mode_info}"."{system_suffix}""
+
+## Project Constitution:
+""{agent}"."{constitution}""
+
+## Guidelines:
+- Always respect the project's coding conventions
+- Write @spec blocks for new tools (TDD-first)
+- Be concise but thorough
+- Ask clarifying questions when needed
+- Suggest improvements proactively
+"""
+
+  base
+
+build_context(agent: map) → str:
+  context = ""
+
+  # Add repo map summary
+  case agent.repo_map.summary != "":
+    true → context = "## Repository Structure:\n {agent}{context}".repo_map."\n\n {summary}"
+    false → nil
+
+  # Add context files
+  case agent.context_files != []:
+    true → {
+      context = "## Context Files:\n {context}"
+      agent.context_files · each(fn(file) {
+        content = read_file(file)
+        context = "### {file}{context}\n```\n {content}\n```\n\n"
+      }
+    }
+    false → nil
+
+  context
+
+# =============================================================================
+# CODE CHANGE DETECTION & APPLICATION
+# =============================================================================
+
+detect_code_changes(response: str) → { has_changes: bool, changes: list[map] }:
+  # Look for code blocks with file paths
+  # Pattern: ```language:path/to/file.ext
+  blocks = extract_code_blocks(response)
+
+  changes = blocks
+    · filter({ it.file_path != "" }
+    · map(fn(b) {
+      {
+        file: b.file_path,
+        content: b.content,
+        language: b.language,
+        action: detect_change_action(b)
+      }
+    }
+
+  { has_changes: length(changes) > 0, changes }
+
+extract_code_blocks(text: str) → list[map]:
+  # Simple regex-like extraction
+  # Looking for ```language:filepath\n...\n```
+  blocks = []
+  remaining = text
+
+  loop:
+    case find_next_code_block(remaining):
+      nil → blocks { block: b, rest: r } → {
+        blocks = [...blocks, b]
+        remaining = r
+        continue loop
+      }
+
+find_next_code_block(text: str) → { block: map, rest: str } | nil:
+  start_idx = "```" · index_of
+  case start_idx:
+    -1 → nil
+    i → {
+      after_ticks = i + 3, length(text · substring)
+      newline_idx = "\n" · index_of
+
+      case newline_idx:
+        -1 → nil
+        nl → {
+          header = 0, nl · substring
+          after_header = nl + 1, length(after_ticks · substring)
+
+          end_idx = "```" · index_of
+          case end_idx:
+            -1 → nil
+            e → {
+              content = 0, e · substring
+              rest = e + 3, length(after_header · substring)
+
+              # Parse header: language:filepath or just language { language, file_path } = parse_code_header(header)
+
+              {
+                block: {
+                  language,
+                  file_path,
+                  content: trim(content)
+                },
+                rest
+              }
+            }
+        }
+    }
+
+parse_code_header(header: str) → { language: str, file_path: str }:
+  parts = split(trim(header), ":")
+  case parts:
+    [lang, path] → { language: lang, file_path }
+    [lang] → { language: lang, file_path: "" }
+    _ → { language: "", file_path: "" }
+
+detect_change_action(block: map) → str:
+  case file_exists(block.file_path):
+    true → "modify"
+    false → "create"
+
+apply_code_changes(agent: map, changes: list[map]) → { applied: bool, errors: list[str] }:
+  errors = []
+
+  changes · each(fn(change) {
+    case change.action:
+      "create" → {
+        write_file(change.file, change.content)
+        terminal.println(ansi.vibee_success("  Created: {change}".file))
+      }
+      "modify" → {
+        # Backup original
+        backup_file(change.file)
+        write_file(change.file, change.content)
+        terminal.println(ansi.vibee_success("  Modified: {change}".file))
+      }
+      _ → nil
+  }
+
+  { applied: length(errors) == 0, errors }
+
+# =============================================================================
+# GIT INTEGRATION
+# =============================================================================
+
+auto_commit_changes(agent: map, query: str) → nil:
+  # Generate commit message
+  spinner_id = spinner.spinner_start("Generating commit message...", style: "dots").id
+
+  result = llm.hybrid_chat(
+    messages: [{
+      role: "type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}",
+      content: """
+Generate a concise git commit message for this change.
+Use conventional commits format: type(scope): description
+
+type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} request: ""{query}""
+
+Respond with ONLY the commit message, nothing else.
+"""
+    }],
+    chain: agent.llm_chain,
+    temperature: 0.3
+  )
+
+  case result.success:
+    true → {
+      message = trim(result.content)
+      spinner.message: "Commit: {message}" · spinner_success
+
+      # Execute git commit
+      ffi("git_ffi", "add_all")
+      ffi("git_ffi", "commit", message)
+    }
+    false → spinner.message: "Failed to generate message" · spinner_error
+
+create_commit(agent: map, args: list[str]) → nil:
+  message = case args:
+    [] → {
+      # Generate commit message from diff
+      diff = ffi("git_ffi", "diff_staged")
+      case diff:
+        "" → {
+          terminal.println(ansi.vibee_warning("No staged changes"))
+          nil
+        }
+        d → {
+          # Use LLM to generate message
+          "Create commit for these changes:\n {d}" · auto_commit_changes
+        }
+    }
+    m → {
+      # Use provided message
+      ffi("git_ffi", "add_all")
+      ffi("git_ffi", "commit", " " · join)
+    }
+
+show_diff(agent: map) → nil:
+  diff = ffi("git_ffi", "diff")
+  case diff:
+    "" → terminal.println(ansi.vibee_muted("No uncommitted changes"))
+    d → terminal.println(d)
+
+# =============================================================================
+# REPO MAP & SPEC COVERAGE
+# =============================================================================
+
+generate_repo_map(root: str) → map:
+  # Scan for .vibee and .gleam files
+  files = ffi("file_ffi", "glob", root, "**/*.{vibee,gleam}")
+
+  # Extract definitions
+  definitions = files · flat_map(fn(file) {
+    content = read_file(file)
+    content · extract_definitions
+  }
+
+  # Calculate spec coverage
+  tools = definitions · filter({ it.type == "tool" }
+  tools_with_spec = tools · filter({ it.has_spec }
+  coverage = case length(tools) > 0:
+    true → (length(tools_with_spec) * 100) / length(tools)
+    false → 100
+
+  # Build summary
+  summary = definitions · build_repo_summary
+
+  {
+    root,
+    files,
+    definitions,
+    spec_coverage,
+    summary
+  }
+
+extract_definitions(file: str, content: str) → list[map]:
+  definitions = []
+
+  # Find tool definitions
+  lines = "\n" · split
+  lines · enumerate · each(fn(item) {
+    i = item.index
+    line = item.value
+
+    case starts_with(trim(line), "tool "):
+      true → {
+        name = "tool " · extract_name
+        has_spec = i · has_spec_in_range
+        definitions = [...definitions, {
+          type: "tool",
+          name,
+          file,
+          line: i + 1,
+          has_spec
+        }]
+      }
+      false → nil
+
+    case starts_with(trim(line), "fn "):
+      true → {
+        name = "fn " · extract_name
+        definitions = [...definitions, {
+          type: "fn",
+          name,
+          file,
+          line: i + 1,
+          has_spec: false
+        }]
+      }
+      false → nil
+
+    case starts_with(trim(line), "scene "):
+      true → {
+        name = "scene " · extract_name
+        definitions = [...definitions, {
+          type: "scene",
+          name,
+          file,
+          line: i + 1,
+          has_spec: false
+        }]
+      }
+      false → nil
+  }
+
+  definitions
+
+build_repo_summary(files: list[str], definitions: list[map]) → str:
+  tools = definitions · filter({ it.type == "tool" } · length
+  fns = definitions · filter({ it.type == "fn" } · length
+  scenes = definitions · filter({ it.type == "scene" } · length
+
+  """
+Files: ""{to_string}"(length(files)) + """
+Tools: ""{to_string}"(tools) + """
+Functions: ""{to_string}"(fns) + """
+Scenes: ""{to_string}"(scenes) + """
+"""
+
+check_spec_coverage(agent: map) → nil:
+  terminal.println("")
+  terminal.println(ansi.vibee_primary("@spec Coverage Report"))
+  terminal.println(ansi.vibee_muted("────────────────────────────────"))
+  terminal.println("")
+
+  coverage = agent.repo_map.spec_coverage
+  color = case coverage:
+    c if c >= 80 → "green"
+    c if c >= 50 → "yellow"
+    _ → "red"
+
+  terminal.println("Coverage: {ansi}".fg(to_string(coverage) + "%", color))
+  terminal.println("")
+
+  # Show tools without specs
+  tools_without = agent.repo_map.definitions
+    · filter({ it.type == "tool" && !it.has_spec }
+
+  case tools_without:
+    [] → terminal.println(ansi.vibee_success("All tools have @spec blocks! ✓"))
+    ts → {
+      terminal.println(ansi.vibee_warning("Tools missing @spec:"))
+      ts · each(fn(t) {
+        terminal.println("  {ansi}".vibee_muted("○") + " {t}"." ({t}{name}".":{to_string}{file}"(t.line) + ")")
+      }
+    }
+
+# =============================================================================
+# UI HELPERS
+# =============================================================================
+
+show_welcome(agent: map) → nil:
+  terminal.println(logo.logo("compact", colored: true, with_tagline: false, lang: agent.lang))
+  terminal.println("")
+
+  mode_info = AGENT_MODES[agent.mode]
+  terminal.println(ansi.vibee_muted("Mode: ") + mode_info." {mode_info}{icon}".name)
+  terminal.println(ansi.vibee_muted("Type /help for commands, /quit to exit"))
+  terminal.println("")
+
+show_prompt(agent: map) → nil:
+  mode_info = AGENT_MODES[agent.mode]
+  mode_indicator = ansi.fg(" {lowercase}"(agent.mode), "cyan")
+
+  terminal.dbg(ansi.bold(ansi.fg("vibee", "magenta")) + mode_indicator ++ ansi.vibee_muted("> "))
+
+show_help(agent: map) → nil:
+  terminal.println("")
+  terminal.println(ansi.vibee_primary("VIBEE SWE Agent Commands"))
+  terminal.println(ansi.vibee_muted("────────────────────────────────"))
+  terminal.println("")
+
+  AGENT_COMMANDS · each(desc · fn {
+    terminal.println("  {ansi}".vibee_secondary(cmd) + "  {ansi}".vibee_muted(desc))
+  }
+
+  terminal.println("")
+  terminal.println(ansi.vibee_muted("Or just type naturally to chat with the agent."))
+  terminal.println("")
+
+show_context(agent: map) → nil:
+  terminal.println("")
+  terminal.println(ansi.vibee_primary("Current Context"))
+  terminal.println(ansi.vibee_muted("────────────────────────────────"))
+  terminal.println("")
+
+  terminal.println(ansi.vibee_secondary("Mode: ") + agent.mode)
+  terminal.println(ansi.vibee_secondary("Language: ") + agent.lang)
+  terminal.println(ansi.vibee_secondary("History: ") + to_string(length(agent.history)) + " messages")
+  terminal.println(ansi.vibee_secondary("Spec coverage: ") + to_string(agent.repo_map.spec_coverage) + "%")
+  terminal.println("")
+
+  case agent.context_files:
+    [] → terminal.println(ansi.vibee_muted("No files in context"))
+    files → {
+      terminal.println(ansi.vibee_secondary("Context files:"))
+      files · each(fn(f) {
+        terminal.println("  • {f}")
+      }
+    }
+
+  terminal.println("")
+
+show_repo_map(repo_map) → nil:
+  terminal.println("")
+  terminal.println(ansi.vibee_primary("Repository Map"))
+  terminal.println(ansi.vibee_muted("────────────────────────────────"))
+  terminal.println("")
+  terminal.println(repo_map.summary)
+  terminal.println("")
+
+show_config(agent: map) → nil:
+  terminal.println("")
+  terminal.println(ansi.vibee_primary("Agent Configuration"))
+  terminal.println(ansi.vibee_muted("────────────────────────────────"))
+  terminal.println("")
+  terminal.println(ansi.vibee_secondary("Auto-commit: ") + to_string(agent.auto_commit))
+  terminal.println(ansi.vibee_secondary("Verbose: ") + to_string(agent.verbose))
+  terminal.println(ansi.vibee_secondary("LLM chain: ") + to_string(length(agent.llm_chain.models)) + " models")
+  terminal.println("")
+
+add_context_file(agent: map, file: str) → map:
+  case file_exists(file):
+    true → {
+      terminal.println(ansi.vibee_success("Added to context: {file}"))
+      { agent: {agent..., context_files: [...agent.context_files, file] } }
+    }
+    false → {
+      terminal.println(ansi.vibee_error("File not found: {file}"))
+      { agent }
+    }
+
+# =============================================================================
+# CONSTITUTION LOADING
+# =============================================================================
+
+load_constitution() → str:
+  case file_exists("VIBEE.md"):
+    true → read_file("VIBEE.md")
+    false → default_constitution()
+
+default_constitution() → str:
+  """
+## Default VIBEE Constitution
+
+### @spec Requirements
+- Every tool should have at least one @spec block
+- Cover both success and error cases
+
+### Code Style
+- Use pattern matching
+- Prefer pipelines over nested calls
+- Keep functions small and focused
+
+### Git Workflow
+- Use conventional commits
+- Write meaningful commit messages
+"""
+
+# =============================================================================
+# I18N
+# =============================================================================
+
+let TRANSLATIONS = const({
+  "en": {
+    "agent": {
+      "thinking": "Thinking...",
+      "applying": "Applying changes...",
+      "committed": "Changes committed"
+    }
+  },
+  "ru": {
+    "agent": {
+      "thinking": "Думаю...",
+      "applying": "Применяю изменения...",
+      "committed": "Изменения закоммичены"
+    }
+  }
+}
+
+t(lang: str, section: str, key: str) → str:
+  translations = TRANSLATIONS[lang] ?? TRANSLATIONS["en"]
+  section_data = translations[section] ?? {}
+  section_data[key] ?? key
+
+# =============================================================================
+# HELPER FUNCTIONS
+# =============================================================================
+
+generate_id() → str: ffi("spinner_ffi", "generate_id")
+now_ms() → int: ffi("spinner_ffi", "now_ms")
+read_file(path: str) → str: ffi("file_ffi", "read", path)
+write_file(path: str, content: str) → nil: ffi("file_ffi", "write", path, content)
+file_exists(path: str) → bool: ffi("file_ffi", "exists", path)
+backup_file(path: str) → nil: ffi("file_ffi", "backup", path)
+
+join(list[str], sep: str) → str:
+  case list:
+    [] → ""
+    [x] → x
+    [x, ...rest] → x ++ sep + sep · join
+
+enumerate(list[a]) → list[{ index: int, value: a }]:
+  0 · enumerate_helper
+
+enumerate_helper(list[a], i: int) → list[{ index: int, value: a }]:
+  case list:
+    [] → []
+    [head, ...tail] → [{ index: i, value: head }, ...i + 1 · enumerate_helper]
+
+has_spec_in_range(lines: list[str], tool_line: int) → bool:
+  # Check 5 lines after tool definition for @spec
+  lines
+    · drop(tool_line)
+    · take(5)
+    · any({ "@spec" · contains }
+
+extract_name(line: str, prefix: str) → str:
+  after_prefix = index_of(line, prefix · substring + length(prefix), length(line))
+  # Take until : or (
+  parts = ":" · split
+  name_part = parts[0]
+  parts2 = "(" · split
+  trim(parts2[0])
+
+flat_map(list[a], f: fn(a) → list[b]) → list[b]:
+  list · map(f) · flatten
+
+flatten(list[list[a]]) → list[a]:
+  case list:
+    [] → []
+    [first, ...rest] → first ++ flatten(rest)
+
+# v8.0
+
+# v10.0 - ML-Powered Migration

@@ -1,0 +1,421 @@
+# YAML DSL Specification for VIBEE Framework
+# Version: 1.0.0
+# This file defines the complete YAML-based DSL for VIBEE plugins
+
+# ==============================================================================
+# PLUGIN DEFINITION
+# ==============================================================================
+
+plugin:
+  # Required fields
+  name: string              # Plugin name (lowercase, underscore)
+  version: semver           # Semantic version (e.g., "1.0.0")
+  category: string          # Category (e.g., "mcp", "telegram", "ai")
+  description: string       # Short description
+  
+  # Optional fields
+  author: string            # Author name
+  license: string           # License (e.g., "MIT", "Apache-2.0")
+  homepage: url             # Project homepage
+  repository: url           # Git repository
+  keywords: [string]        # Search keywords
+  
+  # Metadata
+  metadata:
+    stability: enum         # alpha | beta | stable | deprecated
+    maturity: enum          # experimental | production
+    performance: enum       # low | medium | high
+    complexity: enum        # simple | moderate | complex
+
+# ==============================================================================
+# DEPENDENCIES
+# ==============================================================================
+
+dependencies:
+  # Plugin dependencies
+  - plugin: string          # Plugin path (e.g., "core/types")
+    version: string         # Version constraint (e.g., ">=1.0.0", "^2.0.0")
+    optional: bool          # Optional dependency
+    features: [string]      # Required features
+  
+  # External dependencies (Gleam packages)
+  - package: string         # Package name from Hex
+    version: string         # Version constraint
+
+# ==============================================================================
+# IMPORTS
+# ==============================================================================
+
+imports:
+  # Import types from other plugins
+  - from: string            # Plugin path
+    types: [string]         # Type names to import
+    alias: string           # Optional alias
+  
+  # Import functions
+  - from: string
+    functions: [string]
+    alias: string
+
+# ==============================================================================
+# EXPORTS
+# ==============================================================================
+
+exports:
+  # What this plugin exports
+  types: [string]           # Exported type names
+  functions: [string]       # Exported function names
+  behaviors: [string]       # Exported behaviors
+  
+  # Export configuration
+  public: bool              # Make all exports public
+  selective: bool           # Only export listed items
+
+# ==============================================================================
+# TYPES
+# ==============================================================================
+
+types:
+  # Type definition
+  - name: string            # Type name (PascalCase)
+    kind: enum              # record | enum | alias | opaque
+    visibility: enum        # public | private
+    description: string     # Type description
+    
+    # For record types
+    fields:
+      - name: string        # Field name (snake_case)
+        type: string        # Field type
+        description: string # Field description
+        required: bool      # Is field required
+        default: any        # Default value
+        constraints: [string] # Validation constraints
+    
+    # For enum types
+    variants:
+      - name: string        # Variant name
+        fields: [...]       # Variant fields (same as record fields)
+    
+    # For alias types
+    alias_of: string        # Type being aliased
+    
+    # Type properties
+    implements: [string]    # Traits/interfaces (Debug, Eq, Clone, etc.)
+    derives: [string]       # Auto-derive traits
+    
+    # Validation rules
+    validation:
+      - rule: string        # Validation expression
+        message: string     # Error message
+    
+    # Documentation
+    docs:
+      description: string   # Detailed description
+      examples: [string]    # Usage examples
+      see_also: [string]    # Related types
+
+# ==============================================================================
+# FUNCTIONS
+# ==============================================================================
+
+functions:
+  # Function definition
+  - name: string            # Function name (snake_case)
+    visibility: enum        # public | private
+    description: string     # Function description
+    
+    # Signature
+    signature:
+      params:
+        - name: string      # Parameter name
+          type: string      # Parameter type
+          description: string # Parameter description
+          default: any      # Default value
+          constraints: [string] # Validation constraints
+      
+      returns:
+        type: string        # Return type
+        description: string # Return description
+      
+      generic_params: [string] # Generic type parameters
+    
+    # Implementation
+    implementation:
+      type: enum            # declarative | external | inline
+      
+      # For declarative implementation
+      steps:
+        - action: string    # Step action
+          params: object    # Step parameters
+      
+      # For external implementation
+      language: string      # gleam | erlang | javascript
+      file: string          # File path
+      
+      # For inline implementation
+      code: string          # Inline code
+    
+    # Function properties
+    properties:
+      pure: bool            # Is function pure (no side effects)
+      idempotent: bool      # Same input → same output
+      async: bool           # Is async function
+      memoize: bool         # Cache results
+      tail_recursive: bool  # Tail call optimizable
+    
+    # Error handling
+    errors:
+      - type: string        # Error type
+        when: string        # When this error occurs
+        recovery: string    # How to recover
+    
+    # Performance
+    performance:
+      complexity: string    # Time complexity (e.g., "O(n)")
+      space: string         # Space complexity
+      benchmarks:
+        - input_size: int
+          time_ms: float
+    
+    # Documentation
+    docs:
+      description: string   # Detailed description
+      examples:
+        - code: string      # Example code
+          result: string    # Expected result
+      notes: [string]       # Additional notes
+      warnings: [string]    # Warnings
+      see_also: [string]    # Related functions
+
+# ==============================================================================
+# BEHAVIORS
+# ==============================================================================
+
+behaviors:
+  # Behavior definition (Given-When-Then)
+  - name: string            # Behavior name
+    description: string     # Behavior description
+    
+    # Given-When-Then
+    given: string           # Preconditions
+    when: string            # Action/trigger
+    then: string            # Expected outcome
+    
+    # Examples
+    examples:
+      - name: string        # Example name
+        input: object       # Input data
+        output: object      # Expected output
+        description: string # Example description
+    
+    # Properties
+    properties:
+      idempotent: bool
+      pure: bool
+      async: bool
+    
+    # Related items
+    implements: [string]    # Functions implementing this behavior
+    tests: [string]         # Tests for this behavior
+    
+    # Documentation
+    docs:
+      description: string
+      scenarios: [string]   # Usage scenarios
+      edge_cases: [string]  # Edge cases to consider
+
+# ==============================================================================
+# TESTS
+# ==============================================================================
+
+tests:
+  # Test definition
+  - name: string            # Test name
+    description: string     # Test description
+    type: enum              # unit | integration | e2e | property
+    
+    # Setup
+    setup:
+      mocks:
+        - target: string    # What to mock
+          method: string    # Method to mock
+          returns: any      # Mock return value
+      
+      fixtures:
+        - name: string      # Fixture name
+          value: any        # Fixture value
+      
+      state:
+        - key: string       # State key
+          value: any        # State value
+    
+    # Test cases
+    cases:
+      - name: string        # Case name
+        description: string # Case description
+        
+        # Given-When-Then
+        given: [string]     # Preconditions
+        when:
+          action: string    # Action to perform
+          params: object    # Action parameters
+        then: [string]      # Assertions
+        
+        # Expectations
+        expect:
+          result: any       # Expected result
+          error: string     # Expected error
+          state: object     # Expected state changes
+          calls:            # Expected function calls
+            - function: string
+              times: int
+              with: object
+    
+    # Teardown
+    teardown:
+      - action: string      # Cleanup action
+    
+    # Test properties
+    properties:
+      timeout_ms: int       # Test timeout
+      retry: int            # Retry count
+      skip: bool            # Skip this test
+      only: bool            # Run only this test
+    
+    # Documentation
+    docs:
+      description: string
+      rationale: string     # Why this test exists
+
+# ==============================================================================
+# CONFIGURATION
+# ==============================================================================
+
+config:
+  # Feature flags
+  features:
+    - name: string          # Feature name
+      enabled: bool         # Is enabled
+      description: string   # Feature description
+  
+  # Compiler options
+  compiler:
+    optimizations:
+      - tail_call           # Tail call optimization
+      - constant_folding    # Constant folding
+      - dead_code           # Dead code elimination
+      - inline              # Function inlining
+    
+    warnings:
+      level: enum           # none | low | medium | high | strict
+      as_errors: bool       # Treat warnings as errors
+    
+    output:
+      format: enum          # gleam | erlang | javascript
+      target: enum          # beam | javascript | native
+  
+  # Runtime options
+  runtime:
+    async: bool             # Enable async runtime
+    parallelism: int        # Max parallel tasks
+    memory_limit_mb: int    # Memory limit
+  
+  # Development options
+  development:
+    hot_reload: bool        # Enable hot reload
+    debug: bool             # Enable debug mode
+    profiling: bool         # Enable profiling
+    tracing: bool           # Enable tracing
+
+# ==============================================================================
+# DOCUMENTATION
+# ==============================================================================
+
+documentation:
+  # README content
+  readme: string            # Markdown content
+  
+  # Guides
+  guides:
+    - title: string         # Guide title
+      content: string       # Markdown content
+      order: int            # Display order
+  
+  # API documentation
+  api:
+    auto_generate: bool     # Auto-generate from code
+    format: enum            # markdown | html | json
+  
+  # Examples
+  examples:
+    - name: string          # Example name
+      description: string   # Example description
+      code: string          # Example code
+      output: string        # Expected output
+  
+  # Changelog
+  changelog:
+    - version: semver       # Version
+      date: date            # Release date
+      changes:
+        - type: enum        # added | changed | deprecated | removed | fixed | security
+          description: string
+
+# ==============================================================================
+# COMPLETENESS CRITERIA
+# ==============================================================================
+
+completeness:
+  # Coverage requirements
+  test_coverage: percentage # Minimum test coverage (e.g., "80%")
+  doc_coverage: percentage  # Minimum documentation coverage
+  
+  # Implementation status
+  all_behaviors_implemented: bool
+  all_functions_implemented: bool
+  all_tests_passing: bool
+  
+  # Quality gates
+  quality:
+    no_warnings: bool       # No compiler warnings
+    no_todos: bool          # No TODO comments
+    no_fixmes: bool         # No FIXME comments
+    linter_passing: bool    # Linter passes
+  
+  # Performance requirements
+  performance:
+    max_response_time_ms: int
+    max_memory_mb: int
+    min_throughput: int
+
+# ==============================================================================
+# METADATA
+# ==============================================================================
+
+metadata:
+  # Build information
+  build:
+    timestamp: datetime     # Build timestamp
+    commit: string          # Git commit hash
+    branch: string          # Git branch
+    builder: string         # Who/what built this
+  
+  # Statistics
+  stats:
+    lines_of_code: int      # Total LOC
+    functions: int          # Number of functions
+    types: int              # Number of types
+    tests: int              # Number of tests
+    coverage: percentage    # Test coverage
+  
+  # Tags
+  tags: [string]            # Arbitrary tags
+  
+  # Custom metadata
+  custom: object            # Any custom metadata
+
+# ==============================================================================
+# EXAMPLES
+# ==============================================================================
+
+# See YAML_DSL_MIGRATION.md for complete examples

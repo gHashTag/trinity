@@ -1,0 +1,69 @@
+name: babi_pathfinding
+version: "1.0.0"
+language: zig
+module: babi_pathfinding
+description: "Level 11.18 — bAbI Pathfinding (Tasks 4-5). Implements spatial navigation over an 8-room grid using per-pair individual edge memories with permutation-based directional encoding. bind(from, permute(to, shift)) breaks bind commutativity, enabling distinct N/S/E/W queries. Task 4 tests 8 two-step paths, Task 5 tests 6 three-step paths. All 14/14 (100%). Key insight: bipolar bind is commutative so permutation is required to distinguish A→B from B→A."
+
+constants:
+  DIM: 1024
+  NUM_ROOMS: 8
+  SHIFT_N: 1
+  SHIFT_S: 2
+  SHIFT_E: 3
+  SHIFT_W: 4
+
+types:
+  DirEdge:
+    fields:
+      from: Int
+      to: Int
+      description: "Directional edge in the spatial graph. from and to are room indices."
+  PathResult:
+    fields:
+      task4_correct: Int
+      task4_total: Int
+      task5_correct: Int
+      task5_total: Int
+      description: "Results of pathfinding tasks 4 and 5."
+
+behaviors:
+  - name: permutationDirectionalEncoding
+    given: 8 rooms connected by N/S/E/W edges in a grid layout. Bipolar bind is commutative (bind(A,B) = bind(B,A)) so direction cannot be encoded with plain bind alone.
+    when: Encode each directed edge as bind(from, permute(to, shift)) with a unique permutation shift per direction (N=1, S=2, E=3, W=4). Query by unbinding from, then comparing against permute(candidate, shift).
+    then: Permutation breaks commutativity — bind(A, permute(B,1)) ≠ bind(B, permute(A,1)). Each individual edge memory gives sim=1.0 for the correct match. All 18 edges (4N+4S+5E+5W) correctly distinguishable.
+
+  - name: twoStepPathfinding
+    given: 8 two-step path queries across the spatial grid (e.g., bedroom→N→kitchen→E→office)
+    when: Execute two sequential directional queries using per-pair edge memories with permutation encoding
+    then: Task 4 achieves 8/8 (100%) — each step correctly identifies the next room via unbind + permuted comparison
+
+  - name: threeStepPathfinding
+    given: 6 three-step path queries including south and west directions (e.g., garage→W→office→S→hallway→W→bedroom)
+    when: Execute three sequential directional queries, each using the correct direction's edge memories and permutation shift
+    then: Task 5 achieves 6/6 (100%) — permutation encoding correctly distinguishes all 4 directions across 3-hop chains
+
+  - name: perPairEdgeMemory
+    given: Each directed edge stored as a single bind(from, permute(to, shift)) vector — 18 individual memories total
+    when: Query all edges of a given direction, pick the highest similarity match among permuted candidates
+    then: Per-pair memory gives perfect signal (sim=1.0 for correct, near 0 for incorrect). No bundling interference. Scales to arbitrary graph sizes.
+
+test_cases:
+  - name: test_task4_perfect
+    input: "Run 8 two-step path queries on the 8-room grid"
+    expected: "8/8 (100%)"
+
+  - name: test_task5_perfect
+    input: "Run 6 three-step path queries including S and W directions"
+    expected: "6/6 (100%)"
+
+  - name: test_combined_14
+    input: "Combined pathfinding accuracy"
+    expected: "14/14 (100%)"
+
+  - name: test_permutation_breaks_symmetry
+    input: "Query office→SOUTH vs office→NORTH using permutation shifts"
+    expected: "SOUTH returns hallway, NORTH returns bathroom — different results due to different shifts"
+
+  - name: test_babi_coverage_9
+    input: "Count bAbI tasks covered after adding tasks 4 and 5"
+    expected: "9/20 tasks (1,2,3,4,5,6,7,8,15)"

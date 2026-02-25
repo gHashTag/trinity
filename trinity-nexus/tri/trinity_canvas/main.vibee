@@ -1,0 +1,103 @@
+name: trinity_canvas_main
+version: "2.0.0"
+language: zig
+module: main
+description: "Trinity Canvas v2.0 main entry point - Hyper terminal style"
+
+# =============================================================================
+# TRINITY CANVAS v2.0 — MAIN
+# Entry point, main loop, input handling
+# =============================================================================
+
+imports:
+  - theme
+  - types
+  - panel
+  - panel_system
+  - panels/system
+  - effects/clusters
+  - effects/spirals
+  - effects/effects
+  - effects/goal
+
+types:
+  InputBuffer:
+    description: "Text input buffer"
+    fields:
+      buffer: String[512]
+      len: USize
+      mode: TrinityMode
+      active: Bool
+
+  AppState:
+    description: "Global application state"
+    fields:
+      width: Int
+      height: Int
+      pixel_size: Int
+      mode: TrinityMode
+      time: Float
+      panels: PanelSystem
+      effects: EffectSystem
+      clusters: ClusterSystem
+      spirals: SpiralSystem
+      goal: AutonomousGoal
+      font: Font
+      font_small: Font
+
+constants:
+  WINDOW_WIDTH: 1280
+  WINDOW_HEIGHT: 800
+  WINDOW_TITLE: "TRINITY CANVAS v2.0 — HYPER"
+  TARGET_FPS: 60
+
+behaviors:
+  - name: main
+    given: Nothing
+    when: Program starts
+    then: Initialize raylib, load fonts, run main loop
+
+  - name: init
+    given: Nothing
+    when: Startup
+    then: Create window, load fonts, init all systems
+
+  - name: main_loop
+    given: Nothing
+    when: Each frame
+    then: Handle input, update systems, render
+
+  - name: handle_input
+    given: Time
+    when: Processing input
+    then: Check keyboard for panel focus, mouse for interaction
+
+  - name: handle_panel_shortcuts
+    given: Nothing
+    when: Shift+1-8 pressed
+    then: Focus corresponding panel type
+
+  - name: update
+    given: Delta time, time
+    when: Each frame
+    then: Update all systems
+
+  - name: render
+    given: Time, font
+    when: Each frame
+    then: Clear, draw grid, panels, effects, status bar
+
+  - name: draw_status_bar
+    given: Time, font
+    when: Rendering UI
+    then: Draw bottom status bar with system stats
+
+  - name: draw_keyboard_hint
+    given: Font
+    when: Rendering UI
+    then: Draw top-left keyboard shortcut hint
+
+  - name: shutdown
+    given: Nothing
+    when: Window closes
+    then: Unload fonts, close raylib

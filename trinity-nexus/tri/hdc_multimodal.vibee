@@ -1,0 +1,118 @@
+name: hdc_multimodal
+version: "1.0.0"
+language: zig
+module: hdc_multimodal
+
+description: |
+  HDC Multimodal Fusion — Text + Numeric + Categorical features.
+  Enables structured/tabular data classification in hyperdimensional space.
+
+  Thermometer Encoding (Numeric):
+    Given value v in [min, max] with L levels:
+    idx = floor((v - min) / (max - min) * L)
+    therm_hv = bundle(level_hv[0], level_hv[1], ..., level_hv[idx])
+
+    Properties:
+      - Close values → high cosine similarity (share most levels)
+      - Distant values → low similarity (share few levels)
+      - Preserves ordering in high-dimensional space
+
+  Feature Encoding:
+    feature_hv = bind(role_hv, value_hv)
+    where role_hv = item_memory hash of feature name
+          value_hv = thermometer(numeric) | hash(categorical) | binary(bool)
+
+  Multimodal Fusion:
+    combined_hv = bundle(text_hv, feature_1_hv, feature_2_hv, ...)
+    Classification via bundled class prototypes (same as HDCClassifier)
+
+  Use Cases:
+    - Email spam: text + length + has_attachment + sender_reputation
+    - Log anomaly: message + response_code + latency + method
+    - Document classification: content + word_count + language + source
+
+types:
+  FeatureValue:
+    enum:
+      - numeric: Float
+      - categorical: String
+      - boolean: Bool
+
+  Feature:
+    fields:
+      name: String
+      value: FeatureValue
+
+  FeatureSchema:
+    fields:
+      name: String
+      min_val: Float          # for numeric: range min
+      max_val: Float          # for numeric: range max
+      num_levels: usize       # thermometer levels (default 32)
+
+  MultimodalSample:
+    fields:
+      text: Option<String>
+      features: List<Feature>
+
+  MultimodalPrediction:
+    fields:
+      label: String
+      confidence: Float
+      top_k: List<ClassScore>
+
+  HDCMultimodalEncoder:
+    fields:
+      allocator: Allocator
+      item_memory: Ptr<ItemMemory>
+      dimension: usize
+      num_levels: usize
+      level_hvs: List<HybridBigInt>    # pre-generated level vectors
+
+  HDCMultimodalClassifier:
+    fields:
+      allocator: Allocator
+      item_memory: ItemMemory
+      ngram_encoder: NGramEncoder
+      dimension: usize
+      text_encoder: HDCTextEncoder
+      multimodal_encoder: HDCMultimodalEncoder
+      classes: HashMap<String, ClassPrototype>
+      total_samples: u32
+      schemas: HashMap<String, FeatureSchema>
+
+behaviors:
+  - name: encodeNumeric
+    given: Value, min, max, num_levels
+    when: Thermometer-codes the value
+    then: Returns numeric hypervector
+
+  - name: encodeFeature
+    given: Feature (name + value)
+    when: Binds role_hv with value_hv
+    then: Returns feature hypervector
+
+  - name: encodeSample
+    given: MultimodalSample (optional text + features)
+    when: Encodes text and all features, bundles together
+    then: Returns fused hypervector
+
+  - name: train
+    given: Label, text (optional), features
+    when: Encodes sample, bundles into class prototype
+    then: Class prototype updated
+
+  - name: predict
+    given: Text (optional), features
+    when: Encodes sample, computes similarity to all prototypes
+    then: Returns MultimodalPrediction
+
+  - name: addSchema
+    given: Feature name, min, max, levels
+    when: Registers feature range for thermometer encoding
+    then: Schema stored for future encoding
+
+  - name: stats
+    given: Nothing
+    when: Computes classifier statistics
+    then: Returns stats with num_classes, total_samples, num_schemas

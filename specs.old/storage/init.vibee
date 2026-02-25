@@ -1,0 +1,107 @@
+name: storage_init
+version: "2.0.0"
+language: zig
+module: storage_init
+
+imports:
+  - name: vsa
+    path: "src/vsa.zig"
+
+description: |
+  Storage Init v2.0 — Real Disk Shards + VSA Fingerprints
+
+  === PURPOSE ===
+  Real disk-backed shard storage with VSA content fingerprinting.
+  Each shard is a fixed-size block stored on disk with a SHA-256 hash key
+  and a VSA hypervector fingerprint for content-addressable similarity search.
+
+  === PROOFS (Real I/O) ===
+  S1: storageInitDir        — create storage dir + shards subdir on real filesystem
+  S2: storageWriteReadRoundtrip — write bytes to .shard file, read back, verify match
+  S3: storageShardHash      — SHA-256 hash of data = deterministic shard filename
+  S4: storageDeleteVerify   — write shard, delete, verify gone from disk
+  S5: storageListShards     — write 3 shards, list directory, verify 3 files
+  S6: storageFingerprintDeterminism — same bytes produce same VSA fingerprint
+  S7: storageFingerprintSimilarity  — similar data has high cosine, different data has low
+  S8: storageShardIntegrity — write, corrupt 1 byte, detect via hash mismatch
+
+  === DISK LAYOUT ===
+  /tmp/trinity_test_<unique>/
+    shards/
+      <hex_hash>.shard  — raw shard data
+
+  Trinity Identity: phi^2 + 1/phi^2 = 3
+  Sacred Formula: V = n * 3^k * pi^m * phi^p * e^q
+
+types:
+  ShardConfig:
+    fields:
+      storage_root: String
+      shard_size: Int
+      max_shards: Int
+
+  ShardMeta:
+    fields:
+      hash_hex: String
+      size_bytes: Int
+      fingerprint_seed: Int
+      created_at: Int
+
+  ShardWriteResult:
+    fields:
+      hash_hex: String
+      size_bytes: Int
+      success: Bool
+
+  ShardReadResult:
+    fields:
+      data: String
+      size_bytes: Int
+      found: Bool
+
+  SimilarityResult:
+    fields:
+      hash_hex: String
+      similarity: Float
+      rank: Int
+
+behaviors:
+  - name: storageInitDir
+    given: A temporary test directory path
+    when: Creates the directory and shards subdirectory using std.fs
+    then: Both directories exist on the real filesystem
+
+  - name: storageWriteReadRoundtrip
+    given: A 256-byte test payload and temporary storage directory
+    when: Computes SHA-256 hash of payload and writes to shards dir as hex.shard then reads back
+    then: Read data matches original payload byte-for-byte
+
+  - name: storageShardHash
+    given: A known byte string with known SHA-256 hash
+    when: Computes SHA-256 of the data bytes
+    then: Hash matches expected value proving deterministic content addressing
+
+  - name: storageDeleteVerify
+    given: A shard file written to disk
+    when: Deletes the shard file using std.fs and checks existence
+    then: File no longer exists on disk after deletion
+
+  - name: storageListShards
+    given: Three shard files written to a shards directory
+    when: Iterates the directory listing .shard files
+    then: Exactly 3 shard files are found in the directory
+
+  - name: storageFingerprintDeterminism
+    given: A byte payload encoded twice into VSA fingerprint via vsa.randomVector
+    when: Computes fingerprint using seed derived from data hash
+    then: Both fingerprints are identical proving deterministic encoding
+
+  - name: storageFingerprintSimilarity
+    given: Two similar byte payloads and one different payload
+    when: Computes VSA fingerprints and measures cosine similarity
+    then: Similar payloads have higher cosine than different payloads
+
+  - name: storageShardIntegrity
+    given: A shard file with known SHA-256 hash
+    when: Reads file back and recomputes SHA-256 hash
+    then: Recomputed hash matches original proving data integrity on disk

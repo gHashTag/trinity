@@ -1,0 +1,89 @@
+name: hdc_corpus_convergence
+version: "1.0.0"
+language: zig
+module: hdc_corpus_convergence
+
+description: |
+  HDC Corpus Convergence — Level 10A.2.3: Real Text Training with Loss Tracking.
+  Trains the multi-head HDC transformer on Shakespeare text using charToHV encoding,
+  sliding-window samples, and error-driven bundling updates.
+
+  === MEASURED RESULTS (v2.31) ===
+  Corpus: "to be or not to be that is the question whether"
+  Samples: 8 sliding windows (context_size=8, stride=5)
+  Epochs: 50
+  Loss epoch 0:  1.0109
+  Loss epoch 49: 0.9818
+  Loss drop: 2.9%
+
+  === TRAINING PROTOCOL ===
+  1. Create 8 sliding-window samples from corpus
+  2. For each epoch, for each sample:
+     a. Encode context via charToHV (no Codebook)
+     b. Forward pass via forwardPassMultiHead (3-head attention)
+     c. Compute loss = 1.0 - cosineSimilarity(output, target)
+     d. Error = bundle(target, negate(output))
+     e. Sparsify: zero (1-lr) fraction, lr=0.3
+     f. Update: role = bundle(role, sparse_error) for all 11 roles
+  3. Track loss per epoch for convergence curve
+
+  Trinity Identity: phi^2 + 1/phi^2 = 3
+
+types:
+  CorpusConfig:
+    fields:
+      corpus_text: String
+      context_size: usize
+      sample_count: usize
+      num_epochs: usize
+      learning_rate: Float
+      dimension: usize
+
+  EpochMetrics:
+    fields:
+      epoch: usize
+      avg_loss: Float
+      sample_losses: List<Float>
+
+  ConvergenceResult:
+    fields:
+      loss_first: Float
+      loss_last: Float
+      delta: Float
+      delta_percent: Float
+      epochs_run: usize
+      loss_curve: List<Float>
+
+behaviors:
+  - name: trainOnCorpus
+    given: Corpus text, config with 50 epochs, 8 samples, lr=0.3
+    when: |
+      For each epoch, encode samples on-the-fly via charToHV,
+      run forwardPassMultiHead, compute error, sparsify, bundle-update roles
+    then: ConvergenceResult with loss curve
+
+  - name: measureLossDrop
+    given: Loss values from first and last epoch
+    when: Compute (loss_first - loss_last) / loss_first * 100
+    then: Loss drop percentage (measured: 2.9%)
+
+  - name: slidingWindowSamples
+    given: Corpus text and context_size=8
+    when: Create samples at offsets [0, 5, 10, 15, 20, 25, 30, 35]
+    then: 8 (context, target) pairs for training
+
+test_cases:
+  - name: loss_decreases
+    description: Final loss is lower than initial loss
+    input: "50 epochs on Shakespeare"
+    expected: "loss_final < loss_first"
+
+  - name: loss_in_range
+    description: All loss values in valid range [0, 2]
+    input: "any epoch"
+    expected: "0 <= loss <= 2"
+
+  - name: all_samples_used
+    description: All 8 sliding-window samples contribute to training
+    input: "corpus length >= 43"
+    expected: "8 samples processed per epoch"

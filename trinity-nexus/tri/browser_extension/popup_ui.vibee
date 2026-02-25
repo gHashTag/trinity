@@ -1,0 +1,167 @@
+# Browser Extension Popup UI Specification
+# Generates popup interface for ЖАР ПТИЦА
+# φ² + 1/φ² = 3 = TRINITY
+
+name: firebird_popup
+version: "1.0.0"
+language: zig
+module: popup_ui
+
+description: |
+  Popup UI для browser extension.
+  Отображает evasion метрики, управление профилями, $TRI rewards.
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# UI КОМПОНЕНТЫ
+# ═══════════════════════════════════════════════════════════════════════════════
+
+components:
+  Header:
+    description: "Заголовок с логотипом и статусом"
+    elements:
+      - logo: "ЖАР ПТИЦА 🔥"
+      - status_indicator: NodeStatus
+      - version: "v1.0.0"
+
+  EvasionPanel:
+    description: "Панель управления evasion"
+    elements:
+      - toggle_enabled: Bool
+      - similarity_display: Float
+      - similarity_target: Float
+      - progress_bar: Float
+      - detection_risk: String
+
+  ProfileSelector:
+    description: "Выбор и управление профилями"
+    elements:
+      - current_profile: String
+      - profile_list: List<ProfileItem>
+      - generate_button: Button
+      - delete_button: Button
+
+  NavigationPanel:
+    description: "Виртуальная навигация"
+    elements:
+      - steps_completed: Int
+      - current_similarity: Float
+      - navigate_button: Button
+      - reset_button: Button
+
+  DePINPanel:
+    description: "DePIN и $TRI rewards"
+    elements:
+      - wallet_address: String
+      - pending_tri: Float
+      - total_earned: Float
+      - claim_button: Button
+      - stake_button: Button
+
+  FingerprintDetails:
+    description: "Детали текущего fingerprint"
+    elements:
+      - canvas_hash: String
+      - webgl_hash: String
+      - audio_hash: String
+      - screen_resolution: String
+      - timezone: String
+      - language: String
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# LAYOUT
+# ═══════════════════════════════════════════════════════════════════════════════
+
+layout:
+  width: 400
+  height: 600
+  sections:
+    - Header (fixed top)
+    - EvasionPanel
+    - ProfileSelector
+    - NavigationPanel (collapsible)
+    - DePINPanel
+    - FingerprintDetails (collapsible)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# СТИЛИ (для генерации CSS)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+styles:
+  colors:
+    primary: "#FF6B35"      # Огненный оранжевый (Жар-Птица)
+    secondary: "#1A1A2E"    # Тёмный фон
+    accent: "#FFD700"       # Золотой ($TRI)
+    success: "#00FF88"      # Зелёный (evasion OK)
+    warning: "#FFB800"      # Жёлтый (risk)
+    danger: "#FF4444"       # Красный (detected)
+    text: "#FFFFFF"
+    text_muted: "#888888"
+
+  fonts:
+    primary: "Inter, system-ui, sans-serif"
+    mono: "JetBrains Mono, monospace"
+
+  spacing:
+    xs: 4
+    sm: 8
+    md: 16
+    lg: 24
+    xl: 32
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# СОБЫТИЯ
+# ═══════════════════════════════════════════════════════════════════════════════
+
+events:
+  on_popup_open:
+    - load_config
+    - load_current_profile
+    - update_metrics
+    - sync_depin_status
+
+  on_toggle_evasion:
+    - save_config
+    - notify_content_script
+    - record_depin_operation
+
+  on_generate_profile:
+    - call_wasm_create_profile
+    - save_profile
+    - update_ui
+
+  on_navigate_step:
+    - call_wasm_navigate_step
+    - update_similarity
+    - record_depin_reward
+
+  on_claim_rewards:
+    - call_wasm_claim_rewards
+    - update_balance
+    - show_notification
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ЛОКАЛИЗАЦИЯ
+# ═══════════════════════════════════════════════════════════════════════════════
+
+i18n:
+  en:
+    title: "ЖАР ПТИЦА - Ternary Anti-Detect"
+    evasion_enabled: "Evasion Enabled"
+    similarity: "Similarity"
+    detection_risk: "Detection Risk"
+    generate_profile: "Generate New Profile"
+    navigate: "Navigate"
+    claim_rewards: "Claim $TRI"
+    pending: "Pending"
+    earned: "Total Earned"
+    
+  ru:
+    title: "ЖАР ПТИЦА - Тернарный Anti-Detect"
+    evasion_enabled: "Evasion Включён"
+    similarity: "Схожесть"
+    detection_risk: "Риск Детекции"
+    generate_profile: "Создать Новый Профиль"
+    navigate: "Навигация"
+    claim_rewards: "Забрать $TRI"
+    pending: "Ожидает"
+    earned: "Всего Заработано"

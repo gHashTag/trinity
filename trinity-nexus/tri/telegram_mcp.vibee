@@ -1,0 +1,95 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+types:
+  TelegramTool:
+
+  DialogFilter:
+    fields:
+      unread_only: Bool
+      type_filter: Option(DialogType)
+      date_from: Option(DateTime)
+      date_to: Option(DateTime)
+
+  DialogType:
+
+  MessageFilter:
+    fields:
+      from_user: Option(Int)
+      has_media: Option(Bool)
+      date_from: Option(DateTime)
+      date_to: Option(DateTime)
+
+  list_dialogs:
+      limit: Option(Int)
+      filter: Option(DialogFilter)
+
+  get_dialog_messages:
+      dialog_id: Int
+      limit: Option(Int)
+      filter: Option(MessageFilter)
+
+  search_messages:
+      query: String
+      dialog_id: Option(Int)
+      limit: Option(Int)
+
+  send_message:
+      chat_id: Int
+      text: String
+
+  execute_tool:
+      tool: TelegramTool
+
+  filter_messages:
+      messages: List(Message)
+      filter: MessageFilter
+
+  wrap_result:
+      result: Result(T, Error)
+
+behaviors:
+  - name: list_dialogs_behavior
+    given: |
+    when: |
+    then: |
+  - name: successful_list
+  - name: with_unread_filter
+  - name: send_message_behavior
+    given: |
+    when: |
+    then: |
+  - name: successful_send
+  - name: empty_text_error
+  - name: invalid_chat_id_error
+  - name: search_messages_behavior
+    given: |
+    when: |
+    then: |
+  - name: global_search
+  - name: dialog_search
+  - name: test_list_dialogs
+    when: 
+    then: 
+  - name: test_list_dialogs_with_filter
+    when: 
+    then: 
+  - name: test_send_message
+    when: 
+    then: 
+  - name: test_send_message_empty_text
+    when: 
+    then: 
+  - name: test_send_message_invalid_chat_id
+    when: 
+    then: 
+  - name: test_search_messages
+    when: 
+    then: 
+  - name: test_list_dialogs_respects_limit
+    when: 
+    then: 
+
+types:

@@ -1,0 +1,26 @@
+name: test_plugin
+version: 1.0.0
+description: Test plugin for YAML parsing
+author: Test Author
+category: testing
+tags:
+  - test
+  - yaml
+  - parser
+
+behaviors:
+  - name: parse_yaml
+    description: Parse YAML files
+    given: A YAML file
+    when: Parser is invoked
+    then: Returns parsed data
+
+types:
+  - name: Config
+    fields:
+      - name: String
+      - value: String
+
+functions:
+  - name: parse
+    signature: "parse(path: String) -> Result(Config, String)"

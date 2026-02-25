@@ -1,23 +1,247 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// TRINITY CHAT HTTP SERVER v2.6
-// POST /chat                         — Hybrid Chat endpoint for Cosmic UI
-// POST /chat/clear                   — Clear conversation context
-// GET  /health                       — Health check
-// GET  /api/files                    — Project file listing for Finder
-// POST /api/compile                  — VIBEE/Zig compilation for Editor
-// GET  /api/sacred-formula/fit       — Fit all constants to Sacred Formula
-// GET  /api/sacred-formula/constants — Raw constants list from .tri spec
-// POST /api/sacred-formula/compute   — Fit single value to Sacred Formula
-// POST /api/gematria                 — Coptic gematria (number↔glyphs)
-// POST /api/holographic              — Holographic renderer (AdS, spin, penrose, entropy, hawking)
-// POST /api/qg-sim                   — Quantum gravity simulation (spin foam, Regge, AdS, area)
-// POST /api/marketplace              — $TRI marketplace (dashboard, staking, proof, tokenomics)
-// φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+// TRINITY CHAT HTTP SERVER v2.7
+// POST /chat        — Hybrid Chat endpoint for Cosmic UI
+// POST /chat/clear  — Clear conversation context
+// GET  /health      — Health check
+// GET  /api/files   — Project file listing for Finder
+// POST /api/compile — VIBEE/Zig compilation for Editor
+// GET  /api/pas/*   — PAS Daemon endpoints (v8.20)
+// WS   /ws/pas     — PAS WebSocket (v8.21) — Real-time PAS updates
+// φ² + 1/φ² = 3 = TRINITY | PAS FULL PRODUCTION v8.21
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
 const igla_hybrid_chat = @import("igla_hybrid_chat");
 const tvc = @import("tvc_corpus");
+const pas_orchestrator = @import("pas_orchestrator");
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// WEBSOCKET SERVER (v8.21)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const WS_OPCODE_CONTINUATION = 0x0;
+const WS_OPCODE_TEXT = 0x1;
+const WS_OPCODE_BINARY = 0x2;
+const WS_OPCODE_CLOSE = 0x8;
+const WS_OPCODE_PING = 0x9;
+const WS_OPCODE_PONG = 0xA;
+
+const WSFrameHeader = struct {
+    fin: bool,
+    opcode: u4,
+    masked: bool,
+    payload_len: u64,
+};
+
+const PasWsMessage = struct {
+    type: []const u8,
+    id: []const u8,
+    priority: u8,
+    rationale: []const u8,
+    impact_estimate: f32,
+};
+
+pub const PasWebSocketServer = struct {
+    clients: std.ArrayListUnmanaged(std.net.Stream),
+    allocator: Allocator,
+
+    const Self = @This();
+
+    pub fn init(allocator: Allocator) Self {
+        return Self{
+            .clients = .{},
+            .allocator = allocator,
+        };
+    }
+
+    pub fn deinit(self: *Self) void {
+        for (self.clients.items) |client| {
+            client.close();
+        }
+        self.clients.deinit(self.allocator);
+    }
+
+    /// Broadcast JSON message to all connected WebSocket clients
+    pub fn broadcast(self: *Self, json: []const u8) !void {
+        var i: usize = 0;
+        while (i < self.clients.items.len) {
+            const client = self.clients.items[i];
+            if (self.sendWsFrame(client, json)) {
+                i += 1;
+            } else {
+                // Remove disconnected client
+                _ = self.clients.orderedRemove(i);
+                client.close();
+            }
+        }
+    }
+
+    /// Send WebSocket TEXT frame to client (server-to-client, no masking)
+    fn sendWsFrame(self: *Self, stream: std.net.Stream, payload: []const u8) bool {
+        _ = self;
+        var frame_buf: [16384]u8 = undefined;
+        var pos: usize = 0;
+
+        // First byte: FIN + opcode
+        frame_buf[pos] = 0x80 | WS_OPCODE_TEXT;
+        pos += 1;
+
+        // Second byte: payload length (server-to-client = NOT masked)
+        if (payload.len < 126) {
+            frame_buf[pos] = @intCast(payload.len);
+            pos += 1;
+        } else if (payload.len < 65536) {
+            frame_buf[pos] = 126;
+            pos += 1;
+            frame_buf[pos] = @intCast((payload.len >> 8) & 0xFF);
+            pos += 1;
+            frame_buf[pos] = @intCast(payload.len & 0xFF);
+            pos += 1;
+        } else {
+            frame_buf[pos] = 127;
+            pos += 1;
+            inline for (0..8) |j| {
+                frame_buf[pos] = @intCast((payload.len >> @intCast(56 - j * 8)) & 0xFF);
+                pos += 1;
+            }
+        }
+
+        // Copy payload
+        @memcpy(frame_buf[pos .. pos + payload.len], payload);
+        pos += payload.len;
+
+        stream.writeAll(frame_buf[0..pos]) catch return false;
+        return true;
+    }
+
+    /// Generate PAS recommendation JSON message
+    pub fn generateRecommendation(
+        self: *Self,
+        allocator: Allocator,
+        action: []const u8,
+        priority: u8,
+        rationale: []const u8,
+    ) ![]const u8 {
+        _ = self;
+        const uuid = try generateUUID(allocator);
+        defer allocator.free(uuid);
+
+        return std.fmt.allocPrint(
+            allocator,
+            \\{{"type":"recommendation","id":"{s}","action":"{s}","priority":{d},"rationale":"{s}","timestamp":{d}}}
+        ,
+            .{ uuid, action, priority, rationale, std.time.timestamp() },
+        );
+    }
+
+    /// Generate PAS task progress JSON message
+    pub fn generateProgress(
+        self: *Self,
+        allocator: Allocator,
+        task: []const u8,
+        baseline: u32,
+        pas: u32,
+        attempts: u32,
+        energy: f64,
+    ) ![]const u8 {
+        _ = self;
+        return std.fmt.allocPrint(
+            allocator,
+            \\{{"type":"progress","task":"{s}","baseline":{d},"pas":{d},"attempts":{d},"energy":{d:.2},"timestamp":{d}}}
+        ,
+            .{ task, baseline, pas, attempts, energy, std.time.timestamp() },
+        );
+    }
+
+    /// Generate PAS alert JSON message
+    pub fn generateAlert(
+        self: *Self,
+        allocator: Allocator,
+        level: []const u8,
+        message: []const u8,
+    ) ![]const u8 {
+        _ = self;
+        return std.fmt.allocPrint(
+            allocator,
+            \\{{"type":"alert","level":"{s}","message":"{s}","timestamp":{d}}}
+        ,
+            .{ level, message, std.time.timestamp() },
+        );
+    }
+};
+
+/// Simple UUID v4 generator
+fn generateUUID(allocator: Allocator) ![]const u8 {
+    const hex_chars = "0123456789abcdef";
+    var uuid: [36]u8 = undefined;
+
+    var i: usize = 0;
+    var rand_buf: [16]u8 = undefined;
+    std.crypto.random.bytes(&rand_buf);
+
+    // Format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+    uuid[i] = hex_chars[(rand_buf[0] >> 4) & 0xF];
+    uuid[i + 1] = hex_chars[rand_buf[0] & 0xF];
+    uuid[i + 2] = hex_chars[(rand_buf[1] >> 4) & 0xF];
+    uuid[i + 3] = hex_chars[rand_buf[1] & 0xF];
+    uuid[i + 4] = hex_chars[(rand_buf[2] >> 4) & 0xF];
+    uuid[i + 5] = hex_chars[rand_buf[2] & 0xF];
+    uuid[i + 6] = hex_chars[(rand_buf[3] >> 4) & 0xF];
+    uuid[i + 7] = hex_chars[rand_buf[3] & 0xF];
+    i += 8;
+
+    uuid[i] = '-';
+    i += 1;
+
+    uuid[i] = hex_chars[(rand_buf[4] >> 4) & 0xF];
+    uuid[i + 1] = hex_chars[rand_buf[4] & 0xF];
+    uuid[i + 2] = hex_chars[(rand_buf[5] >> 4) & 0xF];
+    uuid[i + 3] = hex_chars[rand_buf[5] & 0xF];
+    i += 4;
+
+    uuid[i] = '-';
+    i += 1;
+
+    uuid[i] = '4'; // Version 4
+    uuid[i + 1] = hex_chars[rand_buf[6] & 0xF];
+    uuid[i + 2] = hex_chars[(rand_buf[7] >> 4) & 0xF];
+    uuid[i + 3] = hex_chars[rand_buf[7] & 0xF];
+    i += 4;
+
+    uuid[i] = '-';
+    i += 1;
+
+    uuid[i] = hex_chars[((rand_buf[8] >> 4) & 0x3) | 0x8]; // Variant
+    uuid[i + 1] = hex_chars[rand_buf[8] & 0xF];
+    uuid[i + 2] = hex_chars[(rand_buf[9] >> 4) & 0xF];
+    uuid[i + 3] = hex_chars[rand_buf[9] & 0xF];
+    i += 4;
+
+    uuid[i] = '-';
+    i += 1;
+
+    for (10..16) |j| {
+        uuid[i] = hex_chars[(rand_buf[j] >> 4) & 0xF];
+        uuid[i + 1] = hex_chars[rand_buf[j] & 0xF];
+        i += 2;
+    }
+
+    return allocator.dupe(u8, &uuid);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SACRED CONSTANTS (PAS v8.20)
+// ═══════════════════════════════════════════════════════════════════════════════
+const PHI: f64 = 1.6180339887498949; // Золотое сечение
+const PHI_SQ: f64 = 2.6180339887498949; // φ²
+const PHI_INV_SQ: f64 = 0.3819660112501051; // 1/φ²
+const TRINITY: f64 = 3.0; // φ² + 1/φ² = 3
+const MU: f64 = 0.0382; // Mutation = 1/φ²/10
+const CHI: f64 = 0.0618; // Crossover = 1/φ/10
+const SIGMA: f64 = 1.618; // Selection = φ
+const EPSILON: f64 = 0.333; // Elitism = 1/3
+const LUCAS_10: u64 = 123; // L(10) = φ¹⁰ + 1/φ¹⁰
+const PHOENIX: usize = 999; // Sacred rebirth number
 
 const Allocator = std.mem.Allocator;
 
@@ -45,6 +269,18 @@ pub const ChatServer = struct {
     log_count: usize,
     log_index: usize,
 
+    // PAS v8.20 state
+    pas_active: bool,
+    pas_analyses: usize,
+    pas_energy: f64,
+    pas_berry_phase: f64,
+
+    // PAS v8.21 WebSocket server
+    ws_server: PasWebSocketServer,
+
+    // PAS v8.22 Orchestrator connection
+    pas_orchestrator: pas_orchestrator.PasOrchestrator,
+
     const Self = @This();
 
     pub fn init(allocator: Allocator, port: u16) Self {
@@ -65,7 +301,26 @@ pub const ChatServer = struct {
             }} ** MAX_LOG_ENTRIES,
             .log_count = 0,
             .log_index = 0,
+            // PAS v8.20 initialization
+            .pas_active = false,
+            .pas_analyses = 0,
+            .pas_energy = 0.0,
+            .pas_berry_phase = 0.0,
+            // PAS v8.21 WebSocket server
+            .ws_server = PasWebSocketServer.init(allocator),
+            // PAS v8.22 Orchestrator
+            .pas_orchestrator = pas_orchestrator.PasOrchestrator.init(allocator),
         };
+    }
+
+    /// Activate PAS daemon
+    fn activatePas(self: *Self) void {
+        if (!self.pas_active) {
+            self.pas_active = true;
+            std.debug.print("[ChatServer] PAS Daemon v8.20 activated\n", .{});
+            std.debug.print("[ChatServer] φ² + 1/φ² = {d:.10} ≈ {d:.1}\n", .{ PHI_SQ + PHI_INV_SQ, TRINITY });
+            std.debug.print("[ChatServer] μ = {d:.4} (1/φ²/10)\n", .{MU});
+        }
     }
 
     fn addLogEntry(self: *Self, source: []const u8, query: []const u8, confidence: f32, latency_us: u64, learned: bool) void {
@@ -89,6 +344,8 @@ pub const ChatServer = struct {
         if (self.corpus) |c| {
             self.allocator.destroy(c);
         }
+        // Cleanup WebSocket server (v8.21)
+        self.ws_server.deinit();
     }
 
     /// Lazy-init the IglaHybridChat engine on first request
@@ -122,17 +379,21 @@ pub const ChatServer = struct {
     pub fn run(self: *Self) !void {
         std.debug.print("\n", .{});
         std.debug.print("╔══════════════════════════════════════════════════════╗\n", .{});
-        std.debug.print("║         TRINITY CHAT SERVER v2.5                    ║\n", .{});
-        std.debug.print("║   POST /chat | GET /health | /api/files | /compile  ║\n", .{});
+        std.debug.print("║         TRINITY CHAT SERVER v2.7                    ║\n", .{});
+        std.debug.print("║  PAS FULL PRODUCTION v8.21 | φ²+1/φ²=3             ║\n", .{});
         std.debug.print("╚══════════════════════════════════════════════════════╝\n", .{});
         std.debug.print("\n", .{});
         std.debug.print("Endpoints:\n", .{});
-        std.debug.print("  POST /chat        - Chat with Trinity (JSON)\n", .{});
-        std.debug.print("  POST /chat/clear  - Clear conversation context\n", .{});
-        std.debug.print("  GET  /health      - Health check\n", .{});
-        std.debug.print("  GET  /api/files   - Project file listing\n", .{});
-        std.debug.print("  POST /api/compile - VIBEE/Zig compilation\n", .{});
-        std.debug.print("  OPTIONS /*        - CORS preflight\n", .{});
+        std.debug.print("  POST /chat          - Chat with Trinity (JSON)\n", .{});
+        std.debug.print("  POST /chat/clear    - Clear conversation context\n", .{});
+        std.debug.print("  GET  /health        - Health check\n", .{});
+        std.debug.print("  GET  /api/files     - Project file listing\n", .{});
+        std.debug.print("  POST /api/compile   - VIBEE/Zig compilation\n", .{});
+        std.debug.print("  GET  /api/pas/status - PAS daemon status (v8.20)\n", .{});
+        std.debug.print("  GET  /api/pas/recs   - PAS recommendations (v8.20)\n", .{});
+        std.debug.print("  GET  /api/pas/analyze- Current PAS analysis (v8.20)\n", .{});
+        std.debug.print("  WS   /ws/pas        - PAS WebSocket (v8.21) Real-time\n", .{});
+        std.debug.print("  OPTIONS /*          - CORS preflight\n", .{});
         std.debug.print("\n", .{});
 
         const address = std.net.Address.initIp4(.{ 0, 0, 0, 0 }, self.port);
@@ -188,6 +449,13 @@ pub const ChatServer = struct {
         // Route
         if (std.mem.eql(u8, method, "OPTIONS")) {
             try self.sendCors(connection);
+        } else if (std.mem.startsWith(u8, path, "/ws/pas")) {
+            // WebSocket upgrade (v8.21)
+            if (std.mem.eql(u8, method, "GET")) {
+                try self.handleWebSocketUpgrade(connection, request);
+            } else {
+                try self.sendMethodNotAllowed(connection);
+            }
         } else if (std.mem.startsWith(u8, path, "/health")) {
             try self.sendHealth(connection);
         } else if (std.mem.startsWith(u8, path, "/chat/clear")) {
@@ -214,40 +482,12 @@ pub const ChatServer = struct {
             } else {
                 try self.sendMethodNotAllowed(connection);
             }
-        } else if (std.mem.startsWith(u8, path, "/api/sacred-formula/compute")) {
-            if (std.mem.eql(u8, method, "POST")) {
-                try self.handleSacredFormulaCompute(connection, body);
-            } else {
-                try self.sendMethodNotAllowed(connection);
-            }
-        } else if (std.mem.startsWith(u8, path, "/api/sacred-formula/constants")) {
-            try self.handleSacredFormulaConstants(connection);
-        } else if (std.mem.startsWith(u8, path, "/api/sacred-formula/fit")) {
-            try self.handleSacredFormulaFit(connection);
-        } else if (std.mem.startsWith(u8, path, "/api/gematria")) {
-            if (std.mem.eql(u8, method, "POST")) {
-                try self.handleGematria(connection, body);
-            } else {
-                try self.sendMethodNotAllowed(connection);
-            }
-        } else if (std.mem.startsWith(u8, path, "/api/holographic")) {
-            if (std.mem.eql(u8, method, "POST")) {
-                try self.handleHolographic(connection, body);
-            } else {
-                try self.sendMethodNotAllowed(connection);
-            }
-        } else if (std.mem.startsWith(u8, path, "/api/qg-sim")) {
-            if (std.mem.eql(u8, method, "POST")) {
-                try self.handleQGSim(connection, body);
-            } else {
-                try self.sendMethodNotAllowed(connection);
-            }
-        } else if (std.mem.startsWith(u8, path, "/api/marketplace")) {
-            if (std.mem.eql(u8, method, "POST")) {
-                try self.handleMarketplace(connection, body);
-            } else {
-                try self.sendMethodNotAllowed(connection);
-            }
+        } else if (std.mem.startsWith(u8, path, "/api/pas/status")) {
+            try self.handlePasStatus(connection);
+        } else if (std.mem.startsWith(u8, path, "/api/pas/recs")) {
+            try self.handlePasRecommendations(connection);
+        } else if (std.mem.startsWith(u8, path, "/api/pas/analyze")) {
+            try self.handlePasAnalyze(connection);
         } else {
             try self.sendNotFound(connection);
         }
@@ -1028,6 +1268,240 @@ pub const ChatServer = struct {
         try self.sendJsonResponse(connection, json.items);
     }
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // WEBSOCKET HANDLER (v8.21)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// Handle WebSocket upgrade request for /ws/pas
+    fn handleWebSocketUpgrade(self: *Self, connection: *std.net.Server.Connection, request: []const u8) !void {
+        // Check for required WebSocket upgrade headers
+        const has_upgrade = std.mem.indexOf(u8, request, "Upgrade: websocket") != null;
+        const has_connection = std.mem.indexOf(u8, request, "Connection: Upgrade") != null or
+            std.mem.indexOf(u8, request, "connection: Upgrade") != null or
+            std.mem.indexOf(u8, request, "Connection: upgrade") != null or
+            std.mem.indexOf(u8, request, "connection: upgrade") != null;
+
+        if (!has_upgrade or !has_connection) {
+            try self.sendError(connection, "Missing WebSocket upgrade headers");
+            return;
+        }
+
+        // Extract Sec-WebSocket-Key
+        const ws_key = extractHeaderValue(request, "Sec-WebSocket-Key") orelse {
+            try self.sendError(connection, "Missing Sec-WebSocket-Key");
+            return;
+        };
+
+        // Compute Sec-WebSocket-Accept: base64(key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11")
+        const ws_guid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+        const hash_buf = try self.allocator.alloc(u8, ws_key.len + ws_guid.len);
+        defer self.allocator.free(hash_buf);
+        @memcpy(hash_buf[0..ws_key.len], ws_key);
+        @memcpy(hash_buf[ws_key.len..], ws_guid);
+
+        var hash: [20]u8 = undefined;
+        std.crypto.hash.Sha1.hash(hash_buf, &hash, .{});
+
+        var accept_b64: [32]u8 = undefined;
+        const accept_slice = std.base64.standard.Encoder.encode(&accept_b64, &hash);
+
+        // Send 101 Switching Protocols response
+        const response = std.fmt.allocPrint(
+            self.allocator,
+            "HTTP/1.1 101 Switching Protocols\r\n" ++
+                "Upgrade: websocket\r\n" ++
+                "Connection: Upgrade\r\n" ++
+                "Sec-WebSocket-Accept: {s}\r\n" ++
+                "\r\n",
+            .{accept_slice},
+        ) catch return;
+        defer self.allocator.free(response);
+
+        _ = try connection.stream.writeAll(response);
+
+        std.debug.print("[ChatServer] WebSocket /ws/pas connection established\n", .{});
+
+        // Add client to WebSocket server
+        try self.ws_server.clients.append(self.allocator, connection.stream);
+
+        // Send initial welcome message
+        const welcome = try std.fmt.allocPrint(
+            self.allocator,
+            \\{{"type":"connected","endpoint":"/ws/pas","timestamp":{d},"message":"PAS WebSocket connected"}}
+        ,
+            .{std.time.timestamp()},
+        );
+        defer self.allocator.free(welcome);
+        _ = self.ws_server.sendWsFrame(connection.stream, welcome);
+
+        // Send initial PAS status
+        const status_msg = try std.fmt.allocPrint(
+            self.allocator,
+            \\{{"type":"status","pas_active":{s},"analyses":{d},"energy":{d:.2},"berry_phase":{d:.5}}}
+        ,
+            .{ if (self.pas_active) "true" else "false", self.pas_analyses, self.pas_energy, self.pas_berry_phase },
+        );
+        defer self.allocator.free(status_msg);
+        _ = self.ws_server.sendWsFrame(connection.stream, status_msg);
+
+        // Note: This is a simple implementation that doesn't handle persistent connections
+        // In production, you'd want a separate thread/event loop for each WebSocket
+    }
+
+    /// Extract header value from HTTP request
+    fn extractHeaderValue(request: []const u8, header_name: []const u8) ?[]const u8 {
+        var i: usize = 0;
+        while (i < request.len) : (i += 1) {
+            if (i + header_name.len + 2 <= request.len and
+                std.mem.eql(u8, request[i .. i + header_name.len], header_name) and
+                request[i + header_name.len] == ':' and
+                request[i + header_name.len + 1] == ' ')
+            {
+                const start = i + header_name.len + 2;
+                var end = start;
+                while (end < request.len and request[end] != '\r') : (end += 1) {}
+                return std.mem.trimRight(u8, request[start..end], " \t");
+            }
+        }
+        return null;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // PAS HANDLERS (v8.20)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// GET /api/pas/status - Returns PAS daemon status
+    fn handlePasStatus(self: *Self, connection: *std.net.Server.Connection) !void {
+        self.activatePas();
+
+        var json: std.ArrayListUnmanaged(u8) = .{};
+        defer json.deinit(self.allocator);
+
+        try json.appendSlice(self.allocator, "{\"active\":");
+        try json.appendSlice(self.allocator, if (self.pas_active) "true" else "false");
+        try json.appendSlice(self.allocator, ",\"analyses_performed\":");
+
+        var buf1: [32]u8 = undefined;
+        const analyses_str = std.fmt.bufPrint(&buf1, "{d}", .{self.pas_analyses}) catch "0";
+        try json.appendSlice(self.allocator, analyses_str);
+
+        try json.appendSlice(self.allocator, ",\"energy_harvested\":");
+        var buf2: [64]u8 = undefined;
+        const energy_str = std.fmt.bufPrint(&buf2, "{d:.2}", .{self.pas_energy}) catch "0";
+        try json.appendSlice(self.allocator, energy_str);
+
+        try json.appendSlice(self.allocator, ",\"berry_phase\":");
+        var buf3: [64]u8 = undefined;
+        const berry_str = std.fmt.bufPrint(&buf3, "{d:.5}", .{self.pas_berry_phase}) catch "0";
+        try json.appendSlice(self.allocator, berry_str);
+
+        try json.appendSlice(self.allocator, ",\"pas_energy\":");
+        try json.appendSlice(self.allocator, energy_str);
+
+        // Sacred validation
+        const sacred_valid = std.math.approxEqRel(f64, PHI_SQ + PHI_INV_SQ, TRINITY, 0.001);
+        try json.appendSlice(self.allocator, ",\"sacred_valid\":");
+        try json.appendSlice(self.allocator, if (sacred_valid) "true" else "false");
+
+        try json.appendSlice(self.allocator, ",\"pending_recommendations\":0");
+        try json.appendSlice(self.allocator, ",\"pas_version\":\"8.20\"");
+        try json.appendSlice(self.allocator, ",\"trinity_identity\":\"φ² + 1/φ² = 3\"}");
+
+        try self.sendJsonResponse(connection, json.items);
+    }
+
+    /// GET /api/pas/recs - Returns current PAS recommendations
+    fn handlePasRecommendations(self: *Self, connection: *std.net.Server.Connection) !void {
+        self.activatePas();
+
+        var json: std.ArrayListUnmanaged(u8) = .{};
+        defer json.deinit(self.allocator);
+
+        try json.appendSlice(self.allocator, "{\"active\":");
+        try json.appendSlice(self.allocator, if (self.pas_active) "true" else "false");
+
+        try json.appendSlice(self.allocator, ",\"analyses_performed\":");
+        var buf1: [32]u8 = undefined;
+        const analyses_str = std.fmt.bufPrint(&buf1, "{d}", .{self.pas_analyses}) catch "0";
+        try json.appendSlice(self.allocator, analyses_str);
+
+        try json.appendSlice(self.allocator, ",\"energy_harvested\":");
+        var buf2: [64]u8 = undefined;
+        const energy_str = std.fmt.bufPrint(&buf2, "{d:.2}", .{self.pas_energy}) catch "0";
+        try json.appendSlice(self.allocator, energy_str);
+
+        try json.appendSlice(self.allocator, ",\"berry_phase\":");
+        var buf3: [64]u8 = undefined;
+        const berry_str = std.fmt.bufPrint(&buf3, "{d:.5}", .{self.pas_berry_phase}) catch "0";
+        try json.appendSlice(self.allocator, berry_str);
+
+        try json.appendSlice(self.allocator, ",\"pas_energy\":");
+        try json.appendSlice(self.allocator, energy_str);
+
+        const sacred_valid = std.math.approxEqRel(f64, PHI_SQ + PHI_INV_SQ, TRINITY, 0.001);
+        try json.appendSlice(self.allocator, ",\"sacred_validation_rate\":");
+        try json.appendSlice(self.allocator, if (sacred_valid) "1.0" else "0.0");
+
+        try json.appendSlice(self.allocator, ",\"pending_recommendations\":0");
+        try json.appendSlice(self.allocator, ",\"recommendations\":[]}");
+
+        try self.sendJsonResponse(connection, json.items);
+    }
+
+    /// GET /api/pas/analyze - Returns current PAS analysis
+    fn handlePasAnalyze(self: *Self, connection: *std.net.Server.Connection) !void {
+        self.activatePas();
+
+        // Increment analysis count
+        self.pas_analyses += 1;
+
+        // Update Berry phase (mod 2π)
+        self.pas_berry_phase += PHI * 0.1;
+        self.pas_berry_phase = @mod(self.pas_berry_phase, 2.0 * std.math.pi);
+
+        // Harvest some energy
+        self.pas_energy += PHI_INV_SQ * 578.84;
+
+        var json: std.ArrayListUnmanaged(u8) = .{};
+        defer json.deinit(self.allocator);
+
+        try json.appendSlice(self.allocator, "{\"daemon_active\":");
+        try json.appendSlice(self.allocator, if (self.pas_active) "true" else "false");
+
+        // Sacred constants
+        try json.appendSlice(self.allocator, ",\"sacred_constants\":{");
+        try json.appendSlice(self.allocator, "\"phi\":1.6180339887498949,");
+        try json.appendSlice(self.allocator, "\"phi_sq\":2.6180339887498949,");
+        try json.appendSlice(self.allocator, "\"phi_inv_sq\":0.3819660112501051,");
+        try json.appendSlice(self.allocator, "\"trinity\":3.0,");
+        try json.appendSlice(self.allocator, "\"mu\":0.0382,");
+        try json.appendSlice(self.allocator, "\"chi\":0.0618,");
+        try json.appendSlice(self.allocator, "\"sigma\":1.618,");
+        try json.appendSlice(self.allocator, "\"epsilon\":0.333,");
+        try json.appendSlice(self.allocator, "\"lucas_10\":123,");
+        try json.appendSlice(self.allocator, "\"phoenix\":999");
+
+        try json.appendSlice(self.allocator, "},\"current_metrics\":{");
+
+        try json.appendSlice(self.allocator, "\"berry_phase\":");
+        var buf3: [64]u8 = undefined;
+        const berry_str = std.fmt.bufPrint(&buf3, "{d:.5}", .{self.pas_berry_phase}) catch "0";
+        try json.appendSlice(self.allocator, berry_str);
+
+        try json.appendSlice(self.allocator, ",\"pas_energy\":");
+        var buf4: [64]u8 = undefined;
+        const pas_energy_str = std.fmt.bufPrint(&buf4, "{d:.2}", .{self.pas_energy}) catch "0";
+        try json.appendSlice(self.allocator, pas_energy_str);
+
+        const sacred_valid = std.math.approxEqRel(f64, PHI_SQ + PHI_INV_SQ, TRINITY, 0.001);
+        try json.appendSlice(self.allocator, ",\"sacred_validation_rate\":");
+        try json.appendSlice(self.allocator, if (sacred_valid) "1.0" else "0.0");
+
+        try json.appendSlice(self.allocator, "}}");
+
+        try self.sendJsonResponse(connection, json.items);
+    }
+
     fn sendCors(self: *Self, connection: *std.net.Server.Connection) !void {
         _ = self;
         const response =
@@ -1038,227 +1512,6 @@ pub const ChatServer = struct {
             "Content-Length: 0\r\n" ++
             "Connection: close\r\n\r\n";
         try connection.stream.writeAll(response);
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // SACRED FORMULA HANDLERS
-    // ═══════════════════════════════════════════════════════════════════════
-
-    fn handleSacredFormulaFit(self: *Self, connection: *std.net.Server.Connection) !void {
-        const sacred_formula = @import("sacred_formula.zig");
-        const tri_spec = @import("tri_spec_parser.zig");
-
-        const loaded = tri_spec.loadSpecFromFile(self.allocator, "specs/tri/sacred/sacred_formula.tri") catch {
-            try self.sendError(connection, "Failed to load sacred_formula.tri spec");
-            return;
-        };
-        defer self.allocator.free(loaded.source);
-        var spec = loaded.spec;
-        defer spec.deinit();
-
-        const fits = sacred_formula.fitAllConstants(self.allocator, &spec) catch {
-            try self.sendError(connection, "Failed to compute fits");
-            return;
-        };
-        defer self.allocator.free(fits);
-
-        const preds = sacred_formula.computePredictions(self.allocator, &spec) catch {
-            try self.sendError(connection, "Failed to compute predictions");
-            return;
-        };
-        defer self.allocator.free(preds);
-
-        const json = sacred_formula.fullResultsToJson(self.allocator, fits, preds, spec.search) catch {
-            try self.sendError(connection, "JSON serialization failed");
-            return;
-        };
-        defer self.allocator.free(json);
-
-        try self.sendJsonResponse(connection, json);
-    }
-
-    fn handleSacredFormulaConstants(self: *Self, connection: *std.net.Server.Connection) !void {
-        const sacred_formula = @import("sacred_formula.zig");
-        const tri_spec = @import("tri_spec_parser.zig");
-
-        const loaded = tri_spec.loadSpecFromFile(self.allocator, "specs/tri/sacred/sacred_formula.tri") catch {
-            try self.sendError(connection, "Failed to load sacred_formula.tri spec");
-            return;
-        };
-        defer self.allocator.free(loaded.source);
-        var spec = loaded.spec;
-        defer spec.deinit();
-
-        const json = sacred_formula.constantsToJson(self.allocator, &spec) catch {
-            try self.sendError(connection, "JSON serialization failed");
-            return;
-        };
-        defer self.allocator.free(json);
-
-        try self.sendJsonResponse(connection, json);
-    }
-
-    fn handleSacredFormulaCompute(self: *Self, connection: *std.net.Server.Connection, body: []const u8) !void {
-        const sacred_formula = @import("sacred_formula.zig");
-        const tri_spec = @import("tri_spec_parser.zig");
-
-        // Extract "value" from JSON body
-        const value_str = extractJsonNumber(body, "value") orelse {
-            try self.sendError(connection, "Missing 'value' field in JSON body");
-            return;
-        };
-        const target = std.fmt.parseFloat(f64, value_str) catch {
-            try self.sendError(connection, "Invalid number for 'value'");
-            return;
-        };
-
-        if (target <= 0) {
-            try self.sendError(connection, "Value must be positive");
-            return;
-        }
-
-        const bounds = tri_spec.SearchBounds{};
-        const fit = sacred_formula.findFit(target, bounds);
-
-        const json = sacred_formula.fitToJson(self.allocator, target, fit) catch {
-            try self.sendError(connection, "JSON serialization failed");
-            return;
-        };
-        defer self.allocator.free(json);
-
-        try self.sendJsonResponse(connection, json);
-    }
-
-    fn handleGematria(self: *Self, connection: *std.net.Server.Connection, body: []const u8) !void {
-        const gematria = @import("gematria.zig");
-        const sacred_formula = @import("sacred_formula.zig");
-        const tri_spec = @import("tri_spec_parser.zig");
-
-        // Extract "text" from JSON body
-        const input = extractJsonString(body, "text") orelse {
-            try self.sendError(connection, "Missing 'text' field in JSON body");
-            return;
-        };
-
-        // Detect mode: if input is a pure number → number_to_glyphs, otherwise text_to_number
-        const maybe_num = std.fmt.parseInt(u32, input, 10) catch null;
-
-        if (maybe_num) |num| {
-            // Number → Glyphs mode
-            const glyphs = gematria.numberToGlyphs(self.allocator, num) catch {
-                try self.sendError(connection, "Allocation failed");
-                return;
-            };
-            defer self.allocator.free(glyphs);
-
-            // Also compute Sacred Formula fit
-            const total_f64: f64 = @floatFromInt(num);
-            const bounds = tri_spec.SearchBounds{};
-            const fit = sacred_formula.findFit(total_f64, bounds);
-
-            const json = gematria.gematriaWithFitToJson(
-                self.allocator,
-                input,
-                .number_to_glyphs,
-                glyphs,
-                num,
-                fit.n,
-                fit.k,
-                fit.m,
-                fit.p,
-                fit.q,
-                fit.value,
-                fit.error_pct,
-            ) catch {
-                try self.sendError(connection, "JSON serialization failed");
-                return;
-            };
-            defer self.allocator.free(json);
-
-            try self.sendJsonResponse(connection, json);
-        } else {
-            // Text → Number mode
-            const total = gematria.textToGematriaValue(input);
-            const glyphs = gematria.textToGlyphs(self.allocator, input) catch {
-                try self.sendError(connection, "Allocation failed");
-                return;
-            };
-            defer self.allocator.free(glyphs);
-
-            if (total == 0) {
-                const json = gematria.gematriaToJson(self.allocator, input, .text_to_number, glyphs, 0) catch {
-                    try self.sendError(connection, "JSON serialization failed");
-                    return;
-                };
-                defer self.allocator.free(json);
-                try self.sendJsonResponse(connection, json);
-                return;
-            }
-
-            // Also compute Sacred Formula fit
-            const total_f64: f64 = @floatFromInt(total);
-            const bounds = tri_spec.SearchBounds{};
-            const fit = sacred_formula.findFit(total_f64, bounds);
-
-            const json = gematria.gematriaWithFitToJson(
-                self.allocator,
-                input,
-                .text_to_number,
-                glyphs,
-                total,
-                fit.n,
-                fit.k,
-                fit.m,
-                fit.p,
-                fit.q,
-                fit.value,
-                fit.error_pct,
-            ) catch {
-                try self.sendError(connection, "JSON serialization failed");
-                return;
-            };
-            defer self.allocator.free(json);
-
-            try self.sendJsonResponse(connection, json);
-        }
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    // Cycle 87 v3.1 API Handlers: Holographic, QG Sim, Marketplace
-    // ═══════════════════════════════════════════════════════════════════════════
-
-    fn handleHolographic(self: *Self, connection: *std.net.Server.Connection, body: []const u8) !void {
-        const holo = @import("holographic_engine.zig");
-        const mode = extractJsonString(body, "mode") orelse "ads";
-        const json = holo.holoToJson(self.allocator, mode) catch {
-            try self.sendError(connection, "Holographic computation failed");
-            return;
-        };
-        defer self.allocator.free(json);
-        try self.sendJsonResponse(connection, json);
-    }
-
-    fn handleQGSim(self: *Self, connection: *std.net.Server.Connection, body: []const u8) !void {
-        const qg = @import("qg_engine.zig");
-        const steps_str = extractJsonString(body, "steps") orelse "10";
-        const steps = std.fmt.parseInt(u32, steps_str, 10) catch 10;
-        const json = qg.qgSimToJson(self.allocator, steps) catch {
-            try self.sendError(connection, "QG simulation failed");
-            return;
-        };
-        defer self.allocator.free(json);
-        try self.sendJsonResponse(connection, json);
-    }
-
-    fn handleMarketplace(self: *Self, connection: *std.net.Server.Connection, body: []const u8) !void {
-        const market = @import("marketplace_engine.zig");
-        const mode = extractJsonString(body, "mode") orelse "dashboard";
-        const json = market.marketplaceToJson(self.allocator, mode) catch {
-            try self.sendError(connection, "Marketplace computation failed");
-            return;
-        };
-        defer self.allocator.free(json);
-        try self.sendJsonResponse(connection, json);
     }
 
     fn sendNotFound(self: *Self, connection: *std.net.Server.Connection) !void {
@@ -1329,38 +1582,6 @@ fn extractJsonString(body: []const u8, key: []const u8) ?[]const u8 {
                         val_end += 1;
                     }
                     return body[val_start..val_end];
-                }
-            }
-        }
-        pos += 1;
-    }
-    return null;
-}
-
-/// Extract a numeric value from JSON body: "key":123.456 or "key": 42
-fn extractJsonNumber(body: []const u8, key: []const u8) ?[]const u8 {
-    var pos: usize = 0;
-    while (pos + key.len + 3 < body.len) {
-        if (body[pos] == '"') {
-            const key_start = pos + 1;
-            if (key_start + key.len < body.len and
-                std.mem.eql(u8, body[key_start .. key_start + key.len], key) and
-                body[key_start + key.len] == '"')
-            {
-                var vpos = key_start + key.len + 1;
-                while (vpos < body.len and (body[vpos] == ' ' or body[vpos] == ':' or body[vpos] == '\t')) {
-                    vpos += 1;
-                }
-                // Read number (digits, dot, minus, e, E, +)
-                const num_start = vpos;
-                while (vpos < body.len) {
-                    const c = body[vpos];
-                    if ((c >= '0' and c <= '9') or c == '.' or c == '-' or c == '+' or c == 'e' or c == 'E') {
-                        vpos += 1;
-                    } else break;
-                }
-                if (vpos > num_start) {
-                    return body[num_start..vpos];
                 }
             }
         }

@@ -1,0 +1,62 @@
+name: cli_query_dispatch
+version: "1.0.0"
+language: zig
+module: cli_query_dispatch
+description: "Level 11.23 — CLI-Style Query Dispatch Routing. Simulates command-line query interface with 5 query types dispatched programmatically: direct (1-hop), 2-hop chain, 3-hop chain, cross-domain (2 relations per query), and multi-relation (3 relations per entity). 30 entities across 6 categories. Total 40/40 (100%)."
+
+constants:
+  DIM: 1024
+  NUM_ENTITIES: 30
+  NUM_QUERY_TYPES: 5
+
+types:
+  CLIQuery:
+    fields:
+      query_type: String
+      hops: Int
+      result: String
+      correct: Bool
+      description: "A CLI-dispatched query with type routing."
+
+behaviors:
+  - name: directQuery
+    given: 5 cities mapped to 5 countries via city_in_country memory.
+    when: CLI dispatches direct query "What country is city X in?"
+    then: 5/5 (100%) — all direct lookups resolve correctly
+
+  - name: chain2Query
+    given: landmark→city→country 2-hop chain.
+    when: CLI dispatches chain query "What country is landmark X in?"
+    then: 5/5 (100%) — 2-hop chains resolve via intermediate city
+
+  - name: chain3Query
+    given: landmark→city→country→food 3-hop chain.
+    when: CLI dispatches chain query "What food for landmark X?"
+    then: 5/5 (100%) — 3-hop chains propagate correctly
+
+  - name: crossDomainQuery
+    given: country→language and country→climate divergent relations.
+    when: CLI dispatches "What language + climate for country X?"
+    then: 10/10 (100%) — both branches resolve
+
+  - name: multiRelQuery
+    given: country→(food + language + climate) three relations simultaneously.
+    when: CLI dispatches "All relations for country X?"
+    then: 15/15 (100%) — all 3 relations correct for each entity
+
+test_cases:
+  - name: test_direct_5_5
+    input: "Direct city→country queries"
+    expected: "5/5 (100%)"
+
+  - name: test_chain3_5_5
+    input: "3-hop landmark→city→country→food"
+    expected: "5/5 (100%)"
+
+  - name: test_multi_rel_15_15
+    input: "Multi-relation country→food,language,climate"
+    expected: "15/15 (100%)"
+
+  - name: test_total_40_40
+    input: "Total CLI query dispatch accuracy"
+    expected: "40/40 (100%)"

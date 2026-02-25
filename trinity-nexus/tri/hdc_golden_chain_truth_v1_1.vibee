@@ -1,0 +1,136 @@
+name: hdc_golden_chain_truth_v1_1
+version: "1.1.0"
+language: zig
+module: golden_chain_truth
+
+description: |
+  Truth & Provenance Layer for Golden Chain 8-node pipeline.
+  Each pipeline step produces a ProvenanceRecord with:
+    - SHA256 hash of (prev_hash + node + content + confidence + timestamp)
+    - VSA cosine similarity cross-check against TVC corpus
+    - TruthVerdict (Verified / Unverified / LowConfidence)
+  Records form an immutable hash chain (blockchain-style).
+  Each record is emitted as a visible chat line with chakra color.
+  phi^2 + 1/phi^2 = 3 = TRINITY
+
+constants:
+  PROVENANCE_HASH_SIZE: 32
+  TRUTH_CONFIDENCE_THRESHOLD: 0.7
+  TVC_SIMILARITY_THRESHOLD: 0.3
+  MAX_PROVENANCE_RECORDS: 16
+  CONTENT_DIGEST_LEN: 64
+
+types:
+  TruthVerdict:
+    description: "Ternary truth assessment based on confidence + TVC cross-check"
+    variants:
+      - Verified       # confidence >= 0.7 AND tvc_similarity >= 0.3
+      - Unverified     # tvc_similarity < 0.3 (no corpus confirmation)
+      - LowConfidence  # confidence < 0.7
+
+  ProvenanceRecord:
+    description: "Single step in the immutable provenance hash chain"
+    fields:
+      step_index: Int
+      node: ChainNode
+      content_digest: List<Int>
+      digest_len: Int
+      confidence: Float
+      tvc_similarity: Float
+      truth_verdict: TruthVerdict
+      timestamp_us: Int
+      latency_us: Int
+      source: Option<HybridSource>
+      prev_hash: List<Int>
+      current_hash: List<Int>
+
+  ProvenanceChain:
+    description: "Full chain of provenance records for one query session"
+    fields:
+      records: List<ProvenanceRecord>
+      record_count: Int
+      chain_valid: Bool
+      total_confidence: Float
+
+  ChainMessageType_v1_1:
+    description: "Extended message types (v1.1 additions)"
+    variants:
+      - ProvenanceStep      # Hash chain record line
+      - TruthVerification   # Final chain integrity verdict
+
+behaviors:
+  - name: computeStepHash
+    given: Previous hash (32 bytes), node label, content digest, confidence, timestamp
+    when: A pipeline node completes its work
+    then: |
+      Compute SHA256(prev_hash ++ node_label ++ content_digest ++ confidence_bytes ++ timestamp_bytes)
+      Return 32-byte hash. This creates an immutable chain link.
+      Genesis record uses all-zero prev_hash.
+
+  - name: assessTruth
+    given: Confidence score (f32) and TVC similarity score (f32)
+    when: Evaluating the truthfulness of a step output
+    then: |
+      if confidence < 0.7 -> LowConfidence
+      if tvc_similarity < 0.3 -> Unverified (no corpus cross-check)
+      else -> Verified (both thresholds met)
+
+  - name: recordProvenance
+    given: Node completion with content, confidence, tvc_similarity, source, latency
+    when: After each of the 8 pipeline nodes completes
+    then: |
+      1. Get prev_hash from previous record (or all-zeros for genesis)
+      2. Compute SHA256 hash (immutable chain link)
+      3. Assess TruthVerdict
+      4. Store ProvenanceRecord
+      5. Emit ProvenanceStep chat message: "[a3f2b1c9] NODE_NAME | VERIFIED | 95% | tvc:0.00"
+
+  - name: verifyProvenanceChain
+    given: Complete ProvenanceChain after DELIVER node
+    when: Final integrity check before delivering response
+    then: |
+      1. Check genesis record has all-zero prev_hash
+      2. For each record: recompute hash and verify it matches stored hash
+      3. For each record[i>0]: verify prev_hash == record[i-1].current_hash
+      4. Return true if all checks pass, false if any tampered
+
+  - name: formatProvenanceLine
+    given: A ProvenanceRecord
+    when: Rendering to canvas chat
+    then: |
+      Format as: "[<8-char-hex-prefix>] <NODE_LABEL> | <VERDICT> | <conf>% | tvc:<similarity>"
+      Display with steel blue color (#8888AA) for provenance_step
+      Display with bright teal (#00FFAA) for truth_verification
+
+test_cases:
+  - name: hash_deterministic
+    given: "Same inputs twice"
+    expected: "Identical hashes"
+
+  - name: hash_varies_with_content
+    given: "Same node, different content"
+    expected: "Different hashes"
+
+  - name: hash_varies_with_node
+    given: "Same content, different node"
+    expected: "Different hashes"
+
+  - name: hex_prefix_format
+    given: "Hash starting with 0xABCDEF01"
+    expected: "Hex prefix is 'abcdef01'"
+
+  - name: truth_verified
+    given: "confidence=0.85, tvc_similarity=0.45"
+    expected: "TruthVerdict.Verified"
+
+  - name: truth_low_confidence
+    given: "confidence=0.4, tvc_similarity=0.5"
+    expected: "TruthVerdict.LowConfidence"
+
+  - name: truth_unverified
+    given: "confidence=0.85, tvc_similarity=0.1"
+    expected: "TruthVerdict.Unverified"
+
+  - name: chain_genesis_zero
+    given: "First record in chain"
+    expected: "prev_hash is all zeros"

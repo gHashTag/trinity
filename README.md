@@ -187,6 +187,41 @@ Include `X-Wallet: 0xYOUR_ADDRESS` in HTTP headers. See [Tokenomics docs](https:
 | `src/vibeec/vibee_parser.zig` | Parse .vibee specifications |
 | `src/vibeec/zig_codegen.zig` | Generate Zig code from specs |
 | `src/vibeec/verilog_codegen.zig` | Generate Verilog for FPGA |
+| `src/vibeec/runtime_swarm.zig` | Production swarm runtime (32 agents) |
+
+### Production Swarm (v8)
+
+**One-command 32-agent Trinity cluster:**
+
+```bash
+# Run demo
+./demo/v8_production_swarm.sh
+
+# Or directly
+zig build vibee -- gen specs/tri/vsa_swarm_production_32.vibee
+zig build swarm
+./zig-out/bin/swarm-runtime
+```
+
+**Features:**
+- 32 agents with phi-spiral consensus (φ² + 1/φ² = 3)
+- Self-healing with auto-recovery
+- Prometheus metrics on `:9090`
+- Self-improvement cycle (analyzes & regenerates patterns)
+
+**Docker deployment:**
+
+```bash
+cd deploy && docker compose up -d
+# Prometheus: :9091, Grafana: :3000
+```
+
+**Kubernetes deployment:**
+
+```bash
+kubectl apply -f deploy/k8s/
+kubectl port-forward svc/trinity-swarm-metrics 9090:9090
+```
 
 ---
 

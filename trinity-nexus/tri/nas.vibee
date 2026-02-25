@@ -1,0 +1,295 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: create_searcher
+    given: Input data provided
+    when: create_searcher function called
+    then: Result returned
+  - name: test_create_searcher
+  - name: search
+    given: Input data provided
+    when: search function called
+    then: Result returned
+  - name: test_search
+  - name: random_search
+    given: Input data provided
+    when: random_search function called
+    then: Result returned
+  - name: test_random_search
+  - name: random_search_loop
+    given: Input data provided
+    when: random_search_loop function called
+    then: Result returned
+  - name: test_random_search_loop
+  - name: evolutionary_search
+    given: Input data provided
+    when: evolutionary_search function called
+    then: Result returned
+  - name: test_evolutionary_search
+  - name: evolutionary_loop
+    given: Input data provided
+    when: evolutionary_loop function called
+    then: Result returned
+  - name: test_evolutionary_loop
+  - name: rl_search
+    given: Input data provided
+    when: rl_search function called
+    then: Result returned
+  - name: test_rl_search
+  - name: rl_loop
+    given: Input data provided
+    when: rl_loop function called
+    then: Result returned
+  - name: test_rl_loop
+  - name: gradient_search
+    given: Input data provided
+    when: gradient_search function called
+    then: Result returned
+  - name: test_gradient_search
+  - name: gradient_loop
+    given: Input data provided
+    when: gradient_loop function called
+    then: Result returned
+  - name: test_gradient_loop
+  - name: bayesian_search
+    given: Input data provided
+    when: bayesian_search function called
+    then: Result returned
+  - name: test_bayesian_search
+  - name: bayesian_loop
+    given: Input data provided
+    when: bayesian_loop function called
+    then: Result returned
+  - name: test_bayesian_loop
+  - name: sample_architecture
+    given: Input data provided
+    when: sample_architecture function called
+    then: Result returned
+  - name: test_sample_architecture
+  - name: sample_mobilenet
+    given: Input data provided
+    when: sample_mobilenet function called
+    then: Result returned
+  - name: test_sample_mobilenet
+  - name: sample_resnet
+    given: Input data provided
+    when: sample_resnet function called
+    then: Result returned
+  - name: test_sample_resnet
+  - name: sample_transformer
+    given: Input data provided
+    when: sample_transformer function called
+    then: Result returned
+  - name: test_sample_transformer
+  - name: sample_efficientnet
+    given: Input data provided
+    when: sample_efficientnet function called
+    then: Result returned
+  - name: test_sample_efficientnet
+  - name: sample_custom
+    given: Input data provided
+    when: sample_custom function called
+    then: Result returned
+  - name: test_sample_custom
+  - name: evaluate_architecture
+    given: Input data provided
+    when: evaluate_architecture function called
+    then: Result returned
+  - name: test_evaluate_architecture
+  - name: estimate_latency
+    given: Input data provided
+    when: estimate_latency function called
+    then: Result returned
+  - name: test_estimate_latency
+  - name: find_best_architecture
+    given: Input data provided
+    when: find_best_architecture function called
+    then: Result returned
+  - name: test_find_best_architecture
+  - name: tournament_selection
+    given: Input data provided
+    when: tournament_selection function called
+    then: Result returned
+  - name: test_tournament_selection
+  - name: chunk_pairs
+    given: Input data provided
+    when: chunk_pairs function called
+    then: Result returned
+  - name: test_chunk_pairs
+  - name: crossover
+    given: Input data provided
+    when: crossover function called
+    then: Result returned
+  - name: test_crossover
+  - name: mutate
+    given: Input data provided
+    when: mutate function called
+    then: Result returned
+  - name: test_mutate
+  - name: create_rl_controller
+    given: Input data provided
+    when: create_rl_controller function called
+    then: Result returned
+  - name: test_create_rl_controller
+  - name: sample_from_controller
+    given: Input data provided
+    when: sample_from_controller function called
+    then: Result returned
+  - name: test_sample_from_controller
+  - name: update_controller
+    given: Input data provided
+    when: update_controller function called
+    then: Result returned
+  - name: test_update_controller
+  - name: initialize_architecture_params
+    given: Input data provided
+    when: initialize_architecture_params function called
+    then: Result returned
+  - name: test_initialize_architecture_params
+  - name: discretize_architecture
+    given: Input data provided
+    when: discretize_architecture function called
+    then: Result returned
+  - name: test_discretize_architecture
+  - name: update_alpha
+    given: Input data provided
+    when: update_alpha function called
+    then: Result returned
+  - name: test_update_alpha
+  - name: initialize_gaussian_process
+    given: Input data provided
+    when: initialize_gaussian_process function called
+    then: Result returned
+  - name: test_initialize_gaussian_process
+  - name: select_next_architecture
+    given: Input data provided
+    when: select_next_architecture function called
+    then: Result returned
+  - name: test_select_next_architecture
+  - name: update_gaussian_process
+    given: Input data provided
+    when: update_gaussian_process function called
+    then: Result returned
+  - name: test_update_gaussian_process
+  - name: float_to_int
+    given: Input data provided
+    when: float_to_int function called
+    then: Result returned
+  - name: test_float_to_int
+  - name: int_to_float
+    given: Input data provided
+    when: int_to_float function called
+    then: Result returned
+  - name: test_int_to_float
+
+types:
+  create_searcher:
+    description: Auto-generated
+
+  search:
+    description: Auto-generated
+
+  random_search:
+    description: Auto-generated
+
+  random_search_loop:
+    description: Auto-generated
+
+  evolutionary_search:
+    description: Auto-generated
+
+  evolutionary_loop:
+    description: Auto-generated
+
+  rl_search:
+    description: Auto-generated
+
+  rl_loop:
+    description: Auto-generated
+
+  gradient_search:
+    description: Auto-generated
+
+  gradient_loop:
+    description: Auto-generated
+
+  bayesian_search:
+    description: Auto-generated
+
+  bayesian_loop:
+    description: Auto-generated
+
+  sample_architecture:
+    description: Auto-generated
+
+  sample_mobilenet:
+    description: Auto-generated
+
+  sample_resnet:
+    description: Auto-generated
+
+  sample_transformer:
+    description: Auto-generated
+
+  sample_efficientnet:
+    description: Auto-generated
+
+  sample_custom:
+    description: Auto-generated
+
+  evaluate_architecture:
+    description: Auto-generated
+
+  estimate_latency:
+    description: Auto-generated
+
+  find_best_architecture:
+    description: Auto-generated
+
+  tournament_selection:
+    description: Auto-generated
+
+  chunk_pairs:
+    description: Auto-generated
+
+  crossover:
+    description: Auto-generated
+
+  mutate:
+    description: Auto-generated
+
+  create_rl_controller:
+    description: Auto-generated
+
+  sample_from_controller:
+    description: Auto-generated
+
+  update_controller:
+    description: Auto-generated
+
+  initialize_architecture_params:
+    description: Auto-generated
+
+  discretize_architecture:
+    description: Auto-generated
+
+  update_alpha:
+    description: Auto-generated
+
+  initialize_gaussian_process:
+    description: Auto-generated
+
+  select_next_architecture:
+    description: Auto-generated
+
+  update_gaussian_process:
+    description: Auto-generated
+
+  float_to_int:
+    description: Auto-generated
+
+  int_to_float:
+    description: Auto-generated
