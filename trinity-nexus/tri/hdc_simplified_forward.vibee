@@ -1,0 +1,54 @@
+name: hdc_simplified_forward
+version: "1.0.0"
+language: zig
+module: hdc_simplified_forward
+
+description: |
+  HDC Simplified Forward Pass — Level 10A.4.2: 1-Bind Architecture.
+  Replaces attention → FFN → residual (5+ binds) with direct bind.
+
+  === ARCHITECTURE COMPARISON ===
+  Multi-head (v2.29-v2.33):
+    context → permute → bind(Q) → similarity → bind(V) → bundle3
+    → bind(FF1) → bind(FF2) → bundle(residual) → output
+    = 5+ binds, quasi-random output, no learning possible
+
+  Direct (v2.34):
+    context → permute → bundle_all → bind(single_role) → output
+    = 1 bind, clean signal, measurable improvement
+
+  === WHY 1 BIND WORKS BETTER ===
+  With N binds of quasi-random roles, output correlation with target:
+    E[cos(output, target)] ≈ 0 for N >= 3
+  With 1 bind of a learned role:
+    E[cos(output, target)] = E[cos(bind(summary, role), target)]
+    = E[cos(summary, unbind(target, role))]
+    If role = unbind(target, summary), then cos = 1 for that sample
+
+  The direct computation exploits this identity directly.
+
+  Trinity Identity: phi^2 + 1/phi^2 = 3
+
+types:
+  ForwardPassConfig:
+    fields:
+      num_binds: usize
+      architecture: String
+      expected_signal: Float
+
+behaviors:
+  - name: summarizeContext
+    given: 8-element context of Hypervectors
+    when: Permute each by position, bundle sequentially
+    then: Single summary HV
+
+  - name: forwardPassDirect
+    given: Context summary, single learned role
+    when: output = bind(summary, role)
+    then: Predicted next-token HV
+
+test_cases:
+  - name: summary_preserves_info
+    description: Summary has non-zero density
+    input: "8 context HVs"
+    expected: "density > 0"

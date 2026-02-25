@@ -1,0 +1,172 @@
+name: hdc_trinity_mainnet_v1_0_launch
+version: "2.4.0"
+language: zig
+module: golden_chain
+
+description: |
+  Trinity Mainnet v1.0 Official Launch: Community Genesis + Full DAO Live + Immortal Swarm Activation.
+  Builds on v2.3 (88 quarks, 56 QuarkTypes u6, Phase J DAO governance, export v7 46B).
+  Adds 8 new QuarkType variants (64 total, filling u6 to 64/64), 96 quarks per query (+1 per node),
+  community genesis & onboarding, mainnet launch ceremony, live governance activation,
+  immortal swarm activation, node discovery, public API gateway,
+  Phase K verification (mainnet launch integrity), export v8 (50-byte header).
+  This is the FINAL u6 release — all 64 slots occupied.
+
+constants:
+  MAX_COMMUNITY_NODES: 1024              # Max community nodes
+  MAX_NODE_DISCOVERY_RECORDS: 64         # Max discovered nodes tracked
+  COMMUNITY_ONBOARD_BATCH: 32           # Nodes onboarded per batch
+  PUBLIC_API_RATE_LIMIT: 1000           # Requests per second
+  MAINNET_LAUNCH_VERSION_MAJOR: 1       # v1.0 mainnet
+  MAINNET_LAUNCH_VERSION_MINOR: 0
+  QUARK_EXPORT_VERSION: 8
+  QUARK_EXPORT_HEADER_SIZE: 50
+
+types:
+  # 8 new QuarkType variants (indices 56-63, filling u6 to 64/64)
+  QuarkType_v2_4:
+    description: "Add 8 mainnet launch quarks (64 total, u6 FULL)."
+    variants:
+      community_genesis: 56              # Community genesis ceremony
+      mainnet_launch: 57                 # Mainnet v1.0 launch event
+      live_governance: 58                # Live DAO governance activation
+      swarm_activate: 59                 # Immortal swarm activation
+      node_discovery: 60                 # Node discovery record
+      community_onboard: 61             # Community onboarding batch
+      public_api: 62                     # Public API gateway record
+      mainnet_anchor_v2: 63             # Mainnet anchor v2 (final u6)
+
+  # 4 new ChainMessageType variants
+  ChainMessageType_v2_4:
+    variants:
+      MainnetLaunch: "Mainnet v1.0 launch event"
+      CommunityOnboard: "Community onboarding event"
+      NodeDiscovery: "Node discovery event"
+      GovernanceExec: "Governance execution event"
+
+  CommunityState:
+    description: "Community node tracking state"
+    fields:
+      active_nodes: u16
+      total_onboarded: u32
+      onboard_batch: u16
+      last_onboard_us: i64
+      genesis_community_hash: "[32]u8"
+
+  MainnetConfig:
+    description: "Mainnet launch configuration"
+    fields:
+      version_major: u8
+      version_minor: u8
+      launch_timestamp_us: i64
+      is_launched: bool
+      total_nodes: u32
+      api_rate_limit: u32
+
+  LaunchState:
+    description: "Aggregated mainnet launch state"
+    fields:
+      mainnet_launched: bool
+      community_ready: bool
+      governance_live: bool
+      swarm_activated: bool
+      launch_block_height: u64
+      launch_hash: "[32]u8"
+
+  NodeDiscoveryRecord:
+    description: "Discovered node record"
+    fields:
+      node_hash: "[32]u8"
+      discovered_us: i64
+      node_type: u8
+      is_active: bool
+
+behaviors:
+  - name: launchMainnet
+    given: A GoldenChainAgent with mainnet config
+    when: launchMainnet() is called
+    then: Sets mainnet as launched, records timestamp and launch hash
+
+  - name: communityOnboard
+    given: A GoldenChainAgent with community state
+    when: communityOnboard() is called
+    then: Onboards COMMUNITY_ONBOARD_BATCH nodes if below MAX_COMMUNITY_NODES
+
+  - name: discoverNode
+    given: A GoldenChainAgent with node discovery records
+    when: discoverNode(node_hash, node_type) is called
+    then: Registers discovered node if below MAX_NODE_DISCOVERY_RECORDS
+
+  - name: getMainnetState
+    given: A GoldenChainAgent
+    when: getMainnetState() is called
+    then: Returns LaunchState with all launch status flags
+
+  - name: mainnetVerify
+    given: A GoldenChainAgent with launch state
+    when: mainnetVerify() (Phase K) is called
+    then: K1 mainnet launched, K2 community nodes > 0, K3 governance live
+
+tests:
+  - name: QuarkType has 64 variants (u6 FULL)
+    assert: All 64 QuarkType variants accessible and distinct
+
+  - name: v2.4 QuarkType labels unique
+    assert: All 8 new labels unique across all 64 labels
+
+  - name: isCommunityQuark classification
+    assert: community_genesis, community_onboard return true
+
+  - name: isMainnetLaunchQuark classification
+    assert: mainnet_launch, mainnet_anchor_v2 return true
+
+  - name: isLiveGovernanceQuark classification
+    assert: live_governance returns true
+
+  - name: isSwarmActivateQuark classification
+    assert: swarm_activate returns true
+
+  - name: isNodeDiscoveryQuark classification
+    assert: node_discovery returns true
+
+  - name: isPublicAPIQuark classification
+    assert: public_api returns true
+
+  - name: CommunityState defaults
+    assert: Default values match expected (active_nodes 0, total_onboarded 0)
+
+  - name: MainnetConfig initial
+    assert: Default is_launched false, version 1.0
+
+  - name: LaunchState initial
+    assert: All flags false, block_height 0
+
+  - name: Phase K mainnetVerify passes
+    assert: Passes with valid launch state (mainnet launched, community > 0)
+
+  - name: Phase K fails without launch
+    assert: Fails when mainnet not launched
+
+  - name: serializeQuarkChain v8 roundtrip
+    assert: Serialize+deserialize preserves community/discovery state in 50-byte header
+
+  - name: 96 quarks per query
+    assert: Full pipeline emits exactly 96 quarks
+
+  - name: v2.4 QuarkType verification count
+    assert: 61 work quarks + 3 verification quarks = 64 total
+
+  - name: v2.4 constants correct
+    assert: MAX_COMMUNITY_NODES=1024, PUBLIC_API_RATE_LIMIT=1000, MAINNET_LAUNCH_VERSION=1.0
+
+  - name: Export v8 header 50 bytes
+    assert: QUARK_EXPORT_HEADER_SIZE=50, QUARK_EXPORT_VERSION=8
+
+  - name: v2.4 ChainMessageType has 4 new variants
+    assert: MainnetLaunch, CommunityOnboard, NodeDiscovery, GovernanceExec all distinct
+
+  - name: 96 quarks target distribution
+    assert: 12+12+12+13+12+11+12+12 = 96
+
+  - name: u6 capacity fully saturated
+    assert: 64 QuarkType variants = 2^6, no slots remaining

@@ -1,0 +1,42 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+types:
+  RustCodeGenerator:
+    description: Generates Rust code from AST
+    fields:
+      indent_size: Int
+      use_tabs: Bool
+
+  generate:
+    description: Generate Rust code from AST
+      ast: List(Stmt)
+
+  stmt_to_rust:
+    description: Convert single statement to Rust code
+      stmt: Stmt
+
+  type_to_rust:
+    description: Convert VIBEEC type to Rust type
+      t: Type
+
+  expr_to_rust:
+    description: Convert expression to Rust code with indentation
+      expr: Expr
+      indent: Int
+
+behaviors:
+  - name: function_generation
+    given: FnDef AST node
+    when: generate is called
+    then: Returns valid Rust function code
+  - name: type_conversion
+    given: VIBEEC type
+    when: type_to_rust is called
+    then: Returns equivalent Rust type
+  - name: expression_generation
+    given: Expression AST node
+    when: expr_to_rust is called
+    then: Returns valid Rust expression

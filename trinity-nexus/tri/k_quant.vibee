@@ -1,0 +1,87 @@
+name: k_quant
+version: "1.0.0"
+language: zig
+module: k_quant
+author: Ona AI Agent
+description: K-quantization formats (Q4_K, Q5_K, Q6_K) for llama.cpp compatibility
+
+types:
+  Q4KBlock:
+    description: Q4_K super-block (256 elements, 144 bytes)
+    fields:
+      d: Float
+      dmin: Float
+      scales: List<Int>
+      qs: List<Int>
+    constants:
+      BLOCK_SIZE: 256
+      BYTE_SIZE: 144
+      NUM_SUBBLOCKS: 8
+      SUBBLOCK_SIZE: 32
+
+  Q5KBlock:
+    description: Q5_K super-block (256 elements, 176 bytes)
+    fields:
+      d: Float
+      dmin: Float
+      scales: List<Int>
+      qh: List<Int>
+      qs: List<Int>
+    constants:
+      BLOCK_SIZE: 256
+      BYTE_SIZE: 176
+
+  Q6KBlock:
+    description: Q6_K super-block (256 elements, 210 bytes)
+    fields:
+      ql: List<Int>
+      qh: List<Int>
+      scales: List<Int>
+      d: Float
+    constants:
+      BLOCK_SIZE: 256
+      BYTE_SIZE: 210
+
+  DequantResult:
+    fields:
+      data: List<Float>
+      num_elements: Int
+
+behaviors:
+  - name: dequantize_q4_k
+    given: Q4KBlock raw bytes
+    when: Converting to float32
+    then: Return 256 float values using sub-block scales
+
+  - name: dequantize_q5_k
+    given: Q5KBlock raw bytes
+    when: Converting to float32
+    then: Return 256 float values with 5-bit precision
+
+  - name: dequantize_q6_k
+    given: Q6KBlock raw bytes
+    when: Converting to float32
+    then: Return 256 float values with 6-bit precision
+
+  - name: get_subblock_scale
+    given: Packed scales array and subblock index
+    when: Extracting 6-bit scale
+    then: Return unpacked scale value
+
+  - name: get_subblock_min
+    given: Packed scales array and subblock index
+    when: Extracting 6-bit min
+    then: Return unpacked min value
+
+constants:
+  Q4_K_BLOCK_SIZE: 256
+  Q4_K_BYTE_SIZE: 144
+  Q5_K_BLOCK_SIZE: 256
+  Q5_K_BYTE_SIZE: 176
+  Q6_K_BLOCK_SIZE: 256
+  Q6_K_BYTE_SIZE: 210
+  NUM_SUBBLOCKS: 8
+  SUBBLOCK_SIZE: 32
+  SCALE_BITS: 6
+  PHI: 1.618033988749895
+  TRINITY: 3.0

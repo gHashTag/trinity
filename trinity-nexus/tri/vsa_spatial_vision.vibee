@@ -1,0 +1,135 @@
+# ============================================================================
+# VSA Spatial Vision Encoder - Cycle 52
+# 2D spatial grid permutation for patch-based image encoding
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: vsa_spatial_vision
+version: "1.0.0"
+language: zig
+module: vsa_spatial_vision
+
+imports:
+  - name: vsa
+    path: "../src/vsa.zig"
+
+description: |
+  Vision encoder with 2D spatial strategy.
+  Key difference from generic encoder: uses double permutation
+  permute(permute(base, x), y*width) to encode 2D patch positions.
+  This preserves spatial relationships in the hypervector space.
+
+constants:
+  DIMENSION: 1024
+  PATCH_SIZE: 8
+  PHI: 1.6180339887498948482
+
+types:
+  SpatialConfig:
+    fields:
+      width: Int
+      height: Int
+      patch_size: Int
+
+behaviors:
+  - name: realSpatialBind
+    given: Patch vector and 2D grid position (x, y)
+    when: Encoding patch with spatial position
+    then: Double permutation bind for 2D grid
+
+  - name: realSpatialBundle
+    given: Multiple spatially-bound patch vectors
+    when: Combining into image representation
+    then: Majority vote bundle
+
+  - name: realSpatialSimilarity
+    given: Two spatially-encoded images
+    when: Comparing image similarity
+    then: Cosine similarity preserving spatial structure
+
+  - name: realSpatialDistance
+    given: Two spatially-encoded images
+    when: Measuring image distance
+    then: Hamming distance between spatial encodings
+
+  - name: realPatchToVector
+    given: Patch intensity value
+    when: Converting pixel data to base vector
+    then: Character-to-vector mapping for intensity
+
+  - name: realRandomVector
+    given: Seed for position base vector
+    when: Creating spatial reference frame
+    then: Deterministic random vector for grid
+
+  - name: realBind
+    given: Two vectors for association
+    when: Generic binding operation
+    then: VSA bind
+
+  - name: realBundle2
+    given: Two vectors for superposition
+    when: Generic bundling operation
+    then: VSA bundle2
+
+  - name: realPermute
+    given: Vector and shift amount
+    when: Position encoding
+    then: VSA permute
+
+  - name: realCosineSimilarity
+    given: Two vectors
+    when: Measuring similarity
+    then: Cosine similarity score
+
+  - name: realHammingDistance
+    given: Two vectors
+    when: Measuring distance
+    then: Hamming distance count
+
+  - name: realCharToVector
+    given: Pixel intensity as char
+    when: Base encoding
+    then: Character to hypervector
+
+  - name: realEncodeText
+    given: Patch data as text
+    when: Fallback encoding
+    then: Text-based encoding
+
+tests:
+  - name: test_spatial_bind_2d
+    given: Patch at position (3, 5) in 8x8 grid
+    then: Double permutation produces unique binding
+
+  - name: test_spatial_bundle
+    given: Two spatially-bound patches
+    then: Bundle preserves both patches
+
+  - name: test_spatial_self_similarity
+    given: Same image encoded twice
+    then: Cosine similarity = 1.0
+
+  - name: test_spatial_different_images
+    given: Two different images
+    then: Lower similarity than identical
+
+  - name: test_patch_intensity
+    given: Pixel value 128
+    then: Maps to valid hypervector
+
+  - name: test_spatial_position_matters
+    given: Same patch at different positions
+    then: Different encodings (position preserved)
+
+  - name: test_spatial_grid_reference
+    given: Grid seed 42
+    then: Deterministic reference frame
+
+  - name: test_spatial_hamming
+    given: Two spatial encodings
+    then: Valid hamming distance
+
+# ============================================================================
+# Golden Chain: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================

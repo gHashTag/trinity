@@ -1,0 +1,322 @@
+# VIBEE V6 - Advanced Type System & Metaprogramming
+# Version: 6.0.0 (Roadmap)
+# Date: 2026-01-11
+# Goal: Production-grade language with advanced features
+
+# ============================================================================
+# V6 NEW FEATURES
+# ============================================================================
+
+# 1. PATTERN GUARDS (from V5 improvement)
+# ============================================================================
+
+case x {
+  n when n < 0 -> "negative"
+  0 -> "zero"
+  n when n > 0 && n < 10 -> "single digit"
+  
+  # Guard with destructuring
+  [x, y] when x == y -> "equal elements"
+  
+  # Guard with function calls
+  user when is_admin(user) -> "admin user"
+}
+
+# ============================================================================
+# 2. EFFECT SYSTEM
+# ============================================================================
+
+# Pure function (no effects)
+pub pure add(x: Int, y: Int): Int = x + y
+
+# Function with IO effect
+pub io read_file(path: String): String with IO = {
+  # Can perform IO operations
+}
+
+# Function with multiple effects
+pub async_io fetch(url: String): Result<String, Error> 
+  with [IO, Async, Error] = {
+  let response = await http.get(url)
+  response.text()
+}
+
+# Effect inference
+pub process(path: String) with IO = {
+  let content = read_file(path)  # Infers IO effect
+  parse(content)  # Pure, no additional effect
+}
+
+# Effect handlers
+handle {
+  risky_operation()
+} with {
+  IO(action) -> log_io(action)
+  Error(e) -> recover(e)
+}
+
+# ============================================================================
+# 3. ROW POLYMORPHISM
+# ============================================================================
+
+# Function works with any record that has 'name' field
+pub get_name<r>(user: {name: String | r}): String = {
+  user.name
+}
+
+# Extensible records
+type User = {name: String, age: Int}
+type Admin = {..User, role: String}  # Extends User
+
+# Record update
+let admin = {..user, role: "admin"}
+
+# Row constraints
+pub format_user<r>(user: {name: String, email: String | r}): String = {
+  "{user.name} <{user.email}>"
+}
+
+# ============================================================================
+# 4. COMPILE-TIME REFLECTION
+# ============================================================================
+
+# Get type info at compile time
+@comptime
+pub type_info<T>(): TypeInfo = {
+  TypeInfo {
+    name: type_name<T>(),
+    fields: type_fields<T>(),
+    methods: type_methods<T>(),
+  }
+}
+
+# Generate code based on type
+macro derive_json<T>() = {
+  let info = type_info<T>()
+  
+  quote {
+    impl ToJson for $T {
+      pub to_json(self): Json = {
+        Json.object([
+          $(for field in info.fields {
+            quote { ($(field.name), self.$(field.name).to_json()) }
+          })
+        ])
+      }
+    }
+  }
+}
+
+# Usage
+@derive_json
+type User {
+  name: String
+  age: Int
+}
+
+# ============================================================================
+# 5. DEPENDENT TYPES (Basic)
+# ============================================================================
+
+# Length-indexed vector
+type Vec<T, n: Nat> = ...
+
+pub head<T, n: Nat>(vec: Vec<T, n + 1>): T = {
+  # Compiler knows vec is non-empty!
+}
+
+# Non-empty list
+type NonEmpty<T> = [T, ..List<T>]
+
+pub head(list: NonEmpty<T>): T = {
+  let [first, ..] = list
+  first  # No Option needed!
+}
+
+# Refined types
+type PositiveInt = Int where _ > 0
+type NonEmptyString = String where _.length() > 0
+
+pub divide(a: Int, b: PositiveInt): Int = {
+  a / b  # No division by zero!
+}
+
+# ============================================================================
+# 6. LINEAR TYPES
+# ============================================================================
+
+# Linear type (must be used exactly once)
+type File = linear {
+  handle: FileHandle
+}
+
+pub open(path: String): File with IO = {
+  # Returns linear File
+}
+
+pub close(file: File): () with IO = {
+  # Consumes file (can't use again)
+}
+
+pub read(file: File): (String, File) with IO = {
+  # Returns new File (linear)
+}
+
+# Usage
+pub process(path: String) with IO = {
+  let file = open(path)
+  let (content, file) = read(file)
+  close(file)  # Must close!
+}
+
+# ============================================================================
+# 7. HIGHER-KINDED TYPES
+# ============================================================================
+
+# Functor typeclass
+trait Functor<F<_>> {
+  pub map<A, B>(fa: F<A>, f: A -> B): F<B>
+}
+
+# Implement for List
+impl Functor<List> {
+  pub map(list, f) = list.map(f)
+}
+
+# Generic function over any Functor
+pub double<F<_>>(fa: F<Int>) where F: Functor = {
+  fa.map(_ * 2)
+}
+
+double([1, 2, 3])      # [2, 4, 6]
+double(Some(5))        # Some(10)
+
+# ============================================================================
+# 8. ADVANCED MACROS
+# ============================================================================
+
+# Procedural macros
+macro sql(query: String) = {
+  # Parse SQL at compile time
+  let parsed = parse_sql(query)
+  
+  # Generate type-safe query function
+  quote {
+    pub fn execute_query(conn: Connection): Result<Vec<Row>, Error> = {
+      conn.execute($(query))
+    }
+  }
+}
+
+# Usage
+sql!("SELECT * FROM users WHERE age > 18")
+# Generates type-safe function at compile time
+
+# Attribute macros
+@route(GET, "/users/:id")
+pub get_user(id: Int): Response = {
+  # Macro generates routing code
+}
+
+# ============================================================================
+# 9. ALGEBRAIC EFFECTS
+# ============================================================================
+
+# Define effect
+effect State<S> {
+  get(): S
+  put(s: S): ()
+}
+
+# Use effect
+pub counter() with State<Int> = {
+  let count = do State.get()
+  do State.put(count + 1)
+  count
+}
+
+# Handle effect
+let result = handle {
+  counter()
+  counter()
+  counter()
+} with State<Int> {
+  initial: 0
+  get() -> (state, resume) -> resume(state, state)
+  put(new_state) -> (state, resume) -> resume((), new_state)
+}
+
+# ============================================================================
+# 10. GRADUAL TYPING
+# ============================================================================
+
+# Dynamic type for interop
+pub process(data: Dynamic): Result<User, Error> = {
+  # Runtime type checking
+  case data {
+    obj: Object -> {
+      User {
+        name: obj.get("name")?.as_string()?,
+        age: obj.get("age")?.as_int()?,
+      }
+    }
+    _ -> Error("Invalid data")
+  }
+}
+
+# Gradual refinement
+pub parse(input: Dynamic): User = {
+  let name: String = input.name  # Runtime check
+  let age: Int = input.age       # Runtime check
+  User { name, age }
+}
+
+# ============================================================================
+# COMPARISON: V5 vs V6
+# ============================================================================
+
+# V5 (good)
+pub process(data) = {
+  data
+  |> parse
+  |> validate
+  |> save
+}
+
+# V6 (better - with effects)
+pub process(data) with [IO, Error] = {
+  data
+  |> parse?
+  |> validate?
+  |> save?
+}
+
+# V6 (best - with linear types)
+pub process(data: Data) with [IO, Error] = linear {
+  let file = open("output.txt")
+  let (_, file) = write(file, data)
+  close(file)  # Compiler ensures cleanup
+}
+
+# ============================================================================
+# MIGRATION PATH: V5 -> V6
+# ============================================================================
+
+# V5 code still works in V6 (backward compatible)
+pub add(x, y) = x + y  # Valid V6
+
+# V6 features are opt-in
+pub add_pure(x, y): Int pure = x + y  # Opt-in to purity
+
+# Gradual migration
+pub old_code() = {
+  # V5 style
+}
+
+pub new_code() with IO = {
+  # V6 style with effects
+}
+
+# ============================================================================
+# END OF V6 SPECIFICATION
+# ============================================================================

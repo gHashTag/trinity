@@ -1,0 +1,292 @@
+# VIBEE Agent - Beautiful Hash Comments Example
+# Clean, minimal, professional ✨
+
+/* 
+ * ============================================
+ * TELEGRAM BOT AGENT
+ * ============================================
+ * 
+ * A beautiful example of VIBEE code
+ * using hash comments as the primary style
+ * 
+ * Author: VIBEE Team
+ * Version: 2.0
+ * ============================================
+ */
+
+@agent TelegramBot {
+  # Agent configuration
+  name: "TelegramBot"
+  version: "2.0"
+  description: "Telegram bot with beautiful hash comments"
+  
+  # ==========================================
+  # INTENTS
+  # ==========================================
+  
+  @intent start {
+    # Welcome new users
+    patterns: ["/start", "start", "begin"]
+    
+    fn handle(ctx: Context) -> Response {
+      # Get user info
+      let user = ctx.user
+      let name = user.first_name
+      
+      # Create welcome message
+      let message = "👋 Welcome, " <> name <> "!\n\n"
+        <> "I'm your VIBEE assistant.\n"
+        <> "How can I help you today?"
+      
+      # Send response
+      Response.text(message)
+    }
+  }
+  
+  @intent help {
+    # Show available commands
+    patterns: ["/help", "help", "commands"]
+    
+    fn handle(ctx: Context) -> Response {
+      # Build help text
+      let help_text = "📚 Available Commands:\n\n"
+        <> "/start - Start the bot\n"
+        <> "/help - Show this help\n"
+        <> "/status - Check bot status\n"
+        <> "/settings - Configure settings"
+      
+      Response.text(help_text)
+    }
+  }
+  
+  @intent status {
+    # Check bot status
+    patterns: ["/status", "status", "health"]
+    
+    fn handle(ctx: Context) -> Response {
+      # Get system metrics
+      let uptime = get_uptime()
+      let memory = get_memory_usage()
+      let users = get_active_users()
+      
+      # Format status message
+      let status = "✅ Bot Status:\n\n"
+        <> "⏱ Uptime: " <> uptime <> "\n"
+        <> "💾 Memory: " <> memory <> "\n"
+        <> "👥 Active Users: " <> int.to_string(users)
+      
+      Response.text(status)
+    }
+  }
+  
+  # ==========================================
+  # TOOLS
+  # ==========================================
+  
+  @tool generate_image {
+    # Generate AI images using FLUX
+    description: "Generate images from text prompts"
+    
+    /* 
+     * Image generation parameters
+     * - prompt: Text description
+     * - width: Image width (default: 1024)
+     * - height: Image height (default: 1024)
+     * - steps: Generation steps (default: 28)
+     */
+    
+    fn execute(
+      prompt: String,
+      width: Int,
+      height: Int,
+      steps: Int
+    ) -> Result(String, String) {
+      # Validate parameters
+      case validate_image_params(width, height, steps) {
+        Error(e) -> Error(e)
+        Ok(_) -> {
+          # Call FLUX API
+          case flux_api.generate(prompt, width, height, steps) {
+            Ok(image_url) -> {
+              # Success - return image URL
+              Ok(image_url)
+            }
+            Error(api_error) -> {
+              # API error - return error message
+              Error("Failed to generate image: " <> api_error)
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  @tool search_history {
+    # Search conversation history
+    description: "Search through chat history"
+    
+    fn execute(query: String, limit: Int) -> Result(List(Message), String) {
+      # Validate query
+      case string.length(query) {
+        0 -> Error("Query cannot be empty")
+        _ -> {
+          # Search database
+          let results = db.search(query, limit)
+          
+          # Return results
+          Ok(results)
+        }
+      }
+    }
+  }
+  
+  # ==========================================
+  # STATE MACHINE
+  # ==========================================
+  
+  @machine conversation {
+    # Conversation state machine
+    
+    @state idle {
+      # Waiting for user input
+      
+      on message -> {
+        # User sent a message
+        goto processing
+      }
+      
+      on timeout -> {
+        # Session timeout
+        goto cleanup
+      }
+    }
+    
+    @state processing {
+      # Processing user message
+      
+      on complete -> {
+        # Processing complete
+        goto responding
+      }
+      
+      on error -> {
+        # Error occurred
+        goto error_handling
+      }
+    }
+    
+    @state responding {
+      # Sending response to user
+      
+      on sent -> {
+        # Response sent successfully
+        goto idle
+      }
+      
+      on failed -> {
+        # Failed to send response
+        goto error_handling
+      }
+    }
+    
+    @state error_handling {
+      # Handle errors gracefully
+      
+      on recovered -> {
+        # Error recovered
+        goto idle
+      }
+      
+      on fatal -> {
+        # Fatal error
+        goto cleanup
+      }
+    }
+    
+    @state cleanup {
+      # Clean up resources
+      
+      on complete -> {
+        # Cleanup complete
+        exit
+      }
+    }
+  }
+  
+  # ==========================================
+  # HELPER FUNCTIONS
+  # ==========================================
+  
+  fn validate_image_params(
+    width: Int,
+    height: Int,
+    steps: Int
+  ) -> Result(Nil, String) {
+    # Check width
+    case width {
+      w if w < 256 -> Error("Width too small (min: 256)")
+      w if w > 2048 -> Error("Width too large (max: 2048)")
+      _ -> {
+        # Check height
+        case height {
+          h if h < 256 -> Error("Height too small (min: 256)")
+          h if h > 2048 -> Error("Height too large (max: 2048)")
+          _ -> {
+            # Check steps
+            case steps {
+              s if s < 1 -> Error("Steps too small (min: 1)")
+              s if s > 50 -> Error("Steps too large (max: 50)")
+              _ -> Ok(Nil)  # All valid
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  fn get_uptime() -> String {
+    # Calculate uptime
+    let seconds = system.uptime_seconds()
+    let hours = seconds / 3600
+    let minutes = (seconds % 3600) / 60
+    
+    # Format as string
+    int.to_string(hours) <> "h " <> int.to_string(minutes) <> "m"
+  }
+  
+  fn get_memory_usage() -> String {
+    # Get memory usage in MB
+    let bytes = system.memory_bytes()
+    let mb = bytes / 1024 / 1024
+    
+    # Format as string
+    int.to_string(mb) <> " MB"
+  }
+  
+  fn get_active_users() -> Int {
+    # Count active users
+    db.count_active_users()
+  }
+}
+
+# ============================================
+# WHY HASH COMMENTS ARE BEAUTIFUL
+# ============================================
+
+/* 
+ * Hash comments (#) are beautiful because:
+ * 
+ * ✨ Clean and minimal - just 1 character
+ * ✨ Easy to read - stands out clearly
+ * ✨ Professional - used by Python, Ruby, Shell
+ * ✨ Fast to type - no shift key needed
+ * ✨ Universal - recognized everywhere
+ * 
+ * Compare:
+ * # This is clean
+ * // This is okay
+ * 
+ * The difference is subtle but noticeable!
+ */
+
+# End of beautiful example ✨

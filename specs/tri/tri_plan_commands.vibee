@@ -1,0 +1,82 @@
+name: tri_plan_commands
+version: "1.0.0"
+language: zig
+module: tri_plan_commands
+
+types:
+  TaskContext:
+    fields:
+      description: String
+      priority: Option<String>
+      tech_tree_path: Option<String>
+
+  TechTreeNode:
+    fields:
+      id: String
+      name: String
+      branch: String
+      depth: Int
+      dependencies: List<String>
+      children: List<String>
+
+  ImplementationPlan:
+    fields:
+      task_description: String
+      steps: List<PlanStep>
+      tech_tree_nodes: List<String>
+      estimated_effort: String
+      dependencies: List<String>
+
+  PlanStep:
+    fields:
+      order: Int
+      description: String
+      action_type: String
+      dependencies: List<Int>
+      acceptance_criteria: List<String>
+
+behaviors:
+  - name: create_plan_from_task
+    given: A task description with optional priority and tech tree path
+    when: The plan command is invoked with the task
+    then: Generate a structured implementation plan with ordered steps, tech tree navigation, and acceptance criteria
+
+  - name: navigate_tech_tree
+    given: A task context and tech tree structure
+    when: Planning implementation steps
+    then: Map the task to relevant tech tree nodes and identify required dependencies
+
+  - name: break_into_subtasks
+    given: A complex task description
+    when: Generating implementation plan
+    then: Decompose task into atomic steps with clear action types and dependency graph
+
+  - name: estimate_effort
+    given: Implementation plan with steps and dependencies
+    when: Finalizing plan generation
+    then: Provide effort estimation based on complexity and tech tree depth
+
+  - name: validate_plan
+    given: Generated implementation plan
+    when: Before returning plan to user
+    then: Ensure all steps have acceptance criteria, dependencies are valid, and tech tree path exists
+
+  - name: format_plan_output
+    given: Implementation plan object
+    when: Displaying results
+    then: Format plan as human-readable text with step numbering, dependencies, and tech tree markers
+
+  - name: handle_plan_errors
+    given: Invalid input or missing tech tree data
+    when: Plan generation fails
+    then: Return helpful error message with suggestions for valid task descriptions
+
+  - name: apply_priority
+    given: Plan and priority level (low/normal/high/critical)
+    when: Priority is specified
+    then: Adjust step ordering and resource allocation based on priority
+
+  - name: suggest_next_actions
+    given: Generated implementation plan
+    when: Displaying complete plan
+    then: Provide follow-up command suggestions (tri decompose, tri gen, tri verify)

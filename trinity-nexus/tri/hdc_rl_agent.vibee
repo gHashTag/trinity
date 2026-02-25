@@ -1,0 +1,145 @@
+name: hdc_rl_agent
+version: "1.0.0"
+language: zig
+module: hdc_rl_agent
+
+description: |
+  HDC Reinforcement Learning Agent — Q-learning via Hyperdimensional Prototypes.
+  Uses VSA algebra instead of a numerical Q-table for action-value estimation.
+
+  Core Idea (Action-Value Prototypes):
+    For each action a, maintain two prototypes:
+      positive_proto[a] = bundle of state_hvs where action a led to positive returns
+      negative_proto[a] = bundle of state_hvs where action a led to negative returns
+
+    Q(s, a) ≈ cosine(state_hv(s), positive_proto[a]) - cosine(state_hv(s), negative_proto[a])
+
+    Natural generalization: similar states → similar Q-values
+    (because cosine similarity is continuous in HD space)
+
+  State Encoding:
+    state_hv = bind(perm(char_hv(x_digit), 0), perm(char_hv(y_digit), 100))
+    Positional encoding of coordinates preserves spatial structure.
+
+  Action Selection (epsilon-greedy):
+    With prob epsilon: random action
+    Otherwise: argmax_a Q(s, a)
+
+  Learning (Monte Carlo with discounted returns):
+    After episode trajectory [(s0, a0, r0), (s1, a1, r1), ...]:
+    1. Compute discounted returns G_t = r_t + gamma * G_{t+1}
+    2. For each (s_t, a_t, G_t):
+       if G_t > 0: positive_proto[a_t] = bundle(positive_proto[a_t], state_hv(s_t))
+       if G_t < 0: negative_proto[a_t] = bundle(negative_proto[a_t], state_hv(s_t))
+
+  Gridworld Environment:
+    5x5 grid, start=(0,0), goal=(4,4)
+    Walls at (1,1), (1,3), (3,1), (3,3)
+    Reward: +10 at goal, -1 per step, -5 for wall bump
+    Actions: up, down, left, right
+
+  Properties:
+    - No numerical Q-table — purely hyperdimensional
+    - Natural state generalization via cosine similarity
+    - Bounded memory: O(num_actions) prototypes, not O(states * actions)
+    - Works with continuous or discrete state spaces
+
+types:
+  Action:
+    enum:
+      - up
+      - down
+      - left
+      - right
+
+  State:
+    fields:
+      x: usize
+      y: usize
+
+  Transition:
+    fields:
+      state: State
+      action: Action
+      reward: Float
+      next_state: State
+
+  ActionValue:
+    fields:
+      action: Action
+      q_value: Float
+
+  ActionPrototype:
+    fields:
+      positive_proto: Option<HybridBigInt>
+      negative_proto: Option<HybridBigInt>
+      positive_count: u32
+      negative_count: u32
+
+  RLConfig:
+    fields:
+      gamma: Float           # discount factor (default 0.99)
+      epsilon: Float         # exploration rate (default 0.3)
+      epsilon_decay: Float   # decay per episode (default 0.995)
+      epsilon_min: Float     # minimum epsilon (default 0.01)
+
+  Gridworld:
+    fields:
+      width: usize
+      height: usize
+      walls: List<State>
+      goal: State
+      start: State
+
+  EpisodeStats:
+    fields:
+      total_reward: Float
+      steps: usize
+      reached_goal: Bool
+
+  HDCRLAgent:
+    fields:
+      allocator: Allocator
+      item_memory: ItemMemory
+      ngram_encoder: NGramEncoder
+      dimension: usize
+      action_protos: Array<ActionPrototype, 4>   # one per action
+      config: RLConfig
+      total_episodes: usize
+      rng: PRNG
+
+behaviors:
+  - name: encodeState
+    given: Grid coordinates (x, y)
+    when: Creates positional hypervector for state
+    then: Returns state_hv
+
+  - name: getQValue
+    given: State and action
+    when: Computes Q(s,a) from action prototypes
+    then: Returns cosine difference (positive - negative)
+
+  - name: selectAction
+    given: State
+    when: Epsilon-greedy action selection
+    then: Returns chosen action
+
+  - name: getBestAction
+    given: State
+    when: Greedy action selection (no exploration)
+    then: Returns action with highest Q-value
+
+  - name: learnEpisode
+    given: Trajectory of (state, action, reward) tuples
+    when: Computes returns, updates action prototypes
+    then: Prototypes updated, epsilon decayed
+
+  - name: trainGridworld
+    given: Gridworld environment and num_episodes
+    when: Runs episodes, learns from trajectories
+    then: Agent trained on gridworld
+
+  - name: evaluatePolicy
+    given: Gridworld environment
+    when: Runs one greedy episode (no exploration)
+    then: Returns EpisodeStats

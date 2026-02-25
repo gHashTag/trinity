@@ -1,0 +1,143 @@
+# Trinity Plugin Loader
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3
+
+name: plugin_loader
+version: "1.0.0"
+language: zig
+module: plugin_loader
+
+description: |
+  Unified loader for compile-time and runtime plugins.
+  Core plugins loaded via @import at compile time.
+  Community plugins loaded via WASM at runtime.
+  Integrates with existing wasm_parser from Firebird.
+
+imports:
+  - plugin_interface
+  - plugin_registry
+
+types:
+  LoadStrategy:
+    description: "How to load the plugin"
+    variants:
+      - comptime_import   # @import for core plugins (Zig)
+      - wasm_runtime      # WASM for community plugins
+      - native_ffi        # Native .so/.dylib via FFI
+
+  WASMExport:
+    description: "Exported function from WASM module"
+    fields:
+      name: String
+      param_types: List<String>
+      return_type: String
+
+  WASMModule:
+    description: "Loaded WASM plugin module"
+    fields:
+      binary: List<Int>
+      exports: List<WASMExport>
+      memory_pages: Int
+      instance: Pointer
+
+  LoadResult:
+    description: "Result of loading a plugin"
+    fields:
+      success: Bool
+      plugin: Option<Plugin>
+      error: Option<String>
+      load_time_ns: Int
+
+  PluginLoader:
+    description: "Unified plugin loader"
+    fields:
+      allocator: Allocator
+      registry: Pointer  # PluginRegistry*
+      wasm_runtime: Option<Pointer>
+      security_config: SecurityConfig
+
+  SecurityConfig:
+    description: "Security settings for plugin loading"
+    fields:
+      verify_signatures: Bool
+      allow_native: Bool
+      sandbox_wasm: Bool
+      memory_limit_mb: Int
+      timeout_ms: Int
+
+behaviors:
+  - name: loader_init
+    given: Allocator, registry pointer, security config
+    when: Creating plugin loader
+    then: Initialize loader, setup WASM runtime if needed
+
+  - name: loader_deinit
+    given: Loader instance
+    when: Destroying loader
+    then: Cleanup WASM runtime, free resources
+
+  - name: load_builtin
+    given: Comptime module path string
+    when: Loading core plugin at compile time
+    then: Use @import, create Plugin, register in registry
+
+  - name: load_wasm
+    given: WASM binary bytes
+    when: Loading community plugin at runtime
+    then: Parse WASM, validate exports, create Plugin wrapper
+
+  - name: load_from_path
+    given: File path string
+    when: Loading plugin from filesystem
+    then: Detect type (.zig/.wasm), choose strategy, load
+
+  - name: load_from_manifest
+    given: PluginManifest
+    when: Loading plugin described by manifest
+    then: Resolve entry_point, validate, load with appropriate strategy
+
+  - name: verify_wasm_exports
+    given: WASMModule
+    when: Validating WASM plugin
+    then: Check required exports (plugin_init, plugin_invoke, plugin_metadata)
+
+  - name: create_wasm_vtable
+    given: WASMModule instance
+    when: Wrapping WASM as Plugin
+    then: Create VTable pointing to WASM function wrappers
+
+  - name: verify_signature
+    given: Plugin bytes and signature bytes
+    when: Loading untrusted plugin
+    then: Verify ed25519 signature, return success/failure
+
+  - name: sandbox_execute
+    given: WASMModule, function name, args
+    when: Executing WASM function
+    then: Execute in sandbox with memory/time limits
+
+constants:
+  # Required WASM exports
+  WASM_EXPORT_INIT: "plugin_init"
+  WASM_EXPORT_DEINIT: "plugin_deinit"
+  WASM_EXPORT_INVOKE: "plugin_invoke"
+  WASM_EXPORT_METADATA: "plugin_metadata"
+  WASM_EXPORT_CAPABILITIES: "plugin_capabilities"
+
+  # Limits
+  DEFAULT_MEMORY_LIMIT_MB: 256
+  DEFAULT_TIMEOUT_MS: 30000
+  MAX_WASM_PAGES: 65536
+
+theorems:
+  - id: THM-LOAD-001
+    statement: "Comptime plugins have zero runtime loading overhead"
+    proof: "@import resolves at compile time"
+
+  - id: THM-LOAD-002
+    statement: "WASM plugins run in isolated sandbox"
+    proof: "WASM memory model prevents host access"
+
+  - id: THM-LOAD-003
+    statement: "All plugins expose same interface regardless of load strategy"
+    proof: "VTable abstraction unifies Zig and WASM"

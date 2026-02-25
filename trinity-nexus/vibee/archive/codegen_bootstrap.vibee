@@ -1,0 +1,332 @@
+# VIBEEC Code Generator - Bootstrap Specification
+# Self-reproducing code generator that can generate itself
+
+module codegen_bootstrap
+
+## Types
+
+type CodeGenerator {
+  name: String
+  version: Int
+  target_language: TargetLanguage
+  features: List<Feature>
+}
+
+type TargetLanguage = Rust | Go | Gleam | Zig
+
+type Feature {
+  name: String
+  implemented: Bool
+  code_template: String
+}
+
+type GenerationResult {
+  code: String
+  version: Int
+  parent_version: Int
+  improvements: List<String>
+}
+
+## Core Functions
+
+# Generate code from AST
+fn generate(ast: AST, generator: CodeGenerator) -> String {
+  behavior:
+    - Parse AST structure
+    - Apply language-specific templates
+    - Generate idiomatic code
+    - Add imports and boilerplate
+    - Return complete source code
+  
+  example:
+    input: AST with function definitions
+    output: "pub fn add(a: i32, b: i32) -> i32 { a + b }"
+}
+
+# Bootstrap: Generate next version of generator
+fn bootstrap(current_generator: CodeGenerator, spec: Specification) -> CodeGenerator {
+  behavior:
+    - Read current generator code
+    - Parse into AST
+    - Apply improvements from spec
+    - Generate new version
+    - Increment version number
+    - Preserve all features
+  
+  example:
+    input: V1 generator + improvements
+    output: V2 generator with enhancements
+}
+
+# Self-host: Use generator to generate itself
+fn self_host(generator: CodeGenerator) -> GenerationResult {
+  behavior:
+    - Read generator's own specification
+    - Use generator to compile itself
+    - Compare output with current version
+    - Verify correctness
+    - Return new version
+  
+  invariants:
+    - Output must compile successfully
+    - Output must pass all tests
+    - Output must be functionally equivalent
+}
+
+# Evolution: Iterative improvement
+fn evolve(
+  generator: CodeGenerator,
+  iterations: Int,
+  fitness_fn: Fn(CodeGenerator) -> Float
+) -> List<CodeGenerator> {
+  behavior:
+    - Start with V1 (current)
+    - For each iteration:
+      - Generate next version using bootstrap
+      - Measure fitness (code quality, performance)
+      - Keep if fitness improves
+      - Discard if fitness degrades
+    - Return evolution history
+  
+  example:
+    V1 (manual) -> V2 (generated) -> V3 (self-hosted) -> V4 (optimized)
+}
+
+## Language-Specific Generators
+
+# Rust Generator
+fn generate_rust(ast: AST) -> String {
+  behavior:
+    - Use Rust syntax templates
+    - Add "pub fn" for public functions
+    - Use "->" for return types
+    - Add semicolons
+    - Use snake_case naming
+}
+
+# Go Generator
+fn generate_go(ast: AST) -> String {
+  behavior:
+    - Use Go syntax templates
+    - Add "func" keyword
+    - Capitalize public functions
+    - No semicolons
+    - Use camelCase naming
+}
+
+# Gleam Generator
+fn generate_gleam(ast: AST) -> String {
+  behavior:
+    - Use Gleam syntax templates
+    - Add "pub fn" for public functions
+    - Use "->" for return types
+    - No semicolons
+    - Use snake_case naming
+}
+
+# Zig Generator
+fn generate_zig(ast: AST) -> String {
+  behavior:
+    - Use Zig syntax templates
+    - Add "pub fn" for public functions
+    - Use return type after params
+    - Add semicolons
+    - Use snake_case naming
+}
+
+## Bootstrap Pipeline
+
+# Stage 1: Manual V1 (current code)
+fn stage1_manual() -> CodeGenerator {
+  behavior:
+    - Hand-written generator
+    - Basic features
+    - No self-hosting
+    - Version: 1
+}
+
+# Stage 2: Generated V2
+fn stage2_generated(v1: CodeGenerator, spec: Specification) -> CodeGenerator {
+  behavior:
+    - Use V1 to read spec
+    - Generate V2 code
+    - V2 has same features as V1
+    - Version: 2
+}
+
+# Stage 3: Self-hosted V3
+fn stage3_self_hosted(v2: CodeGenerator) -> CodeGenerator {
+  behavior:
+    - Use V2 to generate itself
+    - V3 is functionally identical to V2
+    - Proves self-hosting works
+    - Version: 3
+}
+
+# Stage 4: Evolved V4+
+fn stage4_evolved(v3: CodeGenerator, improvements: List<Improvement>) -> CodeGenerator {
+  behavior:
+    - Apply improvements to spec
+    - Use V3 to generate V4
+    - V4 has enhanced features
+    - Continue evolution
+    - Version: 4+
+}
+
+## Verification
+
+# Verify bootstrap correctness
+fn verify_bootstrap(v1: CodeGenerator, v2: CodeGenerator) -> Bool {
+  behavior:
+    - Compile both versions
+    - Run same test suite
+    - Compare outputs
+    - Check performance
+    - Return true if equivalent
+  
+  tests:
+    - V2 compiles successfully
+    - V2 passes all V1 tests
+    - V2 generates same output as V1
+    - V2 performance >= V1 performance
+}
+
+# Verify self-hosting
+fn verify_self_hosting(vN: CodeGenerator) -> Bool {
+  behavior:
+    - Use vN to generate vN+1
+    - Use vN+1 to generate vN+2
+    - Compare vN+1 and vN+2
+    - They should be identical (fixed point)
+  
+  tests:
+    - vN+1 == vN+2 (bitwise identical)
+    - Both compile successfully
+    - Both pass all tests
+}
+
+## Metrics
+
+# Measure generator quality
+fn measure_quality(generator: CodeGenerator) -> QualityMetrics {
+  behavior:
+    - Count lines of code
+    - Measure compilation time
+    - Count test coverage
+    - Measure code readability
+    - Calculate complexity
+  
+  metrics:
+    - lines_of_code: Int
+    - compilation_time_ms: Int
+    - test_coverage_percent: Float
+    - readability_score: Float
+    - cyclomatic_complexity: Int
+}
+
+# Compare versions
+fn compare_versions(v1: CodeGenerator, v2: CodeGenerator) -> Comparison {
+  behavior:
+    - Measure quality of both
+    - Calculate differences
+    - Identify improvements
+    - Identify regressions
+  
+  output:
+    - improvements: List<String>
+    - regressions: List<String>
+    - overall_delta: Float
+}
+
+## Evolution Strategy
+
+# Fitness function for evolution
+fn fitness(generator: CodeGenerator) -> Float {
+  behavior:
+    - Measure code quality (40%)
+    - Measure performance (30%)
+    - Measure test coverage (20%)
+    - Measure maintainability (10%)
+  
+  formula:
+    fitness = 0.4 * quality + 0.3 * performance + 0.2 * coverage + 0.1 * maintainability
+}
+
+# Select best version
+fn select_best(generations: List<CodeGenerator>) -> CodeGenerator {
+  behavior:
+    - Calculate fitness for each
+    - Sort by fitness descending
+    - Return highest fitness
+}
+
+## Example Usage
+
+# Complete bootstrap process
+fn complete_bootstrap() -> List<CodeGenerator> {
+  behavior:
+    - V1 = stage1_manual()
+    - V2 = stage2_generated(V1, spec)
+    - verify_bootstrap(V1, V2)
+    - V3 = stage3_self_hosted(V2)
+    - verify_self_hosting(V3)
+    - V4_plus = stage4_evolved(V3, improvements)
+    - Return [V1, V2, V3, V4_plus]
+  
+  expected_output:
+    - 4+ versions
+    - Each version compiles
+    - Each version passes tests
+    - Fitness improves over time
+}
+
+## Tests
+
+test "bootstrap_v1_to_v2" {
+  behavior:
+    - Create V1 generator
+    - Generate V2 from spec
+    - Verify V2 compiles
+    - Verify V2 passes tests
+  
+  assert:
+    - V2 is not null
+    - V2.version == 2
+    - verify_bootstrap(V1, V2) == true
+}
+
+test "self_hosting_v2_to_v3" {
+  behavior:
+    - Use V2 to generate V3
+    - Verify V3 is identical to V2
+    - Use V3 to generate V4
+    - Verify V4 is identical to V3
+  
+  assert:
+    - V3 == V2 (functionally)
+    - V4 == V3 (bitwise)
+    - verify_self_hosting(V3) == true
+}
+
+test "evolution_improves_fitness" {
+  behavior:
+    - Start with V1
+    - Evolve for 5 iterations
+    - Measure fitness at each step
+  
+  assert:
+    - fitness(V5) > fitness(V1)
+    - All versions compile
+    - All versions pass tests
+}
+
+test "fixed_point_convergence" {
+  behavior:
+    - Generate V10 from V9
+    - Generate V11 from V10
+    - Compare V10 and V11
+  
+  assert:
+    - V10 == V11 (fixed point reached)
+    - No further evolution needed
+}

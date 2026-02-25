@@ -1,0 +1,37 @@
+# user.vibee - User management example
+
+pub fn create_user(name, email) {
+  guard name != "" else "Name cannot be empty"
+  guard email != "" else "Email cannot be empty"
+  print("User created: {name} ({email})")
+}
+
+pub fn validate_age(age) {
+  guard age >= 0 else "Age cannot be negative"
+  guard age <= 150 else "Age is too high"
+  print("Age is valid: {age}")
+}
+
+pub fn format_user(name, email, age) {
+  print("{name} <{email}> - {age} years old")
+}
+
+test create_user_test {
+  result = create_user("John", "john@example.com")
+  result == "User created: John (john@example.com)"
+}
+
+test validate_age_test {
+  result = validate_age(25)
+  result == "Age is valid: 25"
+}
+
+test validate_age_negative_test {
+  result = validate_age(-5)
+  result == "Age cannot be negative"
+}
+
+test format_user_test {
+  result = format_user("Alice", "alice@example.com", 30)
+  result == "Alice <alice@example.com> - 30 years old"
+}

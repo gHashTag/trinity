@@ -1,0 +1,111 @@
+name: inference_pipeline
+version: "1.0.0"
+language: zig
+module: inference_pipeline
+author: Dmitrii Vasilev
+description: Unified inference pipeline integrating GGUF loader with K-quant and BitNet support
+
+types:
+  ModelConfig:
+    description: Model configuration extracted from GGUF
+    fields:
+      hidden_size: Int
+      num_layers: Int
+      num_heads: Int
+      num_kv_heads: Int
+      head_dim: Int
+      intermediate_size: Int
+      vocab_size: Int
+      max_seq_len: Int
+      rope_theta: Float
+      rms_norm_eps: Float
+      architecture: String
+      quant_type: String
+
+  QuantType:
+    description: Quantization type enum
+    fields:
+      type_id: Int
+      name: String
+      bits_per_weight: Float
+      block_size: Int
+
+  LoadedTensor:
+    description: Tensor loaded and dequantized from GGUF
+    fields:
+      name: String
+      shape: List<Int>
+      data: List<Float>
+      original_type: String
+      memory_bytes: Int
+
+  InferenceResult:
+    description: Result of forward pass
+    fields:
+      logits: List<Float>
+      hidden_state: List<Float>
+      inference_time_ms: Float
+      tokens_per_second: Float
+
+  GenerationResult:
+    description: Result of text generation
+    fields:
+      tokens: List<Int>
+      text: String
+      total_time_ms: Float
+      tokens_per_second: Float
+
+  PipelineStats:
+    description: Pipeline performance statistics
+    fields:
+      model_load_time_ms: Float
+      weight_load_time_ms: Float
+      total_memory_mb: Float
+      quant_compression_ratio: Float
+      avg_inference_time_ms: Float
+      peak_tokens_per_second: Float
+
+behaviors:
+  - name: load_model_from_gguf
+    given: Path to GGUF file
+    when: Initializing inference pipeline
+    then: Return ModelConfig with auto-detected quant type
+
+  - name: load_tensor_with_dequant
+    given: Tensor info and quant type
+    when: Loading weights for inference
+    then: Return LoadedTensor with dequantized float data
+
+  - name: detect_quant_type
+    given: GGUF tensor type
+    when: Determining dequantization method
+    then: Return QuantType with appropriate handler
+
+  - name: forward_pass
+    given: Token ID and position
+    when: Running inference
+    then: Return InferenceResult with logits
+
+  - name: generate_text
+    given: Prompt tokens, max_tokens, temperature
+    when: Generating text autoregressively
+    then: Return GenerationResult with tokens and text
+
+  - name: get_pipeline_stats
+    given: Pipeline instance
+    when: Reporting performance
+    then: Return PipelineStats with all metrics
+
+  - name: benchmark_inference
+    given: Number of iterations
+    when: Measuring performance
+    then: Return average tokens per second
+
+constants:
+  SUPPORTED_QUANTS: ["F32", "F16", "Q8_0", "Q4_0", "Q4_K", "Q5_K", "Q6_K", "TQ1_0"]
+  DEFAULT_TEMPERATURE: 0.7
+  DEFAULT_TOP_P: 0.9
+  DEFAULT_MAX_TOKENS: 100
+  PHI: 1.618033988749895
+  TRINITY: 3.0
+  GOLDEN_IDENTITY: "φ² + 1/φ² = 3"

@@ -1,0 +1,300 @@
+# MCP Analytics Tools Specification
+# Spec-driven development: This spec is the SINGLE SOURCE OF TRUTH
+# All code, tests, and documentation are GENERATED from this spec
+
+metadata:
+  name: mcp_analytics
+  version: 1.0.0
+  description: Analytics and metrics MCP tools for data collection and reporting
+  author: VIBEE Team
+  license: MIT
+  generated_from: spec
+  manual_code_forbidden: true
+
+# Type definitions
+types:
+  - name: AnalyticsConfig
+    description: Analytics service configuration
+    fields:
+      - name: provider
+        type: String
+        description: Analytics provider (google_analytics, mixpanel, amplitude)
+        required: true
+      - name: api_key
+        type: String
+        description: API key
+        required: true
+      - name: property_id
+        type: String
+        description: Property/project ID
+        required: true
+
+  - name: Event
+    description: Analytics event
+    fields:
+      - name: name
+        type: String
+        description: Event name
+        required: true
+      - name: properties
+        type: Map<String, String>
+        description: Event properties
+        default: {}
+      - name: timestamp
+        type: String
+        description: Event timestamp
+        required: true
+      - name: user_id
+        type: String
+        description: User ID
+        required: false
+
+  - name: Metric
+    description: Analytics metric
+    fields:
+      - name: name
+        type: String
+        description: Metric name
+        required: true
+      - name: value
+        type: Float
+        description: Metric value
+        required: true
+      - name: unit
+        type: String
+        description: Metric unit
+        required: false
+      - name: timestamp
+        type: String
+        description: Metric timestamp
+        required: true
+
+  - name: Report
+    description: Analytics report
+    fields:
+      - name: id
+        type: String
+        description: Report ID
+        required: true
+      - name: name
+        type: String
+        description: Report name
+        required: true
+      - name: metrics
+        type: List<Metric>
+        description: Report metrics
+        default: []
+      - name: dimensions
+        type: Map<String, String>
+        description: Report dimensions
+        default: {}
+      - name: date_range
+        type: DateRange
+        description: Report date range
+        required: true
+
+  - name: DateRange
+    description: Date range for reports
+    fields:
+      - name: start_date
+        type: String
+        description: Start date
+        required: true
+      - name: end_date
+        type: String
+        description: End date
+        required: true
+
+# Behavior specifications with test cases
+behaviors:
+  - name: event_tracking
+    description: Event tracking operations
+    functions:
+      - name: track_event
+        description: Track an analytics event
+        params:
+          - name: config
+            type: AnalyticsConfig
+          - name: event
+            type: Event
+        returns: Result<Bool, String>
+        test_cases:
+          - input:
+              config: {provider: "google_analytics", api_key: "test_key", property_id: "GA-123"}
+              event:
+                name: "page_view"
+                properties: {page: "/home", referrer: "google"}
+                timestamp: "2024-01-15T10:00:00Z"
+                user_id: "user-123"
+            expected:
+              Ok: true
+
+      - name: track_batch_events
+        description: Track multiple events
+        params:
+          - name: config
+            type: AnalyticsConfig
+          - name: events
+            type: List<Event>
+        returns: Result<Int, String>
+        test_cases:
+          - input:
+              config: {provider: "mixpanel", api_key: "test_key", property_id: "proj-123"}
+              events:
+                - {name: "click", properties: {button: "signup"}, timestamp: "2024-01-15T10:00:00Z"}
+                - {name: "view", properties: {page: "/pricing"}, timestamp: "2024-01-15T10:01:00Z"}
+            expected:
+              Ok: 2
+
+  - name: metrics_collection
+    description: Metrics collection operations
+    functions:
+      - name: record_metric
+        description: Record a metric value
+        params:
+          - name: config
+            type: AnalyticsConfig
+          - name: metric
+            type: Metric
+        returns: Result<Bool, String>
+        test_cases:
+          - input:
+              config: {provider: "amplitude", api_key: "test_key", property_id: "amp-123"}
+              metric:
+                name: "response_time"
+                value: 125.5
+                unit: "ms"
+                timestamp: "2024-01-15T10:00:00Z"
+            expected:
+              Ok: true
+
+      - name: get_metric
+        description: Get metric value
+        params:
+          - name: config
+            type: AnalyticsConfig
+          - name: metric_name
+            type: String
+          - name: date_range
+            type: DateRange
+        returns: Result<List<Metric>, String>
+        test_cases:
+          - input:
+              config: {provider: "google_analytics", api_key: "test_key", property_id: "GA-123"}
+              metric_name: "page_views"
+              date_range: {start_date: "2024-01-01", end_date: "2024-01-31"}
+            expected:
+              Ok:
+                - {name: "page_views", value: 1000.0, timestamp: "2024-01-15T00:00:00Z"}
+
+  - name: reporting
+    description: Report generation operations
+    functions:
+      - name: generate_report
+        description: Generate analytics report
+        params:
+          - name: config
+            type: AnalyticsConfig
+          - name: metrics
+            type: List<String>
+          - name: date_range
+            type: DateRange
+        returns: Result<Report, String>
+        test_cases:
+          - input:
+              config: {provider: "google_analytics", api_key: "test_key", property_id: "GA-123"}
+              metrics: ["page_views", "sessions", "bounce_rate"]
+              date_range: {start_date: "2024-01-01", end_date: "2024-01-31"}
+            expected:
+              Ok:
+                id: "report-123"
+                name: "Monthly Report"
+                metrics:
+                  - {name: "page_views", value: 10000.0}
+                  - {name: "sessions", value: 5000.0}
+                  - {name: "bounce_rate", value: 0.45}
+
+      - name: export_report
+        description: Export report to file
+        params:
+          - name: report
+            type: Report
+          - name: format
+            type: String
+        returns: Result<String, String>
+        test_cases:
+          - input:
+              report: {id: "report-123", name: "Monthly Report", metrics: [], date_range: {start_date: "2024-01-01", end_date: "2024-01-31"}}
+              format: "csv"
+            expected:
+              Ok: "report-123.csv"
+
+# Function declarations
+functions:
+  - name: track_event
+    params: [config: AnalyticsConfig, event: Event]
+    returns: Result<Bool, String>
+    behavior: event_tracking
+
+  - name: track_batch_events
+    params: [config: AnalyticsConfig, events: List<Event>]
+    returns: Result<Int, String>
+    behavior: event_tracking
+
+  - name: record_metric
+    params: [config: AnalyticsConfig, metric: Metric]
+    returns: Result<Bool, String>
+    behavior: metrics_collection
+
+  - name: get_metric
+    params: [config: AnalyticsConfig, metric_name: String, date_range: DateRange]
+    returns: Result<List<Metric>, String>
+    behavior: metrics_collection
+
+  - name: generate_report
+    params: [config: AnalyticsConfig, metrics: List<String>, date_range: DateRange]
+    returns: Result<Report, String>
+    behavior: reporting
+
+  - name: export_report
+    params: [report: Report, format: String]
+    returns: Result<String, String>
+    behavior: reporting
+
+# Documentation
+documentation:
+  overview: |
+    # MCP Analytics Tools
+    
+    Analytics and metrics tools for data collection and reporting.
+    
+    ## Features
+    - Event tracking (single, batch)
+    - Metrics collection
+    - Report generation
+    - Data export
+    
+  examples:
+    - title: Track Event
+      code: |
+        let config = AnalyticsConfig(
+          provider: "google_analytics",
+          api_key: "your_key",
+          property_id: "GA-123"
+        )
+        let event = Event(
+          name: "button_click",
+          properties: map.from_list([#("button", "signup")]),
+          timestamp: "2024-01-15T10:00:00Z",
+          user_id: Some("user-123")
+        )
+        let result = track_event(config, event)
+
+# Generation metadata
+generation:
+  target_language: gleam
+  output_path: src/mcp_analytics.gleam
+  test_path: test/mcp_analytics_test.gleam
+  generate_docs: true
+  generate_tests: true
+  generate_helpers: true

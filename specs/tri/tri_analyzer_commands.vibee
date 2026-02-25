@@ -1,0 +1,81 @@
+name: tri_analyzer_commands
+version: "1.0.0"
+language: zig
+module: tri_analyzer
+
+# Cycle 79: TRI CLI Analyzer Commands
+# Expose Idiom Analyzer (Cycle 77) and Tree-Sitter Analyzer (Cycle 78) via CLI
+# φ² + 1/φ² = 3
+
+types:
+  Severity:
+    enum: [critical, high, medium, low]
+
+  Violation:
+    fields:
+      kind: String
+      line: Int
+      message: String
+      severity: Severity
+      suggestion: String
+
+  AnalyzerResult:
+    fields:
+      file: String
+      total_functions: Int
+      compliant_functions: Int
+      violations: List[Violation]
+      compliance_percent: Float
+      mode: String  # "string-based" or "AST (tree-sitter)"
+
+behaviors:
+  - name: idiom_analyze
+    given: A Zig source file path
+    when: User runs 'tri idiom-analyze <file>'
+    then:
+      - Read file content
+      - Run string-based idiom checks (duplicate params, unused allocator, empty structs, missing errdefer)
+      - Return AnalyzerResult with violations and compliance percentage
+
+  - name: treesitter_analyze
+    given: A Zig source file path and tree-sitter is enabled
+    when: User runs 'tri treesitter-analyze <file>'
+    then:
+      - Parse file with tree-sitter Zig grammar
+      - Run AST-based checks (shadowing, defer, comptime, return paths, type annotations)
+      - Return AnalyzerResult with violations and compliance percentage
+      - If tree-sitter not available, return error
+
+  - name: analyze_unified
+    given: A Zig source file path
+    when: User runs 'tri analyze <file>'
+    then:
+      - Run string-based checks (always)
+      - If tree-sitter available, run AST checks
+      - Merge results from both analyzers
+      - Return combined AnalyzerResult with mode indicator
+
+  - name: idiom_analyze_with_fix
+    given: A Zig source file and --fix flag
+    when: User runs 'tri idiom-analyze <file> --fix'
+    then:
+      - Run idiom_analyze
+      - For each fixable violation, apply automatic fix
+      - Return updated AnalyzerResult and modified file path
+
+test_cases:
+  - name: idiom_analyze_clean_code
+    given: "pub fn add(a: i32, b: i32) i32 { return a + b; }"
+    expected: "100% compliance, 0 violations"
+
+  - name: idiom_analyze_duplicate_param
+    given: "pub fn parse(allocator: std.mem.Allocator, allocator: std.mem.Allocator) !void { _ = allocator; return; }"
+    expected: "Detects duplicate_param violation at line 1"
+
+  - name: treesitter_analyze_shadowing
+    given: "var x = 1; { var x = 2; }"
+    expected: "Detects variable_shadowing violation"
+
+  - name: analyze_unified_mode
+    given: Clean Zig code with -Dtreesitter=true
+    expected: "Mode: AST (tree-sitter), 100% compliance"

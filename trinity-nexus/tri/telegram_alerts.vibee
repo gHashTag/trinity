@@ -1,0 +1,95 @@
+name: telegram_alerts
+version: "1.0.0"
+language: zig
+module: telegram_alerts
+
+description: |
+  DEV-003-PHASE4: Telegram Alert System for Swarm Watch
+  Sends alerts when DHT health drops below thresholds
+  Tech Tree: Swarm Watch Phase 4, complexity 3/5
+
+types:
+  AlertSeverity:
+    variants: [info, warning, critical]
+
+  AlertCondition:
+    fields:
+      name: String
+      threshold: Float
+      current_value: Float
+      triggered_at: Int
+
+  TelegramConfig:
+    fields:
+      bot_token: String
+      chat_id: String
+      enabled: Bool
+      min_interval_seconds: Int
+
+  AlertMessage:
+    fields:
+      severity: AlertSeverity
+      title: String
+      condition: String
+      current_value: String
+      threshold: String
+      timestamp: Int
+      dashboard_link: String
+      recent_events: List<String>
+
+behaviors:
+  - name: init_telegram
+    given: Bot token and chat ID
+    when: TelegramAlerts initialized
+    then: Returns TelegramConfig with enabled=true, default 60s min interval
+
+  - name: check_dht_health
+    given: Current DHT stats and thresholds
+    when: Poll interval elapsed (respect min_interval)
+    then: Returns list of triggered conditions (acceptance <0.95, peers <10, etc.)
+
+  - name: should_send_alert
+    given: Last alert timestamp and min_interval
+    when: New alert condition detected
+    then: Returns true if min_interval_seconds elapsed since last alert
+
+  - name: format_alert_message
+    given: AlertMessage with condition details
+    when: Preparing to send alert
+    then: Returns formatted markdown message with emoji, severity, dashboard link
+
+  - name: send_telegram_alert
+    given: Bot token, chat ID, and formatted message
+    when: Alert conditions met and should_send_alert returns true
+    then: HTTP POST to Telegram Bot API, records last alert timestamp
+
+  - name: record_alert_sent
+    given: Alert condition that was just sent
+    when: send_telegram_alert succeeds
+    then: Updates last_alert_timestamp, adds to alert history
+
+  - name: get_alert_history
+    given: No parameters
+    when: Alert history requested
+    then: Returns list of recent alerts with timestamps and conditions
+
+test_cases:
+  - name: alert_triggered_when_acceptance_below_95
+    given: DHT acceptance rate of 93%
+    when: check_dht_health called
+    then: Alert condition triggered, should_send_alert returns true
+
+  - name: alert_not_sent_within_min_interval
+    given: Last alert sent 30 seconds ago, min_interval 60s
+    when: New condition detected
+    then: should_send_alert returns false (rate limited)
+
+  - name: message_format_includes_emoji
+    given: Critical alert condition
+    when: format_alert_message called
+    then: Message contains 🚨 emoji and proper markdown formatting
+
+  - name: history_tracks_all_alerts
+    given: 5 alerts sent over time
+    when: get_alert_history called
+    then: Returns all 5 alerts in chronological order

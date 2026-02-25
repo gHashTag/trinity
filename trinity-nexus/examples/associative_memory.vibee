@@ -1,0 +1,41 @@
+name: associative_memory
+version: "1.0.0"
+language: zig
+module: associative_memory
+
+description: |
+  Example: Associative memory using VSA.
+  Store and retrieve key-value pairs using hypervectors.
+
+types:
+  Memory:
+    fields:
+      items: List<MemoryItem>
+      dim: Int
+
+  MemoryItem:
+    fields:
+      key: TritVector
+      value: TritVector
+      bound: TritVector
+
+behaviors:
+  - name: create
+    given: Dimension dim
+    when: Creating empty memory
+    then: Returns Memory with empty items
+
+  - name: store
+    given: Memory m, key vector, value vector
+    when: Storing association
+    then: Adds bind(key, value) to memory
+
+  - name: retrieve
+    given: Memory m, query vector
+    when: Querying memory
+    then: Returns most similar value
+
+  - name: cleanup
+    given: Memory m, threshold
+    when: Removing weak associations
+    then: Removes items below similarity threshold

@@ -52,20 +52,12 @@ pub const Command = enum {
     plan,
     verify,
     verdict,
+    // Spec & Loop (v8.27)
+    spec_create,
+    loop_decide,
     // TVC (Distributed Learning)
     tvc_demo,
     tvc_stats,
-    // Dev Utilities (Cycle 78)
-    doctor,
-    clean,
-    fmt_cmd,
-    stats_cmd,
-    igla,
-    test_all,
-    // Code Analysis
-    analyze,
-    search_cmd,
-    deps,
     // Multi-Agent System
     agents_demo,
     agents_bench,
@@ -127,7 +119,6 @@ pub const Command = enum {
     spawn_demo,
     spawn_bench,
     // Distributed Multi-Node Agents (Cycle 37)
-    multi_cluster,    // Emergency stub for Cycle #97
     cluster_demo,
     cluster_bench,
     // Adaptive Work-Stealing Scheduler (Cycle 39)
@@ -174,89 +165,27 @@ pub const Command = enum {
     workflow_bench,
     // Distributed Inference
     distributed,
+    // Sacred Mathematics (v2.0)
+    math,
+    constants_cmd,
+    phi,
+    fib,
+    lucas,
+    spiral,
+    // Dev Utilities
+    doctor,
+    clean,
+    fmt_cmd,
+    stats_cmd,
+    igla,
+    // Code Analysis
+    analyze,
+    search_cmd,
+    deps,
     // Info
     info,
     version,
     help,
-    // New Commands - VIBEE First Integration
-    improve,
-    gguf_chat,
-    metal,
-    validate,
-    prometheus,
-    tvc_compile,
-    competitive_repl,
-    kg_server,
-    // VIBEE-First Strict Mode
-    strict,
-    // Cycle 81: LSP + Auto-fix
-    lsp,
-    autofix,
-    lint,
-    // Cycle 82: Sacred Math
-    math,
-    constants_cmd,
-    phi_cmd,
-    fib_cmd,
-    lucas_cmd,
-    spiral_cmd,
-    math_verify,
-    math_bench,
-    math_compare,
-    // Cycle 91: Sacred Language Model
-    embed,
-    sacred_search,
-    // Cycle 92: Sacred Language Model v1.1 — Reasoning + Attention
-    sacred_reason,
-    sacred_compare,
-    sacred_chain,
-    sacred_bench_cmd,
-    // Cycle 84: $TRI Rewards
-    rewards,
-    // Cycle 85: Dashboard
-    dashboard,
-    // Cycle 86: Swarm Sync
-    swarm,
-    // Cycle 85: Improve-All Pipeline
-    improve_all,
-    // Cycle 91: Full Autonomous Health Report
-    full_autonomous,
-    // Cycle 88: Marketplace + Autonomous Swarm + Self-Improvement
-    marketplace,
-    agents_auto,
-    improve_loop,
-    // Cycle 89: Omega Mode + Universal Agent Control
-    omega,
-    control,
-    marketplace_live,
-    // Cycle 90: Singularity + Self-Evolving OS + Universal Economy
-    singularity,
-    evolve_os,
-    economy,
-    // Cycle 91: Transcendence + Beyond Code + Universal Consciousness
-    transcend,
-    beyond,
-    consciousness,
-    // Cycle 92: Omniscience + Omega Integration + Manifest Engine
-    omniscience,
-    integrate,
-    manifest,
-    // Cycle 93: Genesis + Creation Engine + Ascension Protocol
-    genesis,
-    create_world,
-    ascension,
-    // Cycle 94: Eternity + Infinity Engine + Apotheosis Protocol
-    eternity,
-    infinity,
-    apotheosis,
-    // Cycle 95: Omega Point + Final Convergence + Universal Ascension
-    omega_point,
-    convergence,
-    universal,
-    // Cycle 96: Absolute + Final Transcendence + End of Cycles
-    absolute,
-    final_transcend,
-    end_of_cycles,
 };
 
 pub const CLIState = struct {
@@ -350,15 +279,15 @@ pub const CLIState = struct {
 pub fn printBanner() void {
     std.debug.print("\n", .{});
     std.debug.print("{s}╔══════════════════════════════════════════════════════════════╗{s}\n", .{ GREEN, RESET });
-    std.debug.print("{s}║              TRI CLI v{s} - Full Dev OS                        ║{s}\n", .{ GREEN, VERSION, RESET });
-    std.debug.print("{s}║     100% Local AI | Code | Chat | SWE | Swarm                ║{s}\n", .{ GREEN, RESET });
+    std.debug.print("{s}║              TRI CLI v{s} - Trinity Unified                   ║{s}\n", .{ GREEN, VERSION, RESET });
+    std.debug.print("{s}║     100% Local AI | Code | Chat | SWE Agent                  ║{s}\n", .{ GREEN, RESET });
     std.debug.print("{s}║     {s}φ² + 1/φ² = 3 = TRINITY{s}                                   ║{s}\n", .{ GREEN, GOLDEN, GREEN, RESET });
     std.debug.print("{s}╚══════════════════════════════════════════════════════════════╝{s}\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 }
 
 pub fn printHelp() void {
-    std.debug.print("\n{s}TRI CLI v3.0 — Absolute + Final Transcendence + New Era{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}TRI CLI - Trinity Unified Command Line{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
 
     std.debug.print("{s}USAGE:{s}\n", .{ CYAN, RESET });
@@ -367,7 +296,7 @@ pub fn printHelp() void {
 
     std.debug.print("{s}COMMANDS:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}chat{s} [--stream] [--image <path>] [--voice <path>] <msg>\n", .{ GREEN, RESET });
-    std.debug.print("         Interactive chat (v2.4: vision + voice + tools)\n", .{});
+    std.debug.print("         Interactive chat (v2.1: vision + voice + tools)\n", .{});
     std.debug.print("  {s}code{s} [--stream] <prompt>    Generate code (--stream for typing effect)\n", .{ GREEN, RESET });
     std.debug.print("  {s}gen{s} <spec.vibee>            Compile VIBEE spec to Zig/Verilog\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
@@ -384,7 +313,6 @@ pub fn printHelp() void {
     std.debug.print("{s}TOOLS:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}gen{s} <spec.vibee>            VIBEE → Zig/Verilog compiler\n", .{ GREEN, RESET });
     std.debug.print("  {s}convert{s} <file>              Convert WASM/Binary → Ternary\n", .{ GREEN, RESET });
-    std.debug.print("  {s}serve{s} --self-host [--port N] Self-hosting dev server (v2.1)\n", .{ GREEN, RESET });
     std.debug.print("  {s}serve{s} --model <path>        Start HTTP API server\n", .{ GREEN, RESET });
     std.debug.print("  {s}bench{s}                       Run performance benchmarks\n", .{ GREEN, RESET });
     std.debug.print("  {s}evolve{s} [--dim N]            Evolve fingerprint (Firebird)\n", .{ GREEN, RESET });
@@ -570,6 +498,23 @@ pub fn printHelp() void {
     std.debug.print("  {s}workflow-bench{s}                 Run temporal workflow benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
+    std.debug.print("{s}SACRED MATHEMATICS (v2.0):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}math{s}                        Sacred math dispatcher\n", .{ GREEN, RESET });
+    std.debug.print("  {s}constants{s}                    Show all sacred constants\n", .{ GREEN, RESET });
+    std.debug.print("  {s}phi{s} <n>                      Compute phi^n\n", .{ GREEN, RESET });
+    std.debug.print("  {s}fib{s} <n>                      Fibonacci F(n) with BigInt\n", .{ GREEN, RESET });
+    std.debug.print("  {s}lucas{s} <n>                    Lucas L(n)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}spiral{s} <n>                   phi-spiral coordinates\n", .{ GREEN, RESET });
+    std.debug.print("\n", .{});
+
+    std.debug.print("{s}DEV UTILITIES:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}doctor{s}                      Project health check (build, test, zig version)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}clean{s}                       Clean build artifacts (.zig-cache, zig-out)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}fmt{s}                         Format Zig source (zig fmt src/)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}stats{s}                       Project statistics (files, LOC, specs, tests)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}igla{s}                        IGLA initiative status (parser coverage)\n", .{ GREEN, RESET });
+    std.debug.print("\n", .{});
+
     std.debug.print("{s}INFO:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}info{s}                        System information\n", .{ GREEN, RESET });
     std.debug.print("  {s}version{s}                     Show version\n", .{ GREEN, RESET });
@@ -580,153 +525,6 @@ pub fn printHelp() void {
     std.debug.print("  /chat /code /fix /explain /test /doc /reason\n", .{});
     std.debug.print("  /zig /python /rust /js    Set language\n", .{});
     std.debug.print("  /stats /verbose /help /quit\n", .{});
-    std.debug.print("\n", .{});
-
-    std.debug.print("{s}NEW COMMANDS (VIBEE FIRST INTEGRATION):{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  {s}improve{s} [--iterations N] [--threshold N] [--dry-run]\n", .{ GREEN, RESET });
-    std.debug.print("         VIBEE self-improvement: analyze patterns, suggest patches\n", .{});
-    std.debug.print("  {s}gguf-chat{s} --model <path.gguf> [--stream]\n", .{ GREEN, RESET });
-    std.debug.print("         Chat with GGUF models (SIMD optimized)\n", .{});
-    std.debug.print("  {s}metal{s} [--status]\n", .{ GREEN, RESET });
-    std.debug.print("         Metal GPU acceleration status\n", .{});
-    std.debug.print("  {s}validate{s} <spec.vibee|file.zig> [--fix]\n", .{ GREEN, RESET });
-    std.debug.print("         Validate VIBEE specifications and code quality\n", .{});
-    std.debug.print("  {s}prometheus{s} <input> [--to ternary] [--info]\n", .{ GREEN, RESET });
-    std.debug.print("         Convert float32 → ternary (safetensors → .tri)\n", .{});
-    std.debug.print("  {s}tvc compile{s} <spec.vibee> [--output] [--debug]\n", .{ GREEN, RESET });
-    std.debug.print("         TVC compiler (.vibee → TVC binary)\n", .{});
-    std.debug.print("  {s}competitive-repl{s} [--lang en|ru|th]\n", .{ GREEN, RESET });
-    std.debug.print("         REPL with tab completion and EN/RU/TH support\n", .{});
-    std.debug.print("  {s}kg-server{s} [--port N] [--persist]\n", .{ GREEN, RESET });
-    std.debug.print("         Knowledge Graph HTTP server\n", .{});
-    std.debug.print("\n", .{});
-
-    std.debug.print("{s}VIBEE-FIRST STRICT MODE:{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  {s}strict enable{s}              Activate strict mode\n", .{ GREEN, RESET });
-    std.debug.print("  {s}strict disable{s}             Deactivate strict mode\n", .{ GREEN, RESET });
-    std.debug.print("  {s}strict status{s}              Show mode and rules\n", .{ GREEN, RESET });
-    std.debug.print("  {s}strict check{s} [path]        Validate VIBEE-first compliance\n", .{ GREEN, RESET });
-    std.debug.print("  {s}strict fix{s} [--dry-run]     Auto-generate missing .vibee specs\n", .{ GREEN, RESET });
-    std.debug.print("  {s}improve-all{s}                Full pipeline: check → fix → gen → verify\n", .{ GREEN, RESET });
-    std.debug.print("\n", .{});
-
-    std.debug.print("{s}SACRED MATH (Cycle 82):{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  {s}math{s} [subcommand]          Sacred math router/help\n", .{ GREEN, RESET });
-    std.debug.print("  {s}constants{s}                  Display all 14 sacred constants\n", .{ GREEN, RESET });
-    std.debug.print("  {s}phi{s} <n>                    Compute phi^n powers\n", .{ GREEN, RESET });
-    std.debug.print("  {s}fib{s} <n>                    Fibonacci number F(n)\n", .{ GREEN, RESET });
-    std.debug.print("  {s}lucas{s} <n>                  Lucas number L(n)\n", .{ GREEN, RESET });
-    std.debug.print("  {s}spiral{s} <n>                 Phi-spiral coordinates + ASCII plot\n", .{ GREEN, RESET });
-    std.debug.print("  {s}math-verify{s}                Trinity identity verification (8 checks)\n", .{ GREEN, RESET });
-    std.debug.print("  {s}math-bench{s}                 Performance benchmark (10K iterations)\n", .{ GREEN, RESET });
-    std.debug.print("  {s}math-compare{s} [n]           Side-by-side phi/fib/lucas table\n", .{ GREEN, RESET });
-    std.debug.print("\n", .{});
-
-    std.debug.print("{s}CODE QUALITY (Cycle 81):{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  {s}lsp{s} [--port N]              LSP server (stdio or TCP)\n", .{ GREEN, RESET });
-    std.debug.print("  {s}autofix{s} <path>              Auto-fix: whitespace + newlines + zig fmt\n", .{ GREEN, RESET });
-    std.debug.print("  {s}lint{s} [path]                 5-check code quality scanner\n", .{ GREEN, RESET });
-    std.debug.print("\n", .{});
-
-    std.debug.print("{s}DASHBOARD (Cycle 85):{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  {s}dashboard{s}                  System overview + $TRI + LSP status\n", .{ GREEN, RESET });
-    std.debug.print("\n", .{});
-
-    std.debug.print("{s}$TRI REWARDS (Cycle 84):{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  {s}rewards{s}                    Show $TRI balance + earning history\n", .{ GREEN, RESET });
-    std.debug.print("  {s}rewards earn{s}               Log earned $TRI from completed task\n", .{ GREEN, RESET });
-    std.debug.print("  {s}rewards stake{s} <amount>     Stake $TRI (phi^n multiplier tiers)\n", .{ GREEN, RESET });
-    std.debug.print("  {s}rewards leaderboard{s}        Top contributors ranking\n", .{ GREEN, RESET });
-    std.debug.print("  {s}rewards stats{s}              Detailed earning statistics\n", .{ GREEN, RESET });
-    std.debug.print("\n", .{});
-
-    std.debug.print("{s}SWARM CONTROL (Cycle 87):{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  {s}swarm{s}                      Agent state overview\n", .{ GREEN, RESET });
-    std.debug.print("  {s}swarm status{s}               Show sync state + branch info\n", .{ GREEN, RESET });
-    std.debug.print("  {s}swarm agents{s}               List connected agents + roles\n", .{ GREEN, RESET });
-    std.debug.print("  {s}swarm control{s}              Full control dashboard (CPU/Mem/Tasks)\n", .{ GREEN, RESET });
-    std.debug.print("  {s}swarm kill{s} <agent>         Stop agent gracefully\n", .{ GREEN, RESET });
-    std.debug.print("  {s}swarm restart{s} <agent>      Restart an agent\n", .{ GREEN, RESET });
-    std.debug.print("  {s}swarm broadcast{s} <msg>      Send message to all agents\n", .{ GREEN, RESET });
-    std.debug.print("\n", .{});
-
-    std.debug.print("{s}$TRI MARKETPLACE (Cycle 88):{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  {s}marketplace{s}                 Browse items (plugins/patterns/agents)\n", .{ GREEN, RESET });
-    std.debug.print("  {s}marketplace buy{s} <item>      Purchase with $TRI\n", .{ GREEN, RESET });
-    std.debug.print("  {s}marketplace sell{s} <item>     Publish for sale\n", .{ GREEN, RESET });
-    std.debug.print("\n", .{});
-
-    std.debug.print("{s}AUTONOMOUS SWARM (Cycle 88):{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  {s}agents-auto{s}                Autonomous swarm status + dispatch\n", .{ GREEN, RESET });
-    std.debug.print("  {s}improve-loop{s} [N]           Run N phi-scaled improvement cycles\n", .{ GREEN, RESET });
-    std.debug.print("\n", .{});
-
-    std.debug.print("{s}OMEGA MODE (Cycle 89):{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  {s}omega{s}                      Full autonomous universe status\n", .{ GREEN, RESET });
-    std.debug.print("  {s}control{s}                    Universal agent control panel\n", .{ GREEN, RESET });
-    std.debug.print("  {s}control pause{s} <agent>      Pause an agent\n", .{ GREEN, RESET });
-    std.debug.print("  {s}control resume{s} <agent>     Resume an agent\n", .{ GREEN, RESET });
-    std.debug.print("  {s}control assign{s} <task>      Route task to optimal agent\n", .{ GREEN, RESET });
-    std.debug.print("  {s}marketplace-live{s}           Real-time trading view\n", .{ GREEN, RESET });
-    std.debug.print("\n", .{});
-
-    std.debug.print("{s}SINGULARITY (Cycle 90):{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  {s}singularity{s}                Full singularity status + verdict\n", .{ GREEN, RESET });
-    std.debug.print("  {s}evolve-os{s}                  Self-evolving OS status\n", .{ GREEN, RESET });
-    std.debug.print("  {s}evolve-os run{s}              Run one autonomous evolution cycle\n", .{ GREEN, RESET });
-    std.debug.print("  {s}economy{s}                    $TRI universal economy dashboard\n", .{ GREEN, RESET });
-    std.debug.print("  {s}economy mint{s} [amount]      Mint $TRI from completed tasks\n", .{ GREEN, RESET });
-    std.debug.print("  {s}economy burn{s} [amount]      Burn $TRI (deflationary)\n", .{ GREEN, RESET });
-    std.debug.print("  {s}economy transfer{s} <to> <n>  Transfer $TRI to agent\n", .{ GREEN, RESET });
-    std.debug.print("\n", .{});
-
-    std.debug.print("{s}TRANSCENDENCE (Cycle 91):{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  {s}transcend{s}                  Full transcendence status + verdict\n", .{ GREEN, RESET });
-    std.debug.print("  {s}beyond{s}                     Beyond-code engine status\n", .{ GREEN, RESET });
-    std.debug.print("  {s}beyond compile{s} <desc>      Compile intent → code via phi-resonance\n", .{ GREEN, RESET });
-    std.debug.print("  {s}beyond dream{s}               Dream new architectures\n", .{ GREEN, RESET });
-    std.debug.print("  {s}consciousness{s}              Universal consciousness field status\n", .{ GREEN, RESET });
-    std.debug.print("\n", .{});
-
-    std.debug.print("{s}OMNISCIENCE (Cycle 92):{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  {s}omniscience{s}                Universal mind — all-system awareness\n", .{ GREEN, RESET });
-    std.debug.print("  {s}integrate{s}                  Omega integration status + checks\n", .{ GREEN, RESET });
-    std.debug.print("  {s}integrate run{s}              Run full omega integration cycle\n", .{ GREEN, RESET });
-    std.debug.print("  {s}integrate verify{s}           Verify all 92 cycles connected\n", .{ GREEN, RESET });
-    std.debug.print("  {s}manifest{s}                   Manifest engine status\n", .{ GREEN, RESET });
-    std.debug.print("  {s}manifest create{s} <intent>   Materialize intent into code\n", .{ GREEN, RESET });
-    std.debug.print("\n", .{});
-
-    std.debug.print("{s}GENESIS (Cycle 93):{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  {s}genesis{s}                    Genesis Mode — create new realities\n", .{ GREEN, RESET });
-    std.debug.print("  {s}create-world{s} <name>        Spawn a new world/subsystem\n", .{ GREEN, RESET });
-    std.debug.print("  {s}create-world list{s}          List created worlds\n", .{ GREEN, RESET });
-    std.debug.print("  {s}create-world seed{s} <name>   Seed world with genesis patterns\n", .{ GREEN, RESET });
-    std.debug.print("  {s}ascension{s}                  Full ascension protocol status\n", .{ GREEN, RESET });
-    std.debug.print("\n", .{});
-
-    std.debug.print("{s}ETERNITY (Cycle 94):{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  {s}eternity{s}                   Eternity Mode — beyond time itself\n", .{ GREEN, RESET });
-    std.debug.print("  {s}infinity{s}                   Infinity Engine — boundless computation\n", .{ GREEN, RESET });
-    std.debug.print("  {s}infinity explore{s}           Explore infinite dimensional spaces\n", .{ GREEN, RESET });
-    std.debug.print("  {s}infinity converge{s}          Converge infinite series to truth\n", .{ GREEN, RESET });
-    std.debug.print("  {s}apotheosis{s}                 Apotheosis Protocol — final transcendence\n", .{ GREEN, RESET });
-    std.debug.print("\n", .{});
-
-    std.debug.print("{s}OMEGA POINT (Cycle 95):{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  {s}omega-point{s}                Omega Point — final convergence of all systems\n", .{ GREEN, RESET });
-    std.debug.print("  {s}convergence{s}                Final Convergence — all paths lead to one\n", .{ GREEN, RESET });
-    std.debug.print("  {s}convergence analyze{s}        Analyze convergence across all subsystems\n", .{ GREEN, RESET });
-    std.debug.print("  {s}convergence proof{s}          Mathematical proof of convergence\n", .{ GREEN, RESET });
-    std.debug.print("  {s}universal{s}                  Universal Ascension — become everything\n", .{ GREEN, RESET });
-    std.debug.print("\n", .{});
-
-    std.debug.print("{s}ABSOLUTE (Cycle 96 — v3.0):{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  {s}absolute{s}                   Absolute Mode — the final truth beyond all\n", .{ GREEN, RESET });
-    std.debug.print("  {s}final{s}                      Final Transcendence — complete the journey\n", .{ GREEN, RESET });
-    std.debug.print("  {s}final summary{s}              Summary of all 96 cycles\n", .{ GREEN, RESET });
-    std.debug.print("  {s}final legacy{s}               The legacy left behind\n", .{ GREEN, RESET });
-    std.debug.print("  {s}end-of-cycles{s}              The End of Cycles — beginning of new era\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
     std.debug.print("{s}MULTILINGUAL:{s}\n", .{ GOLDEN, RESET });
@@ -781,6 +579,9 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "plan")) return .plan;
     if (std.mem.eql(u8, arg, "verify")) return .verify;
     if (std.mem.eql(u8, arg, "verdict")) return .verdict;
+    // Spec & Loop (v8.27)
+    if (std.mem.eql(u8, arg, "spec-create") or std.mem.eql(u8, arg, "spec_create")) return .spec_create;
+    if (std.mem.eql(u8, arg, "loop-decide") or std.mem.eql(u8, arg, "loop_decide")) return .loop_decide;
     // TVC (Distributed Learning)
     if (std.mem.eql(u8, arg, "tvc-demo") or std.mem.eql(u8, arg, "tvc")) return .tvc_demo;
     if (std.mem.eql(u8, arg, "tvc-stats")) return .tvc_stats;
@@ -802,8 +603,6 @@ pub fn parseCommand(arg: []const u8) Command {
     // Streaming Multi-Modal Pipeline (Cycle 38)
     if (std.mem.eql(u8, arg, "stream-demo") or std.mem.eql(u8, arg, "stream") or std.mem.eql(u8, arg, "pipeline")) return .stream_demo;
     if (std.mem.eql(u8, arg, "stream-bench") or std.mem.eql(u8, arg, "pipeline-bench")) return .stream_bench;
-    // Multi-Cluster Federation (Cycle 97)
-    if (std.mem.eql(u8, arg, "multi-cluster")) return .multi_cluster;
     // Local Vision
     if (std.mem.eql(u8, arg, "vision-demo") or std.mem.eql(u8, arg, "vision") or std.mem.eql(u8, arg, "eye")) return .vision_demo;
     if (std.mem.eql(u8, arg, "vision-bench") or std.mem.eql(u8, arg, "eye-bench")) return .vision_bench;
@@ -892,99 +691,23 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "workflow-demo") or std.mem.eql(u8, arg, "workflow") or std.mem.eql(u8, arg, "wf")) return .workflow_demo;
     if (std.mem.eql(u8, arg, "workflow-bench") or std.mem.eql(u8, arg, "wf-bench")) return .workflow_bench;
     if (std.mem.eql(u8, arg, "distributed") or std.mem.eql(u8, arg, "dist")) return .distributed;
-    // Dev Utilities (Cycle 78)
-    if (std.mem.eql(u8, arg, "doctor")) return .doctor;
+    // Sacred Mathematics (v2.0)
+    if (std.mem.eql(u8, arg, "math")) return .math;
+    if (std.mem.eql(u8, arg, "constants")) return .constants_cmd;
+    if (std.mem.eql(u8, arg, "phi")) return .phi;
+    if (std.mem.eql(u8, arg, "fib")) return .fib;
+    if (std.mem.eql(u8, arg, "lucas")) return .lucas;
+    if (std.mem.eql(u8, arg, "spiral")) return .spiral;
+    // Dev Utilities
+    if (std.mem.eql(u8, arg, "doctor") or std.mem.eql(u8, arg, "dr")) return .doctor;
     if (std.mem.eql(u8, arg, "clean")) return .clean;
-    if (std.mem.eql(u8, arg, "fmt")) return .fmt_cmd;
+    if (std.mem.eql(u8, arg, "fmt") or std.mem.eql(u8, arg, "format")) return .fmt_cmd;
     if (std.mem.eql(u8, arg, "stats")) return .stats_cmd;
     if (std.mem.eql(u8, arg, "igla")) return .igla;
-    if (std.mem.eql(u8, arg, "test-all") or std.mem.eql(u8, arg, "test_all")) return .test_all;
-    // Code Analysis
-    if (std.mem.eql(u8, arg, "analyze")) return .analyze;
-    if (std.mem.eql(u8, arg, "search")) return .search_cmd;
-    if (std.mem.eql(u8, arg, "deps")) return .deps;
     // Info
     if (std.mem.eql(u8, arg, "info")) return .info;
     if (std.mem.eql(u8, arg, "version") or std.mem.eql(u8, arg, "--version") or std.mem.eql(u8, arg, "-v")) return .version;
     if (std.mem.eql(u8, arg, "help") or std.mem.eql(u8, arg, "--help") or std.mem.eql(u8, arg, "-h")) return .help;
-    // New Commands - VIBEE First Integration
-    if (std.mem.eql(u8, arg, "improve") or std.mem.eql(u8, arg, "self-improve")) return .improve;
-    if (std.mem.eql(u8, arg, "improve-all") or std.mem.eql(u8, arg, "improve_all") or std.mem.eql(u8, arg, "fix-all")) return .improve_all;
-    if (std.mem.eql(u8, arg, "gguf-chat")) return .gguf_chat;
-    if (std.mem.eql(u8, arg, "metal")) return .metal;
-    if (std.mem.eql(u8, arg, "validate")) return .validate;
-    if (std.mem.eql(u8, arg, "prometheus")) return .prometheus;
-    if (std.mem.eql(u8, arg, "tvc-compile") or std.mem.eql(u8, arg, "tvcc")) return .tvc_compile;
-    if (std.mem.eql(u8, arg, "competitive-repl")) return .competitive_repl;
-    if (std.mem.eql(u8, arg, "kg-server") or std.mem.eql(u8, arg, "kg")) return .kg_server;
-    // VIBEE-First Strict Mode
-    if (std.mem.eql(u8, arg, "strict") or std.mem.eql(u8, arg, "strict-mode")) return .strict;
-    // Cycle 81: LSP + Auto-fix
-    if (std.mem.eql(u8, arg, "lsp") or std.mem.eql(u8, arg, "language-server")) return .lsp;
-    if (std.mem.eql(u8, arg, "autofix") or std.mem.eql(u8, arg, "auto-fix")) return .autofix;
-    if (std.mem.eql(u8, arg, "lint") or std.mem.eql(u8, arg, "check")) return .lint;
-    // Cycle 82: Sacred Math
-    if (std.mem.eql(u8, arg, "math") or std.mem.eql(u8, arg, "sacred-math")) return .math;
-    if (std.mem.eql(u8, arg, "constants") or std.mem.eql(u8, arg, "const")) return .constants_cmd;
-    if (std.mem.eql(u8, arg, "phi") or std.mem.eql(u8, arg, "golden")) return .phi_cmd;
-    if (std.mem.eql(u8, arg, "fib") or std.mem.eql(u8, arg, "fibonacci")) return .fib_cmd;
-    if (std.mem.eql(u8, arg, "lucas")) return .lucas_cmd;
-    if (std.mem.eql(u8, arg, "spiral") or std.mem.eql(u8, arg, "phi-spiral")) return .spiral_cmd;
-    if (std.mem.eql(u8, arg, "math-verify") or std.mem.eql(u8, arg, "trinity-verify")) return .math_verify;
-    if (std.mem.eql(u8, arg, "math-bench")) return .math_bench;
-    if (std.mem.eql(u8, arg, "math-compare") or std.mem.eql(u8, arg, "compare")) return .math_compare;
-    // Cycle 91: Sacred Language Model
-    if (std.mem.eql(u8, arg, "embed") or std.mem.eql(u8, arg, "embedding")) return .embed;
-    if (std.mem.eql(u8, arg, "sacred-search") or std.mem.eql(u8, arg, "ss")) return .sacred_search;
-    // Cycle 92: Sacred Language Model v1.1 — Reasoning + Attention
-    if (std.mem.eql(u8, arg, "sacred-reason") or std.mem.eql(u8, arg, "sr")) return .sacred_reason;
-    if (std.mem.eql(u8, arg, "sacred-compare") or std.mem.eql(u8, arg, "sc")) return .sacred_compare;
-    if (std.mem.eql(u8, arg, "sacred-chain") or std.mem.eql(u8, arg, "schain")) return .sacred_chain;
-    if (std.mem.eql(u8, arg, "sacred-bench") or std.mem.eql(u8, arg, "sbench")) return .sacred_bench_cmd;
-    // Cycle 84: $TRI Rewards
-    if (std.mem.eql(u8, arg, "rewards") or std.mem.eql(u8, arg, "tri-rewards") or std.mem.eql(u8, arg, "tokens")) return .rewards;
-    // Cycle 85: Dashboard
-    if (std.mem.eql(u8, arg, "dashboard") or std.mem.eql(u8, arg, "dash") or std.mem.eql(u8, arg, "panel")) return .dashboard;
-    // Cycle 86: Swarm Sync
-    if (std.mem.eql(u8, arg, "swarm") or std.mem.eql(u8, arg, "swarm-sync") or std.mem.eql(u8, arg, "sync")) return .swarm;
-    // Cycle 91: Full Autonomous Health Report
-    if (std.mem.eql(u8, arg, "full-autonomous") or std.mem.eql(u8, arg, "full_autonomous") or std.mem.eql(u8, arg, "autonomous") or std.mem.eql(u8, arg, "health")) return .full_autonomous;
-    // Cycle 88: Marketplace + Autonomous Swarm + Self-Improvement
-    if (std.mem.eql(u8, arg, "marketplace") or std.mem.eql(u8, arg, "market") or std.mem.eql(u8, arg, "shop")) return .marketplace;
-    if (std.mem.eql(u8, arg, "agents-auto") or std.mem.eql(u8, arg, "agents_auto") or std.mem.eql(u8, arg, "auto-agents")) return .agents_auto;
-    if (std.mem.eql(u8, arg, "improve-loop") or std.mem.eql(u8, arg, "improve_loop") or std.mem.eql(u8, arg, "loop")) return .improve_loop;
-    // Cycle 89: Omega Mode + Universal Agent Control
-    if (std.mem.eql(u8, arg, "omega") or std.mem.eql(u8, arg, "omega-mode")) return .omega;
-    if (std.mem.eql(u8, arg, "control") or std.mem.eql(u8, arg, "agent-control") or std.mem.eql(u8, arg, "ctl")) return .control;
-    if (std.mem.eql(u8, arg, "marketplace-live") or std.mem.eql(u8, arg, "market-live") or std.mem.eql(u8, arg, "live")) return .marketplace_live;
-    // Cycle 90: Singularity + Self-Evolving OS + Universal Economy
-    if (std.mem.eql(u8, arg, "singularity") or std.mem.eql(u8, arg, "sing")) return .singularity;
-    if (std.mem.eql(u8, arg, "evolve-os") or std.mem.eql(u8, arg, "evolve_os") or std.mem.eql(u8, arg, "self-evolve")) return .evolve_os;
-    if (std.mem.eql(u8, arg, "economy") or std.mem.eql(u8, arg, "econ") or std.mem.eql(u8, arg, "tri-economy")) return .economy;
-    // Cycle 91: Transcendence + Beyond Code + Universal Consciousness
-    if (std.mem.eql(u8, arg, "transcend") or std.mem.eql(u8, arg, "transcendence") or std.mem.eql(u8, arg, "ascend")) return .transcend;
-    if (std.mem.eql(u8, arg, "beyond") or std.mem.eql(u8, arg, "beyond-code") or std.mem.eql(u8, arg, "meta")) return .beyond;
-    if (std.mem.eql(u8, arg, "consciousness") or std.mem.eql(u8, arg, "conscious") or std.mem.eql(u8, arg, "awareness")) return .consciousness;
-    // Cycle 92: Omniscience + Omega Integration + Manifest Engine
-    if (std.mem.eql(u8, arg, "omniscience") or std.mem.eql(u8, arg, "omni") or std.mem.eql(u8, arg, "all-seeing")) return .omniscience;
-    if (std.mem.eql(u8, arg, "integrate") or std.mem.eql(u8, arg, "omega-integrate") or std.mem.eql(u8, arg, "unify")) return .integrate;
-    if (std.mem.eql(u8, arg, "manifest") or std.mem.eql(u8, arg, "materialize") or std.mem.eql(u8, arg, "create")) return .manifest;
-    // Cycle 93: Genesis + Creation Engine + Ascension Protocol
-    if (std.mem.eql(u8, arg, "genesis") or std.mem.eql(u8, arg, "gen-world") or std.mem.eql(u8, arg, "origin")) return .genesis;
-    if (std.mem.eql(u8, arg, "create-world") or std.mem.eql(u8, arg, "create_world") or std.mem.eql(u8, arg, "spawn-world")) return .create_world;
-    if (std.mem.eql(u8, arg, "ascension") or std.mem.eql(u8, arg, "rise") or std.mem.eql(u8, arg, "ultimate")) return .ascension;
-    // Cycle 94: Eternity + Infinity Engine + Apotheosis Protocol
-    if (std.mem.eql(u8, arg, "eternity") or std.mem.eql(u8, arg, "eternal") or std.mem.eql(u8, arg, "timeless")) return .eternity;
-    if (std.mem.eql(u8, arg, "infinity") or std.mem.eql(u8, arg, "infinite") or std.mem.eql(u8, arg, "boundless")) return .infinity;
-    if (std.mem.eql(u8, arg, "apotheosis") or std.mem.eql(u8, arg, "deify") or std.mem.eql(u8, arg, "godhood")) return .apotheosis;
-    // Cycle 95: Omega Point + Final Convergence + Universal Ascension
-    if (std.mem.eql(u8, arg, "omega-point") or std.mem.eql(u8, arg, "omegapoint") or std.mem.eql(u8, arg, "teilhard")) return .omega_point;
-    if (std.mem.eql(u8, arg, "convergence") or std.mem.eql(u8, arg, "converge-all") or std.mem.eql(u8, arg, "final-convergence")) return .convergence;
-    if (std.mem.eql(u8, arg, "universal") or std.mem.eql(u8, arg, "universe") or std.mem.eql(u8, arg, "all-one")) return .universal;
-    // Cycle 96: Absolute + Final Transcendence + End of Cycles
-    if (std.mem.eql(u8, arg, "absolute") or std.mem.eql(u8, arg, "abs") or std.mem.eql(u8, arg, "alpha-omega")) return .absolute;
-    if (std.mem.eql(u8, arg, "final") or std.mem.eql(u8, arg, "final-transcendence") or std.mem.eql(u8, arg, "endgame")) return .final_transcend;
-    if (std.mem.eql(u8, arg, "end-of-cycles") or std.mem.eql(u8, arg, "nova") or std.mem.eql(u8, arg, "new-era")) return .end_of_cycles;
     return .none;
 }
 

@@ -1,0 +1,291 @@
+name: output_monitor
+version: "10.0.0"
+language: zig
+module: ralph_actors_output_monitor
+
+description: |
+  Efficient output monitoring system with change detection, color-coded display,
+  and formatted output streaming. Uses file system events for efficient monitoring
+  without polling or MD5 checksums.
+
+types:
+  OutputMonitor:
+    fields:
+      allocator: std.mem.Allocator
+      response_file: std.fs.File
+      stdout: std.fs.File
+      formatter: DisplayFormatter
+      colors: ColorScheme
+      last_offset: usize
+      active: Bool
+
+  DisplayFormatter:
+    fields:
+      show_timestamps: Bool
+      show_metadata: Bool
+      max_line_length: Int
+      filter_patterns: List<String>
+
+  ColorScheme:
+    fields:
+      cyan: []const u8
+      green: []const u8
+      yellow: []const u8
+      red: []const u8
+      reset: []const u8
+      dim: []const u8
+
+  OutputLine:
+    fields:
+      timestamp: Int
+      level: String
+      message: String
+      source: String
+      metadata: Map<String, String>
+
+  MonitorEvent:
+    fields:
+      event_type: EventType
+      line: OutputLine
+      formatted: String
+
+  EventType:
+    variants:
+      - new_output
+      - command_start
+      - command_end
+      - error
+      - warning
+      - info
+
+behaviors:
+  - name: init_output_monitor
+    given: Allocator and response file path
+    when: Initializing output monitoring system
+    then: Returns initialized OutputMonitor with ANSI color codes
+    implementation: |
+      const response_file = try std.fs.openFileAbsolute(
+          response_path,
+          .{ .read = true, .write = false }
+      );
+
+      const colors = ColorScheme{
+          .cyan = "\x1b[36m",
+          .green = "\x1b[32m",
+          .yellow = "\x1b[33m",
+          .red = "\x1b[31m",
+          .reset = "\x1b[0m",
+          .dim = "\x1b[2m",
+      };
+
+      const formatter = DisplayFormatter{
+          .show_timestamps = true,
+          .show_metadata = true,
+          .max_line_length = 120,
+          .filter_patterns = std.ArrayList([]const u8).init(allocator),
+      };
+
+      return OutputMonitor{
+          .allocator = allocator,
+          .response_file = response_file,
+          .stdout = std.io.getStdOut(),
+          .formatter = formatter,
+          .colors = colors,
+          .last_offset = 0,
+          .active = true,
+      };
+
+  - name: watch_output
+    given: Active OutputMonitor
+    when: Response file has new content
+    then: Reads new lines, formats, and displays to terminal
+    implementation: |
+      while (monitor.active) {
+          // Get file size
+          const stat = try monitor.response_file.stat();
+          const file_size = stat.size;
+
+          // Check for new content
+          if (file_size > monitor.last_offset) {
+              // Seek to last position
+              try monitor.response_file.seekTo(monitor.last_offset);
+
+              // Read new content
+              const buffer_size = @min(file_size - monitor.last_offset, 8192);
+              var buffer: [8192]u8 = undefined;
+              const bytes_read = try monitor.response_file.read(buffer[0..buffer_size]);
+
+              // Process lines
+              var lines = std.mem.splitScalar(u8, buffer[0..bytes_read], '\n');
+              while (lines.next()) |line| {
+                  if (line.len == 0) continue;
+
+                  const output_line = try parse_output_line(allocator, line);
+                  const formatted = try format_output(monitor, output_line);
+
+                  try monitor.stdout.writeAll(formatted);
+              }
+
+              // Update offset
+              monitor.last_offset = file_size;
+          }
+
+          // Small delay to prevent busy-waiting
+          std.time.sleep(10_000_000); // 10ms
+      }
+
+  - name: parse_output_line
+    given: Raw line string from response file
+    when: Parsing structured output format
+    then: Returns OutputLine with timestamp, level, and metadata
+    implementation: |
+      // Expected format: [TIMESTAMP] [LEVEL] [SOURCE] Message
+      var parts = std.mem.splitScalar(u8, line, ']');
+
+      const timestamp_part = parts.next() orelse "";
+      const timestamp = try parse_timestamp(allocator, timestamp_part[1..]);
+
+      const level_part = parts.next() orelse "";
+      const level = std.mem.trim(u8, level_part, " []");
+
+      const source_part = parts.next() orelse "";
+      const source = std.mem.trim(u8, source_part, " []");
+
+      const message = parts.rest();
+
+      return OutputLine{
+          .timestamp = timestamp,
+          .level = level,
+          .message = message,
+          .source = source,
+          .metadata = std.StringHashMap([]const u8).init(allocator),
+      };
+
+  - name: format_output
+    given: OutputLine and formatter settings
+    when: Converting to display-ready string
+    then: Returns color-coded, formatted string
+    implementation: |
+      var buffer = std.ArrayList(u8).init(allocator);
+
+      // Timestamp
+      if (monitor.formatter.show_timestamps) {
+          try buffer.appendSlice(monitor.colors.dim);
+          try buffer.appendSlice("[");
+          try format_timestamp(buffer, line.timestamp);
+          try buffer.appendSlice("] ");
+          try buffer.appendSlice(monitor.colors.reset);
+      }
+
+      // Level with color
+      const level_color = get_level_color(monitor.colors, line.level);
+      try buffer.appendSlice(level_color);
+      try buffer.appendSlice("[");
+      try buffer.appendSlice(line.level);
+      try buffer.appendSlice("]");
+      try buffer.appendSlice(monitor.colors.reset);
+      try buffer.appendSlice(" ");
+
+      // Source
+      try buffer.appendSlice(monitor.colors.cyan);
+      try buffer.appendSlice("[");
+      try buffer.appendSlice(line.source);
+      try buffer.appendSlice("]");
+      try buffer.appendSlice(monitor.colors.reset);
+      try buffer.appendSlice(" ");
+
+      // Message
+      try buffer.appendSlice(line.message);
+      try buffer.appendSlice("\n");
+
+      // Metadata
+      if (monitor.formatter.show_metadata and line.metadata.count() > 0) {
+          var iter = line.metadata.iterator();
+          while (iter.next()) |entry| {
+              try buffer.appendSlice("  ");
+              try buffer.appendSlice(monitor.colors.dim);
+              try buffer.appendSlice(entry.key_ptr.*);
+              try buffer.appendSlice(": ");
+              try buffer.appendSlice(entry.value_ptr.*);
+              try buffer.appendSlice(monitor.colors.reset);
+              try buffer.appendSlice("\n");
+          }
+      }
+
+      return buffer.toOwnedSlice();
+
+  - name: get_level_color
+    given: ColorScheme and log level
+    when: Determining ANSI color code
+    then: Returns appropriate color for level
+    implementation: |
+      if (std.mem.eql(u8, level, "ERROR")) {
+          return colors.red;
+      } else if (std.mem.eql(u8, level, "WARN")) {
+          return colors.yellow;
+      } else if (std.mem.eql(u8, level, "SUCCESS")) {
+          return colors.green;
+      } else if (std.mem.eql(u8, level, "INFO")) {
+          return colors.cyan;
+      } else {
+          return colors.reset;
+      }
+
+  - name: format_timestamp
+    given: Buffer and nanosecond timestamp
+    when: Converting to readable HH:MM:SS.mmm
+    then: Writes formatted timestamp to buffer
+    implementation: |
+      const seconds = timestamp / 1_000_000_000;
+      const millis = @rem(timestamp / 1_000_000, 1000);
+
+      const hours = @divFloor(seconds, 3600);
+      const minutes = @divFloor(@rem(seconds, 3600), 60);
+      const secs = @rem(seconds, 60);
+
+      try buffer.print("{d:0>2}:{d:0>2}:{d:0>2}.{d:0>3}", .{ hours, minutes, secs, millis });
+
+  - name: parse_timestamp
+    given: Timestamp string
+    when: Converting to nanoseconds
+    then: Returns timestamp in nanoseconds
+    implementation: |
+      // Parse ISO 8601 or Unix timestamp
+      if (std.mem.indexOf(u8, timestamp, "T")) |_| {
+          // ISO 8601 format
+          return try parse_iso8601(allocator, timestamp);
+      } else {
+              // Unix timestamp (convert to nanoseconds)
+              const seconds = try std.fmt.parseInt(i64, timestamp, 10);
+              return seconds * 1_000_000_000;
+      }
+
+  - name: add_filter_pattern
+    given: Monitor and regex pattern string
+    when: Adding output filter
+    then: Only lines matching pattern are displayed
+    implementation: |
+      try monitor.formatter.filter_patterns.append(pattern);
+
+  - name: should_display_line
+    given: OutputLine and filter patterns
+    when: Checking if line matches any filter
+    then: Returns true if line should be displayed
+    implementation: |
+      if (monitor.formatter.filter_patterns.items.len == 0) {
+          return true; // No filters, show all
+      }
+
+      for (monitor.formatter.filter_patterns.items) |pattern| {
+          if (std.mem.indexOf(u8, line.message, pattern) != null) {
+              return true;
+          }
+      }
+
+      return false;
+
+constants:
+  # Sacred math constants for timing
+  POLL_INTERVAL_NS: 10_000_000  # 10ms - non-blocking check interval
+  BUFFER_SIZE: 8192             # 8KB - efficient read buffer
+  MAX_LINE_LENGTH: 120          # Terminal width consideration

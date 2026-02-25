@@ -1,0 +1,312 @@
+name: type_checker
+version: 1.0.0
+category: compiler
+description: Type checker for VIBEEC language - validates types and infers missing annotations
+
+# Types
+types:
+  - name: TypeChecker
+    description: Type checker state
+    fields:
+      - name: env
+        type: TypeEnv
+        description: Type environment (variable -> type mappings)
+      - name: errors
+        type: List(TypeError)
+        description: Accumulated type errors
+      - name: warnings
+        type: List(TypeWarning)
+        description: Type warnings
+
+  - name: TypeEnv
+    description: Type environment for variables and functions
+    fields:
+      - name: bindings
+        type: Dict(String, Type)
+        description: Variable/function name to type mappings
+      - name: parent
+        type: Option(TypeEnv)
+        description: Parent scope for nested environments
+
+  - name: TypeError
+    description: Type error information
+    fields:
+      - name: message
+        type: String
+        description: Error message
+      - name: expected
+        type: Type
+        description: Expected type
+      - name: actual
+        type: Type
+        description: Actual type
+      - name: location
+        type: Location
+        description: Source location
+
+  - name: TypeWarning
+    description: Type warning information
+    fields:
+      - name: message
+        type: String
+        description: Warning message
+      - name: location
+        type: Location
+        description: Source location
+
+  - name: Location
+    description: Source code location
+    fields:
+      - name: line
+        type: Int
+        description: Line number
+      - name: column
+        type: Int
+        description: Column number
+
+  - name: TypeCheckResult
+    description: Result of type checking
+    variants:
+      - TypeCheckOk(ModuleAst, TypeEnv)
+      - TypeCheckError(List(TypeError), List(TypeWarning))
+
+# Functions
+functions:
+  - name: check_module
+    signature: "check_module(ast: ModuleAst) -> TypeCheckResult"
+    description: Type check entire module
+    params:
+      - name: ast
+        type: ModuleAst
+        description: Module AST to check
+    returns:
+      type: TypeCheckResult
+      description: Type-checked AST or errors
+    examples:
+      - params: {ast: ModuleAst("main", [], [], [FnDef("add", [("a", Some(IntType)), ("b", Some(IntType))], Some(IntType), BinOp(Add, Var("a"), Var("b")), true)], [])}
+        returns: TypeCheckOk(...)
+
+  - name: check_stmt
+    signature: "check_stmt(stmt: Stmt, env: TypeEnv) -> Result((Stmt, TypeEnv), TypeError)"
+    description: Type check statement
+    params:
+      - name: stmt
+        type: Stmt
+        description: Statement to check
+      - name: env
+        type: TypeEnv
+        description: Type environment
+    returns:
+      type: Result((Stmt, TypeEnv), TypeError)
+      description: Type-checked statement and updated environment, or error
+    examples:
+      - params: {stmt: FnDef("add", [("a", Some(IntType)), ("b", Some(IntType))], Some(IntType), BinOp(Add, Var("a"), Var("b")), true), env: empty_env}
+        returns: Ok((FnDef(...), env_with_add))
+
+  - name: check_expr
+    signature: "check_expr(expr: Expr, env: TypeEnv) -> Result((Expr, Type), TypeError)"
+    description: Type check expression and infer type
+    params:
+      - name: expr
+        type: Expr
+        description: Expression to check
+      - name: env
+        type: TypeEnv
+        description: Type environment
+    returns:
+      type: Result((Expr, Type), TypeError)
+      description: Type-checked expression and inferred type, or error
+    examples:
+      - params: {expr: BinOp(Add, IntLit(1), IntLit(2)), env: empty_env}
+        returns: Ok((BinOp(Add, IntLit(1), IntLit(2)), IntType))
+
+  - name: infer_type
+    signature: "infer_type(expr: Expr, env: TypeEnv) -> Result(Type, TypeError)"
+    description: Infer type of expression
+    params:
+      - name: expr
+        type: Expr
+        description: Expression to infer
+      - name: env
+        type: TypeEnv
+        description: Type environment
+    returns:
+      type: Result(Type, TypeError)
+      description: Inferred type or error
+    examples:
+      - params: {expr: IntLit(42), env: empty_env}
+        returns: Ok(IntType)
+      - params: {expr: ListLit([IntLit(1), IntLit(2)]), env: empty_env}
+        returns: Ok(ListType(IntType))
+
+  - name: unify
+    signature: "unify(t1: Type, t2: Type) -> Result(Type, TypeError)"
+    description: Unify two types (find common type)
+    params:
+      - name: t1
+        type: Type
+        description: First type
+      - name: t2
+        type: Type
+        description: Second type
+    returns:
+      type: Result(Type, TypeError)
+      description: Unified type or error
+    examples:
+      - params: {t1: IntType, t2: IntType}
+        returns: Ok(IntType)
+      - params: {t1: IntType, t2: StringType}
+        returns: Error(TypeError("Cannot unify Int and String"))
+
+  - name: check_function_call
+    signature: "check_function_call(name: String, args: List(Expr), env: TypeEnv) -> Result(Type, TypeError)"
+    description: Check function call and return result type
+    params:
+      - name: name
+        type: String
+        description: Function name
+      - name: args
+        type: List(Expr)
+        description: Function arguments
+      - name: env
+        type: TypeEnv
+        description: Type environment
+    returns:
+      type: Result(Type, TypeError)
+      description: Return type or error
+    examples:
+      - params: {name: "add", args: [IntLit(1), IntLit(2)], env: env_with_add}
+        returns: Ok(IntType)
+
+  - name: check_pattern
+    signature: "check_pattern(pattern: Pattern, expected_type: Type, env: TypeEnv) -> Result(TypeEnv, TypeError)"
+    description: Check pattern and bind variables
+    params:
+      - name: pattern
+        type: Pattern
+        description: Pattern to check
+      - name: expected_type
+        type: Type
+        description: Expected type for pattern
+      - name: env
+        type: TypeEnv
+        description: Type environment
+    returns:
+      type: Result(TypeEnv, TypeError)
+      description: Environment with pattern bindings, or error
+    examples:
+      - params: {pattern: PatVar("x"), expected_type: IntType, env: empty_env}
+        returns: Ok(env_with_x_int)
+
+  - name: lookup_type
+    signature: "lookup_type(name: String, env: TypeEnv) -> Option(Type)"
+    description: Look up variable type in environment
+    params:
+      - name: name
+        type: String
+        description: Variable name
+      - name: env
+        type: TypeEnv
+        description: Type environment
+    returns:
+      type: Option(Type)
+      description: Type if found, None otherwise
+    examples:
+      - params: {name: "x", env: env_with_x_int}
+        returns: Some(IntType)
+
+  - name: add_binding
+    signature: "add_binding(name: String, type: Type, env: TypeEnv) -> TypeEnv"
+    description: Add variable binding to environment
+    params:
+      - name: name
+        type: String
+        description: Variable name
+      - name: type
+        type: Type
+        description: Variable type
+      - name: env
+        type: TypeEnv
+        description: Type environment
+    returns:
+      type: TypeEnv
+      description: Updated environment
+    examples:
+      - params: {name: "x", type: IntType, env: empty_env}
+        returns: env_with_x_int
+
+# Type Rules
+type_rules:
+  - name: literal_types
+    description: "IntLit(n) : Int, StringLit(s) : String, BoolLit(b) : Bool"
+  - name: variable_lookup
+    description: "Var(x) : T if x : T in env"
+  - name: binary_operations
+    description: "BinOp(+, e1, e2) : Int if e1 : Int and e2 : Int"
+  - name: function_application
+    description: "Call(f, [e1, ..., en]) : T if f : (T1, ..., Tn) -> T and ei : Ti"
+  - name: list_construction
+    description: "ListLit([e1, ..., en]) : List(T) if all ei : T"
+  - name: case_expression
+    description: "CaseExpr(e, clauses) : T if e : T1 and all clauses return T"
+
+# Behaviors
+behaviors:
+  - name: type_inference
+    description: Infer types for expressions without annotations
+    given: Expression without type annotation
+    when: Type checker processes expression
+    then: Infers correct type
+    examples:
+      - input: IntLit(42)
+        output: IntType
+      - input: ListLit([IntLit(1), IntLit(2)])
+        output: ListType(IntType)
+
+  - name: type_checking
+    description: Validate type annotations
+    given: Expression with type annotation
+    when: Type checker validates
+    then: Accepts if correct, rejects if wrong
+    examples:
+      - input: {expr: IntLit(42), expected: IntType}
+        output: Ok
+      - input: {expr: IntLit(42), expected: StringType}
+        output: TypeError("Expected String, got Int")
+
+  - name: function_type_checking
+    description: Check function definitions and calls
+    given: Function definition with parameter and return types
+    when: Type checker validates function body
+    then: Ensures body type matches return type
+    examples:
+      - input: FnDef("add", [("a", IntType), ("b", IntType)], IntType, BinOp(Add, Var("a"), Var("b")), true)
+        output: Ok
+      - input: FnDef("bad", [("a", IntType)], StringType, Var("a"), true)
+        output: TypeError("Expected String, got Int")
+
+  - name: pattern_matching_types
+    description: Check pattern matching exhaustiveness and types
+    given: Case expression with patterns
+    when: Type checker validates patterns
+    then: Ensures all patterns match scrutinee type and all branches return same type
+    examples:
+      - input: CaseExpr(Var("x"), [CaseClause(PatInt(0), None, StringLit("zero")), CaseClause(PatWildcard, None, StringLit("other"))])
+        output: Ok(StringType)
+
+  - name: error_reporting
+    description: Report clear type errors
+    given: Type mismatch
+    when: Type checker detects error
+    then: Reports expected vs actual types with location
+    examples:
+      - input: BinOp(Add, IntLit(1), StringLit("hello"))
+        output: TypeError("Cannot add Int and String", IntType, StringType, Location(1, 5))
+
+# Completeness
+completeness:
+  test_coverage: 90%
+  all_behaviors_implemented: true
+  all_functions_implemented: true
+  handles_all_types: true
+  inference_complete: true

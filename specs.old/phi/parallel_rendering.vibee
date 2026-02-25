@@ -1,0 +1,81 @@
+name: parallel_rendering
+version: "1.0.0"
+language: zig
+module: ParallelRendering
+description: |
+  Parallel rendering for Trinity inference/mining on GPU (L40S $0.01/hr).
+  PAS DEAMONS as async agents with golden ratio params for optimization.
+  Target: >500K tokens/s on L40S, cost < $0.01/billion tokens.
+
+constants:
+  PHI: 1.618033988749895
+  MUTATION: 0.0382
+  CROSSOVER: 0.0618
+  SELECTION: 1.618
+  ELITISM: 0.333
+  L40S_COST_HR: 0.01
+  DEMONS: 1024
+  BLOCK_SIZE: 256
+
+types:
+  RenderTask:
+    fields:
+      model_ptr: Int
+      prompt_tokens: List<Int>
+      max_tokens: Int
+      temperature: Float
+      batch_id: Int
+
+  DemonAgent:
+    fields:
+      id: Int
+      local_task: Object
+      fitness: Float
+      generation: Int
+
+  RenderResult:
+    fields:
+      tokens: List<Int>
+      latency_ms: Float
+      tokens_per_sec: Float
+
+  BatchResult:
+    fields:
+      results: List<Object>
+      total_tokens: Int
+      total_time_ms: Float
+      throughput: Float
+
+behaviors:
+  - name: parallel_gpu_render
+    given: RenderTask batch of N tasks
+    when: Split to DEMONS agents, dispatch async CUDA kernels
+    then: Render tokens/s >500K, cost < $0.01/billion tokens
+
+  - name: pas_demon_opt
+    given: Render output from batch
+    when: Apply mutation (mu=0.0382), crossover (chi=0.0618), selection (sigma=1.618)
+    then: Fitness >0.85, coherent output maintained
+
+  - name: batch_inference
+    given: Multiple prompts
+    when: Batch into optimal groups, parallel forward pass
+    then: Linear speedup with batch size up to memory limit
+
+  - name: ternary_matmul_cuda
+    given: I2_S packed weights, f32 activations
+    when: Launch CUDA kernel with trit lookup
+    then: No multiplication, only add/sub, 8x memory savings
+
+tests:
+  - name: test_parallel_render
+    input: 10 tasks, 100 tokens each
+    expected: speedup >=10x vs single, all coherent
+
+  - name: test_pas_opt
+    input: 100 generations
+    expected: fitness >=0.85, convergence in <50 generations
+
+  - name: test_batch_throughput
+    input: batch_size=32, tokens=1000
+    expected: throughput >100K tok/s on L40S

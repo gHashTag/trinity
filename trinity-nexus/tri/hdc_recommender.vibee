@@ -1,0 +1,111 @@
+name: hdc_recommender
+version: "1.0.0"
+language: zig
+module: hdc_recommender
+
+description: |
+  HDC Recommender System — Content + Collaborative Filtering via VSA.
+  User profiles as bundled item HVs, recommendations by cosine ranking.
+
+  Core Insight (Profiles as Hypervectors):
+    user_profile = bundle(item_hv_1, item_hv_2, ..., item_hv_K)
+    recommendation_score(item) = cosine(user_profile, item_hv)
+    Items similar to liked items → high cosine → recommended.
+
+  Content-Based Filtering:
+    Each item has a description → encoded to item_hv.
+    User profile = bundle of liked item_hvs.
+    Recommend = rank all items by cosine(profile, item_hv).
+    Naturally captures user's taste across all liked items.
+
+  Collaborative Filtering:
+    Users with similar profiles (high cosine) have similar taste.
+    community_profile = bundle(similar_user_profiles)
+    Recommend items from community profile that user hasn't seen.
+
+  Hybrid:
+    combined_score = alpha * content_score + (1-alpha) * collaborative_score
+    Or: hybrid_profile = bundle(user_profile, community_profile)
+
+  Cold-Start:
+    New user with 1-2 ratings: profile is sparse but functional.
+    More ratings → profile converges → better recommendations.
+    New item: encode from description → immediately comparable.
+
+  Properties:
+    - O(1) profile update: bundle new item into existing profile
+    - O(N) recommendation: compare profile to N candidate items
+    - Natural cold-start handling (works from 1 rating)
+    - Interpretable: cosine score = recommendation strength
+    - No matrix factorization, no gradient descent
+
+types:
+  Item:
+    fields:
+      id: String
+      description: String
+
+  UserProfile:
+    fields:
+      user_id: String
+      profile_hv: Ptr<HybridBigInt>
+      liked_items: List<String>
+      item_count: u32
+
+  Recommendation:
+    fields:
+      item_id: String
+      score: Float
+
+  SimilarUser:
+    fields:
+      user_id: String
+      similarity: Float
+
+  RecommenderStats:
+    fields:
+      num_users: usize
+      num_items: usize
+      avg_items_per_user: Float
+
+  HDCRecommender:
+    fields:
+      allocator: Allocator
+      item_memory: ItemMemory
+      ngram_encoder: NGramEncoder
+      dimension: usize
+      encoder: HDCTextEncoder
+      items: HashMap<String, Ptr<HybridBigInt>>
+      item_descriptions: HashMap<String, String>
+      users: HashMap<String, UserProfile>
+
+behaviors:
+  - name: addItem
+    given: Item ID and description
+    when: Encodes description into item HV
+    then: Item registered in catalog
+
+  - name: addRating
+    given: User ID and item ID (liked)
+    when: Bundles item HV into user profile
+    then: User profile updated
+
+  - name: recommend
+    given: User ID and k (number of recommendations)
+    when: Ranks all unseen items by cosine(profile, item_hv)
+    then: Returns top-k Recommendations
+
+  - name: findSimilarUsers
+    given: User ID and k
+    when: Ranks all other users by cosine(profile_a, profile_b)
+    then: Returns top-k SimilarUsers
+
+  - name: collaborativeRecommend
+    given: User ID and k
+    when: Finds similar users, recommends their liked items
+    then: Returns top-k from collaborative signal
+
+  - name: stats
+    given: Nothing
+    when: Computes recommender statistics
+    then: Returns RecommenderStats

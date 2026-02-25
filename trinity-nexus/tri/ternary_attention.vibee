@@ -1,0 +1,133 @@
+# Ternary Attention Specification
+# Full ternary attention using TernaryKVCache
+# φ² + 1/φ² = 3 | KOSCHEI IS IMMORTAL
+
+name: ternary_attention
+version: "1.0.0"
+language: zig
+module: ternary_attention
+
+description: |
+  Full ternary attention implementation using TernaryKVCache.
+  Combines ternary weights, ternary KV cache, and optimized attention.
+  No multiplications in attention score computation (only add/sub).
+  16x memory reduction + faster computation.
+
+types:
+  TernaryAttentionConfig:
+    description: "Configuration for ternary attention"
+    fields:
+      num_heads: Int
+      num_kv_heads: Int
+      head_dim: Int
+      max_seq_len: Int
+
+  TernaryAttentionState:
+    description: "Pre-allocated buffers for attention"
+    fields:
+      scores: List<Float>
+      output: List<Float>
+      kv_cache: TernaryKVCache
+
+behaviors:
+  - name: ternary_attention_scores
+    given: f32 query and TernaryKVCache
+    when: Computing attention scores Q @ K^T
+    then: Use simdTernaryDot for each cached position
+
+  - name: ternary_softmax
+    given: Attention scores
+    when: Normalizing scores
+    then: Standard softmax (scores are f32)
+
+  - name: ternary_weighted_sum
+    given: Softmax weights and TernaryKVCache values
+    when: Computing attention output
+    then: Dequantize V on-the-fly, accumulate weighted sum
+
+  - name: ternary_attention_head
+    given: Single query head, TernaryKVCache, head index
+    when: Computing attention for one head
+    then: Scores → softmax → weighted sum
+
+  - name: ternary_attention_gqa
+    given: All query heads, TernaryKVCache, GQA config
+    when: Computing attention for all heads
+    then: Process each head with shared KV heads
+
+  - name: online_ternary_attention
+    given: Query, TernaryKVCache, tile size
+    when: Computing with online softmax
+    then: Tiled attention without full score materialization
+
+algorithm:
+  ternary_attention:
+    description: |
+      For each query head h:
+        kv_h = h / kv_group_size  # GQA mapping
+        
+        # Compute scores using ternary dot product
+        for t in 0..seq_len:
+          scores[t] = cache.simdTernaryDot(q_head, t, kv_h) * scale
+        
+        # Softmax
+        softmax(scores)
+        
+        # Weighted sum with on-the-fly dequantization
+        output = zeros(head_dim)
+        for t in 0..seq_len:
+          v = cache.dequantizeV(t, kv_h)
+          output += scores[t] * v
+
+optimizations:
+  - name: no_k_dequantization
+    description: "ternaryDot computes Q @ K without dequantizing K"
+    
+  - name: simd_ternary_dot
+    description: "8 values per iteration using sign lookup"
+    
+  - name: lazy_v_dequantization
+    description: "Dequantize V only when needed (weighted sum)"
+    
+  - name: fused_scale_add
+    description: "Combine dequantization and accumulation"
+
+memory_analysis:
+  f32_attention:
+    kv_cache: "O(seq_len * num_kv_heads * head_dim * 4 bytes)"
+    scores: "O(seq_len * 4 bytes)"
+    
+  ternary_attention:
+    kv_cache: "O(seq_len * num_kv_heads * head_dim / 4 bytes)"
+    scores: "O(seq_len * 4 bytes)"
+    savings: "16x on KV cache"
+
+accuracy_considerations:
+  - name: quantization_error
+    description: "K,V quantized to {-1, 0, +1} with scale"
+    
+  - name: attention_approximation
+    description: "Ternary dot product is approximate"
+    
+  - name: scale_preservation
+    description: "Per-token scales preserve magnitude"
+
+benchmarks:
+  - name: memory_reduction
+    metric: "ratio"
+    target: "16x on KV cache"
+    
+  - name: attention_speedup
+    metric: "ratio"
+    target: "1.5-2x (no K dequantization)"
+    
+  - name: accuracy
+    metric: "cosine similarity"
+    target: ">0.90"
+
+integration:
+  - target: tri_inference.zig
+    description: "Replace f32 attention with ternary"
+    
+  - target: flash_attention.zig
+    description: "Add ternary variant of flash attention"

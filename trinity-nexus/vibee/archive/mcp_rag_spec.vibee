@@ -1,0 +1,548 @@
+# MCP RAG Tools Specification
+# Spec-driven development: This spec is the SINGLE SOURCE OF TRUTH
+# All code, tests, and documentation are GENERATED from this spec
+
+metadata:
+  name: mcp_rag
+  version: 1.0.0
+  description: RAG (Retrieval-Augmented Generation) MCP tools for knowledge management and vector search
+  author: VIBEE Team
+  license: MIT
+  generated_from: spec
+  manual_code_forbidden: true
+
+# Type definitions
+types:
+  - name: RAGConfig
+    description: RAG system configuration
+    fields:
+      - name: embedding_model
+        type: String
+        description: Embedding model name
+        default: "text-embedding-ada-002"
+      - name: vector_db_url
+        type: String
+        description: Vector database URL
+        required: true
+      - name: chunk_size
+        type: Int
+        description: Text chunk size for splitting
+        default: 512
+      - name: chunk_overlap
+        type: Int
+        description: Overlap between chunks
+        default: 50
+      - name: top_k
+        type: Int
+        description: Number of results to return
+        default: 5
+
+  - name: Document
+    description: Document for indexing
+    fields:
+      - name: id
+        type: String
+        description: Document ID
+        required: true
+      - name: content
+        type: String
+        description: Document content
+        required: true
+      - name: metadata
+        type: Map<String, String>
+        description: Document metadata
+        default: {}
+      - name: source
+        type: String
+        description: Document source
+        required: false
+      - name: created_at
+        type: String
+        description: Creation timestamp
+        required: true
+
+  - name: Chunk
+    description: Text chunk with embedding
+    fields:
+      - name: id
+        type: String
+        description: Chunk ID
+        required: true
+      - name: document_id
+        type: String
+        description: Parent document ID
+        required: true
+      - name: content
+        type: String
+        description: Chunk content
+        required: true
+      - name: embedding
+        type: List<Float>
+        description: Vector embedding
+        default: []
+      - name: position
+        type: Int
+        description: Position in document
+        required: true
+      - name: metadata
+        type: Map<String, String>
+        description: Chunk metadata
+        default: {}
+
+  - name: SearchResult
+    description: Search result with relevance score
+    fields:
+      - name: chunk
+        type: Chunk
+        description: Matched chunk
+        required: true
+      - name: score
+        type: Float
+        description: Relevance score (0-1)
+        required: true
+      - name: document
+        type: Document
+        description: Source document
+        required: true
+
+  - name: Embedding
+    description: Text embedding vector
+    fields:
+      - name: text
+        type: String
+        description: Original text
+        required: true
+      - name: vector
+        type: List<Float>
+        description: Embedding vector
+        required: true
+      - name: model
+        type: String
+        description: Model used for embedding
+        required: true
+      - name: dimensions
+        type: Int
+        description: Vector dimensions
+        required: true
+
+  - name: Collection
+    description: Document collection
+    fields:
+      - name: id
+        type: String
+        description: Collection ID
+        required: true
+      - name: name
+        type: String
+        description: Collection name
+        required: true
+      - name: description
+        type: String
+        description: Collection description
+        required: false
+      - name: document_count
+        type: Int
+        description: Number of documents
+        default: 0
+      - name: chunk_count
+        type: Int
+        description: Number of chunks
+        default: 0
+      - name: created_at
+        type: String
+        description: Creation timestamp
+        required: true
+
+  - name: IndexStats
+    description: Index statistics
+    fields:
+      - name: total_documents
+        type: Int
+        description: Total documents indexed
+        default: 0
+      - name: total_chunks
+        type: Int
+        description: Total chunks indexed
+        default: 0
+      - name: total_size_bytes
+        type: Int
+        description: Total index size in bytes
+        default: 0
+      - name: last_updated
+        type: String
+        description: Last update timestamp
+        required: true
+
+# Behavior specifications with test cases
+behaviors:
+  - name: document_management
+    description: Document indexing and management operations
+    functions:
+      - name: index_document
+        description: Index a document for search
+        params:
+          - name: config
+            type: RAGConfig
+          - name: document
+            type: Document
+        returns: Result<List<Chunk>, String>
+        test_cases:
+          - input:
+              config: {embedding_model: "text-embedding-ada-002", chunk_size: 512}
+              document:
+                id: "doc-1"
+                content: "This is a test document with some content."
+                metadata: {author: "Alice", category: "test"}
+                created_at: "2024-01-01T00:00:00Z"
+            expected:
+              Ok:
+                - id: "chunk-1"
+                  document_id: "doc-1"
+                  content: "This is a test document with some content."
+                  position: 0
+
+      - name: delete_document
+        description: Delete document from index
+        params:
+          - name: config
+            type: RAGConfig
+          - name: document_id
+            type: String
+        returns: Result<Bool, String>
+        test_cases:
+          - input:
+              config: {vector_db_url: "http://localhost:6333"}
+              document_id: "doc-1"
+            expected:
+              Ok: true
+
+      - name: get_document
+        description: Get document by ID
+        params:
+          - name: config
+            type: RAGConfig
+          - name: document_id
+            type: String
+        returns: Result<Document, String>
+        test_cases:
+          - input:
+              config: {vector_db_url: "http://localhost:6333"}
+              document_id: "doc-1"
+            expected:
+              Ok:
+                id: "doc-1"
+                content: "This is a test document."
+                created_at: "2024-01-01T00:00:00Z"
+
+      - name: list_documents
+        description: List all documents
+        params:
+          - name: config
+            type: RAGConfig
+          - name: limit
+            type: Int
+          - name: offset
+            type: Int
+        returns: Result<List<Document>, String>
+        test_cases:
+          - input:
+              config: {vector_db_url: "http://localhost:6333"}
+              limit: 10
+              offset: 0
+            expected:
+              Ok:
+                - {id: "doc-1", content: "Document 1", created_at: "2024-01-01T00:00:00Z"}
+                - {id: "doc-2", content: "Document 2", created_at: "2024-01-02T00:00:00Z"}
+
+  - name: search_operations
+    description: Vector search operations
+    functions:
+      - name: search
+        description: Search for relevant documents
+        params:
+          - name: config
+            type: RAGConfig
+          - name: query
+            type: String
+        returns: Result<List<SearchResult>, String>
+        test_cases:
+          - input:
+              config: {embedding_model: "text-embedding-ada-002", top_k: 5}
+              query: "What is machine learning?"
+            expected:
+              Ok:
+                - chunk: {id: "chunk-1", content: "Machine learning is...", position: 0}
+                  score: 0.95
+                  document: {id: "doc-1", content: "ML guide", created_at: "2024-01-01T00:00:00Z"}
+
+      - name: search_with_filter
+        description: Search with metadata filters
+        params:
+          - name: config
+            type: RAGConfig
+          - name: query
+            type: String
+          - name: filters
+            type: Map<String, String>
+        returns: Result<List<SearchResult>, String>
+        test_cases:
+          - input:
+              config: {top_k: 5}
+              query: "machine learning"
+              filters: {category: "tutorial", author: "Alice"}
+            expected:
+              Ok:
+                - chunk: {id: "chunk-1", content: "ML tutorial...", position: 0}
+                  score: 0.92
+
+      - name: semantic_search
+        description: Semantic similarity search
+        params:
+          - name: config
+            type: RAGConfig
+          - name: query
+            type: String
+          - name: threshold
+            type: Float
+        returns: Result<List<SearchResult>, String>
+        test_cases:
+          - input:
+              config: {top_k: 5}
+              query: "neural networks"
+              threshold: 0.8
+            expected:
+              Ok:
+                - chunk: {id: "chunk-1", content: "Deep learning...", position: 0}
+                  score: 0.88
+
+  - name: embedding_operations
+    description: Text embedding operations
+    functions:
+      - name: create_embedding
+        description: Create embedding for text
+        params:
+          - name: config
+            type: RAGConfig
+          - name: text
+            type: String
+        returns: Result<Embedding, String>
+        test_cases:
+          - input:
+              config: {embedding_model: "text-embedding-ada-002"}
+              text: "Hello, world!"
+            expected:
+              Ok:
+                text: "Hello, world!"
+                vector: [0.1, 0.2, 0.3]
+                model: "text-embedding-ada-002"
+                dimensions: 1536
+
+      - name: batch_create_embeddings
+        description: Create embeddings for multiple texts
+        params:
+          - name: config
+            type: RAGConfig
+          - name: texts
+            type: List<String>
+        returns: Result<List<Embedding>, String>
+        test_cases:
+          - input:
+              config: {embedding_model: "text-embedding-ada-002"}
+              texts: ["Text 1", "Text 2", "Text 3"]
+            expected:
+              Ok:
+                - {text: "Text 1", vector: [0.1, 0.2], model: "text-embedding-ada-002", dimensions: 1536}
+                - {text: "Text 2", vector: [0.3, 0.4], model: "text-embedding-ada-002", dimensions: 1536}
+
+  - name: collection_management
+    description: Collection management operations
+    functions:
+      - name: create_collection
+        description: Create a new collection
+        params:
+          - name: config
+            type: RAGConfig
+          - name: name
+            type: String
+          - name: description
+            type: String
+        returns: Result<Collection, String>
+        test_cases:
+          - input:
+              config: {vector_db_url: "http://localhost:6333"}
+              name: "my-collection"
+              description: "Test collection"
+            expected:
+              Ok:
+                id: "coll-1"
+                name: "my-collection"
+                description: "Test collection"
+                document_count: 0
+                chunk_count: 0
+
+      - name: delete_collection
+        description: Delete a collection
+        params:
+          - name: config
+            type: RAGConfig
+          - name: collection_id
+            type: String
+        returns: Result<Bool, String>
+        test_cases:
+          - input:
+              config: {vector_db_url: "http://localhost:6333"}
+              collection_id: "coll-1"
+            expected:
+              Ok: true
+
+      - name: get_index_stats
+        description: Get index statistics
+        params:
+          - name: config
+            type: RAGConfig
+        returns: Result<IndexStats, String>
+        test_cases:
+          - input:
+              config: {vector_db_url: "http://localhost:6333"}
+            expected:
+              Ok:
+                total_documents: 100
+                total_chunks: 500
+                total_size_bytes: 1048576
+                last_updated: "2024-01-01T00:00:00Z"
+
+# Function declarations (generated from behaviors)
+functions:
+  # Document management
+  - name: index_document
+    params: [config: RAGConfig, document: Document]
+    returns: Result<List<Chunk>, String>
+    behavior: document_management
+
+  - name: delete_document
+    params: [config: RAGConfig, document_id: String]
+    returns: Result<Bool, String>
+    behavior: document_management
+
+  - name: get_document
+    params: [config: RAGConfig, document_id: String]
+    returns: Result<Document, String>
+    behavior: document_management
+
+  - name: list_documents
+    params: [config: RAGConfig, limit: Int, offset: Int]
+    returns: Result<List<Document>, String>
+    behavior: document_management
+
+  # Search operations
+  - name: search
+    params: [config: RAGConfig, query: String]
+    returns: Result<List<SearchResult>, String>
+    behavior: search_operations
+
+  - name: search_with_filter
+    params: [config: RAGConfig, query: String, filters: Map<String, String>]
+    returns: Result<List<SearchResult>, String>
+    behavior: search_operations
+
+  - name: semantic_search
+    params: [config: RAGConfig, query: String, threshold: Float]
+    returns: Result<List<SearchResult>, String>
+    behavior: search_operations
+
+  # Embedding operations
+  - name: create_embedding
+    params: [config: RAGConfig, text: String]
+    returns: Result<Embedding, String>
+    behavior: embedding_operations
+
+  - name: batch_create_embeddings
+    params: [config: RAGConfig, texts: List<String>]
+    returns: Result<List<Embedding>, String>
+    behavior: embedding_operations
+
+  # Collection management
+  - name: create_collection
+    params: [config: RAGConfig, name: String, description: String]
+    returns: Result<Collection, String>
+    behavior: collection_management
+
+  - name: delete_collection
+    params: [config: RAGConfig, collection_id: String]
+    returns: Result<Bool, String>
+    behavior: collection_management
+
+  - name: get_index_stats
+    params: [config: RAGConfig]
+    returns: Result<IndexStats, String>
+    behavior: collection_management
+
+# Documentation
+documentation:
+  overview: |
+    # MCP RAG Tools
+    
+    Complete RAG (Retrieval-Augmented Generation) tools for knowledge management and vector search.
+    
+    ## Features
+    - Document indexing (chunking, embedding)
+    - Vector search (semantic, filtered)
+    - Embedding operations (single, batch)
+    - Collection management
+    - Index statistics
+    
+  examples:
+    - title: Index Document
+      code: |
+        let config = RAGConfig(
+          embedding_model: "text-embedding-ada-002",
+          vector_db_url: "http://localhost:6333",
+          chunk_size: 512,
+          chunk_overlap: 50,
+          top_k: 5
+        )
+        let document = Document(
+          id: "doc-1",
+          content: "This is a document about machine learning...",
+          metadata: map.from_list([#("category", "tutorial")]),
+          source: "tutorial.md",
+          created_at: "2024-01-01T00:00:00Z"
+        )
+        let result = index_document(config, document)
+        case result {
+          Ok(chunks) -> io.println("Indexed " <> int.to_string(list.length(chunks)) <> " chunks")
+          Error(err) -> io.println("Error: " <> err)
+        }
+    
+    - title: Search Documents
+      code: |
+        let result = search(config, "What is machine learning?")
+        case result {
+          Ok(results) -> {
+            list.each(results, fn(r) {
+              io.println("Score: " <> float.to_string(r.score))
+              io.println("Content: " <> r.chunk.content)
+            })
+          }
+          Error(err) -> io.println("Error: " <> err)
+        }
+    
+    - title: Create Embedding
+      code: |
+        let result = create_embedding(config, "Hello, world!")
+        case result {
+          Ok(embedding) -> {
+            io.println("Dimensions: " <> int.to_string(embedding.dimensions))
+            io.println("Model: " <> embedding.model)
+          }
+          Error(err) -> io.println("Error: " <> err)
+        }
+
+# Generation metadata
+generation:
+  target_language: gleam
+  output_path: src/mcp_rag.gleam
+  test_path: test/mcp_rag_test.gleam
+  generate_docs: true
+  generate_tests: true
+  generate_helpers: true

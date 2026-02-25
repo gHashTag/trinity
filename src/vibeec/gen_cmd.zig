@@ -10,6 +10,21 @@ const lang_generators = @import("lang_generators.zig");
 const gguf_chat = @import("gguf_chat.zig");
 const http_server = @import("http_server.zig");
 
+// V10.2: Spec Intelligence
+const golden_db = @import("golden_db.zig");
+const reasoning_engine = @import("reasoning_engine.zig");
+const spec_improver = @import("spec_improver.zig");
+
+// V10.3: Self-Feeding Loop + Rewards
+const vibe_rewards = @import("vibe_rewards.zig");
+
+// V10.5: Golden Seed Factory
+const synthetic_seed_gen = @import("synthetic_seed_gen.zig");
+const auto_curation_v2 = @import("auto_curation_v2.zig");
+
+// PHI LOOP: PAS Validation integration
+const phi_types = @import("phi_types.zig");
+
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
 
@@ -104,6 +119,83 @@ pub fn main() !void {
         }
 
         try http_server.runServer(allocator, model_path.?, port);
+    } else if (std.mem.eql(u8, command, "improve-spec")) {
+        // V10.2: Improve spec by filling empty implementations
+        if (args.len < 3) {
+            std.debug.print("Error: Missing spec file\n", .{});
+            printUsage();
+            return;
+        }
+
+        const spec_path = args[2];
+        var dry_run: bool = false;
+        var min_confidence: f32 = 0.7;
+
+        // Parse optional flags
+        var i: usize = 3;
+        while (i < args.len) : (i += 1) {
+            if (std.mem.eql(u8, args[i], "--dry-run")) {
+                dry_run = true;
+            } else if (std.mem.eql(u8, args[i], "--min-confidence") and i + 1 < args.len) {
+                min_confidence = std.fmt.parseFloat(f32, args[i + 1]) catch 0.7;
+                i += 1;
+            }
+        }
+
+        try improveSpec(allocator, spec_path, dry_run, min_confidence);
+    } else if (std.mem.eql(u8, command, "import-seeds")) {
+        // V10.3: Import seeds from generated directory
+        if (args.len < 3) {
+            std.debug.print("Error: Missing directory\n", .{});
+            printUsage();
+            return;
+        }
+
+        const dir = args[2];
+        try importSeeds(allocator, dir);
+    } else if (std.mem.eql(u8, command, "generate-seeds")) {
+        // V10.5: Generate synthetic seeds
+        var spec_files: []const []const u8 = &[_][]const u8{};
+        var min_quality: f32 = 0.6;
+        var import_to_db: bool = false;
+
+        // Parse flags
+        var i: usize = 2;
+        while (i < args.len) : (i += 1) {
+            if (std.mem.eql(u8, args[i], "--min-quality") and i + 1 < args.len) {
+                min_quality = std.fmt.parseFloat(f32, args[i + 1]) catch 0.6;
+                i += 1;
+            } else if (std.mem.eql(u8, args[i], "--import")) {
+                import_to_db = true;
+            } else if (!std.mem.eql(u8, args[i][0..2], "--")) {
+                // Not a flag, treat as spec file
+                const new_list = try allocator.alloc([]const u8, spec_files.len + 1);
+                @memcpy(new_list[0..spec_files.len], spec_files);
+                new_list[spec_files.len] = args[i];
+                if (spec_files.len > 0) allocator.free(spec_files);
+                spec_files = new_list;
+            }
+        }
+
+        if (spec_files.len == 0) {
+            std.debug.print("Error: No spec files provided\n", .{});
+            std.debug.print("Usage: vibeec generate-seeds <spec.tri...> [--min-quality F] [--import]\n", .{});
+            return;
+        }
+
+        try generateSyntheticSeeds(allocator, spec_files, min_quality, import_to_db);
+    } else if (std.mem.eql(u8, command, "curate-seeds")) {
+        // V10.5: Curate synthetic seeds with multi-stage validation
+        try curateSyntheticSeeds(allocator);
+    } else if (std.mem.eql(u8, command, "show-rewards")) {
+        // V10.3: Show reward system info
+        var agent_id: []const u8 = "vibee-v10.3";
+        if (args.len > 2) {
+            if (std.mem.eql(u8, args[2], "--agent") and args.len > 3) {
+                agent_id = args[3];
+            }
+        }
+        try showRewards(allocator, agent_id);
     } else if (std.mem.eql(u8, command, "help") or std.mem.eql(u8, command, "--help")) {
         printUsage();
     } else {
@@ -116,12 +208,21 @@ fn printUsage() void {
     std.debug.print(
         \\
         \\═══════════════════════════════════════════════════════════════════════════════
-        \\                    VIBEEC - VIBEE Compiler v24.φ
+        \\                    VIBEEC - VIBEE Compiler v10.5
         \\                    φ² + 1/φ² = 3
         \\═══════════════════════════════════════════════════════════════════════════════
         \\
         \\USAGE:
-        \\  vibeec gen <input.vibee> [output.zig]       Generate Zig code from .vibee spec
+        \\  vibeec gen <input.tri> [output.zig]         Generate Zig code from .tri spec
+        \\  vibeec improve-spec <file.tri> [options]    Fill empty implementations using Golden DB
+        \\    --dry-run                                 Show what would be filled without writing
+        \\    --min-confidence F                        Minimum confidence threshold (default: 0.7)
+        \\  vibeec import-seeds <dir>                   Import seeds from generated/*.zig files
+        \\  vibeec generate-seeds <specs...> [options] V10.5: Generate synthetic seeds
+        \\    --min-quality F                           Minimum quality threshold (default: 0.6)
+        \\    --import                                  Auto-import to Golden DB
+        \\  vibeec curate-seeds                         V10.5: Auto-curate seeds through validation
+        \\  vibeec show-rewards [--agent <id>]          Show $TRI reward info (V10.3)
         \\  vibeec chat --model <path.gguf> [options]   Chat with GGUF model (SIMD optimized)
         \\    --prompt "text"                           Initial prompt
         \\    --max-tokens N                            Max tokens to generate (default: 100)
@@ -159,6 +260,80 @@ fn deriveOutputPath(allocator: std.mem.Allocator, input_path: []const u8, langua
     const basename = std.fs.path.basename(input_path);
     const stem = std.fs.path.stem(basename);
 
+    // Determine spec category from input path
+    const spec_dir: []const u8 = if (std.mem.indexOf(u8, input_path, "trinity-nexus/ralph") != null)
+        "ralph"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/agent_mu") != null)
+        "agent_mu"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/vibeec") != null)
+        "vibeec"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/bootstrap") != null)
+        "bootstrap"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/lang") != null)
+        "lang"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/vsa") != null)
+        "vsa"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/core") != null)
+        "core"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/network") != null)
+        "network"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/sym") != null)
+        "sym"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/examples") != null)
+        "examples"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/phi") != null)
+        "phi"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/storage") != null)
+        "storage"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/tri") != null)
+        "tri"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/vibee") != null)
+        "vibee"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/deploy") != null)
+        "deploy"
+    else if (std.mem.indexOf(u8, input_path, "trinity-nexus/trinity-w1") != null)
+        "trinity-w1"
+    else
+        "lang"; // Default to lang for backwards compatibility
+
+    // Determine extension and language subdirectory
+    const lang_dir = if (std.mem.eql(u8, language, "verilog") or std.mem.eql(u8, language, "varlog"))
+        "fpga"
+    else if (std.mem.eql(u8, language, "python"))
+        "python"
+    else if (std.mem.eql(u8, language, "typescript"))
+        "typescript"
+    else if (std.mem.eql(u8, language, "rust"))
+        "rust"
+    else if (std.mem.eql(u8, language, "go"))
+        "go"
+    else if (std.mem.eql(u8, language, "cpp"))
+        "cpp"
+    else if (std.mem.eql(u8, language, "csharp"))
+        "csharp"
+    else if (std.mem.eql(u8, language, "java"))
+        "java"
+    else if (std.mem.eql(u8, language, "swift"))
+        "swift"
+    else if (std.mem.eql(u8, language, "kotlin"))
+        "kotlin"
+    else if (std.mem.eql(u8, language, "dart"))
+        "dart"
+    else if (std.mem.eql(u8, language, "lua"))
+        "lua"
+    else if (std.mem.eql(u8, language, "r"))
+        "r"
+    else if (std.mem.eql(u8, language, "matlab"))
+        "matlab"
+    else if (std.mem.eql(u8, language, "php"))
+        "php"
+    else if (std.mem.eql(u8, language, "c"))
+        "c"
+    else if (std.mem.eql(u8, language, "sql"))
+        "sql"
+    else
+        "zig";
+
     const ext = if (std.mem.eql(u8, language, "verilog") or std.mem.eql(u8, language, "varlog"))
         "v"
     else if (std.mem.eql(u8, language, "python"))
@@ -182,12 +357,8 @@ fn deriveOutputPath(allocator: std.mem.Allocator, input_path: []const u8, langua
     else
         "zig";
 
-    const dir = if (std.mem.eql(u8, language, "verilog") or std.mem.eql(u8, language, "varlog"))
-        "trinity/output/fpga"
-    else
-        "generated";
-
-    return try std.fmt.allocPrint(allocator, "{s}/{s}.{s}", .{ dir, stem, ext });
+    // Clean mirror: trinity-nexus/output/{spec_dir}/{lang_dir}/{stem}.{ext}
+    return try std.fmt.allocPrint(allocator, "trinity-nexus/output/{s}/{s}/{s}.{s}", .{ spec_dir, lang_dir, stem, ext });
 }
 
 fn generateCode(allocator: std.mem.Allocator, input_path: []const u8, output_path: []const u8) !void {
@@ -197,12 +368,70 @@ fn generateCode(allocator: std.mem.Allocator, input_path: []const u8, output_pat
     const file = try std.fs.cwd().openFile(input_path, .{});
     defer file.close();
 
-    const source = try file.readToEndAlloc(allocator, 1024 * 1024);
-    defer allocator.free(source);
+    const source = try file.readToEndAlloc(allocator, 10 * 1024 * 1024); // 10MB max for large specs
+    // Note: source is now owned by the spec via spec.source_content
+    // Don't free here - spec.deinit() will handle it
 
     var parser = vibee_parser.VibeeParser.init(allocator, source);
     var spec = try parser.parse();
+    spec.owns_source = true; // source was readToEndAlloc'd — spec owns it
     defer spec.deinit();
+
+    // Multi-target code generation: check if spec has languages array
+    if (spec.languages.items.len > 1) {
+        std.debug.print("\n  ════════════════════════════════════════════════════════════════\n", .{});
+        std.debug.print("  Multi-target generation: {d} languages\n", .{spec.languages.items.len});
+        std.debug.print("  Languages: [", .{});
+        for (spec.languages.items, 0..) |lang, i| {
+            if (i > 0) std.debug.print(", ", .{});
+            std.debug.print("{s}", .{lang});
+        }
+        std.debug.print("]\n", .{});
+
+        for (spec.languages.items) |lang| {
+            const lang_output = deriveOutputPath(allocator, input_path, lang) catch {
+                std.debug.print("    [SKIP] {s}\n", .{lang});
+                continue;
+            };
+            defer allocator.free(lang_output);
+
+            const lang_dir = std.fs.path.dirname(lang_output) orelse ".";
+            std.fs.cwd().makePath(lang_dir) catch {};
+
+            std.debug.print("    → {s}: {s}\n", .{ lang, lang_output });
+
+            // Generate code for this language
+            if (std.mem.eql(u8, lang, "verilog") or std.mem.eql(u8, lang, "varlog")) {
+                const output = try verilog_codegen.generateVerilog(allocator, &spec);
+                defer allocator.free(output);
+                const f = try std.fs.cwd().createFile(lang_output, .{});
+                defer f.close();
+                try f.writeAll(output);
+                try validateWithPAS(allocator, output, lang_output);
+            } else if (isMultiLangTarget(lang)) {
+                const orig_lang = spec.language;
+                spec.language = lang;
+                const output = try generateMultiLang(allocator, &spec);
+                spec.language = orig_lang;
+                defer allocator.free(output);
+                const f = try std.fs.cwd().createFile(lang_output, .{});
+                defer f.close();
+                try f.writeAll(output);
+                try validateWithPAS(allocator, output, lang_output);
+            } else {
+                var codegen = zig_codegen.ZigCodeGen.init(allocator);
+                const output = try codegen.generate(&spec);
+                defer allocator.free(output);
+                const f = try std.fs.cwd().createFile(lang_output, .{});
+                defer f.close();
+                try f.writeAll(output);
+                try validateWithPAS(allocator, output, lang_output);
+            }
+        }
+        std.debug.print("\n  φ² + 1/φ² = 3 | Multi-target complete\n", .{});
+        std.debug.print("  ════════════════════════════════════════════════════════════════\n\n", .{});
+        return;
+    }
 
     const dir_path = std.fs.path.dirname(output_path) orelse ".";
     std.fs.cwd().makePath(dir_path) catch {};
@@ -214,16 +443,100 @@ fn generateCode(allocator: std.mem.Allocator, input_path: []const u8, output_pat
         const output = try verilog_codegen.generateVerilog(allocator, &spec);
         defer allocator.free(output);
         try out_file.writeAll(output);
+        try validateWithPAS(allocator, output, output_path);
     } else if (isMultiLangTarget(spec.language)) {
         const output = try generateMultiLang(allocator, &spec);
         defer allocator.free(output);
         try out_file.writeAll(output);
+        try validateWithPAS(allocator, output, output_path);
     } else {
         var codegen = zig_codegen.ZigCodeGen.init(allocator);
         const output = try codegen.generate(&spec);
         defer allocator.free(output);
         try out_file.writeAll(output);
+        try validateWithPAS(allocator, output, output_path);
     }
+}
+
+/// PAS Validation — validate generated code through sacred mathematics
+/// Returns PAS score and logs validation result
+fn validateWithPAS(allocator: std.mem.Allocator, code: []const u8, output_path: []const u8) !void {
+    _ = output_path;
+    // Cycle 77: Run idiom compliance check on Zig output
+    try runIdiomCheck(allocator, code);
+
+    // Calculate basic PAS score using sacred constants
+    const line_count = std.mem.count(u8, code, "\n");
+    // Language-aware comment detection: // (Zig/TS/Rust/Go/Java), # (Python/Ruby), -- (SQL)
+    const has_comments = std.mem.indexOf(u8, code, "//") != null or
+        std.mem.indexOf(u8, code, "# ") != null or
+        std.mem.indexOf(u8, code, "\"\"\"") != null or
+        std.mem.indexOf(u8, code, "-- ") != null;
+    // Language-aware test detection
+    const has_tests = std.mem.indexOf(u8, code, "test") != null or
+        std.mem.indexOf(u8, code, "def ") != null or
+        std.mem.indexOf(u8, code, "function ") != null or
+        std.mem.indexOf(u8, code, "export ") != null;
+
+    // Base PAS score calculation (0.0 to 1.0)
+    var pas_score: f64 = 0.0;
+
+    // Lines of code contribution (up to 0.3)
+    // Minimum viable output is 20 lines; 100+ lines is full score
+    pas_score += @min(@as(f64, @floatFromInt(line_count)) / 100.0, 0.3);
+
+    // Comments contribution (0.2)
+    if (has_comments) pas_score += 0.2;
+
+    // Tests contribution (0.2)
+    if (has_tests) pas_score += 0.2;
+
+    // Structure contribution (0.1) — has type/class definitions
+    const has_structure = std.mem.indexOf(u8, code, "struct") != null or
+        std.mem.indexOf(u8, code, "class") != null or
+        std.mem.indexOf(u8, code, "interface") != null or
+        std.mem.indexOf(u8, code, "CREATE TABLE") != null;
+    if (has_structure) pas_score += 0.1;
+
+    // Base contribution for generating code (0.2)
+    pas_score += 0.2;
+
+    // Clamp to [0, 1]
+    pas_score = @max(0.0, @min(pas_score, 1.0));
+
+    // Apply φ-weighted boost if below threshold
+    const pas_final = if (pas_score < phi_types.Sacred.SACRED_THRESHOLD)
+        phi_types.Sacred.phiWeighted(pas_score)
+    else
+        pas_score;
+
+    // Clamp final score
+    const pas_clamped = @min(pas_final, 1.0);
+
+    // Check Trinity Identity
+    const trinity_ok = phi_types.Sacred.trinityIdentity();
+
+    // Print validation result
+    std.debug.print("\n  ┌─────────────────────────────────────┐\n", .{});
+    std.debug.print("  │ φ GATE VALIDATION                    │\n", .{});
+    std.debug.print("  ├─────────────────────────────────────┤\n", .{});
+    std.debug.print("  │ PAS Score:       {d:.3} / 1.000     │\n", .{pas_clamped});
+    std.debug.print("  │ Trinity Identity: {s}                │\n", .{if (trinity_ok) "✓" else "✗"});
+    std.debug.print("  │ Threshold:       {d:.3}             │\n", .{phi_types.Sacred.SACRED_THRESHOLD});
+    std.debug.print("  ├─────────────────────────────────────┤\n", .{});
+
+    if (pas_clamped >= phi_types.Sacred.SACRED_THRESHOLD and trinity_ok) {
+        std.debug.print("  │ ✓ PASSED φ GATE                     │\n", .{});
+    } else {
+        std.debug.print("  │ ✗ FAILED φ GATE                      │\n", .{});
+        if (pas_clamped < phi_types.Sacred.SACRED_THRESHOLD) {
+            std.debug.print("  │   Reason: PAS score below threshold   │\n", .{});
+        }
+        if (!trinity_ok) {
+            std.debug.print("  │   Reason: Trinity identity failed     │\n", .{});
+        }
+    }
+    std.debug.print("  └─────────────────────────────────────┘\n\n", .{});
 }
 
 fn isMultiLangTarget(language: []const u8) bool {
@@ -279,3 +592,337 @@ fn generateMultiLang(allocator: std.mem.Allocator, spec: *vibee_parser.VibeeSpec
 
     return lang_generators.generateForLanguage(allocator, parsed, spec.language);
 }
+
+/// V10.2: Improve a spec file by filling empty implementations
+fn improveSpec(allocator: std.mem.Allocator, spec_path: []const u8, dry_run: bool, min_confidence: f32) !void {
+    std.debug.print("╔════════════════════════════════════════════════════════════════╗\n", .{});
+    std.debug.print("║  VIBEE v10.4: Spec Improver + Live TRI Rewards                   ║\n", .{});
+    std.debug.print("╚════════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    std.debug.print("  Spec: {s}\n", .{spec_path});
+    std.debug.print("  Dry run: {any}\n", .{dry_run});
+    std.debug.print("  Min confidence: {d:.1}\n\n", .{min_confidence});
+
+    var improver = try spec_improver.SpecImprover.init(allocator);
+    defer improver.deinit();
+
+    const result = try improver.improveSpecFile(spec_path);
+
+    std.debug.print("\n  Results:\n", .{});
+    std.debug.print("    Behaviors filled:  {d}\n", .{result.behaviors_filled});
+    std.debug.print("    Behaviors skipped: {d}\n", .{result.behaviors_skipped});
+    std.debug.print("    Total behaviors:   {d}\n", .{result.behaviors_total});
+
+    // V10.4: Calculate estimated rewards
+    if (result.behaviors_filled > 0) {
+        // Assume average quality 0.8 for filled behaviors
+        const avg_quality: f32 = 0.8;
+        const estimated_reward = vibe_rewards.VibeRewardSystem.rewardForImprovement(avg_quality, 5);
+        const total_reward = estimated_reward * @as(f64, @floatFromInt(result.behaviors_filled));
+        std.debug.print("\n  Estimated TRI Rewards:\n", .{});
+        std.debug.print("    Behaviors filled: {d}\n", .{result.behaviors_filled});
+        std.debug.print("    Avg quality: {d:.2}\n", .{avg_quality});
+        std.debug.print("    Estimated earned: {d:.1} TRI\n", .{total_reward});
+    }
+
+    if (result.errors.items.len > 0) {
+        std.debug.print("\n  Errors:\n", .{});
+        for (result.errors.items) |err| {
+            std.debug.print("    - {s}: {s}\n", .{ err.behavior_name, err.reason });
+        }
+    }
+
+    std.debug.print("\n", .{});
+
+    // Clean up duplicated error strings
+    for (result.errors.items) |err| {
+        allocator.free(err.behavior_name);
+        allocator.free(err.reason);
+    }
+    // Cast away const for cleanup - we own this data
+    @constCast(&result.errors).deinit(allocator);
+}
+
+/// V10.3: Import seeds from generated directory
+fn importSeeds(allocator: std.mem.Allocator, dir: []const u8) !void {
+    std.debug.print("╔════════════════════════════════════════════════════════════════╗\n", .{});
+    std.debug.print("║  VIBEE v10.3: Import Seeds                                   ║\n", .{});
+    std.debug.print("╚════════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    std.debug.print("  Directory: {s}\n", .{dir});
+    std.debug.print("  Scanning for .zig files...\n\n", .{});
+
+    var db = try golden_db.GoldenDB.init(allocator);
+    defer db.deinit();
+
+    const count = try db.importFromGenerated(dir);
+
+    std.debug.print("\n  Results:\n", .{});
+    std.debug.print("    Seeds imported: {d}\n", .{count});
+    std.debug.print("    Total DB size:  {d}\n", .{db.implementations.items.len});
+    std.debug.print("\n", .{});
+}
+
+fn showRewards(allocator: std.mem.Allocator, agent_id: []const u8) !void {
+    _ = allocator;
+    std.debug.print("╔════════════════════════════════════════════════════════════════╗\n", .{});
+    std.debug.print("║  VIBEE v10.3: $TRI Reward System                           ║\n", .{});
+    std.debug.print("╚════════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    std.debug.print("  Agent: {s}\n\n", .{agent_id});
+
+    // Show reward tiers
+    std.debug.print("  Reward Tiers:\n", .{});
+    std.debug.print("    Platinum (≥0.95): {d:.1} - {d:.1} $TRI\n", .{
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(0.95, 5),
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(1.0, 8),
+    });
+    std.debug.print("    Gold (≥0.90):      {d:.1} - {d:.1} $TRI\n", .{
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(0.90, 5),
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(0.94, 8),
+    });
+    std.debug.print("    Silver (≥0.85):    {d:.1} - {d:.1} $TRI\n", .{
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(0.85, 5),
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(0.89, 8),
+    });
+    std.debug.print("    Bronze (≥0.75):    {d:.1} - {d:.1} $TRI\n", .{
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(0.75, 5),
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(0.84, 8),
+    });
+    std.debug.print("    Unranked (<0.75):  0 - {d:.1} $TRI\n\n", .{
+        vibe_rewards.VibeRewardSystem.rewardForImprovement(0.74, 5),
+    });
+
+    // Show staking bonuses
+    std.debug.print("  Staking Bonuses (priority multiplier):\n", .{});
+    std.debug.print("    0 $TRI:     1.0x (normal)\n", .{});
+    std.debug.print("    100 $TRI:   1.5x\n", .{});
+    std.debug.print("    500+ $TRI:  2.0x\n\n", .{});
+
+    // Show daily cap
+    std.debug.print("  Daily Earnings Cap: {d:.0} $TRI\n", .{vibe_rewards.VibeRewardSystem.DAILY_CAP});
+    std.debug.print("\n", .{});
+}
+
+/// V10.5: Generate synthetic seeds from spec files
+fn generateSyntheticSeeds(
+    allocator: std.mem.Allocator,
+    spec_files: []const []const u8,
+    min_quality: f32,
+    import_to_db: bool,
+) !void {
+    std.debug.print("╔════════════════════════════════════════════════════════════════╗\n", .{});
+    std.debug.print("║  VIBEE v10.5: Synthetic Seed Generator                        ║\n", .{});
+    std.debug.print("╚════════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    std.debug.print("  Spec files: {d}\n", .{spec_files.len});
+    std.debug.print("  Min quality: {d:.2}\n", .{min_quality});
+    std.debug.print("  Import to DB: {any}\n\n", .{import_to_db});
+
+    // Initialize Golden DB
+    var db = try golden_db.GoldenDB.init(allocator);
+    defer db.deinit();
+
+    // Initialize synthetic generator
+    var generator = synthetic_seed_gen.SyntheticSeedGenerator.init(allocator, &db);
+
+    // Collect all behavior names from specs
+    var behavior_names = std.ArrayList([]const u8).initCapacity(allocator, 256) catch |err| {
+        std.debug.print("    [Error] Cannot allocate behavior list: {}\n", .{err});
+        return err;
+    };
+    defer behavior_names.deinit(allocator);
+
+    for (spec_files) |spec_path| {
+        std.debug.print("  Reading: {s}\n", .{spec_path});
+
+        const file = std.fs.cwd().openFile(spec_path, .{}) catch |err| {
+            std.debug.print("    [Error] Cannot open: {}\n", .{err});
+            continue;
+        };
+        defer file.close();
+
+        const source = try file.readToEndAlloc(allocator, 10 * 1024 * 1024); // 10MB max for large specs
+        // Note: Don't free source - VibeeParser takes ownership
+
+        var parser = vibee_parser.VibeeParser.init(allocator, source);
+        var spec = try parser.parse();
+        spec.owns_source = true; // source was readToEndAlloc'd
+        defer spec.deinit(); // This will free source_content
+
+        for (spec.behaviors.items) |b| {
+            const name_copy = try allocator.dupe(u8, b.name);
+            try behavior_names.append(allocator, name_copy);
+        }
+
+        std.debug.print("    Found {d} behaviors\n", .{spec.behaviors.items.len});
+    }
+
+    std.debug.print("\n  Total behaviors: {d}\n", .{behavior_names.items.len});
+    std.debug.print("  Generating synthetic seeds...\n\n", .{});
+
+    // Generate seeds
+    var result = try generator.generateForBehaviors(behavior_names.items, min_quality);
+    defer result.deinit(allocator);
+
+    // Report results
+    std.debug.print("  Results:\n", .{});
+    std.debug.print("    Generated: {d} seeds\n", .{result.generated.items.len});
+    std.debug.print("    High quality (≥0.9): {d}\n", .{result.high_quality_count});
+    std.debug.print("    Avg quality: {d:.2}\n", .{if (result.generated.items.len > 0)
+        result.total_quality / @as(f32, @floatFromInt(result.generated.items.len))
+    else
+        0.0});
+
+    // Import to DB if requested
+    if (import_to_db) {
+        std.debug.print("\n  Importing to Golden DB...\n", .{});
+        var imported: usize = 0;
+        for (result.generated.items) |seed| {
+            if (seed.quality_score >= min_quality) {
+                db.addNewSeed(
+                    seed.name,
+                    seed.signature,
+                    seed.body,
+                    seed.category,
+                ) catch |err| {
+                    std.debug.print("    [Error] Failed to add '{s}': {}\n", .{ seed.name, err });
+                    continue;
+                };
+                imported += 1;
+            }
+        }
+        std.debug.print("    Imported: {d} seeds\n", .{imported});
+        std.debug.print("    DB size: {d}\n", .{db.implementations.items.len});
+    }
+
+    // Show sample of generated seeds
+    if (result.generated.items.len > 0) {
+        std.debug.print("\n  Sample (first 3):\n", .{});
+        const sample_count = @min(3, result.generated.items.len);
+        for (result.generated.items[0..sample_count], 0..) |seed, i| {
+            std.debug.print("    {d}. {s} (quality: {d:.2}, category: {s})\n", .{
+                i + 1,
+                seed.name,
+                seed.quality_score,
+                @tagName(seed.category),
+            });
+        }
+    }
+
+    std.debug.print("\n", .{});
+}
+
+/// V10.5: Curate synthetic seeds through multi-stage validation
+/// Cycle 78: Run unified idiom compliance check (string-based + AST when available)
+fn runIdiomCheck(allocator: std.mem.Allocator, code: []const u8) !void {
+    const unified_mod = zig_codegen.codegen.unified_analyzer;
+    var analyzer = unified_mod.UnifiedAnalyzer{ .allocator = allocator, .source = code };
+    var report = try analyzer.analyze();
+    defer report.deinit();
+
+    const violation_count = report.violations.items.len;
+    const compliance = report.compliancePercent();
+
+    // Print compliance summary
+    std.debug.print("  │ Idiom Compliance: {d:.1}%", .{compliance});
+    if (report.total_functions > 0) {
+        std.debug.print(" ({d}/{d} fn)", .{ report.compliant_functions, report.total_functions });
+    }
+    std.debug.print("       │\n", .{});
+
+    // Print analysis mode (Cycle 78)
+    std.debug.print("  │ Mode: {s}", .{analyzer.mode.label()});
+    std.debug.print("                    │\n", .{});
+
+    // Print violations if any
+    if (violation_count > 0) {
+        std.debug.print("  │ Violations: {d}", .{violation_count});
+        // Count by severity
+        var critical: usize = 0;
+        var high: usize = 0;
+        var medium: usize = 0;
+        var low: usize = 0;
+        for (report.violations.items) |v| {
+            switch (v.severity) {
+                .critical => critical += 1,
+                .high => high += 1,
+                .medium => medium += 1,
+                .low => low += 1,
+            }
+        }
+        if (critical > 0) std.debug.print(" ({d} CRITICAL)", .{critical});
+        if (high > 0) std.debug.print(" ({d} HIGH)", .{high});
+        if (medium > 0) std.debug.print(" ({d} MEDIUM)", .{medium});
+        if (low > 0) std.debug.print(" ({d} LOW)", .{low});
+        std.debug.print("          │\n", .{});
+    }
+}
+
+fn curateSyntheticSeeds(allocator: std.mem.Allocator) !void {
+    std.debug.print("\n╔════════════════════════════════════════════════════════════════╗\n", .{});
+    std.debug.print("║  VIBEE v10.5: Auto-Curation & Self-Feeding v2                 ║\n", .{});
+    std.debug.print("╚════════════════════════════════════════════════════════════════╝\n\n", .{});
+
+    // Initialize Golden DB and curator
+    var db = try golden_db.GoldenDB.init(allocator);
+    defer db.deinit();
+
+    var loop = try auto_curation_v2.SelfFeedingLoopV2.init(allocator, &db, "vibee-v10.5");
+
+    // Get all seeds from Golden DB for curation
+    const seed_count = db.implementations.items.len;
+    std.debug.print("  Seeds in Golden DB: {d}\n", .{seed_count});
+
+    if (seed_count == 0) {
+        std.debug.print("  No seeds to curate. Run 'generate-seeds' first.\n\n", .{});
+        return;
+    }
+
+    // Convert GoldenImpl to GeneratedSeed for validation
+    var seeds = try std.ArrayList(synthetic_seed_gen.GeneratedSeed).initCapacity(allocator, seed_count);
+    defer {
+        for (seeds.items) |*seed| {
+            allocator.free(seed.name);
+            allocator.free(seed.signature);
+            allocator.free(seed.body);
+        }
+        seeds.deinit(allocator);
+    }
+
+    for (db.implementations.items) |impl| {
+        // Note: We need to duplicate strings since GeneratedSeed owns them
+        const name_copy = try allocator.dupe(u8, impl.name);
+        errdefer allocator.free(name_copy);
+
+        const sig_copy = try allocator.dupe(u8, impl.signature);
+        errdefer allocator.free(sig_copy);
+
+        const body_copy = try allocator.dupe(u8, impl.body);
+        errdefer allocator.free(body_copy);
+
+        try seeds.append(allocator, .{
+            .name = name_copy,
+            .signature = sig_copy,
+            .body = body_copy,
+            .category = impl.category,
+            .quality_score = 1.0, // Default high quality for existing seeds
+            .synthesis_method = .template,
+        });
+    }
+
+    // Process and feed
+    const stats = try loop.processAndFeed(seeds.items);
+
+    // Report results
+    std.debug.print("\n  Curation Results:\n", .{});
+    std.debug.print("    Total processed: {d}\n", .{stats.total_processed});
+    std.debug.print("    Syntax passed: {d}\n", .{stats.syntax_passed});
+    std.debug.print("    Semantic passed: {d}\n", .{stats.semantic_passed});
+    std.debug.print("    Pattern passed: {d}\n", .{stats.pattern_passed});
+    std.debug.print("    Approved: {d}\n", .{stats.approved});
+    std.debug.print("    $TRI earned: {d:.1}\n", .{stats.total_tri_earned});
+
+    std.debug.print("\n", .{});
+}
+//

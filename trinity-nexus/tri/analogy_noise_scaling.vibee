@@ -1,0 +1,36 @@
+name: analogy_noise_scaling
+version: "1.0.0"
+language: zig
+module: analogy_noise_scaling
+
+constants:
+  DIM: 1024
+  SEARCH_SPACE: 12
+  NOISE_0_ACC: 1.0
+  NOISE_1_ACC: 1.0
+  NOISE_2_ACC: 1.0
+  NOISE_3_ACC: 0.992
+  NOISE_5_ACC: 0.408
+
+types:
+  NoisePoint:
+    fields:
+      noise_count: Int
+      signal_fraction: Float
+      accuracy: Float
+
+behaviors:
+  - name: noiseScalingCurve
+    given: Bipolar relation extracted from one pair, noise bundled in
+    when: Vary noise from 0 to 5 components
+    then: Clean phase transition at 3-4 noise (signal fraction 25-20%)
+
+  - name: signalFractionThreshold
+    given: Relation bundled with N noise vectors
+    when: Signal fraction = 1/(N+1)
+    then: Threshold at ~25% (3 noise) for 12-word search space
+
+  - name: robustnessVsSearchSpace
+    given: Fixed noise level, varying search space size
+    when: More candidates to confuse with
+    then: Larger search space requires stronger signal

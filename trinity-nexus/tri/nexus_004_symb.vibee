@@ -1,0 +1,45 @@
+# nexus_004_symb.vibee
+# NEXUS-004: Migrate Symbolic AI to trinity-nexus/symb/
+# Knowledge Graph, Triples, DHT Sync, TRI Rewards, TVC
+
+name: nexus_004_symb
+version: "1.0.0"
+language: zig
+module: trinity_symb
+
+types:
+  SymbModule:
+    description: "Trinity Symbolic AI module"
+    fields:
+      version: String
+      module_name: String
+      root_path: String
+
+  MigrationManifest:
+    description: "Files migrated to trinity-nexus/symb/src/"
+    fields:
+      kg_files: List<String>
+      tvc_files: List<String>
+      total_files: Int
+      total_lines: Int
+
+behaviors:
+  - name: copy_kg_files
+    given: src/vibeec/ and src/ knowledge graph files
+    when: migrating to trinity-nexus/symb/src/
+    then: triples_parser, kg_sync, kg_pipeline, igla_knowledge_graph, sym_005_demo, knowledge_graph, kg_cli, kg_server, trinity_kg_server copied
+
+  - name: copy_tvc_files
+    given: src/tvc/ directory
+    when: migrating to trinity-nexus/symb/src/tvc/
+    then: all 20 TVC files copied preserving tvc/ subdirectory
+
+  - name: create_root_exports
+    given: copied files in symb/src/
+    when: setting up module exports
+    then: root.zig exports KG, triples, TVC modules
+
+  - name: verify_compilation
+    given: complete symb module
+    when: running zig build
+    then: trinity-symb compiles, all tests pass

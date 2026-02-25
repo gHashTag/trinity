@@ -1,0 +1,66 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# FUNCTION EMITTER - VIBEE Codegen Module Specification
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Module: function_emitter.zig
+# Purpose: Emit helper functions (phi_lerp, verify_trinity, etc.)
+#
+# φ² + 1/φ² = 3
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: function_emitter
+version: "10.1.0"
+language: zig
+module: vibeec.codegen.function_emitter
+
+dependencies:
+  - module: std
+    used_as: standard library, math
+  - module: vibeec.codegen.builder
+    used_as: CodeBuilder for output
+
+behaviors:
+  - name: writeCreationPatterns
+    given: Array of CreationPattern definitions
+    when: After memory buffers, before behavior functions
+    then:
+      - Write section header "CREATION PATTERNS"
+      - For each pattern:
+        - Emit comment with pattern description
+        - Emit function implementation
+        - Include Trit enum and helper functions if needed
+
+  - name: generateStandardFunctions
+    given: TypeDef array for context
+    when: After creation patterns
+    then:
+      - Emit Trit enum with ternary logic operations
+      - Emit verify_trinity() function
+      - Emit phi_lerp() function
+      - Emit generate_phi_spiral() function
+
+standard_functions:
+  Trit:
+    description: "Ternary digit (-1, 0, +1)"
+    variants: [negative, zero, positive]
+    operations: [trit_and, trit_or, trit_not, trit_xor]
+
+  verify_trinity:
+    returns: f64
+    formula: "PHI * PHI + 1.0 / (PHI * PHI)"
+
+  phi_lerp:
+    params: "a: f64, b: f64, t: f64"
+    returns: f64
+    formula: "a + (b - a) * pow(t, PHI_INV)"
+
+  generate_phi_spiral:
+    params: "n: u32, scale: f64, cx: f64, cy: f64"
+    returns: u32
+    description: "Generate phi spiral points in f64_buffer"
+
+implementation:
+  cycle: "73"
+  extracted_from: "src/vibeec/codegen/emitter.zig"
+  lines: 1175-1405

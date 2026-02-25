@@ -1,0 +1,38 @@
+name: diverse_non_memorized
+version: "1.0.0"
+language: zig
+module: diverse_non_memorized
+
+description: >
+  Assessment of generation diversity and memorization.
+  Even-chunk evaluation shows PPL 1.85 (4-gram KN) which is
+  still memorized — chunk interleaving cannot fully separate
+  n-gram contexts. True disjoint eval requires separate texts.
+
+types:
+  GeneralizationAssessment:
+    fields:
+      overlapping_4g_ppl: Float
+      even_chunk_4g_ppl: Float
+      inflation_ratio: Float
+      is_truly_disjoint: Bool
+
+constants:
+  OVERLAPPING_4G_PPL: 1.94
+  EVEN_CHUNK_4G_PPL: 1.85
+  INFLATION: "1.0x (no inflation = still memorized)"
+
+behaviors:
+  - name: assessChunkSplitLimitation
+    given: Full model trained on all data, evaluated on even chunks
+    when: Compare overlapping vs even-chunk PPL
+    then: No inflation (1.0x) — chunk splitting doesn't separate n-gram memory
+
+  - name: proposeProperHeldOut
+    given: Chunk splitting fails for n-gram models on small corpora
+    when: Consider alternatives for honest generalization
+    then: Need separate Shakespeare plays (Hamlet train, Macbeth eval) or neural models
+
+test_cases:
+  - input: "KN 4-gram, chunk split"
+    expected: "PPL 1.85 vs 1.94 — no meaningful difference"

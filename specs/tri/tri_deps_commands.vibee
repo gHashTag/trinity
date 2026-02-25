@@ -1,0 +1,66 @@
+name: tri_deps_commands
+version: "1.0.0"
+language: zig
+module: tri_deps
+
+# Cycle 79: TRI CLI Dependencies Command
+# Analyze module dependencies and imports
+# φ² + 1/φ² = 3
+
+types:
+  DepNode:
+    fields:
+      module: String
+      imports: List[String]
+      imported_by: List[String]
+
+  DepGraph:
+    fields:
+      nodes: List[DepNode]
+      circular_deps: List[List[String]]
+
+  DepResult:
+    fields:
+      total_modules: Int
+      total_imports: Int
+      external_deps: List[String]
+      graph: DepGraph
+
+behaviors:
+  - name: analyze_deps
+    given: Project directory
+    when: User runs 'tri deps'
+    then:
+      - Scan all .zig files for import statements
+      - Build dependency graph
+      - Return DepResult with module relationships
+
+  - name: find_circular_deps
+    given: Project directory
+    when: User runs 'tri deps --circular'
+    then:
+      - Analyze dependency graph for cycles
+      - Return list of circular dependency chains
+
+  - name: show_dep_tree
+    given: A module name
+    when: User runs 'tri deps --tree <module>'
+    then:
+      - Show dependency tree for module
+      - Display nested imports with indentation
+
+  - name: show_external_deps
+    given: Project directory
+    when: User runs 'tri deps --external'
+    then:
+      - List all external dependencies (std, third-party)
+      - Show which modules use each dependency
+
+test_cases:
+  - name: deps_basic_analysis
+    given: src/vibeec/
+    expected: "Shows module import relationships"
+
+  - name: deps_no_circular
+    given: Clean project without circular imports
+    expected: "Circular deps: none"

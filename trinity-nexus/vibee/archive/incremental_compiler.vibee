@@ -1,0 +1,231 @@
+name: incremental_compiler
+version: "1.0.0"
+language: zig
+module: incremental_compiler
+description: Auto-generated from Gleam code
+
+behaviors:
+  - name: new_cache
+    given: Input data provided
+    when: new_cache function called
+    then: Result returned
+    test_cases:
+      - name: test_new_cache
+        input: {}
+        expected: {}
+
+  - name: calculate_hash
+    given: Input data provided
+    when: calculate_hash function called
+    then: Result returned
+    test_cases:
+      - name: test_calculate_hash
+        input: {}
+        expected: {}
+
+  - name: needs_recompilation
+    given: Input data provided
+    when: needs_recompilation function called
+    then: Result returned
+    test_cases:
+      - name: test_needs_recompilation
+        input: {}
+        expected: {}
+
+  - name: update_cache
+    given: Input data provided
+    when: update_cache function called
+    then: Result returned
+    test_cases:
+      - name: test_update_cache
+        input: {}
+        expected: {}
+
+  - name: get_current_timestamp
+    given: Input data provided
+    when: get_current_timestamp function called
+    then: Result returned
+    test_cases:
+      - name: test_get_current_timestamp
+        input: {}
+        expected: {}
+
+  - name: compile_incremental
+    given: Input data provided
+    when: compile_incremental function called
+    then: Result returned
+    test_cases:
+      - name: test_compile_incremental
+        input: {}
+        expected: {}
+
+  - name: extract_dependencies
+    given: Input data provided
+    when: extract_dependencies function called
+    then: Result returned
+    test_cases:
+      - name: test_extract_dependencies
+        input: {}
+        expected: {}
+
+  - name: compile_batch
+    given: Input data provided
+    when: compile_batch function called
+    then: Result returned
+    test_cases:
+      - name: test_compile_batch
+        input: {}
+        expected: {}
+
+  - name: compile_batch_helper
+    given: Input data provided
+    when: compile_batch_helper function called
+    then: Result returned
+    test_cases:
+      - name: test_compile_batch_helper
+        input: {}
+        expected: {}
+
+  - name: calculate_hit_rate
+    given: Input data provided
+    when: calculate_hit_rate function called
+    then: Result returned
+    test_cases:
+      - name: test_calculate_hit_rate
+        input: {}
+        expected: {}
+
+  - name: calculate_time_saved
+    given: Input data provided
+    when: calculate_time_saved function called
+    then: Result returned
+    test_cases:
+      - name: test_calculate_time_saved
+        input: {}
+        expected: {}
+
+  - name: calculate_total_time
+    given: Input data provided
+    when: calculate_total_time function called
+    then: Result returned
+    test_cases:
+      - name: test_calculate_total_time
+        input: {}
+        expected: {}
+
+  - name: generate_report
+    given: Input data provided
+    when: generate_report function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_report
+        input: {}
+        expected: {}
+
+  - name: main
+    given: Input data provided
+    when: main function called
+    then: Result returned
+    test_cases:
+      - name: test_main
+        input: {}
+        expected: {}
+
+types:
+  CompilationCache:
+    # TODO: Define fields
+
+  CompiledModule:
+    # TODO: Define fields
+
+  CompilationResult:
+    # TODO: Define fields
+
+functions:
+  - name: new_cache
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: calculate_hash
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: needs_recompilation
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: update_cache
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: get_current_timestamp
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: compile_incremental
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: extract_dependencies
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: compile_batch
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: compile_batch_helper
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: calculate_hit_rate
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: calculate_time_saved
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: calculate_total_time
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_report
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: main
+    params: {}
+    returns: json
+    description: Auto-generated
+
+imports:
+  - std.json
+  - std.mem
+  # gleam/dict.{type Dict}
+  # gleam/float
+  # gleam/io
+  # gleam/int
+  # gleam/list
+  # gleam/result
+  # gleam/string
+  # simplifile
+
+optimization:
+  target: zig
+  level: ReleaseFast
+  features:
+    - inline_small_functions

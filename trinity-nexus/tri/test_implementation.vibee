@@ -1,0 +1,68 @@
+# Test Implementation Field for CODEGEN-001 v8.23
+# This spec verifies that the implementation field works correctly
+
+name: test_implementation
+version: "1.0.0"
+language: zig
+module: test_implementation
+
+types:
+  Vec3:
+    fields:
+      x: Float
+      y: Float
+      z: Float
+
+behaviors:
+  - name: vec3_add
+    given: Two 3D vectors a and b
+    when: Add component-wise
+    then: Return sum vector
+    implementation: |
+      pub fn vec3_add(a: Vec3, b: Vec3) Vec3 {
+          return .{ .x = a.x + b.x, .y = a.y + b.y, .z = a.z + b.z };
+      }
+
+  - name: vec3_dot
+    given: Two 3D vectors
+    when: Compute dot product
+    then: Return scalar sum of products
+    implementation: |
+      pub fn vec3_dot(a: Vec3, b: Vec3) f32 {
+          return a.x * b.x + a.y * b.y + a.z * b.z;
+      }
+
+  - name: vec3_length
+    given: A 3D vector
+    when: Compute Euclidean length
+    then: Return sqrt(x^2 + y^2 + z^2)
+    implementation: |
+      pub fn vec3_length(v: Vec3) f32 {
+          return @sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+      }
+
+  - name: vec3_normalize
+    given: A 3D vector
+    when: Compute unit vector
+    then: Return vector divided by its length
+    implementation: |
+      pub fn vec3_normalize(v: Vec3) Vec3 {
+          const len = @sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+          return .{ .x = v.x / len, .y = v.y / len, .z = v.z / len };
+      }
+
+test_cases:
+  - name: vec3_add_test
+    given: vec3_add function
+    when: Adding (1, 2, 3) and (4, 5, 6)
+    then: Returns (5, 7, 9)
+
+  - name: vec3_dot_test
+    given: vec3_dot function
+    when: Computing dot of (1, 2, 3) and (4, 5, 6)
+    then: Returns 32 (1*4 + 2*5 + 3*6 = 4 + 10 + 18)
+
+  - name: vec3_length_test
+    given: vec3_length function
+    when: Computing length of (3, 4, 0)
+    then: Returns 5.0 (sqrt(9+16+0))

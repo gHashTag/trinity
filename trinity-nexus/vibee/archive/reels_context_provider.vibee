@@ -1,0 +1,2031 @@
+// Reels Context Provider (ElizaOS Architecture)
+  // Performance Warning:   // AI Suggestion: Consider extracting hardcoded strings to constants// Converted from infra/agent/providers/reels_context_provider.gleam → dsl/infra/agent/providers/reels_context_provider.vibee
+//
+// Provides contextual information for reels creation decisions:
+// - type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} history (previous reels, topics)
+// - type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} preferences (niches, style)
+// - Current conversation context
+// - Available templates and resources
+
+import ../eliza.vibee as eliza
+
+// =============================================================================
+// Types
+// =============================================================================
+
+struct type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}Preferences {
+  type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}Preferences(
+    preferred_niches: [str],
+    preferred_style: str?,
+    language: str
+  )
+}
+
+struct ReelsTemplate {
+  ReelsTemplate(
+    id: str,
+    name: str,
+    description: str,
+    best_for: [str]
+  )
+}
+fn new() · Self {
+    preferred_style: preferred_style,
+    language: language
+  
+}
+
+  # Auto-generated getters
+fn preferred_style(self) · self.preferred_style
+
+
+  # Auto-generated getters
+fn id(self) · self.id
+
+fn name(self) · self.name
+
+fn description(self) · self.description
+
+fn language(self) · self.language
+
+
+// =============================================================================
+// Reels Context Provider
+// =============================================================================
+
+@spec create_reels_context_provider() → Provider {
+  /// Create the Reels Context Provider
+  given: Nothing
+  when: Setting up providers
+  then: Returns reels context provider
+}
+
+@impl {
+  Provider(
+    "reels_context",
+    "Provides context for reels creation: type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} history, preferences, templates",
+    true,   // Dynamic - refresh each call
+    10,     // High priority - runs first
+    { get_reels_context(it) }
+  )
+}
+
+trace("agent.reels_context_provider.get")
+@spec get_reels_context(context: ActionContext) → ProviderResult {
+  /// Get reels context for action decisions
+  given: Action context
+  when: Gathering context before action
+  then: Returns provider result with context data
+}
+
+@impl {
+  print("[REELS_PROVIDER] Gathering context for type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}: {context.chat_id}")
+
+  // Extract type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} preferences from history
+  let preferences = extract_type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}_preferences(context.history)
+
+  // Detect dominant niche
+  let dominant_niche = detect_dominant_niche(context.history)
+
+  // Count previous reels requests
+  let reels_count = count_reels_requests(context.history)
+
+  // Get available templates
+  let templates = get_available_templates()
+
+  // Build values
+  let values = dict.new()
+    · dict.insert("dominant_niche", dominant_niche)
+    · dict.insert("reels_count", string.inspect(reels_count))
+    · dict.insert("has_photo", match context.photo_url {
+      ☐_) → "true"
+      ∅-> "false"
+    }
+    · dict.insert("type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}_name", match context.type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}_name {
+      ☐name) → name
+      ∅-> "unknown"
+    }
+
+  // Build data
+  let data = dict.new()
+    · dict.insert("preferred_niches", string.join(preferences.preferred_niches, ","))
+    · dict.insert("preferred_style", match preferences.preferred_style {
+      ☐s) → s
+      ∅-> ""
+    }
+    · dict.insert("language", preferences.language)
+    · dict.insert("templates_count", string.inspect(list.len(templates)))
+
+  // Build summary text
+  let summary = build_context_summary(
+    context.type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}_name,
+    dominant_niche,
+    reels_count,
+    preferences
+  )
+
+  values,
+    data
+   · ProviderResult
+}
+
+// =============================================================================
+// Context Extraction Functions
+// =============================================================================
+
+@spec extract_type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}_preferences(history: [str]) → type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}Preferences {
+  /// Extract preferences from message history
+  given: Message history
+  when: Analyzing type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} preferences
+  then: Returns type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}Preferences
+}
+
+@impl {
+  let niches = extract_niches_from_history(history)
+  let style = detect_style_preference(history)
+  let language = detect_language(history)
+
+  type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}style,
+    language
+   · Preferences
+}
+
+@spec extract_niches_from_history(history: [str]) → [str] {
+  /// Extract mentioned niches from history
+  given: Message history
+  when: Finding niche mentions
+  then: Returns type {name} {
+  items: List[Item],
+  count: Int} niches
+}
+
+@impl {
+  let all_text = string." " · join · string.lowercase()
+
+  let niche_keywords = [
+    #("business", ["бизнес", "business", "предприним", "стартап"]),
+    #("productivity", ["продуктив", "productivity", "эффектив", "тайм-менедж"]),
+    #("health", ["здоров", "health", "фитнес", "спорт", "wellness"]),
+    #("finance", ["финанс", "деньг", "инвести", "крипт", "finance", "money"]),
+    #("technology", ["технолог", "tech", "программ", "it", "код"]),
+    #("education", ["образован", "учеба", "курс", "обучен", "education"]),
+    #("marketing", ["маркетинг", "рекла", "smm", "продвиж", "marketing"])
+  ]
+
+  list.fn(item · filter_map {
+    let #(niche, keywords) = item
+    let found = list.fn(kw · any {
+      string.kw · contains
+    }
+    match found {
+      true → ✅niche)
+      false → ❌Nil)
+    }
+  }
+}
+
+@spec detect_dominant_niche(history: [str]) → str {
+  /// Detect dominant niche from history
+  given: Message history
+  when: Finding primary interest
+  then: Returns dominant niche
+}
+
+@impl {
+  let niches = extract_niches_from_history(history)
+  match niches {
+    [first | _] → first
+    [] → "lifestyle"
+  }
+}
+
+@spec detect_style_preference(history: [str]) → str? {
+  /// Detect style preference from history
+  given: Message history
+  when: Finding style mentions
+  then: Returns style or ∅}
+
+@impl {
+  let all_text = string." " · join · string.lowercase()
+
+  let styles = [
+    #(["энергичн", "dynamic"], "energetic"),
+    #(["спокойн", "calm"], "calm"),
+    #(["профессион", "professional"], "professional"),
+    #(["развлекат", "fun"], "fun")
+  ]
+
+  styles · find_style
+}
+
+@spec find_style(text: str, styles: [#([str], str])) → str? {
+  /// Find matching style from keywords
+  given: Text and style definitions
+  when: Searching for match
+  then: Returns style or ∅}
+
+@impl {
+  match styles {
+    [] → ∅[#(keywords, style) | rest] → {
+      match list.{ string.contains(text, it · any } {
+        true → ☐style)
+        false → rest · find_style
+      }
+    }
+  }
+}
+
+@spec detect_language(history: [str]) → str {
+  /// Detect primary language from history
+  given: Message history
+  when: Determining language
+  then: Returns "ru" or "en"
+}
+
+@impl {
+  let all_text = string." " · join
+
+  // Count Cyrillic vs Latin characters
+  let cyrillic_count = count_cyrillic(all_text)
+  let total_count = len(all_text)
+
+  match total_count > 0 {
+    true → {
+      let total_float = int.to_float(total_count)
+      let ratio = cyrillic_count /. { total_float +. 0.0001 }
+      match ratio >. 0.3 {
+        true → "ru"
+        false → "en"
+      }
+    }
+    false → "ru"
+  }
+}
+
+@spec count_cyrillic(text: str) → float {
+  /// Count Cyrillic characters in text
+  given: Text string
+  when: Analyzing language
+  then: Returns count as float
+}
+
+@impl {
+  let cyrillic = ["а", "о", "е", "и", "н", "т", "с", "р", "в", "л"]
+  let lower = string.lowercase(text)
+  list.0.0, fn(acc, char · fold {
+    acc +. char · count_char_occurrences
+  }
+}
+
+@spec count_char_occurrences(text: str, char: str) → float {
+  /// Count occurrences of character in text
+  given: Text and character
+  when: Counting
+  then: Returns count as float
+}
+
+@impl {
+  let parts = string.char · split
+  let count = list.len(parts) - 1
+  int.to_float(count)
+}
+
+@spec count_reels_requests(history: [str]) → int {
+  /// Count reels requests in history
+  given: Message history
+  when: Analyzing request frequency
+  then: Returns count
+}
+
+@impl {
+  let reels_keywords = ["рилс", "reels", "создай видео", "сделай видео"]
+
+  list.fn(msg · count {
+    let lower = string.lowercase(msg)
+    list.fn(kw · any {
+      string.kw · contains
+    }
+  }
+}
+
+// =============================================================================
+// Templates
+// =============================================================================
+
+@spec get_available_templates() → [ReelsTemplate] {
+  /// Get available reels templates
+  given: Nothing
+  when: Loading templates
+  then: Returns template list
+}
+
+@impl {
+  [
+    ReelsTemplate(
+      "split-talking-head",
+      "Split Talking Head",
+      "Avatar on left, B-roll on right",
+      ["business", "education", "productivity"]
+    ),
+    ReelsTemplate(
+      "fullscreen-avatar",
+      "Fullscreen Avatar",
+      "Full-screen talking avatar",
+      ["lifestyle", "personal", "storytelling"]
+    ),
+    ReelsTemplate(
+      "picture-in-picture",
+      "Picture in Picture",
+      "B-roll with avatar in corner",
+      ["technology", "tutorials", "reviews"]
+    )
+  ]
+}
+
+// =============================================================================
+// Summary Builder
+// =============================================================================
+
+@spec build_context_summary(
+  type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}_name: str?,
+  dominant_niche: str,
+  reels_count: int,
+  preferences: type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}Preferences
+) → str {
+  /// Build human-readable context summary
+  given: Context data
+  when: Formatting for display
+  then: Returns summary text
+}
+
+@impl {
+  let name = match type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}_name {
+    ☐n) → n
+    ∅-> "type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}"
+  }
+
+  let niches_text = match preferences.preferred_niches {
+    [] → "no specific niche"
+    niches → string.", " · join
+  }
+
+  let style_text = match preferences.preferred_style {
+    ☐s) → "{s} style"
+    ∅-> "no specific style"
+  }
+
+  "{name} context:\n" +
+  "- Dominant niche: {dominant_niche}\n" +
+  "- Previous reels: {string.inspect(reels_count)}\n" +
+  "- Preferred niches: {niches_text}\n" +
+  "- Style: {style_text}\n" +
+  "- Language: {preferences.language}"
+}
+
+# v8.0
+
+# v8.0
+# v9.0 - Macro-Automation
+
+# v10.0 - ML-Powered Migration
