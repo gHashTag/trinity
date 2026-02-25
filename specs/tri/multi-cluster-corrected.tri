@@ -1,0 +1,207 @@
+name: multi-cluster-corrected
+version: "1.1.0"
+language: zig
+module: multi_cluster
+type: cli_command
+
+description: |
+  Multi-cluster federation mode for distributed TRI CLI deployment (Cycle 97).
+  Coordinates multiple TRI CLI instances across nodes for parallel
+  inference and coordinated $TRI reward distribution.
+
+types:
+  ClusterNode:
+    node_id: String
+    address: String
+    role: Coordinator | Worker
+    capabilities: [String]
+    status: Active | Standby
+
+  FederationConfig:
+    sync_interval: Int (seconds) = 300
+    leader_election: Bool = true
+    max_nodes: Int = 100
+    protocol_version: String = "1.0.0"
+
+command:
+  name: multi-cluster
+  aliases: [multi_cluster, federation]
+  description: Multi-cluster federation for distributed TRI CLI deployment
+  category: Swarm & Distributed
+  module: tri_commands
+  help_short: Manage distributed TRI cluster
+  help_long: |
+    Coordinates multiple TRI CLI instances across nodes for parallel
+    inference and coordinated $TRI reward distribution.
+
+  variant: multi_cluster
+  enum_name: multi_cluster
+  is_flag: false
+
+arguments:
+  - name: subcommand
+    type: enum
+    description: Multi-cluster subcommand to execute
+    values:
+      - value: initialize
+        description: Initialize federation mode
+      - value: discover
+        description: Scan network for available TRI nodes
+      - value: add-node
+        description: Add new TRI CLI instance to cluster
+      - value: remove-node
+        description: Remove node from cluster
+      - value: status
+        description: Show cluster status
+      - value: sync
+        description: Trigger CRDT-based sync protocol
+      - value: federate
+        description: Execute distributed computation task
+      - value: shutdown
+        description: Gracefully stop federation
+      - value: health-check
+        description: Verify federation health
+      - value: list
+        description: List all registered nodes
+      - value: version
+        description: Show multi-cluster version
+
+  - name: mode
+    type: String
+    required: false
+    description: Federation mode (default: federation)
+
+  - name: config
+    type: String
+    required: false
+    description: Cluster config file path
+
+  - name: node-id
+    type: String
+    required: false
+    description: Node identifier
+
+  - name: address
+    type: String
+    required: false
+    description: Node address (host:port)
+
+  - name: role
+    type: enum
+    required: false
+    description: Node role
+    values:
+      - value: Coordinator
+        description: Federation leader
+      - value: Worker
+        description: Federation executor
+
+  - name: max-nodes
+    type: Int
+    required: false
+    description: Maximum nodes (default: 100)
+
+  - name: sync-interval
+    type: Int
+    required: false
+    description: Sync interval in seconds (default: 300)
+
+behaviors:
+  - name: help
+    given: User requests help
+    when: tri multi-cluster is called without arguments
+    then: Display usage information
+    and: Show all subcommands and options
+
+  - name: initialize
+    given: Federation mode is started with --mode federation
+    when: tri multi-cluster initialize is called
+    then: Parse cluster configuration from file or CLI args
+    and: Initialize federation coordinator
+    and: Create cluster node registry
+
+  - name: discover
+    given: Federation is active and discovery requested
+    when: tri multi-cluster discover or auto-discovery triggers
+    then: Scan network for available TRI nodes
+    and: Query each node for capabilities and status
+    and: Return list of discovered nodes with their addresses
+
+  - name: add-node
+    given: New TRI CLI instance needs to be added
+    when: tri multi-cluster add-node with required flags
+    then: Validate node address format
+    and: Register node in cluster registry
+    and: Assign role (coordinator/worker)
+    and: Configure initial sync parameters
+
+  - name: remove-node
+    given: Node needs to be removed from cluster
+    when: tri multi-cluster remove-node <node_id> [reason]
+    then: Validate node_id exists in registry
+    and: Mark node as inactive
+    and: Notify coordinator to update routing
+
+  - name: status
+    given: User requests cluster status
+    when: tri multi-cluster status
+    then: Query all registered nodes
+    and: Display role distribution
+    and: Show active/standby counts
+    and: Display health status of federation
+
+  - name: sync
+    given: Federation needs to synchronize state
+    when: tri multi-cluster sync
+    then: Trigger CRDT-based sync protocol
+    and: Propagate config updates to all nodes
+    and: Collect sync acknowledgments
+    and: Verify convergence
+
+  - name: federate
+    given: Computation task ready for distributed execution
+    when: tri multi-cluster federate <task_spec>
+    then: Parse task specification
+    and: Decompose task into sub-tasks
+    and: Assign to available worker nodes
+    and: Distribute load using work-stealing
+    and: Monitor execution
+    and: Collect results from all nodes
+    and: Aggregate results
+    and: Return consolidated result
+
+  - name: shutdown
+    given: Federation needs to gracefully stop
+    when: tri multi-cluster shutdown
+    then: Notify all nodes of shutdown
+    and: Drain in-progress tasks
+    and: Persist cluster state
+    and: Close coordinator
+
+  - name: health-check
+    given: Periodic health verification needed
+    when: tri multi-cluster health-check
+    then: Query health status from all nodes
+    and: Verify CRDT sync state
+    and: Check resource utilization
+    and: Report overall federation health
+
+  - name: list
+    given: User requests list of registered nodes
+    when: tri multi-cluster list
+    then: Return node registry
+    and: Show all nodes with roles, status, capabilities
+
+  - name: version
+    given: User requests multi-cluster version
+    when: tri multi-cluster --version or -v
+    then: Return multi-cluster version
+    and: Display current protocol version
+    and: Show compatibility info
+
+metadata:
+  author: TRI COMMANDER
+  created: Cycle 97
+  tags: [swarm, federation, distributed, CRDT]
+  protocol_version: 1.0.0
+  trinity_identity: phi^2 + 1/phi^2 = 3
