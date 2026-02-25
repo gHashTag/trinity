@@ -1,0 +1,63 @@
+name: massive_unified_kg
+version: "1.0.0"
+language: zig
+module: massive_unified_kg
+description: "Level 11.21 — Massive Unified KG (Deployment Scale). 40 entities across 8 categories (Universities, Departments, Professors, Courses, Cities, Countries, Fields). 6 relation types with split memories (2×5). Tests 1-hop lookups (professor→university, professor→course), 2-hop chains (professor→university→city), and 3-hop chains (professor→university→city→country, professor→university→department→field). Total 50/50 (100%)."
+
+constants:
+  DIM: 1024
+  NUM_ENTITIES: 40
+  NUM_PROFS: 10
+  NUM_RELATIONS: 6
+
+types:
+  DeploymentQuery:
+    fields:
+      hops: Int
+      chain: String
+      result: String
+      correct: Bool
+      description: "A deployment-scale KG query with variable hop depth."
+
+behaviors:
+  - name: professorToUniversity
+    given: 10 professors across 5 universities, professor_at relation split 2×5.
+    when: Query professor_at(professor) for all 10 professors
+    then: 10/10 (100%) — 2-way split with querySplitN resolves all correctly across 40 candidates
+
+  - name: professorToCourse
+    given: 10 professors teaching 5 courses, teaches relation split 2×5.
+    when: Query teaches(professor) for all 10 professors
+    then: 10/10 (100%) — each professor resolves to correct course
+
+  - name: professorToCity
+    given: 2-hop chain via professor_at → univ_in_city.
+    when: For each professor, chain professor→university→city
+    then: 10/10 (100%) — 2-hop chains all resolve correctly
+
+  - name: professorToCountry
+    given: 3-hop chain via professor_at → univ_in_city → city_in_country.
+    when: For each professor, chain professor→university→city→country
+    then: 10/10 (100%) — 3-hop chains across 40 candidates all correct
+
+  - name: professorToField
+    given: 3-hop chain via professor_at → univ_has_dept → dept_in_field.
+    when: For each professor, chain professor→university→department→field
+    then: 10/10 (100%) — 3-hop divergent chain resolves correctly
+
+test_cases:
+  - name: test_prof_univ_10_10
+    input: "Query university for all 10 professors"
+    expected: "10/10 (100%)"
+
+  - name: test_prof_course_10_10
+    input: "Query course for all 10 professors"
+    expected: "10/10 (100%)"
+
+  - name: test_3hop_country_10_10
+    input: "3-hop professor→university→city→country"
+    expected: "10/10 (100%)"
+
+  - name: test_total_50_50
+    input: "Total massive unified KG accuracy"
+    expected: "50/50 (100%)"

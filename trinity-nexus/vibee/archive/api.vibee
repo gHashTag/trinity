@@ -1,0 +1,67 @@
+// HTTP API Example in VIBEE
+
+type User {
+  User(
+    id: String,
+    email: String,
+    age: Int,
+    created_at: String
+  )
+}
+
+type UserInput {
+  UserInput(
+    email: Option<String>,
+    age: Int
+  )
+}
+
+@http(method: POST, path: "/api/users")
+@spec(body: UserInput, output: Result<User, Error>)
+pub create_user(input) = {
+  guard input.email? else "Email required"
+  guard input.age >= 18 else "Must be 18+"
+  
+  User(
+    id: uuid(),
+    email: input.email,
+    age: input.age,
+    created_at: now()
+  )
+}
+
+@http(method: GET, path: "/api/users/:id")
+@spec(id: String, output: Result<User, Error>)
+pub get_user(id) = {
+  guard id != "" else "Invalid ID"
+  
+  // Fetch from database
+  db.find_user(id)?
+}
+
+@http(method: DELETE, path: "/api/users/:id")
+@spec(id: String, output: Result<String, Error>)
+pub delete_user(id) = {
+  guard id != "" else "Invalid ID"
+  
+  db.delete_user(id)?
+  |> fn(_) { "User deleted" }
+}
+
+test "create user with valid input" {
+  let input = UserInput(email: Some("test@example.com"), age: 25)
+  let result = create_user(input)
+  
+  result.email == "test@example.com"
+  result.age == 25
+}
+
+test "create user with missing email" {
+  let input = UserInput(email: None, age: 25)
+  create_user(input) == Error("Email required")
+}
+
+test "create user under 18" {
+  let input = UserInput(email: Some("test@example.com"), age: 17)
+  create_user(input) == Error("Must be 18+")
+}

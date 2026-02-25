@@ -1,0 +1,277 @@
+name: self_learning_hdc
+version: "1.0.0"
+language: zig
+module: self_learning_hdc
+
+description: |
+  Self-Learning Online AI using Hyperdimensional Computing (HDC)
+  with ternary vectors for CPU-efficient incremental learning.
+  
+  Scientific Basis:
+  - Kanerva (2009): Hyperdimensional Computing
+  - BitNet b1.58 (2024): Ternary weights {-1, 0, +1}
+  - Setun (1958): Balanced ternary computing
+  
+  Mathematical Foundation:
+  - Binding: a ⊗ b = element-wise multiplication
+  - Bundling: majority voting for superposition
+  - Similarity: cosine similarity for matching
+  - Online Update: P ← P + η(v - P), then quantize
+
+constants:
+  VECTOR_DIM: 10240
+  LEARNING_RATE: 0.01
+  SIMILARITY_THRESHOLD: 0.7
+  QUANTIZE_POS_THRESHOLD: 0.5
+  QUANTIZE_NEG_THRESHOLD: -0.5
+  MAX_PROTOTYPES: 1000
+  BATCH_SIZE: 100
+
+types:
+  Trit:
+    description: "Balanced ternary digit"
+    values:
+      - Neg: -1
+      - Zero: 0
+      - Pos: 1
+
+  HyperVector:
+    description: "Ternary hypervector for HDC operations"
+    fields:
+      data: List<Int>
+      dim: Int
+
+  FloatVector:
+    description: "Float accumulator for online averaging"
+    fields:
+      data: List<Float>
+      dim: Int
+
+  Prototype:
+    description: "Class prototype with accumulator"
+    fields:
+      label: String
+      accumulator: FloatVector
+      vector: HyperVector
+      sample_count: Int
+      last_update: Timestamp
+
+  OnlineClassifier:
+    description: "Self-learning HDC classifier"
+    fields:
+      prototypes: Map<String, Prototype>
+      dim: Int
+      learning_rate: Float
+      samples_seen: Int
+      random_bases: List<HyperVector>
+
+  PredictionResult:
+    description: "Classification result"
+    fields:
+      label: String
+      confidence: Float
+      alternatives: List<String>
+
+  LearningMetrics:
+    description: "Online learning statistics"
+    fields:
+      samples_seen: Int
+      accuracy_window: Float
+      prototype_updates: Int
+      avg_similarity: Float
+
+  EncoderConfig:
+    description: "Input encoder configuration"
+    fields:
+      input_type: String
+      num_bases: Int
+      seed: Int
+
+behaviors:
+  # Initialization
+  - name: create_classifier
+    given: Dimension dim, number of random bases, and seed
+    when: Initializing new online classifier
+    then: Returns OnlineClassifier with random seed vectors
+
+  - name: create_random_vector
+    given: Dimension and seed
+    when: Generating random ternary hypervector
+    then: Returns HyperVector with uniform random trits
+
+  # Encoding
+  - name: encode_bytes
+    given: Raw byte array and encoder config
+    when: Converting bytes to hypervector
+    then: Returns HyperVector representation
+
+  - name: encode_features
+    given: Float feature vector and encoder config
+    when: Converting features to hypervector
+    then: Returns HyperVector with feature binding
+
+  - name: encode_sequence
+    given: List of tokens and encoder config
+    when: Converting sequence to hypervector
+    then: Returns HyperVector with positional binding
+
+  # Core HDC Operations
+  - name: bind
+    given: Two hypervectors a and b of same dimension
+    when: Creating association via element-wise multiplication
+    then: Returns HyperVector where c[i] = a[i] * b[i]
+
+  - name: unbind
+    given: Bound vector and key vector
+    when: Retrieving associated value
+    then: Returns bind(bound, key) since ternary bind is self-inverse
+
+  - name: bundle
+    given: List of hypervectors
+    when: Creating superposition via majority voting
+    then: Returns HyperVector with majority trit at each position
+
+  - name: permute
+    given: HyperVector and shift amount k
+    when: Circular permutation for sequence encoding
+    then: Returns HyperVector shifted by k positions
+
+  - name: similarity
+    given: Two hypervectors a and b
+    when: Computing cosine similarity
+    then: Returns float in [-1, 1]
+
+  - name: hamming_distance
+    given: Two hypervectors a and b
+    when: Computing number of differing positions
+    then: Returns integer count
+
+  # Classification
+  - name: predict
+    given: Input hypervector and classifier
+    when: Finding most similar prototype
+    then: Returns PredictionResult with label and confidence
+
+  - name: predict_top_k
+    given: Input hypervector, classifier, and k
+    when: Finding k most similar prototypes
+    then: Returns list of PredictionResult sorted by confidence
+
+  # Online Learning
+  - name: online_update
+    given: Input vector, label, and classifier
+    when: Learning from new labeled sample
+    then: Updates prototype, returns updated LearningMetrics
+
+  - name: online_update_unlabeled
+    given: Input vector and classifier
+    when: Self-supervised learning from unlabeled sample
+    then: Updates nearest prototype if similarity > threshold
+
+  - name: self_learn_batch
+    given: List of unlabeled samples and classifier
+    when: Processing batch for self-supervised clustering
+    then: Creates/updates prototypes, returns metrics
+
+  # Quantization
+  - name: quantize_to_ternary
+    given: FloatVector
+    when: Converting float accumulator to ternary
+    then: Returns HyperVector with values in {-1, 0, +1}
+
+  - name: dequantize_to_float
+    given: HyperVector
+    when: Converting ternary to float for accumulation
+    then: Returns FloatVector
+
+  # Utility
+  - name: get_metrics
+    given: Classifier
+    when: Querying learning statistics
+    then: Returns LearningMetrics
+
+  - name: reset_classifier
+    given: Classifier
+    when: Clearing all learned prototypes
+    then: Returns empty classifier with same config
+
+  - name: export_prototypes
+    given: Classifier
+    when: Serializing learned model
+    then: Returns byte array of prototypes
+
+  - name: import_prototypes
+    given: Byte array and classifier
+    when: Loading pre-trained prototypes
+    then: Returns classifier with loaded prototypes
+
+tests:
+  - name: test_random_vector_distribution
+    input:
+      dim: 10000
+      seed: 42
+    expected:
+      approx_third_neg: true
+      approx_third_zero: true
+      approx_third_pos: true
+
+  - name: test_bind_self_inverse
+    input:
+      vector_a: random(10000, 1)
+      vector_b: random(10000, 2)
+    expected:
+      unbind_recovers: similarity(unbind(bind(a,b), a), b) > 0.99
+
+  - name: test_bundle_majority
+    input:
+      vectors: [all_ones, all_ones, all_neg_ones]
+    expected:
+      result: all_ones
+
+  - name: test_similarity_identical
+    input:
+      vector_a: random(10000, 1)
+      vector_b: same_as_a
+    expected:
+      similarity: 1.0
+
+  - name: test_similarity_orthogonal
+    input:
+      vector_a: random(10000, 1)
+      vector_b: random(10000, 2)
+    expected:
+      similarity_approx_zero: abs(similarity) < 0.1
+
+  - name: test_encode_deterministic
+    input:
+      data: "hello world"
+      config: default_encoder
+    expected:
+      same_encoding_twice: similarity > 0.99
+
+  - name: test_online_update_improves
+    input:
+      samples: 100 labeled samples
+      initial_accuracy: 0.5
+    expected:
+      final_accuracy: > 0.8
+
+  - name: test_noise_robustness
+    input:
+      vector: random(10000, 1)
+      noise_level: 0.2
+    expected:
+      similarity_to_original: > 0.6
+
+  - name: test_quantization_roundtrip
+    input:
+      float_vector: [0.7, -0.3, 0.1, 0.9, -0.8]
+    expected:
+      ternary: [1, 0, 0, 1, -1]
+
+  - name: test_streaming_accuracy
+    input:
+      stream_size: 1000
+      classes: 10
+    expected:
+      accuracy_after_convergence: > 0.85

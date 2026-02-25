@@ -1,0 +1,393 @@
+# PHI LOOP — 999 Links of Cosmic Consciousness Gene
+name: phi_loop
+version: "1.0.0"
+language: zig
+module: vibeec
+
+description: |
+  PHI LOOP — the main improvement loop connecting VIBEE, Agent MU,
+  Symbolic AI, and sacred mathematics (φ). Each link represents one
+  complete cycle of self-improvement: spec → gen → validate → fix → learn → next.
+
+types:
+  # Sacred constants
+  Sacred:
+    fields:
+      phi: Float64           # Golden ratio: 1.618033988749895
+      mu: Float64            # Sacred mu: 0.0382
+      threshold: Float64     # Sacred threshold: 0.95
+
+  # Link result from one PHI LOOP iteration
+  LinkResult:
+    fields:
+      link_number: UInt32
+      pas_score: Float64
+      trinity_identity: Bool
+      confidence: Float32
+      sona_q_value: Float64
+      next_action: NextAction
+      generation_time_ms: UInt64
+      validation_time_ms: UInt64
+
+  # Action to take after a link completes
+  NextAction:
+    enum:
+      - continue        # Proceed to next link
+      - retry           # Retry current link with fixes
+      - skip            # Skip this spec
+      - complete        # All 999 links complete
+      - circuit_break   # Too many failures, stop
+
+  # Generated code output from VIBEE
+  GeneratedCode:
+    fields:
+      code: String
+      output_path: String
+      language: String
+      pattern_id: UInt64
+      timestamp: Int64
+
+  # Validation result from Agent MU
+  ValidationResult:
+    fields:
+      pattern_id: UInt64
+      passed: Bool
+      errors: List<Error>
+      warnings: List<Warning>
+      confidence: Float32
+
+  # Validation error
+  Error:
+    fields:
+      message: String
+      line: Option<UInt32>
+      code: String
+
+  # Validation warning
+  Warning:
+    fields:
+      message: String
+      line: Option<UInt32>
+      code: String
+
+  # φ Gate filter
+  PhiGate:
+    fields:
+      pas_score: Float64
+      trinity_identity: Bool
+      phi_weighted: Bool
+      sona_q_value: Float64
+      confidence: Float32
+      timestamp: Int64
+
+  # Gate status
+  GateStatus:
+    enum:
+      - passed
+      - failed_pas
+      - failed_confidence
+      - failed_sona
+      - failed_trinity
+
+  # Task decomposition for φ Decompose step
+  TaskDecomposition:
+    fields:
+      name: String
+      description: String
+      complexity: Complexity
+      estimated_lines: UInt32
+      dependencies: List<String>
+
+  # Task complexity
+  Complexity:
+    enum:
+      - trivial     # < 50 lines
+      - simple      # 50-200 lines
+      - moderate    # 200-500 lines
+      - complex     # 500-1000 lines
+      - critical    # > 1000 lines
+
+  # SONA episode for learning
+  SonaEpisode:
+    fields:
+      state: String
+      action: String
+      reward: Float64
+      next_state: String
+      timestamp: Int64
+      link_number: UInt32
+
+  # Progress tracking for 999 links
+  ProgressTracker:
+    fields:
+      current_link: UInt32
+      total_links: UInt32
+      passed_links: UInt32
+      failed_links: UInt32
+      skipped_links: UInt32
+      average_pas_score: Float64
+      start_time: Int64
+
+behaviors:
+  - name: init_phi_loop
+    given: Allocator and Config
+    when: Initializing PHI LOOP
+    then: PhiLoop structure with link_number=1, max_links=999, state=idle
+
+  - name: execute_link
+    given: PhiLoop and spec_path
+    when: Running one complete PHI LOOP iteration
+    then: LinkResult with updated link_number and next_action
+
+  - name: phi_decompose
+    given: spec_path
+    when: Analyzing task through sacred math
+    then: TaskDecomposition with complexity and φ-weighted priority
+
+  - name: phi_plan
+    given: TaskDecomposition
+    when: Planning via Tech Tree
+    then: Implementation path verified with Trinity Identity
+
+  - name: phi_gen
+    given: spec_path
+    when: Generating code via VIBEE
+    then: GeneratedCode with pattern_id and timestamp
+
+  - name: phi_validate
+    given: GeneratedCode
+    when: Validating with Agent MU + PAS
+    then: ValidationResult with pas_score and confidence
+
+  - name: phi_gate_check
+    given: PhiGate
+    when: Checking if code passes sacred math filter
+    then: Bool — true if all thresholds met
+
+  - name: fix_generator
+    given: spec_path and ValidationResult
+    when: φ Gate failed and auto_fix enabled
+    then: FixResult with success flag and fixes_applied count
+
+  - name: phi_learn
+    given: GeneratedCode and ValidationResult
+    when: Learning via Symbolic AI + SONA
+    then: SonaEpisode stored with reward and Q-value update
+
+  - name: phi_commit
+    given: spec_path and GeneratedCode and ValidationResult
+    when: Committing to memory + git
+    then: Link number incremented, progress updated
+
+  - name: gate_score
+    given: PhiGate
+    when: Calculating overall gate score (0-1)
+    then: Float64 weighted: PAS 40%, Confidence 30%, SONA 20%, Trinity 10%
+
+  - name: phi_weighted_score
+    given: PhiGate
+    when: Applying φ-weighted boost to scores
+    then: Float64 — score multiplied by PHI (1.618)
+
+  - name: gate_status
+    given: PhiGate
+    when: Getting human-readable status
+    then: GateStatus enum indicating pass or failure reason
+
+  - name: failure_message
+    given: PhiGate and Allocator
+    when: Getting detailed failure message
+    then: String with PAS, Confidence, SONA values and failure reason
+
+  - name: progress_percentage
+    given: ProgressTracker
+    when: Calculating completion percentage
+    then: Float32 from 0.0 to 100.0
+
+  - name: success_rate
+    given: ProgressTracker
+    when: Calculating success rate
+    then: Float32 — passed_links / (passed + failed)
+
+  - name: remaining_links
+    given: ProgressTracker
+    when: Calculating remaining links
+    then: UInt32 — total_links - current_link
+
+  - name: progress_to_json
+    given: PhiLoop and Allocator
+    when: Exporting progress as JSON for dashboard
+    then: String with JSON containing all progress metrics
+
+  - name: quality_score
+    given: LinkResult
+    when: Calculating overall quality score
+    then: Float64 weighted: PAS 40%, Confidence 30%, SONA 20%, Trinity 10%
+
+  - name: passed_phi_gate
+    given: LinkResult
+    when: Checking if link passed φ Gate
+    then: Bool — true if PAS >= 0.95, Confidence >= 0.95, Trinity verified
+
+  - name: batch_validate
+    given: List<PhiGate>
+    when: Validating multiple gates at once
+    then: BatchResult with total, passed, failed, average_score, success_rate
+
+  - name: trinity_identity
+    given: None
+    when: Verifying φ² + 1/φ² = 3
+    then: Bool — true if identity holds within tolerance
+
+  - name: phi_weighted
+    given: Float64 score
+    when: Calculating φ-weighted score
+    then: Float64 — score * PHI
+
+  - name: mu_penalty
+    given: UInt32 error_count
+    when: Calculating μ-weighted penalty
+    then: Float64 — error_count * MU
+
+  - name: code_metrics
+    given: GeneratedCode
+    when: Calculating basic code metrics
+    then: CodeMetrics with line_count, has_comments, has_tests, char_count
+
+  - name: completeness_score
+    given: CodeMetrics
+    when: Calculating basic completeness score
+    then: Float32 from 0.0 to 1.0 based on lines, comments, tests, size
+
+  - name: severity_score
+    given: ValidationResult
+    when: Calculating severity (0 = clean, 1 = critical)
+    then: Float32 — error_count * 0.1 + warning_count * 0.02, capped at 1.0
+
+constants:
+  # Golden ratio
+  PHI: 1.618033988749895
+
+  # Sacred mu
+  MU: 0.0382
+
+  # Sacred threshold
+  SACRED_THRESHOLD: 0.95
+
+  # Max links
+  MAX_LINKS: 999
+
+  # Max retries per link
+  MAX_RETRIES: 3
+
+  # Circuit breaker threshold
+  CIRCUIT_BREAK_THRESHOLD: 10
+
+# Tests
+test:
+  - name: sacred_constants
+    given: None
+    when: PHI LOOP initialized
+    then: Trinity Identity holds (φ² + 1/φ² = 3)
+
+  - name: phi_gate_init
+    given: Allocator
+    when: PhiGate initialized
+    then: All scores zero, trinity_verified true
+
+  - name: phi_gate_passes
+    given: PhiGate with PAS=0.96, Confidence=0.97, SONA=0.8
+    when: Calling passes()
+    then: Returns true
+
+  - name: phi_gate_fails_pas
+    given: PhiGate with PAS=0.80, Confidence=0.97, SONA=0.8
+    when: Calling passes()
+    then: Returns false, status = failed_pas
+
+  - name: phi_gate_score
+    given: PhiGate with PAS=0.96, Confidence=0.97, SONA=0.8
+    when: Calling gateScore()
+    then: Returns score > 0.8
+
+  - name: phi_weighted_boost
+    given: PhiGate with PAS=0.6
+    when: Calling applyPhiWeight() and phiWeightedScore()
+    then: Weighted score > original score
+
+  - name: link_result_quality
+    given: LinkResult with good scores
+    when: Calling qualityScore()
+    then: Returns score > 0.8
+
+  - name: progress_tracking
+    given: PhiLoop at link 500
+    when: Calling getProgress()
+    then: completionPercentage ≈ 50.0, remainingLinks = 499
+
+  - name: batch_validator
+    given: 2 PhiGates (1 pass, 1 fail)
+    when: Calling validateAll()
+    then: BatchResult with total=2, passed=1, failed=1, success_rate=0.5
+
+  - name: task_complexity
+    given: TaskDecomposition with complexity=complex
+    when: Calling priority()
+    then: Returns φ * 0.8 ≈ 1.29
+
+  - name: code_metrics_completeness
+    given: GeneratedCode with lines>0, comments=true, tests=true
+    when: Calling metrics().completeness()
+    then: Returns score >= 0.8
+
+implementation: |
+  // PHI LOOP implementation in src/vibeec/phi_loop.zig
+  // φ Gate implementation in src/vibeec/phi_gate.zig
+  // Types in src/vibeec/phi_types.zig
+
+  const std = @import("std");
+  const phi_types = @import("phi_types.zig");
+  const phi_gate = @import("phi_gate.zig");
+
+  /// Main PHI LOOP structure
+  pub const PhiLoop = struct {
+      allocator: std.mem.Allocator,
+      link_number: u32,
+      max_links: u32,
+      phi_threshold: f64,
+      state: LoopState,
+      progress: phi_types.ProgressTracker,
+      config: Config,
+
+      // ... implementation details
+  };
+
+  /// Execute one complete link of PHI LOOP
+  pub fn executeLink(self: *Self, spec_path: []const u8) !LinkResult {
+      // 1. φ Decompose
+      const task = try self.phiDecompose(spec_path);
+
+      // 2. φ Plan
+      try self.phiPlan(&task);
+
+      // 3. φ Gen
+      const generated = try self.phiGen(spec_path);
+
+      // 4. φ Validate
+      const validation = try self.phiValidate(generated);
+
+      // 5. φ Gate check
+      if (!self.phiGate(validation)) {
+          try self.fixGenerator(spec_path, validation);
+          return try self.executeLink(spec_path); // Retry
+      }
+
+      // 6. φ Learn
+      try self.phiLearn(generated, validation);
+
+      // 7. φ Commit
+      try self.phiCommit(spec_path, generated, validation);
+
+      self.link_number += 1;
+      return result;
+  };

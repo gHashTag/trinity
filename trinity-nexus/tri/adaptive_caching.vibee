@@ -1,0 +1,385 @@
+# ============================================================================
+# Adaptive Caching & Memoization - Cycle 50
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: adaptive_caching
+version: "1.0.0"
+language: zig
+module: adaptive_caching
+
+description: |
+  Adaptive Caching & Memoization — Multi-policy cache with per-agent quotas,
+  VSA-similarity-based fuzzy key matching, write-through and write-behind
+  strategies, event-driven invalidation, and distributed cache coherence.
+
+  Architecture:
+    Cache Policies:
+      LRU (Least Recently Used): evict oldest access
+      LFU (Least Frequently Used): evict lowest frequency
+      ARC (Adaptive Replacement Cache): self-tuning LRU+LFU
+      FIFO (First In First Out): simple queue eviction
+      TTL (Time To Live): expiry-based eviction
+      Adaptive: auto-select policy based on workload pattern
+
+    VSA Similarity Matching:
+      Cache keys encoded as VSA hypervectors
+      Cosine similarity for fuzzy key lookup
+      Similarity threshold configurable (default 0.85)
+      Near-miss detection for partial cache hits
+      VSA-encoded result interpolation
+
+    Write Strategies:
+      Write-through: write to cache and backing store simultaneously
+      Write-behind: write to cache, async flush to store
+      Write-around: write to store only, cache on read
+      Refresh-ahead: proactively refresh before expiry
+
+    Cache Coherence:
+      MESI protocol for distributed cache lines
+      Invalidation-based coherence (write-invalidate)
+      Update-based coherence (write-update)
+      Directory-based tracking for distributed nodes
+      Coherence events via Cycle 41 communication
+
+    Memoization:
+      Function result caching by input hash
+      Configurable max entries per function
+      TTL per memoized result
+      Cache warming on startup
+      Selective invalidation by function
+
+    Per-Agent Quotas:
+      Memory budget per agent cache
+      Eviction priority by agent importance
+      Shared cache pool with fair allocation
+      Quota enforcement via Cycle 45 governor
+
+  Safety:
+    - Max cache size: 256MB
+    - Max entries per cache: 1000000
+    - Max per-agent quota: 32MB
+    - Default TTL: 3600s
+    - Min similarity threshold: 0.5
+    - Max write-behind delay: 5000ms
+    - Coherence timeout: 3000ms
+    - Max caches per agent: 16
+    - Memoization max entries: 10000
+    - Cache warm-up timeout: 10000ms
+
+constants:
+  VSA_DIMENSION: 10000
+  MAX_CACHE_SIZE_BYTES: 268435456
+  MAX_ENTRIES_PER_CACHE: 1000000
+  MAX_PER_AGENT_QUOTA_BYTES: 33554432
+  DEFAULT_TTL_S: 3600
+  MIN_SIMILARITY_THRESHOLD: 0.5
+  DEFAULT_SIMILARITY_THRESHOLD: 0.85
+  MAX_WRITE_BEHIND_DELAY_MS: 5000
+  COHERENCE_TIMEOUT_MS: 3000
+  MAX_CACHES_PER_AGENT: 16
+  MEMOIZATION_MAX_ENTRIES: 10000
+  CACHE_WARMUP_TIMEOUT_MS: 10000
+  EVICTION_BATCH_SIZE: 64
+  ARC_GHOST_LIST_SIZE: 1000
+  REFRESH_AHEAD_THRESHOLD: 0.8
+  COHERENCE_MAX_NODES: 32
+
+types:
+  CachePolicy:
+    enum:
+      - lru
+      - lfu
+      - arc
+      - fifo
+      - ttl
+      - adaptive
+
+  WriteStrategy:
+    enum:
+      - write_through
+      - write_behind
+      - write_around
+      - refresh_ahead
+
+  CoherenceState:
+    enum:
+      - modified
+      - exclusive
+      - shared
+      - invalid
+
+  CacheEntryState:
+    enum:
+      - valid
+      - stale
+      - loading
+      - evicting
+      - invalidated
+
+  EvictionReason:
+    enum:
+      - capacity
+      - ttl_expired
+      - explicit
+      - coherence
+      - quota_exceeded
+      - policy
+
+  CacheEntry:
+    fields:
+      key_hash: Int
+      value_size_bytes: Int
+      state: CacheEntryState
+      access_count: Int
+      last_access_ms: Int
+      created_ms: Int
+      ttl_ms: Int
+      similarity_score: Float
+      coherence_state: CoherenceState
+
+  CacheStats:
+    fields:
+      total_entries: Int
+      total_size_bytes: Int
+      hits: Int
+      misses: Int
+      evictions: Int
+      hit_rate: Float
+      avg_latency_ns: Int
+      similarity_hits: Int
+      write_behind_pending: Int
+
+  AgentCacheQuota:
+    fields:
+      agent_id: Int
+      allocated_bytes: Int
+      used_bytes: Int
+      max_bytes: Int
+      entries_count: Int
+      evictions_count: Int
+      policy: CachePolicy
+
+  MemoEntry:
+    fields:
+      function_hash: Int
+      input_hash: Int
+      result_size_bytes: Int
+      compute_time_ns: Int
+      cache_time_ns: Int
+      hits: Int
+      created_ms: Int
+      ttl_ms: Int
+
+  CoherenceMessage:
+    fields:
+      source_node: Int
+      target_node: Int
+      key_hash: Int
+      state: CoherenceState
+      timestamp_ms: Int
+      ack_required: Bool
+
+  CacheMetrics:
+    fields:
+      total_caches: Int
+      total_entries: Int
+      total_size_bytes: Int
+      global_hit_rate: Float
+      global_miss_rate: Float
+      total_evictions: Int
+      total_invalidations: Int
+      similarity_match_rate: Float
+      write_behind_flushes: Int
+      coherence_messages: Int
+      memoized_functions: Int
+      memoization_savings_ns: Int
+
+  CacheConfig:
+    fields:
+      max_size_bytes: Int
+      max_entries: Int
+      default_ttl_s: Int
+      policy: CachePolicy
+      write_strategy: WriteStrategy
+      similarity_threshold: Float
+      enable_coherence: Bool
+      enable_memoization: Bool
+      per_agent_quota_bytes: Int
+      warmup_enabled: Bool
+
+behaviors:
+  - name: cache_get
+    given: Cache key (exact or VSA-similar)
+    when: Cache lookup requested
+    then: Hit returns value, miss triggers load
+
+  - name: cache_put
+    given: Key-value pair and write strategy
+    when: Value stored in cache
+    then: Entry created per write strategy
+
+  - name: cache_evict
+    given: Cache at capacity or quota exceeded
+    when: Eviction triggered
+    then: Entry evicted per policy (LRU/LFU/ARC)
+
+  - name: similarity_lookup
+    given: VSA-encoded key and threshold
+    when: Exact miss, similarity search triggered
+    then: Nearest match above threshold returned
+
+  - name: invalidate_entry
+    given: Cache entry and invalidation event
+    when: Event-driven invalidation (Cycle 47)
+    then: Entry marked invalid, coherence propagated
+
+  - name: write_behind_flush
+    given: Dirty entries in write-behind buffer
+    when: Flush interval reached or buffer full
+    then: Entries written to backing store
+
+  - name: coherence_update
+    given: Cache line modified on one node
+    when: Coherence protocol triggered
+    then: Other nodes invalidated or updated (MESI)
+
+  - name: memoize_result
+    given: Function call with input hash
+    when: Result not cached
+    then: Result stored with TTL for future calls
+
+  - name: enforce_quota
+    given: Agent cache usage exceeds quota
+    when: Quota check triggered
+    then: Low-priority entries evicted to meet quota
+
+  - name: adapt_policy
+    given: Cache access pattern statistics
+    when: Adaptive policy evaluation
+    then: Policy switched to best-fit for workload
+
+  - name: warm_cache
+    given: Frequently accessed keys list
+    when: Cache initialization or restart
+    then: Keys pre-loaded into cache
+
+  - name: get_cache_metrics
+    given: Cache system state
+    when: Metrics requested
+    then: Returns CacheMetrics with hit rates and stats
+
+tests:
+  # Cache Operations (4)
+  - name: put_get_hit
+    category: operations
+    input: "Store and retrieve 100 entries"
+    expected: "100%% hit rate on stored entries"
+    description: Basic cache put and get
+
+  - name: lru_eviction
+    category: operations
+    input: "Cache full, access pattern favors recent"
+    expected: "Oldest entries evicted first"
+    description: LRU eviction policy
+
+  - name: lfu_eviction
+    category: operations
+    input: "Cache full, access pattern has hot keys"
+    expected: "Least frequently used evicted"
+    description: LFU eviction policy
+
+  - name: arc_adaptive
+    category: operations
+    input: "Mixed recency and frequency patterns"
+    expected: "ARC self-tunes between LRU and LFU"
+    description: ARC adaptive replacement
+
+  # VSA Similarity (3)
+  - name: exact_match
+    category: similarity
+    input: "Identical key lookup"
+    expected: "Exact hit, similarity 1.0"
+    description: Exact key match
+
+  - name: fuzzy_match
+    category: similarity
+    input: "Similar key above 0.85 threshold"
+    expected: "Similarity hit with interpolated result"
+    description: Fuzzy VSA similarity match
+
+  - name: below_threshold
+    category: similarity
+    input: "Key similarity 0.6, threshold 0.85"
+    expected: "Cache miss, below threshold"
+    description: Below-threshold rejection
+
+  # Write Strategies (3)
+  - name: write_through
+    category: write
+    input: "Write with write-through strategy"
+    expected: "Cache and store updated simultaneously"
+    description: Write-through consistency
+
+  - name: write_behind_flush
+    category: write
+    input: "100 writes, flush at interval"
+    expected: "Batch flushed to store asynchronously"
+    description: Write-behind batched flush
+
+  - name: refresh_ahead
+    category: write
+    input: "Entry at 80%% TTL, still accessed"
+    expected: "Proactively refreshed before expiry"
+    description: Refresh-ahead pre-loading
+
+  # Coherence (4)
+  - name: mesi_invalidate
+    category: coherence
+    input: "Node A modifies, Node B has shared copy"
+    expected: "Node B invalidated via coherence"
+    description: MESI write-invalidate
+
+  - name: mesi_exclusive
+    category: coherence
+    input: "Single node reads uncached line"
+    expected: "Line in exclusive state"
+    description: MESI exclusive state
+
+  - name: quota_enforcement
+    category: coherence
+    input: "Agent exceeds 32MB quota"
+    expected: "Low-priority entries evicted"
+    description: Per-agent quota enforcement
+
+  - name: memoization_savings
+    category: coherence
+    input: "Expensive function called 100 times"
+    expected: "99 cache hits, compute saved"
+    description: Memoization compute savings
+
+  # Integration (4)
+  - name: cache_with_events
+    category: integration
+    input: "Event invalidates cache entry"
+    expected: "Entry invalidated on event"
+    description: Integration with event sourcing
+
+  - name: cache_with_governor
+    category: integration
+    input = "Cache respects memory budget"
+    expected: "Eviction when governor pressure critical"
+    description: Integration with resource governor
+
+  - name: cache_with_txn
+    category: integration
+    input: "Transaction rolls back cached write"
+    expected: "Cache entry invalidated on abort"
+    description: Integration with distributed transactions
+
+  - name: cache_with_capsec
+    category: integration
+    input: "Cache access requires read capability"
+    expected: "Unauthorized access denied"
+    description: Integration with capability security

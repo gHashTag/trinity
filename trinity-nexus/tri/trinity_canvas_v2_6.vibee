@@ -1,0 +1,176 @@
+name: trinity_canvas_v2_6
+version: "2.6.0"
+language: typescript
+module: trinity_canvas
+
+description: |
+  Trinity Canvas v2.6 — Self-Reflecting Mirror of Three Worlds
+  Multi-turn chat history in RAZUM + self-reflection wave after each response.
+  Inline file preview in MATERIYA before navigation.
+  Vision drop zone + Voice record in DUKH column.
+  phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL
+
+# =============================================================================
+# TRINITY CANVAS v2.6 — SELF-REFLECTING MIRROR
+# RAZUM: multi-turn chat + reflection. MATERIYA: preview. DUKH: vision + voice.
+# System observes its own reasoning — self-reflection after every response.
+# =============================================================================
+
+types:
+  MirrorChatMessage:
+    description: "v2.6 — message in RAZUM multi-turn history"
+    fields:
+      role: String            # user | assistant
+      text: String
+      source: Option<String>
+      conf: Option<Float>
+      lat: Option<Int>
+      reflection: Option<String>
+
+  MirrorFilePreview:
+    description: "v2.6 — inline file preview in MATERIYA"
+    fields:
+      path: String
+      content: String
+
+  SelfReflection:
+    description: "v2.6 — post-response self-analysis"
+    fields:
+      route: String
+      energy: String
+      confidence: Float
+      learned: Bool
+      text: String
+
+constants:
+  PHI: 1.618033988749895
+  PI: 3.141592653589793
+  E: 2.718281828459045
+  TRINITY_CONSTANT: 3.0
+  MIRROR_POLL_INTERVAL_MS: 2000
+  CHAT_HISTORY_MAX: 5
+  LOG_RING_SIZE: 20
+  LOG_FRONTEND_MAX: 50
+
+behaviors:
+  - name: razum_multi_turn_chat
+    given: User submits message in RAZUM chat input
+    when: handleMirrorChat fires
+    then: |
+      Add user message to mChatHistory (keep last 5).
+      Send to /chat API.
+      Add assistant response to mChatHistory with source/conf/lat/reflection.
+      Display chat history as aligned bubbles (user right, assistant left).
+      Clear input on success.
+
+  - name: self_reflection_wave
+    given: Chat response received in Mirror
+    when: Response includes reflection or routing data
+    then: |
+      If backend returns reflection field, display it.
+      Otherwise generate local reflection:
+        Route name, energy cost, confidence %, learned status.
+      Display as gradient card (gold → purple) below chat.
+      Label: SELF-REFLECTION.
+
+  - name: materiya_inline_preview
+    given: User clicks file in MATERIYA results
+    when: handleMirrorFilePreview fires
+    then: |
+      Send "read file {path}" to /chat API.
+      Display preview inline (max 500 chars) with Open and Close buttons.
+      Open → navigate to Finder layer with file selected.
+      Close → return to file results list.
+      Wave trigger at 180 degrees.
+
+  - name: dukh_vision_drop
+    given: User drags image onto DUKH vision drop zone
+    when: handleMirrorVisionDrop fires
+    then: |
+      Accept image file via drag-and-drop.
+      Read as data URL.
+      Send to /chat with image_path.
+      Display analysis result inline.
+      Wave trigger at 320 degrees.
+
+  - name: dukh_voice_record
+    given: User clicks Voice button in DUKH
+    when: toggleMirrorVoice fires
+    then: |
+      Start SpeechRecognition API (Web Speech).
+      Show "Listening..." while active.
+      On result, set voice text and auto-fill RAZUM chat input.
+      Wave trigger at 200 degrees.
+      Stop on button click or on recognition end.
+
+  - name: mirror_three_columns_v26
+    given: Mirror layer active
+    when: Rendering Mirror dashboard
+    then: |
+      RAZUM (gold, left):
+        — Chat history (last 5 messages as bubbles)
+        — Chat input form
+        — Self-reflection wave card
+        — Query path: Symbolic → TVC → LLM
+        — Metrics row + live log
+      MATERIYA (cyan, center):
+        — File search input (clears preview on change)
+        — Inline file preview OR file results list
+        — Corpus metrics + energy pipeline + corpus log
+      DUKH (purple, right):
+        — Tool buttons (Build/Test/Health)
+        — Vision drop zone + Voice record button
+        — Vision/Voice output display
+        — Tool output display
+        — Provider health + metrics + all-events log
+
+  - name: mirror_auto_poll
+    given: User on Mirror layer
+    when: Layer is 'tools'
+    then: |
+      Poll /health every 2 seconds.
+      Merge logs by timestamp deduplication.
+      Accumulate up to 50 frontend log entries.
+      Auto-scroll all-events log.
+
+  - name: mirror_offline_state
+    given: Backend unreachable
+    when: fetchMirrorStatus returns offline
+    then: |
+      Show start command. Red dot + OFFLINE.
+      Continue polling.
+
+  - name: timestamped_live_logs
+    given: Mirror receives log entries from /health polling
+    when: New events arrive in any column
+    then: |
+      RAZUM log: HH:MM:SS + source icon + query(20 chars) + confidence% + latency
+      MATERIYA log: HH:MM:SS + learned/hit icon + query(18 chars) + status
+      DUKH log: HH:MM:SS + source icon + source name + query(14 chars) + confidence% + latency + learned flag
+
+  - name: learned_pulse_animation
+    given: Assistant response has learned=true in ChatMessage component
+    when: LEARNED badge renders
+    then: |
+      Animate box-shadow with green glow pulse (2s cycle, infinite repeat).
+      Uses framer-motion animate with keyframes.
+
+# Critical Assessment
+# STRENGTHS:
+# - Mirror RAZUM: multi-turn chat with last 5 messages, self-reflection wave
+# - Mirror MATERIYA: inline file preview (500 chars) with Open/Close controls
+# - Mirror DUKH: vision drag-drop + voice record with auto-chat integration
+# - All 3 live logs now have HH:MM:SS timestamps + source icons
+# - Chat LEARNED badge pulses with green glow animation
+# - 27 sacred worlds in 3 realm rings (RAZUM/MATERIYA/DUKH x 9)
+# - All v2.5 features preserved (real compile, file listing, chat)
+#
+# WEAKNESSES:
+# - Self-reflection is generated locally when backend doesn't provide it
+# - Mirror voice uses basic SpeechRecognition (no waveform)
+# - File preview limited to 500 chars (no full scrollable preview)
+# - No WebSocket: still uses 2s polling
+#
+# IMPROVEMENT RATE:
+# v2.6 adds 6 new features over v2.5
+# Rate: 6/9 = 0.667 > 0.618 (golden ratio threshold)

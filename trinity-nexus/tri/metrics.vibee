@@ -1,0 +1,183 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: counter
+    given: Input data provided
+    when: counter function called
+    then: Result returned
+  - name: test_counter
+  - name: gauge
+    given: Input data provided
+    when: gauge function called
+    then: Result returned
+  - name: test_gauge
+  - name: histogram
+    given: Input data provided
+    when: histogram function called
+    then: Result returned
+  - name: test_histogram
+  - name: summary
+    given: Input data provided
+    when: summary function called
+    then: Result returned
+  - name: test_summary
+  - name: counter_inc
+    given: Input data provided
+    when: counter_inc function called
+    then: Result returned
+  - name: test_counter_inc
+  - name: counter_add
+    given: Input data provided
+    when: counter_add function called
+    then: Result returned
+  - name: test_counter_add
+  - name: gauge_set
+    given: Input data provided
+    when: gauge_set function called
+    then: Result returned
+  - name: test_gauge_set
+  - name: gauge_inc
+    given: Input data provided
+    when: gauge_inc function called
+    then: Result returned
+  - name: test_gauge_inc
+  - name: gauge_dec
+    given: Input data provided
+    when: gauge_dec function called
+    then: Result returned
+  - name: test_gauge_dec
+  - name: histogram_observe
+    given: Input data provided
+    when: histogram_observe function called
+    then: Result returned
+  - name: test_histogram_observe
+  - name: with_labels
+    given: Input data provided
+    when: with_labels function called
+    then: Result returned
+  - name: test_with_labels
+  - name: new_registry
+    given: Input data provided
+    when: new_registry function called
+    then: Result returned
+  - name: test_new_registry
+  - name: register
+    given: Input data provided
+    when: register function called
+    then: Result returned
+  - name: test_register
+  - name: get_metric
+    given: Input data provided
+    when: get_metric function called
+    then: Result returned
+  - name: test_get_metric
+  - name: export_prometheus
+    given: Input data provided
+    when: export_prometheus function called
+    then: Result returned
+  - name: test_export_prometheus
+  - name: metric_to_prometheus
+    given: Input data provided
+    when: metric_to_prometheus function called
+    then: Result returned
+  - name: test_metric_to_prometheus
+  - name: counter_to_prometheus
+    given: Input data provided
+    when: counter_to_prometheus function called
+    then: Result returned
+  - name: test_counter_to_prometheus
+  - name: gauge_to_prometheus
+    given: Input data provided
+    when: gauge_to_prometheus function called
+    then: Result returned
+  - name: test_gauge_to_prometheus
+  - name: histogram_to_prometheus
+    given: Input data provided
+    when: histogram_to_prometheus function called
+    then: Result returned
+  - name: test_histogram_to_prometheus
+  - name: summary_to_prometheus
+    given: Input data provided
+    when: summary_to_prometheus function called
+    then: Result returned
+  - name: test_summary_to_prometheus
+  - name: labels_to_string
+    given: Input data provided
+    when: labels_to_string function called
+    then: Result returned
+  - name: test_labels_to_string
+  - name: create_default_metrics
+    given: Input data provided
+    when: create_default_metrics function called
+    then: Result returned
+  - name: test_create_default_metrics
+
+types:
+  counter:
+    description: Auto-generated
+
+  gauge:
+    description: Auto-generated
+
+  histogram:
+    description: Auto-generated
+
+  summary:
+    description: Auto-generated
+
+  counter_inc:
+    description: Auto-generated
+
+  counter_add:
+    description: Auto-generated
+
+  gauge_set:
+    description: Auto-generated
+
+  gauge_inc:
+    description: Auto-generated
+
+  gauge_dec:
+    description: Auto-generated
+
+  histogram_observe:
+    description: Auto-generated
+
+  with_labels:
+    description: Auto-generated
+
+  new_registry:
+    description: Auto-generated
+
+  register:
+    description: Auto-generated
+
+  get_metric:
+    description: Auto-generated
+
+  export_prometheus:
+    description: Auto-generated
+
+  metric_to_prometheus:
+    description: Auto-generated
+
+  counter_to_prometheus:
+    description: Auto-generated
+
+  gauge_to_prometheus:
+    description: Auto-generated
+
+  histogram_to_prometheus:
+    description: Auto-generated
+
+  summary_to_prometheus:
+    description: Auto-generated
+
+  labels_to_string:
+    description: Auto-generated
+
+  create_default_metrics:
+    description: Auto-generated

@@ -1,0 +1,63 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: main
+    given: Input data provided
+    when: main function called
+    then: Result returned
+  - name: test_main
+  - name: handle_request
+    given: Input data provided
+    when: handle_request function called
+    then: Result returned
+  - name: test_handle_request
+  - name: serve_html
+    given: Input data provided
+    when: serve_html function called
+    then: Result returned
+  - name: test_serve_html
+  - name: serve_json
+    given: Input data provided
+    when: serve_json function called
+    then: Result returned
+  - name: test_serve_json
+  - name: serve_text
+    given: Input data provided
+    when: serve_text function called
+    then: Result returned
+  - name: test_serve_text
+  - name: default_theme
+    given: Input data provided
+    when: default_theme function called
+    then: Result returned
+  - name: test_default_theme
+  - name: theme_editor_html
+    given: Input data provided
+    when: theme_editor_html function called
+    then: Result returned
+  - name: test_theme_editor_html
+
+types:
+  main:
+    description: Auto-generated
+
+  handle_request:
+    description: Auto-generated
+
+  serve_html:
+    description: Auto-generated
+
+  serve_json:
+    description: Auto-generated
+
+  serve_text:
+    description: Auto-generated
+
+  default_theme:
+    description: Auto-generated
+
+  theme_editor_html:
+    description: Auto-generated

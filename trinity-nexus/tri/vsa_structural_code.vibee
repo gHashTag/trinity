@@ -1,0 +1,158 @@
+# ============================================================================
+# VSA Structural Code Encoder - Cycle 52
+# Depth-scaled permutation for AST-based code encoding
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: vsa_structural_code
+version: "1.0.0"
+language: zig
+module: vsa_structural_code
+
+imports:
+  - name: vsa
+    path: "../src/vsa.zig"
+
+description: |
+  Code encoder with structural depth strategy.
+  Key difference: uses depth-scaled permutation permute(base, depth * scale)
+  to encode AST nesting level. Tokens at same depth get similar position
+  encodings, preserving structural hierarchy in hypervector space.
+
+constants:
+  DIMENSION: 1024
+  MAX_DEPTH: 32
+  DEPTH_SCALE: 7
+  PHI: 1.6180339887498948482
+
+types:
+  StructuralConfig:
+    fields:
+      max_depth: Int
+      depth_scale: Int
+
+behaviors:
+  - name: realDepthBind
+    given: Token vector and AST depth level
+    when: Encoding token with structural depth
+    then: Depth-scaled permutation bind for hierarchy
+
+  - name: realStructuralBundle
+    given: Multiple depth-bound token vectors
+    when: Combining into code representation
+    then: Majority vote bundle
+
+  - name: realStructuralSimilarity
+    given: Two structurally-encoded code snippets
+    when: Comparing code similarity
+    then: Cosine similarity preserving structural hierarchy
+
+  - name: realStructuralDistance
+    given: Two structurally-encoded code snippets
+    when: Measuring code distance
+    then: Hamming distance between structural encodings
+
+  - name: realTokenToVector
+    given: Token character
+    when: Converting token to base vector
+    then: Character-to-vector mapping
+
+  - name: realTokenTypeVector
+    given: Token type seed (keyword=1, operator=2, etc.)
+    when: Creating type-specific base vector
+    then: Deterministic random vector for token type
+
+  - name: realRandomVector
+    given: Seed for depth base vector
+    when: Creating structural reference frame
+    then: Deterministic random vector for depth axis
+
+  - name: realBind
+    given: Two vectors for association
+    when: Generic binding operation
+    then: VSA bind
+
+  - name: realBundle2
+    given: Two vectors for superposition
+    when: Generic bundling operation
+    then: VSA bundle2
+
+  - name: realBundle3
+    given: Three vectors for superposition
+    when: Triple bundling operation
+    then: VSA bundle3
+
+  - name: realPermute
+    given: Vector and shift amount
+    when: Depth position encoding
+    then: VSA permute
+
+  - name: realCosineSimilarity
+    given: Two vectors
+    when: Measuring similarity
+    then: Cosine similarity score
+
+  - name: realHammingDistance
+    given: Two vectors
+    when: Measuring distance
+    then: Hamming distance count
+
+  - name: realCharToVector
+    given: Token char
+    when: Base encoding
+    then: Character to hypervector
+
+  - name: realEncodeText
+    given: Code source as text
+    when: Fallback text encoding
+    then: N-gram text encoding
+
+  - name: realTextSimilarity
+    given: Two code strings
+    when: Text-level comparison
+    then: Text similarity score
+
+tests:
+  - name: test_depth_bind
+    given: Token at depth 3 with scale 7
+    then: Depth-scaled permutation produces unique binding
+
+  - name: test_structural_bundle
+    given: Two depth-bound tokens
+    then: Bundle preserves both tokens
+
+  - name: test_structural_self_similarity
+    given: Same code encoded twice
+    then: Cosine similarity = 1.0
+
+  - name: test_structural_different_code
+    given: Two different code snippets
+    then: Lower similarity than identical
+
+  - name: test_token_char_vector
+    given: Token character 'f'
+    then: Maps to valid hypervector
+
+  - name: test_token_type_vector
+    given: Keyword type seed 1
+    then: Deterministic type vector
+
+  - name: test_depth_matters
+    given: Same token at different depths
+    then: Different encodings (depth preserved)
+
+  - name: test_structural_hamming
+    given: Two structural encodings
+    then: Valid hamming distance
+
+  - name: test_code_text_encoding
+    given: "fn main() {}"
+    then: Text encoding produces valid vector
+
+  - name: test_code_text_similarity
+    given: Two similar code strings
+    then: Returns valid similarity score
+
+# ============================================================================
+# Golden Chain: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================

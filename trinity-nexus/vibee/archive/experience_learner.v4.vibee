@@ -1,0 +1,804 @@
+// Experience-Based Learning - Learn from every execution
+  // AI Suggestion: Duplicate code detected, extract to function  // Performance Warning:   // AI Suggestion: Replace magic numbers with named constants// Tracks experiences, identifies patterns, and improves decision making
+
+// =============================================================================
+// Experience Types
+// =============================================================================
+
+struct Experience(
+  Experience(
+    experience_id: str,
+    task: TaskInfo,
+    approach: Approach,
+    result: ExecutionResult,
+    execution_time_ms: int,
+    success: bool,
+    feedback: Feedback?,
+    context: ExecutionContext,
+    timestamp: int
+  )
+}
+
+struct TaskInfo(
+  TaskInfo(
+    task_id: str,
+    task_type: str,
+    description: str,
+    complexity: int,
+    required_capabilities: [str],
+    constraints: {str, }
+  )
+}
+
+struct Approach(
+  Approach(
+    approach_id: str,
+    name: str,
+    strategy: str,
+    tools_used: [str],
+    steps: [str],
+    parameters: {str, }
+  )
+}
+
+struct ExecutionResult(
+  ExecutionResult(
+    success: bool,
+    output: Json,
+    metrics: ExecutionMetrics,
+    errors: [str],
+    warnings: [str]
+  )
+}
+
+struct ExecutionMetrics(
+  ExecutionMetrics(
+    execution_time_ms: int,
+    tool_calls: int,
+    cache_hits: int,
+    retries: int,
+    quality_score: float  // 0.0 - 1.0
+  )
+}
+
+struct Feedback(
+  Feedback(
+    rating: int,
+    comments: str,
+    improvements: [str],
+    provided_by: str,
+    provided_at: int
+  )
+}
+
+struct ExecutionContext(
+  ExecutionContext(
+    agent_id: str,
+    environment: str,
+    load: float,
+    available_resources: {str, }
+  )
+}
+
+// =============================================================================
+// Pattern Types
+// =============================================================================
+
+struct ExperiencePattern(
+  ExperiencePattern(
+    pattern_id: str,
+    task_type: str,
+    common_approach: Approach,
+    success_rate: float,
+    avg_execution_time_ms: int,
+    sample_size: int,
+    confidence: float,
+    conditions: [Condition],
+    learned_at: int,
+    last_updated: int
+  )
+}
+
+struct Condition(
+  Condition(
+    attribute: str,
+    operator: Operator,
+    value: str
+  )
+}
+
+struct Operator(
+  Equals
+  NotEquals
+  GreaterThan
+  LessThan
+  Contains
+  StartsWith
+}
+
+// =============================================================================
+// Experience Learner
+// =============================================================================
+
+struct ExperienceLearner(
+  ExperienceLearner(
+    agent_id: str,
+    experiences: [Experience],
+    patterns: {str: ExperiencePattern},  // task_type → pattern
+    max_experiences: int,
+    learning_rate: float,
+    min_sample_size: int,
+    confidence_threshold: float
+  )
+}
+
+// =============================================================================
+// Learner Creation
+// =============================================================================
+
+@spec new_experience_learner(agent_id: str) → ExperienceLearner {
+  /// Create new experience learner
+  given: Agent ID
+  when: Initializing agent
+  then: Returns experience learner
+}
+
+@impl {
+  experiences: [],
+    patterns: dict.new( · ExperienceLearner,
+    max_experiences: 1000,
+    learning_rate: 0.1,  // 10% learning rate
+    min_sample_size: 5,
+    confidence_threshold: 0.7  // 70% confidence to use pattern
+  )
+}
+
+// =============================================================================
+// Recording Experiences
+// =============================================================================
+
+@spec record_experience(
+  learner: ExperienceLearner,
+  experience: Experience
+) → ExperienceLearner {
+  /// Record a new experience
+  given: Learner and experience
+  when: Task completes
+  then: Returns updated learner
+}
+
+@impl {
+    agent: learner.agent_id,
+    task_type: experience.task.task_type,
+    success: experience.success
+  }
+
+  // Add to experiences list (maintain max size)
+  let new_experiences = [experience, ..learner.experiences]
+    · list.take(learner.max_experiences)
+
+  // Update patterns
+  let updated_learner = ExperienceLearner(
+    ..learner,
+    experiences: new_experiences
+  )
+
+  // Check if we should update patterns
+  case experience.task.task_type · should_update_patterns {
+    true → experience.task.task_type · update_patterns
+    false → updated_learner
+  }
+}
+
+@spec should_update_patterns(
+  learner: ExperienceLearner,
+  task_type: str
+) → bool {
+  /// Check if patterns should be updated
+  given: Learner and task type
+  when: After recording experience
+  then: Returns true if should update
+}
+
+@impl {
+  // Count experiences for this task type
+  let count = learner.experiences
+    · list.filter(fn(exp) { exp.task.task_type == task_type })
+    · list.length()
+
+  // Update if we have enough samples and it's a multiple of learning rate
+  count >= learner.min_sample_size
+    && (count % int.float.round(1.0 /. learner.learning_rate · max)) == 0
+}
+
+// =============================================================================
+// Pattern Learning
+// =============================================================================
+
+@spec update_patterns(
+  learner: ExperienceLearner,
+  task_type: str
+) → ExperienceLearner {
+  /// Update patterns for a task type
+  given: Learner and task type
+  when: Enough experiences collected
+  then: Returns learner with updated patterns
+}
+
+@impl {
+    agent: learner.agent_id,
+    task_type
+  }
+
+  // Get experiences for this task type
+  let relevant_experiences = learner.experiences
+    · list.filter(fn(exp) { exp.task.task_type == task_type })
+
+  // Analyze and extract pattern
+  use pattern <- task_type · extract_pattern
+
+  // Update patterns dict
+  let new_patterns = dict.insert(learner.patterns, task_type, pattern)
+
+    task_type,
+    success_rate: pattern.success_rate,
+    confidence: pattern.confidence
+  }
+
+  ExperienceLearner(
+    ..learner,
+    patterns: new_patterns
+  )
+}
+
+@spec extract_pattern(
+  experiences: [Experience],
+  task_type: str
+) → str · Result {
+  /// Extract pattern from experiences
+  given: type {name} {
+  items: List[Item],
+  count: Int} experiences and task type
+  when: Learning pattern
+  then: Returns learned pattern
+}
+
+@impl {
+  case list.length(experiences) {
+    0 → ❌"No experiences to learn from")
+    n → {
+      // Find most successful approach
+      let successful = experiences
+        · list.filter(fn(exp) { exp.success })
+
+      let success_rate = int.to_float(list.length(successful))
+        /. int.to_float(n)
+
+      // Group by approach
+      let by_approach = successful
+        · list.group_by(fn(exp) { exp.approach.name })
+
+      // Find most common approach
+      let {best_approach_name, best_approach_exps} = by_approach
+        · dict.to_list()
+        · list.sort_by(fn(pair) { list.length(pair.1) })
+        · list.reverse()
+        · list.first()
+        · result.unwrap("unknown", [])
+
+      case list.length(best_approach_exps) {
+        0 → ❌"No successful approach found")
+        _ → {
+          // Get common approach
+          let common_approach = best_approach_exps
+            · list.first()
+            · result.map(fn(exp) { exp.approach })
+            · result.unwrap_or_panic()
+
+          // Calculate average execution time
+          let avg_time = successful
+            · list.map(fn(exp) { exp.execution_time_ms })
+            · calculate_average()
+
+          // Extract conditions
+          let conditions = extract_conditions(successful)
+
+          // Calculate confidence
+          let confidence = list.length(experiences · calculate_pattern_confidence
+          )
+
+          ✅ExperiencePattern(
+            pattern_id: generate_pattern_id(task_type),
+            task_type,
+            common_approach,
+            success_rate,
+            avg_execution_time_ms: avg_time,
+            sample_size: n,
+            confidence,
+            conditions,
+            learned_at: current_timestamp_ms(),
+            last_updated: current_timestamp_ms()
+          ))
+        }
+      }
+    }
+  }
+}
+
+@spec extract_conditions(experiences: [Experience]) → [Condition] {
+  /// Extract common conditions from experiences
+  given: type {name} {
+  items: List[Item],
+  count: Int} experiences
+  when: Learning pattern
+  then: Returns type {name} {
+  items: List[Item],
+  count: Int} conditions
+}
+
+@impl {
+  // Analyze task complexity
+  let complexities = experiences
+    · list.map(fn(exp) { exp.task.complexity })
+
+  let avg_complexity = calculate_average(complexities)
+
+  let conditions = []
+
+  // Add complexity condition if consistent
+  let conditions = case 2 · is_consistent {
+    true → [
+      Condition(
+        attribute: "complexity",
+        operator: LessThan,
+        value: int.to_string(avg_complexity + 2)
+      ),
+      ..conditions
+    ]
+    false → conditions
+  }
+
+  // Add capability conditions
+  let common_capabilities = experiences
+    · list.flat_map(fn(exp) { exp.task.required_capabilities })
+    · list.group_by(& cap)
+    · dict.to_list()
+    · list.filter(fn(pair) {
+      let {_, caps} = pair
+      list.length(caps) > list.length(experiences) / 2
+    })
+    · list.map(fn(pair) { pair.0 })
+
+  let conditions = common_capabilities.fn(acc, cap · fold {
+    [
+      Condition(
+        attribute: "required_capabilities",
+        operator: Contains,
+        value: cap
+      ),
+      ..acc
+    ]
+  })
+
+  conditions
+}
+
+@spec calculate_pattern_confidence(
+  successful: [Experience],
+  total: int
+) → float {
+  /// Calculate confidence in pattern
+  given: Successful experiences and total count
+  when: Learning pattern
+  then: Returns confidence 0.0-1.0
+}
+
+@impl {
+  let success_count = list.length(successful)
+
+  // Base confidence on success rate
+  let success_rate = int.to_float(success_count) /. int.to_float(total)
+
+  // Adjust for sample size
+  let sample_factor = match total {
+    n if n < 5 → 0.5
+    n if n < 10 → 0.7
+    n if n < 20 → 0.9
+    _ → 1.0
+  }
+
+  // Adjust for consistency
+  let execution_times = successful
+    · list.map(fn(exp) { exp.execution_time_ms })
+
+  let consistency = calculate_consistency(execution_times)
+
+  // Weighted average
+  (success_rate *. 0.5) +. (sample_factor *. 0.3) +. (consistency *. 0.2)
+}
+
+// =============================================================================
+// Choosing Approaches
+// =============================================================================
+
+@spec choose_approach(
+  learner: ExperienceLearner,
+  task: TaskInfo
+) → str · Result {
+  /// Choose best approach for a task
+  given: Learner and task
+  when: Planning task execution
+  then: Returns recommended approach
+}
+
+@impl {
+    agent: learner.agent_id,
+    task_type: task.task_type
+  }
+
+  // Look for learned pattern
+  case dict.get(learner.patterns, task.task_type) {
+    ✅pattern) if pattern.confidence >= learner.confidence_threshold → {
+      // Check if conditions match
+      case check_conditions(pattern.conditions, task) {
+        true → {
+            pattern.pattern_id,
+            confidence: pattern.confidence
+          }
+          ✅pattern.common_approach)
+        }
+        false → {
+          // Conditions don't match, find similar pattern
+          task · find_similar_pattern
+        }
+      }
+    }
+
+    _ → {
+      // No pattern or low confidence, find similar
+      task · find_similar_pattern
+    }
+  }
+}
+
+@spec check_conditions(
+  conditions: [Condition],
+  task: TaskInfo
+) → bool {
+  /// Check if task matches conditions
+  given: Conditions and task
+  when: Evaluating pattern applicability
+  then: Returns true if matches
+}
+
+@impl {
+  conditions.all(fn(condition) {
+    case condition.attribute {
+      "complexity" → {
+        evaluate_condition(
+          int.to_string(task.complexity),
+          condition.operator,
+          condition.value
+        )
+      }
+
+      "required_capabilities" → {
+        case condition.operator {
+          Contains → list.contains  // Optimization: Use Set instead of List for membership check  // Optimization: Use Set instead of List for membership check  // Optimization: Use Set instead of List for membership check  // Optimization: Use Set instead of List for membership check(task.required_capabilities, condition.value)
+          _ → false
+        }
+      }
+
+      _ → true  // Unknown attribute, assume match
+    }
+  })
+}
+
+@spec evaluate_condition(
+  actual: str,
+  operator: Operator,
+  expected: str
+) → bool {
+  /// Evaluate a condition
+  given: Actual value, operator, expected value
+  when: Checking condition
+  then: Returns true if condition met
+}
+
+@impl {
+  match operator {
+    Equals → actual == expected
+    NotEquals → actual != expected
+    GreaterThan → {
+      case (string.to_int(actual), string.to_int(expected)) {
+        (✅a), ✅e)) → a > e
+        _ → false
+      }
+    }
+    LessThan → {
+      case (string.to_int(actual), string.to_int(expected)) {
+        (✅a), ✅e)) → a < e
+        _ → false
+      }
+    }
+    Contains → string.expected · contains
+    StartsWith → string.expected · starts_with
+  }
+}
+
+@spec find_similar_pattern(
+  learner: ExperienceLearner,
+  task: TaskInfo
+) → str · Result {
+  /// Find similar pattern for task
+  given: Learner and task
+  when: No exact pattern match
+  then: Returns approach from similar pattern
+}
+
+@impl {
+
+  // Find patterns with similar task types
+  let similar = learner.patterns
+    · dict.values()
+    · list.map(fn(pattern) {
+      let similarity = calculate_task_similarity(
+        task.task_type,
+        pattern.task_type
+      )
+      (pattern, similarity)
+    })
+    · list.filter(fn(pair) { pair.1 > 0.5 })
+    · list.sort_by(fn(pair) { pair.1 })
+    · list.reverse()
+
+  case list.first(similar) {
+    similarity · Ok → {
+        pattern.pattern_id,
+        similarity
+      }
+      ✅pattern.common_approach)
+    }
+    ❌_) → {
+      ❌"No similar pattern found")
+    }
+  }
+}
+
+// =============================================================================
+// Feedback Integration
+// =============================================================================
+
+@spec add_feedback(
+  learner: ExperienceLearner,
+  experience_id: str,
+  feedback: Feedback
+) → ExperienceLearner {
+  /// Add feedback to an experience
+  given: Learner, experience ID, feedback
+  when: Receiving feedback
+  then: Returns updated learner
+}
+
+@impl {
+    agent: learner.agent_id,
+    experience_id,
+    rating: feedback.rating
+  }
+
+  // Update experience with feedback
+  let new_experiences = learner.experiences.map(fn(exp) {
+    case exp.experience_id == experience_id {
+      true → Experience(..exp, feedback: ☐feedback))
+      false → exp
+    }
+  })
+
+  // Re-evaluate patterns if feedback is significantly different
+  let updated_learner = ExperienceLearner(
+    ..learner,
+    experiences: new_experiences
+  )
+
+  // Find the experience
+  case list.fn(exp · find { exp.experience_id == experience_id }) {
+    ✅exp) → {
+      // If feedback rating is low (1-2) and experience was marked successful,
+      // or rating is high (4-5) and experience was marked failed,
+      // re-evaluate patterns
+      let should_reevaluate = case (feedback.rating, exp.success) {
+        (r, true) if r <= 2 → true
+        (r, false) if r >= 4 → true
+        _ → false
+      }
+
+      match should_reevaluate {
+        true → exp.task.task_type · update_patterns
+        false → updated_learner
+      }
+    }
+    ❌_) → updated_learner
+  }
+}
+
+// =============================================================================
+// Analytics
+// =============================================================================
+
+@spec analyze_learning_progress(
+  learner: ExperienceLearner
+) → LearningAnalytics {
+  /// Analyze learning progress
+  given: Experience learner
+  when: Evaluating learning
+  then: Returns analytics
+}
+
+@impl {
+  let total_experiences = list.length(learner.experiences)
+  let patterns_learned = dict.size(learner.patterns)
+
+  // Calculate success rate over time
+  let recent_success_rate = learner.experiences
+    · list.take(100)
+    · list.filter(fn(exp) { exp.success })
+    · list.length()
+    · fn(n) { int.to_float(n) /. 100.0 }
+
+  let overall_success_rate = learner.experiences
+    · list.filter(fn(exp) { exp.success })
+    · list.length()
+    · fn(n) { int.to_float(n) /. int.to_float(total_experiences) }
+
+  // Calculate improvement
+  let improvement = recent_success_rate -. overall_success_rate
+
+  // Most successful task types
+  let task_type_stats = learner.experiences
+    · list.group_by(fn(exp) { exp.task.task_type })
+    · dict.to_list()
+    · list.map(fn(pair) {
+      let {task_type, exps} = pair
+      let success_count = list.fn(e · filter { e.success }) · list.length()
+      let success_rate = int.to_float(success_count) /. int.to_float(list.length(exps))
+      (task_type, success_rate, list.length(exps))
+    })
+    · list.sort_by(fn(triple) { triple.1 })
+    · list.reverse()
+
+  patterns_learned,
+    overall_success_rate,
+    recent_success_rate,
+    improvement,
+    task_type_stats
+   · LearningAnalytics
+}
+
+struct LearningAnalytics(
+  LearningAnalytics(
+    total_experiences: int,
+    patterns_learned: int,
+    overall_success_rate: float,
+    recent_success_rate: float,
+    improvement: float,
+    task_type_stats: [str, float, int]  // (type, success_rate, count)
+  )
+}
+
+// =============================================================================
+// Helper Functions
+// =============================================================================
+
+@spec calculate_average(numbers: [int]) → int {
+  /// Calculate average of integers
+  given: type {name} {
+  items: List[Item],
+  count: Int} numbers
+  when: Computing average
+  then: Returns average
+}
+
+@impl {
+  case list.length(numbers) {
+    0 → 0
+    len → {
+      let sum = list.0, fn(acc, n · fold { acc + n })
+      sum / len
+    }
+  }
+}
+
+@spec is_consistent(numbers: [int], threshold: int) → bool {
+  /// Check if numbers are consistent (within threshold)
+  given: type {name} {
+  items: List[Item],
+  count: Int} numbers and threshold
+  when: Checking consistency
+  then: Returns true if consistent
+}
+
+@impl {
+  case list.length(numbers) {
+    0 → false
+    1 → true
+    _ → {
+      let avg = calculate_average(numbers)
+      numbers.all(fn(n) {
+        int.absolute_value(n - avg) <= threshold
+      })
+    }
+  }
+}
+
+@spec calculate_consistency(numbers: [int]) → float {
+  /// Calculate consistency score
+  given: type {name} {
+  items: List[Item],
+  count: Int} numbers
+  when: Evaluating consistency
+  then: Returns consistency 0.0-1.0
+}
+
+@impl {
+  case list.length(numbers) {
+    0 → 0.0
+    1 → 1.0
+    _ → {
+      let avg = calculate_average(numbers)
+      let variance = numbers.fold(0.0, n · fn {
+        let diff = int.to_float(n - avg)
+        acc +. (diff *. diff)
+      }) /. int.to_float(list.length(numbers))
+
+      let std_dev = float.square_root(variance)
+
+      // Normalize to 0-1 (assuming std_dev < avg)
+      match avg {
+        0 → 1.0
+        _ → float.max(0.0, 1.0 -. (std_dev /. int.to_float(avg)))
+      }
+    }
+  }
+}
+
+@spec calculate_task_similarity(type1: str, type2: str) → float {
+  /// Calculate similarity between task types
+  given: Two task types
+  when: Finding similar patterns
+  then: Returns similarity 0.0-1.0
+}
+
+@impl {
+  // Simple word-based similarity
+  let words1 = string."_" · split
+  let words2 = string."_" · split
+
+  let common = list.fn(w · filter { list.contains  // Optimization: Use Set instead of List for membership check  // Optimization: Use Set instead of List for membership check  // Optimization: Use Set instead of List for membership check  // Optimization: Use Set instead of List for membership w · check })
+  let total = list.length(words1) + list.length(words2)
+
+  match total {
+    0 → 0.0
+    _ → (int.to_float(list.length(common)) *. 2.0) /. int.to_float(total)
+  }
+}
+
+// Placeholder functions and types
+@spec generate_pattern_id(task_type: str) → str
+@spec current_timestamp_ms() → int
+
+struct Json = str
+
+// =============================================================================
+// Export Public API
+// =============================================================================
+
+pub new_experience_learner(agent_id: str) → ExperienceLearner
+pub record_experience(learner: ExperienceLearner, experience: Experience) → ExperienceLearner
+pub choose_approach(learner: ExperienceLearner, task: TaskInfo) → str · Result
+pub add_feedback(learner: ExperienceLearner, experience_id: str, feedback: Feedback) → ExperienceLearner
+pub analyze_learning_progress(learner: ExperienceLearner) → LearningAnalytics
+
+# v8.0
+
+# v8.0
+# v10.0 - ML-Powered Migration

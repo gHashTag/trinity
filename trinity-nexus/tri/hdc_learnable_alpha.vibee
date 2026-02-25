@@ -1,0 +1,24 @@
+name: hdc_learnable_alpha
+version: "1.0.0"
+language: zig
+module: hdc_learnable_alpha
+
+types:
+  AlphaConfig:
+    fields:
+      alpha_role: Float
+      alpha_tri: Float
+      alpha_bi: Float
+      eval_loss: Float
+      train_loss: Float
+
+behaviors:
+  - name: gridSearchAlpha
+    given: Large corpus with trigram+bigram+role signals and 8 alpha configurations
+    when: Evaluate each weighted blend on train and eval splits
+    then: Best alpha config with lowest eval loss
+
+  - name: weightedBlend
+    given: Three hypervectors (role, trigram, bigram) with float weights
+    when: Compute weighted sum per trit and threshold to ternary
+    then: Weighted hybrid prediction vector

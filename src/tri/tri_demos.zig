@@ -1685,9 +1685,9 @@ pub fn runMultiModalBench() void {
     for (test_cases) |tc| {
         // Simulate encoding time based on input modalities
         const encoding_time_us: u64 = switch (tc.input_modalities.len) {
-            4...10 => 50,    // single modality
-            11...20 => 120,   // two modalities
-            else => 200,      // three+ modalities
+            4...10 => 50, // single modality
+            11...20 => 120, // two modalities
+            else => 200, // three+ modalities
         };
 
         // Simulate achieved similarity (with some variance)
@@ -1703,7 +1703,7 @@ pub fn runMultiModalBench() void {
             tc.name,
         });
         std.debug.print("       Input: {s} → Output: {s}\n", .{ tc.input_modalities, tc.output_modality });
-        std.debug.print("       Operation: {s}\n", .{ tc.operation });
+        std.debug.print("       Operation: {s}\n", .{tc.operation});
         std.debug.print("       Similarity: {d:.2} (expected: {d:.2})\n", .{ achieved, tc.expected_similarity });
         std.debug.print("       Encoding: {d}μs\n\n", .{encoding_time_us});
 
@@ -3504,7 +3504,28 @@ pub fn runMMOrchBench() void {
         if (pass) passed += 1;
         total_acc += t.accuracy;
 
-        if (std.mem.eql(u8, t.category, "input")) { input_acc += t.accuracy; input_count += 1; } else if (std.mem.eql(u8, t.category, "planning")) { plan_acc += t.accuracy; plan_count += 1; } else if (std.mem.eql(u8, t.category, "cross_modal")) { xmodal_acc += t.accuracy; xmodal_count += 1; } else if (std.mem.eql(u8, t.category, "blackboard")) { bb_acc += t.accuracy; bb_count += 1; } else if (std.mem.eql(u8, t.category, "orchestration")) { orch_acc += t.accuracy; orch_count += 1; } else if (std.mem.eql(u8, t.category, "conflict")) { conf_acc += t.accuracy; conf_count += 1; } else if (std.mem.eql(u8, t.category, "performance")) { perf_acc += t.accuracy; perf_count += 1; }
+        if (std.mem.eql(u8, t.category, "input")) {
+            input_acc += t.accuracy;
+            input_count += 1;
+        } else if (std.mem.eql(u8, t.category, "planning")) {
+            plan_acc += t.accuracy;
+            plan_count += 1;
+        } else if (std.mem.eql(u8, t.category, "cross_modal")) {
+            xmodal_acc += t.accuracy;
+            xmodal_count += 1;
+        } else if (std.mem.eql(u8, t.category, "blackboard")) {
+            bb_acc += t.accuracy;
+            bb_count += 1;
+        } else if (std.mem.eql(u8, t.category, "orchestration")) {
+            orch_acc += t.accuracy;
+            orch_count += 1;
+        } else if (std.mem.eql(u8, t.category, "conflict")) {
+            conf_acc += t.accuracy;
+            conf_count += 1;
+        } else if (std.mem.eql(u8, t.category, "performance")) {
+            perf_acc += t.accuracy;
+            perf_count += 1;
+        }
 
         if (pass) {
             std.debug.print("\n  {s}[PASS]{s} {s}\n", .{ GREEN, RESET, t.name });
@@ -4364,7 +4385,7 @@ pub fn runClusterBench() void {
 
     std.debug.print("\n{s}═══════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  Tests Passed: {d}/{d}\n", .{ total_pass, test_cases.len });
-    std.debug.print("  Tests Failed: {d}\n", .{ total_fail });
+    std.debug.print("  Tests Failed: {d}\n", .{total_fail});
     std.debug.print("  Average Accuracy: {d:.2}\n", .{avg_accuracy});
     std.debug.print("\n  {s}IMPROVEMENT RATE: {d:.3}{s}\n", .{ GOLDEN, improvement_rate, RESET });
 
@@ -4534,7 +4555,7 @@ pub fn runStreamPipelineBench() void {
 
     std.debug.print("\n{s}═══════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  Tests Passed: {d}/{d}\n", .{ total_pass, test_cases.len });
-    std.debug.print("  Tests Failed: {d}\n", .{ total_fail });
+    std.debug.print("  Tests Failed: {d}\n", .{total_fail});
     std.debug.print("  Average Accuracy: {d:.2}\n", .{avg_accuracy});
     std.debug.print("\n  {s}IMPROVEMENT RATE: {d:.3}{s}\n", .{ GOLDEN, improvement_rate, RESET });
 

@@ -1,0 +1,151 @@
+name: hdc_temporal_anomaly
+version: "1.0.0"
+language: zig
+module: hdc_temporal_anomaly
+
+description: |
+  HDC Temporal Sequence Anomaly Detector — Time-series anomaly detection
+  via sliding context windows over event sequences.
+
+  Combines SequencePredictor (temporal context encoding) with
+  AnomalyDetector (novelty scoring) to detect deviations from
+  learned normal temporal patterns.
+
+  Architecture:
+    Events → [Sliding Window] → [Context Encoder] → context_hv
+                                                        ↓
+                                              [Normal Profile(s)]
+                                                        ↓
+                                              [Anomaly Score]
+                                                        ↓
+                                              [Score History]
+                                                        ↓
+                                              [Adaptive Threshold]
+
+  Context Encoding (positional):
+    Given window [e1, e2, ..., en]:
+    context_hv = bundle(perm(hv(e1), 0), perm(hv(e2), 1), ..., perm(hv(en), n-1))
+    This preserves temporal ORDER — [A,B,C] ≠ [C,B,A]
+
+  Normal Learning:
+    1. Slide window over training sequence
+    2. Encode each window → context_hv
+    3. Bundle all context_hvs into normal_prototype
+    4. Calibrate threshold from training similarities
+
+  Detection:
+    1. Encode current window → context_hv
+    2. similarity = cosine(context_hv, normal_prototype)
+    3. anomaly_score = 1 - similarity
+    4. Compare against adaptive threshold
+
+  Multi-Profile Support:
+    Different "regimes" (e.g., daytime vs nighttime patterns)
+    Each profile has its own normal prototype + threshold.
+
+  Score Smoothing:
+    Exponential moving average of raw scores to reduce noise.
+    smoothed = alpha * raw + (1 - alpha) * prev_smoothed
+
+  Properties:
+    - Temporal order preserved (permutation encoding)
+    - Bounded memory: only window_size events stored
+    - Adaptive threshold from training data statistics
+    - Multi-regime support (different normal patterns)
+    - Score smoothing for noisy streams
+
+types:
+  TemporalEvent:
+    fields:
+      value: String              # event token (e.g., "LOGIN", "ERROR", "200")
+      timestamp: Option<u64>     # optional timestamp (unused in v1, future)
+
+  TemporalWindow:
+    fields:
+      events: List<String>       # current window of event tokens
+      size: usize
+
+  AnomalyReport:
+    fields:
+      raw_score: Float           # 1 - cosine(context, normal)
+      smoothed_score: Float      # EMA-smoothed score
+      threshold: Float           # current threshold
+      is_anomaly: Bool           # smoothed_score > threshold
+      profile: String            # which normal profile was matched
+
+  TemporalProfile:
+    fields:
+      name: String
+      prototype: HybridBigInt    # bundled normal context vectors
+      sample_count: u32
+      threshold: Float           # calibrated threshold for this profile
+      mean_similarity: Float     # mean sim during calibration
+      std_similarity: Float      # std dev during calibration
+
+  TemporalConfig:
+    fields:
+      window_size: usize         # context window (default 5)
+      step_size: usize           # slide step (default 1)
+      smoothing_alpha: Float     # EMA alpha (default 0.3)
+      sensitivity: Float         # threshold = mean - sensitivity * std (default 2.0)
+
+  TemporalStats:
+    fields:
+      num_profiles: usize
+      total_samples: u32
+      window_size: usize
+      current_smoothed_score: Float
+
+  HDCTemporalAnomalyDetector:
+    fields:
+      allocator: Allocator
+      item_memory: ItemMemory
+      ngram_encoder: NGramEncoder
+      dimension: usize
+      encoder: HDCTextEncoder
+      profiles: HashMap<String, TemporalProfile>
+      config: TemporalConfig
+      window: List<String>       # current event window
+      smoothed_score: Float
+      total_events: u64
+
+behaviors:
+  - name: trainSequence
+    given: Profile name and sequence of event tokens
+    when: Slides window over sequence, encodes each window, bundles into profile prototype
+    then: Normal profile learned from sequence
+
+  - name: calibrate
+    given: Profile name and sequence of normal events
+    when: Computes similarity stats over training windows, sets threshold
+    then: Profile threshold set to mean_sim - sensitivity * std_sim
+
+  - name: pushEvent
+    given: Single event token
+    when: Adds to current window (shifts if full), computes anomaly score
+    then: Returns AnomalyReport with raw and smoothed scores
+
+  - name: detectSequence
+    given: Sequence of event tokens
+    when: Slides window over sequence, scores each window
+    then: Returns list of AnomalyReports
+
+  - name: detect
+    given: Window of events (explicit)
+    when: Encodes window, compares to best-matching profile
+    then: Returns AnomalyReport
+
+  - name: removeProfile
+    given: Profile name
+    when: Removes named profile
+    then: Returns true if existed
+
+  - name: reset
+    given: Nothing
+    when: Clears window and smoothed score (keeps profiles)
+    then: Detection state reset, profiles preserved
+
+  - name: stats
+    given: Nothing
+    when: Computes detector statistics
+    then: Returns TemporalStats

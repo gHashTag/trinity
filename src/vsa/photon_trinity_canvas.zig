@@ -64,6 +64,8 @@ var g_font_scale: f32 = 1.0;
 var g_dpi_scale: f32 = 1.0;
 // Chat font (Montserrat with Cyrillic) — set in main()
 var g_font_chat: rl.Font = undefined;
+// v8.6: Emoji font for tool pills and UI elements
+var g_font_emoji: rl.Font = undefined;
 
 // ── Persistent chat state (survives panel close/reopen) ──
 const MAX_CHAT_MSGS = 128; // v3.0: increased for Golden Chain (8+ msgs per query)
@@ -6944,11 +6946,50 @@ pub fn main() !void {
     rl.SetTextureFilter(frame_font.texture, rl.TEXTURE_FILTER_BILINEAR);
     rl.SetTextureFilter(frame_font_small.texture, rl.TEXTURE_FILTER_BILINEAR);
 
+    // v8.6: Emoji font for tool pills - NotoEmoji has full emoji support
+    var emoji_codepoints: [50]c_int = undefined;
+    const tool_emoji = [_]u32{
+        0x1F50D, // 🔍 Glob/Find
+        0x1F4F6, // 📖 Read/Book
+        0x1F50E, // 🔎 Grep/Search
+        0x26A1, // ⚡ Bash/Power
+        0x270F, // ✏️ Write/Pencil
+        0x1F504, // 🔄 Edit/Refresh
+        0x1F4CB, // 📋 Todo/Clipboard
+        0x1F4E1, // 📡 Antenna
+        0x1F4BB, // 💻 Computer
+        0x1F9E0, // 🧠 Brain
+        0x1F680, // 🚀 Rocket
+        0x2705, // ✅ Check
+        0x274C, // ❌ Cross
+        0x26A0, // ⚠️ Warning
+        0x1F4A1, // 💡 Bulb
+        0x1F525, // 🔥 Fire
+        0x2728, // ✨ Sparkles
+        0x1F308, // 🌈 Rainbow
+        0x1F916, // 🤖 Robot
+        0x1F3A8, // 🎨 Palette
+        0x1F4CA, // 📊 Chart
+        0x1F3AF, // 🎯 Target
+        0x1F4B0, // 💰 Bag
+        0x2611, // ☑️ Ballot
+        0x1F7E2, // 🟢 Green circle
+        0x1F535, // 🔵 Blue circle
+        0x1F7E3, // 🟣 Purple circle
+    };
+    for (0..tool_emoji.len) |i| emoji_codepoints[i] = @intCast(tool_emoji[i]);
+
+    // Load NotoEmoji font (installed via brew, has full emoji support)
+    g_font_emoji = rl.LoadFontEx("assets/fonts/NotoEmoji.ttf", 32, &emoji_codepoints, emoji_codepoints.len);
+    rl.SetTextureFilter(g_font_emoji.texture, rl.TEXTURE_FILTER_BILINEAR);
+    // Note: g_font_emoji is NOT unloaded here (used throughout app lifetime)
+
     // Chat font: SFPro (Latin + Cyrillic + Greek) at LARGE atlas size for crisp rendering
     var chat_codepoints: [95 + 256 + 144]c_int = undefined;
     for (0..95) |i| chat_codepoints[i] = @intCast(32 + i); // ASCII 32-126
     for (0..256) |i| chat_codepoints[95 + i] = @intCast(0x400 + i); // Cyrillic U+0400-U+04FF
     for (0..144) |i| chat_codepoints[95 + 256 + i] = @intCast(0x370 + i); // Greek U+0370-U+03FF (Λ Κ for agent avatars)
+
     g_font_chat = rl.LoadFontEx("assets/fonts/SFPro.ttf", font_size_large, &chat_codepoints, chat_codepoints.len);
     defer rl.UnloadFont(g_font_chat);
     rl.SetTextureFilter(g_font_chat.texture, rl.TEXTURE_FILTER_BILINEAR);
@@ -9225,65 +9266,73 @@ fn updateDrawFrame() callconv(.c) void {
                         }
                     }
 
-                    // STATUS pill (right side)
+                    // v8.6: Glassmorphism STATUS pill (right side)
                     {
-                        const sm_age = agent.data_age_seconds;
-                        // v8.1.1 fix: Check actual processes, not just status.json
-                        const actually_running = ralphProcessRunning();
-                        const st_label: [*:0]const u8 = if (agent.rate_limited)
-                            "RATE LIMITED"
-                        else if (agent.cb_state == .cb_open)
-                            "ERROR"
-                        else if (agent.is_executing and actually_running)
-                            "ACTIVE"
-                        else if (!actually_running)
-                            "STOPPED"
-                        else if (sm_age < 120)
-                            "IDLE"
-                        else if (sm_age < 1800)
-                            "PAUSED"
-                        else
-                            "STOPPED";
-                        const st_color = if (agent.rate_limited)
-                            ralph_red
-                        else if (agent.cb_state == .cb_open)
-                            ralph_red
-                        else if (agent.is_executing and actually_running)
-                            ralph_green
-                        else if (!actually_running)
-                            ralph_red
-                        else if (sm_age < 120)
-                            ralph_accent
-                        else
-                            dim_text;
+                        const pill_right = cx + content_w - 8;
+                        const pill_w: f32 = 140 * fs;
+                        const pill_x = pill_right - pill_w;
+                        const pill_y = ly + (bar_h - 28 * fs) / 2;
 
-                        // Loop counter
+                        // v8.6: Determine display state for glassmorphism pill
+                        const actually_running = ralphProcessRunning();
+                        const display_state: CircuitBreakerState = if (agent.rate_limited or agent.cb_state == .cb_open)
+                            .cb_open
+                        else if (agent.is_executing and actually_running)
+                            .closed
+                        else
+                            .degraded;
+
+                        drawStatusPill(pill_x, pill_y, display_state, fs, chat_font);
+
+                        // v8.6: Loop counter text (small, after status pill)
                         var loop_buf: [32:0]u8 = undefined;
                         @memset(&loop_buf, 0);
-                        _ = std.fmt.bufPrint(&loop_buf, "Loop #{d}", .{agent.loop}) catch {};
+                        _ = std.fmt.bufPrint(&loop_buf, "L#{d}", .{agent.loop}) catch {};
+                        const loop_sz = rl.MeasureTextEx(chat_font, &loop_buf, 10 * fs, 0.5);
+                        const loop_x = pill_x - loop_sz.x - 8;
+                        rl.DrawTextEx(chat_font, &loop_buf, .{ .x = loop_x, .y = ly + 11 * fs }, 10 * fs, 0.5, dim_text);
 
-                        // Right-align: loop text, then status dot+label
-                        const loop_sz = rl.MeasureTextEx(chat_font, &loop_buf, 11 * fs, 0.5);
-                        const st_sz = rl.MeasureTextEx(chat_font, st_label, 11 * fs, 0.5);
-                        const pill_right = cx + content_w - 8;
-                        const loop_x = pill_right - loop_sz.x;
-                        const st_text_x = loop_x - 12 - st_sz.x;
-                        const dot_x = st_text_x - 10;
-                        rl.DrawCircle(@intFromFloat(dot_x), @intFromFloat(ly + bar_h / 2), 4 * fs, st_color);
-                        rl.DrawTextEx(chat_font, st_label, .{ .x = st_text_x, .y = ly + 10 * fs }, 11 * fs, 0.5, st_color);
-                        rl.DrawTextEx(chat_font, &loop_buf, .{ .x = loop_x, .y = ly + 10 * fs }, 11 * fs, 0.5, dim_text);
-
-                        // LIVE indicator (pulsing red dot before status) — only if actually running
+                        // v8.6: LIVE indicator (pulsing dot) — only if actually running
                         if (actually_running and agent.is_executing and agent.data_age_seconds < 30) {
                             const live_pulse: u8 = @intFromFloat(180.0 + 75.0 * @sin(frame_time * 6.0));
-                            const live_x = dot_x - 14;
-                            rl.DrawCircle(@intFromFloat(live_x), @intFromFloat(ly + bar_h / 2), 4 * fs, rl.Color{ .r = 0xFF, .g = 0x00, .b = 0x00, .a = live_pulse });
+                            const live_x = loop_x - 12;
+                            rl.DrawCircle(@intFromFloat(live_x), @intFromFloat(ly + bar_h / 2), 3 * fs, rl.Color{ .r = 0xFF, .g = 0x00, .b = 0x00, .a = live_pulse });
                         }
 
-                        // Hover popover for full status
-                        const pill_rect = rl.Rectangle{ .x = dot_x - 10, .y = ly, .width = pill_right - dot_x + 20, .height = bar_h };
+                        // v8.6: Hover popover for full status (use pill_x as left edge)
+                        const hover_rect_left = pill_x - 10;
+                        const pill_rect = rl.Rectangle{ .x = hover_rect_left, .y = ly, .width = pill_right - hover_rect_left + 10, .height = bar_h };
                         const pill_hover = rl.CheckCollisionPointRec(.{ .x = mx, .y = my }, pill_rect);
                         if (pill_hover) {
+                            // v8.6: Status label/color for popover
+                            const sm_age = agent.data_age_seconds;
+                            const st_label: [*:0]const u8 = if (agent.rate_limited)
+                                "RATE LIMITED"
+                            else if (agent.cb_state == .cb_open)
+                                "ERROR"
+                            else if (agent.is_executing and actually_running)
+                                "ACTIVE"
+                            else if (!actually_running)
+                                "STOPPED"
+                            else if (sm_age < 120)
+                                "IDLE"
+                            else if (sm_age < 1800)
+                                "PAUSED"
+                            else
+                                "STOPPED";
+                            const st_color = if (agent.rate_limited)
+                                ralph_red
+                            else if (agent.cb_state == .cb_open)
+                                ralph_red
+                            else if (agent.is_executing and actually_running)
+                                ralph_green
+                            else if (!actually_running)
+                                ralph_red
+                            else if (sm_age < 120)
+                                ralph_accent
+                            else
+                                dim_text;
+
                             // Draw popover below the bar
                             const pop_x = cx + content_w - 200 * fs;
                             const pop_y = ly + bar_h + 4;
@@ -9370,9 +9419,6 @@ fn updateDrawFrame() callconv(.c) void {
                 const msg_font_sz: f32 = 13 * fs;
                 const row_h: f32 = 22 * fs;
                 const bubble_max_w = content_w * 0.65;
-                const loop_avatar_color = rl.Color{ .r = 0x00, .g = 0xCC, .b = 0xFF, .a = alpha_u8 };
-                const claude_avatar_color = rl.Color{ .r = 0xFF, .g = 0x00, .b = 0xFF, .a = alpha_u8 };
-                const avatar_letter_color = rl.Color{ .r = 0x10, .g = 0x10, .b = 0x14, .a = 220 };
 
                 var cy = chat_top + 8 - g_ralph_chat_scroll_y;
 
@@ -9389,16 +9435,15 @@ fn updateDrawFrame() callconv(.c) void {
 
                         switch (msg.kind) {
                             .log_line => {
-                                // Left-aligned bubble
+                                // v8.6: Left-aligned bubble for PHI (loop agent)
                                 if (cy + row_h > chat_top and cy < chat_top + chat_h) {
                                     const tag_color = rl.Color{ .r = msg.tag_r, .g = msg.tag_g, .b = msg.tag_b, .a = alpha_u8 };
 
-                                    // Avatar (only on first msg in run)
+                                    // v8.6: Glass avatar for PHI (only on first msg in run)
                                     if (is_first_in_run) {
                                         const ax = cx + avatar_r + 8;
                                         const ay = cy + row_h / 2;
-                                        rl.DrawCircle(@intFromFloat(ax), @intFromFloat(ay), avatar_r, loop_avatar_color);
-                                        rl.DrawTextEx(chat_font, "\xce\x9b", .{ .x = ax - 5 * fs, .y = ay - 7 * fs }, 14 * fs, 0.5, avatar_letter_color);
+                                        drawAvatar(ax, ay, avatar_r, true, chat_font, fs);
                                     }
 
                                     // Message area (no background)
@@ -9416,35 +9461,33 @@ fn updateDrawFrame() callconv(.c) void {
                             },
 
                             .meta_info => {
-                                // Left-aligned metadata line (dim)
+                                // v8.6: Left-aligned metadata line (dim) for VIBEE
                                 if (cy + row_h > chat_top and cy < chat_top + chat_h) {
                                     const tx = cx + avatar_r * 2 + 18;
                                     rl.DrawTextEx(chat_font, &msg.text, .{ .x = tx, .y = cy + 4 }, 11 * fs, 0.5, dim_text);
 
-                                    // Avatar on first
+                                    // v8.6: Glass avatar for VIBEE on first
                                     if (is_first_in_run) {
                                         const ax = cx + avatar_r + 8;
                                         const ay = cy + row_h / 2;
-                                        rl.DrawCircle(@intFromFloat(ax), @intFromFloat(ay), avatar_r, claude_avatar_color);
-                                        rl.DrawTextEx(chat_font, "\xce\x9a", .{ .x = ax - 5 * fs, .y = ay - 7 * fs }, 14 * fs, 0.5, avatar_letter_color);
+                                        drawAvatar(ax, ay, avatar_r, false, chat_font, fs);
                                     }
                                 }
                                 cy += row_h;
                             },
 
                             .task_list => {
-                                // Left-aligned task card
+                                // v8.6: Left-aligned task card for VIBEE
                                 const task_row_h: f32 = 16 * fs;
                                 const card_h = @as(f32, @floatFromInt(agent.todo_count)) * task_row_h + 24;
                                 const card_x = cx + avatar_r * 2 + 18;
 
                                 if (cy + card_h > chat_top and cy < chat_top + chat_h) {
-                                    // Avatar on first
+                                    // v8.6: Glass avatar for VIBEE on first
                                     if (is_first_in_run) {
                                         const ax = cx + avatar_r + 8;
                                         const ay = cy + 16;
-                                        rl.DrawCircle(@intFromFloat(ax), @intFromFloat(ay), avatar_r, claude_avatar_color);
-                                        rl.DrawTextEx(chat_font, "\xce\x9a", .{ .x = ax - 5 * fs, .y = ay - 7 * fs }, 14 * fs, 0.5, avatar_letter_color);
+                                        drawAvatar(ax, ay, avatar_r, false, chat_font, fs);
                                     }
 
                                     // Task card (no colored bg)
@@ -9473,13 +9516,12 @@ fn updateDrawFrame() callconv(.c) void {
                                 const bubble_w = bubble_max_w;
                                 const bubble_x = cx + avatar_r * 2 + 18;
 
-                                // Avatar on first
+                                // v8.6: Glass avatar for VIBEE on first
                                 if (is_first_in_run) {
                                     if (cy + row_h > chat_top and cy < chat_top + chat_h) {
                                         const ax = cx + avatar_r + 8;
                                         const ay = cy + avatar_r;
-                                        rl.DrawCircle(@intFromFloat(ax), @intFromFloat(ay), avatar_r, claude_avatar_color);
-                                        rl.DrawTextEx(chat_font, "\xce\x9a", .{ .x = ax - 5 * fs, .y = ay - 7 * fs }, 14 * fs, 0.5, avatar_letter_color);
+                                        drawAvatar(ax, ay, avatar_r, false, chat_font, fs);
                                     }
                                 }
 
@@ -10159,21 +10201,23 @@ fn drawChatBubble(bounds: rl.Rectangle, is_phi: bool) void {
 fn drawAvatar(center_x: f32, center_y: f32, radius: f32, is_phi: bool, font: rl.Font, fs: f32) void {
     const glow = if (is_phi) GLASS_NEON_CYAN else GLASS_NEON_MAGENTA;
 
-    // Glow ring
-    rl.DrawCircle(@intFromFloat(center_x), @intFromFloat(center_y), @intFromFloat(radius + 4), withAlpha(glow, 60));
+    // v8.6: Glow ring (c_int for x,y, f32 for radius)
+    const cx_int: c_int = @intFromFloat(center_x);
+    const cy_int: c_int = @intFromFloat(center_y);
+    rl.DrawCircle(cx_int, cy_int, radius + 4, withAlpha(glow, 60));
 
     // Main circle
     const circle_color = if (is_phi) rl.Color{ .r = 0x00, .g = 0x88, .b = 0x88, .a = 255 } else rl.Color{ .r = 0x88, .g = 0x00, .b = 0x88, .a = 255 };
-    rl.DrawCircle(@intFromFloat(center_x), @intFromFloat(center_y), @intFromFloat(radius), circle_color);
+    rl.DrawCircle(cx_int, cy_int, radius, circle_color);
 
-    // Φ or Ψ symbol
+    // Φ or Ψ symbol (v8.6: use .ptr for C string)
     const symbol = if (is_phi) "Φ" else "Ψ";
     const font_size = 14 * fs;
-    const text_width = rl.MeasureTextEx(font, symbol, font_size, 0.5).x;
-    rl.DrawTextEx(font, symbol, .{ .x = center_x - text_width / 2, .y = center_y - 10 * fs }, font_size, 0.5, rl.Color{ .r = 255, .g = 255, .b = 255, .a = 255 });
+    const text_width = rl.MeasureTextEx(font, symbol.ptr, font_size, 0.5).x;
+    rl.DrawTextEx(font, symbol.ptr, .{ .x = center_x - text_width / 2, .y = center_y - 10 * fs }, font_size, 0.5, rl.Color{ .r = 255, .g = 255, .b = 255, .a = 255 });
 }
 
-/// Draw a tool pill with glass effect (no square brackets)
+/// Draw a tool pill with glass effect (v8.6: emoji icons)
 fn drawToolPill(x: f32, y: f32, text: []const u8, tool_color: rl.Color, fs: f32, font: rl.Font) void {
     const pill_w: f32 = 80 * fs;
     const pill_h: f32 = 24 * fs;
@@ -10186,31 +10230,33 @@ fn drawToolPill(x: f32, y: f32, text: []const u8, tool_color: rl.Color, fs: f32,
     // Accent strip (left side)
     rl.DrawRectangleRec(.{ .x = x, .y = y, .width = 4, .height = pill_h }, tool_color);
 
-    // v8.6: Emoji icon + text
-    const emoji = getToolEmoji(text);
-    const text_y = y + 7 * fs;
+    // v8.6: Draw emoji icon using g_font_emoji
+    const emoji_str = getToolEmoji(text);
+    const emoji_size = 16 * fs;
+    // Create null-terminated string for C FFI
+    var emoji_buf: [8:0]u8 = undefined;
+    @memset(&emoji_buf, 0);
+    @memcpy(emoji_buf[0..emoji_str.len], emoji_str);
+    rl.DrawTextEx(g_font_emoji, &emoji_buf, .{ .x = x + 10 * fs, .y = y + 4 * fs }, emoji_size, 0.5, tool_color);
 
-    // Draw emoji (left side) - emoji is a string literal, use pointer
-    rl.DrawTextEx(font, emoji.ptr, .{ .x = x + 10, .y = text_y }, 12 * fs, 0.5, tool_color);
-
-    // Draw tool name (after emoji, skip brackets)
+    // Draw tool name (after emoji)
     var buf: [16:0]u8 = undefined;
     @memset(&buf, 0);
     const max_len = @min(text.len, 15);
     @memcpy(buf[0..max_len], text[0..max_len]);
-    rl.DrawTextEx(font, &buf, .{ .x = x + 28, .y = text_y }, 11 * fs, 0.5, rl.Color{ .r = 220, .g = 220, .b = 230, .a = 255 });
+    rl.DrawTextEx(font, &buf, .{ .x = x + 32, .y = y + 7 * fs }, 11 * fs, 0.5, rl.Color{ .r = 220, .g = 220, .b = 230, .a = 255 });
 }
 
-/// Get emoji icon for tool name (v8.6: ASCII fallback for font compatibility)
+/// Get emoji icon for tool name (v8.6: UTF-8 emoji for display)
 fn getToolEmoji(tool: []const u8) []const u8 {
-    if (std.mem.eql(u8, tool, "Glob")) return "#";  // file search
-    if (std.mem.eql(u8, tool, "Read")) return "R";  // read
-    if (std.mem.eql(u8, tool, "Grep")) return "/";  // search
-    if (std.mem.eql(u8, tool, "Bash")) return "$";  // shell
-    if (std.mem.eql(u8, tool, "Write")) return "W"; // write
-    if (std.mem.eql(u8, tool, "Edit")) return "E";  // edit
-    if (std.mem.eql(u8, tool, "Todo")) return "T";  // todo
-    return "";
+    if (std.mem.eql(u8, tool, "Glob")) return "🔍";  // U+1F50D
+    if (std.mem.eql(u8, tool, "Read")) return "📖";  // U+1F4F6
+    if (std.mem.eql(u8, tool, "Grep")) return "🔎";  // U+1F50E
+    if (std.mem.eql(u8, tool, "Bash")) return "⚡";  // U+26A1
+    if (std.mem.eql(u8, tool, "Write")) return "✏️";  // U+270F
+    if (std.mem.eql(u8, tool, "Edit")) return "🔄";  // U+1F504
+    if (std.mem.eql(u8, tool, "Todo")) return "📋";  // U+1F4CB
+    return "•";
 }
 
 /// Draw STATUS pill with pulsing dot and glass effect

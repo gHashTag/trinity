@@ -1,0 +1,258 @@
+# VIBEEC Compiler Specification
+# Self-hosting: This spec generates the VIBEEC compiler itself!
+# The ultimate dogfooding - using VIBEEC to build VIBEEC
+
+name: vibeec
+version: 2.0.0
+description: Spec-driven code generator for Gleam - generates production code from YAML specs
+
+metadata:
+  author: VIBEEC Team
+  license: MIT
+  category: compiler
+  tags:
+    - compiler
+    - code-generation
+    - spec-driven
+    - dogfooding
+
+# ============================================================================
+# TYPES
+# ============================================================================
+
+types:
+  - name: Spec
+    description: Complete specification parsed from YAML
+    fields:
+      - name: name
+        type: String
+        description: Module name
+        required: true
+      - name: version
+        type: String
+        description: Semantic version
+        required: true
+      - name: description
+        type: String
+        description: Module description
+        required: true
+      - name: author
+        type: Option(String)
+        description: Author name
+        required: false
+      - name: category
+        type: Option(String)
+        description: Module category
+        required: false
+      - name: tags
+        type: List(String)
+        description: Search tags
+        default: "[]"
+      - name: types
+        type: List(TypeDef)
+        description: Type definitions
+        default: "[]"
+      - name: functions
+        type: List(FunctionSpec)
+        description: Function specifications
+        default: "[]"
+      - name: behaviors
+        type: List(Behavior)
+        description: Behavior specifications
+        default: "[]"
+
+  - name: TypeDef
+    description: Type definition with fields
+    fields:
+      - name: name
+        type: String
+        description: Type name
+        required: true
+      - name: description
+        type: Option(String)
+        description: Type description
+        required: false
+      - name: fields
+        type: List(FieldDef)
+        description: Type fields
+        default: "[]"
+
+  - name: FieldDef
+    description: Field definition with metadata
+    fields:
+      - name: name
+        type: String
+        description: Field name
+        required: true
+      - name: field_type
+        type: String
+        description: Field type
+        required: true
+      - name: description
+        type: Option(String)
+        description: Field description
+        required: false
+      - name: required
+        type: Bool
+        description: Whether field is required
+        default: "True"
+      - name: default
+        type: Option(String)
+        description: Default value
+        required: false
+
+  - name: FunctionSpec
+    description: Function specification
+    fields:
+      - name: name
+        type: String
+        description: Function name
+        required: true
+      - name: signature
+        type: String
+        description: Function signature
+        required: true
+
+  - name: Behavior
+    description: Behavior specification with test cases
+    fields:
+      - name: name
+        type: String
+        description: Behavior name
+        required: true
+      - name: description
+        type: String
+        description: Behavior description
+        required: true
+      - name: given
+        type: String
+        description: Given condition
+        required: true
+      - name: when
+        type: String
+        description: When action
+        required: true
+      - name: then
+        type: String
+        description: Then result
+        required: true
+      - name: test_cases
+        type: List(TestCase)
+        description: Test cases
+        default: "[]"
+
+  - name: TestCase
+    description: Test case with input and expected output
+    fields:
+      - name: name
+        type: String
+        description: Test case name
+        required: true
+      - name: input
+        type: Dict(String, String)
+        description: Input data
+        default: "dict.new()"
+      - name: expected
+        type: Dict(String, String)
+        description: Expected output
+        default: "dict.new()"
+
+# ============================================================================
+# BEHAVIORS
+# ============================================================================
+
+behaviors:
+  - name: parse_yaml
+    description: Parse YAML file to Spec
+    given: A YAML file path
+    when: parse_yaml is called
+    then: Returns parsed Spec or error
+    test_cases:
+      - name: parse_valid_yaml
+        input:
+          file: "calculator_spec.yml"
+        expected:
+          name: "calculator"
+          version: "1.0.0"
+
+  - name: generate_code
+    description: Generate Gleam code from Spec
+    given: A parsed Spec
+    when: generate_code is called
+    then: Returns generated Gleam code
+    test_cases:
+      - name: generate_simple_module
+        input:
+          spec_name: "calculator"
+        expected:
+          code_length: "1000"
+
+  - name: generate_tests
+    description: Generate test file from Spec
+    given: A parsed Spec with behaviors
+    when: generate_tests is called
+    then: Returns generated test code
+    test_cases:
+      - name: generate_test_file
+        input:
+          spec_name: "calculator"
+        expected:
+          test_count: "4"
+
+# ============================================================================
+# FUNCTIONS
+# ============================================================================
+
+functions:
+  - name: parse_spec_from_yaml
+    signature: "parse_spec_from_yaml(yaml: YamlValue) -> Result(Spec, Nil)"
+    description: Parse YAML value to Spec
+
+  - name: generate_code_v2
+    signature: "generate_code_v2(spec: Spec) -> String"
+    description: Generate Gleam code from Spec
+
+  - name: generate_tests
+    signature: "generate_tests(spec: Spec) -> String"
+    description: Generate test file from Spec
+
+  - name: parse_type_node
+    signature: "parse_type_node(node: YamlValue) -> Result(TypeDef, Nil)"
+    description: Parse YAML node to TypeDef
+
+  - name: parse_field_node
+    signature: "parse_field_node(node: YamlValue) -> Result(FieldDef, Nil)"
+    description: Parse YAML node to FieldDef
+
+  - name: parse_behavior_node
+    signature: "parse_behavior_node(node: YamlValue) -> Result(Behavior, Nil)"
+    description: Parse YAML node to Behavior
+
+  - name: parse_test_case_node
+    signature: "parse_test_case_node(node: YamlValue) -> Result(TestCase, Nil)"
+    description: Parse YAML node to TestCase
+
+  - name: infer_implementation_with_type
+    signature: "infer_implementation_with_type(test_cases: List(TestCase), return_type: String) -> String"
+    description: Infer function implementation from test cases and return type
+
+# ============================================================================
+# DEPENDENCIES
+# ============================================================================
+
+dependencies:
+  - gleam_stdlib
+  - glaml
+  - simplifile
+
+# ============================================================================
+# METADATA
+# ============================================================================
+
+metadata:
+  stability: stable
+  maturity: production
+  performance: high
+  complexity: moderate
+  self_hosting: true
+  dogfooding: true

@@ -1,0 +1,125 @@
+# Chi06 — Regression Pattern Logger
+# Golden Chain v8.26 Component
+# Logs error patterns to REGRESSION_PATTERNS.md
+
+name: chi06_regress
+version: "8.26.0"
+language: zig
+module: chi06_regress
+
+# Sacred Constants
+constants:
+  PHI: 1.618033988749895
+  PHI_SQ: 2.618033988749895
+  MU: 0.0382
+
+types:
+  RegressionEntry:
+    description: "A regression pattern entry"
+    fields:
+      pattern_id: String
+      error_type: String
+      file_path: String
+      line_number: Int
+      error_message: String
+      suggested_fix: String
+      timestamp: Int
+      occurrence_count: Int
+
+  RegressionSummary:
+    description: "Summary of regression patterns"
+    fields:
+      total_patterns: Int
+      recent_patterns: Int
+      common_error_types: String
+      fix_available_count: Int
+
+behaviors:
+  - name: logRegression
+    given: Error pattern + fix suggestion
+    when: Code generation or fix fails
+    then: |
+      Append to .ralph/memory/REGRESSION_PATTERNS.md:
+      - Pattern ID and error type
+      - File path and line number
+      - Error message
+      - Suggested fix
+      - Timestamp and occurrence count
+      Return success or error
+
+  - name: getRegressionCount
+    given: Nothing
+    when: Status query needed
+    then: Return total count of regression patterns
+
+  - name: getRecentRegressions
+    given: Count n (default 10)
+    when: Display recent regressions needed
+    when: TMUX panel refresh
+    then: |
+      Return array of last n regression entries:
+      - Pattern ID
+      - Error type
+      - Suggested fix (truncated to 60 chars)
+      Formatted for TMUX display
+
+  - name: getRegressionSummary
+    given: Nothing
+    when: Summary statistics needed
+    then: |
+      Calculate and return:
+      - Total patterns
+      - Recent patterns (last 24 hours)
+      - Most common error types
+      - Fix available count
+
+  - name: formatForTmux
+    given: RegressionSummary or recent entries
+    when: TMUX panel display needed
+    then: |
+      Return formatted ANSI output:
+      - RED color for regression indicators
+      - Truncated error messages
+      - Fix availability status
+      Ready for panel5_golden_chain()
+
+  - name: searchSimilar
+    given: Error pattern
+    when: Finding similar past errors
+    then: |
+      Search REGRESSION_PATTERNS.md for similar patterns:
+      - Return matching patterns
+      - With similarity scores
+      - For Phi02 pattern matcher
+
+tests:
+  - name: "logRegression creates entry"
+    given: "Valid regression entry data"
+    when: "logRegression called"
+    then: "Entry appended to REGRESSION_PATTERNS.md"
+
+  - name: "getRegressionCount returns count"
+    given: "REGRESSION_PATTERNS.md with entries"
+    when: "getRegressionCount called"
+    then: "Returns correct count"
+
+  - name: "getRecentRegressions returns last n"
+    given: "Multiple regression entries"
+    when: "getRecentRegressions(5) called"
+    then: "Returns last 5 entries"
+
+  - name: "searchSimilar finds matches"
+    given: "Error pattern"
+    when: "searchSimilar called"
+    then: "Returns similar patterns with scores"
+
+  - name: "formatForTmux produces valid ANSI"
+    given: "RegressionSummary data"
+    when: "formatForTmux called"
+    then: "Returns formatted string with ANSI codes"
+
+meta:
+  golden_chain_link: "Chi06"
+  depends_on: "Sigma07"
+  next_link: "V01"
+  trinity_identity: "φ² + 1/φ² = 3"

@@ -1,0 +1,452 @@
+name: b2t_llm_lifter
+version: "1.0.0"
+language: zig
+
+types:
+  EnhancedTVCFunction:
+    fields:
+      base: LiftedFunction
+      semantic_name: String
+      semantic_signature: String
+      variable_names: Map<Int, String>
+      type_annotations: Map<Int, String>
+      struct_definitions: List<StructDef>
+      comments: List<CodeComment>
+      confidence: Float
+  StructDef:
+    fields:
+      name: String
+      fields: List<StructField>
+      size: Int
+      alignment: Int
+      source_evidence: List<String>
+  StructField:
+    fields:
+      name: String
+      field_type: String
+      offset: Int
+      size: Int
+  CodeComment:
+    fields:
+      line: Int
+      comment: String
+      comment_type: CommentType
+  CommentType:
+  LiftingStage:
+  LiftingProgress:
+    fields:
+      current_stage: LiftingStage
+      stages_completed: List<LiftingStage>
+      errors: List<LiftingError>
+      llm_calls: Int
+      tokens_used: Int
+      time_elapsed_ms: Int
+  LiftingError:
+    fields:
+      stage: LiftingStage
+      message: String
+      recoverable: Bool
+      fallback_used: Bool
+  LLMLiftingConfig:
+    fields:
+      enable_name_recovery: Bool
+      enable_type_inference: Bool
+      enable_struct_recovery: Bool
+      enable_pattern_recognition: Bool
+      enable_comments: Bool
+      max_llm_calls_per_function: Int
+      confidence_threshold: Float
+      use_rag: Bool
+      rag_examples_count: Int
+      fallback_on_error: Bool
+  LiftedFunction:
+    fields:
+      name: String
+      instructions: List<IRInstruction>
+      variables: Map<Int, Variable>
+  DisassemblyResult:
+    fields:
+      functions: List<LiftedFunction>
+      entry_points: List<String>
+  BasicBlock:
+    fields:
+      instructions: List<IRInstruction>
+      successors: List<Int>
+  IRInstruction:
+    fields:
+      opcode: String
+      operands: List<String>
+      result: String
+  Variable:
+    fields:
+      id: Int
+      type: String
+      name: String
+  SemanticContext:
+    fields:
+      strings: List<String>
+      calls: List<String>
+      globals: List<String>
+  CallGraph:
+    fields:
+      nodes: List<CallGraphNode>
+      edges: List<CallGraphEdge>
+  CallGraphNode:
+    fields:
+      function_id: Int
+      function_name: String
+  CallGraphEdge:
+    fields:
+      from: Int
+      to: Int
+  DataFlow:
+    fields:
+      def_use_chains: Map<Int, List<Int>>
+      types: Map<Int, String>
+  CallSite:
+    fields:
+      function_id: Int
+      arguments: List<String>
+  CallingConvention:
+  StructAccessPattern:
+    fields:
+      base_offset: Int
+      accesses: List<MemoryAccess>
+  MemoryAccess:
+    fields:
+      offset: Int
+      size: Int
+      type: String
+  RecognizedIdiom:
+    fields:
+      idiom_name: String
+      confidence: Float
+  AlgorithmMatch:
+    fields:
+      algorithm_name: String
+      confidence: Float
+  RecognizedPattern:
+    fields:
+      pattern_name: String
+      pattern_type: String
+  Issue:
+    fields:
+      severity: String
+      message: String
+  ValidationIssue:
+    fields:
+      issue_type: String
+      description: String
+  ImprovementMetrics:
+    fields:
+      name_recovery_improvement: Float
+      type_inference_improvement: Float
+      overall_quality_score: Float
+
+behaviors:
+  - name: lift_with_llm
+    given: b2t_disasm.DisassemblyResult и LLMLiftingConfig
+    when: Полный пайплайн lifting с LLM
+    then: Возвращает List<EnhancedTVCFunction>
+    implementation: |
+                    pub fn lift_with_llm(dasm_result: DisassemblyResult, config: LLMLiftingConfig) []const EnhancedTVCFunction {
+                        _ = dasm_result;
+                        _ = config;
+                        return &[_]EnhancedTVCFunction{};
+                    }
+            
+            
+      
+      
+
+  - name: lift_function_with_llm
+    given: b2t_disasm.BasicBlock[] и LLMLiftingConfig
+    when: Lifting одной функции с LLM-улучшениями
+    then: Возвращает EnhancedTVCFunction
+    implementation: |
+                    pub fn lift_function_with_llm(blocks: []const BasicBlock, config: LLMLiftingConfig) EnhancedTVCFunction {
+                        _ = blocks;
+                        _ = config;
+                        return EnhancedTVCFunction{};
+                    }
+            
+            
+      
+      
+
+  - name: get_lifting_progress
+    given: Текущий контекст lifting
+    when: Запрос прогресса
+    then: Возвращает LiftingProgress
+    implementation: |
+                    pub fn get_lifting_progress(context: anytype) LiftingProgress {
+                        _ = context;
+                        return LiftingProgress{};
+                    }
+            
+            
+      
+      
+
+  - name: recover_function_name
+    given: LiftedFunction и SemanticContext
+    when: Восстановление имени функции через LLM
+    then: Возвращает String имя и Float confidence
+    implementation: |
+                    pub fn recover_function_name(lifted: LiftedFunction, context: SemanticContext) struct { name: []const u8, confidence: f32 } {
+                        _ = lifted;
+                        _ = context;
+                        return .{ .name = "function_name", .confidence = 0.7 };
+                    }
+            
+            
+      
+      
+
+  - name: recover_variable_names
+    given: LiftedFunction и SemanticContext
+    when: Восстановление имён переменных через LLM
+    then: Возвращает Map<Int, String>
+    implementation: |
+                    pub fn recover_variable_names(lifted: LiftedFunction, context: SemanticContext) std.AutoHashMap(usize, []const u8) {
+                        _ = lifted;
+                        _ = context;
+                        const map = std.AutoHashMap(usize, []const u8).init(std.heap.page_allocator);
+                        return map;
+                    }
+            
+            
+      
+      
+
+  - name: recover_parameter_names
+    given: LiftedFunction и call graph context
+    when: Восстановление имён параметров
+    then: Возвращает List<String>
+    implementation: |
+                    pub fn recover_parameter_names(lifted: LiftedFunction, call_graph: CallGraph) []const []const u8 {
+                        _ = lifted;
+                        _ = call_graph;
+                        return &[_][]const u8{};
+                    }
+            
+            
+      
+      
+
+  - name: infer_types_with_llm
+    given: LiftedFunction и data flow
+    when: Улучшенный вывод типов через LLM
+    then: Возвращает Map<Int, String> типов
+    implementation: |
+                    pub fn infer_types_with_llm(lifted: LiftedFunction, data_flow: DataFlow) std.AutoHashMap(usize, []const u8) {
+                        _ = lifted;
+                        _ = data_flow;
+                        const map = std.AutoHashMap(usize, []const u8).init(std.heap.page_allocator);
+                        return map;
+                    }
+            
+            
+      
+      
+
+  - name: infer_return_type
+    given: LiftedFunction и call sites
+    when: Вывод типа возврата
+    then: Возвращает String тип
+    implementation: |
+                    pub fn infer_return_type(lifted: LiftedFunction, call_sites: []const CallSite) []const u8 {
+                        _ = lifted;
+                        _ = call_sites;
+                        return "i64";
+                    }
+            
+            
+      
+      
+
+  - name: infer_parameter_types
+    given: LiftedFunction и calling convention
+    when: Вывод типов параметров
+    then: Возвращает List<String> типов
+    implementation: |
+                    pub fn infer_parameter_types(lifted: LiftedFunction, calling_conv: CallingConvention) []const []const u8 {
+                        _ = lifted;
+                        _ = calling_conv;
+                        return &[_][]const u8{};
+                    }
+            
+            
+      
+      
+
+  - name: detect_struct_access
+    given: TVC IR с memory operations
+    when: Поиск паттернов доступа к структурам
+    then: Возвращает List<StructAccessPattern>
+    implementation: |
+                    pub fn detect_struct_access(ir: []const IRInstruction) []const StructAccessPattern {
+                        _ = ir;
+                        return &[_]StructAccessPattern{};
+                    }
+            
+            
+      
+      
+
+  - name: recover_struct_definition
+    given: List<StructAccessPattern>
+    when: Восстановление определения структуры через LLM
+    then: Возвращает StructDef
+    implementation: |
+                    pub fn recover_struct_definition(patterns: []StructAccessPattern) StructDef {
+                        _ = patterns;
+                        return StructDef{};
+                    }
+            
+            
+      
+      
+
+  - name: apply_struct_types
+    given: LiftedFunction и List<StructDef>
+    when: Применение структурных типов к IR
+    then: Обновляет type annotations
+    implementation: |
+                    pub fn apply_struct_types(lifted: *LiftedFunction, structs: []const StructDef) void {
+                        _ = lifted;
+                        _ = structs;
+                    }
+            
+            
+      
+      
+
+  - name: recognize_idioms
+    given: TVC IR блок
+    when: Распознавание идиом (malloc/free, strlen, memcpy)
+    then: Возвращает List<RecognizedIdiom>
+    implementation: |
+                    pub fn recognize_idioms(ir_block: []const IRInstruction) []const RecognizedIdiom {
+                        _ = ir_block;
+                        return &[_]RecognizedIdiom{};
+                    }
+            
+            
+      
+      
+
+  - name: recognize_algorithms
+    given: LiftedFunction
+    when: Распознавание алгоритмов (sort, search, hash)
+    then: Возвращает Option<AlgorithmMatch>
+    implementation: |
+                    pub fn recognize_algorithms(lifted: LiftedFunction) ?AlgorithmMatch {
+                        _ = lifted;
+                        return AlgorithmMatch{};
+                    }
+            
+            
+      
+      
+
+  - name: apply_pattern_knowledge
+    given: LiftedFunction и recognized patterns
+    when: Применение знаний о паттернах
+    then: Улучшает имена и комментарии
+    implementation: |
+                    pub fn apply_pattern_knowledge(lifted: *EnhancedTVCFunction, patterns: []const RecognizedPattern) void {
+                        _ = lifted;
+                        _ = patterns;
+                    }
+            
+            
+      
+      
+
+  - name: generate_function_comment
+    given: EnhancedTVCFunction
+    when: Генерация документирующего комментария
+    then: Возвращает CodeComment
+    implementation: |
+                    pub fn generate_function_comment(func: EnhancedTVCFunction) CodeComment {
+                        _ = func;
+                        return CodeComment{};
+                    }
+            
+            
+      
+      
+
+  - name: generate_inline_comments
+    given: EnhancedTVCFunction
+    when: Генерация inline комментариев для сложных участков
+    then: Возвращает List<CodeComment>
+    implementation: |
+                    pub fn generate_inline_comments(func: EnhancedTVCFunction) []CodeComment {
+                        _ = func;
+                        return &[_]CodeComment{};
+                    }
+            
+            
+      
+      
+
+  - name: generate_warning_comments
+    given: EnhancedTVCFunction и detected issues
+    when: Генерация предупреждений
+    then: Возвращает List<CodeComment>
+    implementation: |
+                    pub fn generate_warning_comments(func: EnhancedTVCFunction, issues: []const Issue) []const CodeComment {
+                        _ = func;
+                        _ = issues;
+                        return &[_]CodeComment{};
+                    }
+            
+            
+      
+      
+
+  - name: validate_enhanced_ir
+    given: EnhancedTVCFunction
+    when: Проверка корректности улучшений
+    then: Возвращает Bool и List<ValidationIssue>
+    implementation: |
+                    pub fn validate_enhanced_ir(func: EnhancedTVCFunction) struct { valid: bool, issues: []ValidationIssue } {
+                        _ = func;
+                        return .{ .valid = true, .issues = &[_]ValidationIssue{} };
+                    }
+            
+            
+      
+      
+
+  - name: compare_with_baseline
+    given: EnhancedTVCFunction и базовый LiftedFunction
+    when: Сравнение с baseline
+    then: Возвращает ImprovementMetrics
+    implementation: |
+                    pub fn compare_with_baseline(enhanced: EnhancedTVCFunction, baseline: LiftedFunction) ImprovementMetrics {
+                        _ = enhanced;
+                        _ = baseline;
+                        return ImprovementMetrics{};
+                    }
+            
+            
+      
+      
+
+  - name: rollback_to_baseline
+    given: EnhancedTVCFunction с ошибками
+    when: Откат к базовому IR
+    then: Возвращает LiftedFunction
+    implementation: |
+                    pub fn rollback_to_baseline(enhanced: EnhancedTVCFunction) LiftedFunction {
+                        _ = enhanced;
+                        return LiftedFunction{};
+                    }
+            
+            
+      
+      
+

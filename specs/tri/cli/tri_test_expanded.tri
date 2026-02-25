@@ -1,0 +1,62 @@
+# ═══════════════════════════════════════════════════════════════════════════════════════════
+# TRI TEST — Test Command Expansion
+# ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+# Expanded test command with --all and --file options
+# φ² + 1/φ² = 3 = TRINITY
+# ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+name: tri_test
+version: "1.0.0"
+language: zig
+module: commands
+
+cli:
+  main_command: test
+  description: "Run tests"
+
+commands:
+  - name: test
+    description: "Run test suite"
+    function: "runTestCommand"
+    flags:
+      - name: "all"
+        type: "bool"
+        default: false
+        description: "Run all tests across entire project"
+
+      - name: "file"
+        type: "string"
+        default: null
+        description: "Run tests for specific file only"
+
+      - name: "verbose"
+        type: "bool"
+        default: false
+        description: "Show detailed test output"
+
+      - name: "fail-fast"
+        type: "bool"
+        default: false
+        description: "Stop on first test failure"
+
+    test_types:
+      - id: "unit"
+        name: "Unit Tests"
+        description: "Individual test blocks in source files"
+        command: "zig test"
+
+      - id: "integration"
+        name: "Integration Tests"
+        description: "End-to-end tests"
+        command: "zig build test"
+
+      - id: "benchmark"
+        name: "Benchmarks"
+        description: "Performance tests"
+        command: "zig build bench"
+
+    examples:
+      - "tri test"
+      - "tri test --all"
+      - "tri test --file src/tri/tri_commands.zig"
+      - "tri test --verbose --fail-fast"

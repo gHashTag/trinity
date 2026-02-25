@@ -40,8 +40,10 @@ import { AnimatePresence, motion } from 'framer-motion';
 import QuantumCanvas from '../components/QuantumCanvas';
 import type { VizMode } from '../components/QuantumCanvas';
 import ChatMessage from '../components/chat/ChatMessage';
-import { sendMessage, clearContext, checkHealth, fetchMirrorStatus, fetchStorageMetrics, fetchFileList, compileCode, type ChatResponse, type MirrorStatus, type MirrorLogEntry, type StorageMetrics } from '../services/chatApi';
+import { sendMessage, clearContext, checkHealth, fetchMirrorStatus, fetchStorageMetrics, fetchFileList, compileCode, fetchPasStatus, fetchPasAnalysis, fetchOrchestratorStatus, type ChatResponse, type MirrorStatus, type MirrorLogEntry, type StorageMetrics, type PasStatus, type PasAnalysis, type OrchestratorStatus } from '../services/chatApi';
+import { connectPasWebSocket, disconnectPasWebSocket, type PasWsMessage, type PasWsCallbacks } from '../services/pasWebSocket';
 import TrinityCanvasWasm from '../components/TrinityCanvasWasm';
+import KoscheiStatusWidget from '../components/KoscheiStatusWidget';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -476,6 +478,21 @@ export default function TrinityCanvas() {
   const [mirrorLoading, setMirrorLoading] = useState(false);
   const [mirrorLogs, setMirrorLogs] = useState<MirrorLogEntry[]>([]);
   const mirrorLogRef = useRef<HTMLDivElement>(null);
+
+  // PAS v8.20 state
+  const [pasStatus, setPasStatus] = useState<PasStatus | null>(null);
+  const [pasAnalysis, setPasAnalysis] = useState<PasAnalysis | null>(null);
+  const [pasExpanded, setPasExpanded] = useState(true);
+
+  // PAS v8.21 WebSocket state
+  const [pasConnected, setPasConnected] = useState(false);
+  const [pasRecommendations, setPasRecommendations] = useState<PasWsMessage[]>([]);
+  const [pasProgress, setPasProgress] = useState<PasWsMessage[]>([]);
+  const [pasAlerts, setPasAlerts] = useState<PasWsMessage[]>([]);
+
+  // Cycle 59: Trinity Orchestrator state
+  const [orchestratorStatus, setOrchestratorStatus] = useState<OrchestratorStatus | null>(null);
+  const [orchestratorExpanded, setOrchestratorExpanded] = useState(true);
 
   // Mirror RAZUM: inline chat with history (v2.6)
   const [mChatInput, setMChatInput] = useState('');
@@ -945,6 +962,98 @@ export default function TrinityCanvas() {
     const id = setInterval(refreshMirror, 2000);
     return () => clearInterval(id);
   }, [layer, refreshMirror]);
+
+  // ─── PAS v8.20 polling (layer 7 / tools) ───────────────────────────────────────
+
+  const refreshPas = useCallback(async () => {
+    try {
+      const [status, analysis] = await Promise.all([
+        fetchPasStatus(),
+        fetchPasAnalysis(),
+      ]);
+      setPasStatus(status);
+      setPasAnalysis(analysis);
+    } catch {
+      // PAS offline - ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    if (layer !== 'tools') return;
+    refreshPas();
+    const id = setInterval(refreshPas, 5000); // Poll every 5 seconds
+    return () => clearInterval(id);
+  }, [layer, refreshPas]);
+
+  // ─── Cycle 59: Trinity Orchestrator polling ───────────────────────────────────────
+
+  useEffect(() => {
+    if (layer !== 'tools') return;
+    const loadOrchestrator = async () => {
+      const status = await fetchOrchestratorStatus();
+      setOrchestratorStatus(status);
+    };
+    loadOrchestrator();
+    const id = setInterval(loadOrchestrator, 10000); // Poll every 10 seconds
+    return () => clearInterval(id);
+  }, [layer]);
+
+  // ─── PAS v8.21 WebSocket connection (real-time) ───────────────────────────────
+
+  useEffect(() => {
+    if (layer !== 'tools') return;
+
+    const callbacks: PasWsCallbacks = {
+      onConnected: (msg) => {
+        setPasConnected(true);
+        console.log('[PAS WS] Connected:', msg.message);
+      },
+      onStatus: (msg) => {
+        // Update PAS status from WebSocket
+        if (msg.pas_active !== undefined) {
+          setPasStatus(prev => prev ? { ...prev, active: msg.pas_active, analyses: msg.analyses ?? prev.analyses_performed, energy_harvested: msg.energy ?? prev.energy_harvested, berry_phase: msg.berry_phase ?? prev.berry_phase } : null);
+        }
+      },
+      onRecommendation: (msg) => {
+        // Add new recommendation, keep only last 10
+        setPasRecommendations(prev => [msg, ...prev].slice(0, 10));
+        triggerWave(45); // Visual feedback
+      },
+      onProgress: (msg) => {
+        // Update progress for this task
+        setPasProgress(prev => {
+          const existing = prev.findIndex(p => p.task === msg.task);
+          if (existing >= 0) {
+            const updated = [...prev];
+            updated[existing] = msg;
+            return updated;
+          }
+          return [msg, ...prev].slice(0, 5);
+        });
+      },
+      onAlert: (msg) => {
+        // Add alert, keep only last 5
+        setPasAlerts(prev => [msg, ...prev].slice(0, 5));
+        if (msg.level === 'error' || msg.level === 'critical') {
+          triggerWave(0); // Red wave for errors
+        }
+      },
+      onError: (err) => {
+        console.error('[PAS WS] Error:', err);
+        setPasConnected(false);
+      },
+      onDisconnected: () => {
+        setPasConnected(false);
+      },
+    };
+
+    connectPasWebSocket(callbacks);
+
+    return () => {
+      disconnectPasWebSocket();
+      setPasConnected(false);
+    };
+  }, [layer]);
 
   // Auto-scroll logs
   useEffect(() => {
@@ -1808,6 +1917,192 @@ export default function TrinityCanvas() {
                     )}
                   </div>
                 )}
+
+                {/* ── PAS v8.21: Predictive Algorithmic Systematics + WebSocket ── */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '2px 0', borderTop: '1px solid rgba(255,215,0,0.1)' }}>
+                  <div onClick={() => setPasExpanded(!pasExpanded)}
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                    <span style={{ color: '#ffd700', fontSize: 8, fontFamily: MONO, fontWeight: 600, letterSpacing: 1 }}>
+                      PAS v8.21 {pasConnected && <span style={{ color: '#00e599' }}>●</span>}
+                    </span>
+                    <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 8, fontFamily: MONO }}>
+                      {pasExpanded ? '-' : '+'}
+                    </span>
+                  </div>
+                  {pasExpanded && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      {pasStatus ? (
+                        <>
+                          <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
+                            <span style={{ color: pasStatus.active ? '#00e599' : 'rgba(255,215,0,0.3)' }}>
+                              {pasStatus.active ? '●' : '○'} {pasStatus.pas_version}
+                            </span>
+                            <span style={{ color: pasConnected ? '#00e599' : 'rgba(255,215,0,0.3)' }}>
+                              {pasConnected ? 'WS' : 'POLL'}
+                            </span>
+                            <span style={{ color: 'rgba(255,215,0,0.5)' }}>
+                              φ²+1/φ²={pasStatus.sacred_valid ? '3' : '?'}
+                            </span>
+                          </div>
+                          <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
+                            <span style={{ color: '#ffd700' }}>Analyses:{pasStatus.analyses_performed}</span>
+                            <span style={{ color: pasStatus.energy_harvested > 0 ? '#00e599' : 'rgba(255,215,0,0.3)' }}>
+                              Energy:{pasStatus.energy_harvested.toFixed(1)}
+                            </span>
+                          </div>
+                          <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
+                            <span style={{ color: 'rgba(255,215,0,0.5)' }}>
+                              Berry:{pasStatus.berry_phase.toFixed(3)}
+                            </span>
+                          </div>
+
+                          {/* Live recommendations from WebSocket */}
+                          {pasRecommendations.length > 0 && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 1, paddingTop: 2, borderTop: '1px solid rgba(255,215,0,0.1)' }}>
+                              <span style={{ color: 'rgba(255,215,0,0.5)', fontSize: 7, fontFamily: MONO }}>RECOMMENDATIONS</span>
+                              {pasRecommendations.slice(0, 3).map((rec, i) => (
+                                <motion.div key={`rec-${rec.id}-${i}`} initial={{ opacity: 0, x: -4 }} animate={{ opacity: 1, x: 0 }}
+                                  style={{ padding: '2px 4px', background: 'rgba(255,215,0,0.05)', borderRadius: 4, borderLeft: `2px solid ${rec.priority && rec.priority >= 7 ? '#ff4444' : rec.priority && rec.priority >= 4 ? '#ffaa00' : '#00e599'}` }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 7, fontFamily: MONO }}>
+                                    <span style={{ color: '#ffd700' }}>{rec.action}</span>
+                                    <span style={{ color: 'rgba(255,215,0,0.5)' }}>P{rec.priority}</span>
+                                  </div>
+                                  <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 7, fontFamily: MONO, marginTop: 1 }}>
+                                    {rec.rationale?.slice(0, 40)}{rec.rationale && rec.rationale.length > 40 ? '...' : ''}
+                                  </div>
+                                </motion.div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Live progress from WebSocket */}
+                          {pasProgress.length > 0 && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 1, paddingTop: 2, borderTop: '1px solid rgba(255,215,0,0.1)' }}>
+                              <span style={{ color: 'rgba(255,215,0,0.5)', fontSize: 7, fontFamily: MONO }}>TASK PROGRESS</span>
+                              {pasProgress.slice(0, 3).map((prog, i) => (
+                                <div key={`prog-${prog.task}-${i}`} style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 7, fontFamily: MONO }}>
+                                    <span style={{ color: '#ffd700' }}>{prog.task}</span>
+                                    <span style={{ color: '#00e599' }}>{prog.pas ?? 0}/{prog.baseline ?? 0}</span>
+                                  </div>
+                                  <div style={{ position: 'relative', height: 3, borderRadius: 2, background: 'rgba(255,215,0,0.1)', overflow: 'hidden' }}>
+                                    <motion.div
+                                      animate={{ width: `${prog.baseline && prog.baseline > 0 ? ((prog.pas ?? 0) / prog.baseline * 100) : 0}%` }}
+                                      transition={{ duration: 0.3 }}
+                                      style={{ height: '100%', background: '#00e599', borderRadius: 2 }}
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Live alerts from WebSocket */}
+                          {pasAlerts.length > 0 && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 1, paddingTop: 2, borderTop: '1px solid rgba(255,215,0,0.1)' }}>
+                              <span style={{ color: 'rgba(255,215,0,0.5)', fontSize: 7, fontFamily: MONO }}>ALERTS</span>
+                              {pasAlerts.slice(0, 2).map((alert, i) => (
+                                <motion.div key={`alert-${alert.timestamp}-${i}`} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+                                  style={{ padding: '2px 4px', background: `rgba(${alert.level === 'error' || alert.level === 'critical' ? '255,68,68' : '255,215,0'},0.1)`, borderRadius: 4, borderLeft: `2px solid ${alert.level === 'critical' ? '#ff4444' : alert.level === 'error' ? '#ff6644' : alert.level === 'warning' ? '#ffaa00' : '#00e599'}` }}>
+                                  <span style={{ color: alert.level === 'critical' ? '#ff4444' : alert.level === 'error' ? '#ff6644' : alert.level === 'warning' ? '#ffaa00' : '#00e599', fontSize: 7, fontFamily: MONO }}>
+                                    [{alert.level?.toUpperCase()}] {alert.message}
+                                  </span>
+                                </motion.div>
+                              ))}
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div style={{ color: 'rgba(255,215,0,0.15)', fontSize: 8, fontFamily: MONO, padding: 4, textAlign: 'center' }}>
+                          PAS v8.21 — Pattern Analysis System
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Cycle 59: Trinity Orchestrator — φ-weighted consensus ── */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '2px 0', borderTop: '1px solid rgba(255,215,0,0.1)' }}>
+                  <div onClick={() => setOrchestratorExpanded(!orchestratorExpanded)}
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                    <span style={{ color: '#ffd700', fontSize: 8, fontFamily: MONO, fontWeight: 600, letterSpacing: 1 }}>
+                      ORCHESTRATOR
+                    </span>
+                    <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 8, fontFamily: MONO }}>
+                      {orchestratorExpanded ? '-' : '+'}
+                    </span>
+                  </div>
+                  {orchestratorExpanded && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      {orchestratorStatus ? (
+                        <>
+                          <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
+                            <span style={{ color: orchestratorStatus.trinity_verified ? '#00e599' : 'rgba(255,215,0,0.3)' }}>
+                              {orchestratorStatus.trinity_verified ? '✓' : '✗'} φ²+1/φ²=3
+                            </span>
+                            <span style={{ color: '#ffd700' }}>
+                              Link:{orchestratorStatus.link}/{999}
+                            </span>
+                            <span style={{ color: orchestratorStatus.consensus_score > 1.0 ? '#00e599' : 'rgba(255,215,0,0.5)' }}>
+                              Consensus:{orchestratorStatus.consensus_score.toFixed(3)}
+                            </span>
+                          </div>
+                          <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
+                            <span style={{ color: orchestratorStatus.passed > 0 ? '#00e599' : 'rgba(255,215,0,0.3)' }}>
+                              Passed:{orchestratorStatus.passed}
+                            </span>
+                            <span style={{ color: orchestratorStatus.failed > 0 ? '#ff4444' : 'rgba(255,215,0,0.3)' }}>
+                              Failed:{orchestratorStatus.failed}
+                            </span>
+                            <span style={{ color: orchestratorStatus.circuit_breaker_open ? '#ff4444' : 'rgba(255,215,0,0.3)' }}>
+                              CB:{orchestratorStatus.circuit_breaker_open ? 'OPEN' : 'CLOSED'}
+                            </span>
+                            <span style={{ color: '#ffd700' }}>
+                              Agents:{orchestratorStatus.agents_active}
+                            </span>
+                          </div>
+                          {/* Consensus gauge */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <span style={{ fontSize: 7, fontFamily: MONO, color: 'rgba(255,215,0,0.4)' }}>φ:</span>
+                            <div style={{ flex: 1, height: 3, background: 'rgba(255,215,0,0.1)', borderRadius: 2, overflow: 'hidden' }}>
+                              <div style={{
+                                width: `${Math.min(100, (orchestratorStatus.consensus_score / 1.618) * 100)}%`,
+                                height: '100%',
+                                background: `linear-gradient(90deg, #ffd700, #00e599)`,
+                                borderRadius: 2
+                              }} />
+                            </div>
+                          </div>
+                          {/* State badge */}
+                          <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <span style={{
+                              padding: '2px 6px',
+                              borderRadius: 4,
+                              background: orchestratorStatus.state === 'idle' ? 'rgba(0,229,153,0.15)' : 'rgba(255,215,0,0.15)',
+                              border: `1px solid ${orchestratorStatus.state === 'idle' ? 'rgba(0,229,153,0.3)' : 'rgba(255,215,0,0.3)'}`,
+                              color: orchestratorStatus.state === 'idle' ? '#00e599' : '#ffd700',
+                              fontSize: 7,
+                              fontFamily: MONO,
+                              fontWeight: 600,
+                              letterSpacing: 1
+                            }}>
+                              {orchestratorStatus.state.toUpperCase()}
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <div style={{ color: 'rgba(255,215,0,0.15)', fontSize: 8, fontFamily: MONO, padding: 4, textAlign: 'center' }}>
+                          Trinity Orchestrator — Cycle 59
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── KOSCHEI v8.24: Production Swarm Status ── */}
+                <div style={{ marginTop: 4 }}>
+                  <KoscheiStatusWidget width={336} />
+                </div>
 
                 {/* Live log — hidden unless debugLogs enabled */}
                 {debugLogs && (

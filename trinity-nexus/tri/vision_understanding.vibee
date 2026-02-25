@@ -1,0 +1,607 @@
+# ============================================================================
+# Vision Understanding Engine - Cycle 28
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: vision_understanding
+version: "1.0.0"
+language: zig
+module: vision_understanding
+
+description: |
+  Vision Understanding Engine — Local Image Analysis & Cross-Modal Integration.
+  Cycle 28 feature: image loading, patch extraction, feature encoding,
+  scene description, object detection, OCR, and integration with
+  chat/code/tools modalities.
+
+  Architecture:
+    Input: Raw image (PNG/BMP/PPM) or pixel buffer
+    → Patch Extraction: Split into NxN patches (ViT-style)
+    → Feature Encoding: Encode patches into VSA hypervectors
+    → Scene Analysis: Bundle patches → scene descriptor
+    → Object Detection: Similarity search against codebook
+    → OCR Pipeline: Patch → character recognition → text
+    → Cross-Modal: Vision → Text/Code/Voice/Tools
+
+  Vision Capabilities:
+    Image Loading: PPM/BMP/raw pixel buffers
+    Patch Extraction: Configurable NxN grid (default 16x16)
+    Feature Encoding: Color histograms + edge detection + texture
+    Scene Description: Natural language from visual features
+    Object Detection: VSA codebook similarity matching
+    OCR: Character recognition from image patches
+    Error Screenshot: Parse error messages from screenshots
+    Code from Diagram: Generate code from visual diagrams
+
+  Integration with Existing Systems:
+    - Chat (Cycle 25): "Describe this image" → text response
+    - Tools (Cycle 27): Screenshot → detect error → auto-fix
+    - Voice (Cycle 24): "What's in this picture?" → spoken description
+    - Code (Cycle 25): Diagram → generated code
+
+  Safety:
+    - Max image size: 4096x4096 pixels
+    - Memory limit: 512MB for image processing
+    - No external network calls
+    - All processing local
+
+# ============================================================================
+# CONSTANTS
+# ============================================================================
+
+constants:
+  MAX_IMAGE_WIDTH: 4096
+  MAX_IMAGE_HEIGHT: 4096
+  DEFAULT_PATCH_SIZE: 16
+  MAX_PATCHES: 65536         # 4096/16 * 4096/16
+  COLOR_BINS: 16             # Color histogram bins per channel
+  EDGE_THRESHOLD: 30         # Edge detection threshold
+  TEXTURE_WINDOW: 3          # Texture analysis window
+  OCR_CONFIDENCE_MIN: 0.60   # Minimum OCR confidence
+  SCENE_MAX_OBJECTS: 64      # Max detected objects per scene
+  CODEBOOK_SIZE: 1024        # Object codebook entries
+  VSA_DIMENSION: 10000       # Hypervector dimension (trits)
+  SIMILARITY_THRESHOLD: 0.40 # Object detection threshold
+  PHI: 1.6180339887498948482
+
+# ============================================================================
+# TYPES
+# ============================================================================
+
+types:
+  # Pixel & Image
+  Pixel:
+    description: "RGB pixel value"
+    fields:
+      r: u8
+      g: u8
+      b: u8
+
+  ImageFormat:
+    description: "Supported image formats"
+    variants:
+      - ppm          # Portable Pixmap
+      - bmp          # Windows Bitmap
+      - raw_rgb      # Raw RGB buffer
+      - raw_gray     # Raw grayscale buffer
+
+  Image:
+    description: "Loaded image data"
+    fields:
+      width: u32
+      height: u32
+      channels: u8
+      format: ImageFormat
+      pixels: List<u8>
+      metadata: ImageMetadata
+
+  ImageMetadata:
+    description: "Image metadata"
+    fields:
+      file_path: Option<String>
+      file_size_bytes: usize
+      color_depth: u8
+      has_alpha: Bool
+
+  # Patch Extraction
+  Patch:
+    description: "Extracted image patch"
+    fields:
+      x: u32              # Top-left x coordinate
+      y: u32              # Top-left y coordinate
+      width: u32
+      height: u32
+      pixels: List<u8>    # Patch pixel data
+      patch_index: u32    # Sequential index
+
+  PatchGrid:
+    description: "Grid of extracted patches"
+    fields:
+      patches: List<Patch>
+      grid_width: u32     # Number of patches horizontally
+      grid_height: u32    # Number of patches vertically
+      patch_size: u32     # Size of each patch
+      source_width: u32
+      source_height: u32
+
+  # Feature Encoding
+  ColorHistogram:
+    description: "Color distribution in a patch"
+    fields:
+      r_bins: List<f32>   # Red channel histogram
+      g_bins: List<f32>   # Green channel histogram
+      b_bins: List<f32>   # Blue channel histogram
+      dominant_color: Pixel
+
+  EdgeMap:
+    description: "Edge detection result"
+    fields:
+      horizontal_strength: f32
+      vertical_strength: f32
+      diagonal_strength: f32
+      edge_density: f32   # Fraction of edge pixels
+
+  TextureDescriptor:
+    description: "Texture analysis result"
+    fields:
+      contrast: f32
+      homogeneity: f32
+      energy: f32
+      entropy: f32
+
+  PatchFeatures:
+    description: "Extracted features for a single patch"
+    fields:
+      color: ColorHistogram
+      edges: EdgeMap
+      texture: TextureDescriptor
+      brightness: f32     # Average brightness [0, 1]
+      saturation: f32     # Average saturation [0, 1]
+      complexity: f32     # Visual complexity [0, 1]
+
+  # Scene Understanding
+  ObjectCategory:
+    description: "Detected object categories"
+    variants:
+      - text_block       # Text region (for OCR)
+      - code_block       # Code/terminal region
+      - error_message    # Error dialog/message
+      - diagram          # Diagram/flowchart
+      - chart            # Chart/graph
+      - ui_element       # UI component
+      - natural_scene    # Natural image
+      - face             # Face region
+      - icon             # Icon/logo
+      - unknown          # Unclassified
+
+  DetectedObject:
+    description: "Object detected in scene"
+    fields:
+      category: ObjectCategory
+      confidence: f32
+      x: u32
+      y: u32
+      width: u32
+      height: u32
+      label: String
+      features_hash: u64  # VSA encoding hash
+
+  SceneDescription:
+    description: "Natural language scene description"
+    fields:
+      summary: String             # One-line summary
+      objects: List<DetectedObject>
+      dominant_colors: List<Pixel>
+      complexity_score: f32       # Overall scene complexity
+      has_text: Bool
+      has_code: Bool
+      has_errors: Bool
+      suggested_action: String    # What to do with this image
+
+  # OCR
+  OcrChar:
+    description: "Recognized character"
+    fields:
+      character: u8
+      confidence: f32
+      x: u32
+      y: u32
+      width: u32
+      height: u32
+
+  OcrLine:
+    description: "Recognized text line"
+    fields:
+      text: String
+      confidence: f32
+      y_position: u32
+      chars: List<OcrChar>
+
+  OcrResult:
+    description: "Full OCR result"
+    fields:
+      lines: List<OcrLine>
+      full_text: String
+      avg_confidence: f32
+      language_hint: String      # Detected language
+
+  # Cross-Modal Results
+  VisionToTextResult:
+    description: "Vision → Text conversion"
+    fields:
+      description: String
+      confidence: f32
+      objects_mentioned: List<String>
+      processing_time_ms: u64
+
+  VisionToCodeResult:
+    description: "Vision → Code generation"
+    fields:
+      language: String
+      code: String
+      confidence: f32
+      source_type: String        # diagram, screenshot, etc.
+      processing_time_ms: u64
+
+  VisionToToolResult:
+    description: "Vision → Tool invocation"
+    fields:
+      tool_kind: String
+      parameters: List<String>
+      confidence: f32
+      source_region: String      # Which part of image triggered
+      processing_time_ms: u64
+
+  # Engine State
+  VisionEngine:
+    description: "Vision understanding engine"
+    fields:
+      allocator: Allocator
+      codebook: List<String>     # Object recognition codebook
+      patch_size: u32
+      stats: VisionStats
+      ocr_patterns: List<String>
+
+  VisionStats:
+    description: "Vision processing statistics"
+    fields:
+      images_processed: u64
+      patches_extracted: u64
+      objects_detected: u64
+      ocr_chars_recognized: u64
+      avg_processing_ms: f64
+      avg_confidence: f64
+      cross_modal_calls: u64
+
+# ============================================================================
+# BEHAVIORS
+# ============================================================================
+
+behaviors:
+  # Initialization
+  - name: init
+    given: Allocator, optional patch_size
+    when: Creating vision engine
+    then: Initialize with default codebook and OCR patterns
+
+  - name: deinit
+    given: Engine instance
+    when: Destroying engine
+    then: Free all resources
+
+  # Image Loading
+  - name: loadImage
+    given: File path or raw buffer
+    when: Loading image for processing
+    then: Parse format, decode pixels, return Image
+    impl: |
+      1. Detect format from magic bytes (PPM: P6, BMP: BM)
+      2. Parse header (width, height, channels)
+      3. Decode pixel data
+      4. Validate dimensions (max 4096x4096)
+      5. Return Image struct
+
+  - name: loadPPM
+    given: PPM file data
+    when: Loading PPM format
+    then: Parse P6 header, read RGB pixels
+
+  - name: loadBMP
+    given: BMP file data
+    when: Loading BMP format
+    then: Parse BMP header, decode pixels (handle row padding)
+
+  # Patch Extraction
+  - name: extractPatches
+    given: Image, patch_size
+    when: Splitting image into patches
+    then: Return PatchGrid with NxN patches
+    impl: |
+      1. Calculate grid dimensions
+      2. For each grid cell, extract pixel block
+      3. Handle edge patches (may be smaller)
+      4. Return PatchGrid
+
+  # Feature Extraction
+  - name: extractFeatures
+    given: Patch
+    when: Analyzing patch content
+    then: Return PatchFeatures (color, edges, texture)
+    impl: |
+      Color: Build histogram (16 bins per channel)
+      Edges: Sobel operator (horizontal + vertical)
+      Texture: GLCM (contrast, homogeneity, energy, entropy)
+      Brightness: Average pixel value / 255
+      Saturation: max(RGB) - min(RGB) range
+
+  - name: computeColorHistogram
+    given: Patch pixels
+    when: Analyzing color distribution
+    then: Return ColorHistogram with bin counts
+
+  - name: detectEdges
+    given: Patch pixels, threshold
+    when: Finding edges in patch
+    then: Return EdgeMap with directional strengths
+
+  - name: analyzeTexture
+    given: Patch pixels
+    when: Characterizing texture
+    then: Return TextureDescriptor
+
+  # Scene Understanding
+  - name: analyzeScene
+    given: Image
+    when: Understanding full image content
+    then: Return SceneDescription
+    impl: |
+      1. Extract patches
+      2. Compute features per patch
+      3. Classify regions (text, code, diagram, etc.)
+      4. Detect objects via codebook similarity
+      5. Generate natural language summary
+      6. Suggest action based on content
+
+  - name: detectObjects
+    given: PatchGrid, features
+    when: Finding objects in scene
+    then: Return list of DetectedObject
+    impl: |
+      1. Encode patch features into VSA hypervectors
+      2. Compare against codebook entries
+      3. Group adjacent similar patches into regions
+      4. Classify each region
+      5. Return detected objects with bounding boxes
+
+  - name: classifyRegion
+    given: Group of patches with features
+    when: Determining what a region contains
+    then: Return ObjectCategory with confidence
+    impl: |
+      High edge density + uniform color → diagram/chart
+      High text density (many edges, low saturation) → text/code
+      Red/yellow dominant + text → error message
+      Complex edges + varied color → natural scene
+      Low complexity + icon-size → icon/logo
+
+  # OCR Pipeline
+  - name: runOCR
+    given: Image or region of interest
+    when: Extracting text from image
+    then: Return OcrResult with recognized text
+    impl: |
+      1. Convert to grayscale
+      2. Apply threshold (Otsu's method)
+      3. Segment into lines (horizontal projection)
+      4. Segment lines into characters (vertical projection)
+      5. Match characters against pattern codebook
+      6. Return text with confidence scores
+
+  - name: detectTextRegions
+    given: PatchGrid with features
+    when: Finding text areas in image
+    then: Return bounding boxes of text regions
+
+  - name: recognizeCharacter
+    given: Character patch (binarized)
+    when: Identifying single character
+    then: Return character with confidence
+
+  # Cross-Modal Integration
+  - name: visionToText
+    given: Image
+    when: "Describe this image" / "Что на картинке?"
+    then: Return natural language description
+    impl: |
+      1. analyzeScene → SceneDescription
+      2. Format objects and relationships as text
+      3. Include dominant colors, complexity
+      4. Return VisionToTextResult
+
+  - name: visionToCode
+    given: Image (diagram or UI screenshot)
+    when: "Generate code from this image"
+    then: Return generated code
+    impl: |
+      1. analyzeScene → detect diagram/UI regions
+      2. If diagram: Extract nodes/edges → code structure
+      3. If UI: Extract elements → HTML/component code
+      4. If error: Extract error text → fix suggestion
+      5. Return VisionToCodeResult
+
+  - name: visionToTool
+    given: Image (screenshot with error/terminal)
+    when: Screenshot shows actionable content
+    then: Detect intent, invoke appropriate tool
+    impl: |
+      1. analyzeScene → detect regions
+      2. If error_message: OCR → extract error → tool=code_lint
+      3. If code_block: OCR → extract code → tool=code_compile
+      4. If terminal: OCR → extract command → tool=code_run
+      5. Return VisionToToolResult
+
+  - name: visionToVoice
+    given: Image
+    when: "Tell me what you see" (voice request)
+    then: Generate spoken description
+    impl: |
+      1. visionToText → description
+      2. Pass to TTS engine (Cycle 24)
+      3. Return audio description
+
+  # Error Screenshot Analysis
+  - name: analyzeErrorScreenshot
+    given: Screenshot image
+    when: Image contains error message
+    then: Extract error, suggest fix, optionally auto-fix
+    impl: |
+      1. Detect error_message regions
+      2. OCR → extract error text
+      3. Parse error (file, line, message)
+      4. Suggest fix based on error type
+      5. If auto-fix enabled: invoke code_lint tool (Cycle 27)
+
+  # Diagram to Code
+  - name: diagramToCode
+    given: Image of diagram/flowchart
+    when: Converting visual design to code
+    then: Generate code structure from visual elements
+    impl: |
+      1. Detect diagram regions
+      2. Extract nodes (rectangles/circles)
+      3. Extract edges (lines/arrows)
+      4. Extract labels (OCR on nodes)
+      5. Generate code skeleton with structure
+
+  # Statistics
+  - name: getStats
+    given: Engine instance
+    when: Querying usage
+    then: Return VisionStats
+
+# ============================================================================
+# INTEGRATION
+# ============================================================================
+
+integration:
+  - target: multi_modal_unified.vibee
+    description: "Unified multi-modal engine (Cycle 26)"
+
+  - target: multi_modal_tool_use.vibee
+    description: "Tool use engine (Cycle 27)"
+
+  - target: voice_engine.vibee
+    description: "Voice I/O for spoken descriptions (Cycle 24)"
+
+  - target: fluent_coder.vibee
+    description: "Code generation from vision (Cycle 25)"
+
+  - target: vsa.zig
+    description: "VSA operations for feature encoding"
+
+# ============================================================================
+# TESTS
+# ============================================================================
+
+tests:
+  - name: test_load_ppm
+    given: Valid PPM file (P6 format)
+    then: Returns Image with correct dimensions
+
+  - name: test_load_bmp
+    given: Valid BMP file
+    then: Returns Image with correct dimensions
+
+  - name: test_patch_extraction
+    given: 64x64 image, patch_size=16
+    then: Returns 4x4 PatchGrid (16 patches)
+
+  - name: test_color_histogram
+    given: Solid red patch
+    then: R histogram peak at bin 15, G/B near zero
+
+  - name: test_edge_detection
+    given: Patch with sharp horizontal edge
+    then: High horizontal_strength, low vertical_strength
+
+  - name: test_texture_analysis
+    given: Uniform patch
+    then: High homogeneity, low contrast
+
+  - name: test_scene_analysis
+    given: Image with text and code regions
+    then: Detects text_block and code_block objects
+
+  - name: test_ocr_basic
+    given: Clean text image
+    then: Returns recognized text with confidence > 0.60
+
+  - name: test_object_detection
+    given: Image with multiple regions
+    then: Detects and classifies objects with bounding boxes
+
+  - name: test_vision_to_text
+    given: Image with objects
+    then: Returns natural language description
+
+  - name: test_vision_to_code
+    given: Diagram image
+    then: Returns code skeleton matching diagram structure
+
+  - name: test_vision_to_tool
+    given: Error screenshot
+    then: Detects error, returns tool=code_lint with error text
+
+  - name: test_error_screenshot
+    given: Screenshot with "error: undefined variable"
+    then: Extracts error, suggests "declare variable"
+
+  - name: test_diagram_to_code
+    given: Simple flowchart image
+    then: Generates code with if/else structure
+
+  - name: test_cross_modal_voice
+    given: Image + voice request "describe"
+    then: Returns spoken description via TTS
+
+  - name: test_max_image_size
+    given: Image exceeding 4096x4096
+    then: Returns error (image too large)
+
+  - name: test_empty_image
+    given: 0x0 pixel image
+    then: Returns error (invalid image)
+
+# ============================================================================
+# METRICS
+# ============================================================================
+
+metrics:
+  - name: scene_description_accuracy
+    description: "Correct scene element identification"
+    target: "> 85%"
+
+  - name: ocr_accuracy
+    description: "Character recognition accuracy"
+    target: "> 80%"
+
+  - name: object_detection_precision
+    description: "Correct object classification"
+    target: "> 75%"
+
+  - name: cross_modal_quality
+    description: "Vision→Text/Code/Tool quality"
+    target: "> 70%"
+
+  - name: processing_throughput
+    description: "Images processed per second"
+    target: "> 10 img/s"
+
+  - name: patch_extraction_speed
+    description: "Patches extracted per second"
+    target: "> 50,000 patches/s"
+
+# ============================================================================
+# Golden Chain: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================

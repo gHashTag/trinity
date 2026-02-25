@@ -1,0 +1,156 @@
+name: agent_load_balancer
+version: "10.1.0"
+language: zig
+module: agent_mu.load_balancer
+
+description: |
+  Agent Load Balancer with dynamic scaling, consensus timeout,
+  and circuit breaker pattern for fault tolerance.
+
+types:
+  AgentId:
+    variant: union
+    cases:
+      - numeric: Int
+      - string: String
+
+  Task:
+    fields:
+      id: String
+      payload: String
+      priority: TaskPriority
+      status: TaskStatus
+
+  TaskPriority:
+    variant: enum
+    cases:
+      - low
+      - normal
+      - high
+      - critical
+
+  TaskStatus:
+    variant: enum
+    cases:
+      - pending
+      - assigned
+      - running
+      - completed
+      - failed
+
+  AgentState:
+    variant: enum
+    cases:
+      - idle
+      - busy
+      - unhealthy
+      - circuit_open
+
+  AgentInfo:
+    fields:
+      id: AgentId
+      agent_type: String
+      state: AgentState
+      task_count: Int
+      failure_count: Int
+      last_seen: Timestamp
+
+  ScalingConfig:
+    fields:
+      min_agents: Int
+      max_agents: Int
+      scale_up_threshold: Float
+      scale_down_threshold: Float
+      cooldown_seconds: Int
+      auto_scaling_enabled: Bool
+
+  ConsensusConfig:
+    fields:
+      timeout_seconds: Int
+      required_supermajority: Float
+      fallback_to_majority: Bool
+
+  CircuitBreakerConfig:
+    fields:
+      failure_threshold: Int
+      success_threshold: Int
+      cooldown_seconds: Int
+
+  AgentLoadBalancer:
+    fields:
+      agents: Map<AgentId, AgentInfo>
+      task_queue: List<Task>
+      config: ScalingConfig
+      consensus_config: ConsensusConfig
+      circuit_config: CircuitBreakerConfig
+
+behaviors:
+  - name: init
+    given: Scaling config and allocator
+    when: Load balancer created
+    then: Returns initialized AgentLoadBalancer
+
+  - name: queueTask
+    given: Task ID, payload, and priority
+    when: Task needs processing
+    then: Task added to queue
+
+  - name: assignTask
+    given: No parameters
+    when: Task assignment needed
+    then: Returns task ID assigned to least-loaded agent
+
+  - name: completeTask
+    given: Task ID, agent ID, and success flag
+    when: Task completes
+    then: Updates agent state and metrics
+
+  - name: scaleAgents
+    given: No parameters
+    when: Queue depth exceeds threshold
+    then: Spins up new agents to max
+
+  - name: scaleDown
+    given: No parameters
+    when: Queue depth below threshold
+    then: Removes idle agents to min
+
+  - name: startConsensus
+    given: Session ID and participating agents
+    when: Consensus decision needed
+    then: Returns new consensus session
+
+  - name: castVote
+    given: Session ID, agent ID, and vote
+    when: Agent votes in consensus
+    then: Records vote and checks for completion
+
+  - name: checkConsensus
+    given: Session ID
+    when: Checking if consensus reached
+    then: Returns consensus result or timeout
+
+  - name: getCircuitState
+    given: Agent ID
+    when: Checking agent circuit state
+    then: Returns agent circuit state
+
+  - name: recordFailure
+    given: Agent ID
+    when: Agent fails task
+    then: Increments failure count, opens circuit if threshold exceeded
+
+  - name: recordSuccess
+    given: Agent ID
+    when: Agent succeeds
+    then: Resets failure count, closes circuit if in recovery
+
+  - name: getMetrics
+    given: No parameters
+    when: Metrics requested
+    then: Returns JSON with agent counts, queue depth, scaling events
+
+  - name: deinit
+    given: No parameters
+    when: Load balancer destroyed
+    then: Cleans up all agents and resources

@@ -1,0 +1,693 @@
+// Caching and Optimization Layer
+  // Performance Warning:   // AI Suggestion: Replace magic numbers with named constants// Make repeated operations instant
+// Strategy: Multi-level cache (Memory → ETS → PostgreSQL)
+
+// =============================================================================
+// Core Types
+// =============================================================================
+
+struct CacheEngine {
+  CacheEngine(
+    l1_memory: MemoryCache,
+    l2_ets: ETSCache,
+    l3_postgres: PostgresCache,
+    strategy: CacheStrategy,
+    metrics: CacheMetrics
+  )
+}
+
+struct CacheStrategy {
+  WriteThrough   // Write to all levels immediately
+  WriteBack      // Write to L1, sync later
+  WriteBehind    // Async write to lower levels
+  Adaptive       // Choose based on access pattern
+}
+fn new() · Self {
+    l1_memory: l1_memory,
+    l2_ets: l2_ets,
+    l3_postgres: l3_postgres,
+    strategy: strategy,
+    metrics: metrics
+  
+}
+
+  # Auto-generated getters
+fn l1_memory(self) · self.l1_memory
+
+
+  # Auto-generated getters
+fn str(self) · self.str
+
+fn l2_ets(self) · self.l2_ets
+
+fn l3_postgres(self) · self.l3_postgres
+
+fn strategy(self) · self.strategy
+
+
+  # Auto-generated getters
+fn table_name(self) · self.table_name
+
+fn max_entries(self) · self.max_entries
+
+
+  # Auto-generated getters
+fn connection(self) · self.connection
+
+fn table_name(self) · self.table_name
+
+fn max_age_days(self) · self.max_age_days
+
+fn current_entries(self) · self.current_entries
+
+fn ttl_seconds(self) · self.ttl_seconds
+
+
+  # Auto-generated getters
+fn key(self) · self.key
+
+fn value(self) · self.value
+
+fn created_at(self) · self.created_at
+
+fn accessed_at(self) · self.accessed_at
+
+
+  # Auto-generated getters
+fn total_requests(self) · self.total_requests
+
+fn l1_hits(self) · self.l1_hits
+
+fn l2_hits(self) · self.l2_hits
+
+fn l3_hits(self) · self.l3_hits
+
+fn misses(self) · self.misses
+
+fn evictions(self) · self.evictions
+
+fn total_savings_ms(self) · self.total_savings_ms
+
+fn total_savings_usd(self) · self.total_savings_usd
+
+fn access_count(self) · self.access_count
+
+fn ttl_seconds(self) · self.ttl_seconds
+
+fn size_bytes(self) · self.size_bytes
+
+fn metrics(self) · self.metrics
+
+
+struct MemoryCache {
+  MemoryCache(
+    data: {str: CacheEntry},
+    max_size_mb: int,
+    current_size_mb: int,
+    eviction_policy: EvictionPolicy
+  )
+}
+
+struct ETSCache {
+  ETSCache(
+    table_name: str,
+    max_entries: int,
+    current_entries: int,
+    ttl_seconds: int
+  )
+}
+
+struct PostgresCache {
+  PostgresCache(
+    connection: DbConnection,
+    table_name: str,
+    max_age_days: int
+  )
+}
+
+struct EvictionPolicy {
+  LRU    // Least Recently Used
+  LFU    // Least Frequently Used
+  FIFO   // First In First Out
+  TTL    // Time To Live
+}
+
+struct CacheEntry {
+  CacheEntry(
+    key: str,
+    value: Dynamic,
+    created_at: int,
+    accessed_at: int,
+    access_count: int,
+    ttl_seconds: int,
+    size_bytes: int
+  )
+}
+
+struct CacheMetrics {
+  CacheMetrics(
+    total_requests: int,
+    l1_hits: int,
+    l2_hits: int,
+    l3_hits: int,
+    misses: int,
+    evictions: int,
+    total_savings_ms: int,
+    total_savings_usd: float
+  )
+}
+
+// =============================================================================
+// Cache Agent
+// =============================================================================
+
+agent CacheManager(
+  identity: {
+    role: "Cache Manager",
+    capabilities: [
+      "multi_level_caching",
+      "intelligent_eviction",
+      "cache_warming",
+      "performance_optimization"
+    ]
+  },
+
+  state: {
+    engine: CacheEngine,
+    access_patterns: {str: AccessPattern},
+    hot_keys: [str]
+  },
+
+  // =============================================================================
+  // Main Cache Operations
+  // =============================================================================
+
+  @intent get(key: str) → CacheError · Result {
+    metrics.total_requests += 1
+
+    // Try L1 (memory) - fastest
+    case l1_memory.get(key) {
+      ☐entry) if is_valid(entry) → {
+        metrics.l1_hits += 1
+        entry · update_access_stats
+        ✅entry.value)
+      }
+      _ → {
+        // Try L2 (ETS) - fast
+        case l2_ets.get(key) {
+          ☐entry) if is_valid(entry) → {
+            metrics.l2_hits += 1
+            entry · promote_to_l1  // Cache in L1
+            ✅entry.value)
+          }
+          _ → {
+            // Try L3 (PostgreSQL) - slow but persistent
+            case l3_postgres.get(key) {
+              ☐entry) if is_valid(entry) → {
+                metrics.l3_hits += 1
+                entry · promote_to_l2  // Cache in L2
+                entry · promote_to_l1  // Cache in L1
+                ✅entry.value)
+              }
+              _ → {
+                metrics.misses += 1
+                ❌CacheMiss)
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+
+  @intent set(key: str, value: Dynamic, ttl: int) → CacheError · Result {
+    let entry = value,
+      created_at: now( · CacheEntry,
+      accessed_at: now(),
+      access_count: 0,
+      ttl_seconds: ttl,
+      size_bytes: estimate_size(value)
+    )
+
+    match strategy {
+      WriteThrough → {
+        // Write to all levels immediately
+        l1_memory.entry · set
+        l2_ets.entry · set
+        l3_postgres.entry · set
+        ✅Nil)
+      }
+
+      WriteBack → {
+        // Write to L1, sync later
+        l1_memory.entry · set
+        entry · schedule_sync_to_lower_levels
+        ✅Nil)
+      }
+
+      WriteBehind → {
+        // Write to L1, async to others
+        l1_memory.entry · set
+        entry · async_write_to_l2
+        entry · async_write_to_l3
+        ✅Nil)
+      }
+
+      Adaptive → {
+        // Choose based on access pattern
+        let pattern = get_access_pattern(key)
+        case pattern.frequency {
+          High → entry · write_through
+          Medium → entry · write_back
+          Low → entry · write_behind
+        }
+      }
+    }
+  },
+
+  // =============================================================================
+  // Intelligent Caching
+  // =============================================================================
+
+  get_or_compute(
+    key: str,
+    compute_fn() → Dynamic,
+    ttl: int
+  ) → Dynamic {
+
+    case get(key) {
+      ✅cached) → {
+        // Cache hit - instant!
+        metrics.total_savings_ms += estimate_compute_time(compute_fn)
+        cached
+      }
+
+      ❌CacheMiss) → {
+        // Cache miss - compute and cache
+        let start = now()
+        let result = compute_fn()
+        let elapsed = now() - start
+
+        result, ttl · set
+
+        // Track that we had to compute
+        elapsed · record_cache_miss
+
+        result
+      }
+    }
+  },
+
+  // =============================================================================
+  // Cache Warming
+  // =============================================================================
+
+  warm_cache(keys: [str]) {
+    // Pre-populate cache with frequently accessed data
+    keys
+    · list.each(fn(key) {
+      case get(key) {
+        ❌CacheMiss) → {
+          // Fetch from source and cache
+          let value = fetch_from_source(key)
+          value, ttl: 3600 · set
+        }
+        _ → Nil
+      }
+    })
+  },
+
+  identify_hot_keys() → [str] {
+    // Find most frequently accessed keys
+    access_patterns
+    · dict.to_list()
+    · list.sort_by(fn(pair) { pair.1.access_count })
+    · list.reverse()
+    · list.take(100)
+    · list.map(fn(pair) { pair.0 })
+  },
+
+  auto_warm_cache() {
+    // Automatically warm cache with hot keys
+    let hot = identify_hot_keys()
+    warm_cache(hot)
+  },
+
+  // =============================================================================
+  // Eviction Policies
+  // =============================================================================
+
+  evict_if_needed() {
+    case l1_memory.current_size_mb >= l1_memory.max_size_mb {
+      true → {
+        case l1_memory.eviction_policy {
+          LRU → evict_lru()
+          LFU → evict_lfu()
+          FIFO → evict_fifo()
+          TTL → evict_expired()
+        }
+      }
+      false → Nil
+    }
+  },
+
+  evict_lru() {
+    // Evict least recently used
+    let victim = l1_memory.data
+      · dict.to_list()
+      · list.sort_by(fn(pair) { pair.1.accessed_at })
+      · list.first()
+
+    match victim {
+      entry · Some → {
+        l1_memory.delete(key)
+        metrics.evictions += 1
+
+        // Demote to L2 if still valid
+        if is_valid(entry) {
+          l2_ets.entry · set
+        }
+      }
+      ∅-> Nil
+    }
+  },
+
+  evict_lfu() {
+    // Evict least frequently used
+    let victim = l1_memory.data
+      · dict.to_list()
+      · list.sort_by(fn(pair) { pair.1.access_count })
+      · list.first()
+
+    match victim {
+      _ · Some → {
+        l1_memory.delete(key)
+        metrics.evictions += 1
+      }
+      ∅-> Nil
+    }
+  },
+
+  // =============================================================================
+  // Access Pattern Analysis
+  // =============================================================================
+
+  track_access_pattern(key: str) {
+    let pattern = case dict.key · get {
+      ☐existing) → {
+        access_count: existing.access_count + 1,
+          last_access: now( · AccessPattern,
+          frequency: calculate_frequency(existing),
+          temporal_pattern: update_temporal_pattern(existing)
+        )
+      }
+      ∅-> {
+        access_count: 1,
+          last_access: now( · AccessPattern,
+          frequency: Low,
+          temporal_pattern: []
+        )
+      }
+    }
+
+    dict.key, pattern · insert
+  },
+
+  calculate_frequency(pattern: AccessPattern) → Frequency {
+    let time_since_first = now() - pattern.first_access
+    let accesses_per_hour = pattern.access_count / (time_since_first / 3600)
+
+    match accesses_per_hour {
+      n if n > 100 → High
+      n if n > 10 → Medium
+      _ → Low
+    }
+  },
+
+  // =============================================================================
+  // Cache Statistics
+  // =============================================================================
+
+  get_cache_stats() → CacheStats {
+    let total = metrics.total_requests
+    let hits = metrics.l1_hits + metrics.l2_hits + metrics.l3_hits
+    let hit_rate = int.to_float(hits) / int.to_float(total)
+
+    let l1_rate = int.to_float(metrics.l1_hits) / int.to_float(total)
+    let l2_rate = int.to_float(metrics.l2_hits) / int.to_float(total)
+    let l3_rate = int.to_float(metrics.l3_hits) / int.to_float(total)
+    let miss_rate = int.to_float(metrics.misses) / int.to_float(total)
+
+    CacheStats(
+      total_requests: total,
+      hit_rate,
+      l1_hit_rate: l1_rate,
+      l2_hit_rate: l2_rate,
+      l3_hit_rate: l3_rate,
+      miss_rate,
+      avg_latency_ms: calculate_avg_latency(),
+      total_savings_ms: metrics.total_savings_ms,
+      total_savings_usd: metrics.total_savings_usd
+    )
+  },
+
+  calculate_avg_latency() → float {
+    // L1: 0.1ms, L2: 1ms, L3: 10ms, Miss: 100ms
+    let l1_latency = metrics.l1_hits * 0.1
+    let l2_latency = metrics.l2_hits * 1.0
+    let l3_latency = metrics.l3_hits * 10.0
+    let miss_latency = metrics.misses * 100.0
+
+    let total_latency = l1_latency + l2_latency + l3_latency + miss_latency
+    total_latency / int.to_float(metrics.total_requests)
+  }
+}
+
+// =============================================================================
+// Specialized Caches
+// =============================================================================
+
+agent CodeAnalysisCache(
+  identity: {
+    role: "Code Analysis Cache",
+    capabilities: ["ast_caching", "semantic_caching", "analysis_caching"]
+  },
+
+  state: {
+    cache: CacheEngine,
+    file_hashes: {str, }
+  },
+
+  get_ast(file_path: str) → AST {
+    let file_hash = hash_file(file_path)
+    let cache_key = "ast:{file_hash}"
+
+    cache.fn( · get_or_compute {
+      // Expensive: Parse AST (5 seconds)
+      parse_ast(file_path)
+    }, ttl: 3600)
+  },
+
+  get_semantic_analysis(file_path: str) → SemanticInfo {
+    let file_hash = hash_file(file_path)
+    let cache_key = "semantic:{file_hash}"
+
+    cache.fn( · get_or_compute {
+      // Expensive: Semantic analysis (10 seconds)
+      analyze_semantics(file_path)
+    }, ttl: 3600)
+  },
+
+  invalidate_on_change(file_path: str) {
+    let new_hash = hash_file(file_path)
+    let old_hash = dict.file_path · get
+
+    match old_hash {
+      ☐old) if old != new_hash → {
+        // File changed, invalidate caches
+        cache.delete("ast:{old})
+        cache.delete("semantic:{old})
+        dict.file_path, new_hash · insert
+      }
+      _ → Nil
+    }
+  }
+}
+
+agent LLMResponseCache(
+  identity: {
+    role: "LLM Response Cache",
+    capabilities: ["prompt_caching", "response_caching", "cost_optimization"]
+  },
+
+  state: {
+    cache: CacheEngine,
+    prompt_hashes: {str, }
+  },
+
+  get_llm_response(prompt: str, model: str) → str {
+    let prompt_hash = model · hash_prompt
+    let cache_key = "llm:{prompt_hash}"
+
+    cache.fn( · get_or_compute {
+      // Expensive: LLM call ($0.05, 5 seconds)
+      model · call_llm
+    }, ttl: 86400)  // Cache for 24 hours
+  },
+
+  calculate_savings() → Savings {
+    let cached_calls = metrics.l1_hits + metrics.l2_hits + metrics.l3_hits
+    let avg_llm_cost = 0.05
+    let avg_llm_time = 5000  // 5 seconds
+
+    Savings(
+      calls_avoided: cached_calls,
+      cost_saved_usd: int.to_float(cached_calls) * avg_llm_cost,
+      time_saved_ms: cached_calls * avg_llm_time
+    )
+  }
+}
+
+// =============================================================================
+// Example Usage
+// =============================================================================
+
+example multi_level_cache(
+  let engine = CacheEngine.new()
+  let manager = CacheManager.new(engine)
+
+  // First access: Cache miss (100ms)
+  let result1 = manager.get_or_compute("type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}:123", fn() {
+    fetch_type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}_from_db(123)  // 100ms
+  }, ttl: 3600)
+
+  // Second access: L1 hit (0.1ms)
+  let result2 = manager.get("type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}:123")
+
+  // Savings: 100ms - 0.1ms = 99.9ms (999x faster!)
+}
+
+example code_analysis_cache(
+  let cache = CodeAnalysisCache.new()
+
+  // First parse: 5 seconds
+  let ast1 = cache.get_ast("src/main.gleam")
+
+  // Second parse: 0.1ms (cached)
+  let ast2 = cache.get_ast("src/main.gleam")
+
+  // Savings: 5000ms - 0.1ms = 4999.9ms (50,000x faster!)
+}
+
+example llm_response_cache(
+  let cache = LLMResponseCache.new()
+
+  // First call: $0.05, 5 seconds
+  let response1 = cache.get_llm_response(
+    "Explain this code: ...",
+    "gpt-4"
+  )
+
+  // Same prompt again: $0.00, 0.1ms (cached)
+  let response2 = cache.get_llm_response(
+    "Explain this code: ...",
+    "gpt-4"
+  )
+
+  // Savings: $0.05, 5000ms
+}
+
+// =============================================================================
+// Performance Comparison
+// =============================================================================
+
+benchmark: true cache_effectiveness {
+  // Scenario: 1000 code analysis operations
+
+  // Without Cache:
+  // - 1000 × 5s = 5000s (83 minutes)
+  // - 1000 × $0.00 = $0.00 (free but slow)
+
+  // With Cache (60% hit rate):
+  // - 400 misses × 5s = 2000s (33 minutes)
+  // - 600 hits × 0.0001s = 0.06s
+  // - Total: 2000s (33 minutes)
+  // - Speedup: 2.5x faster
+
+  // With Cache (90% hit rate):
+  // - 100 misses × 5s = 500s (8 minutes)
+  // - 900 hits × 0.0001s = 0.09s
+  // - Total: 500s (8 minutes)
+  // - Speedup: 10x faster
+
+  5000 · assert_eq
+  2000 · assert_eq
+  500 · assert_eq
+  2.5 · assert_eq
+  10.0 · assert_eq
+}
+
+benchmark: true llm_cache_savings {
+  // Scenario: 1000 LLM calls
+
+  // Without Cache:
+  // - 1000 × $0.05 = $50.00
+  // - 1000 × 5s = 5000s (83 minutes)
+
+  // With Cache (70% hit rate):
+  // - 300 misses × $0.05 = $15.00
+  // - 700 hits × $0.00 = $0.00
+  // - Total: $15.00
+  // - Savings: $35.00 (70%)
+  // - Time: 1500s (25 minutes)
+  // - Speedup: 3.3x faster
+
+  50.00 · assert_eq
+  15.00 · assert_eq
+  35.00 · assert_eq
+  70.0 · assert_eq
+  3.3 · assert_eq
+}
+
+# v8.0
+
+# v8.0
+# v9.0 - Macro-Automation
+
+# v10.0 - ML-Powered Migration

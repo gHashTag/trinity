@@ -1,0 +1,52 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# MEMORY EMITTER - VIBEE Codegen Module Specification
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Module: memory_emitter.zig
+# Purpose: Emit WASM memory buffer exports
+#
+# φ² + 1/φ² = 3
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: memory_emitter
+version: "10.1.0"
+language: zig
+module: vibeec.codegen.memory_emitter
+
+dependencies:
+  - module: std
+    used_as: standard library
+  - module: vibeec.codegen.builder
+    used_as: CodeBuilder for output
+
+behaviors:
+  - name: writeMemoryBuffers
+    given: No parameters
+    when: After types section, before creation patterns
+    then:
+      - Write section header "ПАМЯТЬ ДЛЯ WASM"
+      - Declare global_buffer: [65536]u8 align(16)
+      - Declare f64_buffer: [8192]f64 align(16)
+      - Export get_global_buffer_ptr() returning [*]u8
+      - Export get_f64_buffer_ptr() returning [*]f64
+
+wasm_exports:
+  global_buffer:
+    size: 65536
+    type: u8
+    alignment: 16
+    getter: get_global_buffer_ptr
+    return_type: [*]u8
+
+  f64_buffer:
+    size: 8192
+    type: f64
+    alignment: 16
+    getter: get_f64_buffer_ptr
+    return_type: [*]f64
+
+implementation:
+  cycle: "73"
+  extracted_from: "src/vibeec/codegen/emitter.zig"
+  lines: 1154-1173

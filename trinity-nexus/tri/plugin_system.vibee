@@ -1,0 +1,22 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+types:
+    description: String
+    description: Запускает Plugin Registry
+    description: Обрабатывает сообщения Registry
+    description: Валидирует манифест плагина
+    description: Загружает плагин и создает instance
+    description: Выгружает плагин
+    description: Фильтрует плагины по критериям
+    description: Поиск плагинов по запросу
+  start_registry:
+    description: Запуск Registry
+
+  register_plugin:
+    description: Регистрация плагина
+
+  validate_plugin_test:
+    description: Валидация плагина

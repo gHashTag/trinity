@@ -1,0 +1,138 @@
+name: codegen_rust
+version: 1.0.0
+category: compiler
+description: Rust code generator from VIBEEC AST
+
+# Types
+types:
+  - name: RustCodeGenerator
+    description: Generates Rust code from AST
+    fields:
+      - name: indent_size
+        type: Int
+        description: Number of spaces for indentation
+        default: 2
+      - name: use_tabs
+        type: Bool
+        description: Use tabs instead of spaces
+        default: false
+
+# Functions
+functions:
+  - name: generate
+    signature: "generate(ast: List(Stmt)) -> String"
+    description: Generate Rust code from AST
+    params:
+      - name: ast
+        type: List(Stmt)
+        description: VIBEEC AST to convert
+    returns:
+      type: String
+      description: Generated Rust code
+    examples:
+      - params: {ast: [FnDef("add", [("a", IntType), ("b", IntType)], IntType, BinOp(Add, Var("a"), Var("b")), true)]}
+        returns: "pub fn add(a: i32, b: i32) -> i32 {\n    a + b\n}"
+
+  - name: stmt_to_rust
+    signature: "stmt_to_rust(stmt: Stmt) -> String"
+    description: Convert single statement to Rust code
+    params:
+      - name: stmt
+        type: Stmt
+        description: Statement to convert
+    returns:
+      type: String
+      description: Rust code
+    examples:
+      - params: {stmt: FnDef("hello", [], StringType, StringLit("Hello"), true)}
+        returns: "pub fn hello() -> String {\n    \"Hello\".to_string()\n}"
+
+  - name: type_to_rust
+    signature: "type_to_rust(t: Type) -> String"
+    description: Convert VIBEEC type to Rust type
+    params:
+      - name: t
+        type: Type
+        description: VIBEEC type
+    returns:
+      type: String
+      description: Rust type string
+    examples:
+      - params: {t: IntType}
+        returns: "i32"
+      - params: {t: ListType(StringType)}
+        returns: "Vec<String>"
+      - params: {t: TupleType([IntType, StringType])}
+        returns: "(i32, String)"
+
+  - name: expr_to_rust
+    signature: "expr_to_rust(expr: Expr, indent: Int) -> String"
+    description: Convert expression to Rust code with indentation
+    params:
+      - name: expr
+        type: Expr
+        description: Expression to convert
+      - name: indent
+        type: Int
+        description: Indentation level
+    returns:
+      type: String
+      description: Rust code
+    examples:
+      - params: {expr: BinOp(Add, IntLit(1), IntLit(2)), indent: 1}
+        returns: "    1 + 2"
+
+# Type Mappings
+type_mappings:
+  - vibeec: IntType
+    rust: i32
+  - vibeec: FloatType
+    rust: f64
+  - vibeec: StringType
+    rust: String
+  - vibeec: BoolType
+    rust: bool
+  - vibeec: ListType(T)
+    rust: Vec<T>
+  - vibeec: TupleType([T1, T2])
+    rust: (T1, T2)
+  - vibeec: Result(T, E)
+    rust: Result<T, E>
+  - vibeec: Option(T)
+    rust: Option<T>
+
+# Behaviors
+behaviors:
+  - name: function_generation
+    description: Generate Rust function from AST
+    given: FnDef AST node
+    when: generate is called
+    then: Returns valid Rust function code
+    examples:
+      - input: FnDef("add", [("a", IntType), ("b", IntType)], IntType, BinOp(Add, Var("a"), Var("b")), true)
+        output: "pub fn add(a: i32, b: i32) -> i32 {\n    a + b\n}"
+
+  - name: type_conversion
+    description: Convert VIBEEC types to Rust types
+    given: VIBEEC type
+    when: type_to_rust is called
+    then: Returns equivalent Rust type
+    examples:
+      - input: ListType(IntType)
+        output: "Vec<i32>"
+
+  - name: expression_generation
+    description: Generate Rust expressions with proper syntax
+    given: Expression AST node
+    when: expr_to_rust is called
+    then: Returns valid Rust expression
+    examples:
+      - input: BinOp(Multiply, IntLit(5), IntLit(3))
+        output: "5 * 3"
+
+# Completeness
+completeness:
+  test_coverage: 85%
+  all_behaviors_implemented: true
+  all_functions_implemented: true
+  supports_all_types: true

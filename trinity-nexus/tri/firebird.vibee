@@ -1,0 +1,388 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# ЖАР ПТИЦА (FIREBIRD) - Ternary Virtual Anti-Detect Browser
+# Virtual space navigation with TVC IR, no HTML rendering
+# V = n × 3^k × π^m × φ^p × e^q
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: firebird
+version: "1.0.0"
+language: zig
+module: firebird
+
+description: |
+  ЖАР ПТИЦА - Ternary-based virtual anti-detect browser for WebArena evasion.
+  All navigation occurs in TVC IR virtual space using high-dimensional ternary vectors.
+  Outputs screenshots to user without HTML rendering.
+  Self-evolving fingerprints via φ-spiral mutations evade AI agent detection.
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# FUNDAMENTAL CONSTANTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  # Vector Space Dimension (high-dim for orthogonality)
+  DIM: 10000
+  
+  # Golden Ratio Constants
+  PHI: 1.6180339887498948482
+  PHI_SQUARED: 2.6180339887498948482
+  PHI_INVERSE_SQUARED: 0.3819660112501051518
+  
+  # Trinity Identity: φ² + 1/φ² = 3
+  TRINITY: 3.0
+  PERFECTION: 30  # TRINITY × 10
+  
+  # Self-Evolution Parameters (Genetic Algorithm)
+  MU: 0.0382      # Mutation rate
+  CHI: 0.0618     # Crossover rate (φ - 1)
+  SIGMA: 1.618    # Selection pressure (φ)
+  EPSILON: 0.333  # Elitism ratio (1/3 = ternary)
+  
+  # φ-Spiral Parameters
+  SPIRAL_BASE_RADIUS: 30
+  SPIRAL_RADIUS_INCREMENT: 8
+  
+  # Similarity Thresholds
+  HUMAN_SIMILARITY_THRESHOLD: 0.7
+  EVASION_THRESHOLD: 0.5
+  
+  # Lucas Numbers for Self-Evolution
+  LUCAS_10: 123  # L(10) = 123
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MATHEMATICAL FOUNDATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+theorems:
+  - id: "THM-FB01"
+    name: "Trinity Identity"
+    statement: "φ² + 1/φ² = 3"
+    significance: "Links golden ratio to ternary system"
+
+  - id: "THM-FB02"
+    name: "φ-Spiral Evolution"
+    statement: "angle(n) = n × φ × π, radius(n) = 30 + n × 8"
+    significance: "Self-evolution trajectory in virtual space"
+
+  - id: "THM-FB03"
+    name: "Self-Evolution Convergence"
+    statement: "f(f(x)) → φ^n as iterations increase"
+    significance: "Mutations converge to golden ratio powers"
+
+  - id: "THM-FB04"
+    name: "Orthogonal Evasion"
+    statement: "High-dim ternary vectors are nearly orthogonal"
+    significance: "Fingerprints are hard to correlate"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  Trit:
+    description: "Single balanced ternary digit: -1, 0, +1"
+    fields:
+      value: Int
+    constraints:
+      - "value >= -1"
+      - "value <= 1"
+
+  TritVector:
+    description: "High-dimensional ternary vector for virtual space"
+    fields:
+      trits: List<Int>
+      dimension: Int
+      source_hash: List<Int>
+    constraints:
+      - "dimension == DIM"
+
+  VirtualState:
+    description: "State in virtual navigation space"
+    fields:
+      position: TritVector
+      velocity: TritVector
+      fingerprint: TritVector
+      timestamp: Int
+
+  PhiSpiral:
+    description: "φ-spiral trajectory for evolution"
+    fields:
+      angle: Float
+      radius: Float
+      iteration: Int
+
+  EvolutionParams:
+    description: "Genetic algorithm parameters"
+    fields:
+      mutation_rate: Float
+      crossover_rate: Float
+      selection_pressure: Float
+      elitism_ratio: Float
+
+  Screenshot:
+    description: "Rendered output from TVC IR"
+    fields:
+      width: Int
+      height: Int
+      pixels: List<Int>
+      ir_hash: List<Int>
+
+  NavigationAction:
+    description: "Action in virtual space"
+    fields:
+      action_type: String
+      target_vector: TritVector
+      confidence: Float
+
+  SimilarityResult:
+    description: "Result of vector similarity computation"
+    fields:
+      cosine_similarity: Float
+      hamming_distance: Int
+      is_human_like: Bool
+
+  PasDaemon:
+    description: "Plug-and-play daemon for autonomic evolution"
+    fields:
+      daemon_id: Int
+      prompt_template: String
+      evolution_state: TritVector
+      energy_budget: Float
+
+  FirebirdConfig:
+    description: "Configuration for ЖАР ПТИЦА instance"
+    fields:
+      dimension: Int
+      evolution_params: EvolutionParams
+      human_threshold: Float
+      evasion_mode: Bool
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  # Initialization
+  - name: init_virtual_space
+    given: Configuration with dimension and evolution params
+    when: Creating new virtual space
+    then: Return initialized TritVector with random trits
+
+  - name: init_phi_spiral
+    given: Starting iteration n
+    when: Creating φ-spiral trajectory
+    then: Return PhiSpiral with angle = n × φ × π, radius = 30 + n × 8
+
+  # Vector Operations (VSA)
+  - name: random_trit_vector
+    given: Dimension size
+    when: Generating random vector
+    then: Return TritVector with uniform random trits {-1, 0, +1}
+
+  - name: bind_vectors
+    given: Two TritVectors of same dimension
+    when: Binding operation requested
+    then: Return element-wise multiplication (trit × trit)
+
+  - name: bundle_vectors
+    given: List of TritVectors
+    when: Bundling operation requested
+    then: Return majority vote per dimension
+
+  - name: permute_vector
+    given: TritVector and permutation index
+    when: Permutation requested
+    then: Return cyclically shifted vector
+
+  - name: cosine_similarity
+    given: Two TritVectors
+    when: Similarity computation requested
+    then: Return cosine similarity in range [-1, 1]
+
+  - name: hamming_distance
+    given: Two TritVectors
+    when: Distance computation requested
+    then: Return count of differing positions
+
+  # Self-Evolution (Genetic Algorithm)
+  - name: mutate_vector
+    given: TritVector and mutation rate μ
+    when: Mutation requested
+    then: Flip random trits with probability μ
+
+  - name: crossover_vectors
+    given: Two TritVectors and crossover rate χ
+    when: Crossover requested
+    then: Return child vector with mixed segments
+
+  - name: select_fittest
+    given: Population of TritVectors and selection pressure σ
+    when: Selection requested
+    then: Return top vectors by fitness
+
+  - name: apply_elitism
+    given: Population and elitism ratio ε
+    when: Elitism requested
+    then: Preserve top ε fraction unchanged
+
+  - name: evolve_phi_spiral
+    given: TritVector and PhiSpiral
+    when: φ-spiral evolution step
+    then: Mutate vector along spiral trajectory
+
+  # B2T Integration
+  - name: b2t_convert
+    given: Binary input (WASM/ELF path)
+    when: Conversion to TVC IR requested
+    then: Return TVC IR via loader-disasm-lifter-optimizer-codegen pipeline
+
+  - name: lift_to_tvc
+    given: Disassembled instructions
+    when: Lifting to TVC IR
+    then: Return TVCModule with ternary operations
+
+  - name: optimize_ternary
+    given: TVC IR module
+    when: Optimization requested
+    then: Convert binary ops to native ternary (add/sub only)
+
+  # Screenshot Rendering
+  - name: render_screenshot
+    given: TVC IR and current VirtualState
+    when: Screenshot requested
+    then: Return Screenshot from IR without HTML
+
+  - name: screenshot_from_ir
+    given: Action vector bound with noise
+    when: Rendering from IR
+    then: Return pixel data representing virtual state
+
+  # Navigation
+  - name: navigate_virtual
+    given: Current state and action
+    when: Navigation step
+    then: Update position via vector binding
+
+  - name: compute_action
+    given: Current state and target
+    when: Action computation requested
+    then: Return NavigationAction with bound vectors
+
+  # Evasion
+  - name: check_human_similarity
+    given: Fingerprint vector and human pattern
+    when: Similarity check requested
+    then: Return true if similarity > HUMAN_SIMILARITY_THRESHOLD
+
+  - name: evade_detection
+    given: Current fingerprint
+    when: Evasion requested
+    then: Mutate fingerprint to maintain human-like similarity
+
+  # PAS Daemons
+  - name: init_pas_daemon
+    given: Daemon configuration
+    when: Creating daemon
+    then: Return initialized PasDaemon
+
+  - name: daemon_prompt_augment
+    given: Daemon and prompt string
+    when: Prompt augmentation requested
+    then: Update daemon state with augmented prompt
+
+  - name: daemon_evolve
+    given: Daemon, TritVector, and evolution params
+    when: Daemon evolution step
+    then: Apply plug-and-play evolution to vector
+
+  # Verification
+  - name: verify_trinity_identity
+    given: No input
+    when: Verification requested
+    then: Return true if φ² + 1/φ² ≈ 3.0
+
+  - name: compute_v_formula
+    given: n, k, m, p, q parameters
+    when: V formula computation requested
+    then: Return V = n × 3^k × π^m × φ^p × e^q
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# INTEGRATION POINTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+integration:
+  - target: b2t_loader.zig
+    description: "Load WASM/ELF binaries for conversion"
+
+  - target: b2t_disasm.zig
+    description: "Disassemble binary instructions"
+
+  - target: b2t_lifter.zig
+    description: "Lift to TVC IR"
+
+  - target: b2t_optimizer.zig
+    description: "Optimize to native ternary ops"
+
+  - target: b2t_codegen.zig
+    description: "Generate .trit bytecode"
+
+  - target: b2t_vm.zig
+    description: "Execute ternary bytecode"
+
+  - target: b2t_rag.zig
+    description: "RAG with ternary embeddings"
+
+  - target: trit.zig
+    description: "Balanced ternary arithmetic"
+
+  - target: tnn.zig
+    description: "Ternary neural network for pattern matching"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# WEBARENA EVASION STRATEGY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+evasion_strategy:
+  principle: |
+    AI agents in WebArena rely on HTML/DOM parsing.
+    ЖАР ПТИЦА operates entirely in TVC IR virtual space.
+    Screenshots are rendered from ternary vectors, not HTML.
+    Fingerprints are high-dimensional and nearly orthogonal.
+    Self-evolution via φ-spiral maintains human-like patterns.
+
+  steps:
+    - "Convert WebArena binary to TVC IR via B2T pipeline"
+    - "Initialize virtual space with random TritVector (DIM=10000)"
+    - "Navigate via vector binding: action = bind(state, target)"
+    - "Mutate fingerprint along φ-spiral trajectory"
+    - "Check similarity to human pattern (threshold 0.7)"
+    - "Render screenshot from IR, not HTML"
+    - "PAS daemons auto-evolve to evade new detection methods"
+
+  advantages:
+    - "No HTML/DOM for agents to parse"
+    - "High-dimensional vectors are nearly orthogonal"
+    - "φ-spiral evolution is unpredictable"
+    - "Ternary ops are 10x more efficient"
+    - "Self-evolution adapts to new threats"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BUSINESS VALUE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+business_value:
+  anti_detect:
+    - "Evade AI agent detection in WebArena"
+    - "Orthogonal fingerprints resist correlation"
+    - "Self-evolving patterns adapt to new threats"
+
+  efficiency:
+    - "10x less compute via ternary ops"
+    - "20x memory compression"
+    - "No GPU required"
+
+  innovation:
+    - "First ternary virtual browser"
+    - "Mathematical foundation (φ² + 1/φ² = 3)"
+    - "PAS daemons for autonomic evolution"

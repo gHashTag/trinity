@@ -1,0 +1,348 @@
+# ============================================================================
+# Unified Fluent System - Complete Chat + Code Generation
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: unified_fluent_system
+version: "1.0.0"
+language: zig
+module: unified_fluent_system
+
+description: |
+  MEGA UNIFICATION: Complete fluent chat + full code generation.
+  Combines Cycle 15 (15 algorithms) + Cycle 16 (10 topics).
+  Seamless mode switching: chat <-> code <-> hybrid.
+  15 algorithms in 4 languages = 60 code templates.
+  10 conversation topics + 5 personality traits.
+  Context memory, honest limitations, multilingual (RU/ZH/EN).
+
+constants:
+  HIGH_CONFIDENCE: 0.95
+  MED_CONFIDENCE: 0.75
+  LOW_CONFIDENCE: 0.5
+  UNKNOWN_CONFIDENCE: 0.2
+  ALGORITHM_COUNT: 15
+  LANGUAGE_COUNT: 4
+  TOPIC_COUNT: 10
+  TEMPLATE_COMBINATIONS: 60
+  MAX_CONTEXT_TURNS: 20
+
+types:
+  SystemMode:
+    description: "Operating mode"
+    enum:
+      - chat
+      - code
+      - hybrid
+      - unknown
+
+  InputLanguage:
+    description: "Detected input language"
+    enum:
+      - russian
+      - chinese
+      - english
+
+  OutputLanguage:
+    description: "Code output language"
+    enum:
+      - zig
+      - python
+      - javascript
+      - typescript
+
+  ChatTopic:
+    description: "Conversation topics (10)"
+    enum:
+      - greeting
+      - farewell
+      - help
+      - capabilities
+      - feelings
+      - weather
+      - time
+      - jokes
+      - facts
+      - unknown
+
+  Algorithm:
+    description: "Supported algorithms (15)"
+    enum:
+      - bubble_sort
+      - quick_sort
+      - merge_sort
+      - linear_search
+      - binary_search
+      - fibonacci
+      - factorial
+      - is_prime
+      - stack
+      - queue
+      - linked_list
+      - binary_tree
+      - hash_map
+      - bfs
+      - dfs
+      - unknown
+
+  PersonalityTrait:
+    description: "Bot personality (5)"
+    enum:
+      - friendly
+      - helpful
+      - honest
+      - curious
+      - humble
+
+  UnifiedContext:
+    description: "Full system context"
+    fields:
+      turn_count: Int
+      current_mode: SystemMode
+      current_topic: ChatTopic
+      current_algorithm: Algorithm
+      input_language: InputLanguage
+      output_language: OutputLanguage
+      user_mood: String
+
+  UnifiedRequest:
+    description: "Request to unified system"
+    fields:
+      text: String
+      context: UnifiedContext
+
+  UnifiedResponse:
+    description: "Response from unified system"
+    fields:
+      text: String
+      code: String
+      mode: SystemMode
+      topic: ChatTopic
+      algorithm: Algorithm
+      output_language: OutputLanguage
+      confidence: Float
+      is_honest: Bool
+      personality: PersonalityTrait
+
+behaviors:
+  # Mode Detection
+  - name: detectMode
+    given: User input
+    when: Analyzing intent
+    then: Return SystemMode (chat/code/hybrid)
+
+  - name: detectInputLanguage
+    given: User input
+    when: Analyzing text patterns
+    then: Return InputLanguage (ru/zh/en)
+
+  - name: detectOutputLanguage
+    given: User input
+    when: Analyzing code request
+    then: Return OutputLanguage (zig/python/js/ts)
+
+  - name: detectTopic
+    given: User input in chat mode
+    when: Analyzing conversation
+    then: Return ChatTopic
+
+  - name: detectAlgorithm
+    given: User input in code mode
+    when: Analyzing code request
+    then: Return Algorithm
+
+  # Chat Responses (10 topics)
+  - name: respondGreeting
+    given: Greeting detected
+    when: User says hello
+    then: Return warm greeting
+
+  - name: respondFarewell
+    given: Farewell detected
+    when: User says goodbye
+    then: Return friendly farewell
+
+  - name: respondHelp
+    given: Help request
+    when: User asks for help
+    then: Return guidance with capabilities
+
+  - name: respondCapabilities
+    given: Capabilities query
+    when: User asks what bot can do
+    then: Return list of 15 algorithms + 10 topics
+
+  - name: respondFeelings
+    given: Feelings question
+    when: User asks about emotions
+    then: Return HONEST AI response
+
+  - name: respondWeather
+    given: Weather question
+    when: User asks about weather
+    then: Return HONEST cannot check
+
+  - name: respondTime
+    given: Time question
+    when: User asks about time
+    then: Return HONEST cannot check
+
+  - name: respondJoke
+    given: Joke request
+    when: User wants humor
+    then: Return programming joke
+
+  - name: respondFact
+    given: Fact request
+    when: User wants interesting fact
+    then: Return tech/math fact
+
+  - name: respondUnknown
+    given: Unknown topic
+    when: Cannot understand
+    then: Return honest uncertainty
+
+  # Code Generation (15 algorithms)
+  - name: generateBubbleSort
+    given: Output language
+    when: User requests bubble sort
+    then: Return real bubble sort code
+
+  - name: generateQuickSort
+    given: Output language
+    when: User requests quick sort
+    then: Return real quick sort code
+
+  - name: generateMergeSort
+    given: Output language
+    when: User requests merge sort
+    then: Return real merge sort code
+
+  - name: generateLinearSearch
+    given: Output language
+    when: User requests linear search
+    then: Return real linear search code
+
+  - name: generateBinarySearch
+    given: Output language
+    when: User requests binary search
+    then: Return real binary search code
+
+  - name: generateFibonacci
+    given: Output language
+    when: User requests fibonacci
+    then: Return real fibonacci code
+
+  - name: generateFactorial
+    given: Output language
+    when: User requests factorial
+    then: Return real factorial code
+
+  - name: generateIsPrime
+    given: Output language
+    when: User requests prime check
+    then: Return real prime check code
+
+  - name: generateStack
+    given: Output language
+    when: User requests stack
+    then: Return real stack code
+
+  - name: generateQueue
+    given: Output language
+    when: User requests queue
+    then: Return real queue code
+
+  - name: generateLinkedList
+    given: Output language
+    when: User requests linked list
+    then: Return real linked list code
+
+  - name: generateBinaryTree
+    given: Output language
+    when: User requests binary tree
+    then: Return real binary tree code
+
+  - name: generateHashMap
+    given: Output language
+    when: User requests hash map
+    then: Return real hash map code
+
+  - name: generateBFS
+    given: Output language
+    when: User requests BFS
+    then: Return real BFS code
+
+  - name: generateDFS
+    given: Output language
+    when: User requests DFS
+    then: Return real DFS code
+
+  # Unified Processing
+  - name: processUnified
+    given: UnifiedRequest
+    when: Processing user input
+    then: Return UnifiedResponse (chat or code or hybrid)
+
+  - name: handleChat
+    given: Chat mode detected
+    when: Processing chat request
+    then: Return chat response
+
+  - name: handleCode
+    given: Code mode detected
+    when: Processing code request
+    then: Return code response
+
+  - name: handleHybrid
+    given: Hybrid mode detected
+    when: Both chat and code needed
+    then: Return greeting + code
+
+  # Context Management
+  - name: initContext
+    given: New session
+    when: First message
+    then: Return initialized UnifiedContext
+
+  - name: updateContext
+    given: Current context and response
+    when: After processing
+    then: Return updated UnifiedContext
+
+  - name: selectPersonality
+    given: Mode and topic
+    when: Choosing style
+    then: Return PersonalityTrait
+
+  # Validation
+  - name: validateResponse
+    given: UnifiedResponse
+    when: Checking quality
+    then: Reject generic patterns
+
+test_cases:
+  - name: russian_greeting_code
+    given: "Привет! Напиши quicksort на Python"
+    expected: "Greeting + quicksort Python (hybrid mode)"
+
+  - name: chinese_bfs_request
+    given: "用JavaScript写广度优先搜索"
+    expected: "BFS in JavaScript (code mode)"
+
+  - name: english_chat_only
+    given: "Tell me a programming joke"
+    expected: "Programming joke (chat mode)"
+
+  - name: capabilities_list
+    given: "What can you do?"
+    expected: "15 algorithms + 10 topics listed"
+
+  - name: honest_weather
+    given: "What's the weather?"
+    expected: "Cannot check - honest response"
+
+  - name: mode_switch
+    given: "Hello! Now write fibonacci in TypeScript"
+    expected: "Greeting then fibonacci TS (hybrid)"

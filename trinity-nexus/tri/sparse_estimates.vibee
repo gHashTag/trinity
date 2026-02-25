@@ -1,0 +1,32 @@
+name: sparse_estimates
+version: "1.0.0"
+language: zig
+module: sparse_estimates
+
+types:
+  SmoothingComparison:
+    fields:
+      laplace_eval_ppl: Float
+      kn_eval_ppl: Float
+      improvement_pct: Float
+      overfit_gap: Float
+
+behaviors:
+  - name: compareLaplaceVsKN
+    given: Same corpus, same train/eval split, Laplace vs Kneser-Ney smoothing
+    when: Evaluate PPL on eval split
+    then: KN 4.84 vs Laplace 28.50 — 83% PPL reduction
+
+  - name: analyzeOverfitGap
+    given: KN train PPL 3.54, KN eval PPL 4.84
+    when: Compute overfit gap
+    then: Gap -1.30 (inverted — eval easier than train, suggests eval overlap)
+
+test_cases:
+  - name: kn_beats_laplace
+    input: "Same eval split, D=0.25, lambda=1.0"
+    expected: "KN PPL 4.84 vs Laplace PPL 28.50 (83% reduction)"
+
+  - name: inverted_gap_analysis
+    input: "KN train vs eval PPL"
+    expected: "Gap -1.30 — eval benefits from trigram overlap with training data"

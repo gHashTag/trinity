@@ -1,0 +1,151 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+types:
+  Video:
+    fields:
+      id: String
+      title: String
+      description: String
+      url: String
+      thumbnail: String
+      duration: Int
+      views: Int
+      likes: Int
+      created_at: String
+      author_id: String
+
+  Channel:
+    fields:
+      id: String
+      name: String
+      description: String
+      avatar: String
+      subscribers: Int
+      videos_count: Int
+      created_at: String
+
+  LiveStream:
+    fields:
+      id: String
+      title: String
+      channel_id: String
+      stream_url: String
+      viewers: Int
+      started_at: String
+      status: StreamStatus
+
+  StreamStatus:
+
+  Comment:
+    fields:
+      id: String
+      video_id: String
+      user_id: String
+      text: String
+      likes: Int
+      created_at: String
+
+  Playlist:
+    fields:
+      id: String
+      name: String
+      description: String
+      video_ids: List(String)
+      created_at: String
+
+  BeamTVError:
+
+  get_video:
+      id: String
+
+  list_videos:
+      limit: Int
+      offset: Int
+
+  upload_video:
+      title: String
+      description: String
+      file_path: String
+
+  delete_video:
+      id: String
+
+  update_video:
+      id: String
+      title: String
+      description: String
+
+  get_channel:
+      id: String
+
+  create_channel:
+      name: String
+      description: String
+
+  subscribe_to_channel:
+      channel_id: String
+      user_id: String
+
+  start_stream:
+      title: String
+      channel_id: String
+
+  stop_stream:
+      stream_id: String
+
+  get_live_streams:
+      limit: Int
+
+  add_comment:
+      video_id: String
+      user_id: String
+      text: String
+
+  get_comments:
+      video_id: String
+      limit: Int
+
+  create_playlist:
+      name: String
+      description: String
+
+  add_to_playlist:
+      playlist_id: String
+      video_id: String
+
+behaviors:
+  - name: video_upload
+    given: user has valid credentials and video file
+    when: upload_video is called
+    then: video is uploaded and available for streaming
+  - name: live_streaming
+    given: channel exists and user is authenticated
+    when: start_stream is called
+    then: live stream starts and viewers can watch
+  - name: channel_subscription
+    given: channel exists and user is authenticated
+    when: subscribe_to_channel is called
+    then: user is subscribed and receives notifications
+  - name: video_comments
+    given: video exists and user is authenticated
+    when: add_comment is called
+    then: comment is added and visible to other users
+  - name: playlist_management
+    given: user is authenticated
+    when: create_playlist is called
+    then: playlist is created and videos can be added
+  - name: test_get_video
+    when: 
+    then: 
+  - name: test_upload_video
+    when: 
+    then: 
+  - name: test_start_stream
+    when: 
+    then: 
+  - name: test_add_comment
+    when: 
+    then: 

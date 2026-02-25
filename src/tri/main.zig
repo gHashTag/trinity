@@ -29,8 +29,7 @@ const utils = @import("tri_utils.zig");
 const commands = @import("tri_commands.zig");
 const pipeline = @import("tri_pipeline.zig");
 const demos = @import("tri_demos.zig");
-const strict_mode = @import("tri_strict.zig");
-const math_mod = @import("tri_math.zig");
+const math_commands = @import("math/commands.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN
@@ -85,6 +84,9 @@ pub fn main() !void {
         .multi_cluster => commands.runMultiClusterCommand(allocator, cmd_args),
         .verify => pipeline.runVerifyCommand(allocator),
         .verdict => pipeline.runVerdictCommand(allocator),
+        // Spec & Loop (v8.27)
+        .spec_create => pipeline.runSpecCreateCommand(allocator, cmd_args),
+        .loop_decide => pipeline.runLoopDecideCommand(allocator, cmd_args),
         // TVC (Distributed Learning)
         .tvc_demo => demos.runTVCDemo(),
         .tvc_stats => demos.runTVCStats(),
@@ -195,98 +197,33 @@ pub fn main() !void {
         .workflow_bench => demos.runWorkflowBench(),
         // Distributed Inference
         .distributed => commands.runDistributedCommand(allocator, cmd_args),
-        // Dev Utilities (Cycle 78)
+        // Sacred Mathematics (v2.0)
+        .math => math_commands.runMathCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Math error: {}\n", .{err});
+        },
+        .constants_cmd => math_commands.runConstantsCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Constants error: {}\n", .{err});
+        },
+        .phi => math_commands.runPhiCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Phi error: {}\n", .{err});
+        },
+        .fib => math_commands.runFibCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Fib error: {}\n", .{err});
+        },
+        .lucas => math_commands.runLucasCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Lucas error: {}\n", .{err});
+        },
+        .spiral => math_commands.runSpiralCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Spiral error: {}\n", .{err});
+        },
+        // Dev Utilities
         .doctor => commands.runDoctorCommand(allocator),
         .clean => commands.runCleanCommand(allocator),
         .fmt_cmd => commands.runFmtCommand(allocator),
         .stats_cmd => commands.runStatsCommand(allocator),
         .igla => commands.runIglaCommand(allocator),
-        .test_all => commands.runTestAllCommand(allocator),
-        // Code Analysis
-        .analyze => commands.runAnalyzeCommand(allocator, cmd_args),
-        .search_cmd => commands.runSearchCommand(allocator, cmd_args),
-        .deps => commands.runDepsCommand(allocator, cmd_args),
         .info => utils.printInfo(),
         .version => utils.printVersion(),
         .help => utils.printHelp(),
-        // New Commands - VIBEE First Integration
-        .improve => commands.runImproveCommand(allocator, cmd_args),
-        .gguf_chat => commands.runGgufChatCommand(allocator, cmd_args),
-        .metal => commands.runMetalCommand(allocator),
-        .validate => commands.runValidateCommand(allocator, cmd_args),
-        .prometheus => commands.runPrometheusCommand(allocator, cmd_args),
-        .tvc_compile => commands.runTVCCompileCommand(allocator, cmd_args),
-        .competitive_repl => commands.runCompetitiveReplCommand(allocator, cmd_args),
-        .kg_server => commands.runKGServerCommand(allocator, cmd_args),
-        // VIBEE-First Strict Mode
-        .strict => strict_mode.runStrictCommand(allocator, cmd_args),
-        // Cycle 81: LSP + Auto-fix
-        .lsp => commands.runLspCommand(allocator, cmd_args),
-        .autofix => commands.runAutofixCommand(allocator, cmd_args),
-        .lint => commands.runLintCommand(allocator, cmd_args),
-        // Cycle 82: Sacred Math
-        .math => math_mod.runMathCommand(cmd_args),
-        .constants_cmd => math_mod.runConstantsCommand(),
-        .phi_cmd => math_mod.runPhiCommand(cmd_args),
-        .fib_cmd => math_mod.runFibCommand(cmd_args),
-        .lucas_cmd => math_mod.runLucasCommand(cmd_args),
-        .spiral_cmd => math_mod.runSpiralCommand(cmd_args),
-        .math_verify => math_mod.runMathVerifyCommand(),
-        .math_bench => math_mod.runMathBenchCommand(),
-        .math_compare => math_mod.runMathCompareCommand(cmd_args),
-        // Cycle 91: Sacred Language Model
-        .embed => commands.runEmbedCommand(allocator, cmd_args),
-        .sacred_search => commands.runSacredSearchCommand(allocator, cmd_args),
-        // Cycle 92: Sacred Language Model v1.1 — Reasoning + Attention
-        .sacred_reason => commands.runSacredReasonCommand(allocator, cmd_args),
-        .sacred_compare => commands.runSacredCompareCommand(allocator, cmd_args),
-        .sacred_chain => commands.runSacredChainCommand(allocator, cmd_args),
-        .sacred_bench_cmd => commands.runSacredBenchCommand(allocator),
-        // Cycle 84: $TRI Rewards
-        .rewards => commands.runRewardsCommand(allocator, cmd_args),
-        // Cycle 85: Dashboard
-        .dashboard => commands.runDashboardCommand(allocator),
-        // Cycle 86: Swarm Sync
-        .swarm => commands.runSwarmCommand(allocator, cmd_args),
-        // Cycle 85: Improve-All Pipeline
-        .improve_all => commands.runImproveAllCommand(allocator, cmd_args),
-        // Cycle 91: Full Autonomous Health Report
-        .full_autonomous => commands.runFullAutonomousCommand(allocator),
-        // Cycle 88: Marketplace + Autonomous Swarm + Self-Improvement
-        .marketplace => commands.runMarketplaceCommand(allocator, cmd_args),
-        .agents_auto => commands.runAgentsAutoCommand(allocator, cmd_args),
-        .improve_loop => commands.runImproveLoopCommand(allocator, cmd_args),
-        // Cycle 89: Omega Mode + Universal Agent Control
-        .omega => commands.runOmegaCommand(allocator),
-        .control => commands.runControlCommand(allocator, cmd_args),
-        .marketplace_live => commands.runMarketplaceLiveCommand(allocator),
-        // Cycle 90: Singularity + Self-Evolving OS + Universal Economy
-        .singularity => commands.runSingularityCommand(allocator),
-        .evolve_os => commands.runEvolveOsCommand(allocator, cmd_args),
-        .economy => commands.runEconomyCommand(allocator, cmd_args),
-        // Cycle 91: Transcendence + Beyond Code + Universal Consciousness
-        .transcend => commands.runTranscendCommand(allocator),
-        .beyond => commands.runBeyondCommand(allocator, cmd_args),
-        .consciousness => commands.runConsciousnessCommand(allocator),
-        // Cycle 92: Omniscience + Omega Integration + Manifest Engine
-        .omniscience => commands.runOmniscienceCommand(allocator),
-        .integrate => commands.runIntegrateCommand(allocator, cmd_args),
-        .manifest => commands.runManifestCommand(allocator, cmd_args),
-        // Cycle 93: Genesis + Creation Engine + Ascension Protocol
-        .genesis => commands.runGenesisCommand(allocator),
-        .create_world => commands.runCreateWorldCommand(allocator, cmd_args),
-        .ascension => commands.runAscensionCommand(allocator),
-        // Cycle 94: Eternity + Infinity Engine + Apotheosis Protocol
-        .eternity => commands.runEternityCommand(allocator),
-        .infinity => commands.runInfinityCommand(allocator, cmd_args),
-        .apotheosis => commands.runApotheosisCommand(allocator),
-        // Cycle 95: Omega Point + Final Convergence + Universal Ascension
-        .omega_point => commands.runOmegaPointCommand(allocator),
-        .convergence => commands.runConvergenceCommand(allocator, cmd_args),
-        .universal => commands.runUniversalCommand(allocator),
-        // Cycle 96: Absolute + Final Transcendence + End of Cycles
-        .absolute => commands.runAbsoluteCommand(allocator),
-        .final_transcend => commands.runFinalTranscendCommand(allocator, cmd_args),
-        .end_of_cycles => commands.runEndOfCyclesCommand(allocator),
     }
 }

@@ -1,0 +1,199 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# QUANTIZER.VIBEE - INT4 ДЕМИУРГ
+# Священные законы концентрации 7B разума в 8GB памяти
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: quantizer
+version: "1.0.0"
+language: zig
+module: trinity_quantizer
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# СВЯЩЕННЫЕ КОНСТАНТЫ INT4
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  INT4_MIN: -8          # Минимальное значение INT4
+  INT4_MAX: 7           # Максимальное значение INT4
+  INT4_RANGE: 15        # Диапазон значений (7 - (-8) = 15)
+  SCALE_DIVISOR: 7.0    # Делитель для вычисления scale
+  BLOCK_SIZE: 32        # Размер блока для block-wise quantization
+  PHI: 1.618033988749895
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ТИПЫ ДАННЫХ
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  # INT4 упакованный формат: 2 значения в 1 байте
+  PackedInt4:
+    fields:
+      data: List<Int>       # Упакованные байты (2 INT4 на байт)
+      scales: List<Float>   # Scale factors для каждого блока
+      zeros: List<Int>      # Zero points для каждого блока
+      shape: List<Int>      # Оригинальная форма тензора
+      num_elements: Int     # Количество элементов
+
+  # Конфигурация квантизации
+  QuantConfig:
+    fields:
+      block_size: Int       # Размер блока (default: 32)
+      symmetric: Bool       # Симметричная квантизация
+      use_zero_point: Bool  # Использовать zero point
+
+  # Статистика квантизации
+  QuantStats:
+    fields:
+      original_size: Int    # Размер в байтах до квантизации
+      quantized_size: Int   # Размер после квантизации
+      compression_ratio: Float
+      max_error: Float      # Максимальная ошибка
+      mean_error: Float     # Средняя ошибка
+
+  # Заголовок INT4 файла
+  Int4Header:
+    fields:
+      magic: Int            # 0x494E5434 = "INT4"
+      version: Int
+      num_tensors: Int
+      vocab_size: Int
+      hidden_size: Int
+      intermediate_size: Int
+      num_layers: Int
+      num_heads: Int
+      num_kv_heads: Int
+      total_params: Int
+      quantized_size: Int   # Размер в байтах после квантизации
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# СВЯЩЕННЫЕ ЗАКОНЫ КВАНТИЗАЦИИ
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  # ЗАКОН 1: Вычисление scale factor
+  - name: compute_scale
+    given: Блок f32 значений размера BLOCK_SIZE
+    when: Нужно найти коэффициент масштабирования
+    then: scale = max(abs(block)) / 7.0
+    formula: |
+      absmax = 0.0
+      for value in block:
+        absmax = max(absmax, abs(value))
+      scale = absmax / 7.0
+      if scale == 0.0:
+        scale = 1.0  # Избегаем деления на ноль
+
+  # ЗАКОН 2: Квантизация f32 → INT4
+  - name: quantize_value
+    given: f32 значение и scale factor
+    when: Нужно сжать до INT4
+    then: int4 = clamp(round(f32 / scale), -8, 7)
+    formula: |
+      scaled = value / scale
+      rounded = round(scaled)
+      clamped = clamp(rounded, -8, 7)
+      return @intCast(i4, clamped)
+
+  # ЗАКОН 3: Деквантизация INT4 → f32
+  - name: dequantize_value
+    given: INT4 значение и scale factor
+    when: Нужно восстановить f32 для вычислений
+    then: f32 = int4_as_f32 * scale
+    formula: |
+      return @as(f32, @floatFromInt(int4)) * scale
+
+  # ЗАКОН 4: Упаковка двух INT4 в один байт
+  - name: pack_int4
+    given: Два INT4 значения (high, low)
+    when: Нужно упаковать для хранения
+    then: byte = (high << 4) | (low & 0x0F)
+    formula: |
+      high_bits = (@as(u8, @bitCast(high)) & 0x0F) << 4
+      low_bits = @as(u8, @bitCast(low)) & 0x0F
+      return high_bits | low_bits
+
+  # ЗАКОН 5: Распаковка байта в два INT4
+  - name: unpack_int4
+    given: Упакованный байт
+    when: Нужно извлечь два INT4 значения
+    then: high = byte >> 4, low = byte & 0x0F (с sign extension)
+    formula: |
+      high_u4 = (byte >> 4) & 0x0F
+      low_u4 = byte & 0x0F
+      # Sign extension: если бит 3 установлен, это отрицательное число
+      high = if (high_u4 & 0x08) != 0 then @as(i8, high_u4) - 16 else @as(i8, high_u4)
+      low = if (low_u4 & 0x08) != 0 then @as(i8, low_u4) - 16 else @as(i8, low_u4)
+
+  # ЗАКОН 6: Block-wise квантизация тензора
+  - name: quantize_tensor
+    given: f32 тензор произвольной формы
+    when: Нужно сконвертировать весь тензор в INT4
+    then: Разбить на блоки, вычислить scale для каждого, квантизовать
+    steps:
+      - Flatten тензор в 1D массив
+      - Разбить на блоки размера BLOCK_SIZE
+      - Для каждого блока вычислить scale (ЗАКОН 1)
+      - Квантизовать каждое значение (ЗАКОН 2)
+      - Упаковать пары INT4 в байты (ЗАКОН 4)
+      - Сохранить scales отдельно
+
+  # ЗАКОН 7: Block-wise деквантизация тензора
+  - name: dequantize_tensor
+    given: PackedInt4 тензор
+    when: Нужно восстановить f32 для inference
+    then: Распаковать, деквантизовать с соответствующими scales
+    steps:
+      - Распаковать байты в INT4 пары (ЗАКОН 5)
+      - Для каждого блока применить соответствующий scale
+      - Деквантизовать каждое значение (ЗАКОН 3)
+      - Reshape в оригинальную форму
+
+  # ЗАКОН 8: Конвертация .tri → .tri.int4
+  - name: convert_tri_to_int4
+    given: Путь к .tri файлу с BF16/F32 весами
+    when: Нужно создать квантизованную версию
+    then: Создать .tri.int4 файл с INT4 весами и scales
+    steps:
+      - Прочитать заголовок .tri
+      - Для каждого тензора:
+        - Загрузить BF16/F32 веса
+        - Применить quantize_tensor (ЗАКОН 6)
+        - Записать упакованные INT4 + scales
+      - Записать новый заголовок с quantized_size
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ФОРМАТ ФАЙЛА .tri.int4
+# ═══════════════════════════════════════════════════════════════════════════════
+
+file_format:
+  extension: ".tri.int4"
+  structure:
+    - Int4Header (64 bytes)
+    - TensorIndex[] (name, offset, packed_size, num_scales)
+    - For each tensor:
+        - scales: f32[num_blocks]
+        - packed_data: u8[packed_size]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# МЕТРИКИ СЖАТИЯ
+# ═══════════════════════════════════════════════════════════════════════════════
+
+metrics:
+  # BF16 → INT4 compression
+  bf16_to_int4:
+    original_bits: 16
+    quantized_bits: 4
+    scale_overhead: 32 bits per 32 values = 1 bit per value
+    effective_bits: 5  # 4 + 1 overhead
+    compression_ratio: 3.2x  # 16 / 5
+
+  # Для 7B модели
+  qwen_7b:
+    original_size_gb: 14.0  # BF16
+    quantized_size_gb: 4.4  # INT4 + scales
+    fits_in_8gb: true
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3
+# ═══════════════════════════════════════════════════════════════════════════════

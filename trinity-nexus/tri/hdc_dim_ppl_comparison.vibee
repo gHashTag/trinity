@@ -1,0 +1,29 @@
+name: hdc_dim_ppl_comparison
+version: "1.0.0"
+language: zig
+module: hdc_dim_ppl_comparison
+
+types:
+  PPLComparisonResult:
+    fields:
+      dim256_train_ppl: Float
+      dim256_test_ppl: Float
+      dim1024_train_ppl: Float
+      dim1024_test_ppl: Float
+
+behaviors:
+  - name: measurePPLAtDim1024
+    given: Corpus, multi-role + Hebbian at dim=1024
+    when: Compute train and test perplexity
+    then: PPL comparison showing overfit gap reduction
+
+  - name: fullPipelineDim1024
+    given: Corpus, multi-role + Hebbian + sampling at dim=1024
+    when: Autoregressive generation with temperature sampling
+    then: Generated token sequence with diversity assessment
+
+test_cases:
+  - name: dim1024_ppl_not_worse
+    given: Same corpus at dim=256 and dim=1024
+    when: Compute test PPL at both dimensions
+    then: dim=1024 test PPL <= dim=256 test PPL

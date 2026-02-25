@@ -1,0 +1,392 @@
+name: marketplace_analytics
+version: 1.0.0
+description: Analytics and metrics tracking for VIBEE Marketplace
+
+metadata:
+  author: VIBEE Team
+  category: analytics
+  tags: [analytics, metrics, tracking, insights]
+  created: 2024-01-10
+
+types:
+  TemplateMetrics:
+    template_id: string
+    downloads: number
+    installs: number
+    active_users: number
+    rating: number
+    reviews_count: number
+    views: number
+    unique_visitors: number
+    conversion_rate: number
+
+  UserMetrics:
+    user_id: string
+    templates_downloaded: number
+    templates_installed: number
+    templates_created: number
+    total_builds: number
+    success_rate: number
+    active_days: number
+    last_active: timestamp
+
+  MarketplaceMetrics:
+    total_templates: number
+    total_downloads: number
+    total_installs: number
+    active_users: number
+    new_templates_this_month: number
+    trending_categories: list<CategoryTrend>
+    growth_rate: number
+
+  CategoryTrend:
+    category: string
+    downloads: number
+    growth_percentage: number
+
+  TimeSeriesData:
+    timestamp: timestamp
+    value: number
+
+  AnalyticsReport:
+    report_id: string
+    report_type: string
+    entity_id: string
+    period: string
+    data: map<string, any>
+    generated_at: timestamp
+
+  Event:
+    event_id: string
+    event_type: string
+    user_id: optional<string>
+    template_id: optional<string>
+    properties: map<string, any>
+    timestamp: timestamp
+
+behaviors:
+  track_event:
+    input:
+      event_type: string
+      user_id: optional<string>
+      template_id: optional<string>
+      properties: map<string, any>
+    output:
+      event_id: string
+    description: Track an analytics event
+    steps:
+      - Validate event type
+      - Create event record
+      - Store in time-series database
+      - Update real-time counters
+      - Trigger aggregation if needed
+      - Return event ID
+
+  get_template_metrics:
+    input:
+      template_id: string
+      period: string  # day, week, month, year, all_time
+    output: TemplateMetrics
+    description: Get metrics for a specific template
+    steps:
+      - Load template data
+      - Query download events
+      - Query install events
+      - Calculate active users
+      - Get rating data
+      - Calculate conversion rate
+      - Return metrics
+
+  get_user_metrics:
+    input:
+      user_id: string
+    output: UserMetrics
+    description: Get usage metrics for a user
+    steps:
+      - Load user data
+      - Count downloads
+      - Count installs
+      - Count created templates
+      - Calculate build success rate
+      - Count active days
+      - Return metrics
+
+  get_marketplace_overview:
+    input:
+      period: string
+    output: MarketplaceMetrics
+    description: Get overall marketplace metrics
+    steps:
+      - Count total templates
+      - Sum total downloads
+      - Sum total installs
+      - Count active users
+      - Count new templates
+      - Calculate trending categories
+      - Calculate growth rate
+      - Return overview
+
+  get_time_series:
+    input:
+      metric_name: string
+      entity_id: optional<string>
+      start_date: timestamp
+      end_date: timestamp
+      granularity: string  # hour, day, week, month
+    output:
+      data: list<TimeSeriesData>
+    description: Get time series data for a metric
+    steps:
+      - Validate metric name
+      - Query time-series database
+      - Apply date range filter
+      - Aggregate by granularity
+      - Fill missing data points
+      - Return time series
+
+  generate_report:
+    input:
+      report_type: string  # template, user, marketplace, category
+      entity_id: optional<string>
+      period: string
+    output: AnalyticsReport
+    description: Generate analytics report
+    steps:
+      - Validate report type
+      - Gather relevant metrics
+      - Calculate trends
+      - Generate visualizations
+      - Create report record
+      - Store report
+      - Return report
+
+  get_trending_templates:
+    input:
+      period: string
+      limit: number
+    output:
+      templates: list<TemplateMetrics>
+    description: Get trending templates
+    steps:
+      - Calculate download velocity
+      - Factor in recent ratings
+      - Consider view-to-download ratio
+      - Calculate trending score
+      - Sort by score
+      - Return top templates
+
+  get_category_analytics:
+    input:
+      category: string
+      period: string
+    output:
+      metrics: map<string, any>
+    description: Get analytics for a category
+    steps:
+      - Count templates in category
+      - Sum downloads
+      - Calculate average rating
+      - Get top templates
+      - Calculate growth rate
+      - Return metrics
+
+  predict_growth:
+    input:
+      metric_name: string
+      entity_id: optional<string>
+      forecast_periods: number
+    output:
+      predictions: list<TimeSeriesData>
+    description: Predict future metric values
+    steps:
+      - Load historical data
+      - Apply time series model
+      - Generate predictions
+      - Calculate confidence intervals
+      - Return predictions
+
+  get_conversion_funnel:
+    input:
+      template_id: string
+      period: string
+    output:
+      funnel: map<string, number>
+    description: Get conversion funnel for template
+    steps:
+      - Count views
+      - Count detail page visits
+      - Count downloads
+      - Count installs
+      - Count successful builds
+      - Calculate conversion rates
+      - Return funnel data
+
+functions:
+  - name: calculate_trending_score
+    params:
+      template_id: string
+      period: string
+    returns: number
+    description: Calculate trending score for template
+
+  - name: aggregate_metrics
+    params:
+      metric_name: string
+      period: string
+    returns: number
+    description: Aggregate metrics over time period
+
+  - name: calculate_growth_rate
+    params:
+      current_value: number
+      previous_value: number
+    returns: number
+    description: Calculate growth rate percentage
+
+  - name: detect_anomalies
+    params:
+      time_series: list<TimeSeriesData>
+    returns: list<timestamp>
+    description: Detect anomalies in time series data
+
+tests:
+  - name: track_download_event
+    behavior: track_event
+    input:
+      event_type: "template_downloaded"
+      user_id: "user_123"
+      template_id: "user_auth"
+      properties:
+        source: "marketplace"
+        category: "authentication"
+    expected:
+      event_id: not_empty
+
+  - name: get_template_stats
+    behavior: get_template_metrics
+    input:
+      template_id: "user_auth"
+      period: "month"
+    expected:
+      template_id: "user_auth"
+      downloads: > 0
+      rating: >= 0
+
+  - name: get_user_activity
+    behavior: get_user_metrics
+    input:
+      user_id: "user_123"
+    expected:
+      user_id: "user_123"
+      templates_downloaded: >= 0
+      success_rate: >= 0
+
+  - name: get_marketplace_stats
+    behavior: get_marketplace_overview
+    input:
+      period: "month"
+    expected:
+      total_templates: > 0
+      total_downloads: > 0
+      trending_categories: length > 0
+
+  - name: get_download_time_series
+    behavior: get_time_series
+    input:
+      metric_name: "downloads"
+      entity_id: "user_auth"
+      start_date: "2024-01-01T00:00:00Z"
+      end_date: "2024-01-31T23:59:59Z"
+      granularity: "day"
+    expected:
+      data: length == 31
+
+  - name: generate_template_report
+    behavior: generate_report
+    input:
+      report_type: "template"
+      entity_id: "user_auth"
+      period: "month"
+    expected:
+      report_type: "template"
+      data: not_empty
+
+  - name: get_weekly_trending
+    behavior: get_trending_templates
+    input:
+      period: "week"
+      limit: 10
+    expected:
+      templates: length == 10
+      templates[0].downloads: > templates[1].downloads
+
+  - name: get_auth_category_stats
+    behavior: get_category_analytics
+    input:
+      category: "authentication"
+      period: "month"
+    expected:
+      metrics.total_templates: > 0
+      metrics.total_downloads: > 0
+
+  - name: predict_next_month
+    behavior: predict_growth
+    input:
+      metric_name: "downloads"
+      entity_id: "user_auth"
+      forecast_periods: 30
+    expected:
+      predictions: length == 30
+
+  - name: get_template_funnel
+    behavior: get_conversion_funnel
+    input:
+      template_id: "user_auth"
+      period: "month"
+    expected:
+      funnel.views: > funnel.downloads
+      funnel.downloads: > funnel.installs
+
+constants:
+  EVENT_TYPES:
+    - template_viewed
+    - template_downloaded
+    - template_installed
+    - template_built
+    - template_deployed
+    - template_rated
+    - template_reviewed
+    - search_performed
+    - category_browsed
+
+  METRICS:
+    - downloads
+    - installs
+    - active_users
+    - views
+    - ratings
+    - reviews
+    - builds
+    - deployments
+
+  AGGREGATION_INTERVALS:
+    - hour
+    - day
+    - week
+    - month
+    - quarter
+    - year
+
+  REPORT_TYPES:
+    - template_performance
+    - user_activity
+    - marketplace_overview
+    - category_analysis
+    - trending_analysis
+    - conversion_analysis
+
+  TRENDING_WEIGHTS:
+    recent_downloads: 0.4
+    download_velocity: 0.3
+    rating: 0.2
+    view_to_download_ratio: 0.1

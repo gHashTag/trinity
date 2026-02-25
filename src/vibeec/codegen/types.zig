@@ -14,6 +14,8 @@ pub const ArrayList = std.ArrayListUnmanaged;
 
 // Re-export parser types
 pub const VibeeSpec = vibee_parser.VibeeSpec;
+pub const ZigMode = vibee_parser.ZigMode;
+pub const AllocatorStrategy = vibee_parser.AllocatorStrategy;
 pub const Import = vibee_parser.Import;
 pub const Constant = vibee_parser.Constant;
 pub const TypeDef = vibee_parser.TypeDef;

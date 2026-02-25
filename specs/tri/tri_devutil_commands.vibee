@@ -1,0 +1,192 @@
+name: tri_devutil_commands
+version: "1.0.0"
+language: zig
+module: tri_devutil
+
+# Cycle 79: TRI CLI Development Utility Commands
+# System health, maintenance, and statistics for Trinity project
+# phi^2 + 1/phi^2 = 3
+
+types:
+  SystemCheck:
+    fields:
+      component: String
+      status: String  # ok, warning, error, missing
+      message: String
+      version: Option[String]
+
+  DoctorReport:
+    fields:
+      zig_version: String
+      required_version: String
+      version_match: Bool
+      build_status: String  # clean, dirty, missing
+      system_checks: List[SystemCheck]
+      overall_status: String  # healthy, issues, critical
+      recommendations: List[String]
+
+  CleanStats:
+    fields:
+      files_removed: Int
+      bytes_freed: Int
+      directories_cleaned: List[String]
+
+  FormatStats:
+    fields:
+      files_checked: Int
+      files_changed: Int
+      files_unchanged: Int
+      errors: List[String]
+
+  ProjectStats:
+    fields:
+      total_files: Int
+      zig_files: Int
+      vibee_files: Int
+      zig_files: Int
+      tri_files: Int
+      total_loc: Int
+      zig_loc: Int
+      vibee_loc: Int
+      zig_loc: Int
+      tri_loc: Int
+      modules: List[String]
+      build_targets: List[String]
+      test_files: List[String]
+
+behaviors:
+  - name: doctor_check_system
+    given: No arguments
+    when: User runs 'tri doctor'
+    then:
+      - Check Zig version (requires 0.15.x)
+      - Verify build artifacts exist or can be built
+      - Check for required dependencies
+      - Verify file structure integrity
+      - Return DoctorReport with overall health status
+      - Provide actionable recommendations for any issues
+
+  - name: doctor_check_component
+    given: A specific component name (zig, build, dependencies, structure)
+    when: User runs 'tri doctor --component <name>'
+    then:
+      - Perform targeted check on specified component
+      - Return DoctorReport with component-specific results
+      - Provide focused recommendations
+
+  - name: doctor_quick_scan
+    given: No arguments
+    when: User runs 'tri doctor --quick'
+    then:
+      - Skip expensive checks (build verification, full dependency scan)
+      - Focus on critical issues only
+      - Return abbreviated DoctorReport
+
+  - name: clean_build_artifacts
+    given: No arguments or specific target
+    when: User runs 'tri clean' or 'tri clean --build'
+    then:
+      - Remove zig-out/ directory
+      - Remove zig-cache/ directory
+      - Return CleanStats with files removed and space freed
+
+  - name: clean_cache
+    given: No arguments
+    when: User runs 'tri clean --cache'
+    then:
+      - Remove Zig cache directories
+      - Clear dependency cache
+      - Return CleanStats with cache details
+
+  - name: clean_temporary
+    given: No arguments
+    when: User runs 'tri clean --temp'
+    then:
+      - Remove temporary files (*.tmp, *~)
+      - Clean generated files marked as temporary
+      - Return CleanStats with temp file details
+
+  - name: clean_all
+    given: No arguments
+    when: User runs 'tri clean --all'
+    then:
+      - Run all clean operations (build, cache, temp)
+      - Return aggregated CleanStats
+      - Ask for confirmation before destructive operations
+
+  - name: format_zig_code
+    given: Optional file path or directory
+    when: User runs 'tri fmt [path]' or 'tri fmt --check'
+    then:
+      - Run 'zig fmt' on specified path or src/ by default
+      - If --check flag: verify formatting without making changes
+      - Return FormatStats with files checked and changed
+      - Report any formatting errors
+
+  - name: format_check_only
+    given: No arguments
+    when: User runs 'tri fmt --check'
+    then:
+      - Check formatting without modifying files
+      - Return FormatStats indicating if changes are needed
+      - Exit with error code if formatting is incorrect
+
+  - name: stats_project
+    given: No arguments
+    when: User runs 'tri stats'
+    then:
+      - Count total files in project
+      - Categorize by type (zig, vibee, tri, etc.)
+      - Count lines of code per language
+      - List all discovered modules
+      - List available build targets
+      - Return ProjectStats with comprehensive metrics
+
+  - name: stats_modules
+    given: Module name filter (optional)
+    when: User runs 'tri stats --modules' or 'tri stats --module <name>'
+    then:
+      - List all modules with file counts and LOC
+      - If filter specified, show detailed stats for that module
+      - Return ProjectStats filtered by module criteria
+
+  - name: stats_build_targets
+    given: No arguments
+    when: User runs 'tri stats --build'
+    then:
+      - Parse build.zig to extract all build targets
+      - Return ProjectStats with build targets list
+      - Show target dependencies
+
+  - name: stats_tests
+    given: No arguments
+    when: User runs 'tri stats --tests'
+    then:
+      - List all test files
+      - Count tests per module
+      - Return ProjectStats with test file details
+
+test_cases:
+  - name: doctor_healthy_system
+    given: Healthy Trinity installation
+    expected: "DoctorReport shows overall_status='healthy', version_match=true"
+
+  - name: doctor_missing_zig
+    given: Zig not installed or wrong version
+    expected: "DoctorReport shows overall_status='critical', recommends Zig 0.15.x"
+
+  - name: clean_build_artifacts
+    given: Project with zig-out/ directory
+    expected: "CleanStats shows files_removed > 0, bytes_freed calculated"
+
+  - name: format_check_no_changes
+    given: All code properly formatted
+    expected: "FormatStats shows files_changed=0, no errors"
+
+  - name: stats_full_project
+    given: Complete Trinity codebase
+    expected: "ProjectStats shows total_files > 100, counts all language types"
+
+  - name: stats_module_filter
+    given: Module filter 'vsa'
+    expected: "ProjectStats returns only vsa-related files and LOC"

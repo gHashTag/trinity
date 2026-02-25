@@ -1,0 +1,127 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: category_level
+    given: Input data provided
+    when: category_level function called
+    then: Result returned
+  - name: test_category_level
+  - name: new
+    given: Input data provided
+    when: new function called
+    then: Result returned
+  - name: test_new
+  - name: add_plugin
+    given: Input data provided
+    when: add_plugin function called
+    then: Result returned
+  - name: test_add_plugin
+  - name: validate_dependencies
+    given: Input data provided
+    when: validate_dependencies function called
+    then: Result returned
+  - name: test_validate_dependencies
+  - name: validate_category_hierarchy
+    given: Input data provided
+    when: validate_category_hierarchy function called
+    then: Result returned
+  - name: test_validate_category_hierarchy
+  - name: int_to_string
+    given: Input data provided
+    when: int_to_string function called
+    then: Result returned
+  - name: test_int_to_string
+  - name: detect_cycles
+    given: Input data provided
+    when: detect_cycles function called
+    then: Result returned
+  - name: test_detect_cycles
+  - name: detect_cycles_helper
+    given: Input data provided
+    when: detect_cycles_helper function called
+    then: Result returned
+  - name: test_detect_cycles_helper
+  - name: dfs_visit
+    given: Input data provided
+    when: dfs_visit function called
+    then: Result returned
+  - name: test_dfs_visit
+  - name: check_neighbors
+    given: Input data provided
+    when: check_neighbors function called
+    then: Result returned
+  - name: test_check_neighbors
+  - name: extract_cycle
+    given: Input data provided
+    when: extract_cycle function called
+    then: Result returned
+  - name: test_extract_cycle
+  - name: topological_sort
+    given: Input data provided
+    when: topological_sort function called
+    then: Result returned
+  - name: test_topological_sort
+  - name: topo_sort_helper
+    given: Input data provided
+    when: topo_sort_helper function called
+    then: Result returned
+  - name: test_topo_sort_helper
+  - name: topo_visit
+    given: Input data provided
+    when: topo_visit function called
+    then: Result returned
+  - name: test_topo_visit
+  - name: format_error
+    given: Input data provided
+    when: format_error function called
+    then: Result returned
+  - name: test_format_error
+
+types:
+  category_level:
+    description: Auto-generated
+
+  new:
+    description: Auto-generated
+
+  add_plugin:
+    description: Auto-generated
+
+  validate_dependencies:
+    description: Auto-generated
+
+  validate_category_hierarchy:
+    description: Auto-generated
+
+  int_to_string:
+    description: Auto-generated
+
+  detect_cycles:
+    description: Auto-generated
+
+  detect_cycles_helper:
+    description: Auto-generated
+
+  dfs_visit:
+    description: Auto-generated
+
+  check_neighbors:
+    description: Auto-generated
+
+  extract_cycle:
+    description: Auto-generated
+
+  topological_sort:
+    description: Auto-generated
+
+  topo_sort_helper:
+    description: Auto-generated
+
+  topo_visit:
+    description: Auto-generated
+
+  format_error:
+    description: Auto-generated

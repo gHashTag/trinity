@@ -1,0 +1,143 @@
+name: hdc_golden_chain_v2_7_community_nodes
+version: "2.7.0"
+language: zig
+module: golden_chain
+
+# Golden Chain v2.7 — Community Nodes v1.0 + Gossip Protocol + DHT for 10k+ nodes
+# Agent: #16 Benjamin | Cycle: 63
+
+constants:
+  MAX_QUARK_RECORDS: 120
+  QUARK_EXPORT_VERSION: 11
+  QUARK_EXPORT_HEADER_SIZE: 62
+  COMMUNITY_MAX_NODES: 50000
+  COMMUNITY_TARGET_NODES: 10000
+  GOSSIP_FANOUT: 8
+  GOSSIP_TTL: 6
+  DHT_REPLICATION_FACTOR: 3
+  DHT_BUCKET_SIZE: 20
+
+types:
+  QuarkType:
+    enum: u7
+    new_variants:
+      - community_node: 80        # GoalParse
+      - gossip_broadcast: 81      # Decompose
+      - dht_lookup: 82            # Schedule
+      - community_sync: 83        # Execute
+      - gossip_propagate: 84      # Monitor
+      - dht_store: 85             # Adapt
+      - community_consensus: 86   # Synthesize
+      - community_anchor: 87      # Deliver
+
+  ChainMessageType:
+    new_variants:
+      - CommunityNode
+      - GossipBroadcast
+      - DHTLookup
+      - CommunitySyncEvent
+
+  CommunityNodeState:
+    fields:
+      target_nodes: u16
+      active_nodes: u32
+      gossip_rounds: u32
+      last_gossip_us: i64
+      community_hash: "[32]u8"
+
+  GossipProtocolState:
+    fields:
+      fanout: u8
+      ttl: u8
+      messages_sent: u64
+      messages_received: u64
+      last_broadcast_us: i64
+
+  DHTState:
+    fields:
+      replication_factor: u8
+      bucket_size: u8
+      stored_keys: u32
+      lookups_completed: u32
+      dht_hash: "[32]u8"
+
+  CommunityNodeRecord:
+    fields:
+      node_id: "[32]u8"
+      join_timestamp_us: i64
+      gossip_status: u8
+      is_active: Bool
+
+behaviors:
+  - name: joinCommunity
+    given: Agent with community_node_state
+    when: Community join triggered
+    then: Increments active_nodes, computes community_hash
+
+  - name: gossipBroadcast
+    given: Agent with gossip_protocol_state
+    when: Gossip broadcast triggered
+    then: Increments messages_sent, updates gossip_rounds
+
+  - name: dhtLookup
+    given: Agent with dht_state
+    when: DHT lookup requested
+    then: Increments lookups_completed, computes dht_hash
+
+  - name: registerCommunityNode
+    given: Agent with community_node_records and node_id
+    when: Node registration requested
+    then: Creates community node record
+
+  - name: communityVerify
+    given: Agent with community state
+    when: Phase N verification
+    then: N1 active >= target, N2 gossip active, N3 DHT operational
+
+verification:
+  phase_N:
+    - N1: community_node_state.active_nodes >= COMMUNITY_TARGET_NODES
+    - N2: gossip_protocol_state.messages_sent > 0
+    - N3: dht_state.lookups_completed > 0
+
+export:
+  version: 11
+  header_size: 62
+  new_bytes: "+4 from v10: community_active_nodes(u16) + dht_lookups(u16)"
+  backward_compatible: "v1-v11"
+
+quark_distribution:
+  GoalParse: 15      # +community_node
+  Decompose: 15      # +gossip_broadcast
+  Schedule: 15       # +dht_lookup
+  Execute: 16        # +community_sync
+  Monitor: 15        # +gossip_propagate
+  Adapt: 14          # +dht_store
+  Synthesize: 15     # +community_consensus
+  Deliver: 15        # +community_anchor
+  total: 120
+
+tests:
+  - test_u7_quark_type_88_variants
+  - test_community_node_label
+  - test_gossip_broadcast_label
+  - test_dht_lookup_label
+  - test_community_sync_label
+  - test_gossip_propagate_label
+  - test_dht_store_label
+  - test_community_consensus_label
+  - test_community_anchor_label
+  - test_is_community_node_quark
+  - test_is_gossip_quark
+  - test_is_dht_quark
+  - test_is_community_sync_quark
+  - test_community_node_state_defaults
+  - test_gossip_protocol_state_defaults
+  - test_dht_state_defaults
+  - test_community_node_record_defaults
+  - test_phase_N_pass
+  - test_phase_N_fail
+  - test_export_v11
+  - test_120_quark_distribution
+  - test_chain_message_type_v27
+  - test_v27_constants

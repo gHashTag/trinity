@@ -1,0 +1,220 @@
+name: coverage_test
+version: "1.0.0"
+language: zig
+module: coverage_test
+description: Auto-generated from Gleam code
+
+behaviors:
+  - name: main
+    given: Input data provided
+    when: main function called
+    then: Result returned
+    test_cases:
+      - name: test_main
+        input: {}
+        expected: {}
+
+  - name: test_basic_types
+    given: Input data provided
+    when: test_basic_types function called
+    then: Result returned
+    test_cases:
+      - name: test_test_basic_types
+        input: {}
+        expected: {}
+
+  - name: test_complex_types
+    given: Input data provided
+    when: test_complex_types function called
+    then: Result returned
+    test_cases:
+      - name: test_test_complex_types
+        input: {}
+        expected: {}
+
+  - name: test_functions
+    given: Input data provided
+    when: test_functions function called
+    then: Result returned
+    test_cases:
+      - name: test_test_functions
+        input: {}
+        expected: {}
+
+  - name: test_error_handling
+    given: Input data provided
+    when: test_error_handling function called
+    then: Result returned
+    test_cases:
+      - name: test_test_error_handling
+        input: {}
+        expected: {}
+
+  - name: test_validation
+    given: Input data provided
+    when: test_validation function called
+    then: Result returned
+    test_cases:
+      - name: test_test_validation
+        input: {}
+        expected: {}
+
+  - name: test_documentation
+    given: Input data provided
+    when: test_documentation function called
+    then: Result returned
+    test_cases:
+      - name: test_test_documentation
+        input: {}
+        expected: {}
+
+  - name: test_testing
+    given: Input data provided
+    when: test_testing function called
+    then: Result returned
+    test_cases:
+      - name: test_test_testing
+        input: {}
+        expected: {}
+
+  - name: test_api_generation
+    given: Input data provided
+    when: test_api_generation function called
+    then: Result returned
+    test_cases:
+      - name: test_test_api_generation
+        input: {}
+        expected: {}
+
+  - name: test_security
+    given: Input data provided
+    when: test_security function called
+    then: Result returned
+    test_cases:
+      - name: test_test_security
+        input: {}
+        expected: {}
+
+  - name: test_performance
+    given: Input data provided
+    when: test_performance function called
+    then: Result returned
+    test_cases:
+      - name: test_test_performance
+        input: {}
+        expected: {}
+
+  - name: print_summary
+    given: Input data provided
+    when: print_summary function called
+    then: Result returned
+    test_cases:
+      - name: test_print_summary
+        input: {}
+        expected: {}
+
+  - name: int_to_float
+    given: Input data provided
+    when: int_to_float function called
+    then: Result returned
+    test_cases:
+      - name: test_int_to_float
+        input: {}
+        expected: {}
+
+  - name: float_to_string
+    given: Input data provided
+    when: float_to_string function called
+    then: Result returned
+    test_cases:
+      - name: test_float_to_string
+        input: {}
+        expected: {}
+
+types:
+  CoverageResult:
+    # TODO: Define fields
+
+functions:
+  - name: main
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: test_basic_types
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: test_complex_types
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: test_functions
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: test_error_handling
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: test_validation
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: test_documentation
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: test_testing
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: test_api_generation
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: test_security
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: test_performance
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: print_summary
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: int_to_float
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: float_to_string
+    params: {}
+    returns: json
+    description: Auto-generated
+
+imports:
+  - std.json
+  - std.mem
+  # gleam/io
+  # gleam/list
+  # gleam/string
+
+optimization:
+  target: zig
+  level: ReleaseFast
+  features:
+    - inline_small_functions

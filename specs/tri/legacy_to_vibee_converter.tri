@@ -1,0 +1,458 @@
+name: legacy_to_vibee_converter
+version: "1.0.0"
+language: zig
+module: vibeec.legacy_converter
+
+description: |
+  LEGACY TO VIBEE CONVERTER — Cycle 67
+
+  Converts legacy format .vibee files to current VIBEE format.
+
+  Legacy format (causes empty output):
+  ```yaml
+  metadata:
+    name: ml_training
+    version: 1.0.0
+  types:
+    - name: Model
+      fields:
+        - name: id
+          type: String
+  ```
+
+  VIBEE format (correct):
+  ```yaml
+  name: ml_training
+  version: "1.0.0"
+  language: zig
+  module: ml_training
+  types:
+    Model:
+      fields:
+        id: String
+  ```
+
+types:
+  LegacyMetadata:
+    fields:
+      name: String
+      version: String
+      description: Option<String>
+      author: Option<String>
+      language: Option<String>
+
+  LegacyField:
+    fields:
+      name: String
+      type: String
+      description: Option<String>
+
+  LegacyType:
+    fields:
+      name: String
+      fields: List<LegacyField>
+      description: Option<String>
+
+  LegacyBehavior:
+    fields:
+      name: String
+      given: Option<String>
+      when: Option<String>
+      then: Option<String>
+      implementation: Option<String>
+
+  LegacySpec:
+    fields:
+      metadata: LegacyMetadata
+      types: List<LegacyType>
+      behaviors: List<LegacyBehavior>
+      constants: Option<List<LegacyConstant>>
+
+  LegacyConstant:
+    fields:
+      name: String
+      value: String
+      type: Option<String>
+
+  ConversionResult:
+    fields:
+      success: Bool
+      output_path: String
+      error: Option<String>
+      warnings: List<String>
+
+constants:
+  DEFAULT_LANGUAGE: "zig"
+  DEFAULT_VERSION: '"1.0.0"'
+
+behaviors:
+  - name: parseLegacySpec
+    given: Legacy format .vibee file path
+    when: Parsing YAML content
+    then: Returns LegacySpec struct with all metadata
+    implementation: |
+      pub fn parseLegacySpec(allocator: Allocator, source: []const u8) !LegacySpec {
+          var result = LegacySpec{
+              .metadata = .{
+                  .name = "",
+                  .version = "1.0.0",
+                  .description = null,
+                  .author = null,
+                  .language = null,
+              },
+              .types = &.{},
+              .behaviors = &.{},
+              .constants = null,
+          };
+
+          var lines = std.mem.splitScalar(u8, source, '\n');
+          var current_section: []const u8 = "";
+          var current_type: ?LegacyType = null;
+          var current_behavior: ?LegacyBehavior = null;
+          var current_field: ?LegacyField = null;
+
+          while (lines.next()) |line| {
+              const trimmed = std.mem.trim(u8, line, " \t\r");
+              if (trimmed.len == 0) continue;
+
+              // Section detection
+              if (std.mem.eql(u8, trimmed, "metadata:")) {
+                  current_section = "metadata";
+                  continue;
+              }
+              if (std.mem.eql(u8, trimmed, "types:")) {
+                  current_section = "types";
+                  continue;
+              }
+              if (std.mem.eql(u8, trimmed, "behaviors:")) {
+                  current_section = "behaviors";
+                  continue;
+              }
+              if (std.mem.eql(u8, trimmed, "constants:")) {
+                  current_section = "constants";
+                  continue;
+              }
+
+              // Parse based on section
+              if (std.mem.eql(u8, current_section, "metadata")) {
+                  try parseMetadataLine(allocator, trimmed, &result.metadata);
+              }
+          }
+
+          return result;
+      }
+
+  - name: parseMetadataLine
+    given: A line from metadata section
+    when: Line contains key: value or key:
+    then: Updates metadata struct accordingly
+    implementation: |
+      fn parseMetadataLine(allocator: Allocator, line: []const u8, metadata: *LegacyMetadata) !void {
+          if (std.mem.indexOf(u8, line, ":")) |colon_pos| {
+              const key = std.mem.trim(u8, line[0..colon_pos], " ");
+              var value = std.mem.trim(u8, line[colon_pos + 1 ..], " ");
+
+              // Remove quotes if present
+              if (value.len >= 2 and value[0] == '"' and value[value.len - 1] == '"') {
+                  value = value[1 .. value.len - 1];
+              }
+
+              if (std.mem.eql(u8, key, "name")) {
+                  metadata.name = try allocator.dupe(u8, value);
+              } else if (std.mem.eql(u8, key, "version")) {
+                  metadata.version = try allocator.dupe(u8, value);
+              } else if (std.mem.eql(u8, key, "description")) {
+                  metadata.description = try allocator.dupe(u8, value);
+              } else if (std.mem.eql(u8, key, "author")) {
+                  metadata.author = try allocator.dupe(u8, value);
+              } else if (std.mem.eql(u8, key, "language")) {
+                  metadata.language = try allocator.dupe(u8, value);
+              }
+          }
+      }
+
+  - name: convertLegacyToVibee
+    given: LegacySpec struct
+    when: Converting to VIBEE format
+    then: Returns string in current VIBEE format
+    implementation: |
+      pub fn convertLegacyToVibee(allocator: Allocator, legacy: LegacySpec) ![]const u8 {
+          var buffer = std.ArrayList(u8).init(allocator);
+          defer buffer.deinit();
+
+          const writer = buffer.writer();
+
+          // Header
+          try writer.print("name: {s}\n", .{legacy.metadata.name});
+          try writer.print("version: \"{s}\"\n", .{legacy.metadata.version});
+
+          // Language (default to zig if not specified)
+          const lang = if (legacy.metadata.language) |l| l else DEFAULT_LANGUAGE;
+          try writer.print("language: {s}\n", .{lang});
+
+          // Module name (same as name)
+          try writer.print("module: {s}\n", .{legacy.metadata.name});
+
+          // Description if present
+          if (legacy.metadata.description) |desc| {
+              try writer.print("\ndescription: |\n  {s}\n", .{desc});
+          }
+
+          // Types section
+          if (legacy.types.len > 0) {
+              try writer.writeAll("\ntypes:\n");
+              for (legacy.types) |t| {
+                  try writer.print("  {s}:\n", .{t.name});
+                  if (t.description) |desc| {
+                      try writer.print("    description: {s}\n", .{desc});
+                  }
+                  try writer.writeAll("    fields:\n");
+                  for (t.fields) |f| {
+                      try writer.print("      {s}: {s}\n", .{ f.name, f.type });
+                  }
+              }
+          }
+
+          // Behaviors section
+          if (legacy.behaviors.len > 0) {
+              try writer.writeAll("\nbehaviors:\n");
+              for (legacy.behaviors) |b| {
+                  try writer.writeAll("  - name: ");
+                  try writer.writeAll(b.name);
+                  try writer.writeAll("\n");
+                  if (b.given) |g| {
+                      try writer.print("    given: {s}\n", .{g});
+                  }
+                  if (b.when) |w| {
+                      try writer.print("    when: {s}\n", .{w});
+                  }
+                  if (b.then) |t| {
+                      try writer.print("    then: {s}\n", .{t});
+                  }
+                  if (b.implementation) |impl| {
+                      try writer.writeAll("    implementation: |\n");
+                      var impl_lines = std.mem.splitScalar(u8, impl, '\n');
+                      while (impl_lines.next()) |impl_line| {
+                          try writer.print("      {s}\n", .{impl_line});
+                      }
+                  }
+              }
+          }
+
+          // Constants section
+          if (legacy.constants) |consts| {
+              if (consts.len > 0) {
+                  try writer.writeAll("\nconstants:\n");
+                  for (consts) |c| {
+                      if (c.type) |t| {
+                          try writer.print("  {s}: {s} # {s}\n", .{ c.name, c.value, t });
+                      } else {
+                          try writer.print("  {s}: {s}\n", .{ c.name, c.value });
+                      }
+                  }
+              }
+          }
+
+          return buffer.toOwnedSlice();
+      }
+
+  - name: convertFile
+    given: Input file path and output directory
+    when: Converting a single legacy spec file
+    then: Returns ConversionResult with success status
+    implementation: |
+      pub fn convertFile(allocator: Allocator, input_path: []const u8, output_dir: []const u8) !ConversionResult {
+          const source = try std.fs.cwd().readFileAlloc(allocator, input_path, 1024 * 1024);
+          defer allocator.free(source);
+
+          var legacy_spec = parseLegacySpec(allocator, source) catch |err| {
+              return ConversionResult{
+                  .success = false,
+                  .output_path = "",
+                  .error = try std.fmt.allocPrint(allocator, "Parse error: {}", .{err}),
+                  .warnings = &.{},
+              };
+          };
+
+          // Get output filename
+          const basename = std.fs.path.basename(input_path);
+          const output_path = try std.fs.path.join(allocator, &.{ output_dir, basename });
+
+          // Convert and write
+          const vibee_content = try convertLegacyToVibee(allocator, legacy_spec);
+          defer allocator.free(vibee_content);
+
+          try std.fs.cwd().writeFile(.{
+              .sub_path = output_path,
+              .data = vibee_content,
+          });
+
+          return ConversionResult{
+              .success = true,
+              .output_path = output_path,
+              .error = null,
+              .warnings = &.{},
+          };
+      }
+
+  - name: convertDirectory
+    given: Input directory and output directory
+    when: Batch converting all .vibee files
+    then: Returns list of ConversionResults
+    implementation: |
+      pub fn convertDirectory(allocator: Allocator, input_dir: []const u8, output_dir_path: []const u8) ![]ConversionResult {
+          var results = std.ArrayList(ConversionResult).init(allocator);
+
+          var dir = try std.fs.cwd().openIterableDir(input_dir, .{});
+          defer dir.close();
+
+          var iterator = dir.iterate(null);
+          while (try iterator.next()) |entry| {
+              if (entry.kind != .file) continue;
+
+              const ext = std.fs.path.extension(entry.name);
+                  if (!std.mem.eql(u8, ext, ".vibee")) continue;
+
+                  const input_path = try std.fs.path.join(allocator, &.{ input_dir, entry.name });
+                  defer allocator.free(input_path);
+
+                  const result = try convertFile(allocator, input_path, output_dir_path);
+                  try results.append(result);
+              }
+          }
+
+          return results.toOwnedSlice();
+      }
+
+  - name: isLegacyFormat
+    given: .vibee file content
+    when: Checking if file uses legacy format
+    then: Returns true if legacy format detected
+    implementation: |
+      pub fn isLegacyFormat(source: []const u8) bool {
+          // Legacy format has "metadata:" at top level
+          const metadata_pos = std.mem.indexOf(u8, source, "metadata:");
+          // Current VIBEE format has "name:" at top level
+          const name_pos = std.mem.indexOf(u8, source, "name:");
+
+          // If metadata: appears before name:, it's legacy
+          if (metadata_pos) |m| {
+              if (name_pos) |n| {
+                  return m < n;
+              }
+              return true;
+          }
+
+          // Also check for list-style type definitions: "- name:"
+          const list_name_pos = std.mem.indexOf(u8, source, "- name:");
+          if (list_name_pos != null) {
+              // Check if it's in types: section
+              const types_pos = std.mem.indexOf(u8, source, "types:");
+              if (types_pos) |t| {
+                  if (list_name_pos.? > t) return true;
+              }
+          }
+
+          return false;
+      }
+
+  - name: main
+    given: CLI arguments
+    when: Running converter tool
+    then: Converts files and reports results
+    implementation: |
+      pub fn main() !u8 {
+          var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+          defer _ = gpa.deinit();
+          const allocator = gpa.allocator();
+
+          const args = try std.process.argsAlloc(allocator);
+          defer std.process.argsFree(allocator, args);
+
+          if (args.len < 2) {
+              std.debug.print(
+                  \\Usage:
+                  \\  {s} <input.vibee> [output_dir]
+                  \\  {s} --batch <input_dir> <output_dir>
+                  \\
+                  \\Examples:
+                  \\  {s} legacy.vibee tri/
+                  \\  {s} --batch vibee/archive/ tri/converted/
+                  \\
+              , .{ args[0], args[0], args[0], args[0] });
+              return 1;
+          }
+
+          if (std.mem.eql(u8, args[1], "--batch")) {
+              if (args.len < 4) {
+                  std.debug.print("Error: --batch requires input_dir and output_dir\n", .{});
+                  return 1;
+              }
+              const input_dir = args[2];
+              const output_dir = args[3];
+
+              // Create output dir if needed
+              try std.fs.cwd().makePath(output_dir);
+
+              const results = try convertDirectory(allocator, input_dir, output_dir);
+
+              var success_count: usize = 0;
+              var fail_count: usize = 0;
+
+              for (results) |r| {
+                  if (r.success) {
+                      success_count += 1;
+                      std.debug.print("✓ {s}\n", .{r.output_path});
+                  } else {
+                      fail_count += 1;
+                      std.debug.print("✗ {s}\n", .{r.error.?});
+                  }
+              }
+
+              std.debug.print("\nConverted: {d} succeeded, {d} failed\n", .{ success_count, fail_count });
+              return if (fail_count > 0) 1 else 0;
+          }
+
+          // Single file conversion
+          const input_path = args[1];
+          const output_dir = if (args.len > 2) args[2] else std.fs.path.dirname(input_path) orelse ".";
+
+          // Check if legacy format
+          const source = try std.fs.cwd().readFileAlloc(allocator, input_path, 1024 * 1024);
+          defer allocator.free(source);
+
+          if (!isLegacyFormat(source)) {
+              std.debug.print("Warning: File may not be in legacy format\n", .{});
+          }
+
+          const result = try convertFile(allocator, input_path, output_dir);
+
+          if (result.success) {
+              std.debug.print("✓ Converted to {s}\n", .{result.output_path});
+              return 0;
+          } else {
+              std.debug.print("✗ Error: {s}\n", .{result.error.?});
+              return 1;
+          }
+      }
+
+test_cases:
+  - name: legacyFormatDetection
+    given: File with "metadata:" at start
+    when: Calling isLegacyFormat
+    then: Returns true
+
+  - name: currentVibeeFormatDetection
+    given: File with "name:" before "metadata:"
+    when: Calling isLegacyFormat
+    then: Returns false
+
+  - name: singleFileConversion
+    given: Legacy spec file path
+    when: Calling convertFile
+    then: Returns ConversionResult with success=true
+
+  - name: batchConversion
+    given: Directory with multiple legacy specs
+    when: Calling convertDirectory
+    then: Returns array of ConversionResults

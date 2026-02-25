@@ -254,6 +254,7 @@ fn generateCode(allocator: std.mem.Allocator, input_path: []const u8, output_pat
         std.debug.print("Error parsing spec: {}\n", .{err});
         return;
     };
+    spec.owns_source = true; // source was readToEndAlloc'd
     defer spec.deinit();
 
     std.debug.print("  Name: {s}\n", .{spec.name});
