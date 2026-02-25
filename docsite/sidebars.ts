@@ -95,6 +95,7 @@ const sidebars: SidebarsConfig = {
       label: 'Benchmarks',
       items: [
         'benchmarks/index',
+        'benchmarks/tri-math-v36-performance',
         'benchmarks/gpu-inference',
         'benchmarks/jit-performance',
         'benchmarks/memory-efficiency',
@@ -404,4 +405,3 @@ const sidebars: SidebarsConfig = {
 };
 
 export default sidebars;
-      'research/trinity-cycle53-ralph-zig-refactor-report',
