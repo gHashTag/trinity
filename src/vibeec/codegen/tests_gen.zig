@@ -58,7 +58,12 @@ pub const TestGenerator = struct {
             if (added_tests.contains(b.name)) continue;
             added_tests.put(b.name, {}) catch continue;
 
-            try self.builder.writeFmt("test \"{s}_behavior\" {{\n", .{sanitizeIdent(b.name)});
+            // Write test with sanitized name (write directly to buffer to avoid memory safety issue)
+            // Debug: print behavior name length to check for corruption
+            std.debug.print("  DEBUG: b.name.len = {d}, b.name = '{s}'\n", .{ b.name.len, b.name });
+            try self.builder.write("test \"");
+            try self.writeSanitizedIdent(b.name);
+            try self.builder.writeLine("_behavior\" {");
             self.builder.incIndent();
             try self.builder.writeFmt("// Given: {s}\n", .{b.given});
             try self.builder.writeFmt("// When: {s}\n", .{b.when});
@@ -444,8 +449,27 @@ pub const TestGenerator = struct {
         return false;
     }
 
+    /// Write sanitized identifier directly to builder's buffer
+    /// Converts hyphens to underscores and removes invalid characters
+    /// This avoids memory safety issues with stack-allocated buffers
+    fn writeSanitizedIdent(self: *Self, name: []const u8) !void {
+        for (name) |c| {
+            // Replace hyphens with underscores
+            if (c == '-') {
+                try self.builder.write("_");
+            }
+            // Keep alphanumeric and underscores
+            else if ((c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or
+                       (c >= '0' and c <= '9') or c == '_')
+            {
+                try self.builder.writeByte(c);
+            }
+        }
+    }
+
     /// Sanitize name for use as Zig identifier
     /// Converts hyphens to underscores and removes invalid characters
+    /// NOTE: This returns a stack-allocated slice - use writeSanitizedIdent instead
     fn sanitizeIdent(name: []const u8) []const u8 {
         var result: [256]u8 = undefined;
         var result_len: usize = 0;
