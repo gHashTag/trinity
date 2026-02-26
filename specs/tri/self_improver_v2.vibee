@@ -1,0 +1,114 @@
+name: self_improver_v2
+version: "3.5.0"
+language: zig
+module: self_improver_v2
+description: |
+  Self-Improver v2 with Adam Optimizer for TRI MATH v3.5.
+  Adaptive moment estimation with EWC++ consolidation.
+  φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+
+constants:
+  PHI: 1.6180339887498948482
+  PI: 3.14159265358979323846
+  E: 2.71828182845904523536
+  TRINITY: 3
+  ADAM_BETA_1: 0.9
+  ADAM_BETA_2: 0.999
+  ADAM_EPSILON: 1e-8
+  LEARNING_RATE: 0.001
+  EWC_LAMBDA: 5000.0
+  EWC_OMEGA: 0.95
+  GRADIENT_CLIP_NORM: 1.0
+  MAX_TRAJECTORY_STEPS: 10000
+
+types:
+  GradientDescentState:
+    description: "SGD state with momentum"
+    fields:
+      m: Float
+      v: Float
+      t: Int
+      learning_rate: Float
+
+  EWCSynapse:
+    description: "Elastic Weight Consolidation synapse"
+    fields:
+      weight_id: u64
+      fisher_info: Float
+      omega: Float
+      importance: Float
+
+  ImprovementIteration:
+    description: "One iteration of self-improvement"
+    fields:
+      iteration_id: u64
+      loss: Float
+      metric_name: String
+      metric_value: Float
+      gradient_norm: Float
+
+  TrajectoryStep:
+    description: "Step in reinforcement learning trajectory"
+    fields:
+      step_id: u64
+      action: String
+      result: String
+      quality: Float
+      state_snapshot: String
+
+behaviors:
+  - name: adam_step
+    given: >
+      Current parameters and gradient
+    when: >
+      Adam optimizer step is triggered
+    then: >
+      Return updated parameters with adaptive learning rate
+
+  - name: ewc_synapse
+    given: >
+      Synapse weights and Fisher information
+    when: >
+      EWC consolidation is needed
+    then: >
+      Return consolidated synapse with omega parameter
+
+  - name: gradient_descent
+    given: >
+      Objective function and initial parameters
+    when: >
+      Gradient descent optimization starts
+    then: >
+      Return optimized parameters after convergence
+
+  - name: momentum_update
+    given: >
+      Current velocity and gradient
+    when: >
+      Momentum update is scheduled
+    then: >
+      Return updated velocity with momentum coefficient
+
+  - name: trajectory
+    given: >
+      Episode context and agent state
+    when: >
+      Trajectory recording is active
+    then: >
+      Return TrajectoryStep with quality metrics
+
+  - name: clip_gradients
+    given: >
+      Gradient tensor and clip threshold
+    when: >
+      Gradient clipping is applied
+    then: >
+      Return clipped gradients within threshold
+
+  - name: consolidate
+    given: >
+      Previous task data and current model
+    when: >
+      Catastrophic forgetting prevention runs
+    then: >
+      Return consolidated model with EWC penalties

@@ -1,0 +1,181 @@
+format: sacred-spec-v1
+name: sacred_formula
+version: "1.0.0"
+description: "Sacred Formula Engine — V = n * 3^k * pi^m * phi^p * e^q"
+
+bases:
+  TRINITY: 3.0
+  PI: 3.14159265358979323846
+  PHI: 1.6180339887498948482
+  E: 2.71828182845904523536
+
+search:
+  n_range: [1, 9]
+  k_range: [-4, 4]
+  m_range: [-3, 3]
+  p_range: [-4, 4]
+  q_range: [-3, 3]
+
+constants:
+  - name: "1/alpha"
+    symbol: "FINE_STRUCTURE_INV"
+    value: 137.036
+    category: "particle_physics"
+    description: "Inverse fine-structure constant"
+
+  - name: "m_p/m_e"
+    symbol: "PROTON_ELECTRON_RATIO"
+    value: 1836.15267343
+    category: "particle_physics"
+    description: "Proton-to-electron mass ratio"
+
+  - name: "CHSH (2*sqrt2)"
+    symbol: "CHSH"
+    value: 2.8284271247461903
+    category: "quantum"
+    description: "CHSH quantum bound"
+
+  - name: "sin2(theta_W)"
+    symbol: "WEINBERG_SIN2"
+    value: 0.23121
+    category: "particle_physics"
+    description: "Weinberg mixing angle"
+
+  - name: "H_0 (67.4)"
+    symbol: "HUBBLE"
+    value: 67.4
+    category: "cosmology"
+    description: "Hubble constant (Planck 2018)"
+
+  - name: "Omega_Lambda"
+    symbol: "OMEGA_LAMBDA"
+    value: 0.685
+    category: "cosmology"
+    description: "Dark energy density parameter"
+
+  - name: "T_CMB (2.7255)"
+    symbol: "CMB_TEMP"
+    value: 2.7255
+    category: "cosmology"
+    description: "CMB temperature in Kelvin"
+
+  - name: "gamma_BI (LQG)"
+    symbol: "BARBERO_IMMIRZI"
+    value: 0.1273840231409480
+    category: "quantum_gravity"
+    description: "Barbero-Immirzi parameter"
+
+  - name: "S/A = 1/4 (BH)"
+    symbol: "BEKENSTEIN_HAWKING_RATIO"
+    value: 0.25
+    category: "quantum_gravity"
+    description: "Bekenstein-Hawking entropy/area ratio"
+
+  - name: "c_BH = 3/2 (AdS)"
+    symbol: "BROWN_HENNEAUX"
+    value: 1.5
+    category: "quantum_gravity"
+    description: "Brown-Henneaux central charge"
+
+  - name: "Age (13.787 Gyr)"
+    symbol: "AGE_UNIVERSE"
+    value: 13.787
+    category: "cosmology"
+    description: "Age of the universe in Gyr"
+
+  - name: "SU3 golden 3/2phi"
+    symbol: "SU3_GOLDEN"
+    value: 0.9270509831248422
+    category: "particle_physics"
+    description: "SU(3) golden ratio connection"
+
+  - name: "m_mu/m_e (206.77)"
+    symbol: "MUON_ELECTRON_RATIO"
+    value: 206.7682830
+    category: "particle_physics"
+    description: "Muon-to-electron mass ratio"
+
+  - name: "m_tau/m_e (3477.2)"
+    symbol: "TAU_ELECTRON_RATIO"
+    value: 3477.1894
+    category: "particle_physics"
+    description: "Tau-to-electron mass ratio"
+
+  - name: "M_Higgs (125.25)"
+    symbol: "M_HIGGS"
+    value: 125.25
+    category: "particle_physics"
+    description: "Higgs boson mass in GeV"
+
+  - name: "M_W (80.377)"
+    symbol: "M_W_BOSON"
+    value: 80.377
+    category: "particle_physics"
+    description: "W boson mass in GeV"
+
+  - name: "M_Z (91.1876)"
+    symbol: "M_Z_BOSON"
+    value: 91.1876
+    category: "particle_physics"
+    description: "Z boson mass in GeV"
+
+  - name: "H_0 SH0ES (73.0)"
+    symbol: "HUBBLE_SH0ES"
+    value: 73.0
+    category: "cosmology"
+    description: "Hubble constant (SH0ES measurement)"
+
+predictions:
+  - name: "Neutrino mass hint"
+    formula: "1*3^-1*pi^-1*phi^-4*e^-1"
+    n: 1
+    k: -1
+    m: -1
+    p: -4
+    q: -1
+    unit: "eV"
+
+  - name: "DM candidate mass"
+    formula: "3*3^2*phi^3*e^2"
+    n: 3
+    k: 2
+    m: 0
+    p: 3
+    q: 2
+    unit: "GeV"
+
+  - name: "Lambda/rho_P hint"
+    formula: "1*3^-4*pi^-2*phi^-4*e^-3"
+    n: 1
+    k: -4
+    m: -2
+    p: -4
+    q: -3
+    unit: "Planck"
+
+  - name: "Graviton mass bound"
+    formula: "1*3^-3*pi^-3*phi^-4*e^-3"
+    n: 1
+    k: -3
+    m: -3
+    p: -4
+    q: -3
+    unit: "eV"
+
+  - name: "Proton lifetime hint"
+    formula: "3*3^4*pi^3*phi^4*e^4"
+    n: 3
+    k: 4
+    m: 3
+    p: 4
+    q: 4
+    unit: "years"
+
+  - name: "Spatial dimensions"
+    formula: "1*3^1"
+    n: 1
+    k: 1
+    m: 0
+    p: 0
+    q: 0
+    unit: ""
