@@ -50,7 +50,7 @@ pub const SymbolKind = enum {
     enum_variant,
     import,
     module,
-    test,
+    @"test",
 
     pub fn jsonStringify(value: SymbolKind, allocator: Allocator) ![]const u8 {
         const s = switch (value) {
@@ -63,7 +63,7 @@ pub const SymbolKind = enum {
             .enum_variant => "enum_variant",
             .import => "import",
             .module => "module",
-            .test => "test",
+            .@"test" => "test",
         };
         return std.fmt.allocPrint(allocator, "\"{s}\"", .{s});
     }
@@ -428,7 +428,7 @@ pub const Extractor = struct {
         return try Symbol.init(
             self.allocator,
             id,
-            .test,
+            .@"test",
             name,
             self.file_path,
             start.toLineNumber(),

@@ -32,6 +32,10 @@ pub const CodeBuilder = struct {
         try self.buffer.appendSlice(self.allocator, str);
     }
 
+    pub fn writeByte(self: *Self, byte: u8) !void {
+        try self.buffer.append(self.allocator, byte);
+    }
+
     pub fn writeLine(self: *Self, str: []const u8) !void {
         try self.writeIndent();
         try self.buffer.appendSlice(self.allocator, str);

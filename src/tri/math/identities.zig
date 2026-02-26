@@ -38,38 +38,42 @@ const golden_identities = [_]Identity{
         .formula = "φ² + 1/φ² = 3",
         .latex = "\\phi^2 + \\phi^{-2} = 3",
         .category = "GOLDEN RATIO",
-        .proof = \\Given φ = (1 + √5)/2:
+        .proof =
+        \\Given φ = (1 + √5)/2:
         \\  φ² = ((1 + √5)/2)² = (6 + 2√5)/4 = (3 + √5)/2
         \\  1/φ² = (3 - √5)/2
         \\  φ² + 1/φ² = (3 + √5 + 3 - √5)/2 = 6/2 = 3 ✓
-    ,
+        ,
     },
     .{
         .name = "Phi Squared",
         .formula = "φ² = φ + 1",
         .latex = "\\phi^2 = \\phi + 1",
         .category = "GOLDEN RATIO",
-        .proof = \\From the definition of φ: φ² - φ - 1 = 0
+        .proof =
+        \\From the definition of φ: φ² - φ - 1 = 0
         \\Therefore: φ² = φ + 1 ✓
-    ,
+        ,
     },
     .{
         .name = "Phi Inverse",
         .formula = "1/φ = φ - 1",
         .latex = "\\phi^{-1} = \\phi - 1",
         .category = "GOLDEN RATIO",
-        .proof = \\From φ² = φ + 1, divide both sides by φ:
+        .proof =
+        \\From φ² = φ + 1, divide both sides by φ:
         \\  φ = 1 + 1/φ
         \\Therefore: 1/φ = φ - 1 ✓
-    ,
+        ,
     },
     .{
         .name = "Phi Cubed",
         .formula = "φ³ = 2φ + 1",
         .latex = "\\phi^3 = 2\\phi + 1",
         .category = "GOLDEN RATIO",
-        .proof = \\φ³ = φ × φ² = φ(φ + 1) = φ² + φ = (φ + 1) + φ = 2φ + 1 ✓
-    ,
+        .proof =
+        \\φ³ = φ × φ² = φ(φ + 1) = φ² + φ = (φ + 1) + φ = 2φ + 1 ✓
+        ,
     },
 };
 
@@ -79,29 +83,32 @@ const sequence_identities = [_]Identity{
         .formula = "L(n) = φⁿ + 1/φⁿ",
         .latex = "L(n) = \\phi^n + \\phi^{-n}",
         .category = "SEQUENCE RELATIONSHIPS",
-        .proof = \\Binet's formula for Lucas numbers:
+        .proof =
+        \\Binet's formula for Lucas numbers:
         \\  L(n) = φⁿ + ψⁿ where ψ = -1/φ
         \\For even n: L(n) = φⁿ + 1/φⁿ ✓
-    ,
+        ,
     },
     .{
         .name = "Fibonacci Binet",
         .formula = "F(n) = (φⁿ - ψⁿ) / √5",
         .latex = "F(n) = \\frac{\\phi^n - \\psi^n}{\\sqrt{5}}",
         .category = "SEQUENCE RELATIONSHIPS",
-        .proof = \\Binet's formula for Fibonacci numbers:
+        .proof =
+        \\Binet's formula for Fibonacci numbers:
         \\  Where ψ = 1 - φ = -1/φ ≈ -0.618
         \\  This gives the closed-form solution ✓
-    ,
+        ,
     },
     .{
         .name = "Lucas Fibonacci Relation",
         .formula = "L(n) = F(n-1) + F(n+1)",
         .latex = "L(n) = F(n-1) + F(n+1)",
         .category = "SEQUENCE RELATIONSHIPS",
-        .proof = \\Direct computation from Fibonacci recurrence:
+        .proof =
+        \\Direct computation from Fibonacci recurrence:
         \\  L(n) = F(n-1) + F(n+1) ✓
-    ,
+        ,
     },
 };
 
@@ -111,31 +118,34 @@ const transcendental_identities = [_]Identity{
         .formula = "π × φ × e ≈ 13.82 ≈ TRYTE_MAX",
         .latex = "\\pi \\phi e \\approx 13.82 \\approx \\text{TRYTE\\_MAX}",
         .category = "TRANSCENDENTAL",
-        .proof = \\π ≈ 3.14159, φ ≈ 1.61803, e ≈ 2.71828
+        .proof =
+        \\π ≈ 3.14159, φ ≈ 1.61803, e ≈ 2.71828
         \\π × φ × e ≈ 13.81689...
         \\TRYTE_MAX = 13 (max value of balanced ternary tryte)
         \\Relative error ≈ 6.3% (close approximation)
-    ,
+        ,
     },
     .{
         .name = "Berry Phase",
         .formula = "β = π(1 - 1/φ)",
         .latex = "\\beta = \\pi(1 - \\phi^{-1})",
         .category = "QUANTUM CONSTANTS",
-        .proof = \\β = π(1 - 1/φ)
+        .proof =
+        \\β = π(1 - 1/φ)
         \\β = π(1 - 0.618...)
         \\β ≈ 1.199 radians ✓
-    ,
+        ,
     },
     .{
         .name = "SU3 Constant",
         .formula = "SU3 = 3/(2φ)",
         .latex = "SU3 = \\frac{3}{2\\phi}",
         .category = "QUANTUM CONSTANTS",
-        .proof = \\SU3 = 3/(2 × 1.618...)
+        .proof =
+        \\SU3 = 3/(2 × 1.618...)
         \\SU3 = 3/3.236...
         \\SU3 ≈ 0.927 ✓
-    ,
+        ,
     },
 };
 
@@ -145,32 +155,36 @@ const trinity_connections = [_]Identity{
         .formula = "L(2) = 3",
         .latex = "L(2) = 3",
         .category = "TRINITY CONNECTIONS",
-        .proof = \\Direct computation: L(2) = L(1) + L(0) = 1 + 2 = 3 ✓
-    ,
+        .proof =
+        \\Direct computation: L(2) = L(1) + L(0) = 1 + 2 = 3 ✓
+        ,
     },
     .{
         .name = "Fibonacci Trinity",
         .formula = "F(4) = 3",
         .latex = "F(4) = 3",
         .category = "TRINITY CONNECTIONS",
-        .proof = \\Direct computation: F(4) = F(3) + F(2) = 2 + 1 = 3 ✓
-    ,
+        .proof =
+        \\Direct computation: F(4) = F(3) + F(2) = 2 + 1 = 3 ✓
+        ,
     },
     .{
         .name = "Phi Trinity",
         .formula = "φ² + 1/φ² = 3",
         .latex = "\\phi^2 + \\phi^{-2} = 3",
         .category = "TRINITY CONNECTIONS",
-        .proof = \\See Trinity Identity proof above ✓
-    ,
+        .proof =
+        \\See Trinity Identity proof above ✓
+        ,
     },
     .{
         .name = "Fibonacci Tryte Max",
         .formula = "F(7) = 13 = TRYTE_MAX",
         .latex = "F(7) = 13 = \\text{TRYTE\\_MAX}",
         .category = "TRINITY CONNECTIONS",
-        .proof = \\Direct computation: F(7) = 13 ✓
-    ,
+        .proof =
+        \\Direct computation: F(7) = 13 ✓
+        ,
     },
 };
 

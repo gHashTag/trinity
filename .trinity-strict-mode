@@ -1,0 +1,10 @@
+VIBEE-FIRST STRICT MODE ENABLED
+Activated: 1771875693 (unix timestamp)
+Protected: trinity/output/, generated/
+Source of truth: specs/tri/*.vibee
+
+Rules:
+  1. ALL application code MUST be generated from .vibee specifications
+  2. Files in trinity/output/ and generated/ must NOT be edited directly
+  3. Workflow: spec -> gen -> test -> assess
+  4. Only specs/tri/*.vibee, src/vibeec/*.zig, src/*.zig are directly editable

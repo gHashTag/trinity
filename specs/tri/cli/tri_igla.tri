@@ -1,0 +1,52 @@
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# TRI IGLA — Parser Module Status
+# ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+# IGLA parser status and coverage information
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+name: tri_igla
+version: "1.0.0"
+language: zig
+module: commands
+
+cli:
+  main_command: igla
+  description: "Show IGLA parser module status and coverage"
+
+commands:
+  - name: igla
+    description: "Display IGLA parser information"
+    function: "runIglaCommand"
+    sections:
+      - id: "parser-modules"
+        name: "Parser Modules"
+        description: "Core parser implementation modules with line counts"
+
+      - id: "tri-specs"
+        name: "TRI Specs"
+        description: "List of .tri specification files"
+
+      - id: "generated-output"
+        name: "Generated Output"
+        description: "Generated Zig files from .tri specs"
+
+    modules:
+      - name: "parser_types.zig"
+        path: "src/vibeec/parser_types.zig"
+        description: "Type definitions for parsing"
+
+      - name: "parser_utils.zig"
+        path: "src/vibeec/parser_utils.zig"
+        description: "Parser utility functions"
+
+      - name: "parser_sections.zig"
+        path: "src/vibeec/parser_sections.zig"
+        description: "Section parsing logic"
+
+      - name: "vibee_parser.zig"
+        path: "src/vibeec/vibee_parser.zig"
+        description: "Main VIBEE parser orchestrator"
+
+    examples:
+      - "tri igla"

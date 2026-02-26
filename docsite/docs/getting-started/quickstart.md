@@ -8,7 +8,7 @@ Get up and running with Trinity in 5 minutes.
 
 ## Prerequisites
 
-- **Zig 0.13.0** — [Download](https://ziglang.org/download/)
+- **Zig 0.15.x** — [Download](https://ziglang.org/download/)
 - **Git** — Version control
 
 ## Installation
@@ -19,7 +19,7 @@ git clone https://github.com/gHashTag/trinity.git
 cd trinity
 
 # Verify Zig version
-zig version  # Should show 0.13.0
+zig version  # Should show 0.15.x
 
 # Build
 zig build
@@ -58,17 +58,28 @@ zig build test
 zig test src/vsa.zig
 ```
 
-## CLI Tools
+## TRI CLI
+
+The unified command-line interface for the entire Trinity ecosystem. See the full [TRI CLI Reference](/cli/) for 190+ commands.
 
 ```bash
+# Build and run TRI CLI (interactive REPL)
+zig build tri
+
 # Generate code from specification
-./bin/vibee gen specs/tri/module.vibee
+zig build tri -- gen specs/tri/module.vibee
 
-# Run program via VM
-./bin/vibee run program.999
+# Chat with AI
+zig build tri -- chat "Explain ternary computing"
 
-# Start chat with model
-./bin/vibee chat --model path/to/model.gguf
+# System health check
+zig build tri -- doctor
+
+# Sacred math verification (38 checks)
+zig build tri -- math-verify
+
+# Full autonomous health report
+zig build tri -- full-autonomous
 ```
 
 ## Try It Now
@@ -117,6 +128,7 @@ function TernaryDemo() {
 
 ## Next Steps
 
+- [TRI CLI Reference](/cli/) — Full CLI documentation (190+ commands)
 - [Installation Guide](/getting-started/installation) — Detailed setup
 - [Development Setup](/getting-started/development-setup) — IDE configuration
 - [API Reference](/api/) — Complete API documentation
