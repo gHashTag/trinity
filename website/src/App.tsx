@@ -18,6 +18,8 @@ const InvestSection = lazy(() => import('./components/sections/InvestSection'))
 
 // Mysticism subtab (hidden by default)
 const MysticismSection = lazy(() => import('./components/sections/MysticismSection'))
+// Sacred Formula Engine — V = n * 3^k * pi^m * phi^p * e^q
+const SacredFormulaSection = lazy(() => import('./components/sections/SacredFormulaSection'))
 
 const SectionFallback = () => (
   <div style={{ minHeight: '50vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -58,8 +60,11 @@ export default function App() {
         
         {/* 8. SCIENCE - Mathematical foundations */}
         <MysticismSection />
-        
-        {/* 8. INVEST - Final CTA */}
+
+        {/* 9. SACRED FORMULA - Integer relation engine */}
+        <SacredFormulaSection />
+
+        {/* 10. INVEST - Final CTA */}
         <InvestSection />
       </Suspense>
       

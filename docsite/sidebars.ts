@@ -24,6 +24,24 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'TRI CLI Reference',
+      items: [
+        'cli/index',
+        'cli/core',
+        'cli/devtools',
+        'cli/analysis',
+        'cli/pipeline',
+        'cli/math',
+        'cli/git',
+        'cli/vibee-tools',
+        'cli/swarm',
+        'cli/demos',
+        'cli/autonomous',
+        'cli/audit',
+      ],
+    },
+    {
+      type: 'category',
       label: 'Concepts',
       items: [
         'concepts/index',
@@ -77,6 +95,7 @@ const sidebars: SidebarsConfig = {
       label: 'Benchmarks',
       items: [
         'benchmarks/index',
+        'benchmarks/tri-math-v36-performance',
         'benchmarks/gpu-inference',
         'benchmarks/jit-performance',
         'benchmarks/memory-efficiency',
@@ -386,4 +405,3 @@ const sidebars: SidebarsConfig = {
 };
 
 export default sidebars;
-      'research/trinity-cycle53-ralph-zig-refactor-report',

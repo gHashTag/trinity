@@ -50,8 +50,11 @@ v.ensureUnpacked();                // Compute efficient
 ### CLI Commands
 
 ```bash
-./bin/vibee gen <spec.vibee>      # Generate code
-./bin/vibee run <program.999>     # Execute program
-./bin/vibee chat --model <path>   # Interactive chat
-./bin/vibee serve --port 8080     # HTTP server
+tri gen <spec.vibee>              # Generate code from spec
+tri chat "Hello"                  # Interactive AI chat
+tri serve --port 8080             # HTTP API server
+tri doctor                        # System health check
+tri full-autonomous               # Full system report
 ```
+
+> **See also:** [TRI CLI Reference](/cli/) for the complete CLI documentation with 190+ commands.

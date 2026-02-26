@@ -81,6 +81,7 @@ pub fn main() !void {
         .pipeline => pipeline.runPipelineCommand(allocator, cmd_args),
         .decompose => pipeline.runDecomposeCommand(allocator, cmd_args),
         .plan => pipeline.runPlanCommand(allocator, cmd_args),
+        .multi_cluster => commands.runMultiClusterCommand(allocator, cmd_args),
         .verify => pipeline.runVerifyCommand(allocator),
         .verdict => pipeline.runVerdictCommand(allocator),
         // Spec & Loop (v8.27)
@@ -215,6 +216,12 @@ pub fn main() !void {
         .spiral => math_commands.runSpiralCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Spiral error: {}\n", .{err});
         },
+        // Dev Utilities
+        .doctor => commands.runDoctorCommand(allocator),
+        .clean => commands.runCleanCommand(allocator),
+        .fmt_cmd => commands.runFmtCommand(allocator),
+        .stats_cmd => commands.runStatsCommand(allocator),
+        .igla => commands.runIglaCommand(allocator),
         .info => utils.printInfo(),
         .version => utils.printVersion(),
         .help => utils.printHelp(),

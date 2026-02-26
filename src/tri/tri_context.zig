@@ -24,8 +24,8 @@ inline fn sacredScore(similarity: f32, name_match: f32, recency: f32, sacred_bon
     const NAME_MATCH_WEIGHT: f32 = 0.3;
     const RECENCY_WEIGHT: f32 = 0.1;
     const base = similarity * SEMANTIC_WEIGHT +
-                  name_match * NAME_MATCH_WEIGHT +
-                  recency * RECENCY_WEIGHT;
+        name_match * NAME_MATCH_WEIGHT +
+        recency * RECENCY_WEIGHT;
     return base * PHI_SQ + sacred_bonus * PHI_INV_SQ;
 }
 

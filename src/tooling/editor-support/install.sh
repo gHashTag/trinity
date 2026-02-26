@@ -99,8 +99,12 @@ install_neovim() {
     # Copy Lua module
     cp "$SCRIPT_DIR/neovim/lua/vibee/init.lua" "$nvim_dir/lua/vibee/"
 
-    # Copy tree-sitter queries
-    cp "$SCRIPT_DIR/neovim/queries/"*.scm "$nvim_dir/queries/vibee/"
+    # Copy tree-sitter queries (from canonical tree-sitter-vibee package)
+    if [[ -d "$SCRIPT_DIR/tree-sitter-vibee/queries" ]]; then
+        cp "$SCRIPT_DIR/tree-sitter-vibee/queries/"*.scm "$nvim_dir/queries/vibee/"
+    elif [[ -d "$SCRIPT_DIR/neovim/queries" ]]; then
+        cp "$SCRIPT_DIR/neovim/queries/"*.scm "$nvim_dir/queries/vibee/"
+    fi
 
     echo -e "${GREEN}✓ Neovim: $nvim_dir${RESET}"
     echo -e "${YELLOW}  Add to init.lua: require('vibee').setup()${RESET}"
