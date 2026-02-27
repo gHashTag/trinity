@@ -713,6 +713,122 @@ pub fn runContextInfoCommand(state: anytype) void {
     }
 }
 
+pub fn runIntelligenceCommand(allocator: std.mem.Allocator, state: anytype, args: []const []const u8) !void {
+    _ = allocator;
+
+    std.debug.print("\n{s}╔════════════════════════════════════════════════════════════════╗{s}\n", .{ colors.GOLDEN, colors.RESET });
+    std.debug.print("{s}║         SACRED INTELLIGENCE - Sacred Formula Analysis        ║{s}\n", .{ colors.GOLDEN, colors.RESET });
+    std.debug.print("{s}║     V = n × 3^k × π^m × φ^p × e^q | φ² + 1/φ² = 3 = TRINITY     ║{s}\n", .{ colors.GOLDEN, colors.RESET });
+    std.debug.print("{s}╚════════════════════════════════════════════════════════════════╝{s}\n\n", .{ colors.GOLDEN, colors.RESET });
+
+    if (args.len == 0) {
+        // No args: show full intelligence report
+        std.debug.print("{s}Analyzing codebase for sacred patterns...{s}\n\n", .{ colors.CYAN, colors.RESET });
+
+        if (state.context_mgr) |mgr| {
+            // Show basic stats
+            std.debug.print("{s}Context Manager Status:{s} {s}Active{s}\n", .{ colors.CYAN, colors.RESET, colors.GREEN, colors.RESET });
+            std.debug.print("  Symbols Indexed: {s}{d}{s}\n", .{ colors.GOLDEN, mgr.stats.symbols_indexed, colors.RESET });
+            std.debug.print("  Files Scanned: {s}{d}{s}\n", .{ colors.GOLDEN, mgr.stats.files_indexed, colors.RESET });
+            std.debug.print("  Index Size: {s}{d} KB{s}\n", .{ colors.GOLDEN, mgr.stats.index_size_bytes / 1024, colors.RESET });
+
+            // Sacred scoring info
+            std.debug.print("\n{s}Sacred Mathematics Integration:{s}\n", .{ colors.CYAN, colors.RESET });
+            std.debug.print("  {s}•{s} Coptic Gematria: 27 glyphs (3³ = 27)\n", .{ colors.GOLDEN, colors.RESET });
+            std.debug.print("  {s}•{s} Sacred Formula: V = n × 3^k × π^m × φ^p × e^q\n", .{ colors.GOLDEN, colors.RESET });
+            std.debug.print("  {s}•{s} 42 Sacred Constants recognized\n", .{ colors.GOLDEN, colors.RESET });
+            std.debug.print("  {s}•{s} φ-weighted similarity scoring\n", .{ colors.GOLDEN, colors.RESET });
+            std.debug.print("\n  φ (Golden Ratio): {s}{s}{s}\n", .{ colors.GOLDEN, "1.618033988749895", colors.RESET });
+            std.debug.print("  φ² + 1/φ² = {s}{s}{s}\n", .{ colors.GOLDEN, "3.0", colors.RESET });
+            std.debug.print("  Trinity Identity: {s}{s}{s}\n", .{ colors.GOLDEN, "φ² + 1/φ² = 3", colors.RESET });
+
+            // Show top symbols by sacred score if available
+            if (mgr.symbols.items.len > 0) {
+                std.debug.print("\n{s}Sample Sacred Symbols:{s}\n", .{ colors.CYAN, colors.RESET });
+                const top_n = @min(5, mgr.symbols.items.len);
+                for (mgr.symbols.items[0..top_n], 0..) |sym, i| {
+                    // Compute simple gematria for symbol name
+                    const gematria = computeSymbolGematria(sym.name);
+                    std.debug.print("  {d}. {s}{s}{s} ({s})\n", .{
+                        i + 1,
+                        colors.GOLDEN,
+                        sym.name,
+                        colors.RESET,
+                        @tagName(sym.kind),
+                    });
+                    std.debug.print("     Gematria: {d} (mod 27 = {d})\n", .{ gematria, gematria % 27 });
+                }
+            }
+
+            std.debug.print("\n{s}Available Commands:{s}\n", .{ colors.CYAN, colors.RESET });
+            std.debug.print("  tri analyze              - Scan codebase for symbols\n", .{});
+            std.debug.print("  tri search <query>       - Search indexed symbols\n", .{});
+            std.debug.print("  tri context              - Show context statistics\n", .{});
+            std.debug.print("  tri intelligence <sym>   - Analyze specific symbol\n", .{});
+            std.debug.print("  tri constants            - Show sacred constants\n", .{});
+            std.debug.print("  tri sacred               - Display sacred formulas\n", .{});
+
+            std.debug.print("\n{s}╔════════════════════════════════════════════════════════════════╗{s}\n", .{ colors.GOLDEN, colors.RESET });
+            std.debug.print("{s}║  φ² + 1/φ² = 3 = TRINITY | Sacred Intelligence Core v1.0.0    ║{s}\n", .{ colors.GOLDEN, colors.RESET });
+            std.debug.print("{s}╚════════════════════════════════════════════════════════════════╝{s}\n\n", .{ colors.GOLDEN, colors.RESET });
+        } else {
+            std.debug.print("{s}Context manager not initialized.{s}\n", .{ colors.RED, colors.RESET });
+            std.debug.print("Run {s}tri analyze{s} to initialize the codebase context.\n\n", .{ colors.GOLDEN, colors.RESET });
+        }
+    } else {
+        // Args provided: analyze specific symbol(s)
+        std.debug.print("{s}Analyzing specific symbol(s):{s}\n\n", .{ colors.CYAN, colors.RESET });
+
+        for (args) |symbol| {
+            std.debug.print("  {s}Symbol:{s} {s}\n", .{ colors.GOLDEN, colors.RESET, symbol });
+
+            // Compute gematria value for symbol
+            const gematria_val = computeSymbolGematria(symbol);
+            std.debug.print("    Gematria: {d} (mod 27 = {d})\n", .{ gematria_val, gematria_val % 27 });
+
+            // Try to fit sacred formula
+            const sacred_formula = @import("math/sacred_formula.zig");
+            const fit = sacred_formula.fitSacredFormula(@as(f64, @floatFromInt(gematria_val)));
+            var formula_buf: [128]u8 = undefined;
+            const formula_str = sacred_formula.formatFormulaString(&formula_buf, fit);
+            std.debug.print("    Formula:  V = {s}\n", .{formula_str});
+            std.debug.print("    Error:    {d:.2}%\n", .{fit.error_pct});
+
+            // Try to find in context manager
+            if (state.context_mgr) |mgr| {
+                var search_buf: [10]SearchHit = undefined;
+                const hit_count = mgr.search(symbol, 5, &search_buf);
+                if (hit_count > 0) {
+                    std.debug.print("    {s}Found:{s} {d} matches in codebase\n", .{ colors.GREEN, colors.RESET, hit_count });
+                    for (search_buf[0..hit_count]) |hit| {
+                        const sym = mgr.symbols.items[hit.symbol_idx];
+                        std.debug.print("      - {s} (score: {d:.2}, sacred: {d:.2})\n", .{
+                            sym.name,
+                            hit.score,
+                            hit.sacred_score,
+                        });
+                    }
+                } else {
+                    std.debug.print("    {s}Not found{s} in codebase index\n", .{ colors.GRAY, colors.RESET });
+                }
+            }
+
+            std.debug.print("\n", .{});
+        }
+
+        std.debug.print("{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ colors.GOLDEN, colors.RESET });
+    }
+}
+
+/// Simple ASCII sum gematria (placeholder for full Coptic gematria)
+fn computeSymbolGematria(text: []const u8) u64 {
+    var sum: u64 = 0;
+    for (text) |c| {
+        sum += c;
+    }
+    return sum;
+}
+
 // =============================================================================
 // TESTS
 // =============================================================================

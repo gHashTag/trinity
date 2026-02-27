@@ -226,6 +226,10 @@ pub fn main() !void {
         .sacred => math_commands.runSacredCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Sacred error: {}\n", .{err});
         },
+        // Intelligence System
+        .intelligence => tri_context.runIntelligenceCommand(allocator, &state, cmd_args) catch |err| {
+            std.debug.print("Intelligence error: {}\n", .{err});
+        },
         // Dev Utilities
         .doctor => try commands.runDoctorCommand(allocator),
         .clean => try commands.runCleanCommand(allocator),
