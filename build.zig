@@ -1514,7 +1514,8 @@ pub fn build(b: *std.Build) void {
     // v8.4: Add raygui include path and C implementation
     trinity_canvas.addIncludePath(b.path("external/raygui/src"));
     trinity_canvas.addCSourceFile(.{ .file = b.path("src/vsa/raygui_impl.c") });
-    b.installArtifact(trinity_canvas);
+    // TEMP: Disable install until raygui.h is available
+    // b.installArtifact(trinity_canvas);
 
     const run_trinity_canvas = b.addRunArtifact(trinity_canvas);
     if (b.args) |args| {
@@ -1644,7 +1645,8 @@ pub fn build(b: *std.Build) void {
             });
             wasm_canvas.linkSystemLibrary("raylib");
             wasm_canvas.linkLibC();
-            b.installArtifact(wasm_canvas);
+            // TEMP: Disable install until raygui.h is available
+            // b.installArtifact(wasm_canvas);
             wasm_step.dependOn(b.getInstallStep());
         }
     }

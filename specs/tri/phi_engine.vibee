@@ -1,0 +1,86 @@
+name: phi_engine
+version: "4.0.0"
+language: zig
+module: phi_engine
+
+types:
+  PhiPower:
+    fields:
+      exponent: Int
+      value: Float
+      inverse: Float
+      sum_identity: Float
+
+  PhiMatrix:
+    fields:
+      m00: Float
+      m01: Float
+      m10: Float
+      m11: Float
+
+  GoldenAngle:
+    fields:
+      radians: Float
+      degrees: Float
+      turns: Float
+
+behaviors:
+  - name: phi_power
+    given: Integer exponent n (positive, negative, or zero)
+    when: phi^n is computed using fast doubling
+    then: Return PhiPower with value and identity verification
+    test_cases:
+      - name: test_phi_0
+        input: "{\"n\": 0}"
+        expected: "1.0"
+      - name: test_phi_1
+        input: "{\"n\": 1}"
+        expected: "1.618033988749895"
+      - name: test_phi_2
+        input: "{\"n\": 2}"
+        expected: "2.618033988749895"
+      - name: test_phi_neg1
+        input: "{\"n\": -1}"
+        expected: "0.618033988749895"
+      - name: test_phi_10
+        input: "{\"n\": 10}"
+        expected: "122.99186938"
+
+  - name: phi_matrix_power
+    given: Integer exponent n
+    when: [[1,1],[1,0]]^n is computed
+    then: Return PhiMatrix where m00=F(n+1), m01=F(n), m10=F(n), m11=F(n-1)
+    test_cases:
+      - name: test_matrix_2
+        input: "{\"n\": 2}"
+        expected: "{\"m00\": 2, \"m01\": 1, \"m10\": 1, \"m11\": 1}"
+
+  - name: golden_angle
+    given: No input
+    when: Golden angle is computed
+    then: Return angle = 2*pi/phi^2 in radians, degrees, and turns
+    test_cases:
+      - name: test_golden_angle_degrees
+        input: "{}"
+        expected: "137.507764"
+
+  - name: golden_wrap
+    given: Float value v
+    when: v is reduced modulo phi
+    then: Return v mod phi in range [0, phi)
+    test_cases:
+      - name: test_wrap_3
+        input: "{\"v\": 3.0}"
+        expected: "1.381966"
+
+  - name: phi_hash
+    given: Byte slice input
+    when: FNV-like hash with phi multiplier is computed
+    then: Return u64 hash value
+    test_cases:
+      - name: test_hash_empty
+        input: "{\"data\": \"\"}"
+        expected: "{\"nonzero\": true}"
+      - name: test_hash_hello
+        input: "{\"data\": \"hello\"}"
+        expected: "{\"nonzero\": true}"

@@ -7,6 +7,8 @@ sidebar_label: VIBEE Tools
 
 VIBEE compiler integration, model inference, self-improvement, validation, and server tools.
 
+> **Note:** Some VIBEE tools (`improve`, `improve-all`, `improve-loop`, `validate`, `gguf-chat`, `metal`, `prometheus`) are available through the **VIBEE binary** (`zig build vibee -- <cmd>`) rather than the `tri` CLI. The `tri` CLI provides `gen`, `serve`, `convert`, `bench`, `evolve`, `distributed`, and `strict` directly.
+
 ## improve
 
 Run the VIBEE self-improvement engine.

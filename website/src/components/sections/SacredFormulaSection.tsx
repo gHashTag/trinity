@@ -4,12 +4,14 @@ import { motion } from 'framer-motion';
 import Section from '../Section';
 import StargateDrum from '../StargateDrum';
 import { useI18n } from '../../i18n/context';
-import { fetchSacredFormula, fitSingleValue, fetchGematria, type SacredFormulaResponse, type SacredConstantResult, type SingleFitResponse, type GematriaResponse } from '../../services/chatApi';
+import { fetchSacredFormula, fitSingleValue, fetchGematria, computeFromParams, PARAM_BOUNDS, type SacredFormulaResponse, type SacredConstantResult, type SingleFitResponse, type GematriaResponse } from '../../services/chatApi';
 
 type Category = 'all' | 'particle_physics' | 'quantum' | 'cosmology' | 'quantum_gravity';
 const CATEGORY_KEYS: Category[] = ['all', 'particle_physics', 'quantum', 'cosmology', 'quantum_gravity'];
 
-type InputMode = 'formula' | 'gematria';
+type InputMode = 'formula' | 'manual' | 'gematria';
+type ParamKey = 'n' | 'k' | 'm' | 'p' | 'q';
+const PARAM_KEYS: ParamKey[] = ['n', 'k', 'm', 'p', 'q'];
 
 function errorBadge(pct: number, msg: any) {
   if (pct < 0.01) return { label: msg?.exact || 'EXACT', color: '#00e599' };
@@ -39,6 +41,27 @@ export default function SacredFormulaSection() {
   const [inputMode, setInputMode] = useState<InputMode>('formula');
   const [gematriaResult, setGematriaResult] = useState<GematriaResponse | null>(null);
   const [highlightedGlyphs, setHighlightedGlyphs] = useState<number[]>([]);
+  const [params, setParams] = useState<Record<ParamKey, string>>({ n: '1', k: '0', m: '0', p: '0', q: '0' });
+  const [paramErrors, setParamErrors] = useState<Record<ParamKey, string | null>>({ n: null, k: null, m: null, p: null, q: null });
+  const [formulaError, setFormulaError] = useState<string | null>(null);
+
+  function validateParam(key: ParamKey, value: string): string | null {
+    if (value.trim() === '') return msg.validationRequired || 'Required';
+    const num = Number(value);
+    if (!Number.isInteger(num)) return msg.validationInteger || 'Must be integer';
+    const bounds = PARAM_BOUNDS[key];
+    if (num < bounds.min || num > bounds.max) {
+      return msg[`validationRange_${key}` as keyof typeof msg] as string || `Range: [${bounds.min}, ${bounds.max}]`;
+    }
+    return null;
+  }
+
+  const hasParamErrors = Object.values(paramErrors).some(e => e !== null);
+
+  const handleParamChange = (key: ParamKey, value: string) => {
+    setParams(prev => ({ ...prev, [key]: value }));
+    setParamErrors(prev => ({ ...prev, [key]: validateParam(key, value) }));
+  };
 
   useEffect(() => {
     fetchSacredFormula().then(setData);
@@ -49,25 +72,60 @@ export default function SacredFormulaSection() {
   ) ?? [];
 
   const handleDecompose = async () => {
-    if (!customValue.trim()) return;
-    setLoading(true);
     setCustomResult(null);
     setGematriaResult(null);
     setHighlightedGlyphs([]);
+    setFormulaError(null);
 
-    try {
-      if (inputMode === 'gematria') {
+    if (inputMode === 'gematria') {
+      if (!customValue.trim()) return;
+      setLoading(true);
+      try {
         const result = await fetchGematria(customValue.trim());
         setGematriaResult(result);
         setHighlightedGlyphs(result.glyphs.map(g => g.index));
-      } else {
-        const val = parseFloat(customValue);
-        if (isNaN(val) || val <= 0) return;
+      } finally {
+        setLoading(false);
+      }
+    } else if (inputMode === 'manual') {
+      // Validate all params
+      const errors: Record<string, string | null> = {};
+      let hasError = false;
+      for (const key of PARAM_KEYS) {
+        const err = validateParam(key, params[key]);
+        errors[key] = err;
+        if (err) hasError = true;
+      }
+      setParamErrors(errors as Record<ParamKey, string | null>);
+      if (hasError) return;
+
+      setLoading(true);
+      const result = computeFromParams(
+        parseInt(params.n), parseInt(params.k), parseInt(params.m),
+        parseInt(params.p), parseInt(params.q)
+      );
+      // Delay result until Stargate finishes spinning (~2.5s), then allow locking + reveal
+      setTimeout(() => {
+        setCustomResult(result);
+      }, 2500);
+      setTimeout(() => {
+        setLoading(false);
+      }, 3500);
+    } else {
+      // formula mode — auto-search
+      if (!customValue.trim()) return;
+      const val = parseFloat(customValue);
+      if (isNaN(val) || val <= 0) {
+        setFormulaError(msg.validationPositive || 'Enter a positive number');
+        return;
+      }
+      setLoading(true);
+      try {
         const result = await fitSingleValue(val);
         setCustomResult(result);
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -140,7 +198,7 @@ export default function SacredFormulaSection() {
         display: 'flex', gap: '0.5rem', justifyContent: 'center',
         marginBottom: '0.75rem',
       }}>
-        {(['formula', 'gematria'] as InputMode[]).map(mode => (
+        {(['formula', 'manual', 'gematria'] as InputMode[]).map(mode => (
           <button
             key={mode}
             onClick={() => {
@@ -149,6 +207,8 @@ export default function SacredFormulaSection() {
               setCustomResult(null);
               setGematriaResult(null);
               setHighlightedGlyphs([]);
+              setFormulaError(null);
+              setParamErrors({ n: null, k: null, m: null, p: null, q: null });
             }}
             style={{
               background: inputMode === mode ? 'rgba(255,215,0,0.15)' : 'transparent',
@@ -164,66 +224,187 @@ export default function SacredFormulaSection() {
           >
             {mode === 'formula'
               ? (msg.modeFormula || 'Number \u2192 Formula')
-              : (msg.modeGematria || 'Gematria')}
+              : mode === 'manual'
+                ? (msg.modeManual || 'Parameters \u2192 Value')
+                : (msg.modeGematria || 'Gematria')}
           </button>
         ))}
       </div>
 
-      {/* Custom input — directly above Stargate */}
-      <div className="fade" style={{
-        display: 'flex', gap: '0.75rem', justifyContent: 'center',
-        alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap'
-      }}>
-        <input
-          type={inputMode === 'formula' ? 'number' : 'text'}
-          placeholder={inputMode === 'gematria'
-            ? (msg.gematriaPlaceholder || 'Number or Coptic text...')
-            : (msg.inputPlaceholder || 'Enter any positive number...')}
-          value={customValue}
-          onChange={e => {
-            setCustomValue(e.target.value);
-            if (!e.target.value) {
-              setCustomResult(null);
-              setGematriaResult(null);
-              setHighlightedGlyphs([]);
-            }
-          }}
-          onKeyDown={e => e.key === 'Enter' && handleDecompose()}
-          style={{
-            background: 'rgba(255,255,255,0.05)',
-            border: `1px solid ${inputMode === 'gematria' ? 'rgba(0,229,153,0.3)' : 'rgba(255,215,0,0.3)'}`,
-            borderRadius: '8px',
-            padding: '0.6rem 1rem',
-            color: 'var(--text)',
-            fontSize: '1rem',
-            width: '220px',
-            fontFamily: 'monospace',
-            outline: 'none',
-          }}
-        />
-        <button
-          onClick={handleDecompose}
-          disabled={loading}
-          style={{
-            background: inputMode === 'gematria'
-              ? 'linear-gradient(135deg, rgba(0,229,153,0.2), rgba(255,215,0,0.2))'
-              : 'linear-gradient(135deg, rgba(255,215,0,0.2), rgba(0,229,153,0.2))',
-            border: `1px solid ${inputMode === 'gematria' ? 'rgba(0,229,153,0.4)' : 'rgba(255,215,0,0.4)'}`,
-            borderRadius: '8px',
-            padding: '0.6rem 1.5rem',
-            color: inputMode === 'gematria' ? '#00e599' : '#ffd700',
-            fontSize: '0.9rem',
-            cursor: loading ? 'wait' : 'pointer',
-            fontFamily: 'monospace',
-          }}
-        >
-          {loading
-            ? (msg.computing || 'Computing...')
-            : inputMode === 'gematria'
-              ? (msg.gematriaDecompose || 'Decode')
-              : (msg.decompose || 'Decompose')}
-        </button>
-      </div>
+      {/* Input area — formula mode */}
+      {inputMode === 'formula' && (
+        <div className="fade" style={{ marginBottom: '0.5rem' }}>
+          <div style={{
+            display: 'flex', gap: '0.75rem', justifyContent: 'center',
+            alignItems: 'center', flexWrap: 'wrap',
+          }}>
+            <input
+              type="number"
+              placeholder={msg.inputPlaceholder || 'Enter any positive number...'}
+              value={customValue}
+              onChange={e => {
+                setCustomValue(e.target.value);
+                setFormulaError(null);
+                if (!e.target.value) { setCustomResult(null); }
+              }}
+              onKeyDown={e => e.key === 'Enter' && handleDecompose()}
+              style={{
+                background: 'rgba(255,255,255,0.05)',
+                border: `1px solid ${formulaError ? 'rgba(255,80,80,0.7)' : 'rgba(255,215,0,0.3)'}`,
+                borderRadius: '8px',
+                padding: '0.6rem 1rem',
+                color: 'var(--text)',
+                fontSize: '1rem',
+                width: '220px',
+                fontFamily: 'monospace',
+                outline: 'none',
+              }}
+            />
+            <button
+              onClick={handleDecompose}
+              disabled={loading}
+              style={{
+                background: 'linear-gradient(135deg, rgba(255,215,0,0.2), rgba(0,229,153,0.2))',
+                border: '1px solid rgba(255,215,0,0.4)',
+                borderRadius: '8px',
+                padding: '0.6rem 1.5rem',
+                color: '#ffd700',
+                fontSize: '0.9rem',
+                cursor: loading ? 'wait' : 'pointer',
+                fontFamily: 'monospace',
+              }}
+            >
+              {loading ? (msg.computing || 'Computing...') : (msg.decompose || 'Decompose')}
+            </button>
+          </div>
+          {formulaError && (
+            <div style={{ color: '#ff5050', fontSize: '0.75rem', fontFamily: 'monospace', textAlign: 'center', marginTop: '0.4rem' }}>
+              {formulaError}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Input area — manual mode (5 parameter inputs) */}
+      {inputMode === 'manual' && (
+        <div className="fade" style={{ marginBottom: '0.5rem' }}>
+          <div style={{
+            display: 'flex', gap: '0.5rem', justifyContent: 'center',
+            alignItems: 'flex-start', flexWrap: 'wrap',
+          }}>
+            {PARAM_KEYS.map(key => {
+              const bounds = PARAM_BOUNDS[key];
+              const error = paramErrors[key];
+              return (
+                <div key={key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '80px' }}>
+                  <label style={{
+                    color: '#ffd700', fontSize: '0.8rem', fontFamily: 'monospace',
+                    marginBottom: '0.25rem', textAlign: 'center',
+                  }}>
+                    {key === 'n' ? 'n' : key === 'k' ? '3^k' : key === 'm' ? '\u03C0^m' : key === 'p' ? '\u03C6^p' : 'e^q'}
+                    <span style={{ opacity: 0.4, fontSize: '0.65rem', display: 'block' }}>
+                      [{bounds.min}, {bounds.max}]
+                    </span>
+                  </label>
+                  <input
+                    type="number"
+                    value={params[key]}
+                    onChange={e => handleParamChange(key, e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleDecompose()}
+                    style={{
+                      background: 'rgba(255,255,255,0.05)',
+                      border: `1px solid ${error ? 'rgba(255,80,80,0.7)' : 'rgba(255,215,0,0.3)'}`,
+                      borderRadius: '6px',
+                      padding: '0.4rem 0.3rem',
+                      color: 'var(--text)',
+                      fontSize: '0.95rem',
+                      width: '100%',
+                      fontFamily: 'monospace',
+                      outline: 'none',
+                      textAlign: 'center',
+                    }}
+                  />
+                  {error && (
+                    <span style={{
+                      color: '#ff5050', fontSize: '0.6rem', fontFamily: 'monospace',
+                      marginTop: '0.2rem', textAlign: 'center', lineHeight: 1.2,
+                    }}>
+                      {error}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ textAlign: 'center', marginTop: '0.5rem' }}>
+            <button
+              onClick={handleDecompose}
+              disabled={loading || hasParamErrors}
+              style={{
+                background: hasParamErrors
+                  ? 'rgba(255,80,80,0.1)'
+                  : 'linear-gradient(135deg, rgba(255,215,0,0.2), rgba(0,229,153,0.2))',
+                border: `1px solid ${hasParamErrors ? 'rgba(255,80,80,0.4)' : 'rgba(255,215,0,0.4)'}`,
+                borderRadius: '8px',
+                padding: '0.6rem 2rem',
+                color: hasParamErrors ? '#ff5050' : '#ffd700',
+                fontSize: '0.9rem',
+                cursor: (loading || hasParamErrors) ? 'not-allowed' : 'pointer',
+                fontFamily: 'monospace',
+                opacity: hasParamErrors ? 0.5 : 1,
+              }}
+            >
+              {loading ? (msg.computing || 'Computing...') : (msg.compute || 'Compute')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Input area — gematria mode */}
+      {inputMode === 'gematria' && (
+        <div className="fade" style={{
+          display: 'flex', gap: '0.75rem', justifyContent: 'center',
+          alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap',
+        }}>
+          <input
+            type="text"
+            placeholder={msg.gematriaPlaceholder || 'Number or Coptic text...'}
+            value={customValue}
+            onChange={e => {
+              setCustomValue(e.target.value);
+              if (!e.target.value) { setGematriaResult(null); setHighlightedGlyphs([]); }
+            }}
+            onKeyDown={e => e.key === 'Enter' && handleDecompose()}
+            style={{
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(0,229,153,0.3)',
+              borderRadius: '8px',
+              padding: '0.6rem 1rem',
+              color: 'var(--text)',
+              fontSize: '1rem',
+              width: '220px',
+              fontFamily: 'monospace',
+              outline: 'none',
+            }}
+          />
+          <button
+            onClick={handleDecompose}
+            disabled={loading}
+            style={{
+              background: 'linear-gradient(135deg, rgba(0,229,153,0.2), rgba(255,215,0,0.2))',
+              border: '1px solid rgba(0,229,153,0.4)',
+              borderRadius: '8px',
+              padding: '0.6rem 1.5rem',
+              color: '#00e599',
+              fontSize: '0.9rem',
+              cursor: loading ? 'wait' : 'pointer',
+              fontFamily: 'monospace',
+            }}
+          >
+            {loading ? (msg.computing || 'Computing...') : (msg.gematriaDecompose || 'Decode')}
+          </button>
+        </div>
+      )}
 
       {/* Gematria result card */}
       {gematriaResult && gematriaResult.glyphs.length > 0 && (
@@ -265,7 +446,7 @@ export default function SacredFormulaSection() {
       {/* Stargate Drum */}
       <StargateDrum
         constants={data?.constants ?? []}
-        isDecomposing={loading && inputMode === 'formula'}
+        isDecomposing={loading && (inputMode === 'formula' || inputMode === 'manual')}
         result={customResult}
         highlightedConstant={highlightedConstant}
         highlightedGlyphs={highlightedGlyphs}

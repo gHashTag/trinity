@@ -30,6 +30,7 @@ const commands = @import("tri_commands.zig");
 const pipeline = @import("tri_pipeline.zig");
 const demos = @import("tri_demos.zig");
 const math_commands = @import("math/commands.zig");
+const tri_context = @import("tri_context.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN
@@ -67,21 +68,21 @@ pub fn main() !void {
         .doc => utils.runSWECommand(&state, .Document, cmd_args),
         .refactor => utils.runSWECommand(&state, .Refactor, cmd_args),
         .reason => utils.runSWECommand(&state, .Reason, cmd_args),
-        .gen => commands.runGenCommand(allocator, cmd_args),
-        .convert => commands.runConvertCommand(cmd_args),
-        .serve => commands.runServeCommand(allocator, cmd_args),
-        .bench => commands.runBenchCommand(allocator),
-        .evolve => commands.runEvolveCommand(cmd_args),
+        .gen => try commands.runGenCommand(allocator, cmd_args),
+        .convert => try commands.runConvertCommand(cmd_args),
+        .serve => try commands.runServeCommand(allocator, cmd_args),
+        .bench => try commands.runBenchCommand(allocator),
+        .evolve => try commands.runEvolveCommand(cmd_args),
         // Git commands
-        .commit => commands.runGitCommand(allocator, "commit", cmd_args),
-        .diff => commands.runGitCommand(allocator, "diff", cmd_args),
-        .status => commands.runGitCommand(allocator, "status", cmd_args),
-        .log => commands.runGitCommand(allocator, "log", cmd_args),
+        .commit => try commands.runGitCommand(allocator, "commit", cmd_args),
+        .diff => try commands.runGitCommand(allocator, "diff", cmd_args),
+        .status => try commands.runGitCommand(allocator, "status", cmd_args),
+        .log => try commands.runGitCommand(allocator, "log", cmd_args),
         // Golden Chain Pipeline
         .pipeline => pipeline.runPipelineCommand(allocator, cmd_args),
         .decompose => pipeline.runDecomposeCommand(allocator, cmd_args),
         .plan => pipeline.runPlanCommand(allocator, cmd_args),
-        .multi_cluster => commands.runMultiClusterCommand(allocator, cmd_args),
+        .multi_cluster => try commands.runMultiClusterCommand(allocator, cmd_args),
         .verify => pipeline.runVerifyCommand(allocator),
         .verdict => pipeline.runVerdictCommand(allocator),
         // Spec & Loop (v8.27)
@@ -196,8 +197,8 @@ pub fn main() !void {
         .workflow_demo => demos.runWorkflowDemo(),
         .workflow_bench => demos.runWorkflowBench(),
         // Distributed Inference
-        .distributed => commands.runDistributedCommand(allocator, cmd_args),
-        // Sacred Mathematics (v2.0)
+        .distributed => try commands.runDistributedCommand(allocator, cmd_args),
+        // Sacred Mathematics (v3.6)
         .math => math_commands.runMathCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Math error: {}\n", .{err});
         },
@@ -216,12 +217,26 @@ pub fn main() !void {
         .spiral => math_commands.runSpiralCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Spiral error: {}\n", .{err});
         },
+        .gematria => math_commands.runGematriaTopLevel(allocator, cmd_args) catch |err| {
+            std.debug.print("Gematria error: {}\n", .{err});
+        },
+        .formula_cmd => math_commands.runFormulaCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Formula error: {}\n", .{err});
+        },
+        .sacred => math_commands.runSacredCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Sacred error: {}\n", .{err});
+        },
         // Dev Utilities
-        .doctor => commands.runDoctorCommand(allocator),
-        .clean => commands.runCleanCommand(allocator),
-        .fmt_cmd => commands.runFmtCommand(allocator),
-        .stats_cmd => commands.runStatsCommand(allocator),
-        .igla => commands.runIglaCommand(allocator),
+        .doctor => try commands.runDoctorCommand(allocator),
+        .clean => try commands.runCleanCommand(allocator),
+        .fmt_cmd => try commands.runFmtCommand(allocator),
+        .stats_cmd => try commands.runStatsCommand(allocator),
+        .igla => try commands.runIglaCommand(allocator),
+        // Codebase Context (Cycle 92)
+        .analyze => tri_context.runAnalyzeCommand(&state),
+        .search_cmd => tri_context.runSearchCommand(&state, cmd_args),
+        .context_info => tri_context.runContextInfoCommand(&state),
+        .deps => utils.printInfo(),
         .info => utils.printInfo(),
         .version => utils.printVersion(),
         .help => utils.printHelp(),

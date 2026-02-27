@@ -226,10 +226,11 @@ function StargateDrum({ constants, isDecomposing, result, highlightedConstant, h
               <g key={i}>
                 {isHL && (
                   <motion.circle
-                    cx={x} cy={y} r={GLYPH_R + 5}
+                    cx={x} cy={y} r={GLYPH_R + 6}
                     fill="none" stroke={isGematriaHL ? '#00e599' : '#ffd700'} strokeWidth="2"
-                    animate={{ opacity: [0.3, 1, 0.3], r: [GLYPH_R + 4, GLYPH_R + 8, GLYPH_R + 4] }}
+                    animate={{ opacity: [0.3, 1, 0.3], scale: [0.9, 1.15, 0.9] }}
                     transition={{ duration: 1.5, repeat: Infinity }}
+                    style={{ transformOrigin: `${x}px ${y}px` }}
                   />
                 )}
                 <circle
@@ -323,10 +324,11 @@ function StargateDrum({ constants, isDecomposing, result, highlightedConstant, h
 
         {/* Active horizon bloom */}
         <motion.circle
-          cx={CX} cy={CY}
+          cx={CX} cy={CY} r={160}
           fill="url(#sg-horizon-active)"
-          animate={{ r: horizonOpen ? 160 : 0, opacity: horizonOpen ? 1 : 0 }}
+          animate={{ scale: horizonOpen ? 1 : 0, opacity: horizonOpen ? 1 : 0 }}
           transition={{ duration: 0.6, ease: [0, 0.55, 0.45, 1] }}
+          style={{ transformOrigin: `${CX}px ${CY}px` }}
         />
 
         {/* Center formula text (always visible but dim when idle) */}

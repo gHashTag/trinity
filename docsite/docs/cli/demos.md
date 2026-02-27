@@ -14,6 +14,50 @@ tri <name>-demo                         # Run interactive demo
 tri <name>-bench                        # Run benchmark
 ```
 
+## Needle Check (Koschei's Immortality Test)
+
+Every benchmark uses the **Needle Check** — a quality gate based on the golden ratio:
+
+$$\text{threshold} = \phi^{-1} = 0.6180339887...$$
+
+The benchmark computes an **improvement rate** and compares it to the threshold:
+
+| Status | Condition | Message |
+|--------|-----------|---------|
+| **PASS** (Immortal) | rate $> 0.618$ | KOSCHEI BESSMERTEN! Igla ostra. (Koschei is immortal! Needle is sharp.) |
+| **WARN** (Mortal) | $0 <$ rate $< 0.618$ | Uluchshenie est', no Igla tupitsya. (Improvement exists, but needle dulls.) |
+| **FAIL** (Regression) | rate $\leq 0$ | REGRESSIYA! Igla slomana. (Regression! Needle is broken.) |
+
+### Improvement Rate Formula
+
+Each benchmark calculates the improvement rate as a weighted composite of scenario metrics:
+
+```
+improvement_rate = (metric_1 + metric_2 + baseline_contribution) / 2.0
+```
+
+Where metrics are scenario-specific (hit rate, similarity score, agent count, throughput, etc.) and normalized to the $[0, 1]$ range.
+
+### Example Benchmark Output
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Scenario 1: Basic query
+    Hit rate:       0.85
+    Similarity:     0.92
+    Improvement:    0.887
+
+  Scenario 2: Complex reasoning
+    Hit rate:       0.72
+    Similarity:     0.88
+    Improvement:    0.800
+
+  Needle Check (phi^-1 = 0.618):
+    Average rate:   0.843
+    Status:         KOSCHEI IS IMMORTAL! Needle is sharp.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
 ## Pre-Cycle Demos
 
 Early features implemented before the numbered cycle system.
@@ -141,3 +185,9 @@ Early features implemented before the numbered cycle system.
 | Scheduling & Plugins | 7 | 39-45 |
 | Advanced Systems | 7 | 46-52 |
 | **Total** | **36 pairs** | **72 commands** |
+
+## See Also
+
+- [Pipeline](/cli/pipeline) — Golden Chain development cycle (where demos are verified)
+- [TVC Learning](/cli/tvc) — TVC corpus architecture (used in tvc-demo)
+- [Sacred Constants](/cli/constants) — The $\phi^{-1} = 0.618$ threshold explained
