@@ -240,6 +240,25 @@ pub fn main() !void {
         .analyze => tri_context.runAnalyzeCommand(&state),
         .search_cmd => tri_context.runSearchCommand(&state, cmd_args),
         .context_info => tri_context.runContextInfoCommand(&state),
+        // Autonomous Evolution (Cycle 97)
+        .auto_commit => utils.runAutoCommitCommand(&state, cmd_args) catch |err| {
+            std.debug.print("Auto-commit error: {}\n", .{err});
+        },
+        .ml_optimize => utils.runMLOptimizeCommand(&state, cmd_args) catch |err| {
+            std.debug.print("ML optimize error: {}\n", .{err});
+        },
+        .deploy_dashboard => utils.runDeployDashboardCommand(&state, cmd_args) catch |err| {
+            std.debug.print("Deploy dashboard error: {}\n", .{err});
+        },
+        .self_host => utils.runSelfHostCommand(&state, cmd_args) catch |err| {
+            std.debug.print("Self-host error: {}\n", .{err});
+        },
+        .safeguards_show => utils.runSafeguardsShowCommand(&state, cmd_args) catch |err| {
+            std.debug.print("Safeguards show error: {}\n", .{err});
+        },
+        .safeguards_disable => utils.runSafeguardsDisableCommand(&state, cmd_args) catch |err| {
+            std.debug.print("Safeguards disable error: {}\n", .{err});
+        },
         .deps => utils.printInfo(),
         .info => utils.printInfo(),
         .version => utils.printVersion(),
