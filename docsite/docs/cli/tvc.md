@@ -67,23 +67,14 @@ tri tvc-stats
 **Example output:**
 
 ```
-TVC CORPUS STATISTICS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Capacity:         10,000 entries
-  Vector dimension: 1,000 trits
-  Threshold:        0.618 (phi^-1)
-  Encoding:         Ternary {-1, 0, +1}
-  Storage:          ~26 MB
-
-  File format:
-    Magic:          TVC1
-    Header:         64 bytes
-    Entry size:     1,000 bytes + metadata
-
-  Bundling:
-    Method:         Majority vote
-    Memory vector:  Bundled accumulator
-    Forgetting:     ZERO (all patterns retained)
+TVC STATISTICS
+═══════════════════════════════════════════════════════════════════
+TVC Enabled:       Ready
+Max Entries:       10,000
+Vector Dimension:  1,000 trits
+Threshold:         0.618 (phi^-1)
+File Format:       .tvc (TVC1 magic)
+═══════════════════════════════════════════════════════════════════
 ```
 
 ## Architecture

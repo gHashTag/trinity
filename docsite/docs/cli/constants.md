@@ -10,50 +10,55 @@ Complete catalog of mathematical, physical, and exotic constants available in TR
 ## Quick Access
 
 ```bash
-tri constants           # Show core sacred constants
+tri constants           # Show core sacred constants (4 sections)
 tri math exotic         # Exotic mathematical constants
 tri math physical       # Physics constants
 tri math chaos          # Chaos theory constants
 tri math all            # Display ALL constants
 ```
 
-## Core Sacred Constants (Cycle 82)
+## `tri constants` Output (Cycle 82)
 
-### Golden Ratio Family
+The `tri constants` command displays 4 sections of constants:
+
+### Section 1: Golden Ratio
 
 | Constant | Symbol | Value | Formula |
 |----------|--------|-------|---------|
-| Golden ratio | $\phi$ | 1.6180339887498948 | $\frac{1+\sqrt{5}}{2}$ |
-| Golden ratio squared | $\phi^2$ | 2.6180339887498948 | $\phi + 1$ |
-| Inverse golden ratio | $\phi^{-1}$ | 0.6180339887498948 | $\phi - 1 = \frac{1}{\phi}$ |
-| Inverse squared | $\phi^{-2}$ | 0.3819660112501051 | $\frac{1}{\phi^2}$ |
+| Golden Ratio | $\phi$ | 1.6180339887498948482 | $(1 + \sqrt{5}) / 2$ |
+| Phi Squared | $\phi^2$ | 2.6180339887498948482 | $\phi^2 = \phi + 1$ |
+| Inverse Phi Squared | $1/\phi^2$ | 0.3819660112501051518 | $1/\phi^2 = \phi - 1$ |
+| Trinity Sum | $\phi^2 + 1/\phi^2$ | 3.0 | TRINITY IDENTITY — exact equality |
 
 **Trinity Identity:**
 
 $$\phi^2 + \frac{1}{\phi^2} = 3 = \text{TRINITY}$$
 
-### Fundamental Mathematical Constants
+### Section 2: Transcendental
 
-| Constant | Symbol | Value |
-|----------|--------|-------|
-| Pi | $\pi$ | 3.1415926535897932 |
-| Euler's number | $e$ | 2.7182818284590452 |
-| Square root of 2 | $\sqrt{2}$ | 1.4142135623730950 |
-| Square root of 3 | $\sqrt{3}$ | 1.7320508075688772 |
-| Square root of 5 | $\sqrt{5}$ | 2.2360679774997896 |
-| Natural log of 2 | $\ln 2$ | 0.6931471805599453 |
-| Euler-Mascheroni | $\gamma$ | 0.5772156649015328 |
+| Constant | Symbol | Value | Formula |
+|----------|--------|-------|---------|
+| Pi | $\pi$ | 3.14159265358979323846 | $C / d$ |
+| Euler's Number | $e$ | 2.71828182845904523536 | $\lim_{n\to\infty}(1 + 1/n)^n$ |
+| Transcendental Product | $\pi \times \phi \times e$ | 13.816890703380645 | $\approx$ TRYTE\_MAX (13) |
 
-### Trinity-Specific Constants
+### Section 3: Genetic Algorithm
 
-| Constant | Symbol | Value | Description |
-|----------|--------|-------|-------------|
-| TRINITY | $T$ | 3 | $\phi^2 + 1/\phi^2$ |
-| MU | $\mu$ | 0.0382 | $\phi^{-4}$ |
-| CHI | $\chi$ | 0.0618 | $\phi^{-2} - \phi^{-3}$ |
-| SIGMA | $\sigma$ | 1.618 | $\approx \phi$ |
-| EPSILON | $\varepsilon$ | 0.333 | $\approx 1/3$ |
-| Transcendental | — | 13.8168907... | $\phi \cdot \pi \cdot e^{\pi/\phi}$ |
+| Constant | Symbol | Value | Formula | Description |
+|----------|--------|-------|---------|-------------|
+| Mu | $\mu$ | 0.0382 | $1/\phi^2/10$ | Mutation rate |
+| Chi | $\chi$ | 0.0618 | $1/\phi/10$ | Crossover rate |
+| Sigma | $\sigma$ | 1.618 | $\phi$ | Selection pressure |
+| Epsilon | $\varepsilon$ | 0.333 | $1/3$ | Elitism rate |
+
+### Section 4: Quantum
+
+| Constant | Symbol | Value | Formula | Description |
+|----------|--------|-------|---------|-------------|
+| CHSH Inequality | CHSH | 2.8284271247461903 | $2\sqrt{2}$ | Bell inequality violation |
+| Fine Structure Inverse | $\alpha^{-1}$ | 137.036 | $4\pi^3 + \pi^2 + \pi$ | Fine structure constant |
+| Berry Phase | $\beta$ | 2.112 | $\pi(1 - 1/\phi)$ | Quantum-inspired phase |
+| SU3 Constant | SU3 | 0.927 | $3/(2\phi)$ | Energy harvesting constant |
 
 ## Exotic Mathematical Constants (Cycle 83)
 
@@ -163,7 +168,7 @@ These constants appear in **any** system exhibiting period-doubling route to cha
 
 | Command | Category | Constants shown |
 |---------|----------|----------------|
-| `tri constants` | Core | 14+ golden ratio, pi, e, Trinity |
+| `tri constants` | Core | 4 sections: Golden Ratio, Transcendental, Genetic Algorithm, Quantum |
 | `tri math exotic` | Exotic | 10 rare mathematical constants |
 | `tri math physical` | Physics | 12 fundamental physics constants |
 | `tri math chaos` | Chaos | Feigenbaum + logistic map demo |
