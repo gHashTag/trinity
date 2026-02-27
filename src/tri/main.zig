@@ -198,7 +198,7 @@ pub fn main() !void {
         .workflow_bench => demos.runWorkflowBench(),
         // Distributed Inference
         .distributed => try commands.runDistributedCommand(allocator, cmd_args),
-        // Sacred Mathematics (v2.0)
+        // Sacred Mathematics (v3.6)
         .math => math_commands.runMathCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Math error: {}\n", .{err});
         },
@@ -216,6 +216,12 @@ pub fn main() !void {
         },
         .spiral => math_commands.runSpiralCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Spiral error: {}\n", .{err});
+        },
+        .gematria => math_commands.runGematriaTopLevel(allocator, cmd_args) catch |err| {
+            std.debug.print("Gematria error: {}\n", .{err});
+        },
+        .formula_cmd => math_commands.runFormulaCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Formula error: {}\n", .{err});
         },
         // Dev Utilities
         .doctor => try commands.runDoctorCommand(allocator),

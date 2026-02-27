@@ -14,6 +14,8 @@ const eval = @import("eval.zig");
 const compute = @import("compute.zig");
 const bench_mod = @import("bench.zig");
 const identities_mod = @import("identities.zig");
+const gematria_math = @import("gematria.zig");
+const sacred_formula = @import("sacred_formula.zig");
 
 // Direct writer that works with the compute/eval modules
 // This works because it implements the Writer interface without std.io
@@ -78,6 +80,10 @@ pub fn runMathCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         try runBenchCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "identities")) {
         try runIdentitiesCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "gematria") or std.mem.eql(u8, subcommand, "gem")) {
+        try gematria_math.runGematriaCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "formula")) {
+        try runFormulaCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "help")) {
         try showMathHelp();
     } else {
@@ -222,11 +228,31 @@ pub fn runIdentitiesCommand(allocator: std.mem.Allocator, args: []const []const 
     try identities_mod.printAllIdentities(wr.writer());
 }
 
+pub fn runGematriaTopLevel(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    try gematria_math.runGematriaCommand(allocator, args);
+}
+
+pub fn runFormulaCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    if (args.len == 0) {
+        std.debug.print("Usage: tri formula <number>\n", .{});
+        std.debug.print("  Decompose a number using Sacred Formula V = n \xc3\x97 3^k \xc3\x97 \xcf\x80^m \xc3\x97 \xcf\x86^p \xc3\x97 e^q\n", .{});
+        return;
+    }
+    const value = std.fmt.parseFloat(f64, args[0]) catch {
+        std.debug.print("Error: '{s}' is not a valid number\n", .{args[0]});
+        return;
+    };
+    const fit = sacred_formula.fitSacredFormula(value);
+    sacred_formula.printSacredFormulaFit(fit, value);
+}
+
 fn showMathHelp() !void {
     var wr = DirectWriter{};
     try wr.writeAll("+====================================================================+\n");
-    try wr.writeAll("|                    SACRED MATHEMATICS v2.0                          |\n");
-    try wr.writeAll("|                    phi^2 + 1/phi^2 = 3 = TRINITY                   |\n");
+    try wr.writeAll("|                    SACRED MATHEMATICS v3.6                          |\n");
+    try wr.writeAll("|            V = n \xc3\x97 3^k \xc3\x97 \xcf\x80^m \xc3\x97 \xcf\x86^p \xc3\x97 e^q                       |\n");
+    try wr.writeAll("|                phi^2 + 1/phi^2 = 3 = TRINITY                       |\n");
     try wr.writeAll("+====================================================================+\n");
     try wr.writeAll("\n");
     try wr.writeAll("  SUBCOMMANDS\n");
@@ -240,6 +266,8 @@ fn showMathHelp() !void {
     try wr.writeAll("  tri math compute compare <n>    Compare sequences\n");
     try wr.writeAll("  tri math bench                  Run benchmarks\n");
     try wr.writeAll("  tri math identities             Show phi-identities\n");
+    try wr.writeAll("  tri math gematria <number|text> Coptic gematria + sacred formula\n");
+    try wr.writeAll("  tri math formula <value>        Sacred formula decomposition\n");
     try wr.writeAll("\n");
     try wr.writeAll("  ALIASES (Quick Access)\n");
     try wr.writeAll("  ----------------------------------------------------------------\n");
@@ -249,6 +277,8 @@ fn showMathHelp() !void {
     try wr.writeAll("  tri lucas <n>      Same as 'tri math eval lucas <n>'\n");
     try wr.writeAll("  tri spiral <n>     Same as 'tri math compute spiral <n>'\n");
     try wr.writeAll("  tri verify         Same as 'tri math compute verify'\n");
+    try wr.writeAll("  tri gematria <n>   Same as 'tri math gematria <n>'\n");
+    try wr.writeAll("  tri formula <v>    Same as 'tri math formula <v>'\n");
     try wr.writeAll("\n");
     try wr.writeAll("  FLAGS\n");
     try wr.writeAll("  ----------------------------------------------------------------\n");
