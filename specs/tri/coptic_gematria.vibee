@@ -1,0 +1,98 @@
+name: coptic_gematria
+version: "3.6.0"
+language: zig
+module: coptic_gematria
+
+constants:
+  - name: COPTIC_GLYPH_COUNT
+    value: 27
+  - name: MAX_ISOPSEPHY_VALUE
+    value: 999
+
+types:
+  SacredFormulaFit:
+    fields:
+      n: Int
+      k: Int
+      m: Int
+      p: Int
+      q: Int
+      computed: Float
+      error_pct: Float
+
+  GlyphBreakdown:
+    fields:
+      glyph: String
+      index: Int
+      value: Int
+
+  GematriaResult:
+    fields:
+      input: String
+      mode: String
+      total: Int
+      has_sacred_fit: Bool
+
+behaviors:
+  - name: sacred_formula_compute
+    given: Parameters (n, k, m, p, q) as integers
+    when: V = n * 3^k * pi^m * phi^p * e^q is computed
+    then: Return the floating-point result
+    test_cases:
+      - name: test_trinity
+        input: "{\"n\": 1, \"k\": 1, \"m\": 0, \"p\": 0, \"q\": 0}"
+        expected: "3.0"
+      - name: test_unity
+        input: "{\"n\": 1, \"k\": 0, \"m\": 0, \"p\": 0, \"q\": 0}"
+        expected: "1.0"
+      - name: test_phi
+        input: "{\"n\": 1, \"k\": 0, \"m\": 0, \"p\": 1, \"q\": 0}"
+        expected: "1.618033988749895"
+
+  - name: sacred_formula_fit
+    given: A target numeric value
+    when: Brute-force search over bounded (n,k,m,p,q) ranges
+    then: Return SacredFormulaFit minimizing |V - target|/target
+    test_cases:
+      - name: test_fit_3
+        input: "{\"target\": 3.0}"
+        expected: "{\"n\": 1, \"k\": 1, \"error_pct\": 0.0}"
+      - name: test_fit_137
+        input: "{\"target\": 137.036}"
+        expected: "{\"error_pct_lt\": 5.0}"
+
+  - name: number_to_glyphs
+    given: A positive integer (1-999+)
+    when: Decomposed into hundreds+tens+units Coptic glyphs
+    then: Return GlyphBreakdown array (greedy, largest first)
+    test_cases:
+      - name: test_137
+        input: "{\"value\": 137}"
+        expected: "{\"count\": 3, \"values\": [100, 30, 7]}"
+      - name: test_999
+        input: "{\"value\": 999}"
+        expected: "{\"count\": 3, \"values\": [900, 90, 9]}"
+      - name: test_42
+        input: "{\"value\": 42}"
+        expected: "{\"count\": 2, \"values\": [40, 2]}"
+
+  - name: text_to_gematria_value
+    given: UTF-8 text string with Coptic characters
+    when: Each Coptic glyph value is summed
+    then: Return total numeric value
+    test_cases:
+      - name: test_abcd
+        input: "{\"text\": \"\\u2C80\\u2C82\\u2C84\\u2C86\"}"
+        expected: "10"
+      - name: test_non_coptic
+        input: "{\"text\": \"ABC\"}"
+        expected: "0"
+
+  - name: gematria_with_sacred_fit
+    given: Number or text input
+    when: Gematria is computed and sacred formula fitting is applied to total
+    then: Return GematriaResult with populated sacred_fit fields
+    test_cases:
+      - name: test_gematria_137
+        input: "{\"value\": 137}"
+        expected: "{\"total\": 137, \"has_sacred_fit\": true}"
