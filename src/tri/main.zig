@@ -30,6 +30,7 @@ const commands = @import("tri_commands.zig");
 const pipeline = @import("tri_pipeline.zig");
 const demos = @import("tri_demos.zig");
 const math_commands = @import("math/commands.zig");
+const tri_context = @import("tri_context.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN
@@ -222,9 +223,10 @@ pub fn main() !void {
         .fmt_cmd => try commands.runFmtCommand(allocator),
         .stats_cmd => try commands.runStatsCommand(allocator),
         .igla => try commands.runIglaCommand(allocator),
-        // Analyzer commands (cycle-78)
-        .analyze => utils.printInfo(),
-        .search_cmd => utils.printInfo(),
+        // Codebase Context (Cycle 92)
+        .analyze => tri_context.runAnalyzeCommand(&state),
+        .search_cmd => tri_context.runSearchCommand(&state, cmd_args),
+        .context_info => tri_context.runContextInfoCommand(&state),
         .deps => utils.printInfo(),
         .info => utils.printInfo(),
         .version => utils.printVersion(),

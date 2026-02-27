@@ -82,6 +82,9 @@ zig-windows-*/
 # Ralph logs (keep config)
 .ralph/logs/
 
+# Context index (generated binary, 80MB+)
+.trinity-nexus/.context_index
+
 # Temporary scripts
 check_ssh.py
 
