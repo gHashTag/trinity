@@ -1416,7 +1416,7 @@ pub const ZigCodeGen = struct {
 
     /// ALSO check for opening brace after fn name (CYCLE 97 FIX)
     /// For languages like Go/Rust where spec provides full function with braces
-    fn hasFunctionBodyBraces(implementation: []const u8, fn_name: []const u8) bool {
+    fn hasFunctionBodyBraces(implementation: []const u8, _: []const u8) bool {
         var after_fn: usize = 0;
         while (after_fn < implementation.len and (
             implementation[after_fn] == ' ' or

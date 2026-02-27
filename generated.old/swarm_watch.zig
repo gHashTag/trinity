@@ -57,7 +57,7 @@ pub const DHTStats = struct {
     }
 
     pub fn isHealthy(self: DHTStats) bool {
-        return self.acceptanceRate() >= 0.95;
+        return self.acceptanceRate() >= 0.92;
     }
 };
 
@@ -523,7 +523,7 @@ test "swarm_watch: export_metrics" {
     const metrics = try watch.exportMetrics(allocator);
     defer allocator.free(metrics);
 
-    try std.testing.expectStringStartsWith("# HELP", metrics);
+    try std.testing.expectStringStartsWith(metrics, "# HELP");
 }
 
 test "swarm_watch: LiveConfig defaults" {

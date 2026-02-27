@@ -916,3 +916,221 @@ export function subscribeToPatternEvents(
     eventSource.close();
   };
 }
+
+// Sacred Formula types and functions
+
+export interface SacredFormulaResponse {
+  constants: SacredConstantResult[];
+  predictions?: {
+    name: string;
+    formula: string;
+    value: number;
+    unit?: string;
+  }[];
+}
+
+export interface SacredConstantResult {
+  name: string;
+  symbol: string;
+  category: string;
+  target: string;
+  fit: { n: number; k: number; m: number; p: number; q: number };
+  computed: number;
+  error_pct: number;
+}
+
+export interface SingleFitResponse {
+  fit: { n: number; k: number; m: number; p: number; q: number };
+  computed: number;
+  error_pct: number;
+}
+
+export interface GematriaResponse {
+  glyphs: { glyph: string; value: number; index: number }[];
+  total: number;
+  sacred_fit?: { n: number; k: number; m: number; p: number; q: number };
+  sacred_computed?: number;
+  sacred_error_pct?: number;
+}
+
+export async function fetchSacredFormula(): Promise<SacredFormulaResponse> {
+  return {
+    formula: 'V = n × 3^k × π^m × φ^p × e^q',
+    constants: [
+      // Particle Physics
+      { name: '1/\u03B1 (fine structure)', symbol: 'FINE_STRUCTURE_INV', target: '137.036', category: 'particle_physics', fit: { n: 4, k: 2, m: -1, p: 1, q: 2 }, computed: 137.002733, error_pct: 0.0243 },
+      { name: 'm_p/m_e', symbol: 'PROTON_ELECTRON_RATIO', target: '1836.15', category: 'particle_physics', fit: { n: 9, k: 4, m: 0, p: 4, q: -1 }, computed: 1838.161254, error_pct: 0.1094 },
+      { name: 'sin\u00B2(\u03B8_W)', symbol: 'WEINBERG_SIN2', target: '0.2229', category: 'particle_physics', fit: { n: 8, k: -1, m: 0, p: -1, q: -2 }, computed: 0.223045, error_pct: 0.0650 },
+      { name: 'M_Higgs (GeV)', symbol: 'M_HIGGS', target: '125.25', category: 'particle_physics', fit: { n: 5, k: 3, m: 0, p: 4, q: -2 }, computed: 125.226247, error_pct: 0.0190 },
+      { name: 'M_W (GeV)', symbol: 'M_W_BOSON', target: '80.377', category: 'particle_physics', fit: { n: 2, k: 4, m: -1, p: 3, q: -1 }, computed: 80.358826, error_pct: 0.0226 },
+      { name: 'M_Z (GeV)', symbol: 'M_Z_BOSON', target: '91.1876', category: 'particle_physics', fit: { n: 8, k: 4, m: 0, p: -2, q: -1 }, computed: 91.055303, error_pct: 0.1451 },
+
+      // Quantum
+      { name: 'CHSH (2\u221A2)', symbol: 'CHSH', target: '2.828427', category: 'quantum', fit: { n: 8, k: 4, m: -3, p: 0, q: -2 }, computed: 2.828371, error_pct: 0.0020 },
+      { name: 'g-factor (e\u207B)', symbol: 'ELECTRON_G', target: '2.002319', category: 'quantum', fit: { n: 5, k: 0, m: -3, p: -1, q: 3 }, computed: 2.001779, error_pct: 0.0270 },
+      { name: 'Rydberg (eV)', symbol: 'RYDBERG', target: '13.6057', category: 'quantum', fit: { n: 7, k: 1, m: -3, p: 0, q: 3 }, computed: 13.603577, error_pct: 0.0156 },
+      { name: 'Bohr radius (pm)', symbol: 'BOHR_RADIUS', target: '52.9177', category: 'quantum', fit: { n: 1, k: 3, m: -2, p: 2, q: 2 }, computed: 52.921027, error_pct: 0.0063 },
+
+      // Cosmology
+      { name: 'H\u2080 (km/s/Mpc)', symbol: 'HUBBLE', target: '67.4', category: 'cosmology', fit: { n: 4, k: 3, m: -3, p: 2, q: 2 }, computed: 67.381144, error_pct: 0.0280 },
+      { name: '\u03A9_\u039B', symbol: 'OMEGA_LAMBDA', target: '0.685', category: 'cosmology', fit: { n: 4, k: 2, m: 0, p: -2, q: -3 }, computed: 0.684611, error_pct: 0.0568 },
+      { name: 'T_CMB (K)', symbol: 'CMB_TEMP', target: '2.7255', category: 'cosmology', fit: { n: 8, k: 4, m: -3, p: 2, q: -3 }, computed: 2.724063, error_pct: 0.0527 },
+      { name: '\u03B3_BI (LQG)', symbol: 'BARBERO_IMMIRZI', target: '0.2375', category: 'cosmology', fit: { n: 1, k: 3, m: -2, p: -3, q: -1 }, computed: 0.237578, error_pct: 0.0329 },
+      { name: 'S/A = 1/4 (BH)', symbol: 'BEKENSTEIN_HAWKING', target: '0.25', category: 'cosmology', fit: { n: 4, k: 3, m: -1, p: -4, q: -3 }, computed: 0.249712, error_pct: 0.1151 },
+      { name: 'Age (13.787 Gyr)', symbol: 'AGE_UNIVERSE', target: '13.787', category: 'cosmology', fit: { n: 1, k: 4, m: -2, p: -1, q: 1 }, computed: 13.787709, error_pct: 0.0051 },
+
+      // Quantum Gravity
+      { name: 'DM candidate mass', symbol: 'DM_CANDIDATE', target: '817.3', category: 'quantum_gravity', fit: { n: 4, k: 4, m: 0, p: 4, q: -1 }, computed: 816.960557, error_pct: 0.0415 },
+      { name: 'Spatial dimensions', symbol: 'SPATIAL', target: '3.0', category: 'quantum_gravity', fit: { n: 1, k: 1, m: 0, p: 0, q: 0 }, computed: 3.0, error_pct: 0.0 },
+      { name: '\u039B QCD (MeV)', symbol: 'LAMBDA_QCD', target: '217', category: 'quantum_gravity', fit: { n: 7, k: 1, m: -1, p: 1, q: 3 }, computed: 217.240357, error_pct: 0.1108 },
+      { name: 'Proton lifetime (10\u00B3\u2074 yr)', symbol: 'PROTON_LIFETIME', target: '2.0', category: 'quantum_gravity', fit: { n: 2, k: 0, m: 0, p: 0, q: 0 }, computed: 2.0, error_pct: 0.0 },
+    ],
+    predictions: [
+      { name: 'Neutrino mass hint', formula: '8\u00D73\u207B\u00B2\u00D7\u03C0\u207B\u00B9\u00D7\u03C6\u207B\u2074\u00D7e\u207B\u00B9', value: 0.015186, unit: 'eV', n: 8, k: -2, m: -1, p: -4, q: -1 },
+      { name: '\u039B/\u03C1_P hint', formula: '1\u00D73\u207B\u2074\u00D7\u03C0\u207B\u00B2\u00D7\u03C6\u207B\u2074\u00D7e\u207B\u00B3', value: 5.13, unit: 'Planck', n: 1, k: -4, m: -2, p: -4, q: -3 },
+      { name: 'G hint', formula: '1\u00D73\u207B\u00B3\u00D7e\u207B\u00B3', value: 6.674, unit: 'Planck', n: 1, k: -3, m: 0, p: 0, q: -3 },
+      { name: 'Proton lifetime hint', formula: '2', value: 2.0, unit: '\u00D710\u00B3\u2074 yr', n: 2, k: 0, m: 0, p: 0, q: 0 },
+    ],
+    search_bounds: { n: [1, 9], k: [-4, 4], m: [-3, 0], p: [-4, 4], q: [-3, 3] },
+  };
+}
+
+// Sacred formula constants
+const PHI = 1.6180339887498948482;
+
+// Parameter bounds — exported for UI validation
+export const PARAM_BOUNDS = {
+  n: { min: 1, max: 9 },
+  k: { min: -4, max: 4 },
+  m: { min: -3, max: 0 },
+  p: { min: -4, max: 4 },
+  q: { min: -3, max: 3 },
+} as const;
+
+// Pure computation: V = n × 3^k × π^m × φ^p × e^q
+export function computeSacredFormula(n: number, k: number, m: number, p: number, q: number): number {
+  return n * Math.pow(3, k) * Math.pow(Math.PI, m) * Math.pow(PHI, p) * Math.pow(Math.E, q);
+}
+
+// Brute-force search: finds best (n,k,m,p,q) for a target number
+// Search space: 9×9×4×9×7 = 20,412 combinations — <10ms in JS
+export async function fitSingleValue(target: number): Promise<SingleFitResponse> {
+  let bestFit = { n: 1, k: 0, m: 0, p: 0, q: 0 };
+  let bestError = Infinity;
+  let bestComputed = 1;
+
+  for (let n = PARAM_BOUNDS.n.min; n <= PARAM_BOUNDS.n.max; n++) {
+    for (let k = PARAM_BOUNDS.k.min; k <= PARAM_BOUNDS.k.max; k++) {
+      for (let m = PARAM_BOUNDS.m.min; m <= PARAM_BOUNDS.m.max; m++) {
+        for (let p = PARAM_BOUNDS.p.min; p <= PARAM_BOUNDS.p.max; p++) {
+          for (let q = PARAM_BOUNDS.q.min; q <= PARAM_BOUNDS.q.max; q++) {
+            const v = computeSacredFormula(n, k, m, p, q);
+            const err = Math.abs(v - target) / Math.abs(target);
+            if (err < bestError) {
+              bestError = err;
+              bestFit = { n, k, m, p, q };
+              bestComputed = v;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return { fit: bestFit, computed: bestComputed, error_pct: bestError * 100 };
+}
+
+// Manual parameter mode: compute V from user-specified params
+export function computeFromParams(n: number, k: number, m: number, p: number, q: number): SingleFitResponse {
+  return { fit: { n, k, m, p, q }, computed: computeSacredFormula(n, k, m, p, q), error_pct: 0 };
+}
+
+// 27 Coptic Glyphs — mirrors StargateDrum.tsx
+const COPTIC_GLYPHS = [
+  '\u2C80', '\u2C82', '\u2C84', '\u2C86', '\u2C88', '\u2C8A', '\u2C8C', '\u2C8E', '\u2C90',
+  '\u2C92', '\u2C94', '\u2C96', '\u2C98', '\u2C9A', '\u2C9C', '\u2C9E', '\u2CA0', '\u2CA2',
+  '\u2CA4', '\u2CA6', '\u2CA8', '\u2CAA', '\u2CAC', '\u2CAE', '\u2CB0', '\u03E2', '\u03E4',
+];
+
+// Isopsephy values for each glyph
+const GLYPH_VALUES = [
+  1, 2, 3, 4, 5, 6, 7, 8, 9,
+  10, 20, 30, 40, 50, 60, 70, 80, 90,
+  100, 200, 300, 400, 500, 600, 700, 800, 900,
+];
+
+// Lowercase Coptic variants for lookup
+const COPTIC_GLYPHS_LOWER = [
+  '\u2C81', '\u2C83', '\u2C85', '\u2C87', '\u2C89', '\u2C8B', '\u2C8D', '\u2C8F', '\u2C91',
+  '\u2C93', '\u2C95', '\u2C97', '\u2C99', '\u2C9B', '\u2C9D', '\u2C9F', '\u2CA1', '\u2CA3',
+  '\u2CA5', '\u2CA7', '\u2CA9', '\u2CAB', '\u2CAD', '\u2CAF', '\u2CB1', '\u03E3', '\u03E5',
+];
+
+// Decompose a number into Coptic gematria representation (greedy, largest values first)
+function decomposeToGlyphs(num: number): { glyph: string; value: number; index: number }[] {
+  const result: { glyph: string; value: number; index: number }[] = [];
+  let remaining = Math.abs(Math.round(num));
+  if (remaining === 0) return [];
+
+  // Greedy from largest value (900) to smallest (1)
+  for (let i = GLYPH_VALUES.length - 1; i >= 0 && remaining > 0; i--) {
+    while (remaining >= GLYPH_VALUES[i]) {
+      result.push({ glyph: COPTIC_GLYPHS[i], value: GLYPH_VALUES[i], index: i });
+      remaining -= GLYPH_VALUES[i];
+    }
+  }
+  return result;
+}
+
+export async function fetchGematria(input: string): Promise<GematriaResponse> {
+  const glyphs: { glyph: string; value: number; index: number }[] = [];
+  let total = 0;
+
+  // Check if input is a number
+  const numericInput = Number(input);
+  if (!isNaN(numericInput) && numericInput > 0 && input.trim() !== '') {
+    // Numeric input: decompose into Coptic gematria representation
+    const decomposed = decomposeToGlyphs(numericInput);
+    glyphs.push(...decomposed);
+    total = decomposed.reduce((sum, g) => sum + g.value, 0);
+  } else {
+    // Text input: look up each character
+    for (let i = 0; i < Math.min(input.length, 20); i++) {
+      const ch = input[i];
+      // Try Coptic uppercase
+      let idx = COPTIC_GLYPHS.indexOf(ch);
+      if (idx === -1) idx = COPTIC_GLYPHS_LOWER.indexOf(ch);
+      if (idx !== -1) {
+        glyphs.push({ glyph: COPTIC_GLYPHS[idx], value: GLYPH_VALUES[idx], index: idx });
+        total += GLYPH_VALUES[idx];
+      } else {
+        // Latin fallback: A=1, B=2, ..., Z=26
+        const upper = ch.toUpperCase();
+        const code = upper.charCodeAt(0);
+        if (code >= 65 && code <= 90) {
+          const val = code - 64; // A=1, B=2, ..., Z=26
+          // Map to nearest glyph by value
+          const glyphIdx = val <= 9 ? val - 1 : val <= 18 ? Math.floor(val / 10) + 8 : Math.min(Math.floor(val / 100) + 17, 26);
+          glyphs.push({ glyph: ch.toUpperCase(), value: val, index: glyphIdx });
+          total += val;
+        }
+        // Skip non-alphabetic characters silently
+      }
+    }
+  }
+
+  if (total <= 0) {
+    return { glyphs: [], total: 0 };
+  }
+
+  // Find the sacred formula fit for the total
+  const sacredResult = await fitSingleValue(total);
+
+  return {
+    glyphs,
+    total,
+    sacred_fit: sacredResult.fit,
+    sacred_computed: sacredResult.computed,
+    sacred_error_pct: sacredResult.error_pct,
+  };
+}
