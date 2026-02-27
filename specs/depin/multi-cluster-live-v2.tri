@@ -1,0 +1,48 @@
+name: multi_cluster_live_v2
+version: "2.0.0"
+language: zig
+module: multi_cluster
+
+types:
+  LiveNode:
+    fields:
+      node_id: String
+      socket: String
+      last_heartbeat: UInt64
+      operations_completed: UInt64
+      earned_tri: Float64
+      pending_tri: Float64
+      stake_tier: String
+
+  NetworkPacket:
+    fields:
+      packet_type: String
+      sender_id: String
+      payload: String
+      timestamp: UInt64
+
+behaviors:
+  - name: real_udp_discovery
+    given: Cluster coordinator starts
+    when: Bind UDP socket on 0.0.0.0:9333 and broadcast discovery
+    then: All nodes respond with their LiveNode info
+    
+  - name: real_tcp_jobs
+    given: Worker node connected
+    when: Send JobPacket via TCP connection
+    then: Worker executes and returns result
+    
+  - name: live_tri_rewards
+    given: Operation completes successfully
+    when: Call Firebird RewardCalculator
+    then: $TRI added to node pending_tri balance
+    
+  - name: tier_staking
+    given: Node requests tier upgrade
+    when: Verify $TRI stake on testnet
+    then: Apply multiplier (STAKER 1.5x, POWER 2.0x, WHALE 3.0x)
+    
+  - name: live_crdt_sync
+    given: Two federations connected
+    when: Sync CRDT state via TCP
+    then: Merge states with last-write-wins conflict resolution
