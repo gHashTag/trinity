@@ -723,24 +723,31 @@ fn mapTypeZigFluent(vibee_type: []const u8) []const u8 {
     if (std.mem.eql(u8, type_value, "Float")) return "f64";
     if (std.mem.eql(u8, type_value, "Bool")) return "bool";
 
-    // Parse generic types
-    if (std.mem.startsWith(u8, type_value, "List<")) {
+    // Parse generic types List<T> -> std.ArrayList(T) (FIXED: respect inner type)
+    if (std.mem.startsWith(u8, type_value, "List<") and type_value.len > 5) {
         const inner = type_value[5 .. type_value.len - 1];
         const inner_mapped = mapTypeZigFluent(inner);
         if (std.mem.eql(u8, inner_mapped, "[]const u8")) return "std.ArrayList([]const u8)";
         if (std.mem.eql(u8, inner_mapped, "i64")) return "std.ArrayList(i64)";
-        return "std.ArrayList(u8)";
+        if (std.mem.eql(u8, inner_mapped, "f64")) return "std.ArrayList(f64)";
+        if (std.mem.eql(u8, inner_mapped, "bool")) return "std.ArrayList(bool)";
+        if (std.mem.eql(u8, inner_mapped, "usize")) return "std.ArrayList(usize)";
+        return "std.ArrayList(u8)"; // fallback for truly unknown types
     }
 
-    if (std.mem.startsWith(u8, type_value, "Option<")) {
-        const inner = type_value[8 .. type_value.len - 1];
+    // Parse generic types Option<T> -> ?T (FIXED: respect inner type)
+    if (std.mem.startsWith(u8, type_value, "Option<") and type_value.len > 7) {
+        const inner = type_value[7 .. type_value.len - 1];
         const inner_mapped = mapTypeZigFluent(inner);
         if (std.mem.eql(u8, inner_mapped, "[]const u8")) return "?[]const u8";
         if (std.mem.eql(u8, inner_mapped, "i64")) return "?i64";
-        return "?u8";
+        if (std.mem.eql(u8, inner_mapped, "f64")) return "?f64";
+        if (std.mem.eql(u8, inner_mapped, "bool")) return "?bool";
+        if (std.mem.eql(u8, inner_mapped, "usize")) return "?usize";
+        return "?[]const u8"; // fallback
     }
 
-    return "u8";
+    return type_value; // return as-is instead of hardcoded "u8"
 }
 
 // VIBEE Generator v2: Check if type string is already valid Zig type syntax
