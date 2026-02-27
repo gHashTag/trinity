@@ -984,12 +984,56 @@ export async function fetchSacredFormula(): Promise<SacredFormulaResponse> {
       { name: 'Spatial dimensions', symbol: 'SPATIAL', target: '3.0', category: 'quantum_gravity', fit: { n: 1, k: 1, m: 0, p: 0, q: 0 }, computed: 3.0, error_pct: 0.0 },
       { name: '\u039B QCD (MeV)', symbol: 'LAMBDA_QCD', target: '217', category: 'quantum_gravity', fit: { n: 7, k: 1, m: -1, p: 1, q: 3 }, computed: 217.240357, error_pct: 0.1108 },
       { name: 'Proton lifetime (10\u00B3\u2074 yr)', symbol: 'PROTON_LIFETIME', target: '2.0', category: 'quantum_gravity', fit: { n: 2, k: 0, m: 0, p: 0, q: 0 }, computed: 2.0, error_pct: 0.0 },
+
+      // Particle Physics Extended
+      { name: 'm_e (MeV)', symbol: 'ELECTRON_MASS', target: '0.511', category: 'particle_physics', fit: { n: 2, k: 0, m: -2, p: 4, q: -1 }, computed: 0.510959, error_pct: 0.0080 },
+      { name: 'Koide Q (2/3)', symbol: 'KOIDE_Q', target: '0.66667', category: 'particle_physics', fit: { n: 2, k: -1, m: 0, p: 0, q: 0 }, computed: 0.666667, error_pct: 0.0005 },
+      { name: '\u03B1_s (strong)', symbol: 'ALPHA_STRONG', target: '0.1179', category: 'particle_physics', fit: { n: 4, k: -2, m: -2, p: 2, q: 0 }, computed: 0.117894, error_pct: 0.0048 },
+      { name: 'm_\u03BC (MeV)', symbol: 'MUON_MASS', target: '105.658', category: 'particle_physics', fit: { n: 8, k: 1, m: 0, p: 1, q: 1 }, computed: 105.559, error_pct: 0.0941 },
+      { name: 'sin(\u03B8_C) Cabibbo', symbol: 'CABIBBO_ANGLE', target: '0.2253', category: 'particle_physics', fit: { n: 1, k: 1, m: -1, p: -3, q: 0 }, computed: 0.225428, error_pct: 0.0570 },
+      { name: '\u0394m(n-p) MeV', symbol: 'NP_MASS_DIFF', target: '1.2934', category: 'particle_physics', fit: { n: 4, k: 2, m: -2, p: 2, q: -2 }, computed: 1.292377, error_pct: 0.0791 },
+
+      // Neutrino Mixing
+      { name: '\u03B8\u2081\u2082 solar (\u00B0)', symbol: 'THETA_12', target: '33.44', category: 'neutrino', fit: { n: 5, k: -1, m: 0, p: 0, q: 3 }, computed: 33.476, error_pct: 0.1073 },
+      { name: '\u03B8\u2082\u2083 atmos (\u00B0)', symbol: 'THETA_23', target: '49.2', category: 'neutrino', fit: { n: 7, k: 4, m: 0, p: -3, q: -1 }, computed: 49.241, error_pct: 0.0831 },
+      { name: '\u03B8\u2081\u2083 reactor (\u00B0)', symbol: 'THETA_13', target: '8.57', category: 'neutrino', fit: { n: 9, k: 4, m: 0, p: -3, q: -3 }, computed: 8.568, error_pct: 0.0229 },
+
+      // Cosmological Extended
+      { name: '\u03A9_matter', symbol: 'OMEGA_MATTER', target: '0.315', category: 'cosmology', fit: { n: 8, k: -2, m: 0, p: 2, q: -2 }, computed: 0.314944, error_pct: 0.0177 },
+      { name: '\u03A9_baryon', symbol: 'OMEGA_BARYON', target: '0.0493', category: 'cosmology', fit: { n: 8, k: -1, m: -3, p: 3, q: -2 }, computed: 0.049305, error_pct: 0.0106 },
+      { name: 'n_s spectral', symbol: 'SPECTRAL_NS', target: '0.9649', category: 'cosmology', fit: { n: 8, k: 1, m: -2, p: -4, q: 1 }, computed: 0.964396, error_pct: 0.0522 },
+
+      // Nuclear Physics
+      { name: 'Beta decay Q (MeV)', symbol: 'BETA_Q', target: '0.782', category: 'nuclear', fit: { n: 2, k: 1, m: 0, p: 2, q: -3 }, computed: 0.782065, error_pct: 0.0084 },
+      { name: '\u03C0\u2070 mass (MeV)', symbol: 'PION0_MASS', target: '134.977', category: 'nuclear', fit: { n: 5, k: 3, m: 0, p: 0, q: 0 }, computed: 135.0, error_pct: 0.0170 },
+      { name: 'Fe-56 binding (MeV/A)', symbol: 'FE56_BINDING', target: '8.7945', category: 'nuclear', fit: { n: 2, k: 0, m: 0, p: 1, q: 1 }, computed: 8.796545, error_pct: 0.0233 },
+      { name: '\u0394 baryon (MeV)', symbol: 'DELTA_BARYON', target: '1232', category: 'nuclear', fit: { n: 4, k: 4, m: -1, p: 1, q: 2 }, computed: 1233.025, error_pct: 0.0832 },
+
+      // Mathematical Constants
+      { name: 'Meissel-Mertens M', symbol: 'MEISSEL_MERTENS', target: '0.26149', category: 'mathematical', fit: { n: 5, k: -4, m: 0, p: 3, q: 0 }, computed: 0.261486, error_pct: 0.0017 },
+      { name: 'Ramanujan-Soldner \u03BC', symbol: 'RAMANUJAN_SOLDNER', target: '1.45136', category: 'mathematical', fit: { n: 5, k: 2, m: -3, p: 0, q: 0 }, computed: 1.451319, error_pct: 0.0028 },
+      { name: 'Ap\u00E9ry \u03B6(3)', symbol: 'APERY', target: '1.20206', category: 'mathematical', fit: { n: 2, k: 0, m: -3, p: 4, q: 1 }, computed: 1.201781, error_pct: 0.0232 },
+      { name: 'Feigenbaum \u03B4', symbol: 'FEIGENBAUM_DELTA', target: '4.6692', category: 'mathematical', fit: { n: 5, k: 3, m: -2, p: 4, q: -3 }, computed: 4.667681, error_pct: 0.0325 },
+
+      // Dimensionless Ratios
+      { name: 'm_\u03C4/m_\u03BC', symbol: 'TAU_MUON_RATIO', target: '16.818', category: 'ratios', fit: { n: 7, k: 5, m: -4, p: 2, q: -1 }, computed: 16.81844, error_pct: 0.0080 },
+      { name: 'm_\u03BC/m_e', symbol: 'MUON_ELECTRON_RATIO', target: '206.77', category: 'ratios', fit: { n: 4, k: 4, m: 1, p: 5, q: -4 }, computed: 206.7546, error_pct: 0.0061 },
     ],
     predictions: [
-      { name: 'Neutrino mass hint', formula: '8\u00D73\u207B\u00B2\u00D7\u03C0\u207B\u00B9\u00D7\u03C6\u207B\u2074\u00D7e\u207B\u00B9', value: 0.015186, unit: 'eV', n: 8, k: -2, m: -1, p: -4, q: -1 },
-      { name: '\u039B/\u03C1_P hint', formula: '1\u00D73\u207B\u2074\u00D7\u03C0\u207B\u00B2\u00D7\u03C6\u207B\u2074\u00D7e\u207B\u00B3', value: 5.13, unit: 'Planck', n: 1, k: -4, m: -2, p: -4, q: -3 },
-      { name: 'G hint', formula: '1\u00D73\u207B\u00B3\u00D7e\u207B\u00B3', value: 6.674, unit: 'Planck', n: 1, k: -3, m: 0, p: 0, q: -3 },
-      { name: 'Proton lifetime hint', formula: '2', value: 2.0, unit: '\u00D710\u00B3\u2074 yr', n: 2, k: 0, m: 0, p: 0, q: 0 },
+      { name: 'Neutrino mass hint', formula: '1\u00D73\u207B\u00B9\u00D7\u03C0\u207B\u00B9\u00D7\u03C6\u207B\u2074\u00D7e\u207B\u00B9', value: 0.005695, unit: 'eV', n: 1, k: -1, m: -1, p: -4, q: -1 },
+      { name: '\u039B/\u03C1_P hint', formula: '1\u00D73\u207B\u2074\u00D7\u03C0\u207B\u00B2\u00D7\u03C6\u207B\u2074\u00D7e\u207B\u00B3', value: 9.086e-6, unit: 'Planck', n: 1, k: -4, m: -2, p: -4, q: -3 },
+      { name: 'G hint', formula: '1\u00D73\u207B\u00B3\u00D7\u03C0\u207B\u00B3\u00D7\u03C6\u207B\u2074\u00D7e\u207B\u00B3', value: 8.677e-6, unit: 'Planck', n: 1, k: -3, m: -3, p: -4, q: -3 },
+      { name: 'Proton lifetime hint', formula: '3\u00D73\u2074\u00D7\u03C0\u00B3\u00D7\u03C6\u2074\u00D7e\u2074', value: 2.8196e6, unit: 'years', n: 3, k: 4, m: 3, p: 4, q: 4 },
+      { name: '\u03A3m_\u03BD hint', formula: '3\u00D73\u2076\u00D7\u03C0\u207B\u2074\u00D7\u03C6\u207B\u2074\u00D7e\u207B\u2074', value: 0.05999579, unit: 'eV', n: 3, k: 6, m: -4, p: -4, q: -4 },
+      { name: 'Inflation N_e hint', formula: '8\u00D73\u00B2\u00D7\u03C0\u207B\u00B9\u00D7\u03C6\u00B2', value: 60.00092, unit: 'e-folds', n: 8, k: 2, m: -1, p: 2, q: 0 },
+      { name: 'Tensor-to-scalar r', formula: '4\u00D73\u207B\u00B2\u00D7\u03C0\u207B\u00B2\u00D7\u03C6\u207B\u2075\u00D7e\u00B2', value: 0.03000326, unit: '\u2014', n: 4, k: -2, m: -2, p: -5, q: 2 },
+      { name: 'Neutron \u03C4_n hint', formula: '2\u00D73\u2074\u00D7\u03C0\u2074\u00D7\u03C6\u207B\u2076', value: 879.4045, unit: 's', n: 2, k: 4, m: 4, p: -6, q: 0 },
+      { name: 'S_topo hint', formula: '4\u00D73\u207B\u00B9\u00D7\u03C0\u207B\u2074\u00D7\u03C6\u2074\u00D7e\u00B2', value: 0.6932323, unit: 'nat', n: 4, k: -1, m: -4, p: 4, q: 2 },
+      { name: 'N_eff hint', formula: '1\u00D73\u00B3\u00D7\u03C0\u207B\u00B9\u00D7\u03C6\u00B2\u00D7e\u207B\u00B2', value: 3.045091, unit: '\u2014', n: 1, k: 3, m: -1, p: 2, q: -2 },
+      { name: 'M-theory dim', formula: '4\u00D73\u207B\u2074\u00D7\u03C6\u2075\u00D7e\u00B3', value: 11.0001, unit: 'dim', n: 4, k: -4, m: 0, p: 5, q: 3 },
+      { name: 'Bosonic string dim', formula: '2\u00D73\u207B\u00B9\u00D7\u03C0\u00B9\u00D7\u03C6\u207B\u00B9\u00D7e\u00B3', value: 25.99887, unit: 'dim', n: 2, k: -1, m: 1, p: -1, q: 3 },
+      { name: '\u0394m\u00B2\u2083\u2082 hint', formula: '1\u00D73\u207B\u00B3\u00D7\u03C0\u207B\u00B2\u00D7\u03C6\u207B\u2075\u00D7e\u00B2', value: 0.002500272, unit: 'eV\u00B2', n: 1, k: -3, m: -2, p: -5, q: 2 },
+      { name: 'S\u2088 (\u03C3\u2088\u03A9\u1D50\u00B9\u00B2)', formula: '8\u00D73\u207B\u2075\u00D7\u03C0\u207B\u00B2\u00D7e\u00B3', value: 0.06699886, unit: '\u2014', n: 8, k: -5, m: -2, p: 0, q: 3 },
     ],
     search_bounds: { n: [1, 9], k: [-4, 4], m: [-3, 0], p: [-4, 4], q: [-3, 3] },
   };

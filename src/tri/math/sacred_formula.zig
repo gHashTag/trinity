@@ -234,7 +234,7 @@ pub const SacredPrediction = struct {
     value: f64,
 };
 
-// 32 constants — matching website/src/services/chatApi.ts
+// 42 constants — matching website/src/services/chatApi.ts
 pub const sacred_constants = [_]SacredConstant{
     // Particle Physics (original)
     .{ .name = "1/α (fine structure)", .symbol = "FINE_STRUCTURE_INV", .target = 137.036, .category = "particle_physics", .n = 4, .k = 2, .m = -1, .p = 1, .q = 2, .computed = 137.002733, .error_pct = 0.0243 },
@@ -290,7 +290,7 @@ pub const sacred_constants = [_]SacredConstant{
     .{ .name = "m_mu/m_e", .symbol = "MUON_ELECTRON_RATIO", .target = 206.77, .category = "ratios", .n = 4, .k = 4, .m = 1, .p = 5, .q = -4, .computed = 206.754588, .error_pct = 0.0075 },
 };
 
-// 9 predictions — matching chatApi.ts
+// 15 predictions — matching chatApi.ts
 pub const sacred_predictions = [_]SacredPrediction{
     .{ .name = "Neutrino mass hint", .unit = "eV", .n = 1, .k = -1, .m = -1, .p = -4, .q = -1, .value = 0.005695 },
     .{ .name = "Λ/ρ_P hint", .unit = "Planck", .n = 1, .k = -4, .m = -2, .p = -4, .q = -3, .value = 9.086e-6 },
@@ -301,6 +301,11 @@ pub const sacred_predictions = [_]SacredPrediction{
     .{ .name = "Tensor-to-scalar r", .unit = "—", .n = 4, .k = -2, .m = -2, .p = -5, .q = 2, .value = 0.03000326 },
     .{ .name = "Neutron τ_n hint", .unit = "s", .n = 2, .k = 4, .m = 4, .p = -6, .q = 0, .value = 879.4045 },
     .{ .name = "S_topo hint", .unit = "nat", .n = 4, .k = -1, .m = -4, .p = 4, .q = 2, .value = 0.6932323 },
+    .{ .name = "N_eff hint", .unit = "—", .n = 1, .k = 3, .m = -1, .p = 2, .q = -2, .value = 3.045091 },
+    .{ .name = "M-theory dim", .unit = "dim", .n = 4, .k = -4, .m = 0, .p = 5, .q = 3, .value = 11.0001 },
+    .{ .name = "Bosonic string dim", .unit = "dim", .n = 2, .k = -1, .m = 1, .p = -1, .q = 3, .value = 25.99887 },
+    .{ .name = "dm2_32 hint", .unit = "eV2", .n = 1, .k = -3, .m = -2, .p = -5, .q = 2, .value = 0.002500272 },
+    .{ .name = "S_8 hint", .unit = "—", .n = 8, .k = -5, .m = -2, .p = 0, .q = 3, .value = 0.06699886 },
 };
 
 /// Print full sacred constants table with ANSI colors
@@ -356,7 +361,7 @@ pub fn printSacredConstantsTable() void {
         });
     }
 
-    std.debug.print("\n{s}32 constants | 9 predictions | φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}42 constants | 15 predictions | φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
