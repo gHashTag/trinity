@@ -400,6 +400,8 @@ const sidebars: SidebarsConfig = {
         'research/pas-v8.23-final-production-report',
         // PAS v8.24 KOSCHEI MODE
         'research/trinity-golden-chain-v2-32-koschei-mode-report',
+        // Cycle 95: Sacred Intelligence Core
+        'research/cycle-95-sacred-intelligence-core',
       ],
     },
     'faq',
