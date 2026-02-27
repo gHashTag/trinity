@@ -108,6 +108,67 @@ flowchart TB
 | FPGA/ASIC | Hardware synthesis | Planned |
 | WebAssembly | Browser deployment | Complete |
 
+### Layer 5+: DePIN Hardware + Real Networking
+
+| Component | Description | Status |
+|-----------|-------------|--------|
+| UDP Discovery | Real broadcast on 0.0.0.0:9333 | In Progress |
+| TCP Jobs | Real job distribution on port 9334 | Planned |
+| REST API | HTTP server on port 8080 | Planned |
+| $TRI Staking | Testnet tier verification | Q2 2026 |
+| CRDT Sync | Federation state merge | Complete |
+| Reward Calculator | Firebird PoUW integration | Planned |
+
+**DePIN Architecture:**
+
+```mermaid
+flowchart TB
+    subgraph Cluster["DePIN Cluster"]
+        Coord[Coordinator]
+        W1[Worker 1]
+        W2[Worker 2]
+        W3[Worker N]
+    end
+
+    subgraph Network["Real Network"]
+        UDP[UDP 9333 Discovery]
+        TCP[TCP 9334 Jobs]
+        HTTP[HTTP 8080 API]
+    end
+
+    subgraph Rewards["$TRI Rewards"]
+        Calc[Reward Calculator]
+        Stake[Tier Verification]
+        Wallet[Pending Balance]
+    end
+
+    Coord -->|Broadcast| UDP
+    UDP --> W1
+    UDP --> W2
+    UDP --> W3
+
+    Coord -->|Job Packet| TCP
+    TCP --> W1
+    TCP --> W2
+    TCP --> W3
+
+    W1 -->|Result| TCP
+    W2 -->|Result| TCP
+    W3 -->|Result| TCP
+
+    TCP --> Calc
+    Calc --> Wallet
+    Stake -->|Multiplier| Calc
+
+    Coord --> HTTP
+    HTTP -->|Status| Cluster
+
+    style UDP fill:#FF6B6B
+    style TCP fill:#4ECDC4
+    style HTTP fill:#FFD700
+    style Calc fill:#00E599
+```
+
 ## Data Flow
 
 ```mermaid
