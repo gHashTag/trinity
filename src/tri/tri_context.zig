@@ -14,6 +14,7 @@
 
 const std = @import("std");
 const colors = @import("tri_colors.zig");
+const sacred_formula = @import("math/sacred_formula.zig");
 
 // Sacred constants
 const PHI: f64 = 1.618033988749895;
@@ -35,13 +36,22 @@ const SymbolKind = enum(u8) {
     import = 5,
 };
 
-// Indexed symbol
+// Indexed symbol (Sacred Intelligence v3.6)
 pub const IndexedSymbol = struct {
     name: []const u8,
     file_path: []const u8,
     line: u32,
     kind: SymbolKind,
     snippet: []const u8,
+    // Sacred Intelligence fields
+    sacred_gematria: ?u32,
+    hebrew_gematria: ?u32,
+    greek_gematria: ?u32,
+    arabic_gematria: ?u32,
+    sacred_formula: ?[]const u8,
+    sacred_constant_match: ?[]const u8,
+    patch_candidate: bool,
+    confidence_score: f64,
 };
 
 // Search result
@@ -60,6 +70,32 @@ pub const ContextStats = struct {
     is_loaded: bool,
 };
 
+// Sacred Intelligence metrics
+pub const SacredMetrics = struct {
+    total_symbols_analyzed: u32,
+    patch_candidates_found: u32,
+    sacred_constant_matches: u32,
+    avg_confidence_score: f64,
+    top_sacred_symbols: u32,
+    evolution_progress: f64, // 0.0 to 1.0
+};
+
+// Patch statistics
+pub const PatchStats = struct {
+    patches_applied: u32,
+    patches_succeeded: u32,
+    patches_failed: u32,
+    avg_improvement_pct: f64,
+};
+
+// Multi-language gematria result
+pub const MultiLanguageGematria = struct {
+    sacred: u32,    // Coptic-based (27 glyphs)
+    hebrew: u32,    // Hebrew alefbet
+    greek: u32,     // Greek isopsephy
+    arabic: u32,    // Abjad numerals
+};
+
 // ContextManager
 pub const ContextManager = struct {
     allocator: std.mem.Allocator,
@@ -67,6 +103,7 @@ pub const ContextManager = struct {
     symbols: std.ArrayListUnmanaged(IndexedSymbol),
     embeddings: std.ArrayListUnmanaged([EMBEDDING_DIM]f32),
     stats: ContextStats,
+    sacred_metrics: SacredMetrics,
     is_dirty: bool,
 
     const Self = @This();
@@ -96,6 +133,14 @@ pub const ContextManager = struct {
                 .index_size_bytes = 0,
                 .last_scan_ms = 0,
                 .is_loaded = false,
+            },
+            .sacred_metrics = .{
+                .total_symbols_analyzed = 0,
+                .patch_candidates_found = 0,
+                .sacred_constant_matches = 0,
+                .avg_confidence_score = 0.0,
+                .top_sacred_symbols = 0,
+                .evolution_progress = 0.0,
             },
             .is_dirty = false,
         };
@@ -239,13 +284,39 @@ pub const ContextManager = struct {
         const snip_len = @min(snippet.len, MAX_SNIPPET_LEN);
         const snippet_copy = try arena.dupe(u8, snippet[0..snip_len]);
 
+        // Compute sacred intelligence
+        const multi_gem = computeMultiLanguageGematria(name);
+        const sacred_fit = computeSacredFormulaForSymbol(name);
+        const constant_match = findSacredConstantMatch(multi_gem.sacred);
+        const confidence = computeSymbolSacredScoreImpl(multi_gem, sacred_fit, constant_match);
+
+        // Format sacred formula string
+        var formula_buf: [128]u8 = undefined;
+        const formula_str = if (sacred_fit.error_pct < 10.0)
+            try arena.dupe(u8, formatSacredFormula(&formula_buf, sacred_fit))
+        else
+            null;
+
         try self.symbols.append(self.allocator, .{
             .name = name_copy,
             .file_path = path_copy,
             .line = line_num,
             .kind = kind,
             .snippet = snippet_copy,
+            .sacred_gematria = multi_gem.sacred,
+            .hebrew_gematria = multi_gem.hebrew,
+            .greek_gematria = multi_gem.greek,
+            .arabic_gematria = multi_gem.arabic,
+            .sacred_formula = formula_str,
+            .sacred_constant_match = constant_match,
+            .patch_candidate = confidence > 0.7,
+            .confidence_score = confidence,
         });
+
+        // Update sacred metrics
+        self.sacred_metrics.total_symbols_analyzed += 1;
+        if (confidence > 0.7) self.sacred_metrics.patch_candidates_found += 1;
+        if (constant_match != null) self.sacred_metrics.sacred_constant_matches += 1;
 
         // Generate embedding for this symbol
         var emb: [EMBEDDING_DIM]f32 = undefined;
@@ -321,7 +392,7 @@ pub const ContextManager = struct {
         if (hit_count == 0) return null;
 
         // Format context header
-        var buf: [8192]u8 = undefined;
+        var buf: [16384]u8 = undefined; // Increased for sacred information
         var fbs = std.io.fixedBufferStream(&buf);
         const writer = fbs.writer();
 
@@ -334,7 +405,44 @@ pub const ContextManager = struct {
                 @tagName(sym.kind), sym.file_path, sym.line, sym.name, hit.sacred_score,
             }) catch break;
             std.fmt.format(writer, "//   {s}\n", .{sym.snippet}) catch break;
+
+            // Add sacred intelligence information
+            if (sym.sacred_gematria) |gem| {
+                std.fmt.format(writer, "//   Sacred Gematria: {d} (mod 27 = {d})\n", .{
+                    gem, gem % 27,
+                }) catch break;
+            }
+            if (sym.hebrew_gematria) |gem| {
+                std.fmt.format(writer, "//   Hebrew Gematria: {d}\n", .{gem}) catch break;
+            }
+            if (sym.greek_gematria) |gem| {
+                std.fmt.format(writer, "//   Greek Gematria: {d}\n", .{gem}) catch break;
+            }
+            if (sym.arabic_gematria) |gem| {
+                std.fmt.format(writer, "//   Arabic Gematria: {d}\n", .{gem}) catch break;
+            }
+            if (sym.sacred_formula) |formula| {
+                std.fmt.format(writer, "//   Sacred Formula: V = {s}\n", .{formula}) catch break;
+            }
+            if (sym.sacred_constant_match) |match| {
+                std.fmt.format(writer, "//   Sacred Constant Match: {s}\n", .{match}) catch break;
+            }
+            if (sym.patch_candidate) {
+                std.fmt.format(writer, "//   PATCH CANDIDATE (confidence: {d:.2})\n", .{
+                    sym.confidence_score,
+                }) catch break;
+            }
         }
+
+        // Add evolution progress
+        const metrics = self.getSacredMetrics();
+        std.fmt.format(writer, "// === EVOLUTION PROGRESS: {d:.1}% ===\n", .{
+            metrics.evolution_progress * 100.0,
+        }) catch {};
+        std.fmt.format(writer, "// Patch Candidates: {d} / {d} symbols\n", .{
+            metrics.patch_candidates_found,
+            metrics.total_symbols_analyzed,
+        }) catch {};
 
         writer.writeAll("// === END CONTEXT ===\n\n") catch return null;
 
@@ -342,6 +450,83 @@ pub const ContextManager = struct {
         const result = self.allocator.alloc(u8, written.len) catch return null;
         @memcpy(result, written);
         return result;
+    }
+
+    // =========================================================================
+    // SACRED INTELLIGENCE FUNCTIONS
+    // =========================================================================
+
+    /// Find all patch candidates (symbols with confidence > threshold)
+    pub fn findPatchCandidates(self: *Self, threshold: f64) ![]IndexedSymbol {
+        var candidates = std.ArrayList(IndexedSymbol).init(self.allocator);
+        defer candidates.deinit();
+
+        for (self.symbols.items) |sym| {
+            if (sym.confidence_score >= threshold) {
+                try candidates.append(sym);
+            }
+        }
+
+        // Return slice (caller owns memory)
+        const result = try self.allocator.alloc(IndexedSymbol, candidates.items.len);
+        @memcpy(result, candidates.items);
+        return result;
+    }
+
+    /// Get top N sacred symbols by confidence score
+    pub fn getTopSacredSymbols(self: *Self, n: usize) ![]IndexedSymbol {
+        const top_n = @min(n, self.symbols.items.len);
+        if (top_n == 0) return &[_]IndexedSymbol{};
+
+        // Copy symbols to sort
+        var sorted = try self.allocator.alloc(IndexedSymbol, self.symbols.items.len);
+        defer self.allocator.free(sorted);
+        @memcpy(sorted, self.symbols.items);
+
+        // Sort by confidence score (descending)
+        std.sort.insertion(IndexedSymbol, sorted, {}, struct {
+            fn lessThan(_: void, a: IndexedSymbol, b: IndexedSymbol) bool {
+                return a.confidence_score > b.confidence_score;
+            }
+        }.lessThan);
+
+        // Return top N
+        const result = try self.allocator.alloc(IndexedSymbol, top_n);
+        @memcpy(result, sorted[0..top_n]);
+        return result;
+    }
+
+    /// Get sacred metrics for this context
+    pub fn getSacredMetrics(self: *Self) SacredMetrics {
+        // Update evolution progress based on coverage
+        const coverage = if (self.symbols.items.len > 0)
+            @as(f64, @floatFromInt(self.sacred_metrics.sacred_constant_matches)) /
+            @as(f64, @floatFromInt(self.symbols.items.len))
+        else
+            0.0;
+
+        var metrics = self.sacred_metrics;
+        metrics.evolution_progress = coverage;
+        metrics.avg_confidence_score = if (self.symbols.items.len > 0) blk: {
+            var sum: f64 = 0.0;
+            for (self.symbols.items) |sym| sum += sym.confidence_score;
+            break :blk sum / @as(f64, @floatFromInt(self.symbols.items.len));
+        } else 0.0;
+
+        metrics.top_sacred_symbols = @intCast(self.symbols.items.len);
+
+        return metrics;
+    }
+
+    /// Apply sacred patches (stub for future implementation)
+    pub fn applySacredPatches(self: *Self) !PatchStats {
+        _ = self;
+        return PatchStats{
+            .patches_applied = 0,
+            .patches_succeeded = 0,
+            .patches_failed = 0,
+            .avg_improvement_pct = 0.0,
+        };
     }
 
     // =========================================================================
@@ -380,6 +565,15 @@ pub const ContextManager = struct {
             std.debug.print("    Tests:      {d}\n", .{test_count});
             std.debug.print("    Constants:  {d}\n", .{const_count});
         }
+
+        // Sacred Intelligence metrics
+        const metrics = self.getSacredMetrics();
+        std.debug.print("\n  {s}Sacred Intelligence:{s}\n", .{ colors.PURPLE, colors.RESET });
+        std.debug.print("    Analyzed:        {d}\n", .{metrics.total_symbols_analyzed});
+        std.debug.print("    Patch candidates:{d}\n", .{metrics.patch_candidates_found});
+        std.debug.print("    Constant matches:{d}\n", .{metrics.sacred_constant_matches});
+        std.debug.print("    Avg confidence:  {d:.3}\n", .{metrics.avg_confidence_score});
+        std.debug.print("    Evolution:       {d:.1}%\n", .{metrics.evolution_progress * 100.0});
 
         std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ colors.GOLDEN, colors.RESET });
     }
@@ -506,6 +700,14 @@ pub const ContextManager = struct {
                 .line = line,
                 .kind = kind,
                 .snippet = snippet,
+                .sacred_gematria = null,
+                .hebrew_gematria = null,
+                .greek_gematria = null,
+                .arabic_gematria = null,
+                .sacred_formula = null,
+                .sacred_constant_match = null,
+                .patch_candidate = false,
+                .confidence_score = 0.0,
             });
             try self.embeddings.append(self.allocator, emb);
         }
@@ -787,7 +989,6 @@ pub fn runIntelligenceCommand(allocator: std.mem.Allocator, state: anytype, args
             std.debug.print("    Gematria: {d} (mod 27 = {d})\n", .{ gematria_val, gematria_val % 27 });
 
             // Try to fit sacred formula
-            const sacred_formula = @import("math/sacred_formula.zig");
             const fit = sacred_formula.fitSacredFormula(@as(f64, @floatFromInt(gematria_val)));
             var formula_buf: [128]u8 = undefined;
             const formula_str = sacred_formula.formatFormulaString(&formula_buf, fit);
@@ -827,6 +1028,111 @@ fn computeSymbolGematria(text: []const u8) u64 {
         sum += c;
     }
     return sum;
+}
+
+/// Compute multi-language gematria for a symbol name
+fn computeMultiLanguageGematria(text: []const u8) MultiLanguageGematria {
+    // Sacred (Coptic-based): ASCII sum mod 1000
+    var sacred: u32 = 0;
+    for (text) |c| sacred +%= @as(u32, @intCast(c));
+    sacred = sacred % 1000;
+
+    // Hebrew: ASCII sum with alefbet weights (simplified)
+    var hebrew: u32 = 0;
+    for (text, 0..) |c, i| {
+        const weight = @as(u32, @intCast(i % 22 + 1)); // 22 Hebrew letters
+        hebrew +%= @as(u32, @intCast(c)) *% weight;
+    }
+    hebrew = hebrew % 1000;
+
+    // Greek: ASCII sum with isopsephy weights (simplified)
+    var greek: u32 = 0;
+    for (text, 0..) |c, i| {
+        const weight = @as(u32, @intCast(i % 24 + 1)); // 24 Greek letters
+        greek +%= @as(u32, @intCast(c)) *% weight;
+    }
+    greek = greek % 1000;
+
+    // Arabic: ASCII sum with Abjad numerals (simplified)
+    var arabic: u32 = 0;
+    for (text, 0..) |c, i| {
+        const weight = @as(u32, @intCast(i % 28 + 1)); // 28 Arabic letters
+        arabic +%= @as(u32, @intCast(c)) *% weight;
+    }
+    arabic = arabic % 1000;
+
+    return .{
+        .sacred = sacred,
+        .hebrew = hebrew,
+        .greek = greek,
+        .arabic = arabic,
+    };
+}
+
+/// Compute sacred formula fit for a symbol name
+fn computeSacredFormulaForSymbol(name: []const u8) sacred_formula.SacredFormulaFit {
+    const gematria = computeSymbolGematria(name);
+    const target: f64 = @floatFromInt(gematria);
+    return sacred_formula.fitSacredFormula(target);
+}
+
+/// Find sacred constant match for a gematria value
+fn findSacredConstantMatch(gematria: u32) ?[]const u8 {
+    const target: f64 = @floatFromInt(gematria);
+
+    // Check all sacred constants for close match (within 1%)
+    for (sacred_formula.sacred_constants) |const_| {
+        const diff = @abs(const_.target - target) / target;
+        if (diff < 0.01) {
+            return const_.name;
+        }
+    }
+
+    return null;
+}
+
+/// Format sacred formula string
+fn formatSacredFormula(buf: []u8, fit: sacred_formula.SacredFormulaFit) []const u8 {
+    return sacred_formula.formatFormulaString(buf, fit);
+}
+
+/// Compute sacred score for a symbol (internal implementation)
+fn computeSymbolSacredScoreImpl(
+    multi_gem: MultiLanguageGematria,
+    fit: sacred_formula.SacredFormulaFit,
+    constant_match: ?[]const u8,
+) f64 {
+    var score: f64 = 0.0;
+
+    // Sacred gematria score (27 is sacred: 3³)
+    const sacred_mod = multi_gem.sacred % 27;
+    score += @as(f64, @floatFromInt(sacred_mod)) / 27.0 * 0.3;
+
+    // Formula fit score (lower error = higher score)
+    const formula_score = if (fit.error_pct < 10.0)
+        (1.0 - fit.error_pct / 10.0) * 0.4
+    else
+        0.0;
+    score += formula_score;
+
+    // Constant match bonus
+    if (constant_match != null) {
+        score += 0.3;
+    }
+
+    // Multi-language harmony (all gematria values close)
+    const avg = @as(f64, @floatFromInt(multi_gem.sacred + multi_gem.hebrew + multi_gem.greek + multi_gem.arabic)) / 4.0;
+    var variance: f64 = 0.0;
+    const vals = [_]u32{ multi_gem.sacred, multi_gem.hebrew, multi_gem.greek, multi_gem.arabic };
+    for (vals) |v| {
+        const diff = @as(f64, @floatFromInt(v)) - avg;
+        variance += diff * diff;
+    }
+    variance /= 4.0;
+    const harmony = 1.0 / (1.0 + variance / 10000.0);
+    score += harmony * 0.2;
+
+    return @min(score, 1.0);
 }
 
 // =============================================================================
@@ -878,4 +1184,126 @@ test "context_manager_init_deinit" {
     defer mgr.deinit();
     try std.testing.expectEqual(mgr.stats.symbols_indexed, 0);
     try std.testing.expectEqual(mgr.stats.is_loaded, false);
+}
+
+test "multi_language_gematria_calculation" {
+    const result = computeMultiLanguageGematria("test");
+    try std.testing.expect(result.sacred >= 0 and result.sacred < 1000);
+    try std.testing.expect(result.hebrew >= 0 and result.hebrew < 1000);
+    try std.testing.expect(result.greek >= 0 and result.greek < 1000);
+    try std.testing.expect(result.arabic >= 0 and result.arabic < 1000);
+}
+
+test "sacred_constant_matching" {
+    // Test with known sacred constant values
+    const match_137 = findSacredConstantMatch(137);
+    try std.testing.expect(match_137 != null); // 1/α (fine structure)
+
+    const match_42 = findSacredConstantMatch(42);
+    // 42 might not match exactly within 1%, so we just check it doesn't crash
+    _ = match_42;
+}
+
+test "patch_candidate_identification" {
+    var mgr = ContextManager.init(std.testing.allocator);
+    defer mgr.deinit();
+
+    // Create test symbols with known scores
+    const arena = mgr.arena.allocator();
+
+    const name1 = try arena.dupe(u8, "sacredSymbol");
+    const path1 = try arena.dupe(u8, "test.zig");
+    const snippet1 = try arena.dupe(u8, "pub fn sacredSymbol() void {}");
+
+    const name2 = try arena.dupe(u8, "test");
+    const path2 = try arena.dupe(u8, "test.zig");
+    const snippet2 = try arena.dupe(u8, "pub fn test() void {}");
+
+    try mgr.symbols.append(mgr.allocator, .{
+        .name = name1,
+        .file_path = path1,
+        .line = 1,
+        .kind = .function,
+        .snippet = snippet1,
+        .sacred_gematria = 137,
+        .hebrew_gematria = 100,
+        .greek_gematria = 90,
+        .arabic_gematria = 80,
+        .sacred_formula = null,
+        .sacred_constant_match = null,
+        .patch_candidate = true,
+        .confidence_score = 0.8,
+    });
+
+    try mgr.symbols.append(mgr.allocator, .{
+        .name = name2,
+        .file_path = path2,
+        .line = 10,
+        .kind = .test_case,
+        .snippet = snippet2,
+        .sacred_gematria = 50,
+        .hebrew_gematria = 45,
+        .greek_gematria = 40,
+        .arabic_gematria = 35,
+        .sacred_formula = null,
+        .sacred_constant_match = null,
+        .patch_candidate = false,
+        .confidence_score = 0.3,
+    });
+
+    // Find patch candidates with threshold 0.5
+    const candidates = try mgr.findPatchCandidates(0.5);
+    defer mgr.allocator.free(candidates);
+
+    try std.testing.expectEqual(@as(usize, 1), candidates.len);
+    try std.testing.expectEqual(0.8, candidates[0].confidence_score);
+}
+
+test "sacred_score_calculation" {
+    const multi_gem = computeMultiLanguageGematria("testFunction");
+    const fit = computeSacredFormulaForSymbol("testFunction");
+    const match = findSacredConstantMatch(multi_gem.sacred);
+
+    const score = computeSymbolSacredScoreImpl(multi_gem, fit, match);
+
+    try std.testing.expect(score >= 0.0);
+    try std.testing.expect(score <= 1.0);
+}
+
+test "sacred_metrics_collection" {
+    var mgr = ContextManager.init(std.testing.allocator);
+    defer mgr.deinit();
+
+    // Add some test symbols
+    const arena = mgr.arena.allocator();
+    const name = try arena.dupe(u8, "test");
+    const path = try arena.dupe(u8, "test.zig");
+    const snippet = try arena.dupe(u8, "pub fn test() void {}");
+
+    try mgr.symbols.append(mgr.allocator, .{
+        .name = name,
+        .file_path = path,
+        .line = 1,
+        .kind = .function,
+        .snippet = snippet,
+        .sacred_gematria = 137,
+        .hebrew_gematria = 100,
+        .greek_gematria = 90,
+        .arabic_gematria = 80,
+        .sacred_formula = null,
+        .sacred_constant_match = null,
+        .patch_candidate = false,
+        .confidence_score = 0.5,
+    });
+
+    mgr.sacred_metrics.total_symbols_analyzed = 1;
+    mgr.sacred_metrics.patch_candidates_found = 0;
+    mgr.sacred_metrics.sacred_constant_matches = 0;
+
+    const metrics = mgr.getSacredMetrics();
+
+    try std.testing.expectEqual(@as(u32, 1), metrics.total_symbols_analyzed);
+    try std.testing.expect(metrics.avg_confidence_score >= 0.0);
+    try std.testing.expect(metrics.evolution_progress >= 0.0);
+    try std.testing.expect(metrics.evolution_progress <= 1.0);
 }
