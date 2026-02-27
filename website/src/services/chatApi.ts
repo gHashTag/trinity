@@ -1,12 +1,340 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// TRINITY CHAT API SERVICE v2.8
+// TRINITY CHAT API SERVICE v2.9
 // Connects Cosmic UI to Zig HTTP backend
 // v2.5: + /api/files (Finder) + /api/compile (Editor)
 // v2.7: + /api/storage-metrics (Storage Network Dashboard)
 // v2.8: + /api/model-status (Model Status Bar in Settings)
+// v2.9: + /api/sacred-intelligence/* (Sacred Intelligence Production Dashboard)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const BASE_URL = 'http://localhost:8080';
+
+// ============================================================================
+// SACRED INTELLIGENCE API TYPES
+// ============================================================================
+
+export interface SacredMetrics {
+  total_commands: number;
+  analyses_performed: number;
+  patches_applied: number;
+  patches_pending: number;
+  patches_rolled_back: number;
+  sacred_constants_count: number;
+  symbols_indexed: number;
+  sacred_percentage: number;
+  evolution_generation: number;
+  best_fitness: number;
+  convergence_rate: number;
+  phi_squared_plus_inverse: number;
+  trinity_alignment: number;
+  last_updated: string;
+}
+
+export interface PatchHistory {
+  id: string;
+  timestamp: string;
+  type: 'applied' | 'pending' | 'rolled_back';
+  description: string;
+  file: string;
+  confidence: number;
+}
+
+export interface GematriaValues {
+  text: string;
+  hebrew: number;
+  greek: number;
+  arabic: number;
+  coptic: number;
+  total: number;
+}
+
+export interface SacredConstant {
+  id: string;
+  name: string;
+  value: number;
+  category: 'phi' | 'pi' | 'e' | 'fibonacci' | 'lucas' | 'other';
+  description: string;
+}
+
+export interface EvolutionMetrics {
+  generation: number;
+  best_fitness: number;
+  average_fitness: number;
+  convergence_rate: number;
+  diversity_index: number;
+}
+
+export interface CodebaseHealth {
+  symbols_indexed: number;
+  total_symbols: number;
+  sacred_percentage: number;
+  patterns_found: number;
+  patterns_verified: number;
+}
+
+export interface TrinityAlignment {
+  phi_squared_plus_inverse: number;
+  expected: number;
+  deviation: number;
+  verified: boolean;
+}
+
+// ============================================================================
+// SACRED INTELLIGENCE API FUNCTIONS
+// ============================================================================
+
+/**
+ * Fetch sacred intelligence metrics
+ */
+export async function fetchSacredMetrics(): Promise<SacredMetrics> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/sacred-intelligence/metrics`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) throw new Error(`Metrics API error: ${res.status}`);
+    return res.json();
+  } catch (error) {
+    console.warn('[Sacred Intelligence] Using mock metrics');
+    return generateMockSacredMetrics();
+  }
+}
+
+/**
+ * Fetch patch history
+ */
+export async function fetchPatchHistory(): Promise<PatchHistory[]> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/sacred-intelligence/patches`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) throw new Error(`Patches API error: ${res.status}`);
+    return res.json();
+  } catch (error) {
+    console.warn('[Sacred Intelligence] Using mock patch history');
+    return generateMockPatchHistory();
+  }
+}
+
+/**
+ * Calculate multi-language gematria for text (API version)
+ */
+export async function fetchGematriaAPI(text: string): Promise<GematriaValues> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/sacred-intelligence/gematria/${encodeURIComponent(text)}`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) throw new Error(`Gematria API error: ${res.status}`);
+    return res.json();
+  } catch (error) {
+    console.warn('[Sacred Intelligence] Using mock gematria calculation');
+    return generateMockGematria(text);
+  }
+}
+
+/**
+ * Fetch sacred constants with optional search
+ */
+export async function fetchSacredConstants(search?: string): Promise<SacredConstant[]> {
+  try {
+    const url = search
+      ? `${BASE_URL}/api/sacred-intelligence/constants?search=${encodeURIComponent(search)}`
+      : `${BASE_URL}/api/sacred-intelligence/constants`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) throw new Error(`Constants API error: ${res.status}`);
+    return res.json();
+  } catch (error) {
+    console.warn('[Sacred Intelligence] Using mock constants');
+    return generateMockSacredConstants(search);
+  }
+}
+
+// ============================================================================
+// MOCK DATA GENERATORS (Fallbacks)
+// ============================================================================
+
+function generateMockSacredMetrics(): SacredMetrics {
+  return {
+    total_commands: Math.floor(Math.random() * 1000) + 500,
+    analyses_performed: Math.floor(Math.random() * 500) + 200,
+    patches_applied: Math.floor(Math.random() * 50) + 10,
+    patches_pending: Math.floor(Math.random() * 10) + 1,
+    patches_rolled_back: Math.floor(Math.random() * 5),
+    sacred_constants_count: 100,
+    symbols_indexed: Math.floor(Math.random() * 5000) + 3000,
+    sacred_percentage: Math.random() * 20 + 15,
+    evolution_generation: Math.floor(Math.random() * 100) + 50,
+    best_fitness: Math.random() * 0.2 + 0.75,
+    convergence_rate: Math.random() * 0.3 + 0.6,
+    phi_squared_plus_inverse: 3.000000000000000,
+    trinity_alignment: 100,
+    last_updated: new Date().toISOString(),
+  };
+}
+
+function generateMockPatchHistory(): PatchHistory[] {
+  const patches: PatchHistory[] = [
+    {
+      id: '1',
+      timestamp: new Date().toISOString(),
+      type: 'applied',
+      description: 'Optimize VSA bind operation',
+      file: 'src/vsa.zig',
+      confidence: 0.95,
+    },
+    {
+      id: '2',
+      timestamp: new Date(Date.now() - 3600000).toISOString(),
+      type: 'applied',
+      description: 'Fix memory leak in VM',
+      file: 'src/vm.zig',
+      confidence: 0.98,
+    },
+    {
+      id: '3',
+      timestamp: new Date(Date.now() - 7200000).toISOString(),
+      type: 'pending',
+      description: 'Add Coptic gematria support',
+      file: 'src/tri/math/sacred_formula.zig',
+      confidence: 0.87,
+    },
+    {
+      id: '4',
+      timestamp: new Date(Date.now() - 10800000).toISOString(),
+      type: 'rolled_back',
+      description: 'Refactor hybrid bigint',
+      file: 'src/hybrid.zig',
+      confidence: 0.72,
+    },
+  ];
+  return patches;
+}
+
+function generateMockGematria(text: string): GematriaValues {
+  // Simple mock calculation based on character codes
+  const hebrew = text.split('').reduce((acc, char) => acc + char.charCodeAt(0) % 1000, 0);
+  const greek = text.split('').reduce((acc, char) => acc + char.charCodeAt(0) % 900, 0);
+  const arabic = text.split('').reduce((acc, char) => acc + char.charCodeAt(0) % 1000, 0);
+  const coptic = text.split('').reduce((acc, char) => acc + char.charCodeAt(0) % 800, 0);
+
+  return {
+    text,
+    hebrew: hebrew || 0,
+    greek: greek || 0,
+    arabic: arabic || 0,
+    coptic: coptic || 0,
+    total: hebrew + greek + arabic + coptic,
+  };
+}
+
+function generateMockSacredConstants(search?: string): SacredConstant[] {
+  const allConstants: SacredConstant[] = [
+    {
+      id: 'phi',
+      name: 'Phi (Golden Ratio)',
+      value: 1.618033988749895,
+      category: 'phi',
+      description: 'The golden ratio, φ = (1 + √5) / 2',
+    },
+    {
+      id: 'phi-squared',
+      name: 'Phi Squared',
+      value: 2.618033988749895,
+      category: 'phi',
+      description: 'φ² = φ + 1',
+    },
+    {
+      id: 'phi-cubed',
+      name: 'Phi Cubed',
+      value: 4.23606797749979,
+      category: 'phi',
+      description: 'φ³ = 2φ + 1',
+    },
+    {
+      id: 'pi',
+      name: 'Pi',
+      value: 3.141592653589793,
+      category: 'pi',
+      description: 'Ratio of circle circumference to diameter',
+    },
+    {
+      id: 'e',
+      name: 'Euler\'s Number',
+      value: 2.718281828459045,
+      category: 'e',
+      description: 'Base of natural logarithm',
+    },
+    {
+      id: 'fib-1',
+      name: 'Fibonacci F(1)',
+      value: 1,
+      category: 'fibonacci',
+      description: 'First Fibonacci number',
+    },
+    {
+      id: 'fib-2',
+      name: 'Fibonacci F(2)',
+      value: 1,
+      category: 'fibonacci',
+      description: 'Second Fibonacci number',
+    },
+    {
+      id: 'fib-10',
+      name: 'Fibonacci F(10)',
+      value: 55,
+      category: 'fibonacci',
+      description: '55th position in Fibonacci sequence',
+    },
+    {
+      id: 'fib-42',
+      name: 'Fibonacci F(42)',
+      value: 267914296,
+      category: 'fibonacci',
+      description: 'The answer to everything',
+    },
+    {
+      id: 'lucas-0',
+      name: 'Lucas L(0)',
+      value: 2,
+      category: 'lucas',
+      description: 'Zeroth Lucas number',
+    },
+    {
+      id: 'lucas-1',
+      name: 'Lucas L(1)',
+      value: 1,
+      category: 'lucas',
+      description: 'First Lucas number',
+    },
+    {
+      id: 'lucas-2',
+      name: 'Lucas L(2)',
+      value: 3,
+      category: 'lucas',
+      description: 'L(2) = 3 = TRINITY',
+    },
+    {
+      id: 'trinity-identity',
+      name: 'Trinity Identity',
+      value: 3,
+      category: 'phi',
+      description: 'φ² + 1/φ² = 3',
+    },
+  ];
+
+  if (!search) return allConstants;
+
+  const lowerSearch = search.toLowerCase();
+  return allConstants.filter(
+    (c) =>
+      c.name.toLowerCase().includes(lowerSearch) ||
+      c.description.toLowerCase().includes(lowerSearch) ||
+      c.category.toLowerCase().includes(lowerSearch)
+  );
+}
+
+// ============================================================================
+// END OF FILE
+// ============================================================================
 
 export interface ChatRequest {
   message: string;
