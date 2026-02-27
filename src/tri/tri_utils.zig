@@ -190,6 +190,8 @@ pub const Command = enum {
     deps,
     // Codebase Context (Cycle 92)
     context_info,
+    // Sacred Intelligence (Cycle 94)
+    intelligence,
     // Info
     info,
     version,
@@ -742,6 +744,8 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "analyze") or std.mem.eql(u8, arg, "scan")) return .analyze;
     if (std.mem.eql(u8, arg, "search")) return .search_cmd;
     if (std.mem.eql(u8, arg, "context") or std.mem.eql(u8, arg, "ctx")) return .context_info;
+    // Sacred Intelligence (Cycle 94)
+    if (std.mem.eql(u8, arg, "intelligence")) return .intelligence;
     // Info
     if (std.mem.eql(u8, arg, "info")) return .info;
     if (std.mem.eql(u8, arg, "version") or std.mem.eql(u8, arg, "--version") or std.mem.eql(u8, arg, "-v")) return .version;

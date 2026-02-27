@@ -236,6 +236,9 @@ pub fn main() !void {
         .analyze => tri_context.runAnalyzeCommand(&state),
         .search_cmd => tri_context.runSearchCommand(&state, cmd_args),
         .context_info => tri_context.runContextInfoCommand(&state),
+        .intelligence => tri_context.runIntelligenceCommand(allocator, &state, cmd_args) catch |err| {
+            std.debug.print("Intelligence error: {}\n", .{err});
+        },
         .deps => utils.printInfo(),
         .info => utils.printInfo(),
         .version => utils.printVersion(),
