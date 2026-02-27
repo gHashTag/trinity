@@ -916,3 +916,265 @@ export function subscribeToPatternEvents(
     eventSource.close();
   };
 }
+
+// Sacred Formula types and functions
+
+export interface SacredFormulaResponse {
+  constants: SacredConstantResult[];
+  predictions?: {
+    name: string;
+    formula: string;
+    value: number;
+    unit?: string;
+  }[];
+}
+
+export interface SacredConstantResult {
+  name: string;
+  symbol: string;
+  category: string;
+  target: string;
+  fit: { n: number; k: number; m: number; p: number; q: number };
+  computed: number;
+  error_pct: number;
+}
+
+export interface SingleFitResponse {
+  fit: { n: number; k: number; m: number; p: number; q: number };
+  computed: number;
+  error_pct: number;
+}
+
+export interface GematriaResponse {
+  glyphs: { glyph: string; value: number; index: number }[];
+  total: number;
+  sacred_fit?: { n: number; k: number; m: number; p: number; q: number };
+  sacred_computed?: number;
+  sacred_error_pct?: number;
+}
+
+export async function fetchSacredFormula(): Promise<SacredFormulaResponse> {
+  return {
+    formula: 'V = n × 3^k × π^m × φ^p × e^q',
+    constants: [
+      // Particle Physics
+      { name: '1/\u03B1 (fine structure)', symbol: 'FINE_STRUCTURE_INV', target: '137.036', category: 'particle_physics', fit: { n: 4, k: 2, m: -1, p: 1, q: 2 }, computed: 137.002733, error_pct: 0.0243 },
+      { name: 'm_p/m_e', symbol: 'PROTON_ELECTRON_RATIO', target: '1836.15', category: 'particle_physics', fit: { n: 9, k: 4, m: 0, p: 4, q: -1 }, computed: 1838.161254, error_pct: 0.1094 },
+      { name: 'sin\u00B2(\u03B8_W)', symbol: 'WEINBERG_SIN2', target: '0.2229', category: 'particle_physics', fit: { n: 8, k: -1, m: 0, p: -1, q: -2 }, computed: 0.223045, error_pct: 0.0650 },
+      { name: 'M_Higgs (GeV)', symbol: 'M_HIGGS', target: '125.25', category: 'particle_physics', fit: { n: 5, k: 3, m: 0, p: 4, q: -2 }, computed: 125.226247, error_pct: 0.0190 },
+      { name: 'M_W (GeV)', symbol: 'M_W_BOSON', target: '80.377', category: 'particle_physics', fit: { n: 2, k: 4, m: -1, p: 3, q: -1 }, computed: 80.358826, error_pct: 0.0226 },
+      { name: 'M_Z (GeV)', symbol: 'M_Z_BOSON', target: '91.1876', category: 'particle_physics', fit: { n: 8, k: 4, m: 0, p: -2, q: -1 }, computed: 91.055303, error_pct: 0.1451 },
+
+      // Quantum
+      { name: 'CHSH (2\u221A2)', symbol: 'CHSH', target: '2.828427', category: 'quantum', fit: { n: 8, k: 4, m: -3, p: 0, q: -2 }, computed: 2.828371, error_pct: 0.0020 },
+      { name: 'g-factor (e\u207B)', symbol: 'ELECTRON_G', target: '2.002319', category: 'quantum', fit: { n: 5, k: 0, m: -3, p: -1, q: 3 }, computed: 2.001779, error_pct: 0.0270 },
+      { name: 'Rydberg (eV)', symbol: 'RYDBERG', target: '13.6057', category: 'quantum', fit: { n: 7, k: 1, m: -3, p: 0, q: 3 }, computed: 13.603577, error_pct: 0.0156 },
+      { name: 'Bohr radius (pm)', symbol: 'BOHR_RADIUS', target: '52.9177', category: 'quantum', fit: { n: 1, k: 3, m: -2, p: 2, q: 2 }, computed: 52.921027, error_pct: 0.0063 },
+
+      // Cosmology
+      { name: 'H\u2080 (km/s/Mpc)', symbol: 'HUBBLE', target: '67.4', category: 'cosmology', fit: { n: 4, k: 3, m: -3, p: 2, q: 2 }, computed: 67.381144, error_pct: 0.0280 },
+      { name: '\u03A9_\u039B', symbol: 'OMEGA_LAMBDA', target: '0.685', category: 'cosmology', fit: { n: 4, k: 2, m: 0, p: -2, q: -3 }, computed: 0.684611, error_pct: 0.0568 },
+      { name: 'T_CMB (K)', symbol: 'CMB_TEMP', target: '2.7255', category: 'cosmology', fit: { n: 8, k: 4, m: -3, p: 2, q: -3 }, computed: 2.724063, error_pct: 0.0527 },
+      { name: '\u03B3_BI (LQG)', symbol: 'BARBERO_IMMIRZI', target: '0.2375', category: 'cosmology', fit: { n: 1, k: 3, m: -2, p: -3, q: -1 }, computed: 0.237578, error_pct: 0.0329 },
+      { name: 'S/A = 1/4 (BH)', symbol: 'BEKENSTEIN_HAWKING', target: '0.25', category: 'cosmology', fit: { n: 4, k: 3, m: -1, p: -4, q: -3 }, computed: 0.249712, error_pct: 0.1151 },
+      { name: 'Age (13.787 Gyr)', symbol: 'AGE_UNIVERSE', target: '13.787', category: 'cosmology', fit: { n: 1, k: 4, m: -2, p: -1, q: 1 }, computed: 13.787709, error_pct: 0.0051 },
+
+      // Quantum Gravity
+      { name: 'DM candidate mass', symbol: 'DM_CANDIDATE', target: '817.3', category: 'quantum_gravity', fit: { n: 4, k: 4, m: 0, p: 4, q: -1 }, computed: 816.960557, error_pct: 0.0415 },
+      { name: 'Spatial dimensions', symbol: 'SPATIAL', target: '3.0', category: 'quantum_gravity', fit: { n: 1, k: 1, m: 0, p: 0, q: 0 }, computed: 3.0, error_pct: 0.0 },
+      { name: '\u039B QCD (MeV)', symbol: 'LAMBDA_QCD', target: '217', category: 'quantum_gravity', fit: { n: 7, k: 1, m: -1, p: 1, q: 3 }, computed: 217.240357, error_pct: 0.1108 },
+      { name: 'Proton lifetime (10\u00B3\u2074 yr)', symbol: 'PROTON_LIFETIME', target: '2.0', category: 'quantum_gravity', fit: { n: 2, k: 0, m: 0, p: 0, q: 0 }, computed: 2.0, error_pct: 0.0 },
+
+      // Particle Physics Extended
+      { name: 'm_e (MeV)', symbol: 'ELECTRON_MASS', target: '0.511', category: 'particle_physics', fit: { n: 2, k: 0, m: -2, p: 4, q: -1 }, computed: 0.510959, error_pct: 0.0080 },
+      { name: 'Koide Q (2/3)', symbol: 'KOIDE_Q', target: '0.66667', category: 'particle_physics', fit: { n: 2, k: -1, m: 0, p: 0, q: 0 }, computed: 0.666667, error_pct: 0.0005 },
+      { name: '\u03B1_s (strong)', symbol: 'ALPHA_STRONG', target: '0.1179', category: 'particle_physics', fit: { n: 4, k: -2, m: -2, p: 2, q: 0 }, computed: 0.117894, error_pct: 0.0048 },
+      { name: 'm_\u03BC (MeV)', symbol: 'MUON_MASS', target: '105.658', category: 'particle_physics', fit: { n: 8, k: 1, m: 0, p: 1, q: 1 }, computed: 105.559, error_pct: 0.0941 },
+      { name: 'sin(\u03B8_C) Cabibbo', symbol: 'CABIBBO_ANGLE', target: '0.2253', category: 'particle_physics', fit: { n: 1, k: 1, m: -1, p: -3, q: 0 }, computed: 0.225428, error_pct: 0.0570 },
+      { name: '\u0394m(n-p) MeV', symbol: 'NP_MASS_DIFF', target: '1.2934', category: 'particle_physics', fit: { n: 4, k: 2, m: -2, p: 2, q: -2 }, computed: 1.292377, error_pct: 0.0791 },
+
+      // Neutrino Mixing
+      { name: '\u03B8\u2081\u2082 solar (\u00B0)', symbol: 'THETA_12', target: '33.44', category: 'neutrino', fit: { n: 5, k: -1, m: 0, p: 0, q: 3 }, computed: 33.476, error_pct: 0.1073 },
+      { name: '\u03B8\u2082\u2083 atmos (\u00B0)', symbol: 'THETA_23', target: '49.2', category: 'neutrino', fit: { n: 7, k: 4, m: 0, p: -3, q: -1 }, computed: 49.241, error_pct: 0.0831 },
+      { name: '\u03B8\u2081\u2083 reactor (\u00B0)', symbol: 'THETA_13', target: '8.57', category: 'neutrino', fit: { n: 9, k: 4, m: 0, p: -3, q: -3 }, computed: 8.568, error_pct: 0.0229 },
+
+      // Cosmological Extended
+      { name: '\u03A9_matter', symbol: 'OMEGA_MATTER', target: '0.315', category: 'cosmology', fit: { n: 8, k: -2, m: 0, p: 2, q: -2 }, computed: 0.314944, error_pct: 0.0177 },
+      { name: '\u03A9_baryon', symbol: 'OMEGA_BARYON', target: '0.0493', category: 'cosmology', fit: { n: 8, k: -1, m: -3, p: 3, q: -2 }, computed: 0.049305, error_pct: 0.0106 },
+      { name: 'n_s spectral', symbol: 'SPECTRAL_NS', target: '0.9649', category: 'cosmology', fit: { n: 8, k: 1, m: -2, p: -4, q: 1 }, computed: 0.964396, error_pct: 0.0522 },
+
+      // Nuclear Physics
+      { name: 'Beta decay Q (MeV)', symbol: 'BETA_Q', target: '0.782', category: 'nuclear', fit: { n: 2, k: 1, m: 0, p: 2, q: -3 }, computed: 0.782065, error_pct: 0.0084 },
+      { name: '\u03C0\u2070 mass (MeV)', symbol: 'PION0_MASS', target: '134.977', category: 'nuclear', fit: { n: 5, k: 3, m: 0, p: 0, q: 0 }, computed: 135.0, error_pct: 0.0170 },
+      { name: 'Fe-56 binding (MeV/A)', symbol: 'FE56_BINDING', target: '8.7945', category: 'nuclear', fit: { n: 2, k: 0, m: 0, p: 1, q: 1 }, computed: 8.796545, error_pct: 0.0233 },
+      { name: '\u0394 baryon (MeV)', symbol: 'DELTA_BARYON', target: '1232', category: 'nuclear', fit: { n: 4, k: 4, m: -1, p: 1, q: 2 }, computed: 1233.025, error_pct: 0.0832 },
+
+      // Mathematical Constants
+      { name: 'Meissel-Mertens M', symbol: 'MEISSEL_MERTENS', target: '0.26149', category: 'mathematical', fit: { n: 5, k: -4, m: 0, p: 3, q: 0 }, computed: 0.261486, error_pct: 0.0017 },
+      { name: 'Ramanujan-Soldner \u03BC', symbol: 'RAMANUJAN_SOLDNER', target: '1.45136', category: 'mathematical', fit: { n: 5, k: 2, m: -3, p: 0, q: 0 }, computed: 1.451319, error_pct: 0.0028 },
+      { name: 'Ap\u00E9ry \u03B6(3)', symbol: 'APERY', target: '1.20206', category: 'mathematical', fit: { n: 2, k: 0, m: -3, p: 4, q: 1 }, computed: 1.201781, error_pct: 0.0232 },
+      { name: 'Feigenbaum \u03B4', symbol: 'FEIGENBAUM_DELTA', target: '4.6692', category: 'mathematical', fit: { n: 5, k: 3, m: -2, p: 4, q: -3 }, computed: 4.667681, error_pct: 0.0325 },
+
+      // Dimensionless Ratios
+      { name: 'm_\u03C4/m_\u03BC', symbol: 'TAU_MUON_RATIO', target: '16.818', category: 'ratios', fit: { n: 7, k: 5, m: -4, p: 2, q: -1 }, computed: 16.81844, error_pct: 0.0080 },
+      { name: 'm_\u03BC/m_e', symbol: 'MUON_ELECTRON_RATIO', target: '206.77', category: 'ratios', fit: { n: 4, k: 4, m: 1, p: 5, q: -4 }, computed: 206.7546, error_pct: 0.0061 },
+    ],
+    predictions: [
+      { name: 'Neutrino mass hint', formula: '1\u00D73\u207B\u00B9\u00D7\u03C0\u207B\u00B9\u00D7\u03C6\u207B\u2074\u00D7e\u207B\u00B9', value: 0.005695, unit: 'eV', n: 1, k: -1, m: -1, p: -4, q: -1 },
+      { name: '\u039B/\u03C1_P hint', formula: '1\u00D73\u207B\u2074\u00D7\u03C0\u207B\u00B2\u00D7\u03C6\u207B\u2074\u00D7e\u207B\u00B3', value: 9.086e-6, unit: 'Planck', n: 1, k: -4, m: -2, p: -4, q: -3 },
+      { name: 'G hint', formula: '1\u00D73\u207B\u00B3\u00D7\u03C0\u207B\u00B3\u00D7\u03C6\u207B\u2074\u00D7e\u207B\u00B3', value: 8.677e-6, unit: 'Planck', n: 1, k: -3, m: -3, p: -4, q: -3 },
+      { name: 'Proton lifetime hint', formula: '3\u00D73\u2074\u00D7\u03C0\u00B3\u00D7\u03C6\u2074\u00D7e\u2074', value: 2.8196e6, unit: 'years', n: 3, k: 4, m: 3, p: 4, q: 4 },
+      { name: '\u03A3m_\u03BD hint', formula: '3\u00D73\u2076\u00D7\u03C0\u207B\u2074\u00D7\u03C6\u207B\u2074\u00D7e\u207B\u2074', value: 0.05999579, unit: 'eV', n: 3, k: 6, m: -4, p: -4, q: -4 },
+      { name: 'Inflation N_e hint', formula: '8\u00D73\u00B2\u00D7\u03C0\u207B\u00B9\u00D7\u03C6\u00B2', value: 60.00092, unit: 'e-folds', n: 8, k: 2, m: -1, p: 2, q: 0 },
+      { name: 'Tensor-to-scalar r', formula: '4\u00D73\u207B\u00B2\u00D7\u03C0\u207B\u00B2\u00D7\u03C6\u207B\u2075\u00D7e\u00B2', value: 0.03000326, unit: '\u2014', n: 4, k: -2, m: -2, p: -5, q: 2 },
+      { name: 'Neutron \u03C4_n hint', formula: '2\u00D73\u2074\u00D7\u03C0\u2074\u00D7\u03C6\u207B\u2076', value: 879.4045, unit: 's', n: 2, k: 4, m: 4, p: -6, q: 0 },
+      { name: 'S_topo hint', formula: '4\u00D73\u207B\u00B9\u00D7\u03C0\u207B\u2074\u00D7\u03C6\u2074\u00D7e\u00B2', value: 0.6932323, unit: 'nat', n: 4, k: -1, m: -4, p: 4, q: 2 },
+      { name: 'N_eff hint', formula: '1\u00D73\u00B3\u00D7\u03C0\u207B\u00B9\u00D7\u03C6\u00B2\u00D7e\u207B\u00B2', value: 3.045091, unit: '\u2014', n: 1, k: 3, m: -1, p: 2, q: -2 },
+      { name: 'M-theory dim', formula: '4\u00D73\u207B\u2074\u00D7\u03C6\u2075\u00D7e\u00B3', value: 11.0001, unit: 'dim', n: 4, k: -4, m: 0, p: 5, q: 3 },
+      { name: 'Bosonic string dim', formula: '2\u00D73\u207B\u00B9\u00D7\u03C0\u00B9\u00D7\u03C6\u207B\u00B9\u00D7e\u00B3', value: 25.99887, unit: 'dim', n: 2, k: -1, m: 1, p: -1, q: 3 },
+      { name: '\u0394m\u00B2\u2083\u2082 hint', formula: '1\u00D73\u207B\u00B3\u00D7\u03C0\u207B\u00B2\u00D7\u03C6\u207B\u2075\u00D7e\u00B2', value: 0.002500272, unit: 'eV\u00B2', n: 1, k: -3, m: -2, p: -5, q: 2 },
+      { name: 'S\u2088 (\u03C3\u2088\u03A9\u1D50\u00B9\u00B2)', formula: '8\u00D73\u207B\u2075\u00D7\u03C0\u207B\u00B2\u00D7e\u00B3', value: 0.06699886, unit: '\u2014', n: 8, k: -5, m: -2, p: 0, q: 3 },
+    ],
+    search_bounds: { n: [1, 9], k: [-4, 4], m: [-3, 0], p: [-4, 4], q: [-3, 3] },
+  };
+}
+
+// Sacred formula constants
+const PHI = 1.6180339887498948482;
+
+// Parameter bounds — exported for UI validation
+export const PARAM_BOUNDS = {
+  n: { min: 1, max: 9 },
+  k: { min: -4, max: 4 },
+  m: { min: -3, max: 0 },
+  p: { min: -4, max: 4 },
+  q: { min: -3, max: 3 },
+} as const;
+
+// Pure computation: V = n × 3^k × π^m × φ^p × e^q
+export function computeSacredFormula(n: number, k: number, m: number, p: number, q: number): number {
+  return n * Math.pow(3, k) * Math.pow(Math.PI, m) * Math.pow(PHI, p) * Math.pow(Math.E, q);
+}
+
+// Brute-force search: finds best (n,k,m,p,q) for a target number
+// Search space: 9×9×4×9×7 = 20,412 combinations — <10ms in JS
+export async function fitSingleValue(target: number): Promise<SingleFitResponse> {
+  let bestFit = { n: 1, k: 0, m: 0, p: 0, q: 0 };
+  let bestError = Infinity;
+  let bestComputed = 1;
+
+  for (let n = PARAM_BOUNDS.n.min; n <= PARAM_BOUNDS.n.max; n++) {
+    for (let k = PARAM_BOUNDS.k.min; k <= PARAM_BOUNDS.k.max; k++) {
+      for (let m = PARAM_BOUNDS.m.min; m <= PARAM_BOUNDS.m.max; m++) {
+        for (let p = PARAM_BOUNDS.p.min; p <= PARAM_BOUNDS.p.max; p++) {
+          for (let q = PARAM_BOUNDS.q.min; q <= PARAM_BOUNDS.q.max; q++) {
+            const v = computeSacredFormula(n, k, m, p, q);
+            const err = Math.abs(v - target) / Math.abs(target);
+            if (err < bestError) {
+              bestError = err;
+              bestFit = { n, k, m, p, q };
+              bestComputed = v;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return { fit: bestFit, computed: bestComputed, error_pct: bestError * 100 };
+}
+
+// Manual parameter mode: compute V from user-specified params
+export function computeFromParams(n: number, k: number, m: number, p: number, q: number): SingleFitResponse {
+  return { fit: { n, k, m, p, q }, computed: computeSacredFormula(n, k, m, p, q), error_pct: 0 };
+}
+
+// 27 Coptic Glyphs — mirrors StargateDrum.tsx
+const COPTIC_GLYPHS = [
+  '\u2C80', '\u2C82', '\u2C84', '\u2C86', '\u2C88', '\u2C8A', '\u2C8C', '\u2C8E', '\u2C90',
+  '\u2C92', '\u2C94', '\u2C96', '\u2C98', '\u2C9A', '\u2C9C', '\u2C9E', '\u2CA0', '\u2CA2',
+  '\u2CA4', '\u2CA6', '\u2CA8', '\u2CAA', '\u2CAC', '\u2CAE', '\u2CB0', '\u03E2', '\u03E4',
+];
+
+// Isopsephy values for each glyph
+const GLYPH_VALUES = [
+  1, 2, 3, 4, 5, 6, 7, 8, 9,
+  10, 20, 30, 40, 50, 60, 70, 80, 90,
+  100, 200, 300, 400, 500, 600, 700, 800, 900,
+];
+
+// Lowercase Coptic variants for lookup
+const COPTIC_GLYPHS_LOWER = [
+  '\u2C81', '\u2C83', '\u2C85', '\u2C87', '\u2C89', '\u2C8B', '\u2C8D', '\u2C8F', '\u2C91',
+  '\u2C93', '\u2C95', '\u2C97', '\u2C99', '\u2C9B', '\u2C9D', '\u2C9F', '\u2CA1', '\u2CA3',
+  '\u2CA5', '\u2CA7', '\u2CA9', '\u2CAB', '\u2CAD', '\u2CAF', '\u2CB1', '\u03E3', '\u03E5',
+];
+
+// Decompose a number into Coptic gematria representation (greedy, largest values first)
+function decomposeToGlyphs(num: number): { glyph: string; value: number; index: number }[] {
+  const result: { glyph: string; value: number; index: number }[] = [];
+  let remaining = Math.abs(Math.round(num));
+  if (remaining === 0) return [];
+
+  // Greedy from largest value (900) to smallest (1)
+  for (let i = GLYPH_VALUES.length - 1; i >= 0 && remaining > 0; i--) {
+    while (remaining >= GLYPH_VALUES[i]) {
+      result.push({ glyph: COPTIC_GLYPHS[i], value: GLYPH_VALUES[i], index: i });
+      remaining -= GLYPH_VALUES[i];
+    }
+  }
+  return result;
+}
+
+export async function fetchGematria(input: string): Promise<GematriaResponse> {
+  const glyphs: { glyph: string; value: number; index: number }[] = [];
+  let total = 0;
+
+  // Check if input is a number
+  const numericInput = Number(input);
+  if (!isNaN(numericInput) && numericInput > 0 && input.trim() !== '') {
+    // Numeric input: decompose into Coptic gematria representation
+    const decomposed = decomposeToGlyphs(numericInput);
+    glyphs.push(...decomposed);
+    total = decomposed.reduce((sum, g) => sum + g.value, 0);
+  } else {
+    // Text input: look up each character
+    for (let i = 0; i < Math.min(input.length, 20); i++) {
+      const ch = input[i];
+      // Try Coptic uppercase
+      let idx = COPTIC_GLYPHS.indexOf(ch);
+      if (idx === -1) idx = COPTIC_GLYPHS_LOWER.indexOf(ch);
+      if (idx !== -1) {
+        glyphs.push({ glyph: COPTIC_GLYPHS[idx], value: GLYPH_VALUES[idx], index: idx });
+        total += GLYPH_VALUES[idx];
+      } else {
+        // Latin fallback: A=1, B=2, ..., Z=26
+        const upper = ch.toUpperCase();
+        const code = upper.charCodeAt(0);
+        if (code >= 65 && code <= 90) {
+          const val = code - 64; // A=1, B=2, ..., Z=26
+          // Map to nearest glyph by value
+          const glyphIdx = val <= 9 ? val - 1 : val <= 18 ? Math.floor(val / 10) + 8 : Math.min(Math.floor(val / 100) + 17, 26);
+          glyphs.push({ glyph: ch.toUpperCase(), value: val, index: glyphIdx });
+          total += val;
+        }
+        // Skip non-alphabetic characters silently
+      }
+    }
+  }
+
+  if (total <= 0) {
+    return { glyphs: [], total: 0 };
+  }
+
+  // Find the sacred formula fit for the total
+  const sacredResult = await fitSingleValue(total);
+
+  return {
+    glyphs,
+    total,
+    sacred_fit: sacredResult.fit,
+    sacred_computed: sacredResult.computed,
+    sacred_error_pct: sacredResult.error_pct,
+  };
+}

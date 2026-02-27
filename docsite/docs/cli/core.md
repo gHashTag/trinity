@@ -9,14 +9,29 @@ Chat, code generation, and the SWE (Software Engineering) agent.
 
 ## chat
 
-Interactive chat with vision, voice, and tool support.
+Interactive multi-modal chat with vision, voice, and tool support (v2.1).
 
 ```bash
 tri chat [message]
 tri chat "Explain ternary computing"
+tri chat --stream "Tell me about phi"
+tri chat --image photo.jpg "What's in this image?"
+tri chat --voice recording.wav "Transcribe this"
 ```
 
-In REPL mode, type any message directly to chat.
+**Options:**
+
+| Flag | Description |
+|------|-------------|
+| `--stream` | Enable streaming output (typing effect, token-by-token) |
+| `--image <path>` | Attach image file for vision analysis |
+| `--voice <path>` | Attach audio file for speech-to-text processing |
+
+**Provider priority:** Groq (fastest) > Claude > OpenAI > local GGUF
+
+The chat system integrates with the [TVC corpus](/cli/tvc) — similar queries are served from cache (threshold: $\phi^{-1} = 0.618$) without making an LLM call.
+
+In REPL mode, type any message directly to chat. See [Interactive REPL](/cli/repl) for details.
 
 ## code
 
@@ -27,6 +42,14 @@ tri code [prompt]
 tri code "Write a Fibonacci function in Zig"
 tri code --stream "Implement a binary search"   # Typing effect
 ```
+
+**Options:**
+
+| Flag | Description |
+|------|-------------|
+| `--stream` | Enable streaming (character-by-character typing effect) |
+
+The output language is determined by the current language setting (default: Zig). Use `/zig`, `/python`, `/rust`, or `/js` in [REPL mode](/cli/repl) to switch.
 
 ## gen
 
@@ -41,7 +64,14 @@ tri gen specs/tri/my_module.vibee
 
 ## SWE Agent Commands
 
-The SWE (Software Engineering) Agent provides AI-powered code assistance:
+The SWE (Software Engineering) Agent provides AI-powered code assistance. All SWE commands use the `TrinitySWEAgent` with multi-language support:
+
+| Language | REPL switch | File extensions |
+|----------|------------|-----------------|
+| Zig | `/zig` | `.zig` |
+| Python | `/python` | `.py` |
+| Rust | `/rust` | `.rs` |
+| JavaScript | `/js` | `.js`, `.ts` |
 
 ### fix
 

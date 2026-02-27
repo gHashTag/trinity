@@ -22,7 +22,7 @@ tri math <subcommand>       # Run specific subcommand
 
 ### constants
 
-Display 14+ sacred mathematical constants.
+Display sacred mathematical constants organized in 4 sections.
 
 **Aliases:** `const`
 
@@ -33,22 +33,55 @@ tri constants
 **Example output:**
 
 ```
-Sacred Constants (phi^2 + 1/phi^2 = 3)
-================================================
++=======================================================================+
+|                    SACRED MATHEMATICS CONSTANTS                       |
+|                    phi^2 + 1/phi^2 = 3 = TRINITY                     |
++=======================================================================+
 
-  phi (PHI)                = 1.6180339887498948
-  phi^2 (PHI_SQ)           = 2.6180339887498948
-  1/phi (PHI_INV)          = 0.6180339887498948
-  1/phi^2 (PHI_INV_SQ)     = 0.3819660112501051
+  --- GOLDEN RATIO ---
 
-  sqrt(2)                  = 1.4142135623730950
-  sqrt(5)                  = 2.2360679774997896
+    Golden Ratio (φ)
+      Value:   1.6180339887498948482
+      Formula: (1 + √5) / 2
 
-  pi                       = 3.1415926535897932
-  e                        = 2.7182818284590452
-  ...
+    Phi Squared (φ²)
+      Value:   2.6180339887498948482
+      Formula: φ² = φ + 1
 
-  Verification: phi^2 + 1/phi^2 = 3.0000000000000000 TRINITY VERIFIED
+    Inverse Phi Squared (1/φ²)
+      Value:   0.3819660112501051518
+      Formula: 1/φ² = φ - 1
+
+    Trinity Sum (φ² + 1/φ²)
+      Value:   3.0
+      Formula: φ² + 1/φ² = 3
+      TRINITY IDENTITY — exact equality
+
+  --- TRANSCENDENTAL ---
+
+    Pi (π)           3.14159265358979323846
+    Euler's Number   2.71828182845904523536
+    π × φ × e        13.816890703380645  ≈ TRYTE_MAX (13)
+
+  --- GENETIC ALGORITHM ---
+
+    Mu (μ)      0.0382   Mutation rate
+    Chi (χ)     0.0618   Crossover rate
+    Sigma (σ)   1.618    Selection pressure
+    Epsilon (ε) 0.333    Elitism rate
+
+  --- QUANTUM ---
+
+    CHSH Inequality     2.8284271247461903  (2√2)
+    Fine Structure α⁻¹  137.036
+    Berry Phase (β)     2.112
+    SU3 Constant        0.927
+
++=======================================================================+
+|  Trit: -1  0  +1  |  Base: 3  |  phi = 1.6180339...                 |
+|  mu = 0.0382  |  chi = 0.0618  |  sigma = phi  |  epsilon = 1/3     |
+|  Lucas: 2, 1, 3, 4, 7, 11, 18, 29, 47, 76, 123                     |
++=======================================================================+
 ```
 
 ### phi
@@ -65,11 +98,7 @@ tri phi 20
 **Example output:**
 
 ```
-phi Powers (n = 10)
-================================
-  phi^10       = 122.9919370529757
-  1/phi^10     = 0.0081355169125897
-  phi^10 + 1/phi^10 = 123.0000725698883  = L(10) = 123
+phi^10 = 122.9918693812442100
 ```
 
 ### fib
@@ -80,7 +109,13 @@ Fibonacci number F(n).
 
 ```bash
 tri fib [n]                 # Default: n=10, max safe: n=92
-tri fib 19
+tri fib 20
+```
+
+**Example output:**
+
+```
+F(20) = 6,765 [4 digits]
 ```
 
 Special flags: `F(4) = 3 = TRINITY`, `F(7) = 13 = TRYTE_MAX`.
@@ -94,20 +129,39 @@ tri lucas [n]               # Default: n=5, max safe: n=86
 tri lucas 10
 ```
 
+**Example output:**
+
+```
+L(10) = 123 [3 digits]
+  * L(10) = 123 (Lucas number L(10))
+```
+
 Highlights `L(2) = 3 = TRINITY!`.
 
 ### spiral
 
-Phi-spiral coordinates with ASCII visualization.
+Phi-spiral coordinates.
 
 **Aliases:** `phi-spiral`
 
 ```bash
-tri spiral [n]              # n=0-8 for ASCII plot, up to 64 points
-tri spiral 8
+tri spiral [n]              # Compute phi-spiral for point n
+tri spiral 5
 ```
 
-**Output:** Coordinate table + 50x20 ASCII grid with spiral markers.
+**Example output:**
+
+```
++--------------------------------------------------------------+
+|                       phi-SPIRAL                             |
++--------------------------------------------------------------+
+  n      : 5
+  angle  : 1456.23 deg (25.416018 rad)
+  radius : 70.00
+  x      : 67.210122
+  y      : 19.565263
++--------------------------------------------------------------+
+```
 
 ### math-compare
 

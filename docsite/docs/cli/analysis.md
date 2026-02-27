@@ -7,6 +7,8 @@ sidebar_label: Code Analysis
 
 Static analysis, full-text search, and dependency graph tools.
 
+> **Note:** These commands are currently placeholders. They display system information (same as `tri info`) instead of performing analysis. Full implementations are planned for future cycles.
+
 ## analyze
 
 Static code analysis with pattern detection.
@@ -17,31 +19,7 @@ tri analyze src/
 tri analyze src/vsa.zig
 ```
 
-Reports: TODO/FIXME count, large file detection (>500 lines), function visibility (public vs private ratio), patterns found.
-
-**Example output:**
-
-```
-TRI ANALYZE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Target: src/
-
-  Code Metrics:
-    Zig files scanned:  210+
-    TODOs found:        12
-    FIXMEs found:       3
-    Large files (>500): 8
-
-  Function Visibility:
-    Public:    347
-    Private:   189
-    Ratio:     64.7% public
-
-  Patterns:
-    test blocks:   94
-    error unions:  67
-    comptime:      23
-```
+**Current status:** Displays system info. Planned to report: TODO/FIXME count, large file detection (\>500 lines), function visibility (public vs private ratio), pattern detection.
 
 ## search
 
@@ -53,20 +31,7 @@ tri search "cosineSimilarity"
 tri search "TODO" src/vsa.zig
 ```
 
-Searches all `.zig` files and displays matching lines with file path and line number.
-
-**Example output:**
-
-```
-TRI SEARCH: "cosineSimilarity"
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  src/vsa.zig:142: pub fn cosineSimilarity(a: []const Trit, b: []const Trit) f64 {
-  src/sdk.zig:89:     const sim = vsa.cosineSimilarity(self.data, other.data);
-  src/tri/tri_math.zig:301:     // Uses cosineSimilarity for vector comparison
-
-  Found: 3 matches in 3 files
-```
+**Current status:** Displays system info. Planned to search all `.zig` files and display matching lines with file path and line number.
 
 ## deps
 
@@ -77,23 +42,4 @@ tri deps [module]
 tri deps src/vsa.zig
 ```
 
-Shows import chains and reverse dependency tree.
-
-**Example output:**
-
-```
-DEPENDENCY ANALYSIS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Module: src/vsa.zig
-
-  Imports:
-    └── std (stdlib)
-
-  Imported by:
-    ├── src/sdk.zig
-    ├── src/hybrid.zig
-    ├── src/vm.zig
-    └── src/tri/tri_math.zig
-
-  Depth: 1 (leaf module)
-```
+**Current status:** Displays system info. Planned to show import chains and reverse dependency trees.

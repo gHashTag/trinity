@@ -1,0 +1,95 @@
+name: codebase_context
+version: "1.0.0"
+language: zig
+module: codebase_context
+
+constants:
+  - name: EMBEDDING_DIM
+    value: 384
+  - name: MAX_SYMBOLS
+    value: 50000
+  - name: MAX_SNIPPET_LEN
+    value: 256
+  - name: DEFAULT_TOP_K
+    value: 5
+  - name: INDEX_MAGIC
+    value: "TCTX"
+
+types:
+  ContextConfig:
+    fields:
+      index_path: String
+      repo_root: String
+      top_k: Int
+      min_similarity: Float
+      auto_load: Bool
+
+  IndexedSymbol:
+    fields:
+      id: Int
+      name: String
+      file_path: String
+      line: Int
+      kind: String
+      snippet: String
+
+  SearchHit:
+    fields:
+      symbol: String
+      file_path: String
+      line: Int
+      snippet: String
+      score: Float
+      sacred_score: Float
+
+  ContextStats:
+    fields:
+      files_indexed: Int
+      symbols_indexed: Int
+      index_size_bytes: Int
+      last_scan_ms: Int
+      is_loaded: Bool
+
+  ContextResult:
+    fields:
+      query: String
+      chunks_found: Int
+      total_symbols: Int
+      augmented_prompt: String
+      sacred_score: Float
+
+behaviors:
+  - name: init_context
+    given: ContextConfig with index path and repo root
+    when: ContextManager is initialized
+    then: Load existing index from disk or create empty index
+
+  - name: scan_repository
+    given: Repository root directory with .zig and .vibee files
+    when: tri analyze is invoked
+    then: Walk all source files, extract symbols via pattern matching, generate embeddings, save index to disk
+
+  - name: search_context
+    given: Natural language query string
+    when: tri search <query> is invoked
+    then: Generate query embedding, linear scan with cosine similarity, apply sacred phi-scoring, return top-k results
+
+  - name: get_context_for_prompt
+    given: User prompt from SWE command (fix, explain, test, doc, refactor, reason)
+    when: Any SWE command runs automatically
+    then: Auto-retrieve top-k context via search, format augmented prompt with code snippets header
+
+  - name: show_stats
+    given: Loaded context index
+    when: tri context is invoked
+    then: Display index statistics including files indexed, symbols count, index size, last scan time
+
+  - name: save_index
+    given: In-memory symbols and embeddings
+    when: After scan completes or CLI exits
+    then: Serialize to TCTX binary format at configured index_path
+
+  - name: load_index
+    given: Existing TCTX index file on disk
+    when: ContextManager initializes with auto_load
+    then: Deserialize binary index, restore symbols and embeddings into memory

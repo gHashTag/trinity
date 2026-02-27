@@ -16,6 +16,7 @@ const igla_coder = @import("igla_coder");
 const tvc = @import("tvc_corpus");
 const streaming = @import("streaming.zig");
 const multilingual = @import("multilingual.zig");
+const tri_context = @import("tri_context.zig");
 
 const GREEN = colors.GREEN;
 const GOLDEN = colors.GOLDEN;
@@ -165,13 +166,18 @@ pub const Command = enum {
     workflow_bench,
     // Distributed Inference
     distributed,
-    // Sacred Mathematics (v2.0)
+    // Multi-Cluster (Cycle #97)
+    multi_cluster,
+    // Sacred Mathematics (v3.6)
     math,
     constants_cmd,
     phi,
     fib,
     lucas,
     spiral,
+    gematria,
+    formula_cmd,
+    sacred,
     // Dev Utilities
     doctor,
     clean,
@@ -182,6 +188,8 @@ pub const Command = enum {
     analyze,
     search_cmd,
     deps,
+    // Codebase Context (Cycle 92)
+    context_info,
     // Info
     info,
     version,
@@ -201,6 +209,9 @@ pub const CLIState = struct {
 
     // TVC Corpus for self-learning (heap-allocated, ~26MB)
     tvc_corpus: ?*tvc.TVCCorpus,
+
+    // Codebase Context Manager (Cycle 92)
+    context_mgr: ?*tri_context.ContextManager,
 
     const Self = @This();
 
@@ -222,6 +233,11 @@ pub const CLIState = struct {
         corpus.initInPlace();
         // Try loading existing corpus from disk (load into heap-allocated struct)
         corpus.loadInto(TVC_CORPUS_PATH) catch {};
+
+        // Codebase Context Manager (Cycle 92)
+        const ctx_mgr = try allocator.create(tri_context.ContextManager);
+        ctx_mgr.* = tri_context.ContextManager.init(allocator);
+        ctx_mgr.loadIndex() catch {};
 
         // Read API keys from environment
         const groq_key = std.process.getEnvVarOwned(allocator, "GROQ_API_KEY") catch null;
@@ -251,10 +267,20 @@ pub const CLIState = struct {
             .running = true,
             .stream_enabled = false,
             .tvc_corpus = corpus,
+            .context_mgr = ctx_mgr,
         };
     }
 
     pub fn deinit(self: *Self) void {
+        // Save context index before exit (Cycle 92)
+        if (self.context_mgr) |mgr| {
+            if (mgr.is_dirty) {
+                mgr.saveIndex() catch {};
+            }
+            mgr.deinit();
+            self.allocator.destroy(mgr);
+            self.context_mgr = null;
+        }
         // Save TVC corpus to disk before exit
         if (self.tvc_corpus) |corpus| {
             corpus.save(TVC_CORPUS_PATH) catch {};
@@ -498,13 +524,16 @@ pub fn printHelp() void {
     std.debug.print("  {s}workflow-bench{s}                 Run temporal workflow benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
-    std.debug.print("{s}SACRED MATHEMATICS (v2.0):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}SACRED MATHEMATICS (v3.6):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}math{s}                        Sacred math dispatcher\n", .{ GREEN, RESET });
     std.debug.print("  {s}constants{s}                    Show all sacred constants\n", .{ GREEN, RESET });
     std.debug.print("  {s}phi{s} <n>                      Compute phi^n\n", .{ GREEN, RESET });
     std.debug.print("  {s}fib{s} <n>                      Fibonacci F(n) with BigInt\n", .{ GREEN, RESET });
     std.debug.print("  {s}lucas{s} <n>                    Lucas L(n)\n", .{ GREEN, RESET });
     std.debug.print("  {s}spiral{s} <n>                   phi-spiral coordinates\n", .{ GREEN, RESET });
+    std.debug.print("  {s}gematria{s} <number|text>       Coptic gematria + sacred formula\n", .{ GREEN, RESET });
+    std.debug.print("  {s}formula{s} <value>              Sacred formula decomposition\n", .{ GREEN, RESET });
+    std.debug.print("  {s}sacred{s}                      32 constants + 9 predictions table\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
     std.debug.print("{s}DEV UTILITIES:{s}\n", .{ CYAN, RESET });
@@ -589,7 +618,7 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "agents-demo") or std.mem.eql(u8, arg, "agents")) return .agents_demo;
     if (std.mem.eql(u8, arg, "agents-bench")) return .agents_bench;
     // Long Context
-    if (std.mem.eql(u8, arg, "context-demo") or std.mem.eql(u8, arg, "context")) return .context_demo;
+    if (std.mem.eql(u8, arg, "context-demo")) return .context_demo;
     if (std.mem.eql(u8, arg, "context-bench")) return .context_bench;
     // RAG
     if (std.mem.eql(u8, arg, "rag-demo") or std.mem.eql(u8, arg, "rag")) return .rag_demo;
@@ -691,19 +720,28 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "workflow-demo") or std.mem.eql(u8, arg, "workflow") or std.mem.eql(u8, arg, "wf")) return .workflow_demo;
     if (std.mem.eql(u8, arg, "workflow-bench") or std.mem.eql(u8, arg, "wf-bench")) return .workflow_bench;
     if (std.mem.eql(u8, arg, "distributed") or std.mem.eql(u8, arg, "dist")) return .distributed;
-    // Sacred Mathematics (v2.0)
+    // Multi-Cluster (Cycle #97)
+    if (std.mem.eql(u8, arg, "multi-cluster") or std.mem.eql(u8, arg, "mc")) return .multi_cluster;
+    // Sacred Mathematics (v3.6)
     if (std.mem.eql(u8, arg, "math")) return .math;
     if (std.mem.eql(u8, arg, "constants")) return .constants_cmd;
     if (std.mem.eql(u8, arg, "phi")) return .phi;
     if (std.mem.eql(u8, arg, "fib")) return .fib;
     if (std.mem.eql(u8, arg, "lucas")) return .lucas;
     if (std.mem.eql(u8, arg, "spiral")) return .spiral;
+    if (std.mem.eql(u8, arg, "gematria") or std.mem.eql(u8, arg, "gem")) return .gematria;
+    if (std.mem.eql(u8, arg, "formula")) return .formula_cmd;
+    if (std.mem.eql(u8, arg, "sacred")) return .sacred;
     // Dev Utilities
     if (std.mem.eql(u8, arg, "doctor") or std.mem.eql(u8, arg, "dr")) return .doctor;
     if (std.mem.eql(u8, arg, "clean")) return .clean;
     if (std.mem.eql(u8, arg, "fmt") or std.mem.eql(u8, arg, "format")) return .fmt_cmd;
     if (std.mem.eql(u8, arg, "stats")) return .stats_cmd;
     if (std.mem.eql(u8, arg, "igla")) return .igla;
+    // Code Analysis & Context (Cycle 92)
+    if (std.mem.eql(u8, arg, "analyze") or std.mem.eql(u8, arg, "scan")) return .analyze;
+    if (std.mem.eql(u8, arg, "search")) return .search_cmd;
+    if (std.mem.eql(u8, arg, "context") or std.mem.eql(u8, arg, "ctx")) return .context_info;
     // Info
     if (std.mem.eql(u8, arg, "info")) return .info;
     if (std.mem.eql(u8, arg, "version") or std.mem.eql(u8, arg, "--version") or std.mem.eql(u8, arg, "-v")) return .version;
@@ -965,11 +1003,21 @@ pub fn runInteractiveMode(state: *CLIState) !void {
 
         // Read line character by character
         var line_len: usize = 0;
+        var eof_reached = false;
         while (line_len < buf.len - 1) {
             const read_result = stdin_file.read(buf[line_len .. line_len + 1]) catch break;
-            if (read_result == 0) break; // EOF
+            if (read_result == 0) {
+                eof_reached = true;
+                break; // EOF
+            }
             if (buf[line_len] == '\n') break;
             line_len += 1;
+        }
+
+        // Exit REPL on EOF (when stdin is not a TTY)
+        if (eof_reached and line_len == 0) {
+            state.running = false;
+            break;
         }
 
         if (line_len > 0) {
@@ -1178,9 +1226,19 @@ pub fn runSWECommand(state: *CLIState, task_type: trinity_swe.SWETaskType, args:
 
     std.debug.print("{s}Processing ({s}):{s} {s}\n\n", .{ CYAN, @tagName(task_type), RESET, prompt });
 
+    // Auto-inject codebase context (Cycle 92)
+    const context: ?[]const u8 = if (state.context_mgr) |mgr|
+        mgr.getContextForPrompt(prompt)
+    else
+        null;
+    if (context != null) {
+        std.debug.print("{s}[Context: injected]{s}\n", .{ GRAY, RESET });
+    }
+
     const request = trinity_swe.SWERequest{
         .task_type = task_type,
         .prompt = prompt,
+        .context = context,
         .language = state.language,
     };
     if (state.agent.process(request)) |result| {
