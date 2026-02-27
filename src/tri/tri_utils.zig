@@ -165,6 +165,8 @@ pub const Command = enum {
     workflow_bench,
     // Distributed Inference
     distributed,
+    // Multi-Cluster (Cycle #97)
+    multi_cluster,
     // Sacred Mathematics (v2.0)
     math,
     constants_cmd,
@@ -691,6 +693,8 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "workflow-demo") or std.mem.eql(u8, arg, "workflow") or std.mem.eql(u8, arg, "wf")) return .workflow_demo;
     if (std.mem.eql(u8, arg, "workflow-bench") or std.mem.eql(u8, arg, "wf-bench")) return .workflow_bench;
     if (std.mem.eql(u8, arg, "distributed") or std.mem.eql(u8, arg, "dist")) return .distributed;
+    // Multi-Cluster (Cycle #97)
+    if (std.mem.eql(u8, arg, "multi-cluster") or std.mem.eql(u8, arg, "cluster") or std.mem.eql(u8, arg, "mc")) return .multi_cluster;
     // Sacred Mathematics (v2.0)
     if (std.mem.eql(u8, arg, "math")) return .math;
     if (std.mem.eql(u8, arg, "constants")) return .constants_cmd;
@@ -965,11 +969,21 @@ pub fn runInteractiveMode(state: *CLIState) !void {
 
         // Read line character by character
         var line_len: usize = 0;
+        var eof_reached = false;
         while (line_len < buf.len - 1) {
             const read_result = stdin_file.read(buf[line_len .. line_len + 1]) catch break;
-            if (read_result == 0) break; // EOF
+            if (read_result == 0) {
+                eof_reached = true;
+                break; // EOF
+            }
             if (buf[line_len] == '\n') break;
             line_len += 1;
+        }
+
+        // Exit REPL on EOF (when stdin is not a TTY)
+        if (eof_reached and line_len == 0) {
+            state.running = false;
+            break;
         }
 
         if (line_len > 0) {

@@ -38,6 +38,9 @@ const sidebars: SidebarsConfig = {
         'cli/demos',
         'cli/autonomous',
         'cli/audit',
+        'cli/repl',
+        'cli/tvc',
+        'cli/constants',
       ],
     },
     {

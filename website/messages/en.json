@@ -958,7 +958,17 @@
     "modeGematria": "Gematria",
     "gematriaPlaceholder": "Number or Coptic text...",
     "gematriaDecompose": "Decode",
-    "sacredFit": "Sacred fit"
+    "sacredFit": "Sacred fit",
+    "modeManual": "Parameters \u2192 Value",
+    "compute": "Compute",
+    "validationRequired": "Required",
+    "validationInteger": "Must be integer",
+    "validationRange_n": "n: 1\u20139",
+    "validationRange_k": "k: -4\u20264",
+    "validationRange_m": "m: -3\u20260",
+    "validationRange_p": "p: -4\u20264",
+    "validationRange_q": "q: -3\u20263",
+    "validationPositive": "Enter a positive number"
   },
   "holographic": {
     "title": "Holographic Renderer v3.1",

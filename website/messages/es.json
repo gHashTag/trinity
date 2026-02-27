@@ -935,7 +935,17 @@
     "modeGematria": "Gematría",
     "gematriaPlaceholder": "Número o texto copto...",
     "gematriaDecompose": "Decodificar",
-    "sacredFit": "Fórmula sagrada"
+    "sacredFit": "Fórmula sagrada",
+    "modeManual": "Parámetros \u2192 Valor",
+    "compute": "Calcular",
+    "validationRequired": "Obligatorio",
+    "validationInteger": "Debe ser entero",
+    "validationRange_n": "n: 1\u20139",
+    "validationRange_k": "k: -4\u20264",
+    "validationRange_m": "m: -3\u20260",
+    "validationRange_p": "p: -4\u20264",
+    "validationRange_q": "q: -3\u20263",
+    "validationPositive": "Ingrese un número positivo"
   },
   "holographic": {
     "title": "Renderizador Holográfico v3.1",
@@ -983,8 +993,7 @@
   "stickyCta": {
     "invest": "Invertir Ahora",
     "calculator": "Calculadora de Ahorro"
-  }
-}  },
+  },
   "autonomousUniverse": {
     "title": "Universo Autónomo",
     "description": "Universo matemático autoevolutivo con burbujas autónomas",

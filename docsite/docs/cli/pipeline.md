@@ -134,6 +134,56 @@ tri plan
 tri plan --file tasks.json
 ```
 
+## spec-create
+
+Create a `.vibee` specification template (Link 6).
+
+**Aliases:** `spec_create`
+
+```bash
+tri spec-create <name>
+tri spec-create my_module
+```
+
+Generates a template file at `specs/tri/<name>.vibee` with the standard VIBEE structure (name, version, language, module, types, behaviors).
+
+## loop-decide
+
+Loop decision gate (Link 17) — determines whether to continue iterating or exit.
+
+**Aliases:** `loop_decide`
+
+```bash
+tri loop-decide              # Auto mode (evaluate EXIT_SIGNAL)
+tri loop-decide auto         # Same as above
+tri loop-decide continue     # Force CONTINUE
+tri loop-decide exit         # Force EXIT
+```
+
+The loop decision evaluates the **EXIT_SIGNAL** criteria:
+
+```
+EXIT_SIGNAL = (
+    tests_pass AND
+    spec_complete AND
+    critical_assessment_written AND
+    tech_tree_options_proposed AND
+    achievement_documented AND
+    dashboard_widget_updated AND
+    committed
+)
+```
+
+| Condition | Check |
+|-----------|-------|
+| `tests_pass` | `zig build test` succeeds |
+| `spec_complete` | `.vibee` spec exists for all generated code |
+| `critical_assessment_written` | Toxic verdict (Link 14) completed |
+| `tech_tree_options_proposed` | 3 options for next iteration listed |
+| `achievement_documented` | Report written in `docsite/docs/research/` |
+| `dashboard_widget_updated` | Canvas mirror widget reflects new state |
+| `committed` | Changes committed to git |
+
 ## verify
 
 Run tests + benchmarks (Links 7-11).
