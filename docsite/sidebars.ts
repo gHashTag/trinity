@@ -146,6 +146,7 @@ const sidebars: SidebarsConfig = {
       items: [
         'math-foundations/index',
         'math-foundations/formulas',
+        'math-foundations/sacred-formulas',
         'math-foundations/proofs',
       ],
     },
