@@ -29,6 +29,8 @@ tri pipeline resume            # Resume from checkpoint
 
 ### The 17 Links
 
+Links are numbered 0-16 (17 total). The CLI banner displays "16 Links" counting from Link 0.
+
 | # | Link | Description | Critical |
 |---|------|-------------|----------|
 | 0 | `TVC_GATE` | Search corpus, return cached or continue | Yes |
