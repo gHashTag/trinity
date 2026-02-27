@@ -100,9 +100,11 @@ pub const eval = @import("eval.zig");
 pub const compute = @import("compute.zig");
 pub const bench = @import("bench.zig");
 pub const identities = @import("identities.zig");
+pub const sacred_formula = @import("sacred_formula.zig");
+pub const gematria_math = @import("gematria.zig");
 
 // Version
-pub const version = "2.0.0";
+pub const version = "3.6.0";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
@@ -115,6 +117,8 @@ test "module exports" {
     _ = compute;
     _ = bench;
     _ = identities;
+    _ = sacred_formula;
+    _ = gematria_math;
 }
 
 test "trinity identity" {

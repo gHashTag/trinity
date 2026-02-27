@@ -8,6 +8,8 @@
 const std = @import("std");
 const parent_mod = @import("mod.zig");
 const format = @import("format.zig");
+const sacred_formula = @import("sacred_formula.zig");
+const gematria_engine = @import("../gematria.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // BENCHMARK RESULT
@@ -120,17 +122,68 @@ fn benchmarkFibonacci(iterations: usize) BenchmarkResult {
     };
 }
 
+fn benchmarkSacredFormulaFit(iterations: usize) BenchmarkResult {
+    var timer = std.time.Timer.start() catch return .{
+        .name = "Sacred Formula Fit (skipped)",
+        .ops_per_sec = 0,
+        .avg_time_ns = 0,
+    };
+    const start = timer.read();
+
+    var i: usize = 0;
+    while (i < iterations) : (i += 1) {
+        // Fit target 137.036 (fine structure constant) — 20,412 combos per call
+        _ = sacred_formula.fitSacredFormula(137.036);
+    }
+
+    const elapsed_ns = timer.read() - start;
+    const avg_ns = @as(f64, @floatFromInt(elapsed_ns)) / @as(f64, @floatFromInt(iterations));
+    const ops_per_sec = 1e9 / avg_ns;
+
+    return .{
+        .name = "Sacred Formula Fit (20K combos)",
+        .ops_per_sec = ops_per_sec,
+        .avg_time_ns = avg_ns,
+    };
+}
+
+fn benchmarkGematriaDecode(iterations: usize, allocator: std.mem.Allocator) BenchmarkResult {
+    var timer = std.time.Timer.start() catch return .{
+        .name = "Gematria Decode (skipped)",
+        .ops_per_sec = 0,
+        .avg_time_ns = 0,
+    };
+    const start = timer.read();
+
+    var i: usize = 0;
+    while (i < iterations) : (i += 1) {
+        const glyphs = gematria_engine.numberToGlyphs(allocator, @as(u32, @intCast((i % 999) + 1))) catch continue;
+        allocator.free(glyphs);
+    }
+
+    const elapsed_ns = timer.read() - start;
+    const avg_ns = @as(f64, @floatFromInt(elapsed_ns)) / @as(f64, @floatFromInt(iterations));
+    const ops_per_sec = 1e9 / avg_ns;
+
+    return .{
+        .name = "Gematria numberToGlyphs",
+        .ops_per_sec = ops_per_sec,
+        .avg_time_ns = avg_ns,
+    };
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // PRINT RESULTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn printBenchmarkResults(writer: anytype, allocator: std.mem.Allocator) !void {
     try writer.writeAll("+====================================================================+\n");
-    try writer.writeAll("|                    PERFORMANCE BENCHMARKS                         |\n");
+    try writer.writeAll("|              SACRED MATHEMATICS v3.6 — BENCHMARKS                  |\n");
+    try writer.writeAll("|              V = n × 3^k × π^m × φ^p × e^q                        |\n");
     try writer.writeAll("+====================================================================+\n");
 
     // Core operations
-    try writer.writeAll("  CORE OPERATIONS\n");
+    try writer.writeAll("  CORE OPERATIONS (v2.0)\n");
     try writer.writeAll("  ----------------------------------------------------------------\n");
 
     const core_iterations = 1_000_000;
@@ -143,7 +196,7 @@ pub fn printBenchmarkResults(writer: anytype, allocator: std.mem.Allocator) !voi
 
     // Floating point
     try writer.writeAll("\n");
-    try writer.writeAll("  FLOATING POINT\n");
+    try writer.writeAll("  FLOATING POINT (v2.0)\n");
     try writer.writeAll("  ----------------------------------------------------------------\n");
 
     const phi_power = benchmarkPhiPower(100_000);
@@ -151,15 +204,26 @@ pub fn printBenchmarkResults(writer: anytype, allocator: std.mem.Allocator) !voi
 
     // Sequences
     try writer.writeAll("\n");
-    try writer.writeAll("  SEQUENCES\n");
+    try writer.writeAll("  SEQUENCES (v2.0)\n");
     try writer.writeAll("  ----------------------------------------------------------------\n");
 
     const fibonacci = benchmarkFibonacci(1_000);
     try printBenchmarkResult(writer, &fibonacci);
 
-    try writer.writeAll("\n+====================================================================+\n");
+    // v3.6: Sacred Formula + Gematria
+    try writer.writeAll("\n");
+    try writer.writeAll("  SACRED FORMULA v3.6 (NEW)\n");
+    try writer.writeAll("  ----------------------------------------------------------------\n");
 
-    _ = allocator;
+    const formula_fit = benchmarkSacredFormulaFit(100);
+    try printBenchmarkResult(writer, &formula_fit);
+
+    const gematria_decode = benchmarkGematriaDecode(10_000, allocator);
+    try printBenchmarkResult(writer, &gematria_decode);
+
+    try writer.writeAll("\n+====================================================================+\n");
+    try writer.writeAll("  φ² + 1/φ² = 3 = TRINITY\n");
+    try writer.writeAll("+====================================================================+\n");
 }
 
 fn printBenchmarkResult(writer: anytype, result: *const BenchmarkResult) !void {

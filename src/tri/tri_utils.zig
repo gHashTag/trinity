@@ -168,13 +168,15 @@ pub const Command = enum {
     distributed,
     // Multi-Cluster (Cycle #97)
     multi_cluster,
-    // Sacred Mathematics (v2.0)
+    // Sacred Mathematics (v3.6)
     math,
     constants_cmd,
     phi,
     fib,
     lucas,
     spiral,
+    gematria,
+    formula_cmd,
     // Dev Utilities
     doctor,
     clean,
@@ -521,13 +523,15 @@ pub fn printHelp() void {
     std.debug.print("  {s}workflow-bench{s}                 Run temporal workflow benchmark (Needle check)\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
-    std.debug.print("{s}SACRED MATHEMATICS (v2.0):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}SACRED MATHEMATICS (v3.6):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}math{s}                        Sacred math dispatcher\n", .{ GREEN, RESET });
     std.debug.print("  {s}constants{s}                    Show all sacred constants\n", .{ GREEN, RESET });
     std.debug.print("  {s}phi{s} <n>                      Compute phi^n\n", .{ GREEN, RESET });
     std.debug.print("  {s}fib{s} <n>                      Fibonacci F(n) with BigInt\n", .{ GREEN, RESET });
     std.debug.print("  {s}lucas{s} <n>                    Lucas L(n)\n", .{ GREEN, RESET });
     std.debug.print("  {s}spiral{s} <n>                   phi-spiral coordinates\n", .{ GREEN, RESET });
+    std.debug.print("  {s}gematria{s} <number|text>       Coptic gematria + sacred formula\n", .{ GREEN, RESET });
+    std.debug.print("  {s}formula{s} <value>              Sacred formula decomposition\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
     std.debug.print("{s}DEV UTILITIES:{s}\n", .{ CYAN, RESET });
@@ -715,14 +719,16 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "workflow-bench") or std.mem.eql(u8, arg, "wf-bench")) return .workflow_bench;
     if (std.mem.eql(u8, arg, "distributed") or std.mem.eql(u8, arg, "dist")) return .distributed;
     // Multi-Cluster (Cycle #97)
-    if (std.mem.eql(u8, arg, "multi-cluster") or std.mem.eql(u8, arg, "cluster") or std.mem.eql(u8, arg, "mc")) return .multi_cluster;
-    // Sacred Mathematics (v2.0)
+    if (std.mem.eql(u8, arg, "multi-cluster") or std.mem.eql(u8, arg, "mc")) return .multi_cluster;
+    // Sacred Mathematics (v3.6)
     if (std.mem.eql(u8, arg, "math")) return .math;
     if (std.mem.eql(u8, arg, "constants")) return .constants_cmd;
     if (std.mem.eql(u8, arg, "phi")) return .phi;
     if (std.mem.eql(u8, arg, "fib")) return .fib;
     if (std.mem.eql(u8, arg, "lucas")) return .lucas;
     if (std.mem.eql(u8, arg, "spiral")) return .spiral;
+    if (std.mem.eql(u8, arg, "gematria") or std.mem.eql(u8, arg, "gem")) return .gematria;
+    if (std.mem.eql(u8, arg, "formula")) return .formula_cmd;
     // Dev Utilities
     if (std.mem.eql(u8, arg, "doctor") or std.mem.eql(u8, arg, "dr")) return .doctor;
     if (std.mem.eql(u8, arg, "clean")) return .clean;
