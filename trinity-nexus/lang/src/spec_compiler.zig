@@ -37,23 +37,15 @@ pub const Field = struct {
 };
 
 pub const TypeDef = struct {
-    name: []const u8,
+    name: []const u8 = "",
     description: []const u8 = "",
-    fields: ArrayList(Field),
+    fields: ArrayList(Field) = .{},
     is_enum: bool = false,
-    enum_values: ArrayList([]const u8),
+    enum_values: ArrayList([]const u8) = .{},
 
-    pub fn init(allocator: Allocator) TypeDef {
-        return TypeDef{
-            .name = "",
-            .fields = ArrayList(Field).init(allocator),
-            .enum_values = ArrayList([]const u8).init(allocator),
-        };
-    }
-
-    pub fn deinit(self: *TypeDef) void {
-        self.fields.deinit();
-        self.enum_values.deinit();
+    pub fn deinit(self: *TypeDef, allocator: Allocator) void {
+        self.fields.deinit(allocator);
+        self.enum_values.deinit(allocator);
     }
 };
 
@@ -64,51 +56,34 @@ pub const TestCase = struct {
 };
 
 pub const Behavior = struct {
-    name: []const u8,
+    name: []const u8 = "",
     given: []const u8 = "",
     when: []const u8 = "",
     then: []const u8 = "",
     pas_pattern: []const u8 = "",
-    test_cases: ArrayList(TestCase),
+    test_cases: ArrayList(TestCase) = .{},
 
-    pub fn init(allocator: Allocator) Behavior {
-        return Behavior{
-            .name = "",
-            .test_cases = ArrayList(TestCase).init(allocator),
-        };
-    }
-
-    pub fn deinit(self: *Behavior) void {
-        self.test_cases.deinit();
+    pub fn deinit(self: *Behavior, allocator: Allocator) void {
+        self.test_cases.deinit(allocator);
     }
 };
 
 pub const Spec = struct {
-    name: []const u8,
-    version: []const u8,
-    module: []const u8,
-    types: ArrayList(TypeDef),
-    behaviors: ArrayList(Behavior),
+    name: []const u8 = "",
+    version: []const u8 = "1.0.0",
+    module: []const u8 = "",
+    types: ArrayList(TypeDef) = .{},
+    behaviors: ArrayList(Behavior) = .{},
 
-    pub fn init(allocator: Allocator) Spec {
-        return Spec{
-            .name = "",
-            .version = "1.0.0",
-            .module = "",
-            .types = ArrayList(TypeDef).init(allocator),
-            .behaviors = ArrayList(Behavior).init(allocator),
-        };
-    }
-
-    pub fn deinit(self: *Spec) void {
+    pub fn deinit(self: *Spec, allocator: Allocator) void {
         for (self.types.items) |*t| {
-            t.deinit();
+            t.deinit(allocator);
         }
         for (self.behaviors.items) |*b| {
-            b.deinit();
+            b.deinit(allocator);
         }
-        self.types.deinit();
-        self.behaviors.deinit();
+        self.types.deinit(allocator);
+        self.behaviors.deinit(allocator);
     }
 };
 
@@ -118,27 +93,22 @@ pub const Spec = struct {
 
 pub const SpecCompiler = struct {
     allocator: Allocator,
-    buffer: ArrayList(u8),
-    indent: u32,
-    types_generated: u32,
-    functions_generated: u32,
-    tests_generated: u32,
+    buffer: ArrayList(u8) = .{},
+    indent: u32 = 0,
+    types_generated: u32 = 0,
+    functions_generated: u32 = 0,
+    tests_generated: u32 = 0,
 
     const Self = @This();
 
     pub fn init(allocator: Allocator) Self {
         return Self{
             .allocator = allocator,
-            .buffer = ArrayList(u8).init(allocator),
-            .indent = 0,
-            .types_generated = 0,
-            .functions_generated = 0,
-            .tests_generated = 0,
         };
     }
 
     pub fn deinit(self: *Self) void {
-        self.buffer.deinit();
+        self.buffer.deinit(self.allocator);
     }
 
     pub fn compile(self: *Self, spec: *const Spec) ![]const u8 {
@@ -360,29 +330,29 @@ pub const SpecCompiler = struct {
 
     fn writeLine(self: *Self, str: []const u8) !void {
         try self.writeIndent();
-        try self.buffer.appendSlice(str);
-        try self.buffer.append('\n');
+        try self.buffer.appendSlice(self.allocator, str);
+        try self.buffer.append(self.allocator, '\n');
     }
 
     fn writeFmt(self: *Self, comptime fmt: []const u8, args: anytype) !void {
-        const writer = self.buffer.writer();
+        const writer = self.buffer.writer(self.allocator);
         try writer.print(fmt, args);
     }
 
     fn writeIndent(self: *Self) !void {
         var i: u32 = 0;
         while (i < self.indent) : (i += 1) {
-            try self.buffer.appendSlice("    ");
+            try self.buffer.appendSlice(self.allocator, "    ");
         }
     }
 
     fn newline(self: *Self) !void {
-        try self.buffer.append('\n');
+        try self.buffer.append(self.allocator, '\n');
     }
 
     /// Write raw string to buffer (no indent or newline)
     fn write(self: *Self, str: []const u8) !void {
-        try self.buffer.appendSlice(str);
+        try self.buffer.appendSlice(self.allocator, str);
     }
 
     /// Write sanitized identifier directly to buffer
@@ -391,13 +361,13 @@ pub const SpecCompiler = struct {
         for (name) |c| {
             // Replace hyphens with underscores
             if (c == '-') {
-                try self.buffer.append('_');
+                try self.buffer.append(self.allocator, '_');
             }
             // Keep alphanumeric and underscores
             else if ((c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or
-                       (c >= '0' and c <= '9') or c == '_')
+                (c >= '0' and c <= '9') or c == '_')
             {
-                try self.buffer.append(c);
+                try self.buffer.append(self.allocator, c);
             }
         }
     }
@@ -416,7 +386,7 @@ pub const SpecCompiler = struct {
             }
             // Keep alphanumeric and underscores
             else if ((c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or
-                       (c >= '0' and c <= '9') or c == '_')
+                (c >= '0' and c <= '9') or c == '_')
             {
                 result[result_len] = c;
                 result_len += 1;
@@ -454,7 +424,7 @@ pub fn mapType(vibee_type: []const u8) []const u8 {
         if (vibee_type[0] == '"' and vibee_type[vibee_type.len - 1] == '"')
             vibee_type[1 .. vibee_type.len - 1]
         else if (vibee_type.len >= 4 and vibee_type[0] == '\\' and vibee_type[1] == '"' and
-                 vibee_type[vibee_type.len - 2] == '"' and vibee_type[vibee_type.len - 1] == '\\')
+            vibee_type[vibee_type.len - 2] == '"' and vibee_type[vibee_type.len - 1] == '\\')
             vibee_type[2 .. vibee_type.len - 2]
         else
             vibee_type
@@ -467,8 +437,36 @@ pub fn mapType(vibee_type: []const u8) []const u8 {
     if (std.mem.eql(u8, type_value, "Float")) return "f64";
     if (std.mem.eql(u8, type_value, "Bool")) return "bool";
     if (std.mem.eql(u8, type_value, "Void")) return "void";
-    if (std.mem.startsWith(u8, type_value, "List<")) return "[]const u8";
-    if (std.mem.startsWith(u8, type_value, "Option<")) return "?[]const u8";
+
+    // Generic types List<T> -> []const T (FIXED: parse inner type)
+    if (std.mem.startsWith(u8, type_value, "List<") and type_value.len > 5) {
+        const inner = type_value[5 .. type_value.len - 1];
+        if (std.mem.eql(u8, inner, "String")) return "[]const u8";
+        if (std.mem.eql(u8, inner, "Int")) return "[]const i64";
+        if (std.mem.eql(u8, inner, "Float")) return "[]const f64";
+        if (std.mem.eql(u8, inner, "Bool")) return "[]const bool";
+        if (std.mem.eql(u8, inner, "usize")) return "[]const usize";
+        if (std.mem.eql(u8, inner, "u8")) return "[]u8";
+        // Recursively map inner type for custom/nested types
+        const inner_mapped = mapType(inner);
+        if (std.mem.eql(u8, inner_mapped, "[]const u8")) return "[]const []const u8";
+        if (std.mem.eql(u8, inner_mapped, "i64")) return "[]const i64";
+        if (std.mem.eql(u8, inner_mapped, "f64")) return "[]const f64";
+        if (std.mem.eql(u8, inner_mapped, "bool")) return "[]const bool";
+        return "[]const u8"; // fallback for unknown types
+    }
+
+    // Generic types Option<T> -> ?T (FIXED: parse inner type)
+    if (std.mem.startsWith(u8, type_value, "Option<") and type_value.len > 7) {
+        const inner = type_value[7 .. type_value.len - 1];
+        const inner_mapped = mapType(inner);
+        if (std.mem.eql(u8, inner_mapped, "[]const u8")) return "?[]const u8";
+        if (std.mem.eql(u8, inner_mapped, "i64")) return "?i64";
+        if (std.mem.eql(u8, inner_mapped, "f64")) return "?f64";
+        if (std.mem.eql(u8, inner_mapped, "bool")) return "?bool";
+        if (std.mem.eql(u8, inner_mapped, "usize")) return "?usize";
+        return "?[]const u8"; // fallback
+    }
 
     // Return raw Zig type as-is (e.g., [256]u8, usize, u16, etc.)
     return type_value;
@@ -481,8 +479,8 @@ pub fn mapType(vibee_type: []const u8) []const u8 {
 test "SpecCompiler: compile empty spec" {
     const allocator = testing.allocator;
 
-    var spec = Spec.init(allocator);
-    defer spec.deinit();
+    var spec = Spec{};
+    defer spec.deinit(allocator);
     spec.name = "test_spec";
     spec.version = "1.0.0";
 
@@ -499,17 +497,17 @@ test "SpecCompiler: compile empty spec" {
 test "SpecCompiler: compile with types" {
     const allocator = testing.allocator;
 
-    var spec = Spec.init(allocator);
-    defer spec.deinit();
+    var spec = Spec{};
+    defer spec.deinit(allocator);
     spec.name = "user_spec";
     spec.version = "1.0.0";
 
-    var user_type = TypeDef.init(allocator);
+    var user_type = TypeDef{};
     user_type.name = "User";
     user_type.description = "User entity";
-    try user_type.fields.append(Field{ .name = "id", .type_name = "Int" });
-    try user_type.fields.append(Field{ .name = "name", .type_name = "String" });
-    try spec.types.append(user_type);
+    try user_type.fields.append(allocator, Field{ .name = "id", .type_name = "Int" });
+    try user_type.fields.append(allocator, Field{ .name = "name", .type_name = "String" });
+    try spec.types.append(allocator, user_type);
 
     var compiler = SpecCompiler.init(allocator);
     defer compiler.deinit();
@@ -527,18 +525,18 @@ test "SpecCompiler: compile with types" {
 test "SpecCompiler: compile with behaviors" {
     const allocator = testing.allocator;
 
-    var spec = Spec.init(allocator);
-    defer spec.deinit();
+    var spec = Spec{};
+    defer spec.deinit(allocator);
     spec.name = "behavior_spec";
     spec.version = "1.0.0";
 
-    var behavior = Behavior.init(allocator);
+    var behavior = Behavior{};
     behavior.name = "create_user";
     behavior.given = "Valid user data";
     behavior.when = "create_user is called";
     behavior.then = "Return new User";
     behavior.pas_pattern = "PRE";
-    try spec.behaviors.append(behavior);
+    try spec.behaviors.append(allocator, behavior);
 
     var compiler = SpecCompiler.init(allocator);
     defer compiler.deinit();
@@ -556,22 +554,22 @@ test "SpecCompiler: compile with behaviors" {
 test "SpecCompiler: compile with test_cases" {
     const allocator = testing.allocator;
 
-    var spec = Spec.init(allocator);
-    defer spec.deinit();
+    var spec = Spec{};
+    defer spec.deinit(allocator);
     spec.name = "test_spec";
     spec.version = "1.0.0";
 
-    var behavior = Behavior.init(allocator);
+    var behavior = Behavior{};
     behavior.name = "calculate";
     behavior.given = "Numbers";
     behavior.when = "calculate is called";
     behavior.then = "Return result";
-    try behavior.test_cases.append(TestCase{
+    try behavior.test_cases.append(allocator, TestCase{
         .name = "test_basic",
         .input = "{\"a\": 1}",
         .expected = "1",
     });
-    try spec.behaviors.append(behavior);
+    try spec.behaviors.append(allocator, behavior);
 
     var compiler = SpecCompiler.init(allocator);
     defer compiler.deinit();
@@ -585,39 +583,52 @@ test "SpecCompiler: compile with test_cases" {
 }
 
 test "SpecCompiler: type mapping" {
+    // Basic types
     try testing.expectEqualStrings("[]const u8", mapType("String"));
     try testing.expectEqualStrings("i64", mapType("Int"));
     try testing.expectEqualStrings("f64", mapType("Float"));
     try testing.expectEqualStrings("bool", mapType("Bool"));
     try testing.expectEqualStrings("CustomType", mapType("CustomType"));
+
+    // List<T> generic types (FIXED)
+    try testing.expectEqualStrings("[]const u8", mapType("List<String>"));
+    try testing.expectEqualStrings("[]const i64", mapType("List<Int>"));
+    try testing.expectEqualStrings("[]const f64", mapType("List<Float>"));
+    try testing.expectEqualStrings("[]const bool", mapType("List<Bool>"));
+
+    // Option<T> generic types (FIXED)
+    try testing.expectEqualStrings("?[]const u8", mapType("Option<String>"));
+    try testing.expectEqualStrings("?i64", mapType("Option<Int>"));
+    try testing.expectEqualStrings("?f64", mapType("Option<Float>"));
+    try testing.expectEqualStrings("?bool", mapType("Option<Bool>"));
 }
 
 test "SpecCompiler: stats tracking" {
     const allocator = testing.allocator;
 
-    var spec = Spec.init(allocator);
-    defer spec.deinit();
+    var spec = Spec{};
+    defer spec.deinit(allocator);
     spec.name = "stats_test";
     spec.version = "1.0.0";
 
     // Add 2 types
-    var type1 = TypeDef.init(allocator);
+    var type1 = TypeDef{};
     type1.name = "Type1";
-    try spec.types.append(type1);
+    try spec.types.append(allocator, type1);
 
-    var type2 = TypeDef.init(allocator);
+    var type2 = TypeDef{};
     type2.name = "Type2";
-    try spec.types.append(type2);
+    try spec.types.append(allocator, type2);
 
     // Add 1 behavior with 2 test cases
-    var behavior = Behavior.init(allocator);
+    var behavior = Behavior{};
     behavior.name = "test_behavior";
     behavior.given = "Given";
     behavior.when = "When";
     behavior.then = "Then";
-    try behavior.test_cases.append(TestCase{ .name = "test1", .input = "{}", .expected = "{}" });
-    try behavior.test_cases.append(TestCase{ .name = "test2", .input = "{}", .expected = "{}" });
-    try spec.behaviors.append(behavior);
+    try behavior.test_cases.append(allocator, TestCase{ .name = "test1", .input = "{}", .expected = "{}" });
+    try behavior.test_cases.append(allocator, TestCase{ .name = "test2", .input = "{}", .expected = "{}" });
+    try spec.behaviors.append(allocator, behavior);
 
     var compiler = SpecCompiler.init(allocator);
     defer compiler.deinit();

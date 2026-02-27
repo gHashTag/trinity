@@ -180,83 +180,119 @@ TRI v3.0 DASHBOARD
 
 ## multi-cluster
 
-Multi-cluster federation mode for distributed TRI CLI deployment.
-Coordinates multiple TRI CLI instances across nodes for parallel inference and coordinated $TRI reward distribution.
+DePIN Multi-Cluster Federation with 10 real subcommands and $TRI Proof of Useful Work (PoUW) reward integration. Implemented in Golden Chain #99.
 
-**Aliases:** `federation`, `multi_cluster`
+**Aliases:** `mc`
+
+**Spec:** `specs/depin/multi-cluster-full.vibee`
 
 ```bash
-tri multi-cluster                          # Show help
-tri multi-cluster initialize               # Initialize federation coordinator
-tri multi-cluster discover                 # Scan network for available TRI nodes
-tri multi-cluster add-node <options>        # Add new TRI CLI instance to cluster
-tri multi-cluster remove-node <node_id>     # Remove node from cluster
-tri multi-cluster status                    # Show cluster status
-tri multi-cluster sync                      # Trigger CRDT-based sync protocol
-tri multi-cluster federate <task_spec>       # Execute distributed computation task
-tri multi-cluster shutdown                   # Gracefully stop federation
-tri multi-cluster health-check               # Verify federation health
-tri multi-cluster list                     # List all registered nodes
-tri multi-cluster --version                # Show multi-cluster version
+tri multi-cluster                                          # Show help
+tri multi-cluster initialize [--port N] [--discovery-port N] # Create cluster, start coordinator
+tri multi-cluster discover [--timeout N]                    # Broadcast UDP discovery, find nodes
+tri multi-cluster add-node <address> [--port N] [--role R]  # Add node to cluster
+tri multi-cluster remove-node <node-id>                     # Remove node, claim pending $TRI
+tri multi-cluster status [--verbose]                        # Show cluster status + $TRI summary
+tri multi-cluster sync [--force]                            # Trigger CRDT synchronization
+tri multi-cluster federate <addr> [--sync-mode crdt|raft|gossip] # Link clusters for federation
+tri multi-cluster shutdown [--force] [--drain]              # Graceful shutdown + final $TRI claim
+tri multi-cluster health-check                              # Ping nodes, validate CRDT, needle check
+tri multi-cluster list [--format table|json]                # List all nodes with stats
 ```
 
 ### Subcommands
 
 | Subcommand | Description |
 |------------|-------------|
-| `initialize` | Initialize federation mode with cluster node registry |
-| `discover` | Scan network for available TRI nodes with capabilities and status |
-| `add-node` | Register new node in cluster (requires --node-id, --address, --role) |
-| `remove-node` | Remove node from cluster (requires node_id and reason) |
-| `status` | Show role distribution, active/standby counts, health status |
-| `sync` | Trigger CRDT-based sync, propagate config, verify convergence |
-| `federate` | Decompose task into sub-tasks, assign to workers, monitor execution |
-| `shutdown` | Notify all nodes, drain tasks, persist state, close coordinator |
-| `health-check` | Query health, verify CRDT sync, check resource utilization |
-| `list` | Return node registry with roles, status, capabilities |
-| `--version` | Show multi-cluster version and protocol info |
+| `initialize` | Create cluster, start coordinator, bind discovery + job ports |
+| `discover` | Broadcast UDP discovery packet, collect responses, print node table |
+| `add-node` | Connect to node, validate handshake, sync CRDT state, init $TRI wallet |
+| `remove-node` | Gracefully disconnect, redistribute work, claim pending $TRI rewards |
+| `status` | Show node count, online/offline, operations, $TRI earned, health score |
+| `sync` | Trigger CRDT synchronization (delta or force full state transfer) |
+| `federate` | Establish federation link, merge CRDT states, pool $TRI, enable cross-cluster dispatch |
+| `shutdown` | Stop nodes, claim pending $TRI, persist CRDT state, print final reward summary |
+| `health-check` | Ping all nodes, check heartbeats, validate CRDT, report needle status |
+| `list` | List all nodes with ID, address, role, status, operations, $TRI earned |
 
-### Options
+### Example: Initialize + Health Check
 
-| Option | Default | Description |
-|--------|----------|-------------|
-| `--mode <mode>` | federation | Federation mode (coordinator/worker) |
-| `--config <path>` | — | Cluster config file path |
-| `--node-id <id>` | — | Node identifier (UUID or hostname) |
-| `--address <host:port>` | — | Node address for registration |
-| `--role <role>` | — | Coordinator or Worker |
-| `--max-nodes <n>` | 100 | Maximum nodes in federation |
-| `--sync-interval <s>` | 300 | Sync interval in seconds |
+```
+$ tri multi-cluster initialize --port 9334 --discovery-port 9333
 
-### Federation Types
+═══════════════════════════════════════════════════════
+  MULTI-CLUSTER INITIALIZE
+═══════════════════════════════════════════════════════
 
-| Type | Role | Description |
-|------|-------|-------------|
-| Coordinator | leader | Manages cluster registry, task distribution, load balancing |
-| Worker | executor | Runs inference tasks, reports results to coordinator |
+  Cluster ID:      mc-9334-9333
+  Role:            Coordinator
+  Job Port:        TCP 9334
+  Discovery Port:  UDP 9333
+  CRDT Sync:       Enabled (interval: 1000ms)
+  $TRI Wallet:     Initialized
+  PoUW Engine:     Active (reward: 0.0010 $TRI/op)
+
+Cluster initialized. Listening for nodes...
+
+$ tri multi-cluster health-check
+
+═══════════════════════════════════════════════════════
+  CLUSTER HEALTH CHECK
+═══════════════════════════════════════════════════════
+
+  [1/4] Node heartbeats...  OK
+  [2/4] CRDT consistency... OK
+  [3/4] PoUW engine...      OK
+  [4/4] $TRI ledger...      OK
+
+  Health Score:  1.000
+  Threshold:    0.618 (phi^-1)
+  Needle:       SHARP (KOSCHEI BESSMERTEN!)
+```
+
+### Network Ports
+
+| Port | Protocol | Purpose |
+|------|----------|---------|
+| 9333 | UDP | Node discovery (broadcast) |
+| 9334 | TCP | Job distribution + results |
+| 8080 | HTTP | REST API + dashboard |
+
+### $TRI PoUW Rewards
+
+Nodes earn $TRI tokens for compute contributions via Proof of Useful Work:
+
+| Operation | Reward |
+|-----------|--------|
+| PoUW computation | 0.001 $TRI/op |
+| Benchmark | 0.005 $TRI/bench |
+| CRDT sync | 0.0001 $TRI/sync |
+
+**Tier multipliers** (stake-based):
+
+| Tier | Stake | Multiplier |
+|------|-------|------------|
+| FREE | 0 | 1.0x |
+| STAKER | 100+ $TRI | 1.5x |
+| POWER | 1,000+ $TRI | 2.0x |
+| WHALE | 10,000+ $TRI | 3.0x |
 
 ### CRDT-Based Synchronization
 
 - **Conflict-free replication** using CRDT (Conflict-Free Replicated Data Types)
 - **Automatic convergence** without leader election conflicts
-- **State sync interval**: 300 seconds (configurable)
-- **Leader election**: Enabled by default
+- **Sync modes**: `crdt` (default), `raft`, `gossip`
+- **Sync interval**: 1000ms (configurable)
 
-### Protocol Version
+### Needle Status (Health Gate)
 
-- **Current**: v1.0.0
-- **Trinity identity**: φ² + 1/φ² = 3
+Health score is checked against the golden threshold (phi^-1 = 0.618):
 
-
-RECENT COMMITS
-    (git log --oneline -5)
-
-  TECH TREE
-    Level 0: Core        ✓
-    Level I: VSA         ✓
-    ...
-    Level X: Eternity    ← CURRENT
-```
+| Status | Condition | Message |
+|--------|-----------|---------|
+| Sharp | score >= 0.618 | KOSCHEI BESSMERTEN! |
+| Dulling | 0 \< score \< 0.618 | Igla tupitsya |
+| Broken | score \<= 0 | REGRESSIYA! |
 
 ## omega
 

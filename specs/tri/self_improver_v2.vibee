@@ -1,9 +1,9 @@
 name: self_improver_v2
-version: "3.5.0"
+version: "3.6.0"
 language: zig
 module: self_improver_v2
 description: |
-  Self-Improver v2 with Adam Optimizer for TRI MATH v3.5.
+  Self-Improver v2 with Adam Optimizer for TRI MATH v3.6.
   Adaptive moment estimation with EWC++ consolidation.
   φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
 
@@ -56,6 +56,21 @@ types:
       quality: Float
       state_snapshot: String
 
+  AdamOptimizer:
+    description: "Adam optimizer with adaptive moment estimates"
+    fields:
+      m: Float
+      v: Float
+      beta_1: Float
+      beta_2: Float
+      t: Int
+
+  ImportanceWeights:
+    description: "Per-parameter importance weights for EWC"
+    fields:
+      weights: List<Float>
+      fisher_matrices: List<Float>
+
 behaviors:
   - name: adam_step
     given: >
@@ -64,6 +79,35 @@ behaviors:
       Adam optimizer step is triggered
     then: >
       Return updated parameters with adaptive learning rate
+    implementation: |
+      // Adam optimizer update with bias-corrected moment estimates
+      const beta_1_t = if (optimizer.t < 7) @as(f64, @floatFromInt(optimizer.t)) / (ADAM_BETA_1 - 1.0) else ADAM_BETA_1;
+      const beta_2_t = if (optimizer.t < 7) @as(f64, @floatFromInt(optimizer.t)) / (ADAM_BETA_2 - 1.0) else ADAM_BETA_2;
+
+      const biased_first_moment = (1.0 - beta_1_t) * gradient;
+      const biased_second_moment = (1.0 - beta_2_t) * gradient * gradient;
+
+      // Update first and second moments
+      optimizer.m += biased_first_moment;
+      optimizer.v = @sqrt(optimizer.v * (1.0 - beta_2_t) + biased_second_moment + biased_second_moment);
+      optimizer.t += 1;
+
+      // Bias correction
+      const bias_correction = @sqrt(1.0 - beta_1_t) / (1.0 - beta_2_t);
+      optimizer.m *= bias_correction;
+      optimizer.v *= bias_correction;
+
+      // Phi-weighted learning rate adjustment
+      const lr_factor = 1.0 - (current_loss * PHI_INV * 0.5);
+      const adaptive_lr = LEARNING_RATE * lr_factor;
+
+      return AdamOptimizer{
+          .m = optimizer.m,
+          .v = optimizer.v,
+          .beta_1 = beta_1_t,
+          .beta_2 = beta_2_t,
+          .t = optimizer.t + 1,
+      };
 
   - name: ewc_synapse
     given: >
@@ -72,6 +116,24 @@ behaviors:
       EWC consolidation is needed
     then: >
       Return consolidated synapse with omega parameter
+    implementation: |
+      // EWC++: Improved consolidation with Fisher information and phi-weighting
+      const fisher_info_sq = fisher_info * fisher_info;
+      const omega = 1.0 / (1.0 + @exp(-fisher_info_sq / EWC_LAMBDA));
+
+      // Phi-weighted importance: higher importance for more certain parameters
+      const certainty = 1.0 - omega;
+      const phi_weight = 1.0 + certainty * PHI_INV;
+
+      // Apply omega penalty with phi scaling
+      const weighted_importance = importance * (1.0 + omega * phi_weight);
+
+      return EWCSynapse{
+          .weight_id = weight_id,
+          .fisher_info = fisher_info,
+          .omega = omega,
+          .importance = weighted_importance,
+      };
 
   - name: gradient_descent
     given: >
@@ -80,6 +142,14 @@ behaviors:
       Gradient descent optimization starts
     then: >
       Return optimized parameters after convergence
+    implementation: |
+      // Initialize SGD state with momentum
+      return GradientDescentState{
+          .m = initial_m,
+          .v = 0.0,
+          .t = 0,
+          .learning_rate = LEARNING_RATE,
+      };
 
   - name: momentum_update
     given: >
@@ -88,6 +158,19 @@ behaviors:
       Momentum update is scheduled
     then: >
       Return updated velocity with momentum coefficient
+    implementation: |
+      // Phi-weighted momentum coefficient
+      const momentum_phi = PHI_INV * 0.9;
+
+      // Velocity update: v = momentum_phi * v - lr * gradient
+      const velocity = (state.v * momentum_phi) - (state.learning_rate * gradient);
+
+      return GradientDescentState{
+          .m = state.m - (velocity * state.learning_rate),
+          .v = velocity,
+          .t = state.t + 1,
+          .learning_rate = state.learning_rate,
+      };
 
   - name: trajectory
     given: >
@@ -96,6 +179,19 @@ behaviors:
       Trajectory recording is active
     then: >
       Return TrajectoryStep with quality metrics
+    implementation: |
+      // Calculate trajectory quality with phi-weighted evaluation
+      const action_impact = @abs(result_score - previous_result_score);
+      const quality_base = 0.7 * (1.0 - action_impact);
+      const phi_bonus = quality_base * (PHI - 1.0);
+
+      return TrajectoryStep{
+          .step_id = @as(u64, @intCast(state.t)),
+          .action = action,
+          .result = result,
+          .quality = quality_base + phi_bonus,
+          .state_snapshot = try std.fmt.allocPrintZ(allocator, "t={d},m={d:.3}", .{state.t, state.m}),
+      };
 
   - name: clip_gradients
     given: >
@@ -104,6 +200,21 @@ behaviors:
       Gradient clipping is applied
     then: >
       Return clipped gradients within threshold
+    implementation: |
+      // Clip gradients using L2 norm with phi threshold
+      const grad_norm_sq = gradient[0] * gradient[0] + gradient[1] * gradient[1];
+      const grad_norm = @sqrt(grad_norm_sq);
+
+      // Phi-adaptive clipping: dynamic threshold based on training progress
+      const clip_threshold = GRADIENT_CLIP_NORM * (1.0 + state.t * PHI_INV * 0.01);
+
+      if (grad_norm > clip_threshold) {
+          const scale = clip_threshold / grad_norm;
+          gradient[0] *= scale;
+          gradient[1] *= scale;
+      }
+
+      return gradient;
 
   - name: consolidate
     given: >
@@ -112,3 +223,29 @@ behaviors:
       Catastrophic forgetting prevention runs
     then: >
       Return consolidated model with EWC penalties
+    implementation: |
+      // EWC++: Enhanced consolidation with phi-weighted regularization
+      var consolidated_weights = std.ArrayList(Float).init(allocator);
+      var total_penalty: f64 = 0.0;
+
+      for (previous_tasks) |task| {
+          const penalty = task.loss * task.gradient_norm * EWC_OMEGA * task.importance;
+          total_penalty += penalty;
+
+          const weight_adjustment = if (task.importance > 0.5)
+              current_weights[task.weight_id] * (1.0 - task.importance * PHI_INV * 0.1)
+          else
+              current_weights[task.weight_id];
+
+          try consolidated_weights.append(weight_adjustment);
+      }
+
+      // Apply phi-consistency penalty
+      const phi_penalty = @abs(@divTrunc(@as(u64, @intCast(consolidated_weights.items.len)), 10) - PHI) * 0.01;
+      total_penalty += phi_penalty;
+
+      return ConsolidatedModel{
+          .weights = consolidated_weights,
+          .ewc_penalty = total_penalty,
+          .phi_consistency = 1.0 - phi_penalty,
+      };

@@ -5,7 +5,7 @@ sidebar_label: Overview
 
 # TRI CLI Reference
 
-**TRI CLI** is the unified command-line interface for the entire Trinity ecosystem. One binary, **161 commands** with **240+ aliases** (total 230+ unique triggers) across 96 development cycles — covering AI chat, code generation, SWE agent, sacred math, swarm orchestration, VIBEE compilation, and more.
+**TRI CLI** is the unified command-line interface for the entire Trinity ecosystem. One binary, **171+ commands** with **240+ aliases** (total 230+ unique triggers) across 96 development cycles — covering AI chat, code generation, SWE agent, sacred math, swarm orchestration, VIBEE compilation, and more.
 
 ```
 phi^2 + 1/phi^2 = 3 = TRINITY
@@ -42,6 +42,9 @@ zig build tri -- <command> [args]
 | [Swarm](/cli/swarm) | `swarm`, `agents-auto`, `marketplace`, `omega`, `control`, `dashboard`, `rewards`, `eternity`, `infinity`, `apotheosis`, `omega-point`, `convergence`, `universal`, `absolute`, `final`, `end-of-cycles` | Agent orchestration, $TRI economy, Cycles 94-96 |
 | [Demos](/cli/demos) | `*-demo`, `*-bench` + short aliases | 36 demo/benchmark pairs across Cycles 20-52 |
 | [Autonomous](/cli/autonomous) | `full-autonomous` | Comprehensive 5-step system health report |
+| [Interactive REPL](/cli/repl) | `/chat`, `/code`, `/fix`, `/quit` | REPL mode, mode/language switching, session stats |
+| [TVC Learning](/cli/tvc) | `tvc-demo`, `tvc-stats` | Distributed learning corpus (10K entries, zero-forgetting) |
+| [Sacred Constants](/cli/constants) | `constants`, `math exotic`, `math physical` | 76+ mathematical and physics constants reference |
 
 ## Interactive REPL
 
@@ -91,6 +94,55 @@ TRI CLI is built from 6 Zig modules:
 | **Math** | `src/tri/tri_math.zig` | Sacred math module |
 | **Strict** | `src/tri/tri_strict.zig` | VIBEE-first strict mode |
 | **Demos** | `src/tri/tri_demos.zig` | All demo and benchmark functions |
+
+## Quick Start
+
+```bash
+# 1. Build TRI CLI
+zig build tri
+
+# 2. Start interactive REPL
+./zig-out/bin/tri
+
+# 3. Or run a specific command
+./zig-out/bin/tri chat "Hello, Trinity!"
+./zig-out/bin/tri phi 10
+./zig-out/bin/tri pipeline run "add new feature"
+./zig-out/bin/tri doctor
+```
+
+## Command Flow
+
+```
+User Input
+    │
+    ├── No args ──────────→ Interactive REPL (tri_utils.zig)
+    │                        ├── /chat, /code, /fix ...
+    │                        └── /quit to exit
+    │
+    ├── chat/code ─────────→ Multi-modal Chat (IglaHybridChat)
+    │                        ├── TVC corpus check (hit/miss)
+    │                        ├── Groq/Claude/OpenAI/local GGUF
+    │                        └── --stream, --image, --voice
+    │
+    ├── fix/explain/test ──→ SWE Agent (TrinitySWEAgent)
+    │   doc/refactor/reason  └── Language: Zig/Python/Rust/JS
+    │
+    ├── pipeline/decompose → Golden Chain (17 links)
+    │   plan/verify/verdict  └── TVC gate → spec → gen → test → bench → verdict
+    │
+    ├── math/phi/fib ──────→ Sacred Math Engine (40+ commands)
+    │   lucas/spiral          └── Cycles 82-90
+    │
+    ├── status/diff/log ───→ Git Integration (child process)
+    │   commit
+    │
+    ├── *-demo/*-bench ────→ Demo Engine (52+ cycles)
+    │                        └── Needle Check: threshold = phi^-1 = 0.618
+    │
+    └── swarm/omega/... ───→ Swarm & Economy ($TRI)
+                             └── 16 agents, marketplace, staking
+```
 
 ## Version
 

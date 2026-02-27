@@ -1,0 +1,158 @@
+name: multi_cluster_full
+version: "1.0.0"
+language: zig
+module: multi_cluster
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MULTI-CLUSTER FULL — 10 Real Subcommands + $TRI PoUW Integration
+# Golden Chain #99 | φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# DePIN Multi-Cluster Federation with Proof of Useful Work (PoUW)
+# Nodes earn $TRI tokens for compute contributions.
+#
+# Architecture:
+#   Coordinator ──► Workers (CRDT sync)
+#   UDP 9333: Node discovery (broadcast)
+#   TCP 9334: Job distribution + results
+#   HTTP 8080: REST API + dashboard
+#   Prometheus 9090: Metrics export
+#
+# Token: $TRI (3^21 × 10^18 total supply)
+# Threshold: φ^-1 = 0.618 (Needle quality gate)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  NodeRole:
+    fields:
+      role: String  # coordinator | worker | storage
+
+  NodeInfo:
+    fields:
+      id: String
+      address: String
+      port: Int
+      role: String
+      status: String  # offline | syncing | online | earning
+      uptime_seconds: Int
+      operations_count: Int
+      earned_tri: Float
+
+  ClusterConfig:
+    fields:
+      cluster_id: String
+      coordinator_address: String
+      coordinator_port: Int
+      discovery_port: Int
+      job_port: Int
+      max_nodes: Int
+      crdt_sync_interval_ms: Int
+      phi_threshold: Float  # 0.618
+
+  ClusterStatus:
+    fields:
+      cluster_id: String
+      node_count: Int
+      online_nodes: Int
+      total_operations: Int
+      total_tri_earned: Float
+      uptime_hours: Float
+      health_score: Float
+
+  FederationConfig:
+    fields:
+      clusters: List<String>
+      sync_mode: String  # crdt | raft | gossip
+      reward_pool_tri: Float
+      metal_enabled: Bool
+      gguf_model_path: Option<String>
+
+  RewardSummary:
+    fields:
+      node_id: String
+      operations: Int
+      base_reward_tri: Float
+      tier_multiplier: Float
+      total_reward_tri: Float
+      tier: String  # FREE | STAKER | POWER | WHALE
+
+behaviors:
+  - name: initialize
+    given: ClusterConfig with coordinator address and ports
+    when: User runs "tri multi-cluster initialize [--port N] [--discovery-port N]"
+    then: Creates cluster, starts coordinator, binds discovery + job ports, prints cluster ID and status
+    test_cases:
+      - input: "initialize --port 9334 --discovery-port 9333"
+        expected: "Cluster initialized with coordinator on port 9334"
+
+  - name: discover
+    given: Cluster is initialized and discovery port is listening
+    when: User runs "tri multi-cluster discover [--timeout N]"
+    then: Broadcasts UDP discovery packet, collects responses for timeout seconds, prints discovered nodes table
+    test_cases:
+      - input: "discover --timeout 5"
+        expected: "Discovery complete. Found N nodes."
+
+  - name: add_node
+    given: Cluster is initialized
+    when: User runs "tri multi-cluster add-node <address> [--port N] [--role worker|storage]"
+    then: Connects to node, validates handshake, adds to cluster, syncs CRDT state, prints confirmation with $TRI wallet
+    test_cases:
+      - input: "add-node 192.168.1.10 --port 9334 --role worker"
+        expected: "Node added: 192.168.1.10:9334 (worker)"
+
+  - name: remove_node
+    given: Node exists in cluster
+    when: User runs "tri multi-cluster remove-node <node-id>"
+    then: Gracefully disconnects node, redistributes work, finalizes pending $TRI rewards, removes from CRDT
+    test_cases:
+      - input: "remove-node node-alpha"
+        expected: "Node node-alpha removed. Pending rewards: 0.005 $TRI claimed."
+
+  - name: status
+    given: Cluster exists
+    when: User runs "tri multi-cluster status [--verbose]"
+    then: Prints cluster status table with node count, online/offline, total operations, $TRI earned, health score
+    test_cases:
+      - input: "status"
+        expected: "Cluster status: N nodes, M online, health: 0.95"
+
+  - name: sync
+    given: Cluster has multiple nodes
+    when: User runs "tri multi-cluster sync [--force]"
+    then: Triggers CRDT synchronization across all nodes, reports sync status and conflict resolution
+    test_cases:
+      - input: "sync"
+        expected: "CRDT sync complete. N entries synchronized."
+
+  - name: federate
+    given: Multiple clusters exist
+    when: User runs "tri multi-cluster federate <cluster-address> [--sync-mode crdt|raft|gossip]"
+    then: Establishes federation link, merges CRDT states, pools $TRI rewards, enables cross-cluster job dispatch
+    test_cases:
+      - input: "federate 10.0.1.1:9334 --sync-mode crdt"
+        expected: "Federation established with cluster at 10.0.1.1:9334"
+
+  - name: shutdown
+    given: Cluster is running
+    when: User runs "tri multi-cluster shutdown [--force] [--drain]"
+    then: Gracefully stops all nodes, claims pending $TRI, persists CRDT state, prints final reward summary
+    test_cases:
+      - input: "shutdown --drain"
+        expected: "Cluster shutdown. Total $TRI distributed: N.NNN"
+
+  - name: health_check
+    given: Cluster is running
+    when: User runs "tri multi-cluster health-check"
+    then: Pings all nodes, checks heartbeats, validates CRDT consistency, reports health score (0-1) vs phi^-1 threshold
+    test_cases:
+      - input: "health-check"
+        expected: "Health: 0.95 (threshold: 0.618) — NEEDLE SHARP"
+
+  - name: list
+    given: Cluster has nodes
+    when: User runs "tri multi-cluster list [--format table|json]"
+    then: Lists all nodes with ID, address, role, status, operations, $TRI earned
+    test_cases:
+      - input: "list"
+        expected: "N nodes in cluster"

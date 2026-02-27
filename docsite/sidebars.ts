@@ -38,6 +38,9 @@ const sidebars: SidebarsConfig = {
         'cli/demos',
         'cli/autonomous',
         'cli/audit',
+        'cli/repl',
+        'cli/tvc',
+        'cli/constants',
       ],
     },
     {
@@ -143,6 +146,7 @@ const sidebars: SidebarsConfig = {
       items: [
         'math-foundations/index',
         'math-foundations/formulas',
+        'math-foundations/sacred-formulas',
         'math-foundations/proofs',
       ],
     },

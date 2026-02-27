@@ -21,7 +21,7 @@ Runs 5 independent health checks and produces a unified status report:
 
 | # | Check | Command | What it verifies |
 |---|-------|---------|-----------------|
-| 1 | Doctor | `tri doctor` | System diagnostics (8 checks: Zig compiler, build.zig, main.zig, colors, binary, specs, core tests, VM tests) |
+| 1 | Doctor | `tri doctor` | System diagnostics (5 checks: Zig version, Compiler, Std Lib, Allocator, Build) |
 | 2 | Tests | `tri test` | All test suites pass (VSA, VM, integration) |
 | 3 | Strict | `tri strict` | VIBEE-first compliance (no manual code in protected dirs) |
 | 4 | Swarm | `tri swarm` | Agent health (16 agents, CRDT sync, connectivity) |
