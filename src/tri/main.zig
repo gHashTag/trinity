@@ -223,6 +223,9 @@ pub fn main() !void {
         .formula_cmd => math_commands.runFormulaCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Formula error: {}\n", .{err});
         },
+        .sacred => math_commands.runSacredCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Sacred error: {}\n", .{err});
+        },
         // Dev Utilities
         .doctor => try commands.runDoctorCommand(allocator),
         .clean => try commands.runCleanCommand(allocator),

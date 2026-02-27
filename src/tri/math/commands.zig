@@ -84,6 +84,8 @@ pub fn runMathCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         try gematria_math.runGematriaCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "formula")) {
         try runFormulaCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "sacred")) {
+        try runSacredCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "help")) {
         try showMathHelp();
     } else {
@@ -236,7 +238,7 @@ pub fn runFormulaCommand(allocator: std.mem.Allocator, args: []const []const u8)
     _ = allocator;
     if (args.len == 0) {
         std.debug.print("Usage: tri formula <number>\n", .{});
-        std.debug.print("  Decompose a number using Sacred Formula V = n \xc3\x97 3^k \xc3\x97 \xcf\x80^m \xc3\x97 \xcf\x86^p \xc3\x97 e^q\n", .{});
+        std.debug.print("  Decompose a number using Sacred Formula V = n × 3^k × π^m × φ^p × e^q\n", .{});
         return;
     }
     const value = std.fmt.parseFloat(f64, args[0]) catch {
@@ -247,11 +249,30 @@ pub fn runFormulaCommand(allocator: std.mem.Allocator, args: []const []const u8)
     sacred_formula.printSacredFormulaFit(fit, value);
 }
 
+pub fn runSacredCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    if (args.len > 0 and std.mem.eql(u8, args[0], "search")) {
+        if (args.len < 2) {
+            std.debug.print("Usage: tri sacred search <value>\n", .{});
+            std.debug.print("  Brute-force search for sacred formula fit\n", .{});
+            return;
+        }
+        const value = std.fmt.parseFloat(f64, args[1]) catch {
+            std.debug.print("Error: '{s}' is not a valid number\n", .{args[1]});
+            return;
+        };
+        const fit = sacred_formula.fitSacredFormula(value);
+        sacred_formula.printSacredFormulaFit(fit, value);
+    } else {
+        sacred_formula.printSacredConstantsTable();
+    }
+}
+
 fn showMathHelp() !void {
     var wr = DirectWriter{};
     try wr.writeAll("+====================================================================+\n");
     try wr.writeAll("|                    SACRED MATHEMATICS v3.6                          |\n");
-    try wr.writeAll("|            V = n \xc3\x97 3^k \xc3\x97 \xcf\x80^m \xc3\x97 \xcf\x86^p \xc3\x97 e^q                       |\n");
+    try wr.writeAll("|            V = n × 3^k × π^m × φ^p × e^q                       |\n");
     try wr.writeAll("|                phi^2 + 1/phi^2 = 3 = TRINITY                       |\n");
     try wr.writeAll("+====================================================================+\n");
     try wr.writeAll("\n");
@@ -268,6 +289,8 @@ fn showMathHelp() !void {
     try wr.writeAll("  tri math identities             Show phi-identities\n");
     try wr.writeAll("  tri math gematria <number|text> Coptic gematria + sacred formula\n");
     try wr.writeAll("  tri math formula <value>        Sacred formula decomposition\n");
+    try wr.writeAll("  tri math sacred                 Show 32 constants + 9 predictions\n");
+    try wr.writeAll("  tri math sacred search <value>  Search formula for any value\n");
     try wr.writeAll("\n");
     try wr.writeAll("  ALIASES (Quick Access)\n");
     try wr.writeAll("  ----------------------------------------------------------------\n");
@@ -279,6 +302,7 @@ fn showMathHelp() !void {
     try wr.writeAll("  tri verify         Same as 'tri math compute verify'\n");
     try wr.writeAll("  tri gematria <n>   Same as 'tri math gematria <n>'\n");
     try wr.writeAll("  tri formula <v>    Same as 'tri math formula <v>'\n");
+    try wr.writeAll("  tri sacred         Same as 'tri math sacred'\n");
     try wr.writeAll("\n");
     try wr.writeAll("  FLAGS\n");
     try wr.writeAll("  ----------------------------------------------------------------\n");

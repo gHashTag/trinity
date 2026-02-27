@@ -177,6 +177,7 @@ pub const Command = enum {
     spiral,
     gematria,
     formula_cmd,
+    sacred,
     // Dev Utilities
     doctor,
     clean,
@@ -532,6 +533,7 @@ pub fn printHelp() void {
     std.debug.print("  {s}spiral{s} <n>                   phi-spiral coordinates\n", .{ GREEN, RESET });
     std.debug.print("  {s}gematria{s} <number|text>       Coptic gematria + sacred formula\n", .{ GREEN, RESET });
     std.debug.print("  {s}formula{s} <value>              Sacred formula decomposition\n", .{ GREEN, RESET });
+    std.debug.print("  {s}sacred{s}                      32 constants + 9 predictions table\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
     std.debug.print("{s}DEV UTILITIES:{s}\n", .{ CYAN, RESET });
@@ -729,6 +731,7 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "spiral")) return .spiral;
     if (std.mem.eql(u8, arg, "gematria") or std.mem.eql(u8, arg, "gem")) return .gematria;
     if (std.mem.eql(u8, arg, "formula")) return .formula_cmd;
+    if (std.mem.eql(u8, arg, "sacred")) return .sacred;
     // Dev Utilities
     if (std.mem.eql(u8, arg, "doctor") or std.mem.eql(u8, arg, "dr")) return .doctor;
     if (std.mem.eql(u8, arg, "clean")) return .clean;
