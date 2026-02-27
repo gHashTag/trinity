@@ -1,0 +1,93 @@
+name: treesitter_improvements
+version: "1.0.0"
+language: zig
+module: treesitter_improvements
+
+constants:
+  - name: TS_VERSION
+    value: "0.24.0"
+  - name: AST_HEALTH_THRESHOLD
+    value: 0.92
+  - name: MAX_SCOPE_DEPTH
+    value: 64
+
+types:
+  AnalysisMode:
+    fields:
+      string_based: Bool
+      ast_treesitter: Bool
+      ast_fallback: Bool
+
+  TSIntegrationStatus:
+    fields:
+      bindings_ok: Bool
+      grammar_loaded: Bool
+      analyzer_active: Bool
+      compliance_pct: Float
+      mode: String
+
+  ASTCheckResult:
+    fields:
+      check_name: String
+      severity: String
+      line: Int
+      message: String
+
+  ComplianceReport:
+    fields:
+      total_functions: Int
+      compliant_functions: Int
+      violations: List<String>
+      compliance_pct: Float
+      mode: String
+
+behaviors:
+  - name: check_treesitter_availability
+    given: Tree-sitter C library may or may not be installed
+    when: System checks for libtree-sitter at build time
+    then: Returns boolean indicating availability, graceful fallback
+
+  - name: run_string_analysis
+    given: Source code text as input
+    when: String-based idiom analyzer runs 4 checks (duplicate params, unused allocator, empty structs, missing errdefer)
+    then: Returns list of violations with severity levels
+
+  - name: run_ast_analysis
+    given: Source code text and tree-sitter grammar available
+    when: AST-based analyzer runs 5 checks (shadowing, scope-aware defer, comptime misuse, missing return paths, missing type annotations)
+    then: Returns list of violations merged with string-based results
+
+  - name: merge_analysis_reports
+    given: String-based report and AST-based report
+    when: Unified analyzer merges both into single compliance report
+    then: Returns combined report with total compliance percentage
+
+  - name: validate_phi_gate
+    given: Generated code compliance report
+    when: PAS score >= 0.950 threshold
+    then: Code passes phi gate validation
+
+  - name: wire_ast_nodes_pipeline
+    given: ast_nodes.zig with Zig 0.15 ArrayList migration needed
+    when: Symbol extraction integrated into ts_bridge
+    then: Symbols available for semantic search and indexing
+
+  - name: compile_zig_grammar
+    given: tree-sitter-zig grammar source
+    when: Grammar compiled to shared library
+    then: Real AST parsing enabled instead of NULL stub
+
+  - name: create_vibee_grammar
+    given: .vibee specification format definition
+    when: tree-sitter grammar for .vibee created
+    then: .vibee files can be parsed into AST for validation
+
+  - name: detect_variable_shadowing
+    given: Zig source code with nested scopes
+    when: AST walker tracks variable declarations per scope
+    then: Warns when inner scope shadows outer variable name
+
+  - name: detect_missing_defer
+    given: Zig source code with allocations
+    when: AST finds alloc/create/init without matching defer/errdefer
+    then: Reports missing cleanup as medium severity violation

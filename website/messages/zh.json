@@ -935,7 +935,17 @@
     "modeGematria": "字母数值学",
     "gematriaPlaceholder": "数字或科普特文字...",
     "gematriaDecompose": "解码",
-    "sacredFit": "神圣公式"
+    "sacredFit": "神圣公式",
+    "modeManual": "参数 \u2192 值",
+    "compute": "计算",
+    "validationRequired": "必填",
+    "validationInteger": "必须为整数",
+    "validationRange_n": "n: 1\u20139",
+    "validationRange_k": "k: -4\u20264",
+    "validationRange_m": "m: -3\u20260",
+    "validationRange_p": "p: -4\u20264",
+    "validationRange_q": "q: -3\u20263",
+    "validationPositive": "请输入正数"
   },
   "holographic": {
     "title": "全息渲染器 v3.1",
@@ -983,8 +993,7 @@
   "stickyCta": {
     "invest": "立即投资",
     "calculator": "节省计算器"
-  }
-}  },
+  },
   "autonomousUniverse": {
     "title": "自主宇宙",
     "description": "具有自主泡泡和自调参数的自我演化数学宇宙",

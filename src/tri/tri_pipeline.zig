@@ -20,7 +20,8 @@ const GRAY = colors.GRAY;
 const RED = colors.RED;
 const CYAN = colors.CYAN;
 const RESET = colors.RESET;
-const YELLOW = colors.YELLOW;
+// YELLOW uses GOLDEN instead (YELLOW not defined in tri_colors.zig)
+const YELLOW = colors.GOLDEN;
 // GOLDEN CHAIN PIPELINE COMMANDS
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -157,7 +158,7 @@ pub fn runPlanCommand(allocator: std.mem.Allocator, args: []const []const u8) vo
     }
 
     if (show_list) {
-        printPlanList(allocator);
+        printPlanList();
         return;
     }
 
@@ -187,7 +188,7 @@ pub fn runPlanCommand(allocator: std.mem.Allocator, args: []const []const u8) vo
     var name_buf: [256]u8 = undefined;
     var name_pos: usize = 0;
     for (task) |c| {
-        if (std.ascii.isAlnum(c) or c == '_') {
+        if (std.ascii.isAlphanumeric(c) or c == '_') {
             if (name_pos < name_buf.len - 1) {
                 name_buf[name_pos] = std.ascii.toLower(c);
                 name_pos += 1;
@@ -342,7 +343,7 @@ fn printPlanList() void {
         std.debug.print("\n{s}Total: {d} spec(s){s}\n", .{ CYAN, count, RESET });
         std.debug.print("\nUse 'tri gen specs/tri/<name>.vibee' to generate code\n", .{});
     }
-    std.debug.print("\n");
+    std.debug.print("\n", .{});
 }
 
 pub fn runVerifyCommand(allocator: std.mem.Allocator) void {

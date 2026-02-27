@@ -958,7 +958,17 @@
     "modeGematria": "Гематрия",
     "gematriaPlaceholder": "Число или коптский текст...",
     "gematriaDecompose": "Расшифровать",
-    "sacredFit": "Священная формула"
+    "sacredFit": "Священная формула",
+    "modeManual": "Параметры \u2192 Значение",
+    "compute": "Вычислить",
+    "validationRequired": "Обязательно",
+    "validationInteger": "Должно быть целым",
+    "validationRange_n": "n: 1\u20139",
+    "validationRange_k": "k: -4\u20264",
+    "validationRange_m": "m: -3\u20260",
+    "validationRange_p": "p: -4\u20264",
+    "validationRange_q": "q: -3\u20263",
+    "validationPositive": "Введите положительное число"
   },
   "holographic": {
     "title": "Голографический Рендерер v3.1",
