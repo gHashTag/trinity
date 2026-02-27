@@ -310,11 +310,8 @@ pub const CLIState = struct {
 
 pub fn printBanner() void {
     std.debug.print("\n", .{});
-    std.debug.print("{s}╔══════════════════════════════════════════════════════════════╗{s}\n", .{ GREEN, RESET });
-    std.debug.print("{s}║              TRI CLI v{s} - Trinity Unified                   ║{s}\n", .{ GREEN, VERSION, RESET });
-    std.debug.print("{s}║     100% Local AI | Code | Chat | SWE Agent                  ║{s}\n", .{ GREEN, RESET });
-    std.debug.print("{s}║     {s}φ² + 1/φ² = 3 = TRINITY{s}                                   ║{s}\n", .{ GREEN, GOLDEN, GREEN, RESET });
-    std.debug.print("{s}╚══════════════════════════════════════════════════════════════╝{s}\n", .{ GREEN, RESET });
+    std.debug.print("{s}TRINITY v{s}{s}\n", .{ GOLDEN, VERSION, RESET });
+    std.debug.print("100% Local AI | Code | Chat | SWE Agent\n", .{});
     std.debug.print("\n", .{});
 }
 

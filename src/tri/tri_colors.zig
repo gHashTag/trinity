@@ -13,6 +13,7 @@ pub const WHITE = "\x1b[38;2;255;255;255m";
 pub const GRAY = "\x1b[38;2;156;156;160m";
 pub const RED = "\x1b[38;2;239;68;68m";
 pub const CYAN = "\x1b[38;2;0;255;255m";
+pub const PURPLE = "\x1b[38;2;170;102;255m";
 pub const RESET = "\x1b[0m";
 
 pub const VERSION = "3.0.0";
