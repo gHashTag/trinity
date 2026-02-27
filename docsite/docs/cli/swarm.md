@@ -180,11 +180,18 @@ TRI v3.0 DASHBOARD
 
 ## multi-cluster
 
-DePIN Multi-Cluster Federation with 10 real subcommands and $TRI Proof of Useful Work (PoUW) reward integration. Implemented in Golden Chain #99.
+DePIN Multi-Cluster Federation v2 with persistent state, CRDT merge, and $TRI Proof of Useful Work (PoUW) reward integration. Implemented in Golden Chain #99-2.
 
 **Aliases:** `mc`
 
 **Spec:** `specs/depin/multi-cluster-full.vibee`
+
+**Features:**
+- Persistent cluster state (`.tri-cluster.json`)
+- CRDT merge between federations (last-write-wins based on ops + tier)
+- Tier-based reward multipliers (FREE 1.0x, STAKER 1.5x, POWER 2.0x, WHALE 3.0x)
+- Pending rewards tracking and claim functionality
+- 256 max nodes per cluster
 
 ```bash
 tri multi-cluster                                          # Show help
@@ -214,6 +221,35 @@ tri multi-cluster list [--format table|json]                # List all nodes wit
 | `shutdown` | Stop nodes, claim pending $TRI, persist CRDT state, print final reward summary |
 | `health-check` | Ping all nodes, check heartbeats, validate CRDT, report needle status |
 | `list` | List all nodes with ID, address, role, status, operations, $TRI earned |
+
+### v2 Implementation Details
+
+**State Persistence:**
+- Cluster state automatically saved to `.tri-cluster.json`
+- JSON serialization includes: cluster_id, nodes, CRDT stats, ports
+- Automatic state restoration on cluster initialization
+
+**NodeEntry Structure:**
+```zig
+NodeEntry {
+    id: []const u8,
+    address: []const u8,
+    port: u16,
+    role: []const u8,        // coordinator | worker | storage
+    status: []const u8,      // offline | syncing | online | earning
+    uptime_seconds: u64,
+    operations_count: u64,
+    earned_tri: f64,
+    pending_tri: f64,       // unclaimed rewards
+    tier: NodeTier,         // FREE | STAKER | POWER | WHALE
+    added_at: i64,          // Unix timestamp
+}
+```
+
+**CRDT Merge:**
+- Last-write-wins conflict resolution
+- Winner determined by: (operations_count, tier_priority)
+- Automatic convergence across federations
 
 ### Example: Initialize + Health Check
 

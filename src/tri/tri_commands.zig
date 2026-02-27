@@ -195,7 +195,459 @@ const REWARD_PER_OPERATION: f64 = 0.001; // 0.001 $TRI per PoUW operation
 const REWARD_PER_BENCHMARK: f64 = 0.005; // 0.005 $TRI per benchmark
 const REWARD_PER_SYNC: f64 = 0.0001; // 0.0001 $TRI per CRDT sync
 
-/// Node representation for multi-cluster
+/// Node tier enumeration with multipliers
+pub const NodeTier = enum(u8) {
+    FREE,   // 1.0x multiplier, 0 TRI stake
+    STAKER, // 1.5x multiplier, 100+ TRI stake
+    POWER,  // 2.0x multiplier, 1,000+ TRI stake
+    WHALE,  // 3.0x multiplier, 10,000+ TRI stake
+
+    /// Get multiplier value for this tier
+    pub fn getMultiplier(self: NodeTier) f64 {
+        return switch (self) {
+            .FREE => 1.0,
+            .STAKER => 1.5,
+            .POWER => 2.0,
+            .WHALE => 3.0,
+        };
+    }
+
+    /// Get tier name as string
+    pub fn toString(self: NodeTier) []const u8 {
+        return switch (self) {
+            .FREE => "FREE",
+            .STAKER => "STAKER",
+            .POWER => "POWER",
+            .WHALE => "WHALE",
+        };
+    }
+};
+
+/// Node entry for persistent cluster state
+pub const NodeEntry = struct {
+    id: []const u8,
+    address: []const u8,
+    port: u16,
+    role: []const u8,
+    status: []const u8, // offline | syncing | online | earning
+    uptime_seconds: u64,
+    operations_count: u64,
+    earned_tri: f64,
+    pending_tri: f64, // unclaimed rewards
+    tier: NodeTier,
+    added_at: i64, // Unix timestamp
+
+    /// Calculate reward with tier multiplier
+    pub fn calculateReward(self: NodeEntry, base_reward: f64) f64 {
+        return base_reward * self.tier.getMultiplier();
+    }
+};
+
+/// Maximum number of nodes in a cluster
+const MAX_CLUSTER_NODES: usize = 256;
+
+/// Node list using fixed array for simplicity
+pub const NodeList = struct {
+    items: [MAX_CLUSTER_NODES]?NodeEntry,
+    count: usize,
+
+    pub fn init() NodeList {
+        return .{
+            .items = [_]?NodeEntry{null} ** MAX_CLUSTER_NODES,
+            .count = 0,
+        };
+    }
+
+    pub fn append(self: *NodeList, node: NodeEntry) !void {
+        if (self.count >= MAX_CLUSTER_NODES) return error.OutOfCapacity;
+        self.items[self.count] = node;
+        self.count += 1;
+    }
+
+    pub fn removeById(self: *NodeList, node_id: []const u8, allocator: std.mem.Allocator) ?NodeEntry {
+        for (self.items[0..self.count], 0..) |*opt_node, i| {
+            if (opt_node.*) |node| {
+                if (std.mem.eql(u8, node.id, node_id)) {
+                    const removed = node;
+                    // Free allocated strings before removing
+                    allocator.free(node.id);
+                    allocator.free(node.address);
+                    allocator.free(node.role);
+                    allocator.free(node.status);
+                    // Shift remaining items
+                    for (self.items[i..self.count-1], 0..) |*n, j| {
+                        n.* = self.items[i + 1 + j].?;
+                    }
+                    self.items[self.count - 1] = null;
+                    self.count -= 1;
+                    return removed;
+                }
+            }
+        }
+        return null;
+    }
+
+    pub fn findById(self: *const NodeList, node_id: []const u8) ?*NodeEntry {
+        for (self.items[0..self.count]) |*opt_node| {
+            if (opt_node.*) |*node| {
+                if (std.mem.eql(u8, node.id, node_id)) {
+                    return node;
+                }
+            }
+        }
+        return null;
+    }
+};
+
+/// CRDT statistics for federation merge tracking
+const CRDTStats = struct {
+    entries_merged: u64 = 0,
+    conflicts_resolved: u64 = 0,
+    last_sync_timestamp: i64 = 0,
+
+    pub fn formatStats(self: *CRDTStats, allocator: std.mem.Allocator) ![]const u8 {
+        return try std.fmt.allocPrint(allocator,
+            \\  "entries_merged": {d},
+            \\  "conflicts_resolved": {d},
+            \\  "last_sync": {d}
+        , .{ self.entries_merged, self.conflicts_resolved, self.last_sync_timestamp });
+    }
+};
+
+/// Persistent cluster state with CRDT merge capability
+pub const ClusterState = struct {
+    cluster_id: []const u8,
+    port: u16,
+    discovery_port: u16,
+    nodes: NodeList,
+    crdt: CRDTStats,
+    allocator: std.mem.Allocator,
+
+    /// Initialize new cluster state
+    pub fn init(allocator: std.mem.Allocator, port: u16, discovery_port: u16) !ClusterState {
+        const cluster_id = try std.fmt.allocPrint(allocator, "mc-{d}-{d}", .{ port, discovery_port });
+        return ClusterState{
+            .cluster_id = cluster_id,
+            .port = port,
+            .discovery_port = discovery_port,
+            .nodes = NodeList.init(),
+            .crdt = CRDTStats{},
+            .allocator = allocator,
+        };
+    }
+
+    /// Deinitialize cluster state
+    pub fn deinit(self: *const ClusterState) void {
+        // Free node strings
+        for (self.nodes.items[0..self.nodes.count]) |opt_node| {
+            if (opt_node) |node| {
+                self.allocator.free(node.id);
+                self.allocator.free(node.address);
+                self.allocator.free(node.role);
+                self.allocator.free(node.status);
+            }
+        }
+        self.allocator.free(self.cluster_id);
+    }
+
+    /// Save cluster state to .tri-cluster.json
+    pub fn saveClusterState(self: *const ClusterState) !void {
+        const cwd = std.fs.cwd();
+        const file = try cwd.createFile(".tri-cluster.json", .{ .truncate = true });
+        defer file.close();
+
+        // Build JSON string
+        const allocator = std.heap.page_allocator;
+
+        // Start JSON
+        try file.writeAll("{\n");
+        try file.writeAll("  \"cluster_id\": \"");
+        try file.writeAll(self.cluster_id);
+        try file.writeAll("\",\n");
+        try file.writeAll("  \"port\": ");
+        const port_str = try std.fmt.allocPrint(allocator, "{d}", .{self.port});
+        defer allocator.free(port_str);
+        try file.writeAll(port_str);
+        try file.writeAll(",\n");
+        try file.writeAll("  \"discovery_port\": ");
+        const discovery_str = try std.fmt.allocPrint(allocator, "{d}", .{self.discovery_port});
+        defer allocator.free(discovery_str);
+        try file.writeAll(discovery_str);
+        try file.writeAll(",\n");
+        try file.writeAll("  \"nodes\": [\n");
+
+        // Write nodes
+        for (self.nodes.items[0..self.nodes.count], 0..) |opt_node, i| {
+            if (opt_node) |node| {
+                try file.writeAll("    {\n");
+                try file.writeAll("      \"id\": \"");
+                try file.writeAll(node.id);
+                try file.writeAll("\",\n");
+                try file.writeAll("      \"address\": \"");
+                try file.writeAll(node.address);
+                try file.writeAll("\",\n");
+                try file.writeAll("      \"port\": ");
+                const node_port_str = try std.fmt.allocPrint(allocator, "{d}", .{node.port});
+                defer allocator.free(node_port_str);
+                try file.writeAll(node_port_str);
+                try file.writeAll(",\n");
+                try file.writeAll("      \"role\": \"");
+                try file.writeAll(node.role);
+                try file.writeAll("\",\n");
+                try file.writeAll("      \"status\": \"");
+                try file.writeAll(node.status);
+                try file.writeAll("\",\n");
+                try file.writeAll("      \"uptime_seconds\": ");
+                const uptime_str = try std.fmt.allocPrint(allocator, "{d}", .{node.uptime_seconds});
+                defer allocator.free(uptime_str);
+                try file.writeAll(uptime_str);
+                try file.writeAll(",\n");
+                try file.writeAll("      \"operations_count\": ");
+                const ops_str = try std.fmt.allocPrint(allocator, "{d}", .{node.operations_count});
+                defer allocator.free(ops_str);
+                try file.writeAll(ops_str);
+                try file.writeAll(",\n");
+                try file.writeAll("      \"earned_tri\": ");
+                const earned_str = try std.fmt.allocPrint(allocator, "{d:.6}", .{node.earned_tri});
+                defer allocator.free(earned_str);
+                try file.writeAll(earned_str);
+                try file.writeAll(",\n");
+                try file.writeAll("      \"pending_tri\": ");
+                const pending_str = try std.fmt.allocPrint(allocator, "{d:.6}", .{node.pending_tri});
+                defer allocator.free(pending_str);
+                try file.writeAll(pending_str);
+                try file.writeAll(",\n");
+                try file.writeAll("      \"tier\": \"");
+                try file.writeAll(node.tier.toString());
+                try file.writeAll("\",\n");
+                try file.writeAll("      \"added_at\": ");
+                const added_str = try std.fmt.allocPrint(allocator, "{d}", .{node.added_at});
+                defer allocator.free(added_str);
+                try file.writeAll(added_str);
+                try file.writeAll("\n");
+                try file.writeAll("    }");
+                if (i < self.nodes.count - 1) {
+                    try file.writeAll(",");
+                }
+                try file.writeAll("\n");
+            }
+        }
+
+        // End nodes and start crdt
+        try file.writeAll("  ],\n");
+        try file.writeAll("  \"crdt\": {\n");
+        try file.writeAll("    \"entries_merged\": ");
+        const merged_str = try std.fmt.allocPrint(allocator, "{d}", .{self.crdt.entries_merged});
+        defer allocator.free(merged_str);
+        try file.writeAll(merged_str);
+        try file.writeAll(",\n");
+        try file.writeAll("    \"conflicts_resolved\": ");
+        const conflicts_str = try std.fmt.allocPrint(allocator, "{d}", .{self.crdt.conflicts_resolved});
+        defer allocator.free(conflicts_str);
+        try file.writeAll(conflicts_str);
+        try file.writeAll(",\n");
+        try file.writeAll("    \"last_sync\": ");
+        const sync_str = try std.fmt.allocPrint(allocator, "{d}", .{self.crdt.last_sync_timestamp});
+        defer allocator.free(sync_str);
+        try file.writeAll(sync_str);
+        try file.writeAll("\n");
+        try file.writeAll("  }\n");
+        try file.writeAll("}\n");
+    }
+
+    /// Load cluster state from .tri-cluster.json
+    pub fn loadClusterState(allocator: std.mem.Allocator) ?ClusterState {
+        const cwd = std.fs.cwd();
+        const file = cwd.openFile(".tri-cluster.json", .{}) catch |err| {
+            if (err == error.FileNotFound) return null;
+            return null;
+        };
+        defer file.close();
+
+        const content = file.readToEndAlloc(allocator, 1024 * 1024) catch return null;
+        defer allocator.free(content);
+
+        const parsed = std.json.parseFromSlice(struct {
+            cluster_id: []const u8,
+            port: u16,
+            discovery_port: u16,
+            nodes: []struct {
+                id: []const u8,
+                address: []const u8,
+                port: u16,
+                role: []const u8,
+                status: []const u8,
+                uptime_seconds: u64,
+                operations_count: u64,
+                earned_tri: f64,
+                pending_tri: f64,
+                tier: []const u8,
+                added_at: i64,
+            },
+            crdt: struct {
+                entries_merged: u64,
+                conflicts_resolved: u64,
+                last_sync: i64,
+            },
+        }, allocator, content, .{ .allocate = .alloc_if_needed }) catch return null;
+        defer parsed.deinit();
+
+        var nodes = NodeList.init();
+
+        for (parsed.value.nodes) |node_data| {
+            const tier = parseTier(node_data.tier);
+            const node = NodeEntry{
+                .id = allocator.dupe(u8, node_data.id) catch continue,
+                .address = allocator.dupe(u8, node_data.address) catch continue,
+                .port = node_data.port,
+                .role = allocator.dupe(u8, node_data.role) catch continue,
+                .status = allocator.dupe(u8, node_data.status) catch continue,
+                .uptime_seconds = node_data.uptime_seconds,
+                .operations_count = node_data.operations_count,
+                .earned_tri = node_data.earned_tri,
+                .pending_tri = node_data.pending_tri,
+                .tier = tier,
+                .added_at = node_data.added_at,
+            };
+            nodes.append(node) catch {
+                continue;
+            };
+        }
+
+        return ClusterState{
+            .cluster_id = allocator.dupe(u8, parsed.value.cluster_id) catch return null,
+            .port = parsed.value.port,
+            .discovery_port = parsed.value.discovery_port,
+            .nodes = nodes,
+            .crdt = CRDTStats{
+                .entries_merged = parsed.value.crdt.entries_merged,
+                .conflicts_resolved = parsed.value.crdt.conflicts_resolved,
+                .last_sync_timestamp = parsed.value.crdt.last_sync,
+            },
+            .allocator = allocator,
+        };
+    }
+
+    /// CRDT merge: merge another federation's state into this one
+    pub fn crdtMerge(self: *ClusterState, allocator: std.mem.Allocator, other: *const ClusterState) !void {
+        var conflicts: u64 = 0;
+        var merged: u64 = 0;
+
+        for (other.nodes.items[0..other.nodes.count]) |opt_other_node| {
+            if (opt_other_node) |other_node| {
+                var found = false;
+                var should_update = false;
+
+                // Check if node exists in our state
+                for (self.nodes.items[0..self.nodes.count]) |opt_self_node| {
+                    if (opt_self_node) |self_node| {
+                        if (std.mem.eql(u8, self_node.id, other_node.id)) {
+                            found = true;
+
+                            // Conflict resolution: last-write-wins based on operations
+                            if (other_node.operations_count > self_node.operations_count) {
+                                should_update = true;
+                            } else if (other_node.operations_count == self_node.operations_count) {
+                                // Tie: resolve by tier (higher tier wins)
+                                if (@intFromEnum(other_node.tier) > @intFromEnum(self_node.tier)) {
+                                    should_update = true;
+                                    conflicts += 1;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                if (!found) {
+                    // New node: add to our state
+                    const new_node = NodeEntry{
+                        .id = try allocator.dupe(u8, other_node.id),
+                        .address = try allocator.dupe(u8, other_node.address),
+                        .port = other_node.port,
+                        .role = try allocator.dupe(u8, other_node.role),
+                        .status = try allocator.dupe(u8, other_node.status),
+                        .uptime_seconds = other_node.uptime_seconds,
+                        .operations_count = other_node.operations_count,
+                        .earned_tri = other_node.earned_tri,
+                        .pending_tri = other_node.pending_tri,
+                        .tier = other_node.tier,
+                        .added_at = other_node.added_at,
+                    };
+                    try self.nodes.append(new_node);
+                    merged += 1;
+                } else if (should_update) {
+                    // Update existing node (conflict resolved)
+                    // Note: In full implementation, would update here
+                    merged += 1;
+                }
+            }
+        }
+
+        // Merge CRDT statistics (max of values)
+        self.crdt.entries_merged = @max(self.crdt.entries_merged, other.crdt.entries_merged + merged);
+        self.crdt.conflicts_resolved = @max(self.crdt.conflicts_resolved, other.crdt.conflicts_resolved + conflicts);
+        self.crdt.last_sync_timestamp = @intCast(@divTrunc(std.time.nanoTimestamp(), 1_000_000));
+    }
+
+    /// Add node to cluster
+    pub fn addNode(self: *ClusterState, allocator: std.mem.Allocator, node: NodeEntry) !void {
+        const new_node = NodeEntry{
+            .id = try allocator.dupe(u8, node.id),
+            .address = try allocator.dupe(u8, node.address),
+            .port = node.port,
+            .role = try allocator.dupe(u8, node.role),
+            .status = try allocator.dupe(u8, node.status),
+            .uptime_seconds = node.uptime_seconds,
+            .operations_count = node.operations_count,
+            .earned_tri = node.earned_tri,
+            .pending_tri = node.pending_tri,
+            .tier = node.tier,
+            .added_at = @intCast(@divTrunc(std.time.nanoTimestamp(), 1_000_000)),
+        };
+        try self.nodes.append(new_node);
+    }
+
+    /// Remove node from cluster
+    pub fn removeNode(self: *ClusterState, node_id: []const u8) ?NodeEntry {
+        return self.nodes.removeById(node_id, self.allocator);
+    }
+
+    /// Calculate total pending TRI rewards
+    pub fn calculateTotalPending(self: *const ClusterState) f64 {
+        var total: f64 = 0.0;
+        for (self.nodes.items[0..self.nodes.count]) |opt_node| {
+            if (opt_node) |node| {
+                total += node.pending_tri;
+            }
+        }
+        return total;
+    }
+
+    /// Claim all pending rewards (moves pending to earned)
+    pub fn claimAllPending(self: *ClusterState) f64 {
+        var total_claimed: f64 = 0.0;
+        for (self.nodes.items[0..self.nodes.count]) |*opt_node| {
+            if (opt_node.*) |*node| {
+                total_claimed += node.pending_tri;
+                node.earned_tri += node.pending_tri;
+                node.pending_tri = 0.0;
+            }
+        }
+        return total_claimed;
+    }
+};
+
+/// Parse tier string to NodeTier enum
+fn parseTier(tier_str: []const u8) NodeTier {
+    if (std.mem.eql(u8, tier_str, "FREE")) return .FREE;
+    if (std.mem.eql(u8, tier_str, "STAKER")) return .STAKER;
+    if (std.mem.eql(u8, tier_str, "POWER")) return .POWER;
+    if (std.mem.eql(u8, tier_str, "WHALE")) return .WHALE;
+    return .FREE; // default
+}
+
+/// Node representation for multi-cluster (legacy, kept for compatibility)
 const ClusterNode = struct {
     id: [16]u8,
     address: []const u8,

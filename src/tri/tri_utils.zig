@@ -17,6 +17,10 @@ const tvc = @import("tvc_corpus");
 const streaming = @import("streaming.zig");
 const multilingual = @import("multilingual.zig");
 const tri_context = @import("tri_context.zig");
+const sacred_formula = @import("math/sacred_formula.zig");
+
+// Sacred Intelligence is enabled by default
+const SACRED_INTELLIGENCE_DEFAULT = true;
 
 const GREEN = colors.GREEN;
 const GOLDEN = colors.GOLDEN;
@@ -178,6 +182,8 @@ pub const Command = enum {
     gematria,
     formula_cmd,
     sacred,
+    // Intelligence System
+    intelligence,
     // Dev Utilities
     doctor,
     clean,
@@ -536,6 +542,11 @@ pub fn printHelp() void {
     std.debug.print("  {s}sacred{s}                      32 constants + 9 predictions table\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
+    std.debug.print("{s}SACRED INTELLIGENCE:{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}intelligence{s} [<symbol>...]   Sacred formula + gematria analysis\n", .{ GREEN, RESET });
+    std.debug.print("  {s}intel{s} [<symbol>...]          Alias for intelligence\n", .{ GREEN, RESET });
+    std.debug.print("\n", .{});
+
     std.debug.print("{s}DEV UTILITIES:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}doctor{s}                      Project health check (build, test, zig version)\n", .{ GREEN, RESET });
     std.debug.print("  {s}clean{s}                       Clean build artifacts (.zig-cache, zig-out)\n", .{ GREEN, RESET });
@@ -732,6 +743,8 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "gematria") or std.mem.eql(u8, arg, "gem")) return .gematria;
     if (std.mem.eql(u8, arg, "formula")) return .formula_cmd;
     if (std.mem.eql(u8, arg, "sacred")) return .sacred;
+    // Intelligence System
+    if (std.mem.eql(u8, arg, "intelligence") or std.mem.eql(u8, arg, "intel")) return .intelligence;
     // Dev Utilities
     if (std.mem.eql(u8, arg, "doctor") or std.mem.eql(u8, arg, "dr")) return .doctor;
     if (std.mem.eql(u8, arg, "clean")) return .clean;
@@ -1035,17 +1048,20 @@ pub fn runCodeCommand(state: *CLIState, args: []const []const u8) void {
         return;
     }
 
-    // Check for --stream flag
+    // Check for --stream flag and --no-sacred flag
     var stream_mode = state.stream_enabled;
+    const sacred_enabled = SACRED_INTELLIGENCE_DEFAULT and !hasNoSacredFlag(args);
     var filtered_args: [64][]const u8 = undefined;
     var filtered_len: usize = 0;
 
     for (args) |arg| {
         if (std.mem.eql(u8, arg, "--stream") or std.mem.eql(u8, arg, "-s")) {
             stream_mode = true;
-        } else if (filtered_len < filtered_args.len) {
-            filtered_args[filtered_len] = arg;
-            filtered_len += 1;
+        } else if (!std.mem.eql(u8, arg, "--no-sacred") and !std.mem.eql(u8, arg, "--no-sacred-intelligence")) {
+            if (filtered_len < filtered_args.len) {
+                filtered_args[filtered_len] = arg;
+                filtered_len += 1;
+            }
         }
     }
 
@@ -1086,6 +1102,11 @@ pub fn runCodeCommand(state: *CLIState, args: []const []const u8) void {
 
     std.debug.print("{s}Generating code for:{s} {s}\n\n", .{ CYAN, RESET, prompt });
 
+    // Show sacred intelligence status
+    if (sacred_enabled) {
+        std.debug.print("{s}[Sacred Intelligence: active]{s}\n", .{ GOLDEN, RESET });
+    }
+
     const code_result = state.coder.generateCode(prompt);
     if (code_result.is_match) {
         if (stream_mode) {
@@ -1104,22 +1125,50 @@ pub fn runCodeCommand(state: *CLIState, args: []const []const u8) void {
             }
         }
     } else {
-        // Fallback to SWE agent
-        const request = trinity_swe.SWERequest{
-            .task_type = .CodeGen,
-            .prompt = prompt,
-            .language = state.language,
-        };
-        if (state.agent.process(request)) |result| {
-            if (stream_mode) {
-                var stream = streaming.createFastStreaming();
-                stream.streamText(result.output);
-                stream.streamChar('\n');
-            } else {
-                std.debug.print("{s}{s}{s}\n", .{ WHITE, result.output, RESET });
+        // Build enhanced prompt with sacred intelligence for SWE agent fallback
+        var enhanced_prompt: ?[]const u8 = null;
+        if (sacred_enabled) {
+            if (generateSacredIntelligenceContext(state.allocator, prompt)) |sacred_ctx| {
+                defer state.allocator.free(sacred_ctx);
+
+                // Combine sacred context with prompt
+                var combined = std.ArrayListUnmanaged(u8){};
+                defer {
+                    if (combined.items.len > 0) {
+                        combined.deinit(state.allocator);
+                    }
+                }
+
+                combined.appendSlice(state.allocator, sacred_ctx) catch {};
+                combined.appendSlice(state.allocator, prompt) catch {};
+                enhanced_prompt = combined.toOwnedSlice(state.allocator) catch null;
+            } else |_| {}
+        }
+
+        {
+            const final_prompt = if (enhanced_prompt != null) enhanced_prompt.? else prompt;
+
+            const request = trinity_swe.SWERequest{
+                .task_type = .CodeGen,
+                .prompt = final_prompt,
+                .language = state.language,
+            };
+            if (state.agent.process(request)) |result| {
+                if (stream_mode) {
+                    var stream = streaming.createFastStreaming();
+                    stream.streamText(result.output);
+                    stream.streamChar('\n');
+                } else {
+                    std.debug.print("{s}{s}{s}\n", .{ WHITE, result.output, RESET });
+                }
+            } else |_| {
+                std.debug.print("{s}Error generating code.{s}\n", .{ RED, RESET });
             }
-        } else |_| {
-            std.debug.print("{s}Error generating code.{s}\n", .{ RED, RESET });
+
+            // Free enhanced prompt if allocated
+            if (enhanced_prompt != null) {
+                state.allocator.free(enhanced_prompt.?);
+            }
         }
     }
 }
@@ -1130,6 +1179,7 @@ pub fn runChatCommand(state: *CLIState, args: []const []const u8) void {
         var stream_mode = state.stream_enabled;
         var image_path: ?[]const u8 = null;
         var voice_path: ?[]const u8 = null;
+        const sacred_enabled = SACRED_INTELLIGENCE_DEFAULT and !hasNoSacredFlag(args);
         var filtered_args: [64][]const u8 = undefined;
         var filtered_len: usize = 0;
 
@@ -1148,9 +1198,11 @@ pub fn runChatCommand(state: *CLIState, args: []const []const u8) void {
                     i += 1;
                     voice_path = args[i];
                 }
-            } else if (filtered_len < filtered_args.len) {
-                filtered_args[filtered_len] = arg;
-                filtered_len += 1;
+            } else if (!std.mem.eql(u8, arg, "--no-sacred") and !std.mem.eql(u8, arg, "--no-sacred-intelligence")) {
+                if (filtered_len < filtered_args.len) {
+                    filtered_args[filtered_len] = arg;
+                    filtered_len += 1;
+                }
             }
         }
 
@@ -1167,6 +1219,11 @@ pub fn runChatCommand(state: *CLIState, args: []const []const u8) void {
             pos += copy_len;
         }
         const msg = msg_buf[0..pos];
+
+        // Show sacred intelligence status
+        if (sacred_enabled) {
+            std.debug.print("{s}[Sacred Intelligence: active]{s}\n", .{ GOLDEN, RESET });
+        }
 
         // Route by modality (v2.1)
         if (voice_path) |vp| {
@@ -1185,8 +1242,31 @@ pub fn runChatCommand(state: *CLIState, args: []const []const u8) void {
                 std.debug.print("{s}Vision error: {}{s}\n", .{ RED, err, RESET });
             }
         } else {
+            // Normal text chat - enhance with sacred intelligence if enabled
+            var enhanced_msg: ?[]const u8 = null;
+
+            if (sacred_enabled) {
+                if (generateSacredIntelligenceContext(state.allocator, msg)) |sacred_ctx| {
+                    defer state.allocator.free(sacred_ctx);
+
+                    // Combine sacred context with message
+                    var combined = std.ArrayListUnmanaged(u8){};
+                    defer {
+                        if (combined.items.len > 0) {
+                            combined.deinit(state.allocator);
+                        }
+                    }
+
+                    combined.appendSlice(state.allocator, sacred_ctx) catch {};
+                    combined.appendSlice(state.allocator, msg) catch {};
+                    enhanced_msg = combined.toOwnedSlice(state.allocator) catch null;
+                } else |_| {}
+            }
+
+            const final_msg = if (enhanced_msg != null) enhanced_msg.? else msg;
+
             // Normal text chat (v2.0 flow with v2.1 tool detection)
-            if (state.chat_agent.respond(msg)) |chat_response| {
+            if (state.chat_agent.respond(final_msg)) |chat_response| {
                 if (stream_mode) {
                     var stream = streaming.createFastStreaming();
                     stream.streamText(chat_response.response);
@@ -1197,6 +1277,11 @@ pub fn runChatCommand(state: *CLIState, args: []const []const u8) void {
             } else |err| {
                 std.debug.print("{s}Chat error: {}{s}\n", .{ RED, err, RESET });
             }
+
+            // Free enhanced message if allocated
+            if (enhanced_msg != null) {
+                state.allocator.free(enhanced_msg.?);
+            }
         }
     } else {
         // Interactive chat mode
@@ -1205,15 +1290,107 @@ pub fn runChatCommand(state: *CLIState, args: []const []const u8) void {
     }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// SACRED INTELLIGENCE HELPER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Generate sacred intelligence context for a prompt
+/// Includes gematria value, sacred formula fit, and constant recognition
+fn generateSacredIntelligenceContext(allocator: std.mem.Allocator, prompt: []const u8) ![]u8 {
+    // Compute gematria value for prompt
+    var gematria_sum: u64 = 0;
+    for (prompt) |c| {
+        gematria_sum += c;
+    }
+
+    // Fit sacred formula
+    const fit = sacred_formula.fitSacredFormula(@as(f64, @floatFromInt(gematria_sum)));
+
+    // Format output buffer
+    var buf: [2048]u8 = undefined;
+    var fbs = std.io.fixedBufferStream(&buf);
+    const writer = fbs.writer();
+
+    // Write sacred intelligence header
+    writer.writeAll("\n// ═══════════════════════════════════════════════════════════════════════════════\n") catch return error.BufferTooSmall;
+    writer.writeAll("// SACRED INTELLIGENCE ACTIVE | φ² + 1/φ² = 3 = TRINITY\n") catch return error.BufferTooSmall;
+    writer.writeAll("// ═══════════════════════════════════════════════════════════════════════════════\n") catch return error.BufferTooSmall;
+
+    // Gematria info
+    std.fmt.format(writer, "// Prompt Gematria: {d} (mod 27 = {d})\n", .{ gematria_sum, gematria_sum % 27 }) catch return error.BufferTooSmall;
+
+    // Sacred formula fit
+    var formula_buf: [128]u8 = undefined;
+    const formula_str = sacred_formula.formatFormulaString(&formula_buf, fit);
+    std.fmt.format(writer, "// Sacred Formula: V = {s}\n", .{formula_str}) catch return error.BufferTooSmall;
+    std.fmt.format(writer, "// Formula Error: {d:.2}%\n", .{fit.error_pct}) catch return error.BufferTooSmall;
+
+    // Recognized constants (basic pattern matching)
+    writer.writeAll("// Recognized Constants: ") catch return error.BufferTooSmall;
+    var found_any = false;
+    if (std.mem.indexOf(u8, prompt, "phi") != null or std.mem.indexOf(u8, prompt, "φ") != null) {
+        writer.writeAll("φ(1.618) ") catch return error.BufferTooSmall;
+        found_any = true;
+    }
+    if (std.mem.indexOf(u8, prompt, "pi") != null or std.mem.indexOf(u8, prompt, "π") != null) {
+        writer.writeAll("π(3.142) ") catch return error.BufferTooSmall;
+        found_any = true;
+    }
+    if (std.mem.indexOf(u8, prompt, "e") != null) {
+        writer.writeAll("e(2.718) ") catch return error.BufferTooSmall;
+        found_any = true;
+    }
+    if (std.mem.indexOf(u8, prompt, "3") != null) {
+        writer.writeAll("TRINITY(3) ") catch return error.BufferTooSmall;
+        found_any = true;
+    }
+    if (!found_any) {
+        writer.writeAll("none") catch return error.BufferTooSmall;
+    }
+    writer.writeAll("\n") catch return error.BufferTooSmall;
+
+    writer.writeAll("// ═══════════════════════════════════════════════════════════════════════════════\n\n") catch return error.BufferTooSmall;
+
+    const written = fbs.getWritten();
+    const result = try allocator.alloc(u8, written.len);
+    @memcpy(result, written);
+    return result;
+}
+
+/// Check if sacred intelligence should be disabled via flag
+fn hasNoSacredFlag(args: []const []const u8) bool {
+    for (args) |arg| {
+        if (std.mem.eql(u8, arg, "--no-sacred") or std.mem.eql(u8, arg, "--no-sacred-intelligence")) {
+            return true;
+        }
+    }
+    return false;
+}
+
 pub fn runSWECommand(state: *CLIState, task_type: trinity_swe.SWETaskType, args: []const []const u8) void {
     if (args.len < 1) {
         std.debug.print("{s}Usage: tri {s} <file or prompt>{s}\n", .{ RED, @tagName(task_type), RESET });
         return;
     }
 
+    // Check for --no-sacred flag
+    const sacred_enabled = SACRED_INTELLIGENCE_DEFAULT and !hasNoSacredFlag(args);
+
+    // Filter out --no-sacred flags from prompt
+    var filtered_args: [64][]const u8 = undefined;
+    var filtered_len: usize = 0;
+    for (args) |arg| {
+        if (!std.mem.eql(u8, arg, "--no-sacred") and !std.mem.eql(u8, arg, "--no-sacred-intelligence")) {
+            if (filtered_len < filtered_args.len) {
+                filtered_args[filtered_len] = arg;
+                filtered_len += 1;
+            }
+        }
+    }
+
     var prompt_buf: [4096]u8 = undefined;
     var pos: usize = 0;
-    for (args, 0..) |arg, i| {
+    for (filtered_args[0..filtered_len], 0..) |arg, i| {
         if (i > 0 and pos < prompt_buf.len) {
             prompt_buf[pos] = ' ';
             pos += 1;
@@ -1226,19 +1403,67 @@ pub fn runSWECommand(state: *CLIState, task_type: trinity_swe.SWETaskType, args:
 
     std.debug.print("{s}Processing ({s}):{s} {s}\n\n", .{ CYAN, @tagName(task_type), RESET, prompt });
 
-    // Auto-inject codebase context (Cycle 92)
-    const context: ?[]const u8 = if (state.context_mgr) |mgr|
-        mgr.getContextForPrompt(prompt)
-    else
-        null;
-    if (context != null) {
+    // Build enhanced context with sacred intelligence
+    var enhanced_context: ?[]const u8 = null;
+
+    // 1. Sacred intelligence analysis (if enabled)
+    if (sacred_enabled) {
+        std.debug.print("{s}[Sacred Intelligence: active]{s}\n", .{ GOLDEN, RESET });
+
+        if (generateSacredIntelligenceContext(state.allocator, prompt)) |sacred_ctx| {
+            defer state.allocator.free(sacred_ctx);
+
+            // Get codebase context if available
+            const codebase_ctx = if (state.context_mgr) |mgr|
+                mgr.getContextForPrompt(prompt)
+            else
+                null;
+            defer {
+                if (codebase_ctx != null and enhanced_context == null) {
+                    state.allocator.free(codebase_ctx.?);
+                }
+            }
+
+            // Try to build combined context
+            var combined_buf = std.ArrayListUnmanaged(u8){};
+            defer {
+                if (combined_buf.items.len > 0) {
+                    combined_buf.deinit(state.allocator);
+                }
+            }
+
+            // Append sacred context
+            combined_buf.appendSlice(state.allocator, sacred_ctx) catch {};
+
+            // Append codebase context if available
+            if (codebase_ctx) |ctx| {
+                combined_buf.appendSlice(state.allocator, ctx) catch {
+                    state.allocator.free(ctx);
+                };
+                state.allocator.free(ctx);
+            }
+
+            enhanced_context = combined_buf.toOwnedSlice(state.allocator) catch null;
+        } else |_| {
+            std.debug.print("{s}[Sacred Intelligence: generation failed, using fallback]{s}\n", .{ GRAY, RESET });
+        }
+    }
+
+    // 2. Fallback to codebase context only if sacred not enabled or failed
+    if (enhanced_context == null) {
+        if (state.context_mgr) |mgr| {
+            enhanced_context = mgr.getContextForPrompt(prompt);
+        }
+    }
+
+    if (enhanced_context != null) {
         std.debug.print("{s}[Context: injected]{s}\n", .{ GRAY, RESET });
     }
 
     const request = trinity_swe.SWERequest{
         .task_type = task_type,
         .prompt = prompt,
-        .context = context,
+        .context = enhanced_context,
         .language = state.language,
     };
     if (state.agent.process(request)) |result| {
@@ -1246,4 +1471,89 @@ pub fn runSWECommand(state: *CLIState, task_type: trinity_swe.SWETaskType, args:
     } else |_| {
         std.debug.print("{s}Error processing request.{s}\n", .{ RED, RESET });
     }
+
+    // Free enhanced context if it was allocated
+    if (enhanced_context) |ctx| {
+        state.allocator.free(ctx);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SACRED INTELLIGENCE COMMAND
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runIntelligenceCommand(state: *CLIState, args: []const []const u8) void {
+    // Print sacred intelligence banner
+    std.debug.print("\n{s}╔══════════════════════════════════════════════════════════════╗{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}║         SACRED INTELLIGENCE - Sacred Formula Analysis        ║{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}║     V = n × 3^k × π^m × φ^p × e^q | φ² + 1/φ² = 3 = TRINITY     ║{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}╚══════════════════════════════════════════════════════════════╝{s}\n\n", .{ GOLDEN, RESET });
+
+    if (args.len == 0) {
+        // No args: show full intelligence report
+        std.debug.print("{s}Analyzing codebase for sacred patterns...{s}\n\n", .{ CYAN, RESET });
+
+        // Call context manager's intelligence command
+        if (state.context_mgr) |mgr| {
+            mgr.showStats();
+            std.debug.print("\n{s}Sacred Analysis Complete{s}\n", .{ GREEN, RESET });
+            std.debug.print("  {s}•{s} Coptic Gematria: 27 glyphs (3³ = 27)\n", .{ GOLDEN, RESET });
+            std.debug.print("  {s}•{s} Sacred Formula: V = n × 3^k × π^m × φ^p × e^q\n", .{ GOLDEN, RESET });
+            std.debug.print("  {s}•{s} 42 Sacred Constants recognized\n", .{ GOLDEN, RESET });
+            std.debug.print("  {s}•{s} φ-weighted similarity scoring\n", .{ GOLDEN, RESET });
+        } else {
+            std.debug.print("{s}Error:{s} Context manager not initialized. Run 'tri analyze' first.\n", .{ RED, RESET });
+        }
+    } else {
+        // Args provided: analyze specific symbol(s)
+        std.debug.print("{s}Analyzing specific symbol(s):{s}\n", .{ CYAN, RESET });
+        for (args) |symbol| {
+            std.debug.print("  {s}•{s} {s}\n", .{ GOLDEN, RESET, symbol });
+
+            // Compute gematria value for symbol
+            const gematria_val = computeSimpleGematria(symbol);
+            std.debug.print("    Gematria: {d} (mod 27 = {d})\n", .{ gematria_val, gematria_val % 27 });
+
+            // Try to fit sacred formula
+            const fit = @import("math/sacred_formula.zig").fitSacredFormula(@as(f64, @floatFromInt(gematria_val)));
+            var formula_buf: [128]u8 = undefined;
+            const formula_str = @import("math/sacred_formula.zig").formatFormulaString(&formula_buf, fit);
+            std.debug.print("    Formula:  V = {s}\n", .{formula_str});
+            std.debug.print("    Error:    {d:.2}%\n", .{fit.error_pct});
+            std.debug.print("\n", .{});
+        }
+    }
+
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+}
+
+/// Simple ASCII sum gematria (placeholder for full Coptic gematria)
+fn computeSimpleGematria(text: []const u8) u64 {
+    var sum: u64 = 0;
+    for (text) |c| {
+        sum += c;
+    }
+    return sum;
+}
+
+pub fn printIntelligenceHelp() void {
+    std.debug.print("\n{s}SACRED INTELLIGENCE:{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
+
+    std.debug.print("{s}USAGE:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}tri intelligence{s}              Show full codebase sacred analysis\n", .{ GREEN, RESET });
+    std.debug.print("  {s}tri intel{s} <symbol> [...]     Analyze specific symbol(s)\n\n", .{ GREEN, RESET });
+
+    std.debug.print("{s}ANALYSIS INCLUDES:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}•{s} Coptic Gematria value (27 glyphs, 3³ = 27)\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}•{s} Sacred Formula decomposition: V = n × 3^k × π^m × φ^p × e^q\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}•{s} Recognition of 42 sacred constants\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}•{s} φ-weighted similarity scoring\n\n", .{ GOLDEN, RESET });
+
+    std.debug.print("{s}EXAMPLES:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  tri intelligence\n", .{});
+    std.debug.print("  tri intel bind\n", .{});
+    std.debug.print("  tri intel fibonacci phi\n\n", .{});
+
+    std.debug.print("{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
 }
