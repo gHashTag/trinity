@@ -140,30 +140,30 @@ pub fn formatFormulaString(buf: []u8, fit: SacredFormulaFit) []const u8 {
 
     if (fit.k != 0) {
         if (fit.k == 1) {
-            writer.writeAll("\xc3\x973") catch {}; // ×3
+            writer.writeAll("×3") catch {};
         } else {
-            writer.print("\xc3\x973^{d}", .{fit.k}) catch {}; // ×3^k
+            writer.print("×3^{d}", .{fit.k}) catch {};
         }
     }
     if (fit.m != 0) {
         if (fit.m == 1) {
-            writer.writeAll("\xc3\x97\xcf\x80") catch {}; // ×π
+            writer.writeAll("×π") catch {};
         } else {
-            writer.print("\xc3\x97\xcf\x80^{d}", .{fit.m}) catch {}; // ×π^m
+            writer.print("×π^{d}", .{fit.m}) catch {};
         }
     }
     if (fit.p != 0) {
         if (fit.p == 1) {
-            writer.writeAll("\xc3\x97\xcf\x86") catch {}; // ×φ
+            writer.writeAll("×φ") catch {};
         } else {
-            writer.print("\xc3\x97\xcf\x86^{d}", .{fit.p}) catch {}; // ×φ^p
+            writer.print("×φ^{d}", .{fit.p}) catch {};
         }
     }
     if (fit.q != 0) {
         if (fit.q == 1) {
-            writer.writeAll("\xc3\x97e") catch {}; // ×e
+            writer.writeAll("×e") catch {};
         } else {
-            writer.print("\xc3\x97e^{d}", .{fit.q}) catch {}; // ×e^q
+            writer.print("×e^{d}", .{fit.q}) catch {};
         }
     }
 
@@ -202,7 +202,161 @@ pub fn printSacredFormulaFit(fit: SacredFormulaFit, target: f64) void {
         WHITE, fit.q, RESET,
     });
 
-    std.debug.print("\n{s}\xcf\x86\xc2\xb2 + 1/\xcf\x86\xc2\xb2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SACRED CONSTANTS DATABASE (mirrors chatApi.ts)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const SacredConstant = struct {
+    name: []const u8,
+    symbol: []const u8,
+    target: f64,
+    category: []const u8,
+    n: i8,
+    k: i8,
+    m: i8,
+    p: i8,
+    q: i8,
+    computed: f64,
+    error_pct: f64,
+};
+
+pub const SacredPrediction = struct {
+    name: []const u8,
+    unit: []const u8,
+    n: i8,
+    k: i8,
+    m: i8,
+    p: i8,
+    q: i8,
+    value: f64,
+};
+
+// 32 constants — matching website/src/services/chatApi.ts
+pub const sacred_constants = [_]SacredConstant{
+    // Particle Physics (original)
+    .{ .name = "1/α (fine structure)", .symbol = "FINE_STRUCTURE_INV", .target = 137.036, .category = "particle_physics", .n = 4, .k = 2, .m = -1, .p = 1, .q = 2, .computed = 137.002733, .error_pct = 0.0243 },
+    .{ .name = "m_p/m_e", .symbol = "PROTON_ELECTRON_RATIO", .target = 1836.15, .category = "particle_physics", .n = 9, .k = 4, .m = 0, .p = 4, .q = -1, .computed = 1838.161254, .error_pct = 0.1094 },
+    .{ .name = "sin²(θ_W)", .symbol = "WEINBERG_SIN2", .target = 0.2229, .category = "particle_physics", .n = 8, .k = -1, .m = 0, .p = -1, .q = -2, .computed = 0.223045, .error_pct = 0.0650 },
+    .{ .name = "M_Higgs (GeV)", .symbol = "M_HIGGS", .target = 125.25, .category = "particle_physics", .n = 5, .k = 3, .m = 0, .p = 4, .q = -2, .computed = 125.226247, .error_pct = 0.0190 },
+    .{ .name = "M_W (GeV)", .symbol = "M_W_BOSON", .target = 80.377, .category = "particle_physics", .n = 2, .k = 4, .m = -1, .p = 3, .q = -1, .computed = 80.358826, .error_pct = 0.0226 },
+    .{ .name = "M_Z (GeV)", .symbol = "M_Z_BOSON", .target = 91.1876, .category = "particle_physics", .n = 8, .k = 4, .m = 0, .p = -2, .q = -1, .computed = 91.055303, .error_pct = 0.1451 },
+    // Particle Physics Extended
+    .{ .name = "m_e (MeV)", .symbol = "ELECTRON_MASS", .target = 0.511, .category = "particle_physics", .n = 2, .k = 0, .m = -2, .p = 4, .q = -1, .computed = 0.510959, .error_pct = 0.0080 },
+    .{ .name = "Koide Q (2/3)", .symbol = "KOIDE_Q", .target = 0.66667, .category = "particle_physics", .n = 2, .k = -1, .m = 0, .p = 0, .q = 0, .computed = 0.666667, .error_pct = 0.0005 },
+    .{ .name = "α_s (strong)", .symbol = "ALPHA_STRONG", .target = 0.1179, .category = "particle_physics", .n = 4, .k = -2, .m = -2, .p = 2, .q = 0, .computed = 0.117894, .error_pct = 0.0048 },
+    .{ .name = "m_μ (MeV)", .symbol = "MUON_MASS", .target = 105.658, .category = "particle_physics", .n = 8, .k = 1, .m = 0, .p = 1, .q = 1, .computed = 105.559, .error_pct = 0.0941 },
+    .{ .name = "sin(θ_C) Cabibbo", .symbol = "CABIBBO_ANGLE", .target = 0.2253, .category = "particle_physics", .n = 1, .k = 1, .m = -1, .p = -3, .q = 0, .computed = 0.225428, .error_pct = 0.0570 },
+    .{ .name = "Δm(n-p) MeV", .symbol = "NP_MASS_DIFF", .target = 1.2934, .category = "particle_physics", .n = 4, .k = 2, .m = -2, .p = 2, .q = -2, .computed = 1.292377, .error_pct = 0.0791 },
+    // Quantum
+    .{ .name = "CHSH (2sqrt2)", .symbol = "CHSH", .target = 2.828427, .category = "quantum", .n = 8, .k = 4, .m = -3, .p = 0, .q = -2, .computed = 2.828371, .error_pct = 0.0020 },
+    .{ .name = "g-factor (e⁻)", .symbol = "ELECTRON_G", .target = 2.002319, .category = "quantum", .n = 5, .k = 0, .m = -3, .p = -1, .q = 3, .computed = 2.001779, .error_pct = 0.0270 },
+    .{ .name = "Rydberg (eV)", .symbol = "RYDBERG", .target = 13.6057, .category = "quantum", .n = 7, .k = 1, .m = -3, .p = 0, .q = 3, .computed = 13.603577, .error_pct = 0.0156 },
+    .{ .name = "Bohr radius (pm)", .symbol = "BOHR_RADIUS", .target = 52.9177, .category = "quantum", .n = 1, .k = 3, .m = -2, .p = 2, .q = 2, .computed = 52.921027, .error_pct = 0.0063 },
+    // Neutrino Mixing
+    .{ .name = "θ₁₂ solar (°)", .symbol = "THETA_12", .target = 33.44, .category = "neutrino", .n = 5, .k = -1, .m = 0, .p = 0, .q = 3, .computed = 33.476, .error_pct = 0.1073 },
+    .{ .name = "θ₂₃ atmos (°)", .symbol = "THETA_23", .target = 49.2, .category = "neutrino", .n = 7, .k = 4, .m = 0, .p = -3, .q = -1, .computed = 49.241, .error_pct = 0.0831 },
+    .{ .name = "θ₁₃ reactor (°)", .symbol = "THETA_13", .target = 8.57, .category = "neutrino", .n = 9, .k = 4, .m = 0, .p = -3, .q = -3, .computed = 8.568, .error_pct = 0.0229 },
+    // Cosmology (original)
+    .{ .name = "H₀ (km/s/Mpc)", .symbol = "HUBBLE", .target = 67.4, .category = "cosmology", .n = 4, .k = 3, .m = -3, .p = 2, .q = 2, .computed = 67.381144, .error_pct = 0.0280 },
+    .{ .name = "Ω_Λ", .symbol = "OMEGA_LAMBDA", .target = 0.685, .category = "cosmology", .n = 4, .k = 2, .m = 0, .p = -2, .q = -3, .computed = 0.684611, .error_pct = 0.0568 },
+    .{ .name = "T_CMB (K)", .symbol = "CMB_TEMP", .target = 2.7255, .category = "cosmology", .n = 8, .k = 4, .m = -3, .p = 2, .q = -3, .computed = 2.724063, .error_pct = 0.0527 },
+    .{ .name = "γ_BI (LQG)", .symbol = "BARBERO_IMMIRZI", .target = 0.2375, .category = "cosmology", .n = 1, .k = 3, .m = -2, .p = -3, .q = -1, .computed = 0.237578, .error_pct = 0.0329 },
+    .{ .name = "S/A = 1/4 (BH)", .symbol = "BEKENSTEIN_HAWKING", .target = 0.25, .category = "cosmology", .n = 4, .k = 3, .m = -1, .p = -4, .q = -3, .computed = 0.249712, .error_pct = 0.1151 },
+    .{ .name = "Age (13.787 Gyr)", .symbol = "AGE_UNIVERSE", .target = 13.787, .category = "cosmology", .n = 1, .k = 4, .m = -2, .p = -1, .q = 1, .computed = 13.787709, .error_pct = 0.0051 },
+    // Cosmological Extended
+    .{ .name = "Ω_matter", .symbol = "OMEGA_MATTER", .target = 0.315, .category = "cosmology", .n = 8, .k = -2, .m = 0, .p = 2, .q = -2, .computed = 0.314944, .error_pct = 0.0177 },
+    .{ .name = "Ω_baryon", .symbol = "OMEGA_BARYON", .target = 0.0493, .category = "cosmology", .n = 8, .k = -1, .m = -3, .p = 3, .q = -2, .computed = 0.049305, .error_pct = 0.0106 },
+    .{ .name = "n_s spectral", .symbol = "SPECTRAL_NS", .target = 0.9649, .category = "cosmology", .n = 8, .k = 1, .m = -2, .p = -4, .q = 1, .computed = 0.964396, .error_pct = 0.0522 },
+    // Quantum Gravity
+    .{ .name = "DM candidate mass", .symbol = "DM_CANDIDATE", .target = 817.3, .category = "quantum_gravity", .n = 4, .k = 4, .m = 0, .p = 4, .q = -1, .computed = 816.960557, .error_pct = 0.0415 },
+    .{ .name = "Spatial dimensions", .symbol = "SPATIAL", .target = 3.0, .category = "quantum_gravity", .n = 1, .k = 1, .m = 0, .p = 0, .q = 0, .computed = 3.0, .error_pct = 0.0 },
+    .{ .name = "Λ QCD (MeV)", .symbol = "LAMBDA_QCD", .target = 217.0, .category = "quantum_gravity", .n = 7, .k = 1, .m = -1, .p = 1, .q = 3, .computed = 217.240357, .error_pct = 0.1108 },
+    .{ .name = "Proton lifetime (10³⁴ yr)", .symbol = "PROTON_LIFETIME", .target = 2.0, .category = "quantum_gravity", .n = 2, .k = 0, .m = 0, .p = 0, .q = 0, .computed = 2.0, .error_pct = 0.0 },
+    // Nuclear Physics
+    .{ .name = "Beta decay Q (MeV)", .symbol = "BETA_Q", .target = 0.782, .category = "nuclear", .n = 2, .k = 1, .m = 0, .p = 2, .q = -3, .computed = 0.782065, .error_pct = 0.0084 },
+    .{ .name = "pi0 mass (MeV)", .symbol = "PION0_MASS", .target = 134.977, .category = "nuclear", .n = 5, .k = 3, .m = 0, .p = 0, .q = 0, .computed = 135.0, .error_pct = 0.0170 },
+    .{ .name = "Fe-56 binding (MeV/A)", .symbol = "FE56_BINDING", .target = 8.7945, .category = "nuclear", .n = 2, .k = 0, .m = 0, .p = 1, .q = 1, .computed = 8.796545, .error_pct = 0.0233 },
+    .{ .name = "Delta baryon (MeV)", .symbol = "DELTA_BARYON", .target = 1232.0, .category = "nuclear", .n = 4, .k = 4, .m = -1, .p = 1, .q = 2, .computed = 1233.025, .error_pct = 0.0832 },
+    // Mathematical Constants
+    .{ .name = "Meissel-Mertens M", .symbol = "MEISSEL_MERTENS", .target = 0.26149, .category = "mathematical", .n = 5, .k = -4, .m = 0, .p = 3, .q = 0, .computed = 0.261486, .error_pct = 0.0017 },
+    .{ .name = "Ramanujan-Soldner mu", .symbol = "RAMANUJAN_SOLDNER", .target = 1.45136, .category = "mathematical", .n = 5, .k = 2, .m = -3, .p = 0, .q = 0, .computed = 1.451319, .error_pct = 0.0028 },
+    .{ .name = "Apery zeta(3)", .symbol = "APERY", .target = 1.20206, .category = "mathematical", .n = 2, .k = 0, .m = -3, .p = 4, .q = 1, .computed = 1.201781, .error_pct = 0.0232 },
+    .{ .name = "Feigenbaum delta", .symbol = "FEIGENBAUM_DELTA", .target = 4.6692, .category = "mathematical", .n = 5, .k = 3, .m = -2, .p = 4, .q = -3, .computed = 4.667681, .error_pct = 0.0325 },
+    // Dimensionless Ratios
+    .{ .name = "m_tau/m_mu", .symbol = "TAU_MUON_RATIO", .target = 16.818, .category = "ratios", .n = 7, .k = 5, .m = -4, .p = 2, .q = -1, .computed = 16.818437, .error_pct = 0.0026 },
+    .{ .name = "m_mu/m_e", .symbol = "MUON_ELECTRON_RATIO", .target = 206.77, .category = "ratios", .n = 4, .k = 4, .m = 1, .p = 5, .q = -4, .computed = 206.754588, .error_pct = 0.0075 },
+};
+
+// 9 predictions — matching chatApi.ts
+pub const sacred_predictions = [_]SacredPrediction{
+    .{ .name = "Neutrino mass hint", .unit = "eV", .n = 1, .k = -1, .m = -1, .p = -4, .q = -1, .value = 0.005695 },
+    .{ .name = "Λ/ρ_P hint", .unit = "Planck", .n = 1, .k = -4, .m = -2, .p = -4, .q = -3, .value = 9.086e-6 },
+    .{ .name = "G hint", .unit = "Planck", .n = 1, .k = -3, .m = -3, .p = -4, .q = -3, .value = 8.677e-6 },
+    .{ .name = "Proton lifetime hint", .unit = "years", .n = 3, .k = 4, .m = 3, .p = 4, .q = 4, .value = 2.8196e6 },
+    .{ .name = "Σm_ν hint", .unit = "eV", .n = 3, .k = 6, .m = -4, .p = -4, .q = -4, .value = 0.05999579 },
+    .{ .name = "Inflation N_e hint", .unit = "e-folds", .n = 8, .k = 2, .m = -1, .p = 2, .q = 0, .value = 60.00092 },
+    .{ .name = "Tensor-to-scalar r", .unit = "—", .n = 4, .k = -2, .m = -2, .p = -5, .q = 2, .value = 0.03000326 },
+    .{ .name = "Neutron τ_n hint", .unit = "s", .n = 2, .k = 4, .m = 4, .p = -6, .q = 0, .value = 879.4045 },
+    .{ .name = "S_topo hint", .unit = "nat", .n = 4, .k = -1, .m = -4, .p = 4, .q = 2, .value = 0.6932323 },
+};
+
+/// Print full sacred constants table with ANSI colors
+pub fn printSacredConstantsTable() void {
+    const GOLDEN = "\x1b[33m";
+    const CYAN = "\x1b[36m";
+    const WHITE = "\x1b[97m";
+    const GRAY = "\x1b[90m";
+    const GREEN = "\x1b[32m";
+    const RED = "\x1b[31m";
+    const RESET = "\x1b[0m";
+    const BOLD = "\x1b[1m";
+
+    std.debug.print("\n{s}{s}SACRED FORMULA CONSTANTS{s}\n", .{ BOLD, GOLDEN, RESET });
+    std.debug.print("{s}V = n × 3^k × π^m × φ^p × e^q{s}\n", .{ GRAY, RESET });
+    std.debug.print("{s}================================{s}\n\n", .{ GRAY, RESET });
+
+    // Print constants
+    std.debug.print("{s}  {s:<30} {s:>12} {s:>12} {s:>8} {s:>5} {s:>5} {s:>5} {s:>5} {s:>5}{s}\n", .{
+        GRAY, "Name", "Target", "Computed", "Err%", "n", "k", "m", "p", "q", RESET,
+    });
+    std.debug.print("{s}  {s}{s}\n", .{ GRAY, "-" ** 95, RESET });
+
+    var last_cat: []const u8 = "";
+    for (sacred_constants) |c| {
+        if (!std.mem.eql(u8, c.category, last_cat)) {
+            last_cat = c.category;
+            std.debug.print("\n  {s}{s}{s}\n", .{ CYAN, c.category, RESET });
+        }
+        const err_color = if (c.error_pct < 0.01) GREEN else if (c.error_pct < 1.0) WHITE else RED;
+        std.debug.print("  {s:<30} {s}{d:>12.4}{s} {s}{d:>12.6}{s} {s}{d:>7.4}{s} {d:>5} {d:>5} {d:>5} {d:>5} {d:>5}\n", .{
+            c.name,
+            GRAY, c.target, RESET,
+            WHITE, c.computed, RESET,
+            err_color, c.error_pct, RESET,
+            c.n, c.k, c.m, c.p, c.q,
+        });
+    }
+
+    // Print predictions
+    std.debug.print("\n\n{s}{s}SACRED PREDICTIONS (extrapolations){s}\n", .{ BOLD, GOLDEN, RESET });
+    std.debug.print("{s}  {s}{s}\n", .{ GRAY, "-" ** 70, RESET });
+
+    for (sacred_predictions) |p| {
+        var formula_buf: [128]u8 = undefined;
+        const fit = SacredFormulaFit{ .n = p.n, .k = p.k, .m = p.m, .p = p.p, .q = p.q, .computed = p.value, .error_pct = 0.0 };
+        const formula_str = formatFormulaString(&formula_buf, fit);
+        std.debug.print("  {s}{s:<25}{s} {s}{s:<30}{s} = {s}{d:.6}{s} {s}{s}{s}\n", .{
+            WHITE, p.name, RESET,
+            GOLDEN, formula_str, RESET,
+            CYAN, p.value, RESET,
+            GRAY, p.unit, RESET,
+        });
+    }
+
+    std.debug.print("\n{s}32 constants | 9 predictions | φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

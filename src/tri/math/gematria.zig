@@ -58,7 +58,7 @@ fn runNumberMode(allocator: Allocator, number: u32) !void {
     const target: f64 = @floatFromInt(number);
     const fit = sacred_formula.fitSacredFormula(target);
 
-    printHeader("Number \xe2\x86\x92 Glyphs + Sacred Formula");
+    printHeader("Number → Glyphs + Sacred Formula");
 
     std.debug.print("  {s}Number:{s} {s}{d}{s}\n\n", .{ GRAY, RESET, WHITE, number, RESET });
 
@@ -91,7 +91,7 @@ fn runTextMode(allocator: Allocator, text: []const u8) !void {
     const glyphs = try gematria_engine.textToGlyphs(allocator, text);
     defer allocator.free(glyphs);
 
-    printHeader("Text \xe2\x86\x92 Number + Sacred Formula");
+    printHeader("Text → Number + Sacred Formula");
 
     std.debug.print("  {s}Input:{s} {s}{s}{s}\n\n", .{ GRAY, RESET, WHITE, text, RESET });
 
@@ -132,7 +132,7 @@ fn printHeader(title: []const u8) void {
 
 fn printSacredFit(fit: sacred_formula.SacredFormulaFit, target: f64) void {
     std.debug.print("\n  {s}Sacred Formula:{s}\n", .{ PURPLE, RESET });
-    std.debug.print("  {s}V = n \xc3\x97 3^k \xc3\x97 \xcf\x80^m \xc3\x97 \xcf\x86^p \xc3\x97 e^q{s}\n\n", .{ GRAY, RESET });
+    std.debug.print("  {s}V = n × 3^k × π^m × φ^p × e^q{s}\n\n", .{ GRAY, RESET });
 
     var formula_buf: [128]u8 = undefined;
     const formula_str = sacred_formula.formatFormulaString(&formula_buf, fit);
@@ -154,7 +154,7 @@ fn printSacredFit(fit: sacred_formula.SacredFormulaFit, target: f64) void {
 }
 
 fn printFooter() void {
-    std.debug.print("\n{s}\xcf\x86\xc2\xb2 + 1/\xcf\x86\xc2\xb2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
 }
 
 fn printGematriaHelp() void {
@@ -165,14 +165,14 @@ fn printGematriaHelp() void {
     std.debug.print("    tri gematria <text>      Sum Coptic glyph values in text\n", .{});
     std.debug.print("    tri math gematria <n>    Same via math subcommand\n", .{});
     std.debug.print("\n  {s}Examples:{s}\n", .{ CYAN, RESET });
-    std.debug.print("    tri gematria 137         137 = \xe2\xb2\xa4(100) + \xe2\xb2\x96(30) + \xe2\xb2\x8c(7)\n", .{});
-    std.debug.print("    tri gematria 42          42 = \xe2\xb2\x98(40) + \xe2\xb2\x82(2)\n", .{});
-    std.debug.print("    tri gematria 999         999 = \xcf\xa4(900) + \xe2\xb2\xa2(90) + \xe2\xb2\x90(9)\n", .{});
-    std.debug.print("\n  {s}27 Coptic Glyphs (3\xc2\xb3):{s}\n", .{ CYAN, RESET });
-    std.debug.print("    Matter  (1-9):    \xe2\xb2\x80 \xe2\xb2\x82 \xe2\xb2\x84 \xe2\xb2\x86 \xe2\xb2\x88 \xe2\xb2\x8a \xe2\xb2\x8c \xe2\xb2\x8e \xe2\xb2\x90\n", .{});
-    std.debug.print("    Energy  (10-90):  \xe2\xb2\x92 \xe2\xb2\x94 \xe2\xb2\x96 \xe2\xb2\x98 \xe2\xb2\x9a \xe2\xb2\x9c \xe2\xb2\x9e \xe2\xb2\xa0 \xe2\xb2\xa2\n", .{});
-    std.debug.print("    Info    (100-900):\xe2\xb2\xa4 \xe2\xb2\xa6 \xe2\xb2\xa8 \xe2\xb2\xaa \xe2\xb2\xac \xe2\xb2\xae \xe2\xb2\xb0 \xcf\xa2 \xcf\xa4\n", .{});
-    std.debug.print("\n{s}\xcf\x86\xc2\xb2 + 1/\xcf\x86\xc2\xb2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+    std.debug.print("    tri gematria 137         137 = Ⲥ(100) + Ⲗ(30) + Ⲍ(7)\n", .{});
+    std.debug.print("    tri gematria 42          42 = Ⲙ(40) + Ⲃ(2)\n", .{});
+    std.debug.print("    tri gematria 999         999 = Ϥ(900) + Ⲣ(90) + Ⲑ(9)\n", .{});
+    std.debug.print("\n  {s}27 Coptic Glyphs (3³):{s}\n", .{ CYAN, RESET });
+    std.debug.print("    Matter  (1-9):    Ⲁ Ⲃ Ⲅ Ⲇ Ⲉ Ⲋ Ⲍ Ⲏ Ⲑ\n", .{});
+    std.debug.print("    Energy  (10-90):  Ⲓ Ⲕ Ⲗ Ⲙ Ⲛ Ⲝ Ⲟ Ⲡ Ⲣ\n", .{});
+    std.debug.print("    Info    (100-900):Ⲥ Ⲧ Ⲩ Ⲫ Ⲭ Ⲯ Ⲱ Ϣ Ϥ\n", .{});
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
