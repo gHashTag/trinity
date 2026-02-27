@@ -254,7 +254,7 @@ pub fn runSacredCommand(allocator: std.mem.Allocator, args: []const []const u8) 
     if (args.len > 0 and std.mem.eql(u8, args[0], "search")) {
         if (args.len < 2) {
             std.debug.print("Usage: tri sacred search <value>\n", .{});
-            std.debug.print("  Brute-force search for sacred formula fit\n", .{});
+            std.debug.print("  Brute-force search for sacred formula fit (20,412 combos)\n", .{});
             return;
         }
         const value = std.fmt.parseFloat(f64, args[1]) catch {
@@ -263,6 +263,51 @@ pub fn runSacredCommand(allocator: std.mem.Allocator, args: []const []const u8) 
         };
         const fit = sacred_formula.fitSacredFormula(value);
         sacred_formula.printSacredFormulaFit(fit, value);
+    } else if (args.len > 0 and std.mem.eql(u8, args[0], "deep")) {
+        if (args.len < 2) {
+            std.debug.print("Usage: tri sacred deep <value>\n", .{});
+            std.debug.print("  Extended search with wider bounds (123,201 combos, ~6x)\n", .{});
+            std.debug.print("  Allows positive pi powers — finds dramatically better fits\n", .{});
+            return;
+        }
+        const value = std.fmt.parseFloat(f64, args[1]) catch {
+            std.debug.print("Error: '{s}' is not a valid number\n", .{args[1]});
+            return;
+        };
+        // Run both standard and extended, show comparison
+        const std_fit = sacred_formula.fitSacredFormula(value);
+        const ext_fit = sacred_formula.fitSacredFormulaExtended(value);
+
+        const GOLDEN = "\x1b[33m";
+        const CYAN = "\x1b[36m";
+        const WHITE = "\x1b[97m";
+        const GRAY = "\x1b[90m";
+        const GREEN = "\x1b[32m";
+        const RESET = "\x1b[0m";
+
+        std.debug.print("\n{s}Sacred Formula DEEP Search{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("{s}================================{s}\n", .{ GRAY, RESET });
+        std.debug.print("  {s}Target:{s}  {s}{d:.6}{s}\n\n", .{ GRAY, RESET, WHITE, value, RESET });
+
+        // Standard result
+        var buf1: [128]u8 = undefined;
+        const f1 = sacred_formula.formatFormulaString(&buf1, std_fit);
+        const c1 = if (std_fit.error_pct < 0.01) GREEN else WHITE;
+        std.debug.print("  {s}Standard{s} (20,412 combos):\n", .{ CYAN, RESET });
+        std.debug.print("    V = {s}{s}{s}  = {s}{d:.6}{s}  err={s}{d:.4}%{s}\n\n", .{ GOLDEN, f1, RESET, WHITE, std_fit.computed, RESET, c1, std_fit.error_pct, RESET });
+
+        // Extended result
+        var buf2: [128]u8 = undefined;
+        const f2 = sacred_formula.formatFormulaString(&buf2, ext_fit);
+        const c2 = if (ext_fit.error_pct < 0.01) GREEN else WHITE;
+        std.debug.print("  {s}Extended{s} (123,201 combos):\n", .{ CYAN, RESET });
+        std.debug.print("    V = {s}{s}{s}  = {s}{d:.6}{s}  err={s}{d:.4}%{s}\n", .{ GOLDEN, f2, RESET, WHITE, ext_fit.computed, RESET, c2, ext_fit.error_pct, RESET });
+
+        if (ext_fit.error_pct < std_fit.error_pct * 0.5) {
+            const improvement = std_fit.error_pct / ext_fit.error_pct;
+            std.debug.print("\n  {s}>>> Extended is {d:.1}x better! <<<{s}\n", .{ GREEN, improvement, RESET });
+        }
+        std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
     } else {
         sacred_formula.printSacredConstantsTable();
     }
@@ -289,8 +334,9 @@ fn showMathHelp() !void {
     try wr.writeAll("  tri math identities             Show phi-identities\n");
     try wr.writeAll("  tri math gematria <number|text> Coptic gematria + sacred formula\n");
     try wr.writeAll("  tri math formula <value>        Sacred formula decomposition\n");
-    try wr.writeAll("  tri math sacred                 Show 32 constants + 9 predictions\n");
-    try wr.writeAll("  tri math sacred search <value>  Search formula for any value\n");
+    try wr.writeAll("  tri math sacred                 Show 60 constants + 15 predictions\n");
+    try wr.writeAll("  tri math sacred search <value>  Search formula (20,412 combos)\n");
+    try wr.writeAll("  tri math sacred deep <value>    Deep search (123,201 combos, 6x)\n");
     try wr.writeAll("\n");
     try wr.writeAll("  ALIASES (Quick Access)\n");
     try wr.writeAll("  ----------------------------------------------------------------\n");
