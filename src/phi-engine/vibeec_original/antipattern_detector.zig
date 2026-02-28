@@ -1,11 +1,11 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// ANTIPATTERN DETECTOR - Runtime verification on[CYR:[EN]]and[EN] VIBEE [CYR:[EN]]before[CYR:[EN]]andand
+// ANTIPATTERN DETECTOR - Runtime verification onand VIBEE beforeand
 // ═══════════════════════════════════════════════════════════════════════════════
 // SACRED FORMULA: V = n × 3^k × π^m × φ^p × e^q
-// [CYR:[EN]] [CYR:[EN]]: φ² + 1/φ² = 3
+//  : φ² + 1/φ² = 3
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]]: [CYR:[EN]] bootstrap code for [CYR:[EN]]in[EN]toand [CYR:[EN]]and[EN] file[EN]in
-// [CYR:[EN]]and[EN]andto[EN]and[EN]: specs/antipatterns.vibee
+// :  bootstrap code for intoand and filein
+// andtoand: specs/antipatterns.vibee
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
@@ -16,10 +16,10 @@ const Allocator = std.mem.Allocator;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const Severity = enum {
-    critical,   // ⛔ [CYR:[EN]]toand[CYR:[EN]] to[CYR:[EN]]and[EN]
-    high,       // ⚠️ [CYR:[EN]] andwith[CYR:[EN]]in[CYR:[EN]]and[EN]
-    medium,     // ℹ️ [EN]to[CYR:[EN]]with[EN] andwith[CYR:[EN]]inand[EN]
-    low,        // 💡 [CYR:[EN]]and[EN]
+    critical,   // ⛔ toand toand
+    high,       // ⚠️  andwithinand
+    medium,     // ℹ️ towith andwithinand
+    low,        // 💡 and
     
     pub fn symbol(self: Severity) []const u8 {
         return switch (self) {
@@ -36,15 +36,15 @@ pub const Severity = enum {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const AntipatternType = enum {
-    direct_implementation,      // .zig [CYR:[EN]] .vibee
+    direct_implementation,      // .zig  .vibee
     legacy_web_files,          // .html/.css/.js
-    missing_tests,             // [CYR:[EN]] test_cases
-    missing_creation_pattern,  // [CYR:[EN]] creation_pattern
-    false_optimization_claims, // [CYR:[EN]] to[CYR:[EN]]andand
-    esoteric_over_science,     // [EN]from[EN]andto[EN] [CYR:[EN]] [CYR:[EN]]with[EN]in[EN]and[EN]
-    missing_pas_analysis,      // [CYR:[EN]] PAS [EN]on[EN]and[EN]
-    manual_code_without_spec,  // [CYR:[EN]] code [CYR:[EN]] with[CYR:[EN]]and[EN]andto[EN]andand
-    spec_implementation_mismatch, // [CYR:[EN]]and[EN]andto[EN]and[EN] not with[EN]answerwith[EN]in[CYR:[EN]] to[CYR:[EN]]
+    missing_tests,             //  test_cases
+    missing_creation_pattern,  //  creation_pattern
+    false_optimization_claims, //  toand
+    esoteric_over_science,     // fromandto  withinand
+    missing_pas_analysis,      //  PAS onand
+    manual_code_without_spec,  //  code  withandtoand
+    spec_implementation_mismatch, // andtoand not withanswerwithin to
     
     pub fn severity(self: AntipatternType) Severity {
         return switch (self) {
@@ -62,15 +62,15 @@ pub const AntipatternType = enum {
     
     pub fn description(self: AntipatternType) []const u8 {
         return switch (self) {
-            .direct_implementation => "[CYR:[EN]]andwith[EN]and[EN] .zig file[EN] [CYR:[EN]] .vibee with[CYR:[EN]]and[EN]andto[EN]andand",
-            .legacy_web_files => "[CYR:[EN]]yes[EN]and[EN] legacy web file[EN]in (.html/.css/.js)",
-            .missing_tests => "[CYR:[EN]]and[EN]andto[EN]and[EN] [CYR:[EN]] test_cases",
-            .missing_creation_pattern => "[CYR:[EN]]and[EN]andto[EN]and[EN] [CYR:[EN]] creation_pattern",
-            .false_optimization_claims => "[CYR:[EN]] to[CYR:[EN]]andand [EN] [CYR:[EN]]and[EN]and[CYR:[EN]]and[EN]",
-            .esoteric_over_science => "[EN]from[EN]andto[EN] [CYR:[EN]] on[CYR:[EN]] [CYR:[EN]]with[EN]in[EN]and[EN]",
-            .missing_pas_analysis => "[CYR:[EN]]and[EN] [CYR:[EN]] PAS [EN]on[EN]and[EN]",
-            .manual_code_without_spec => "[CYR:[EN]] to[EN] before[CYR:[EN]] [EN]not[EN]and[EN]in[CYR:[EN]]with[EN] and[EN] .vibee",
-            .spec_implementation_mismatch => "[CYR:[EN]] not with[EN]fromin[EN]with[EN]in[CYR:[EN]] with[CYR:[EN]]and[EN]andto[EN]andand",
+            .direct_implementation => "andwithand .zig file  .vibee withandtoand",
+            .legacy_web_files => "yesand legacy web filein (.html/.css/.js)",
+            .missing_tests => "andtoand  test_cases",
+            .missing_creation_pattern => "andtoand  creation_pattern",
+            .false_optimization_claims => " toand  andand",
+            .esoteric_over_science => "fromandto  on withinand",
+            .missing_pas_analysis => "and  PAS onand",
+            .manual_code_without_spec => " to before notandinwith and .vibee",
+            .spec_implementation_mismatch => " not withfrominwithin withandtoand",
         };
     }
 };
@@ -99,7 +99,7 @@ pub const Violation = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// EXCEPTIONS - File[EN], which [CYR:[EN]] [CYR:[EN]] on[EN]andwith[CYR:[EN]] on[CYR:[EN]]
+// EXCEPTIONS - File, which   onandwith on
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const BOOTSTRAP_EXCEPTIONS = [_][]const u8{
@@ -107,8 +107,8 @@ const BOOTSTRAP_EXCEPTIONS = [_][]const u8{
     "codegen.zig",
     "vm.zig",
     "pas.zig",
-    "antipattern_detector.zig",  // [EN]from file
-    // [CYR:[EN]]and with with[CYR:[EN]]with[EN]in[CYR:[EN]]and[EN]and with[CYR:[EN]]and[EN]andto[EN]and[EN]and
+    "antipattern_detector.zig",  // from file
+    // and with withinand withandtoand
     "vm_core.zig",      // specs/vm_core.vibee
     "vm_opcodes.zig",   // specs/vm_opcodes.vibee
     "vm_jit.zig",       // specs/vm_jit.vibee
@@ -187,7 +187,7 @@ pub const AntipatternDetector = struct {
             .antipattern = .direct_implementation,
             .file_path = file_path,
             .line = null,
-            .message = "[CYR:[EN]] with[EN]fromin[EN]with[EN]in[CYR:[EN]] .vibee with[CYR:[EN]]and[EN]andto[EN]andand",
+            .message = " withfrominwithin .vibee withandtoand",
         });
     }
     
@@ -211,7 +211,7 @@ pub const AntipatternDetector = struct {
                     .antipattern = .legacy_web_files,
                     .file_path = file_path,
                     .line = null,
-                    .message = "Legacy web file - and[CYR:[EN]]and[CYR:[EN]] in runtime/runtime.html",
+                    .message = "Legacy web file - and in runtime/runtime.html",
                 });
                 return;
             }

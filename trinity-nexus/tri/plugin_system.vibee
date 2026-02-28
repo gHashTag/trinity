@@ -5,18 +5,18 @@ module: unknown
 
 types:
     description: String
-    description: [CYR:[TRANSLATED]]with[CYR:[EN]acts] Plugin Registry
-    description: [CYR:[EN]work[EN]y]in[CYR:acts] with[CYR:[TRANSLATED]]andI Registry
-    description: [CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN]with[EN] [CYR:[TRANSLATED]]andon
-    description: [CYR:[TRANSLATED]acts] [CYR:[TRANSLATED]]and[EN] and with[CYR:[TRANSLATED]acts] instance
-    description: [CYR:Vy[TRANSLATED]acts] [CYR:[TRANSLATED]]and[EN]
-    description: [EN]and[CYR:l[TRANSLATED]] [CYR:[TRANSLATED]]and[EN]y [EN] [EN]and[CYR:[TRANSLATED]]andI[EN]
-    description: [EN]andwith[EN] [CYR:[TRANSLATED]]and[EN]in [EN] query[EN]
+    description: withacts] Plugin Registry
+    description: [CYR:worky]in[CYR:acts] withandI Registry
+    description: and andwith andon
+    description: [CYR:acts] and and withacts] instance
+    description: [CYR:Vyacts] and
+    description: and[CYR:l] andy  andI
+    description: andwith andin  query
   start_registry:
-    description: [CYR:[TRANSLATED]]with[EN] Registry
+    description: with Registry
 
   register_plugin:
-    description: [CYR:[TRANSLATED]]andwith[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]]andon
+    description: andwithandI andon
 
   validate_plugin_test:
-    description: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]]andon
+    description: andI andon

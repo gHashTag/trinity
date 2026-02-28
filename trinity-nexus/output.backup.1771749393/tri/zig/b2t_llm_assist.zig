@@ -15,10 +15,10 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]A[TRANSLATED]]
+// [CYR:A]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// [CYR:[TRANSLATED]]iny[EN] φ-to[EN]with[CYR:[TRANSLATED]y] (Sacred Formula)
+// iny φ-towithy] (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -30,7 +30,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// 
@@ -152,7 +152,7 @@ pub const DecompilationResult = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]A[TRANSLATED]] [CYR:[TRANSLATED]] WASM
+// [CYR:A]  WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -202,13 +202,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-and[CYR:[TRANSLATED]]fields[EN]andI
+/// φ-andfieldsandI
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// [EN]not[CYR:[TRANSLATED]]andI φ-with[EN]and[CYR:[TRANSLATED]]and
+/// notandI φ-withand
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -261,8 +261,8 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 
 
 
-/// TVC IR [CYR:[TRANSLATED]]to[EN]andand
-/// When: Aon[EN]and[EN] def-use chains
+/// TVC IR toand
+/// When: Aonand def-use chains
 /// Then: Returns List<DataFlowNode>
 pub fn extract_data_flow() !void {
 // Extract: Returns List<DataFlowNode>
@@ -440,57 +440,57 @@ pub fn extract_data_flow() !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "detect_distortions_behavior" {
-// Given: [EN]to[CYR:[TRANSLATED]]or[EN]in[CYR:[EN]ny] to[EN] and TVC IR
-// When: Aon[EN]and[EN] with[CYR:[TRANSLATED]]and[EN]withtoand[EN] andwithto[CYR:[TRANSLATED]]and[EN]
-// Then: Returns with[EN]andwith[EN]to Distortion with [EN]to[EN]andI[EN]and and severity
+// Given: toorin[CYR:ny] to and TVC IR
+// When: Aonand withandwithtoand andwithtoand
+// Then: Returns withandwithto Distortion with toandIand and severity
 // Test detect_distortions: verify behavior is callable (compile-time check)
 _ = detect_distortions;
 }
 
 test "compute_semantic_intensity_behavior" {
-// Given: [CYR:[TRANSLATED]]to[EN] [EN]to[CYR:[TRANSLATED]]or[EN]in[CYR:[TRANSLATED]go] to[CYR:[TRANSLATED]]
-// When: [CYR:Vy[EN]]andwith[CYR:[TRANSLATED]]and[EN] "with[CYR:[TRANSLATED]]and[EN]withto[EN] and[CYR:[TRANSLATED]]withandin[EN]with[EN]and" ([EN] FidelityGPT)
-// Then: Returns Float score for [EN]and[EN]and[EN]and[CYR:[TRANSLATED]]andand andwith[CYR:law]in[CYR:[TRANSLATED]]and[EN]
+// Given: to toorin[CYR:go] to
+// When: [CYR:Vy]andwithand "withandwithto andwithandinwithand" ( FidelityGPT)
+// Then: Returns Float score for andandand andwithlaw]inand
 // Test compute_semantic_intensity: verify returns a float in valid range
 // TODO: Add specific test for compute_semantic_intensity
 _ = compute_semantic_intensity;
 }
 
 test "analyze_variable_dependencies_behavior" {
-// Given: [EN]andwith[EN]to [CYR:[TRANSLATED]me[EN]y[EN]] with andwithto[CYR:[TRANSLATED]]andI[EN]and
-// When: [EN]with[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] [EN]inandwithand[EN]with[CYR:[TRANSLATED]]
-// Then: Returns [CYR:[TRANSLATED]I[TRANSLATED]ny] with[EN]andwith[EN]to for andwith[CYR:law]in[CYR:[TRANSLATED]]andI
+// Given: andwithto [CYR:mey] with andwithtoandIand
+// When: withand  inandwithandwith
+// Then: Returns [CYR:Iny] withandwithto for andwithlaw]inandI
 // Test analyze_variable_dependencies: verify behavior is callable (compile-time check)
 _ = analyze_variable_dependencies;
 }
 
 test "extract_data_flow_behavior" {
-// Given: TVC IR [CYR:[TRANSLATED]]to[EN]andand
-// When: Aon[EN]and[EN] def-use chains
+// Given: TVC IR toand
+// When: Aonand def-use chains
 // Then: Returns List<DataFlowNode>
 // Test extract_data_flow: verify behavior is callable (compile-time check)
 _ = extract_data_flow;
 }
 
 test "extract_call_graph_behavior" {
-// Given: TVC IR [CYR:[TRANSLATED]I]
-// When: [EN]with[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] in[CYR:y[EN]]in[EN]in
+// Given: TVC IR [CYR:I]
+// When: withand  in[CYR:y]inin
 // Then: Returns List<CallGraphNode>
 // Test extract_call_graph: verify behavior is callable (compile-time check)
 _ = extract_call_graph;
 }
 
 test "build_semantic_context_behavior" {
-// Given: TVC IR and resulty [EN]and[EN]withwith[CYR:[TRANSLATED]]and[EN]in[EN]andI
-// When: [CYR:A[TRANSLATED]]andI inwith[CYR:[EN]go] to[CYR:[TRANSLATED]]towith[EN]
+// Given: TVC IR and resulty andwithandinandI
+// When: [CYR:A]andI inwithgo] totowith
 // Then: Returns SemanticContext
 // Test build_semantic_context: verify behavior is callable (compile-time check)
 _ = build_semantic_context;
 }
 
 test "embed_code_behavior" {
-// Given: [CYR:[TRANSLATED]me[EN]] to[CYR:[TRANSLATED]]
-// When: [EN]not[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] LLM
+// Given: [CYR:me] to
+// When: notandI and  LLM
 // Then: Returns CodeEmbedding
 // Test embed_code: verify behavior is callable (compile-time check)
 _ = embed_code;
@@ -498,32 +498,32 @@ _ = embed_code;
 
 test "search_similar_behavior" {
 // Given: CodeEmbedding and RAGDatabase
-// When: [EN]andwithto k [EN]and[CYR:[TRANSLATED]]and[EN] with[EN]with[CYR:[TRANSLATED]]
-// Then: Returns List<SimilarCode> fromwith[CYR:[TRANSLATED]]and[EN]in[CYR:[EN]ny] [EN] similarity
+// When: andwithto k and with
+// Then: Returns List<SimilarCode> fromwithandin[CYR:ny]  similarity
 // Test search_similar: verify returns a float in valid range
 // TODO: Add specific test for search_similar
 _ = search_similar;
 }
 
 test "retrieve_examples_behavior" {
-// Given: [EN]to[CYR:[TRANSLATED]]or[EN]in[CYR:[EN]ny] to[EN] and [EN]and[EN] andwithto[CYR:[TRANSLATED]]andI
-// When: [EN]andwithto [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]y[EN]] [EN]and[CYR:[TRANSLATED]]in for ICL
-// Then: Returns List<SimilarCode> for [CYR:pro[TRANSLATED]]
+// Given: toorin[CYR:ny] to and and andwithtoandI
+// When: andwithto in[CYR:y] andin for ICL
+// Then: Returns List<SimilarCode> for [CYR:pro]
 // Test retrieve_examples: verify behavior is callable (compile-time check)
 _ = retrieve_examples;
 }
 
 test "select_template_behavior" {
-// Given: [EN]and[EN] andwithto[CYR:[TRANSLATED]]andI and [CYR:[TRANSLATED]]in[EN] to[CYR:[TRANSLATED]]with[EN]in[EN]
-// When: [CYR:Vy[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[EN]lnogo] [CYR:[TRANSLATED]]on [CYR:pro[TRANSLATED]]
+// Given: and andwithtoandI and in towithin
+// When: [CYR:Vy] and[CYR:lnogo] on [CYR:pro]
 // Then: Returns PromptTemplate
 // Test select_template: verify behavior is callable (compile-time check)
 _ = select_template;
 }
 
 test "build_prompt_behavior" {
-// Given: [EN]with[EN] to[CYR:[TRANSLATED]]not[CYR:[EN]y] to[CYR:[TRANSLATED]]towith[EN]
-// When: [CYR:[TRANSLATED]]to[EN] [EN]andon[CYR:lnogo] [CYR:pro[TRANSLATED]]
+// Given: with tonot[CYR:y] totowith
+// When: to andon[CYR:lnogo] [CYR:pro]
 // Then: Returns DecompilationPrompt
 // Test build_prompt: verify behavior is callable (compile-time check)
 _ = build_prompt;
@@ -531,15 +531,15 @@ _ = build_prompt;
 
 test "format_icl_examples_behavior" {
 // Given: List<SimilarCode>
-// When: [CYR:[TRANSLATED]]and[EN]in[EN]and[EN] [EN]and[CYR:[TRANSLATED]]in for in-context learning
-// Then: Returns String with [EN]and[CYR:[TRANSLATED]]and in [CYR:[TRANSLATED]] few-shot
+// When: andinand andin for in-context learning
+// Then: Returns String with and in  few-shot
 // Test format_icl_examples: verify behavior is callable (compile-time check)
 _ = format_icl_examples;
 }
 
 test "correct_code_behavior" {
 // Given: DecompilationPrompt
-// When: [CYR:[EN]law]into[EN] in LLM and [CYR:[TRANSLATED]]and[EN] andwith[CYR:law]in[CYR:[TRANSLATED]]and[EN]
+// When: [CYR:law]into in LLM and and andwithlaw]inand
 // Then: Returns CorrectedCode
 // Test correct_code: verify behavior is callable (compile-time check)
 _ = correct_code;
@@ -547,31 +547,31 @@ _ = correct_code;
 
 test "validate_correction_behavior" {
 // Given: CorrectedCode
-// When: Check withand[CYR:[TRANSLATED]]towithandwith[EN] and with[CYR:[TRANSLATED]]andtoand
-// Then: Returns Bool (in[EN]and[CYR:[TRANSLATED]] or not[EN])
+// When: Check withandtowithandwith and withandtoand
+// Then: Returns Bool (inand or not)
 // Test validate_correction: verify behavior is callable (compile-time check)
 _ = validate_correction;
 }
 
 test "apply_corrections_behavior" {
-// Given: [EN]and[EN]andon[CYR:lny] to[EN] and List<CodeChange>
-// When: [EN]and[EN]not[EN]and[EN] andwith[CYR:law]in[CYR:[TRANSLATED]]and[EN]
-// Then: Returns andwith[CYR:law]in[CYR:[TRANSLATED]ny] to[EN]
+// Given: andon[CYR:lny] to and List<CodeChange>
+// When: andnotand andwithlaw]inand
+// Then: Returns andwithlaw]in[CYR:ny] to
 // Test apply_corrections: verify behavior is callable (compile-time check)
 _ = apply_corrections;
 }
 
 test "decompile_with_llm_behavior" {
-// Given: [EN]andon[CYR:[EN]ny] file and [CYR:[TRANSLATED]]with [CYR:[TRANSLATED]]to[EN]andand
-// When: [CYR:[TRANSLATED]ny] [CYR:[TRANSLATED]] [EN]to[CYR:[TRANSLATED]]and[CYR:[EN]I[EN]]andand with LLM
+// Given: andon[CYR:ny] file and with toand
+// When: [CYR:ny]  toand[CYR:I]and with LLM
 // Then: Returns DecompilationResult
 // Test decompile_with_llm: verify behavior is callable (compile-time check)
 _ = decompile_with_llm;
 }
 
 test "batch_decompile_behavior" {
-// Given: [EN]andon[CYR:[EN]ny] file and with[EN]andwith[EN]to [CYR:[TRANSLATED]]with[EN]in
-// When: [EN]to[EN]onI [EN]to[CYR:[TRANSLATED]]and[CYR:[EN]I[EN]]andI inwith[EN] [CYR:[TRANSLATED]]to[EN]and[EN]
+// Given: andon[CYR:ny] file and withandwithto within
+// When: toonI toand[CYR:I]andI inwith toand
 // Then: Returns List<DecompilationResult>
 // Test batch_decompile: verify behavior is callable (compile-time check)
 _ = batch_decompile;
@@ -579,8 +579,8 @@ _ = batch_decompile;
 
 test "learn_from_result_behavior" {
 // Given: DecompilationResult with feedback
-// When: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] RAG [CYR:[TRANSLATED]y] [EN]with[CYR:[TRANSLATED]y[EN]]and [EN]and[CYR:[TRANSLATED]]and
-// Then: [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [EN]iny[EN] [CYR:[TRANSLATED]]and[EN]and in [CYR:[TRANSLATED]]
+// When: inand RAG [CYR:y] withy]and and
+// Then: in[CYR:I] iny and in 
 // Test learn_from_result: verify behavior is callable (compile-time check)
 _ = learn_from_result;
 }

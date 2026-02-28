@@ -411,7 +411,7 @@ behaviors:
   # Cross-Modal Integration
   - name: visionToText
     given: Image
-    when: "Describe this image" / "[CYR:[TRANSLATED]] on [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]?"
+    when: "Describe this image" / " on and?"
     then: Return natural language description
     impl: |
       1. analyzeScene → SceneDescription

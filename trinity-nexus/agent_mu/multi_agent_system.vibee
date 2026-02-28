@@ -378,7 +378,7 @@ tests:
     then: Returns conversation
 
   - name: test_classify_russian
-    given: "[CYR:[TRANSLATED]]and[EN]and [CYR:[TRANSLATED]]and[EN] with[CYR:[TRANSLATED]]and[EN]in[EN]and"
+    given: "and and withandinand"
     then: Returns code_generation, language russian
 
   - name: test_classify_chinese

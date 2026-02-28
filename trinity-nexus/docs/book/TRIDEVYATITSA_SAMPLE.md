@@ -1,6 +1,6 @@
 # 🏰 Three[CYRILLIC]tt[CYRILLIC]a[CYRILLIC] — [CYRILLIC]k Three[CYRILLIC]tt[CYRILLIC] [CYRILLIC]uтttа
 
-> *В [CYRILLIC]a[CYRILLIC]ttяvolume [CYRILLIC]uтttе, tt [CYRILLIC]a[CYRILLIC]uяvolume [CYRILLIC]u[CYRILLIC]uтttе...*
+> * [CYRILLIC]a[CYRILLIC]ttяvolume [CYRILLIC]uтttе, tt [CYRILLIC]a[CYRILLIC]uяvolume [CYRILLIC]u[CYRILLIC]uтttе...*
 
 ## [CYRILLIC]
 

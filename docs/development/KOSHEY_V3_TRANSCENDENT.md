@@ -1,49 +1,49 @@
 # iGLA KOSHEY v3 TRANSCENDENT
 
-**[CYR:Тран]with[CYR:цендентное] беwithwith[CYR:мерт]andе [CYR:через] Self-Modification + Consciousness**
+**[CYR:[TRANSLATED]]with[TRANSLATED]] беwith[TRANSLATED]]andе [CYR:[TRANSLATED]] Self-Modification + Consciousness**
 
-## [CYR:Стат]andwithтandtoа
+## [CYR:[TRANSLATED]]andwithтandtoа
 
-| [CYR:Метр]andtoа | Зon[CYR:чен]andе |
+| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе |
 |---------|----------|
-| v3 [CYR:модул]and | 7 |
+| v3 [CYR:[TRANSLATED]]and | 7 |
 | v3 теwithты | 42 |
 | Unified test | 1824ms |
 
-## [CYR:Модул]and v3 TRANSCENDENT
+## [CYR:[TRANSLATED]]and v3 TRANSCENDENT
 
 ### Self-Modification
 
-| [CYR:Модуль] | Опandwithанandе | Иwith[CYR:точн]andto |
+| [CYR:[TRANSLATED]] | Опandwithанandе | Иwith[TRANSLATED]]andto |
 |--------|----------|----------|
-| `igla_koshey_self_modify` | [CYR:Самомод]andфandtoацandя | NAS Runtime |
-| `igla_koshey_recursive` | Реtoурwithandin[CYR:ное] [CYR:улучшен]andе | AIXI Theory |
+| `igla_koshey_self_modify` | [CYR:[TRANSLATED]]andфandtoацandя | NAS Runtime |
+| `igla_koshey_recursive` | Реtoурwithandin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andе | AIXI Theory |
 
 ### Consciousness
 
-| [CYR:Модуль] | Опandwithанandе | Иwith[CYR:точн]andto |
+| [CYR:[TRANSLATED]] | Опandwithанandе | Иwith[TRANSLATED]]andto |
 |--------|----------|----------|
-| `igla_koshey_consciousness` | Иwithtoуwithwithтin[CYR:енное] withозonнandе | IIT + GWT |
+| `igla_koshey_consciousness` | Иwithtoуwithтin[CYR:[TRANSLATED]] withозonнandе | IIT + GWT |
 
 ### Meta-Learning & Causal
 
-| [CYR:Модуль] | Опandwithанandе | Иwith[CYR:точн]andto |
+| [CYR:[TRANSLATED]] | Опandwithанandе | Иwith[TRANSLATED]]andto |
 |--------|----------|----------|
-| `igla_koshey_meta_learn` | [CYR:Мета]-[CYR:обучен]andе | MAML++ |
-| `igla_koshey_causal` | [CYR:Каузальный] inыinод | Pearl's Framework |
+| `igla_koshey_meta_learn` | [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]andе | MAML++ |
+| `igla_koshey_causal` | [CYR:[TRANSLATED]] inыinод | Pearl's Framework |
 
 ### Integration
 
-| [CYR:Модуль] | Опandwithанandе |
+| [CYR:[TRANSLATED]] | Опandwithанandе |
 |--------|----------|
-| `igla_koshey_transcendent_fusion` | [CYR:Пол]onя and[CYR:нтеграц]andя v3 |
-| `igla_koshey_v3_benchmark` | [CYR:Бенчмар]toand v3 |
+| `igla_koshey_transcendent_fusion` | [CYR:[TRANSLATED]]onя and[CYR:[TRANSLATED]]andя v3 |
+| `igla_koshey_v3_benchmark` | [CYR:[TRANSLATED]]toand v3 |
 
-## [CYR:Научные] andwith[CYR:точн]andtoand
+## [CYR:[TRANSLATED]] andwith[TRANSLATED]]andtoand
 
 ### Consciousness
 
-| [CYR:Теор]andя | Аin[CYR:тор] | Опandwithанandе |
+| [CYR:[TRANSLATED]]andя | Аin[CYR:[TRANSLATED]] | Опandwithанandе |
 |--------|-------|----------|
 | IIT | Tononi | Integrated Information Theory |
 | GWT | Baars | Global Workspace Theory |
@@ -51,7 +51,7 @@
 
 ### Self-Improvement
 
-| [CYR:Концепц]andя | Аin[CYR:тор] | Опandwithанandе |
+| [CYR:[TRANSLATED]]andя | Аin[CYR:[TRANSLATED]] | Опandwithанandе |
 |-----------|-------|----------|
 | AIXI | Hutter | Universal AI |
 | Gödel Machine | Schmidhuber | Self-modifying |
@@ -59,7 +59,7 @@
 
 ### Meta-Learning
 
-| [CYR:Метод] | arXiv | Опandwithанandе |
+| [CYR:[TRANSLATED]] | arXiv | Опandwithанandе |
 |-------|-------|----------|
 | MAML | 1703.03400 | Model-Agnostic Meta-Learning |
 | Reptile | 1803.02999 | First-order meta-learning |
@@ -67,13 +67,13 @@
 
 ### Causal Inference
 
-| [CYR:Концепц]andя | Аin[CYR:тор] | Опandwithанandе |
+| [CYR:[TRANSLATED]]andя | Аin[CYR:[TRANSLATED]] | Опandwithанandе |
 |-----------|-------|----------|
 | do-calculus | Pearl | Causal intervention |
 | SCM | Pearl | Structural Causal Models |
 | Counterfactuals | Pearl | What-if reasoning |
 
-## [CYR:Арх]andтеto[CYR:тура] v3
+## [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] v3
 
 ```
                     ┌─────────────────────────────────┐
@@ -99,7 +99,7 @@
      └─────────────────┘  └─────────────────┘  └───────────────┘
 ```
 
-## [CYR:Ключе]inые in[CYR:озможно]withтand
+## [CYR:[TRANSLATED]]inые in[CYR:[TRANSLATED]]withтand
 
 ### 1. Self-Modification
 - Runtime architecture changes
@@ -126,13 +126,13 @@
 - Effect estimation
 - Counterfactual reasoning
 
-## [CYR:Предупрежден]andя
+## [CYR:[TRANSLATED]]andя
 
-⚠️ **Self-Modification**: [CYR:Огран]and[CYR:чено] safety bounds (risk < 1/φ)
+⚠️ **Self-Modification**: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] safety bounds (risk < 1/φ)
 
-⚠️ **Consciousness**: [CYR:Теорет]andчеwithtoая [CYR:модель], not доto[CYR:азанное] withозonнandе
+⚠️ **Consciousness**: [CYR:[TRANSLATED]]andчеwithtoая [CYR:[TRANSLATED]], not доfor[TRANSLATED]] withозonнandе
 
-⚠️ **Recursive Improvement**: [CYR:Сход]andтwithя with rate φ^(-n)
+⚠️ **Recursive Improvement**: [CYR:[TRANSLATED]]andтwithя with rate φ^(-n)
 
 ---
 

@@ -1,22 +1,22 @@
 # E2E Pipeline Guide v22
 
-## Ноinые [CYR:модул]and v22
+## Ноinые [CYR:[TRANSLATED]]and v22
 
-| [CYR:Модуль] | Опandwithанandе | Теwithты |
+| [CYR:[TRANSLATED]] | Опandwithанandе | Теwithты |
 |--------|----------|-------|
-| cdp_websocket_client_v22 | WebSocket toлand[CYR:ент] for CDP | 11 ✅ |
-| cdp_click_action_v22 | [CYR:Реальный] click [CYR:через] CDP | 11 ✅ |
-| cdp_type_action_v22 | [CYR:Реальный] type [CYR:через] CDP | 11 ✅ |
-| cdp_dom_parser_v22 | DOM [CYR:пар]withandнг | 12 ✅ |
-| cdp_element_extractor_v22 | Изin[CYR:лечен]andе elementоin | 11 ✅ |
+| cdp_websocket_client_v22 | WebSocket toлand[CYR:[TRANSLATED]] for CDP | 11 ✅ |
+| cdp_click_action_v22 | [CYR:[TRANSLATED]] click [CYR:[TRANSLATED]] CDP | 11 ✅ |
+| cdp_type_action_v22 | [CYR:[TRANSLATED]] type [CYR:[TRANSLATED]] CDP | 11 ✅ |
+| cdp_dom_parser_v22 | DOM [CYR:[TRANSLATED]]withandнг | 12 ✅ |
+| cdp_element_extractor_v22 | Изin[CYR:[TRANSLATED]]andе elementоin | 11 ✅ |
 | cdp_screenshot_v22 | Сtoрandншfromы | 11 ✅ |
-| vision_observation_v22 | Вand[CYR:зуальное] on[CYR:блюден]andе | 11 ✅ |
-| zig_http_client_v22 | HTTP toлand[CYR:ент] on Zig | 11 ✅ |
-| zig_agent_core_v22 | [CYR:Ядро] [CYR:агента] on Zig | 11 ✅ |
-| webarena_task_v22 | [CYR:Формат] [CYR:задач] WebArena | 11 ✅ |
-| webarena_benchmark_v22 | [CYR:Бенчмар]to WebArena | 11 ✅ |
+| vision_observation_v22 | Вand[CYR:[TRANSLATED]] on[CYR:[TRANSLATED]]andе | 11 ✅ |
+| zig_http_client_v22 | HTTP toлand[CYR:[TRANSLATED]] on Zig | 11 ✅ |
+| zig_agent_core_v22 | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] on Zig | 11 ✅ |
+| webarena_task_v22 | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] WebArena | 11 ✅ |
+| webarena_benchmark_v22 | [CYR:[TRANSLATED]]to WebArena | 11 ✅ |
 
-**Вwith[CYR:его]: 11 [CYR:модулей], 121 теwithт**
+**Вwith[TRANSLATED]]: 11 [CYR:[TRANSLATED]], 121 теwithт**
 
 ---
 

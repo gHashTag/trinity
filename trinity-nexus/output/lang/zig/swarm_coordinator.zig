@@ -15,7 +15,7 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]A[TRANSLATED]]
+// [CYR:A]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PHI: f64 = 0;
@@ -74,13 +74,13 @@ pub const ARCHITECT_AGENT_BASE_SCORE: f64 = 0;
 
 pub const CODEX_AGENT_BASE_SCORE: f64 = 0;
 
-// [CYR:[TRANSLATED]]iny[EN] φ-to[EN]with[CYR:[TRANSLATED]y] (Sacred Formula)
+// iny φ-towithy] (Sacred Formula)
 pub const SQRT5: f64 = 2.2360679774997896;
 pub const TAU: f64 = 6.283185307179586;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Types of sacred agents in the swarm
@@ -346,7 +346,7 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-and[CYR:[TRANSLATED]]fields[EN]andI
+/// φ-andfieldsandI
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;

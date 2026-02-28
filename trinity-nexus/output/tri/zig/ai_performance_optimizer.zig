@@ -15,10 +15,10 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]A[TRANSLATED]]
+// [CYR:A]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// [CYR:[TRANSLATED]]iny[EN] φ-to[EN]with[CYR:[TRANSLATED]y] (Sacred Formula)
+// iny φ-towithy] (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -30,7 +30,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// 
@@ -38,7 +38,7 @@ pub const description = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]A[TRANSLATED]] [CYR:[TRANSLATED]] WASM
+// [CYR:A]  WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -88,13 +88,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-and[CYR:[TRANSLATED]]fields[EN]andI
+/// φ-andfieldsandI
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// [EN]not[CYR:[TRANSLATED]]andI φ-with[EN]and[CYR:[TRANSLATED]]and
+/// notandI φ-withand
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -187,7 +187,7 @@ pub fn apply_list_comprehension() !void {
 /// 
 /// When: 
 /// Then: 
-pub fn "[CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]]andI with[EN]andwithto[EN]in"() !void {
+pub fn "andandI withandwithtoin"() !void {
 // TODO: implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
@@ -196,7 +196,7 @@ pub fn "[CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]]andI with[EN]andwithto[EN]
 /// 
 /// When: 
 /// Then: 
-pub fn "[CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]]andI [CYR:algorithm]and[CYR:[TRANSLATED]]"() !void {
+pub fn "andandI [CYR:algorithm]and"() !void {
 // TODO: implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
@@ -205,7 +205,7 @@ pub fn "[CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]]andI [CYR:algorithm]and[CY
 /// 
 /// When: 
 /// Then: 
-pub fn "[CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]I[EN]]and"() !void {
+pub fn "andandI [CYR:I]and"() !void {
 // TODO: implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
@@ -271,28 +271,28 @@ test "apply_list_comprehension_behavior" {
 _ = apply_list_comprehension;
 }
 
-test ""[CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]]andI with[EN]andwithto[EN]in"_behavior" {
+test ""andandI withandwithtoin"_behavior" {
 // Given: 
 // When: 
 // Then: 
-// Test "[CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]]andI with[EN]andwithto[EN]in": verify behavior is callable (compile-time check)
-_ = "[CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]]andI with[EN]andwithto[EN]in";
+// Test "andandI withandwithtoin": verify behavior is callable (compile-time check)
+_ = "andandI withandwithtoin";
 }
 
-test ""[CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]]andI [CYR:algorithm]and[CYR:[TRANSLATED]]"_behavior" {
+test ""andandI [CYR:algorithm]and"_behavior" {
 // Given: 
 // When: 
 // Then: 
-// Test "[CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]]andI [CYR:algorithm]and[CYR:[TRANSLATED]]": verify behavior is callable (compile-time check)
-_ = "[CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]]andI [CYR:algorithm]and[CYR:[TRANSLATED]]";
+// Test "andandI [CYR:algorithm]and": verify behavior is callable (compile-time check)
+_ = "andandI [CYR:algorithm]and";
 }
 
-test ""[CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]I[EN]]and"_behavior" {
+test ""andandI [CYR:I]and"_behavior" {
 // Given: 
 // When: 
 // Then: 
-// Test "[CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]I[EN]]and": verify behavior is callable (compile-time check)
-_ = "[CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]I[EN]]and";
+// Test "andandI [CYR:I]and": verify behavior is callable (compile-time check)
+_ = "andandI [CYR:I]and";
 }
 
 test "phi_constants" {

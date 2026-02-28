@@ -5,7 +5,7 @@ const tvc_vm_jit = @import("tvc_vm_jit.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TVC JIT DEMONSTRATION
-// [CYR:[EN]]with[CYR:[EN]]and[EN] JIT to[CYR:[EN]]and[CYR:[EN]]andand and comparison with and[CYR:[EN]]
+// withand JIT toandand and comparison with and
 // ═══════════════════════════════════════════════════════════════════════════
 
 pub fn main() !void {
@@ -13,40 +13,40 @@ pub fn main() !void {
 
     std.debug.print("╔════════════════════════════════════════════════╗\n", .{});
     std.debug.print("║           TVC JIT DEMONSTRATION                 ║\n", .{});
-    std.debug.print("║  [CYR:[EN]]and[CYR:[EN]]and[EN] TVC IR in on[EN]andin[CYR:[EN]] x86_64 to[EN]        ║\n", .{});
+    std.debug.print("║  and TVC IR in onandin x86_64 to        ║\n", .{});
     std.debug.print("╚════════════════════════════════════════════════╝\n\n", .{});
 
-    // 1. [CYR:[EN]]yes[EN] test[EN]in[EN] module
-    std.debug.print("═══ [1] [CYR:[EN]] [CYR:[EN]] [CYR:[EN]] ═══\n", .{});
+    // 1. yes testin module
+    std.debug.print("═══ [1]    ═══\n", .{});
     var module = try createTestModule(allocator);
-    std.debug.print("✓ [CYR:[EN]] with[EN]yes[EN]: {s}\n", .{module.name});
-    std.debug.print("  [CYR:[EN]]to[EN]and[EN]: {}\n", .{module.functions.count()});
+    std.debug.print("✓  withyes: {s}\n", .{module.name});
+    std.debug.print("  toand: {}\n", .{module.functions.count()});
 
-    // 2. Test JIT to[CYR:[EN]]and[CYR:[EN]]
-    std.debug.print("\n═══ [2] [CYR:[EN]] JIT [CYR:[EN]] ═══\n", .{});
+    // 2. Test JIT toand
+    std.debug.print("\n═══ [2]  JIT  ═══\n", .{});
     try testJITCompiler(allocator, &module);
 
-    // 3. Test [EN]yes[EN]andin[CYR:[EN]] [CYR:[EN]]and[EN]
-    std.debug.print("\n═══ [3] [CYR:[EN]] [CYR:[EN]] [CYR:[EN]] ═══\n", .{});
+    // 3. Test yesandin and
+    std.debug.print("\n═══ [3]    ═══\n", .{});
     try testAdaptiveMode(allocator, &module);
 
-    // 4. [CYR:[EN]]to VM vs JIT
-    std.debug.print("\n═══ [4] [CYR:[EN]] VM vs JIT ═══\n", .{});
+    // 4. to VM vs JIT
+    std.debug.print("\n═══ [4]  VM vs JIT ═══\n", .{});
     try runBenchmarks(allocator, &module);
 
-    // 5. [CYR:[EN]]andwith[EN]andto[EN]
-    std.debug.print("\n═══ [5] [CYR:[EN]] [CYR:[EN]] ═══\n", .{});
+    // 5. andwithandto
+    std.debug.print("\n═══ [5]   ═══\n", .{});
     printSummary();
 
     std.debug.print("\n╔════════════════════════════════════════════════╗\n", .{});
-    std.debug.print("║         [CYR:[EN]] [CYR:[EN]]                  ║\n", .{});
+    std.debug.print("║                            ║\n", .{});
     std.debug.print("╚════════════════════════════════════════════════╝\n", .{});
 }
 
 fn createTestModule(allocator: std.mem.Allocator) !tvc_ir.TVCModule {
     var module = tvc_ir.TVCModule.init(allocator, "jit_test_module");
 
-    // [CYR:[EN]]to[EN]and[EN] 1: trinary_logic (NOT, AND, OR, XOR)
+    // toand 1: trinary_logic (NOT, AND, OR, XOR)
     const func1 = try module.addFunction("trinary_logic");
     var block1 = tvc_ir.TVCBlock.init(allocator, "entry");
     block1.entry_point = 0;
@@ -81,7 +81,7 @@ fn createTestModule(allocator: std.mem.Allocator) !tvc_ir.TVCModule {
     try func1.blocks.put("entry", block1);
     func1.returns = .i64_trit;
 
-    // [CYR:[EN]]to[EN]and[EN] 2: arithmetic (ADD, SUB, MUL)
+    // toand 2: arithmetic (ADD, SUB, MUL)
     const func2 = try module.addFunction("arithmetic");
     var block2 = tvc_ir.TVCBlock.init(allocator, "entry");
     block2.entry_point = 0;
@@ -111,7 +111,7 @@ fn createTestModule(allocator: std.mem.Allocator) !tvc_ir.TVCModule {
     try func2.blocks.put("entry", block2);
     func2.returns = .i64_trit;
 
-    // [CYR:[EN]]to[EN]and[EN] 3: implies (IMPLIES - with[CYR:[EN]]on[EN] operation)
+    // toand 3: implies (IMPLIES - withon operation)
     const func3 = try module.addFunction("implies");
     var block3 = tvc_ir.TVCBlock.init(allocator, "entry");
     block3.entry_point = 0;
@@ -131,31 +131,31 @@ fn createTestModule(allocator: std.mem.Allocator) !tvc_ir.TVCModule {
     try func3.blocks.put("entry", block3);
     func3.returns = .i64_trit;
 
-    // [CYR:[EN]]to[EN]and[EN] 4: sum_loop - with[CYR:[EN]] 1..100 ([CYR:[EN]]in[CYR:[EN]] [EN]andto[EN] for VM)
-    // [CYR:[EN]]and[CYR:[EN]] [EN]andto[EN] via byin[CYR:[EN]]and[EN]with[EN] and[EN]with[CYR:[EN]]to[EN]andand
+    // toand 4: sum_loop - with 1..100 (in andto for VM)
+    // and andto via byinandwith andwithtoand
     const func4 = try module.addFunction("sum_100");
     var block4 = tvc_ir.TVCBlock.init(allocator, "entry");
     block4.entry_point = 0;
     
-    // Initialize: i0 = 0 (with[CYR:[EN]]), i1 = 100 (with[CYR:[EN]]andto)
+    // Initialize: i0 = 0 (with), i1 = 100 (withandto)
     try block4.instructions.append(tvc_ir.TVCInstruction{
         .opcode = .loop_init,
         .operands = &[_]u64{100},
         .location = 0,
     });
     
-    // [CYR:[EN]]in[CYR:[EN]] [EN]andto[EN]: 100 and[CYR:[EN]]and[EN] add + dec
+    // in andto: 100 and add + dec
     var loc: u32 = 1;
     var i: u32 = 0;
     while (i < 100) : (i += 1) {
-        // add i0, i1 (with[CYR:[EN]] += with[CYR:[EN]]andto)
+        // add i0, i1 (with += withandto)
         try block4.instructions.append(tvc_ir.TVCInstruction{
             .opcode = .loop_inc,
             .operands = &[_]u64{},
             .location = loc,
         });
         loc += 1;
-        // dec i1 (with[CYR:[EN]]andto--)
+        // dec i1 (withandto--)
         try block4.instructions.append(tvc_ir.TVCInstruction{
             .opcode = .loop_dec,
             .operands = &[_]u64{},
@@ -181,17 +181,17 @@ fn testJITCompiler(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !voi
     var jit = tvc_jit.TVCJit.init(allocator);
     defer jit.deinit();
 
-    // [CYR:[EN]]or[CYR:[EN]] to[CYR:[EN]] [CYR:[EN]]to[EN]and[EN]
+    // or to toand
     var iter = module.functions.iterator();
     while (iter.next()) |entry| {
         const func = &entry.value_ptr.*;
-        std.debug.print("[CYR:[EN]]and[CYR:[EN]]and[EN]: {s}...\n", .{func.name});
+        std.debug.print("and: {s}...\n", .{func.name});
 
         const compiled = try jit.compile(func);
-        std.debug.print("  ✓ [EN]to[CYR:[EN]]or[EN]in[CYR:[EN]]: {} [CYR:[EN]] [CYR:[EN]]and[CYR:[EN]] to[EN]yes\n", .{compiled.code_size});
+        std.debug.print("  ✓ toorin: {}  and toyes\n", .{compiled.code_size});
 
-        // [EN]in[EN]and[EN] [CYR:[EN]]in[EN] [CYR:[EN]] to[EN]yes
-        std.debug.print("  [CYR:[EN]]: ", .{});
+        // inand in  toyes
+        std.debug.print("  : ", .{});
         const code_ptr = compiled.exec_mem.ptr;
         const max_bytes = @min(compiled.code_size, 16);
         for (code_ptr[0..max_bytes]) |byte| {
@@ -202,8 +202,8 @@ fn testJITCompiler(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !voi
         }
         std.debug.print("\n", .{});
 
-        // [EN]by[CYR:[EN]] [CYR:[EN]]to[EN]and[EN]!
-        std.debug.print("  [EN]by[EN]not[EN]and[EN]: ", .{});
+        // by toand!
+        std.debug.print("  bynotand: ", .{});
         const result = compiled.call();
         std.debug.print("result = {}\n", .{result});
     }
@@ -215,20 +215,20 @@ fn testAdaptiveMode(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !vo
     var vm = tvc_vm_jit.TVCVMJit.init(allocator, 64 * 1024, 4 * 1024);
     defer vm.deinit();
 
-    // [EN]withby[CYR:[EN]] [CYR:[EN]]to[EN] and[CYR:[EN]] (JIT code cannot in[EN]by[EN]and[EN] [CYR:[EN]] mmap PROT_EXEC)
+    // withby to and (JIT code cannot inbyand  mmap PROT_EXEC)
     vm.setMode(.interpret);
 
     try vm.loadModule(module);
 
-    std.debug.print("[CYR:[EN]]and[EN]: and[CYR:[EN]] (JIT [CYR:[EN]] mmap PROT_EXEC)\n", .{});
-    std.debug.print("[CYR:[EN]]in[CYR:[EN]] trinary_logic 10 [CYR:[EN]]...\n", .{});
+    std.debug.print("and: and (JIT  mmap PROT_EXEC)\n", .{});
+    std.debug.print("in trinary_logic 10 ...\n", .{});
 
     var i: u64 = 0;
     while (i < 10) : (i += 1) {
         _ = vm.callFunction("trinary_logic") catch 0;
     }
 
-    std.debug.print("✓ [EN]by[EN]not[EN] {} in[CYR:[EN]]in[EN]in\n", .{i});
+    std.debug.print("✓ bynot {} ininin\n", .{i});
     vm.dumpStats();
 }
 
@@ -236,27 +236,27 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
     const tvc_vm = @import("tvc_vm.zig");
     const iterations: u64 = 1000000;
 
-    std.debug.print("[CYR:[EN]]toand VM vs JIT ({} and[CYR:[EN]]and[EN]):\n\n", .{iterations});
+    std.debug.print("toand VM vs JIT ({} and):\n\n", .{iterations});
 
-    // [CYR:[EN]]yes[EN] JIT to[CYR:[EN]]and[CYR:[EN]]
+    // yes JIT toand
     var jit = tvc_jit.TVCJit.init(allocator);
     defer jit.deinit();
     
-    // [CYR:[EN]]yes[EN] VM (silent mode)
+    // yes VM (silent mode)
     var vm = tvc_vm.TVCVM.initSilent(allocator, 1024, 256);
     defer vm.deinit();
     try vm.loadModule(module);
 
-    // [CYR:[EN]]to VM vs JIT
+    // to VM vs JIT
     var func_iter = module.functions.iterator();
     while (func_iter.next()) |entry| {
         const func = &entry.value_ptr.*;
         const func_name = func.name;
 
-        std.debug.print("[CYR:[EN]]to[EN]and[EN]: {s}\n", .{func_name});
+        std.debug.print("toand: {s}\n", .{func_name});
 
         // === VM Benchmark (silent) ===
-        // [CYR:[EN]]in VM
+        // in VM
         var i: u64 = 0;
         while (i < 1000) : (i += 1) {
             _ = vm.callFunctionSilent(func_name) catch 0;
@@ -264,7 +264,7 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
             vm.registers.r1 = 0;
         }
         
-        // [CYR:[EN]] VM
+        //  VM
         const vm_start = std.time.nanoTimestamp();
         i = 0;
         while (i < iterations) : (i += 1) {
@@ -276,16 +276,16 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
         const vm_ns = @as(u64, @intCast(vm_end - vm_start));
 
         // === JIT Benchmark ===
-        // [CYR:[EN]]or[CYR:[EN]] JIT
+        // or JIT
         const compiled = try jit.compile(func);
 
-        // [CYR:[EN]]in JIT
+        // in JIT
         i = 0;
         while (i < 1000) : (i += 1) {
             _ = compiled.call();
         }
 
-        // [CYR:[EN]] JIT
+        //  JIT
         const jit_start = std.time.nanoTimestamp();
         i = 0;
         while (i < iterations) : (i += 1) {
@@ -294,7 +294,7 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
         const jit_end = std.time.nanoTimestamp();
         const jit_ns = @as(u64, @intCast(jit_end - jit_start));
 
-        // Compute [CYR:[EN]]andtoand
+        // Compute andtoand
         const vm_ns_per_call = vm_ns / iterations;
         const jit_ns_per_call = jit_ns / iterations;
         const speedup_float: f64 = if (jit_ns > 0) @as(f64, @floatFromInt(vm_ns)) / @as(f64, @floatFromInt(jit_ns)) else 0.0;
@@ -304,7 +304,7 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
         std.debug.print("  Ratio: {d:.2}x\n\n", .{speedup_float});
     }
     
-    // === [CYR:[EN]] [CYR:[EN]]: JIT Loop Unrolling vs VM ===
+    // ===  : JIT Loop Unrolling vs VM ===
     std.debug.print("╔════════════════════════════════════════════════════════════════╗\n", .{});
     std.debug.print("║           LOOP UNROLLING BENCHMARK (sum 1..1000)               ║\n", .{});
     std.debug.print("╚════════════════════════════════════════════════════════════════╝\n", .{});
@@ -315,13 +315,13 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
     // JIT with loop unrolling
     const jit_loop = try jit.compileSumLoop(n);
     
-    // [CYR:[EN]]in JIT
+    // in JIT
     var j: u64 = 0;
     while (j < 1000) : (j += 1) {
         _ = jit_loop.call();
     }
     
-    // [CYR:[EN]] JIT loop
+    //  JIT loop
     const jit_loop_start = std.time.nanoTimestamp();
     j = 0;
     while (j < loop_iterations) : (j += 1) {
@@ -330,12 +330,12 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
     const jit_loop_end = std.time.nanoTimestamp();
     const jit_loop_ns = @as(u64, @intCast(jit_loop_end - jit_loop_start));
     
-    // VM [CYR:[EN]]and[EN] [EN]andto[EN] ([CYR:[EN]]with[CYR:[EN]] Zig code for with[EN]innot[EN]and[EN])
+    // VM and andto (with Zig code for withinnotand)
     const vm_loop_start = std.time.nanoTimestamp();
     j = 0;
     var vm_sum: i64 = 0;
     while (j < loop_iterations) : (j += 1) {
-        // [CYR:[EN]]and[CYR:[EN]] VM: [EN]andto[EN] sum(1..n)
+        // and VM: andto sum(1..n)
         var k: i64 = @intCast(n);
         var s: i64 = 0;
         while (k > 0) : (k -= 1) {
@@ -351,7 +351,7 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
     const jit_loop_ns_per_call = jit_loop_ns / loop_iterations;
     const loop_speedup: f64 = if (jit_loop_ns > 0) @as(f64, @floatFromInt(vm_loop_ns)) / @as(f64, @floatFromInt(jit_loop_ns)) else 0.0;
     
-    std.debug.print("\nsum(1..{}) x {} and[CYR:[EN]]and[EN]:\n", .{n, loop_iterations});
+    std.debug.print("\nsum(1..{}) x {} and:\n", .{n, loop_iterations});
     std.debug.print("  Zig loop:  {} ns/call\n", .{vm_loop_ns_per_call});
     std.debug.print("  JIT loop:  {} ns/call\n", .{jit_loop_ns_per_call});
     std.debug.print("  JIT result: {}\n", .{jit_loop.call()});
@@ -409,7 +409,7 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
     const simd_n_aligned: u32 = (simd_n / 8) * 8;
     const expected_aligned: i64 = @as(i64, simd_n_aligned) * (@as(i64, simd_n_aligned) + 1) / 2;
     
-    std.debug.print("\nsum(1..{}) x {} and[CYR:[EN]]and[EN]:\n", .{simd_n, simd_iterations});
+    std.debug.print("\nsum(1..{}) x {} and:\n", .{simd_n, simd_iterations});
     std.debug.print("  Scalar JIT (4x unroll): {} ns/call\n", .{scalar_ns_per_call});
     std.debug.print("  SIMD JIT (8x unroll):   {} ns/call\n", .{simd_ns_per_call});
     std.debug.print("  Expected (aligned {}): {}\n", .{simd_n_aligned, expected_aligned});
@@ -418,14 +418,14 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
     std.debug.print("╔════════════════════════════════════════════════════════════════╗\n", .{});
     std.debug.print("║                    BENCHMARK ANALYSIS                          ║\n", .{});
     std.debug.print("╠════════════════════════════════════════════════════════════════╣\n", .{});
-    std.debug.print("║ [CYR:[EN]]with[CYR:[EN]] [CYR:[EN]]to[EN]andand: VM [EN]with[CYR:[EN]] (Zig [CYR:[EN]]and[EN]and[CYR:[EN]]andand)                  ║\n", .{});
-    std.debug.print("║ [CYR:[EN]]to[EN]andand with [EN]andto[CYR:[EN]]and: JIT 5.5x [EN]with[CYR:[EN]] VM                         ║\n", .{});
-    std.debug.print("║ SIMD: [EN]by[EN]and[CYR:[EN]] [EN]withto[CYR:[EN]]and[EN] on [CYR:[EN]]and[EN] yes[CYR:[EN]]               ║\n", .{});
+    std.debug.print("║ with toand: VM with (Zig andand)                  ║\n", .{});
+    std.debug.print("║ toand with andtoand: JIT 5.5x with VM                         ║\n", .{});
+    std.debug.print("║ SIMD: byand withtoand on and yes               ║\n", .{});
     std.debug.print("║                                                                ║\n", .{});
-    std.debug.print("║ JIT [CYR:[EN]]and[CYR:[EN]]with[EN]in[EN]:                                              ║\n", .{});
-    std.debug.print("║ - Loop unrolling (4x [CYR:[EN]]in[CYR:[EN]]to[EN])                                ║\n", .{});
+    std.debug.print("║ JIT andwithin:                                              ║\n", .{});
+    std.debug.print("║ - Loop unrolling (4x into)                                ║\n", .{});
     std.debug.print("║ - SIMD-style parallel accumulation                             ║\n", .{});
-    std.debug.print("║ - [CYR:[EN]] [CYR:[EN]]and[CYR:[EN]] to[EN] [CYR:[EN]] dispatch overhead                    ║\n", .{});
+    std.debug.print("║ -  and to  dispatch overhead                    ║\n", .{});
     std.debug.print("╚════════════════════════════════════════════════════════════════╝\n", .{});
 }
 
@@ -434,11 +434,11 @@ fn printSummary() void {
     std.debug.print("║              SUMMARY                            ║\n", .{});
     std.debug.print("╠════════════════════════════════════════════════╣\n", .{});
     std.debug.print("║  TVC JIT Compiler Features:                     ║\n", .{});
-    std.debug.print("║  ✓ x86_64 [CYR:[EN]]and[CYR:[EN]] to[EN]                          ║\n", .{});
-    std.debug.print("║  ✓ [CYR:[EN]]or[EN]in[EN]and[EN] hot paths                     ║\n", .{});
-    std.debug.print("║  ✓ Inline caching (64 with[EN]from[EN])                    ║\n", .{});
-    std.debug.print("║  ✓ [EN]yes[EN]andinon[EN] to[CYR:[EN]]and[CYR:[EN]]and[EN]                        ║\n", .{});
+    std.debug.print("║  ✓ x86_64 and to                          ║\n", .{});
+    std.debug.print("║  ✓ orinand hot paths                     ║\n", .{});
+    std.debug.print("║  ✓ Inline caching (64 withfrom)                    ║\n", .{});
+    std.debug.print("║  ✓ yesandinon toand                        ║\n", .{});
     std.debug.print("║  ✓ Trinary operation (NOT, AND, OR, XOR, IMPLIES)║\n", .{});
-    std.debug.print("║  ✓ [EN]and[CYR:[EN]]andto[EN] (ADD, SUB, MUL, DIV)              ║\n", .{});
+    std.debug.print("║  ✓ andto (ADD, SUB, MUL, DIV)              ║\n", .{});
     std.debug.print("╚════════════════════════════════════════════════╝\n", .{});
 }

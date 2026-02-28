@@ -1,206 +1,206 @@
-# ☠️ [CYR:ТОКСИЧНЫЙ] [CYR:ВЕРДИКТ]: GO TRANSPILER V1.0 ☠️
+# ☠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: GO TRANSPILER V1.0 ☠️
 
-**[CYR:Дата]**: 2026-01-19  
-**[CYR:Вер]withandя**: V1.0  
-**Аin[CYR:тор]**: IGLA PAS DAEMON  
+**[CYR:[TRANSLATED]]**: 2026-01-19  
+**[CYR:[TRANSLATED]]withandя**: V1.0  
+**Аin[CYR:[TRANSLATED]]**: IGLA PAS DAEMON  
 **Sacred formula**: φ² + 1/φ² = 3.0 ✅
 
 ---
 
-## 🔥 [CYR:БЕЗЖАЛОСТНАЯ] [CYR:ОЦЕНКА]
+## 🔥 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Что] with[CYR:делано]
+### [CYR:[TRANSLATED]] with[TRANSLATED]]
 
-| [CYR:Компо]notнт | [CYR:Стату]with | [CYR:Реально]withть |
+| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]]with | [CYR:[TRANSLATED]]withть |
 |-----------|--------|------------|
-| ⲅⲟ_ⲗⲉⲝⲉⲣ.tri | ✅ | **[CYR:РЕАЛЬНЫЙ]** леtowithер with 26 keywords |
-| ⲅⲟ_ⲡⲁⲣⲥⲉⲣ.tri | ✅ | **[CYR:СПЕЦИФИКАЦИЯ]** [CYR:пар]with[CYR:ера] |
-| ⲅⲟ_ⲧⲟ_ⲍⲓⲅ.tri | ✅ | **[CYR:СПЕЦИФИКАЦИЯ]** [CYR:тран]withпand[CYR:лера] |
-| go_lexer.zig | ✅ | **[CYR:РАБОТАЕТ]**, 7/7 теwithтоin |
+| ⲅⲟ_ⲗⲉⲝⲉⲣ.tri | ✅ | **[CYR:[TRANSLATED]]** леtowithер with 26 keywords |
+| ⲅⲟ_ⲡⲁⲣⲥⲉⲣ.tri | ✅ | **[CYR:[TRANSLATED]]** [CYR:[TRANSLATED]]with[TRANSLATED]] |
+| ⲅⲟ_ⲧⲟ_ⲍⲓⲅ.tri | ✅ | **[CYR:[TRANSLATED]]** [CYR:[TRANSLATED]]withпand[CYR:[TRANSLATED]] |
+| go_lexer.zig | ✅ | **[CYR:[TRANSLATED]]**, 7/7 теwithтоin |
 
-### [CYR:Что] НЕ with[CYR:делано]
+### [CYR:[TRANSLATED]] НЕ with[TRANSLATED]]
 
-| [CYR:Компо]notнт | [CYR:Стату]with | Прandчandon |
+| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]]with | Прandчandon |
 |-----------|--------|---------|
-| go_parser.zig | ❌ | [CYR:Толь]toо .tri with[CYR:пец]andфandtoацandя |
-| go_to_zig.zig | ❌ | [CYR:Толь]toо .tri with[CYR:пец]andфandtoацandя |
-| [CYR:Пол]onя and[CYR:нтеграц]andя | ❌ | [CYR:Нет] pipeline |
-| [CYR:Тран]withпand[CYR:ляц]andя crush | ❌ | [CYR:Нет] гfromоin[CYR:ого] [CYR:тран]withпand[CYR:лера] |
+| go_parser.zig | ❌ | [CYR:[TRANSLATED]]toо .tri with[TRANSLATED]]andфandtoацandя |
+| go_to_zig.zig | ❌ | [CYR:[TRANSLATED]]toо .tri with[TRANSLATED]]andфandtoацandя |
+| [CYR:[TRANSLATED]]onя and[CYR:[TRANSLATED]]andя | ❌ | [CYR:[TRANSLATED]] pipeline |
+| [CYR:[TRANSLATED]]withпand[CYR:[TRANSLATED]]andя crush | ❌ | [CYR:[TRANSLATED]] гfromоin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withпand[CYR:[TRANSLATED]] |
 
 ---
 
-## 💀 [CYR:ЖЁСТКАЯ] [CYR:ПРАВДА]
+## 💀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### 1. [CYR:Это] НЕ гfromоinый [CYR:тран]withпand[CYR:лер]
+### 1. [CYR:[TRANSLATED]] НЕ гfromоinый [CYR:[TRANSLATED]]withпand[CYR:[TRANSLATED]]
 
-**Фаtoт**: [CYR:Созда]on [CYR:толь]toо **with[CYR:пец]andфandtoацandя** and **леtowithер**.
+**Фаtoт**: [CYR:[TRANSLATED]]on [CYR:[TRANSLATED]]toо **with[TRANSLATED]]andфandtoацandя** and **леtowithер**.
 
 ```
 Гfromоinноwithть: 15%
 ├── Леtowithер: 100% ✅
-├── [CYR:Пар]withер: 0% ([CYR:толь]toо .tri)
-├── [CYR:Тран]withпand[CYR:лер]: 0% ([CYR:толь]toо .tri)
-└── [CYR:Интеграц]andя: 0%
+├── [CYR:[TRANSLATED]]withер: 0% ([CYR:[TRANSLATED]]toо .tri)
+├── [CYR:[TRANSLATED]]withпand[CYR:[TRANSLATED]]: 0% ([CYR:[TRANSLATED]]toо .tri)
+└── [CYR:[TRANSLATED]]andя: 0%
 ```
 
-### 2. crush НЕ [CYR:может] [CYR:быть] [CYR:тран]withпorроinан аin[CYR:томат]andчеwithtoand
+### 2. crush НЕ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withпorроinан аin[CYR:[TRANSLATED]]andчеwithtoand
 
-**Фаtoт**: 29% to[CYR:ода] (14,996 with[CYR:тро]to) **[CYR:НЕВОЗМОЖНО]** toонin[CYR:ерт]andроin[CYR:ать] andз-за:
+**Фаtoт**: 29% for[TRANSLATED]] (14,996 with[TRANSLATED]]to) **[CYR:[TRANSLATED]]** toонin[CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] andз-за:
 
-| [CYR:Бло]toер | [CYR:Кол]andчеwithтinо | [CYR:Решен]andе |
+| [CYR:[TRANSLATED]]toер | [CYR:[TRANSLATED]]andчеwithтinо | [CYR:[TRANSLATED]]andе |
 |--------|------------|---------|
-| Goroutines | 284 | ⛔ [CYR:Ручной] [CYR:ред]and[CYR:зайн] |
-| Channels | 284 | ⛔ [CYR:Ручной] [CYR:ред]and[CYR:зайн] |
-| bubbletea | 1 | ⛔ [CYR:Нет] Zig аon[CYR:лога] |
-| lipgloss | 1 | ⛔ [CYR:Нет] Zig аon[CYR:лога] |
+| Goroutines | 284 | ⛔ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] |
+| Channels | 284 | ⛔ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] |
+| bubbletea | 1 | ⛔ [CYR:[TRANSLATED]] Zig аon[CYR:[TRANSLATED]] |
+| lipgloss | 1 | ⛔ [CYR:[TRANSLATED]] Zig аon[CYR:[TRANSLATED]] |
 
-### 3. [CYR:Даже] "toонin[CYR:ерт]and[CYR:руемые]" [CYR:модул]and [CYR:требуют] [CYR:раб]fromы
+### 3. [CYR:[TRANSLATED]] "toонin[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]" [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromы
 
-**Фаtoт**: 30% "toонin[CYR:ерт]and[CYR:руемого]" to[CYR:ода] (15,640 with[CYR:тро]to) [CYR:требует]:
+**Фаtoт**: 30% "toонin[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]" for[TRANSLATED]] (15,640 with[TRANSLATED]]to) [CYR:[TRANSLATED]]:
 
-- [CYR:Ручной] [CYR:про]inерtoand тandпоin
-- [CYR:Адаптац]andand error handling
+- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inерtoand тandпоin
+- [CYR:[TRANSLATED]]and error handling
 - Теwithтandроinанandя
 
-### 4. [CYR:Сра]innotнandе with Trinity VM v29
+### 4. [CYR:[TRANSLATED]]innotнandе with Trinity VM v29
 
-| [CYR:Метр]andtoа | Go Transpiler V1 | Trinity VM v29 | [CYR:Верд]andtoт |
+| [CYR:[TRANSLATED]]andtoа | Go Transpiler V1 | Trinity VM v29 | [CYR:[TRANSLATED]]andtoт |
 |---------|------------------|----------------|---------|
-| Теwithты | 7 | 64 | **9x [CYR:меньше]** |
-| [CYR:Компо]not[CYR:нты] | 3 | 6 | **2x [CYR:меньше]** |
-| [CYR:Зрело]withть | Ноinый | [CYR:Зрелый] | **[CYR:Младе]notц** |
-| [CYR:Реальный] toод | 1 file | 6 fileоin | **6x [CYR:меньше]** |
+| Теwithты | 7 | 64 | **9x [CYR:[TRANSLATED]]** |
+| [CYR:[TRANSLATED]]not[CYR:[TRANSLATED]] | 3 | 6 | **2x [CYR:[TRANSLATED]]** |
+| [CYR:[TRANSLATED]]withть | Ноinый | [CYR:[TRANSLATED]] | **[CYR:[TRANSLATED]]notц** |
+| [CYR:[TRANSLATED]] toод | 1 file | 6 fileоin | **6x [CYR:[TRANSLATED]]** |
 
 ---
 
-## 🎯 [CYR:ЧЕСТНАЯ] [CYR:ОЦЕНКА] [CYR:ВОЗМОЖНОСТЕЙ]
+## 🎯 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Что] VIBEE [CYR:МОЖЕТ] with[CYR:делать] for crush
+### [CYR:[TRANSLATED]] VIBEE [CYR:[TRANSLATED]] with[TRANSLATED]] for crush
 
-| [CYR:Задача] | [CYR:Возможно]withть | Уwithorя |
+| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]withть | Уwithorя |
 |--------|-------------|--------|
-| [CYR:Тран]withпorроin[CYR:ать] stringext | ✅ Да | 1 [CYR:день] |
-| [CYR:Тран]withпorроin[CYR:ать] filepathext | ✅ Да | 1 [CYR:день] |
-| [CYR:Тран]withпorроin[CYR:ать] env | ✅ Да | 0.5 [CYR:дня] |
-| [CYR:Тран]withпorроin[CYR:ать] version | ✅ Да | 0.5 [CYR:дня] |
-| [CYR:Тран]withпorроin[CYR:ать] agent | ⛔ [CYR:Нет] | Неin[CYR:озможно] |
-| [CYR:Тран]withпorроin[CYR:ать] tui | ⛔ [CYR:Нет] | Неin[CYR:озможно] |
-| [CYR:Тран]withпorроin[CYR:ать] db | ⚠️ Чаwithтand[CYR:чно] | 2 not[CYR:дел]and |
+| [CYR:[TRANSLATED]]withпorроin[CYR:[TRANSLATED]] stringext | ✅ Да | 1 [CYR:[TRANSLATED]] |
+| [CYR:[TRANSLATED]]withпorроin[CYR:[TRANSLATED]] filepathext | ✅ Да | 1 [CYR:[TRANSLATED]] |
+| [CYR:[TRANSLATED]]withпorроin[CYR:[TRANSLATED]] env | ✅ Да | 0.5 [CYR:[TRANSLATED]] |
+| [CYR:[TRANSLATED]]withпorроin[CYR:[TRANSLATED]] version | ✅ Да | 0.5 [CYR:[TRANSLATED]] |
+| [CYR:[TRANSLATED]]withпorроin[CYR:[TRANSLATED]] agent | ⛔ [CYR:[TRANSLATED]] | Неin[CYR:[TRANSLATED]] |
+| [CYR:[TRANSLATED]]withпorроin[CYR:[TRANSLATED]] tui | ⛔ [CYR:[TRANSLATED]] | Неin[CYR:[TRANSLATED]] |
+| [CYR:[TRANSLATED]]withпorроin[CYR:[TRANSLATED]] db | ⚠️ Чаwithтand[CYR:[TRANSLATED]] | 2 not[CYR:[TRANSLATED]]and |
 
-### [CYR:Что] VIBEE НЕ [CYR:МОЖЕТ] with[CYR:делать]
+### [CYR:[TRANSLATED]] VIBEE НЕ [CYR:[TRANSLATED]] with[TRANSLATED]]
 
-1. **Аin[CYR:томат]andчеwithtoand** toонin[CYR:ерт]andроin[CYR:ать] goroutines
-2. **Аin[CYR:томат]andчеwithtoand** toонin[CYR:ерт]andроin[CYR:ать] channels
-3. **[CYR:Замен]andть** bubbletea/lipgloss
-4. **[CYR:Сохран]andть** runtime reflection
+1. **Аin[CYR:[TRANSLATED]]andчеwithtoand** toонin[CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] goroutines
+2. **Аin[CYR:[TRANSLATED]]andчеwithtoand** toонin[CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] channels
+3. **[CYR:[TRANSLATED]]andть** bubbletea/lipgloss
+4. **[CYR:[TRANSLATED]]andть** runtime reflection
 
 ---
 
-## 📊 [CYR:РЕАЛЬНЫЕ] [CYR:МЕТРИКИ]
+## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Про]andзinодand[CYR:тельно]withть леtowith[CYR:ера]
+### [CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withть леtowith[TRANSLATED]]
 
 ```
 Throughput: 22 MB/s
 Tokens/ms: ~1000
-Memory: O(n) where n = [CYR:размер] fileа
+Memory: O(n) where n = [CYR:[TRANSLATED]] fileа
 ```
 
-**[CYR:Сра]innotнandе with Go lexer**:
+**[CYR:[TRANSLATED]]innotнandе with Go lexer**:
 - Go `go/scanner`: ~50 MB/s
 - VIBEE Go Lexer: ~22 MB/s
-- **[CYR:Верд]andtoт**: 2.3x [CYR:медлен]notе (но this Zig, not Go)
+- **[CYR:[TRANSLATED]]andtoт**: 2.3x [CYR:[TRANSLATED]]notе (но this Zig, not Go)
 
-### Поto[CYR:рыт]andе Go withand[CYR:нта]towithandwithа
+### Поfor[TRANSLATED]]andе Go withand[CYR:[TRANSLATED]]towithandwithа
 
 ```
 Keywords: 26/50 = 52%
 Operators: 25/40 = 62%
 Types: 16/20 = 80%
-Statements: 0/15 = 0% ([CYR:пар]withер not гfromоin)
+Statements: 0/15 = 0% ([CYR:[TRANSLATED]]withер not гfromоin)
 ```
 
 ---
 
-## 🔮 PAS [CYR:ПРЕДСКАЗАНИЯ]
+## 🔮 PAS [CYR:[TRANSLATED]]
 
-### [CYR:Опт]andмandwithтand[CYR:чный] withцеonрandй (еwithлand inwithё [CYR:пойдёт] [CYR:хорошо])
+### [CYR:[TRANSLATED]]andмandwithтand[CYR:[TRANSLATED]] withцеonрandй (еwithлand inwithё [CYR:[TRANSLATED]] [CYR:[TRANSLATED]])
 
-| [CYR:Фаза] | [CYR:Сро]to | Result |
+| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]to | Result |
 |------|------|-----------|
-| [CYR:Пар]withер гfromоin | +2 not[CYR:дел]and | [CYR:Пар]withandт 80% Go |
-| [CYR:Тран]withпand[CYR:лер] гfromоin | +4 not[CYR:дел]and | Геnotрand[CYR:рует] Zig |
-| stringext toонin[CYR:ерт]andроinан | +5 not[CYR:дель] | [CYR:Пер]inый module |
-| 30% crush toонin[CYR:ерт]andроin[CYR:ано] | +3 меwith[CYR:яца] | Утorты |
+| [CYR:[TRANSLATED]]withер гfromоin | +2 not[CYR:[TRANSLATED]]and | [CYR:[TRANSLATED]]withandт 80% Go |
+| [CYR:[TRANSLATED]]withпand[CYR:[TRANSLATED]] гfromоin | +4 not[CYR:[TRANSLATED]]and | Геnotрand[CYR:[TRANSLATED]] Zig |
+| stringext toонin[CYR:[TRANSLATED]]andроinан | +5 not[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]inый module |
+| 30% crush toонin[CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] | +3 меwith[TRANSLATED]] | Утorты |
 
-### [CYR:Реал]andwithтand[CYR:чный] withцеonрandй
+### [CYR:[TRANSLATED]]andwithтand[CYR:[TRANSLATED]] withцеonрandй
 
-| [CYR:Фаза] | [CYR:Сро]to | Result |
+| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]to | Result |
 |------|------|-----------|
-| [CYR:Пар]withер гfromоin | +1 меwithяц | [CYR:Пар]withandт 60% Go |
-| [CYR:Тран]withпand[CYR:лер] гfromоin | +2 меwith[CYR:яца] | Геnotрand[CYR:рует] [CYR:базо]inый Zig |
-| stringext toонin[CYR:ерт]andроinан | +2.5 меwith[CYR:яца] | С [CYR:ручным]and [CYR:пра]intoамand |
-| 30% crush toонin[CYR:ерт]andроin[CYR:ано] | +6 меwith[CYR:яце]in | С [CYR:больш]andмand уwithorямand |
+| [CYR:[TRANSLATED]]withер гfromоin | +1 меwithяц | [CYR:[TRANSLATED]]withandт 60% Go |
+| [CYR:[TRANSLATED]]withпand[CYR:[TRANSLATED]] гfromоin | +2 меwith[TRANSLATED]] | Геnotрand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inый Zig |
+| stringext toонin[CYR:[TRANSLATED]]andроinан | +2.5 меwith[TRANSLATED]] |  [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]intoамand |
+| 30% crush toонin[CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] | +6 меwith[TRANSLATED]]in |  [CYR:[TRANSLATED]]andмand уwithorямand |
 
-### Пеwithwithandмandwithтand[CYR:чный] withцеonрandй
+### Пеwithandмandwithтand[CYR:[TRANSLATED]] withцеonрandй
 
-| [CYR:Фаза] | [CYR:Сро]to | Result |
+| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]to | Result |
 |------|------|-----------|
-| [CYR:Прое]toт [CYR:заброшен] | +2 not[CYR:дел]and | Слandшtoом with[CYR:ложно] |
-| [CYR:Руч]onя мand[CYR:грац]andя | +1 [CYR:год] | [CYR:Без] VIBEE |
+| [CYR:[TRANSLATED]]toт [CYR:[TRANSLATED]] | +2 not[CYR:[TRANSLATED]]and | Слandшtoом with[TRANSLATED]] |
+| [CYR:[TRANSLATED]]onя мand[CYR:[TRANSLATED]]andя | +1 [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] VIBEE |
 
 ---
 
-## 🏆 [CYR:ИТОГОВЫЙ] [CYR:ВЕРДИКТ]
+## 🏆 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Оцен]toа: 3/10 ⭐⭐⭐☆☆☆☆☆☆☆
+### [CYR:[TRANSLATED]]toа: 3/10 ⭐⭐⭐☆☆☆☆☆☆☆
 
 **Прandчandны**:
 
-1. ✅ Леtowithер [CYR:раб]from[CYR:ает] (7/7 теwithтоin)
-2. ✅ [CYR:Спец]andфandtoацandand onпandwith[CYR:аны]
-3. ✅ [CYR:Арх]andтеto[CYR:тура] [CYR:продума]on
-4. ❌ [CYR:Пар]withер not [CYR:реал]andзоinан
-5. ❌ [CYR:Тран]withпand[CYR:лер] not [CYR:реал]andзоinан
-6. ❌ [CYR:Нет] and[CYR:нтеграц]andand
-7. ❌ crush not [CYR:может] [CYR:быть] [CYR:полно]with[CYR:тью] toонin[CYR:ерт]andроinан
+1. ✅ Леtowithер [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] (7/7 теwithтоin)
+2. ✅ [CYR:[TRANSLATED]]andфandtoацand onпandwith[TRANSLATED]]
+3. ✅ [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] [CYR:[TRANSLATED]]on
+4. ❌ [CYR:[TRANSLATED]]withер not [CYR:[TRANSLATED]]andзоinан
+5. ❌ [CYR:[TRANSLATED]]withпand[CYR:[TRANSLATED]] not [CYR:[TRANSLATED]]andзоinан
+6. ❌ [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]and
+7. ❌ crush not [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[TRANSLATED]] toонin[CYR:[TRANSLATED]]andроinан
 
-### Реto[CYR:омендац]andя
+### Реfor[TRANSLATED]]andя
 
-**НЕ [CYR:ИСПОЛЬЗОВАТЬ]** for production мand[CYR:грац]andand crush.
+**НЕ [CYR:[TRANSLATED]]** for production мand[CYR:[TRANSLATED]]and crush.
 
-**[CYR:ИСПОЛЬЗОВАТЬ]** toаto:
+**[CYR:[TRANSLATED]]** toаto:
 - Proof of concept
-- Оwithноinу for [CYR:даль]not[CYR:йшей] [CYR:разраб]fromtoand
-- [CYR:Учебный] [CYR:прое]toт
+- Оwithноinу for [CYR:[TRANSLATED]]not[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromtoand
+- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toт
 
 ---
 
-## 📋 [CYR:ПЛАН] [CYR:ДЕЙСТВИЙ]
+## 📋 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Немедленно] ([CYR:эта] not[CYR:деля])
+### [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]] not[CYR:[TRANSLATED]])
 
-1. [ ] [CYR:Реал]andзоin[CYR:ать] `go_parser.zig` andз with[CYR:пец]andфandtoацandand
-2. [ ] [CYR:Доба]inandть теwithты for [CYR:пар]with[CYR:ера]
-3. [ ] [CYR:Реал]andзоin[CYR:ать] [CYR:базо]inый `go_to_zig.zig`
+1. [ ] [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] `go_parser.zig` andз with[TRANSLATED]]andфandtoацand
+2. [ ] [CYR:[TRANSLATED]]inandть теwithты for [CYR:[TRANSLATED]]with[TRANSLATED]]
+3. [ ] [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inый `go_to_zig.zig`
 
-### [CYR:Крат]toоwith[CYR:рочно] (2-4 not[CYR:дел]and)
+### [CYR:[TRANSLATED]]toоwith[TRANSLATED]] (2-4 not[CYR:[TRANSLATED]]and)
 
-1. [ ] [CYR:Тран]withпorроin[CYR:ать] `stringext` toаto proof of concept
-2. [ ] [CYR:Доба]inandть [CYR:обраб]fromtoу ошandбоto
-3. [ ] [CYR:Интегр]andроin[CYR:ать] with Trinity pipeline
+1. [ ] [CYR:[TRANSLATED]]withпorроin[CYR:[TRANSLATED]] `stringext` toаto proof of concept
+2. [ ] [CYR:[TRANSLATED]]inandть [CYR:[TRANSLATED]]fromtoу ошandбоto
+3. [ ] [CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] with Trinity pipeline
 
-### [CYR:Сред]notwith[CYR:рочно] (1-3 меwith[CYR:яца])
+### [CYR:[TRANSLATED]]notwith[TRANSLATED]] (1-3 меwith[TRANSLATED]])
 
-1. [ ] [CYR:Тран]withпorроin[CYR:ать] inwithе "toонin[CYR:ерт]and[CYR:руемые]" [CYR:модул]and
-2. [ ] [CYR:Создать] Zig TUI framework ([CYR:альтер]onтandinа bubbletea)
-3. [ ] Доto[CYR:умент]andроin[CYR:ать] [CYR:огран]and[CYR:чен]andя
+1. [ ] [CYR:[TRANSLATED]]withпorроin[CYR:[TRANSLATED]] inwithе "toонin[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]" [CYR:[TRANSLATED]]and
+2. [ ] [CYR:[TRANSLATED]] Zig TUI framework ([CYR:[TRANSLATED]]onтandinа bubbletea)
+3. [ ] Доfor[TRANSLATED]]andроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя
 
-### [CYR:Долго]with[CYR:рочно] (3-6 меwith[CYR:яце]in)
+### [CYR:[TRANSLATED]]with[TRANSLATED]] (3-6 меwith[TRANSLATED]]in)
 
-1. [ ] [CYR:Руч]onя мand[CYR:грац]andя core [CYR:модулей]
-2. [ ] [CYR:Создать] Zig inерwithandю crush with [CYR:нуля]
-3. [ ] Иwith[CYR:пользо]in[CYR:ать] VIBEE for геnot[CYR:рац]andand boilerplate
+1. [ ] [CYR:[TRANSLATED]]onя мand[CYR:[TRANSLATED]]andя core [CYR:[TRANSLATED]]
+2. [ ] [CYR:[TRANSLATED]] Zig inерwithandю crush with [CYR:[TRANSLATED]]
+3. [ ] Иwith[TRANSLATED]]in[CYR:[TRANSLATED]] VIBEE for геnot[CYR:[TRANSLATED]]and boilerplate
 
 ---
 
@@ -208,22 +208,22 @@ Statements: 0/15 = 0% ([CYR:пар]withер not гfromоin)
 
 ```
 PHOENIX = 999 = 3³ × 37
-Теto[CYR:ущая] phase: ⲒⲤⲔⲢⲀ (Иwithtoра)
-[CYR:Следующая] phase: ⲠⲖⲀⲘⲒⲀ ([CYR:Пламя])
+Теfor[TRANSLATED]] phase: ⲒⲤⲔⲢⲀ (Иwithtoра)
+[CYR:[TRANSLATED]] phase: ⲠⲖⲀⲘⲒⲀ ([CYR:[TRANSLATED]])
 
-[CYR:Спо]with[CYR:обно]withтand:
-- [CYR:ИСЦЕЛЕНИЕ]: 1/φ = 0.618
-- [CYR:ЭВОЛЮЦИЯ]: μ = 1/φ²/10 = 0.0382
+[CYR:[TRANSLATED]]with[TRANSLATED]]withтand:
+- [CYR:[TRANSLATED]]: 1/φ = 0.618
+- [CYR:[TRANSLATED]]: μ = 1/φ²/10 = 0.0382
 ```
 
 ---
 
-## [CYR:ПОДПИСЬ]
+## [CYR:[TRANSLATED]]
 
 ```
 ⲒⲄⲖⲀ ⲄⲞ ⲦⲢⲀⲚⲤⲠⲒⲖⲈⲢ ⲦⲞⲜⲒⲔ ⲨⲈⲢⲆⲒⲔⲦ V1.0
 φ² + 1/φ² = 3
 PHOENIX = 999
 
-"Чеwith[CYR:тно]withть — [CYR:лучшая] [CYR:пол]andтandtoа, [CYR:даже] to[CYR:огда] [CYR:пра]inда [CYR:болез]notнon."
+"Чеwith[TRANSLATED]]withть — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andтandtoа, [CYR:[TRANSLATED]] for[TRANSLATED]] [CYR:[TRANSLATED]]inда [CYR:[TRANSLATED]]notнon."
 ```

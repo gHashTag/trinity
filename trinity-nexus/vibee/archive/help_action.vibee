@@ -1,4 +1,4 @@
-// Help Action - Responds to "that [EN]y [CYR:[TRANSLATED]]" and similar help requests
+// Help Action - Responds to "that y " and similar help requests
   // Performance Warning:   // AI Suggestion: Consider extracting hardcoded strings to constants// Part of Actions-based Architecture for type type type type type type User {
   name: String,
   email: String,
@@ -42,14 +42,14 @@ import ../intent.vibee as intent
   count: Int} capabilities",
     // Similes for NLP matching
     [
-      "that [CYR:[TRANSLATED]]", "that [EN]y [CYR:[TRANSLATED]]", "[CYR:[TRANSLATED]]", "help",
-      "in[CYR:[EN]can[EN]]with[EN]and", "[CYR:[TRANSLATED]]andand", "that [CYR:can[TRANSLATED]]"
+      "that ", "that y ", "", "help",
+      "in[CYR:can]withand", "and", "that [CYR:can]"
     ],
     // Example messages
     [
-      "[CYR:[TRANSLATED]] [EN]y [CYR:[TRANSLATED]]?",
-      "[CYR:[TRANSLATED]]",
-      "[CYR:[TRANSLATED]]and[EN]  [CYR:youI] in[CYR:[EN]can[EN]]with[EN]and?",
+      " y ?",
+      "",
+      "and  [CYR:youI] in[CYR:can]withand?",
       "What can you do?"
     ],
     { validate_help(it) },
@@ -118,25 +118,25 @@ trace("agent.help_action.handle")
   print("[HELP_ACTION] Handling help request")
 
   let response = """
- [EN]in[EN] [CYR:[TRANSLATED]]with[EN]on[CYR:lny] AI-[CYR:[TRANSLATED]]and[EN] VIBEE! [CYR:[TRANSLATED]] that I [CYR:[TRANSLATED]]:
+ in withon[CYR:lny] AI-and VIBEE!  that I :
 
-**[EN]and[CYR:[TRANSLATED]] and [EN]and[EN]withy**
-- [CYR:[TRANSLATED]]in[CYR:ate] [EN]and[EN]withy - with[CYR:[TRANSLATED]]and "with[CYR:[TRANSLATED]] [EN]and[EN]with [CYR:pro] [[CYR:[TRANSLATED]]]"
-- [EN]not[EN]and[EN]in[CYR:ate] video - with[CYR:[TRANSLATED]]and "with[CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]] [CYR:pro] [[CYR:[TRANSLATED]]]"
+**and and andwithy**
+- in[CYR:ate] andwithy - withand "with andwith [CYR:pro] []"
+- notandin[CYR:ate] video - withand "with inand [CYR:pro] []"
 
-**[CYR:[TRANSLATED]]andI**
-- [EN]not[EN]and[EN]in[CYR:ate] neurophoto - with[CYR:[TRANSLATED]]and "with[EN]not[EN]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [[EN]andwith[EN]and[EN]]"
-- [CYR:[TRANSLATED]]in[CYR:ate] [EN]in[CYR:[TRANSLATED]y]
+**andI**
+- notandin[CYR:ate] neurophoto - withand "withnotand  [andwithand]"
+- in[CYR:ate] in[CYR:y]
 
-**[CYR:[TRANSLATED]]with**
-- [EN]in[EN]andin[CYR:ate] [CYR:[TRANSLATED]]with[EN] - with[CYR:[TRANSLATED]]and "[EN]in[CYR:[TRANSLATED]] [[CYR:[TRANSLATED]]with[EN]]"
-- [CYR:[TRANSLATED]]and[EN]in[CYR:ate] [CYR:go[EN]]with
+**with**
+- inandin[CYR:ate] with - withand "in [with]"
+- andin[CYR:ate] [CYR:go]with
 
-**[CYR:[TRANSLATED]]and[EN]y**
-- [EN]with[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN]y - with[CYR:[TRANSLATED]]and "while[EN]and [CYR:[TRANSLATED]]and[EN]y"
+**andy**
+- with andy - withand "whileand andy"
 
 **Digital Twin**
-- [EN]with[CYR:[TRANSLATED]]and[EN] type type type type type type User {
+- withand type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -154,9 +154,9 @@ trace("agent.help_action.handle")
   id: Int} {
   name: String,
   email: String,
-  id: Int}-Bot - with[CYR:[TRANSLATED]]and "onwith[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]"
+  id: Int}-Bot - withand "onwithand "
 
-[CYR:[TRANSLATED]]with[EN] on[EN]and[EN]and that [CYR:you[EN]] [CYR:[TRANSLATED]]!
+with onand that [CYR:you] !
 """
 
   eliza.success_result(response)

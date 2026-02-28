@@ -80,17 +80,17 @@ Star if useful!
 ### Russian Version
 
 ```
-🚀 Trinity IGLA v1.0 — Лоto[CYR:альный] to[CYR:огерентный] AI in 264KB!
+🚀 Trinity IGLA v1.0 — Лоfor[TRANSLATED]] for[TRANSLATED]] AI in 264KB!
 
-[CYR:Что] [CYR:умеет]:
-• 4,854 [CYR:запро]withоin/withеto on M1 Pro
-• 50,000 withлоin withлоin[CYR:аря]
-• [CYR:Раб]from[CYR:ает] [CYR:полно]with[CYR:тью] лоto[CYR:ально]
-• [CYR:Нет] [CYR:обла]toа, notт API to[CYR:лючей]
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
+• 4,854 [CYR:[TRANSLATED]]withоin/withеto on M1 Pro
+• 50,000 withлоin withлоin[CYR:[TRANSLATED]]
+• [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[TRANSLATED]] лоfor[TRANSLATED]]
+• [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toа, notт API for[TRANSLATED]]
 
-[CYR:Почему] CPU [CYR:лучше] GPU:
-CPU SIMD (8 пfromоtoоin) быwith[CYR:трее] Metal GPU in 7.2 [CYR:раза]!
-Прandчandon: overhead Metal command buffer (~1-2мwith) убandin[CYR:ает] [CYR:малень]toandе [CYR:задач]and.
+[CYR:[TRANSLATED]] CPU [CYR:[TRANSLATED]] GPU:
+CPU SIMD (8 пfromоtoоin) быwith[TRANSLATED]] Metal GPU in 7.2 [CYR:[TRANSLATED]]!
+Прandчandon: overhead Metal command buffer (~1-2мwith) убandin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toandе [CYR:[TRANSLATED]]and.
 
 Бandonрнandtoand:
 • macOS ARM64: 264 KB
@@ -98,9 +98,9 @@ CPU SIMD (8 пfromоtoоin) быwith[CYR:трее] Metal GPU in 7.2 [CYR:раз�
 • Linux x64: 2.3 MB
 • Windows x64: 543 KB
 
-Сto[CYR:ачать]: github.com/gHashTag/trinity/releases/tag/v1.0.0-igla
+Сfor[TRANSLATED]]: github.com/gHashTag/trinity/releases/tag/v1.0.0-igla
 
-Поwith[CYR:троено] on Zig. MIT лand[CYR:ценз]andя.
+Поwith[TRANSLATED]] on Zig. MIT лand[CYR:[TRANSLATED]]andя.
 
 φ² + 1/φ² = 3 = TRINITY
 

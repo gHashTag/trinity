@@ -2599,8 +2599,8 @@ import ./eliza.vibee as eliza
   Action(
     "HELP",
     "Provides help and available commands",
-    ["help", "[CYR:[TRANSLATED]]", "that [CYR:[TRANSLATED]]", "that [EN]y [CYR:[TRANSLATED]]", "in[CYR:[EN]can[EN]]with[EN]and", "?"],
-    ["[CYR:[TRANSLATED]]and [EN]not", "[CYR:[TRANSLATED]] [EN]y [CYR:[TRANSLATED]]?", "Help", "How can you help?"],
+    ["help", "", "that ", "that y ", "in[CYR:can]withand", "?"],
+    ["and not", " y ?", "Help", "How can you help?"],
     { validate_help_intent(it) },
     { handle_help(it) }
   )
@@ -2615,7 +2615,7 @@ import ./eliza.vibee as eliza
 
 @impl {
   let lower = lowercase(context.message)
-  ["help", "[CYR:[TRANSLATED]]", "that [CYR:[TRANSLATED]]", "in[CYR:[EN]can[EN]]with[EN]and", "?"] · contains_any
+  ["help", "", "that ", "in[CYR:can]withand", "?"] · contains_any
 }
 
 @spec handle_help(context: ActionContext) → ActionResult {
@@ -2750,10 +2750,10 @@ import ./eliza.vibee as eliza
 
 @impl {
   let text = """
-[EN]andin[EN]!  VIBEE - [EN]in[EN] [CYR:[TRANSLATED]]with[EN]on[CYR:lny] AI-[EN]withwithandwith[CYR:[TRANSLATED]].
+andin!  VIBEE - in withon[CYR:lny] AI-withandwith.
 
-[CYR:[TRANSLATED]] that I [CYR:[TRANSLATED]]:
-- [EN]with[CYR:[TRANSLATED]]and[EN] Digital Twin (type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+ that I :
+- withand Digital Twin (type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -2877,11 +2877,11 @@ import ./eliza.vibee as eliza
   name: String,
   email: String,
   id: Int}-bot)
-- [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]y] and [EN]in[CYR:[EN]ate] [EN]in[CYR:[TRANSLATED]]and[EN]with[EN]and
-- [EN]not[EN]and[EN]in[CYR:ate] [CYR:[TRANSLATED]] for with[EN]with[CYR:[TRANSLATED]]
-- [CYR:[TRANSLATED]]in[CYR:ate] inand[CYR:[TRANSLATED]] and from[CYR:[TRANSLATED]]andI
+- and [CYR:y] and in[CYR:ate] inandwithand
+- notandin[CYR:ate]  for with
+- in[CYR:ate] inand and fromandI
 
-[CYR:[TRANSLATED]]with[EN] on[EN]and[EN]and that [CYR:you[EN]] [CYR:[TRANSLATED]], and I [CYR:[TRANSLATED]]!
+with onand that [CYR:you] , and I !
 """
   eliza.success_result(text)
 }
@@ -3617,7 +3617,7 @@ import ./eliza.vibee as eliza
   name: String,
   email: String,
   id: Int} through Digital Twin setup",
-    ["onwith[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]", "with[CYR:[TRANSLATED]ate] [CYR:[TRANSLATED]]", "digital twin", "type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+    ["onwithand ", "withate] ", "digital twin", "type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -3741,7 +3741,7 @@ import ./eliza.vibee as eliza
   name: String,
   email: String,
   id: Int}bot", "setup"],
-    ["[EN]with[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]", "[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]ate] [CYR:[TRANSLATED]]", "Setup type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+    ["with ", " withate] ", "Setup type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -3879,7 +3879,7 @@ import ./eliza.vibee as eliza
 
 @impl {
   let lower = lowercase(context.message)
-  ["onwith[CYR:[TRANSLATED]]and[EN]", "setup", "with[CYR:[TRANSLATED]ate] [CYR:[TRANSLATED]]", "digital twin", "type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+  ["onwithand", "setup", "withate] ", "digital twin", "type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -4002,7 +4002,7 @@ import ./eliza.vibee as eliza
   id: Int} {
   name: String,
   email: String,
-  id: Int}bot", "on[CYR:[EN]ate]"] · contains_any
+  id: Int}bot", "on[CYR:ate]"] · contains_any
 }
 
 @spec handle_setup_start(context: ActionContext) → ActionResult {
@@ -4260,10 +4260,10 @@ import ./eliza.vibee as eliza
 
 @impl {
   let text = """
-[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]! [EN]in[EN] onwith[CYR:[TRANSLATED]]and[EN] [EN]in[EN] Digital Twin.
+and! in onwithand in Digital Twin.
 
-[CYR:[EN]I] [CYR:[TRANSLATED]]key[EN]andI  Telegram [EN]not [CYR:[TRANSLATED]] [EN]in[EN] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]on.
-[CYR:[TRANSLATED]]and[EN]and [CYR:[EN]go] in [CYR:[TRANSLATED]]: +79001234567
+[CYR:I] keyandI  Telegram not  in  on.
+and [CYR:go] in : +79001234567
 """
   eliza.success_result(text)
 }

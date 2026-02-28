@@ -103,7 +103,7 @@ pub const ReplAgent = struct {
         try stdout.print("║  Type 'help' for commands, or describe your task naturally  ║\n", .{});
         try stdout.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
         try stdout.print("\n", .{});
-        try stdout.print("REPL Agent Mode [EN]to[EN]andinand[EN]in[EN]. [EN]from[EN]in [EN]and[EN]and[CYR:[EN]] [EN]yes[EN]and.\n\n", .{});
+        try stdout.print("REPL Agent Mode toandinandin. fromin and yesand.\n\n", .{});
 
         var input_buf: [4096]u8 = undefined;
 
@@ -145,7 +145,7 @@ pub const ReplAgent = struct {
         switch (cmd) {
             .Exit => {
                 self.running = false;
-                try writer.print("[CYR:[EN]] and[EN] REPL...\n", .{});
+                try writer.print(" and REPL...\n", .{});
             },
 
             .Help => {
@@ -184,18 +184,18 @@ pub const ReplAgent = struct {
         _ = self;
         try writer.print("\n📚 REPL Commands:\n", .{});
         try writer.print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
-        try writer.print("  <task>         - [EN]andwith[EN]and[EN] [EN]yes[EN]and on [EN]with[EN]with[EN]in[CYR:[EN]] [CYR:[EN]]to[EN]\n", .{});
-        try writer.print("  infer <model>  - [CYR:[EN]]with[EN]and[EN] and[CYR:[EN]]with on [CYR:[EN]]and\n", .{});
-        try writer.print("  stake <amount> - [EN]with[CYR:[EN]]to[CYR:[EN]] TRI [EN]to[CYR:[EN]]\n", .{});
-        try writer.print("  vote <id> <yes/no> - [CYR:[EN]]with[EN]in[CYR:[EN]] [EN] [CYR:[EN]]and[EN]\n", .{});
-        try writer.print("  jobs           - [CYR:[EN]]and beforewith[CYR:[EN]] [EN]yes[EN]and in Trinity L2\n", .{});
-        try writer.print("  stats          - [EN]to[CYR:[EN]] with[CYR:[EN]]andwith[EN]andto[EN] with[EN]withwithandand\n", .{});
-        try writer.print("  help           - [EN]to[CYR:[EN]] [CYR:[EN]] with[CYR:[EN]]into[EN]\n", .{});
-        try writer.print("  exit           - [CYR:[EN]]and and[EN] REPL\n", .{});
-        try writer.print("\n📝 [EN]and[CYR:[EN]]:\n", .{});
-        try writer.print("  vibee repl> [CYR:[EN]]and[EN]and[EN]and[CYR:[EN]] inference for Qwen2.5-Coder-7B\n", .{});
-        try writer.print("  vibee repl> [CYR:[EN]]in[EN] to[CYR:[EN]] for [EN]in[EN]-with[CYR:[EN]]toand[CYR:[EN]] [EN]and earnings > 100 TRI\n", .{});
-        try writer.print("  vibee repl> [CYR:[EN]]with[EN]and with[CYR:[EN]]withwith-[EN]with[EN] on 1000 jobs and byto[EN]and [CYR:[EN]]andtoand\n", .{});
+        try writer.print("  <task>         - andwithand yesand on within to\n", .{});
+        try writer.print("  infer <model>  - withand andwith on and\n", .{});
+        try writer.print("  stake <amount> - withto TRI to\n", .{});
+        try writer.print("  vote <id> <yes/no> - within  and\n", .{});
+        try writer.print("  jobs           - and beforewith yesand in Trinity L2\n", .{});
+        try writer.print("  stats          - to withandwithandto withwithand\n", .{});
+        try writer.print("  help           - to  withinto\n", .{});
+        try writer.print("  exit           - and and REPL\n", .{});
+        try writer.print("\n📝 and:\n", .{});
+        try writer.print("  vibee repl> andand inference for Qwen2.5-Coder-7B\n", .{});
+        try writer.print("  vibee repl> in to for in-withtoand and earnings > 100 TRI\n", .{});
+        try writer.print("  vibee repl> withand withwith-with on 1000 jobs and bytoand andtoand\n", .{});
         try writer.print("\n", .{});
     }
 

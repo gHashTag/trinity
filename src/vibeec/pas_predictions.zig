@@ -1,16 +1,16 @@
 //! ═══════════════════════════════════════════════════════════════════════════════
 //! PAS PREDICTIONS IMPLEMENTATION
 //! ═══════════════════════════════════════════════════════════════════════════════
-//! [CYR:[EN]]and[EN] [CYR:[EN]]withto[CYR:[EN]]and[EN] PAS DAEMON for TRINITY VM
-//! [EN]in[CYR:[EN]]: Dmitrii Vasilev
-//! [CYR:[EN]]withand[EN]: 1.0.0
+//! and withtoand PAS DAEMON for TRINITY VM
+//! in: Dmitrii Vasilev
+//! withand: 1.0.0
 //! ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
 const math = std.math;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]] CONSTANTS
+//  CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PHI: f64 = 1.618033988749895; // Golden ratio
@@ -114,12 +114,12 @@ pub const Timeline = enum {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]] [CYR:[EN]] (2025-2026)
+//   (2025-2026)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const ShortTermPredictions = struct {
     
-    /// 3DGS [CYR:[EN]]and[EN]: 15 [EN]and[EN] → 30 with[EN]to[CYR:[EN]] (85% [EN]in[CYR:[EN]]with[EN])
+    /// 3DGS and: 15 and → 30 withto (85% inwith)
     pub const FastTraining = struct {
         pub const id = "ST-001";
         pub const name = "Ultra-Fast 3DGS Training";
@@ -157,7 +157,7 @@ pub const ShortTermPredictions = struct {
         }
     };
     
-    /// 3DGS memory: 500MB → 50MB (80% [EN]in[CYR:[EN]]with[EN])
+    /// 3DGS memory: 500MB → 50MB (80% inwith)
     pub const CompactMemory = struct {
         pub const id = "ST-002";
         pub const name = "Compact 3DGS Representation";
@@ -204,7 +204,7 @@ pub const ShortTermPredictions = struct {
         }
     };
     
-    /// Neural Upscaling: 4x → 8x (82% [EN]in[CYR:[EN]]with[EN])
+    /// Neural Upscaling: 4x → 8x (82% inwith)
     pub const NeuralUpscaling = struct {
         pub const id = "ST-003";
         pub const name = "8x Neural Super Resolution";
@@ -240,12 +240,12 @@ pub const ShortTermPredictions = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]] [CYR:[EN]] (2027-2028)
+//   (2027-2028)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const MediumTermPredictions = struct {
     
-    /// Single-Image 3D: Real-time, high quality (72% [EN]in[CYR:[EN]]with[EN])
+    /// Single-Image 3D: Real-time, high quality (72% inwith)
     pub const SingleImage3D = struct {
         pub const id = "MT-001";
         pub const name = "Real-time Single-Image 3D Reconstruction";
@@ -263,7 +263,7 @@ pub const MediumTermPredictions = struct {
         };
     };
     
-    /// 4D Capture: Single camera, real-time (65% [EN]in[CYR:[EN]]with[EN])
+    /// 4D Capture: Single camera, real-time (65% inwith)
     pub const Realtime4D = struct {
         pub const id = "MT-002";
         pub const name = "Real-time 4D Capture";
@@ -299,12 +299,12 @@ pub const MediumTermPredictions = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]] [CYR:[EN]] (2029-2030)
+//   (2029-2030)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const LongTermPredictions = struct {
     
-    /// Fully Neural Graphics Pipeline (55% [EN]in[CYR:[EN]]with[EN])
+    /// Fully Neural Graphics Pipeline (55% inwith)
     pub const NeuralPipeline = struct {
         pub const id = "LT-001";
         pub const name = "Fully Neural Graphics Pipeline";
@@ -326,7 +326,7 @@ pub const LongTermPredictions = struct {
         };
     };
     
-    /// True Real-time Photorealism (60% [EN]in[CYR:[EN]]with[EN])
+    /// True Real-time Photorealism (60% inwith)
     pub const TruePhotorealism = struct {
         pub const id = "LT-002";
         pub const name = "True Real-time Photorealism";

@@ -1,5 +1,5 @@
 // VIBEE BOGATYR - Spec Structure Validator
-// Checks with[CYR:[EN]]to[CYR:[EN]] .vibee with[CYR:[EN]]and[EN]andto[EN]andand
+// Checks withto .vibee withandtoand
 // φ² + 1/φ² = 3 | PHOENIX = 999
 
 const std = @import("std");
@@ -36,23 +36,23 @@ fn validateSpecStructure(ctx: *const common.ValidationContext) !common.BogatyrRe
 
         checks += 1;
 
-        // Check [CYR:[EN]] keys
+        // Check  keys
         if (std.mem.indexOfScalar(u8, trimmed, ':')) |colon_idx| {
             const key = std.mem.trim(u8, trimmed[0..colon_idx], " ");
 
-            // Check what keys [EN]andwith[EN]with[EN]in[CYR:[EN]]
+            // Check what keys andwithin
             if (std.mem.eql(u8, key, "name") or
                 std.mem.eql(u8, key, "version") or
                 std.mem.eql(u8, key, "language") or
                 std.mem.eql(u8, key, "module") or
                 std.mem.eql(u8, key, "output"))
             {
-                // [CYR:[EN]] on[CYR:[EN]]
+                //  on
             }
         }
     }
 
-    // Check on[EN]and[EN]and[EN] [CYR:[EN]] by[CYR:[EN]]
+    // Check onand  by
     var has_name = false;
     var has_version = false;
     var has_language = false;
@@ -77,7 +77,7 @@ fn validateSpecStructure(ctx: *const common.ValidationContext) !common.BogatyrRe
         }
     }
 
-    // [CYR:[EN]] [EN] [EN]and[EN]to[EN]
+    //   andto
     if (!has_name) {
         try errors.append(try common.createError(allocator, "missing_name", "Missing required 'name' field", 1, 0));
     }

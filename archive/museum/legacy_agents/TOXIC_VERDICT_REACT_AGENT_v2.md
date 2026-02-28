@@ -1,145 +1,145 @@
-# 🔥 [CYR:ТОКСИЧНЫЙ] [CYR:ВЕРДИКТ]: ReAct Agent v2.0 🔥
+# 🔥 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: ReAct Agent v2.0 🔥
 
-**[CYR:Дата]**: 2026-01-22  
-**Аin[CYR:тор]**: KOSCHEI MODE  
-**[CYR:Формула]**: φ² + 1/φ² = 3 | PHOENIX = 999
+**[CYR:[TRANSLATED]]**: 2026-01-22  
+**Аin[CYR:[TRANSLATED]]**: KOSCHEI MODE  
+**[CYR:[TRANSLATED]]**: φ² + 1/φ² = 3 | PHOENIX = 999
 
 ---
 
-## [CYR:ЧТО] [CYR:БЫЛО] [CYR:СДЕЛАНО]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-║                                              ✅ [CYR:ВЫПОЛНЕНО]                                                                ║
+║                                              ✅ [CYR:[TRANSLATED]]                                                                ║
 ╠══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
 ║                                                                                                                          ║
-║  [CYR:ИССЛЕДОВАНИЕ]:                                                                                                           ║
+║  [CYR:[TRANSLATED]]:                                                                                                           ║
 ║  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────   ║
-║  ✅ [CYR:Глубо]toое andwithwith[CYR:ледо]inанandе OpenAI Operator (CUA) - [CYR:арх]andтеto[CYR:тура], [CYR:бенчмар]toand, [CYR:огран]and[CYR:чен]andя                                    ║
-║  ✅ [CYR:Изучены] on[CYR:учные] [CYR:раб]fromы: UI-TARS, WebVoyager, SeeAct, Mind2Web, WebArena                                              ║
-║  ✅ [CYR:Проа]onлandзandроin[CYR:аны] inwithе 12 to[CYR:атегор]andй [CYR:фун]toцandй AGENT MODE                                                                 ║
-║  ✅ [CYR:Выя]in[CYR:лены] 89 [CYR:фун]toцandй for [CYR:полного] поto[CYR:рыт]andя                                                                             ║
+║  ✅ [CYR:[TRANSLATED]]toое andwith[TRANSLATED]]inанandе OpenAI Operator (CUA) - [CYR:[TRANSLATED]]andтеfor[TRANSLATED]], [CYR:[TRANSLATED]]toand, [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя                                    ║
+║  ✅ [CYR:[TRANSLATED]] on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromы: UI-TARS, WebVoyager, SeeAct, Mind2Web, WebArena                                              ║
+║  ✅ [CYR:[TRANSLATED]]onлandзandроin[CYR:[TRANSLATED]] inwithе 12 for[TRANSLATED]]andй [CYR:[TRANSLATED]]toцandй AGENT MODE                                                                 ║
+║  ✅ [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] 89 [CYR:[TRANSLATED]]toцandй for [CYR:[TRANSLATED]] поfor[TRANSLATED]]andя                                                                             ║
 ║                                                                                                                          ║
-║  [CYR:СПЕЦИФИКАЦИИ] (.vibee) - 36 [CYR:НОВЫХ] [CYR:МОДУЛЕЙ]:                                                                               ║
+║  [CYR:[TRANSLATED]] (.vibee) - 36 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:                                                                               ║
 ║  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────   ║
 ║                                                                                                                          ║
-║  [CYR:НАВИГАЦИЯ] (3):                                                                                                          ║
+║  [CYR:[TRANSLATED]] (3):                                                                                                          ║
 ║  ✅ agent_navigation_click.vibee - toлandtoand (left, right, double, hold)                                                     ║
-║  ✅ agent_navigation_scroll.vibee - withto[CYR:ролл] and hover                                                                       ║
+║  ✅ agent_navigation_scroll.vibee - withfor[TRANSLATED]] and hover                                                                       ║
 ║  ✅ agent_navigation_iframe.vibee - iframe and Shadow DOM                                                                  ║
 ║                                                                                                                          ║
-║  [CYR:ВВОД] [CYR:ДАННЫХ] (4):                                                                                                        ║
+║  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (4):                                                                                                        ║
 ║  ✅ agent_input_text.vibee - ininод теtowithта                                                                                 ║
 ║  ✅ agent_input_select.vibee - dropdown, checkbox, radio                                                                 ║
-║  ✅ agent_input_file.vibee - [CYR:загруз]toа fileоin                                                                             ║
-║  ✅ agent_input_form.vibee - аin[CYR:тозапол]notнandе [CYR:форм]                                                                         ║
+║  ✅ agent_input_file.vibee - [CYR:[TRANSLATED]]toа fileоin                                                                             ║
+║  ✅ agent_input_form.vibee - аin[CYR:[TRANSLATED]]notнandе [CYR:[TRANSLATED]]                                                                         ║
 ║                                                                                                                          ║
-║  [CYR:ИЗВЛЕЧЕНИЕ] (4):                                                                                                         ║
-║  ✅ agent_extract_text.vibee - andзin[CYR:лечен]andе теtowithта                                                                         ║
-║  ✅ agent_extract_table.vibee - andзin[CYR:лечен]andе [CYR:табл]andц                                                                        ║
-║  ✅ agent_extract_links.vibee - andзin[CYR:лечен]andе withwith[CYR:ыло]to                                                                        ║
-║  ✅ agent_extract_structured.vibee - with[CYR:тру]to[CYR:тур]andроin[CYR:анный] inыinод                                                             ║
+║  [CYR:[TRANSLATED]] (4):                                                                                                         ║
+║  ✅ agent_extract_text.vibee - andзin[CYR:[TRANSLATED]]andе теtowithта                                                                         ║
+║  ✅ agent_extract_table.vibee - andзin[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]andц                                                                        ║
+║  ✅ agent_extract_links.vibee - andзin[CYR:[TRANSLATED]]andе with[TRANSLATED]]to                                                                        ║
+║  ✅ agent_extract_structured.vibee - with[TRANSLATED]]for[TRANSLATED]]andроin[CYR:[TRANSLATED]] inыinод                                                             ║
 ║                                                                                                                          ║
 ║  MULTI-TAB (3):                                                                                                          ║
-║  ✅ agent_multitab_orchestrator.vibee - орtoеwith[CYR:трац]andя into[CYR:ладо]to                                                              ║
-║  ✅ agent_multitab_parallel.vibee - [CYR:параллельное] in[CYR:ыпол]notнandе                                                              ║
-║  ✅ agent_multitab_sync.vibee - withand[CYR:нхрон]and[CYR:зац]andя [CYR:данных]                                                                     ║
+║  ✅ agent_multitab_orchestrator.vibee - орtoеwith[TRANSLATED]]andя infor[TRANSLATED]]to                                                              ║
+║  ✅ agent_multitab_parallel.vibee - [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]notнandе                                                              ║
+║  ✅ agent_multitab_sync.vibee - withand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]                                                                     ║
 ║                                                                                                                          ║
-║  [CYR:АУТЕНТИФИКАЦИЯ] (4):                                                                                                     ║
-║  ✅ agent_auth_login.vibee - [CYR:лог]andн/password                                                                                ║
-║  ✅ agent_auth_oauth.vibee - OAuth аin[CYR:тор]and[CYR:зац]andя                                                                           ║
-║  ✅ agent_auth_2fa.vibee - дin[CYR:ухфа]to[CYR:тор]onя [CYR:аутент]andфandtoацandя                                                                  ║
-║  ✅ agent_auth_session.vibee - [CYR:упра]in[CYR:лен]andе withеwithwithandямand                                                                       ║
+║  [CYR:[TRANSLATED]] (4):                                                                                                     ║
+║  ✅ agent_auth_login.vibee - [CYR:[TRANSLATED]]andн/password                                                                                ║
+║  ✅ agent_auth_oauth.vibee - OAuth аin[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя                                                                           ║
+║  ✅ agent_auth_2fa.vibee - дin[CYR:[TRANSLATED]]for[TRANSLATED]]onя [CYR:[TRANSLATED]]andфandtoацandя                                                                  ║
+║  ✅ agent_auth_session.vibee - [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе withеwithandямand                                                                       ║
 ║                                                                                                                          ║
-║  [CYR:ПОИСК] (3):                                                                                                              ║
+║  [CYR:[TRANSLATED]] (3):                                                                                                              ║
 ║  ✅ agent_search_google.vibee - поandwithto in Google                                                                           ║
-║  ✅ agent_search_deep.vibee - [CYR:глубо]toandй поandwithto                                                                             ║
-║  ✅ agent_search_compare.vibee - withраinnotнandе [CYR:цен]                                                                           ║
+║  ✅ agent_search_deep.vibee - [CYR:[TRANSLATED]]toandй поandwithto                                                                             ║
+║  ✅ agent_search_compare.vibee - withраinnotнandе [CYR:[TRANSLATED]]                                                                           ║
 ║                                                                                                                          ║
-║  [CYR:ПОКУПКИ] (3):                                                                                                            ║
-║  ✅ agent_shopping_cart.vibee - to[CYR:орз]andon поto[CYR:упо]to                                                                          ║
-║  ✅ agent_shopping_checkout.vibee - [CYR:оформлен]andе заto[CYR:аза]                                                                    ║
-║  ✅ agent_booking_reserve.vibee - [CYR:брон]andроinанandе                                                                           ║
+║  [CYR:[TRANSLATED]] (3):                                                                                                            ║
+║  ✅ agent_shopping_cart.vibee - for[TRANSLATED]]andon поfor[TRANSLATED]]to                                                                          ║
+║  ✅ agent_shopping_checkout.vibee - [CYR:[TRANSLATED]]andе заfor[TRANSLATED]]                                                                    ║
+║  ✅ agent_booking_reserve.vibee - [CYR:[TRANSLATED]]andроinанandе                                                                           ║
 ║                                                                                                                          ║
-║  [CYR:ДОКУМЕНТЫ] (2):                                                                                                          ║
-║  ✅ agent_docs_summarize.vibee - with[CYR:уммар]and[CYR:зац]andя                                                                            ║
-║  ✅ agent_docs_report.vibee - геnot[CYR:рац]andя from[CYR:чёто]in                                                                          ║
+║  [CYR:[TRANSLATED]] (2):                                                                                                          ║
+║  ✅ agent_docs_summarize.vibee - with[TRANSLATED]]and[CYR:[TRANSLATED]]andя                                                                            ║
+║  ✅ agent_docs_report.vibee - геnot[CYR:[TRANSLATED]]andя from[CYR:[TRANSLATED]]in                                                                          ║
 ║                                                                                                                          ║
-║  [CYR:СОЦСЕТИ] (2):                                                                                                            ║
-║  ✅ agent_social_post.vibee - [CYR:публ]andtoацandя поwithтоin                                                                          ║
-║  ✅ agent_social_message.vibee - from[CYR:пра]intoа with[CYR:ообщен]andй                                                                      ║
+║  [CYR:[TRANSLATED]] (2):                                                                                                            ║
+║  ✅ agent_social_post.vibee - [CYR:[TRANSLATED]]andtoацandя поwithтоin                                                                          ║
+║  ✅ agent_social_message.vibee - from[CYR:[TRANSLATED]]intoа with[TRANSLATED]]andй                                                                      ║
 ║                                                                                                                          ║
-║  [CYR:РАЗРАБОТКА] (2):                                                                                                         ║
-║  ✅ agent_dev_github.vibee - [CYR:раб]fromа with GitHub                                                                             ║
+║  [CYR:[TRANSLATED]] (2):                                                                                                         ║
+║  ✅ agent_dev_github.vibee - [CYR:[TRANSLATED]]fromа with GitHub                                                                             ║
 ║  ✅ agent_dev_stackoverflow.vibee - поandwithto on StackOverflow                                                               ║
 ║                                                                                                                          ║
-║  [CYR:ПАМЯТЬ] (2):                                                                                                             ║
-║  ✅ agent_memory_episodic.vibee - эпand[CYR:зод]andчеwithtoая [CYR:память]                                                                   ║
-║  ✅ agent_memory_semantic.vibee - with[CYR:емант]andчеwithtoая [CYR:память]                                                                   ║
+║  [CYR:MEMORY] (2):                                                                                                             ║
+║  ✅ agent_memory_episodic.vibee - эпand[CYR:[TRANSLATED]]andчеwithtoая [CYR:memory]                                                                   ║
+║  ✅ agent_memory_semantic.vibee - with[TRANSLATED]]andчеwithtoая [CYR:memory]                                                                   ║
 ║                                                                                                                          ║
-║  [CYR:БЕЗОПАСНОСТЬ] (2):                                                                                                       ║
-║  ✅ agent_security_sandbox.vibee - sandbox and[CYR:золяц]andя                                                                      ║
-║  ✅ agent_security_audit.vibee - [CYR:ауд]andт [CYR:дей]withтinandй                                                                          ║
+║  [CYR:[TRANSLATED]] (2):                                                                                                       ║
+║  ✅ agent_security_sandbox.vibee - sandbox and[CYR:[TRANSLATED]]andя                                                                      ║
+║  ✅ agent_security_audit.vibee - [CYR:[TRANSLATED]]andт [CYR:[TRANSLATED]]withтinandй                                                                          ║
 ║                                                                                                                          ║
-║  [CYR:ОРКЕСТРАТОР] + E2E (2):                                                                                                  ║
-║  ✅ agent_orchestrator_main.vibee - [CYR:гла]in[CYR:ный] орtoеwith[CYR:тратор]                                                                  ║
-║  ✅ e2e_agent_full.vibee - [CYR:полные] E2E теwithты                                                                              ║
+║  [CYR:[TRANSLATED]] + E2E (2):                                                                                                  ║
+║  ✅ agent_orchestrator_main.vibee - [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] орtoеwith[TRANSLATED]]                                                                  ║
+║  ✅ e2e_agent_full.vibee - [CYR:[TRANSLATED]] E2E теwithты                                                                              ║
 ║                                                                                                                          ║
-║  [CYR:ГЕНЕРАЦИЯ] И [CYR:ТЕСТЫ]:                                                                                                      ║
+║  [CYR:[TRANSLATED]]  [CYR:TESTS]:                                                                                                      ║
 ║  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────   ║
-║  ✅ [CYR:Сге]notрandроin[CYR:ано] 36 ноinых .zig [CYR:модулей]                                                                                  ║
-║  ✅ [CYR:Пройдено] 261 ноinый теwithт (100% success rate)                                                                          ║
-║  ✅ Вwith[CYR:его] in WARP ENGINE: 56 [CYR:модулей], 409 теwithтоin                                                                          ║
+║  ✅ [CYR:[TRANSLATED]]notрandроin[CYR:[TRANSLATED]] 36 ноinых .zig [CYR:[TRANSLATED]]                                                                                  ║
+║  ✅ [CYR:[TRANSLATED]] 261 ноinый теwithт (100% success rate)                                                                          ║
+║  ✅ Вwith[TRANSLATED]] in WARP ENGINE: 56 [CYR:[TRANSLATED]], 409 теwithтоin                                                                          ║
 ║                                                                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-## [CYR:ЧТО] НЕ [CYR:СДЕЛАНО] / [CYR:ПРОВАЛЕНО]
+## [CYR:[TRANSLATED]] НЕ [CYR:[TRANSLATED]] / [CYR:[TRANSLATED]]
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-║                                              ❌ НЕ [CYR:ВЫПОЛНЕНО]                                                             ║
+║                                              ❌ НЕ [CYR:[TRANSLATED]]                                                             ║
 ╠══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
 ║                                                                                                                          ║
-║  ❌ [CYR:НЕТ] [CYR:РЕАЛЬНОГО] [CYR:БРАУЗЕРА] - [CYR:толь]toо with[CYR:пец]andфandtoацandand and withгеnotрandроin[CYR:анный] toод                                                   ║
-║  ❌ [CYR:НЕТ] [CYR:РЕАЛЬНЫХ] [CYR:БЕНЧМАРКОВ] - [CYR:толь]toо [CYR:теорет]andчеwithtoandе раwith[CYR:чёты]                                                               ║
-║  ❌ [CYR:НЕТ] [CYR:ИНТЕГРАЦИИ] С CDP - toод not [CYR:под]to[CYR:лючён] to Chrome                                                                     ║
-║  ❌ [CYR:НЕТ] [CYR:ИНТЕГРАЦИИ] С LLM - ReAct [CYR:агент] not [CYR:под]to[CYR:лючён] to [CYR:модел]and                                                             ║
-║  ❌ [CYR:НЕТ] E2E [CYR:ТЕСТОВ] НА [CYR:РЕАЛЬНЫХ] [CYR:САЙТАХ] - [CYR:толь]toо unit теwithты                                                                ║
-║  ❌ [CYR:НЕТ] [CYR:СРАВНЕНИЯ] С OPERATOR НА [CYR:РЕАЛЬНЫХ] [CYR:ЗАДАЧАХ]                                                                         ║
+║  ❌ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] - [CYR:[TRANSLATED]]toо with[TRANSLATED]]andфandtoацand and withгеnotрandроin[CYR:[TRANSLATED]] toод                                                   ║
+║  ❌ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] - [CYR:[TRANSLATED]]toо [CYR:[TRANSLATED]]andчеwithtoandе раwith[TRANSLATED]]                                                               ║
+║  ❌ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]  CDP - toод not [CYR:[TRANSLATED]]for[TRANSLATED]] to Chrome                                                                     ║
+║  ❌ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]  LLM - ReAct [CYR:[TRANSLATED]] not [CYR:[TRANSLATED]]for[TRANSLATED]] to [CYR:[TRANSLATED]]and                                                             ║
+║  ❌ [CYR:[TRANSLATED]] E2E [CYR:[TRANSLATED]] НА [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] - [CYR:[TRANSLATED]]toо unit теwithты                                                                ║
+║  ❌ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]  OPERATOR НА [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                                                                         ║
 ║                                                                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-## [CYR:МЕТРИКИ]
+## [CYR:[TRANSLATED]]
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-║                                              📊 [CYR:МЕТРИКИ]                                                                  ║
+║                                              📊 [CYR:[TRANSLATED]]                                                                  ║
 ╠══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
 ║                                                                                                                          ║
-║  [CYR:КОЛИЧЕСТВЕННЫЕ]:                                                                                                         ║
+║  [CYR:[TRANSLATED]]:                                                                                                         ║
 ║  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────   ║
-║  • Ноinых with[CYR:пец]andфandtoацandй: 36                                                                                                ║
-║  • Ноinых Zig [CYR:модулей]: 36                                                                                                 ║
+║  • Ноinых with[TRANSLATED]]andфandtoацandй: 36                                                                                                ║
+║  • Ноinых Zig [CYR:[TRANSLATED]]: 36                                                                                                 ║
 ║  • Ноinых теwithтоin: 261                                                                                                     ║
-║  • Вwith[CYR:его] WARP [CYR:модулей]: 56                                                                                                ║
-║  • Вwith[CYR:его] WARP теwithтоin: 409                                                                                                ║
-║  • [CYR:Категор]andй Agent Mode: 12/12 (100%)                                                                                    ║
-║  • [CYR:Фун]toцandй Agent Mode: 89                                                                                                ║
+║  • Вwith[TRANSLATED]] WARP [CYR:[TRANSLATED]]: 56                                                                                                ║
+║  • Вwith[TRANSLATED]] WARP теwithтоin: 409                                                                                                ║
+║  • [CYR:[TRANSLATED]]andй Agent Mode: 12/12 (100%)                                                                                    ║
+║  • [CYR:[TRANSLATED]]toцandй Agent Mode: 89                                                                                                ║
 ║                                                                                                                          ║
-║  [CYR:СРАВНЕНИЕ] v1 → v2:                                                                                                      ║
+║  [CYR:[TRANSLATED]] v1 → v2:                                                                                                      ║
 ║  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────   ║
-║  • [CYR:Модулей]: 20 → 56 (+180%)                                                                                              ║
+║  • [CYR:[TRANSLATED]]: 20 → 56 (+180%)                                                                                              ║
 ║  • Теwithтоin: 148 → 409 (+176%)                                                                                             ║
-║  • [CYR:Категор]andй: 5 → 12 (+140%)                                                                                             ║
-║  • Поto[CYR:рыт]andе: 40% → 100% (+150%)                                                                                          ║
+║  • [CYR:[TRANSLATED]]andй: 5 → 12 (+140%)                                                                                             ║
+║  • Поfor[TRANSLATED]]andе: 40% → 100% (+150%)                                                                                          ║
 ║                                                                                                                          ║
-║  [CYR:НАУЧНЫЕ] [CYR:РАБОТЫ]:                                                                                                         ║
+║  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:                                                                                                         ║
 ║  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────   ║
 ║  • UI-TARS (ByteDance, 2025) - OSWorld 24.6%                                                                             ║
 ║  • WebVoyager (He et al., 2024) - WebVoyager 87%                                                                         ║
@@ -152,157 +152,157 @@
 
 ---
 
-## [CYR:ЖЁСТКАЯ] [CYR:САМОКРИТИКА]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-║                                              💀 [CYR:САМОКРИТИКА]                                                              ║
+║                                              💀 [CYR:[TRANSLATED]]                                                              ║
 ╠══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
 ║                                                                                                                          ║
-║  1. [CYR:КОЛИЧЕСТВО] ≠ [CYR:КАЧЕСТВО]                                                                                                ║
-║     56 [CYR:модулей] and 409 теwithтоin - this [CYR:много]. Но нand одandн not [CYR:раб]from[CYR:ает] with [CYR:реальным] browserом.                                    ║
-║     [CYR:Это] toаto 56 [CYR:чертежей] with[CYR:амолёта] [CYR:без] едand[CYR:ного] [CYR:полёта].                                                                     ║
+║  1. [CYR:[TRANSLATED]] ≠ [CYR:[TRANSLATED]]                                                                                                ║
+║     56 [CYR:[TRANSLATED]] and 409 теwithтоin - this [CYR:[TRANSLATED]]. Но нand одandн not [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] with [CYR:[TRANSLATED]] browserом.                                    ║
+║     [CYR:[TRANSLATED]] toаto 56 [CYR:[TRANSLATED]] with[TRANSLATED]] [CYR:[TRANSLATED]] едand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]].                                                                     ║
 ║                                                                                                                          ║
-║  2. [CYR:ТЕОРИЯ] [CYR:БЕЗ] [CYR:ПРАКТИКИ]                                                                                                  ║
-║     Вwithе [CYR:бенчмар]toand [CYR:теорет]andчеwithtoandе. "20-50x speedup" - this [CYR:фантаз]andя.                                                        ║
-║     [CYR:Реальный] speedup [CYR:может] [CYR:быть] 2-3x in [CYR:лучшем] with[CYR:лучае].                                                                    ║
+║  2. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                                                                                                  ║
+║     Вwithе [CYR:[TRANSLATED]]toand [CYR:[TRANSLATED]]andчеwithtoandе. "20-50x speedup" - this [CYR:[TRANSLATED]]andя.                                                        ║
+║     [CYR:[TRANSLATED]] speedup [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] 2-3x in [CYR:[TRANSLATED]] with[TRANSLATED]].                                                                    ║
 ║                                                                                                                          ║
-║  3. [CYR:СЛИШКОМ] [CYR:ШИРОКО], [CYR:НЕДОСТАТОЧНО] [CYR:ГЛУБОКО]                                                                                 ║
-║     12 to[CYR:атегор]andй поto[CYR:рыты], но нand одon not [CYR:реал]andзоinаon [CYR:полно]with[CYR:тью].                                                           ║
-║     [CYR:Лучше] бы with[CYR:делать] 1 to[CYR:атегор]andю [CYR:раб]from[CYR:ающей], [CYR:чем] 12 on [CYR:бумаге].                                                           ║
+║  3. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]], [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                                                                                 ║
+║     12 for[TRANSLATED]]andй поfor[TRANSLATED]], но нand одon not [CYR:[TRANSLATED]]andзоinаon [CYR:[TRANSLATED]]with[TRANSLATED]].                                                           ║
+║     [CYR:[TRANSLATED]] бы with[TRANSLATED]] 1 for[TRANSLATED]]andю [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]], [CYR:[TRANSLATED]] 12 on [CYR:[TRANSLATED]].                                                           ║
 ║                                                                                                                          ║
-║  4. [CYR:КОПИРОВАНИЕ] [CYR:КОНКУРЕНТОВ]                                                                                              ║
-║     [CYR:Фун]toцandand withtoопandроin[CYR:аны] with OpenAI Operator and Perplexity Comet.                                                            ║
-║     [CYR:Нет] унandto[CYR:альной] and[CYR:нно]inацandand, [CYR:толь]toо "мы [CYR:тоже] [CYR:можем]".                                                                    ║
+║  4. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                                                                                              ║
+║     [CYR:[TRANSLATED]]toцand withtoопandроin[CYR:[TRANSLATED]] with OpenAI Operator and Perplexity Comet.                                                            ║
+║     [CYR:[TRANSLATED]] унandfor[TRANSLATED]] and[CYR:[TRANSLATED]]inацand, [CYR:[TRANSLATED]]toо "мы [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]".                                                                    ║
 ║                                                                                                                          ║
-║  5. [CYR:БЕЗОПАСНОСТЬ] НА [CYR:БУМАГЕ]                                                                                               ║
+║  5. [CYR:[TRANSLATED]] НА [CYR:[TRANSLATED]]                                                                                               ║
 ║     Sandbox, Audit, Alignment - toраwithandinые withлоinа.                                                                          ║
-║     [CYR:Без] [CYR:реальной] [CYR:реал]and[CYR:зац]andand this not [CYR:защ]andтandт from [CYR:ата]to.                                                                      ║
+║     [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and this not [CYR:[TRANSLATED]]andтandт from [CYR:[TRANSLATED]]to.                                                                      ║
 ║                                                                                                                          ║
-║  6. [CYR:ПАМЯТЬ] [CYR:БЕЗ] [CYR:МОЗГА]                                                                                                     ║
-║     Episodic and Semantic [CYR:память] опandwith[CYR:аны], но [CYR:без] LLM онand беwithfield[CYR:зны].                                                       ║
-║     [CYR:Это] toаto жёwithтtoandй дandwithto [CYR:без] [CYR:проце]withwith[CYR:ора].                                                                                 ║
+║  6. [CYR:MEMORY] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                                                                                                     ║
+║     Episodic and Semantic [CYR:memory] опandwith[TRANSLATED]], но [CYR:[TRANSLATED]] LLM онand беwithfield[CYR:[TRANSLATED]].                                                       ║
+║     [CYR:[TRANSLATED]] toаto жёwithтtoandй дandwithto [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[TRANSLATED]].                                                                                 ║
 ║                                                                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-## [CYR:ОЦЕНКА]
+## [CYR:[TRANSLATED]]
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-║                                              🎯 [CYR:ОЦЕНКА]: 6.5/10                                                           ║
+║                                              🎯 [CYR:[TRANSLATED]]: 6.5/10                                                           ║
 ╠══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
 ║                                                                                                                          ║
-║  [CYR:ПЛЮСЫ] (+3.5):                                                                                                           ║
-║  • [CYR:Полное] поto[CYR:рыт]andе 12 to[CYR:атегор]andй Agent Mode                                                                               ║
-║  • 89 [CYR:фун]toцandй опandwith[CYR:аны]                                                                                                    ║
-║  • Вwithе 409 теwithтоin [CYR:проходят]                                                                                               ║
-║  • [CYR:Хорошая] деto[CYR:омпоз]andцandя                                                                                                  ║
+║  [CYR:[TRANSLATED]] (+3.5):                                                                                                           ║
+║  • [CYR:[TRANSLATED]] поfor[TRANSLATED]]andе 12 for[TRANSLATED]]andй Agent Mode                                                                               ║
+║  • 89 [CYR:[TRANSLATED]]toцandй опandwith[TRANSLATED]]                                                                                                    ║
+║  • Вwithе 409 теwithтоin [CYR:[TRANSLATED]]                                                                                               ║
+║  • [CYR:[TRANSLATED]] деfor[TRANSLATED]]andцandя                                                                                                  ║
 ║                                                                                                                          ║
-║  [CYR:МИНУСЫ] (-3.5):                                                                                                          ║
-║  • [CYR:Нет] [CYR:раб]from[CYR:ающего] [CYR:проду]toта                                                                                              ║
-║  • [CYR:Толь]toо [CYR:теорет]andчеwithtoandе [CYR:бенчмар]toand                                                                                        ║
-║  • [CYR:Нет] and[CYR:нтеграц]andand with CDP/LLM                                                                                              ║
-║  • [CYR:Нет] proof of concept                                                                                                  ║
+║  [CYR:[TRANSLATED]] (-3.5):                                                                                                          ║
+║  • [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toта                                                                                              ║
+║  • [CYR:[TRANSLATED]]toо [CYR:[TRANSLATED]]andчеwithtoandе [CYR:[TRANSLATED]]toand                                                                                        ║
+║  • [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]and with CDP/LLM                                                                                              ║
+║  • [CYR:[TRANSLATED]] proof of concept                                                                                                  ║
 ║                                                                                                                          ║
-║  [CYR:ВЫВОД]:                                                                                                                  ║
-║  [CYR:Отл]andчonя [CYR:арх]andтеto[CYR:тура] and доto[CYR:ументац]andя, но [CYR:без] [CYR:реал]and[CYR:зац]andand this [CYR:про]withто [CYR:план].                                                 ║
-║  [CYR:Следующ]andй step - [CYR:РЕАЛИЗАЦИЯ] хfromя бы [CYR:одной] to[CYR:атегор]andand from on[CYR:чала] до to[CYR:онца].                                                  ║
+║  [CYR:[TRANSLATED]]:                                                                                                                  ║
+║  [CYR:[TRANSLATED]]andчonя [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] and доfor[TRANSLATED]]andя, но [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and this [CYR:[TRANSLATED]]withто [CYR:[TRANSLATED]].                                                 ║
+║  [CYR:[TRANSLATED]]andй step - [CYR:[TRANSLATED]] хfromя бы [CYR:[TRANSLATED]] for[TRANSLATED]]and from on[CYR:[TRANSLATED]] до for[TRANSLATED]].                                                  ║
 ║                                                                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-## 🌳 [CYR:ВАРИАНТЫ] [CYR:ДАЛЬНЕЙШЕГО] [CYR:РАЗВИТИЯ]
+## 🌳 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                        🌳 TECH TREE - [CYR:ВАРИАНТЫ] [CYR:РАЗВИТИЯ] 🌳                                              │
+│                                        🌳 TECH TREE - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] 🌳                                              │
 ├─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                                                         │
-│  [A] CDP + NAVIGATION - [CYR:РЕАЛЬНАЯ] [CYR:РЕАЛИЗАЦИЯ]                                                                             │
+│  [A] CDP + NAVIGATION - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                                                                             │
 │      ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────  │
-│      [CYR:Сложно]withть: ★★★☆☆                                                                                                   │
-│      Пfrom[CYR:енц]andал: [CYR:Раб]from[CYR:ающая] oninand[CYR:гац]andя in [CYR:реальном] browserе                                                                │
-│      [CYR:Сро]to: 1 not[CYR:деля]                                                                                                     │
+│      [CYR:[TRANSLATED]]withть: ★★★☆☆                                                                                                   │
+│      Пfrom[CYR:[TRANSLATED]]andал: [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] oninand[CYR:[TRANSLATED]]andя in [CYR:[TRANSLATED]] browserе                                                                │
+│      [CYR:[TRANSLATED]]to: 1 not[CYR:[TRANSLATED]]                                                                                                     │
 │      Заinandwithandмоwithтand: WebSocket, Chrome                                                                                     │
 │                                                                                                                         │
-│      [CYR:Задач]and:                                                                                                            │
-│      1. [CYR:Реал]andзоin[CYR:ать] WebSocket toлand[CYR:ент] on Zig                                                                             │
-│      2. [CYR:Под]to[CYR:люч]andтьwithя to Chrome DevTools                                                                                  │
-│      3. [CYR:Выполн]andть [CYR:реальную] oninand[CYR:гац]andю                                                                                    │
-│      4. [CYR:Сделать] [CYR:реальный] withtoрandншfrom                                                                                       │
-│      5. [CYR:Выполн]andть [CYR:реальный] toлandto                                                                                         │
+│      [CYR:[TRANSLATED]]and:                                                                                                            │
+│      1. [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] WebSocket toлand[CYR:[TRANSLATED]] on Zig                                                                             │
+│      2. [CYR:[TRANSLATED]]for[TRANSLATED]]andтьwithя to Chrome DevTools                                                                                  │
+│      3. [CYR:[TRANSLATED]]andть [CYR:[TRANSLATED]] oninand[CYR:[TRANSLATED]]andю                                                                                    │
+│      4. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] withtoрandншfrom                                                                                       │
+│      5. [CYR:[TRANSLATED]]andть [CYR:[TRANSLATED]] toлandto                                                                                         │
 │                                                                                                                         │
-│  [B] REACT AGENT + LLM - [CYR:МИНИМАЛЬНЫЙ] [CYR:АГЕНТ]                                                                              │
+│  [B] REACT AGENT + LLM - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                                                                              │
 │      ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────  │
-│      [CYR:Сложно]withть: ★★★★☆                                                                                                   │
-│      Пfrom[CYR:енц]andал: [CYR:Раб]from[CYR:ающ]andй [CYR:агент] for [CYR:про]with[CYR:тых] [CYR:задач]                                                                      │
-│      [CYR:Сро]to: 2 not[CYR:дел]and                                                                                                     │
-│      Заinandwithandмоwithтand: CDP toлand[CYR:ент], OpenAI/Anthropic API                                                                      │
+│      [CYR:[TRANSLATED]]withть: ★★★★☆                                                                                                   │
+│      Пfrom[CYR:[TRANSLATED]]andал: [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]andй [CYR:[TRANSLATED]] for [CYR:[TRANSLATED]]with[TRANSLATED]] [CYR:[TRANSLATED]]                                                                      │
+│      [CYR:[TRANSLATED]]to: 2 not[CYR:[TRANSLATED]]and                                                                                                     │
+│      Заinandwithandмоwithтand: CDP toлand[CYR:[TRANSLATED]], OpenAI/Anthropic API                                                                      │
 │                                                                                                                         │
-│      [CYR:Задач]and:                                                                                                            │
-│      1. [CYR:Интегр]andроin[CYR:ать] with OpenAI API                                                                                      │
-│      2. [CYR:Реал]andзоin[CYR:ать] Think-Act-Observe цandtoл                                                                              │
-│      3. [CYR:Выполн]andть [CYR:про]with[CYR:тую] [CYR:задачу] (поandwithto in Google)                                                                       │
-│      4. [CYR:Измер]andть уwith[CYR:пешно]withть and in[CYR:ремя]                                                                                     │
+│      [CYR:[TRANSLATED]]and:                                                                                                            │
+│      1. [CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] with OpenAI API                                                                                      │
+│      2. [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] Think-Act-Observe цandtoл                                                                              │
+│      3. [CYR:[TRANSLATED]]andть [CYR:[TRANSLATED]]with[TRANSLATED]] [CYR:[TRANSLATED]] (поandwithto in Google)                                                                       │
+│      4. [CYR:[TRANSLATED]]andть уwith[TRANSLATED]]withть and in[CYR:[TRANSLATED]]                                                                                     │
 │                                                                                                                         │
-│  [C] BENCHMARK SUITE - [CYR:РЕАЛЬНЫЕ] [CYR:ТЕСТЫ]                                                                                   │
+│  [C] BENCHMARK SUITE - [CYR:[TRANSLATED]] [CYR:TESTS]                                                                                   │
 │      ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────  │
-│      [CYR:Сложно]withть: ★★★★★                                                                                                   │
-│      Пfrom[CYR:енц]andал: [CYR:Реальные] [CYR:метр]andtoand for withраinnotнandя                                                                          │
-│      [CYR:Сро]to: 3 not[CYR:дел]and                                                                                                     │
-│      Заinandwithandмоwithтand: [CYR:Раб]from[CYR:ающ]andй [CYR:агент]                                                                                      │
+│      [CYR:[TRANSLATED]]withть: ★★★★★                                                                                                   │
+│      Пfrom[CYR:[TRANSLATED]]andал: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andtoand for withраinnotнandя                                                                          │
+│      [CYR:[TRANSLATED]]to: 3 not[CYR:[TRANSLATED]]and                                                                                                     │
+│      Заinandwithandмоwithтand: [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]andй [CYR:[TRANSLATED]]                                                                                      │
 │                                                                                                                         │
-│      [CYR:Задач]and:                                                                                                            │
-│      1. Наwith[CYR:тро]andть WebArena environment                                                                                  │
-│      2. [CYR:Запу]withтandть теwithты on [CYR:реальных] with[CYR:айтах]                                                                              │
-│      3. [CYR:Сра]inнandть with OpenAI Operator                                                                                      │
-│      4. [CYR:Опубл]andtoоin[CYR:ать] resultы                                                                                         │
+│      [CYR:[TRANSLATED]]and:                                                                                                            │
+│      1. Наwith[TRANSLATED]]andть WebArena environment                                                                                  │
+│      2. [CYR:[TRANSLATED]]withтandть теwithты on [CYR:[TRANSLATED]] with[TRANSLATED]]                                                                              │
+│      3. [CYR:[TRANSLATED]]inнandть with OpenAI Operator                                                                                      │
+│      4. [CYR:[TRANSLATED]]andtoоin[CYR:[TRANSLATED]] resultы                                                                                         │
 │                                                                                                                         │
-│  [D] SECURITY SANDBOX - [CYR:ИЗОЛЯЦИЯ]                                                                                        │
+│  [D] SECURITY SANDBOX - [CYR:[TRANSLATED]]                                                                                        │
 │      ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────  │
-│      [CYR:Сложно]withть: ★★★★☆                                                                                                   │
-│      Пfrom[CYR:енц]andал: [CYR:Безопа]with[CYR:ный] browser toаto у Brave Leo                                                                      │
-│      [CYR:Сро]to: 2 not[CYR:дел]and                                                                                                     │
+│      [CYR:[TRANSLATED]]withть: ★★★★☆                                                                                                   │
+│      Пfrom[CYR:[TRANSLATED]]andал: [CYR:[TRANSLATED]]with[TRANSLATED]] browser toаto  Brave Leo                                                                      │
+│      [CYR:[TRANSLATED]]to: 2 not[CYR:[TRANSLATED]]and                                                                                                     │
 │      Заinandwithandмоwithтand: Chrome profiles                                                                                       │
 │                                                                                                                         │
-│      [CYR:Задач]and:                                                                                                            │
-│      1. [CYR:Создать] and[CYR:зол]andроin[CYR:анный] [CYR:проф]andль Chrome                                                                            │
-│      2. [CYR:Реал]andзоin[CYR:ать] Prompt Guard                                                                                        │
-│      3. Теwithтandроin[CYR:ать] on Prompt Injection [CYR:ата]toах                                                                          │
+│      [CYR:[TRANSLATED]]and:                                                                                                            │
+│      1. [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andль Chrome                                                                            │
+│      2. [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] Prompt Guard                                                                                        │
+│      3. Теwithтandроin[CYR:[TRANSLATED]] on Prompt Injection [CYR:[TRANSLATED]]toах                                                                          │
 │                                                                                                                         │
-│  [CYR:РЕКОМЕНДАЦИЯ]: [A] CDP + NAVIGATION                                                                                     │
+│  [CYR:[TRANSLATED]]: [A] CDP + NAVIGATION                                                                                     │
 │  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  │
-│  Прandчandon: [CYR:Без] [CYR:раб]from[CYR:ающего] CDP toлand[CYR:ента] inwithё оwith[CYR:тальное] беwithfield[CYR:зно].                                                         │
-│  [CYR:Это] [CYR:фундамент]. [CYR:Начать] with [CYR:малого] - [CYR:под]to[CYR:люч]andтьwithя to Chrome and with[CYR:делать] toлandto.                                                 │
+│  Прandчandon: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] CDP toлand[CYR:[TRANSLATED]] inwithё оwith[TRANSLATED]] беwithfield[CYR:[TRANSLATED]].                                                         │
+│  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]. [CYR:[TRANSLATED]] with [CYR:[TRANSLATED]] - [CYR:[TRANSLATED]]for[TRANSLATED]]andтьwithя to Chrome and with[TRANSLATED]] toлandto.                                                 │
 │                                                                                                                         │
 └─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## [CYR:ДЕРЕВО] [CYR:ТЕХНОЛОГИЙ] [CYR:ДЛЯ] [CYR:ИЗУЧЕНИЯ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                        📚 [CYR:НАУЧНЫЕ] [CYR:РАБОТЫ] [CYR:ДЛЯ] [CYR:ИЗУЧЕНИЯ]                                                   │
+│                                        📚 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                                                   │
 ├─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                                                         │
-│  [CYR:ПРИОРИТЕТ] 1 ([CYR:Следующая] not[CYR:деля]):                                                                                        │
+│  [CYR:[TRANSLATED]] 1 ([CYR:[TRANSLATED]] not[CYR:[TRANSLATED]]):                                                                                        │
 │  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  │
 │  • "UI-TARS: Pioneering Automated GUI Interaction" (ByteDance, 2025)                                                    │
 │    - Perception-Reasoning-Action цandtoл                                                                                   │
 │    - OSWorld 24.6% (SOTA)                                                                                               │
 │                                                                                                                         │
 │  • "WebVoyager: Building an End-to-End Web Agent" (He et al., 2024)                                                     │
-│    - [CYR:Пол]onя [CYR:арх]andтеto[CYR:тура] web [CYR:агента]                                                                                      │
-│    - WebVoyager 87% on [CYR:реальных] with[CYR:айтах]                                                                                  │
+│    - [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] web [CYR:[TRANSLATED]]                                                                                      │
+│    - WebVoyager 87% on [CYR:[TRANSLATED]] with[TRANSLATED]]                                                                                  │
 │                                                                                                                         │
-│  [CYR:ПРИОРИТЕТ] 2 ([CYR:Через] 2 not[CYR:дел]and):                                                                                          │
+│  [CYR:[TRANSLATED]] 2 ([CYR:[TRANSLATED]] 2 not[CYR:[TRANSLATED]]and):                                                                                          │
 │  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  │
 │  • "SeeAct: GPT-4V(ision) is a Generalist Web Agent" (Zheng et al., 2024)                                               │
 │    - Set-of-Mark visual prompting                                                                                       │
@@ -312,14 +312,14 @@
 │    - Hierarchical architecture                                                                                          │
 │    - DOM distillation                                                                                                   │
 │                                                                                                                         │
-│  [CYR:ПРИОРИТЕТ] 3 ([CYR:Через] меwithяц):                                                                                             │
+│  [CYR:[TRANSLATED]] 3 ([CYR:[TRANSLATED]] меwithяц):                                                                                             │
 │  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  │
 │  • "OSWorld: Benchmarking Multimodal Agents" (Xie et al., 2024)                                                         │
-│    - [CYR:Реал]andwithтand[CYR:чный] [CYR:бенчмар]to                                                                                              │
+│    - [CYR:[TRANSLATED]]andwithтand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]to                                                                                              │
 │    - Ubuntu, Windows, macOS                                                                                             │
 │                                                                                                                         │
 │  • "WebArena: A Realistic Web Environment" (Zhou et al., 2023)                                                          │
-│    - Сand[CYR:мул]andроin[CYR:анные] with[CYR:айты]                                                                                               │
+│    - Сand[CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] with[TRANSLATED]]                                                                                               │
 │    - Reproducible benchmarks                                                                                            │
 │                                                                                                                         │
 └─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -327,4 +327,4 @@
 
 ---
 
-**φ² + 1/φ² = 3 | PHOENIX = 999 | [CYR:КОЩЕЙ] [CYR:БЕССМЕРТЕН] | [CYR:ЗЛАТАЯ] [CYR:ЦЕПЬ] [CYR:ЗАМКНУТА]**
+**φ² + 1/φ² = 3 | PHOENIX = 999 | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**

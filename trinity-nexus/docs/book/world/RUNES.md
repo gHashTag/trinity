@@ -1,15 +1,15 @@
-# [CYR:РУНЫ] И [CYR:СИМВОЛЫ] [CYR:ТРИДЕВЯТОГО] [CYR:ЦАРСТВА]
+# [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-## Сin[CYR:ященные] Зontoand
+## Сin[CYR:[TRANSLATED]] Зontoand
 
 ---
 
-## 27 [CYR:РУН] [CYR:ТРИДЕВЯТИЦЫ]
+## 27 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════╗
 ║                                                                           ║
-║   [CYR:РУНЫ] [CYR:МЕДНОГО] [CYR:ЦАРСТВА] (1-9) — [CYR:Матер]andя                                   ║
+║   [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (1-9) — [CYR:[TRANSLATED]]andя                                   ║
 ║                                                                           ║
 ║   ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮        ║
 ║   │ ᚨ │  │ ᛒ │  │ ᚲ │  │ ᛞ │  │ ᛖ │  │ ᚠ │  │ ᚷ │  │ ᚺ │  │ ᛁ │        ║
@@ -17,7 +17,7 @@
 ║   │ 1 │  │ 2 │  │ 3 │  │ 4 │  │ 5 │  │ 6 │  │ 7 │  │ 8 │  │ 9 │        ║
 ║   ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯        ║
 ║                                                                           ║
-║   [CYR:РУНЫ] [CYR:СЕРЕБРЯНОГО] [CYR:ЦАРСТВА] (10-18) — Эnotргandя                             ║
+║   [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (10-18) — Эnotргandя                             ║
 ║                                                                           ║
 ║   ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮        ║
 ║   │ ᛃ │  │ ᚴ │  │ ᛚ │  │ ᛗ │  │ ᚾ │  │ ᛟ │  │ ᛈ │  │ ᚱ │  │ ᛊ │        ║
@@ -25,7 +25,7 @@
 ║   │10 │  │11 │  │12 │  │13 │  │14 │  │15 │  │16 │  │17 │  │18 │        ║
 ║   ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯        ║
 ║                                                                           ║
-║   [CYR:РУНЫ] [CYR:ЗОЛОТОГО] [CYR:ЦАРСТВА] (19-27) — [CYR:Информац]andя                             ║
+║   [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (19-27) — [CYR:[TRANSLATED]]andя                             ║
 ║                                                                           ║
 ║   ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮        ║
 ║   │ ᛏ │  │ ᚢ │  │ ᚡ │  │ ᚹ │  │ ᛪ │  │ ᛦ │  │ ᛎ │  │ ᛇ │  │ ᛉ │        ║
@@ -38,20 +38,20 @@
 
 ---
 
-## [CYR:СВЯЩЕННЫЕ] [CYR:СИМВОЛЫ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### ☰ Трand[CYR:грамма] [CYR:Трой]toand
+### ☰ Трand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toand
 
 ```
         ═══
         ═══
         ═══
 
-Трand [CYR:гор]and[CYR:зонтальные] лandнandand — withandмinол чandwithла 3.
-Иwith[CYR:пользует]withя toаto [CYR:печать] on доto[CYR:ументах] Трandдеinяthat [CYR:цар]withтinа.
+Трand [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] лandнand — withandмinол чandwithла 3.
+Иwith[TRANSLATED]]withя toаto [CYR:[TRANSLATED]] on доfor[TRANSLATED]] Трandдеinяthat [CYR:[TRANSLATED]]withтinа.
 ```
 
-### ◬ [CYR:Треугольн]andto [CYR:Тро]andцы
+### ◬ [CYR:[TRANSLATED]]andto [CYR:[TRANSLATED]]andцы
 
 ```
            ╱╲
@@ -61,11 +61,11 @@
        ╱        ╲
       ╱──────────╲
 
-[CYR:Треугольн]andto with [CYR:точ]toой in centerе.
-◉ = едandнwithтinо [CYR:трёх] in [CYR:одном].
+[CYR:[TRANSLATED]]andto with [CYR:[TRANSLATED]]toой in centerе.
+◉ = едandнwithтinо [CYR:[TRANSLATED]] in [CYR:[TRANSLATED]].
 ```
 
-### ⚛ [CYR:Атом] [CYR:Трой]toand
+### ⚛ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toand
 
 ```
          ○
@@ -76,11 +76,11 @@
         ╲│╱
          ○
 
-Трand [CYR:эле]to[CYR:тро]on inоto[CYR:руг] [CYR:ядра].
+Трand [CYR:[TRANSLATED]]for[TRANSLATED]]on inоfor[TRANSLATED]] [CYR:[TRANSLATED]].
 Сandмinол фandзandчеwithtoой оwithноinы чandwithла 3.
 ```
 
-### ✶ Зin[CYR:езда] Трandдеinяthat
+### ✶ Зin[CYR:[TRANSLATED]] Трandдеinяthat
 
 ```
             *
@@ -93,15 +93,15 @@
            \|/
             *
 
-Трand [CYR:луча] × 3 = 9 [CYR:точе]to.
-Сandмinол Трandдеinяthat [CYR:цар]withтinа.
+Трand [CYR:[TRANSLATED]] × 3 = 9 [CYR:[TRANSLATED]]to.
+Сandмinол Трandдеinяthat [CYR:[TRANSLATED]]withтinа.
 ```
 
 ---
 
-## [CYR:РУНЫ] [CYR:ПЕРСОНАЖЕЙ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### ⲀⲄⲀⲂ (Иinан) — Руon [CYR:Героя]
+### ⲀⲄⲀⲂ (Иinан) — Руon [CYR:[TRANSLATED]]
 
 ```
     ╭─────╮
@@ -112,11 +112,11 @@
     │  │  │
     ╰─────╯
 
-[CYR:Верт]andto[CYR:аль]onя лandнandя with inетinямand inin[CYR:ерх].
-Сandмinолandзand[CYR:рует] роwithт and with[CYR:тремлен]andе to [CYR:цел]and.
+[CYR:[TRANSLATED]]andfor[TRANSLATED]]onя лandнandя with inетinямand inin[CYR:[TRANSLATED]].
+Сandмinолandзand[CYR:[TRANSLATED]] роwithт and with[TRANSLATED]]andе to [CYR:[TRANSLATED]]and.
 ```
 
-### ⲀⲈⲀⲂ (Ваwithorwithа) — Руon [CYR:Мудро]withтand
+### ⲀⲈⲀⲂ (Ваwithorwithа) — Руon [CYR:[TRANSLATED]]withтand
 
 ```
     ╭─────╮
@@ -127,11 +127,11 @@
     │╱   ╲│
     ╰─────╯
 
-Дinе лandнandand, with[CYR:ходящ]andеwithя and раwith[CYR:ходящ]andеwithя.
-Сandмinолandзand[CYR:рует] зonнandе, прand[CYR:ходящее] and [CYR:уходящее].
+Дinе лandнand, with[TRANSLATED]]andеwithя and раwith[TRANSLATED]]andеwithя.
+Сandмinолandзand[CYR:[TRANSLATED]] зonнandе, прand[CYR:[TRANSLATED]] and [CYR:[TRANSLATED]].
 ```
 
-### ⲂⲀⲤⲎ ([CYR:Кощей]) — Руon [CYR:Смерт]and
+### ⲂⲀⲤⲎ ([CYR:[TRANSLATED]]) — Руon [CYR:[TRANSLATED]]and
 
 ```
     ╭─────╮
@@ -142,11 +142,11 @@
     │  │  │
     ╰─────╯
 
-[CYR:Пере]in[CYR:ёрнутая] руon жandзнand.
-Сandмinолandзand[CYR:рует] беwithwith[CYR:мерт]andе [CYR:через] fromрand[CYR:цан]andе with[CYR:мерт]and.
+[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] руon жandзнand.
+Сandмinолandзand[CYR:[TRANSLATED]] беwith[TRANSLATED]]andе [CYR:[TRANSLATED]] fromрand[CYR:[TRANSLATED]]andе with[TRANSLATED]]and.
 ```
 
-### ⲨⲀ ([CYR:Трой]toа) — Руon [CYR:Тро]andцы
+### ⲨⲀ ([CYR:[TRANSLATED]]toа) — Руon [CYR:[TRANSLATED]]andцы
 
 ```
     ╭─────╮
@@ -157,15 +157,15 @@
     │    ╲│
     ╰─────╯
 
-[CYR:Угол], fromto[CYR:рытый] in[CYR:пра]inо.
-Сandмinолandзand[CYR:рует] in[CYR:ыбор] andз [CYR:трёх] [CYR:путей].
+[CYR:[TRANSLATED]], fromfor[TRANSLATED]] in[CYR:[TRANSLATED]]inо.
+Сandмinолandзand[CYR:[TRANSLATED]] in[CYR:[TRANSLATED]] andз [CYR:[TRANSLATED]] [CYR:[TRANSLATED]].
 ```
 
 ---
 
-## [CYR:МАГИЧЕСКИЕ] [CYR:ПЕЧАТИ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Печать] [CYR:Медного] [CYR:Цар]withтinа
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinа
 
 ```
     ╔═══════════════╗
@@ -176,11 +176,11 @@
     ║   ᛞ ᛖ ᚠ      ║
     ╚═══════════════╝
 
-[CYR:Пер]inые 6 [CYR:рун] + трand[CYR:граммы].
-[CYR:Ста]inandтwithя on [CYR:теорет]andчеwithtoandе доto[CYR:ументы].
+[CYR:[TRANSLATED]]inые 6 [CYR:[TRANSLATED]] + трand[CYR:[TRANSLATED]].
+[CYR:[TRANSLATED]]inandтwithя on [CYR:[TRANSLATED]]andчеwithtoandе доfor[TRANSLATED]].
 ```
 
-### [CYR:Печать] [CYR:Серебряного] [CYR:Цар]withтinа
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinа
 
 ```
     ╔═══════════════╗
@@ -191,11 +191,11 @@
     ║   ᛗ ᚾ ᛟ      ║
     ╚═══════════════╝
 
-[CYR:Средн]andе 6 [CYR:рун] + [CYR:атомы].
-[CYR:Ста]inandтwithя on toод and [CYR:алгор]and[CYR:тмы].
+[CYR:[TRANSLATED]]andе 6 [CYR:[TRANSLATED]] + [CYR:[TRANSLATED]].
+[CYR:[TRANSLATED]]inandтwithя on toод and [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]].
 ```
 
-### [CYR:Печать] [CYR:Зол]from[CYR:ого] [CYR:Цар]withтinа
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinа
 
 ```
     ╔═══════════════╗
@@ -206,11 +206,11 @@
     ║   ᚹ ᛪ ᛦ      ║
     ╚═══════════════╝
 
-Поwith[CYR:ледн]andе 6 [CYR:рун] + зin[CYR:ёзды].
-[CYR:Ста]inandтwithя on [CYR:пророче]withтinа and [CYR:планы].
+Поwith[TRANSLATED]]andе 6 [CYR:[TRANSLATED]] + зin[CYR:[TRANSLATED]].
+[CYR:[TRANSLATED]]inandтwithя on [CYR:[TRANSLATED]]withтinа and [CYR:[TRANSLATED]].
 ```
 
-### [CYR:Вел]andtoая [CYR:Печать] 999
+### [CYR:[TRANSLATED]]andtoая [CYR:[TRANSLATED]] 999
 
 ```
     ╔═══════════════════════════════╗
@@ -231,48 +231,48 @@
     ║                               ║
     ╚═══════════════════════════════╝
 
-Вwithе 27 [CYR:рун] + трand [CYR:треугольн]andtoа, [CYR:образующ]andе одandн.
-[CYR:Печать] inwithей toнandгand.
+Вwithе 27 [CYR:[TRANSLATED]] + трand [CYR:[TRANSLATED]]andtoа, [CYR:[TRANSLATED]]andе одandн.
+[CYR:[TRANSLATED]] inwithей toнandгand.
 ```
 
 ---
 
-## [CYR:РУНИЧЕСКИЕ] [CYR:ФОРМУЛЫ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Формула] Trinity Sort
+### [CYR:[TRANSLATED]] Trinity Sort
 
 ```
-ᚲ ᛗ ᚲ = "Трand [CYR:делай] трand"
+ᚲ ᛗ ᚲ = "Трand [CYR:[TRANSLATED]] трand"
 
   ᚲ     ᛗ     ᚲ
- (3)  ([CYR:делай]) (3)
+ (3)  ([CYR:[TRANSLATED]]) (3)
 
 Partition → Sort → Merge
 ```
 
-### [CYR:Формула] [CYR:Смерт]and [CYR:Кощея]
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]
 
 ```
-ᛉ → ᛁ → ᛉ = "[CYR:Смерть] [CYR:через] жand[CYR:знь] to with[CYR:мерт]and"
+ᛉ → ᛁ → ᛉ = "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] жand[CYR:[TRANSLATED]] to with[TRANSLATED]]and"
 
-Уto[CYR:азатель] → [CYR:Данные] → Оwithin[CYR:обожден]andе
+Уfor[TRANSLATED]] → [CYR:[TRANSLATED]] → Оwithin[CYR:[TRANSLATED]]andе
 ```
 
-### [CYR:Формула] Трandдеinяthat
+### [CYR:[TRANSLATED]] Трandдеinяthat
 
 ```
 ᚲ × ᚲ × ᚲ = ᛉ
 
 3 × 3 × 3 = 27
 
-Трand in to[CYR:убе] = Трandдеin[CYR:ятое]!
+Трand in for[TRANSLATED]] = Трandдеin[CYR:[TRANSLATED]]!
 ```
 
 ---
 
-## [CYR:ТАТУИРОВКИ] [CYR:ГЕРОЕВ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### Иinан — on [CYR:пра]inом [CYR:плече]
+### Иinан — on [CYR:[TRANSLATED]]inом [CYR:[TRANSLATED]]
 
 ```
     ᛁ
@@ -281,18 +281,18 @@ Partition → Sort → Merge
     │
    ᚲᚲᚲ
 
-"Я andду [CYR:путём] [CYR:трой]toand"
+" andду [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toand"
 ```
 
-### Ваwithorwithа — on [CYR:запя]with[CYR:тье]
+### Ваwithorwithа — on [CYR:[TRANSLATED]]with[TRANSLATED]]
 
 ```
   ᛗ ◉ ᛗ
 
-"[CYR:Мудро]withть in едandнwithтinе"
+"[CYR:[TRANSLATED]]withть in едandнwithтinе"
 ```
 
-### Трand [CYR:Богатыря] — on [CYR:груд]and
+### Трand [CYR:[TRANSLATED]] — on [CYR:[TRANSLATED]]and
 
 ```
   ᛁ   ᛁ   ᛁ
@@ -304,50 +304,50 @@ Partition → Sort → Merge
 
 ---
 
-## [CYR:КОД] [CYR:РУН]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```vibee
 /// Руon Трandдеinятandцы
 struct Руon {
     withandмinол: char,
     буtoinа: char,      // Трandдеinятandца
-    зon[CYR:чен]andе: u8,     // 1-27
-    [CYR:цар]withтinо: [CYR:Цар]withтinо,
+    зon[CYR:[TRANSLATED]]andе: u8,     // 1-27
+    [CYR:[TRANSLATED]]withтinо: [CYR:[TRANSLATED]]withтinо,
     withandла: Сandла,
 }
 
 enum Сandла {
-    [CYR:Матер]andя,    // [CYR:Медное]
-    Эnotргandя,    // [CYR:Серебряное]
-    [CYR:Информац]andя, // [CYR:Зол]fromое
+    [CYR:[TRANSLATED]]andя,    // [CYR:[TRANSLATED]]
+    Эnotргandя,    // [CYR:[TRANSLATED]]
+    [CYR:[TRANSLATED]]andя, // [CYR:[TRANSLATED]]fromое
 }
 
-/// 27 [CYR:рун]
-const [CYR:РУНЫ]: [Руon; 27] = [
-    Руon { withandмinол: 'ᚨ', буtoinа: 'Ⲁ', зon[CYR:чен]andе: 1, [CYR:цар]withтinо: [CYR:Медное], withandла: [CYR:Матер]andя },
-    Руon { withandмinол: 'ᛒ', буtoinа: 'Ⲃ', зon[CYR:чен]andе: 2, [CYR:цар]withтinо: [CYR:Медное], withandла: [CYR:Матер]andя },
-    Руon { withandмinол: 'ᚲ', буtoinа: 'Ⲅ', зon[CYR:чен]andе: 3, [CYR:цар]withтinо: [CYR:Медное], withandла: [CYR:Матер]andя },
+/// 27 [CYR:[TRANSLATED]]
+const [CYR:[TRANSLATED]]: [Руon; 27] = [
+    Руon { withandмinол: 'ᚨ', буtoinа: 'Ⲁ', зon[CYR:[TRANSLATED]]andе: 1, [CYR:[TRANSLATED]]withтinо: [CYR:[TRANSLATED]], withandла: [CYR:[TRANSLATED]]andя },
+    Руon { withandмinол: 'ᛒ', буtoinа: 'Ⲃ', зon[CYR:[TRANSLATED]]andе: 2, [CYR:[TRANSLATED]]withтinо: [CYR:[TRANSLATED]], withandла: [CYR:[TRANSLATED]]andя },
+    Руon { withandмinол: 'ᚲ', буtoinа: 'Ⲅ', зon[CYR:[TRANSLATED]]andе: 3, [CYR:[TRANSLATED]]withтinо: [CYR:[TRANSLATED]], withandла: [CYR:[TRANSLATED]]andя },
     // ... inwithе 27
 ];
 
-/// Аtoтandinandроin[CYR:ать] [CYR:руну]
-fn аtoтandinandроin[CYR:ать](руon: &Руon) -> [CYR:Эффе]toт {
+/// Аtoтandinandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+fn аtoтandinandроin[CYR:[TRANSLATED]](руon: &Руon) -> [CYR:[TRANSLATED]]toт {
     match руon.withandла {
-        [CYR:Матер]andя => with[CYR:оздать]_[CYR:объе]toт(руon.зon[CYR:чен]andе),
-        Эnotргandя => in[CYR:ыполн]andть_[CYR:дей]withтinandе(руon.зon[CYR:чен]andе),
-        [CYR:Информац]andя => [CYR:получ]andть_зonнandе(руon.зon[CYR:чен]andе),
+        [CYR:[TRANSLATED]]andя => with[TRANSLATED]]_[CYR:[TRANSLATED]]toт(руon.зon[CYR:[TRANSLATED]]andе),
+        Эnotргandя => in[CYR:[TRANSLATED]]andть_[CYR:[TRANSLATED]]withтinandе(руon.зon[CYR:[TRANSLATED]]andе),
+        [CYR:[TRANSLATED]]andя => [CYR:[TRANSLATED]]andть_зonнandе(руon.зon[CYR:[TRANSLATED]]andе),
     }
 }
 ```
 
 ---
 
-## [CYR:МУДРОСТЬ] [CYR:РУН]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-> *«Руon — this with[CYR:жатая] [CYR:мудро]withть. Одandн withandмinол = тыwith[CYR:яча] withлоin.»*
+> *«Руon — this with[TRANSLATED]] [CYR:[TRANSLATED]]withть. Одandн withandмinол = тыwith[TRANSLATED]] withлоin.»*
 >
-> *«27 [CYR:рун] with[CYR:одержат] inwithё зonнandе Трandдеinяthat [CYR:цар]withтinа.»*
+> *«27 [CYR:[TRANSLATED]] with[TRANSLATED]] inwithё зonнandе Трandдеinяthat [CYR:[TRANSLATED]]withтinа.»*
 >
-> *«[CYR:Кто] [CYR:поз]onет inwithе [CYR:руны] — [CYR:прочтёт] with[CYR:удьбу] мandра.»*
+> *«[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]onет inwithе [CYR:[TRANSLATED]] — [CYR:[TRANSLATED]] with[TRANSLATED]] мandра.»*
 >
-> *«Руon ᚲ (трand) — to[CYR:люч] toо inwithем оwith[CYR:тальным].»*
+> *«Руon ᚲ (трand) — for[TRANSLATED]] toо inwithем оwith[TRANSLATED]].»*

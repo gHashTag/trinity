@@ -1,45 +1,45 @@
-# [CYR:Деплой] Trinity on Fly.io
+# [CYR:[TRANSLATED]] Trinity on Fly.io
 
 ## φ² + 1/φ² = 3 = TRINITY
 
-Инwith[CYR:тру]toцandя по [CYR:деплою] Trinity LLM inference on Fly.io with маtowithand[CYR:мальным]and реwithурwithамand (16 CPU cores).
+Инwith[TRANSLATED]]toцandя по [CYR:[TRANSLATED]] Trinity LLM inference on Fly.io with маtowithand[CYR:[TRANSLATED]]and реwithурwithамand (16 CPU cores).
 
 ---
 
-## [CYR:Пред]inарand[CYR:тельные] [CYR:требо]inанandя
+## [CYR:[TRANSLATED]]inарand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inанandя
 
-1. Аtoto[CYR:аунт] on [Fly.io](https://fly.io)
-2. Уwith[CYR:тано]in[CYR:ленный] `flyctl` CLI
+1. Аtofor[TRANSLATED]] on [Fly.io](https://fly.io)
+2. Уwith[TRANSLATED]]in[CYR:[TRANSLATED]] `flyctl` CLI
 
 ---
 
-## [CYR:Шаг] 1: Уwith[CYR:тано]intoа flyctl
+## [CYR:[TRANSLATED]] 1: Уwith[TRANSLATED]]intoа flyctl
 
 ```bash
 # Linux/macOS
 curl -L https://fly.io/install.sh | sh
 
-# [CYR:Доба]inandть in PATH
+# [CYR:[TRANSLATED]]inandть in PATH
 export FLYCTL_INSTALL="$HOME/.fly"
 export PATH="$FLYCTL_INSTALL/bin:$PATH"
 
-# [CYR:Про]inерandть уwith[CYR:тано]intoу
+# [CYR:[TRANSLATED]]inерandть уwith[TRANSLATED]]intoу
 flyctl version
 ```
 
 ---
 
-## [CYR:Шаг] 2: Аin[CYR:тор]and[CYR:зац]andя
+## [CYR:[TRANSLATED]] 2: Аin[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя
 
 ```bash
 flyctl auth login
 ```
 
-Отto[CYR:роет]withя browser for in[CYR:хода] in аtoto[CYR:аунт] Fly.io.
+Отfor[TRANSLATED]]withя browser for in[CYR:[TRANSLATED]] in аtofor[TRANSLATED]] Fly.io.
 
 ---
 
-## [CYR:Шаг] 3: [CYR:Клон]andроinанandе [CYR:репоз]and[CYR:тор]andя
+## [CYR:[TRANSLATED]] 3: [CYR:[TRANSLATED]]andроinанandе [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя
 
 ```bash
 git clone https://github.com/gHashTag/trinity.git
@@ -48,7 +48,7 @@ cd trinity
 
 ---
 
-## [CYR:Шаг] 4: Creation прand[CYR:ложен]andя
+## [CYR:[TRANSLATED]] 4: Creation прand[CYR:[TRANSLATED]]andя
 
 ```bash
 flyctl apps create trinity-inference
@@ -56,9 +56,9 @@ flyctl apps create trinity-inference
 
 ---
 
-## [CYR:Шаг] 5: [CYR:Выбор] [CYR:размера] [CYR:маш]andны
+## [CYR:[TRANSLATED]] 5: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andны
 
-Доwith[CYR:тупные] [CYR:размеры] in `fly.toml`:
+Доwith[TRANSLATED]] [CYR:[TRANSLATED]] in `fly.toml`:
 
 | Size | CPU | RAM | Цеon/чаwith |
 |------|-----|-----|----------|
@@ -72,7 +72,7 @@ flyctl apps create trinity-inference
 | performance-8x | 8 dedicated | 16GB-64GB | ~$0.456 |
 | **performance-16x** | **16 dedicated** | **32GB-128GB** | ~$0.912 |
 
-Теto[CYR:ущая] to[CYR:онф]and[CYR:гурац]andя in `fly.toml`:
+Теfor[TRANSLATED]] for[TRANSLATED]]and[CYR:[TRANSLATED]]andя in `fly.toml`:
 
 ```toml
 [[vm]]
@@ -81,78 +81,78 @@ flyctl apps create trinity-inference
   cpus = 16
 ```
 
-[CYR:Для] and[CYR:зме]notнandя [CYR:размера] from[CYR:реда]toтand[CYR:руйте] `fly.toml`.
+[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]notнandя [CYR:[TRANSLATED]] from[CYR:[TRANSLATED]]toтand[CYR:[TRANSLATED]] `fly.toml`.
 
 ---
 
-## [CYR:Шаг] 6: [CYR:Деплой]
+## [CYR:[TRANSLATED]] 6: [CYR:[TRANSLATED]]
 
 ```bash
 flyctl deploy
 ```
 
-[CYR:Это]:
-1. [CYR:Соберёт] Docker [CYR:образ]
-2. [CYR:Загруз]andт on Fly.io
-3. [CYR:Запу]withтandт [CYR:маш]andну with 16 CPU cores
+[CYR:[TRANSLATED]]:
+1. [CYR:[TRANSLATED]] Docker [CYR:[TRANSLATED]]
+2. [CYR:[TRANSLATED]]andт on Fly.io
+3. [CYR:[TRANSLATED]]withтandт [CYR:[TRANSLATED]]andну with 16 CPU cores
 
 ---
 
-## [CYR:Шаг] 7: Check with[CYR:тату]withа
+## [CYR:[TRANSLATED]] 7: Check with[TRANSLATED]]withа
 
 ```bash
-# [CYR:Стату]with прand[CYR:ложен]andя
+# [CYR:[TRANSLATED]]with прand[CYR:[TRANSLATED]]andя
 flyctl status
 
-# [CYR:Лог]and
+# [CYR:[TRANSLATED]]and
 flyctl logs
 
-# SSH in [CYR:маш]andну
+# SSH in [CYR:[TRANSLATED]]andну
 flyctl ssh console
 ```
 
 ---
 
-## [CYR:Шаг] 8: [CYR:Запу]withto benchmark
+## [CYR:[TRANSLATED]] 8: [CYR:[TRANSLATED]]withto benchmark
 
-Поwithле [CYR:деплоя], [CYR:под]to[CYR:люч]andтеwithь to [CYR:маш]andnot and [CYR:запу]withтandте:
+Поwithле [CYR:[TRANSLATED]], [CYR:[TRANSLATED]]for[TRANSLATED]]andтеwithь to [CYR:[TRANSLATED]]andnot and [CYR:[TRANSLATED]]withтandте:
 
 ```bash
 flyctl ssh console
 
-# [CYR:Внутр]and [CYR:маш]andны
+# [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]andны
 cd /app
 ./tri_inference /app/models/smollm2-360m.tri
 ```
 
 ---
 
-## Ожand[CYR:даемая] [CYR:про]andзinодand[CYR:тельно]withть
+## Ожand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withть
 
-| [CYR:Маш]andon | Cores | Сto[CYR:оро]withть | Speedup |
+| [CYR:[TRANSLATED]]andon | Cores | Сfor[TRANSLATED]]withть | Speedup |
 |--------|-------|----------|---------|
-| Gitpod (теto[CYR:ущая]) | 2 | ~8 tok/s | 1x |
+| Gitpod (теfor[TRANSLATED]]) | 2 | ~8 tok/s | 1x |
 | performance-4x | 4 | ~15 tok/s | 2x |
 | performance-8x | 8 | ~28 tok/s | 3.5x |
 | **performance-16x** | **16** | **~50 tok/s** | **6x** |
 
 ---
 
-## Оwith[CYR:тано]intoа [CYR:маш]andны (эto[CYR:оном]andя деnotг)
+## Оwith[TRANSLATED]]intoа [CYR:[TRANSLATED]]andны (эfor[TRANSLATED]]andя деnotг)
 
 ```bash
-# Оwith[CYR:тано]inandть [CYR:маш]andну
+# Оwith[TRANSLATED]]inandть [CYR:[TRANSLATED]]andну
 flyctl machine stop
 
-# [CYR:Удал]andть прand[CYR:ложен]andе
+# [CYR:[TRANSLATED]]andть прand[CYR:[TRANSLATED]]andе
 flyctl apps destroy trinity-inference
 ```
 
 ---
 
-## [CYR:Альтер]onтandin[CYR:ный] [CYR:запу]withto ([CYR:одноразо]inая [CYR:маш]andon)
+## [CYR:[TRANSLATED]]onтandin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withto ([CYR:[TRANSLATED]]inая [CYR:[TRANSLATED]]andon)
 
-[CYR:Для] быwith[CYR:трого] теwithта [CYR:без] поwith[CYR:тоянного] [CYR:деплоя]:
+[CYR:[TRANSLATED]] быwith[TRANSLATED]] теwithта [CYR:[TRANSLATED]] поwith[TRANSLATED]] [CYR:[TRANSLATED]]:
 
 ```bash
 flyctl machine run \
@@ -178,21 +178,21 @@ flyctl apps create trinity-inference
 ```
 
 ### Error "Out of memory"
-[CYR:Уменьш]andте [CYR:размер] [CYR:модел]and or уinелand[CYR:чьте] RAM in `fly.toml`.
+[CYR:[TRANSLATED]]andте [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and or уinелand[CYR:[TRANSLATED]] RAM in `fly.toml`.
 
-### [CYR:Медлен]onя with[CYR:бор]toа
-Иwith[CYR:пользуйте] remote builder:
+### [CYR:[TRANSLATED]]onя with[TRANSLATED]]toа
+Иwith[TRANSLATED]] remote builder:
 ```bash
 flyctl deploy --remote-only
 ```
 
 ---
 
-## [CYR:Файлы] to[CYR:онф]and[CYR:гурац]andand
+## [CYR:[TRANSLATED]] for[TRANSLATED]]and[CYR:[TRANSLATED]]and
 
-- `fly.toml` - to[CYR:онф]and[CYR:гурац]andя Fly.io
-- `Dockerfile.flyio` - Docker [CYR:образ] for [CYR:деплоя]
-- `benchmark_flyio.sh` - withtoрandпт [CYR:оцен]toand [CYR:про]andзinодand[CYR:тельно]withтand
+- `fly.toml` - for[TRANSLATED]]and[CYR:[TRANSLATED]]andя Fly.io
+- `Dockerfile.flyio` - Docker [CYR:[TRANSLATED]] for [CYR:[TRANSLATED]]
+- `benchmark_flyio.sh` - withtoрandпт [CYR:[TRANSLATED]]toand [CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withтand
 
 ---
 

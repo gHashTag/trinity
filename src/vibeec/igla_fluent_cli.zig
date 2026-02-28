@@ -342,7 +342,7 @@ fn printHelp() void {
     std.debug.print("  - History truncation: max {d} messages (no hang!)\n", .{MAX_HISTORY_SIZE});
     std.debug.print("  - Symbolic patterns: 100+ multilingual (RU/EN/CN)\n", .{});
     std.debug.print("  - TinyLlama fallback: fluent local responses\n", .{});
-    std.debug.print("\n{s}Try:{s} [EN]andin[EN], to[EN]to [CYR:[EN]], hello, what is phi?\n\n", .{ GRAY, RESET });
+    std.debug.print("\n{s}Try:{s} andin, toto , hello, what is phi?\n\n", .{ GRAY, RESET });
 }
 
 fn printPrompt(state: *CLIState) void {
@@ -532,8 +532,8 @@ test "conversation history add message" {
     var history = ConversationHistory.init(allocator);
     defer history.deinit();
 
-    try history.addMessage(.User, "[EN]andin[EN]");
-    try history.addMessage(.Assistant, "[EN]andin[EN]!");
+    try history.addMessage(.User, "andin");
+    try history.addMessage(.Assistant, "andin!");
 
     try std.testing.expectEqual(@as(usize, 2), history.count());
 }
@@ -560,7 +560,7 @@ test "fluent engine symbolic hit" {
     var engine = try FluentChatEngine.init(allocator, false); // No LLM
     defer engine.deinit();
 
-    const response = try engine.chat("[EN]andin[EN]");
+    const response = try engine.chat("andin");
     try std.testing.expect(response.len > 0);
     try std.testing.expectEqual(@as(usize, 1), engine.symbolic_hits);
 }

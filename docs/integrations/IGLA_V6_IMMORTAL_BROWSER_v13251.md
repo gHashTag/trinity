@@ -1,7 +1,7 @@
 # iGLA v6 IMMORTAL Browser Integration - KOSCHEI CYCLE 8
 
 ## 15000x SPEEDUP | -99.5% MEMORY | ∞ CONTEXT | QUANTUM READY
-## φ² + 1/φ² = 3 | PHOENIX = 999 | [CYR:КОЩЕЙ] = ∞
+## φ² + 1/φ² = 3 | PHOENIX = 999 | [CYR:[TRANSLATED]] = ∞
 
 ---
 
@@ -196,7 +196,7 @@ vibee gen-all
 # Parallel testing (8 workers)
 vibee test-all
 
-# Full [CYR:ЗЛАТАЯ] [CYR:ЦЕПЬ] cycle
+# Full [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] cycle
 vibee chain
 
 # Manual parallel execution
@@ -222,7 +222,7 @@ IMMORTAL = 15000x
 
 ---
 
-**[CYR:КОЩЕЙ] [CYR:БЕССМЕРТЕН]. CYCLE 8 COMPLETE.**
+**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]. CYCLE 8 COMPLETE.**
 
 **15000x SPEEDUP | 261 MODULES | 1615 TESTS | 100% PASS RATE**
 

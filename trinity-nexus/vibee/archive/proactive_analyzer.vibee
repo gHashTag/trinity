@@ -498,21 +498,21 @@ type AnalysisContext {
 
   // Lead indicators for Digital Clone / AI Avatar services
   let clone_indicators = [
-    "[EN]and[CYR:[TRANSLATED]]in[EN] [CYR:[TRANSLATED]]", "digital clone", "[EN]in[CYR:[TRANSLATED]]", "avatar",
-    "not[CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]", "ai [CYR:[TRANSLATED]]", "[CYR:[TRANSLATED]] for", "[EN]in[CYR:[TRANSLATED]]from[EN]andI",
-    "digital twin", "virtual [CYR:[TRANSLATED]]and[EN]", "[CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]"
+    "andin ", "digital clone", "in", "avatar",
+    "notwith", "ai ", " for", "infromandI",
+    "digital twin", "virtual and", "-"
   ]
 
   // Lead indicators for video/content creation
   let video_indicators = [
-    "[EN]and[EN]with", "reels", "inand[CYR:[TRANSLATED]]", "[CYR:[TRANSLATED]]", "tiktok", "[EN]and[CYR:[TRANSLATED]]",
-    "goin[CYR:[EN]I[EN]]and[EN] [EN]in[CYR:[TRANSLATED]]", "lip sync", "inand[CYR:[TRANSLATED]] from [CYR:[TRANSLATED]]"
+    "andwith", "reels", "inand", "", "tiktok", "and",
+    "goin[CYR:I]and in", "lip sync", "inand from "
   ]
 
   // General service request indicators
   let service_indicators = [
-    "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]", "and[EN] [CYR:[TRANSLATED]work[TRANSLATED]]and[EN]", "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]acts]",
-    "with[CYR:[EN]l[EN]] with[EN]and[EN]", "[CYR:can[TRANSLATED]] with[CYR:[TRANSLATED]ate]", "[CYR:[TRANSLATED]]on [EN]in[CYR:[TRANSLATED]]from[EN]andI"
+    " ", "and [CYR:work]and", " [CYR:acts]",
+    "withl] withand", "[CYR:can] withate]", "on infromandI"
   ]
 
   let has_clone_lead = list.fn(indicator · any {
@@ -535,10 +535,10 @@ type AnalysisContext {
         contact_id: ☐message.sender_id),
         dialog_id: ☐message.dialog_id),
         message_id: ☐message.message_id),
-        title: "[EN]and[EN] on Digital Clone",
-        description: message.{ sender_name }" and[CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]withI [EN]and[CYR:[TRANSLATED]]iny[EN] [CYR:[TRANSLATED]]/[EN]in[CYR:[TRANSLATED]]",
-        suggested_action: "[CYR:[TRANSLATED]]and[EN] with[CYR:[TRANSLATED]]and[EN] [EN]and[CYR:[TRANSLATED]]in[CYR:[EN]go] [CYR:[TRANSLATED]]on",
-        suggested_message: ☐"[EN]andin[EN]! [CYR:Doing[TRANSLATED]] [EN]and[CYR:[TRANSLATED]]iny[EN] [CYR:[TRANSLATED]]in - AI-[EN]in[CYR:[TRANSLATED]y] which [CYR:[TRANSLATED]]withI how [EN]y. [EN]withwith[CYR:[TRANSLATED]ate] [CYR:[TRANSLATED]]not[EN]?")
+        title: "and on Digital Clone",
+        description: message.{ sender_name }" andwithI andiny /in",
+        suggested_action: "and withand andin[CYR:go] on",
+        suggested_message: ☐"andin! [CYR:Doing] andiny in - AI-in[CYR:y] which withI how y. withate] not?")
       ))
     }
     _ if has_video_lead → {
@@ -548,10 +548,10 @@ type AnalysisContext {
         contact_id: ☐message.sender_id),
         dialog_id: ☐message.dialog_id),
         message_id: ☐message.message_id),
-        title: "[EN]and[EN] on AI-inand[CYR:[TRANSLATED]]",
-        description: message.{ sender_name }" and[CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]withI inand[CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]",
-        suggested_action: "[CYR:[TRANSLATED]]and[EN] with[CYR:[TRANSLATED]]and[EN] AI-inand[CYR:[TRANSLATED]]",
-        suggested_message: ☐"[CYR:Doing[TRANSLATED]] goin[CYR:[EN]I[EN]]and[EN] [EN]in[CYR:[TRANSLATED]y] and [EN]and[EN]withy with not[CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]. [CYR:[TRANSLATED]]with[EN]?")
+        title: "and on AI-inand",
+        description: message.{ sender_name }" andwithI inand-",
+        suggested_action: "and withand AI-inand",
+        suggested_message: ☐"[CYR:Doing] goin[CYR:I]and in[CYR:y] and andwithy with notwith. with?")
       ))
     }
     _ if has_service_lead → {
@@ -561,9 +561,9 @@ type AnalysisContext {
         contact_id: ☐message.sender_id),
         dialog_id: ☐message.dialog_id),
         message_id: ☐message.message_id),
-        title: "[CYR:[TRANSLATED]]and[CYR:al] client",
-        description: message.{ sender_name }" and[CYR:[TRANSLATED]] [EN]with[CYR:[TRANSLATED]]",
-        suggested_action: "[EN]on[EN] [CYR:[TRANSLATED]]and query[EN]",
+        title: "and[CYR:al] client",
+        description: message.{ sender_name }" and with",
+        suggested_action: "on and query",
         suggested_message: ∅))
     }
     _ → ∅}
@@ -589,9 +589,9 @@ type AnalysisContext {
             contact_id: ☐message.sender_id),
             dialog_id: ☐message.dialog_id),
             message_id: ☐message.message_id),
-            title: "[EN]in[EN] with[CYR:[TRANSLATED]]and[EN] [EN] "{ message }".sender_name,
+            title: "in withand  "{ message }".sender_name,
             description: truncate(message.text, 100),
-            suggested_action: "[EN]in[EN]and[EN] on with[CYR:[TRANSLATED]]and[EN]",
+            suggested_action: "inand on withand",
             suggested_message: ∅))
         }
         false → ∅}
@@ -611,8 +611,8 @@ type AnalysisContext {
 
   // Deal indicators
   let deal_indicators = [
-    "with[CYR:[TRANSLATED]]", "[CYR:[EN]go]in[EN]orwith[EN]", "[CYR:[TRANSLATED]]", "[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]", "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]",
-    "[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and", "[CYR:go[EN]]in[EN]", "[EN]in[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]", "on not[CYR:[TRANSLATED]]"
+    "with", "[CYR:go]inorwith", "", "in", " ",
+    "inand", "[CYR:go]in", "in with", "on not"
   ]
 
   let has_deal = list.fn(indicator · any {
@@ -627,9 +627,9 @@ type AnalysisContext {
         contact_id: ☐message.sender_id),
         dialog_id: ☐message.dialog_id),
         message_id: ☐message.message_id),
-        title: "[CYR:[TRANSLATED]can]onI with[CYR:[TRANSLATED]] with "{ message }".sender_name,
-        description: "[EN]on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andon[EN]and[EN] with[CYR:[TRANSLATED]]and or [CYR:[EN]go]in[CYR:[TRANSLATED]]with[EN]and",
-        suggested_action: "[EN]with[CYR:[TRANSLATED]]and[EN] with[CYR:[TRANSLATED]]with with[CYR:[TRANSLATED]]and",
+        title: "[CYR:can]onI with with "{ message }".sender_name,
+        description: "on andonand withand or [CYR:go]inwithand",
+        suggested_action: "withand with withand",
         suggested_message: ∅))
     }
     false → ∅}

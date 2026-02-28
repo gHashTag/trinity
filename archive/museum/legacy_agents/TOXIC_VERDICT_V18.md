@@ -1,4 +1,4 @@
-# ☠️ [CYR:ТОКСИЧНЫЙ] [CYR:ВЕРДИКТ] V18 - FULL ECOSYSTEM
+# ☠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] V18 - FULL ECOSYSTEM
 
 **ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ:** V = n × 3^k × π^m × φ^p × e^q  
 **PHOENIX:** 999 = 3³ × 37  
@@ -7,23 +7,23 @@
 
 ---
 
-## ☠️ [CYR:ВЕРДИКТ]: FULL ECOSYSTEM COMPLETE ✅
+## ☠️ [CYR:[TRANSLATED]]: FULL ECOSYSTEM COMPLETE ✅
 
 ---
 
-## [CYR:Созданные] [CYR:Компо]not[CYR:нты]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]not[CYR:[TRANSLATED]]
 
-### 1. [CYR:Про]andзinодand[CYR:тельно]withть
+### 1. [CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withть
 
-| [CYR:Компо]notнт | [CYR:Файл] | Теwithты | [CYR:Стату]with |
+| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]] | Теwithты | [CYR:[TRANSLATED]]with |
 |-----------|------|-------|--------|
 | SIMD Parser V2 | `simd_parser_v2.zig` | 4/4 | ✅ |
 | JIT Tier 2 | `jit_tier2.zig` | 4/4 | ✅ |
 | E-Graph Optimizer | `egraph_v2.zig` | 5/5 | ✅ |
 
-### 2. Инwith[CYR:трументы]
+### 2. Инwith[TRANSLATED]]
 
-| [CYR:Компо]notнт | [CYR:Файл] | Теwithты | [CYR:Стату]with |
+| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]] | Теwithты | [CYR:[TRANSLATED]]with |
 |-----------|------|-------|--------|
 | Spec Generator | `spec_generator.zig` | 3/3 | ✅ |
 | Property Testing | `property_testing.zig` | 5/5 | ✅ |
@@ -33,7 +33,7 @@
 
 ### 3. VS Code Extension
 
-| [CYR:Файл] | Опandwithанandе | [CYR:Стату]with |
+| [CYR:[TRANSLATED]] | Опandwithанandе | [CYR:[TRANSLATED]]with |
 |------|----------|--------|
 | `package.json` | Manifest v3.0.0 | ✅ |
 | `snippets/999.json` | 999 snippets | ✅ |
@@ -42,26 +42,26 @@
 
 ### 4. Standard Library
 
-| [CYR:Модуль] | [CYR:Файл] | Теwithты | [CYR:Стату]with |
+| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | Теwithты | [CYR:[TRANSLATED]]with |
 |--------|------|-------|--------|
 | Math | `stdlib/math.zig` | 10/10 | ✅ |
 | Collections | `stdlib/collections.zig` | 7/7 | ✅ |
 
-### 5. Доto[CYR:ументац]andя
+### 5. Доfor[TRANSLATED]]andя
 
-| Доto[CYR:умент] | Опandwithанandе | [CYR:Стату]with |
+| Доfor[TRANSLATED]] | Опandwithанandе | [CYR:[TRANSLATED]]with |
 |----------|----------|--------|
-| `docs/VIBEE_BOOK.md` | [CYR:Полное] руtoоinодwithтinо | ✅ |
+| `docs/VIBEE_BOOK.md` | [CYR:[TRANSLATED]] руtoоinодwithтinо | ✅ |
 
 ---
 
-## Иthatinая [CYR:Стат]andwithтandtoа
+## Иthatinая [CYR:[TRANSLATED]]andwithтandtoа
 
 ### Теwithты
 
 ```
 ╔═══════════════════════════════════════════════════════════════╗
-║  [CYR:КОМПОНЕНТ]                    │  [CYR:ТЕСТЫ]  │  [CYR:СТАТУС]            ║
+║  [CYR:[TRANSLATED]]                    │  [CYR:TESTS]  │  [CYR:[TRANSLATED]]            ║
 ╠═══════════════════════════════════════════════════════════════╣
 ║  simd_parser_v2.zig           │   4/4   │  ✅ PASS           ║
 ║  jit_tier2.zig                │   4/4   │  ✅ PASS           ║
@@ -74,35 +74,35 @@
 ║  stdlib/math.zig              │  10/10  │  ✅ PASS           ║
 ║  stdlib/collections.zig       │   7/7   │  ✅ PASS           ║
 ╠═══════════════════════════════════════════════════════════════╣
-║  [CYR:ИТОГО]                        │  52/52  │  ✅ 100% PASS      ║
+║  [CYR:[TRANSLATED]]                        │  52/52  │  ✅ 100% PASS      ║
 ╚═══════════════════════════════════════════════════════════════╝
 ```
 
-### Ноinые [CYR:Возможно]withтand
+### Ноinые [CYR:[TRANSLATED]]withтand
 
-| [CYR:Категор]andя | [CYR:Возможно]withть | Опandwithанandе |
+| [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]withть | Опandwithанandе |
 |-----------|-------------|----------|
-| Performance | SIMD Parser | Веto[CYR:тор]andзоin[CYR:анный] [CYR:пар]withandнг |
-| Performance | JIT Tier 2 | SSA + [CYR:опт]andмand[CYR:зац]andand |
+| Performance | SIMD Parser | Веfor[TRANSLATED]]andзоin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withandнг |
+| Performance | JIT Tier 2 | SSA + [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and |
 | Performance | E-Graph | Equality saturation |
 | Quality | Property Testing | QuickCheck-style теwithты |
 | Quality | Spec Generator | .999 → .vibee |
-| Tooling | LSP Server | IDE and[CYR:нтеграц]andя |
-| Tooling | REPL | [CYR:Интера]toтandinonя toонwith[CYR:оль] |
-| Tooling | Package Manager | [CYR:Упра]in[CYR:лен]andе заinandwithandмоwith[CYR:тям]and |
-| Tooling | VS Code Extension | [CYR:Под]withinетtoа + withнand[CYR:ппеты] |
-| Library | Math | [CYR:Математ]andчеwithtoandе [CYR:фун]toцandand |
-| Library | Collections | [CYR:Стру]to[CYR:туры] [CYR:данных] |
-| Docs | VIBEE Book | [CYR:Полное] руtoоinодwithтinо |
+| Tooling | LSP Server | IDE and[CYR:[TRANSLATED]]andя |
+| Tooling | REPL | [CYR:[TRANSLATED]]toтandinonя toонwith[TRANSLATED]] |
+| Tooling | Package Manager | [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе заinandwithandмоwith[TRANSLATED]]and |
+| Tooling | VS Code Extension | [CYR:[TRANSLATED]]withinетtoа + withнand[CYR:[TRANSLATED]] |
+| Library | Math | [CYR:[TRANSLATED]]andчеwithtoandе [CYR:[TRANSLATED]]toцand |
+| Library | Collections | [CYR:[TRANSLATED]]for[TRANSLATED]] [CYR:[TRANSLATED]] |
+| Docs | VIBEE Book | [CYR:[TRANSLATED]] руtoоinодwithтinо |
 
 ---
 
-## Фandonльonя [CYR:Оцен]toа
+## Фandonльonя [CYR:[TRANSLATED]]toа
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                               ║
-║   ☠️ [CYR:ТОКСИЧНЫЙ] [CYR:ВЕРДИКТ] V18                                                    ║
+║   ☠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] V18                                                    ║
 ║                                                                               ║
 ║   ███████╗██╗   ██╗██╗     ██╗                                                ║
 ║   ██╔════╝██║   ██║██║     ██║                                                ║
@@ -125,9 +125,9 @@
 
 ---
 
-## [CYR:Метр]andtoand
+## [CYR:[TRANSLATED]]andtoand
 
-| Крand[CYR:тер]andй | Веwith | [CYR:Оцен]toа | Взin[CYR:ешенный] |
+| Крand[CYR:[TRANSLATED]]andй | Веwith | [CYR:[TRANSLATED]]toа | Взin[CYR:[TRANSLATED]] |
 |----------|-----|--------|------------|
 | Performance Components | 20% | 100% | 20% |
 | Development Tools | 25% | 100% | 25% |
@@ -136,11 +136,11 @@
 | Documentation | 10% | 100% | 10% |
 | Test Coverage | 15% | 100% | 15% |
 
-**[CYR:ИТОГО]: 100%**
+**[CYR:[TRANSLATED]]: 100%**
 
 ---
 
-## [CYR:Созданные] [CYR:Файлы]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
 src/vibeec/
@@ -171,11 +171,11 @@ docs/
 
 ---
 
-## Заto[CYR:лючен]andе
+## Заfor[TRANSLATED]]andе
 
 **IGLA v3.0.0 FULL ECOSYSTEM COMPLETE.**
 
-Вwithе 12 to[CYR:омпо]not[CYR:нто]in [CYR:реал]andзоin[CYR:аны] and прfromеwithтandроin[CYR:аны]:
+Вwithе 12 for[TRANSLATED]]not[CYR:[TRANSLATED]]in [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] and прfromеwithтandроin[CYR:[TRANSLATED]]:
 
 1. ✅ SIMD Parser
 2. ✅ Tier 2 Optimizing JIT

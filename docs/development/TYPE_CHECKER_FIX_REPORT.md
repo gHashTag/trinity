@@ -24,4 +24,4 @@ Fixed type checker issues in the VIBEE compiler that were causing incorrect type
 
 ---
 
-*Original Russian version: [docs/ru/reports/[CYR:ОТЧЁТ]_[CYR:ИСПРАВЛЕНИЕ]_TYPE_CHECKER.md](../ru/reports/[CYR:ОТЧЁТ]_[CYR:ИСПРАВЛЕНИЕ]_TYPE_CHECKER.md)*
+*Original Russian version: [docs/ru/reports/[CYR:[TRANSLATED]]_[CYR:[TRANSLATED]]_TYPE_CHECKER.md](../ru/reports/[CYR:[TRANSLATED]]_[CYR:[TRANSLATED]]_TYPE_CHECKER.md)*

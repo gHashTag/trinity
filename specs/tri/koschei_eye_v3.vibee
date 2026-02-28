@@ -126,10 +126,10 @@ behaviors:
 # | Query              | Sacred Value    | Confidence | Real-World 2026 Status          |
 # |--------------------|-----------------|------------|---------------------------------|
 # | Neutrino mass      | 0.0057 eV       | 99.7%      | KATRIN <0.45 eV (79× better)    |
-# | Proton lifetime    | 2.82×10³⁴ [CYR:[TRANSLATED]]    | 96%        | Super-K ~10³⁴, Hyper-K ready    |
+# | Proton lifetime    | 2.82×10³⁴     | 96%        | Super-K ~10³⁴, Hyper-K ready    |
 # | DM mass (CDG-2)    | 817 GeV         | 94%        | Hubble Feb 2026: 99% DM galaxy |
 # | Hubble constant    | 73.0 km/s/Mpc   | 91%        | Tension 5σ confirmed           |
-# | Element 120 half-life | 10⁻⁶ with[EN]    | 88%        | NEW blind spot (v3.0)          |
+# | Element 120 half-life | 10⁻⁶ with    | 88%        | NEW blind spot (v3.0)          |
 # | Lithium problem    | 0.240 ratio     | 85%        | 3σ anomaly confirmed           |
 # | Muon g-2           | 0.002332        | 88%        | 4.2σ anomaly confirmed         |
 

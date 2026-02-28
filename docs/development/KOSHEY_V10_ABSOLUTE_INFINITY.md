@@ -171,7 +171,7 @@ done
 
 **KOSHEY v10 ABSOLUTE INFINITY | φ² + 1/φ² = 3 | PHOENIX = 999**
 
-**[CYR:КОЩЕЙ] [CYR:БЕССМЕРТНЫЙ] - IMMORTAL BEYOND INFINITY**
+**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] - IMMORTAL BEYOND INFINITY**
 
 **"The Omega Point is the point at which the universe becomes conscious of itself."**
 *— Teilhard de Chardin*

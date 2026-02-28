@@ -25,10 +25,10 @@ behaviors:
     test_cases:
       - name: break_a_leg_to_russian
         input: {idiom: "break_a_leg", target: "russian"}
-        expected: {translation: "[EN]and [CYR:[TRANSLATED]] [EN]and [CYR:[TRANSLATED]]", confidence: 0.95}
+        expected: {translation: "and  and ", confidence: 0.95}
       - name: raining_cats_and_dogs
         input: {idiom: "raining_cats_and_dogs", target: "russian"}
-        expected: {translation: "[CYR:[TRANSLATED]] how from in[CYR:[TRANSLATED]]", confidence: 0.90}
+        expected: {translation: " how from in", confidence: 0.90}
 
   - name: translate_with_context
     given: Text with idioms and context
@@ -37,7 +37,7 @@ behaviors:
     test_cases:
       - name: theater_context
         input: {text: "Break a leg!", context: "Theater"}
-        expected: {translation: "[EN]and [CYR:[TRANSLATED]] [EN]and [CYR:[TRANSLATED]]!", confidence: 0.95}
+        expected: {translation: "and  and !", confidence: 0.95}
 
 types:
   IdiomDetection:
@@ -74,27 +74,27 @@ idiom_database:
   break_a_leg:
     meaning: "Good luck"
     domain: "Theater"
-    russian: "[EN]and [CYR:[TRANSLATED]] [EN]and [CYR:[TRANSLATED]]"
+    russian: "and  and "
     
   raining_cats_and_dogs:
     meaning: "Heavy rain"
     domain: "Weather"
-    russian: "[CYR:[TRANSLATED]] how from in[CYR:[TRANSLATED]]"
+    russian: " how from in"
     
   piece_of_cake:
     meaning: "Very easy"
     domain: "General"
-    russian: "[CYR:[TRANSLATED]] [CYR:pro]withthat"
+    russian: " [CYR:pro]withthat"
     
   hit_the_nail_on_the_head:
     meaning: "Exactly right"
     domain: "General"
-    russian: "[CYR:[TRANSLATED]]with[EN] in [CYR:[TRANSLATED]]"
+    russian: "with in "
     
   spill_the_beans:
     meaning: "Reveal a secret"
     domain: "General"
-    russian: "[EN]with[CYR:[EN]y[EN]] with[CYR:[TRANSLATED]]"
+    russian: "withy] with"
 
 imports:
   - std

@@ -5,13 +5,13 @@ const tvc_jit = @import("tvc_jit.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TVC VM WITH JIT SUPPORT
-// [EN]in[CYR:[EN]]and[EN]withtoand to[CYR:[EN]]or[CYR:[EN]] [CYR:[EN]]and[EN] [CYR:[EN]]to[EN]andand in [CYR:[EN]]and[CYR:[EN]] code
+// inandwithtoand toor and toand in and code
 // ═══════════════════════════════════════════════════════════════════════════
 
 pub const ExecutionMode = enum {
-    interpret, // [EN]with[EN]yes and[CYR:[EN]]and[EN]in[CYR:[EN]]
-    jit,       // [EN]with[EN]yes JIT to[CYR:[EN]]or[EN]in[CYR:[EN]]
-    adaptive,  // [EN]yes[EN]andin[EN]: and[CYR:[EN]]and[EN]in[CYR:[EN]], [EN]from[EN] JIT for [CYR:[EN]]and[EN]
+    interpret, // withyes andin
+    jit,       // withyes JIT toorin
+    adaptive,  // yesandin: andin, from JIT for and
 };
 
 pub const TVCVMJit = struct {
@@ -29,7 +29,7 @@ pub const TVCVMJit = struct {
             .jit = tvc_jit.TVCJit.init(allocator),
             .mode = .adaptive,
             .call_counts = std.StringHashMap(u64).init(allocator),
-            .jit_threshold = 100, // [CYR:[EN]]or[EN]in[CYR:[EN]] after 100 in[CYR:[EN]]in[EN]in
+            .jit_threshold = 100, // orin after 100 ininin
             .total_interpreted = 0,
             .total_jit = 0,
         };
@@ -49,9 +49,9 @@ pub const TVCVMJit = struct {
         try self.vm.loadModule(module);
     }
 
-    // [CYR:[EN]]in [CYR:[EN]]to[EN]andand with [EN]in[CYR:[EN]]and[EN]withtoand[EN] in[CYR:[EN]] [CYR:[EN]]and[EN]
+    // in toand with inandwithtoand in and
     pub fn callFunction(self: *TVCVMJit, func_name: []const u8) !i64 {
-        // [EN]in[EN]and[EN]andin[CYR:[EN]] with[CYR:[EN]]andto in[CYR:[EN]]in[EN]in
+        // inandin withandto ininin
         const count = (self.call_counts.get(func_name) orelse 0) + 1;
         try self.call_counts.put(func_name, count);
 
@@ -63,27 +63,27 @@ pub const TVCVMJit = struct {
                 return self.executeJIT(func_name);
             },
             .adaptive => {
-                // Check, [EN]with[EN] [EN]and [CYR:[EN]] withto[CYR:[EN]]or[EN]in[EN]on[EN] version
+                // Check, with and  withtoorinon version
                 if (self.jit.getCompiled(func_name)) |compiled| {
                     self.total_jit += 1;
                     return compiled.call();
                 }
 
-                // Check, beforewith[EN]and[CYR:[EN]] [EN]and by[CYR:[EN]] for JIT
+                // Check, beforewithand and by for JIT
                 if (count >= self.jit_threshold) {
-                    // [CYR:[EN]]with[EN] withto[CYR:[EN]]or[EN]in[CYR:[EN]]
+                    // with withtoorin
                     if (self.vm.getFunction(func_name)) |func| {
                         if (self.jit.compile(func)) |compiled| {
                             std.debug.print("[JIT] Compiled function: {s} (after {} calls)\n", .{ func_name, count });
                             self.total_jit += 1;
                             return compiled.call();
                         } else |_| {
-                            // [EN]and[EN]to[EN] to[CYR:[EN]]and[CYR:[EN]]andand - [CYR:[EN]]before[CYR:[EN]] and[CYR:[EN]]and[EN]in[CYR:[EN]]
+                            // andto toandand - before andin
                         }
                     }
                 }
 
-                // [CYR:[EN]]and[CYR:[EN]]
+                // and
                 return self.executeInterpreted(func_name);
             },
         }
@@ -92,18 +92,18 @@ pub const TVCVMJit = struct {
     fn executeInterpreted(self: *TVCVMJit, func_name: []const u8) !i64 {
         self.total_interpreted += 1;
         try self.vm.callFunction(func_name);
-        // Return value and[EN] [CYR:[EN]]andwith[CYR:[EN]] r0
+        // Return value and andwith r0
         return @as(i64, self.vm.registers.r0);
     }
 
     fn executeJIT(self: *TVCVMJit, func_name: []const u8) !i64 {
-        // Check to[EN]
+        // Check to
         if (self.jit.getCompiled(func_name)) |compiled| {
             self.total_jit += 1;
             return compiled.call();
         }
 
-        // [CYR:[EN]]or[CYR:[EN]]
+        // or
         if (self.vm.getFunction(func_name)) |func| {
             const compiled = try self.jit.compile(func);
             self.total_jit += 1;
@@ -113,7 +113,7 @@ pub const TVCVMJit = struct {
         return error.InvalidFunction;
     }
 
-    // [EN]and[CYR:[EN]]and[CYR:[EN]]on[EN] JIT compilation [CYR:[EN]]to[EN]andand
+    // andon JIT compilation toand
     pub fn forceCompile(self: *TVCVMJit, func_name: []const u8) !void {
         if (self.vm.getFunction(func_name)) |func| {
             _ = try self.jit.compile(func);
@@ -121,7 +121,7 @@ pub const TVCVMJit = struct {
         }
     }
 
-    // [CYR:[EN]]andwith[EN]andto[EN]
+    // andwithandto
     pub fn getStats(self: *const TVCVMJit) VMJitStats {
         const jit_stats = self.jit.getStats();
         return VMJitStats{
@@ -176,7 +176,7 @@ pub fn benchmarkVMvsJIT(
     func_name: []const u8,
     iterations: u64,
 ) !BenchmarkResult {
-    // [CYR:[EN]]yes[EN] [EN]in[EN] VM: [CYR:[EN]] for and[CYR:[EN]]andand, [CYR:[EN]] for JIT
+    // yes in VM:  for andand,  for JIT
     var vm_only = TVCVMJit.init(allocator, 64 * 1024, 4 * 1024);
     defer vm_only.deinit();
     vm_only.setMode(.interpret);
@@ -187,14 +187,14 @@ pub fn benchmarkVMvsJIT(
     vm_jit.setMode(.jit);
     try vm_jit.loadModule(module);
 
-    // [CYR:[EN]]in
+    // in
     var i: u64 = 0;
     while (i < 10) : (i += 1) {
         _ = vm_only.callFunction(func_name) catch 0;
         _ = vm_jit.callFunction(func_name) catch 0;
     }
 
-    // [CYR:[EN]] and[CYR:[EN]]
+    //  and
     const vm_start = std.time.nanoTimestamp();
     i = 0;
     while (i < iterations) : (i += 1) {
@@ -202,7 +202,7 @@ pub fn benchmarkVMvsJIT(
     }
     const vm_end = std.time.nanoTimestamp();
 
-    // [CYR:[EN]] JIT
+    //  JIT
     const jit_start = std.time.nanoTimestamp();
     i = 0;
     while (i < iterations) : (i += 1) {

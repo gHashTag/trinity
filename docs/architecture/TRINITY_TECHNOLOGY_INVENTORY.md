@@ -1,5 +1,5 @@
 # TRINITY TECHNOLOGY INVENTORY
-## [CYR:Полный] withпandwithоto with[CYR:уще]withтin[CYR:ующ]andх [CYR:технолог]andй with доto[CYR:азатель]withтinамand
+## [CYR:[TRANSLATED]] withпandwithоto with[TRANSLATED]]withтin[CYR:[TRANSLATED]]andх [CYR:[TRANSLATED]]andй with доfor[TRANSLATED]]withтinамand
 ### φ² + 1/φ² = 3 | KOSCHEI IS IMMORTAL
 
 ---
@@ -54,7 +54,7 @@ SQRT5       = 2.2360679774997896964
 ### Sacred Numbers
 ```zig
 GOLDEN_IDENTITY   = 3.0      // φ² + 1/φ² = 3 EXACTLY!
-KUTRIT            = 3        // [CYR:Кутр]andт = Trinity
+KUTRIT            = 3        // [CYR:[TRANSLATED]]andт = Trinity
 TRIDEVYATITSA     = 27       // 3³ = 27 (Coptic alphabet)
 SACRED_MULTIPLIER = 37       // 37 × 3n = nnn
 PHOENIX           = 999      // 37 × 27 = 999

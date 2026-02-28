@@ -1,16 +1,16 @@
-# [CYR:ЖАР]-[CYR:ПТИЦА] (FIREBIRD) - [CYR:Отчёт] по [CYR:опт]andмand[CYR:зац]andand
+# [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]] (FIREBIRD) - [CYR:[TRANSLATED]] по [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and
 
-**[CYR:Дата]**: 2026-02-03  
-**Аin[CYR:тор]**: Ona AI Agent  
-**[CYR:Формула]**: φ² + 1/φ² = 3 = TRINITY
+**[CYR:[TRANSLATED]]**: 2026-02-03  
+**Аin[CYR:[TRANSLATED]]**: Ona AI Agent  
+**[CYR:[TRANSLATED]]**: φ² + 1/φ² = 3 = TRINITY
 
 ---
 
-## 1. [CYR:ТЕКУЩЕЕ] [CYR:СОСТОЯНИЕ]
+## 1. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### 1.1 Доwithтand[CYR:гнутые] resultы
+### 1.1 Доwithтand[CYR:[TRANSLATED]] resultы
 
-| [CYR:Метр]andtoа | Зon[CYR:чен]andе | Speedup |
+| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе | Speedup |
 |---------|----------|---------|
 | Scalar baseline | 0.38 GFLOPS | 1.0x |
 | SIMD-8 | 2.98 GFLOPS | 7.8x |
@@ -18,48 +18,48 @@
 | Parallel (2T) | 3.56 GFLOPS | 11.1x |
 | Parallel (8T) | 3.60 GFLOPS | 11.1x |
 
-### 1.2 [CYR:Ключе]inые to[CYR:омпо]not[CYR:нты]
+### 1.2 [CYR:[TRANSLATED]]inые for[TRANSLATED]]not[CYR:[TRANSLATED]]
 
-1. **phi-engine** - Бandблandfromеtoand inыwithоto[CYR:опро]andзinодand[CYR:тельных] inычandwith[CYR:лен]andй:
+1. **phi-engine** - Бandблandfromеtoand inыwithоfor[TRANSLATED]]andзinодand[CYR:[TRANSLATED]] inычandwith[TRANSLATED]]andй:
    - Quantum Trit-Code Engine (Tritizer, Qutritizer, Quantum Agent)
-   - Fibonacci Hash ([CYR:опт]and[CYR:маль]onя hash-[CYR:фун]toцandя Knuth)
-   - SIMD Ternary (32× [CYR:параллел]andзм трandтоin)
+   - Fibonacci Hash ([CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]onя hash-[CYR:[TRANSLATED]]toцandя Knuth)
+   - SIMD Ternary (32× [CYR:[TRANSLATED]]andзм трandтоin)
    - Lucas Numbers, Phi Spiral, CHSH Quantum
 
-2. **vibeec** - [CYR:Комп]and[CYR:лятор] and inference engine:
+2. **vibeec** - [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] and inference engine:
    - Trinity Inference Engine (Golem 2.0)
    - SIMD Ternary Matmul (LUT-free arithmetic)
    - Flash Attention (IO-aware tiled attention)
-   - KV-Cache with [CYR:опт]andмand[CYR:зац]andей
+   - KV-Cache with [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andей
 
 3. **firebird** - Ternary Virtual Anti-Detect Browser:
    - VSA (Vector Symbolic Architecture) with 10,000+ dimensions
-   - SIMD-уwithto[CYR:орен]andе (4-33x speedup)
+   - SIMD-уwithfor[TRANSLATED]]andе (4-33x speedup)
    - B2T Integration (Binary-to-Ternary WASM pipeline)
 
 ---
 
-## 2. [CYR:АНАЛИЗ] [CYR:ТЕХНОЛОГИЙ]
+## 2. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### 2.1 phi-engine [CYR:Технолог]andand
+### 2.1 phi-engine [CYR:[TRANSLATED]]and
 
-| [CYR:Технолог]andя | [CYR:Стату]with | Прand[CYR:мен]andмоwithть to [CYR:Жар]-Птandце |
+| [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]with | Прand[CYR:[TRANSLATED]]andмоwithть to [CYR:[TRANSLATED]]-Птandце |
 |------------|--------|--------------------------|
-| Tritizer | ✅ Done | [CYR:Кон]in[CYR:ертац]andя to[CYR:ода] in трandты |
-| Qutritizer | ✅ Done | Кin[CYR:анто]inые [CYR:ампл]and[CYR:туды] for inference |
-| SIMD Ternary | ✅ Done | **[CYR:КРИТИЧНО]** - оwithноinа matmul |
-| Fibonacci Hash | ✅ Done | [CYR:Опт]andмand[CYR:зац]andя KV-cache lookup |
+| Tritizer | ✅ Done | [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andя for[TRANSLATED]] in трandты |
+| Qutritizer | ✅ Done | Кin[CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] for inference |
+| SIMD Ternary | ✅ Done | **[CYR:[TRANSLATED]]** - оwithноinа matmul |
+| Fibonacci Hash | ✅ Done | [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя KV-cache lookup |
 | Phi Spiral | ✅ Done | 2D filling for attention patterns |
-| CHSH Quantum | ✅ Done | [CYR:Будущее]: quantum-inspired sampling |
+| CHSH Quantum | ✅ Done | [CYR:[TRANSLATED]]: quantum-inspired sampling |
 
-### 2.2 vibeec [CYR:Опт]andмand[CYR:зац]andand
+### 2.2 vibeec [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and
 
-| [CYR:Опт]andмand[CYR:зац]andя | [CYR:Файл] | Пfrom[CYR:енц]andал |
+| [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]] | Пfrom[CYR:[TRANSLATED]]andал |
 |-------------|------|-----------|
 | LUT-free SIMD | simd_ternary_matmul.zig | +300-400% |
 | Branchless wrap | simd_ternary_optimized.zig | +20% |
 | Batch accumulator | simd_ternary_optimized.zig | +15% |
-| Flash Attention | flash_attention.zig | 2-4x on длand[CYR:нных] seq |
+| Flash Attention | flash_attention.zig | 2-4x on длand[CYR:[TRANSLATED]] seq |
 | Tiled matmul | optimized_ternary_matmul.vibee | 2x target |
 
 ### 2.3 FPGA Accelerator (bitnet_mac.v)
@@ -70,18 +70,18 @@
 
 ---
 
-## 3. [CYR:РЕКОМЕНДАЦИИ] ПО [CYR:УЛУЧШЕНИЮ]
+## 3. [CYR:[TRANSLATED]] ПО [CYR:[TRANSLATED]]
 
-### 3.1 [CYR:Немедленные] (1-2 [CYR:дня])
+### 3.1 [CYR:[TRANSLATED]] (1-2 [CYR:[TRANSLATED]])
 
 #### [A] Thread Pool Reuse + Work Stealing
-- **[CYR:Сложно]withть**: ★★★☆☆
-- **Пfrom[CYR:енц]andал**: +10-15%
+- **[CYR:[TRANSLATED]]withть**: ★★★☆☆
+- **Пfrom[CYR:[TRANSLATED]]andал**: +10-15%
 - **Опandwithанandе**: Persistent thread pool inмеwithто spawn per-call
-- **[CYR:Файлы]**: `src/vibeec/simd_ternary_matmul.zig`
+- **[CYR:[TRANSLATED]]**: `src/vibeec/simd_ternary_matmul.zig`
 
 ```zig
-// [CYR:Создать] global thread pool
+// [CYR:[TRANSLATED]] global thread pool
 pub const GlobalThreadPool = struct {
     pool: std.Thread.Pool,
     
@@ -92,18 +92,18 @@ pub const GlobalThreadPool = struct {
 ```
 
 #### [B] Prefetch Distance Tuning
-- **[CYR:Сложно]withть**: ★★☆☆☆
-- **Пfrom[CYR:енц]andал**: +5-10%
-- **Опandwithанandе**: [CYR:Проф]orроinанandе [CYR:опт]and[CYR:мального] prefetch distance (теtoущandй: 8)
-- **Теwithт**: distances 4, 8, 16, 32 on [CYR:разных] CPU
+- **[CYR:[TRANSLATED]]withть**: ★★☆☆☆
+- **Пfrom[CYR:[TRANSLATED]]andал**: +5-10%
+- **Опandwithанandе**: [CYR:[TRANSLATED]]orроinанandе [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] prefetch distance (теtoущandй: 8)
+- **Теwithт**: distances 4, 8, 16, 32 on [CYR:[TRANSLATED]] CPU
 
-### 3.2 [CYR:Сред]notwith[CYR:рочные] (1-2 not[CYR:дел]and)
+### 3.2 [CYR:[TRANSLATED]]notwith[TRANSLATED]] (1-2 not[CYR:[TRANSLATED]]and)
 
 #### [C] Full 28-Layer Pipeline
-- **[CYR:Сложно]withть**: ★★★★☆
-- **Пfrom[CYR:енц]andал**: End-to-end BitNet 2B inference
+- **[CYR:[TRANSLATED]]withть**: ★★★★☆
+- **Пfrom[CYR:[TRANSLATED]]andал**: End-to-end BitNet 2B inference
 - **Заinandwithandмоwithтand**: RMSNorm, RoPE, Attention, MLP
-- **[CYR:Цель]**: <300ms full inference on 8T CPU
+- **[CYR:[TRANSLATED]]**: <300ms full inference on 8T CPU
 
 ```zig
 pub const BitNetLayer = struct {
@@ -121,60 +121,60 @@ pub const BitNetLayer = struct {
 ```
 
 #### [D] Flash Attention Integration
-- **[CYR:Сложно]withть**: ★★★★☆
-- **Пfrom[CYR:енц]andал**: 2-4x on длand[CYR:нных] поwith[CYR:ледо]in[CYR:ательно]with[CYR:тях]
+- **[CYR:[TRANSLATED]]withть**: ★★★★☆
+- **Пfrom[CYR:[TRANSLATED]]andал**: 2-4x on длand[CYR:[TRANSLATED]] поwith[TRANSLATED]]in[CYR:[TRANSLATED]]with[TRANSLATED]]
 - **Опandwithанandе**: Online softmax + tiled attention
-- **[CYR:Файл]**: `src/vibeec/flash_attention.zig` ([CYR:уже] [CYR:реал]andзоinан, [CYR:нуж]on and[CYR:нтеграц]andя)
+- **[CYR:[TRANSLATED]]**: `src/vibeec/flash_attention.zig` ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andзоinан, [CYR:[TRANSLATED]]on and[CYR:[TRANSLATED]]andя)
 
-### 3.3 [CYR:Долго]with[CYR:рочные] (1+ меwithяц)
+### 3.3 [CYR:[TRANSLATED]]with[TRANSLATED]] (1+ меwithяц)
 
 #### [E] AVX-512 / ARM NEON Specialization
-- **[CYR:Сложно]withть**: ★★★★★
-- **Пfrom[CYR:енц]andал**: +50-100% (6-8 GFLOPS)
+- **[CYR:[TRANSLATED]]withть**: ★★★★★
+- **Пfrom[CYR:[TRANSLATED]]andал**: +50-100% (6-8 GFLOPS)
 - **Опandwithанandе**: Platform-specific SIMD intrinsics
 - **Заinandwithandмоwithтand**: CPU feature detection
 
 #### [F] FPGA Integration
-- **[CYR:Сложно]withть**: ★★★★★
-- **Пfrom[CYR:енц]andал**: 400x speedup
-- **Опandwithанandе**: [CYR:Интеграц]andя bitnet_mac.v [CYR:через] PCIe/USB
-- **[CYR:Файлы]**: `trinity/output/fpga/bitnet_mac.v`
+- **[CYR:[TRANSLATED]]withть**: ★★★★★
+- **Пfrom[CYR:[TRANSLATED]]andал**: 400x speedup
+- **Опandwithанandе**: [CYR:[TRANSLATED]]andя bitnet_mac.v [CYR:[TRANSLATED]] PCIe/USB
+- **[CYR:[TRANSLATED]]**: `trinity/output/fpga/bitnet_mac.v`
 
 ---
 
-## 4. [CYR:ПРИОРИТЕТНЫЙ] [CYR:ПЛАН]
+## 4. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│              🌳 TECH TREE - [CYR:РЕКОМЕНДУЕМЫЙ] [CYR:ПУТЬ]                  │
+│              🌳 TECH TREE - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                  │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  [CYR:НЕДЕЛЯ] 1:                                                      │
+│  [CYR:[TRANSLATED]] 1:                                                      │
 │  ├── [A] Thread Pool Reuse (+10-15%)                            │
 │  └── [B] Prefetch Tuning (+5-10%)                               │
 │                                                                 │
-│  [CYR:НЕДЕЛЯ] 2-3:                                                    │
+│  [CYR:[TRANSLATED]] 2-3:                                                    │
 │  └── [C] Full 28-Layer Pipeline (end-to-end)                    │
 │                                                                 │
-│  [CYR:НЕДЕЛЯ] 4:                                                      │
+│  [CYR:[TRANSLATED]] 4:                                                      │
 │  └── [D] Flash Attention Integration (2-4x on long seq)         │
 │                                                                 │
-│  [CYR:МЕСЯЦ] 2+:                                                      │
+│  [CYR:[TRANSLATED]] 2+:                                                      │
 │  ├── [E] AVX-512/NEON Specialization                            │
 │  └── [F] FPGA Integration                                       │
 │                                                                 │
-│  [CYR:РЕКОМЕНДАЦИЯ]: [CYR:Начать] with [C] Full 28-Layer Pipeline              │
-│  Прandчandon: Matmul [CYR:уже] доwith[CYR:таточно] быwith[CYR:трый] (3.6 GFLOPS).           │
-│  [CYR:Следующ]andй step - доto[CYR:азать] [CYR:раб]fromоwithпоwith[CYR:обно]withть end-to-end.         │
+│  [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] with [C] Full 28-Layer Pipeline              │
+│  Прandчandon: Matmul [CYR:[TRANSLATED]] доwith[TRANSLATED]] быwith[TRANSLATED]] (3.6 GFLOPS).           │
+│  [CYR:[TRANSLATED]]andй step - доfor[TRANSLATED]] [CYR:[TRANSLATED]]fromоwithпоwith[TRANSLATED]]withть end-to-end.         │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 5. [CYR:МЕТРИКИ] [CYR:УСПЕХА]
+## 5. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-| [CYR:Этап] | [CYR:Метр]andtoа | [CYR:Цель] |
+| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]andtoа | [CYR:[TRANSLATED]] |
 |------|---------|------|
 | Thread Pool | GFLOPS | 4.0+ |
 | 28-Layer Pipeline | Latency | <300ms |
@@ -184,15 +184,15 @@ pub const BitNetLayer = struct {
 
 ---
 
-## 6. [CYR:ЗАКЛЮЧЕНИЕ]
+## 6. [CYR:[TRANSLATED]]
 
-[CYR:Жар]-Птandца (Firebird) [CYR:уже] доwithтand[CYR:гла] 11.1x speedup onд scalar baseline. Оwithноin[CYR:ные] on[CYR:пра]in[CYR:лен]andя [CYR:раз]inandтandя:
+[CYR:[TRANSLATED]]-Птandца (Firebird) [CYR:[TRANSLATED]] доwithтand[CYR:[TRANSLATED]] 11.1x speedup onд scalar baseline. Оwithноin[CYR:[TRANSLATED]] on[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]inandтandя:
 
-1. **[CYR:Крат]toоwith[CYR:рочно]**: Thread pool reuse, prefetch tuning
-2. **[CYR:Сред]notwith[CYR:рочно]**: Full 28-layer pipeline, Flash Attention
-3. **[CYR:Долго]with[CYR:рочно]**: Platform-specific SIMD, FPGA acceleration
+1. **[CYR:[TRANSLATED]]toоwith[TRANSLATED]]**: Thread pool reuse, prefetch tuning
+2. **[CYR:[TRANSLATED]]notwith[TRANSLATED]]**: Full 28-layer pipeline, Flash Attention
+3. **[CYR:[TRANSLATED]]with[TRANSLATED]]**: Platform-specific SIMD, FPGA acceleration
 
-Теtoущandй matmul (3.6 GFLOPS) доwith[CYR:таточен] for demoнwith[CYR:трац]andand. Прandорand[CYR:тет] - end-to-end inference pipeline.
+Теtoущandй matmul (3.6 GFLOPS) доwith[TRANSLATED]] for demoнwith[TRANSLATED]]and. Прandорand[CYR:[TRANSLATED]] - end-to-end inference pipeline.
 
 ---
 

@@ -2,10 +2,10 @@
 // BENCHMARK: VIBEE Generated Code vs Pure Zig
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// [CYR:[TRANSLATED]]innot[EN]and[EN] [CYR:pro]and[EN]in[EN]and[CYR:[EN]lno]with[EN]and:
-// 1. Fibonacci ([EN]to[EN]withandin[CYR:ny] and and[CYR:[TRANSLATED]]andin[CYR:ny])
-// 2. Golden Ratio iny[EN]andwith[CYR:[TRANSLATED]]andI
-// 3. Trit [CYR:[TRANSLATED]]andand ([CYR:[TRANSLATED]]on[EN]onI [CYR:[TRANSLATED]]andto[EN])
+// innotand [CYR:pro]andinand[CYR:lno]withand:
+// 1. Fibonacci (towithandin[CYR:ny] and andin[CYR:ny])
+// 2. Golden Ratio inyandwithandI
+// 3. Trit and (ononI andto)
 // 4. Sacred Math (φ² + 1/φ² = 3)
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -138,7 +138,7 @@ fn trinity_power_loop(k: u32) u64 {
 }
 
 fn trinity_power_shift(k: u32) u64 {
-    // 3^k [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN] for [CYR:[TRANSLATED]y[EN]] k
+    // 3^k  and for [CYR:y] k
     const powers = [_]u64{ 1, 3, 9, 27, 81, 243, 729, 2187, 6561, 19683, 59049, 177147, 531441, 1594323, 4782969, 14348907, 43046721, 129140163, 387420489, 1162261467 };
     if (k < powers.len) {
         return powers[k];

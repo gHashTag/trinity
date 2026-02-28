@@ -29,7 +29,7 @@
 
 ## What Changed (v2.2 -> v2.3)
 
-### 1. Tools Layer -> Mirror of Three Worlds ([CYR:Зер]to[CYR:ало] [CYR:Трёх] Мandроin)
+### 1. Tools Layer -> Mirror of Three Worlds ([CYR:[TRANSLATED]]for[TRANSLATED]] [CYR:[TRANSLATED]] Мandроin)
 
 The Tools layer (Build/Test/Bench/Health buttons) is **gone**. Replaced by a functional three-column dashboard that shows real pipeline metrics and live logs.
 

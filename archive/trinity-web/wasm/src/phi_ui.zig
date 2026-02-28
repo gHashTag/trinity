@@ -2,7 +2,7 @@
 // phi_ui v24.φ - Unified WASM UI Module
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]ny] UI module for WASM
+// and[CYR:ny] UI module for WASM
 // Golden identity: φ² + 1/φ² = 3
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -11,7 +11,7 @@ const std = @import("std");
 const math = std.math;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]A[TRANSLATED]]
+// [CYR:A]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PHI: f64 = 1.618033988749895;
@@ -38,7 +38,7 @@ pub const STATE_IDLE: u32 = 0;
 pub const STATE_DRAGGING: u32 = 1;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]A[TRANSLATED]] [CYR:[TRANSLATED]] WASM
+// [CYR:A]  WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;

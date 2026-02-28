@@ -1,5 +1,5 @@
 // Maxwell Daemon - LLM Client
-// [CYR:[TRANSLATED]]andI with LLM API for reasoning
+// andI with LLM API for reasoning
 //
 // IMPLEMENTATION STATUS:
 // - GLM (z.ai): IMPLEMENTED (working)
@@ -182,7 +182,7 @@ pub const LLMClient = struct {
         self.conversation.deinit();
     }
 
-    /// [CYR:[EN]law]inand[EN] with[CYR:[TRANSLATED]]and[EN] and [CYR:[TRANSLATED]]and[EN] fromin[EN]
+    /// [CYR:law]inand withand and and fromin
     pub fn chat(self: *LLMClient, user_message: []const u8) !LLMResponse {
         // Add user message to conversation
         try self.conversation.append(Message{
@@ -202,7 +202,7 @@ pub const LLMClient = struct {
         return response;
     }
 
-    /// [CYR:[TRANSLATED]]not[EN]and[EN]in[CYR:ate] .vibee with[CYR:[TRANSLATED]]and[EN]andto[EN]and[EN]
+    /// notandin[CYR:ate] .vibee withandtoand
     pub fn generateSpec(self: *LLMClient, task_description: []const u8, context: []const u8) ![]const u8 {
         var prompt = std.ArrayList(u8).init(self.allocator);
         defer prompt.deinit();
@@ -219,7 +219,7 @@ pub const LLMClient = struct {
         return response.content;
     }
 
-    /// [CYR:[TRANSLATED]]on[EN]and[EN]and[EN]in[CYR:ate] [EN]and[EN]to[EN] and [CYR:[TRANSLATED]]and[EN] andwith[CYR:law]in[CYR:[TRANSLATED]]and[EN]
+    /// onandin[CYR:ate] andto and and andwithlaw]inand
     pub fn analyzeError(self: *LLMClient, error_message: []const u8, code_context: []const u8) ![]const u8 {
         var prompt = std.ArrayList(u8).init(self.allocator);
         defer prompt.deinit();
@@ -236,7 +236,7 @@ pub const LLMClient = struct {
         return response.content;
     }
 
-    /// [EN]to[CYR:[TRANSLATED]]and[EN]in[CYR:ate] [CYR:[TRANSLATED]] on [CYR:[TRANSLATED]]and
+    /// toandin[CYR:ate]  on and
     pub fn decomposeTask(self: *LLMClient, task_description: []const u8) ![]const u8 {
         var prompt = std.ArrayList(u8).init(self.allocator);
         defer prompt.deinit();
@@ -252,7 +252,7 @@ pub const LLMClient = struct {
         return response.content;
     }
 
-    /// [EN]andwith[EN]and[EN] andwith[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]go]in[CYR:[TRANSLATED]]
+    /// andwithand andwithand [CYR:go]in
     pub fn clearHistory(self: *LLMClient) void {
         self.conversation.clearRetainingCapacity();
         self.conversation.append(Message{

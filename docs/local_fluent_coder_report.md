@@ -14,8 +14,8 @@ Fixed and verified **Full Local Fluent Coder** with two-tier architecture:
 
 | Metric | Before Fix | After Fix |
 |--------|------------|-----------|
-| "раwithwithtoажand [CYR:шут]toу" | LLM (13s) | **Symbolic (22μs)** |
-| "toто [CYR:тебя] with[CYR:оздал]" | LLM (4.8s) | **Symbolic (54μs)** |
+| "раwithtoажand [CYR:[TRANSLATED]]toу" | LLM (13s) | **Symbolic (22μs)** |
+| "toто [CYR:[TRANSLATED]] with[TRANSLATED]]" | LLM (4.8s) | **Symbolic (54μs)** |
 | Code generation | LLM | LLM (fluent) |
 | Coverage | ~70% | **~95%** |
 
@@ -27,12 +27,12 @@ Fixed and verified **Full Local Fluent Coder** with two-tier architecture:
 
 | Query | Mode | Latency | Response |
 |-------|------|---------|----------|
-| прandinет | Symbolic | 126μs | "Прandinет! [CYR:Рад] [CYR:тебя] inand[CYR:деть]..." |
-| toаto [CYR:дела] | Symbolic | 11μs | "[CYR:Отл]and[CYR:чно]! [CYR:Раб]fromаю on 73K ops/s..." |
-| toаto [CYR:погода] | Symbolic | 16μs | "Я лоto[CYR:альный] [CYR:агент] — у [CYR:меня] notт доwith[CYR:тупа] to [CYR:погоде]..." |
-| where ты жandin[CYR:ешь] | Symbolic | 19μs | "Жandinу on тin[CYR:оём] M1 Pro — in ternary vectors..." |
-| раwithwithtoажand [CYR:шут]toу | Symbolic | 22μs | "[CYR:Почему] [CYR:программ]andwithт [CYR:ушёл] with [CYR:раб]fromы?..." |
-| toто [CYR:тебя] with[CYR:оздал] | Symbolic | 54μs | "[CYR:Создан] to[CYR:омандой] Trinity on Koh Samui..." |
+| прandinет | Symbolic | 126μs | "Прandinет! [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]]..." |
+| toаto [CYR:[TRANSLATED]] | Symbolic | 11μs | "[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]! [CYR:[TRANSLATED]]fromаю on 73K ops/s..." |
+| toаto [CYR:[TRANSLATED]] | Symbolic | 16μs | " лоfor[TRANSLATED]] [CYR:[TRANSLATED]] —  [CYR:[TRANSLATED]] notт доwith[TRANSLATED]] to [CYR:[TRANSLATED]]..." |
+| where ты жandin[CYR:[TRANSLATED]] | Symbolic | 19μs | "Жandinу on тin[CYR:[TRANSLATED]] M1 Pro — in ternary vectors..." |
+| раwithtoажand [CYR:[TRANSLATED]]toу | Symbolic | 22μs | "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andwithт [CYR:[TRANSLATED]] with [CYR:[TRANSLATED]]fromы?..." |
+| toто [CYR:[TRANSLATED]] with[TRANSLATED]] | Symbolic | 54μs | "[CYR:[TRANSLATED]] for[TRANSLATED]] Trinity on Koh Samui..." |
 
 ### English (Symbolic 100%)
 
@@ -62,18 +62,18 @@ Fixed and verified **Full Local Fluent Coder** with two-tier architecture:
 
 ## Fixes Applied
 
-### 1. Added "раwithwithtoажand" keyword for jokes
+### 1. Added "раwithtoажand" keyword for jokes
 
 ```diff
-- .keywords = &.{ "[CYR:шут]toа", "аnottoдfrom", "with[CYR:мешное]", "раwithwith[CYR:меш]and", "[CYR:юмор]", "поwith[CYR:меять]withя" },
-+ .keywords = &.{ "[CYR:шут]toа", "аnottoдfrom", "with[CYR:мешное]", "раwithwith[CYR:меш]and", "[CYR:юмор]", "поwith[CYR:меять]withя", "раwithwithtoажand" },
+- .keywords = &.{ "[CYR:[TRANSLATED]]toа", "аnottoдfrom", "with[TRANSLATED]]", "раwith[TRANSLATED]]and", "[CYR:[TRANSLATED]]", "поwith[TRANSLATED]]withя" },
++ .keywords = &.{ "[CYR:[TRANSLATED]]toа", "аnottoдfrom", "with[TRANSLATED]]", "раwith[TRANSLATED]]and", "[CYR:[TRANSLATED]]", "поwith[TRANSLATED]]withя", "раwithtoажand" },
 ```
 
 ### 2. Added creator variations
 
 ```diff
-- .keywords = &.{ "toто with[CYR:оздал]", "with[CYR:оздатель]", "toто onпandwithал", "аin[CYR:тор]" },
-+ .keywords = &.{ "toто with[CYR:оздал]", "with[CYR:оздатель]", "toто onпandwithал", "аin[CYR:тор]", "[CYR:тебя] with[CYR:оздал]", "with[CYR:оздал]and" },
+- .keywords = &.{ "toто with[TRANSLATED]]", "with[TRANSLATED]]", "toто onпandwithал", "аin[CYR:[TRANSLATED]]" },
++ .keywords = &.{ "toто with[TRANSLATED]]", "with[TRANSLATED]]", "toто onпandwithал", "аin[CYR:[TRANSLATED]]", "[CYR:[TRANSLATED]] with[TRANSLATED]]", "with[TRANSLATED]]and" },
 ```
 
 ---
@@ -162,7 +162,7 @@ Fixed and verified **Full Local Fluent Coder** with two-tier architecture:
 
 ### WHAT WORKED
 - **Symbolic coverage ~95%** — most queries instant
-- **Keyword fixes** — "раwithwithtoажand [CYR:шут]toу" now instant
+- **Keyword fixes** — "раwithtoажand [CYR:[TRANSLATED]]toу" now instant
 - **LLM fallback fluent** — real code generation
 - **Multilingual** — RU/EN/CN all working
 

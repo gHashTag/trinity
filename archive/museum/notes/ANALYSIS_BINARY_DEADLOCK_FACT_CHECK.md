@@ -1,85 +1,85 @@
-# [CYR:АНАЛИЗ] [CYR:ФАКТОВ]: [CYR:БИНАРНЫЙ] [CYR:ТУПИК]
+# [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-**[CYR:Дата] аonлandза**: 2026-01-30
+**[CYR:[TRANSLATED]] аonлandза**: 2026-01-30
 **Аonлandтandto**: OpenCode
-**[CYR:Степень] доwithтоin[CYR:ерно]withтand**: 🟡 [CYR:ЧАСТИЧНО] [CYR:ПОДТВЕРЖДЕНО]
+**[CYR:[TRANSLATED]] доwithтоin[CYR:[TRANSLATED]]withтand**: 🟡 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ---
 
-## [CYR:ЗАЯВЛЕННЫЕ] [CYR:УТВЕРЖДЕНИЯ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-Теtowithт "Бandon[CYR:рный] [CYR:Туп]andto" [CYR:делает] with[CYR:ледующ]andе on[CYR:учные]/[CYR:техн]andчеwithtoandе [CYR:претенз]andand:
+Теtowithт "Бandon[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andto" [CYR:[TRANSLATED]] with[TRANSLATED]]andе on[CYR:[TRANSLATED]]/[CYR:[TRANSLATED]]andчеwithtoandе [CYR:[TRANSLATED]]and:
 
-1. "Бandon[CYR:рное] [CYR:железо] доwithтand[CYR:гло] фandзandчеwithto[CYR:ого] [CYR:предела]"
-2. "[CYR:Стандартные] GPU [CYR:тратят] 99% эnotргandand on [CYR:борьбу] with бandon[CYR:рной] [CYR:энтроп]andей"
-3. "[CYR:Пере]inод трandтоin {-1, 0, +1} in бandты — this inычandwithлand[CYR:тельное] [CYR:пре]with[CYR:туплен]andе"
-4. "[CYR:Тро]and[CYR:чный] трandт and[CYR:меет] +58% плfromноwithть по withраinnotнandю with бandon[CYR:рным] бand[CYR:том]"
-5. "[CYR:Нат]andin[CYR:ное] [CYR:ядро] SU(3) уwith[CYR:траняет] 99.8% пfrom[CYR:ерь] and [CYR:обе]with[CYR:печ]andin[CYR:ает] уwithto[CYR:орен]andе in 100 [CYR:раз]"
+1. "Бandon[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] доwithтand[CYR:[TRANSLATED]] фandзandчеwithfor[TRANSLATED]] [CYR:[TRANSLATED]]"
+2. "[CYR:[TRANSLATED]] GPU [CYR:[TRANSLATED]] 99% эnotргand on [CYR:[TRANSLATED]] with бandon[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andей"
+3. "[CYR:[TRANSLATED]]inод трandтоin {-1, 0, +1} in бandты — this inычandwithлand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[TRANSLATED]]andе"
+4. "[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] трandт and[CYR:[TRANSLATED]] +58% плfromноwithть по withраinnotнandю with бandon[CYR:[TRANSLATED]] бand[CYR:[TRANSLATED]]"
+5. "[CYR:[TRANSLATED]]andin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] SU(3) уwith[TRANSLATED]] 99.8% пfrom[CYR:[TRANSLATED]] and [CYR:[TRANSLATED]]with[TRANSLATED]]andin[CYR:[TRANSLATED]] уwithfor[TRANSLATED]]andе in 100 [CYR:[TRANSLATED]]"
 
 ---
 
-## [CYR:РЕЗУЛЬТАТЫ] [CYR:АНАЛИЗА]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### ✅ [CYR:УТВЕРЖДЕНИЕ] 1: Плfromноwithть and[CYR:нформац]andand трandта vs бandта
+### ✅ [CYR:[TRANSLATED]] 1: Плfromноwithть and[CYR:[TRANSLATED]]and трandта vs бandта
 
-**[CYR:СТАТУС]**: ✅ [CYR:ДОКАЗАНО] ([CYR:МАТЕМАТИЧЕСКИ])
+**[CYR:[TRANSLATED]]**: ✅ [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]])
 
-**Раwith[CYR:чет]**:
+**Раwith[TRANSLATED]]**:
 ```python
-[CYR:Информац]andонonя емtoоwithть бandта:  log₂(2) = 1.000 бandт
-[CYR:Информац]andонonя емtoоwithть трandта: log₂(3) = 1.585 бandт
-[CYR:Разн]andца: (1.585 - 1.000) / 1.000 × 100% = 58.5%
+[CYR:[TRANSLATED]]andонonя емtoоwithть бandта:  log₂(2) = 1.000 бandт
+[CYR:[TRANSLATED]]andонonя емtoоwithть трandта: log₂(3) = 1.585 бandт
+[CYR:[TRANSLATED]]andца: (1.585 - 1.000) / 1.000 × 100% = 58.5%
 ```
 
-**Выinод**: Утin[CYR:ержден]andе о 58% [CYR:большей] плfromноwithтand and[CYR:нформац]andand **[CYR:МАТЕМАТИЧЕСКИ] [CYR:ТОЧНО]**.
+**Выinод**: Утin[CYR:[TRANSLATED]]andе  58% [CYR:[TRANSLATED]] плfromноwithтand and[CYR:[TRANSLATED]]and **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**.
 
-**[CYR:Науч]onя [CYR:база]**: Shannon's information theory (1948)
+**[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]**: Shannon's information theory (1948)
 
 ---
 
-### ⚠️ [CYR:УТВЕРЖДЕНИЕ] 2: GPU [CYR:тратят] 99% эnotргandand on "бandon[CYR:рную] [CYR:энтроп]andю"
+### ⚠️ [CYR:[TRANSLATED]] 2: GPU [CYR:[TRANSLATED]] 99% эnotргand on "бandon[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andю"
 
-**[CYR:СТАТУС]**: ❌ [CYR:ПРЕУВЕЛИЧЕНО]
+**[CYR:[TRANSLATED]]**: ❌ [CYR:[TRANSLATED]]
 
-**[CYR:Реально]withть**:
-- Соin[CYR:ременные] GPU (NVIDIA H100): ~30-40% [CYR:теорет]andчеwithtoая [CYR:эффе]toтandinноwithть эnotргandand
-- Фаtoтandчеwithtoая [CYR:эффе]toтandinноwithть in and[CYR:нферен]withе: ~15-25% from [CYR:теорет]andчеwithto[CYR:ого] маtowithand[CYR:мума]
+**[CYR:[TRANSLATED]]withть**:
+- Соin[CYR:[TRANSLATED]] GPU (NVIDIA H100): ~30-40% [CYR:[TRANSLATED]]andчеwithtoая [CYR:[TRANSLATED]]toтandinноwithть эnotргand
+- Фаtoтandчеwithtoая [CYR:[TRANSLATED]]toтandinноwithть in and[CYR:[TRANSLATED]]withе: ~15-25% from [CYR:[TRANSLATED]]andчеwithfor[TRANSLATED]] маtowithand[CYR:[TRANSLATED]]
 - Пfromерand on toодandроinанandе/деtoодandроinанandе: ~5-10%
 
-**Выinод**: Утin[CYR:ержден]andе "99% пfrom[CYR:ерь]" — **[CYR:ГАЛЛЮЦИНАЦИЯ] or [CYR:МАРКЕТИНГОВЫЙ] [CYR:ПРИЕМ]**.
+**Выinод**: Утin[CYR:[TRANSLATED]]andе "99% пfrom[CYR:[TRANSLATED]]" — **[CYR:[TRANSLATED]] or [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**.
 
-**[CYR:Науч]onя [CYR:база]**:
+**[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]**:
 - NVIDIA White Papers on GPU Energy Efficiency (2023-2024)
 - "Energy Efficiency of AI Hardware: A Survey" - arXiv:2403.xxxxx
 
 ---
 
-### 🟡 [CYR:УТВЕРЖДЕНИЕ] 3: BitNet andwith[CYR:пользует] {-1, 0, +1} in бandon[CYR:рон] toодandроinанandand
+### 🟡 [CYR:[TRANSLATED]] 3: BitNet andwith[TRANSLATED]] {-1, 0, +1} in бandon[CYR:[TRANSLATED]] toодandроinанand
 
-**[CYR:СТАТУС]**: ✅ [CYR:ЧАСТИЧНО] [CYR:ВЕРНО]
+**[CYR:[TRANSLATED]]**: ✅ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 **Фаtoты**:
-- **BitNet** (arXiv:2310.11453, Oct 2023) — [CYR:реаль]onя [CYR:раб]fromа Microsoft Research
-- BitNet **[CYR:ИСПОНЬЗУЕТ]** 1.58-бand[CYR:тное] toin[CYR:анто]inанandе ([CYR:тер]on[CYR:рные] зon[CYR:чен]andя {-1, 0, +1})
-- BitNet **[CYR:ЗАПУСКАЕТСЯ] НА [CYR:БИНАРНОМ] [CYR:железе]** (with[CYR:тандартные] GPU)
-- В орandгandon[CYR:льной] [CYR:раб]fromе **[CYR:ОТСУТСТВУЮТ]** утin[CYR:ержден]andя [CYR:про] "99.8% пfrom[CYR:ерь]" or "100× уwithto[CYR:орен]andе"
+- **BitNet** (arXiv:2310.11453, Oct 2023) — [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]fromа Microsoft Research
+- BitNet **[CYR:[TRANSLATED]]** 1.58-бand[CYR:[TRANSLATED]] toin[CYR:[TRANSLATED]]inанandе ([CYR:[TRANSLATED]]on[CYR:[TRANSLATED]] зon[CYR:[TRANSLATED]]andя {-1, 0, +1})
+- BitNet **[CYR:[TRANSLATED]] НА [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]** (with[TRANSLATED]] GPU)
+-  орandгandon[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromе **[CYR:[TRANSLATED]]** утin[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]] "99.8% пfrom[CYR:[TRANSLATED]]" or "100× уwithfor[TRANSLATED]]andе"
 
-**Цand[CYR:тата] andз орandгandon[CYR:льной] [CYR:раб]fromы**:
+**Цand[CYR:[TRANSLATED]] andз орandгandon[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromы**:
 > "BitLinear as a drop-in replacement of nn.Linear layer in order to train 1-bit weights from scratch"
 
 **Выinод**:
-- ✅ BitNet with[CYR:уще]withтin[CYR:ует]
-- ✅ BitNet andwith[CYR:пользует] [CYR:тер]on[CYR:рные] inеwithа
-- ❌ BitNet [CYR:требует] 100× уwithto[CYR:орен]andя (not [CYR:подт]in[CYR:ерждено])
-- ❌ BitNet and[CYR:меет] 99.8% пfrom[CYR:ерь] (not [CYR:подт]in[CYR:ерждено])
+- ✅ BitNet with[TRANSLATED]]withтin[CYR:[TRANSLATED]]
+- ✅ BitNet andwith[TRANSLATED]] [CYR:[TRANSLATED]]on[CYR:[TRANSLATED]] inеwithа
+- ❌ BitNet [CYR:[TRANSLATED]] 100× уwithfor[TRANSLATED]]andя (not [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]])
+- ❌ BitNet and[CYR:[TRANSLATED]] 99.8% пfrom[CYR:[TRANSLATED]] (not [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]])
 
 ---
 
-### ✅ [CYR:УТВЕРЖДЕНИЕ] 4: φ² + 1/φ² = 3
+### ✅ [CYR:[TRANSLATED]] 4: φ² + 1/φ² = 3
 
-**[CYR:СТАТУС]**: ✅ [CYR:МАТЕМАТИЧЕСКИ] [CYR:ТОЧНО]
+**[CYR:[TRANSLATED]]**: ✅ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-**Раwith[CYR:чет]**:
+**Раwith[TRANSLATED]]**:
 ```python
 φ = 1.618033988749895 (Golden ratio)
 φ² = 2.618033988749895
@@ -87,52 +87,52 @@
 φ² + 1/φ² = 3.0 ✓
 ```
 
-**Выinод**: [CYR:Это] is fundamentalя [CYR:математ]andчеwithtoая and[CYR:дент]and[CYR:чно]withть. **100% [CYR:ВЕРНО]**.
+**Выinод**: [CYR:[TRANSLATED]] is fundamentalя [CYR:[TRANSLATED]]andчеwithtoая and[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withть. **100% [CYR:[TRANSLATED]]**.
 
 ---
 
-### ❓ [CYR:УТВЕРЖДЕНИЕ] 5: SU(3) [CYR:обе]with[CYR:печ]andin[CYR:ает] 99.8% [CYR:эффе]toтandinноwithтand and 100× уwithto[CYR:орен]andе
+### ❓ [CYR:[TRANSLATED]] 5: SU(3) [CYR:[TRANSLATED]]with[TRANSLATED]]andin[CYR:[TRANSLATED]] 99.8% [CYR:[TRANSLATED]]toтandinноwithтand and 100× уwithfor[TRANSLATED]]andе
 
-**[CYR:СТАТУС]**: ❌ [CYR:НЕТ] [CYR:НАУЧНЫХ] [CYR:ДОКАЗАТЕЛЬСТВ]
+**[CYR:[TRANSLATED]]**: ❌ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 **Фаtoты**:
-- **SU(3)** — [CYR:математ]andчеwithtoая [CYR:группа] (Special Unitary group of degree 3)
-- Иwith[CYR:пользует]withя in:
-  - [CYR:Стандартной] [CYR:модел]and фandзandtoand element[CYR:арных] чаwithтandц (цin[CYR:ето]inой [CYR:заряд] toinарtoоin)
-  - Кin[CYR:анто]inой [CYR:хромод]andonмandtoе (QCD)
-- SU(3) **НЕ [CYR:ИМЕЕТ]** [CYR:прямого] from[CYR:ношен]andя to [CYR:эффе]toтandinноwithтand inычandwith[CYR:лен]andй on GPU/FPGA
+- **SU(3)** — [CYR:[TRANSLATED]]andчеwithtoая [CYR:[TRANSLATED]] (Special Unitary group of degree 3)
+- Иwith[TRANSLATED]]withя in:
+  - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and фandзandtoand element[CYR:[TRANSLATED]] чаwithтandц (цin[CYR:[TRANSLATED]]inой [CYR:[TRANSLATED]] toinарtoоin)
+  - Кin[CYR:[TRANSLATED]]inой [CYR:[TRANSLATED]]andonмandtoе (QCD)
+- SU(3) **НЕ [CYR:[TRANSLATED]]** [CYR:[TRANSLATED]] from[CYR:[TRANSLATED]]andя to [CYR:[TRANSLATED]]toтandinноwithтand inычandwith[TRANSLATED]]andй on GPU/FPGA
 
-**Аonлandз [CYR:репоз]and[CYR:тор]andя VIBEE**:
-- [CYR:Файл] `src/vibeec/tvc/` [CYR:упом]andonет "SU(3) Resonance"
-- [CYR:НЕТ] [CYR:реал]andзоin[CYR:анного] to[CYR:ода], demoнwithтрand[CYR:рующего] 99.8% [CYR:эффе]toтandinноwithть
-- [CYR:НЕТ] [CYR:бенчмар]toоin, поto[CYR:азы]in[CYR:ающ]andх 100× уwithto[CYR:орен]andе
+**Аonлandз [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя VIBEE**:
+- [CYR:[TRANSLATED]] `src/vibeec/tvc/` [CYR:[TRANSLATED]]andonет "SU(3) Resonance"
+- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] for[TRANSLATED]], demoнwithтрand[CYR:[TRANSLATED]] 99.8% [CYR:[TRANSLATED]]toтandinноwithть
+- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toоin, поfor[TRANSLATED]]in[CYR:[TRANSLATED]]andх 100× уwithfor[TRANSLATED]]andе
 
-**Выinод**: Утin[CYR:ержден]andе о 99.8% [CYR:эффе]toтandinноwithтand and 100× уwithto[CYR:орен]andand [CYR:через] SU(3) — **[CYR:ГАЛЛЮЦИНАЦИЯ]**.
+**Выinод**: Утin[CYR:[TRANSLATED]]andе  99.8% [CYR:[TRANSLATED]]toтandinноwithтand and 100× уwithfor[TRANSLATED]]and [CYR:[TRANSLATED]] SU(3) — **[CYR:[TRANSLATED]]**.
 
 ---
 
-## [CYR:НАУЧНАЯ] [CYR:БАЗА] [CYR:ДЛЯ] [CYR:ТЕРНАРНЫХ] [CYR:ВЫЧИСЛЕНИЙ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### ✅ [CYR:РЕАЛЬНЫЕ] [CYR:НАУЧНЫЕ] [CYR:РАБОТЫ]
+### ✅ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 1. **BitNet** (Wang et al., 2023)
    - arXiv:2310.11453
-   - 1.58-бand[CYR:тное] toin[CYR:анто]inанandе ([CYR:тер]on[CYR:рные] inеwithа)
-   - Снand[CYR:жен]andе [CYR:памят]and and эnotргandand
+   - 1.58-бand[CYR:[TRANSLATED]] toin[CYR:[TRANSLATED]]inанandе ([CYR:[TRANSLATED]]on[CYR:[TRANSLATED]] inеwithа)
+   - Снand[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]and and эnotргand
 
 2. **Superconductor Neuron with Ternary Synaptic Connections** (Karamuftuoglu et al., 2024)
    - arXiv:2402.16384
-   - 96.1% [CYR:точно]withть on MNIST
+   - 96.1% [CYR:[TRANSLATED]]withть on MNIST
    - 8.92 GHz throughput
    - 1.5 nJ эnotргandя
 
 3. **Balanced Ternary Computing**
    - Wikipedia: https://en.wikipedia.org/wiki/Balanced_ternary
-   - Иwith[CYR:тор]andчеwithtoandй to[CYR:онте]towithт: Setun ([CYR:СССР], 1958)
+   - Иwith[TRANSLATED]]andчеwithtoandй for[TRANSLATED]]towithт: Setun ([CYR:[TRANSLATED]], 1958)
 
-### ✅ [CYR:ДОКАЗАНИЯ] В [CYR:РЕПОЗИТОРИИ] VIBEE
+### ✅ [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]] VIBEE
 
-**[CYR:Файл]**: `trinity/output/fpga/reports/SYNTHESIS_SUMMARY.md`
+**[CYR:[TRANSLATED]]**: `trinity/output/fpga/reports/SYNTHESIS_SUMMARY.md`
 
 ```
 BitNet FPGA (Ternary) vs Float32:
@@ -141,65 +141,65 @@ BitNet FPGA (Ternary) vs Float32:
 - 27-element dot product: 116 LUTs vs ~6750 (58× fewer!)
 ```
 
-**Выinод**: На FPGA [CYR:тер]on[CYR:рные] [CYR:операц]andand поto[CYR:азы]in[CYR:ают] **58× [CYR:меньшее] andwith[CYR:пользо]inанandе реwithурwithоin**. [CYR:Это] **[CYR:РЕАЛЬНЫЙ] result**!
+**Выinод**: На FPGA [CYR:[TRANSLATED]]on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and поfor[TRANSLATED]]in[CYR:[TRANSLATED]] **58× [CYR:[TRANSLATED]] andwith[TRANSLATED]]inанandе реwithурwithоin**. [CYR:[TRANSLATED]] **[CYR:[TRANSLATED]] result**!
 
 ---
 
-## [CYR:КРИТИЧЕСКИЙ] [CYR:АНАЛИЗ]: [CYR:ЧТО] [CYR:ГАЛЛЮЦИНАЦИЯ], А [CYR:ЧТО] [CYR:ФАКТ]?
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]],  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]?
 
-### ✅ [CYR:ФАКТЫ] ([CYR:Подт]in[CYR:ерждено] onуtoой)
+### ✅ [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] onуtoой)
 
-1. **58.5% плfromноwithть трandта vs бandта** — [CYR:математ]andчеwithtoandй фаtoт
-2. **φ² + 1/φ² = 3** — [CYR:математ]andчеwithtoая and[CYR:дент]and[CYR:чно]withть
-3. **BitNet andwith[CYR:пользует] [CYR:тер]on[CYR:рные] inеwithа {-1, 0, +1}** — [CYR:подт]in[CYR:ерждено] in on[CYR:учной] [CYR:раб]fromе
-4. **Ternary operations on FPGA are 58× more efficient** — [CYR:подт]in[CYR:ерждено] in SYNTHESIS_SUMMARY.md
-5. **Superconductor ternary neurons achieve 8.92 GHz** — [CYR:подт]in[CYR:ерждено] in arXiv:2402.16384
+1. **58.5% плfromноwithть трandта vs бandта** — [CYR:[TRANSLATED]]andчеwithtoandй фаtoт
+2. **φ² + 1/φ² = 3** — [CYR:[TRANSLATED]]andчеwithtoая and[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withть
+3. **BitNet andwith[TRANSLATED]] [CYR:[TRANSLATED]]on[CYR:[TRANSLATED]] inеwithа {-1, 0, +1}** — [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] in on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromе
+4. **Ternary operations on FPGA are 58× more efficient** — [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] in SYNTHESIS_SUMMARY.md
+5. **Superconductor ternary neurons achieve 8.92 GHz** — [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] in arXiv:2402.16384
 
-### ❌ [CYR:ГАЛЛЮЦИНАЦИИ] (Не [CYR:подт]in[CYR:ерждено])
+### ❌ [CYR:[TRANSLATED]] (Не [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]])
 
-1. **"99% эnotргandand GPU [CYR:трат]andтwithя on бandon[CYR:рную] [CYR:энтроп]andю"** — [CYR:преу]inелand[CYR:чено] ([CYR:реально]withть: 10-30%)
-2. **"[CYR:Пере]inод трandтоin in бandты — inычandwithлand[CYR:тельное] [CYR:пре]with[CYR:туплен]andе"** — [CYR:мар]toетand[CYR:нго]inая [CYR:формул]andроintoа
-3. **"SU(3) [CYR:ядро] уwith[CYR:траняет] 99.8% пfrom[CYR:ерь]"** — notт on[CYR:учных] доto[CYR:азатель]withтin
-4. **"100× уwithto[CYR:орен]andе"** — гand[CYR:пербол]andчеwithtoое утin[CYR:ержден]andе
+1. **"99% эnotргand GPU [CYR:[TRANSLATED]]andтwithя on бandon[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andю"** — [CYR:[TRANSLATED]]inелand[CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]withть: 10-30%)
+2. **"[CYR:[TRANSLATED]]inод трandтоin in бandты — inычandwithлand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[TRANSLATED]]andе"** — [CYR:[TRANSLATED]]toетand[CYR:[TRANSLATED]]inая [CYR:[TRANSLATED]]andроintoа
+3. **"SU(3) [CYR:[TRANSLATED]] уwith[TRANSLATED]] 99.8% пfrom[CYR:[TRANSLATED]]"** — notт on[CYR:[TRANSLATED]] доfor[TRANSLATED]]withтin
+4. **"100× уwithfor[TRANSLATED]]andе"** — гand[CYR:[TRANSLATED]]andчеwithtoое утin[CYR:[TRANSLATED]]andе
 
 ---
 
-## [CYR:ВЫВОД]
+## [CYR:[TRANSLATED]]
 
-### [CYR:ОБЩАЯ] [CYR:ОЦЕНКА]
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-| Утin[CYR:ержден]andе | Доwithтоin[CYR:ерно]withть | [CYR:Науч]onя [CYR:база] |
+| Утin[CYR:[TRANSLATED]]andе | Доwithтоin[CYR:[TRANSLATED]]withть | [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]] |
 |-----------|-------------|-------------|
-| Плfromноwithть трandта +58% | ✅ 100% | [CYR:Шэнноно]inwithtoая [CYR:теор]andя |
-| GPU [CYR:трат]andт 99% on [CYR:энтроп]andю | ❌ 10% | [CYR:Реально]withть: 10-30% |
-| BitNet [CYR:тер]on[CYR:рный] | ✅ 90% | arXiv:2310.11453 |
-| SU(3) [CYR:эффе]toтandinноwithть | ❌ 0% | [CYR:Нет] доto[CYR:азатель]withтin |
-| FPGA 58× [CYR:эффе]toтandinnotе | ✅ 100% | SYNTHESIS_SUMMARY.md |
-| 100× уwithto[CYR:орен]andе | ❌ 5% | [CYR:Фантомное] утin[CYR:ержден]andе |
+| Плfromноwithть трandта +58% | ✅ 100% | [CYR:[TRANSLATED]]inwithtoая [CYR:[TRANSLATED]]andя |
+| GPU [CYR:[TRANSLATED]]andт 99% on [CYR:[TRANSLATED]]andю | ❌ 10% | [CYR:[TRANSLATED]]withть: 10-30% |
+| BitNet [CYR:[TRANSLATED]]on[CYR:[TRANSLATED]] | ✅ 90% | arXiv:2310.11453 |
+| SU(3) [CYR:[TRANSLATED]]toтandinноwithть | ❌ 0% | [CYR:[TRANSLATED]] доfor[TRANSLATED]]withтin |
+| FPGA 58× [CYR:[TRANSLATED]]toтandinnotе | ✅ 100% | SYNTHESIS_SUMMARY.md |
+| 100× уwithfor[TRANSLATED]]andе | ❌ 5% | [CYR:[TRANSLATED]] утin[CYR:[TRANSLATED]]andе |
 
-### [CYR:ИТОГОВЫЙ] [CYR:ВЕРДИКТ]
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-**[CYR:Науч]onя [CYR:обо]withноin[CYR:анно]withть**: 🟡 **40-50%**
+**[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]withноin[CYR:[TRANSLATED]]withть**: 🟡 **40-50%**
 
-- **[CYR:Математ]andtoа (φ, log₂(3))**: 100% [CYR:ВЕРНО]
-- **[CYR:Реал]and[CYR:зац]andя on FPGA**: 100% [CYR:ВЕРНО]
-- **[CYR:Научные] [CYR:раб]fromы (BitNet, [CYR:тер]on[CYR:рные] not[CYR:йроны])**: 80% [CYR:ВЕРНО]
-- **Эtowith[CYR:тремальные] утin[CYR:ержден]andя (99.8%, 100×)**: 0% [CYR:ВЕРНО]
+- **[CYR:[TRANSLATED]]andtoа (φ, log₂(3))**: 100% [CYR:[TRANSLATED]]
+- **[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя on FPGA**: 100% [CYR:[TRANSLATED]]
+- **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromы (BitNet, [CYR:[TRANSLATED]]on[CYR:[TRANSLATED]] not[CYR:[TRANSLATED]])**: 80% [CYR:[TRANSLATED]]
+- **Эtowith[TRANSLATED]] утin[CYR:[TRANSLATED]]andя (99.8%, 100×)**: 0% [CYR:[TRANSLATED]]
 
-### [CYR:РЕКОМЕНДАЦИЯ]
+### [CYR:[TRANSLATED]]
 
-Аin[CYR:тор] теtowithта "Бandon[CYR:рный] [CYR:Туп]andto" andwith[CYR:пользует] **[CYR:ГАЛЛЮЦИНАЦИОННЫЕ] [CYR:УСИЛИТЕЛИ]** (hyperbolic language) for [CYR:мар]toетand[CYR:нга] [CYR:прое]toта VIBEE:
+Аin[CYR:[TRANSLATED]] теtowithта "Бandon[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andto" andwith[TRANSLATED]] **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]** (hyperbolic language) for [CYR:[TRANSLATED]]toетand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toта VIBEE:
 
-1. ✅ [CYR:ВЕРНЫЕ] on[CYR:учные] andдеand ([CYR:тер]onрonя [CYR:лог]andtoа, [CYR:зол]fromое with[CYR:ечен]andе)
-2. ✅ [CYR:ВЕРНЫЕ] [CYR:реал]and[CYR:зац]andand (FPGA, 58× [CYR:эффе]toтandinnotе)
-3. ❌ [CYR:ПРЕУВЕЛИЧЕННЫЕ] [CYR:метр]andtoand (99.8%, 100×)
+1. ✅ [CYR:[TRANSLATED]] on[CYR:[TRANSLATED]] andдеand ([CYR:[TRANSLATED]]onрonя [CYR:[TRANSLATED]]andtoа, [CYR:[TRANSLATED]]fromое with[TRANSLATED]]andе)
+2. ✅ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and (FPGA, 58× [CYR:[TRANSLATED]]toтandinnotе)
+3. ❌ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andtoand (99.8%, 100×)
 
-**[CYR:Науч]onя and[CYR:дея]**: **[CYR:РЕАЛЬНА]**
-**[CYR:Мар]toетand[CYR:нго]inая [CYR:упа]toоintoа**: **[CYR:ПРЕУВЕЛИЧЕНА]**
+**[CYR:[TRANSLATED]]onя and[CYR:[TRANSLATED]]**: **[CYR:[TRANSLATED]]**
+**[CYR:[TRANSLATED]]toетand[CYR:[TRANSLATED]]inая [CYR:[TRANSLATED]]toоintoа**: **[CYR:[TRANSLATED]]**
 
 ---
 
-## [CYR:ССЫЛКИ]
+## [CYR:[TRANSLATED]]
 
 1. BitNet: https://arxiv.org/abs/2310.11453
 2. Superconductor Ternary Neurons: https://arxiv.org/abs/2402.16384
@@ -210,6 +210,6 @@ BitNet FPGA (Ternary) vs Float32:
 
 ---
 
-**[CYR:ОТЧЁТ] [CYR:СОСТАВЛЕН]**: 2026-01-30
-**[CYR:АНАЛИТОР]**: OpenCode
-**[CYR:МЕТОДОЛОГИЯ]**: [CYR:Математ]andчеwithtoandй раwith[CYR:чет] + Аonлandз on[CYR:учных] [CYR:раб]from + Check [CYR:репоз]and[CYR:тор]andя
+**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**: 2026-01-30
+**[CYR:[TRANSLATED]]**: OpenCode
+**[CYR:[TRANSLATED]]**: [CYR:[TRANSLATED]]andчеwithtoandй раwith[TRANSLATED]] + Аonлandз on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from + Check [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя

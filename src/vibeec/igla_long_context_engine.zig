@@ -329,7 +329,7 @@ pub const Summarizer = struct {
         // Detect user info (names, preferences)
         if (std.mem.indexOf(u8, content, "my name is") != null or
             std.mem.indexOf(u8, content, "I am ") != null or
-            std.mem.indexOf(u8, content, "[CYR:[EN]] [EN]in[EN]") != null)
+            std.mem.indexOf(u8, content, " in") != null)
         {
             summary.addFact(KeyFact{
                 .fact = content,
@@ -356,7 +356,7 @@ pub const Summarizer = struct {
         // Detect decisions
         if (std.mem.indexOf(u8, content, "I want") != null or
             std.mem.indexOf(u8, content, "let's do") != null or
-            std.mem.indexOf(u8, content, "[CYR:[EN]]") != null)
+            std.mem.indexOf(u8, content, "") != null)
         {
             summary.addFact(KeyFact{
                 .fact = content,

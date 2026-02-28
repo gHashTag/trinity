@@ -1,6 +1,6 @@
 name: ai_performance_optimizer
 version: 1.0.0
-description: AI-powered optimization [CYR:pro]fromin[EN]and[CYR:[EN]lno]with[EN]and - on[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[EN] [EN]with[EN] and [CYR:[TRANSLATED]acts] [CYR:[TRANSLATED]]andI
+description: AI-powered optimization [CYR:pro]frominand[CYR:lno]withand - onand and with and [CYR:acts] andI
 
 metadata:
   author: VIBEE Team
@@ -82,110 +82,110 @@ constants:
 
   AI_PROMPTS:
     analyze_performance: |
-      [EN]y - [EN]with[CYR:[TRANSLATED]] [EN] [CYR:[TRANSLATED]]and[EN]from[EN]andand [CYR:pro]fromin[EN]and[CYR:[EN]lno]with[EN]and VIBEE code[EN].
+      y - with  andfromand [CYR:pro]frominand[CYR:lno]withand VIBEE code.
       
-      [CYR:Code] for analysis[EN]:
+      [CYR:Code] for analysis:
       ```vibee
       {code}
       ```
       
-      [CYR:[TRANSLATED]]andl [CYR:pro]fromin[EN]and[CYR:[EN]lno]with[EN]and:
-      - [CYR:[TRANSLATED]I] in[CYR:y[TRANSLATED]]not[EN]andI: {execution_time}ms
-      - [CYR:[TRANSLATED]I[EN]]: {memory_usage}MB
+      andl [CYR:pro]frominand[CYR:lno]withand:
+      - [CYR:I] in[CYR:y]notandI: {execution_time}ms
+      - [CYR:I]: {memory_usage}MB
       - CPU: {cpu_usage}%
-      - [CYR:[TRANSLATED]]and[EN]with[EN]in[EN] in[CYR:y[EN]]in[EN]in: {call_count}
+      - andwithin in[CYR:y]inin: {call_count}
       
-      [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]and[EN] [EN]with[EN] and [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]and[EN]from[EN]andand.
+      : and and with and and andfromand.
       
-      [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]:
-      1. [CYR:A[EN]go[EN]]and[EN]and[EN]with[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]with[EN] (O-notation)
-      2. [EN]with[CYR:[EN]l[EN]]in[EN]and[EN] [CYR:[TRANSLATED]I[EN]]and
-      3. [CYR:[TRANSLATED]y[EN]] [CYR:[TRANSLATED]]andand
-      4. [EN]in[CYR:[TRANSLATED]I[EN]]and[EN]withI iny[EN]andwith[CYR:[TRANSLATED]]andI
-      5. [CYR:[EN]effect]andin[CYR:[EN]y[EN]] with[CYR:[TRANSLATED]y] [CYR:data]
-      6. I/O [CYR:[TRANSLATED]]andand
+      in:
+      1. [CYR:Ago]andwith with (O-notation)
+      2. withl]inand [CYR:I]and
+      3. [CYR:y] and
+      4. in[CYR:I]andwithI inyandwithandI
+      5. [CYR:effect]andin[CYR:y] withy] [CYR:data]
+      6. I/O and
       
-      [CYR:[TRANSLATED]] response[EN]:
-      [CYR:[TRANSLATED]]and[EN] [EN]with[EN]:
-      1. [EN]with[EN]: <location>
-         [CYR:[TRANSLATED]]: <[EN]andwith[EN]and[EN]>
-         [CYR:[TRANSLATED]I] with[CYR:[TRANSLATED]]with[EN]: <O-notation>
-         Impact: <[CYR:pro[TRANSLATED]] [EN] [CYR:[TRANSLATED]go] in[CYR:[EN]me]and>
+       response:
+      and with:
+      1. with: <location>
+         : <andwithand>
+         [CYR:I] with: <O-notation>
+         Impact: <[CYR:pro]  [CYR:go] in[CYR:me]and>
       
-      [CYR:[TRANSLATED]]and[EN]from[EN]andand:
-      1. [CYR:[TRANSLATED]]in[EN]and[EN]: <[CYR:[TRANSLATED]] on[EN]in[EN]and[EN]>
-         [EN]:
+      andfromand:
+      1. inand: < oninand>
+         :
          ```vibee
-         <[CYR:[TRANSLATED]]and[EN] code>
+         <and code>
          ```
-         [EN]with[EN]:
+         with:
          ```vibee
-         <[CYR:[TRANSLATED]]and[EN]fromand[EN]in[CYR:[EN]ny] code>
+         <andfromandin[CYR:ny] code>
          ```
-         [CYR:[TRANSLATED]]and[EN]: <[CYR:[TRANSLATED]]and[EN]and>
-         [CYR:[TRANSLATED]]with[EN]: <easy/medium/hard>
-         [EN]and[EN]and[CYR:[TRANSLATED]]: <1-10>
+         and: <and>
+         with: <easy/medium/hard>
+         and: <1-10>
       
     suggest_algorithm: |
-      [EN]y - [EN]with[CYR:[TRANSLATED]] [EN] [CYR:algorithm]and[CYR:[TRANSLATED]] and with[CYR:[TRANSLATED]] [CYR:data].
+      y - with  [CYR:algorithm]and and with [CYR:data].
       
-      [CYR:[TRANSLATED]]and[EN] code:
+      and code:
       ```vibee
       {code}
       ```
       
-      [CYR:[TRANSLATED]I] with[CYR:[TRANSLATED]]with[EN]: {current_complexity}
-      [CYR:[TRANSLATED]]: {problem_description}
+      [CYR:I] with: {current_complexity}
+      : {problem_description}
       
-      [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]] [CYR:effect]andin[CYR:ny] [CYR:algorithm]and[EN].
+      : and  [CYR:effect]andin[CYR:ny] [CYR:algorithm]and.
       
-      [EN]withwith[CYR:[TRANSLATED]]and:
-      - [CYR:[TRANSLATED]]-tables for O(1) lookup
-      - [CYR:[TRANSLATED]]and[EN]in[EN] for [EN]andon[CYR:[TRANSLATED]go] [EN]andwith[EN]
-      - [EN]andon[EN]and[EN]with[CYR:[TRANSLATED]] [CYR:pro[TRANSLATED]]and[EN]in[EN]and[EN]
-      - [CYR:[TRANSLATED]y[EN]] [CYR:algorithm]and[CYR:tmy]
+      withand:
+      - -tables for O(1) lookup
+      - andin for andon[CYR:go] andwith
+      - andonandwith [CYR:pro]andinand
+      - [CYR:y] [CYR:algorithm]and[CYR:tmy]
       - Divide and conquer
       
-      [CYR:[TRANSLATED]] response[EN]:
-      [CYR:[TRANSLATED]me[TRANSLATED]y[EN]] [CYR:algorithm]and[EN]: <on[EN]in[EN]and[EN]>
-      [CYR:[TRANSLATED]]with[EN]: <O-notation>
+       response:
+      [CYR:mey] [CYR:algorithm]and: <oninand>
+      with: <O-notation>
       [CYR:Code]:
       ```vibee
-      <[CYR:[TRANSLATED]]and[EN]fromand[EN]in[CYR:[EN]ny] code>
+      <andfromandin[CYR:ny] code>
       ```
-      [CYR:[TRANSLATED]I]withnot[EN]and[EN]: <[CYR:[TRANSLATED]] this [CYR:[TRANSLATED]]>
-      Trade-offs: <[CYR:[TRANSLATED]]promisewithy>
+      [CYR:I]withnotand: < this >
+      Trade-offs: <promisewithy>
       
     memory_optimization: |
-      [EN]y - [EN]with[CYR:[TRANSLATED]] [EN] [CYR:[TRANSLATED]]and[EN]from[EN]andand [CYR:[TRANSLATED]I[EN]]and.
+      y - with  andfromand [CYR:I]and.
       
       [CYR:Code]:
       ```vibee
       {code}
       ```
       
-      [EN]with[CYR:[EN]l[EN]]in[EN]and[EN] [CYR:[TRANSLATED]I[EN]]and: {memory_usage}MB
-      [CYR:[TRANSLATED]]: {memory_issue}
+      withl]inand [CYR:I]and: {memory_usage}MB
+      : {memory_issue}
       
-      [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]and[EN]fromand[CYR:[TRANSLATED]] andwith[CYR:[EN]l[EN]]in[EN]and[EN] [CYR:[TRANSLATED]I[EN]]and.
+      : andfromand andwithl]inand [CYR:I]and.
       
-      [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]:
-      - [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]I[EN]]and
-      - [CYR:[TRANSLATED]y[EN]] [CYR:[TRANSLATED]]and[EN]in[EN]andI
-      - [CYR:[EN]l[EN]]and[EN] in[CYR:[TRANSLATED]nye] objecty
-      - [CYR:[EN]effect]andin[CYR:[EN]y[EN]] with[CYR:[TRANSLATED]y] [CYR:data]
-      - [CYR:[TRANSLATED]can[EN]]with[EN] streaming
+      in:
+      - and [CYR:I]and
+      - [CYR:y] andinandI
+      - [CYR:l]and in[CYR:nye] objecty
+      - [CYR:effect]andin[CYR:y] withy] [CYR:data]
+      - [CYR:can]with streaming
       
-      [CYR:[TRANSLATED]] response[EN]:
-      [CYR:[TRANSLATED]y]:
-      - <list [CYR:pro[TRANSLATED]]>
+       response:
+      [CYR:y]:
+      - <list [CYR:pro]>
       
-      [CYR:[TRANSLATED]]andI:
+      andI:
       ```vibee
-      <[CYR:[TRANSLATED]]and[EN]fromand[EN]in[CYR:[EN]ny] code>
+      <andfromandin[CYR:ny] code>
       ```
       
-      [CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]I[EN]]and: <[CYR:pro[TRANSLATED]]>
+      andI [CYR:I]and: <[CYR:pro]>
 
 behaviors:
   analyze_performance:
@@ -195,14 +195,14 @@ behaviors:
     output:
       hotspots: list<Hotspot>
       hints: list<OptimizationHint>
-    description: Aon[EN]from [CYR:pro]fromin[EN]and[CYR:[EN]lno]with[EN]and with AI
+    description: Aonfrom [CYR:pro]frominand[CYR:lno]withand with AI
     steps:
-      - [CYR:[TRANSLATED]]or[EN]in[CYR:ate] code
-      - [CYR:[EN]law]inand[EN] on analysis AI
-      - [CYR:[TRANSLATED]]and[EN] list [CYR:[TRANSLATED]]and[EN] [EN]with[EN]
-      - [CYR:[TRANSLATED]]not[EN]and[EN]in[CYR:ate] hints
-      - [EN]and[EN]and[EN]fromand[EN]in[CYR:ate] hints
-      - [CYR:[TRANSLATED]] resulty
+      - orin[CYR:ate] code
+      - [CYR:law]inand on analysis AI
+      - and list and with
+      - notandin[CYR:ate] hints
+      - andfromandin[CYR:ate] hints
+      -  resulty
       
   suggest_optimizations:
     input:
@@ -210,14 +210,14 @@ behaviors:
       code: string
     output:
       hints: list<OptimizationHint>
-    description: [CYR:[TRANSLATED]]andI [EN] [CYR:[TRANSLATED]]and[EN]from[EN]andand
+    description: andI  andfromand
     steps:
-      - [CYR:[TRANSLATED]]analyze [CYR:[TRANSLATED]] [EN]with[EN]
-      - [CYR:[TRANSLATED]]and[EN] type [CYR:pro[TRANSLATED]y]
-      - [CYR:[TRANSLATED]]not[EN]and[EN]in[CYR:ate] in[EN]and[CYR:[TRANSLATED]y] [CYR:[TRANSLATED]]and[EN]from[EN]andand
-      - [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]andI
-      - [CYR:[TRANSLATED]]and[EN]in[CYR:ate] [EN] [EN]and[EN]and[CYR:[TRANSLATED]]
-      - [CYR:[TRANSLATED]] hints
+      - analyze  with
+      - and type [CYR:proy]
+      - notandin[CYR:ate] inand[CYR:y] andfromand
+      - and andI
+      - andin[CYR:ate]  and
+      -  hints
       
   apply_optimization:
     input:
@@ -226,14 +226,14 @@ behaviors:
     output:
       optimized_code: string
       result: OptimizationResult
-    description: [EN]and[EN]not[EN]and[EN] [CYR:[TRANSLATED]]and[EN]from[EN]andand
+    description: andnotand andfromand
     steps:
-      - [EN]and[CYR:me]and[EN] from[EN]not[EN]andI
-      - [CYR:[TRANSLATED]]with[EN]and[EN] testy
-      - [CYR:[TRANSLATED]]and[EN] performance
-      - [CYR:[TRANSLATED]]in[EN]and[EN] with baseline
-      - [CYR:[TRANSLATED]]and[EN]and[EN]in[CYR:ate] improvement
-      - [CYR:[TRANSLATED]] result
+      - and[CYR:me]and fromnotandI
+      - withand testy
+      - and performance
+      - inand with baseline
+      - andin[CYR:ate] improvement
+      -  result
       
   benchmark_code:
     input:
@@ -241,14 +241,14 @@ behaviors:
       iterations: number
     output:
       metrics: PerformanceMetrics
-    description: [CYR:[TRANSLATED]] code[EN]
+    description:  code
     steps:
-      - [EN]compile code
-      - [CYR:[TRANSLATED]] JIT
-      - [CYR:[TRANSLATED]]with[EN]and[EN] iterations [CYR:[TRANSLATED]]
-      - [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[EN]and
-      - [EN]with[CYR:[TRANSLATED]]and[EN] resulty
-      - [CYR:[TRANSLATED]] metrics
+      - compile code
+      -  JIT
+      - withand iterations 
+      - and and
+      - withand resulty
+      -  metrics
       
   compare_algorithms:
     input:
@@ -257,13 +257,13 @@ behaviors:
       test_data: list<any>
     output:
       comparison: AlgorithmComparison
-    description: [CYR:[TRANSLATED]]innot[EN]and[EN] [CYR:algorithm]and[CYR:[TRANSLATED]]in
+    description: innotand [CYR:algorithm]andin
     steps:
-      - [CYR:[TRANSLATED]] algorithm_a
-      - [CYR:[TRANSLATED]] algorithm_b
-      - [CYR:[TRANSLATED]]in[EN]and[EN] [CYR:[TRANSLATED]]and[EN]and
-      - [CYR:[TRANSLATED]]and[EN] winner
-      - [CYR:[TRANSLATED]] comparison
+      -  algorithm_a
+      -  algorithm_b
+      - inand and
+      - and winner
+      -  comparison
 
 functions:
   - name: profile_code
@@ -271,21 +271,21 @@ functions:
       code: string
       input_data: any
     returns: PerformanceProfile
-    description: [CYR:[TRANSLATED]]or[EN]in[EN]and[EN] code[EN]
+    description: orinand code
     
   - name: detect_hotspots
     params:
       profile: PerformanceProfile
       threshold_percent: number
     returns: list<Hotspot>
-    description: [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[EN] [EN]with[EN]
+    description: and and with
     
   - name: estimate_improvement
     params:
       current_code: string
       optimized_code: string
     returns: ImprovementMetrics
-    description: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andI
+    description:  andI
     
   - name: validate_optimization
     params:
@@ -293,7 +293,7 @@ functions:
       optimized: string
       test_cases: list<TestCase>
     returns: boolean
-    description: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]]and[EN]from[EN]andand
+    description: andI andfromand
 
 tests:
   - name: detect_list_operation_hotspot
@@ -339,8 +339,8 @@ tests:
       result.actual_improvement.speed_improvement_percent: > 30
 
 examples:
-  - name: "[CYR:[TRANSLATED]]and[EN]from[EN]andI with[EN]andwith[EN]in"
-    description: "AI on[CYR:[TRANSLATED]]and[EN] not[CYR:effect]andin[CYR:[EN]y[EN]] [CYR:[TRANSLATED]]andand with[EN] with[EN]andwith[CYR:[TRANSLATED]]and"
+  - name: "andfromandI withandwithin"
+    description: "AI onand not[CYR:effect]andin[CYR:y] and with withandwithand"
     input:
       code: |
         pub process_items(items) = {
@@ -354,15 +354,15 @@ examples:
         memory_usage_mb: 80
     output:
       hint:
-        title: "[CYR:[TRANSLATED]]and[EN]and[EN] filter [CYR:[TRANSLATED]]andand"
+        title: "and filter and"
         code_after: |
           pub process_items(items) = {
             [i.price for i in items if i.active && i.price > 100]
           }
         improvement: "50% faster, 40% less memory"
         
-  - name: "[CYR:[TRANSLATED]]and[EN]from[EN]andI [CYR:algorithm]and[CYR:[TRANSLATED]]"
-    description: "AI [CYR:[TRANSLATED]acts] [CYR:[TRANSLATED]] [CYR:effect]andin[CYR:ny] [CYR:algorithm]and[EN]"
+  - name: "andfromandI [CYR:algorithm]and"
+    description: "AI [CYR:acts]  [CYR:effect]andin[CYR:ny] [CYR:algorithm]and"
     input:
       code: |
         pub find_duplicates(list) = {
@@ -376,7 +376,7 @@ examples:
       complexity: "O(n²)"
     output:
       hint:
-        title: "[EN]with[CYR:[EN]l[EN]]in[CYR:ate] Set for O(n)"
+        title: "withl]in[CYR:ate] Set for O(n)"
         code_after: |
           pub find_duplicates(list) = {
             let seen = set.new()
@@ -386,14 +386,14 @@ examples:
             }
             false
           }
-        improvement: "O(n²) → O(n), 100x faster on [CYR:[EN]l[EN]]and[EN] [CYR:data]"
+        improvement: "O(n²) → O(n), 100x faster on [CYR:l]and [CYR:data]"
         
-  - name: "[CYR:[TRANSLATED]]and[EN]from[EN]andI [CYR:[TRANSLATED]I[EN]]and"
-    description: "AI on[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and and [EN]and[EN]and[EN] [CYR:[TRANSLATED]]andand"
+  - name: "andfromandI [CYR:I]and"
+    description: "AI onand and and and and"
     input:
       code: |
         pub process_large_file(path) = {
-          let content = file.read_all(path)  // [CYR:[TRANSLATED]acts] in[EN]with[EN] file
+          let content = file.read_all(path)  // [CYR:acts] inwith file
           content
             |> string.split("\n")
             |> list.map(process_line)
@@ -401,7 +401,7 @@ examples:
       memory_usage_mb: 500
     output:
       hint:
-        title: "[EN]with[CYR:[EN]l[EN]]in[CYR:ate] streaming"
+        title: "withl]in[CYR:ate] streaming"
         code_after: |
           pub process_large_file(path) = {
             file.stream_lines(path)
@@ -412,27 +412,27 @@ examples:
 
 optimization_categories:
   algorithmic:
-    - "[CYR:[TRANSLATED]]and[EN] with[CYR:[TRANSLATED]]with[EN]and (O-notation)"
-    - "[CYR:Vy[TRANSLATED]] with[CYR:[TRANSLATED]] [CYR:data]"
-    - "[CYR:[TRANSLATED]]and[EN]in[EN]and[EN] result[EN]in"
-    - "[CYR:[TRANSLATED]]from[EN]andI"
+    - "and withand (O-notation)"
+    - "[CYR:Vy] with [CYR:data]"
+    - "andinand resultin"
+    - "fromandI"
     
   memory:
-    - "[CYR:[EN]me[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[EN]"
-    - "[CYR:[TRANSLATED]]andwith[CYR:[EN]l[EN]]in[EN]and[EN] object[EN]in"
-    - "Streaming in[EN]with[EN] [CYR:[TRANSLATED]]and"
-    - "[CYR:[TRANSLATED]]andiny[EN] iny[EN]andwith[CYR:[TRANSLATED]]andI"
+    - "[CYR:me]and and"
+    - "andwithl]inand objectin"
+    - "Streaming inwith and"
+    - "andiny inyandwithandI"
     
   io:
-    - "[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[EN]"
+    - "and and"
     - "Asynchronous I/O"
-    - "[CYR:[TRANSLATED]]from[EN]andI"
-    - "[CYR:[TRANSLATED]l]onI handling"
+    - "fromandI"
+    - "[CYR:l]onI handling"
     
   code_structure:
-    - "[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[EN]"
-    - "[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]in[CYR:[EN]go] code[EN]"
-    - "[CYR:[TRANSLATED]]and[EN]from[EN]andI loop[EN]in"
+    - "and and"
+    - "and in[CYR:go] code"
+    - "andfromandI loopin"
     - "Tail call optimization"
 
 metrics:

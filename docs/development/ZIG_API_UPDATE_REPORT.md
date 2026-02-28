@@ -23,4 +23,4 @@ Updated the codebase to be compatible with Zig 0.15.2 API changes.
 
 ---
 
-*Original Russian version: [docs/ru/reports/[CYR:ОТЧЁТ]_[CYR:ОБНОВЛЕНИИ]_ZIG_0.15.2_API.md](../ru/reports/[CYR:ОТЧЁТ]_[CYR:ОБНОВЛЕНИИ]_ZIG_0.15.2_API.md)*
+*Original Russian version: [docs/ru/reports/[CYR:[TRANSLATED]]_[CYR:[TRANSLATED]]_ZIG_0.15.2_API.md](../ru/reports/[CYR:[TRANSLATED]]_[CYR:[TRANSLATED]]_ZIG_0.15.2_API.md)*

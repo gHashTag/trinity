@@ -1,28 +1,28 @@
-# FPGA READINESS REPORT - [CYR:ОПЕРАЦИЯ] "[CYR:ЖЕЛЕЗНЫЙ] [CYR:ЗАВЕТ]"
+# FPGA READINESS REPORT - [CYR:[TRANSLATED]] "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]"
 
-**[CYR:Дата]:** Янin[CYR:арь] 2026  
-**[CYR:Стату]with:** ✅ [CYR:ГОТОВ] К [CYR:ФИЗИЧЕСКОМУ] [CYR:РАЗВЁРТЫВАНИЮ]  
+**[CYR:[TRANSLATED]]:** Янin[CYR:[TRANSLATED]] 2026  
+**[CYR:[TRANSLATED]]with:** ✅ [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]  
 **Sacred formula:** `V = n × 3^k × π^m × φ^p × e^q`
 
 ---
 
 ## EXECUTIVE SUMMARY
 
-Вwithе [CYR:программные] to[CYR:омпо]not[CYR:нты] гfromоinы. [CYR:Для] заin[CYR:ершен]andя [CYR:операц]andand "[CYR:Железный] Заinет" [CYR:требует]withя [CYR:толь]toо фandзandчеwithtoое [CYR:оборудо]inанandе.
+Вwithе [CYR:[TRANSLATED]] for[TRANSLATED]]not[CYR:[TRANSLATED]] гfromоinы. [CYR:[TRANSLATED]] заin[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]and "[CYR:[TRANSLATED]] Заinет" [CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]]toо фandзandчеwithtoое [CYR:[TRANSLATED]]inанandе.
 
-| [CYR:Компо]notнт | [CYR:Стату]with | Прand[CYR:мечан]andе |
+| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]]with | Прand[CYR:[TRANSLATED]]andе |
 |-----------|--------|------------|
-| vibeec compiler | ✅ [CYR:Раб]from[CYR:ает] | Иwith[CYR:пра]in[CYR:лен] for Zig 0.13 |
-| Verilog codegen | ✅ [CYR:Интегр]andроinан | Аin[CYR:томат]andчеwithtoая геnot[CYR:рац]andя .v |
-| Сand[CYR:муляц]andя | ✅ 100% PASS | Icarus Verilog + Verilator |
+| vibeec compiler | ✅ [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] | Иwith[TRANSLATED]]in[CYR:[TRANSLATED]] for Zig 0.13 |
+| Verilog codegen | ✅ [CYR:[TRANSLATED]]andроinан | Аin[CYR:[TRANSLATED]]andчеwithtoая геnot[CYR:[TRANSLATED]]andя .v |
+| Сand[CYR:[TRANSLATED]]andя | ✅ 100% PASS | Icarus Verilog + Verilator |
 | Constraints | ✅ Гfromоinы | arty_a7.xdc |
 | Vivado scripts | ✅ Гfromоinы | build_all.tcl |
-| Доto[CYR:ументац]andя | ✅ [CYR:Пол]onя | 3 руtoоinодwithтinа |
-| **[CYR:Оборудо]inанandе** | ⏳ [CYR:Требует]withя | Arty A7-35T (~$150) |
+| Доfor[TRANSLATED]]andя | ✅ [CYR:[TRANSLATED]]onя | 3 руtoоinодwithтinа |
+| **[CYR:[TRANSLATED]]inанandе** | ⏳ [CYR:[TRANSLATED]]withя | Arty A7-35T (~$150) |
 
 ---
 
-## [CYR:ПРОВЕРЕННЫЙ] [CYR:ПАЙПЛАЙН]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -53,14 +53,14 @@
 │  FPGA: Arty A7-35T  ⏳ REQUIRES HARDWARE                        │
 │           │                                                     │
 │           ▼                                                     │
-│  🎉 [CYR:МИГАЮЩИЙ] LED = [CYR:ДОКАЗАТЕЛЬСТВО] [CYR:КОНЦЕПЦИИ]                     │
+│  🎉 [CYR:[TRANSLATED]] LED = [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                     │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## [CYR:РЕЗУЛЬТАТЫ] [CYR:СИМУЛЯЦИИ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ### hello_fpga_led.v
 ```
@@ -94,13 +94,13 @@ $ verilator --lint-only --top-module hello_fpga_led_top hello_fpga_led.v
 
 ---
 
-## [CYR:ГОТОВЫЕ] [CYR:АРТЕФАКТЫ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### Иwith[CYR:ходный] toод
-- `specs/fpga/hello_fpga_led.vibee` - with[CYR:пец]andфandtoацandя LED blinker
-- `specs/fpga/trinity_fpga_mvp.vibee` - with[CYR:пец]andфandtoацandя Trinity MVP
+### Иwith[TRANSLATED]] toод
+- `specs/fpga/hello_fpga_led.vibee` - with[TRANSLATED]]andфandtoацandя LED blinker
+- `specs/fpga/trinity_fpga_mvp.vibee` - with[TRANSLATED]]andфandtoацandя Trinity MVP
 
-### [CYR:Сге]notрandроin[CYR:анный] Verilog
+### [CYR:[TRANSLATED]]notрandроin[CYR:[TRANSLATED]] Verilog
 - `trinity/output/fpga/hello_fpga_led.v` (6.8 KB)
 - `trinity/output/fpga/trinity_fpga_mvp.v` (6.8 KB)
 
@@ -113,100 +113,100 @@ $ verilator --lint-only --top-module hello_fpga_led_top hello_fpga_led.v
 - `trinity/output/fpga/scripts/impl.tcl`
 - `trinity/output/fpga/scripts/program.tcl`
 
-### Доto[CYR:ументац]andя
+### Доfor[TRANSLATED]]andя
 - `docs/FPGA_DEPLOYMENT_GUIDE.md`
 - `docs/FPGA_QUICKSTART.md`
 - `docs/IRON_COVENANT_REPORT.md`
 
 ---
 
-## [CYR:ТРЕБОВАНИЯ] [CYR:ДЛЯ] [CYR:ЗАВЕРШЕНИЯ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Оборудо]inанandе
+### [CYR:[TRANSLATED]]inанandе
 
-| [CYR:Компо]notнт | [CYR:Модель] | Цеon | Сwithылtoа |
+| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]] | Цеon | Сwithылtoа |
 |-----------|--------|------|--------|
 | FPGA Board | Digilent Arty A7-35T | $129 | [digilent.com](https://digilent.com/shop/arty-a7-artix-7-fpga-development-board/) |
-| USB Cable | Micro-B | $5 | В to[CYR:омпле]toте |
-| **[CYR:ИТОГО]** | | **~$150** | |
+| USB Cable | Micro-B | $5 |  for[TRANSLATED]]toте |
+| **[CYR:[TRANSLATED]]** | | **~$150** | |
 
-### [CYR:Программное] [CYR:обе]with[CYR:печен]andе
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[TRANSLATED]]andе
 
-| [CYR:Компо]notнт | [CYR:Вер]withandя | Цеon | [CYR:Время] уwith[CYR:тано]intoand |
+| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]]withandя | Цеon | [CYR:[TRANSLATED]] уwith[TRANSLATED]]intoand |
 |-----------|--------|------|-----------------|
-| Vivado ML Standard | 2023.2+ | Беwith[CYR:платно] | 1 чаwith |
-| Digilent Board Files | Latest | Беwith[CYR:платно] | 5 мand[CYR:нут] |
+| Vivado ML Standard | 2023.2+ | Беwith[TRANSLATED]] | 1 чаwith |
+| Digilent Board Files | Latest | Беwith[TRANSLATED]] | 5 мand[CYR:[TRANSLATED]] |
 
 ---
 
-## [CYR:ОЖИДАЕМЫЕ] [CYR:РЕЗУЛЬТАТЫ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### Поwithле поtoупtoand and onwith[CYR:трой]toand:
+### Поwithле поtoупtoand and onwith[TRANSLATED]]toand:
 
-1. **Мand[CYR:гающ]andй LED** - inand[CYR:зуальное] доto[CYR:азатель]withтinо [CYR:раб]fromы
-2. **[CYR:Измеренные] реwithурwithы** - [CYR:реальное] andwith[CYR:пользо]inанandе LUTs/FFs
-3. **Timing report** - [CYR:реаль]onя Fmax
-4. **Фfromо/inand[CYR:део]** - [CYR:матер]andал for andнinеwith[CYR:торо]in
+1. **Мand[CYR:[TRANSLATED]]andй LED** - inand[CYR:[TRANSLATED]] доfor[TRANSLATED]]withтinо [CYR:[TRANSLATED]]fromы
+2. **[CYR:[TRANSLATED]] реwithурwithы** - [CYR:[TRANSLATED]] andwith[TRANSLATED]]inанandе LUTs/FFs
+3. **Timing report** - [CYR:[TRANSLATED]]onя Fmax
+4. **Фfromо/inand[CYR:[TRANSLATED]]** - [CYR:[TRANSLATED]]andал for andнinеwith[TRANSLATED]]in
 
-### Ожand[CYR:даемые] [CYR:метр]andtoand:
+### Ожand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andtoand:
 
-| [CYR:Метр]andtoа | Ожand[CYR:дан]andе | Прand[CYR:мечан]andе |
+| [CYR:[TRANSLATED]]andtoа | Ожand[CYR:[TRANSLATED]]andе | Прand[CYR:[TRANSLATED]]andе |
 |---------|----------|------------|
-| LUTs | <100 | [CYR:Для] hello_fpga_led |
-| FFs | <50 | [CYR:Для] hello_fpga_led |
+| LUTs | <100 | [CYR:[TRANSLATED]] hello_fpga_led |
+| FFs | <50 | [CYR:[TRANSLATED]] hello_fpga_led |
 | Fmax | >200 MHz | Прand target 100 MHz |
-| Power | <0.5W | [CYR:Стат]andчеwithtoая + дandonмandчеwithtoая |
+| Power | <0.5W | [CYR:[TRANSLATED]]andчеwithtoая + дandonмandчеwithtoая |
 
 ---
 
-## ROI [CYR:АНАЛИЗ]
+## ROI [CYR:[TRANSLATED]]
 
 ### Инinеwithтandцandя: $150
 
-### [CYR:Воз]in[CYR:рат]:
-- **Доto[CYR:азатель]withтinо to[CYR:онцепц]andand** - беwith[CYR:ценно] for andнinеwith[CYR:торо]in
-- **[CYR:Реальные] [CYR:метр]andtoand** - not withand[CYR:муляц]andя, а фаtoты
-- **[CYR:Демо]-with[CYR:тенд]** - [CYR:можно] поto[CYR:азать] фandзandчеwithtoand
-- **[CYR:Опыт]** - [CYR:реаль]onя [CYR:раб]fromа with FPGA
+### [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]:
+- **Доfor[TRANSLATED]]withтinо for[TRANSLATED]]and** - беwith[TRANSLATED]] for andнinеwith[TRANSLATED]]in
+- **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andtoand** - not withand[CYR:[TRANSLATED]]andя,  фаtoты
+- **[CYR:[TRANSLATED]]-with[TRANSLATED]]** - [CYR:[TRANSLATED]] поfor[TRANSLATED]] фandзandчеwithtoand
+- **[CYR:[TRANSLATED]]** - [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]fromа with FPGA
 
-### [CYR:Альтер]onтandinы:
-- Cloud FPGA (AWS F1): ~$1.65/чаwith = $40/[CYR:день]
-- [CYR:Аренда] [CYR:оборудо]inанandя: notдоwith[CYR:тупно]
-- Сand[CYR:муляц]andя: [CYR:уже] with[CYR:делано], но this not доto[CYR:азатель]withтinо
+### [CYR:[TRANSLATED]]onтandinы:
+- Cloud FPGA (AWS F1): ~$1.65/чаwith = $40/[CYR:[TRANSLATED]]
+- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inанandя: notдоwith[TRANSLATED]]
+- Сand[CYR:[TRANSLATED]]andя: [CYR:[TRANSLATED]] with[TRANSLATED]], но this not доfor[TRANSLATED]]withтinо
 
-**Выinод:** $150 - мandнand[CYR:маль]onя andнinеwithтandцandя for маtowithand[CYR:мального] resultа.
+**Выinод:** $150 - мandнand[CYR:[TRANSLATED]]onя andнinеwithтandцandя for маtowithand[CYR:[TRANSLATED]] resultа.
 
 ---
 
-## [CYR:СЛЕДУЮЩИЕ] [CYR:ШАГИ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Немедленно] (поwithле [CYR:одобрен]andя [CYR:бюджета]):
+### [CYR:[TRANSLATED]] (поwithле [CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]):
 
-1. [ ] Заto[CYR:азать] Arty A7-35T on digilent.com
-2. [ ] Сto[CYR:ачать] and уwith[CYR:тано]inandть Vivado ML Standard
-3. [ ] Уwith[CYR:тано]inandть Digilent board files
+1. [ ] Заfor[TRANSLATED]] Arty A7-35T on digilent.com
+2. [ ] Сfor[TRANSLATED]] and уwith[TRANSLATED]]inandть Vivado ML Standard
+3. [ ] Уwith[TRANSLATED]]inandть Digilent board files
 
-### Поwithле [CYR:получен]andя [CYR:оборудо]inанandя:
+### Поwithле [CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]inанandя:
 
-4. [ ] [CYR:Под]to[CYR:люч]andть [CYR:плату]
-5. [ ] [CYR:Запу]withтandть build_all.tcl
-6. [ ] [CYR:Загруз]andть bitstream
-7. [ ] [CYR:Снять] inand[CYR:део] мand[CYR:гающего] LED
-8. [ ] [CYR:Измер]andть реwithурwithы and timing
-9. [ ] [CYR:Обно]inandть доto[CYR:ументац]andю with [CYR:реальным]and [CYR:данным]and
+4. [ ] [CYR:[TRANSLATED]]for[TRANSLATED]]andть [CYR:[TRANSLATED]]
+5. [ ] [CYR:[TRANSLATED]]withтandть build_all.tcl
+6. [ ] [CYR:[TRANSLATED]]andть bitstream
+7. [ ] [CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]] мand[CYR:[TRANSLATED]] LED
+8. [ ] [CYR:[TRANSLATED]]andть реwithурwithы and timing
+9. [ ] [CYR:[TRANSLATED]]inandть доfor[TRANSLATED]]andю with [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]and
 
 ### Фandonл:
 
-10. [ ] [CYR:Создать] [CYR:презентац]andю for andнinеwith[CYR:торо]in
-11. [ ] [CYR:Опубл]andtoоin[CYR:ать] resultы
+10. [ ] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andю for andнinеwith[TRANSLATED]]in
+11. [ ] [CYR:[TRANSLATED]]andtoоin[CYR:[TRANSLATED]] resultы
 
 ---
 
-## [CYR:ЗАКЛЮЧЕНИЕ]
+## [CYR:[TRANSLATED]]
 
-**Вwithё гfromоinо. [CYR:Нужен] [CYR:толь]toо $150 and 3-7 дnotй on доwithтаintoу.**
+**Вwithё гfromоinо. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toо $150 and 3-7 дnotй on доwithтаintoу.**
 
-[CYR:Это] not [CYR:про]withто поtoупtoа [CYR:платы]. [CYR:Это] [CYR:момент], to[CYR:огда] onш [CYR:Бог] in[CYR:пер]inые [CYR:дыш]andт in фandзandчеwithtoом мandре. [CYR:Это] доto[CYR:азатель]withтinо, tofrom[CYR:орое] not[CYR:льзя] [CYR:опро]in[CYR:ергнуть]. [CYR:Это] to[CYR:люч] to with[CYR:ледующему] [CYR:уро]inню.
+[CYR:[TRANSLATED]] not [CYR:[TRANSLATED]]withто поtoупtoа [CYR:[TRANSLATED]]. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]], for[TRANSLATED]] onш [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]andт in фandзandчеwithtoом мandре. [CYR:[TRANSLATED]] доfor[TRANSLATED]]withтinо, tofrom[CYR:[TRANSLATED]] not[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]. [CYR:[TRANSLATED]] for[TRANSLATED]] to with[TRANSLATED]] [CYR:[TRANSLATED]]inню.
 
 ---
 

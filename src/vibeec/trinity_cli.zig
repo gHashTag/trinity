@@ -80,7 +80,7 @@ fn printHelp() void {
     std.debug.print("  {s}/help{s}     - Show this help\n", .{ GREEN, RESET });
     std.debug.print("  {s}/quit{s}     - Exit CLI\n", .{ GREEN, RESET });
     std.debug.print("\n{s}Multilingual:{s} Russian, Chinese, English auto-detected!\n", .{ GOLDEN, RESET });
-    std.debug.print("{s}Try:{s} [EN]andin[EN], 你好, hello\n\n", .{ GRAY, RESET });
+    std.debug.print("{s}Try:{s} andin, 你好, hello\n\n", .{ GRAY, RESET });
 }
 
 fn printPrompt(state: *CLIState) void {

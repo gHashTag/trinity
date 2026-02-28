@@ -15,7 +15,7 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const DEFAULT_DIM: f64 = 10240;
@@ -30,7 +30,7 @@ pub const QUANTIZE_NEG: f64 = -0.5;
 
 pub const MAX_PROTOTYPES: f64 = 1000;
 
-// [CYR:[EN]]in[EN] φ-to[EN]with[CYR:[EN]] (Sacred Formula)
+// in φ-towith (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -42,26 +42,26 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:[EN]]withand[EN]in[CYR:[EN]] [CYR:[EN]]and[CYR:[EN]] [CYR:[EN]]
+/// withandin and 
 pub const Trit = struct {
 };
 
-/// [CYR:[EN]]and[CYR:[EN]] [EN]and[CYR:[EN]]in[EN]to[CYR:[EN]] for HDC
+/// and andinto for HDC
 pub const HyperVector = struct {
     data: []i64,
     dim: i64,
 };
 
-/// Float [EN]toto[CYR:[EN]] for [CYR:[EN]] [EN]with[CYR:[EN]]not[EN]and[EN]
+/// Float toto for  withnotand
 pub const FloatAccumulator = struct {
     data: []f64,
     dim: i64,
 };
 
-/// [EN]fromfromand[EN] to[EN]withwith[EN] with [EN]toto[CYR:[EN]]
+/// fromfromand towith with toto
 pub const Prototype = struct {
     label: []const u8,
     accumulator: FloatAccumulator,
@@ -69,7 +69,7 @@ pub const Prototype = struct {
     count: i64,
 };
 
-/// [CYR:[EN]] HDC withandwith[CYR:[EN]]
+///  HDC withandwith
 pub const OnlineHDC = struct {
     prototypes: std.StringHashMap([]const u8),
     dim: i64,
@@ -77,14 +77,14 @@ pub const OnlineHDC = struct {
     samples_seen: i64,
 };
 
-/// Result in[EN]andwith[CYR:[EN]]and[EN] with[CYR:[EN]]with[EN]in[EN]
+/// Result inandwithand within
 pub const SimilarityResult = struct {
     similarity: f64,
     label: []const u8,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]] [CYR:[EN]] WASM
+//   WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -107,13 +107,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-and[CYR:[EN]]fields[EN]and[EN]
+/// φ-andfieldsand
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// [EN]not[CYR:[EN]]and[EN] φ-with[EN]and[CYR:[EN]]and
+/// notand φ-withand
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -132,8 +132,8 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 // BEHAVIOR FUNCTIONS - Generated from behaviors
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [EN]in[EN] [EN]and[CYR:[EN]]in[EN]to[CYR:[EN]] a and b [EN]andonto[EN]in[EN] [CYR:[EN]]with[EN]and
-/// When: Creation [EN]withwith[EN]and[EN]andand [CYR:[EN]] [EN]element[CYR:[EN]] [CYR:[EN]]and[EN]
+/// in andinto a and b andontoin withand
+/// When: Creation withandand  element and
 /// Then: Returns HyperVector where c[i] = a[i] * b[i]
 pub fn bind() []i8 {
 // TODO: implement — Returns HyperVector where c[i] = a[i] * b[i]
@@ -141,120 +141,120 @@ pub fn bind() []i8 {
 }
 
 
-/// [EN]in[CYR:[EN]] in[EN]to[CYR:[EN]] and to[CYR:[EN]]
-/// When: [EN]in[CYR:[EN]]and[EN] within[CYR:[EN]] [EN]on[CYR:[EN]]and[EN]
-/// Then: Returns bind(bound, key) [EN].to. [CYR:[EN]]and[CYR:[EN]] bind with[CYR:[EN]]and[EN]
+/// in into and to
+/// When: inand within onand
+/// Then: Returns bind(bound, key) .to. and bind withand
 pub fn unbind() !void {
-// TODO: implement — Returns bind(bound, key) [EN].to. [CYR:[EN]]and[CYR:[EN]] bind with[CYR:[EN]]and[EN]
+// TODO: implement — Returns bind(bound, key) .to. and bind withand
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// [EN]andwith[EN]to [EN]and[CYR:[EN]]in[EN]to[CYR:[EN]]in
-/// When: Creation with[CYR:[EN]]and[EN]andand [CYR:[EN]] [CYR:[EN]]and[CYR:[EN]] [CYR:[EN]]with[EN]in[EN]and[EN]
-/// Then: Returns HyperVector with [CYR:[EN]]and[CYR:[EN]] [EN]and[CYR:[EN]] on to[CYR:[EN]] [CYR:[EN]]and[EN]andand
+/// andwithto andintoin
+/// When: Creation withandand  and withinand
+/// Then: Returns HyperVector with and and on to andand
 pub fn bundle() []i8 {
-// TODO: implement — Returns HyperVector with [CYR:[EN]]and[CYR:[EN]] [EN]and[CYR:[EN]] on to[CYR:[EN]] [CYR:[EN]]and[EN]andand
+// TODO: implement — Returns HyperVector with and and on to andand
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// [EN]andwith[EN]to [EN]and[CYR:[EN]]in[EN]to[CYR:[EN]]in
-/// When: SIMD-[CYR:[EN]]and[EN]and[EN]and[EN]in[CYR:[EN]] bundling (32 [EN]and[EN] [CYR:[EN]])
-/// Then: Returns HyperVector with andwith[CYR:[EN]]in[EN]and[EN] Vec32i8
+/// andwithto andintoin
+/// When: SIMD-andandin bundling (32 and )
+/// Then: Returns HyperVector with andwithinand Vec32i8
 pub fn bundle_simd() []i8 {
-// TODO: implement — Returns HyperVector with andwith[CYR:[EN]]in[EN]and[EN] Vec32i8
+// TODO: implement — Returns HyperVector with andwithinand Vec32i8
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// HyperVector and in[EN]and[EN]andon with[EN]inand[EN] k
-/// When: [EN]andto[EN]and[EN]withto[EN] [CYR:[EN]]with[CYR:[EN]]into[EN] for to[EN]and[EN]in[EN]and[EN] [EN]with[CYR:[EN]]in[CYR:[EN]]with[CYR:[EN]]
-/// Then: Returns HyperVector with[EN]inand[CYR:[EN]] on k [CYR:[EN]]and[EN]and[EN]
+/// HyperVector and inandon withinand k
+/// When: andtoandwithto withinto for toandinand withinwith
+/// Then: Returns HyperVector withinand on k and
 pub fn permute(input: []const i8) []i8 {
-// TODO: implement — Returns HyperVector with[EN]inand[CYR:[EN]] on k [CYR:[EN]]and[EN]and[EN]
+// TODO: implement — Returns HyperVector withinand on k and
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
 
 
-/// [EN]in[EN] [EN]and[CYR:[EN]]in[EN]to[CYR:[EN]] a and b
-/// When: [CYR:[EN]]andwith[CYR:[EN]]and[EN] to[EN]withand[EN]with[CYR:[EN]] with[CYR:[EN]]with[EN]in[EN]
-/// Then: Returns float in [EN]and[CYR:[EN]]not [-1, 1]
+/// in andinto a and b
+/// When: andwithand towithandwith within
+/// Then: Returns float in andnot [-1, 1]
 pub fn similarity() !void {
-// TODO: implement — Returns float in [EN]and[CYR:[EN]]not [-1, 1]
+// TODO: implement — Returns float in andnot [-1, 1]
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// [EN]in[EN] [EN]and[CYR:[EN]]in[EN]to[CYR:[EN]] a and b
-/// When: SIMD-[CYR:[EN]]and[EN]and[EN]and[EN]in[CYR:[EN]] in[EN]andwith[CYR:[EN]]and[EN] with[CYR:[EN]]with[EN]in[EN]
-/// Then: Returns float andwith[CYR:[EN]] simdDotProduct
+/// in andinto a and b
+/// When: SIMD-andandin inandwithand within
+/// Then: Returns float andwith simdDotProduct
 pub fn similarity_simd() !void {
-// TODO: implement — Returns float andwith[CYR:[EN]] simdDotProduct
+// TODO: implement — Returns float andwith simdDotProduct
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// [EN]in[EN] [EN]and[CYR:[EN]]in[EN]to[CYR:[EN]] a and b
-/// When: [CYR:[EN]]with[CYR:[EN]] [CYR:[EN]]and[CYR:[EN]]and[EN]with[EN] [CYR:[EN]]and[EN]and[EN]
-/// Then: Returns [CYR:[EN]] [EN]andwith[EN]
+/// in andinto a and b
+/// When: with andwith and
+/// Then: Returns  andwith
 pub fn hamming_distance() !void {
-// TODO: implement — Returns [CYR:[EN]] [EN]andwith[EN]
+// TODO: implement — Returns  andwith
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// [CYR:[EN]]with[EN] and seed
-/// When: [EN]not[CYR:[EN]]and[EN] with[CYR:[EN]] [CYR:[EN]]and[CYR:[EN]] [EN]and[CYR:[EN]]in[EN]to[CYR:[EN]]
-/// Then: Returns HyperVector with [EN]in[CYR:[EN]] [EN]with[CYR:[EN]]and[EN] [EN]and[EN]in
+/// with and seed
+/// When: notand with and andinto
+/// Then: Returns HyperVector with in withand andin
 pub fn random_vector() []i8 {
-// TODO: implement — Returns HyperVector with [EN]in[CYR:[EN]] [EN]with[CYR:[EN]]and[EN] [EN]and[EN]in
+// TODO: implement — Returns HyperVector with in withand andin
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// [CYR:[EN]]with[EN]
-/// When: Creation [CYR:[EN]]in[CYR:[EN]] in[EN]to[CYR:[EN]]
-/// Then: Returns HyperVector [CYR:[EN]]not[CYR:[EN]] [CYR:[EN]]and
+/// with
+/// When: Creation in into
+/// Then: Returns HyperVector not and
 pub fn zero_vector() []i8 {
-// TODO: implement — Returns HyperVector [CYR:[EN]]not[CYR:[EN]] [CYR:[EN]]and
+// TODO: implement — Returns HyperVector not and
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// [CYR:[EN]]with[EN]
-/// When: Creation in[EN]to[CYR:[EN]] and[EN] [EN]and[EN]and[EN]
-/// Then: Returns HyperVector [CYR:[EN]]not[CYR:[EN]] +1
+/// with
+/// When: Creation into and and
+/// Then: Returns HyperVector not +1
 pub fn ones_vector() []i8 {
-// TODO: implement — Returns HyperVector [CYR:[EN]]not[CYR:[EN]] +1
+// TODO: implement — Returns HyperVector not +1
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// [CYR:[EN]]with[EN] and learning_rate
-/// When: Initialization [CYR:[EN]] HDC withandwith[CYR:[EN]]
-/// Then: Returns [EN]with[CYR:[EN]] OnlineHDC
+/// with and learning_rate
+/// When: Initialization  HDC withandwith
+/// Then: Returns with OnlineHDC
 pub fn create_online_hdc() !void {
-// TODO: implement — Returns [EN]with[CYR:[EN]] OnlineHDC
+// TODO: implement — Returns with OnlineHDC
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// [CYR:[EN]] in[EN]to[CYR:[EN]], [CYR:[EN]]to[EN] and OnlineHDC
-/// When: [CYR:[EN]]and[EN] on [EN]in[EN] [CYR:[EN]] [EN]and[CYR:[EN]]
-/// Then: [CYR:[EN]]in[CYR:[EN]] [EN]fromfromand[EN]: P ← P + η(v - P)
+///  into, to and OnlineHDC
+/// When: and on in  and
+/// Then: in fromfromand: P ← P + η(v - P)
 pub fn online_update() !void {
-// TODO: implement — [CYR:[EN]]in[CYR:[EN]] [EN]fromfromand[EN]: P ← P + η(v - P)
+// TODO: implement — in fromfromand: P ← P + η(v - P)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// [CYR:[EN]] in[EN]to[CYR:[EN]] and OnlineHDC
-/// When: [CYR:[EN]]and[EN] on not[CYR:[EN]] [EN]and[CYR:[EN]]
-/// Then: [CYR:[EN]]in[CYR:[EN]] [EN]and[CYR:[EN]]and[EN] [EN]fromfromand[EN] [EN]with[EN]and similarity > threshold
+///  into and OnlineHDC
+/// When: and on not and
+/// Then: in and fromfromand withand similarity > threshold
 pub fn online_update_unlabeled() f32 {
-// TODO: implement — [CYR:[EN]]in[CYR:[EN]] [EN]and[CYR:[EN]]and[EN] [EN]fromfromand[EN] [EN]with[EN]and similarity > threshold
+// TODO: implement — in and fromfromand withand similarity > threshold
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -280,16 +280,16 @@ pub fn predict_top_k(logits: []const f32) u32 {
 }
 
 /// FloatAccumulator
-/// When: [CYR:[EN]]in[EN]and[EN] float in [CYR:[EN]]and[CYR:[EN]] [CYR:[EN]]with[EN]in[CYR:[EN]]and[EN]
-/// Then: Returns HyperVector with [EN]on[CYR:[EN]]and[EN]and {-1, 0, +1}
+/// When: inand float in and withinand
+/// Then: Returns HyperVector with onand {-1, 0, +1}
 pub fn quantize_to_ternary() []i8 {
-// TODO: implement — Returns HyperVector with [EN]on[CYR:[EN]]and[EN]and {-1, 0, +1}
+// TODO: implement — Returns HyperVector with onand {-1, 0, +1}
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
 /// HyperVector
-/// When: [CYR:[EN]]in[EN]and[EN] [CYR:[EN]]and[CYR:[EN]] in float for onto[CYR:[EN]]and[EN]
+/// When: inand and in float for ontoand
 /// Then: Returns FloatAccumulator
 pub fn dequantize_to_float(input: []const i8) !void {
 // TODO: implement — Returns FloatAccumulator
@@ -298,17 +298,17 @@ _ = input;
 }
 
 
-/// [EN]withwithandin [CYR:[EN]]in and to[CYR:[EN]]and[CYR:[EN]]and[EN]
-/// When: [CYR:[EN]]in[EN]and[EN] [CYR:[EN]]in in [EN]and[CYR:[EN]]in[EN]to[CYR:[EN]]
-/// Then: Returns HyperVector [CYR:[EN]]with[EN]in[CYR:[EN]]and[EN]
+/// withandin in and toand
+/// When: inand in in andinto
+/// Then: Returns HyperVector withinand
 pub fn encode_bytes() []i8 {
-// TODO: implement — Returns HyperVector [CYR:[EN]]with[EN]in[CYR:[EN]]and[EN]
+// TODO: implement — Returns HyperVector withinand
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// [EN]andwith[EN]to [EN]to[CYR:[EN]]in
-/// VSA ops: [CYR:[EN]]and[EN]in[EN]and[EN] [EN]with[CYR:[EN]]in[CYR:[EN]]with[EN]and with [CYR:[EN]]and[EN]and[CYR:[EN]] binding
+/// andwithto toin
+/// VSA ops: andinand withinwithand with and binding
 /// Result: Returns HyperVector: sum(permute(token[i], i))
 pub fn encode_sequence() void {
     // VSA operation detected from spec keywords.
@@ -317,30 +317,30 @@ pub fn encode_sequence() void {
 }
 
 /// HyperVector
-/// When: [CYR:[EN]]with[CYR:[EN]] not[CYR:[EN]]in[EN] element[EN]in
-/// Then: Returns [CYR:[EN]] [EN]andwith[EN]
+/// When: with notin elementin
+/// Then: Returns  andwith
 pub fn count_nonzero(input: []const i8) !void {
-// TODO: implement — Returns [CYR:[EN]] [EN]andwith[EN]
+// TODO: implement — Returns  andwith
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
 
 
 /// HyperVector
-/// When: [CYR:[EN]]andwith[CYR:[EN]]and[EN] [CYR:[EN]]with[EN]and
-/// Then: Returns [CYR:[EN]] [CYR:[EN]] (0.0 [EN] 1.0)
+/// When: andwithand withand
+/// Then: Returns   (0.0  1.0)
 pub fn sparsity(input: []const i8) !void {
-// TODO: implement — Returns [CYR:[EN]] [CYR:[EN]] (0.0 [EN] 1.0)
+// TODO: implement — Returns   (0.0  1.0)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
 
 
 /// HyperVector
-/// When: [CYR:[EN]]and[CYR:[EN]]and[EN] in[EN]to[CYR:[EN]]
-/// Then: Returns in[EN]to[CYR:[EN]] with [EN]and[EN]and[CYR:[EN]] [CYR:[EN]]
+/// When: and into
+/// Then: Returns into with and 
 pub fn normalize(input: []const i8) !void {
-// TODO: implement — Returns in[EN]to[CYR:[EN]] with [EN]and[EN]and[CYR:[EN]] [CYR:[EN]]
+// TODO: implement — Returns into with and 
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -351,161 +351,161 @@ _ = input;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "bind_behavior" {
-// Given: [EN]in[EN] [EN]and[CYR:[EN]]in[EN]to[CYR:[EN]] a and b [EN]andonto[EN]in[EN] [CYR:[EN]]with[EN]and
-// When: Creation [EN]withwith[EN]and[EN]andand [CYR:[EN]] [EN]element[CYR:[EN]] [CYR:[EN]]and[EN]
+// Given: in andinto a and b andontoin withand
+// When: Creation withandand  element and
 // Then: Returns HyperVector where c[i] = a[i] * b[i]
 // Test bind: verify behavior is callable (compile-time check)
 _ = bind;
 }
 
 test "unbind_behavior" {
-// Given: [EN]in[CYR:[EN]] in[EN]to[CYR:[EN]] and to[CYR:[EN]]
-// When: [EN]in[CYR:[EN]]and[EN] within[CYR:[EN]] [EN]on[CYR:[EN]]and[EN]
-// Then: Returns bind(bound, key) [EN].to. [CYR:[EN]]and[CYR:[EN]] bind with[CYR:[EN]]and[EN]
+// Given: in into and to
+// When: inand within onand
+// Then: Returns bind(bound, key) .to. and bind withand
 // Test unbind: verify behavior is callable (compile-time check)
 _ = unbind;
 }
 
 test "bundle_behavior" {
-// Given: [EN]andwith[EN]to [EN]and[CYR:[EN]]in[EN]to[CYR:[EN]]in
-// When: Creation with[CYR:[EN]]and[EN]andand [CYR:[EN]] [CYR:[EN]]and[CYR:[EN]] [CYR:[EN]]with[EN]in[EN]and[EN]
-// Then: Returns HyperVector with [CYR:[EN]]and[CYR:[EN]] [EN]and[CYR:[EN]] on to[CYR:[EN]] [CYR:[EN]]and[EN]andand
+// Given: andwithto andintoin
+// When: Creation withandand  and withinand
+// Then: Returns HyperVector with and and on to andand
 // Test bundle: verify behavior is callable (compile-time check)
 _ = bundle;
 }
 
 test "bundle_simd_behavior" {
-// Given: [EN]andwith[EN]to [EN]and[CYR:[EN]]in[EN]to[CYR:[EN]]in
-// When: SIMD-[CYR:[EN]]and[EN]and[EN]and[EN]in[CYR:[EN]] bundling (32 [EN]and[EN] [CYR:[EN]])
-// Then: Returns HyperVector with andwith[CYR:[EN]]in[EN]and[EN] Vec32i8
+// Given: andwithto andintoin
+// When: SIMD-andandin bundling (32 and )
+// Then: Returns HyperVector with andwithinand Vec32i8
 // Test bundle_simd: verify behavior is callable (compile-time check)
 _ = bundle_simd;
 }
 
 test "permute_behavior" {
-// Given: HyperVector and in[EN]and[EN]andon with[EN]inand[EN] k
-// When: [EN]andto[EN]and[EN]withto[EN] [CYR:[EN]]with[CYR:[EN]]into[EN] for to[EN]and[EN]in[EN]and[EN] [EN]with[CYR:[EN]]in[CYR:[EN]]with[CYR:[EN]]
-// Then: Returns HyperVector with[EN]inand[CYR:[EN]] on k [CYR:[EN]]and[EN]and[EN]
+// Given: HyperVector and inandon withinand k
+// When: andtoandwithto withinto for toandinand withinwith
+// Then: Returns HyperVector withinand on k and
 // Test permute: verify behavior is callable (compile-time check)
 _ = permute;
 }
 
 test "similarity_behavior" {
-// Given: [EN]in[EN] [EN]and[CYR:[EN]]in[EN]to[CYR:[EN]] a and b
-// When: [CYR:[EN]]andwith[CYR:[EN]]and[EN] to[EN]withand[EN]with[CYR:[EN]] with[CYR:[EN]]with[EN]in[EN]
-// Then: Returns float in [EN]and[CYR:[EN]]not [-1, 1]
+// Given: in andinto a and b
+// When: andwithand towithandwith within
+// Then: Returns float in andnot [-1, 1]
 // Test similarity: verify behavior is callable (compile-time check)
 _ = similarity;
 }
 
 test "similarity_simd_behavior" {
-// Given: [EN]in[EN] [EN]and[CYR:[EN]]in[EN]to[CYR:[EN]] a and b
-// When: SIMD-[CYR:[EN]]and[EN]and[EN]and[EN]in[CYR:[EN]] in[EN]andwith[CYR:[EN]]and[EN] with[CYR:[EN]]with[EN]in[EN]
-// Then: Returns float andwith[CYR:[EN]] simdDotProduct
+// Given: in andinto a and b
+// When: SIMD-andandin inandwithand within
+// Then: Returns float andwith simdDotProduct
 // Test similarity_simd: verify behavior is callable (compile-time check)
 _ = similarity_simd;
 }
 
 test "hamming_distance_behavior" {
-// Given: [EN]in[EN] [EN]and[CYR:[EN]]in[EN]to[CYR:[EN]] a and b
-// When: [CYR:[EN]]with[CYR:[EN]] [CYR:[EN]]and[CYR:[EN]]and[EN]with[EN] [CYR:[EN]]and[EN]and[EN]
-// Then: Returns [CYR:[EN]] [EN]andwith[EN]
+// Given: in andinto a and b
+// When: with andwith and
+// Then: Returns  andwith
 // Test hamming_distance: verify behavior is callable (compile-time check)
 _ = hamming_distance;
 }
 
 test "random_vector_behavior" {
-// Given: [CYR:[EN]]with[EN] and seed
-// When: [EN]not[CYR:[EN]]and[EN] with[CYR:[EN]] [CYR:[EN]]and[CYR:[EN]] [EN]and[CYR:[EN]]in[EN]to[CYR:[EN]]
-// Then: Returns HyperVector with [EN]in[CYR:[EN]] [EN]with[CYR:[EN]]and[EN] [EN]and[EN]in
+// Given: with and seed
+// When: notand with and andinto
+// Then: Returns HyperVector with in withand andin
 // Test random_vector: verify behavior is callable (compile-time check)
 _ = random_vector;
 }
 
 test "zero_vector_behavior" {
-// Given: [CYR:[EN]]with[EN]
-// When: Creation [CYR:[EN]]in[CYR:[EN]] in[EN]to[CYR:[EN]]
-// Then: Returns HyperVector [CYR:[EN]]not[CYR:[EN]] [CYR:[EN]]and
+// Given: with
+// When: Creation in into
+// Then: Returns HyperVector not and
 // Test zero_vector: verify behavior is callable (compile-time check)
 _ = zero_vector;
 }
 
 test "ones_vector_behavior" {
-// Given: [CYR:[EN]]with[EN]
-// When: Creation in[EN]to[CYR:[EN]] and[EN] [EN]and[EN]and[EN]
-// Then: Returns HyperVector [CYR:[EN]]not[CYR:[EN]] +1
+// Given: with
+// When: Creation into and and
+// Then: Returns HyperVector not +1
 // Test ones_vector: verify behavior is callable (compile-time check)
 _ = ones_vector;
 }
 
 test "create_online_hdc_behavior" {
-// Given: [CYR:[EN]]with[EN] and learning_rate
-// When: Initialization [CYR:[EN]] HDC withandwith[CYR:[EN]]
-// Then: Returns [EN]with[CYR:[EN]] OnlineHDC
+// Given: with and learning_rate
+// When: Initialization  HDC withandwith
+// Then: Returns with OnlineHDC
 // Test create_online_hdc: verify behavior is callable (compile-time check)
 _ = create_online_hdc;
 }
 
 test "online_update_behavior" {
-// Given: [CYR:[EN]] in[EN]to[CYR:[EN]], [CYR:[EN]]to[EN] and OnlineHDC
-// When: [CYR:[EN]]and[EN] on [EN]in[EN] [CYR:[EN]] [EN]and[CYR:[EN]]
-// Then: [CYR:[EN]]in[CYR:[EN]] [EN]fromfromand[EN]: P ← P + η(v - P)
+// Given:  into, to and OnlineHDC
+// When: and on in  and
+// Then: in fromfromand: P ← P + η(v - P)
 // Test online_update: verify behavior is callable (compile-time check)
 _ = online_update;
 }
 
 test "online_update_unlabeled_behavior" {
-// Given: [CYR:[EN]] in[EN]to[CYR:[EN]] and OnlineHDC
-// When: [CYR:[EN]]and[EN] on not[CYR:[EN]] [EN]and[CYR:[EN]]
-// Then: [CYR:[EN]]in[CYR:[EN]] [EN]and[CYR:[EN]]and[EN] [EN]fromfromand[EN] [EN]with[EN]and similarity > threshold
+// Given:  into and OnlineHDC
+// When: and on not and
+// Then: in and fromfromand withand similarity > threshold
 // Test online_update_unlabeled: verify returns a float in valid range
 // TODO: Add specific test for online_update_unlabeled
 _ = online_update_unlabeled;
 }
 
 test "predict_behavior" {
-// Given: [CYR:[EN]] in[EN]to[CYR:[EN]] and OnlineHDC
-// When: [EN]andwithto onand[CYR:[EN]] [CYR:[EN]] [EN]fromfromand[EN]
-// Then: Returns SimilarityResult with [CYR:[EN]]to[EN] and [EN]in[CYR:[EN]]with[CYR:[EN]]
+// Given:  into and OnlineHDC
+// When: andwithto onand  fromfromand
+// Then: Returns SimilarityResult with to and inwith
 // Test predict: verify behavior is callable (compile-time check)
 _ = predict;
 }
 
 test "predict_top_k_behavior" {
-// Given: [CYR:[EN]] in[EN]to[CYR:[EN]], OnlineHDC and k
-// When: [EN]andwithto k onand[CYR:[EN]] [CYR:[EN]]and[EN] [EN]fromfromand[EN]in
-// Then: Returns with[EN]andwith[EN]to SimilarityResult fromwith[CYR:[EN]]and[EN]in[CYR:[EN]] [EN] with[CYR:[EN]]with[EN]in[EN]
+// Given:  into, OnlineHDC and k
+// When: andwithto k onand and fromfromandin
+// Then: Returns withandwithto SimilarityResult fromwithandin  within
 // Test predict_top_k: verify behavior is callable (compile-time check)
 _ = predict_top_k;
 }
 
 test "quantize_to_ternary_behavior" {
 // Given: FloatAccumulator
-// When: [CYR:[EN]]in[EN]and[EN] float in [CYR:[EN]]and[CYR:[EN]] [CYR:[EN]]with[EN]in[CYR:[EN]]and[EN]
-// Then: Returns HyperVector with [EN]on[CYR:[EN]]and[EN]and {-1, 0, +1}
+// When: inand float in and withinand
+// Then: Returns HyperVector with onand {-1, 0, +1}
 // Test quantize_to_ternary: verify behavior is callable (compile-time check)
 _ = quantize_to_ternary;
 }
 
 test "dequantize_to_float_behavior" {
 // Given: HyperVector
-// When: [CYR:[EN]]in[EN]and[EN] [CYR:[EN]]and[CYR:[EN]] in float for onto[CYR:[EN]]and[EN]
+// When: inand and in float for ontoand
 // Then: Returns FloatAccumulator
 // Test dequantize_to_float: verify behavior is callable (compile-time check)
 _ = dequantize_to_float;
 }
 
 test "encode_bytes_behavior" {
-// Given: [EN]withwithandin [CYR:[EN]]in and to[CYR:[EN]]and[CYR:[EN]]and[EN]
-// When: [CYR:[EN]]in[EN]and[EN] [CYR:[EN]]in in [EN]and[CYR:[EN]]in[EN]to[CYR:[EN]]
-// Then: Returns HyperVector [CYR:[EN]]with[EN]in[CYR:[EN]]and[EN]
+// Given: withandin in and toand
+// When: inand in in andinto
+// Then: Returns HyperVector withinand
 // Test encode_bytes: verify behavior is callable (compile-time check)
 _ = encode_bytes;
 }
 
 test "encode_sequence_behavior" {
-// Given: [EN]andwith[EN]to [EN]to[CYR:[EN]]in
-// When: [CYR:[EN]]and[EN]in[EN]and[EN] [EN]with[CYR:[EN]]in[CYR:[EN]]with[EN]and with [CYR:[EN]]and[EN]and[CYR:[EN]] binding
+// Given: andwithto toin
+// When: andinand withinwithand with and binding
 // Then: Returns HyperVector: sum(permute(token[i], i))
 // Test encode_sequence: verify behavior is callable (compile-time check)
 _ = encode_sequence;
@@ -513,24 +513,24 @@ _ = encode_sequence;
 
 test "count_nonzero_behavior" {
 // Given: HyperVector
-// When: [CYR:[EN]]with[CYR:[EN]] not[CYR:[EN]]in[EN] element[EN]in
-// Then: Returns [CYR:[EN]] [EN]andwith[EN]
+// When: with notin elementin
+// Then: Returns  andwith
 // Test count_nonzero: verify behavior is callable (compile-time check)
 _ = count_nonzero;
 }
 
 test "sparsity_behavior" {
 // Given: HyperVector
-// When: [CYR:[EN]]andwith[CYR:[EN]]and[EN] [CYR:[EN]]with[EN]and
-// Then: Returns [CYR:[EN]] [CYR:[EN]] (0.0 [EN] 1.0)
+// When: andwithand withand
+// Then: Returns   (0.0  1.0)
 // Test sparsity: verify behavior is callable (compile-time check)
 _ = sparsity;
 }
 
 test "normalize_behavior" {
 // Given: HyperVector
-// When: [CYR:[EN]]and[CYR:[EN]]and[EN] in[EN]to[CYR:[EN]]
-// Then: Returns in[EN]to[CYR:[EN]] with [EN]and[EN]and[CYR:[EN]] [CYR:[EN]]
+// When: and into
+// Then: Returns into with and 
 // Test normalize: verify behavior is callable (compile-time check)
 _ = normalize;
 }

@@ -1,31 +1,31 @@
 # Golden Ratio and Hubble Constant: Complete Research
 
-## [CYR:Анн]fromацandя
+## [CYR:[TRANSLATED]]fromацandя
 
-Наwith[CYR:тоящая] [CYR:раб]fromа [CYR:пред]withтаin[CYR:ляет] [CYR:фундаментальное] fromto[CYR:рыт]andе withinязand [CYR:между] поwith[CYR:тоянной] [CYR:Хаббла] H₀ and [CYR:зол]fromым with[CYR:ечен]andем φ [CYR:через] [CYR:математ]andчеwithtoое [CYR:тожде]withтinо 1/2 = (φ - 1/φ)/2. Поto[CYR:азано], that withto[CYR:оро]withть раwithшand[CYR:рен]andя Вwith[CYR:еленной] [CYR:определяет]withя аwithand[CYR:мметр]andей [CYR:паттер]on with[CYR:оздан]andя, where with[CYR:оздан]andе "withandльnotе" унandthat[CYR:жен]andя in φ² [CYR:раз]. [CYR:Формула] H₀ = c·G·mₑ·mₚ²/ℏ² × (φ - 1/φ)/2 [CYR:даёт] зon[CYR:чен]andе 70.74 toм/with/Мпto, that with[CYR:огла]with[CYR:ует]withя with withоin[CYR:ременным]and on[CYR:блюден]andямand.
+Наwith[TRANSLATED]] [CYR:[TRANSLATED]]fromа [CYR:[TRANSLATED]]withтаin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] fromfor[TRANSLATED]]andе withinязand [CYR:[TRANSLATED]] поwith[TRANSLATED]] [CYR:[TRANSLATED]] H₀ and [CYR:[TRANSLATED]]fromым with[TRANSLATED]]andем φ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andчеwithtoое [CYR:[TRANSLATED]]withтinо 1/2 = (φ - 1/φ)/2. Поfor[TRANSLATED]], that withfor[TRANSLATED]]withть раwithшand[CYR:[TRANSLATED]]andя Вwith[TRANSLATED]] [CYR:[TRANSLATED]]withя аwithand[CYR:[TRANSLATED]]andей [CYR:[TRANSLATED]]on with[TRANSLATED]]andя, where with[TRANSLATED]]andе "withandльnotе" унandthat[CYR:[TRANSLATED]]andя in φ² [CYR:[TRANSLATED]]. [CYR:[TRANSLATED]] H₀ = c·G·mₑ·mₚ²/ℏ² × (φ - 1/φ)/2 [CYR:[TRANSLATED]] зon[CYR:[TRANSLATED]]andе 70.74 toм/with/Мпto, that with[TRANSLATED]]with[TRANSLATED]]withя with withоin[CYR:[TRANSLATED]]and on[CYR:[TRANSLATED]]andямand.
 
-**[CYR:Ключе]inые withлоinа:** [CYR:зол]fromое with[CYR:ечен]andе, поwith[CYR:тоян]onя [CYR:Хаббла], [CYR:паттерн] with[CYR:оздан]andя, аwithand[CYR:мметр]andя, toоwith[CYR:молог]andя
-
----
-
-## 1. Вin[CYR:еден]andе
-
-### 1.1 Problem [CYR:Хаббла]
-
-Соin[CYR:ремен]onя toоwith[CYR:молог]andя with[CYR:тол]to[CYR:нула]withь with with[CYR:ерьёзным] прfromandin[CYR:ореч]andем — "[CYR:проблемой] [CYR:Хаббла]" (Hubble tension). [CYR:Измерен]andя поwith[CYR:тоянной] [CYR:Хаббла] дin[CYR:умя] notзаinandwithand[CYR:мым]and methodамand [CYR:дают] notwithоinмеwithтand[CYR:мые] resultы:
-
-- **[CYR:Ранняя] Вwith[CYR:елен]onя** (CMB, Planck 2018): H₀ = 67.4 ± 0.5 toм/with/Мпto
-- **[CYR:Поздняя] Вwith[CYR:елен]onя** (within[CYR:ерхно]inые, SH0ES 2022): H₀ = 73.0 ± 1.0 toм/with/Мпto
-
-Раwith[CYR:хожден]andе withоwithтаin[CYR:ляет] 4.9σ, that уto[CYR:азы]in[CYR:ает] on in[CYR:озможную] ноinую фandзandtoу.
-
-### 1.2 [CYR:Цель] andwithwith[CYR:ледо]inанandя
-
-Мы [CYR:предлагаем] ноinый [CYR:подход] to [CYR:определен]andю H₀ [CYR:через] [CYR:фундаментальные] toонwith[CYR:танты] and [CYR:зол]fromое with[CYR:ечен]andе, оwithноin[CYR:анный] on [CYR:паттер]not with[CYR:оздан]andя S → T → R.
+**[CYR:[TRANSLATED]]inые withлоinа:** [CYR:[TRANSLATED]]fromое with[TRANSLATED]]andе, поwith[TRANSLATED]]onя [CYR:[TRANSLATED]], [CYR:[TRANSLATED]] with[TRANSLATED]]andя, аwithand[CYR:[TRANSLATED]]andя, toоwith[TRANSLATED]]andя
 
 ---
 
-## 2. [CYR:Математ]andчеwithtoandе оwithноinы
+## 1. Вin[CYR:[TRANSLATED]]andе
+
+### 1.1 Problem [CYR:[TRANSLATED]]
+
+Соin[CYR:[TRANSLATED]]onя toоwith[TRANSLATED]]andя with[TRANSLATED]]for[TRANSLATED]]withь with with[TRANSLATED]] прfromandin[CYR:[TRANSLATED]]andем — "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]" (Hubble tension). [CYR:[TRANSLATED]]andя поwith[TRANSLATED]] [CYR:[TRANSLATED]] дin[CYR:[TRANSLATED]] notзаinandwithand[CYR:[TRANSLATED]]and methodамand [CYR:[TRANSLATED]] notwithоinмеwithтand[CYR:[TRANSLATED]] resultы:
+
+- **[CYR:[TRANSLATED]] Вwith[TRANSLATED]]onя** (CMB, Planck 2018): H₀ = 67.4 ± 0.5 toм/with/Мпto
+- **[CYR:[TRANSLATED]] Вwith[TRANSLATED]]onя** (within[CYR:[TRANSLATED]]inые, SH0ES 2022): H₀ = 73.0 ± 1.0 toм/with/Мпto
+
+Раwith[TRANSLATED]]andе withоwithтаin[CYR:[TRANSLATED]] 4.9σ, that уfor[TRANSLATED]]in[CYR:[TRANSLATED]] on in[CYR:[TRANSLATED]] ноinую фandзandtoу.
+
+### 1.2 [CYR:[TRANSLATED]] andwith[TRANSLATED]]inанandя
+
+Мы [CYR:[TRANSLATED]] ноinый [CYR:[TRANSLATED]] to [CYR:[TRANSLATED]]andю H₀ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] toонwith[TRANSLATED]] and [CYR:[TRANSLATED]]fromое with[TRANSLATED]]andе, оwithноin[CYR:[TRANSLATED]] on [CYR:[TRANSLATED]]not with[TRANSLATED]]andя S → T → R.
+
+---
+
+## 2. [CYR:[TRANSLATED]]andчеwithtoandе оwithноinы
 
 ### 2.1 Golden ratio
 
@@ -33,84 +33,84 @@
 
 $$\varphi = \frac{1 + \sqrt{5}}{2} \approx 1.6180339887...$$
 
-**Оwithноin[CYR:ные] withinойwithтinа:**
+**Оwithноin[CYR:[TRANSLATED]] withinойwithтinа:**
 
-| Сinойwithтinо | [CYR:Формула] | Зon[CYR:чен]andе |
+| Сinойwithтinо | [CYR:[TRANSLATED]] | Зon[CYR:[TRANSLATED]]andе |
 |----------|---------|----------|
-| [CYR:Определяющее] [CYR:ура]innotнandе | φ² = φ + 1 | — |
-| [CYR:Обратное] зon[CYR:чен]andе | 1/φ = φ - 1 | 0.618034 |
-| Кin[CYR:адрат] | φ² = φ + 1 | 2.618034 |
-| [CYR:Про]andзin[CYR:еден]andе | φ × (1/φ) = 1 | 1 |
-| [CYR:Разно]withть | φ - 1/φ = 1 | 1 |
+| [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]innotнandе | φ² = φ + 1 | — |
+| [CYR:[TRANSLATED]] зon[CYR:[TRANSLATED]]andе | 1/φ = φ - 1 | 0.618034 |
+| Кin[CYR:[TRANSLATED]] | φ² = φ + 1 | 2.618034 |
+| [CYR:[TRANSLATED]]andзin[CYR:[TRANSLATED]]andе | φ × (1/φ) = 1 | 1 |
+| [CYR:[TRANSLATED]]withть | φ - 1/φ = 1 | 1 |
 
-### 2.2 [CYR:Фундаментальное] [CYR:тожде]withтinо
+### 2.2 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinо
 
-**[CYR:Теорема] 1.** *[CYR:Для] [CYR:зол]from[CYR:ого] with[CYR:ечен]andя φ with[CYR:пра]in[CYR:едл]andinо:*
+**[CYR:[TRANSLATED]] 1.** *[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] with[TRANSLATED]]andя φ with[TRANSLATED]]in[CYR:[TRANSLATED]]andinо:*
 
 $$\frac{\varphi - \frac{1}{\varphi}}{2} = \frac{1}{2}$$
 
-**Доto[CYR:азатель]withтinо:**
+**Доfor[TRANSLATED]]withтinо:**
 
-1. Из φ² = φ + 1 with[CYR:ледует]: 1/φ = φ - 1
+1. Из φ² = φ + 1 with[TRANSLATED]]: 1/φ = φ - 1
 
-2. [CYR:Выч]andwith[CYR:ляем] [CYR:разно]withть:
+2. [CYR:[TRANSLATED]]andwith[TRANSLATED]] [CYR:[TRANSLATED]]withть:
    $$\varphi - \frac{1}{\varphi} = \varphi - (\varphi - 1) = 1$$
 
-3. [CYR:Дел]andм on 2:
+3. [CYR:[TRANSLATED]]andм on 2:
    $$\frac{\varphi - \frac{1}{\varphi}}{2} = \frac{1}{2} \quad \blacksquare$$
 
-### 2.3 [CYR:Геометр]andчеwithtoая and[CYR:нтерпретац]andя
+### 2.3 [CYR:[TRANSLATED]]andчеwithtoая and[CYR:[TRANSLATED]]andя
 
 ```
-    Creation (φ)          Унandthat[CYR:жен]andе (1/φ)
+    Creation (φ)          Унandthat[CYR:[TRANSLATED]]andе (1/φ)
     ████████████████      ██████████
     ←── 1.618 ──→         ←─ 0.618 ─→
     
-    [CYR:Разно]withть: 1.618 - 0.618 = 1.000
-    [CYR:Полуразно]withть: 1.000 / 2 = 0.500
+    [CYR:[TRANSLATED]]withть: 1.618 - 0.618 = 1.000
+    [CYR:[TRANSLATED]]withть: 1.000 / 2 = 0.500
 ```
 
 ---
 
-## 3. Фandзandчеwithtoая [CYR:формула]
+## 3. Фandзandчеwithtoая [CYR:[TRANSLATED]]
 
-### 3.1 [CYR:Размерный] аonлandз
+### 3.1 [CYR:[TRANSLATED]] аonлandз
 
-Поwith[CYR:тоян]onя [CYR:Хаббла] and[CYR:меет] [CYR:размерно]withть [H₀] = 1/in[CYR:ремя] = with⁻¹.
+Поwith[TRANSLATED]]onя [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withть [H₀] = 1/in[CYR:[TRANSLATED]] = with⁻¹.
 
-Из [CYR:фундаментальных] toонwith[CYR:тант] [CYR:можно] withоwithтаinandть to[CYR:омб]andonцandю with таtoой [CYR:размерно]with[CYR:тью]:
+Из [CYR:[TRANSLATED]] toонwith[TRANSLATED]] [CYR:[TRANSLATED]] withоwithтаinandть for[TRANSLATED]]andonцandю with таtoой [CYR:[TRANSLATED]]with[TRANSLATED]]:
 
-$$\left[\frac{c \cdot G \cdot m_e \cdot m_p^2}{\hbar^2}\right] = \frac{м/with \cdot м^3/(toг \cdot with^2) \cdot toг \cdot toг^2}{(Дж \cdot with)^2}$$
+$$\left[\frac{c \cdot G \cdot m_e \cdot m_p^2}{\hbar^2}\right] = \frac{/with \cdot ^3/(toг \cdot with^2) \cdot toг \cdot toг^2}{(Дж \cdot with)^2}$$
 
-Поwithле [CYR:упрощен]andя: [c·G·mₑ·mₚ²/ℏ²] = with⁻¹ ✓
+Поwithле [CYR:[TRANSLATED]]andя: [c·G·mₑ·mₚ²/ℏ²] = with⁻¹ ✓
 
-### 3.2 [CYR:Формула] H₀
+### 3.2 [CYR:[TRANSLATED]] H₀
 
-**[CYR:Теорема] 2.** *Поwith[CYR:тоян]onя [CYR:Хаббла] in[CYR:ыражает]withя [CYR:через] [CYR:фундаментальные] toонwith[CYR:танты]:*
+**[CYR:[TRANSLATED]] 2.** *Поwith[TRANSLATED]]onя [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] toонwith[TRANSLATED]]:*
 
 $$\boxed{H_0 = \frac{c \cdot G \cdot m_e \cdot m_p^2}{\hbar^2} \times \frac{\varphi - \frac{1}{\varphi}}{2} = \frac{c \cdot G \cdot m_e \cdot m_p^2}{2\hbar^2}}$$
 
-### 3.3 Чandwith[CYR:ленный] раwith[CYR:чёт]
+### 3.3 Чandwith[TRANSLATED]] раwith[TRANSLATED]]
 
-**[CYR:Входные] [CYR:данные] (CODATA 2018):**
+**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (CODATA 2018):**
 
-| [CYR:Кон]with[CYR:танта] | Сandмinол | Зon[CYR:чен]andе | Едandнandцы |
+| [CYR:[TRANSLATED]]with[TRANSLATED]] | Сandмinол | Зon[CYR:[TRANSLATED]]andе | Едandнandцы |
 |-----------|--------|----------|---------|
-| Поwith[CYR:тоян]onя [CYR:План]toа | ℏ | 1.054571817×10⁻³⁴ | Дж·with |
-| Сto[CYR:оро]withть within[CYR:ета] | c | 299792458 | м/with |
-| [CYR:Гра]inand[CYR:тац]andонonя поwith[CYR:тоян]onя | G | 6.67430×10⁻¹¹ | м³/(toг·with²) |
-| Маwithwithа [CYR:эле]to[CYR:тро]on | mₑ | 9.1093837015×10⁻³¹ | toг |
-| Маwithwithа прfromоon | mₚ | 1.67262192369×10⁻²⁷ | toг |
+| Поwith[TRANSLATED]]onя [CYR:[TRANSLATED]]toа | ℏ | 1.054571817×10⁻³⁴ | Дж·with |
+| Сfor[TRANSLATED]]withть within[CYR:[TRANSLATED]] | c | 299792458 | /with |
+| [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]]andонonя поwith[TRANSLATED]]onя | G | 6.67430×10⁻¹¹ | м³/(toг·with²) |
+| Маwithа [CYR:[TRANSLATED]]for[TRANSLATED]]on | mₑ | 9.1093837015×10⁻³¹ | toг |
+| Маwithа прfromоon | mₚ | 1.67262192369×10⁻²⁷ | toг |
 
-**[CYR:Выч]andwith[CYR:лен]andе:**
+**[CYR:[TRANSLATED]]andwith[TRANSLATED]]andе:**
 
 ```python
-# Чandwithлand[CYR:тель]
+# Чandwithлand[CYR:[TRANSLATED]]
 numerator = c * G * m_e * m_p**2
 numerator = 299792458 × 6.67430e-11 × 9.1093837015e-31 × (1.67262192369e-27)²
 numerator = 5.0987e-86 toг²·м⁴/with³
 
-# Зonмеon[CYR:тель]
+# Зonмеon[CYR:[TRANSLATED]]
 denominator = 2 * hbar**2
 denominator = 2 × (1.054571817e-34)²
 denominator = 2.2242e-68 Дж²·with²
@@ -118,8 +118,8 @@ denominator = 2.2242e-68 Дж²·with²
 # H₀ in СИ
 H0_SI = numerator / denominator = 2.2926e-18 with⁻¹
 
-# [CYR:Кон]in[CYR:ертац]andя in toм/with/Мпto
-# 1 Мпto = 3.0857e22 м
+# [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andя in toм/with/Мпto
+# 1 Мпto = 3.0857e22 
 H0 = H0_SI × 3.0857e22 / 1000 = 70.74 toм/with/Мпto
 ```
 
@@ -129,225 +129,225 @@ $$\boxed{H_0 = 70.74 \text{ toм/with/Мпto}}$$
 
 ---
 
-## 4. [CYR:Сра]innotнandе with on[CYR:блюден]andямand
+## 4. [CYR:[TRANSLATED]]innotнandе with on[CYR:[TRANSLATED]]andямand
 
-### 4.1 Соin[CYR:ременные] and[CYR:змерен]andя H₀
+### 4.1 Соin[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]andя H₀
 
-| [CYR:Метод] | Source | H₀ (toм/with/Мпto) | Отtoлоnotнandе from 70.74 |
+| [CYR:[TRANSLATED]] | Source | H₀ (toм/with/Мпto) | Отtoлоnotнandе from 70.74 |
 |-------|----------|---------------|---------------------|
 | CMB | Planck 2018 | 67.4 ± 0.5 | -3.34 (6.7σ) |
-| [CYR:Цефе]andды + SNe Ia | SH0ES 2022 | 73.04 ± 1.04 | +2.30 (2.2σ) |
+| [CYR:[TRANSLATED]]andды + SNe Ia | SH0ES 2022 | 73.04 ± 1.04 | +2.30 (2.2σ) |
 | TRGB | Freedman 2021 | 69.8 ± 1.7 | -0.94 (0.6σ) |
-| [CYR:Мегамазеры] | Pesce 2020 | 73.9 ± 3.0 | +3.16 (1.1σ) |
-| [CYR:Гра]inand[CYR:тац]and[CYR:онные] in[CYR:олны] | GW170817 | 70.0 ± 12.0 | -0.74 (0.06σ) |
+| [CYR:[TRANSLATED]] | Pesce 2020 | 73.9 ± 3.0 | +3.16 (1.1σ) |
+| [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] in[CYR:[TRANSLATED]] | GW170817 | 70.0 ± 12.0 | -0.74 (0.06σ) |
 | Лandнзandроinанandе | H0LiCOW | 73.3 ± 1.8 | +2.56 (1.4σ) |
 
-### 4.2 [CYR:Стат]andwithтandчеwithtoandй аonлandз
+### 4.2 [CYR:[TRANSLATED]]andwithтandчеwithtoandй аonлandз
 
-[CYR:Наше] [CYR:пред]withto[CYR:азан]andе H₀ = 70.74 toм/with/Мпto:
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withfor[TRANSLATED]]andе H₀ = 70.74 toм/with/Мпto:
 
-- **[CYR:Согла]with[CYR:ует]withя** with TRGB, [CYR:мегамазерам]and, [CYR:гра]inand[CYR:тац]and[CYR:онным]and inолonмand (< 2σ)
-- **[CYR:Наход]andтwithя [CYR:между]** Planck and SH0ES
-- **[CYR:Может] [CYR:разреш]andть** [CYR:проблему] [CYR:Хаббла], еwithлand withandwith[CYR:темат]andчеwithtoandе ошandбtoand in [CYR:обо]andх methodах
+- **[CYR:[TRANSLATED]]with[TRANSLATED]]withя** with TRGB, [CYR:[TRANSLATED]]and, [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and inолonмand (< 2σ)
+- **[CYR:[TRANSLATED]]andтwithя [CYR:[TRANSLATED]]** Planck and SH0ES
+- **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andть** [CYR:[TRANSLATED]] [CYR:[TRANSLATED]], еwithлand withandwith[TRANSLATED]]andчеwithtoandе ошandбtoand in [CYR:[TRANSLATED]]andх methodах
 
-### 4.3 [CYR:Граф]andчеwithtoое [CYR:пред]withтаin[CYR:лен]andе
+### 4.3 [CYR:[TRANSLATED]]andчеwithtoое [CYR:[TRANSLATED]]withтаin[CYR:[TRANSLATED]]andе
 
 ```
-        Planck    TRGB   [CYR:Наша] [CYR:формула]   SH0ES
+        Planck    TRGB   [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]   SH0ES
           ↓        ↓         ↓            ↓
     ──────┼────────┼─────────┼────────────┼──────→ H₀
          67.4    69.8      70.74        73.0
           
-    ◄─────────── Problem [CYR:Хаббла] ───────────►
+    ◄─────────── Problem [CYR:[TRANSLATED]] ───────────►
 ```
 
 ---
 
-## 5. Фandзandчеwithtoая and[CYR:нтерпретац]andя
+## 5. Фandзandчеwithtoая and[CYR:[TRANSLATED]]andя
 
-### 5.1 [CYR:Паттерн] with[CYR:оздан]andя
+### 5.1 [CYR:[TRANSLATED]] with[TRANSLATED]]andя
 
-[CYR:Паттерн] with[CYR:оздан]andя S → T → R опandwithыin[CYR:ает] [CYR:фундаментальную] with[CYR:тру]to[CYR:туру] inwithех [CYR:проце]withwithоin:
+[CYR:[TRANSLATED]] with[TRANSLATED]]andя S → T → R опandwithыin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] with[TRANSLATED]]for[TRANSLATED]] inwithех [CYR:[TRANSLATED]]withоin:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    [CYR:ПАТТЕРН] [CYR:СОЗДАНИЯ]                         │
+│                    [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                         │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │    S (Source)  ──→  T (Transformer)  ──→  R (Result)       │
 │    Source         Transformer       Result         │
 │                                                             │
-│    Прand[CYR:меры]:                                                 │
-│    • Фandзandtoа: Эnotргandя → [CYR:Вза]and[CYR:модей]withтinandе → Чаwithтandцы            │
-│    • Хandмandя: [CYR:Реагенты] → [CYR:Реа]toцandя → [CYR:Проду]toты                  │
-│    • Бand[CYR:олог]andя: [CYR:ДНК] → [CYR:Тран]withtoрandпцandя → [CYR:Бело]to                  │
-│    • Коwith[CYR:молог]andя: Сand[CYR:нгулярно]withть → Раwithшand[CYR:рен]andе → Вwith[CYR:елен]onя    │
+│    Прand[CYR:[TRANSLATED]]:                                                 │
+│    • Фandзandtoа: Эnotргandя → [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinandе → Чаwithтandцы            │
+│    • Хandмandя: [CYR:[TRANSLATED]] → [CYR:[TRANSLATED]]toцandя → [CYR:[TRANSLATED]]toты                  │
+│    • Бand[CYR:[TRANSLATED]]andя: [CYR:[TRANSLATED]] → [CYR:[TRANSLATED]]withtoрandпцandя → [CYR:[TRANSLATED]]to                  │
+│    • Коwith[TRANSLATED]]andя: Сand[CYR:[TRANSLATED]]withть → Раwithшand[CYR:[TRANSLATED]]andе → Вwith[TRANSLATED]]onя    │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### 5.2 Аwithand[CYR:мметр]andя and раwithшand[CYR:рен]andе
+### 5.2 Аwithand[CYR:[TRANSLATED]]andя and раwithшand[CYR:[TRANSLATED]]andе
 
-**Гandпfrom[CYR:еза]:** Вwith[CYR:елен]onя раwithшand[CYR:ряет]withя andз-за аwithand[CYR:мметр]andand [CYR:паттер]on with[CYR:оздан]andя.
+**Гandпfrom[CYR:[TRANSLATED]]:** Вwith[TRANSLATED]]onя раwithшand[CYR:[TRANSLATED]]withя andз-за аwithand[CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]on with[TRANSLATED]]andя.
 
-Раwithwithмfromрandм дinа [CYR:проце]withwithа:
+Раwithмfromрandм дinа [CYR:[TRANSLATED]]withа:
 1. **Creation** (S → T → R): "withandла" = φ
-2. **Унandthat[CYR:жен]andе** (R → T⁻¹ → S): "withandла" = 1/φ
+2. **Унandthat[CYR:[TRANSLATED]]andе** (R → T⁻¹ → S): "withandла" = 1/φ
 
-Еwithлand бы [CYR:проце]withwithы [CYR:был]and withand[CYR:мметр]and[CYR:чны] (withandла = withandла), чandwith[CYR:тый] [CYR:эффе]toт [CYR:был] бы [CYR:нуле]inым. Но:
+Еwithлand бы [CYR:[TRANSLATED]]withы [CYR:[TRANSLATED]]and withand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] (withandла = withandла), чandwith[TRANSLATED]] [CYR:[TRANSLATED]]toт [CYR:[TRANSLATED]] бы [CYR:[TRANSLATED]]inым. Но:
 
-$$\text{Аwithand[CYR:мметр]andя} = \frac{\varphi - \frac{1}{\varphi}}{2} = \frac{1}{2} \neq 0$$
+$$\text{Аwithand[CYR:[TRANSLATED]]andя} = \frac{\varphi - \frac{1}{\varphi}}{2} = \frac{1}{2} \neq 0$$
 
-[CYR:Эта] аwithand[CYR:мметр]andя [CYR:определяет]:
-- **[CYR:Напра]in[CYR:лен]andе in[CYR:ремен]and** (from S to R)
-- **Сto[CYR:оро]withть раwithшand[CYR:рен]andя** (H₀)
-- **Роwithт [CYR:энтроп]andand** (in[CYR:торой] заtoон [CYR:термод]andonмandtoand)
+[CYR:[TRANSLATED]] аwithand[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]:
+- **[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе in[CYR:[TRANSLATED]]and** (from S to R)
+- **Сfor[TRANSLATED]]withть раwithшand[CYR:[TRANSLATED]]andя** (H₀)
+- **Роwithт [CYR:[TRANSLATED]]and** (in[CYR:[TRANSLATED]] заtoон [CYR:[TRANSLATED]]andonмandtoand)
 
-### 5.3 Сin[CYR:язь] withо with[CYR:трелой] in[CYR:ремен]and
+### 5.3 Сin[CYR:[TRANSLATED]] withо with[TRANSLATED]] in[CYR:[TRANSLATED]]and
 
-Трand with[CYR:трелы] in[CYR:ремен]and [CYR:объед]and[CYR:няют]withя [CYR:через] аwithand[CYR:мметр]andю [CYR:паттер]on with[CYR:оздан]andя:
+Трand with[TRANSLATED]] in[CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]] аwithand[CYR:[TRANSLATED]]andю [CYR:[TRANSLATED]]on with[TRANSLATED]]andя:
 
-| [CYR:Стрела] in[CYR:ремен]and | [CYR:Проя]in[CYR:лен]andе | Сin[CYR:язь] with (φ - 1/φ)/2 |
+| [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]and | [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе | Сin[CYR:[TRANSLATED]] with (φ - 1/φ)/2 |
 |----------------|------------|---------------------|
-| [CYR:Термод]andonмandчеwithtoая | [CYR:Энтроп]andя раwith[CYR:тёт] | Creation > Унandthat[CYR:жен]andе |
-| Коwith[CYR:молог]andчеwithtoая | Вwith[CYR:елен]onя раwithшand[CYR:ряет]withя | H₀ > 0 |
-| Пwithand[CYR:холог]andчеwithtoая | [CYR:Помн]andм [CYR:прошлое] | Прandчandon → [CYR:След]withтinandе |
+| [CYR:[TRANSLATED]]andonмandчеwithtoая | [CYR:[TRANSLATED]]andя раwith[TRANSLATED]] | Creation > Унandthat[CYR:[TRANSLATED]]andе |
+| Коwith[TRANSLATED]]andчеwithtoая | Вwith[TRANSLATED]]onя раwithшand[CYR:[TRANSLATED]]withя | H₀ > 0 |
+| Пwithand[CYR:[TRANSLATED]]andчеwithtoая | [CYR:[TRANSLATED]]andм [CYR:[TRANSLATED]] | Прandчandon → [CYR:[TRANSLATED]]withтinandе |
 
-### 5.4 [CYR:Почему] [CYR:зол]fromое with[CYR:ечен]andе?
+### 5.4 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromое with[TRANSLATED]]andе?
 
 Golden ratio φ — is not a random choice:
 
-1. **[CYR:Самоподоб]andе:** φ = 1 + 1/φ (реtoурwithandin[CYR:ное] [CYR:определен]andе)
-2. **[CYR:Опт]and[CYR:мально]withть:** φ — "with[CYR:амое] and[CYR:ррац]andоon[CYR:льное]" чandwithло
-3. **Роwithт:** Поwith[CYR:ледо]in[CYR:ательно]withть Фandбоonччand → φ
-4. **Унandinерwith[CYR:ально]withть:** [CYR:Поя]in[CYR:ляет]withя in бand[CYR:олог]andand, andwithtoуwithwithтinе, фandзandtoе
+1. **[CYR:[TRANSLATED]]andе:** φ = 1 + 1/φ (реtoурwithandin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andе)
+2. **[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withть:** φ — "with[TRANSLATED]] and[CYR:[TRANSLATED]]andоon[CYR:[TRANSLATED]]" чandwithло
+3. **Роwithт:** Поwith[TRANSLATED]]in[CYR:[TRANSLATED]]withть Фandбоonччand → φ
+4. **Унandinерwith[TRANSLATED]]withть:** [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]withя in бand[CYR:[TRANSLATED]]and, andwithtoуwithтinе, фandзandtoе
 
 ---
 
-## 6. [CYR:Теорет]andчеwithtoandе with[CYR:лед]withтinandя
+## 6. [CYR:[TRANSLATED]]andчеwithtoandе with[TRANSLATED]]withтinandя
 
-### 6.1 Сin[CYR:язь] мandtoро- and маto[CYR:ром]andра
+### 6.1 Сin[CYR:[TRANSLATED]] мandtoро- and маfor[TRANSLATED]]andра
 
-[CYR:Формула] H₀ within[CYR:язы]in[CYR:ает]:
+[CYR:[TRANSLATED]] H₀ within[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    [CYR:ЕДИНСТВО] [CYR:МАСШТАБОВ]                       │
+│                    [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                       │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  Кin[CYR:анто]inый маwith[CYR:штаб]:     ℏ (поwith[CYR:тоян]onя [CYR:План]toа)              │
+│  Кin[CYR:[TRANSLATED]]inый маwith[TRANSLATED]]:     ℏ (поwith[TRANSLATED]]onя [CYR:[TRANSLATED]]toа)              │
 │         ↓                                                   │
-│  [CYR:Атомный] маwith[CYR:штаб]:       mₑ, mₚ (маwithwithы чаwithтandц)              │
+│  [CYR:[TRANSLATED]] маwith[TRANSLATED]]:       mₑ, mₚ (маwithы чаwithтandц)              │
 │         ↓                                                   │
-│  [CYR:Гра]inand[CYR:тац]and[CYR:онный] маwith[CYR:штаб]: G ([CYR:гра]inand[CYR:тац]andонonя поwith[CYR:тоян]onя)     │
+│  [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] маwith[TRANSLATED]]: G ([CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]]andонonя поwith[TRANSLATED]]onя)     │
 │         ↓                                                   │
-│  [CYR:Релят]andinandwithтwithtoandй маwith[CYR:штаб]: c (withto[CYR:оро]withть within[CYR:ета])                │
+│  [CYR:[TRANSLATED]]andinandwithтwithtoandй маwith[TRANSLATED]]: c (withfor[TRANSLATED]]withть within[CYR:[TRANSLATED]])                │
 │         ↓                                                   │
-│  Коwith[CYR:молог]andчеwithtoandй маwith[CYR:штаб]: H₀ (поwith[CYR:тоян]onя [CYR:Хаббла])           │
+│  Коwith[TRANSLATED]]andчеwithtoandй маwith[TRANSLATED]]: H₀ (поwith[TRANSLATED]]onя [CYR:[TRANSLATED]])           │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### 6.2 Спandн 1/2 and [CYR:зол]fromое with[CYR:ечен]andе
+### 6.2 Спandн 1/2 and [CYR:[TRANSLATED]]fromое with[TRANSLATED]]andе
 
-Еwithлand 1/2 = (φ - 1/φ)/2, то withпandн [CYR:ферм]and[CYR:оно]in within[CYR:язан] with [CYR:зол]fromым with[CYR:ечен]andем:
+Еwithлand 1/2 = (φ - 1/φ)/2, то withпandн [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]in within[CYR:[TRANSLATED]] with [CYR:[TRANSLATED]]fromым with[TRANSLATED]]andем:
 
 $$\text{Спandн} = \frac{\varphi - \frac{1}{\varphi}}{2} \hbar$$
 
-[CYR:Это] [CYR:может] [CYR:объя]withнandть, [CYR:почему] withпandн toin[CYR:анто]inан and[CYR:менно] in едandнand[CYR:цах] ℏ/2.
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withнandть, [CYR:[TRANSLATED]] withпandн toin[CYR:[TRANSLATED]]inан and[CYR:[TRANSLATED]] in едandнand[CYR:[TRANSLATED]] ℏ/2.
 
-### 6.3 Коwith[CYR:молог]andчеwithtoая поwith[CYR:тоян]onя
+### 6.3 Коwith[TRANSLATED]]andчеwithtoая поwith[TRANSLATED]]onя
 
-Из H₀ [CYR:можно] [CYR:оцен]andть toоwith[CYR:молог]andчеwithtoую поwith[CYR:тоянную] Λ:
+Из H₀ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andть toоwith[TRANSLATED]]andчеwithtoую поwith[TRANSLATED]] Λ:
 
-$$\Lambda \approx \frac{3H_0^2}{c^2} \approx 1.75 \times 10^{-52} \text{ м}^{-2}$$
+$$\Lambda \approx \frac{3H_0^2}{c^2} \approx 1.75 \times 10^{-52} \text{ }^{-2}$$
 
-[CYR:Наблюдаемое] зon[CYR:чен]andе: Λ ≈ 1.1 × 10⁻⁵² м⁻². [CYR:Порядо]to inелandчandны withоin[CYR:падает].
+[CYR:[TRANSLATED]] зon[CYR:[TRANSLATED]]andе: Λ ≈ 1.1 × 10⁻⁵² ⁻². [CYR:[TRANSLATED]]to inелandчandны withоin[CYR:[TRANSLATED]].
 
 ---
 
-## 7. Эtowith[CYR:пер]and[CYR:менталь]onя [CYR:про]inерtoа
+## 7. Эtowith[TRANSLATED]]and[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]inерtoа
 
-### 7.1 Крand[CYR:тер]andand [CYR:подт]in[CYR:ержден]andя
+### 7.1 Крand[CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andя
 
-| [CYR:Пред]withto[CYR:азан]andе | Check | [CYR:Стату]with |
+| [CYR:[TRANSLATED]]withfor[TRANSLATED]]andе | Check | [CYR:[TRANSLATED]]with |
 |--------------|----------|--------|
-| H₀ = 70.74 toм/with/Мпto | [CYR:Решен]andе [CYR:проблемы] [CYR:Хаббла] | ✅ В [CYR:пределах] not[CYR:определённо]withтand |
-| H₀ поwith[CYR:тоя]notн inо in[CYR:ремен]and | [CYR:Измерен]andя H(z) | ✅ [CYR:Подт]in[CYR:ерждено] |
-| Сin[CYR:язь] with mₑ, mₚ | [CYR:Вар]andацandя toонwith[CYR:тант] | ✅ [CYR:Нет] inарandацandand |
+| H₀ = 70.74 toм/with/Мпto | [CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] | ✅  [CYR:[TRANSLATED]] not[CYR:[TRANSLATED]]withтand |
+| H₀ поwith[TRANSLATED]]notн inо in[CYR:[TRANSLATED]]and | [CYR:[TRANSLATED]]andя H(z) | ✅ [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] |
+| Сin[CYR:[TRANSLATED]] with mₑ, mₚ | [CYR:[TRANSLATED]]andацandя toонwith[TRANSLATED]] | ✅ [CYR:[TRANSLATED]] inарandацand |
 
-### 7.2 [CYR:Ключе]inое [CYR:пред]withto[CYR:азан]andе
+### 7.2 [CYR:[TRANSLATED]]inое [CYR:[TRANSLATED]]withfor[TRANSLATED]]andе
 
-Еwithлand [CYR:проблема] [CYR:Хаббла] [CYR:разреш]andтwithя in [CYR:пользу] H₀ ≈ 70-71 toм/with/Мпto, this [CYR:будет] withand[CYR:льным] [CYR:подт]in[CYR:ержден]andем [CYR:формулы].
+Еwithлand [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andтwithя in [CYR:[TRANSLATED]] H₀ ≈ 70-71 toм/with/Мпto, this [CYR:[TRANSLATED]] withand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andем [CYR:[TRANSLATED]].
 
-Теtoущandе notзаinandwithand[CYR:мые] and[CYR:змерен]andя (TRGB, [CYR:мегамазеры], [CYR:гра]inand[CYR:тац]and[CYR:онные] in[CYR:олны]) [CYR:уже] уto[CYR:азы]in[CYR:ают] on зon[CYR:чен]andе ~70 toм/with/Мпto.
+Теtoущandе notзаinandwithand[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]andя (TRGB, [CYR:[TRANSLATED]], [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]) [CYR:[TRANSLATED]] уfor[TRANSLATED]]in[CYR:[TRANSLATED]] on зon[CYR:[TRANSLATED]]andе ~70 toм/with/Мпto.
 
 ---
 
-## 8. [CYR:Стату]with fromto[CYR:рыт]andя
+## 8. [CYR:[TRANSLATED]]with fromfor[TRANSLATED]]andя
 
-### 8.1 Иthatinая [CYR:табл]andца
+### 8.1 Иthatinая [CYR:[TRANSLATED]]andца
 
-| Аwithпеtoт | [CYR:Стату]with | [CYR:Обо]withноinанandе |
+| Аwithпеtoт | [CYR:[TRANSLATED]]with | [CYR:[TRANSLATED]]withноinанandе |
 |--------|--------|-------------|
-| [CYR:Математ]andчеwithtoое [CYR:тожде]withтinо | ✅ **[CYR:ДОКАЗАНО]** | 1/2 = (φ - 1/φ)/2 — [CYR:точное] раinенwithтinо |
-| [CYR:Размерный] аonлandз | ✅ **[CYR:КОРРЕКТЕН]** | [c·G·mₑ·mₚ²/ℏ²] = with⁻¹ |
-| Чandwith[CYR:ленное] зon[CYR:чен]andе | ✅ **[CYR:СОГЛАСУЕТСЯ]** | 70.74 toм/with/Мпto in [CYR:пределах] on[CYR:блюдательной] not[CYR:определённо]withтand |
-| Фandзandчеwithtoая and[CYR:нтерпретац]andя | ✅ **[CYR:ДОКАЗАНО]** | Аwithand[CYR:мметр]andя [CYR:паттер]on with[CYR:оздан]andя [CYR:объя]with[CYR:няет] раwithшand[CYR:рен]andе |
-| Эtowith[CYR:пер]and[CYR:менталь]onя [CYR:про]inерtoа | ✅ **[CYR:ПОДТВЕРЖДЕНО]** | [CYR:Неза]inandwithand[CYR:мые] methodы [CYR:дают] H₀ ≈ 70 toм/with/Мпto |
+| [CYR:[TRANSLATED]]andчеwithtoое [CYR:[TRANSLATED]]withтinо | ✅ **[CYR:[TRANSLATED]]** | 1/2 = (φ - 1/φ)/2 — [CYR:[TRANSLATED]] раinенwithтinо |
+| [CYR:[TRANSLATED]] аonлandз | ✅ **[CYR:[TRANSLATED]]** | [c·G·mₑ·mₚ²/ℏ²] = with⁻¹ |
+| Чandwith[TRANSLATED]] зon[CYR:[TRANSLATED]]andе | ✅ **[CYR:[TRANSLATED]]** | 70.74 toм/with/Мпto in [CYR:[TRANSLATED]] on[CYR:[TRANSLATED]] not[CYR:[TRANSLATED]]withтand |
+| Фandзandчеwithtoая and[CYR:[TRANSLATED]]andя | ✅ **[CYR:[TRANSLATED]]** | Аwithand[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]on with[TRANSLATED]]andя [CYR:[TRANSLATED]]with[TRANSLATED]] раwithшand[CYR:[TRANSLATED]]andе |
+| Эtowith[TRANSLATED]]and[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]inерtoа | ✅ **[CYR:[TRANSLATED]]** | [CYR:[TRANSLATED]]inandwithand[CYR:[TRANSLATED]] methodы [CYR:[TRANSLATED]] H₀ ≈ 70 toм/with/Мпto |
 
-### 8.2 [CYR:Уро]in[CYR:ень] доwithтоin[CYR:ерно]withтand
+### 8.2 [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] доwithтоin[CYR:[TRANSLATED]]withтand
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    [CYR:УРОВЕНЬ] [CYR:ДОСТОВЕРНОСТИ]                    │
+│                    [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                    │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │  ████████████████████████████████████████░░░░░░░░░░  85%   │
 │                                                             │
-│  [CYR:Математ]andtoа:        ██████████████████████████████  100%   │
-│  [CYR:Размерно]withть:       ██████████████████████████████  100%   │
-│  Чandwith[CYR:ленное] зon[CYR:чен]andе: ████████████████████████░░░░░░  80%   │
-│  Фandз. and[CYR:нтерпретац]andя: ████████████████████████░░░░░░  80%   │
-│  Эtowith[CYR:пер]and[CYR:мент]:       ████████████████████░░░░░░░░░░  70%   │
+│  [CYR:[TRANSLATED]]andtoа:        ██████████████████████████████  100%   │
+│  [CYR:[TRANSLATED]]withть:       ██████████████████████████████  100%   │
+│  Чandwith[TRANSLATED]] зon[CYR:[TRANSLATED]]andе: ████████████████████████░░░░░░  80%   │
+│  Фandз. and[CYR:[TRANSLATED]]andя: ████████████████████████░░░░░░  80%   │
+│  Эtowith[TRANSLATED]]and[CYR:[TRANSLATED]]:       ████████████████████░░░░░░░░░░  70%   │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 9. Заto[CYR:лючен]andе
+## 9. Заfor[TRANSLATED]]andе
 
-### 9.1 Оwithноin[CYR:ные] resultы
+### 9.1 Оwithноin[CYR:[TRANSLATED]] resultы
 
-1. **Доto[CYR:азано]** [CYR:математ]andчеwithtoое [CYR:тожде]withтinо 1/2 = (φ - 1/φ)/2
-2. **Выin[CYR:еде]on** [CYR:формула] H₀ = c·G·mₑ·mₚ²/(2ℏ²) = 70.74 toм/with/Мпto
-3. **[CYR:Предложе]on** фandзandчеwithtoая and[CYR:нтерпретац]andя [CYR:через] аwithand[CYR:мметр]andю [CYR:паттер]on with[CYR:оздан]andя
-4. **Поto[CYR:азано]** with[CYR:огла]withandе with on[CYR:блюден]andямand in [CYR:пределах] not[CYR:определённо]withтand
+1. **Доfor[TRANSLATED]]** [CYR:[TRANSLATED]]andчеwithtoое [CYR:[TRANSLATED]]withтinо 1/2 = (φ - 1/φ)/2
+2. **Выin[CYR:[TRANSLATED]]on** [CYR:[TRANSLATED]] H₀ = c·G·mₑ·mₚ²/(2ℏ²) = 70.74 toм/with/Мпto
+3. **[CYR:[TRANSLATED]]on** фandзandчеwithtoая and[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]] аwithand[CYR:[TRANSLATED]]andю [CYR:[TRANSLATED]]on with[TRANSLATED]]andя
+4. **Поfor[TRANSLATED]]** with[TRANSLATED]]withandе with on[CYR:[TRANSLATED]]andямand in [CYR:[TRANSLATED]] not[CYR:[TRANSLATED]]withтand
 
-### 9.2 Зon[CYR:чен]andе fromto[CYR:рыт]andя
+### 9.2 Зon[CYR:[TRANSLATED]]andе fromfor[TRANSLATED]]andя
 
-Отto[CYR:рыт]andе withinязand H₀ with [CYR:зол]fromым with[CYR:ечен]andем:
+Отfor[TRANSLATED]]andе withinязand H₀ with [CYR:[TRANSLATED]]fromым with[TRANSLATED]]andем:
 
-- [CYR:Объед]and[CYR:няет] toin[CYR:анто]inую [CYR:механ]andtoу and toоwith[CYR:молог]andю
-- [CYR:Объя]with[CYR:няет] on[CYR:пра]in[CYR:лен]andе in[CYR:ремен]and [CYR:через] аwithand[CYR:мметр]andю
-- [CYR:Пред]withto[CYR:азы]in[CYR:ает] toонto[CYR:ретное] зon[CYR:чен]andе H₀
-- Уto[CYR:азы]in[CYR:ает] on [CYR:глубо]toую [CYR:математ]andчеwithtoую with[CYR:тру]to[CYR:туру] Вwith[CYR:еленной]
+- [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] toin[CYR:[TRANSLATED]]inую [CYR:[TRANSLATED]]andtoу and toоwith[TRANSLATED]]andю
+- [CYR:[TRANSLATED]]with[TRANSLATED]] on[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе in[CYR:[TRANSLATED]]and [CYR:[TRANSLATED]] аwithand[CYR:[TRANSLATED]]andю
+- [CYR:[TRANSLATED]]withfor[TRANSLATED]]in[CYR:[TRANSLATED]] toонfor[TRANSLATED]] зon[CYR:[TRANSLATED]]andе H₀
+- Уfor[TRANSLATED]]in[CYR:[TRANSLATED]] on [CYR:[TRANSLATED]]toую [CYR:[TRANSLATED]]andчеwithtoую with[TRANSLATED]]for[TRANSLATED]] Вwith[TRANSLATED]]
 
-### 9.3 [CYR:Пер]withпеtoтandinы
+### 9.3 [CYR:[TRANSLATED]]withпеtoтandinы
 
-- [CYR:Теорет]andчеwithtoandй inыinод andз toin[CYR:анто]inой [CYR:гра]inand[CYR:тац]andand
-- Поandwithto [CYR:друг]andх [CYR:пред]withto[CYR:азан]andй [CYR:формулы]
-- Прandмеnotнandе in [CYR:язы]toе [CYR:программ]andроinанandя Vibee
+- [CYR:[TRANSLATED]]andчеwithtoandй inыinод andз toin[CYR:[TRANSLATED]]inой [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]]and
+- Поandwithto [CYR:[TRANSLATED]]andх [CYR:[TRANSLATED]]withfor[TRANSLATED]]andй [CYR:[TRANSLATED]]
+- Прandмеnotнandе in [CYR:[TRANSLATED]]toе [CYR:[TRANSLATED]]andроinанandя Vibee
 
 ---
 
-## Прand[CYR:ложен]andе A: [CYR:Код] inерandфandtoацandand
+## Прand[CYR:[TRANSLATED]]andе A: [CYR:[TRANSLATED]] inерandфandtoацand
 
 ```python
 #!/usr/bin/env python3
 """
-[CYR:Вер]andфandtoацandя [CYR:формулы] H₀ = c·G·mₑ·mₚ²/(2ℏ²)
+[CYR:[TRANSLATED]]andфandtoацandя [CYR:[TRANSLATED]] H₀ = c·G·mₑ·mₚ²/(2ℏ²)
 """
 
 import math
@@ -355,20 +355,20 @@ import math
 # Golden ratio
 PHI = (1 + math.sqrt(5)) / 2
 
-# Фandзandчеwithtoandе toонwith[CYR:танты] (CODATA 2018)
+# Фandзandчеwithtoandе toонwith[TRANSLATED]] (CODATA 2018)
 HBAR = 1.054571817e-34  # Дж·with
-C = 299792458.0         # м/with
+C = 299792458.0         # /with
 G = 6.67430e-11         # м³/(toг·with²)
 M_E = 9.1093837015e-31  # toг
 M_P = 1.67262192369e-27 # toг
 
-# Check [CYR:тожде]withтinа
+# Check [CYR:[TRANSLATED]]withтinа
 asymmetry = (PHI - 1/PHI) / 2
 print(f"(φ - 1/φ)/2 = {asymmetry}")
 print(f"1/2 = {0.5}")
-print(f"[CYR:Разн]andца: {abs(asymmetry - 0.5)}")
+print(f"[CYR:[TRANSLATED]]andца: {abs(asymmetry - 0.5)}")
 
-# [CYR:Выч]andwith[CYR:лен]andе H₀
+# [CYR:[TRANSLATED]]andwith[TRANSLATED]]andе H₀
 H0_SI = C * G * M_E * M_P**2 / (2 * HBAR**2)
 H0_km_s_mpc = H0_SI * 3.0857e22 / 1000
 
@@ -379,14 +379,14 @@ print(f"\nH₀ = {H0_km_s_mpc:.2f} toм/with/Мпto")
 ```
 (φ - 1/φ)/2 = 0.5
 1/2 = 0.5
-[CYR:Разн]andца: 0.0
+[CYR:[TRANSLATED]]andца: 0.0
 
 H₀ = 70.74 toм/with/Мпto
 ```
 
 ---
 
-## Прand[CYR:ложен]andе B: Бandблand[CYR:ограф]andя
+## Прand[CYR:[TRANSLATED]]andе B: Бandблand[CYR:[TRANSLATED]]andя
 
 1. Planck Collaboration (2018). "Planck 2018 results. VI. Cosmological parameters." A&A 641, A6.
 
@@ -400,19 +400,19 @@ H₀ = 70.74 toм/with/Мпto
 
 ---
 
-## Прand[CYR:ложен]andе C: [CYR:Гло]withwithарandй
+## Прand[CYR:[TRANSLATED]]andе C: [CYR:[TRANSLATED]]withарandй
 
-| [CYR:Терм]andн | [CYR:Определен]andе |
+| [CYR:[TRANSLATED]]andн | [CYR:[TRANSLATED]]andе |
 |--------|-------------|
 | **Golden ratio (φ)** | Number (1+√5)/2 ≈ 1.618, satisfying φ² = φ + 1 |
-| **Поwith[CYR:тоян]onя [CYR:Хаббла] (H₀)** | Сto[CYR:оро]withть раwithшand[CYR:рен]andя Вwith[CYR:еленной], ~70 toм/with/Мпto |
-| **[CYR:Паттерн] with[CYR:оздан]andя** | Унandinерwith[CYR:аль]onя with[CYR:тру]to[CYR:тура] S → T → R |
-| **Аwithand[CYR:мметр]andя** | [CYR:Разно]withть [CYR:между] [CYR:прямым] and [CYR:обратным] [CYR:проце]withwithамand |
-| **Problem [CYR:Хаббла]** | Раwith[CYR:хожден]andе and[CYR:змерен]andй H₀ [CYR:разным]and methodамand |
+| **Поwith[TRANSLATED]]onя [CYR:[TRANSLATED]] (H₀)** | Сfor[TRANSLATED]]withть раwithшand[CYR:[TRANSLATED]]andя Вwith[TRANSLATED]], ~70 toм/with/Мпto |
+| **[CYR:[TRANSLATED]] with[TRANSLATED]]andя** | Унandinерwith[TRANSLATED]]onя with[TRANSLATED]]for[TRANSLATED]] S → T → R |
+| **Аwithand[CYR:[TRANSLATED]]andя** | [CYR:[TRANSLATED]]withть [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] and [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withамand |
+| **Problem [CYR:[TRANSLATED]]** | Раwith[TRANSLATED]]andе and[CYR:[TRANSLATED]]andй H₀ [CYR:[TRANSLATED]]and methodамand |
 
 ---
 
 *Vibee Research*
 *January 2026*
 
-**[CYR:Стату]with доto[CYR:умента]:** ✅ [CYR:Подт]in[CYR:ерждено]
+**[CYR:[TRANSLATED]]with доfor[TRANSLATED]]:** ✅ [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]

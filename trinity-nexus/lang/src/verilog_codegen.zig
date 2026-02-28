@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// VERILOG CODEGEN - [EN]not[CYR:[TRANSLATED]] Verilog to[CYR:[TRANSLATED]] and[EN] .vibee with[CYR:[TRANSLATED]]and[EN]andto[EN]and[EN]
+// VERILOG CODEGEN - not Verilog to and .vibee withandtoand
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// [EN]not[EN]and[CYR:[TRANSLATED]] Verilog to[EN] for FPGA withand[CYR:[TRANSLATED]]
-// Ain[CYR:[TRANSLATED]]: Dmitrii Vasilev
+// notand Verilog to for FPGA withand
+// Ain: Dmitrii Vasilev
 // φ² + 1/φ² = 3 | PHOENIX = 999
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -294,7 +294,7 @@ pub const VerilogCodeGen = struct {
         self.builder.deinit();
     }
 
-    /// [EN]not[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]go] Verilog file[EN] and[EN] with[CYR:[TRANSLATED]]and[EN]andto[EN]andand
+    /// notandI [CYR:go] Verilog file and withandtoand
     pub fn generate(self: *Self, spec: *const VibeeSpec) ![]const u8 {
         self.spec = spec;
         try self.writeHeader(spec);

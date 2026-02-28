@@ -10,8 +10,8 @@ module: vsa_benchmark
 # Quantifies ternary VSA advantage vs float32 / binary alternatives.
 # Measures: throughput, latency, memory, recall, convergence.
 #
-# [EN]in[CYR:I[TRANSLATED]]onI [CYR:[TRANSLATED]]: V = n × 3^k × π^m × φ^p × e^q
-# [CYR:[TRANSLATED]I] and[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]with[EN]: φ² + 1/φ² = 3
+# in[CYR:I]onI : V = n × 3^k × π^m × φ^p × e^q
+# [CYR:I] andwith: φ² + 1/φ² = 3
 # ═══════════════════════════════════════════════════════════════════════════════
 
 types:

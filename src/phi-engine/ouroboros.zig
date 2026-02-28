@@ -73,7 +73,7 @@ pub const Uroboros = struct {
 
     pub fn consume(self: *Uroboros, path: []const u8) !void {
         std.debug.print("\n🐍═════════════════════════════════════════🐍\n", .{});
-        std.debug.print("║        [CYR:[EN]] vFINAL: [CYR:[EN]] {d} [CYR:[EN]]            ║\n", .{self.cycle_count});
+        std.debug.print("║         vFINAL:  {d}             ║\n", .{self.cycle_count});
         std.debug.print("🐍═════════════════════════════════════════🐍\n\n", .{});
 
         const content = try std.fs.cwd().readFileAlloc(self.allocator, path, 10 * 1024 * 1024);
@@ -84,15 +84,15 @@ pub const Uroboros = struct {
 
         self.cycle_count += 1;
 
-        std.debug.print("  ✅ [CYR:[EN]]: {s}\n", .{profane.path});
-        std.debug.print("  ✅ [CYR:[EN]]to: {s}\n", .{@tagName(profane.language)});
-        std.debug.print("  ✅ [CYR:[EN]]: {d} [CYR:[EN]]\n", .{profane.content.len});
-        std.debug.print("  ✅ [CYR:[EN]]: ", .{});
+        std.debug.print("  ✅ : {s}\n", .{profane.path});
+        std.debug.print("  ✅ to: {s}\n", .{@tagName(profane.language)});
+        std.debug.print("  ✅ : {d} \n", .{profane.content.len});
+        std.debug.print("  ✅ : ", .{});
         for (profane.hash[0..8]) |b| std.debug.print("{x:0>2}", .{b});
         std.debug.print("\n\n", .{});
 
         std.debug.print("🐍═════════════════════════════════════════🐍\n", .{});
-        std.debug.print("║      [CYR:[EN]] vFINAL: [CYR:[EN]] [CYR:[EN]] - [CYR:[EN]]      ║\n", .{});
+        std.debug.print("║       vFINAL:   -       ║\n", .{});
         std.debug.print("🐍═════════════════════════════════════════🐍\n\n", .{});
     }
 };
@@ -101,13 +101,13 @@ pub fn main() !void {
     const allocator = std.heap.page_allocator;
     var uroboros = Uroboros.init(allocator);
 
-    std.debug.print("\n🔥 [CYR:[EN]] vFINAL: [CYR:[EN]] [CYR:[EN]] 🔥\n", .{});
-    std.debug.print("🐍 [EN] not [EN]and[EN]with[EN] with[CYR:[EN]]and – [EN] [EN] by[EN]yes[EN].\n\n", .{});
+    std.debug.print("\n🔥  vFINAL:   🔥\n", .{});
+    std.debug.print("🐍  not andwith withand –   byyes.\n\n", .{});
 
     try uroboros.consume("src/vibeec/tvc/tvc_ir.zig");
 
-    std.debug.print("\n🎉 [CYR:[EN]] vFINAL [CYR:[EN]] [CYR:[EN]] 🎉\n", .{});
-    std.debug.print("🐍 [CYR:[EN]] to[EN] [EN]and[CYR:[EN]]. [CYR:[EN]] – [EN]andin[EN] in[CYR:[EN]].\n", .{});
+    std.debug.print("\n🎉  vFINAL   🎉\n", .{});
+    std.debug.print("🐍  to and.  – andin in.\n", .{});
 }
 
 test "ouroboros final - sacred constants" {

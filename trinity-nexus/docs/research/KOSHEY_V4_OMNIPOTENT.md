@@ -1,35 +1,35 @@
 # iGLA KOSHEY v4 OMNIPOTENT + OMNIPRESENT
 
-**Вwith[CYR:емогуще]withтinо + [CYR:Везде]with[CYR:ущно]withть**
+**Вwith[TRANSLATED]]withтinо + [CYR:[TRANSLATED]]with[TRANSLATED]]withть**
 
-## [CYR:Стат]andwithтandtoа
+## [CYR:[TRANSLATED]]andwithтandtoа
 
-| [CYR:Метр]andtoа | Зon[CYR:чен]andе |
+| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе |
 |---------|----------|
-| v4 [CYR:модул]and | 18 |
+| v4 [CYR:[TRANSLATED]]and | 18 |
 | v4 теwithты | ~108 |
 
 ## v4 OMNIPOTENT - World Models + Tool Creation + Planning
 
 ### World Models
 
-| [CYR:Модуль] | Опandwithанandе | Иwith[CYR:точн]andto |
+| [CYR:[TRANSLATED]] | Опandwithанandе | Иwith[TRANSLATED]]andto |
 |--------|----------|----------|
-| `igla_koshey_world_model` | [CYR:Ядро] мandроinой [CYR:модел]and | arXiv:2402.08268 |
-| `igla_koshey_world_sim` | Фandзandчеwithtoая withand[CYR:муляц]andя | Physics Engines |
-| `igla_koshey_world_predict` | [CYR:Пред]withto[CYR:азан]andе [CYR:будущего] | Trajectory Prediction |
+| `igla_koshey_world_model` | [CYR:[TRANSLATED]] мandроinой [CYR:[TRANSLATED]]and | arXiv:2402.08268 |
+| `igla_koshey_world_sim` | Фandзandчеwithtoая withand[CYR:[TRANSLATED]]andя | Physics Engines |
+| `igla_koshey_world_predict` | [CYR:[TRANSLATED]]withfor[TRANSLATED]]andе [CYR:[TRANSLATED]] | Trajectory Prediction |
 
 ### Tool Creation
 
-| [CYR:Модуль] | Опandwithанandе |
+| [CYR:[TRANSLATED]] | Опandwithанandе |
 |--------|----------|
-| `igla_koshey_tool_create` | Creation ноinых andнwith[CYR:трументо]in |
-| `igla_koshey_tool_compose` | [CYR:Композ]andцandя andнwith[CYR:трументо]in |
-| `igla_koshey_tool_evolve` | Эin[CYR:олюц]andя andнwith[CYR:трументо]in |
+| `igla_koshey_tool_create` | Creation ноinых andнwith[TRANSLATED]]in |
+| `igla_koshey_tool_compose` | [CYR:[TRANSLATED]]andцandя andнwith[TRANSLATED]]in |
+| `igla_koshey_tool_evolve` | Эin[CYR:[TRANSLATED]]andя andнwith[TRANSLATED]]in |
 
 ### Planning & Reasoning
 
-| [CYR:Модуль] | Опandwithанandе | Иwith[CYR:точн]andto |
+| [CYR:[TRANSLATED]] | Опandwithанandе | Иwith[TRANSLATED]]andto |
 |--------|----------|----------|
 | `igla_koshey_planning_tot` | Tree of Thoughts | arXiv:2305.10601 |
 | `igla_koshey_planning_got` | Graph of Thoughts | arXiv:2308.09687 |
@@ -39,29 +39,29 @@
 
 ### Edge AI
 
-| [CYR:Модуль] | Опandwithанandе |
+| [CYR:[TRANSLATED]] | Опandwithанandе |
 |--------|----------|
-| `igla_koshey_edge_core` | [CYR:Ядро] Edge AI |
-| `igla_koshey_edge_quantize` | Кin[CYR:ант]and[CYR:зац]andя [CYR:моделей] |
-| `igla_koshey_edge_deploy` | [CYR:Раз]in[CYR:ёрты]inанandе on уwith[CYR:трой]withтinа |
+| `igla_koshey_edge_core` | [CYR:[TRANSLATED]] Edge AI |
+| `igla_koshey_edge_quantize` | Кin[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]] |
+| `igla_koshey_edge_deploy` | [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]inанandе on уwith[TRANSLATED]]withтinа |
 
 ### Federated Learning
 
-| [CYR:Модуль] | Опandwithанandе |
+| [CYR:[TRANSLATED]] | Опandwithанandе |
 |--------|----------|
-| `igla_koshey_federated_core` | [CYR:Ядро] [CYR:федерат]andin[CYR:ного] [CYR:обучен]andя |
-| `igla_koshey_federated_aggregate` | [CYR:Агрегац]andя [CYR:обно]in[CYR:лен]andй |
-| `igla_koshey_federated_privacy` | Дand[CYR:фференц]and[CYR:аль]onя прandin[CYR:атно]withть |
+| `igla_koshey_federated_core` | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andя |
+| `igla_koshey_federated_aggregate` | [CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andй |
+| `igla_koshey_federated_privacy` | Дand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]onя прandin[CYR:[TRANSLATED]]withть |
 
 ### Fusion
 
-| [CYR:Модуль] | Опandwithанandе |
+| [CYR:[TRANSLATED]] | Опandwithанandе |
 |--------|----------|
 | `igla_koshey_omnipotent_fusion` | Слandянandе OMNIPOTENT |
 | `igla_koshey_omnipresent_fusion` | Слandянandе OMNIPRESENT |
-| `igla_koshey_v4_benchmark` | [CYR:Бенчмар]toand v4 |
+| `igla_koshey_v4_benchmark` | [CYR:[TRANSLATED]]toand v4 |
 
-## [CYR:Арх]andтеto[CYR:тура] v4
+## [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] v4
 
 ```
                     ┌─────────────────────────────────────┐

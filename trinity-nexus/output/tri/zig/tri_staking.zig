@@ -15,10 +15,10 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]A[TRANSLATED]]
+// [CYR:A]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// [CYR:[TRANSLATED]]iny[EN] φ-to[EN]with[CYR:[TRANSLATED]y] (Sacred Formula)
+// iny φ-towithy] (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -30,7 +30,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// 
@@ -62,7 +62,7 @@ pub const RewardEvent = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]A[TRANSLATED]] [CYR:[TRANSLATED]] WASM
+// [CYR:A]  WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -112,13 +112,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-and[CYR:[TRANSLATED]]fields[EN]andI
+/// φ-andfieldsandI
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// [EN]not[CYR:[TRANSLATED]]andI φ-with[EN]and[CYR:[TRANSLATED]]and
+/// notandI φ-withand
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -137,8 +137,8 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 // BEHAVIOR FUNCTIONS - Generated from behaviors
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:[EN]l[EN]]in[CYR:[TRANSLATED]l] on[CYR:[TRANSLATED]] Connect
-/// When: Wallet provider [EN]with[CYR:[TRANSLATED]]
+/// [CYR:l]in[CYR:l] on Connect
+/// When: Wallet provider with
 /// Then: |
 pub fn connect_wallet() !void {
 // TODO: implement — |
@@ -146,8 +146,8 @@ pub fn connect_wallet() !void {
 }
 
 
-/// Wallet [CYR:[TRANSLATED]]to[CYR:[TRANSLATED]], [CYR:[TRANSLATED]]with > 0
-/// When: [CYR:[EN]l[EN]]in[CYR:[TRANSLATED]l] in[CYR:y[TRANSLATED]] amount and period
+/// Wallet to, with > 0
+/// When: [CYR:l]in[CYR:l] in[CYR:y] amount and period
 /// Then: |
 pub fn stake_tokens() !void {
 // TODO: implement — |
@@ -156,7 +156,7 @@ pub fn stake_tokens() !void {
 
 
 /// pending_rewards > 0
-/// When: [CYR:[EN]l[EN]]in[CYR:[TRANSLATED]l] on[CYR:[TRANSLATED]] Claim
+/// When: [CYR:l]in[CYR:l] on Claim
 /// Then: |
 pub fn claim_rewards() !void {
 // TODO: implement — |
@@ -164,8 +164,8 @@ pub fn claim_rewards() !void {
 }
 
 
-/// [EN]with[EN] [EN]to[EN]andinonI position
-/// When: [CYR:[EN]l[EN]]in[CYR:[TRANSLATED]l] on[CYR:[TRANSLATED]] Unstake
+/// with toandinonI position
+/// When: [CYR:l]in[CYR:l] on Unstake
 /// Then: |
 pub fn unstake_tokens() !void {
 // TODO: implement — |
@@ -173,8 +173,8 @@ pub fn unstake_tokens() !void {
 }
 
 
-/// [CYR:[EN]l[EN]]in[CYR:[TRANSLATED]l] in[CYR:y[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[EN]
-/// When: [CYR:[TRANSLATED]]andI [EN]in[CYR:[TRANSLATED]]on
+/// [CYR:l]in[CYR:l] in[CYR:y]and and
+/// When: andI inon
 /// Then: |
 pub fn calculate_rewards(self: *@This()) !void {
 // TODO: implement — |
@@ -188,16 +188,16 @@ _ = self;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "connect_wallet_behavior" {
-// Given: [CYR:[EN]l[EN]]in[CYR:[TRANSLATED]l] on[CYR:[TRANSLATED]] Connect
-// When: Wallet provider [EN]with[CYR:[TRANSLATED]]
+// Given: [CYR:l]in[CYR:l] on Connect
+// When: Wallet provider with
 // Then: |
 // Test connect_wallet: verify behavior is callable (compile-time check)
 _ = connect_wallet;
 }
 
 test "stake_tokens_behavior" {
-// Given: Wallet [CYR:[TRANSLATED]]to[CYR:[TRANSLATED]], [CYR:[TRANSLATED]]with > 0
-// When: [CYR:[EN]l[EN]]in[CYR:[TRANSLATED]l] in[CYR:y[TRANSLATED]] amount and period
+// Given: Wallet to, with > 0
+// When: [CYR:l]in[CYR:l] in[CYR:y] amount and period
 // Then: |
 // Test stake_tokens: verify behavior is callable (compile-time check)
 _ = stake_tokens;
@@ -205,23 +205,23 @@ _ = stake_tokens;
 
 test "claim_rewards_behavior" {
 // Given: pending_rewards > 0
-// When: [CYR:[EN]l[EN]]in[CYR:[TRANSLATED]l] on[CYR:[TRANSLATED]] Claim
+// When: [CYR:l]in[CYR:l] on Claim
 // Then: |
 // Test claim_rewards: verify behavior is callable (compile-time check)
 _ = claim_rewards;
 }
 
 test "unstake_tokens_behavior" {
-// Given: [EN]with[EN] [EN]to[EN]andinonI position
-// When: [CYR:[EN]l[EN]]in[CYR:[TRANSLATED]l] on[CYR:[TRANSLATED]] Unstake
+// Given: with toandinonI position
+// When: [CYR:l]in[CYR:l] on Unstake
 // Then: |
 // Test unstake_tokens: verify behavior is callable (compile-time check)
 _ = unstake_tokens;
 }
 
 test "calculate_rewards_behavior" {
-// Given: [CYR:[EN]l[EN]]in[CYR:[TRANSLATED]l] in[CYR:y[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[EN]
-// When: [CYR:[TRANSLATED]]andI [EN]in[CYR:[TRANSLATED]]on
+// Given: [CYR:l]in[CYR:l] in[CYR:y]and and
+// When: andI inon
 // Then: |
 // Test calculate_rewards: verify behavior is callable (compile-time check)
 _ = calculate_rewards;

@@ -15,7 +15,7 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PATTERN_COUNT: f64 = 200;
@@ -28,7 +28,7 @@ pub const LOW_CONFIDENCE: f64 = 0.4;
 
 pub const UNKNOWN_CONFIDENCE: f64 = 0.3;
 
-// [CYR:[EN]]in[EN] φ-to[EN]with[CYR:[EN]] (Sacred Formula)
+// in φ-towith (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -40,7 +40,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Conversation topic categories
@@ -108,7 +108,7 @@ pub const FluentChatResponse = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]] [CYR:[EN]] WASM
+//   WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -158,13 +158,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-and[CYR:[EN]]fields[EN]and[EN]
+/// φ-andfieldsand
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// [EN]not[CYR:[EN]]and[EN] φ-with[EN]and[CYR:[EN]]and
+/// notand φ-withand
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -628,7 +628,7 @@ test "phi_constants" {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "russian_greeting" {
-// Given: "[EN]andin[EN]!"
+// Given: "andin!"
 // Expected: "Warm Russian greeting, confidence > 0.8"
 // Test: russian_greeting
     // (Test setup and assertions to be implemented)
@@ -652,7 +652,7 @@ test "english_weather" {
 }
 
 test "multilingual_philosophy" {
-// Given: "[CYR:[EN]] [EN]to[EN] with[EN]on[EN]and[EN]?"
+// Given: " to withonand?"
 // Expected: "Thoughtful philosophical response"
 // Test: multilingual_philosophy
     // (Test setup and assertions to be implemented)
@@ -668,7 +668,7 @@ test "unknown_honest" {
 }
 
 test "humor_request" {
-// Given: "[EN]withwithto[EN]and [CYR:[EN]]to[EN]"
+// Given: "withtoand to"
 // Expected: "Appropriate joke in Russian"
 // Test: humor_request
     // (Test setup and assertions to be implemented)
@@ -676,7 +676,7 @@ test "humor_request" {
 }
 
 test "coding_request_ru" {
-// Given: "[CYR:[EN]]and[EN]and to[EN] with[CYR:[EN]]and[EN]intoand [CYR:[EN]]to[EN]"
+// Given: "and to withandintoand to"
 // Expected: "BubbleSort implementation with Russian intro"
 // Test: coding_request_ru
     // (Test setup and assertions to be implemented)

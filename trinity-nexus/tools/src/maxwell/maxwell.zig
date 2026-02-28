@@ -1,5 +1,5 @@
 // Maxwell Daemon - Main Module
-// Ain[CYR:[TRANSLATED]ny] [CYR:agent]-[CYR:pro[TRANSLATED]]andwith[EN]
+// Ain[CYR:ny] [CYR:agent]-[CYR:pro]andwith
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -29,7 +29,7 @@ pub const MemoryStore = memory_store.MemoryStore;
 // MAXWELL DAEMON
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:[TRANSLATED]ny] demo[EN] Maxwell with inwith[EN]and to[CYR:[TRANSLATED]]not[CYR:[TRANSLATED]]and
+/// [CYR:ny] demo Maxwell with inwithand tonotand
 pub const MaxwellDaemon = struct {
     allocator: std.mem.Allocator,
     config: DaemonConfig,
@@ -63,13 +63,13 @@ pub const MaxwellDaemon = struct {
         self.memory.deinit();
     }
 
-    /// [CYR:[TRANSLATED]]with[EN]and[EN] demoon
+    /// withand demoon
     pub fn start(self: *MaxwellDaemon) !void {
         std.debug.print(
             \\
             \\╔══════════════════════════════════════════════════════════════╗
             \\║                    🧠 MAXWELL DAEMON                         ║
-            \\║              "[CYR:[TRANSLATED]], tofrom[CYR:[EN]y[EN]] with[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] to[EN]"                  ║
+            \\║              ", tofrom[CYR:y] withand to"                  ║
             \\║                                                              ║
             \\║  φ² + 1/φ² = 3 = TRINITY                                    ║
             \\╚══════════════════════════════════════════════════════════════╝
@@ -88,7 +88,7 @@ pub const MaxwellDaemon = struct {
         std.debug.print("[MAXWELL] Daemon started. Waiting for tasks...\n", .{});
     }
 
-    /// [EN]with[CYR:[TRANSLATED]]inand[EN] demoon
+    /// withinand demoon
     pub fn stop(self: *MaxwellDaemon) void {
         std.debug.print("[MAXWELL] Stopping daemon...\n", .{});
 
@@ -100,12 +100,12 @@ pub const MaxwellDaemon = struct {
         std.debug.print("[MAXWELL] Daemon stopped.\n", .{});
     }
 
-    /// [CYR:[EN]law]inand[EN] [CYR:[TRANSLATED]]
+    /// [CYR:law]inand 
     pub fn submitTask(self: *MaxwellDaemon, description: []const u8, task_type: TaskType) !u64 {
         return self.agent.submitTask(description, task_type);
     }
 
-    /// [CYR:[TRANSLATED]]and[EN] with[CYR:[TRANSLATED]]with
+    /// and with
     pub fn getStatus(self: *MaxwellDaemon) Status {
         const agent_state = self.agent.getState();
         const memory_stats = self.memory.getStats();

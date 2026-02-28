@@ -1,6 +1,6 @@
 name: canvas_ui_layout
-# Canvas UI Layout - [EN]andonI system [CYR:[EN]law]in[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]]andon[EN]and [CYR:[TRANSLATED]] Canvas
-# [CYR:[TRANSLATED]y[EN]] [EN]and[EN]with[CYR:[EN]l] = [CYR:[TRANSLATED]ny] process, YogaLayout for [CYR:[TRANSLATED]]andon[EN]
+# Canvas UI Layout - andonI system [CYR:law]inandI andonand  Canvas
+# [CYR:y] andwithl] = [CYR:ny] process, YogaLayout for andon
 
 plugin:
   name: canvas_ui_layout

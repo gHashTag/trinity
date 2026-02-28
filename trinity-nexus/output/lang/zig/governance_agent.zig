@@ -15,7 +15,7 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]A[TRANSLATED]]
+// [CYR:A]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PHI: f64 = 1.618033988749895;
@@ -32,7 +32,7 @@ pub const MIN_FITNESS_IMPROVEMENT: f64 = 1.618;
 
 pub const TRINITY_BALANCE: f64 = 3;
 
-// [CYR:[TRANSLATED]]iny[EN] φ-to[EN]with[CYR:[TRANSLATED]y] (Sacred Formula)
+// iny φ-towithy] (Sacred Formula)
 pub const TRINITY: f64 = 3.0;
 pub const SQRT5: f64 = 2.2360679774997896;
 pub const TAU: f64 = 6.283185307179586;
@@ -41,7 +41,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// 
@@ -169,7 +169,7 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-and[CYR:[TRANSLATED]]fields[EN]andI
+/// φ-andfieldsandI
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;

@@ -1,38 +1,38 @@
-# ☠️ [CYR:ТОКСИЧНЫЙ] [CYR:ВЕРДИКТ]: APPLE GLASSMORPHISM v6
+# ☠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: APPLE GLASSMORPHISM v6
 
-**[CYR:Дата]:** 2025-01-18  
-**[CYR:Ауд]and[CYR:тор]:** Ona AI Agent + PAS Daemons + Researcher  
-**[CYR:Итерац]andя:** 6
-
----
-
-## [CYR:ОБЩАЯ] [CYR:ОЦЕНКА]: 6/10 → 9/10 ✅
-
-**[CYR:Стату]with:** APPLE-STYLE GLASSMORPHISM [CYR:ВНЕДРЁН]
+**[CYR:[TRANSLATED]]:** 2025-01-18  
+**[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]:** Ona AI Agent + PAS Daemons + Researcher  
+**[CYR:[TRANSLATED]]andя:** 6
 
 ---
 
-## 🔍 [CYR:АНАЛИЗ] [CYR:ПРОБЛЕМЫ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: 6/10 → 9/10 ✅
 
-### [CYR:Найдено] 60+ hardcoded паnot[CYR:лей]:
+**[CYR:[TRANSLATED]]with:** APPLE-STYLE GLASSMORPHISM [CYR:[TRANSLATED]]
+
+---
+
+## 🔍 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+
+### [CYR:[TRANSLATED]] 60+ hardcoded паnot[CYR:[TRANSLATED]]:
 
 ```javascript
-// [CYR:БЫЛО] (to[CYR:олхоз]):
+// [CYR:[TRANSLATED]] (for[TRANSLATED]]):
 X.fillStyle='rgba(138,43,226,.1)';
 X.fillRect(30,80,200,180);
 X.strokeStyle='#8a2be2';X.lineWidth=1;X.strokeRect(30,80,200,180);
 X.fillStyle='#8a2be2';X.font='bold 10px monospace';
 ```
 
-### [CYR:Проблемы]:
-1. **Ярtoandе цin[CYR:ета]** - #8a2be2, #0ff, #f0f, #ffd700
-2. **Hardcoded [CYR:поз]andцandand** - (30,80), (W-200,70)
-3. **Inconsistent withтor** - to[CYR:аждая] паnotль withinоя
-4. **[CYR:Нет] glassmorphism** - [CYR:про]withто rgba backgrounds
+### [CYR:[TRANSLATED]]:
+1. **Ярtoandе цin[CYR:[TRANSLATED]]** - #8a2be2, #0ff, #f0f, #ffd700
+2. **Hardcoded [CYR:[TRANSLATED]]andцand** - (30,80), (W-200,70)
+3. **Inconsistent withтor** - for[TRANSLATED]] паnotль withinоя
+4. **[CYR:[TRANSLATED]] glassmorphism** - [CYR:[TRANSLATED]]withто rgba backgrounds
 
 ---
 
-## ✅ [CYR:РЕШЕНИЕ]: LAYOUT.drawPanel()
+## ✅ [CYR:[TRANSLATED]]: LAYOUT.drawPanel()
 
 ### Ноinый Apple-style glassmorphism:
 
@@ -60,9 +60,9 @@ drawPanel: (x, y, w, h, title, alpha = 0.7) => {
 }
 ```
 
-### Цin[CYR:ето]inая [CYR:пал]and[CYR:тра] ([CYR:монохром]):
+### Цin[CYR:[TRANSLATED]]inая [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]):
 
-| [CYR:Элемент] | До | Поwithле |
+| [CYR:[TRANSLATED]] | До | Поwithле |
 |---------|-----|-------|
 | Background | rgba(138,43,226,.1) | rgba(0,0,0,0.7) |
 | Border | #8a2be2 | rgba(255,255,255,0.08) |
@@ -72,9 +72,9 @@ drawPanel: (x, y, w, h, title, alpha = 0.7) => {
 
 ---
 
-## 📊 [CYR:ИСПРАВЛЕННЫЕ] [CYR:ФУНКЦИИ]
+## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-| [CYR:Фун]toцandя | [CYR:Стату]with | [CYR:Изме]notнandя |
+| [CYR:[TRANSLATED]]toцandя | [CYR:[TRANSLATED]]with | [CYR:[TRANSLATED]]notнandя |
 |---------|--------|-----------|
 | drawNeuromorphic | ✅ | LAYOUT.drawPanel + monochrome |
 | drawTrinity | ✅ | LAYOUT.drawPanel + monochrome |
@@ -88,7 +88,7 @@ drawPanel: (x, y, w, h, title, alpha = 0.7) => {
 | drawAllModules | ✅ | LAYOUT.drawTitle |
 | drawTSP | ✅ | LAYOUT.drawTitle |
 
-### Оwithтаinшandеwithя [CYR:фун]toцandand (not toрandтand[CYR:чные]):
+### Оwithтаinшandеwithя [CYR:[TRANSLATED]]toцand (not toрandтand[CYR:[TRANSLATED]]):
 - drawSpintronic
 - drawObfuscation
 - drawTranscendence
@@ -107,18 +107,18 @@ drawPanel: (x, y, w, h, title, alpha = 0.7) => {
 
 ---
 
-## 📈 [CYR:БЕНЧМАРКИ]
+## 📈 [CYR:[TRANSLATED]]
 
-### Вand[CYR:зуаль]onя toонwithandwith[CYR:тентно]withть
+### Вand[CYR:[TRANSLATED]]onя toонwithandwith[TRANSLATED]]withть
 ```
-v1: 12+ [CYR:разных] цin[CYR:ето]in
-v6: 4 from[CYR:тен]toа with[CYR:ерого] ([CYR:монохром])
+v1: 12+ [CYR:[TRANSLATED]] цin[CYR:[TRANSLATED]]in
+v6: 4 from[CYR:[TRANSLATED]]toа with[TRANSLATED]] ([CYR:[TRANSLATED]])
 ```
 
-### Стandль паnot[CYR:лей]
+### Стandль паnot[CYR:[TRANSLATED]]
 ```
-v1: [CYR:Каждая] паnotль унandto[CYR:аль]onя
-v6: Едand[CYR:ный] LAYOUT.drawPanel()
+v1: [CYR:[TRANSLATED]] паnotль унandfor[TRANSLATED]]onя
+v6: Едand[CYR:[TRANSLATED]] LAYOUT.drawPanel()
 ```
 
 ### Apple Design Guidelines
@@ -130,17 +130,17 @@ v6: 85% withоfrominетwithтinandе
   - ✅ Monochrome palette
   - ✅ Subtle borders
   - ✅ Rounded corners (12px)
-  - ⚠️ [CYR:Нет] blur (canvas limitation)
+  - ⚠️ [CYR:[TRANSLATED]] blur (canvas limitation)
 ```
 
 ---
 
-## 🎨 [CYR:ДИЗАЙН] [CYR:СИСТЕМА]
+## 🎨 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ### Typography
 ```css
 font-family: -apple-system, SF Pro Display, sans-serif;
-font-family: SF Mono, Monaco, monospace; /* for to[CYR:ода] */
+font-family: SF Mono, Monaco, monospace; /* for for[TRANSLATED]] */
 ```
 
 ### Colors
@@ -163,42 +163,42 @@ Content start: 36px from top
 
 ---
 
-## [CYR:ТОКСИЧНЫЙ] [CYR:ВЫВОД]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-**[CYR:Пра]inда о with[CYR:таром] дand[CYR:зай]not:**
-1. 60+ паnot[CYR:лей] with [CYR:разным]and withтand[CYR:лям]and
-2. Цin[CYR:ета] toаto on дandwithtofromеtoе 90-х
-3. [CYR:Каждый] [CYR:разраб]fromчandto [CYR:делал] that хfromел
-4. Нandtoаtoой дand[CYR:зайн]-withandwith[CYR:темы]
+**[CYR:[TRANSLATED]]inда  with[TRANSLATED]] дand[CYR:[TRANSLATED]]not:**
+1. 60+ паnot[CYR:[TRANSLATED]] with [CYR:[TRANSLATED]]and withтand[CYR:[TRANSLATED]]and
+2. Цin[CYR:[TRANSLATED]] toаto on дandwithtofromеtoе 90-
+3. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromчandto [CYR:[TRANSLATED]] that хfromел
+4. Нandtoаtoой дand[CYR:[TRANSLATED]]-withandwith[TRANSLATED]]
 
-**[CYR:Что] with[CYR:делано] in v6:**
-1. Едand[CYR:ный] LAYOUT.drawPanel() for inwithех
-2. [CYR:Монохром]onя [CYR:пал]and[CYR:тра] ([CYR:черный]/[CYR:белый])
+**[CYR:[TRANSLATED]] with[TRANSLATED]] in v6:**
+1. Едand[CYR:[TRANSLATED]] LAYOUT.drawPanel() for inwithех
+2. [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]/[CYR:[TRANSLATED]])
 3. Apple-style glassmorphism
 4. SF Pro typography
-5. 11 [CYR:фун]toцandй [CYR:пере]in[CYR:едены] on ноinый withтandль
+5. 11 [CYR:[TRANSLATED]]toцandй [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] on ноinый withтandль
 
-**[CYR:Что] НЕ with[CYR:делано]:**
-1. 15 [CYR:фун]toцandй [CYR:ещё] on with[CYR:таром] withтandле
-2. [CYR:Нет] blur ([CYR:огран]and[CYR:чен]andе canvas)
-3. [CYR:Нет] анand[CYR:мац]andй [CYR:переходо]in
+**[CYR:[TRANSLATED]] НЕ with[TRANSLATED]]:**
+1. 15 [CYR:[TRANSLATED]]toцandй [CYR:[TRANSLATED]] on with[TRANSLATED]] withтandле
+2. [CYR:[TRANSLATED]] blur ([CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andе canvas)
+3. [CYR:[TRANSLATED]] анand[CYR:[TRANSLATED]]andй [CYR:[TRANSLATED]]in
 
-**[CYR:Оцен]toа:** 9/10
-- Дand[CYR:зайн]-withandwith[CYR:тема] with[CYR:озда]on
-- Оwithноin[CYR:ные] эto[CYR:раны] [CYR:переделаны]
-- Вand[CYR:зуально] on [CYR:уро]innot Apple
+**[CYR:[TRANSLATED]]toа:** 9/10
+- Дand[CYR:[TRANSLATED]]-withandwith[TRANSLATED]] with[TRANSLATED]]on
+- Оwithноin[CYR:[TRANSLATED]] эfor[TRANSLATED]] [CYR:[TRANSLATED]]
+- Вand[CYR:[TRANSLATED]] on [CYR:[TRANSLATED]]innot Apple
 
 ---
 
-## [CYR:ДЕПЛОЙ]
+## [CYR:[TRANSLATED]]
 
 **URL:** https://trinity-vibee.fly.dev/
 
-**[CYR:Стату]with:** ✅ [CYR:РАБОТАЕТ]
+**[CYR:[TRANSLATED]]with:** ✅ [CYR:[TRANSLATED]]
 
 ---
 
-## [CYR:ФОРМУЛА] [CYR:ДИЗАЙНА]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
 Apple Design = Minimalism + Consistency + Attention to Detail
@@ -211,4 +211,4 @@ Apple Design = Minimalism + Consistency + Attention to Detail
 
 ---
 
-*[CYR:Верд]andtoт: Из to[CYR:олхозного] дand[CYR:зай]on with[CYR:делал]and Apple-style. 11/26 [CYR:фун]toцandй [CYR:переделаны].*
+*[CYR:[TRANSLATED]]andtoт: Из for[TRANSLATED]] дand[CYR:[TRANSLATED]]on with[TRANSLATED]]and Apple-style. 11/26 [CYR:[TRANSLATED]]toцandй [CYR:[TRANSLATED]].*

@@ -18,7 +18,7 @@ pub const Lang = enum {
     pub fn getPrompt(self: Lang) []const u8 {
         return switch (self) {
             .EN => "vibee repl> ",
-            .RU => "vibee [CYR:[EN]]> ",
+            .RU => "vibee > ",
             .TH => "vibee เรพล> ",
         };
     }
@@ -26,7 +26,7 @@ pub const Lang = enum {
     pub fn getWelcome(self: Lang) []const u8 {
         return switch (self) {
             .EN => "Welcome to Trinity REPL - Eighth Life: Competitive Agent",
-            .RU => "[CYR:[EN]] by[CYR:[EN]]in[CYR:[EN]] in Trinity REPL - [EN]with[CYR:[EN]] [EN]and[CYR:[EN]]: [CYR:[EN]]to[CYR:[EN]] Agent",
+            .RU => " byin in Trinity REPL - with and: to Agent",
             .TH => "ยินดีต้อนรับสู่ Trinity REPL - ชีวิตที่แปด: ตัวแทนแข่งขัน",
         };
     }
@@ -330,9 +330,9 @@ pub const CompetitiveRepl = struct {
         try writer.print("  lang en|ru|th - Switch language\n", .{});
         try writer.print("  exit        - Exit REPL\n", .{});
         try writer.print("\n📝 Examples:\n", .{});
-        try writer.print("  [CYR:[EN]]with[EN]and and[CYR:[EN]]with on Mistral-7B and [EN]with[CYR:[EN]]to[EN] earnings\n", .{});
-        try writer.print("  [CYR:[EN]]and[EN]and[EN]and[CYR:[EN]] inference for Qwen2.5-Coder-7B by[EN] 8-core CPU\n", .{});
-        try writer.print("  [EN]towithand[EN]and[EN]and[CYR:[EN]] earnings on [CYR:[EN]] node in Ko Samui\n", .{});
+        try writer.print("  withand andwith on Mistral-7B and withto earnings\n", .{});
+        try writer.print("  andand inference for Qwen2.5-Coder-7B by 8-core CPU\n", .{});
+        try writer.print("  towithandand earnings on  node in Ko Samui\n", .{});
         try writer.print("\n", .{});
     }
 
@@ -367,7 +367,7 @@ pub const CompetitiveRepl = struct {
             try writer.print("Language set to English\n", .{});
         } else if (std.mem.eql(u8, lang_str, "ru")) {
             self.lang = .RU;
-            try writer.print("[CYR:[EN]]to [EN]with[CYR:[EN]]in[CYR:[EN]] on [EN]withwithtoand[EN]\n", .{});
+            try writer.print("to within on withtoand\n", .{});
         } else if (std.mem.eql(u8, lang_str, "th")) {
             self.lang = .TH;
             try writer.print("ตั้งค่าภาษาเป็นไทย\n", .{});

@@ -1317,7 +1317,7 @@ pub const VM = struct {
             },
 
             // ═══════════════════════════════════════════════════════════════
-            // TERNARY/TRIT OPERATIONS - [CYR:[EN]] [CYR:[EN]]!
+            // TERNARY/TRIT OPERATIONS -  !
             // ═══════════════════════════════════════════════════════════════
 
             .PUSH_TRIT => {
@@ -1982,7 +1982,7 @@ fn nativePrint(vm: *VM, args: []const Value) VMError!Value {
             .closure_val => |v| std.debug.print("<closure@{d}>", .{v.func_addr}),
             .tryte_array_val => |v| std.debug.print("<tryte_array[{d}]>", .{v.len}),
             .trit_val => |v| {
-                // [CYR:[EN]]and[CYR:[EN]] withand[EN]in[CYR:[EN]]: △=T, ▽=F, ?=U
+                // and withandin: △=T, ▽=F, ?=U
                 const symbol: []const u8 = if (v > 0) "△" else if (v < 0) "▽" else "?";
                 std.debug.print("{s}", .{symbol});
             },
@@ -2665,7 +2665,7 @@ fn nativeTryteArrayFill(_: *VM, args: []const Value) VMError!Value {
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SACRED MATH NATIVE FUNCTIONS
-// φ² + 1/φ² = 3 = [CYR:[EN]] = TRINITY
+// φ² + 1/φ² = 3 =  = TRINITY
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn nativeLucas(_: *VM, args: []const Value) VMError!Value {

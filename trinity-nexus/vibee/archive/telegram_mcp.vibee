@@ -1,9 +1,9 @@
 # telegram_mcp.vibee
-# Telegram MCP Plugin on [CYR:language[EN]] VIBEE
-# [CYR:[TRANSLATED]]or[CYR:[TRANSLATED]]withI in Gleam/Erlang [CYR:[TRANSLATED]] vibeec
+# Telegram MCP Plugin on [CYR:language] VIBEE
+# orwithI in Gleam/Erlang  vibeec
 
 # ==============================================================================
-# [CYR:[TRANSLATED]A[EN]A[TRANSLATED]] [CYR:[EN]A[TRANSLATED]A]
+# [CYR:AA] [CYR:AA]
 # ==============================================================================
 
 plugin:
@@ -15,7 +15,7 @@ plugin:
   license: MIT
 
 # ==============================================================================
-# [CYR:[TRANSLATED]]
+# 
 # ==============================================================================
 
 imports:
@@ -30,7 +30,7 @@ imports:
     import: [Tool, ToolResult, ToolError]
 
 # ==============================================================================
-# [CYR:[TRANSLATED]]
+# 
 # ==============================================================================
 
 types:
@@ -108,11 +108,11 @@ types:
         type: Option(DateTime)
 
 # ==============================================================================
-# [CYR:[TRANSLATED]]
+# 
 # ==============================================================================
 
 functions:
-  # [EN]andwith[EN] [EN]and[CYR:[TRANSLATED]go]in
+  # andwith and[CYR:go]in
   - name: list_dialogs
     visibility: public
     async: true
@@ -131,14 +131,14 @@ functions:
     returns: Result(List(Dialog), Error)
     
     implementation:
-      # [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI
+      # andI
       - guard: limit is None or limit > 0
         else: return Error("Limit must be positive")
       
-      # [CYR:Vy[EN]]in Telegram API
+      # [CYR:Vy]in Telegram API
       - await: telegram_api.get_dialogs(limit, filter)
       
-      # [CYR:[EN]work[TRANSLATED]] result[EN]
+      # [CYR:work] result
       - case: result
         of:
           - pattern: Ok(dialogs)
@@ -149,9 +149,9 @@ functions:
     properties:
       idempotent: true
       memoize: true
-      cache_ttl: 300  # 5 [EN]and[CYR:[TRANSLATED]]
+      cache_ttl: 300  # 5 and
   
-  # [CYR:[TRANSLATED]]and[EN] with[CYR:[TRANSLATED]]andI from [EN]and[CYR:[TRANSLATED]]
+  # and withandI from and
   - name: get_dialog_messages
     visibility: public
     async: true
@@ -175,14 +175,14 @@ functions:
     returns: Result(List(Message), Error)
     
     implementation:
-      # [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI
+      # andI
       - guard: dialog_id != 0
         else: return Error("Invalid dialog_id")
       
-      # [CYR:[TRANSLATED]]and[EN] with[CYR:[TRANSLATED]]andI
+      # and withandI
       - await: telegram_api.get_history(dialog_id, limit)
       
-      # [EN]and[CYR:me]and[EN] [EN]and[CYR:l[EN]]
+      # and[CYR:me]and and[CYR:l]
       - if: filter is Some(f)
         then:
           - let: filtered = messages |> filter_messages(f)
@@ -193,7 +193,7 @@ functions:
     properties:
       idempotent: true
   
-  # [EN]andwith[EN] with[CYR:[TRANSLATED]]and[EN]
+  # andwith withand
   - name: search_messages
     visibility: public
     async: true
@@ -218,20 +218,20 @@ functions:
     returns: Result(List(Message), Error)
     
     implementation:
-      # [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI
+      # andI
       - guard: query is not empty
         else: return Error("Query cannot be empty")
       
-      # [EN]andwith[EN]
+      # andwith
       - await: telegram_api.search_global(query, dialog_id, limit)
       
-      # [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] result[EN]
+      # in result
       - return: result
     
     properties:
       idempotent: true
   
-  # [CYR:[EN]law]inand[EN] with[CYR:[TRANSLATED]]and[EN]
+  # [CYR:law]inand withand
   - name: send_message
     visibility: public
     async: true
@@ -250,7 +250,7 @@ functions:
     returns: Result(Message, Error)
     
     implementation:
-      # [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI
+      # andI
       - guard: chat_id != 0
         else: return Error("Invalid chat_id")
       
@@ -260,10 +260,10 @@ functions:
       - guard: text.length <= 4096
         else: return Error("Text too long (max 4096 chars)")
       
-      # [CYR:[EN]law]in[EN]
+      # [CYR:law]in
       - await: telegram_api.send_message(chat_id, text)
       
-      # [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] result[EN]
+      # in result
       - case: result
         of:
           - pattern: Ok(message)
@@ -274,7 +274,7 @@ functions:
     properties:
       idempotent: false
   
-  # [CYR:Vy[TRANSLATED]]and[EN] MCP tool
+  # [CYR:Vy]and MCP tool
   - name: execute_tool
     visibility: public
     async: true
@@ -285,7 +285,7 @@ functions:
     returns: Result(ToolResult, ToolError)
     
     implementation:
-      # [EN]andwith[CYR:[TRANSLATED]]from[EN]andI [EN] type[EN] tool
+      # andwithfromandI  type tool
       - case: tool
         of:
           - pattern: ListDialogs(limit, filter)
@@ -311,7 +311,7 @@ functions:
     properties:
       idempotent: false
   
-  # [EN]with[CYR:[TRANSLATED]l]onI function: [EN]and[CYR:l[TRANSLATED]]andI with[CYR:[TRANSLATED]]and[EN]
+  # withl]onI function: and[CYR:l]andI withand
   - name: filter_messages
     visibility: private
     params:
@@ -325,17 +325,17 @@ functions:
     implementation:
       - let: filtered = messages
       
-      # [EN]and[CYR:l[EN]] [EN] [CYR:[EN]law]inand[CYR:[TRANSLATED]]
+      # and[CYR:l]  [CYR:law]inand
       - if: filter.from_user is Some(user_id)
         then:
           - let: filtered = filtered |> filter(m => m.from.id == user_id)
       
-      # [EN]and[CYR:l[EN]] [EN] [CYR:[TRANSLATED]]and[EN]
+      # and[CYR:l]  and
       - if: filter.has_media is Some(has_media)
         then:
           - let: filtered = filtered |> filter(m => m.has_media == has_media)
       
-      # [EN]and[CYR:l[EN]] [EN] [CYR:[TRANSLATED]]
+      # and[CYR:l]  
       - if: filter.date_from is Some(date)
         then:
           - let: filtered = filtered |> filter(m => m.date >= date)
@@ -346,7 +346,7 @@ functions:
       
       - return: filtered
   
-  # [EN]with[CYR:[TRANSLATED]l]onI function: [CYR:[TRANSLATED]] result[EN]
+  # withl]onI function:  result
   - name: wrap_result
     visibility: private
     params:
@@ -364,11 +364,11 @@ functions:
             return: Error(ToolError { message: e })
 
 # ==============================================================================
-# [CYR:[TRANSLATED]] (Given-When-Then)
+#  (Given-When-Then)
 # ==============================================================================
 
 behaviors:
-  # [EN]in[CYR:[TRANSLATED]]and[EN]: list [EN]and[CYR:[TRANSLATED]go]in
+  # inand: list and[CYR:go]in
   - name: list_dialogs_behavior
     given: |
       - User is authenticated with Telegram
@@ -405,7 +405,7 @@ behaviors:
     
     implements: [list_dialogs]
   
-  # [EN]in[CYR:[TRANSLATED]]and[EN]: [CYR:[EN]law]in[EN] with[CYR:[TRANSLATED]]andI
+  # inand: [CYR:law]in withandI
   - name: send_message_behavior
     given: |
       - User is authenticated
@@ -450,7 +450,7 @@ behaviors:
     
     implements: [send_message]
   
-  # [EN]in[CYR:[TRANSLATED]]and[EN]: [EN]andwith[EN] with[CYR:[TRANSLATED]]and[EN]
+  # inand: andwith withand
   - name: search_messages_behavior
     given: |
       - User is authenticated
@@ -489,11 +489,11 @@ behaviors:
     implements: [search_messages]
 
 # ==============================================================================
-# [CYR:[TRANSLATED]]
+# 
 # ==============================================================================
 
 tests:
-  # [EN]with[EN]: list [EN]and[CYR:[TRANSLATED]go]in
+  # with: list and[CYR:go]in
   - name: test_list_dialogs
     type: unit
     
@@ -518,7 +518,7 @@ tests:
     teardown:
       - cleanup: mocks
   
-  # [EN]with[EN]: list [EN]and[CYR:[TRANSLATED]go]in with [EN]and[CYR:l[TRANSLATED]]
+  # with: list and[CYR:go]in with and[CYR:l]
   - name: test_list_dialogs_with_filter
     type: unit
     
@@ -538,7 +538,7 @@ tests:
       - result.dialogs.length == 1
       - result.dialogs[0].unread > 0
   
-  # [EN]with[EN]: [CYR:[EN]law]in[EN] with[CYR:[TRANSLATED]]andI
+  # with: [CYR:law]in withandI
   - name: test_send_message
     type: unit
     
@@ -558,7 +558,7 @@ tests:
       - result.message.text == "Test"
       - telegram_api.send_message was called once
   
-  # [EN]with[EN]: [CYR:[EN]law]in[EN] [EN]withthat with[CYR:[TRANSLATED]]andI
+  # with: [CYR:law]in withthat withandI
   - name: test_send_message_empty_text
     type: unit
     
@@ -572,7 +572,7 @@ tests:
       - result is Error
       - result.error contains "cannot be empty"
   
-  # [EN]with[EN]: [CYR:[EN]law]in[EN] with notin[EN]and[CYR:[EN]y[EN]] chat_id
+  # with: [CYR:law]in with notinand[CYR:y] chat_id
   - name: test_send_message_invalid_chat_id
     type: unit
     
@@ -586,7 +586,7 @@ tests:
       - result is Error
       - result.error contains "Invalid chat_id"
   
-  # [EN]with[EN]: [EN]andwith[EN] with[CYR:[TRANSLATED]]and[EN]
+  # with: andwith withand
   - name: test_search_messages
     type: unit
     
@@ -608,7 +608,7 @@ tests:
       - result.messages.length == 2
       - all messages contain "hello"
   
-  # Property-based test: list_dialogs inwith[CYR:[TRANSLATED]] in[EN]in[CYR:[TRANSLATED]acts] <= limit
+  # Property-based test: list_dialogs inwith inin[CYR:acts] <= limit
   - name: test_list_dialogs_respects_limit
     type: property
     
@@ -616,7 +616,7 @@ tests:
     
     setup:
       - mock: telegram_api.get_dialogs
-        returns: generate_dialogs(limit * 2)  # [CYR:[EN]l[EN]] [CYR:[TRANSLATED]] limit
+        returns: generate_dialogs(limit * 2)  # [CYR:l]  limit
     
     when:
       call: list_dialogs
@@ -629,7 +629,7 @@ tests:
       - result.dialogs.length <= limit
 
 # ==============================================================================
-# [CYR:[TRANSLATED]A[TRANSLATED]]
+# [CYR:A]
 # ==============================================================================
 
 config:
@@ -657,7 +657,7 @@ config:
     cache_size_mb: 64
 
 # ==============================================================================
-# [CYR:[TRANSLATED]]
+# 
 # ==============================================================================
 
 exports:
@@ -675,7 +675,7 @@ exports:
     - execute_tool
 
 # ==============================================================================
-# [CYR:[TRANSLATED]A[TRANSLATED]]
+# [CYR:A]
 # ==============================================================================
 
 documentation:
@@ -717,7 +717,7 @@ documentation:
         }
 
 # ==============================================================================
-# [CYR:[TRANSLATED]A[EN]A[TRANSLATED]]
+# [CYR:AA]
 # ==============================================================================
 
 metadata:

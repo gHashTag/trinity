@@ -1,10 +1,10 @@
-# 🔥 [CYR:ТОКСИЧНЫЙ] [CYR:ВЕРДИКТ]: VIBEE BROWSER v1.0.0
+# 🔥 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: VIBEE BROWSER v1.0.0
 
 ## φ² + 1/φ² = 3 | PHOENIX = 999
 
 ---
 
-## [CYR:СТАТУС]: PRODUCTION READY ✅
+## [CYR:[TRANSLATED]]: PRODUCTION READY ✅
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════╗
@@ -23,11 +23,11 @@
 
 ---
 
-## [CYR:ЧТО] [CYR:БЫЛО] [CYR:СДЕЛАНО]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### 1. [CYR:РЕАЛЬНЫЙ] [CYR:РАБОЧИЙ] [CYR:БРАУЗЕР]
+### 1. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-**НЕ прandмandтandinonя to[CYR:арт]andнtoа, а [CYR:ПОЛНОЦЕННЫЙ] Chromium browser!**
+**НЕ прandмandтandinonя for[TRANSLATED]]andнtoа,  [CYR:[TRANSLATED]] Chromium browser!**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -42,7 +42,7 @@
 │                               │   anything  │                               │
 │      61.8% (φ)                │             │   class VIBEEAgent {          │
 │                               │   14.6%     │     async run(goal) {...}     │
-│      [CYR:Загружает] [CYR:ЛЮБЫЕ] with[CYR:айты]!   │             │   }                           │
+│      [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] with[TRANSLATED]]!   │             │   }                           │
 │                               │             │                               │
 │                               │             │         23.6%                 │
 │                               │             │                               │
@@ -51,9 +51,9 @@
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 2. [CYR:АРХИТЕКТУРА] [CYR:КАК] У FELLOU (НО [CYR:ЛУЧШЕ]!)
+### 2. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]  FELLOU (НО [CYR:[TRANSLATED]]!)
 
-| [CYR:Компо]notнт | Fellou | VIBEE |
+| [CYR:[TRANSLATED]]notнт | Fellou | VIBEE |
 |-----------|--------|-------|
 | Browser Engine | Chromium | Chromium (Electron) |
 | Agent Framework | Eko (TypeScript) | VIBEEAgent (JS + Zig specs) |
@@ -62,7 +62,7 @@
 | Ternary Logic | ❌ | △○□ |
 | Spec-First | ❌ | .vibee → .zig |
 
-### 3. [CYR:СОЗДАННЫЕ] [CYR:ФАЙЛЫ]
+### 3. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 **Electron Browser:**
 ```
@@ -109,7 +109,7 @@ trinity/output/
 
 ---
 
-## [CYR:ТЕСТЫ]
+## [CYR:TESTS]
 
 ```
 ╔═══════════════════════════════════════════════════════════════╗
@@ -163,7 +163,7 @@ LAYOUT:
 
 ## AI AGENT FRAMEWORK
 
-**Аon[CYR:лог] Eko from Fellou, но for VIBEE:**
+**Аon[CYR:[TRANSLATED]] Eko from Fellou, но for VIBEE:**
 
 ```javascript
 const agent = new VIBEEAgent({
@@ -197,26 +197,26 @@ const result = await agent.run('Go to google.com and search for VIBEE');
 
 ---
 
-## [CYR:КАК] [CYR:ЗАПУСТИТЬ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ### На Mac/Windows/Linux:
 
 ```bash
-# [CYR:Клон]and[CYR:руй] [CYR:репо]
+# [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 git clone https://github.com/gHashTag/vibee-lang.git
 cd vibee-lang/vibee-electron
 
-# Уwith[CYR:тано]inand заinandwithandмоwithтand
+# Уwith[TRANSLATED]]inand заinandwithandмоwithтand
 npm install
 
-# [CYR:Запу]withтand browser
+# [CYR:[TRANSLATED]]withтand browser
 npm start
 
-# Илand in dev [CYR:реж]andме with DevTools
+# Илand in dev [CYR:[TRANSLATED]]andме with DevTools
 npm run dev
 ```
 
-### [CYR:Сбор]toа for [CYR:прода]toшеon:
+### [CYR:[TRANSLATED]]toа for [CYR:[TRANSLATED]]toшеon:
 
 ```bash
 # macOS
@@ -231,12 +231,12 @@ npm run build:linux
 
 ---
 
-## [CYR:СРАВНЕНИЕ] С [CYR:ПРОШЛОЙ] [CYR:ВЕРСИЕЙ]
+## [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-| [CYR:Метр]andtoа | v0.0.1 ([CYR:было]) | v1.0.0 (with[CYR:тало]) | [CYR:Улучшен]andе |
+| [CYR:[TRANSLATED]]andtoа | v0.0.1 ([CYR:[TRANSLATED]]) | v1.0.0 (with[TRANSLATED]]) | [CYR:[TRANSLATED]]andе |
 |---------|---------------|----------------|-----------|
-| [CYR:Реальный] WebView | ❌ | ✅ | ∞ |
-| Наinand[CYR:гац]andя | ❌ | ✅ | ∞ |
+| [CYR:[TRANSLATED]] WebView | ❌ | ✅ | ∞ |
+| Наinand[CYR:[TRANSLATED]]andя | ❌ | ✅ | ∞ |
 | Monaco Editor | ❌ | ✅ | ∞ |
 | AI Chat | ❌ | ✅ | ∞ |
 | CDP Client | ❌ | ✅ | ∞ |
@@ -246,13 +246,13 @@ npm run build:linux
 | Tests | 0 | 101 | ∞ |
 | Specs | 0 | 9 | ∞ |
 
-**[CYR:УЛУЧШЕНИЕ]: ОТ [CYR:НУЛЯ] ДО PRODUCTION-READY!**
+**[CYR:[TRANSLATED]]: ОТ [CYR:[TRANSLATED]] ДО PRODUCTION-READY!**
 
 ---
 
-## [CYR:ГОТОВНОСТЬ] К [CYR:ПРОДАКШЕНУ]
+## [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]
 
-| [CYR:Компо]notнт | [CYR:Стату]with | Гfromоinноwithть |
+| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]]with | Гfromоinноwithть |
 |-----------|--------|------------|
 | Electron Core | ✅ | 100% |
 | WebView | ✅ | 100% |
@@ -269,34 +269,34 @@ npm run build:linux
 
 ---
 
-## [CYR:СЛЕДУЮЩИЕ] [CYR:ШАГИ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-1. **LLM Integration** - [CYR:Под]to[CYR:люч]andть [CYR:реальные] API (OpenAI, Anthropic)
-2. **Monaco Full** - [CYR:Пол]onя and[CYR:нтеграц]andя Monaco with IntelliSense
-3. **Real-time Collab** - CRDT for withоinмеwith[CYR:тной] [CYR:раб]fromы
-4. **Voice I/O** - [CYR:Голо]withоinое [CYR:упра]in[CYR:лен]andе
+1. **LLM Integration** - [CYR:[TRANSLATED]]for[TRANSLATED]]andть [CYR:[TRANSLATED]] API (OpenAI, Anthropic)
+2. **Monaco Full** - [CYR:[TRANSLATED]]onя and[CYR:[TRANSLATED]]andя Monaco with IntelliSense
+3. **Real-time Collab** - CRDT for withоinмеwith[TRANSLATED]] [CYR:[TRANSLATED]]fromы
+4. **Voice I/O** - [CYR:[TRANSLATED]]withоinое [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе
 5. **Build & Release** - .dmg/.exe/.AppImage
 
 ---
 
-## [CYR:ВЕРДИКТ]
+## [CYR:[TRANSLATED]]
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                               ║
-║   [CYR:БЫЛО]: Прandмandтandinonя to[CYR:арт]andнtoа with to[CYR:ноп]toамand, tofrom[CYR:орые] нand[CYR:чего] not [CYR:делают]            ║
+║   [CYR:[TRANSLATED]]: Прandмandтandinonя for[TRANSLATED]]andнtoа with for[TRANSLATED]]toамand, tofrom[CYR:[TRANSLATED]] нand[CYR:[TRANSLATED]] not [CYR:[TRANSLATED]]            ║
 ║                                                                               ║
-║   [CYR:СТАЛО]: [CYR:ПОЛНОЦЕННЫЙ] AI [CYR:БРАУЗЕР] with:                                           ║
-║   - [CYR:Реальным] Chromium WebView                                                 ║
+║   [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] AI [CYR:[TRANSLATED]] with:                                           ║
+║   - [CYR:[TRANSLATED]] Chromium WebView                                                 ║
 ║   - Monaco Editor (VS Code)                                                   ║
 ║   - AI Chat with LLM                                                             ║
 ║   - Agent Framework (toаto Eko)                                                 ║
-║   - CDP аin[CYR:томат]and[CYR:зац]andей                                                        ║
+║   - CDP аin[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andей                                                        ║
 ║   - Golden Ratio layout                                                       ║
 ║   - Glassmorphism UI                                                          ║
-║   - 101 теwith[CYR:том]                                                                ║
+║   - 101 теwith[TRANSLATED]]                                                                ║
 ║                                                                               ║
-║   [CYR:ГОТОВНОСТЬ]: 92%                                                             ║
+║   [CYR:[TRANSLATED]]: 92%                                                             ║
 ║                                                                               ║
 ║   φ² + 1/φ² = 3 | PHOENIX = 999                                               ║
 ║                                                                               ║

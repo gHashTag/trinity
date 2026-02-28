@@ -1,5 +1,5 @@
 // BPE TOKENIZER - Byte Pair Encoding for Qwen2.5-Coder
-// [CYR:[EN]]to[EN] tokenizer.json and encode/decode [EN]towith[EN]
+// to tokenizer.json and encode/decode towith
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");

@@ -1,12 +1,12 @@
-//! Ternary RL Agent - Reinforcement Learning with [EN]and[CYR:[EN]]dimensionaland in[EN]andwith[CYR:[EN]]and[EN]and
+//! Ternary RL Agent - Reinforcement Learning with anddimensionaland inandwithand
 //!
-//! [EN]with[CYR:[EN]]and[EN] and [CYR:[EN]]with[EN]inand[EN] [CYR:[EN]]with[EN]in[CYR:[EN]] how [CYR:[EN]]and[CYR:[EN]] [EN]and[CYR:[EN]]in[EN]to[CYR:[EN]].
-//! [CYR:[EN]] TD-learning with [CYR:[EN]]and[CYR:[EN]] toin[CYR:[EN]]and[CYR:[EN]]and[EN].
+//! withand and withinand within how and andinto.
+//!  TD-learning with and toinand.
 //!
-//! [CYR:[EN]]on[EN] [CYR:base]:
-//! - HDC for RL: [EN]and[EN]in[CYR:[EN]] [CYR:[EN]]with[EN]in[CYR:[EN]]and[EN] with[EN]with[CYR:[EN]]and[EN]/[CYR:[EN]]with[EN]inand[EN]
+//! on [CYR:base]:
+//! - HDC for RL: andin withinand withand/withinand
 //! - TD-Learning: Sutton & Barto temporal difference
-//! - Ternary Efficiency: BitNet-style compression in[EN]with[EN]in
+//! - Ternary Efficiency: BitNet-style compression inwithin
 //!
 //! φ² + 1/φ² = 3 | TRINITY
 
@@ -31,7 +31,7 @@ pub const DEFAULT_EPSILON_DECAY: f64 = 0.995;
 // TYPES
 // ═══════════════════════════════════════════════════════════════
 
-/// [CYR:[EN]]and[CYR:[EN]]and[EN] agent[EN]
+/// and agent
 pub const AgentConfig = struct {
     state_dim: usize = DEFAULT_STATE_DIM,
     num_actions: usize = 4,
@@ -42,14 +42,14 @@ pub const AgentConfig = struct {
     epsilon_decay: f64 = DEFAULT_EPSILON_DECAY,
 };
 
-/// [CYR:[EN]]with[EN]inand[EN]
+/// withinand
 pub const Action = struct {
     id: usize,
     vector: []Trit,
     name: []const u8,
 };
 
-/// [CYR:[EN]]and[EN]on[EN] Q-function for to[EN]before[EN] with[EN]with[CYR:[EN]]and[EN]-[CYR:[EN]]with[EN]inand[EN]
+/// andon Q-function for tobefore withand-withinand
 pub const QTable = struct {
     values: []f64,
     num_states: usize,
@@ -109,7 +109,7 @@ pub const QTable = struct {
     }
 };
 
-/// [CYR:[EN]]andtoand [CYR:[EN]]and[EN]
+/// andtoand and
 pub const TrainingMetrics = struct {
     episode_count: u64,
     total_steps: u64,
@@ -132,7 +132,7 @@ pub const RLAgent = struct {
     rng: std.Random.DefaultPrng,
 
     pub fn init(allocator: std.mem.Allocator, config: AgentConfig) !RLAgent {
-        // [CYR:[EN]]yes[EN] seed-in[EN]to[CYR:[EN]] for [CYR:[EN]]with[EN]inand[EN] ([EN]thaton[CYR:[EN]])
+        // yes seed-into for withinand (thaton)
         const action_seeds = try allocator.alloc(HyperVector, config.num_actions);
         for (action_seeds, 0..) |*seed, i| {
             seed.* = try hdc.randomVector(allocator, config.state_dim, @as(u64, i) * 12345 + 1);
@@ -165,7 +165,7 @@ pub const RLAgent = struct {
         self.episode_rewards.deinit();
     }
 
-    /// [EN]and[EN]and[EN]and[EN]and[EN]in[CYR:[EN]] Q-[CYR:[EN]]and[EN] for [EN]yes[CYR:[EN]] [EN]andwith[EN] with[EN]with[CYR:[EN]]and[EN]
+    /// andandin Q-and for yes andwith withand
     pub fn initQTable(self: *RLAgent, num_states: usize) !void {
         if (self.q_table) |*qt| {
             qt.deinit();
@@ -173,7 +173,7 @@ pub const RLAgent = struct {
         self.q_table = try QTable.init(self.allocator, num_states, self.config.num_actions);
     }
 
-    /// [CYR:[EN]]andwith[EN]and[EN] Q(s, a) - [CYR:[EN]]and[EN]on[EN] version
+    /// andwithand Q(s, a) - andon version
     pub fn computeQValue(self: *const RLAgent, state_id: usize, action_id: usize) f64 {
         if (self.q_table) |qt| {
             return qt.get(state_id, action_id);
@@ -181,7 +181,7 @@ pub const RLAgent = struct {
         return 0;
     }
 
-    /// [CYR:[EN]] better[EN] [CYR:[EN]]with[EN]inand[EN] (greedy)
+    ///  better withinand (greedy)
     pub fn selectActionGreedy(self: *const RLAgent, state_id: usize) usize {
         if (self.q_table) |qt| {
             return qt.getBestAction(state_id);
@@ -189,7 +189,7 @@ pub const RLAgent = struct {
         return 0;
     }
 
-    /// [CYR:[EN]] [CYR:[EN]]with[EN]inand[EN] (epsilon-greedy)
+    ///  withinand (epsilon-greedy)
     pub fn selectAction(self: *RLAgent, state_id: usize) usize {
         const random = self.rng.random();
         if (random.float(f64) < self.epsilon) {
@@ -218,7 +218,7 @@ pub const RLAgent = struct {
         return td_error;
     }
 
-    /// [CYR:[EN]]and[EN] epsilon
+    /// and epsilon
     pub fn decayEpsilon(self: *RLAgent) void {
         self.epsilon = @max(
             self.config.epsilon_end,
@@ -226,14 +226,14 @@ pub const RLAgent = struct {
         );
     }
 
-    /// [EN]in[CYR:[EN]]and[EN] [EN]and[CYR:[EN]]
+    /// inand and
     pub fn endEpisode(self: *RLAgent, episode_reward: f64) void {
         self.episode_count += 1;
         self.episode_rewards.append(episode_reward) catch {};
         self.decayEpsilon();
     }
 
-    /// [CYR:[EN]]and[EN] [CYR:[EN]]andtoand
+    /// and andtoand
     pub fn getMetrics(self: *const RLAgent) TrainingMetrics {
         var avg_100: f64 = 0;
         const items = self.episode_rewards.items;
@@ -255,30 +255,30 @@ pub const RLAgent = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// [CYR:[EN]] [CYR:[EN]]
+//  
 // ═══════════════════════════════════════════════════════════════
 
-/// [CYR:[EN]]and[EN]in[CYR:[EN]] [EN]andwithto[CYR:[EN]] with[EN]with[CYR:[EN]]and[EN]
+/// andin andwithto withand
 pub fn encodeDiscreteState(allocator: std.mem.Allocator, state_id: usize, dim: usize) !HyperVector {
     return hdc.randomVector(allocator, dim, @as(u64, state_id) * 99999 + 42);
 }
 
-/// [CYR:[EN]]and[EN]in[CYR:[EN]] not[CYR:[EN]]in[CYR:[EN]] with[EN]with[CYR:[EN]]and[EN] (via [CYR:[EN]]in[EN]and)
+/// andin notin withand (via inand)
 pub fn encodeContinuousState(allocator: std.mem.Allocator, features: []const f64, dim: usize, num_levels: usize) !HyperVector {
     const result = try hdc.zeroVector(allocator, dim);
     var temp = try hdc.HyperVector.init(allocator, dim);
     defer temp.deinit();
 
     for (features, 0..) |f, i| {
-        // [EN]andwithto[CYR:[EN]]and[EN]and[CYR:[EN]] value in [CYR:[EN]]in[CYR:[EN]]
+        // andwithtoand value in in
         const level: usize = @intFromFloat(@max(0, @min(@as(f64, @floatFromInt(num_levels - 1)), f * @as(f64, @floatFromInt(num_levels)))));
 
-        // [CYR:[EN]]yes[EN] vector for (feature_id, level)
+        // yes vector for (feature_id, level)
         const seed = @as(u64, i) * 1000 + @as(u64, level);
         var level_vec = try hdc.randomVector(allocator, dim, seed);
         defer level_vec.deinit();
 
-        // [EN]to[CYR:[EN]]andin[CYR:[EN]]
+        // toandin
         for (0..dim) |j| {
             const sum: i16 = @as(i16, result.data[j]) + @as(i16, level_vec.data[j]);
             if (sum > 1) {
@@ -295,7 +295,7 @@ pub fn encodeContinuousState(allocator: std.mem.Allocator, features: []const f64
 }
 
 // ═══════════════════════════════════════════════════════════════
-// [CYR:[EN]]
+// 
 // ═══════════════════════════════════════════════════════════════
 
 test "agent init/deinit" {
@@ -312,7 +312,7 @@ test "action seeds orthogonal" {
     var agent = try RLAgent.init(allocator, .{ .state_dim = 1000, .num_actions = 4 });
     defer agent.deinit();
 
-    // Check what seed-in[EN]to[CYR:[EN]] by[EN]and [EN]thaton[CYR:[EN]]
+    // Check what seed-into byand thaton
     for (0..agent.config.num_actions) |i| {
         for (i + 1..agent.config.num_actions) |j| {
             const sim = hdc.similarity(agent.action_seeds[i].data, agent.action_seeds[j].data);
@@ -337,7 +337,7 @@ test "epsilon decay" {
     agent.decayEpsilon();
     try std.testing.expectApproxEqAbs(@as(f64, 0.9), agent.epsilon, 0.001);
 
-    // [EN]with[EN] [CYR:[EN]]and[EN] decay before[CYR:[EN]] beforewith[EN]and[EN] epsilon_end
+    // with and decay before beforewithand epsilon_end
     for (0..100) |_| agent.decayEpsilon();
     try std.testing.expectApproxEqAbs(@as(f64, 0.1), agent.epsilon, 0.001);
 }
@@ -357,7 +357,7 @@ test "td update changes q value" {
     _ = agent.tdUpdate(0, 0, 1.0, 1, false);
     const q_after = agent.computeQValue(0, 0);
 
-    // Q-value before[CYR:[EN]] and[CYR:[EN]]and[EN]with[EN]
+    // Q-value before andwith
     try std.testing.expect(q_before != q_after);
 }
 
@@ -372,12 +372,12 @@ test "greedy selects best action" {
 
     try agent.initQTable(10);
 
-    // [CYR:[EN]] [CYR:[EN]]with[EN]inand[EN] 1 with in[EN]with[EN]to[EN] on[CYR:[EN]]before[EN]
+    //  withinand 1 with inwithto onbefore
     for (0..10) |_| {
         _ = agent.tdUpdate(0, 1, 10.0, 0, true);
     }
 
-    // Greedy before[CYR:[EN]] in[CYR:[EN]] [CYR:[EN]]with[EN]inand[EN] 1
+    // Greedy before in withinand 1
     const best = agent.selectActionGreedy(0);
     try std.testing.expectEqual(@as(usize, 1), best);
 }

@@ -622,7 +622,7 @@ pub fn printHelp() void {
     std.debug.print("  Examples:\n", .{});
     std.debug.print("    tri code \"optimize fibonacci function\"    [RU]\n", .{});
     std.debug.print("    tri code \"写一个斐波那契函数\"           [ZH]\n", .{});
-    std.debug.print("    tri code \"write fibonacci function\"   [EN]\n", .{});
+    std.debug.print("    tri code \"write fibonacci function\"   \n", .{});
     std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
 }
 
@@ -1040,7 +1040,7 @@ pub fn detectMode(input: []const u8) ?trinity_swe.SWETaskType {
     };
 
     // Code generation patterns
-    if (std.mem.indexOf(u8, lower, "on[EN]and[EN]and") != null or
+    if (std.mem.indexOf(u8, lower, "onand") != null or
         std.mem.indexOf(u8, lower, "create") != null or
         std.mem.indexOf(u8, lower, "generate") != null or
         std.mem.indexOf(u8, lower, "write") != null or

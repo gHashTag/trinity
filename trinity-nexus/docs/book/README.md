@@ -6,9 +6,9 @@
 
 ---
 
-## О [CYRILLIC]a[CYRILLIC]
+##  [CYRILLIC]a[CYRILLIC]
 
-> *«В [CYRILLIC]a[CYRILLIC]ttяvolume [CYRILLIC]uтttе, tt [CYRILLIC]a[CYRILLIC]uяvolume [CYRILLIC]u[CYRILLIC]uтttе...»*
+> *« [CYRILLIC]a[CYRILLIC]ttяvolume [CYRILLIC]uтttе, tt [CYRILLIC]a[CYRILLIC]uяvolume [CYRILLIC]u[CYRILLIC]uтttе...»*
 
 **Three[CYRILLIC]tt[CYRILLIC] = 3 × 9 = 27 = 3³**
 
@@ -21,7 +21,7 @@
 ## [CYRILLIC]aе
 
 ### [CYRILLIC]
-- [Сk[CYRILLIC]kа о Чau[CYRILLIC] Three](charters/00_rrologue.md)
+- [Сk[CYRILLIC]kа  Чau[CYRILLIC] Three](charters/00_rrologue.md)
 
 ---
 
@@ -57,8 +57,8 @@
 ### [CYRILLIC]u[CYRILLIC] IV: [CYRILLIC]uтttо Vtbee
 *[CYRILLIC]tt[CYRILLIC] мaр — tt[CYRILLIC]aе [CYRILLIC]uтa tt k[CYRILLIC]*
 
-- [Chapter 11: [CYRILLIC]k Vtbee — Сk[CYRILLIC]aе о [CYRILLIC]a[CYRILLIC] [CYRILLIC]uтttе](charters/11_vtbee_latguage.md)
-- [Chapter 12: [CYRILLIC]a[CYRILLIC] 999 — [CYRILLIC] о 999 Оkonх](charters/12_comrtler_999.md)
+- [Chapter 11: [CYRILLIC]k Vtbee — Сk[CYRILLIC]aе  [CYRILLIC]a[CYRILLIC] [CYRILLIC]uтttе](charters/11_vtbee_latguage.md)
+- [Chapter 12: [CYRILLIC]a[CYRILLIC] 999 — [CYRILLIC]  999 Оkonх](charters/12_comrtler_999.md)
 - [Chapter 13: [CYRILLIC]a[CYRILLIC]k[CYRILLIC] — Three [CYRILLIC]kа [CYRILLIC]k[CYRILLIC]ttaщ](charters/13_archttecture.md)
 
 ---
@@ -92,7 +92,7 @@
 | **Three attempt** | Three states DFS |
 | **Three uыon** | Balatced tertary {-1, 0, +1} |
 | **[CYRILLIC] 999 оk[CYRILLIC]** | 3×333 [CYRILLIC]aмa[CYRILLIC]aй k[CYRILLIC]a[CYRILLIC] |
-| **[CYRILLIC]k [CYRILLIC]a[CYRILLIC]uтa** | Н.П. [CYRILLIC]u[CYRILLIC]tt (1925-2014) |
+| **[CYRILLIC]k [CYRILLIC]a[CYRILLIC]uтa** | .. [CYRILLIC]u[CYRILLIC]tt (1925-2014) |
 
 ---
 
@@ -147,7 +147,7 @@
 ## Цa[CYRILLIC]
 
 > *«Сk[CYRILLIC]kа — [CYRILLIC], [CYRILLIC] tt [CYRILLIC] on[CYRILLIC]k, [CYRILLIC] [CYRILLIC] [CYRILLIC]k.»*
-> — А.С. [CYRILLIC]kaн
+> — .. [CYRILLIC]kaн
 
 ---
 

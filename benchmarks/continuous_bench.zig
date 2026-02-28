@@ -2,10 +2,10 @@
 // VIBEE CONTINUOUS BENCHMARK SYSTEM
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Ain[CYR:[TRANSLATED]]and[EN]withtoand[EN] [CYR:[TRANSLATED]]toand[EN] with fromwith[CYR:[TRANSLATED]]andin[EN]and[EN] [CYR:[TRANSLATED]]and[EN]
+// Ainandwithtoand toand with fromwithandinand and
 // φ² + 1/φ² = 3 | 27 = 3³
 //
-// [CYR:[TRANSLATED]]withto: zig build-exe benchmarks/continuous_bench.zig -O ReleaseFast && ./continuous_bench
+// withto: zig build-exe benchmarks/continuous_bench.zig -O ReleaseFast && ./continuous_bench
 //
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -120,7 +120,7 @@ pub fn trinity_power(k: u32) u64 {
     return result;
 }
 
-/// Digital root (with[CYR:[TRANSLATED]] [EN]and[EN] [EN] [CYR:[TRANSLATED]])
+/// Digital root (with and  )
 pub fn digital_root(n: u64) u64 {
     if (n == 0) return 0;
     const r = n % 9;

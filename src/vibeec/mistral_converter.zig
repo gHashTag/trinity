@@ -1,5 +1,5 @@
 // MISTRAL-7B TO TRINITY CONVERTER
-// [CYR:[EN]]in[CYR:[EN]]and[EN] Mistral-7B and[EN] safetensors in .tri format
+// inand Mistral-7B and safetensors in .tri format
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");
@@ -85,15 +85,15 @@ pub const ShardedLoader = struct {
         }
     }
 
-    /// [CYR:[EN]]to[EN] to[EN]to[CYR:[EN]] [CYR:[EN]]yes
+    /// to toto yes
     pub fn loadShard(self: *ShardedLoader, shard_idx: usize) !*safetensors.SafetensorsFile {
-        // [EN]to[EN]in[CYR:[EN]] [CYR:[EN]]and[EN] [CYR:[EN]]
+        // toin and 
         if (self.current_shard) |shard| {
             shard.deinit();
             self.allocator.destroy(shard);
         }
 
-        // [CYR:[EN]]and[CYR:[EN]] path to [CYR:[EN]]
+        // and path to 
         var path_buf: [512]u8 = undefined;
         const path = try std.fmt.bufPrint(&path_buf, "{s}/model-{d:0>5}-of-{d:0>5}.safetensors", .{
             self.base_path,
@@ -132,7 +132,7 @@ pub const ConversionStats = struct {
     }
 };
 
-/// [CYR:[EN]]in[CYR:[EN]]and[EN] Mistral-7B in .tri format
+/// inand Mistral-7B in .tri format
 pub fn convertMistral(
     allocator: std.mem.Allocator,
     model_path: []const u8,
@@ -151,7 +151,7 @@ pub fn convertMistral(
     std.debug.print("║ Expected params: {d:<43} ║\n", .{config.totalParams()});
     std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 
-    // [CYR:[EN]]yes[EN] writer for .tri
+    // yes writer for .tri
     var writer = try trinity_format.TrinityWriter.init(allocator, output_path);
     defer writer.deinit();
 
@@ -164,10 +164,10 @@ pub fn convertMistral(
         config.num_key_value_heads,
     );
 
-    // [CYR:[EN]]yes[EN] toin[CYR:[EN]]and[CYR:[EN]]
+    // yes toinand
     var quantizer = prometheus.Quantizer.init(0.1);
 
-    // [CYR:[EN]] [CYR:[EN]] by [CYR:[EN]]and ([CYR:[EN]] to[EN]and[EN]with[EN]in[EN] [EN]in[CYR:[EN]]and[EN]withtoand)
+    //   by and ( toandwithin inandwithtoand)
     const num_shards: usize = 4; // Qwen2.5-Coder-7B has 4 shards
     var loader = ShardedLoader.init(allocator, model_path, num_shards);
     defer loader.deinit();
@@ -180,13 +180,13 @@ pub fn convertMistral(
             continue;
         };
 
-        // [CYR:[EN]]in[CYR:[EN]]and[CYR:[EN]] all [CYR:[EN]] in [CYR:[EN]]
+        // inand all  in 
         var tensor_it = shard.tensors.iterator();
         while (tensor_it.next()) |entry| {
             const info = entry.value_ptr.*;
             const name = info.name;
 
-            // [CYR:[EN]]withto[CYR:[EN]] layernorm in[EN]with[EN] ([EN]and [EN]with[CYR:[EN]]with[EN] in float)
+            // withto layernorm inwith (and with in float)
             if (std.mem.indexOf(u8, name, "layernorm") != null or
                 std.mem.indexOf(u8, name, "norm") != null)
             {
@@ -201,11 +201,11 @@ pub fn convertMistral(
             };
             defer allocator.free(f32_data);
 
-            // [EN]in[CYR:[EN]]and[CYR:[EN]] in [EN]and[EN]
+            // inand in and
             var trit_tensor = try quantizer.quantize(allocator, f32_data, info.shape);
             defer trit_tensor.deinit();
 
-            // [EN]and[CYR:[EN]] [CYR:[EN]]and
+            // and and
             for (trit_tensor.data) |t| {
                 if (t == .zero) stats.zeros_count += 1;
             }
@@ -226,10 +226,10 @@ pub fn convertMistral(
         }
     }
 
-    // [EN]andon[EN]and[EN]and[CYR:[EN]] file
+    // andonand file
     try writer.finalize();
 
-    // Compute with[CYR:[EN]]andwith[EN]andto[EN]
+    // Compute withandwithandto
     stats.compressed_size_bytes = (stats.total_params + 3) / 4;
     stats.sparsity = @as(f32, @floatFromInt(stats.zeros_count)) /
         @as(f32, @floatFromInt(stats.total_params));
@@ -256,7 +256,7 @@ fn printStats(stats: *const ConversionStats) void {
     std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 }
 
-/// [CYR:[EN]]in[CYR:[EN]]and[EN] [CYR:[EN]] safetensors file[EN] (not sharded)
+/// inand  safetensors file (not sharded)
 pub fn convertSingleFile(
     allocator: std.mem.Allocator,
     input_path: []const u8,
@@ -273,11 +273,11 @@ pub fn convertSingleFile(
     std.debug.print("║ Output: {s:<52} ║\n", .{output_path[0..@min(output_path.len, 52)]});
     std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 
-    // [CYR:[EN]] safetensors
+    //  safetensors
     var sf = try safetensors.SafetensorsFile.open(allocator, input_path);
     defer sf.deinit();
 
-    // [CYR:[EN]]yes[EN] writer for .tri
+    // yes writer for .tri
     var writer = try trinity_format.TrinityWriter.init(allocator, output_path);
     defer writer.deinit();
 
@@ -290,10 +290,10 @@ pub fn convertSingleFile(
         config.num_key_value_heads,
     );
 
-    // [CYR:[EN]]yes[EN] toin[CYR:[EN]]and[CYR:[EN]]
+    // yes toinand
     var quantizer = prometheus.Quantizer.init(0.1);
 
-    // [CYR:[EN]]in[CYR:[EN]]and[CYR:[EN]] all [CYR:[EN]]
+    // inand all 
     var tensor_it = sf.tensors.iterator();
     while (tensor_it.next()) |entry| {
         const info = entry.value_ptr.*;
@@ -306,11 +306,11 @@ pub fn convertSingleFile(
         };
         defer allocator.free(f32_data);
 
-        // [EN]in[CYR:[EN]]and[CYR:[EN]] in [EN]and[EN]
+        // inand in and
         var trit_tensor = try quantizer.quantize(allocator, f32_data, info.shape);
         defer trit_tensor.deinit();
 
-        // [EN]and[CYR:[EN]] [CYR:[EN]]and
+        // and and
         for (trit_tensor.data) |t| {
             if (t == .zero) stats.zeros_count += 1;
         }
@@ -325,10 +325,10 @@ pub fn convertSingleFile(
         std.debug.print("  ✓ {s}\n", .{name[0..@min(name.len, 50)]});
     }
 
-    // [EN]andon[EN]and[EN]and[CYR:[EN]] file
+    // andonand file
     try writer.finalize();
 
-    // Compute with[CYR:[EN]]andwith[EN]andto[EN]
+    // Compute withandwithandto
     stats.compressed_size_bytes = (stats.total_params + 3) / 4;
     stats.sparsity = @as(f32, @floatFromInt(stats.zeros_count)) /
         @as(f32, @floatFromInt(stats.total_params));

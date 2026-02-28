@@ -1,5 +1,5 @@
 # Browser Extension Popup UI Specification
-# Generates popup interface for [CYR:[EN]A[EN]] [CYR:[TRANSLATED]A]
+# Generates popup interface for [CYR:A] [CYR:A]
 # φ² + 1/φ² = 3 = TRINITY
 
 name: firebird_popup
@@ -9,22 +9,22 @@ module: popup_ui
 
 description: |
   Popup UI for browser extension.
-  [CYR:[TRANSLATED]acts] evasion [CYR:[TRANSLATED]]and[EN]and, control [CYR:pro[EN]]and[CYR:[EN]I[EN]]and, $TRI rewards.
+  [CYR:acts] evasion and, control [CYR:pro]and[CYR:I]and, $TRI rewards.
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# UI [CYR:[TRANSLATED]]
+# UI 
 # ═══════════════════════════════════════════════════════════════════════════════
 
 components:
   Header:
-    description: "[CYR:[EN]go[EN]]in[EN] with [CYR:[EN]go]type[EN] and with[CYR:[TRANSLATED]]with[EN]"
+    description: "[CYR:go]in with [CYR:go]type and with"
     elements:
-      - logo: "[CYR:[EN]A[EN]] [CYR:[TRANSLATED]A] 🔥"
+      - logo: "[CYR:A] [CYR:A] 🔥"
       - status_indicator: NodeStatus
       - version: "v1.0.0"
 
   EvasionPanel:
-    description: "[EN]notl [CYR:[EN]law]in[CYR:[TRANSLATED]]andI evasion"
+    description: "notl [CYR:law]inandI evasion"
     elements:
       - toggle_enabled: Bool
       - similarity_display: Float
@@ -33,7 +33,7 @@ components:
       - detection_risk: String
 
   ProfileSelector:
-    description: "[CYR:Vy[TRANSLATED]] and control [CYR:pro[EN]]and[CYR:[EN]I[EN]]and"
+    description: "[CYR:Vy] and control [CYR:pro]and[CYR:I]and"
     elements:
       - current_profile: String
       - profile_list: List<ProfileItem>
@@ -41,7 +41,7 @@ components:
       - delete_button: Button
 
   NavigationPanel:
-    description: "[EN]and[CYR:[TRANSLATED]l]onI oninand[CYR:[TRANSLATED]]andI"
+    description: "and[CYR:l]onI oninandI"
     elements:
       - steps_completed: Int
       - current_similarity: Float
@@ -58,7 +58,7 @@ components:
       - stake_button: Button
 
   FingerprintDetails:
-    description: "[CYR:[TRANSLATED]]and [CYR:[TRANSLATED]go] fingerprint"
+    description: "and [CYR:go] fingerprint"
     elements:
       - canvas_hash: String
       - webgl_hash: String
@@ -83,17 +83,17 @@ layout:
     - FingerprintDetails (collapsible)
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# [CYR:[TRANSLATED]] (for [EN]not[CYR:[TRANSLATED]]andand CSS)
+#  (for notand CSS)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 styles:
   colors:
-    primary: "#FF6B35"      # [EN]not[CYR:[EN]ny] [CYR:[TRANSLATED]]iny[EN] ([CYR:[TRANSLATED]]-[EN]and[EN])
-    secondary: "#1A1A2E"    # [CYR:[TRANSLATED]ny] [CYR:foundation]
-    accent: "#FFD700"       # [CYR:[TRANSLATED]] ($TRI)
-    success: "#00FF88"      # [CYR:[TRANSLATED]ny] (evasion OK)
-    warning: "#FFB800"      # [CYR:[TRANSLATED]y[EN]] (risk)
-    danger: "#FF4444"       # [CYR:[TRANSLATED]]with[CYR:ny] (detected)
+    primary: "#FF6B35"      # not[CYR:ny] iny (-and)
+    secondary: "#1A1A2E"    # [CYR:ny] [CYR:foundation]
+    accent: "#FFD700"       #  ($TRI)
+    success: "#00FF88"      # [CYR:ny] (evasion OK)
+    warning: "#FFB800"      # [CYR:y] (risk)
+    danger: "#FF4444"       # withny] (detected)
     text: "#FFFFFF"
     text_muted: "#888888"
 
@@ -109,7 +109,7 @@ styles:
     xl: 32
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# [CYR:[TRANSLATED]]
+# 
 # ═══════════════════════════════════════════════════════════════════════════════
 
 events:
@@ -140,12 +140,12 @@ events:
     - show_notification
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# [CYR:[TRANSLATED]A[TRANSLATED]A[TRANSLATED]]
+# [CYR:AA]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 i18n:
   en:
-    title: "[CYR:[EN]A[EN]] [CYR:[TRANSLATED]A] - Ternary Anti-Detect"
+    title: "[CYR:A] [CYR:A] - Ternary Anti-Detect"
     evasion_enabled: "Evasion Enabled"
     similarity: "Similarity"
     detection_risk: "Detection Risk"
@@ -156,12 +156,12 @@ i18n:
     earned: "Total Earned"
     
   ru:
-    title: "[CYR:[EN]A[EN]] [CYR:[TRANSLATED]A] - [CYR:[TRANSLATED]]on[CYR:[EN]ny] Anti-Detect"
-    evasion_enabled: "Evasion [EN]key[EN]"
-    similarity: "[CYR:[TRANSLATED]]with[EN]"
-    detection_risk: "[EN]andwith[EN] [CYR:[TRANSLATED]]andand"
-    generate_profile: "[CYR:[TRANSLATED]ate] [EN]iny[EN] [CYR:[TRANSLATED]]andl"
-    navigate: "[EN]inand[CYR:[TRANSLATED]]andI"
-    claim_rewards: "[CYR:[TRANSLATED]ate] $TRI"
-    pending: "[EN]and[CYR:[EN]acts]"
-    earned: "[EN]with[CYR:[EN]go] [CYR:[EN]work[EN]]"
+    title: "[CYR:A] [CYR:A] - on[CYR:ny] Anti-Detect"
+    evasion_enabled: "Evasion key"
+    similarity: "with"
+    detection_risk: "andwith and"
+    generate_profile: "[CYR:ate] iny andl"
+    navigate: "inandI"
+    claim_rewards: "[CYR:ate] $TRI"
+    pending: "and[CYR:acts]"
+    earned: "withgo] [CYR:work]"

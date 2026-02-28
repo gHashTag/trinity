@@ -1,16 +1,16 @@
 name: pixel_grid
 # spec.yml for grid_manager
-# Grid Manager - [EN]not[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]and [EN]and[EN]with[CYR:[TRANSLATED]] with YogaLayout and[CYR:[TRANSLATED]]and[EN]
+# Grid Manager - not withand andwith with YogaLayout and
 
 plugin:
   name: grid_manager
   version: 1.0.0
   category: ui
-  description: [EN]not[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]and [EN]and[EN]with[CYR:[TRANSLATED]] - [CYR:[TRANSLATED]y[EN]] [EN]and[EN]with[CYR:[EN]l] this BEAM process
+  description: not withand andwith - [CYR:y] andwithl] this BEAM process
 
 behaviors:
   - name: start_grid_manager
-    description: [CYR:[TRANSLATED]]with[EN] Grid Manager actor
+    description: with Grid Manager actor
     given: Viewport dimensions (width, height, scale)
     when: start() function called
     then: Grid Manager actor started and ready
@@ -19,7 +19,7 @@ behaviors:
         output: {status: "running", atoms_count: 0}
   
   - name: create_pixel_atom
-    description: [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] [EN]and[EN]with[CYR:[EN]I]
+    description: and  andwithI]
     given: Grid Manager running
     when: CreateAtom message sent
     then: New pixel actor created
@@ -28,7 +28,7 @@ behaviors:
         output: {created: true, id: "atom_0"}
   
   - name: destroy_pixel_atom
-    description: [EN]andthat[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] [EN]and[EN]with[CYR:[EN]I]
+    description: andthatand  andwithI]
     given: Atom exists in grid
     when: DestroyAtom message sent
     then: Pixel actor stopped
@@ -39,14 +39,14 @@ behaviors:
 functions:
   - name: start
     signature: "start(viewport: Viewport) -> Result(Subject(GridMessage), String)"
-    description: [CYR:[TRANSLATED]]with[CYR:[EN]acts] Grid Manager actor
+    description: withacts] Grid Manager actor
     params:
       - name: viewport
         type: Viewport
   
   - name: handle_message
     signature: "handle_message(msg: GridMessage, state: GridState) -> actor.Next(GridState)"
-    description: [CYR:[EN]work[EN]y]in[CYR:acts] with[CYR:[TRANSLATED]]andI Grid Manager
+    description: [CYR:worky]in[CYR:acts] withandI Grid Manager
     params:
       - name: msg
         type: GridMessage

@@ -7,9 +7,9 @@
 
 ---
 
-## ⚠️ VERDICT: v48 UI = [CYR:ДЕТСКИЙ] [CYR:УРОВЕНЬ]
+## ⚠️ VERDICT: v48 UI = [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Проблемы] v48:
+### [CYR:[TRANSLATED]] v48:
 
 | Problem | Severity | Impact |
 |----------|----------|--------|
@@ -21,7 +21,7 @@
 
 ---
 
-## ✅ [CYR:РЕШЕНИЕ]: v49 Pro UI Design
+## ✅ [CYR:[TRANSLATED]]: v49 Pro UI Design
 
 ### Benchmark Results (PROOF)
 
@@ -257,7 +257,7 @@ PHOENIX = 999 = 3³ × 37 = 27 × 37 ✅
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                               ║
-║   v48 UI: ☠️ [CYR:ДЕТСКИЙ] [CYR:УРОВЕНЬ] - Full redraw, no HCI, 2920 FPS                 ║
+║   v48 UI: ☠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] - Full redraw, no HCI, 2920 FPS                 ║
 ║                                                                               ║
 ║   v49 UI: ✅ PROFESSIONAL - Double-buffer, HCI applied, 6758 FPS             ║
 ║                                                                               ║

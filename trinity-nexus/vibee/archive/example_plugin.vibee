@@ -1,12 +1,12 @@
 name: example_plugin
-# Example Plugin - [EN]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andon with Canvas UI and [CYR:[TRANSLATED]me[TRANSLATED]]and[EN]
+# Example Plugin - and andon with Canvas UI and [CYR:me]and
 
 module: honeycomb/ui/plugin_system/example_plugin
 version: 1.0.0
-description: [EN]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andon demo[EN]with[EN]and[CYR:[TRANSLATED]]and[EN] Canvas UI and [CYR:[EN]I[TRANSLATED]l[EN]y[EN]] componenty
+description: and andon demowithand Canvas UI and [CYR:Ily] componenty
 
 types:
-  # [EN]with[CYR:[EN]I[EN]]and[EN] [CYR:[TRANSLATED]]andon
+  # withI]and andon
   ExampleState:
     counter: Int
     color: Color
@@ -19,24 +19,24 @@ types:
     a: Int
 
 functions:
-  # [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[EN]with[EN] [CYR:[TRANSLATED]]andon
+  # and andwith andon
   manifest:
     params: []
     returns: PluginManifest
-    description: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] [CYR:[TRANSLATED]]and[EN]with[EN] [CYR:[TRANSLATED]]andon
+    description: in[CYR:acts] andwith andon
     implementation: |
       PluginManifest(
-        # [CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]]andI
+        # andandI
         id: "com.vibee.example-plugin",
         name: "Example Plugin",
         version: "1.0.0",
-        description: "[CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]and[CYR:[EN]ny] [CYR:[TRANSLATED]]and[EN] with Canvas UI",
+        description: "withand[CYR:ny] and with Canvas UI",
         author: "VIBEE Team",
         license: "MIT",
         homepage: Some("https://vibee.dev/plugins/example"),
         repository: Some("https://github.com/vibee/example-plugin"),
         
-        # UI ([CYR:[TRANSLATED]A[TRANSLATED]])
+        # UI ([CYR:A])
         canvas_widget: create_widget(),
         documentation_page: "honeycomb/ui/plugin_system/example_plugin/docs/README.md",
         icon: Some("assets/icon.svg"),
@@ -53,12 +53,12 @@ functions:
         resizable: True,
         aspect_ratio: Some(2.0),
         
-        # [EN]inandwithand[EN]with[EN]and
+        # inandwithandwithand
         dependencies: [],
         peer_dependencies: [],
         conflicts: [],
         
-        # [CYR:[TRANSLATED]]in[EN]
+        # in
         permissions: [ReadState, WriteState],
         
         # Lifecycle hooks
@@ -68,7 +68,7 @@ functions:
         on_focus: on_focus,
         on_blur: on_blur,
         
-        # [CYR:[TRANSLATED]data]
+        # [CYR:data]
         tags: ["example", "demo", "tutorial"],
         category: Development,
         maturity: Stable,
@@ -76,11 +76,11 @@ functions:
         updated_at: "2026-01-10T00:00:00Z",
       )
   
-  # [CYR:[TRANSLATED]]and[EN] Canvas Widget
+  # and Canvas Widget
   create_widget:
     params: []
     returns: CanvasWidget
-    description: [CYR:[TRANSLATED]acts] Canvas inand[CYR:[TRANSLATED]] for [CYR:[TRANSLATED]]andon
+    description: [CYR:acts] Canvas inand for andon
     implementation: |
       CanvasWidget(
         render: render_widget,
@@ -90,17 +90,17 @@ functions:
         animate: Some(animate_widget),
       )
   
-  # [CYR:[TRANSLATED]]and[EN] inand[CYR:[TRANSLATED]]
+  # and inand
   render_widget:
     params:
       - ctx: RenderContext
     returns: List(DrawCommand)
-    description: [CYR:[TRANSLATED]]and[EN] inand[CYR:[TRANSLATED]] on Canvas
+    description: and inand on Canvas
     implementation: |
       let state = get_current_state()
       
       [
-        # [CYR:[TRANSLATED]]
+        # 
         DrawRect(
           x: ctx.x,
           y: ctx.y,
@@ -110,7 +110,7 @@ functions:
           radius: Some(12.0),
         ),
         
-        # [CYR:[TRANSLATED]]and[EN] (if in [CYR:[TRANSLATED]]with[EN])
+        # and (if in with)
         case ctx.focused {
           True -> DrawRect(
             x: ctx.x,
@@ -123,7 +123,7 @@ functions:
           False -> DrawNone
         },
         
-        # [CYR:[EN]go[EN]]in[EN]
+        # [CYR:go]in
         DrawText(
           x: ctx.x +. 20.0,
           y: ctx.y +. 30.0,
@@ -132,7 +132,7 @@ functions:
           color: Color(255, 255, 255, 255),
         ),
         
-        # [CYR:[TRANSLATED]]and[EN]
+        # and
         DrawText(
           x: ctx.x +. 20.0,
           y: ctx.y +. 60.0,
@@ -141,7 +141,7 @@ functions:
           color: state.color,
         ),
         
-        # [CYR:[TRANSLATED]]
+        # 
         DrawRect(
           x: ctx.x +. ctx.width -. 100.0,
           y: ctx.y +. ctx.height -. 50.0,
@@ -163,22 +163,22 @@ functions:
         ),
       ]
   
-  # [CYR:[EN]work[TRANSLATED]] with[CYR:[EN]y[EN]]and[EN]
+  # [CYR:work] withy]and
   handle_event:
     params:
       - event: UIEvent
     returns: Result(EventResponse, String)
-    description: [CYR:[EN]work[EN]y]in[CYR:acts] UI with[CYR:[EN]y[EN]]andI
+    description: [CYR:worky]in[CYR:acts] UI withy]andI
     implementation: |
       case event {
         Click(x, y) -> {
-          # [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [EN]and[EN] [EN] [CYR:[TRANSLATED]]
+          # in[CYR:I] and  
           let button_x = x -. 100.0
           let button_y = y -. 50.0
           
           case button_x >=. 0.0 && button_x <=. 80.0 && button_y >=. 0.0 && button_y <=. 30.0 {
             True -> {
-              # [EN]in[EN]and[EN]andin[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]and[EN]
+              # inandin withand
               let state = get_current_state()
               let new_state = ExampleState(
                 ..state,
@@ -194,7 +194,7 @@ functions:
         }
         
         MouseMove(x, y) -> {
-          # [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] onin[CYR:[TRANSLATED]]and[EN] on [CYR:[TRANSLATED]]
+          # in[CYR:I] oninand on 
           let button_x = x -. 100.0
           let button_y = y -. 50.0
           
@@ -207,7 +207,7 @@ functions:
         KeyDown(key) -> {
           case key {
             "Space" -> {
-              # [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [EN]in[EN]and[EN]andin[CYR:acts] with[CYR:[TRANSLATED]]and[EN]
+              #   inandin[CYR:acts] withand
               let state = get_current_state()
               let new_state = ExampleState(
                 ..state,
@@ -219,7 +219,7 @@ functions:
             }
             
             "r" | "R" -> {
-              # R with[CYR:[TRANSLATED]]withyin[CYR:acts] with[CYR:[TRANSLATED]]and[EN]
+              # R withyin[CYR:acts] withand
               let state = get_current_state()
               let new_state = ExampleState(
                 ..state,
@@ -247,21 +247,21 @@ functions:
         _ -> Ok(Propagate)
       }
   
-  # [CYR:[TRANSLATED]]and[EN] with[EN]with[CYR:[EN]I[EN]]andI
+  # and withI]andI
   get_state:
     params: []
     returns: WidgetState
-    description: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] [CYR:[TRANSLATED]] with[EN]with[CYR:[EN]I[EN]]and[EN] inand[CYR:[TRANSLATED]]
+    description: in[CYR:acts]  withI]and inand
     implementation: |
       let state = get_current_state()
       widget_state_from_example(state)
   
-  # [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] with[EN]with[CYR:[EN]I[EN]]andI
+  # inand withI]andI
   update_state:
     params:
       - widget_state: WidgetState
     returns: Result(Nil, String)
-    description: [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] with[EN]with[CYR:[EN]I[EN]]and[EN] inand[CYR:[TRANSLATED]]
+    description: in[CYR:I] withI]and inand
     implementation: |
       case json.decode(widget_state.data, example_state_decoder) {
         Ok(state) -> {
@@ -272,16 +272,16 @@ functions:
         Error(err) -> Error("Failed to decode state: " <> string.inspect(err))
       }
   
-  # A[EN]and[CYR:[TRANSLATED]]andI
+  # AandI
   animate_widget:
     params:
       - time: Float
     returns: List(DrawCommand)
-    description: A[EN]and[EN]and[CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]]
+    description: Aand inand
     implementation: |
       let state = get_current_state()
       
-      # [CYR:[EN]l]with[EN]andI [EN]in[CYR:[TRANSLATED]]
+      # [CYR:l]withandI in
       let pulse = float.sin(time *. 2.0) *. 0.5 +. 0.5
       let animated_color = Color(
         r: float.round(255.0 *. pulse) |> float.truncate,
@@ -303,11 +303,11 @@ functions:
   on_load:
     params: []
     returns: Result(Nil, String)
-    description: [CYR:Vy[EN]y]in[CYR:acts]withI [EN]and [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andon
+    description: [CYR:Vyy]in[CYR:acts]withI and  andon
     implementation: |
       io.println("Example plugin loaded")
       
-      # [EN]and[EN]and[EN]fromand[CYR:[TRANSLATED]] with[EN]with[CYR:[EN]I[EN]]and[EN]
+      # andfromand withI]and
       let initial_state = ExampleState(
         counter: 0,
         color: Color(99, 102, 241, 255),
@@ -320,7 +320,7 @@ functions:
   on_unload:
     params: []
     returns: Result(Nil, String)
-    description: [CYR:Vy[EN]y]in[CYR:acts]withI [EN]and in[CYR:y[TRANSLATED]] [CYR:[TRANSLATED]]andon
+    description: [CYR:Vyy]in[CYR:acts]withI and in[CYR:y] andon
     implementation: |
       io.println("Example plugin unloaded")
       Ok(Nil)
@@ -330,7 +330,7 @@ functions:
       - width: Float
       - height: Float
     returns: Result(Nil, String)
-    description: [CYR:Vy[EN]y]in[CYR:acts]withI [EN]and from[EN]not[EN]andand [CYR:[TRANSLATED]]
+    description: [CYR:Vyy]in[CYR:acts]withI and fromnotand 
     implementation: |
       io.println("Example plugin resized to: " <> float.to_string(width) <> "x" <> float.to_string(height))
       Ok(Nil)
@@ -338,7 +338,7 @@ functions:
   on_focus:
     params: []
     returns: Result(Nil, String)
-    description: [CYR:Vy[EN]y]in[CYR:acts]withI [EN]and [CYR:[TRANSLATED]]andand [CYR:[TRANSLATED]]with[EN]
+    description: [CYR:Vyy]in[CYR:acts]withI and and with
     implementation: |
       io.println("Example plugin focused")
       Ok(Nil)
@@ -346,16 +346,16 @@ functions:
   on_blur:
     params: []
     returns: Result(Nil, String)
-    description: [CYR:Vy[EN]y]in[CYR:acts]withI [EN]and [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[EN]
+    description: [CYR:Vyy]in[CYR:acts]withI and  with
     implementation: |
       io.println("Example plugin blurred")
       Ok(Nil)
   
-  # [EN]with[CYR:[TRANSLATED]l[EN]y[EN]] [CYR:[TRANSLATED]]andand
+  # withly] and
   get_current_state:
     params: []
     returns: ExampleState
-    description: [CYR:[TRANSLATED]acts] [CYR:[TRANSLATED]] with[EN]with[CYR:[EN]I[EN]]and[EN] from process dictionary
+    description: [CYR:acts]  withI]and from process dictionary
     implementation: |
       case process.get("example_plugin_state") {
         Some(state) -> state
@@ -370,7 +370,7 @@ functions:
     params:
       - state: ExampleState
     returns: Nil
-    description: [CYR:[TRANSLATED]I[EN]] with[EN]with[CYR:[EN]I[EN]]and[EN] in process dictionary
+    description: [CYR:I] withI]and in process dictionary
     implementation: |
       process.put("example_plugin_state", state)
   
@@ -378,7 +378,7 @@ functions:
     params:
       - state: ExampleState
     returns: WidgetState
-    description: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] ExampleState in WidgetState
+    description: inand ExampleState in WidgetState
     implementation: |
       let data = json.object([
         #("counter", json.int(state.counter)),
@@ -400,14 +400,14 @@ functions:
 
 tests:
   - name: create_manifest
-    description: [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[EN]with[EN]
+    description: and andwith
     test: |
       let m = manifest()
       m.id == "com.vibee.example-plugin"
       m.name == "Example Plugin"
   
   - name: render_widget_test
-    description: [CYR:[TRANSLATED]]and[EN] inand[CYR:[TRANSLATED]]
+    description: and inand
     test: |
       let ctx = RenderContext(
         x: 0.0,
@@ -431,7 +431,7 @@ tests:
       list.length(commands) > 0
   
   - name: handle_click_test
-    description: [CYR:[EN]work[TRANSLATED]] [EN]and[EN]
+    description: [CYR:work] and
     test: |
       let event = Click(150.0, 70.0)
       let result = handle_event(event)

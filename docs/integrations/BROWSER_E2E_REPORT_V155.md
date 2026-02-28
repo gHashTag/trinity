@@ -1,14 +1,14 @@
 # 🌐 BROWSER E2E REPORT V155
 
-**[CYR:Дата]:** 2026-01-20  
-**[CYR:Вер]withandя:** 155.0.0  
+**[CYR:[TRANSLATED]]:** 2026-01-20  
+**[CYR:[TRANSLATED]]withandя:** 155.0.0  
 **φ² + 1/φ² = 3 | PHOENIX = 999**
 
 ---
 
-## 🚀 [CYR:КАК] [CYR:ЗАПУСТИТЬ] [CYR:БРАУЗЕР]
+## 🚀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Шаг] 1: Уwith[CYR:тано]inandть Chromium
+### [CYR:[TRANSLATED]] 1: Уwith[TRANSLATED]]inandть Chromium
 ```bash
 # Ubuntu/Debian
 sudo apt install chromium-browser
@@ -16,39 +16,39 @@ sudo apt install chromium-browser
 # macOS
 brew install chromium
 
-# Илand andwith[CYR:пользо]in[CYR:ать] Chrome
+# Илand andwith[TRANSLATED]]in[CYR:[TRANSLATED]] Chrome
 ```
 
-### [CYR:Шаг] 2: [CYR:Запу]withтandть with CDP
+### [CYR:[TRANSLATED]] 2: [CYR:[TRANSLATED]]withтandть with CDP
 ```bash
-# Headless [CYR:реж]andм
+# Headless [CYR:[TRANSLATED]]andм
 chromium --remote-debugging-port=9222 --headless --disable-gpu
 
-# С UI (for from[CYR:лад]toand)
+#  UI (for from[CYR:[TRANSLATED]]toand)
 chromium --remote-debugging-port=9222
 ```
 
-### [CYR:Шаг] 3: [CYR:Под]to[CYR:люч]andтьwithя
+### [CYR:[TRANSLATED]] 3: [CYR:[TRANSLATED]]for[TRANSLATED]]andтьwithя
 ```bash
 # WebSocket endpoint
 ws://localhost:9222/devtools/browser/<id>
 
-# [CYR:Получ]andть endpoint
+# [CYR:[TRANSLATED]]andть endpoint
 curl http://localhost:9222/json/version
 ```
 
-### [CYR:Шаг] 4: Иwith[CYR:пользо]in[CYR:ать] vibee-agent
+### [CYR:[TRANSLATED]] 4: Иwith[TRANSLATED]]in[CYR:[TRANSLATED]] vibee-agent
 ```bash
-./bin/vibee-agent "Отto[CYR:рой] google.com and onйдand [CYR:погоду]"
+./bin/vibee-agent "Отfor[TRANSLATED]] google.com and onйдand [CYR:[TRANSLATED]]"
 ```
 
 ---
 
-## 📊 E2E [CYR:ТЕСТЫ]
+## 📊 E2E [CYR:TESTS]
 
 ### Resultы теwithтandроinанandя:
 
-| [CYR:Модуль] | Теwithты | [CYR:Стату]with |
+| [CYR:[TRANSLATED]] | Теwithты | [CYR:[TRANSLATED]]with |
 |--------|-------|--------|
 | headless_browser.zig | 48 | ✅ |
 | browser_agent_full.zig | 13 | ✅ |
@@ -63,13 +63,13 @@ curl http://localhost:9222/json/version
 | real_browser_runner_v154.zig | 23 | ✅ |
 | e2e_test_suite_v155.zig | 6 | ✅ |
 
-**[CYR:ВСЕГО]: 179 теwithтоin ✅**
+**[CYR:[TRANSLATED]]: 179 теwithтоin ✅**
 
 ---
 
-## 📈 [CYR:БЕНЧМАРКИ]: v1 → v150 → v155
+## 📈 [CYR:[TRANSLATED]]: v1 → v150 → v155
 
-| [CYR:Метр]andtoа | v1 | v150 | v155 | [CYR:Улучшен]andе |
+| [CYR:[TRANSLATED]]andtoа | v1 | v150 | v155 | [CYR:[TRANSLATED]]andе |
 |---------|-----|------|------|-----------|
 | Parse speed (MB/s) | 100 | 250 | 280 | **+180%** |
 | Codegen (specs/s) | 50 | 120 | 135 | **+170%** |
@@ -80,7 +80,7 @@ curl http://localhost:9222/json/version
 | Screenshot (ms) | 500 | 200 | 150 | **-70%** |
 | Memory (MB) | 100 | 65 | 58 | **-42%** |
 
-### [CYR:Граф]andtoand [CYR:улучшен]andй:
+### [CYR:[TRANSLATED]]andtoand [CYR:[TRANSLATED]]andй:
 
 ```
 Parse Speed (MB/s)
@@ -101,19 +101,19 @@ v155 █████████████████████████
 
 ---
 
-## 🔬 PAS DAEMONS [CYR:ПРИМЕНЕНИЕ]
+## 🔬 PAS DAEMONS [CYR:[TRANSLATED]]
 
 | Daemon | Прandмеnotнandе in browserе | Speedup |
 |--------|----------------------|---------|
-| **PRE** | [CYR:Кэш] DOM [CYR:запро]withоin | 3x |
-| **D&C** | [CYR:Параллельные] into[CYR:лад]toand | Nx |
-| **HSH** | [CYR:Хэш] elementоin | O(1) |
-| **FDT** | [CYR:Обраб]fromtoа [CYR:мед]andа | 5x |
-| **MLS** | ML with[CYR:еле]to[CYR:торы] | 2x on[CYR:дёжно]withть |
+| **PRE** | [CYR:[TRANSLATED]] DOM [CYR:[TRANSLATED]]withоin | 3x |
+| **D&C** | [CYR:[TRANSLATED]] infor[TRANSLATED]]toand | Nx |
+| **HSH** | [CYR:[TRANSLATED]] elementоin | O(1) |
+| **FDT** | [CYR:[TRANSLATED]]fromtoа [CYR:[TRANSLATED]]andа | 5x |
+| **MLS** | ML with[TRANSLATED]]for[TRANSLATED]] | 2x on[CYR:[TRANSLATED]]withть |
 
 ---
 
-## 📋 [CYR:ТЕСТОВЫЕ] [CYR:СЬЮТЫ]
+## 📋 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ### Browser Core (6 теwithтоin)
 - ✅ Launch headless browser
@@ -157,9 +157,9 @@ v155 █████████████████████████
 
 ---
 
-## 📊 [CYR:ПОКРЫТИЕ] [CYR:КОДА]
+## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-| [CYR:Модуль] | Поto[CYR:рыт]andе |
+| [CYR:[TRANSLATED]] | Поfor[TRANSLATED]]andе |
 |--------|----------|
 | Browser Core | 95% |
 | DOM Operations | 92% |
@@ -171,38 +171,38 @@ v155 █████████████████████████
 
 ---
 
-## ⚠️ [CYR:ТОКСИЧНЫЙ] [CYR:ВЕРДИКТ]
+## ⚠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### 🟡 [CYR:СТАТУС]: YELLOW ([CYR:Требует] [CYR:дораб]fromtoand)
+### 🟡 [CYR:[TRANSLATED]]: YELLOW ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromtoand)
 
-### ✅ [CYR:СИЛЬНЫЕ] [CYR:СТОРОНЫ]:
-1. **350 with[CYR:пец]andфandtoацandй** — [CYR:огром]onя [CYR:база]
-2. **179 теwithтоin** — [CYR:хорошее] поto[CYR:рыт]andе
-3. **88% coverage** — in[CYR:ыше] with[CYR:ред]notго
-4. **Кin[CYR:анто]inые [CYR:модул]and** — cutting-edge
-5. **PAS method[CYR:олог]andя** — on[CYR:учный] [CYR:подход]
+### ✅ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
+1. **350 with[TRANSLATED]]andфandtoацandй** — [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]
+2. **179 теwithтоin** — [CYR:[TRANSLATED]] поfor[TRANSLATED]]andе
+3. **88% coverage** — in[CYR:[TRANSLATED]] with[TRANSLATED]]notго
+4. **Кin[CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]and** — cutting-edge
+5. **PAS method[CYR:[TRANSLATED]]andя** — on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### ❌ [CYR:СЛАБЫЕ] [CYR:СТОРОНЫ]:
-1. **[CYR:Нет] [CYR:реального] WebSocket toлand[CYR:ента]** — [CYR:толь]toо with[CYR:пец]andфandtoацandand
-2. **[CYR:Нет] and[CYR:нтеграц]andand with Chromium** — [CYR:требует]withя [CYR:ручной] [CYR:запу]withto
-3. **[CYR:Нет] CI/CD pipeline** — теwithты [CYR:толь]toо лоto[CYR:ально]
-4. **Доto[CYR:ументац]andя on руwithwithtoом** — [CYR:огран]andчandin[CYR:ает] [CYR:ауд]and[CYR:тор]andю
+### ❌ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
+1. **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] WebSocket toлand[CYR:[TRANSLATED]]** — [CYR:[TRANSLATED]]toо with[TRANSLATED]]andфandtoацand
+2. **[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]and with Chromium** — [CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withto
+3. **[CYR:[TRANSLATED]] CI/CD pipeline** — теwithты [CYR:[TRANSLATED]]toо лоfor[TRANSLATED]]
+4. **Доfor[TRANSLATED]]andя on руwithtoом** — [CYR:[TRANSLATED]]andчandin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andю
 
-### 🔥 [CYR:КРИТИЧЕСКИЕ] [CYR:ДЕЙСТВИЯ]:
+### 🔥 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
 
-| Прandорand[CYR:тет] | [CYR:Дей]withтinandе | [CYR:Сро]to |
+| Прandорand[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]withтinandе | [CYR:[TRANSLATED]]to |
 |-----------|----------|------|
-| P0 | [CYR:Реал]andзоin[CYR:ать] WebSocket toлand[CYR:ент] on Zig | 1 not[CYR:деля] |
-| P0 | [CYR:Интегр]andроin[CYR:ать] with Chromium CDP | 2 not[CYR:дел]and |
-| P1 | [CYR:Доба]inandть GitHub Actions CI | 3 [CYR:дня] |
-| P1 | [CYR:Пере]inеwithтand доto[CYR:ументац]andю on [CYR:англ]andйwithtoandй | 1 not[CYR:деля] |
-| P2 | [CYR:Опубл]andtoоin[CYR:ать] in package registry | 2 not[CYR:дел]and |
+| P0 | [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] WebSocket toлand[CYR:[TRANSLATED]] on Zig | 1 not[CYR:[TRANSLATED]] |
+| P0 | [CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] with Chromium CDP | 2 not[CYR:[TRANSLATED]]and |
+| P1 | [CYR:[TRANSLATED]]inandть GitHub Actions CI | 3 [CYR:[TRANSLATED]] |
+| P1 | [CYR:[TRANSLATED]]inеwithтand доfor[TRANSLATED]]andю on [CYR:[TRANSLATED]]andйwithtoandй | 1 not[CYR:[TRANSLATED]] |
+| P2 | [CYR:[TRANSLATED]]andtoоin[CYR:[TRANSLATED]] in package registry | 2 not[CYR:[TRANSLATED]]and |
 
 ---
 
-## 📁 [CYR:НОВЫЕ] [CYR:ФАЙЛЫ]
+## 📁 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-| [CYR:Файл] | Теwithты |
+| [CYR:[TRANSLATED]] | Теwithты |
 |------|-------|
 | `real_browser_runner_v154.vibee` | 23 ✅ |
 | `e2e_test_suite_v155.vibee` | 6 ✅ |
@@ -211,28 +211,28 @@ v155 █████████████████████████
 
 ---
 
-## 🎯 [CYR:ПЛАН] [CYR:РАЗВИТИЯ]
+## 🎯 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Фаза] 1: WebSocket (1 not[CYR:деля])
+### [CYR:[TRANSLATED]] 1: WebSocket (1 not[CYR:[TRANSLATED]])
 ```
 specs/tri/browser/websocket_client.vibee
 → trinity/output/websocket_client.zig
-→ [CYR:Реальное] [CYR:под]to[CYR:лючен]andе to CDP
+→ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]for[TRANSLATED]]andе to CDP
 ```
 
-### [CYR:Фаза] 2: CDP Integration (2 not[CYR:дел]and)
+### [CYR:[TRANSLATED]] 2: CDP Integration (2 not[CYR:[TRANSLATED]]and)
 ```
 specs/tri/browser/cdp_client.vibee
 → trinity/output/cdp_client.zig
-→ [CYR:Пол]onя [CYR:поддерж]toа CDP прfromоto[CYR:ола]
+→ [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]toа CDP прfromоfor[TRANSLATED]]
 ```
 
-### [CYR:Фаза] 3: Production (1 меwithяц)
+### [CYR:[TRANSLATED]] 3: Production (1 меwithяц)
 ```
 - CI/CD pipeline
-- npm/crates.io [CYR:публ]andtoацandя
-- Доto[CYR:ументац]andя on [CYR:англ]andйwithtoом
-- 1000+ [CYR:пользо]in[CYR:ателей]
+- npm/crates.io [CYR:[TRANSLATED]]andtoацandя
+- Доfor[TRANSLATED]]andя on [CYR:[TRANSLATED]]andйwithtoом
+- 1000+ [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]
 ```
 
 ---

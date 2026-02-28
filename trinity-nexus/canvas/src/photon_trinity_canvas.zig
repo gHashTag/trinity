@@ -67,15 +67,15 @@ const ChatMsgType = enum {
     user,
     ai,
     log,
-    // [CYR:[TRANSLATED]I] [CYR:[TRANSLATED]] — 8 chain nodes (Chakra colors)
-    chain_goal_parse, // Red — [CYR:[TRANSLATED]]
-    chain_decompose, // Orange — [EN]in[CYR:[TRANSLATED]]andwith[EN]on
-    chain_schedule, // Yellow — [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
-    chain_execute, // Green — Aon[CYR:[TRANSLATED]]
-    chain_monitor, // Blue — [EN]and[CYR:[TRANSLATED]]
-    chain_adapt, // Indigo — [CYR:A[EN]]on
-    chain_synthesize, // Violet — [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]
-    chain_deliver, // Gold — [EN]and[EN]with[EN]in[EN]
+    // [CYR:I]  — 8 chain nodes (Chakra colors)
+    chain_goal_parse, // Red — 
+    chain_decompose, // Orange — inandwithon
+    chain_schedule, // Yellow — and
+    chain_execute, // Green — Aon
+    chain_monitor, // Blue — and
+    chain_adapt, // Indigo — [CYR:A]on
+    chain_synthesize, // Violet — with
+    chain_deliver, // Gold — andwithin
     // Additional feedback types
     tool_result, // Tool execution
     routing_info, // Routing decision
@@ -485,7 +485,7 @@ fn addChatLogMessage(comptime fmt: []const u8, args: anytype) void {
 }
 
 // =============================================================================
-// [CYR:[EN]A[EN]A[EN]] [CYR:[TRANSLATED]] — Chakra Colors + Chain Indicator Renderer
+// [CYR:AA]  — Chakra Colors + Chain Indicator Renderer
 // =============================================================================
 
 fn getChainMsgColor(msg_type: ChatMsgType, alpha: u8) rl.Color {
@@ -1659,7 +1659,7 @@ const FormulaParticle = struct {
 const MAX_FORMULA_PARTICLES = 42;
 
 // ADVANCED WINDOW SYSTEM - GLASSMORPHISM PANELS
-// Floating notin[EN]with[CYR:[EN]y[EN]] windows with phi-based animations
+// Floating notinwithy] windows with phi-based animations
 // =============================================================================
 
 const MAX_PANELS = 12;

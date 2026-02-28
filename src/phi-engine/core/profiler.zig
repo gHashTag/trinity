@@ -11,7 +11,7 @@ const StringHashMap = std.StringHashMap;
 const ArrayList = std.ArrayList;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]] CONSTANTS
+//  CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PHI: f64 = 1.6180339887498948482;

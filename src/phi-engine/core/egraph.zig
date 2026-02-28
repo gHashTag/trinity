@@ -11,7 +11,7 @@ pub const PI: f64 = 3.14159265358979323846;
 pub const E: f64 = 2.71828182845904523536;
 pub const GOLDEN_IDENTITY: f64 = 3.0;
 
-// [EN]in[CYR:[EN]] Parameters [EN]in[CYR:[EN]]andand (PAS DAEMON V40)
+// in Parameters inand (PAS DAEMON V40)
 pub const MUTATION_RATE: f64 = 0.0381966; // 1/φ²/10
 pub const CROSSOVER_RATE: f64 = 0.0618034; // 1/φ/10
 pub const SELECTION_SIGMA: f64 = 1.6180339; // φ
@@ -461,7 +461,7 @@ pub const EGraph = struct {
         if (pattern.const_match) |expected| {
             const class = self.classes.get(root) orelse return false;
             for (class.nodes.items) |node| {
-                // [CYR:[EN]] with[EN]bywith[EN]in[CYR:[EN]]and[EN] within[CYR:[EN]] to[EN]with[CYR:[EN]] by [CYR:[EN]]
+                //  withbywithinand within towith by 
                 if (expected == .float) {
                     if (node.op == .const_phi and @abs(PHI - expected.float) < 0.0001) return true;
                     if (node.op == .const_pi and @abs(PI - expected.float) < 0.0001) return true;
@@ -482,7 +482,7 @@ pub const EGraph = struct {
         if (pattern.op) |op| {
             const class = self.classes.get(root) orelse return false;
             for (class.nodes.items) |node| {
-                // [EN]with[EN]and operator [CYR:[EN]] with[EN]in[EN]yes[EN] with [CYR:[EN]] [CYR:[EN]]on (into[CYR:[EN]] to[EN]with[CYR:[EN]]-[CYR:[EN]])
+                // withand operator  withinyes with  on (into towith-)
                 if (node.op == op) {
                     if (pattern.children[0] == null and node.child_count == 0) return true;
 
@@ -562,7 +562,7 @@ pub const EGraph = struct {
         return self.stats;
     }
 
-    /// Extracts [CYR:[EN]]and[EN] [CYR:[EN]] and[EN] e-to[EN]withwith[EN] on [EN]with[EN]in[EN] "within[CYR:[EN]]" [CYR:[EN]]to[EN]andand with[EN]and[EN]with[EN]and
+    /// Extracts and  and e-towith on within "within" toand withandwithand
     pub fn extractBest(self: *EGraph, class_id: EClassId) !ENode {
         const root = self.find(class_id);
         const class = self.classes.get(root) orelse return error.InvalidEClass;
@@ -573,11 +573,11 @@ pub const EGraph = struct {
         for (class.nodes.items) |node| {
             var cost = self.getNodeCost(node);
 
-            // [EN]to[EN]withandin[EN] add with[EN]and[EN]with[EN] [CYR:[EN]]
+            // towithandin add withandwith 
             for (node.children[0..node.child_count]) |maybe_child| {
                 if (maybe_child) |_| {
-                    // [EN] by[CYR:[EN]] [CYR:[EN]]and[CYR:[EN]]andand [CYR:[EN]]with[EN] need and[CYR:[EN]] [EN]andto[EN]in and andwithby[CYR:[EN]]in[CYR:[EN]] [CYR:[EN]]and[CYR:[EN]]and[EN]
-                    // [CYR:[EN]] MVP andwithby[CYR:[EN]] [CYR:[EN]] [CYR:[EN]]to[EN]
+                    //  by andand with need and andtoin and andwithbyin and
+                    //  MVP andwithby  to
                     cost += 1.0;
                 }
             }
@@ -594,11 +594,11 @@ pub const EGraph = struct {
     fn getNodeCost(self: *const EGraph, node: ENode) f64 {
         _ = self;
         return switch (node.op) {
-            .const_phi, .const_pi, .const_e => 0.1, // [EN]in[CYR:[EN]] to[EN]with[CYR:[EN]] by[EN]and [EN]with[CYR:[EN]]
-            .const_float, .const_int => 1.0, // [CYR:[EN]] to[EN]with[CYR:[EN]] before[CYR:[EN]]
+            .const_phi, .const_pi, .const_e => 0.1, // in towith byand with
+            .const_float, .const_int => 1.0, //  towith before
             .add, .sub => 2.0,
-            .mul, .div => 4.0, // [CYR:[EN]]and[EN] before[CYR:[EN]] with[CYR:[EN]]and[EN]
-            .pow, .exp, .ln => 10.0, // [CYR:[EN]] [CYR:[EN]]to[EN]andand with[CYR:[EN]] before[CYR:[EN]]and[EN]
+            .mul, .div => 4.0, // and before withand
+            .pow, .exp, .ln => 10.0, //  toand with beforeand
             else => 1.0,
         };
     }

@@ -1,50 +1,50 @@
 # HDC - Hyperdimensional Computing for Trinity
 
-## [CYR:Обзор]
+## [CYR:[TRANSLATED]]
 
-[CYR:Модуль] HDC [CYR:реал]and[CYR:зует] гand[CYR:перразмерные] inычandwith[CYR:лен]andя with [CYR:онлайн]-[CYR:обучен]andем for with[CYR:амообучающ]andхwithя AI [CYR:моделей] on оwithноinе [CYR:тро]and[CYR:чных] inеto[CYR:торо]in {-1, 0, +1}.
+[CYR:[TRANSLATED]] HDC [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] гand[CYR:[TRANSLATED]] inычandwith[TRANSLATED]]andя with [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]andем for with[TRANSLATED]]andхwithя AI [CYR:[TRANSLATED]] on оwithноinе [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] inеfor[TRANSLATED]]in {-1, 0, +1}.
 
-**[CYR:Стат]andwithтandtoа [CYR:модуля]:**
-- [CYR:Код]: 2031 with[CYR:тро]toа Zig
-- Теwithты: 29 (inwithе [CYR:проходят])
-- [CYR:Файло]in: 6
+**[CYR:[TRANSLATED]]andwithтandtoа [CYR:[TRANSLATED]]:**
+- [CYR:[TRANSLATED]]: 2031 with[TRANSLATED]]toа Zig
+- Теwithты: 29 (inwithе [CYR:[TRANSLATED]])
+- [CYR:[TRANSLATED]]in: 6
 
-## [CYR:Науч]onя [CYR:база]
+## [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]
 
-| Иwith[CYR:точн]andto | Прandмеnotнandе |
+| Иwith[TRANSLATED]]andto | Прandмеnotнandе |
 |----------|------------|
 | **Kanerva (2009)** | Hyperdimensional Computing |
-| **BitNet b1.58 (2024)** | [CYR:Тро]and[CYR:чные] inеwithа for LLM |
-| **Setun (1958)** | [CYR:Сбалан]withandроinанonя [CYR:тро]andчonя withandwith[CYR:тема] |
+| **BitNet b1.58 (2024)** | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] inеwithа for LLM |
+| **Setun (1958)** | [CYR:[TRANSLATED]]withandроinанonя [CYR:[TRANSLATED]]andчonя withandwith[TRANSLATED]] |
 | **Plate (1995)** | Holographic Reduced Representations |
 | **Sutton & Barto** | TD-Learning for RL |
 
-## [CYR:Стру]to[CYR:тура] [CYR:модуля]
+## [CYR:[TRANSLATED]]for[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
 src/phi-engine/hdc/
-├── hdc_core.zig          # [CYR:Базо]inые HDC [CYR:операц]andand (377 with[CYR:тро]to)
-├── online_classifier.zig # [CYR:Онлайн] toлаwithwithandфandto[CYR:атор] (302 with[CYR:тро]toand)
-├── rl_agent.zig          # RL [CYR:агент] with Q-learning (395 with[CYR:тро]to)
-├── gridworld.zig         # [CYR:Среда] GridWorld (294 with[CYR:тро]toand)
-├── demo_gridworld.zig    # [CYR:Демо] [CYR:обучен]andя (225 with[CYR:тро]to)
-├── streaming_memory.zig  # Пfromоtoоinая [CYR:память] (438 with[CYR:тро]to)
-└── README.md             # Доto[CYR:ументац]andя
+├── hdc_core.zig          # [CYR:[TRANSLATED]]inые HDC [CYR:[TRANSLATED]]and (377 with[TRANSLATED]]to)
+├── online_classifier.zig # [CYR:[TRANSLATED]] toлаwithandфandfor[TRANSLATED]] (302 with[TRANSLATED]]toand)
+├── rl_agent.zig          # RL [CYR:[TRANSLATED]] with Q-learning (395 with[TRANSLATED]]to)
+├── gridworld.zig         # [CYR:[TRANSLATED]] GridWorld (294 with[TRANSLATED]]toand)
+├── demo_gridworld.zig    # [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andя (225 with[TRANSLATED]]to)
+├── streaming_memory.zig  # Пfromоtoоinая [CYR:memory] (438 with[TRANSLATED]]to)
+└── README.md             # Доfor[TRANSLATED]]andя
 ```
 
-## [CYR:Математ]andtoа
+## [CYR:[TRANSLATED]]andtoа
 
-### [CYR:Базо]inые [CYR:операц]andand
+### [CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]and
 
-| [CYR:Операц]andя | [CYR:Формула] | Опandwithанandе |
+| [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]] | Опandwithанandе |
 |----------|---------|----------|
-| **Bind** | `c[i] = a[i] × b[i]` | Creation аwithwithоцandацandand |
-| **Unbind** | `c = bind(M, k)` | Изin[CYR:лечен]andе (with[CYR:амообрат]andмоwithть) |
-| **Bundle** | `c[i] = majority(a[i], b[i], ...)` | [CYR:Суперпоз]andцandя |
-| **Permute** | `c[(i+k) mod n] = a[i]` | [CYR:Код]andроinанandе [CYR:поз]andцandand |
-| **Similarity** | `cos(a,b) = (a·b)/(‖a‖×‖b‖)` | [CYR:Сход]withтinо |
+| **Bind** | `c[i] = a[i] × b[i]` | Creation аwithоцandацand |
+| **Unbind** | `c = bind(M, k)` | Изin[CYR:[TRANSLATED]]andе (with[TRANSLATED]]andмоwithть) |
+| **Bundle** | `c[i] = majority(a[i], b[i], ...)` | [CYR:[TRANSLATED]]andцandя |
+| **Permute** | `c[(i+k) mod n] = a[i]` | [CYR:[TRANSLATED]]andроinанandе [CYR:[TRANSLATED]]andцand |
+| **Similarity** | `cos(a,b) = (a·b)/(‖a‖×‖b‖)` | [CYR:[TRANSLATED]]withтinо |
 
-### [CYR:Онлайн] [CYR:обучен]andе
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andе
 
 ```
 P(t+1) = P(t) + η × (v - P(t))
@@ -59,27 +59,27 @@ Retrieve: value ≈ unbind(M, key)
 Forget:   M ← (1-λ)M
 ```
 
-## [CYR:Компо]not[CYR:нты]
+## [CYR:[TRANSLATED]]not[CYR:[TRANSLATED]]
 
-### 1. hdc_core.zig - [CYR:Базо]inые [CYR:операц]andand
+### 1. hdc_core.zig - [CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]and
 
 ```zig
 const hdc = @import("hdc_core.zig");
 
-// Creation inеto[CYR:торо]in
+// Creation inеfor[TRANSLATED]]in
 var v1 = try hdc.randomVector(allocator, 1000, seed);
 var v2 = try hdc.zeroVector(allocator, 1000);
 
-// [CYR:Операц]andand
+// [CYR:[TRANSLATED]]and
 hdc.bind(a.data, b.data, result.data);
 hdc.bundle2(a.data, b.data, result.data);
 const sim = hdc.similarity(a.data, b.data);
 
-// Кin[CYR:ант]and[CYR:зац]andя
+// Кin[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя
 hdc.quantizeToTernary(float_data, trit_data);
 ```
 
-### 2. online_classifier.zig - [CYR:Кла]withwithandфandto[CYR:атор]
+### 2. online_classifier.zig - [CYR:[TRANSLATED]]withandфandfor[TRANSLATED]]
 
 ```zig
 const clf = @import("online_classifier.zig");
@@ -94,7 +94,7 @@ try classifier.train(input_vector, "class_label");
 const result = classifier.predict(test_vector);
 ```
 
-### 3. rl_agent.zig - RL [CYR:агент]
+### 3. rl_agent.zig - RL [CYR:[TRANSLATED]]
 
 ```zig
 const rl = @import("rl_agent.zig");
@@ -111,7 +111,7 @@ const action = agent.selectAction(state_id);
 _ = agent.tdUpdate(state, action, reward, next_state, done);
 ```
 
-### 4. streaming_memory.zig - Пfromоtoоinая [CYR:память]
+### 4. streaming_memory.zig - Пfromоtoоinая [CYR:memory]
 
 ```zig
 const sm = @import("streaming_memory.zig");
@@ -124,7 +124,7 @@ const result = mem.retrieve(key.data, result_buf);
 mem.applyForgetting(0.1);
 ```
 
-### 5. gridworld.zig - [CYR:Среда] for теwithтandроinанandя
+### 5. gridworld.zig - [CYR:[TRANSLATED]] for теwithтandроinанandя
 
 ```zig
 const gw = @import("gridworld.zig");
@@ -136,13 +136,13 @@ var state = env.reset();
 const result = env.step(action);
 ```
 
-## [CYR:Запу]withto
+## [CYR:[TRANSLATED]]withto
 
 ```bash
 # Вwithе теwithты
 zig test src/phi-engine/hdc/demo_gridworld.zig
 
-# [CYR:Демо] GridWorld
+# [CYR:[TRANSLATED]] GridWorld
 zig build-exe src/phi-engine/hdc/demo_gridworld.zig -O ReleaseFast
 ./demo_gridworld
 ```
@@ -150,18 +150,18 @@ zig build-exe src/phi-engine/hdc/demo_gridworld.zig -O ReleaseFast
 ## Resultы demo
 
 ```
-Эпand[CYR:зодо]in:           500
-[CYR:Побед]:              478 (95.6%)
+Эпand[CYR:[TRANSLATED]]in:           500
+[CYR:[TRANSLATED]]:              478 (95.6%)
 Avg reward (100):   9.45
-✅ [CYR:ЦЕЛЬ] [CYR:ДОСТИГНУТА] за 6 stepоin!
+✅ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] за 6 stepоin!
 ```
 
-## [CYR:Про]andзinодand[CYR:тельно]withть
+## [CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withть
 
-| [CYR:Метр]andtoа | Зon[CYR:чен]andе |
+| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе |
 |---------|----------|
-| SIMD | 32 трandта [CYR:параллельно] |
-| [CYR:Обучен]andе | 1 ms / 500 эпand[CYR:зодо]in |
+| SIMD | 32 трandта [CYR:[TRANSLATED]] |
+| [CYR:[TRANSLATED]]andе | 1 ms / 500 эпand[CYR:[TRANSLATED]]in |
 | Win rate | 95.6% |
 
 ---

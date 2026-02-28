@@ -8,7 +8,7 @@
 
 ## Problem
 
-User reported: "[CYR:почему] withтрandмandнг not [CYR:поддерж]andin[CYR:ает]withя!!"
+User reported: "[CYR:[TRANSLATED]] withтрandмandнг not [CYR:[TRANSLATED]]andin[CYR:[TRANSLATED]]withя!!"
 
 The VIBEE Agent was not streaming responses from DeepSeek API - it waited for the full response before displaying.
 

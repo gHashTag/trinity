@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// VERILOG CODEGEN - [EN]not[CYR:[EN]] Verilog to[EN]yes and[EN] .vibee with[CYR:[EN]]and[EN]andto[EN]and[EN]
+// VERILOG CODEGEN - not Verilog toyes and .vibee withandtoand
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Generates Verilog code for FPGA withand[CYR:[EN]]
-// [EN]in[CYR:[EN]]: Dmitrii Vasilev
+// Generates Verilog code for FPGA withand
+// in: Dmitrii Vasilev
 // φ² + 1/φ² = 3 | PHOENIX = 999
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -294,7 +294,7 @@ pub const VerilogCodeGen = struct {
         self.builder.deinit();
     }
 
-    /// [EN]not[CYR:[EN]]and[EN] by[CYR:[EN]] Verilog file[EN] from specification
+    /// notand by Verilog file from specification
     pub fn generate(self: *Self, spec: *const VibeeSpec) ![]const u8 {
         self.spec = spec;
         try self.writeHeader(spec);

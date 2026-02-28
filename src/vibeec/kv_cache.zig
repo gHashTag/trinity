@@ -1,6 +1,6 @@
 // KV-CACHE - Key-Value Cache for Autoregressive Generation
-// [CYR:[EN]]and[EN]in[EN]and[EN] K,V [CYR:[EN]]in for [EN]withto[CYR:[EN]]and[EN] [EN]not[CYR:[EN]]andand
-// [CYR:[EN]] KV-cache: O(N²) [CYR:[EN]]and[EN], with KV-cache: O(N) [CYR:[EN]]and[EN]
+// andinand K,V in for withtoand notand
+//  KV-cache: O(N²) and, with KV-cache: O(N) and
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");

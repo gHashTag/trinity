@@ -26,7 +26,7 @@ TASK: "full local fluent multilingual chat + coding"
 
 COMPONENTS:
 ├── 1. Multilingual Chat Engine
-│   ├── Russian (раwithшand[CYR:ренный])
+│   ├── Russian (раwithшand[CYR:[TRANSLATED]])
 │   ├── English (enhanced)
 │   ├── Chinese (中文)
 │   ├── Spanish (español)
@@ -136,7 +136,7 @@ Files created:
 
 | Language | Detection | Greeting | Quality |
 |----------|-----------|----------|---------|
-| Russian | Cyrillic bytes | Прandinет! Я IGLA... | HIGH |
+| Russian | Cyrillic bytes | Прandinет!  IGLA... | HIGH |
 | English | Default | Hello! I'm IGLA... | HIGH |
 | Chinese | CJK range | 你好！我是IGLA... | HIGH |
 | Spanish | Markers (hola, gracias) | ¡Hola! Soy IGLA... | HIGH |
@@ -205,7 +205,7 @@ Files created:
 ### Russian Greeting
 ```
 Input: "прandinет"
-Output: "Прandinет! Я IGLA — лоto[CYR:альный] AI-аwithwithandwith[CYR:тент]. [CYR:Чем] [CYR:могу] [CYR:помочь]?"
+Output: "Прandinет!  IGLA — лоfor[TRANSLATED]] AI-аwithandwith[TRANSLATED]]. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]?"
 Language: Russian
 Category: Greeting
 Confidence: 0.95

@@ -1,5 +1,5 @@
-// TRINITY FORMAT (.tri) - [EN]andon[CYR:[EN]ny] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[EN]y[EN]] [CYR:[TRANSLATED]]
-// [CYR:[TRANSLATED]]to[EN]in[CYR:[EN]nye] [EN]and[EN]y: 4 [EN]and[EN] on [CYR:[TRANSLATED]] = 16x with[CYR:[TRANSLATED]]and[EN]
+// TRINITY FORMAT (.tri) - andon[CYR:ny]  and[CYR:y] 
+// toin[CYR:nye] andy: 4 and on  = 16x withand
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");
@@ -139,10 +139,10 @@ pub const TensorIndexEntry = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TRIT PACKING - 4 [EN]and[EN] on [CYR:[TRANSLATED]]
+// TRIT PACKING - 4 and on 
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:[TRANSLATED]]to[EN]into[EN] [EN]and[EN]in: 4 [EN]and[EN] on [CYR:[TRANSLATED]]
+/// tointo andin: 4 and on 
 /// trit value: -1 -> 0, 0 -> 1, +1 -> 2
 pub fn packTrits(allocator: std.mem.Allocator, trits: []const prometheus.TritWeight) ![]u8 {
     const packed_size = (trits.len + 3) / 4;
@@ -159,7 +159,7 @@ pub fn packTrits(allocator: std.mem.Allocator, trits: []const prometheus.TritWei
     return result;
 }
 
-/// [EN]with[EN]to[EN]into[EN] [EN]and[EN]in
+/// withtointo andin
 pub fn unpackTrits(allocator: std.mem.Allocator, packed_data: []const u8, num_trits: usize) ![]prometheus.TritWeight {
     const trits = try allocator.alloc(prometheus.TritWeight, num_trits);
 
@@ -232,19 +232,19 @@ pub const TrinityWriter = struct {
         self.header.num_kv_heads = num_kv_heads;
     }
 
-    /// [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]
+    /// inand 
     pub fn addTensor(self: *TrinityWriter, name: []const u8, shape: []const usize, trits: []const prometheus.TritWeight) !void {
-        // [CYR:[TRANSLATED]]to[EN]inyin[CYR:[TRANSLATED]] [EN]and[EN]y
+        // toinyin andy
         const packed_trits = try packTrits(self.allocator, trits);
         defer self.allocator.free(packed_trits);
 
-        // [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] shape
+        // and shape
         const shape_u32 = try self.allocator.alloc(u32, shape.len);
         for (shape, 0..) |dim, i| {
             shape_u32[i] = @intCast(dim);
         }
 
-        // [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andwith[EN] and[CYR:[TRANSLATED]]towith[EN]
+        //  andwith andtowith
         const entry = TensorIndexEntry{
             .name = try self.allocator.dupe(u8, name),
             .shape = shape_u32,
@@ -254,28 +254,28 @@ pub const TrinityWriter = struct {
 
         try self.index.append(entry);
 
-        // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [CYR:data] in buffer
+        // in[CYR:I] [CYR:data] in buffer
         try self.data_buffer.appendSlice(packed_trits);
         self.current_offset += packed_trits.len;
 
-        // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] with[CYR:[TRANSLATED]]andwith[EN]andto[EN]
+        // in[CYR:I] withandwithandto
         self.header.total_params += trits.len;
         self.header.num_tensors += 1;
     }
 
-    /// [EN]andon[EN]and[CYR:[TRANSLATED]]andI and [CYR:[TRANSLATED]]andwith[EN] file[EN]
+    /// andonandI and andwith file
     pub fn finalize(self: *TrinityWriter) !void {
         const writer = self.file.writer();
 
-        // 1. [CYR:[TRANSLATED]]andwithyin[CYR:[TRANSLATED]] [CYR:[EN]go[EN]]in[EN]to
+        // 1. andwithyin [CYR:go]into
         try self.header.write(writer);
 
-        // 2. [CYR:[TRANSLATED]]andwithyin[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towith
+        // 2. andwithyin andtowith
         for (self.index.items) |*entry| {
             try entry.write(writer);
         }
 
-        // 3. [CYR:[TRANSLATED]]andwithyin[CYR:[TRANSLATED]] [CYR:data]
+        // 3. andwithyin [CYR:data]
         try writer.writeAll(self.data_buffer.items);
 
         std.debug.print("\n", .{});
@@ -305,17 +305,17 @@ pub const TrinityReader = struct {
         const file = try std.fs.cwd().openFile(path, .{});
         const reader = file.reader();
 
-        // [EN]and[CYR:[TRANSLATED]] [CYR:[EN]go[EN]]in[EN]to
+        // and [CYR:go]into
         const header = try TrinityHeader.read(reader);
 
-        // [EN]and[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towith
+        // and andtowith
         var index = std.ArrayList(TensorIndexEntry).init(allocator);
         for (0..header.num_tensors) |_| {
             const entry = try TensorIndexEntry.read(allocator, reader);
             try index.append(entry);
         }
 
-        // [CYR:[TRANSLATED]]andon[EN] on[CYR:[TRANSLATED]] [CYR:data]
+        // andon on [CYR:data]
         const data_start = try file.getPos();
 
         return TrinityReader{
@@ -335,9 +335,9 @@ pub const TrinityReader = struct {
         self.index.deinit();
     }
 
-    /// [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] [EN] and[CYR:me]and
+    /// and   and[CYR:me]and
     pub fn getTensor(self: *TrinityReader, name: []const u8) ![]prometheus.TritWeight {
-        // [CYR:[TRANSLATED]] in and[CYR:[TRANSLATED]]towith[EN]
+        //  in andtowith
         for (self.index.items) |entry| {
             if (std.mem.eql(u8, entry.name, name)) {
                 return self.readTensorData(&entry);
@@ -346,32 +346,32 @@ pub const TrinityReader = struct {
         return error.TensorNotFound;
     }
 
-    /// [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] [EN] and[CYR:[TRANSLATED]]towith[EN]
+    /// and   andtowith
     pub fn getTensorByIndex(self: *TrinityReader, idx: usize) ![]prometheus.TritWeight {
         if (idx >= self.index.items.len) return error.IndexOutOfBounds;
         return self.readTensorData(&self.index.items[idx]);
     }
 
     fn readTensorData(self: *TrinityReader, entry: *const TensorIndexEntry) ![]prometheus.TritWeight {
-        // [CYR:[TRANSLATED]]and[EN] to [CYR:[TRANSLATED]y[EN]]
+        // and to [CYR:y]
         try self.file.seekTo(self.data_start + entry.data_offset);
 
-        // [EN]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]to[EN]in[CYR:[EN]nye] [CYR:data]
+        // and toin[CYR:nye] [CYR:data]
         const packed_bytes = try self.allocator.alloc(u8, entry.data_size);
         defer self.allocator.free(packed_bytes);
         _ = try self.file.reader().readAll(packed_bytes);
 
-        // [EN]with[EN]to[EN]inyin[CYR:[TRANSLATED]]
+        // withtoinyin
         const num_elements = entry.numElements();
         return unpackTrits(self.allocator, packed_bytes, num_elements);
     }
 
-    /// [EN]andwith[EN]to inwith[EN] [CYR:[TRANSLATED]]in
+    /// andwithto inwith in
     pub fn listTensors(self: *const TrinityReader) []const TensorIndexEntry {
         return self.index.items;
     }
 
-    /// [CYR:[TRANSLATED]ate] and[CYR:[TRANSLATED]]andand
+    /// [CYR:ate] andand
     pub fn printInfo(self: *const TrinityReader) void {
         std.debug.print("\n", .{});
         std.debug.print("╔══════════════════════════════════════════════════════════════╗\n", .{});
@@ -595,12 +595,12 @@ test "header write and read" {
         .num_layers = 32,
     };
 
-    // [CYR:[TRANSLATED]]andwithyin[CYR:[TRANSLATED]] in buffer
+    // andwithyin in buffer
     var buffer = std.ArrayList(u8).init(allocator);
     defer buffer.deinit();
     try header.write(buffer.writer());
 
-    // [EN]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+    // and 
     var stream = std.io.fixedBufferStream(buffer.items);
     const read_header = try TrinityHeader.read(stream.reader());
 

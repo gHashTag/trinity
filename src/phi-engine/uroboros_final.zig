@@ -73,7 +73,7 @@ pub const Uroboros = struct {
 
     pub fn consume(self: *Uroboros, path: []const u8) !void {
         std.debug.print("\n🐍═════════════════════════════════════════════════════🐍\n", .{});
-        std.debug.print("║        [CYR:[EN]] vFINAL: [CYR:[EN]] {d} [CYR:[EN]]            ║\n", .{self.cycle_count});
+        std.debug.print("║         vFINAL:  {d}             ║\n", .{self.cycle_count});
         std.debug.print("🐍═════════════════════════════════════════════════════🐍\n\n", .{});
 
         const content = try std.fs.cwd().readFileAlloc(self.allocator, path, 10 * 1024 * 1024);
@@ -83,7 +83,7 @@ pub const Uroboros = struct {
         defer profane.deinit();
 
         self.cycle_count += 1;
-        std.debug.print("  ✅ [EN]andto[EN] [EN]in[CYR:[EN]]: {d}\n", .{self.cycle_count});
+        std.debug.print("  ✅ andto in: {d}\n", .{self.cycle_count});
     }
 };
 
@@ -91,9 +91,9 @@ pub fn main() !void {
     const allocator = std.heap.page_allocator;
     var uroboros = Uroboros.init(allocator);
 
-    std.debug.print("\n🔥 [CYR:[EN]] vFINAL: [CYR:[EN]] [CYR:[EN]] 🔥\n", .{});
+    std.debug.print("\n🔥  vFINAL:   🔥\n", .{});
     try uroboros.consume("src/vibeec/tvc/tvc_ir.zig");
-    std.debug.print("\n🎉 [CYR:[EN]] vFINAL [CYR:[EN]] [CYR:[EN]] 🎉\n", .{});
+    std.debug.print("\n🎉  vFINAL   🎉\n", .{});
 }
 
 test "ouroboros final - sacred constants" {

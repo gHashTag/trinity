@@ -1,18 +1,18 @@
 # VIBEE Debug Footer Rule
 
-## [CYR:Обязательно] [CYR:доба]in[CYR:лять] in to[CYR:онце] [CYR:КАЖДОГО] with[CYR:ообщен]andя:
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] in for[TRANSLATED]] [CYR:[TRANSLATED]] with[TRANSLATED]]andя:
 
 ```
 ---
 🔧 **Debug Info:**
-- Model: [onзinанandе [CYR:модел]and]
-- Session: [тandп withеwithwithandand]
-- Tools: [andwith[CYR:пользуемые] tools]
-- Duration: [in[CYR:ремя] in[CYR:ыпол]notнandя]
-- Tokens: [andwith[CYR:пользо]in[CYR:ано] тоto[CYR:ено]in]
+- Model: [onзinанandе [CYR:[TRANSLATED]]and]
+- Session: [тandп withеwithand]
+- Tools: [andwith[TRANSLATED]] tools]
+- Duration: [in[CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]notнandя]
+- Tokens: [andwith[TRANSLATED]]in[CYR:[TRANSLATED]] тоfor[TRANSLATED]]in]
 ```
 
-## Прand[CYR:мер]:
+## Прand[CYR:[TRANSLATED]]:
 
 ```
 ---
@@ -24,20 +24,20 @@
 - Tokens: 12,450 / 200,000
 ```
 
-## [CYR:Зачем]:
+## [CYR:[TRANSLATED]]:
 
-1. **Дand[CYR:агно]withтandtoа** — inand[CYR:дно] toаtoая [CYR:модель] fromin[CYR:ечает]
-2. **[CYR:Отлад]toа** — [CYR:понятно] toаtoandе tools andwith[CYR:пользо]inалandwithь
-3. **[CYR:Про]andзinодand[CYR:тельно]withть** — inand[CYR:дно] in[CYR:ремя] and тоto[CYR:ены]
-4. **[CYR:Прозрачно]withть** — [CYR:пользо]in[CYR:атель] зonет that [CYR:про]andwith[CYR:ход]andт
+1. **Дand[CYR:[TRANSLATED]]withтandtoа** — inand[CYR:[TRANSLATED]] toаtoая [CYR:[TRANSLATED]] fromin[CYR:[TRANSLATED]]
+2. **[CYR:[TRANSLATED]]toа** — [CYR:[TRANSLATED]] toаtoandе tools andwith[TRANSLATED]]inалandwithь
+3. **[CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withть** — inand[CYR:[TRANSLATED]] in[CYR:[TRANSLATED]] and тоfor[TRANSLATED]]
+4. **[CYR:[TRANSLATED]]withть** — [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] зonет that [CYR:[TRANSLATED]]andwith[TRANSLATED]]andт
 
-## [CYR:Формат] for [CYR:разных] [CYR:моделей]:
+## [CYR:[TRANSLATED]] for [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
 
 - Claude Code: `claude-code (claude-3-5-sonnet-20241022)`
 - DeepSeek: `deepseek (deepseek-chat)`
 - Z.ai: `zai (zai-1.0)`
 - OpenClaw: `openclaw (default)`
 
-## Вwith[CYR:егда] [CYR:доба]in[CYR:лять] in to[CYR:онце]!
+## Вwith[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] in for[TRANSLATED]]!
 
-[CYR:Это] [CYR:пра]inandло for [CYR:ВСЕХ] [CYR:агенто]in and [CYR:ВСЕХ] with[CYR:ообщен]andй.
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inandло for [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in and [CYR:[TRANSLATED]] with[TRANSLATED]]andй.

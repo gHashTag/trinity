@@ -1,17 +1,17 @@
-# PAS DAEMON - [CYR:ФИНАЛЬНЫЙ] [CYR:СТАТУС]
+# PAS DAEMON - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-**[CYR:Дата]**: 2026-01-17  
-**[CYR:Вер]withandя**: V4  
-**[CYR:Стату]with**: [CYR:РАБОТАЕТ]
+**[CYR:[TRANSLATED]]**: 2026-01-17  
+**[CYR:[TRANSLATED]]withandя**: V4  
+**[CYR:[TRANSLATED]]with**: [CYR:[TRANSLATED]]
 
 ---
 
-## ✅ [CYR:ЧТО] [CYR:РЕАЛЬНО] [CYR:РАБОТАЕТ]
+## ✅ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### 1. TypeFeedback and[CYR:нтегр]andроinан in VM
+### 1. TypeFeedback and[CYR:[TRANSLATED]]andроinан in VM
 
 ```zig
-// vm.zig - [CYR:РЕАЛЬНЫЙ] toод
+// vm.zig - [CYR:[TRANSLATED]] toод
 pub const TypeFeedback = struct {
     type_observations: [1024]TypeObservation,
     branch_taken: [256]u32,
@@ -27,14 +27,14 @@ pub const VM = struct {
 };
 ```
 
-### 2. [CYR:Реальный] with[CYR:бор] [CYR:данных] in runFast()
+### 2. [CYR:[TRANSLATED]] with[TRANSLATED]] [CYR:[TRANSLATED]] in runFast()
 
 ```zig
 @intFromEnum(Opcode.ADD) => {
     const b = self.popFast();
     const a = self.popFast();
     
-    // [CYR:РЕАЛЬНЫЙ] with[CYR:бор] type feedback
+    // [CYR:[TRANSLATED]] with[TRANSLATED]] type feedback
     if (self.feedback_enabled) {
         self.feedback.recordType(@intCast(self.ip - 1), @intFromEnum(a.tag));
         self.feedback.recordType(@intCast(self.ip - 1), @intFromEnum(b.tag));
@@ -43,7 +43,7 @@ pub const VM = struct {
 }
 ```
 
-### 3. [CYR:Реальные] [CYR:бенчмар]toand
+### 3. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toand
 
 ```
 VIBEE VM Fibonacci Benchmark (2026-01-17)
@@ -54,7 +54,7 @@ fib(25) = 75025  Average: 8.594 ms
 fib(30) = 832040 Average: 97.203 ms
 ```
 
-### 4. Теwithты [CYR:проходят]
+### 4. Теwithты [CYR:[TRANSLATED]]
 
 - **40 теwithтоin** in vm.zig
 - **46 теwithтоin** in pas_daemon_v4.zig
@@ -63,9 +63,9 @@ fib(30) = 832040 Average: 97.203 ms
 
 ---
 
-## 📊 [CYR:РЕАЛЬНЫЕ] [CYR:МЕТРИКИ]
+## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Про]andзinодand[CYR:тельно]withть
+### [CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withть
 
 | Benchmark | VIBEE VM | Python 3.12 | Ratio |
 |-----------|----------|-------------|-------|
@@ -75,68 +75,68 @@ fib(30) = 832040 Average: 97.203 ms
 
 ### Type Feedback
 
-| [CYR:Метр]andtoа | Зon[CYR:чен]andе |
+| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе |
 |---------|----------|
-| total_observations | > 0 ([CYR:реально] withобand[CYR:рает]withя) |
-| monomorphic_ratio | Computeswithя andз [CYR:данных] |
-| biased_branch_ratio | Computeswithя andз [CYR:данных] |
+| total_observations | > 0 ([CYR:[TRANSLATED]] withобand[CYR:[TRANSLATED]]withя) |
+| monomorphic_ratio | Computeswithя andз [CYR:[TRANSLATED]] |
+| biased_branch_ratio | Computeswithя andз [CYR:[TRANSLATED]] |
 
 ---
 
-## ❌ [CYR:ЧТО] НЕ [CYR:СДЕЛАНО]
+## ❌ [CYR:[TRANSLATED]] НЕ [CYR:[TRANSLATED]]
 
-### Не [CYR:реал]andзоin[CYR:ано]:
+### Не [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]]:
 
 1. **Tracing JIT** - notт native code generation
 2. **Hidden Classes** - notт transition trees
-3. **Inline Caching** - with[CYR:тру]to[CYR:туры] еwithть, not and[CYR:нтегр]andроin[CYR:аны]
+3. **Inline Caching** - with[TRANSLATED]]for[TRANSLATED]] еwithть, not and[CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]]
 4. **Garbage Collection** - notт GC
 5. **Escape Analysis** - notт
 
-### Не [CYR:проч]and[CYR:тано] [CYR:полно]with[CYR:тью]:
+### Не [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[TRANSLATED]]:
 
-1. Gal et al., PLDI 2009 (12 with[CYR:тран]andц)
-2. Chambers & Ungar, OOPSLA 1989 (15 with[CYR:тран]andц)
-3. Hölzle et al., OOPSLA 1991 (14 with[CYR:тран]andц)
-4. Würthinger et al., Onward! 2013 (16 with[CYR:тран]andц)
+1. Gal et al., PLDI 2009 (12 with[TRANSLATED]]andц)
+2. Chambers & Ungar, OOPSLA 1989 (15 with[TRANSLATED]]andц)
+3. Hölzle et al., OOPSLA 1991 (14 with[TRANSLATED]]andц)
+4. Würthinger et al., Onward! 2013 (16 with[TRANSLATED]]andц)
 
 ---
 
-## 🎯 [CYR:ЧЕСТНАЯ] [CYR:ОЦЕНКА]
+## 🎯 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ### VIBEE VM v0.1.0:
 
-- ✅ **[CYR:Раб]from[CYR:ающ]andй and[CYR:нтерпретатор]** with реtoурwithandей
-- ✅ **Type feedback** and[CYR:нтегр]andроinан and withобand[CYR:рает] [CYR:данные]
-- ✅ **[CYR:Бенчмар]toand** [CYR:реальные], and[CYR:змеряемые]
-- ⚠️ **[CYR:Про]andзinодand[CYR:тельно]withть** ~1.1x vs Python (not in[CYR:печатляет])
-- ❌ **JIT** fromwithутwithтin[CYR:ует]
-- ❌ **GC** fromwithутwithтin[CYR:ует]
+- ✅ **[CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]andй and[CYR:[TRANSLATED]]** with реtoурwithandей
+- ✅ **Type feedback** and[CYR:[TRANSLATED]]andроinан and withобand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+- ✅ **[CYR:[TRANSLATED]]toand** [CYR:[TRANSLATED]], and[CYR:[TRANSLATED]]
+- ⚠️ **[CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withть** ~1.1x vs Python (not in[CYR:[TRANSLATED]])
+- ❌ **JIT** fromwithутwithтin[CYR:[TRANSLATED]]
+- ❌ **GC** fromwithутwithтin[CYR:[TRANSLATED]]
 
 ### PAS DAEMON v4:
 
-- ✅ **[CYR:Реальные] [CYR:бенчмар]toand** with std.time.nanoTimestamp()
-- ✅ **[CYR:Интеграц]andя with VM** [CYR:через] TypeFeedback
-- ✅ **[CYR:Вал]and[CYR:дац]andя [CYR:пред]withto[CYR:азан]andй** with error calculation
-- ⚠️ **[CYR:Пред]withto[CYR:азан]andя** оwithноin[CYR:аны] on [CYR:данных], но not on papers
+- ✅ **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toand** with std.time.nanoTimestamp()
+- ✅ **[CYR:[TRANSLATED]]andя with VM** [CYR:[TRANSLATED]] TypeFeedback
+- ✅ **[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]withfor[TRANSLATED]]andй** with error calculation
+- ⚠️ **[CYR:[TRANSLATED]]withfor[TRANSLATED]]andя** оwithноin[CYR:[TRANSLATED]] on [CYR:[TRANSLATED]], но not on papers
 
 ---
 
 ## 📈 ROADMAP
 
-### [CYR:Фаза] 1: [CYR:Опт]andмand[CYR:зац]andand and[CYR:нтерпретатора] (1-2 меwith[CYR:яца])
+### [CYR:[TRANSLATED]] 1: [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and and[CYR:[TRANSLATED]] (1-2 меwith[TRANSLATED]])
 
-1. [ ] Computed goto (еwithлand Zig [CYR:поддерж]andт)
+1. [ ] Computed goto (еwithлand Zig [CYR:[TRANSLATED]]andт)
 2. [ ] Superinstructions
-3. [ ] [CYR:Интеграц]andя inline_cache.zig
+3. [ ] [CYR:[TRANSLATED]]andя inline_cache.zig
 
-### [CYR:Фаза] 2: [CYR:Базо]inый JIT (3-6 меwith[CYR:яце]in)
+### [CYR:[TRANSLATED]] 2: [CYR:[TRANSLATED]]inый JIT (3-6 меwith[TRANSLATED]]in)
 
 1. [ ] Trace recording
 2. [ ] SSA IR
 3. [ ] Native codegen (x86-64)
 
-### [CYR:Фаза] 3: Production (12+ меwith[CYR:яце]in)
+### [CYR:[TRANSLATED]] 3: Production (12+ меwith[TRANSLATED]]in)
 
 1. [ ] Garbage collection
 2. [ ] Tiered compilation
@@ -144,24 +144,24 @@ fib(30) = 832040 Average: 97.203 ms
 
 ---
 
-## 🔬 [CYR:НАУЧНЫЕ] [CYR:ОСНОВЫ]
+## 🔬 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Изучено] (поin[CYR:ерхно]with[CYR:тно]):
+### [CYR:[TRANSLATED]] (поin[CYR:[TRANSLATED]]with[TRANSLATED]]):
 
-- Trace-based JIT to[CYR:онцепц]andя
-- Polymorphic Inline Caches to[CYR:онцепц]andя
-- Hidden Classes to[CYR:онцепц]andя
-- Partial Evaluation to[CYR:онцепц]andя
+- Trace-based JIT for[TRANSLATED]]andя
+- Polymorphic Inline Caches for[TRANSLATED]]andя
+- Hidden Classes for[TRANSLATED]]andя
+- Partial Evaluation for[TRANSLATED]]andя
 
-### [CYR:Требует]withя and[CYR:зуч]andть ([CYR:глубо]toо):
+### [CYR:[TRANSLATED]]withя and[CYR:[TRANSLATED]]andть ([CYR:[TRANSLATED]]toо):
 
-- [CYR:Полные] теtowithты 4 to[CYR:люче]inых papers
-- Иwith[CYR:ходн]andtoand LuaJIT, V8, PyPy
-- [CYR:Алгор]and[CYR:тмы] register allocation
+- [CYR:[TRANSLATED]] теtowithты 4 for[TRANSLATED]]inых papers
+- Иwith[TRANSLATED]]andtoand LuaJIT, V8, PyPy
+- [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] register allocation
 - SSA construction
 
 ---
 
-*"[CYR:Прогре]withwith and[CYR:змеряет]withя not withлоinамand, а [CYR:раб]from[CYR:ающ]andм to[CYR:одом]."*
+*"[CYR:[TRANSLATED]]with and[CYR:[TRANSLATED]]withя not withлоinамand,  [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]andм for[TRANSLATED]]."*
 
-**Теtoущandй with[CYR:тату]with: 40+ теwithтоin [CYR:проходят], type feedback [CYR:раб]from[CYR:ает], [CYR:бенчмар]toand [CYR:реальные].**
+**Теtoущandй with[TRANSLATED]]with: 40+ теwithтоin [CYR:[TRANSLATED]], type feedback [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]], [CYR:[TRANSLATED]]toand [CYR:[TRANSLATED]].**

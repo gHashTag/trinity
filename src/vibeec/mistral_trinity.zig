@@ -1,5 +1,5 @@
-// MISTRAL TRINITY - Mistral-7B on [CYR:[EN]]and[CYR:[EN]] in[EN]with[EN]
-// [CYR:[EN]]on[EN] [CYR:[EN]]and[CYR:[EN]]and[EN] [CYR:[EN]]and[EN]to[CYR:[EN]] Mistral with SIMD-[CYR:[EN]]and[EN]and[CYR:[EN]]and[EN]
+// MISTRAL TRINITY - Mistral-7B on and inwith
+// on and andto Mistral with SIMD-andand
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");
@@ -50,7 +50,7 @@ pub const MistralConfig = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// RMS LAYER NORM ([CYR:[EN]] [CYR:[EN]]and[EN] on in[EN]with[EN] - in[EN]with[EN] in float)
+// RMS LAYER NORM ( and on inwith - inwith in float)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn rmsNorm(output: []f32, input: []const f32, eps: f32) void {

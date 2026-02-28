@@ -2,8 +2,8 @@
 // jit_compiler_v7 v1.0.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// [EN]in[CYR:I[TRANSLATED]]onI [CYR:[TRANSLATED]]: V = n × 3^k × π^m × φ^p × e^q
-// [CYR:[TRANSLATED]I] and[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]with[EN]: φ² + 1/φ² = 3
+// in[CYR:I]onI : V = n × 3^k × π^m × φ^p × e^q
+// [CYR:I] andwith: φ² + 1/φ² = 3
 //
 // Author: Trinity Cycle 108
 // DO NOT EDIT - This file is auto-generated
@@ -15,7 +15,7 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]A[TRANSLATED]]
+// [CYR:A]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const HOT_THRESHOLD_DEFAULT: f64 = 100;
@@ -28,7 +28,7 @@ pub const EXPECTED_JIT_SPEEDUP_MIN: f64 = 2;
 
 pub const EXPECTED_JIT_SPEEDUP_MAX: f64 = 50;
 
-// [CYR:[TRANSLATED]]iny[EN] φ-[CYR:[TRANSLATED]]with[CYR:[TRANSLATED]y] (Sacred Formula)
+// iny φ-withy] (Sacred Formula)
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
 pub const TRINITY: f64 = 3.0;
@@ -39,7 +39,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// 
@@ -126,12 +126,12 @@ pub const Trit = enum(i8) {
     }
 };
 
-/// [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] TRINITY identity: φ² + 1/φ² = 3
+/// in TRINITY identity: φ² + 1/φ² = 3
 fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-and[CYR:[TRANSLATED]]fields[EN]andI
+/// φ-andfieldsandI
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;

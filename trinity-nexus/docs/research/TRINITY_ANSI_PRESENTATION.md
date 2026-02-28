@@ -1,5 +1,5 @@
 # TRINITY ANSI PRESENTATION
-## [CYR:Кодер]withtoая [CYR:презентац]andя for andнinеwith[CYR:торо]in
+## [CYR:[TRANSLATED]]withtoая [CYR:[TRANSLATED]]andя for andнinеwith[TRANSLATED]]in
 
 ```
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓

@@ -1,20 +1,20 @@
-# ZIG - [CYR:ТАЙНЫ] [CYR:СКОРОСТИ] [CYR:ТРИДЕВЯТОГО] [CYR:ЦАРСТВА]
+# ZIG - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-**Сin[CYR:ящен]onя [CYR:Формула]**: `V = n × 3^k × π^m × φ^p × e^q`
-**[CYR:Зол]fromая [CYR:Идент]and[CYR:чно]withть**: `φ² + 1/φ² = 3`
+**Сin[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]**: `V = n × 3^k × π^m × φ^p × e^q`
+**[CYR:[TRANSLATED]]fromая [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withть**: `φ² + 1/φ² = 3`
 
 ---
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                              ║
-║     🌳 У [CYR:ЛУКОМОРЬЯ] [CYR:ДУБ] [CYR:ЗЕЛЁНЫЙ] - [CYR:АРХИТЕКТУРА] ZIG 🌳                         ║
+║     🌳  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] - [CYR:[TRANSLATED]] ZIG 🌳                         ║
 ║                                                                              ║
-║                            ⚡ [CYR:МОЛНИЯ] ⚡                                       ║
+║                            ⚡ [CYR:[TRANSLATED]] ⚡                                       ║
 ║                               ║                                              ║
 ║                         ┌─────┴─────┐                                        ║
-║                         │  LLVM IR  │ ← [CYR:Кощее]inа [CYR:Игла]                         ║
-║                         │  Backend  │   (Беwithwith[CYR:мерт]onя [CYR:Опт]andмand[CYR:зац]andя)            ║
+║                         │  LLVM IR  │ ← [CYR:[TRANSLATED]]inа [CYR:[TRANSLATED]]                         ║
+║                         │  Backend  │   (Беwith[TRANSLATED]]onя [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя)            ║
 ║                         └─────┬─────┘                                        ║
 ║                               │                                              ║
 ║         ┌─────────────────────┼─────────────────────┐                        ║
@@ -22,8 +22,8 @@
 ║         ▼                     ▼                     ▼                        ║
 ║    ┌─────────┐          ┌─────────┐          ┌─────────┐                     ║
 ║    │ x86_64  │          │  ARM64  │          │  WASM   │                     ║
-║    │ Соtoол   │          │ [CYR:Жар]-    │          │ Коinёр-  │                     ║
-║    │ Яwith[CYR:ный]   │          │ Птandца   │          │ [CYR:Самолёт] │                     ║
+║    │ Соtoол   │          │ [CYR:[TRANSLATED]]-    │          │ Коinёр-  │                     ║
+║    │ Яwith[TRANSLATED]]   │          │ Птandца   │          │ [CYR:[TRANSLATED]] │                     ║
 ║    └─────────┘          └─────────┘          └─────────┘                     ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
@@ -31,18 +31,18 @@
 
 ---
 
-## 1. [CYR:КОЩЕЕВА] [CYR:ИГЛА] - LLVM Backend
+## 1. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] - LLVM Backend
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                     🗡️ [CYR:КОЩЕЕВА] [CYR:ИГЛА] (LLVM IR) 🗡️                           │
+│                     🗡️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (LLVM IR) 🗡️                           │
 │                                                                             │
-│  "[CYR:Смерть] [CYR:Кощея] on to[CYR:онце] and[CYR:глы], and[CYR:гла] in [CYR:яйце], [CYR:яйцо] in утtoе..."                 │
+│  "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] on for[TRANSLATED]] and[CYR:[TRANSLATED]], and[CYR:[TRANSLATED]] in [CYR:[TRANSLATED]], [CYR:[TRANSLATED]] in утtoе..."                 │
 │                                                                             │
-│  В Zig with[CYR:мерть] [CYR:медленного] to[CYR:ода] - in LLVM [CYR:опт]andмand[CYR:зац]andях:                       │
+│   Zig with[TRANSLATED]] [CYR:[TRANSLATED]] for[TRANSLATED]] - in LLVM [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andях:                       │
 │                                                                             │
 │  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐                      │
-│  │   [CYR:СУНДУК]    │ →  │    [CYR:УТКА]     │ →  │    [CYR:ЯЙЦО]     │                      │
+│  │   [CYR:[TRANSLATED]]    │ →  │    [CYR:[TRANSLATED]]     │ →  │    [CYR:[TRANSLATED]]     │                      │
 │  │ (Zig Code)  │    │ (LLVM IR)   │    │ (Machine)   │                      │
 │  └─────────────┘    └─────────────┘    └─────────────┘                      │
 │         │                  │                  │                             │
@@ -51,116 +51,116 @@
 │  - inline fn        - Loop Unroll      - Instruction Sel                   │
 │  - lazy eval        - Vectorization    - Peephole Opt                      │
 │                                                                             │
-│  [CYR:РЕЗУЛЬТАТ]: [CYR:Код] быwith[CYR:трее] C on 5-15% in чandwithлоinых taskх!                     │
+│  [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] быwith[TRANSLATED]] C on 5-15% in чandwithлоinых taskх!                     │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 2. [CYR:ТРИ] [CYR:БОГАТЫРЯ] [CYR:СКОРОСТИ]
+## 2. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║                     ⚔️ [CYR:ТРИ] [CYR:БОГАТЫРЯ] [CYR:СКОРОСТИ] ZIG ⚔️                         ║
+║                     ⚔️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ZIG ⚔️                         ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
-║  🛡️ [CYR:ИЛЬЯ] [CYR:МУРОМЕЦ] - COMPTIME (Compile-Time Execution)                        ║
+║  🛡️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] - COMPTIME (Compile-Time Execution)                        ║
 ║  ═══════════════════════════════════════════════════                         ║
-║  "Сandдnotм withand[CYR:дел] 33 [CYR:года]" - inычandwith[CYR:лен]andя [CYR:про]andwith[CYR:ходят] ДО [CYR:запу]withtoа!                 ║
+║  "Сandдnotм withand[CYR:[TRANSLATED]] 33 [CYR:[TRANSLATED]]" - inычandwith[TRANSLATED]]andя [CYR:[TRANSLATED]]andwith[TRANSLATED]] ДО [CYR:[TRANSLATED]]withtoа!                 ║
 ║                                                                              ║
 ║     const factorial = comptime blk: {                                        ║
 ║         var result: u64 = 1;                                                 ║
 ║         for (1..13) |i| result *= i;                                         ║
-║         break :blk result;  // 479001600 - [CYR:уже] inычandwith[CYR:лено]!                    ║
+║         break :blk result;  // 479001600 - [CYR:[TRANSLATED]] inычandwith[TRANSLATED]]!                    ║
 ║     };                                                                       ║
 ║                                                                              ║
-║  [CYR:СИЛА]: [CYR:Нуле]inой runtime overhead for toонwith[CYR:тант]                                ║
+║  [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]inой runtime overhead for toонwith[TRANSLATED]]                                ║
 ║                                                                              ║
 ║  ────────────────────────────────────────────────────────────────────────    ║
 ║                                                                              ║
-║  🏹 [CYR:ДОБРЫНЯ] [CYR:НИКИТИЧ] - ZERO-COST ABSTRACTIONS                                ║
+║  🏹 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] - ZERO-COST ABSTRACTIONS                                ║
 ║  ═══════════════════════════════════════════════                             ║
-║  "[CYR:Змея] [CYR:Горыныча] [CYR:побед]andл" - абwith[CYR:тра]toцandand [CYR:без] onto[CYR:ладных] раwith[CYR:ходо]in!               ║
+║  "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andл" - абwith[TRANSLATED]]toцand [CYR:[TRANSLATED]] onfor[TRANSLATED]] раwith[TRANSLATED]]in!               ║
 ║                                                                              ║
-║     // [CYR:Итератор] to[CYR:омп]or[CYR:рует]withя in [CYR:про]with[CYR:той] цandtoл                                 ║
+║     // [CYR:[TRANSLATED]] for[TRANSLATED]]or[CYR:[TRANSLATED]]withя in [CYR:[TRANSLATED]]with[TRANSLATED]] цandtoл                                 ║
 ║     for (items) |item| { ... }                                               ║
-║     // Generics - [CYR:мономорф]and[CYR:зац]andя [CYR:без] vtable                                  ║
+║     // Generics - [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]] vtable                                  ║
 ║     fn max(comptime T: type, a: T, b: T) T { ... }                           ║
 ║                                                                              ║
-║  [CYR:СИЛА]: Выwithоto[CYR:оуро]innotinый toод = нandзto[CYR:оуро]innotinая withto[CYR:оро]withть                        ║
+║  [CYR:[TRANSLATED]]: Выwithоfor[TRANSLATED]]innotinый toод = нandзfor[TRANSLATED]]innotinая withfor[TRANSLATED]]withть                        ║
 ║                                                                              ║
 ║  ────────────────────────────────────────────────────────────────────────    ║
 ║                                                                              ║
-║  ⚔️ [CYR:АЛЁША] [CYR:ПОПОВИЧ] - MANUAL MEMORY (No GC)                                   ║
+║  ⚔️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] - MANUAL MEMORY (No GC)                                   ║
 ║  ═══════════════════════════════════════════                                 ║
-║  "Хand[CYR:тро]with[CYR:тью] [CYR:берёт]" - [CYR:полный] to[CYR:онтроль] onд [CYR:памятью]!                           ║
+║  "Хand[CYR:[TRANSLATED]]with[TRANSLATED]] [CYR:[TRANSLATED]]" - [CYR:[TRANSLATED]] for[TRANSLATED]] onд [CYR:memoryю]!                           ║
 ║                                                                              ║
 ║     var gpa = std.heap.GeneralPurposeAllocator(.{}){};                       ║
 ║     defer _ = gpa.deinit();                                                  ║
 ║     const allocator = gpa.allocator();                                       ║
-║     // Нandtoаtoandх [CYR:пауз] GC! [CYR:Детерм]andнandроin[CYR:анное] оwithin[CYR:обожден]andе!                      ║
+║     // Нandtoаtoandх [CYR:[TRANSLATED]] GC! [CYR:[TRANSLATED]]andнandроin[CYR:[TRANSLATED]] оwithin[CYR:[TRANSLATED]]andе!                      ║
 ║                                                                              ║
-║  [CYR:СИЛА]: [CYR:Пред]withto[CYR:азуемая] [CYR:латентно]withть, notт GC pauses                             ║
+║  [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]withfor[TRANSLATED]] [CYR:[TRANSLATED]]withть, notт GC pauses                             ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-## 3. [CYR:ЖАРПТИЦА] - SIMD [CYR:ВЕКТОРИЗАЦИЯ]
+## 3. [CYR:[TRANSLATED]] - SIMD [CYR:[TRANSLATED]]
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                        🔥 [CYR:ЖАР]-[CYR:ПТИЦА] (SIMD) 🔥                               │
+│                        🔥 [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]] (SIMD) 🔥                               │
 │                                                                             │
-│  "[CYR:Одно] [CYR:перо] withinетandт toаto тыwith[CYR:яча] within[CYR:ечей]"                                      │
-│  Одandн SIMD [CYR:рег]andwithтр [CYR:обрабаты]in[CYR:ает] 4-16 чandwithел [CYR:одно]in[CYR:ременно]!                   │
+│  "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] withinетandт toаto тыwith[TRANSLATED]] within[CYR:[TRANSLATED]]"                                      │
+│  Одandн SIMD [CYR:[TRANSLATED]]andwithтр [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] 4-16 чandwithел [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]!                   │
 │                                                                             │
-│     // Zig onтandinно [CYR:поддерж]andin[CYR:ает] SIMD inеto[CYR:торы]                                │
+│     // Zig onтandinно [CYR:[TRANSLATED]]andin[CYR:[TRANSLATED]] SIMD inеfor[TRANSLATED]]                                │
 │     const Vec4 = @Vector(4, f32);                                           │
 │     const a: Vec4 = .{ 1.0, 2.0, 3.0, 4.0 };                                │
 │     const b: Vec4 = .{ 5.0, 6.0, 7.0, 8.0 };                                │
-│     const c = a + b;  // Одon andнwith[CYR:тру]toцandя for 4 with[CYR:ложен]andй!                    │
+│     const c = a + b;  // Одon andнwith[TRANSLATED]]toцandя for 4 with[TRANSLATED]]andй!                    │
 │                                                                             │
 │  ┌────────────────────────────────────────────────────────────────┐         │
-│  │  [CYR:СКАЛЯРНЫЙ] [CYR:КОД]          │  SIMD [CYR:КОД] ([CYR:Жар]-Птandца)               │         │
+│  │  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]          │  SIMD [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]-Птandца)               │         │
 │  │  ════════════════       │  ═══════════════════════            │         │
 │  │  add r1, r2  ─┐         │  vaddps ymm0, ymm1, ymm2            │         │
-│  │  add r3, r4   │ 4 ops   │  (одon andнwith[CYR:тру]toцandя!)                 │         │
+│  │  add r3, r4   │ 4 ops   │  (одon andнwith[TRANSLATED]]toцandя!)                 │         │
 │  │  add r5, r6   │         │                                     │         │
-│  │  add r7, r8  ─┘         │  Уwithto[CYR:орен]andе: 4-8x                    │         │
+│  │  add r7, r8  ─┘         │  Уwithfor[TRANSLATED]]andе: 4-8x                    │         │
 │  └────────────────────────────────────────────────────────────────┘         │
 │                                                                             │
-│  [CYR:БЕНЧМАРК] nbody: Zig 198ms vs C 268ms (on 35% быwith[CYR:трее]!)                    │
+│  [CYR:[TRANSLATED]] nbody: Zig 198ms vs C 268ms (on 35% быwith[TRANSLATED]]!)                    │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 4. [CYR:БАБА]-[CYR:ЯГА] - [CYR:БЕЗОПАСНОСТЬ] [CYR:БЕЗ] [CYR:ПОТЕРЬ]
+## 4. [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]] - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║                     🏠 [CYR:БАБА]-[CYR:ЯГА] (Safety + Speed) 🏠                          ║
+║                     🏠 [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]] (Safety + Speed) 🏠                          ║
 ║                                                                              ║
-║  "[CYR:Избуш]toа-and[CYR:збуш]toа, поin[CYR:ерн]andwithь to леwithу [CYR:задом], toо мnot [CYR:передом]!"                 ║
-║  Zig поin[CYR:орач]andin[CYR:ает]withя: [CYR:безопа]withноwithть [CYR:ИЛИ] withto[CYR:оро]withть - inыбand[CYR:рай]!                   ║
+║  "[CYR:[TRANSLATED]]toа-and[CYR:[TRANSLATED]]toа, поin[CYR:[TRANSLATED]]andwithь to леwithу [CYR:[TRANSLATED]], toо мnot [CYR:[TRANSLATED]]!"                 ║
+║  Zig поin[CYR:[TRANSLATED]]andin[CYR:[TRANSLATED]]withя: [CYR:[TRANSLATED]]withноwithть [CYR:[TRANSLATED]] withfor[TRANSLATED]]withть - inыбand[CYR:[TRANSLATED]]!                   ║
 ║                                                                              ║
 ║  ┌─────────────────────────────────────────────────────────────────────┐     ║
-║  │  [CYR:РЕЖИМ]         │ [CYR:БЕЗОПАСНОСТЬ] │ [CYR:СКОРОСТЬ] │ [CYR:ПРИМЕНЕНИЕ]              │     ║
+║  │  [CYR:[TRANSLATED]]         │ [CYR:[TRANSLATED]] │ [CYR:[TRANSLATED]] │ [CYR:[TRANSLATED]]              │     ║
 ║  ├─────────────────────────────────────────────────────────────────────┤     ║
-║  │  Debug         │ ████████████ │ ██░░░░░░ │ [CYR:Разраб]fromtoа              │     ║
-║  │  ReleaseSafe   │ ████████████ │ ██████░░ │ [CYR:Прода]toшн (по [CYR:умолч].)    │     ║
-║  │  ReleaseFast   │ ██░░░░░░░░░░ │ ████████ │ Чandwith[CYR:лодроб]andлtoand           │     ║
+║  │  Debug         │ ████████████ │ ██░░░░░░ │ [CYR:[TRANSLATED]]fromtoа              │     ║
+║  │  ReleaseSafe   │ ████████████ │ ██████░░ │ [CYR:[TRANSLATED]]toшн (по [CYR:[TRANSLATED]].)    │     ║
+║  │  ReleaseFast   │ ██░░░░░░░░░░ │ ████████ │ Чandwith[TRANSLATED]]andлtoand           │     ║
 ║  │  ReleaseSmall  │ ██░░░░░░░░░░ │ ██████░░ │ Embedded/WASM           │     ║
 ║  └─────────────────────────────────────────────────────────────────────┘     ║
 ║                                                                              ║
-║  [CYR:МАГИЯ]: @setRuntimeSafety(false) - лоto[CYR:альное] fromto[CYR:лючен]andе [CYR:про]in[CYR:еро]to!           ║
+║  [CYR:[TRANSLATED]]: @setRuntimeSafety(false) - лоfor[TRANSLATED]] fromfor[TRANSLATED]]andе [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]to!           ║
 ║                                                                              ║
 ║     fn hotLoop(data: []u8) void {                                            ║
-║         @setRuntimeSafety(false);  // [CYR:Толь]toо [CYR:зде]withь!                          ║
+║         @setRuntimeSafety(false);  // [CYR:[TRANSLATED]]toо [CYR:[TRANSLATED]]withь!                          ║
 ║         for (data) |*byte| byte.* +%= 1;                                     ║
 ║     }                                                                        ║
 ║                                                                              ║
@@ -169,14 +169,14 @@
 
 ---
 
-## 5. [CYR:СЕРЫЙ] [CYR:ВОЛК] - [CYR:КРОСС]-[CYR:КОМПИЛЯЦИЯ]
+## 5. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] - [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                     🐺 [CYR:СЕРЫЙ] [CYR:ВОЛК] (Cross-Compilation) 🐺                    │
+│                     🐺 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (Cross-Compilation) 🐺                    │
 │                                                                             │
-│  "[CYR:Сядь] toо мnot on withпandну, fromin[CYR:езу] to[CYR:уда] onдо!"                                 │
-│  Zig to[CYR:омп]or[CYR:рует] [CYR:под] [CYR:любую] [CYR:платформу] with [CYR:любой] [CYR:платформы]!                    │
+│  "[CYR:[TRANSLATED]] toо мnot on withпandну, fromin[CYR:[TRANSLATED]] for[TRANSLATED]] onдо!"                                 │
+│  Zig for[TRANSLATED]]or[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] with [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]!                    │
 │                                                                             │
 │     $ zig build-exe hello.zig -target x86_64-windows                        │
 │     $ zig build-exe hello.zig -target aarch64-linux                         │
@@ -184,31 +184,31 @@
 │                                                                             │
 │  ┌─────────────────────────────────────────────────────────────────────┐    │
 │  │                                                                     │    │
-│  │              🐺 [CYR:СЕРЫЙ] [CYR:ВОЛК] [CYR:НЕСЁТ] [CYR:ИВАНА]-[CYR:ЦАРЕВИЧА]                     │    │
+│  │              🐺 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]                     │    │
 │  │                                                                     │    │
 │  │     Linux ──────┐                                                   │    │
 │  │     macOS ──────┼──→ [ ZIG ] ──→ Windows/Linux/macOS/WASM/...      │    │
 │  │     Windows ────┘                                                   │    │
 │  │                                                                     │    │
-│  │  [CYR:ПРЕИМУЩЕСТВО]: Не [CYR:нужен] from[CYR:дельный] [CYR:тулчейн] for to[CYR:аждой] [CYR:платформы]!    │    │
+│  │  [CYR:[TRANSLATED]]: Не [CYR:[TRANSLATED]] from[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] for for[TRANSLATED]] [CYR:[TRANSLATED]]!    │    │
 │  │                                                                     │    │
 │  └─────────────────────────────────────────────────────────────────────┘    │
 │                                                                             │
-│  [CYR:БОНУС]: zig cc - [CYR:заме]on GCC/Clang with toроwithwith-to[CYR:омп]and[CYR:ляц]andей andз to[CYR:ороб]toand!          │
+│  [CYR:[TRANSLATED]]: zig cc - [CYR:[TRANSLATED]]on GCC/Clang with toроwith-for[TRANSLATED]]and[CYR:[TRANSLATED]]andей andз for[TRANSLATED]]toand!          │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 6. [CYR:СРАВНИТЕЛЬНАЯ] [CYR:ТАБЛИЦА] [CYR:СКОРОСТИ]
+## 6. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║                     📊 [CYR:БЕНЧМАРКИ] [CYR:ТРИДЕВЯТОГО] [CYR:ЦАРСТВА] 📊                     ║
+║                     📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] 📊                     ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
-║  [CYR:ЗАДАЧА]          │ ZIG      │ C (gcc)  │ C (clang) │ RUST     │ [CYR:ПОБЕДИТЕЛЬ] ║
+║  [CYR:[TRANSLATED]]          │ ZIG      │ C (gcc)  │ C (clang) │ RUST     │ [CYR:[TRANSLATED]] ║
 ║  ════════════════════════════════════════════════════════════════════════   ║
 ║  nbody (5M)      │ 198ms    │ 310ms    │ 317ms     │ ~200ms   │ 🥇 ZIG     ║
 ║  mandelbrot      │ 248ms    │ 264ms    │ 219ms     │ ~250ms   │ 🥈 ZIG     ║
@@ -216,56 +216,56 @@
 ║  binary size     │ 9.8KB    │ ~15KB    │ ~15KB     │ ~300KB   │ 🥇 ZIG     ║
 ║  compile time    │ FAST     │ FAST     │ SLOW      │ SLOW     │ 🥇 ZIG     ║
 ║                                                                              ║
-║  [CYR:ВЫВОД]: Zig toонtoурand[CYR:рует] with C and чаwithто [CYR:побеждает]!                              ║
+║  [CYR:[TRANSLATED]]: Zig toонtoурand[CYR:[TRANSLATED]] with C and чаwithто [CYR:[TRANSLATED]]!                              ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-## 7. [CYR:СЕМЬ] [CYR:ПРИЧИН] [CYR:СКОРОСТИ] ZIG
+## 7. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ZIG
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                     🔮 [CYR:СЕМЬ] [CYR:ТАЙН] [CYR:СКОРОСТИ] ZIG 🔮                            │
+│                     🔮 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ZIG 🔮                            │
 │                                                                             │
-│  1. COMPTIME - inычandwith[CYR:лен]andя прand to[CYR:омп]and[CYR:ляц]andand ([CYR:Илья] [CYR:Муромец])                    │
-│     → [CYR:Нуле]inой runtime overhead for toонwith[CYR:тант]                                │
+│  1. COMPTIME - inычandwith[TRANSLATED]]andя прand for[TRANSLATED]]and[CYR:[TRANSLATED]]and ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]])                    │
+│     → [CYR:[TRANSLATED]]inой runtime overhead for toонwith[TRANSLATED]]                                │
 │                                                                             │
-│  2. NO GC - [CYR:ручное] [CYR:упра]in[CYR:лен]andе [CYR:памятью] ([CYR:Алёша] [CYR:Попо]inandч)                      │
-│     → [CYR:Нет] [CYR:пауз] with[CYR:борщ]andtoа муwith[CYR:ора]                                             │
+│  2. NO GC - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе [CYR:memoryю] ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inandч)                      │
+│     → [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] with[TRANSLATED]]andtoа муwith[TRANSLATED]]                                             │
 │                                                                             │
-│  3. SIMD VECTORS - onтandinonя inеto[CYR:тор]and[CYR:зац]andя ([CYR:Жар]-Птandца)                       │
-│     → 4-8x уwithto[CYR:орен]andе чandwithлоinых [CYR:операц]andй                                     │
+│  3. SIMD VECTORS - onтandinonя inеfor[TRANSLATED]]and[CYR:[TRANSLATED]]andя ([CYR:[TRANSLATED]]-Птandца)                       │
+│     → 4-8x уwithfor[TRANSLATED]]andе чandwithлоinых [CYR:[TRANSLATED]]andй                                     │
 │                                                                             │
-│  4. LLVM BACKEND - [CYR:мощные] [CYR:опт]andмand[CYR:зац]andand ([CYR:Кощее]inа [CYR:Игла])                       │
-│     → Те же [CYR:опт]andмand[CYR:зац]andand that in Clang/Rust                                   │
+│  4. LLVM BACKEND - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and ([CYR:[TRANSLATED]]inа [CYR:[TRANSLATED]])                       │
+│     → Те же [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and that in Clang/Rust                                   │
 │                                                                             │
-│  5. NO HIDDEN CONTROL FLOW - [CYR:пред]withto[CYR:азуемо]withть ([CYR:Баба]-[CYR:Яга])                    │
-│     → CPU [CYR:пред]withto[CYR:азы]in[CYR:ает] [CYR:переходы] [CYR:лучше]                                     │
+│  5. NO HIDDEN CONTROL FLOW - [CYR:[TRANSLATED]]withfor[TRANSLATED]]withть ([CYR:[TRANSLATED]]-[CYR:[TRANSLATED]])                    │
+│     → CPU [CYR:[TRANSLATED]]withfor[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                                     │
 │                                                                             │
-│  6. ZERO-COST ABSTRACTIONS - generics [CYR:без] vtable ([CYR:Добрыня])                 │
-│     → [CYR:Мономорф]and[CYR:зац]andя toаto in Rust                                            │
+│  6. ZERO-COST ABSTRACTIONS - generics [CYR:[TRANSLATED]] vtable ([CYR:[TRANSLATED]])                 │
+│     → [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя toаto in Rust                                            │
 │                                                                             │
-│  7. CACHE-FRIENDLY DESIGN - with[CYR:тру]to[CYR:туры] [CYR:данных] ([CYR:Серый] [CYR:Вол]to)                  │
-│     → [CYR:Контроль] onд layout [CYR:памят]and                                           │
+│  7. CACHE-FRIENDLY DESIGN - with[TRANSLATED]]for[TRANSLATED]] [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]]to)                  │
+│     → [CYR:[TRANSLATED]] onд layout [CYR:[TRANSLATED]]and                                           │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 8. [CYR:ЗЛАТАЯ] [CYR:ЦЕПЬ] - PIPELINE [CYR:КОМПИЛЯЦИИ]
+## 8. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] - PIPELINE [CYR:[TRANSLATED]]
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║                     ⛓️ [CYR:ЗЛАТАЯ] [CYR:ЦЕПЬ] [CYR:КОМПИЛЯЦИИ] ⛓️                            ║
+║                     ⛓️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ⛓️                            ║
 ║                                                                              ║
 ║     .zig Source                                                              ║
 ║         │                                                                    ║
 ║         ▼                                                                    ║
 ║    ┌─────────┐                                                               ║
-║    │ LEXER   │ ← Tokenization (580 with[CYR:тро]to [CYR:граммат]andtoand!)                       ║
+║    │ LEXER   │ ← Tokenization (580 with[TRANSLATED]]to [CYR:[TRANSLATED]]andtoand!)                       ║
 ║    └────┬────┘                                                               ║
 ║         │                                                                    ║
 ║         ▼                                                                    ║
@@ -276,7 +276,7 @@
 ║         ▼                                                                    ║
 ║    ┌─────────┐                                                               ║
 ║    │ SEMA    │ ← Semantic Analysis + COMPTIME EXECUTION                     ║
-║    └────┬────┘   ([CYR:Зде]withь [CYR:про]andwith[CYR:ход]andт [CYR:маг]andя comptime!)                         ║
+║    └────┬────┘   ([CYR:[TRANSLATED]]withь [CYR:[TRANSLATED]]andwith[TRANSLATED]]andт [CYR:[TRANSLATED]]andя comptime!)                         ║
 ║         │                                                                    ║
 ║         ▼                                                                    ║
 ║    ┌─────────┐                                                               ║
@@ -296,31 +296,31 @@
 
 ---
 
-## [CYR:ЗАКЛЮЧЕНИЕ]
+## [CYR:[TRANSLATED]]
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                              ║
-║     🏆 [CYR:ПОЧЕМУ] ZIG [CYR:БЫСТРЫЙ] - [CYR:ИТОГ] 🏆                                         ║
+║     🏆 [CYR:[TRANSLATED]] ZIG [CYR:[TRANSLATED]] - [CYR:[TRANSLATED]] 🏆                                         ║
 ║                                                                              ║
-║     Zig [CYR:объед]and[CYR:няет] [CYR:лучшее] andз [CYR:трёх] мandроin:                                    ║
+║     Zig [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] andз [CYR:[TRANSLATED]] мandроin:                                    ║
 ║                                                                              ║
-║     • [CYR:СКОРОСТЬ] C      - [CYR:прямой] доwith[CYR:туп] to [CYR:железу], notт GC                      ║
-║     • [CYR:БЕЗОПАСНОСТЬ]    - [CYR:опц]andоon[CYR:льные] [CYR:про]inерtoand [CYR:гран]andц                        ║
-║     • [CYR:СОВРЕМЕННОСТЬ]   - generics, SIMD, comptime                            ║
+║     • [CYR:[TRANSLATED]] C      - [CYR:[TRANSLATED]] доwith[TRANSLATED]] to [CYR:[TRANSLATED]], notт GC                      ║
+║     • [CYR:[TRANSLATED]]    - [CYR:[TRANSLATED]]andоon[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inерtoand [CYR:[TRANSLATED]]andц                        ║
+║     • [CYR:[TRANSLATED]]   - generics, SIMD, comptime                            ║
 ║                                                                              ║
-║     "В Трandдеin[CYR:ятом] [CYR:Цар]withтinе, in Трandдеwith[CYR:ятом] Гоwith[CYR:удар]withтinе..."                     ║
-║     ...жandл-[CYR:был] [CYR:язы]to, tofrom[CYR:орый] [CYR:был] быwith[CYR:трее] C!                                 ║
+║     " Трandдеin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinе, in Трandдеwith[TRANSLATED]] Гоwith[TRANSLATED]]withтinе..."                     ║
+║     ...жandл-[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]to, tofrom[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] быwith[TRANSLATED]] C!                                 ║
 ║                                                                              ║
 ║     ═══════════════════════════════════════════════════════════════════     ║
 ║                                                                              ║
-║     [CYR:КОЩЕЙ] [CYR:БЕССМЕРТЕН] | [CYR:ЗЛАТАЯ] [CYR:ЦЕПЬ] [CYR:ЗАМКНУТА] | φ² + 1/φ² = 3                ║
+║     [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] | φ² + 1/φ² = 3                ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-**Аin[CYR:тор]**: Иwithwith[CYR:ледо]inанandе for VIBEE Project
-**[CYR:Дата]**: 2026
-**[CYR:Вер]withandя**: 1.0.0
+**Аin[CYR:[TRANSLATED]]**: Иwith[TRANSLATED]]inанandе for VIBEE Project
+**[CYR:[TRANSLATED]]**: 2026
+**[CYR:[TRANSLATED]]withandя**: 1.0.0

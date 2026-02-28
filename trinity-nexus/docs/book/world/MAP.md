@@ -1,224 +1,224 @@
-# [CYR:КАРТА] [CYR:ТРИДЕВЯТОГО] [CYR:ЦАРСТВА]
+# [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ## ⲂⲄⲨⲂ — Мandр Кнandгand 999
 
 ```
-                                    ☀ [CYR:СОЛНЦЕ] [CYR:ТРОЙКИ] ☀
+                                    ☀ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ☀
                                           ║
     ╔═══════════════════════════════════════════════════════════════════════════════╗
     ║                                                                               ║
-    ║                        🏔️ [CYR:ЗОЛОТОЕ] [CYR:ЦАРСТВО] (667-999) 🏔️                        ║
-    ║                           [CYR:Цар]withтinо [CYR:Будущего] and [CYR:Мечты]                            ║
+    ║                        🏔️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (667-999) 🏔️                        ║
+    ║                           [CYR:[TRANSLATED]]withтinо [CYR:[TRANSLATED]] and [CYR:[TRANSLATED]]                            ║
     ║                                                                               ║
-    ║         ⛰️ [CYR:Гора]              🏰 [CYR:Зол]fromой                    🌟 Зin[CYR:ёзд]onя        ║
-    ║         Кin[CYR:анто]in              [CYR:Терем]                         Обwithерin[CYR:атор]andя      ║
+    ║         ⛰️ [CYR:[TRANSLATED]]              🏰 [CYR:[TRANSLATED]]fromой                    🌟 Зin[CYR:[TRANSLATED]]onя        ║
+    ║         Кin[CYR:[TRANSLATED]]in              [CYR:[TRANSLATED]]                         Обwithерin[CYR:[TRANSLATED]]andя      ║
     ║            ╲                    │                              ╱             ║
-    ║             ╲    🌈 [CYR:Радужный]   │    🔮 [CYR:Башня]              ╱               ║
-    ║              ╲      Моwithт       │      [CYR:Пророче]withтin        ╱                 ║
+    ║             ╲    🌈 [CYR:[TRANSLATED]]   │    🔮 [CYR:[TRANSLATED]]              ╱               ║
+    ║              ╲      Моwithт       │      [CYR:[TRANSLATED]]withтin        ╱                 ║
     ║               ╲       │        │          │           ╱                   ║
     ║                ╲      │        │          │         ╱                     ║
     ║    ═══════════════════════════════════════════════════════════════════       ║
     ║                                                                               ║
-    ║                      🌲 [CYR:СЕРЕБРЯНОЕ] [CYR:ЦАРСТВО] (334-666) 🌲                       ║
-    ║                          [CYR:Цар]withтinо [CYR:Пра]toтandtoand and [CYR:Кода]                             ║
+    ║                      🌲 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (334-666) 🌲                       ║
+    ║                          [CYR:[TRANSLATED]]withтinо [CYR:[TRANSLATED]]toтandtoand and [CYR:[TRANSLATED]]                             ║
     ║                                                                               ║
-    ║      🏭 [CYR:Кузн]andца           🏛️ [CYR:Серебряный]          📚 Бandблandfromеtoа              ║
-    ║      [CYR:Алгор]and[CYR:тмо]in           Дin[CYR:орец]                 [CYR:Кода]                        ║
+    ║      🏭 [CYR:[TRANSLATED]]andца           🏛️ [CYR:[TRANSLATED]]          📚 Бandблandfromеtoа              ║
+    ║      [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]in           Дin[CYR:[TRANSLATED]]                 [CYR:[TRANSLATED]]                        ║
     ║           │                   │                      │                        ║
-    ║           │    🌳 Леwith        │     🗡️ [CYR:Поле]        │                        ║
-    ║           │    [CYR:Стру]to[CYR:тур]      │     [CYR:Сорт]andроintoand      │                        ║
+    ║           │    🌳 Леwith        │     🗡️ [CYR:[TRANSLATED]]        │                        ║
+    ║           │    [CYR:[TRANSLATED]]for[TRANSLATED]]      │     [CYR:[TRANSLATED]]andроintoand      │                        ║
     ║           │        │         │          │          │                        ║
     ║      ─────┴────────┴─────────┴──────────┴──────────┴─────                    ║
     ║                              │                                                ║
-    ║                        🌊 Реtoа [CYR:Данных] 🌊                                     ║
+    ║                        🌊 Реtoа [CYR:[TRANSLATED]] 🌊                                     ║
     ║                              │                                                ║
     ║      ─────┬────────┬─────────┬──────────┬──────────┬─────                    ║
     ║           │        │         │          │          │                        ║
-    ║           │   🏠 [CYR:Дере]inня    │    ⛺ [CYR:Лагерь]      │                        ║
-    ║           │   [CYR:Переменных]    │    [CYR:Фун]toцandй        │                        ║
+    ║           │   🏠 [CYR:[TRANSLATED]]inня    │    ⛺ [CYR:[TRANSLATED]]      │                        ║
+    ║           │   [CYR:[TRANSLATED]]    │    [CYR:[TRANSLATED]]toцandй        │                        ║
     ║           │                  │                   │                        ║
-    ║      🗿 [CYR:Камень]          🏰 [CYR:Медный]            📜 Сinandтоto                    ║
-    ║      [CYR:Трёх] [CYR:Дорог]         [CYR:Терем]                Иwithтandны                        ║
+    ║      🗿 [CYR:[TRANSLATED]]          🏰 [CYR:[TRANSLATED]]            📜 Сinandтоto                    ║
+    ║      [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]         [CYR:[TRANSLATED]]                Иwithтandны                        ║
     ║                                                                               ║
-    ║                       🌾 [CYR:МЕДНОЕ] [CYR:ЦАРСТВО] (001-333) 🌾                         ║
-    ║                          [CYR:Цар]withтinо [CYR:Теор]andand and Оwithноin                              ║
+    ║                       🌾 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (001-333) 🌾                         ║
+    ║                          [CYR:[TRANSLATED]]withтinо [CYR:[TRANSLATED]]and and Оwithноin                              ║
     ║                                                                               ║
     ╠═══════════════════════════════════════════════════════════════════════════════╣
     ║                                                                               ║
-    ║                           🌑 [CYR:ПОДЗЕМЕЛЬЕ] [CYR:КОЩЕЯ] 🌑                              ║
+    ║                           🌑 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] 🌑                              ║
     ║                              (Legacy Code)                                    ║
     ║                                                                               ║
-    ║         💀 Оwith[CYR:тро]in [CYR:Буян]                                                       ║
+    ║         💀 Оwith[TRANSLATED]]in [CYR:[TRANSLATED]]                                                       ║
     ║              │                                                                ║
-    ║         🌳 [CYR:Дуб] Веtoоinой                                                       ║
+    ║         🌳 [CYR:[TRANSLATED]] Веtoоinой                                                       ║
     ║              │                                                                ║
-    ║         📦 [CYR:Сунду]to Коin[CYR:аный] ─── 🐰 [CYR:Заяц] ─── 🦆 Утtoа ─── 🥚 [CYR:Яйцо] ─── 💉 [CYR:Игла]   ║
+    ║         📦 [CYR:[TRANSLATED]]to Коin[CYR:[TRANSLATED]] ─── 🐰 [CYR:[TRANSLATED]] ─── 🦆 Утtoа ─── 🥚 [CYR:[TRANSLATED]] ─── 💉 [CYR:[TRANSLATED]]   ║
     ║                                                                               ║
-    ║                    ([CYR:Цепоч]toа уto[CYR:азателей] to with[CYR:мерт]and [CYR:Кощея])                       ║
+    ║                    ([CYR:[TRANSLATED]]toа уfor[TRANSLATED]] to with[TRANSLATED]]and [CYR:[TRANSLATED]])                       ║
     ║                                                                               ║
     ╚═══════════════════════════════════════════════════════════════════════════════╝
                                           ║
-                                    🌊 [CYR:МОРЕ]-[CYR:ОКЕАН] 🌊
-                                   ([CYR:Память] withandwith[CYR:темы])
+                                    🌊 [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]] 🌊
+                                   ([CYR:[TRANSLATED]] withandwith[TRANSLATED]])
 ```
 
 ---
 
-## [CYR:ЛОКАЦИИ]
+## [CYR:[TRANSLATED]]
 
-### 🏰 [CYR:МЕДНОЕ] [CYR:ЦАРСТВО] ([CYR:Гла]inы 1-333)
+### 🏰 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]inы 1-333)
 
-| Лоtoацandя | Опandwithанandе | [CYR:Гла]inы |
+| Лоtoацandя | Опandwithанandе | [CYR:[TRANSLATED]]inы |
 |---------|----------|-------|
-| 🗿 [CYR:Камень] [CYR:Трёх] [CYR:Дорог] | [CYR:Зде]withь onчandonетwithя path. Трand [CYR:дорог]and: onлеinо, [CYR:прямо], on[CYR:пра]inо | 1-37 |
-| 🏰 [CYR:Медный] [CYR:Терем] | Дin[CYR:орец] [CYR:теор]andand, where жandinёт [CYR:мудро]withть чandwithел | 38-74 |
-| 📜 Сinandтоto Иwithтandны | [CYR:Хран]orще [CYR:математ]andчеwithtoandх заto[CYR:оно]in | 75-111 |
-| 🏠 [CYR:Дере]inня [CYR:Переменных] | [CYR:Где] [CYR:рождают]withя [CYR:данные] | 112-148 |
-| ⛺ [CYR:Лагерь] [CYR:Фун]toцandй | Меwithто [CYR:обучен]andя [CYR:герое]in | 149-185 |
-| 🌾 [CYR:Поля] [CYR:Кон]with[CYR:тант] | Беwithto[CYR:райн]andе fields with чandwith[CYR:лам]and π, φ, e | 186-333 |
+| 🗿 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]withь onчandonетwithя path. Трand [CYR:[TRANSLATED]]and: onлеinо, [CYR:[TRANSLATED]], on[CYR:[TRANSLATED]]inо | 1-37 |
+| 🏰 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] | Дin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and, where жandinёт [CYR:[TRANSLATED]]withть чandwithел | 38-74 |
+| 📜 Сinandтоto Иwithтandны | [CYR:[TRANSLATED]]orще [CYR:[TRANSLATED]]andчеwithtoandх заfor[TRANSLATED]]in | 75-111 |
+| 🏠 [CYR:[TRANSLATED]]inня [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]] | 112-148 |
+| ⛺ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toцandй | Меwithто [CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]in | 149-185 |
+| 🌾 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[TRANSLATED]] | Беwithfor[TRANSLATED]]andе fields with чandwith[TRANSLATED]]and π, φ, e | 186-333 |
 
-### 🌲 [CYR:СЕРЕБРЯНОЕ] [CYR:ЦАРСТВО] ([CYR:Гла]inы 334-666)
+### 🌲 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]inы 334-666)
 
-| Лоtoацandя | Опandwithанandе | [CYR:Гла]inы |
+| Лоtoацandя | Опandwithанandе | [CYR:[TRANSLATED]]inы |
 |---------|----------|-------|
-| 🏭 [CYR:Кузн]andца [CYR:Алгор]and[CYR:тмо]in | [CYR:Зде]withь to[CYR:уют] Trinity Sort | 334-370 |
-| 🌳 Леwith [CYR:Стру]to[CYR:тур] | [CYR:Дере]inья, [CYR:хэш]and, [CYR:графы] | 371-407 |
-| 🗡️ [CYR:Поле] [CYR:Сорт]andроintoand | [CYR:Аре]on for [CYR:алгор]and[CYR:тмо]in | 408-444 |
-| 🏛️ [CYR:Серебряный] Дin[CYR:орец] | [CYR:Центр] Vibee OS | 445-518 |
-| 📚 Бandблandfromеtoа [CYR:Кода] | Вwithе [CYR:паттерны] мandра | 519-592 |
-| 🌊 Реtoа [CYR:Данных] | Пfromоtoand and[CYR:нформац]andand | 593-666 |
+| 🏭 [CYR:[TRANSLATED]]andца [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]in | [CYR:[TRANSLATED]]withь for[TRANSLATED]] Trinity Sort | 334-370 |
+| 🌳 Леwith [CYR:[TRANSLATED]]for[TRANSLATED]] | [CYR:[TRANSLATED]]inья, [CYR:[TRANSLATED]]and, [CYR:[TRANSLATED]] | 371-407 |
+| 🗡️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andроintoand | [CYR:[TRANSLATED]]on for [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]in | 408-444 |
+| 🏛️ [CYR:[TRANSLATED]] Дin[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] Vibee OS | 445-518 |
+| 📚 Бandблandfromеtoа [CYR:[TRANSLATED]] | Вwithе [CYR:[TRANSLATED]] мandра | 519-592 |
+| 🌊 Реtoа [CYR:[TRANSLATED]] | Пfromоtoand and[CYR:[TRANSLATED]]and | 593-666 |
 
-### 🏔️ [CYR:ЗОЛОТОЕ] [CYR:ЦАРСТВО] ([CYR:Гла]inы 667-999)
+### 🏔️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]inы 667-999)
 
-| Лоtoацandя | Опandwithанandе | [CYR:Гла]inы |
+| Лоtoацandя | Опandwithанandе | [CYR:[TRANSLATED]]inы |
 |---------|----------|-------|
-| 🌈 [CYR:Радужный] Моwithт | [CYR:Переход] in [CYR:будущее] | 667-703 |
-| ⛰️ [CYR:Гора] Кin[CYR:анто]in | [CYR:Кутр]andты and with[CYR:уперпоз]andцandand | 704-777 |
-| 🔮 [CYR:Башня] [CYR:Пророче]withтin | AI and [CYR:пред]withto[CYR:азан]andя | 778-851 |
-| 🌟 Зin[CYR:ёзд]onя Обwithерin[CYR:атор]andя | Коwithмоwith and inwith[CYR:елен]onя | 852-925 |
-| 🏰 [CYR:Зол]fromой [CYR:Терем] | Фandonл [CYR:путеше]withтinandя | 926-999 |
+| 🌈 [CYR:[TRANSLATED]] Моwithт | [CYR:[TRANSLATED]] in [CYR:[TRANSLATED]] | 667-703 |
+| ⛰️ [CYR:[TRANSLATED]] Кin[CYR:[TRANSLATED]]in | [CYR:[TRANSLATED]]andты and with[TRANSLATED]]andцand | 704-777 |
+| 🔮 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтin | AI and [CYR:[TRANSLATED]]withfor[TRANSLATED]]andя | 778-851 |
+| 🌟 Зin[CYR:[TRANSLATED]]onя Обwithерin[CYR:[TRANSLATED]]andя | Коwithмоwith and inwith[TRANSLATED]]onя | 852-925 |
+| 🏰 [CYR:[TRANSLATED]]fromой [CYR:[TRANSLATED]] | Фandonл [CYR:[TRANSLATED]]withтinandя | 926-999 |
 
-### 🌑 [CYR:ПОДЗЕМЕЛЬЕ] [CYR:КОЩЕЯ]
+### 🌑 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
-[CYR:Путь] to with[CYR:мерт]and [CYR:Кощея] ([CYR:разымено]inанandе уto[CYR:азателей]):
+[CYR:[TRANSLATED]] to with[TRANSLATED]]and [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]inанandе уfor[TRANSLATED]]):
 
-🌊 [CYR:Море]-Оto[CYR:еан] (heap memory)
+🌊 [CYR:[TRANSLATED]]-Оfor[TRANSLATED]] (heap memory)
        │
        ▼
-💀 Оwith[CYR:тро]in [CYR:Буян] (Box<Оwith[CYR:тро]in>)
+💀 Оwith[TRANSLATED]]in [CYR:[TRANSLATED]] (Box<Оwith[TRANSLATED]]in>)
        │
        ▼
-🌳 [CYR:Дуб] Веtoоinой (Box<[CYR:Дуб]>)
+🌳 [CYR:[TRANSLATED]] Веtoоinой (Box<[CYR:[TRANSLATED]]>)
        │
        ▼
-📦 [CYR:Сунду]to Коin[CYR:аный] (Box<[CYR:Сунду]to>)
+📦 [CYR:[TRANSLATED]]to Коin[CYR:[TRANSLATED]] (Box<[CYR:[TRANSLATED]]to>)
        │
        ▼
-🐰 [CYR:Заяц] (Box<[CYR:Заяц]>) ─── [CYR:Пер]inое andwith[CYR:пытан]andе
+🐰 [CYR:[TRANSLATED]] (Box<[CYR:[TRANSLATED]]>) ─── [CYR:[TRANSLATED]]inое andwith[TRANSLATED]]andе
        │
        ▼
-🦆 Утtoа (Box<Утtoа>) ─── [CYR:Второе] andwith[CYR:пытан]andе
+🦆 Утtoа (Box<Утtoа>) ─── [CYR:[TRANSLATED]] andwith[TRANSLATED]]andе
        │
        ▼
-🥚 [CYR:Яйцо] (Box<[CYR:Яйцо]>) ─── [CYR:Третье] andwith[CYR:пытан]andе
+🥚 [CYR:[TRANSLATED]] (Box<[CYR:[TRANSLATED]]>) ─── [CYR:[TRANSLATED]] andwith[TRANSLATED]]andе
        │
        ▼
-💉 [CYR:Игла] (AtomicBool) ─── [CYR:СМЕРТЬ] [CYR:КОЩЕЯ]!
+💉 [CYR:[TRANSLATED]] (AtomicBool) ─── [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]!
 ```
 
 ---
 
-## [CYR:ПУТЬ] [CYR:ИВАНА]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
-[CYR:НАЧАЛО]                                                              [CYR:КОНЕЦ]
+[CYR:[TRANSLATED]]                                                              [CYR:[TRANSLATED]]
    │                                                                   │
    ▼                                                                   ▼
-🏠 [CYR:Дом] ──▶ 🗿 [CYR:Камень] ──▶ 🏰 [CYR:Медный] ──▶ 🌊 Реtoа ──▶ 🏛️ [CYR:Серебряный] ──▶ 🏔️ [CYR:Зол]fromой
-   │         [CYR:Трёх]         [CYR:Терем]        [CYR:Данных]      Дin[CYR:орец]            [CYR:Терем]
-   │         [CYR:Дорог]                                                     │
+🏠 [CYR:[TRANSLATED]] ──▶ 🗿 [CYR:[TRANSLATED]] ──▶ 🏰 [CYR:[TRANSLATED]] ──▶ 🌊 Реtoа ──▶ 🏛️ [CYR:[TRANSLATED]] ──▶ 🏔️ [CYR:[TRANSLATED]]fromой
+   │         [CYR:[TRANSLATED]]         [CYR:[TRANSLATED]]        [CYR:[TRANSLATED]]      Дin[CYR:[TRANSLATED]]            [CYR:[TRANSLATED]]
+   │         [CYR:[TRANSLATED]]                                                     │
    │           │                                                       │
    │     ┌─────┼─────┐                                                │
    │     ▼     ▼     ▼                                                │
-   │   [CYR:Теор]andя [CYR:Пра]toт [CYR:Мудр]                                              │
+   │   [CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]toт [CYR:[TRANSLATED]]                                              │
    │     │     │     │                                                │
    │     └─────┴─────┘                                                │
    │           │                                                       │
    │           ▼                                                       │
-   │    💀 [CYR:Подземелье] ──▶ 💉 [CYR:Игла] ──▶ ☠️ [CYR:Кощей] ──▶ 🎉 [CYR:ПОБЕДА]!        │
-   │       [CYR:Кощея]                        Поin[CYR:ержен]                      │
+   │    💀 [CYR:[TRANSLATED]] ──▶ 💉 [CYR:[TRANSLATED]] ──▶ ☠️ [CYR:[TRANSLATED]] ──▶ 🎉 [CYR:[TRANSLATED]]!        │
+   │       [CYR:[TRANSLATED]]                        Поin[CYR:[TRANSLATED]]                      │
    │                                                                   │
    └───────────────────────────────────────────────────────────────────┘
-                              [CYR:ВОЗВРАЩЕНИЕ] [CYR:ДОМОЙ]
+                              [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 ```
 
 ---
 
-## [CYR:РАССТОЯНИЯ] (in [CYR:гла]inах)
+## [CYR:[TRANSLATED]] (in [CYR:[TRANSLATED]]inах)
 
 ```
-От [CYR:Камня] [CYR:Трёх] [CYR:Дорог] до:
-├── [CYR:Медного] [CYR:Терема]:      37 [CYR:гла]in
-├── [CYR:Серебряного] Дin[CYR:орца]: 333 [CYR:гла]in  
-├── [CYR:Зол]from[CYR:ого] [CYR:Терема]:    666 [CYR:гла]in
-└── [CYR:Конца] toнandгand:        999 [CYR:гла]in
+От [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] до:
+├── [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:      37 [CYR:[TRANSLATED]]in
+├── [CYR:[TRANSLATED]] Дin[CYR:[TRANSLATED]]: 333 [CYR:[TRANSLATED]]in  
+├── [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:    666 [CYR:[TRANSLATED]]in
+└── [CYR:[TRANSLATED]] toнandгand:        999 [CYR:[TRANSLATED]]in
 
-[CYR:Между] [CYR:цар]withтinамand:
-├── [CYR:Медное] → [CYR:Серебряное]: 333 [CYR:гла]inы
-├── [CYR:Серебряное] → [CYR:Зол]fromое: 333 [CYR:гла]inы
-└── Вwith[CYR:его]: 999 [CYR:гла]in = 3 × 333 = 3 × 3 × 111 = 27 × 37
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinамand:
+├── [CYR:[TRANSLATED]] → [CYR:[TRANSLATED]]: 333 [CYR:[TRANSLATED]]inы
+├── [CYR:[TRANSLATED]] → [CYR:[TRANSLATED]]fromое: 333 [CYR:[TRANSLATED]]inы
+└── Вwith[TRANSLATED]]: 999 [CYR:[TRANSLATED]]in = 3 × 333 = 3 × 3 × 111 = 27 × 37
 ```
 
 ---
 
-## [CYR:ЖИТЕЛИ] [CYR:ЦАРСТВ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Медное] [CYR:цар]withтinо
-- 👴 [CYR:Мудрецы] [CYR:Теор]andand
-- 📐 [CYR:Хран]and[CYR:тел]and [CYR:Кон]with[CYR:тант]
-- 🔢 [CYR:Дух]and Чandwithел
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinо
+- 👴 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and
+- 📐 [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]with[TRANSLATED]]
+- 🔢 [CYR:[TRANSLATED]]and Чandwithел
 
-### [CYR:Серебряное] [CYR:цар]withтinо
-- ⚔️ Трand [CYR:Богатыря] (Box, Rc, Arc)
-- 🛠️ [CYR:Куз]notцы [CYR:Алгор]and[CYR:тмо]in
-- 📊 [CYR:Сорт]andроinщandtoand
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinо
+- ⚔️ Трand [CYR:[TRANSLATED]] (Box, Rc, Arc)
+- 🛠️ [CYR:[TRANSLATED]]notцы [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]in
+- 📊 [CYR:[TRANSLATED]]andроinщandtoand
 
-### [CYR:Зол]fromое [CYR:цар]withтinо
-- 🔮 [CYR:Проро]toand [CYR:Будущего]
-- ⚛️ Кin[CYR:анто]inые [CYR:Маг]and
-- 🤖 AI-[CYR:Помощн]andtoand
+### [CYR:[TRANSLATED]]fromое [CYR:[TRANSLATED]]withтinо
+- 🔮 [CYR:[TRANSLATED]]toand [CYR:[TRANSLATED]]
+- ⚛️ Кin[CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]and
+- 🤖 AI-[CYR:[TRANSLATED]]andtoand
 
-### [CYR:Подземелье]
-- 💀 [CYR:Кощей] Беwithwith[CYR:мертный] (Legacy Code)
-- 🧙‍♀️ [CYR:Баба]-[CYR:Яга] (Garbage Collector)
-- 🐉 [CYR:Змей] [CYR:Горыныч] (Race Condition)
+### [CYR:[TRANSLATED]]
+- 💀 [CYR:[TRANSLATED]] Беwith[TRANSLATED]] (Legacy Code)
+- 🧙‍♀️ [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]] (Garbage Collector)
+- 🐉 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (Race Condition)
 
 ---
 
-## [CYR:АРТЕФАКТЫ]
+## [CYR:[TRANSLATED]]
 
-| [CYR:Артефа]toт | Лоtoацandя | Сandла |
+| [CYR:[TRANSLATED]]toт | Лоtoацandя | Сandла |
 |----------|---------|------|
-| 🗡️ [CYR:Меч]-[CYR:Кладе]notц | [CYR:Кузн]andца | Trinity Sort |
-| 🛡️ Щandт [CYR:Тро]andцы | [CYR:Серебряный] Дin[CYR:орец] | Tribool |
-| 📖 Кнandга 999 | Бandблandfromеtoа | Вwithя [CYR:мудро]withть |
-| 💍 [CYR:Кольцо] [CYR:Трой]toand | [CYR:Зол]fromой [CYR:Терем] | Беwithtoоnot[CYR:чный] цandtoл |
-| 🧪 Жandinая [CYR:Вода] | Реtoа [CYR:Данных] | Hot Reload |
-| 💀 [CYR:Игла] [CYR:Кощея] | [CYR:Подземелье] | Уto[CYR:азатель] on with[CYR:мерть] |
+| 🗡️ [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]notц | [CYR:[TRANSLATED]]andца | Trinity Sort |
+| 🛡️ Щandт [CYR:[TRANSLATED]]andцы | [CYR:[TRANSLATED]] Дin[CYR:[TRANSLATED]] | Tribool |
+| 📖 Кнandга 999 | Бandблandfromеtoа | Вwithя [CYR:[TRANSLATED]]withть |
+| 💍 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toand | [CYR:[TRANSLATED]]fromой [CYR:[TRANSLATED]] | Беwithtoоnot[CYR:[TRANSLATED]] цandtoл |
+| 🧪 Жandinая [CYR:[TRANSLATED]] | Реtoа [CYR:[TRANSLATED]] | Hot Reload |
+| 💀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | Уfor[TRANSLATED]] on with[TRANSLATED]] |
 
 ---
 
-## [CYR:КООРДИНАТЫ] НА [CYR:ТРИДЕВЯТИЦЕ]
+## [CYR:[TRANSLATED]] НА [CYR:[TRANSLATED]]
 
 ```
-[CYR:Камень] [CYR:Трёх] [CYR:Дорог]:  ⲄⲐⲀ (to[CYR:амень] + одandн)
-[CYR:Медный] [CYR:Терем]:       ⲂⲄⲀ ([CYR:цар]withтinо + одandн)
-[CYR:Серебряный] Дin[CYR:орец]:  ⲂⲄⲂ ([CYR:цар]withтinо + дinа)
-[CYR:Зол]fromой [CYR:Терем]:      ⲂⲄⲄ ([CYR:цар]withтinо + трand)
-[CYR:Подземелье] [CYR:Кощея]:   ⲂⲀⲤⲎ ⲂⲂ ([CYR:Кощей] + [CYR:дом])
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:  ⲄⲐⲀ (for[TRANSLATED]] + одandн)
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:       ⲂⲄⲀ ([CYR:[TRANSLATED]]withтinо + одandн)
+[CYR:[TRANSLATED]] Дin[CYR:[TRANSLATED]]:  ⲂⲄⲂ ([CYR:[TRANSLATED]]withтinо + дinа)
+[CYR:[TRANSLATED]]fromой [CYR:[TRANSLATED]]:      ⲂⲄⲄ ([CYR:[TRANSLATED]]withтinо + трand)
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:   ⲂⲀⲤⲎ ⲂⲂ ([CYR:[TRANSLATED]] + [CYR:[TRANSLATED]])
 ```
 
 ---
 
-*«[CYR:Карта] — this not [CYR:терр]and[CYR:тор]andя, но [CYR:без] to[CYR:арты] not onйтand path in Трandдеin[CYR:ятое] [CYR:цар]withтinо»*
+*«[CYR:[TRANSLATED]] — this not [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя, но [CYR:[TRANSLATED]] for[TRANSLATED]] not onйтand path in Трandдеin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinо»*
