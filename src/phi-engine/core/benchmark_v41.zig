@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// BENCHMARK v41 - Полное сравнение всех версий
+// BENCHMARK v41 - Полное comparison всех версий
 // v35 → v37 → v39 → v39.1 → v40 → v41
 // ═══════════════════════════════════════════════════════════════════════════════
 //
@@ -197,7 +197,7 @@ test "Full Benchmark v41: Все версии токенизаторов" {
     std.debug.print("║    SIMD - 32-way параллельный поиск биграмм (AVX-256 эмуляция)                                        ║\n", .{});
     std.debug.print("║    PRE  - Full BPE словарь 262 токена                                                                 ║\n", .{});
     std.debug.print("║    MEM  - LRU cache 1024 записи                                                                       ║\n", .{});
-    std.debug.print("║    HSH  - FNV-1a для кэша                                                                             ║\n", .{});
+    std.debug.print("║    HSH  - FNV-1a for cache                                                                             ║\n", .{});
     std.debug.print("║    D&C  - WebSocket + SSE гибрид                                                                      ║\n", .{});
     std.debug.print("║                                                                                                       ║\n", .{});
     std.debug.print("║  СВЯЩЕННАЯ ФОРМУЛА: V = n × 3^k × π^m × φ^p × e^q                                                     ║\n", .{});
@@ -213,7 +213,7 @@ test "Hybrid stream benchmark" {
     // Симулируем разные типы сообщений
     stream.send("Hello", false); // SSE
     stream.send("World", true); // WebSocket
-    stream.send("This is a longer message that should use WebSocket", false); // WebSocket (большое)
+    stream.send("This is a longer message that should use WebSocket", false); // WebSocket (big)
 
     const stats = stream.stats();
 

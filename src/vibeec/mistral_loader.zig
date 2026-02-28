@@ -1,5 +1,5 @@
 // MISTRAL LOADER - Загрузчик модели Mistral 7B
-// Конвертация Mistral в троичный формат TRINITY
+// Конвертация Mistral in ternary format TRINITY
 // φ² + 1/φ² = 3 = TRINITY
 //
 // Mistral 7B архитектура:
@@ -69,7 +69,7 @@ pub const MistralConfig = struct {
         return total;
     }
 
-    /// Конфигурация для маленькой тестовой модели
+    /// Конфигурация for маленькой тестовой модели
     pub fn tiny() MistralConfig {
         return MistralConfig{
             .vocab_size = 256,
@@ -183,7 +183,7 @@ pub const MistralLoader = struct {
         self.model.deinit();
     }
 
-    /// Загрузка и квантизация модели из safetensors
+    /// Загрузка and квантизация модели из safetensors
     pub fn loadFromSafetensors(self: *MistralLoader, path: []const u8) !void {
         std.debug.print("\n", .{});
         std.debug.print("╔══════════════════════════════════════════════════════════════╗\n", .{});
@@ -218,12 +218,12 @@ pub const MistralLoader = struct {
             try self.loadAndQuantizeTensor(&sf, try names.upProj(layer), .mlp_up);
             try self.loadAndQuantizeTensor(&sf, try names.downProj(layer), .mlp_down);
 
-            // Norms (не квантизуем, сохраняем как есть)
+            // Norms (не квантизуем, сохраняем how есть)
             // try self.loadAndQuantizeTensor(&sf, try names.inputLayernorm(layer), .norm);
             // try self.loadAndQuantizeTensor(&sf, try names.postAttnLayernorm(layer), .norm);
         }
 
-        // Final norm и lm_head
+        // Final norm and lm_head
         try self.loadAndQuantizeTensor(&sf, try names.lmHead(), .linear);
 
         self.printStats();
@@ -237,7 +237,7 @@ pub const MistralLoader = struct {
     ) !void {
         defer self.allocator.free(name);
 
-        // Получаем данные тензора
+        // Получаем data тензора
         const weights = sf.getTensorF32(self.allocator, name) catch |err| {
             std.debug.print("  Warning: tensor '{s}' not found: {}\n", .{ name, err });
             return;
@@ -255,7 +255,7 @@ pub const MistralLoader = struct {
         self.stats.tensors_quantized += 1;
         self.stats.quantized_size_mb += @as(f64, @floatFromInt(weights.len / 4)) / (1024 * 1024);
 
-        // Добавляем в модель
+        // Добавляем in модель
         try self.model.addLayer(prometheus.TritLayer{
             .name = name,
             .weights = tensor,
@@ -335,13 +335,13 @@ pub const TrinityModelFile = struct {
         self.layers.deinit();
     }
 
-    /// Сохранение в .tri формат
+    /// Сохранение in .tri format
     pub fn save(self: *const TrinityModelFile, path: []const u8) !void {
         const file = try std.fs.cwd().createFile(path, .{});
         defer file.close();
         const writer = file.writer();
 
-        // Магическое число
+        // Магическое number
         try writer.writeAll("TRI1");
 
         // Конфигурация
@@ -367,7 +367,7 @@ pub const TrinityModelFile = struct {
                 try writer.writeInt(u32, @intCast(dim), .little);
             }
 
-            // Данные (упакованные триты: 4 трита на байт)
+            // Данные (упакованные триты: 4 трита on байт)
             const packed_size = (layer.data.len + 3) / 4;
             try writer.writeInt(u64, layer.data.len, .little);
 
@@ -392,7 +392,7 @@ pub const TrinityModelFile = struct {
         defer file.close();
         const reader = file.reader();
 
-        // Магическое число
+        // Магическое number
         var magic: [4]u8 = undefined;
         _ = try reader.readAll(&magic);
         if (!std.mem.eql(u8, &magic, "TRI1")) return error.InvalidFormat;

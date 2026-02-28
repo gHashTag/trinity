@@ -29,7 +29,7 @@ pub const BogatyrPlugin = struct {
     category: []const u8,
     priority: u32,
     weight: f32 = 1.0, // Жар-птица (34) имеет вес 2.0
-    is_creator: bool = false, // Только для Богатыря-Творца
+    is_creator: bool = false, // Только for Богатыря-Творца
     validate: *const fn (*const ValidationContext) anyerror!BogatyrResult,
 };
 

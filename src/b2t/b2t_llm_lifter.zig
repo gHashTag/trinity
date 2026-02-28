@@ -1,6 +1,6 @@
 // 🤖 TRINITY v0.11.0: Suborbital Order
 // B2T LLM-Enhanced Lifter
-// Улучшение качества TVC IR через LLM-ассистирование
+// Improving TVC IR quality via LLM assistance
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -49,11 +49,11 @@ pub const CodeComment = struct {
 };
 
 pub const CommentType = enum {
-    function_purpose, // Назначение функции
-    parameter_description, // Описание параметра
-    return_value, // Описание возврата
-    algorithm_step, // Шаг алгоритма
-    warning, // Предупреждение
+    function_purpose, // Function purpose
+    parameter_description, // Parameter description
+    return_value, // Return value description
+    algorithm_step, // Algorithm step
+    warning, // Warning
     todo, // TODO
 };
 
@@ -99,15 +99,15 @@ pub const EnhancedTVCFunction = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const LiftingStage = enum {
-    disassembly, // Дизассемблирование
-    basic_lifting, // Базовый lifting
-    ssa_conversion, // SSA преобразование
-    type_inference, // Вывод типов
-    name_recovery, // Восстановление имён
-    struct_recovery, // Восстановление структур
-    pattern_recognition, // Распознавание паттернов
-    comment_generation, // Генерация комментариев
-    final_validation, // Финальная валидация
+    disassembly, // Disassembly
+    basic_lifting, // Basic lifting
+    ssa_conversion, // SSA conversion
+    type_inference, // Type inference
+    name_recovery, // Name recovery
+    struct_recovery, // Struct recovery
+    pattern_recognition, // Pattern recognition
+    comment_generation, // Comment generation
+    final_validation, // Final validation
 };
 
 pub const LiftingProgress = struct {
@@ -179,11 +179,11 @@ pub const LLMLifterEngine = struct {
         self.progress.deinit();
     }
 
-    /// Полный пайплайн lifting с LLM
+    /// Complete lifting pipeline with LLM
     pub fn liftWithLLM(self: *LLMLifterEngine, disasm_result: *const b2t_disasm.DisassemblyResult) !std.ArrayList(EnhancedTVCFunction) {
         var enhanced_functions = std.ArrayList(EnhancedTVCFunction).init(self.allocator);
 
-        // Базовый lifting
+        // Basic lifting
         var lifter = b2t_lifter.Lifter.init(self.allocator);
         defer lifter.deinit();
 
@@ -193,7 +193,7 @@ pub const LLMLifterEngine = struct {
         self.progress.current_stage = .basic_lifting;
         try self.progress.stages_completed.append(.disassembly);
 
-        // Улучшение каждой функции
+        // Enhance each function
         for (module.functions.items) |func| {
             const enhanced = try self.enhanceFunction(func);
             try enhanced_functions.append(enhanced);
@@ -205,31 +205,31 @@ pub const LLMLifterEngine = struct {
         return enhanced_functions;
     }
 
-    /// Улучшение одной функции
+    /// Enhance a single function
     fn enhanceFunction(self: *LLMLifterEngine, func: b2t_lifter.TVCFunction) !EnhancedTVCFunction {
         var enhanced = EnhancedTVCFunction.init(self.allocator, func);
 
-        // Извлечение контекста
+        // Extract context
         if (self.config.enable_name_recovery or self.config.enable_type_inference) {
             try self.llm_assist.extractDataFlow(&func);
         }
 
-        // Восстановление имён
+        // Recover names
         if (self.config.enable_name_recovery) {
             try self.recoverNames(&enhanced);
         }
 
-        // Вывод типов
+        // Infer types
         if (self.config.enable_type_inference) {
             try self.inferTypes(&enhanced);
         }
 
-        // Восстановление структур
+        // Recover structs
         if (self.config.enable_struct_recovery) {
             try self.recoverStructs(&enhanced);
         }
 
-        // Генерация комментариев
+        // Generate comments
         if (self.config.enable_comments) {
             try self.generateComments(&enhanced);
         }
@@ -237,9 +237,9 @@ pub const LLMLifterEngine = struct {
         return enhanced;
     }
 
-    /// Восстановление имён переменных
+    /// Recover variable names
     fn recoverNames(self: *LLMLifterEngine, enhanced: *EnhancedTVCFunction) !void {
-        // Анализ контекста для восстановления имён
+        // Analyze context for name recovery
         for (enhanced.base.values.items) |value| {
             const suggested_name = self.suggestVariableName(value);
             if (suggested_name) |name| {
@@ -250,7 +250,7 @@ pub const LLMLifterEngine = struct {
 
     fn suggestVariableName(self: *LLMLifterEngine, value: b2t_lifter.TVCValue) ?[]const u8 {
         _ = self;
-        // Простая эвристика на основе типа
+        // Simple heuristic based on type
         return switch (value.value_type) {
             .trit_ptr => "ptr",
             .trit32 => "value",
@@ -259,7 +259,7 @@ pub const LLMLifterEngine = struct {
         };
     }
 
-    /// Вывод типов
+    /// Type inference
     fn inferTypes(self: *LLMLifterEngine, enhanced: *EnhancedTVCFunction) !void {
         for (enhanced.base.values.items) |value| {
             const inferred_type = self.inferType(value);
@@ -280,13 +280,13 @@ pub const LLMLifterEngine = struct {
         };
     }
 
-    /// Восстановление структур
+    /// Recover structs
     fn recoverStructs(self: *LLMLifterEngine, enhanced: *EnhancedTVCFunction) !void {
-        // Анализ паттернов доступа к памяти
+        // Analyze memory access patterns
         for (enhanced.base.blocks.items) |block| {
             for (block.instructions.items) |inst| {
                 if (inst.opcode == .t_load or inst.opcode == .t_store) {
-                    // Потенциальный доступ к структуре
+                    // Potential struct access
                     _ = try self.detectStructAccess(inst);
                 }
             }
@@ -296,20 +296,20 @@ pub const LLMLifterEngine = struct {
     fn detectStructAccess(self: *LLMLifterEngine, inst: b2t_lifter.TVCInstruction) !?StructDef {
         _ = self;
         _ = inst;
-        // TODO: Реализовать детекцию структур
+        // TODO: Implement struct detection
         return null;
     }
 
-    /// Генерация комментариев
+    /// Generate comments
     fn generateComments(_: *LLMLifterEngine, enhanced: *EnhancedTVCFunction) !void {
-        // Комментарий к функции
+        // Function comment
         try enhanced.comments.append(CodeComment{
             .line = 0,
             .comment = "// TODO: Add function description",
             .comment_type = .function_purpose,
         });
 
-        // Комментарии к параметрам
+        // Parameter comments
         for (enhanced.base.params.items) |_| {
             try enhanced.comments.append(CodeComment{
                 .line = 0,
@@ -319,7 +319,7 @@ pub const LLMLifterEngine = struct {
         }
     }
 
-    /// Получение прогресса
+    /// Get progress
     pub fn getProgress(self: *LLMLifterEngine) LiftingProgress {
         return self.progress;
     }

@@ -36,11 +36,11 @@ fn validateSpecStructure(ctx: *const common.ValidationContext) !common.BogatyrRe
 
         checks += 1;
 
-        // Проверяем обязательные ключи
+        // Проверяем обязательные keys
         if (std.mem.indexOfScalar(u8, trimmed, ':')) |colon_idx| {
             const key = std.mem.trim(u8, trimmed[0..colon_idx], " ");
 
-            // Проверяем что ключи присутствуют
+            // Проверяем what keys присутствуют
             if (std.mem.eql(u8, key, "name") or
                 std.mem.eql(u8, key, "version") or
                 std.mem.eql(u8, key, "language") or

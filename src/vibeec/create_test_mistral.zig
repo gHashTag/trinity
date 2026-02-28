@@ -1,5 +1,5 @@
 // CREATE TEST MISTRAL MODEL
-// Создание тестовой модели со структурой Mistral для проверки пайплайна
+// Создание тестовой модели со структурой Mistral for проверки пайплайна
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");

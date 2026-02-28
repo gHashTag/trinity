@@ -2,7 +2,7 @@
 // VIBEE PARSER - Парсер .vibee спецификаций
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Парсит YAML-подобный формат .vibee файлов
+// Парсит YAML-подобный format .vibee файлов
 // Автор: Dmitrii Vasilev
 // φ² + 1/φ² = 3
 //
@@ -414,7 +414,7 @@ pub const VibeeParser = struct {
                 self.pos += 1;
                 self.line += 1;
             } else if (c == '#') {
-                // Пропускаем комментарий до конца строки
+                // Пропускаем comment before конца строки
                 while (self.pos < self.source.len and self.source[self.pos] != '\n') {
                     self.pos += 1;
                 }
@@ -486,7 +486,7 @@ pub const VibeeParser = struct {
     }
 
     fn parseConstants(self: *Self, constants: *ArrayList(Constant)) !void {
-        // Не вызываем skipToNextLine - мы уже на следующей строке после ":"
+        // Не вызываем skipToNextLine - мы уже on следующей строке after ":"
         while (self.pos < self.source.len) {
             self.skipEmptyLinesAndComments();
             if (self.pos >= self.source.len) break;
@@ -504,7 +504,7 @@ pub const VibeeParser = struct {
             const name = self.readKey();
             if (name.len == 0) break;
 
-            // Проверяем что это не следующая секция (без отступа)
+            // Check that this is not the next section (without indent)
             if (indent == 0 and (std.mem.eql(u8, name, "types") or
                 std.mem.eql(u8, name, "creation_patterns") or
                 std.mem.eql(u8, name, "behaviors")))
@@ -515,7 +515,7 @@ pub const VibeeParser = struct {
 
             self.skipColon();
 
-            // Пробуем прочитать inline значение (формат: NAME: VALUE)
+            // Пробуем прочитать inline value (format: NAME: VALUE)
             self.skipInlineWhitespace();
             const inline_value = self.readValue();
 
@@ -526,11 +526,11 @@ pub const VibeeParser = struct {
             };
 
             if (inline_value.len > 0) {
-                // Inline формат: PHI: 1.618
+                // Inline format: PHI: 1.618
                 constant.value = std.fmt.parseFloat(f64, inline_value) catch 0;
                 self.skipToNextLine();
             } else {
-                // Nested формат
+                // Nested format
                 self.skipToNextLine();
 
                 // Читаем вложенные поля (отступ 4 пробела)
@@ -539,7 +539,7 @@ pub const VibeeParser = struct {
                     if (self.pos >= self.source.len) break;
 
                     const field_indent = self.countIndent();
-                    if (field_indent < 4) break; // Меньше 4 = следующая константа или конец
+                    if (field_indent < 4) break; // Меньше 4 = следующая constant or конец
                     self.pos += field_indent;
 
                     const field_key = self.readKey();
@@ -601,13 +601,13 @@ pub const VibeeParser = struct {
                 self.skipToNextLine();
                 continue;
             }
-            // Пропускаем строки только с пробелами
+            // Пропускаем строки только with пробелами
             if (self.pos < self.source.len and self.source[self.pos] == '\n') {
                 self.pos += 1;
                 self.line += 1;
                 continue;
             }
-            // Откатываемся к началу строки
+            // Откатываемся to началу строки
             self.pos = line_start;
             break;
         }
@@ -625,7 +625,7 @@ pub const VibeeParser = struct {
             const name = self.readKey();
             if (name.len == 0) break;
 
-            // Проверяем что это не следующая секция
+            // Check that this is not the next section
             if (std.mem.eql(u8, name, "creation_patterns") or
                 std.mem.eql(u8, name, "behaviors") or
                 std.mem.eql(u8, name, "algorithms") or
@@ -1116,7 +1116,7 @@ pub const VibeeParser = struct {
             const name = self.readKey();
             if (name.len == 0) break;
 
-            // Проверяем что это не следующая секция
+            // Check that this is not the next section
             if (std.mem.eql(u8, name, "behaviors") or
                 std.mem.eql(u8, name, "algorithms") or
                 std.mem.eql(u8, name, "wasm_exports") or
@@ -1172,7 +1172,7 @@ pub const VibeeParser = struct {
             if (indent < 2) break;
             self.pos += indent;
 
-            // Behaviors начинаются с '-'
+            // Behaviors начинаются with '-'
             if (self.pos >= self.source.len or self.source[self.pos] != '-') {
                 self.pos -= indent;
                 break;
@@ -1182,7 +1182,7 @@ pub const VibeeParser = struct {
 
             var behavior = Behavior.init(self.allocator);
 
-            // Первое поле на той же строке: "- name: value"
+            // Первое поле on той же строке: "- name: value"
             const first_key = self.readKey();
             if (first_key.len > 0) {
                 self.skipColon();
@@ -1256,7 +1256,7 @@ pub const VibeeParser = struct {
                 .tolerance = null,
             };
 
-            // Первое поле на той же строке
+            // Первое поле on той же строке
             const first_key = self.readKey();
             if (first_key.len > 0) {
                 self.skipColon();
@@ -1673,7 +1673,7 @@ pub const VibeeParser = struct {
     }
 
     fn skipBlock(self: *Self) void {
-        // Пропускаем блок с отступом
+        // Пропускаем блок with отступом
         const base_indent = self.countIndent();
         self.skipLine();
         while (self.pos < self.source.len) {

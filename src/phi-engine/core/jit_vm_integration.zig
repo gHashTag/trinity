@@ -1,12 +1,12 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// JIT VM INTEGRATION - Интеграция JIT компилятора с VIBEE VM
+// JIT VM INTEGRATION - Интеграция JIT компилятора with VIBEE VM
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 // PHOENIX = 999
 //
-// Интеграция ExecutableJIT с VM для ускорения горячих путей
+// ExecutableJIT integration with VM for ускорения горячих путей
 //
 // Author: VIBEE Team
 // Co-authored-by: Ona <no-reply@ona.com>
@@ -26,7 +26,7 @@ pub const GOLDEN_IDENTITY: f64 = 3.0;
 pub const PHOENIX: u64 = 999;
 
 // JIT Configuration
-pub const JIT_THRESHOLD: u32 = 50; // Порог для JIT компиляции
+pub const JIT_THRESHOLD: u32 = 50; // Threshold for JIT compilation
 pub const MAX_COMPILED_BLOCKS: usize = 1024;
 pub const CODE_CACHE_SIZE: usize = 1024 * 1024; // 1MB
 
@@ -36,13 +36,13 @@ pub const CODE_CACHE_SIZE: usize = 1024 * 1024; // 1MB
 
 /// Базовый блок - последовательность инструкций без переходов
 pub const BasicBlock = struct {
-    /// Начальный адрес в байткоде
+    /// Начальный адрес in байткоде
     start_addr: u32,
     /// Конечный адрес (не включительно)
     end_addr: u32,
     /// Счётчик выполнений
     execution_count: u32,
-    /// Скомпилированный нативный код (если есть)
+    /// Скомпилированный нативный code (if есть)
     native_code: ?*const fn (i64, i64) callconv(.C) i64,
     /// Флаг: блок скомпилирован
     is_compiled: bool,
@@ -73,10 +73,10 @@ pub const JITRuntime = struct {
     /// Кэш базовых блоков (адрес -> блок)
     blocks: std.AutoHashMap(u32, BasicBlock),
 
-    /// Исполняемый буфер для JIT кода
+    /// Executable buffer for JIT code
     code_buffer: jit.ExecutableBuffer,
 
-    /// Текущая позиция в буфере
+    /// Текущая позиция in буфере
     code_pos: usize,
 
     /// Статистика
@@ -99,7 +99,7 @@ pub const JITRuntime = struct {
         self.code_buffer.deinit();
     }
 
-    /// Записать выполнение блока, вернуть true если нужна компиляция
+    /// Записать execution блока, вернуть true if нужна compilation
     pub fn recordBlockExecution(self: *Self, addr: u32, end_addr: u32) !bool {
         const entry = try self.blocks.getOrPut(addr);
         if (!entry.found_existing) {
@@ -108,7 +108,7 @@ pub const JITRuntime = struct {
         return entry.value_ptr.recordExecution();
     }
 
-    /// Получить скомпилированный код для блока
+    /// Get compiled code for блока
     pub fn getCompiledCode(self: *const Self, addr: u32) ?*const fn (i64, i64) callconv(.C) i64 {
         if (self.blocks.get(addr)) |block| {
             return block.native_code;
@@ -133,17 +133,17 @@ pub const JITRuntime = struct {
             try self.code_buffer.makeWritable();
         }
 
-        // Анализ байткода и генерация нативного кода
+        // Анализ байткода and генерация нативного кода
         const start_pos = self.code_buffer.pos;
 
-        // Генерируем простую функцию для арифметических операций
+        // Generate simple function for арифметических операций
         // Пока поддерживаем только ADD, SUB, MUL
         self.emitBlockCode(bytecode[entry.start_addr..entry.end_addr]);
 
-        // Делаем код исполняемым
+        // Делаем code исполняемым
         try self.code_buffer.makeExecutable();
 
-        // Сохраняем указатель на функцию
+        // Сохраняем указатель on функцию
         entry.native_code = self.code_buffer.getFunctionAt(
             *const fn (i64, i64) callconv(.C) i64,
             start_pos,
@@ -154,12 +154,12 @@ pub const JITRuntime = struct {
         self.stats.bytes_generated += self.code_buffer.pos - start_pos;
     }
 
-    /// Генерация нативного кода для блока
+    /// Native code generation for блока
     fn emitBlockCode(self: *Self, bytecode_slice: []const u8) void {
-        // Пролог: сохраняем аргументы
+        // Пролог: сохраняем arguments
         // rdi = arg1, rsi = arg2 (System V AMD64 ABI)
 
-        // mov rax, rdi (первый аргумент в rax)
+        // mov rax, rdi (первый аргумент in rax)
         self.code_buffer.emit(0x48);
         self.code_buffer.emit(0x89);
         self.code_buffer.emit(0xF8);
@@ -238,7 +238,7 @@ pub const JITStats = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// HYBRID VM - VM с интегрированным JIT
+// HYBRID VM - VM with интегрированным JIT
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const HybridVM = struct {
@@ -278,7 +278,7 @@ pub const HybridVM = struct {
         self.jit_runtime.deinit();
     }
 
-    /// Запустить выполнение
+    /// Запустить execution
     pub fn run(self: *Self) !i64 {
         self.running = true;
         self.ip = 0;
@@ -287,9 +287,9 @@ pub const HybridVM = struct {
         while (self.running and self.ip < self.bytecode.len) {
             const block_start = self.ip;
 
-            // Проверяем, есть ли скомпилированный код
+            // Проверяем, есть ли скомпилированный code
             if (self.jit_runtime.isCompiled(block_start)) {
-                // Выполняем JIT код
+                // Выполняем JIT code
                 const arg1 = if (self.sp > 0) self.stack[self.sp - 1] else 0;
                 const arg2 = if (self.sp > 1) self.stack[self.sp - 2] else 0;
 
@@ -314,7 +314,7 @@ pub const HybridVM = struct {
             const opcode = self.bytecode[self.ip];
             self.ip += 1;
 
-            // Записываем выполнение для hot path detection
+            // Record execution for hot path detection
             const block_end = self.findBlockEnd(block_start);
             const should_compile = try self.jit_runtime.recordBlockExecution(block_start, block_end);
 
@@ -335,7 +335,7 @@ pub const HybridVM = struct {
             const op = self.bytecode[pos];
             pos += 1;
 
-            // Конец блока на переходах или HALT
+            // Конец блока on переходах or HALT
             if (op == 0x40 or op == 0x41 or op == 0x42 or op == 0x43 or op == 0x44 or op == 0x45) {
                 return pos;
             }
@@ -425,14 +425,14 @@ test "jit runtime record execution" {
     var runtime = try JITRuntime.init(allocator);
     defer runtime.deinit();
 
-    // Записываем выполнения до порога
+    // Записываем выполнения before порога
     var i: u32 = 0;
     while (i < JIT_THRESHOLD - 1) : (i += 1) {
         const should_compile = try runtime.recordBlockExecution(0x100, 0x110);
         try std.testing.expect(!should_compile);
     }
 
-    // На пороге должна быть компиляция
+    // На пороге должна быть compilation
     const should_compile = try runtime.recordBlockExecution(0x100, 0x110);
     try std.testing.expect(should_compile);
 }
@@ -562,7 +562,7 @@ pub const VMBenchmarkResult = struct {
     jit_compilations: u64,
 };
 
-/// Бенчмарк: многократное выполнение программы
+/// Бенчмарк: многократное execution программы
 pub fn benchmarkVM(allocator: Allocator, bytecode: []const u8, iterations: u64) !VMBenchmarkResult {
     // Бенчмарк интерпретатора (без JIT)
     var timer = std.time.Timer.start() catch unreachable;
@@ -572,17 +572,17 @@ pub fn benchmarkVM(allocator: Allocator, bytecode: []const u8, iterations: u64) 
     while (i < iterations) : (i += 1) {
         var vm = try HybridVM.init(allocator, bytecode);
         defer vm.deinit();
-        // Отключаем JIT для чистого интерпретатора
+        // Disable JIT for pure interpreter
         sum_interp +%= try vm.run();
     }
     const interp_ns = timer.read();
 
-    // Бенчмарк с JIT
+    // Бенчмарк with JIT
     timer.reset();
     var sum_jit: i64 = 0;
     var jit_compilations: u64 = 0;
 
-    // Создаём одну VM и выполняем много раз (для прогрева JIT)
+    // Create one VM and execute many times (for прогрева JIT)
     var vm_jit = try HybridVM.init(allocator, bytecode);
     defer vm_jit.deinit();
 
@@ -618,6 +618,6 @@ test "benchmark vm add" {
     };
 
     const result = try benchmarkVM(allocator, &bytecode, 1000);
-    // Проверяем, что бенчмарк выполнился
+    // Check that benchmark completed
     try std.testing.expect(result.iterations == 1000);
 }

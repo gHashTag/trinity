@@ -1,6 +1,6 @@
-//! Demo Memory Agent - Агент с памятью в GridWorld
+//! Demo Memory Agent - Агент with памятью in GridWorld
 //!
-//! Демонстрация RL агента с Streaming Memory для experience replay.
+//! Демонстрация RL агента with Streaming Memory for experience replay.
 //! Цель: достичь 100% win rate благодаря памяти.
 //!
 //! φ² + 1/φ² = 3 | TRINITY
@@ -50,7 +50,7 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
     print("Состояний: {d}, Действий: {d}\n", .{ env.numStates(), gw.NUM_ACTIONS });
     print("\n", .{});
 
-    // Создаём агента с памятью
+    // Создаём агента with памятью
     var agent = try rlm.RLAgentWithMemory.init(allocator, .{
         .state_dim = config.state_dim,
         .num_actions = gw.NUM_ACTIONS,
@@ -212,7 +212,7 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
     print("φ² + 1/φ² = 3 | TRINITY HDC RL WITH MEMORY COMPLETE\n", .{});
 }
 
-/// Точка входа (только для исполняемого файла)
+/// Точка входа (только for исполняемого файла)
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();

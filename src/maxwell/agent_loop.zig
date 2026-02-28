@@ -115,8 +115,8 @@ pub const DaemonConfig = struct {
     poll_interval_ms: u64,
 
     pub const SafetyMode = enum {
-        Strict, // Требует подтверждения для каждого действия
-        Normal, // Автоматически, но с ограничениями
+        Strict, // Требует подтверждения for каждого действия
+        Normal, // Автоматически, но with ограничениями
         Permissive, // Минимальные ограничения
     };
 
@@ -210,7 +210,7 @@ pub const AgentLoop = struct {
     // LIFECYCLE
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Запустить демона в фоновом режиме
+    /// Запустить демона in фоновом режиме
     pub fn start(self: *AgentLoop) !void {
         if (self.running.load(.seq_cst)) return;
         
@@ -238,7 +238,7 @@ pub const AgentLoop = struct {
         self.state.status = .Stopped;
     }
 
-    /// Запустить один цикл (для тестирования)
+    /// Запустить один цикл (for тестирования)
     pub fn step(self: *AgentLoop) !void {
         try self.processNextTask();
     }
@@ -262,7 +262,7 @@ pub const AgentLoop = struct {
     // TASK MANAGEMENT
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Добавить задачу в очередь
+    /// Добавить задачу in очередь
     pub fn submitTask(self: *AgentLoop, description: []const u8, task_type: TaskType) !u64 {
         const task = try self.allocator.create(Task);
         const id = @as(u64, @intCast(std.time.timestamp())) ^ @as(u64, @intFromPtr(task));
@@ -274,7 +274,7 @@ pub const AgentLoop = struct {
         return id;
     }
 
-    /// Добавить задачу с приоритетом
+    /// Добавить задачу with приоритетом
     pub fn submitTaskWithPriority(self: *AgentLoop, description: []const u8, task_type: TaskType, priority: u8) !u64 {
         const task = try self.allocator.create(Task);
         const id = @as(u64, @intCast(std.time.timestamp())) ^ @as(u64, @intFromPtr(task));

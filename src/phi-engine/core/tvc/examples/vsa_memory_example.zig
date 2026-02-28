@@ -1,5 +1,5 @@
 // VSA Associative Memory Example
-// Демонстрация использования VSA для ассоциативной памяти
+// Демонстрация использования VSA for ассоциативной памяти
 //
 // Запуск: zig run vsa_memory_example.zig
 
@@ -33,7 +33,7 @@ pub fn main() !void {
     std.debug.print("   Свойства: red, yellow, fast\n\n", .{});
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // 2. Создаём ассоциации через bind
+    // 2. Создаём ассоциации via bind
     // ═══════════════════════════════════════════════════════════════════════════
 
     std.debug.print("2. Создание ассоциаций (bind)...\n", .{});
@@ -46,29 +46,29 @@ pub fn main() !void {
     var yellow_banana = tvc_vsa.bind(&banana, &yellow);
     std.debug.print("   yellow_banana = bind(banana, yellow)\n", .{});
 
-    // car + fast = "быстрая машина"
+    // car + fast = "fast машина"
     var fast_car = tvc_vsa.bind(&car, &fast);
     std.debug.print("   fast_car = bind(car, fast)\n\n", .{});
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // 3. Объединяем в память через bundle
+    // 3. Объединяем in memory via bundle
     // ═══════════════════════════════════════════════════════════════════════════
 
     std.debug.print("3. Создание памяти (bundle)...\n", .{});
 
-    // Объединяем все ассоциации в одну память
+    // Объединяем all ассоциации in одну memory
     var temp = tvc_vsa.bundle2(&red_apple, &yellow_banana);
     var memory = tvc_vsa.bundle3(&temp, &fast_car, &temp);
 
     std.debug.print("   memory = bundle(red_apple, yellow_banana, fast_car)\n\n", .{});
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // 4. Запросы к памяти
+    // 4. Запросы to памяти
     // ═══════════════════════════════════════════════════════════════════════════
 
     std.debug.print("4. Запросы к памяти...\n\n", .{});
 
-    // Запрос: "Что красное?" (unbind с red)
+    // Запрос: "Что красное?" (unbind with red)
     std.debug.print("   Запрос: 'Что красное?'\n", .{});
     var query_red = tvc_vsa.bind(&memory, &red);
 
@@ -81,7 +81,7 @@ pub fn main() !void {
     std.debug.print("   Сходство с car:    {d:.4}\n", .{sim_car_red});
     std.debug.print("   Ответ: apple (максимальное сходство)\n\n", .{});
 
-    // Запрос: "Что жёлтое?" (unbind с yellow)
+    // Запрос: "Что жёлтое?" (unbind with yellow)
     std.debug.print("   Запрос: 'Что жёлтое?'\n", .{});
     var query_yellow = tvc_vsa.bind(&memory, &yellow);
 
@@ -94,7 +94,7 @@ pub fn main() !void {
     std.debug.print("   Сходство с car:    {d:.4}\n", .{sim_car_yellow});
     std.debug.print("   Ответ: banana (максимальное сходство)\n\n", .{});
 
-    // Запрос: "Какое свойство у яблока?" (unbind с apple)
+    // Запрос: "Какое property у яблока?" (unbind with apple)
     std.debug.print("   Запрос: 'Какое свойство у яблока?'\n", .{});
     var query_apple = tvc_vsa.bind(&memory, &apple);
 

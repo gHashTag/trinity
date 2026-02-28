@@ -1,7 +1,7 @@
-//! Streaming Memory - Потоковая ассоциативная память на HDC
+//! Streaming Memory - Потоковая ассоциативная memory on HDC
 //!
-//! Непрерывное обучение с bind/unbind для key-value хранения.
-//! Поддержка forgetting factor для адаптации к concept drift.
+//! Непрерывное обучение with bind/unbind for key-value хранения.
+//! Поддержка forgetting factor for адаптации to concept drift.
 //!
 //! Научная база:
 //! - Holographic Reduced Representations (Plate, 1995)
@@ -58,12 +58,12 @@ pub const MemoryMetrics = struct {
     memory_utilization: f64,
 };
 
-/// Потоковая ассоциативная память
+/// Потоковая ассоциативная memory
 pub const StreamingMemory = struct {
     config: MemoryConfig,
-    // Float аккумулятор для плавного обновления
+    // Float аккумулятор for плавного обновления
     accumulator: []f64,
-    // Квантизованная троичная память
+    // Квантизованная троичная memory
     memory: []Trit,
     // Статистика
     item_count: usize,
@@ -95,7 +95,7 @@ pub const StreamingMemory = struct {
         self.allocator.free(self.memory);
     }
 
-    /// Сбросить память
+    /// Сбросить memory
     pub fn reset(self: *StreamingMemory) void {
         @memset(self.accumulator, 0.0);
         @memset(self.memory, 0);
@@ -105,7 +105,7 @@ pub const StreamingMemory = struct {
         self.total_confidence = 0;
     }
 
-    /// Сохранить пару ключ-значение
+    /// Сохранить пару ключ-value
     /// M ← M + bind(key, value)
     pub fn store(self: *StreamingMemory, key: []const Trit, value: []const Trit) !void {
         const dim = self.config.dim;
@@ -115,7 +115,7 @@ pub const StreamingMemory = struct {
         // bind(key, value)
         hdc.bind(key, value, bound);
 
-        // Добавляем к аккумулятору
+        // Добавляем to аккумулятору
         for (0..dim) |i| {
             self.accumulator[i] += @floatFromInt(bound[i]);
         }
@@ -127,7 +127,7 @@ pub const StreamingMemory = struct {
         self.total_writes += 1;
     }
 
-    /// Сохранить с забыванием
+    /// Сохранить with забыванием
     /// M ← (1-λ)M + λ×bind(k,v)
     pub fn storeWithForgetting(self: *StreamingMemory, key: []const Trit, value: []const Trit, lambda: f64) !void {
         const dim = self.config.dim;
@@ -137,7 +137,7 @@ pub const StreamingMemory = struct {
         // bind(key, value)
         hdc.bind(key, value, bound);
 
-        // Экспоненциальное забывание + новый элемент
+        // Экспоненциальное забывание + new element
         for (0..dim) |i| {
             self.accumulator[i] = (1.0 - lambda) * self.accumulator[i] + lambda * @as(f64, @floatFromInt(bound[i]));
         }
@@ -149,15 +149,15 @@ pub const StreamingMemory = struct {
         self.total_writes += 1;
     }
 
-    /// Извлечь значение по ключу
+    /// Извлечь value by ключу
     /// value ≈ unbind(M, key)
     pub fn retrieve(self: *StreamingMemory, key: []const Trit, result: []Trit) RetrievalResult {
         const dim = self.config.dim;
 
-        // unbind(M, key) = bind(M, key) для троичных векторов
+        // unbind(M, key) = bind(M, key) for троичных векторов
         hdc.unbind(self.memory, key, result);
 
-        // Вычисляем уверенность через норму результата
+        // Вычисляем уверенность via норму результата
         var norm: f64 = 0;
         for (0..dim) |i| {
             norm += @as(f64, @floatFromInt(result[i])) * @as(f64, @floatFromInt(result[i]));
@@ -203,7 +203,7 @@ pub const StreamingMemory = struct {
         const retrieved = try self.allocator.alloc(Trit, dim);
         defer self.allocator.free(retrieved);
 
-        // Получаем текущее значение
+        // Получаем текущее value
         _ = self.retrieve(key, retrieved);
 
         // Вычисляем bind(key, retrieved)
@@ -251,7 +251,7 @@ pub const StreamingMemory = struct {
         };
     }
 
-    /// Получить сырой вектор памяти
+    /// Получить сырой vector памяти
     pub fn getMemoryVector(self: *const StreamingMemory) []const Trit {
         return self.memory;
     }
@@ -275,7 +275,7 @@ test "store and retrieve" {
     var mem = try StreamingMemory.init(allocator, .{ .dim = 1000 });
     defer mem.deinit();
 
-    // Создаём ключ и значение
+    // Создаём ключ and value
     var key = try hdc.randomVector(allocator, 1000, 11111);
     defer key.deinit();
     var value = try hdc.randomVector(allocator, 1000, 22222);
@@ -290,18 +290,18 @@ test "store and retrieve" {
 
     const result = mem.retrieve(key.data, result_buf);
 
-    // Проверяем сходство с оригинальным значением
+    // Проверяем сходство with оригинальным значением
     const sim = hdc.similarity(result.value, value.data);
     try std.testing.expect(sim > 0.5);
 }
 
 test "multiple items" {
     const allocator = std.testing.allocator;
-    // Используем большую размерность для лучшей ёмкости
+    // Используем большую размерность for лучшей ёмкости
     var mem = try StreamingMemory.init(allocator, .{ .dim = 5000 });
     defer mem.deinit();
 
-    // Сохраняем несколько пар (меньше для лучшего качества)
+    // Сохраняем несколько пар (меньше for лучшего качества)
     const num_items = 5;
     var keys: [num_items]HyperVector = undefined;
     var values: [num_items]HyperVector = undefined;
@@ -330,7 +330,7 @@ test "multiple items" {
     }
 
     const avg_sim = total_sim / @as(f64, num_items);
-    // HDC память имеет ограниченную ёмкость, ожидаем хотя бы положительное сходство
+    // HDC memory имеет ограниченную ёмкость, ожидаем хотя бы положительное сходство
     try std.testing.expect(avg_sim > 0.1);
 }
 
@@ -350,14 +350,14 @@ test "forgetting reduces old" {
     const result_buf = try allocator.alloc(Trit, 500);
     defer allocator.free(result_buf);
 
-    // Извлекаем до забывания
+    // Извлекаем before забывания
     const before = mem.retrieve(key.data, result_buf);
     const conf_before = before.confidence;
 
     // Применяем сильное забывание
     mem.applyForgetting(0.9);
 
-    // Извлекаем после забывания
+    // Извлекаем after забывания
     const after = mem.retrieve(key.data, result_buf);
     const conf_after = after.confidence;
 
@@ -380,10 +380,10 @@ test "store with forgetting" {
     var val2 = try hdc.randomVector(allocator, 500, 22222);
     defer val2.deinit();
 
-    // Сохраняем первый элемент
+    // Сохраняем первый element
     try mem.storeWithForgetting(key1.data, val1.data, 1.0);
 
-    // Сохраняем второй с забыванием первого
+    // Сохраняем второй with забыванием первого
     try mem.storeWithForgetting(key2.data, val2.data, 0.5);
 
     try std.testing.expectEqual(@as(usize, 2), mem.item_count);

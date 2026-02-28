@@ -1,5 +1,5 @@
 // VSA Sequence Encoding Example
-// Демонстрация кодирования последовательностей с помощью permute
+// Демонстрация кодирования последовательностей with помощью permute
 //
 // Запуск: zig run vsa_sequence_example.zig
 
@@ -36,7 +36,7 @@ pub fn main() !void {
     std.debug.print("2. Кодирование предложения 'the cat sat'...\n", .{});
     std.debug.print("   Формула: sentence = word[0] + permute(word[1], 1) + permute(word[2], 2)\n\n", .{});
 
-    // Ручное кодирование для демонстрации
+    // Ручное encoding for демонстрации
     var p0 = the; // permute(the, 0) = the
     var p1 = tvc_vsa.permute(&cat, 1);
     var p2 = tvc_vsa.permute(&sat, 2);
@@ -47,12 +47,12 @@ pub fn main() !void {
     std.debug.print("   sentence1 = the + permute(cat, 1) + permute(sat, 2)\n\n", .{});
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // 3. Проверяем позиции слов в предложении
+    // 3. Проверяем позиции слов in предложении
     // ═══════════════════════════════════════════════════════════════════════════
 
     std.debug.print("3. Проверка позиций слов в 'the cat sat'...\n\n", .{});
 
-    // Проверяем "the" на разных позициях
+    // Проверяем "the" on разных позициях
     std.debug.print("   Слово 'the':\n", .{});
     for (0..5) |pos| {
         const sim = tvc_vsa.probeSequence(&sentence1, &the, pos);

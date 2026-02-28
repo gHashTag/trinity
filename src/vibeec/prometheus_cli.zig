@@ -1,5 +1,5 @@
-// PROMETHEUS CLI - Конвертер моделей в троичный формат
-// Превращает профанные float32 веса в священные триты
+// PROMETHEUS CLI - Конвертер моделей in ternary format
+// Превращает профанные float32 веса in священные триты
 // φ² + 1/φ² = 3 = TRINITY
 //
 // Использование:
@@ -86,7 +86,7 @@ fn cmdConvert(allocator: std.mem.Allocator, args: []const []const u8) !void {
     const input_path = args[2];
     const output_path = args[3];
 
-    // Парсим опции
+    // Парсим options
     var threshold: f32 = 0.1;
     var config = mistral.MistralConfig.mistral7B();
 
@@ -112,7 +112,7 @@ fn cmdConvert(allocator: std.mem.Allocator, args: []const []const u8) !void {
     std.debug.print("║ Threshold: {d:<49.2} ║\n", .{threshold});
     std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 
-    // Загружаем и конвертируем
+    // Загружаем and конвертируем
     var loader = mistral.MistralLoader.init(allocator, config, threshold);
     defer loader.deinit();
 
@@ -140,7 +140,7 @@ fn cmdInfo(allocator: std.mem.Allocator, args: []const []const u8) !void {
     const path = args[2];
 
     if (std.mem.endsWith(u8, path, ".safetensors")) {
-        // Safetensors файл
+        // Safetensors file
         var sf = safetensors.SafetensorsFile.open(allocator, path) catch |err| {
             std.debug.print("Error opening file: {}\n", .{err});
             return;
@@ -149,7 +149,7 @@ fn cmdInfo(allocator: std.mem.Allocator, args: []const []const u8) !void {
 
         sf.printInfo();
     } else if (std.mem.endsWith(u8, path, ".tri")) {
-        // Trinity файл
+        // Trinity file
         var model = mistral.TrinityModelFile.load(allocator, path) catch |err| {
             std.debug.print("Error loading model: {}\n", .{err});
             return;
@@ -226,6 +226,6 @@ fn cmdTest(allocator: std.mem.Allocator, args: []const []const u8) !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "cli help" {
-    // Просто проверяем, что printUsage не падает
+    // Просто проверяем, what printUsage не падает
     printUsage();
 }

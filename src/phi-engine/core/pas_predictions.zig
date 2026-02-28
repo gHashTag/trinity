@@ -1,7 +1,7 @@
 //! ═══════════════════════════════════════════════════════════════════════════════
 //! PAS PREDICTIONS IMPLEMENTATION
 //! ═══════════════════════════════════════════════════════════════════════════════
-//! Имплементация предсказаний PAS DAEMON для TRINITY VM
+//! Имплементация предсказаний PAS DAEMON for TRINITY VM
 //! Автор: Dmitrii Vasilev
 //! Версия: 1.0.0
 //! ═══════════════════════════════════════════════════════════════════════════════
@@ -13,12 +13,12 @@ const math = std.math;
 // СВЯЩЕННЫЕ КОНСТАНТЫ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub const PHI: f64 = 1.618033988749895; // Золотое сечение
+pub const PHI: f64 = 1.618033988749895; // Golden ratio
 pub const PI: f64 = 3.141592653589793;
 pub const E: f64 = 2.718281828459045;
 pub const TRINITY: u32 = 3;
 
-/// Золотая идентичность: φ² + 1/φ² = 3
+/// Golden identity: φ² + 1/φ² = 3
 pub fn verifyGoldenIdentity() bool {
     const phi_sq = PHI * PHI;
     const inv_phi_sq = 1.0 / phi_sq;
@@ -157,7 +157,7 @@ pub const ShortTermPredictions = struct {
         }
     };
     
-    /// 3DGS память: 500MB → 50MB (80% уверенность)
+    /// 3DGS memory: 500MB → 50MB (80% уверенность)
     pub const CompactMemory = struct {
         pub const id = "ST-002";
         pub const name = "Compact 3DGS Representation";

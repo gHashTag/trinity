@@ -1,6 +1,6 @@
 // KV-CACHE - Key-Value Cache for Autoregressive Generation
-// Кэширование K,V тензоров для ускорения генерации
-// Без KV-cache: O(N²) операций, с KV-cache: O(N) операций
+// Кэширование K,V тензоров for ускорения генерации
+// Без KV-cache: O(N²) операций, with KV-cache: O(N) операций
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");

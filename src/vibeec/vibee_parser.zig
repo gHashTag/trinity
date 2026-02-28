@@ -2,7 +2,7 @@
 // VIBEE PARSER - Парсер .tri спецификаций
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Парсит YAML-подобный формат .tri файлов (legacy .vibee supported)
+// Парсит YAML-подобный format .tri файлов (legacy .vibee supported)
 // Автор: Dmitrii Vasilev
 // φ² + 1/φ² = 3
 //
@@ -281,7 +281,7 @@ pub const VibeeParser = struct {
             const name = self.readKey();
             if (name.len == 0) break;
 
-            // Проверяем что это не следующая секция
+            // Проверяем what this не следующая секция
             if (std.mem.eql(u8, name, "creation_patterns") or
                 std.mem.eql(u8, name, "behaviors") or
                 std.mem.eql(u8, name, "algorithms") or
@@ -508,7 +508,7 @@ pub const VibeeParser = struct {
             if (indent < 2) break;
             self.pos += indent;
 
-            // Behaviors начинаются с '-'
+            // Behaviors начинаются with '-'
             if (self.pos >= self.source.len or self.source[self.pos] != '-') {
                 self.pos -= indent;
                 break;
@@ -518,7 +518,7 @@ pub const VibeeParser = struct {
 
             var behavior = Behavior.init(self.allocator);
 
-            // Первое поле на той же строке: "- name: value"
+            // Первое поле on той же строке: "- name: value"
             const first_key = self.readKey();
             if (first_key.len > 0) {
                 self.skipColon();

@@ -2,7 +2,7 @@
 // ZIG CODEGEN - Генератор Zig кода из .vibee спецификаций
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Генерирует Zig код для компиляции в WASM
+// Generates Zig code for компиляции in WASM
 // Автор: Dmitrii Vasilev
 // φ² + 1/φ² = 3
 //
@@ -103,7 +103,7 @@ pub const ZigCodeGen = struct {
         self.builder.deinit();
     }
 
-    /// Генерация полного Zig файла из спецификации
+    /// Generation of complete Zig file from specification
     pub fn generate(self: *Self, spec: *const VibeeSpec) ![]const u8 {
         try self.writeHeader(spec);
         try self.writeImports();
@@ -2033,8 +2033,8 @@ pub const ZigCodeGen = struct {
         try self.builder.writeFmt("// {s} v{s} - Generated from .vibee specification\n", .{ spec.name, spec.version });
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.writeLine("//");
-        try self.builder.writeLine("// Священная формула: V = n × 3^k × π^m × φ^p × e^q");
-        try self.builder.writeLine("// Золотая идентичность: φ² + 1/φ² = 3");
+        try self.builder.writeLine("// Sacred formula: V = n × 3^k × π^m × φ^p × e^q");
+        try self.builder.writeLine("// Golden identity: φ² + 1/φ² = 3");
         try self.builder.writeLine("//");
         try self.builder.writeFmt("// Author: {s}\n", .{spec.author});
         try self.builder.writeLine("// DO NOT EDIT - This file is auto-generated");
@@ -2063,7 +2063,7 @@ pub const ZigCodeGen = struct {
             try self.builder.newline();
         }
 
-        // Добавляем базовые φ-константы только если их нет в спецификации
+        // Добавляем базовые φ-константы только if их нет in спецификации
         var has_phi = false;
         for (constants) |c| {
             if (std.mem.eql(u8, c.name, "PHI")) {
@@ -2072,7 +2072,7 @@ pub const ZigCodeGen = struct {
             }
         }
 
-        // Добавляем базовые φ-константы если их нет
+        // Добавляем базовые φ-константы if их нет
         try self.builder.writeLine("// Базовые φ-константы (Sacred Formula)");
 
         var has_phi_inv = false;
@@ -2407,7 +2407,7 @@ pub const ZigCodeGen = struct {
                     try self.generateTestAssertion(b.name, tc);
                 }
             } else {
-                // Fallback для известных тестов без test_cases
+                // Fallback for known tests без test_cases
                 try self.generateKnownTestAssertion(b.name);
             }
 
@@ -2416,7 +2416,7 @@ pub const ZigCodeGen = struct {
             try self.builder.newline();
         }
 
-        // Добавляем базовый тест констант если его нет
+        // Добавляем базовый test констант if его нет
         if (!added_tests.contains("phi_constants")) {
             try self.builder.writeLine("test \"phi_constants\" {");
             try self.builder.writeLine("    try std.testing.expectApproxEqAbs(PHI * PHI_INV, 1.0, 1e-10);");
@@ -2426,16 +2426,16 @@ pub const ZigCodeGen = struct {
     }
 
     fn generateTestAssertion(self: *Self, behavior_name: []const u8, tc: TestCase) !void {
-        // Парсим input: { n: 0 } или { a: 0, b: 100, t: 0.5 }
-        // Убираем кавычки если есть
+        // Парсим input: { n: 0 } or { a: 0, b: 100, t: 0.5 }
+        // Убираем кавычки if есть
         const input = stripQuotes(tc.input);
-        // Извлекаем только число из expected (может содержать комментарий)
+        // Извлекаем только number из expected (может содержать comment)
         const expected = extractNumber(stripQuotes(tc.expected));
 
-        // Используем tc.name если есть, иначе behavior_name
+        // Используем tc.name if есть, else behavior_name
         const func_name = if (tc.name.len > 0) tc.name else behavior_name;
 
-        // Определяем функцию по имени
+        // Определяем функцию by имени
         if (std.mem.startsWith(u8, func_name, "phi_power")) {
             // Извлекаем n из input
             if (extractIntParam(input, "n")) |n| {
@@ -2464,11 +2464,11 @@ pub const ZigCodeGen = struct {
             try self.builder.writeLine("const count = generate_phi_spiral(100, 10.0, 0.0, 0.0);");
             try self.builder.writeLine("try std.testing.expect(count > 0);");
         } else if (std.mem.startsWith(u8, func_name, "phi_lerp")) {
-            // phi_lerp тесты - используем большую tolerance из-за приближённых значений в spec
+            // phi_lerp тесты - используем большую tolerance из-за приближённых значений in spec
             if (extractFloatParam(input, "t")) |t| {
                 const a = extractFloatParam(input, "a") orelse 0.0;
                 const b_val = extractFloatParam(input, "b") orelse 100.0;
-                const tol = tc.tolerance orelse 1.0; // Большая tolerance для phi_lerp
+                const tol = tc.tolerance orelse 1.0; // Larger tolerance for phi_lerp
                 try self.builder.writeFmt("try std.testing.expectApproxEqAbs(phi_lerp({d}, {d}, {d}), {s}, {d});\n", .{ a, b_val, t, expected, tol });
             }
         } else if (std.mem.startsWith(u8, func_name, "factorial") or std.mem.startsWith(u8, func_name, "test_factorial")) {
@@ -2538,7 +2538,7 @@ pub const ZigCodeGen = struct {
         } else if (std.mem.startsWith(u8, func_name, "verify_trinity") or std.mem.startsWith(u8, func_name, "test_verify_trinity")) {
             try self.builder.writeLine("try std.testing.expectApproxEqAbs(verify_trinity(), TRINITY, 1e-10);");
         } else {
-            // Неизвестный тест - генерируем комментарий
+            // Неизвестный test - генерируем comment
             try self.builder.writeFmt("// Test case: input={s}, expected={s}\n", .{ input, expected });
         }
     }
@@ -2622,7 +2622,7 @@ pub const ZigCodeGen = struct {
     }
 
     fn extractNumber(value: []const u8) []const u8 {
-        // Извлекаем только число из строки типа "65.47  # comment"
+        // Извлекаем только number из строки типа "65.47  # comment"
         var end: usize = 0;
         // Пропускаем начальные пробелы
         var start: usize = 0;
@@ -2630,7 +2630,7 @@ pub const ZigCodeGen = struct {
             start += 1;
         }
         end = start;
-        // Читаем число (может быть отрицательным, с точкой)
+        // Читаем number (может быть отрицательным, with точкой)
         if (end < value.len and value[end] == '-') {
             end += 1;
         }
@@ -2644,7 +2644,7 @@ pub const ZigCodeGen = struct {
     }
 
     fn extractIntParam(input: []const u8, param: []const u8) ?i32 {
-        // Ищем "param: value" в строке типа "{ n: 0 }"
+        // Ищем "param: value" in строке типа "{ n: 0 }"
         var search_buf: [64]u8 = undefined;
         const search = std.fmt.bufPrint(&search_buf, "{s}:", .{param}) catch return null;
 
@@ -2654,7 +2654,7 @@ pub const ZigCodeGen = struct {
             while (start < input.len and (input[start] == ' ' or input[start] == '\t')) {
                 start += 1;
             }
-            // Читаем число (может быть отрицательным)
+            // Читаем number (может быть отрицательным)
             var end = start;
             if (end < input.len and input[end] == '-') {
                 end += 1;
@@ -2807,7 +2807,7 @@ pub const ZigCodeGen = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn generateFromFile(allocator: Allocator, vibee_path: []const u8, output_path: []const u8) !void {
-    // Читаем .vibee файл
+    // Читаем .vibee file
     const file = try std.fs.cwd().openFile(vibee_path, .{});
     defer file.close();
 
@@ -2819,13 +2819,13 @@ pub fn generateFromFile(allocator: Allocator, vibee_path: []const u8, output_pat
     var spec = try parser.parse();
     defer spec.deinit();
 
-    // Генерируем Zig код
+    // Генерируем Zig code
     var codegen = ZigCodeGen.init(allocator);
     defer codegen.deinit();
 
     const output = try codegen.generate(&spec);
 
-    // Записываем в файл
+    // Записываем in file
     const out_file = try std.fs.cwd().createFile(output_path, .{});
     defer out_file.close();
 

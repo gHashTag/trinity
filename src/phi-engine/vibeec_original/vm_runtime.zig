@@ -2665,7 +2665,7 @@ fn nativeTryteArrayFill(_: *VM, args: []const Value) VMError!Value {
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SACRED MATH NATIVE FUNCTIONS
-// φ² + 1/φ² = 3 = КУТРИТ = ТРОИЦА
+// φ² + 1/φ² = 3 = КУТРИТ = TRINITY
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn nativeLucas(_: *VM, args: []const Value) VMError!Value {

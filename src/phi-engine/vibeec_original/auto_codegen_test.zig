@@ -56,7 +56,7 @@ test "generate struct from TypeDef" {
     spec.version = "1.0.0";
     spec.author = "Test";
 
-    // Добавляем тип User
+    // Добавляем type User
     var user_type = TypeDef.init(allocator);
     user_type.name = "User";
     user_type.description = "User entity";
@@ -118,7 +118,7 @@ test "generate test from TestCase" {
     spec.version = "1.0.0";
     spec.author = "Test";
 
-    // Добавляем behavior с test case
+    // Добавляем behavior with test case
     var behavior = Behavior.init(allocator);
     behavior.name = "calculate";
     behavior.given = "Numbers";
@@ -156,7 +156,7 @@ test "mapType handles all basic types" {
 }
 
 test "mapType handles unknown types" {
-    // Неизвестные типы возвращаются как есть
+    // Неизвестные типы возвращаются how есть
     try testing.expectEqualStrings("CustomType", auto_codegen.mapType("CustomType"));
 }
 

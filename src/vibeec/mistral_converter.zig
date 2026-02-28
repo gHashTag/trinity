@@ -1,5 +1,5 @@
 // MISTRAL-7B TO TRINITY CONVERTER
-// Конвертация Mistral-7B из safetensors в .tri формат
+// Конвертация Mistral-7B из safetensors in .tri format
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");
@@ -93,7 +93,7 @@ pub const ShardedLoader = struct {
             self.allocator.destroy(shard);
         }
 
-        // Формируем путь к шарду
+        // Формируем path to шарду
         var path_buf: [512]u8 = undefined;
         const path = try std.fmt.bufPrint(&path_buf, "{s}/model-{d:0>5}-of-{d:0>5}.safetensors", .{
             self.base_path,
@@ -132,7 +132,7 @@ pub const ConversionStats = struct {
     }
 };
 
-/// Конвертация Mistral-7B в .tri формат
+/// Конвертация Mistral-7B in .tri format
 pub fn convertMistral(
     allocator: std.mem.Allocator,
     model_path: []const u8,
@@ -151,7 +151,7 @@ pub fn convertMistral(
     std.debug.print("║ Expected params: {d:<43} ║\n", .{config.totalParams()});
     std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 
-    // Создаём writer для .tri
+    // Создаём writer for .tri
     var writer = try trinity_format.TrinityWriter.init(allocator, output_path);
     defer writer.deinit();
 
@@ -167,7 +167,7 @@ pub fn convertMistral(
     // Создаём квантизатор
     var quantizer = prometheus.Quantizer.init(0.1);
 
-    // Загружаем шарды по очереди (определяем количество автоматически)
+    // Загружаем шарды by очереди (определяем количество автоматически)
     const num_shards: usize = 4; // Qwen2.5-Coder-7B has 4 shards
     var loader = ShardedLoader.init(allocator, model_path, num_shards);
     defer loader.deinit();
@@ -180,13 +180,13 @@ pub fn convertMistral(
             continue;
         };
 
-        // Конвертируем все тензоры в шарде
+        // Конвертируем all тензоры in шарде
         var tensor_it = shard.tensors.iterator();
         while (tensor_it.next()) |entry| {
             const info = entry.value_ptr.*;
             const name = info.name;
 
-            // Пропускаем layernorm веса (они остаются в float)
+            // Пропускаем layernorm веса (они остаются in float)
             if (std.mem.indexOf(u8, name, "layernorm") != null or
                 std.mem.indexOf(u8, name, "norm") != null)
             {
@@ -194,14 +194,14 @@ pub fn convertMistral(
                 continue;
             }
 
-            // Получаем данные как f32
+            // Получаем data how f32
             const f32_data = shard.getTensorF32(allocator, name) catch |err| {
                 std.debug.print("  Skip {s}: {}\n", .{ name[0..@min(name.len, 40)], err });
                 continue;
             };
             defer allocator.free(f32_data);
 
-            // Квантизуем в триты
+            // Квантизуем in триты
             var trit_tensor = try quantizer.quantize(allocator, f32_data, info.shape);
             defer trit_tensor.deinit();
 
@@ -210,7 +210,7 @@ pub fn convertMistral(
                 if (t == .zero) stats.zeros_count += 1;
             }
 
-            // Добавляем в .tri файл
+            // Добавляем in .tri file
             try writer.addTensor(name, info.shape, trit_tensor.data);
 
             stats.total_tensors += 1;
@@ -226,7 +226,7 @@ pub fn convertMistral(
         }
     }
 
-    // Финализируем файл
+    // Финализируем file
     try writer.finalize();
 
     // Вычисляем статистику
@@ -277,7 +277,7 @@ pub fn convertSingleFile(
     var sf = try safetensors.SafetensorsFile.open(allocator, input_path);
     defer sf.deinit();
 
-    // Создаём writer для .tri
+    // Создаём writer for .tri
     var writer = try trinity_format.TrinityWriter.init(allocator, output_path);
     defer writer.deinit();
 
@@ -293,20 +293,20 @@ pub fn convertSingleFile(
     // Создаём квантизатор
     var quantizer = prometheus.Quantizer.init(0.1);
 
-    // Конвертируем все тензоры
+    // Конвертируем all тензоры
     var tensor_it = sf.tensors.iterator();
     while (tensor_it.next()) |entry| {
         const info = entry.value_ptr.*;
         const name = info.name;
 
-        // Получаем данные как f32
+        // Получаем data how f32
         const f32_data = sf.getTensorF32(allocator, name) catch |err| {
             std.debug.print("  Skip {s}: {}\n", .{ name[0..@min(name.len, 40)], err });
             continue;
         };
         defer allocator.free(f32_data);
 
-        // Квантизуем в триты
+        // Квантизуем in триты
         var trit_tensor = try quantizer.quantize(allocator, f32_data, info.shape);
         defer trit_tensor.deinit();
 
@@ -315,7 +315,7 @@ pub fn convertSingleFile(
             if (t == .zero) stats.zeros_count += 1;
         }
 
-        // Добавляем в .tri файл
+        // Добавляем in .tri file
         try writer.addTensor(name, info.shape, trit_tensor.data);
 
         stats.total_tensors += 1;
@@ -325,7 +325,7 @@ pub fn convertSingleFile(
         std.debug.print("  ✓ {s}\n", .{name[0..@min(name.len, 50)]});
     }
 
-    // Финализируем файл
+    // Финализируем file
     try writer.finalize();
 
     // Вычисляем статистику

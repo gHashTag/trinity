@@ -24,7 +24,7 @@ pub const BogatyrRegistry = struct {
         };
 
         // Регистрируем существующие базовые проверки (из validate_cmd.zig)
-        // TODO: Добавить остальные 33 богатыря по мере реализации
+        // TODO: Добавить остальные 33 богатыря by мере реализации
         try registry.registerBasicChecks();
 
         return registry;
@@ -34,11 +34,11 @@ pub const BogatyrRegistry = struct {
         self.plugins.deinit();
     }
 
-    /// Регистрация базовых проверок (пока без полных 33 богатырей)
+    /// Регистрация базовых проверок (while без полных 33 богатырей)
     fn registerBasicChecks(self: *Self) !void {
         try self.register(@import("bogatyrs_yaml_syntax.zig").bogatyr);
         try self.register(@import("bogatyrs_spec_structure.zig").bogatyr);
-        // Жар-птица — 34-й Богатырь-Творец с принципом synthesis
+        // Жар-птица — 34-й Богатырь-Творец with принципом synthesis
         try self.register(@import("bogatyr_34_creator.zig").bogatyr);
     }
 
@@ -51,12 +51,12 @@ pub const BogatyrRegistry = struct {
         try self.plugins.put(plugin.name, entry);
     }
 
-    /// Получить плагин по имени
+    /// Получить плагин by имени
     pub fn getPlugin(self: *Self, name: []const u8) ?PluginEntry {
         return self.plugins.get(name);
     }
 
-    /// Получить все плагины
+    /// Получить all плагины
     pub fn getAllPlugins(self: *Self) ![]interface.BogatyrPlugin {
         var list = std.ArrayList(interface.BogatyrPlugin).init(self.allocator);
         defer list.deinit();

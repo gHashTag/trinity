@@ -1,7 +1,7 @@
 //! VIBEE E-Graph Pattern Matcher - PAS DAEMON V40
-//! Паттерны: ALG (algebraic rewrites), HSH (hash-consing), PRE (canonical forms)
-//! Священная формула: V = n × 3^k × π^m × φ^p × e^q
-//! Золотая идентичность: φ² + 1/φ² = 3
+//! Patterns: ALG (algebraic rewrites), HSH (hash-consing), PRE (canonical forms)
+//! Sacred formula: V = n × 3^k × π^m × φ^p × e^q
+//! Golden identity: φ² + 1/φ² = 3
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
@@ -461,7 +461,7 @@ pub const EGraph = struct {
         if (pattern.const_match) |expected| {
             const class = self.classes.get(root) orelse return false;
             for (class.nodes.items) |node| {
-                // Прямое сопоставление священных констант по оператору
+                // Прямое сопоставление священных констант by оператору
                 if (expected == .float) {
                     if (node.op == .const_phi and @abs(PHI - expected.float) < 0.0001) return true;
                     if (node.op == .const_pi and @abs(PI - expected.float) < 0.0001) return true;
@@ -482,7 +482,7 @@ pub const EGraph = struct {
         if (pattern.op) |op| {
             const class = self.classes.get(root) orelse return false;
             for (class.nodes.items) |node| {
-                // Если оператор узла совпадает с оператором паттерна (включая константы-операторы)
+                // Если operator узла совпадает with оператором паттерна (включая константы-операторы)
                 if (node.op == op) {
                     if (pattern.children[0] == null and node.child_count == 0) return true;
 
@@ -562,7 +562,7 @@ pub const EGraph = struct {
         return self.stats;
     }
 
-    /// Извлекает лучший узел из e-класса на основе "священной" функции стоимости
+    /// Извлекает лучший узел из e-класса on основе "священной" функции стоимости
     pub fn extractBest(self: *EGraph, class_id: EClassId) !ENode {
         const root = self.find(class_id);
         const class = self.classes.get(root) orelse return error.InvalidEClass;
@@ -576,7 +576,7 @@ pub const EGraph = struct {
             // Рекурсивно добавляем стоимость детей
             for (node.children[0..node.child_count]) |maybe_child| {
                 if (maybe_child) |_| {
-                    // В полной реализации здесь нужно избегать циклов и использовать мемоизацию
+                    // В полной реализации здесь нужно избегать циклов and использовать мемоизацию
                     // Для MVP используем упрощенную оценку
                     cost += 1.0;
                 }

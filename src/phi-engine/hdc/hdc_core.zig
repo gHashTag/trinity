@@ -1,5 +1,5 @@
 //! HDC Core - Базовые операции гиперразмерных вычислений
-//! с онлайн-обучением для самообучающихся AI моделей.
+//! with онлайн-обучением for самообучающихся AI моделей.
 //!
 //! Научная база:
 //! - Kanerva (2009): Hyperdimensional Computing
@@ -21,7 +21,7 @@ pub const PHI: f64 = 1.618033988749895;
 pub const Trit = i8; // {-1, 0, +1}
 pub const Vec32i8 = @Vector(32, i8);
 
-/// Троичный гипервектор
+/// Ternary гипервектор
 pub const HyperVector = struct {
     data: []Trit,
     dim: usize,
@@ -44,7 +44,7 @@ pub const HyperVector = struct {
     }
 };
 
-/// Float аккумулятор для онлайн усреднения
+/// Float аккумулятор for онлайн усреднения
 pub const FloatAccumulator = struct {
     data: []f64,
     dim: usize,
@@ -79,7 +79,7 @@ pub const SimilarityResult = struct {
 // БАЗОВЫЕ HDC ОПЕРАЦИИ
 // ═══════════════════════════════════════════════════════════════
 
-/// Bind: поэлементное умножение (создание ассоциации)
+/// Bind: поэлементное умножение (creation ассоциации)
 pub fn bind(a: []const Trit, b: []const Trit, result: []Trit) void {
     const len = @min(a.len, @min(b.len, result.len));
     const chunks = len / SIMD_WIDTH;
@@ -96,12 +96,12 @@ pub fn bind(a: []const Trit, b: []const Trit, result: []Trit) void {
     }
 }
 
-/// Unbind: то же что bind (самообратимость)
+/// Unbind: that же what bind (самообратимость)
 pub fn unbind(bound: []const Trit, key: []const Trit, result: []Trit) void {
     bind(bound, key, result);
 }
 
-/// Bundle: мажоритарное голосование для 2 векторов
+/// Bundle: мажоритарное голосование for 2 векторов
 pub fn bundle2(a: []const Trit, b: []const Trit, result: []Trit) void {
     const len = @min(a.len, @min(b.len, result.len));
 
@@ -117,7 +117,7 @@ pub fn bundle2(a: []const Trit, b: []const Trit, result: []Trit) void {
     }
 }
 
-/// Bundle: мажоритарное голосование для N векторов
+/// Bundle: мажоритарное голосование for N векторов
 pub fn bundleN(vectors: []const []const Trit, result: []Trit) void {
     if (vectors.len == 0) return;
 
@@ -153,7 +153,7 @@ pub fn permute(v: []const Trit, k: usize, result: []Trit) void {
 // СХОДСТВО
 // ═══════════════════════════════════════════════════════════════
 
-/// Dot product с SIMD
+/// Dot product with SIMD
 pub fn dotProduct(a: []const Trit, b: []const Trit) i64 {
     const len = @min(a.len, b.len);
     var dot: i64 = 0;
@@ -204,7 +204,7 @@ pub fn hammingDistance(a: []const Trit, b: []const Trit) usize {
 // СОЗДАНИЕ ВЕКТОРОВ
 // ═══════════════════════════════════════════════════════════════
 
-/// Случайный вектор
+/// Случайный vector
 pub fn randomVector(allocator: std.mem.Allocator, dim: usize, seed: u64) !HyperVector {
     const vec = try HyperVector.init(allocator, dim);
     var rng = std.Random.DefaultPrng.init(seed);
@@ -216,7 +216,7 @@ pub fn randomVector(allocator: std.mem.Allocator, dim: usize, seed: u64) !HyperV
     return vec;
 }
 
-/// Нулевой вектор
+/// Нулевой vector
 pub fn zeroVector(allocator: std.mem.Allocator, dim: usize) !HyperVector {
     return HyperVector.init(allocator, dim);
 }
@@ -256,7 +256,7 @@ pub fn dequantizeToFloat(trit_data: []const Trit, result: []f64) void {
 // ОНЛАЙН ОБУЧЕНИЕ
 // ═══════════════════════════════════════════════════════════════
 
-/// Онлайн обновление прототипа: P ← P + η(v - P)
+/// Онлайн update прототипа: P ← P + η(v - P)
 pub fn onlineUpdate(accumulator: []f64, input: []const Trit, lr: f64) void {
     for (0..@min(accumulator.len, input.len)) |i| {
         const v: f64 = @floatFromInt(input[i]);
@@ -313,7 +313,7 @@ test "bind self-inverse" {
             if (recovered.data[i] == a.data[i]) matches += 1;
         }
     }
-    // Должно совпадать для всех ненулевых b
+    // Должно совпадать for всех ненулевых b
     try std.testing.expect(matches == nonzero_b);
 }
 

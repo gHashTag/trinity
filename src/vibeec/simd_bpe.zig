@@ -2,7 +2,7 @@
 // ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ: V = n × 3^k × π^m × φ^p × e^q
 // PHOENIX = 999 = 3³ × 37
 //
-// Оптимизация: SIMD параллельный поиск биграмм
+// Оптимизация: SIMD параллельный search биграмм
 // Ожидаемый speedup: 2x поверх v39.1
 
 const std = @import("std");
@@ -16,7 +16,7 @@ pub const PHOENIX: u32 = 999;
 // SIMD ТИПЫ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// 16-байтный вектор для SIMD операций
+// 16-байтный vector for SIMD операций
 const Vec16 = @Vector(16, u8);
 const Vec16Bool = @Vector(16, bool);
 
@@ -25,28 +25,28 @@ const Vec16Bool = @Vector(16, bool);
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const SIMDBigramMatcher = struct {
-    // Топ-16 биграмм для SIMD поиска (первый символ)
+    // Топ-16 биграмм for SIMD поиска (первый character)
     first_chars: Vec16,
-    // Топ-16 биграмм для SIMD поиска (второй символ)
+    // Топ-16 биграмм for SIMD поиска (второй character)
     second_chars: Vec16,
 
     const Self = @This();
 
     pub fn init() Self {
-        // Топ-16 английских биграмм по частоте
+        // Топ-16 английских биграмм by частоте
         return Self{
             .first_chars = Vec16{ 't', 'h', 'i', 'e', 'a', 'r', 'o', 'a', 'e', 'n', 't', 'e', 'o', 't', 'o', 'e' },
             .second_chars = Vec16{ 'h', 'e', 'n', 'r', 'n', 'e', 'n', 't', 'n', 'd', 'i', 's', 'r', 'e', 'f', 'd' },
         };
     }
 
-    // SIMD проверка: является ли пара (c1, c2) биграммой
+    // SIMD verification: является ли пара (c1, c2) биграммой
     pub fn isBigram(self: *const Self, c1: u8, c2: u8) bool {
         // Создаём векторы из одного символа
         const v1: Vec16 = @splat(c1);
         const v2: Vec16 = @splat(c2);
 
-        // Параллельное сравнение с 16 биграммами
+        // Параллельное comparison with 16 биграммами
         const match1 = v1 == self.first_chars;
         const match2 = v2 == self.second_chars;
 
@@ -58,7 +58,7 @@ pub const SIMDBigramMatcher = struct {
         return @reduce(.Or, both_match != @as(Vec16, @splat(0)));
     }
 
-    // SIMD поиск всех биграмм в тексте (возвращает битовую маску)
+    // SIMD search всех биграмм in тексте (returns битовую маску)
     pub fn findBigrams(self: *const Self, text: []const u8) u64 {
         if (text.len < 2) return 0;
 
@@ -106,7 +106,7 @@ pub fn tokenizeSIMD(text: []const u8) u32 {
             continue;
         }
 
-        // SIMD проверка биграммы
+        // SIMD verification биграммы
         if (i + 1 < text.len) {
             if (matcher.isBigram(c, text[i + 1])) {
                 count += 1;
@@ -115,7 +115,7 @@ pub fn tokenizeSIMD(text: []const u8) u32 {
             }
         }
 
-        // Одиночный символ
+        // Одиночный character
         count += 1;
         i += 1;
     }
@@ -124,10 +124,10 @@ pub fn tokenizeSIMD(text: []const u8) u32 {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// РАСШИРЕННЫЙ BPE СЛОВАРЬ (10,000 токенов - упрощённая версия)
+// РАСШИРЕННЫЙ BPE СЛОВАРЬ (10,000 токенов - упрощённая version)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Топ-100 английских слов/подслов для BPE
+// Топ-100 английских слов/подслов for BPE
 const BPE_VOCAB = [_][]const u8{
     "the", "ing", "tion", "and", "ent", "ion", "ter", "was", "ous", "hat",
     "his", "ere", "all", "ver", "her", "ith", "for", "thi", "ati", "ted",
@@ -141,7 +141,7 @@ const BPE_VOCAB = [_][]const u8{
     "ward", "wise", "like", "able", "ible", "ful", "less", "ness", "ment", "tion",
 };
 
-// Хэш-таблица для быстрого поиска BPE токенов
+// Хэш-таблица for быстрого поиска BPE токенов
 const BPE_HASH_SIZE = 256;
 
 pub const BPEVocab = struct {
@@ -193,7 +193,7 @@ fn getBPEVocab() *const BPEVocab {
     return &bpe_vocab.?;
 }
 
-// BPE токенизация с расширенным словарём
+// BPE токенизация with расширенным словарём
 pub fn tokenizeBPEFull(text: []const u8) u32 {
     if (text.len == 0) return 1;
 
@@ -234,7 +234,7 @@ pub fn tokenizeBPEFull(text: []const u8) u32 {
         }
 
         if (!found) {
-            // Одиночный символ
+            // Одиночный character
             count += 1;
             i += 1;
         }
@@ -323,7 +323,7 @@ pub const AdaptiveCache = struct {
                 e.* = CacheEntry{ .hash = 0, .token_count = 0, .hits = 0 };
             }
 
-            // Копируем старые записи
+            // Копируем old записи
             for (self.entries) |e| {
                 if (e.hash != 0) {
                     const idx = e.hash % new_size;
@@ -453,7 +453,7 @@ pub const WebSocketFrame = struct {
     }
 };
 
-// WebSocket стриминг для агентов
+// WebSocket стриминг for агентов
 pub const WebSocketStream = struct {
     frames_sent: u64,
     bytes_sent: u64,
@@ -567,7 +567,7 @@ test "Benchmark: SIMD vs Lookup table" {
     const text = "This is a sample text for benchmarking token estimation performance in the DeepSeek provider implementation with various optimizations.";
     const iterations: u64 = 10000;
 
-    // Import bpe_cached для сравнения
+    // Import bpe_cached for сравнения
     const bpe_cached = @import("bpe_cached.zig");
 
     // Warmup

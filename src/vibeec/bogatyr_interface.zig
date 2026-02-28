@@ -4,19 +4,19 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-/// Контекст валидации - общие данные для всех богатырей
+/// Контекст валидации - общие data for всех богатырей
 pub const ValidationContext = struct {
     allocator: Allocator,
     spec_path: []const u8,
     source: []const u8,
     config: ValidatorConfig,
 
-    // AST (если уже спарсен)
+    // AST (if уже спарсен)
     ast: ?*const struct {
         nodes: []const AstNode,
     },
 
-    // Таблица символов (если уже построена)
+    // Таблица символов (if уже построена)
     symbol_table: ?*const struct {
         symbols: std.StringHashMap(Symbol),
     },
@@ -53,7 +53,7 @@ pub const BogatyrMetrics = struct {
     checks_performed: usize,
 };
 
-/// Интерфейс Богатыря - каждый богатырь реализует этот трейт
+/// Интерфейс Богатыря - each богатырь реализует this трейт
 pub const BogatyrPlugin = struct {
     name: []const u8,
     version: []const u8,

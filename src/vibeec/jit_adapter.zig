@@ -127,7 +127,7 @@ pub const AdapterConfig = struct {
     trace_max_length: usize = jit.TRACE_MAX_LENGTH,
     enable_profiling: bool = true,
     use_fast_path: bool = true, // Использовать VM.runFast() вместо run()
-    use_native: bool = true, // Использовать нативный x86-64 код когда доступен
+    use_native: bool = true, // Использовать нативный x86-64 code when доступен
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1451,7 +1451,7 @@ pub const LoopUnroller = struct {
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SIMD VECTORIZER
-// Автоматическая векторизация циклов для SSE/AVX
+// Автоматическая векторизация циклов for SSE/AVX
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// SIMD Vector width (number of i64 elements)
@@ -1473,7 +1473,7 @@ pub const SIMDVectorizer = struct {
         };
     }
 
-    /// Анализ цикла на возможность векторизации
+    /// Анализ цикла on возможность векторизации
     pub fn analyzeLoop(self: *Self, ir: []const IRInstruction, loop_start: usize, loop_end: usize) ?VectorizationInfo {
         self.loops_analyzed += 1;
 
@@ -1496,12 +1496,12 @@ pub const SIMDVectorizer = struct {
                 // Загрузка/сохранение - проверяем stride
                 .LOAD_LOCAL, .STORE_LOCAL => {
                     has_array_access = true;
-                    // Простая эвристика: если есть последовательный доступ
+                    // Простая эвристика: if есть последовательный доступ
                     if (array_stride == 0) {
                         array_stride = 1;
                     }
                 },
-                // Зависимости между итерациями - не векторизуем
+                // Зависимости between итерациями - не векторизуем
                 .JUMP, .JUMP_IF_ZERO, .JUMP_IF_NOT_ZERO => {
                     // Условные переходы внутри цикла - сложно векторизовать
                     if (instr.imm < 0) {
@@ -1533,7 +1533,7 @@ pub const SIMDVectorizer = struct {
         var result = std.ArrayList(IRInstruction).init(self.allocator);
         errdefer result.deinit();
 
-        // Пролог: код до цикла
+        // Пролог: code before цикла
         for (ir[0..info.loop_start]) |instr| {
             try result.append(instr);
         }
@@ -1542,7 +1542,7 @@ pub const SIMDVectorizer = struct {
         for (ir[info.loop_start..info.loop_end]) |instr| {
             switch (instr.opcode) {
                 .ADD_INT => {
-                    // Заменяем скалярное сложение на векторное
+                    // Заменяем скалярное сложение on векторное
                     try result.append(.{
                         .opcode = .VADD,
                         .dest = instr.dest,
@@ -1595,13 +1595,13 @@ pub const SIMDVectorizer = struct {
                     self.scalar_ops_replaced += 1;
                 },
                 else => {
-                    // Остальные инструкции оставляем как есть
+                    // Остальные инструкции оставляем how есть
                     try result.append(instr);
                 },
             }
         }
 
-        // Эпилог: код после цикла
+        // Эпилог: code after цикла
         for (ir[info.loop_end..]) |instr| {
             try result.append(instr);
         }
@@ -1609,7 +1609,7 @@ pub const SIMDVectorizer = struct {
         return result.toOwnedSlice();
     }
 
-    /// Оптимизация IR с автоматической векторизацией
+    /// Оптимизация IR with автоматической векторизацией
     pub fn optimize(self: *Self, ir: []const IRInstruction) ![]IRInstruction {
         // Ищем циклы (простая эвристика: backward jumps)
         var loop_start: ?usize = null;
@@ -6843,7 +6843,7 @@ pub const RegisterAllocator = struct {
 /// Inline Cache for hot call sites
 // ═══════════════════════════════════════════════════════════════════════════════
 // POLYMORPHIC INLINE CACHE (PIC)
-// Оптимизация вызовов методов через кэширование targets
+// Оптимизация вызовов методов via caching targets
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Состояние Inline Cache
@@ -6854,11 +6854,11 @@ pub const ICState = enum {
     Megamorphic, // >4 targets (fallback)
 };
 
-/// Запись в Inline Cache
+/// Запись in Inline Cache
 pub const ICEntry = struct {
     type_id: u32, // ID типа объекта
     target_address: u32, // Адрес целевой функции
-    native_code: ?*const fn () callconv(.C) i64, // Скомпилированный код
+    native_code: ?*const fn () callconv(.C) i64, // Скомпилированный code
     hit_count: u64, // Счётчик попаданий
 };
 
@@ -6875,16 +6875,16 @@ pub const PolymorphicInlineCache = struct {
     transitions: usize = 0,
     invalidations: usize = 0,
 
-    /// Максимум entries в polymorphic режиме
+    /// Максимум entries in polymorphic режиме
     const MAX_POLYMORPHIC_ENTRIES: usize = 4;
 
-    /// PIC entry для одного call site
+    /// PIC entry for одного call site
     const PICEntry = struct {
         state: ICState,
         entries: [MAX_POLYMORPHIC_ENTRIES]?ICEntry,
         entry_count: u8,
         total_calls: u64,
-        /// Megamorphic fallback (hash map для >4 types)
+        /// Megamorphic fallback (hash map for >4 types)
         megamorphic_map: ?std.AutoHashMap(u32, ICEntry),
 
         fn init() PICEntry {
@@ -6917,7 +6917,7 @@ pub const PolymorphicInlineCache = struct {
         self.cache.deinit();
     }
 
-    /// Lookup в IC - возвращает native_code или null
+    /// Lookup in IC - returns native_code or null
     pub fn lookup(self: *Self, call_site: u32, type_id: u32) ?*const fn () callconv(.C) i64 {
         if (self.cache.getPtr(call_site)) |pic| {
             pic.total_calls += 1;
@@ -6939,7 +6939,7 @@ pub const PolymorphicInlineCache = struct {
                     return null;
                 },
                 .Polymorphic => {
-                    // Линейный поиск по 2-4 entries
+                    // Линейный search by 2-4 entries
                     for (&pic.entries) |*maybe_entry| {
                         if (maybe_entry.*) |*entry| {
                             if (entry.type_id == type_id) {
@@ -6992,7 +6992,7 @@ pub const PolymorphicInlineCache = struct {
                 pic.value_ptr.state = .Monomorphic;
             },
             .Monomorphic => {
-                // Проверяем, не тот же ли это тип
+                // Проверяем, не that же ли this type
                 if (pic.value_ptr.entries[0]) |existing| {
                     if (existing.type_id == type_id) {
                         // Обновляем существующий
@@ -7000,14 +7000,14 @@ pub const PolymorphicInlineCache = struct {
                         return;
                     }
                 }
-                // Новый тип -> polymorphic
+                // Новый type -> polymorphic
                 pic.value_ptr.entries[1] = entry;
                 pic.value_ptr.entry_count = 2;
                 pic.value_ptr.state = .Polymorphic;
                 self.transitions += 1;
             },
             .Polymorphic => {
-                // Ищем существующий или свободный слот
+                // Ищем существующий or свободный слот
                 var free_slot: ?usize = null;
                 for (&pic.value_ptr.entries, 0..) |*maybe_entry, i| {
                     if (maybe_entry.*) |existing| {
@@ -7031,7 +7031,7 @@ pub const PolymorphicInlineCache = struct {
                 }
             },
             .Megamorphic => {
-                // Добавляем в hash map
+                // Добавляем in hash map
                 if (pic.value_ptr.megamorphic_map) |*map| {
                     try map.put(type_id, entry);
                 }
@@ -7039,7 +7039,7 @@ pub const PolymorphicInlineCache = struct {
         }
     }
 
-    /// Переход в megamorphic режим
+    /// Переход in megamorphic режим
     fn transitionToMegamorphic(self: *Self, pic: *PICEntry, new_entry: ICEntry) !void {
         var map = std.AutoHashMap(u32, ICEntry).init(self.allocator);
 
@@ -7050,7 +7050,7 @@ pub const PolymorphicInlineCache = struct {
             }
         }
 
-        // Добавляем новый
+        // Добавляем new
         try map.put(new_entry.type_id, new_entry);
 
         pic.megamorphic_map = map;
@@ -7058,7 +7058,7 @@ pub const PolymorphicInlineCache = struct {
         self.transitions += 1;
     }
 
-    /// Инвалидация IC для call site
+    /// Инвалидация IC for call site
     pub fn invalidate(self: *Self, call_site: u32) void {
         if (self.cache.getPtr(call_site)) |pic| {
             if (pic.megamorphic_map) |*map| {
@@ -7099,10 +7099,10 @@ pub const PolymorphicInlineCache = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// IC RUNTIME - Обработка IC miss и интеграция с компилятором
+// IC RUNTIME - Обработка IC miss and integration with компилятором
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// IC Runtime - управляет Inline Cache во время выполнения
+/// IC Runtime - manages Inline Cache during выполнения
 pub const ICRuntime = struct {
     allocator: Allocator,
     /// Polymorphic Inline Cache
@@ -7128,23 +7128,23 @@ pub const ICRuntime = struct {
         self.method_table.deinit();
     }
 
-    /// Создать ключ для method table
+    /// Создать ключ for method table
     fn makeMethodKey(type_id: u32, method_id: u32) u64 {
         return (@as(u64, type_id) << 32) | @as(u64, method_id);
     }
 
-    /// Зарегистрировать метод в таблице
+    /// Зарегистрировать method in таблице
     pub fn registerMethod(self: *Self, type_id: u32, method_id: u32, native_code: *const fn () callconv(.C) i64) !void {
         const key = makeMethodKey(type_id, method_id);
         try self.method_table.put(key, native_code);
     }
 
-    /// IC Miss Handler - вызывается при промахе в IC
-    /// Возвращает результат вызова метода и обновляет IC
+    /// IC Miss Handler - вызывается при промахе in IC
+    /// Возвращает result вызова метода and updates IC
     pub fn handleICMiss(self: *Self, call_site: u32, type_id: u32, method_id: u32) !i64 {
         self.lookups += 1;
 
-        // 1. Найти метод в таблице
+        // 1. Найти method in таблице
         const key = makeMethodKey(type_id, method_id);
         const native_code = self.method_table.get(key);
 
@@ -7153,15 +7153,15 @@ pub const ICRuntime = struct {
             try self.pic.update(call_site, type_id, method_id, code);
             self.cache_updates += 1;
 
-            // 3. Вызвать метод
+            // 3. Вызвать method
             return code();
         } else {
-            // Метод не найден - ошибка
+            // Метод не найден - error
             return error.MethodNotFound;
         }
     }
 
-    /// Быстрый путь - проверка IC и вызов
+    /// Быстрый path - verification IC and вызов
     pub fn callMethod(self: *Self, call_site: u32, type_id: u32, method_id: u32) !i64 {
         // Попробовать IC lookup
         if (self.pic.lookup(call_site, type_id)) |native_code| {
@@ -7169,7 +7169,7 @@ pub const ICRuntime = struct {
             return native_code();
         }
 
-        // IC miss - медленный путь
+        // IC miss - slow path
         return self.handleICMiss(call_site, type_id, method_id);
     }
 
@@ -7189,7 +7189,7 @@ pub const ICRuntime = struct {
     }
 };
 
-/// Legacy InlineCache (для обратной совместимости)
+/// Legacy InlineCache (for обратной совместимости)
 pub const InlineCache = struct {
     allocator: Allocator,
     /// Cache entries: call_site -> cached_target
@@ -10443,7 +10443,7 @@ pub const JITAdapter = struct {
     }
 
     /// Mixed mode: interpret + JIT hot paths
-    /// Автоматически использует нативный код когда доступен
+    /// Автоматически использует нативный code when доступен
     fn executeMixed(self: *Self, code: []const u8) !Value {
         const entry_addr: u32 = 0;
 
@@ -11617,16 +11617,16 @@ test "JITAdapter автоматический JIT при повторном вы
     };
     const constants = [_]Value{.{ .int_val = 42 }};
 
-    // Первое выполнение - через интерпретатор
+    // Первое execution - via интерпретатор
     const result1 = try adapter.execute(&code, &constants);
     try std.testing.expect(result1.value == .int_val);
     try std.testing.expectEqual(@as(i64, 42), result1.value.int_val);
 
-    // После первого выполнения должен быть скомпилирован нативный код
-    // (если hot_threshold = 1)
+    // После первого выполнения должен быть скомпилирован нативный code
+    // (if hot_threshold = 1)
     const metrics = adapter.getNativeMetrics();
 
-    // Проверяем что компиляция произошла
+    // Проверяем what compilation произошла
     if (@import("builtin").mode == .Debug) {
         std.debug.print("\n=== Автоматический JIT тест ===\n", .{});
         std.debug.print("Кэшированных функций: {d}\n", .{metrics.cached_functions});
@@ -11637,7 +11637,7 @@ test "JITAdapter автоматический JIT при повторном вы
 test "Benchmark: VM vs JIT IR vs Native" {
     const allocator = std.testing.allocator;
 
-    // IR для: (2 + 3) * 7 = 35
+    // IR for: (2 + 3) * 7 = 35
     const ir = [_]IRInstruction{
         .{ .opcode = .LOAD_CONST, .dest = 0, .src1 = 0, .src2 = 0, .imm = 2 },
         .{ .opcode = .LOAD_CONST, .dest = 1, .src1 = 0, .src2 = 0, .imm = 3 },
@@ -11662,7 +11662,7 @@ test "Benchmark: VM vs JIT IR vs Native" {
     const native_end = std.time.nanoTimestamp();
     const native_time = native_end - native_start;
 
-    // Проверяем результат
+    // Проверяем result
     try std.testing.expectEqual(@as(i64, 35), native_result);
 
     // Выводим результаты бенчмарка
@@ -11680,7 +11680,7 @@ test "Benchmark: VM vs JIT IR vs Native" {
 test "Бенчмарк: нативный код vs интерпретатор" {
     const allocator = std.testing.allocator;
 
-    // Компилируем IR в нативный код: 2 + 3 = 5
+    // Компилируем IR in нативный code: 2 + 3 = 5
     var adapter = try JITAdapter.init(allocator);
     defer adapter.deinit();
 
@@ -11703,7 +11703,7 @@ test "Бенчмарк: нативный код vs интерпретатор" {
     const end = std.time.nanoTimestamp();
     const native_time: u64 = @intCast(@max(0, end - start));
 
-    // Проверяем результат
+    // Проверяем result
     try std.testing.expectEqual(@as(i64, 5), result);
 
     // Выводим результаты
@@ -14892,7 +14892,7 @@ test "PolymorphicIC monomorphic hit" {
     const type_id: u32 = 1;
     const target: u32 = 0x2000;
 
-    // Первый вызов - miss, добавляем в кэш
+    // Первый вызов - miss, добавляем in кэш
     const result1 = pic.lookup(call_site, type_id);
     try std.testing.expect(result1 == null);
 
@@ -14917,16 +14917,16 @@ test "PolymorphicIC polymorphic transition" {
 
     const call_site: u32 = 0x1000;
 
-    // Добавляем первый тип -> monomorphic
+    // Добавляем первый type -> monomorphic
     try pic.update(call_site, 1, 0x2000, null);
 
-    // Добавляем второй тип -> polymorphic
+    // Добавляем второй type -> polymorphic
     try pic.update(call_site, 2, 0x3000, null);
 
     const stats = pic.getStats();
     try std.testing.expectEqual(@as(usize, 1), stats.transitions);
 
-    // Lookup для обоих типов должен работать
+    // Lookup for обоих типов должен работать
     _ = pic.lookup(call_site, 1);
     _ = pic.lookup(call_site, 2);
 
@@ -14947,12 +14947,12 @@ test "PolymorphicIC megamorphic transition" {
     try pic.update(call_site, 2, 0x3000, null);
     try pic.update(call_site, 3, 0x4000, null);
     try pic.update(call_site, 4, 0x5000, null);
-    try pic.update(call_site, 5, 0x6000, null); // Переход в megamorphic
+    try pic.update(call_site, 5, 0x6000, null); // Переход in megamorphic
 
     const stats = pic.getStats();
     try std.testing.expectEqual(@as(usize, 2), stats.transitions); // mono->poly, poly->mega
 
-    // Lookup в megamorphic режиме
+    // Lookup in megamorphic режиме
     _ = pic.lookup(call_site, 3);
 
     const stats2 = pic.getStats();
@@ -14998,7 +14998,7 @@ test "PolymorphicIC hit rate calculation" {
         _ = pic.lookup(call_site, 1);
     }
 
-    // 2 misses (другой тип)
+    // 2 misses (other type)
     _ = pic.lookup(call_site, 2);
     _ = pic.lookup(call_site, 2);
 

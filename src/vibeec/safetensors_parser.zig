@@ -12,8 +12,8 @@ pub const PHI: f64 = 1.618033988749895;
 //
 // Формат файла:
 // [8 байт]  - размер заголовка (u64 little-endian)
-// [N байт]  - JSON заголовок с метаданными
-// [остаток] - сырые данные тензоров
+// [N байт]  - JSON заголовок with метаданными
+// [остаток] - сырые data тензоров
 //
 // JSON заголовок:
 // {
@@ -117,14 +117,14 @@ pub const SafetensorsFile = struct {
         }
     }
 
-    /// Открытие и парсинг safetensors файла
+    /// Открытие and парсинг safetensors файла
     pub fn open(allocator: std.mem.Allocator, path: []const u8) !SafetensorsFile {
         var self = SafetensorsFile.init(allocator);
         errdefer self.deinit();
 
         self.file_path = path;
 
-        // Читаем файл
+        // Читаем file
         const file = try std.fs.cwd().openFile(path, .{});
         defer file.close();
 
@@ -150,7 +150,7 @@ pub const SafetensorsFile = struct {
     }
 
     fn parseHeader(self: *SafetensorsFile, json_data: []const u8) !void {
-        // Простой парсер JSON для safetensors
+        // Простой парсер JSON for safetensors
         // Формат: {"tensor_name": {"dtype": "F32", "shape": [d1, d2], "data_offsets": [start, end]}, ...}
 
         var parsed = try std.json.parseFromSlice(
@@ -228,7 +228,7 @@ pub const SafetensorsFile = struct {
         return self.data[data_start..data_end];
     }
 
-    /// Получение тензора как float32
+    /// Получение тензора how float32
     pub fn getTensorF32(self: *const SafetensorsFile, allocator: std.mem.Allocator, name: []const u8) ![]f32 {
         const info = self.tensors.get(name) orelse return error.TensorNotFound;
         const raw_data = self.getTensorData(name) orelse return error.TensorNotFound;
@@ -238,7 +238,7 @@ pub const SafetensorsFile = struct {
 
         switch (info.dtype) {
             .F32 => {
-                // Копирование побайтово (без требований к выравниванию)
+                // Копирование побайтово (без требований to выравниванию)
                 for (0..num_elements) |i| {
                     const offset = i * 4;
                     const bytes = raw_data[offset..][0..4];

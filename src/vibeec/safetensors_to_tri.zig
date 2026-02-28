@@ -1,5 +1,5 @@
 // SAFETENSORS TO TRINITY CONVERTER
-// Конвертация весов из safetensors в .tri формат
+// Конвертация весов из safetensors in .tri format
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");
@@ -36,7 +36,7 @@ pub const ConverterConfig = struct {
     num_kv_heads: u32 = 8,
 };
 
-/// Конвертация safetensors в .tri формат
+/// Конвертация safetensors in .tri format
 pub fn convert(
     allocator: std.mem.Allocator,
     input_path: []const u8,
@@ -57,7 +57,7 @@ pub fn convert(
     var sf = try safetensors.SafetensorsFile.open(allocator, input_path);
     defer sf.deinit();
 
-    // 2. Создаём writer для .tri
+    // 2. Создаём writer for .tri
     var writer = try trinity.TrinityWriter.init(allocator, output_path);
     defer writer.deinit();
 
@@ -73,7 +73,7 @@ pub fn convert(
     // 3. Создаём квантизатор
     var quantizer = prometheus.Quantizer.init(0.1); // threshold = 0.1
 
-    // 4. Конвертируем каждый тензор
+    // 4. Конвертируем each тензор
     var tensor_it = sf.tensors.iterator();
     var total_zeros: usize = 0;
 
@@ -81,23 +81,23 @@ pub fn convert(
         const info = entry.value_ptr.*;
         const name = info.name;
 
-        // Получаем данные как f32
+        // Получаем data how f32
         const f32_data = sf.getTensorF32(allocator, name) catch |err| {
             std.debug.print("⚠️  Skip {s}: {}\n", .{ name, err });
             continue;
         };
         defer allocator.free(f32_data);
 
-        // Квантизуем в триты
+        // Квантизуем in триты
         var trit_tensor = try quantizer.quantize(allocator, f32_data, info.shape);
         defer trit_tensor.deinit();
 
-        // Считаем нули для sparsity
+        // Считаем нули for sparsity
         for (trit_tensor.data) |t| {
             if (t == .zero) total_zeros += 1;
         }
 
-        // Добавляем в .tri файл
+        // Добавляем in .tri file
         try writer.addTensor(name, info.shape, trit_tensor.data);
 
         stats.total_tensors += 1;
@@ -110,7 +110,7 @@ pub fn convert(
         }
     }
 
-    // 5. Финализируем файл
+    // 5. Финализируем file
     try writer.finalize();
 
     // 6. Вычисляем статистику
@@ -118,7 +118,7 @@ pub fn convert(
     stats.sparsity = @as(f32, @floatFromInt(total_zeros)) /
         @as(f32, @floatFromInt(stats.total_params));
 
-    // 7. Печатаем результат
+    // 7. Печатаем result
     printStats(&stats);
 
     return stats;

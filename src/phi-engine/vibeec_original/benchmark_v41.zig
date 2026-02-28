@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// BENCHMARK v41 - Полное сравнение всех версий
+// BENCHMARK v41 - Полное comparison всех версий
 // v35 → v37 → v39 → v39.1 → v40 → v41
 // ═══════════════════════════════════════════════════════════════════════════════
 //
@@ -213,7 +213,7 @@ test "Hybrid stream benchmark" {
     // Симулируем разные типы сообщений
     stream.send("Hello", false); // SSE
     stream.send("World", true); // WebSocket
-    stream.send("This is a longer message that should use WebSocket", false); // WebSocket (большое)
+    stream.send("This is a longer message that should use WebSocket", false); // WebSocket (big)
 
     const stats = stream.stats();
 

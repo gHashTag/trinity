@@ -2,9 +2,9 @@
 // VIBEEC CODEGEN WASM - ZIG/WASM CODE GENERATOR FROM .VIBEE SPECS
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Генерирует Zig код для компиляции в WASM из .vibee спецификаций
-// Священная формула: V = n × 3^k × π^m × φ^p × e^q
-// Золотая идентичность: φ² + 1/φ² = 3
+// Generates Zig code для компиляции в WASM из .vibee спецификаций
+// Sacred formula: V = n × 3^k × π^m × φ^p × e^q
+// Golden identity: φ² + 1/φ² = 3
 //
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -182,7 +182,7 @@ pub const WasmCodeGen = struct {
         self.builder.deinit();
     }
 
-    /// Генерация полного Zig файла из спецификации
+    /// Generation of complete Zig file from specification
     pub fn generate(self: *Self, spec: VibeeSpec) ![]const u8 {
         try self.writeHeader(spec);
         try self.writeConstants(spec.constants);
@@ -200,8 +200,8 @@ pub const WasmCodeGen = struct {
         try self.builder.writeFmt("// {s} v{s} - Generated from .vibee specification\n", .{ spec.name, spec.version });
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.writeLine("//");
-        try self.builder.writeLine("// Священная формула: V = n × 3^k × π^m × φ^p × e^q");
-        try self.builder.writeLine("// Золотая идентичность: φ² + 1/φ² = 3");
+        try self.builder.writeLine("// Sacred formula: V = n × 3^k × π^m × φ^p × e^q");
+        try self.builder.writeLine("// Golden identity: φ² + 1/φ² = 3");
         try self.builder.writeLine("//");
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.newline();
@@ -327,7 +327,7 @@ pub const WasmCodeGen = struct {
             try self.builder.writeLine("if (n == 0) return 0;");
             try self.builder.writeLine("if (n <= 2) return 1;");
             try self.builder.newline();
-            try self.builder.writeLine("// Формула Бине: F(n) = (φⁿ - ψⁿ) / √5");
+            try self.builder.writeLine("// Binet formula: F(n) = (φⁿ - ψⁿ) / √5");
             try self.builder.writeLine("const phi_n = phi_power(@intCast(n));");
             try self.builder.writeLine("const psi: f64 = -PHI_INV;");
             try self.builder.writeLine("var psi_n: f64 = 1.0;");

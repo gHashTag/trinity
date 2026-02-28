@@ -1,4 +1,4 @@
-// TRINITY LLM - Локальный LLM на троичных весах
+// TRINITY LLM - Локальный LLM on троичных весах
 // БЕЗ NVIDIA. БЕЗ API. БЕЗ ИНТЕРНЕТА.
 // φ² + 1/φ² = 3 = TRINITY
 //
@@ -32,7 +32,7 @@ pub const SimpleTokenizer = struct {
     }
 
     pub fn deinit(self: *SimpleTokenizer) void {
-        // Освобождаем все строки токенов
+        // Освобождаем all строки токенов
         var it = self.vocab.keyIterator();
         while (it.next()) |key| {
             self.allocator.free(key.*);
@@ -41,7 +41,7 @@ pub const SimpleTokenizer = struct {
         self.reverse_vocab.deinit();
     }
 
-    /// Добавление токена в словарь
+    /// Добавление токена in словарь
     pub fn addToken(self: *SimpleTokenizer, token: []const u8) !u32 {
         if (self.vocab.get(token)) |id| {
             return id;
@@ -55,7 +55,7 @@ pub const SimpleTokenizer = struct {
         return id;
     }
 
-    /// Простая токенизация по символам
+    /// Простая токенизация by символам
     pub fn encode(self: *SimpleTokenizer, text: []const u8) !std.ArrayList(u32) {
         var tokens = std.ArrayList(u32).init(self.allocator);
 
@@ -68,7 +68,7 @@ pub const SimpleTokenizer = struct {
         return tokens;
     }
 
-    /// Декодирование токенов в текст
+    /// Декодирование токенов in текст
     pub fn decode(self: *const SimpleTokenizer, tokens: []const u32) ![]u8 {
         var result = std.ArrayList(u8).init(self.allocator);
 
@@ -131,7 +131,7 @@ pub const TrinityAttention = struct {
         const v = try self.v_proj.forward(allocator, x, batch_size * seq_len);
         defer allocator.free(v);
 
-        // Упрощённый attention: просто усредняем V (для демонстрации)
+        // Упрощённый attention: просто усредняем V (for демонстрации)
         // В реальности нужен полный attention механизм
         const output = try allocator.alloc(f32, seq_len * self.hidden_size);
         @memcpy(output, v);
@@ -171,8 +171,8 @@ pub const TrinityMLP = struct {
         const up = try self.up_proj.forward(allocator, x, seq_len);
         defer allocator.free(up);
 
-        // gate * up (элементное умножение - единственное место где нужно умножение!)
-        // Но мы можем аппроксимировать через сложение: gate + up
+        // gate * up (элементное умножение - единственное место where нужно умножение!)
+        // Но мы можем аппроксимировать via сложение: gate + up
         const intermediate = try allocator.alloc(f32, gate.len);
         for (gate, up, 0..) |g, u, i| {
             intermediate[i] = g + u;  // Аппроксимация gate * up
@@ -317,7 +317,7 @@ pub const TrinityLLM = struct {
         // Embedding
         var hidden = try self.embedding.forward(self.allocator, input, seq_len);
 
-        // Проходим через все блоки
+        // Проходим via all блоки
         for (self.blocks.items) |*block| {
             const next_hidden = try block.forward(self.allocator, hidden, seq_len);
             self.allocator.free(hidden);
@@ -358,7 +358,7 @@ pub const TrinityLLM = struct {
         std.debug.print("║ Tensors: {d:<51} ║\n", .{reader.header.num_tensors});
         std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 
-        // Загружаем веса по именам тензоров
+        // Загружаем веса by именам тензоров
         var loaded_count: usize = 0;
 
         for (reader.listTensors()) |entry| {
@@ -371,7 +371,7 @@ pub const TrinityLLM = struct {
             };
             defer self.allocator.free(trits);
 
-            // Маппинг имён тензоров на слои модели
+            // Маппинг имён тензоров on слои модели
             if (std.mem.indexOf(u8, name, "embed_tokens") != null) {
                 try self.loadWeightsToLayer(&self.embedding, trits);
                 loaded_count += 1;
@@ -470,11 +470,11 @@ pub const TrinityLLM = struct {
 
 /// Парсинг индекса слоя из имени тензора (например, "layers.5.self_attn.q_proj" -> 5)
 fn parseLayerIndex(name: []const u8) usize {
-    // Ищем паттерн "layers.N." или ".N."
+    // Ищем pattern "layers.N." or ".N."
     var i: usize = 0;
     while (i < name.len) : (i += 1) {
         if (name[i] == '.') {
-            // Проверяем, есть ли число после точки
+            // Проверяем, есть ли number after точки
             var j = i + 1;
             var num: usize = 0;
             var found_digit = false;

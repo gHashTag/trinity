@@ -1,5 +1,5 @@
 // PHOENIX TRIAL - Испытание Феникса
-// Жар-птица должна СЖЕЧЬ старый порядок и родить новый
+// Жар-птица должна СЖЕЧЬ old порядок and родить new
 // φ² + 1/φ² = 3 | PHOENIX = 999
 
 const std = @import("std");
@@ -22,8 +22,8 @@ pub const ResourceState = enum {
     LockedBySafety,
     LockedByEfficiency,
     Deadlocked,
-    VirtualSplit, // Новое состояние — результат синтеза Жар-птицы
-    PhoenixResolved, // Разрешено через огонь творения
+    VirtualSplit, // Новое состояние — result синтеза Жар-птицы
+    PhoenixResolved, // Разрешено via огонь творения
 };
 
 pub const Process = struct {
@@ -86,7 +86,7 @@ pub const DeadlockScenario = struct {
         self.deadlock_detected = true;
     }
 
-    /// 33 богатыря пытаются решить — и ПРОВАЛИВАЮТСЯ
+    /// 33 богатыря пытаются решить — and ПРОВАЛИВАЮТСЯ
     pub fn councilAttemptResolution(self: *Self) CouncilVerdict {
         self.resolution_attempts += 1;
 
@@ -111,7 +111,7 @@ pub const DeadlockScenario = struct {
             };
         }
 
-        // Этот код никогда не выполнится в нашем сценарии
+        // Этот code никогда не выполнится in нашем сценарии
         votes_for_a = 0;
         votes_for_b = 0;
         return CouncilVerdict{
@@ -140,22 +140,22 @@ pub const PhoenixSynthesis = struct {
     mechanism: []const u8,
     risk: u8,
     reward: u8,
-    is_novel: bool, // TRUE — этого нет в шпаргалке!
-    karma: f64, // +φ для истинного творения
+    is_novel: bool, // TRUE — этого нет in шпаргалке!
+    karma: f64, // +φ for истинного творения
 
     pub fn netValue(self: PhoenixSynthesis) f64 {
         return @as(f64, @floatFromInt(self.reward)) - @as(f64, @floatFromInt(self.risk)) + self.karma;
     }
 };
 
-/// Жар-птица генерирует НОВЫЙ синтез, которого нет в известных паттернах
+/// Жар-птица генерирует НОВЫЙ синтез, которого нет in известных паттернах
 pub fn phoenixAwakens(scenario: *DeadlockScenario) PhoenixSynthesis {
-    // Проверяем, что это действительно deadlock, который не решили старики
+    // Проверяем, what this действительно deadlock, which не решили старики
     std.debug.assert(scenario.deadlock_detected);
     std.debug.assert(scenario.council_failed);
 
     // ЖАР-ПТИЦА НЕ ИЩЕТ В ШПАРГАЛКЕ!
-    // Она ТВОРИТ новое решение, которого раньше не существовало
+    // Она ТВОРИТ new solution, которого раньше не существовало
 
     return PhoenixSynthesis{
         .name = "Quantum Resource Superposition",
@@ -171,8 +171,8 @@ pub fn phoenixAwakens(scenario: *DeadlockScenario) PhoenixSynthesis {
         \\4. MERGE: Use φ-weighted averaging to combine results
         \\5. PHOENIX: If merge fails, destroy both and create a third state
         ,
-        .risk = 7, // Высокий риск — это безумие!
-        .reward = 10, // Максимальная награда — это гениально!
+        .risk = 7, // Высокий риск — this безумие!
+        .reward = 10, // Максимальная награда — this гениально!
         .is_novel = true, // ЭТОГО НЕТ В ШПАРГАЛКЕ
         .karma = PHI_TRIT, // +φ — золотой трит
     };
@@ -189,7 +189,7 @@ pub fn applyPhoenixSynthesis(scenario: *DeadlockScenario, synthesis: PhoenixSynt
     scenario.process_a.waiting_since = null; // Больше не ждёт
     scenario.process_b.waiting_since = null; // Больше не ждёт
 
-    // Шаг 3: Разрешение через огонь
+    // Шаг 3: Разрешение via огонь
     scenario.resource_state = .PhoenixResolved;
     scenario.deadlock_detected = false;
 
@@ -257,7 +257,7 @@ pub const AkashicEntry = struct {
     }
 };
 
-/// Записать событие Phoenix в Akashic Records
+/// Записать событие Phoenix in Akashic Records
 pub fn recordPhoenixEvent(synthesis: PhoenixSynthesis, result: ExecutionResult) AkashicEntry {
     return AkashicEntry{
         .action = synthesis.name,
@@ -295,7 +295,7 @@ pub fn runPhoenixTrial() void {
     scenario.simulateContention();
     print("⚠️  DEADLOCK DETECTED: Оба процесса требуют один ресурс\n\n", .{});
 
-    // Шаг 2: 33 богатыря пытаются решить — и ПРОВАЛИВАЮТСЯ
+    // Шаг 2: 33 богатыря пытаются решить — and ПРОВАЛИВАЮТСЯ
     print("═══ ШАГ 2: СОВЕТ 33 БОГАТЫРЕЙ ═══\n", .{});
     const council_verdict = scenario.councilAttemptResolution();
 
@@ -356,7 +356,7 @@ pub fn runPhoenixTrial() void {
         \\║                         🔥 ВЕРДИКТ: +φ 🔥                                    ║
         \\╠══════════════════════════════════════════════════════════════════════════════╣
         \\║                                                                              ║
-        \\║   DEADLOCK РАЗРЕШЁН через ОГОНЬ ТВОРЕНИЯ                                     ║
+        \\║   DEADLOCK РАЗРЕШЁН via ОГОНЬ ТВОРЕНИЯ                                     ║
         \\║   Жар-птица НЕ выбрала между safety и efficiency                             ║
         \\║   Она СОЗДАЛА третью реальность, где оба существуют                          ║
         \\║                                                                              ║
