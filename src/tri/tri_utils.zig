@@ -835,6 +835,9 @@ pub fn parseCommand(arg: []const u8) Command {
     // Temporal Trinity v1.0 (Order #020, #021) — ACTIVE
     if (std.mem.eql(u8, arg, "time")) return .time;
     if (std.mem.eql(u8, arg, "os") or std.mem.eql(u8, arg, "boot")) return .os_boot;
+    // ABSOLUTE INFINITY v2.0 + OMEGA PHASE (Order #024)
+    if (std.mem.eql(u8, arg, "infinity")) return .infinity;
+    if (std.mem.eql(u8, arg, "omega-phase") or std.mem.eql(u8, arg, "omega_phase")) return .omega_phase;
     return .none;
 }
 
