@@ -13,7 +13,7 @@ import { I18nProvider } from './i18n/context.tsx'
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <I18nProvider>
-      <BrowserRouter basename="/trinity">
+      <BrowserRouter>
         <Routes>
           <Route path="/" element={<App />} />
           <Route path="/canvas" element={<TrinityCanvas />} />

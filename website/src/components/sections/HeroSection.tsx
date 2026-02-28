@@ -134,87 +134,33 @@ function MetallicLogo() {
   );
 }
 
-// Animated equation component with golden glow effect
+// Animated equation component - LaTeX-style math
 function AnimatedEquation() {
   return (
-    <motion.div 
-      className="fade" 
-      style={{ 
-        fontSize: 'clamp(1.2rem, 5vw, 2rem)', 
-        marginBottom: '1rem', 
-        fontFamily: 'serif', 
-        fontStyle: 'italic',
+    <motion.div
+      className="fade"
+      style={{
+        fontSize: 'clamp(1.6rem, 6vw, 2.8rem)',
+        marginBottom: '1.5rem',
+        fontFamily: '"Times New Roman", Times, serif',
         position: 'relative',
         display: 'inline-block'
       }}
     >
-      {/* Glow effect */}
-      <motion.div
-        animate={{ 
-          opacity: [0.3, 0.6, 0.3],
-          scale: [1, 1.02, 1]
-        }}
-        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-        style={{
-          position: 'absolute',
-          inset: '-10px',
-          background: 'radial-gradient(ellipse, rgba(218,165,32,0.15) 0%, transparent 70%)',
-          borderRadius: '50%',
-          filter: 'blur(8px)',
-          zIndex: -1
-        }}
-      />
-      
-      {/* Equation parts with staggered animation */}
-      <motion.span
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5, duration: 0.6 }}
-        style={{ color: 'var(--accent)' }}
-      >
-        φ²
-      </motion.span>
       <motion.span
         initial={{ opacity: 0 }}
-        animate={{ opacity: 0.6 }}
-        transition={{ delay: 0.8, duration: 0.4 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5, duration: 0.8 }}
       >
-        {' + '}
+        <span style={{ fontStyle: 'italic', fontFamily: 'inherit' }}>φ</span>
+        <sup style={{ fontStyle: 'normal' }}>2</sup>
+        <span style={{ margin: '0 0.1em' }}>+</span>
+        <span style={{ fontStyle: 'normal', fontFamily: 'inherit' }}>1/</span>
+        <span style={{ fontStyle: 'italic', fontFamily: 'inherit' }}>φ</span>
+        <sup style={{ fontStyle: 'normal' }}>2</sup>
+        <span style={{ margin: '0 0.1em' }}>=</span>
+        <span style={{ fontStyle: 'normal', fontWeight: 500 }}>3</span>
       </motion.span>
-      <motion.span
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.0, duration: 0.6 }}
-        style={{ color: 'var(--accent)' }}
-      >
-        1/φ²
-      </motion.span>
-      <motion.span
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.6 }}
-        transition={{ delay: 1.3, duration: 0.4 }}
-      >
-        {' = '}
-      </motion.span>
-      <motion.span
-        initial={{ opacity: 0, scale: 0.5 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 1.5, duration: 0.5, type: "spring" }}
-        style={{ 
-          color: 'var(--accent)', 
-          fontWeight: 'bold',
-          fontSize: '1.2em'
-        }}
-      >
-        3
-      </motion.span>
-      
-      {/* Floating animation for entire equation */}
-      <motion.div
-        animate={{ y: [0, -5, 0] }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-        style={{ position: 'absolute', inset: 0 }}
-      />
     </motion.div>
   );
 }

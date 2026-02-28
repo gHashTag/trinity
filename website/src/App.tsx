@@ -16,6 +16,13 @@ const TechTree = lazy(() => import('./components/TechTree/TechTree'))
 const TeamSection = lazy(() => import('./components/sections/TeamSection'))
 const InvestSection = lazy(() => import('./components/sections/InvestSection'))
 
+// Cycle 98: Sacred Intelligence Widgets
+const SacredIdentityWidget = lazy(() => import('./components/sections/SacredIdentityWidget'))
+const SwarmStatusWidget = lazy(() => import('./components/sections/SwarmStatusWidget'))
+const EvolutionMonitorWidget = lazy(() => import('./components/sections/EvolutionMonitorWidget'))
+const GovernanceRulesWidget = lazy(() => import('./components/sections/GovernanceRulesWidget'))
+const EternalLoopWidget = lazy(() => import('./components/sections/EternalLoopWidget'))
+
 // Mysticism subtab (hidden by default)
 const MysticismSection = lazy(() => import('./components/sections/MysticismSection'))
 // Sacred Formula Engine — V = n * 3^k * pi^m * phi^p * e^q
@@ -54,17 +61,24 @@ export default function App() {
 
         {/* 7. TECH TREE - Research laboratory */}
         <TechTree />
-        
-        {/* 7. TEAM - Trust builder (3 members max) */}
+
+        {/* 8. SACRED INTELLIGENCE - Cycle 98 Self-Awareness Dashboard */}
+        <SacredIdentityWidget />
+        <SwarmStatusWidget />
+        <EvolutionMonitorWidget />
+        <GovernanceRulesWidget />
+        <EternalLoopWidget />
+
+        {/* 9. TEAM - Trust builder (3 members max) */}
         <TeamSection />
-        
-        {/* 8. SCIENCE - Mathematical foundations */}
+
+        {/* 10. SCIENCE - Mathematical foundations */}
         <MysticismSection />
 
-        {/* 9. SACRED FORMULA - Integer relation engine */}
+        {/* 11. SACRED FORMULA - Integer relation engine */}
         <SacredFormulaSection />
 
-        {/* 10. INVEST - Final CTA */}
+        {/* 12. INVEST - Final CTA */}
         <InvestSection />
       </Suspense>
       

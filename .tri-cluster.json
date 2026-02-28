@@ -1,0 +1,142 @@
+{
+  "cluster_id": "mc-9334-9333",
+  "port": 9334,
+  "discovery_port": 9333,
+  "nodes": [
+    {
+      "id": "node-0",
+      "address": "127.0.0.1",
+      "port": 9334,
+      "role": "worker",
+      "status": "online",
+      "uptime_seconds": 3600,
+      "operations_count": 100,
+      "earned_tri": 0.100000,
+      "pending_tri": 0.010000,
+      "tier": "FREE",
+      "added_at": 1772196828129
+    },
+    {
+      "id": "node-1",
+      "address": "127.0.0.1",
+      "port": 9334,
+      "role": "worker",
+      "status": "online",
+      "uptime_seconds": 3600,
+      "operations_count": 100,
+      "earned_tri": 0.100000,
+      "pending_tri": 0.010000,
+      "tier": "STAKER",
+      "added_at": 1772196828129
+    },
+    {
+      "id": "node-2",
+      "address": "127.0.0.1",
+      "port": 9334,
+      "role": "worker",
+      "status": "online",
+      "uptime_seconds": 3600,
+      "operations_count": 100,
+      "earned_tri": 0.100000,
+      "pending_tri": 0.010000,
+      "tier": "POWER",
+      "added_at": 1772196828130
+    },
+    {
+      "id": "node-3",
+      "address": "127.0.0.1",
+      "port": 9334,
+      "role": "worker",
+      "status": "online",
+      "uptime_seconds": 3600,
+      "operations_count": 100,
+      "earned_tri": 0.100000,
+      "pending_tri": 0.010000,
+      "tier": "WHALE",
+      "added_at": 1772196828130
+    },
+    {
+      "id": "node-4",
+      "address": "127.0.0.1",
+      "port": 9334,
+      "role": "worker",
+      "status": "online",
+      "uptime_seconds": 3600,
+      "operations_count": 100,
+      "earned_tri": 0.100000,
+      "pending_tri": 0.010000,
+      "tier": "FREE",
+      "added_at": 1772196828130
+    },
+    {
+      "id": "node-5",
+      "address": "127.0.0.1",
+      "port": 9334,
+      "role": "worker",
+      "status": "online",
+      "uptime_seconds": 3600,
+      "operations_count": 100,
+      "earned_tri": 0.100000,
+      "pending_tri": 0.010000,
+      "tier": "STAKER",
+      "added_at": 1772196828130
+    },
+    {
+      "id": "node-6",
+      "address": "127.0.0.1",
+      "port": 9334,
+      "role": "worker",
+      "status": "online",
+      "uptime_seconds": 3600,
+      "operations_count": 100,
+      "earned_tri": 0.100000,
+      "pending_tri": 0.010000,
+      "tier": "POWER",
+      "added_at": 1772196828130
+    },
+    {
+      "id": "node-7",
+      "address": "127.0.0.1",
+      "port": 9334,
+      "role": "worker",
+      "status": "online",
+      "uptime_seconds": 3600,
+      "operations_count": 100,
+      "earned_tri": 0.100000,
+      "pending_tri": 0.010000,
+      "tier": "WHALE",
+      "added_at": 1772196828130
+    },
+    {
+      "id": "node-8",
+      "address": "127.0.0.1",
+      "port": 9334,
+      "role": "worker",
+      "status": "online",
+      "uptime_seconds": 3600,
+      "operations_count": 100,
+      "earned_tri": 0.100000,
+      "pending_tri": 0.010000,
+      "tier": "FREE",
+      "added_at": 1772196828130
+    },
+    {
+      "id": "node-9",
+      "address": "127.0.0.1",
+      "port": 9334,
+      "role": "worker",
+      "status": "online",
+      "uptime_seconds": 3600,
+      "operations_count": 100,
+      "earned_tri": 0.100000,
+      "pending_tri": 0.010000,
+      "tier": "STAKER",
+      "added_at": 1772196828130
+    }
+  ],
+  "crdt": {
+    "entries_merged": 0,
+    "conflicts_resolved": 0,
+    "last_sync": 0
+  }
+}

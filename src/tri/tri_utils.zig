@@ -190,6 +190,10 @@ pub const Command = enum {
     fmt_cmd,
     stats_cmd,
     igla,
+    // Cycle 98: Sacred Intelligence
+    identity,
+    swarm,
+    govern,
     // Code Analysis
     analyze,
     search_cmd,
@@ -765,6 +769,10 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "fmt") or std.mem.eql(u8, arg, "format")) return .fmt_cmd;
     if (std.mem.eql(u8, arg, "stats")) return .stats_cmd;
     if (std.mem.eql(u8, arg, "igla")) return .igla;
+    // Cycle 98: Sacred Intelligence
+    if (std.mem.eql(u8, arg, "identity")) return .identity;
+    if (std.mem.eql(u8, arg, "swarm")) return .swarm;
+    if (std.mem.eql(u8, arg, "govern")) return .govern;
     // Code Analysis & Context (Cycle 92)
     if (std.mem.eql(u8, arg, "analyze") or std.mem.eql(u8, arg, "scan")) return .analyze;
     if (std.mem.eql(u8, arg, "search")) return .search_cmd;

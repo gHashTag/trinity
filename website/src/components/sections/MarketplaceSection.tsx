@@ -24,7 +24,8 @@ const TABS: { key: MarketplaceMode; label: string }[] = [
 ];
 
 function formatTRI(n: number): string {
-  return n.toLocaleString('en-US', { maximumFractionDigits: 0 });
+  // Format with thousand separators: 10,460,353,203 -> "10,460,353,203"
+  return n.toLocaleString('en-US');
 }
 
 export default function MarketplaceSection() {
@@ -94,18 +95,43 @@ export default function MarketplaceSection() {
                   ● {data.dashboard.network_active ? 'ACTIVE' : 'OFFLINE'}
                 </span>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10, marginBottom: 20 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 20 }}>
                 {[
-                  { label: msg.totalSupply || 'Total Supply', value: `${formatTRI(data.dashboard.total_supply)} $TRI`, color: '#ffd700' },
-                  { label: msg.circulating || 'Circulating', value: `${formatTRI(data.dashboard.circulating)} $TRI`, color: '#00e599' },
-                  { label: msg.staked || 'Staked', value: `${formatTRI(data.dashboard.staked)} $TRI`, color: '#00ccff' },
-                  { label: msg.constants || 'Constants', value: String(data.dashboard.total_constants), color: '#aa66ff' },
-                  { label: msg.formulaFits || 'Formula Fits', value: `${data.dashboard.formula_fits} (${data.dashboard.exact_fits} exact)`, color: '#ffd700' },
+                  { label: msg.totalSupply || 'Total Supply', value: formatTRI(data.dashboard.total_supply), unit: 'TRI', color: '#ffd700' },
+                  { label: msg.circulating || 'Circulating', value: formatTRI(data.dashboard.circulating), unit: 'TRI', color: '#00e599' },
+                  { label: msg.staked || 'Staked', value: formatTRI(data.dashboard.staked), unit: 'TRI', color: '#00ccff' },
+                  { label: msg.constants || 'Constants', value: String(data.dashboard.total_constants), unit: '', color: '#aa66ff' },
+                  { label: msg.formulaFits || 'Formula Fits', value: `${data.dashboard.formula_fits} (${data.dashboard.exact_fits})`, color: '#ffd700' },
                   { label: msg.verified || 'Verified', value: `${data.dashboard.verify_passing}/${data.dashboard.verify_total}`, color: '#00e599' },
                 ].map((item, i) => (
-                  <div key={i} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: '10px 12px', border: `1px solid ${item.color}20` }}>
-                    <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 9, fontFamily: 'JetBrains Mono, monospace', marginBottom: 4 }}>{item.label}</div>
-                    <div style={{ color: item.color, fontSize: 13, fontFamily: 'JetBrains Mono, monospace' }}>{item.value}</div>
+                  <div key={i} style={{
+                    flex: '1 1 140px',
+                    minWidth: 130,
+                    background: 'rgba(255,255,255,0.03)',
+                    borderRadius: 8,
+                    padding: '10px',
+                    border: `1px solid ${item.color}30`,
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 8, fontFamily: 'Outfit, sans-serif', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
+                      {item.label}
+                    </div>
+                    <div style={{
+                      color: item.color,
+                      fontSize: item.value.length > 10 ? 10 : 12,
+                      fontFamily: 'JetBrains Mono, monospace',
+                      fontWeight: 500,
+                      wordBreak: 'break-word',
+                      lineHeight: 1.3,
+                      marginBottom: item.unit ? 2 : 0
+                    }}>
+                      {item.value}
+                    </div>
+                    {item.unit && (
+                      <div style={{ color: `${item.color}60`, fontSize: 8, fontFamily: 'JetBrains Mono, monospace' }}>
+                        ${item.unit}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
