@@ -5,18 +5,18 @@ module: unknown
 
 types:
     description: String
-    description: Запускает Plugin Registry
-    description: Обрабатывает сообщения Registry
-    description: Валидирует манифест плагина
-    description: Загружает плагин и создает instance
-    description: Выгружает плагин
-    description: Фильтрует плагины по критериям
-    description: Поиск плагинов по запросу
+    description: [CYR:Запу]with[CYR:кает] Plugin Registry
+    description: [CYR:Обрабаты]in[CYR:ает] with[CYR:ообщен]andя Registry
+    description: [CYR:Вал]andдand[CYR:рует] [CYR:ман]andфеwithт [CYR:плаг]andon
+    description: [CYR:Загружает] [CYR:плаг]andн and with[CYR:оздает] instance
+    description: [CYR:Выгружает] [CYR:плаг]andн
+    description: Фand[CYR:льтрует] [CYR:плаг]andны по крand[CYR:тер]andям
+    description: Поandwithк [CYR:плаг]andноin по queryу
   start_registry:
-    description: Запуск Registry
+    description: [CYR:Запу]withк Registry
 
   register_plugin:
-    description: Регистрация плагина
+    description: [CYR:Рег]andwith[CYR:трац]andя [CYR:плаг]andon
 
   validate_plugin_test:
-    description: Валидация плагина
+    description: [CYR:Вал]and[CYR:дац]andя [CYR:плаг]andon

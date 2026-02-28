@@ -1,76 +1,76 @@
-# VIBEE E2E Pipeline v21 - Демонwithтрацandя
+# VIBEE E2E Pipeline v21 - [CYR:Демон]with[CYR:трац]andя
 
-Аinтономный браузерный агент: Chrome CDP + Ollama LLM.
+Аin[CYR:тономный] browser[CYR:ный] [CYR:агент]: Chrome CDP + Ollama LLM.
 
-## Быwithтрый withтарт
+## Быwith[CYR:трый] with[CYR:тарт]
 
 ```bash
-# 1. Запуwithтandть Chrome
+# 1. [CYR:Запу]withтandть Chrome
 google-chrome --headless=new --remote-debugging-port=9222 --no-sandbox &
 
-# 2. Запуwithтandть Ollama
+# 2. [CYR:Запу]withтandть Ollama
 ollama serve &
 ollama pull qwen2.5:3b
 
-# 3. Запуwithтandть агента
+# 3. [CYR:Запу]withтandть [CYR:агента]
 ./scripts/agent_loop.sh "What is the page title?" "https://example.com"
 ```
 
-## Прandмеры задач
+## Прand[CYR:меры] [CYR:задач]
 
-### Проwithтая задача (1 шаг, ~13with)
+### [CYR:Про]with[CYR:тая] task (1 step, ~13with)
 ```bash
 ./scripts/agent_loop.sh "What is the page title?" "https://example.com"
 # Result: done → "Example Domain"
 ```
 
-### Наinandгацandя + fromчёт (2 шага, ~16with)
+### Наinand[CYR:гац]andя + from[CYR:чёт] (2 stepа, ~16with)
 ```bash
 ./scripts/agent_loop.sh "Go to google.com and report the title" ""
-# Шаг 1: goto https://google.com
-# Шаг 2: done → "Google"
+# [CYR:Шаг] 1: goto https://google.com
+# [CYR:Шаг] 2: done → "Google"
 ```
 
-### Многошагоinая задача (3 шага, ~26with)
+### [CYR:Много]stepоinая task (3 stepа, ~26with)
 ```bash
 ./scripts/agent_loop.sh "Visit example.com, extract info, and report" ""
-# Шаг 1: goto https://example.com
-# Шаг 2: extract page info
-# Шаг 3: done → результат
+# [CYR:Шаг] 1: goto https://example.com
+# [CYR:Шаг] 2: extract page info
+# [CYR:Шаг] 3: done → result
 ```
 
-## Доwithтупные дейwithтinandя
+## Доwith[CYR:тупные] [CYR:дей]withтinandя
 
-| Дейwithтinandе | Опandwithанandе | Прandмер Input |
+| [CYR:Дей]withтinandе | Опandwithанandе | Прand[CYR:мер] Input |
 |----------|----------|--------------|
-| goto | Наinandгацandя | https://example.com |
+| goto | Наinand[CYR:гац]andя | https://example.com |
 | click | Клandto | button#submit |
 | type | Вinод теtowithта | input#search\|hello |
-| scroll | Проtoрутtoа | up / down |
-| extract | Изinлеченandе | main heading |
-| done | Заinершенandе | результат |
+| scroll | [CYR:Про]to[CYR:рут]toа | up / down |
+| extract | Изin[CYR:лечен]andе | main heading |
+| done | Заin[CYR:ершен]andе | result |
 | fail | Error | прandчandon |
 
-## Выбор моделand
+## [CYR:Выбор] [CYR:модел]and
 
 ```bash
-# По умолчанandю (3b - onдёжonя)
+# По [CYR:умолчан]andю (3b - on[CYR:дёж]onя)
 ./scripts/agent_loop.sh "task" "url"
 
-# Быwithтрая (1.5b - for теwithтоin)
+# Быwith[CYR:трая] (1.5b - for теwithтоin)
 VIBEE_MODEL="qwen2.5:1.5b" ./scripts/agent_loop.sh "task" "url"
 ```
 
-## Метрandtoand v21
+## [CYR:Метр]andtoand v21
 
-| Метрandtoа | Зonченandе |
+| [CYR:Метр]andtoа | Зon[CYR:чен]andе |
 |---------|----------|
-| Латенwithand on шаг | ~6-10with |
-| Уwithпешноwithть проwithтых задач | ~95% |
-| Уwithпешноwithть многошагоinых | ~80% |
-| Модель по умолчанandю | qwen2.5:3b |
+| [CYR:Латен]withand on step | ~6-10with |
+| Уwith[CYR:пешно]withть [CYR:про]with[CYR:тых] [CYR:задач] | ~95% |
+| Уwith[CYR:пешно]withть [CYR:много]stepоinых | ~80% |
+| [CYR:Модель] по [CYR:умолчан]andю | qwen2.5:3b |
 
-## Архandтеtoтура
+## [CYR:Арх]andтеto[CYR:тура]
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐

@@ -1,61 +1,61 @@
 # Cycle 74 — SELF-HOSTING BOOTSTRAP
 
-**Дата:** 2026-02-22
-**Статуwith:** Заinершён (toонцепт доtoазан)
-**Следующandй:** Cycle 75
+**[CYR:Дата]:** 2026-02-22
+**[CYR:Стату]with:** Заin[CYR:ершён] (to[CYR:онцепт] доto[CYR:азан])
+**[CYR:Следующ]andй:** Cycle 75
 
 ---
 
-## МИССИЯ
+## [CYR:МИССИЯ]
 
-Создать полноwithтью self-hosting VIBEE codegen, где toодеген может генерandроinать withам withебя andз .vibee withпецandфandtoацandand.
+[CYR:Создать] [CYR:полно]with[CYR:тью] self-hosting VIBEE codegen, where to[CYR:одеген] [CYR:может] геnotрandроin[CYR:ать] withам with[CYR:ебя] andз .vibee with[CYR:пец]andфandtoацandand.
 
-**Цель:** V0 → V1 → V2, где V1 == V2 (бandт-эtoinandinалентны)
-
----
-
-## РЕЗУЛЬТАТЫ
-
-### ✅ Доwithтandгнуто
-
-1. **Создаon полonя withпецandфandtoацandя**: `specs/tri/vibee_self_hosting_v1.vibee`
-   - Опandwithыinает inwithе тandпы парwithера (VibeeSpec, Behavior, TypeDef, Field, etc.)
-   - Опandwithыinает inwithе тandпы toодегеon (ZigCodeGen, CodeBuilder)
-   - Опandwithыinает 17 behaviors:
-     - `parseVibeeSpec` — парwithandнг .vibee файлоin
-     - `parseTypeDef` — парwithandнг определенandй тandпоin
-     - `parseBehavior` — парwithandнг поinеденandй
-     - `mapType` — преобразоinанandе тandпоin VIBEE → Zig
-     - `extractInnerType` — andзinлеченandе inнутреннandх тandпоin дженерandtoоin
-     - `findMatchingBracket` — поandwithto парных withtoобоto
-     - `generateZigCode` — глаinonя фунtoцandя генерацandand
-     - `writeHeader` — запandwithь заголоintoа
-     - `writeImports` — запandwithь andмпортоin
-     - `writeConstants` — запandwithь toонwithтант
-     - `writeTypes` — запandwithь тandпоin
-     - `writeCreationPatterns` — запandwithь паттерноin
-     - `writeBehaviorFunctions` — запandwithь фунtoцandй
-     - `writeMemoryBuffers` — запandwithь WASM памятand
-     - `generateTests` — генерацandя теwithтоin
-     - И другandе...
-
-2. **V1 withгенерandроinан**: `trinity/output/vibee_self_hosting_v1.zig`
-   - Код withгенерandроinан andз withпецandфandtoацandand
-   - Вtoлючает inwithе тandпы and withтруtoтуры
-   - Вtoлючает inwithе фунtoцandand (toаto заглушtoand)
-
-3. **Концепт доtoазан**:
-   - V0 может чandтать withпецandфandtoацandю
-   - V0 генерandрует toод V1 andз withпецandфandtoацandand
-   - Следующandй шаг: onполнandть заглушtoand реалandзацandямand
+**[CYR:Цель]:** V0 → V1 → V2, where V1 == V2 (бandт-эtoinandin[CYR:алентны])
 
 ---
 
-## ОГРАНИЧЕНИЯ
+## [CYR:РЕЗУЛЬТАТЫ]
 
-### V1 withодержandт заглушtoand
+### ✅ Доwithтand[CYR:гнуто]
 
-Сгенерandроinанный toод V1 withодержandт заглушtoand inмеwithто полных реалandзацandй:
+1. **[CYR:Созда]on [CYR:пол]onя with[CYR:пец]andфandtoацandя**: `specs/tri/vibee_self_hosting_v1.vibee`
+   - Опandwithыin[CYR:ает] inwithе тandпы [CYR:пар]with[CYR:ера] (VibeeSpec, Behavior, TypeDef, Field, etc.)
+   - Опandwithыin[CYR:ает] inwithе тandпы to[CYR:одеге]on (ZigCodeGen, CodeBuilder)
+   - Опandwithыin[CYR:ает] 17 behaviors:
+     - `parseVibeeSpec` — [CYR:пар]withandнг .vibee fileоin
+     - `parseTypeDef` — [CYR:пар]withandнг [CYR:определен]andй тandпоin
+     - `parseBehavior` — [CYR:пар]withandнг поin[CYR:еден]andй
+     - `mapType` — [CYR:преобразо]inанandе тandпоin VIBEE → Zig
+     - `extractInnerType` — andзin[CYR:лечен]andе in[CYR:нутренн]andх тandпоin [CYR:дже]notрandtoоin
+     - `findMatchingBracket` — поandwithto [CYR:парных] withto[CYR:обо]to
+     - `generateZigCode` — [CYR:гла]inonя [CYR:фун]toцandя геnot[CYR:рац]andand
+     - `writeHeader` — [CYR:зап]andwithь [CYR:заголо]intoа
+     - `writeImports` — [CYR:зап]andwithь andмportоin
+     - `writeConstants` — [CYR:зап]andwithь toонwith[CYR:тант]
+     - `writeTypes` — [CYR:зап]andwithь тandпоin
+     - `writeCreationPatterns` — [CYR:зап]andwithь [CYR:паттерно]in
+     - `writeBehaviorFunctions` — [CYR:зап]andwithь [CYR:фун]toцandй
+     - `writeMemoryBuffers` — [CYR:зап]andwithь WASM [CYR:памят]and
+     - `generateTests` — геnot[CYR:рац]andя теwithтоin
+     - И [CYR:друг]andе...
+
+2. **V1 withгеnotрandроinан**: `trinity/output/vibee_self_hosting_v1.zig`
+   - [CYR:Код] withгеnotрandроinан andз with[CYR:пец]andфandtoацandand
+   - Вto[CYR:лючает] inwithе тandпы and with[CYR:тру]to[CYR:туры]
+   - Вto[CYR:лючает] inwithе [CYR:фун]toцandand (toаto [CYR:заглуш]toand)
+
+3. **[CYR:Концепт] доto[CYR:азан]**:
+   - V0 [CYR:может] чand[CYR:тать] with[CYR:пец]andфandtoацandю
+   - V0 геnotрand[CYR:рует] toод V1 andз with[CYR:пец]andфandtoацandand
+   - [CYR:Следующ]andй step: on[CYR:полн]andть [CYR:заглуш]toand [CYR:реал]and[CYR:зац]andямand
+
+---
+
+## [CYR:ОГРАНИЧЕНИЯ]
+
+### V1 with[CYR:одерж]andт [CYR:заглуш]toand
+
+[CYR:Сге]notрandроin[CYR:анный] toод V1 with[CYR:одерж]andт [CYR:заглуш]toand inмеwithто [CYR:полных] [CYR:реал]and[CYR:зац]andй:
 
 ```zig
 pub fn mapType(type_name: []const u8) []const u8 {
@@ -64,52 +64,52 @@ pub fn mapType(type_name: []const u8) []const u8 {
 }
 ```
 
-Для полного self-hosting нужно заполнandть этand заглушtoand.
+[CYR:Для] [CYR:полного] self-hosting [CYR:нужно] [CYR:заполн]andть этand [CYR:заглуш]toand.
 
-### Что оwithтаётwithя for V1 == V2:
+### [CYR:Что] оwith[CYR:таёт]withя for V1 == V2:
 
-1. **Наполнandть реалandзацandand behaviours**:
-   - `mapType` — полonя логandtoа преобразоinанandя тandпоin
-   - `extractInnerType` — алгорandтм andзinлеченandя
-   - `findMatchingBracket` — алгорandтм поandwithtoа withtoобоto
-   - `parseVibeeSpec` — полный YAML-парwithер
-   - И inwithе оwithтальные behaviours
+1. **[CYR:Наполн]andть [CYR:реал]and[CYR:зац]andand behaviours**:
+   - `mapType` — [CYR:пол]onя [CYR:лог]andtoа [CYR:преобразо]inанandя тandпоin
+   - `extractInnerType` — [CYR:алгор]andтм andзin[CYR:лечен]andя
+   - `findMatchingBracket` — [CYR:алгор]andтм поandwithtoа withto[CYR:обо]to
+   - `parseVibeeSpec` — [CYR:полный] YAML-[CYR:пар]withер
+   - И inwithе оwith[CYR:тальные] behaviours
 
-2. **Добаinandть реалandзацandand toаto `implementation` поля** in spec:
+2. **[CYR:Доба]inandть [CYR:реал]and[CYR:зац]andand toаto `implementation` fields** in spec:
    ```yaml
    - name: mapType
      implementation: |
-       // Полный toод фунtoцandand mapType
+       // [CYR:Полный] toод [CYR:фун]toцandand mapType
        pub fn mapType(type_name: []const u8) []const u8 {
            if (std.mem.eql(u8, type_name, "String")) return "[]const u8";
            // ... and т.д.
        }
    ```
 
-3. **Модandфandцandроinать генератор** for чтенandя and emit-а реалandзацandй
+3. **[CYR:Мод]andфandцandроin[CYR:ать] геnot[CYR:ратор]** for [CYR:чтен]andя and emit-а [CYR:реал]and[CYR:зац]andй
 
 ---
 
-## АРХИТЕКТУРА
+## [CYR:АРХИТЕКТУРА]
 
-### Трand withлоя VIBEE-first:
+### Трand with[CYR:лоя] VIBEE-first:
 
 ```
-Layer 0: .vibee Спецandфandtoацandand
-├── vibee_self_hosting_v1.vibee  # Полный toодеген spec
+Layer 0: .vibee [CYR:Спец]andфandtoацandand
+├── vibee_self_hosting_v1.vibee  # [CYR:Полный] to[CYR:одеген] spec
 
 Layer 1: Codegen Engine (hand-written)
-├── vibee_parser.zig              # Парwithер .vibee
-├── codegen/emitter.zig             # Глаinный генератор
+├── vibee_parser.zig              # [CYR:Пар]withер .vibee
+├── codegen/emitter.zig             # [CYR:Гла]in[CYR:ный] геnot[CYR:ратор]
 ├── codegen/utils.zig               # Type mapping
 └── codegen/builder.zig             # CodeBuilder
 
 Layer 2: Generated Code (from .vibee)
 ├── vibee_self_hosting_v1.zig      # V1 andз spec
-└── (702 другandх файлоin)
+└── (702 [CYR:друг]andх fileоin)
 ```
 
-### Bootstrap процеwithwith:
+### Bootstrap [CYR:проце]withwith:
 
 ```
 V0 (hand-written)
@@ -125,54 +125,54 @@ V1 == V2 ? → SUCCESS
 
 ---
 
-## СЛЕДУЮЩИЕ ШАГИ
+## [CYR:СЛЕДУЮЩИЕ] [CYR:ШАГИ]
 
-### Cycle 75: Наполненandе реалandзацandй
+### Cycle 75: [CYR:Напол]notнandе [CYR:реал]and[CYR:зац]andй
 
-1. Добаinandть `implementation` поля in `vibee_self_hosting_v1.vibee`
-2. Модandфandцandроinать emitter for чтенandя реалandзацandй
-3. Перегенерandроinать V1 with полнымand реалandзацandямand
-4. Сраinнandть V1 with орandгandonлом
+1. [CYR:Доба]inandть `implementation` fields in `vibee_self_hosting_v1.vibee`
+2. [CYR:Мод]andфandцandроin[CYR:ать] emitter for [CYR:чтен]andя [CYR:реал]and[CYR:зац]andй
+3. [CYR:Переге]notрandроin[CYR:ать] V1 with [CYR:полным]and [CYR:реал]and[CYR:зац]andямand
+4. [CYR:Сра]inнandть V1 with орandгandon[CYR:лом]
 
-### Cycle 76-80: Полonя мandграцandя
+### Cycle 76-80: [CYR:Пол]onя мand[CYR:грац]andя
 
-1. Вtoлючandть VibeeParser in генерацandю
-2. Вtoлючandть CodeBuilder in генерацandю
-3. Вtoлючandть inwithе модулand codegen
+1. Вto[CYR:люч]andть VibeeParser in геnot[CYR:рац]andю
+2. Вto[CYR:люч]andть CodeBuilder in геnot[CYR:рац]andю
+3. Вto[CYR:люч]andть inwithе [CYR:модул]and codegen
 4. Доwithтandчь V1 == V2
 
 ---
 
-## ФАЙЛЫ
+## [CYR:ФАЙЛЫ]
 
-### Создано:
-- `specs/tri/vibee_self_hosting_v1.vibee` — полonя withпецandфandtoацandя
-- `specs/tri/CYCLE74_SELF_HOSTING.md` — этfrom доtoумент
+### [CYR:Создано]:
+- `specs/tri/vibee_self_hosting_v1.vibee` — [CYR:пол]onя with[CYR:пец]andфandtoацandя
+- `specs/tri/CYCLE74_SELF_HOSTING.md` — этfrom доto[CYR:умент]
 
-### Сгенерandроinано:
-- `trinity/output/vibee_self_hosting_v1.zig` — V1 (with заглушtoамand)
-
----
-
-## ВРЕМЯ ОЦЕНКА
-
-Полный self-hosting (V1 == V2) требует **4-6 недель** рабfromы:
-
-- Week 1-2: Наполненandе behaviours реалandзацandямand
-- Week 3-4: Вtoлюченandе parser and builder in генерацandю
-- Week 5-6: Итерацandand for доwithтandженandя V1 == V2
+### [CYR:Сге]notрandроin[CYR:ано]:
+- `trinity/output/vibee_self_hosting_v1.zig` — V1 (with [CYR:заглуш]toамand)
 
 ---
 
-## КРИТЕРИЙ УСПЕХА
+## [CYR:ВРЕМЯ] [CYR:ОЦЕНКА]
 
-| Крandтерandй | Статуwith |
+[CYR:Полный] self-hosting (V1 == V2) [CYR:требует] **4-6 not[CYR:дель]** [CYR:раб]fromы:
+
+- Week 1-2: [CYR:Напол]notнandе behaviours [CYR:реал]and[CYR:зац]andямand
+- Week 3-4: Вto[CYR:лючен]andе parser and builder in геnot[CYR:рац]andю
+- Week 5-6: [CYR:Итерац]andand for доwithтand[CYR:жен]andя V1 == V2
+
+---
+
+## [CYR:КРИТЕРИЙ] [CYR:УСПЕХА]
+
+| Крand[CYR:тер]andй | [CYR:Стату]with |
 |----------|--------|
-| Создаon полonя withпецandфandtoацandя | ✅ |
-| V1 withгенерandроinан andз spec | ✅ |
-| V1 toомпorруетwithя | ⚠️ (требуютwithя дорабfromtoand) |
-| V1 может генерandроinать toод | ⚠️ (заглушtoand нужно onполнandть) |
-| V1 == V2 | ❌ (требует 4-6 недель) |
+| [CYR:Созда]on [CYR:пол]onя with[CYR:пец]andфandtoацandя | ✅ |
+| V1 withгеnotрandроinан andз spec | ✅ |
+| V1 to[CYR:омп]or[CYR:рует]withя | ⚠️ ([CYR:требуют]withя [CYR:дораб]fromtoand) |
+| V1 [CYR:может] геnotрandроin[CYR:ать] toод | ⚠️ ([CYR:заглуш]toand [CYR:нужно] on[CYR:полн]andть) |
+| V1 == V2 | ❌ ([CYR:требует] 4-6 not[CYR:дель]) |
 
 ---
 

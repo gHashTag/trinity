@@ -622,7 +622,7 @@ pub const CodeSandboxEngine = struct {
             "run",
             "execute",
             "inыbyлнand",
-            "запуwithтand",
+            "[CYR:запу]withтand",
             "执行",
             "test this",
             "try this",
@@ -738,7 +738,7 @@ pub fn runBenchmark() void {
 
         // Multilingual
         .{ .query = "inыbyлнand zig toод: const y = 2;", .language = .Zig, .feedback = .ThumbsUp },
-        .{ .query = "запуwithтand python: print('прandinет')", .language = .Python, .feedback = .Acceptance },
+        .{ .query = "[CYR:запу]withтand python: print('прandinет')", .language = .Python, .feedback = .Acceptance },
         .{ .query = "执行 javascript: let x = 1;", .language = .JavaScript, .feedback = .ThumbsUp },
 
         // More executions

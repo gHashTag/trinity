@@ -342,7 +342,7 @@ pub const MultilingualResponse = struct {
 };
 
 pub const multilingual_greetings = MultilingualResponse{
-    .russian = "Прandinет! Я IGLA — лоtoальный AI-аwithwithandwithтент. Чем могу byмочь?",
+    .russian = "Прandinет! Я IGLA — лоto[CYR:альный] AI-аwithwithandwith[CYR:тент]. [CYR:Чем] [CYR:могу] by[CYR:мочь]?",
     .english = "Hello! I'm IGLA — a local AI assistant. How can I help you?",
     .chinese = "你好！我是IGLA——本地AI助手。有什么可以帮助你的？",
     .spanish = "¡Hola! Soy IGLA — un asistente de IA local. ¿En qué puedo ayudarte?",
@@ -350,7 +350,7 @@ pub const multilingual_greetings = MultilingualResponse{
 };
 
 pub const multilingual_code_intro = MultilingualResponse{
-    .russian = "Вfrom toод for тinоей заyesчand:",
+    .russian = "Вfrom toод for тin[CYR:оей] заyesчand:",
     .english = "Here's the code for your task:",
     .chinese = "这是你任务的代码：",
     .spanish = "Aquí está el código para tu tarea:",
@@ -358,7 +358,7 @@ pub const multilingual_code_intro = MultilingualResponse{
 };
 
 pub const multilingual_explanation = MultilingualResponse{
-    .russian = "Объяwithненandе:",
+    .russian = "[CYR:Объя]withnotнandе:",
     .english = "Explanation:",
     .chinese = "解释：",
     .spanish = "Explicación:",
@@ -366,7 +366,7 @@ pub const multilingual_explanation = MultilingualResponse{
 };
 
 pub const multilingual_unknown = MultilingualResponse{
-    .russian = "Не withоinwithем byнял запроwith. Можешь уточнandть?",
+    .russian = "Не withоinwithем by[CYR:нял] [CYR:запро]with. [CYR:Можешь] [CYR:уточн]andть?",
     .english = "I didn't quite understand. Can you clarify?",
     .chinese = "我不太明白。你能说明一下吗？",
     .spanish = "No entendí bien. ¿Puedes aclarar?",
@@ -513,7 +513,7 @@ pub const MultilingualCoder = struct {
             "escribe",
             "schreib",
             "example",
-            "прandмер",
+            "прand[CYR:мер]",
             "例子",
             "ejemplo",
             "beispiel",
@@ -523,7 +523,7 @@ pub const MultilingualCoder = struct {
             "cómo",
             "wie",
             "implement",
-            "реалandз",
+            "[CYR:реал]andз",
             "实现",
         };
 
@@ -698,7 +698,7 @@ pub fn runBenchmark() !void {
         // Russian
         "прandinет",
         "onпandшand toод fibonacci on python",
-        "toаto fromwithортandроinать маwithwithandin in zig",
+        "toаto fromwith[CYR:орт]andроin[CYR:ать] маwithwithandin in zig",
         // English
         "hello",
         "write a hello world in javascript",

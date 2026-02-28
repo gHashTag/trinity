@@ -9,14 +9,14 @@ behaviors:
   - name: translate_simple_greeting
     given: English greeting "Hello"
     when: translate function called with target "russian"
-    then: Russian greeting "Привет" returned
+    then: Russian greeting "Прandinет" returned
     test_cases:
       - name: hello_to_russian
         input: {text: "Hello", source: "english", target: "russian"}
-        expected: {translation: "Привет", confidence: 1.0}
+        expected: {translation: "Прandinет", confidence: 1.0}
       - name: good_morning_to_russian
         input: {text: "Good morning", source: "english", target: "russian"}
-        expected: {translation: "Доброе утро", confidence: 1.0}
+        expected: {translation: "[CYR:Доброе] [CYR:утро]", confidence: 1.0}
 
   - name: translate_technical_term
     given: English technical term
@@ -25,10 +25,10 @@ behaviors:
     test_cases:
       - name: compiler_to_russian
         input: {text: "compiler", source: "english", target: "russian"}
-        expected: {translation: "компилятор", confidence: 1.0}
+        expected: {translation: "[CYR:комп]and[CYR:лятор]", confidence: 1.0}
       - name: algorithm_to_russian
         input: {text: "algorithm", source: "english", target: "russian"}
-        expected: {translation: "алгоритм", confidence: 1.0}
+        expected: {translation: "[CYR:алгор]andтм", confidence: 1.0}
 
   - name: translate_sentence
     given: English sentence with subject-verb-object structure
@@ -37,10 +37,10 @@ behaviors:
     test_cases:
       - name: i_love_programming
         input: {text: "I love programming", source: "english", target: "russian"}
-        expected: {translation: "Я люблю программирование", confidence: 0.95}
+        expected: {translation: "Я [CYR:люблю] [CYR:программ]andроinанandе", confidence: 0.95}
       - name: we_build_compiler
         input: {text: "We are building a compiler", source: "english", target: "russian"}
-        expected: {translation: "Мы строим компилятор", confidence: 0.95}
+        expected: {translation: "Мы with[CYR:тро]andм [CYR:комп]and[CYR:лятор]", confidence: 0.95}
 
 types:
   Language:
@@ -159,18 +159,18 @@ grammar_rules:
 
 dictionary:
   english_to_russian:
-    hello: ["Привет", "Здравствуйте"]
-    good: ["хороший", "добрый"]
-    morning: ["утро"]
-    compiler: ["компилятор"]
-    algorithm: ["алгоритм"]
-    function: ["функция"]
+    hello: ["Прandinет", "[CYR:Здра]inwithтin[CYR:уйте]"]
+    good: ["[CYR:хорош]andй", "[CYR:добрый]"]
+    morning: ["[CYR:утро]"]
+    compiler: ["[CYR:комп]and[CYR:лятор]"]
+    algorithm: ["[CYR:алгор]andтм"]
+    function: ["function"]
     I: ["Я"]
-    love: ["люблю", "любить"]
-    programming: ["программирование"]
+    love: ["[CYR:люблю]", "[CYR:люб]andть"]
+    programming: ["[CYR:программ]andроinанandе"]
     we: ["мы"]
     are: [""]  # Auxiliary verb, often omitted
-    building: ["строим", "строить"]
+    building: ["with[CYR:тро]andм", "with[CYR:тро]andть"]
     a: [""]  # Article, not used in Russian
     the: [""]  # Article, not used in Russian
 

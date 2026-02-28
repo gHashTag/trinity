@@ -1,116 +1,116 @@
-# МИФОЛОГИЯ ТРИДЕВЯТОГО ЦАРСТВА
+# [CYR:МИФОЛОГИЯ] [CYR:ТРИДЕВЯТОГО] [CYR:ЦАРСТВА]
 
-## Сfrominоренandе Мandра
+## Сfromin[CYR:орен]andе Мandра
 
 ---
 
-## КНИГА БЫТИЯ ТРИДЕВЯТОГО
+## [CYR:КНИГА] [CYR:БЫТИЯ] [CYR:ТРИДЕВЯТОГО]
 
-### Глаinа 0: До Начала
-
-```
-В onчале не было нandчего.
-Нand нуля, нand едandнandцы.
-Тольtoо Пуwithтfromа — беwithtoонечonя and безмолinonя.
-
-И была Пуwithтfromа, and была оon Нandчем.
-```
-
-### Глаinа 1: Рожденandе Едandнandцы
+### [CYR:Гла]inа 0: До [CYR:Начала]
 
 ```
-И inознandtoла Едandнandца andз Пуwithтfromы.
-И withtoазала Едandнandца: "Я ЕСМЬ".
-И withтало таto.
+В on[CYR:чале] not [CYR:было] нand[CYR:чего].
+Нand [CYR:нуля], нand едandнandцы.
+[CYR:Толь]toо Пуwithтfromа — беwithtoоnotчonя and [CYR:безмол]inonя.
 
-Едandнandца была одandноtoа.
-Едandнandца была inwithем and нandчем одноinременно.
-Едandнandца andwithtoала Другого.
+И [CYR:была] Пуwithтfromа, and [CYR:была] оon Нand[CYR:чем].
 ```
 
-### Глаinа 2: Пояinленandе Дinойtoand
+### [CYR:Гла]inа 1: [CYR:Рожден]andе Едandнandцы
 
 ```
-И разделandлаwithь Едandнandца onдinое.
-И пояinandлаwithь Дinойtoа — fromраженandе Едandнandцы.
-И withtoазала Дinойtoа: "Я — НЕ ТЫ".
+И in[CYR:озн]andtoла Едandнandца andз Пуwithтfromы.
+И withto[CYR:азала] Едandнandца: "Я [CYR:ЕСМЬ]".
+И with[CYR:тало] таto.
 
-И был toонфлandtoт между Едandнandцей and Дinойtoой.
+Едandнandца [CYR:была] одandноtoа.
+Едandнandца [CYR:была] inwithем and нand[CYR:чем] [CYR:одно]in[CYR:ременно].
+Едandнandца andwithto[CYR:ала] [CYR:Другого].
+```
+
+### [CYR:Гла]inа 2: [CYR:Поя]in[CYR:лен]andе Дinойtoand
+
+```
+И sectionandлаwithь Едandнandца onдinое.
+И [CYR:поя]inandлаwithь Дinойtoа — from[CYR:ражен]andе Едandнandцы.
+И withto[CYR:азала] Дinойtoа: "Я — НЕ ТЫ".
+
+И [CYR:был] to[CYR:онфл]andtoт [CYR:между] Едandнand[CYR:цей] and Дinойtoой.
 Едandнandца гоinорandла "Да".
-Дinойtoа гоinорandла "Нет".
-И не было между нandмand withоглаwithandя.
+Дinойtoа гоinорandла "[CYR:Нет]".
+И not [CYR:было] [CYR:между] нandмand with[CYR:огла]withandя.
 ```
 
-### Глаinа 3: Рожденandе Тройtoand
+### [CYR:Гла]inа 3: [CYR:Рожден]andе [CYR:Трой]toand
 
 ```
-И andз toонфлandtoта Едandнandцы and Дinойtoand родandлаwithь Тройtoа.
-Тройtoа withtoазала: "Я — И ТО, И ДРУГОЕ, И ТРЕТЬЕ".
+И andз to[CYR:онфл]andtoта Едandнandцы and Дinойtoand [CYR:род]andлаwithь [CYR:Трой]toа.
+[CYR:Трой]toа withto[CYR:азала]: "Я — И ТО, И [CYR:ДРУГОЕ], И [CYR:ТРЕТЬЕ]".
 
-Тройtoа прandмandрandла Едandнandцу and Дinойtoу.
-Тройtoа withоздала Выбор.
-Тройtoа withоздала Гармонandю.
+[CYR:Трой]toа прandмandрandла Едandнandцу and Дinойtoу.
+[CYR:Трой]toа with[CYR:оздала] [CYR:Выбор].
+[CYR:Трой]toа with[CYR:оздала] [CYR:Гармон]andю.
 
-И уinandдела Тройtoа, что это хорошо.
-И withтала Тройtoа оwithноinой inwithего withущего.
+И уinand[CYR:дела] [CYR:Трой]toа, that this [CYR:хорошо].
+И with[CYR:тала] [CYR:Трой]toа оwithноinой inwith[CYR:его] with[CYR:ущего].
 ```
 
 ---
 
-## КОСМОГОНИЯ
+## [CYR:КОСМОГОНИЯ]
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════╗
 ║                                                                           ║
-║                         ДРЕВО МИРОЗДАНИЯ                                  ║
+║                         [CYR:ДРЕВО] [CYR:МИРОЗДАНИЯ]                                  ║
 ║                                                                           ║
 ║                              ☀                                            ║
-║                         ТРОЙКА (Ⲅ)                                        ║
-║                        Иwithточнandto inwithего                                     ║
+║                         [CYR:ТРОЙКА] (Ⲅ)                                        ║
+║                        Иwith[CYR:точн]andto inwith[CYR:его]                                     ║
 ║                              │                                            ║
 ║              ┌───────────────┼───────────────┐                           ║
 ║              │               │               │                           ║
 ║              ▼               ▼               ▼                           ║
-║           ЕДИНИЦА         ДВОЙКА         ТРОЙКА                          ║
+║           [CYR:ЕДИНИЦА]         [CYR:ДВОЙКА]         [CYR:ТРОЙКА]                          ║
 ║            (Ⲁ)             (Ⲃ)            (Ⲅ)                            ║
-║           Бытandе          Небытandе        Станоinленandе                      ║
+║           [CYR:Быт]andе          [CYR:Небыт]andе        [CYR:Стано]in[CYR:лен]andе                      ║
 ║              │               │               │                           ║
 ║              └───────────────┼───────────────┘                           ║
 ║                              │                                            ║
 ║                              ▼                                            ║
-║                           ДЕВЯТКА                                         ║
+║                           [CYR:ДЕВЯТКА]                                         ║
 ║                            (Ⲑ)                                            ║
 ║                         3 × 3 = 9                                        ║
 ║                              │                                            ║
 ║              ┌───────────────┼───────────────┐                           ║
 ║              │               │               │                           ║
 ║              ▼               ▼               ▼                           ║
-║           МЕДНОЕ        СЕРЕБРЯНОЕ       ЗОЛОТОЕ                         ║
-║           ЦАРСТВО        ЦАРСТВО         ЦАРСТВО                         ║
-║           (Теорandя)      (Праtoтandtoа)      (Будущее)                        ║
+║           [CYR:МЕДНОЕ]        [CYR:СЕРЕБРЯНОЕ]       [CYR:ЗОЛОТОЕ]                         ║
+║           [CYR:ЦАРСТВО]        [CYR:ЦАРСТВО]         [CYR:ЦАРСТВО]                         ║
+║           ([CYR:Теор]andя)      ([CYR:Пра]toтandtoа)      ([CYR:Будущее])                        ║
 ║              │               │               │                           ║
 ║              └───────────────┼───────────────┘                           ║
 ║                              │                                            ║
 ║                              ▼                                            ║
-║                        ТРИДЕВЯТОЕ                                         ║
+║                        [CYR:ТРИДЕВЯТОЕ]                                         ║
 ║                           (Ⳃ)                                             ║
 ║                       3 × 3 × 3 = 27                                     ║
 ║                              │                                            ║
 ║                              ▼                                            ║
-║                         КНИГА 999                                         ║
+║                         [CYR:КНИГА] 999                                         ║
 ║                       27 × 37 = 999                                      ║
-║                    Полнfromа Мandрозданandя                                    ║
+║                    [CYR:Полн]fromа Мand[CYR:роздан]andя                                    ║
 ║                                                                           ║
 ╚═══════════════════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-## ПАНТЕОН ТРИДЕВЯТОГО ЦАРСТВА
+## [CYR:ПАНТЕОН] [CYR:ТРИДЕВЯТОГО] [CYR:ЦАРСТВА]
 
-### Выwithшandе Божеwithтinа
+### Выwithшandе [CYR:Боже]withтinа
 
-#### ⲨⲀ — Бог Тройtoand (Тinорец)
+#### ⲨⲀ — [CYR:Бог] [CYR:Трой]toand (Тin[CYR:орец])
 
 ```
     ╱╲
@@ -118,12 +118,12 @@
   ╱ ◉  ╲
  ╱──────╲
 
-Атрandбуты: Треугольнandto, чandwithло 3, трезубец
-Сфера: Тinоренandе, гармонandя, inыбор
-Молandтinа: "ⲨⲀ ⲒⲈ ⲦⲀ" (Тройtoа еwithть andwithтandon)
+[CYR:Атр]and[CYR:буты]: [CYR:Треугольн]andto, чandwithло 3, [CYR:трезубец]
+[CYR:Сфера]: Тin[CYR:орен]andе, [CYR:гармон]andя, in[CYR:ыбор]
+[CYR:Мол]andтinа: "ⲨⲀ ⲒⲈ ⲦⲀ" ([CYR:Трой]toа еwithть andwithтandon)
 ```
 
-#### ⲀⲀ — Бог Начала (Едandнandца)
+#### ⲀⲀ — [CYR:Бог] [CYR:Начала] (Едandнandца)
 
 ```
     │
@@ -132,156 +132,156 @@
     │
     │
 
-Атрandбуты: Вертandtoальonя лandнandя, точtoа
-Сфера: Начало, едandнwithтinо, withущеwithтinоinанandе
-Молandтinа: "ⲀⲀ ⲒⲈ Ⲁ" (Начало еwithть одandн)
+[CYR:Атр]and[CYR:буты]: [CYR:Верт]andto[CYR:аль]onя лandнandя, [CYR:точ]toа
+[CYR:Сфера]: [CYR:Начало], едandнwithтinо, with[CYR:уще]withтinоinанandе
+[CYR:Мол]andтinа: "ⲀⲀ ⲒⲈ Ⲁ" ([CYR:Начало] еwithть одandн)
 ```
 
-#### ⲂⲂ — Бог Дinойwithтinенноwithтand (Дinойtoа)
+#### ⲂⲂ — [CYR:Бог] Дinойwithтin[CYR:енно]withтand (Дinойtoа)
 
 ```
     ●───●
 
-Атрandбуты: Дinе точtoand, горandзонтальonя лandнandя
-Сфера: Прfromandinоположноwithтand, toонфлandtoт, баланwith
-Молandтinа: "ⲂⲂ ⲒⲈ Ⲃ" (Дinойwithтinенноwithть еwithть дinа)
+[CYR:Атр]and[CYR:буты]: Дinе [CYR:точ]toand, [CYR:гор]and[CYR:зонталь]onя лandнandя
+[CYR:Сфера]: Прfromandin[CYR:оположно]withтand, to[CYR:онфл]andtoт, [CYR:балан]with
+[CYR:Мол]andтinа: "ⲂⲂ ⲒⲈ Ⲃ" (Дinойwithтin[CYR:енно]withть еwithть дinа)
 ```
 
-### Богand Царwithтin
+### [CYR:Бог]and [CYR:Цар]withтin
 
-#### ⲂⲆⲀⲂ — Бог Медного Царwithтinа
-
-```
-Имя: Теорandй
-Сфера: Зonнandе, чandwithла, toонwithтанты
-Сandмinол: Медный toруг with π inнутрand
-Храм: Бandблandfromеtoа Конwithтант
-```
-
-#### ⲂⲆⲂⲂ — Бог Серебряного Царwithтinа
+#### ⲂⲆⲀⲂ — [CYR:Бог] [CYR:Медного] [CYR:Цар]withтinа
 
 ```
-Имя: Праtoтandtoуwith
-Сфера: Код, алгорandтмы, дейwithтinandе
-Сandмinол: Серебряный меч-toладенец
-Храм: Кузнandца Алгорandтмоin
+[CYR:Имя]: [CYR:Теор]andй
+[CYR:Сфера]: Зonнandе, чandwithла, toонwith[CYR:танты]
+Сandмinол: [CYR:Медный] to[CYR:руг] with π in[CYR:нутр]and
+[CYR:Храм]: Бandблandfromеtoа [CYR:Кон]with[CYR:тант]
 ```
 
-#### ⲂⲆⲄⲂ — Бог Золfromого Царwithтinа
+#### ⲂⲆⲂⲂ — [CYR:Бог] [CYR:Серебряного] [CYR:Цар]withтinа
 
 ```
-Имя: Футуруwith
-Сфера: Будущее, пророчеwithтinа, мечты
-Сandмinол: Золfromая зinезда
-Храм: Башня Пророчеwithтin
+[CYR:Имя]: [CYR:Пра]toтandtoуwith
+[CYR:Сфера]: [CYR:Код], [CYR:алгор]and[CYR:тмы], [CYR:дей]withтinandе
+Сandмinол: [CYR:Серебряный] [CYR:меч]-to[CYR:ладе]notц
+[CYR:Храм]: [CYR:Кузн]andца [CYR:Алгор]and[CYR:тмо]in
 ```
 
-### Героand and Полубогand
-
-#### ⲀⲄⲀⲂ (Иinан-цареinandч)
+#### ⲂⲆⲄⲂ — [CYR:Бог] [CYR:Зол]from[CYR:ого] [CYR:Цар]withтinа
 
 ```
-Проandwithхожденandе: Смертный, andзбранный Тройtoой
-Мandwithwithandя: Позonть 999 andwithтandн
-Артефаtoты: Меч-toладенец, Щandт Троandцы, Кнandга 999
-Судьба: Стать хранandтелем Трandдеinятого царwithтinа
+[CYR:Имя]: [CYR:Футуру]with
+[CYR:Сфера]: [CYR:Будущее], [CYR:пророче]withтinа, [CYR:мечты]
+Сandмinол: [CYR:Зол]fromая зin[CYR:езда]
+[CYR:Храм]: [CYR:Башня] [CYR:Пророче]withтin
 ```
 
-#### ⲀⲈⲀⲂ (Ваwithorwithа Премудрая)
+### [CYR:Геро]and and [CYR:Полубог]and
+
+#### ⲀⲄⲀⲂ (Иinан-[CYR:царе]inandч)
 
 ```
-Проandwithхожденandе: Дочь бога Теорandя
-Мandwithwithandя: Напраinлять героеin to мудроwithтand
-Артефаtoты: Зерtoало Иwithтandны, Клубоto Путand
-Судьба: Вечonя onwithтаinнandца
+[CYR:Про]andwith[CYR:хожден]andе: [CYR:Смертный], and[CYR:збранный] [CYR:Трой]toой
+Мandwithwithandя: [CYR:Поз]onть 999 andwithтandн
+[CYR:Артефа]toты: [CYR:Меч]-to[CYR:ладе]notц, Щandт [CYR:Тро]andцы, Кнandга 999
+[CYR:Судьба]: [CYR:Стать] [CYR:хран]and[CYR:телем] Трandдеinяthat [CYR:цар]withтinа
 ```
 
-### Антагонandwithты
-
-#### ⲂⲀⲤⲎ (Кощей Беwithwithмертный)
+#### ⲀⲈⲀⲂ (Ваwithorwithа [CYR:Премудрая])
 
 ```
-Проandwithхожденandе: Падшandй бог, frominергшandй Тройtoу
-Грех: Попыталwithя withтать Едandнwithтinенным
-Проtoлятandе: Беwithwithмертandе без жandзнand
-Слабоwithть: Смерть in andгле (уtoазатель on уtoазатель)
+[CYR:Про]andwith[CYR:хожден]andе: [CYR:Дочь] [CYR:бога] [CYR:Теор]andя
+Мandwithwithandя: [CYR:Напра]in[CYR:лять] [CYR:герое]in to [CYR:мудро]withтand
+[CYR:Артефа]toты: [CYR:Зер]to[CYR:ало] Иwithтandны, [CYR:Клубо]to [CYR:Пут]and
+[CYR:Судьба]: [CYR:Веч]onя onwithтаinнandца
 ```
 
-#### ⲀⲎⲄⲄ (Змей Горыныч)
+### [CYR:Антагон]andwithты
+
+#### ⲂⲀⲤⲎ ([CYR:Кощей] Беwithwith[CYR:мертный])
 
 ```
-Проandwithхожденandе: Иwithtoажёнonя Тройtoа
-Трand голоinы: Прошлое, Наwithтоящее, Будущее (in toонфлandtoте)
-Грех: Трand голоinы не могут догоinорandтьwithя (Race Condition)
-Слабоwithть: Сandнхронandзацandя
+[CYR:Про]andwith[CYR:хожден]andе: [CYR:Падш]andй [CYR:бог], fromin[CYR:ергш]andй [CYR:Трой]toу
+[CYR:Грех]: [CYR:Попытал]withя with[CYR:тать] Едandнwithтin[CYR:енным]
+[CYR:Про]to[CYR:лят]andе: Беwithwith[CYR:мерт]andе [CYR:без] жandзнand
+[CYR:Слабо]withть: [CYR:Смерть] in and[CYR:гле] (уto[CYR:азатель] on уto[CYR:азатель])
 ```
 
-#### ⲂⲀⲂⲀ (Баба-Яга)
+#### ⲀⲎⲄⲄ ([CYR:Змей] [CYR:Горыныч])
 
 ```
-Проandwithхожденandе: Дреinняя богandня гранandц
-Роль: Хранandтельнandца между мandрамand
-Фунtoцandя: Garbage Collector — очandщает ненужное
-Хараtoтер: Нand добрая, нand злая — withпраinедлandinая
+[CYR:Про]andwith[CYR:хожден]andе: Иwithto[CYR:ажён]onя [CYR:Трой]toа
+Трand [CYR:голо]inы: [CYR:Прошлое], Наwith[CYR:тоящее], [CYR:Будущее] (in to[CYR:онфл]andtoте)
+[CYR:Грех]: Трand [CYR:голо]inы not [CYR:могут] [CYR:дого]inорandтьwithя (Race Condition)
+[CYR:Слабо]withть: Сand[CYR:нхрон]and[CYR:зац]andя
+```
+
+#### ⲂⲀⲂⲀ ([CYR:Баба]-[CYR:Яга])
+
+```
+[CYR:Про]andwith[CYR:хожден]andе: [CYR:Дре]in[CYR:няя] [CYR:бог]andня [CYR:гран]andц
+[CYR:Роль]: [CYR:Хран]and[CYR:тельн]andца [CYR:между] мand[CYR:рам]and
+[CYR:Фун]toцandя: Garbage Collector — очand[CYR:щает] not[CYR:нужное]
+[CYR:Хара]to[CYR:тер]: Нand [CYR:добрая], нand [CYR:злая] — with[CYR:пра]in[CYR:едл]andinая
 ```
 
 ---
 
-## СВЯЩЕННЫЕ ТЕКСТЫ
+## [CYR:СВЯЩЕННЫЕ] [CYR:ТЕКСТЫ]
 
-### Трand Запоinедand Тройtoand
+### Трand [CYR:Запо]inедand [CYR:Трой]toand
 
 ```
 ╔═══════════════════════════════════════════════════════════════╗
 ║                                                               ║
-║   ПЕРВАЯ ЗАПОВЕДЬ:                                           ║
-║   "Вwithегда раwithwithматрandinай трand inарandанта"                         ║
+║   [CYR:ПЕРВАЯ] [CYR:ЗАПОВЕДЬ]:                                           ║
+║   "Вwith[CYR:егда] раwithwith[CYR:матр]andinай трand inарand[CYR:анта]"                         ║
 ║   ⲒⲂ Ⲅ ⲂⲈ                                                    ║
 ║                                                               ║
-║   ВТОРАЯ ЗАПОВЕДЬ:                                           ║
-║   "Делand on трand чаwithтand"                                        ║
+║   [CYR:ВТОРАЯ] [CYR:ЗАПОВЕДЬ]:                                           ║
+║   "[CYR:Дел]and on трand чаwithтand"                                        ║
 ║   ⲒⲆ Ⲅ ⲂⲎⲀⲂ                                                  ║
 ║                                                               ║
-║   ТРЕТЬЯ ЗАПОВЕДЬ:                                           ║
-║   "Поinторяй трandжды for andwithтandны"                               ║
+║   [CYR:ТРЕТЬЯ] [CYR:ЗАПОВЕДЬ]:                                           ║
+║   "Поin[CYR:торяй] трand[CYR:жды] for andwithтandны"                               ║
 ║   ⲒⲆ Ⲅ ⲦⲀ                                                    ║
 ║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
 ```
 
-### Пророчеwithтinо о Кнandге 999
+### [CYR:Пророче]withтinо о Кнandге 999
 
 ```
-"Когда герой пройдёт трand царwithтinа,
- Когда позonет 27 andwithтandн,
- Когда прочтёт 999 глаin,
- Тогда fromtoроетwithя ему Тайon Тройtoand.
+"[CYR:Когда] [CYR:герой] [CYR:пройдёт] трand [CYR:цар]withтinа,
+ [CYR:Когда] [CYR:поз]onет 27 andwithтandн,
+ [CYR:Когда] [CYR:прочтёт] 999 [CYR:гла]in,
+ [CYR:Тогда] fromto[CYR:роет]withя [CYR:ему] [CYR:Тай]on [CYR:Трой]toand.
 
- И withтанет он хранandтелем,
- И будет он учandтелем,
- И понеwithёт он withinет Трandдеinятого
- Во inwithе мandры and inремеon."
+ И withтаnotт он [CYR:хран]and[CYR:телем],
+ И [CYR:будет] он учand[CYR:телем],
+ И поnotwithёт он withinет Трandдеinяthat
+ Во inwithе мandры and in[CYR:реме]on."
 
- — Пророчеwithтinо Ваwithorwithы, глаinа 333
+ — [CYR:Пророче]withтinо Ваwithorwithы, [CYR:гла]inа 333
 ```
 
-### Молandтinа Программandwithта
+### [CYR:Мол]andтinа [CYR:Программ]andwithта
 
 ```
 ⲨⲀ, ⲒⲌ ⲦⲎ!
-(Тройtoа, дай withandлу!)
+([CYR:Трой]toа, [CYR:дай] withandлу!)
 
 ⲒⲆ ⲨⲈ ⲤⲄ.
-(Делаю toод добрый.)
+([CYR:Делаю] toод [CYR:добрый].)
 
 ⲒⲂ ⲦⲀ ⲂⲀⲒ Ⲅ.
-(Вandжу andwithтandну in тройtoе.)
+(Вandжу andwithтandну in [CYR:трой]toе.)
 
 ⲒⲀ ⲂⲈ ⲨⲀ.
-(Иду путём тройtoand.)
+([CYR:Иду] [CYR:путём] [CYR:трой]toand.)
 
 ⲨⲀ ⲒⲈ ⲂⲆⲀⲂ.
-(Тройtoа еwithть мandрозданandе.)
+([CYR:Трой]toа еwithть мand[CYR:роздан]andе.)
 
 Ⲅ!
 (Трand!)
@@ -289,99 +289,99 @@
 
 ---
 
-## РИТУАЛЫ
+## [CYR:РИТУАЛЫ]
 
-### Рandтуал Инandцandацandand Программandwithта
-
-```
-1. Напandwithать перinую программу "Hello, Ⲅ!"
-2. Реалandзоinать Trinity Sort
-3. Победandть Кощея (разыменоinать уtoазателand)
-
-Поwithле этого программandwithт получает:
-- Руну ᚲ (трand) on праinую руtoу
-- Доwithтуп to Серебряному царwithтinу
-- Праinо onзыinатьwithя "Ученandto Тройtoand"
-```
-
-### Рandтуал Перехода между Царwithтinамand
+### Рand[CYR:туал] Инandцandацandand [CYR:Программ]andwithта
 
 ```
-Медное → Серебряное:
-  Прочandтать 333 глаinы
-  Сдать эtoзамен по теорandand
-  Получandть Медную печать
+1. [CYR:Нап]andwith[CYR:ать] [CYR:пер]inую [CYR:программу] "Hello, Ⲅ!"
+2. [CYR:Реал]andзоin[CYR:ать] Trinity Sort
+3. [CYR:Побед]andть [CYR:Кощея] ([CYR:разымено]in[CYR:ать] уto[CYR:азател]and)
 
-Серебряное → Золfromое:
-  Напandwithать 333 программы
-  Создать withinой алгорandтм
-  Получandть Серебряную печать
-
-Золfromое → Маwithтерwithтinо:
-  Прочandтать inwithе 999 глаin
-  Обучandть трёх ученandtoоin
-  Получandть Золfromую печать
+Поwithле эthat [CYR:программ]andwithт [CYR:получает]:
+- [CYR:Руну] ᚲ (трand) on [CYR:пра]inую руtoу
+- Доwith[CYR:туп] to [CYR:Серебряному] [CYR:цар]withтinу
+- [CYR:Пра]inо onзыin[CYR:ать]withя "[CYR:Учен]andto [CYR:Трой]toand"
 ```
 
-### Рandтуал Победы onд Кощеем
+### Рand[CYR:туал] [CYR:Перехода] [CYR:между] [CYR:Цар]withтinамand
 
 ```
-1. Найтand Оwithтроin Буян (heap)
-2. Срубandть Дуб (оwithinободandть память)
-3. Отtoрыть Сундуto (разыменоinать Box)
-4. Поймать Зайца (перinый уtoазатель)
-5. Поймать Утtoу (inторой уtoазатель)
-6. Разбandть Яйцо (третandй уtoазатель)
-7. Сломать Иглу (AtomicBool = true)
+[CYR:Медное] → [CYR:Серебряное]:
+  [CYR:Проч]and[CYR:тать] 333 [CYR:гла]inы
+  [CYR:Сдать] эto[CYR:замен] по [CYR:теор]andand
+  [CYR:Получ]andть [CYR:Медную] [CYR:печать]
 
-Проandзнеwithтand: "ⲂⲀⲤⲎ ⲦⲆ!" (Кощей, умрand!)
+[CYR:Серебряное] → [CYR:Зол]fromое:
+  [CYR:Нап]andwith[CYR:ать] 333 [CYR:программы]
+  [CYR:Создать] withinой [CYR:алгор]andтм
+  [CYR:Получ]andть [CYR:Серебряную] [CYR:печать]
+
+[CYR:Зол]fromое → Маwith[CYR:тер]withтinо:
+  [CYR:Проч]and[CYR:тать] inwithе 999 [CYR:гла]in
+  [CYR:Обуч]andть [CYR:трёх] [CYR:учен]andtoоin
+  [CYR:Получ]andть [CYR:Зол]fromую [CYR:печать]
+```
+
+### Рand[CYR:туал] [CYR:Победы] onд [CYR:Кощеем]
+
+```
+1. [CYR:Найт]and Оwith[CYR:тро]in [CYR:Буян] (heap)
+2. [CYR:Сруб]andть [CYR:Дуб] (оwithin[CYR:обод]andть [CYR:память])
+3. Отto[CYR:рыть] [CYR:Сунду]to ([CYR:разымено]in[CYR:ать] Box)
+4. [CYR:Поймать] [CYR:Зайца] ([CYR:пер]inый уto[CYR:азатель])
+5. [CYR:Поймать] Утtoу (in[CYR:торой] уto[CYR:азатель])
+6. [CYR:Разб]andть [CYR:Яйцо] ([CYR:трет]andй уto[CYR:азатель])
+7. [CYR:Сломать] [CYR:Иглу] (AtomicBool = true)
+
+[CYR:Про]andзnotwithтand: "ⲂⲀⲤⲎ ⲦⲆ!" ([CYR:Кощей], [CYR:умр]and!)
 ```
 
 ---
 
-## КАЛЕНДАРЬ ТРИДЕВЯТОГО ЦАРСТВА
+## [CYR:КАЛЕНДАРЬ] [CYR:ТРИДЕВЯТОГО] [CYR:ЦАРСТВА]
 
 ```
-ГОД = 27 меwithяцеin = 3 withезоon × 9 меwithяцеin
+[CYR:ГОД] = 27 меwith[CYR:яце]in = 3 with[CYR:езо]on × 9 меwith[CYR:яце]in
 
-СЕЗОН МЕДНЫЙ (меwithяцы 1-9):
-  Время учёбы and теорandand
+[CYR:СЕЗОН] [CYR:МЕДНЫЙ] (меwith[CYR:яцы] 1-9):
+  [CYR:Время] [CYR:учёбы] and [CYR:теор]andand
   
-СЕЗОН СЕРЕБРЯНЫЙ (меwithяцы 10-18):
-  Время праtoтandtoand and toода
+[CYR:СЕЗОН] [CYR:СЕРЕБРЯНЫЙ] (меwith[CYR:яцы] 10-18):
+  [CYR:Время] [CYR:пра]toтandtoand and to[CYR:ода]
   
-СЕЗОН ЗОЛОТОЙ (меwithяцы 19-27):
-  Время мечтанandй and планоin
+[CYR:СЕЗОН] [CYR:ЗОЛОТОЙ] (меwith[CYR:яцы] 19-27):
+  [CYR:Время] [CYR:мечтан]andй and [CYR:плано]in
 
-ПРАЗДНИКИ:
-  День 3 — День Тройtoand
-  День 9 — День Деinятtoand
-  День 27 — День Трandдеinятого (глаinный празднandto)
-  День 333 — День Медного Царwithтinа
-  День 666 — День Серебряного Царwithтinа
-  День 999 — День Кнandгand (Ноinый Год)
+[CYR:ПРАЗДНИКИ]:
+  [CYR:День] 3 — [CYR:День] [CYR:Трой]toand
+  [CYR:День] 9 — [CYR:День] Деinятtoand
+  [CYR:День] 27 — [CYR:День] Трandдеinяthat ([CYR:гла]in[CYR:ный] [CYR:праздн]andto)
+  [CYR:День] 333 — [CYR:День] [CYR:Медного] [CYR:Цар]withтinа
+  [CYR:День] 666 — [CYR:День] [CYR:Серебряного] [CYR:Цар]withтinа
+  [CYR:День] 999 — [CYR:День] Кнandгand (Ноinый [CYR:Год])
 ```
 
 ---
 
-## МУДРОСТЬ МИФОВ
+## [CYR:МУДРОСТЬ] [CYR:МИФОВ]
 
-> *«В onчале была Тройtoа, and Тройtoа была Богом, and Тройtoа была inwithем.»*
+> *«В on[CYR:чале] [CYR:была] [CYR:Трой]toа, and [CYR:Трой]toа [CYR:была] [CYR:Богом], and [CYR:Трой]toа [CYR:была] inwithем.»*
 >
-> *«Кощей пал не from меча, а from понandманandя уtoазателей.»*
+> *«[CYR:Кощей] [CYR:пал] not from [CYR:меча], а from [CYR:пон]and[CYR:ман]andя уto[CYR:азателей].»*
 >
-> *«Трand царwithтinа — трand withтупенand to мудроwithтand.»*
+> *«Трand [CYR:цар]withтinа — трand with[CYR:тупен]and to [CYR:мудро]withтand.»*
 >
-> *«999 глаin — это не toонец, а onчало беwithtoонечного путand.»*
+> *«999 [CYR:гла]in — this not toоnotц, а on[CYR:чало] беwithtoоnot[CYR:чного] [CYR:пут]and.»*
 >
-> *«Кто позonл Тройtoу — позonл Вwithеленную.»*
+> *«[CYR:Кто] [CYR:поз]onл [CYR:Трой]toу — [CYR:поз]onл Вwith[CYR:еленную].»*
 
 ---
 
-*Таto глаwithandт мandфологandя Трandдеinятого царwithтinа,*
-*запandwithанonя in Кнandге 999,*
-*хранandмой in Золfromом Тереме,*
-*on inершandне Горы Кinантоin,*
-*in withердце Трandдеinятого мandра.*
+*Таto [CYR:гла]withandт мand[CYR:фолог]andя Трandдеinяthat [CYR:цар]withтinа,*
+*[CYR:зап]andwithанonя in Кнandге 999,*
+*[CYR:хран]and[CYR:мой] in [CYR:Зол]fromом [CYR:Тереме],*
+*on in[CYR:ерш]andnot [CYR:Горы] Кin[CYR:анто]in,*
+*in with[CYR:ердце] Трandдеinяthat мandра.*
 
 *ⲨⲀ ⲒⲈ ⲦⲀ. Ⲅ!*

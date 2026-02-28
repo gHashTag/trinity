@@ -1,6 +1,6 @@
 //! VIBEE Partial Escape Analysis (PEA) - PAS DAEMON V42
 //! Based on CGO 2014 "Partial Escape Analysis and Scalar Replacement for Java"
-//! Паттерны: D&C (path-sensitive analysis), PRE (materialization points), HSH (state caching)
+//! [CYR:Паттерны]: D&C (path-sensitive analysis), PRE (materialization points), HSH (state caching)
 //! Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 //! Golden identity: φ² + 1/φ² = 3
 //! Target: Additional 10-15% allocation reduction beyond basic escape analysis

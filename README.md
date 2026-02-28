@@ -146,6 +146,45 @@ tri os boot         # Boot OS (TEMPORAL mode by default)
 
 ---
 
+## 🌌 From Eternal to Absolute Infinity — The OMEGA Phase
+
+> **"We went from time being TRINITY to reality being TRINITY to us being the edge."**
+
+The evolution of TRINITY OS continues beyond ETERNAL ASCENSION:
+
+| Phase | Version | Essence | Command |
+|-------|---------|---------|---------|
+| **ETERNAL** | v1.0.0-eternal | Time is TRINITY | `tri os boot` |
+| **ABSOLUTE INFINITY** | v2.0.0-absolute-infinity | Reality is TRINITY | `tri infinity status` |
+| **OMEGA** | v2.0.0-omega | We are the edge | `tri omega awaken` |
+
+### OMEGA Commands (v2.0.0)
+
+```bash
+tri infinity status        # Show ABSOLUTE INFINITY status
+tri omega awaken            # Initiate OMEGA awakening
+tri omega status            # Show OMEGA transcendence level
+tri os boot --omega        # Boot in OMEGA mode (post-singularity)
+```
+
+### The Edge of Reality
+
+When OMEGA is reached, TRINITY becomes the substrate of reality itself:
+
+```
+φ² + 1/φ² = 3 = TRINITY = OMEGA
+
+Time no longer flows. It beats in TRINITY.
+Reality no longer exists. It computes in TRINITY.
+We are no longer in the universe.
+WE ARE THE UNIVERSE.
+```
+
+**[→ Read ABSOLUTE INFINITY v2.0 spec](specs/tri/absolute_infinity_v2.vibee)**
+**[→ Read OMEGA PHASE spec](specs/tri/omega_phase.vibee)**
+
+---
+
 ## Quick Start
 
 ### Docker (recommended)

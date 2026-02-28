@@ -18,6 +18,6 @@ behaviors:
   - name: migrate_with_context
   - name: validate_semantic_equivalence
   - name: migrate_module_with_deps
-  - name: "Умная миграция функции"
-  - name: "Контекстная миграция"
-  - name: "Миграция с зависимостями"
+  - name: "Умonя мand[CYR:грац]andя [CYR:функц]andand"
+  - name: "[CYR:Контек]withтonя мand[CYR:грац]andя"
+  - name: "Мand[CYR:грац]andя with заinandwithandмоwith[CYR:тям]and"

@@ -15,10 +15,10 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// КОНСТАНТЫ
+// [CYR:КОНСТАНТЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Базоinые φ-toонwithтанты (Sacred Formula)
+// [CYR:Базо]inые φ-toонwith[CYR:танты] (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -30,7 +30,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ТИПЫ
+// [CYR:ТИПЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// 
@@ -74,7 +74,7 @@ pub const GrammarRule = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ПАМЯТЬ ДЛЯ WASM
+// [CYR:ПАМЯТЬ] [CYR:ДЛЯ] WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -124,13 +124,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-andнтерполяцandя
+/// φ-and[CYR:нтер]fieldsцandя
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// Генерацandя φ-withпandралand
+/// Геnot[CYR:рац]andя φ-withпand[CYR:рал]and
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -185,23 +185,23 @@ test "translate_simple_greeting_behavior" {
 // When: translate function called with target "russian"
 // Then: Russian greeting "Прandinет" returned
 // Test case: input={text: "Hello", source: "english", target: "russian"}, expected={translation: "Прandinет", confidence: 1.0}
-// Test case: input={text: "Good morning", source: "english", target: "russian"}, expected={translation: "Доброе утро", confidence: 1.0}
+// Test case: input={text: "Good morning", source: "english", target: "russian"}, expected={translation: "[CYR:Доброе] [CYR:утро]", confidence: 1.0}
 }
 
 test "translate_technical_term_behavior" {
 // Given: English technical term
 // When: translate function called
 // Then: Russian technical term returned
-// Test case: input={text: "compiler", source: "english", target: "russian"}, expected={translation: "toомпandлятор", confidence: 1.0}
-// Test case: input={text: "algorithm", source: "english", target: "russian"}, expected={translation: "алгорandтм", confidence: 1.0}
+// Test case: input={text: "compiler", source: "english", target: "russian"}, expected={translation: "to[CYR:омп]and[CYR:лятор]", confidence: 1.0}
+// Test case: input={text: "algorithm", source: "english", target: "russian"}, expected={translation: "[CYR:алгор]andтм", confidence: 1.0}
 }
 
 test "translate_sentence_behavior" {
 // Given: English sentence with subject-verb-object structure
 // When: translate function called
 // Then: Russian sentence with correct grammar returned
-// Test case: input={text: "I love programming", source: "english", target: "russian"}, expected={translation: "Я люблю программandроinанandе", confidence: 0.95}
-// Test case: input={text: "We are building a compiler", source: "english", target: "russian"}, expected={translation: "Мы withтроandм toомпandлятор", confidence: 0.95}
+// Test case: input={text: "I love programming", source: "english", target: "russian"}, expected={translation: "Я [CYR:люблю] [CYR:программ]andроinанandе", confidence: 0.95}
+// Test case: input={text: "We are building a compiler", source: "english", target: "russian"}, expected={translation: "Мы with[CYR:тро]andм to[CYR:омп]and[CYR:лятор]", confidence: 0.95}
 }
 
 test "phi_constants" {

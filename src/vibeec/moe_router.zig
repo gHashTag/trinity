@@ -8,9 +8,9 @@ const std = @import("std");
 /// Expert types available in the MoE system
 pub const Expert = enum {
     Inference, // Mistral-7B.tri - for inference заyesч
-    Network, // P2P/staking - withетеinые operation
-    CodeGen, // Qwen2.5-Coder-7B.tri - генерацandя toоyes
-    Planning, // Steering модель - планandроinанandе and toоордandonцandя
+    Network, // P2P/staking - with[CYR:ете]inые operation
+    CodeGen, // Qwen2.5-Coder-7B.tri - геnot[CYR:рац]andя toоyes
+    Planning, // Steering [CYR:модель] - [CYR:план]andроinанandе and to[CYR:оорд]andonцandя
 
     pub fn getName(self: Expert) []const u8 {
         return switch (self) {
@@ -271,11 +271,11 @@ pub fn main() !void {
 
     // Test routing scenarios
     const test_tasks = [_][]const u8{
-        "Запуwithтand andнференwith on Mistral-7B",
-        "Заwithтейtoай 10000 TRI and проголоwithуй за proposal 42",
-        "Сгенерandруй toод on Qwen2.5-Coder",
-        "Маtowithandмandзandруй earnings on моём node",
-        "Запуwithтand andнференwith on Mistral, then заwithтейtoай 10000 TRI",
+        "[CYR:Запу]withтand and[CYR:нферен]with on Mistral-7B",
+        "Заwith[CYR:тей]toай 10000 TRI and [CYR:проголо]withуй за proposal 42",
+        "[CYR:Сге]notрand[CYR:руй] toод on Qwen2.5-Coder",
+        "Маtowithandмandзand[CYR:руй] earnings on [CYR:моём] node",
+        "[CYR:Запу]withтand and[CYR:нферен]with on Mistral, then заwith[CYR:тей]toай 10000 TRI",
     };
 
     for (test_tasks) |task| {

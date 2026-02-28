@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// VERILOG CODEGEN - Генератор Verilog toода andз .vibee withпецandфandtoацandй
+// VERILOG CODEGEN - Геnot[CYR:ратор] Verilog to[CYR:ода] andз .vibee with[CYR:пец]andфandtoацandй
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Генерandрует Verilog toод for FPGA withandнтеза
-// Аinтор: Dmitrii Vasilev
+// Геnotрand[CYR:рует] Verilog toод for FPGA withand[CYR:нтеза]
+// Аin[CYR:тор]: Dmitrii Vasilev
 // φ² + 1/φ² = 3 | PHOENIX = 999
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -294,7 +294,7 @@ pub const VerilogCodeGen = struct {
         self.builder.deinit();
     }
 
-    /// Генерацandя полного Verilog файла andз withпецandфandtoацandand
+    /// Геnot[CYR:рац]andя [CYR:полного] Verilog fileа andз with[CYR:пец]andфandtoацandand
     pub fn generate(self: *Self, spec: *const VibeeSpec) ![]const u8 {
         self.spec = spec;
         try self.writeHeader(spec);

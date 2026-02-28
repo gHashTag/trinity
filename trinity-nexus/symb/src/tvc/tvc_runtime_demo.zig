@@ -4,18 +4,18 @@ const tvc_vm = @import("tvc_vm.zig");
 const tvc_ir = @import("tvc_ir.zig");
 const tvc_parser = @import("tvc_parser.zig");
 
-// TVC Runtime Demo - Демонwithтрацandя полного цandtoла inыполненandя
+// TVC Runtime Demo - [CYR:Демон]with[CYR:трац]andя [CYR:полного] цandtoла in[CYR:ыпол]notнandя
 
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
 
     std.debug.print("╔════════════════════════════════════════════════╗\n", .{});
     std.debug.print("║         TVC RUNTIME DEMONSTRATION               ║\n", .{});
-    std.debug.print("║  Полный цandtoл: .vibee → IR → VM → Execution      ║\n", .{});
+    std.debug.print("║  [CYR:Полный] цandtoл: .vibee → IR → VM → Execution      ║\n", .{});
     std.debug.print("╚════════════════════════════════════════════════╝\n\n", .{});
 
     // 1. Initialization Runtime
-    std.debug.print("═══ [1] ИНИЦИАЛИЗАЦИЯ RUNTIME ═══\n", .{});
+    std.debug.print("═══ [1] [CYR:ИНИЦИАЛИЗАЦИЯ] RUNTIME ═══\n", .{});
     var runtime = try tvc_runtime.TVCRuntime.init(allocator, 1024 * 1024, 512 * 1024);
     defer runtime.deinit();
 
@@ -23,34 +23,34 @@ pub fn main() !void {
     runtime.start();
 
     // 2. Теwithт Memory Manager
-    std.debug.print("\n═══ [2] ТЕСТ MEMORY MANAGER ═══\n", .{});
+    std.debug.print("\n═══ [2] [CYR:ТЕСТ] MEMORY MANAGER ═══\n", .{});
     testMemoryManager(&runtime);
 
     // 3. Теwithт Math Library
-    std.debug.print("\n═══ [3] ТЕСТ MATH LIBRARY ═══\n", .{});
+    std.debug.print("\n═══ [3] [CYR:ТЕСТ] MATH LIBRARY ═══\n", .{});
     testMathLibrary();
 
     // 4. Теwithт Balanced Ternary
-    std.debug.print("\n═══ [4] ТЕСТ BALANCED TERNARY ═══\n", .{});
+    std.debug.print("\n═══ [4] [CYR:ТЕСТ] BALANCED TERNARY ═══\n", .{});
     try testBalancedTernary(allocator);
 
-    // 5. Creation and inыполненandе модуля
-    std.debug.print("\n═══ [5] ВЫПОЛНЕНИЕ TVC МОДУЛЯ ═══\n", .{});
+    // 5. Creation and in[CYR:ыпол]notнandе [CYR:модуля]
+    std.debug.print("\n═══ [5] [CYR:ВЫПОЛНЕНИЕ] TVC [CYR:МОДУЛЯ] ═══\n", .{});
     try testModuleExecution(&runtime, allocator);
 
-    // 6. Статandwithтandtoа
-    std.debug.print("\n═══ [6] СТАТИСТИКА RUNTIME ═══\n", .{});
+    // 6. [CYR:Стат]andwithтandtoа
+    std.debug.print("\n═══ [6] [CYR:СТАТИСТИКА] RUNTIME ═══\n", .{});
     runtime.dumpState();
 
-    // 7. Сборtoа муwithора
-    std.debug.print("\n═══ [7] СБОРКА МУСОРА ═══\n", .{});
+    // 7. [CYR:Сбор]toа муwith[CYR:ора]
+    std.debug.print("\n═══ [7] [CYR:СБОРКА] [CYR:МУСОРА] ═══\n", .{});
     runtime.gc();
-    std.debug.print("✓ GC inыполнен\n", .{});
+    std.debug.print("✓ GC in[CYR:ыпол]notн\n", .{});
 
     runtime.stop();
 
     std.debug.print("\n╔════════════════════════════════════════════════╗\n", .{});
-    std.debug.print("║         ДЕМОНСТРАЦИЯ ЗАВЕРШЕНА                  ║\n", .{});
+    std.debug.print("║         [CYR:ДЕМОНСТРАЦИЯ] [CYR:ЗАВЕРШЕНА]                  ║\n", .{});
     std.debug.print("╚════════════════════════════════════════════════╝\n", .{});
 }
 
@@ -60,7 +60,7 @@ fn testMemoryManager(runtime: *tvc_runtime.TVCRuntime) void {
         std.debug.print("✗ Arena alloc failed\n", .{});
         return;
     };
-    std.debug.print("✓ Arena: inыделено 256 байт\n", .{});
+    std.debug.print("✓ Arena: in[CYR:ыделено] 256 [CYR:байт]\n", .{});
     _ = arena_data;
 
     // Теwithт GC Allocator
@@ -68,10 +68,10 @@ fn testMemoryManager(runtime: *tvc_runtime.TVCRuntime) void {
         std.debug.print("✗ GC alloc failed\n", .{});
         return;
     };
-    std.debug.print("✓ GC: inыделено 128 байт\n", .{});
+    std.debug.print("✓ GC: in[CYR:ыделено] 128 [CYR:байт]\n", .{});
     _ = gc_data;
 
-    // Статandwithтandtoа памятand
+    // [CYR:Стат]andwithтandtoа [CYR:памят]and
     const stats = runtime.memory.getStats();
     std.debug.print("  Arena used: {} bytes\n", .{stats.arena_used});
     std.debug.print("  GC objects: {}\n", .{stats.gc_objects});
@@ -84,14 +84,14 @@ fn testMathLibrary() void {
     const ZERO = tvc_vm.ZERO;
     const POS1 = tvc_vm.POS1;
 
-    // Теwithт базоinых операцandй
-    std.debug.print("Trinary арandфметandtoа:\n", .{});
+    // Теwithт [CYR:базо]inых [CYR:операц]andй
+    std.debug.print("Trinary арand[CYR:фмет]andtoа:\n", .{});
     std.debug.print("  add(+1, -1) = {}\n", .{Math.add(POS1, NEG1)});
     std.debug.print("  sub(+1, -1) = {}\n", .{Math.sub(POS1, NEG1)});
     std.debug.print("  mul(+1, -1) = {}\n", .{Math.mul(POS1, NEG1)});
 
-    // Теwithт логandчеwithtoandх операцandй
-    std.debug.print("Trinary логandtoа:\n", .{});
+    // Теwithт [CYR:лог]andчеwithtoandх [CYR:операц]andй
+    std.debug.print("Trinary [CYR:лог]andtoа:\n", .{});
     std.debug.print("  AND(+1, 0) = {}\n", .{Math.tritAnd(POS1, ZERO)});
     std.debug.print("  OR(+1, 0) = {}\n", .{Math.tritOr(POS1, ZERO)});
     std.debug.print("  XOR(+1, -1) = {}\n", .{Math.tritXor(POS1, NEG1)});
@@ -101,13 +101,13 @@ fn testMathLibrary() void {
     // Теwithт Golden Identity
     std.debug.print("Golden Identity:\n", .{});
     std.debug.print("  φ = {}\n", .{Math.PHI});
-    std.debug.print("  φ² + 1/φ² = {} (должно быть 3)\n", .{Math.goldenIdentity()});
+    std.debug.print("  φ² + 1/φ² = {} ([CYR:должно] [CYR:быть] 3)\n", .{Math.goldenIdentity()});
 }
 
 fn testBalancedTernary(allocator: std.mem.Allocator) !void {
     const Math = tvc_runtime.TVCMath;
 
-    // Базоinые теwithты toонinерwithandand
+    // [CYR:Базо]inые теwithты toонinерwithandand
     const test_numbers = [_]i64{ 0, 1, -1, 5, -5, 13, -13, 42, -42, 100, -100 };
 
     std.debug.print("Balanced Ternary toонinерwithandя:\n", .{});
@@ -130,11 +130,11 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
         if (ok) passed += 1 else failed += 1;
     }
 
-    // Теwithты арandфметandtoand
-    std.debug.print("\nАрandфметandtoа трandтоinых маwithwithandinоin:\n", .{});
+    // Теwithты арand[CYR:фмет]andtoand
+    std.debug.print("\nАрand[CYR:фмет]andtoа трandтоinых маwithwithandinоin:\n", .{});
 
-    // Теwithт withложенandя
-    std.debug.print("  СЛОЖЕНИЕ:\n", .{});
+    // Теwithт with[CYR:ложен]andя
+    std.debug.print("  [CYR:СЛОЖЕНИЕ]:\n", .{});
     const add_tests = [_]struct { a: i64, b: i64 }{
         .{ .a = 5, .b = 3 },     // 5 + 3 = 8
         .{ .a = -5, .b = 3 },    // -5 + 3 = -2
@@ -160,8 +160,8 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
         if (ok) passed += 1 else failed += 1;
     }
 
-    // Теwithт inычandтанandя
-    std.debug.print("  ВЫЧИТАНИЕ:\n", .{});
+    // Теwithт inычand[CYR:тан]andя
+    std.debug.print("  [CYR:ВЫЧИТАНИЕ]:\n", .{});
     const sub_tests = [_]struct { a: i64, b: i64 }{
         .{ .a = 10, .b = 3 },    // 10 - 3 = 7
         .{ .a = 5, .b = 8 },     // 5 - 8 = -3
@@ -186,8 +186,8 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
         if (ok) passed += 1 else failed += 1;
     }
 
-    // Теwithт умноженandя
-    std.debug.print("  УМНОЖЕНИЕ:\n", .{});
+    // Теwithт [CYR:умножен]andя
+    std.debug.print("  [CYR:УМНОЖЕНИЕ]:\n", .{});
     const mul_tests = [_]struct { a: i64, b: i64 }{
         .{ .a = 3, .b = 4 },     // 3 * 4 = 12
         .{ .a = -3, .b = 4 },    // -3 * 4 = -12
@@ -214,11 +214,11 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
         if (ok) passed += 1 else failed += 1;
     }
 
-    // Теwithт деленandя
-    std.debug.print("  ДЕЛЕНИЕ:\n", .{});
+    // Теwithт [CYR:делен]andя
+    std.debug.print("  [CYR:ДЕЛЕНИЕ]:\n", .{});
     const div_tests = [_]struct { a: i64, b: i64 }{
         .{ .a = 12, .b = 4 },    // 12 / 4 = 3
-        .{ .a = 13, .b = 4 },    // 13 / 4 = 3 (целочandwithленное)
+        .{ .a = 13, .b = 4 },    // 13 / 4 = 3 ([CYR:целоч]andwith[CYR:ленное])
         .{ .a = -12, .b = 4 },   // -12 / 4 = -3
         .{ .a = 81, .b = 9 },    // 81 / 9 = 9
         .{ .a = 100, .b = 10 },  // 100 / 10 = 10
@@ -241,8 +241,8 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
         if (ok) passed += 1 else failed += 1;
     }
 
-    // Теwithт withраinненandя
-    std.debug.print("  СРАВНЕНИЕ:\n", .{});
+    // Теwithт withраinnotнandя
+    std.debug.print("  [CYR:СРАВНЕНИЕ]:\n", .{});
     const cmp_tests = [_]struct { a: i64, b: i64, expected: i8 }{
         .{ .a = 5, .b = 3, .expected = 1 },      // 5 > 3
         .{ .a = 3, .b = 5, .expected = -1 },     // 3 < 5
@@ -265,8 +265,8 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
         if (ok) passed += 1 else failed += 1;
     }
 
-    // Теwithт inозinеденandя in withтепень
-    std.debug.print("  СТЕПЕНЬ:\n", .{});
+    // Теwithт inозin[CYR:еден]andя in with[CYR:тепень]
+    std.debug.print("  [CYR:СТЕПЕНЬ]:\n", .{});
     const pow_tests = [_]struct { base: i64, exp: u32, expected: i64 }{
         .{ .base = 2, .exp = 0, .expected = 1 },   // 2^0 = 1
         .{ .base = 2, .exp = 1, .expected = 2 },   // 2^1 = 2
@@ -289,21 +289,21 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
         if (ok) passed += 1 else failed += 1;
     }
 
-    // Итогand
+    // [CYR:Итог]and
     std.debug.print("\nResultы: {} passed, {} failed\n", .{ passed, failed });
 }
 
 fn testModuleExecution(runtime: *tvc_runtime.TVCRuntime, allocator: std.mem.Allocator) !void {
-    // Создаём теwithтоinый модуль
+    // [CYR:Создаём] теwithтоinый module
     var module = tvc_ir.TVCModule.init(allocator, "test_runtime_module");
 
-    // Добаinляем фунtoцandю trinary_logic
+    // [CYR:Доба]in[CYR:ляем] [CYR:фун]toцandю trinary_logic
     const func = try module.addFunction("trinary_logic");
 
     var block = tvc_ir.TVCBlock.init(allocator, "entry");
     block.entry_point = 0;
 
-    // Инwithтруtoцandand: NOT, AND, OR, XOR, IMPLIES, RET
+    // Инwith[CYR:тру]toцandand: NOT, AND, OR, XOR, IMPLIES, RET
     try block.instructions.append(tvc_ir.TVCInstruction{
         .opcode = .t_not,
         .operands = &[_]u64{},
@@ -344,10 +344,10 @@ fn testModuleExecution(runtime: *tvc_runtime.TVCRuntime, allocator: std.mem.Allo
     try func.blocks.put("entry", block);
     func.returns = .i64_trit;
 
-    // Загружаем and inыполняем
+    // [CYR:Загружаем] and in[CYR:ыполняем]
     try runtime.loadModule(&module);
-    std.debug.print("✓ Модуль загружен: {s}\n", .{module.name});
+    std.debug.print("✓ [CYR:Модуль] [CYR:загружен]: {s}\n", .{module.name});
 
     try runtime.callFunction("trinary_logic");
-    std.debug.print("✓ Фунtoцandя trinary_logic inыполнеon\n", .{});
+    std.debug.print("✓ [CYR:Фун]toцandя trinary_logic in[CYR:ыпол]noton\n", .{});
 }

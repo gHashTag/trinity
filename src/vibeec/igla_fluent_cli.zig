@@ -342,7 +342,7 @@ fn printHelp() void {
     std.debug.print("  - History truncation: max {d} messages (no hang!)\n", .{MAX_HISTORY_SIZE});
     std.debug.print("  - Symbolic patterns: 100+ multilingual (RU/EN/CN)\n", .{});
     std.debug.print("  - TinyLlama fallback: fluent local responses\n", .{});
-    std.debug.print("\n{s}Try:{s} прandinет, toаto дела, hello, what is phi?\n\n", .{ GRAY, RESET });
+    std.debug.print("\n{s}Try:{s} прandinет, toаto [CYR:дела], hello, what is phi?\n\n", .{ GRAY, RESET });
 }
 
 fn printPrompt(state: *CLIState) void {

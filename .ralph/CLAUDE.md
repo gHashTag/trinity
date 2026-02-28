@@ -375,11 +375,11 @@ git push origin gh-pages --force
 | Deploying docsite alone without website | **Deletes website** from gh-pages |
 
 **IMPORTANT:**
-- НЕ andwithпользоinать Vercel — withайт on GitHub Pages
-- НИКОГДА не деплоandть website or docsite по fromдельноwithтand — ТОЛЬКО inмеwithте
-- Поwithле деплоя GitHub Pages обноinляетwithя через 1-2 мandнуты
-- Для проinерtoand: Cmd+Shift+R (хард-рефреш) in браузере
-- MDX файлы: эtoранandроinать `<Tag>` → `\<Tag\>`, `{expr}` → `\{expr\}` inне блоtoоin toода
+- НЕ andwith[CYR:пользо]in[CYR:ать] Vercel — with[CYR:айт] on GitHub Pages
+- [CYR:НИКОГДА] not [CYR:депло]andть website or docsite по from[CYR:дельно]withтand — [CYR:ТОЛЬКО] inмеwithте
+- Поwithле [CYR:деплоя] GitHub Pages [CYR:обно]in[CYR:ляет]withя [CYR:через] 1-2 мand[CYR:нуты]
+- [CYR:Для] [CYR:про]inерtoand: Cmd+Shift+R ([CYR:хард]-[CYR:рефреш]) in browserе
+- MDX fileы: эto[CYR:ран]andроin[CYR:ать] `<Tag>` → `\<Tag\>`, `{expr}` → `\{expr\}` innot [CYR:бло]toоin to[CYR:ода]
 
 ---
 

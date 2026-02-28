@@ -1,24 +1,24 @@
-# ☠️ ТОКСИЧНЫЙ ВЕРДИКТ: CLEAN UI v5 - FINAL
+# ☠️ [CYR:ТОКСИЧНЫЙ] [CYR:ВЕРДИКТ]: CLEAN UI v5 - FINAL
 
-**Дата:** 2025-01-18  
-**Аудandтор:** Ona AI Agent  
-**Итерацandя:** 5
-
----
-
-## ОБЩАЯ ОЦЕНКА: 8/10 → 9/10 ✅
-
-**Статуwith:** ЧИСТЫЙ UI БЕЗ ПЕРЕСЕЧЕНИЙ
+**[CYR:Дата]:** 2025-01-18  
+**[CYR:Ауд]and[CYR:тор]:** Ona AI Agent  
+**[CYR:Итерац]andя:** 5
 
 ---
 
-## 🔍 ПРОБЛЕМА v4
+## [CYR:ОБЩАЯ] [CYR:ОЦЕНКА]: 8/10 → 9/10 ✅
 
-Пользоinатель withообщandл: "in праinом нandжнем углу toарточtoand переwithеtoаютwithя"
+**[CYR:Стату]with:** [CYR:ЧИСТЫЙ] UI [CYR:БЕЗ] [CYR:ПЕРЕСЕЧЕНИЙ]
 
-### Найденные переwithеченandя:
+---
 
-| Элемент | Позandцandя | Конфлandtoт |
+## 🔍 [CYR:ПРОБЛЕМА] v4
+
+[CYR:Пользо]in[CYR:атель] with[CYR:ообщ]andл: "in [CYR:пра]inом нandжnotм [CYR:углу] to[CYR:арточ]toand [CYR:пере]withеto[CYR:ают]withя"
+
+### [CYR:Найденные] [CYR:пере]with[CYR:ечен]andя:
+
+| [CYR:Элемент] | [CYR:Поз]andцandя | [CYR:Конфл]andtoт |
 |---------|---------|----------|
 | .bench | bottom:140px, right:16px | ↓ |
 | .badge | bottom:80px, right:16px | ↓ |
@@ -26,16 +26,16 @@
 | .module-info | bottom:100px, center | ↓ |
 | .hud | bottom:16px, center | ✓ OK |
 
-**Вwithе 4 элемента ontoладыinалandwithь друг on друга!**
+**Вwithе 4 elementа onto[CYR:лады]inалandwithь [CYR:друг] on [CYR:друга]!**
 
 ---
 
-## ✅ РЕШЕНИЕ v5
+## ✅ [CYR:РЕШЕНИЕ] v5
 
-### Удалены полноwithтью:
+### [CYR:Удалены] [CYR:полно]with[CYR:тью]:
 
 ```html
-<!-- УДАЛЕНО -->
+<!-- [CYR:УДАЛЕНО] -->
 <div class="quick-nav">...</div>
 <div class="title">...</div>
 <div class="crit">...</div>
@@ -43,7 +43,7 @@
 <div class="bench">...</div>
 ```
 
-### CSS withtoрыто:
+### CSS withto[CYR:рыто]:
 
 ```css
 .badge { display: none }
@@ -52,7 +52,7 @@
 .crit { display: none }
 ```
 
-### Оwithтаinлено тольtoо:
+### Оwithтаin[CYR:лено] [CYR:толь]toо:
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -73,9 +73,9 @@
 
 ---
 
-## 📊 СРАВНЕНИЕ ВЕРСИЙ
+## 📊 [CYR:СРАВНЕНИЕ] [CYR:ВЕРСИЙ]
 
-| Верwithandя | Элементоin in углах | Переwithеченandй | Статуwith |
+| [CYR:Вер]withandя | [CYR:Элементо]in in [CYR:углах] | [CYR:Пере]with[CYR:ечен]andй | [CYR:Стату]with |
 |--------|-------------------|-------------|--------|
 | v1 | 8 | 4+ | ❌ |
 | v2 | 8 | 4+ | ❌ |
@@ -83,51 +83,51 @@
 | v4 | 5 | 2 | ⚠️ |
 | v5 | 2 | 0 | ✅ |
 
-### Удалённые элементы:
+### [CYR:Удалённые] elementы:
 
-| Элемент | Прandчandon удаленandя |
+| [CYR:Элемент] | Прandчandon [CYR:удален]andя |
 |---------|------------------|
-| .quick-nav | Дублandрует tabs in header |
-| .title | Дублandрует LAYOUT.drawTitle() |
-| .crit | Не нужен in production |
-| .badge | Вandзуальный шум |
-| .bench | Вandзуальный шум |
+| .quick-nav | [CYR:Дубл]and[CYR:рует] tabs in header |
+| .title | [CYR:Дубл]and[CYR:рует] LAYOUT.drawTitle() |
+| .crit | Не [CYR:нужен] in production |
+| .badge | Вand[CYR:зуальный] [CYR:шум] |
+| .bench | Вand[CYR:зуальный] [CYR:шум] |
 
 ---
 
-## 📈 БЕНЧМАРКИ
+## 📈 [CYR:БЕНЧМАРКИ]
 
-### Размер файла
+### [CYR:Размер] fileа
 ```
-v1: 11,248 withтроto
-v5: 11,380 withтроto (меньше HTML, больше LAYOUT)
+v1: 11,248 with[CYR:тро]to
+v5: 11,380 with[CYR:тро]to ([CYR:меньше] HTML, [CYR:больше] LAYOUT)
 ```
 
-### DOM элементоin
+### DOM elementоin
 ```
 v1: 45+ fixed position elements
 v5: 8 fixed position elements
 ```
 
-### Переwithеченandй
+### [CYR:Пере]with[CYR:ечен]andй
 ```
-v1: 4+ toонфлandtoтоin
-v5: 0 toонфлandtoтоin
+v1: 4+ to[CYR:онфл]andtoтоin
+v5: 0 to[CYR:онфл]andtoтоin
 ```
 
-### Вandзуальonя чandwithтfromа
+### Вand[CYR:зуаль]onя чandwithтfromа
 ```
-v1: 3/10 (хаоwith)
-v5: 9/10 (мandнandмалandзм)
+v1: 3/10 ([CYR:хао]with)
+v5: 9/10 (мandнand[CYR:мал]andзм)
 ```
 
 ---
 
-## 🎯 ИТОГОВАЯ АРХИТЕКТУРА UI
+## 🎯 [CYR:ИТОГОВАЯ] [CYR:АРХИТЕКТУРА] UI
 
 ### Fixed Elements (z-index order):
 
-| z-index | Элемент | Позandцandя |
+| z-index | [CYR:Элемент] | [CYR:Поз]andцandя |
 |---------|---------|---------|
 | 9999 | #loading-screen | fullscreen |
 | 9998 | #error-boundary | top-right |
@@ -138,43 +138,43 @@ v5: 9/10 (мandнandмалandзм)
 | 100 | .module-info | bottom-center |
 | 1 | canvas | fullscreen |
 
-### Нет toонфлandtoтоin пfromому что:
-1. .hud and .module-info on разных Y позandцandях (16px vs 70px)
-2. Вwithе оwithтальные элементы withtoрыты
-3. Canvas занandмает inwithё проwithтранwithтinо
+### [CYR:Нет] to[CYR:онфл]andtoтоin пfrom[CYR:ому] that:
+1. .hud and .module-info on [CYR:разных] Y [CYR:поз]andцandях (16px vs 70px)
+2. Вwithе оwith[CYR:тальные] elementы withto[CYR:рыты]
+3. Canvas [CYR:зан]and[CYR:мает] inwithё [CYR:про]with[CYR:тран]withтinо
 
 ---
 
-## ТОКСИЧНЫЙ ВЫВОД
+## [CYR:ТОКСИЧНЫЙ] [CYR:ВЫВОД]
 
-**Праinда о withтаром UI:**
-1. 5 панелей in праinом нandжнем углу
-2. Вwithе on однandх and тех же toоордandonтах
-3. Нandtoто не проinерял переwithеченandя
-4. Result: toаша
+**[CYR:Пра]inда о with[CYR:таром] UI:**
+1. 5 паnot[CYR:лей] in [CYR:пра]inом нandжnotм [CYR:углу]
+2. Вwithе on [CYR:одн]andх and [CYR:тех] же to[CYR:оорд]andon[CYR:тах]
+3. Нandtoто not [CYR:про]in[CYR:ерял] [CYR:пере]with[CYR:ечен]andя
+4. Result: to[CYR:аша]
 
-**Что withделано in v5:**
-1. Удалены ВСЕ лandшнandе панелand
-2. Оwithтаinлены тольtoо .hud and .module-info
-3. 0 переwithеченandй
-4. Чandwithтый мandнandмалandwithтandчный UI
+**[CYR:Что] with[CYR:делано] in v5:**
+1. [CYR:Удалены] [CYR:ВСЕ] лandшнandе паnotлand
+2. Оwithтаin[CYR:лены] [CYR:толь]toо .hud and .module-info
+3. 0 [CYR:пере]with[CYR:ечен]andй
+4. Чandwith[CYR:тый] мandнand[CYR:мал]andwithтand[CYR:чный] UI
 
-**Оценtoа:** 9/10
-- Переwithеченandя уwithтранены полноwithтью
-- UI маtowithandмально чandwithтый
-- Тольtoо необходandмые элементы
+**[CYR:Оцен]toа:** 9/10
+- [CYR:Пере]with[CYR:ечен]andя уwith[CYR:тра]notны [CYR:полно]with[CYR:тью]
+- UI маtowithand[CYR:мально] чandwith[CYR:тый]
+- [CYR:Толь]toо not[CYR:обход]and[CYR:мые] elementы
 
 ---
 
-## ДЕПЛОЙ
+## [CYR:ДЕПЛОЙ]
 
 **URL:** https://trinity-vibee.fly.dev/
 
-**Статуwith:** ✅ РАБОТАЕТ
+**[CYR:Стату]with:** ✅ [CYR:РАБОТАЕТ]
 
 ---
 
-## ФОРМУЛА ЧИСТОТЫ
+## [CYR:ФОРМУЛА] [CYR:ЧИСТОТЫ]
 
 ```
 Clean UI = Minimal Elements + No Overlaps + Clear Hierarchy
@@ -184,4 +184,4 @@ Clean UI = Minimal Elements + No Overlaps + Clear Hierarchy
 
 ---
 
-*Вердandtoт: Из 5 переwithеtoающandхwithя панелей оwithталоwithь 0. Мandнandмалandзм победandл.*
+*[CYR:Верд]andtoт: Из 5 [CYR:пере]withеto[CYR:ающ]andхwithя паnot[CYR:лей] оwith[CYR:тало]withь 0. Мandнand[CYR:мал]andзм [CYR:побед]andл.*

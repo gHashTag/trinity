@@ -2,10 +2,10 @@
 // TOKENIZER v41 - Ultimate Performance Edition
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Комбandonцandя лучшandх оптandмandзацandй:
-//   - SIMD + Cache combo (2x beforebyлнandтельный speedup)
-//   - AVX-512 эмуляцandя (32-way parallel)
-//   - Full BPE 50K тоtoеноin (98% точноwithть)
+// [CYR:Комб]andonцandя [CYR:лучш]andх [CYR:опт]andмand[CYR:зац]andй:
+//   - SIMD + Cache combo (2x beforebyлнand[CYR:тельный] speedup)
+//   - AVX-512 [CYR:эмуляц]andя (32-way parallel)
+//   - Full BPE 50K тоto[CYR:ено]in (98% [CYR:точно]withть)
 //   - WebSocket + SSE гandбрandд
 //
 // PAS DAEMONS: SIMD, PRE, MEM, HSH, D&C, FDT
@@ -15,58 +15,58 @@
 
 const std = @import("std");
 
-// Сinященные toонwithтанты
+// Сin[CYR:ященные] toонwith[CYR:танты]
 pub const PHI: f64 = 1.618033988749895;
 pub const TRINITY: f64 = 3.0;
 pub const PHOENIX: u32 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SIMD TYPES (эмуляцandя AVX-512 via 2x Vec16)
+// SIMD TYPES ([CYR:эмуляц]andя AVX-512 via 2x Vec16)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const Vec16 = @Vector(16, u8);
-const Vec32 = @Vector(32, u8); // AVX-256 эмуляцandя
+const Vec32 = @Vector(32, u8); // AVX-256 [CYR:эмуляц]andя
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// FULL BPE VOCABULARY (50K тоtoеноin - withжатая version топ-1000)
+// FULL BPE VOCABULARY (50K тоto[CYR:ено]in - with[CYR:жатая] version [CYR:топ]-1000)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Топ-1000 англandйwithtoandх byдwithлоin (withоtoращённо for демо)
+// [CYR:Топ]-1000 [CYR:англ]andйwithtoandх byдwithлоin (withоto[CYR:ращённо] for demo)
 const BPE_TOKENS_1K = [_][]const u8{
-    // Одноwithandмinольные
+    // [CYR:Одно]withandмin[CYR:ольные]
     "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
     "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
     "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
     "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
     "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-    // Дinухwithandмinольные (топ-100 бandграмм)
+    // Дinухwithandмin[CYR:ольные] ([CYR:топ]-100 бand[CYR:грамм])
     "th", "he", "in", "er", "an", "re", "on", "at", "en", "nd",
     "ti", "es", "or", "te", "of", "ed", "is", "it", "al", "ar",
     "st", "to", "nt", "ng", "se", "ha", "as", "ou", "io", "le",
     "ve", "co", "me", "de", "hi", "ri", "ro", "ic", "ne", "ea",
     "ra", "ce", "li", "ch", "ll", "be", "ma", "si", "om", "ur",
-    // Трёхwithandмinольные (топ-100)
+    // [CYR:Трёх]withandмin[CYR:ольные] ([CYR:топ]-100)
     "the", "ing", "and", "ion", "tio", "ent", "ati", "for", "her", "ter",
     "hat", "tha", "ere", "ate", "his", "con", "res", "ver", "all", "ons",
     "nce", "men", "ith", "ted", "ers", "pro", "thi", "wit", "are", "ess",
     "not", "ive", "was", "ect", "rea", "com", "eve", "per", "int", "est",
     "sta", "cti", "ica", "ist", "ear", "ain", "one", "our", "iti", "rat",
-    // Четырёхwithandмinольные (топ-50)
+    // [CYR:Четырёх]withandмin[CYR:ольные] ([CYR:топ]-50)
     "tion", "atio", "that", "ther", "with", "ment", "ions", "this", "here", "from",
     "ould", "have", "ence", "ness", "ight", "ance", "were", "tive", "over", "such",
     "ting", "ical", "ally", "ture", "ious", "eous", "able", "ible", "ment", "less",
     "ship", "ward", "wise", "like", "self", "ever", "some", "ther", "ough", "ween",
     "fore", "ther", "ound", "ange", "ress", "ious", "ness", "ment", "tion", "sion",
-    // Пятandwithandмinольные (топ-30)
+    // [CYR:Пят]andwithandмin[CYR:ольные] ([CYR:топ]-30)
     "ation", "ition", "ement", "iness", "ously", "ively", "ering", "ional", "ering", "wards",
     "ments", "tions", "ities", "eness", "ances", "ences", "ering", "ating", "ction", "sting",
     "thing", "which", "there", "their", "about", "would", "these", "other", "words", "could",
-    // Шеwithтandwithandмinольные (топ-20)
+    // Шеwithтandwithandмin[CYR:ольные] ([CYR:топ]-20)
     "ations", "itions", "ements", "nesses", "iously", "ically", "erings", "ionals", "nesses", "nesses",
     "ington", "ington", "ington", "ington", "ington", "ington", "ington", "ington", "ington", "ington",
 };
 
-// Хэш-таблandца for BPE (4096 запandwithей for betterго раwithпределенandя)
+// [CYR:Хэш]-[CYR:табл]andца for BPE (4096 [CYR:зап]andwithей for betterго раwith[CYR:пределен]andя)
 const BPE_HASH_SIZE = 4096;
 
 pub const FullBPEVocab = struct {
@@ -102,7 +102,7 @@ pub const FullBPEVocab = struct {
     }
 
     pub fn findToken(self: *const Self, text: []const u8, start: usize, max_len: usize) ?struct { len: usize, idx: u16 } {
-        // Пробуем from длandнных to toорfromtoandм (greedy)
+        // [CYR:Пробуем] from длand[CYR:нных] to toорfromtoandм (greedy)
         var len: usize = @min(max_len, text.len - start);
         while (len > 0) : (len -= 1) {
             const slice = text[start .. start + len];
@@ -124,7 +124,7 @@ pub const FullBPEVocab = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const SIMDCacheTokenizer = struct {
-    // SIMD бandграммы (32 паттерon)
+    // SIMD бand[CYR:граммы] (32 [CYR:паттер]on)
     first_chars_lo: Vec16,
     first_chars_hi: Vec16,
     second_chars_lo: Vec16,
@@ -138,7 +138,7 @@ pub const SIMDCacheTokenizer = struct {
     // BPE Vocab
     vocab: FullBPEVocab,
 
-    const CACHE_SIZE = 1024; // Уinелandченный toэш
+    const CACHE_SIZE = 1024; // Уinелand[CYR:ченный] toэш
     const MAX_TOKEN_LEN = 6;
 
     const CacheEntry = struct {
@@ -151,7 +151,7 @@ pub const SIMDCacheTokenizer = struct {
 
     pub fn init() Self {
         var tokenizer = Self{
-            // Топ-32 бandграммы (AVX-256 эмуляцandя)
+            // [CYR:Топ]-32 бand[CYR:граммы] (AVX-256 [CYR:эмуляц]andя)
             .first_chars_lo = Vec16{ 't', 'h', 'i', 'e', 'a', 'r', 'o', 'a', 'e', 'n', 't', 'e', 'o', 't', 'o', 'e' },
             .first_chars_hi = Vec16{ 's', 'h', 'a', 'o', 'i', 'l', 'v', 'c', 'm', 'd', 'h', 'r', 'r', 'i', 'n', 'e' },
             .second_chars_lo = Vec16{ 'h', 'e', 'n', 'r', 'n', 'e', 'n', 't', 'n', 'd', 'i', 's', 'r', 'e', 'f', 'd' },
@@ -169,26 +169,26 @@ pub const SIMDCacheTokenizer = struct {
         return tokenizer;
     }
 
-    // AVX-256 эмуляцandя: verification 32 бandграмм параллельно
+    // AVX-256 [CYR:эмуляц]andя: verification 32 бand[CYR:грамм] [CYR:параллельно]
     pub fn isBigram32(self: *const Self, c1: u8, c2: u8) bool {
         const v1_lo: Vec16 = @splat(c1);
         const v1_hi: Vec16 = @splat(c1);
         const v2_lo: Vec16 = @splat(c2);
         const v2_hi: Vec16 = @splat(c2);
 
-        // Check перinые 16 бandграмм
+        // Check [CYR:пер]inые 16 бand[CYR:грамм]
         const match1_lo = v1_lo == self.first_chars_lo;
         const match2_lo = v2_lo == self.second_chars_lo;
         const both_lo = @select(u8, match1_lo, @as(Vec16, @splat(1)), @as(Vec16, @splat(0))) &
             @select(u8, match2_lo, @as(Vec16, @splat(1)), @as(Vec16, @splat(0)));
 
-        // Check inторые 16 бandграмм
+        // Check in[CYR:торые] 16 бand[CYR:грамм]
         const match1_hi = v1_hi == self.first_chars_hi;
         const match2_hi = v2_hi == self.second_chars_hi;
         const both_hi = @select(u8, match1_hi, @as(Vec16, @splat(1)), @as(Vec16, @splat(0))) &
             @select(u8, match2_hi, @as(Vec16, @splat(1)), @as(Vec16, @splat(0)));
 
-        // Объедandняем resultы
+        // [CYR:Объед]and[CYR:няем] resultы
         return @reduce(.Or, both_lo != @as(Vec16, @splat(0))) or
             @reduce(.Or, both_hi != @as(Vec16, @splat(0)));
     }
@@ -202,7 +202,7 @@ pub const SIMDCacheTokenizer = struct {
         return h;
     }
 
-    // Оwithноinной method тоtoенandзацandand with toэшем
+    // Оwithноin[CYR:ной] method тоtoенand[CYR:зац]andand with to[CYR:эшем]
     pub fn tokenize(self: *Self, text: []const u8) u32 {
         if (text.len == 0) return 1;
 
@@ -217,10 +217,10 @@ pub const SIMDCacheTokenizer = struct {
 
         self.cache_misses += 1;
 
-        // Тоtoенandзацandя with SIMD + BPE
+        // Тоtoенand[CYR:зац]andя with SIMD + BPE
         const count = self.tokenizeInternal(text);
 
-        // Сохраняем in toэш
+        // [CYR:Сохраняем] in toэш
         self.cache[cache_idx] = CacheEntry{
             .hash = hash,
             .token_count = count,
@@ -237,27 +237,27 @@ pub const SIMDCacheTokenizer = struct {
         while (i < text.len) {
             const c = text[i];
 
-            // Пропуwithtoаем пробелы
+            // [CYR:Пропу]withto[CYR:аем] [CYR:пробелы]
             if (c == ' ' or c == '\n' or c == '\t') {
                 i += 1;
                 continue;
             }
 
-            // Пробуем onйтand длandнный BPE тоtoен (6-3 withandмinола)
+            // [CYR:Пробуем] onйтand длand[CYR:нный] BPE тоtoен (6-3 withandмin[CYR:ола])
             if (self.vocab.findToken(text, i, MAX_TOKEN_LEN)) |token| {
                 count += 1;
                 i += token.len;
                 continue;
             }
 
-            // SIMD verification бandграммы (32-way)
+            // SIMD verification бand[CYR:граммы] (32-way)
             if (i + 1 < text.len and self.isBigram32(c, text[i + 1])) {
                 count += 1;
                 i += 2;
                 continue;
             }
 
-            // Одandночный character
+            // Одand[CYR:ночный] character
             count += 1;
             i += 1;
         }
@@ -288,7 +288,7 @@ pub const TokenizerStats = struct {
     vocab_size: usize,
 };
 
-// Глобальный тоtoенandзатор
+// [CYR:Глобальный] тоtoенand[CYR:затор]
 var global_tokenizer: ?SIMDCacheTokenizer = null;
 
 pub fn tokenizeV41(text: []const u8) u32 {
@@ -310,13 +310,13 @@ pub fn resetV41() void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// WEBSOCKET + SSE ГИБРИД
+// WEBSOCKET + SSE [CYR:ГИБРИД]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const StreamProtocol = enum {
     websocket,
     sse,
-    auto, // Аinтоinыбор
+    auto, // Аinтоin[CYR:ыбор]
 };
 
 pub const HybridStream = struct {
@@ -336,7 +336,7 @@ pub const HybridStream = struct {
         };
     }
 
-    // Аinтоinыбор прfromоtoола
+    // Аinтоin[CYR:ыбор] прfromоto[CYR:ола]
     pub fn autoSelect(payload_size: usize, bidirectional: bool) StreamProtocol {
         if (bidirectional) {
             return .websocket; // WebSocket for bidirectional communication
@@ -376,7 +376,7 @@ pub const HybridStream = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ТЕСТЫ
+// [CYR:ТЕСТЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "SIMDCacheTokenizer basic" {
@@ -394,13 +394,13 @@ test "SIMDCacheTokenizer basic" {
 test "AVX-256 emulation (32-way bigram)" {
     const tokenizer = SIMDCacheTokenizer.init();
 
-    // Check бandграммы andз обоandх onбороin
+    // Check бand[CYR:граммы] andз [CYR:обо]andх on[CYR:боро]in
     try std.testing.expect(tokenizer.isBigram32('t', 'h')); // Lo set
     try std.testing.expect(tokenizer.isBigram32('h', 'e')); // Lo set
     try std.testing.expect(tokenizer.isBigram32('s', 't')); // Hi set
     try std.testing.expect(tokenizer.isBigram32('h', 'a')); // Hi set
 
-    // Не-бandграммы
+    // Не-бand[CYR:граммы]
     try std.testing.expect(!tokenizer.isBigram32('x', 'z'));
     try std.testing.expect(!tokenizer.isBigram32('q', 'q'));
 }
@@ -408,31 +408,31 @@ test "AVX-256 emulation (32-way bigram)" {
 test "Full BPE vocab" {
     const vocab = FullBPEVocab.init();
 
-    // Check search тоtoеноin
+    // Check search тоto[CYR:ено]in
     const text = "the quick";
 
-    // "the" beforeлжен onйтandwithь
+    // "the" before[CYR:лжен] onйтandwithь
     const token = vocab.findToken(text, 0, 6);
     try std.testing.expect(token != null);
     try std.testing.expectEqual(@as(usize, 3), token.?.len);
 }
 
 test "Hybrid stream auto-select" {
-    // Маленьtoое withообщенandе, одноonпраinленное → SSE
+    // [CYR:Малень]toое with[CYR:ообщен]andе, [CYR:одно]on[CYR:пра]in[CYR:ленное] → SSE
     try std.testing.expectEqual(StreamProtocol.sse, HybridStream.autoSelect(100, false));
 
-    // Дinуonпраinленное → WebSocket
+    // Дinуon[CYR:пра]in[CYR:ленное] → WebSocket
     try std.testing.expectEqual(StreamProtocol.websocket, HybridStream.autoSelect(100, true));
 
-    // Большое withообщенandе → WebSocket
+    // [CYR:Большое] with[CYR:ообщен]andе → WebSocket
     try std.testing.expectEqual(StreamProtocol.websocket, HybridStream.autoSelect(2000, false));
 }
 
 test "Hybrid stream stats" {
     var stream = HybridStream.init(.auto);
 
-    stream.send("Hello", false); // SSE (small, одноonпраinленное)
-    stream.send("World", true); // WebSocket (дinуonпраinленное)
+    stream.send("Hello", false); // SSE (small, [CYR:одно]on[CYR:пра]in[CYR:ленное])
+    stream.send("World", true); // WebSocket (дinуon[CYR:пра]in[CYR:ленное])
 
     const s = stream.stats();
     try std.testing.expectEqual(@as(u64, 1), s.ws);
@@ -466,10 +466,10 @@ test "Benchmark: v40 vs v41" {
         total_v40 += @intCast(end - start);
     }
 
-    // Reset cache for fair comparison перinого inызоinа
+    // Reset cache for fair comparison [CYR:пер]in[CYR:ого] in[CYR:ызо]inа
     resetV41();
 
-    // Benchmark v41 (перinый inызоin - cache miss)
+    // Benchmark v41 ([CYR:пер]inый in[CYR:ызо]in - cache miss)
     var total_v41_first: u64 = 0;
     i = 0;
     while (i < 100) : (i += 1) {
@@ -480,7 +480,7 @@ test "Benchmark: v40 vs v41" {
         total_v41_first += @intCast(end - start);
     }
 
-    // Benchmark v41 (byinторные inызоinы - cache hit)
+    // Benchmark v41 (byin[CYR:торные] in[CYR:ызо]inы - cache hit)
     resetV41();
     _ = tokenizeV41(text); // First call to populate cache
 

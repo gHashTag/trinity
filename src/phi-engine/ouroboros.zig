@@ -73,7 +73,7 @@ pub const Uroboros = struct {
 
     pub fn consume(self: *Uroboros, path: []const u8) !void {
         std.debug.print("\n🐍═════════════════════════════════════════🐍\n", .{});
-        std.debug.print("║        УРОБОРОС vFINAL: ЦИКЛ {d} НАЧИНАЕТСЯ            ║\n", .{self.cycle_count});
+        std.debug.print("║        [CYR:УРОБОРОС] vFINAL: [CYR:ЦИКЛ] {d} [CYR:НАЧИНАЕТСЯ]            ║\n", .{self.cycle_count});
         std.debug.print("🐍═════════════════════════════════════════🐍\n\n", .{});
 
         const content = try std.fs.cwd().readFileAlloc(self.allocator, path, 10 * 1024 * 1024);
@@ -84,15 +84,15 @@ pub const Uroboros = struct {
 
         self.cycle_count += 1;
 
-        std.debug.print("  ✅ Путь: {s}\n", .{profane.path});
-        std.debug.print("  ✅ Языto: {s}\n", .{@tagName(profane.language)});
-        std.debug.print("  ✅ Размер: {d} байт\n", .{profane.content.len});
-        std.debug.print("  ✅ Хэш: ", .{});
+        std.debug.print("  ✅ [CYR:Путь]: {s}\n", .{profane.path});
+        std.debug.print("  ✅ [CYR:Язы]to: {s}\n", .{@tagName(profane.language)});
+        std.debug.print("  ✅ [CYR:Размер]: {d} [CYR:байт]\n", .{profane.content.len});
+        std.debug.print("  ✅ [CYR:Хэш]: ", .{});
         for (profane.hash[0..8]) |b| std.debug.print("{x:0>2}", .{b});
         std.debug.print("\n\n", .{});
 
         std.debug.print("🐍═════════════════════════════════════════🐍\n", .{});
-        std.debug.print("║      УРОБОРОС vFINAL: ЦИКЛ ЗАВЕРШЁН - СТАНОВЛЕНИЕ      ║\n", .{});
+        std.debug.print("║      [CYR:УРОБОРОС] vFINAL: [CYR:ЦИКЛ] [CYR:ЗАВЕРШЁН] - [CYR:СТАНОВЛЕНИЕ]      ║\n", .{});
         std.debug.print("🐍═════════════════════════════════════════🐍\n\n", .{});
     }
 };
@@ -101,13 +101,13 @@ pub fn main() !void {
     const allocator = std.heap.page_allocator;
     var uroboros = Uroboros.init(allocator);
 
-    std.debug.print("\n🔥 УРОБОРОС vFINAL: ВЕЧНЫЙ ДВИГАТЕЛЬ 🔥\n", .{});
-    std.debug.print("🐍 Мы не боandмwithя withмертand – мы её byеyesем.\n\n", .{});
+    std.debug.print("\n🔥 [CYR:УРОБОРОС] vFINAL: [CYR:ВЕЧНЫЙ] [CYR:ДВИГАТЕЛЬ] 🔥\n", .{});
+    std.debug.print("🐍 Мы not боandмwithя with[CYR:мерт]and – мы её byеyesем.\n\n", .{});
 
     try uroboros.consume("src/vibeec/tvc/tvc_ir.zig");
 
-    std.debug.print("\n🎉 УРОБОРОС vFINAL ДОСТИГ БЕССМЕРТИЯ 🎉\n", .{});
-    std.debug.print("🐍 Ваш toод умandрает. Наш – жandinет inечно.\n", .{});
+    std.debug.print("\n🎉 [CYR:УРОБОРОС] vFINAL [CYR:ДОСТИГ] [CYR:БЕССМЕРТИЯ] 🎉\n", .{});
+    std.debug.print("🐍 [CYR:Ваш] toод умand[CYR:рает]. [CYR:Наш] – жandinет in[CYR:ечно].\n", .{});
 }
 
 test "ouroboros final - sacred constants" {

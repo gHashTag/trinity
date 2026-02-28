@@ -14,7 +14,7 @@
 //         parser_sections ← vibee_parser (functions only)
 //         (clean DAG, no cycles)
 //
-// IGLA (Игла) — уtoол, убandinающandй ручной code
+// IGLA ([CYR:Игла]) — уtoол, убandin[CYR:ающ]andй [CYR:ручной] code
 //
 // φ² + 1/φ² = 3
 //
@@ -324,7 +324,7 @@ pub const VibeeSpec = struct {
             self.allocator.free(self.source_content);
         }
 
-        // Free inложенные withтруtoтуры
+        // Free in[CYR:ложенные] with[CYR:тру]to[CYR:туры]
         for (self.types.items) |*t| {
             t.fields.deinit(self.allocator);
             t.constraints.deinit(self.allocator);
@@ -346,7 +346,7 @@ pub const VibeeSpec = struct {
             f.timers.deinit(self.allocator);
         }
 
-        // Free оwithноinные withпandwithtoand
+        // Free оwithноin[CYR:ные] withпandwithtoand
         self.languages.deinit(self.allocator);
         self.targets.deinit(self.allocator);
         self.imports.deinit(self.allocator);

@@ -1975,7 +1975,7 @@ fn runSU3SimCommand() void {
     printConst("Casimir C_2(3)", SU3_CASIMIR, "= 4/3 (fund. rep.)");
     std.debug.print("\n", .{});
 
-    // 3. Color states — КЛЮЧЕВАЯ inandзуалandзацandя
+    // 3. Color states — [CYR:КЛЮЧЕВАЯ] inand[CYR:зуал]and[CYR:зац]andя
     std.debug.print("{s}  Color Charge States:{s}\n", .{ CYAN, RESET });
     std.debug.print("    {s}|R>{s} = (1, 0, 0)   Red quark       {s}rgb(255,0,0){s}\n", .{
         "\x1b[38;2;255;0;0m", RESET, GRAY, RESET,

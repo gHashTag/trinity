@@ -1,6 +1,6 @@
 name: ai_security_scanner
 version: 1.0.0
-description: AI-powered сканирование безопасности - находит уязвимости и предлагает исправления
+description: AI-powered with[CYR:кан]andроinанandе [CYR:безопа]withноwithтand - on[CYR:ход]andт [CYR:уяз]inandмоwithтand and [CYR:предлагает] andwith[CYR:пра]in[CYR:лен]andя
 
 metadata:
   author: VIBEE Team
@@ -45,11 +45,11 @@ constants:
   OWASP_TOP_10:
     - id: "A01"
       name: "Broken Access Control"
-      description: "Нарушение контроля доступа"
+      description: "[CYR:Нарушен]andе [CYR:контроля] доwith[CYR:тупа]"
       
     - id: "A02"
       name: "Cryptographic Failures"
-      description: "Криптографические ошибки"
+      description: "Крand[CYR:птограф]andчеwithкandе ошandбкand"
       
     - id: "A03"
       name: "Injection"
@@ -57,27 +57,27 @@ constants:
       
     - id: "A04"
       name: "Insecure Design"
-      description: "Небезопасный дизайн"
+      description: "[CYR:Небезопа]with[CYR:ный] дfrom[CYR:айн]"
       
     - id: "A05"
       name: "Security Misconfiguration"
-      description: "Неправильная конфигурация"
+      description: "[CYR:Непра]inandльonя configuration"
       
     - id: "A06"
       name: "Vulnerable Components"
-      description: "Уязвимые компоненты"
+      description: "[CYR:Уяз]inand[CYR:мые] componentы"
       
     - id: "A07"
       name: "Authentication Failures"
-      description: "Ошибки аутентификации"
+      description: "Ошandбкand [CYR:аутент]andфand[CYR:кац]andand"
       
     - id: "A08"
       name: "Data Integrity Failures"
-      description: "Нарушение целостности данных"
+      description: "[CYR:Нарушен]andе [CYR:цело]with[CYR:тно]withтand [CYR:данных]"
       
     - id: "A09"
       name: "Logging Failures"
-      description: "Недостаточное логирование"
+      description: "[CYR:Недо]with[CYR:таточное] [CYR:лог]andроinанandе"
       
     - id: "A10"
       name: "SSRF"
@@ -88,49 +88,49 @@ constants:
       pattern: 'query("SELECT * FROM users WHERE id = " <> user_input)'
       severity: "critical"
       cwe: "CWE-89"
-      fix: "Использовать параметризованные запросы"
+      fix: "Иwith[CYR:пользо]in[CYR:ать] parameterfromоin[CYR:анные] queryы"
       
     xss:
       pattern: 'html.render(user_input)'
       severity: "high"
       cwe: "CWE-79"
-      fix: "Экранировать HTML"
+      fix: "[CYR:Экран]andроin[CYR:ать] HTML"
       
     path_traversal:
       pattern: 'file.read(user_input)'
       severity: "high"
       cwe: "CWE-22"
-      fix: "Валидировать пути файлов"
+      fix: "[CYR:Вал]andдandроin[CYR:ать] [CYR:пут]and fileоin"
       
     weak_crypto:
       pattern: 'md5(password)'
       severity: "high"
       cwe: "CWE-327"
-      fix: "Использовать bcrypt или argon2"
+      fix: "Иwith[CYR:пользо]in[CYR:ать] bcrypt or argon2"
       
     hardcoded_secrets:
       pattern: 'api_key = "sk-..."'
       severity: "critical"
       cwe: "CWE-798"
-      fix: "Использовать переменные окружения"
+      fix: "Иwith[CYR:пользо]in[CYR:ать] [CYR:переменные] [CYR:окружен]andя"
 
   AI_PROMPTS:
     security_scan: |
-      Ты - эксперт по безопасности приложений (OWASP Top 10).
+      Ты - экwith[CYR:перт] по [CYR:безопа]withноwithтand прand[CYR:ложен]andй (OWASP Top 10).
       
-      Код для анализа:
+      [CYR:Код] for analysisа:
       ```vibee
       {code}
       ```
       
-      Контекст:
-      - Тип приложения: {app_type}
-      - Используемые библиотеки: {libraries}
-      - Обрабатываемые данные: {data_types}
+      [CYR:Контек]withт:
+      - Тandп прand[CYR:ложен]andя: {app_type}
+      - Иwith[CYR:пользуемые] бandблand[CYR:отек]and: {libraries}
+      - [CYR:Обрабаты]in[CYR:аемые] [CYR:данные]: {data_types}
       
-      Задача: Найди все уязвимости безопасности.
+      [CYR:Задача]: [CYR:Найд]and inwithе [CYR:уяз]inandмоwithтand [CYR:безопа]withноwithтand.
       
-      Проверь на:
+      [CYR:Про]in[CYR:ерь] on:
       1. Injection (SQL, NoSQL, OS, LDAP)
       2. XSS (Reflected, Stored, DOM)
       3. CSRF
@@ -142,75 +142,75 @@ constants:
       9. Insecure Deserialization
       10. Using Components with Known Vulnerabilities
       
-      Формат ответа:
-      Уязвимости:
-      1. Тип: <название>
+      [CYR:Формат] responseа:
+      [CYR:Уяз]inandмоwithтand:
+      1. Тandп: <onзinанandе>
          Severity: <critical/high/medium/low>
          CWE: <CWE-ID>
          OWASP: <A01-A10>
-         Место: <location>
-         Описание: <что не так>
-         Эксплойт: <как можно использовать>
-         Исправление:
+         Меwithто: <location>
+         Опandwithанandе: <that not [CYR:так]>
+         Экwith[CYR:плойт]: <how [CYR:можно] andwith[CYR:пользо]in[CYR:ать]>
+         Иwith[CYR:пра]in[CYR:лен]andе:
          ```vibee
-         <безопасный код>
+         <[CYR:безопа]with[CYR:ный] code>
          ```
-         Объяснение: <почему это безопасно>
+         [CYR:Объя]withnotнandе: <[CYR:почему] this [CYR:безопа]withно>
       
     exploit_analysis: |
-      Ты - эксперт по эксплуатации уязвимостей.
+      Ты - экwith[CYR:перт] по экwith[CYR:плуатац]andand [CYR:уяз]inandмоwith[CYR:тей].
       
-      Уязвимость:
+      [CYR:Уяз]inandмоwithть:
       ```vibee
       {vulnerable_code}
       ```
       
-      Тип: {vulnerability_type}
+      Тandп: {vulnerability_type}
       
-      Задача: Опиши сценарий эксплуатации.
+      [CYR:Задача]: Опandшand withцеonрandй экwith[CYR:плуатац]andand.
       
-      Формат ответа:
-      Сценарий атаки:
-      1. Шаг: <действие атакующего>
-         Payload: <пример payload>
-         Результат: <что произойдет>
+      [CYR:Формат] responseа:
+      [CYR:Сце]onрandй [CYR:атак]and:
+      1. [CYR:Шаг]: <[CYR:дей]withтinandе [CYR:атакующего]>
+         Payload: <example payload>
+         [CYR:Результат]: <that [CYR:про]from[CYR:ойдет]>
       
       Impact:
-      - Конфиденциальность: <high/medium/low>
-      - Целостность: <high/medium/low>
-      - Доступность: <high/medium/low>
+      - [CYR:Конф]and[CYR:денц]and[CYR:ально]withть: <high/medium/low>
+      - [CYR:Цело]with[CYR:тно]withть: <high/medium/low>
+      - Доwith[CYR:тупно]withть: <high/medium/low>
       
       CVSS Score: <0-10>
       
     secure_coding: |
-      Ты - эксперт по безопасной разработке.
+      Ты - экwith[CYR:перт] по [CYR:безопа]with[CYR:ной] [CYR:разработке].
       
-      Небезопасный код:
+      [CYR:Небезопа]with[CYR:ный] code:
       ```vibee
       {insecure_code}
       ```
       
-      Проблема: {vulnerability_description}
+      [CYR:Проблема]: {vulnerability_description}
       
-      Задача: Предложи безопасную реализацию.
+      [CYR:Задача]: [CYR:Предлож]and [CYR:безопа]with[CYR:ную] [CYR:реал]fromацandю.
       
-      Требования:
-      - Защита от известных атак
-      - Валидация входных данных
-      - Правильная обработка ошибок
-      - Минимальные привилегии
+      [CYR:Требо]inанandя:
+      - [CYR:Защ]andта от frominеwith[CYR:тных] [CYR:атак]
+      - [CYR:Вал]and[CYR:дац]andя entry[CYR:ных] [CYR:данных]
+      - [CYR:Пра]inandльonя handling ошand[CYR:бок]
+      - Мandнand[CYR:мальные] прandinand[CYR:лег]andand
       - Defense in depth
       
-      Формат ответа:
-      Безопасный код:
+      [CYR:Формат] responseа:
+      [CYR:Безопа]with[CYR:ный] code:
       ```vibee
-      <исправленный код>
+      <andwith[CYR:пра]in[CYR:ленный] code>
       ```
       
-      Защита:
-      - От чего защищает: <список атак>
-      - Как работает: <объяснение>
-      - Дополнительные меры: <рекомендации>
+      [CYR:Защ]andта:
+      - От [CYR:чего] [CYR:защ]and[CYR:щает]: <list [CYR:атак]>
+      - [CYR:Как] [CYR:работает]: <[CYR:объя]withnotнandе>
+      - [CYR:Дополн]and[CYR:тельные] [CYR:меры]: <[CYR:рекомендац]andand>
 
 behaviors:
   scan_code:
@@ -220,14 +220,14 @@ behaviors:
     output:
       scan: SecurityScan
       vulnerabilities: list<Vulnerability>
-    description: Сканирование кода на уязвимости
+    description: [CYR:Скан]andроinанandе codeа on [CYR:уяз]inandмоwithтand
     steps:
-      - Парсить код в AST
-      - Отправить на анализ AI
-      - Получить список уязвимостей
-      - Классифицировать по severity
-      - Добавить CWE/OWASP категории
-      - Вернуть результаты
+      - [CYR:Пар]withandть code in AST
+      - [CYR:Отпра]inandть on analysis AI
+      - [CYR:Получ]andть list [CYR:уяз]inandмоwith[CYR:тей]
+      - [CYR:Кла]withwithandфandцandроin[CYR:ать] по severity
+      - [CYR:Доба]inandть CWE/OWASP [CYR:категор]andand
+      - [CYR:Вернуть] resultы
       
   analyze_vulnerability:
     input:
@@ -235,13 +235,13 @@ behaviors:
       code: string
     output:
       analysis: VulnerabilityAnalysis
-    description: Детальный анализ уязвимости
+    description: [CYR:Детальный] analysis [CYR:уяз]inandмоwithтand
     steps:
-      - Проанализировать уязвимость
-      - Определить exploit scenario
-      - Оценить impact
-      - Рассчитать CVSS score
-      - Вернуть analysis
+      - [CYR:Про]analyze [CYR:уяз]inandмоwithть
+      - [CYR:Определ]andть exploit scenario
+      - [CYR:Оцен]andть impact
+      - Раwithwithread CVSS score
+      - [CYR:Вернуть] analysis
       
   suggest_fix:
     input:
@@ -249,13 +249,13 @@ behaviors:
       code: string
     output:
       fix: SecurityFix
-    description: Предложение исправления
+    description: [CYR:Предложен]andе andwith[CYR:пра]in[CYR:лен]andя
     steps:
-      - Определить тип уязвимости
-      - Сгенерировать безопасный код
-      - Валидировать исправление
-      - Проверить на новые уязвимости
-      - Вернуть fix
+      - [CYR:Определ]andть type [CYR:уяз]inandмоwithтand
+      - [CYR:Сге]notрandроin[CYR:ать] [CYR:безопа]with[CYR:ный] code
+      - [CYR:Вал]andдandроin[CYR:ать] fix
+      - [CYR:Про]inерandть on ноinые [CYR:уяз]inandмоwithтand
+      - [CYR:Вернуть] fix
       
   apply_fix:
     input:
@@ -264,13 +264,13 @@ behaviors:
     output:
       patched_code: string
       validation: ValidationResult
-    description: Применение исправления
+    description: Прandмеnotнandе andwith[CYR:пра]in[CYR:лен]andя
     steps:
-      - Применить patch
-      - Запустить тесты
-      - Повторное сканирование
-      - Валидировать безопасность
-      - Вернуть результат
+      - Прand[CYR:мен]andть patch
+      - [CYR:Запу]withтandть testы
+      - Поin[CYR:торное] with[CYR:кан]andроinанandе
+      - [CYR:Вал]andдandроin[CYR:ать] security
+      - [CYR:Вернуть] result
       
   generate_security_report:
     input:
@@ -279,32 +279,32 @@ behaviors:
     output:
       report: string
       format: string
-    description: Генерация отчета по безопасности
+    description: Геnot[CYR:рац]andя [CYR:отчета] по [CYR:безопа]withноwithтand
     steps:
-      - Собрать статистику
-      - Группировать по severity
-      - Добавить рекомендации
-      - Форматировать отчет
-      - Вернуть report
+      - [CYR:Собрать] with[CYR:тат]andwithтandку
+      - [CYR:Групп]andроin[CYR:ать] по severity
+      - [CYR:Доба]inandть [CYR:рекомендац]andand
+      - [CYR:Формат]andроin[CYR:ать] [CYR:отчет]
+      - [CYR:Вернуть] report
 
 functions:
   - name: detect_injection
     params:
       code: string
     returns: list<Vulnerability>
-    description: Поиск injection уязвимостей
+    description: Поandwithк injection [CYR:уяз]inandмоwith[CYR:тей]
     
   - name: detect_xss
     params:
       code: string
     returns: list<Vulnerability>
-    description: Поиск XSS уязвимостей
+    description: Поandwithк XSS [CYR:уяз]inandмоwith[CYR:тей]
     
   - name: calculate_cvss
     params:
       vuln: Vulnerability
     returns: number
-    description: Расчет CVSS score
+    description: Раwith[CYR:чет] CVSS score
     
   - name: validate_fix
     params:
@@ -312,7 +312,7 @@ functions:
       fixed: string
       vuln_type: string
     returns: boolean
-    description: Валидация исправления
+    description: [CYR:Вал]and[CYR:дац]andя andwith[CYR:пра]in[CYR:лен]andя
 
 tests:
   - name: detect_sql_injection
@@ -366,7 +366,7 @@ tests:
 
 examples:
   - name: "SQL Injection"
-    description: "AI находит и исправляет SQL injection"
+    description: "AI on[CYR:ход]andт and andwith[CYR:пра]in[CYR:ляет] SQL injection"
     input:
       code: |
         pub get_user(id) = {
@@ -383,10 +383,10 @@ examples:
           pub get_user(id) = {
             db.query_params("SELECT * FROM users WHERE id = ?", [id])
           }
-        explanation: "Параметризованный запрос защищает от SQL injection"
+        explanation: "[CYR:Параметр]fromоin[CYR:анный] query [CYR:защ]and[CYR:щает] от SQL injection"
         
   - name: "XSS"
-    description: "AI находит XSS уязвимость"
+    description: "AI on[CYR:ход]andт XSS [CYR:уяз]inandмоwithть"
     input:
       code: |
         pub render_comment(user_input) = {
@@ -397,7 +397,7 @@ examples:
         type: "xss"
         severity: "high"
         cwe: "CWE-79"
-        exploit: "Атакующий может вставить <script>alert('XSS')</script>"
+        exploit: "[CYR:Атакующ]andй [CYR:может] inwithтаinandть <script>alert('XSS')</script>"
       fix:
         code_after: |
           pub render_comment(user_input) = {
@@ -405,7 +405,7 @@ examples:
           }
         
   - name: "Weak Crypto"
-    description: "AI находит слабую криптографию"
+    description: "AI on[CYR:ход]andт with[CYR:лабую] крand[CYR:птограф]andю"
     input:
       code: |
         pub hash_password(password) = {
@@ -421,7 +421,7 @@ examples:
           pub hash_password(password) = {
             crypto.bcrypt(password, rounds: 12)
           }
-        explanation: "bcrypt устойчив к brute-force атакам"
+        explanation: "bcrypt уwith[CYR:тойч]andin к brute-force [CYR:атакам]"
 
 security_checks:
   input_validation:

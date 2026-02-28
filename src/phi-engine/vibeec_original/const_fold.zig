@@ -1,5 +1,5 @@
 //! VIBEE Constant Folder - PAS DAEMON V40
-//! Паттерны: PRE (compile-time evaluation), ALG (algebraic simplification), D&C (recursive folding)
+//! [CYR:Паттерны]: PRE (compile-time evaluation), ALG (algebraic simplification), D&C (recursive folding)
 //! Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 //! Golden identity: φ² + 1/φ² = 3
 

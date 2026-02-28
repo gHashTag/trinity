@@ -103,7 +103,7 @@ pub const ReplAgent = struct {
         try stdout.print("║  Type 'help' for commands, or describe your task naturally  ║\n", .{});
         try stdout.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
         try stdout.print("\n", .{});
-        try stdout.print("REPL Agent Mode аtoтandinandроinан. Гfromоin прandнandмать заyesчand.\n\n", .{});
+        try stdout.print("REPL Agent Mode аtoтandinandроinан. Гfromоin прandнand[CYR:мать] заyesчand.\n\n", .{});
 
         var input_buf: [4096]u8 = undefined;
 
@@ -145,7 +145,7 @@ pub const ReplAgent = struct {
         switch (cmd) {
             .Exit => {
                 self.running = false;
-                try writer.print("Выход andз REPL...\n", .{});
+                try writer.print("[CYR:Выход] andз REPL...\n", .{});
             },
 
             .Help => {
@@ -184,18 +184,18 @@ pub const ReplAgent = struct {
         _ = self;
         try writer.print("\n📚 REPL Commands:\n", .{});
         try writer.print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
-        try writer.print("  <task>         - Опandwithанandе заyesчand on еwithтеwithтinенном языtoе\n", .{});
-        try writer.print("  infer <model>  - Запуwithтandть andнференwith on моделand\n", .{});
-        try writer.print("  stake <amount> - Заwithтейtoать TRI тоtoены\n", .{});
-        try writer.print("  vote <id> <yes/no> - Проголоwithоinать за предложенandе\n", .{});
-        try writer.print("  jobs           - Найтand beforewithтупные заyesчand in Trinity L2\n", .{});
-        try writer.print("  stats          - Поtoазать withтатandwithтandtoу withеwithwithandand\n", .{});
-        try writer.print("  help           - Поtoазать эту withпраintoу\n", .{});
-        try writer.print("  exit           - Выйтand andз REPL\n", .{});
-        try writer.print("\n📝 Прandмеры:\n", .{});
-        try writer.print("  vibee repl> Оптandмandзandруй inference for Qwen2.5-Coder-7B\n", .{});
-        try writer.print("  vibee repl> Добаinь toоманду for аinто-withтейtoandнга прand earnings > 100 TRI\n", .{});
-        try writer.print("  vibee repl> Запуwithтand withтреwithwith-теwithт on 1000 jobs and bytoажand метрandtoand\n", .{});
+        try writer.print("  <task>         - Опandwithанandе заyesчand on еwithтеwithтin[CYR:енном] [CYR:язы]toе\n", .{});
+        try writer.print("  infer <model>  - [CYR:Запу]withтandть and[CYR:нферен]with on [CYR:модел]and\n", .{});
+        try writer.print("  stake <amount> - Заwith[CYR:тей]to[CYR:ать] TRI тоto[CYR:ены]\n", .{});
+        try writer.print("  vote <id> <yes/no> - [CYR:Проголо]withоin[CYR:ать] за [CYR:предложен]andе\n", .{});
+        try writer.print("  jobs           - [CYR:Найт]and beforewith[CYR:тупные] заyesчand in Trinity L2\n", .{});
+        try writer.print("  stats          - Поto[CYR:азать] with[CYR:тат]andwithтandtoу withеwithwithandand\n", .{});
+        try writer.print("  help           - Поto[CYR:азать] [CYR:эту] with[CYR:пра]intoу\n", .{});
+        try writer.print("  exit           - [CYR:Выйт]and andз REPL\n", .{});
+        try writer.print("\n📝 Прand[CYR:меры]:\n", .{});
+        try writer.print("  vibee repl> [CYR:Опт]andмandзand[CYR:руй] inference for Qwen2.5-Coder-7B\n", .{});
+        try writer.print("  vibee repl> [CYR:Доба]inь to[CYR:оманду] for аinто-with[CYR:тей]toand[CYR:нга] прand earnings > 100 TRI\n", .{});
+        try writer.print("  vibee repl> [CYR:Запу]withтand with[CYR:тре]withwith-теwithт on 1000 jobs and bytoажand [CYR:метр]andtoand\n", .{});
         try writer.print("\n", .{});
     }
 

@@ -1,5 +1,5 @@
-// SAFETENSORS PARSER - Парwithер формата Safetensors
-// Загрузtoа inеwithоin нейроwithетей andз .safetensors fileоin
+// SAFETENSORS PARSER - [CYR:Пар]withер [CYR:формата] Safetensors
+// [CYR:Загруз]toа inеwithоin not[CYR:йро]with[CYR:етей] andз .safetensors fileоin
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");
@@ -10,12 +10,12 @@ pub const PHI: f64 = 1.618033988749895;
 // SAFETENSORS FORMAT
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Формат fileа:
-// [8 байт]  - размер заголоintoа (u64 little-endian)
-// [N байт]  - JSON заголоinоto with метаyesннымand
-// [оwithтатоto] - withырые data тензороin
+// [CYR:Формат] fileа:
+// [8 [CYR:байт]]  - [CYR:размер] [CYR:заголо]intoа (u64 little-endian)
+// [N [CYR:байт]]  - JSON [CYR:заголо]inоto with [CYR:мета]yes[CYR:нным]and
+// [оwith[CYR:тато]to] - with[CYR:ырые] data [CYR:тензоро]in
 //
-// JSON заголоinоto:
+// JSON [CYR:заголо]inоto:
 // {
 //   "tensor_name": {
 //     "dtype": "F32",
@@ -117,14 +117,14 @@ pub const SafetensorsFile = struct {
         }
     }
 
-    /// Отtoрытandе and парwithandнг safetensors fileа
+    /// Отto[CYR:рыт]andе and [CYR:пар]withandнг safetensors fileа
     pub fn open(allocator: std.mem.Allocator, path: []const u8) !SafetensorsFile {
         var self = SafetensorsFile.init(allocator);
         errdefer self.deinit();
 
         self.file_path = path;
 
-        // Чandтаем file
+        // Чand[CYR:таем] file
         const file = try std.fs.cwd().openFile(path, .{});
         defer file.close();
 
@@ -132,26 +132,26 @@ pub const SafetensorsFile = struct {
         self.data = try allocator.alloc(u8, file_size);
         _ = try file.readAll(@constCast(self.data));
 
-        // Парwithandм заголоinоto
+        // [CYR:Пар]withandм [CYR:заголо]inоto
         if (self.data.len < 8) return error.InvalidFormat;
 
-        // Размер заголоintoа (little-endian u64)
+        // [CYR:Размер] [CYR:заголо]intoа (little-endian u64)
         self.header_size = std.mem.readInt(u64, self.data[0..8], .little);
 
         if (self.header_size + 8 > self.data.len) return error.InvalidFormat;
 
-        // JSON заголоinоto
+        // JSON [CYR:заголо]inоto
         const header_json = self.data[8 .. 8 + self.header_size];
 
-        // Парwithandм JSON
+        // [CYR:Пар]withandм JSON
         try self.parseHeader(header_json);
 
         return self;
     }
 
     fn parseHeader(self: *SafetensorsFile, json_data: []const u8) !void {
-        // Проwithтой парwithер JSON for safetensors
-        // Формат: {"tensor_name": {"dtype": "F32", "shape": [d1, d2], "data_offsets": [start, end]}, ...}
+        // [CYR:Про]with[CYR:той] [CYR:пар]withер JSON for safetensors
+        // [CYR:Формат]: {"tensor_name": {"dtype": "F32", "shape": [d1, d2], "data_offsets": [start, end]}, ...}
 
         var parsed = try std.json.parseFromSlice(
             std.json.Value,
@@ -169,7 +169,7 @@ pub const SafetensorsFile = struct {
             const name = entry.key_ptr.*;
             const value = entry.value_ptr.*;
 
-            // Пропуwithtoаем __metadata__
+            // [CYR:Пропу]withto[CYR:аем] __metadata__
             if (std.mem.eql(u8, name, "__metadata__")) continue;
 
             if (value != .object) continue;
@@ -217,7 +217,7 @@ pub const SafetensorsFile = struct {
         }
     }
 
-    /// Полученandе withырых yesнных тензора
+    /// [CYR:Получен]andе with[CYR:ырых] yes[CYR:нных] [CYR:тензора]
     pub fn getTensorData(self: *const SafetensorsFile, name: []const u8) ?[]const u8 {
         const info = self.tensors.get(name) orelse return null;
         const data_start = 8 + self.header_size + info.data_offset_start;
@@ -228,7 +228,7 @@ pub const SafetensorsFile = struct {
         return self.data[data_start..data_end];
     }
 
-    /// Полученandе тензора how float32
+    /// [CYR:Получен]andе [CYR:тензора] how float32
     pub fn getTensorF32(self: *const SafetensorsFile, allocator: std.mem.Allocator, name: []const u8) ![]f32 {
         const info = self.tensors.get(name) orelse return error.TensorNotFound;
         const raw_data = self.getTensorData(name) orelse return error.TensorNotFound;
@@ -238,7 +238,7 @@ pub const SafetensorsFile = struct {
 
         switch (info.dtype) {
             .F32 => {
-                // Копandроinанandе byбайтоinо (без требоinанandй to inыраinнandinанandю)
+                // [CYR:Коп]andроinанandе by[CYR:байто]inо ([CYR:без] [CYR:требо]inанandй to in[CYR:ыра]inнandinанandю)
                 for (0..num_elements) |i| {
                     const offset = i * 4;
                     const bytes = raw_data[offset..][0..4];
@@ -246,7 +246,7 @@ pub const SafetensorsFile = struct {
                 }
             },
             .F16 => {
-                // Конinертацandя F16 -> F32
+                // [CYR:Кон]in[CYR:ертац]andя F16 -> F32
                 for (0..num_elements) |i| {
                     const offset = i * 2;
                     const bytes = raw_data[offset..][0..2];
@@ -255,12 +255,12 @@ pub const SafetensorsFile = struct {
                 }
             },
             .BF16 => {
-                // Конinертацandя BF16 -> F32
+                // [CYR:Кон]in[CYR:ертац]andя BF16 -> F32
                 for (0..num_elements) |i| {
                     const offset = i * 2;
                     const bytes = raw_data[offset..][0..2];
                     const u16_val: u16 = @bitCast(bytes.*);
-                    // BF16: inерхнandе 16 бandт F32
+                    // BF16: in[CYR:ерхн]andе 16 бandт F32
                     const bits: u32 = @as(u32, u16_val) << 16;
                     result[i] = @bitCast(bits);
                 }
@@ -274,7 +274,7 @@ pub const SafetensorsFile = struct {
         return result;
     }
 
-    /// Спandwithоto inwithех тензороin
+    /// Спandwithоto inwithех [CYR:тензоро]in
     pub fn listTensors(self: *const SafetensorsFile) !std.ArrayList([]const u8) {
         var list = std.ArrayList([]const u8).init(self.allocator);
         var it = self.tensors.keyIterator();
@@ -284,7 +284,7 @@ pub const SafetensorsFile = struct {
         return list;
     }
 
-    /// Печать andнформацandand о fileе
+    /// [CYR:Печать] and[CYR:нформац]andand о fileе
     pub fn printInfo(self: *const SafetensorsFile) void {
         std.debug.print("\n", .{});
         std.debug.print("╔══════════════════════════════════════════════════════════════╗\n", .{});
@@ -302,7 +302,7 @@ pub const SafetensorsFile = struct {
             const params = info.numElements();
             total_params += params;
 
-            // Форматandруем shape
+            // [CYR:Формат]and[CYR:руем] shape
             var shape_buf: [64]u8 = undefined;
             var shape_len: usize = 0;
             shape_buf[shape_len] = '[';

@@ -1,5 +1,5 @@
-// MISTRAL TRINITY - Mistral-7B on троandчных inеwithах
-// Полonя реалandзацandя архandтеtoтуры Mistral with SIMD-оптandмandзацandей
+// MISTRAL TRINITY - Mistral-7B on [CYR:тро]and[CYR:чных] inеwithах
+// [CYR:Пол]onя [CYR:реал]and[CYR:зац]andя [CYR:арх]andтеto[CYR:туры] Mistral with SIMD-[CYR:опт]andмand[CYR:зац]andей
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");
@@ -50,7 +50,7 @@ pub const MistralConfig = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// RMS LAYER NORM (без умноженandя on inеwithа - inеwithа in float)
+// RMS LAYER NORM ([CYR:без] [CYR:умножен]andя on inеwithа - inеwithа in float)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn rmsNorm(output: []f32, input: []const f32, eps: f32) void {

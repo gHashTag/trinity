@@ -15,10 +15,10 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// КОНСТАНТЫ
+// [CYR:КОНСТАНТЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Базоinые φ-toонwithтанты (Sacred Formula)
+// [CYR:Базо]inые φ-toонwith[CYR:танты] (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -30,7 +30,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ТИПЫ
+// [CYR:ТИПЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// 
@@ -46,7 +46,7 @@ pub const TranslationContext = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ПАМЯТЬ ДЛЯ WASM
+// [CYR:ПАМЯТЬ] [CYR:ДЛЯ] WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -96,13 +96,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-andнтерполяцandя
+/// φ-and[CYR:нтер]fieldsцandя
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// Генерацandя φ-withпandралand
+/// Геnot[CYR:рац]andя φ-withпand[CYR:рал]and
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -168,15 +168,15 @@ test "translate_idiom_behavior" {
 // Given: Detected idiom
 // When: Translation to Russian requested
 // Then: Cultural equivalent returned
-// Test case: input={idiom: "break_a_leg", target: "russian"}, expected={translation: "Нand пуха нand пера", confidence: 0.95}
-// Test case: input={idiom: "raining_cats_and_dogs", target: "russian"}, expected={translation: "Льёт toаto andз inедра", confidence: 0.90}
+// Test case: input={idiom: "break_a_leg", target: "russian"}, expected={translation: "Нand [CYR:пуха] нand [CYR:пера]", confidence: 0.95}
+// Test case: input={idiom: "raining_cats_and_dogs", target: "russian"}, expected={translation: "[CYR:Льёт] toаto andз in[CYR:едра]", confidence: 0.90}
 }
 
 test "translate_with_context_behavior" {
 // Given: Text with idioms and context
 // When: Full translation requested
 // Then: Contextually appropriate translation returned
-// Test case: input={text: "Break a leg!", context: "Theater"}, expected={translation: "Нand пуха нand пера!", confidence: 0.95}
+// Test case: input={text: "Break a leg!", context: "Theater"}, expected={translation: "Нand [CYR:пуха] нand [CYR:пера]!", confidence: 0.95}
 }
 
 test "phi_constants" {

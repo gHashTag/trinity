@@ -1,8 +1,8 @@
-// TRINITY LLM - Лоtoальный LLM on троandчных inеwithах
-// БЕЗ NVIDIA. БЕЗ API. БЕЗ ИНТЕРНЕТА.
+// TRINITY LLM - Лоto[CYR:альный] LLM on [CYR:тро]and[CYR:чных] inеwithах
+// [CYR:БЕЗ] NVIDIA. [CYR:БЕЗ] API. [CYR:БЕЗ] [CYR:ИНТЕРНЕТА].
 // φ² + 1/φ² = 3 = TRINITY
 //
-// "Мы не арендуем inычandwithлandтельную мощь. Мы withозyesём её andз нandчего."
+// "Мы not [CYR:арендуем] inычandwithлand[CYR:тельную] [CYR:мощь]. Мы withозyesём её andз нand[CYR:чего]."
 
 const std = @import("std");
 const prometheus = @import("prometheus_seed.zig");
@@ -13,7 +13,7 @@ pub const PHI: f64 = 1.618033988749895;
 pub const TRINITY: f64 = 3.0;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TOKENIZER (проwithтой BPE-bybeforeбный)
+// TOKENIZER ([CYR:про]with[CYR:той] BPE-bybefore[CYR:бный])
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const SimpleTokenizer = struct {
@@ -32,7 +32,7 @@ pub const SimpleTokenizer = struct {
     }
 
     pub fn deinit(self: *SimpleTokenizer) void {
-        // Free all withтроtoand тоtoеноin
+        // Free all with[CYR:тро]toand тоto[CYR:ено]in
         var it = self.vocab.keyIterator();
         while (it.next()) |key| {
             self.allocator.free(key.*);
@@ -41,7 +41,7 @@ pub const SimpleTokenizer = struct {
         self.reverse_vocab.deinit();
     }
 
-    /// Добаinленandе тоtoеon in withлоinарь
+    /// [CYR:Доба]in[CYR:лен]andе тоtoеon in withлоin[CYR:арь]
     pub fn addToken(self: *SimpleTokenizer, token: []const u8) !u32 {
         if (self.vocab.get(token)) |id| {
             return id;
@@ -55,7 +55,7 @@ pub const SimpleTokenizer = struct {
         return id;
     }
 
-    /// Проwithтая тоtoенandзацandя by withandмinолам
+    /// [CYR:Про]with[CYR:тая] тоtoенand[CYR:зац]andя by withandмin[CYR:олам]
     pub fn encode(self: *SimpleTokenizer, text: []const u8) !std.ArrayList(u32) {
         var tokens = std.ArrayList(u32).init(self.allocator);
 
@@ -68,7 +68,7 @@ pub const SimpleTokenizer = struct {
         return tokens;
     }
 
-    /// Деtoодandроinанandе тоtoеноin in теtowithт
+    /// Деtoодandроinанandе тоto[CYR:ено]in in теtowithт
     pub fn decode(self: *const SimpleTokenizer, tokens: []const u32) ![]u8 {
         var result = std.ArrayList(u8).init(self.allocator);
 
@@ -83,7 +83,7 @@ pub const SimpleTokenizer = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TRINITY TRANSFORMER BLOCK (упрощённый)
+// TRINITY TRANSFORMER BLOCK ([CYR:упрощённый])
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const TrinityAttention = struct {
@@ -119,11 +119,11 @@ pub const TrinityAttention = struct {
         self.o_proj.deinit();
     }
 
-    /// Упрощённый attention (без softmax, andwithbyльзуем лandнейное прandблandженandе)
+    /// [CYR:Упрощённый] attention ([CYR:без] softmax, andwithby[CYR:льзуем] лandnot[CYR:йное] прandблand[CYR:жен]andе)
     pub fn forward(self: *const TrinityAttention, allocator: std.mem.Allocator, x: []const f32, seq_len: usize) ![]f32 {
         const batch_size = 1;
 
-        // Q, K, V проеtoцandand
+        // Q, K, V [CYR:прое]toцandand
         const q = try self.q_proj.forward(allocator, x, batch_size * seq_len);
         defer allocator.free(q);
         const k = try self.k_proj.forward(allocator, x, batch_size * seq_len);
@@ -131,8 +131,8 @@ pub const TrinityAttention = struct {
         const v = try self.v_proj.forward(allocator, x, batch_size * seq_len);
         defer allocator.free(v);
 
-        // Упрощённый attention: проwithто уwithредняем V (for демонwithтрацandand)
-        // В реальноwithтand нужен byлный attention механandзм
+        // [CYR:Упрощённый] attention: [CYR:про]withто уwith[CYR:редняем] V (for demoнwith[CYR:трац]andand)
+        // В [CYR:реально]withтand [CYR:нужен] by[CYR:лный] attention [CYR:механ]andзм
         const output = try allocator.alloc(f32, seq_len * self.hidden_size);
         @memcpy(output, v);
 
@@ -171,11 +171,11 @@ pub const TrinityMLP = struct {
         const up = try self.up_proj.forward(allocator, x, seq_len);
         defer allocator.free(up);
 
-        // gate * up (элементное умноженandе - едandнwithтinенное меwithто where need умноженandе!)
-        // Но мы можем аппроtowithandмandроinать via withложенandе: gate + up
+        // gate * up (element[CYR:ное] [CYR:умножен]andе - едandнwithтin[CYR:енное] меwithто where need [CYR:умножен]andе!)
+        // Но мы [CYR:можем] [CYR:аппро]towithandмandроin[CYR:ать] via with[CYR:ложен]andе: gate + up
         const intermediate = try allocator.alloc(f32, gate.len);
         for (gate, up, 0..) |g, u, i| {
-            intermediate[i] = g + u;  // Аппроtowithandмацandя gate * up
+            intermediate[i] = g + u;  // [CYR:Аппро]towithand[CYR:мац]andя gate * up
         }
 
         const output = try self.down_proj.forward(allocator, intermediate, seq_len);
@@ -263,7 +263,7 @@ pub const TrinityLLM = struct {
             .num_heads = num_heads,
         };
 
-        // Созyesём блоtoand транwithформера
+        // [CYR:Соз]yesём [CYR:бло]toand [CYR:тран]with[CYR:формера]
         for (0..num_layers) |_| {
             const block = try TrinityBlock.init(allocator, hidden_size, num_heads, intermediate_size);
             try model.blocks.append(block);
@@ -282,28 +282,28 @@ pub const TrinityLLM = struct {
         self.lm_head.deinit();
     }
 
-    /// Генерацandя теtowithта
+    /// Геnot[CYR:рац]andя теtowithта
     pub fn generate(self: *TrinityLLM, prompt: []const u8, max_tokens: usize) ![]u8 {
         var tokens = try self.tokenizer.encode(prompt);
         defer tokens.deinit();
 
-        // Генерandруем тоtoены
+        // Геnotрand[CYR:руем] тоto[CYR:ены]
         for (0..max_tokens) |_| {
             const next_token = try self.predictNext(tokens.items);
             try tokens.append(next_token);
 
-            // Проwithтой toрandтерandй оwithтаноintoand
+            // [CYR:Про]with[CYR:той] toрand[CYR:тер]andй оwith[CYR:тано]intoand
             if (next_token == 0) break;
         }
 
         return self.tokenizer.decode(tokens.items);
     }
 
-    /// Предwithtoазанandе withледующего тоtoеon
+    /// [CYR:Пред]withto[CYR:азан]andе with[CYR:ледующего] тоtoеon
     fn predictNext(self: *TrinityLLM, tokens: []const u32) !u32 {
         const seq_len = tokens.len;
 
-        // One-hot encoding loginных тоtoеноin
+        // One-hot encoding login[CYR:ных] тоto[CYR:ено]in
         var input = try self.allocator.alloc(f32, seq_len * self.vocab_size);
         defer self.allocator.free(input);
         @memset(input, 0.0);
@@ -317,19 +317,19 @@ pub const TrinityLLM = struct {
         // Embedding
         var hidden = try self.embedding.forward(self.allocator, input, seq_len);
 
-        // Проходandм via all блоtoand
+        // [CYR:Проход]andм via all [CYR:бло]toand
         for (self.blocks.items) |*block| {
             const next_hidden = try block.forward(self.allocator, hidden, seq_len);
             self.allocator.free(hidden);
             hidden = next_hidden;
         }
 
-        // LM head - get логandты
+        // LM head - get [CYR:лог]andты
         const logits = try self.lm_head.forward(self.allocator, hidden, seq_len);
         defer self.allocator.free(logits);
         self.allocator.free(hidden);
 
-        // Берём логandты bywithледнего тоtoеon
+        // [CYR:Берём] [CYR:лог]andты bywith[CYR:лед]notго тоtoеon
         const last_logits = logits[(seq_len - 1) * self.vocab_size .. seq_len * self.vocab_size];
 
         // Argmax
@@ -345,7 +345,7 @@ pub const TrinityLLM = struct {
         return max_idx;
     }
 
-    /// Загрузtoа inеwithоin andз .tri fileа
+    /// [CYR:Загруз]toа inеwithоin andз .tri fileа
     pub fn loadFromTri(self: *TrinityLLM, path: []const u8) !void {
         var reader = try trinity_format.TrinityReader.init(self.allocator, path);
         defer reader.deinit();
@@ -358,20 +358,20 @@ pub const TrinityLLM = struct {
         std.debug.print("║ Tensors: {d:<51} ║\n", .{reader.header.num_tensors});
         std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 
-        // Загружаем inеwithа by andмеonм тензороin
+        // [CYR:Загружаем] inеwithа by andмеonм [CYR:тензоро]in
         var loaded_count: usize = 0;
 
         for (reader.listTensors()) |entry| {
             const name = entry.name;
 
-            // Загружаем тензор
+            // [CYR:Загружаем] [CYR:тензор]
             const trits = reader.getTensor(name) catch |err| {
                 std.debug.print("⚠️  Skip {s}: {}\n", .{ name, err });
                 continue;
             };
             defer self.allocator.free(trits);
 
-            // Маппandнг andмён тензороin on withлоand моделand
+            // [CYR:Мапп]andнг and[CYR:мён] [CYR:тензоро]in on withлоand [CYR:модел]and
             if (std.mem.indexOf(u8, name, "embed_tokens") != null) {
                 try self.loadWeightsToLayer(&self.embedding, trits);
                 loaded_count += 1;
@@ -432,7 +432,7 @@ pub const TrinityLLM = struct {
         @memcpy(layer.weights[0..copy_len], trits[0..copy_len]);
     }
 
-    /// Статandwithтandtoа моделand
+    /// [CYR:Стат]andwithтandtoа [CYR:модел]and
     pub fn printStats(self: *const TrinityLLM) void {
         var total_params: usize = 0;
         total_params += self.embedding.weights.len;
@@ -449,8 +449,8 @@ pub const TrinityLLM = struct {
 
         std.debug.print("\n", .{});
         std.debug.print("╔══════════════════════════════════════════════════════════════╗\n", .{});
-        std.debug.print("║           TRINITY LLM - ПРОМЕТЕЙ                             ║\n", .{});
-        std.debug.print("║           БЕЗ NVIDIA | БЕЗ API | БЕЗ УМНОЖЕНИЯ               ║\n", .{});
+        std.debug.print("║           TRINITY LLM - [CYR:ПРОМЕТЕЙ]                             ║\n", .{});
+        std.debug.print("║           [CYR:БЕЗ] NVIDIA | [CYR:БЕЗ] API | [CYR:БЕЗ] [CYR:УМНОЖЕНИЯ]               ║\n", .{});
         std.debug.print("╠══════════════════════════════════════════════════════════════╣\n", .{});
         std.debug.print("║ Vocab size:       {d:>12}                               ║\n", .{self.vocab_size});
         std.debug.print("║ Hidden size:      {d:>12}                               ║\n", .{self.hidden_size});
@@ -468,13 +468,13 @@ pub const TrinityLLM = struct {
 // HELPER FUNCTIONS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Парwithandнг andндеtowithа withлоя andз andменand тензора (onexample, "layers.5.self_attn.q_proj" -> 5)
+/// [CYR:Пар]withandнг and[CYR:нде]towithа with[CYR:лоя] andз and[CYR:мен]and [CYR:тензора] (onexample, "layers.5.self_attn.q_proj" -> 5)
 fn parseLayerIndex(name: []const u8) usize {
-    // Ищем pattern "layers.N." or ".N."
+    // [CYR:Ищем] pattern "layers.N." or ".N."
     var i: usize = 0;
     while (i < name.len) : (i += 1) {
         if (name[i] == '.') {
-            // Check, еwithть лand number after точtoand
+            // Check, еwithть лand number after [CYR:точ]toand
             var j = i + 1;
             var num: usize = 0;
             var found_digit = false;

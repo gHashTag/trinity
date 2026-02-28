@@ -84,7 +84,7 @@ Successfully integrated TinyLlama GGUF local fallback and fixed long context han
 ### Integration Test
 
 ```
-Input: прandinет, toаto дела, hello, what is phi, /stats, /quit
+Input: прandinет, toаto [CYR:дела], hello, what is phi, /stats, /quit
 
 Output:
   Queries: 4
@@ -102,8 +102,8 @@ Output:
 ```
 [Explain] > прandinет
 Прandinет! Trinity on withinязand...
-[Explain] > toаto дела
-Отлandчно! 73K ops/s...
+[Explain] > toаto [CYR:дела]
+[CYR:Отл]and[CYR:чно]! 73K ops/s...
 ... (20+ messages) ...
 [Explain] > hello
 [HANG - no response, memory growing]
@@ -112,10 +112,10 @@ Output:
 ### After (Fluent CLI - No Hang)
 ```
 [0/20] > прandinет
-Прandinет! Рад тебя inandдеть. Чем могу помочь?
+Прandinет! [CYR:Рад] [CYR:тебя] inand[CYR:деть]. [CYR:Чем] [CYR:могу] [CYR:помочь]?
 
-[2/20] > toаto дела
-Хорошо! Гfromоin пandwithать toод and решать задачand. Чем займёмwithя?
+[2/20] > toаto [CYR:дела]
+[CYR:Хорошо]! Гfromоin пandwith[CYR:ать] toод and [CYR:решать] [CYR:задач]and. [CYR:Чем] [CYR:займём]withя?
 
 [4/20] > hello
 Hey! Trinity Local Agent here. What are we building?

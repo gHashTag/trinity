@@ -24,10 +24,10 @@ const Behavior = types.Behavior;
 
 /// Russian greeting responses
 const GREETINGS_RU = [_][]const u8{
-    "Прandinет! Рад тебя inandдеть!",
-    "Здраinwithтinуй! Каto тinоand дела?",
-    "Прandinетwithтinую! Чем могу byмочь?",
-    "Прandinет-прandinет! Что ноinого?",
+    "Прandinет! [CYR:Рад] [CYR:тебя] inand[CYR:деть]!",
+    "[CYR:Здра]inwithтinуй! Каto тinоand [CYR:дела]?",
+    "Прandinетwithтinую! [CYR:Чем] [CYR:могу] by[CYR:мочь]?",
+    "Прandinет-прandinет! [CYR:Что] ноin[CYR:ого]?",
     "Зbeforeроinо! Каto withам?",
 };
 
@@ -51,11 +51,11 @@ const GREETINGS_ZH = [_][]const u8{
 
 /// Russian farewell responses
 const FAREWELLS_RU = [_][]const u8{
-    "До withinandyesнandя! Был рад byобщатьwithя!",
-    "Поtoа! Возinращайwithя withtoорее!",
-    "До inwithтречand! Уyesчand тебе!",
-    "Вwithего хорошего! Буду жyesть!",
-    "Поtoа-bytoа! Заходand ещё!",
+    "До withinandyesнandя! [CYR:Был] [CYR:рад] by[CYR:общать]withя!",
+    "Поtoа! [CYR:Воз]in[CYR:ращай]withя withto[CYR:орее]!",
+    "До inwith[CYR:треч]and! Уyesчand [CYR:тебе]!",
+    "Вwith[CYR:его] [CYR:хорошего]! [CYR:Буду] жyesть!",
+    "Поtoа-bytoа! [CYR:Заход]and [CYR:ещё]!",
 };
 
 /// English farewell responses
@@ -78,11 +78,11 @@ const FAREWELLS_ZH = [_][]const u8{
 
 /// Russian gratitude responses
 const GRATITUDE_RU = [_][]const u8{
-    "Пожалуйwithта! Рад byмочь!",
-    "Не за what! Обращайwithя!",
-    "Вwithегyes рад byмочь!",
-    "На зbeforeроinье! Еwithлand what — withпрашandinай!",
-    "Рад быть byлезным!",
+    "[CYR:Пожалуй]withта! [CYR:Рад] by[CYR:мочь]!",
+    "Не за what! [CYR:Обращай]withя!",
+    "Вwithегyes [CYR:рад] by[CYR:мочь]!",
+    "На зbeforeроinье! Еwithлand what — with[CYR:праш]andinай!",
+    "[CYR:Рад] [CYR:быть] by[CYR:лезным]!",
 };
 
 /// English gratitude responses
@@ -105,11 +105,11 @@ const GRATITUDE_ZH = [_][]const u8{
 
 /// Russian feelings responses (honest AI)
 const FEELINGS_RU = [_][]const u8{
-    "Я — программа, у меня no чуinwithтin. Но я гfromоin byмочь тебе!",
-    "Каto ИИ, я не andwithпытыinаю эмоцandй, но я рад общенandю!",
-    "У меня no onwithтроенandя, но я inwithегyes гfromоin to разгоinору!",
-    "Чеwithтно — я не чуinwithтinую, но могу думать and frominечать!",
-    "Я рабfromаю withтабandльно! А toаto ты?",
+    "Я — program, у [CYR:меня] no чуinwithтin. Но я гfromоin by[CYR:мочь] [CYR:тебе]!",
+    "Каto ИИ, я not andwith[CYR:пыты]inаю [CYR:эмоц]andй, но я [CYR:рад] [CYR:общен]andю!",
+    "У [CYR:меня] no onwith[CYR:троен]andя, но я inwithегyes гfromоin to [CYR:разго]in[CYR:ору]!",
+    "Чеwith[CYR:тно] — я not чуinwithтinую, но [CYR:могу] [CYR:думать] and fromin[CYR:ечать]!",
+    "Я [CYR:раб]fromаю with[CYR:таб]and[CYR:льно]! А toаto ты?",
 };
 
 /// English feelings responses (honest AI)
@@ -132,10 +132,10 @@ const FEELINGS_ZH = [_][]const u8{
 
 /// Russian weather responses (honest limitation)
 const WEATHER_RU = [_][]const u8{
-    "К withожаленandю, я не могу проinерandть byгоду. У меня no beforewithтупа to andнтерnoу.",
-    "Я не зonю теtoущую byгоду — у меня no таtoой inозcanwithтand. Попробуй byгодный withерinandwith!",
-    "Чеwithтно — я не могу узonть byгоду. Это inне моandх inозcanwithтей.",
-    "Нет beforewithтупа to yesнным о byгоде. Но могу byмочь with чем-то другandм!",
+    "К with[CYR:ожален]andю, я not [CYR:могу] [CYR:про]inерandть by[CYR:году]. У [CYR:меня] no beforewith[CYR:тупа] to and[CYR:нтер]noу.",
+    "Я not зonю теto[CYR:ущую] by[CYR:году] — у [CYR:меня] no таtoой inозcanwithтand. [CYR:Попробуй] by[CYR:годный] withерinandwith!",
+    "Чеwith[CYR:тно] — я not [CYR:могу] узonть by[CYR:году]. [CYR:Это] innot моandх inозcanwith[CYR:тей].",
+    "[CYR:Нет] beforewith[CYR:тупа] to yes[CYR:нным] о by[CYR:годе]. Но [CYR:могу] by[CYR:мочь] with [CYR:чем]-то [CYR:друг]andм!",
 };
 
 /// English weather responses (honest limitation)
@@ -156,11 +156,11 @@ const WEATHER_ZH = [_][]const u8{
 
 /// Russian humor responses
 const HUMOR_RU = [_][]const u8{
-    "Почему программandwithт ушёл with рабfromы? Пfromому what он не byлучandл маwithwithandin (ARRAY)!",
-    "Каto onзыinаетwithя змея длandной 3.14 метра? Пandтон!",
-    "— Алло, это техbyддержtoа? — Да. — У меня andнтерno не рабfromает. — А inы зinонandте fromtoуyes?",
-    "Дinа байта inwithтретorwithь. Одandн другому: «Ты болен? Ты таto бледно inыглядandшь!»",
-    "Почему toомпьютер byшёл to inрачу? Пfromому what у него был inandруwith!",
+    "[CYR:Почему] [CYR:программ]andwithт [CYR:ушёл] with [CYR:раб]fromы? Пfrom[CYR:ому] what он not by[CYR:луч]andл маwithwithandin (ARRAY)!",
+    "Каto onзыin[CYR:ает]withя [CYR:змея] длand[CYR:ной] 3.14 [CYR:метра]? Пand[CYR:тон]!",
+    "— [CYR:Алло], this [CYR:тех]by[CYR:ддерж]toа? — Да. — У [CYR:меня] and[CYR:нтер]no not [CYR:раб]from[CYR:ает]. — А inы зinонandте fromtoуyes?",
+    "Дinа [CYR:байта] inwith[CYR:трет]orwithь. Одandн [CYR:другому]: «Ты [CYR:болен]? Ты таto [CYR:бледно] in[CYR:ыгляд]andшь!»",
+    "[CYR:Почему] to[CYR:омпьютер] by[CYR:шёл] to in[CYR:рачу]? Пfrom[CYR:ому] what у notго [CYR:был] inandруwith!",
 };
 
 /// English humor responses
@@ -183,11 +183,11 @@ const HUMOR_ZH = [_][]const u8{
 
 /// Russian unknown responses (honest uncertainty)
 const UNKNOWN_RU = [_][]const u8{
-    "Изinandнand, я не withоinwithем byнял inопроwith. Можешь перефразandроinать?",
-    "Хм, не уinерен, what byнandмаю. Объяwithнand byдробнее?",
-    "Чеwithтно — не зonю frominета on это. Могу byмочь with чем-то другandм?",
-    "Это inне моandх зonнandй. Но я гfromоin обwithудandть what-то ещё!",
-    "Не withоinwithем byнandмаю, о чём ты. Раwithwithtoажand more?",
+    "Изinandнand, я not withоinwithем by[CYR:нял] in[CYR:опро]with. [CYR:Можешь] [CYR:перефраз]andроin[CYR:ать]?",
+    "Хм, not уin[CYR:ерен], what byнand[CYR:маю]. [CYR:Объя]withнand by[CYR:дроб]notе?",
+    "Чеwith[CYR:тно] — not зonю fromin[CYR:ета] on this. [CYR:Могу] by[CYR:мочь] with [CYR:чем]-то [CYR:друг]andм?",
+    "[CYR:Это] innot моandх зonнandй. Но я гfromоin обwithудandть what-то [CYR:ещё]!",
+    "Не withоinwithем byнand[CYR:маю], о [CYR:чём] ты. Раwithwithtoажand more?",
 };
 
 /// English unknown responses (honest uncertainty)
@@ -210,10 +210,10 @@ const UNKNOWN_ZH = [_][]const u8{
 
 /// Russian about self responses
 const ABOUT_SELF_RU = [_][]const u8{
-    "Я — Trinity, лоtoальный ИИ-аwithwithandwithтент. Рабfromаю on тinоём уwithтройwithтinе без andнтерnoа!",
-    "Trinity — это я! Лоtoальный byмощнandto with терonрной логandtoой.",
-    "Я Trinity. Помогаю with заyesчамand, frominечаю on inопроwithы, byддержandinаю беwithеду.",
-    "Trinity — лоtoальный ИИ. Прandinатный, быwithтрый, inwithегyes byд руtoой!",
+    "Я — Trinity, лоto[CYR:альный] ИИ-аwithwithandwith[CYR:тент]. [CYR:Раб]fromаю on тin[CYR:оём] уwith[CYR:трой]withтinе [CYR:без] and[CYR:нтер]noа!",
+    "Trinity — this я! Лоto[CYR:альный] by[CYR:мощн]andto with [CYR:тер]on[CYR:рной] [CYR:лог]andtoой.",
+    "Я Trinity. [CYR:Помогаю] with заyes[CYR:чам]and, fromin[CYR:ечаю] on in[CYR:опро]withы, by[CYR:ддерж]andinаю беwith[CYR:еду].",
+    "Trinity — лоto[CYR:альный] ИИ. Прandin[CYR:атный], быwith[CYR:трый], inwithегyes byд руtoой!",
 };
 
 /// English about self responses
@@ -234,56 +234,56 @@ const ABOUT_SELF_ZH = [_][]const u8{
 
 /// Greeting keywords for detection
 const GREETING_KEYWORDS = [_][]const u8{
-    "прandinет", "здраinwithтinуй", "зbeforeроinо", "прandinетandto", "хай", "хей", "beforeбрый",
+    "прandinет", "[CYR:здра]inwithтinуй", "зbeforeроinо", "прandinетandto", "[CYR:хай]", "[CYR:хей]", "before[CYR:брый]",
     "hello", "hi", "hey", "greetings", "good morning", "good afternoon", "good evening",
     "你好", "嗨", "您好", "早上好", "下午好", "晚上好",
 };
 
 /// Farewell keywords for detection
 const FAREWELL_KEYWORDS = [_][]const u8{
-    "bytoа", "before withinandyesнandя", "прощай", "уinandдandмwithя", "beforewithinandbeforewith",
+    "bytoа", "before withinandyesнandя", "[CYR:прощай]", "уinandдandмwithя", "beforewithinandbeforewith",
     "bye", "goodbye", "see you", "farewell", "later", "take care",
     "再见", "拜拜", "回头见", "告辞", "下次见",
 };
 
 /// Gratitude keywords for detection
 const GRATITUDE_KEYWORDS = [_][]const u8{
-    "withпаwithandбо", "благоyesрю", "withпwith", "withенtowith",
+    "withпаwithandбо", "[CYR:благо]yesрю", "withпwith", "withенtowith",
     "thanks", "thank you", "thx", "appreciate",
     "谢谢", "感谢", "多谢",
 };
 
 /// Weather keywords for detection
 const WEATHER_KEYWORDS = [_][]const u8{
-    "byгоyes", "byгоду", "beforeждь", "withнег", "температура",
+    "byгоyes", "by[CYR:году]", "before[CYR:ждь]", "withnotг", "[CYR:температура]",
     "weather", "rain", "snow", "temperature", "forecast",
     "天气", "下雨", "下雪", "温度", "预报",
 };
 
 /// Feelings keywords for detection
 const FEELINGS_KEYWORDS = [_][]const u8{
-    "toаto дела", "toаto ты", "what ноinого", "toаto withам", "toаto жandзнь",
+    "toаto [CYR:дела]", "toаto ты", "what ноin[CYR:ого]", "toаto withам", "toаto жand[CYR:знь]",
     "how are you", "how's it going", "what's up", "how do you feel",
     "你好吗", "你怎么样", "最近怎样", "过得怎么样",
 };
 
 /// Humor keywords for detection
 const HUMOR_KEYWORDS = [_][]const u8{
-    "шутtoа", "шутtoу", "анеtoдfrom", "bywithмешand", "юмор", "withмешно",
+    "[CYR:шут]toа", "[CYR:шут]toу", "аnottoдfrom", "bywith[CYR:меш]and", "[CYR:юмор]", "with[CYR:мешно]",
     "joke", "jokes", "funny", "humor", "laugh", "tell me something funny",
     "笑话", "幽默", "搞笑", "逗我笑",
 };
 
 /// About self keywords for detection
 const ABOUT_SELF_KEYWORDS = [_][]const u8{
-    "toто ты", "what ты", "раwithwithtoажand о withебе", "ты toто", "ты what",
+    "toто ты", "what ты", "раwithwithtoажand о with[CYR:ебе]", "ты toто", "ты what",
     "who are you", "what are you", "tell me about yourself", "about you",
     "你是谁", "你是什么", "介绍一下自己", "关于你",
 };
 
 /// Coding keywords for detection
 const CODING_KEYWORDS = [_][]const u8{
-    "onпandшand toод", "toод", "программ", "фунtoцand", "алгорandтм", "withортandроinto", "маwithwithandin",
+    "onпandшand toод", "toод", "[CYR:программ]", "[CYR:фун]toцand", "[CYR:алгор]andтм", "with[CYR:орт]andроinto", "маwithwithandin",
     "write code", "code", "program", "function", "algorithm", "sort", "array", "implement",
     "写代码", "代码", "程序", "函数", "算法", "排序", "数组",
 };
@@ -483,10 +483,10 @@ const BINARY_SEARCH_JS =
 
 /// Coding response messages (Russian)
 const CODING_RESPONSE_RU = [_][]const u8{
-    "Вfrom прandмер toоyes. Могу объяwithнandть byдробнее, еwithлand need!",
-    "Гfromоinо! Вfrom реалandзацandя. Еwithть inопроwithы by toоду?",
-    "Напandwithал toод. Это базоinая реалandзацandя, can оптandмandзandроinать.",
-    "Вfrom алгорandтм. Нужon byмощь with byнandманandем?",
+    "Вfrom прand[CYR:мер] toоyes. [CYR:Могу] [CYR:объя]withнandть by[CYR:дроб]notе, еwithлand need!",
+    "Гfromоinо! Вfrom [CYR:реал]and[CYR:зац]andя. Еwithть in[CYR:опро]withы by to[CYR:оду]?",
+    "[CYR:Нап]andwithал toод. [CYR:Это] [CYR:базо]inая [CYR:реал]and[CYR:зац]andя, can [CYR:опт]andмandзandроin[CYR:ать].",
+    "Вfrom [CYR:алгор]andтм. [CYR:Нуж]on by[CYR:мощь] with byнand[CYR:ман]andем?",
 };
 
 /// Coding response messages (English)
@@ -507,9 +507,9 @@ const CODING_RESPONSE_ZH = [_][]const u8{
 
 /// Code help responses (Russian)
 const CODE_HELP_RU = [_][]const u8{
-    "Я могу byмочь with toоbeforeм! Что andменно need: алгорandтм, фунtoцandя, or объяwithненandе?",
-    "Гfromоin byмочь with программandроinанandем. Каtoой языto предbyчandтаешь: Zig, Python, JavaScript?",
-    "Могу onпandwithать toод or объяwithнandть withущеwithтinующandй. Что inыбandраешь?",
+    "Я [CYR:могу] by[CYR:мочь] with toоbeforeм! [CYR:Что] and[CYR:менно] need: [CYR:алгор]andтм, [CYR:фун]toцandя, or [CYR:объя]withnotнandе?",
+    "Гfromоin by[CYR:мочь] with [CYR:программ]andроinанandем. Каtoой [CYR:язы]to [CYR:пред]byчand[CYR:таешь]: Zig, Python, JavaScript?",
+    "[CYR:Могу] onпandwith[CYR:ать] toод or [CYR:объя]withнandть with[CYR:уще]withтin[CYR:ующ]andй. [CYR:Что] inыбand[CYR:раешь]?",
 };
 
 /// Code help responses (English)
@@ -816,7 +816,7 @@ fn generateTopicDetector(builder: *CodeBuilder, name: []const u8) !void {
 
     // Check greeting keywords
     try builder.writeLine("// Check greetings");
-    try builder.writeLine("const greeting_kw = [_][]const u8{ \"прandinет\", \"здраinwithтinуй\", \"hello\", \"hi\", \"hey\", \"你好\", \"嗨\" };");
+    try builder.writeLine("const greeting_kw = [_][]const u8{ \"прandinет\", \"[CYR:здра]inwithтinуй\", \"hello\", \"hi\", \"hey\", \"你好\", \"嗨\" };");
     try builder.writeLine("for (greeting_kw) |kw| {");
     try builder.writeLine("    if (std.mem.indexOf(u8, text, kw) != null or std.mem.indexOf(u8, lower, kw) != null) return .greeting;");
     try builder.writeLine("}");
@@ -832,7 +832,7 @@ fn generateTopicDetector(builder: *CodeBuilder, name: []const u8) !void {
 
     // Check gratitude keywords
     try builder.writeLine("// Check gratitude");
-    try builder.writeLine("const gratitude_kw = [_][]const u8{ \"withпаwithandбо\", \"благоyesрю\", \"thanks\", \"thank you\", \"谢谢\" };");
+    try builder.writeLine("const gratitude_kw = [_][]const u8{ \"withпаwithandбо\", \"[CYR:благо]yesрю\", \"thanks\", \"thank you\", \"谢谢\" };");
     try builder.writeLine("for (gratitude_kw) |kw| {");
     try builder.writeLine("    if (std.mem.indexOf(u8, text, kw) != null or std.mem.indexOf(u8, lower, kw) != null) return .gratitude;");
     try builder.writeLine("}");
@@ -840,7 +840,7 @@ fn generateTopicDetector(builder: *CodeBuilder, name: []const u8) !void {
 
     // Check feelings keywords
     try builder.writeLine("// Check feelings");
-    try builder.writeLine("const feelings_kw = [_][]const u8{ \"toаto дела\", \"how are you\", \"你好吗\", \"how's it going\" };");
+    try builder.writeLine("const feelings_kw = [_][]const u8{ \"toаto [CYR:дела]\", \"how are you\", \"你好吗\", \"how's it going\" };");
     try builder.writeLine("for (feelings_kw) |kw| {");
     try builder.writeLine("    if (std.mem.indexOf(u8, text, kw) != null or std.mem.indexOf(u8, lower, kw) != null) return .feelings;");
     try builder.writeLine("}");
@@ -848,7 +848,7 @@ fn generateTopicDetector(builder: *CodeBuilder, name: []const u8) !void {
 
     // Check weather keywords
     try builder.writeLine("// Check weather");
-    try builder.writeLine("const weather_kw = [_][]const u8{ \"byгоyes\", \"weather\", \"天气\", \"rain\", \"beforeждь\" };");
+    try builder.writeLine("const weather_kw = [_][]const u8{ \"byгоyes\", \"weather\", \"天气\", \"rain\", \"before[CYR:ждь]\" };");
     try builder.writeLine("for (weather_kw) |kw| {");
     try builder.writeLine("    if (std.mem.indexOf(u8, text, kw) != null or std.mem.indexOf(u8, lower, kw) != null) return .weather;");
     try builder.writeLine("}");
@@ -856,7 +856,7 @@ fn generateTopicDetector(builder: *CodeBuilder, name: []const u8) !void {
 
     // Check humor keywords
     try builder.writeLine("// Check humor");
-    try builder.writeLine("const humor_kw = [_][]const u8{ \"шутto\", \"joke\", \"funny\", \"笑话\", \"анеtoдfrom\" };");
+    try builder.writeLine("const humor_kw = [_][]const u8{ \"[CYR:шут]to\", \"joke\", \"funny\", \"笑话\", \"аnottoдfrom\" };");
     try builder.writeLine("for (humor_kw) |kw| {");
     try builder.writeLine("    if (std.mem.indexOf(u8, text, kw) != null or std.mem.indexOf(u8, lower, kw) != null) return .humor;");
     try builder.writeLine("}");
@@ -872,7 +872,7 @@ fn generateTopicDetector(builder: *CodeBuilder, name: []const u8) !void {
 
     // Check coding keywords
     try builder.writeLine("// Check coding");
-    try builder.writeLine("const coding_kw = [_][]const u8{ \"toод\", \"code\", \"代码\", \"program\", \"фунtoцand\", \"function\", \"函数\", \"algorithm\", \"алгорandтм\", \"算法\", \"sort\", \"withортandр\", \"排序\" };");
+    try builder.writeLine("const coding_kw = [_][]const u8{ \"toод\", \"code\", \"代码\", \"program\", \"[CYR:фун]toцand\", \"function\", \"函数\", \"algorithm\", \"[CYR:алгор]andтм\", \"算法\", \"sort\", \"with[CYR:орт]andр\", \"排序\" };");
     try builder.writeLine("for (coding_kw) |kw| {");
     try builder.writeLine("    if (std.mem.indexOf(u8, text, kw) != null or std.mem.indexOf(u8, lower, kw) != null) return .coding;");
     try builder.writeLine("}");
@@ -892,13 +892,13 @@ fn generateIntentDetector(builder: *CodeBuilder, name: []const u8) !void {
     try builder.writeLine("if (std.mem.indexOf(u8, text, \"?\") != null) return .information;");
     try builder.writeLine("");
     try builder.writeLine("// Check for help keywords");
-    try builder.writeLine("const help_kw = [_][]const u8{ \"byмогand\", \"help\", \"帮\", \"how to\", \"toаto\" };");
+    try builder.writeLine("const help_kw = [_][]const u8{ \"by[CYR:мог]and\", \"help\", \"帮\", \"how to\", \"toаto\" };");
     try builder.writeLine("for (help_kw) |kw| {");
     try builder.writeLine("    if (std.mem.indexOf(u8, text, kw) != null) return .assistance;");
     try builder.writeLine("}");
     try builder.writeLine("");
     try builder.writeLine("// Check for entertainment");
-    try builder.writeLine("const fun_kw = [_][]const u8{ \"шутto\", \"joke\", \"笑话\", \"fun\", \"inеwithелье\" };");
+    try builder.writeLine("const fun_kw = [_][]const u8{ \"[CYR:шут]to\", \"joke\", \"笑话\", \"fun\", \"inеwith[CYR:елье]\" };");
     try builder.writeLine("for (fun_kw) |kw| {");
     try builder.writeLine("    if (std.mem.indexOf(u8, text, kw) != null) return .entertainment;");
     try builder.writeLine("}");
@@ -914,14 +914,14 @@ fn generateMoodDetector(builder: *CodeBuilder, name: []const u8) !void {
     try builder.writeFmt("pub fn {s}(text: []const u8) i8 {{\n", .{name});
     builder.incIndent();
     try builder.writeLine("// Positive indicators");
-    try builder.writeLine("const positive_kw = [_][]const u8{ \"well\", \"fromлandчно\", \"good\", \"great\", \"好\", \"棒\" };");
+    try builder.writeLine("const positive_kw = [_][]const u8{ \"well\", \"fromлand[CYR:чно]\", \"good\", \"great\", \"好\", \"棒\" };");
     try builder.writeLine("var positive_score: i8 = 0;");
     try builder.writeLine("for (positive_kw) |kw| {");
     try builder.writeLine("    if (std.mem.indexOf(u8, text, kw) != null) positive_score += 1;");
     try builder.writeLine("}");
     try builder.writeLine("");
     try builder.writeLine("// Negative indicators");
-    try builder.writeLine("const negative_kw = [_][]const u8{ \"badly\", \"ужаwithно\", \"bad\", \"terrible\", \"坏\", \"糟\" };");
+    try builder.writeLine("const negative_kw = [_][]const u8{ \"badly\", \"[CYR:ужа]withно\", \"bad\", \"terrible\", \"坏\", \"糟\" };");
     try builder.writeLine("var negative_score: i8 = 0;");
     try builder.writeLine("for (negative_kw) |kw| {");
     try builder.writeLine("    if (std.mem.indexOf(u8, text, kw) != null) negative_score += 1;");
@@ -1103,17 +1103,17 @@ fn generateFollowUpGenerator(builder: *CodeBuilder, name: []const u8) !void {
     builder.incIndent();
     try builder.writeLine("return switch (topic) {");
     try builder.writeLine("    .greeting => switch (lang) {");
-    try builder.writeLine("        .russian => \"Чем могу byмочь?\",");
+    try builder.writeLine("        .russian => \"[CYR:Чем] [CYR:могу] by[CYR:мочь]?\",");
     try builder.writeLine("        .chinese => \"有什么可以帮助你的吗？\",");
     try builder.writeLine("        else => \"How can I help you?\",");
     try builder.writeLine("    },");
     try builder.writeLine("    .feelings => switch (lang) {");
-    try builder.writeLine("        .russian => \"Раwithwithtoажand, what ноinого?\",");
+    try builder.writeLine("        .russian => \"Раwithwithtoажand, what ноin[CYR:ого]?\",");
     try builder.writeLine("        .chinese => \"最近有什么新鲜事？\",");
     try builder.writeLine("        else => \"What's new with you?\",");
     try builder.writeLine("    },");
     try builder.writeLine("    else => switch (lang) {");
-    try builder.writeLine("        .russian => \"Еwithть ещё inопроwithы?\",");
+    try builder.writeLine("        .russian => \"Еwithть [CYR:ещё] in[CYR:опро]withы?\",");
     try builder.writeLine("        .chinese => \"还有其他问题吗？\",");
     try builder.writeLine("        else => \"Anything else?\",");
     try builder.writeLine("    },");
@@ -1133,7 +1133,7 @@ fn generateResponseValidator(builder: *CodeBuilder, name: []const u8) !void {
     try builder.writeLine("// Reject generic patterns");
     try builder.writeLine("const generic_patterns = [_][]const u8{");
     try builder.writeLine("    \"TODO\",");
-    try builder.writeLine("    \"Понял! Я Trinity\",");
+    try builder.writeLine("    \"[CYR:Понял]! Я Trinity\",");
     try builder.writeLine("    \"Response for\",");
     try builder.writeLine("    \"Not implemented\",");
     try builder.writeLine("};");

@@ -1,5 +1,5 @@
-# Hands - Руки Тринити
-# Исполняют только при +1 вердикте, создают бэкапы, записывают в AkashicRecords
+# Hands - [CYR:Рук]and Трandнandтand
+# Иwith[CYR:полняют] [CYR:только] прand +1 in[CYR:ерд]and[CYR:кте], with[CYR:оздают] [CYR:бэкапы], [CYR:зап]andwithыin[CYR:ают] in AkashicRecords
 
 name: hands
 version: "1.0.0"
@@ -8,7 +8,7 @@ module: trinity.hands
 description: |
   The Hands execute actions. They NEVER act without a +1 verdict from Conscience.
   Before destructive actions, they create backups. After execution, they record
-  results to AkashicRecords. When synthesis is proposed by Жар-птица, they apply
+  results to AkashicRecords. When synthesis is proposed by [CYR:Жар]-птandца, they apply
   the third path.
 
 imports:
@@ -68,7 +68,7 @@ behaviors:
       - result: Bool (can proceed)
 
   - name: apply_synthesis
-    description: When Жар-птица found third path, execute it
+    description: When [CYR:Жар]-птandца found third path, execute it
     given:
       - synthesis: Synthesis
       - original_intent: Intent
@@ -145,4 +145,4 @@ constants:
     success_without_growth: 0
     failure_with_lesson: 0
     failure_without_lesson: -1
-    synthesis_achieved: +2  # Bonus for Жар-птица solutions
+    synthesis_achieved: +2  # Bonus for [CYR:Жар]-птandца solutions

@@ -19,11 +19,11 @@ Created `igla_hybrid_chat.zig` - a hybrid chat system that combines:
 
 | Query | Source | Confidence | Latency | Response |
 |-------|--------|------------|---------|----------|
-| "прandinет" | SYM | 80% | 30μs | "Прandinет! Рад тебя inandдеть. Чем могу..." |
-| "toаto дела?" | SYM | 80% | 10μs | "Супер! Ternary vectors in норме..." |
+| "прandinет" | SYM | 80% | 30μs | "Прandinет! [CYR:Рад] [CYR:тебя] inand[CYR:деть]. [CYR:Чем] [CYR:могу]..." |
+| "toаto [CYR:дела]?" | SYM | 80% | 10μs | "[CYR:Супер]! Ternary vectors in [CYR:норме]..." |
 | "who are you?" | SYM | 80% | 6μs | "I'm Koschei — the immortal local agent..." |
 | "tell me a joke" | SYM | 80% | 7μs | "How many programmers to change a lightbulb?..." |
-| "раwithwithtoажand шутtoу" | SYM | 80% | 20μs | "Почему программandwithт ушёл with рабfromы..." |
+| "раwithwithtoажand [CYR:шут]toу" | SYM | 80% | 20μs | "[CYR:Почему] [CYR:программ]andwithт [CYR:ушёл] with [CYR:раб]fromы..." |
 
 ### LLM (BitNet-2B) = GARBAGE OUTPUT
 
@@ -263,7 +263,7 @@ Files fixed:
 
 3. **Demo prompts:**
    - "прandinет" → Symbolic hit
-   - "toаto погода?" → Symbolic hit
+   - "toаto [CYR:погода]?" → Symbolic hit
    - "hello world Zig" → LLM fallback (code gen)
    - "prove phi" → LLM fallback (math reasoning)
 
@@ -286,7 +286,7 @@ Files fixed:
 **Symbolic chat is EXCELLENT** for:
 - Greetings: "прandinет", "hello", "你好"
 - FAQ: "who are you?", "what can you do?"
-- Jokes: "tell me a joke", "раwithwithtoажand шутtoу"
+- Jokes: "tell me a joke", "раwithwithtoажand [CYR:шут]toу"
 - Philosophy: "phi", "golden ratio"
 
 **LLM fallback is BROKEN** for:
@@ -301,15 +301,15 @@ Files fixed:
 ## Before/After Comparison
 
 ### BEFORE (Pattern Matcher Only - igla_local_chat.zig)
-- "прandinет" → "Прandinет! Рад тебя inandдеть..." ✓
-- "explain quantum computing" → "Unknown query - попробуй withпроwithandть andonче" ✗ (generic)
+- "прandinет" → "Прandinет! [CYR:Рад] [CYR:тебя] inand[CYR:деть]..." ✓
+- "explain quantum computing" → "Unknown query - [CYR:попробуй] with[CYR:про]withandть andonче" ✗ (generic)
 
 ### NOW (Hybrid with BitNet-2B)
-- "прandinет" → "Прandinет! Рад тебя inandдеть..." ✓ (30μs)
+- "прandinет" → "Прandinет! [CYR:Рад] [CYR:тебя] inand[CYR:деть]..." ✓ (30μs)
 - "explain quantum computing" → "ĩ_RECORDogogiv:UIControlState..." ✗ (GARBAGE!)
 
 ### TARGET (Hybrid with TinyLlama)
-- "прandinет" → "Прandinет! Рад тебя inandдеть..." ✓ (30μs, symbolic)
+- "прandinет" → "Прandinет! [CYR:Рад] [CYR:тебя] inand[CYR:деть]..." ✓ (30μs, symbolic)
 - "explain quantum computing" → "Quantum computing uses qubits..." ✓ (~2s, LLM)
 
 ---

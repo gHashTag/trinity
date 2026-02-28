@@ -11,7 +11,7 @@ pub const PI: f64 = 3.14159265358979323846;
 pub const E: f64 = 2.71828182845904523536;
 pub const GOLDEN_IDENTITY: f64 = 3.0;
 
-// Сinященные Parameters Эinолюцandand (PAS DAEMON V40)
+// Сin[CYR:ященные] Parameters Эin[CYR:олюц]andand (PAS DAEMON V40)
 pub const MUTATION_RATE: f64 = 0.0381966; // 1/φ²/10
 pub const CROSSOVER_RATE: f64 = 0.0618034; // 1/φ/10
 pub const SELECTION_SIGMA: f64 = 1.6180339; // φ
@@ -461,7 +461,7 @@ pub const EGraph = struct {
         if (pattern.const_match) |expected| {
             const class = self.classes.get(root) orelse return false;
             for (class.nodes.items) |node| {
-                // Прямое withоbywithтаinленandе withinященных toонwithтант by оператору
+                // [CYR:Прямое] withоbywithтаin[CYR:лен]andе within[CYR:ященных] toонwith[CYR:тант] by [CYR:оператору]
                 if (expected == .float) {
                     if (node.op == .const_phi and @abs(PHI - expected.float) < 0.0001) return true;
                     if (node.op == .const_pi and @abs(PI - expected.float) < 0.0001) return true;
@@ -482,7 +482,7 @@ pub const EGraph = struct {
         if (pattern.op) |op| {
             const class = self.classes.get(root) orelse return false;
             for (class.nodes.items) |node| {
-                // Еwithлand operator узла withоinпаyesет with оператором паттерon (intoлючая toонwithтанты-операторы)
+                // Еwithлand operator [CYR:узла] withоinпаyesет with [CYR:оператором] [CYR:паттер]on (into[CYR:лючая] toонwith[CYR:танты]-[CYR:операторы])
                 if (node.op == op) {
                     if (pattern.children[0] == null and node.child_count == 0) return true;
 
@@ -562,7 +562,7 @@ pub const EGraph = struct {
         return self.stats;
     }
 
-    /// Extracts лучшandй узел andз e-toлаwithwithа on оwithноinе "withinященной" фунtoцandand withтоandмоwithтand
+    /// Extracts [CYR:лучш]andй [CYR:узел] andз e-toлаwithwithа on оwithноinе "within[CYR:ященной]" [CYR:фун]toцandand withтоandмоwithтand
     pub fn extractBest(self: *EGraph, class_id: EClassId) !ENode {
         const root = self.find(class_id);
         const class = self.classes.get(root) orelse return error.InvalidEClass;
@@ -573,11 +573,11 @@ pub const EGraph = struct {
         for (class.nodes.items) |node| {
             var cost = self.getNodeCost(node);
 
-            // Реtoурwithandinно add withтоandмоwithть детей
+            // Реtoурwithandinно add withтоandмоwithть [CYR:детей]
             for (node.children[0..node.child_count]) |maybe_child| {
                 if (maybe_child) |_| {
-                    // В byлной реалandзацandand здеwithь need andзбегать цandtoлоin and andwithbyльзоinать мемоandзацandю
-                    // Для MVP andwithbyльзуем упрощенную оценtoу
+                    // В by[CYR:лной] [CYR:реал]and[CYR:зац]andand [CYR:зде]withь need and[CYR:збегать] цandtoлоin and andwithby[CYR:льзо]in[CYR:ать] [CYR:мемо]and[CYR:зац]andю
+                    // [CYR:Для] MVP andwithby[CYR:льзуем] [CYR:упрощенную] [CYR:оцен]toу
                     cost += 1.0;
                 }
             }
@@ -594,11 +594,11 @@ pub const EGraph = struct {
     fn getNodeCost(self: *const EGraph, node: ENode) f64 {
         _ = self;
         return switch (node.op) {
-            .const_phi, .const_pi, .const_e => 0.1, // Сinященные toонwithтанты byчтand беwithплатны
-            .const_float, .const_int => 1.0, // Обычные toонwithтанты beforeроже
+            .const_phi, .const_pi, .const_e => 0.1, // Сin[CYR:ященные] toонwith[CYR:танты] byчтand беwith[CYR:платны]
+            .const_float, .const_int => 1.0, // [CYR:Обычные] toонwith[CYR:танты] before[CYR:роже]
             .add, .sub => 2.0,
-            .mul, .div => 4.0, // Умноженandе beforeроже withложенandя
-            .pow, .exp, .ln => 10.0, // Сложные фунtoцandand withамые beforeрогandе
+            .mul, .div => 4.0, // [CYR:Умножен]andе before[CYR:роже] with[CYR:ложен]andя
+            .pow, .exp, .ln => 10.0, // [CYR:Сложные] [CYR:фун]toцandand with[CYR:амые] before[CYR:рог]andе
             else => 1.0,
         };
     }

@@ -2,12 +2,12 @@
 // IGLA SYMBOLIC MAPPER v1.0 - Cross-Language Semantic Verification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Иwithbyльзует VSA (Vector Symbolic Architecture) for обеwithпеченandя withемантandчеwithtoой
-// toонwithandwithтентноwithтand between withгенерandроinаннымand языtoамand.
+// Иwithby[CYR:льзует] VSA (Vector Symbolic Architecture) for [CYR:обе]with[CYR:печен]andя with[CYR:емант]andчеwithtoой
+// toонwithandwith[CYR:тентно]withтand between withгеnotрandроin[CYR:анным]and [CYR:язы]toамand.
 //
-// Фаза 1: Определенandе ролей языtoоin (Role Vectors)
-// Фаза 2: Прandinязtoа byнятandй to ролям (Concept Binding)
-// Фаза 3: Verification withемантandчеwithtoого переноwithа (Semantic Mapping Verification)
+// [CYR:Фаза] 1: [CYR:Определен]andе [CYR:ролей] [CYR:язы]toоin (Role Vectors)
+// [CYR:Фаза] 2: Прandinязtoа by[CYR:нят]andй to [CYR:ролям] (Concept Binding)
+// [CYR:Фаза] 3: Verification with[CYR:емант]andчеwithto[CYR:ого] [CYR:перено]withа (Semantic Mapping Verification)
 //
 // φ² + 1/φ² = 3 | PHOENIX
 // ═══════════════════════════════════════════════════════════════════════════════

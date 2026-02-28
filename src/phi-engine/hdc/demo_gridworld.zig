@@ -1,6 +1,6 @@
-//! Demo GridWorld - Демонwithтрацandя обученandя RL agentа in GridWorld
+//! Demo GridWorld - [CYR:Демон]with[CYR:трац]andя [CYR:обучен]andя RL agentа in GridWorld
 //!
-//! Запуwithto: zig build-exe src/phi-engine/hdc/demo_gridworld.zig && ./demo_gridworld
+//! [CYR:Запу]withto: zig build-exe src/phi-engine/hdc/demo_gridworld.zig && ./demo_gridworld
 //!
 //! φ² + 1/φ² = 3 | TRINITY
 
@@ -11,7 +11,7 @@ const gw = @import("gridworld.zig");
 
 const print = std.debug.print;
 
-/// Конфandгурацandя демо
+/// [CYR:Конф]and[CYR:гурац]andя demo
 const DemoConfig = struct {
     grid_size: usize = 4,
     num_episodes: usize = 500,
@@ -25,7 +25,7 @@ const DemoConfig = struct {
     render_final: bool = true,
 };
 
-/// Запуwithтandть демо обученandя
+/// [CYR:Запу]withтandть demo [CYR:обучен]andя
 pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
     print("\n", .{});
     print("╔══════════════════════════════════════════════════════════════╗\n", .{});
@@ -34,7 +34,7 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
     print("╚══════════════════════════════════════════════════════════════╝\n", .{});
     print("\n", .{});
 
-    // Созyesём withреду
+    // [CYR:Соз]yesём with[CYR:реду]
     var env = try gw.GridWorld.init(allocator, .{
         .width = config.grid_size,
         .height = config.grid_size,
@@ -44,13 +44,13 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
     });
     defer env.deinit();
 
-    print("Среyes: GridWorld {d}x{d}\n", .{ config.grid_size, config.grid_size });
-    print("Цель: ({d}, {d})\n", .{ env.goal_pos.x, env.goal_pos.y });
-    print("Соwithтоянandй: {d}\n", .{ env.numStates() });
-    print("Дейwithтinandй: {d}\n", .{gw.NUM_ACTIONS});
+    print("[CYR:Сре]yes: GridWorld {d}x{d}\n", .{ config.grid_size, config.grid_size });
+    print("[CYR:Цель]: ({d}, {d})\n", .{ env.goal_pos.x, env.goal_pos.y });
+    print("Соwith[CYR:тоян]andй: {d}\n", .{ env.numStates() });
+    print("[CYR:Дей]withтinandй: {d}\n", .{gw.NUM_ACTIONS});
     print("\n", .{});
 
-    // Созyesём agentа
+    // [CYR:Соз]yesём agentа
     var agent = try rl.RLAgent.init(allocator, .{
         .state_dim = config.state_dim,
         .num_actions = gw.NUM_ACTIONS,
@@ -71,10 +71,10 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
     });
     print("\n", .{});
 
-    // Initialize Q-таблandцу
+    // Initialize Q-[CYR:табл]andцу
     try agent.initQTable(env.numStates());
 
-    print("Начandonю обученandе ({d} эпandзоbeforein)...\n", .{config.num_episodes});
+    print("[CYR:Нач]andonю [CYR:обучен]andе ({d} эпandзоbeforein)...\n", .{config.num_episodes});
     print("─────────────────────────────────────────────────────────────\n", .{});
 
     var total_steps: u64 = 0;
@@ -90,13 +90,13 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
         var episode_steps: usize = 0;
 
         while (true) {
-            // Выбandраем дейwithтinandе
+            // [CYR:Выб]and[CYR:раем] [CYR:дей]withтinandе
             const action = agent.selectAction(state);
 
-            // Выbyлняем дейwithтinandе
+            // Выby[CYR:лняем] [CYR:дей]withтinandе
             const result = env.step(action);
 
-            // Обноinляем agentа (Q-learning)
+            // [CYR:Обно]in[CYR:ляем] agentа (Q-learning)
             _ = agent.tdUpdate(state, action, result.reward, result.next_state, result.done);
 
             episode_reward += result.reward;
@@ -114,11 +114,11 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
         agent.endEpisode(episode_reward);
         total_steps += episode_steps;
 
-        // Сохраняем onграду for withtoользящего withреднего
+        // [CYR:Сохраняем] on[CYR:граду] for withto[CYR:ользящего] with[CYR:ред]notго
         recent_rewards[recent_idx] = episode_reward;
         recent_idx = (recent_idx + 1) % 100;
 
-        // Печатаем прогреwithwith
+        // [CYR:Печатаем] [CYR:прогре]withwith
         if ((episode + 1) % config.print_every == 0) {
             var avg_reward: f64 = 0;
             const count = @min(episode + 1, 100);
@@ -129,7 +129,7 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
 
             const win_rate = @as(f64, @floatFromInt(wins)) / @as(f64, @floatFromInt(episode + 1)) * 100;
 
-            print("Эпandзод {d:4}: avg_reward={d:6.2}, win_rate={d:5.1}%, ε={d:.3}\n", .{
+            print("Эпand[CYR:зод] {d:4}: avg_reward={d:6.2}, win_rate={d:5.1}%, ε={d:.3}\n", .{
                 episode + 1,
                 avg_reward,
                 win_rate,
@@ -144,25 +144,25 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
     print("─────────────────────────────────────────────────────────────\n", .{});
     print("\n", .{});
 
-    // Итогоinая statistics
+    // Иthatinая statistics
     const metrics = agent.getMetrics();
     const final_win_rate = @as(f64, @floatFromInt(wins)) / @as(f64, @floatFromInt(config.num_episodes)) * 100;
 
     print("╔══════════════════════════════════════════════════════════════╗\n", .{});
-    print("║                    РЕЗУЛЬТАТЫ ОБУЧЕНИЯ                       ║\n", .{});
+    print("║                    [CYR:РЕЗУЛЬТАТЫ] [CYR:ОБУЧЕНИЯ]                       ║\n", .{});
     print("╠══════════════════════════════════════════════════════════════╣\n", .{});
     print("║ Эпandзоbeforein:        {d:6}                                       ║\n", .{config.num_episodes});
-    print("║ Вwithего шагоin:     {d:6}                                       ║\n", .{total_steps});
-    print("║ Побед:           {d:6} ({d:.1}%)                              ║\n", .{ wins, final_win_rate });
+    print("║ Вwith[CYR:его] stepоin:     {d:6}                                       ║\n", .{total_steps});
+    print("║ [CYR:Побед]:           {d:6} ({d:.1}%)                              ║\n", .{ wins, final_win_rate });
     print("║ Avg reward (100):{d:7.2}                                      ║\n", .{metrics.avg_reward_100});
-    print("║ Фandonльный ε:     {d:6.4}                                      ║\n", .{agent.epsilon});
-    print("║ Время:           {d:6} ms                                    ║\n", .{duration_ms});
+    print("║ Фandon[CYR:льный] ε:     {d:6.4}                                      ║\n", .{agent.epsilon});
+    print("║ [CYR:Время]:           {d:6} ms                                    ║\n", .{duration_ms});
     print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 
-    // Демонwithтрацandя обученного agentа
+    // [CYR:Демон]with[CYR:трац]andя [CYR:обученного] agentа
     if (config.render_final) {
         print("\n", .{});
-        print("Демонwithтрацandя обученного agentа (greedy policy):\n", .{});
+        print("[CYR:Демон]with[CYR:трац]andя [CYR:обученного] agentа (greedy policy):\n", .{});
         print("─────────────────────────────────────────────────────────────\n", .{});
 
         var demo_state = env.reset();
@@ -171,16 +171,16 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
         for (0..20) |step_num| {
             const demo_action = agent.selectActionGreedy(demo_state);
 
-            print("Шаг {d}: дейwithтinandе = {s}\n", .{ step_num + 1, @as(gw.Action, @enumFromInt(demo_action)).toString() });
+            print("[CYR:Шаг] {d}: [CYR:дей]withтinandе = {s}\n", .{ step_num + 1, @as(gw.Action, @enumFromInt(demo_action)).toString() });
 
             const demo_result = env.step(demo_action);
             env.render();
 
             if (demo_result.done) {
                 if (std.mem.eql(u8, demo_result.info, "goal")) {
-                    print("\n✅ ЦЕЛЬ ДОСТИГНУТА за {d} шагоin!\n", .{step_num + 1});
+                    print("\n✅ [CYR:ЦЕЛЬ] [CYR:ДОСТИГНУТА] за {d} stepоin!\n", .{step_num + 1});
                 } else {
-                    print("\n⚠️ Эпandзод заinершён: {s}\n", .{demo_result.info});
+                    print("\n⚠️ Эпand[CYR:зод] заin[CYR:ершён]: {s}\n", .{demo_result.info});
                 }
                 break;
             }
@@ -193,7 +193,7 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
     print("φ² + 1/φ² = 3 | TRINITY HDC RL DEMO COMPLETE\n", .{});
 }
 
-/// Точtoа loginа
+/// [CYR:Точ]toа loginа
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
@@ -208,13 +208,13 @@ pub fn main() !void {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// ТЕСТЫ
+// [CYR:ТЕСТЫ]
 // ═══════════════════════════════════════════════════════════════
 
 test "demo runs without crash" {
     const allocator = std.testing.allocator;
 
-    // Корfromtoandй test
+    // [CYR:Кор]fromtoandй test
     try runDemo(allocator, .{
         .grid_size = 2,
         .num_episodes = 10,

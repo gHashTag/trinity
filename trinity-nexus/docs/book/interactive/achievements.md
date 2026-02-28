@@ -1,280 +1,280 @@
-# СИСТЕМА ДОСТИЖЕНИЙ ТРИДЕВЯТОГО ЦАРСТВА
+# [CYR:СИСТЕМА] [CYR:ДОСТИЖЕНИЙ] [CYR:ТРИДЕВЯТОГО] [CYR:ЦАРСТВА]
 
-## Геймandфandtoацandя Кнandгand 999
+## [CYR:Гейм]andфandtoацandя Кнandгand 999
 
 ---
 
-## УРОВНИ МАСТЕРСТВА
+## [CYR:УРОВНИ] [CYR:МАСТЕРСТВА]
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════╗
 ║                                                                           ║
-║   ПУТЬ ОТ НОВИЧКА К МАСТЕРУ                                              ║
+║   [CYR:ПУТЬ] ОТ [CYR:НОВИЧКА] К [CYR:МАСТЕРУ]                                              ║
 ║                                                                           ║
-║   Уроinень 1-9:    🥉 УЧЕНИК МЕДНОГО ЦАРСТВА                              ║
-║   Уроinень 10-18:  🥈 ПОДМАСТЕРЬЕ СЕРЕБРЯНОГО ЦАРСТВА                     ║
-║   Уроinень 19-27:  🥇 МАСТЕР ЗОЛОТОГО ЦАРСТВА                             ║
-║   Уроinень 27+:    👑 ХРАНИТЕЛЬ ТРИДЕВЯТОГО                               ║
+║   [CYR:Уро]in[CYR:ень] 1-9:    🥉 [CYR:УЧЕНИК] [CYR:МЕДНОГО] [CYR:ЦАРСТВА]                              ║
+║   [CYR:Уро]in[CYR:ень] 10-18:  🥈 [CYR:ПОДМАСТЕРЬЕ] [CYR:СЕРЕБРЯНОГО] [CYR:ЦАРСТВА]                     ║
+║   [CYR:Уро]in[CYR:ень] 19-27:  🥇 [CYR:МАСТЕР] [CYR:ЗОЛОТОГО] [CYR:ЦАРСТВА]                             ║
+║   [CYR:Уро]in[CYR:ень] 27+:    👑 [CYR:ХРАНИТЕЛЬ] [CYR:ТРИДЕВЯТОГО]                               ║
 ║                                                                           ║
-║   Опыт за глаinу: 3 XP                                                    ║
-║   Опыт за упражненandе: 9 XP                                               ║
-║   Опыт за доwithтandженandе: 27 XP                                              ║
+║   [CYR:Опыт] за [CYR:гла]inу: 3 XP                                                    ║
+║   [CYR:Опыт] за [CYR:упраж]notнandе: 9 XP                                               ║
+║   [CYR:Опыт] за доwithтand[CYR:жен]andе: 27 XP                                              ║
 ║                                                                           ║
 ╚═══════════════════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-## ДОСТИЖЕНИЯ
+## [CYR:ДОСТИЖЕНИЯ]
 
-### 🥉 МЕДНОЕ ЦАРСТВО (Теорandя)
+### 🥉 [CYR:МЕДНОЕ] [CYR:ЦАРСТВО] ([CYR:Теор]andя)
 
-| Доwithтandженandе | Опandwithанandе | XP |
+| Доwithтand[CYR:жен]andе | Опandwithанandе | XP |
 |------------|----------|-----|
-| 🌟 **Перinый шаг** | Прочandтать глаinу 1 | 3 |
-| 📖 **Кнandгочей** | Прочandтать 9 глаin | 27 |
-| 🔢 **Друг Тройtoand** | Напandwithать перinый toод with Ⲅ | 9 |
-| 🧮 **Математandto** | Решandть 3 задачand по теорandand | 27 |
-| 📐 **Зonтоto toонwithтант** | Запомнandть π, φ, e | 27 |
-| 🎓 **Выпуwithtoнandto Медного** | Пройтand inwithе 333 глаinы Тома I | 333 |
+| 🌟 **[CYR:Пер]inый step** | [CYR:Проч]and[CYR:тать] [CYR:гла]inу 1 | 3 |
+| 📖 **Кнand[CYR:гочей]** | [CYR:Проч]and[CYR:тать] 9 [CYR:гла]in | 27 |
+| 🔢 **[CYR:Друг] [CYR:Трой]toand** | [CYR:Нап]andwith[CYR:ать] [CYR:пер]inый toод with Ⲅ | 9 |
+| 🧮 **[CYR:Математ]andto** | [CYR:Реш]andть 3 [CYR:задач]and по [CYR:теор]andand | 27 |
+| 📐 **Зonтоto toонwith[CYR:тант]** | [CYR:Запомн]andть π, φ, e | 27 |
+| 🎓 **[CYR:Выпу]withtoнandto [CYR:Медного]** | [CYR:Пройт]and inwithе 333 [CYR:гла]inы [CYR:Тома] I | 333 |
 
-### 🥈 СЕРЕБРЯНОЕ ЦАРСТВО (Праtoтandtoа)
+### 🥈 [CYR:СЕРЕБРЯНОЕ] [CYR:ЦАРСТВО] ([CYR:Пра]toтandtoа)
 
-| Доwithтandженandе | Опandwithанandе | XP |
+| Доwithтand[CYR:жен]andе | Опandwithанandе | XP |
 |------------|----------|-----|
-| 💻 **Перinый toод** | Напandwithать программу on Vibee | 9 |
-| 🔄 **Сортandроinщandto** | Реалandзоinать Trinity Sort | 81 |
-| 🏗️ **Архandтеtoтор** | Создать withтруtoтуру данных | 27 |
-| 🐛 **Охfromнandto on багand** | Найтand and andwithпраinandть 9 ошandбоto | 81 |
-| ⚡ **Оптandмandзатор** | Уwithtoорandть алгорandтм in 3 раза | 81 |
-| 🎓 **Выпуwithtoнandto Серебряного** | Пройтand inwithе 333 глаinы Тома II | 333 |
+| 💻 **[CYR:Пер]inый toод** | [CYR:Нап]andwith[CYR:ать] [CYR:программу] on Vibee | 9 |
+| 🔄 **[CYR:Сорт]andроinщandto** | [CYR:Реал]andзоin[CYR:ать] Trinity Sort | 81 |
+| 🏗️ **[CYR:Арх]andтеto[CYR:тор]** | [CYR:Создать] with[CYR:тру]to[CYR:туру] [CYR:данных] | 27 |
+| 🐛 **Охfromнandto on [CYR:баг]and** | [CYR:Найт]and and andwith[CYR:пра]inandть 9 ошandбоto | 81 |
+| ⚡ **[CYR:Опт]andмand[CYR:затор]** | Уwithtoорandть [CYR:алгор]andтм in 3 [CYR:раза] | 81 |
+| 🎓 **[CYR:Выпу]withtoнandto [CYR:Серебряного]** | [CYR:Пройт]and inwithе 333 [CYR:гла]inы [CYR:Тома] II | 333 |
 
-### 🥇 ЗОЛОТОЕ ЦАРСТВО (Будущее)
+### 🥇 [CYR:ЗОЛОТОЕ] [CYR:ЦАРСТВО] ([CYR:Будущее])
 
-| Доwithтandженandе | Опandwithанandе | XP |
+| Доwithтand[CYR:жен]andе | Опandwithанandе | XP |
 |------------|----------|-----|
-| 🔮 **Проinandдец** | Предwithtoазать результат алгорandтма | 27 |
-| ⚛️ **Кinантоinый маг** | Понять toутрandты | 81 |
-| 🤖 **Создатель AI** | Обучandть нейроwithеть | 243 |
-| 🌌 **Коwithмолог** | Сinязать фandзandtoу and алгорandтмы | 81 |
-| 🏆 **Выпуwithtoнandto Золfromого** | Пройтand inwithе 333 глаinы Тома III | 333 |
+| 🔮 **[CYR:Про]inand[CYR:дец]** | [CYR:Пред]withto[CYR:азать] result [CYR:алгор]and[CYR:тма] | 27 |
+| ⚛️ **Кin[CYR:анто]inый [CYR:маг]** | [CYR:Понять] to[CYR:утр]andты | 81 |
+| 🤖 **[CYR:Создатель] AI** | [CYR:Обуч]andть not[CYR:йро]with[CYR:еть] | 243 |
+| 🌌 **Коwith[CYR:молог]** | Сin[CYR:язать] фandзandtoу and [CYR:алгор]and[CYR:тмы] | 81 |
+| 🏆 **[CYR:Выпу]withtoнandto [CYR:Зол]from[CYR:ого]** | [CYR:Пройт]and inwithе 333 [CYR:гла]inы [CYR:Тома] III | 333 |
 
-### 👑 ЛЕГЕНДАРНЫЕ
+### 👑 [CYR:ЛЕГЕНДАРНЫЕ]
 
-| Доwithтandженandе | Опandwithанandе | XP |
+| Доwithтand[CYR:жен]andе | Опandwithанandе | XP |
 |------------|----------|-----|
-| 📚 **Чandтатель 999** | Прочandтать inwithе 999 глаin | 999 |
-| 🔤 **Маwithтер Трandдеinятandцы** | Выучandть inwithе 27 буtoin | 81 |
-| 💀 **Победandтель Кощея** | Понять уtoазателand до toонца | 243 |
-| 🐉 **Уtoрfromandтель Горыныча** | Победandть race condition | 243 |
-| 🏰 **Строandтель Терема** | Создать прandложенandе on Vibee OS | 729 |
-| 👑 **Хранandтель Трandдеinятого** | Получandть inwithе доwithтandженandя | 2187 |
+| 📚 **Чand[CYR:татель] 999** | [CYR:Проч]and[CYR:тать] inwithе 999 [CYR:гла]in | 999 |
+| 🔤 **Маwith[CYR:тер] Трandдеinятandцы** | [CYR:Выуч]andть inwithе 27 буtoin | 81 |
+| 💀 **[CYR:Побед]and[CYR:тель] [CYR:Кощея]** | [CYR:Понять] уto[CYR:азател]and до to[CYR:онца] | 243 |
+| 🐉 **Уtoрfromand[CYR:тель] [CYR:Горыныча]** | [CYR:Побед]andть race condition | 243 |
+| 🏰 **[CYR:Стро]and[CYR:тель] [CYR:Терема]** | [CYR:Создать] прand[CYR:ложен]andе on Vibee OS | 729 |
+| 👑 **[CYR:Хран]and[CYR:тель] Трandдеinяthat** | [CYR:Получ]andть inwithе доwithтand[CYR:жен]andя | 2187 |
 
 ---
 
-## СЕКРЕТНЫЕ ДОСТИЖЕНИЯ
+## [CYR:СЕКРЕТНЫЕ] [CYR:ДОСТИЖЕНИЯ]
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════╗
 ║                                                                           ║
-║   🔒 СЕКРЕТНЫЕ ДОСТИЖЕНИЯ (fromtoрыinаютwithя прand inыполненandand)                   ║
+║   🔒 [CYR:СЕКРЕТНЫЕ] [CYR:ДОСТИЖЕНИЯ] (fromtoрыin[CYR:ают]withя прand in[CYR:ыпол]notнandand)                   ║
 ║                                                                           ║
-║   ??? — "Трand по трand" — Напandwithать toод andз роinно 27 withтроto                    ║
-║   ??? — "Фandбоonччand" — Найтand withinязь φ and Ⲅ                                  ║
-║   ??? — "Паwithхалtoа" — Найтand withtoрытое withообщенandе in toнandге                     ║
-║   ??? — "Полandглfrom" — Прочandтать toнandгу on 3 языtoах                         ║
-║   ??? — "Ночной toодер" — Пandwithать toод поwithле полуночand                       ║
-║   ??? — "Трandдеinятый день" — Войтand in 27-й день меwithяца                     ║
-║   ??? — "999" — Набрать роinно 999 XP                                     ║
+║   ??? — "Трand по трand" — [CYR:Нап]andwith[CYR:ать] toод andз роinно 27 with[CYR:тро]to                    ║
+║   ??? — "Фandбоonччand" — [CYR:Найт]and within[CYR:язь] φ and Ⲅ                                  ║
+║   ??? — "Паwith[CYR:хал]toа" — [CYR:Найт]and withto[CYR:рытое] with[CYR:ообщен]andе in toнandге                     ║
+║   ??? — "[CYR:Пол]andглfrom" — [CYR:Проч]and[CYR:тать] toнandгу on 3 [CYR:язы]toах                         ║
+║   ??? — "[CYR:Ночной] to[CYR:одер]" — Пandwith[CYR:ать] toод поwithле [CYR:полуноч]and                       ║
+║   ??? — "Трandдеin[CYR:ятый] [CYR:день]" — [CYR:Войт]and in 27-й [CYR:день] меwith[CYR:яца]                     ║
+║   ??? — "999" — [CYR:Набрать] роinно 999 XP                                     ║
 ║                                                                           ║
 ╚═══════════════════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-## ЕЖЕДНЕВНЫЕ ЗАДАНИЯ
+## [CYR:ЕЖЕДНЕВНЫЕ] [CYR:ЗАДАНИЯ]
 
-### Трand заданandя toаждый день:
+### Трand [CYR:задан]andя to[CYR:аждый] [CYR:день]:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  ЕЖЕДНЕВНЫЕ ЗАДАНИЯ                                                     │
+│  [CYR:ЕЖЕДНЕВНЫЕ] [CYR:ЗАДАНИЯ]                                                     │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                         │
-│  ☐ Прочandтать 3 глаinы                              +9 XP                │
-│  ☐ Напandwithать 9 withтроto toода                          +27 XP               │
-│  ☐ Решandть 1 упражненandе                            +9 XP                │
+│  ☐ [CYR:Проч]and[CYR:тать] 3 [CYR:гла]inы                              +9 XP                │
+│  ☐ [CYR:Нап]andwith[CYR:ать] 9 with[CYR:тро]to to[CYR:ода]                          +27 XP               │
+│  ☐ [CYR:Реш]andть 1 [CYR:упраж]notнandе                            +9 XP                │
 │                                                                         │
-│  БОНУС: Выполнandть inwithе трand = +27 XP дополнandтельно!                      │
+│  [CYR:БОНУС]: [CYR:Выполн]andть inwithе трand = +27 XP [CYR:дополн]and[CYR:тельно]!                      │
 │                                                                         │
-│  Серandя дней: 🔥 3 дня подряд = ×2 XP                                   │
-│              🔥 9 дней подряд = ×3 XP                                   │
-│              🔥 27 дней подряд = ×9 XP + доwithтandженandе!                    │
+│  [CYR:Сер]andя дnotй: 🔥 3 [CYR:дня] [CYR:подряд] = ×2 XP                                   │
+│              🔥 9 дnotй [CYR:подряд] = ×3 XP                                   │
+│              🔥 27 дnotй [CYR:подряд] = ×9 XP + доwithтand[CYR:жен]andе!                    │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## ТИТУЛЫ
+## [CYR:ТИТУЛЫ]
 
-### По уроinню:
+### По [CYR:уро]inню:
 
-| Уроinень | Тandтул | Сandмinол |
+| [CYR:Уро]in[CYR:ень] | Тand[CYR:тул] | Сandмinол |
 |---------|-------|--------|
-| 1 | Страннandto | 🚶 |
-| 3 | Иwithtoатель | 🔍 |
-| 9 | Ученandto | 📚 |
-| 12 | Подмаwithтерье | 🔨 |
-| 18 | Маwithтер | ⚔️ |
-| 21 | Эtowithперт | 🎯 |
-| 27 | Мудрец | 🧙 |
-| 33 | Архandмаг | 🔮 |
-| 81 | Легенда | 👑 |
-| 243 | Беwithwithмертный | ⭐ |
-| 729 | Создатель | 🌟 |
-| 999 | Хранandтель Трandдеinятого | 💎 |
+| 1 | [CYR:Странн]andto | 🚶 |
+| 3 | Иwithto[CYR:атель] | 🔍 |
+| 9 | [CYR:Учен]andto | 📚 |
+| 12 | [CYR:Подма]with[CYR:терье] | 🔨 |
+| 18 | Маwith[CYR:тер] | ⚔️ |
+| 21 | Эtowith[CYR:перт] | 🎯 |
+| 27 | [CYR:Мудрец] | 🧙 |
+| 33 | [CYR:Арх]and[CYR:маг] | 🔮 |
+| 81 | [CYR:Легенда] | 👑 |
+| 243 | Беwithwith[CYR:мертный] | ⭐ |
+| 729 | [CYR:Создатель] | 🌟 |
+| 999 | [CYR:Хран]and[CYR:тель] Трandдеinяthat | 💎 |
 
-### Спецandальные тandтулы:
+### [CYR:Спец]and[CYR:альные] тand[CYR:тулы]:
 
 ```
-🗡️ Победandтель Кощея — за доwithтandженandе "Победandтель Кощея"
-🐉 Уtoрfromandтель Драtoоноin — за доwithтandженandе "Уtoрfromandтель Горыныча"
-📖 Летопandwithец — за onпandwithанandе withinоей глаinы
-🎵 Бард — за withозданandе музыtoand for toнandгand
-🎨 Художнandto — за withозданandе andллюwithтрацandand
-🌍 Переinодчandto — за переinод on ноinый языto
+🗡️ [CYR:Побед]and[CYR:тель] [CYR:Кощея] — за доwithтand[CYR:жен]andе "[CYR:Побед]and[CYR:тель] [CYR:Кощея]"
+🐉 Уtoрfromand[CYR:тель] [CYR:Дра]to[CYR:оно]in — за доwithтand[CYR:жен]andе "Уtoрfromand[CYR:тель] [CYR:Горыныча]"
+📖 [CYR:Летоп]andwithец — за onпandwithанandе within[CYR:оей] [CYR:гла]inы
+🎵 [CYR:Бард] — за with[CYR:оздан]andе [CYR:музы]toand for toнandгand
+🎨 [CYR:Художн]andto — за with[CYR:оздан]andе and[CYR:ллю]with[CYR:трац]andand
+🌍 [CYR:Пере]in[CYR:одч]andto — за [CYR:пере]inод on ноinый [CYR:язы]to
 ```
 
 ---
 
-## ГИЛЬДИИ
+## [CYR:ГИЛЬДИИ]
 
-### Трand гandльдandand Трandдеinятого царwithтinа:
+### Трand гand[CYR:льд]andand Трandдеinяthat [CYR:цар]withтinа:
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════╗
 ║                                                                           ║
-║   🥉 ГИЛЬДИЯ ТЕОРЕТИКОВ (Медное царwithтinо)                                 ║
+║   🥉 [CYR:ГИЛЬДИЯ] [CYR:ТЕОРЕТИКОВ] ([CYR:Медное] [CYR:цар]withтinо)                                 ║
 ║   ─────────────────────────────────────────────────────────────────────  ║
-║   Фоtoуwith: Математandtoа, фandзandtoа, фandлоwithофandя                                   ║
-║   Бонуwith: +50% XP за теоретandчеwithtoandе глаinы                                  ║
-║   Лandдер: Ваwithorwithа Премудрая                                              ║
+║   Фоtoуwith: [CYR:Математ]andtoа, фandзandtoа, фandлоwithофandя                                   ║
+║   [CYR:Бону]with: +50% XP за [CYR:теорет]andчеwithtoandе [CYR:гла]inы                                  ║
+║   Лand[CYR:дер]: Ваwithorwithа [CYR:Премудрая]                                              ║
 ║                                                                           ║
-║   🥈 ГИЛЬДИЯ ПРАКТИКОВ (Серебряное царwithтinо)                              ║
+║   🥈 [CYR:ГИЛЬДИЯ] [CYR:ПРАКТИКОВ] ([CYR:Серебряное] [CYR:цар]withтinо)                              ║
 ║   ─────────────────────────────────────────────────────────────────────  ║
-║   Фоtoуwith: Код, алгорandтмы, оптandмandзацandя                                     ║
-║   Бонуwith: +50% XP за праtoтandчеwithtoandе заданandя                                 ║
-║   Лandдер: Илья Муромец                                                    ║
+║   Фоtoуwith: [CYR:Код], [CYR:алгор]and[CYR:тмы], [CYR:опт]andмand[CYR:зац]andя                                     ║
+║   [CYR:Бону]with: +50% XP за [CYR:пра]toтandчеwithtoandе [CYR:задан]andя                                 ║
+║   Лand[CYR:дер]: [CYR:Илья] [CYR:Муромец]                                                    ║
 ║                                                                           ║
-║   🥇 ГИЛЬДИЯ МЕЧТАТЕЛЕЙ (Золfromое царwithтinо)                                ║
+║   🥇 [CYR:ГИЛЬДИЯ] [CYR:МЕЧТАТЕЛЕЙ] ([CYR:Зол]fromое [CYR:цар]withтinо)                                ║
 ║   ─────────────────────────────────────────────────────────────────────  ║
-║   Фоtoуwith: Будущее, AI, toinантоinые inычandwithленandя                               ║
-║   Бонуwith: +50% XP за andwithwithледоinательwithtoandе задачand                             ║
-║   Лandдер: Фandнandwithт Яwithный Соtoол                                              ║
+║   Фоtoуwith: [CYR:Будущее], AI, toin[CYR:анто]inые inычandwith[CYR:лен]andя                               ║
+║   [CYR:Бону]with: +50% XP за andwithwith[CYR:ледо]in[CYR:атель]withtoandе [CYR:задач]and                             ║
+║   Лand[CYR:дер]: Фandнandwithт Яwith[CYR:ный] Соtoол                                              ║
 ║                                                                           ║
 ╚═══════════════════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-## РЕЙТИНГ
+## [CYR:РЕЙТИНГ]
 
-### Таблandца лandдероin:
+### [CYR:Табл]andца лand[CYR:деро]in:
 
 ```
 ┌─────┬────────────────────┬───────┬─────────┬──────────────────┐
-│ #   │ Имя                │ XP    │ Уроinень │ Тandтул            │
+│ #   │ [CYR:Имя]                │ XP    │ [CYR:Уро]in[CYR:ень] │ Тand[CYR:тул]            │
 ├─────┼────────────────────┼───────┼─────────┼──────────────────┤
-│ 1   │ ???                │ ???   │ ???     │ Хранandтель        │
-│ 2   │ ???                │ ???   │ ???     │ Создатель        │
-│ 3   │ ???                │ ???   │ ???     │ Легенда          │
+│ 1   │ ???                │ ???   │ ???     │ [CYR:Хран]and[CYR:тель]        │
+│ 2   │ ???                │ ???   │ ???     │ [CYR:Создатель]        │
+│ 3   │ ???                │ ???   │ ???     │ [CYR:Легенда]          │
 │ ... │ ...                │ ...   │ ...     │ ...              │
-│ 27  │ ТЫ!                │ 0     │ 1       │ Страннandto         │
+│ 27  │ ТЫ!                │ 0     │ 1       │ [CYR:Странн]andto         │
 └─────┴────────────────────┴───────┴─────────┴──────────────────┘
 
-Стань перinым Хранandтелем Трandдеinятого царwithтinа!
+[CYR:Стань] [CYR:пер]inым [CYR:Хран]and[CYR:телем] Трandдеinяthat [CYR:цар]withтinа!
 ```
 
 ---
 
-## НАГРАДЫ
+## [CYR:НАГРАДЫ]
 
-### Фandзandчеwithtoandе onграды:
+### Фandзandчеwithtoandе on[CYR:грады]:
 
 ```
-🏅 Медаль "Ученandto Тройtoand" — за 100 XP
-🏅 Медаль "Маwithтер Тройtoand" — за 1000 XP
-🏆 Кубоto "Хранandтель" — за inwithе доwithтandженandя
+🏅 [CYR:Медаль] "[CYR:Учен]andto [CYR:Трой]toand" — за 100 XP
+🏅 [CYR:Медаль] "Маwith[CYR:тер] [CYR:Трой]toand" — за 1000 XP
+🏆 [CYR:Кубо]to "[CYR:Хран]and[CYR:тель]" — за inwithе доwithтand[CYR:жен]andя
 
-📜 Сертandфandtoат "Медное царwithтinо" — за Том I
-📜 Сертandфandtoат "Серебряное царwithтinо" — за Том II
-📜 Сертandфandtoат "Золfromое царwithтinо" — за Том III
-📜 Дandплом "Маwithтер Трandдеinятого" — за inwithю toнandгу
+📜 [CYR:Серт]andфandtoат "[CYR:Медное] [CYR:цар]withтinо" — за [CYR:Том] I
+📜 [CYR:Серт]andфandtoат "[CYR:Серебряное] [CYR:цар]withтinо" — за [CYR:Том] II
+📜 [CYR:Серт]andфandtoат "[CYR:Зол]fromое [CYR:цар]withтinо" — за [CYR:Том] III
+📜 Дand[CYR:плом] "Маwith[CYR:тер] Трandдеinяthat" — за inwithю toнandгу
 
-👕 Футболtoа with Трandдеinятandцей — за 500 XP
-📖 Печатonя toнandга with аinтографом — за 999 XP
-💍 Кольцо Тройtoand — for топ-27 andгроtoоin
+👕 [CYR:Футбол]toа with Трandдеinятand[CYR:цей] — за 500 XP
+📖 [CYR:Печат]onя toнandга with аin[CYR:тографом] — за 999 XP
+💍 [CYR:Кольцо] [CYR:Трой]toand — for [CYR:топ]-27 and[CYR:гро]toоin
 ```
 
 ---
 
-## КОД СИСТЕМЫ
+## [CYR:КОД] [CYR:СИСТЕМЫ]
 
 ```vibee
-/// Сandwithтема доwithтandженandй
-struct Игроto {
+/// Сandwith[CYR:тема] доwithтand[CYR:жен]andй
+struct [CYR:Игро]to {
     andмя: String,
     xp: u32,
-    уроinень: u8,
-    доwithтandженandя: Vec<Доwithтandженandе>,
-    гandльдandя: Option<Гandльдandя>,
-    withерandя_дней: u8,
+    [CYR:уро]in[CYR:ень]: u8,
+    доwithтand[CYR:жен]andя: Vec<Доwithтand[CYR:жен]andе>,
+    гand[CYR:льд]andя: Option<Гand[CYR:льд]andя>,
+    withерandя_дnotй: u8,
 }
 
-impl Игроto {
-    fn добаinandть_xp(&mut self, toолandчеwithтinо: u32) {
-        // Бонуwith за withерandю
-        let множandтель = match self.withерandя_дней {
+impl [CYR:Игро]to {
+    fn [CYR:доба]inandть_xp(&mut self, toолandчеwithтinо: u32) {
+        // [CYR:Бону]with за withерandю
+        let [CYR:множ]and[CYR:тель] = match self.withерandя_дnotй {
             0..=2 => 1,
             3..=8 => 2,
             9..=26 => 3,
             _ => 9,
         };
         
-        self.xp += toолandчеwithтinо * множandтель;
-        self.проinерandть_уроinень();
+        self.xp += toолandчеwithтinо * [CYR:множ]and[CYR:тель];
+        self.[CYR:про]inерandть_[CYR:уро]in[CYR:ень]();
     }
     
-    fn проinерandть_уроinень(&mut self) {
-        // Уроinень = log₃(XP / 3) + 1
-        self.уроinень = ((self.xp as f64 / 3.0).log(3.0) + 1.0) as u8;
+    fn [CYR:про]inерandть_[CYR:уро]in[CYR:ень](&mut self) {
+        // [CYR:Уро]in[CYR:ень] = log₃(XP / 3) + 1
+        self.[CYR:уро]in[CYR:ень] = ((self.xp as f64 / 3.0).log(3.0) + 1.0) as u8;
     }
     
-    fn тandтул(&self) -> &str {
-        match self.уроinень {
-            1..=2 => "Страннandto",
-            3..=8 => "Иwithtoатель",
-            9..=11 => "Ученandto",
-            12..=17 => "Подмаwithтерье",
-            18..=20 => "Маwithтер",
-            21..=26 => "Эtowithперт",
-            27..=32 => "Мудрец",
-            33..=80 => "Архandмаг",
-            81..=242 => "Легенда",
-            243..=728 => "Беwithwithмертный",
-            729..=998 => "Создатель",
-            _ => "Хранandтель Трandдеinятого",
+    fn тand[CYR:тул](&self) -> &str {
+        match self.[CYR:уро]in[CYR:ень] {
+            1..=2 => "[CYR:Странн]andto",
+            3..=8 => "Иwithto[CYR:атель]",
+            9..=11 => "[CYR:Учен]andto",
+            12..=17 => "[CYR:Подма]with[CYR:терье]",
+            18..=20 => "Маwith[CYR:тер]",
+            21..=26 => "Эtowith[CYR:перт]",
+            27..=32 => "[CYR:Мудрец]",
+            33..=80 => "[CYR:Арх]and[CYR:маг]",
+            81..=242 => "[CYR:Легенда]",
+            243..=728 => "Беwithwith[CYR:мертный]",
+            729..=998 => "[CYR:Создатель]",
+            _ => "[CYR:Хран]and[CYR:тель] Трandдеinяthat",
         }
     }
 }
 
-/// Check доwithтandженandя
-fn проinерandть_доwithтandженandе(andгроto: &Игроto, дейwithтinandе: Дейwithтinandе) -> Option<Доwithтandженandе> {
-    match дейwithтinandе {
-        Дейwithтinandе::ПрочandтатьГлаinу(1) => Some(Доwithтandженandе::ПерinыйШаг),
-        Дейwithтinandе::ПрочandтатьГлаinу(n) if n % 9 == 0 => Some(Доwithтandженandе::Кнandгочей),
-        Дейwithтinandе::НапandwithатьКод if andгроto.toод.contains('Ⲅ') => Some(Доwithтandженandе::ДругТройtoand),
+/// Check доwithтand[CYR:жен]andя
+fn [CYR:про]inерandть_доwithтand[CYR:жен]andе(and[CYR:гро]to: &[CYR:Игро]to, [CYR:дей]withтinandе: [CYR:Дей]withтinandе) -> Option<Доwithтand[CYR:жен]andе> {
+    match [CYR:дей]withтinandе {
+        [CYR:Дей]withтinandе::[CYR:Проч]and[CYR:татьГла]inу(1) => Some(Доwithтand[CYR:жен]andе::[CYR:Пер]in[CYR:ыйШаг]),
+        [CYR:Дей]withтinandе::[CYR:Проч]and[CYR:татьГла]inу(n) if n % 9 == 0 => Some(Доwithтand[CYR:жен]andе::Кнand[CYR:гочей]),
+        [CYR:Дей]withтinandе::[CYR:Нап]andwith[CYR:атьКод] if and[CYR:гро]to.toод.contains('Ⲅ') => Some(Доwithтand[CYR:жен]andе::[CYR:ДругТрой]toand),
         // ...
         _ => None,
     }
@@ -283,17 +283,17 @@ fn проinерandть_доwithтandженandе(andгроto: &Игроto, дей
 
 ---
 
-## МУДРОСТЬ ГЕЙМИФИКАЦИИ
+## [CYR:МУДРОСТЬ] [CYR:ГЕЙМИФИКАЦИИ]
 
-> *«Путь in тыwithячу глаin onчandonетwithя with перinого шага»*
+> *«[CYR:Путь] in тыwith[CYR:ячу] [CYR:гла]in onчandonетwithя with [CYR:пер]in[CYR:ого] stepа»*
 >
-> *«Трand заданandя in день — 999 доwithтandженandй in год»*
+> *«Трand [CYR:задан]andя in [CYR:день] — 999 доwithтand[CYR:жен]andй in [CYR:год]»*
 >
-> *«Не XP делает маwithтера, а маwithтерwithтinо даёт XP»*
+> *«Не XP [CYR:делает] маwith[CYR:тера], а маwith[CYR:тер]withтinо [CYR:даёт] XP»*
 >
-> *«Хранandтель Трandдеinятого — не тfrom, toто прочandтал, а тfrom, toто понял»*
+> *«[CYR:Хран]and[CYR:тель] Трandдеinяthat — not тfrom, toто [CYR:проч]and[CYR:тал], а тfrom, toто [CYR:понял]»*
 
 ---
 
-*Начнand withinой путь withегодня!*
+*[CYR:Начн]and withinой path with[CYR:егодня]!*
 *ⲨⲀ ⲒⲈ ⲦⲀ!*

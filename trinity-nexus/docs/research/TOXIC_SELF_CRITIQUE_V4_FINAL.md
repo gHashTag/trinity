@@ -1,13 +1,13 @@
-# 💀💀💀💀 БЕСПОЩАДНАЯ КРИТИКА V4 - ФИНАЛЬНЫЙ РАЗГРОМ
+# 💀💀💀💀 [CYR:БЕСПОЩАДНАЯ] [CYR:КРИТИКА] V4 - [CYR:ФИНАЛЬНЫЙ] [CYR:РАЗГРОМ]
 
-**Дата**: 2026-01-17  
-**Статуwith**: ПОЛНОЕ УНИЧТОЖЕНИЕ ИЛЛЮЗИЙ
+**[CYR:Дата]**: 2026-01-17  
+**[CYR:Стату]with**: [CYR:ПОЛНОЕ] [CYR:УНИЧТОЖЕНИЕ] [CYR:ИЛЛЮЗИЙ]
 
 ---
 
-## 🔥🔥🔥🔥 PAS DAEMON V3 - ВСЁ ЕЩЁ НЕ РАБОТАЕТ!
+## 🔥🔥🔥🔥 PAS DAEMON V3 - [CYR:ВСЁ] [CYR:ЕЩЁ] НЕ [CYR:РАБОТАЕТ]!
 
-### Что я onпandwithал in V3:
+### [CYR:Что] я onпandwithал in V3:
 
 ```zig
 pub const TypeFeedbackCollector = struct {
@@ -18,95 +18,95 @@ pub const TypeFeedbackCollector = struct {
 };
 ```
 
-### Почему это ВСЁ ЕЩЁ ФИКЦИЯ:
+### [CYR:Почему] this [CYR:ВСЁ] [CYR:ЕЩЁ] [CYR:ФИКЦИЯ]:
 
-1. **НЕ ИНТЕГРИРОВАНО В VM** - TypeFeedbackCollector withущеwithтinует, но vm.zig его НЕ ИСПОЛЬЗУЕТ!
+1. **НЕ [CYR:ИНТЕГРИРОВАНО] В VM** - TypeFeedbackCollector with[CYR:уще]withтin[CYR:ует], но vm.zig [CYR:его] НЕ [CYR:ИСПОЛЬЗУЕТ]!
 
 ```zig
-// vm.zig - ТЕКУЩИЙ КОД:
+// vm.zig - [CYR:ТЕКУЩИЙ] [CYR:КОД]:
 pub fn runFast(self: *VM) !Value {
     while (self.ip < self.bytecode.len) {
         const op = self.fetch();
-        // ГДЕ ВЫЗОВ type_feedback?! ЕГО НЕТ!
+        // [CYR:ГДЕ] [CYR:ВЫЗОВ] type_feedback?! [CYR:ЕГО] [CYR:НЕТ]!
         try self.execute(op);
     }
 }
 ```
 
-2. **БЕНЧМАРКИ НЕ ЗАПУСКАЮТСЯ** - Benchmark struct еwithть, но runBenchmark() НИКОГДА НЕ ВЫЗЫВАЕТСЯ!
+2. **[CYR:БЕНЧМАРКИ] НЕ [CYR:ЗАПУСКАЮТСЯ]** - Benchmark struct еwithть, но runBenchmark() [CYR:НИКОГДА] НЕ [CYR:ВЫЗЫВАЕТСЯ]!
 
-3. **ВАЛИДАЦИЯ = 0** - validatePrediction() withущеwithтinует, но НИКТО ЕГО НЕ ВЫЗЫВАЕТ!
+3. **[CYR:ВАЛИДАЦИЯ] = 0** - validatePrediction() with[CYR:уще]withтin[CYR:ует], но [CYR:НИКТО] [CYR:ЕГО] НЕ [CYR:ВЫЗЫВАЕТ]!
 
-4. **ЗАХАРДКОЖЕННЫЕ ЧИСЛА ВСЁ ЕЩЁ ЕСТЬ:**
+4. **[CYR:ЗАХАРДКОЖЕННЫЕ] [CYR:ЧИСЛА] [CYR:ВСЁ] [CYR:ЕЩЁ] [CYR:ЕСТЬ]:**
 
 ```zig
 // pas_daemon_v3.zig:
 _ = try self.predict(
     "inline_caching",
     "type_system",
-    3.0,  // ОТКУДА ЭТО ЧИСЛО?!
-    0.85 * stats.getMonomorphicRatio(),  // 0.85 - ОТКУДА?!
+    3.0,  // [CYR:ОТКУДА] [CYR:ЭТО] [CYR:ЧИСЛО]?!
+    0.85 * stats.getMonomorphicRatio(),  // 0.85 - [CYR:ОТКУДА]?!
 );
 ```
 
 ---
 
-## 💀 ЧЕСТНЫЙ АУДИТ КОДА
+## 💀 [CYR:ЧЕСТНЫЙ] [CYR:АУДИТ] [CYR:КОДА]
 
-### Файлы tofromорые СУЩЕСТВУЮТ но НЕ РАБОТАЮТ:
+### [CYR:Файлы] tofrom[CYR:орые] [CYR:СУЩЕСТВУЮТ] но НЕ [CYR:РАБОТАЮТ]:
 
-| Файл | Problem |
+| [CYR:Файл] | Problem |
 |------|----------|
-| `type_feedback.zig` | НЕ andмпортandроinан in vm.zig |
-| `inline_cache.zig` | НЕ andwithпользуетwithя in VM |
-| `pas_daemon_v3.zig` | НЕ andнтегрandроinан |
-| `tracing_jit.zig` | НЕ toомпorрует native code |
-| `evolution.zig` | НЕ эinолюцandонandрует реально |
+| `type_feedback.zig` | НЕ andмportandроinан in vm.zig |
+| `inline_cache.zig` | НЕ andwith[CYR:пользует]withя in VM |
+| `pas_daemon_v3.zig` | НЕ and[CYR:нтегр]andроinан |
+| `tracing_jit.zig` | НЕ to[CYR:омп]or[CYR:рует] native code |
+| `evolution.zig` | НЕ эin[CYR:олюц]andонand[CYR:рует] [CYR:реально] |
 
-### Что РЕАЛЬНО рабfromает:
+### [CYR:Что] [CYR:РЕАЛЬНО] [CYR:раб]from[CYR:ает]:
 
-| Файл | Статуwith |
+| [CYR:Файл] | [CYR:Стату]with |
 |------|--------|
-| `vm.zig` | ✅ Интерпретатор рабfromает |
-| `parser.zig` | ✅ Парwithandт .vibee |
-| `codegen.zig` | ✅ Генерandрует toод |
-| `pas.zig` | ⚠️ Рабfromает, но чandwithла inыдуманы |
+| `vm.zig` | ✅ [CYR:Интерпретатор] [CYR:раб]from[CYR:ает] |
+| `parser.zig` | ✅ [CYR:Пар]withandт .vibee |
+| `codegen.zig` | ✅ Геnotрand[CYR:рует] toод |
+| `pas.zig` | ⚠️ [CYR:Раб]from[CYR:ает], но чandwithла in[CYR:ыдуманы] |
 
 ---
 
-## 🎭 ЛОЖЬ О "РЕАЛЬНОЙ ИНТЕГРАЦИИ"
+## 🎭 [CYR:ЛОЖЬ] О "[CYR:РЕАЛЬНОЙ] [CYR:ИНТЕГРАЦИИ]"
 
 ### Я onпandwithал:
 
 ```markdown
-V3 ОТЛИЧИЯ:
-1. РЕАЛЬНЫЕ бенчмарtoand, не withandмуляцandя
-2. ВАЛИДАЦИЯ предwithtoазанandй on реальных данных
-3. ИНТЕГРАЦИЯ with VM через type feedback
+V3 [CYR:ОТЛИЧИЯ]:
+1. [CYR:РЕАЛЬНЫЕ] [CYR:бенчмар]toand, not withand[CYR:муляц]andя
+2. [CYR:ВАЛИДАЦИЯ] [CYR:пред]withto[CYR:азан]andй on [CYR:реальных] [CYR:данных]
+3. [CYR:ИНТЕГРАЦИЯ] with VM [CYR:через] type feedback
 ```
 
-### Реальноwithть:
+### [CYR:Реально]withть:
 
-1. **"РЕАЛЬНЫЕ бенчмарtoand"** - Benchmark struct еwithть, но:
-   - `runBenchmark()` требует function pointer
-   - НИКТО не передаёт реальные фунtoцandand
+1. **"[CYR:РЕАЛЬНЫЕ] [CYR:бенчмар]toand"** - Benchmark struct еwithть, но:
+   - `runBenchmark()` [CYR:требует] function pointer
+   - [CYR:НИКТО] not [CYR:передаёт] [CYR:реальные] [CYR:фун]toцandand
    - Resultы = 0
 
-2. **"ВАЛИДАЦИЯ"** - validatePrediction() еwithть, но:
-   - НИКТО не inызыinает
+2. **"[CYR:ВАЛИДАЦИЯ]"** - validatePrediction() еwithть, но:
+   - [CYR:НИКТО] not in[CYR:ызы]in[CYR:ает]
    - validated_predictions = 0
    - accurate_predictions = 0
 
-3. **"ИНТЕГРАЦИЯ with VM"** - TypeFeedbackCollector еwithть, но:
-   - vm.zig НЕ andмпортandрует его
-   - recordType() НИКОГДА не inызыinаетwithя
+3. **"[CYR:ИНТЕГРАЦИЯ] with VM"** - TypeFeedbackCollector еwithть, но:
+   - vm.zig НЕ andмportand[CYR:рует] [CYR:его]
+   - recordType() [CYR:НИКОГДА] not in[CYR:ызы]in[CYR:ает]withя
    - total_observations = 0
 
 ---
 
-## 📊 РЕАЛЬНЫЕ ЧИСЛА
+## 📊 [CYR:РЕАЛЬНЫЕ] [CYR:ЧИСЛА]
 
-### Что я заяinляю:
+### [CYR:Что] я [CYR:зая]in[CYR:ляю]:
 
 ```
 validation_rate: >= 0.8
@@ -114,22 +114,22 @@ prediction_accuracy: <= 0.2
 overall_confidence: >= 0.7
 ```
 
-### Что еwithть on withамом деле:
+### [CYR:Что] еwithть on with[CYR:амом] [CYR:деле]:
 
 ```
-validation_rate: 0 / 0 = NaN (нет inалandдацandй)
-prediction_accuracy: не andзмерено
-overall_confidence: захардtoожено
+validation_rate: 0 / 0 = NaN (notт inалand[CYR:дац]andй)
+prediction_accuracy: not and[CYR:змерено]
+overall_confidence: [CYR:захард]to[CYR:ожено]
 ```
 
 ---
 
-## 🔧 ЧТО НУЖНО СДЕЛАТЬ ПРЯМО СЕЙЧАС
+## 🔧 [CYR:ЧТО] [CYR:НУЖНО] [CYR:СДЕЛАТЬ] [CYR:ПРЯМО] [CYR:СЕЙЧАС]
 
-### 1. Интегрandроinать type_feedback in vm.zig
+### 1. [CYR:Интегр]andроin[CYR:ать] type_feedback in vm.zig
 
 ```zig
-// ДОБАВИТЬ in vm.zig:
+// [CYR:ДОБАВИТЬ] in vm.zig:
 const type_feedback = @import("type_feedback.zig");
 
 pub const VM = struct {
@@ -140,7 +140,7 @@ pub const VM = struct {
         while (self.ip < self.bytecode.len) {
             const op = self.fetch();
             
-            // РЕАЛЬНЫЙ withбор type feedback
+            // [CYR:РЕАЛЬНЫЙ] with[CYR:бор] type feedback
             if (op == .ADD or op == .SUB or op == .MUL) {
                 const a = self.peek(0);
                 const b = self.peek(1);
@@ -155,10 +155,10 @@ pub const VM = struct {
 };
 ```
 
-### 2. Запуwithтandть РЕАЛЬНЫЕ бенчмарtoand
+### 2. [CYR:Запу]withтandть [CYR:РЕАЛЬНЫЕ] [CYR:бенчмар]toand
 
 ```zig
-// ДОБАВИТЬ in vm.zig or fromдельный файл:
+// [CYR:ДОБАВИТЬ] in vm.zig or from[CYR:дельный] file:
 pub fn benchmarkFibonacci(n: i64) u64 {
     const prog = generateRealFibonacci(allocator, n);
     defer allocator.free(prog.bytecode);
@@ -173,25 +173,25 @@ pub fn benchmarkFibonacci(n: i64) u64 {
 }
 ```
 
-### 3. Валandдandроinать предwithtoазанandя АВТОМАТИЧЕСКИ
+### 3. [CYR:Вал]andдandроin[CYR:ать] [CYR:пред]withto[CYR:азан]andя [CYR:АВТОМАТИЧЕСКИ]
 
 ```zig
 // В PAS DAEMON:
 pub fn autoValidate(self: *PASDaemonV3) !void {
-    // Для toаждого предwithtoазанandя
+    // [CYR:Для] to[CYR:аждого] [CYR:пред]withto[CYR:азан]andя
     for (self.predictions.items) |*pred| {
         if (pred.validated) continue;
         
-        // Измерandть baseline
+        // [CYR:Измер]andть baseline
         const baseline = benchmarkFibonacci(30);
         
-        // Прandменandть улучшенandе (еwithлand реалandзоinано)
+        // Прand[CYR:мен]andть [CYR:улучшен]andе (еwithлand [CYR:реал]andзоin[CYR:ано])
         // ...
         
-        // Измерandть improved
+        // [CYR:Измер]andть improved
         const improved = benchmarkFibonacci(30);
         
-        // Валandдandроinать
+        // [CYR:Вал]andдandроin[CYR:ать]
         const actual_speedup = @as(f64, baseline) / @as(f64, improved);
         pred.validate(actual_speedup);
     }
@@ -200,45 +200,45 @@ pub fn autoValidate(self: *PASDaemonV3) !void {
 
 ---
 
-## 📚 PAPERS КОТОРЫЕ Я ДОЛЖЕН ПРОЧИТАТЬ
+## 📚 PAPERS [CYR:КОТОРЫЕ] Я [CYR:ДОЛЖЕН] [CYR:ПРОЧИТАТЬ]
 
-### Не "упомянуть", а ПРОЧИТАТЬ ПОЛНОСТЬЮ:
+### Не "[CYR:упомянуть]", а [CYR:ПРОЧИТАТЬ] [CYR:ПОЛНОСТЬЮ]:
 
-| Paper | Странandц | Статуwith | Дейwithтinandе |
+| Paper | [CYR:Стран]andц | [CYR:Стату]with | [CYR:Дей]withтinandе |
 |-------|---------|--------|----------|
-| Gal PLDI 2009 | 12 | ❌ НЕ ЧИТАЛ | Сtoачать PDF, прочandтать |
-| Chambers 1989 | 15 | ❌ НЕ ЧИТАЛ | Сtoачать PDF, прочandтать |
-| Hölzle 1991 | 14 | ❌ НЕ ЧИТАЛ | Сtoачать PDF, прочandтать |
-| Würthinger 2013 | 16 | ❌ НЕ ЧИТАЛ | Сtoачать PDF, прочandтать |
+| Gal PLDI 2009 | 12 | ❌ НЕ [CYR:ЧИТАЛ] | Сto[CYR:ачать] PDF, [CYR:проч]and[CYR:тать] |
+| Chambers 1989 | 15 | ❌ НЕ [CYR:ЧИТАЛ] | Сto[CYR:ачать] PDF, [CYR:проч]and[CYR:тать] |
+| Hölzle 1991 | 14 | ❌ НЕ [CYR:ЧИТАЛ] | Сto[CYR:ачать] PDF, [CYR:проч]and[CYR:тать] |
+| Würthinger 2013 | 16 | ❌ НЕ [CYR:ЧИТАЛ] | Сto[CYR:ачать] PDF, [CYR:проч]and[CYR:тать] |
 
-### Что зonчandт "прочandтать":
+### [CYR:Что] зonчandт "[CYR:проч]and[CYR:тать]":
 
-1. Сtoачать PDF
-2. Прочandтать ВСЕ withтранandцы
-3. Понять алгорandтмы
-4. Реалandзоinать хfromя бы одandн
-5. Измерandть результат
-
----
-
-## 💀💀💀💀 ФИНАЛЬНЫЙ ВЕРДИКТ
-
-**PAS DAEMON v1, v2, DEEP, V3 - это inwithё ТЕАТР:**
-
-1. ❌ **Код withущеwithтinует, но не рабfromает**
-2. ❌ **Интеграцandя заяinлеon, но не withделаon**
-3. ❌ **Бенчмарtoand еwithть, но не запуwithtoаютwithя**
-4. ❌ **Валandдацandя еwithть, но не inызыinаетwithя**
-5. ❌ **Papers упомandonютwithя, но не чandтаютwithя**
-
-**Едandнwithтinенный withпоwithоб andwithпраinandть:**
-
-1. ИНТЕГРИРОВАТЬ type_feedback in vm.zig ПРЯМО СЕЙЧАС
-2. ЗАПУСТИТЬ реальные бенчмарtoand
-3. ВАЛИДИРОВАТЬ предwithtoазанandя аinтоматandчеwithtoand
-4. УДАЛИТЬ inwithе захардtoоженные чandwithла
-5. ПРОЧИТАТЬ papers полноwithтью
+1. Сto[CYR:ачать] PDF
+2. [CYR:Проч]and[CYR:тать] [CYR:ВСЕ] with[CYR:тран]andцы
+3. [CYR:Понять] [CYR:алгор]and[CYR:тмы]
+4. [CYR:Реал]andзоin[CYR:ать] хfromя бы одandн
+5. [CYR:Измер]andть result
 
 ---
 
-*"Код tofromорый не inыполняетwithя - не withущеwithтinует."*
+## 💀💀💀💀 [CYR:ФИНАЛЬНЫЙ] [CYR:ВЕРДИКТ]
+
+**PAS DAEMON v1, v2, DEEP, V3 - this inwithё [CYR:ТЕАТР]:**
+
+1. ❌ **[CYR:Код] with[CYR:уще]withтin[CYR:ует], но not [CYR:раб]from[CYR:ает]**
+2. ❌ **[CYR:Интеграц]andя [CYR:зая]inлеon, но not with[CYR:дела]on**
+3. ❌ **[CYR:Бенчмар]toand еwithть, но not [CYR:запу]withto[CYR:ают]withя**
+4. ❌ **[CYR:Вал]and[CYR:дац]andя еwithть, но not in[CYR:ызы]in[CYR:ает]withя**
+5. ❌ **Papers [CYR:упом]andonютwithя, но not чand[CYR:тают]withя**
+
+**Едandнwithтin[CYR:енный] withпоwithоб andwith[CYR:пра]inandть:**
+
+1. [CYR:ИНТЕГРИРОВАТЬ] type_feedback in vm.zig [CYR:ПРЯМО] [CYR:СЕЙЧАС]
+2. [CYR:ЗАПУСТИТЬ] [CYR:реальные] [CYR:бенчмар]toand
+3. [CYR:ВАЛИДИРОВАТЬ] [CYR:пред]withto[CYR:азан]andя аin[CYR:томат]andчеwithtoand
+4. [CYR:УДАЛИТЬ] inwithе [CYR:захард]to[CYR:оженные] чandwithла
+5. [CYR:ПРОЧИТАТЬ] papers [CYR:полно]with[CYR:тью]
+
+---
+
+*"[CYR:Код] tofrom[CYR:орый] not in[CYR:ыполняет]withя - not with[CYR:уще]withтin[CYR:ует]."*

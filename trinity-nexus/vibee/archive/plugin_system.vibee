@@ -1,12 +1,12 @@
 name: plugin_system
-# Plugin Registry - Реестр плагинов с обязательными UI и документацией
+# Plugin Registry - [CYR:Рее]withтр [CYR:плаг]andноin with [CYR:обязательным]and UI and [CYR:документац]andей
 
 module: honeycomb/ui/plugin_system/registry
 version: 1.0.0
-description: Центральный реестр плагинов с валидацией и lifecycle управлением
+description: [CYR:Центральный] [CYR:рее]withтр [CYR:плаг]andноin with inалand[CYR:дац]andей and lifecycle controlм
 
 types:
-  # Манифест плагина
+  # [CYR:Ман]andфеwithт [CYR:плаг]andon
   PluginManifest:
     id: String
     name: String
@@ -17,7 +17,7 @@ types:
     homepage: Option(String)
     repository: Option(String)
     
-    # UI (ОБЯЗАТЕЛЬНО)
+    # UI ([CYR:ОБЯЗАТЕЛЬНО])
     canvas_widget: CanvasWidget
     documentation_page: String
     icon: Option(String)
@@ -31,12 +31,12 @@ types:
     resizable: Bool
     aspect_ratio: Option(Float)
     
-    # Зависимости
+    # Заinandwithandмоwithтand
     dependencies: List(PluginDependency)
     peer_dependencies: List(String)
     conflicts: List(String)
     
-    # Права
+    # [CYR:Пра]inа
     permissions: List(Permission)
     
     # Lifecycle hooks
@@ -46,7 +46,7 @@ types:
     on_focus: fn() -> Result(Nil, String)
     on_blur: fn() -> Result(Nil, String)
     
-    # Метаданные
+    # [CYR:Метаданные]
     tags: List(String)
     category: PluginCategory
     maturity: PluginMaturity
@@ -159,7 +159,7 @@ types:
     enabled: Bool
     data: String
   
-  # Зарегистрированный плагин
+  # [CYR:Зарег]andwithтрandроin[CYR:анный] [CYR:плаг]andн
   RegisteredPlugin:
     manifest: PluginManifest
     instance: Option(PluginInstance)
@@ -184,7 +184,7 @@ types:
     state_actor: Subject(StateMessage)
     yoga_node: YogaNode
   
-  # Сообщения Registry
+  # [CYR:Сообщен]andя Registry
   RegistryMessage:
     variants:
       - Register(manifest: PluginManifest, reply: Subject(Result(Nil, String)))
@@ -200,7 +200,7 @@ types:
     status: Option(PluginStatus)
     tags: List(String)
   
-  # Состояние Registry
+  # Соwith[CYR:тоян]andе Registry
   RegistryState:
     plugins: Dict(String, RegisteredPlugin)
     categories: Dict(PluginCategory, List(String))
@@ -219,11 +219,11 @@ types:
     opaque: True
 
 functions:
-  # Запуск Registry
+  # [CYR:Запу]withк Registry
   start:
     params: []
     returns: Result(Subject(RegistryMessage), String)
-    description: Запускает Plugin Registry
+    description: [CYR:Запу]with[CYR:кает] Plugin Registry
     implementation: |
       let initial_state = RegistryState(
         plugins: dict.new(),
@@ -233,17 +233,17 @@ functions:
       
       actor.start(initial_state, handle_message)
   
-  # Обработка сообщений
+  # [CYR:Обработка] with[CYR:ообщен]andй
   handle_message:
     params:
       - msg: RegistryMessage
       - state: RegistryState
     returns: actor.Next(RegistryState)
-    description: Обрабатывает сообщения Registry
+    description: [CYR:Обрабаты]in[CYR:ает] with[CYR:ообщен]andя Registry
     implementation: |
       case msg {
         Register(manifest, reply) -> {
-          # Валидация плагина
+          # [CYR:Вал]and[CYR:дац]andя [CYR:плаг]andon
           case validate_plugin(manifest) {
             Ok(_) -> {
               let plugin = RegisteredPlugin(
@@ -256,7 +256,7 @@ functions:
               
               let new_plugins = dict.insert(state.plugins, manifest.id, plugin)
               
-              # Обновляем индексы
+              # [CYR:Обно]in[CYR:ляем] indexes
               let new_categories = update_category_index(state.categories, manifest)
               let new_tags = update_tag_index(state.tags, manifest)
               
@@ -281,7 +281,7 @@ functions:
         Unregister(id, reply) -> {
           case dict.get(state.plugins, id) {
             Ok(plugin) -> {
-              # Выгружаем если загружен
+              # [CYR:Выгружаем] if [CYR:загружен]
               case plugin.status {
                 Loaded | Running -> {
                   let _ = unload_plugin_internal(plugin)
@@ -309,7 +309,7 @@ functions:
             Ok(plugin) -> {
               case plugin.status {
                 NotLoaded -> {
-                  # Загружаем плагин
+                  # [CYR:Загружаем] [CYR:плаг]andн
                   case load_plugin_internal(plugin) {
                     Ok(instance) -> {
                       let updated_plugin = RegisteredPlugin(
@@ -424,46 +424,46 @@ functions:
         }
       }
   
-  # Валидация плагина
+  # [CYR:Вал]and[CYR:дац]andя [CYR:плаг]andon
   validate_plugin:
     params:
       - manifest: PluginManifest
     returns: Result(Nil, List(String))
-    description: Валидирует манифест плагина
+    description: [CYR:Вал]andдand[CYR:рует] [CYR:ман]andфеwithт [CYR:плаг]andon
     implementation: |
       let errors = []
       
-      # 1. Проверка ID (reverse domain)
+      # 1. [CYR:Про]in[CYR:ерка] ID (reverse domain)
       let errors = case string.starts_with(manifest.id, "com.") {
         True -> errors
         False -> list.append(errors, ["ID must start with reverse domain (com.*)"])
       }
       
-      # 2. Проверка версии (semver)
+      # 2. [CYR:Про]in[CYR:ерка] inерwithandand (semver)
       let errors = case is_valid_semver(manifest.version) {
         True -> errors
         False -> list.append(errors, ["Invalid semantic version"])
       }
       
-      # 3. Проверка Canvas widget (ОБЯЗАТЕЛЬНО)
+      # 3. [CYR:Про]in[CYR:ерка] Canvas widget ([CYR:ОБЯЗАТЕЛЬНО])
       let errors = case manifest.canvas_widget {
         CanvasWidget(render: _, handle_event: _, get_state: _, ..) -> errors
         _ -> list.append(errors, ["Canvas widget is required"])
       }
       
-      # 4. Проверка документации (ОБЯЗАТЕЛЬНО)
+      # 4. [CYR:Про]in[CYR:ерка] [CYR:документац]andand ([CYR:ОБЯЗАТЕЛЬНО])
       let errors = case file_exists(manifest.documentation_page) {
         True -> errors
         False -> list.append(errors, ["Documentation not found: " <> manifest.documentation_page])
       }
       
-      # 5. Проверка размеров
+      # 5. [CYR:Про]in[CYR:ерка] [CYR:размеро]in
       let errors = case manifest.min_width >. 0.0 && manifest.min_height >. 0.0 {
         True -> errors
         False -> list.append(errors, ["Invalid min dimensions"])
       }
       
-      # 6. Проверка зависимостей
+      # 6. [CYR:Про]in[CYR:ерка] заinandwithandмоwith[CYR:тей]
       let errors = list.fold(manifest.dependencies, errors, fn(errs, dep) {
         case plugin_exists(dep.id) {
           True -> errs
@@ -476,20 +476,20 @@ functions:
         False -> Error(errors)
       }
   
-  # Загрузка плагина
+  # [CYR:Загрузка] [CYR:плаг]andon
   load_plugin_internal:
     params:
       - plugin: RegisteredPlugin
     returns: Result(PluginInstance, String)
-    description: Загружает плагин и создает instance
+    description: [CYR:Загружает] [CYR:плаг]andн and with[CYR:оздает] instance
     implementation: |
-      # Вызываем on_load hook
+      # [CYR:Вызы]in[CYR:аем] on_load hook
       case plugin.manifest.on_load() {
         Ok(_) -> {
-          # Создаем Yoga node
+          # [CYR:Создаем] Yoga node
           let yoga_node = create_yoga_node(plugin.manifest)
           
-          # Создаем actors
+          # [CYR:Создаем] actors
           let supervisor = plugin_supervisor.start(plugin.manifest.id)
           let widget_actor = widget_actor.start(plugin.manifest.canvas_widget)
           let state_actor = state_actor.start(WidgetState(
@@ -510,37 +510,37 @@ functions:
         Error(err) -> Error("on_load failed: " <> err)
       }
   
-  # Выгрузка плагина
+  # [CYR:Выгрузка] [CYR:плаг]andon
   unload_plugin_internal:
     params:
       - plugin: RegisteredPlugin
     returns: Result(Nil, String)
-    description: Выгружает плагин
+    description: [CYR:Выгружает] [CYR:плаг]andн
     implementation: |
       case plugin.instance {
         Some(instance) -> {
-          # Останавливаем actors
+          # Оwithтаoninлandin[CYR:аем] actors
           process.send(instance.supervisor, Stop)
           process.send(instance.widget_actor, Stop)
           process.send(instance.state_actor, Stop)
           
-          # Освобождаем Yoga node
+          # Оwithin[CYR:обождаем] Yoga node
           yoga.free_node(instance.yoga_node)
           
-          # Вызываем on_unload hook
+          # [CYR:Вызы]in[CYR:аем] on_unload hook
           plugin.manifest.on_unload()
         }
         
         None -> Ok(Nil)
       }
   
-  # Фильтрация плагинов
+  # Фand[CYR:льтрац]andя [CYR:плаг]andноin
   filter_plugins:
     params:
       - plugins: List(RegisteredPlugin)
       - filter: PluginFilter
     returns: List(RegisteredPlugin)
-    description: Фильтрует плагины по критериям
+    description: Фand[CYR:льтрует] [CYR:плаг]andны по крand[CYR:тер]andям
     implementation: |
       plugins
       |> list.filter(fn(p) {
@@ -566,13 +566,13 @@ functions:
         category_match && status_match && tags_match
       })
   
-  # Поиск плагинов
+  # Поandwithк [CYR:плаг]andноin
   search_plugins:
     params:
       - plugins: List(RegisteredPlugin)
       - query: String
     returns: List(RegisteredPlugin)
-    description: Поиск плагинов по запросу
+    description: Поandwithк [CYR:плаг]andноin по queryу
     implementation: |
       let query_lower = string.lowercase(query)
       
@@ -587,7 +587,7 @@ functions:
         name_match || desc_match || tag_match
       })
   
-  # Вспомогательные функции
+  # Вwith[CYR:помогательные] [CYR:функц]andand
   update_category_index:
     params:
       - categories: Dict(PluginCategory, List(String))
@@ -633,13 +633,13 @@ functions:
 
 tests:
   - name: start_registry
-    description: Запуск Registry
+    description: [CYR:Запу]withк Registry
     test: |
       let result = start()
       result |> should.be_ok
   
   - name: register_plugin
-    description: Регистрация плагина
+    description: [CYR:Рег]andwith[CYR:трац]andя [CYR:плаг]andon
     test: |
       let registry = start() |> should.be_ok
       
@@ -652,7 +652,7 @@ tests:
       result |> should.be_ok
   
   - name: validate_plugin_test
-    description: Валидация плагина
+    description: [CYR:Вал]and[CYR:дац]andя [CYR:плаг]andon
     test: |
       let manifest = create_test_manifest()
       let result = validate_plugin(manifest)

@@ -4,24 +4,24 @@ language: zig
 module: maxwell_daemon
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# MAXWELL DAEMON - Автономный Агент-Программист
-# "Демон, который сортирует код по энтропии"
+# MAXWELL DAEMON - Аin[CYR:тономный] [CYR:Агент]-[CYR:Программ]andwithт
+# "[CYR:Демон], which with[CYR:орт]and[CYR:рует] code по [CYR:энтроп]andand"
 # ═══════════════════════════════════════════════════════════════════════════════
 #
-# Демон Максвелла в термодинамике - гипотетическое существо, способное
-# сортировать молекулы по скорости, уменьшая энтропию системы.
+# [CYR:Демон] [CYR:Мак]within[CYR:елла] in [CYR:термод]andonмandке - гand[CYR:потет]andчеwith[CYR:кое] with[CYR:уще]withтinо, withпоwith[CYR:обное]
+# with[CYR:орт]andроin[CYR:ать] [CYR:молекулы] по with[CYR:коро]withтand, [CYR:уменьшая] [CYR:энтроп]andю withandwith[CYR:темы].
 #
-# Maxwell Daemon в программировании - автономный агент, способный:
-# - Анализировать код и находить проблемы (высокая энтропия)
-# - Генерировать решения через .vibee спецификации
-# - Тестировать и улучшать код (уменьшение энтропии)
-# - Учиться на своих ошибках
+# Maxwell Daemon in [CYR:программ]andроinанandand - аin[CYR:тономный] [CYR:агент], withпоwith[CYR:обный]:
+# - Аonлfromandроin[CYR:ать] code and on[CYR:ход]andть [CYR:проблемы] (inыwith[CYR:окая] [CYR:энтроп]andя)
+# - Геnotрandроin[CYR:ать] [CYR:решен]andя [CYR:через] .vibee with[CYR:пец]andфand[CYR:кац]andand
+# - Теwithтandроin[CYR:ать] and improve code ([CYR:уменьшен]andе [CYR:энтроп]andand)
+# - Учandтьwithя on withinоandх errorх
 #
 # φ² + 1/φ² = 3 = TRINITY
 # ═══════════════════════════════════════════════════════════════════════════════
 
 types:
-  # Состояние демона
+  # Соwith[CYR:тоян]andе demoon
   DaemonState:
     fields:
       status: String          # "idle", "working", "error", "stopped"
@@ -31,12 +31,12 @@ types:
       uptime_seconds: Int
       memory_usage_mb: Float
 
-  # Задача для агента
+  # [CYR:Задача] for [CYR:агента]
   Task:
     fields:
       id: String
       description: String
-      priority: Int           # 1-10, где 10 - максимальный
+      priority: Int           # 1-10, where 10 - [CYR:мак]withand[CYR:мальный]
       task_type: String       # "feature", "bugfix", "refactor", "test", "optimize"
       target_files: List<String>
       constraints: List<String>
@@ -44,7 +44,7 @@ types:
       status: String          # "pending", "in_progress", "completed", "failed"
       result: Option<TaskResult>
 
-  # Результат выполнения задачи
+  # [CYR:Результат] in[CYR:ыпол]notнandя [CYR:задач]and
   TaskResult:
     fields:
       success: Bool
@@ -56,22 +56,22 @@ types:
       duration_ms: Int
       metrics: Metrics
 
-  # Метрики производительности
+  # [CYR:Метр]andкand [CYR:про]frominодand[CYR:тельно]withтand
   Metrics:
     fields:
       lines_of_code: Int
       cyclomatic_complexity: Float
       test_coverage: Float
-      performance_delta: Float  # % изменение производительности
+      performance_delta: Float  # % change [CYR:про]frominодand[CYR:тельно]withтand
 
-  # Память агента
+  # [CYR:Память] [CYR:агента]
   Memory:
     fields:
       experiences: List<Experience>
       learned_patterns: List<Pattern>
       error_history: List<ErrorRecord>
 
-  # Опыт (для обучения)
+  # [CYR:Опыт] (for [CYR:обучен]andя)
   Experience:
     fields:
       task_type: String
@@ -80,16 +80,16 @@ types:
       lessons: List<String>
       timestamp: Int
 
-  # Паттерн (выученный)
+  # [CYR:Паттерн] (in[CYR:ыученный])
   Pattern:
     fields:
       name: String
-      trigger: String         # Когда применять
-      solution: String        # Что делать
+      trigger: String         # [CYR:Когда] прand[CYR:менять]
+      solution: String        # [CYR:Что] [CYR:делать]
       confidence: Float       # 0.0 - 1.0
       usage_count: Int
 
-  # Запись об ошибке
+  # [CYR:Зап]andwithь об ошand[CYR:бке]
   ErrorRecord:
     fields:
       error_type: String
@@ -98,7 +98,7 @@ types:
       resolved: Bool
       timestamp: Int
 
-  # Конфигурация демона
+  # [CYR:Конф]and[CYR:гурац]andя demoon
   DaemonConfig:
     fields:
       llm_api_key: String
@@ -109,13 +109,13 @@ types:
       working_directory: String
       log_level: String       # "debug", "info", "warn", "error"
 
-  # Сообщение для LLM
+  # [CYR:Сообщен]andе for LLM
   LLMMessage:
     fields:
       role: String            # "system", "user", "assistant"
       content: String
 
-  # Ответ от LLM
+  # Отinет от LLM
   LLMResponse:
     fields:
       content: String

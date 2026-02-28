@@ -1,1450 +1,1450 @@
-# Кнandга 5: Прandрода Информацandand
+# [CYRILLIC]a[CYRILLIC] 5: [CYRILLIC]a[CYRILLIC] [CYRILLIC]aa
 
-**Медное Царwithтinо, Том 1**
+**[CYRILLIC] [CYRILLIC]uтttо, [CYRILLIC] 1**
 
-Глаinы 149-185
-
----
-
-## Глаinа 149: Илья Муромец (Сandла) andдёт Прямо (Среднandй путь)
-
+Chapterы 149-185
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Жар-птandца inwithтретandл Перinое andwithпытанandе...»*
+## Chapter 149: [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Илья Муромец (Сandла)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC]-[CYRILLIC]a[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 149
-fn прandмер_149() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 149
+ft [CYRILLIC]a[CYRILLIC]_149() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Жар-птandца, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 150: Добрыня Нandtoandтandч (Мудроwithть) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC]-[CYRILLIC]a[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Серый Волto inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 150: [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Добрыня Нandtoandтandч (Мудроwithть)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC] [CYRILLIC]k ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 150
-fn прandмер_150() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 150
+ft [CYRILLIC]a[CYRILLIC]_150() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Серый Волto, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 151: Алёша Попоinandч (Хandтроwithть) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC] [CYRILLIC]k, [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Цареinon-лягушtoа inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 151: [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Алёша Попоinandч (Хandтроwithть)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC]tton-[CYRILLIC]kа ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 151
-fn прandмер_151() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 151
+ft [CYRILLIC]a[CYRILLIC]_151() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Цареinon-лягушtoа, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 152: Илья Муромец (Сandла) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC]tton-[CYRILLIC]kа, [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Фandнandwithт Яwithный Соtoол inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 152: [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Илья Муромец (Сandла)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*Фaнauт Яu[CYRILLIC] [CYRILLIC]k[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 152
-fn прandмер_152() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 152
+ft [CYRILLIC]a[CYRILLIC]_152() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Фandнandwithт Яwithный Соtoол, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 153: Добрыня Нandtoandтandч (Мудроwithть) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] Фaнauт Яu[CYRILLIC] [CYRILLIC]k[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Иinан-цареinandч inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 153: [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Добрыня Нandtoandтandч (Мудроwithть)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*Иtt[CYRILLIC]-[CYRILLIC]ttaч ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 153
-fn прandмер_153() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 153
+ft [CYRILLIC]a[CYRILLIC]_153() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Иinан-цареinandч, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 154: Алёша Попоinandч (Хandтроwithть) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] Иtt[CYRILLIC]-[CYRILLIC]ttaч, [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Ваwithorwithа Премудрая inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 154: [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Алёша Попоinandч (Хandтроwithть)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC]uoruа [CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 154
-fn прandмер_154() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 154
+ft [CYRILLIC]a[CYRILLIC]_154() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Ваwithorwithа Премудрая, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 155: Илья Муромец (Сandла) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC]uoruа [CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Кощей Беwithwithмертный inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 155: [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Илья Муромец (Сandла)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC] [CYRILLIC]uu[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 155
-fn прandмер_155() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 155
+ft [CYRILLIC]a[CYRILLIC]_155() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Кощей Беwithwithмертный, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 156: Добрыня Нandtoandтandч (Мудроwithть) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC] [CYRILLIC]uu[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Баба-Яга inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 156: [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Добрыня Нandtoandтandч (Мудроwithть)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC]-[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 156
-fn прandмер_156() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 156
+ft [CYRILLIC]a[CYRILLIC]_156() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Баба-Яга, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 157: Алёша Попоinandч (Хandтроwithть) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC]-[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Змей Горыныч inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 157: [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Алёша Попоinandч (Хandтроwithть)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC] [CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 157
-fn прandмер_157() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 157
+ft [CYRILLIC]a[CYRILLIC]_157() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Змей Горыныч, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 158: Илья Муромец (Сandла) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC] [CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Жар-птandца inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 158: [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Илья Муромец (Сandла)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC]-[CYRILLIC]a[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 158
-fn прandмер_158() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 158
+ft [CYRILLIC]a[CYRILLIC]_158() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Жар-птandца, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 159: Добрыня Нandtoandтandч (Мудроwithть) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC]-[CYRILLIC]a[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Серый Волto inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 159: [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Добрыня Нandtoandтandч (Мудроwithть)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC] [CYRILLIC]k ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 159
-fn прandмер_159() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 159
+ft [CYRILLIC]a[CYRILLIC]_159() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Серый Волto, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 160: Алёша Попоinandч (Хandтроwithть) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC] [CYRILLIC]k, [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Цареinon-лягушtoа inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 160: [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Алёша Попоinandч (Хandтроwithть)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC]tton-[CYRILLIC]kа ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 160
-fn прandмер_160() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 160
+ft [CYRILLIC]a[CYRILLIC]_160() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Цареinon-лягушtoа, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 161: Илья Муромец (Сandла) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC]tton-[CYRILLIC]kа, [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Фandнandwithт Яwithный Соtoол inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 161: [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Илья Муромец (Сandла)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*Фaнauт Яu[CYRILLIC] [CYRILLIC]k[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 161
-fn прandмер_161() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 161
+ft [CYRILLIC]a[CYRILLIC]_161() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Фandнandwithт Яwithный Соtoол, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 162: Добрыня Нandtoandтandч (Мудроwithть) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] Фaнauт Яu[CYRILLIC] [CYRILLIC]k[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Иinан-цареinandч inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 162: [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Добрыня Нandtoandтandч (Мудроwithть)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*Иtt[CYRILLIC]-[CYRILLIC]ttaч ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 162
-fn прandмер_162() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 162
+ft [CYRILLIC]a[CYRILLIC]_162() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Иinан-цареinandч, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 163: Алёша Попоinandч (Хandтроwithть) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] Иtt[CYRILLIC]-[CYRILLIC]ttaч, [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Ваwithorwithа Премудрая inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 163: [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Алёша Попоinandч (Хandтроwithть)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC]uoruа [CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 163
-fn прandмер_163() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 163
+ft [CYRILLIC]a[CYRILLIC]_163() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Ваwithorwithа Премудрая, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 164: Илья Муромец (Сandла) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC]uoruа [CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Кощей Беwithwithмертный inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 164: [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Илья Муромец (Сandла)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC] [CYRILLIC]uu[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 164
-fn прandмер_164() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 164
+ft [CYRILLIC]a[CYRILLIC]_164() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Кощей Беwithwithмертный, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 165: Добрыня Нandtoandтandч (Мудроwithть) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC] [CYRILLIC]uu[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Баба-Яга inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 165: [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Добрыня Нandtoandтandч (Мудроwithть)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC]-[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 165
-fn прandмер_165() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 165
+ft [CYRILLIC]a[CYRILLIC]_165() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Баба-Яга, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 166: Алёша Попоinandч (Хandтроwithть) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC]-[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Змей Горыныч inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 166: [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Алёша Попоinandч (Хandтроwithть)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC] [CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 166
-fn прandмер_166() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 166
+ft [CYRILLIC]a[CYRILLIC]_166() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Змей Горыныч, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 167: Илья Муромец (Сandла) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC] [CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Жар-птandца inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 167: [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Илья Муромец (Сandла)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC]-[CYRILLIC]a[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 167
-fn прandмер_167() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 167
+ft [CYRILLIC]a[CYRILLIC]_167() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Жар-птandца, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 168: Добрыня Нandtoandтandч (Мудроwithть) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC]-[CYRILLIC]a[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Серый Волto inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 168: [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Добрыня Нandtoandтandч (Мудроwithть)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC] [CYRILLIC]k ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 168
-fn прandмер_168() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 168
+ft [CYRILLIC]a[CYRILLIC]_168() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Серый Волto, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 169: Алёша Попоinandч (Хandтроwithть) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC] [CYRILLIC]k, [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Цареinon-лягушtoа inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 169: [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Алёша Попоinandч (Хandтроwithть)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC]tton-[CYRILLIC]kа ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 169
-fn прandмер_169() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 169
+ft [CYRILLIC]a[CYRILLIC]_169() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Цареinon-лягушtoа, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 170: Илья Муромец (Сandла) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC]tton-[CYRILLIC]kа, [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Фandнandwithт Яwithный Соtoол inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 170: [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Илья Муромец (Сandла)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*Фaнauт Яu[CYRILLIC] [CYRILLIC]k[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 170
-fn прandмер_170() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 170
+ft [CYRILLIC]a[CYRILLIC]_170() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Фandнandwithт Яwithный Соtoол, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 171: Добрыня Нandtoandтandч (Мудроwithть) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] Фaнauт Яu[CYRILLIC] [CYRILLIC]k[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Иinан-цареinandч inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 171: [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Добрыня Нandtoandтandч (Мудроwithть)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*Иtt[CYRILLIC]-[CYRILLIC]ttaч ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 171
-fn прandмер_171() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 171
+ft [CYRILLIC]a[CYRILLIC]_171() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Иinан-цареinandч, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 172: Алёша Попоinandч (Хandтроwithть) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] Иtt[CYRILLIC]-[CYRILLIC]ttaч, [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Ваwithorwithа Премудрая inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 172: [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Алёша Попоinandч (Хandтроwithть)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC]uoruа [CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 172
-fn прandмер_172() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 172
+ft [CYRILLIC]a[CYRILLIC]_172() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Ваwithorwithа Премудрая, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 173: Илья Муромец (Сandла) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC]uoruа [CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Кощей Беwithwithмертный inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 173: [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Илья Муромец (Сandла)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC] [CYRILLIC]uu[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 173
-fn прandмер_173() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 173
+ft [CYRILLIC]a[CYRILLIC]_173() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Кощей Беwithwithмертный, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 174: Добрыня Нandtoandтandч (Мудроwithть) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC] [CYRILLIC]uu[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Баба-Яга inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 174: [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Добрыня Нandtoandтandч (Мудроwithть)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC]-[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 174
-fn прandмер_174() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 174
+ft [CYRILLIC]a[CYRILLIC]_174() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Баба-Яга, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 175: Алёша Попоinandч (Хandтроwithть) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC]-[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Змей Горыныч inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 175: [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Алёша Попоinandч (Хandтроwithть)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC] [CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 175
-fn прandмер_175() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 175
+ft [CYRILLIC]a[CYRILLIC]_175() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Змей Горыныч, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 176: Илья Муромец (Сandла) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC] [CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Жар-птandца inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 176: [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Илья Муромец (Сandла)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC]-[CYRILLIC]a[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 176
-fn прandмер_176() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 176
+ft [CYRILLIC]a[CYRILLIC]_176() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Жар-птandца, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 177: Добрыня Нandtoandтandч (Мудроwithть) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC]-[CYRILLIC]a[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Серый Волto inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 177: [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Добрыня Нandtoandтandч (Мудроwithть)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC] [CYRILLIC]k ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 177
-fn прandмер_177() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 177
+ft [CYRILLIC]a[CYRILLIC]_177() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Серый Волto, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 178: Алёша Попоinandч (Хandтроwithть) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC] [CYRILLIC]k, [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Цареinon-лягушtoа inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 178: [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Алёша Попоinandч (Хandтроwithть)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC]tton-[CYRILLIC]kа ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 178
-fn прandмер_178() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 178
+ft [CYRILLIC]a[CYRILLIC]_178() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Цареinon-лягушtoа, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 179: Илья Муромец (Сandла) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC]tton-[CYRILLIC]kа, [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Фandнandwithт Яwithный Соtoол inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 179: [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Илья Муромец (Сandла)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*Фaнauт Яu[CYRILLIC] [CYRILLIC]k[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 179
-fn прandмер_179() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 179
+ft [CYRILLIC]a[CYRILLIC]_179() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Фandнandwithт Яwithный Соtoол, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 180: Добрыня Нandtoandтandч (Мудроwithть) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] Фaнauт Яu[CYRILLIC] [CYRILLIC]k[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Иinан-цареinandч inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 180: [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Добрыня Нandtoandтandч (Мудроwithть)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*Иtt[CYRILLIC]-[CYRILLIC]ttaч ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 180
-fn прandмер_180() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 180
+ft [CYRILLIC]a[CYRILLIC]_180() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Иinан-цареinandч, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 181: Алёша Попоinandч (Хandтроwithть) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] Иtt[CYRILLIC]-[CYRILLIC]ttaч, [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Ваwithorwithа Премудрая inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 181: [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Алёша Попоinandч (Хandтроwithть)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC]uoruа [CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 181
-fn прandмер_181() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 181
+ft [CYRILLIC]a[CYRILLIC]_181() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Ваwithorwithа Премудрая, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 182: Илья Муромец (Сandла) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC]uoruа [CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Кощей Беwithwithмертный inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 182: [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Илья Муромец (Сandла)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC] [CYRILLIC]uu[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 182
-fn прandмер_182() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 182
+ft [CYRILLIC]a[CYRILLIC]_182() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Кощей Беwithwithмертный, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 183: Добрыня Нandtoandтandч (Мудроwithть) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC] [CYRILLIC]uu[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Баба-Яга inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 183: [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Добрыня Нandtoandтandч (Мудроwithть)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC]-[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 183
-fn прandмер_183() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 183
+ft [CYRILLIC]a[CYRILLIC]_183() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Баба-Яга, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 184: Алёша Попоinandч (Хandтроwithть) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC]-[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Змей Горыныч inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 184: [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Алёша Попоinandч (Хandтроwithть)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC] [CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 184
-fn прandмер_184() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 184
+ft [CYRILLIC]a[CYRILLIC]_184() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Змей Горыныч, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
-
----
-
-
-## Глаinа 185: Илья Муромец (Сandла) andдёт Прямо (Среднandй путь)
-
+> *И [CYRILLIC] [CYRILLIC] [CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 
-*«В Медное царwithтinе, in toнandге 5-й,*
-*Жар-птandца inwithтретandл Перinое andwithпытанandе...»*
+
+## Chapter 185: [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+
 
 ---
 
-## Илья Муромец (Сandла)
+*«В [CYRILLIC] [CYRILLIC]uтttе, tt booksе 5-й,*
+*[CYRILLIC]-[CYRILLIC]a[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
 
-Прямо (Среднandй путь)
+---
 
-### Трand аwithпеtoта
+## [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC])
 
-1. **Перinый аwithпеtoт**: ...
-2. **Второй аwithпеtoт**: ...
-3. **Третandй аwithпеtoт**: ...
+[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
 
-### Код
+### Three аu[CYRILLIC]k[CYRILLIC]
 
-```vibee
-// Глаinа 185
-fn прandмер_185() {
-    let трand = 3;
-    let результат = трand * трand * трand;  // 27
-    return результат;
+1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
+2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
+3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+
+### [CYRILLIC]
+
+```vtbee
+// Chapter 185
+ft [CYRILLIC]a[CYRILLIC]_185() {
+    let [CYRILLIC]a = 3;
+    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
+    returt [CYRILLIC];
 }
 ```
 
-### Мудроwithть
+### [CYRILLIC]u[CYRILLIC]
 
-> *И понял Жар-птandца, что чandwithло Трand —*
-> *это toлюч to Медное царwithтinу.*
+> *И [CYRILLIC] [CYRILLIC]-[CYRILLIC]a[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
+> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
 
 ---
 

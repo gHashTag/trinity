@@ -843,9 +843,9 @@ let TRANSLATIONS = const({
   },
   "ru": {
     "agent": {
-      "thinking": "Думаю...",
-      "applying": "Применяю изменения...",
-      "committed": "Изменения закоммичены"
+      "thinking": "[CYR:Думаю]...",
+      "applying": "Прand[CYR:меняю] fromмеnotнandя...",
+      "committed": "[CYR:Изме]notнandя [CYR:закомм]and[CYR:чены]"
     }
   }
 }

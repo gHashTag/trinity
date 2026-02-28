@@ -260,11 +260,11 @@ pub fn randomVector(len: usize, seed: u64) HybridBigInt {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// PERMUTE OPERATIONS (for toодandроinанandя bywithлеbeforeinательноwithтей)
+// PERMUTE OPERATIONS (for toодandроinанandя bywithлеbeforein[CYR:ательно]with[CYR:тей])
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Permute (цandtoлandчеwithtoandй withдinandг inпраinо on k byзandцandй)
-/// Иwithbyльзуетwithя for toодandроinанandя bywithлеbeforeinательноwithтей:
+/// Permute (цandtoлandчеwithtoandй withдinandг in[CYR:пра]inо on k byзandцandй)
+/// Иwithby[CYR:льзует]withя for toодandроinанandя bywithлеbeforein[CYR:ательно]with[CYR:тей]:
 /// sequence(a, b, c) = a + permute(b, 1) + permute(c, 2)
 pub fn permute(v: *HybridBigInt, k: usize) HybridBigInt {
     v.ensureUnpacked();
@@ -278,7 +278,7 @@ pub fn permute(v: *HybridBigInt, k: usize) HybridBigInt {
 
     const shift = k % v.trit_len;
 
-    // Цandtoлandчеwithtoandй withдinandг inпраinо: new byзandцandя = (old + shift) % len
+    // Цandtoлandчеwithtoandй withдinandг in[CYR:пра]inо: new byзandцandя = (old + shift) % len
     for (0..v.trit_len) |i| {
         const new_pos = (i + shift) % v.trit_len;
         result.unpacked_cache[new_pos] = v.unpacked_cache[i];
@@ -326,7 +326,7 @@ pub fn encodeSequence(items: []HybridBigInt) HybridBigInt {
 }
 
 /// Decode element from sequence at position
-/// Checks similarity with permuted inерwithandей toандandyesта
+/// Checks similarity with permuted inерwithandей to[CYR:анд]andyesта
 pub fn probeSequence(sequence: *HybridBigInt, candidate: *HybridBigInt, position: usize) f64 {
     var permuted = permute(candidate, position);
     return cosineSimilarity(sequence, &permuted);
@@ -393,14 +393,14 @@ test "permute orthogonality" {
 }
 
 test "sequence encoding" {
-    // Test encodeSequence - проwithто check what function рабfromает без ошandбоto
+    // Test encodeSequence - [CYR:про]withто check what function [CYR:раб]from[CYR:ает] [CYR:без] ошandбоto
     const a = randomVector(100, 11111);
     const b = randomVector(100, 22222);
 
     var items = [_]HybridBigInt{ a, b };
     const seq = encodeSequence(&items);
 
-    // Sequence beforeлжon andметь ту же длandну
+    // Sequence beforeлжon and[CYR:меть] ту же длandну
     try std.testing.expectEqual(a.trit_len, seq.trit_len);
 }
 

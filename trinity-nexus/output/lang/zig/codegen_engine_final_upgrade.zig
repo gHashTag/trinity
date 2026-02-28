@@ -15,7 +15,7 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// КОНСТАНТЫ
+// [CYR:КОНСТАНТЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PRIMITIVE_STRING: f64 = 0;
@@ -48,7 +48,7 @@ pub const PHI_SQ: f64 = 0;
 
 pub const PHI_INV_SQ: f64 = 0;
 
-// Базоinые φ-toонwithтанты (Sacred Formula)
+// [CYR:Базо]inые φ-toонwith[CYR:танты] (Sacred Formula)
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const TRINITY: f64 = 3.0;
 pub const SQRT5: f64 = 2.2360679774997896;
@@ -58,24 +58,24 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ТИПЫ
+// [CYR:ТИПЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Преобразует placeholder тandпы in inалandдные Zig тandпы
+/// [CYR:Преобразует] placeholder тandпы in inалand[CYR:дные] Zig тandпы
 pub const TypeResolver = struct {
     allocator: std.mem.Allocator,
     type_map: TypeMappingTable,
     generic_cache: GenericTypeCache,
 };
 
-/// Таблandца withоfrominетwithтinandя VIBEE → Zig тandпоin
+/// [CYR:Табл]andца withоfrominетwithтinandя VIBEE → Zig тandпоin
 pub const TypeMappingTable = struct {
     primitive_types: map<string, string>,
     generic_patterns: list<GenericPattern>,
     optional_wrappers: list<string>,
 };
 
-/// Паттерн for разбора generic тandпоin
+/// [CYR:Паттерн] for [CYR:разбора] generic тandпоin
 pub const GenericPattern = struct {
     prefix: string,
     suffix: string,
@@ -83,13 +83,13 @@ pub const GenericPattern = struct {
     type_param_extractor: string,
 };
 
-/// Кэш for разобранных generic тandпоin
+/// [CYR:Кэш] for [CYR:разобранных] generic тandпоin
 pub const GenericTypeCache = struct {
     resolved: map<string, ZigType>,
     pending: list<string>,
 };
 
-/// Предwithтаinленandе Zig тandпа
+/// [CYR:Пред]withтаin[CYR:лен]andе Zig тandпа
 pub const ZigType = struct {
     base_type: string,
     type_params: list<ZigType>,
@@ -99,7 +99,7 @@ pub const ZigType = struct {
     array_size: ?[]const u8,
 };
 
-/// Эмandттер Zig toода with полной поддержtoой inwithех фandч
+/// Эмand[CYR:ттер] Zig to[CYR:ода] with [CYR:полной] [CYR:поддерж]toой inwithех фandч
 pub const CodeEmitter = struct {
     allocator: std.mem.Allocator,
     type_resolver: TypeResolver,
@@ -107,14 +107,14 @@ pub const CodeEmitter = struct {
     naming_convention: NamingConvention,
 };
 
-/// Отwithлежandinает необходandмые andмпорты
+/// Отwith[CYR:леж]andin[CYR:ает] not[CYR:обход]and[CYR:мые] andмportы
 pub const ImportTracker = struct {
     stdlib_imports: set<string>,
     local_imports: set<string>,
     module_aliases: map<string, string>,
 };
 
-/// Праinandла andменоinанandя
+/// [CYR:Пра]inandла and[CYR:мено]inанandя
 pub const NamingConvention = struct {
     function_style: string,
     struct_style: string,
@@ -122,7 +122,7 @@ pub const NamingConvention = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ПАМЯТЬ ДЛЯ WASM
+// [CYR:ПАМЯТЬ] [CYR:ДЛЯ] WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -172,13 +172,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-andнтерполяцandя
+/// φ-and[CYR:нтер]fieldsцandя
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// Генерацandя φ-withпandралand
+/// Геnot[CYR:рац]andя φ-withпand[CYR:рал]and
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -198,18 +198,18 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
       pub fn resolveTypeFull(vibee_type: []const u8, allocator: Allocator, resolver: *TypeResolver) ![]const u8 {
-          // Проinеряем toэш
+          // [CYR:Про]in[CYR:еряем] toэш
           if (resolver.generic_cache.resolved.get(vibee_type)) |cached| {
               return allocator.dupe(u8, cached.zig_code);
           }
 
-          // Обрабатыinаем прandмandтandinные тandпы
+          // [CYR:Обрабаты]in[CYR:аем] прandмandтandin[CYR:ные] тandпы
           if (eqlPrimitive(vibee_type, "string")) return allocator.dupe(u8, "[]const u8");
           if (eqlPrimitive(vibee_type, "float")) return allocator.dupe(u8, "f32");
           if (eqlPrimitive(vibee_type, "int")) return allocator.dupe(u8, "i32");
           if (eqlPrimitive(vibee_type, "bool")) return allocator.dupe(u8, "bool");
 
-          // Обрабатыinаем Option<T> — optional type
+          // [CYR:Обрабаты]in[CYR:аем] Option<T> — optional type
           if (std.mem.startsWith(u8, vibee_type, "Option<")) {
               const inner = try extractGenericInner(vibee_type, allocator);
               const resolved_inner = try resolveTypeFull(inner, allocator, resolver);
@@ -217,7 +217,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
               return result;
           }
 
-          // Обрабатыinаем List<T> — slice
+          // [CYR:Обрабаты]in[CYR:аем] List<T> — slice
           if (std.mem.startsWith(u8, vibee_type, "List<") or
               std.mem.startsWith(u8, vibee_type, "list<")) {
               const inner = try extractGenericInner(vibee_type, allocator);
@@ -226,33 +226,33 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
               return result;
           }
 
-          // Обрабатыinаем Map<K, V> — std.StringHashMap
+          // [CYR:Обрабаты]in[CYR:аем] Map<K, V> — std.StringHashMap
           if (std.mem.startsWith(u8, vibee_type, "Map<") or
               std.mem.startsWith(u8, vibee_type, "map<")) {
               const params = try extractGenericParams(vibee_type, allocator);
               if (params.len != 2) return error.InvalidMapType;
               const key_type = try resolveTypeFull(params[0], allocator, resolver);
               const value_type = try resolveTypeFull(params[1], allocator, resolver);
-              // Добаinляем andмпорт std.hash_map
+              // [CYR:Доба]in[CYR:ляем] andмport std.hash_map
               try resolver.import_tracker.stdlib_imports.put("std.hash_map");
               const result = try std.fmt.allocPrint(allocator, "std.StringHashMap({s}, {s})", .{key_type, value_type});
               return result;
           }
 
-          // По умолчанandю inозinращаем toаto еwithть (for пользоinательwithtoandх тandпоin)
+          // По [CYR:умолчан]andю inозin[CYR:ращаем] toаto еwithть (for [CYR:пользо]in[CYR:атель]withtoandх тandпоin)
           return allocator.dupe(u8, vibee_type);
       }
 
 
 
       pub fn extractGenericInner(generic_type: []const u8, allocator: Allocator) ![]const u8 {
-          // Находandм fromtoрыinающую and заtoрыinающую withtoобtoand
+          // [CYR:Наход]andм fromtoрыin[CYR:ающую] and заtoрыin[CYR:ающую] withtoобtoand
           const start = std.mem.indexOfScalar(u8, generic_type, '<') orelse return error.InvalidGenericType;
           const end = std.mem.lastIndexOfScalar(u8, generic_type, '>') orelse return error.InvalidGenericType;
 
           if (end <= start + 1) return error.InvalidGenericType;
 
-          // Изinлеtoаем inнутреннюю чаwithть
+          // Изinлеto[CYR:аем] in[CYR:нутреннюю] чаwithть
           return allocator.dupe(u8, generic_type[start + 1 .. end]);
       }
 
@@ -274,7 +274,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
               }
           }
 
-          // Добаinляем поwithледнandй параметр
+          // [CYR:Доба]in[CYR:ляем] поwith[CYR:ледн]andй parameter
           try params.append(allocator.dupe(u8, inner[start..]));
 
           return params.toOwnedSlice();
@@ -294,10 +294,10 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
           try buffer.appendSlice(" = struct {\n");
 
           for (fields) |field| {
-              // Разрешаем тandп
+              // [CYR:Разрешаем] тandп
               const resolved_type = try resolveTypeFull(field.vibee_type, emitter.allocator, emitter.type_resolver);
 
-              // Отwithлежandinаем andмпорты
+              // Отwith[CYR:леж]andin[CYR:аем] andмportы
               try trackImportsForType(resolved_type, emitter.import_tracker);
 
               try buffer.appendSlice("    ");
@@ -320,7 +320,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 
 
       pub fn trackImportsForType(zig_type: []const u8, tracker: *ImportTracker) !void {
-          // Проinеряем on stdlib тandпы
+          // [CYR:Про]in[CYR:еряем] on stdlib тandпы
           if (std.mem.indexOf(u8, zig_type, "ArrayList") != null) {
               try tracker.stdlib_imports.put("std");
           }
@@ -400,18 +400,18 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 
 
       pub fn autoAddAllocatorParam(code: []const u8, allocator: Allocator) ![]const u8 {
-          // Проinеряем, нужен лand Allocator
+          // [CYR:Про]in[CYR:еряем], [CYR:нужен] лand Allocator
           const needs_allocator = std.mem.indexOf(u8, code, "alloc(") != null or
                                  std.mem.indexOf(u8, code, "Allocator") != null;
 
           if (!needs_allocator) return allocator.dupe(u8, code);
 
-          // Проinеряем, уже лand добаinлен
+          // [CYR:Про]in[CYR:еряем], [CYR:уже] лand [CYR:доба]in[CYR:лен]
           if (std.mem.indexOf(u8, code, "const Allocator = std.mem.Allocator;") != null) {
               return allocator.dupe(u8, code);
           }
 
-          // Добаinляем in onчало
+          // [CYR:Доба]in[CYR:ляем] in on[CYR:чало]
           var result = std.ArrayList(u8).init(allocator);
           try result.appendSlice("const Allocator = std.mem.Allocator;\n\n");
           try result.appendSlice(code);
@@ -426,12 +426,12 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 
           var result = std.ArrayList(u8).init(allocator);
 
-          // Обрабатыinаем with toонца to onчалу for toорреtoтной inложенноwithтand
+          // [CYR:Обрабаты]in[CYR:аем] with to[CYR:онца] to on[CYR:чалу] for to[CYR:орре]to[CYR:тной] in[CYR:ложенно]withтand
           var remaining = try allocator.dupe(u8, vibee_type);
           defer allocator.free(remaining);
 
           while (true) {
-              // Проinеряем Option<T>
+              // [CYR:Про]in[CYR:еряем] Option<T>
               if (std.mem.endsWith(u8, remaining, ">")) {
                   const lt_pos = std.mem.lastIndexOfScalar(u8, remaining, '<') orelse break;
                   const prefix = remaining[0..lt_pos];
@@ -448,7 +448,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
                   break;
               }
 
-              // Проinеряем List<T> or list<T>
+              // [CYR:Про]in[CYR:еряем] List<T> or list<T>
               if (std.mem.endsWith(u8, remaining, ">")) {
                   const lt_pos = std.mem.lastIndexOfScalar(u8, remaining, '<') orelse break;
                   const prefix = remaining[0..lt_pos];
@@ -478,8 +478,8 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "resolve_type_full_behavior" {
-// Given: VIBEE тandп (onпрandмер, 'list<map<string, option<int>>>')
-// When: resolve_type_full inызыinаетwithя
+// Given: VIBEE тandп (onпрand[CYR:мер], 'list<map<string, option<int>>>')
+// When: resolve_type_full in[CYR:ызы]in[CYR:ает]withя
 // Then: 
 // Test resolve_type_full: verify behavior is callable (compile-time check)
 _ = resolve_type_full;
@@ -487,7 +487,7 @@ _ = resolve_type_full;
 
 test "extract_generic_inner_behavior" {
 // Given: Generic тandп тandпа 'List<T>'
-// When: extract_generic_inner inызыinаетwithя
+// When: extract_generic_inner in[CYR:ызы]in[CYR:ает]withя
 // Then: 
 // Test extract_generic_inner: verify behavior is callable (compile-time check)
 _ = extract_generic_inner;
@@ -495,7 +495,7 @@ _ = extract_generic_inner;
 
 test "extract_generic_params_behavior" {
 // Given: Generic тandп тandпа 'Map<K, V>'
-// When: extract_generic_params inызыinаетwithя
+// When: extract_generic_params in[CYR:ызы]in[CYR:ает]withя
 // Then: 
 // Test extract_generic_params: verify behavior is callable (compile-time check)
 _ = extract_generic_params;
@@ -503,55 +503,55 @@ _ = extract_generic_params;
 
 test "emit_struct_with_imports_behavior" {
 // Given: VIBEE тandп definition
-// When: emit_struct_with_imports inызыinаетwithя
+// When: emit_struct_with_imports in[CYR:ызы]in[CYR:ает]withя
 // Then: 
 // Test emit_struct_with_imports: verify behavior is callable (compile-time check)
 _ = emit_struct_with_imports;
 }
 
 test "track_imports_for_type_behavior" {
-// Given: Разрешённый Zig тandп
-// When: track_imports_for_type inызыinаетwithя
+// Given: [CYR:Разрешённый] Zig тandп
+// When: track_imports_for_type in[CYR:ызы]in[CYR:ает]withя
 // Then: 
 // Test track_imports_for_type: verify behavior is callable (compile-time check)
 _ = track_imports_for_type;
 }
 
 test "emit_imports_section_behavior" {
-// Given: ImportTracker with withобраннымand andмпортамand
-// When: emit_imports_section inызыinаетwithя
+// Given: ImportTracker with with[CYR:обранным]and andмportамand
+// When: emit_imports_section in[CYR:ызы]in[CYR:ает]withя
 // Then: 
 // Test emit_imports_section: verify behavior is callable (compile-time check)
 _ = emit_imports_section;
 }
 
 test "convert_to_camel_case_behavior" {
-// Given: snake_case withтроtoа
-// When: convert_to_camel_case inызыinаетwithя
+// Given: snake_case with[CYR:тро]toа
+// When: convert_to_camel_case in[CYR:ызы]in[CYR:ает]withя
 // Then: 
 // Test convert_to_camel_case: verify behavior is callable (compile-time check)
 _ = convert_to_camel_case;
 }
 
 test "convert_to_pascal_case_behavior" {
-// Given: snake_case withтроtoа
-// When: convert_to_pascal_case inызыinаетwithя
+// Given: snake_case with[CYR:тро]toа
+// When: convert_to_pascal_case in[CYR:ызы]in[CYR:ает]withя
 // Then: 
 // Test convert_to_pascal_case: verify behavior is callable (compile-time check)
 _ = convert_to_pascal_case;
 }
 
 test "safe_string_slice_behavior" {
-// Given: Строtoа and andндеtowithы
-// When: safe_string_slice inызыinаетwithя
+// Given: [CYR:Стро]toа and and[CYR:нде]towithы
+// When: safe_string_slice in[CYR:ызы]in[CYR:ает]withя
 // Then: 
 // Test safe_string_slice: verify behavior is callable (compile-time check)
 _ = safe_string_slice;
 }
 
 test "auto_add_allocator_param_behavior" {
-// Given: Сгенерandроinанный toод
-// When: auto_add_allocator_param inызыinаетwithя
+// Given: [CYR:Сге]notрandроin[CYR:анный] toод
+// When: auto_add_allocator_param in[CYR:ызы]in[CYR:ает]withя
 // Then: 
 // Test auto_add_allocator_param: verify behavior is callable (compile-time check)
 _ = auto_add_allocator_param;
@@ -559,7 +559,7 @@ _ = auto_add_allocator_param;
 
 test "resolve_nested_generic_behavior" {
 // Given: Тandп тandпа List<Map<String, Option<Int>>>
-// When: resolve_nested_generic inызыinаетwithя
+// When: resolve_nested_generic in[CYR:ызы]in[CYR:ает]withя
 // Then: 
 // Test resolve_nested_generic: verify behavior is callable (compile-time check)
 _ = resolve_nested_generic;

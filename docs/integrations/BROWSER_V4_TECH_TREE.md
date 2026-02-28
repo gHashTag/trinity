@@ -163,13 +163,13 @@
 ## KOSCHEI CYCLE
 
 ```
-ЯЙЦО (Egg)     → Quantum State Init
-ИГЛА (Needle)  → Quantum Measurement
-УТКА (Duck)    → Classical Execution
-ЗАЯЦ (Hare)    → Feedback Loop
-СУНДУК (Chest) → State Persistence
-ДУБ (Oak)      → Foundation
-ЦЕПЬ (Chain)   → Golden Integration
+[CYR:ЯЙЦО] (Egg)     → Quantum State Init
+[CYR:ИГЛА] (Needle)  → Quantum Measurement
+[CYR:УТКА] (Duck)    → Classical Execution
+[CYR:ЗАЯЦ] (Hare)    → Feedback Loop
+[CYR:СУНДУК] (Chest) → State Persistence
+[CYR:ДУБ] (Oak)      → Foundation
+[CYR:ЦЕПЬ] (Chain)   → Golden Integration
 ```
 
 ---

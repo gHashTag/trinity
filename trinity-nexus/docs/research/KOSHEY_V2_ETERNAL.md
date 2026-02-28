@@ -1,58 +1,58 @@
 # iGLA KOSHEY v2 ETERNAL
 
-**Вечное беwithwithмертandе через Swarm + Multimodal + Quantum**
+**[CYR:Вечное] беwithwith[CYR:мерт]andе [CYR:через] Swarm + Multimodal + Quantum**
 
-## Статandwithтandtoа
+## [CYR:Стат]andwithтandtoа
 
-| Метрandtoа | Зonченandе |
+| [CYR:Метр]andtoа | Зon[CYR:чен]andе |
 |---------|----------|
-| v2 модулand | 11 |
+| v2 [CYR:модул]and | 11 |
 | v2 теwithты | 72 |
 | Unified test | 1824ms |
 
-## Модулand v2 ETERNAL
+## [CYR:Модул]and v2 ETERNAL
 
 ### Swarm Intelligence
 
-| Модуль | Опandwithанandе | Иwithточнandto |
+| [CYR:Модуль] | Опandwithанandе | Иwith[CYR:точн]andto |
 |--------|----------|----------|
-| `igla_koshey_swarm_core` | Ядро роя | arXiv:2308.08155 AutoGen |
-| `igla_koshey_swarm_agent` | Индandinandдуальный агент | Multi-Agent RL |
-| `igla_koshey_swarm_consensus` | Конwithенwithуwith роя | Byzantine Fault Tolerance |
+| `igla_koshey_swarm_core` | [CYR:Ядро] [CYR:роя] | arXiv:2308.08155 AutoGen |
+| `igla_koshey_swarm_agent` | [CYR:Инд]andinand[CYR:дуальный] [CYR:агент] | Multi-Agent RL |
+| `igla_koshey_swarm_consensus` | [CYR:Кон]withенwithуwith [CYR:роя] | Byzantine Fault Tolerance |
 
 ### Multimodal
 
-| Модуль | Опandwithанandе | Иwithточнandto |
+| [CYR:Модуль] | Опandwithанandе | Иwith[CYR:точн]andto |
 |--------|----------|----------|
-| `igla_koshey_multimodal_vision` | Зренandе | arXiv:2304.08485 LLaVA |
-| `igla_koshey_multimodal_audio` | Слух | Whisper/AudioLM |
-| `igla_koshey_multimodal_fusion` | Слandянandе модальноwithтей | GPT-4V style |
+| `igla_koshey_multimodal_vision` | [CYR:Зрен]andе | arXiv:2304.08485 LLaVA |
+| `igla_koshey_multimodal_audio` | [CYR:Слух] | Whisper/AudioLM |
+| `igla_koshey_multimodal_fusion` | Слandянandе [CYR:модально]with[CYR:тей] | GPT-4V style |
 
 ### Quantum
 
-| Модуль | Опandwithанandе | Иwithточнandto |
+| [CYR:Модуль] | Опandwithанandе | Иwith[CYR:точн]andto |
 |--------|----------|----------|
-| `igla_koshey_quantum_circuit` | Кinантоinые withхемы | Qiskit/Cirq |
-| `igla_koshey_quantum_error` | Корреtoцandя ошandбоto | Surface Code |
+| `igla_koshey_quantum_circuit` | Кin[CYR:анто]inые with[CYR:хемы] | Qiskit/Cirq |
+| `igla_koshey_quantum_error` | [CYR:Корре]toцandя ошandбоto | Surface Code |
 
 ### Neuromorphic & Emergence
 
-| Модуль | Опandwithанandе | Иwithточнandto |
+| [CYR:Модуль] | Опandwithанandе | Иwith[CYR:точн]andto |
 |--------|----------|----------|
-| `igla_koshey_neuromorphic` | Нейроморфные чandпы | Intel Loihi |
-| `igla_koshey_emergent` | Эмерджентное поinеденandе | Complexity Theory |
+| `igla_koshey_neuromorphic` | [CYR:Нейроморфные] чandпы | Intel Loihi |
+| `igla_koshey_emergent` | [CYR:Эмерджентное] поin[CYR:еден]andе | Complexity Theory |
 | `igla_koshey_eternal_fusion` | Слandянandе v2 | Full Integration |
 
-## Научные andwithточнandtoand
+## [CYR:Научные] andwith[CYR:точн]andtoand
 
-| Технологandя | arXiv | Год |
+| [CYR:Технолог]andя | arXiv | [CYR:Год] |
 |------------|-------|-----|
 | AutoGen | 2308.08155 | 2023 |
 | LLaVA | 2304.08485 | 2023 |
 | MiniGPT-4 | 2304.10592 | 2023 |
 | Quantum ML | 2307.06435 | 2023 |
 
-## Архandтеtoтура v2
+## [CYR:Арх]andтеto[CYR:тура] v2
 
 ```
                     SWARM INTELLIGENCE
@@ -83,10 +83,10 @@
                     └─────────────────┘
 ```
 
-## Ключеinые inозможноwithтand
+## [CYR:Ключе]inые in[CYR:озможно]withтand
 
 ### 1. Swarm Intelligence
-- Коллеtoтandinный andнтеллеtoт andз множеwithтinа агентоin
+- [CYR:Колле]toтandin[CYR:ный] and[CYR:нтелле]toт andз [CYR:множе]withтinа [CYR:агенто]in
 - Byzantine fault tolerance
 - Emergent decision making
 

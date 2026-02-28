@@ -15,7 +15,7 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// КОНСТАНТЫ
+// [CYR:КОНСТАНТЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QUARK_HASH_SIZE: f64 = 32;
@@ -56,7 +56,7 @@ pub const FIB_SEQUENCE: f64 = 0;
 
 pub const MAX_DAG_EDGES: f64 = 96;
 
-// Базоinые φ-toонwithтанты (Sacred Formula)
+// [CYR:Базо]inые φ-toонwith[CYR:танты] (Sacred Formula)
 pub const TRINITY: f64 = 3.0;
 pub const SQRT5: f64 = 2.2360679774997896;
 pub const TAU: f64 = 6.283185307179586;
@@ -65,7 +65,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ТИПЫ
+// [CYR:ТИПЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// 22 sub-step types: 14 original work + 3 verification + 3 adversarial/accounting + 1 DAG + 1 reward
@@ -129,7 +129,7 @@ pub const ChainMessageType_v1_4 = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ПАМЯТЬ ДЛЯ WASM
+// [CYR:ПАМЯТЬ] [CYR:ДЛЯ] WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -179,13 +179,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-andнтерполяцandя
+/// φ-and[CYR:нтер]fieldsцandя
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// Генерацandя φ-withпandралand
+/// Геnot[CYR:рац]andя φ-withпand[CYR:рал]and
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;

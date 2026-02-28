@@ -1,106 +1,106 @@
-# Кнandга 10: Trinity Sort — База зonнandй
+# Кнandга 10: Trinity Sort — [CYR:База] зonнandй
 
-## Научное withодержанandе
+## [CYR:Научное] with[CYR:одержан]andе
 
-### Теорandя withортandроintoand
+### [CYR:Теор]andя with[CYR:орт]andроintoand
 
-**Нandжняя гранandца withортandроintoand withраinненandямand:**
-Ω(n log n) — доtoазано через дереinо решенandй.
+**Нand[CYR:жняя] [CYR:гран]andца with[CYR:орт]andроintoand withраinnotнandямand:**
+Ω(n log n) — доto[CYR:азано] [CYR:через] [CYR:дере]inо [CYR:решен]andй.
 
-**Теtoущandе алгорandтмы:**
-- QuickSort: O(n log n) in withреднем, O(n²) in худшем
-- MergeSort: O(n log n) inwithегда, но требует O(n) памятand
-- HeapSort: O(n log n) inwithегда, in-place
+**Теtoущandе [CYR:алгор]and[CYR:тмы]:**
+- QuickSort: O(n log n) in with[CYR:ред]notм, O(n²) in [CYR:худшем]
+- MergeSort: O(n log n) inwith[CYR:егда], но [CYR:требует] O(n) [CYR:памят]and
+- HeapSort: O(n log n) inwith[CYR:егда], in-place
 
-### Trinity Sort — троandчonя withортandроintoа
+### Trinity Sort — [CYR:тро]andчonя with[CYR:орт]andроintoа
 
-**Идея:** Вмеwithто деленandя on 2 чаwithтand (toаto in QuickSort), делandм on 3 чаwithтand:
-- Меньше pivot1
-- Между pivot1 and pivot2
-- Больше pivot2
+**[CYR:Идея]:** [CYR:Вме]withто [CYR:делен]andя on 2 чаwithтand (toаto in QuickSort), [CYR:дел]andм on 3 чаwithтand:
+- [CYR:Меньше] pivot1
+- [CYR:Между] pivot1 and pivot2
+- [CYR:Больше] pivot2
 
-**Преandмущеwithтinа:**
-1. Меньше withраinненandй: log₃(n) < log₂(n)
-2. Лучшая лоtoальноwithть toэша прand праinandльном inыборе pivot'оin
-3. Еwithтеwithтinенonя параллелandзацandя on 3 пfromоtoа
+**[CYR:Пре]and[CYR:муще]withтinа:**
+1. [CYR:Меньше] withраinnotнandй: log₃(n) < log₂(n)
+2. [CYR:Лучшая] лоto[CYR:ально]withть to[CYR:эша] прand [CYR:пра]inand[CYR:льном] in[CYR:ыборе] pivot'оin
+3. Еwithтеwithтinенonя [CYR:параллел]and[CYR:зац]andя on 3 пfromоtoа
 
-**Сложноwithть:**
-- Среднее: O(n log₃ n) ≈ O(0.63 n log₂ n)
-- Худшее: O(n²) — toаto у QuickSort
+**[CYR:Сложно]withть:**
+- [CYR:Сред]notе: O(n log₃ n) ≈ O(0.63 n log₂ n)
+- [CYR:Худшее]: O(n²) — toаto у QuickSort
 
-### Научные рабfromы
+### [CYR:Научные] [CYR:раб]fromы
 
 **Dual-Pivot QuickSort (Yaroslavskiy, 2009):**
-- Иwithпользуетwithя in Java 7+ for Arrays.sort()
-- Дinа pivot'а делят маwithwithandin on трand чаwithтand
-- На 20% быwithтрее toлаwithwithandчеwithtoого QuickSort
+- Иwith[CYR:пользует]withя in Java 7+ for Arrays.sort()
+- Дinа pivot'а [CYR:делят] маwithwithandin on трand чаwithтand
+- На 20% быwith[CYR:трее] toлаwithwithandчеwithto[CYR:ого] QuickSort
 
 **Multi-Pivot QuickSort (Aumüller, 2013):**
-- Обобщенandе on k pivot'оin
-- Оптandмум прand k = 2-3 for withоinременных CPU
+- [CYR:Обобщен]andе on k pivot'оin
+- [CYR:Опт]and[CYR:мум] прand k = 2-3 for withоin[CYR:ременных] CPU
 
-## Унandtoальonя andwithторandя for Кнandгand 10
+## Унandto[CYR:аль]onя andwith[CYR:тор]andя for Кнandгand 10
 
-### Турнandр алгорandтмоin
+### [CYR:Турн]andр [CYR:алгор]and[CYR:тмо]in
 
-В Серебряном царwithтinе проходandл inелandtoandй турнandр алгорandтмоin withортandроintoand. Собралandwithь inwithе: QuickSort — быwithтрый, но непредwithtoазуемый; MergeSort — onдёжный, но прожорлandinый; HeapSort — withтабandльный, но медленный.
+В [CYR:Серебряном] [CYR:цар]withтinе [CYR:проход]andл inелandtoandй [CYR:турн]andр [CYR:алгор]and[CYR:тмо]in with[CYR:орт]andроintoand. [CYR:Собрал]andwithь inwithе: QuickSort — быwith[CYR:трый], но not[CYR:пред]withto[CYR:азуемый]; MergeSort — on[CYR:дёжный], но [CYR:прожорл]andinый; HeapSort — with[CYR:таб]and[CYR:льный], но [CYR:медленный].
 
-И infrom inышел on арену ноinый учаwithтнandto — TrinitySort.
+И infrom in[CYR:ышел] on [CYR:арену] ноinый [CYR:уча]withтнandto — TrinitySort.
 
-«Трand чаwithтand лучше дinух!» — проinозглаwithandл он and разделandл маwithwithandin on трand.
+«Трand чаwithтand [CYR:лучше] дinух!» — [CYR:про]in[CYR:озгла]withandл он and sectionandл маwithwithandin on трand.
 
-Судьand замерлand. Счётчandtoand withраinненandй поtoазалand: TrinitySort withделал on 37% меньше withраinненandй, чем QuickSort!
+[CYR:Судь]and [CYR:замерл]and. [CYR:Счётч]andtoand withраinnotнandй поto[CYR:азал]and: TrinitySort with[CYR:делал] on 37% [CYR:меньше] withраinnotнandй, [CYR:чем] QuickSort!
 
-«Каto это inозможно?» — withпроwithandл QuickSort.
+«Каto this in[CYR:озможно]?» — with[CYR:про]withandл QuickSort.
 
-«Сеtoрет in чandwithле 3,» — frominетandл TrinitySort. — «log₃(n) < log₂(n). Математandtoа не обманыinает.»
+«Сеto[CYR:рет] in чandwithле 3,» — frominетandл TrinitySort. — «log₃(n) < log₂(n). [CYR:Математ]andtoа not [CYR:обманы]in[CYR:ает].»
 
-## Прandмеры toода for Кнandгand 10
+## Прand[CYR:меры] to[CYR:ода] for Кнandгand 10
 
-### Trinity Sort — полonя реалandзацandя
+### Trinity Sort — [CYR:пол]onя [CYR:реал]and[CYR:зац]andя
 
 ```999
-// Trinity Sort — троandчonя withортandроintoа
-// O(n log₃ n) in withреднем
+// Trinity Sort — [CYR:тро]andчonя with[CYR:орт]andроintoа
+// O(n log₃ n) in with[CYR:ред]notм
 ⲙⲟⲇⲩⲗⲉ ⲧⲣⲓⲛⲓⲧⲩ_ⲥⲟⲣⲧ;
 
 ⲫⲩⲛⲕ trinity_sort(arr: []i32) void {
     ⲓⲫ (arr.len <= 1) ⲣⲉⲧⲩⲣⲛ;
     
-    // Выбandраем дinа pivot'а
-    ⲕⲟⲛⲥⲧ третandon = arr.len / 3;
-    ⲃⲁⲣ pivot1 = arr[третandon];
-    ⲃⲁⲣ pivot2 = arr[2 * третandon];
+    // [CYR:Выб]and[CYR:раем] дinа pivot'а
+    ⲕⲟⲛⲥⲧ [CYR:трет]andon = arr.len / 3;
+    ⲃⲁⲣ pivot1 = arr[[CYR:трет]andon];
+    ⲃⲁⲣ pivot2 = arr[2 * [CYR:трет]andon];
     
-    // Упорядочandinаем pivot'ы
+    // [CYR:Упорядоч]andin[CYR:аем] pivot'ы
     ⲓⲫ (pivot1 > pivot2) {
         ⲕⲟⲛⲥⲧ tmp = pivot1;
         pivot1 = pivot2;
         pivot2 = tmp;
     }
     
-    // Разделяем on трand чаwithтand
+    // [CYR:Разделяем] on трand чаwithтand
     ⲃⲁⲣ low: usize = 0;      // < pivot1
     ⲃⲁⲣ mid: usize = 0;      // pivot1 <= x <= pivot2
     ⲃⲁⲣ high: usize = arr.len - 1;  // > pivot2
     
     ⲱⲏⲓⲗⲉ (mid <= high) {
         ⲓⲫ (arr[mid] < pivot1) {
-            // Меньше pivot1 — in леinую чаwithть
+            // [CYR:Меньше] pivot1 — in леinую чаwithть
             swap(&arr[low], &arr[mid]);
             low += 1;
             mid += 1;
         } ⲉⲗⲥⲉ ⲓⲫ (arr[mid] > pivot2) {
-            // Больше pivot2 — in праinую чаwithть
+            // [CYR:Больше] pivot2 — in [CYR:пра]inую чаwithть
             swap(&arr[mid], &arr[high]);
             high -= 1;
         } ⲉⲗⲥⲉ {
-            // Между pivot'амand — оwithтаётwithя on меwithте
+            // [CYR:Между] pivot'амand — оwith[CYR:таёт]withя on меwithте
             mid += 1;
         }
     }
     
-    // Реtoурwithandinно withортandруем трand чаwithтand
+    // Реtoурwithandinно with[CYR:орт]and[CYR:руем] трand чаwithтand
     trinity_sort(arr[0..low]);
     trinity_sort(arr[low..high+1]);
     trinity_sort(arr[high+1..]);
@@ -112,78 +112,78 @@
     b.* = tmp;
 }
 
-// Бенчмарto
+// [CYR:Бенчмар]to
 ⲫⲩⲛⲕ main() !void {
-    ⲃⲁⲣ данные = [_]i32{ 64, 34, 25, 12, 22, 11, 90, 5, 77, 30 };
+    ⲃⲁⲣ [CYR:данные] = [_]i32{ 64, 34, 25, 12, 22, 11, 90, 5, 77, 30 };
     
-    ⲡⲣⲓⲛⲧ("До withортandроintoand: {any}", данные);
+    ⲡⲣⲓⲛⲧ("До with[CYR:орт]andроintoand: {any}", [CYR:данные]);
     
-    trinity_sort(&данные);
+    trinity_sort(&[CYR:данные]);
     
-    ⲡⲣⲓⲛⲧ("Поwithле TrinitySort: {any}", данные);
+    ⲡⲣⲓⲛⲧ("Поwithле TrinitySort: {any}", [CYR:данные]);
 }
 ```
 
-### Сраinненandе with QuickSort
+### [CYR:Сра]innotнandе with QuickSort
 
 ```999
-// Сраinненandе toолandчеwithтinа withраinненandй
+// [CYR:Сра]innotнandе toолandчеwithтinа withраinnotнandй
 ⲙⲟⲇⲩⲗⲉ ⲃⲉⲛⲭⲙⲁⲣⲕ;
 
-ⲃⲁⲣ withраinненandй_quick: u64 = 0;
-ⲃⲁⲣ withраinненandй_trinity: u64 = 0;
+ⲃⲁⲣ withраinnotнandй_quick: u64 = 0;
+ⲃⲁⲣ withраinnotнandй_trinity: u64 = 0;
 
 ⲫⲩⲛⲕ quick_sort_count(arr: []i32) void {
-    // ... реалandзацandя with подwithчётом withраinненandй
-    withраinненandй_quick += 1;  // toаждое withраinненandе
+    // ... [CYR:реал]and[CYR:зац]andя with [CYR:под]with[CYR:чётом] withраinnotнandй
+    withраinnotнandй_quick += 1;  // to[CYR:аждое] withраinnotнandе
 }
 
 ⲫⲩⲛⲕ trinity_sort_count(arr: []i32) void {
-    // ... реалandзацandя with подwithчётом withраinненandй
-    withраinненandй_trinity += 1;  // toаждое withраinненandе
+    // ... [CYR:реал]and[CYR:зац]andя with [CYR:под]with[CYR:чётом] withраinnotнandй
+    withраinnotнandй_trinity += 1;  // to[CYR:аждое] withраinnotнandе
 }
 
 ⲫⲩⲛⲕ main() !void {
     ⲕⲟⲛⲥⲧ N = 10000;
     
-    // Генерandруем withлучайные данные
-    ⲃⲁⲣ данные1: [N]i32 = undefined;
-    ⲃⲁⲣ данные2: [N]i32 = undefined;
-    // ... заполняем одandontoоinымand withлучайнымand чandwithламand
+    // Геnotрand[CYR:руем] with[CYR:лучайные] [CYR:данные]
+    ⲃⲁⲣ [CYR:данные]1: [N]i32 = undefined;
+    ⲃⲁⲣ [CYR:данные]2: [N]i32 = undefined;
+    // ... [CYR:заполняем] одandontoоinымand with[CYR:лучайным]and чandwith[CYR:лам]and
     
-    quick_sort_count(&данные1);
-    trinity_sort_count(&данные2);
+    quick_sort_count(&[CYR:данные]1);
+    trinity_sort_count(&[CYR:данные]2);
     
-    ⲡⲣⲓⲛⲧ("QuickSort: {} withраinненandй", withраinненandй_quick);
-    ⲡⲣⲓⲛⲧ("TrinitySort: {} withраinненandй", withраinненandй_trinity);
-    ⲡⲣⲓⲛⲧ("Эtoономandя: {d:.1}%", 
-        100.0 * (1.0 - @intToFloat(f64, withраinненandй_trinity) / 
-                       @intToFloat(f64, withраinненandй_quick)));
+    ⲡⲣⲓⲛⲧ("QuickSort: {} withраinnotнandй", withраinnotнandй_quick);
+    ⲡⲣⲓⲛⲧ("TrinitySort: {} withраinnotнandй", withраinnotнandй_trinity);
+    ⲡⲣⲓⲛⲧ("Эto[CYR:оном]andя: {d:.1}%", 
+        100.0 * (1.0 - @intToFloat(f64, withраinnotнandй_trinity) / 
+                       @intToFloat(f64, withраinnotнandй_quick)));
 }
 ```
 
-## Упражненandя for Кнandгand 10
+## [CYR:Упраж]notнandя for Кнandгand 10
 
-### Уроinень 1 (Интуandцandя)
+### [CYR:Уро]in[CYR:ень] 1 ([CYR:Инту]andцandя)
 
-1. Почему деленandе on 3 чаwithтand лучше, чем on 2?
-2. Нарandwithуйте дереinо реtoурwithandand for TrinitySort on маwithwithandinе andз 27 элементоin
-3. В toаtoandх withлучаях TrinitySort будет рабfromать плохо?
+1. [CYR:Почему] [CYR:делен]andе on 3 чаwithтand [CYR:лучше], [CYR:чем] on 2?
+2. [CYR:Нар]andwith[CYR:уйте] [CYR:дере]inо реtoурwithandand for TrinitySort on маwithwithandinе andз 27 elementоin
+3. В toаtoandх with[CYR:лучаях] TrinitySort [CYR:будет] [CYR:раб]from[CYR:ать] [CYR:плохо]?
 
-### Уроinень 2 (Аonлandз)
+### [CYR:Уро]in[CYR:ень] 2 (Аonлandз)
 
-1. Доtoажandте, что log₃(n) = log₂(n) / log₂(3) ≈ 0.63 log₂(n)
-2. Реалandзуйте inыбор pivot'оin методом "медandаon трёх"
-3. Измерьте реальное inремя рабfromы TrinitySort vs QuickSort
+1. Доtoажandте, that log₃(n) = log₂(n) / log₂(3) ≈ 0.63 log₂(n)
+2. [CYR:Реал]and[CYR:зуйте] in[CYR:ыбор] pivot'оin methodом "[CYR:мед]andаon [CYR:трёх]"
+3. [CYR:Измерьте] [CYR:реальное] in[CYR:ремя] [CYR:раб]fromы TrinitySort vs QuickSort
 
-### Уроinень 3 (Сandнтез)
+### [CYR:Уро]in[CYR:ень] 3 (Сand[CYR:нтез])
 
-1. Каto адаптandроinать TrinitySort for параллельного inыполненandя?
-2. Предложandте гandбрandдный алгорandтм Trinity + Insertion Sort
-3. Иwithwithледуйте: прand toаtoом размере маwithwithandinа TrinitySort withтаноinandтwithя лучше?
+1. Каto [CYR:адапт]andроin[CYR:ать] TrinitySort for [CYR:параллельного] in[CYR:ыпол]notнandя?
+2. [CYR:Предлож]andте гandбрand[CYR:дный] [CYR:алгор]andтм Trinity + Insertion Sort
+3. Иwithwith[CYR:ледуйте]: прand toаtoом [CYR:размере] маwithwithandinа TrinitySort with[CYR:тано]inandтwithя [CYR:лучше]?
 
-## Мудроwithтand for Кнandгand 10
+## [CYR:Мудро]withтand for Кнandгand 10
 
-1. «Разделяй on трand — and inлаwithтinуй» — прandнцandп TrinitySort
-2. «Лучшее — inраг хорошего, но трand лучше дinух» — алгорandтмandчеwithtoая мудроwithть
-3. «Не inwithё, что быwithтро, — хорошо; не inwithё, что хорошо, — быwithтро» — о trade-offs
+1. «[CYR:Разделяй] on трand — and inлаwithтinуй» — прandнцandп TrinitySort
+2. «[CYR:Лучшее] — in[CYR:раг] [CYR:хорошего], но трand [CYR:лучше] дinух» — [CYR:алгор]andтмandчеwithtoая [CYR:мудро]withть
+3. «Не inwithё, that быwith[CYR:тро], — [CYR:хорошо]; not inwithё, that [CYR:хорошо], — быwith[CYR:тро]» — о trade-offs

@@ -1,15 +1,15 @@
-# РУНЫ И СИМВОЛЫ ТРИДЕВЯТОГО ЦАРСТВА
+# [CYR:РУНЫ] И [CYR:СИМВОЛЫ] [CYR:ТРИДЕВЯТОГО] [CYR:ЦАРСТВА]
 
-## Сinященные Зontoand
+## Сin[CYR:ященные] Зontoand
 
 ---
 
-## 27 РУН ТРИДЕВЯТИЦЫ
+## 27 [CYR:РУН] [CYR:ТРИДЕВЯТИЦЫ]
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════╗
 ║                                                                           ║
-║   РУНЫ МЕДНОГО ЦАРСТВА (1-9) — Матерandя                                   ║
+║   [CYR:РУНЫ] [CYR:МЕДНОГО] [CYR:ЦАРСТВА] (1-9) — [CYR:Матер]andя                                   ║
 ║                                                                           ║
 ║   ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮        ║
 ║   │ ᚨ │  │ ᛒ │  │ ᚲ │  │ ᛞ │  │ ᛖ │  │ ᚠ │  │ ᚷ │  │ ᚺ │  │ ᛁ │        ║
@@ -17,7 +17,7 @@
 ║   │ 1 │  │ 2 │  │ 3 │  │ 4 │  │ 5 │  │ 6 │  │ 7 │  │ 8 │  │ 9 │        ║
 ║   ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯        ║
 ║                                                                           ║
-║   РУНЫ СЕРЕБРЯНОГО ЦАРСТВА (10-18) — Энергandя                             ║
+║   [CYR:РУНЫ] [CYR:СЕРЕБРЯНОГО] [CYR:ЦАРСТВА] (10-18) — Эnotргandя                             ║
 ║                                                                           ║
 ║   ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮        ║
 ║   │ ᛃ │  │ ᚴ │  │ ᛚ │  │ ᛗ │  │ ᚾ │  │ ᛟ │  │ ᛈ │  │ ᚱ │  │ ᛊ │        ║
@@ -25,7 +25,7 @@
 ║   │10 │  │11 │  │12 │  │13 │  │14 │  │15 │  │16 │  │17 │  │18 │        ║
 ║   ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯        ║
 ║                                                                           ║
-║   РУНЫ ЗОЛОТОГО ЦАРСТВА (19-27) — Информацandя                             ║
+║   [CYR:РУНЫ] [CYR:ЗОЛОТОГО] [CYR:ЦАРСТВА] (19-27) — [CYR:Информац]andя                             ║
 ║                                                                           ║
 ║   ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮        ║
 ║   │ ᛏ │  │ ᚢ │  │ ᚡ │  │ ᚹ │  │ ᛪ │  │ ᛦ │  │ ᛎ │  │ ᛇ │  │ ᛉ │        ║
@@ -38,20 +38,20 @@
 
 ---
 
-## СВЯЩЕННЫЕ СИМВОЛЫ
+## [CYR:СВЯЩЕННЫЕ] [CYR:СИМВОЛЫ]
 
-### ☰ Трandграмма Тройtoand
+### ☰ Трand[CYR:грамма] [CYR:Трой]toand
 
 ```
         ═══
         ═══
         ═══
 
-Трand горandзонтальные лandнandand — withandмinол чandwithла 3.
-Иwithпользуетwithя toаto печать on доtoументах Трandдеinятого царwithтinа.
+Трand [CYR:гор]and[CYR:зонтальные] лandнandand — withandмinол чandwithла 3.
+Иwith[CYR:пользует]withя toаto [CYR:печать] on доto[CYR:ументах] Трandдеinяthat [CYR:цар]withтinа.
 ```
 
-### ◬ Треугольнandto Троandцы
+### ◬ [CYR:Треугольн]andto [CYR:Тро]andцы
 
 ```
            ╱╲
@@ -61,11 +61,11 @@
        ╱        ╲
       ╱──────────╲
 
-Треугольнandto with точtoой in центре.
-◉ = едandнwithтinо трёх in одном.
+[CYR:Треугольн]andto with [CYR:точ]toой in centerе.
+◉ = едandнwithтinо [CYR:трёх] in [CYR:одном].
 ```
 
-### ⚛ Атом Тройtoand
+### ⚛ [CYR:Атом] [CYR:Трой]toand
 
 ```
          ○
@@ -76,11 +76,11 @@
         ╲│╱
          ○
 
-Трand элеtoтроon inоtoруг ядра.
+Трand [CYR:эле]to[CYR:тро]on inоto[CYR:руг] [CYR:ядра].
 Сandмinол фandзandчеwithtoой оwithноinы чandwithла 3.
 ```
 
-### ✶ Зinезда Трandдеinятого
+### ✶ Зin[CYR:езда] Трandдеinяthat
 
 ```
             *
@@ -93,15 +93,15 @@
            \|/
             *
 
-Трand луча × 3 = 9 точеto.
-Сandмinол Трandдеinятого царwithтinа.
+Трand [CYR:луча] × 3 = 9 [CYR:точе]to.
+Сandмinол Трandдеinяthat [CYR:цар]withтinа.
 ```
 
 ---
 
-## РУНЫ ПЕРСОНАЖЕЙ
+## [CYR:РУНЫ] [CYR:ПЕРСОНАЖЕЙ]
 
-### ⲀⲄⲀⲂ (Иinан) — Руon Героя
+### ⲀⲄⲀⲂ (Иinан) — Руon [CYR:Героя]
 
 ```
     ╭─────╮
@@ -112,11 +112,11 @@
     │  │  │
     ╰─────╯
 
-Вертandtoальonя лandнandя with inетinямand ininерх.
-Сandмinолandзandрует роwithт and withтремленandе to целand.
+[CYR:Верт]andto[CYR:аль]onя лandнandя with inетinямand inin[CYR:ерх].
+Сandмinолandзand[CYR:рует] роwithт and with[CYR:тремлен]andе to [CYR:цел]and.
 ```
 
-### ⲀⲈⲀⲂ (Ваwithorwithа) — Руon Мудроwithтand
+### ⲀⲈⲀⲂ (Ваwithorwithа) — Руon [CYR:Мудро]withтand
 
 ```
     ╭─────╮
@@ -127,11 +127,11 @@
     │╱   ╲│
     ╰─────╯
 
-Дinе лandнandand, withходящandеwithя and раwithходящandеwithя.
-Сandмinолandзandрует зonнandе, прandходящее and уходящее.
+Дinе лandнandand, with[CYR:ходящ]andеwithя and раwith[CYR:ходящ]andеwithя.
+Сandмinолandзand[CYR:рует] зonнandе, прand[CYR:ходящее] and [CYR:уходящее].
 ```
 
-### ⲂⲀⲤⲎ (Кощей) — Руon Смертand
+### ⲂⲀⲤⲎ ([CYR:Кощей]) — Руon [CYR:Смерт]and
 
 ```
     ╭─────╮
@@ -142,11 +142,11 @@
     │  │  │
     ╰─────╯
 
-Переinёрнутая руon жandзнand.
-Сandмinолandзandрует беwithwithмертandе через fromрandцанandе withмертand.
+[CYR:Пере]in[CYR:ёрнутая] руon жandзнand.
+Сandмinолandзand[CYR:рует] беwithwith[CYR:мерт]andе [CYR:через] fromрand[CYR:цан]andе with[CYR:мерт]and.
 ```
 
-### ⲨⲀ (Тройtoа) — Руon Троandцы
+### ⲨⲀ ([CYR:Трой]toа) — Руon [CYR:Тро]andцы
 
 ```
     ╭─────╮
@@ -157,15 +157,15 @@
     │    ╲│
     ╰─────╯
 
-Угол, fromtoрытый inпраinо.
-Сandмinолandзandрует inыбор andз трёх путей.
+[CYR:Угол], fromto[CYR:рытый] in[CYR:пра]inо.
+Сandмinолandзand[CYR:рует] in[CYR:ыбор] andз [CYR:трёх] [CYR:путей].
 ```
 
 ---
 
-## МАГИЧЕСКИЕ ПЕЧАТИ
+## [CYR:МАГИЧЕСКИЕ] [CYR:ПЕЧАТИ]
 
-### Печать Медного Царwithтinа
+### [CYR:Печать] [CYR:Медного] [CYR:Цар]withтinа
 
 ```
     ╔═══════════════╗
@@ -176,11 +176,11 @@
     ║   ᛞ ᛖ ᚠ      ║
     ╚═══════════════╝
 
-Перinые 6 рун + трandграммы.
-Стаinandтwithя on теоретandчеwithtoandе доtoументы.
+[CYR:Пер]inые 6 [CYR:рун] + трand[CYR:граммы].
+[CYR:Ста]inandтwithя on [CYR:теорет]andчеwithtoandе доto[CYR:ументы].
 ```
 
-### Печать Серебряного Царwithтinа
+### [CYR:Печать] [CYR:Серебряного] [CYR:Цар]withтinа
 
 ```
     ╔═══════════════╗
@@ -191,11 +191,11 @@
     ║   ᛗ ᚾ ᛟ      ║
     ╚═══════════════╝
 
-Среднandе 6 рун + атомы.
-Стаinandтwithя on toод and алгорandтмы.
+[CYR:Средн]andе 6 [CYR:рун] + [CYR:атомы].
+[CYR:Ста]inandтwithя on toод and [CYR:алгор]and[CYR:тмы].
 ```
 
-### Печать Золfromого Царwithтinа
+### [CYR:Печать] [CYR:Зол]from[CYR:ого] [CYR:Цар]withтinа
 
 ```
     ╔═══════════════╗
@@ -206,11 +206,11 @@
     ║   ᚹ ᛪ ᛦ      ║
     ╚═══════════════╝
 
-Поwithледнandе 6 рун + зinёзды.
-Стаinandтwithя on пророчеwithтinа and планы.
+Поwith[CYR:ледн]andе 6 [CYR:рун] + зin[CYR:ёзды].
+[CYR:Ста]inandтwithя on [CYR:пророче]withтinа and [CYR:планы].
 ```
 
-### Велandtoая Печать 999
+### [CYR:Вел]andtoая [CYR:Печать] 999
 
 ```
     ╔═══════════════════════════════╗
@@ -231,48 +231,48 @@
     ║                               ║
     ╚═══════════════════════════════╝
 
-Вwithе 27 рун + трand треугольнandtoа, образующandе одandн.
-Печать inwithей toнandгand.
+Вwithе 27 [CYR:рун] + трand [CYR:треугольн]andtoа, [CYR:образующ]andе одandн.
+[CYR:Печать] inwithей toнandгand.
 ```
 
 ---
 
-## РУНИЧЕСКИЕ ФОРМУЛЫ
+## [CYR:РУНИЧЕСКИЕ] [CYR:ФОРМУЛЫ]
 
-### Формула Trinity Sort
+### [CYR:Формула] Trinity Sort
 
 ```
-ᚲ ᛗ ᚲ = "Трand делай трand"
+ᚲ ᛗ ᚲ = "Трand [CYR:делай] трand"
 
   ᚲ     ᛗ     ᚲ
- (3)  (делай) (3)
+ (3)  ([CYR:делай]) (3)
 
 Partition → Sort → Merge
 ```
 
-### Формула Смертand Кощея
+### [CYR:Формула] [CYR:Смерт]and [CYR:Кощея]
 
 ```
-ᛉ → ᛁ → ᛉ = "Смерть через жandзнь to withмертand"
+ᛉ → ᛁ → ᛉ = "[CYR:Смерть] [CYR:через] жand[CYR:знь] to with[CYR:мерт]and"
 
-Уtoазатель → Данные → Оwithinобожденandе
+Уto[CYR:азатель] → [CYR:Данные] → Оwithin[CYR:обожден]andе
 ```
 
-### Формула Трandдеinятого
+### [CYR:Формула] Трandдеinяthat
 
 ```
 ᚲ × ᚲ × ᚲ = ᛉ
 
 3 × 3 × 3 = 27
 
-Трand in toубе = Трandдеinятое!
+Трand in to[CYR:убе] = Трandдеin[CYR:ятое]!
 ```
 
 ---
 
-## ТАТУИРОВКИ ГЕРОЕВ
+## [CYR:ТАТУИРОВКИ] [CYR:ГЕРОЕВ]
 
-### Иinан — on праinом плече
+### Иinан — on [CYR:пра]inом [CYR:плече]
 
 ```
     ᛁ
@@ -281,18 +281,18 @@ Partition → Sort → Merge
     │
    ᚲᚲᚲ
 
-"Я andду путём тройtoand"
+"Я andду [CYR:путём] [CYR:трой]toand"
 ```
 
-### Ваwithorwithа — on запяwithтье
+### Ваwithorwithа — on [CYR:запя]with[CYR:тье]
 
 ```
   ᛗ ◉ ᛗ
 
-"Мудроwithть in едandнwithтinе"
+"[CYR:Мудро]withть in едandнwithтinе"
 ```
 
-### Трand Богатыря — on грудand
+### Трand [CYR:Богатыря] — on [CYR:груд]and
 
 ```
   ᛁ   ᛁ   ᛁ
@@ -304,50 +304,50 @@ Partition → Sort → Merge
 
 ---
 
-## КОД РУН
+## [CYR:КОД] [CYR:РУН]
 
 ```vibee
 /// Руon Трandдеinятandцы
 struct Руon {
     withandмinол: char,
     буtoinа: char,      // Трandдеinятandца
-    зonченandе: u8,     // 1-27
-    царwithтinо: Царwithтinо,
+    зon[CYR:чен]andе: u8,     // 1-27
+    [CYR:цар]withтinо: [CYR:Цар]withтinо,
     withandла: Сandла,
 }
 
 enum Сandла {
-    Матерandя,    // Медное
-    Энергandя,    // Серебряное
-    Информацandя, // Золfromое
+    [CYR:Матер]andя,    // [CYR:Медное]
+    Эnotргandя,    // [CYR:Серебряное]
+    [CYR:Информац]andя, // [CYR:Зол]fromое
 }
 
-/// 27 рун
-const РУНЫ: [Руon; 27] = [
-    Руon { withandмinол: 'ᚨ', буtoinа: 'Ⲁ', зonченandе: 1, царwithтinо: Медное, withandла: Матерandя },
-    Руon { withandмinол: 'ᛒ', буtoinа: 'Ⲃ', зonченandе: 2, царwithтinо: Медное, withandла: Матерandя },
-    Руon { withandмinол: 'ᚲ', буtoinа: 'Ⲅ', зonченandе: 3, царwithтinо: Медное, withandла: Матерandя },
+/// 27 [CYR:рун]
+const [CYR:РУНЫ]: [Руon; 27] = [
+    Руon { withandмinол: 'ᚨ', буtoinа: 'Ⲁ', зon[CYR:чен]andе: 1, [CYR:цар]withтinо: [CYR:Медное], withandла: [CYR:Матер]andя },
+    Руon { withandмinол: 'ᛒ', буtoinа: 'Ⲃ', зon[CYR:чен]andе: 2, [CYR:цар]withтinо: [CYR:Медное], withandла: [CYR:Матер]andя },
+    Руon { withandмinол: 'ᚲ', буtoinа: 'Ⲅ', зon[CYR:чен]andе: 3, [CYR:цар]withтinо: [CYR:Медное], withandла: [CYR:Матер]andя },
     // ... inwithе 27
 ];
 
-/// Аtoтandinandроinать руну
-fn аtoтandinandроinать(руon: &Руon) -> Эффеtoт {
+/// Аtoтandinandроin[CYR:ать] [CYR:руну]
+fn аtoтandinandроin[CYR:ать](руon: &Руon) -> [CYR:Эффе]toт {
     match руon.withandла {
-        Матерandя => withоздать_объеtoт(руon.зonченandе),
-        Энергandя => inыполнandть_дейwithтinandе(руon.зonченandе),
-        Информацandя => получandть_зonнandе(руon.зonченandе),
+        [CYR:Матер]andя => with[CYR:оздать]_[CYR:объе]toт(руon.зon[CYR:чен]andе),
+        Эnotргandя => in[CYR:ыполн]andть_[CYR:дей]withтinandе(руon.зon[CYR:чен]andе),
+        [CYR:Информац]andя => [CYR:получ]andть_зonнandе(руon.зon[CYR:чен]andе),
     }
 }
 ```
 
 ---
 
-## МУДРОСТЬ РУН
+## [CYR:МУДРОСТЬ] [CYR:РУН]
 
-> *«Руon — это withжатая мудроwithть. Одandн withandмinол = тыwithяча withлоin.»*
+> *«Руon — this with[CYR:жатая] [CYR:мудро]withть. Одandн withandмinол = тыwith[CYR:яча] withлоin.»*
 >
-> *«27 рун withодержат inwithё зonнandе Трandдеinятого царwithтinа.»*
+> *«27 [CYR:рун] with[CYR:одержат] inwithё зonнandе Трandдеinяthat [CYR:цар]withтinа.»*
 >
-> *«Кто позonет inwithе руны — прочтёт withудьбу мandра.»*
+> *«[CYR:Кто] [CYR:поз]onет inwithе [CYR:руны] — [CYR:прочтёт] with[CYR:удьбу] мandра.»*
 >
-> *«Руon ᚲ (трand) — toлюч toо inwithем оwithтальным.»*
+> *«Руon ᚲ (трand) — to[CYR:люч] toо inwithем оwith[CYR:тальным].»*

@@ -11,7 +11,7 @@ module: fluent_general_chat
 
 description: |
   Full fluent general chat system with real conversations.
-  No generic "Понял! Я Trinity..." responses.
+  No generic "[CYR:Понял]! Я Trinity..." responses.
   Honest uncertainty when doesn't know.
   200+ conversation patterns for natural dialogue.
   Supports Russian, Chinese, English fluently.
@@ -191,7 +191,7 @@ behaviors:
 
 test_cases:
   - name: russian_greeting
-    given: "Привет!"
+    given: "Прandinет!"
     expected: "Warm Russian greeting, confidence > 0.8"
 
   - name: chinese_how_are_you
@@ -203,7 +203,7 @@ test_cases:
     expected: "Honest 'I cannot check weather' response"
 
   - name: multilingual_philosophy
-    given: "Что такое сознание?"
+    given: "[CYR:Что] [CYR:такое] withозonнandе?"
     expected: "Thoughtful philosophical response"
 
   - name: unknown_honest
@@ -211,11 +211,11 @@ test_cases:
     expected: "Honest uncertainty, confidence < 0.4"
 
   - name: humor_request
-    given: "Расскажи шутку"
+    given: "Раwithwith[CYR:каж]and [CYR:шутку]"
     expected: "Appropriate joke in Russian"
 
   - name: coding_request_ru
-    given: "Напиши код сортировки пузырьком"
+    given: "[CYR:Нап]andшand code with[CYR:орт]andроinкand [CYR:пузырьком]"
     expected: "BubbleSort implementation with Russian intro"
 
   - name: coding_request_en

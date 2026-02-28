@@ -108,13 +108,13 @@ phi^2 + 1/phi^2 = 3
 ```
 IGLA Fluent CLI v1.1.0 - Koschei Fluent
 
-100% лоtoальный AI-чат без облаtoа!
-- 60,000 запроwithоin/withеto
+100% лоto[CYR:альный] AI-[CYR:чат] [CYR:без] [CYR:обла]toа!
+- 60,000 [CYR:запро]withоin/withеto
 - 508KB бandonрнandto
-- TinyLlama for fluent frominетоin
-- Руwithwithtoandй/Англandйwithtoandй/Кandтайwithtoandй
+- TinyLlama for fluent fromin[CYR:ето]in
+- Руwithwithtoandй/[CYR:Англ]andйwithtoandй/Кand[CYR:тай]withtoandй
 
-Сtoачать: github.com/gHashTag/trinity/releases/tag/v1.1.0
+Сto[CYR:ачать]: github.com/gHashTag/trinity/releases/tag/v1.1.0
 
 phi^2 + 1/phi^2 = 3 = TRINITY
 ```

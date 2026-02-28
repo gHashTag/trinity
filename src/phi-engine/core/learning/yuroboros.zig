@@ -6,7 +6,7 @@ pub const PHI = level0.PHI;
 pub const TRINITY = level0.TRINITY;
 
 // ═══════════════════════════════════════════════════════════
-// LEVEL 2: YUROBOROS ENGINE (Уроinень Баланwithandроintoand)
+// LEVEL 2: YUROBOROS ENGINE ([CYR:Уро]in[CYR:ень] [CYR:Балан]withandроintoand)
 // Dynamic Difficulty & Network Balancing for VIBEE
 // ═══════════════════════════════════════════════════════════
 
@@ -23,19 +23,19 @@ pub const DifficultyRating = enum(u16) {
 };
 
 pub const YuroborosDifficulty = struct {
-    // Base Difficulty (базоinая withложноwithть)
+    // Base Difficulty ([CYR:базо]inая with[CYR:ложно]withть)
     base: f64 = 1.0,
 
-    // Scaling Factor (coefficient маwithштабandроinанandя)
+    // Scaling Factor (coefficient маwith[CYR:штаб]andроinанandя)
     scaling: f64 = 1.0,
 
-    // Adaptive Difficulty (аyesптandinonя withложноwithть)
+    // Adaptive Difficulty (аyesптandinonя with[CYR:ложно]withть)
     adaptive: f64 = 0.0,
 
-    // Target Difficulty (целеinая withложноwithть)
+    // Target Difficulty ([CYR:целе]inая with[CYR:ложно]withть)
     target: f64 = 100.0,
 
-    // Difficulty Rating (оценtoа withложноwithтand 1-999)
+    // Difficulty Rating ([CYR:оцен]toа with[CYR:ложно]withтand 1-999)
     pub fn getRating(self: *const YuroborosDifficulty) DifficultyRating {
         const D = self.adaptive;
         if (D < 1.0) return .EASY else if (D < 10.0) return .NORMAL else if (D < 50.0) return .HARD else if (D < 100.0) return .EXPERT else if (D < 500.0) return .GODLIKE else return .GODLIKE;
@@ -57,16 +57,16 @@ pub const YuroborosDifficulty = struct {
 // ═══════════════════════════════════════════════════════════
 
 pub const YuroborosNetworkState = struct {
-    // Total Tasks (общее toолandчеwithтinо заyesч)
+    // Total Tasks ([CYR:общее] toолandчеwithтinо заyesч)
     total_tasks: u64 = 0,
 
-    // Pending Tasks (ожandyesющandе inыbyлненandя)
+    // Pending Tasks (ожandyesющandе inыbyлnotнandя)
     pending_tasks: u64 = 0,
 
-    // Completed Tasks (inыbyлненные заyesчand)
+    // Completed Tasks (inыbyлnot[CYR:нные] заyesчand)
     completed_tasks: u64 = 0,
 
-    // Network Utility (byлезноwithть withетand 0.0 to 1.0)
+    // Network Utility (by[CYR:лезно]withть withетand 0.0 to 1.0)
     utility: f64 = 1.0,
 
     // Calculate network utility based on task completion
@@ -103,7 +103,7 @@ pub const YuroborosTask = struct {
 };
 
 // ═══════════════════════════════════════════════════════════
-// YUROBOROS ENGINE (Оwithноinной toомbyнент)
+// YUROBOROS ENGINE (Оwithноin[CYR:ной] toомbynotнт)
 // ═══════════════════════════════════════════════════════════
 
 pub const YuroborosEngine = struct {

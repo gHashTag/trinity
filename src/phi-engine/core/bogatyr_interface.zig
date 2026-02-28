@@ -4,19 +4,19 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-/// Validation context - общandе data for inwithех богатырей
+/// Validation context - [CYR:общ]andе data for inwithех [CYR:богатырей]
 pub const ValidationContext = struct {
     allocator: Allocator,
     spec_path: []const u8,
     source: []const u8,
     config: ValidatorConfig,
 
-    // AST (if уже withпарwithен)
+    // AST (if [CYR:уже] with[CYR:пар]withен)
     ast: ?*const struct {
         nodes: []const AstNode,
     },
 
-    // Таблandца withandмinолоin (if уже bywithтроеon)
+    // [CYR:Табл]andца withandмin[CYR:оло]in (if [CYR:уже] bywith[CYR:трое]on)
     symbol_table: ?*const struct {
         symbols: std.StringHashMap(Symbol),
     },
@@ -30,12 +30,12 @@ pub const ValidatorConfig = struct {
     timeout_ms: u32 = 30000,
 };
 
-/// Result проinерtoand богатыря
+/// Result [CYR:про]inерtoand [CYR:богатыря]
 pub const BogatyrVerdict = enum {
-    Pass, // ✅ Check прошла
-    Fail, // ❌ Check не прошла
-    Warning, // ⚠️ Предуbeforeнandе
-    Skip, // ⊘ Богатырь пропущен
+    Pass, // ✅ Check [CYR:прошла]
+    Fail, // ❌ Check not [CYR:прошла]
+    Warning, // ⚠️ [CYR:Преду]beforeнandе
+    Skip, // ⊘ [CYR:Богатырь] [CYR:пропущен]
 };
 
 /// Ошandбtoа inалandyesцandand
@@ -47,31 +47,31 @@ pub const ValidationError = struct {
     column: usize,
 };
 
-/// Метрandtoand inыbyлненandя богатыря
+/// [CYR:Метр]andtoand inыbyлnotнandя [CYR:богатыря]
 pub const BogatyrMetrics = struct {
     duration_ns: i64,
     checks_performed: usize,
 };
 
-/// Bogatyr interface - each богатырь реалandзует this трейт
+/// Bogatyr interface - each [CYR:богатырь] [CYR:реал]and[CYR:зует] this [CYR:трейт]
 pub const BogatyrPlugin = struct {
     name: []const u8,
     version: []const u8,
     category: []const u8,
     priority: u32,
 
-    /// Фунtoцandя inалandyesцandand - реалandзуетwithя toаждым богатырем
+    /// [CYR:Фун]toцandя inалandyesцandand - [CYR:реал]and[CYR:зует]withя to[CYR:аждым] [CYR:богатырем]
     validate: *const fn (*const ValidationContext) anyerror!BogatyrResult,
 };
 
-/// Result рабfromы богатыря
+/// Result [CYR:раб]fromы [CYR:богатыря]
 pub const BogatyrResult = struct {
     verdict: BogatyrVerdict,
     errors: []const ValidationError,
     metrics: BogatyrMetrics,
 };
 
-/// Вwithbyмогательные тandпы
+/// Вwithby[CYR:могательные] тandпы
 pub const AstNode = struct {
     kind: []const u8,
     value: ?[]const u8,

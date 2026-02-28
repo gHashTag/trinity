@@ -17,7 +17,7 @@
 | Performance | 23-491x faster |
 | Binary Size | 68x smaller |
 
-**Verdict**: ✅ TRI преinоwithходandт Claude Code
+**Verdict**: ✅ TRI [CYR:пре]inоwith[CYR:ход]andт Claude Code
 
 ---
 

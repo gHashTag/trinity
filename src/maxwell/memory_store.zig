@@ -1,5 +1,5 @@
 // Maxwell Daemon - Memory Store
-// Долгоwithрочonя memory agentа for обученandя
+// [CYR:Долго]with[CYR:роч]onя memory agentа for [CYR:обучен]andя
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -9,7 +9,7 @@ const std = @import("std");
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Experience inыbyлненandя заyesчand
+/// Experience inыbyлnotнandя заyesчand
 pub const Experience = struct {
     id: u64,
     task_type: []const u8,
@@ -52,12 +52,12 @@ pub const Experience = struct {
     }
 };
 
-/// Выученный pattern
+/// [CYR:Выученный] pattern
 pub const Pattern = struct {
     id: u64,
     name: []const u8,
-    trigger: []const u8, // Когyes прandменять
-    solution: []const u8, // Что делать
+    trigger: []const u8, // [CYR:Ког]yes прand[CYR:менять]
+    solution: []const u8, // [CYR:Что] [CYR:делать]
     confidence: f32, // 0.0 - 1.0
     usage_count: u32,
     success_count: u32,
@@ -69,7 +69,7 @@ pub const Pattern = struct {
     }
 };
 
-/// Запandwithь об ошandбtoе
+/// [CYR:Зап]andwithь об ошandбtoе
 pub const ErrorRecord = struct {
     id: u64,
     error_type: []const u8,
@@ -131,7 +131,7 @@ pub const MemoryStore = struct {
     // EXPERIENCE
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Запandwithать experience
+    /// [CYR:Зап]andwith[CYR:ать] experience
     pub fn recordExperience(self: *MemoryStore, exp: Experience) !u64 {
         var new_exp = exp;
         new_exp.id = self.next_experience_id;
@@ -147,7 +147,7 @@ pub const MemoryStore = struct {
         return new_exp.id;
     }
 
-    /// Найтand byхожandй experience
+    /// [CYR:Найт]and by[CYR:хож]andй experience
     pub fn findSimilarExperience(self: *MemoryStore, task_type: []const u8, keywords: []const []const u8) ?*Experience {
         var best_match: ?*Experience = null;
         var best_score: u32 = 0;
@@ -171,7 +171,7 @@ pub const MemoryStore = struct {
         return best_match;
     }
 
-    /// Получandть уwithпешные experienceы by тandпу заyesчand
+    /// [CYR:Получ]andть уwith[CYR:пешные] experienceы by тandпу заyesчand
     pub fn getSuccessfulExperiences(self: *MemoryStore, task_type: []const u8) !std.ArrayList(*Experience) {
         var result = std.ArrayList(*Experience).init(self.allocator);
 
@@ -188,7 +188,7 @@ pub const MemoryStore = struct {
     // PATTERNS
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Добаinandть pattern
+    /// [CYR:Доба]inandть pattern
     pub fn addPattern(self: *MemoryStore, pattern: Pattern) !u64 {
         var new_pattern = pattern;
         new_pattern.id = self.next_pattern_id;
@@ -200,7 +200,7 @@ pub const MemoryStore = struct {
         return new_pattern.id;
     }
 
-    /// Найтand pattern by трandггеру
+    /// [CYR:Найт]and pattern by трand[CYR:ггеру]
     pub fn findPattern(self: *MemoryStore, trigger: []const u8) ?*Pattern {
         // Exact match
         if (self.pattern_by_trigger.get(trigger)) |id| {
@@ -221,7 +221,7 @@ pub const MemoryStore = struct {
         return null;
     }
 
-    /// Обноinandть withтатandwithтandtoу паттерon
+    /// [CYR:Обно]inandть with[CYR:тат]andwithтandtoу [CYR:паттер]on
     pub fn updatePatternStats(self: *MemoryStore, pattern_id: u64, success: bool) void {
         for (self.patterns.items) |*p| {
             if (p.id == pattern_id) {
@@ -236,7 +236,7 @@ pub const MemoryStore = struct {
         }
     }
 
-    /// Получandть лучшandе паттерны
+    /// [CYR:Получ]andть [CYR:лучш]andе [CYR:паттерны]
     pub fn getTopPatterns(self: *MemoryStore, limit: usize) !std.ArrayList(*Pattern) {
         var result = std.ArrayList(*Pattern).init(self.allocator);
 
@@ -264,7 +264,7 @@ pub const MemoryStore = struct {
         return result;
     }
 
-    /// Изinлечь pattern andз experienceа
+    /// Изin[CYR:лечь] pattern andз experienceа
     fn extractPattern(self: *MemoryStore, exp: *Experience) !void {
         // Simple pattern extraction: task_type -> approach
         const existing = self.findPattern(exp.task_type);
@@ -288,7 +288,7 @@ pub const MemoryStore = struct {
     // ERRORS
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Запandwithать ошandбtoу
+    /// [CYR:Зап]andwith[CYR:ать] ошandбtoу
     pub fn recordError(self: *MemoryStore, error_type: []const u8, message: []const u8, context: []const u8) !u64 {
         const record = ErrorRecord{
             .id = self.next_error_id,
@@ -306,7 +306,7 @@ pub const MemoryStore = struct {
         return record.id;
     }
 
-    /// Найтand byхожую ошandбtoу (for byinторного andwithbyльзоinанandя решенandя)
+    /// [CYR:Найт]and by[CYR:хожую] ошandбtoу (for byin[CYR:торного] andwithby[CYR:льзо]inанandя [CYR:решен]andя)
     pub fn findSimilarError(self: *MemoryStore, error_type: []const u8, message: []const u8) ?*ErrorRecord {
         for (self.errors.items) |*err| {
             if (std.mem.eql(u8, err.error_type, error_type) and
@@ -319,7 +319,7 @@ pub const MemoryStore = struct {
         return null;
     }
 
-    /// Отметandть ошandбtoу how решённую
+    /// [CYR:Отмет]andть ошandбtoу how [CYR:решённую]
     pub fn resolveError(self: *MemoryStore, error_id: u64, solution: []const u8) void {
         for (self.errors.items) |*err| {
             if (err.id == error_id) {
@@ -334,7 +334,7 @@ pub const MemoryStore = struct {
     // PERSISTENCE
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Сохранandть memory in file
+    /// [CYR:Сохран]andть memory in file
     pub fn save(self: *MemoryStore, path: []const u8) !void {
         const file = try std.fs.cwd().createFile(path, .{});
         defer file.close();
@@ -356,7 +356,7 @@ pub const MemoryStore = struct {
         // TODO: Serialize actual data
     }
 
-    /// Загрузandть memory andз fileа
+    /// [CYR:Загруз]andть memory andз fileа
     pub fn load(self: *MemoryStore, path: []const u8) !void {
         const file = std.fs.cwd().openFile(path, .{}) catch return;
         defer file.close();

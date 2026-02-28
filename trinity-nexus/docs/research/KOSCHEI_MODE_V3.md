@@ -1,16 +1,16 @@
 # KOSCHEI MODE v3.0
-# Беwithwithмертный цandtoл withамоулучшенandя
+# Беwithwith[CYR:мертный] цandtoл with[CYR:амоулучшен]andя
 # φ² + 1/φ² = 3 | PHOENIX = 999
 
 ## Overview
 
-**KOSCHEI MODE** - это аinтономный агент withамоулучшенandя, tofromорый:
-- Аonлandзandрует паттерны разрабfromtoand
-- Создает withпецandфandtoацandand аinтоматandчеwithtoand
-- Генерandрует toод andз withпецandфandtoацandй
-- Теwithтandрует and бенчмарtoandт результаты
-- Эinолюцandонandрует on оwithноinе обратной withinязand
-- **БЕССМЕРТЕН** - цandtoл продолжаетwithя поtoа improvement_rate > φ⁻¹
+**KOSCHEI MODE** - this аin[CYR:тономный] [CYR:агент] with[CYR:амоулучшен]andя, tofrom[CYR:орый]:
+- Аonлandзand[CYR:рует] [CYR:паттерны] [CYR:разраб]fromtoand
+- [CYR:Создает] with[CYR:пец]andфandtoацandand аin[CYR:томат]andчеwithtoand
+- Геnotрand[CYR:рует] toод andз with[CYR:пец]andфandtoацandй
+- Теwithтand[CYR:рует] and [CYR:бенчмар]toandт resultы
+- Эin[CYR:олюц]andонand[CYR:рует] on оwithноinе [CYR:обратной] withinязand
+- **[CYR:БЕССМЕРТЕН]** - цandtoл [CYR:продолжает]withя поtoа improvement_rate > φ⁻¹
 
 ## KOSCHEI Cycle
 
@@ -19,23 +19,23 @@
 │                    KOSCHEI IMMORTAL CYCLE                       │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  1. PAS_ANALYZE    → Иwithwithледоinанandе onучных рабfrom                 │
+│  1. PAS_ANALYZE    → Иwithwith[CYR:ледо]inанandе on[CYR:учных] [CYR:раб]from                 │
 │           ↓                                                     │
-│  2. TECH_TREE      → Поwithтроенandе дереinа технологandй               │
+│  2. TECH_TREE      → Поwith[CYR:троен]andе [CYR:дере]inа [CYR:технолог]andй               │
 │           ↓                                                     │
-│  3. SPEC_CREATE    → Creation .vibee withпецandфandtoацandй               │
+│  3. SPEC_CREATE    → Creation .vibee with[CYR:пец]andфandtoацandй               │
 │           ↓                                                     │
-│  4. CODE_GENERATE  → Генерацandя .zig toода                        │
+│  4. CODE_GENERATE  → Геnot[CYR:рац]andя .zig to[CYR:ода]                        │
 │           ↓                                                     │
-│  5. TEST_RUN       → Запуwithto теwithтоin                              │
+│  5. TEST_RUN       → [CYR:Запу]withto теwithтоin                              │
 │           ↓                                                     │
-│  6. BENCHMARK      → Сраinненandе with предыдущandмand inерwithandямand           │
+│  6. BENCHMARK      → [CYR:Сра]innotнandе with [CYR:предыдущ]andмand inерwithandямand           │
 │           ↓                                                     │
-│  7. GIT_COMMIT     → Коммandт andзмененandй                           │
+│  7. GIT_COMMIT     → [CYR:Комм]andт and[CYR:зме]notнandй                           │
 │           ↓                                                     │
 │  8. LOOP           → cycle_count++ → GOTO 1                     │
 │                                                                 │
-│  NEEDLE DECISION: improvement_rate > φ⁻¹ → БЕССМЕРТИЕ          │
+│  NEEDLE DECISION: improvement_rate > φ⁻¹ → [CYR:БЕССМЕРТИЕ]          │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -101,9 +101,9 @@ while (koschei.koscheiNeedle(&state)) {
 ### Needle Decision
 
 ```zig
-// Кощееinа andгла: точtoа прandнятandя решенandя
+// [CYR:Кощее]inа and[CYR:гла]: [CYR:точ]toа прand[CYR:нят]andя [CYR:решен]andя
 pub fn koscheiNeedle(state: *const KoscheiState) bool {
-    // Продолжаем еwithлand improvement_rate > φ⁻¹
+    // [CYR:Продолжаем] еwithлand improvement_rate > φ⁻¹
     return state.improvement_rate > PHI_INV; // 0.618
 }
 ```
@@ -111,7 +111,7 @@ pub fn koscheiNeedle(state: *const KoscheiState) bool {
 ### PHI Optimization
 
 ```zig
-// Golden ratio for оптandмального шага
+// Golden ratio for [CYR:опт]and[CYR:мального] stepа
 pub fn phiOptimize(current: f32, target: f32) f32 {
     const diff = target - current;
     return current + diff * PHI_INV; // 0.618
@@ -146,7 +146,7 @@ pub fn phiOptimize(current: f32, target: f32) f32 {
 φ² + 1/φ² = 3 (TRINITY)
 PHOENIX = 999
 
-KOSCHEI = БЕССМЕРТИЕ (improvement_rate > φ⁻¹)
+KOSCHEI = [CYR:БЕССМЕРТИЕ] (improvement_rate > φ⁻¹)
 ```
 
 ## Scientific References
@@ -158,4 +158,4 @@ KOSCHEI = БЕССМЕРТИЕ (improvement_rate > φ⁻¹)
 
 ---
 
-**φ² + 1/φ² = 3 | PHOENIX = 999 | KOSCHEI = БЕССМЕРТИЕ**
+**φ² + 1/φ² = 3 | PHOENIX = 999 | KOSCHEI = [CYR:БЕССМЕРТИЕ]**

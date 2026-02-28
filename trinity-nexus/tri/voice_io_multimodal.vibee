@@ -562,7 +562,7 @@ tests:
     then: Recognizes phoneme sequence [h, eh, l, ow]
 
   - name: test_phoneme_recognition_ru
-    given: MFCC features of "привет"
+    given: MFCC features of "прandinет"
     then: Recognizes phoneme sequence [p, r, i, v, e, t]
 
   - name: test_stt_english
@@ -570,15 +570,15 @@ tests:
     then: Returns "read the file" with confidence > 0.50
 
   - name: test_stt_russian
-    given: Audio of "прочитай файл"
-    then: Returns "прочитай файл" with confidence > 0.50
+    given: Audio of "[CYR:проч]and[CYR:тай] file"
+    then: Returns "[CYR:проч]and[CYR:тай] file" with confidence > 0.50
 
   - name: test_tts_english
     given: Text "Hello world"
     then: Returns AudioBuffer with synthesized speech
 
   - name: test_tts_russian
-    given: Text "Привет мир"
+    given: Text "Прandinет мandр"
     then: Returns AudioBuffer with synthesized speech
 
   - name: test_grapheme_to_phoneme_en
@@ -586,7 +586,7 @@ tests:
     then: Returns [h, eh, l, ow] phoneme sequence
 
   - name: test_grapheme_to_phoneme_ru
-    given: "привет"
+    given: "прandinет"
     then: Returns [p, r, i, v, e, t] phoneme sequence
 
   - name: test_prosody_question

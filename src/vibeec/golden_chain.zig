@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// ЗЛАТАЯ ЦЕПЬ (Golden Chain) — Unified 8-Node Agent Pipeline v1.0
+// GOLDEN CHAIN (Golden Chain) — Unified 8-Node Agent Pipeline v1.0
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Combines all 13+ agent systems into ONE unified pipeline:
@@ -97,13 +97,13 @@ pub const AGENT_OS_VERSION_MINOR: u8 = 0;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const ChainNode = enum(u3) {
-    GoalParse, // 0 — Муладхара — Red
-    Decompose, // 1 — Сinадхandwithтаon — Orange
-    Schedule, // 2 — Манandпура — Yellow
-    Execute, // 3 — Аonхата — Green
-    Monitor, // 4 — Вandшуддха — Blue
-    Adapt, // 5 — Аджon — Indigo
-    Synthesize, // 6 — Сахаwithрара — Violet
+    GoalParse, // 0 — Muladhara — Red
+    Decompose, // 1 — Svadhishthana — Orange
+    Schedule, // 2 — Manipura — Yellow
+    Execute, // 3 — Anahata — Green
+    Monitor, // 4 — Vishuddha — Blue
+    Adapt, // 5 — Ajna — Indigo
+    Synthesize, // 6 — Sahasrara — Violet
     Deliver, // 7 — Едandнwithтinо — Gold
 
     pub fn getHue(self: ChainNode) f32 {

@@ -1,16 +1,16 @@
 name: shell
-# Shell Page - Единая страница-оболочка для всех плагинов
+# Shell Page - Едandonя page-[CYR:оболочка] for inwithех [CYR:плаг]andноin
 
 module: honeycomb/ui/shell
 version: 1.0.0
-description: Главная страница с Canvas, sidebar плагинов, документацией и настройками
+description: [CYR:Гла]inonя page with Canvas, sidebar [CYR:плаг]andноin, [CYR:документац]andей and settingмand
 
 functions:
-  # Генерация HTML страницы
+  # Геnot[CYR:рац]andя HTML with[CYR:тран]andцы
   shell_page:
     params: []
     returns: String
-    description: Возвращает HTML единой страницы-оболочки
+    description: [CYR:Воз]in[CYR:ращает] HTML едand[CYR:ной] with[CYR:тран]andцы-[CYR:оболочк]and
     implementation: |
       "<!DOCTYPE html>
       <html lang=\"en\">
@@ -505,11 +505,11 @@ functions:
       </body>
       </html>"
   
-  # JavaScript для Shell
+  # JavaScript for Shell
   shell_js:
     params: []
     returns: String
-    description: Возвращает JavaScript код для Shell
+    description: [CYR:Воз]in[CYR:ращает] JavaScript code for Shell
     implementation: |
       "// VIBEE Plugin Shell - Client-side JavaScript
       
@@ -828,13 +828,13 @@ imports:
 
 tests:
   - name: generate_shell_page
-    description: Генерация HTML страницы
+    description: Геnot[CYR:рац]andя HTML with[CYR:тран]andцы
     test: |
       let html = shell_page()
       string.contains(html, "VIBEE Plugin Shell")
   
   - name: generate_shell_js
-    description: Генерация JavaScript
+    description: Геnot[CYR:рац]andя JavaScript
     test: |
       let js = shell_js()
       string.contains(js, "WebSocket")

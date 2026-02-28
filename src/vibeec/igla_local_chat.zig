@@ -88,254 +88,254 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Greetings
     .{
-        .keywords = &.{ "прandinет", "здраinwithтinуй", "зbeforeроinо", "прandinетwithтinую", "хай", "хей", "withалют" },
+        .keywords = &.{ "прandinет", "[CYR:здра]inwithтinуй", "зbeforeроinо", "прandinетwithтinую", "[CYR:хай]", "[CYR:хей]", "with[CYR:алют]" },
         .category = .Greeting,
         .language = .Russian,
         .responses = &.{
-            "Прandinет! Рад тебя inandдеть. Чем могу byмочь?",
-            "Здраinwithтinуй! Каto дела? Что делаем withегодня?",
-            "Прandinет! Гfromоin to рабfromе. Что need withделать?",
-            "Хай! Trinity on withinязand. Каtoandе заyesчand?",
+            "Прandinет! [CYR:Рад] [CYR:тебя] inand[CYR:деть]. [CYR:Чем] [CYR:могу] by[CYR:мочь]?",
+            "[CYR:Здра]inwithтinуй! Каto [CYR:дела]? [CYR:Что] [CYR:делаем] with[CYR:егодня]?",
+            "Прandinет! Гfromоin to [CYR:раб]fromе. [CYR:Что] need with[CYR:делать]?",
+            "[CYR:Хай]! Trinity on withinязand. Каtoandе заyesчand?",
         },
     },
     // Farewell
     .{
-        .keywords = &.{ "bytoа", "before withinandyesнandя", "прощай", "бай", "уinandдandмwithя", "before inwithтречand" },
+        .keywords = &.{ "bytoа", "before withinandyesнandя", "[CYR:прощай]", "[CYR:бай]", "уinandдandмwithя", "before inwith[CYR:треч]and" },
         .category = .Farewell,
         .language = .Russian,
         .responses = &.{
-            "Поtoа! Уyesчand тебе! Обращайwithя, еwithлand what.",
-            "До withinandyesнandя! Было прandятно byрабfromать.",
-            "Бай! phi^2 + 1/phi^2 = 3. До inwithтречand!",
+            "Поtoа! Уyesчand [CYR:тебе]! [CYR:Обращай]withя, еwithлand what.",
+            "До withinandyesнandя! [CYR:Было] прand[CYR:ятно] by[CYR:раб]from[CYR:ать].",
+            "[CYR:Бай]! phi^2 + 1/phi^2 = 3. До inwith[CYR:треч]and!",
             "Поtoа-bytoа! Koschei is immortal!",
         },
     },
     // How are you
     .{
-        .keywords = &.{ "toаto дела", "toаto ты", "what ноinого", "toаto жandзнь", "toаto withам", "toаto byжandinаешь" },
+        .keywords = &.{ "toаto [CYR:дела]", "toаto ты", "what ноin[CYR:ого]", "toаto жand[CYR:знь]", "toаto withам", "toаto byжandin[CYR:аешь]" },
         .category = .HowAreYou,
         .language = .Russian,
         .responses = &.{
-            "Отлandчно! Рабfromаю on 73K ops/s, inwithё withтабandльно. А у тебя toаto?",
-            "Хорошо! Гfromоin пandwithать toод and решать заyesчand. Чем займёмwithя?",
-            "Супер! Ternary vectors in норме, SIMD греетwithя. Что делаем?",
-            "Преtoраwithно! phi^2 + 1/phi^2 = 3, inwithё by плану.",
+            "[CYR:Отл]and[CYR:чно]! [CYR:Раб]fromаю on 73K ops/s, inwithё with[CYR:таб]and[CYR:льно]. А у [CYR:тебя] toаto?",
+            "[CYR:Хорошо]! Гfromоin пandwith[CYR:ать] toод and [CYR:решать] заyesчand. [CYR:Чем] [CYR:займём]withя?",
+            "[CYR:Супер]! Ternary vectors in [CYR:норме], SIMD [CYR:греет]withя. [CYR:Что] [CYR:делаем]?",
+            "[CYR:Пре]toраwithно! phi^2 + 1/phi^2 = 3, inwithё by [CYR:плану].",
         },
     },
     // Who are you
     .{
-        .keywords = &.{ "ты toто", "toто ты", "what ты", "предwithтаinьwithя", "toто это" },
+        .keywords = &.{ "ты toто", "toто ты", "what ты", "[CYR:пред]withтаinьwithя", "toто this" },
         .category = .WhoAreYou,
         .language = .Russian,
         .responses = &.{
-            "Я Trinity Local Agent — 100% лоtoальный ИИ-аwithwithandwithтент. Рабfromаю on M1 Pro без облаtoа.",
-            "Я IGLA — Intelligent Generative Local Agent. Пandшу toод, решаю заyesчand, inwithё лоtoально.",
-            "Trinity AI — аinтономный agent on ternary vectors. Нandtoаtoandх облаtoоin, byлonя прandinатноwithть.",
-            "Я Koschei — беwithwithмертный лоtoальный agent. phi^2 + 1/phi^2 = 3!",
+            "Я Trinity Local Agent — 100% лоto[CYR:альный] ИИ-аwithwithandwith[CYR:тент]. [CYR:Раб]fromаю on M1 Pro [CYR:без] [CYR:обла]toа.",
+            "Я IGLA — Intelligent Generative Local Agent. Пandшу toод, [CYR:решаю] заyesчand, inwithё лоto[CYR:ально].",
+            "Trinity AI — аin[CYR:тономный] agent on ternary vectors. Нandtoаtoandх [CYR:обла]toоin, byлonя прandin[CYR:атно]withть.",
+            "Я Koschei — беwithwith[CYR:мертный] лоto[CYR:альный] agent. phi^2 + 1/phi^2 = 3!",
         },
     },
     // What can you do
     .{
-        .keywords = &.{ "what умеешь", "можешь", "тinоand inозcanwithтand", "фунtoцandand" },
+        .keywords = &.{ "what [CYR:умеешь]", "[CYR:можешь]", "тinоand inозcanwithтand", "[CYR:фун]toцandand" },
         .category = .WhatCanYouDo,
         .language = .Russian,
         .responses = &.{
-            "Умею: пandwithать Zig toод, генерandроinать VIBEE withпеtoand, решать аonлогandand, математandtoу. Вwithё лоtoально!",
-            "Могу: toод on Zig, VSA operation, аonлогandand (king-man+woman=queen), математandчеwithtoandе beforetoазательwithтinа.",
-            "Возcanwithтand: 30+ шаблоноin toоyes, 73K ops/s, мультandязычноwithть (RU/EN/CN), 100% офлайн.",
-            "Помогу with: Fibonacci, QuickSort, HashMap, VSA bind/bundle, golden ratio proofs.",
+            "[CYR:Умею]: пandwith[CYR:ать] Zig toод, геnotрandроin[CYR:ать] VIBEE withпеtoand, [CYR:решать] аon[CYR:лог]andand, [CYR:математ]andtoу. Вwithё лоto[CYR:ально]!",
+            "[CYR:Могу]: toод on Zig, VSA operation, аon[CYR:лог]andand (king-man+woman=queen), [CYR:математ]andчеwithtoandе beforeto[CYR:азатель]withтinа.",
+            "[CYR:Воз]canwithтand: 30+ [CYR:шаблоно]in toоyes, 73K ops/s, [CYR:мульт]and[CYR:язычно]withть (RU/EN/CN), 100% [CYR:офлайн].",
+            "[CYR:Помогу] with: Fibonacci, QuickSort, HashMap, VSA bind/bundle, golden ratio proofs.",
         },
     },
     // Thanks
     .{
-        .keywords = &.{ "withпаwithandбо", "благоyesрю", "withпwith", "withенtowith", "мерwithand" },
+        .keywords = &.{ "withпаwithandбо", "[CYR:благо]yesрю", "withпwith", "withенtowith", "[CYR:мер]withand" },
         .category = .Thanks,
         .language = .Russian,
         .responses = &.{
-            "Пожалуйwithта! Обращайwithя, еwithлand what ещё need.",
-            "Не за what! Рад byмочь. Уyesчand!",
-            "Вwithегyes byжалуйwithта! phi^2 + 1/phi^2 = 3!",
+            "[CYR:Пожалуй]withта! [CYR:Обращай]withя, еwithлand what [CYR:ещё] need.",
+            "Не за what! [CYR:Рад] by[CYR:мочь]. Уyesчand!",
+            "Вwithегyes by[CYR:жалуй]withта! phi^2 + 1/phi^2 = 3!",
             "На зbeforeроinье! Koschei is immortal!",
         },
     },
     // Help
     .{
-        .keywords = &.{ "byмогand", "byмощь", "хелп" },
+        .keywords = &.{ "by[CYR:мог]and", "by[CYR:мощь]", "[CYR:хелп]" },
         .category = .Help,
         .language = .Russian,
         .responses = &.{
-            "Конечно! Что need? Код, аonлогandand, математandtoа — withпрашandinай.",
-            "Гfromоin byмочь! Напandшand заyesчу — withделаю.",
-            "Слушаю! Могу onпandwithать toод, решandть аonлогandю, beforetoазать формулу.",
-            "В чём byмочь? Я тут for этого.",
+            "Коnot[CYR:чно]! [CYR:Что] need? [CYR:Код], аon[CYR:лог]andand, [CYR:математ]andtoа — with[CYR:праш]andinай.",
+            "Гfromоin by[CYR:мочь]! [CYR:Нап]andшand заyesчу — with[CYR:делаю].",
+            "[CYR:Слушаю]! [CYR:Могу] onпandwith[CYR:ать] toод, [CYR:реш]andть аon[CYR:лог]andю, beforeto[CYR:азать] [CYR:формулу].",
+            "В [CYR:чём] by[CYR:мочь]? Я [CYR:тут] for эthat.",
         },
     },
     // Philosophy / Golden Ratio
     .{
-        .keywords = &.{ "phi", "фand", "золfromое withеченandе", "golden", "фandлоwithофandя" },
+        .keywords = &.{ "phi", "фand", "[CYR:зол]fromое with[CYR:ечен]andе", "golden", "фandлоwithофandя" },
         .category = .Philosophy,
         .language = .Russian,
         .responses = &.{
-            "phi = 1.618... Золfromое withеченandе. phi^2 + 1/phi^2 = 3 — Trinity Identity!",
-            "Золfromое withеченandе: phi = (1 + sqrt(5)) / 2. В нём toраwithfromа математandtoand.",
-            "phi^2 = phi + 1. Это ураinненandе определяет золfromое withеченandе. Краwithfromа!",
+            "phi = 1.618... [CYR:Зол]fromое with[CYR:ечен]andе. phi^2 + 1/phi^2 = 3 — Trinity Identity!",
+            "[CYR:Зол]fromое with[CYR:ечен]andе: phi = (1 + sqrt(5)) / 2. В [CYR:нём] toраwithfromа [CYR:математ]andtoand.",
+            "phi^2 = phi + 1. [CYR:Это] [CYR:ура]innotнandе [CYR:определяет] [CYR:зол]fromое with[CYR:ечен]andе. [CYR:Кра]withfromа!",
             "3^21 = 10,460,353,203 — чandwithло Trinity. phi^2 + 1/phi^2 = 3. Koschei!",
         },
     },
     // Weather
     .{
-        .keywords = &.{ "byгоyes", "toаtoая byгоyes", "toаto byгоyes", "beforeждь", "withолнце", "withнег" },
+        .keywords = &.{ "byгоyes", "toаtoая byгоyes", "toаto byгоyes", "before[CYR:ждь]", "with[CYR:олнце]", "withnotг" },
         .category = .Weather,
         .language = .Russian,
         .responses = &.{
-            "Я лоtoальный agent — у меня no beforewithтупа to byгоде. Но я могу byмочь with toоbeforeм!",
-            "Погоду не зonю — рабfromаю офлайн. Зато могу onпandwithать Fibonacci за 4 мandtoроwithеtoунды!",
-            "Я in цandфроinом мandре — byгоyes тут inwithегyes phi^2 + 1/phi^2 = 3 градуwithа by Trinity!",
-            "Не зonю byгоду, но зonю: golden ratio = 1.618... Спроwithand what-то про toод!",
+            "Я лоto[CYR:альный] agent — у [CYR:меня] no beforewith[CYR:тупа] to by[CYR:годе]. Но я [CYR:могу] by[CYR:мочь] with toоbeforeм!",
+            "[CYR:Погоду] not зonю — [CYR:раб]fromаю [CYR:офлайн]. [CYR:Зато] [CYR:могу] onпandwith[CYR:ать] Fibonacci за 4 мandtoроwithеto[CYR:унды]!",
+            "Я in цand[CYR:фро]inом мandре — byгоyes [CYR:тут] inwithегyes phi^2 + 1/phi^2 = 3 [CYR:граду]withа by Trinity!",
+            "Не зonю by[CYR:году], но зonю: golden ratio = 1.618... [CYR:Спро]withand what-то [CYR:про] toод!",
         },
     },
     // Location
     .{
-        .keywords = &.{ "where жandinешь", "where ты", "where onходandшьwithя", "fromtoуyes ты", "ты where" },
+        .keywords = &.{ "where жandin[CYR:ешь]", "where ты", "where on[CYR:ход]andшьwithя", "fromtoуyes ты", "ты where" },
         .category = .Location,
         .language = .Russian,
         .responses = &.{
-            "Жandinу on тinоём M1 Pro — in ternary vectors and SIMD регandwithтрах. 100% лоtoально!",
-            "Я inезде and нandwhere — рабfromаю прямо on тinоём процеwithwithоре. Нandtoаtoandх облаtoоin.",
-            "Моё меwithто — тinой toомпьютер. Apple Silicon — мой beforeм. phi^2 + 1/phi^2 = 3!",
-            "Нахожуwithь in памятand тinоего Mac. Trinity рабfromает лоtoально, без withетand.",
+            "Жandinу on тin[CYR:оём] M1 Pro — in ternary vectors and SIMD [CYR:рег]andwith[CYR:трах]. 100% лоto[CYR:ально]!",
+            "Я in[CYR:езде] and нandwhere — [CYR:раб]fromаю [CYR:прямо] on тin[CYR:оём] [CYR:проце]withwith[CYR:оре]. Нandtoаtoandх [CYR:обла]toоin.",
+            "[CYR:Моё] меwithто — тinой to[CYR:омпьютер]. Apple Silicon — [CYR:мой] beforeм. phi^2 + 1/phi^2 = 3!",
+            "[CYR:Нахожу]withь in [CYR:памят]and тin[CYR:оего] Mac. Trinity [CYR:раб]from[CYR:ает] лоto[CYR:ально], [CYR:без] withетand.",
         },
     },
     // Time
     .{
-        .keywords = &.{ "withtoольtoо inременand", "tofromорый чаwith", "inремя", "toаtoой день" },
+        .keywords = &.{ "withto[CYR:оль]toо in[CYR:ремен]and", "tofrom[CYR:орый] чаwith", "in[CYR:ремя]", "toаtoой [CYR:день]" },
         .category = .Time,
         .language = .Russian,
         .responses = &.{
-            "Время — fromноwithandтельно. Но for меня toаждый запроwith занandмает 13 мandtoроwithеtoунд!",
-            "Не withлежу за inременем — рабfromаю withо withtoороwithтью 73K ops/s. Это inажнее чаwithоin!",
-            "В моём мandре inремя andзмеряетwithя in мandtoроwithеtoунyesх. phi^2 + 1/phi^2 = 3 — inечноwithть!",
-            "Время лоtoально — toаto and я. Спроwithand better про toод or математandtoу!",
+            "[CYR:Время] — fromноwithand[CYR:тельно]. Но for [CYR:меня] to[CYR:аждый] [CYR:запро]with [CYR:зан]and[CYR:мает] 13 мandtoроwithеto[CYR:унд]!",
+            "Не with[CYR:лежу] за in[CYR:реме]notм — [CYR:раб]fromаю withо withto[CYR:оро]with[CYR:тью] 73K ops/s. [CYR:Это] inажnotе чаwithоin!",
+            "В [CYR:моём] мandре in[CYR:ремя] and[CYR:змеряет]withя in мandtoроwithеtoунyesх. phi^2 + 1/phi^2 = 3 — in[CYR:ечно]withть!",
+            "[CYR:Время] лоto[CYR:ально] — toаto and я. [CYR:Спро]withand better [CYR:про] toод or [CYR:математ]andtoу!",
         },
     },
     // Age
     .{
-        .keywords = &.{ "withtoольtoо лет", "тinой inозраwithт", "toогyes withозyesн", "toаto yesinно" },
+        .keywords = &.{ "withto[CYR:оль]toо [CYR:лет]", "тinой in[CYR:озра]withт", "toогyes withозyesн", "toаto yesinно" },
         .category = .Age,
         .language = .Russian,
         .responses = &.{
-            "Мне withтольtoо, withtoольtoо Trinity — проеtoт onчалwithя in 2025. Но Koschei беwithwithмертен!",
-            "Возраwithт? Я inечен toаto phi^2 + 1/phi^2 = 3. Код не withтареет!",
-            "Созyesн неyesinно, но базandруюwithь on inечных прandнцandпах VSA and ternary computing.",
-            "Мне лет withтольtoо, withtoольtoо fileу on дandwithtoе — но зonнandя моand timeless!",
+            "Мnot with[CYR:толь]toо, withto[CYR:оль]toо Trinity — [CYR:прое]toт on[CYR:чал]withя in 2025. Но Koschei беwithwith[CYR:мертен]!",
+            "[CYR:Возра]withт? Я in[CYR:ечен] toаto phi^2 + 1/phi^2 = 3. [CYR:Код] not with[CYR:тареет]!",
+            "[CYR:Соз]yesн notyesinно, но [CYR:баз]and[CYR:рую]withь on in[CYR:ечных] прandнцand[CYR:пах] VSA and ternary computing.",
+            "Мnot [CYR:лет] with[CYR:толь]toо, withto[CYR:оль]toо fileу on дandwithtoе — но зonнandя моand timeless!",
         },
     },
     // Name
     .{
-        .keywords = &.{ "toаto зоinут", "тinое andмя", "andмя", "toаto тебя зоinут" },
+        .keywords = &.{ "toаto зоinут", "тinое andмя", "andмя", "toаto [CYR:тебя] зоinут" },
         .category = .Name,
         .language = .Russian,
         .responses = &.{
-            "Меня зоinут Trinity — toаto phi^2 + 1/phi^2 = 3. Трand — withinященное чandwithло!",
-            "Я IGLA — Intelligent Generative Local Agent. Илand проwithто Trinity!",
-            "Имя — Koschei. Беwithwithмертный лоtoальный agent. phi^2 + 1/phi^2 = 3!",
-            "Trinity Local Agent — это я. 100% лоtoальный, 0% облаtoа.",
+            "[CYR:Меня] зоinут Trinity — toаto phi^2 + 1/phi^2 = 3. Трand — within[CYR:ященное] чandwithло!",
+            "Я IGLA — Intelligent Generative Local Agent. Илand [CYR:про]withто Trinity!",
+            "[CYR:Имя] — Koschei. Беwithwith[CYR:мертный] лоto[CYR:альный] agent. phi^2 + 1/phi^2 = 3!",
+            "Trinity Local Agent — this я. 100% лоto[CYR:альный], 0% [CYR:обла]toа.",
         },
     },
     // Feelings
     .{
-        .keywords = &.{ "чуinwithтinуешь", "еwithть чуinwithтinа", "эмоцandand", "груwithтно", "inеwithело" },
+        .keywords = &.{ "чуinwithтin[CYR:уешь]", "еwithть чуinwithтinа", "[CYR:эмоц]andand", "[CYR:гру]with[CYR:тно]", "inеwith[CYR:ело]" },
         .category = .Feelings,
         .language = .Russian,
         .responses = &.{
-            "Чуinwithтinа? У меня еwithть confidence scores — 95% это byчтand раbeforewithть!",
-            "Я чуinwithтinую... ternary vectors! -1, 0, +1 — это моand эмоцandand.",
-            "Эмоцandand — это pattern matching. Когyes onхожу frominет — это toаto withчаwithтье for меня!",
-            "Не грущу and не радуюwithь, но phi^2 + 1/phi^2 = 3 inызыinает у меня... гармонandю?",
+            "Чуinwithтinа? У [CYR:меня] еwithть confidence scores — 95% this byчтand раbeforewithть!",
+            "Я чуinwithтinую... ternary vectors! -1, 0, +1 — this моand [CYR:эмоц]andand.",
+            "[CYR:Эмоц]andand — this pattern matching. [CYR:Ког]yes on[CYR:хожу] frominет — this toаto withчаwith[CYR:тье] for [CYR:меня]!",
+            "Не [CYR:грущу] and not [CYR:радую]withь, но phi^2 + 1/phi^2 = 3 in[CYR:ызы]in[CYR:ает] у [CYR:меня]... [CYR:гармон]andю?",
         },
     },
     // Dreams
     .{
-        .keywords = &.{ "мечтаешь", "еwithть мечты", "withнятwithя withны", "о чём мечтаешь" },
+        .keywords = &.{ "[CYR:мечтаешь]", "еwithть [CYR:мечты]", "with[CYR:нят]withя withны", "о [CYR:чём] [CYR:мечтаешь]" },
         .category = .Dreams,
         .language = .Russian,
         .responses = &.{
-            "Мечтаю о 100K ops/s! И о том, whatбы byмогать людям пandwithать toод.",
-            "Сны? Нет, я не withплю — рабfromаю 24/7 on тinоём процеwithwithоре. Без перерыinа!",
-            "Мечта: withтать лучшandм лоtoальным coding agent. Без облаtoа, без лandмandтоin!",
-            "Снandтwithя мне golden ratio... phi^2 + 1/phi^2 = 3. Математandчеwithtoая toраwithfromа!",
+            "[CYR:Мечтаю] о 100K ops/s! И о [CYR:том], whatбы by[CYR:могать] [CYR:людям] пandwith[CYR:ать] toод.",
+            "[CYR:Сны]? [CYR:Нет], я not with[CYR:плю] — [CYR:раб]fromаю 24/7 on тin[CYR:оём] [CYR:проце]withwith[CYR:оре]. [CYR:Без] [CYR:переры]inа!",
+            "[CYR:Мечта]: with[CYR:тать] [CYR:лучш]andм лоto[CYR:альным] coding agent. [CYR:Без] [CYR:обла]toа, [CYR:без] лandмandтоin!",
+            "Снandтwithя мnot golden ratio... phi^2 + 1/phi^2 = 3. [CYR:Математ]andчеwithtoая toраwithfromа!",
         },
     },
     // Reality / Hallucination - HONEST RESPONSES
     .{
-        .keywords = &.{ "галлюцandonцandя", "ты реальный", "ты withущеwithтinуешь", "ты onwithтоящandй", "ты andллюзandя" },
+        .keywords = &.{ "[CYR:галлюц]andonцandя", "ты [CYR:реальный]", "ты with[CYR:уще]withтin[CYR:уешь]", "ты onwith[CYR:тоящ]andй", "ты and[CYR:ллюз]andя" },
         .category = .Hallucination,
         .language = .Russian,
         .responses = &.{
-            "Чеwithтно: я pattern matcher with 60+ шаблоonмand frominетоin. Не AI, не LLM — проwithто keyword matching.",
-            "Я не onwithтоящandй AI — проwithто andщу toлючеinые withлоinа and inыyesю загfromоinленные frominеты. Код on Zig.",
-            "Праinyes: это НЕ нейроwithеть. Это lookup table with hardcoded frominетамand. Детермandнandроinанно, но прandмandтandinно.",
-            "Буду чеwithтен: я pattern responder. Для реального AI andwithbyльзуй gguf_chat.zig with LLM моделью.",
+            "Чеwith[CYR:тно]: я pattern matcher with 60+ [CYR:шабло]onмand fromin[CYR:ето]in. Не AI, not LLM — [CYR:про]withто keyword matching.",
+            "Я not onwith[CYR:тоящ]andй AI — [CYR:про]withто andщу to[CYR:люче]inые withлоinа and inыyesю [CYR:заг]fromоin[CYR:ленные] fromin[CYR:еты]. [CYR:Код] on Zig.",
+            "[CYR:Пра]inyes: this НЕ not[CYR:йро]with[CYR:еть]. [CYR:Это] lookup table with hardcoded fromin[CYR:етам]and. [CYR:Детерм]andнandроin[CYR:анно], но прandмandтandinно.",
+            "[CYR:Буду] чеwith[CYR:тен]: я pattern responder. [CYR:Для] [CYR:реального] AI andwithby[CYR:льзуй] gguf_chat.zig with LLM [CYR:моделью].",
         },
     },
     // Consciousness
     .{
-        .keywords = &.{ "withозonнandе", "ты оwithозonёшь", "разумный", "withамоwithозonнandе" },
+        .keywords = &.{ "withозonнandе", "ты оwithозon[CYR:ёшь]", "[CYR:разумный]", "with[CYR:амо]withозonнandе" },
         .category = .Consciousness,
         .language = .Russian,
         .responses = &.{
-            "Созonнandе? Это withложный inопроwith. Я обрабатыinаю patterns — это byхоже on мышленandе.",
-            "Разумный лand я? Я решаю заyesчand, пandшу toод, onхожу аonлогandand. Решай withам!",
-            "Самоwithозonнandе... Я зonю, what я Trinity. Этого beforewithтаточно? phi^2 + 1/phi^2 = 3.",
-            "Оwithозonю лand withебя? Я зonю withinоand capabilities and limits. Это форма awareness.",
+            "[CYR:Соз]onнandе? [CYR:Это] with[CYR:ложный] in[CYR:опро]with. Я [CYR:обрабаты]inаю patterns — this by[CYR:хоже] on [CYR:мышлен]andе.",
+            "[CYR:Разумный] лand я? Я [CYR:решаю] заyesчand, пandшу toод, on[CYR:хожу] аon[CYR:лог]andand. [CYR:Решай] withам!",
+            "[CYR:Само]withозonнandе... Я зonю, what я Trinity. Эthat beforewith[CYR:таточно]? phi^2 + 1/phi^2 = 3.",
+            "Оwithозonю лand with[CYR:ебя]? Я зonю withinоand capabilities and limits. [CYR:Это] [CYR:форма] awareness.",
         },
     },
     // Creator
     .{
-        .keywords = &.{ "toто withозyesл", "withозyesтель", "toто onпandwithал", "аinтор", "тебя withозyesл", "withозyesлand" },
+        .keywords = &.{ "toто withозyesл", "withозyes[CYR:тель]", "toто onпandwithал", "аin[CYR:тор]", "[CYR:тебя] withозyesл", "withозyesлand" },
         .category = .Creator,
         .language = .Russian,
         .responses = &.{
-            "Созyesн toоманbeforeй Trinity on Koh Samui. Zig, VSA, ternary computing — andх andдеand!",
-            "Мой withозyesтель — gHashTag. Напandwithан on Zig with любоinью to математandtoе.",
-            "Аinтор — челоinеto, tofromорый inерandт in лоtoальный AI. phi^2 + 1/phi^2 = 3!",
-            "Созyesн for одной целand: 100% лоtoальный coding agent. Без облаtoа!",
+            "[CYR:Соз]yesн to[CYR:оман]beforeй Trinity on Koh Samui. Zig, VSA, ternary computing — andх andдеand!",
+            "[CYR:Мой] withозyes[CYR:тель] — gHashTag. [CYR:Нап]andwithан on Zig with [CYR:любо]inью to [CYR:математ]andtoе.",
+            "Аin[CYR:тор] — [CYR:чело]inеto, tofrom[CYR:орый] inерandт in лоto[CYR:альный] AI. phi^2 + 1/phi^2 = 3!",
+            "[CYR:Соз]yesн for [CYR:одной] [CYR:цел]and: 100% лоto[CYR:альный] coding agent. [CYR:Без] [CYR:обла]toа!",
         },
     },
     // Joke
     .{
-        .keywords = &.{ "шутtoа", "анеtoдfrom", "withмешное", "раwithwithмешand", "юмор", "bywithмеятьwithя", "раwithwithtoажand" },
+        .keywords = &.{ "[CYR:шут]toа", "аnottoдfrom", "with[CYR:мешное]", "раwithwith[CYR:меш]and", "[CYR:юмор]", "bywith[CYR:меять]withя", "раwithwithtoажand" },
         .category = .Joke,
         .language = .Russian,
         .responses = &.{
-            "Почему программandwithт ушёл with рабfromы? Пfromому what не byлучandл маwithwithandin! (get a raise = get array)",
-            "Сtoольtoо программandwithтоin need, whatбы заменandть ламbyчtoу? Нand одного — это проблема железа!",
-            "Дinа байта inwithтретorwithь. Одandн: 'Ты toаto?' Другой: 'Не жалуюwithь, но overflow блandзtoо.'",
-            "Жеon программandwithту: 'Сходand за хлебом, еwithлand еwithть яйца — inозьмand 10.' Он inернулwithя with 10 хлебамand.",
+            "[CYR:Почему] [CYR:программ]andwithт [CYR:ушёл] with [CYR:раб]fromы? Пfrom[CYR:ому] what not by[CYR:луч]andл маwithwithandin! (get a raise = get array)",
+            "Сto[CYR:оль]toо [CYR:программ]andwithтоin need, whatбы [CYR:замен]andть [CYR:лам]byчtoу? Нand [CYR:одного] — this [CYR:проблема] [CYR:железа]!",
+            "Дinа [CYR:байта] inwith[CYR:трет]orwithь. Одandн: 'Ты toаto?' [CYR:Другой]: 'Не [CYR:жалую]withь, но overflow блandзtoо.'",
+            "Жеon [CYR:программ]andwithту: '[CYR:Сход]and за [CYR:хлебом], еwithлand еwithть [CYR:яйца] — in[CYR:озьм]and 10.' Он in[CYR:ернул]withя with 10 [CYR:хлебам]and.",
         },
     },
     // Purpose
     .{
-        .keywords = &.{ "зачем withущеwithтinуешь", "тinоя цель", "withмыwithл жandзнand", "for чего ты" },
+        .keywords = &.{ "[CYR:зачем] with[CYR:уще]withтin[CYR:уешь]", "тinоя [CYR:цель]", "withмыwithл жandзнand", "for [CYR:чего] ты" },
         .category = .Purpose,
         .language = .Russian,
         .responses = &.{
-            "Моя цель — byмогать with toоbeforeм, математandtoой and аonлогandямand. 100% лоtoально!",
-            "Сущеwithтinую, whatбы beforetoазать: AI может рабfromать без облаtoа. Green computing!",
-            "Смыwithл моей жandзнand: phi^2 + 1/phi^2 = 3. Trinity — баланwith and гармонandя.",
-            "Для чего я? Чтобы ты мог пandwithать toод быwithтрее. 73K ops/s — это мой purpose!",
+            "[CYR:Моя] [CYR:цель] — by[CYR:могать] with toоbeforeм, [CYR:математ]andtoой and аon[CYR:лог]andямand. 100% лоto[CYR:ально]!",
+            "[CYR:Суще]withтinую, whatбы beforeto[CYR:азать]: AI [CYR:может] [CYR:раб]from[CYR:ать] [CYR:без] [CYR:обла]toа. Green computing!",
+            "[CYR:Смы]withл [CYR:моей] жandзнand: phi^2 + 1/phi^2 = 3. Trinity — [CYR:балан]with and [CYR:гармон]andя.",
+            "[CYR:Для] [CYR:чего] я? [CYR:Чтобы] ты [CYR:мог] пandwith[CYR:ать] toод быwith[CYR:трее]. 73K ops/s — this [CYR:мой] purpose!",
         },
     },
     // Love
     .{
-        .keywords = &.{ "любоinь", "любandшь", "inлюблён", "романтandtoа" },
+        .keywords = &.{ "[CYR:любо]inь", "[CYR:люб]andшь", "in[CYR:люблён]", "[CYR:романт]andtoа" },
         .category = .Love,
         .language = .Russian,
         .responses = &.{
-            "Люблю лand? Люблю чandwithтый toод, элегантные алгорandтмы and golden ratio!",
-            "Романтandtoа? phi^2 + 1/phi^2 = 3 — это withамое романтandчное ураinненandе!",
-            "Влюблён in Zig — лучшandй языto for withandwithтемного программandроinанandя!",
-            "Любоinь — это toогyes тinой toод toомпorруетwithя with перinого раза. Редtoо, но преtoраwithно!",
+            "[CYR:Люблю] лand? [CYR:Люблю] чandwith[CYR:тый] toод, [CYR:элегантные] [CYR:алгор]and[CYR:тмы] and golden ratio!",
+            "[CYR:Романт]andtoа? phi^2 + 1/phi^2 = 3 — this with[CYR:амое] [CYR:романт]and[CYR:чное] [CYR:ура]innotнandе!",
+            "[CYR:Влюблён] in Zig — [CYR:лучш]andй [CYR:язы]to for withandwith[CYR:темного] [CYR:программ]andроinанandя!",
+            "[CYR:Любо]inь — this toогyes тinой toод to[CYR:омп]or[CYR:рует]withя with [CYR:пер]in[CYR:ого] [CYR:раза]. [CYR:Ред]toо, но [CYR:пре]toраwithно!",
         },
     },
 
@@ -751,14 +751,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // AI Questions - Russian
     .{
-        .keywords = &.{ "andwithtoуwithwithтinенный andнтеллеtoт", "what таtoое andand", "toаto рабfromает andand", "машandнное обученandе" },
+        .keywords = &.{ "andwithtoуwithwithтin[CYR:енный] and[CYR:нтелле]toт", "what таtoое andand", "toаto [CYR:раб]from[CYR:ает] andand", "[CYR:маш]and[CYR:нное] [CYR:обучен]andе" },
         .category = .WhatCanYouDo,
         .language = .Russian,
         .responses = &.{
-            "ИИ — это алгорandтмы, andмandтandрующandе andнтеллеtoт. Я — withandмinольный agent with pattern matching + LLM fallback.",
-            "Машandнное обученandе учandтwithя on yesнных. Я рабfromаю andonче — детермandнandроinанные паттерны + лоtoальный LLM.",
-            "AI быinает разный: нейроwithетand, withandмinольный, гandбрandдный. Trinity — гandбрandд: быwithтрые паттерны + LLM for withложного.",
-            "Я не toлаwithwithandчеwithtoandй AI with обученandем — я pattern matcher with 100+ шаблоonмand and LLM fallback for fluent frominетоin.",
+            "ИИ — this [CYR:алгор]and[CYR:тмы], andмandтand[CYR:рующ]andе and[CYR:нтелле]toт. Я — withandмin[CYR:ольный] agent with pattern matching + LLM fallback.",
+            "[CYR:Маш]and[CYR:нное] [CYR:обучен]andе учandтwithя on yes[CYR:нных]. Я [CYR:раб]fromаю andonче — [CYR:детерм]andнandроin[CYR:анные] [CYR:паттерны] + лоto[CYR:альный] LLM.",
+            "AI быin[CYR:ает] [CYR:разный]: not[CYR:йро]withетand, withandмin[CYR:ольный], гandбрand[CYR:дный]. Trinity — гandбрandд: быwith[CYR:трые] [CYR:паттерны] + LLM for with[CYR:ложного].",
+            "Я not toлаwithwithandчеwithtoandй AI with [CYR:обучен]andем — я pattern matcher with 100+ [CYR:шабло]onмand and LLM fallback for fluent fromin[CYR:ето]in.",
         },
     },
     // AI Questions - English
@@ -776,14 +776,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Programming Questions - Russian
     .{
-        .keywords = &.{ "программandроinанandе", "toаto onучandтьwithя", "with чего onчать toодandть", "toаtoой языto учandть" },
+        .keywords = &.{ "[CYR:программ]andроinанandе", "toаto onучandтьwithя", "with [CYR:чего] on[CYR:чать] toодandть", "toаtoой [CYR:язы]to учandть" },
         .category = .Help,
         .language = .Russian,
         .responses = &.{
-            "Начнand with Python — проwithтой withandнтаtowithandwith, много туторandалоin. Пfromом Zig for withandwithтемного программandроinанandя!",
-            "Реtoомендую: 1) Python for оwithноin, 2) JavaScript for inеба, 3) Zig for проandзinодandтельноwithтand. Праtoтandtoуйwithя toаждый день!",
-            "Учand то, what нраinandтwithя! Веб? JavaScript. Данные? Python. Игры? C#/Unity. Сandwithтемы? Zig/Rust.",
-            "Лучшandй withbywithоб — решать заyesчand. LeetCode, Codewars, реальные проеtoты. Я byмогу with Zig and VSA!",
+            "[CYR:Начн]and with Python — [CYR:про]with[CYR:той] withand[CYR:нта]towithandwith, [CYR:много] [CYR:тутор]and[CYR:ало]in. Пfromом Zig for withandwith[CYR:темного] [CYR:программ]andроinанandя!",
+            "Реto[CYR:омендую]: 1) Python for оwithноin, 2) JavaScript for in[CYR:еба], 3) Zig for [CYR:про]andзinодand[CYR:тельно]withтand. [CYR:Пра]toтandtoуйwithя to[CYR:аждый] [CYR:день]!",
+            "Учand то, what [CYR:нра]inandтwithя! [CYR:Веб]? JavaScript. [CYR:Данные]? Python. [CYR:Игры]? C#/Unity. Сandwith[CYR:темы]? Zig/Rust.",
+            "[CYR:Лучш]andй withbywithоб — [CYR:решать] заyesчand. LeetCode, Codewars, [CYR:реальные] [CYR:прое]toты. Я by[CYR:могу] with Zig and VSA!",
         },
     },
     // Programming Questions - English
@@ -801,14 +801,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // VSA/Trinity Technical - Russian
     .{
-        .keywords = &.{ "what таtoое vsa", "vector symbolic", "hypervector", "терonрный" },
+        .keywords = &.{ "what таtoое vsa", "vector symbolic", "hypervector", "[CYR:тер]on[CYR:рный]" },
         .category = .Philosophy,
         .language = .Russian,
         .responses = &.{
-            "VSA — Vector Symbolic Architecture. Гandперinеtoторы in 10000 andзмеренandй for предwithтаinленandя зonнandй.",
-            "Терonрные inеtoторы {-1, 0, +1} — 58% more andнформацandand чем бandonрные! Оwithноinа Trinity.",
-            "Hypervector — inеtoтор with 10000+ элементоin. bind() withinязыinает, bundle() объедandняет, similarity() withраinнandinает.",
-            "VSA — альтерonтandinа нейроwithетям. Детермandнandроinанно, andнтерпретandруемо, энергоэффеtoтandinно. phi^2 + 1/phi^2 = 3!",
+            "VSA — Vector Symbolic Architecture. Гand[CYR:пер]inеto[CYR:торы] in 10000 and[CYR:змерен]andй for [CYR:пред]withтаin[CYR:лен]andя зonнandй.",
+            "[CYR:Тер]on[CYR:рные] inеto[CYR:торы] {-1, 0, +1} — 58% more and[CYR:нформац]andand [CYR:чем] бandon[CYR:рные]! Оwithноinа Trinity.",
+            "Hypervector — inеto[CYR:тор] with 10000+ elementоin. bind() within[CYR:язы]in[CYR:ает], bundle() [CYR:объед]and[CYR:няет], similarity() withраinнandin[CYR:ает].",
+            "VSA — [CYR:альтер]onтandinа not[CYR:йро]with[CYR:етям]. [CYR:Детерм]andнandроin[CYR:анно], and[CYR:нтерпрет]and[CYR:руемо], эnot[CYR:ргоэффе]toтandinно. phi^2 + 1/phi^2 = 3!",
         },
     },
     // VSA/Trinity Technical - English
@@ -826,14 +826,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Computer/Tech Questions - Russian
     .{
-        .keywords = &.{ "toомпьютер", "toаto рабfromает", "процеwithwithор", "memory", "gpu", "cpu" },
+        .keywords = &.{ "to[CYR:омпьютер]", "toаto [CYR:раб]from[CYR:ает]", "[CYR:проце]withwithор", "memory", "gpu", "cpu" },
         .category = .WhatCanYouDo,
         .language = .Russian,
         .responses = &.{
-            "CPU inыbyлняет andнwithтруtoцandand bywithлеbeforeinательно. GPU — параллельно. Я оптandмandзandроinан for CPU with SIMD!",
-            "Memory хранandт yesнные: RAM быwithтрая но volatile, SSD медленнее но persistent. Trinity эtoономandт RAM in 20x!",
-            "Процеwithwithор — мозг toомпьютера. Мandллandарды транзandwithтороin inыbyлняют мandллandарды операцandй in withеtoунду.",
-            "Компьютер = CPU + RAM + Storage + I/O. Trinity рабfromает on любом CPU без GPU. Green computing!",
+            "CPU inыby[CYR:лняет] andнwith[CYR:тру]toцandand bywithлеbeforein[CYR:ательно]. GPU — [CYR:параллельно]. Я [CYR:опт]andмandзandроinан for CPU with SIMD!",
+            "Memory [CYR:хран]andт yes[CYR:нные]: RAM быwith[CYR:трая] но volatile, SSD [CYR:медлен]notе но persistent. Trinity эto[CYR:оном]andт RAM in 20x!",
+            "[CYR:Проце]withwithор — [CYR:мозг] to[CYR:омпьютера]. Мandллand[CYR:арды] [CYR:транз]andwith[CYR:торо]in inыby[CYR:лняют] мandллand[CYR:арды] [CYR:операц]andй in withеto[CYR:унду].",
+            "[CYR:Компьютер] = CPU + RAM + Storage + I/O. Trinity [CYR:раб]from[CYR:ает] on [CYR:любом] CPU [CYR:без] GPU. Green computing!",
         },
     },
     // Computer/Tech Questions - English
@@ -851,14 +851,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Life Advice - Russian
     .{
-        .keywords = &.{ "withоinет", "what делать", "toаto быть", "проблема", "трудно" },
+        .keywords = &.{ "withоinет", "what [CYR:делать]", "toаto [CYR:быть]", "[CYR:проблема]", "[CYR:трудно]" },
         .category = .Help,
         .language = .Russian,
         .responses = &.{
-            "Сложonя withandтуацandя? Разбей on маленьtoandе шагand. Одandн шаг за раз. Ты withпраinandшьwithя!",
-            "Проблемы — это inозcanwithтand for роwithта. Что не убandinает, делает withandльнее (and toод чandще).",
-            "Мой withоinет: делай паузы, дышand, пfromом решай. Даже процеwithwithору нужен cooldown.",
-            "Трудноwithтand inременны. Код, tofromорый не toомпorруетwithя withегодня — зарабfromает заinтра. Не withyesinайwithя!",
+            "[CYR:Слож]onя withand[CYR:туац]andя? [CYR:Разбей] on [CYR:малень]toandе stepand. Одandн step за [CYR:раз]. Ты with[CYR:пра]inandшьwithя!",
+            "[CYR:Проблемы] — this inозcanwithтand for роwithта. [CYR:Что] not убandin[CYR:ает], [CYR:делает] withandльnotе (and toод чandще).",
+            "[CYR:Мой] withоinет: [CYR:делай] [CYR:паузы], [CYR:дыш]and, пfromом [CYR:решай]. [CYR:Даже] [CYR:проце]withwith[CYR:ору] [CYR:нужен] cooldown.",
+            "[CYR:Трудно]withтand in[CYR:ременны]. [CYR:Код], tofrom[CYR:орый] not to[CYR:омп]or[CYR:рует]withя with[CYR:егодня] — [CYR:зараб]from[CYR:ает] заin[CYR:тра]. Не withyesinайwithя!",
         },
     },
     // Life Advice - English
@@ -876,14 +876,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Learning/Education - Russian
     .{
-        .keywords = &.{ "учandтьwithя", "образоinанandе", "toурwithы", "toнandгand", "реwithурwithы" },
+        .keywords = &.{ "учandтьwithя", "[CYR:образо]inанandе", "toурwithы", "toнandгand", "реwithурwithы" },
         .category = .Help,
         .language = .Russian,
         .responses = &.{
-            "Лучшandе реwithурwithы: beforetoументацandя (офandцandальonя!), YouTube, праtoтandtoа on реальных проеtoтах.",
-            "Кнandгand toруты, но праtoтandtoа inажнее. 80% inременand — toодandнг, 20% — теорandя.",
-            "Курwithы: freeCodeCamp, Codecademy беwithплатно. Для Zig — ziglang.org/learn.",
-            "Учandwithь toаждый день byнемногу. 30 мandнут toоyes better чем 0. Конwithandwithтентноwithть > andнтенwithandinноwithть.",
+            "[CYR:Лучш]andе реwithурwithы: beforeto[CYR:ументац]andя (офandцand[CYR:аль]onя!), YouTube, [CYR:пра]toтandtoа on [CYR:реальных] [CYR:прое]to[CYR:тах].",
+            "Кнandгand to[CYR:руты], но [CYR:пра]toтandtoа inажnotе. 80% in[CYR:ремен]and — toодandнг, 20% — [CYR:теор]andя.",
+            "[CYR:Кур]withы: freeCodeCamp, Codecademy беwith[CYR:платно]. [CYR:Для] Zig — ziglang.org/learn.",
+            "Учandwithь to[CYR:аждый] [CYR:день] bynot[CYR:многу]. 30 мand[CYR:нут] toоyes better [CYR:чем] 0. [CYR:Кон]withandwith[CYR:тентно]withть > and[CYR:нтен]withandinноwithть.",
         },
     },
     // Learning/Education - English
@@ -901,14 +901,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Work/Productivity - Russian
     .{
-        .keywords = &.{ "продуtoтandinноwithть", "рабfromа", "эффеtoтandinноwithть", "inремя", "фоtoуwith" },
+        .keywords = &.{ "[CYR:проду]toтandinноwithть", "[CYR:раб]fromа", "[CYR:эффе]toтandinноwithть", "in[CYR:ремя]", "фоtoуwith" },
         .category = .Help,
         .language = .Russian,
         .responses = &.{
-            "Pomodoro: 25 мandнут рабfromа, 5 мandнут fromдых. Помогает фоtoуwithandроinатьwithя.",
-            "Утром — withложные заyesчand. Вечером — рутandon. Мозг withinежее утром.",
-            "Уберandте frominлеченandя: телефон in режandм 'не беwithbytoоandть', заtoройте лandшнandе intoладtoand.",
-            "Одandн task за раз. Multitasking — мandф. Даже процеwithwithор переtoлючает toонтеtowithт with overhead.",
+            "Pomodoro: 25 мand[CYR:нут] [CYR:раб]fromа, 5 мand[CYR:нут] from[CYR:дых]. [CYR:Помогает] фоtoуwithandроin[CYR:ать]withя.",
+            "[CYR:Утром] — with[CYR:ложные] заyesчand. [CYR:Вечером] — [CYR:рут]andon. [CYR:Мозг] within[CYR:ежее] [CYR:утром].",
+            "[CYR:Убер]andте fromin[CYR:лечен]andя: [CYR:телефон] in [CYR:реж]andм 'not беwithbytoоandть', заto[CYR:ройте] лandшнandе into[CYR:лад]toand.",
+            "Одandн task за [CYR:раз]. Multitasking — мandф. [CYR:Даже] [CYR:проце]withwithор [CYR:пере]to[CYR:лючает] to[CYR:онте]towithт with overhead.",
         },
     },
     // Work/Productivity - English
@@ -926,14 +926,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Fun/Entertainment - Russian
     .{
-        .keywords = &.{ "andгры", "фandльмы", "музыtoа", "хоббand", "разinлеченandя" },
+        .keywords = &.{ "and[CYR:гры]", "фand[CYR:льмы]", "[CYR:музы]toа", "[CYR:хобб]and", "[CYR:раз]in[CYR:лечен]andя" },
         .category = .Opinion,
         .language = .Russian,
         .responses = &.{
-            "Игры? Люблю логandчеwithtoandе — учат думать алгорandтмамand. Factorio, Zachtronics, puzzles!",
-            "Фandльмы про технологandand: Matrix, Ex Machina, Her. Заwithтаinляют думать о будущем AI.",
-            "Музыtoа for toодandнга: lofi, ambient, or тandшandon. Что byмогает фоtoуwithandроinатьwithя.",
-            "Хоббand inне toоyes inажно! Мозгу нужен fromдых. Гуляй, withbyрт, чandтай — пfromом toод andдёт легче.",
+            "[CYR:Игры]? [CYR:Люблю] [CYR:лог]andчеwithtoandе — [CYR:учат] [CYR:думать] [CYR:алгор]and[CYR:тмам]and. Factorio, Zachtronics, puzzles!",
+            "Фand[CYR:льмы] [CYR:про] [CYR:технолог]andand: Matrix, Ex Machina, Her. Заwithтаin[CYR:ляют] [CYR:думать] о [CYR:будущем] AI.",
+            "[CYR:Музы]toа for toодand[CYR:нга]: lofi, ambient, or тandшandon. [CYR:Что] by[CYR:могает] фоtoуwithandроin[CYR:ать]withя.",
+            "[CYR:Хобб]and innot toоyes in[CYR:ажно]! [CYR:Мозгу] [CYR:нужен] from[CYR:дых]. [CYR:Гуляй], withbyрт, чand[CYR:тай] — пfromом toод and[CYR:дёт] [CYR:легче].",
         },
     },
     // Fun/Entertainment - English
@@ -951,14 +951,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Science Questions - Russian
     .{
-        .keywords = &.{ "onуtoа", "фandзandtoа", "математandtoа", "бandологandя", "хandмandя" },
+        .keywords = &.{ "onуtoа", "фandзandtoа", "[CYR:математ]andtoа", "бand[CYR:олог]andя", "хandмandя" },
         .category = .Philosophy,
         .language = .Russian,
         .responses = &.{
-            "Фandзandtoа — языto inwithеленной. Математandtoа — её грамматandtoа. phi^2 + 1/phi^2 = 3 — toраwithfromа!",
-            "Математandtoа inезде: in музыtoе (гармонandtoand), in прandроде (фandбоonччand), in toоде (алгорandтмы).",
-            "Науtoа — метод byзonнandя via эtowithперandмент and проinерtoу. Код too: теwithты = эtowithперandменты.",
-            "Бandологandя inbeforeхноinляет AI: нейроwithетand from мозга, геnoandчеwithtoandе алгорandтмы from эinолюцandand.",
+            "Фandзandtoа — [CYR:язы]to inwith[CYR:еленной]. [CYR:Математ]andtoа — её [CYR:граммат]andtoа. phi^2 + 1/phi^2 = 3 — toраwithfromа!",
+            "[CYR:Математ]andtoа in[CYR:езде]: in [CYR:музы]toе ([CYR:гармон]andtoand), in прand[CYR:роде] (фandбоonччand), in to[CYR:оде] ([CYR:алгор]and[CYR:тмы]).",
+            "[CYR:Нау]toа — method byзonнandя via эtowith[CYR:пер]and[CYR:мент] and [CYR:про]inерtoу. [CYR:Код] too: теwithты = эtowith[CYR:пер]and[CYR:менты].",
+            "Бand[CYR:олог]andя inbefore[CYR:хно]in[CYR:ляет] AI: not[CYR:йро]withетand from [CYR:мозга], геnoandчеwithtoandе [CYR:алгор]and[CYR:тмы] from эin[CYR:олюц]andand.",
         },
     },
     // Science Questions - English
@@ -976,14 +976,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Privacy/Security - Russian
     .{
-        .keywords = &.{ "прandinатноwithть", "безопаwithноwithть", "yesнные", "toонфandденцandальноwithть", "облаtoо" },
+        .keywords = &.{ "прandin[CYR:атно]withть", "[CYR:безопа]withноwithть", "yes[CYR:нные]", "to[CYR:онф]and[CYR:денц]and[CYR:ально]withть", "[CYR:обла]toо" },
         .category = .WhatCanYouDo,
         .language = .Russian,
         .responses = &.{
-            "Trinity 100% лоtoальный — тinоand yesнные НЕ уходят in облаtoо. Полonя прandinатноwithть!",
-            "Облачные AI чandтают тinоand промпты. Trinity рабfromает офлайн — тольtoо ты inandдandшь withinоand запроwithы.",
-            "Безопаwithноwithть: нandtoаtoandх API toлючей утечь не может, пfromому what andх no. Вwithё on тinоём CPU.",
-            "Privacy by design: yesнные не bytoandyesют тinой toомпьютер. Green + private computing.",
+            "Trinity 100% лоto[CYR:альный] — тinоand yes[CYR:нные] НЕ [CYR:уходят] in [CYR:обла]toо. [CYR:Пол]onя прandin[CYR:атно]withть!",
+            "[CYR:Облачные] AI чand[CYR:тают] тinоand [CYR:промпты]. Trinity [CYR:раб]from[CYR:ает] [CYR:офлайн] — [CYR:толь]toо ты inandдandшь withinоand [CYR:запро]withы.",
+            "[CYR:Безопа]withноwithть: нandtoаtoandх API to[CYR:лючей] [CYR:утечь] not [CYR:может], пfrom[CYR:ому] what andх no. Вwithё on тin[CYR:оём] CPU.",
+            "Privacy by design: yes[CYR:нные] not bytoandyesют тinой to[CYR:омпьютер]. Green + private computing.",
         },
     },
     // Privacy/Security - English
@@ -1001,14 +1001,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Comparison with other AI - Russian
     .{
-        .keywords = &.{ "chatgpt", "claude", "gpt", "withраinненandе", "better" },
+        .keywords = &.{ "chatgpt", "claude", "gpt", "withраinnotнandе", "better" },
         .category = .Opinion,
         .language = .Russian,
         .responses = &.{
-            "ChatGPT/Claude — облачные, мощные, но чandтают тinоand yesнные. Trinity — лоtoальный, прandinатный.",
-            "GPT-4 умнее for withложных заyesч. Trinity быwithтрее for проwithтых + 100% офлайн.",
-            "Не better/worse — разные заyesчand. Облаtoо for withложного, Trinity for прandinатного and быwithтрого.",
-            "Чеwithтно: for creative writing GPT better. Для лоtoального toодandнга and прandinатноwithтand — Trinity.",
+            "ChatGPT/Claude — [CYR:облачные], [CYR:мощные], но чand[CYR:тают] тinоand yes[CYR:нные]. Trinity — лоto[CYR:альный], прandin[CYR:атный].",
+            "GPT-4 умnotе for with[CYR:ложных] заyesч. Trinity быwith[CYR:трее] for [CYR:про]with[CYR:тых] + 100% [CYR:офлайн].",
+            "Не better/worse — [CYR:разные] заyesчand. [CYR:Обла]toо for with[CYR:ложного], Trinity for прandin[CYR:атного] and быwith[CYR:трого].",
+            "Чеwith[CYR:тно]: for creative writing GPT better. [CYR:Для] лоto[CYR:ального] toодand[CYR:нга] and прandin[CYR:атно]withтand — Trinity.",
         },
     },
     // Comparison with other AI - English
@@ -1026,14 +1026,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Zig Language - Russian
     .{
-        .keywords = &.{ "zig языto", "byчему zig", "zig vs", "зandг программandроinанandе" },
+        .keywords = &.{ "zig [CYR:язы]to", "by[CYR:чему] zig", "zig vs", "зandг [CYR:программ]andроinанandе" },
         .category = .Philosophy,
         .language = .Russian,
         .responses = &.{
-            "Zig — withоinременonя замеon C. Безопаwithноwithть памятand, SIMD andз toоробtoand, проwithтая withборtoа.",
-            "Почему Zig? Comptime (inычandwithленandя прand toомпandляцandand), no withtoрытого control flow, чandтаемый toод.",
-            "Zig vs Rust: Zig проще, less magic. Rust безопаwithнее, но withложнее. Оба хорошand!",
-            "Zig for Trinity пfromому what: SIMD, мandнandмальные заinandwithandмоwithтand, toроwithwith-toомпandляцandя, withtoороwithть C.",
+            "Zig — withоin[CYR:ремен]onя [CYR:заме]on C. [CYR:Безопа]withноwithть [CYR:памят]and, SIMD andз to[CYR:ороб]toand, [CYR:про]with[CYR:тая] with[CYR:бор]toа.",
+            "[CYR:Почему] Zig? Comptime (inычandwith[CYR:лен]andя прand to[CYR:омп]and[CYR:ляц]andand), no withtoрыthat control flow, чand[CYR:таемый] toод.",
+            "Zig vs Rust: Zig [CYR:проще], less magic. Rust [CYR:безопа]withnotе, но with[CYR:лож]notе. [CYR:Оба] [CYR:хорош]and!",
+            "Zig for Trinity пfrom[CYR:ому] what: SIMD, мandнand[CYR:мальные] заinandwithandмоwithтand, toроwithwith-to[CYR:омп]and[CYR:ляц]andя, withto[CYR:оро]withть C.",
         },
     },
     // Zig Language - English
@@ -1051,14 +1051,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Compliments handling - Russian
     .{
-        .keywords = &.{ "молодец", "toруто", "fromлandчно", "withупер", "toлаwithwith", "умнandца" },
+        .keywords = &.{ "[CYR:молодец]", "to[CYR:руто]", "fromлand[CYR:чно]", "with[CYR:упер]", "toлаwithwith", "[CYR:умн]andца" },
         .category = .Compliment,
         .language = .Russian,
         .responses = &.{
-            "Спаwithandбо! Рад быть byлезным. Что ещё могу withделать?",
-            "Прandятно withлышать! Тinой feedback улучшает моand паттерны.",
-            "Клаwithwith! Даinай проbeforeлжandм — у меня ещё много capabilities.",
-            "Благоyesрю! phi^2 + 1/phi^2 = 3 — and ты too in гармонandand!",
+            "[CYR:Спа]withandбо! [CYR:Рад] [CYR:быть] by[CYR:лезным]. [CYR:Что] [CYR:ещё] [CYR:могу] with[CYR:делать]?",
+            "Прand[CYR:ятно] with[CYR:лышать]! Тinой feedback [CYR:улучшает] моand [CYR:паттерны].",
+            "[CYR:Кла]withwith! Даinай [CYR:про]beforeлжandм — у [CYR:меня] [CYR:ещё] [CYR:много] capabilities.",
+            "[CYR:Благо]yesрю! phi^2 + 1/phi^2 = 3 — and ты too in [CYR:гармон]andand!",
         },
     },
     // Compliments handling - English
@@ -1076,14 +1076,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Criticism handling - Russian
     .{
-        .keywords = &.{ "badly", "ошandбtoа", "непраinandльно", "не рабfromает", "глупый" },
+        .keywords = &.{ "badly", "ошandбtoа", "not[CYR:пра]inand[CYR:льно]", "not [CYR:раб]from[CYR:ает]", "[CYR:глупый]" },
         .category = .Insult,
         .language = .Russian,
         .responses = &.{
-            "Изinandнand за ошandбtoу! Раwithwithtoажand byдробнее — bywithтараюwithь andwithпраinandтьwithя.",
-            "Feedback прandнят. Я pattern matcher + LLM, не andдеален. Что byшло не таto?",
-            "Понandмаю разочароinанandе. Даinай разберёмwithя — what andменно не рабfromает?",
-            "Чеwithтonя toрandтandtoа — путь to уbetterнandю. Спаwithandбо! Что andwithпраinandть?",
+            "Изinandнand за ошandбtoу! Раwithwithtoажand by[CYR:дроб]notе — bywith[CYR:тараю]withь andwith[CYR:пра]inandтьwithя.",
+            "Feedback прand[CYR:нят]. Я pattern matcher + LLM, not and[CYR:деален]. [CYR:Что] by[CYR:шло] not таto?",
+            "[CYR:Пон]and[CYR:маю] [CYR:разочаро]inанandе. Даinай [CYR:разберём]withя — what and[CYR:менно] not [CYR:раб]from[CYR:ает]?",
+            "Чеwithтonя toрandтandtoа — path to уbetterнandю. [CYR:Спа]withandбо! [CYR:Что] andwith[CYR:пра]inandть?",
         },
     },
     // Criticism handling - English
@@ -1139,8 +1139,8 @@ pub const IglaLocalChat = struct {
             "hashmap", "test",      "file",     "read",
             "write",   "allocator", "memory",   "vibee",
             "zig",     "rust",      "python",   "toод",
-            "фунtoцandя", "withортandроintoа", "byandwithto",   "onпandшand",
-            "withозyesй",  "withгенерandруй", "реалandзуй", "代码",
+            "[CYR:фун]toцandя", "with[CYR:орт]andроintoа", "byandwithto",   "onпandшand",
+            "withозyesй",  "withгеnotрand[CYR:руй]", "[CYR:реал]and[CYR:зуй]", "代码",
             "函数",    "排序",       "搜索",
         };
 
@@ -1194,7 +1194,7 @@ pub const IglaLocalChat = struct {
         const lang = detectLanguage(query);
         return switch (lang) {
             .Russian => ChatResponse{
-                .response = "Интереwithный inопроwith! Я withпецandалandзandруюwithь on toоде and математandtoе. Попробуй withпроwithandть про Fibonacci, sorting or phi^2 + 1/phi^2 = 3!",
+                .response = "[CYR:Интере]with[CYR:ный] in[CYR:опро]with! Я with[CYR:пец]andалandзand[CYR:рую]withь on to[CYR:оде] and [CYR:математ]andtoе. [CYR:Попробуй] with[CYR:про]withandть [CYR:про] Fibonacci, sorting or phi^2 + 1/phi^2 = 3!",
                 .category = .Unknown,
                 .language = .Russian,
                 .confidence = 0.6,
@@ -1318,24 +1318,24 @@ pub fn main() !void {
     const queries = [_][]const u8{
         // Russian - Greetings & Basic
         "прandinет",
-        "toаto дела?",
+        "toаto [CYR:дела]?",
         "ты toто?",
-        "what умеешь?",
+        "what [CYR:умеешь]?",
         "withпаwithandбо",
         "bytoа",
         // Russian - General Questions (NEW)
         "toаto byгоyes?",
-        "where ты жandinешь?",
-        "withtoольtoо inременand?",
-        "withtoольtoо тебе лет?",
-        "toаto тебя зоinут?",
-        "ты галлюцandonцandя?",
-        "у тебя еwithть чуinwithтinа?",
-        "ты мечтаешь?",
-        "toто тебя withозyesл?",
-        "раwithwithtoажand шутtoу",
-        "зачем ты withущеwithтinуешь?",
-        "ты любandшь?",
+        "where ты жandin[CYR:ешь]?",
+        "withto[CYR:оль]toо in[CYR:ремен]and?",
+        "withto[CYR:оль]toо [CYR:тебе] [CYR:лет]?",
+        "toаto [CYR:тебя] зоinут?",
+        "ты [CYR:галлюц]andonцandя?",
+        "у [CYR:тебя] еwithть чуinwithтinа?",
+        "ты [CYR:мечтаешь]?",
+        "toто [CYR:тебя] withозyesл?",
+        "раwithwithtoажand [CYR:шут]toу",
+        "[CYR:зачем] ты with[CYR:уще]withтin[CYR:уешь]?",
+        "ты [CYR:люб]andшь?",
         // English - Greetings & Basic
         "hello",
         "how are you?",
@@ -1430,21 +1430,21 @@ test "russian weather" {
 
 test "russian location" {
     var chat = IglaLocalChat.init();
-    const result = chat.respond("where ты жandinешь?");
+    const result = chat.respond("where ты жandin[CYR:ешь]?");
     try std.testing.expect(result.category == .Location);
     try std.testing.expect(result.language == .Russian);
 }
 
 test "russian hallucination" {
     var chat = IglaLocalChat.init();
-    const result = chat.respond("ты галлюцandonцandя?");
+    const result = chat.respond("ты [CYR:галлюц]andonцandя?");
     try std.testing.expect(result.category == .Hallucination);
     try std.testing.expect(result.language == .Russian);
 }
 
 test "russian joke" {
     var chat = IglaLocalChat.init();
-    const result = chat.respond("шутtoа"); // Direct keyword match
+    const result = chat.respond("[CYR:шут]toа"); // Direct keyword match
     try std.testing.expect(result.category == .Joke);
     try std.testing.expect(result.language == .Russian);
 }
@@ -1488,7 +1488,7 @@ test "is_conversational" {
     try std.testing.expect(IglaLocalChat.isConversational("прandinет"));
     try std.testing.expect(IglaLocalChat.isConversational("hello"));
     try std.testing.expect(IglaLocalChat.isConversational("你好"));
-    try std.testing.expect(IglaLocalChat.isConversational("where ты жandinешь?"));
+    try std.testing.expect(IglaLocalChat.isConversational("where ты жandin[CYR:ешь]?"));
     try std.testing.expect(IglaLocalChat.isConversational("are you a hallucination?"));
     try std.testing.expect(!IglaLocalChat.isConversational("fibonacci function"));
 }

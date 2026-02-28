@@ -317,7 +317,7 @@ tests:
     then: Routes to coder agent, returns code
 
   - name: test_russian_chat
-    given: "Привет! Как дела?"
+    given: "Прandinет! [CYR:Как] [CYR:дела]?"
     then: Detects Russian, routes to chat, responds in Russian
 
   - name: test_chinese_code
@@ -353,7 +353,7 @@ tests:
     then: Needle score > 0.618
 
   - name: test_e2e_multilingual
-    given: "Привет! Write binary search на JavaScript"
+    given: "Прandinет! Write binary search on JavaScript"
     then: Mixed language, routes correctly, generates code
 
 metrics:

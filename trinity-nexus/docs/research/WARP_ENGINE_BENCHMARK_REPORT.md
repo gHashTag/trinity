@@ -1,17 +1,17 @@
 # WARP ENGINE Benchmark Report
 
-**Верwithandя**: 1.0.0  
-**Дата**: 2026-01-22  
-**Формула**: φ² + 1/φ² = 3 | PHOENIX = 999  
-**Режandм**: KOSCHEI MODE + YOLO + AMPLIFICATION + MATRYOSHKA
+**[CYR:Вер]withandя**: 1.0.0  
+**[CYR:Дата]**: 2026-01-22  
+**[CYR:Формула]**: φ² + 1/φ² = 3 | PHOENIX = 999  
+**[CYR:Реж]andм**: KOSCHEI MODE + YOLO + AMPLIFICATION + MATRYOSHKA
 
 ---
 
-## РЕЗУЛЬТАТЫ ТЕСТИРОВАНИЯ
+## [CYR:РЕЗУЛЬТАТЫ] [CYR:ТЕСТИРОВАНИЯ]
 
-### Созданные модулand
+### [CYR:Созданные] [CYR:модул]and
 
-| # | Модуль | Теwithты | Статуwith |
+| # | [CYR:Модуль] | Теwithты | [CYR:Стату]with |
 |---|--------|-------|--------|
 | 1 | warp_cdp_ultra | 7/7 | ✅ PASSED |
 | 2 | warp_screenshot_fast | 7/7 | ✅ PASSED |
@@ -34,80 +34,80 @@
 | 19 | e2e_warp_browser | 11/11 | ✅ PASSED |
 | 20 | warp_engine_integration | 13/13 | ✅ PASSED |
 
-**ИТОГО: 20 модулей, 148 теwithтоin, 100% passed**
+**[CYR:ИТОГО]: 20 [CYR:модулей], 148 теwithтоin, 100% passed**
 
 ---
 
-## СРАВНЕНИЕ С ПРЕДЫДУЩИМИ ВЕРСИЯМИ
+## [CYR:СРАВНЕНИЕ] С [CYR:ПРЕДЫДУЩИМИ] [CYR:ВЕРСИЯМИ]
 
-### Колandчеwithтinо withпецandфandtoацandй
+### [CYR:Кол]andчеwithтinо with[CYR:пец]andфandtoацandй
 
-| Верwithandя | Дата | Browser specs | Agent specs | Security specs | Total WARP |
+| [CYR:Вер]withandя | [CYR:Дата] | Browser specs | Agent specs | Security specs | Total WARP |
 |--------|------|---------------|-------------|----------------|------------|
 | v0 (до) | 2026-01-21 | 307 | 410 | ~50 | 0 |
 | v1 (поwithле) | 2026-01-22 | 327 | 430 | 53 | 20 |
 | **Δ** | | **+20** | **+20** | **+3** | **+20** |
 
-### Поtoрытandе фунtoцandоonльноwithтand
+### Поto[CYR:рыт]andе [CYR:фун]toцandоon[CYR:льно]withтand
 
-| Категорandя | v0 | v1 | Δ |
+| [CYR:Категор]andя | v0 | v1 | Δ |
 |-----------|----|----|---|
-| CDP toлandент | ❌ | ✅ | +1 |
-| Быwithтрые withtoрandншfromы | ❌ | ✅ | +1 |
-| Умonя oninandгацandя | ❌ | ✅ | +1 |
-| Быwithтрый ininод | ❌ | ✅ | +1 |
+| CDP toлand[CYR:ент] | ❌ | ✅ | +1 |
+| Быwith[CYR:трые] withtoрandншfromы | ❌ | ✅ | +1 |
+| Умonя oninand[CYR:гац]andя | ❌ | ✅ | +1 |
+| Быwith[CYR:трый] ininод | ❌ | ✅ | +1 |
 | DOM аonлandз | ❌ | ✅ | +1 |
-| ReAct агент | ⚠️ | ✅ | улучшен |
-| Chain-of-Thought | ⚠️ | ✅ | улучшен |
+| ReAct [CYR:агент] | ⚠️ | ✅ | [CYR:улучшен] |
+| Chain-of-Thought | ⚠️ | ✅ | [CYR:улучшен] |
 | Tree-of-Thought | ❌ | ✅ | +1 |
 | Reflexion | ❌ | ✅ | +1 |
-| Изоляцandя профandля | ❌ | ✅ | +1 |
+| [CYR:Изоляц]andя [CYR:проф]andля | ❌ | ✅ | +1 |
 | Alignment checker | ❌ | ✅ | +1 |
 | Prompt Guard | ❌ | ✅ | +1 |
-| YOLO режandм | ⚠️ | ✅ | улучшен |
-| Koschei цandtoл | ⚠️ | ✅ | улучшен |
-| Matryoshka | ⚠️ | ✅ | улучшен |
-| Phoenix Terminal | ⚠️ | ✅ | улучшен |
+| YOLO [CYR:реж]andм | ⚠️ | ✅ | [CYR:улучшен] |
+| Koschei цandtoл | ⚠️ | ✅ | [CYR:улучшен] |
+| Matryoshka | ⚠️ | ✅ | [CYR:улучшен] |
+| Phoenix Terminal | ⚠️ | ✅ | [CYR:улучшен] |
 | Multi-tab | ❌ | ✅ | +1 |
 | Memory System | ❌ | ✅ | +1 |
 | E2E теwithты | ❌ | ✅ | +1 |
 
 ---
 
-## ТЕОРЕТИЧЕСКИЕ БЕНЧМАРКИ
+## [CYR:ТЕОРЕТИЧЕСКИЕ] [CYR:БЕНЧМАРКИ]
 
-### Целеinые метрandtoand vs Конtoуренты
+### [CYR:Целе]inые [CYR:метр]andtoand vs [CYR:Кон]to[CYR:уренты]
 
-| Операцandя | OpenAI Operator | Perplexity Comet | Fellou | VIBEE (цель) | Speedup |
+| [CYR:Операц]andя | OpenAI Operator | Perplexity Comet | Fellou | VIBEE ([CYR:цель]) | Speedup |
 |----------|-----------------|------------------|--------|--------------|---------|
-| LLM задержtoа | 1000-3000ms | 500-2000ms | 500-1500ms | < 50ms | **20-60x** |
+| LLM [CYR:задерж]toа | 1000-3000ms | 500-2000ms | 500-1500ms | < 50ms | **20-60x** |
 | Сtoрandншfrom | 200-500ms | 100-300ms | 150-400ms | < 10ms | **10-50x** |
-| Наinandгацandя | 2000-5000ms | 1000-3000ms | 1500-4000ms | < 500ms | **2-10x** |
+| Наinand[CYR:гац]andя | 2000-5000ms | 1000-3000ms | 1500-4000ms | < 500ms | **2-10x** |
 | Вinод теtowithта | 100-200ms/c | 50-100ms/c | 80-150ms/c | < 5ms/c | **10-40x** |
 | Reasoning | 500-2000ms | 300-1000ms | 400-1200ms | < 100ms | **3-20x** |
 
 ### MATRYOSHKA Acceleration
 
-| Слой | Назinанandе | φ^n | Технandtoа |
+| [CYR:Слой] | [CYR:Наз]inанandе | φ^n | [CYR:Техн]andtoа |
 |------|----------|-----|---------|
-| 0 | BASE | 1.00x | Базоinый |
-| 1 | FAST | 1.62x | Кэшandроinанandе |
-| 2 | ULTRA | 2.62x | Батчandнг |
-| 3 | HYPER | 4.24x | Параллелandзм |
-| 4 | SUPREME | 6.85x | Спеtoуляцandя |
-| 5 | ABSOLUTE | 11.09x | Предinычandwithленandе |
-| 6 | TRANSCENDENT | 17.94x | Кinантоinанandе |
+| 0 | BASE | 1.00x | [CYR:Базо]inый |
+| 1 | FAST | 1.62x | [CYR:Кэш]andроinанandе |
+| 2 | ULTRA | 2.62x | [CYR:Батч]andнг |
+| 3 | HYPER | 4.24x | [CYR:Параллел]andзм |
+| 4 | SUPREME | 6.85x | [CYR:Спе]to[CYR:уляц]andя |
+| 5 | ABSOLUTE | 11.09x | [CYR:Пред]inычandwith[CYR:лен]andе |
+| 6 | TRANSCENDENT | 17.94x | Кin[CYR:анто]inанandе |
 | 7 | COSMIC | 29.03x | WARP |
 
-**Суммарное теоретandчеwithtoое уwithtoоренandе: Σ(φ^i) = 74.39x**
+**[CYR:Суммарное] [CYR:теорет]andчеwithtoое уwithto[CYR:орен]andе: Σ(φ^i) = 74.39x**
 
 ---
 
-## НАУЧНЫЕ ОСНОВЫ
+## [CYR:НАУЧНЫЕ] [CYR:ОСНОВЫ]
 
-### Иwithпользоinанные onучные рабfromы
+### Иwith[CYR:пользо]in[CYR:анные] on[CYR:учные] [CYR:раб]fromы
 
-| Технологandя | Рабfromа | Аinторы | Год | Конференцandя |
+| [CYR:Технолог]andя | [CYR:Раб]fromа | Аin[CYR:торы] | [CYR:Год] | [CYR:Конференц]andя |
 |------------|--------|--------|-----|-------------|
 | ReAct | ReAct: Synergizing Reasoning and Acting | Yao et al. | 2022 | ICLR 2023 |
 | CoT | Chain-of-Thought Prompting | Wei et al. | 2022 | NeurIPS 2022 |
@@ -125,7 +125,7 @@
 
 ---
 
-## АРХИТЕКТУРА WARP ENGINE
+## [CYR:АРХИТЕКТУРА] WARP ENGINE
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════╗
@@ -166,27 +166,27 @@
 
 ---
 
-## ФОРМУЛЫ
+## [CYR:ФОРМУЛЫ]
 
 ```
-Сinященные формулы VIBEE:
+Сin[CYR:ященные] [CYR:формулы] VIBEE:
 
 1. Golden ratio:
    φ = (1 + √5) / 2 ≈ 1.618033988749895
 
-2. Тождеwithтinо Трandнandтand:
+2. [CYR:Тожде]withтinо Трandнandтand:
    φ² + 1/φ² = 3
 
-3. Сinязь with π:
+3. Сin[CYR:язь] with π:
    φ = 2cos(π/5)
 
 4. PHOENIX:
    999 = 37 × 27 = 37 × 3³
 
-5. Формула VIBEE:
+5. [CYR:Формула] VIBEE:
    V = n × 3^k × π^m × φ^p × e^q
 
-6. Уwithtoоренandе Matryoshka:
+6. Уwithto[CYR:орен]andе Matryoshka:
    A(n) = φ^n
    Σ(φ^i) for i=0..7 = 74.39x
 ```

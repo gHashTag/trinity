@@ -1,8 +1,8 @@
-// PROMETHEUS CLI - Конinертер моделей in ternary format
-// Преinращает профанные float32 inеwithа in withinященные трandты
+// PROMETHEUS CLI - [CYR:Кон]in[CYR:ертер] [CYR:моделей] in ternary format
+// [CYR:Пре]in[CYR:ращает] [CYR:профанные] float32 inеwithа in within[CYR:ященные] трandты
 // φ² + 1/φ² = 3 = TRINITY
 //
-// Иwithbyльзоinанandе:
+// Иwithby[CYR:льзо]inанandе:
 //   prometheus convert <input.safetensors> <output.tri> [--threshold 0.1]
 //   prometheus info <model.tri>
 //   prometheus test <model.tri>
@@ -86,7 +86,7 @@ fn cmdConvert(allocator: std.mem.Allocator, args: []const []const u8) !void {
     const input_path = args[2];
     const output_path = args[3];
 
-    // Парwithandм options
+    // [CYR:Пар]withandм options
     var threshold: f32 = 0.1;
     var config = mistral.MistralConfig.mistral7B();
 
@@ -112,7 +112,7 @@ fn cmdConvert(allocator: std.mem.Allocator, args: []const []const u8) !void {
     std.debug.print("║ Threshold: {d:<49.2} ║\n", .{threshold});
     std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 
-    // Загружаем and toонinертandруем
+    // [CYR:Загружаем] and toонin[CYR:ерт]and[CYR:руем]
     var loader = mistral.MistralLoader.init(allocator, config, threshold);
     defer loader.deinit();
 
@@ -121,7 +121,7 @@ fn cmdConvert(allocator: std.mem.Allocator, args: []const []const u8) !void {
         return;
     };
 
-    // Сохраняем
+    // [CYR:Сохраняем]
     loader.save(output_path) catch |err| {
         std.debug.print("Error saving model: {}\n", .{err});
         return;
@@ -187,14 +187,14 @@ fn cmdTest(allocator: std.mem.Allocator, args: []const []const u8) !void {
     std.debug.print("║ Loading: {s:<51} ║\n", .{path});
     std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 
-    // Загружаем модель
+    // [CYR:Загружаем] [CYR:модель]
     var model = mistral.TrinityModelFile.load(allocator, path) catch |err| {
         std.debug.print("Error loading model: {}\n", .{err});
         return;
     };
     defer model.deinit();
 
-    // Созyesём LLM
+    // [CYR:Соз]yesём LLM
     var llm = try trinity_llm.TrinityLLM.init(
         allocator,
         model.config.vocab_size,
@@ -207,7 +207,7 @@ fn cmdTest(allocator: std.mem.Allocator, args: []const []const u8) !void {
 
     llm.printStats();
 
-    // Testоinая генерацandя
+    // Testоinая геnot[CYR:рац]andя
     std.debug.print("\nTest generation:\n", .{});
     std.debug.print("Prompt: \"Hello\"\n", .{});
 
@@ -226,6 +226,6 @@ fn cmdTest(allocator: std.mem.Allocator, args: []const []const u8) !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "cli help" {
-    // Проwithто check, what printUsage не паyesет
+    // [CYR:Про]withто check, what printUsage not паyesет
     printUsage();
 }

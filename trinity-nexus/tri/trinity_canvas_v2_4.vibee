@@ -27,7 +27,7 @@ types:
       - finder
       - vision
       - voice
-      - tools     # display: ЗЕРКАЛО (Mirror of Three Worlds)
+      - tools     # display: [CYR:ЗЕРКАЛО] (Mirror of Three Worlds)
       - settings
       - viz
 
@@ -121,7 +121,7 @@ constants:
 behaviors:
   - name: mirror_auto_poll
     given: User switches to Mirror layer (key 7)
-    when: Layer becomes 'tools' (display ЗЕРКАЛО)
+    when: Layer becomes 'tools' (display [CYR:ЗЕРКАЛО])
     then: |
       Immediately fetch /health endpoint.
       Parse JSON into MirrorStatus with razum/materiya/dukh + logs.

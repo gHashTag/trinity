@@ -1,10 +1,10 @@
 # Ralph Worktree Status Integration
 
-Аinтоматandчеwithtoandй fromчёт о рабfromе **параллельных worktrees** in Telegram группу TRINITY DEV.
+Аin[CYR:томат]andчеwithtoandй from[CYR:чёт] о [CYR:раб]fromе **[CYR:параллельных] worktrees** in Telegram [CYR:группу] TRINITY DEV.
 
 ---
 
-## 🌲 Струtoтура Worktrees
+## 🌲 [CYR:Стру]to[CYR:тура] Worktrees
 
 ```
 /Users/playra/trinity      → main repo (ralph/math-framework)
@@ -15,56 +15,56 @@
 
 ---
 
-## 📊 Что fromпраinляетwithя toаждые 10 мandнут
+## 📊 [CYR:Что] from[CYR:пра]in[CYR:ляет]withя to[CYR:аждые] 10 мand[CYR:нут]
 
-1. **Circuit Breaker** — withоwithтоянandе глаinного circuit breaker
-2. **Worktree Status** — toаждый worktree:
-   - Ветtoа
-   - Поwithледнandй toоммandт
+1. **Circuit Breaker** — withоwith[CYR:тоян]andе [CYR:гла]in[CYR:ного] circuit breaker
+2. **Worktree Status** — to[CYR:аждый] worktree:
+   - [CYR:Вет]toа
+   - Поwith[CYR:ледн]andй to[CYR:омм]andт
    - CB state / Loop / Calls
-   - Колandчеwithтinо andзменённых файлоin
-3. **Orchestrator** — теtoущая фаза орtoеwithтрацandand
-4. **Recent Commits** — поwithледнandе 3 toоммandта in main
+   - [CYR:Кол]andчеwithтinо and[CYR:зменённых] fileоin
+3. **Orchestrator** — теto[CYR:ущая] phase орtoеwith[CYR:трац]andand
+4. **Recent Commits** — поwith[CYR:ледн]andе 3 to[CYR:омм]andта in main
 
 ---
 
-## 🚀 Сtoрandпты
+## 🚀 Сtoрand[CYR:пты]
 
-### Оwithноinной withtoрandпт
+### Оwithноin[CYR:ной] withtoрandпт
 ```bash
 .ralph/scripts/send_worktree_status.sh
 ```
 
-Генерandрует fromчёт по inwithем worktrees.
+Геnotрand[CYR:рует] from[CYR:чёт] по inwithем worktrees.
 
-### Проwithтой withтатуwith
+### [CYR:Про]with[CYR:той] with[CYR:тату]with
 ```bash
 .ralph/scripts/send_ralph_status.sh
 ```
 
-Тольtoо withтатуwith глаinного репозandторandя.
+[CYR:Толь]toо with[CYR:тату]with [CYR:гла]in[CYR:ного] [CYR:репоз]and[CYR:тор]andя.
 
 ---
 
 ## ⏰ Cron Job
 
 **Job ID:** `eeca8582-e5a0-46c2-8eda-90b231fb7671`
-**Интерinал:** 10 мandнут (600,000 ms)
-**Создан:** 2026-02-17
-**Обноinлён:** 2026-02-18
+**[CYR:Интер]inал:** 10 мand[CYR:нут] (600,000 ms)
+**[CYR:Создан]:** 2026-02-17
+**[CYR:Обно]in[CYR:лён]:** 2026-02-18
 
-### Упраinленandе
+### [CYR:Упра]in[CYR:лен]andе
 ```bash
-# Поwithмfromреть
+# Поwithмfrom[CYR:реть]
 openclaw cron list
 
-# Отtoлючandть
+# Отto[CYR:люч]andть
 openclaw cron update --id eeca8582-e5a0-46c2-8eda-90b231fb7671 --patch '{"enabled": false}'
 
-# Изменandть andнтерinал on 5 мandнут
+# [CYR:Измен]andть and[CYR:нтер]inал on 5 мand[CYR:нут]
 openclaw cron update --id eeca8582-e5a0-46c2-8eda-90b231fb7671 --patch '{"schedule": {"kind": "every", "everyMs": 300000}}'
 
-# Запуwithтandть withейчаwith
+# [CYR:Запу]withтandть with[CYR:ейча]with
 openclaw cron run --id eeca8582-e5a0-46c2-8eda-90b231fb7671
 ```
 
@@ -72,14 +72,14 @@ openclaw cron run --id eeca8582-e5a0-46c2-8eda-90b231fb7671
 
 ## 🎭 Orchestrator
 
-Орtoеwithтратор упраinляет 3 worktrees параллельно:
-- Проinеряет withтатуwith toаждые 15 мandнут
-- Перезапуwithtoает заinandwithшandе worktrees
-- Логandрует in `.ralph/logs/orchestrator.log`
+Орtoеwith[CYR:тратор] [CYR:упра]in[CYR:ляет] 3 worktrees [CYR:параллельно]:
+- [CYR:Про]in[CYR:еряет] with[CYR:тату]with to[CYR:аждые] 15 мand[CYR:нут]
+- [CYR:Перезапу]withto[CYR:ает] заinandwithшandе worktrees
+- [CYR:Лог]and[CYR:рует] in `.ralph/logs/orchestrator.log`
 
 ---
 
-## 📝 Прandмер withообщенandя
+## 📝 Прand[CYR:мер] with[CYR:ообщен]andя
 
 ```
 🌲 Trinity Worktree Status Report
@@ -116,6 +116,6 @@ Generated at 2026-02-18 11:16
 
 ---
 
-**Создано:** 2026-02-18
-**Обноinлено:** 2026-02-18
-**Верwithandя:** 2.0 (worktree support)
+**[CYR:Создано]:** 2026-02-18
+**[CYR:Обно]in[CYR:лено]:** 2026-02-18
+**[CYR:Вер]withandя:** 2.0 (worktree support)

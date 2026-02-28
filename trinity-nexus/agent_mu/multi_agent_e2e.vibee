@@ -385,7 +385,7 @@ test_cases:
 
   # === MULTILINGUAL (6) ===
   - name: ml01_russian_code
-    given: "Напиши функцию сортировки на Python"
+    given: "[CYR:Нап]andшand [CYR:функц]andю with[CYR:орт]andроinкand on Python"
     expected: "Detects Russian, routes to coder"
 
   - name: ml02_chinese_code
@@ -393,7 +393,7 @@ test_cases:
     expected: "Detects Chinese, routes to coder"
 
   - name: ml03_russian_chat
-    given: "Привет! Как дела?"
+    given: "Прandinет! [CYR:Как] [CYR:дела]?"
     expected: "Detects Russian, routes to chat"
 
   - name: ml04_chinese_chat
@@ -401,7 +401,7 @@ test_cases:
     expected: "Detects Chinese, routes to chat"
 
   - name: ml05_mixed_language
-    given: "Привет! Write quicksort на JavaScript"
+    given: "Прandinет! Write quicksort on JavaScript"
     expected: "Handles mixed language"
 
   - name: ml06_english_default

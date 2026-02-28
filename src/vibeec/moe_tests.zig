@@ -46,7 +46,7 @@ test "3. Expert routing for inference tasks" {
     var router = try moe.MoERouter.init(allocator, .{});
     defer router.deinit();
 
-    const result = router.route("Запуwithтand andнференwith on Mistral-7B");
+    const result = router.route("[CYR:Запу]withтand and[CYR:нферен]with on Mistral-7B");
 
     // Routing should happen successfully (scores sum to ~1)
     var sum: f32 = 0;
@@ -60,7 +60,7 @@ test "4. Expert routing for network tasks" {
     var router = try moe.MoERouter.init(allocator, .{});
     defer router.deinit();
 
-    const result = router.route("Заwithтейtoай 10000 TRI and byдtoлючandwithь to p2p");
+    const result = router.route("Заwith[CYR:тей]toай 10000 TRI and byдto[CYR:люч]andwithь to p2p");
 
     // Network expert should be activated
     var network_selected = false;
@@ -99,7 +99,7 @@ test "6. Mixed task routing (multi-expert)" {
     defer router.deinit();
 
     // Task that needs multiple experts
-    const result = router.route("Запуwithтand andнференwith on Mistral, then заwithтейtoай 10000 TRI");
+    const result = router.route("[CYR:Запу]withтand and[CYR:нферен]with on Mistral, then заwith[CYR:тей]toай 10000 TRI");
 
     // Should select 2 experts
     try std.testing.expectEqual(@as(u8, 2), result.selected_count);

@@ -4,19 +4,19 @@ language: zig
 module: hdc_core
 
 description: |
-  HDC Core - Базовые операции гиперразмерных вычислений
-  с онлайн-обучением для самообучающихся AI моделей.
+  HDC Core - [CYR:Базо]inые [CYR:операц]andand гand[CYR:перразмерных] inычandwith[CYR:лен]andй
+  with [CYR:онлайн]-[CYR:обучен]andем for with[CYR:амообучающ]andхwithя AI [CYR:моделей].
   
-  Научная база:
+  [CYR:Науч]onя [CYR:база]:
   - Kanerva (2009): Hyperdimensional Computing
-  - BitNet b1.58 (2024): Троичные веса {-1, 0, +1}
-  - Setun (1958): Сбалансированная троичная система
+  - BitNet b1.58 (2024): [CYR:Тро]and[CYR:чные] inеwithа {-1, 0, +1}
+  - Setun (1958): [CYR:Сбалан]withandроinанonя [CYR:тро]andчonя system
   
-  Математика:
-  - Binding: a ⊗ b = поэлементное умножение
-  - Bundling: мажоритарное голосование
-  - Similarity: косинусное сходство
-  - Online Update: P ← P + η(v - P), затем квантизация
+  [CYR:Математ]andка:
+  - Binding: a ⊗ b = поelement[CYR:ное] [CYR:умножен]andе
+  - Bundling: [CYR:мажор]and[CYR:тарное] [CYR:голо]withоinанandе
+  - Similarity: коwithandнуwith[CYR:ное] with[CYR:ход]withтinо
+  - Online Update: P ← P + η(v - P), [CYR:затем] кin[CYR:ант]fromацandя
 
 imports:
   - hybrid  # HybridBigInt, Vec32i8, SIMD_WIDTH
@@ -31,26 +31,26 @@ constants:
 
 types:
   Trit:
-    description: "Сбалансированный троичный разряд"
+    description: "[CYR:Сбалан]withandроin[CYR:анный] [CYR:тро]and[CYR:чный] [CYR:разряд]"
     values:
       - Neg: -1
       - Zero: 0
       - Pos: 1
 
   HyperVector:
-    description: "Троичный гипервектор для HDC"
+    description: "[CYR:Тро]and[CYR:чный] гand[CYR:пер]in[CYR:ектор] for HDC"
     fields:
       data: List<Int>
       dim: Int
 
   FloatAccumulator:
-    description: "Float аккумулятор для онлайн усреднения"
+    description: "Float [CYR:аккумулятор] for [CYR:онлайн] уwith[CYR:ред]notнandя"
     fields:
       data: List<Float>
       dim: Int
 
   Prototype:
-    description: "Прототип класса с аккумулятором"
+    description: "[CYR:Прото]type classа with [CYR:аккумулятором]"
     fields:
       label: String
       accumulator: FloatAccumulator
@@ -58,7 +58,7 @@ types:
       count: Int
 
   OnlineHDC:
-    description: "Онлайн HDC система"
+    description: "[CYR:Онлайн] HDC system"
     fields:
       prototypes: Map<String, Prototype>
       dim: Int
@@ -66,138 +66,138 @@ types:
       samples_seen: Int
 
   SimilarityResult:
-    description: "Результат вычисления сходства"
+    description: "[CYR:Результат] inычandwith[CYR:лен]andя with[CYR:ход]withтinа"
     fields:
       similarity: Float
       label: String
 
 behaviors:
-  # === БАЗОВЫЕ HDC ОПЕРАЦИИ ===
+  # === [CYR:БАЗОВЫЕ] HDC [CYR:ОПЕРАЦИИ] ===
   
   - name: bind
-    given: Два гипервектора a и b одинаковой размерности
-    when: Создание ассоциации через поэлементное умножение
-    then: Возвращает HyperVector где c[i] = a[i] * b[i]
+    given: Дinа гand[CYR:пер]in[CYR:ектора] a and b одandonкоinой [CYR:размерно]withтand
+    when: [CYR:Создан]andе аwithwithоцandацandand [CYR:через] поelement[CYR:ное] [CYR:умножен]andе
+    then: [CYR:Воз]in[CYR:ращает] HyperVector where c[i] = a[i] * b[i]
 
   - name: unbind
-    given: Связанный вектор и ключ
-    when: Извлечение связанного значения
-    then: Возвращает bind(bound, key) т.к. троичный bind самообратим
+    given: Сin[CYR:язанный] in[CYR:ектор] and key
+    when: Изin[CYR:лечен]andе within[CYR:язанного] values
+    then: [CYR:Воз]in[CYR:ращает] bind(bound, key) т.к. [CYR:тро]and[CYR:чный] bind with[CYR:амообрат]andм
 
   - name: bundle
-    given: Список гипервекторов
-    when: Создание суперпозиции через мажоритарное голосование
-    then: Возвращает HyperVector с мажоритарным тритом на каждой позиции
+    given: Спandwithок гand[CYR:пер]in[CYR:екторо]in
+    when: [CYR:Создан]andе with[CYR:уперпоз]andцandand [CYR:через] [CYR:мажор]and[CYR:тарное] [CYR:голо]withоinанandе
+    then: [CYR:Воз]in[CYR:ращает] HyperVector with [CYR:мажор]and[CYR:тарным] трand[CYR:том] on [CYR:каждой] [CYR:поз]andцandand
 
   - name: bundle_simd
-    given: Список гипервекторов
-    when: SIMD-оптимизированное bundling (32 трита параллельно)
-    then: Возвращает HyperVector с использованием Vec32i8
+    given: Спandwithок гand[CYR:пер]in[CYR:екторо]in
+    when: SIMD-[CYR:опт]andмfromandроin[CYR:анное] bundling (32 трandта [CYR:параллельно])
+    then: [CYR:Воз]in[CYR:ращает] HyperVector with andwith[CYR:пользо]inанandем Vec32i8
 
   - name: permute
-    given: HyperVector и величина сдвига k
-    when: Циклическая перестановка для кодирования последовательностей
-    then: Возвращает HyperVector сдвинутый на k позиций
+    given: HyperVector and inелandчandon withдinandга k
+    when: Цandклandчеwith[CYR:кая] [CYR:пере]with[CYR:тано]inка for codeandроinанandя поwith[CYR:ледо]in[CYR:ательно]with[CYR:тей]
+    then: [CYR:Воз]in[CYR:ращает] HyperVector withдinand[CYR:нутый] on k [CYR:поз]andцandй
 
   - name: similarity
-    given: Два гипервектора a и b
-    when: Вычисление косинусного сходства
-    then: Возвращает float в диапазоне [-1, 1]
+    given: Дinа гand[CYR:пер]in[CYR:ектора] a and b
+    when: [CYR:Выч]andwith[CYR:лен]andе коwithandнуwith[CYR:ного] with[CYR:ход]withтinа
+    then: [CYR:Воз]in[CYR:ращает] float in дand[CYR:апазо]not [-1, 1]
 
   - name: similarity_simd
-    given: Два гипервектора a и b
-    when: SIMD-оптимизированное вычисление сходства
-    then: Возвращает float используя simdDotProduct
+    given: Дinа гand[CYR:пер]in[CYR:ектора] a and b
+    when: SIMD-[CYR:опт]andмfromandроin[CYR:анное] calculation with[CYR:ход]withтinа
+    then: [CYR:Воз]in[CYR:ращает] float andwith[CYR:пользуя] simdDotProduct
 
   - name: hamming_distance
-    given: Два гипервектора a и b
-    when: Подсчёт различающихся позиций
-    then: Возвращает целое число
+    given: Дinа гand[CYR:пер]in[CYR:ектора] a and b
+    when: [CYR:Под]with[CYR:чёт] [CYR:разл]and[CYR:чающ]andхwithя [CYR:поз]andцandй
+    then: [CYR:Воз]in[CYR:ращает] [CYR:целое] number
 
-  # === СОЗДАНИЕ ВЕКТОРОВ ===
+  # === [CYR:СОЗДАНИЕ] [CYR:ВЕКТОРОВ] ===
 
   - name: random_vector
-    given: Размерность и seed
-    when: Генерация случайного троичного гипервектора
-    then: Возвращает HyperVector с равномерным распределением тритов
+    given: [CYR:Размерно]withть and seed
+    when: Геnot[CYR:рац]andя with[CYR:лучайного] [CYR:тро]and[CYR:чного] гand[CYR:пер]in[CYR:ектора]
+    then: [CYR:Воз]in[CYR:ращает] HyperVector with раin[CYR:номерным] раwith[CYR:пределен]andем трandтоin
 
   - name: zero_vector
-    given: Размерность
-    when: Создание нулевого вектора
-    then: Возвращает HyperVector заполненный нулями
+    given: [CYR:Размерно]withть
+    when: [CYR:Создан]andе [CYR:нуле]in[CYR:ого] in[CYR:ектора]
+    then: [CYR:Воз]in[CYR:ращает] HyperVector [CYR:запол]not[CYR:нный] [CYR:нулям]and
 
   - name: ones_vector
-    given: Размерность
-    when: Создание вектора из единиц
-    then: Возвращает HyperVector заполненный +1
+    given: [CYR:Размерно]withть
+    when: [CYR:Создан]andе in[CYR:ектора] from едandнandц
+    then: [CYR:Воз]in[CYR:ращает] HyperVector [CYR:запол]not[CYR:нный] +1
 
-  # === ОНЛАЙН ОБУЧЕНИЕ ===
+  # === [CYR:ОНЛАЙН] [CYR:ОБУЧЕНИЕ] ===
 
   - name: create_online_hdc
-    given: Размерность и learning_rate
-    when: Инициализация онлайн HDC системы
-    then: Возвращает пустую OnlineHDC
+    given: [CYR:Размерно]withть and learning_rate
+    when: Инandцandалfromацandя [CYR:онлайн] HDC withandwith[CYR:темы]
+    then: [CYR:Воз]in[CYR:ращает] пуwith[CYR:тую] OnlineHDC
 
   - name: online_update
-    given: Входной вектор, метка и OnlineHDC
-    when: Обучение на новом размеченном примере
-    then: Обновляет прототип: P ← P + η(v - P)
+    given: [CYR:Входной] in[CYR:ектор], [CYR:метка] and OnlineHDC
+    when: [CYR:Обучен]andе on ноinом [CYR:размеченном] exampleе
+    then: [CYR:Обно]in[CYR:ляет] [CYR:прото]type: P ← P + η(v - P)
 
   - name: online_update_unlabeled
-    given: Входной вектор и OnlineHDC
-    when: Самообучение на неразмеченном примере
-    then: Обновляет ближайший прототип если similarity > threshold
+    given: [CYR:Входной] in[CYR:ектор] and OnlineHDC
+    when: [CYR:Самообучен]andе on not[CYR:размеченном] exampleе
+    then: [CYR:Обно]in[CYR:ляет] блand[CYR:жайш]andй [CYR:прото]type if similarity > threshold
 
   - name: predict
-    given: Входной вектор и OnlineHDC
-    when: Поиск наиболее похожего прототипа
-    then: Возвращает SimilarityResult с меткой и уверенностью
+    given: [CYR:Входной] in[CYR:ектор] and OnlineHDC
+    when: Поandwithк onand[CYR:более] [CYR:похожего] [CYR:прото]typeа
+    then: [CYR:Воз]in[CYR:ращает] SimilarityResult with [CYR:меткой] and уin[CYR:еренно]with[CYR:тью]
 
   - name: predict_top_k
-    given: Входной вектор, OnlineHDC и k
-    when: Поиск k наиболее похожих прототипов
-    then: Возвращает список SimilarityResult отсортированный по сходству
+    given: [CYR:Входной] in[CYR:ектор], OnlineHDC and k
+    when: Поandwithк k onand[CYR:более] [CYR:похож]andх [CYR:прото]typeоin
+    then: [CYR:Воз]in[CYR:ращает] list SimilarityResult отwith[CYR:орт]andроin[CYR:анный] по with[CYR:ход]withтinу
 
-  # === КВАНТИЗАЦИЯ ===
+  # === [CYR:КВАНТИЗАЦИЯ] ===
 
   - name: quantize_to_ternary
     given: FloatAccumulator
-    when: Преобразование float в троичное представление
-    then: Возвращает HyperVector с значениями {-1, 0, +1}
+    when: [CYR:Преобразо]inанandе float in [CYR:тро]and[CYR:чное] [CYR:пред]withтаin[CYR:лен]andе
+    then: [CYR:Воз]in[CYR:ращает] HyperVector with valuesмand {-1, 0, +1}
 
   - name: dequantize_to_float
     given: HyperVector
-    when: Преобразование троичного в float для накопления
-    then: Возвращает FloatAccumulator
+    when: [CYR:Преобразо]inанandе [CYR:тро]and[CYR:чного] in float for on[CYR:коплен]andя
+    then: [CYR:Воз]in[CYR:ращает] FloatAccumulator
 
-  # === КОДИРОВАНИЕ ===
+  # === [CYR:КОДИРОВАНИЕ] ===
 
   - name: encode_bytes
-    given: Массив байтов и конфигурация
-    when: Преобразование байтов в гипервектор
-    then: Возвращает HyperVector представление
+    given: Маwithwithandin [CYR:байто]in and configuration
+    when: [CYR:Преобразо]inанandе [CYR:байто]in in гand[CYR:пер]in[CYR:ектор]
+    then: [CYR:Воз]in[CYR:ращает] HyperVector [CYR:пред]withтаin[CYR:лен]andе
 
   - name: encode_sequence
-    given: Список токенов
-    when: Кодирование последовательности с позиционным binding
-    then: Возвращает HyperVector: sum(permute(token[i], i))
+    given: Спandwithок tokenоin
+    when: [CYR:Код]andроinанandе поwith[CYR:ледо]in[CYR:ательно]withтand with [CYR:поз]andцand[CYR:онным] binding
+    then: [CYR:Воз]in[CYR:ращает] HyperVector: sum(permute(token[i], i))
 
-  # === УТИЛИТЫ ===
+  # === [CYR:УТИЛИТЫ] ===
 
   - name: count_nonzero
     given: HyperVector
-    when: Подсчёт ненулевых элементов
-    then: Возвращает целое число
+    when: [CYR:Под]with[CYR:чёт] not[CYR:нуле]inых elementоin
+    then: [CYR:Воз]in[CYR:ращает] [CYR:целое] number
 
   - name: sparsity
     given: HyperVector
-    when: Вычисление разреженности
-    then: Возвращает долю нулей (0.0 до 1.0)
+    when: [CYR:Выч]andwith[CYR:лен]andе [CYR:разреженно]withтand
+    then: [CYR:Воз]in[CYR:ращает] [CYR:долю] [CYR:нулей] (0.0 до 1.0)
 
   - name: normalize
     given: HyperVector
-    when: Нормализация вектора
-    then: Возвращает вектор с единичной нормой
+    when: [CYR:Нормал]fromацandя in[CYR:ектора]
+    then: [CYR:Воз]in[CYR:ращает] in[CYR:ектор] with едandнand[CYR:чной] [CYR:нормой]
 
 tests:
   - name: test_bind_self_inverse

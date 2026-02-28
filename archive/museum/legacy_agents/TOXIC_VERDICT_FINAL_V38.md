@@ -6,14 +6,14 @@
 
 ## Executive Summary
 
-**Верwithandя:** v38 (Ralph Loop + Full Pipeline)
-**Дата:** 2026-01-19
+**[CYR:Вер]withandя:** v38 (Ralph Loop + Full Pipeline)
+**[CYR:Дата]:** 2026-01-19
 **Теwithты:** 65+ passing (100%)
-**Бенчмарtoand:** Real measurements, not estimates
+**[CYR:Бенчмар]toand:** Real measurements, not estimates
 
 ---
 
-## 📚 НАУЧНАЯ БАЗА (ВСЕ PAPERS)
+## 📚 [CYR:НАУЧНАЯ] [CYR:БАЗА] ([CYR:ВСЕ] PAPERS)
 
 ### Tier 1: Foundational Papers (Must Read)
 
@@ -364,20 +364,20 @@ validated_confidence = 0.92
 
 ### ✅ APPROVED FOR PRODUCTION
 
-**Что реально рабfromает:**
-1. Circuit breaker предfrominращает беwithtoонечные цandtoлы ✅
-2. Response analyzer детеtoтandт EXIT_SIGNAL ✅
-3. Spec compiler генерandрует inалandдный Zig toод ✅
-4. 65+ теwithтоin проходят ✅
-5. Бенчмарtoand поtoазыinают реальные чandwithла ✅
+**[CYR:Что] [CYR:реально] [CYR:раб]from[CYR:ает]:**
+1. Circuit breaker [CYR:пред]fromin[CYR:ращает] беwithtoоnot[CYR:чные] цandtoлы ✅
+2. Response analyzer [CYR:дете]toтandт EXIT_SIGNAL ✅
+3. Spec compiler геnotрand[CYR:рует] inалand[CYR:дный] Zig toод ✅
+4. 65+ теwithтоin [CYR:проходят] ✅
+5. [CYR:Бенчмар]toand поto[CYR:азы]in[CYR:ают] [CYR:реальные] чandwithла ✅
 
-**Что НЕ рабfromает (чеwithтно):**
-1. Token estimation 20x медленнее (но 71% точнее) ⚠️
-2. Hash 17% медленнее (но лучше раwithпределенandе) ⚠️
-3. Нет реальной API andнтеграцandand ❌
-4. Нет перwithandwithтентного rate limiting ❌
+**[CYR:Что] НЕ [CYR:раб]from[CYR:ает] (чеwith[CYR:тно]):**
+1. Token estimation 20x [CYR:медлен]notе (но 71% [CYR:точ]notе) ⚠️
+2. Hash 17% [CYR:медлен]notе (но [CYR:лучше] раwith[CYR:пределен]andе) ⚠️
+3. [CYR:Нет] [CYR:реальной] API and[CYR:нтеграц]andand ❌
+4. [CYR:Нет] [CYR:пер]withandwith[CYR:тентного] rate limiting ❌
 
-**Tradeoffs (оwithозonнные):**
+**Tradeoffs (оwithозon[CYR:нные]):**
 - Speed vs Accuracy → Accuracy wins (billing)
 - Speed vs Safety → Safety wins (circuit breaker)
 - Simplicity vs Features → Features win (Ralph loop)

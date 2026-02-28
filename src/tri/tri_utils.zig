@@ -226,6 +226,9 @@ pub const Command = enum {
     // Temporal Trinity v1.0 (Order #020, #021) — ACTIVE
     time,
     os_boot,
+    // ABSOLUTE INFINITY v2.0 + OMEGA PHASE (Order #024)
+    infinity,
+    omega_phase,
 };
 
 pub const CLIState = struct {

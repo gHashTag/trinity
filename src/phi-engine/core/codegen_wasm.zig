@@ -2,7 +2,7 @@
 // VIBEEC CODEGEN WASM - ZIG/WASM CODE GENERATOR FROM .VIBEE SPECS
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Generates Zig code for toомпandляцandand in WASM andз .vibee withпецandфandtoацandй
+// Generates Zig code for to[CYR:омп]and[CYR:ляц]andand in WASM andз .vibee with[CYR:пец]andфandtoацandй
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 // Golden identity: φ² + 1/φ² = 3
 //
@@ -14,7 +14,7 @@ const ArrayList = std.ArrayList;
 const parser = @import("parser_v3.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// СВЯЩЕННЫЕ CONSTANTS
+// [CYR:СВЯЩЕННЫЕ] CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PHI: f64 = 1.618033988749895;
@@ -24,7 +24,7 @@ pub const TRINITY: f64 = 3.0;
 pub const VERSION = "24.φ";
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TYPES СПЕЦИФИКАЦИИ
+// TYPES [CYR:СПЕЦИФИКАЦИИ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const VibeeSpec = struct {

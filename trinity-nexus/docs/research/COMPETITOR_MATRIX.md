@@ -4,7 +4,7 @@
 
 ---
 
-## СВОДНАЯ ТАБЛИЦА ФУНКЦИЙ (50+ features)
+## [CYR:СВОДНАЯ] [CYR:ТАБЛИЦА] [CYR:ФУНКЦИЙ] (50+ features)
 
 | Feature | Fellou | Dia | Arc Max | Brave Leo | Opera Aria | Edge Copilot | Chrome AI | Firefox | VIBEE |
 |---------|--------|-----|---------|-----------|------------|--------------|-----------|---------|-------|
