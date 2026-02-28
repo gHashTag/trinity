@@ -7,8 +7,8 @@
 //
 // Run: zig build bench-math
 //
-// Священная формула: V = n × 3^k × π^m × φ^p × e^q
-// Золотая идентичность: φ² + 1/φ² = 3
+// Sacred formula: V = n × 3^k × π^m × φ^p × e^q
+// Golden identity: φ² + 1/φ² = 3
 //
 // Generated from specs/tri/vsa_benchmark.vibee (MATH-003)
 // ═══════════════════════════════════════════════════════════════════════════════

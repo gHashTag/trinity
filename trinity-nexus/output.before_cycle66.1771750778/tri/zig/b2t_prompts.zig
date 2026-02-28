@@ -2,8 +2,8 @@
 // b2t_prompts v1.0.0 - Generated from .vibee specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Священная формула: V = n × 3^k × π^m × φ^p × e^q
-// Золотая идентичность: φ² + 1/φ² = 3
+// Sacred formula: V = n × 3^k × π^m × φ^p × e^q
+// Golden identity: φ² + 1/φ² = 3
 //
 // Author: 
 // DO NOT EDIT - This file is auto-generated
@@ -18,7 +18,7 @@ const Allocator = std.mem.Allocator;
 // КОНСТАНТЫ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Базовые φ-константы (Sacred Formula)
+// Базоinые φ-toонwithтанты (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -139,18 +139,18 @@ pub const Trit = enum(i8) {
     }
 };
 
-/// Проверка TRINITY identity: φ² + 1/φ² = 3
+/// Check TRINITY identity: φ² + 1/φ² = 3
 fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-интерполяция
+/// φ-andнтерполяцandя
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// Генерация φ-спирали
+/// Генерацandя φ-withпandралand
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -305,89 +305,89 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "build_system_prompt_behavior" {
-// Given: Роль агента и ограничения
-// When: Создание системного промпта
-// Then: Возвращает PromptSection с role=system
+// Given: Роль агента and огранandченandя
+// When: Creation withandwithтемного промпта
+// Then: Returns PromptSection with role=system
 // Test build_system_prompt: verify behavior is callable (compile-time check)
 _ = build_system_prompt;
 }
 
 test "build_context_section_behavior" {
-// Given: SemanticContext из b2t_llm_assist
-// When: Форматирование контекста
-// Then: Возвращает PromptSection с role=context
+// Given: SemanticContext andз b2t_llm_assist
+// When: Форматandроinанandе toонтеtowithта
+// Then: Returns PromptSection with role=context
 // Test build_context_section: verify behavior is callable (compile-time check)
 _ = build_context_section;
 }
 
 test "build_icl_examples_behavior" {
-// Given: List<SimilarCode> и max_examples
-// When: Форматирование примеров для ICL
-// Then: Возвращает PromptSection с role=example
+// Given: List<SimilarCode> and max_examples
+// When: Форматandроinанandе прandмероin for ICL
+// Then: Returns PromptSection with role=example
 // Test build_icl_examples: verify behavior is callable (compile-time check)
 _ = build_icl_examples;
 }
 
 test "build_query_behavior" {
-// Given: Декомпилированный код и задача
-// When: Формирование запроса
-// Then: Возвращает PromptSection с role=query
+// Given: Деtoомпorроinанный toод and задача
+// When: Формandроinанandе запроwithа
+// Then: Returns PromptSection with role=query
 // Test build_query: verify behavior is callable (compile-time check)
 _ = build_query;
 }
 
 test "assemble_prompt_behavior" {
-// Given: List<PromptSection> и PromptConfig
-// When: Сборка финального промпта с учётом лимитов
-// Then: Возвращает String промпт
+// Given: List<PromptSection> and PromptConfig
+// When: Сборtoа фandonльного промпта with учётом лandмandтоin
+// Then: Returns String промпт
 // Test assemble_prompt: verify behavior is callable (compile-time check)
 _ = assemble_prompt;
 }
 
 test "get_distortion_template_behavior" {
 // Given: DistortionType
-// When: Получение шаблона для конкретного искажения
-// Then: Возвращает DistortionTemplate
+// When: Полученandе шаблоon for toонtoретного andwithtoаженandя
+// Then: Returns DistortionTemplate
 // Test get_distortion_template: verify behavior is callable (compile-time check)
 _ = get_distortion_template;
 }
 
 test "format_detection_prompt_behavior" {
-// Given: Код и DistortionTemplate
-// When: Создание промпта для детекции искажений
-// Then: Возвращает String промпт
+// Given: Код and DistortionTemplate
+// When: Creation промпта for детеtoцandand andwithtoаженandй
+// Then: Returns String промпт
 // Test format_detection_prompt: verify behavior is callable (compile-time check)
 _ = format_detection_prompt;
 }
 
 test "format_correction_prompt_behavior" {
-// Given: Код, искажения и DistortionTemplate
-// When: Создание промпта для исправления
-// Then: Возвращает String промпт
+// Given: Код, andwithtoаженandя and DistortionTemplate
+// When: Creation промпта for andwithпраinленandя
+// Then: Returns String промпт
 // Test format_correction_prompt: verify behavior is callable (compile-time check)
 _ = format_correction_prompt;
 }
 
 test "format_validation_prompt_behavior" {
-// Given: Оригинал, исправление и DistortionTemplate
-// When: Создание промпта для валидации
-// Then: Возвращает String промпт
+// Given: Орandгandonл, andwithпраinленandе and DistortionTemplate
+// When: Creation промпта for inалandдацandand
+// Then: Returns String промпт
 // Test format_validation_prompt: verify behavior is callable (compile-time check)
 _ = format_validation_prompt;
 }
 
 test "create_cot_prompt_behavior" {
-// Given: Задача и ChainOfThought
-// When: Создание промпта с пошаговым рассуждением
-// Then: Возвращает String промпт
+// Given: Задача and ChainOfThought
+// When: Creation промпта with пошагоinым раwithwithужденandем
+// Then: Returns String промпт
 // Test create_cot_prompt: verify behavior is callable (compile-time check)
 _ = create_cot_prompt;
 }
 
 test "parse_cot_response_behavior" {
-// Given: Ответ LLM с рассуждениями
-// When: Извлечение шагов и финального ответа
-// Then: Возвращает структурированный результат
+// Given: Отinет LLM with раwithwithужденandямand
+// When: Изinлеченandе шагоin and фandonльного frominета
+// Then: Returns withтруtoтурandроinанный результат
 // Test parse_cot_response: verify behavior is callable (compile-time check)
 _ = parse_cot_response;
 }

@@ -1,5 +1,5 @@
 // Maxwell Daemon - Main Module
-// Автономный агент-программист
+// Аinтономный агент-программandwithт
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -29,7 +29,7 @@ pub const MemoryStore = memory_store.MemoryStore;
 // MAXWELL DAEMON
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Полный демон Maxwell с всеми компонентами
+/// Полный демон Maxwell with inwithемand toомпонентамand
 pub const MaxwellDaemon = struct {
     allocator: std.mem.Allocator,
     config: DaemonConfig,
@@ -63,13 +63,13 @@ pub const MaxwellDaemon = struct {
         self.memory.deinit();
     }
 
-    /// Запустить демона
+    /// Запуwithтandть демоon
     pub fn start(self: *MaxwellDaemon) !void {
         std.debug.print(
             \\
             \\╔══════════════════════════════════════════════════════════════╗
             \\║                    🧠 MAXWELL DAEMON                         ║
-            \\║              "Демон, который сортирует код"                  ║
+            \\║              "Демон, tofromорый withортandрует toод"                  ║
             \\║                                                              ║
             \\║  φ² + 1/φ² = 3 = TRINITY                                    ║
             \\╚══════════════════════════════════════════════════════════════╝
@@ -88,7 +88,7 @@ pub const MaxwellDaemon = struct {
         std.debug.print("[MAXWELL] Daemon started. Waiting for tasks...\n", .{});
     }
 
-    /// Остановить демона
+    /// Оwithтаноinandть демоon
     pub fn stop(self: *MaxwellDaemon) void {
         std.debug.print("[MAXWELL] Stopping daemon...\n", .{});
 
@@ -100,12 +100,12 @@ pub const MaxwellDaemon = struct {
         std.debug.print("[MAXWELL] Daemon stopped.\n", .{});
     }
 
-    /// Отправить задачу
+    /// Отпраinandть задачу
     pub fn submitTask(self: *MaxwellDaemon, description: []const u8, task_type: TaskType) !u64 {
         return self.agent.submitTask(description, task_type);
     }
 
-    /// Получить статус
+    /// Получandть withтатуwith
     pub fn getStatus(self: *MaxwellDaemon) Status {
         const agent_state = self.agent.getState();
         const memory_stats = self.memory.getStats();

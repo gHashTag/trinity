@@ -1,7 +1,7 @@
 const std = @import("std");
 
-/// BATCH GENERATOR - Массовая генерация VIBEE модулей
-/// Ускорение: 10-50x по сравнению с последовательной генерацией
+/// BATCH GENERATOR - Маwithwithоinая генерацandя VIBEE модулей
+/// Уwithtoоренandе: 10-50x по withраinненandю with поwithледоinательной генерацandей
 
 pub const ModuleDef = struct {
     name: []const u8,
@@ -14,7 +14,7 @@ pub const DomainConfig = struct {
     modules: []const ModuleDef,
 };
 
-/// Генерирует .vibee спецификацию
+/// Генерandрует .vibee withпецandфandtoацandю
 pub fn generateSpec(allocator: std.mem.Allocator, domain: []const u8, module: ModuleDef, version: u32) ![]const u8 {
     _ = domain;
     const v1 = version / 100;
@@ -61,7 +61,7 @@ pub fn generateSpec(allocator: std.mem.Allocator, domain: []const u8, module: Mo
     , .{ module.name, version, v1, v2, v3, module.name, module.desc, module.name, module.name, module.name, module.name, module.name, module.name });
 }
 
-/// Генерирует .zig код напрямую (без промежуточного .vibee)
+/// Генерandрует .zig toод onпрямую (без промежуточного .vibee)
 pub fn generateZig(allocator: std.mem.Allocator, module: ModuleDef, version: u32) ![]const u8 {
     const v1 = version / 100;
     const v2 = (version / 10) % 10;
@@ -140,18 +140,18 @@ pub fn generateZig(allocator: std.mem.Allocator, module: ModuleDef, version: u32
     });
 }
 
-/// Batch генерация всего домена
+/// Batch генерацandя inwithего домеon
 pub fn generateDomain(allocator: std.mem.Allocator, config: DomainConfig) !void {
     const spec_dir = try std.fmt.allocPrint(allocator, "specs/tri/{s}", .{config.name});
     const output_dir = "trinity/output";
 
-    // Создаем директории
+    // Создаем дandреtoторandand
     std.fs.cwd().makePath(spec_dir) catch {};
     std.fs.cwd().makePath(output_dir) catch {};
 
     var version = config.version_start;
     for (config.modules) |module| {
-        // Генерируем .vibee
+        // Генерandруем .vibee
         const spec_content = try generateSpec(allocator, config.name, module, version);
         const spec_path = try std.fmt.allocPrint(allocator, "{s}/{s}_v{d}.vibee", .{ spec_dir, module.name, version });
         
@@ -159,7 +159,7 @@ pub fn generateDomain(allocator: std.mem.Allocator, config: DomainConfig) !void 
         defer spec_file.close();
         try spec_file.writeAll(spec_content);
 
-        // Генерируем .zig напрямую
+        // Генерandруем .zig onпрямую
         const zig_content = try generateZig(allocator, module, version);
         const zig_path = try std.fmt.allocPrint(allocator, "{s}/{s}_v{d}.zig", .{ output_dir, module.name, version });
         

@@ -1,7 +1,7 @@
 //! VIBEE Intermediate Representation - PAS DAEMON V39
 //! Паттерны: HSH (O(1) value lookup), D&C (SSA construction), PRE (dominator tree)
-//! Священная формула: V = n × 3^k × π^m × φ^p × e^q
-//! Золотая идентичность: φ² + 1/φ² = 3
+//! Sacred formula: V = n × 3^k × π^m × φ^p × e^q
+//! Golden identity: φ² + 1/φ² = 3
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;

@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// VERILOG CODEGEN - Генератор Verilog кода из .vibee спецификаций
+// VERILOG CODEGEN - Генератор Verilog toода andз .vibee withпецandфandtoацandй
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Генерирует Verilog код для FPGA синтеза
-// Автор: Dmitrii Vasilev
+// Генерandрует Verilog toод for FPGA withandнтеза
+// Аinтор: Dmitrii Vasilev
 // φ² + 1/φ² = 3 | PHOENIX = 999
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -294,7 +294,7 @@ pub const VerilogCodeGen = struct {
         self.builder.deinit();
     }
 
-    /// Генерация полного Verilog файла из спецификации
+    /// Генерацandя полного Verilog файла andз withпецandфandtoацandand
     pub fn generate(self: *Self, spec: *const VibeeSpec) ![]const u8 {
         self.spec = spec;
         try self.writeHeader(spec);

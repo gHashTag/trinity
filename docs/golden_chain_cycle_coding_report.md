@@ -53,7 +53,7 @@
 ### Topic Detection
 
 Added `coding` topic with multilingual keywords:
-- Russian: код, программ, функци, алгоритм, сортировк
+- Russian: toод, программ, фунtoцand, алгорandтм, withортandроinto
 - English: code, program, function, algorithm, sort
 - Chinese: 代码, 程序, 函数, 算法, 排序
 
@@ -61,8 +61,8 @@ Added `coding` topic with multilingual keywords:
 
 ### Russian
 ```
-"Вот пример кода. Могу объяснить подробнее, если нужно!"
-"Готово! Вот реализация. Есть вопросы по коду?"
+"Вfrom прandмер toода. Могу объяwithнandть подробнее, еwithлand нужно!"
+"Гfromоinо! Вfrom реалandзацandя. Еwithть inопроwithы по toоду?"
 ```
 
 ### English

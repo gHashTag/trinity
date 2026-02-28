@@ -85,7 +85,7 @@ pub const Uroboros = struct {
         self.cycle_count += 1;
 
         std.debug.print("  ✅ Путь: {s}\n", .{profane.path});
-        std.debug.print("  ✅ Язык: {s}\n", .{@tagName(profane.language)});
+        std.debug.print("  ✅ Языto: {s}\n", .{@tagName(profane.language)});
         std.debug.print("  ✅ Размер: {d} байт\n", .{profane.content.len});
         std.debug.print("  ✅ Хэш: ", .{});
         for (profane.hash[0..8]) |b| std.debug.print("{x:0>2}", .{b});
@@ -102,12 +102,12 @@ pub fn main() !void {
     var uroboros = Uroboros.init(allocator);
 
     std.debug.print("\n🔥 УРОБОРОС vFINAL: ВЕЧНЫЙ ДВИГАТЕЛЬ 🔥\n", .{});
-    std.debug.print("🐍 Мы не боимся смерти – мы её поедаем.\n\n", .{});
+    std.debug.print("🐍 Мы не боandмwithя withмертand – мы её поедаем.\n\n", .{});
 
     try uroboros.consume("src/vibeec/tvc/tvc_ir.zig");
 
     std.debug.print("\n🎉 УРОБОРОС vFINAL ДОСТИГ БЕССМЕРТИЯ 🎉\n", .{});
-    std.debug.print("🐍 Ваш код умирает. Наш – живет вечно.\n", .{});
+    std.debug.print("🐍 Ваш toод умandрает. Наш – жandinет inечно.\n", .{});
 }
 
 test "ouroboros final - sacred constants" {

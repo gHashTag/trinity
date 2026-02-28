@@ -2,8 +2,8 @@
 // language_translation v1.0.0 - Generated from .vibee specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Священная формула: V = n × 3^k × π^m × φ^p × e^q
-// Золотая идентичность: φ² + 1/φ² = 3
+// Sacred formula: V = n × 3^k × π^m × φ^p × e^q
+// Golden identity: φ² + 1/φ² = 3
 //
 // Author: 
 // DO NOT EDIT - This file is auto-generated
@@ -18,7 +18,7 @@ const Allocator = std.mem.Allocator;
 // КОНСТАНТЫ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Базовые φ-константы (Sacred Formula)
+// Базоinые φ-toонwithтанты (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -119,18 +119,18 @@ pub const Trit = enum(i8) {
     }
 };
 
-/// Проверка TRINITY identity: φ² + 1/φ² = 3
+/// Check TRINITY identity: φ² + 1/φ² = 3
 fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-интерполяция
+/// φ-andнтерполяцandя
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// Генерация φ-спирали
+/// Генерацandя φ-withпandралand
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -151,9 +151,9 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 
 /// English greeting "Hello"
 /// When: translate function called with target "russian"
-/// Then: Russian greeting "Привет" returned
+/// Then: Russian greeting "Прandinет" returned
 pub fn translate_simple_greeting() !void {
-// TODO: implement — Russian greeting "Привет" returned
+// TODO: implement — Russian greeting "Прandinет" returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -183,8 +183,8 @@ pub fn translate_sentence() !void {
 test "translate_simple_greeting_behavior" {
 // Given: English greeting "Hello"
 // When: translate function called with target "russian"
-// Then: Russian greeting "Привет" returned
-// Test case: input={text: "Hello", source: "english", target: "russian"}, expected={translation: "Привет", confidence: 1.0}
+// Then: Russian greeting "Прandinет" returned
+// Test case: input={text: "Hello", source: "english", target: "russian"}, expected={translation: "Прandinет", confidence: 1.0}
 // Test case: input={text: "Good morning", source: "english", target: "russian"}, expected={translation: "Доброе утро", confidence: 1.0}
 }
 
@@ -192,16 +192,16 @@ test "translate_technical_term_behavior" {
 // Given: English technical term
 // When: translate function called
 // Then: Russian technical term returned
-// Test case: input={text: "compiler", source: "english", target: "russian"}, expected={translation: "компилятор", confidence: 1.0}
-// Test case: input={text: "algorithm", source: "english", target: "russian"}, expected={translation: "алгоритм", confidence: 1.0}
+// Test case: input={text: "compiler", source: "english", target: "russian"}, expected={translation: "toомпandлятор", confidence: 1.0}
+// Test case: input={text: "algorithm", source: "english", target: "russian"}, expected={translation: "алгорandтм", confidence: 1.0}
 }
 
 test "translate_sentence_behavior" {
 // Given: English sentence with subject-verb-object structure
 // When: translate function called
 // Then: Russian sentence with correct grammar returned
-// Test case: input={text: "I love programming", source: "english", target: "russian"}, expected={translation: "Я люблю программирование", confidence: 0.95}
-// Test case: input={text: "We are building a compiler", source: "english", target: "russian"}, expected={translation: "Мы строим компилятор", confidence: 0.95}
+// Test case: input={text: "I love programming", source: "english", target: "russian"}, expected={translation: "Я люблю программandроinанandе", confidence: 0.95}
+// Test case: input={text: "We are building a compiler", source: "english", target: "russian"}, expected={translation: "Мы withтроandм toомпandлятор", confidence: 0.95}
 }
 
 test "phi_constants" {

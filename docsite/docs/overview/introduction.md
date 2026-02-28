@@ -51,7 +51,7 @@ zig build tri
 tri chat "Hello, how are you?"
 
 # Generate code (multilingual)
-tri code "напиши функцию фибоначчи"  # Russian
+tri code "onпandшand фунtoцandю фandбоonччand"  # Russian
 tri code "写一个斐波那契函数"          # Chinese
 tri code "write fibonacci function"   # English
 ```

@@ -11,7 +11,7 @@ V = n × 3^k × π^m × φ^p × e^q
 
 ## PAS Methodology Overview
 
-PAS (Предиктивная Алгоритмическая Систематика) is analogous to Mendeleev's periodic table predictions with 98% accuracy. We apply PAS to predict algorithmic improvements in VIBEE.
+PAS (Предandtoтandinonя Алгорandтмandчеwithtoая Сandwithтематandtoа) is analogous to Mendeleev's periodic table predictions with 98% accuracy. We apply PAS to predict algorithmic improvements in VIBEE.
 
 ### Discovery Patterns
 

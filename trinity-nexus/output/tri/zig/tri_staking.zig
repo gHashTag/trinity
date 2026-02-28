@@ -2,8 +2,8 @@
 // "Trinity Token" v1.0.0 - Generated from .vibee specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Священная формула: V = n × 3^k × π^m × φ^p × e^q
-// Золотая идентичность: φ² + 1/φ² = 3
+// Sacred formula: V = n × 3^k × π^m × φ^p × e^q
+// Golden identity: φ² + 1/φ² = 3
 //
 // Author: 
 // DO NOT EDIT - This file is auto-generated
@@ -18,7 +18,7 @@ const Allocator = std.mem.Allocator;
 // КОНСТАНТЫ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Базовые φ-константы (Sacred Formula)
+// Базоinые φ-toонwithтанты (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -107,18 +107,18 @@ pub const Trit = enum(i8) {
     }
 };
 
-/// Проверка TRINITY identity: φ² + 1/φ² = 3
+/// Check TRINITY identity: φ² + 1/φ² = 3
 fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-интерполяция
+/// φ-andнтерполяцandя
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// Генерация φ-спирали
+/// Генерацandя φ-withпandралand
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -137,8 +137,8 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 // BEHAVIOR FUNCTIONS - Generated from behaviors
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Пользователь нажал Connect
-/// When: Wallet provider доступен
+/// Пользоinатель onжал Connect
+/// When: Wallet provider доwithтупен
 /// Then: |
 pub fn connect_wallet() !void {
 // TODO: implement — |
@@ -146,8 +146,8 @@ pub fn connect_wallet() !void {
 }
 
 
-/// Wallet подключён, баланс > 0
-/// When: Пользователь выбрал amount и period
+/// Wallet подtoлючён, баланwith > 0
+/// When: Пользоinатель inыбрал amount and period
 /// Then: |
 pub fn stake_tokens() !void {
 // TODO: implement — |
@@ -156,7 +156,7 @@ pub fn stake_tokens() !void {
 
 
 /// pending_rewards > 0
-/// When: Пользователь нажал Claim
+/// When: Пользоinатель onжал Claim
 /// Then: |
 pub fn claim_rewards() !void {
 // TODO: implement — |
@@ -164,8 +164,8 @@ pub fn claim_rewards() !void {
 }
 
 
-/// Есть активная position
-/// When: Пользователь нажал Unstake
+/// Еwithть аtoтandinonя position
+/// When: Пользоinатель onжал Unstake
 /// Then: |
 pub fn unstake_tokens() !void {
 // TODO: implement — |
@@ -173,8 +173,8 @@ pub fn unstake_tokens() !void {
 }
 
 
-/// Пользователь выполнил операцию
-/// When: Операция завершена
+/// Пользоinатель inыполнandл операцandю
+/// When: Операцandя заinершеon
 /// Then: |
 pub fn calculate_rewards(self: *@This()) !void {
 // TODO: implement — |
@@ -188,16 +188,16 @@ _ = self;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "connect_wallet_behavior" {
-// Given: Пользователь нажал Connect
-// When: Wallet provider доступен
+// Given: Пользоinатель onжал Connect
+// When: Wallet provider доwithтупен
 // Then: |
 // Test connect_wallet: verify behavior is callable (compile-time check)
 _ = connect_wallet;
 }
 
 test "stake_tokens_behavior" {
-// Given: Wallet подключён, баланс > 0
-// When: Пользователь выбрал amount и period
+// Given: Wallet подtoлючён, баланwith > 0
+// When: Пользоinатель inыбрал amount and period
 // Then: |
 // Test stake_tokens: verify behavior is callable (compile-time check)
 _ = stake_tokens;
@@ -205,23 +205,23 @@ _ = stake_tokens;
 
 test "claim_rewards_behavior" {
 // Given: pending_rewards > 0
-// When: Пользователь нажал Claim
+// When: Пользоinатель onжал Claim
 // Then: |
 // Test claim_rewards: verify behavior is callable (compile-time check)
 _ = claim_rewards;
 }
 
 test "unstake_tokens_behavior" {
-// Given: Есть активная position
-// When: Пользователь нажал Unstake
+// Given: Еwithть аtoтandinonя position
+// When: Пользоinатель onжал Unstake
 // Then: |
 // Test unstake_tokens: verify behavior is callable (compile-time check)
 _ = unstake_tokens;
 }
 
 test "calculate_rewards_behavior" {
-// Given: Пользователь выполнил операцию
-// When: Операция завершена
+// Given: Пользоinатель inыполнandл операцandю
+// When: Операцandя заinершеon
 // Then: |
 // Test calculate_rewards: verify behavior is callable (compile-time check)
 _ = calculate_rewards;

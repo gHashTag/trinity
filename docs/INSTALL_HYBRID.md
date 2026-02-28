@@ -82,7 +82,7 @@ fn factorial(n: u64) u64 {
 
 ```bash
 # Symbolic (instant, 2-45μs)
-./trinity-hybrid "привет"
+./trinity-hybrid "прandinет"
 ./trinity-hybrid "tell me a joke"
 ./trinity-hybrid "who are you?"
 

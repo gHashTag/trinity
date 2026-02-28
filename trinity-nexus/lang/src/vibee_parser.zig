@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// VIBEE PARSER - Парсер .vibee спецификаций
+// VIBEE PARSER - Парwithер .vibee withпецandфandtoацandй
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Парсит YAML-подобный формат .vibee файлов
-// Автор: Dmitrii Vasilev
+// Парwithandт YAML-подобный формат .vibee файлоin
+// Аinтор: Dmitrii Vasilev
 // φ² + 1/φ² = 3
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -72,7 +72,7 @@ pub const VibeeSpec = struct {
     }
 
     pub fn deinit(self: *VibeeSpec) void {
-        // Освобождаем вложенные структуры
+        // Оwithinобождаем inложенные withтруtoтуры
         for (self.types.items) |*t| {
             t.fields.deinit(self.allocator);
             t.constraints.deinit(self.allocator);
@@ -94,7 +94,7 @@ pub const VibeeSpec = struct {
             f.timers.deinit(self.allocator);
         }
 
-        // Освобождаем основные списки
+        // Оwithinобождаем оwithноinные withпandwithtoand
         self.languages.deinit(self.allocator);
         self.targets.deinit(self.allocator);
         self.imports.deinit(self.allocator);
@@ -345,7 +345,7 @@ pub const VibeeParser = struct {
                 continue;
             }
 
-            // Пропускаем только ":"
+            // Пропуwithtoаем тольtoо ":"
             if (self.pos < self.source.len and self.source[self.pos] == ':') {
                 self.pos += 1;
             }
@@ -456,7 +456,7 @@ pub const VibeeParser = struct {
                 self.pos += 1;
                 self.line += 1;
             } else if (c == '#') {
-                // Пропускаем комментарий до конца строки
+                // Пропуwithtoаем toомментарandй до toонца withтроtoand
                 while (self.pos < self.source.len and self.source[self.pos] != '\n') {
                     self.pos += 1;
                 }
@@ -565,16 +565,16 @@ pub const VibeeParser = struct {
     }
 
     fn parseConstants(self: *Self, constants: *ArrayList(Constant)) !void {
-        // Не вызываем skipToNextLine - мы уже на следующей строке после ":"
+        // Не inызыinаем skipToNextLine - мы уже on withледующей withтроtoе поwithле ":"
         while (self.pos < self.source.len) {
             self.skipEmptyLinesAndComments();
             if (self.pos >= self.source.len) break;
 
-            // Проверяем отступ (константы имеют отступ 2 пробела)
+            // Проinеряем fromwithтуп (toонwithтанты andмеют fromwithтуп 2 пробела)
             const indent = self.countIndent();
-            if (indent < 2) break; // Меньше 2 = конец секции
+            if (indent < 2) break; // Меньше 2 = toонец withеtoцandand
             if (indent > 4) {
-                // Это вложенное поле, пропускаем
+                // Это inложенное поле, пропуwithtoаем
                 self.skipToNextLine();
                 continue;
             }
@@ -583,7 +583,7 @@ pub const VibeeParser = struct {
             const name = self.readKey();
             if (name.len == 0) break;
 
-            // Проверяем что это не следующая секция (без отступа)
+            // Проinеряем что это не withледующая withеtoцandя (без fromwithтупа)
             if (indent == 0 and (std.mem.eql(u8, name, "types") or
                 std.mem.eql(u8, name, "creation_patterns") or
                 std.mem.eql(u8, name, "behaviors")))
@@ -594,7 +594,7 @@ pub const VibeeParser = struct {
 
             self.skipColon();
 
-            // Пробуем прочитать inline значение (формат: NAME: VALUE)
+            // Пробуем прочandтать inline зonченandе (формат: NAME: VALUE)
             self.skipInlineWhitespace();
             const inline_value = self.readValue();
 
@@ -612,13 +612,13 @@ pub const VibeeParser = struct {
                 // Nested формат
                 self.skipToNextLine();
 
-                // Читаем вложенные поля (отступ 4 пробела)
+                // Чandтаем inложенные поля (fromwithтуп 4 пробела)
                 while (self.pos < self.source.len) {
                     self.skipEmptyLinesAndComments();
                     if (self.pos >= self.source.len) break;
 
                     const field_indent = self.countIndent();
-                    if (field_indent < 4) break; // Меньше 4 = следующая константа или конец
+                    if (field_indent < 4) break; // Меньше 4 = withледующая toонwithтанта or toонец
                     self.pos += field_indent;
 
                     const field_key = self.readKey();
@@ -730,31 +730,31 @@ pub const VibeeParser = struct {
 
     fn skipEmptyLinesAndComments(self: *Self) void {
         while (self.pos < self.source.len) {
-            // Пропускаем пустые строки
+            // Пропуwithtoаем пуwithтые withтроtoand
             if (self.source[self.pos] == '\n') {
                 self.pos += 1;
                 self.line += 1;
                 continue;
             }
-            // Проверяем строку
+            // Проinеряем withтроtoу
             const line_start = self.pos;
             var spaces: usize = 0;
             while (self.pos < self.source.len and self.source[self.pos] == ' ') {
                 spaces += 1;
                 self.pos += 1;
             }
-            // Пропускаем строки-комментарии
+            // Пропуwithtoаем withтроtoand-toомментарandand
             if (self.pos < self.source.len and self.source[self.pos] == '#') {
                 self.skipToNextLine();
                 continue;
             }
-            // Пропускаем строки только с пробелами
+            // Пропуwithtoаем withтроtoand тольtoо with пробеламand
             if (self.pos < self.source.len and self.source[self.pos] == '\n') {
                 self.pos += 1;
                 self.line += 1;
                 continue;
             }
-            // Откатываемся к началу строки
+            // Отtoатыinаемwithя to onчалу withтроtoand
             self.pos = line_start;
             break;
         }
@@ -772,7 +772,7 @@ pub const VibeeParser = struct {
             const name = self.readKey();
             if (name.len == 0) break;
 
-            // Проверяем что это не следующая секция
+            // Проinеряем что это не withледующая withеtoцandя
             if (std.mem.eql(u8, name, "creation_patterns") or
                 std.mem.eql(u8, name, "behaviors") or
                 std.mem.eql(u8, name, "algorithms") or
@@ -788,7 +788,7 @@ pub const VibeeParser = struct {
             var typedef = TypeDef.init(self.allocator);
             typedef.name = name;
 
-            // Читаем вложенные поля
+            // Чandтаем inложенные поля
             while (self.pos < self.source.len) {
                 self.skipEmptyLinesAndComments();
                 if (self.pos >= self.source.len) break;
@@ -1291,7 +1291,7 @@ pub const VibeeParser = struct {
             const name = self.readKey();
             if (name.len == 0) break;
 
-            // Проверяем что это не следующая секция
+            // Проinеряем что это не withледующая withеtoцandя
             if (std.mem.eql(u8, name, "behaviors") or
                 std.mem.eql(u8, name, "algorithms") or
                 std.mem.eql(u8, name, "wasm_exports") or
@@ -1311,7 +1311,7 @@ pub const VibeeParser = struct {
                 .result = "",
             };
 
-            // Читаем вложенные поля
+            // Чandтаем inложенные поля
             while (self.pos < self.source.len) {
                 self.skipEmptyLinesAndComments();
                 if (self.pos >= self.source.len) break;
@@ -1347,7 +1347,7 @@ pub const VibeeParser = struct {
             if (indent < 2) break;
             self.pos += indent;
 
-            // Behaviors начинаются с '-'
+            // Behaviors onчandonютwithя with '-'
             if (self.pos >= self.source.len or self.source[self.pos] != '-') {
                 self.pos -= indent;
                 break;
@@ -1357,7 +1357,7 @@ pub const VibeeParser = struct {
 
             var behavior = Behavior.init(self.allocator);
 
-            // Первое поле на той же строке: "- name: value"
+            // Перinое поле on той же withтроtoе: "- name: value"
             const first_key = self.readKey();
             if (first_key.len > 0) {
                 self.skipColon();
@@ -1367,7 +1367,7 @@ pub const VibeeParser = struct {
             }
             self.skipToNextLine();
 
-            // Читаем остальные поля behavior
+            // Чandтаем оwithтальные поля behavior
             while (self.pos < self.source.len) {
                 self.skipEmptyLinesAndComments();
                 if (self.pos >= self.source.len) break;
@@ -1438,7 +1438,7 @@ pub const VibeeParser = struct {
                 .tolerance = null,
             };
 
-            // Первое поле на той же строке
+            // Перinое поле on той же withтроtoе
             const first_key = self.readKey();
             if (first_key.len > 0) {
                 self.skipColon();
@@ -1450,7 +1450,7 @@ pub const VibeeParser = struct {
             }
             self.skipToNextLine();
 
-            // Читаем остальные поля test_case
+            // Чandтаем оwithтальные поля test_case
             while (self.pos < self.source.len) {
                 self.skipEmptyLinesAndComments();
                 if (self.pos >= self.source.len) break;
@@ -1908,7 +1908,7 @@ pub const VibeeParser = struct {
         }
     }
 
-    // Вспомогательные функции
+    // Вwithпомогательные фунtoцandand
     fn countIndent(self: *Self) usize {
         var count: usize = 0;
         const start = self.pos;
@@ -1916,7 +1916,7 @@ pub const VibeeParser = struct {
             count += 1;
             self.pos += 1;
         }
-        self.pos = start; // Откатываемся
+        self.pos = start; // Отtoатыinаемwithя
         return count;
     }
 
@@ -1931,7 +1931,7 @@ pub const VibeeParser = struct {
     }
 
     fn skipBlock(self: *Self) void {
-        // Пропускаем блок с отступом
+        // Пропуwithtoаем блоto with fromwithтупом
         const base_indent = self.countIndent();
         self.skipLine();
         while (self.pos < self.source.len) {

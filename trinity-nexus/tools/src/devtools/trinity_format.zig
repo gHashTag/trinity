@@ -1,5 +1,5 @@
-// TRINITY FORMAT (.tri) - Бинарный формат троичных моделей
-// Упакованные триты: 4 трита на байт = 16x сжатие
+// TRINITY FORMAT (.tri) - Бandonрный формат троandчных моделей
+// Упаtoоinанные трandты: 4 трandта on байт = 16x withжатandе
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");
@@ -139,10 +139,10 @@ pub const TensorIndexEntry = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TRIT PACKING - 4 трита на байт
+// TRIT PACKING - 4 трandта on байт
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Упаковка тритов: 4 трита на байт
+/// Упаtoоintoа трandтоin: 4 трandта on байт
 /// trit value: -1 -> 0, 0 -> 1, +1 -> 2
 pub fn packTrits(allocator: std.mem.Allocator, trits: []const prometheus.TritWeight) ![]u8 {
     const packed_size = (trits.len + 3) / 4;
@@ -159,7 +159,7 @@ pub fn packTrits(allocator: std.mem.Allocator, trits: []const prometheus.TritWei
     return result;
 }
 
-/// Распаковка тритов
+/// Раwithпаtoоintoа трandтоin
 pub fn unpackTrits(allocator: std.mem.Allocator, packed_data: []const u8, num_trits: usize) ![]prometheus.TritWeight {
     const trits = try allocator.alloc(prometheus.TritWeight, num_trits);
 
@@ -232,19 +232,19 @@ pub const TrinityWriter = struct {
         self.header.num_kv_heads = num_kv_heads;
     }
 
-    /// Добавление тензора
+    /// Добаinленandе тензора
     pub fn addTensor(self: *TrinityWriter, name: []const u8, shape: []const usize, trits: []const prometheus.TritWeight) !void {
-        // Упаковываем триты
+        // Упаtoоinыinаем трandты
         const packed_trits = try packTrits(self.allocator, trits);
         defer self.allocator.free(packed_trits);
 
-        // Копируем shape
+        // Копandруем shape
         const shape_u32 = try self.allocator.alloc(u32, shape.len);
         for (shape, 0..) |dim, i| {
             shape_u32[i] = @intCast(dim);
         }
 
-        // Создаём запись индекса
+        // Создаём запandwithь andндеtowithа
         const entry = TensorIndexEntry{
             .name = try self.allocator.dupe(u8, name),
             .shape = shape_u32,
@@ -254,28 +254,28 @@ pub const TrinityWriter = struct {
 
         try self.index.append(entry);
 
-        // Добавляем данные в буфер
+        // Добаinляем данные in буфер
         try self.data_buffer.appendSlice(packed_trits);
         self.current_offset += packed_trits.len;
 
-        // Обновляем статистику
+        // Обноinляем withтатandwithтandtoу
         self.header.total_params += trits.len;
         self.header.num_tensors += 1;
     }
 
-    /// Финализация и запись файла
+    /// Фandonлandзацandя and запandwithь файла
     pub fn finalize(self: *TrinityWriter) !void {
         const writer = self.file.writer();
 
-        // 1. Записываем заголовок
+        // 1. Запandwithыinаем заголоinоto
         try self.header.write(writer);
 
-        // 2. Записываем индекс
+        // 2. Запandwithыinаем andндеtowith
         for (self.index.items) |*entry| {
             try entry.write(writer);
         }
 
-        // 3. Записываем данные
+        // 3. Запandwithыinаем данные
         try writer.writeAll(self.data_buffer.items);
 
         std.debug.print("\n", .{});
@@ -305,17 +305,17 @@ pub const TrinityReader = struct {
         const file = try std.fs.cwd().openFile(path, .{});
         const reader = file.reader();
 
-        // Читаем заголовок
+        // Чandтаем заголоinоto
         const header = try TrinityHeader.read(reader);
 
-        // Читаем индекс
+        // Чandтаем andндеtowith
         var index = std.ArrayList(TensorIndexEntry).init(allocator);
         for (0..header.num_tensors) |_| {
             const entry = try TensorIndexEntry.read(allocator, reader);
             try index.append(entry);
         }
 
-        // Запоминаем начало данных
+        // Запомandonем onчало данных
         const data_start = try file.getPos();
 
         return TrinityReader{
@@ -335,9 +335,9 @@ pub const TrinityReader = struct {
         self.index.deinit();
     }
 
-    /// Получение тензора по имени
+    /// Полученandе тензора по andменand
     pub fn getTensor(self: *TrinityReader, name: []const u8) ![]prometheus.TritWeight {
-        // Ищем в индексе
+        // Ищем in andндеtowithе
         for (self.index.items) |entry| {
             if (std.mem.eql(u8, entry.name, name)) {
                 return self.readTensorData(&entry);
@@ -346,32 +346,32 @@ pub const TrinityReader = struct {
         return error.TensorNotFound;
     }
 
-    /// Получение тензора по индексу
+    /// Полученandе тензора по andндеtowithу
     pub fn getTensorByIndex(self: *TrinityReader, idx: usize) ![]prometheus.TritWeight {
         if (idx >= self.index.items.len) return error.IndexOutOfBounds;
         return self.readTensorData(&self.index.items[idx]);
     }
 
     fn readTensorData(self: *TrinityReader, entry: *const TensorIndexEntry) ![]prometheus.TritWeight {
-        // Переходим к данным
+        // Переходandм to данным
         try self.file.seekTo(self.data_start + entry.data_offset);
 
-        // Читаем упакованные данные
+        // Чandтаем упаtoоinанные данные
         const packed_bytes = try self.allocator.alloc(u8, entry.data_size);
         defer self.allocator.free(packed_bytes);
         _ = try self.file.reader().readAll(packed_bytes);
 
-        // Распаковываем
+        // Раwithпаtoоinыinаем
         const num_elements = entry.numElements();
         return unpackTrits(self.allocator, packed_bytes, num_elements);
     }
 
-    /// Список всех тензоров
+    /// Спandwithоto inwithех тензороin
     pub fn listTensors(self: *const TrinityReader) []const TensorIndexEntry {
         return self.index.items;
     }
 
-    /// Печать информации
+    /// Печать andнформацandand
     pub fn printInfo(self: *const TrinityReader) void {
         std.debug.print("\n", .{});
         std.debug.print("╔══════════════════════════════════════════════════════════════╗\n", .{});
@@ -595,12 +595,12 @@ test "header write and read" {
         .num_layers = 32,
     };
 
-    // Записываем в буфер
+    // Запandwithыinаем in буфер
     var buffer = std.ArrayList(u8).init(allocator);
     defer buffer.deinit();
     try header.write(buffer.writer());
 
-    // Читаем обратно
+    // Чandтаем обратно
     var stream = std.io.fixedBufferStream(buffer.items);
     const read_header = try TrinityHeader.read(stream.reader());
 

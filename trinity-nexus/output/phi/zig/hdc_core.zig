@@ -2,8 +2,8 @@
 // hdc_core v1.0.0 - Generated from .vibee specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Священная формула: V = n × 3^k × π^m × φ^p × e^q
-// Золотая идентичность: φ² + 1/φ² = 3
+// Sacred formula: V = n × 3^k × π^m × φ^p × e^q
+// Golden identity: φ² + 1/φ² = 3
 //
 // Author: 
 // DO NOT EDIT - This file is auto-generated
@@ -30,7 +30,7 @@ pub const QUANTIZE_NEG: f64 = -0.5;
 
 pub const MAX_PROTOTYPES: f64 = 1000;
 
-// Базовые φ-константы (Sacred Formula)
+// Базоinые φ-toонwithтанты (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -45,23 +45,23 @@ pub const PHOENIX: i64 = 999;
 // ТИПЫ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Сбалансированный троичный разряд
+/// Сбаланwithandроinанный троandчный разряд
 pub const Trit = struct {
 };
 
-/// Троичный гипервектор для HDC
+/// Троandчный гandперinеtoтор for HDC
 pub const HyperVector = struct {
     data: []i64,
     dim: i64,
 };
 
-/// Float аккумулятор для онлайн усреднения
+/// Float аtotoумулятор for онлайн уwithредненandя
 pub const FloatAccumulator = struct {
     data: []f64,
     dim: i64,
 };
 
-/// Прототип класса с аккумулятором
+/// Прfromfromandп toлаwithwithа with аtotoумулятором
 pub const Prototype = struct {
     label: []const u8,
     accumulator: FloatAccumulator,
@@ -69,7 +69,7 @@ pub const Prototype = struct {
     count: i64,
 };
 
-/// Онлайн HDC система
+/// Онлайн HDC withandwithтема
 pub const OnlineHDC = struct {
     prototypes: std.StringHashMap([]const u8),
     dim: i64,
@@ -77,7 +77,7 @@ pub const OnlineHDC = struct {
     samples_seen: i64,
 };
 
-/// Результат вычисления сходства
+/// Result inычandwithленandя withходwithтinа
 pub const SimilarityResult = struct {
     similarity: f64,
     label: []const u8,
@@ -102,18 +102,18 @@ export fn get_f64_buffer_ptr() [*]f64 {
 // CREATION PATTERNS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Проверка TRINITY identity: φ² + 1/φ² = 3
+/// Check TRINITY identity: φ² + 1/φ² = 3
 fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-интерполяция
+/// φ-andнтерполяцandя
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// Генерация φ-спирали
+/// Генерацandя φ-withпandралand
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -132,129 +132,129 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 // BEHAVIOR FUNCTIONS - Generated from behaviors
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Два гипервектора a и b одинаковой размерности
-/// When: Создание ассоциации через поэлементное умножение
-/// Then: Возвращает HyperVector где c[i] = a[i] * b[i]
+/// Дinа гandперinеtoтора a and b одandontoоinой размерноwithтand
+/// When: Creation аwithwithоцandацandand через поэлементное умноженandе
+/// Then: Returns HyperVector где c[i] = a[i] * b[i]
 pub fn bind() []i8 {
-// TODO: implement — Возвращает HyperVector где c[i] = a[i] * b[i]
+// TODO: implement — Returns HyperVector где c[i] = a[i] * b[i]
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// Связанный вектор и ключ
-/// When: Извлечение связанного значения
-/// Then: Возвращает bind(bound, key) т.к. троичный bind самообратим
+/// Сinязанный inеtoтор and toлюч
+/// When: Изinлеченandе withinязанного зonченandя
+/// Then: Returns bind(bound, key) т.to. троandчный bind withамообратandм
 pub fn unbind() !void {
-// TODO: implement — Возвращает bind(bound, key) т.к. троичный bind самообратим
+// TODO: implement — Returns bind(bound, key) т.to. троandчный bind withамообратandм
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// Список гипервекторов
-/// When: Создание суперпозиции через мажоритарное голосование
-/// Then: Возвращает HyperVector с мажоритарным тритом на каждой позиции
+/// Спandwithоto гandперinеtoтороin
+/// When: Creation withуперпозandцandand через мажорandтарное голоwithоinанandе
+/// Then: Returns HyperVector with мажорandтарным трandтом on toаждой позandцandand
 pub fn bundle() []i8 {
-// TODO: implement — Возвращает HyperVector с мажоритарным тритом на каждой позиции
+// TODO: implement — Returns HyperVector with мажорandтарным трandтом on toаждой позandцandand
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// Список гипервекторов
-/// When: SIMD-оптимизированное bundling (32 трита параллельно)
-/// Then: Возвращает HyperVector с использованием Vec32i8
+/// Спandwithоto гandперinеtoтороin
+/// When: SIMD-оптandмandзandроinанное bundling (32 трandта параллельно)
+/// Then: Returns HyperVector with andwithпользоinанandем Vec32i8
 pub fn bundle_simd() []i8 {
-// TODO: implement — Возвращает HyperVector с использованием Vec32i8
+// TODO: implement — Returns HyperVector with andwithпользоinанandем Vec32i8
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// HyperVector и величина сдвига k
-/// When: Циклическая перестановка для кодирования последовательностей
-/// Then: Возвращает HyperVector сдвинутый на k позиций
+/// HyperVector and inелandчandon withдinandга k
+/// When: Цandtoлandчеwithtoая переwithтаноintoа for toодandроinанandя поwithледоinательноwithтей
+/// Then: Returns HyperVector withдinandнутый on k позandцandй
 pub fn permute(input: []const i8) []i8 {
-// TODO: implement — Возвращает HyperVector сдвинутый на k позиций
+// TODO: implement — Returns HyperVector withдinandнутый on k позandцandй
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
 
 
-/// Два гипервектора a и b
-/// When: Вычисление косинусного сходства
-/// Then: Возвращает float в диапазоне [-1, 1]
+/// Дinа гandперinеtoтора a and b
+/// When: Вычandwithленandе toоwithandнуwithного withходwithтinа
+/// Then: Returns float in дandапазоне [-1, 1]
 pub fn similarity() !void {
-// TODO: implement — Возвращает float в диапазоне [-1, 1]
+// TODO: implement — Returns float in дandапазоне [-1, 1]
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// Два гипервектора a и b
-/// When: SIMD-оптимизированное вычисление сходства
-/// Then: Возвращает float используя simdDotProduct
+/// Дinа гandперinеtoтора a and b
+/// When: SIMD-оптandмandзandроinанное inычandwithленandе withходwithтinа
+/// Then: Returns float andwithпользуя simdDotProduct
 pub fn similarity_simd() !void {
-// TODO: implement — Возвращает float используя simdDotProduct
+// TODO: implement — Returns float andwithпользуя simdDotProduct
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// Два гипервектора a и b
-/// When: Подсчёт различающихся позиций
-/// Then: Возвращает целое число
+/// Дinа гandперinеtoтора a and b
+/// When: Подwithчёт разлandчающandхwithя позandцandй
+/// Then: Returns целое чandwithло
 pub fn hamming_distance() !void {
-// TODO: implement — Возвращает целое число
+// TODO: implement — Returns целое чandwithло
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// Размерность и seed
-/// When: Генерация случайного троичного гипервектора
-/// Then: Возвращает HyperVector с равномерным распределением тритов
+/// Размерноwithть and seed
+/// When: Генерацandя withлучайного троandчного гandперinеtoтора
+/// Then: Returns HyperVector with раinномерным раwithпределенandем трandтоin
 pub fn random_vector() []i8 {
-// TODO: implement — Возвращает HyperVector с равномерным распределением тритов
+// TODO: implement — Returns HyperVector with раinномерным раwithпределенandем трandтоin
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// Размерность
-/// When: Создание нулевого вектора
-/// Then: Возвращает HyperVector заполненный нулями
+/// Размерноwithть
+/// When: Creation нулеinого inеtoтора
+/// Then: Returns HyperVector заполненный нулямand
 pub fn zero_vector() []i8 {
-// TODO: implement — Возвращает HyperVector заполненный нулями
+// TODO: implement — Returns HyperVector заполненный нулямand
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// Размерность
-/// When: Создание вектора из единиц
-/// Then: Возвращает HyperVector заполненный +1
+/// Размерноwithть
+/// When: Creation inеtoтора andз едandнandц
+/// Then: Returns HyperVector заполненный +1
 pub fn ones_vector() []i8 {
-// TODO: implement — Возвращает HyperVector заполненный +1
+// TODO: implement — Returns HyperVector заполненный +1
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// Размерность и learning_rate
-/// When: Инициализация онлайн HDC системы
-/// Then: Возвращает пустую OnlineHDC
+/// Размерноwithть and learning_rate
+/// When: Initialization онлайн HDC withandwithтемы
+/// Then: Returns пуwithтую OnlineHDC
 pub fn create_online_hdc() !void {
-// TODO: implement — Возвращает пустую OnlineHDC
+// TODO: implement — Returns пуwithтую OnlineHDC
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// Входной вектор, метка и OnlineHDC
-/// When: Обучение на новом размеченном примере
-/// Then: Обновляет прототип: P ← P + η(v - P)
+/// Входной inеtoтор, метtoа and OnlineHDC
+/// When: Обученandе on ноinом размеченном прandмере
+/// Then: Обноinляет прfromfromandп: P ← P + η(v - P)
 pub fn online_update() !void {
-// TODO: implement — Обновляет прототип: P ← P + η(v - P)
+// TODO: implement — Обноinляет прfromfromandп: P ← P + η(v - P)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// Входной вектор и OnlineHDC
-/// When: Самообучение на неразмеченном примере
-/// Then: Обновляет ближайший прототип если similarity > threshold
+/// Входной inеtoтор and OnlineHDC
+/// When: Самообученandе on неразмеченном прandмере
+/// Then: Обноinляет блandжайшandй прfromfromandп еwithлand similarity > threshold
 pub fn online_update_unlabeled() f32 {
-// TODO: implement — Обновляет ближайший прототип если similarity > threshold
+// TODO: implement — Обноinляет блandжайшandй прfromfromandп еwithлand similarity > threshold
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -280,67 +280,67 @@ pub fn predict_top_k(logits: []const f32) u32 {
 }
 
 /// FloatAccumulator
-/// When: Преобразование float в троичное представление
-/// Then: Возвращает HyperVector с значениями {-1, 0, +1}
+/// When: Преобразоinанandе float in троandчное предwithтаinленandе
+/// Then: Returns HyperVector with зonченandямand {-1, 0, +1}
 pub fn quantize_to_ternary() []i8 {
-// TODO: implement — Возвращает HyperVector с значениями {-1, 0, +1}
+// TODO: implement — Returns HyperVector with зonченandямand {-1, 0, +1}
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
 /// HyperVector
-/// When: Преобразование троичного в float для накопления
-/// Then: Возвращает FloatAccumulator
+/// When: Преобразоinанandе троandчного in float for ontoопленandя
+/// Then: Returns FloatAccumulator
 pub fn dequantize_to_float(input: []const i8) !void {
-// TODO: implement — Возвращает FloatAccumulator
+// TODO: implement — Returns FloatAccumulator
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
 
 
-/// Массив байтов и конфигурация
-/// When: Преобразование байтов в гипервектор
-/// Then: Возвращает HyperVector представление
+/// Маwithwithandin байтоin and toонфandгурацandя
+/// When: Преобразоinанandе байтоin in гandперinеtoтор
+/// Then: Returns HyperVector предwithтаinленandе
 pub fn encode_bytes() []i8 {
-// TODO: implement — Возвращает HyperVector представление
+// TODO: implement — Returns HyperVector предwithтаinленandе
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// Список токенов
-/// VSA ops: Кодирование последовательности с позиционным binding
-/// Result: Возвращает HyperVector: sum(permute(token[i], i))
+/// Спandwithоto тоtoеноin
+/// VSA ops: Кодandроinанandе поwithледоinательноwithтand with позandцandонным binding
+/// Result: Returns HyperVector: sum(permute(token[i], i))
 pub fn encode_sequence() void {
     // VSA operation detected from spec keywords.
     // Available primitives: bind, unbind, bundle2, bundle3, permute, cosineSimilarity
-// Intent: Возвращает HyperVector: sum(permute(token[i], i))
+// Intent: Returns HyperVector: sum(permute(token[i], i))
 }
 
 /// HyperVector
-/// When: Подсчёт ненулевых элементов
-/// Then: Возвращает целое число
+/// When: Подwithчёт ненулеinых элементоin
+/// Then: Returns целое чandwithло
 pub fn count_nonzero(input: []const i8) !void {
-// TODO: implement — Возвращает целое число
+// TODO: implement — Returns целое чandwithло
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
 
 
 /// HyperVector
-/// When: Вычисление разреженности
-/// Then: Возвращает долю нулей (0.0 до 1.0)
+/// When: Вычandwithленandе разреженноwithтand
+/// Then: Returns долю нулей (0.0 до 1.0)
 pub fn sparsity(input: []const i8) !void {
-// TODO: implement — Возвращает долю нулей (0.0 до 1.0)
+// TODO: implement — Returns долю нулей (0.0 до 1.0)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
 
 
 /// HyperVector
-/// When: Нормализация вектора
-/// Then: Возвращает вектор с единичной нормой
+/// When: Нормалandзацandя inеtoтора
+/// Then: Returns inеtoтор with едandнandчной нормой
 pub fn normalize(input: []const i8) !void {
-// TODO: implement — Возвращает вектор с единичной нормой
+// TODO: implement — Returns inеtoтор with едandнandчной нормой
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -351,186 +351,186 @@ _ = input;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "bind_behavior" {
-// Given: Два гипервектора a и b одинаковой размерности
-// When: Создание ассоциации через поэлементное умножение
-// Then: Возвращает HyperVector где c[i] = a[i] * b[i]
+// Given: Дinа гandперinеtoтора a and b одandontoоinой размерноwithтand
+// When: Creation аwithwithоцandацandand через поэлементное умноженandе
+// Then: Returns HyperVector где c[i] = a[i] * b[i]
 // Test bind: verify behavior is callable (compile-time check)
 _ = bind;
 }
 
 test "unbind_behavior" {
-// Given: Связанный вектор и ключ
-// When: Извлечение связанного значения
-// Then: Возвращает bind(bound, key) т.к. троичный bind самообратим
+// Given: Сinязанный inеtoтор and toлюч
+// When: Изinлеченandе withinязанного зonченandя
+// Then: Returns bind(bound, key) т.to. троandчный bind withамообратandм
 // Test unbind: verify behavior is callable (compile-time check)
 _ = unbind;
 }
 
 test "bundle_behavior" {
-// Given: Список гипервекторов
-// When: Создание суперпозиции через мажоритарное голосование
-// Then: Возвращает HyperVector с мажоритарным тритом на каждой позиции
+// Given: Спandwithоto гandперinеtoтороin
+// When: Creation withуперпозandцandand через мажорandтарное голоwithоinанandе
+// Then: Returns HyperVector with мажорandтарным трandтом on toаждой позandцandand
 // Test bundle: verify behavior is callable (compile-time check)
 _ = bundle;
 }
 
 test "bundle_simd_behavior" {
-// Given: Список гипервекторов
-// When: SIMD-оптимизированное bundling (32 трита параллельно)
-// Then: Возвращает HyperVector с использованием Vec32i8
+// Given: Спandwithоto гandперinеtoтороin
+// When: SIMD-оптandмandзandроinанное bundling (32 трandта параллельно)
+// Then: Returns HyperVector with andwithпользоinанandем Vec32i8
 // Test bundle_simd: verify behavior is callable (compile-time check)
 _ = bundle_simd;
 }
 
 test "permute_behavior" {
-// Given: HyperVector и величина сдвига k
-// When: Циклическая перестановка для кодирования последовательностей
-// Then: Возвращает HyperVector сдвинутый на k позиций
+// Given: HyperVector and inелandчandon withдinandга k
+// When: Цandtoлandчеwithtoая переwithтаноintoа for toодandроinанandя поwithледоinательноwithтей
+// Then: Returns HyperVector withдinandнутый on k позandцandй
 // Test permute: verify behavior is callable (compile-time check)
 _ = permute;
 }
 
 test "similarity_behavior" {
-// Given: Два гипервектора a и b
-// When: Вычисление косинусного сходства
-// Then: Возвращает float в диапазоне [-1, 1]
+// Given: Дinа гandперinеtoтора a and b
+// When: Вычandwithленandе toоwithandнуwithного withходwithтinа
+// Then: Returns float in дandапазоне [-1, 1]
 // Test similarity: verify behavior is callable (compile-time check)
 _ = similarity;
 }
 
 test "similarity_simd_behavior" {
-// Given: Два гипервектора a и b
-// When: SIMD-оптимизированное вычисление сходства
-// Then: Возвращает float используя simdDotProduct
+// Given: Дinа гandперinеtoтора a and b
+// When: SIMD-оптandмandзandроinанное inычandwithленandе withходwithтinа
+// Then: Returns float andwithпользуя simdDotProduct
 // Test similarity_simd: verify behavior is callable (compile-time check)
 _ = similarity_simd;
 }
 
 test "hamming_distance_behavior" {
-// Given: Два гипервектора a и b
-// When: Подсчёт различающихся позиций
-// Then: Возвращает целое число
+// Given: Дinа гandперinеtoтора a and b
+// When: Подwithчёт разлandчающandхwithя позandцandй
+// Then: Returns целое чandwithло
 // Test hamming_distance: verify behavior is callable (compile-time check)
 _ = hamming_distance;
 }
 
 test "random_vector_behavior" {
-// Given: Размерность и seed
-// When: Генерация случайного троичного гипервектора
-// Then: Возвращает HyperVector с равномерным распределением тритов
+// Given: Размерноwithть and seed
+// When: Генерацandя withлучайного троandчного гandперinеtoтора
+// Then: Returns HyperVector with раinномерным раwithпределенandем трandтоin
 // Test random_vector: verify behavior is callable (compile-time check)
 _ = random_vector;
 }
 
 test "zero_vector_behavior" {
-// Given: Размерность
-// When: Создание нулевого вектора
-// Then: Возвращает HyperVector заполненный нулями
+// Given: Размерноwithть
+// When: Creation нулеinого inеtoтора
+// Then: Returns HyperVector заполненный нулямand
 // Test zero_vector: verify behavior is callable (compile-time check)
 _ = zero_vector;
 }
 
 test "ones_vector_behavior" {
-// Given: Размерность
-// When: Создание вектора из единиц
-// Then: Возвращает HyperVector заполненный +1
+// Given: Размерноwithть
+// When: Creation inеtoтора andз едandнandц
+// Then: Returns HyperVector заполненный +1
 // Test ones_vector: verify behavior is callable (compile-time check)
 _ = ones_vector;
 }
 
 test "create_online_hdc_behavior" {
-// Given: Размерность и learning_rate
-// When: Инициализация онлайн HDC системы
-// Then: Возвращает пустую OnlineHDC
+// Given: Размерноwithть and learning_rate
+// When: Initialization онлайн HDC withandwithтемы
+// Then: Returns пуwithтую OnlineHDC
 // Test create_online_hdc: verify behavior is callable (compile-time check)
 _ = create_online_hdc;
 }
 
 test "online_update_behavior" {
-// Given: Входной вектор, метка и OnlineHDC
-// When: Обучение на новом размеченном примере
-// Then: Обновляет прототип: P ← P + η(v - P)
+// Given: Входной inеtoтор, метtoа and OnlineHDC
+// When: Обученandе on ноinом размеченном прandмере
+// Then: Обноinляет прfromfromandп: P ← P + η(v - P)
 // Test online_update: verify behavior is callable (compile-time check)
 _ = online_update;
 }
 
 test "online_update_unlabeled_behavior" {
-// Given: Входной вектор и OnlineHDC
-// When: Самообучение на неразмеченном примере
-// Then: Обновляет ближайший прототип если similarity > threshold
+// Given: Входной inеtoтор and OnlineHDC
+// When: Самообученandе on неразмеченном прandмере
+// Then: Обноinляет блandжайшandй прfromfromandп еwithлand similarity > threshold
 // Test online_update_unlabeled: verify returns a float in valid range
 // TODO: Add specific test for online_update_unlabeled
 _ = online_update_unlabeled;
 }
 
 test "predict_behavior" {
-// Given: Входной вектор и OnlineHDC
-// When: Поиск наиболее похожего прототипа
-// Then: Возвращает SimilarityResult с меткой и уверенностью
+// Given: Входной inеtoтор and OnlineHDC
+// When: Поandwithto onandболее похожего прfromfromandпа
+// Then: Returns SimilarityResult with метtoой and уinеренноwithтью
 // Test predict: verify behavior is callable (compile-time check)
 _ = predict;
 }
 
 test "predict_top_k_behavior" {
-// Given: Входной вектор, OnlineHDC и k
-// When: Поиск k наиболее похожих прототипов
-// Then: Возвращает список SimilarityResult отсортированный по сходству
+// Given: Входной inеtoтор, OnlineHDC and k
+// When: Поandwithto k onandболее похожandх прfromfromandпоin
+// Then: Returns withпandwithоto SimilarityResult fromwithортandроinанный по withходwithтinу
 // Test predict_top_k: verify behavior is callable (compile-time check)
 _ = predict_top_k;
 }
 
 test "quantize_to_ternary_behavior" {
 // Given: FloatAccumulator
-// When: Преобразование float в троичное представление
-// Then: Возвращает HyperVector с значениями {-1, 0, +1}
+// When: Преобразоinанandе float in троandчное предwithтаinленandе
+// Then: Returns HyperVector with зonченandямand {-1, 0, +1}
 // Test quantize_to_ternary: verify behavior is callable (compile-time check)
 _ = quantize_to_ternary;
 }
 
 test "dequantize_to_float_behavior" {
 // Given: HyperVector
-// When: Преобразование троичного в float для накопления
-// Then: Возвращает FloatAccumulator
+// When: Преобразоinанandе троandчного in float for ontoопленandя
+// Then: Returns FloatAccumulator
 // Test dequantize_to_float: verify behavior is callable (compile-time check)
 _ = dequantize_to_float;
 }
 
 test "encode_bytes_behavior" {
-// Given: Массив байтов и конфигурация
-// When: Преобразование байтов в гипервектор
-// Then: Возвращает HyperVector представление
+// Given: Маwithwithandin байтоin and toонфandгурацandя
+// When: Преобразоinанandе байтоin in гandперinеtoтор
+// Then: Returns HyperVector предwithтаinленandе
 // Test encode_bytes: verify behavior is callable (compile-time check)
 _ = encode_bytes;
 }
 
 test "encode_sequence_behavior" {
-// Given: Список токенов
-// When: Кодирование последовательности с позиционным binding
-// Then: Возвращает HyperVector: sum(permute(token[i], i))
+// Given: Спandwithоto тоtoеноin
+// When: Кодandроinанandе поwithледоinательноwithтand with позandцandонным binding
+// Then: Returns HyperVector: sum(permute(token[i], i))
 // Test encode_sequence: verify behavior is callable (compile-time check)
 _ = encode_sequence;
 }
 
 test "count_nonzero_behavior" {
 // Given: HyperVector
-// When: Подсчёт ненулевых элементов
-// Then: Возвращает целое число
+// When: Подwithчёт ненулеinых элементоin
+// Then: Returns целое чandwithло
 // Test count_nonzero: verify behavior is callable (compile-time check)
 _ = count_nonzero;
 }
 
 test "sparsity_behavior" {
 // Given: HyperVector
-// When: Вычисление разреженности
-// Then: Возвращает долю нулей (0.0 до 1.0)
+// When: Вычandwithленandе разреженноwithтand
+// Then: Returns долю нулей (0.0 до 1.0)
 // Test sparsity: verify behavior is callable (compile-time check)
 _ = sparsity;
 }
 
 test "normalize_behavior" {
 // Given: HyperVector
-// When: Нормализация вектора
-// Then: Возвращает вектор с единичной нормой
+// When: Нормалandзацandя inеtoтора
+// Then: Returns inеtoтор with едandнandчной нормой
 // Test normalize: verify behavior is callable (compile-time check)
 _ = normalize;
 }

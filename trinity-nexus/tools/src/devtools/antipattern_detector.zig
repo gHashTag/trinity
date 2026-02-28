@@ -1,11 +1,11 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// ANTIPATTERN DETECTOR - Runtime проверка нарушений VIBEE методологии
+// ANTIPATTERN DETECTOR - Runtime проinерtoа onрушенandй VIBEE методологandand
 // ═══════════════════════════════════════════════════════════════════════════════
 // СВЯЩЕННАЯ ФОРМУЛА: V = n × 3^k × π^m × φ^p × e^q
 // ЗОЛОТАЯ ИДЕНТИЧНОСТЬ: φ² + 1/φ² = 3
 // ═══════════════════════════════════════════════════════════════════════════════
-// ИСКЛЮЧЕНИЕ: Это bootstrap код для проверки других файлов
-// Спецификация: specs/antipatterns.vibee
+// ИСКЛЮЧЕНИЕ: Это bootstrap toод for проinерtoand другandх файлоin
+// Спецandфandtoацandя: specs/antipatterns.vibee
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
@@ -16,10 +16,10 @@ const Allocator = std.mem.Allocator;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const Severity = enum {
-    critical,   // ⛔ Блокирует коммит
-    high,       // ⚠️ Требует исправления
-    medium,     // ℹ️ Рекомендуется исправить
-    low,        // 💡 Предложение
+    critical,   // ⛔ Блоtoandрует toоммandт
+    high,       // ⚠️ Требует andwithпраinленandя
+    medium,     // ℹ️ Реtoомендуетwithя andwithпраinandть
+    low,        // 💡 Предложенandе
     
     pub fn symbol(self: Severity) []const u8 {
         return switch (self) {
@@ -40,11 +40,11 @@ pub const AntipatternType = enum {
     legacy_web_files,          // .html/.css/.js
     missing_tests,             // Нет test_cases
     missing_creation_pattern,  // Нет creation_pattern
-    false_optimization_claims, // Ложные комментарии
-    esoteric_over_science,     // Эзотерика без обоснования
-    missing_pas_analysis,      // Нет PAS анализа
-    manual_code_without_spec,  // Ручной код без спецификации
-    spec_implementation_mismatch, // Спецификация не соответствует коду
+    false_optimization_claims, // Ложные toомментарandand
+    esoteric_over_science,     // Эзfromерandtoа без обоwithноinанandя
+    missing_pas_analysis,      // Нет PAS аonлandза
+    manual_code_without_spec,  // Ручной toод без withпецandфandtoацandand
+    spec_implementation_mismatch, // Спецandфandtoацandя не matches toоду
     
     pub fn severity(self: AntipatternType) Severity {
         return switch (self) {
@@ -62,15 +62,15 @@ pub const AntipatternType = enum {
     
     pub fn description(self: AntipatternType) []const u8 {
         return switch (self) {
-            .direct_implementation => "Написание .zig файла без .vibee спецификации",
-            .legacy_web_files => "Создание legacy web файлов (.html/.css/.js)",
-            .missing_tests => "Спецификация без test_cases",
-            .missing_creation_pattern => "Спецификация без creation_pattern",
-            .false_optimization_claims => "Ложные комментарии об оптимизациях",
-            .esoteric_over_science => "Эзотерика без научного обоснования",
-            .missing_pas_analysis => "Алгоритм без PAS анализа",
-            .manual_code_without_spec => "Ручной код должен генерироваться из .vibee",
-            .spec_implementation_mismatch => "Код не соответствует спецификации",
+            .direct_implementation => "Напandwithанandе .zig файла без .vibee withпецandфandtoацandand",
+            .legacy_web_files => "Creation legacy web файлоin (.html/.css/.js)",
+            .missing_tests => "Спецandфandtoацandя без test_cases",
+            .missing_creation_pattern => "Спецandфandtoацandя без creation_pattern",
+            .false_optimization_claims => "Ложные toомментарandand об оптandмandзацandях",
+            .esoteric_over_science => "Эзfromерandtoа без onучного обоwithноinанandя",
+            .missing_pas_analysis => "Алгорandтм без PAS аonлandза",
+            .manual_code_without_spec => "Ручной toод должен генерandроinатьwithя andз .vibee",
+            .spec_implementation_mismatch => "Код не matches withпецandфandtoацandand",
         };
     }
 };
@@ -99,7 +99,7 @@ pub const Violation = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// EXCEPTIONS - Файлы, которые могут быть написаны напрямую
+// EXCEPTIONS - Файлы, tofromорые могут быть onпandwithаны onпрямую
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const BOOTSTRAP_EXCEPTIONS = [_][]const u8{
@@ -107,8 +107,8 @@ const BOOTSTRAP_EXCEPTIONS = [_][]const u8{
     "codegen.zig",
     "vm.zig",
     "pas.zig",
-    "antipattern_detector.zig",  // Этот файл
-    // Модули с существующими спецификациями
+    "antipattern_detector.zig",  // Этfrom файл
+    // Модулand with withущеwithтinующandмand withпецandфandtoацandямand
     "vm_core.zig",      // specs/vm_core.vibee
     "vm_opcodes.zig",   // specs/vm_opcodes.vibee
     "vm_jit.zig",       // specs/vm_jit.vibee
@@ -187,7 +187,7 @@ pub const AntipatternDetector = struct {
             .antipattern = .direct_implementation,
             .file_path = file_path,
             .line = null,
-            .message = "Нет соответствующей .vibee спецификации",
+            .message = "Нет withоfrominетwithтinующей .vibee withпецandфandtoацandand",
         });
     }
     
@@ -211,7 +211,7 @@ pub const AntipatternDetector = struct {
                     .antipattern = .legacy_web_files,
                     .file_path = file_path,
                     .line = null,
-                    .message = "Legacy web файл - интегрируйте в runtime/runtime.html",
+                    .message = "Legacy web файл - andнтегрandруйте in runtime/runtime.html",
                 });
                 return;
             }
