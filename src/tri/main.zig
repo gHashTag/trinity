@@ -426,7 +426,7 @@ pub fn main() !void {
                     if (std.mem.eql(u8, arg, "--quantum") or std.mem.eql(u8, arg, "-q")) break :blk .quantum;
                     if (std.mem.eql(u8, arg, "--normal") or std.mem.eql(u8, arg, "-n")) break :blk .normal;
                 }
-                break :blk .god; // Default to GOD mode
+                break :blk .temporal; // Order #022: Default to TEMPORAL TRINITY mode
             };
 
             try os_instance.boot(mode);
