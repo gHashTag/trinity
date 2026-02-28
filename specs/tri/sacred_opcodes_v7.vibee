@@ -1,0 +1,255 @@
+name: sacred_opcodes_v7
+version: "7.0.0"
+language: zig
+module: sacred_opcodes_v7
+
+description: |
+  SACRED OPCODES v7.0 — Native VM instructions for sacred mathematics and chemistry
+  Auto-generated from sacred/const.zig and sacred/chemistry.zig
+  Opcodes 0x80-0xFF reserved for sacred operations
+
+types:
+  OpcodeRange:
+    description: Sacred opcode address space
+    fields:
+      start: UInt8 = 0x80
+      end: UInt8 = 0xFF
+      count: UInt8 = 128
+
+  SacredOpcodeCategory:
+    description: Categories of sacred operations
+    fields:
+      name: String
+      opcodes: List[UInt8]
+      cycles_base: UInt8
+      description: String
+
+behaviors:
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # MATH OPCODES (0x80-0x9F) — 32 opcodes
+  # ═══════════════════════════════════════════════════════════════════════════════
+
+  - name: opcode_phi_const
+    code: 0x80
+    given: No operands
+    when: Executed
+    then: Load φ = 1.6180339887498948482 into f0
+
+  - name: opcode_phi_pow
+    code: 0x81
+    given: Exponent n in s0
+    when: Executed
+    then: f0 = φ^n using fast exponentiation
+
+  - name: opcode_fib
+    code: 0x82
+    given: n in s0 (n < 94 for BigInt safety)
+    when: Executed
+    then: v0 = F(n) via Binet's formula or BigInt
+
+  - name: opcode_lucas
+    code: 0x83
+    given: n in s0
+    when: Executed
+    then: v0 = L(n) = φ^n + (-φ)^(-n)
+
+  - name: opcode_pell
+    code: 0x84
+    given: n in s0
+    when: Executed
+    then: v0 = P(n) where P(0)=0, P(1)=1, P(n)=2×P(n-1)+P(n-2)
+
+  - name: opcode_tribonacci
+    code: 0x85
+    given: n in s0
+    when: Executed
+    then: v0 = T(n) where T(n)=T(n-1)+T(n-2)+T(n-3)
+
+  - name: opcode_padovan
+    code: 0x86
+    given: n in s0
+    when: Executed
+    then: v0 = P(n) where P(n)=P(n-2)+P(n-3)
+
+  - name: opcode_catalan
+    code: 0x87
+    given: n in s0
+    when: Executed
+    then: v0 = C(n) = (2n)!/((n+1)!×n!)
+
+  - name: opcode_gamma
+    code: 0x88
+    given: x in f0
+    when: Executed
+    then: f0 = Γ(x) via Lanczos approximation
+
+  - name: opcode_zeta
+    code: 0x89
+    given: s in f0
+    when: Executed
+    then: f0 = ζ(s) Riemann zeta
+
+  - name: opcode_erf
+    code: 0x8A
+    given: x in f0
+    when: Executed
+    then: f0 = erf(x) error function
+
+  - name: opcode_bessel_j
+    code: 0x8B
+    given: n in s0, x in f0
+    when: Executed
+    then: f0 = J_n(x) Bessel function 1st kind
+
+  - name: opcode_sacred_identity
+    code: 0x8C
+    given: No operands
+    when: Executed
+    then: Verify φ² + 1/φ² = 3, set cc_zero if true
+
+  - name: opcode_golden_angle
+    code: 0x8D
+    given: No operands
+    when: Executed
+    then: f0 = 137.507764° (360/φ²) in degrees
+
+  - name: opcode_platonic
+    code: 0x8E
+    given: Solid ID (0-4) in s0
+    when: Executed
+    then: Load platonic solid data to v0 (faces, vertices, volume)
+
+  - name: opcode_fractal_tree
+    code: 0x8F
+    given: Depth in s0
+    when: Executed
+    then: Generate ASCII fractal (tree/snowflake) to memory
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # CHEMISTRY OPCODES (0xA0-0xBF) — 32 opcodes
+  # ═══════════════════════════════════════════════════════════════════════════════
+
+  - name: opcode_element
+    code: 0xA0
+    given: Element symbol (string) or atomic number
+    when: Executed
+    then: Load full element data to v0 (118-element table lookup)
+
+  - name: opcode_molar_mass
+    code: 0xA1
+    given: Formula string (e.g., "H2O")
+    when: Executed
+    then: f0 = molar mass in g/mol
+
+  - name: opcode_formula_parse
+    code: 0xA2
+    given: Formula string
+    when: Executed
+    then: Parse into element:count map in v0
+
+  - name: opcode_percent_comp
+    code: 0xA3
+    given: Formula string
+    when: Executed
+    then: Return % composition map in v0
+
+  - name: opcode_balance
+    code: 0xA4
+    given: Unbalanced equation string
+    when: Executed
+    then: Return balanced coefficients in v0
+
+  - name: opcode_moles
+    code: 0xA5
+    given: Mass in f0, formula in string
+    when: Executed
+    then: f0 = moles, s0 = molecules, v0 = atoms
+
+  - name: opcode_ideal_gas
+    code: 0xA6
+    given: 3 of {P,V,n,T}, solve for 4th
+    when: Executed
+    then: f0 = missing variable via PV=nRT
+
+  - name: opcode_ph
+    code: 0xA7
+    given: Concentration in f0
+    when: Executed
+    then: f0 = pH = -log10[H+]
+
+  - name: opcode_redox_balance
+    code: 0xA8
+    given: Half-reaction strings
+    when: Executed
+    then: Return balanced redox equation in v0
+
+  - name: opcode_periodic_table
+    code: 0xA9
+    given: No operands
+    when: Executed
+    then: Load ASCII periodic table to memory buffer
+
+  - name: opcode_group_elements
+    code: 0xAA
+    given: Group number (1-18) in s0
+    when: Executed
+    then: Return list of element symbols in v0
+
+  - name: opcode_period_elements
+    code: 0xAB
+    given: Period number (1-7) in s0
+    when: Executed
+    then: Return list of element symbols in v0
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # PHYSICS OPCODES (0xC0-0xDF) — 32 opcodes
+  # ═══════════════════════════════════════════════════════════════════════════════
+
+  - name: opcode_hbar
+    code: 0xC0
+    given: No operands
+    then: f0 = 1.054571817×10⁻³⁴ J·s
+
+  - name: opcode_light_speed
+    code: 0xC1
+    given: No operands
+    then: f0 = 299792458 m/s
+
+  - name: opcode_gravity
+    code: 0xC2
+    given: No operands
+    then: f0 = 6.67430×10⁻¹¹ m³/kg·s²
+
+  - name: opcode_fine_structure
+    code: 0xC3
+    given: No operands
+    then: f0 = α ≈ 1/137.036
+
+  - name: opcode_avogadro
+    code: 0xC4
+    given: No operands
+    then: f0 = 6.02214076×10²³ mol⁻¹
+
+  - name: opcode_gas_constant
+    code: 0xC5
+    given: No operands
+    then: f0 = R = 8.314462618 J/(mol·K)
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # OPCODE DISPATCH
+  # ═══════════════════════════════════════════════════════════════════════════════
+
+  - name: sacred_dispatch
+    given: Opcode byte in PC
+    when: Opcode >= 0x80 (sacred range)
+    then: Jump to sacred_handler, execute, return to VM
+
+  - name: sacred_handler_init
+    given: VM initialization
+    when: Startup
+    then: Build opcode table (0x80-0xFF) with function pointers
+
+  - name: sacred_cycles_count
+    given: Sacred opcode executed
+    when: Execution complete
+    then: Add base_cycles to total cycle counter
