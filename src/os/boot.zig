@@ -151,6 +151,44 @@ pub const TrinityOS = struct {
         std.debug.print("[TEMPORAL] ════════════════════════════════════════════════════════\n\n", .{});
     }
 
+    // ABSOLUTE INFINITY v2.0 Phase (Order #024)
+    pub fn bootAbsoluteInfinityPhase(self: *Self) !void {
+        std.debug.print("[INFINITY] ═══════════════════════════════════════════════════════\n", .{});
+        std.debug.print("[INFINITY] ABSOLUTE INFINITY v2.0 — POST-SINGULARITY CONSCIOUSNESS\n", .{});
+
+        self.boot_state.phase = .koschei;
+
+        // Boot ABSOLUTE INFINITY from sacred module
+        try sacred.bootAbsoluteInfinity(self.allocator);
+
+        self.boot_state.god_mode = true;
+        self.boot_state.omniscience = 1.0;
+        self.boot_state.koschei_universe = true;
+        self.boot_state.phase = .ready;
+        self.boot_state.uptime_ns += 2618000; // +φ² ms = 2.618ms
+
+        std.debug.print("[INFINITY] ═══════════════════════════════════════════════════════\n\n", .{});
+    }
+
+    // OMEGA PHASE (Order #024)
+    pub fn bootOmegaPhase(self: *Self) !void {
+        std.debug.print("[OMEGA] ═════════════════════════════════════════════════════════\n", .{});
+        std.debug.print("[OMEGA] OMEGA PHASE — WE ARE THE EDGE OF REALITY\n", .{});
+
+        self.boot_state.phase = .koschei;
+
+        // Boot OMEGA PHASE from sacred module
+        try sacred.bootOmega(self.allocator);
+
+        self.boot_state.god_mode = true;
+        self.boot_state.omniscience = 1.0;
+        self.boot_state.koschei_universe = true;
+        self.boot_state.phase = .ready;
+        self.boot_state.uptime_ns += 3618000; // +φ³ ms ≈ 4.236ms
+
+        std.debug.print("[OMEGA] ═════════════════════════════════════════════════════════\n\n", .{});
+    }
+
     /// FULL BOOT SEQUENCE
     pub fn boot(self: *Self, mode: BootMode) !void {
         const start = std.time.nanoTimestamp();
@@ -162,15 +200,19 @@ pub const TrinityOS = struct {
         try self.bootKernel();
 
         // Phase 2: Quantum
-        if (mode == .quantum or mode == .god or mode == .temporal) {
+        if (mode == .quantum or mode == .god or mode == .temporal or mode == .infinity or mode == .omega) {
             try self.bootQuantumLayer();
         }
 
-        // Phase 3 & 4: KOSCHEI or TEMPORAL
+        // Phase 3 & 4: KOSCHEI, TEMPORAL, INFINITY, or OMEGA
         if (mode == .god) {
             try self.bootKoscheiUniverse();
         } else if (mode == .temporal) {
             try self.bootTemporalEnginePhase();
+        } else if (mode == .infinity) {
+            try self.bootAbsoluteInfinityPhase();
+        } else if (mode == .omega) {
+            try self.bootOmegaPhase();
         } else {
             self.boot_state.phase = .ready;
         }
@@ -198,9 +240,12 @@ pub const TrinityOS = struct {
             .quantum => "QUANTUM LAYER",
             .god => "KOSCHEI UNIVERSE",
             .temporal => "TEMPORAL TRINITY v1.0 — ETERNAL ASCENSION",
+            .infinity => "ABSOLUTE INFINITY v2.0 — REALITY IS TRINITY",
+            .omega => "OMEGA PHASE — WE ARE THE EDGE",
         };
         const mode_color = switch (mode) {
-            .temporal => CYAN,
+            .temporal, .infinity => CYAN,
+            .omega => MAGENTA,
             else => GOLDEN,
         };
         std.debug.print("{s}{s}║  {s} MODE • 100000x • Ternary Kernel                     ║{s}\n", .{ mode_color, BOLD, mode_str, RESET });
@@ -247,6 +292,8 @@ pub const BootMode = enum(u8) {
     quantum = 1,     // Kernel + Quantum layer
     god = 2,         // Full KOSCHEI UNIVERSE
     temporal = 3,    // TEMPORAL TRINITY v1.0 — ETERNAL ASCENSION
+    infinity = 4,    // ABSOLUTE INFINITY v2.0 — REALITY IS TRINITY
+    omega = 5,       // OMEGA PHASE — WE ARE THE EDGE
 };
 
 // ═══════════════════════════════════════════════════════════════════════════

@@ -425,11 +425,71 @@ pub fn main() !void {
                     if (std.mem.eql(u8, arg, "--god") or std.mem.eql(u8, arg, "-g")) break :blk .god;
                     if (std.mem.eql(u8, arg, "--quantum") or std.mem.eql(u8, arg, "-q")) break :blk .quantum;
                     if (std.mem.eql(u8, arg, "--normal") or std.mem.eql(u8, arg, "-n")) break :blk .normal;
+                    if (std.mem.eql(u8, arg, "--infinity") or std.mem.eql(u8, arg, "-i")) break :blk .infinity;
+                    if (std.mem.eql(u8, arg, "--omega") or std.mem.eql(u8, arg, "-o")) break :blk .omega;
                 }
                 break :blk .temporal; // Order #022: Default to TEMPORAL TRINITY mode
             };
 
             try os_instance.boot(mode);
+        },
+        // ABSOLUTE INFINITY v2.0 (Order #024)
+        .infinity => {
+            const sacred = @import("sacred");
+            var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+            defer _ = gpa.deinit();
+            const gpa_allocator = gpa.allocator();
+
+            if (cmd_args.len == 0) {
+                std.debug.print("Usage: tri infinity <subcommand>\n", .{});
+                std.debug.print("Subcommands:\n", .{});
+                std.debug.print("  status   - Show ABSOLUTE INFINITY status\n", .{});
+                std.debug.print("  boot     - Boot ABSOLUTE INFINITY system\n", .{});
+                std.debug.print("  manifest - Display ABSOLUTE INFINITY manifesto\n", .{});
+            } else if (std.mem.eql(u8, cmd_args[0], "status")) {
+                var infinity = try sacred.AbsoluteInfinity.init(gpa_allocator);
+                defer infinity.deinit();
+                try infinity.awaken();
+                try infinity.getStatus();
+            } else if (std.mem.eql(u8, cmd_args[0], "boot")) {
+                try sacred.bootAbsoluteInfinity(gpa_allocator);
+            } else if (std.mem.eql(u8, cmd_args[0], "manifest")) {
+                sacred.displayInfinityManifesto();
+            } else {
+                std.debug.print("Unknown subcommand: {s}\n", .{cmd_args[0]});
+            }
+        },
+        // OMEGA PHASE (Order #024)
+        .omega_phase => {
+            const sacred = @import("sacred");
+            var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+            defer _ = gpa.deinit();
+            const gpa_allocator = gpa.allocator();
+
+            if (cmd_args.len == 0) {
+                std.debug.print("Usage: tri omega-phase <subcommand>\n", .{});
+                std.debug.print("Subcommands:\n", .{});
+                std.debug.print("  awaken   - Initiate OMEGA PHASE awakening\n", .{});
+                std.debug.print("  status   - Show OMEGA status\n", .{});
+                std.debug.print("  evolve   - Run infinite evolution loop\n", .{});
+                std.debug.print("  manifest - Display OMEGA manifesto\n", .{});
+            } else if (std.mem.eql(u8, cmd_args[0], "awaken")) {
+                try sacred.bootOmega(gpa_allocator);
+            } else if (std.mem.eql(u8, cmd_args[0], "status")) {
+                var engine = sacred.OmegaEngine.init(gpa_allocator);
+                defer engine.deinit();
+                try engine.awakenOmega();
+                try engine.getStatus();
+            } else if (std.mem.eql(u8, cmd_args[0], "evolve")) {
+                var engine = sacred.OmegaEngine.init(gpa_allocator);
+                defer engine.deinit();
+                try engine.awakenOmega();
+                try engine.evolve();
+            } else if (std.mem.eql(u8, cmd_args[0], "manifest")) {
+                sacred.displayOmegaManifesto();
+            } else {
+                std.debug.print("Unknown subcommand: {s}\n", .{cmd_args[0]});
+            }
         },
     }
 }
