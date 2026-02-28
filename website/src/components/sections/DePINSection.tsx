@@ -4,13 +4,14 @@ import { motion, useInView } from 'framer-motion'
 import Section from '../Section'
 
 // Animated counter that counts up when scrolled into view
-function AnimatedCounter({ target, prefix = '', suffix = '', decimals = 0, delay = 0, color = '#00ccff' }: {
+function AnimatedCounter({ target, prefix = '', suffix = '', decimals = 0, delay = 0, color = '#00ccff', compact = false }: {
   target: number
   prefix?: string
   suffix?: string
   decimals?: number
   delay?: number
   color?: string
+  compact?: boolean
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true })
@@ -50,11 +51,13 @@ function AnimatedCounter({ target, prefix = '', suffix = '', decimals = 0, delay
 
   return (
     <div ref={ref} style={{
-      fontSize: 'clamp(1.8rem, 4vw, 2.5rem)',
+      fontSize: compact ? 'clamp(1.2rem, 3vw, 1.6rem)' : 'clamp(1.8rem, 4vw, 2.5rem)',
       fontWeight: 700,
       color,
-      marginBottom: '0.5rem',
-      fontFamily: 'JetBrains Mono, monospace'
+      marginBottom: '0.3rem',
+      fontFamily: 'JetBrains Mono, monospace',
+      wordBreak: 'break-all',
+      lineHeight: 1.2
     }}>
       {prefix}{display}{suffix}
     </div>
@@ -117,58 +120,70 @@ export default function DePINSection() {
       {/* Stats Cards */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-        gap: '1.5rem',
-        maxWidth: '1000px',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: '1rem',
+        maxWidth: '900px',
         margin: '0 auto 4rem',
       }}>
         {/* Active Nodes */}
         <motion.div
-          style={{ ...glassStyle, padding: '2rem 1.5rem', textAlign: 'center' }}
+          style={{ ...glassStyle, padding: '1.5rem 1rem', textAlign: 'center' }}
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0 }}
           viewport={{ once: true }}
         >
-          <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>
+          <div style={{ fontSize: '0.7rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>
             Testnet Nodes
           </div>
-          <div style={{ fontSize: 'clamp(1.8rem, 4vw, 2.5rem)', fontWeight: 700, color: '#00ccff', marginBottom: '0.5rem', fontFamily: 'JetBrains Mono, monospace' }}>
+          <div style={{ fontSize: 'clamp(1.4rem, 3.5vw, 1.8rem)', fontWeight: 700, color: '#00ccff', marginBottom: '0.4rem', fontFamily: 'JetBrains Mono, monospace', lineHeight: 1.1 }}>
             Launching Soon
           </div>
-          <div style={{ fontSize: '0.8rem', color: 'rgba(0, 204, 255, 0.6)' }}>
+          <div style={{ fontSize: '0.7rem', color: 'rgba(0, 204, 255, 0.6)' }}>
             <a href="https://sepolia.etherscan.io/address/0xef368e29FA3aB2eaf02BccD05438ED3bafE9f469" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(0, 204, 255, 0.8)', textDecoration: 'underline' }}>Sepolia testnet</a>
           </div>
         </motion.div>
 
-        {/* Total $TRI Earned */}
+        {/* Total Supply */}
         <motion.div
-          style={{ ...glassStyle, padding: '2rem 1.5rem', textAlign: 'center' }}
+          style={{ ...glassStyle, padding: '1.5rem 1rem', textAlign: 'center' }}
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.15 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
           viewport={{ once: true }}
         >
-          <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>
+          <div style={{ fontSize: '0.7rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>
             Total Supply
           </div>
-          <AnimatedCounter target={10460353203} color="#ffd700" delay={200} />
-          <div style={{ fontSize: '0.8rem', color: 'rgba(255, 215, 0, 0.6)' }}>$TRI (3^21)</div>
+          <div style={{
+            fontSize: 'clamp(1.3rem, 3vw, 1.6rem)',
+            fontWeight: 700,
+            color: '#ffd700',
+            marginBottom: '0.3rem',
+            fontFamily: 'JetBrains Mono, monospace',
+            wordBreak: 'break-all',
+            lineHeight: 1.1
+          }}>
+            10,460,353,203
+          </div>
+          <div style={{ fontSize: '0.7rem', color: 'rgba(255, 215, 0, 0.6)' }}>$TRI (3^21)</div>
         </motion.div>
 
-        {/* Storage Hosted */}
+        {/* Min Stake */}
         <motion.div
-          style={{ ...glassStyle, padding: '2rem 1.5rem', textAlign: 'center' }}
+          style={{ ...glassStyle, padding: '1.5rem 1rem', textAlign: 'center' }}
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
           viewport={{ once: true }}
         >
-          <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>
+          <div style={{ fontSize: '0.7rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>
             Min Stake
           </div>
-          <AnimatedCounter target={100} suffix=" TRI" color="#00ccff" delay={400} />
-          <div style={{ fontSize: '0.8rem', color: 'rgba(0, 204, 255, 0.6)' }}>for 1.5x earnings boost</div>
+          <div style={{ fontSize: 'clamp(1.4rem, 3.5vw, 1.8rem)', fontWeight: 700, color: '#00ccff', marginBottom: '0.4rem', fontFamily: 'JetBrains Mono, monospace', lineHeight: 1.1 }}>
+            100 TRI
+          </div>
+          <div style={{ fontSize: '0.7rem', color: 'rgba(0, 204, 255, 0.6)' }}>for 1.5x earnings boost</div>
         </motion.div>
       </div>
 

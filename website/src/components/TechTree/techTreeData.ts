@@ -540,12 +540,12 @@ export const techBranches: TechBranch[] = [
       {
         id: 'dist-003',
         name: 'DePIN Network',
-        description: 'Decentralized Physical Infrastructure with TRI rewards',
-        status: 'locked',
+        description: 'Decentralized Physical Infrastructure with $TRI rewards. Supply: 10.46B (3^21)',
+        status: 'done',
         branch: 'distributed',
         prerequisites: ['dist-002'],
-        unlocks: ['dist-004'],
-        metrics: '$TRI mining',
+        unlocks: ['dist-004', 'sacred-004'],
+        metrics: '$TRI 10.46B',
         x: 2,
         y: 7
       },
@@ -572,6 +572,75 @@ export const techBranches: TechBranch[] = [
         metrics: 'Zero-knowledge',
         x: 4,
         y: 7
+      }
+    ]
+  },
+  {
+    id: 'sacred',
+    name: 'SACRED MATH',
+    color: '#ffd700',
+    icon: '🕉️',
+    nodes: [
+      {
+        id: 'sacred-001',
+        name: 'Trinity Identity',
+        description: 'φ² + 1/φ² = 3 — математическое основание троичных вычислений',
+        status: 'done',
+        branch: 'sacred',
+        prerequisites: [],
+        unlocks: ['sacred-002'],
+        metrics: 'φ² + 1/φ² = 3',
+        x: 0,
+        y: 8
+      },
+      {
+        id: 'sacred-002',
+        name: 'Sacred Formula',
+        description: 'V = n × 3^k × π^m × φ^p × e^q — 42 константы с <5% ошибкой',
+        status: 'done',
+        branch: 'sacred',
+        prerequisites: ['sacred-001'],
+        unlocks: ['sacred-003', 'sacred-004'],
+        metrics: '42 constants',
+        x: 1,
+        y: 8
+      },
+      {
+        id: 'sacred-003',
+        name: 'Coptic Gematria',
+        description: '27 glyphs с изопсефическими значениями (1-900)',
+        status: 'done',
+        branch: 'sacred',
+        prerequisites: ['sacred-002'],
+        unlocks: ['sacred-005'],
+        metrics: '27 glyphs',
+        x: 2,
+        y: 8
+      },
+      {
+        id: 'sacred-004',
+        name: '15 Predictions',
+        description: 'Научные прогнозы для экстраполяции физических констант',
+        status: 'done',
+        branch: 'sacred',
+        prerequisites: ['sacred-002', 'dist-003'],
+        unlocks: [],
+        metrics: '15 predictions',
+        x: 3,
+        y: 8
+      },
+      {
+        id: 'sacred-005',
+        name: 'Isopsephy Engine',
+        description: 'Text-to-number conversion с математической значимостью',
+        status: 'in_progress',
+        progress: 85,
+        branch: 'sacred',
+        prerequisites: ['sacred-003'],
+        unlocks: [],
+        metrics: '85%',
+        x: 4,
+        y: 8
       }
     ]
   }

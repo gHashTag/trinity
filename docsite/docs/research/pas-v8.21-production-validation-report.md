@@ -18,7 +18,7 @@ The Production Autonomy System (PAS) v8.21 has been successfully implemented and
 | Task Success Rate | 73.5% | 95.2% | +21.7% |
 | Average Attempts | 100 | 76 | -24% |
 | Energy per Task | 10.0 Wh | 7.6 Wh | -24% |
-| Real-time Updates | Poll (5s) | WebSocket (<100ms) | 50x faster |
+| Real-time Updates | Poll (5s) | WebSocket (\<100ms) | 50x faster |
 | Validation Coverage | 0 tasks | 8 tasks | +∞ |
 
 ---
@@ -121,19 +121,19 @@ const LUCAS_10: u64 = 123;                 // L(10)
 **VSA-002: Bundle Similarity**
 - Target: Deterministic bundling (100% consistency)
 - Target: Majority vote preservation
-- Target: 80%+ accuracy for N<=50 bundles
+- Target: 80%+ accuracy for N\<=50 bundles
 
 ### Swarm Validation (SWARM-001/2)
 
 **SWARM-001: Consensus**
-- Target: 32-node consensus in <100ms
+- Target: 32-node consensus in \<100ms
 - Target: Byzantine tolerance (3/32 malicious)
-- Target: Partition recovery in <5s
+- Target: Partition recovery in \<5s
 
 **SWARM-002: Node Recovery**
-- Target: New node join in <200ms
-- Target: Failure detection in <100ms
-- Target: Hot standby promotion in <50ms
+- Target: New node join in \<200ms
+- Target: Failure detection in \<100ms
+- Target: Hot standby promotion in \<50ms
 
 ### Meta Validation (META-001/2/3)
 
@@ -192,7 +192,7 @@ After (v8.21 - With PAS):
 ├── Average Attempts: 76 (-24%)
 ├── Success Rate: 95.2% (+21.7%)
 ├── Energy per Task: 7.6 Wh (-24%)
-└── Update Latency: <100ms (WebSocket)
+└── Update Latency: \<100ms (WebSocket)
 ```
 
 ### Energy Savings
@@ -275,7 +275,7 @@ Harvested Energy += Energy Saved per task
 
 PAS v8.21 represents a significant advancement in autonomous production systems:
 
-1. **Real-time Communication**: WebSocket reduces latency from 5s to <100ms
+1. **Real-time Communication**: WebSocket reduces latency from 5s to \<100ms
 2. **Improved Success Rate**: 73.5% → 95.2% (+21.7%)
 3. **Energy Efficiency**: 24% reduction in attempts and energy
 4. **Sacred Math Foundation**: All constants validated; Trinity identity holds

@@ -236,6 +236,10 @@ pub fn main() !void {
         .fmt_cmd => try commands.runFmtCommand(allocator),
         .stats_cmd => try commands.runStatsCommand(allocator),
         .igla => try commands.runIglaCommand(allocator),
+        // Cycle 98: Sacred Intelligence
+        .identity => try commands.runIdentityCommand(allocator, cmd_args),
+        .swarm => try commands.runSwarmCommand(allocator, cmd_args),
+        .govern => try commands.runGovernCommand(allocator, cmd_args),
         // Codebase Context (Cycle 92)
         .analyze => tri_context.runAnalyzeCommand(&state),
         .search_cmd => tri_context.runSearchCommand(&state, cmd_args),
