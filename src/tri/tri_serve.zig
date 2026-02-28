@@ -205,26 +205,56 @@ pub const UnifiedApiServer = struct {
             if (total_read > 0 and headers_complete) {
                 const request = buffer[0..total_read];
 
-                // Parse HTTP request
-                var response: []const u8 = undefined;
+                // Handle OPTIONS preflight request for CORS
+                if (std.mem.indexOf(u8, request, "OPTIONS /graphql") != null) {
+                    const options_response = try self.corsOptionsResponse();
+                    defer self.allocator.free(options_response);
+                    _ = std.posix.write(client_socket, options_response) catch {};
+                }
+                // Check for POST request (GraphQL query)
+                else if (std.mem.indexOf(u8, request, "POST /graphql") != null) {
+                    // Parse GraphQL query from JSON body
+                    const body_start = std.mem.indexOf(u8, request, "\r\n\r\n") orelse continue;
+                    const body = request[body_start + 4 ..];
 
-                if (std.mem.indexOf(u8, request, "GET /api/health") != null) {
+                    // Handle empty body (health check from playground)
+                    if (body.len == 0 or std.mem.eql(u8, body, "")) {
+                        const health_response = try self.healthCheckResponse();
+                        defer self.allocator.free(health_response);
+                        _ = std.posix.write(client_socket, health_response) catch {};
+                        continue;
+                    }
+
+                    // Debug: log what we received
+                    std.debug.print("DEBUG: Received GraphQL POST, body: {s}\n", .{body});
+
+                    // Simple GraphQL parser for {"query":"..."}
+                    const response = try self.handleGraphQLQuery(body);
+                    defer self.allocator.free(response);
+                    _ = std.posix.write(client_socket, response) catch {};
+                }
+                // Parse HTTP GET requests
+                else if (std.mem.indexOf(u8, request, "GET /api/health") != null) {
                     // Health check response
-                    response = try self.healthCheckResponse();
+                    const response = try self.healthCheckResponse();
+                    defer self.allocator.free(response);
+                    _ = std.posix.write(client_socket, response) catch {};
                 } else if (std.mem.indexOf(u8, request, "GET /api/openapi.json") != null) {
                     // OpenAPI spec response
-                    response = try self.openApiResponse();
+                    const response = try self.openApiResponse();
+                    defer self.allocator.free(response);
+                    _ = std.posix.write(client_socket, response) catch {};
                 } else if (std.mem.indexOf(u8, request, "GET /graphql") != null) {
                     // GraphQL playground
-                    response = try self.graphqlPlaygroundResponse();
+                    const response = try self.graphqlPlaygroundResponse();
+                    defer self.allocator.free(response);
+                    _ = std.posix.write(client_socket, response) catch {};
                 } else {
                     // 404 response
-                    response = try self.notFoundResponse();
+                    const response = try self.notFoundResponse();
+                    defer self.allocator.free(response);
+                    _ = std.posix.write(client_socket, response) catch {};
                 }
-
-                // Send response
-                _ = std.posix.write(client_socket, response) catch {};
-                self.allocator.free(response);
             }
 
             std.posix.close(client_socket);
@@ -253,13 +283,54 @@ pub const UnifiedApiServer = struct {
     }
 
     fn graphqlPlaygroundResponse(self: *const UnifiedApiServer) ![]const u8 {
-        return std.fmt.allocPrint(self.allocator,
+        // GraphQL Playground - standalone version with embedded JS
+        var buffer = std.ArrayList(u8).initCapacity(self.allocator, 8192) catch return error.OutOfMemory;
+        try buffer.appendSlice(self.allocator,
             \\HTTP/1.1 200 OK
             \\Content-Type: text/html
             \\Access-Control-Allow-Origin: *
             \\
-            \\<html><body><h1>GraphQL Playground</h1><p>130 commands available</p></body></html>
-        , .{});
+            \\<!DOCTYPE html>
+            \\<html lang="en">
+            \\<head>
+            \\  <meta charset="utf-8"/>
+            \\  <title>GraphQL Playground</title>
+            \\  <style>
+            \\    body { height: 100vh; margin: 0; width: 100%; overflow: hidden; }
+            \\    #playground { height: 100vh; width: 100%; }
+            \\  </style>
+            \\  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/graphql-playground-react@1.7.26/build/static/css/index.css" />
+            \\</head>
+            \\<body>
+            \\  <div id="playground"></div>
+            \\  <script crossorigin src="https://cdn.jsdelivr.net/npm/react@16/umd/react.production.min.js"></script>
+            \\  <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@16/umd/react-dom.production.min.js"></script>
+            \\  <script src="https://cdn.jsdelivr.net/npm/graphql-playground-react@1.7.26/build/static/js/middleware.js"></script>
+            \\  <script>
+            \\    window.addEventListener('load', function (event) {
+            \\      GraphQLPlayground.init(document.getElementById('playground'), {
+            \\        endpoint: '/graphql',
+            \\        subscriptionEndpoint: null,
+            \\        headers: {},
+            \\        workspaceName: 'TRINITY GraphQL',
+            \\        settings: {
+            \\          'request.credentials': 'include',
+            \\          'schema.polling.enable': false,
+            \\        },
+            \\        defaultQuery: `{
+            \\  commands {
+            \\    name
+            \\    category
+            \\    description
+            \\  }
+            \\}`,
+            \\      });
+            \\    });
+            \\  </script>
+            \\</body>
+            \\</html>
+        );
+        return buffer.toOwnedSlice(self.allocator);
     }
 
     fn notFoundResponse(self: *const UnifiedApiServer) ![]const u8 {
@@ -269,6 +340,226 @@ pub const UnifiedApiServer = struct {
             \\
             \\{{"error":"Not Found"}}
         , .{});
+    }
+
+    fn corsOptionsResponse(self: *const UnifiedApiServer) ![]const u8 {
+        var buffer = std.ArrayList(u8).initCapacity(self.allocator, 256) catch return error.OutOfMemory;
+        try buffer.appendSlice(self.allocator, "HTTP/1.1 200 OK\nAccess-Control-Allow-Origin: *\nAccess-Control-Allow-Methods: GET, POST, OPTIONS\nAccess-Control-Allow-Headers: Content-Type, Authorization\nAccess-Control-Max-Age: 86400\nContent-Length: 0\n\n");
+        return buffer.toOwnedSlice(self.allocator);
+    }
+
+    // Parse simple JSON: {"query":"{ commands { name } }"}
+    // Extract the query string between "query":" and "}
+    fn extractGraphQLQuery(allocator: std.mem.Allocator, body: []const u8) ![]const u8 {
+        // Find "query":" pattern
+        const query_key = "\"query\":\"";
+        const query_start_idx = std.mem.indexOf(u8, body, query_key) orelse return error.MalformedJSON;
+        const query_start = query_start_idx + query_key.len;
+
+        // Find closing "}
+        const query_end = std.mem.indexOf(u8, body[query_start..], "\"}") orelse {
+            // Try just " as end
+            const end_brace = std.mem.indexOf(u8, body[query_start..], "\"") orelse return error.MalformedJSON;
+            return allocator.dupe(u8, body[query_start..][0..end_brace]);
+        };
+
+        // Handle escaped quotes in query
+        var query_list = std.ArrayList(u8).initCapacity(allocator, 256) catch return error.OutOfMemory;
+        errdefer query_list.deinit(allocator);
+
+        var i: usize = 0;
+        while (i < query_end) : (i += 1) {
+            const c = body[query_start + i];
+            // Handle escaped characters like \n
+            if (c == '\\' and i + 1 < query_end) {
+                const next = body[query_start + i + 1];
+                if (next == 'n') {
+                    try query_list.append(allocator, '\n');
+                    i += 1;
+                } else if (next == '"') {
+                    try query_list.append(allocator, '"');
+                    i += 1;
+                } else {
+                    try query_list.append(allocator, c);
+                }
+            } else {
+                try query_list.append(allocator, c);
+            }
+        }
+
+        return query_list.toOwnedSlice(allocator);
+    }
+
+    // Convert CommandCategory enum to string
+    fn categoryToString(cat: api.CommandCategory) []const u8 {
+        return switch (cat) {
+            .CORE => "CORE",
+            .VIBEE => "VIBEE",
+            .GIT => "GIT",
+            .PIPELINE => "PIPELINE",
+            .MULTI_CLUSTER => "MULTI_CLUSTER",
+            .VERIFY => "VERIFY",
+            .SPEC => "SPEC",
+            .TVC => "TVC",
+            .DEMOS => "DEMOS",
+            .MATH => "MATH",
+            .INTELLIGENCE => "INTELLIGENCE",
+            .DOCTOR => "DOCTOR",
+            .IDENTITY => "IDENTITY",
+            .ANALYZE => "ANALYZE",
+            .ADVANCED => "ADVANCED",
+            .INFO => "INFO",
+        };
+    }
+
+    // Execute GraphQL query against command registry
+    fn handleGraphQLQuery(self: *const UnifiedApiServer, body: []const u8) ![]const u8 {
+        // Parse query from JSON body
+        const query = extractGraphQLQuery(self.allocator, body) catch |err| {
+            // Return error response - build manually
+            std.debug.print("DEBUG: Failed to parse query: {s}\n", .{@errorName(err)});
+            var buffer = std.ArrayList(u8).initCapacity(self.allocator, 256) catch return error.OutOfMemory;
+            try buffer.appendSlice(self.allocator, "HTTP/1.1 400 Bad Request\nContent-Type: application/json\nAccess-Control-Allow-Origin: *\n\n");
+            try buffer.appendSlice(self.allocator, "{\"errors\":[{\"message\":\"Failed to parse query: ");
+            try buffer.appendSlice(self.allocator, @errorName(err));
+            try buffer.appendSlice(self.allocator, "\"}]}");
+            return buffer.toOwnedSlice(self.allocator);
+        };
+        defer self.allocator.free(query);
+
+        std.debug.print("DEBUG: Extracted query: {s}\n", .{query});
+
+        // Normalize query: remove all whitespace including newlines
+        var normalized = std.ArrayList(u8).initCapacity(self.allocator, query.len) catch return error.OutOfMemory;
+        defer normalized.deinit(self.allocator);
+
+        for (query) |c| {
+            if (!std.ascii.isWhitespace(c)) {
+                try normalized.append(self.allocator, c);
+            }
+        }
+        const normalized_query = normalized.items;
+
+        std.debug.print("DEBUG: Normalized query: {s}\n", .{normalized_query});
+
+        // Handle Introspection queries (GraphQL Playground needs this)
+        if (std.mem.indexOf(u8, normalized_query, "__schema") != null or
+            std.mem.indexOf(u8, normalized_query, "__type") != null or
+            std.mem.indexOf(u8, normalized_query, "IntrospectionQuery") != null) {
+            std.debug.print("DEBUG: Introspection query - returning complete schema\n", .{});
+            var buffer = std.ArrayList(u8).initCapacity(self.allocator, 4096) catch return error.OutOfMemory;
+            try buffer.appendSlice(self.allocator, "HTTP/1.1 200 OK\nContent-Type: application/json\nAccess-Control-Allow-Origin: *\n\n");
+
+            // Build minimal but valid introspection schema
+            try buffer.appendSlice(self.allocator, "{\"data\":{\"__schema\":{");
+            try buffer.appendSlice(self.allocator, "\"queryType\":{\"name\":\"Query\"},");
+            try buffer.appendSlice(self.allocator, "\"mutationType\":null,");
+            try buffer.appendSlice(self.allocator, "\"subscriptionType\":null,");
+            try buffer.appendSlice(self.allocator, "\"types\":[");
+
+            // Query type
+            try buffer.appendSlice(self.allocator, "{\"kind\":\"OBJECT\",\"name\":\"Query\",\"fields\":[");
+            try buffer.appendSlice(self.allocator, "{\"name\":\"commands\",\"type\":{\"kind\":\"LIST\",\"ofType\":{\"kind\":\"OBJECT\",\"name\":\"Command\",\"ofType\":null}}},");
+            try buffer.appendSlice(self.allocator, "{\"name\":\"status\",\"type\":{\"kind\":\"OBJECT\",\"name\":\"Status\",\"ofType\":null}}");
+            try buffer.appendSlice(self.allocator, "]}");
+            try buffer.appendSlice(self.allocator, ",");
+
+            // Command type
+            try buffer.appendSlice(self.allocator, "{\"kind\":\"OBJECT\",\"name\":\"Command\",\"fields\":[");
+            try buffer.appendSlice(self.allocator, "{\"name\":\"name\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\"}},");
+            try buffer.appendSlice(self.allocator, "{\"name\":\"category\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\"}},");
+            try buffer.appendSlice(self.allocator, "{\"name\":\"description\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\"}}");
+            try buffer.appendSlice(self.allocator, "]}");
+            try buffer.appendSlice(self.allocator, ",");
+
+            // Status type
+            try buffer.appendSlice(self.allocator, "{\"kind\":\"OBJECT\",\"name\":\"Status\",\"fields\":[");
+            try buffer.appendSlice(self.allocator, "{\"name\":\"healthy\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"Boolean\"}},");
+            try buffer.appendSlice(self.allocator, "{\"name\":\"connections\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"Int\"}},");
+            try buffer.appendSlice(self.allocator, "{\"name\":\"uptime\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"Int\"}}");
+            try buffer.appendSlice(self.allocator, "]}");
+            try buffer.appendSlice(self.allocator, ",");
+
+            // String scalar
+            try buffer.appendSlice(self.allocator, "{\"kind\":\"SCALAR\",\"name\":\"String\"}");
+            try buffer.appendSlice(self.allocator, ",");
+
+            // Boolean scalar
+            try buffer.appendSlice(self.allocator, "{\"kind\":\"SCALAR\",\"name\":\"Boolean\"}");
+            try buffer.appendSlice(self.allocator, ",");
+
+            // Int scalar
+            try buffer.appendSlice(self.allocator, "{\"kind\":\"SCALAR\",\"name\":\"Int\"}");
+
+            try buffer.appendSlice(self.allocator, "],");
+            try buffer.appendSlice(self.allocator, "\"directives\":[]}}}");
+
+            return buffer.toOwnedSlice(self.allocator);
+        }
+        if (std.mem.indexOf(u8, normalized_query, "{commands") != null or
+            std.mem.indexOf(u8, normalized_query, "commands") != null) {
+            std.debug.print("DEBUG: Matched commands query!\n", .{});
+
+            // Build JSON response with all commands
+            var response_buffer = std.ArrayList(u8).initCapacity(self.allocator, 8192) catch return error.OutOfMemory;
+            errdefer response_buffer.deinit(self.allocator);
+
+            try response_buffer.appendSlice(self.allocator,
+                \\HTTP/1.1 200 OK
+                \\Content-Type: application/json
+                \\Access-Control-Allow-Origin: *
+                \\
+                \\"data":{"commands":[
+            );
+
+            var iter = self.registry.commands.iterator();
+            var first = true;
+            while (iter.next()) |entry| {
+                if (!first) try response_buffer.append(self.allocator, ',');
+                first = false;
+
+                const cmd = entry.value_ptr.*;
+                const cat_str = categoryToString(cmd.category);
+
+                try response_buffer.appendSlice(self.allocator, "{\"name\":\"");
+                try response_buffer.appendSlice(self.allocator, cmd.name);
+                try response_buffer.appendSlice(self.allocator, "\",\"category\":\"");
+                try response_buffer.appendSlice(self.allocator, cat_str);
+                try response_buffer.appendSlice(self.allocator, "\",\"description\":\"");
+                try response_buffer.appendSlice(self.allocator, cmd.description);
+                try response_buffer.appendSlice(self.allocator, "\"}");
+            }
+
+            try response_buffer.appendSlice(self.allocator, "]}");
+
+            const result = response_buffer.toOwnedSlice(self.allocator);
+            std.debug.print("DEBUG: Returning response\n", .{});
+            return result;
+        }
+
+        // Handle { status { healthy connections } } query
+        if (std.mem.indexOf(u8, normalized_query, "{status") != null or
+            std.mem.indexOf(u8, normalized_query, "status") != null) {
+            const uptime = std.time.milliTimestamp() - self.status.start_time;
+            var buffer = std.ArrayList(u8).initCapacity(self.allocator, 256) catch return error.OutOfMemory;
+            try buffer.appendSlice(self.allocator, "HTTP/1.1 200 OK\nContent-Type: application/json\nAccess-Control-Allow-Origin: *\n\n");
+            try buffer.appendSlice(self.allocator, "{\"data\":{\"status\":{\"healthy\":true,\"connections\":");
+            const conn_str = try std.fmt.allocPrint(self.allocator, "{d}", .{self.status.connections});
+            defer self.allocator.free(conn_str);
+            try buffer.appendSlice(self.allocator, conn_str);
+            try buffer.appendSlice(self.allocator, ",\"uptime\":");
+            const uptime_str = try std.fmt.allocPrint(self.allocator, "{d}", .{uptime});
+            defer self.allocator.free(uptime_str);
+            try buffer.appendSlice(self.allocator, uptime_str);
+            try buffer.appendSlice(self.allocator, "}}}}");
+            return buffer.toOwnedSlice(self.allocator);
+        }
+
+        // Unknown query - return error
+        var buffer = std.ArrayList(u8).initCapacity(self.allocator, 256) catch return error.OutOfMemory;
+        try buffer.appendSlice(self.allocator, "HTTP/1.1 200 OK\nContent-Type: application/json\nAccess-Control-Allow-Origin: *\n\n");
+        try buffer.appendSlice(self.allocator, "{\"data\":null,\"errors\":[{\"message\":\"Cannot query field: unknown\"}]}");
+        return buffer.toOwnedSlice(self.allocator);
     }
 
     pub fn stop(self: *UnifiedApiServer) void {
