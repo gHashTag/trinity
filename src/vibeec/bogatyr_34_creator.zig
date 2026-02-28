@@ -1,5 +1,5 @@
-// VIBEE BOGATYR 34 - Жар-птица (Creator)
-// Принцип: SYNTHESIS - объединение противоположностей in нечто большее
+// VIBEE BOGATYR 34 - Жар-птandца (Creator)
+// Прandнцandп: SYNTHESIS - объедandненandе прfromandinоbyложноwithтей in неwhat moreе
 // φ² + 1/φ² = 3 | PHOENIX = 999
 
 const std = @import("std");
@@ -10,8 +10,8 @@ const common = @import("bogatyrs_common.zig");
 // ============================================================================
 
 pub const CREATOR_ID: u32 = 34;
-pub const CREATOR_NAME = "Жар-птица";
-pub const CREATOR_WEIGHT: f32 = 2.0; // Двойной вес in совете - синтез ломает тупики
+pub const CREATOR_NAME = "Жар-птandца";
+pub const CREATOR_WEIGHT: f32 = 2.0; // Дinойной inеwith in withоinете - withandнтез ломает тупandtoand
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_SQUARED: f64 = 2.618033988749895;
 pub const GOLDEN_IDENTITY: f64 = 3.0; // φ² + 1/φ² = 3
@@ -20,7 +20,7 @@ pub const GOLDEN_IDENTITY: f64 = 3.0; // φ² + 1/φ² = 3
 // TYPES
 // ============================================================================
 
-/// Пара противоположных сил, кажущихся взаимоисключающими
+/// Пара прfromandinоbyложных withandл, toажущandхwithя inзаandмоandwithtoлючающandмand
 pub const Paradox = struct {
     pole_a: []const u8,
     pole_b: []const u8,
@@ -36,7 +36,7 @@ pub const Paradox = struct {
     }
 };
 
-/// Третий path, which трансцендирует парадокс
+/// Третandй path, which транwithцендandрует параbeforetowith
 pub const Synthesis = struct {
     paradox: Paradox,
     third_path: []const u8,
@@ -49,7 +49,7 @@ pub const Synthesis = struct {
     }
 };
 
-/// Изученный pattern успешного синтеза
+/// Изученный pattern уwithпешного withandнтеза
 pub const CreationPattern = struct {
     pattern_id: []const u8,
     paradox_type: []const u8,
@@ -60,7 +60,7 @@ pub const CreationPattern = struct {
 
     pub fn successRate(self: CreationPattern) f64 {
         const total = self.success_count + self.failure_count;
-        if (total == 0) return 0.5; // Неизвестно
+        if (total == 0) return 0.5; // Неandзinеwithтно
         return @as(f64, @floatFromInt(self.success_count)) / @as(f64, @floatFromInt(total));
     }
 };
@@ -69,7 +69,7 @@ pub const CreationPattern = struct {
 // HARDCODED SYNTHESIS PATTERNS
 // ============================================================================
 
-/// Известные синтезы for типичных парадоксов
+/// Изinеwithтные withandнтезы for тandпandчных параbeforetowithоin
 pub const SYNTHESIS_PATTERNS = [_]struct {
     pole_a: []const u8,
     pole_b: []const u8,
@@ -131,7 +131,7 @@ pub const SYNTHESIS_PATTERNS = [_]struct {
 // CORE FUNCTIONS
 // ============================================================================
 
-/// Analyzes конфликт and идентифицирует парадокс
+/// Analyzes toонфлandtoт and andдентandфandцandрует параbeforetowith
 pub fn analyzeParadox(pole_a: []const u8, pole_b: []const u8, context: []const u8) Paradox {
     return Paradox{
         .pole_a = pole_a,
@@ -140,9 +140,9 @@ pub fn analyzeParadox(pole_a: []const u8, pole_b: []const u8, context: []const u
     };
 }
 
-/// Searches третий path, which трансцендирует парадокс
+/// Searches третandй path, which транwithцендandрует параbeforetowith
 pub fn seekSynthesis(paradox: Paradox) ?Synthesis {
-    // Ищем in известных паттернах
+    // Ищем in andзinеwithтных паттерonх
     for (SYNTHESIS_PATTERNS) |pattern| {
         const match_forward = std.mem.eql(u8, paradox.pole_a, pattern.pole_a) and
             std.mem.eql(u8, paradox.pole_b, pattern.pole_b);
@@ -160,29 +160,29 @@ pub fn seekSynthesis(paradox: Paradox) ?Synthesis {
         }
     }
 
-    // Парадокс неизвестен — нужно творчество
+    // Параbeforetowith неandзinеwithтен — need тinорчеwithтinо
     return null;
 }
 
-/// Рассчитывает требуемую смелость for синтеза
+/// Раwithwithчandтыinает требуемую withмелоwithть for withandнтеза
 pub fn calculateCourageRequirement(synthesis: Synthesis) f64 {
-    // Смелость = (риск / 10) * (1 - reward/risk_ratio)
+    // Смелоwithть = (рandwithto / 10) * (1 - reward/risk_ratio)
     const risk_normalized = @as(f64, @floatFromInt(synthesis.risk_level)) / 10.0;
     const reward_normalized = @as(f64, @floatFromInt(synthesis.reward_level)) / 10.0;
 
-    // Чем выше награда относительно риска, тем меньше нужно смелости
+    // Чем inыше onграyes fromноwithandтельно рandwithtoа, тем less need withмелоwithтand
     const risk_reward_ratio = if (reward_normalized > 0) risk_normalized / reward_normalized else 1.0;
 
     return @min(1.0, risk_normalized * risk_reward_ratio);
 }
 
-/// 34-й голос — не за сохранение, а за расширение
+/// 34-й голоwith — не за withохраненandе, а за раwithшandренandе
 pub fn voteAsCreator(ctx: *const common.ValidationContext) !common.BogatyrResult {
     const start_time = std.time.nanoTimestamp();
-    _ = ctx; // Используется for валидации контекста
+    _ = ctx; // Иwithbyльзуетwithя for inалandyesцandand toонтеtowithта
 
-    // Жар-птица всегда голосует Pass, if finds path for творчества
-    // В реальной системе здесь будет analysis парадоксов in контексте
+    // Жар-птandца inwithегyes голоwithует Pass, if finds path for тinорчеwithтinа
+    // В реальной withandwithтеме здеwithь будет analysis параbeforetowithоin in toонтеtowithте
 
     const end_time = std.time.nanoTimestamp();
     const duration: i64 = @intCast(end_time - start_time);
@@ -205,9 +205,9 @@ pub const bogatyr = common.BogatyrPlugin{
     .name = CREATOR_NAME,
     .version = "1.0.0",
     .category = "synthesis",
-    .priority = 999, // Высший приоритет — Жар-птица решает тупики
-    .weight = CREATOR_WEIGHT, // 2.0 — двойной вес
-    .is_creator = true, // Единственный Богатырь-Творец
+    .priority = 999, // Выwithшandй прandорandтет — Жар-птandца решает тупandtoand
+    .weight = CREATOR_WEIGHT, // 2.0 — дinойной inеwith
+    .is_creator = true, // Едandнwithтinенный Богатырь-Тinорец
     .validate = voteAsCreator,
 };
 
@@ -243,7 +243,7 @@ test "seek synthesis - safety vs efficiency" {
 
     try std.testing.expect(synthesis != null);
     if (synthesis) |s| {
-        try std.testing.expect(s.reward_level > s.risk_level); // Награда > риск
+        try std.testing.expect(s.reward_level > s.risk_level); // Награyes > рandwithto
         try std.testing.expectEqualStrings("Safe efficiency through incremental verification: fast iterations with safety gates at each step", s.third_path);
     }
 }

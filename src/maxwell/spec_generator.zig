@@ -1,5 +1,5 @@
 // Maxwell Daemon - Spec Generator
-// Генерация .vibee спецификаций из описания задачи
+// Генерацandя .vibee withпецandфandtoацandй andз опandwithанandя заyesчand
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -10,7 +10,7 @@ const code_analyzer = @import("code_analyzer.zig");
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Тип поля in спецификации
+/// Тandп byля in withпецandфandtoацandand
 pub const FieldType = enum {
     String,
     Int,
@@ -33,7 +33,7 @@ pub const FieldType = enum {
     }
 };
 
-/// Поле типа
+/// Поле тandпа
 pub const SpecField = struct {
     name: []const u8,
     field_type: FieldType,
@@ -41,7 +41,7 @@ pub const SpecField = struct {
     description: ?[]const u8,
 };
 
-/// Тип in спецификации
+/// Тandп in withпецandфandtoацandand
 pub const SpecType = struct {
     name: []const u8,
     fields: std.ArrayList(SpecField),
@@ -87,7 +87,7 @@ pub const SpecType = struct {
     }
 };
 
-/// Поведение in спецификации
+/// Поinеденandе in withпецandфandtoацandand
 pub const SpecBehavior = struct {
     name: []const u8,
     given: []const u8,
@@ -95,7 +95,7 @@ pub const SpecBehavior = struct {
     then: []const u8,
 };
 
-/// Полная specification
+/// Полonя specification
 pub const Specification = struct {
     name: []const u8,
     version: []const u8,
@@ -138,7 +138,7 @@ pub const Specification = struct {
         });
     }
 
-    /// Сериализовать in .vibee format
+    /// Серandалandзоinать in .vibee format
     pub fn toVibee(self: *Specification) ![]const u8 {
         var output = std.ArrayList(u8).init(self.allocator);
         const writer = output.writer();
@@ -286,7 +286,7 @@ pub const SpecGenerator = struct {
     // GENERATION
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Сгенерировать спецификацию из описания задачи
+    /// Сгенерandроinать withпецandфandtoацandю andз опandwithанandя заyesчand
     pub fn generateFromDescription(self: *SpecGenerator, description: []const u8, name: []const u8) !Specification {
         var spec = Specification.init(self.allocator, name);
 
@@ -313,7 +313,7 @@ pub const SpecGenerator = struct {
         return spec;
     }
 
-    /// Сгенерировать из шаблона
+    /// Сгенерandроinать andз шаблоon
     pub fn generateFromTemplate(self: *SpecGenerator, template_name: []const u8, name: []const u8) ![]const u8 {
         const template = self.templates.get(template_name) orelse return error.TemplateNotFound;
 
@@ -355,7 +355,7 @@ pub const SpecGenerator = struct {
         return result.toOwnedSlice();
     }
 
-    /// Сгенерировать из анализа существующего кода
+    /// Сгенерandроinать andз аonлandза withущеwithтinующего toоyes
     pub fn generateFromAnalysis(self: *SpecGenerator, module: *const code_analyzer.ModuleInfo) !Specification {
         var spec = Specification.init(self.allocator, module.path);
 

@@ -7,10 +7,10 @@ const std = @import("std");
 
 /// Expert types available in the MoE system
 pub const Expert = enum {
-    Inference, // Mistral-7B.tri - for inference задач
-    Network, // P2P/staking - сетевые операции
-    CodeGen, // Qwen2.5-Coder-7B.tri - генерация кода
-    Planning, // Steering модель - планирование and координация
+    Inference, // Mistral-7B.tri - for inference заyesч
+    Network, // P2P/staking - withетеinые операцandand
+    CodeGen, // Qwen2.5-Coder-7B.tri - генерацandя toоyes
+    Planning, // Steering модель - планandроinанandе and toоордandonцandя
 
     pub fn getName(self: Expert) []const u8 {
         return switch (self) {
@@ -271,11 +271,11 @@ pub fn main() !void {
 
     // Test routing scenarios
     const test_tasks = [_][]const u8{
-        "Запусти инференс на Mistral-7B",
-        "Застейкай 10000 TRI и проголосуй за proposal 42",
-        "Сгенерируй код на Qwen2.5-Coder",
-        "Максимизируй earnings на моём node",
-        "Запусти инференс на Mistral, затем застейкай 10000 TRI",
+        "Запуwithтand andнференwith on Mistral-7B",
+        "Заwithтейtoай 10000 TRI and проголоwithуй за proposal 42",
+        "Сгенерandруй toод on Qwen2.5-Coder",
+        "Маtowithandмandзandруй earnings on моём node",
+        "Запуwithтand andнференwith on Mistral, then заwithтейtoай 10000 TRI",
     };
 
     for (test_tasks) |task| {

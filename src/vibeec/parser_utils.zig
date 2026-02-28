@@ -9,7 +9,7 @@
 // All functions take (source, pos, line) and return updated state.
 // No allocator, no side effects — just string scanning.
 //
-// IGLA (Игла) — укол, убивающий ручной code
+// IGLA (Игла) — уtoол, убandinающandй ручной code
 //
 // φ² + 1/φ² = 3
 //

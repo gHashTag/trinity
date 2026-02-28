@@ -28,8 +28,8 @@ pub const BogatyrPlugin = struct {
     version: []const u8,
     category: []const u8,
     priority: u32,
-    weight: f32 = 1.0, // Жар-птица (34) имеет вес 2.0
-    is_creator: bool = false, // Только for Богатыря-Творца
+    weight: f32 = 1.0, // Жар-птandца (34) andмеет inеwith 2.0
+    is_creator: bool = false, // Тольtoо for Богатыря-Тinорца
     validate: *const fn (*const ValidationContext) anyerror!BogatyrResult,
 };
 

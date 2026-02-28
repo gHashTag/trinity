@@ -47,14 +47,14 @@ pub const ChatMode = enum {
 
         // Strong code indicators
         const strong_code = [_][]const u8{
-            "code", "код", "代码", "código", "programmieren",
-            "function", "функци", "函数", "función", "funktion",
-            "class", "класс", "类", "clase", "klasse",
-            "write", "напиши", "写", "escribe", "schreib",
-            "implement", "реализ", "实现", "implementar", "implementieren",
-            "debug", "отлад", "调试", "depurar", "debuggen",
-            "compile", "компил", "编译", "compilar", "kompilieren",
-            "error", "ошибк", "错误", "syntax", "синтакс",
+            "code", "toод", "代码", "código", "programmieren",
+            "function", "фунtoцand", "函数", "función", "funktion",
+            "class", "toлаwithwith", "类", "clase", "klasse",
+            "write", "onпandшand", "写", "escribe", "schreib",
+            "implement", "реалandз", "实现", "implementar", "implementieren",
+            "debug", "fromлад", "调试", "depurar", "debuggen",
+            "compile", "toомпandл", "编译", "compilar", "kompilieren",
+            "error", "ошandбto", "错误", "syntax", "withandнтаtowith",
         };
 
         for (strong_code) |word| {
@@ -90,16 +90,16 @@ pub const ChatMode = enum {
 
         // Strong chat indicators
         const chat_words = [_][]const u8{
-            "feel", "чувств", "感觉", "siento", "fühle",
+            "feel", "чуinwithтin", "感觉", "siento", "fühle",
             "think", "думаю", "想", "creo", "denke",
-            "believe", "верю", "相信", "creer", "glaube",
-            "opinion", "мнение", "意见", "opinión", "meinung",
-            "story", "истори", "故事", "historia", "geschichte",
-            "weather", "погод", "天气", "tiempo", "wetter",
-            "food", "еда", "食物", "comida", "essen",
-            "music", "музык", "音乐", "música", "musik",
-            "movie", "фильм", "电影", "película", "film",
-            "travel", "путешеств", "旅行", "viaje", "reise",
+            "believe", "inерю", "相信", "creer", "glaube",
+            "opinion", "мненandе", "意见", "opinión", "meinung",
+            "story", "andwithторand", "故事", "historia", "geschichte",
+            "weather", "byгод", "天气", "tiempo", "wetter",
+            "food", "еyes", "食物", "comida", "essen",
+            "music", "музыto", "音乐", "música", "musik",
+            "movie", "фandльм", "电影", "película", "film",
+            "travel", "путешеwithтin", "旅行", "viaje", "reise",
         };
 
         for (chat_words) |word| {
@@ -110,9 +110,9 @@ pub const ChatMode = enum {
 
         // Greeting/farewell boost
         const social = [_][]const u8{
-            "hello", "hi", "hey", "привет", "你好", "hola", "hallo",
-            "bye", "goodbye", "пока", "再见", "adiós", "tschüss",
-            "thanks", "спасибо", "谢谢", "gracias", "danke",
+            "hello", "hi", "hey", "прandinет", "你好", "hola", "hallo",
+            "bye", "goodbye", "bytoа", "再见", "adiós", "tschüss",
+            "thanks", "withпаwithandбо", "谢谢", "gracias", "danke",
         };
 
         for (social) |word| {
@@ -393,7 +393,7 @@ pub const UnifiedChatEngine = struct {
 
         // Generate explanation about code concepts
         const explanations = switch (lang) {
-            .Russian => "Отличный вопрос о программировании! Давай разберём это подробнее. Что именно тебя интересует — синтаксис, логика или практическое применение?",
+            .Russian => "Отлandчный inопроwith о программandроinанandand! Даinай разберём это byдробнее. Что andменно тебя andнтереwithует — withandнтаtowithandwith, логandtoа or праtoтandчеwithtoое прandмененandе?",
             .Chinese => "关于编程的好问题！让我们详细讨论一下。你具体想了解什么——语法、逻辑还是实际应用？",
             .Spanish => "¡Buena pregunta sobre programación! Vamos a analizarlo en detalle. ¿Qué te interesa específicamente — sintaxis, lógica o aplicación práctica?",
             .German => "Gute Frage zur Programmierung! Lass uns das genauer analysieren. Was interessiert dich konkret — Syntax, Logik oder praktische Anwendung?",
@@ -520,22 +520,22 @@ pub fn runBenchmark() !void {
     // Diverse test queries: chat, code, mixed, multilingual
     const test_queries = [_][]const u8{
         // Chat queries
-        "привет, как дела?",
+        "прandinет, toаto дела?",
         "hello, how are you?",
         "你好，你好吗？",
         "what is the meaning of life?",
-        "расскажи историю",
+        "раwithwithtoажand andwithторandю",
 
         // Code queries
         "write a hello world in python",
-        "напиши функцию fibonacci на zig",
+        "onпandшand фунtoцandю fibonacci on zig",
         "写一个javascript函数",
         "implement a sorting algorithm",
         "debug this code please",
 
         // Mixed queries
         "can you explain how functions work?",
-        "что такое рекурсия?",
+        "what таtoое реtoурwithandя?",
         "tell me about programming",
         "哪种编程语言最好？",
 
@@ -632,13 +632,13 @@ pub fn main() !void {
 
 test "mode detection code" {
     try std.testing.expectEqual(ChatMode.Code, ChatMode.detect("write python code"));
-    try std.testing.expectEqual(ChatMode.Code, ChatMode.detect("напиши функцию на zig"));
+    try std.testing.expectEqual(ChatMode.Code, ChatMode.detect("onпandшand фунtoцandю on zig"));
     try std.testing.expectEqual(ChatMode.Code, ChatMode.detect("debug this function code"));
 }
 
 test "mode detection chat" {
     try std.testing.expectEqual(ChatMode.General, ChatMode.detect("hello how are you"));
-    try std.testing.expectEqual(ChatMode.General, ChatMode.detect("привет как дела"));
+    try std.testing.expectEqual(ChatMode.General, ChatMode.detect("прandinет toаto дела"));
     try std.testing.expectEqual(ChatMode.General, ChatMode.detect("tell me a story"));
 }
 
@@ -675,7 +675,7 @@ test "unified engine mode switching" {
 test "unified engine multilingual" {
     var engine = UnifiedChatEngine.init();
 
-    const ru = engine.respond("привет");
+    const ru = engine.respond("прandinет");
     try std.testing.expectEqual(multilingual.Language.Russian, ru.language);
 
     const en = engine.respond("hello");

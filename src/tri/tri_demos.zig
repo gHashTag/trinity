@@ -114,8 +114,8 @@ pub fn runAgentsBench() void {
         .{ .query = "search best practices", .task_type = "Research", .agents = "Researcher" },
         .{ .query = "summarize findings", .task_type = "Summarization", .agents = "Researcher + Chat" },
         .{ .query = "hello there", .task_type = "Conversation", .agents = "Chat" },
-        .{ .query = "напиши код сортировки", .task_type = "CodeGeneration", .agents = "Coder" },
-        .{ .query = "проанализируй результаты", .task_type = "Analysis", .agents = "Reasoner" },
+        .{ .query = "onпandшand toод withортandроintoand", .task_type = "CodeGeneration", .agents = "Coder" },
+        .{ .query = "проаonлandзandруй результаты", .task_type = "Analysis", .agents = "Reasoner" },
     };
 
     var multi_agent_count: usize = 0;
@@ -534,10 +534,10 @@ pub fn runVoiceBenchLegacy() void {
 
     const tts_tests = [_]TTSTest{
         .{ .text = "Hello, how are you today?", .expected_duration_ms = 1500, .language = "EN" },
-        .{ .text = "Привет, как дела?", .expected_duration_ms = 1200, .language = "RU" },
+        .{ .text = "Прandinет, toаto дела?", .expected_duration_ms = 1200, .language = "RU" },
         .{ .text = "你好，今天怎么样？", .expected_duration_ms = 1400, .language = "ZH" },
         .{ .text = "The quick brown fox jumps over the lazy dog.", .expected_duration_ms = 2500, .language = "EN" },
-        .{ .text = "Золотое сечение равно фи.", .expected_duration_ms = 1800, .language = "RU" },
+        .{ .text = "Золfromое withеченandе раinно фand.", .expected_duration_ms = 1800, .language = "RU" },
     };
 
     std.debug.print("{s}Running {d} TTS tests...{s}\n", .{ CYAN, tts_tests.len, RESET });
@@ -578,7 +578,7 @@ pub fn runVoiceBenchLegacy() void {
 
     const stt_tests = [_]STTTest{
         .{ .audio_description = "clear_speech_en.wav", .expected_text = "Hello world", .language = "EN" },
-        .{ .audio_description = "russian_greeting.wav", .expected_text = "Привет мир", .language = "RU" },
+        .{ .audio_description = "russian_greeting.wav", .expected_text = "Прandinет мandр", .language = "RU" },
         .{ .audio_description = "chinese_phrase.wav", .expected_text = "你好世界", .language = "ZH" },
         .{ .audio_description = "technical_en.wav", .expected_text = "Vector symbolic architecture", .language = "EN" },
         .{ .audio_description = "numbers_mixed.wav", .expected_text = "One two three", .language = "EN" },
@@ -1015,7 +1015,7 @@ pub fn runVisionDemoLegacy() void {
     std.debug.print("  │       ↓                                     │\n", .{});
     std.debug.print("  │  {s}Describe{s} → Natural language caption     │\n", .{ GREEN, RESET });
     std.debug.print("  │       ↓                                     │\n", .{});
-    std.debug.print("  │  {s}Chat{s} → \"Что на картинке?\" integration   │\n", .{ GREEN, RESET });
+    std.debug.print("  │  {s}Chat{s} → \"Что on toартandнtoе?\" integration   │\n", .{ GREEN, RESET });
     std.debug.print("  └─────────────────────────────────────────────┘\n", .{});
     std.debug.print("\n", .{});
 
@@ -1044,7 +1044,7 @@ pub fn runVisionDemoLegacy() void {
     std.debug.print("\n", .{});
 
     std.debug.print("{s}Chat Integration:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  \"Что на картинке?\"     → Scene description\n", .{});
+    std.debug.print("  \"Что on toартandнtoе?\"     → Scene description\n", .{});
     std.debug.print("  \"What is in image X?\"  → Object detection\n", .{});
     std.debug.print("  \"Describe photo.jpg\"   → Full analysis\n", .{});
     std.debug.print("\n", .{});
@@ -1119,8 +1119,8 @@ pub fn runVisionBenchLegacy() void {
             .image_name = "russian_scene.jpg",
             .format = "JPG",
             .size = "1024x768",
-            .expected_objects = "здание, улица, человек, машина",
-            .scene_type = "outdoor/городской",
+            .expected_objects = "зyesнandе, улandца, челоinеto, машandon",
+            .scene_type = "outdoor/городwithtoой",
         },
         .{
             .image_name = "chinese_garden.png",
@@ -1286,8 +1286,8 @@ pub fn runFineTuneBench() void {
         .{ .input = "How does it work?", .output = "It works by processing patterns and learning from examples.", .category = "question" },
         .{ .input = "Thank you", .output = "You're welcome!", .category = "gratitude" },
         .{ .input = "Thanks a lot", .output = "My pleasure! Happy to help!", .category = "gratitude" },
-        .{ .input = "Привет", .output = "Привет! Как дела?", .category = "greeting_ru" },
-        .{ .input = "Пока", .output = "До свидания!", .category = "farewell_ru" },
+        .{ .input = "Прandinет", .output = "Прandinет! Каto дела?", .category = "greeting_ru" },
+        .{ .input = "Поtoа", .output = "До withinandyesнandя!", .category = "farewell_ru" },
         .{ .input = "你好", .output = "你好！有什么可以帮助你的？", .category = "greeting_zh" },
         .{ .input = "再见", .output = "再见！保重！", .category = "farewell_zh" },
     };
@@ -1342,7 +1342,7 @@ pub fn runFineTuneBench() void {
         .{ .input = "How does this work?", .expected_category = "question" },
         .{ .input = "Thank you so much", .expected_category = "gratitude" },
         .{ .input = "Thanks!", .expected_category = "gratitude" },
-        .{ .input = "Привет друг", .expected_category = "greeting_ru" },
+        .{ .input = "Прandinет друг", .expected_category = "greeting_ru" },
         .{ .input = "你好朋友", .expected_category = "greeting_zh" },
         .{ .input = "xyz random text", .expected_category = "none" },
         .{ .input = "12345", .expected_category = "none" },
@@ -1790,9 +1790,9 @@ pub fn runToolUseDemo() void {
 
     std.debug.print("{s}Intent Detection (Multilingual):{s}\n", .{ CYAN, RESET });
     std.debug.print("  \"Read file src/vsa.zig\"          → file_read\n", .{});
-    std.debug.print("  \"Прочитай файл main.zig\"         → file_read\n", .{});
+    std.debug.print("  \"Прочandтай файл main.zig\"         → file_read\n", .{});
     std.debug.print("  \"Run tests\"                       → code_test\n", .{});
-    std.debug.print("  \"Запусти тесты\"                   → code_test\n", .{});
+    std.debug.print("  \"Запуwithтand теwithты\"                   → code_test\n", .{});
     std.debug.print("  \"Fix this error\" + [screenshot]   → code_lint\n", .{});
     std.debug.print("  \"Compile and benchmark\"            → code_compile + code_bench\n", .{});
     std.debug.print("\n", .{});
@@ -1896,7 +1896,7 @@ pub fn runToolUseBench() void {
             .name = "Russian → File Read",
             .input_modality = "text (ru)",
             .tool_kind = "file_read",
-            .intent_text = "Прочитай файл main.zig",
+            .intent_text = "Прочandтай файл main.zig",
             .expected_accuracy = 0.91,
             .is_chain = false,
         },
@@ -1904,7 +1904,7 @@ pub fn runToolUseBench() void {
             .name = "Russian → Code Test",
             .input_modality = "text (ru)",
             .tool_kind = "code_test",
-            .intent_text = "Запусти тесты",
+            .intent_text = "Запуwithтand теwithты",
             .expected_accuracy = 0.90,
             .is_chain = false,
         },
@@ -2301,7 +2301,7 @@ pub fn runVisionBench() void {
             .name = "OCR: Russian Text",
             .category = "ocr",
             .input_desc = "Cyrillic text region",
-            .expected_output = "\"Ошибка: переменная не определена\"",
+            .expected_output = "\"Ошandбtoа: переменonя не определеon\"",
             .expected_accuracy = 0.78,
             .is_cross_modal = false,
         },

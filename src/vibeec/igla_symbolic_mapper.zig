@@ -2,12 +2,12 @@
 // IGLA SYMBOLIC MAPPER v1.0 - Cross-Language Semantic Verification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Использует VSA (Vector Symbolic Architecture) for обеспечения семантической
-// консистентности between сгенерированными языками.
+// Иwithbyльзует VSA (Vector Symbolic Architecture) for обеwithпеченandя withемантandчеwithtoой
+// toонwithandwithтентноwithтand between withгенерandроinаннымand языtoамand.
 //
-// Фаза 1: Определение ролей языков (Role Vectors)
-// Фаза 2: Привязка понятий to ролям (Concept Binding)
-// Фаза 3: Verification семантического переноса (Semantic Mapping Verification)
+// Фаза 1: Определенandе ролей языtoоin (Role Vectors)
+// Фаза 2: Прandinязtoа byнятandй to ролям (Concept Binding)
+// Фаза 3: Verification withемантandчеwithtoого переноwithа (Semantic Mapping Verification)
 //
 // φ² + 1/φ² = 3 | PHOENIX
 // ═══════════════════════════════════════════════════════════════════════════════

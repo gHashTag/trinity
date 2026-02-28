@@ -34,52 +34,52 @@ pub const GOLDEN_IDENTITY: f64 = 3.0;
 /// КУТРИТ = КОДОН = TRINITY
 pub const KUTRIT: u32 = 3;
 
-/// Тридевятица: 27 = 3³
+/// Трandдеinятandца: 27 = 3³
 pub const TRIDEVYATITSA: u32 = 27;
 
-/// Магия 37
+/// Магandя 37
 pub const SACRED_MULTIPLIER: u32 = 37;
 
-/// Священное number: 999 = 37 × 27
+/// Сinященное number: 999 = 37 × 27
 pub const SACRED: u32 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ЭВОЛЮЦИОННЫЕ КОНСТАНТЫ (из φ)
+// ЭВОЛЮЦИОННЫЕ КОНСТАНТЫ (andз φ)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// μ = 1/φ²/10 = мутация
+/// μ = 1/φ²/10 = мутацandя
 pub const MU_MUTATION: f64 = 0.0382;
 
-/// χ = 1/φ/10 = кроссовер
+/// χ = 1/φ/10 = toроwithwithоinер
 pub const CHI_CROSSOVER: f64 = 0.0618;
 
-/// σ = φ = селекция
+/// σ = φ = withелеtoцandя
 pub const SIGMA_SELECTION: f64 = PHI;
 
-/// ε = 1/3 = элитизм
+/// ε = 1/3 = элandтandзм
 pub const EPSILON_ELITISM: f64 = 0.333;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // КВАНТОВЫЕ КОНСТАНТЫ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Классический предел CHSH
+/// Клаwithwithandчеwithtoandй предел CHSH
 pub const CHSH_CLASSICAL: f64 = 2.0;
 
-/// Квантовый предел CHSH = 2√2
+/// Кinантоinый предел CHSH = 2√2
 pub const CHSH_QUANTUM: f64 = 2.8284271247461903;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // НЕЙРОМОРФНЫЕ КОНСТАНТЫ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// τ = φ временная constant LIF нейрона
+/// τ = φ inременonя constant LIF нейроon
 pub const TAU_LIF: f64 = PHI;
 
-/// 3 уровня спайков = φ² + 1/φ²
+/// 3 уроinня withпайtoоin = φ² + 1/φ²
 pub const SPIKE_LEVELS: u32 = 3;
 
-/// 603x энергоэффективность = 67 × 3²
+/// 603x энергоэффеtoтandinноwithть = 67 × 3²
 pub const ENERGY_EFFICIENCY: u32 = 603;
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -96,7 +96,7 @@ pub const LUCAS_10: u32 = 123;
 // 2. SACRED FORMULA: V = n × 3^k × π^m × φ^p × e^q
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Вычислить священную формулу
+/// Вычandwithлandть withinященную формулу
 pub fn sacredFormula(n: u32, k: i32, m: i32, p: i32, q: i32) f64 {
     const n_f: f64 = @floatFromInt(n);
     const three_k = math.pow(f64, 3.0, @as(f64, @floatFromInt(k)));
@@ -107,7 +107,7 @@ pub fn sacredFormula(n: u32, k: i32, m: i32, p: i32, q: i32) f64 {
     return n_f * three_k * pi_m * phi_p * e_q;
 }
 
-/// Вычислить via золотую идентичность: 3 = φ² + 1/φ²
+/// Вычandwithлandть via золfromую andдентandчноwithть: 3 = φ² + 1/φ²
 pub fn sacredFormulaViaGoldenKey(n: u32, k: i32, m: i32, p: i32, q: i32) f64 {
     const n_f: f64 = @floatFromInt(n);
     const golden_key = PHI_SQ + PHI_INV_SQ; // = 3.0
@@ -123,13 +123,13 @@ pub fn sacredFormulaViaGoldenKey(n: u32, k: i32, m: i32, p: i32, q: i32) f64 {
 // 3. ЗОЛОТАЯ ИДЕНТИЧНОСТЬ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Проверить φ² + 1/φ² = 3
+/// Проinерandть φ² + 1/φ² = 3
 pub fn verifyGoldenIdentity() bool {
     const result = PHI_SQ + PHI_INV_SQ;
     return @abs(result - 3.0) < 1e-14;
 }
 
-/// Вычислить 3^k via золотую идентичность
+/// Вычandwithлandть 3^k via золfromую andдентandчноwithть
 pub fn threeViaPhi(k: i32) f64 {
     const golden_key = PHI_SQ + PHI_INV_SQ;
     return math.pow(f64, golden_key, @as(f64, @floatFromInt(k)));
@@ -139,14 +139,14 @@ pub fn threeViaPhi(k: i32) f64 {
 // 4. ЧИСЛА ЛУКАСА: L(n) = φⁿ + 1/φⁿ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Вычислить number Лукаса L(n)
+/// Вычandwithлandть number Луtoаwithа L(n)
 pub fn lucas(n: u32) f64 {
     const n_f: f64 = @floatFromInt(n);
     const phi_n = math.pow(f64, PHI, n_f);
     const inv_phi_n = math.pow(f64, PHI_INV, n_f);
 
     // Для чётных n: L(n) = φⁿ + 1/φⁿ
-    // Для нечётных n: L(n) = φⁿ - 1/φⁿ (with учётом знака)
+    // Для нечётных n: L(n) = φⁿ - 1/φⁿ (with учётом зontoа)
     if (n % 2 == 0) {
         return phi_n + inv_phi_n;
     } else {
@@ -154,7 +154,7 @@ pub fn lucas(n: u32) f64 {
     }
 }
 
-/// Первые числа Лукаса
+/// Перinые чandwithла Луtoаwithа
 pub const LUCAS_SEQUENCE = [_]u32{ 2, 1, 3, 4, 7, 11, 18, 29, 47, 76, 123 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -178,12 +178,12 @@ pub const LIFNeuron = struct {
         };
     }
 
-    /// Обновить потенциал: τ × dV/dt = -(V - V_rest) + R × I
+    /// Обноinandть пfromенцandал: τ × dV/dt = -(V - V_rest) + R × I
     pub fn update(self: *LIFNeuron, input_current: f64, dt: f64) bool {
         const dv = (-(self.membrane_potential - self.v_rest) + input_current) / self.tau;
         self.membrane_potential += dv * dt;
 
-        // Check порогов (3 уровня = φ² + 1/φ²)
+        // Check byрогоin (3 уроinня = φ² + 1/φ²)
         if (self.membrane_potential >= self.v_threshold + PHI) {
             self.spike_level = 3;
             self.membrane_potential = self.v_rest;
@@ -220,7 +220,7 @@ pub const QubitSpiral = struct {
         };
     }
 
-    /// Координаты on спирали
+    /// Коордandonты on withпandралand
     pub fn position(self: QubitSpiral) struct { x: f64, y: f64 } {
         return .{
             .x = self.radius * @cos(self.angle),
@@ -229,12 +229,12 @@ pub const QubitSpiral = struct {
     }
 };
 
-/// Проверить квантовое преимущество: CHSH > 2
+/// Проinерandть toinантоinое преandмущеwithтinо: CHSH > 2
 pub fn hasQuantumAdvantage(chsh_value: f64) bool {
     return chsh_value > CHSH_CLASSICAL;
 }
 
-/// Максимальное нарушение CHSH = 2√2
+/// Маtowithandмальное onрушенandе CHSH = 2√2
 pub fn maxCHSHViolation() f64 {
     return CHSH_QUANTUM;
 }
@@ -244,7 +244,7 @@ pub fn maxCHSHViolation() f64 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const EvolutionOperators = struct {
-    /// Мутация with rate = μ = 1/φ²/10
+    /// Мутацandя with rate = μ = 1/φ²/10
     pub fn mutate(genome: []f64, rng: *std.Random) void {
         for (genome) |*gene| {
             if (rng.float(f64) < MU_MUTATION) {
@@ -253,7 +253,7 @@ pub const EvolutionOperators = struct {
         }
     }
 
-    /// Кроссовер with rate = χ = 1/φ/10
+    /// Кроwithwithоinер with rate = χ = 1/φ/10
     pub fn crossover(parent_a: []const f64, parent_b: []const f64, child: []f64, rng: *std.Random) void {
         for (parent_a, parent_b, child) |a, b, *c| {
             if (rng.float(f64) < CHI_CROSSOVER) {
@@ -264,23 +264,23 @@ pub const EvolutionOperators = struct {
         }
     }
 
-    /// Селекция with pressure = σ = φ
+    /// Селеtoцandя with pressure = σ = φ
     pub fn selectionWeight(rank: u32) f64 {
         const rank_f: f64 = @floatFromInt(rank);
         return math.pow(f64, SIGMA_SELECTION, -rank_f);
     }
 
-    /// Элитизм with ratio = ε = 1/3
+    /// Элandтandзм with ratio = ε = 1/3
     pub fn eliteCount(population_size: usize) usize {
         return @intFromFloat(@as(f64, @floatFromInt(population_size)) * EPSILON_ELITISM);
     }
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 8. TSL ТИПЫ (3 типа = TRINITY)
+// 8. TSL ТИПЫ (3 тandпа = TRINITY)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Тип 1: Священное Computation
+/// Тandп 1: Сinященное Computation
 pub const SacredComputation = struct {
     n: u32,
     k: i32,
@@ -297,7 +297,7 @@ pub const SacredComputation = struct {
     }
 };
 
-/// Тип 2: Эволюционное Состояние
+/// Тandп 2: Эinолюцandонное Соwithтоянandе
 pub const EvolutionState = struct {
     generation: u32,
     fitness: f64,
@@ -323,16 +323,16 @@ pub const EvolutionState = struct {
     }
 };
 
-/// Тип 3: Квантово-Нейроморфное Состояние
+/// Тandп 3: Кinантоinо-Нейроморфное Соwithтоянandе
 pub const QuantumNeuroState = struct {
-    // Кубиты
+    // Кубandты
     chsh_value: f64,
 
     // LIF нейроны
     tau: f64, // = φ
     spike_level: u8, // 1, 2, or 3
 
-    // Энергия
+    // Энергandя
     energy_efficiency: f64, // goal: 603x
 
     pub fn initDefault() QuantumNeuroState {
@@ -431,7 +431,7 @@ test "qubit spiral placement" {
 }
 
 test "3 types = trinity" {
-    // Check what у нас ровно 3 типа
+    // Check what у onwith роinно 3 тandпа
     const type1 = SacredComputation{ .n = 1, .k = 0, .m = 0, .p = 0, .q = 0 };
     const type2 = EvolutionState.initDefault();
     const type3 = QuantumNeuroState.initDefault();

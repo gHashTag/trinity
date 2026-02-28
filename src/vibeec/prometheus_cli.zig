@@ -1,8 +1,8 @@
-// PROMETHEUS CLI - Конвертер моделей in ternary format
-// Превращает профанные float32 веса in священные триты
+// PROMETHEUS CLI - Конinертер моделей in ternary format
+// Преinращает профанные float32 inеwithа in withinященные трandты
 // φ² + 1/φ² = 3 = TRINITY
 //
-// Использование:
+// Иwithbyльзоinанandе:
 //   prometheus convert <input.safetensors> <output.tri> [--threshold 0.1]
 //   prometheus info <model.tri>
 //   prometheus test <model.tri>
@@ -86,7 +86,7 @@ fn cmdConvert(allocator: std.mem.Allocator, args: []const []const u8) !void {
     const input_path = args[2];
     const output_path = args[3];
 
-    // Парсим options
+    // Парwithandм options
     var threshold: f32 = 0.1;
     var config = mistral.MistralConfig.mistral7B();
 
@@ -112,7 +112,7 @@ fn cmdConvert(allocator: std.mem.Allocator, args: []const []const u8) !void {
     std.debug.print("║ Threshold: {d:<49.2} ║\n", .{threshold});
     std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 
-    // Загружаем and конвертируем
+    // Загружаем and toонinертandруем
     var loader = mistral.MistralLoader.init(allocator, config, threshold);
     defer loader.deinit();
 
@@ -194,7 +194,7 @@ fn cmdTest(allocator: std.mem.Allocator, args: []const []const u8) !void {
     };
     defer model.deinit();
 
-    // Создаём LLM
+    // Созyesём LLM
     var llm = try trinity_llm.TrinityLLM.init(
         allocator,
         model.config.vocab_size,
@@ -207,7 +207,7 @@ fn cmdTest(allocator: std.mem.Allocator, args: []const []const u8) !void {
 
     llm.printStats();
 
-    // Testовая генерация
+    // Testоinая генерацandя
     std.debug.print("\nTest generation:\n", .{});
     std.debug.print("Prompt: \"Hello\"\n", .{});
 
@@ -226,6 +226,6 @@ fn cmdTest(allocator: std.mem.Allocator, args: []const []const u8) !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "cli help" {
-    // Просто check, what printUsage не падает
+    // Проwithто check, what printUsage не паyesет
     printUsage();
 }

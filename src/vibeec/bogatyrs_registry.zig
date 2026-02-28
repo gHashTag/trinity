@@ -5,7 +5,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const interface = @import("bogatyrs_common.zig");
 
-/// Реестр всех богатырей
+/// Рееwithтр inwithех богатырей
 pub const BogatyrRegistry = struct {
     allocator: Allocator,
     plugins: std.StringHashMap(PluginEntry),
@@ -23,8 +23,8 @@ pub const BogatyrRegistry = struct {
             .plugins = std.StringHashMap(PluginEntry).init(allocator),
         };
 
-        // Регистрируем существующие базовые проверки (из validate_cmd.zig)
-        // TODO: Добавить остальные 33 богатыря by мере реализации
+        // Регandwithтрandруем withущеwithтinующandе базоinые проinерtoand (andз validate_cmd.zig)
+        // TODO: Добаinandть оwithтальные 33 богатыря by мере реалandзацandand
         try registry.registerBasicChecks();
 
         return registry;
@@ -34,11 +34,11 @@ pub const BogatyrRegistry = struct {
         self.plugins.deinit();
     }
 
-    /// Registration базовых проверок (while без полных 33 богатырей)
+    /// Registration базоinых проinероto (while без byлных 33 богатырей)
     fn registerBasicChecks(self: *Self) !void {
         try self.register(@import("bogatyrs_yaml_syntax.zig").bogatyr);
         try self.register(@import("bogatyrs_spec_structure.zig").bogatyr);
-        // Жар-птица — 34-й Богатырь-Творец with принципом synthesis
+        // Жар-птandца — 34-й Богатырь-Тinорец with прandнцandbyм synthesis
         try self.register(@import("bogatyr_34_creator.zig").bogatyr);
     }
 
@@ -51,12 +51,12 @@ pub const BogatyrRegistry = struct {
         try self.plugins.put(plugin.name, entry);
     }
 
-    /// Получить плагин by имени
+    /// Получandть плагandн by andменand
     pub fn getPlugin(self: *Self, name: []const u8) ?PluginEntry {
         return self.plugins.get(name);
     }
 
-    /// Получить all плагины
+    /// Получandть all плагandны
     pub fn getAllPlugins(self: *Self) ![]interface.BogatyrPlugin {
         var list = std.ArrayList(interface.BogatyrPlugin).init(self.allocator);
         defer list.deinit();
@@ -69,7 +69,7 @@ pub const BogatyrRegistry = struct {
         return list.toOwnedSlice();
     }
 
-    /// Получить количество зарегистрированных богатырей
+    /// Получandть toолandчеwithтinо зарегandwithтрandроinанных богатырей
     pub fn pluginCount(self: *const Self) usize {
         return self.plugins.count();
     }
@@ -84,7 +84,7 @@ test "bogatyr registry initialization" {
     var registry = try BogatyrRegistry.init(allocator);
     defer registry.deinit();
 
-    // Базовые проверки должны быть зарегистрированы
+    // Базоinые проinерtoand beforeлжны быть зарегandwithтрandроinаны
     const num_plugins = registry.pluginCount();
     try std.testing.expect(num_plugins >= 0);
 }
