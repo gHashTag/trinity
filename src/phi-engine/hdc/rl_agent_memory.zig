@@ -95,7 +95,7 @@ pub const RLAgentWithMemory = struct {
 
     /// Сохранить опыт in memory
     pub fn storeExperience(self: *RLAgentWithMemory, exp: Experience) !void {
-        // Кодируем опыт how ключ-value
+        // Encode опыт how ключ-value
         // Ключ: state_id + action_id
         // Значение: reward + next_state + done
         const key_seed = @as(u64, exp.state_id) * 1000 + @as(u64, exp.action_id);

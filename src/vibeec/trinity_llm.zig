@@ -32,7 +32,7 @@ pub const SimpleTokenizer = struct {
     }
 
     pub fn deinit(self: *SimpleTokenizer) void {
-        // Освобождаем all строки токенов
+        // Free all строки токенов
         var it = self.vocab.keyIterator();
         while (it.next()) |key| {
             self.allocator.free(key.*);
@@ -303,7 +303,7 @@ pub const TrinityLLM = struct {
     fn predictNext(self: *TrinityLLM, tokens: []const u32) !u32 {
         const seq_len = tokens.len;
 
-        // One-hot encoding входных токенов
+        // One-hot encoding loginных токенов
         var input = try self.allocator.alloc(f32, seq_len * self.vocab_size);
         defer self.allocator.free(input);
         @memset(input, 0.0);
@@ -324,7 +324,7 @@ pub const TrinityLLM = struct {
             hidden = next_hidden;
         }
 
-        // LM head - получаем логиты
+        // LM head - get логиты
         const logits = try self.lm_head.forward(self.allocator, hidden, seq_len);
         defer self.allocator.free(logits);
         self.allocator.free(hidden);
@@ -468,13 +468,13 @@ pub const TrinityLLM = struct {
 // HELPER FUNCTIONS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Парсинг индекса слоя из имени тензора (например, "layers.5.self_attn.q_proj" -> 5)
+/// Парсинг индекса слоя из имени тензора (наexample, "layers.5.self_attn.q_proj" -> 5)
 fn parseLayerIndex(name: []const u8) usize {
     // Ищем pattern "layers.N." or ".N."
     var i: usize = 0;
     while (i < name.len) : (i += 1) {
         if (name[i] == '.') {
-            // Проверяем, есть ли number after точки
+            // Check, есть ли number after точки
             var j = i + 1;
             var num: usize = 0;
             var found_digit = false;

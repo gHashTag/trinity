@@ -1,4 +1,4 @@
-//! GridWorld - Классическая среда for тестирования RL агентов
+//! GridWorld - Классическая среда for testирования RL агентов
 //!
 //! Сетка NxN with:
 //! - Стартовая позиция (0,0)
@@ -126,7 +126,7 @@ pub const GridWorld = struct {
     pub fn step(self: *GridWorld, action: usize) StepResult {
         self.steps += 1;
 
-        // Вычисляем новую позицию
+        // Compute новую позицию
         var new_pos = self.agent_pos;
         switch (@as(Action, @enumFromInt(action))) {
             .UP => {
@@ -143,7 +143,7 @@ pub const GridWorld = struct {
             },
         }
 
-        // Проверяем стену
+        // Check стену
         const new_idx = new_pos.toIndex(self.width);
         var reward = self.config.step_reward;
         var info: []const u8 = "step";
@@ -156,7 +156,7 @@ pub const GridWorld = struct {
             self.agent_pos = new_pos;
         }
 
-        // Проверяем goal
+        // Check goal
         var done = false;
         if (self.agent_pos.eql(self.goal_pos)) {
             reward = self.config.goal_reward;
@@ -164,7 +164,7 @@ pub const GridWorld = struct {
             info = "goal";
         }
 
-        // Проверяем лимит шагов
+        // Check лимит шагов
         if (self.steps >= self.config.max_steps) {
             done = true;
             info = "timeout";

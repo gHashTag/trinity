@@ -38,7 +38,7 @@ pub const CODE_CACHE_SIZE: usize = 1024 * 1024; // 1MB
 pub const BasicBlock = struct {
     /// Начальный адрес in байткоде
     start_addr: u32,
-    /// Конечный адрес (не включительно)
+    /// Конечный адрес (не вkeysтельно)
     end_addr: u32,
     /// Счётчик выполнений
     execution_count: u32,
@@ -137,7 +137,7 @@ pub const JITRuntime = struct {
         const start_pos = self.code_buffer.pos;
 
         // Generate simple function for арифметических операций
-        // Пока поддерживаем только ADD, SUB, MUL
+        // Пока support только ADD, SUB, MUL
         self.emitBlockCode(bytecode[entry.start_addr..entry.end_addr]);
 
         // Делаем code исполняемым
@@ -194,7 +194,7 @@ pub const JITRuntime = struct {
                     break;
                 },
                 else => {
-                    // Пропускаем неподдерживаемые опкоды
+                    // Пропускаем неsupportые опкоды
                 },
             }
         }
@@ -287,7 +287,7 @@ pub const HybridVM = struct {
         while (self.running and self.ip < self.bytecode.len) {
             const block_start = self.ip;
 
-            // Проверяем, есть ли скомпилированный code
+            // Check, есть ли скомпилированный code
             if (self.jit_runtime.isCompiled(block_start)) {
                 // Выполняем JIT code
                 const arg1 = if (self.sp > 0) self.stack[self.sp - 1] else 0;

@@ -71,7 +71,7 @@ fn tritsToI8(trits: []const prometheus.TritWeight, out: []i8) void {
 }
 
 /// SIMD-оптимизированное матричное умножение
-/// Обрабатывает 8 входных значений за раз
+/// Processes 8 loginных значений за раз
 pub fn simdMatmul(
     output: []f32,
     input: []const f32,
@@ -95,7 +95,7 @@ pub fn simdMatmul(
         // Обрабатываем by 8 элементов за раз
         var i: usize = 0;
         while (i + 8 <= in_features) : (i += 8) {
-            // Загружаем 8 входных значений
+            // Загружаем 8 loginных значений
             const input_vec: Vec8f = input[i..][0..8].*;
 
             // Загружаем 8 тритов and конвертируем in f32

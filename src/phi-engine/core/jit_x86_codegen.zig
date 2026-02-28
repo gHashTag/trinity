@@ -860,7 +860,7 @@ pub const HotPathDetector = struct {
         return entry.value_ptr.* >= self.hot_threshold;
     }
 
-    /// Проверить, является ли адрес горячим
+    /// Проверить, is ли адрес горячим
     pub fn isHot(self: *const Self, address: u32) bool {
         if (self.execution_counts.get(address)) |count| {
             return count >= self.hot_threshold;
@@ -1269,7 +1269,7 @@ pub fn benchmarkAdd(iterations: u64) !BenchmarkResult {
     }
     const jit_ns = timer.read();
 
-    // Проверка корректности
+    // Check корректности
     if (sum_interp != sum_jit) {
         return error.ResultMismatch;
     }
@@ -1335,7 +1335,7 @@ pub fn printBenchmarkResults(name: []const u8, result: BenchmarkResult) void {
 
 test "benchmark add" {
     const result = try benchmarkAdd(100_000);
-    // JIT должен быть быстрее (or примерно равен из-за оптимизаций компилятора)
+    // JIT должен быть быстрее (or exampleно равен из-за оптимизаций компилятора)
     try std.testing.expect(result.speedup > 0.5);
 }
 

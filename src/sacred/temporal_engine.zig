@@ -116,7 +116,7 @@ pub const TemporalEngine = struct {
         return .{ sacred.cosmology.OMEGA_MATTER, sacred.cosmology.OMEGA_LAMBDA };
     }
 
-    /// Shutdown temporal engine (например, перед poweroff)
+    /// Shutdown temporal engine (наexample, перед poweroff)
     pub fn deinit(self: *TemporalEngine) void {
         _ = self;
         // В production: остановить monitoring, освободить ресурсы
@@ -313,7 +313,7 @@ pub const AsymmetryStats = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// BOOT INTEGRATION — Temporal Engine запускается при загрузке системы
+// BOOT INTEGRATION — Temporal Engine runsся при загрузке системы
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Запустить Temporal Engine при загрузке системы
@@ -377,7 +377,7 @@ pub const temporal = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TESTS — Вечная верификация
+// TESTS — Вечная verification
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "temporal engine: verify φ² + 1/φ² = 3" {

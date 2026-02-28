@@ -1,5 +1,5 @@
-// TEST MODEL CREATOR - Создание тестовой модели
-// Генерирует small safetensors file for тестирования
+// TEST MODEL CREATOR - Создание testовой модели
+// Generates small safetensors file for testирования
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");
@@ -41,11 +41,11 @@ pub fn main() !void {
     std.debug.print("Created test model with {d} parameters\n", .{total_floats});
     std.debug.print("File size: {d} bytes\n", .{8 + header.len + 278528});
 
-    // Проверяем
+    // Check
     const stat = try std.fs.cwd().statFile(path);
     std.debug.print("Actual file size: {d} bytes\n", .{stat.size});
 
-    // Тестируем загрузку
+    // Test загрузку
     const safetensors = @import("safetensors_parser.zig");
     var sf = try safetensors.SafetensorsFile.open(allocator, path);
     defer sf.deinit();

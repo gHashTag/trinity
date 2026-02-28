@@ -69,7 +69,7 @@ pub const MistralConfig = struct {
         return total;
     }
 
-    /// Конфигурация for маленькой тестовой модели
+    /// Конфигурация for маленькой testовой модели
     pub fn tiny() MistralConfig {
         return MistralConfig{
             .vocab_size = 256,
@@ -237,7 +237,7 @@ pub const MistralLoader = struct {
     ) !void {
         defer self.allocator.free(name);
 
-        // Получаем data тензора
+        // Get data тензора
         const weights = sf.getTensorF32(self.allocator, name) catch |err| {
             std.debug.print("  Warning: tensor '{s}' not found: {}\n", .{ name, err });
             return;
@@ -255,7 +255,7 @@ pub const MistralLoader = struct {
         self.stats.tensors_quantized += 1;
         self.stats.quantized_size_mb += @as(f64, @floatFromInt(weights.len / 4)) / (1024 * 1024);
 
-        // Добавляем in модель
+        // Add in модель
         try self.model.addLayer(prometheus.TritLayer{
             .name = name,
             .weights = tensor,

@@ -57,12 +57,12 @@ pub const ChromeLauncher = struct {
 
     pub fn deinit(self: *Self) void {
         _ = self;
-        // Registry деинициализируется снаружи
+        // Registry deinitializesся снаружи
     }
 
     /// Запуск Chrome with предварительной валидацией
     pub fn launchWithValidation(self: *Self) !ChromeProcess {
-        // Валидация перед запуском (if включено)
+        // Validation перед запуском (if включено)
         if (self.config.validate_spec_before_launch and self.config.spec_path != null) {
             const source = self.allocator.alloc(u8, 2048) catch return ChromeLauncherError.OutOfMemory;
             defer self.allocator.free(source);
@@ -74,7 +74,7 @@ pub const ChromeLauncher = struct {
             };
             defer self.allocator.free(spec_source);
 
-            // Создаем валидационный контекст
+            // Create валидационный контекст
             const validation_config = registry_mod.ValidationConfig{
                 .strict_mode = self.config.strict_validation,
                 .warning_as_error = false,
@@ -282,7 +282,7 @@ pub const ChromeLauncher = struct {
         };
     }
 
-    /// Проверка доступности порта
+    /// Check доступности порта
     fn isPortAvailable(port: u16) bool {
         const address = std.net.Address.parseIp("127.0.0.1", port) catch return false;
         const socket = std.net.tcp.getSocketToAddress(address) catch return true;
@@ -311,7 +311,7 @@ pub const ChromeLauncher = struct {
         return ChromeLauncherError.ChromeNotFound;
     }
 
-    /// Create temporary directory for пользовательских данных
+    /// Create temporary directory for userских данных
     fn createTempUserDataDir(self: *Self) ![]const u8 {
         const temp_dir = std.fs.getenv("TMPDIR") orelse "/tmp";
 
@@ -388,7 +388,7 @@ test "chrome launcher with validation disabled" {
     var launcher = try ChromeLauncher.init(allocator, config, &registry);
     defer launcher.deinit();
 
-    // Тест без валидации Chrome не запускаем
+    // Test без валидации Chrome не запускаем
 }
 
 test "port availability" {

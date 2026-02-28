@@ -2063,7 +2063,7 @@ pub const ZigCodeGen = struct {
             try self.builder.newline();
         }
 
-        // Добавляем базовые φ-константы только if их нет in спецификации
+        // Add базовые φ-константы только if их нет in спецификации
         var has_phi = false;
         for (constants) |c| {
             if (std.mem.eql(u8, c.name, "PHI")) {
@@ -2072,7 +2072,7 @@ pub const ZigCodeGen = struct {
             }
         }
 
-        // Добавляем базовые φ-константы if их нет
+        // Add базовые φ-константы if их нет
         try self.builder.writeLine("// Базовые φ-константы (Sacred Formula)");
 
         var has_phi_inv = false;
@@ -2344,7 +2344,7 @@ pub const ZigCodeGen = struct {
         try self.builder.newline();
 
         // verify_trinity
-        try self.builder.writeLine("/// Проверка TRINITY identity: φ² + 1/φ² = 3");
+        try self.builder.writeLine("/// Check TRINITY identity: φ² + 1/φ² = 3");
         try self.builder.writeLine("fn verify_trinity() f64 {");
         try self.builder.writeLine("    return PHI * PHI + 1.0 / (PHI * PHI);");
         try self.builder.writeLine("}");
@@ -2386,7 +2386,7 @@ pub const ZigCodeGen = struct {
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.newline();
 
-        // Отслеживаем уже добавленные тесты
+        // Track уже добавленные testы
         var added_tests = std.StringHashMap(void).init(self.allocator);
         defer added_tests.deinit();
 
@@ -2416,7 +2416,7 @@ pub const ZigCodeGen = struct {
             try self.builder.newline();
         }
 
-        // Добавляем базовый test констант if его нет
+        // Add базовый test констант if его нет
         if (!added_tests.contains("phi_constants")) {
             try self.builder.writeLine("test \"phi_constants\" {");
             try self.builder.writeLine("    try std.testing.expectApproxEqAbs(PHI * PHI_INV, 1.0, 1e-10);");
@@ -2429,7 +2429,7 @@ pub const ZigCodeGen = struct {
         // Парсим input: { n: 0 } or { a: 0, b: 100, t: 0.5 }
         // Убираем кавычки if есть
         const input = stripQuotes(tc.input);
-        // Извлекаем только number из expected (может содержать comment)
+        // Extract только number из expected (может содержать comment)
         const expected = extractNumber(stripQuotes(tc.expected));
 
         // Используем tc.name if есть, else behavior_name
@@ -2437,7 +2437,7 @@ pub const ZigCodeGen = struct {
 
         // Определяем функцию by имени
         if (std.mem.startsWith(u8, func_name, "phi_power")) {
-            // Извлекаем n из input
+            // Extract n из input
             if (extractIntParam(input, "n")) |n| {
                 if (tc.tolerance) |tol| {
                     try self.builder.writeFmt("try std.testing.expectApproxEqAbs(phi_power({d}), {s}, {d});\n", .{ n, expected, tol });
@@ -2460,11 +2460,11 @@ pub const ZigCodeGen = struct {
         } else if (std.mem.eql(u8, func_name, "trinity_identity")) {
             try self.builder.writeLine("try std.testing.expectApproxEqAbs(verify_trinity(), TRINITY, 1e-10);");
         } else if (std.mem.startsWith(u8, func_name, "phi_spiral")) {
-            // phi_spiral тесты
+            // phi_spiral testы
             try self.builder.writeLine("const count = generate_phi_spiral(100, 10.0, 0.0, 0.0);");
             try self.builder.writeLine("try std.testing.expect(count > 0);");
         } else if (std.mem.startsWith(u8, func_name, "phi_lerp")) {
-            // phi_lerp тесты - используем большую tolerance из-за приближённых значений in spec
+            // phi_lerp testы - используем большую tolerance из-за приближённых значений in spec
             if (extractFloatParam(input, "t")) |t| {
                 const a = extractFloatParam(input, "a") orelse 0.0;
                 const b_val = extractFloatParam(input, "b") orelse 100.0;
@@ -2622,7 +2622,7 @@ pub const ZigCodeGen = struct {
     }
 
     fn extractNumber(value: []const u8) []const u8 {
-        // Извлекаем только number из строки типа "65.47  # comment"
+        // Extract только number из строки типа "65.47  # comment"
         var end: usize = 0;
         // Пропускаем начальные пробелы
         var start: usize = 0;

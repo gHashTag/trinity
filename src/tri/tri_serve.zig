@@ -683,6 +683,84 @@ pub const UnifiedApiServer = struct {
 
             return buffer.toOwnedSlice(self.allocator);
         }
+        // Check for specific field queries FIRST (using {field pattern to avoid substring matches)
+        if (std.mem.indexOf(u8, normalized_query, "{sacred") != null) {
+            var buffer = std.ArrayList(u8).initCapacity(self.allocator, 512) catch return error.OutOfMemory;
+            try buffer.appendSlice(self.allocator, "HTTP/1.1 200 OK\nContent-Type: application/json\nAccess-Control-Allow-Origin: *\n\n");
+            try buffer.appendSlice(self.allocator, "{\"data\":{\"sacred\":{");
+            try buffer.appendSlice(self.allocator, "\"phi\":1.618033988749895,");
+            try buffer.appendSlice(self.allocator, "\"phi_sq\":2.618033988749895,");
+            try buffer.appendSlice(self.allocator, "\"trinity\":3.0,");
+            try buffer.appendSlice(self.allocator, "\"pi\":3.141592653589793,");
+            try buffer.appendSlice(self.allocator, "\"e\":2.718281828459045,");
+            try buffer.appendSlice(self.allocator, "\"golden_angle\":137.50776405003785");
+            try buffer.appendSlice(self.allocator, "}}}");
+            return buffer.toOwnedSlice(self.allocator);
+        }
+
+        if (std.mem.indexOf(u8, normalized_query, "{version") != null) {
+            var buffer = std.ArrayList(u8).initCapacity(self.allocator, 256) catch return error.OutOfMemory;
+            try buffer.appendSlice(self.allocator, "HTTP/1.1 200 OK\nContent-Type: application/json\nAccess-Control-Allow-Origin: *\n\n");
+            try buffer.appendSlice(self.allocator, "{\"data\":{\"version\":{");
+            try buffer.appendSlice(self.allocator, "\"version\":\"1.0.0\",");
+            try buffer.appendSlice(self.allocator, "\"build\":\"Cycle 102\",");
+            try buffer.appendSlice(self.allocator, "\"zig_version\":\"0.15.2\"");
+            try buffer.appendSlice(self.allocator, "}}}");
+            return buffer.toOwnedSlice(self.allocator);
+        }
+
+        if (std.mem.indexOf(u8, normalized_query, "{docs") != null) {
+            var buffer = std.ArrayList(u8).initCapacity(self.allocator, 1024) catch return error.OutOfMemory;
+            try buffer.appendSlice(self.allocator, "HTTP/1.1 200 OK\nContent-Type: application/json\nAccess-Control-Allow-Origin: *\n\n");
+            try buffer.appendSlice(self.allocator, "{\"data\":{\"docs\":[");
+            try buffer.appendSlice(self.allocator, "{\"title\":\"GraphQL API\",\"url\":\"/graphql\",\"category\":\"API\"},");
+            try buffer.appendSlice(self.allocator, "{\"title\":\"REST API\",\"url\":\"/api/*\",\"category\":\"API\"},");
+            try buffer.appendSlice(self.allocator, "{\"title\":\"OpenAPI Spec\",\"url\":\"/api/openapi.json\",\"category\":\"API\"},");
+            try buffer.appendSlice(self.allocator, "{\"title\":\"TRINITY Docs\",\"url\":\"https://ghashtag.github.io/trinity/docs\",\"category\":\"Documentation\"},");
+            try buffer.appendSlice(self.allocator, "{\"title\":\"Research\",\"url\":\"https://ghashtag.github.io/trinity/docs/research\",\"category\":\"Documentation\"},");
+            try buffer.appendSlice(self.allocator, "{\"title\":\"Benchmarks\",\"url\":\"https://ghashtag.github.io/trinity/docs/benchmarks\",\"category\":\"Documentation\"},");
+            try buffer.appendSlice(self.allocator, "{\"title\":\"GitHub\",\"url\":\"https://github.com/ghashtag/trinity\",\"category\":\"Source\"}");
+            try buffer.appendSlice(self.allocator, "]}}");
+            return buffer.toOwnedSlice(self.allocator);
+        }
+
+        if (std.mem.indexOf(u8, normalized_query, "{stats") != null) {
+            const cmd_count = self.registry.count();
+            var buffer = std.ArrayList(u8).initCapacity(self.allocator, 512) catch return error.OutOfMemory;
+            try buffer.appendSlice(self.allocator, "HTTP/1.1 200 OK\nContent-Type: application/json\nAccess-Control-Allow-Origin: *\n\n");
+            try buffer.appendSlice(self.allocator, "{\"data\":{\"stats\":{");
+            const cmd_str = try std.fmt.allocPrint(self.allocator, "{d}", .{cmd_count});
+            defer self.allocator.free(cmd_str);
+            try buffer.appendSlice(self.allocator, "\"commands_count\":");
+            try buffer.appendSlice(self.allocator, cmd_str);
+            try buffer.appendSlice(self.allocator, ",\"categories_count\":17,");
+            try buffer.appendSlice(self.allocator, "\"protocols\":[\"REST\",\"GraphQL\",\"gRPC\",\"WebSocket\"],");
+            try buffer.appendSlice(self.allocator, "\"endpoints\":{");
+            try buffer.appendSlice(self.allocator, "\"rest\":\"http://localhost:8080/api/*\",");
+            try buffer.appendSlice(self.allocator, "\"graphql\":\"http://localhost:8080/graphql\",");
+            try buffer.appendSlice(self.allocator, "\"grpc\":\"http://localhost:9335\",");
+            try buffer.appendSlice(self.allocator, "\"websocket\":\"http://localhost:8080/ws\"");
+            try buffer.appendSlice(self.allocator, "}}}}");
+            return buffer.toOwnedSlice(self.allocator);
+        }
+
+        if (std.mem.indexOf(u8, normalized_query, "{status") != null) {
+            const uptime = std.time.milliTimestamp() - self.status.start_time;
+            var buffer = std.ArrayList(u8).initCapacity(self.allocator, 256) catch return error.OutOfMemory;
+            try buffer.appendSlice(self.allocator, "HTTP/1.1 200 OK\nContent-Type: application/json\nAccess-Control-Allow-Origin: *\n\n");
+            try buffer.appendSlice(self.allocator, "{\"data\":{\"status\":{\"healthy\":true,\"connections\":");
+            const conn_str = try std.fmt.allocPrint(self.allocator, "{d}", .{self.status.connections});
+            defer self.allocator.free(conn_str);
+            try buffer.appendSlice(self.allocator, conn_str);
+            try buffer.appendSlice(self.allocator, ",\"uptime\":");
+            const uptime_str = try std.fmt.allocPrint(self.allocator, "{d}", .{uptime});
+            defer self.allocator.free(uptime_str);
+            try buffer.appendSlice(self.allocator, uptime_str);
+            try buffer.appendSlice(self.allocator, "}}}}");
+            return buffer.toOwnedSlice(self.allocator);
+        }
+
+        // Commands query - check LAST (most specific pattern)
         if (std.mem.indexOf(u8, normalized_query, "{commands") != null or
             std.mem.indexOf(u8, normalized_query, "commands") != null) {
             std.debug.print("DEBUG: Matched commands query!\n", .{});
@@ -722,88 +800,6 @@ pub const UnifiedApiServer = struct {
             const result = response_buffer.toOwnedSlice(self.allocator);
             std.debug.print("DEBUG: Returning response\n", .{});
             return result;
-        }
-
-        // Handle { status { healthy connections } } query
-        if (std.mem.indexOf(u8, normalized_query, "{status") != null or
-            std.mem.indexOf(u8, normalized_query, "status") != null) {
-            const uptime = std.time.milliTimestamp() - self.status.start_time;
-            var buffer = std.ArrayList(u8).initCapacity(self.allocator, 256) catch return error.OutOfMemory;
-            try buffer.appendSlice(self.allocator, "HTTP/1.1 200 OK\nContent-Type: application/json\nAccess-Control-Allow-Origin: *\n\n");
-            try buffer.appendSlice(self.allocator, "{\"data\":{\"status\":{\"healthy\":true,\"connections\":");
-            const conn_str = try std.fmt.allocPrint(self.allocator, "{d}", .{self.status.connections});
-            defer self.allocator.free(conn_str);
-            try buffer.appendSlice(self.allocator, conn_str);
-            try buffer.appendSlice(self.allocator, ",\"uptime\":");
-            const uptime_str = try std.fmt.allocPrint(self.allocator, "{d}", .{uptime});
-            defer self.allocator.free(uptime_str);
-            try buffer.appendSlice(self.allocator, uptime_str);
-            try buffer.appendSlice(self.allocator, "}}}}");
-            return buffer.toOwnedSlice(self.allocator);
-        }
-
-        // Handle { sacred { phi pi e } } query
-        if (std.mem.indexOf(u8, normalized_query, "{sacred") != null) {
-            var buffer = std.ArrayList(u8).initCapacity(self.allocator, 512) catch return error.OutOfMemory;
-            try buffer.appendSlice(self.allocator, "HTTP/1.1 200 OK\nContent-Type: application/json\nAccess-Control-Allow-Origin: *\n\n");
-            try buffer.appendSlice(self.allocator, "{\"data\":{\"sacred\":{");
-            try buffer.appendSlice(self.allocator, "\"phi\":1.618033988749895,");
-            try buffer.appendSlice(self.allocator, "\"phi_sq\":2.618033988749895,");
-            try buffer.appendSlice(self.allocator, "\"trinity\":3.0,");
-            try buffer.appendSlice(self.allocator, "\"pi\":3.141592653589793,");
-            try buffer.appendSlice(self.allocator, "\"e\":2.718281828459045,");
-            try buffer.appendSlice(self.allocator, "\"golden_angle\":137.50776405003785");
-            try buffer.appendSlice(self.allocator, "}}}");
-            return buffer.toOwnedSlice(self.allocator);
-        }
-
-        // Handle { version { build } } query
-        if (std.mem.indexOf(u8, normalized_query, "{version") != null) {
-            var buffer = std.ArrayList(u8).initCapacity(self.allocator, 256) catch return error.OutOfMemory;
-            try buffer.appendSlice(self.allocator, "HTTP/1.1 200 OK\nContent-Type: application/json\nAccess-Control-Allow-Origin: *\n\n");
-            try buffer.appendSlice(self.allocator, "{\"data\":{\"version\":{");
-            try buffer.appendSlice(self.allocator, "\"version\":\"1.0.0\",");
-            try buffer.appendSlice(self.allocator, "\"build\":\"Cycle 102\",");
-            try buffer.appendSlice(self.allocator, "\"zig_version\":\"0.15.2\"");
-            try buffer.appendSlice(self.allocator, "}}}");
-            return buffer.toOwnedSlice(self.allocator);
-        }
-
-        // Handle { docs { title url } } query
-        if (std.mem.indexOf(u8, normalized_query, "{docs") != null) {
-            var buffer = std.ArrayList(u8).initCapacity(self.allocator, 1024) catch return error.OutOfMemory;
-            try buffer.appendSlice(self.allocator, "HTTP/1.1 200 OK\nContent-Type: application/json\nAccess-Control-Allow-Origin: *\n\n");
-            try buffer.appendSlice(self.allocator, "{\"data\":{\"docs\":[");
-            try buffer.appendSlice(self.allocator, "{\"title\":\"GraphQL API\",\"url\":\"/graphql\",\"category\":\"API\"},");
-            try buffer.appendSlice(self.allocator, "{\"title\":\"REST API\",\"url\":\"/api/*\",\"category\":\"API\"},");
-            try buffer.appendSlice(self.allocator, "{\"title\":\"OpenAPI Spec\",\"url\":\"/api/openapi.json\",\"category\":\"API\"},");
-            try buffer.appendSlice(self.allocator, "{\"title\":\"TRINITY Docs\",\"url\":\"https://ghashtag.github.io/trinity/docs\",\"category\":\"Documentation\"},");
-            try buffer.appendSlice(self.allocator, "{\"title\":\"Research\",\"url\":\"https://ghashtag.github.io/trinity/docs/research\",\"category\":\"Documentation\"},");
-            try buffer.appendSlice(self.allocator, "{\"title\":\"Benchmarks\",\"url\":\"https://ghashtag.github.io/trinity/docs/benchmarks\",\"category\":\"Documentation\"},");
-            try buffer.appendSlice(self.allocator, "{\"title\":\"GitHub\",\"url\":\"https://github.com/ghashtag/trinity\",\"category\":\"Source\"}");
-            try buffer.appendSlice(self.allocator, "]}}");
-            return buffer.toOwnedSlice(self.allocator);
-        }
-
-        // Handle { stats { commands_count } } query
-        if (std.mem.indexOf(u8, normalized_query, "{stats") != null) {
-            const cmd_count = self.registry.count();
-            var buffer = std.ArrayList(u8).initCapacity(self.allocator, 512) catch return error.OutOfMemory;
-            try buffer.appendSlice(self.allocator, "HTTP/1.1 200 OK\nContent-Type: application/json\nAccess-Control-Allow-Origin: *\n\n");
-            try buffer.appendSlice(self.allocator, "{\"data\":{\"stats\":{");
-            const cmd_str = try std.fmt.allocPrint(self.allocator, "{d}", .{cmd_count});
-            defer self.allocator.free(cmd_str);
-            try buffer.appendSlice(self.allocator, "\"commands_count\":");
-            try buffer.appendSlice(self.allocator, cmd_str);
-            try buffer.appendSlice(self.allocator, ",\"categories_count\":17,");
-            try buffer.appendSlice(self.allocator, "\"protocols\":[\"REST\",\"GraphQL\",\"gRPC\",\"WebSocket\"],");
-            try buffer.appendSlice(self.allocator, "\"endpoints\":{");
-            try buffer.appendSlice(self.allocator, "\"rest\":\"http://localhost:8080/api/*\",");
-            try buffer.appendSlice(self.allocator, "\"graphql\":\"http://localhost:8080/graphql\",");
-            try buffer.appendSlice(self.allocator, "\"grpc\":\"http://localhost:9335\",");
-            try buffer.appendSlice(self.allocator, "\"websocket\":\"http://localhost:8080/ws\"");
-            try buffer.appendSlice(self.allocator, "}}}}");
-            return buffer.toOwnedSlice(self.allocator);
         }
 
         // Unknown query - return error

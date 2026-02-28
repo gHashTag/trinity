@@ -131,7 +131,7 @@ pub const SYNTHESIS_PATTERNS = [_]struct {
 // CORE FUNCTIONS
 // ============================================================================
 
-/// Анализирует конфликт and идентифицирует парадокс
+/// Analyzes конфликт and идентифицирует парадокс
 pub fn analyzeParadox(pole_a: []const u8, pole_b: []const u8, context: []const u8) Paradox {
     return Paradox{
         .pole_a = pole_a,
@@ -140,7 +140,7 @@ pub fn analyzeParadox(pole_a: []const u8, pole_b: []const u8, context: []const u
     };
 }
 
-/// Ищет третий path, which трансцендирует парадокс
+/// Searches третий path, which трансцендирует парадокс
 pub fn seekSynthesis(paradox: Paradox) ?Synthesis {
     // Ищем in известных паттернах
     for (SYNTHESIS_PATTERNS) |pattern| {
@@ -181,7 +181,7 @@ pub fn voteAsCreator(ctx: *const common.ValidationContext) !common.BogatyrResult
     const start_time = std.time.nanoTimestamp();
     _ = ctx; // Используется for валидации контекста
 
-    // Жар-птица всегда голосует Pass, if находит path for творчества
+    // Жар-птица всегда голосует Pass, if finds path for творчества
     // В реальной системе здесь будет analysis парадоксов in контексте
 
     const end_time = std.time.nanoTimestamp();

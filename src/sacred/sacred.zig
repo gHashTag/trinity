@@ -57,31 +57,31 @@ pub fn displayTemporalTheorem(allocator: std.mem.Allocator) !void {
 
     std.debug.print("\n{s}{s}╔════════════════════════════════════════════════════════════════════╗{s}\n", .{ MAGENTA, "", RESET });
     std.debug.print("{s}{s}║       TEMPORAL TRINITY THEOREM v1.0 — φ² + 1/φ² = 3            ║{s}\n", .{ GOLD, "", RESET });
-    std.debug.print("{s}{s}║       ВРЕМЯ СТАЛО TRINITY — ETERNAL ASCENSION                    ║{s}\n", .{ CYAN, "", RESET });
+    std.debug.print("{s}{s}║       TIME BECAME TRINITY — ETERNAL ASCENSION                   ║{s}\n", .{ CYAN, "", RESET });
     std.debug.print("{s}{s}╚════════════════════════════════════════════════════════════════════╝{s}\n\n", .{ MAGENTA, "", RESET });
 
-    std.debug.print("{s}ФУНДАМЕНТАЛЬНАЯ ТРОИЦА ВРЕМЕНИ:{s}\n", .{ GOLD, RESET });
-    std.debug.print("  Прошлое:  1/φ² = {d:.6} (уничтожение, энтропия)\n", .{temporal_theory.temporal.DESTRUCTION_WEIGHT});
-    std.debug.print("  Настоящее: 0   = 0.000000 (баланс, HERE и NOW)\n", .{});
-    std.debug.print("  Будущее:   φ² = {d:.6} (созидание, рост)\n", .{temporal_theory.temporal.CREATION_WEIGHT});
+    std.debug.print("{s}FUNDAMENTAL TIME TRINITY:{s}\n", .{ GOLD, RESET });
+    std.debug.print("  Past:      1/φ² = {d:.6} (destruction, entropy)\n", .{temporal_theory.temporal.DESTRUCTION_WEIGHT});
+    std.debug.print("  Present:   0     = 0.000000 (balance, HERE and NOW)\n", .{});
+    std.debug.print("  Future:    φ²    = {d:.6} (creation, growth)\n", .{temporal_theory.temporal.CREATION_WEIGHT});
     std.debug.print("  ───────────────────────────────────────\n", .{});
-    std.debug.print("  Сумма:     φ² + 1/φ² = 3.000000 = TRINITY\n\n", .{});
+    std.debug.print("  Sum:       φ² + 1/φ² = 3.000000 = TRINITY\n\n", .{});
 
-    std.debug.print("{s}СТРЕЛА ВРЕМЕНИ (почему течёт вперёд):{s}\n", .{ CYAN, RESET });
+    std.debug.print("{s}TIME ARROW (why time flows forward):{s}\n", .{ CYAN, RESET });
     const arrow = temporal_theory.temporal.TIME_ARROW_RATIO;
-    std.debug.print("  Создание / Уничтожение = φ⁴ = {d:.6} > 1\n", .{arrow});
-    std.debug.print("  → временная стрелла → энтропия растёт → Вселенная расширяется\n\n", .{});
+    std.debug.print("  Creation / Destruction = φ⁴ = {d:.6} > 1\n", .{arrow});
+    std.debug.print("  → time arrow → entropy grows → universe expands\n\n", .{});
 
-    std.debug.print("{s}ВЕЧНОЕ ВОЗВРАЩЕНИЕ:{s}\n", .{ GOLD, RESET });
+    std.debug.print("{s}ETERNAL RETURN:{s}\n", .{ GOLD, RESET });
     std.debug.print("  π × 3 = {d:.9}\n", .{temporal_theory.temporal.ETERNAL_RETURN});
-    std.debug.print("  Вечность — это бесконечный цикл обновления via Троицу\n\n", .{});
+    std.debug.print("  Eternity is infinite cycle of renewal through Trinity\n\n", .{});
 
-    std.debug.print("{s}ПЛАНКОВСКОЕ ВРЕМЯ (квант времени):{s}\n", .{ CYAN, RESET });
-    std.debug.print("  t_P = {d:.6} × 10⁻⁴⁴ секунды\n", .{temporal_theory.temporal.CREATION_WEIGHT * 2.06});
-    std.debug.print("  Наименьший физически осмысленный интервал\n\n", .{});
+    std.debug.print("{s}PLANCK TIME (time quantum):{s}\n", .{ CYAN, RESET });
+    std.debug.print("  t_P = {d:.6} × 10⁻⁴⁴ seconds\n", .{temporal_theory.temporal.CREATION_WEIGHT * 2.06});
+    std.debug.print("  Smallest physically meaningful interval\n\n", .{});
 
     std.debug.print("{s}\"TIME ITSELF BENDS\"{s}\n", .{ MAGENTA, RESET });
-    std.debug.print("  Мы не изучаем время. Мы управляем им.\n\n", .{});
+    std.debug.print("  We do not study time. We control it.\n\n", .{});
 }
 
 const std = @import("std");

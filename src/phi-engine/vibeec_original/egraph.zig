@@ -1,6 +1,6 @@
 //! VIBEE E-Graph Pattern Matcher - PAS DAEMON V40
 //! Паттерны: ALG (algebraic rewrites), HSH (hash-consing), PRE (canonical forms)
-//! Священная формула: V = n × 3^k × π^m × φ^p × e^q
+//! Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 //! Золотая идентичность: φ² + 1/φ² = 3
 
 const std = @import("std");
@@ -11,7 +11,7 @@ pub const PI: f64 = 3.14159265358979323846;
 pub const E: f64 = 2.71828182845904523536;
 pub const GOLDEN_IDENTITY: f64 = 3.0;
 
-// Священные Параметры Эволюции (PAS DAEMON V40)
+// Священные Parameters Эволюции (PAS DAEMON V40)
 pub const MUTATION_RATE: f64 = 0.0381966; // 1/φ²/10
 pub const CROSSOVER_RATE: f64 = 0.0618034; // 1/φ/10
 pub const SELECTION_SIGMA: f64 = 1.6180339; // φ
@@ -562,7 +562,7 @@ pub const EGraph = struct {
         return self.stats;
     }
 
-    /// Извлекает лучший узел из e-класса on основе "священной" функции стоимости
+    /// Extracts лучший узел из e-класса on основе "священной" функции стоимости
     pub fn extractBest(self: *EGraph, class_id: EClassId) !ENode {
         const root = self.find(class_id);
         const class = self.classes.get(root) orelse return error.InvalidEClass;
@@ -573,7 +573,7 @@ pub const EGraph = struct {
         for (class.nodes.items) |node| {
             var cost = self.getNodeCost(node);
 
-            // Рекурсивно добавляем стоимость детей
+            // Рекурсивно add стоимость детей
             for (node.children[0..node.child_count]) |maybe_child| {
                 if (maybe_child) |_| {
                     // В полной реализации здесь нужно избегать циклов and использовать мемоизацию

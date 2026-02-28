@@ -65,7 +65,7 @@ pub const Bridge = struct {
         };
     }
 
-    /// Извлекает лучший (наиболее "sacred") вариант дерева
+    /// Extracts лучший (наиболее "sacred") вариант дерева
     pub fn extractBest(self: *Bridge, class_id: EClassId) !*AstNode {
         const best_enode = try self.graph.extractBest(class_id);
 

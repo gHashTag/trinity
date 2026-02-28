@@ -2,7 +2,7 @@
 // VERILOG CODEGEN - Генератор Verilog кода из .vibee спецификаций
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Генерирует Verilog code for FPGA синтеза
+// Generates Verilog code for FPGA синтеза
 // Автор: Dmitrii Vasilev
 // φ² + 1/φ² = 3 | PHOENIX = 999
 //

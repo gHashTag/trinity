@@ -1,5 +1,5 @@
 // VIBEE BOGATYR - YAML Syntax Validator
-// Проверяет YAML синтаксис .vibee файла
+// Checks YAML синтаксис .vibee файла
 // φ² + 1/φ² = 3 | PHOENIX = 999
 
 const std = @import("std");

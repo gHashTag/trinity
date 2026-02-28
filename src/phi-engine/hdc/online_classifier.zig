@@ -2,7 +2,7 @@
 //! on основе гиперразмерных вычислений with онлайн-обновлением.
 //!
 //! Алгоритм:
-//! 1. Кодирование входа in гипервектор
+//! 1. Кодирование loginа in гипервектор
 //! 2. Поиск ближайшего прототипа
 //! 3. Онлайн update: P ← P + η(v - P)
 //! 4. Квантизация in троичное представление
@@ -134,7 +134,7 @@ pub const OnlineClassifier = struct {
         };
     }
 
-    /// Обучение on размеченном примере
+    /// Обучение on размеченном exampleе
     pub fn train(self: *OnlineClassifier, input: []const Trit, label: []const u8) !void {
         self.samples_seen += 1;
 
@@ -147,7 +147,7 @@ pub const OnlineClassifier = struct {
         }
     }
 
-    /// Самообучение on неразмеченном примере
+    /// Самообучение on неразмеченном exampleе
     pub fn trainUnlabeled(self: *OnlineClassifier, input: []const Trit) !void {
         const pred = self.predict(input);
 
@@ -296,7 +296,7 @@ test "online learning improves" {
         try clf.train(proto.data, "test_class");
     }
 
-    // Проверяем what прототип стал похож on входные data
+    // Check what прототип стал похож on loginные data
     const pred = clf.predict(proto.data);
     try std.testing.expect(pred.confidence > 0.8);
 }

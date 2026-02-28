@@ -368,7 +368,7 @@ pub const MAGIC_37_9: u32 = 999;
 // 17. ФУНКЦИИ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Священная формула: V = n × 3^k × π^m × φ^p × e^q
+/// Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 pub fn sacredFormula(n: u32, k: i32, m: i32, p: i32, q: i32) f64 {
     const n_f: f64 = @floatFromInt(n);
     const three_k = math.pow(f64, 3.0, @as(f64, @floatFromInt(k)));

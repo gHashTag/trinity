@@ -339,7 +339,7 @@ pub fn mapType(vibee_type: []const u8) []const u8 {
 
     // List<T> -> []T
     if (std.mem.startsWith(u8, vibee_type, "List<")) {
-        // Упрощённая handling - возвращаем slice
+        // Упрощённая handling - return slice
         return "[]const u8"; // TODO: proper generic handling
     }
 
@@ -348,7 +348,7 @@ pub fn mapType(vibee_type: []const u8) []const u8 {
         return "?[]const u8"; // TODO: proper generic handling
     }
 
-    // Неизвестный type - возвращаем how есть
+    // Неизвестный type - return how есть
     return vibee_type;
 }
 

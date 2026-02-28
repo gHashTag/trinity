@@ -57,12 +57,12 @@ pub const ChromeLauncher = struct {
 
     pub fn deinit(self: *Self) void {
         _ = self;
-        // Registry деинициализируется снаружи
+        // Registry deinitializesся снаружи
     }
 
     /// Запуск Chrome with предварительной валидацией
     pub fn launchWithValidation(self: *Self) !ChromeProcess {
-        // Валидация перед запуском (if включено)
+        // Validation перед запуском (if включено)
         if (self.config.validate_spec_before_launch and self.config.spec_path != null) {
             const source = self.allocator.alloc(u8, 2048) catch return ChromeLauncherError.OutOfMemory;
             defer self.allocator.free(source);
@@ -74,7 +74,7 @@ pub const ChromeLauncher = struct {
             };
             defer self.allocator.free(spec_source);
 
-            // Создаем валидационный контекст
+            // Create валидационный контекст
             const validation_config = registry_mod.ValidationConfig{
                 .strict_mode = self.config.strict_validation,
                 .warning_as_error = false,
@@ -259,7 +259,7 @@ pub const ChromeLauncher = struct {
 
         const pid = process.id;
 
-        // Проверяем what Chrome запустился (ждем when порт станет занят)
+        // Check what Chrome запустился (ждем when порт станет занят)
         var tries: u32 = 0;
         const max_tries = self.config.timeout_ms / 100; // 100мс интервал
 
@@ -282,7 +282,7 @@ pub const ChromeLauncher = struct {
         };
     }
 
-    /// Проверка доступности порта
+    /// Check доступности порта
     fn isPortAvailable(port: u16) bool {
         const address = std.net.Address.parseIp("127.0.0.1", port) catch return false;
         const socket = std.net.tcp.getSocketToAddress(address) catch return true;
@@ -311,7 +311,7 @@ pub const ChromeLauncher = struct {
         return ChromeLauncherError.ChromeNotFound;
     }
 
-    /// Создание временной директории for пользовательских данных
+    /// Создание временной директории for userских данных
     fn createTempUserDataDir(self: *Self) ![]const u8 {
         const temp_dir = std.fs.getenv("TMPDIR") orelse "/tmp";
 
@@ -388,7 +388,7 @@ test "chrome launcher with validation disabled" {
     var launcher = try ChromeLauncher.init(allocator, config, &registry);
     defer launcher.deinit();
 
-    // Тест без валидации Chrome не запускаем
+    // Test без валидации Chrome не запускаем
 }
 
 test "port availability" {
@@ -401,7 +401,7 @@ test "port availability" {
     };
     defer registry.deinit();
 
-    // Проверяем what порт 9222 свободен (Chrome не запущен)
+    // Check what порт 9222 свободен (Chrome не запущен)
     const config = ChromeLauncherConfig{};
     var launcher = try ChromeLauncher.init(allocator, config, &registry) catch |err| {
         _ = err;

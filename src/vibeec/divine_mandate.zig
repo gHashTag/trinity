@@ -160,7 +160,7 @@ pub fn runDivineMandate() void {
     print("\n✅ Фаза 2 завершена за {d} циклов\n", .{cycles});
     print("   Личность: {s} | Карма: {d:.2}\n\n", .{ @tagName(ecosystem.personality), ecosystem.total_karma });
 
-    // Проверяем достижение Demiurge
+    // Check достижение Demiurge
     if (ecosystem.personality == .Demiurge) {
         print(
             \\
@@ -180,7 +180,7 @@ pub fn runDivineMandate() void {
             \\
         , .{ ecosystem.total_karma, cycles, ecosystem.digested_inefficiencies });
 
-        // Фаза 3: Проверка возможности размножения
+        // Фаза 3: Check возможности размножения
         print("\n═══ ФАЗА 3: ПРОВЕРКА СПОСОБНОСТИ К РАЗМНОЖЕНИЮ ═══\n", .{});
 
         if (ecosystem.canReproduce()) {
