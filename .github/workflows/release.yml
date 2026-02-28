@@ -1,0 +1,275 @@
+# Trinity Binary Release
+# Builds cross-platform binaries and creates GitHub releases
+# φ² + 1/φ² = 3 | PHOENIX = 999
+
+name: Binary Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+env:
+  CARGO_TERM_COLOR: always
+  ZIG_VERSION: 0.15.2
+
+jobs:
+  build-linux-amd64:
+    name: Build Linux (amd64)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: ${{ env.ZIG_VERSION }}
+
+      - name: Build Trinity (Linux amd64)
+        run: |
+          zig build -Dtarget=x86_64-linux-gnu.2.35 -Drelease-safe=true
+          zig build vibee -Dtarget=x86_64-linux-gnu.2.35 -Drelease-safe=true
+
+      - name: Create archive
+        run: |
+          mkdir -p release
+          cp zig-out/bin/tri release/tri-linux-amd64
+          cp zig-out/bin/vibee release/vibee-linux-amd64
+          chmod +x release/tri-linux-amd64 release/vibee-linux-amd64
+          tar czf trinity-linux-amd64.tar.gz -C release tri-linux-amd64 vibee-linux-amd64
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-amd64
+          path: trinity-linux-amd64.tar.gz
+
+  build-linux-arm64:
+    name: Build Linux (arm64)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: ${{ env.ZIG_VERSION }}
+
+      - name: Build Trinity (Linux arm64)
+        run: |
+          zig build -Dtarget=aarch64-linux-gnu.2.35 -Drelease-safe=true
+          zig build vibee -Dtarget=aarch64-linux-gnu.2.35 -Drelease-safe=true
+
+      - name: Create archive
+        run: |
+          mkdir -p release
+          cp zig-out/bin/tri release/tri-linux-arm64
+          cp zig-out/bin/vibee release/vibee-linux-arm64
+          chmod +x release/tri-linux-arm64 release/vibee-linux-arm64
+          tar czf trinity-linux-arm64.tar.gz -C release tri-linux-arm64 vibee-linux-arm64
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-arm64
+          path: trinity-linux-arm64.tar.gz
+
+  build-macos-amd64:
+    name: Build macOS (amd64)
+    runs-on: macos-13
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: ${{ env.ZIG_VERSION }}
+
+      - name: Build Trinity (macOS amd64)
+        run: |
+          zig build -Dtarget=x86_64-macos-none -Drelease-safe=true
+          zig build vibee -Dtarget=x86_64-macos-none -Drelease-safe=true
+
+      - name: Create archive
+        run: |
+          mkdir -p release
+          cp zig-out/bin/tri release/tri-macos-amd64
+          cp zig-out/bin/vibee release/vibee-macos-amd64
+          chmod +x release/tri-macos-amd64 release/vibee-macos-amd64
+          tar czf trinity-macos-amd64.tar.gz -C release tri-macos-amd64 vibee-macos-amd64
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-amd64
+          path: trinity-macos-amd64.tar.gz
+
+  build-macos-arm64:
+    name: Build macOS (arm64)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: ${{ env.ZIG_VERSION }}
+
+      - name: Build Trinity (macOS arm64)
+        run: |
+          zig build -Dtarget=aarch64-macos-none -Drelease-safe=true
+          zig build vibee -Dtarget=aarch64-macos-none -Drelease-safe=true
+
+      - name: Create archive
+        run: |
+          mkdir -p release
+          cp zig-out/bin/tri release/tri-macos-arm64
+          cp zig-out/bin/vibee release/vibee-macos-arm64
+          chmod +x release/tri-macos-arm64 release/vibee-macos-arm64
+          tar czf trinity-macos-arm64.tar.gz -C release tri-macos-arm64 vibee-macos-arm64
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-arm64
+          path: trinity-macos-arm64.tar.gz
+
+  build-windows:
+    name: Build Windows (amd64)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: ${{ env.ZIG_VERSION }}
+
+      - name: Build Trinity (Windows amd64)
+        run: |
+          zig build -Dtarget=x86_64-windows-gnu -Drelease-safe=true
+          zig build vibee -Dtarget=x86_64-windows-gnu -Drelease-safe=true
+
+      - name: Create archive
+        run: |
+          mkdir -p release
+          cp zig-out/bin/tri.exe release/tri-windows-amd64.exe
+          cp zig-out/bin/vibee.exe release/vibee-windows-amd64.exe
+          zip trinity-windows-amd64.zip release/tri-windows-amd64.exe release/vibee-windows-amd64.exe
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-amd64
+          path: trinity-windows-amd64.zip
+
+  release:
+    name: Create Release
+    needs: [build-linux-amd64, build-linux-arm64, build-macos-amd64, build-macos-arm64, build-windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release-assets
+          find artifacts -name "*.tar.gz" -exec cp {} release-assets/ \;
+          find artifacts -name "*.zip" -exec cp {} release-assets/ \;
+          ls -la release-assets/
+
+      - name: Generate checksums
+        run: |
+          cd release-assets
+          sha256sum * > checksums.txt
+          cat checksums.txt
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          make_latest: true
+          files: |
+            release-assets/*.tar.gz
+            release-assets/*.zip
+            release-assets/checksums.txt
+          body: |
+            ## Trinity ${{ github.ref_name }}
+
+            **φ² + 1/φ² = 3 | PHOENIX = 999**
+
+            ### Downloads
+
+            | Platform | Architecture | File |
+            |----------|--------------|------|
+            | Linux | AMD64 | `trinity-linux-amd64.tar.gz` |
+            | Linux | ARM64 | `trinity-linux-arm64.tar.gz` |
+            | macOS | AMD64 (Intel) | `trinity-macos-amd64.tar.gz` |
+            | macOS | ARM64 (Apple Silicon) | `trinity-macos-arm64.tar.gz` |
+            | Windows | AMD64 | `trinity-windows-amd64.zip` |
+
+            ### Verification
+
+            Verify downloads using `checksums.txt`:
+
+            ```bash
+            sha256sum -c checksums.txt
+            ```
+
+            ### Quick Start
+
+            ```bash
+            # Extract archive
+            tar xzf trinity-<platform>-<arch>.tar.gz
+
+            # Run TRI
+            ./tri-<platform>-<arch> --help
+
+            # Run VIBEE compiler
+            ./vibee-<platform>-<arch> --help
+            ```
+
+            ### What's Included
+
+            - **TRI** - Unified Trinity CLI (chat, code, pipeline, all commands)
+            - **VIBEE** - VIBEE compiler (spec → Zig/Verilog)
+
+            ### Documentation
+
+            - [CLI Reference](https://ghashtag.github.io/trinity/docs/api/cli)
+            - [VIBEE Language](https://ghashtag.github.io/trinity/docs/research/vibee)
+            - [Architecture](https://ghashtag.github.io/trinity/docs/research/vsa-framework)
+          fail_on_unmatched_files: false
+
+      - name: Upload checksums as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: checksums
+          path: release-assets/checksums.txt

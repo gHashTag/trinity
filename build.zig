@@ -141,6 +141,19 @@ pub fn build(b: *std.Build) void {
     const run_vsa_tests = b.addRunArtifact(vsa_tests);
     test_step.dependOn(&run_vsa_tests.step);
 
+    // Benchmark tests
+    const bench_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("benchmarks/benchmark_test.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+            .imports = &.{.{ .name = "vsa", .module = trinity_mod }},
+        }),
+    });
+    const run_bench_tests = b.addRunArtifact(bench_tests);
+    const bench_test_step = b.step("bench-test", "Run benchmark tests");
+    bench_test_step.dependOn(&run_bench_tests.step);
+
     // VM tests
     const vm_tests = b.addTest(.{
         .root_module = b.createModule(.{
@@ -255,8 +268,21 @@ pub fn build(b: *std.Build) void {
     const query_step = b.step("query", "Run trinity-query (KG query CLI)");
     query_step.dependOn(&run_query.step);
 
-    // Benchmark executable — run directly: zig run benchmarks/bench_core.zig
-    _ = b.step("bench", "Run benchmarks (use: zig run benchmarks/bench_core.zig)");
+    // Core Benchmark executable
+    const bench_core = b.addExecutable(.{
+        .name = "bench-core",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("benchmarks/bench_core.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+            .imports = &.{.{ .name = "vsa", .module = trinity_mod }},
+        }),
+    });
+    b.installArtifact(bench_core);
+
+    const run_bench_core = b.addRunArtifact(bench_core);
+    const bench_step = b.step("bench", "Run core benchmarks");
+    bench_step.dependOn(&run_bench_core.step);
 
     // Compression Benchmark executable
     const bench_compress = b.addExecutable(.{

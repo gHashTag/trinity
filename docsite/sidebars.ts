@@ -16,7 +16,7 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'Getting Started',
       items: [
-        'getting-started/quickstart',
+        'getting-started/quick-start-v1',
         'getting-started/tutorial',
         'getting-started/installation',
         'getting-started/development-setup',
@@ -406,6 +406,13 @@ const sidebars: SidebarsConfig = {
         'research/cycle-97-full-autonomous-sacred-evolution',
         // Production Releases
         'research/tri-production-dashboard-release',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Community',
+      items: [
+        'community/guidelines',
       ],
     },
     'faq',

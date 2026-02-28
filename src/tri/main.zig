@@ -256,10 +256,7 @@ pub fn main() !void {
             std.debug.print("Sacred error: {}\n", .{err});
         },
         // Chemistry (v6.0) - TODO: complete element data (missing optional fields)
-        .chem => {
-            std.debug.print("Chemistry commands coming soon - element data incomplete\n", .{});
-            std.debug.print("Run 'zig build test' to verify core sacred math modules\n", .{});
-        },
+        .chem => try commands.runChemCommand(allocator, cmd_args),
         // Intelligence System
         .intelligence => tri_context.runIntelligenceCommand(allocator, &state, cmd_args) catch |err| {
             std.debug.print("Intelligence error: {}\n", .{err});
