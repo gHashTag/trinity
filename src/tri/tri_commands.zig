@@ -99,20 +99,23 @@ fn printConvertHelp() void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SERVE COMMAND - HTTP Server
+// SERVE COMMAND - Unified API Server (Golden Chain #102)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn runServeCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    const port: u16 = if (args.len > 0)
-        std.fmt.parseInt(u16, args[0], 10) catch 8080
-    else
-        8080;
+    // Import new Unified API serve module
+    const tri_serve = @import("tri_serve.zig");
 
-    std.debug.print("{s}Starting HTTP server on port {d}{s}\n", .{ GREEN, port, RESET });
-    std.debug.print("  Use Ctrl+C to stop\n", .{});
+    // Check for help flag
+    for (args) |arg| {
+        if (std.mem.eql(u8, arg, "--help") or std.mem.eql(u8, arg, "-h")) {
+            tri_serve.printHelp();
+            return;
+        }
+    }
 
-    // Note: Full HTTP server implementation in chat_server.zig
-    try chat_server.runChatServer(allocator, port);
+    // Launch Unified API server
+    try tri_serve.runServeCommand(allocator, args);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
