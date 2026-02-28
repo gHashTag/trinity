@@ -492,6 +492,17 @@ pub fn build(b: *std.Build) void {
     const run_depin_network_tests = b.addRunArtifact(depin_network_tests);
     test_step.dependOn(&run_depin_network_tests.step);
 
+    // Unified API tests — REST+GraphQL+gRPC+WebSocket (Golden Chain #101)
+    const api_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/api/unified_server.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_api_tests = b.addRunArtifact(api_tests);
+    test_step.dependOn(&run_api_tests.step);
+
     // Trinity Node - File Encoder tests
     const file_encoder_tests = b.addTest(.{
         .root_module = b.createModule(.{
