@@ -129,7 +129,7 @@ All 6 tests passed.
 ## Next Steps
 
 1. **Fix remaining specs** with full `pub fn` signatures
-2. **Add type aliases** for Queue<T>, Dict<K,V>
+2. **Add type aliases** for Queue\<T>, Dict\<K,V>
 3. **Benchmark** shell vs Zig (Phase 7)
 4. **Git commit** all changes (Phase 9)
 

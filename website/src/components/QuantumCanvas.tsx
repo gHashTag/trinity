@@ -4,14 +4,18 @@ import { useEffect, useRef } from 'react';
 const PHI = 1.618033988749895;
 const TAU = Math.PI * 2;
 
-export type VizMode = 
+export type VizMode =
   | 'trinity-computer' // Main: TRINITY quantum computer architecture
   | 'quantum-field' | 'neural-network' | 'wave-interference' | 'entanglement' | 'vortex' | 'photon-beam'
   | 'consciousness' | 'trinity' | 'multiverse' | 'encryption' | 'supremacy' | 'tsp'
   | 'neuromorphic' | 'spintronic' | 'transcendence' | 'living' | 'quantum-life' | 'quantum-agents'
   | 'matryoshka' | 'zhar-ptitsa' | 'bogatyri' | 'qec' | 'obfuscation' | 'secure'
   | 'beings' | 'pas' | 'quantum-biology' | 'llm-architecture' | 'cinema4d' | 'universal-translator'
-  | 'chat-wave';
+  | 'chat-wave'
+  // Sacred Math modes
+  | 'sacred-formula' | 'coptic-gematria' | 'trinity-identity'
+  // DePIN modes
+  | 'node-network';
 
 interface Particle {
   x: number; y: number;
@@ -92,7 +96,11 @@ export default function QuantumCanvas({ mode, particleCount = 1500, interactive 
         'qec': 190, 'obfuscation': 260, 'secure': 170,
         'beings': 310, 'pas': 130, 'quantum-biology': 140,
         'llm-architecture': 230, 'cinema4d': 350,
-        'chat-wave': 45
+        'chat-wave': 45,
+        // Sacred Math
+        'sacred-formula': 45, 'coptic-gematria': 190, 'trinity-identity': 270,
+        // DePIN
+        'node-network': 160
       };
       return hues[m] || 160;
     }
@@ -635,6 +643,56 @@ export default function QuantumCanvas({ mode, particleCount = 1500, interactive 
           p.vy += dy * 0.0002;
           break;
 
+        // Sacred Math: Sacred Formula - Golden Spiral
+        case 'sacred-formula': {
+          const goldenAngle = PHI * TAU;
+          const spiralR = 10 + (i / particleCount) * 300;
+          const spiralAngle = (i * goldenAngle) + t * 0.2;
+          const spiralX = cx + Math.cos(spiralAngle) * spiralR;
+          const spiralY = cy + Math.sin(spiralAngle) * spiralR;
+          p.vx += (spiralX - p.x) * 0.02;
+          p.vy += (spiralY - p.y) * 0.02;
+          break;
+        }
+
+        // Sacred Math: Coptic Gematria - 3 Rings
+        case 'coptic-gematria': {
+          const ring = p.type % 3; // 3 rings
+          const ringR = 80 + ring * 70;
+          const glyphsPerRing = Math.floor(particleCount / 3);
+          const glyphIndex = i % glyphsPerRing;
+          const ringAngle = (glyphIndex / glyphsPerRing) * TAU + t * (0.3 - ring * 0.1) * (ring % 2 ? 1 : -1);
+          const ringX = cx + Math.cos(ringAngle) * ringR;
+          const ringY = cy + Math.sin(ringAngle) * ringR;
+          p.vx += (ringX - p.x) * 0.03;
+          p.vy += (ringY - p.y) * 0.03;
+          break;
+        }
+
+        // Sacred Math: Trinity Identity
+        case 'trinity-identity': {
+          const triPos = i % 3;
+          const triAngle = triPos * TAU / 3 + t * 0.2;
+          const triDist = 150 + Math.sin(t * 2 + i * 0.01) * 30;
+          const triX = cx + Math.cos(triAngle) * triDist;
+          const triY = cy + Math.sin(triAngle) * triDist;
+          p.vx += (triX - p.x) * 0.015;
+          p.vy += (triY - p.y) * 0.015;
+          break;
+        }
+
+        // DePIN: Node Network
+        case 'node-network': {
+          // Particles form distributed nodes with connections
+          const nodeIndex = Math.floor(i / 10);
+          const nodeX = 150 + (nodeIndex % 5) * ((w - 300) / 4);
+          const nodeY = 150 + Math.floor(nodeIndex / 5) * ((h - 300) / 3);
+          const localJitter = 30;
+          p.vx += ((nodeX + (Math.random() - 0.5) * localJitter) - p.x) * 0.01;
+          p.vy += ((nodeY + (Math.random() - 0.5) * localJitter) - p.y) * 0.01;
+          break;
+        }
+
         default:
           p.vx += (Math.random() - 0.5) * dt * 5;
           p.vy += (Math.random() - 0.5) * dt * 5;
@@ -713,6 +771,52 @@ export default function QuantumCanvas({ mode, particleCount = 1500, interactive 
             ctx.stroke();
           }
         });
+      }
+
+      // Sacred Math: Trinity Identity - Draw triangle connections
+      if (mode === 'trinity-identity' && i < 99) {
+        const step = Math.floor(particleCount / 3);
+        const triGroup = Math.floor(i / step);
+        particles.slice(triGroup * step, (triGroup + 1) * step).forEach((other, j) => {
+          const idx = triGroup * step + j;
+          if (idx <= i) return;
+          const d = Math.sqrt((other.x - p.x) ** 2 + (other.y - p.y) ** 2);
+          if (d < 200 && d > 50) {
+            ctx.strokeStyle = `hsla(${270 + triGroup * 30}, 80%, 60%, ${0.2 * (1 - d / 200)})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(other.x, p.y);
+            ctx.stroke();
+          }
+        });
+      }
+
+      // DePIN: Node Network - Draw connections between nearby nodes
+      if (mode === 'node-network' && i < particleCount - 10) {
+        particles.slice(i + 1, Math.min(i + 50, particleCount)).forEach((other) => {
+          const d = Math.sqrt((other.x - p.x) ** 2 + (other.y - p.y) ** 2);
+          if (d < 100) {
+            ctx.strokeStyle = `hsla(160, 70%, 50%, ${0.15 * (1 - d / 100)})`;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(other.x, p.y);
+            ctx.stroke();
+          }
+        });
+      }
+
+      // Coptic Gematria - Draw glowing glyphs
+      if (mode === 'coptic-gematria') {
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = `hsla(${hue}, 100%, 50%, 0.5)`;
+        const glyphSize = p.size * 3 + p.amplitude * 4;
+        ctx.fillStyle = `hsla(${hue}, 100%, 70%, ${alpha})`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, glyphSize, 0, TAU);
+        ctx.fill();
+        ctx.shadowBlur = 0;
       }
     }
 

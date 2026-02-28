@@ -57,7 +57,7 @@ total_importance += new_importance;
 
 ### Strengths
 
-1. **Sub-nanosecond operations**: Each engine averages <1 ns per operation
+1. **Sub-nanosecond operations**: Each engine averages \<1 ns per operation
 2. **High throughput**: ~1B ops/sec for floating-point operations
 3. **Consistent performance**: All three engines perform similarly
 

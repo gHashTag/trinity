@@ -1,0 +1,11 @@
+[
+  {
+    "timestamp": 1772212742,
+    "event_type": "test",
+    "operation": "test_operation",
+    "allowed": true,
+    "violation": "none",
+    "confidence": 1.000000,
+    "details": "Test details"
+  }
+]

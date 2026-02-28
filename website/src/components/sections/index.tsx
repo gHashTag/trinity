@@ -3,3 +3,10 @@
 export { default as HeroSection } from './HeroSection'
 export { default as ProblemSection } from './ProblemSection'
 export { default as SolutionSection } from './SolutionSection'
+
+// Cycle 98 Sacred Intelligence Widgets
+export { default as SacredIdentityWidget } from './SacredIdentityWidget'
+export { default as SwarmStatusWidget } from './SwarmStatusWidget'
+export { default as EvolutionMonitorWidget } from './EvolutionMonitorWidget'
+export { default as GovernanceRulesWidget } from './GovernanceRulesWidget'
+export { default as EternalLoopWidget } from './EternalLoopWidget'

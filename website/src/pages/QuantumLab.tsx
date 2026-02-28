@@ -74,6 +74,20 @@ const categories = [
     ]
   },
   {
+    name: 'Sacred Math',
+    modes: [
+      { id: 'sacred-formula', icon: '🕉️', title: 'Sacred Formula', color: '#ffd700' },
+      { id: 'coptic-gematria', icon: '☥', title: 'Coptic Gematria', color: '#00ccff' },
+      { id: 'trinity-identity', icon: '🔺', title: 'Trinity Identity', color: '#aa66ff' },
+    ]
+  },
+  {
+    name: 'DePIN',
+    modes: [
+      { id: 'node-network', icon: '🌐', title: 'Node Network', color: '#00e599' },
+    ]
+  },
+  {
     name: 'Other',
     modes: [
       { id: 'tsp', icon: '🗺️', title: 'TSP Solver', color: '#4a4' },
