@@ -194,8 +194,8 @@ The multi-agent system supports multilingual task detection:
 | Language | Example Query | Detected Task |
 |----------|---------------|---------------|
 | English | "write code for sorting" | CodeGeneration |
-| Russian | "onпandшand toод withортandроintoand" | CodeGeneration |
-| Russian | "проаonлandзandруй результаты" | Analysis |
+| Russian | "onпandшand toод with[CYR:орт]andроintoand" | CodeGeneration |
+| Russian | "[CYR:проа]onлandзand[CYR:руй] resultы" | Analysis |
 | Chinese | "找一下最佳实践" | Research |
 
 ## Files Modified

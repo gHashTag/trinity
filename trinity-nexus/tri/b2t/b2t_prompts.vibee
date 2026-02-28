@@ -49,9 +49,9 @@ types:
 
 behaviors:
   - name: build_system_prompt
-    given: Роль агента и ограничения
-    when: Создание системного промпта
-    then: Возвращает PromptSection с role=system
+    given: [CYR:Роль] [CYR:агента] and [CYR:огран]and[CYR:чен]andя
+    when: [CYR:Создан]andе withandwith[CYR:темного] [CYR:промпта]
+    then: [CYR:Воз]in[CYR:ращает] PromptSection with role=system
     implementation: |
                     pub fn build_system_prompt(role: []const u8, constraints: []const u8) PromptSection {
                         _ = role;
@@ -64,9 +64,9 @@ behaviors:
       
 
   - name: build_context_section
-    given: SemanticContext из b2t_llm_assist
-    when: Форматирование контекста
-    then: Возвращает PromptSection с role=context
+    given: SemanticContext from b2t_llm_assist
+    when: [CYR:Формат]andроinанandе [CYR:контек]withта
+    then: [CYR:Воз]in[CYR:ращает] PromptSection with role=context
     implementation: |
                     pub fn build_context_section(context: anytype) PromptSection {
                         _ = context;
@@ -78,9 +78,9 @@ behaviors:
       
 
   - name: build_icl_examples
-    given: List<SimilarCode> и max_examples
-    when: Форматирование примеров для ICL
-    then: Возвращает PromptSection с role=example
+    given: List<SimilarCode> and max_examples
+    when: [CYR:Формат]andроinанandе exampleоin for ICL
+    then: [CYR:Воз]in[CYR:ращает] PromptSection with role=example
     implementation: |
                     pub fn build_icl_examples(examples: anytype, max_examples: usize) PromptSection {
                         _ = examples;
@@ -93,9 +93,9 @@ behaviors:
       
 
   - name: build_query
-    given: Декомпилированный код и задача
-    when: Формирование запроса
-    then: Возвращает PromptSection с role=query
+    given: [CYR:Декомп]orроin[CYR:анный] code and task
+    when: [CYR:Форм]andроinанandе queryа
+    then: [CYR:Воз]in[CYR:ращает] PromptSection with role=query
     implementation: |
                     pub fn build_query(code: []const u8, task: []const u8) PromptSection {
                         _ = code;
@@ -108,9 +108,9 @@ behaviors:
       
 
   - name: assemble_prompt
-    given: List<PromptSection> и PromptConfig
-    when: Сборка финального промпта с учётом лимитов
-    then: Возвращает String промпт
+    given: List<PromptSection> and PromptConfig
+    when: [CYR:Сборка] фandon[CYR:льного] [CYR:промпта] with [CYR:учётом] лandмandтоin
+    then: [CYR:Воз]in[CYR:ращает] String [CYR:промпт]
     implementation: |
                     pub fn assemble_prompt(sections: []const PromptSection, config: PromptConfig) []const u8 {
                         _ = sections;
@@ -124,8 +124,8 @@ behaviors:
 
   - name: get_distortion_template
     given: DistortionType
-    when: Получение шаблона для конкретного искажения
-    then: Возвращает DistortionTemplate
+    when: [CYR:Получен]andе [CYR:шабло]on for [CYR:конкретного] andwith[CYR:кажен]andя
+    then: [CYR:Воз]in[CYR:ращает] DistortionTemplate
     implementation: |
                     pub fn get_distortion_template(dist_type: anytype) DistortionTemplate {
                         _ = dist_type;
@@ -137,9 +137,9 @@ behaviors:
       
 
   - name: format_detection_prompt
-    given: Код и DistortionTemplate
-    when: Создание промпта для детекции искажений
-    then: Возвращает String промпт
+    given: [CYR:Код] and DistortionTemplate
+    when: [CYR:Создан]andе [CYR:промпта] for [CYR:детекц]andand andwith[CYR:кажен]andй
+    then: [CYR:Воз]in[CYR:ращает] String [CYR:промпт]
     implementation: |
                     pub fn format_detection_prompt(code: []const u8, template: anytype) []const u8 {
                         _ = code;
@@ -152,9 +152,9 @@ behaviors:
       
 
   - name: format_correction_prompt
-    given: Код, искажения и DistortionTemplate
-    when: Создание промпта для исправления
-    then: Возвращает String промпт
+    given: [CYR:Код], andwith[CYR:кажен]andя and DistortionTemplate
+    when: [CYR:Создан]andе [CYR:промпта] for andwith[CYR:пра]in[CYR:лен]andя
+    then: [CYR:Воз]in[CYR:ращает] String [CYR:промпт]
     implementation: |
                     pub fn format_correction_prompt(code: []const u8, distortions: anytype, template: anytype) []const u8 {
                         _ = code;
@@ -168,9 +168,9 @@ behaviors:
       
 
   - name: format_validation_prompt
-    given: Оригинал, исправление и DistortionTemplate
-    when: Создание промпта для валидации
-    then: Возвращает String промпт
+    given: Орandгandonл, fix and DistortionTemplate
+    when: [CYR:Создан]andе [CYR:промпта] for inалand[CYR:дац]andand
+    then: [CYR:Воз]in[CYR:ращает] String [CYR:промпт]
     implementation: |
                     pub fn format_validation_prompt(original: []const u8, corrected: []const u8, template: anytype) []const u8 {
                         _ = original;
@@ -184,9 +184,9 @@ behaviors:
       
 
   - name: create_cot_prompt
-    given: Задача и ChainOfThought
-    when: Создание промпта с пошаговым рассуждением
-    then: Возвращает String промпт
+    given: [CYR:Задача] and ChainOfThought
+    when: [CYR:Создан]andе [CYR:промпта] with поstepоinым раwithwith[CYR:ужден]andем
+    then: [CYR:Воз]in[CYR:ращает] String [CYR:промпт]
     implementation: |
                     pub fn create_cot_prompt(task: []const u8, cot: anytype) []const u8 {
                         _ = task;
@@ -199,9 +199,9 @@ behaviors:
       
 
   - name: parse_cot_response
-    given: Ответ LLM с рассуждениями
-    when: Извлечение шагов и финального ответа
-    then: Возвращает структурированный результат
+    given: Отinет LLM with раwithwith[CYR:ужден]andямand
+    when: Изin[CYR:лечен]andе stepоin and фandon[CYR:льного] responseа
+    then: [CYR:Воз]in[CYR:ращает] with[CYR:труктур]andроin[CYR:анный] result
     implementation: |
                     pub fn parse_cot_response(response: []const u8) CoTParseResult {
                         _ = response;

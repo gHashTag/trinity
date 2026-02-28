@@ -1,6 +1,6 @@
 # Golden Chain #100-1 — VERDICT
 
-**Order:** ПРИКАЗ ГЕНЕРАЛА №100-1 — REAL DEPIN NETWORK TRANSCENDENCE
+**Order:** [CYR:ПРИКАЗ] [CYR:ГЕНЕРАЛА] №100-1 — REAL DEPIN NETWORK TRANSCENDENCE
 
 **Date:** 2026-02-28
 

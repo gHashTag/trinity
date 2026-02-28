@@ -8,11 +8,11 @@ language: zig
 module: tri_staking
 
 description: |
-  Реальная интеграция $TRI токена для DePIN rewards.
-  Включает staking, claiming, и wallet connection.
+  [CYR:Реаль]onя and[CYR:нтеграц]andя $TRI tokenа for DePIN rewards.
+  Вkey[CYR:ает] staking, claiming, and wallet connection.
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ТОКЕНОМИКА
+# [CYR:ТОКЕНОМИКА]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 tokenomics:
@@ -95,7 +95,7 @@ wallets:
     abi: "ERC20 + Staking"
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ТИПЫ ДАННЫХ
+# [CYR:ТИПЫ] [CYR:ДАННЫХ]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 types:
@@ -125,61 +125,61 @@ types:
       tx_hash: Option<String>
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ПОВЕДЕНИЯ
+# [CYR:ПОВЕДЕНИЯ]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 behaviors:
   - name: connect_wallet
-    description: "Подключение кошелька"
-    given: Пользователь нажал Connect
-    when: Wallet provider доступен
+    description: "[CYR:Под]keyенandе [CYR:кошелька]"
+    given: [CYR:Пользо]in[CYR:атель] on[CYR:жал] Connect
+    when: Wallet provider доwith[CYR:тупен]
     then: |
-      1. Запросить accounts через EIP-1193
-      2. Получить адрес и баланс
-      3. Загрузить staking positions
-      4. Обновить UI
+      1. [CYR:Запро]withandть accounts [CYR:через] EIP-1193
+      2. [CYR:Получ]andть [CYR:адре]with and [CYR:балан]with
+      3. [CYR:Загруз]andть staking positions
+      4. [CYR:Обно]inandть UI
 
   - name: stake_tokens
-    description: "Стейкинг токенов"
-    given: Wallet подключён, баланс > 0
-    when: Пользователь выбрал amount и period
+    description: "[CYR:Стейк]andнг tokenоin"
+    given: Wallet [CYR:под]keyён, [CYR:балан]with > 0
+    when: [CYR:Пользо]in[CYR:атель] in[CYR:ыбрал] amount and period
     then: |
-      1. Проверить allowance
-      2. Если нужно - approve
-      3. Вызвать stake() на контракте
-      4. Дождаться confirmation
-      5. Обновить positions
+      1. [CYR:Про]inерandть allowance
+      2. Еwithлand [CYR:нужно] - approve
+      3. [CYR:Выз]in[CYR:ать] stake() on [CYR:контракте]
+      4. Доwaitwithя confirmation
+      5. [CYR:Обно]inandть positions
 
   - name: claim_rewards
-    description: "Получение наград"
+    description: "[CYR:Получен]andе on[CYR:град]"
     given: pending_rewards > 0
-    when: Пользователь нажал Claim
+    when: [CYR:Пользо]in[CYR:атель] on[CYR:жал] Claim
     then: |
-      1. Вызвать claimRewards() на контракте
-      2. Дождаться confirmation
-      3. Обновить баланс
-      4. Показать notification
+      1. [CYR:Выз]in[CYR:ать] claimRewards() on [CYR:контракте]
+      2. Доwaitwithя confirmation
+      3. [CYR:Обно]inandть [CYR:балан]with
+      4. [CYR:Показать] notification
 
   - name: unstake_tokens
-    description: "Вывод из стейкинга"
-    given: Есть активная position
-    when: Пользователь нажал Unstake
+    description: "Выinод from with[CYR:тейк]and[CYR:нга]"
+    given: Еwithть [CYR:акт]andinonя position
+    when: [CYR:Пользо]in[CYR:атель] on[CYR:жал] Unstake
     then: |
-      1. Проверить lock period
-      2. Если early - показать penalty warning
-      3. Вызвать unstake() на контракте
-      4. Обновить positions
+      1. [CYR:Про]inерandть lock period
+      2. Еwithлand early - while[CYR:зать] penalty warning
+      3. [CYR:Выз]in[CYR:ать] unstake() on [CYR:контракте]
+      4. [CYR:Обно]inandть positions
 
   - name: calculate_rewards
-    description: "Расчёт наград"
-    given: Пользователь выполнил операцию
-    when: Операция завершена
+    description: "Раwith[CYR:чёт] on[CYR:град]"
+    given: [CYR:Пользо]in[CYR:атель] in[CYR:ыполн]andл [CYR:операц]andю
+    when: [CYR:Операц]andя заin[CYR:ерше]on
     then: |
-      1. Получить base reward
-      2. Применить staking multiplier
-      3. Применить streak multiplier
-      4. Проверить daily cap
-      5. Добавить к pending
+      1. [CYR:Получ]andть base reward
+      2. Прand[CYR:мен]andть staking multiplier
+      3. Прand[CYR:мен]andть streak multiplier
+      4. [CYR:Про]inерandть daily cap
+      5. [CYR:Доба]inandть к pending
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SMART CONTRACT INTERFACE
@@ -222,7 +222,7 @@ contract_interface:
       params: [user: address, amount: uint256]
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# UI КОМПОНЕНТЫ
+# UI [CYR:КОМПОНЕНТЫ]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 ui_components:
@@ -254,24 +254,24 @@ ui_components:
       - unstake_button: "Unstake"
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ТЕСТЫ
+# [CYR:ТЕСТЫ]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 tests:
   - name: test_reward_calculation
-    description: "Расчёт наград корректен"
+    description: "Раwith[CYR:чёт] on[CYR:град] [CYR:корректен]"
     assert: reward == base * staking_mult * streak_mult
 
   - name: test_daily_cap
-    description: "Daily cap работает"
+    description: "Daily cap [CYR:работает]"
     assert: daily_rewards <= 10
 
   - name: test_early_unstake_penalty
-    description: "Penalty применяется"
+    description: "Penalty прand[CYR:меняет]withя"
     assert: returned == staked * 0.9
 
   - name: test_multiplier_tiers
-    description: "Multiplier tiers корректны"
+    description: "Multiplier tiers [CYR:корректны]"
     assert: |
       stake(1000) => mult == 1.1
       stake(10000) => mult == 1.25

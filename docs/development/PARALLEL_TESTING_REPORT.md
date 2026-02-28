@@ -25,4 +25,4 @@ zig build test -- --parallel
 
 ---
 
-*Original Russian version: [docs/ru/reports/ОТЧЁТ_ПАРАЛЛЕЛЬНОЕ_ТЕСТИРОВАНИЕ.md](../ru/reports/ОТЧЁТ_ПАРАЛЛЕЛЬНОЕ_ТЕСТИРОВАНИЕ.md)*
+*Original Russian version: [docs/ru/reports/[CYR:ОТЧЁТ]_[CYR:ПАРАЛЛЕЛЬНОЕ]_[CYR:ТЕСТИРОВАНИЕ].md](../ru/reports/[CYR:ОТЧЁТ]_[CYR:ПАРАЛЛЕЛЬНОЕ]_[CYR:ТЕСТИРОВАНИЕ].md)*

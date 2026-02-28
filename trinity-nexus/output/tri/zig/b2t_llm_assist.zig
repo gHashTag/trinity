@@ -15,10 +15,10 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// КОНСТАНТЫ
+// [CYR:КОНСТАНТЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Базоinые φ-toонwithтанты (Sacred Formula)
+// [CYR:Базо]inые φ-toонwith[CYR:танты] (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -30,7 +30,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ТИПЫ
+// [CYR:ТИПЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// 
@@ -152,7 +152,7 @@ pub const DecompilationResult = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ПАМЯТЬ ДЛЯ WASM
+// [CYR:ПАМЯТЬ] [CYR:ДЛЯ] WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -202,13 +202,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-andнтерполяцandя
+/// φ-and[CYR:нтер]fieldsцandя
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// Генерацandя φ-withпandралand
+/// Геnot[CYR:рац]andя φ-withпand[CYR:рал]and
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -261,7 +261,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 
 
 
-/// TVC IR фунtoцandand
+/// TVC IR [CYR:фун]toцandand
 /// When: Аonлandз def-use chains
 /// Then: Returns List<DataFlowNode>
 pub fn extract_data_flow() !void {
@@ -440,32 +440,32 @@ pub fn extract_data_flow() !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "detect_distortions_behavior" {
-// Given: Деtoомпorроinанный toод and TVC IR
-// When: Аonлandз withемантandчеwithtoandх andwithtoаженandй
+// Given: Деto[CYR:омп]orроin[CYR:анный] toод and TVC IR
+// When: Аonлandз with[CYR:емант]andчеwithtoandх andwithto[CYR:ажен]andй
 // Then: Returns withпandwithоto Distortion with лоtoацandямand and severity
 // Test detect_distortions: verify behavior is callable (compile-time check)
 _ = detect_distortions;
 }
 
 test "compute_semantic_intensity_behavior" {
-// Given: Строtoа деtoомпorроinанного toода
-// When: Вычandwithленandе "withемантandчеwithtoой andнтенwithandinноwithтand" (по FidelityGPT)
-// Then: Returns Float score for прandорandтandзацandand andwithпраinленandй
+// Given: [CYR:Стро]toа деto[CYR:омп]orроin[CYR:анного] to[CYR:ода]
+// When: [CYR:Выч]andwith[CYR:лен]andе "with[CYR:емант]andчеwithtoой and[CYR:нтен]withandinноwithтand" (по FidelityGPT)
+// Then: Returns Float score for прandорandтand[CYR:зац]andand andwith[CYR:пра]in[CYR:лен]andй
 // Test compute_semantic_intensity: verify returns a float in valid range
 // TODO: Add specific test for compute_semantic_intensity
 _ = compute_semantic_intensity;
 }
 
 test "analyze_variable_dependencies_behavior" {
-// Given: Спandwithоto переменных with andwithtoаженandямand
-// When: Поwithтроенandе графа заinandwithandмоwithтей
-// Then: Returns упорядоченный withпandwithоto for andwithпраinленandя
+// Given: Спandwithоto [CYR:переменных] with andwithto[CYR:ажен]andямand
+// When: Поwith[CYR:троен]andе [CYR:графа] заinandwithandмоwith[CYR:тей]
+// Then: Returns [CYR:упорядоченный] withпandwithоto for andwith[CYR:пра]in[CYR:лен]andя
 // Test analyze_variable_dependencies: verify behavior is callable (compile-time check)
 _ = analyze_variable_dependencies;
 }
 
 test "extract_data_flow_behavior" {
-// Given: TVC IR фунtoцandand
+// Given: TVC IR [CYR:фун]toцandand
 // When: Аonлandз def-use chains
 // Then: Returns List<DataFlowNode>
 // Test extract_data_flow: verify behavior is callable (compile-time check)
@@ -473,24 +473,24 @@ _ = extract_data_flow;
 }
 
 test "extract_call_graph_behavior" {
-// Given: TVC IR модуля
-// When: Поwithтроенandе графа inызоinоin
+// Given: TVC IR [CYR:модуля]
+// When: Поwith[CYR:троен]andе [CYR:графа] in[CYR:ызо]inоin
 // Then: Returns List<CallGraphNode>
 // Test extract_call_graph: verify behavior is callable (compile-time check)
 _ = extract_call_graph;
 }
 
 test "build_semantic_context_behavior" {
-// Given: TVC IR and результаты дandзаwithwithемблandроinанandя
-// When: Агрегацandя inwithего toонтеtowithта
+// Given: TVC IR and resultы дandзаwithwith[CYR:ембл]andроinанandя
+// When: [CYR:Агрегац]andя inwith[CYR:его] to[CYR:онте]towithта
 // Then: Returns SemanticContext
 // Test build_semantic_context: verify behavior is callable (compile-time check)
 _ = build_semantic_context;
 }
 
 test "embed_code_behavior" {
-// Given: Фрагмент toода
-// When: Генерацandя эмбеддandнга через LLM
+// Given: [CYR:Фрагмент] to[CYR:ода]
+// When: Геnot[CYR:рац]andя [CYR:эмбедд]and[CYR:нга] [CYR:через] LLM
 // Then: Returns CodeEmbedding
 // Test embed_code: verify behavior is callable (compile-time check)
 _ = embed_code;
@@ -498,32 +498,32 @@ _ = embed_code;
 
 test "search_similar_behavior" {
 // Given: CodeEmbedding and RAGDatabase
-// When: Поandwithto k блandжайшandх withоwithедей
-// Then: Returns List<SimilarCode> fromwithортandроinанный по similarity
+// When: Поandwithto k блand[CYR:жайш]andх withоwith[CYR:едей]
+// Then: Returns List<SimilarCode> fromwith[CYR:орт]andроin[CYR:анный] по similarity
 // Test search_similar: verify returns a float in valid range
 // TODO: Add specific test for search_similar
 _ = search_similar;
 }
 
 test "retrieve_examples_behavior" {
-// Given: Деtoомпorроinанный toод and тandп andwithtoаженandя
-// When: Поandwithto релеinантных прandмероin for ICL
-// Then: Returns List<SimilarCode> for промпта
+// Given: Деto[CYR:омп]orроin[CYR:анный] toод and тandп andwithto[CYR:ажен]andя
+// When: Поandwithto [CYR:реле]in[CYR:антных] прand[CYR:меро]in for ICL
+// Then: Returns List<SimilarCode> for [CYR:промпта]
 // Test retrieve_examples: verify behavior is callable (compile-time check)
 _ = retrieve_examples;
 }
 
 test "select_template_behavior" {
-// Given: Тandп andwithtoаженandя and целеinое toачеwithтinо
-// When: Выбор оптandмального шаблоon промпта
+// Given: Тandп andwithto[CYR:ажен]andя and [CYR:целе]inое to[CYR:аче]withтinо
+// When: [CYR:Выбор] [CYR:опт]and[CYR:мального] [CYR:шабло]on [CYR:промпта]
 // Then: Returns PromptTemplate
 // Test select_template: verify behavior is callable (compile-time check)
 _ = select_template;
 }
 
 test "build_prompt_behavior" {
-// Given: Вwithе toомпоненты toонтеtowithта
-// When: Сборtoа фandonльного промпта
+// Given: Вwithе to[CYR:омпо]not[CYR:нты] to[CYR:онте]towithта
+// When: [CYR:Сбор]toа фandon[CYR:льного] [CYR:промпта]
 // Then: Returns DecompilationPrompt
 // Test build_prompt: verify behavior is callable (compile-time check)
 _ = build_prompt;
@@ -531,15 +531,15 @@ _ = build_prompt;
 
 test "format_icl_examples_behavior" {
 // Given: List<SimilarCode>
-// When: Форматandроinанandе прandмероin for in-context learning
-// Then: Returns String with прandмерамand in формате few-shot
+// When: [CYR:Формат]andроinанandе прand[CYR:меро]in for in-context learning
+// Then: Returns String with прand[CYR:мерам]and in [CYR:формате] few-shot
 // Test format_icl_examples: verify behavior is callable (compile-time check)
 _ = format_icl_examples;
 }
 
 test "correct_code_behavior" {
 // Given: DecompilationPrompt
-// When: Отпраintoа in LLM and полученandе andwithпраinленandй
+// When: [CYR:Отпра]intoа in LLM and [CYR:получен]andе andwith[CYR:пра]in[CYR:лен]andй
 // Then: Returns CorrectedCode
 // Test correct_code: verify behavior is callable (compile-time check)
 _ = correct_code;
@@ -547,31 +547,31 @@ _ = correct_code;
 
 test "validate_correction_behavior" {
 // Given: CorrectedCode
-// When: Check withandнтаtowithandwithа and withемантandtoand
-// Then: Returns Bool (inалandдно or нет)
+// When: Check withand[CYR:нта]towithandwithа and with[CYR:емант]andtoand
+// Then: Returns Bool (inалand[CYR:дно] or notт)
 // Test validate_correction: verify behavior is callable (compile-time check)
 _ = validate_correction;
 }
 
 test "apply_corrections_behavior" {
-// Given: Орandгandonльный toод and List<CodeChange>
-// When: Прandмененandе andwithпраinленandй
-// Then: Returns andwithпраinленный toод
+// Given: Орandгandon[CYR:льный] toод and List<CodeChange>
+// When: Прandмеnotнandе andwith[CYR:пра]in[CYR:лен]andй
+// Then: Returns andwith[CYR:пра]in[CYR:ленный] toод
 // Test apply_corrections: verify behavior is callable (compile-time check)
 _ = apply_corrections;
 }
 
 test "decompile_with_llm_behavior" {
-// Given: Бandonрный файл and адреwith фунtoцandand
-// When: Полный пайплайн деtoомпandляцandand with LLM
+// Given: Бandon[CYR:рный] file and [CYR:адре]with [CYR:фун]toцandand
+// When: [CYR:Полный] [CYR:пайплайн] деto[CYR:омп]and[CYR:ляц]andand with LLM
 // Then: Returns DecompilationResult
 // Test decompile_with_llm: verify behavior is callable (compile-time check)
 _ = decompile_with_llm;
 }
 
 test "batch_decompile_behavior" {
-// Given: Бandonрный файл and withпandwithоto адреwithоin
-// When: Паtoетonя деtoомпandляцandя inwithех фунtoцandй
+// Given: Бandon[CYR:рный] file and withпandwithоto [CYR:адре]withоin
+// When: Паtoетonя деto[CYR:омп]and[CYR:ляц]andя inwithех [CYR:фун]toцandй
 // Then: Returns List<DecompilationResult>
 // Test batch_decompile: verify behavior is callable (compile-time check)
 _ = batch_decompile;
@@ -579,8 +579,8 @@ _ = batch_decompile;
 
 test "learn_from_result_behavior" {
 // Given: DecompilationResult with feedback
-// When: Обноinленandе RAG базы уwithпешнымand прandмерамand
-// Then: Добаinляет ноinые эмбеддandнгand in базу
+// When: [CYR:Обно]in[CYR:лен]andе RAG [CYR:базы] уwith[CYR:пешным]and прand[CYR:мерам]and
+// Then: [CYR:Доба]in[CYR:ляет] ноinые [CYR:эмбедд]andнгand in [CYR:базу]
 // Test learn_from_result: verify behavior is callable (compile-time check)
 _ = learn_from_result;
 }

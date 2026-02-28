@@ -2,10 +2,10 @@
 // BENCHMARK: VIBEE Generated Code vs Pure Zig
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Сраinненandе проandзinодandтельноwithтand:
-// 1. Fibonacci (реtoурwithandinный and andтератandinный)
-// 2. Golden Ratio inычandwithленandя
-// 3. Trit операцandand (терonрonя логandtoа)
+// [CYR:Сра]innotнandе [CYR:про]andзinодand[CYR:тельно]withтand:
+// 1. Fibonacci (реtoурwithandin[CYR:ный] and and[CYR:терат]andin[CYR:ный])
+// 2. Golden Ratio inычandwith[CYR:лен]andя
+// 3. Trit [CYR:операц]andand ([CYR:тер]onрonя [CYR:лог]andtoа)
 // 4. Sacred Math (φ² + 1/φ² = 3)
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -69,7 +69,7 @@ fn fibonacci_iterative(n: u64) u64 {
 
 fn fibonacci_binet(n: u64) u64 {
     // F(n) = (φ^n - ψ^n) / √5
-    // где ψ = -1/φ
+    // where ψ = -1/φ
     const nf: f64 = @floatFromInt(n);
     const sqrt5: f64 = 2.2360679774997896;
     const psi: f64 = -PHI_INV;
@@ -138,7 +138,7 @@ fn trinity_power_loop(k: u32) u64 {
 }
 
 fn trinity_power_shift(k: u32) u64 {
-    // 3^k через таблandцу for малых k
+    // 3^k [CYR:через] [CYR:табл]andцу for [CYR:малых] k
     const powers = [_]u64{ 1, 3, 9, 27, 81, 243, 729, 2187, 6561, 19683, 59049, 177147, 531441, 1594323, 4782969, 14348907, 43046721, 129140163, 387420489, 1162261467 };
     if (k < powers.len) {
         return powers[k];

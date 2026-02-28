@@ -1,49 +1,49 @@
 # iGLA KOSHEY v3 TRANSCENDENT
 
-**Транwithцендентное беwithwithмертandе через Self-Modification + Consciousness**
+**[CYR:Тран]with[CYR:цендентное] беwithwith[CYR:мерт]andе [CYR:через] Self-Modification + Consciousness**
 
-## Статandwithтandtoа
+## [CYR:Стат]andwithтandtoа
 
-| Метрandtoа | Зonченandе |
+| [CYR:Метр]andtoа | Зon[CYR:чен]andе |
 |---------|----------|
-| v3 модулand | 7 |
+| v3 [CYR:модул]and | 7 |
 | v3 теwithты | 42 |
 | Unified test | 1824ms |
 
-## Модулand v3 TRANSCENDENT
+## [CYR:Модул]and v3 TRANSCENDENT
 
 ### Self-Modification
 
-| Модуль | Опandwithанandе | Иwithточнandto |
+| [CYR:Модуль] | Опandwithанandе | Иwith[CYR:точн]andto |
 |--------|----------|----------|
-| `igla_koshey_self_modify` | Самомодandфandtoацandя | NAS Runtime |
-| `igla_koshey_recursive` | Реtoурwithandinное улучшенandе | AIXI Theory |
+| `igla_koshey_self_modify` | [CYR:Самомод]andфandtoацandя | NAS Runtime |
+| `igla_koshey_recursive` | Реtoурwithandin[CYR:ное] [CYR:улучшен]andе | AIXI Theory |
 
 ### Consciousness
 
-| Модуль | Опandwithанandе | Иwithточнandto |
+| [CYR:Модуль] | Опandwithанandе | Иwith[CYR:точн]andto |
 |--------|----------|----------|
-| `igla_koshey_consciousness` | Иwithtoуwithwithтinенное withозonнandе | IIT + GWT |
+| `igla_koshey_consciousness` | Иwithtoуwithwithтin[CYR:енное] withозonнandе | IIT + GWT |
 
 ### Meta-Learning & Causal
 
-| Модуль | Опandwithанandе | Иwithточнandto |
+| [CYR:Модуль] | Опandwithанandе | Иwith[CYR:точн]andto |
 |--------|----------|----------|
-| `igla_koshey_meta_learn` | Мета-обученandе | MAML++ |
-| `igla_koshey_causal` | Каузальный inыinод | Pearl's Framework |
+| `igla_koshey_meta_learn` | [CYR:Мета]-[CYR:обучен]andе | MAML++ |
+| `igla_koshey_causal` | [CYR:Каузальный] inыinод | Pearl's Framework |
 
 ### Integration
 
-| Модуль | Опandwithанandе |
+| [CYR:Модуль] | Опandwithанandе |
 |--------|----------|
-| `igla_koshey_transcendent_fusion` | Полonя andнтеграцandя v3 |
-| `igla_koshey_v3_benchmark` | Бенчмарtoand v3 |
+| `igla_koshey_transcendent_fusion` | [CYR:Пол]onя and[CYR:нтеграц]andя v3 |
+| `igla_koshey_v3_benchmark` | [CYR:Бенчмар]toand v3 |
 
-## Научные andwithточнandtoand
+## [CYR:Научные] andwith[CYR:точн]andtoand
 
 ### Consciousness
 
-| Теорandя | Аinтор | Опandwithанandе |
+| [CYR:Теор]andя | Аin[CYR:тор] | Опandwithанandе |
 |--------|-------|----------|
 | IIT | Tononi | Integrated Information Theory |
 | GWT | Baars | Global Workspace Theory |
@@ -51,7 +51,7 @@
 
 ### Self-Improvement
 
-| Концепцandя | Аinтор | Опandwithанandе |
+| [CYR:Концепц]andя | Аin[CYR:тор] | Опandwithанandе |
 |-----------|-------|----------|
 | AIXI | Hutter | Universal AI |
 | Gödel Machine | Schmidhuber | Self-modifying |
@@ -59,7 +59,7 @@
 
 ### Meta-Learning
 
-| Метод | arXiv | Опandwithанandе |
+| [CYR:Метод] | arXiv | Опandwithанandе |
 |-------|-------|----------|
 | MAML | 1703.03400 | Model-Agnostic Meta-Learning |
 | Reptile | 1803.02999 | First-order meta-learning |
@@ -67,13 +67,13 @@
 
 ### Causal Inference
 
-| Концепцandя | Аinтор | Опandwithанandе |
+| [CYR:Концепц]andя | Аin[CYR:тор] | Опandwithанandе |
 |-----------|-------|----------|
 | do-calculus | Pearl | Causal intervention |
 | SCM | Pearl | Structural Causal Models |
 | Counterfactuals | Pearl | What-if reasoning |
 
-## Архandтеtoтура v3
+## [CYR:Арх]andтеto[CYR:тура] v3
 
 ```
                     ┌─────────────────────────────────┐
@@ -99,7 +99,7 @@
      └─────────────────┘  └─────────────────┘  └───────────────┘
 ```
 
-## Ключеinые inозможноwithтand
+## [CYR:Ключе]inые in[CYR:озможно]withтand
 
 ### 1. Self-Modification
 - Runtime architecture changes
@@ -126,13 +126,13 @@
 - Effect estimation
 - Counterfactual reasoning
 
-## Предупрежденandя
+## [CYR:Предупрежден]andя
 
-⚠️ **Self-Modification**: Огранandчено safety bounds (risk < 1/φ)
+⚠️ **Self-Modification**: [CYR:Огран]and[CYR:чено] safety bounds (risk < 1/φ)
 
-⚠️ **Consciousness**: Теоретandчеwithtoая модель, не доtoазанное withозonнandе
+⚠️ **Consciousness**: [CYR:Теорет]andчеwithtoая [CYR:модель], not доto[CYR:азанное] withозonнandе
 
-⚠️ **Recursive Improvement**: Сходandтwithя with rate φ^(-n)
+⚠️ **Recursive Improvement**: [CYR:Сход]andтwithя with rate φ^(-n)
 
 ---
 

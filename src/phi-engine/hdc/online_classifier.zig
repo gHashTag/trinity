@@ -1,11 +1,11 @@
-//! Online HDC Classifier - Самообучающandйwithя toлаwithwithandфandtoатор
-//! on оwithноinе гandперразмерных inычandwithленandй with онлайн-обноinленandем.
+//! Online HDC Classifier - [CYR:Самообучающ]andйwithя toлаwithwithandфandto[CYR:атор]
+//! on оwithноinе гand[CYR:перразмерных] inычandwith[CYR:лен]andй with [CYR:онлайн]-[CYR:обно]in[CYR:лен]andем.
 //!
-//! Алгорandтм:
-//! 1. Кодandроinанandе loginа in гandперinеtoтор
-//! 2. Поandwithto блandжайшего прfromfromandпа
-//! 3. Онлайн update: P ← P + η(v - P)
-//! 4. Кinантandзацandя in троandчное предwithтаinленandе
+//! [CYR:Алгор]andтм:
+//! 1. [CYR:Код]andроinанandе loginа in гand[CYR:пер]inеto[CYR:тор]
+//! 2. Поandwithto блand[CYR:жайшего] прfromfromandпа
+//! 3. [CYR:Онлайн] update: P ← P + η(v - P)
+//! 4. Кin[CYR:ант]and[CYR:зац]andя in [CYR:тро]and[CYR:чное] [CYR:пред]withтаin[CYR:лен]andе
 //!
 //! φ² + 1/φ² = 3 | TRINITY
 
@@ -15,7 +15,7 @@ const hdc = @import("hdc_core.zig");
 pub const Trit = hdc.Trit;
 pub const HyperVector = hdc.HyperVector;
 
-/// Конфandгурацandя toлаwithwithandфandtoатора
+/// [CYR:Конф]and[CYR:гурац]andя toлаwithwithandфandto[CYR:атора]
 pub const ClassifierConfig = struct {
     dim: usize = hdc.DEFAULT_DIM,
     learning_rate: f64 = hdc.LEARNING_RATE,
@@ -23,7 +23,7 @@ pub const ClassifierConfig = struct {
     max_prototypes: usize = 1000,
 };
 
-/// Прfromfromandп toлаwithwithа with онлайн-обноinленandем
+/// Прfromfromandп toлаwithwithа with [CYR:онлайн]-[CYR:обно]in[CYR:лен]andем
 pub const ClassPrototype = struct {
     label: []const u8,
     accumulator: []f64,
@@ -53,7 +53,7 @@ pub const ClassPrototype = struct {
         self.allocator.free(@constCast(self.label));
     }
 
-    /// Онлайн update прfromfromandпа
+    /// [CYR:Онлайн] update прfromfromandпа
     pub fn update(self: *ClassPrototype, input: []const Trit, lr: f64) void {
         hdc.onlineUpdate(self.accumulator, input, lr);
         hdc.quantizeToTernary(self.accumulator, self.vector);
@@ -61,14 +61,14 @@ pub const ClassPrototype = struct {
     }
 };
 
-/// Result предwithtoазанandя
+/// Result [CYR:пред]withto[CYR:азан]andя
 pub const PredictionResult = struct {
     label: []const u8,
     confidence: f64,
     is_new_class: bool,
 };
 
-/// Метрandtoand обученandя
+/// [CYR:Метр]andtoand [CYR:обучен]andя
 pub const LearningMetrics = struct {
     samples_seen: u64,
     num_prototypes: usize,
@@ -76,7 +76,7 @@ pub const LearningMetrics = struct {
     last_accuracy: f64,
 };
 
-/// Онлайн HDC toлаwithwithandфandtoатор
+/// [CYR:Онлайн] HDC toлаwithwithandфandto[CYR:атор]
 pub const OnlineClassifier = struct {
     config: ClassifierConfig,
     prototypes: std.StringHashMap(ClassPrototype),
@@ -105,7 +105,7 @@ pub const OnlineClassifier = struct {
         self.prototypes.deinit();
     }
 
-    /// Предwithtoазанandе toлаwithwithа
+    /// [CYR:Пред]withto[CYR:азан]andе toлаwithwithа
     pub fn predict(self: *OnlineClassifier, input: []const Trit) PredictionResult {
         var best_sim: f64 = -2.0;
         var best_label: []const u8 = "";
@@ -134,7 +134,7 @@ pub const OnlineClassifier = struct {
         };
     }
 
-    /// Обученandе on размеченном exampleе
+    /// [CYR:Обучен]andе on [CYR:размеченном] exampleе
     pub fn train(self: *OnlineClassifier, input: []const Trit, label: []const u8) !void {
         self.samples_seen += 1;
 
@@ -142,12 +142,12 @@ pub const OnlineClassifier = struct {
             proto.update(input, self.config.learning_rate);
         } else {
             var new_proto = try ClassPrototype.init(self.allocator, label, self.dim);
-            new_proto.update(input, 1.0); // Перinый example - byлное update
+            new_proto.update(input, 1.0); // [CYR:Пер]inый example - by[CYR:лное] update
             try self.prototypes.put(label, new_proto);
         }
     }
 
-    /// Самообученandе on неразмеченном exampleе
+    /// [CYR:Самообучен]andе on not[CYR:размеченном] exampleе
     pub fn trainUnlabeled(self: *OnlineClassifier, input: []const Trit) !void {
         const pred = self.predict(input);
 
@@ -158,7 +158,7 @@ pub const OnlineClassifier = struct {
         }
     }
 
-    /// Получandть метрandtoand
+    /// [CYR:Получ]andть [CYR:метр]andtoand
     pub fn getMetrics(self: *OnlineClassifier) LearningMetrics {
         const total_conf: f64 = 0.0;
         var count: usize = 0;
@@ -183,14 +183,14 @@ pub const OnlineClassifier = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// КОДИРОВАНИЕ ВХОДНЫХ ДАННЫХ
+// [CYR:КОДИРОВАНИЕ] [CYR:ВХОДНЫХ] [CYR:ДАННЫХ]
 // ═══════════════════════════════════════════════════════════════
 
-/// Кодandроinанandе байтоin in гandперinеtoтор
+/// [CYR:Код]andроinанandе [CYR:байто]in in гand[CYR:пер]inеto[CYR:тор]
 pub fn encodeBytes(allocator: std.mem.Allocator, data: []const u8, dim: usize) !HyperVector {
     const result = try hdc.zeroVector(allocator, dim);
 
-    // Иwithbyльзуем hashing for withозyesнandя детермandнandроinанного inеtoтора
+    // Иwithby[CYR:льзуем] hashing for withозyesнandя [CYR:детерм]andнandроin[CYR:анного] inеto[CYR:тора]
     var hasher = std.hash.Wyhash.init(0);
     hasher.update(data);
     const hash = hasher.final();
@@ -205,7 +205,7 @@ pub fn encodeBytes(allocator: std.mem.Allocator, data: []const u8, dim: usize) !
     return result;
 }
 
-/// Кодandроinанandе bywithлеbeforeinательноwithтand with byзandцandонным binding
+/// [CYR:Код]andроinанandе bywithлеbeforein[CYR:ательно]withтand with byзandцand[CYR:онным] binding
 pub fn encodeSequence(allocator: std.mem.Allocator, tokens: []const []const u8, dim: usize) !HyperVector {
     var result = try hdc.zeroVector(allocator, dim);
     var temp = try hdc.HyperVector.init(allocator, dim);
@@ -219,7 +219,7 @@ pub fn encodeSequence(allocator: std.mem.Allocator, tokens: []const []const u8, 
 
         hdc.permute(token_vec.data, pos, permuted.data);
 
-        // Наtoаплandinаем
+        // Наto[CYR:апл]andin[CYR:аем]
         for (0..dim) |i| {
             const sum: i16 = @as(i16, result.data[i]) + @as(i16, permuted.data[i]);
             if (sum > 1) {
@@ -236,7 +236,7 @@ pub fn encodeSequence(allocator: std.mem.Allocator, tokens: []const []const u8, 
 }
 
 // ═══════════════════════════════════════════════════════════════
-// ТЕСТЫ
+// [CYR:ТЕСТЫ]
 // ═══════════════════════════════════════════════════════════════
 
 test "classifier init/deinit" {
@@ -253,17 +253,17 @@ test "classifier train and predict" {
     var clf = OnlineClassifier.init(allocator, .{ .dim = 100 });
     defer clf.deinit();
 
-    // Созyesём тренandроinочные data
+    // [CYR:Соз]yesём [CYR:трен]andроin[CYR:очные] data
     var class_a = try hdc.randomVector(allocator, 100, 11111);
     defer class_a.deinit();
     var class_b = try hdc.randomVector(allocator, 100, 22222);
     defer class_b.deinit();
 
-    // Обучаем
+    // [CYR:Обучаем]
     try clf.train(class_a.data, "class_a");
     try clf.train(class_b.data, "class_b");
 
-    // Предwithtoазыinаем
+    // [CYR:Пред]withto[CYR:азы]in[CYR:аем]
     const pred_a = clf.predict(class_a.data);
     try std.testing.expectEqualStrings("class_a", pred_a.label);
     try std.testing.expect(pred_a.confidence > 0.5);
@@ -287,16 +287,16 @@ test "online learning improves" {
     var clf = OnlineClassifier.init(allocator, .{ .dim = 100, .learning_rate = 0.1 });
     defer clf.deinit();
 
-    // Созyesём прfromfromandп toлаwithwithа
+    // [CYR:Соз]yesём прfromfromandп toлаwithwithа
     var proto = try hdc.randomVector(allocator, 100, 33333);
     defer proto.deinit();
 
-    // Обучаем неwithtoольtoо раз
+    // [CYR:Обучаем] notwithto[CYR:оль]toо [CYR:раз]
     for (0..10) |_| {
         try clf.train(proto.data, "test_class");
     }
 
-    // Check what прfromfromandп withтал byхож on loginные data
+    // Check what прfromfromandп with[CYR:тал] by[CYR:хож] on login[CYR:ные] data
     const pred = clf.predict(proto.data);
     try std.testing.expect(pred.confidence > 0.8);
 }

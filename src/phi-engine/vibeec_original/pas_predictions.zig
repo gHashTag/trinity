@@ -1,16 +1,16 @@
 //! ═══════════════════════════════════════════════════════════════════════════════
 //! PAS PREDICTIONS IMPLEMENTATION
 //! ═══════════════════════════════════════════════════════════════════════════════
-//! Имплементацandя предwithtoазанandй PAS DAEMON for TRINITY VM
-//! Аinтор: Dmitrii Vasilev
-//! Верwithandя: 1.0.0
+//! [CYR:Имплементац]andя [CYR:пред]withto[CYR:азан]andй PAS DAEMON for TRINITY VM
+//! Аin[CYR:тор]: Dmitrii Vasilev
+//! [CYR:Вер]withandя: 1.0.0
 //! ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
 const math = std.math;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// СВЯЩЕННЫЕ CONSTANTS
+// [CYR:СВЯЩЕННЫЕ] CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PHI: f64 = 1.618033988749895; // Golden ratio
@@ -114,12 +114,12 @@ pub const Timeline = enum {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// КРАТКОСРОЧНЫЕ ПРЕДСКАЗАНИЯ (2025-2026)
+// [CYR:КРАТКОСРОЧНЫЕ] [CYR:ПРЕДСКАЗАНИЯ] (2025-2026)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const ShortTermPredictions = struct {
     
-    /// 3DGS обученandе: 15 мandн → 30 withеtoунд (85% уinеренноwithть)
+    /// 3DGS [CYR:обучен]andе: 15 мandн → 30 withеto[CYR:унд] (85% уin[CYR:еренно]withть)
     pub const FastTraining = struct {
         pub const id = "ST-001";
         pub const name = "Ultra-Fast 3DGS Training";
@@ -157,7 +157,7 @@ pub const ShortTermPredictions = struct {
         }
     };
     
-    /// 3DGS memory: 500MB → 50MB (80% уinеренноwithть)
+    /// 3DGS memory: 500MB → 50MB (80% уin[CYR:еренно]withть)
     pub const CompactMemory = struct {
         pub const id = "ST-002";
         pub const name = "Compact 3DGS Representation";
@@ -204,7 +204,7 @@ pub const ShortTermPredictions = struct {
         }
     };
     
-    /// Neural Upscaling: 4x → 8x (82% уinеренноwithть)
+    /// Neural Upscaling: 4x → 8x (82% уin[CYR:еренно]withть)
     pub const NeuralUpscaling = struct {
         pub const id = "ST-003";
         pub const name = "8x Neural Super Resolution";
@@ -240,12 +240,12 @@ pub const ShortTermPredictions = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// СРЕДНЕСРОЧНЫЕ ПРЕДСКАЗАНИЯ (2027-2028)
+// [CYR:СРЕДНЕСРОЧНЫЕ] [CYR:ПРЕДСКАЗАНИЯ] (2027-2028)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const MediumTermPredictions = struct {
     
-    /// Single-Image 3D: Real-time, high quality (72% уinеренноwithть)
+    /// Single-Image 3D: Real-time, high quality (72% уin[CYR:еренно]withть)
     pub const SingleImage3D = struct {
         pub const id = "MT-001";
         pub const name = "Real-time Single-Image 3D Reconstruction";
@@ -263,7 +263,7 @@ pub const MediumTermPredictions = struct {
         };
     };
     
-    /// 4D Capture: Single camera, real-time (65% уinеренноwithть)
+    /// 4D Capture: Single camera, real-time (65% уin[CYR:еренно]withть)
     pub const Realtime4D = struct {
         pub const id = "MT-002";
         pub const name = "Real-time 4D Capture";
@@ -299,12 +299,12 @@ pub const MediumTermPredictions = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ДОЛГОСРОЧНЫЕ ПРЕДСКАЗАНИЯ (2029-2030)
+// [CYR:ДОЛГОСРОЧНЫЕ] [CYR:ПРЕДСКАЗАНИЯ] (2029-2030)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const LongTermPredictions = struct {
     
-    /// Fully Neural Graphics Pipeline (55% уinеренноwithть)
+    /// Fully Neural Graphics Pipeline (55% уin[CYR:еренно]withть)
     pub const NeuralPipeline = struct {
         pub const id = "LT-001";
         pub const name = "Fully Neural Graphics Pipeline";
@@ -326,7 +326,7 @@ pub const LongTermPredictions = struct {
         };
     };
     
-    /// True Real-time Photorealism (60% уinеренноwithть)
+    /// True Real-time Photorealism (60% уin[CYR:еренно]withть)
     pub const TruePhotorealism = struct {
         pub const id = "LT-002";
         pub const name = "True Real-time Photorealism";

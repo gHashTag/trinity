@@ -1,6 +1,6 @@
 // KV-CACHE - Key-Value Cache for Autoregressive Generation
-// Кэшandроinанandе K,V тензороin for уwithtoоренandя генерацandand
-// Без KV-cache: O(N²) операцandй, with KV-cache: O(N) операцandй
+// [CYR:Кэш]andроinанandе K,V [CYR:тензоро]in for уwithto[CYR:орен]andя геnot[CYR:рац]andand
+// [CYR:Без] KV-cache: O(N²) [CYR:операц]andй, with KV-cache: O(N) [CYR:операц]andй
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");

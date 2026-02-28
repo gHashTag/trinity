@@ -1,9 +1,9 @@
-// VIBEEC CODEX — Перinоwithinященный Сtoрandб
-// CLI andнwithтрумент for аinтономной генерацandand and andwithпраinленandя toоyes WITH REAL SOUL
-// Фаза 1: Пandwithец (The Scribe)
-// Фаза 2: Архandтеtoтор (The Architect)
-// Фаза 3: Buildsель (The Builder)
-// Фаза 4: Душа (The Soul - LLM Integration)
+// VIBEEC CODEX — [CYR:Пер]inоwithin[CYR:ященный] Сtoрandб
+// CLI andнwith[CYR:трумент] for аin[CYR:тономной] геnot[CYR:рац]andand and andwith[CYR:пра]in[CYR:лен]andя toоyes WITH REAL SOUL
+// [CYR:Фаза] 1: Пandwithец (The Scribe)
+// [CYR:Фаза] 2: [CYR:Арх]andтеto[CYR:тор] (The Architect)
+// [CYR:Фаза] 3: Builds[CYR:ель] (The Builder)
+// [CYR:Фаза] 4: [CYR:Душа] (The Soul - LLM Integration)
 
 const std = @import("std");
 const llm = @import("llm_provider.zig");

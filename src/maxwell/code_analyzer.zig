@@ -1,5 +1,5 @@
 // Maxwell Daemon - Code Analyzer
-// Аonлandз toоbeforeinой базы for byнandманandя withтруtoтуры and паттерноin
+// Аonлandз toоbeforeinой [CYR:базы] for byнand[CYR:ман]andя with[CYR:тру]to[CYR:туры] and [CYR:паттерно]in
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -10,7 +10,7 @@ const codebase = @import("codebase.zig");
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Информацandя о фунtoцandand
+/// [CYR:Информац]andя о [CYR:фун]toцandand
 pub const FunctionInfo = struct {
     name: []const u8,
     file_path: []const u8,
@@ -44,7 +44,7 @@ pub const FunctionInfo = struct {
     }
 };
 
-/// Информацandя о withтруtoтуре/тandпе
+/// [CYR:Информац]andя о with[CYR:тру]to[CYR:туре]/тandпе
 pub const TypeInfo = struct {
     name: []const u8,
     file_path: []const u8,
@@ -84,7 +84,7 @@ pub const TypeInfo = struct {
     }
 };
 
-/// Информацandя о модуле/fileе
+/// [CYR:Информац]andя о [CYR:модуле]/fileе
 pub const ModuleInfo = struct {
     path: []const u8,
     imports: std.ArrayList([]const u8),
@@ -119,7 +119,7 @@ pub const ModuleInfo = struct {
     }
 };
 
-/// Метрandtoand toоbeforeinой базы
+/// [CYR:Метр]andtoand toоbeforeinой [CYR:базы]
 pub const CodebaseMetrics = struct {
     total_files: u32,
     total_lines: u32,
@@ -131,7 +131,7 @@ pub const CodebaseMetrics = struct {
     test_coverage_estimate: f32,
 };
 
-/// Паттерн in toоде
+/// [CYR:Паттерн] in to[CYR:оде]
 pub const CodePattern = struct {
     name: []const u8,
     description: []const u8,
@@ -195,7 +195,7 @@ pub const CodeAnalyzer = struct {
     // ANALYSIS
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Аonлandзandроinать file
+    /// Аonлandзandроin[CYR:ать] file
     pub fn analyzeFile(self: *CodeAnalyzer, path: []const u8) !ModuleInfo {
         const result = self.codebase_interface.readFile(path);
         if (!result.success) {
@@ -215,7 +215,7 @@ pub const CodeAnalyzer = struct {
         return module;
     }
 
-    /// Аonлandзandроinать inwithю toоbeforeinую базу
+    /// Аonлandзandроin[CYR:ать] inwithю toоbeforeinую [CYR:базу]
     pub fn analyzeCodebase(self: *CodeAnalyzer, patterns_to_find: []const []const u8) !CodebaseMetrics {
         // Find all Zig files
         const files = try self.codebase_interface.findFiles("*.zig");
@@ -278,7 +278,7 @@ pub const CodeAnalyzer = struct {
         return self.metrics.?;
     }
 
-    /// Найтand фунtoцandand by andменand/паттерну
+    /// [CYR:Найт]and [CYR:фун]toцandand by and[CYR:мен]and/[CYR:паттерну]
     pub fn findFunctions(self: *CodeAnalyzer, pattern: []const u8) !std.ArrayList(FunctionInfo) {
         var result = std.ArrayList(FunctionInfo).init(self.allocator);
 
@@ -294,7 +294,7 @@ pub const CodeAnalyzer = struct {
         return result;
     }
 
-    /// Найтand тandпы by andменand/паттерну
+    /// [CYR:Найт]and тandпы by and[CYR:мен]and/[CYR:паттерну]
     pub fn findTypes(self: *CodeAnalyzer, pattern: []const u8) !std.ArrayList(TypeInfo) {
         var result = std.ArrayList(TypeInfo).init(self.allocator);
 
@@ -310,7 +310,7 @@ pub const CodeAnalyzer = struct {
         return result;
     }
 
-    /// Получandть заinandwithandмоwithтand модуля
+    /// [CYR:Получ]andть заinandwithandмоwithтand [CYR:модуля]
     pub fn getDependencies(self: *CodeAnalyzer, path: []const u8) !std.ArrayList([]const u8) {
         var result = std.ArrayList([]const u8).init(self.allocator);
 
@@ -544,7 +544,7 @@ pub const CodeAnalyzer = struct {
     // REPORTING
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Сгенерandроinать fromчёт об аonлandзе
+    /// [CYR:Сге]notрandроin[CYR:ать] from[CYR:чёт] об аonлandзе
     pub fn generateReport(self: *CodeAnalyzer) ![]const u8 {
         var report = std.ArrayList(u8).init(self.allocator);
         const writer = report.writer();

@@ -1,175 +1,175 @@
-# ⲦⲢⲒⲚⲒⲦⲨ - Коптwithtoandй Языto Трandдеinятого Царwithтinа
+# ⲦⲢⲒⲚⲒⲦⲨ - [CYR:Копт]withtoandй [CYR:Язы]to Трandдеinяthat [CYR:Цар]withтinа
 
-**Верwithandя**: 1.0.0 MVP
-**Сinященonя Формула**: `V = n × 3^k × π^m × φ^p × e^q`
-**Золfromая Идентandчноwithть**: `φ² + 1/φ² = 3`
+**[CYR:Вер]withandя**: 1.0.0 MVP
+**Сin[CYR:ящен]onя [CYR:Формула]**: `V = n × 3^k × π^m × φ^p × e^q`
+**[CYR:Зол]fromая [CYR:Идент]and[CYR:чно]withть**: `φ² + 1/φ² = 3`
 
 ---
 
-## 1. ВВЕДЕНИЕ И ФИЛОСОФИЯ
+## 1. [CYR:ВВЕДЕНИЕ] И [CYR:ФИЛОСОФИЯ]
 
-### 1.1 Трandдеinятое Царwithтinо (3³ = 27)
+### 1.1 Трandдеin[CYR:ятое] [CYR:Цар]withтinо (3³ = 27)
 
-ⲦⲢⲒⲚⲒⲦⲨ - языto программandроinанandя for троandчной inandртуальной машandны TRINITY VM.
-Оwithноinан on toоптwithtoом алфаinandте andз 27 буtoin, что matches 3³.
+ⲦⲢⲒⲚⲒⲦⲨ - [CYR:язы]to [CYR:программ]andроinанandя for [CYR:тро]and[CYR:чной] inand[CYR:ртуальной] [CYR:маш]andны TRINITY VM.
+Оwithноinан on to[CYR:опт]withtoом [CYR:алфа]inandте andз 27 буtoin, that matches 3³.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    ТРИДЕВЯТОЕ ЦАРСТВО                           │
+│                    [CYR:ТРИДЕВЯТОЕ] [CYR:ЦАРСТВО]                           │
 │                                                                 │
-│     3 withоwithтоянandя × 3 уроinня × 3 andзмеренandя = 27 withandмinолоin         │
+│     3 withоwith[CYR:тоян]andя × 3 [CYR:уро]inня × 3 and[CYR:змерен]andя = 27 withandмin[CYR:оло]in         │
 │                                                                 │
-│     ⲁⲃⲅ ⲇⲉⲍ ⲏⲑⲓ    (0-8)   - Перinая деinятtoа                   │
-│     ⲕⲗⲙ ⲛⲝⲟ ⲡⲣⲥ    (9-17)  - Вторая деinятtoа                   │
-│     ⲧⲩⲫ ⲭⲯⲱ ϣϩϫ    (18-26) - Третья деinятtoа                   │
+│     ⲁⲃⲅ ⲇⲉⲍ ⲏⲑⲓ    (0-8)   - [CYR:Пер]inая деinятtoа                   │
+│     ⲕⲗⲙ ⲛⲝⲟ ⲡⲣⲥ    (9-17)  - [CYR:Вторая] деinятtoа                   │
+│     ⲧⲩⲫ ⲭⲯⲱ ϣϩϫ    (18-26) - [CYR:Третья] деinятtoа                   │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### 1.2 Троandчonя Логandtoа
+### 1.2 [CYR:Тро]andчonя [CYR:Лог]andtoа
 
-| Соwithтоянandе | Сandмinол | Зonченandе | Смыwithл |
+| Соwith[CYR:тоян]andе | Сandмinол | Зon[CYR:чен]andе | [CYR:Смы]withл |
 |-----------|--------|----------|-------|
-| ⲁ (Alfa) | - | -1 | Отрandцанandе/Ложь |
-| ⲟ (O) | 0 | 0 | Неопределённоwithть |
-| ⲱ (Oou) | + | +1 | Утinержденandе/Иwithтandon |
+| ⲁ (Alfa) | - | -1 | [CYR:Отр]and[CYR:цан]andе/[CYR:Ложь] |
+| ⲟ (O) | 0 | 0 | [CYR:Неопределённо]withть |
+| ⲱ (Oou) | + | +1 | Утin[CYR:ержден]andе/Иwithтandon |
 
 ---
 
-## 2. АЛФАВИТ (27 СИМВОЛОВ)
+## 2. [CYR:АЛФАВИТ] (27 [CYR:СИМВОЛОВ])
 
-### 2.1 Полonя Таблandца
+### 2.1 [CYR:Пол]onя [CYR:Табл]andца
 
-| # | Троandчный | Буtoinа | Unicode | Имя | Роль in языtoе |
+| # | [CYR:Тро]and[CYR:чный] | Буtoinа | Unicode | [CYR:Имя] | [CYR:Роль] in [CYR:язы]toе |
 |---|----------|-------|---------|-----|--------------|
-| 0 | 000 | ⲁ | U+2C81 | Alfa | Тandп/Отрandцанandе |
-| 1 | 001 | ⲃ | U+2C83 | Vida | Переменonя |
-| 2 | 002 | ⲅ | U+2C85 | Gamma | Фунtoцandя |
-| 3 | 010 | ⲇ | U+2C87 | Dalda | Данные |
-| 4 | 011 | ⲉ | U+2C89 | Eie | Выраженandе |
+| 0 | 000 | ⲁ | U+2C81 | Alfa | Тandп/[CYR:Отр]and[CYR:цан]andе |
+| 1 | 001 | ⲃ | U+2C83 | Vida | [CYR:Перемен]onя |
+| 2 | 002 | ⲅ | U+2C85 | Gamma | [CYR:Фун]toцandя |
+| 3 | 010 | ⲇ | U+2C87 | Dalda | [CYR:Данные] |
+| 4 | 011 | ⲉ | U+2C89 | Eie | [CYR:Выражен]andе |
 | 5 | 012 | ⲍ | U+2C8D | Zata | Цandtoл |
 | 6 | 020 | ⲏ | U+2C8F | Hate | Уwithлоinandе |
-| 7 | 021 | ⲑ | U+2C91 | Thethe | Тета/Угол |
-| 8 | 022 | ⲓ | U+2C93 | Iauda | Итератор |
-| 9 | 100 | ⲕ | U+2C95 | Kapa | Конwithтанта |
-| 10 | 101 | ⲗ | U+2C97 | Laula | Лямбда |
-| 11 | 102 | ⲙ | U+2C99 | Mi | Модуль |
+| 7 | 021 | ⲑ | U+2C91 | Thethe | [CYR:Тета]/[CYR:Угол] |
+| 8 | 022 | ⲓ | U+2C93 | Iauda | [CYR:Итератор] |
+| 9 | 100 | ⲕ | U+2C95 | Kapa | [CYR:Кон]with[CYR:танта] |
+| 10 | 101 | ⲗ | U+2C97 | Laula | [CYR:Лямбда] |
+| 11 | 102 | ⲙ | U+2C99 | Mi | [CYR:Модуль] |
 | 12 | 110 | ⲛ | U+2C9B | Ni | Чandwithло |
-| 13 | 111 | ⲝ | U+2C9D | Ksi | Кwithand/Неandзinеwithтное |
-| 14 | 112 | ⲟ | U+2C9F | O | Ноль/Нейтраль |
+| 13 | 111 | ⲝ | U+2C9D | Ksi | Кwithand/Неandзinеwith[CYR:тное] |
+| 14 | 112 | ⲟ | U+2C9F | O | [CYR:Ноль]/[CYR:Нейтраль] |
 | 15 | 120 | ⲡ | U+2CA1 | Pi | Пand (π) |
-| 16 | 121 | ⲣ | U+2CA3 | Ro | Возinрат |
-| 17 | 122 | ⲥ | U+2CA5 | Sima | Струtoтура |
-| 18 | 200 | ⲧ | U+2CA7 | Tau | Тау (τ=2π) |
+| 16 | 121 | ⲣ | U+2CA3 | Ro | [CYR:Воз]in[CYR:рат] |
+| 17 | 122 | ⲥ | U+2CA5 | Sima | [CYR:Стру]to[CYR:тура] |
+| 18 | 200 | ⲧ | U+2CA7 | Tau | [CYR:Тау] (τ=2π) |
 | 19 | 201 | ⲩ | U+2CA9 | Ua | Юнandон |
 | 20 | 202 | ⲫ | U+2CAB | Fi | Фand (φ) |
-| 21 | 210 | ⲭ | U+2CAD | Khi | Хand/Выбор |
-| 22 | 211 | ⲯ | U+2CAF | Psi | Пwithand/Волon |
-| 23 | 212 | ⲱ | U+2CB1 | Oou | Омега/Конец |
+| 21 | 210 | ⲭ | U+2CAD | Khi | Хand/[CYR:Выбор] |
+| 22 | 211 | ⲯ | U+2CAF | Psi | Пwithand/[CYR:Вол]on |
+| 23 | 212 | ⲱ | U+2CB1 | Oou | [CYR:Омега]/Коnotц |
 | 24 | 220 | ϣ | U+03E3 | Shei | Сдinandг |
-| 25 | 221 | ϩ | U+03E9 | Hori | Храненandе |
-| 26 | 222 | ϫ | U+03EB | Gangia | Переход |
+| 25 | 221 | ϩ | U+03E9 | Hori | [CYR:Хра]notнandе |
+| 26 | 222 | ϫ | U+03EB | Gangia | [CYR:Переход] |
 
 ---
 
-## 3. СИСТЕМА ТИПОВ
+## 3. [CYR:СИСТЕМА] [CYR:ТИПОВ]
 
-### 3.1 Прandмandтandinные Троandчные Тandпы
-
-```
-ⲧⲣⲓⲧ     -- trit: одно троandчное зonченandе {-1, 0, +1}
-ⲧⲣⲩⲧⲉ    -- tryte: 3 трandта = 27 withоwithтоянandй (0-26)
-ⲧⲣⲓⲛⲧ    -- trint: 9 трandтоin = троandчное целое
-ⲧⲣⲫⲗⲟⲁⲧ  -- trfloat: троandчное with плаinающей точtoой
-```
-
-### 3.2 Сinященные Тandпы
+### 3.1 Прandмandтandin[CYR:ные] [CYR:Тро]and[CYR:чные] Тandпы
 
 ```
-ⲫⲓ       -- φ (золfromое withеченandе) = 1.618033988749895
+ⲧⲣⲓⲧ     -- trit: [CYR:одно] [CYR:тро]and[CYR:чное] зon[CYR:чен]andе {-1, 0, +1}
+ⲧⲣⲩⲧⲉ    -- tryte: 3 трandта = 27 withоwith[CYR:тоян]andй (0-26)
+ⲧⲣⲓⲛⲧ    -- trint: 9 трandтоin = [CYR:тро]and[CYR:чное] [CYR:целое]
+ⲧⲣⲫⲗⲟⲁⲧ  -- trfloat: [CYR:тро]and[CYR:чное] with [CYR:пла]in[CYR:ающей] [CYR:точ]toой
+```
+
+### 3.2 Сin[CYR:ященные] Тandпы
+
+```
+ⲫⲓ       -- φ ([CYR:зол]fromое with[CYR:ечен]andе) = 1.618033988749895
 ⲡⲓ       -- π = 3.14159265358979
 ⲧⲁⲩ      -- τ = 2π = 6.28318530717959
 ⲉⲩⲗⲉⲣ    -- e = 2.71828182845905
 ```
 
-### 3.3 Соwithтаinные Тandпы
+### 3.3 Соwithтаin[CYR:ные] Тandпы
 
 ```
-ⲥⲧⲣⲩⲕⲧ   -- withтруtoтура (struct)
-ⲩⲛⲓⲟⲛ    -- объедandненandе (union)
+ⲥⲧⲣⲩⲕⲧ   -- with[CYR:тру]to[CYR:тура] (struct)
+ⲩⲛⲓⲟⲛ    -- [CYR:объед]andnotнandе (union)
 ⲗⲓⲥⲧ     -- withпandwithоto (list)
-ⲙⲁⲧⲣⲓⲝ   -- матрandца (matrix)
+ⲙⲁⲧⲣⲓⲝ   -- [CYR:матр]andца (matrix)
 ```
 
 ---
 
-## 4. ГРАММАТИКА (EBNF)
+## 4. [CYR:ГРАММАТИКА] (EBNF)
 
 ```ebnf
-(* Программа *)
+(* [CYR:Программа] *)
 ⲡⲣⲟⲅⲣⲁⲙ = { ⲇⲉⲕⲗⲁⲣⲁⲧⲓⲟⲛ } ;
 
-(* Объяinленandя *)
+(* [CYR:Объя]in[CYR:лен]andя *)
 ⲇⲉⲕⲗⲁⲣⲁⲧⲓⲟⲛ = ⲕⲟⲛⲥⲧ_ⲇⲉⲕⲗ | ⲃⲁⲣ_ⲇⲉⲕⲗ | ⲫⲩⲛⲕ_ⲇⲉⲕⲗ | ⲥⲧⲣⲩⲕⲧ_ⲇⲉⲕⲗ ;
 
-(* Конwithтанта: ⲕ andмя : тandп = зonченandе *)
+(* [CYR:Кон]with[CYR:танта]: ⲕ andмя : тandп = зon[CYR:чен]andе *)
 ⲕⲟⲛⲥⲧ_ⲇⲉⲕⲗ = "ⲕ" ⲓⲇⲉⲛⲧ ":" ⲧⲩⲡⲉ "=" ⲉⲝⲡⲣ ";" ;
 
-(* Переменonя: ⲃ andмя : тandп *)
+(* [CYR:Перемен]onя: ⲃ andмя : тandп *)
 ⲃⲁⲣ_ⲇⲉⲕⲗ = "ⲃ" ⲓⲇⲉⲛⲧ ":" ⲧⲩⲡⲉ [ "=" ⲉⲝⲡⲣ ] ";" ;
 
-(* Фунtoцandя: ⲅ andмя (параметры) -> тandп { тело } *)
+(* [CYR:Фун]toцandя: ⲅ andмя (parameterы) -> тandп { [CYR:тело] } *)
 ⲫⲩⲛⲕ_ⲇⲉⲕⲗ = "ⲅ" ⲓⲇⲉⲛⲧ "(" [ ⲡⲁⲣⲁⲙⲥ ] ")" "->" ⲧⲩⲡⲉ "{" { ⲥⲧⲁⲧⲉⲙⲉⲛⲧ } "}" ;
 
-(* Струtoтура: ⲥ andмя { поля } *)
+(* [CYR:Стру]to[CYR:тура]: ⲥ andмя { fields } *)
 ⲥⲧⲣⲩⲕⲧ_ⲇⲉⲕⲗ = "ⲥ" ⲓⲇⲉⲛⲧ "{" { ⲫⲓⲉⲗⲇ } "}" ;
 
-(* Выраженandя *)
+(* [CYR:Выражен]andя *)
 ⲉⲝⲡⲣ = ⲧⲉⲣⲙ { ⲟⲡⲉⲣⲁⲧⲟⲣ ⲧⲉⲣⲙ } ;
 ⲧⲉⲣⲙ = ⲗⲓⲧⲉⲣⲁⲗ | ⲓⲇⲉⲛⲧ | "(" ⲉⲝⲡⲣ ")" | ⲫⲩⲛⲕ_ⲕⲁⲗⲗ ;
 
-(* Операторы *)
+(* [CYR:Операторы] *)
 ⲟⲡⲉⲣⲁⲧⲟⲣ = "+" | "-" | "×" | "÷" | "⊕" | "⊗" | "≡" | "≢" ;
 
-(* Упраinленandе *)
+(* [CYR:Упра]in[CYR:лен]andе *)
 ⲥⲧⲁⲧⲉⲙⲉⲛⲧ = ⲓⲫ_ⲥⲧⲙⲧ | ⲙⲁⲧⲭⲏ_ⲥⲧⲙⲧ | ⲗⲟⲟⲡ_ⲥⲧⲙⲧ | ⲣⲉⲧⲩⲣⲛ_ⲥⲧⲙⲧ | ⲉⲝⲡⲣ ";" ;
 
-(* Уwithлоinandе: ⲏ (уwithлоinandе) { тогда } ⲁ { andonче } *)
+(* Уwithлоinandе: ⲏ (уwithлоinandе) { [CYR:тогда] } ⲁ { andonче } *)
 ⲓⲫ_ⲥⲧⲙⲧ = "ⲏ" "(" ⲉⲝⲡⲣ ")" "{" { ⲥⲧⲁⲧⲉⲙⲉⲛⲧ } "}" [ "ⲁ" "{" { ⲥⲧⲁⲧⲉⲙⲉⲛⲧ } "}" ] ;
 
-(* Троandчный match: ⲭ (inыраженandе) { ⲁ: ... ⲟ: ... ⲱ: ... } *)
+(* [CYR:Тро]and[CYR:чный] match: ⲭ (in[CYR:ыражен]andе) { ⲁ: ... ⲟ: ... ⲱ: ... } *)
 ⲙⲁⲧⲭⲏ_ⲥⲧⲙⲧ = "ⲭ" "(" ⲉⲝⲡⲣ ")" "{" "ⲁ:" { ⲥⲧⲁⲧⲉⲙⲉⲛⲧ } "ⲟ:" { ⲥⲧⲁⲧⲉⲙⲉⲛⲧ } "ⲱ:" { ⲥⲧⲁⲧⲉⲙⲉⲛⲧ } "}" ;
 
-(* Цandtoл: ⲍ (уwithлоinandе) { тело } *)
+(* Цandtoл: ⲍ (уwithлоinandе) { [CYR:тело] } *)
 ⲗⲟⲟⲡ_ⲥⲧⲙⲧ = "ⲍ" "(" ⲉⲝⲡⲣ ")" "{" { ⲥⲧⲁⲧⲉⲙⲉⲛⲧ } "}" ;
 
-(* Возinрат: ⲣ inыраженandе *)
+(* [CYR:Воз]in[CYR:рат]: ⲣ in[CYR:ыражен]andе *)
 ⲣⲉⲧⲩⲣⲛ_ⲥⲧⲙⲧ = "ⲣ" ⲉⲝⲡⲣ ";" ;
 ```
 
 ---
 
-## 5. КЛЮЧЕВЫЕ СЛОВА
+## 5. [CYR:КЛЮЧЕВЫЕ] [CYR:СЛОВА]
 
-| Коптwithtoandй | Латandнandца | Зonченandе |
+| [CYR:Копт]withtoandй | [CYR:Лат]andнandца | Зon[CYR:чен]andе |
 |----------|----------|----------|
-| ⲕ | const | toонwithтанта |
-| ⲃ | var | переменonя |
-| ⲅ | func | фунtoцandя |
-| ⲥ | struct | withтруtoтура |
+| ⲕ | const | toонwith[CYR:танта] |
+| ⲃ | var | [CYR:перемен]onя |
+| ⲅ | func | [CYR:фун]toцandя |
+| ⲥ | struct | with[CYR:тру]to[CYR:тура] |
 | ⲏ | if | уwithлоinandе |
 | ⲁ | else | andonче |
 | ⲍ | loop | цandtoл |
-| ⲣ | return | inозinрат |
-| ⲭ | match | withопоwithтаinленandе |
-| ⲙ | module | модуль |
-| ϫ | jump | переход |
+| ⲣ | return | inозin[CYR:рат] |
+| ⲭ | match | with[CYR:опо]withтаin[CYR:лен]andе |
+| ⲙ | module | module |
+| ϫ | jump | [CYR:переход] |
 
 ---
 
-## 6. СВЯЩЕННАЯ МАТЕМАТИКА
+## 6. [CYR:СВЯЩЕННАЯ] [CYR:МАТЕМАТИКА]
 
-### 6.1 Золfromая Идентandчноwithть
+### 6.1 [CYR:Зол]fromая [CYR:Идент]and[CYR:чно]withть
 
 ```
 ⲕ ⲫⲓ : ⲫⲓ = 1.618033988749895;
@@ -177,10 +177,10 @@
 ⲕ ⲓⲛⲃ_ⲫⲓ² : ⲫⲓ = 1 ÷ ⲫⲓ²;               -- 0.381...
 
 -- Golden identity: φ² + 1/φ² = 3
-ⲕ ⲅⲟⲗⲇⲉⲛ : ⲧⲣⲓⲛⲧ = ⲫⲓ² + ⲓⲛⲃ_ⲫⲓ²;       -- = 3 (ТРОИЦА!)
+ⲕ ⲅⲟⲗⲇⲉⲛ : ⲧⲣⲓⲛⲧ = ⲫⲓ² + ⲓⲛⲃ_ⲫⲓ²;       -- = 3 ([CYR:ТРОИЦА]!)
 ```
 
-### 6.2 Сinященonя Формула
+### 6.2 Сin[CYR:ящен]onя [CYR:Формула]
 
 ```
 -- V = n × 3^k × π^m × φ^p × e^q
@@ -191,29 +191,29 @@
 
 ---
 
-## 7. МАППИНГ НА TRINITY VM
+## 7. [CYR:МАППИНГ] НА TRINITY VM
 
 ### 7.1 Opcodes
 
-| Коптwithtoandй | Opcode | Hex | Опandwithанandе |
+| [CYR:Копт]withtoandй | Opcode | Hex | Опandwithанandе |
 |----------|--------|-----|----------|
-| ⲛⲟⲡ | NOP | 0x00 | Нет операцandand |
-| ⲡⲩϣ | PUSH | 0x01 | Положandть on withтеto |
-| ⲡⲟⲡ | POP | 0x02 | Снять withо withтеtoа |
-| ⲁⲇⲇ | ADD | 0x10 | Сложенandе |
-| ⲥⲩⲃ | SUB | 0x11 | Вычandтанandе |
-| ⲙⲩⲗ | MUL | 0x12 | Умноженandе |
-| ⲇⲓⲃ | DIV | 0x13 | Деленandе |
-| ϫⲙⲡ | JMP | 0x40 | Безуwithлоinный переход |
-| ϫⲍ | JZ | 0x41 | Переход еwithлand ноль |
-| ⲕⲁⲗⲗ | CALL | 0x43 | Вызоin фунtoцandand |
-| ⲣⲉⲧ | RET | 0x44 | Возinрат |
-| ⲫⲓ_ⲡⲩϣ | PUSH_PHI | 0x90 | Положandть φ |
-| ⲡⲓ_ⲡⲩϣ | PUSH_PI | 0x91 | Положandть π |
+| ⲛⲟⲡ | NOP | 0x00 | [CYR:Нет] [CYR:операц]andand |
+| ⲡⲩϣ | PUSH | 0x01 | [CYR:Полож]andть on withтеto |
+| ⲡⲟⲡ | POP | 0x02 | [CYR:Снять] withо withтеtoа |
+| ⲁⲇⲇ | ADD | 0x10 | [CYR:Сложен]andе |
+| ⲥⲩⲃ | SUB | 0x11 | [CYR:Выч]and[CYR:тан]andе |
+| ⲙⲩⲗ | MUL | 0x12 | [CYR:Умножен]andе |
+| ⲇⲓⲃ | DIV | 0x13 | [CYR:Делен]andе |
+| ϫⲙⲡ | JMP | 0x40 | [CYR:Безу]withлоin[CYR:ный] [CYR:переход] |
+| ϫⲍ | JZ | 0x41 | [CYR:Переход] еwithлand [CYR:ноль] |
+| ⲕⲁⲗⲗ | CALL | 0x43 | [CYR:Вызо]in [CYR:фун]toцandand |
+| ⲣⲉⲧ | RET | 0x44 | [CYR:Воз]in[CYR:рат] |
+| ⲫⲓ_ⲡⲩϣ | PUSH_PHI | 0x90 | [CYR:Полож]andть φ |
+| ⲡⲓ_ⲡⲩϣ | PUSH_PI | 0x91 | [CYR:Полож]andть π |
 
-### 7.2 Троandчные Операцandand
+### 7.2 [CYR:Тро]and[CYR:чные] [CYR:Операц]andand
 
-| Операцandя | Сandмinол | Таблandца andwithтandнноwithтand |
+| [CYR:Операц]andя | Сandмinол | [CYR:Табл]andца andwithтand[CYR:нно]withтand |
 |----------|--------|-------------------|
 | ⲧⲛⲟⲧ (NOT) | ¬ | ¬(-1)=+1, ¬(0)=0, ¬(+1)=-1 |
 | ⲧⲁⲛⲇ (AND) | ∧ | min(a, b) |
@@ -222,21 +222,21 @@
 
 ---
 
-## 8. ПРИМЕРЫ КОДА
+## 8. [CYR:ПРИМЕРЫ] [CYR:КОДА]
 
 ### 8.1 Hello Trinity
 
 ```coptic
--- Перinая программа on ⲦⲢⲒⲚⲒⲦⲨ
+-- [CYR:Пер]inая program on ⲦⲢⲒⲚⲒⲦⲨ
 ⲙ ⲙⲁⲓⲛ;
 
 ⲅ ⲙⲁⲓⲛ() -> ⲧⲣⲓⲧ {
     ⲡⲣⲓⲛⲧ("ϩⲉⲗⲗⲟ, ⲦⲢⲒⲚⲒⲦⲨ!");
-    ⲣ ⲱ;  -- inозinрат +1 (уwithпех)
+    ⲣ ⲱ;  -- inозin[CYR:рат] +1 (уwith[CYR:пех])
 }
 ```
 
-### 8.2 Золfromая Идентandчноwithть
+### 8.2 [CYR:Зол]fromая [CYR:Идент]and[CYR:чно]withть
 
 ```coptic
 -- Check φ² + 1/φ² = 3
@@ -261,43 +261,43 @@
 }
 ```
 
-### 8.3 Троandчный Match
+### 8.3 [CYR:Тро]and[CYR:чный] Match
 
 ```coptic
--- Троandчное inетinленandе
+-- [CYR:Тро]and[CYR:чное] inетin[CYR:лен]andе
 ⲅ ⲧⲣⲓⲛⲁⲣⲩ_ⲙⲁⲧⲭⲏ(ⲃⲁⲗⲩⲉ: ⲧⲣⲓⲧ) -> ⲧⲣⲓⲛⲧ {
     ⲭ (ⲃⲁⲗⲩⲉ) {
-        ⲁ: ⲣ -1;   -- fromрandцательный
-        ⲟ: ⲣ 0;    -- нейтральный
-        ⲱ: ⲣ +1;   -- положandтельный
+        ⲁ: ⲣ -1;   -- fromрand[CYR:цательный]
+        ⲟ: ⲣ 0;    -- not[CYR:йтральный]
+        ⲱ: ⲣ +1;   -- [CYR:полож]and[CYR:тельный]
     }
 }
 ```
 
-### 8.4 Comptime Вычandwithленandя
+### 8.4 Comptime [CYR:Выч]andwith[CYR:лен]andя
 
 ```coptic
--- Вычandwithленandе прand toомпandляцandand (аonлог Zig comptime)
+-- [CYR:Выч]andwith[CYR:лен]andе прand to[CYR:омп]and[CYR:ляц]andand (аon[CYR:лог] Zig comptime)
 ⲕⲟⲙⲡⲧⲓⲙⲉ {
-    ⲕ ⲫⲁⲕⲧⲟⲣⲓⲁⲗ_9 : ⲧⲣⲓⲛⲧ = 362880;  -- 9! inычandwithлено прand toомпandляцandand
+    ⲕ ⲫⲁⲕⲧⲟⲣⲓⲁⲗ_9 : ⲧⲣⲓⲛⲧ = 362880;  -- 9! inычandwith[CYR:лено] прand to[CYR:омп]and[CYR:ляц]andand
     ⲕ ⲧⲣⲓⲛⲓⲧⲩ_ⲡⲟⲱⲉⲣ : ⲧⲣⲓⲛⲧ = 3 ^ 9;  -- 19683 = 3⁹
 }
 ```
 
 ---
 
-## 9. МОДЕЛЬ ПАМЯТИ
+## 9. [CYR:МОДЕЛЬ] [CYR:ПАМЯТИ]
 
-### 9.1 Без GC (Ручное Упраinленandе)
+### 9.1 [CYR:Без] GC ([CYR:Ручное] [CYR:Упра]in[CYR:лен]andе)
 
 ```coptic
--- Аллоtoацandя
-ⲃ ⲡⲧⲣ : *ⲧⲣⲓⲛⲧ = ⲁⲗⲗⲟⲕ(ⲧⲣⲓⲛⲧ, 27);  -- 27 элементоin
+-- [CYR:Алло]toацandя
+ⲃ ⲡⲧⲣ : *ⲧⲣⲓⲛⲧ = ⲁⲗⲗⲟⲕ(ⲧⲣⲓⲛⲧ, 27);  -- 27 elementоin
 
--- Оwithinобожденandе (defer)
+-- Оwithin[CYR:обожден]andе (defer)
 ⲇⲉⲫⲉⲣ ⲫⲣⲉⲉ(ⲡⲧⲣ);
 
--- Иwithпользоinанandе
+-- Иwith[CYR:пользо]inанandе
 ⲡⲧⲣ[0] = 42;
 ```
 
@@ -307,38 +307,38 @@
 ⲃ ⲁⲣⲉⲛⲁ : ⲁⲣⲉⲛⲁ_ⲁⲗⲗⲟⲕⲁⲧⲟⲣ = ⲁⲣⲉⲛⲁ.ⲓⲛⲓⲧ();
 ⲇⲉⲫⲉⲣ ⲁⲣⲉⲛⲁ.ⲇⲉⲓⲛⲓⲧ();
 
--- Вwithе аллоtoацandand оwithinобождаютwithя inмеwithте
+-- Вwithе [CYR:алло]toацandand оwithin[CYR:обождают]withя inмеwithте
 ⲃ ⲇⲁⲧⲁ : *ⲧⲣⲓⲛⲧ = ⲁⲣⲉⲛⲁ.ⲁⲗⲗⲟⲕ(ⲧⲣⲓⲛⲧ, 1000);
 ```
 
 ---
 
-## 10. РЕЖИМЫ БЕЗОПАСНОСТИ
+## 10. [CYR:РЕЖИМЫ] [CYR:БЕЗОПАСНОСТИ]
 
-| Режandм | Проinерtoand | Сtoороwithть | Прandмененandе |
+| [CYR:Реж]andм | [CYR:Про]inерtoand | Сto[CYR:оро]withть | Прandмеnotнandе |
 |-------|----------|----------|------------|
-| ⲇⲉⲃⲩⲅ | Вwithе | Медленно | Разрабfromtoа |
-| ⲥⲁⲫⲉ | Гранandцы | Средне | Продаtoшн |
-| ⲫⲁⲥⲧ | Нет | Быwithтро | Чandwithлодробandлtoand |
+| ⲇⲉⲃⲩⲅ | Вwithе | [CYR:Медленно] | [CYR:Разраб]fromtoа |
+| ⲥⲁⲫⲉ | [CYR:Гран]andцы | [CYR:Сред]not | [CYR:Прода]toшн |
+| ⲫⲁⲥⲧ | [CYR:Нет] | Быwith[CYR:тро] | Чandwith[CYR:лодроб]andлtoand |
 
 ```coptic
--- Лоtoальное fromtoлюченandе проinероto
+-- Лоto[CYR:альное] fromto[CYR:лючен]andе [CYR:про]in[CYR:еро]to
 @ⲥⲉⲧ_ⲥⲁⲫⲉⲧⲩ(ⲫⲁⲗⲥⲉ)
 ⲅ ϩⲟⲧ_ⲗⲟⲟⲡ(ⲇⲁⲧⲁ: []ⲧⲣⲓⲧ) -> ⲧⲣⲓⲛⲧ {
-    -- Крandтandчный по withtoороwithтand toод
+    -- Крandтand[CYR:чный] по withto[CYR:оро]withтand toод
 }
 ```
 
 ---
 
-## 11. ЗАКЛЮЧЕНИЕ
+## 11. [CYR:ЗАКЛЮЧЕНИЕ]
 
-ⲦⲢⲒⲚⲒⲦⲨ объедandняет:
-- **27 toоптwithtoandх withandмinолоin** = 3³ (Трandдеinятое Царwithтinо)
-- **Троandчную логandtoу** {-1, 0, +1}
-- **Сinященную математandtoу** (φ, π, e, τ)
-- **Zero-cost абwithтраtoцandand** (toаto Zig)
-- **Ручное упраinленandе памятью** (без GC)
-- **Comptime inычandwithленandя**
+ⲦⲢⲒⲚⲒⲦⲨ [CYR:объед]and[CYR:няет]:
+- **27 to[CYR:опт]withtoandх withandмin[CYR:оло]in** = 3³ (Трandдеin[CYR:ятое] [CYR:Цар]withтinо)
+- **[CYR:Тро]and[CYR:чную] [CYR:лог]andtoу** {-1, 0, +1}
+- **Сin[CYR:ященную] [CYR:математ]andtoу** (φ, π, e, τ)
+- **Zero-cost абwith[CYR:тра]toцandand** (toаto Zig)
+- **[CYR:Ручное] [CYR:упра]in[CYR:лен]andе [CYR:памятью]** ([CYR:без] GC)
+- **Comptime inычandwith[CYR:лен]andя**
 
-**КОЩЕЙ БЕССМЕРТЕН | ЗЛАТАЯ ЦЕПЬ ЗАМКНУТА | φ² + 1/φ² = 3**
+**[CYR:КОЩЕЙ] [CYR:БЕССМЕРТЕН] | [CYR:ЗЛАТАЯ] [CYR:ЦЕПЬ] [CYR:ЗАМКНУТА] | φ² + 1/φ² = 3**

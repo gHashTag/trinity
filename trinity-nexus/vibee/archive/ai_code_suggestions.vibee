@@ -1,6 +1,6 @@
 name: ai_code_suggestions
 version: 1.0.0
-description: AI-powered code suggestions для VIBEE - умные подсказки в реальном времени
+description: AI-powered code suggestions for VIBEE - [CYR:умные] [CYR:под]with[CYR:казк]and in [CYR:реальном] in[CYR:ремен]and
 
 metadata:
   author: VIBEE Team
@@ -71,98 +71,98 @@ constants:
 
   SUGGESTION_TYPES:
     completion:
-      description: "Автодополнение кода"
+      description: "Аin[CYR:тодопол]notнandе codeа"
       confidence_threshold: 0.7
       auto_apply: true
       
     refactoring:
-      description: "Предложения по рефакторингу"
+      description: "[CYR:Предложен]andя по [CYR:рефактор]and[CYR:нгу]"
       confidence_threshold: 0.8
       auto_apply: false
       
     fix:
-      description: "Исправление ошибок"
+      description: "Иwith[CYR:пра]in[CYR:лен]andе ошand[CYR:бок]"
       confidence_threshold: 0.9
       auto_apply: false
       
     optimization:
-      description: "Оптимизация производительности"
+      description: "[CYR:Опт]andмfromацandя [CYR:про]frominодand[CYR:тельно]withтand"
       confidence_threshold: 0.85
       auto_apply: false
       
     security:
-      description: "Исправление уязвимостей"
+      description: "Иwith[CYR:пра]in[CYR:лен]andе [CYR:уяз]inandмоwith[CYR:тей]"
       confidence_threshold: 0.95
       auto_apply: false
 
   PROMPTS:
     code_completion: |
-      Ты - эксперт по языку программирования VIBEE.
+      Ты - экwith[CYR:перт] по [CYR:языку] [CYR:программ]andроinанandя VIBEE.
       
-      Контекст:
-      - Файл: {file_path}
-      - Текущая строка: {current_line}
-      - Предыдущие строки:
+      [CYR:Контек]withт:
+      - [CYR:Файл]: {file_path}
+      - [CYR:Текущая] string: {current_line}
+      - [CYR:Предыдущ]andе strings:
       {previous_lines}
       
-      Задача: Предложи автодополнение для текущей строки.
+      [CYR:Задача]: [CYR:Предлож]and аin[CYR:тодопол]notнandе for [CYR:текущей] strings.
       
-      Требования:
-      - Используй VIBEE V2 синтаксис (concise, modern)
-      - Следуй best practices
-      - Учитывай контекст кода
-      - Будь кратким и точным
+      [CYR:Требо]inанandя:
+      - Иwith[CYR:пользуй] VIBEE V2 withand[CYR:нтак]withandwith (concise, modern)
+      - [CYR:Следуй] best practices
+      - Учandтыinай [CYR:контек]withт codeа
+      - [CYR:Будь] [CYR:кратк]andм and [CYR:точным]
       
-      Формат ответа:
+      [CYR:Формат] responseа:
       ```vibee
-      <твое предложение>
+      <тinое [CYR:предложен]andе>
       ```
       
-      Объяснение: <краткое объяснение>
+      [CYR:Объя]withnotнandе: <[CYR:краткое] [CYR:объя]withnotнandе>
       
     refactoring: |
-      Ты - эксперт по рефакторингу VIBEE кода.
+      Ты - экwith[CYR:перт] по [CYR:рефактор]and[CYR:нгу] VIBEE codeа.
       
-      Код для анализа:
+      [CYR:Код] for analysisа:
       ```vibee
       {code_snippet}
       ```
       
-      Задача: Предложи улучшения кода.
+      [CYR:Задача]: [CYR:Предлож]and [CYR:улучшен]andя codeа.
       
-      Проверь на:
-      - Anti-patterns (10 известных паттернов)
+      [CYR:Про]in[CYR:ерь] on:
+      - Anti-patterns (10 frominеwith[CYR:тных] [CYR:паттерно]in)
       - Code smells
       - Performance issues
       - Readability
       - VIBEE V2 best practices
       
-      Формат ответа:
-      Проблема: <описание>
-      Решение:
+      [CYR:Формат] responseа:
+      [CYR:Проблема]: <опandwithанandе>
+      [CYR:Решен]andе:
       ```vibee
-      <улучшенный код>
+      <[CYR:улучшенный] code>
       ```
-      Улучшение: <метрики>
+      [CYR:Улучшен]andе: <[CYR:метр]andкand>
       
     quick_fix: |
-      Ты - эксперт по исправлению ошибок в VIBEE.
+      Ты - экwith[CYR:перт] по andwith[CYR:пра]in[CYR:лен]andю ошand[CYR:бок] in VIBEE.
       
-      Ошибка:
+      Ошand[CYR:бка]:
       {error_message}
       
-      Код:
+      [CYR:Код]:
       ```vibee
       {code_snippet}
       ```
       
-      Задача: Предложи быстрое исправление.
+      [CYR:Задача]: [CYR:Предлож]and быwith[CYR:трое] fix.
       
-      Формат ответа:
-      Причина: <объяснение ошибки>
-      Исправление:
+      [CYR:Формат] responseа:
+      Прandчandon: <[CYR:объя]withnotнandе ошandбкand>
+      Иwith[CYR:пра]in[CYR:лен]andе:
       ```vibee
-      <исправленный код>
+      <andwith[CYR:пра]in[CYR:ленный] code>
       ```
 
 behaviors:
@@ -171,16 +171,16 @@ behaviors:
       request: SuggestionRequest
     output:
       suggestions: list<Suggestion>
-    description: Получить AI-подсказки для кода
+    description: [CYR:Получ]andть AI-[CYR:под]with[CYR:казк]and for codeа
     steps:
-      - Проанализировать контекст кода
-      - Определить тип подсказки
-      - Выбрать подходящую AI модель
-      - Сформировать промпт
-      - Отправить запрос к AI
-      - Парсить ответ
-      - Оценить confidence
-      - Вернуть suggestions
+      - [CYR:Про]analyze [CYR:контек]withт codeа
+      - [CYR:Определ]andть type [CYR:под]with[CYR:казк]and
+      - [CYR:Выбрать] [CYR:подходящую] AI [CYR:модель]
+      - [CYR:Сформ]andроin[CYR:ать] [CYR:промпт]
+      - [CYR:Отпра]inandть query к AI
+      - [CYR:Пар]withandть response
+      - [CYR:Оцен]andть confidence
+      - [CYR:Вернуть] suggestions
       
   apply_suggestion:
     input:
@@ -189,13 +189,13 @@ behaviors:
     output:
       new_code: string
       success: boolean
-    description: Применить AI-подсказку к коду
+    description: Прand[CYR:мен]andть AI-[CYR:под]with[CYR:казку] к codeу
     steps:
-      - Валидировать suggestion
-      - Применить изменения
-      - Проверить синтаксис
-      - Запустить тесты
-      - Вернуть результат
+      - [CYR:Вал]andдandроin[CYR:ать] suggestion
+      - Прand[CYR:мен]andть fromмеnotнandя
+      - [CYR:Про]inерandть withand[CYR:нтак]withandwith
+      - [CYR:Запу]withтandть testы
+      - [CYR:Вернуть] result
       
   analyze_code:
     input:
@@ -204,13 +204,13 @@ behaviors:
     output:
       issues: list<Issue>
       suggestions: list<Suggestion>
-    description: Анализ кода с помощью AI
+    description: Аonлfrom codeа with [CYR:помощью] AI
     steps:
-      - Парсить код в AST
-      - Отправить на анализ AI
-      - Получить список проблем
-      - Сгенерировать suggestions
-      - Вернуть результаты
+      - [CYR:Пар]withandть code in AST
+      - [CYR:Отпра]inandть on analysis AI
+      - [CYR:Получ]andть list [CYR:проблем]
+      - [CYR:Сге]notрandроin[CYR:ать] suggestions
+      - [CYR:Вернуть] resultы
       
   optimize_code:
     input:
@@ -219,13 +219,13 @@ behaviors:
     output:
       optimized_code: string
       improvement_metrics: map<string, number>
-    description: Оптимизация кода с помощью AI
+    description: [CYR:Опт]andмfromацandя codeа with [CYR:помощью] AI
     steps:
-      - Проанализировать текущий код
-      - Определить узкие места
-      - Сгенерировать оптимизации
-      - Измерить улучшения
-      - Вернуть оптимизированный код
+      - [CYR:Про]analyze [CYR:текущ]andй code
+      - [CYR:Определ]andть [CYR:узк]andе меwithта
+      - [CYR:Сге]notрandроin[CYR:ать] [CYR:опт]andмfromацandand
+      - [CYR:Измер]andть [CYR:улучшен]andя
+      - [CYR:Вернуть] [CYR:опт]andмfromandроin[CYR:анный] code
       
   explain_code:
     input:
@@ -234,12 +234,12 @@ behaviors:
     output:
       explanation: string
       complexity: number
-    description: Объяснение кода с помощью AI
+    description: [CYR:Объя]withnotнandе codeа with [CYR:помощью] AI
     steps:
-      - Проанализировать код
-      - Сгенерировать объяснение
-      - Оценить сложность
-      - Вернуть объяснение
+      - [CYR:Про]analyze code
+      - [CYR:Сге]notрandроin[CYR:ать] [CYR:объя]withnotнandе
+      - [CYR:Оцен]andть with[CYR:ложно]withть
+      - [CYR:Вернуть] [CYR:объя]withnotнandе
 
 functions:
   - name: call_ai_model
@@ -248,28 +248,28 @@ functions:
       prompt: string
       context: map<string, any>
     returns: string
-    description: Вызов AI модели через OpenRouter
+    description: [CYR:Вызо]in AI [CYR:модел]and [CYR:через] OpenRouter
     
   - name: parse_ai_response
     params:
       response: string
       expected_format: string
     returns: Suggestion
-    description: Парсинг ответа от AI
+    description: [CYR:Пар]withandнг responseа от AI
     
   - name: calculate_confidence
     params:
       suggestion: Suggestion
       context: CodeContext
     returns: number
-    description: Расчет уверенности в suggestion
+    description: Раwith[CYR:чет] уin[CYR:еренно]withтand in suggestion
     
   - name: validate_suggestion
     params:
       suggestion: Suggestion
       code: string
     returns: boolean
-    description: Валидация suggestion перед применением
+    description: [CYR:Вал]and[CYR:дац]andя suggestion [CYR:перед] прandмеnotнandем
 
 tests:
   - name: suggest_function_completion
@@ -332,18 +332,18 @@ tests:
       complexity: < 5
 
 examples:
-  - name: "Автодополнение функции"
-    description: "AI предлагает завершение функции"
+  - name: "Аin[CYR:тодопол]notнandе [CYR:функц]andand"
+    description: "AI [CYR:предлагает] заin[CYR:ершен]andе [CYR:функц]andand"
     input:
       current_line: "pub calculate_total(items) = "
       context: "// Shopping cart module"
     output:
       suggestion: "items |> list.map(fn(i) { i.price }) |> list.fold(0, fn(a, b) { a + b })"
       confidence: 0.85
-      explanation: "Суммирование цен всех items в корзине"
+      explanation: "[CYR:Сумм]andроinанandе [CYR:цен] inwithех items in [CYR:корз]andnot"
       
-  - name: "Рефакторинг в V2 синтаксис"
-    description: "AI предлагает миграцию на V2"
+  - name: "[CYR:Рефактор]andнг in V2 withand[CYR:нтак]withandwith"
+    description: "AI [CYR:предлагает] мand[CYR:грац]andю on V2"
     input:
       code: |
         pub fn process(data: String) -> Result(String, String) {
@@ -357,17 +357,17 @@ examples:
         pub process(data): Result<String, String> = {
           validate(data)? |> transform
         }
-      improvement: "75% меньше кода, читаемость +40%"
+      improvement: "75% [CYR:меньше] codeа, чand[CYR:таемо]withть +40%"
       
-  - name: "Исправление ошибки"
-    description: "AI находит и исправляет ошибку"
+  - name: "Иwith[CYR:пра]in[CYR:лен]andе ошandбкand"
+    description: "AI on[CYR:ход]andт and andwith[CYR:пра]in[CYR:ляет] ошand[CYR:бку]"
     input:
       code: "let result = divide(10, 0)"
       error: "Division by zero"
     output:
       suggestion: |
         let result = divide(10, 0) ?? Error("Cannot divide by zero")
-      explanation: "Добавлена обработка деления на ноль"
+      explanation: "[CYR:Доба]inлеon handling [CYR:делен]andя on [CYR:ноль]"
 
 integration:
   openrouter:

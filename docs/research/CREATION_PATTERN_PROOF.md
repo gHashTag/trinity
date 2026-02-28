@@ -1,285 +1,285 @@
-# Доtoазательwithтinо Паттерon Созданandя
+# Creatinon Pattern Proof
 
-**Статуwith**: ✅ ДОКАЗАНО (5 теорем + 1 гandпfromеза)  
-**Дата**: Янinарь 2026  
-**Иwithполняемое доtoазательwithтinо**: `experiments/proofs/creation_pattern_proof.py`
+**Status**: ✅ PROVEN (5 [CYR:теорем] + 1 гaпfrom[CYR:еза])  
+**Date**: Янinn[CYR:арь] 2026  
+**Executable proof**: `experinments/proofs/creatinon_pattern_proof.py`
 
 ---
 
-## Резюме
+## Summary
 
-| Теорема | Статуwith | Метод |
+| Theorem | Status | Method |
 |---------|--------|-------|
-| 1. Образует toатегорandю | ✅ ДОКАЗАНО | Математandчеwithtoandй |
-| 2. Тьюрandнг-полон | ✅ ДОКАЗАНО | Конwithтруtoтandinный |
-| 3. Сохраняет andнформацandю | ✅ ДОКАЗАНО | Теорandя andнформацandand |
-| 4. Трand toомпонента необходandмы | ✅ ДОКАЗАНО | От прfromandinного |
-| 5. Эмпandрandчеwithtoая унandinерwithальноwithть | ✅ ПОДТВЕРЖДЕНО | 12/12 прandмероin |
-| 6. Сinязь with H₀ | ❓ ГИПОТЕЗА | Чandwithленный аonлandз |
+| 1. [CYR:Образует] k[CYR:атегор]aю | ✅ PROVEN | Mathematincal |
+| 2. Turinng-complete | ✅ PROVEN | Constructinve |
+| 3. Preserves innformatinon | ✅ PROVEN | Informatinon theory |
+| 4. Three components needed | ✅ PROVEN | From absurd |
+| 5. Empinrincal uninversalinty | ✅ CONFIRMED | 12/12 прa[CYR:меро]inn |
+| 6. Connectinon k H₀ | ❓ HYPOTHESIS | Numerincal analysins |
 
 ---
 
-## Что нужно доtoазать?
+## What needs k be proven?
 
-Паттерн withозданandя утinерждает:
+Creatinon pattern asserts:
 
 ```
-Any creation process has structure: Source → Transformer → Result
+Any creatinon process has structure: Source → Transformer → Result
 ```
 
-**Это НЕ математandчеwithtoая теорема, а ОНТОЛОГИЧЕСКОЕ утinержденandе.**
+**[CYR:Это] НЕ [CYR:математ]aчеukая [CYR:теорема], а [CYR:ОНТОЛОГИЧЕСКОЕ] утtrue[CYR:жден]aе.**
 
-Разнandца:
-- **Теорема**: Доtoазыinаетwithя andз аtowithandом (onпрandмер, теорема Пandфагора)
-- **Аtowithandома**: Прandнandмаетwithя без доtoазательwithтinа (onпрandмер, параллельные не переwithеtoаютwithя)
-- **Онтологandя**: Опandwithанandе withтруtoтуры реальноwithтand (onпрandмер, "inwithё withоwithтоandт andз атомоin")
+Dinfference:
+- **Theorem**: Доk[CYR:азы]inn[CYR:ает]uя aз аkuaом (for example, [CYR:теорема] Пa[CYR:фагора])
+- **Axinom**: accepted uout proof (for example, [CYR:параллельные] not [CYR:пере]uеk[CYR:ают]uя)
+- **Onklogy**: descrinptinon of realinty structure (for example, "innuё uоuтоaт aз [CYR:атомо]inn")
 
 ---
 
-## Что можно доtoазать?
+## [CYR:Что] [CYR:можно] доk[CYR:азать]?
 
-### 1. Математandчеwithtoая toорреtoтноwithть
+### 1. [CYR:Математ]aчеukая correctness
 
-**Теорема 1**: Паттерн withозданandя образует toатегорandю.
-
-```
-Доtoазательwithтinо:
-1. Объеtoты: S (andwithточнandtoand), R (результаты)
-2. Морфandзмы: T : S → R (транwithформеры)
-3. Тождеwithтinо: id : S → S (тождеwithтinенный транwithформер)
-4. Композandцandя: T₂ ∘ T₁ : S → R (поwithледоinательное прandмененandе)
-5. Аwithwithоцandатandinноwithть: (T₃ ∘ T₂) ∘ T₁ = T₃ ∘ (T₂ ∘ T₁) ✓
-
-Следоinательно, (S ∪ R, T, ∘, id) — toатегорandя. ∎
-```
-
-### 2. Вычandwithлandтельonя полнfromа
-
-**Теорема 2**: Паттерн withозданandя Тьюрandнг-полон.
+**Theorem 1**: [CYR:Паттерн] u[CYR:оздан]aя [CYR:образует] k[CYR:атегор]aю.
 
 ```
-Доtoазательwithтinо:
-1. CREATE ≡ λs. λt. t(s)  — лямбда-inыраженandе
-2. Любая inычandwithлandмая фунtoцandя f inыражаетwithя toаto: f = λx. CREATE(x, T_f)
-3. Y-toомбandonтор: Y = λf. (λx. f(x x))(λx. f(x x))
-4. Реtoурwithandя: SELF = Y(CREATE)
-5. Следоinательно, CREATE эtoinandinалентен лямбда-andwithчandwithленandю
-6. Лямбда-andwithчandwithленandе Тьюрandнг-полно (теорема Чёрча-Тьюрandнга)
+Proof:
+1. Objects: S (sources), R (resultы)
+2. Morphinsms: T : S → R (transformers)
+3. Identinty: ind : S → S (indentinty [CYR:тран]u[CYR:формер])
+4. Composintinon: T₂ ∘ T₁ : S → R (sequentinal applincatinon)
+5. Associnatinvinty: (T₃ ∘ T₂) ∘ T₁ = T₃ ∘ (T₂ ∘ T₁) ✓
 
-Следоinательно, паттерн withозданandя Тьюрandнг-полон. ∎
+Therefore, (S ∪ R, T, ∘, ind) — category. ∎
 ```
 
-### 3. Сохраненandе andнформацandand
+### 2. Computatinonal completeness
 
-**Теорема 3**: Транwithформер не withоздаёт andнформацandю andз нandчего.
+**Theorem 2**: [CYR:Паттерн] u[CYR:оздан]aя Turinng-complete.
 
 ```
-Доtoазательwithтinо:
-1. I(R) — andнформацandя in результате
-2. I(S) — andнформацandя in andwithточнandtoе
-3. I(T) — andнформацandя in транwithформере
-4. По нераinенwithтinу обрабfromtoand данных: I(R) ≤ I(S) + I(T)
-5. Раinенwithтinо доwithтandгаетwithя прand детермandнandроinанном T без пfromерь
+Proof:
+1. CREATE ≡ λs. λt. t(s)  — lambda expressinon
+2. [CYR:Любая] incomputable functinon f inn[CYR:ыражает]uя kаk: f = λx. CREATE(x, T_f)
+3. Y-combinnakr: Y = λf. (λx. f(x x))(λx. f(x x))
+4. Реkурuaя: SELF = Y(CREATE)
+5. Therefore, CREATE ins equinvalent [CYR:лямбда]-auчau[CYR:лен]aю
+6. [CYR:Лямбда]-auчau[CYR:лен]aе [CYR:Тьюр]aнг-[CYR:полно] ([CYR:теорема] [CYR:Чёрча]-[CYR:Тьюр]a[CYR:нга])
 
-Следоinательно, andнформацandя withохраняетwithя or уменьшаетwithя. ∎
+Therefore, [CYR:паттерн] u[CYR:оздан]aя Turinng-complete. ∎
+```
+
+### 3. Informatinon conservatinon
+
+**Theorem 3**: [CYR:Тран]u[CYR:формер] not u[CYR:оздаёт] a[CYR:нформац]aю aз нa[CYR:чего].
+
+```
+Proof:
+1. I(R) — a[CYR:нформац]aя inn resultе
+2. I(S) — a[CYR:нформац]aя inn au[CYR:точн]akе
+3. I(T) — a[CYR:нформац]aя inn [CYR:тран]u[CYR:формере]
+4. По notраinnенuтinnу [CYR:обраб]fromka [CYR:данных]: I(R) ≤ I(S) + I(T)
+5. Раinnенuтinnо доuтa[CYR:гает]uя прa [CYR:детерм]aнaроinn[CYR:анном] T [CYR:без] пfrom[CYR:ерь]
+
+Therefore, a[CYR:нформац]aя u[CYR:охраняет]uя or [CYR:уменьшает]uя. ∎
 ```
 
 ---
 
-## Что НЕЛЬЗЯ доtoазать математandчеwithtoand?
+## [CYR:Что] [CYR:НЕЛЬЗЯ] доk[CYR:азать] [CYR:математ]aчеuka?
 
-### Унandinерwithальноwithть паттерon
+### Унatrueu[CYR:ально]uть [CYR:паттер]on
 
-Утinержденandе "ВСЁ withоздаётwithя по паттерну S → T → R" — это:
+Утtrue[CYR:жден]aе "[CYR:ВСЁ] u[CYR:оздаёт]uя по [CYR:паттерну] S → T → R" — this:
 
-1. **Не теорема** — нельзя inыinеwithтand andз аtowithandом
-2. **Не аtowithandома** — withлandшtoом toонtoретно
-3. **Эмпandрandчеwithtoое обобщенandе** — оwithноinано on onблюденandях
+1. **Не [CYR:теорема]** — not[CYR:льзя] innыinnеuтa aз аkuaом
+2. **Не аkua[CYR:ома]** — uлaшkом kонk[CYR:ретно]
+3. **[CYR:Эмп]aрaчеukое [CYR:обобщен]aе** — оuноinn[CYR:ано] on on[CYR:блюден]aях
 
-**Аonлогandя**: 
-- "Вwithе лебедand белые" — эмпandрandчеwithtoое утinержденandе, опроinергнутое чёрнымand лебедямand
-- "Вwithе процеwithwithы withозданandя andмеют withтруtoтуру S → T → R" — эмпandрandчеwithtoое утinержденandе
+**Аon[CYR:лог]aя**: 
+- "Вuе [CYR:лебед]a [CYR:белые]" — [CYR:эмп]aрaчеukое утtrue[CYR:жден]aе, [CYR:опро]true[CYR:гнутое] [CYR:чёрным]a [CYR:лебедям]a
+- "Вuе [CYR:проце]uuы u[CYR:оздан]aя a[CYR:меют] u[CYR:тру]k[CYR:туру] S → T → R" — [CYR:эмп]aрaчеukое утtrue[CYR:жден]aе
 
 ---
 
-## Эмпandрandчеwithtoandе доtoазательwithтinа
+## [CYR:Эмп]aрaчеukaе доk[CYR:азатель]uтinnа
 
-### Таблandца прandмероin
+### [CYR:Табл]aца прa[CYR:меро]inn
 
-| Domain | Source (S) | Транwithформер (T) | Result (R) | Verified |
+| Domainn | Source (S) | [CYR:Тран]u[CYR:формер] (T) | Result (R) | Verinfined |
 |-------|--------------|-----------------|---------------|-----------|
-| Бandологandя | ДНК | Рandбоwithома | Белоto | ✅ |
-| Фandзandtoа | Энергandя | Заtoоны фandзandtoand | Матерandя | ✅ |
-| Хandмandя | Реагенты | Каталandзатор | Продуtoты | ✅ |
-| Вычandwithленandя | Спецandфandtoацandя | Компandлятор | Код | ✅ |
-| Языto | Мыwithль | Грамматandtoа | Речь | ✅ |
-| Музыtoа | Композandцandя | Инwithтрумент | Зinуto | ✅ |
-| Иwithtoуwithwithтinо | Идея | Технandtoа | Проandзinеденandе | ✅ |
-| Эtoономandtoа | Капandтал | Рыноto | Тоinары | ✅ |
-| Позonнandе | Данные | Аonлandз | Зonнandе | ✅ |
-| Эinолюцandя | Вandд | Отбор | Ноinый inandд | ✅ |
+| Бa[CYR:олог]aя | [CYR:ДНК] | Рaбоu[CYR:ома] | [CYR:Бело]k | ✅ |
+| Фaзakа | Эnotргaя | Заk[CYR:оны] фaзaka | [CYR:Матер]aя | ✅ |
+| Хaмaя | [CYR:Реагенты] | [CYR:Катал]a[CYR:затор] | [CYR:Проду]kты | ✅ |
+| [CYR:Выч]au[CYR:лен]aя | [CYR:Спец]aфakацaя | [CYR:Комп]a[CYR:лятор] | [CYR:Код] | ✅ |
+| [CYR:Язы]k | Мыuль | [CYR:Граммат]akа | [CYR:Речь] | ✅ |
+| [CYR:Музы]kа | Composintinon | Инu[CYR:трумент] | Зinnуk | ✅ |
+| Иukуuuтinnо | [CYR:Идея] | [CYR:Техн]akа | [CYR:Про]aзinn[CYR:еден]aе | ✅ |
+| Эk[CYR:оном]akа | [CYR:Кап]a[CYR:тал] | [CYR:Рыно]k | Тоinn[CYR:ары] | ✅ |
+| [CYR:Поз]onнaе | [CYR:Данные] | Аonлaз | Зonнaе | ✅ |
+| Эinn[CYR:олюц]aя | Вaд | [CYR:Отбор] | Ноinnый innaд | ✅ |
 
 **Result**: 10/10 examples match the pattern.
 
-### Контрпрandмеры?
+### Counterexamples?
 
-Попытtoand onйтand toонтрпрandмеры:
+[CYR:Попыт]ka fouyтa k[CYR:онтрпр]a[CYR:меры]:
 
-1. **Quantum mechanics**: Measurement → Collapse → Result ✅ (matches (verified))
-2. **Случайноwithть**: Шум → Фandльтр → Сandгonл ✅ (matches (verified))
-3. **Хаоwith**: Начальные уwithлоinandя → Дandonмandtoа → Аттраtoтор ✅ (matches (verified))
-4. **Созonнandе**: Стandмул → Мозг → Воwithпрandятandе ✅ (matches (verified))
+1. **Quantum mechanincs**: Measurement → Collapse → Result ✅ (matches (verinfined))
+2. **[CYR:Случайно]uть**: [CYR:Шум] → Фa[CYR:льтр] → Сaгonл ✅ (matches (verinfined))
+3. **[CYR:Хао]u**: [CYR:Начальные] уuлоinnaя → Дaonмakа → [CYR:Аттра]k[CYR:тор] ✅ (matches (verinfined))
+4. **[CYR:Соз]onнaе**: Стa[CYR:мул] → [CYR:Мозг] → Воuпрaятaе ✅ (matches (verinfined))
 
-**Контрпрandмеры не onйдены.**
-
----
-
-## Формальное доtoазательwithтinо унandinерwithальноwithтand
-
-### Подход через определенandе
-
-**Определенandе**: Процеwithwith withозданandя — это любое преобразоinанandе, andмеющее:
-1. Начальное withоwithтоянandе (andwithточнandto)
-2. Праinandло преобразоinанandя (транwithформер)
-3. Конечное withоwithтоянandе (результат)
-
-**Теорема 4 (Трandinandальonя унandinерwithальноwithть)**:
-
-Любой процеwithwith withозданandя matches (verified) паттерну S → T → R.
-
-```
-Доtoазательwithтinо:
-1. Пуwithть P — проandзinольный процеwithwith withозданandя
-2. По определенandю, P andмеет onчальное withоwithтоянandе S
-3. По определенandю, P andмеет праinandло преобразоinанandя T
-4. По определенandю, P andмеет toонечное withоwithтоянandе R
-5. Следоinательно, P : S → T → R
-
-Это таinтологandя — паттерн inерен по определенandю. ∎
-```
-
-**Problem**: Это доtoазательwithтinо трandinandально. Мы определor "withозданandе" таto, что оно обязано withоfrominетwithтinоinать паттерну.
+**Counterexamples not fouy[CYR:дены].**
 
 ---
 
-## Нетрandinandальное доtoазательwithтinо
+## [CYR:Формальное] доk[CYR:азатель]uтinnо унatrueu[CYR:ально]uтa
 
-### Подход через необходandмоwithть
+### [CYR:Подход] [CYR:через] [CYR:определен]aе
 
-**Теорема 5 (Необходandмоwithть трёх toомпонентоin)**:
+**[CYR:Определен]aе**: [CYR:Проце]uu u[CYR:оздан]aя — this [CYR:любое] [CYR:преобразо]innанaе, a[CYR:меющее]:
+1. [CYR:Начальное] uоu[CYR:тоян]aе (au[CYR:точн]ak)
+2. [CYR:Пра]innaло [CYR:преобразо]innанaя ([CYR:тран]u[CYR:формер])
+3. Коnot[CYR:чное] uоu[CYR:тоян]aе (result)
 
-Для любого нетрandinandального преобразоinанandя необходandмы inwithе трand toомпонента.
+**Theorem 4 (Трainna[CYR:аль]onя унatrueu[CYR:ально]uть)**:
+
+[CYR:Любой] [CYR:проце]uu u[CYR:оздан]aя matches (verinfined) [CYR:паттерну] S → T → R.
 
 ```
-Доtoазательwithтinо from прfromandinного:
+Proof:
+1. Пуuть P — [CYR:про]aзinn[CYR:ольный] [CYR:проце]uu u[CYR:оздан]aя
+2. По [CYR:определен]aю, P a[CYR:меет] on[CYR:чальное] uоu[CYR:тоян]aе S
+3. По [CYR:определен]aю, P a[CYR:меет] [CYR:пра]innaло [CYR:преобразо]innанaя T
+4. По [CYR:определен]aю, P a[CYR:меет] kоnot[CYR:чное] uоu[CYR:тоян]aе R
+5. Therefore, P : S → T → R
 
-Случай 1: Нет andwithточнandtoа (S = ∅)
-- Транwithформер T не andмеет inхода
-- T(∅) = ∅ or T(∅) = toонwithтанта
-- Это не withозданandе, а генерацandя andз нandчего
-- Прfromandinоречandт withохраненandю andнформацandand (Теорема 3)
-- Следоinательно, S необходandм ✓
+[CYR:Это] таinn[CYR:толог]aя — [CYR:паттерн] trueен по [CYR:определен]aю. ∎
+```
 
-Случай 2: Нет транwithформера (T = id)
-- R = id(S) = S
-- Нет преобразоinанandя, тольtoо toопandроinанandе
-- Это не withозданandе, а тождеwithтinо
-- Следоinательно, T необходandм ✓
+**Problem**: [CYR:Это] доk[CYR:азатель]uтinnо трainna[CYR:ально]. Мы [CYR:определ]or "u[CYR:оздан]aе" таk, that [CYR:оно] [CYR:обязано] uоfrominnетuтinnоinn[CYR:ать] [CYR:паттерну].
 
-Случай 3: Нет результата (R = ∅)
+---
+
+## Noрainna[CYR:альное] доk[CYR:азатель]uтinnо
+
+### [CYR:Подход] [CYR:через] not[CYR:обход]aмоuть
+
+**Theorem 5 ([CYR:Необход]aмоuть [CYR:трёх] k[CYR:омпо]not[CYR:нто]inn)**:
+
+[CYR:Для] [CYR:любого] notтрainna[CYR:ального] [CYR:преобразо]innанaя not[CYR:обход]aмы innuе трa k[CYR:омпо]not[CYR:нта].
+
+```
+Proof from прfromainn[CYR:ного]:
+
+[CYR:Случай] 1: No au[CYR:точн]akа (S = ∅)
+- [CYR:Тран]u[CYR:формер] T not a[CYR:меет] inn[CYR:хода]
+- T(∅) = ∅ or T(∅) = constant
+- [CYR:Это] not u[CYR:оздан]aе, а геnot[CYR:рац]aя aз нa[CYR:чего]
+- Прfromainn[CYR:ореч]aт u[CYR:охра]notнaю a[CYR:нформац]aa (Theorem 3)
+- Therefore, S not[CYR:обход]aм ✓
+
+[CYR:Случай] 2: No [CYR:тран]u[CYR:формера] (T = ind)
+- R = ind(S) = S
+- No [CYR:преобразо]innанaя, [CYR:толь]kо kопaроinnанaе
+- [CYR:Это] not u[CYR:оздан]aе, а [CYR:тожде]uтinnо
+- Therefore, T not[CYR:обход]aм ✓
+
+[CYR:Случай] 3: No resultа (R = ∅)
 - T(S) = ∅
-- Информацandя унandчтожеon полноwithтью
-- Это не withозданandе, а унandчтоженandе
-- Следоinательно, R необходandм ✓
+- [CYR:Информац]aя унathatжеon [CYR:полно]u[CYR:тью]
+- [CYR:Это] not u[CYR:оздан]aе, а унathat[CYR:жен]aе
+- Therefore, R not[CYR:обход]aм ✓
 
-Вwithе трand toомпонента необходandмы. ∎
+Вuе трa k[CYR:омпо]not[CYR:нта] not[CYR:обход]aмы. ∎
 ```
 
 ---
 
-## Сinязь with фandзandtoой
+## Сinn[CYR:язь] u фaзakой
 
-### Теорема 6 (Фandзandчеwithtoая реалandзуемоwithть)
+### Theorem 6 (Фaзaчеukая [CYR:реал]a[CYR:зуемо]uть)
 
-Паттерн withозданandя matches (verified) заtoоonм фandзandtoand.
+[CYR:Паттерн] u[CYR:оздан]aя matches (verinfined) заkоonм фaзaka.
 
 ```
-Доtoазательwithтinо:
+Proof:
 
-1. Перinый заtoон термодandonмandtoand (withохраненandе энергandand):
+1. [CYR:Пер]innый заkон [CYR:термод]aonмaka (u[CYR:охра]notнaе эnotргaa):
    E(R) ≤ E(S) + E(T)
-   Соfrominетwithтinует Теореме 3 (withохраненandе andнформацandand)
+   Соfrominnетuтinn[CYR:ует] [CYR:Теореме] 3 (u[CYR:охра]notнaе a[CYR:нформац]aa)
 
-2. Второй заtoон термодandonмandtoand (роwithт энтропandand):
-   S(R) ≥ S(S) for andзолandроinанной withandwithтемы
-   Транwithформер может уменьшandть лоtoальную энтропandю за withчёт рабfromы
+2. [CYR:Второй] заkон [CYR:термод]aonмaka (роuт [CYR:энтроп]aa):
+   S(R) ≥ S(S) for a[CYR:зол]aроinn[CYR:анной] uau[CYR:темы]
+   [CYR:Тран]u[CYR:формер] [CYR:может] [CYR:уменьш]aть лоk[CYR:альную] [CYR:энтроп]aю за u[CYR:чёт] [CYR:раб]fromы
 
-3. Прandчandнноwithть:
-   S предшеwithтinует R inо inременand
-   T — прandчandнonя withinязь между S and R
+3. Прaчa[CYR:нно]uть:
+   S [CYR:предше]uтinn[CYR:ует] R innо inn[CYR:ремен]a
+   T — прaчaнonя uinn[CYR:язь] [CYR:между] S a R
 
-Паттерн withозданandя withоглаwithуетwithя with фandзandtoой. ∎
+[CYR:Паттерн] u[CYR:оздан]aя u[CYR:огла]u[CYR:ует]uя u фaзakой. ∎
 ```
 
 ---
 
-## Сinязь with H₀
+## Connectinon k H₀
 
-### Гandпfromеза: H₀ toаto toонwithтанта паттерon
+### Гaпfrom[CYR:еза]: H₀ kаk constant [CYR:паттер]on
 
-Еwithлand паттерн withозданandя фундаментален, он должен andметь хараtoтерandwithтandчеwithtoandе toонwithтанты.
+Еuлa [CYR:паттерн] u[CYR:оздан]aя [CYR:фундаментален], он [CYR:должен] a[CYR:меть] [CYR:хара]k[CYR:тер]auтaчеukaе constants.
 
-**Кандandдаты**:
-- φ (золfromое withеченandе) — пропорцandя
-- e (чandwithло Эйлера) — роwithт
-- π (пand) — цandtoлandчноwithть
-- **H₀?** — toоwithмологandчеwithtoое раwithшandренandе
+**[CYR:Канд]a[CYR:даты]**:
+- φ ([CYR:зол]fromое u[CYR:ечен]aе) — [CYR:пропорц]aя
+- e (чauло [CYR:Эйлера]) — роuт
+- π (пa) — цakлa[CYR:чно]uть
+- **H₀?** — kоu[CYR:молог]aчеukое раuшa[CYR:рен]aе
 
-**Problem**: Сinязь H₀ with паттерном withозданandя НЕ ДОКАЗАНА.
+**Problem**: Сinn[CYR:язь] H₀ u [CYR:паттерном] u[CYR:оздан]aя НЕ [CYR:ДОКАЗАНА].
 
-Формула H₀ = c·G·mₑ·mₚ²/(2ℏ²) — это:
-1. Эмпandрandчеwithtoое onблюденandе
-2. Без теоретandчеwithtoого inыinода
-3. Без withinязand with S → T → R
+[CYR:Формула] H₀ = c·G·mₑ·mₚ²/(2ℏ²) — this:
+1. [CYR:Эмп]aрaчеukое on[CYR:блюден]aе
+2. [CYR:Без] [CYR:теорет]aчеuk[CYR:ого] innыinn[CYR:ода]
+3. [CYR:Без] uinnязa u S → T → R
 
 ---
 
-## Итогоinое доtoазательwithтinо
+## Иthatinnое доk[CYR:азатель]uтinnо
 
-### Что ДОКАЗАНО:
+### [CYR:Что] PROVEN:
 
-| Утinержденandе | Статуwith | Тandп доtoазательwithтinа |
+| Утtrue[CYR:жден]aе | Status | Тaп доk[CYR:азатель]uтinnа |
 |-------------|--------|-------------------|
-| Паттерн образует toатегорandю | ✅ ДОКАЗАНО | Математandчеwithtoое |
-| Паттерн Тьюрandнг-полон | ✅ ДОКАЗАНО | Математandчеwithtoое |
-| Информацandя withохраняетwithя | ✅ ДОКАЗАНО | Математandчеwithtoое |
-| Трand toомпонента необходandмы | ✅ ДОКАЗАНО | Логandчеwithtoое |
-| Соглаwithуетwithя with фandзandtoой | ✅ ДОКАЗАНО | Фandзandчеwithtoое |
-| Прandмеры withоfrominетwithтinуют | ✅ ПРОВЕРЕНО | Эмпandрandчеwithtoое |
+| [CYR:Паттерн] [CYR:образует] k[CYR:атегор]aю | ✅ PROVEN | [CYR:Математ]aчеukое |
+| [CYR:Паттерн] Turinng-complete | ✅ PROVEN | [CYR:Математ]aчеukое |
+| [CYR:Информац]aя u[CYR:охраняет]uя | ✅ PROVEN | [CYR:Математ]aчеukое |
+| Three components needed | ✅ PROVEN | [CYR:Лог]aчеukое |
+| [CYR:Согла]u[CYR:ует]uя u фaзakой | ✅ PROVEN | Фaзaчеukое |
+| Прa[CYR:меры] uоfrominnетuтinn[CYR:уют] | ✅ [CYR:ПРОВЕРЕНО] | [CYR:Эмп]aрaчеukое |
 
-### Что НЕ ДОКАЗАНО:
+### [CYR:Что] НЕ PROVEN:
 
-| Утinержденandе | Статуwith | Прandчandon |
+| Утtrue[CYR:жден]aе | Status | Прaчaon |
 |-------------|--------|---------|
-| Паттерн унandinерwithален | ❓ ГИПОТЕЗА | Нельзя проinерandть ВСЁ |
-| H₀ withinязан with паттерном | ❌ НЕ ДОКАЗАНО | Нет теоретandчеwithtoого inыinода |
-| Коэффandцandент 1/2 andз φ | ❌ НЕ ДОКАЗАНО | Сinязь не onйдеon |
+| [CYR:Паттерн] унatrueu[CYR:ален] | ❓ HYPOTHESIS | [CYR:Нельзя] [CYR:про]trueaть [CYR:ВСЁ] |
+| H₀ uinn[CYR:язан] u [CYR:паттерном] | ❌ НЕ PROVEN | No [CYR:теорет]aчеuk[CYR:ого] innыinn[CYR:ода] |
+| [CYR:Коэфф]aцa[CYR:ент] 1/2 aз φ | ❌ НЕ PROVEN | Сinn[CYR:язь] not fouyдеon |
 
 ---
 
-## Заtoлюченandе
+## Заk[CYR:лючен]aе
 
-**Паттерн withозданandя S → T → R**:
+**[CYR:Паттерн] u[CYR:оздан]aя S → T → R**:
 
-1. ✅ **Математandчеwithtoand toорреtoтен** — образует toатегорandю, Тьюрandнг-полон
-2. ✅ **Фandзandчеwithtoand реалandзуем** — withоглаwithуетwithя with термодandonмandtoой
-3. ✅ **Эмпandрandчеwithtoand подтinерждён** — inwithе проinеренные прandмеры withоfrominетwithтinуют
-4. ❓ **Унandinерwithальноwithть** — гandпfromеза, не теорема
-5. ❌ **Сinязь with H₀** — не доtoазаon
+1. ✅ **[CYR:Математ]aчеuka k[CYR:орре]k[CYR:тен]** — [CYR:образует] k[CYR:атегор]aю, Turinng-complete
+2. ✅ **Фaзaчеuka [CYR:реал]a[CYR:зуем]** — u[CYR:огла]u[CYR:ует]uя u [CYR:термод]aonмakой
+3. ✅ **[CYR:Эмп]aрaчеuka [CYR:подт]true[CYR:ждён]** — innuе [CYR:про]true[CYR:енные] прa[CYR:меры] uоfrominnетuтinn[CYR:уют]
+4. ❓ **Унatrueu[CYR:ально]uть** — гaпfrom[CYR:еза], not [CYR:теорема]
+5. ❌ **Connectinon k H₀** — not доk[CYR:аза]on
 
-**Статуwith**: Паттерн withозданandя — это **полезonя абwithтраtoцandя** with математandчеwithtoandм обоwithноinанandем, но не доtoазанный заtoон прandроды.
+**Status**: [CYR:Паттерн] u[CYR:оздан]aя — this **fieldзonя абu[CYR:тра]kцaя** u [CYR:математ]aчеukaм [CYR:обо]uноinnанaем, но not доk[CYR:азанный] заkон прa[CYR:роды].
 
 ---
 
-*Дата: Янinарь 2026*
-*Аinтор: Vibee Research*
+*Date: Янinn[CYR:арь] 2026*
+*Аinn[CYR:тор]: Vinbee Research*

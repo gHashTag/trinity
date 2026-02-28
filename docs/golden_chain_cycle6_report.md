@@ -26,7 +26,7 @@ TASK: "full local fluent multilingual chat + coding"
 
 COMPONENTS:
 ├── 1. Multilingual Chat Engine
-│   ├── Russian (раwithшandренный)
+│   ├── Russian (раwithшand[CYR:ренный])
 │   ├── English (enhanced)
 │   ├── Chinese (中文)
 │   ├── Spanish (español)
@@ -205,7 +205,7 @@ Files created:
 ### Russian Greeting
 ```
 Input: "прandinет"
-Output: "Прandinет! Я IGLA — лоtoальный AI-аwithwithandwithтент. Чем могу помочь?"
+Output: "Прandinет! Я IGLA — лоto[CYR:альный] AI-аwithwithandwith[CYR:тент]. [CYR:Чем] [CYR:могу] [CYR:помочь]?"
 Language: Russian
 Category: Greeting
 Confidence: 0.95

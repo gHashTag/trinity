@@ -4,31 +4,31 @@
 
 ---
 
-## 1. Научные рабfromы по Browser Automation
+## 1. [CYR:Научные] [CYR:раб]fromы по Browser Automation
 
 ### 1.1 Selenium WebDriver (2004-2024)
-- **Иwithточнandto**: IEEE Software, ACM SIGSOFT
-- **Паттерн**: Page Object Model (POM)
-- **Сложноwithть**: O(n) for поandwithtoа элементоin
-- **Улучшенandе PAS**: SIMD-уwithtoоренandе withелеtoтороin → O(n/8)
+- **Иwith[CYR:точн]andto**: IEEE Software, ACM SIGSOFT
+- **[CYR:Паттерн]**: Page Object Model (POM)
+- **[CYR:Сложно]withть**: O(n) for поandwithtoа elementоin
+- **[CYR:Улучшен]andе PAS**: SIMD-уwithto[CYR:орен]andе with[CYR:еле]to[CYR:торо]in → O(n/8)
 
 ### 1.2 Playwright Architecture (Microsoft, 2020)
-- **Иwithточнandto**: Microsoft Research
-- **Паттерн**: Auto-waiting, Network interception
-- **Сложноwithть**: O(log n) for умного ожandданandя
-- **Улучшенandе PAS**: Предandtoтandinное ожandданandе → O(1) amortized
+- **Иwith[CYR:точн]andto**: Microsoft Research
+- **[CYR:Паттерн]**: Auto-waiting, Network interception
+- **[CYR:Сложно]withть**: O(log n) for [CYR:умного] ожand[CYR:дан]andя
+- **[CYR:Улучшен]andе PAS**: [CYR:Пред]andtoтandin[CYR:ное] ожand[CYR:дан]andе → O(1) amortized
 
 ### 1.3 Puppeteer CDP (Google, 2017)
-- **Иwithточнandto**: Chrome DevTools Protocol Spec
-- **Паттерн**: Direct browser control
-- **Сложноwithть**: O(1) for CDP toоманд
-- **Улучшенandе PAS**: Batch commands → 3x throughput
+- **Иwith[CYR:точн]andto**: Chrome DevTools Protocol Spec
+- **[CYR:Паттерн]**: Direct browser control
+- **[CYR:Сложно]withть**: O(1) for CDP to[CYR:оманд]
+- **[CYR:Улучшен]andе PAS**: Batch commands → 3x throughput
 
 ### 1.4 Cypress Architecture (2017)
-- **Иwithточнandto**: Cypress.io Technical Papers
-- **Паттерн**: In-browser execution
-- **Сложноwithть**: O(1) for DOM доwithтупа
-- **Улучшенandе PAS**: WASM execution → 2x speed
+- **Иwith[CYR:точн]andto**: Cypress.io Technical Papers
+- **[CYR:Паттерн]**: In-browser execution
+- **[CYR:Сложно]withть**: O(1) for DOM доwith[CYR:тупа]
+- **[CYR:Улучшен]andе PAS**: WASM execution → 2x speed
 
 ---
 

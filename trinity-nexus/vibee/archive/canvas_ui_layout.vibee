@@ -1,6 +1,6 @@
 name: canvas_ui_layout
-# Canvas UI Layout - Единая система управления плагинами через Canvas
-# Каждый пиксель = атомарный процесс, YogaLayout для координат
+# Canvas UI Layout - Едandonя system [CYR:упра]in[CYR:лен]andя [CYR:плаг]andonмand [CYR:через] Canvas
+# [CYR:Каждый] пandкwith[CYR:ель] = [CYR:атомарный] process, YogaLayout for [CYR:коорд]andonт
 
 plugin:
   name: canvas_ui_layout

@@ -1,4 +1,4 @@
-// Help Action - Responds to "что ты умеешь" and similar help requests
+// Help Action - Responds to "that ты [CYR:умеешь]" and similar help requests
   // Performance Warning:   // AI Suggestion: Consider extracting hardcoded strings to constants// Part of Actions-based Architecture for type type type type type type User {
   name: String,
   email: String,
@@ -42,14 +42,14 @@ import "../intent.vibee" as intent
   count: Int} capabilities",
     // Similes for NLP matching
     [
-      "что умеешь", "что ты умеешь", "помощь", "help",
-      "возможности", "функции", "что можешь"
+      "that [CYR:умеешь]", "that ты [CYR:умеешь]", "[CYR:помощь]", "help",
+      "in[CYR:озможно]withтand", "[CYR:функц]andand", "that [CYR:можешь]"
     ],
     // Example messages
     [
-      "Что ты умеешь?",
-      "Помощь",
-      "Какие у тебя возможности?",
+      "[CYR:Что] ты [CYR:умеешь]?",
+      "[CYR:Помощь]",
+      "[CYR:Как]andе у [CYR:тебя] in[CYR:озможно]withтand?",
       "What can you do?"
     ],
     { validate_help(it) },
@@ -118,25 +118,25 @@ trace("agent.help_action.handle")
   print("[HELP_ACTION] Handling help request")
 
   let response = """
-Я твой персональный AI-помощник VIBEE! Вот что я умею:
+Я тinой [CYR:пер]withоon[CYR:льный] AI-[CYR:помощн]andк VIBEE! [CYR:Вот] that я [CYR:умею]:
 
-**Видео и Рилсы**
-- Создавать рилсы - скажи "создай рилс про [тему]"
-- Генерировать video - скажи "сделай видео про [тему]"
+**Вand[CYR:део] and Рandлwithы**
+- [CYR:Созда]in[CYR:ать] рandлwithы - with[CYR:каж]and "with[CYR:оздай] рandлwith [CYR:про] [[CYR:тему]]"
+- Геnotрandроin[CYR:ать] video - with[CYR:каж]and "with[CYR:делай] inand[CYR:део] [CYR:про] [[CYR:тему]]"
 
-**Изображения**
-- Генерировать neurophoto - скажи "сгенерируй фото [описание]"
-- Создавать аватары
+**[CYR:Изображен]andя**
+- Геnotрandроin[CYR:ать] neurophoto - with[CYR:каж]and "withгеnotрand[CYR:руй] [CYR:фото] [опandwithанandе]"
+- [CYR:Созда]in[CYR:ать] аin[CYR:атары]
 
-**Голос**
-- Озвучивать текст - скажи "озвучь [текст]"
-- Клонировать голос
+**[CYR:Голо]with**
+- Озinучandin[CYR:ать] [CYR:тек]withт - with[CYR:каж]and "озin[CYR:учь] [[CYR:тек]withт]"
+- [CYR:Клон]andроin[CYR:ать] [CYR:голо]with
 
-**Тарифы**
-- Посмотреть тарифы - скажи "покажи тарифы"
+**[CYR:Тар]andфы**
+- Поwith[CYR:мотреть] [CYR:тар]andфы - with[CYR:каж]and "whileжand [CYR:тар]andфы"
 
 **Digital Twin**
-- Настроить type type type type type type User {
+- Наwith[CYR:тро]andть type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -154,9 +154,9 @@ trace("agent.help_action.handle")
   id: Int} {
   name: String,
   email: String,
-  id: Int}-Bot - скажи "настроить бота"
+  id: Int}-Bot - with[CYR:каж]and "onwith[CYR:тро]andть [CYR:бота]"
 
-Просто напиши что тебе нужно!
+[CYR:Про]withто onпandшand that [CYR:тебе] [CYR:нужно]!
 """
 
   eliza.success_result(response)

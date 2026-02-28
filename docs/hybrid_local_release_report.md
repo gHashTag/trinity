@@ -34,7 +34,7 @@ Hello! Great to see you. How can I help?
 
 $ ./trinity-hybrid "прandinет"
 [Symbolic, 80%, 45μs]
-Прandinет! Рад тебя inandдеть. Чем могу помочь?
+Прandinет! [CYR:Рад] [CYR:тебя] inand[CYR:деть]. [CYR:Чем] [CYR:могу] [CYR:помочь]?
 
 $ ./trinity-hybrid "tell me a joke"
 [Symbolic, 80%, 7μs]

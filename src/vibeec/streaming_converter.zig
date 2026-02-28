@@ -1,5 +1,5 @@
 // STREAMING CONVERTER - Low-memory conversion for large models
-// Processes тензоры by одному, не загружая inwithю модель in memory
+// Processes [CYR:тензоры] by [CYR:одному], not [CYR:загружая] inwithю [CYR:модель] in memory
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");

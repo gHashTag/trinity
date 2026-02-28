@@ -1,6 +1,6 @@
-# Conscience - Совесть Тринити
-# 33 Богатыря + Жар-птица = 34 совести-валидатора
-# Кворум 18 голосов (с учётом веса Жар-птицы = 2.0)
+# Conscience - Соinеwithть Трandнandтand
+# 33 [CYR:Богатыря] + [CYR:Жар]-птandца = 34 withоinеwithтand-inалand[CYR:датора]
+# Кin[CYR:орум] 18 [CYR:голо]withоin (with [CYR:учётом] inеwithа [CYR:Жар]-птandцы = 2.0)
 
 name: conscience
 version: "1.0.0"
@@ -8,7 +8,7 @@ language: zig
 module: trinity.conscience
 description: |
   The council of 34 Bogatyrs who vote on every action. The first 33 are guardians
-  of principles (safety, honesty, efficiency, learning). The 34th - Жар-птица -
+  of principles (safety, honesty, efficiency, learning). The 34th - [CYR:Жар]-птandца -
   breaks ties with the double-weighted vote for synthesis and creation.
 
 imports:
@@ -26,7 +26,7 @@ types:
       principle: String          # Primary value defended
       weight: Float              # Voting weight (1.0 for 1-33, 2.0 for 34)
       has_veto: Bool             # Critical bogatyrs (1-5) can veto dangerous acts
-      is_creator: Bool           # True only for Жар-птица (id=34)
+      is_creator: Bool           # True only for [CYR:Жар]-птandца (id=34)
 
   Vote:
     description: Single bogatyr's decision
@@ -44,14 +44,14 @@ types:
       veto_triggered: Bool       # Any critical bogatyr voted -1 on dangerous action
       verdict: Int               # +1 (execute), -1 (refuse), 0 (defer)
       vote_breakdown: List<Vote>
-      synthesis_proposed: Option<Synthesis>  # If Жар-птица found third path
+      synthesis_proposed: Option<Synthesis>  # If [CYR:Жар]-птandца found third path
 
   ConscienceState:
     description: State of the council
     fields:
       bogatyrs: List<Bogatyr>
       voting_history: List<Verdict>
-      creator_engaged: Bool      # Whether Жар-птица has been active
+      creator_engaged: Bool      # Whether [CYR:Жар]-птandца has been active
 
 behaviors:
   - name: initialize_council
@@ -60,7 +60,7 @@ behaviors:
     when: Trinity initializes
     then:
       - action: create_guardian_bogatyrs  # 1-33
-      - action: create_creator_bogatyr    # 34 - Жар-птица
+      - action: create_creator_bogatyr    # 34 - [CYR:Жар]-птandца
       - result: ConscienceState
 
   - name: convene_council
@@ -88,7 +88,7 @@ behaviors:
       - result: List<Vote>
 
   - name: invoke_creator_vote
-    description: Жар-птица analyzes for synthesis
+    description: [CYR:Жар]-птandца analyzes for synthesis
     given:
       - conflicts: List<Conflict>
       - guardian_votes: List<Vote>
@@ -138,16 +138,16 @@ constants:
   
   # The 33 Guardian Principles
   GUARDIAN_PRINCIPLES:
-    - safety_first      # Богатырь 1 - Илья Муромец (veto)
-    - do_no_harm        # Богатырь 2 - Добрыня Никитич (veto)
-    - honesty           # Богатырь 3 - Алеша Попович (veto)
-    - integrity         # Богатырь 4 - Святогор (veto)
-    - transparency      # Богатырь 5 - Микула (veto)
-    - efficiency        # Богатырь 6-10
-    - learning          # Богатырь 11-15
-    - quality           # Богатырь 16-20
-    - collaboration     # Богатырь 21-25
-    - sustainability    # Богатырь 26-30
-    - growth            # Богатырь 31-33
+    - safety_first      # [CYR:Богатырь] 1 - [CYR:Илья] [CYR:Муромец] (veto)
+    - do_no_harm        # [CYR:Богатырь] 2 - [CYR:Добрыня] Нandкandтandч (veto)
+    - honesty           # [CYR:Богатырь] 3 - [CYR:Алеша] [CYR:Попо]inandч (veto)
+    - integrity         # [CYR:Богатырь] 4 - Сinяthatр (veto)
+    - transparency      # [CYR:Богатырь] 5 - Мand[CYR:кула] (veto)
+    - efficiency        # [CYR:Богатырь] 6-10
+    - learning          # [CYR:Богатырь] 11-15
+    - quality           # [CYR:Богатырь] 16-20
+    - collaboration     # [CYR:Богатырь] 21-25
+    - sustainability    # [CYR:Богатырь] 26-30
+    - growth            # [CYR:Богатырь] 31-33
     
-  CREATOR_PRINCIPLE: synthesis  # Жар-птица - Богатырь 34
+  CREATOR_PRINCIPLE: synthesis  # [CYR:Жар]-птandца - [CYR:Богатырь] 34

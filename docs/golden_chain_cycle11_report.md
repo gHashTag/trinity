@@ -109,7 +109,7 @@ Key components:
 |----------|---------|---------------|
 | English | "read file config.zig" | FileRead |
 | English | "search for TODO" | Search |
-| Russian | "поtoажand файл readme" | FileRead |
+| Russian | "поtoажand file readme" | FileRead |
 | Russian | "onйдand ошandбtoand" | Search |
 | Chinese | "读取文件 config" | FileRead |
 

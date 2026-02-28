@@ -243,7 +243,7 @@ runtime.html (unified interpreter)
 vibee-lang/
 ├── specs/tri/           # .vibee specifications (18 files)
 ├── trinity/
-│   ├── ЦАРСТВО/         # .tri files (Coptic)
+│   ├── [CYR:ЦАРСТВО]/         # .tri files (Coptic)
 │   └── output/          # Generated .zig (18 files, 120 tests)
 ├── bin/
 │   ├── vibeec           # Compiler

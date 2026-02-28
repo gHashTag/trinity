@@ -53,46 +53,46 @@ pub const KeywordMapping = struct {
 // ============================================================================
 
 pub const russian_keywords = [_]KeywordMapping{
-    .{ .original = "фунtoцandя", .english = "function" },
-    .{ .original = "фунtoцandю", .english = "function" },
-    .{ .original = "переменonя", .english = "variable" },
+    .{ .original = "[CYR:фун]toцandя", .english = "function" },
+    .{ .original = "[CYR:фун]toцandю", .english = "function" },
+    .{ .original = "[CYR:перемен]onя", .english = "variable" },
     .{ .original = "цandtoл", .english = "loop" },
     .{ .original = "еwithлand", .english = "if" },
     .{ .original = "andonче", .english = "else" },
-    .{ .original = "inозinрат", .english = "return" },
-    .{ .original = "withтруtoтура", .english = "struct" },
+    .{ .original = "inозin[CYR:рат]", .english = "return" },
+    .{ .original = "with[CYR:тру]to[CYR:тура]", .english = "struct" },
     .{ .original = "маwithwithandin", .english = "array" },
-    .{ .original = "withтроtoа", .english = "string" },
+    .{ .original = "with[CYR:тро]toа", .english = "string" },
     .{ .original = "чandwithло", .english = "number" },
-    .{ .original = "печать", .english = "print" },
-    .{ .original = "withортandроintoа", .english = "sort" },
-    .{ .original = "withортandроintoу", .english = "sort" },
+    .{ .original = "[CYR:печать]", .english = "print" },
+    .{ .original = "with[CYR:орт]andроintoа", .english = "sort" },
+    .{ .original = "with[CYR:орт]andроintoу", .english = "sort" },
     .{ .original = "byandwithto", .english = "search" },
     .{ .original = "фandбоonччand", .english = "fibonacci" },
-    .{ .original = "фаtoторandал", .english = "factorial" },
+    .{ .original = "фаto[CYR:тор]andал", .english = "factorial" },
     .{ .original = "onпandшand", .english = "write" },
-    .{ .original = "withоздай", .english = "create" },
-    .{ .original = "withделай", .english = "make" },
+    .{ .original = "with[CYR:оздай]", .english = "create" },
+    .{ .original = "with[CYR:делай]", .english = "make" },
     .{ .original = "прandinет", .english = "hello" },
     .{ .original = "мandр", .english = "world" },
     .{ .original = "for", .english = "for" },
     .{ .original = "bytoа", .english = "while" },
     .{ .original = "withпandwithоto", .english = "list" },
-    .{ .original = "withлоinарь", .english = "dictionary" },
+    .{ .original = "withлоin[CYR:арь]", .english = "dictionary" },
     .{ .original = "toлаwithwith", .english = "class" },
-    .{ .original = "метод", .english = "method" },
-    .{ .original = "объеtoт", .english = "object" },
+    .{ .original = "method", .english = "method" },
+    .{ .original = "[CYR:объе]toт", .english = "object" },
     .{ .original = "file", .english = "file" },
-    .{ .original = "чandтать", .english = "read" },
-    .{ .original = "пandwithать", .english = "write" },
-    .{ .original = "withумма", .english = "sum" },
-    .{ .original = "маtowithandмум", .english = "max" },
-    .{ .original = "мandнandмум", .english = "min" },
-    .{ .original = "проinерtoа", .english = "check" },
+    .{ .original = "чand[CYR:тать]", .english = "read" },
+    .{ .original = "пandwith[CYR:ать]", .english = "write" },
+    .{ .original = "with[CYR:умма]", .english = "sum" },
+    .{ .original = "маtowithand[CYR:мум]", .english = "max" },
+    .{ .original = "мandнand[CYR:мум]", .english = "min" },
+    .{ .original = "[CYR:про]inерtoа", .english = "check" },
     .{ .original = "теwithт", .english = "test" },
     .{ .original = "toод", .english = "code" },
-    .{ .original = "программа", .english = "program" },
-    .{ .original = "алгорandтм", .english = "algorithm" },
+    .{ .original = "program", .english = "program" },
+    .{ .original = "[CYR:алгор]andтм", .english = "algorithm" },
 };
 
 // ============================================================================
@@ -389,7 +389,7 @@ pub fn formatDetection(detection: LanguageDetectionResult) [256]u8 {
 // ============================================================================
 
 test "detect Russian" {
-    const result = detectLanguage("onпandшand фунtoцandю фandбоonччand");
+    const result = detectLanguage("onпandшand [CYR:фун]toцandю фandбоonччand");
     try std.testing.expectEqual(Language.russian, result.language);
     try std.testing.expect(result.cyrillic_count > 0);
 }
@@ -420,7 +420,7 @@ test "isCJK" {
 
 test "extractKeywords Russian" {
     const allocator = std.testing.allocator;
-    const keywords = try extractKeywords(allocator, "onпandшand фунtoцandю фandбоonччand", .russian);
+    const keywords = try extractKeywords(allocator, "onпandшand [CYR:фун]toцandю фandбоonччand", .russian);
     defer allocator.free(keywords);
 
     try std.testing.expect(keywords.len >= 2);
@@ -428,6 +428,6 @@ test "extractKeywords Russian" {
 
 test "containsSubstring" {
     try std.testing.expect(containsSubstring("hello world", "world"));
-    try std.testing.expect(containsSubstring("фунtoцandя", "фунtoцandя"));
+    try std.testing.expect(containsSubstring("[CYR:фун]toцandя", "[CYR:фун]toцandя"));
     try std.testing.expect(!containsSubstring("hello", "world"));
 }

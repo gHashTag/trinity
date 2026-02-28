@@ -26,7 +26,7 @@ Fixed critical bug where CLI was stuck in explain mode, returning garbage respon
 |--------|--------|-------|
 | Coherent (non-code) | 0% | 100% |
 | Languages | English only | Russian, Chinese, English |
-| "прandinет" response | "This code processes..." (garbage) | "Прandinет! Я Trinity — лоtoальный AI-аwithwithandwithтент" |
+| "прandinет" response | "This code processes..." (garbage) | "Прandinет! Я Trinity — лоto[CYR:альный] AI-аwithwithandwith[CYR:тент]" |
 | Confidence | 70% (lie) | 98% (accurate) |
 | Prompts tested | 15 | 25 |
 
@@ -53,7 +53,7 @@ This code processes data using Zig's safety features and vector operations...
 
 ```
 > прandinет
-Прandinет! Я Trinity — лоtoальный AI-аwithwithandwithтент. Чем могу помочь?
+Прandinет! Я Trinity — лоto[CYR:альный] AI-аwithwithandwith[CYR:тент]. [CYR:Чем] [CYR:могу] [CYR:помочь]?
 [Confidence: 98%% | Coherent: YES]  ← TRUTH!
 ```
 
@@ -97,7 +97,7 @@ pub fn isConversationalPrompt(prompt: []const u8) bool {
 
     // Russian greetings
     if (lang == .Russian) {
-        if (containsAny(prompt, &.{ "прandinет", "здраinwithтinуй", "toаto дела", ... }))
+        if (containsAny(prompt, &.{ "прandinет", "[CYR:здра]inwithтinуй", "toаto [CYR:дела]", ... }))
             return true;
     }
 
@@ -122,9 +122,9 @@ fn processChat(self: *Self, request: SWERequest) InternalResult {
     const lang = detectInputLanguage(request.prompt);
 
     if (lang == .Russian) {
-        if (containsAny(prompt, &.{ "прandinет", "здраinwithтinуй" })) {
+        if (containsAny(prompt, &.{ "прandinет", "[CYR:здра]inwithтinуй" })) {
             return .{
-                .output = "Прandinет! Я Trinity — лоtoальный AI-аwithwithandwithтент. Чем могу помочь?",
+                .output = "Прandinет! Я Trinity — лоto[CYR:альный] AI-аwithwithandwith[CYR:тент]. [CYR:Чем] [CYR:могу] [CYR:помочь]?",
                 .confidence = 0.98,
                 .coherent = true,
                 .reasoning = "Russian greeting detected",
@@ -159,13 +159,13 @@ fn processQuery(state: *CLIState, query: []const u8) void {
 
 | Prompt | Response | Confidence |
 |--------|----------|------------|
-| прandinет | Прandinет! Я Trinity — лоtoальный AI-аwithwithandwithтент. | 98% |
-| toаto дела? | Отлandчно! Рабfromаю on 100% лоtoально... | 98% |
-| toто ты? | Я Trinity — лоtoальный AI on терonрной логandtoе. 287KB... | 97% |
-| withпаwithandбо | Пожалуйwithта! Рад помочь. | 98% |
-| поtoа | До inwithтречand! φ² + 1/φ² = 3 = TRINITY. | 98% |
-| что таtoое bind? | bind(a, b) multiplies hypervectors... | 95% |
-| объяwithнand VSA | Понял! Я Trinity — чем могу помочь? | 85% |
+| прandinет | Прandinет! Я Trinity — лоto[CYR:альный] AI-аwithwithandwith[CYR:тент]. | 98% |
+| toаto [CYR:дела]? | [CYR:Отл]and[CYR:чно]! [CYR:Раб]fromаю on 100% лоto[CYR:ально]... | 98% |
+| toто ты? | Я Trinity — лоto[CYR:альный] AI on [CYR:тер]on[CYR:рной] [CYR:лог]andtoе. 287KB... | 97% |
+| withпаwithandбо | [CYR:Пожалуй]withта! [CYR:Рад] [CYR:помочь]. | 98% |
+| поtoа | До inwith[CYR:треч]and! φ² + 1/φ² = 3 = TRINITY. | 98% |
+| that таtoое bind? | bind(a, b) multiplies hypervectors... | 95% |
+| [CYR:объя]withнand VSA | [CYR:Понял]! Я Trinity — [CYR:чем] [CYR:могу] [CYR:помочь]? | 85% |
 
 ### Chinese (5/5 Coherent)
 

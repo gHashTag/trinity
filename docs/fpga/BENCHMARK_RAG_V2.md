@@ -1,6 +1,6 @@
 # BENCHMARK: RAG v2
 
-**φ² + 1/φ² = 3 | PHOENIX = 999 | КОЩЕЙ БЕССМЕРТЕН**
+**φ² + 1/φ² = 3 | PHOENIX = 999 | [CYR:КОЩЕЙ] [CYR:БЕССМЕРТЕН]**
 
 ## Benchmark Results
 

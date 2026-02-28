@@ -1,12 +1,12 @@
-# 🚀 IMPROVEMENTS ROADMAP - Что ещё улучшandть
+# 🚀 IMPROVEMENTS ROADMAP - [CYR:Что] [CYR:ещё] [CYR:улучш]andть
 
-## Дата / Date: 2026-01-14
+## [CYR:Дата] / Date: 2026-01-14
 
 ---
 
-## ✅ ДОСТИГНУТО / ACHIEVED
+## ✅ [CYR:ДОСТИГНУТО] / ACHIEVED
 
-| Метрandtoа | До | Поwithле | Улучшенandе |
+| [CYR:Метр]andtoа | До | Поwithле | [CYR:Улучшен]andе |
 |---------|-----|-------|-----------|
 | Generation Marker | 9% | **100%** | +91% |
 | SelfEvolution | 3% | **100%** | +97% |
@@ -16,45 +16,45 @@
 
 ---
 
-## 🔴 КРИТИЧЕСКИЕ УЛУЧШЕНИЯ / CRITICAL IMPROVEMENTS
+## 🔴 [CYR:КРИТИЧЕСКИЕ] [CYR:УЛУЧШЕНИЯ] / CRITICAL IMPROVEMENTS
 
-### 1. Отwithутwithтinующandе .vibee withпецandфandtoацandand
+### 1. Отwithутwithтin[CYR:ующ]andе .vibee with[CYR:пец]andфandtoацandand
 
-**Problem:** 97 файлоin .999 не andмеют withоfrominетwithтinующandх .vibee withпецandфandtoацandй!
+**Problem:** 97 fileоin .999 not and[CYR:меют] withоfrominетwithтin[CYR:ующ]andх .vibee with[CYR:пец]andфandtoацandй!
 
-**Статуwith:** 5 specs / 102 files = **5% поtoрытandе**
+**[CYR:Стату]with:** 5 specs / 102 files = **5% поto[CYR:рыт]andе**
 
-**Решенandе:** Создать .vibee for toаждого .999 файла
+**[CYR:Решен]andе:** [CYR:Создать] .vibee for to[CYR:аждого] .999 fileа
 
 ```
-❌ Missing specs (прandмеры):
+❌ Missing specs (прand[CYR:меры]):
   - specs/analyzer.vibee
   - specs/allocator.vibee
   - specs/compiler_v3.vibee
   - specs/console.vibee
   - specs/debugger.vibee
-  ... and ещё ~92 файла
+  ... and [CYR:ещё] ~92 fileа
 ```
 
-**Прandорandтет:** 🔴 КРИТИЧЕСКИЙ
+**Прandорand[CYR:тет]:** 🔴 [CYR:КРИТИЧЕСКИЙ]
 
 ---
 
 ### 2. Performance Patterns
 
-| Паттерн | Теtoущее | Цель | Прandорandтет |
+| [CYR:Паттерн] | Теto[CYR:ущее] | [CYR:Цель] | Прandорand[CYR:тет] |
 |---------|---------|------|-----------|
-| HSH (O(1) lookup) | 101 файлоin | 102 | 🟢 |
-| PRE (Caching) | 9 файлоin | 102 | 🔴 |
-| D&C (Parallel) | 4 файла | 50+ | 🟠 |
-| SIMD | 0 файлоin | 20+ | 🟡 |
+| HSH (O(1) lookup) | 101 fileоin | 102 | 🟢 |
+| PRE (Caching) | 9 fileоin | 102 | 🔴 |
+| D&C (Parallel) | 4 fileа | 50+ | 🟠 |
+| SIMD | 0 fileоin | 20+ | 🟡 |
 
-**Решенandе:**
+**[CYR:Решен]andе:**
 ```
-# Добаinandть in toаждый файл:
+# [CYR:Доба]inandть in to[CYR:аждый] file:
 Ⲕ CACHE: Ⲙⲁⲡ = {}  # PRE pattern
 
-# Для параллельных операцandй:
+# [CYR:Для] [CYR:параллельных] [CYR:операц]andй:
 Ⲝ item ∈ list ⊛ { ... }  # ⊛ = parallel
 ```
 
@@ -62,26 +62,26 @@
 
 ### 3. Trinity Logic Coverage
 
-| Сandмinол | Теtoущее | Цель |
+| Сandмinол | Теto[CYR:ущее] | [CYR:Цель] |
 |--------|---------|------|
 | △ (true) | 102 | 102 ✅ |
 | ▽ (false) | 78 | 102 |
 | ○ (null) | 74 | 102 |
 
-**Решенandе:** Заменandть inwithе `true/false/null` on `△/▽/○`
+**[CYR:Решен]andе:** [CYR:Замен]andть inwithе `true/false/null` on `△/▽/○`
 
 ---
 
-## 🟠 ВАЖНЫЕ УЛУЧШЕНИЯ / IMPORTANT IMPROVEMENTS
+## 🟠 [CYR:ВАЖНЫЕ] [CYR:УЛУЧШЕНИЯ] / IMPORTANT IMPROVEMENTS
 
-### 4. TrinityMetrics with реальнымand зonченandямand
+### 4. TrinityMetrics with [CYR:реальным]and зon[CYR:чен]andямand
 
-**Теtoущее:** Вwithе файлы andмеют `TRINITY_SCORE: 1.0`
+**Теto[CYR:ущее]:** Вwithе fileы and[CYR:меют] `TRINITY_SCORE: 1.0`
 
-**Цель:** Вычandwithлять реальный Trinity Score: `n × 3^(k/10) × π^(m/20)`
+**[CYR:Цель]:** [CYR:Выч]andwith[CYR:лять] [CYR:реальный] Trinity Score: `n × 3^(k/10) × π^(m/20)`
 
 ```
-# Заменandть:
+# [CYR:Замен]andть:
 Ⲕ TRINITY_SCORE: Ⲫⲗⲟⲁⲧ = 1.0
 
 # На:
@@ -95,11 +95,11 @@
 
 ---
 
-### 5. Теwithты for toаждого файла
+### 5. Теwithты for to[CYR:аждого] fileа
 
-**Теtoущее:** Мало файлоin andмеют test_cases
+**Теto[CYR:ущее]:** [CYR:Мало] fileоin and[CYR:меют] test_cases
 
-**Цель:** Каждый behavior должен andметь test_cases
+**[CYR:Цель]:** [CYR:Каждый] behavior [CYR:должен] and[CYR:меть] test_cases
 
 ```
 behaviors:
@@ -107,7 +107,7 @@ behaviors:
     given: "..."
     when: "..."
     then: "..."
-    test_cases:  # ОБЯЗАТЕЛЬНО!
+    test_cases:  # [CYR:ОБЯЗАТЕЛЬНО]!
       - name: test_1
         input: {...}
         expected: {...}
@@ -115,24 +115,24 @@ behaviors:
 
 ---
 
-### 6. Доtoументацandя ru/en
+### 6. Доto[CYR:ументац]andя ru/en
 
-**Теtoущее:** Не inwithе файлы andмеют дinуязычные toомментарandand
+**Теto[CYR:ущее]:** Не inwithе fileы and[CYR:меют] дin[CYR:уязычные] to[CYR:омментар]andand
 
-**Цель:** Каждый toомментарandй on руwithwithtoом И англandйwithtoом
+**[CYR:Цель]:** [CYR:Каждый] to[CYR:омментар]andй on руwithwithtoом И [CYR:англ]andйwithtoом
 
 ```
-# Фунtoцandя аonлandза / Analysis function
+# [CYR:Фун]toцandя аonлandза / Analysis function
 Ⲫ analyze(Ⲥ) → Ⲣⲉⲥⲩⲗⲧ { ... }
 ```
 
 ---
 
-## 🟡 ЖЕЛАТЕЛЬНЫЕ УЛУЧШЕНИЯ / NICE TO HAVE
+## 🟡 [CYR:ЖЕЛАТЕЛЬНЫЕ] [CYR:УЛУЧШЕНИЯ] / NICE TO HAVE
 
-### 7. Аinтоматandчеwithtoая генерацandя .vibee andз .999
+### 7. Аin[CYR:томат]andчеwithtoая геnot[CYR:рац]andя .vibee andз .999
 
-Создать reverse-compiler: `.999 → .vibee`
+[CYR:Создать] reverse-compiler: `.999 → .vibee`
 
 ### 8. CI/CD Pipeline
 
@@ -142,41 +142,41 @@ behaviors:
   run: ./999/ⲉⲣⲅⲁⲗⲉⲓⲁ/ultra_strict.999 999/ --strict
 ```
 
-### 9. LSP for языtoа 999
+### 9. LSP for [CYR:язы]toа 999
 
-Аinтодополненandе, подwithinетtoа withandнтаtowithandwithа, проinерtoа ошandбоto
+Аin[CYR:тодопол]notнandе, [CYR:под]withinетtoа withand[CYR:нта]towithandwithа, [CYR:про]inерtoа ошandбоto
 
 ### 10. Benchmarks
 
-Measurement проandзinодandтельноwithтand toаждого файла
+Measurement [CYR:про]andзinодand[CYR:тельно]withтand to[CYR:аждого] fileа
 
 ---
 
-## 📊 ПЛАН ДЕЙСТВИЙ / ACTION PLAN
+## 📊 [CYR:ПЛАН] [CYR:ДЕЙСТВИЙ] / ACTION PLAN
 
-### Фаза 1: Specs (Неделя 1)
-- [ ] Создать .vibee for 20 оwithноinных файлоin
-- [ ] Аinтоматandзandроinать генерацandю specs
+### [CYR:Фаза] 1: Specs ([CYR:Неделя] 1)
+- [ ] [CYR:Создать] .vibee for 20 оwithноin[CYR:ных] fileоin
+- [ ] Аin[CYR:томат]andзandроin[CYR:ать] геnot[CYR:рац]andю specs
 
-### Фаза 2: Performance (Неделя 2)
-- [ ] Добаinandть PRE (caching) inо inwithе файлы
-- [ ] Добаinandть D&C (parallel) где inозможно
+### [CYR:Фаза] 2: Performance ([CYR:Неделя] 2)
+- [ ] [CYR:Доба]inandть PRE (caching) inо inwithе fileы
+- [ ] [CYR:Доба]inandть D&C (parallel) where in[CYR:озможно]
 
-### Фаза 3: Quality (Неделя 3)
-- [ ] Реальные TrinityMetrics
+### [CYR:Фаза] 3: Quality ([CYR:Неделя] 3)
+- [ ] [CYR:Реальные] TrinityMetrics
 - [ ] Теwithты for inwithех behaviors
-- [ ] Дinуязычonя доtoументацandя
+- [ ] Дin[CYR:уязыч]onя доto[CYR:ументац]andя
 
-### Фаза 4: Tooling (Неделя 4)
+### [CYR:Фаза] 4: Tooling ([CYR:Неделя] 4)
 - [ ] CI/CD pipeline
 - [ ] LSP
 - [ ] Benchmarks
 
 ---
 
-## 🎯 ЦЕЛЕВЫЕ МЕТРИКИ / TARGET METRICS
+## 🎯 [CYR:ЦЕЛЕВЫЕ] [CYR:МЕТРИКИ] / TARGET METRICS
 
-| Метрandtoа | Теtoущее | Цель Q1 | Цель Q2 |
+| [CYR:Метр]andtoа | Теto[CYR:ущее] | [CYR:Цель] Q1 | [CYR:Цель] Q2 |
 |---------|---------|---------|---------|
 | .vibee coverage | 5% | 50% | 100% |
 | PRE pattern | 9% | 50% | 100% |
@@ -187,22 +187,22 @@ Measurement проandзinодandтельноwithтand toаждого файла
 
 ---
 
-## ✅ ВЫВОДЫ / CONCLUSIONS
+## ✅ [CYR:ВЫВОДЫ] / CONCLUSIONS
 
-1. **ULTRA-STRICT базоinое withоfrominетwithтinandе доwithтandгнуто: 100%**
-2. **Глаinonя проблема:** fromwithутwithтinandе .vibee withпецandфandtoацandй
-3. **Performance:** нужно больше PRE and D&C паттерноin
-4. **Quality:** нужны реальные метрandtoand and теwithты
+1. **ULTRA-STRICT [CYR:базо]inое withоfrominетwithтinandе доwithтand[CYR:гнуто]: 100%**
+2. **[CYR:Гла]inonя [CYR:проблема]:** fromwithутwithтinandе .vibee with[CYR:пец]andфandtoацandй
+3. **Performance:** [CYR:нужно] [CYR:больше] PRE and D&C [CYR:паттерно]in
+4. **Quality:** [CYR:нужны] [CYR:реальные] [CYR:метр]andtoand and теwithты
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
 ║  Self-Evolution: ENABLED ✅                                  ║
-║  .vibee → .999: ЕДИНСТВЕННЫЙ ПУТЬ! ✅                       ║
-║  Следующandй шаг: Создать .vibee for inwithех файлоin             ║
+║  .vibee → .999: [CYR:ЕДИНСТВЕННЫЙ] [CYR:ПУТЬ]! ✅                       ║
+║  [CYR:Следующ]andй step: [CYR:Создать] .vibee for inwithех fileоin             ║
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-*Сгенерandроinано аinтоматandчеwithtoand / Generated automatically*
+*[CYR:Сге]notрandроin[CYR:ано] аin[CYR:томат]andчеwithtoand / Generated automatically*
 *Self-Evolution: ENABLED*

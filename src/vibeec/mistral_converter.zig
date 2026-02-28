@@ -1,5 +1,5 @@
 // MISTRAL-7B TO TRINITY CONVERTER
-// Конinертацandя Mistral-7B andз safetensors in .tri format
+// [CYR:Кон]in[CYR:ертац]andя Mistral-7B andз safetensors in .tri format
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");
@@ -85,15 +85,15 @@ pub const ShardedLoader = struct {
         }
     }
 
-    /// Загрузtoа toонtoретного шарyes
+    /// [CYR:Загруз]toа toонto[CYR:ретного] [CYR:шар]yes
     pub fn loadShard(self: *ShardedLoader, shard_idx: usize) !*safetensors.SafetensorsFile {
-        // Заtoрыinаем предыдущandй шард
+        // Заtoрыin[CYR:аем] [CYR:предыдущ]andй [CYR:шард]
         if (self.current_shard) |shard| {
             shard.deinit();
             self.allocator.destroy(shard);
         }
 
-        // Формandруем path to шарду
+        // [CYR:Форм]and[CYR:руем] path to [CYR:шарду]
         var path_buf: [512]u8 = undefined;
         const path = try std.fmt.bufPrint(&path_buf, "{s}/model-{d:0>5}-of-{d:0>5}.safetensors", .{
             self.base_path,
@@ -132,7 +132,7 @@ pub const ConversionStats = struct {
     }
 };
 
-/// Конinертацandя Mistral-7B in .tri format
+/// [CYR:Кон]in[CYR:ертац]andя Mistral-7B in .tri format
 pub fn convertMistral(
     allocator: std.mem.Allocator,
     model_path: []const u8,
@@ -151,7 +151,7 @@ pub fn convertMistral(
     std.debug.print("║ Expected params: {d:<43} ║\n", .{config.totalParams()});
     std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 
-    // Созyesём writer for .tri
+    // [CYR:Соз]yesём writer for .tri
     var writer = try trinity_format.TrinityWriter.init(allocator, output_path);
     defer writer.deinit();
 
@@ -164,10 +164,10 @@ pub fn convertMistral(
         config.num_key_value_heads,
     );
 
-    // Созyesём toinантandзатор
+    // [CYR:Соз]yesём toin[CYR:ант]and[CYR:затор]
     var quantizer = prometheus.Quantizer.init(0.1);
 
-    // Загружаем шарды by очередand (определяем toолandчеwithтinо аinтоматandчеwithtoand)
+    // [CYR:Загружаем] [CYR:шарды] by [CYR:очеред]and ([CYR:определяем] toолandчеwithтinо аin[CYR:томат]andчеwithtoand)
     const num_shards: usize = 4; // Qwen2.5-Coder-7B has 4 shards
     var loader = ShardedLoader.init(allocator, model_path, num_shards);
     defer loader.deinit();
@@ -180,13 +180,13 @@ pub fn convertMistral(
             continue;
         };
 
-        // Конinертandруем all тензоры in шарде
+        // [CYR:Кон]in[CYR:ерт]and[CYR:руем] all [CYR:тензоры] in [CYR:шарде]
         var tensor_it = shard.tensors.iterator();
         while (tensor_it.next()) |entry| {
             const info = entry.value_ptr.*;
             const name = info.name;
 
-            // Пропуwithtoаем layernorm inеwithа (онand оwithтаютwithя in float)
+            // [CYR:Пропу]withto[CYR:аем] layernorm inеwithа (онand оwith[CYR:тают]withя in float)
             if (std.mem.indexOf(u8, name, "layernorm") != null or
                 std.mem.indexOf(u8, name, "norm") != null)
             {
@@ -201,11 +201,11 @@ pub fn convertMistral(
             };
             defer allocator.free(f32_data);
 
-            // Кinантandзуем in трandты
+            // Кin[CYR:ант]and[CYR:зуем] in трandты
             var trit_tensor = try quantizer.quantize(allocator, f32_data, info.shape);
             defer trit_tensor.deinit();
 
-            // Счandтаем нулand
+            // Счand[CYR:таем] [CYR:нул]and
             for (trit_tensor.data) |t| {
                 if (t == .zero) stats.zeros_count += 1;
             }
@@ -226,10 +226,10 @@ pub fn convertMistral(
         }
     }
 
-    // Фandonлandзandруем file
+    // Фandonлandзand[CYR:руем] file
     try writer.finalize();
 
-    // Compute withтатandwithтandtoу
+    // Compute with[CYR:тат]andwithтandtoу
     stats.compressed_size_bytes = (stats.total_params + 3) / 4;
     stats.sparsity = @as(f32, @floatFromInt(stats.zeros_count)) /
         @as(f32, @floatFromInt(stats.total_params));
@@ -256,7 +256,7 @@ fn printStats(stats: *const ConversionStats) void {
     std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 }
 
-/// Конinертацandя одного safetensors fileа (не sharded)
+/// [CYR:Кон]in[CYR:ертац]andя [CYR:одного] safetensors fileа (not sharded)
 pub fn convertSingleFile(
     allocator: std.mem.Allocator,
     input_path: []const u8,
@@ -273,11 +273,11 @@ pub fn convertSingleFile(
     std.debug.print("║ Output: {s:<52} ║\n", .{output_path[0..@min(output_path.len, 52)]});
     std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 
-    // Загружаем safetensors
+    // [CYR:Загружаем] safetensors
     var sf = try safetensors.SafetensorsFile.open(allocator, input_path);
     defer sf.deinit();
 
-    // Созyesём writer for .tri
+    // [CYR:Соз]yesём writer for .tri
     var writer = try trinity_format.TrinityWriter.init(allocator, output_path);
     defer writer.deinit();
 
@@ -290,10 +290,10 @@ pub fn convertSingleFile(
         config.num_key_value_heads,
     );
 
-    // Созyesём toinантandзатор
+    // [CYR:Соз]yesём toin[CYR:ант]and[CYR:затор]
     var quantizer = prometheus.Quantizer.init(0.1);
 
-    // Конinертandруем all тензоры
+    // [CYR:Кон]in[CYR:ерт]and[CYR:руем] all [CYR:тензоры]
     var tensor_it = sf.tensors.iterator();
     while (tensor_it.next()) |entry| {
         const info = entry.value_ptr.*;
@@ -306,11 +306,11 @@ pub fn convertSingleFile(
         };
         defer allocator.free(f32_data);
 
-        // Кinантandзуем in трandты
+        // Кin[CYR:ант]and[CYR:зуем] in трandты
         var trit_tensor = try quantizer.quantize(allocator, f32_data, info.shape);
         defer trit_tensor.deinit();
 
-        // Счandтаем нулand
+        // Счand[CYR:таем] [CYR:нул]and
         for (trit_tensor.data) |t| {
             if (t == .zero) stats.zeros_count += 1;
         }
@@ -325,10 +325,10 @@ pub fn convertSingleFile(
         std.debug.print("  ✓ {s}\n", .{name[0..@min(name.len, 50)]});
     }
 
-    // Фandonлandзandруем file
+    // Фandonлandзand[CYR:руем] file
     try writer.finalize();
 
-    // Compute withтатandwithтandtoу
+    // Compute with[CYR:тат]andwithтandtoу
     stats.compressed_size_bytes = (stats.total_params + 3) / 4;
     stats.sparsity = @as(f32, @floatFromInt(stats.zeros_count)) /
         @as(f32, @floatFromInt(stats.total_params));

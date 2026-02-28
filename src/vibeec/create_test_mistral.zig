@@ -1,5 +1,5 @@
 // CREATE TEST MISTRAL MODEL
-// Созyesнandе testоinой моделand withо withтруtoтурой Mistral for проinерtoand пайплайon
+// [CYR:Соз]yesнandе testоinой [CYR:модел]and withо with[CYR:тру]to[CYR:турой] Mistral for [CYR:про]inерtoand [CYR:пайплай]on
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");

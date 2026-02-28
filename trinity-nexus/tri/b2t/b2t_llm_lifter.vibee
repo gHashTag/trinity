@@ -145,9 +145,9 @@ types:
 
 behaviors:
   - name: lift_with_llm
-    given: b2t_disasm.DisassemblyResult и LLMLiftingConfig
-    when: Полный пайплайн lifting с LLM
-    then: Возвращает List<EnhancedTVCFunction>
+    given: b2t_disasm.DisassemblyResult and LLMLiftingConfig
+    when: [CYR:Полный] [CYR:пайплайн] lifting with LLM
+    then: [CYR:Воз]in[CYR:ращает] List<EnhancedTVCFunction>
     implementation: |
                     pub fn lift_with_llm(dasm_result: DisassemblyResult, config: LLMLiftingConfig) []const EnhancedTVCFunction {
                         _ = dasm_result;
@@ -160,9 +160,9 @@ behaviors:
       
 
   - name: lift_function_with_llm
-    given: b2t_disasm.BasicBlock[] и LLMLiftingConfig
-    when: Lifting одной функции с LLM-улучшениями
-    then: Возвращает EnhancedTVCFunction
+    given: b2t_disasm.BasicBlock[] and LLMLiftingConfig
+    when: Lifting [CYR:одной] [CYR:функц]andand with LLM-[CYR:улучшен]andямand
+    then: [CYR:Воз]in[CYR:ращает] EnhancedTVCFunction
     implementation: |
                     pub fn lift_function_with_llm(blocks: []const BasicBlock, config: LLMLiftingConfig) EnhancedTVCFunction {
                         _ = blocks;
@@ -175,9 +175,9 @@ behaviors:
       
 
   - name: get_lifting_progress
-    given: Текущий контекст lifting
-    when: Запрос прогресса
-    then: Возвращает LiftingProgress
+    given: [CYR:Текущ]andй [CYR:контек]withт lifting
+    when: [CYR:Запро]with [CYR:прогре]withwithа
+    then: [CYR:Воз]in[CYR:ращает] LiftingProgress
     implementation: |
                     pub fn get_lifting_progress(context: anytype) LiftingProgress {
                         _ = context;
@@ -189,9 +189,9 @@ behaviors:
       
 
   - name: recover_function_name
-    given: LiftedFunction и SemanticContext
-    when: Восстановление имени функции через LLM
-    then: Возвращает String имя и Float confidence
+    given: LiftedFunction and SemanticContext
+    when: Воwithwith[CYR:тано]in[CYR:лен]andе and[CYR:мен]and [CYR:функц]andand [CYR:через] LLM
+    then: [CYR:Воз]in[CYR:ращает] String andмя and Float confidence
     implementation: |
                     pub fn recover_function_name(lifted: LiftedFunction, context: SemanticContext) struct { name: []const u8, confidence: f32 } {
                         _ = lifted;
@@ -204,9 +204,9 @@ behaviors:
       
 
   - name: recover_variable_names
-    given: LiftedFunction и SemanticContext
-    when: Восстановление имён переменных через LLM
-    then: Возвращает Map<Int, String>
+    given: LiftedFunction and SemanticContext
+    when: Воwithwith[CYR:тано]in[CYR:лен]andе and[CYR:мён] [CYR:переменных] [CYR:через] LLM
+    then: [CYR:Воз]in[CYR:ращает] Map<Int, String>
     implementation: |
                     pub fn recover_variable_names(lifted: LiftedFunction, context: SemanticContext) std.AutoHashMap(usize, []const u8) {
                         _ = lifted;
@@ -220,9 +220,9 @@ behaviors:
       
 
   - name: recover_parameter_names
-    given: LiftedFunction и call graph context
-    when: Восстановление имён параметров
-    then: Возвращает List<String>
+    given: LiftedFunction and call graph context
+    when: Воwithwith[CYR:тано]in[CYR:лен]andе and[CYR:мён] parameterоin
+    then: [CYR:Воз]in[CYR:ращает] List<String>
     implementation: |
                     pub fn recover_parameter_names(lifted: LiftedFunction, call_graph: CallGraph) []const []const u8 {
                         _ = lifted;
@@ -235,9 +235,9 @@ behaviors:
       
 
   - name: infer_types_with_llm
-    given: LiftedFunction и data flow
-    when: Улучшенный вывод типов через LLM
-    then: Возвращает Map<Int, String> типов
+    given: LiftedFunction and data flow
+    when: [CYR:Улучшенный] inыinод typeоin [CYR:через] LLM
+    then: [CYR:Воз]in[CYR:ращает] Map<Int, String> typeоin
     implementation: |
                     pub fn infer_types_with_llm(lifted: LiftedFunction, data_flow: DataFlow) std.AutoHashMap(usize, []const u8) {
                         _ = lifted;
@@ -251,9 +251,9 @@ behaviors:
       
 
   - name: infer_return_type
-    given: LiftedFunction и call sites
-    when: Вывод типа возврата
-    then: Возвращает String тип
+    given: LiftedFunction and call sites
+    when: Выinод typeа inозin[CYR:рата]
+    then: [CYR:Воз]in[CYR:ращает] String type
     implementation: |
                     pub fn infer_return_type(lifted: LiftedFunction, call_sites: []const CallSite) []const u8 {
                         _ = lifted;
@@ -266,9 +266,9 @@ behaviors:
       
 
   - name: infer_parameter_types
-    given: LiftedFunction и calling convention
-    when: Вывод типов параметров
-    then: Возвращает List<String> типов
+    given: LiftedFunction and calling convention
+    when: Выinод typeоin parameterоin
+    then: [CYR:Воз]in[CYR:ращает] List<String> typeоin
     implementation: |
                     pub fn infer_parameter_types(lifted: LiftedFunction, calling_conv: CallingConvention) []const []const u8 {
                         _ = lifted;
@@ -281,9 +281,9 @@ behaviors:
       
 
   - name: detect_struct_access
-    given: TVC IR с memory operations
-    when: Поиск паттернов доступа к структурам
-    then: Возвращает List<StructAccessPattern>
+    given: TVC IR with memory operations
+    when: Поandwithк [CYR:паттерно]in доwith[CYR:тупа] к with[CYR:труктурам]
+    then: [CYR:Воз]in[CYR:ращает] List<StructAccessPattern>
     implementation: |
                     pub fn detect_struct_access(ir: []const IRInstruction) []const StructAccessPattern {
                         _ = ir;
@@ -296,8 +296,8 @@ behaviors:
 
   - name: recover_struct_definition
     given: List<StructAccessPattern>
-    when: Восстановление определения структуры через LLM
-    then: Возвращает StructDef
+    when: Воwithwith[CYR:тано]in[CYR:лен]andе [CYR:определен]andя with[CYR:труктуры] [CYR:через] LLM
+    then: [CYR:Воз]in[CYR:ращает] StructDef
     implementation: |
                     pub fn recover_struct_definition(patterns: []StructAccessPattern) StructDef {
                         _ = patterns;
@@ -309,9 +309,9 @@ behaviors:
       
 
   - name: apply_struct_types
-    given: LiftedFunction и List<StructDef>
-    when: Применение структурных типов к IR
-    then: Обновляет type annotations
+    given: LiftedFunction and List<StructDef>
+    when: Прandмеnotнandе with[CYR:труктурных] typeоin к IR
+    then: [CYR:Обно]in[CYR:ляет] type annotations
     implementation: |
                     pub fn apply_struct_types(lifted: *LiftedFunction, structs: []const StructDef) void {
                         _ = lifted;
@@ -323,9 +323,9 @@ behaviors:
       
 
   - name: recognize_idioms
-    given: TVC IR блок
-    when: Распознавание идиом (malloc/free, strlen, memcpy)
-    then: Возвращает List<RecognizedIdiom>
+    given: TVC IR block
+    when: Раwith[CYR:поз]oninанandе andдandом (malloc/free, strlen, memcpy)
+    then: [CYR:Воз]in[CYR:ращает] List<RecognizedIdiom>
     implementation: |
                     pub fn recognize_idioms(ir_block: []const IRInstruction) []const RecognizedIdiom {
                         _ = ir_block;
@@ -338,8 +338,8 @@ behaviors:
 
   - name: recognize_algorithms
     given: LiftedFunction
-    when: Распознавание алгоритмов (sort, search, hash)
-    then: Возвращает Option<AlgorithmMatch>
+    when: Раwith[CYR:поз]oninанandе [CYR:алгор]and[CYR:тмо]in (sort, search, hash)
+    then: [CYR:Воз]in[CYR:ращает] Option<AlgorithmMatch>
     implementation: |
                     pub fn recognize_algorithms(lifted: LiftedFunction) ?AlgorithmMatch {
                         _ = lifted;
@@ -351,9 +351,9 @@ behaviors:
       
 
   - name: apply_pattern_knowledge
-    given: LiftedFunction и recognized patterns
-    when: Применение знаний о паттернах
-    then: Улучшает имена и комментарии
+    given: LiftedFunction and recognized patterns
+    when: Прandмеnotнandе зonнandй о [CYR:паттер]onх
+    then: [CYR:Улучшает] andмеon and [CYR:комментар]andand
     implementation: |
                     pub fn apply_pattern_knowledge(lifted: *EnhancedTVCFunction, patterns: []const RecognizedPattern) void {
                         _ = lifted;
@@ -366,8 +366,8 @@ behaviors:
 
   - name: generate_function_comment
     given: EnhancedTVCFunction
-    when: Генерация документирующего комментария
-    then: Возвращает CodeComment
+    when: Геnot[CYR:рац]andя [CYR:документ]and[CYR:рующего] [CYR:комментар]andя
+    then: [CYR:Воз]in[CYR:ращает] CodeComment
     implementation: |
                     pub fn generate_function_comment(func: EnhancedTVCFunction) CodeComment {
                         _ = func;
@@ -380,8 +380,8 @@ behaviors:
 
   - name: generate_inline_comments
     given: EnhancedTVCFunction
-    when: Генерация inline комментариев для сложных участков
-    then: Возвращает List<CodeComment>
+    when: Геnot[CYR:рац]andя inline [CYR:комментар]andеin for with[CYR:ложных] [CYR:уча]with[CYR:тко]in
+    then: [CYR:Воз]in[CYR:ращает] List<CodeComment>
     implementation: |
                     pub fn generate_inline_comments(func: EnhancedTVCFunction) []CodeComment {
                         _ = func;
@@ -393,9 +393,9 @@ behaviors:
       
 
   - name: generate_warning_comments
-    given: EnhancedTVCFunction и detected issues
-    when: Генерация предупреждений
-    then: Возвращает List<CodeComment>
+    given: EnhancedTVCFunction and detected issues
+    when: Геnot[CYR:рац]andя [CYR:предупрежден]andй
+    then: [CYR:Воз]in[CYR:ращает] List<CodeComment>
     implementation: |
                     pub fn generate_warning_comments(func: EnhancedTVCFunction, issues: []const Issue) []const CodeComment {
                         _ = func;
@@ -409,8 +409,8 @@ behaviors:
 
   - name: validate_enhanced_ir
     given: EnhancedTVCFunction
-    when: Проверка корректности улучшений
-    then: Возвращает Bool и List<ValidationIssue>
+    when: [CYR:Про]in[CYR:ерка] [CYR:корректно]withтand [CYR:улучшен]andй
+    then: [CYR:Воз]in[CYR:ращает] Bool and List<ValidationIssue>
     implementation: |
                     pub fn validate_enhanced_ir(func: EnhancedTVCFunction) struct { valid: bool, issues: []ValidationIssue } {
                         _ = func;
@@ -422,9 +422,9 @@ behaviors:
       
 
   - name: compare_with_baseline
-    given: EnhancedTVCFunction и базовый LiftedFunction
-    when: Сравнение с baseline
-    then: Возвращает ImprovementMetrics
+    given: EnhancedTVCFunction and [CYR:базо]inый LiftedFunction
+    when: [CYR:Сра]innotнandе with baseline
+    then: [CYR:Воз]in[CYR:ращает] ImprovementMetrics
     implementation: |
                     pub fn compare_with_baseline(enhanced: EnhancedTVCFunction, baseline: LiftedFunction) ImprovementMetrics {
                         _ = enhanced;
@@ -437,9 +437,9 @@ behaviors:
       
 
   - name: rollback_to_baseline
-    given: EnhancedTVCFunction с ошибками
-    when: Откат к базовому IR
-    then: Возвращает LiftedFunction
+    given: EnhancedTVCFunction with errorмand
+    when: [CYR:Откат] к [CYR:базо]in[CYR:ому] IR
+    then: [CYR:Воз]in[CYR:ращает] LiftedFunction
     implementation: |
                     pub fn rollback_to_baseline(enhanced: EnhancedTVCFunction) LiftedFunction {
                         _ = enhanced;

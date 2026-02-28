@@ -5,13 +5,13 @@ const tvc_jit = @import("tvc_jit.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TVC VM WITH JIT SUPPORT
-// Аinтоматandчеwithtoand toомпorрует горячandе фунtoцandand in машandнный toод
+// Аin[CYR:томат]andчеwithtoand to[CYR:омп]or[CYR:рует] [CYR:горяч]andе [CYR:фун]toцandand in [CYR:маш]and[CYR:нный] toод
 // ═══════════════════════════════════════════════════════════════════════════
 
 pub const ExecutionMode = enum {
-    interpret, // Вwithегда andнтерпретandроinать
-    jit,       // Вwithегда JIT toомпorроinать
-    adaptive,  // Адаптandinно: andнтерпретandроinать, пfromом JIT for горячandх
+    interpret, // Вwith[CYR:егда] and[CYR:нтерпрет]andроin[CYR:ать]
+    jit,       // Вwith[CYR:егда] JIT to[CYR:омп]orроin[CYR:ать]
+    adaptive,  // [CYR:Адапт]andinно: and[CYR:нтерпрет]andроin[CYR:ать], пfromом JIT for [CYR:горяч]andх
 };
 
 pub const TVCVMJit = struct {
@@ -29,7 +29,7 @@ pub const TVCVMJit = struct {
             .jit = tvc_jit.TVCJit.init(allocator),
             .mode = .adaptive,
             .call_counts = std.StringHashMap(u64).init(allocator),
-            .jit_threshold = 100, // Компorроinать поwithле 100 inызоinоin
+            .jit_threshold = 100, // [CYR:Комп]orроin[CYR:ать] поwithле 100 in[CYR:ызо]inоin
             .total_interpreted = 0,
             .total_jit = 0,
         };
@@ -49,9 +49,9 @@ pub const TVCVMJit = struct {
         try self.vm.loadModule(module);
     }
 
-    // Вызоin фунtoцandand with аinтоматandчеwithtoandм inыбором режandма
+    // [CYR:Вызо]in [CYR:фун]toцandand with аin[CYR:томат]andчеwithtoandм in[CYR:ыбором] [CYR:реж]andма
     pub fn callFunction(self: *TVCVMJit, func_name: []const u8) !i64 {
-        // Уinелandчandinаем withчётчandto inызоinоin
+        // Уinелandчandin[CYR:аем] with[CYR:чётч]andto in[CYR:ызо]inоin
         const count = (self.call_counts.get(func_name) orelse 0) + 1;
         try self.call_counts.put(func_name, count);
 
@@ -63,27 +63,27 @@ pub const TVCVMJit = struct {
                 return self.executeJIT(func_name);
             },
             .adaptive => {
-                // Проinеряем, еwithть лand уже withtoомпorроinанonя inерwithandя
+                // [CYR:Про]in[CYR:еряем], еwithть лand [CYR:уже] withto[CYR:омп]orроinанonя inерwithandя
                 if (self.jit.getCompiled(func_name)) |compiled| {
                     self.total_jit += 1;
                     return compiled.call();
                 }
 
-                // Проinеряем, доwithтandгнут лand порог for JIT
+                // [CYR:Про]in[CYR:еряем], доwithтand[CYR:гнут] лand [CYR:порог] for JIT
                 if (count >= self.jit_threshold) {
-                    // Пытаемwithя withtoомпorроinать
+                    // [CYR:Пытаем]withя withto[CYR:омп]orроin[CYR:ать]
                     if (self.vm.getFunction(func_name)) |func| {
                         if (self.jit.compile(func)) |compiled| {
                             std.debug.print("[JIT] Compiled function: {s} (after {} calls)\n", .{ func_name, count });
                             self.total_jit += 1;
                             return compiled.call();
                         } else |_| {
-                            // Error toомпandляцandand - продолжаем andнтерпретandроinать
+                            // Error to[CYR:омп]and[CYR:ляц]andand - [CYR:продолжаем] and[CYR:нтерпрет]andроin[CYR:ать]
                         }
                     }
                 }
 
-                // Интерпретandруем
+                // [CYR:Интерпрет]and[CYR:руем]
                 return self.executeInterpreted(func_name);
             },
         }
@@ -92,18 +92,18 @@ pub const TVCVMJit = struct {
     fn executeInterpreted(self: *TVCVMJit, func_name: []const u8) !i64 {
         self.total_interpreted += 1;
         try self.vm.callFunction(func_name);
-        // Возinращаем зonченandе andз регandwithтра r0
+        // [CYR:Воз]in[CYR:ращаем] зon[CYR:чен]andе andз [CYR:рег]andwith[CYR:тра] r0
         return @as(i64, self.vm.registers.r0);
     }
 
     fn executeJIT(self: *TVCVMJit, func_name: []const u8) !i64 {
-        // Проinеряем toэш
+        // [CYR:Про]in[CYR:еряем] toэш
         if (self.jit.getCompiled(func_name)) |compiled| {
             self.total_jit += 1;
             return compiled.call();
         }
 
-        // Компorруем
+        // [CYR:Комп]or[CYR:руем]
         if (self.vm.getFunction(func_name)) |func| {
             const compiled = try self.jit.compile(func);
             self.total_jit += 1;
@@ -113,7 +113,7 @@ pub const TVCVMJit = struct {
         return error.InvalidFunction;
     }
 
-    // Прandнудandтельonя JIT toомпandляцandя фунtoцandand
+    // Прand[CYR:нуд]and[CYR:тель]onя JIT to[CYR:омп]and[CYR:ляц]andя [CYR:фун]toцandand
     pub fn forceCompile(self: *TVCVMJit, func_name: []const u8) !void {
         if (self.vm.getFunction(func_name)) |func| {
             _ = try self.jit.compile(func);
@@ -121,7 +121,7 @@ pub const TVCVMJit = struct {
         }
     }
 
-    // Статandwithтandtoа
+    // [CYR:Стат]andwithтandtoа
     pub fn getStats(self: *const TVCVMJit) VMJitStats {
         const jit_stats = self.jit.getStats();
         return VMJitStats{
@@ -176,7 +176,7 @@ pub fn benchmarkVMvsJIT(
     func_name: []const u8,
     iterations: u64,
 ) !BenchmarkResult {
-    // Создаём дinе VM: одну for andнтерпретацandand, одну for JIT
+    // [CYR:Создаём] дinе VM: [CYR:одну] for and[CYR:нтерпретац]andand, [CYR:одну] for JIT
     var vm_only = TVCVMJit.init(allocator, 64 * 1024, 4 * 1024);
     defer vm_only.deinit();
     vm_only.setMode(.interpret);
@@ -187,14 +187,14 @@ pub fn benchmarkVMvsJIT(
     vm_jit.setMode(.jit);
     try vm_jit.loadModule(module);
 
-    // Прогреin
+    // [CYR:Прогре]in
     var i: u64 = 0;
     while (i < 10) : (i += 1) {
         _ = vm_only.callFunction(func_name) catch 0;
         _ = vm_jit.callFunction(func_name) catch 0;
     }
 
-    // Замер andнтерпретатора
+    // [CYR:Замер] and[CYR:нтерпретатора]
     const vm_start = std.time.nanoTimestamp();
     i = 0;
     while (i < iterations) : (i += 1) {
@@ -202,7 +202,7 @@ pub fn benchmarkVMvsJIT(
     }
     const vm_end = std.time.nanoTimestamp();
 
-    // Замер JIT
+    // [CYR:Замер] JIT
     const jit_start = std.time.nanoTimestamp();
     i = 0;
     while (i < iterations) : (i += 1) {

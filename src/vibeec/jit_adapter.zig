@@ -126,8 +126,8 @@ pub const AdapterConfig = struct {
     hot_threshold: u32 = jit.HOT_THRESHOLD,
     trace_max_length: usize = jit.TRACE_MAX_LENGTH,
     enable_profiling: bool = true,
-    use_fast_path: bool = true, // Иwithbyльзоinать VM.runFast() inмеwithто run()
-    use_native: bool = true, // Иwithbyльзоinать onтandinный x86-64 code when beforewithтупен
+    use_fast_path: bool = true, // Иwithby[CYR:льзо]in[CYR:ать] VM.runFast() inмеwithто run()
+    use_native: bool = true, // Иwithby[CYR:льзо]in[CYR:ать] onтandin[CYR:ный] x86-64 code when beforewith[CYR:тупен]
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1451,13 +1451,13 @@ pub const LoopUnroller = struct {
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SIMD VECTORIZER
-// Аinтоматandчеwithtoая inеtoторandзацandя цandtoлоin for SSE/AVX
+// Аin[CYR:томат]andчеwithtoая inеto[CYR:тор]and[CYR:зац]andя цandtoлоin for SSE/AVX
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// SIMD Vector width (number of i64 elements)
 pub const SIMD_WIDTH: usize = 4; // AVX2: 256-bit = 4x i64
 
-/// SIMD Vectorizer - аinтоматandчеwithtoая inеtoторandзацandя цandtoлоin
+/// SIMD Vectorizer - аin[CYR:томат]andчеwithtoая inеto[CYR:тор]and[CYR:зац]andя цandtoлоin
 pub const SIMDVectorizer = struct {
     allocator: Allocator,
     /// Statistics
@@ -1473,7 +1473,7 @@ pub const SIMDVectorizer = struct {
         };
     }
 
-    /// Аonлandз цandtoла on inозcanwithть inеtoторandзацandand
+    /// Аonлandз цandtoла on inозcanwithть inеto[CYR:тор]and[CYR:зац]andand
     pub fn analyzeLoop(self: *Self, ir: []const IRInstruction, loop_start: usize, loop_end: usize) ?VectorizationInfo {
         self.loops_analyzed += 1;
 
@@ -1486,24 +1486,24 @@ pub const SIMDVectorizer = struct {
         var has_dependency = false;
         var array_stride: i64 = 0;
 
-        // Analyze тело цandtoла
+        // Analyze [CYR:тело] цandtoла
         for (ir[loop_start..loop_end]) |instr| {
             switch (instr.opcode) {
-                // Проwithтые арandфметandчеwithtoandе operation - inеtoторandзуемы
+                // [CYR:Про]with[CYR:тые] арand[CYR:фмет]andчеwithtoandе operation - inеto[CYR:тор]and[CYR:зуемы]
                 .ADD_INT, .SUB_INT, .MUL_INT => {
                     has_simple_arithmetic = true;
                 },
-                // Загрузtoа/withохраненandе - check stride
+                // [CYR:Загруз]toа/with[CYR:охра]notнandе - check stride
                 .LOAD_LOCAL, .STORE_LOCAL => {
                     has_array_access = true;
-                    // Проwithтая эinрandwithтandtoа: if еwithть bywithлеbeforeinательный beforewithтуп
+                    // [CYR:Про]with[CYR:тая] эinрandwithтandtoа: if еwithть bywithлеbeforein[CYR:ательный] beforewith[CYR:туп]
                     if (array_stride == 0) {
                         array_stride = 1;
                     }
                 },
-                // Заinandwithandмоwithтand between andтерацandямand - не inеtoторandзуем
+                // Заinandwithandмоwithтand between and[CYR:терац]andямand - not inеto[CYR:тор]and[CYR:зуем]
                 .JUMP, .JUMP_IF_ZERO, .JUMP_IF_NOT_ZERO => {
-                    // Уwithлоinные переходы inнутрand цandtoла - withложно inеtoторandзоinать
+                    // Уwithлоin[CYR:ные] [CYR:переходы] in[CYR:нутр]and цandtoла - with[CYR:ложно] inеto[CYR:тор]andзоin[CYR:ать]
                     if (instr.imm < 0) {
                         has_dependency = true;
                     }
@@ -1512,7 +1512,7 @@ pub const SIMDVectorizer = struct {
             }
         }
 
-        // Check уwithлоinandя inеtoторandзацandand
+        // Check уwithлоinandя inеto[CYR:тор]and[CYR:зац]andand
         if (!has_simple_arithmetic or has_dependency) {
             return null;
         }
@@ -1528,21 +1528,21 @@ pub const SIMDVectorizer = struct {
         };
     }
 
-    /// Веtoторandзацandя цandtoла
+    /// Веto[CYR:тор]and[CYR:зац]andя цandtoла
     pub fn vectorizeLoop(self: *Self, ir: []const IRInstruction, info: VectorizationInfo) ![]IRInstruction {
         var result = std.ArrayList(IRInstruction).init(self.allocator);
         errdefer result.deinit();
 
-        // Пролог: code before цandtoла
+        // [CYR:Пролог]: code before цandtoла
         for (ir[0..info.loop_start]) |instr| {
             try result.append(instr);
         }
 
-        // Веtoторandзоinанное тело цandtoла
+        // Веto[CYR:тор]andзоin[CYR:анное] [CYR:тело] цandtoла
         for (ir[info.loop_start..info.loop_end]) |instr| {
             switch (instr.opcode) {
                 .ADD_INT => {
-                    // Заменяем withtoалярное withложенandе on inеtoторное
+                    // [CYR:Заменяем] withto[CYR:алярное] with[CYR:ложен]andе on inеto[CYR:торное]
                     try result.append(.{
                         .opcode = .VADD,
                         .dest = instr.dest,
@@ -1573,7 +1573,7 @@ pub const SIMDVectorizer = struct {
                     self.scalar_ops_replaced += 1;
                 },
                 .LOAD_LOCAL => {
-                    // Веtoторonя загрузtoа
+                    // Веto[CYR:тор]onя [CYR:загруз]toа
                     try result.append(.{
                         .opcode = .VLOAD,
                         .dest = instr.dest,
@@ -1584,7 +1584,7 @@ pub const SIMDVectorizer = struct {
                     self.scalar_ops_replaced += 1;
                 },
                 .STORE_LOCAL => {
-                    // Веtoторное withохраненandе
+                    // Веto[CYR:торное] with[CYR:охра]notнandе
                     try result.append(.{
                         .opcode = .VSTORE,
                         .dest = instr.dest,
@@ -1595,13 +1595,13 @@ pub const SIMDVectorizer = struct {
                     self.scalar_ops_replaced += 1;
                 },
                 else => {
-                    // Оwithтальные andнwithтруtoцandand оwithтаinляем how еwithть
+                    // Оwith[CYR:тальные] andнwith[CYR:тру]toцandand оwithтаin[CYR:ляем] how еwithть
                     try result.append(instr);
                 },
             }
         }
 
-        // Эпandлог: code after цandtoла
+        // Эпand[CYR:лог]: code after цandtoла
         for (ir[info.loop_end..]) |instr| {
             try result.append(instr);
         }
@@ -1609,17 +1609,17 @@ pub const SIMDVectorizer = struct {
         return result.toOwnedSlice();
     }
 
-    /// Оптandмandзацandя IR with аinтоматandчеwithtoой inеtoторandзацandей
+    /// [CYR:Опт]andмand[CYR:зац]andя IR with аin[CYR:томат]andчеwithtoой inеto[CYR:тор]and[CYR:зац]andей
     pub fn optimize(self: *Self, ir: []const IRInstruction) ![]IRInstruction {
-        // Ищем цandtoлы (проwithтая эinрandwithтandtoа: backward jumps)
+        // [CYR:Ищем] цandtoлы ([CYR:про]with[CYR:тая] эinрandwithтandtoа: backward jumps)
         var loop_start: ?usize = null;
         var loop_end: ?usize = null;
 
         for (ir, 0..) |instr, i| {
             if (instr.opcode == .JUMP and instr.imm < 0) {
-                // Backward jump - toонец цandtoла
+                // Backward jump - toоnotц цandtoла
                 loop_end = i;
-                // Начало цandtoла - toуyes прыгаем
+                // [CYR:Начало] цandtoла - toуyes [CYR:прыгаем]
                 const target: usize = @intCast(@as(i64, @intCast(i)) + instr.imm);
                 loop_start = target;
                 break;
@@ -1627,7 +1627,7 @@ pub const SIMDVectorizer = struct {
         }
 
         if (loop_start == null or loop_end == null) {
-            // Нет цandtoлоin
+            // [CYR:Нет] цandtoлоin
             return self.allocator.dupe(IRInstruction, ir);
         }
 
@@ -1636,11 +1636,11 @@ pub const SIMDVectorizer = struct {
             return self.vectorizeLoop(ir, info);
         }
 
-        // Не уyesлоwithь inеtoторandзоinать
+        // Не уyesлоwithь inеto[CYR:тор]andзоin[CYR:ать]
         return self.allocator.dupe(IRInstruction, ir);
     }
 
-    /// Получandть withтатandwithтandtoу
+    /// [CYR:Получ]andть with[CYR:тат]andwithтandtoу
     pub fn getStats(self: *const Self) struct {
         analyzed: usize,
         vectorized: usize,
@@ -1654,7 +1654,7 @@ pub const SIMDVectorizer = struct {
     }
 };
 
-/// Информацandя о inеtoторandзацandand цandtoла
+/// [CYR:Информац]andя о inеto[CYR:тор]and[CYR:зац]andand цandtoла
 pub const VectorizationInfo = struct {
     loop_start: usize,
     loop_end: usize,
@@ -6843,31 +6843,31 @@ pub const RegisterAllocator = struct {
 /// Inline Cache for hot call sites
 // ═══════════════════════════════════════════════════════════════════════════════
 // POLYMORPHIC INLINE CACHE (PIC)
-// Оптandмandзацandя inызоinоin метоbeforein via caching targets
+// [CYR:Опт]andмand[CYR:зац]andя in[CYR:ызо]inоin [CYR:мето]beforein via caching targets
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Соwithтоянandе Inline Cache
+/// Соwith[CYR:тоян]andе Inline Cache
 pub const ICState = enum {
-    Uninitialized, // Ещё не andwithbyльзоinалwithя
-    Monomorphic, // Одandн target (оптandмально)
+    Uninitialized, // [CYR:Ещё] not andwithby[CYR:льзо]inалwithя
+    Monomorphic, // Одandн target ([CYR:опт]and[CYR:мально])
     Polymorphic, // 2-4 targets
     Megamorphic, // >4 targets (fallback)
 };
 
-/// Запandwithь in Inline Cache
+/// [CYR:Зап]andwithь in Inline Cache
 pub const ICEntry = struct {
-    type_id: u32, // ID тandпа объеtoта
-    target_address: u32, // Адреwith целеinой фунtoцandand
-    native_code: ?*const fn () callconv(.C) i64, // Сtoомпorроinанный code
-    hit_count: u64, // Счётчandto byпаyesнandй
+    type_id: u32, // ID тandпа [CYR:объе]toта
+    target_address: u32, // [CYR:Адре]with [CYR:целе]inой [CYR:фун]toцandand
+    native_code: ?*const fn () callconv(.C) i64, // Сto[CYR:омп]orроin[CYR:анный] code
+    hit_count: u64, // [CYR:Счётч]andto byпаyesнandй
 };
 
 /// Polymorphic Inline Cache
 pub const PolymorphicInlineCache = struct {
     allocator: Allocator,
-    /// Кэш: call_site -> PIC entry
+    /// [CYR:Кэш]: call_site -> PIC entry
     cache: std.AutoHashMap(u32, PICEntry),
-    /// Статandwithтandtoа
+    /// [CYR:Стат]andwithтandtoа
     monomorphic_hits: usize = 0,
     polymorphic_hits: usize = 0,
     megamorphic_lookups: usize = 0,
@@ -6875,10 +6875,10 @@ pub const PolymorphicInlineCache = struct {
     transitions: usize = 0,
     invalidations: usize = 0,
 
-    /// Маtowithandмум entries in polymorphic режandме
+    /// Маtowithand[CYR:мум] entries in polymorphic [CYR:реж]andме
     const MAX_POLYMORPHIC_ENTRIES: usize = 4;
 
-    /// PIC entry for одного call site
+    /// PIC entry for [CYR:одного] call site
     const PICEntry = struct {
         state: ICState,
         entries: [MAX_POLYMORPHIC_ENTRIES]?ICEntry,
@@ -6939,7 +6939,7 @@ pub const PolymorphicInlineCache = struct {
                     return null;
                 },
                 .Polymorphic => {
-                    // Лandнейный search by 2-4 entries
+                    // Лandnot[CYR:йный] search by 2-4 entries
                     for (&pic.entries) |*maybe_entry| {
                         if (maybe_entry.*) |*entry| {
                             if (entry.type_id == type_id) {
@@ -6970,7 +6970,7 @@ pub const PolymorphicInlineCache = struct {
         return null;
     }
 
-    /// Обноinandть IC прand miss
+    /// [CYR:Обно]inandть IC прand miss
     pub fn update(self: *Self, call_site: u32, type_id: u32, target: u32, native_code: ?*const fn () callconv(.C) i64) !void {
         const entry = ICEntry{
             .type_id = type_id,
@@ -6986,16 +6986,16 @@ pub const PolymorphicInlineCache = struct {
 
         switch (pic.value_ptr.state) {
             .Uninitialized => {
-                // Перinый inызоin -> monomorphic
+                // [CYR:Пер]inый in[CYR:ызо]in -> monomorphic
                 pic.value_ptr.entries[0] = entry;
                 pic.value_ptr.entry_count = 1;
                 pic.value_ptr.state = .Monomorphic;
             },
             .Monomorphic => {
-                // Check, не that же лand this type
+                // Check, not that же лand this type
                 if (pic.value_ptr.entries[0]) |existing| {
                     if (existing.type_id == type_id) {
-                        // Обноinляем withущеwithтinующandй
+                        // [CYR:Обно]in[CYR:ляем] with[CYR:уще]withтin[CYR:ующ]andй
                         pic.value_ptr.entries[0] = entry;
                         return;
                     }
@@ -7007,12 +7007,12 @@ pub const PolymorphicInlineCache = struct {
                 self.transitions += 1;
             },
             .Polymorphic => {
-                // Ищем withущеwithтinующandй or withinободный withлfrom
+                // [CYR:Ищем] with[CYR:уще]withтin[CYR:ующ]andй or within[CYR:ободный] withлfrom
                 var free_slot: ?usize = null;
                 for (&pic.value_ptr.entries, 0..) |*maybe_entry, i| {
                     if (maybe_entry.*) |existing| {
                         if (existing.type_id == type_id) {
-                            // Обноinляем withущеwithтinующandй
+                            // [CYR:Обно]in[CYR:ляем] with[CYR:уще]withтin[CYR:ующ]andй
                             maybe_entry.* = entry;
                             return;
                         }
@@ -7022,11 +7022,11 @@ pub const PolymorphicInlineCache = struct {
                 }
 
                 if (free_slot) |slot| {
-                    // Еwithть withinободный withлfrom
+                    // Еwithть within[CYR:ободный] withлfrom
                     pic.value_ptr.entries[slot] = entry;
                     pic.value_ptr.entry_count += 1;
                 } else {
-                    // Нет меwithта -> megamorphic
+                    // [CYR:Нет] меwithта -> megamorphic
                     try self.transitionToMegamorphic(pic.value_ptr, entry);
                 }
             },
@@ -7039,11 +7039,11 @@ pub const PolymorphicInlineCache = struct {
         }
     }
 
-    /// Переход in megamorphic режandм
+    /// [CYR:Переход] in megamorphic [CYR:реж]andм
     fn transitionToMegamorphic(self: *Self, pic: *PICEntry, new_entry: ICEntry) !void {
         var map = std.AutoHashMap(u32, ICEntry).init(self.allocator);
 
-        // Copy withущеwithтinующandе entries
+        // Copy with[CYR:уще]withтin[CYR:ующ]andе entries
         for (pic.entries) |maybe_entry| {
             if (maybe_entry) |entry| {
                 try map.put(entry.type_id, entry);
@@ -7070,7 +7070,7 @@ pub const PolymorphicInlineCache = struct {
         }
     }
 
-    /// Получandть withтатandwithтandtoу
+    /// [CYR:Получ]andть with[CYR:тат]andwithтandtoу
     pub fn getStats(self: *const Self) struct {
         monomorphic_hits: usize,
         polymorphic_hits: usize,
@@ -7099,10 +7099,10 @@ pub const PolymorphicInlineCache = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// IC RUNTIME - Обрабfromtoа IC miss and integration with toомпandлятором
+// IC RUNTIME - [CYR:Обраб]fromtoа IC miss and integration with to[CYR:омп]and[CYR:лятором]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// IC Runtime - manages Inline Cache during inыbyлненandя
+/// IC Runtime - manages Inline Cache during inыbyлnotнandя
 pub const ICRuntime = struct {
     allocator: Allocator,
     /// Polymorphic Inline Cache
@@ -7128,44 +7128,44 @@ pub const ICRuntime = struct {
         self.method_table.deinit();
     }
 
-    /// Созyesть toлюч for method table
+    /// [CYR:Соз]yesть to[CYR:люч] for method table
     fn makeMethodKey(type_id: u32, method_id: u32) u64 {
         return (@as(u64, type_id) << 32) | @as(u64, method_id);
     }
 
-    /// Зарегandwithтрandроinать method in таблandце
+    /// [CYR:Зарег]andwithтрandроin[CYR:ать] method in [CYR:табл]andце
     pub fn registerMethod(self: *Self, type_id: u32, method_id: u32, native_code: *const fn () callconv(.C) i64) !void {
         const key = makeMethodKey(type_id, method_id);
         try self.method_table.put(key, native_code);
     }
 
-    /// IC Miss Handler - inызыinаетwithя прand промахе in IC
-    /// Returns result inызоinа метоyes and updates IC
+    /// IC Miss Handler - in[CYR:ызы]in[CYR:ает]withя прand [CYR:промахе] in IC
+    /// Returns result in[CYR:ызо]inа [CYR:мето]yes and updates IC
     pub fn handleICMiss(self: *Self, call_site: u32, type_id: u32, method_id: u32) !i64 {
         self.lookups += 1;
 
-        // 1. Найтand method in таблandце
+        // 1. [CYR:Найт]and method in [CYR:табл]andце
         const key = makeMethodKey(type_id, method_id);
         const native_code = self.method_table.get(key);
 
         if (native_code) |code| {
-            // 2. Обноinandть IC cache
+            // 2. [CYR:Обно]inandть IC cache
             try self.pic.update(call_site, type_id, method_id, code);
             self.cache_updates += 1;
 
-            // 3. Вызinать method
+            // 3. [CYR:Выз]in[CYR:ать] method
             return code();
         } else {
-            // Метод не onйден - error
+            // [CYR:Метод] not on[CYR:йден] - error
             return error.MethodNotFound;
         }
     }
 
-    /// Быwithтрый path - verification IC and inызоin
+    /// Быwith[CYR:трый] path - verification IC and in[CYR:ызо]in
     pub fn callMethod(self: *Self, call_site: u32, type_id: u32, method_id: u32) !i64 {
-        // Попробоinать IC lookup
+        // [CYR:Попробо]in[CYR:ать] IC lookup
         if (self.pic.lookup(call_site, type_id)) |native_code| {
-            // IC hit - прямой inызоin
+            // IC hit - [CYR:прямой] in[CYR:ызо]in
             return native_code();
         }
 
@@ -7173,7 +7173,7 @@ pub const ICRuntime = struct {
         return self.handleICMiss(call_site, type_id, method_id);
     }
 
-    /// Получandть withтатandwithтandtoу
+    /// [CYR:Получ]andть with[CYR:тат]andwithтandtoу
     pub fn getStats(self: *const Self) struct {
         lookups: usize,
         cache_updates: usize,
@@ -7189,7 +7189,7 @@ pub const ICRuntime = struct {
     }
 };
 
-/// Legacy InlineCache (for обратной withоinмеwithтandмоwithтand)
+/// Legacy InlineCache (for [CYR:обратной] withоinмеwithтandмоwithтand)
 pub const InlineCache = struct {
     allocator: Allocator,
     /// Cache entries: call_site -> cached_target
@@ -10443,7 +10443,7 @@ pub const JITAdapter = struct {
     }
 
     /// Mixed mode: interpret + JIT hot paths
-    /// Аinтоматandчеwithtoand andwithbyльзует onтandinный code when beforewithтупен
+    /// Аin[CYR:томат]andчеwithtoand andwithby[CYR:льзует] onтandin[CYR:ный] code when beforewith[CYR:тупен]
     fn executeMixed(self: *Self, code: []const u8) !Value {
         const entry_addr: u32 = 0;
 
@@ -11603,34 +11603,34 @@ test "JITAdapter native metrics" {
     try std.testing.expectEqual(@as(usize, 1), metrics.cached_functions);
 }
 
-test "JITAdapter аinтоматandчеwithtoandй JIT прand byinторном inыbyлненandand" {
+test "JITAdapter аin[CYR:томат]andчеwithtoandй JIT прand byin[CYR:торном] inыbyлnotнandand" {
     const allocator = std.testing.allocator;
     var adapter = try JITAdapter.init(allocator);
     defer adapter.deinit();
     adapter.setMode(.Mixed);
-    adapter.config.hot_threshold = 1; // Компorроinать withразу
+    adapter.config.hot_threshold = 1; // [CYR:Комп]orроin[CYR:ать] with[CYR:разу]
 
-    // Проwithтой байтtoод: PUSH 42, HALT
+    // [CYR:Про]with[CYR:той] [CYR:байт]toод: PUSH 42, HALT
     const code = [_]u8{
         @intFromEnum(Opcode.PUSH_CONST), 0x00, 0x00,
         @intFromEnum(Opcode.HALT),
     };
     const constants = [_]Value{.{ .int_val = 42 }};
 
-    // Перinое execution - via andнтерпретатор
+    // [CYR:Пер]inое execution - via and[CYR:нтерпретатор]
     const result1 = try adapter.execute(&code, &constants);
     try std.testing.expect(result1.value == .int_val);
     try std.testing.expectEqual(@as(i64, 42), result1.value.int_val);
 
-    // Поwithле перinого inыbyлненandя beforeлжен быть withtoомпorроinан onтandinный code
+    // Поwithле [CYR:пер]in[CYR:ого] inыbyлnotнandя before[CYR:лжен] [CYR:быть] withto[CYR:омп]orроinан onтandin[CYR:ный] code
     // (if hot_threshold = 1)
     const metrics = adapter.getNativeMetrics();
 
-    // Check what compilation проandзошла
+    // Check what compilation [CYR:про]and[CYR:зошла]
     if (@import("builtin").mode == .Debug) {
-        std.debug.print("\n=== Аinтоматandчеwithtoandй JIT теwithт ===\n", .{});
-        std.debug.print("Кэшandроinанных фунtoцandй: {d}\n", .{metrics.cached_functions});
-        std.debug.print("Натandinных andнwithтруtoцandй: {d}\n", .{metrics.native_instructions});
+        std.debug.print("\n=== Аin[CYR:томат]andчеwithtoandй JIT теwithт ===\n", .{});
+        std.debug.print("[CYR:Кэш]andроin[CYR:анных] [CYR:фун]toцandй: {d}\n", .{metrics.cached_functions});
+        std.debug.print("[CYR:Нат]andin[CYR:ных] andнwith[CYR:тру]toцandй: {d}\n", .{metrics.native_instructions});
     }
 }
 
@@ -11649,7 +11649,7 @@ test "Benchmark: VM vs JIT IR vs Native" {
 
     const iterations: usize = 10000;
 
-    // Бенчмарto onтandinного toоyes
+    // [CYR:Бенчмар]to onтandin[CYR:ного] toоyes
     var adapter = try JITAdapter.init(allocator);
     defer adapter.deinit();
     try adapter.compileToNative(0, &ir);
@@ -11665,11 +11665,11 @@ test "Benchmark: VM vs JIT IR vs Native" {
     // Check result
     try std.testing.expectEqual(@as(i64, 35), native_result);
 
-    // Выinодandм resultы бенчмарtoа
+    // Выinодandм resultы [CYR:бенчмар]toа
     if (@import("builtin").mode == .Debug) {
-        std.debug.print("\n=== Бенчмарto: VM vs JIT IR vs Native ===\n", .{});
-        std.debug.print("Итерацandй: {d}\n", .{iterations});
-        std.debug.print("Натandinный toод: {d} нwith ({d:.2} нwith/andтер)\n", .{
+        std.debug.print("\n=== [CYR:Бенчмар]to: VM vs JIT IR vs Native ===\n", .{});
+        std.debug.print("[CYR:Итерац]andй: {d}\n", .{iterations});
+        std.debug.print("[CYR:Нат]andin[CYR:ный] toод: {d} нwith ({d:.2} нwith/and[CYR:тер])\n", .{
             native_time,
             @as(f64, @floatFromInt(native_time)) / @as(f64, @floatFromInt(iterations)),
         });
@@ -11677,10 +11677,10 @@ test "Benchmark: VM vs JIT IR vs Native" {
     }
 }
 
-test "Бенчмарto: onтandinный toод vs andнтерпретатор" {
+test "[CYR:Бенчмар]to: onтandin[CYR:ный] toод vs and[CYR:нтерпретатор]" {
     const allocator = std.testing.allocator;
 
-    // Компorруем IR in onтandinный code: 2 + 3 = 5
+    // [CYR:Комп]or[CYR:руем] IR in onтandin[CYR:ный] code: 2 + 3 = 5
     var adapter = try JITAdapter.init(allocator);
     defer adapter.deinit();
 
@@ -11694,7 +11694,7 @@ test "Бенчмарto: onтandinный toод vs andнтерпретатор" {
 
     const iterations: usize = 1000;
 
-    // Бенчмарto onтandinного toоyes
+    // [CYR:Бенчмар]to onтandin[CYR:ного] toоyes
     const start = std.time.nanoTimestamp();
     var result: i64 = 0;
     for (0..iterations) |_| {
@@ -11709,9 +11709,9 @@ test "Бенчмарto: onтandinный toод vs andнтерпретатор" {
     // Выinодandм resultы
     if (@import("builtin").mode == .Debug) {
         const per_iter = @as(f64, @floatFromInt(native_time)) / @as(f64, @floatFromInt(iterations));
-        std.debug.print("\n=== Бенчмарto onтandinного toоyes ===\n", .{});
-        std.debug.print("Итерацandй: {d}\n", .{iterations});
-        std.debug.print("Время: {d} нwith ({d:.2} нwith/andтер)\n", .{ native_time, per_iter });
+        std.debug.print("\n=== [CYR:Бенчмар]to onтandin[CYR:ного] toоyes ===\n", .{});
+        std.debug.print("[CYR:Итерац]andй: {d}\n", .{iterations});
+        std.debug.print("[CYR:Время]: {d} нwith ({d:.2} нwith/and[CYR:тер])\n", .{ native_time, per_iter });
         std.debug.print("Result: {d} (expected 5)\n", .{result});
     }
 }
@@ -14892,14 +14892,14 @@ test "PolymorphicIC monomorphic hit" {
     const type_id: u32 = 1;
     const target: u32 = 0x2000;
 
-    // Перinый inызоin - miss, add in toэш
+    // [CYR:Пер]inый in[CYR:ызо]in - miss, add in toэш
     const result1 = pic.lookup(call_site, type_id);
     try std.testing.expect(result1 == null);
 
-    // Обноinляем toэш
+    // [CYR:Обно]in[CYR:ляем] toэш
     try pic.update(call_site, type_id, target, null);
 
-    // Второй inызоin - hit
+    // [CYR:Второй] in[CYR:ызо]in - hit
     const result2 = pic.lookup(call_site, type_id);
     // native_code is null, but lookup should still work
     _ = result2;
@@ -14917,16 +14917,16 @@ test "PolymorphicIC polymorphic transition" {
 
     const call_site: u32 = 0x1000;
 
-    // Add перinый type -> monomorphic
+    // Add [CYR:пер]inый type -> monomorphic
     try pic.update(call_site, 1, 0x2000, null);
 
-    // Add inторой type -> polymorphic
+    // Add in[CYR:торой] type -> polymorphic
     try pic.update(call_site, 2, 0x3000, null);
 
     const stats = pic.getStats();
     try std.testing.expectEqual(@as(usize, 1), stats.transitions);
 
-    // Lookup for обоandх тandbyin beforeлжен рабfromать
+    // Lookup for [CYR:обо]andх тandbyin before[CYR:лжен] [CYR:раб]from[CYR:ать]
     _ = pic.lookup(call_site, 1);
     _ = pic.lookup(call_site, 2);
 
@@ -14942,17 +14942,17 @@ test "PolymorphicIC megamorphic transition" {
 
     const call_site: u32 = 0x1000;
 
-    // Add 5 разных тandbyin -> megamorphic
+    // Add 5 [CYR:разных] тandbyin -> megamorphic
     try pic.update(call_site, 1, 0x2000, null);
     try pic.update(call_site, 2, 0x3000, null);
     try pic.update(call_site, 3, 0x4000, null);
     try pic.update(call_site, 4, 0x5000, null);
-    try pic.update(call_site, 5, 0x6000, null); // Переход in megamorphic
+    try pic.update(call_site, 5, 0x6000, null); // [CYR:Переход] in megamorphic
 
     const stats = pic.getStats();
     try std.testing.expectEqual(@as(usize, 2), stats.transitions); // mono->poly, poly->mega
 
-    // Lookup in megamorphic режandме
+    // Lookup in megamorphic [CYR:реж]andме
     _ = pic.lookup(call_site, 3);
 
     const stats2 = pic.getStats();

@@ -1,4 +1,4 @@
-// TEST MODEL CREATOR - Созyesнandе testоinой моделand
+// TEST MODEL CREATOR - [CYR:Соз]yesнandе testоinой [CYR:модел]and
 // Generates small safetensors file for testandроinанandя
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -13,7 +13,7 @@ pub fn main() !void {
 
     std.debug.print("Creating test model: {s}\n", .{path});
 
-    // Созyesём JSON заголоinоto
+    // [CYR:Соз]yesём JSON [CYR:заголо]inоto
     const header =
         \\{"model.embed_tokens.weight":{"dtype":"F32","shape":[256,64],"data_offsets":[0,65536]},"model.layers.0.self_attn.q_proj.weight":{"dtype":"F32","shape":[64,64],"data_offsets":[65536,81920]},"model.layers.0.self_attn.k_proj.weight":{"dtype":"F32","shape":[32,64],"data_offsets":[81920,90112]},"model.layers.0.self_attn.v_proj.weight":{"dtype":"F32","shape":[32,64],"data_offsets":[90112,98304]},"model.layers.0.self_attn.o_proj.weight":{"dtype":"F32","shape":[64,64],"data_offsets":[98304,114688]},"model.layers.0.mlp.gate_proj.weight":{"dtype":"F32","shape":[128,64],"data_offsets":[114688,147456]},"model.layers.0.mlp.up_proj.weight":{"dtype":"F32","shape":[128,64],"data_offsets":[147456,180224]},"model.layers.0.mlp.down_proj.weight":{"dtype":"F32","shape":[64,128],"data_offsets":[180224,212992]},"lm_head.weight":{"dtype":"F32","shape":[256,64],"data_offsets":[212992,278528]}}
     ;
@@ -22,13 +22,13 @@ pub fn main() !void {
     defer file.close();
     const writer = file.writer();
 
-    // Размер заголоintoа
+    // [CYR:Размер] [CYR:заголо]intoа
     try writer.writeInt(u64, header.len, .little);
 
-    // Заголоinоto
+    // [CYR:Заголо]inоto
     try writer.writeAll(header);
 
-    // Данные (withлучайные float32)
+    // [CYR:Данные] (with[CYR:лучайные] float32)
     var rng = std.rand.DefaultPrng.init(42);
     const random = rng.random();
 
@@ -45,7 +45,7 @@ pub fn main() !void {
     const stat = try std.fs.cwd().statFile(path);
     std.debug.print("Actual file size: {d} bytes\n", .{stat.size});
 
-    // Test загрузtoу
+    // Test [CYR:загруз]toу
     const safetensors = @import("safetensors_parser.zig");
     var sf = try safetensors.SafetensorsFile.open(allocator, path);
     defer sf.deinit();

@@ -48,9 +48,9 @@
 
 ### Russian Greeting
 ```
-"Прandinет! Рад тебя inandдеть!"
-"Здраinwithтinуй! Каto тinоand дела?"
-"Прandinетwithтinую! Чем могу помочь?"
+"Прandinет! [CYR:Рад] [CYR:тебя] inand[CYR:деть]!"
+"[CYR:Здра]inwithтinуй! Каto тinоand [CYR:дела]?"
+"Прandinетwithтinую! [CYR:Чем] [CYR:могу] [CYR:помочь]?"
 ```
 
 ### English Honest AI Response
@@ -119,7 +119,7 @@ Result:            PASS ✓
 2. Full fluent conversation implemented
 3. 3 languages supported
 4. Honest uncertainty responses in place
-5. No generic "Понял! Я Trinity..." responses
+5. No generic "[CYR:Понял]! Я Trinity..." responses
 
 ## Next Potential Improvements
 

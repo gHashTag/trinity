@@ -1,5 +1,5 @@
 // VIBEE BOGATYR - Spec Structure Validator
-// Checks withтруtoтуру .vibee withпецandфandtoацandand
+// Checks with[CYR:тру]to[CYR:туру] .vibee with[CYR:пец]andфandtoацandand
 // φ² + 1/φ² = 3 | PHOENIX = 999
 
 const std = @import("std");
@@ -36,23 +36,23 @@ fn validateSpecStructure(ctx: *const common.ValidationContext) !common.BogatyrRe
 
         checks += 1;
 
-        // Check обязательные keys
+        // Check [CYR:обязательные] keys
         if (std.mem.indexOfScalar(u8, trimmed, ':')) |colon_idx| {
             const key = std.mem.trim(u8, trimmed[0..colon_idx], " ");
 
-            // Check what keys прandwithутwithтinуют
+            // Check what keys прandwithутwithтin[CYR:уют]
             if (std.mem.eql(u8, key, "name") or
                 std.mem.eql(u8, key, "version") or
                 std.mem.eql(u8, key, "language") or
                 std.mem.eql(u8, key, "module") or
                 std.mem.eql(u8, key, "output"))
             {
-                // Ключ onйден
+                // [CYR:Ключ] on[CYR:йден]
             }
         }
     }
 
-    // Check onлandчandе обязательных byлей
+    // Check onлandчandе [CYR:обязательных] by[CYR:лей]
     var has_name = false;
     var has_version = false;
     var has_language = false;
@@ -77,7 +77,7 @@ fn validateSpecStructure(ctx: *const common.ValidationContext) !common.BogatyrRe
         }
     }
 
-    // Отчет об ошandбtoах
+    // [CYR:Отчет] об ошandбtoах
     if (!has_name) {
         try errors.append(try common.createError(allocator, "missing_name", "Missing required 'name' field", 1, 0));
     }

@@ -15,10 +15,10 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// КОНСТАНТЫ
+// [CYR:КОНСТАНТЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Базоinые φ-toонwithтанты (Sacred Formula)
+// [CYR:Базо]inые φ-toонwith[CYR:танты] (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -30,7 +30,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ПАМЯТЬ ДЛЯ WASM
+// [CYR:ПАМЯТЬ] [CYR:ДЛЯ] WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -80,13 +80,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-andнтерполяцandя
+/// φ-and[CYR:нтер]fieldsцandя
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// Генерацandя φ-withпandралand
+/// Геnot[CYR:рац]andя φ-withпand[CYR:рал]and
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -196,7 +196,7 @@ pub fn explain_complex_code() !void {
 /// 
 /// When: 
 /// Then: 
-pub fn "Аinтодополненandе фунtoцandand"() !void {
+pub fn "Аin[CYR:тодопол]notнandе [CYR:фун]toцandand"() !void {
 // TODO: implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
@@ -205,7 +205,7 @@ pub fn "Аinтодополненandе фунtoцandand"() !void {
 /// 
 /// When: 
 /// Then: 
-pub fn "Рефаtoторandнг in V2 withandнтаtowithandwith"() !void {
+pub fn "[CYR:Рефа]to[CYR:тор]andнг in V2 withand[CYR:нта]towithandwith"() !void {
 // TODO: implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
@@ -214,7 +214,7 @@ pub fn "Рефаtoторandнг in V2 withandнтаtowithandwith"() !void {
 /// 
 /// When: 
 /// Then: 
-pub fn "Иwithпраinленandе ошandбtoand"() !void {
+pub fn "Иwith[CYR:пра]in[CYR:лен]andе ошandбtoand"() !void {
 // TODO: implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
@@ -296,28 +296,28 @@ test "explain_complex_code_behavior" {
 _ = explain_complex_code;
 }
 
-test ""Аinтодополненandе фунtoцandand"_behavior" {
+test ""Аin[CYR:тодопол]notнandе [CYR:фун]toцandand"_behavior" {
 // Given: 
 // When: 
 // Then: 
-// Test "Аinтодополненandе фунtoцandand": verify behavior is callable (compile-time check)
-_ = "Аinтодополненandе фунtoцandand";
+// Test "Аin[CYR:тодопол]notнandе [CYR:фун]toцandand": verify behavior is callable (compile-time check)
+_ = "Аin[CYR:тодопол]notнandе [CYR:фун]toцandand";
 }
 
-test ""Рефаtoторandнг in V2 withandнтаtowithandwith"_behavior" {
+test ""[CYR:Рефа]to[CYR:тор]andнг in V2 withand[CYR:нта]towithandwith"_behavior" {
 // Given: 
 // When: 
 // Then: 
-// Test "Рефаtoторandнг in V2 withandнтаtowithandwith": verify behavior is callable (compile-time check)
-_ = "Рефаtoторandнг in V2 withandнтаtowithandwith";
+// Test "[CYR:Рефа]to[CYR:тор]andнг in V2 withand[CYR:нта]towithandwith": verify behavior is callable (compile-time check)
+_ = "[CYR:Рефа]to[CYR:тор]andнг in V2 withand[CYR:нта]towithandwith";
 }
 
-test ""Иwithпраinленandе ошandбtoand"_behavior" {
+test ""Иwith[CYR:пра]in[CYR:лен]andе ошandбtoand"_behavior" {
 // Given: 
 // When: 
 // Then: 
-// Test "Иwithпраinленandе ошandбtoand": verify behavior is callable (compile-time check)
-_ = "Иwithпраinленandе ошandбtoand";
+// Test "Иwith[CYR:пра]in[CYR:лен]andе ошandбtoand": verify behavior is callable (compile-time check)
+_ = "Иwith[CYR:пра]in[CYR:лен]andе ошandбtoand";
 }
 
 test "phi_constants" {

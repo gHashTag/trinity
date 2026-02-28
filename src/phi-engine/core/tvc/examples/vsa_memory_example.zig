@@ -1,7 +1,7 @@
 // VSA Associative Memory Example
-// Демонwithтрацandя andwithbyльзоinанandя VSA for аwithwithоцandатandinной памятand
+// [CYR:Демон]with[CYR:трац]andя andwithby[CYR:льзо]inанandя VSA for аwithwithоцandатandin[CYR:ной] [CYR:памят]and
 //
-// Запуwithto: zig run vsa_memory_example.zig
+// [CYR:Запу]withto: zig run vsa_memory_example.zig
 
 const std = @import("std");
 const tvc_vsa = @import("../tvc_vsa.zig");
@@ -14,12 +14,12 @@ pub fn main() !void {
     std.debug.print("╚══════════════════════════════════════════════════════════════╝\n\n", .{});
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // 1. Созyesём withлоinарь toонцептоin (withлучайные inеtoторы)
+    // 1. [CYR:Соз]yesём withлоin[CYR:арь] to[CYR:онцепто]in (with[CYR:лучайные] inеto[CYR:торы])
     // ═══════════════════════════════════════════════════════════════════════════
 
-    std.debug.print("1. Созyesнandе withлоinаря toонцептоin...\n", .{});
+    std.debug.print("1. [CYR:Соз]yesнandе withлоin[CYR:аря] to[CYR:онцепто]in...\n", .{});
 
-    // Объеtoты
+    // [CYR:Объе]toты
     var apple = tvc_vsa.randomVector(256, 1001);
     var banana = tvc_vsa.randomVector(256, 1002);
     var car = tvc_vsa.randomVector(256, 1003);
@@ -29,100 +29,100 @@ pub fn main() !void {
     var yellow = tvc_vsa.randomVector(256, 2002);
     var fast = tvc_vsa.randomVector(256, 2003);
 
-    std.debug.print("   Объеtoты: apple, banana, car\n", .{});
+    std.debug.print("   [CYR:Объе]toты: apple, banana, car\n", .{});
     std.debug.print("   Сinойwithтinа: red, yellow, fast\n\n", .{});
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // 2. Созyesём аwithwithоцandацandand via bind
+    // 2. [CYR:Соз]yesём аwithwithоцandацandand via bind
     // ═══════════════════════════════════════════════════════════════════════════
 
-    std.debug.print("2. Созyesнandе аwithwithоцandацandй (bind)...\n", .{});
+    std.debug.print("2. [CYR:Соз]yesнandе аwithwithоцandацandй (bind)...\n", .{});
 
-    // apple + red = "toраwithное яблоtoо"
+    // apple + red = "toраwith[CYR:ное] [CYR:ябло]toо"
     var red_apple = tvc_vsa.bind(&apple, &red);
     std.debug.print("   red_apple = bind(apple, red)\n", .{});
 
-    // banana + yellow = "жёлтый баonн"
+    // banana + yellow = "[CYR:жёлтый] баonн"
     var yellow_banana = tvc_vsa.bind(&banana, &yellow);
     std.debug.print("   yellow_banana = bind(banana, yellow)\n", .{});
 
-    // car + fast = "fast машandon"
+    // car + fast = "fast [CYR:маш]andon"
     var fast_car = tvc_vsa.bind(&car, &fast);
     std.debug.print("   fast_car = bind(car, fast)\n\n", .{});
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // 3. Объедandняем in memory via bundle
+    // 3. [CYR:Объед]and[CYR:няем] in memory via bundle
     // ═══════════════════════════════════════════════════════════════════════════
 
-    std.debug.print("3. Созyesнandе памятand (bundle)...\n", .{});
+    std.debug.print("3. [CYR:Соз]yesнandе [CYR:памят]and (bundle)...\n", .{});
 
-    // Объедandняем all аwithwithоцandацandand in одну memory
+    // [CYR:Объед]and[CYR:няем] all аwithwithоцandацandand in [CYR:одну] memory
     var temp = tvc_vsa.bundle2(&red_apple, &yellow_banana);
     var memory = tvc_vsa.bundle3(&temp, &fast_car, &temp);
 
     std.debug.print("   memory = bundle(red_apple, yellow_banana, fast_car)\n\n", .{});
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // 4. Запроwithы to памятand
+    // 4. [CYR:Запро]withы to [CYR:памят]and
     // ═══════════════════════════════════════════════════════════════════════════
 
-    std.debug.print("4. Запроwithы to памятand...\n\n", .{});
+    std.debug.print("4. [CYR:Запро]withы to [CYR:памят]and...\n\n", .{});
 
-    // Запроwith: "Что toраwithное?" (unbind with red)
-    std.debug.print("   Запроwith: 'Что toраwithное?'\n", .{});
+    // [CYR:Запро]with: "[CYR:Что] toраwith[CYR:ное]?" (unbind with red)
+    std.debug.print("   [CYR:Запро]with: '[CYR:Что] toраwith[CYR:ное]?'\n", .{});
     var query_red = tvc_vsa.bind(&memory, &red);
 
     const sim_apple_red = tvc_vsa.cosineSimilarity(&query_red, &apple);
     const sim_banana_red = tvc_vsa.cosineSimilarity(&query_red, &banana);
     const sim_car_red = tvc_vsa.cosineSimilarity(&query_red, &car);
 
-    std.debug.print("   Сходwithтinо with apple:  {d:.4}\n", .{sim_apple_red});
-    std.debug.print("   Сходwithтinо with banana: {d:.4}\n", .{sim_banana_red});
-    std.debug.print("   Сходwithтinо with car:    {d:.4}\n", .{sim_car_red});
-    std.debug.print("   Отinет: apple (маtowithandмальное withходwithтinо)\n\n", .{});
+    std.debug.print("   [CYR:Сход]withтinо with apple:  {d:.4}\n", .{sim_apple_red});
+    std.debug.print("   [CYR:Сход]withтinо with banana: {d:.4}\n", .{sim_banana_red});
+    std.debug.print("   [CYR:Сход]withтinо with car:    {d:.4}\n", .{sim_car_red});
+    std.debug.print("   Отinет: apple (маtowithand[CYR:мальное] with[CYR:ход]withтinо)\n\n", .{});
 
-    // Запроwith: "Что жёлтое?" (unbind with yellow)
-    std.debug.print("   Запроwith: 'Что жёлтое?'\n", .{});
+    // [CYR:Запро]with: "[CYR:Что] [CYR:жёлтое]?" (unbind with yellow)
+    std.debug.print("   [CYR:Запро]with: '[CYR:Что] [CYR:жёлтое]?'\n", .{});
     var query_yellow = tvc_vsa.bind(&memory, &yellow);
 
     const sim_apple_yellow = tvc_vsa.cosineSimilarity(&query_yellow, &apple);
     const sim_banana_yellow = tvc_vsa.cosineSimilarity(&query_yellow, &banana);
     const sim_car_yellow = tvc_vsa.cosineSimilarity(&query_yellow, &car);
 
-    std.debug.print("   Сходwithтinо with apple:  {d:.4}\n", .{sim_apple_yellow});
-    std.debug.print("   Сходwithтinо with banana: {d:.4}\n", .{sim_banana_yellow});
-    std.debug.print("   Сходwithтinо with car:    {d:.4}\n", .{sim_car_yellow});
-    std.debug.print("   Отinет: banana (маtowithandмальное withходwithтinо)\n\n", .{});
+    std.debug.print("   [CYR:Сход]withтinо with apple:  {d:.4}\n", .{sim_apple_yellow});
+    std.debug.print("   [CYR:Сход]withтinо with banana: {d:.4}\n", .{sim_banana_yellow});
+    std.debug.print("   [CYR:Сход]withтinо with car:    {d:.4}\n", .{sim_car_yellow});
+    std.debug.print("   Отinет: banana (маtowithand[CYR:мальное] with[CYR:ход]withтinо)\n\n", .{});
 
-    // Запроwith: "Каtoое property у яблоtoа?" (unbind with apple)
-    std.debug.print("   Запроwith: 'Каtoое withinойwithтinо у яблоtoа?'\n", .{});
+    // [CYR:Запро]with: "Каtoое property у [CYR:ябло]toа?" (unbind with apple)
+    std.debug.print("   [CYR:Запро]with: 'Каtoое withinойwithтinо у [CYR:ябло]toа?'\n", .{});
     var query_apple = tvc_vsa.bind(&memory, &apple);
 
     const sim_red_apple = tvc_vsa.cosineSimilarity(&query_apple, &red);
     const sim_yellow_apple = tvc_vsa.cosineSimilarity(&query_apple, &yellow);
     const sim_fast_apple = tvc_vsa.cosineSimilarity(&query_apple, &fast);
 
-    std.debug.print("   Сходwithтinо with red:    {d:.4}\n", .{sim_red_apple});
-    std.debug.print("   Сходwithтinо with yellow: {d:.4}\n", .{sim_yellow_apple});
-    std.debug.print("   Сходwithтinо with fast:   {d:.4}\n", .{sim_fast_apple});
-    std.debug.print("   Отinет: red (маtowithandмальное withходwithтinо)\n\n", .{});
+    std.debug.print("   [CYR:Сход]withтinо with red:    {d:.4}\n", .{sim_red_apple});
+    std.debug.print("   [CYR:Сход]withтinо with yellow: {d:.4}\n", .{sim_yellow_apple});
+    std.debug.print("   [CYR:Сход]withтinо with fast:   {d:.4}\n", .{sim_fast_apple});
+    std.debug.print("   Отinет: red (маtowithand[CYR:мальное] with[CYR:ход]withтinо)\n\n", .{});
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // 5. Статandwithтandtoа памятand
+    // 5. [CYR:Стат]andwithтandtoа [CYR:памят]and
     // ═══════════════════════════════════════════════════════════════════════════
 
-    std.debug.print("5. Статandwithтandtoа памятand...\n", .{});
+    std.debug.print("5. [CYR:Стат]andwithтandtoа [CYR:памят]and...\n", .{});
 
     memory.pack();
     const mem_bytes = memory.memoryUsage();
     const unpacked_bytes = memory.trit_len;
 
-    std.debug.print("   Размер inеtoтора: {} трandтоin\n", .{memory.trit_len});
-    std.debug.print("   Memory (packed): {} байт\n", .{mem_bytes});
-    std.debug.print("   Memory (unpacked): {} байт\n", .{unpacked_bytes});
-    std.debug.print("   Эtoономandя: {d:.1}x\n\n", .{@as(f64, @floatFromInt(unpacked_bytes)) / @as(f64, @floatFromInt(mem_bytes))});
+    std.debug.print("   [CYR:Размер] inеto[CYR:тора]: {} трandтоin\n", .{memory.trit_len});
+    std.debug.print("   Memory (packed): {} [CYR:байт]\n", .{mem_bytes});
+    std.debug.print("   Memory (unpacked): {} [CYR:байт]\n", .{unpacked_bytes});
+    std.debug.print("   Эto[CYR:оном]andя: {d:.1}x\n\n", .{@as(f64, @floatFromInt(unpacked_bytes)) / @as(f64, @floatFromInt(mem_bytes))});
 
     std.debug.print("╔══════════════════════════════════════════════════════════════╗\n", .{});
-    std.debug.print("║                    Прandмер заinершён                           ║\n", .{});
+    std.debug.print("║                    Прand[CYR:мер] заin[CYR:ершён]                           ║\n", .{});
     std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 }

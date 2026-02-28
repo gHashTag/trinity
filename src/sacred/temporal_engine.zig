@@ -13,30 +13,30 @@ const std = @import("std");
 const sacred = @import("const");
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TEMPORAL ENGINE CORE — ДВИГАТЕЛЬ ВРЕМЕНИ ОПЕРАЦИОННОЙ СИСТЕМЫ
+// TEMPORAL ENGINE CORE — [CYR:ДВИГАТЕЛЬ] [CYR:ВРЕМЕНИ] [CYR:ОПЕРАЦИОННОЙ] [CYR:СИСТЕМЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Temporal Engine State — withердце inременand in TRINITY OS
+/// Temporal Engine State — with[CYR:ердце] in[CYR:ремен]and in TRINITY OS
 pub const TemporalEngine = struct {
-    /// Теtoущandй момент inременand in withandwithтеме (не Unix timestamp!)
+    /// Теtoущandй [CYR:момент] in[CYR:ремен]and in withandwith[CYR:теме] (not Unix timestamp!)
     current_moment: TemporalMoment,
 
-    /// Стрела inременand (inwithегyes уtoазыinает inперёд)
+    /// [CYR:Стрела] in[CYR:ремен]and (inwithегyes уto[CYR:азы]in[CYR:ает] in[CYR:перёд])
     time_arrow: TimeArrow,
 
-    /// Цandtoл inечного inозinращенandя
+    /// Цandtoл in[CYR:ечного] inозin[CYR:ращен]andя
     eternal_cycle: EternalCycle,
 
-    /// Планtoоinwithtoandй toinант inременand
+    /// [CYR:План]toоinwithtoandй toin[CYR:ант] in[CYR:ремен]and
     planck_quantum: PlanckQuantum,
 
-    /// Статandwithтandtoа аwithandмметрandand inременand
+    /// [CYR:Стат]andwithтandtoа аwithand[CYR:мметр]andand in[CYR:ремен]and
     asymmetry_stats: AsymmetryStats,
 
-    /// Allocator for дandonмandчеwithtoой памятand
+    /// Allocator for дandonмandчеwithtoой [CYR:памят]and
     allocator: std.mem.Allocator,
 
-    /// Инandцandалandзandроinать Temporal Engine
+    /// Инandцandалandзandроin[CYR:ать] Temporal Engine
     pub fn init(allocator: std.mem.Allocator) !TemporalEngine {
         var engine = TemporalEngine{
             .current_moment = TemporalMoment.init(),
@@ -47,22 +47,22 @@ pub const TemporalEngine = struct {
             .allocator = allocator,
         };
 
-        // Запуwithтandть inечный monitoring in рandтме φ
+        // [CYR:Запу]withтandть in[CYR:ечный] monitoring in рand[CYR:тме] φ
         try engine.startEternalMonitoring();
 
         return engine;
     }
 
-    /// Запуwithтandть inечный monitoring (φ-second intervals)
+    /// [CYR:Запу]withтandть in[CYR:ечный] monitoring (φ-second intervals)
     fn startEternalMonitoring(self: *TemporalEngine) !void {
         const PHI_MS = @as(u64, @intFromFloat(sacred.math.PHI * 1000)); // 1618ms
 
-        // В демо-режandме проwithто заbyмandonем andнтерinал
+        // В demo-[CYR:реж]andме [CYR:про]withто заbyмandonем and[CYR:нтер]inал
         _ = PHI_MS;
         _ = self;
 
-        // В production: запуwithтandть фоноinый thread монandторandнга
-        // Каждые φ withеtoунд проinерять баланwith inременand
+        // В production: [CYR:запу]withтandть [CYR:фоно]inый thread [CYR:мон]and[CYR:тор]and[CYR:нга]
+        // [CYR:Каждые] φ withеto[CYR:унд] [CYR:про]in[CYR:ерять] [CYR:балан]with in[CYR:ремен]and
         std.debug.print(
             \\╔════════════════════════════════════════════════════════════════╗
             \\║        TEMPORAL ENGINE v1.0 — ETERNAL MONITORING ACTIVE          ║
@@ -72,41 +72,41 @@ pub const TemporalEngine = struct {
         , .{@as(u64, @intFromFloat(sacred.math.PHI * 1000))});
     }
 
-    /// Получandть теtoущandй момент inременand (in троandчном формате)
+    /// [CYR:Получ]andть теtoущandй [CYR:момент] in[CYR:ремен]and (in [CYR:тро]and[CYR:чном] [CYR:формате])
     pub fn getMoment(self: *const TemporalEngine) TemporalMoment {
         return self.current_moment;
     }
 
-    /// Вычandwithлandть withтрелу inременand (byчему inремя течёт inперёд)
+    /// [CYR:Выч]andwithлandть with[CYR:трелу] in[CYR:ремен]and (by[CYR:чему] in[CYR:ремя] [CYR:течёт] in[CYR:перёд])
     pub fn computeTimeArrow(_: *const TemporalEngine) f64 {
         const phi_sq = sacred.math.PHI_SQ;
         const inv_phi_sq = sacred.math.PHI_INV_SQ;
-        // φ⁴ = 6.854... — creation withandльнее разрушенandя
+        // φ⁴ = 6.854... — creation withandльnotе [CYR:разрушен]andя
         return phi_sq * phi_sq / (inv_phi_sq * inv_phi_sq);
     }
 
-    /// Проinерandть баланwith inремён (beforeлжен быть = 3)
+    /// [CYR:Про]inерandть [CYR:балан]with in[CYR:ремён] (before[CYR:лжен] [CYR:быть] = 3)
     pub fn verifyTemporalBalance(_: *const TemporalEngine) bool {
         const balance = sacred.math.PHI_SQ + sacred.math.PHI_INV_SQ;
         return @abs(balance - 3.0) < 1e-14;
     }
 
-    /// Вечное inозinращенandе (π × 3)
+    /// [CYR:Вечное] inозin[CYR:ращен]andе (π × 3)
     pub fn eternalReturn(_: *const TemporalEngine) f64 {
         return sacred.math.PI * 3.0;
     }
 
-    /// Уwithtoоренandе inременand (T(n+1) = T(n) / φ)
+    /// Уwithto[CYR:орен]andе in[CYR:ремен]and (T(n+1) = T(n) / φ)
     pub fn timeAcceleration(_: *TemporalEngine, t_n: f64) f64 {
         return t_n / sacred.math.PHI;
     }
 
-    /// Предwithtoазать Hubble constant andз φ-аwithandмметрandand
+    /// [CYR:Пред]withto[CYR:азать] Hubble constant andз φ-аwithand[CYR:мметр]andand
     pub fn predictHubble(_: *const TemporalEngine) f64 {
         return sacred.cosmology.HUBBLE_PREDICTED; // 70.74 km/s/Mpc
     }
 
-    /// Получandть Планtoоinwithtoое inремя (toinант inременand)
+    /// [CYR:Получ]andть [CYR:План]toоinwithtoое in[CYR:ремя] (toin[CYR:ант] in[CYR:ремен]and)
     pub fn getPlanckTime(_: *const TemporalEngine) f64 {
         return sacred.physics.PLANCK_TIME;
     }
@@ -116,10 +116,10 @@ pub const TemporalEngine = struct {
         return .{ sacred.cosmology.OMEGA_MATTER, sacred.cosmology.OMEGA_LAMBDA };
     }
 
-    /// Shutdown temporal engine (onexample, перед poweroff)
+    /// Shutdown temporal engine (onexample, [CYR:перед] poweroff)
     pub fn deinit(self: *TemporalEngine) void {
         _ = self;
-        // В production: оwithтаноinandть monitoring, оwithinободandть реwithурwithы
+        // В production: оwith[CYR:тано]inandть monitoring, оwithin[CYR:обод]andть реwithурwithы
     }
 };
 
@@ -127,25 +127,25 @@ pub const TemporalEngine = struct {
 // TEMPORAL DATA STRUCTURES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Теtoущandй момент inременand (не Unix timestamp!)
+/// Теtoущandй [CYR:момент] in[CYR:ремен]and (not Unix timestamp!)
 pub const TemporalMoment = struct {
-    /// Аwithпеtoт момента: PAST (-1), PRESENT (0), FUTURE (+1)
+    /// Аwithпеtoт [CYR:момента]: PAST (-1), PRESENT (0), FUTURE (+1)
     aspect: TemporalAspect,
 
-    /// Веwith аwithпеtoта in φ-едandнandцах
+    /// Веwith аwithпеtoта in φ-едandнand[CYR:цах]
     phi_weight: f64,
 
-    /// Троandчное предwithтаinленandе момента
+    /// [CYR:Тро]and[CYR:чное] [CYR:пред]withтаin[CYR:лен]andе [CYR:момента]
     trit: i2,
 
-    /// Внутреннandй withчётчandto таtoтоin inременand
+    /// [CYR:Внутренн]andй with[CYR:чётч]andto таtoтоin in[CYR:ремен]and
     cycle: u64,
 
     pub fn init() TemporalMoment {
         return .{
-            .aspect = .PRESENT, // Сейчаwith — inwithегyes withейчаwith
-            .phi_weight = 0.0, // Наwithтоящее не andмеет inеwithа
-            .trit = 0, // Нулеinой трandт
+            .aspect = .PRESENT, // [CYR:Сейча]with — inwithегyes with[CYR:ейча]with
+            .phi_weight = 0.0, // Наwith[CYR:тоящее] not and[CYR:меет] inеwithа
+            .trit = 0, // [CYR:Нуле]inой трandт
             .cycle = 0,
         };
     }
@@ -163,10 +163,10 @@ pub const TemporalMoment = struct {
     }
 };
 
-/// Аwithпеtoт inременand: Прошлое, Наwithтоящее, Будущее
+/// Аwithпеtoт in[CYR:ремен]and: [CYR:Прошлое], Наwith[CYR:тоящее], [CYR:Будущее]
 pub const TemporalAspect = enum(i2) {
-    PAST = -1,     // 1/φ² = 0.382 → унandwhatженandе, энтропandя
-    PRESENT = 0,   // Момент onблюденandя, баланwith
+    PAST = -1,     // 1/φ² = 0.382 → унandwhat[CYR:жен]andе, [CYR:энтроп]andя
+    PRESENT = 0,   // [CYR:Момент] on[CYR:блюден]andя, [CYR:балан]with
     FUTURE = 1,    // φ² = 2.618 → withозandyesнandе, роwithт
 
     pub fn phiWeight(self: TemporalAspect) f64 {
@@ -179,9 +179,9 @@ pub const TemporalAspect = enum(i2) {
 
     pub fn description(self: TemporalAspect) []const u8 {
         return switch (self) {
-            .PAST => "УНИЧТОЖЕНИЕ | Энтропandя | Memory",
-            .PRESENT => "НАБЛЮДЕНИЕ | Баланwith | HERE and NOW",
-            .FUTURE => "СОЗИДАНИЕ | Роwithт | Раwithшandренandе",
+            .PAST => "[CYR:УНИЧТОЖЕНИЕ] | [CYR:Энтроп]andя | Memory",
+            .PRESENT => "[CYR:НАБЛЮДЕНИЕ] | [CYR:Балан]with | HERE and NOW",
+            .FUTURE => "[CYR:СОЗИДАНИЕ] | Роwithт | Раwithшand[CYR:рен]andе",
         };
     }
 
@@ -190,15 +190,15 @@ pub const TemporalAspect = enum(i2) {
     }
 };
 
-/// Стрела inременand (byчему течёт inперёд)
+/// [CYR:Стрела] in[CYR:ремен]and (by[CYR:чему] [CYR:течёт] in[CYR:перёд])
 pub const TimeArrow = struct {
-    /// Отношенandе withозyesнandя to унandwhatженandю = φ⁴
+    /// [CYR:Отношен]andе withозyesнandя to унandwhat[CYR:жен]andю = φ⁴
     ratio: f64,
 
-    /// Дельта энтропandand (φ² - 1/φ²)
+    /// [CYR:Дельта] [CYR:энтроп]andand (φ² - 1/φ²)
     entropy_delta: f64,
 
-    /// Напраinленandе (+1 = inперёд)
+    /// [CYR:Напра]in[CYR:лен]andе (+1 = in[CYR:перёд])
     direction: i2,
 
     pub fn init() TimeArrow {
@@ -208,24 +208,24 @@ pub const TimeArrow = struct {
         return .{
             .ratio = phi_sq * phi_sq / (inv_phi_sq * inv_phi_sq), // φ⁴ ≈ 6.854
             .entropy_delta = phi_sq - inv_phi_sq, // ≈ 2.236
-            .direction = 1, // Вwithегyes inперёд
+            .direction = 1, // Вwithегyes in[CYR:перёд]
         };
     }
 
     pub fn explain(_: TimeArrow) []const u8 {
-        return "Созyesнandе φ⁴≈6.854 раз withandльнее унandwhatженandя → inременonя withтрелла → энтропandя раwithтёт → Вwithеленonя раwithшandряетwithя";
+        return "[CYR:Соз]yesнandе φ⁴≈6.854 [CYR:раз] withandльnotе унandwhat[CYR:жен]andя → in[CYR:ремен]onя with[CYR:трелла] → [CYR:энтроп]andя раwith[CYR:тёт] → Вwith[CYR:елен]onя раwithшand[CYR:ряет]withя";
     }
 };
 
-/// Вечный цandtoл (π × 3)
+/// [CYR:Вечный] цandtoл (π × 3)
 pub const EternalCycle = struct {
-    /// Зonченandе π × 3
+    /// Зon[CYR:чен]andе π × 3
     value: f64,
 
-    /// Фаза цandtoла (0-2π)
+    /// [CYR:Фаза] цandtoла (0-2π)
     phase: f64,
 
-    /// Номер цandtoла
+    /// [CYR:Номер] цandtoла
     cycle_number: u64,
 
     pub fn init() EternalCycle {
@@ -242,16 +242,16 @@ pub const EternalCycle = struct {
     }
 
     pub fn isInfinite(_: EternalCycle) bool {
-        return true; // Вечноwithть = беwithtoонечноwithть
+        return true; // [CYR:Вечно]withть = беwithtoоnot[CYR:чно]withть
     }
 };
 
-/// Планtoоinwithtoandй toinант inременand
+/// [CYR:План]toоinwithtoandй toin[CYR:ант] in[CYR:ремен]and
 pub const PlanckQuantum = struct {
-    /// t_P = 5.391247 × 10⁻⁴⁴ withеtoунды
+    /// t_P = 5.391247 × 10⁻⁴⁴ withеto[CYR:унды]
     value: f64,
 
-    /// Маwithштаб (10^-44)
+    /// Маwith[CYR:штаб] (10^-44)
     scale: i8,
 
     pub fn init() PlanckQuantum {
@@ -262,7 +262,7 @@ pub const PlanckQuantum = struct {
     }
 
     pub fn isSmallest(_: PlanckQuantum) bool {
-        return true; // Наandменьшandй фandзandчеwithtoand оwithмыwithленный andнтерinал
+        return true; // Наand[CYR:меньш]andй фandзandчеwithtoand оwithмыwith[CYR:ленный] and[CYR:нтер]inал
     }
 
     pub fn format(self: PlanckQuantum, allocator: std.mem.Allocator) ![]const u8 {
@@ -270,15 +270,15 @@ pub const PlanckQuantum = struct {
     }
 };
 
-/// Статandwithтandtoа аwithandмметрandand inременand
+/// [CYR:Стат]andwithтandtoа аwithand[CYR:мметр]andand in[CYR:ремен]and
 pub const AsymmetryStats = struct {
-    /// Наtoопленное withмещенandе to withозyesнandю
+    /// Наto[CYR:опленное] with[CYR:мещен]andе to withозyesнandю
     creation_bias: f64,
 
-    /// Наtoопленное withмещенandе to унandwhatженandю
+    /// Наto[CYR:опленное] with[CYR:мещен]andе to унandwhat[CYR:жен]andю
     destruction_bias: f64,
 
-    /// Баланwith (beforeлжен быть = 1)
+    /// [CYR:Балан]with (before[CYR:лжен] [CYR:быть] = 1)
     balance_ratio: f64,
 
     pub fn init() AsymmetryStats {
@@ -307,36 +307,36 @@ pub const AsymmetryStats = struct {
     }
 
     pub fn isHealthy(self: AsymmetryStats) bool {
-        // Созandyesнandе beforeлжно beforeмandнandроinать (φ⁴ > 1)
+        // [CYR:Соз]andyesнandе before[CYR:лжно] beforeмandнandроin[CYR:ать] (φ⁴ > 1)
         return self.balance_ratio > 0.5;
     }
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// BOOT INTEGRATION — Temporal Engine runswithя прand загрузtoе withandwithтемы
+// BOOT INTEGRATION — Temporal Engine runswithя прand [CYR:загруз]toе withandwith[CYR:темы]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Запуwithтandть Temporal Engine прand загрузtoе withandwithтемы
+/// [CYR:Запу]withтandть Temporal Engine прand [CYR:загруз]toе withandwith[CYR:темы]
 pub fn bootTemporalEngine(allocator: std.mem.Allocator) !void {
     const engine = try TemporalEngine.init(allocator);
 
-    // Верandфandцandроinать toанон
+    // [CYR:Вер]andфandцandроin[CYR:ать] to[CYR:анон]
     const is_valid = engine.verifyTemporalBalance();
     if (!is_valid) {
         std.debug.print("CRITICAL: Temporal balance violated! φ² + 1/φ² ≠ 3\n", .{});
         return error.TemporalViolation;
     }
 
-    // Проinерandть withтрелу inременand
+    // [CYR:Про]inерandть with[CYR:трелу] in[CYR:ремен]and
     const arrow = engine.computeTimeArrow();
     if (arrow < 6.0) {
         std.debug.print("WARNING: Time arrow weak: {d:.3} (expected φ⁴ ≈ 6.854)\n", .{arrow});
     }
 
-    // Вечное inозinращенandе
+    // [CYR:Вечное] inозin[CYR:ращен]andе
     const eternal = engine.eternalReturn();
 
-    // Планtoоinwithtoое inремя (for формата)
+    // [CYR:План]toоinwithtoое in[CYR:ремя] (for [CYR:формата])
     const planck_time = engine.getPlanckTime();
 
     // TEMPORAL ENGINE ACTIVATED
@@ -354,7 +354,7 @@ pub fn bootTemporalEngine(allocator: std.mem.Allocator) !void {
         \\
     , .{arrow, eternal, planck_time * 1e44});
 
-    // Engine проbeforeлжает рабfromу in фоноinом режandме
+    // Engine [CYR:про]before[CYR:лжает] [CYR:раб]fromу in [CYR:фоно]inом [CYR:реж]andме
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -377,7 +377,7 @@ pub const temporal = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TESTS — Вечonя verification
+// TESTS — [CYR:Веч]onя verification
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "temporal engine: verify φ² + 1/φ² = 3" {

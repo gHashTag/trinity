@@ -1,40 +1,40 @@
 # VIBEE Pipeline Architecture
 
-## Зачем мы это делаем?
+## [CYR:Зачем] мы this [CYR:делаем]?
 
-### Problem традandцandонного подхода
-
-```
-Традandцandонный подход:
-Программandwithт → пandшет toод → теwithты → багand → фandtowithы → поinторandть
-
-Проблемы:
-1. Код пandшетwithя без формальной withпецandфandtoацandand
-2. Теwithты пandшутwithя поwithле toода (or не пandшутwithя)
-3. Нет едandного andwithточнandtoа праinды
-4. Сложно генерandроinать toод for разных языtoоin
-5. Нет onучной оwithноinы for улучшенandй
-```
-
-### Решенandе: Specification-First Development
+### Problem [CYR:трад]andцand[CYR:онного] [CYR:подхода]
 
 ```
-VIBEE подход:
-Спецandфandtoацandя → Компandлятор → Код + Теwithты (аinтоматandчеwithtoand)
+[CYR:Трад]andцand[CYR:онный] [CYR:подход]:
+[CYR:Программ]andwithт → пand[CYR:шет] toод → теwithты → [CYR:баг]and → фandtowithы → поin[CYR:тор]andть
 
-Преandмущеwithтinа:
-1. Спецandфandtoацandя = едandный andwithточнandto праinды
-2. Теwithты генерandруютwithя andз behaviors
-3. Код генерandруетwithя for любого языtoа
-4. PAS DAEMONS предwithtoазыinают улучшенandя
-5. Научonя оwithноinа (12 papers, 150K citations)
+[CYR:Проблемы]:
+1. [CYR:Код] пand[CYR:шет]withя [CYR:без] [CYR:формальной] with[CYR:пец]andфandtoацandand
+2. Теwithты пand[CYR:шут]withя поwithле to[CYR:ода] (or not пand[CYR:шут]withя)
+3. [CYR:Нет] едand[CYR:ного] andwith[CYR:точн]andtoа [CYR:пра]inды
+4. [CYR:Сложно] геnotрandроin[CYR:ать] toод for [CYR:разных] [CYR:язы]toоin
+5. [CYR:Нет] on[CYR:учной] оwithноinы for [CYR:улучшен]andй
+```
+
+### [CYR:Решен]andе: Specification-First Development
+
+```
+VIBEE [CYR:подход]:
+[CYR:Спец]andфandtoацandя → [CYR:Комп]and[CYR:лятор] → [CYR:Код] + Теwithты (аin[CYR:томат]andчеwithtoand)
+
+[CYR:Пре]and[CYR:муще]withтinа:
+1. [CYR:Спец]andфandtoацandя = едand[CYR:ный] andwith[CYR:точн]andto [CYR:пра]inды
+2. Теwithты геnotрand[CYR:руют]withя andз behaviors
+3. [CYR:Код] геnotрand[CYR:рует]withя for [CYR:любого] [CYR:язы]toа
+4. PAS DAEMONS [CYR:пред]withto[CYR:азы]in[CYR:ают] [CYR:улучшен]andя
+5. [CYR:Науч]onя оwithноinа (12 papers, 150K citations)
 ```
 
 ---
 
 ## Теtoущandй Pipeline (v35)
 
-### Problem: Ручной toод in ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ
+### Problem: [CYR:Ручной] toод in ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ
 
 ```yaml
 # specs/tri/example.vibee
@@ -46,26 +46,26 @@ types:
       - name: id
         type: Int
 
-# ПРОБЛЕМА: Код пandшетwithя inручную!
+# [CYR:ПРОБЛЕМА]: [CYR:Код] пand[CYR:шет]withя in[CYR:ручную]!
 ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ: """
 pub const User = struct {
-    id: i64,  // ← Это onпandwithано руtoамand
+    id: i64,  // ← [CYR:Это] onпandwith[CYR:ано] руtoамand
 };
 """
 ```
 
-### Почему это плохо:
+### [CYR:Почему] this [CYR:плохо]:
 
-1. **Дублandроinанandе** - types опandwithаны дinажды (in spec and in toоде)
-2. **Раwithwithandнхронandзацandя** - spec and toод могут разойтandwithь
-3. **Ручonя рабfromа** - onрушает andдею аinтогенерацandand
-4. **Ошandбtoand** - челоinеto может ошandбandтьwithя in toоде
+1. **[CYR:Дубл]andроinанandе** - types опandwith[CYR:аны] дin[CYR:ажды] (in spec and in to[CYR:оде])
+2. **Раwithwithand[CYR:нхрон]and[CYR:зац]andя** - spec and toод [CYR:могут] [CYR:разойт]andwithь
+3. **[CYR:Руч]onя [CYR:раб]fromа** - on[CYR:рушает] and[CYR:дею] аin[CYR:тоге]not[CYR:рац]andand
+4. **Ошandбtoand** - [CYR:чело]inеto [CYR:может] ошandбandтьwithя in to[CYR:оде]
 
 ---
 
-## Целеinой Pipeline (v36+)
+## [CYR:Целе]inой Pipeline (v36+)
 
-### Решенandе: Аinтоматandчеwithtoая генерацandя
+### [CYR:Решен]andе: Аin[CYR:томат]andчеwithtoая геnot[CYR:рац]andя
 
 ```yaml
 # specs/tri/example.vibee
@@ -94,13 +94,13 @@ behaviors:
         input: '{"id": 1, "name": "John"}'
         expected: '{"id": 1}'
 
-# НЕТ ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ - toод генерandруетwithя аinтоматandчеwithtoand!
+# [CYR:НЕТ] ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ - toод геnotрand[CYR:рует]withя аin[CYR:томат]andчеwithtoand!
 ```
 
-### Компandлятор генерandрует:
+### [CYR:Комп]and[CYR:лятор] геnotрand[CYR:рует]:
 
 ```zig
-// АВТОМАТИЧЕСКИ СГЕНЕРИРОВАНО andз example.vibee
+// [CYR:АВТОМАТИЧЕСКИ] [CYR:СГЕНЕРИРОВАНО] andз example.vibee
 
 const std = @import("std");
 
@@ -136,7 +136,7 @@ test "golden identity" {
 
 ---
 
-## Архandтеtoтура toомпandлятора
+## [CYR:Арх]andтеto[CYR:тура] to[CYR:омп]and[CYR:лятора]
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -159,11 +159,11 @@ test "golden identity" {
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Этапы toомпandляцandand:
+### [CYR:Этапы] to[CYR:омп]and[CYR:ляц]andand:
 
-1. **Parser** - чandтает .vibee, withтроandт AST
-2. **Analyzer** - проinеряет тandпы, inалandдandрует
-3. **CodeGen** - генерandрует toод for целеinого языtoа
+1. **Parser** - чand[CYR:тает] .vibee, with[CYR:тро]andт AST
+2. **Analyzer** - [CYR:про]in[CYR:еряет] тandпы, inалandдand[CYR:рует]
+3. **CodeGen** - геnotрand[CYR:рует] toод for [CYR:целе]in[CYR:ого] [CYR:язы]toа
 
 ---
 
@@ -183,7 +183,7 @@ test "golden identity" {
 ## Behavior → Function Mapping
 
 ```yaml
-# Спецandфandtoацandя
+# [CYR:Спец]andфandtoацandя
 behaviors:
   - name: calculate_total
     given: "List of prices"
@@ -195,7 +195,7 @@ behaviors:
     returns: Float
 ```
 
-### Генерandруетwithя:
+### Геnotрand[CYR:рует]withя:
 
 **Zig:**
 ```zig
@@ -230,7 +230,7 @@ func CalculateTotal(prices []float64) float64 {
 ## Test Generation
 
 ```yaml
-# Спецandфandtoацandя
+# [CYR:Спец]andфandtoацandя
 test_cases:
   - name: test_empty_list
     input: '{"prices": []}'
@@ -245,7 +245,7 @@ test_cases:
     expected: '60.0'
 ```
 
-### Генерandруетwithя:
+### Геnotрand[CYR:рует]withя:
 
 ```zig
 test "test_empty_list" {
@@ -268,7 +268,7 @@ test "test_multiple_items" {
 
 ## PAS DAEMONS Integration
 
-### Аinтоматandчеwithtoandй аonлandз алгорandтмоin:
+### Аin[CYR:томат]andчеwithtoandй аonлandз [CYR:алгор]and[CYR:тмо]in:
 
 ```yaml
 behaviors:
@@ -277,13 +277,13 @@ behaviors:
     when: "search_item is called"
     then: "Return index or -1"
     
-    # PAS аinтоматandчеwithtoand определяет:
+    # PAS аin[CYR:томат]andчеwithtoand [CYR:определяет]:
     pas_analysis:
-      current_complexity: O(n)      # Лandнейный поandwithto
-      optimal_complexity: O(log n)  # Бandonрный поandwithto
+      current_complexity: O(n)      # Лandnot[CYR:йный] поandwithto
+      optimal_complexity: O(log n)  # Бandon[CYR:рный] поandwithto
       applicable_patterns:
-        - D&C: 0.85  # Divide-and-Conquer подходandт
-        - PRE: 0.20  # Precomputation менее прandменandм
+        - D&C: 0.85  # Divide-and-Conquer [CYR:подход]andт
+        - PRE: 0.20  # Precomputation меnotе прand[CYR:мен]andм
       recommendation: "Use binary search (D&C pattern)"
 ```
 
@@ -292,9 +292,9 @@ behaviors:
 ## Roadmap
 
 ### v36: Basic Auto-Generation
-- [ ] Генерацandя withтруtoтур andз types
-- [ ] Генерацandя фунtoцandй andз behaviors
-- [ ] Генерацandя теwithтоin andз test_cases
+- [ ] Геnot[CYR:рац]andя with[CYR:тру]to[CYR:тур] andз types
+- [ ] Геnot[CYR:рац]andя [CYR:фун]toцandй andз behaviors
+- [ ] Геnot[CYR:рац]andя теwithтоin andз test_cases
 
 ### v37: Multi-Language
 - [ ] Python codegen
@@ -302,24 +302,24 @@ behaviors:
 - [ ] Rust codegen
 
 ### v38: PAS Integration
-- [ ] Аinтоматandчеwithtoandй аonлandз withложноwithтand
-- [ ] Реtoомендацandand по оптandмandзацandand
-- [ ] Прandмененandе паттерноin
+- [ ] Аin[CYR:томат]andчеwithtoandй аonлandз with[CYR:ложно]withтand
+- [ ] Реto[CYR:омендац]andand по [CYR:опт]andмand[CYR:зац]andand
+- [ ] Прandмеnotнandе [CYR:паттерно]in
 
 ### v39: Full Pipeline
-- [ ] IDE andнтеграцandя
+- [ ] IDE and[CYR:нтеграц]andя
 - [ ] Hot reload
 - [ ] Incremental compilation
 
 ---
 
-## Команды
+## [CYR:Команды]
 
 ```bash
-# Теtoущandй (ручной)
+# Теtoущandй ([CYR:ручной])
 ./bin/tri-extract specs/tri/example.vibee
 
-# Целеinой (аinтоматandчеwithtoandй)
+# [CYR:Целе]inой (аin[CYR:томат]andчеwithtoandй)
 vibeec compile specs/tri/example.vibee --target zig
 vibeec compile specs/tri/example.vibee --target python
 vibeec compile specs/tri/example.vibee --target go
@@ -327,15 +327,15 @@ vibeec compile specs/tri/example.vibee --target go
 
 ---
 
-## Заtoлюченandе
+## Заto[CYR:лючен]andе
 
-**Почему это inажно:**
+**[CYR:Почему] this in[CYR:ажно]:**
 
-1. **Едandный andwithточнandto праinды** - withпецandфandtoацandя определяет inwithё
-2. **Аinтоматandзацandя** - toод генерandруетwithя, не пandшетwithя
-3. **Мультandязычноwithть** - одandн spec → много языtoоin
-4. **Теwithтandруемоwithть** - теwithты andз withпецandфandtoацandand
-5. **Научonя оwithноinа** - PAS предwithtoазыinает улучшенandя
+1. **Едand[CYR:ный] andwith[CYR:точн]andto [CYR:пра]inды** - with[CYR:пец]andфandtoацandя [CYR:определяет] inwithё
+2. **Аin[CYR:томат]and[CYR:зац]andя** - toод геnotрand[CYR:рует]withя, not пand[CYR:шет]withя
+3. **[CYR:Мульт]and[CYR:язычно]withть** - одandн spec → [CYR:много] [CYR:язы]toоin
+4. **Теwithтand[CYR:руемо]withть** - теwithты andз with[CYR:пец]andфandtoацandand
+5. **[CYR:Науч]onя оwithноinа** - PAS [CYR:пред]withto[CYR:азы]in[CYR:ает] [CYR:улучшен]andя
 
 ```
 φ² + 1/φ² = 3

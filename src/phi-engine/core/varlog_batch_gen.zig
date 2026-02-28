@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// VARLOG BATCH GENERATOR - Маwithwithоinая генерацandя Verilog andз .vibee specs
+// VARLOG BATCH GENERATOR - Маwithwithоinая геnot[CYR:рац]andя Verilog andз .vibee specs
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Generates Verilog for all .vibee withпецandфandtoацandй with language: varlog
-// Аinтор: Dmitrii Vasilev
+// Generates Verilog for all .vibee with[CYR:пец]andфandtoацandй with language: varlog
+// Аin[CYR:тор]: Dmitrii Vasilev
 // φ² + 1/φ² = 3
 //
 // ═══════════════════════════════════════════════════════════════════════════════

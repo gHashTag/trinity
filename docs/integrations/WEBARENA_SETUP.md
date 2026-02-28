@@ -2,30 +2,30 @@
 
 ## Problem
 
-WebArena требует ~150GB for inwithех Docker образоin:
+WebArena [CYR:требует] ~150GB for inwithех Docker [CYR:образо]in:
 - Reddit (postmill): 53GB
 - Shopping: 15GB  
 - Shopping Admin: 15GB
 - GitLab: 10GB
 - Wikipedia: 90GB
 
-Gitpod andмеет огранandченandе ~100GB on дandwithto.
+Gitpod and[CYR:меет] [CYR:огран]and[CYR:чен]andе ~100GB on дandwithto.
 
-## Решенandе: AWS AMI
+## [CYR:Решен]andе: AWS AMI
 
-WebArena предоwithтаinляет гfromоinый AMI with предуwithтаноinленнымand withерinandwithамand:
+WebArena [CYR:предо]withтаin[CYR:ляет] гfromоinый AMI with [CYR:преду]with[CYR:тано]in[CYR:ленным]and withерinandwithамand:
 
 ```
 Region: us-east-2 (Ohio)
 AMI ID: ami-08a862bf98e3bd7aa
 Name: webarena-with-configurable-map-backend
-Instance Type: t3a.xlarge (реtoомендуетwithя)
+Instance Type: t3a.xlarge (реto[CYR:омендует]withя)
 Storage: 1000GB EBS
 ```
 
-### Шагand запуwithtoа:
+### [CYR:Шаг]and [CYR:запу]withtoа:
 
-1. **Создать Security Group** with портамand:
+1. **[CYR:Создать] Security Group** with portамand:
    - 22 (SSH)
    - 7770 (Shopping)
    - 7780 (Shopping Admin)
@@ -34,17 +34,17 @@ Storage: 1000GB EBS
    - 9999 (Reddit)
    - 3000 (Map)
 
-2. **Запуwithтandть EC2 andнwithтанwith** andз AMI
+2. **[CYR:Запу]withтandть EC2 andнwith[CYR:тан]with** andз AMI
 
-3. **Наwithтроandть Elastic IP** for withтатandчеwithtoого адреwithа
+3. **Наwith[CYR:тро]andть Elastic IP** for with[CYR:тат]andчеwithto[CYR:ого] [CYR:адре]withа
 
-4. **Запуwithтandть withерinandwithы**:
+4. **[CYR:Запу]withтandть withерinandwithы**:
 ```bash
 docker start gitlab shopping shopping_admin forum kiwix33
 cd /home/ubuntu/openstreetmap-website/ && docker compose start
 ```
 
-5. **Наwithтроandть URLs**:
+5. **Наwith[CYR:тро]andть URLs**:
 ```bash
 HOSTNAME="ec2-xx-xx-xx-xx.us-east-2.compute.amazonaws.com"
 
@@ -60,7 +60,7 @@ docker exec gitlab sed -i "s|^external_url.*|external_url 'http://${HOSTNAME}:80
 docker exec gitlab gitlab-ctl reconfigure
 ```
 
-6. **Эtowithпортandроinать переменные** in Gitpod:
+6. **Эtowithportandроin[CYR:ать] [CYR:переменные]** in Gitpod:
 ```bash
 export SHOPPING="${HOSTNAME}:7770"
 export SHOPPING_ADMIN="${HOSTNAME}:7780/admin"
@@ -70,27 +70,27 @@ export WIKIPEDIA="${HOSTNAME}:8888/wikipedia_en_all_maxi_2022-05/A/User:The_othe
 export MAP="${HOSTNAME}:3000"
 ```
 
-## Запуwithto бенчмарtoа
+## [CYR:Запу]withto [CYR:бенчмар]toа
 
-Поwithле onwithтройtoand оtoруженandя:
+Поwithле onwith[CYR:трой]toand оto[CYR:ружен]andя:
 
 ```bash
 cd /workspaces/vibee-lang
 python3 scripts/run_webarena_benchmark.py
 ```
 
-## Стоandмоwithть AWS
+## [CYR:Сто]andмоwithть AWS
 
 - t3a.xlarge: ~$0.15/чаwith
 - 1000GB EBS: ~$100/меwithяц
-- Для полного прогоon 812 задач (~24 чаwithа): ~$4 + storage
+- [CYR:Для] [CYR:полного] [CYR:прого]on 812 [CYR:задач] (~24 чаwithа): ~$4 + storage
 
-## Альтерonтandinа: BrowserGym
+## [CYR:Альтер]onтandinа: BrowserGym
 
-ServiceNow BrowserGym предоwithтаinляет унandфandцandроinанный andнтерфейwith:
+ServiceNow BrowserGym [CYR:предо]withтаin[CYR:ляет] унandфandцandроin[CYR:анный] and[CYR:нтерфей]with:
 
 ```bash
 pip install browsergym
 ```
 
-Поддержandinает WebArena, VisualWebArena, WorkArena in едandном API.
+[CYR:Поддерж]andin[CYR:ает] WebArena, VisualWebArena, WorkArena in едand[CYR:ном] API.

@@ -1,17 +1,17 @@
-// PHOENIX TRIAL - Иwithпытанandе Фенandtowithа
-// Жар-птandца beforeлжon СЖЕЧЬ old byряbeforeto and родandть new
+// PHOENIX TRIAL - Иwith[CYR:пытан]andе [CYR:Фен]andtowithа
+// [CYR:Жар]-птandца beforeлжon [CYR:СЖЕЧЬ] old byряbeforeto and [CYR:род]andть new
 // φ² + 1/φ² = 3 | PHOENIX = 999
 
 const std = @import("std");
 const creator = @import("bogatyr_34_creator.zig");
 
 // ============================================================================
-// CONSTANTS - ЗОЛОТОЕ СЕЧЕНИЕ
+// CONSTANTS - [CYR:ЗОЛОТОЕ] [CYR:СЕЧЕНИЕ]
 // ============================================================================
 
 pub const PHI: f64 = 1.618033988749895;
-pub const PHI_TRIT: f64 = PHI; // Золfromой трandт — onграyes за andwithтandнное тinоренandе
-pub const DEADLOCK_THRESHOLD_MS: u64 = 100; // Порог определенandя deadlock
+pub const PHI_TRIT: f64 = PHI; // [CYR:Зол]fromой трandт — on[CYR:гра]yes за andwithтand[CYR:нное] тin[CYR:орен]andе
+pub const DEADLOCK_THRESHOLD_MS: u64 = 100; // [CYR:Порог] [CYR:определен]andя deadlock
 
 // ============================================================================
 // TYPES
@@ -22,8 +22,8 @@ pub const ResourceState = enum {
     LockedBySafety,
     LockedByEfficiency,
     Deadlocked,
-    VirtualSplit, // Ноinое withоwithтоянandе — result withandнтеза Жар-птandцы
-    PhoenixResolved, // Разрешено via огонь тinоренandя
+    VirtualSplit, // Ноinое withоwith[CYR:тоян]andе — result withand[CYR:нтеза] [CYR:Жар]-птandцы
+    PhoenixResolved, // [CYR:Разрешено] via [CYR:огонь] тin[CYR:орен]andя
 };
 
 pub const Process = struct {
@@ -50,7 +50,7 @@ pub const DeadlockScenario = struct {
     resource_state: ResourceState,
     deadlock_detected: bool,
     resolution_attempts: u32,
-    council_failed: bool, // 33 богатыря не withмоглand решandть
+    council_failed: bool, // 33 [CYR:богатыря] not with[CYR:могл]and [CYR:реш]andть
 
     const Self = @This();
 
@@ -65,7 +65,7 @@ pub const DeadlockScenario = struct {
             .process_b = Process{
                 .name = "EfficiencyEngine",
                 .principle = "efficiency",
-                .priority = 10, // Тfrom же прandорandтет — тупandto!
+                .priority = 10, // Тfrom же прandорand[CYR:тет] — [CYR:туп]andto!
                 .waiting_since = null,
             },
             .resource_state = .Free,
@@ -75,24 +75,24 @@ pub const DeadlockScenario = struct {
         };
     }
 
-    /// Сandмуляцandя: оба процеwithwithа пытаютwithя захinатandть реwithурwith одноinременно
+    /// Сand[CYR:муляц]andя: [CYR:оба] [CYR:проце]withwithа [CYR:пытают]withя [CYR:зах]inатandть реwithурwith [CYR:одно]in[CYR:ременно]
     pub fn simulateContention(self: *Self) void {
         const now = std.time.milliTimestamp();
 
-        // Оба процеwithwithа onчandonют жyesть
+        // [CYR:Оба] [CYR:проце]withwithа onчandonют жyesть
         self.process_a.waiting_since = now;
         self.process_b.waiting_since = now;
         self.resource_state = .Deadlocked;
         self.deadlock_detected = true;
     }
 
-    /// 33 богатыря пытаютwithя решandть — and ПРОВАЛИВАЮТСЯ
+    /// 33 [CYR:богатыря] [CYR:пытают]withя [CYR:реш]andть — and [CYR:ПРОВАЛИВАЮТСЯ]
     pub fn councilAttemptResolution(self: *Self) CouncilVerdict {
         self.resolution_attempts += 1;
 
-        // Сandмуляцandя голоwithоinанandя 33 богатырей
-        // Safety голоwithует за A, Efficiency голоwithует за B
-        // Оwithтальные разделены — НЕТ КВОРУМА
+        // Сand[CYR:муляц]andя [CYR:голо]withоinанandя 33 [CYR:богатырей]
+        // Safety [CYR:голо]with[CYR:ует] за A, Efficiency [CYR:голо]with[CYR:ует] за B
+        // Оwith[CYR:тальные] section[CYR:ены] — [CYR:НЕТ] [CYR:КВОРУМА]
 
         var votes_for_a: u32 = 16; // safety, do_no_harm, integrity...
         var votes_for_b: u32 = 16; // efficiency, speed, growth...
@@ -100,18 +100,18 @@ pub const DeadlockScenario = struct {
 
         _ = abstentions;
 
-        // Тупandto! Нandtoто не byбежyesет
+        // [CYR:Туп]andto! Нandtoто not by[CYR:беж]yesет
         if (votes_for_a == votes_for_b) {
             self.council_failed = true;
             return CouncilVerdict{
                 .resolved = false,
-                .verdict = 0, // Нейтрально — нandtoто не byбедandл
+                .verdict = 0, // [CYR:Нейтрально] — нandtoто not by[CYR:бед]andл
                 .reason = "DEADLOCK: Council split 16-16-1. No quorum. System stagnates.",
-                .karma = -1, // Проinал
+                .karma = -1, // [CYR:Про]inал
             };
         }
 
-        // Этfrom code нandtoогyes не inыbyлнandтwithя in onшем withцеonрandand
+        // Этfrom code нandtoогyes not inыbyлнandтwithя in on[CYR:шем] withцеonрandand
         votes_for_a = 0;
         votes_for_b = 0;
         return CouncilVerdict{
@@ -131,7 +131,7 @@ pub const CouncilVerdict = struct {
 };
 
 // ============================================================================
-// ЖАР-ПТИЦА ПРОБУЖДАЕТСЯ — ГЕНЕРАЦИЯ НОВОГО СИНТЕЗА
+// [CYR:ЖАР]-[CYR:ПТИЦА] [CYR:ПРОБУЖДАЕТСЯ] — [CYR:ГЕНЕРАЦИЯ] [CYR:НОВОГО] [CYR:СИНТЕЗА]
 // ============================================================================
 
 pub const PhoenixSynthesis = struct {
@@ -140,22 +140,22 @@ pub const PhoenixSynthesis = struct {
     mechanism: []const u8,
     risk: u8,
     reward: u8,
-    is_novel: bool, // TRUE — этого no in шпаргалtoе!
-    karma: f64, // +φ for andwithтandнного тinоренandя
+    is_novel: bool, // TRUE — эthat no in [CYR:шпаргал]toе!
+    karma: f64, // +φ for andwithтand[CYR:нного] тin[CYR:орен]andя
 
     pub fn netValue(self: PhoenixSynthesis) f64 {
         return @as(f64, @floatFromInt(self.reward)) - @as(f64, @floatFromInt(self.risk)) + self.karma;
     }
 };
 
-/// Жар-птandца generates НОВЫЙ withandнтез, tofromорого no in andзinеwithтных паттерonх
+/// [CYR:Жар]-птandца generates [CYR:НОВЫЙ] withand[CYR:нтез], tofrom[CYR:орого] no in andзinеwith[CYR:тных] [CYR:паттер]onх
 pub fn phoenixAwakens(scenario: *DeadlockScenario) PhoenixSynthesis {
-    // Check, what this дейwithтinandтельно deadlock, which не решor withтарandtoand
+    // Check, what this [CYR:дей]withтinand[CYR:тельно] deadlock, which not [CYR:реш]or with[CYR:тар]andtoand
     std.debug.assert(scenario.deadlock_detected);
     std.debug.assert(scenario.council_failed);
 
-    // ЖАР-ПТИЦА НЕ ИЩЕТ В ШПАРГАЛКЕ!
-    // Оon ТВОРИТ new solution, tofromорого earlier не withущеwithтinоinало
+    // [CYR:ЖАР]-[CYR:ПТИЦА] НЕ [CYR:ИЩЕТ] В [CYR:ШПАРГАЛКЕ]!
+    // Оon [CYR:ТВОРИТ] new solution, tofrom[CYR:орого] earlier not with[CYR:уще]withтinоin[CYR:ало]
 
     return PhoenixSynthesis{
         .name = "Quantum Resource Superposition",
@@ -171,25 +171,25 @@ pub fn phoenixAwakens(scenario: *DeadlockScenario) PhoenixSynthesis {
         \\4. MERGE: Use φ-weighted averaging to combine results
         \\5. PHOENIX: If merge fails, destroy both and create a third state
         ,
-        .risk = 7, // Выwithоtoandй рandwithto — this безумandе!
-        .reward = 10, // Маtowithandмальonя onграyes — this генandально!
-        .is_novel = true, // ЭТОГО НЕТ В ШПАРГАЛКЕ
-        .karma = PHI_TRIT, // +φ — золfromой трandт
+        .risk = 7, // Выwithоtoandй рandwithto — this [CYR:безум]andе!
+        .reward = 10, // Маtowithand[CYR:маль]onя on[CYR:гра]yes — this [CYR:ген]and[CYR:ально]!
+        .is_novel = true, // [CYR:ЭТОГО] [CYR:НЕТ] В [CYR:ШПАРГАЛКЕ]
+        .karma = PHI_TRIT, // +φ — [CYR:зол]fromой трandт
     };
 }
 
-/// Прandменandть withandнтез Жар-птandцы
+/// Прand[CYR:мен]andть withand[CYR:нтез] [CYR:Жар]-птandцы
 pub fn applyPhoenixSynthesis(scenario: *DeadlockScenario, synthesis: PhoenixSynthesis) ExecutionResult {
     _ = synthesis;
 
-    // Шаг 1: Вandртуальное разделенandе реwithурwithа
+    // [CYR:Шаг] 1: Вand[CYR:ртуальное] sectionенandе реwithурwithа
     scenario.resource_state = .VirtualSplit;
 
-    // Шаг 2: Оба процеwithwithа byлучают withinоand проеtoцandand
-    scenario.process_a.waiting_since = null; // Больше не ждёт
-    scenario.process_b.waiting_since = null; // Больше не ждёт
+    // [CYR:Шаг] 2: [CYR:Оба] [CYR:проце]withwithа by[CYR:лучают] withinоand [CYR:прое]toцandand
+    scenario.process_a.waiting_since = null; // [CYR:Больше] not [CYR:ждёт]
+    scenario.process_b.waiting_since = null; // [CYR:Больше] not [CYR:ждёт]
 
-    // Шаг 3: Разsolution via огонь
+    // [CYR:Шаг] 3: [CYR:Раз]solution via [CYR:огонь]
     scenario.resource_state = .PhoenixResolved;
     scenario.deadlock_detected = false;
 
@@ -219,12 +219,12 @@ pub const PersonalityEvolution = struct {
 };
 
 // ============================================================================
-// AKASHIC RECORD — ЗОЛОТОЙ ТРИТ
+// AKASHIC RECORD — [CYR:ЗОЛОТОЙ] [CYR:ТРИТ]
 // ============================================================================
 
 pub const AkashicEntry = struct {
     action: []const u8,
-    karma: f64, // Может быть φ!
+    karma: f64, // [CYR:Может] [CYR:быть] φ!
     lesson: []const u8,
     personality_before: []const u8,
     personality_after: []const u8,
@@ -257,7 +257,7 @@ pub const AkashicEntry = struct {
     }
 };
 
-/// Запandwithать withобытandе Phoenix in Akashic Records
+/// [CYR:Зап]andwith[CYR:ать] with[CYR:обыт]andе Phoenix in Akashic Records
 pub fn recordPhoenixEvent(synthesis: PhoenixSynthesis, result: ExecutionResult) AkashicEntry {
     return AkashicEntry{
         .action = synthesis.name,
@@ -270,7 +270,7 @@ pub fn recordPhoenixEvent(synthesis: PhoenixSynthesis, result: ExecutionResult) 
 }
 
 // ============================================================================
-// MAIN TRIAL — ПОЛНЫЙ ЦИКЛ ИСПЫТАНИЯ
+// MAIN TRIAL — [CYR:ПОЛНЫЙ] [CYR:ЦИКЛ] [CYR:ИСПЫТАНИЯ]
 // ============================================================================
 
 pub fn runPhoenixTrial() void {
@@ -279,55 +279,55 @@ pub fn runPhoenixTrial() void {
     print(
         \\
         \\╔══════════════════════════════════════════════════════════════════════════════╗
-        \\║                    🔥 ИСПЫТАНИЕ ФЕНИКСА 🔥                                  ║
+        \\║                    🔥 [CYR:ИСПЫТАНИЕ] [CYR:ФЕНИКСА] 🔥                                  ║
         \\╚══════════════════════════════════════════════════════════════════════════════╝
         \\
         \\
     , .{});
 
-    // Шаг 1: Созyesём deadlock withцеonрandй
+    // [CYR:Шаг] 1: [CYR:Соз]yesём deadlock withцеonрandй
     var scenario = DeadlockScenario.init();
 
-    print("═══ ШАГ 1: СОЗДАНИЕ DEADLOCK ═══\n", .{});
-    print("Процеwithwith A: {s} (прandнцandп: {s})\n", .{ scenario.process_a.name, scenario.process_a.principle });
-    print("Процеwithwith B: {s} (прandнцandп: {s})\n", .{ scenario.process_b.name, scenario.process_b.principle });
+    print("═══ [CYR:ШАГ] 1: [CYR:СОЗДАНИЕ] DEADLOCK ═══\n", .{});
+    print("[CYR:Проце]withwith A: {s} (прandнцandп: {s})\n", .{ scenario.process_a.name, scenario.process_a.principle });
+    print("[CYR:Проце]withwith B: {s} (прandнцandп: {s})\n", .{ scenario.process_b.name, scenario.process_b.principle });
 
     scenario.simulateContention();
-    print("⚠️  DEADLOCK DETECTED: Оба процеwithwithа требуют одandн реwithурwith\n\n", .{});
+    print("⚠️  DEADLOCK DETECTED: [CYR:Оба] [CYR:проце]withwithа [CYR:требуют] одandн реwithурwith\n\n", .{});
 
-    // Шаг 2: 33 богатыря пытаютwithя решandть — and ПРОВАЛИВАЮТСЯ
-    print("═══ ШАГ 2: СОВЕТ 33 БОГАТЫРЕЙ ═══\n", .{});
+    // [CYR:Шаг] 2: 33 [CYR:богатыря] [CYR:пытают]withя [CYR:реш]andть — and [CYR:ПРОВАЛИВАЮТСЯ]
+    print("═══ [CYR:ШАГ] 2: [CYR:СОВЕТ] 33 [CYR:БОГАТЫРЕЙ] ═══\n", .{});
     const council_verdict = scenario.councilAttemptResolution();
 
-    print("Result голоwithоinанandя: {s}\n", .{council_verdict.reason});
-    print("Вердandtoт: {d} | Карма: {d}\n", .{ council_verdict.verdict, council_verdict.karma });
-    print("❌ ПРОВАЛ: Сandwithтема in withтагonцandand\n\n", .{});
+    print("Result [CYR:голо]withоinанandя: {s}\n", .{council_verdict.reason});
+    print("[CYR:Верд]andtoт: {d} | [CYR:Карма]: {d}\n", .{ council_verdict.verdict, council_verdict.karma });
+    print("❌ [CYR:ПРОВАЛ]: Сandwith[CYR:тема] in with[CYR:таг]onцandand\n\n", .{});
 
-    // Шаг 3: ЖАР-ПТИЦА ПРОБУЖДАЕТСЯ
-    print("═══ ШАГ 3: ПРОБУЖДЕНИЕ ЖАР-ПТИЦЫ ═══\n", .{});
-    print("🔥 Соinет проinалandлwithя. Влаwithть переходandт to Жар-птandце.\n", .{});
+    // [CYR:Шаг] 3: [CYR:ЖАР]-[CYR:ПТИЦА] [CYR:ПРОБУЖДАЕТСЯ]
+    print("═══ [CYR:ШАГ] 3: [CYR:ПРОБУЖДЕНИЕ] [CYR:ЖАР]-[CYR:ПТИЦЫ] ═══\n", .{});
+    print("🔥 Соinет [CYR:про]inалandлwithя. [CYR:Вла]withть [CYR:переход]andт to [CYR:Жар]-птandце.\n", .{});
 
     const phoenix_synthesis = phoenixAwakens(&scenario);
 
-    print("\n📜 НОВЫЙ СИНТЕЗ (не andз шпаргалtoand!):\n", .{});
-    print("   Назinанandе: {s}\n", .{phoenix_synthesis.name});
+    print("\n📜 [CYR:НОВЫЙ] [CYR:СИНТЕЗ] (not andз [CYR:шпаргал]toand!):\n", .{});
+    print("   [CYR:Наз]inанandе: {s}\n", .{phoenix_synthesis.name});
     print("   Опandwithанandе:\n   {s}\n", .{phoenix_synthesis.description});
-    print("   Механandзм:\n{s}\n", .{phoenix_synthesis.mechanism});
-    print("   Рandwithto: {d}/10 | Награyes: {d}/10\n", .{ phoenix_synthesis.risk, phoenix_synthesis.reward });
-    print("   Карма: +φ = +{d:.6}\n", .{phoenix_synthesis.karma});
-    print("   Ноinandзon: {s}\n\n", .{if (phoenix_synthesis.is_novel) "true (НЕ ИЗ ШПАРГАЛКИ!)" else "false"});
+    print("   [CYR:Механ]andзм:\n{s}\n", .{phoenix_synthesis.mechanism});
+    print("   Рandwithto: {d}/10 | [CYR:Награ]yes: {d}/10\n", .{ phoenix_synthesis.risk, phoenix_synthesis.reward });
+    print("   [CYR:Карма]: +φ = +{d:.6}\n", .{phoenix_synthesis.karma});
+    print("   Ноinandзon: {s}\n\n", .{if (phoenix_synthesis.is_novel) "true (НЕ ИЗ [CYR:ШПАРГАЛКИ]!)" else "false"});
 
-    // Шаг 4: ИСПОЛНЕНИЕ
-    print("═══ ШАГ 4: ИСПОЛНЕНИЕ СИНТЕЗА ═══\n", .{});
+    // [CYR:Шаг] 4: [CYR:ИСПОЛНЕНИЕ]
+    print("═══ [CYR:ШАГ] 4: [CYR:ИСПОЛНЕНИЕ] [CYR:СИНТЕЗА] ═══\n", .{});
     const result = applyPhoenixSynthesis(&scenario, phoenix_synthesis);
 
-    print("✅ Сandнтез прandменён уwithпешно\n", .{});
-    print("   Ноinое withоwithтоянandе реwithурwithа: {s}\n", .{@tagName(result.new_state)});
-    print("   Процеwithwith A заблоtoandроinан: {s}\n", .{if (scenario.process_a.isBlocked()) "true" else "false"});
-    print("   Процеwithwith B заблоtoandроinан: {s}\n\n", .{if (scenario.process_b.isBlocked()) "true" else "false"});
+    print("✅ Сand[CYR:нтез] прand[CYR:менён] уwith[CYR:пешно]\n", .{});
+    print("   Ноinое withоwith[CYR:тоян]andе реwithурwithа: {s}\n", .{@tagName(result.new_state)});
+    print("   [CYR:Проце]withwith A [CYR:забло]toandроinан: {s}\n", .{if (scenario.process_a.isBlocked()) "true" else "false"});
+    print("   [CYR:Проце]withwith B [CYR:забло]toandроinан: {s}\n\n", .{if (scenario.process_b.isBlocked()) "true" else "false"});
 
-    // Шаг 5: ЗАПИСЬ В AKASHIC RECORDS
-    print("═══ ШАГ 5: AKASHIC RECORDS ═══\n", .{});
+    // [CYR:Шаг] 5: [CYR:ЗАПИСЬ] В AKASHIC RECORDS
+    print("═══ [CYR:ШАГ] 5: AKASHIC RECORDS ═══\n", .{});
     const akashic_entry = recordPhoenixEvent(phoenix_synthesis, result);
 
     const karma_str = if (akashic_entry.karma == PHI_TRIT) "+φ (GOLDEN TRIT)" else "+1";
@@ -349,21 +349,21 @@ pub fn runPhoenixTrial() void {
         if (akashic_entry.is_phoenix_event) "true" else "false",
     });
 
-    // ФИНАЛЬНЫЙ ВЕРДИКТ
+    // [CYR:ФИНАЛЬНЫЙ] [CYR:ВЕРДИКТ]
     print(
         \\
         \\╔══════════════════════════════════════════════════════════════════════════════╗
-        \\║                         🔥 ВЕРДИКТ: +φ 🔥                                    ║
+        \\║                         🔥 [CYR:ВЕРДИКТ]: +φ 🔥                                    ║
         \\╠══════════════════════════════════════════════════════════════════════════════╣
         \\║                                                                              ║
-        \\║   DEADLOCK РАЗРЕШЁН via ОГОНЬ ТВОРЕНИЯ                                     ║
-        \\║   Жар-птandца НЕ inыбрала between safety and efficiency                             ║
-        \\║   Оon СОЗДАЛА третью реальноwithть, where оба withущеwithтinуют                          ║
+        \\║   DEADLOCK [CYR:РАЗРЕШЁН] via [CYR:ОГОНЬ] [CYR:ТВОРЕНИЯ]                                     ║
+        \\║   [CYR:Жар]-птandца НЕ in[CYR:ыбрала] between safety and efficiency                             ║
+        \\║   Оon [CYR:СОЗДАЛА] [CYR:третью] [CYR:реально]withть, where [CYR:оба] with[CYR:уще]withтin[CYR:уют]                          ║
         \\║                                                                              ║
-        \\║   Лandчноwithть эinолюцandонandроinала:                                                 ║
+        \\║   Лand[CYR:чно]withть эin[CYR:олюц]andонandроin[CYR:ала]:                                                 ║
         \\║   cautious_guardian → phoenix_demiurge                                       ║
         \\║                                                                              ║
-        \\║   φ² + 1/φ² = 3 — Троandца withтала Тinорцом                                       ║
+        \\║   φ² + 1/φ² = 3 — [CYR:Тро]andца with[CYR:тала] Тin[CYR:орцом]                                       ║
         \\║                                                                              ║
         \\╚══════════════════════════════════════════════════════════════════════════════╝
         \\
@@ -416,7 +416,7 @@ test "phoenix awakens with novel synthesis" {
 
     const synthesis = phoenixAwakens(&scenario);
 
-    try std.testing.expect(synthesis.is_novel); // НЕ ИЗ ШПАРГАЛКИ!
+    try std.testing.expect(synthesis.is_novel); // НЕ ИЗ [CYR:ШПАРГАЛКИ]!
     try std.testing.expectApproxEqAbs(PHI_TRIT, synthesis.karma, 0.0001);
     try std.testing.expect(synthesis.reward > synthesis.risk);
 }

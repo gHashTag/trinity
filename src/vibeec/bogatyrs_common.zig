@@ -28,8 +28,8 @@ pub const BogatyrPlugin = struct {
     version: []const u8,
     category: []const u8,
     priority: u32,
-    weight: f32 = 1.0, // Жар-птandца (34) andмеет inеwith 2.0
-    is_creator: bool = false, // Тольtoо for Богатыря-Тinорца
+    weight: f32 = 1.0, // [CYR:Жар]-птandца (34) and[CYR:меет] inеwith 2.0
+    is_creator: bool = false, // [CYR:Толь]toо for [CYR:Богатыря]-Тin[CYR:орца]
     validate: *const fn (*const ValidationContext) anyerror!BogatyrResult,
 };
 

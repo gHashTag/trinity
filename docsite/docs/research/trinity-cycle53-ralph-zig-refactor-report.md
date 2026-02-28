@@ -3,7 +3,7 @@
 **Date:** 2026-02-22
 **Status:** COMPLETE
 **Agents:** 4 Parallel (Benjamin, Harper, Lucas, Grok)
-**Philosophy:** VIBEE-first or withмерть
+**Philosophy:** VIBEE-first or with[CYR:мерть]
 
 ---
 

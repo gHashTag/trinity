@@ -48,7 +48,7 @@ test "REPL command parsing - vote" {
 }
 
 test "REPL command parsing - natural language (agent)" {
-    const cmd = repl.ReplCommand.fromString("Оптandмandзandруй inference for Qwen");
+    const cmd = repl.ReplCommand.fromString("[CYR:Опт]andмandзand[CYR:руй] inference for Qwen");
     try std.testing.expectEqual(repl.ReplCommand.Agent, cmd);
 }
 

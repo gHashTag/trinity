@@ -1,6 +1,6 @@
 name: ai_intelligent_migration
 version: 1.0.0
-description: Умная миграция кода V1→V2 с помощью AI - понимает контекст и семантику
+description: Умonя мand[CYR:грац]andя codeа V1→V2 with [CYR:помощью] AI - [CYR:пон]and[CYR:мает] [CYR:контек]withт and with[CYR:емант]andку
 
 metadata:
   author: VIBEE Team
@@ -63,123 +63,123 @@ types:
 constants:
   MIGRATION_STRATEGIES:
     conservative:
-      description: "Минимальные изменения, максимальная безопасность"
+      description: "Мandнand[CYR:мальные] fromмеnotнandя, [CYR:мак]withand[CYR:маль]onя security"
       confidence_threshold: 0.95
       risk_level: "low"
       auto_apply: true
       
     balanced:
-      description: "Баланс между улучшениями и безопасностью"
+      description: "[CYR:Балан]with [CYR:между] [CYR:улучшен]andямand and securityю"
       confidence_threshold: 0.85
       risk_level: "medium"
       auto_apply: false
       
     aggressive:
-      description: "Максимальные улучшения, требует review"
+      description: "[CYR:Мак]withand[CYR:мальные] [CYR:улучшен]andя, [CYR:требует] review"
       confidence_threshold: 0.75
       risk_level: "high"
       auto_apply: false
 
   AI_PROMPTS:
     analyze_code: |
-      Ты - эксперт по миграции VIBEE кода с V1 на V2.
+      Ты - экwith[CYR:перт] по мand[CYR:грац]andand VIBEE codeа with V1 on V2.
       
-      Код V1:
+      [CYR:Код] V1:
       ```vibee
       {v1_code}
       ```
       
-      Контекст:
-      - Файл: {file_path}
-      - Зависимости: {dependencies}
-      - Бизнес-логика: {business_logic}
+      [CYR:Контек]withт:
+      - [CYR:Файл]: {file_path}
+      - Заinandwithandмоwithтand: {dependencies}
+      - Бfromnotwith-[CYR:лог]andка: {business_logic}
       
-      Задача: Проанализируй код и предложи стратегию миграции.
+      [CYR:Задача]: [CYR:Про]analysisand[CYR:руй] code and [CYR:предлож]and with[CYR:тратег]andю мand[CYR:грац]andand.
       
-      Учитывай:
-      1. Семантику кода (что он делает)
-      2. Паттерны использования
-      3. Зависимости между модулями
-      4. Бизнес-логику
-      5. Риски изменений
+      Учandтыinай:
+      1. [CYR:Семант]andку codeа (that он [CYR:делает])
+      2. [CYR:Паттерны] andwith[CYR:пользо]inанandя
+      3. Заinandwithandмоwithтand [CYR:между] [CYR:модулям]and
+      4. Бfromnotwith-[CYR:лог]andку
+      5. Рandwithкand fromмеnotнandй
       
-      Формат ответа:
-      Стратегия: <conservative/balanced/aggressive>
-      Уверенность: <0-1>
-      Шаги:
-      1. <описание шага>
-         До: <код>
-         После: <код>
-         Объяснение: <почему>
+      [CYR:Формат] responseа:
+      [CYR:Стратег]andя: <conservative/balanced/aggressive>
+      Уin[CYR:еренно]withть: <0-1>
+      [CYR:Шаг]and:
+      1. <опandwithанandе stepа>
+         До: <code>
+         Поwithле: <code>
+         [CYR:Объя]withnotнandе: <[CYR:почему]>
       
-      Риски: <список рисков>
-      Метрики: <ожидаемые улучшения>
+      Рandwithкand: <list рandwithкоin>
+      [CYR:Метр]andкand: <ожand[CYR:даемые] [CYR:улучшен]andя>
       
     semantic_migration: |
-      Ты - эксперт по семантическому анализу кода.
+      Ты - экwith[CYR:перт] по with[CYR:емант]andчеwith[CYR:кому] analysisу codeа.
       
-      Задача: Мигрировать код, сохраняя семантику.
+      [CYR:Задача]: Мandгрandроin[CYR:ать] code, with[CYR:охраняя] with[CYR:емант]andку.
       
-      Код V1:
+      [CYR:Код] V1:
       ```vibee
       {v1_code}
       ```
       
-      Требования:
-      - Сохранить точную семантику
-      - Использовать V2 синтаксис
-      - Улучшить читаемость
-      - Оптимизировать производительность
+      [CYR:Требо]inанandя:
+      - [CYR:Сохран]andть [CYR:точную] with[CYR:емант]andку
+      - Иwith[CYR:пользо]in[CYR:ать] V2 withand[CYR:нтак]withandwith
+      - [CYR:Улучш]andть чand[CYR:таемо]withть
+      - [CYR:Опт]andмfromandроin[CYR:ать] performance
       
-      Проверь:
-      - Все edge cases обработаны
-      - Типы корректны
-      - Ошибки обрабатываются
-      - Тесты пройдут
+      [CYR:Про]in[CYR:ерь]:
+      - Вwithе edge cases [CYR:обработаны]
+      - Тandпы [CYR:корректны]
+      - Ошandбкand [CYR:обрабаты]in[CYR:ают]withя
+      - Теwithты [CYR:пройдут]
       
-      Формат ответа:
+      [CYR:Формат] responseа:
       ```vibee
-      <мигрированный код V2>
+      <мandгрandроin[CYR:анный] code V2>
       ```
       
-      Изменения:
-      - <список изменений>
+      [CYR:Изме]notнandя:
+      - <list fromмеnotнandй>
       
-      Гарантии:
-      - Семантика: <сохранена/изменена>
-      - Тесты: <пройдут/требуют обновления>
-      - Производительность: <улучшена/без изменений>
+      [CYR:Гарант]andand:
+      - [CYR:Семант]andка: <with[CYR:охра]noton/fromмеnoton>
+      - Теwithты: <[CYR:пройдут]/[CYR:требуют] [CYR:обно]in[CYR:лен]andя>
+      - [CYR:Про]frominодand[CYR:тельно]withть: <[CYR:улучше]on/[CYR:без] fromмеnotнandй>
       
     context_aware_migration: |
-      Ты - эксперт по контекстно-зависимой миграции.
+      Ты - экwith[CYR:перт] по [CYR:контек]with[CYR:тно]-заinandwithand[CYR:мой] мand[CYR:грац]andand.
       
-      Целевой код:
+      [CYR:Целе]inой code:
       ```vibee
       {target_code}
       ```
       
-      Контекст использования:
+      [CYR:Контек]withт andwith[CYR:пользо]inанandя:
       {usage_context}
       
-      Зависимые модули:
+      Заinandwithand[CYR:мые] [CYR:модул]and:
       {dependent_modules}
       
-      Задача: Мигрировать с учетом всего контекста.
+      [CYR:Задача]: Мandгрandроin[CYR:ать] with [CYR:учетом] inwith[CYR:его] [CYR:контек]withта.
       
-      Учитывай:
-      - Как код используется в других местах
-      - Какие модули зависят от него
-      - Какие изменения потребуются в зависимых модулях
-      - Порядок миграции модулей
+      Учandтыinай:
+      - [CYR:Как] code andwith[CYR:пользует]withя in [CYR:друг]andх меwith[CYR:тах]
+      - [CYR:Как]andе [CYR:модул]and заinandwithят от notго
+      - [CYR:Как]andе fromмеnotнandя [CYR:потребуют]withя in заinandwithand[CYR:мых] [CYR:модулях]
+      - [CYR:Порядок] мand[CYR:грац]andand [CYR:модулей]
       
-      Формат ответа:
-      План миграции:
-      1. Модуль: <имя>
-         Изменения: <описание>
-         Зависимости: <список>
+      [CYR:Формат] responseа:
+      [CYR:План] мand[CYR:грац]andand:
+      1. [CYR:Модуль]: <andмя>
+         [CYR:Изме]notнandя: <опandwithанandе>
+         Заinandwithandмоwithтand: <list>
       
-      Порядок выполнения: <последовательность>
-      Риски: <анализ рисков>
+      [CYR:Порядок] in[CYR:ыпол]notнandя: <поwith[CYR:ледо]in[CYR:ательно]withть>
+      Рandwithкand: <analysis рandwithкоin>
 
 behaviors:
   analyze_migration:
@@ -188,29 +188,29 @@ behaviors:
       strategy_preference: string
     output:
       strategy: MigrationStrategy
-    description: Анализ кода и выбор стратегии миграции
+    description: Аonлfrom codeа and in[CYR:ыбор] with[CYR:тратег]andand мand[CYR:грац]andand
     steps:
-      - Проанализировать код с помощью AI
-      - Определить паттерны использования
-      - Оценить риски
-      - Выбрать стратегию
-      - Сгенерировать план миграции
-      - Вернуть стратегию
+      - [CYR:Про]analyze code with [CYR:помощью] AI
+      - [CYR:Определ]andть [CYR:паттерны] andwith[CYR:пользо]inанandя
+      - [CYR:Оцен]andть рandwithкand
+      - [CYR:Выбрать] with[CYR:тратег]andю
+      - [CYR:Сге]notрandроin[CYR:ать] [CYR:план] мand[CYR:грац]andand
+      - [CYR:Вернуть] with[CYR:тратег]andю
       
   migrate_with_ai:
     input:
       context: MigrationContext
       strategy: MigrationStrategy
     output: MigrationResult
-    description: Умная миграция с AI
+    description: Умonя мand[CYR:грац]andя with AI
     steps:
-      - Отправить код на анализ AI
-      - Получить мигрированный код
-      - Валидировать семантику
-      - Проверить синтаксис
-      - Запустить тесты
-      - Собрать метрики
-      - Вернуть результат
+      - [CYR:Отпра]inandть code on analysis AI
+      - [CYR:Получ]andть мandгрandроin[CYR:анный] code
+      - [CYR:Вал]andдandроin[CYR:ать] with[CYR:емант]andку
+      - [CYR:Про]inерandть withand[CYR:нтак]withandwith
+      - [CYR:Запу]withтandть testы
+      - [CYR:Собрать] [CYR:метр]andкand
+      - [CYR:Вернуть] result
       
   validate_semantics:
     input:
@@ -220,13 +220,13 @@ behaviors:
     output:
       equivalent: boolean
       differences: list<string>
-    description: Проверка семантической эквивалентности
+    description: [CYR:Про]in[CYR:ерка] with[CYR:емант]andчеwith[CYR:кой] экinandin[CYR:алентно]withтand
     steps:
-      - Скомпилировать обе версии
-      - Запустить тесты на обеих
-      - Сравнить результаты
-      - Проверить edge cases
-      - Вернуть результат
+      - Сcompile [CYR:обе] inерwithandand
+      - [CYR:Запу]withтandть testы on [CYR:обе]andх
+      - [CYR:Сра]inнandть resultы
+      - [CYR:Про]inерandть edge cases
+      - [CYR:Вернуть] result
       
   migrate_module:
     input:
@@ -234,55 +234,55 @@ behaviors:
       dependencies: list<string>
     output:
       migrated_modules: list<MigrationResult>
-    description: Миграция модуля с зависимостями
+    description: Мand[CYR:грац]andя [CYR:модуля] with заinandwithandмоwith[CYR:тям]and
     steps:
-      - Построить граф зависимостей
-      - Определить порядок миграции
-      - Мигрировать каждый модуль
-      - Обновить зависимости
-      - Валидировать интеграцию
-      - Вернуть результаты
+      - Поwith[CYR:тро]andть [CYR:граф] заinandwithandмоwith[CYR:тей]
+      - [CYR:Определ]andть [CYR:порядок] мand[CYR:грац]andand
+      - Мandгрandроin[CYR:ать] [CYR:каждый] module
+      - [CYR:Обно]inandть заinandwithandмоwithтand
+      - [CYR:Вал]andдandроin[CYR:ать] and[CYR:нтеграц]andю
+      - [CYR:Вернуть] resultы
       
   suggest_improvements:
     input:
       migrated_code: string
     output:
       improvements: list<Suggestion>
-    description: Предложения по улучшению после миграции
+    description: [CYR:Предложен]andя по [CYR:улучшен]andю поwithле мand[CYR:грац]andand
     steps:
-      - Проанализировать мигрированный код
-      - Найти возможности для улучшения
-      - Сгенерировать suggestions
-      - Оценить impact
-      - Вернуть improvements
+      - [CYR:Про]analyze мandгрandроin[CYR:анный] code
+      - [CYR:Найт]and in[CYR:озможно]withтand for [CYR:улучшен]andя
+      - [CYR:Сге]notрandроin[CYR:ать] suggestions
+      - [CYR:Оцен]andть impact
+      - [CYR:Вернуть] improvements
 
 functions:
   - name: build_dependency_graph
     params:
       module_path: string
     returns: DependencyGraph
-    description: Построение графа зависимостей
+    description: Поwith[CYR:троен]andе [CYR:графа] заinandwithandмоwith[CYR:тей]
     
   - name: analyze_usage_patterns
     params:
       code: string
       codebase: string
     returns: list<UsagePattern>
-    description: Анализ паттернов использования
+    description: Аonлfrom [CYR:паттерно]in andwith[CYR:пользо]inанandя
     
   - name: estimate_migration_time
     params:
       strategy: MigrationStrategy
       code_size: number
     returns: number
-    description: Оценка времени миграции
+    description: [CYR:Оценка] in[CYR:ремен]and мand[CYR:грац]andand
     
   - name: calculate_risk_score
     params:
       changes: list<Change>
       dependencies: list<string>
     returns: number
-    description: Расчет риска изменений
+    description: Раwith[CYR:чет] рandwithка fromмеnotнandй
 
 tests:
   - name: analyze_simple_function
@@ -339,8 +339,8 @@ tests:
       migrated_modules: all_match(success == true)
 
 examples:
-  - name: "Умная миграция функции"
-    description: "AI понимает бизнес-логику и мигрирует соответственно"
+  - name: "Умonя мand[CYR:грац]andя [CYR:функц]andand"
+    description: "AI [CYR:пон]and[CYR:мает] бfromnotwith-[CYR:лог]andку and мandгрand[CYR:рует] withоresponsewithтin[CYR:енно]"
     input:
       v1_code: |
         pub fn calculate_discount(price: Float, user_type: String) -> Float {
@@ -360,45 +360,45 @@ examples:
             _ => price
           }
         }
-      explanation: "Сохранена бизнес-логика, улучшен синтаксис"
+      explanation: "[CYR:Сохра]noton бfromnotwith-[CYR:лог]andка, [CYR:улучшен] withand[CYR:нтак]withandwith"
       
-  - name: "Контекстная миграция"
-    description: "AI учитывает как функция используется"
+  - name: "[CYR:Контек]withтonя мand[CYR:грац]andя"
+    description: "AI учandтыin[CYR:ает] how function andwith[CYR:пользует]withя"
     input:
       code: "pub fn get_user(id: Int) -> Result(User, String)"
-      usage_context: "Вызывается из 15 мест, всегда с error handling"
+      usage_context: "[CYR:Вызы]in[CYR:ает]withя from 15 меwithт, inwith[CYR:егда] with error handling"
     output:
       strategy: "conservative"
-      explanation: "Много мест использования - безопасная миграция"
+      explanation: "[CYR:Много] меwithт andwith[CYR:пользо]inанandя - [CYR:безопа]withonя мand[CYR:грац]andя"
       v2_code: "pub get_user(id): Result<User, String> = !impl"
       
-  - name: "Миграция с зависимостями"
-    description: "AI определяет порядок миграции модулей"
+  - name: "Мand[CYR:грац]andя with заinandwithandмоwith[CYR:тям]and"
+    description: "AI [CYR:определяет] [CYR:порядок] мand[CYR:грац]andand [CYR:модулей]"
     input:
       module: "user_service"
       dependencies: ["database", "validation", "auth"]
     output:
       migration_order: ["database", "validation", "auth", "user_service"]
-      explanation: "Сначала зависимости, потом основной модуль"
+      explanation: "Сon[CYR:чала] заinandwithandмоwithтand, [CYR:потом] оwithноin[CYR:ной] module"
 
 ai_capabilities:
   semantic_understanding:
-    - "Понимание бизнес-логики"
-    - "Анализ паттернов использования"
-    - "Определение критичных участков"
-    - "Оценка рисков изменений"
+    - "[CYR:Пон]and[CYR:ман]andе бfromnotwith-[CYR:лог]andкand"
+    - "Аonлfrom [CYR:паттерно]in andwith[CYR:пользо]inанandя"
+    - "[CYR:Определен]andе крandтand[CYR:чных] [CYR:уча]with[CYR:тко]in"
+    - "[CYR:Оценка] рandwithкоin fromмеnotнandй"
     
   context_awareness:
-    - "Анализ зависимостей"
-    - "Понимание архитектуры"
-    - "Учет паттернов проекта"
-    - "Соблюдение стиля кода"
+    - "Аonлfrom заinandwithandмоwith[CYR:тей]"
+    - "[CYR:Пон]and[CYR:ман]andе [CYR:арх]and[CYR:тектуры]"
+    - "[CYR:Учет] [CYR:паттерно]in [CYR:проекта]"
+    - "[CYR:Соблюден]andе withтandля codeа"
     
   intelligent_decisions:
-    - "Выбор оптимальной стратегии"
-    - "Определение порядка миграции"
-    - "Балансировка риск/улучшение"
-    - "Адаптация под проект"
+    - "[CYR:Выбор] [CYR:опт]and[CYR:мальной] with[CYR:тратег]andand"
+    - "[CYR:Определен]andе [CYR:порядка] мand[CYR:грац]andand"
+    - "[CYR:Балан]withandроinка рandwithк/improvement"
+    - "[CYR:Адаптац]andя [CYR:под] [CYR:проект]"
 
 metrics:
   migration_accuracy: "> 95%"

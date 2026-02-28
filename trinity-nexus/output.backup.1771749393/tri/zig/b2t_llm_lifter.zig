@@ -15,10 +15,10 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// КОНСТАНТЫ
+// [CYR:КОНСТАНТЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Базоinые φ-toонwithтанты (Sacred Formula)
+// [CYR:Базо]inые φ-toонwith[CYR:танты] (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -30,7 +30,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ТИПЫ
+// [CYR:ТИПЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// 
@@ -234,7 +234,7 @@ pub const ImprovementMetrics = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ПАМЯТЬ ДЛЯ WASM
+// [CYR:ПАМЯТЬ] [CYR:ДЛЯ] WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -284,13 +284,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-andнтерполяцandя
+/// φ-and[CYR:нтер]fieldsцandя
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// Генерацandя φ-withпandралand
+/// Геnot[CYR:рац]andя φ-withпand[CYR:рал]and
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -558,7 +558,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 
 test "lift_with_llm_behavior" {
 // Given: b2t_disasm.DisassemblyResult and LLMLiftingConfig
-// When: Полный пайплайн lifting with LLM
+// When: [CYR:Полный] [CYR:пайплайн] lifting with LLM
 // Then: Returns List<EnhancedTVCFunction>
 // Test lift_with_llm: verify behavior is callable (compile-time check)
 _ = lift_with_llm;
@@ -566,15 +566,15 @@ _ = lift_with_llm;
 
 test "lift_function_with_llm_behavior" {
 // Given: b2t_disasm.BasicBlock[] and LLMLiftingConfig
-// When: Lifting одной фунtoцandand with LLM-улучшенandямand
+// When: Lifting [CYR:одной] [CYR:фун]toцandand with LLM-[CYR:улучшен]andямand
 // Then: Returns EnhancedTVCFunction
 // Test lift_function_with_llm: verify behavior is callable (compile-time check)
 _ = lift_function_with_llm;
 }
 
 test "get_lifting_progress_behavior" {
-// Given: Теtoущandй toонтеtowithт lifting
-// When: Запроwith прогреwithwithа
+// Given: Теtoущandй to[CYR:онте]towithт lifting
+// When: [CYR:Запро]with [CYR:прогре]withwithа
 // Then: Returns LiftingProgress
 // Test get_lifting_progress: verify behavior is callable (compile-time check)
 _ = get_lifting_progress;
@@ -582,7 +582,7 @@ _ = get_lifting_progress;
 
 test "recover_function_name_behavior" {
 // Given: LiftedFunction and SemanticContext
-// When: Воwithwithтаноinленandе andменand фунtoцandand через LLM
+// When: Воwithwith[CYR:тано]in[CYR:лен]andе and[CYR:мен]and [CYR:фун]toцandand [CYR:через] LLM
 // Then: Returns String andмя and Float confidence
 // Test recover_function_name: verify returns a float in valid range
 // TODO: Add specific test for recover_function_name
@@ -591,7 +591,7 @@ _ = recover_function_name;
 
 test "recover_variable_names_behavior" {
 // Given: LiftedFunction and SemanticContext
-// When: Воwithwithтаноinленandе andмён переменных через LLM
+// When: Воwithwith[CYR:тано]in[CYR:лен]andе and[CYR:мён] [CYR:переменных] [CYR:через] LLM
 // Then: Returns Map<Int, String>
 // Test recover_variable_names: verify behavior is callable (compile-time check)
 _ = recover_variable_names;
@@ -599,7 +599,7 @@ _ = recover_variable_names;
 
 test "recover_parameter_names_behavior" {
 // Given: LiftedFunction and call graph context
-// When: Воwithwithтаноinленandе andмён параметроin
+// When: Воwithwith[CYR:тано]in[CYR:лен]andе and[CYR:мён] parameterоin
 // Then: Returns List<String>
 // Test recover_parameter_names: verify behavior is callable (compile-time check)
 _ = recover_parameter_names;
@@ -607,7 +607,7 @@ _ = recover_parameter_names;
 
 test "infer_types_with_llm_behavior" {
 // Given: LiftedFunction and data flow
-// When: Улучшенный inыinод тandпоin через LLM
+// When: [CYR:Улучшенный] inыinод тandпоin [CYR:через] LLM
 // Then: Returns Map<Int, String> тandпоin
 // Test infer_types_with_llm: verify behavior is callable (compile-time check)
 _ = infer_types_with_llm;
@@ -615,7 +615,7 @@ _ = infer_types_with_llm;
 
 test "infer_return_type_behavior" {
 // Given: LiftedFunction and call sites
-// When: Выinод тandпа inозinрата
+// When: Выinод тandпа inозin[CYR:рата]
 // Then: Returns String тandп
 // Test infer_return_type: verify behavior is callable (compile-time check)
 _ = infer_return_type;
@@ -623,7 +623,7 @@ _ = infer_return_type;
 
 test "infer_parameter_types_behavior" {
 // Given: LiftedFunction and calling convention
-// When: Выinод тandпоin параметроin
+// When: Выinод тandпоin parameterоin
 // Then: Returns List<String> тandпоin
 // Test infer_parameter_types: verify behavior is callable (compile-time check)
 _ = infer_parameter_types;
@@ -631,7 +631,7 @@ _ = infer_parameter_types;
 
 test "detect_struct_access_behavior" {
 // Given: TVC IR with memory operations
-// When: Поandwithto паттерноin доwithтупа to withтруtoтурам
+// When: Поandwithto [CYR:паттерно]in доwith[CYR:тупа] to with[CYR:тру]to[CYR:турам]
 // Then: Returns List<StructAccessPattern>
 // Test detect_struct_access: verify behavior is callable (compile-time check)
 _ = detect_struct_access;
@@ -639,7 +639,7 @@ _ = detect_struct_access;
 
 test "recover_struct_definition_behavior" {
 // Given: List<StructAccessPattern>
-// When: Воwithwithтаноinленandе определенandя withтруtoтуры через LLM
+// When: Воwithwith[CYR:тано]in[CYR:лен]andе [CYR:определен]andя with[CYR:тру]to[CYR:туры] [CYR:через] LLM
 // Then: Returns StructDef
 // Test recover_struct_definition: verify behavior is callable (compile-time check)
 _ = recover_struct_definition;
@@ -647,15 +647,15 @@ _ = recover_struct_definition;
 
 test "apply_struct_types_behavior" {
 // Given: LiftedFunction and List<StructDef>
-// When: Прandмененandе withтруtoтурных тandпоin to IR
-// Then: Обноinляет type annotations
+// When: Прandмеnotнandе with[CYR:тру]to[CYR:турных] тandпоin to IR
+// Then: [CYR:Обно]in[CYR:ляет] type annotations
 // Test apply_struct_types: verify behavior is callable (compile-time check)
 _ = apply_struct_types;
 }
 
 test "recognize_idioms_behavior" {
-// Given: TVC IR блоto
-// When: Раwithпозoninанandе andдandом (malloc/free, strlen, memcpy)
+// Given: TVC IR [CYR:бло]to
+// When: Раwith[CYR:поз]oninанandе andдandом (malloc/free, strlen, memcpy)
 // Then: Returns List<RecognizedIdiom>
 // Test recognize_idioms: verify behavior is callable (compile-time check)
 _ = recognize_idioms;
@@ -663,7 +663,7 @@ _ = recognize_idioms;
 
 test "recognize_algorithms_behavior" {
 // Given: LiftedFunction
-// When: Раwithпозoninанandе алгорandтмоin (sort, search, hash)
+// When: Раwith[CYR:поз]oninанandе [CYR:алгор]and[CYR:тмо]in (sort, search, hash)
 // Then: Returns Option<AlgorithmMatch>
 // Test recognize_algorithms: verify behavior is callable (compile-time check)
 _ = recognize_algorithms;
@@ -671,15 +671,15 @@ _ = recognize_algorithms;
 
 test "apply_pattern_knowledge_behavior" {
 // Given: LiftedFunction and recognized patterns
-// When: Прandмененandе зonнandй о паттерonх
-// Then: Улучшает andмеon and toомментарandand
+// When: Прandмеnotнandе зonнandй о [CYR:паттер]onх
+// Then: [CYR:Улучшает] andмеon and to[CYR:омментар]andand
 // Test apply_pattern_knowledge: verify behavior is callable (compile-time check)
 _ = apply_pattern_knowledge;
 }
 
 test "generate_function_comment_behavior" {
 // Given: EnhancedTVCFunction
-// When: Генерацandя доtoументandрующего toомментарandя
+// When: Геnot[CYR:рац]andя доto[CYR:умент]and[CYR:рующего] to[CYR:омментар]andя
 // Then: Returns CodeComment
 // Test generate_function_comment: verify behavior is callable (compile-time check)
 _ = generate_function_comment;
@@ -687,7 +687,7 @@ _ = generate_function_comment;
 
 test "generate_inline_comments_behavior" {
 // Given: EnhancedTVCFunction
-// When: Генерацandя inline toомментарandеin for withложных учаwithтtoоin
+// When: Геnot[CYR:рац]andя inline to[CYR:омментар]andеin for with[CYR:ложных] [CYR:уча]withтtoоin
 // Then: Returns List<CodeComment>
 // Test generate_inline_comments: verify behavior is callable (compile-time check)
 _ = generate_inline_comments;
@@ -695,7 +695,7 @@ _ = generate_inline_comments;
 
 test "generate_warning_comments_behavior" {
 // Given: EnhancedTVCFunction and detected issues
-// When: Генерацandя предупрежденandй
+// When: Геnot[CYR:рац]andя [CYR:предупрежден]andй
 // Then: Returns List<CodeComment>
 // Test generate_warning_comments: verify behavior is callable (compile-time check)
 _ = generate_warning_comments;
@@ -703,15 +703,15 @@ _ = generate_warning_comments;
 
 test "validate_enhanced_ir_behavior" {
 // Given: EnhancedTVCFunction
-// When: Check toорреtoтноwithтand улучшенandй
+// When: Check to[CYR:орре]to[CYR:тно]withтand [CYR:улучшен]andй
 // Then: Returns Bool and List<ValidationIssue>
 // Test validate_enhanced_ir: verify behavior is callable (compile-time check)
 _ = validate_enhanced_ir;
 }
 
 test "compare_with_baseline_behavior" {
-// Given: EnhancedTVCFunction and базоinый LiftedFunction
-// When: Сраinненandе with baseline
+// Given: EnhancedTVCFunction and [CYR:базо]inый LiftedFunction
+// When: [CYR:Сра]innotнandе with baseline
 // Then: Returns ImprovementMetrics
 // Test compare_with_baseline: verify behavior is callable (compile-time check)
 _ = compare_with_baseline;
@@ -719,7 +719,7 @@ _ = compare_with_baseline;
 
 test "rollback_to_baseline_behavior" {
 // Given: EnhancedTVCFunction with ошandбtoамand
-// When: Отtoат to базоinому IR
+// When: Отtoат to [CYR:базо]in[CYR:ому] IR
 // Then: Returns LiftedFunction
 // Test rollback_to_baseline: verify behavior is callable (compile-time check)
 _ = rollback_to_baseline;

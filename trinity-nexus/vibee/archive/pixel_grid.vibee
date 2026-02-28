@@ -1,16 +1,16 @@
 name: pixel_grid
 # spec.yml for grid_manager
-# Grid Manager - Менеджер сетки пикселей с YogaLayout интеграцией
+# Grid Manager - Меnot[CYR:джер] with[CYR:етк]and пandкwith[CYR:елей] with YogaLayout and[CYR:нтеграц]andей
 
 plugin:
   name: grid_manager
   version: 1.0.0
   category: ui
-  description: Менеджер сетки пикселей - каждый пиксель это BEAM процесс
+  description: Меnot[CYR:джер] with[CYR:етк]and пandкwith[CYR:елей] - [CYR:каждый] пandкwith[CYR:ель] this BEAM process
 
 behaviors:
   - name: start_grid_manager
-    description: Запуск Grid Manager actor
+    description: [CYR:Запу]withк Grid Manager actor
     given: Viewport dimensions (width, height, scale)
     when: start() function called
     then: Grid Manager actor started and ready
@@ -19,7 +19,7 @@ behaviors:
         output: {status: "running", atoms_count: 0}
   
   - name: create_pixel_atom
-    description: Создание атома пикселя
+    description: [CYR:Создан]andе [CYR:атома] пandкwith[CYR:еля]
     given: Grid Manager running
     when: CreateAtom message sent
     then: New pixel actor created
@@ -28,7 +28,7 @@ behaviors:
         output: {created: true, id: "atom_0"}
   
   - name: destroy_pixel_atom
-    description: Уничтожение атома пикселя
+    description: Унandthat[CYR:жен]andе [CYR:атома] пandкwith[CYR:еля]
     given: Atom exists in grid
     when: DestroyAtom message sent
     then: Pixel actor stopped
@@ -39,14 +39,14 @@ behaviors:
 functions:
   - name: start
     signature: "start(viewport: Viewport) -> Result(Subject(GridMessage), String)"
-    description: Запускает Grid Manager actor
+    description: [CYR:Запу]with[CYR:кает] Grid Manager actor
     params:
       - name: viewport
         type: Viewport
   
   - name: handle_message
     signature: "handle_message(msg: GridMessage, state: GridState) -> actor.Next(GridState)"
-    description: Обрабатывает сообщения Grid Manager
+    description: [CYR:Обрабаты]in[CYR:ает] with[CYR:ообщен]andя Grid Manager
     params:
       - name: msg
         type: GridMessage

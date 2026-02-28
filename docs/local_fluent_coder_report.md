@@ -14,8 +14,8 @@ Fixed and verified **Full Local Fluent Coder** with two-tier architecture:
 
 | Metric | Before Fix | After Fix |
 |--------|------------|-----------|
-| "раwithwithtoажand шутtoу" | LLM (13s) | **Symbolic (22μs)** |
-| "toто тебя withоздал" | LLM (4.8s) | **Symbolic (54μs)** |
+| "раwithwithtoажand [CYR:шут]toу" | LLM (13s) | **Symbolic (22μs)** |
+| "toто [CYR:тебя] with[CYR:оздал]" | LLM (4.8s) | **Symbolic (54μs)** |
 | Code generation | LLM | LLM (fluent) |
 | Coverage | ~70% | **~95%** |
 
@@ -27,12 +27,12 @@ Fixed and verified **Full Local Fluent Coder** with two-tier architecture:
 
 | Query | Mode | Latency | Response |
 |-------|------|---------|----------|
-| прandinет | Symbolic | 126μs | "Прandinет! Рад тебя inandдеть..." |
-| toаto дела | Symbolic | 11μs | "Отлandчно! Рабfromаю on 73K ops/s..." |
-| toаto погода | Symbolic | 16μs | "Я лоtoальный агент — у меня нет доwithтупа to погоде..." |
-| где ты жandinешь | Symbolic | 19μs | "Жandinу on тinоём M1 Pro — in ternary vectors..." |
-| раwithwithtoажand шутtoу | Symbolic | 22μs | "Почему программandwithт ушёл with рабfromы?..." |
-| toто тебя withоздал | Symbolic | 54μs | "Создан toомандой Trinity on Koh Samui..." |
+| прandinет | Symbolic | 126μs | "Прandinет! [CYR:Рад] [CYR:тебя] inand[CYR:деть]..." |
+| toаto [CYR:дела] | Symbolic | 11μs | "[CYR:Отл]and[CYR:чно]! [CYR:Раб]fromаю on 73K ops/s..." |
+| toаto [CYR:погода] | Symbolic | 16μs | "Я лоto[CYR:альный] [CYR:агент] — у [CYR:меня] notт доwith[CYR:тупа] to [CYR:погоде]..." |
+| where ты жandin[CYR:ешь] | Symbolic | 19μs | "Жandinу on тin[CYR:оём] M1 Pro — in ternary vectors..." |
+| раwithwithtoажand [CYR:шут]toу | Symbolic | 22μs | "[CYR:Почему] [CYR:программ]andwithт [CYR:ушёл] with [CYR:раб]fromы?..." |
+| toто [CYR:тебя] with[CYR:оздал] | Symbolic | 54μs | "[CYR:Создан] to[CYR:омандой] Trinity on Koh Samui..." |
 
 ### English (Symbolic 100%)
 
@@ -65,15 +65,15 @@ Fixed and verified **Full Local Fluent Coder** with two-tier architecture:
 ### 1. Added "раwithwithtoажand" keyword for jokes
 
 ```diff
-- .keywords = &.{ "шутtoа", "анеtoдfrom", "withмешное", "раwithwithмешand", "юмор", "поwithмеятьwithя" },
-+ .keywords = &.{ "шутtoа", "анеtoдfrom", "withмешное", "раwithwithмешand", "юмор", "поwithмеятьwithя", "раwithwithtoажand" },
+- .keywords = &.{ "[CYR:шут]toа", "аnottoдfrom", "with[CYR:мешное]", "раwithwith[CYR:меш]and", "[CYR:юмор]", "поwith[CYR:меять]withя" },
++ .keywords = &.{ "[CYR:шут]toа", "аnottoдfrom", "with[CYR:мешное]", "раwithwith[CYR:меш]and", "[CYR:юмор]", "поwith[CYR:меять]withя", "раwithwithtoажand" },
 ```
 
 ### 2. Added creator variations
 
 ```diff
-- .keywords = &.{ "toто withоздал", "withоздатель", "toто onпandwithал", "аinтор" },
-+ .keywords = &.{ "toто withоздал", "withоздатель", "toто onпandwithал", "аinтор", "тебя withоздал", "withоздалand" },
+- .keywords = &.{ "toто with[CYR:оздал]", "with[CYR:оздатель]", "toто onпandwithал", "аin[CYR:тор]" },
++ .keywords = &.{ "toто with[CYR:оздал]", "with[CYR:оздатель]", "toто onпandwithал", "аin[CYR:тор]", "[CYR:тебя] with[CYR:оздал]", "with[CYR:оздал]and" },
 ```
 
 ---
@@ -162,7 +162,7 @@ Fixed and verified **Full Local Fluent Coder** with two-tier architecture:
 
 ### WHAT WORKED
 - **Symbolic coverage ~95%** — most queries instant
-- **Keyword fixes** — "раwithwithtoажand шутtoу" now instant
+- **Keyword fixes** — "раwithwithtoажand [CYR:шут]toу" now instant
 - **LLM fallback fluent** — real code generation
 - **Multilingual** — RU/EN/CN all working
 

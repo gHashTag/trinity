@@ -444,21 +444,21 @@ type AnalysisContext(
 
   // Lead indicators for Digital Clone / AI Avatar services
   let clone_indicators = [
-    "цифровой клон", "digital clone", "аватар", "avatar",
-    "нейросеть", "ai бот", "бот для", "автоматизация",
-    "digital twin", "виртуальный помощник", "чат-бот"
+    "цand[CYR:фро]inой [CYR:клон]", "digital clone", "аin[CYR:атар]", "avatar",
+    "not[CYR:йро]with[CYR:еть]", "ai [CYR:бот]", "[CYR:бот] for", "аin[CYR:томат]fromацandя",
+    "digital twin", "virtual [CYR:помощн]andк", "[CYR:чат]-[CYR:бот]"
   ]
 
   // Lead indicators for video/content creation
   let video_indicators = [
-    "рилс", "reels", "видео", "контент", "tiktok", "тикток",
-    "говорящий аватар", "lip sync", "видео из фото"
+    "рandлwith", "reels", "inand[CYR:део]", "[CYR:контент]", "tiktok", "тand[CYR:кток]",
+    "гоin[CYR:орящ]andй аin[CYR:атар]", "lip sync", "inand[CYR:део] from [CYR:фото]"
   ]
 
   // General service request indicators
   let service_indicators = [
-    "нужен бот", "ищу разработчика", "кто делает",
-    "сколько стоит", "можешь сделать", "нужна автоматизация"
+    "[CYR:нужен] [CYR:бот]", "andщу [CYR:разработч]andка", "[CYR:кто] [CYR:делает]",
+    "with[CYR:колько] withтоandт", "[CYR:можешь] with[CYR:делать]", "[CYR:нуж]on аin[CYR:томат]fromацandя"
   ]
 
   let has_clone_lead = list.fn(indicator · any {
@@ -481,10 +481,10 @@ type AnalysisContext(
         contact_id: ☐message.sender_id),
         dialog_id: ☐message.dialog_id),
         message_id: ☐message.message_id),
-        title: "Лид на Digital Clone",
-        description: message.{ sender_name }" интересуется цифровым клоном/аватаром",
-        suggested_action: "Предложить создание цифрового клона",
-        suggested_message: ☐"Привет! Делаем цифровых клонов - AI-аватары которые общаются как ты. Рассказать подробнее?")
+        title: "Лandд on Digital Clone",
+        description: message.{ sender_name }" and[CYR:нтере]with[CYR:ует]withя цand[CYR:фро]inым [CYR:клоном]/аin[CYR:атаром]",
+        suggested_action: "[CYR:Предлож]andть with[CYR:оздан]andе цand[CYR:фро]in[CYR:ого] [CYR:кло]on",
+        suggested_message: ☐"Прandinет! [CYR:Делаем] цand[CYR:фро]inых [CYR:клоно]in - AI-аin[CYR:атары] which [CYR:общают]withя how ты. Раwithwith[CYR:казать] [CYR:подроб]notе?")
       ))
     }
     _ if has_video_lead → {
@@ -494,10 +494,10 @@ type AnalysisContext(
         contact_id: ☐message.sender_id),
         dialog_id: ☐message.dialog_id),
         message_id: ☐message.message_id),
-        title: "Лид на AI-видео",
-        description: message.{ sender_name }" интересуется видео-контентом",
-        suggested_action: "Предложить создание AI-видео",
-        suggested_message: ☐"Делаем говорящие аватары и рилсы с нейросетью. Интересно?")
+        title: "Лandд on AI-inand[CYR:део]",
+        description: message.{ sender_name }" and[CYR:нтере]with[CYR:ует]withя inand[CYR:део]-[CYR:контентом]",
+        suggested_action: "[CYR:Предлож]andть with[CYR:оздан]andе AI-inand[CYR:део]",
+        suggested_message: ☐"[CYR:Делаем] гоin[CYR:орящ]andе аin[CYR:атары] and рandлwithы with not[CYR:йро]with[CYR:етью]. [CYR:Интере]withно?")
       ))
     }
     _ if has_service_lead → {
@@ -507,9 +507,9 @@ type AnalysisContext(
         contact_id: ☐message.sender_id),
         dialog_id: ☐message.dialog_id),
         message_id: ☐message.message_id),
-        title: "Потенциальный клиент",
-        description: message.{ sender_name }" ищет услугу",
-        suggested_action: "Узнать детали запроса",
+        title: "[CYR:Потенц]and[CYR:альный] client",
+        description: message.{ sender_name }" and[CYR:щет] уwith[CYR:лугу]",
+        suggested_action: "Узonть [CYR:детал]and queryа",
         suggested_message: ∅))
     }
     _ → ∅}
@@ -535,9 +535,9 @@ type AnalysisContext(
             contact_id: ☐message.sender_id),
             dialog_id: ☐message.dialog_id),
             message_id: ☐message.message_id),
-            title: "Новое сообщение от "{ message }".sender_name,
+            title: "Ноinое with[CYR:ообщен]andе от "{ message }".sender_name,
             description: truncate(message.text, 100),
-            suggested_action: "Ответить на сообщение",
+            suggested_action: "Отinетandть on with[CYR:ообщен]andе",
             suggested_message: ∅))
         }
         false → ∅}
@@ -557,8 +557,8 @@ type AnalysisContext(
 
   // Deal indicators
   let deal_indicators = [
-    "сделка", "договорились", "оплачу", "переведу", "жду оплат",
-    "подтверди", "готово", "завтра сделаем", "на неделе"
+    "with[CYR:делка]", "[CYR:дого]inорorwithь", "[CYR:оплачу]", "[CYR:пере]in[CYR:еду]", "[CYR:жду] [CYR:оплат]",
+    "[CYR:подт]in[CYR:ерд]and", "[CYR:гото]inо", "заin[CYR:тра] with[CYR:делаем]", "on not[CYR:деле]"
   ]
 
   let has_deal = list.fn(indicator · any {
@@ -573,9 +573,9 @@ type AnalysisContext(
         contact_id: ☐message.sender_id),
         dialog_id: ☐message.dialog_id),
         message_id: ☐message.message_id),
-        title: "Возможная сделка с "{ message }".sender_name,
-        description: "Обнаружено упоминание сделки или договорённости",
-        suggested_action: "Отследить статус сделки",
+        title: "[CYR:Возмож]onя with[CYR:делка] with "{ message }".sender_name,
+        description: "Обon[CYR:ружено] [CYR:упом]andonнandе with[CYR:делк]and or [CYR:дого]in[CYR:орённо]withтand",
+        suggested_action: "Отwith[CYR:лед]andть with[CYR:тату]with with[CYR:делк]and",
         suggested_message: ∅))
     }
     false → ∅}

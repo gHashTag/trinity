@@ -127,7 +127,7 @@ pub const HybridCodeGen = struct {
             analysis.task_type = .DataStructure;
             analysis.addConcept("fields");
             analysis.addConcept("methods");
-        } else if (trinity_swe.TrinitySWEAgent.containsAny(prompt, &.{ "function", "fn", "func", "фунtoцand" })) {
+        } else if (trinity_swe.TrinitySWEAgent.containsAny(prompt, &.{ "function", "fn", "func", "[CYR:фун]toцand" })) {
             analysis.task_type = .Function;
             analysis.addConcept("params");
             analysis.addConcept("return");

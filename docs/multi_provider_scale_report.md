@@ -97,7 +97,7 @@
 |--------|----------|---------------|
 | `用中文解释AI` | Chinese | Zhipu → Groq |
 | `計算 2+2` | Chinese | Zhipu → Groq |
-| `Объяwithнand ИИ` | Russian | Groq |
+| `[CYR:Объя]withнand ИИ` | Russian | Groq |
 | `explain AI` | English | Groq |
 
 ---
@@ -127,7 +127,7 @@ Provider Distribution:
 | 4 | Capital of France | English | Groq | 225.2 | ✅ |
 | 5 | 用中文解释AI | Chinese | Groq* | 235.2 | ✅ |
 | 6 | 计算 2+2 | Chinese | Groq* | 227.3 | ✅ |
-| 7 | Объяwithнand ИИ | Russian | Groq | 89.4 | ✅ |
+| 7 | [CYR:Объя]withнand ИИ | Russian | Groq | 89.4 | ✅ |
 | 8 | Theory of relativity | English | Groq | 101.0 | ✅ |
 | 9 | Fibonacci next | English | Groq | 218.8 | ✅ |
 | 10 | Quantum computing | English | Groq* | 248.7 | ✅ |

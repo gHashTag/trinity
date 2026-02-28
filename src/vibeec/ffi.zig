@@ -1,5 +1,5 @@
 //! VIBEE FFI (Foreign Function Interface) - PAS DAEMON V38
-//! Паттерны: HSH (O(1) symbol lookup), PRE (cached bindings), D&C (type marshalling)
+//! [CYR:Паттерны]: HSH (O(1) symbol lookup), PRE (cached bindings), D&C (type marshalling)
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;

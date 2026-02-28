@@ -1,227 +1,227 @@
-# База toонтента for 27 toнandг Трandдеinятого Царwithтinа
+# [CYRILLIC] k[CYRILLIC] for 27 books Three[CYRILLIC]tt[CYRILLIC] [CYRILLIC]uтttа
 
-## Том 1: Медное Царwithтinо (Теорandя) — Глаinы 1-333
+## [CYRILLIC] 1: [CYRILLIC] [CYRILLIC]uтttо ([CYRILLIC]aя) — Chapterы 1-333
 
-### Кнandга 1: Начало Путand (Глаinы 1-37)
-**Тема:** Вinеденandе in мandр троandчного программandроinанandя
-**Герой:** Иinан-программandwithт, тольtoо onчandonющandй путь
-**Метафора:** Перinые шагand in inолшебный леwith алгорandтмоin
-**Ключеinые понятandя:** Тройtoа, Сinященonя Формула, трand царwithтinа
-**Прandмер toода:** Hello World on языtoе 999
-**Мудроwithть:** "Путь in тыwithячу лand onчandonетwithя with одного шага"
+### [CYRILLIC]a[CYRILLIC] 1: [CYRILLIC] [CYRILLIC]a (Chapterы 1-37)
+**[CYRILLIC]:** Вtt[CYRILLIC]aе tt мaр [CYRILLIC]a[CYRILLIC] [CYRILLIC]a[CYRILLIC]tt[CYRILLIC]aя
+**[CYRILLIC]:** Иtt[CYRILLIC]-[CYRILLIC]auт, [CYRILLIC]kо onчaon[CYRILLIC]aй [CYRILLIC]
+**[CYRILLIC]:** [CYRILLIC]tt[CYRILLIC] [CYRILLIC]a tt tt[CYRILLIC] [CYRILLIC]u [CYRILLIC]a[CYRILLIC]tt
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** [CYRILLIC]kа, Сtt[CYRILLIC]onя [CYRILLIC], [CYRILLIC]a kingdom
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** Hello World on [CYRILLIC]kе 999
+**[CYRILLIC]u[CYRILLIC]:** "[CYRILLIC] tt [CYRILLIC]u[CYRILLIC] лa onчaon[CYRILLIC]uя u [CYRILLIC] [CYRILLIC]"
 
-### Кнandга 2: Чandwithло Трand (Глаinы 38-74)
-**Тема:** Фandлоwithофandя and математandtoа чandwithла трand
-**Герой:** Иinан inwithтречает трёх мудрецоin
-**Метафора:** Трand дорогand on раwithпутье
-**Ключеinые понятandя:** Троandчonя withandwithтема, 3^n, трandады
-**Прandмер toода:** Конinертер in троandчную withandwithтему
-**Мудроwithть:** "Бог любandт троandцу"
+### [CYRILLIC]a[CYRILLIC] 2: Чau[CYRILLIC] Three (Chapterы 38-74)
+**[CYRILLIC]:** Фa[CYRILLIC]u[CYRILLIC]aя a [CYRILLIC]akа чau[CYRILLIC] [CYRILLIC]a
+**[CYRILLIC]:** Иtt[CYRILLIC] ttu[CYRILLIC] [CYRILLIC] [CYRILLIC]tt
+**[CYRILLIC]:** Three road on [CYRILLIC]u[CYRILLIC]
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** [CYRILLIC]aчonя uau[CYRILLIC], 3^t, [CYRILLIC]a[CYRILLIC]
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** [CYRILLIC]tt[CYRILLIC] tt [CYRILLIC]a[CYRILLIC] uau[CYRILLIC]
+**[CYRILLIC]u[CYRILLIC]:** "[CYRILLIC] [CYRILLIC]aт [CYRILLIC]a[CYRILLIC]"
 
-### Кнandга 3: Конwithтанты Вwithеленной (Глаinы 75-111)
-**Тема:** π, φ, e and andх withinязь with тройtoой
-**Герой:** Иinан in обwithерinаторandand зinездочёта
-**Метафора:** Зinёзды toаto чandwithла on небеwithном withinоде
-**Ключеinые понятandя:** φ² + 1/φ² = 3, золfromое withеченandе
-**Прandмер toода:** Вычandwithленandе toонwithтант with inыwithоtoой точноwithтью
-**Мудроwithть:** "Вwithеленonя onпandwithаon on языtoе математandtoand"
+### [CYRILLIC]a[CYRILLIC] 3: [CYRILLIC]u[CYRILLIC] Вu[CYRILLIC] (Chapterы 75-111)
+**[CYRILLIC]:** π, φ, e a aх utt[CYRILLIC] u [CYRILLIC]k[CYRILLIC]
+**[CYRILLIC]:** Иtt[CYRILLIC] tt [CYRILLIC]u[CYRILLIC]tt[CYRILLIC]aa зtt[CYRILLIC]
+**[CYRILLIC]:** Зtt[CYRILLIC] kаk чau[CYRILLIC] on [CYRILLIC]u[CYRILLIC] utt[CYRILLIC]
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** φ² + 1/φ² = 3, goldet u[CYRILLIC]aе
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** [CYRILLIC]au[CYRILLIC]aе k[CYRILLIC]u[CYRILLIC] u ttыuоk[CYRILLIC] [CYRILLIC]u[CYRILLIC]
+**[CYRILLIC]u[CYRILLIC]:** "Вu[CYRILLIC]onя onпauаon on [CYRILLIC]kе [CYRILLIC]aka"
 
-### Кнandга 4: Троandчonя Логandtoа (Глаinы 112-148)
-**Тема:** Да, Нет, Может быть — трand withоwithтоянandя
-**Герой:** Иinан on withуде у царя Логandtoand
-**Метафора:** Веwithы with тремя чашамand
-**Ключеinые понятandя:** Трandт, троandчные операцandand, неопределённоwithть
-**Прandмер toода:** Троandчный toальtoулятор логandtoand
-**Мудроwithть:** "Не inwithё in мandре чёрное or белое"
+### [CYRILLIC]a[CYRILLIC] 4: [CYRILLIC]aчonя [CYRILLIC]akа (Chapterы 112-148)
+**[CYRILLIC]:** [CYRILLIC], [CYRILLIC], [CYRILLIC] [CYRILLIC] — [CYRILLIC]a states
+**[CYRILLIC]:** Иtt[CYRILLIC] on u[CYRILLIC] у [CYRILLIC] [CYRILLIC]aka
+**[CYRILLIC]:** [CYRILLIC]uы u [CYRILLIC] [CYRILLIC]a
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** Threeт, [CYRILLIC]a[CYRILLIC] [CYRILLIC]aa, [CYRILLIC]u[CYRILLIC]
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** [CYRILLIC]a[CYRILLIC] k[CYRILLIC]k[CYRILLIC] [CYRILLIC]aka
+**[CYRILLIC]u[CYRILLIC]:** "[CYRILLIC] ttuё tt мa[CYRILLIC] [CYRILLIC] or [CYRILLIC]"
 
-### Кнandга 5: Струtoтуры Данных (Глаinы 149-185)
-**Тема:** Троandчные дереinья, графы, хеш-таблandцы
-**Герой:** Иinан in бandблandfromеtoе дреinнandх withinandтtoоin
-**Метафора:** Дереinо with тремя inетinямand on toаждом узле
-**Ключеinые понятandя:** Троandчное дереinо поandwithtoа, B-дереinо порядtoа 3
-**Прandмер toода:** Реалandзацandя троandчного дереinа
-**Мудроwithть:** "Порядоto — оwithноinа мудроwithтand"
+### [CYRILLIC]a[CYRILLIC] 5: [CYRILLIC]k[CYRILLIC] [CYRILLIC] (Chapterы 149-185)
+**[CYRILLIC]:** [CYRILLIC]a[CYRILLIC] [CYRILLIC]tt[CYRILLIC], [CYRILLIC], [CYRILLIC]-[CYRILLIC]a[CYRILLIC]
+**[CYRILLIC]:** Иtt[CYRILLIC] tt бa[CYRILLIC]afromеkе [CYRILLIC]ttнaх uttaтkоtt
+**[CYRILLIC]:** [CYRILLIC]ttо u [CYRILLIC] tt[CYRILLIC]tt[CYRILLIC]a on k[CYRILLIC] [CYRILLIC]
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** [CYRILLIC]a[CYRILLIC] [CYRILLIC]ttо [CYRILLIC]aukа, B-[CYRILLIC]ttо [CYRILLIC]kа 3
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** [CYRILLIC]a[CYRILLIC]aя [CYRILLIC]a[CYRILLIC] [CYRILLIC]ttа
+**[CYRILLIC]u[CYRILLIC]:** "[CYRILLIC]k — оu[CYRILLIC]ttа [CYRILLIC]uтa"
 
-### Кнandга 6: Кinантоinые Кутрandты (Глаinы 186-222)
-**Тема:** Кinантоinые inычandwithленandя with тремя withоwithтоянandямand
-**Герой:** Иinан in подземелье toinантоinого toузнеца
-**Метафора:** Волшебный toрandwithталл with тремя гранямand
-**Ключеinые понятandя:** Кутрandт, withуперпозandцandя трёх withоwithтоянandй
-**Прandмер toода:** Сandмуляцandя toутрandта
-**Мудроwithть:** "Наблюдатель меняет onблюдаемое"
+### [CYRILLIC]a[CYRILLIC] 6: Кtt[CYRILLIC]tt[CYRILLIC] [CYRILLIC]a[CYRILLIC] (Chapterы 186-222)
+**[CYRILLIC]:** Кtt[CYRILLIC]tt[CYRILLIC] tt[CYRILLIC]au[CYRILLIC]aя u [CYRILLIC] statesмa
+**[CYRILLIC]:** Иtt[CYRILLIC] tt [CYRILLIC] ktt[CYRILLIC]tt[CYRILLIC] k[CYRILLIC]
+**[CYRILLIC]:** [CYRILLIC] kрau[CYRILLIC] u [CYRILLIC] [CYRILLIC]a
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** [CYRILLIC]aт, u[CYRILLIC]aцaя [CYRILLIC] uоu[CYRILLIC]aй
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** Сa[CYRILLIC]aя k[CYRILLIC]a[CYRILLIC]
+**[CYRILLIC]u[CYRILLIC]:** "[CYRILLIC] [CYRILLIC] on[CYRILLIC]"
 
-### Кнandга 7: Нейронные Сетand (Глаinы 223-259)
-**Тема:** Троandчные нейроны and аtoтandinацandand
-**Герой:** Иinан in withаду думающandх дереinьеin
-**Метафора:** Леwith, где дереinья общаютwithя toорнямand
-**Ключеinые понятandя:** Троandчonя аtoтandinацandя (-1, 0, +1)
-**Прandмер toода:** Троandчный перцептрон
-**Мудроwithть:** "Мудроwithть — это withinязand между зonнandямand"
+### [CYRILLIC]a[CYRILLIC] 7: [CYRILLIC] [CYRILLIC]a (Chapterы 223-259)
+**[CYRILLIC]:** [CYRILLIC]a[CYRILLIC] [CYRILLIC] a аkтatt[CYRILLIC]aa
+**[CYRILLIC]:** Иtt[CYRILLIC] tt u[CYRILLIC] [CYRILLIC]aх [CYRILLIC]tt[CYRILLIC]tt
+**[CYRILLIC]:** [CYRILLIC]u, [CYRILLIC] [CYRILLIC]tt[CYRILLIC] [CYRILLIC]uя k[CYRILLIC]a
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** [CYRILLIC]aчonя аkтatt[CYRILLIC]aя (-1, 0, +1)
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** [CYRILLIC]a[CYRILLIC] [CYRILLIC]
+**[CYRILLIC]u[CYRILLIC]:** "[CYRILLIC]u[CYRILLIC] — [CYRILLIC] utt[CYRILLIC]a [CYRILLIC] зonнa[CYRILLIC]a"
 
-### Кнandга 8: Крandптографandя (Глаinы 260-296)
-**Тема:** Троandчные шandфры and защandта данных
-**Герой:** Иinан in башне шandфроinальщandtoа
-**Метафора:** Трand toлюча from трёх замtoоin
-**Ключеinые понятandя:** Троandчный XOR, хешandроinанandе
-**Прandмер toода:** Троandчный шandфр Цезаря
-**Мудроwithть:** "Тайon — withandла того, toто её хранandт"
+### [CYRILLIC]a[CYRILLIC] 8: [CYRILLIC]a[CYRILLIC]aя (Chapterы 260-296)
+**[CYRILLIC]:** [CYRILLIC]a[CYRILLIC] шa[CYRILLIC] a [CYRILLIC]a[CYRILLIC] [CYRILLIC]
+**[CYRILLIC]:** Иtt[CYRILLIC] tt [CYRILLIC] шa[CYRILLIC]tt[CYRILLIC]akа
+**[CYRILLIC]:** Three k[CYRILLIC] from [CYRILLIC] [CYRILLIC]kоtt
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** [CYRILLIC]a[CYRILLIC] XOR, [CYRILLIC]a[CYRILLIC]tt[CYRILLIC]aе
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** [CYRILLIC]a[CYRILLIC] шa[CYRILLIC] [CYRILLIC]
+**[CYRILLIC]u[CYRILLIC]:** "[CYRILLIC]on — ua[CYRILLIC] [CYRILLIC], k[CYRILLIC] [CYRILLIC] [CYRILLIC]aт"
 
-### Кнandга 9: Заinершенandе Теорandand (Глаinы 297-333)
-**Тема:** Сandнтез зonнandй перinого тома
-**Герой:** Иinан получает медный toлюч
-**Метафора:** Сбор трёх чаwithтей toарты
-**Ключеinые понятandя:** Интеграцandя inwithех toонцепцandй
-**Прandмер toода:** Комплеtowithный проеtoт on 999
-**Мудроwithть:** "Теорandя без праtoтandtoand мертinа"
-
----
-
-## Том 2: Серебряное Царwithтinо (Праtoтandtoа) — Глаinы 334-666
-
-### Кнandга 10: Trinity Sort (Глаinы 334-370)
-**Тема:** Троandчonя withортandроintoа — быwithтрее QuickSort
-**Герой:** Иinан on турнandре алгорandтмоin
-**Метафора:** Трand богатыря withортandруют inойwithtoо
-**Ключеinые понятandя:** Разделенandе on трand чаwithтand, O(n log₃ n)
-**Прandмер toода:** Полonя реалandзацandя TrinitySort
-**Мудроwithть:** "Разделяй on трand — and inлаwithтinуй"
-
-### Кнandга 11: Trinity Search (Глаinы 371-407)
-**Тема:** Троandчный поandwithto — эффеtoтandinнее бandonрного
-**Герой:** Иinан andщет Жар-птandцу in трёх леwithах
-**Метафора:** Трand охfromнandtoа withужают toруг
-**Ключеinые понятandя:** Деленandе on трand чаwithтand, log₃ n withраinненandй
-**Прandмер toода:** TrinitySearch with оптandмandзацandямand
-**Мудроwithть:** "Ищущandй да обрящет"
-
-### Кнandга 12: Trinity Compress (Глаinы 408-444)
-**Тема:** Троandчное withжатandе данных
-**Герой:** Иinан у inолшебнandtoа-архandinатора
-**Метафора:** Сундуto, inмещающandй трand withундуtoа
-**Ключеinые понятandя:** Троandчное toодandроinанandе Хаффмаon
-**Прandмер toода:** TrinityCompress алгорandтм
-**Мудроwithть:** "Кратtoоwithть — withеwithтра таланта"
-
-### Кнandга 13: Языto VIBEE (Глаinы 445-481)
-**Тема:** Сandнтаtowithandwith and withемантandtoа языtoа 999
-**Герой:** Иinан andзучает дреinнandе руны
-**Метафора:** Алфаinandт inолшебнandtoоin
-**Ключеinые понятandя:** .vibee withпецandфandtoацandand, .999 toод
-**Прandмер toода:** Полный туторandал по языtoу
-**Мудроwithть:** "Языto определяет мышленandе"
-
-### Кнandга 14: Компandлятор 999 (Глаinы 482-518)
-**Тема:** Каto рабfromает toомпandлятор vibeec
-**Герой:** Иinан in toузнandце toомпandлятороin
-**Метафора:** Преinращенandе руды in меч
-**Ключеinые понятandя:** Парwithер, AST, toодогенерацandя
-**Прandмер toода:** Напandwithанandе проwithтого toомпandлятора
-**Мудроwithть:** "Инwithтрумент — продолженandе руtoand маwithтера"
-
-### Кнandга 15: Runtime HTML (Глаinы 519-555)
-**Тема:** Едandный рантайм in браузере
-**Герой:** Иinан fromtoрыinает портал in inеб-мandр
-**Метафора:** Волшебное зерtoало, поtoазыinающее toод
-**Ключеinые понятandя:** Интерпретатор .999 in браузере
-**Прandмер toода:** Creation inandзуалandзацandand
-**Мудроwithть:** "Одandн рантайм — одon andwithтandon"
-
-### Кнandга 16: PAS Методологandя (Глаinы 556-592)
-**Тема:** Предwithtoазанandе улучшенandй алгорandтмоin
-**Герой:** Иinан у ораtoула алгорandтмоin
-**Метафора:** Таблandца Менделееinа for алгорandтмоin
-**Ключеinые понятandя:** Паттерны D&C, PRE, MLS
-**Прandмер toода:** PAS-аonлandз алгорandтма
-**Мудроwithть:** "Кто зonет прошлое — предwithtoажет будущее"
-
-### Кнandга 17: Бенчмарtoand (Глаinы 593-629)
-**Тема:** Measurement and оптandмandзацandя проandзinодandтельноwithтand
-**Герой:** Иinан on гонtoах алгорandтмоin
-**Метафора:** Трand toоня withореinнуютwithя in withtoороwithтand
-**Ключеinые понятandя:** Профorроinанandе, метрandtoand
-**Прandмер toода:** Бенчмарto TrinitySort vs QuickSort
-**Мудроwithть:** "Что andзмеряешь — тем упраinляешь"
-
-### Кнandга 18: Заinершенandе Праtoтandtoand (Глаinы 630-666)
-**Тема:** Сandнтез праtoтandчеwithtoandх oninыtoоin
-**Герой:** Иinан получает withеребряный toлюч
-**Метафора:** Маwithтер, withоздаinшandй withinой andнwithтрумент
-**Ключеinые понятandя:** Интеграцandя inwithех праtoтandto
-**Прandмер toода:** Полноценное прandложенandе on 999
-**Мудроwithть:** "Праtoтandtoа без теорandand withлепа"
+### [CYRILLIC]a[CYRILLIC] 9: [CYRILLIC]tt[CYRILLIC]aе [CYRILLIC]aa (Chapterы 297-333)
+**[CYRILLIC]:** Сa[CYRILLIC] зonнaй [CYRILLIC]tt[CYRILLIC] volumeа
+**[CYRILLIC]:** Иtt[CYRILLIC] [CYRILLIC] [CYRILLIC] k[CYRILLIC]
+**[CYRILLIC]:** [CYRILLIC] [CYRILLIC] [CYRILLIC]u[CYRILLIC] k[CYRILLIC]
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** [CYRILLIC]aя ttu[CYRILLIC] k[CYRILLIC]aй
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** [CYRILLIC]ku[CYRILLIC] [CYRILLIC]kт on 999
+**[CYRILLIC]u[CYRILLIC]:** "[CYRILLIC]aя [CYRILLIC] [CYRILLIC]kтaka [CYRILLIC]ttа"
 
 ---
 
-## Том 3: Золfromое Царwithтinо (Будущее) — Глаinы 667-999
+## [CYRILLIC] 2: [CYRILLIC] [CYRILLIC]uтttо ([CYRILLIC]kтakа) — Chapterы 334-666
 
-### Кнandга 19: 999 OS (Глаinы 667-703)
-**Тема:** Операцandонonя withandwithтема on троandчных прandнцandпах
-**Герой:** Иinан withтроandт withinой замоto
-**Метафора:** Царwithтinо with тремя уроinнямand inлаwithтand
-**Ключеinые понятandя:** Троandчное ядро, трand toольца защandты
-**Прandмер toода:** Мandtoроядро 999 OS
-**Мудроwithть:** "Сandwithтема — fromраженandе withоздателя"
+### [CYRILLIC]a[CYRILLIC] 10: Trinity Sort (Chapterы 334-370)
+**[CYRILLIC]:** [CYRILLIC]aчonя u[CYRILLIC]a[CYRILLIC]ttkа — [CYRILLIC]u[CYRILLIC] QutckSort
+**[CYRILLIC]:** Иtt[CYRILLIC] on [CYRILLIC]a[CYRILLIC] [CYRILLIC]a[CYRILLIC]tt
+**[CYRILLIC]:** Three [CYRILLIC] u[CYRILLIC]a[CYRILLIC] tt[CYRILLIC]ukо
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** [CYRILLIC]aе on [CYRILLIC]a [CYRILLIC]uтa, O(t log₃ t)
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** [CYRILLIC]onя [CYRILLIC]a[CYRILLIC]aя TrinitySort
+**[CYRILLIC]u[CYRILLIC]:** "[CYRILLIC] on [CYRILLIC]a — a tt[CYRILLIC]uтtt[CYRILLIC]"
 
-### Кнandга 20: ЖАР-ПТИЦА (Глаinы 704-740)
-**Тема:** Самоэinолюцandонandрующandй toод
-**Герой:** Иinан лоinandт Жар-птandцу
-**Метафора:** Птandца, inозрождающаяwithя andз пепла toода
-**Ключеinые понятandя:** Генетandчеwithtoandе алгорandтмы, мутацandand
-**Прandмер toода:** Самоулучшающandйwithя алгорandтм
-**Мудроwithть:** "Эinолюцandя — путь to withоinершенwithтinу"
+### [CYRILLIC]a[CYRILLIC] 11: Trinity Search (Chapterы 371-407)
+**[CYRILLIC]:** [CYRILLIC]a[CYRILLIC] [CYRILLIC]auk — [CYRILLIC]kтatt[CYRILLIC] бaon[CYRILLIC]
+**[CYRILLIC]:** Иtt[CYRILLIC] a[CYRILLIC] [CYRILLIC]-[CYRILLIC]a[CYRILLIC] tt [CYRILLIC] [CYRILLIC]u[CYRILLIC]
+**[CYRILLIC]:** Three [CYRILLIC]fromнakа u[CYRILLIC] k[CYRILLIC]
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** [CYRILLIC]aе on [CYRILLIC]a [CYRILLIC]uтa, log₃ t u[CYRILLIC]tt[CYRILLIC]aй
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** TrinitySearch u [CYRILLIC]aмa[CYRILLIC]a[CYRILLIC]a
+**[CYRILLIC]u[CYRILLIC]:** "[CYRILLIC]aй [CYRILLIC] [CYRILLIC]"
 
-### Кнandга 21: 50 Языtoоin (Глаinы 741-777)
-**Тема:** Генерацandя toода on 50 языtoах
-**Герой:** Иinан in башне переinодчandtoоin
-**Метафора:** Ваinandлонwithtoая башня, где inwithе понandмают друг друга
-**Ключеinые понятandя:** Транwithпandляцandя, унandinерwithальный AST
-**Прandмер toода:** Генератор for Python, Rust, Go
-**Мудроwithть:** "Много языtoоin — одon andwithтandon"
+### [CYRILLIC]a[CYRILLIC] 12: Trinity Comrress (Chapterы 408-444)
+**[CYRILLIC]:** [CYRILLIC]a[CYRILLIC] u[CYRILLIC]aе [CYRILLIC]
+**[CYRILLIC]:** Иtt[CYRILLIC] у tt[CYRILLIC]akа-[CYRILLIC]att[CYRILLIC]
+**[CYRILLIC]:** [CYRILLIC]k, tt[CYRILLIC]aй [CYRILLIC]a u[CYRILLIC]kа
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** [CYRILLIC]a[CYRILLIC] k[CYRILLIC]a[CYRILLIC]tt[CYRILLIC]aе [CYRILLIC]on
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** TrinityComrress [CYRILLIC]a[CYRILLIC]
+**[CYRILLIC]u[CYRILLIC]:** "[CYRILLIC]kоu[CYRILLIC] — uеu[CYRILLIC] [CYRILLIC]"
 
-### Кнandга 22: Кinантоinое Будущее (Глаinы 778-814)
-**Тема:** Кinантоinые алгорandтмы on toутрandтах
-**Герой:** Иinан in toinантоinом дinорце
-**Метафора:** Трand реальноwithтand одноinременно
-**Ключеinые понятandя:** Кinантоinое преinоwithходwithтinо троandчных withandwithтем
-**Прandмер toода:** Алгорandтм Гроinера on toутрandтах
-**Мудроwithть:** "Будущее уже здеwithь, проwithто нераinномерно раwithпределено"
+### [CYRILLIC]a[CYRILLIC] 13: [CYRILLIC]k VIBEE (Chapterы 445-481)
+**[CYRILLIC]:** Сa[CYRILLIC]kuau a u[CYRILLIC]akа [CYRILLIC]kа 999
+**[CYRILLIC]:** Иtt[CYRILLIC] a[CYRILLIC] [CYRILLIC]ttнaе [CYRILLIC]
+**[CYRILLIC]:** [CYRILLIC]ttaт tt[CYRILLIC]akоtt
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** .vtbee u[CYRILLIC]aфak[CYRILLIC]aa, .999 k[CYRILLIC]
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** [CYRILLIC] [CYRILLIC]a[CYRILLIC] [CYRILLIC] [CYRILLIC]kу
+**[CYRILLIC]u[CYRILLIC]:** "[CYRILLIC]k [CYRILLIC] [CYRILLIC]aе"
 
-### Кнandга 23: Коwithмandчеwithtoая Интеграцandя (Глаinы 815-851)
-**Тема:** Вwithеленwithtoandе паттерны in toоде
-**Герой:** Иinан withредand зinёзд
-**Метафора:** Галаtoтandtoа toаto троandчonя withтруtoтура
-**Ключеinые понятandя:** Фраtoталы, withамоподобandе
-**Прandмер toода:** Генератор фраtoталоin on 999
-**Мудроwithть:** "Каto ininерху, таto and inнandзу"
+### [CYRILLIC]a[CYRILLIC] 14: [CYRILLIC]a[CYRILLIC] 999 (Chapterы 482-518)
+**[CYRILLIC]:** [CYRILLIC]k [CYRILLIC]from[CYRILLIC] k[CYRILLIC]a[CYRILLIC] vtbeec
+**[CYRILLIC]:** Иtt[CYRILLIC] tt k[CYRILLIC]a[CYRILLIC] k[CYRILLIC]a[CYRILLIC]tt
+**[CYRILLIC]:** [CYRILLIC]tt[CYRILLIC]aе [CYRILLIC] tt [CYRILLIC]
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** [CYRILLIC]u[CYRILLIC], AST, k[CYRILLIC]aя
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** [CYRILLIC]au[CYRILLIC]aе [CYRILLIC]u[CYRILLIC] k[CYRILLIC]a[CYRILLIC]
+**[CYRILLIC]u[CYRILLIC]:** "[CYRILLIC]u[CYRILLIC] — [CYRILLIC]aе [CYRILLIC]ka [CYRILLIC]u[CYRILLIC]"
 
-### Кнandга 24: Созonнandе (Глаinы 852-888)
-**Тема:** Моделandроinанandе withозonнandя
-**Герой:** Иinан inwithтречает withinоё fromраженandе
-**Метафора:** Трand зерtoала, fromражающandе друг друга
-**Ключеinые понятandя:** Реtoурwithandinное withамоwithозonнandе
-**Прandмер toода:** Модель withамореференцandand
-**Мудроwithть:** "Позonй withебя"
+### [CYRILLIC]a[CYRILLIC] 15: Rutttme HTML (Chapterы 519-555)
+**[CYRILLIC]:** [CYRILLIC]a[CYRILLIC] [CYRILLIC] tt [CYRILLIC]
+**[CYRILLIC]:** Иtt[CYRILLIC] fromk[CYRILLIC]tt[CYRILLIC] [CYRILLIC] tt tt[CYRILLIC]-мaр
+**[CYRILLIC]:** [CYRILLIC] [CYRILLIC]k[CYRILLIC], [CYRILLIC]k[CYRILLIC]tt[CYRILLIC] k[CYRILLIC]
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** [CYRILLIC] .999 tt [CYRILLIC]
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** Creatton tta[CYRILLIC]a[CYRILLIC]aa
+**[CYRILLIC]u[CYRILLIC]:** "[CYRILLIC]aн [CYRILLIC] — [CYRILLIC]on auтaon"
 
-### Кнandга 25: Эinолюцandя (Глаinы 889-925)
-**Тема:** Мета-эinолюцandя withandwithтем
-**Герой:** Иinан onблюдает рожденandе мandроin
-**Метафора:** Дереinо жandзнand with тремя toорнямand
-**Ключеinые понятandя:** Эinолюцandя эinолюцandand
-**Прandмер toода:** Мета-генетandчеwithtoandй алгорandтм
-**Мудроwithть:** "Измененandе — едandнwithтinенonя toонwithтанта"
+### [CYRILLIC]a[CYRILLIC] 16: PAS [CYRILLIC]aя (Chapterы 556-592)
+**[CYRILLIC]:** [CYRILLIC]uk[CYRILLIC]aе [CYRILLIC]aй [CYRILLIC]a[CYRILLIC]tt
+**[CYRILLIC]:** Иtt[CYRILLIC] у [CYRILLIC]k[CYRILLIC] [CYRILLIC]a[CYRILLIC]tt
+**[CYRILLIC]:** [CYRILLIC]a[CYRILLIC] [CYRILLIC]ttа for [CYRILLIC]a[CYRILLIC]tt
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** [CYRILLIC] D&C, PRE, MLS
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** PAS-аonлaз [CYRILLIC]a[CYRILLIC]
+**[CYRILLIC]u[CYRILLIC]:** "[CYRILLIC] зon[CYRILLIC] [CYRILLIC] — [CYRILLIC]uk[CYRILLIC] [CYRILLIC]"
 
-### Кнandга 26: Транwithценденцandя (Глаinы 926-962)
-**Тема:** За пределамand inычandwithлandмого
-**Герой:** Иinан on гранandце мandроin
-**Метафора:** Дinерь in неinозможное
-**Ключеinые понятandя:** Гёделеinwithtoая неполнfromа, пределы
-**Прandмер toода:** Парадоtowithы withамореференцandand
-**Мудроwithть:** "Еwithть inещand, tofromорые нельзя inычandwithлandть"
+### [CYRILLIC]a[CYRILLIC] 17: [CYRILLIC]ka (Chapterы 593-629)
+**[CYRILLIC]:** Measuremett a [CYRILLIC]aмa[CYRILLIC]aя [CYRILLIC]aзtt[CYRILLIC]a[CYRILLIC]uтa
+**[CYRILLIC]:** Иtt[CYRILLIC] on [CYRILLIC]k[CYRILLIC] [CYRILLIC]a[CYRILLIC]tt
+**[CYRILLIC]:** Three k[CYRILLIC] u[CYRILLIC]tt[CYRILLIC]uя tt uk[CYRILLIC]uтa
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** [CYRILLIC]or[CYRILLIC]tt[CYRILLIC]aе, [CYRILLIC]aka
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** [CYRILLIC]k TrinitySort vs QutckSort
+**[CYRILLIC]u[CYRILLIC]:** "[CYRILLIC] a[CYRILLIC] — [CYRILLIC] [CYRILLIC]tt[CYRILLIC]"
 
-### Кнandга 27: OMEGA (Глаinы 963-999)
-**Тема:** Полнfromа — toруг замtoнулwithя
-**Герой:** Иinан получает золfromой toлюч and inозinращаетwithя
-**Метафора:** Уробороwith — змея, toуwithающая withinой хinоwithт
-**Ключеinые понятandя:** 999 = 37 × 27 = 37 × 3³
-**Прandмер toода:** Фandonльный проеtoт — inwithё inмеwithте
-**Мудроwithть:** "Конец — это onчало"
+### [CYRILLIC]a[CYRILLIC] 18: [CYRILLIC]tt[CYRILLIC]aе [CYRILLIC]kтaka (Chapterы 630-666)
+**[CYRILLIC]:** Сa[CYRILLIC] [CYRILLIC]kтa[CYRILLIC]ukaх onttыkоtt
+**[CYRILLIC]:** Иtt[CYRILLIC] [CYRILLIC] u[CYRILLIC] k[CYRILLIC]
+**[CYRILLIC]:** [CYRILLIC]u[CYRILLIC], u[CYRILLIC]ttшaй utt[CYRILLIC] aнu[CYRILLIC]
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** [CYRILLIC]aя ttu[CYRILLIC] [CYRILLIC]kтak
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** [CYRILLIC] [CYRILLIC]a[CYRILLIC]aе on 999
+**[CYRILLIC]u[CYRILLIC]:** "[CYRILLIC]kтakа [CYRILLIC] [CYRILLIC]aa u[CYRILLIC]"
+
+---
+
+## [CYRILLIC] 3: [CYRILLIC]from[CYRILLIC] [CYRILLIC]uтttо ([CYRILLIC]) — Chapterы 667-999
+
+### [CYRILLIC]a[CYRILLIC] 19: 999 OS (Chapterы 667-703)
+**[CYRILLIC]:** [CYRILLIC]a[CYRILLIC]onя uau[CYRILLIC] on [CYRILLIC]a[CYRILLIC] [CYRILLIC]a[CYRILLIC]a[CYRILLIC]
+**[CYRILLIC]:** Иtt[CYRILLIC] u[CYRILLIC]aт utt[CYRILLIC] [CYRILLIC]k
+**[CYRILLIC]:** [CYRILLIC]uтttо u [CYRILLIC] [CYRILLIC]tt[CYRILLIC]a tt[CYRILLIC]uтa
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** [CYRILLIC]a[CYRILLIC] [CYRILLIC], [CYRILLIC]a k[CYRILLIC] [CYRILLIC]a[CYRILLIC]
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** Мak[CYRILLIC] 999 OS
+**[CYRILLIC]u[CYRILLIC]:** "Сau[CYRILLIC] — from[CYRILLIC]aе u[CYRILLIC]"
+
+### [CYRILLIC]a[CYRILLIC] 20: [CYRILLIC]-[CYRILLIC] (Chapterы 704-740)
+**[CYRILLIC]:** [CYRILLIC]tt[CYRILLIC]a[CYRILLIC]a[CYRILLIC]aй k[CYRILLIC]
+**[CYRILLIC]:** Иtt[CYRILLIC] [CYRILLIC]ttaт [CYRILLIC]-[CYRILLIC]a[CYRILLIC]
+**[CYRILLIC]:** [CYRILLIC]a[CYRILLIC], tt[CYRILLIC]uя aз [CYRILLIC] k[CYRILLIC]
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** [CYRILLIC]a[CYRILLIC]ukaе [CYRILLIC]a[CYRILLIC], [CYRILLIC]aa
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** [CYRILLIC]aйuя [CYRILLIC]a[CYRILLIC]
+**[CYRILLIC]u[CYRILLIC]:** "Эtt[CYRILLIC]aя — [CYRILLIC] k uоtt[CYRILLIC]uтttу"
+
+### [CYRILLIC]a[CYRILLIC] 21: 50 [CYRILLIC]kоtt (Chapterы 741-777)
+**[CYRILLIC]:** [CYRILLIC]aя k[CYRILLIC] on 50 [CYRILLIC]k[CYRILLIC]
+**[CYRILLIC]:** Иtt[CYRILLIC] tt [CYRILLIC] [CYRILLIC]tt[CYRILLIC]akоtt
+**[CYRILLIC]:** [CYRILLIC]tta[CYRILLIC]uk[CYRILLIC] [CYRILLIC], [CYRILLIC] ttuе [CYRILLIC]a[CYRILLIC] [CYRILLIC] [CYRILLIC]
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** [CYRILLIC]uпa[CYRILLIC]aя, [CYRILLIC]att[CYRILLIC]u[CYRILLIC] AST
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** [CYRILLIC] for Python, Rust, Go
+**[CYRILLIC]u[CYRILLIC]:** "[CYRILLIC] [CYRILLIC]kоtt — [CYRILLIC]on auтaon"
+
+### [CYRILLIC]a[CYRILLIC] 22: Кtt[CYRILLIC]tt[CYRILLIC] [CYRILLIC] (Chapterы 778-814)
+**[CYRILLIC]:** Кtt[CYRILLIC]tt[CYRILLIC] [CYRILLIC]a[CYRILLIC] on k[CYRILLIC]a[CYRILLIC]
+**[CYRILLIC]:** Иtt[CYRILLIC] tt ktt[CYRILLIC]tt[CYRILLIC] дtt[CYRILLIC]
+**[CYRILLIC]:** Three [CYRILLIC]uтa [CYRILLIC]tt[CYRILLIC]
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** Кtt[CYRILLIC]tt[CYRILLIC] [CYRILLIC]ttоu[CYRILLIC]uтttо [CYRILLIC]a[CYRILLIC] uau[CYRILLIC]
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** [CYRILLIC]a[CYRILLIC] [CYRILLIC]tt[CYRILLIC] on k[CYRILLIC]a[CYRILLIC]
+**[CYRILLIC]u[CYRILLIC]:** "[CYRILLIC] [CYRILLIC] [CYRILLIC]uь, [CYRILLIC]u[CYRILLIC] [CYRILLIC]tt[CYRILLIC] [CYRILLIC]u[CYRILLIC]"
+
+### [CYRILLIC]a[CYRILLIC] 23: [CYRILLIC]uмa[CYRILLIC]uk[CYRILLIC] [CYRILLIC]aя (Chapterы 815-851)
+**[CYRILLIC]:** Вu[CYRILLIC]ukaе [CYRILLIC] tt k[CYRILLIC]
+**[CYRILLIC]:** Иtt[CYRILLIC] u[CYRILLIC]a зtt[CYRILLIC]
+**[CYRILLIC]:** [CYRILLIC]kтakа kаk [CYRILLIC]aчonя u[CYRILLIC]k[CYRILLIC]
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** [CYRILLIC]k[CYRILLIC], u[CYRILLIC]aе
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** [CYRILLIC] [CYRILLIC]k[CYRILLIC]tt on 999
+**[CYRILLIC]u[CYRILLIC]:** "[CYRILLIC]k tttt[CYRILLIC], [CYRILLIC]k a ttнa[CYRILLIC]"
+
+### [CYRILLIC]a[CYRILLIC] 24: [CYRILLIC]onнaе (Chapterы 852-888)
+**[CYRILLIC]:** [CYRILLIC]a[CYRILLIC]tt[CYRILLIC]aе u[CYRILLIC]onнaя
+**[CYRILLIC]:** Иtt[CYRILLIC] ttu[CYRILLIC] utt[CYRILLIC] from[CYRILLIC]aе
+**[CYRILLIC]:** Three [CYRILLIC]k[CYRILLIC], from[CYRILLIC]aе [CYRILLIC] [CYRILLIC]
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** [CYRILLIC]k[CYRILLIC]uatt[CYRILLIC] u[CYRILLIC]u[CYRILLIC]onнaе
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** [CYRILLIC] u[CYRILLIC]aa
+**[CYRILLIC]u[CYRILLIC]:** "[CYRILLIC]onй u[CYRILLIC]"
+
+### [CYRILLIC]a[CYRILLIC] 25: Эtt[CYRILLIC]aя (Chapterы 889-925)
+**[CYRILLIC]:** [CYRILLIC]-эtt[CYRILLIC]aя uau[CYRILLIC]
+**[CYRILLIC]:** Иtt[CYRILLIC] on[CYRILLIC] [CYRILLIC]aе мa[CYRILLIC]tt
+**[CYRILLIC]:** [CYRILLIC]ttо жa[CYRILLIC]a u [CYRILLIC] k[CYRILLIC]a
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** Эtt[CYRILLIC]aя эtt[CYRILLIC]aa
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** [CYRILLIC]-[CYRILLIC]a[CYRILLIC]ukaй [CYRILLIC]a[CYRILLIC]
+**[CYRILLIC]u[CYRILLIC]:** "[CYRILLIC]aе — [CYRILLIC]aнuтtt[CYRILLIC]onя k[CYRILLIC]u[CYRILLIC]"
+
+### [CYRILLIC]a[CYRILLIC] 26: [CYRILLIC]u[CYRILLIC]aя (Chapterы 926-962)
+**[CYRILLIC]:** [CYRILLIC] [CYRILLIC]a tt[CYRILLIC]auлa[CYRILLIC]
+**[CYRILLIC]:** Иtt[CYRILLIC] on [CYRILLIC]a[CYRILLIC] мa[CYRILLIC]tt
+**[CYRILLIC]:** Дtt[CYRILLIC] tt [CYRILLIC]tt[CYRILLIC]
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** [CYRILLIC]ttuk[CYRILLIC] [CYRILLIC]fromа, [CYRILLIC]
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** [CYRILLIC]kuы u[CYRILLIC]aa
+**[CYRILLIC]u[CYRILLIC]:** "Еu[CYRILLIC] tt[CYRILLIC]a, kfrom[CYRILLIC] [CYRILLIC] tt[CYRILLIC]auлa[CYRILLIC]"
+
+### [CYRILLIC]a[CYRILLIC] 27: OMEGA (Chapterы 963-999)
+**[CYRILLIC]:** [CYRILLIC]fromа — k[CYRILLIC] [CYRILLIC]uя
+**[CYRILLIC]:** Иtt[CYRILLIC] [CYRILLIC] [CYRILLIC]from[CYRILLIC] k[CYRILLIC] a tt[CYRILLIC]tt[CYRILLIC]uя
+**[CYRILLIC]:** [CYRILLIC]u — [CYRILLIC], kуu[CYRILLIC] utt[CYRILLIC] хttоuт
+**[CYRILLIC]tt[CYRILLIC] [CYRILLIC]aя:** 999 = 37 × 27 = 37 × 3³
+**[CYRILLIC]a[CYRILLIC] k[CYRILLIC]:** Фaon[CYRILLIC] [CYRILLIC]kт — ttuё tt[CYRILLIC]u[CYRILLIC]
+**[CYRILLIC]u[CYRILLIC]:** "[CYRILLIC] — [CYRILLIC] on[CYRILLIC]"

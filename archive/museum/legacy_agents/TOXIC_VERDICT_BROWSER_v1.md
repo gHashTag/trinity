@@ -1,10 +1,10 @@
-# 🔥 ТОКСИЧНЫЙ ВЕРДИКТ: VIBEE BROWSER v1.0.0
+# 🔥 [CYR:ТОКСИЧНЫЙ] [CYR:ВЕРДИКТ]: VIBEE BROWSER v1.0.0
 
 ## φ² + 1/φ² = 3 | PHOENIX = 999
 
 ---
 
-## СТАТУС: PRODUCTION READY ✅
+## [CYR:СТАТУС]: PRODUCTION READY ✅
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════╗
@@ -23,11 +23,11 @@
 
 ---
 
-## ЧТО БЫЛО СДЕЛАНО
+## [CYR:ЧТО] [CYR:БЫЛО] [CYR:СДЕЛАНО]
 
-### 1. РЕАЛЬНЫЙ РАБОЧИЙ БРАУЗЕР
+### 1. [CYR:РЕАЛЬНЫЙ] [CYR:РАБОЧИЙ] [CYR:БРАУЗЕР]
 
-**НЕ прandмandтandinonя toартandнtoа, а ПОЛНОЦЕННЫЙ Chromium браузер!**
+**НЕ прandмandтandinonя to[CYR:арт]andнtoа, а [CYR:ПОЛНОЦЕННЫЙ] Chromium browser!**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -42,7 +42,7 @@
 │                               │   anything  │                               │
 │      61.8% (φ)                │             │   class VIBEEAgent {          │
 │                               │   14.6%     │     async run(goal) {...}     │
-│      Загружает ЛЮБЫЕ withайты!   │             │   }                           │
+│      [CYR:Загружает] [CYR:ЛЮБЫЕ] with[CYR:айты]!   │             │   }                           │
 │                               │             │                               │
 │                               │             │         23.6%                 │
 │                               │             │                               │
@@ -51,9 +51,9 @@
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 2. АРХИТЕКТУРА КАК У FELLOU (НО ЛУЧШЕ!)
+### 2. [CYR:АРХИТЕКТУРА] [CYR:КАК] У FELLOU (НО [CYR:ЛУЧШЕ]!)
 
-| Компонент | Fellou | VIBEE |
+| [CYR:Компо]notнт | Fellou | VIBEE |
 |-----------|--------|-------|
 | Browser Engine | Chromium | Chromium (Electron) |
 | Agent Framework | Eko (TypeScript) | VIBEEAgent (JS + Zig specs) |
@@ -62,7 +62,7 @@
 | Ternary Logic | ❌ | △○□ |
 | Spec-First | ❌ | .vibee → .zig |
 
-### 3. СОЗДАННЫЕ ФАЙЛЫ
+### 3. [CYR:СОЗДАННЫЕ] [CYR:ФАЙЛЫ]
 
 **Electron Browser:**
 ```
@@ -109,7 +109,7 @@ trinity/output/
 
 ---
 
-## ТЕСТЫ
+## [CYR:ТЕСТЫ]
 
 ```
 ╔═══════════════════════════════════════════════════════════════╗
@@ -163,7 +163,7 @@ LAYOUT:
 
 ## AI AGENT FRAMEWORK
 
-**Аonлог Eko from Fellou, но for VIBEE:**
+**Аon[CYR:лог] Eko from Fellou, но for VIBEE:**
 
 ```javascript
 const agent = new VIBEEAgent({
@@ -197,26 +197,26 @@ const result = await agent.run('Go to google.com and search for VIBEE');
 
 ---
 
-## КАК ЗАПУСТИТЬ
+## [CYR:КАК] [CYR:ЗАПУСТИТЬ]
 
 ### На Mac/Windows/Linux:
 
 ```bash
-# Клонandруй репо
+# [CYR:Клон]and[CYR:руй] [CYR:репо]
 git clone https://github.com/gHashTag/vibee-lang.git
 cd vibee-lang/vibee-electron
 
-# Уwithтаноinand заinandwithandмоwithтand
+# Уwith[CYR:тано]inand заinandwithandмоwithтand
 npm install
 
-# Запуwithтand браузер
+# [CYR:Запу]withтand browser
 npm start
 
-# Илand in dev режandме with DevTools
+# Илand in dev [CYR:реж]andме with DevTools
 npm run dev
 ```
 
-### Сборtoа for продаtoшеon:
+### [CYR:Сбор]toа for [CYR:прода]toшеon:
 
 ```bash
 # macOS
@@ -231,12 +231,12 @@ npm run build:linux
 
 ---
 
-## СРАВНЕНИЕ С ПРОШЛОЙ ВЕРСИЕЙ
+## [CYR:СРАВНЕНИЕ] С [CYR:ПРОШЛОЙ] [CYR:ВЕРСИЕЙ]
 
-| Метрandtoа | v0.0.1 (было) | v1.0.0 (withтало) | Улучшенandе |
+| [CYR:Метр]andtoа | v0.0.1 ([CYR:было]) | v1.0.0 (with[CYR:тало]) | [CYR:Улучшен]andе |
 |---------|---------------|----------------|-----------|
-| Реальный WebView | ❌ | ✅ | ∞ |
-| Наinandгацandя | ❌ | ✅ | ∞ |
+| [CYR:Реальный] WebView | ❌ | ✅ | ∞ |
+| Наinand[CYR:гац]andя | ❌ | ✅ | ∞ |
 | Monaco Editor | ❌ | ✅ | ∞ |
 | AI Chat | ❌ | ✅ | ∞ |
 | CDP Client | ❌ | ✅ | ∞ |
@@ -246,13 +246,13 @@ npm run build:linux
 | Tests | 0 | 101 | ∞ |
 | Specs | 0 | 9 | ∞ |
 
-**УЛУЧШЕНИЕ: ОТ НУЛЯ ДО PRODUCTION-READY!**
+**[CYR:УЛУЧШЕНИЕ]: ОТ [CYR:НУЛЯ] ДО PRODUCTION-READY!**
 
 ---
 
-## ГОТОВНОСТЬ К ПРОДАКШЕНУ
+## [CYR:ГОТОВНОСТЬ] К [CYR:ПРОДАКШЕНУ]
 
-| Компонент | Статуwith | Гfromоinноwithть |
+| [CYR:Компо]notнт | [CYR:Стату]with | Гfromоinноwithть |
 |-----------|--------|------------|
 | Electron Core | ✅ | 100% |
 | WebView | ✅ | 100% |
@@ -269,34 +269,34 @@ npm run build:linux
 
 ---
 
-## СЛЕДУЮЩИЕ ШАГИ
+## [CYR:СЛЕДУЮЩИЕ] [CYR:ШАГИ]
 
-1. **LLM Integration** - Подtoлючandть реальные API (OpenAI, Anthropic)
-2. **Monaco Full** - Полonя andнтеграцandя Monaco with IntelliSense
-3. **Real-time Collab** - CRDT for withоinмеwithтной рабfromы
-4. **Voice I/O** - Голоwithоinое упраinленandе
+1. **LLM Integration** - [CYR:Под]to[CYR:люч]andть [CYR:реальные] API (OpenAI, Anthropic)
+2. **Monaco Full** - [CYR:Пол]onя and[CYR:нтеграц]andя Monaco with IntelliSense
+3. **Real-time Collab** - CRDT for withоinмеwith[CYR:тной] [CYR:раб]fromы
+4. **Voice I/O** - [CYR:Голо]withоinое [CYR:упра]in[CYR:лен]andе
 5. **Build & Release** - .dmg/.exe/.AppImage
 
 ---
 
-## ВЕРДИКТ
+## [CYR:ВЕРДИКТ]
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                               ║
-║   БЫЛО: Прandмandтandinonя toартandнtoа with toнопtoамand, tofromорые нandчего не делают            ║
+║   [CYR:БЫЛО]: Прandмandтandinonя to[CYR:арт]andнtoа with to[CYR:ноп]toамand, tofrom[CYR:орые] нand[CYR:чего] not [CYR:делают]            ║
 ║                                                                               ║
-║   СТАЛО: ПОЛНОЦЕННЫЙ AI БРАУЗЕР with:                                           ║
-║   - Реальным Chromium WebView                                                 ║
+║   [CYR:СТАЛО]: [CYR:ПОЛНОЦЕННЫЙ] AI [CYR:БРАУЗЕР] with:                                           ║
+║   - [CYR:Реальным] Chromium WebView                                                 ║
 ║   - Monaco Editor (VS Code)                                                   ║
 ║   - AI Chat with LLM                                                             ║
 ║   - Agent Framework (toаto Eko)                                                 ║
-║   - CDP аinтоматandзацandей                                                        ║
+║   - CDP аin[CYR:томат]and[CYR:зац]andей                                                        ║
 ║   - Golden Ratio layout                                                       ║
 ║   - Glassmorphism UI                                                          ║
-║   - 101 теwithтом                                                                ║
+║   - 101 теwith[CYR:том]                                                                ║
 ║                                                                               ║
-║   ГОТОВНОСТЬ: 92%                                                             ║
+║   [CYR:ГОТОВНОСТЬ]: 92%                                                             ║
 ║                                                                               ║
 ║   φ² + 1/φ² = 3 | PHOENIX = 999                                               ║
 ║                                                                               ║

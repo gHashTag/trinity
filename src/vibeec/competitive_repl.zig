@@ -18,7 +18,7 @@ pub const Lang = enum {
     pub fn getPrompt(self: Lang) []const u8 {
         return switch (self) {
             .EN => "vibee repl> ",
-            .RU => "vibee репл> ",
+            .RU => "vibee [CYR:репл]> ",
             .TH => "vibee เรพล> ",
         };
     }
@@ -26,7 +26,7 @@ pub const Lang = enum {
     pub fn getWelcome(self: Lang) []const u8 {
         return switch (self) {
             .EN => "Welcome to Trinity REPL - Eighth Life: Competitive Agent",
-            .RU => "Добро byжалоinать in Trinity REPL - Воwithьмая Жandзнь: Конtoурентный Agent",
+            .RU => "[CYR:Добро] by[CYR:жало]in[CYR:ать] in Trinity REPL - Воwith[CYR:ьмая] Жand[CYR:знь]: [CYR:Кон]to[CYR:урентный] Agent",
             .TH => "ยินดีต้อนรับสู่ Trinity REPL - ชีวิตที่แปด: ตัวแทนแข่งขัน",
         };
     }
@@ -330,9 +330,9 @@ pub const CompetitiveRepl = struct {
         try writer.print("  lang en|ru|th - Switch language\n", .{});
         try writer.print("  exit        - Exit REPL\n", .{});
         try writer.print("\n📝 Examples:\n", .{});
-        try writer.print("  Запуwithтand andнференwith on Mistral-7B and заwithтейtoай earnings\n", .{});
-        try writer.print("  Оптandмandзandруй inference for Qwen2.5-Coder-7B byд 8-core CPU\n", .{});
-        try writer.print("  Маtowithandмandзandруй earnings on моём node in Ko Samui\n", .{});
+        try writer.print("  [CYR:Запу]withтand and[CYR:нферен]with on Mistral-7B and заwith[CYR:тей]toай earnings\n", .{});
+        try writer.print("  [CYR:Опт]andмandзand[CYR:руй] inference for Qwen2.5-Coder-7B byд 8-core CPU\n", .{});
+        try writer.print("  Маtowithandмandзand[CYR:руй] earnings on [CYR:моём] node in Ko Samui\n", .{});
         try writer.print("\n", .{});
     }
 
@@ -367,7 +367,7 @@ pub const CompetitiveRepl = struct {
             try writer.print("Language set to English\n", .{});
         } else if (std.mem.eql(u8, lang_str, "ru")) {
             self.lang = .RU;
-            try writer.print("Языto уwithтаноinлен on руwithwithtoandй\n", .{});
+            try writer.print("[CYR:Язы]to уwith[CYR:тано]in[CYR:лен] on руwithwithtoandй\n", .{});
         } else if (std.mem.eql(u8, lang_str, "th")) {
             self.lang = .TH;
             try writer.print("ตั้งค่าภาษาเป็นไทย\n", .{});

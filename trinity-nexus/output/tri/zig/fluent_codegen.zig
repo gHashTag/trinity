@@ -15,7 +15,7 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// КОНСТАНТЫ
+// [CYR:КОНСТАНТЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const MAX_CODE_LENGTH: f64 = 4096;
@@ -24,7 +24,7 @@ pub const MIN_CONFIDENCE: f64 = 0.7;
 
 pub const TEMPLATE_COUNT: f64 = 50;
 
-// Базоinые φ-toонwithтанты (Sacred Formula)
+// [CYR:Базо]inые φ-toонwith[CYR:танты] (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -36,7 +36,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ТИПЫ
+// [CYR:ТИПЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Input prompt language
@@ -98,7 +98,7 @@ pub const CodeTemplate = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ПАМЯТЬ ДЛЯ WASM
+// [CYR:ПАМЯТЬ] [CYR:ДЛЯ] WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -148,13 +148,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-andнтерполяцandя
+/// φ-and[CYR:нтер]fieldsцandя
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// Генерацandя φ-withпandралand
+/// Геnot[CYR:рац]andя φ-withпand[CYR:рал]and
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -449,7 +449,7 @@ test "phi_constants" {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "russian_sort_zig" {
-// Given: "Напandшand withортandроintoу маwithwithandinа on Zig"
+// Given: "[CYR:Нап]andшand with[CYR:орт]andроintoу маwithwithandinа on Zig"
 // Expected: "Real bubble/quick sort in Zig"
 // Test: russian_sort_zig
     // (Test setup and assertions to be implemented)
@@ -473,7 +473,7 @@ test "english_binary_search" {
 }
 
 test "russian_stack_python" {
-// Given: "Создай toлаwithwith withтеtoа on Python"
+// Given: "[CYR:Создай] toлаwithwith withтеtoа on Python"
 // Expected: "Real Stack class in Python"
 // Test: russian_stack_python
     // (Test setup and assertions to be implemented)

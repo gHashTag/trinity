@@ -98,7 +98,7 @@ Key components:
 | Farewell | goodbye, bye, поtoа, 再见 |
 | Question | what, why, how, when, where, ? |
 | Request | please, help me, i need |
-| Opinion | i think, i believe, по-моему |
+| Opinion | i think, i believe, по-[CYR:моему] |
 | Acknowledgment | thank, ok, yes, no, withпаwithandбо |
 | Emotion | happy, sad, angry, excited |
 | Statement | Default for other input |
@@ -108,7 +108,7 @@ Key components:
 | Language | Detection | Greeting | Farewell |
 |----------|-----------|----------|----------|
 | English | Default | Hello! | Goodbye! |
-| Russian | Cyrillic | Прandinет! | До withinandданandя! |
+| Russian | Cyrillic | Прandinет! | До withinand[CYR:дан]andя! |
 | Chinese | Han chars | 你好！ | 再见！ |
 | Spanish | ñ, ¿, ¡ | ¡Hola! | ¡Adiós! |
 | French | ç, œ | Bonjour! | Au revoir! |

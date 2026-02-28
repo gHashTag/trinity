@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// MULTI-LANGUAGE CODEGEN - Генератор toода for inwithех языtoоin
+// MULTI-LANGUAGE CODEGEN - Геnot[CYR:ратор] to[CYR:ода] for inwithех [CYR:язы]toоin
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Генерandрует toод for 39 языtoоin andз .vibee withпецandфandtoацandй
-// Аinтор: Dmitrii Vasilev
+// Геnotрand[CYR:рует] toод for 39 [CYR:язы]toоin andз .vibee with[CYR:пец]andфandtoацandй
+// Аin[CYR:тор]: Dmitrii Vasilev
 // φ² + 1/φ² = 3 | PHOENIX = 999
 //
 // ═══════════════════════════════════════════════════════════════════════════════

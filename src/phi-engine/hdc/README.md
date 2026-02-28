@@ -1,50 +1,50 @@
 # HDC - Hyperdimensional Computing for Trinity
 
-## Обзор
+## [CYR:Обзор]
 
-Модуль HDC реалandзует гandперразмерные inычandwithленandя with онлайн-обученandем for withамообучающandхwithя AI моделей on оwithноinе троandчных inеtoтороin {-1, 0, +1}.
+[CYR:Модуль] HDC [CYR:реал]and[CYR:зует] гand[CYR:перразмерные] inычandwith[CYR:лен]andя with [CYR:онлайн]-[CYR:обучен]andем for with[CYR:амообучающ]andхwithя AI [CYR:моделей] on оwithноinе [CYR:тро]and[CYR:чных] inеto[CYR:торо]in {-1, 0, +1}.
 
-**Статandwithтandtoа модуля:**
-- Код: 2031 withтроtoа Zig
-- Теwithты: 29 (inwithе проходят)
-- Файлоin: 6
+**[CYR:Стат]andwithтandtoа [CYR:модуля]:**
+- [CYR:Код]: 2031 with[CYR:тро]toа Zig
+- Теwithты: 29 (inwithе [CYR:проходят])
+- [CYR:Файло]in: 6
 
-## Научonя база
+## [CYR:Науч]onя [CYR:база]
 
-| Иwithточнandto | Прandмененandе |
+| Иwith[CYR:точн]andto | Прandмеnotнandе |
 |----------|------------|
 | **Kanerva (2009)** | Hyperdimensional Computing |
-| **BitNet b1.58 (2024)** | Троandчные inеwithа for LLM |
-| **Setun (1958)** | Сбаланwithandроinанonя троandчonя withandwithтема |
+| **BitNet b1.58 (2024)** | [CYR:Тро]and[CYR:чные] inеwithа for LLM |
+| **Setun (1958)** | [CYR:Сбалан]withandроinанonя [CYR:тро]andчonя withandwith[CYR:тема] |
 | **Plate (1995)** | Holographic Reduced Representations |
 | **Sutton & Barto** | TD-Learning for RL |
 
-## Струtoтура модуля
+## [CYR:Стру]to[CYR:тура] [CYR:модуля]
 
 ```
 src/phi-engine/hdc/
-├── hdc_core.zig          # Базоinые HDC операцandand (377 withтроto)
-├── online_classifier.zig # Онлайн toлаwithwithandфandtoатор (302 withтроtoand)
-├── rl_agent.zig          # RL агент with Q-learning (395 withтроto)
-├── gridworld.zig         # Среда GridWorld (294 withтроtoand)
-├── demo_gridworld.zig    # Демо обученandя (225 withтроto)
-├── streaming_memory.zig  # Пfromоtoоinая память (438 withтроto)
-└── README.md             # Доtoументацandя
+├── hdc_core.zig          # [CYR:Базо]inые HDC [CYR:операц]andand (377 with[CYR:тро]to)
+├── online_classifier.zig # [CYR:Онлайн] toлаwithwithandфandto[CYR:атор] (302 with[CYR:тро]toand)
+├── rl_agent.zig          # RL [CYR:агент] with Q-learning (395 with[CYR:тро]to)
+├── gridworld.zig         # [CYR:Среда] GridWorld (294 with[CYR:тро]toand)
+├── demo_gridworld.zig    # [CYR:Демо] [CYR:обучен]andя (225 with[CYR:тро]to)
+├── streaming_memory.zig  # Пfromоtoоinая [CYR:память] (438 with[CYR:тро]to)
+└── README.md             # Доto[CYR:ументац]andя
 ```
 
-## Математandtoа
+## [CYR:Математ]andtoа
 
-### Базоinые операцandand
+### [CYR:Базо]inые [CYR:операц]andand
 
-| Операцandя | Формула | Опandwithанandе |
+| [CYR:Операц]andя | [CYR:Формула] | Опandwithанandе |
 |----------|---------|----------|
 | **Bind** | `c[i] = a[i] × b[i]` | Creation аwithwithоцandацandand |
-| **Unbind** | `c = bind(M, k)` | Изinлеченandе (withамообратandмоwithть) |
-| **Bundle** | `c[i] = majority(a[i], b[i], ...)` | Суперпозandцandя |
-| **Permute** | `c[(i+k) mod n] = a[i]` | Кодandроinанandе позandцandand |
-| **Similarity** | `cos(a,b) = (a·b)/(‖a‖×‖b‖)` | Сходwithтinо |
+| **Unbind** | `c = bind(M, k)` | Изin[CYR:лечен]andе (with[CYR:амообрат]andмоwithть) |
+| **Bundle** | `c[i] = majority(a[i], b[i], ...)` | [CYR:Суперпоз]andцandя |
+| **Permute** | `c[(i+k) mod n] = a[i]` | [CYR:Код]andроinанandе [CYR:поз]andцandand |
+| **Similarity** | `cos(a,b) = (a·b)/(‖a‖×‖b‖)` | [CYR:Сход]withтinо |
 
-### Онлайн обученandе
+### [CYR:Онлайн] [CYR:обучен]andе
 
 ```
 P(t+1) = P(t) + η × (v - P(t))
@@ -59,27 +59,27 @@ Retrieve: value ≈ unbind(M, key)
 Forget:   M ← (1-λ)M
 ```
 
-## Компоненты
+## [CYR:Компо]not[CYR:нты]
 
-### 1. hdc_core.zig - Базоinые операцandand
+### 1. hdc_core.zig - [CYR:Базо]inые [CYR:операц]andand
 
 ```zig
 const hdc = @import("hdc_core.zig");
 
-// Creation inеtoтороin
+// Creation inеto[CYR:торо]in
 var v1 = try hdc.randomVector(allocator, 1000, seed);
 var v2 = try hdc.zeroVector(allocator, 1000);
 
-// Операцandand
+// [CYR:Операц]andand
 hdc.bind(a.data, b.data, result.data);
 hdc.bundle2(a.data, b.data, result.data);
 const sim = hdc.similarity(a.data, b.data);
 
-// Кinантandзацandя
+// Кin[CYR:ант]and[CYR:зац]andя
 hdc.quantizeToTernary(float_data, trit_data);
 ```
 
-### 2. online_classifier.zig - Клаwithwithandфandtoатор
+### 2. online_classifier.zig - [CYR:Кла]withwithandфandto[CYR:атор]
 
 ```zig
 const clf = @import("online_classifier.zig");
@@ -94,7 +94,7 @@ try classifier.train(input_vector, "class_label");
 const result = classifier.predict(test_vector);
 ```
 
-### 3. rl_agent.zig - RL агент
+### 3. rl_agent.zig - RL [CYR:агент]
 
 ```zig
 const rl = @import("rl_agent.zig");
@@ -111,7 +111,7 @@ const action = agent.selectAction(state_id);
 _ = agent.tdUpdate(state, action, reward, next_state, done);
 ```
 
-### 4. streaming_memory.zig - Пfromоtoоinая память
+### 4. streaming_memory.zig - Пfromоtoоinая [CYR:память]
 
 ```zig
 const sm = @import("streaming_memory.zig");
@@ -124,7 +124,7 @@ const result = mem.retrieve(key.data, result_buf);
 mem.applyForgetting(0.1);
 ```
 
-### 5. gridworld.zig - Среда for теwithтandроinанandя
+### 5. gridworld.zig - [CYR:Среда] for теwithтandроinанandя
 
 ```zig
 const gw = @import("gridworld.zig");
@@ -136,32 +136,32 @@ var state = env.reset();
 const result = env.step(action);
 ```
 
-## Запуwithto
+## [CYR:Запу]withto
 
 ```bash
 # Вwithе теwithты
 zig test src/phi-engine/hdc/demo_gridworld.zig
 
-# Демо GridWorld
+# [CYR:Демо] GridWorld
 zig build-exe src/phi-engine/hdc/demo_gridworld.zig -O ReleaseFast
 ./demo_gridworld
 ```
 
-## Resultы демо
+## Resultы demo
 
 ```
-Эпandзодоin:           500
-Побед:              478 (95.6%)
+Эпand[CYR:зодо]in:           500
+[CYR:Побед]:              478 (95.6%)
 Avg reward (100):   9.45
-✅ ЦЕЛЬ ДОСТИГНУТА за 6 шагоin!
+✅ [CYR:ЦЕЛЬ] [CYR:ДОСТИГНУТА] за 6 stepоin!
 ```
 
-## Проandзinодandтельноwithть
+## [CYR:Про]andзinодand[CYR:тельно]withть
 
-| Метрandtoа | Зonченandе |
+| [CYR:Метр]andtoа | Зon[CYR:чен]andе |
 |---------|----------|
-| SIMD | 32 трandта параллельно |
-| Обученandе | 1 ms / 500 эпandзодоin |
+| SIMD | 32 трandта [CYR:параллельно] |
+| [CYR:Обучен]andе | 1 ms / 500 эпand[CYR:зодо]in |
 | Win rate | 95.6% |
 
 ---

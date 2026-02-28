@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// VIBEE PARSER - Парwithер .vibee withпецandфandtoацandй
+// VIBEE PARSER - [CYR:Пар]withер .vibee with[CYR:пец]andфandtoацandй
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Парwithandт YAML-подобный формат .vibee файлоin
-// Аinтор: Dmitrii Vasilev
+// [CYR:Пар]withandт YAML-[CYR:подобный] [CYR:формат] .vibee fileоin
+// Аin[CYR:тор]: Dmitrii Vasilev
 // φ² + 1/φ² = 3
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -13,7 +13,7 @@ const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayListUnmanaged;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ТИПЫ СПЕЦИФИКАЦИИ
+// [CYR:ТИПЫ] [CYR:СПЕЦИФИКАЦИИ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const VibeeSpec = struct {
@@ -72,7 +72,7 @@ pub const VibeeSpec = struct {
     }
 
     pub fn deinit(self: *VibeeSpec) void {
-        // Оwithinобождаем inложенные withтруtoтуры
+        // Оwithin[CYR:обождаем] in[CYR:ложенные] with[CYR:тру]to[CYR:туры]
         for (self.types.items) |*t| {
             t.fields.deinit(self.allocator);
             t.constraints.deinit(self.allocator);
@@ -94,7 +94,7 @@ pub const VibeeSpec = struct {
             f.timers.deinit(self.allocator);
         }
 
-        // Оwithinобождаем оwithноinные withпandwithtoand
+        // Оwithin[CYR:обождаем] оwithноin[CYR:ные] withпandwithtoand
         self.languages.deinit(self.allocator);
         self.targets.deinit(self.allocator);
         self.imports.deinit(self.allocator);
@@ -312,7 +312,7 @@ pub const PasPrediction = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ПАРСЕР
+// [CYR:ПАРСЕР]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const VibeeParser = struct {
@@ -345,7 +345,7 @@ pub const VibeeParser = struct {
                 continue;
             }
 
-            // Пропуwithtoаем тольtoо ":"
+            // [CYR:Пропу]withto[CYR:аем] [CYR:толь]toо ":"
             if (self.pos < self.source.len and self.source[self.pos] == ':') {
                 self.pos += 1;
             }
@@ -456,7 +456,7 @@ pub const VibeeParser = struct {
                 self.pos += 1;
                 self.line += 1;
             } else if (c == '#') {
-                // Пропуwithtoаем toомментарandй до toонца withтроtoand
+                // [CYR:Пропу]withto[CYR:аем] to[CYR:омментар]andй до to[CYR:онца] with[CYR:тро]toand
                 while (self.pos < self.source.len and self.source[self.pos] != '\n') {
                     self.pos += 1;
                 }
@@ -565,16 +565,16 @@ pub const VibeeParser = struct {
     }
 
     fn parseConstants(self: *Self, constants: *ArrayList(Constant)) !void {
-        // Не inызыinаем skipToNextLine - мы уже on withледующей withтроtoе поwithле ":"
+        // Не in[CYR:ызы]in[CYR:аем] skipToNextLine - мы [CYR:уже] on with[CYR:ледующей] with[CYR:тро]toе поwithле ":"
         while (self.pos < self.source.len) {
             self.skipEmptyLinesAndComments();
             if (self.pos >= self.source.len) break;
 
-            // Проinеряем fromwithтуп (toонwithтанты andмеют fromwithтуп 2 пробела)
+            // [CYR:Про]in[CYR:еряем] fromwith[CYR:туп] (toонwith[CYR:танты] and[CYR:меют] fromwith[CYR:туп] 2 [CYR:пробела])
             const indent = self.countIndent();
-            if (indent < 2) break; // Меньше 2 = toонец withеtoцandand
+            if (indent < 2) break; // [CYR:Меньше] 2 = toоnotц withеtoцandand
             if (indent > 4) {
-                // Это inложенное поле, пропуwithtoаем
+                // [CYR:Это] in[CYR:ложенное] field, [CYR:пропу]withto[CYR:аем]
                 self.skipToNextLine();
                 continue;
             }
@@ -583,7 +583,7 @@ pub const VibeeParser = struct {
             const name = self.readKey();
             if (name.len == 0) break;
 
-            // Проinеряем что это не withледующая withеtoцandя (без fromwithтупа)
+            // [CYR:Про]in[CYR:еряем] that this not with[CYR:ледующая] withеtoцandя ([CYR:без] fromwith[CYR:тупа])
             if (indent == 0 and (std.mem.eql(u8, name, "types") or
                 std.mem.eql(u8, name, "creation_patterns") or
                 std.mem.eql(u8, name, "behaviors")))
@@ -594,7 +594,7 @@ pub const VibeeParser = struct {
 
             self.skipColon();
 
-            // Пробуем прочandтать inline зonченandе (формат: NAME: VALUE)
+            // [CYR:Пробуем] [CYR:проч]and[CYR:тать] inline зon[CYR:чен]andе ([CYR:формат]: NAME: VALUE)
             self.skipInlineWhitespace();
             const inline_value = self.readValue();
 
@@ -605,20 +605,20 @@ pub const VibeeParser = struct {
             };
 
             if (inline_value.len > 0) {
-                // Inline формат: PHI: 1.618
+                // Inline [CYR:формат]: PHI: 1.618
                 constant.value = std.fmt.parseFloat(f64, inline_value) catch 0;
                 self.skipToNextLine();
             } else {
-                // Nested формат
+                // Nested [CYR:формат]
                 self.skipToNextLine();
 
-                // Чandтаем inложенные поля (fromwithтуп 4 пробела)
+                // Чand[CYR:таем] in[CYR:ложенные] fields (fromwith[CYR:туп] 4 [CYR:пробела])
                 while (self.pos < self.source.len) {
                     self.skipEmptyLinesAndComments();
                     if (self.pos >= self.source.len) break;
 
                     const field_indent = self.countIndent();
-                    if (field_indent < 4) break; // Меньше 4 = withледующая toонwithтанта or toонец
+                    if (field_indent < 4) break; // [CYR:Меньше] 4 = with[CYR:ледующая] toонwith[CYR:танта] or toоnotц
                     self.pos += field_indent;
 
                     const field_key = self.readKey();
@@ -730,31 +730,31 @@ pub const VibeeParser = struct {
 
     fn skipEmptyLinesAndComments(self: *Self) void {
         while (self.pos < self.source.len) {
-            // Пропуwithtoаем пуwithтые withтроtoand
+            // [CYR:Пропу]withto[CYR:аем] пуwith[CYR:тые] with[CYR:тро]toand
             if (self.source[self.pos] == '\n') {
                 self.pos += 1;
                 self.line += 1;
                 continue;
             }
-            // Проinеряем withтроtoу
+            // [CYR:Про]in[CYR:еряем] with[CYR:тро]toу
             const line_start = self.pos;
             var spaces: usize = 0;
             while (self.pos < self.source.len and self.source[self.pos] == ' ') {
                 spaces += 1;
                 self.pos += 1;
             }
-            // Пропуwithtoаем withтроtoand-toомментарandand
+            // [CYR:Пропу]withto[CYR:аем] with[CYR:тро]toand-to[CYR:омментар]andand
             if (self.pos < self.source.len and self.source[self.pos] == '#') {
                 self.skipToNextLine();
                 continue;
             }
-            // Пропуwithtoаем withтроtoand тольtoо with пробеламand
+            // [CYR:Пропу]withto[CYR:аем] with[CYR:тро]toand [CYR:толь]toо with [CYR:пробелам]and
             if (self.pos < self.source.len and self.source[self.pos] == '\n') {
                 self.pos += 1;
                 self.line += 1;
                 continue;
             }
-            // Отtoатыinаемwithя to onчалу withтроtoand
+            // Отto[CYR:аты]in[CYR:аем]withя to on[CYR:чалу] with[CYR:тро]toand
             self.pos = line_start;
             break;
         }
@@ -772,7 +772,7 @@ pub const VibeeParser = struct {
             const name = self.readKey();
             if (name.len == 0) break;
 
-            // Проinеряем что это не withледующая withеtoцandя
+            // [CYR:Про]in[CYR:еряем] that this not with[CYR:ледующая] withеtoцandя
             if (std.mem.eql(u8, name, "creation_patterns") or
                 std.mem.eql(u8, name, "behaviors") or
                 std.mem.eql(u8, name, "algorithms") or
@@ -788,7 +788,7 @@ pub const VibeeParser = struct {
             var typedef = TypeDef.init(self.allocator);
             typedef.name = name;
 
-            // Чandтаем inложенные поля
+            // Чand[CYR:таем] in[CYR:ложенные] fields
             while (self.pos < self.source.len) {
                 self.skipEmptyLinesAndComments();
                 if (self.pos >= self.source.len) break;
@@ -1291,7 +1291,7 @@ pub const VibeeParser = struct {
             const name = self.readKey();
             if (name.len == 0) break;
 
-            // Проinеряем что это не withледующая withеtoцandя
+            // [CYR:Про]in[CYR:еряем] that this not with[CYR:ледующая] withеtoцandя
             if (std.mem.eql(u8, name, "behaviors") or
                 std.mem.eql(u8, name, "algorithms") or
                 std.mem.eql(u8, name, "wasm_exports") or
@@ -1311,7 +1311,7 @@ pub const VibeeParser = struct {
                 .result = "",
             };
 
-            // Чandтаем inложенные поля
+            // Чand[CYR:таем] in[CYR:ложенные] fields
             while (self.pos < self.source.len) {
                 self.skipEmptyLinesAndComments();
                 if (self.pos >= self.source.len) break;
@@ -1357,7 +1357,7 @@ pub const VibeeParser = struct {
 
             var behavior = Behavior.init(self.allocator);
 
-            // Перinое поле on той же withтроtoе: "- name: value"
+            // [CYR:Пер]inое field on [CYR:той] же with[CYR:тро]toе: "- name: value"
             const first_key = self.readKey();
             if (first_key.len > 0) {
                 self.skipColon();
@@ -1367,7 +1367,7 @@ pub const VibeeParser = struct {
             }
             self.skipToNextLine();
 
-            // Чandтаем оwithтальные поля behavior
+            // Чand[CYR:таем] оwith[CYR:тальные] fields behavior
             while (self.pos < self.source.len) {
                 self.skipEmptyLinesAndComments();
                 if (self.pos >= self.source.len) break;
@@ -1438,7 +1438,7 @@ pub const VibeeParser = struct {
                 .tolerance = null,
             };
 
-            // Перinое поле on той же withтроtoе
+            // [CYR:Пер]inое field on [CYR:той] же with[CYR:тро]toе
             const first_key = self.readKey();
             if (first_key.len > 0) {
                 self.skipColon();
@@ -1450,7 +1450,7 @@ pub const VibeeParser = struct {
             }
             self.skipToNextLine();
 
-            // Чandтаем оwithтальные поля test_case
+            // Чand[CYR:таем] оwith[CYR:тальные] fields test_case
             while (self.pos < self.source.len) {
                 self.skipEmptyLinesAndComments();
                 if (self.pos >= self.source.len) break;
@@ -1908,7 +1908,7 @@ pub const VibeeParser = struct {
         }
     }
 
-    // Вwithпомогательные фунtoцandand
+    // Вwith[CYR:помогательные] [CYR:фун]toцandand
     fn countIndent(self: *Self) usize {
         var count: usize = 0;
         const start = self.pos;
@@ -1916,7 +1916,7 @@ pub const VibeeParser = struct {
             count += 1;
             self.pos += 1;
         }
-        self.pos = start; // Отtoатыinаемwithя
+        self.pos = start; // Отto[CYR:аты]in[CYR:аем]withя
         return count;
     }
 
@@ -1931,7 +1931,7 @@ pub const VibeeParser = struct {
     }
 
     fn skipBlock(self: *Self) void {
-        // Пропуwithtoаем блоto with fromwithтупом
+        // [CYR:Пропу]withto[CYR:аем] [CYR:бло]to with fromwith[CYR:тупом]
         const base_indent = self.countIndent();
         self.skipLine();
         while (self.pos < self.source.len) {
@@ -2012,7 +2012,7 @@ pub const VibeeParser = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ТЕСТЫ
+// [CYR:ТЕСТЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "parse simple spec" {

@@ -53,7 +53,7 @@
 ### Topic Detection
 
 Added `coding` topic with multilingual keywords:
-- Russian: toод, программ, фунtoцand, алгорandтм, withортandроinto
+- Russian: toод, [CYR:программ], [CYR:фун]toцand, [CYR:алгор]andтм, with[CYR:орт]andроinto
 - English: code, program, function, algorithm, sort
 - Chinese: 代码, 程序, 函数, 算法, 排序
 
@@ -61,8 +61,8 @@ Added `coding` topic with multilingual keywords:
 
 ### Russian
 ```
-"Вfrom прandмер toода. Могу объяwithнandть подробнее, еwithлand нужно!"
-"Гfromоinо! Вfrom реалandзацandя. Еwithть inопроwithы по toоду?"
+"Вfrom прand[CYR:мер] to[CYR:ода]. [CYR:Могу] [CYR:объя]withнandть [CYR:подроб]notе, еwithлand [CYR:нужно]!"
+"Гfromоinо! Вfrom [CYR:реал]and[CYR:зац]andя. Еwithть in[CYR:опро]withы по to[CYR:оду]?"
 ```
 
 ### English

@@ -195,4 +195,4 @@ done
 
 **KOSHEY v8 SINGULARITY | φ² + 1/φ² = 3 | PHOENIX = 999**
 
-**КОЩЕЙ БЕССМЕРТНЫЙ - IMMORTAL INTELLIGENCE**
+**[CYR:КОЩЕЙ] [CYR:БЕССМЕРТНЫЙ] - IMMORTAL INTELLIGENCE**

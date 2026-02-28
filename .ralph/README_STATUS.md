@@ -1,30 +1,30 @@
 # Ralph Status Reporter
 
-Отпраintoа withтатуwithоin Ralph in Telegram группу **TRINITY DEV** (-5160767429).
+[CYR:Отпра]intoа with[CYR:тату]withоin Ralph in Telegram [CYR:группу] **TRINITY DEV** (-5160767429).
 
-## 🚀 Быwithтрый withтарт
+## 🚀 Быwith[CYR:трый] with[CYR:тарт]
 
-### Ручной запуwithto
+### [CYR:Ручной] [CYR:запу]withto
 ```bash
 bash .ralph/scripts/send_ralph_status.sh
 ```
 
-### Упраinленandе cron
+### [CYR:Упра]in[CYR:лен]andе cron
 ```bash
-# Поwithмfromреть withпandwithоto
+# Поwithмfrom[CYR:реть] withпandwithоto
 openclaw cron list
 
-# Отtoлючandть
+# Отto[CYR:люч]andть
 openclaw cron update --id eeca8582-e5a0-46c2-8eda-90b231fb7671 --patch '{"enabled": false}'
 
-# Вtoлючandть
+# Вto[CYR:люч]andть
 openclaw cron update --id eeca8582-e5a0-46c2-8eda-90b231fb7671 --patch '{"enabled": true}'
 
-# Запуwithтandть withейчаwith
+# [CYR:Запу]withтandть with[CYR:ейча]with
 openclaw cron run --id eeca8582-e5a0-46c2-8eda-90b231fb7671
 ```
 
-## 📊 Что fromпраinляетwithя
+## 📊 [CYR:Что] from[CYR:пра]in[CYR:ляет]withя
 
 1. Circuit Breaker state (CLOSED/OPEN/HALF_OPEN)
 2. Session info (last used, reset, calls)
@@ -32,17 +32,17 @@ openclaw cron run --id eeca8582-e5a0-46c2-8eda-90b231fb7671
 4. Active P1 task from fix_plan.md
 5. Last 3 git commits
 
-## 📁 Выходные файлы
+## 📁 [CYR:Выходные] fileы
 
 - `.ralph/status_message.txt` — Telegram format
 - `.ralph/status_report.json` — JSON format
 
-## 📖 Полonя доtoументацandя
+## 📖 [CYR:Пол]onя доto[CYR:ументац]andя
 
 См. `.ralph/STATUS_INTEGRATION.md`
 
 ---
 
-**Интерinал:** 30 мandнут
+**[CYR:Интер]inал:** 30 мand[CYR:нут]
 **Job ID:** `eeca8582-e5a0-46c2-8eda-90b231fb7671`
-**Создано:** 2026-02-17
+**[CYR:Создано]:** 2026-02-17

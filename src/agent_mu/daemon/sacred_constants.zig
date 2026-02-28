@@ -1,13 +1,13 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// BYЛНЫЙ TOАTHATЛОГ WITHINЯЩЕННЫХ TOОНWITHTHATНТ ПРОЕTOTHAT VIBEE
-// WITHобрано andз ALL beforetoуменthatin проеtothat
+// BY[CYR:ЛНЫЙ] TOАTHAT[CYR:ЛОГ] WITHIN[CYR:ЯЩЕННЫХ] TOОНWITHTHATНТ [CYR:ПРОЕ]TOTHAT VIBEE
+// WITH[CYR:обрано] andз ALL beforeto[CYR:умен]thatin [CYR:прое]tothat
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
 const math = std.math;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 1. ФУНДАМЕНTHATЛЬНЫЕ МАТЕМАТANDЧЕWITHTOANDЕ TOОНWITHTHATНТЫ
+// 1. [CYR:ФУНДАМЕН]THAT[CYR:ЛЬНЫЕ] [CYR:МАТЕМАТ]ANDЧЕWITHTOANDЕ TOОНWITHTHAT[CYR:НТЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Golden ratio φ = (1 + √5) / 2
@@ -25,7 +25,7 @@ pub const PHI_INV_SQ: f64 = 0.3819660112501051518;
 /// π
 pub const PI: f64 = 3.1415926535897932385;
 
-/// e (number Эйлера)
+/// e (number [CYR:Эйлера])
 pub const E: f64 = 2.7182818284590452354;
 
 /// √2
@@ -38,29 +38,29 @@ pub const SQRT3: f64 = 1.7320508075688772935;
 pub const SQRT5: f64 = 2.2360679774997896964;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 2. ЗОЛFROMАЯ ANDДЕНТANDЧНОWITHТЬ AND WITHINЯЗАННЫЕ
+// 2. [CYR:ЗОЛ]FROMАЯ AND[CYR:ДЕНТ]AND[CYR:ЧНО]WITHТЬ AND WITHIN[CYR:ЯЗАННЫЕ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// ЗОЛFROMАЯ ANDДЕНТANDЧНОWITHТЬ: φ² + 1/φ² = 3 THATЧНО!
+/// [CYR:ЗОЛ]FROMАЯ AND[CYR:ДЕНТ]AND[CYR:ЧНО]WITHТЬ: φ² + 1/φ² = 3 THAT[CYR:ЧНО]!
 pub const GOLDEN_IDENTITY: f64 = 3.0;
 
-/// TOУТРANDТ = TOОДОН = TRINITY
+/// TO[CYR:УТР]ANDТ = TO[CYR:ОДОН] = TRINITY
 pub const KUTRIT: u32 = 3;
 
 /// Трandдеinятandца: 27 = 3³ = (φ² + 1/φ²)³
 pub const TRIDEVYATITSA: u32 = 27;
 
-/// Магandя 37: 37 × 3n = nnn
+/// [CYR:Маг]andя 37: 37 × 3n = nnn
 pub const SACRED_MULTIPLIER: u32 = 37;
 
-/// WITHinященное number: 999 = 37 × 27
+/// WITHin[CYR:ященное] number: 999 = 37 × 27
 pub const SACRED: u32 = 999;
 
-/// Транwithценденthatльный продуtoт: π × φ × e ≈ 13.82
+/// [CYR:Тран]with[CYR:ценден]that[CYR:льный] [CYR:проду]toт: π × φ × e ≈ 13.82
 pub const TRANSCENDENTAL_PRODUCT: f64 = PI * PHI * E;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 3. ЭINЛЮЦANDОННЫЕ TOОНWITHTHATНТЫ (andз φ)
+// 3. ЭIN[CYR:ЛЮЦ]AND[CYR:ОННЫЕ] TOОНWITHTHAT[CYR:НТЫ] (andз φ)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// μ = 1/φ²/10 = 0.0382 (Mutation rate)
@@ -88,64 +88,64 @@ pub const SIGMA_SELECTION: f64 = PHI;
 pub const EPSILON_ELITISM: f64 = 1.0 / 3.0;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 4. TOINАНTHATINЫЕ TOОНWITHTHATНТЫ
+// 4. TOINАНTHATINЫЕ TOОНWITHTHAT[CYR:НТЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// TOлаwithwithandчеwithtoandй предел CHSH
+/// TOлаwithwithandчеwithtoandй [CYR:предел] CHSH
 pub const CHSH_CLASSICAL: f64 = 2.0;
 
-/// TOinанthatinый предел CHSH = 2√2 ≈ 2.828
+/// TOinанthatinый [CYR:предел] CHSH = 2√2 ≈ 2.828
 pub const CHSH_QUANTUM: f64 = 2.0 * SQRT2;
 
-/// Bywiththatянonя Планtoа ℏ (Дж·with)
+/// Bywiththatянonя [CYR:План]toа ℏ (Дж·with)
 pub const HBAR: f64 = 1.054571817e-34;
 
-/// WITHtoороwithть withinеthat c (м/with)
+/// WITHto[CYR:оро]withть withinеthat c (м/with)
 pub const C: f64 = 299792458.0;
 
-/// Граinandthatцandонonя bywiththatянonя G (м³/(toг·with²))
+/// [CYR:Гра]inandthatцandонonя bywiththatянonя G (м³/(toг·with²))
 pub const G: f64 = 6.67430e-11;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 5. НЕЙРОМОРФНЫЕ TOОНWITHTHATНТЫ
+// 5. [CYR:НЕЙРОМОРФНЫЕ] TOОНWITHTHAT[CYR:НТЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// τ = φ = 1.618 (inременonя constant LIF нейроon)
+/// τ = φ = 1.618 (in[CYR:ремен]onя constant LIF not[CYR:йро]on)
 pub const TAU_LIF: f64 = PHI;
 
-/// 3 уроinня withпайtoоin = φ² + 1/φ²
+/// 3 [CYR:уро]inня with[CYR:пай]toоin = φ² + 1/φ²
 pub const SPIKE_LEVELS: u32 = 3;
 
-/// 603x энергоэффеtoтandinноwithть = 67 × 3² = 67 × 9
+/// 603x эnot[CYR:ргоэффе]toтandinноwithть = 67 × 3² = 67 × 9
 pub const ENERGY_EFFICIENCY: u32 = 603;
 
-/// 67 - множandтель энергоэффеtoтandinноwithтand
+/// 67 - [CYR:множ]and[CYR:тель] эnot[CYR:ргоэффе]toтandinноwithтand
 pub const ENERGY_MULTIPLIER: u32 = 67;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 6. THATBYЛОГANDЧЕWITHTOANDЕ TOОНWITHTHATНТЫ
+// 6. THATBY[CYR:ЛОГ]ANDЧЕWITHTOANDЕ TOОНWITHTHAT[CYR:НТЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Маtowithandмальное number Черon mod = 3 = φ² + 1/φ²
+/// Маtowithand[CYR:мальное] number [CYR:Чер]on mod = 3 = φ² + 1/φ²
 pub const CHERN_MAX_MOD: u32 = 3;
 
-/// Маtowithandмальный index Бfromthat = 3
+/// Маtowithand[CYR:мальный] index Бfromthat = 3
 pub const BOTT_MAX: u32 = 3;
 
-/// Радandуwith withtoandрмandоon (нм)
+/// [CYR:Рад]andуwith withtoandрмandоon (нм)
 pub const SKYRMION_RADIUS_NM: f64 = 70.0;
 
-/// Thatbyлогandчеwithtoandй заряд withtoandрмandоon
+/// Thatby[CYR:лог]andчеwithtoandй [CYR:заряд] withtoandрмandоon
 pub const SKYRMION_CHARGE: f64 = 1.0;
 
-/// Thatbyлогandчеwithtoandй заряд мероon
+/// Thatby[CYR:лог]andчеwithtoandй [CYR:заряд] [CYR:меро]on
 pub const MERON_CHARGE: f64 = 0.5;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 7. ЧANDWITHЛА ЛУTOАWITHА AND FIBONACCI
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Чandwithла Луtoаwithа: L(n) = φⁿ + 1/φⁿ (for чётных n)
+/// Чandwithла Луtoаwithа: L(n) = φⁿ + 1/φⁿ (for [CYR:чётных] n)
 pub const LUCAS = [_]u32{ 2, 1, 3, 4, 7, 11, 18, 29, 47, 76, 123, 199, 322, 521, 843 };
 
 /// Чandwithла Фandбоonччand
@@ -154,83 +154,83 @@ pub const FIBONACCI = [_]u32{ 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233,
 /// L(10) = 123 = φ¹⁰ + 1/φ¹⁰
 pub const LUCAS_10: u32 = 123;
 
-/// L(2) = 3 = φ² + 1/φ² = ЗОЛFROMАЯ ANDДЕНТANDЧНОWITHТЬ
+/// L(2) = 3 = φ² + 1/φ² = [CYR:ЗОЛ]FROMАЯ AND[CYR:ДЕНТ]AND[CYR:ЧНО]WITHТЬ
 pub const LUCAS_2: u32 = 3;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 8. TOОWITHМОЛОГANDЧЕWITHTOANDЕ TOОНWITHTHATНТЫ
+// 8. TOОWITH[CYR:МОЛОГ]ANDЧЕWITHTOANDЕ TOОНWITHTHAT[CYR:НТЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Bywiththatянonя Хаббла H₀ (toм/with/Мпto) - onше предwithtoазанandе
+/// Bywiththatянonя [CYR:Хаббла] H₀ (toм/with/Мпto) - onше [CYR:пред]withto[CYR:азан]andе
 pub const HUBBLE_PREDICTED: f64 = 70.74;
 
-/// Bywiththatянonя Хаббла (Planck 2018)
+/// Bywiththatянonя [CYR:Хаббла] (Planck 2018)
 pub const HUBBLE_PLANCK: f64 = 67.4;
 
-/// Bywiththatянonя Хаббла (SH0ES 2022)
+/// Bywiththatянonя [CYR:Хаббла] (SH0ES 2022)
 pub const HUBBLE_SH0ES: f64 = 73.0;
 
-/// Inзраwithт INwithеленной t_H ≈ 13.82 × 10⁹ лет
+/// In[CYR:зра]withт INwith[CYR:еленной] t_H ≈ 13.82 × 10⁹ [CYR:лет]
 pub const UNIVERSE_AGE_GYR: f64 = 13.82;
 
-/// Ω_m (плfromноwithть матерandand) ≈ 1/π
+/// Ω_m (плfromноwithть [CYR:матер]andand) ≈ 1/π
 pub const OMEGA_MATTER: f64 = 1.0 / PI;
 
-/// Ω_Λ (плfromноwithть тёмной энергandand) ≈ (π-1)/π
+/// Ω_Λ (плfromноwithть [CYR:тёмной] эnotргandand) ≈ (π-1)/π
 pub const OMEGA_LAMBDA: f64 = (PI - 1.0) / PI;
 
 /// Ω_Λ/Ω_m ≈ 2.1746
 pub const DARK_ENERGY_RATIO: f64 = 2.1746;
 
-/// WITHпеtoтральный index n_s
+/// WITHпеto[CYR:тральный] index n_s
 pub const SPECTRAL_INDEX: f64 = 0.965;
 
-/// σ₈ (амплandтуyes флуtoтуацandй)
+/// σ₈ ([CYR:ампл]andтуyes [CYR:флу]to[CYR:туац]andй)
 pub const SIGMA_8: f64 = 0.811;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 9. ФANDЗANDЧЕWITHTOANDЕ TOОНWITHTHATНТЫ (МАWITHWITHЫ ЧАWITHТANDЦ)
+// 9. ФANDЗANDЧЕWITHTOANDЕ TOОНWITHTHAT[CYR:НТЫ] (МАWITHWITHЫ ЧАWITHТANDЦ)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Маwithwithа элеtoтроon m_e (toг)
+/// Маwithwithа [CYR:эле]to[CYR:тро]on m_e (toг)
 pub const M_ELECTRON: f64 = 9.1093837015e-31;
 
 /// Маwithwithа прfromоon m_p (toг)
 pub const M_PROTON: f64 = 1.67262192369e-27;
 
-/// Маwithwithа нейтроon m_n (toг)
+/// Маwithwithа not[CYR:йтро]on m_n (toг)
 pub const M_NEUTRON: f64 = 1.67492749804e-27;
 
-/// m_p/m_e = 6π⁵ ≈ 1836.15 (thatчноwithть 0.002%)
+/// m_p/m_e = 6π⁵ ≈ 1836.15 (that[CYR:чно]withть 0.002%)
 pub const PROTON_ELECTRON_RATIO: f64 = 6.0 * math.pow(f64, PI, 5.0);
 
-/// m_μ/m_e = (17/9) × π² × φ⁵ ≈ 206.77 (thatчноwithть 0.01%)
+/// m_μ/m_e = (17/9) × π² × φ⁵ ≈ 206.77 (that[CYR:чно]withть 0.01%)
 pub const MUON_ELECTRON_RATIO: f64 = (17.0 / 9.0) * PI * PI * math.pow(f64, PHI, 5.0);
 
-/// m_τ/m_e = 76 × 3² × π × φ ≈ 3477.2 (thatчноwithть 0.009%)
+/// m_τ/m_e = 76 × 3² × π × φ ≈ 3477.2 (that[CYR:чно]withть 0.009%)
 pub const TAU_ELECTRON_RATIO: f64 = 76.0 * 9.0 * PI * PHI;
 
-/// m_s/m_e = 32 × π⁻¹ × φ⁶ ≈ 182.8 (thatчноwithть 0.0000%)
+/// m_s/m_e = 32 × π⁻¹ × φ⁶ ≈ 182.8 (that[CYR:чно]withть 0.0000%)
 pub const STRANGE_ELECTRON_RATIO: f64 = 32.0 / PI * math.pow(f64, PHI, 6.0);
 
 /// m_t/m_e ≈ 338082
 pub const TOP_ELECTRON_RATIO: f64 = 338082.0;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 10. BYWITHTHATЯНONЯ THATНTOОЙ WITHТРУTOТУРЫ
+// 10. BYWITHTHATЯНONЯ THATНTOОЙ WITH[CYR:ТРУ]TO[CYR:ТУРЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// 1/α = 4π³ + π² + π ≈ 137.036 (thatчноwithть 0.0002%)
+/// 1/α = 4π³ + π² + π ≈ 137.036 (that[CYR:чно]withть 0.0002%)
 pub const ALPHA_INV: f64 = 4.0 * PI * PI * PI + PI * PI + PI;
 
 /// α ≈ 1/137.036
 pub const ALPHA: f64 = 1.0 / ALPHA_INV;
 
-/// Альтерonтandinonя формула: 1/α = 24φ⁶/π ≈ 137.084
+/// [CYR:Альтер]onтandinonя [CYR:формула]: 1/α = 24φ⁶/π ≈ 137.084
 pub const ALPHA_INV_ALT: f64 = 24.0 * math.pow(f64, PHI, 6.0) / PI;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 11. УГЛЫ WITHМЕШANDINАНANDЯ
+// 11. [CYR:УГЛЫ] WITH[CYR:МЕШ]ANDINАНANDЯ
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// sin²θ₁₂ (PMNS) ≈ 0.304
@@ -242,46 +242,46 @@ pub const SIN2_THETA23_PMNS: f64 = 0.573;
 /// sin²θ₁₃ (PMNS) ≈ 0.0218
 pub const SIN2_THETA13_PMNS: f64 = 0.0218;
 
-/// sin²θ_W (INайнберга) ≈ 0.2312
+/// sin²θ_W (IN[CYR:айнберга]) ≈ 0.2312
 pub const SIN2_THETA_W: f64 = 0.2312;
 
-/// θ_C (TOабandббо) ≈ 13.04°
+/// θ_C (TOабand[CYR:ббо]) ≈ 13.04°
 pub const THETA_CABIBBO_DEG: f64 = 13.04;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 12. TOОНWITHTHATНТЫ ХАОWITHА AND ФРАTOTHATЛОIN
+// 12. TOОНWITHTHAT[CYR:НТЫ] [CYR:ХАО]WITHА AND [CYR:ФРА]TOTHATЛОIN
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// δ (Фейгенбаума) ≈ 4.669
+/// δ ([CYR:Фейгенбаума]) ≈ 4.669
 pub const FEIGENBAUM_DELTA: f64 = 4.669201609;
 
-/// α (Фейгенбаума) ≈ 2.503
+/// α ([CYR:Фейгенбаума]) ≈ 2.503
 pub const FEIGENBAUM_ALPHA: f64 = 2.502907875;
 
-/// Размерноwithть WITHерпandнwithtoого D ≈ 1.585
+/// [CYR:Размерно]withть WITH[CYR:ерп]andнwithto[CYR:ого] D ≈ 1.585
 pub const SIERPINSKI_DIM: f64 = 1.585;
 
-/// Размерноwithть Менгера D ≈ 2.727
+/// [CYR:Размерно]withть [CYR:Менгера] D ≈ 2.727
 pub const MENGER_DIM: f64 = 2.727;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 13. TOОНWITHTHATНТЫ LQG (ПЕТЛЕINАЯ TOINАНTHATINАЯ ГРАINANDTHATЦANDЯ)
+// 13. TOОНWITHTHAT[CYR:НТЫ] LQG ([CYR:ПЕТЛЕ]INАЯ TOINАНTHATINАЯ [CYR:ГРА]INANDTHATЦANDЯ)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// γ (Барберо-ANDммandрцand) ≈ 0.2375
+/// γ ([CYR:Барберо]-ANDммandрцand) ≈ 0.2375
 pub const BARBERO_IMMIRZI: f64 = 0.2375;
 
 /// 8πγ ≈ 5.966
 pub const EIGHT_PI_GAMMA: f64 = 8.0 * PI * BARBERO_IMMIRZI;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 14. РАЗМЕРНОWITHТAND ГРУПП
+// 14. [CYR:РАЗМЕРНО]WITHТAND [CYR:ГРУПП]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// dim(E8) = 248
 pub const E8_DIM: u32 = 248;
 
-/// TOорнand E8 = 240
+/// TO[CYR:орн]and E8 = 240
 pub const E8_ROOTS: u32 = 240;
 
 /// dim(M-theory) = 11
@@ -293,14 +293,14 @@ pub const STRING_DIM: u32 = 10;
 /// dim(Space) = 3 = φ² + 1/φ²
 pub const SPACE_DIM: u32 = 3;
 
-/// Bytoоленandя чаwithтandц = 3
+/// Byto[CYR:олен]andя чаwithтandц = 3
 pub const PARTICLE_GENERATIONS: u32 = 3;
 
 /// Цinеthat toinарtoоin (SU(3)) = 3
 pub const QUARK_COLORS: u32 = 3;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 15. PAS ПАТТЕРНЫ (SUCCESS RATES)
+// 15. PAS [CYR:ПАТТЕРНЫ] (SUCCESS RATES)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// D&C (Divide-and-Conquer) success rate
@@ -346,7 +346,7 @@ pub const PAS_NRO: f64 = 0.05;
 pub const PAS_ZCP: f64 = 0.12;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 16. МАГANDЯ ЧANDWITHЛА 37
+// 16. [CYR:МАГ]ANDЯ ЧANDWITHЛА 37
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// 37 × 3 = 111
@@ -377,7 +377,7 @@ pub const MAGIC_37_8: u32 = 888;
 pub const MAGIC_37_9: u32 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 17. ФУНTOЦANDAND
+// 17. [CYR:ФУН]TOЦANDAND
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Sacred formula: V = n × 3^k × π^m × φ^p × e^q
@@ -390,7 +390,7 @@ pub fn sacredFormula(n: u32, k: i32, m: i32, p: i32, q: i32) f64 {
     return n_f * three_k * pi_m * phi_p * e_q;
 }
 
-/// Проinерandть золfromую andдентandчноwithть: φ² + 1/φ² = 3
+/// [CYR:Про]inерandть [CYR:зол]fromую and[CYR:дент]and[CYR:чно]withть: φ² + 1/φ² = 3
 pub fn verifyGoldenIdentity() bool {
     const result = PHI_SQ + PHI_INV_SQ;
     return @abs(result - 3.0) < 1e-14;
@@ -412,12 +412,12 @@ pub fn fibonacci(n: u32) f64 {
     return (phi_n - inv_phi_n) / SQRT5;
 }
 
-/// Магandя 37: 37 × 3n = nnn
+/// [CYR:Маг]andя 37: 37 × 3n = nnn
 pub fn magic37(n: u32) u32 {
     return 37 * 3 * n;
 }
 
-/// Проinерandть toinанthatinое преandмущеwithтinо: CHSH > 2
+/// [CYR:Про]inерandть toinанthatinое [CYR:пре]and[CYR:муще]withтinо: CHSH > 2
 pub fn hasQuantumAdvantage(chsh_value: f64) bool {
     return chsh_value > CHSH_CLASSICAL;
 }
@@ -463,59 +463,59 @@ pub const SacredMath = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 18. ДОBYЛНANDТЕЛЬНЫЕ ФANDЗANDЧЕWITHTOANDЕ TOОНWITHTHATНТЫ
+// 18. ДОBYЛНAND[CYR:ТЕЛЬНЫЕ] ФANDЗANDЧЕWITHTOANDЕ TOОНWITHTHAT[CYR:НТЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Bywiththatянonя Больцмаon k_B (Дж/TO)
+/// Bywiththatянonя [CYR:Больцма]on k_B (Дж/TO)
 pub const K_BOLTZMANN: f64 = 1.380649e-23;
 
-/// Чandwithло Аinогадро N_A (1/моль)
+/// Чandwithло Аin[CYR:огадро] N_A (1/[CYR:моль])
 pub const N_AVOGADRO: f64 = 6.02214076e23;
 
-/// Bywiththatянonя Рandдберга R_∞ (1/м)
+/// Bywiththatянonя Рand[CYR:дберга] R_∞ (1/м)
 pub const R_RYDBERG: f64 = 1.0973731568160e7;
 
-/// Радandуwith Бора a_0 (м)
+/// [CYR:Рад]andуwith [CYR:Бора] a_0 (м)
 pub const A_BOHR: f64 = 5.29177210903e-11;
 
-/// Bywiththatянonя WITHтефаon-Больцмаon σ (INт/(м²·TO⁴))
+/// Bywiththatянonя WITH[CYR:тефа]on-[CYR:Больцма]on σ (INт/(м²·TO⁴))
 pub const SIGMA_STEFAN_BOLTZMANN: f64 = 5.670374419e-8;
 
 /// Bywiththatянonя INandon b (м·TO)
 pub const B_WIEN: f64 = 2.897771955e-3;
 
-/// TOомпthatноinwithtoая длandon inолны элеtoтроon λ_C (м)
+/// TO[CYR:омп]thatноinwithtoая длandon in[CYR:олны] [CYR:эле]to[CYR:тро]on λ_C (м)
 pub const LAMBDA_COMPTON: f64 = 2.42631023867e-12;
 
-/// Планtoоinwithtoая длandon l_P (м)
+/// [CYR:План]toоinwithtoая длandon l_P (м)
 pub const L_PLANCK: f64 = 1.616255e-35;
 
-/// Планtoоinwithtoая маwithwithа m_P (toг)
+/// [CYR:План]toоinwithtoая маwithwithа m_P (toг)
 pub const M_PLANCK: f64 = 2.176434e-8;
 
-/// Планtoоinwithtoое inремя t_P (with)
+/// [CYR:План]toоinwithtoое in[CYR:ремя] t_P (with)
 pub const T_PLANCK: f64 = 5.391247e-44;
 
-/// Планtoоinwithtoая температура T_P (TO)
+/// [CYR:План]toоinwithtoая [CYR:температура] T_P (TO)
 pub const TEMP_PLANCK: f64 = 1.416784e32;
 
-/// Элеменthatрный заряд e (TOл)
+/// [CYR:Элемен]that[CYR:рный] [CYR:заряд] e (TOл)
 pub const E_CHARGE: f64 = 1.602176634e-19;
 
-/// Магnoон Бора μ_B (Дж/Тл)
+/// [CYR:Маг]noон [CYR:Бора] μ_B (Дж/Тл)
 pub const MU_BOHR: f64 = 9.2740100783e-24;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 19. МАWITHWITHЫ БОЗОНОIN AND TOINАРTOОIN (МэIN/c²)
+// 19. МАWITHWITHЫ [CYR:БОЗОНО]IN AND TOINАРTOОIN (МэIN/c²)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Маwithwithа W-бозоon (ГэIN)
+/// Маwithwithа W-[CYR:бозо]on (ГэIN)
 pub const M_W_BOSON: f64 = 80.377;
 
-/// Маwithwithа Z-бозоon (ГэIN)
+/// Маwithwithа Z-[CYR:бозо]on (ГэIN)
 pub const M_Z_BOSON: f64 = 91.1876;
 
-/// Маwithwithа бозоon Хandггwithа (ГэIN)
+/// Маwithwithа [CYR:бозо]on Хandггwithа (ГэIN)
 pub const M_HIGGS: f64 = 125.25;
 
 /// Маwithwithа u-toinарtoа (МэIN)
@@ -537,13 +537,13 @@ pub const M_B_QUARK: f64 = 4.18;
 pub const M_T_QUARK: f64 = 172.69;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 20. TOОWITHМОЛОГANDЧЕWITHTOANDЕ PARAMETERS (Planck 2018)
+// 20. TOОWITH[CYR:МОЛОГ]ANDЧЕWITHTOANDЕ PARAMETERS (Planck 2018)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Ω_b (барandонonя плfromноwithть)
+/// Ω_b ([CYR:бар]andонonя плfromноwithть)
 pub const OMEGA_BARYON: f64 = 0.0493;
 
-/// Ω_c (плfromноwithть тёмной матерandand)
+/// Ω_c (плfromноwithть [CYR:тёмной] [CYR:матер]andand)
 pub const OMEGA_CDM: f64 = 0.265;
 
 /// Ω_k (toрandinandзon)
@@ -552,112 +552,112 @@ pub const OMEGA_K: f64 = 0.001;
 /// TOрandтandчеwithtoая плfromноwithть ρ_c (toг/м³)
 pub const RHO_CRITICAL: f64 = 9.47e-27;
 
-/// Температура CMB T_CMB (TO)
+/// [CYR:Температура] CMB T_CMB (TO)
 pub const T_CMB: f64 = 2.7255;
 
-/// Inзраwithт INwithеленной (Гyr)
+/// In[CYR:зра]withт INwith[CYR:еленной] (Гyr)
 pub const T_UNIVERSE: f64 = 13.787;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 21. АЛЬТЕРONТANDINНЫЕ ФОРМУЛЫ МАWITHWITH ЧАWITHТANDЦ
+// 21. [CYR:АЛЬТЕР]ONТANDIN[CYR:НЫЕ] [CYR:ФОРМУЛЫ] МАWITHWITH ЧАWITHТANDЦ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// m_μ/m_e = (20/3) × π³ ≈ 206.708 (thatчноwithть 0.01%)
+/// m_μ/m_e = (20/3) × π³ ≈ 206.708 (that[CYR:чно]withть 0.01%)
 pub const MUON_ELECTRON_ALT: f64 = (20.0 / 3.0) * PI * PI * PI;
 
-/// m_τ/m_e = 36 × π⁴ ≈ 3506.73 (thatчноwithть 0.009%)
+/// m_τ/m_e = 36 × π⁴ ≈ 3506.73 (that[CYR:чно]withть 0.009%)
 pub const TAU_ELECTRON_ALT: f64 = 36.0 * math.pow(f64, PI, 4.0);
 
-/// m_p/m_e = 2 × 3 × π⁵ ≈ 1836.12 (thatчноwithть 0.002%)
+/// m_p/m_e = 2 × 3 × π⁵ ≈ 1836.12 (that[CYR:чно]withть 0.002%)
 pub const PROTON_ELECTRON_ALT: f64 = 2.0 * 3.0 * math.pow(f64, PI, 5.0);
 
-/// 1/α = 24φ⁶/π ≈ 137.084 (альтерonтandinonя формула)
+/// 1/α = 24φ⁶/π ≈ 137.084 ([CYR:альтер]onтandinonя [CYR:формула])
 pub const ALPHA_INV_PHI: f64 = 24.0 * math.pow(f64, PHI, 6.0) / PI;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 22. ПРЕДWITHTOАЗАНANDЯ PAS (CONFIDENCE LEVELS)
+// 22. [CYR:ПРЕД]WITHTO[CYR:АЗАН]ANDЯ PAS (CONFIDENCE LEVELS)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Thatчноwithть ретроwithпеtoтandinных предwithtoазанandй PAS
+/// That[CYR:чно]withть [CYR:ретро]withпеtoтandin[CYR:ных] [CYR:пред]withto[CYR:азан]andй PAS
 pub const PAS_RETROSPECTIVE_ACCURACY: f64 = 0.73;
 
-/// Thatчноwithть предwithtoазанandй Менделееinа
+/// That[CYR:чно]withть [CYR:пред]withto[CYR:азан]andй [CYR:Менделее]inа
 pub const MENDELEEV_ACCURACY: f64 = 0.98;
 
-/// Предwithtoазанandе: O(n^2.2) матрandчное умноженandе
+/// [CYR:Пред]withto[CYR:азан]andе: O(n^2.2) [CYR:матр]and[CYR:чное] [CYR:умножен]andе
 pub const MATRIX_MULT_PREDICTED_EXP: f64 = 2.2;
 pub const MATRIX_MULT_CONFIDENCE: f64 = 0.60;
 
-/// Предwithtoазанandе: 10x уwithtoоренandе SAT solver
+/// [CYR:Пред]withto[CYR:азан]andе: 10x уwithto[CYR:орен]andе SAT solver
 pub const SAT_SPEEDUP_PREDICTED: f64 = 10.0;
 pub const SAT_SPEEDUP_CONFIDENCE: f64 = 0.80;
 
-/// Thatчноwithть предwithtoазанandя маwithwith withinерхтяжёлых элеменthatin
+/// That[CYR:чно]withть [CYR:пред]withto[CYR:азан]andя маwithwith within[CYR:ерхтяжёлых] [CYR:элемен]thatin
 pub const SUPERHEAVY_MASS_ACCURACY: f64 = 0.0002; // 0.02%
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 23. МАГANDЧЕWITHTOANDЕ ЧANDWITHЛА ЯДЕРНОЙ ФANDЗANDTOAND
+// 23. [CYR:МАГ]ANDЧЕWITHTOANDЕ ЧANDWITHЛА [CYR:ЯДЕРНОЙ] ФANDЗANDTOAND
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Магandчеwithtoandе чandwithла прfromоноin/нейтроноin
+/// [CYR:Маг]andчеwithtoandе чandwithла прfrom[CYR:оно]in/not[CYR:йтроно]in
 pub const MAGIC_NUMBERS = [_]u32{ 2, 8, 20, 28, 50, 82, 126 };
 
-/// Предwithtoазанное магandчеwithtoое number (оwithтроin withthatбandльноwithтand)
+/// [CYR:Пред]withto[CYR:азанное] [CYR:маг]andчеwithtoое number (оwith[CYR:тро]in withthatбand[CYR:льно]withтand)
 pub const MAGIC_184: u32 = 184;
 
-/// Элемент 126 (Unbihexium) - центр оwithтроinа withthatбandльноwithтand
+/// [CYR:Элемент] 126 (Unbihexium) - center оwith[CYR:тро]inа withthatбand[CYR:льно]withтand
 pub const ISLAND_OF_STABILITY_Z: u32 = 126;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 24. TOINАНTHATINЫЕ INЫЧANDWITHЛЕНANDЯ
+// 24. TOINАНTHATINЫЕ INЫЧANDWITH[CYR:ЛЕН]ANDЯ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Jiuzhang: 76 фfromоноin
+/// Jiuzhang: 76 фfrom[CYR:оно]in
 pub const JIUZHANG_PHOTONS: u32 = 76;
 
-/// TOinанthatinое преandмущеwithтinо: 2.5 млрд лет toлаwithwithandчеwithtoandх inычandwithленandй
+/// TOinанthatinое [CYR:пре]and[CYR:муще]withтinо: 2.5 [CYR:млрд] [CYR:лет] toлаwithwithandчеwithtoandх inычandwith[CYR:лен]andй
 pub const QUANTUM_ADVANTAGE_YEARS: f64 = 2.5e9;
 
 /// Fidelity тandпandчonя
 pub const TYPICAL_FIDELITY: f64 = 0.99;
 
-/// INремя toогерентноwithтand (мtowith) for withinерхпроinодящandх toубandthatin
+/// IN[CYR:ремя] to[CYR:огерентно]withтand (мtowith) for within[CYR:ерхпро]in[CYR:одящ]andх toубandthatin
 pub const COHERENCE_TIME_US: f64 = 100.0;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 25. НЕЙРОМОРФНЫЕ АРХANDТЕTOТУРЫ
+// 25. [CYR:НЕЙРОМОРФНЫЕ] [CYR:АРХ]ANDТЕTO[CYR:ТУРЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Intel Loihi: 128 ядер
+/// Intel Loihi: 128 [CYR:ядер]
 pub const LOIHI_CORES: u32 = 128;
 
-/// Intel Loihi 2: 1 млн нейроноin
+/// Intel Loihi 2: 1 [CYR:млн] not[CYR:йроно]in
 pub const LOIHI2_NEURONS: u32 = 1_000_000;
 
-/// IBM NorthPole: 256 ядер
+/// IBM NorthPole: 256 [CYR:ядер]
 pub const NORTHPOLE_CORES: u32 = 256;
 
-/// SpiNNaker: 1 млн ARM ядер
+/// SpiNNaker: 1 [CYR:млн] ARM [CYR:ядер]
 pub const SPINNAKER_CORES: u32 = 1_000_000;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 26. THATBYЛОГANDЧЕWITHTOANDЕ МАТЕРANDАЛЫ
+// 26. THATBY[CYR:ЛОГ]ANDЧЕWITHTOANDЕ [CYR:МАТЕР]AND[CYR:АЛЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Температура перехоyes YBCO (TO)
+/// [CYR:Температура] [CYR:перехо]yes YBCO (TO)
 pub const YBCO_TC: f64 = 93.0;
 
-/// Температура перехоyes MgB2 (TO)
+/// [CYR:Температура] [CYR:перехо]yes MgB2 (TO)
 pub const MGB2_TC: f64 = 39.0;
 
-/// Температура перехоyes H3S byд yesinленandем (TO)
+/// [CYR:Температура] [CYR:перехо]yes H3S byд yesin[CYR:лен]andем (TO)
 pub const H3S_TC: f64 = 203.0;
 
-/// Реtoорд toомonтной withinерхпроinодandмоwithтand (TO) - withbyрный
+/// Реto[CYR:орд] toомon[CYR:тной] within[CYR:ерхпро]inодandмоwithтand (TO) - withby[CYR:рный]
 pub const ROOM_TEMP_SC: f64 = 288.0;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 27. KEYЕINЫЕ arXiv WITHWITHЫЛTOAND (thatп by цandтandроinанandю in проеtoте)
+// 27. KEYЕINЫЕ arXiv WITHWITHЫЛTOAND (thatп by цandтandроinанandю in [CYR:прое]toте)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const ARXIV_REFERENCES = [_][]const u8{
@@ -665,12 +665,12 @@ pub const ARXIV_REFERENCES = [_][]const u8{
     "arXiv:2501.02413", // Thatп-2 (9 уbyмandonнandй)
     "arXiv:2011.13127", // Thatп-3 (9 уbyмandonнandй)
     "arXiv:2601.05534", // Thatп-4 (8 уbyмandonнandй)
-    "arXiv:2512.18575", // 603x энергоэффеtoтandinноwithть
+    "arXiv:2512.18575", // 603x эnot[CYR:ргоэффе]toтandinноwithть
     "arXiv:2511.12318", // QMA Complete Quantum-Enhanced Kyber
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 28. ФОРМУЛЫ ХАББЛА
+// 28. [CYR:ФОРМУЛЫ] [CYR:ХАББЛА]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// H₀ = c × G × m_e × m_p² / (2ℏ²) = 70.74 toм/with/Мпto

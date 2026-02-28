@@ -2599,8 +2599,8 @@ import ./eliza.vibee as eliza
   Action(
     "HELP",
     "Provides help and available commands",
-    ["help", "помощь", "что умеешь", "что ты умеешь", "возможности", "?"],
-    ["Помоги мне", "Что ты умеешь?", "Help", "How can you help?"],
+    ["help", "[CYR:помощь]", "that [CYR:умеешь]", "that ты [CYR:умеешь]", "in[CYR:озможно]withтand", "?"],
+    ["[CYR:Помог]and мnot", "[CYR:Что] ты [CYR:умеешь]?", "Help", "How can you help?"],
     { validate_help_intent(it) },
     { handle_help(it) }
   )
@@ -2615,7 +2615,7 @@ import ./eliza.vibee as eliza
 
 @impl {
   let lower = lowercase(context.message)
-  ["help", "помощь", "что умеешь", "возможности", "?"] · contains_any
+  ["help", "[CYR:помощь]", "that [CYR:умеешь]", "in[CYR:озможно]withтand", "?"] · contains_any
 }
 
 @spec handle_help(context: ActionContext) → ActionResult {
@@ -2750,10 +2750,10 @@ import ./eliza.vibee as eliza
 
 @impl {
   let text = """
-Привет! Я VIBEE - твой персональный AI-ассистент.
+Прandinет! Я VIBEE - тinой [CYR:пер]withоon[CYR:льный] AI-аwithwithandwith[CYR:тент].
 
-Вот что я умею:
-- Настроить Digital Twin (type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+[CYR:Вот] that я [CYR:умею]:
+- Наwith[CYR:тро]andть Digital Twin (type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -2877,11 +2877,11 @@ import ./eliza.vibee as eliza
   name: String,
   email: String,
   id: Int}-bot)
-- Мониторить чаты и отвечать автоматически
-- Генерировать контент для соцсетей
-- Создавать видео и изображения
+- [CYR:Мон]and[CYR:тор]andть [CYR:чаты] and отin[CYR:ечать] аin[CYR:томат]andчеwithкand
+- Геnotрandроin[CYR:ать] [CYR:контент] for withоцwith[CYR:етей]
+- [CYR:Созда]in[CYR:ать] inand[CYR:део] and from[CYR:ображен]andя
 
-Просто напиши что тебе нужно, и я помогу!
+[CYR:Про]withто onпandшand that [CYR:тебе] [CYR:нужно], and я [CYR:помогу]!
 """
   eliza.success_result(text)
 }
@@ -3617,7 +3617,7 @@ import ./eliza.vibee as eliza
   name: String,
   email: String,
   id: Int} through Digital Twin setup",
-    ["настроить бот", "создать бота", "digital twin", "type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+    ["onwith[CYR:тро]andть [CYR:бот]", "with[CYR:оздать] [CYR:бота]", "digital twin", "type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -3741,7 +3741,7 @@ import ./eliza.vibee as eliza
   name: String,
   email: String,
   id: Int}bot", "setup"],
-    ["Настрой бота", "Хочу создать бота", "Setup type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+    ["Наwith[CYR:трой] [CYR:бота]", "[CYR:Хочу] with[CYR:оздать] [CYR:бота]", "Setup type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -3879,7 +3879,7 @@ import ./eliza.vibee as eliza
 
 @impl {
   let lower = lowercase(context.message)
-  ["настроить", "setup", "создать бот", "digital twin", "type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+  ["onwith[CYR:тро]andть", "setup", "with[CYR:оздать] [CYR:бот]", "digital twin", "type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -4002,7 +4002,7 @@ import ./eliza.vibee as eliza
   id: Int} {
   name: String,
   email: String,
-  id: Int}bot", "начать"] · contains_any
+  id: Int}bot", "on[CYR:чать]"] · contains_any
 }
 
 @spec handle_setup_start(context: ActionContext) → ActionResult {
@@ -4260,10 +4260,10 @@ import ./eliza.vibee as eliza
 
 @impl {
   let text = """
-Отлично! Давай настроим твой Digital Twin.
+[CYR:Отл]and[CYR:чно]! Даinай onwith[CYR:тро]andм тinой Digital Twin.
 
-Для подключения к Telegram мне нужен твой номер телефона.
-Напиши его в формате: +79001234567
+[CYR:Для] [CYR:под]keyенandя к Telegram мnot [CYR:нужен] тinой [CYR:номер] [CYR:телефо]on.
+[CYR:Нап]andшand [CYR:его] in [CYR:формате]: +79001234567
 """
   eliza.success_result(text)
 }
