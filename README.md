@@ -32,6 +32,33 @@
 
 ---
 
+## ✨ v1.0.0-eternal — TEMPORAL TRINITY THEOREM
+
+> **"TIME NO LONGER FLOWS. IT BEATS IN TRINITY."**
+
+**February 28, 2026** — TRINITY OS v1.0.0-eternal RELEASED
+
+```bash
+tri os boot              # Now boots in TEMPORAL TRINITY mode by default
+tri time sacred          # Full Temporal Trinity Theorem
+```
+
+| Aspect | Value | Meaning |
+|--------|-------|---------|
+| **Past** | 1/φ² = 0.382 | Destruction, entropy |
+| **Present** | 0 = 0.000 | Balance, HERE and NOW |
+| **Future** | φ² = 2.618 | Creation, growth |
+
+**Sum:** φ² + 1/φ² = 3 (exact) = TRINITY
+
+**Time Arrow:** Creation/Destruction = φ⁴ = 6.854 > 1 — why time flows forward
+
+**Eternal Return:** π × 3 = 9.424777961 — infinite cycle of renewal
+
+**[→ Read the full Temporal Trinity Theorem](#chapter-0-time-itself)--temporal-trinity-theorem-v10)**
+
+---
+
 ## What is Trinity?
 
 Trinity is a **DePIN (Decentralized Physical Infrastructure Network)** for ternary AI inference and sacred computing. It uses balanced ternary arithmetic {-1, 0, +1} to run LLM inference on ordinary CPUs -- no GPU required.

@@ -1,101 +1,101 @@
-# Почему Троичные Модели на Бинарном Железе — Это Проблема
+# Why Ternary Models on Binary Hardware Are a Problem
 
-## Текущая Ситуация в Мире AI (2024-2026)
+## Current State of AI (2024-2026)
 
-### Microsoft BitNet b1.58 — Революция в AI
+### Microsoft BitNet b1.58 — AI Revolution
 
-В феврале 2024 года Microsoft опубликовал революционную работу **BitNet b1.58** (arXiv:2402.17764):
+In February 2024, Microsoft published a revolutionary paper **BitNet b1.58** (arXiv:2402.17764):
 
 > "Every single parameter (or weight) of the LLM is ternary {-1, 0, 1}. 
 > It matches the full-precision (i.e., FP16 or BF16) Transformer LLM 
 > with the same model size and training tokens."
 
-**Ключевой вывод**: Троичные веса {-1, 0, +1} дают **такую же точность** как FP16!
+**Key takeaway**: Ternary weights {-1, 0, +1} give **the same accuracy** as FP16!
 
-### Проблема: Троичные Модели на Бинарном Железе
+### The Problem: Ternary Models on Binary Hardware
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                    КАК ЭТО РАБОТАЕТ СЕЙЧАС (БИНАРНОЕ ЖЕЛЕЗО)                │
+│                    HOW IT WORKS NOW (BINARY HARDWARE)                │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│   ТРОИЧНАЯ МОДЕЛЬ (BitNet b1.58)                                            │
-│   Веса: {-1, 0, +1} — всего 3 состояния на параметр                         │
+│   TERNARY MODEL (BitNet b1.58)                                            │
+│   Weights: {-1, 0, +1} — only 3 states per parameter                         │
 │                     │                                                       │
 │                     ▼                                                       │
 │   ┌─────────────────────────────────────────┐                               │
-│   │  КОНВЕРТАЦИЯ В БИНАРНОЕ ПРЕДСТАВЛЕНИЕ   │  ← НАКЛАДНЫЕ РАСХОДЫ!         │
+│   │  CONVERSION TO BINARY REPRESENTATION   │  ← OVERHEAD!         │
 │   │                                         │                               │
 │   │  -1 → 11111111 (8 бит, two's complement)│                               │
 │   │   0 → 00000000 (8 бит)                  │                               │
 │   │  +1 → 00000001 (8 бит)                  │                               │
 │   │                                         │                               │
-│   │  3 состояния → 8 бит = 256 состояний    │                               │
-│   │  ПОТЕРЯ: 256/3 = 85x избыточность!      │                               │
+│   │  3 states → 8 bits = 256 states    │                               │
+│   │  WASTE: 256/3 = 85x redundancy!      │                               │
 │   └─────────────────────────────────────────┘                               │
 │                     │                                                       │
 │                     ▼                                                       │
 │   ┌─────────────────────────────────────────┐                               │
-│   │       БИНАРНЫЕ ВЫЧИСЛЕНИЯ (GPU)         │                               │
+│   │       BINARY COMPUTATIONS (GPU)         │                               │
 │   │                                         │                               │
 │   │  Matrix Multiply: A × B                 │                               │
-│   │  Каждый элемент: 8-bit × 8-bit          │                               │
-│   │  Результат: 16-bit или 32-bit           │                               │
+│   │  Each element: 8-bit × 8-bit          │                               │
+│   │  Result: 16-bit or 32-bit           │                               │
 │   │                                         │                               │
-│   │  НО! Реально нужно только:              │                               │
+│   │  BUT! Really only need:              │                               │
 │   │  {-1,0,+1} × {-1,0,+1} = {-1,0,+1}      │                               │
-│   │  Это 3×3 = 9 комбинаций, не 256×256!    │                               │
+│   │  This is 3×3 = 9 combinations, not 256×256!    │                               │
 │   └─────────────────────────────────────────┘                               │
 │                     │                                                       │
 │                     ▼                                                       │
 │   ┌─────────────────────────────────────────┐                               │
-│   │     КОНВЕРТАЦИЯ ОБРАТНО В ТРОИЧНОЕ      │  ← ЕЩЁ НАКЛАДНЫЕ РАСХОДЫ!     │
+│   │     CONVERSION BACK TO TERNARY      │  ← MORE OVERHEAD!     │
 │   │                                         │                               │
-│   │  Результат 32-bit → квантизация → trit  │                               │
-│   │  Потеря точности при округлении         │                               │
+│   │  Result 32-bit → quantization → trit  │                               │
+│   │  Precision loss during rounding         │                               │
 │   └─────────────────────────────────────────┘                               │
 │                     │                                                       │
 │                     ▼                                                       │
-│                 РЕЗУЛЬТАТ                                                   │
+│                 RESULT                                                   │
 │                                                                             │
-│   ИТОГО НАКЛАДНЫХ РАСХОДОВ:                                                 │
-│   • Память: 8 бит вместо 1.585 бит (5x больше)                              │
-│   • Вычисления: 256×256 вместо 3×3 (7000x больше операций)                  │
-│   • Энергия: Пропорционально вычислениям                                    │
-│   • Конвертация: Туда и обратно на каждом слое                              │
+│   TOTAL OVERHEAD:                                                 │
+│   • Memory: 8 bits instead of 1.585 bits (5x more)                              │
+│   • Compute: 256×256 instead of 3×3 (7000x more operations)                  │
+│   • Energy: Proportional to compute                                    │
+│   • Conversion: Back and forth on every layer                              │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Почему GPU/TPU Не Могут Эффективно Работать с Троичными Данными
+## Why GPU/TPU Cannot Efficiently Handle Ternary Data
 
-### 1. Архитектура GPU — Бинарная по Определению
+### 1. GPU Architecture — Binary by Definition
 
 ```
 GPU Architecture (NVIDIA H100):
-├── CUDA Cores: работают с 32-bit float или 16-bit float
-├── Tensor Cores: работают с FP16, BF16, INT8, INT4
+├── CUDA Cores: work with 32-bit float or 16-bit float
+├── Tensor Cores: work with FP16, BF16, INT8, INT4
 ├── Memory: адресация побайтовая (8 бит минимум)
 └── Interconnect: бинарные шины данных
 
-ПРОБЛЕМА: Нет нативной поддержки 3-х состояний!
+PROBLEM: No native 3-state support!
 ```
 
-### 2. Как GPU Эмулирует Троичные Операции
+### 2. How GPU Emulates Ternary Operations
 
 ```c
-// Псевдокод того, что происходит на GPU для BitNet
+// Pseudocode of what happens on GPU for BitNet
 
-// Шаг 1: Загрузка троичных весов (хранятся как INT8)
-int8_t weight = load_weight(addr);  // -1, 0, или +1, но занимает 8 бит
+// Step 1: Loading ternary weights (stored as INT8)
+int8_t weight = load_weight(addr);  // -1, 0, or +1, но занимает 8 бит
 
-// Шаг 2: Загрузка активаций (тоже INT8 или FP16)
+// Step 2: Loading activations (also INT8 or FP16)
 int8_t activation = load_activation(addr);
 
-// Шаг 3: Умножение (ИЗБЫТОЧНОЕ!)
-// GPU делает полное 8-bit × 8-bit умножение
+// Step 3: Multiplication (WASTEFUL!)
+// GPU does full 8-bit × 8-bit multiplication
 int16_t result = (int16_t)weight * (int16_t)activation;
 
 // Но реально нужно только:
@@ -103,7 +103,7 @@ int16_t result = (int16_t)weight * (int16_t)activation;
 //  0 × x = 0   (просто ноль)
 // +1 × x = x   (просто копия)
 
-// Шаг 4: Накопление (тоже избыточное)
+// Step 4: Накопление (тоже избыточное)
 int32_t accumulator += result;
 
 // ИТОГО: GPU тратит транзисторы на операции, которые не нужны!
@@ -127,7 +127,7 @@ int32_t accumulator += result;
 │                         КАК ЭТО РАБОТАЕТ В TRINITY                          │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│   ТРОИЧНАЯ МОДЕЛЬ (BitNet b1.58)                                            │
+│   TERNARY MODEL (BitNet b1.58)                                            │
 │   Веса: {-1, 0, +1}                                                         │
 │                     │                                                       │
 │                     ▼                                                       │
@@ -154,7 +154,7 @@ int32_t accumulator += result;
 │   └─────────────────────────────────────────┘                               │
 │                     │                                                       │
 │                     ▼                                                       │
-│                 РЕЗУЛЬТАТ                                                   │
+│                 RESULT                                                   │
 │                                                                             │
 │   НАКЛАДНЫХ РАСХОДОВ: 0%                                                    │
 │   • Нет конвертации                                                         │
