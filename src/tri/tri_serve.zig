@@ -170,41 +170,64 @@ pub const UnifiedApiServer = struct {
                 if (err == error.WouldBlock) continue;
                 return err;
             };
-            defer std.posix.close(client_socket);
 
-            // Read request
-            var buffer: [2048]u8 = undefined;
-            const bytes_read = std.posix.read(client_socket, &buffer) catch |err| {
-                if (err == error.WouldBlock) continue;
-                continue;
-            };
+            // Set client socket to non-blocking for read with timeout
+            const flags = std.posix.fcntl(client_socket, std.posix.F.GETFL, 0) catch 0;
+            _ = std.posix.fcntl(client_socket, std.posix.F.SETFL, flags | 4) catch {}; // 4 = O_NONBLOCK
 
-            if (bytes_read > 0) {
-                const request = buffer[0..bytes_read];
+            // Read request in loop until we get full headers
+            var buffer: [4096]u8 = undefined;
+            var total_read: usize = 0;
+            var headers_complete = false;
 
-                // Parse HTTP request
-                if (std.mem.indexOf(u8, request, "GET /api/health") != null) {
-                    // Health check response
-                    const response = try self.healthCheckResponse();
-                    defer self.allocator.free(response);
-                    _ = std.posix.write(client_socket, response) catch {};
-                } else if (std.mem.indexOf(u8, request, "GET /api/openapi.json") != null) {
-                    // OpenAPI spec response
-                    const response = try self.openApiResponse();
-                    defer self.allocator.free(response);
-                    _ = std.posix.write(client_socket, response) catch {};
-                } else if (std.mem.indexOf(u8, request, "GET /graphql") != null) {
-                    // GraphQL playground
-                    const response = try self.graphqlPlaygroundResponse();
-                    defer self.allocator.free(response);
-                    _ = std.posix.write(client_socket, response) catch {};
-                } else {
-                    // 404 response
-                    const response = try self.notFoundResponse();
-                    defer self.allocator.free(response);
-                    _ = std.posix.write(client_socket, response) catch {};
+            while (total_read < buffer.len and !headers_complete) {
+                const bytes_read = std.posix.read(client_socket, buffer[total_read..]) catch |err| {
+                    if (err == error.WouldBlock) {
+                        // No more data available yet - retry
+                        if (total_read > 0) break; // Got some data, process it
+                        continue;
+                    }
+                    break;
+                };
+
+                if (bytes_read == 0) break; // Connection closed
+                total_read += bytes_read;
+
+                // Check for end of headers (\r\n\r\n)
+                if (total_read >= 4) {
+                    if (std.mem.indexOf(u8, buffer[0..total_read], "\r\n\r\n")) |end_idx| {
+                        headers_complete = true;
+                        _ = end_idx;
+                    }
                 }
             }
+
+            if (total_read > 0 and headers_complete) {
+                const request = buffer[0..total_read];
+
+                // Parse HTTP request
+                var response: []const u8 = undefined;
+
+                if (std.mem.indexOf(u8, request, "GET /api/health") != null) {
+                    // Health check response
+                    response = try self.healthCheckResponse();
+                } else if (std.mem.indexOf(u8, request, "GET /api/openapi.json") != null) {
+                    // OpenAPI spec response
+                    response = try self.openApiResponse();
+                } else if (std.mem.indexOf(u8, request, "GET /graphql") != null) {
+                    // GraphQL playground
+                    response = try self.graphqlPlaygroundResponse();
+                } else {
+                    // 404 response
+                    response = try self.notFoundResponse();
+                }
+
+                // Send response
+                _ = std.posix.write(client_socket, response) catch {};
+                self.allocator.free(response);
+            }
+
+            std.posix.close(client_socket);
         }
     }
 
