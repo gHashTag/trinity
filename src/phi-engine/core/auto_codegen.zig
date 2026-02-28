@@ -2,7 +2,7 @@
 // AUTO CODEGEN - Автоматическая генерация Zig кода из .vibee спецификаций
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Генерирует полный Zig код БЕЗ ручного ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ
+// Generates complete Zig code WITHOUT manual ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ
 // Автор: Dmitrii Vasilev
 // φ² + 1/φ² = 3
 //
@@ -57,7 +57,7 @@ pub const AutoCodeGenerator = struct {
         self.buffer.deinit();
     }
 
-    /// Генерация полного Zig файла из спецификации
+    /// Generation of complete Zig file from specification
     pub fn generate(self: *Self, spec: *const VibeeSpec) ![]const u8 {
         try self.writeHeader(spec);
         try self.writeImports();
@@ -172,13 +172,13 @@ pub const AutoCodeGenerator = struct {
             try self.writeFmt("/// {s}\n", .{t.description});
         }
 
-        // Если есть базовый тип - это алиас
+        // If there is a base type - this is an alias
         if (t.base) |base| {
             try self.writeFmt("pub const {s} = {s};\n", .{ t.name, mapType(base) });
             return;
         }
 
-        // Генерируем структуру
+        // Generate structure
         try self.writeFmt("pub const {s} = struct {{\n", .{t.name});
         self.indent += 1;
 
@@ -217,7 +217,7 @@ pub const AutoCodeGenerator = struct {
         try self.writeFmt("/// When: {s}\n", .{b.when});
         try self.writeFmt("/// Then: {s}\n", .{b.then});
 
-        // Генерируем сигнатуру функции
+        // Generate function signature
         try self.writeFmt("pub fn {s}() void {{\n", .{b.name});
         self.indent += 1;
 
@@ -329,7 +329,7 @@ pub const AutoCodeGenerator = struct {
 // TYPE MAPPING
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Маппинг VIBEE типов в Zig типы
+/// Маппинг VIBEE типов in Zig типы
 pub fn mapType(vibee_type: []const u8) []const u8 {
     if (std.mem.eql(u8, vibee_type, "String")) return "[]const u8";
     if (std.mem.eql(u8, vibee_type, "Int")) return "i64";
@@ -339,7 +339,7 @@ pub fn mapType(vibee_type: []const u8) []const u8 {
 
     // List<T> -> []T
     if (std.mem.startsWith(u8, vibee_type, "List<")) {
-        // Упрощённая обработка - возвращаем slice
+        // Упрощённая handling - возвращаем slice
         return "[]const u8"; // TODO: proper generic handling
     }
 
@@ -348,7 +348,7 @@ pub fn mapType(vibee_type: []const u8) []const u8 {
         return "?[]const u8"; // TODO: proper generic handling
     }
 
-    // Неизвестный тип - возвращаем как есть
+    // Неизвестный type - возвращаем how есть
     return vibee_type;
 }
 

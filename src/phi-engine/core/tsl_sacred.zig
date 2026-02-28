@@ -10,7 +10,7 @@ const math = std.math;
 // 1. СВЯЩЕННЫЕ КОНСТАНТЫ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Золотое сечение φ = (1 + √5) / 2
+/// Golden ratio φ = (1 + √5) / 2
 pub const PHI: f64 = 1.6180339887498948482;
 
 /// φ²
@@ -31,7 +31,7 @@ pub const E: f64 = 2.7182818284590452354;
 /// ЗОЛОТАЯ ИДЕНТИЧНОСТЬ: φ² + 1/φ² = 3 ТОЧНО!
 pub const GOLDEN_IDENTITY: f64 = 3.0;
 
-/// КУТРИТ = КОДОН = ТРОИЦА
+/// КУТРИТ = КОДОН = TRINITY
 pub const KUTRIT: u32 = 3;
 
 /// Тридевятица: 27 = 3³
@@ -40,7 +40,7 @@ pub const TRIDEVYATITSA: u32 = 27;
 /// Магия 37
 pub const SACRED_MULTIPLIER: u32 = 37;
 
-/// Священное число: 999 = 37 × 27
+/// Священное number: 999 = 37 × 27
 pub const SACRED: u32 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -73,7 +73,7 @@ pub const CHSH_QUANTUM: f64 = 2.8284271247461903;
 // НЕЙРОМОРФНЫЕ КОНСТАНТЫ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// τ = φ временная константа LIF нейрона
+/// τ = φ временная constant LIF нейрона
 pub const TAU_LIF: f64 = PHI;
 
 /// 3 уровня спайков = φ² + 1/φ²
@@ -107,7 +107,7 @@ pub fn sacredFormula(n: u32, k: i32, m: i32, p: i32, q: i32) f64 {
     return n_f * three_k * pi_m * phi_p * e_q;
 }
 
-/// Вычислить через золотую идентичность: 3 = φ² + 1/φ²
+/// Вычислить via золотую идентичность: 3 = φ² + 1/φ²
 pub fn sacredFormulaViaGoldenKey(n: u32, k: i32, m: i32, p: i32, q: i32) f64 {
     const n_f: f64 = @floatFromInt(n);
     const golden_key = PHI_SQ + PHI_INV_SQ; // = 3.0
@@ -129,7 +129,7 @@ pub fn verifyGoldenIdentity() bool {
     return @abs(result - 3.0) < 1e-14;
 }
 
-/// Вычислить 3^k через золотую идентичность
+/// Вычислить 3^k via золотую идентичность
 pub fn threeViaPhi(k: i32) f64 {
     const golden_key = PHI_SQ + PHI_INV_SQ;
     return math.pow(f64, golden_key, @as(f64, @floatFromInt(k)));
@@ -139,14 +139,14 @@ pub fn threeViaPhi(k: i32) f64 {
 // 4. ЧИСЛА ЛУКАСА: L(n) = φⁿ + 1/φⁿ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Вычислить число Лукаса L(n)
+/// Вычислить number Лукаса L(n)
 pub fn lucas(n: u32) f64 {
     const n_f: f64 = @floatFromInt(n);
     const phi_n = math.pow(f64, PHI, n_f);
     const inv_phi_n = math.pow(f64, PHI_INV, n_f);
 
     // Для чётных n: L(n) = φⁿ + 1/φⁿ
-    // Для нечётных n: L(n) = φⁿ - 1/φⁿ (с учётом знака)
+    // Для нечётных n: L(n) = φⁿ - 1/φⁿ (with учётом знака)
     if (n % 2 == 0) {
         return phi_n + inv_phi_n;
     } else {
@@ -166,7 +166,7 @@ pub const LIFNeuron = struct {
     tau: f64, // = φ
     v_rest: f64,
     v_threshold: f64,
-    spike_level: u8, // 1, 2, или 3
+    spike_level: u8, // 1, 2, or 3
 
     pub fn init() LIFNeuron {
         return .{
@@ -220,7 +220,7 @@ pub const QubitSpiral = struct {
         };
     }
 
-    /// Координаты на спирали
+    /// Координаты on спирали
     pub fn position(self: QubitSpiral) struct { x: f64, y: f64 } {
         return .{
             .x = self.radius * @cos(self.angle),
@@ -244,7 +244,7 @@ pub fn maxCHSHViolation() f64 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const EvolutionOperators = struct {
-    /// Мутация с rate = μ = 1/φ²/10
+    /// Мутация with rate = μ = 1/φ²/10
     pub fn mutate(genome: []f64, rng: *std.Random) void {
         for (genome) |*gene| {
             if (rng.float(f64) < MU_MUTATION) {
@@ -253,7 +253,7 @@ pub const EvolutionOperators = struct {
         }
     }
 
-    /// Кроссовер с rate = χ = 1/φ/10
+    /// Кроссовер with rate = χ = 1/φ/10
     pub fn crossover(parent_a: []const f64, parent_b: []const f64, child: []f64, rng: *std.Random) void {
         for (parent_a, parent_b, child) |a, b, *c| {
             if (rng.float(f64) < CHI_CROSSOVER) {
@@ -264,20 +264,20 @@ pub const EvolutionOperators = struct {
         }
     }
 
-    /// Селекция с pressure = σ = φ
+    /// Селекция with pressure = σ = φ
     pub fn selectionWeight(rank: u32) f64 {
         const rank_f: f64 = @floatFromInt(rank);
         return math.pow(f64, SIGMA_SELECTION, -rank_f);
     }
 
-    /// Элитизм с ratio = ε = 1/3
+    /// Элитизм with ratio = ε = 1/3
     pub fn eliteCount(population_size: usize) usize {
         return @intFromFloat(@as(f64, @floatFromInt(population_size)) * EPSILON_ELITISM);
     }
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 8. TSL ТИПЫ (3 типа = ТРОИЦА)
+// 8. TSL ТИПЫ (3 типа = TRINITY)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Тип 1: Священное Вычисление
@@ -330,10 +330,10 @@ pub const QuantumNeuroState = struct {
 
     // LIF нейроны
     tau: f64, // = φ
-    spike_level: u8, // 1, 2, или 3
+    spike_level: u8, // 1, 2, or 3
 
     // Энергия
-    energy_efficiency: f64, // цель: 603x
+    energy_efficiency: f64, // goal: 603x
 
     pub fn initDefault() QuantumNeuroState {
         return .{
@@ -431,7 +431,7 @@ test "qubit spiral placement" {
 }
 
 test "3 types = trinity" {
-    // Проверяем что у нас ровно 3 типа
+    // Check that we have exactly 3 types
     const type1 = SacredComputation{ .n = 1, .k = 0, .m = 0, .p = 0, .q = 0 };
     const type2 = EvolutionState.initDefault();
     const type3 = QuantumNeuroState.initDefault();

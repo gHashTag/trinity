@@ -5,7 +5,7 @@ const tvc_vm_jit = @import("tvc_vm_jit.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TVC JIT DEMONSTRATION
-// Демонстрация JIT компиляции и сравнение с интерпретатором
+// Демонстрация JIT компиляции and comparison with интерпретатором
 // ═══════════════════════════════════════════════════════════════════════════
 
 pub fn main() !void {
@@ -16,7 +16,7 @@ pub fn main() !void {
     std.debug.print("║  Компиляция TVC IR в нативный x86_64 код        ║\n", .{});
     std.debug.print("╚════════════════════════════════════════════════╝\n\n", .{});
 
-    // 1. Создаём тестовый модуль
+    // 1. Создаём тестовый module
     std.debug.print("═══ [1] СОЗДАНИЕ ТЕСТОВОГО МОДУЛЯ ═══\n", .{});
     var module = try createTestModule(allocator);
     std.debug.print("✓ Модуль создан: {s}\n", .{module.name});
@@ -111,7 +111,7 @@ fn createTestModule(allocator: std.mem.Allocator) !tvc_ir.TVCModule {
     try func2.blocks.put("entry", block2);
     func2.returns = .i64_trit;
 
-    // Функция 3: implies (IMPLIES - сложная операция)
+    // Функция 3: implies (IMPLIES - сложная operation)
     const func3 = try module.addFunction("implies");
     var block3 = tvc_ir.TVCBlock.init(allocator, "entry");
     block3.entry_point = 0;
@@ -131,8 +131,8 @@ fn createTestModule(allocator: std.mem.Allocator) !tvc_ir.TVCModule {
     try func3.blocks.put("entry", block3);
     func3.returns = .i64_trit;
 
-    // Функция 4: sum_loop - сумма 1..100 (развёрнутый цикл для VM)
-    // Эмулируем цикл через повторяющиеся инструкции
+    // Функция 4: sum_loop - сумма 1..100 (развёрнутый цикл for VM)
+    // Эмулируем цикл via повторяющиеся инструкции
     const func4 = try module.addFunction("sum_100");
     var block4 = tvc_ir.TVCBlock.init(allocator, "entry");
     block4.entry_point = 0;
@@ -215,7 +215,7 @@ fn testAdaptiveMode(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !vo
     var vm = tvc_vm_jit.TVCVMJit.init(allocator, 64 * 1024, 4 * 1024);
     defer vm.deinit();
 
-    // Используем только интерпретатор (JIT код нельзя выполнить без mmap PROT_EXEC)
+    // Используем только интерпретатор (JIT code нельзя выполнить без mmap PROT_EXEC)
     vm.setMode(.interpret);
 
     try vm.loadModule(module);
@@ -312,7 +312,7 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
     const loop_iterations: u64 = 100000;
     const n: u32 = 1000;
     
-    // JIT с loop unrolling
+    // JIT with loop unrolling
     const jit_loop = try jit.compileSumLoop(n);
     
     // Прогрев JIT
@@ -330,7 +330,7 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
     const jit_loop_end = std.time.nanoTimestamp();
     const jit_loop_ns = @as(u64, @intCast(jit_loop_end - jit_loop_start));
     
-    // VM эмуляция цикла (простой Zig код для сравнения)
+    // VM эмуляция цикла (простой Zig code for сравнения)
     const vm_loop_start = std.time.nanoTimestamp();
     j = 0;
     var vm_sum: i64 = 0;

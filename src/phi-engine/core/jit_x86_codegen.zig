@@ -6,7 +6,7 @@
 // φ² + 1/φ² = 3 = TRINITY
 // PHOENIX = 999
 //
-// Генератор нативного x86-64 кода для JIT компилятора
+// Генератор нативного x86-64 кода for JIT компилятора
 // Цель: 10x ускорение vs интерпретатор
 //
 // Author: VIBEE Team
@@ -20,7 +20,7 @@ const posix = std.posix;
 const mem = std.mem;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// BYTECODE TYPES (локальные определения для независимости)
+// BYTECODE TYPES (local definitions for независимости)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const Opcode = enum(u8) {
@@ -170,28 +170,28 @@ pub const CodeBuffer = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// EXECUTABLE BUFFER (с поддержкой mmap/mprotect)
+// EXECUTABLE BUFFER (with поддержкой mmap/mprotect)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const ExecutableBuffer = struct {
-    /// Указатель на исполняемую память
+    /// Указатель on исполняемую memory
     memory: []align(mem.page_size) u8,
     /// Текущая позиция записи
     pos: usize,
     /// Размер буфера
     size: usize,
-    /// Флаг: память сделана исполняемой
+    /// Флаг: memory сделана исполняемой
     is_executable: bool,
 
     const Self = @This();
 
     /// Создать буфер исполняемой памяти
     pub fn init(size: usize) !Self {
-        // Выровнять размер по странице
+        // Выровнять размер by странице
         const page_size = mem.page_size;
         const aligned_size = ((size + page_size - 1) / page_size) * page_size;
 
-        // Выделить память через mmap с правами RW
+        // Выделить memory via mmap with правами RW
         const memory = try posix.mmap(
             null,
             aligned_size,
@@ -209,7 +209,7 @@ pub const ExecutableBuffer = struct {
         };
     }
 
-    /// Освободить память
+    /// Освободить memory
     pub fn deinit(self: *Self) void {
         posix.munmap(self.memory);
     }
@@ -227,36 +227,36 @@ pub const ExecutableBuffer = struct {
         for (bytes) |b| self.emit(b);
     }
 
-    /// Записать 32-битное значение (little-endian)
+    /// Записать 32-битное value (little-endian)
     pub fn emitI32(self: *Self, value: i32) void {
         const bytes: [4]u8 = @bitCast(value);
         self.emitBytes(&bytes);
     }
 
-    /// Записать 64-битное значение (little-endian)
+    /// Записать 64-битное value (little-endian)
     pub fn emitI64(self: *Self, value: i64) void {
         const bytes: [8]u8 = @bitCast(value);
         self.emitBytes(&bytes);
     }
 
-    /// Сделать память исполняемой (и убрать право записи)
+    /// Сделать memory исполняемой (and убрать право записи)
     pub fn makeExecutable(self: *Self) !void {
         try posix.mprotect(self.memory, posix.PROT.READ | posix.PROT.EXEC);
         self.is_executable = true;
     }
 
-    /// Сделать память записываемой (и убрать право исполнения)
+    /// Сделать memory записываемой (and убрать право исполнения)
     pub fn makeWritable(self: *Self) !void {
         try posix.mprotect(self.memory, posix.PROT.READ | posix.PROT.WRITE);
         self.is_executable = false;
     }
 
-    /// Получить указатель на функцию
+    /// Получить указатель on функцию
     pub fn getFunction(self: *const Self, comptime T: type) T {
         return @ptrCast(self.memory.ptr);
     }
 
-    /// Получить указатель на функцию по смещению
+    /// Получить указатель on функцию by смещению
     pub fn getFunctionAt(self: *const Self, comptime T: type, offset: usize) T {
         return @ptrCast(self.memory.ptr + offset);
     }
@@ -266,7 +266,7 @@ pub const ExecutableBuffer = struct {
         return self.pos;
     }
 
-    /// Сбросить позицию (для повторного использования)
+    /// Reset position (for повторного использования)
     pub fn reset(self: *Self) void {
         self.pos = 0;
     }
@@ -279,10 +279,10 @@ pub const ExecutableBuffer = struct {
 /// Функция без аргументов, возвращающая i64
 pub const JitFn0 = *const fn () callconv(.C) i64;
 
-/// Функция с одним аргументом i64, возвращающая i64
+/// Функция with одним аргументом i64, возвращающая i64
 pub const JitFn1 = *const fn (i64) callconv(.C) i64;
 
-/// Функция с двумя аргументами i64, возвращающая i64
+/// Функция with двумя аргументами i64, возвращающая i64
 pub const JitFn2 = *const fn (i64, i64) callconv(.C) i64;
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -415,7 +415,7 @@ pub const ExecutableJIT = struct {
         return self.buf.getFunction(JitFn1);
     }
 
-    /// Сбросить буфер для новой функции
+    /// Reset buffer for новой функции
     pub fn reset(self: *Self) !void {
         try self.buf.makeWritable();
         self.buf.reset();
@@ -850,7 +850,7 @@ pub const HotPathDetector = struct {
         self.compiled_addresses.deinit();
     }
 
-    /// Записать выполнение по адресу, вернуть true если стал горячим
+    /// Записать execution by адресу, вернуть true if стал горячим
     pub fn recordExecution(self: *Self, address: u32) bool {
         const entry = self.execution_counts.getOrPut(address) catch return false;
         if (!entry.found_existing) {
@@ -873,17 +873,17 @@ pub const HotPathDetector = struct {
         return self.execution_counts.get(address) orelse 0;
     }
 
-    /// Сохранить скомпилированный код
+    /// Сохранить скомпилированный code
     pub fn cacheCompiledCode(self: *Self, address: u32, code: []const u8) !void {
         try self.compiled_addresses.put(address, code);
     }
 
-    /// Получить скомпилированный код
+    /// Get compiled code
     pub fn getCompiledCode(self: *const Self, address: u32) ?[]const u8 {
         return self.compiled_addresses.get(address);
     }
 
-    /// Проверить, есть ли скомпилированный код
+    /// Проверить, есть ли скомпилированный code
     pub fn hasCompiledCode(self: *const Self, address: u32) bool {
         return self.compiled_addresses.contains(address);
     }
@@ -935,19 +935,19 @@ pub const AdaptiveJIT = struct {
         self.detector.deinit();
     }
 
-    /// Выполнить блок кода - интерпретировать или JIT
+    /// Выполнить блок кода - интерпретировать or JIT
     pub fn execute(self: *Self, address: u32, instructions: []const Instruction, constants: []const i64) !?[]const u8 {
-        // Проверить, есть ли уже скомпилированный код
+        // Проверить, есть ли уже скомпилированный code
         if (self.detector.getCompiledCode(address)) |code| {
             self.jit_count += 1;
             return code;
         }
 
-        // Записать выполнение
+        // Записать execution
         const became_hot = self.detector.recordExecution(address);
 
         if (became_hot and !self.detector.hasCompiledCode(address)) {
-            // Компилировать горячий путь
+            // Компилировать горячий path
             const code = try self.compiler.compile(instructions, constants);
             try self.detector.cacheCompiledCode(address, code);
             self.jit_count += 1;
@@ -1080,7 +1080,7 @@ test "hot path detector" {
         try std.testing.expect(!hot);
     }
 
-    // 10-е выполнение - становится горячим
+    // 10-е execution - становится горячим
     const hot = detector.recordExecution(0x1000);
     try std.testing.expect(hot);
 
@@ -1099,14 +1099,14 @@ test "adaptive jit" {
     };
     const constants = [_]i64{42};
 
-    // Первые 99 выполнений - интерпретация
+    // Первые 99 выполнений - interpretation
     var i: u32 = 0;
     while (i < 99) : (i += 1) {
         const result = try ajit.execute(0x2000, &instructions, &constants);
         try std.testing.expect(result == null);
     }
 
-    // 100-е выполнение - JIT компиляция
+    // 100-е execution - JIT compilation
     const result = try ajit.execute(0x2000, &instructions, &constants);
     try std.testing.expect(result != null);
 
@@ -1222,7 +1222,7 @@ pub const BenchmarkResult = struct {
     iterations: u64,
 };
 
-/// Простой интерпретатор для сравнения
+/// Simple interpreter for сравнения
 fn interpretAdd(a: i64, b: i64) i64 {
     return a + b;
 }
@@ -1335,7 +1335,7 @@ pub fn printBenchmarkResults(name: []const u8, result: BenchmarkResult) void {
 
 test "benchmark add" {
     const result = try benchmarkAdd(100_000);
-    // JIT должен быть быстрее (или примерно равен из-за оптимизаций компилятора)
+    // JIT должен быть быстрее (or примерно равен из-за оптимизаций компилятора)
     try std.testing.expect(result.speedup > 0.5);
 }
 

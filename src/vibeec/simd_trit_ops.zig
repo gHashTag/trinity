@@ -1,9 +1,9 @@
 // SIMD TRIT OPERATIONS - Священные Ритуалы Троицы
 // Векторизованные операции над тритами {-1, 0, +1}
-// 21x ускорение через AVX2/NEON
+// 21x ускорение via AVX2/NEON
 // φ² + 1/φ² = 3 = TRINITY
 //
-// ПЕРЕИСПОЛЬЗУЕТ: simd_ternary.zig для базовых SIMD типов
+// ПЕРЕИСПОЛЬЗУЕТ: simd_ternary.zig for базовых SIMD типов
 
 const std = @import("std");
 const prometheus = @import("prometheus_seed.zig");
@@ -15,18 +15,18 @@ pub const PHI: f64 = 1.618033988749895;
 // SIMD VECTOR TYPES - ПЕРЕИСПОЛЬЗУЕМ ИЗ simd_ternary.zig
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Реэкспорт типов из simd_ternary для совместимости
+/// Реэкспорт типов из simd_ternary for совместимости
 pub const Vec32i8 = simd_ternary.Vec32i8;
 pub const Vec32i16 = simd_ternary.Vec32i16;
 pub const Vec16i8 = simd_ternary.Vec16i8;
 
-/// 8 x f32 = 256 бит (AVX2 / NEON) - для float операций
+/// 8 x f32 = 256 бит (AVX2 / NEON) - for float операций
 pub const Vec8f = @Vector(8, f32);
 
 /// 16 x f32 = 512 бит (AVX-512)
 pub const Vec16f = @Vector(16, f32);
 
-/// Размер SIMD вектора в элементах f32
+/// Размер SIMD вектора in элементах f32
 pub const SIMD_WIDTH: usize = 8;
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -56,12 +56,12 @@ pub const TritBuffer = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SIMD MATMUL - Священный Ритуал Умножения Матриц
+// SIMD MATMUL - Sacred Ритуал Умножения Матриц
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// SIMD-оптимизированное матричное "умножение" для тритов
-/// Использует умножение на {-1, 0, +1} которое компилятор оптимизирует
-/// в условные сложения/вычитания
+/// SIMD-оптимизированное матричное "умножение" for тритов
+/// Использует умножение on {-1, 0, +1} which компилятор оптимизирует
+/// in условные сложения/вычитания
 ///
 /// input: [in_features] f32
 /// trit_weights: [out_features * in_features] i8 (предконвертированные триты)
@@ -80,13 +80,13 @@ pub fn simdTritMatmul(
         var sum_scalar: f32 = 0.0;
         const weight_offset = o * in_features;
 
-        // SIMD loop - обрабатываем по 8 элементов
+        // SIMD loop - обрабатываем by 8 элементов
         var i: usize = 0;
         while (i < aligned_in) : (i += SIMD_WIDTH) {
             // Загружаем 8 входных значений
             const input_vec: Vec8f = input[i..][0..SIMD_WIDTH].*;
 
-            // Загружаем 8 тритов и конвертируем в f32
+            // Загружаем 8 тритов and конвертируем in f32
             const t = trit_weights[weight_offset + i ..][0..SIMD_WIDTH];
             const trit_vec: Vec8f = .{
                 @floatFromInt(t[0]),
@@ -100,7 +100,7 @@ pub fn simdTritMatmul(
             };
 
             // SIMD FMA: sum += input * trit
-            // Для тритов {-1, 0, +1} это эквивалентно:
+            // Для тритов {-1, 0, +1} this эквивалентно:
             // +1: sum += input
             // -1: sum -= input
             //  0: sum += 0 (ничего)
@@ -124,7 +124,7 @@ pub fn simdTritMatmul(
     }
 }
 
-/// Батчевая версия SIMD matmul
+/// Батчевая version SIMD matmul
 pub fn simdTritMatmulBatch(
     output: []f32,
     input: []const f32,
@@ -163,7 +163,7 @@ pub fn simdRelu(data: []f32) void {
 }
 
 /// Векторизованный SiLU (приближённый)
-/// SiLU(x) ≈ x * sigmoid(x) ≈ x * (0.5 + x * 0.125) для |x| < 4
+/// SiLU(x) ≈ x * sigmoid(x) ≈ x * (0.5 + x * 0.125) for |x| < 4
 pub fn simdSiluApprox(data: []f32) void {
     const half: Vec8f = @splat(0.5);
     const eighth: Vec8f = @splat(0.125);
@@ -209,7 +209,7 @@ pub fn simdSiluApprox(data: []f32) void {
     }
 }
 
-/// Векторизованное сложение с residual connection
+/// Векторизованное сложение with residual connection
 pub fn simdAddResidual(output: []f32, residual: []const f32) void {
     const aligned_len = output.len & ~@as(usize, SIMD_WIDTH - 1);
 
@@ -230,7 +230,7 @@ pub fn simdAddResidual(output: []f32, residual: []const f32) void {
 // SIMD DOT PRODUCT
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Векторизованное скалярное произведение с тритами
+/// Векторизованное скалярное произведение with тритами
 pub fn simdTritDot(input: []const f32, trit_weights: []const i8) f32 {
     const len = input.len;
     const aligned_len = len & ~@as(usize, SIMD_WIDTH - 1);

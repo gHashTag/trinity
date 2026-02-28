@@ -1,5 +1,5 @@
 // Maxwell Daemon - Code Analyzer
-// Анализ кодовой базы для понимания структуры и паттернов
+// Анализ кодовой базы for понимания структуры and паттернов
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -131,7 +131,7 @@ pub const CodebaseMetrics = struct {
     test_coverage_estimate: f32,
 };
 
-/// Паттерн в коде
+/// Паттерн in коде
 pub const CodePattern = struct {
     name: []const u8,
     description: []const u8,
@@ -195,7 +195,7 @@ pub const CodeAnalyzer = struct {
     // ANALYSIS
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Анализировать файл
+    /// Анализировать file
     pub fn analyzeFile(self: *CodeAnalyzer, path: []const u8) !ModuleInfo {
         const result = self.codebase_interface.readFile(path);
         if (!result.success) {
@@ -278,7 +278,7 @@ pub const CodeAnalyzer = struct {
         return self.metrics.?;
     }
 
-    /// Найти функции по имени/паттерну
+    /// Найти функции by имени/паттерну
     pub fn findFunctions(self: *CodeAnalyzer, pattern: []const u8) !std.ArrayList(FunctionInfo) {
         var result = std.ArrayList(FunctionInfo).init(self.allocator);
 
@@ -294,7 +294,7 @@ pub const CodeAnalyzer = struct {
         return result;
     }
 
-    /// Найти типы по имени/паттерну
+    /// Найти типы by имени/паттерну
     pub fn findTypes(self: *CodeAnalyzer, pattern: []const u8) !std.ArrayList(TypeInfo) {
         var result = std.ArrayList(TypeInfo).init(self.allocator);
 

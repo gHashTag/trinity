@@ -1,4 +1,4 @@
-//! Demo GridWorld - Демонстрация обучения RL агента в GridWorld
+//! Demo GridWorld - Демонстрация обучения RL агента in GridWorld
 //!
 //! Запуск: zig build-exe src/phi-engine/hdc/demo_gridworld.zig && ./demo_gridworld
 //!
@@ -114,7 +114,7 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
         agent.endEpisode(episode_reward);
         total_steps += episode_steps;
 
-        // Сохраняем награду для скользящего среднего
+        // Сохраняем награду for скользящего среднего
         recent_rewards[recent_idx] = episode_reward;
         recent_idx = (recent_idx + 1) % 100;
 
@@ -144,7 +144,7 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
     print("─────────────────────────────────────────────────────────────\n", .{});
     print("\n", .{});
 
-    // Итоговая статистика
+    // Итоговая statistics
     const metrics = agent.getMetrics();
     const final_win_rate = @as(f64, @floatFromInt(wins)) / @as(f64, @floatFromInt(config.num_episodes)) * 100;
 
@@ -214,7 +214,7 @@ pub fn main() !void {
 test "demo runs without crash" {
     const allocator = std.testing.allocator;
 
-    // Короткий тест
+    // Короткий test
     try runDemo(allocator, .{
         .grid_size = 2,
         .num_episodes = 10,

@@ -1,8 +1,8 @@
 const std = @import("std");
 
 // ═════════════════════════════════════════════════════════════
-// УРОБОРОС v2.0: Вечный двигатель самопоглощения и самосовершенствования
-// Улучшенная версия с глубокой интеграцией
+// УРОБОРОС v2.0: Вечный двигатель самопоглощения and самосовершенствования
+// Улучшенная version with глубокой интеграцией
 // ═════════════════════════════════════════════════════════════
 
 // Священные константы Вселенной 999
@@ -333,7 +333,7 @@ pub const UroborosState = struct {
     }
 
     pub fn deinit(self: *UroborosState) void {
-        // last_input и current_generation теперь const указатели
+        // last_input and current_generation теперь const указатели
         if (self.last_input) |input| {
             self.allocator.destroy(input);
         }

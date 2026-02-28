@@ -1,13 +1,13 @@
 // 🤖 TRINITY v0.11.0: Suborbital Order
 // B2T LLM-Assisted Decompilation
-// Интеграция LLM для улучшения качества декомпиляции
+// LLM integration to improve decompilation quality
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 //
-// Научная основа:
+// Scientific basis:
 // - ICL4Decomp (arXiv:2511.01763): +40% re-executability
 // - FidelityGPT (arXiv:2510.19615): 89% detection accuracy
-// - ReCopilot (arXiv:2505.16366): +13% через data flow context
+// - ReCopilot (arXiv:2505.16366): +13% via data flow context
 
 const std = @import("std");
 const b2t_disasm = @import("b2t_disasm.zig");
@@ -22,40 +22,40 @@ pub const PHI_SQ: f64 = 2.618033988749895;
 pub const TRINITY: f64 = 3.0;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// DISTORTION TYPES (по FidelityGPT)
+// DISTORTION TYPES (per FidelityGPT)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const DistortionType = enum {
-    variable_naming, // Потеря имён переменных
-    type_inference, // Неверный вывод типов
-    control_flow, // Искажение потока управления
-    loop_structure, // Потеря структуры циклов
-    function_boundary, // Неверные границы функций
-    calling_convention, // Ошибки соглашения о вызовах
-    memory_access, // Неверный доступ к памяти
-    constant_propagation, // Потеря констант
-    dead_code, // Ложный мёртвый код
-    inlining_artifact, // Артефакты инлайнинга
+    variable_naming, // Loss of variable names
+    type_inference, // Incorrect type inference
+    control_flow, // Control flow distortion
+    loop_structure, // Loss of loop structure
+    function_boundary, // Incorrect function boundaries
+    calling_convention, // Calling convention errors
+    memory_access, // Incorrect memory access
+    constant_propagation, // Loss of constants
+    dead_code, // False dead code
+    inlining_artifact, // Inlining artifacts
 };
 
 pub const Distortion = struct {
     distortion_type: DistortionType,
-    location: u64, // Адрес в бинарнике
-    line_number: u32, // Строка в декомпилированном коде
-    severity: f32, // 0.0-1.0, где 1.0 = критично
+    location: u64, // Address in binary
+    line_number: u32, // Line in decompiled code
+    severity: f32, // 0.0-1.0, where 1.0 = critical
     description: []const u8,
     suggested_fix: ?[]const u8,
-    confidence: f32, // Уверенность детекции
+    confidence: f32, // Detection confidence
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SEMANTIC CONTEXT (по ReCopilot)
+// SEMANTIC CONTEXT (per ReCopilot)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const DataFlowNode = struct {
     variable_id: u32,
-    definition_site: u64, // Где определена
-    use_sites: std.ArrayList(u64), // Где используется
+    definition_site: u64, // Where defined
+    use_sites: std.ArrayList(u64), // Where used
     type_hint: ?[]const u8,
     is_parameter: bool,
     is_return_value: bool,
@@ -79,8 +79,8 @@ pub const DataFlowNode = struct {
 pub const CallGraphNode = struct {
     function_address: u64,
     function_name: ?[]const u8,
-    callers: std.ArrayList(u64), // Кто вызывает
-    callees: std.ArrayList(u64), // Кого вызывает
+    callers: std.ArrayList(u64), // Who calls
+    callees: std.ArrayList(u64), // Whom calls
     is_library: bool,
     signature_hint: ?[]const u8,
 
@@ -150,7 +150,7 @@ pub const CorrectedCode = struct {
     corrected: []const u8,
     changes: std.ArrayList(CodeChange),
     confidence: f32,
-    reasoning: []const u8, // Chain-of-thought объяснение
+    reasoning: []const u8, // Chain-of-thought explanation
 
     pub fn init(allocator: std.mem.Allocator) CorrectedCode {
         return CorrectedCode{
@@ -174,8 +174,8 @@ pub const DecompilationResult = struct {
     corrected_code: []const u8,
     distortions_found: std.ArrayList(Distortion),
     distortions_fixed: std.ArrayList(Distortion),
-    fix_rate: f32, // % исправленных искажений
-    re_executable: bool, // Можно ли перекомпилировать?
+    fix_rate: f32, // % of distortions fixed
+    re_executable: bool, // Can it be recompiled?
     tokens_used: u32,
 
     pub fn init(allocator: std.mem.Allocator) DecompilationResult {
@@ -220,9 +220,9 @@ pub const LLMAssistEngine = struct {
         self.distortions.deinit();
     }
 
-    /// Детекция искажений в декомпилированном коде
+    /// Distortion detection in decompiled code
     pub fn detectDistortions(self: *LLMAssistEngine, code: []const u8) ![]Distortion {
-        // Анализ паттернов искажений
+        // Analyze distortion patterns
         var lines = std.mem.splitScalar(u8, code, '\n');
         var line_num: u32 = 0;
 
@@ -230,27 +230,27 @@ pub const LLMAssistEngine = struct {
             line_num += 1;
             const trimmed = std.mem.trim(u8, line, " \t");
 
-            // Детекция бессмысленных имён переменных
+            // Detect meaningless variable names
             if (self.detectVariableNamingIssue(trimmed)) {
                 try self.distortions.append(Distortion{
                     .distortion_type = .variable_naming,
                     .location = 0,
                     .line_number = line_num,
                     .severity = 0.7,
-                    .description = "Бессмысленное имя переменной",
+                    .description = "Meaningless variable name",
                     .suggested_fix = null,
                     .confidence = 0.8,
                 });
             }
 
-            // Детекция проблем с типами
+            // Detect type issues
             if (self.detectTypeIssue(trimmed)) {
                 try self.distortions.append(Distortion{
                     .distortion_type = .type_inference,
                     .location = 0,
                     .line_number = line_num,
                     .severity = 0.8,
-                    .description = "Возможная ошибка вывода типа",
+                    .description = "Possible type inference error",
                     .suggested_fix = null,
                     .confidence = 0.6,
                 });
@@ -262,7 +262,7 @@ pub const LLMAssistEngine = struct {
 
     fn detectVariableNamingIssue(self: *LLMAssistEngine, line: []const u8) bool {
         _ = self;
-        // Паттерны бессмысленных имён: v1, v2, var_1234, sub_5678
+        // Patterns of meaningless names: v1, v2, var_1234, sub_5678
         const patterns = [_][]const u8{ "v1", "v2", "v3", "var_", "sub_", "loc_", "arg_" };
         for (patterns) |pattern| {
             if (std.mem.indexOf(u8, line, pattern) != null) {
@@ -274,13 +274,13 @@ pub const LLMAssistEngine = struct {
 
     fn detectTypeIssue(self: *LLMAssistEngine, line: []const u8) bool {
         _ = self;
-        // Паттерны проблем с типами: void*, int вместо pointer
+        // Patterns of type issues: void*, int instead of pointer
         if (std.mem.indexOf(u8, line, "void*") != null) return true;
         if (std.mem.indexOf(u8, line, "(int)") != null) return true;
         return false;
     }
 
-    /// Извлечение контекста потока данных из TVC IR
+    /// Extract data flow context from TVC IR
     pub fn extractDataFlow(self: *LLMAssistEngine, func: *const b2t_lifter.TVCFunction) !void {
         for (func.blocks.items) |block| {
             for (block.instructions.items) |inst| {
@@ -288,7 +288,7 @@ pub const LLMAssistEngine = struct {
                     var node = DataFlowNode.init(self.allocator, dest_id);
                     node.definition_site = inst.source_address;
 
-                    // Анализ использований
+                    // Analyze usages
                     for (inst.operands[0..inst.operand_count]) |operand| {
                         if (operand != dest_id) {
                             try node.use_sites.append(inst.source_address);
@@ -301,13 +301,13 @@ pub const LLMAssistEngine = struct {
         }
     }
 
-    /// Построение графа вызовов
+    /// Build call graph
     pub fn buildCallGraph(self: *LLMAssistEngine, module: *const b2t_lifter.TVCModule) !void {
         for (module.functions.items) |func| {
             var node = CallGraphNode.init(self.allocator, func.id);
             node.function_name = if (func.name.len > 0) func.name else null;
 
-            // Поиск вызовов в функции
+            // Search calls in function
             for (func.blocks.items) |block| {
                 for (block.instructions.items) |inst| {
                     if (inst.opcode == .t_call) {
@@ -321,48 +321,48 @@ pub const LLMAssistEngine = struct {
         }
     }
 
-    /// Вычисление семантической интенсивности (по FidelityGPT)
+    /// Compute semantic intensity (per FidelityGPT)
     pub fn computeSemanticIntensity(self: *LLMAssistEngine, line: []const u8) f32 {
         _ = self;
         var intensity: f32 = 0.0;
 
-        // Факторы, увеличивающие интенсивность:
-        // - Наличие указателей
+        // Factors increasing intensity:
+        // - Presence of pointers
         if (std.mem.indexOf(u8, line, "*") != null) intensity += 0.2;
-        // - Приведение типов
+        // - Type casting
         if (std.mem.indexOf(u8, line, "(") != null and std.mem.indexOf(u8, line, ")") != null) intensity += 0.15;
-        // - Арифметика с указателями
+        // - Pointer arithmetic
         if (std.mem.indexOf(u8, line, "->") != null) intensity += 0.25;
-        // - Бессмысленные имена
+        // - Meaningless names
         if (std.mem.indexOf(u8, line, "v1") != null or std.mem.indexOf(u8, line, "v2") != null) intensity += 0.3;
 
         return @min(intensity, 1.0);
     }
 
-    /// Генерация промпта для LLM
+    /// Generate LLM prompt
     pub fn generatePrompt(self: *LLMAssistEngine, code: []const u8, distortions: []const Distortion) ![]const u8 {
         var prompt = std.ArrayList(u8).init(self.allocator);
         const writer = prompt.writer();
 
-        try writer.writeAll("Ты Maxwell — эксперт по декомпиляции. Исправь искажения в коде.\n\n");
-        try writer.writeAll("КОД:\n```\n");
+        try writer.writeAll("You are Maxwell — decompilation expert. Fix distortions in code.\n\n");
+        try writer.writeAll("CODE:\n```\n");
         try writer.writeAll(code);
         try writer.writeAll("\n```\n\n");
 
-        try writer.writeAll("ОБНАРУЖЕННЫЕ ИСКАЖЕНИЯ:\n");
+        try writer.writeAll("DETECTED DISTORTIONS:\n");
         for (distortions) |d| {
-            try writer.print("- Строка {d}: {s} (severity: {d:.2})\n", .{
+            try writer.print("- Line {d}: {s} (severity: {d:.2})\n", .{
                 d.line_number,
                 d.description,
                 d.severity,
             });
         }
 
-        try writer.writeAll("\nКОНТЕКСТ:\n");
-        try writer.print("- Строковые ссылки: {d}\n", .{self.context.string_references.items.len});
-        try writer.print("- Функции в графе вызовов: {d}\n", .{self.context.call_graph.items.len});
+        try writer.writeAll("\nCONTEXT:\n");
+        try writer.print("- String references: {d}\n", .{self.context.string_references.items.len});
+        try writer.print("- Functions in call graph: {d}\n", .{self.context.call_graph.items.len});
 
-        try writer.writeAll("\nВыведи ТОЛЬКО исправленный код.\n");
+        try writer.writeAll("\nOutput ONLY the corrected code.\n");
 
         return prompt.toOwnedSlice();
     }

@@ -5,13 +5,13 @@ const tvc_jit = @import("tvc_jit.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TVC VM WITH JIT SUPPORT
-// Автоматически компилирует горячие функции в машинный код
+// Автоматически компилирует горячие функции in машинный code
 // ═══════════════════════════════════════════════════════════════════════════
 
 pub const ExecutionMode = enum {
     interpret, // Всегда интерпретировать
     jit,       // Всегда JIT компилировать
-    adaptive,  // Адаптивно: интерпретировать, потом JIT для горячих
+    adaptive,  // Адаптивно: интерпретировать, потом JIT for горячих
 };
 
 pub const TVCVMJit = struct {
@@ -29,7 +29,7 @@ pub const TVCVMJit = struct {
             .jit = tvc_jit.TVCJit.init(allocator),
             .mode = .adaptive,
             .call_counts = std.StringHashMap(u64).init(allocator),
-            .jit_threshold = 100, // Компилировать после 100 вызовов
+            .jit_threshold = 100, // Компилировать after 100 вызовов
             .total_interpreted = 0,
             .total_jit = 0,
         };
@@ -49,7 +49,7 @@ pub const TVCVMJit = struct {
         try self.vm.loadModule(module);
     }
 
-    // Вызов функции с автоматическим выбором режима
+    // Вызов функции with автоматическим выбором режима
     pub fn callFunction(self: *TVCVMJit, func_name: []const u8) !i64 {
         // Увеличиваем счётчик вызовов
         const count = (self.call_counts.get(func_name) orelse 0) + 1;
@@ -63,13 +63,13 @@ pub const TVCVMJit = struct {
                 return self.executeJIT(func_name);
             },
             .adaptive => {
-                // Проверяем, есть ли уже скомпилированная версия
+                // Проверяем, есть ли уже скомпилированная version
                 if (self.jit.getCompiled(func_name)) |compiled| {
                     self.total_jit += 1;
                     return compiled.call();
                 }
 
-                // Проверяем, достигнут ли порог для JIT
+                // Проверяем, достигнут ли порог for JIT
                 if (count >= self.jit_threshold) {
                     // Пытаемся скомпилировать
                     if (self.vm.getFunction(func_name)) |func| {
@@ -92,7 +92,7 @@ pub const TVCVMJit = struct {
     fn executeInterpreted(self: *TVCVMJit, func_name: []const u8) !i64 {
         self.total_interpreted += 1;
         try self.vm.callFunction(func_name);
-        // Возвращаем значение из регистра r0
+        // Возвращаем value из регистра r0
         return @as(i64, self.vm.registers.r0);
     }
 
@@ -113,7 +113,7 @@ pub const TVCVMJit = struct {
         return error.InvalidFunction;
     }
 
-    // Принудительная JIT компиляция функции
+    // Принудительная JIT compilation функции
     pub fn forceCompile(self: *TVCVMJit, func_name: []const u8) !void {
         if (self.vm.getFunction(func_name)) |func| {
             _ = try self.jit.compile(func);
@@ -176,7 +176,7 @@ pub fn benchmarkVMvsJIT(
     func_name: []const u8,
     iterations: u64,
 ) !BenchmarkResult {
-    // Создаём две VM: одну для интерпретации, одну для JIT
+    // Создаём две VM: одну для интерпретации, одну for JIT
     var vm_only = TVCVMJit.init(allocator, 64 * 1024, 4 * 1024);
     defer vm_only.deinit();
     vm_only.setMode(.interpret);

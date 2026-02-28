@@ -26,7 +26,7 @@ pub const YuroborosDifficulty = struct {
     // Base Difficulty (базовая сложность)
     base: f64 = 1.0,
 
-    // Scaling Factor (коэффициент масштабирования)
+    // Scaling Factor (coefficient масштабирования)
     scaling: f64 = 1.0,
 
     // Adaptive Difficulty (адаптивная сложность)

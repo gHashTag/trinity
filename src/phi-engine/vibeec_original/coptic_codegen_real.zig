@@ -532,7 +532,7 @@ test "phi constant" {
 // ═══════════════════════════════════════════════════════════════════════════════
 // VERILOG BACKEND (FPGA Target)
 // ═══════════════════════════════════════════════════════════════════════════════
-// Генерация Verilog кода для синтеза на FPGA
+// Генерация Verilog кода for синтеза on FPGA
 // Приоритет: BitNet операции (Ternary MAC без умножений)
 // φ² + 1/φ² = 3
 
@@ -606,7 +606,7 @@ pub const VerilogGen = struct {
     }
 
     fn visitFuncDeclVerilog(self: *VerilogGen, node: *const AstNode) !void {
-        // В Verilog функции становятся модулями или always блоками
+        // В Verilog функции становятся модулями or always блоками
         try self.write("    // Function: ");
         if (node.children.items.len > 0) {
             const name = node.children.items[0].token.lexeme(self.source);

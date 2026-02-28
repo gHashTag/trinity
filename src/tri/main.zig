@@ -256,7 +256,8 @@ pub fn main() !void {
             std.debug.print("Sacred error: {}\n", .{err});
         },
         // Chemistry (v6.0) - TODO: complete element data (missing optional fields)
-        .chem => try commands.runChemCommand(allocator, cmd_args),
+        // TODO: Fix sacred module exports (AVOGADRO, etc.)
+        // .chem => try commands.runChemCommand(allocator, cmd_args),
         // Intelligence System
         .intelligence => tri_context.runIntelligenceCommand(allocator, &state, cmd_args) catch |err| {
             std.debug.print("Intelligence error: {}\n", .{err});
@@ -377,6 +378,58 @@ pub fn main() !void {
                     std.debug.print("Error: {s}\n", .{err_msg});
                 }
             }
+        },
+        // Temporal Trinity v1.0 (Order #020, #021) — ACTIVE
+        .time => {
+            if (cmd_args.len == 0) {
+                std.debug.print("Usage: tri time <subcommand>\n", .{});
+                std.debug.print("Subcommands:\n", .{});
+                std.debug.print("  sacred    - Display TEMPORAL TRINITY THEOREM\n", .{});
+                std.debug.print("  balance   - Show φ² + 1/φ² = 3\n", .{});
+                std.debug.print("  arrow     - Show time arrow φ⁴\n", .{});
+                std.debug.print("  planck    - Show Planck time\n", .{});
+                std.debug.print("  eternal   - Show eternal return π×3\n", .{});
+            } else {
+                const sacred = @import("sacred");
+                if (std.mem.eql(u8, cmd_args[0], "sacred")) {
+                    _ = try sacred.displayTemporalTheorem(allocator);
+                } else if (std.mem.eql(u8, cmd_args[0], "balance")) {
+                    const balance = sacred.calculateTemporalBalance();
+                    std.debug.print("Temporal Balance (φ² + 1/φ²): {d:.6}\n", .{balance});
+                } else if (std.mem.eql(u8, cmd_args[0], "arrow")) {
+                    std.debug.print("Time Arrow Ratio (φ⁴): {d:.6}\n", .{sacred.computeTimeArrow()});
+                } else if (std.mem.eql(u8, cmd_args[0], "planck")) {
+                    std.debug.print("Planck Time: {d:.6} × 10⁻⁴⁴ s\n", .{sacred.computePlanckTime() * 1e44});
+                } else if (std.mem.eql(u8, cmd_args[0], "eternal")) {
+                    std.debug.print("Eternal Return (π × 3): {d:.9}\n", .{sacred.eternalReturn()});
+                } else {
+                    std.debug.print("Unknown subcommand: {s}\n", .{cmd_args[0]});
+                }
+            }
+        },
+        .os_boot => {
+            const os_mod = @import("os");
+
+            var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+            defer _ = gpa.deinit();
+            const boot_allocator = gpa.allocator();
+
+            var os_instance = try os_mod.TrinityOS.init(boot_allocator);
+            defer os_instance.deinit();
+
+            // Parse boot mode - handle both "tri boot --temporal" and "tri os boot --temporal"
+            const mode: os_mod.BootMode = blk: {
+                // Check all arguments for mode flags
+                for (cmd_args) |arg| {
+                    if (std.mem.eql(u8, arg, "--temporal")) break :blk .temporal;
+                    if (std.mem.eql(u8, arg, "--god") or std.mem.eql(u8, arg, "-g")) break :blk .god;
+                    if (std.mem.eql(u8, arg, "--quantum") or std.mem.eql(u8, arg, "-q")) break :blk .quantum;
+                    if (std.mem.eql(u8, arg, "--normal") or std.mem.eql(u8, arg, "-n")) break :blk .normal;
+                }
+                break :blk .god; // Default to GOD mode
+            };
+
+            try os_instance.boot(mode);
         },
     }
 }

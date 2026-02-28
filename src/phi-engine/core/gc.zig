@@ -1,5 +1,5 @@
 //! VIBEE Garbage Collector - PAS DAEMON V38
-//! Паттерны: HSH (O(1) object lookup), D&C (generational collection), PRE (write barriers)
+//! Patterns: HSH (O(1) object lookup), D&C (generational collection), PRE (write barriers)
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;

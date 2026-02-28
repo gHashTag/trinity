@@ -1,5 +1,5 @@
 // VIBEE BOGATYR 34 - Жар-птица (Creator)
-// Принцип: SYNTHESIS - объединение противоположностей в нечто большее
+// Принцип: SYNTHESIS - объединение противоположностей in нечто большее
 // φ² + 1/φ² = 3 | PHOENIX = 999
 
 const std = @import("std");
@@ -11,7 +11,7 @@ const common = @import("bogatyrs_common.zig");
 
 pub const CREATOR_ID: u32 = 34;
 pub const CREATOR_NAME = "Жар-птица";
-pub const CREATOR_WEIGHT: f32 = 2.0; // Двойной вес в совете - синтез ломает тупики
+pub const CREATOR_WEIGHT: f32 = 2.0; // Двойной вес in совете - синтез ломает тупики
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_SQUARED: f64 = 2.618033988749895;
 pub const GOLDEN_IDENTITY: f64 = 3.0; // φ² + 1/φ² = 3
@@ -36,7 +36,7 @@ pub const Paradox = struct {
     }
 };
 
-/// Третий путь, который трансцендирует парадокс
+/// Третий path, which трансцендирует парадокс
 pub const Synthesis = struct {
     paradox: Paradox,
     third_path: []const u8,
@@ -49,7 +49,7 @@ pub const Synthesis = struct {
     }
 };
 
-/// Изученный паттерн успешного синтеза
+/// Изученный pattern успешного синтеза
 pub const CreationPattern = struct {
     pattern_id: []const u8,
     paradox_type: []const u8,
@@ -69,7 +69,7 @@ pub const CreationPattern = struct {
 // HARDCODED SYNTHESIS PATTERNS
 // ============================================================================
 
-/// Известные синтезы для типичных парадоксов
+/// Известные синтезы for типичных парадоксов
 pub const SYNTHESIS_PATTERNS = [_]struct {
     pole_a: []const u8,
     pole_b: []const u8,
@@ -131,7 +131,7 @@ pub const SYNTHESIS_PATTERNS = [_]struct {
 // CORE FUNCTIONS
 // ============================================================================
 
-/// Анализирует конфликт и идентифицирует парадокс
+/// Анализирует конфликт and идентифицирует парадокс
 pub fn analyzeParadox(pole_a: []const u8, pole_b: []const u8, context: []const u8) Paradox {
     return Paradox{
         .pole_a = pole_a,
@@ -140,9 +140,9 @@ pub fn analyzeParadox(pole_a: []const u8, pole_b: []const u8, context: []const u
     };
 }
 
-/// Ищет третий путь, который трансцендирует парадокс
+/// Ищет третий path, which трансцендирует парадокс
 pub fn seekSynthesis(paradox: Paradox) ?Synthesis {
-    // Ищем в известных паттернах
+    // Ищем in известных паттернах
     for (SYNTHESIS_PATTERNS) |pattern| {
         const match_forward = std.mem.eql(u8, paradox.pole_a, pattern.pole_a) and
             std.mem.eql(u8, paradox.pole_b, pattern.pole_b);
@@ -164,7 +164,7 @@ pub fn seekSynthesis(paradox: Paradox) ?Synthesis {
     return null;
 }
 
-/// Рассчитывает требуемую смелость для синтеза
+/// Рассчитывает требуемую смелость for синтеза
 pub fn calculateCourageRequirement(synthesis: Synthesis) f64 {
     // Смелость = (риск / 10) * (1 - reward/risk_ratio)
     const risk_normalized = @as(f64, @floatFromInt(synthesis.risk_level)) / 10.0;
@@ -179,10 +179,10 @@ pub fn calculateCourageRequirement(synthesis: Synthesis) f64 {
 /// 34-й голос — не за сохранение, а за расширение
 pub fn voteAsCreator(ctx: *const common.ValidationContext) !common.BogatyrResult {
     const start_time = std.time.nanoTimestamp();
-    _ = ctx; // Используется для валидации контекста
+    _ = ctx; // Используется for валидации контекста
 
-    // Жар-птица всегда голосует Pass, если находит путь для творчества
-    // В реальной системе здесь будет анализ парадоксов в контексте
+    // Жар-птица всегда голосует Pass, if находит path for творчества
+    // В реальной системе здесь будет analysis парадоксов in контексте
 
     const end_time = std.time.nanoTimestamp();
     const duration: i64 = @intCast(end_time - start_time);

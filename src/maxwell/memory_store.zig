@@ -1,5 +1,5 @@
 // Maxwell Daemon - Memory Store
-// Долгосрочная память агента для обучения
+// Долгосрочная memory агента for обучения
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -52,7 +52,7 @@ pub const Experience = struct {
     }
 };
 
-/// Выученный паттерн
+/// Выученный pattern
 pub const Pattern = struct {
     id: u64,
     name: []const u8,
@@ -171,7 +171,7 @@ pub const MemoryStore = struct {
         return best_match;
     }
 
-    /// Получить успешные опыты по типу задачи
+    /// Получить успешные опыты by типу задачи
     pub fn getSuccessfulExperiences(self: *MemoryStore, task_type: []const u8) !std.ArrayList(*Experience) {
         var result = std.ArrayList(*Experience).init(self.allocator);
 
@@ -188,7 +188,7 @@ pub const MemoryStore = struct {
     // PATTERNS
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Добавить паттерн
+    /// Добавить pattern
     pub fn addPattern(self: *MemoryStore, pattern: Pattern) !u64 {
         var new_pattern = pattern;
         new_pattern.id = self.next_pattern_id;
@@ -200,7 +200,7 @@ pub const MemoryStore = struct {
         return new_pattern.id;
     }
 
-    /// Найти паттерн по триггеру
+    /// Найти pattern by триггеру
     pub fn findPattern(self: *MemoryStore, trigger: []const u8) ?*Pattern {
         // Exact match
         if (self.pattern_by_trigger.get(trigger)) |id| {
@@ -264,7 +264,7 @@ pub const MemoryStore = struct {
         return result;
     }
 
-    /// Извлечь паттерн из опыта
+    /// Извлечь pattern из опыта
     fn extractPattern(self: *MemoryStore, exp: *Experience) !void {
         // Simple pattern extraction: task_type -> approach
         const existing = self.findPattern(exp.task_type);
@@ -306,7 +306,7 @@ pub const MemoryStore = struct {
         return record.id;
     }
 
-    /// Найти похожую ошибку (для повторного использования решения)
+    /// Найти похожую ошибку (for повторного использования решения)
     pub fn findSimilarError(self: *MemoryStore, error_type: []const u8, message: []const u8) ?*ErrorRecord {
         for (self.errors.items) |*err| {
             if (std.mem.eql(u8, err.error_type, error_type) and
@@ -319,7 +319,7 @@ pub const MemoryStore = struct {
         return null;
     }
 
-    /// Отметить ошибку как решённую
+    /// Отметить ошибку how решённую
     pub fn resolveError(self: *MemoryStore, error_id: u64, solution: []const u8) void {
         for (self.errors.items) |*err| {
             if (err.id == error_id) {
@@ -334,7 +334,7 @@ pub const MemoryStore = struct {
     // PERSISTENCE
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Сохранить память в файл
+    /// Сохранить memory in file
     pub fn save(self: *MemoryStore, path: []const u8) !void {
         const file = try std.fs.cwd().createFile(path, .{});
         defer file.close();
@@ -356,7 +356,7 @@ pub const MemoryStore = struct {
         // TODO: Serialize actual data
     }
 
-    /// Загрузить память из файла
+    /// Загрузить memory из файла
     pub fn load(self: *MemoryStore, path: []const u8) !void {
         const file = std.fs.cwd().openFile(path, .{}) catch return;
         defer file.close();

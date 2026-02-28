@@ -1,7 +1,7 @@
 const std = @import("std");
 
 /// BATCH GENERATOR - Массовая генерация VIBEE модулей
-/// Ускорение: 10-50x по сравнению с последовательной генерацией
+/// Ускорение: 10-50x by сравнению with последовательной генерацией
 
 pub const ModuleDef = struct {
     name: []const u8,
@@ -60,7 +60,7 @@ pub fn generateSpec(allocator: std.mem.Allocator, domain: []const u8, module: Mo
     , .{ module.name, version, v1, v2, v3, module.name, module.desc, module.name, module.name, module.name, module.name, module.name, module.name });
 }
 
-/// Генерирует .zig код напрямую (без промежуточного .vibee)
+/// Генерирует .zig code напрямую (без промежуточного .vibee)
 pub fn generateZig(allocator: std.mem.Allocator, module: ModuleDef, version: u32) ![]const u8 {
     const v1 = version / 100;
     const v2 = (version / 10) % 10;

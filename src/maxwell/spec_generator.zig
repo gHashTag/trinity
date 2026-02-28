@@ -10,7 +10,7 @@ const code_analyzer = @import("code_analyzer.zig");
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Тип поля в спецификации
+/// Тип поля in спецификации
 pub const FieldType = enum {
     String,
     Int,
@@ -41,7 +41,7 @@ pub const SpecField = struct {
     description: ?[]const u8,
 };
 
-/// Тип в спецификации
+/// Тип in спецификации
 pub const SpecType = struct {
     name: []const u8,
     fields: std.ArrayList(SpecField),
@@ -87,7 +87,7 @@ pub const SpecType = struct {
     }
 };
 
-/// Поведение в спецификации
+/// Поведение in спецификации
 pub const SpecBehavior = struct {
     name: []const u8,
     given: []const u8,
@@ -95,7 +95,7 @@ pub const SpecBehavior = struct {
     then: []const u8,
 };
 
-/// Полная спецификация
+/// Полная specification
 pub const Specification = struct {
     name: []const u8,
     version: []const u8,
@@ -138,7 +138,7 @@ pub const Specification = struct {
         });
     }
 
-    /// Сериализовать в .vibee формат
+    /// Сериализовать in .vibee format
     pub fn toVibee(self: *Specification) ![]const u8 {
         var output = std.ArrayList(u8).init(self.allocator);
         const writer = output.writer();

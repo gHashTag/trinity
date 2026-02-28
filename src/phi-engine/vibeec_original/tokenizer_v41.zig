@@ -21,17 +21,17 @@ pub const TRINITY: f64 = 3.0;
 pub const PHOENIX: u32 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SIMD ТИПЫ (эмуляция AVX-512 через 2x Vec16)
+// SIMD ТИПЫ (эмуляция AVX-512 via 2x Vec16)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const Vec16 = @Vector(16, u8);
 const Vec32 = @Vector(32, u8); // AVX-256 эмуляция
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// FULL BPE VOCABULARY (50K токенов - сжатая версия топ-1000)
+// FULL BPE VOCABULARY (50K токенов - сжатая version топ-1000)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Топ-1000 английских подслов (сокращённо для демо)
+// Топ-1000 английских подслов (сокращённо for демо)
 const BPE_TOKENS_1K = [_][]const u8{
     // Односимвольные
     "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
@@ -66,7 +66,7 @@ const BPE_TOKENS_1K = [_][]const u8{
     "ington", "ington", "ington", "ington", "ington", "ington", "ington", "ington", "ington", "ington",
 };
 
-// Хэш-таблица для BPE (4096 записей для лучшего распределения)
+// Хэш-таблица для BPE (4096 записей for лучшего распределения)
 const BPE_HASH_SIZE = 4096;
 
 pub const FullBPEVocab = struct {
@@ -102,7 +102,7 @@ pub const FullBPEVocab = struct {
     }
 
     pub fn findToken(self: *const Self, text: []const u8, start: usize, max_len: usize) ?struct { len: usize, idx: u16 } {
-        // Пробуем от длинных к коротким (greedy)
+        // Пробуем from длинных to коротким (greedy)
         var len: usize = @min(max_len, text.len - start);
         while (len > 0) : (len -= 1) {
             const slice = text[start .. start + len];
@@ -169,7 +169,7 @@ pub const SIMDCacheTokenizer = struct {
         return tokenizer;
     }
 
-    // AVX-256 эмуляция: проверка 32 биграмм параллельно
+    // AVX-256 эмуляция: verification 32 биграмм параллельно
     pub fn isBigram32(self: *const Self, c1: u8, c2: u8) bool {
         const v1_lo: Vec16 = @splat(c1);
         const v1_hi: Vec16 = @splat(c1);
@@ -202,7 +202,7 @@ pub const SIMDCacheTokenizer = struct {
         return h;
     }
 
-    // Основной метод токенизации с кэшем
+    // Основной method токенизации with кэшем
     pub fn tokenize(self: *Self, text: []const u8) u32 {
         if (text.len == 0) return 1;
 
@@ -217,10 +217,10 @@ pub const SIMDCacheTokenizer = struct {
 
         self.cache_misses += 1;
 
-        // Токенизация с SIMD + BPE
+        // Токенизация with SIMD + BPE
         const count = self.tokenizeInternal(text);
 
-        // Сохраняем в кэш
+        // Сохраняем in кэш
         self.cache[cache_idx] = CacheEntry{
             .hash = hash,
             .token_count = count,
@@ -250,14 +250,14 @@ pub const SIMDCacheTokenizer = struct {
                 continue;
             }
 
-            // SIMD проверка биграммы (32-way)
+            // SIMD verification биграммы (32-way)
             if (i + 1 < text.len and self.isBigram32(c, text[i + 1])) {
                 count += 1;
                 i += 2;
                 continue;
             }
 
-            // Одиночный символ
+            // Одиночный character
             count += 1;
             i += 1;
         }
@@ -339,12 +339,12 @@ pub const HybridStream = struct {
     // Автовыбор протокола
     pub fn autoSelect(payload_size: usize, bidirectional: bool) StreamProtocol {
         if (bidirectional) {
-            return .websocket; // WebSocket для двунаправленной связи
+            return .websocket; // WebSocket for двунаправленной связи
         }
         if (payload_size < 1024) {
-            return .sse; // SSE для маленьких сообщений
+            return .sse; // SSE for маленьких сообщений
         }
-        return .websocket; // WebSocket для больших данных
+        return .websocket; // WebSocket for больших данных
     }
 
     pub fn send(self: *Self, payload: []const u8, bidirectional: bool) void {
@@ -356,11 +356,11 @@ pub const HybridStream = struct {
         switch (protocol) {
             .websocket => {
                 self.ws_frames += 1;
-                self.bytes_sent += payload.len + 2; // +2 для заголовка
+                self.bytes_sent += payload.len + 2; // +2 for заголовка
             },
             .sse => {
                 self.sse_events += 1;
-                self.bytes_sent += payload.len + 20; // +20 для "data: " + "\n\n"
+                self.bytes_sent += payload.len + 20; // +20 for "data: " + "\n\n"
             },
             .auto => unreachable,
         }
@@ -408,7 +408,7 @@ test "AVX-256 emulation (32-way bigram)" {
 test "Full BPE vocab" {
     const vocab = FullBPEVocab.init();
 
-    // Проверяем поиск токенов
+    // Проверяем search токенов
     const text = "the quick";
 
     // "the" должен найтись
@@ -431,7 +431,7 @@ test "Hybrid stream auto-select" {
 test "Hybrid stream stats" {
     var stream = HybridStream.init(.auto);
 
-    stream.send("Hello", false); // SSE (маленькое, однонаправленное)
+    stream.send("Hello", false); // SSE (small, однонаправленное)
     stream.send("World", true); // WebSocket (двунаправленное)
 
     const s = stream.stats();
@@ -466,7 +466,7 @@ test "Benchmark: v40 vs v41" {
         total_v40 += @intCast(end - start);
     }
 
-    // Reset cache для честного сравнения первого вызова
+    // Reset cache for честного сравнения первого вызова
     resetV41();
 
     // Benchmark v41 (первый вызов - cache miss)
@@ -482,7 +482,7 @@ test "Benchmark: v40 vs v41" {
 
     // Benchmark v41 (повторные вызовы - cache hit)
     resetV41();
-    _ = tokenizeV41(text); // Первый вызов для заполнения кэша
+    _ = tokenizeV41(text); // Первый вызов for заполнения кэша
 
     var total_v41_cached: u64 = 0;
     i = 0;

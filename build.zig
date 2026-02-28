@@ -1302,11 +1302,21 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     const sacred_mod = b.createModule(.{
-        .root_source_file = b.path("src/sacred/chemistry.zig"),
+        .root_source_file = b.path("src/sacred/sacred.zig"),
         .target = target,
         .optimize = optimize,
         .imports = &.{
             .{ .name = "const", .module = sacred_const_mod },
+        },
+    });
+
+    // OS Boot module (Temporal Trinity v1.0 — Order #021)
+    const os_mod = b.createModule(.{
+        .root_source_file = b.path("src/os/boot.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "sacred", .module = sacred_mod },
         },
     });
 
@@ -1330,6 +1340,8 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "api", .module = api_mod },
                 // Sacred modules (v6.0)
                 .{ .name = "sacred", .module = sacred_mod },
+                // OS Boot module (Temporal Trinity v1.0 — Order #021)
+                .{ .name = "os", .module = os_mod },
             },
         }),
     });

@@ -2,7 +2,7 @@
 // UNIVERSAL VARLOG GENERATOR - Генерация Verilog из ЛЮБЫХ .vibee specs
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Генерирует Verilog HDL для ВСЕХ .vibee спецификаций (игнорирует language field)
+// Генерирует Verilog HDL for ВСЕХ .vibee спецификаций (игнорирует language field)
 // Автор: Dmitrii Vasilev
 // φ² + 1/φ² = 3
 //

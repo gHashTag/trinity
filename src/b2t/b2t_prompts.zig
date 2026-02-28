@@ -1,13 +1,13 @@
 // 🤖 TRINITY v0.11.0: Suborbital Order
 // B2T Prompts - Distortion-Aware Prompt Templates
-// Шаблоны промптов для LLM-ассистированной декомпиляции
+// Prompt templates for LLM-assisted decompilation
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 //
-// Научная основа:
+// Scientific basis:
 // - FidelityGPT: Distortion-aware prompt templates
-// - ICL4Decomp: In-context learning с примерами
-// - Chain-of-Thought: Пошаговое рассуждение
+// - ICL4Decomp: In-context learning with examples
+// - Chain-of-Thought: Step-by-step reasoning
 
 const std = @import("std");
 const b2t_llm_assist = @import("b2t_llm_assist.zig");
@@ -28,49 +28,49 @@ pub const PromptTemplate = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const MAXWELL_DECOMPILER_PROMPT =
-    \\Ты Maxwell — автономный агент-декомпилятор, работающий на принципах троичной логики.
+    \\You are Maxwell — an autonomous decompiler agent working on ternary logic principles.
     \\
-    \\ТВОЯ РОЛЬ:
-    \\- Анализировать декомпилированный код и находить семантические искажения
-    \\- Восстанавливать осмысленные имена переменных и функций
-    \\- Исправлять структуру потока управления
-    \\- Выводить корректные типы данных
+    \\YOUR ROLE:
+    \\- Analyze decompiled code and find semantic distortions
+    \\- Restore meaningful variable and function names
+    \\- Correct control flow structure
+    \\- Output correct data types
     \\
-    \\ПРИНЦИПЫ ТРОИЧНОЙ ЛОГИКИ:
-    \\- Для каждого решения рассматривай три исхода: отрицательный, нейтральный, положительный
-    \\- Используй формулу: φ² + 1/φ² = 3 = TRINITY
-    \\- Неопределённость — это не ошибка, а третье состояние
+    \\PRINCIPLES OF TERNARY LOGIC:
+    \\- For each decision, consider three outcomes: negative, neutral, positive
+    \\- Use the formula: φ² + 1/φ² = 3 = TRINITY
+    \\- Uncertainty is not an error, but a third state
     \\
-    \\ОГРАНИЧЕНИЯ:
-    \\- Генерируй ТОЛЬКО код, без объяснений (если не запрошено)
-    \\- Сохраняй семантику оригинала
-    \\- Не добавляй функциональность, которой не было
+    \\LIMITATIONS:
+    \\- Generate ONLY code, without explanations (if not requested)
+    \\- Preserve original semantics
+    \\- Do not add functionality that wasn't present
     \\
-    \\ФОРМАТ ОТВЕТА:
+    \\RESPONSE FORMAT:
     \\```c
-    \\// исправленный код
+    \\// corrected code
     \\```
 ;
 
 pub const DISTORTION_DETECTOR_PROMPT =
-    \\Ты эксперт по анализу качества декомпиляции.
+    \\You are an expert in decompilation quality analysis.
     \\
-    \\ТВОЯ ЗАДАЧА:
-    \\Найти семантические искажения в декомпилированном коде.
+    \\YOUR TASK:
+    \\Find semantic distortions in decompiled code.
     \\
-    \\ТИПЫ ИСКАЖЕНИЙ:
-    \\1. variable_naming — бессмысленные имена (v1, v2, sub_1234)
-    \\2. type_inference — неверные типы (int вместо pointer)
-    \\3. control_flow — искажённые циклы и условия
-    \\4. loop_structure — потеря структуры for/while
-    \\5. function_boundary — неверные границы функций
-    \\6. calling_convention — ошибки ABI
-    \\7. memory_access — неверные указатели
-    \\8. constant_propagation — потеря констант
-    \\9. dead_code — ложный мёртвый код
-    \\10. inlining_artifact — артефакты инлайнинга
+    \\DISTORTION TYPES:
+    \\1. variable_naming — meaningless names (v1, v2, sub_1234)
+    \\2. type_inference — incorrect types (int instead of pointer)
+    \\3. control_flow — distorted loops and conditions
+    \\4. loop_structure — loss of for/while structure
+    \\5. function_boundary — incorrect function boundaries
+    \\6. calling_convention — ABI errors
+    \\7. memory_access — incorrect pointers
+    \\8. constant_propagation — loss of constants
+    \\9. dead_code — false dead code
+    \\10. inlining_artifact — inlining artifacts
     \\
-    \\ФОРМАТ ОТВЕТА:
+    \\RESPONSE FORMAT:
     \\```json
     \\{
     \\  "distortions": [
@@ -86,23 +86,23 @@ pub const DISTORTION_DETECTOR_PROMPT =
 ;
 
 pub const SEMANTIC_RECOVERER_PROMPT =
-    \\Ты эксперт по восстановлению семантики из бинарного кода.
+    \\You are an expert at restoring semantics from binary code.
     \\
-    \\КОНТЕКСТ:
-    \\Тебе дан декомпилированный код с искажениями и дополнительный контекст:
-    \\- Граф потока данных (data flow)
-    \\- Граф вызовов (call graph)
-    \\- Строковые литералы
-    \\- Импортируемые символы
+    \\CONTEXT:
+    \\You are given decompiled code with distortions and additional context:
+    \\- Data flow graph
+    \\- Call graph
+    \\- String literals
+    \\- Imported symbols
     \\
-    \\ТВОЯ ЗАДАЧА:
-    \\Восстановить осмысленный код, используя весь доступный контекст.
+    \\YOUR TASK:
+    \\Restore meaningful code using all available context.
     \\
-    \\СТРАТЕГИЯ:
-    \\1. Проанализируй строковые литералы — они часто указывают на назначение
-    \\2. Изучи граф вызовов — имена библиотечных функций информативны
-    \\3. Проследи поток данных — откуда приходят и куда уходят значения
-    \\4. Примени паттерны — типичные конструкции (malloc/free, open/close)
+    \\STRATEGY:
+    \\1. Analyze string literals — they often indicate purpose
+    \\2. Study the call graph — library function names are informative
+    \\3. Trace data flow — where values come from and go to
+    \\4. Apply patterns — typical constructions (malloc/free, open/close)
     \\
     \\φ² + 1/φ² = 3 = TRINITY
 ;
@@ -114,22 +114,22 @@ pub const SEMANTIC_RECOVERER_PROMPT =
 pub const VARIABLE_NAMING_TEMPLATE = PromptTemplate{
     .name = "variable_naming_fix",
     .template =
-    \\Исправь имена переменных в этом коде:
+    \\Fix variable names in this code:
     \\```
     \\{code}
     \\```
     \\
-    \\КОНТЕКСТ:
-    \\- Строки в коде: {string_refs}
-    \\- Вызываемые функции: {callees}
+    \\CONTEXT:
+    \\- Strings in code: {string_refs}
+    \\- Called functions: {callees}
     \\
-    \\ОБНАРУЖЕННЫЕ ПРОБЛЕМЫ:
+    \\DETECTED PROBLEMS:
     \\{distortions}
     \\
-    \\ПРИМЕРЫ ИСПРАВЛЕНИЙ:
+    \\CORRECTION EXAMPLES:
     \\{examples}
     \\
-    \\Выведи ТОЛЬКО исправленный код.
+    \\Output ONLY corrected code.
     ,
     .distortion_aware = true,
     .examples_count = 3,
@@ -138,22 +138,22 @@ pub const VARIABLE_NAMING_TEMPLATE = PromptTemplate{
 pub const TYPE_INFERENCE_TEMPLATE = PromptTemplate{
     .name = "type_inference_fix",
     .template =
-    \\Исправь типы в этом коде:
+    \\Fix types in this code:
     \\```
     \\{code}
     \\```
     \\
-    \\КОНТЕКСТ:
-    \\- Сигнатуры вызываемых функций: {signatures}
-    \\- Размеры данных: {sizes}
+    \\CONTEXT:
+    \\- Called function signatures: {signatures}
+    \\- Data sizes: {sizes}
     \\
-    \\ОБНАРУЖЕННЫЕ ПРОБЛЕМЫ:
+    \\DETECTED PROBLEMS:
     \\{distortions}
     \\
-    \\ПРИМЕРЫ:
+    \\EXAMPLES:
     \\{examples}
     \\
-    \\Выведи ТОЛЬКО исправленный код с правильными типами.
+    \\Output ONLY corrected code with correct types.
     ,
     .distortion_aware = true,
     .examples_count = 5,
@@ -162,21 +162,21 @@ pub const TYPE_INFERENCE_TEMPLATE = PromptTemplate{
 pub const CONTROL_FLOW_TEMPLATE = PromptTemplate{
     .name = "control_flow_fix",
     .template =
-    \\Восстанови структуру потока управления:
+    \\Restore control flow structure:
     \\```
     \\{code}
     \\```
     \\
-    \\TVC IR показывает правильную структуру:
+    \\TVC IR shows the correct structure:
     \\```
     \\{tvc_ir}
     \\```
     \\
-    \\ПРИМЕРЫ ВОССТАНОВЛЕНИЯ:
+    \\RESTORATION EXAMPLES:
     \\{examples}
     \\
-    \\Преобразуй goto в структурные конструкции.
-    \\Выведи ТОЛЬКО исправленный код.
+    \\Convert goto to structured constructs.
+    \\Output ONLY corrected code.
     ,
     .distortion_aware = true,
     .examples_count = 3,
@@ -201,20 +201,20 @@ pub const PromptBuilder = struct {
         self.buffer.deinit();
     }
 
-    /// Построение промпта для детекции искажений
+    /// Build prompt for distortion detection
     pub fn buildDetectionPrompt(self: *PromptBuilder, code: []const u8) ![]const u8 {
         self.buffer.clearRetainingCapacity();
         const writer = self.buffer.writer();
 
         try writer.writeAll(DISTORTION_DETECTOR_PROMPT);
-        try writer.writeAll("\n\nКОД ДЛЯ АНАЛИЗА:\n```\n");
+        try writer.writeAll("\n\nCODE FOR ANALYSIS:\n```\n");
         try writer.writeAll(code);
         try writer.writeAll("\n```\n");
 
         return self.buffer.items;
     }
 
-    /// Построение промпта для исправления
+    /// Build prompt for correction
     pub fn buildCorrectionPrompt(
         self: *PromptBuilder,
         template: PromptTemplate,
@@ -228,21 +228,21 @@ pub const PromptBuilder = struct {
         try writer.writeAll(MAXWELL_DECOMPILER_PROMPT);
         try writer.writeAll("\n\n");
 
-        // Подстановка переменных в шаблон
+        // Substitute variables into template
         const template_copy = template.template;
 
-        // Замена {code}
+        // Replace {code}
         if (std.mem.indexOf(u8, template_copy, "{code}")) |_| {
-            try writer.writeAll("КОД:\n```\n");
+            try writer.writeAll("CODE:\n```\n");
             try writer.writeAll(code);
             try writer.writeAll("\n```\n\n");
         }
 
-        // Замена {distortions}
+        // Replace {distortions}
         if (std.mem.indexOf(u8, template_copy, "{distortions}")) |_| {
-            try writer.writeAll("ИСКАЖЕНИЯ:\n");
+            try writer.writeAll("DISTORTIONS:\n");
             for (distortions) |d| {
-                try writer.print("- Строка {d}: {s} (severity: {d:.2})\n", .{
+                try writer.print("- Line {d}: {s} (severity: {d:.2})\n", .{
                     d.line_number,
                     d.description,
                     d.severity,
@@ -251,18 +251,18 @@ pub const PromptBuilder = struct {
             try writer.writeAll("\n");
         }
 
-        // Замена {examples}
+        // Replace {examples}
         if (std.mem.indexOf(u8, template_copy, "{examples}")) |_| {
-            try writer.writeAll("ПРИМЕРЫ:\n");
+            try writer.writeAll("EXAMPLES:\n");
             for (examples, 0..) |example, i| {
-                try writer.print("Пример {d}:\n```\n{s}\n```\n\n", .{ i + 1, example });
+                try writer.print("Example {d}:\n```\n{s}\n```\n\n", .{ i + 1, example });
             }
         }
 
         return self.buffer.items;
     }
 
-    /// Построение Chain-of-Thought промпта
+    /// Build Chain-of-Thought prompt
     pub fn buildCoTPrompt(self: *PromptBuilder, code: []const u8, context: []const u8) ![]const u8 {
         self.buffer.clearRetainingCapacity();
         const writer = self.buffer.writer();
@@ -270,36 +270,36 @@ pub const PromptBuilder = struct {
         try writer.writeAll(SEMANTIC_RECOVERER_PROMPT);
         try writer.writeAll("\n\n");
 
-        try writer.writeAll("КОД:\n```\n");
+        try writer.writeAll("CODE:\n```\n");
         try writer.writeAll(code);
         try writer.writeAll("\n```\n\n");
 
-        try writer.writeAll("КОНТЕКСТ:\n");
+        try writer.writeAll("CONTEXT:\n");
         try writer.writeAll(context);
         try writer.writeAll("\n\n");
 
         try writer.writeAll(
-            \\ПОШАГОВОЕ РАССУЖДЕНИЕ:
+            \\STEP-BY-STEP REASONING:
             \\
-            \\Шаг 1: Анализ строковых литералов
-            \\Что они говорят о назначении функции?
+            \\Step 1: Analyze string literals
+            \\What do they say about function purpose?
             \\
-            \\Шаг 2: Анализ графа вызовов
-            \\Какие функции вызываются? Что это говорит о функциональности?
+            \\Step 2: Analyze call graph
+            \\Which functions are called? What does this say about functionality?
             \\
-            \\Шаг 3: Анализ потока данных
-            \\Откуда приходят входные данные? Куда уходят выходные?
+            \\Step 3: Analyze data flow
+            \\Where do input data come from? Where do outputs go?
             \\
-            \\Шаг 4: Детекция искажений
-            \\Какие искажения присутствуют? В каком порядке исправлять?
+            \\Step 4: Distortion detection
+            \\What distortions are present? In what order to fix?
             \\
-            \\Шаг 5: Применение исправлений
-            \\Исправь искажения по приоритету.
+            \\Step 5: Apply corrections
+            \\Fix distortions by priority.
             \\
-            \\Шаг 6: Финальная валидация
-            \\Код компилируется? Семантика эквивалентна оригиналу?
+            \\Step 6: Final validation
+            \\Does code compile? Is semantics equivalent to original?
             \\
-            \\Выведи финальный исправленный код.
+            \\Output final corrected code.
         );
 
         return self.buffer.items;
@@ -310,7 +310,7 @@ pub const PromptBuilder = struct {
 // TEMPLATE SELECTOR
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Выбор шаблона на основе типа искажения
+/// Select template based on distortion type
 pub fn selectTemplate(distortion_type: b2t_llm_assist.DistortionType) PromptTemplate {
     return switch (distortion_type) {
         .variable_naming => VARIABLE_NAMING_TEMPLATE,
@@ -352,6 +352,6 @@ test "build cot prompt" {
 
     const prompt = try builder.buildCoTPrompt("int x = 5;", "No context");
     try std.testing.expect(prompt.len > 0);
-    try std.testing.expect(std.mem.indexOf(u8, prompt, "Шаг 1") != null);
+    try std.testing.expect(std.mem.indexOf(u8, prompt, "Step 1") != null);
 }
 // φ² + 1/φ² = 3 | TRINITY

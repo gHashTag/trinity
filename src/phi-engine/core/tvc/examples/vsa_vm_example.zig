@@ -1,5 +1,5 @@
 // VSA VM Example
-// Демонстрация использования виртуальной машины для VSA операций
+// Демонстрация использования виртуальной машины for VSA операций
 //
 // Запуск: zig run vsa_vm_example.zig
 
@@ -39,7 +39,7 @@ pub fn main() !void {
         // Развязываем обратно
         .{ .opcode = .v_unbind, .dst = 3, .src1 = 2, .src2 = 1 }, // v3 = unbind(v2, v1)
 
-        // Проверяем сходство v0 и v3 (должно быть ~1.0)
+        // Проверяем сходство v0 and v3 (должно быть ~1.0)
         .{ .opcode = .v_cosine, .src1 = 0, .src2 = 3 }, // f0 = cosine(v0, v3)
 
         .{ .opcode = .halt },
@@ -58,7 +58,7 @@ pub fn main() !void {
     std.debug.print("(Ожидается ~1.0, т.к. unbind(bind(a,b), b) = a)\n\n", .{});
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // Пример 2: Bundle и поиск
+    // Пример 2: Bundle and search
     // ═══════════════════════════════════════════════════════════════════════════
 
     std.debug.print("Пример 2: Bundle и поиск\n", .{});
@@ -69,10 +69,10 @@ pub fn main() !void {
         .{ .opcode = .v_random, .dst = 0, .imm = 333 }, // v0 = A
         .{ .opcode = .v_random, .dst = 1, .imm = 444 }, // v1 = B
 
-        // Объединяем в bundle
+        // Объединяем in bundle
         .{ .opcode = .v_bundle2, .dst = 2, .src1 = 0, .src2 = 1 }, // v2 = bundle(A, B)
 
-        // Проверяем сходство bundle с A
+        // Проверяем сходство bundle with A
         .{ .opcode = .v_cosine, .src1 = 0, .src2 = 2 }, // f0 = cosine(A, bundle)
 
         .{ .opcode = .halt },
@@ -90,17 +90,17 @@ pub fn main() !void {
     std.debug.print("(Bundle похож на оба входа)\n\n", .{});
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // Пример 3: Permute для последовательностей
+    // Пример 3: Permute for последовательностей
     // ═══════════════════════════════════════════════════════════════════════════
 
     std.debug.print("Пример 3: Permute для последовательностей\n", .{});
     std.debug.print("──────────────────────────────────────────\n", .{});
 
     const program3 = [_]VSAInstruction{
-        // Создаём вектор
+        // Создаём vector
         .{ .opcode = .v_random, .dst = 0, .imm = 555 }, // v0 = original
 
-        // Permute на 5 позиций
+        // Permute on 5 позиций
         .{ .opcode = .v_permute, .dst = 1, .src1 = 0, .imm = 5 }, // v1 = permute(v0, 5)
 
         // Inverse permute
@@ -137,7 +137,7 @@ pub fn main() !void {
         .{ .opcode = .v_random, .dst = 2, .imm = 3000 },
         .{ .opcode = .v_random, .dst = 3, .imm = 4000 },
 
-        // Упаковываем для экономии памяти
+        // Упаковываем for экономии памяти
         .{ .opcode = .v_pack, .dst = 0 },
         .{ .opcode = .v_pack, .dst = 1 },
         .{ .opcode = .v_pack, .dst = 2 },

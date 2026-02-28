@@ -1,5 +1,5 @@
 // Maxwell Daemon - LLM Client
-// Интеграция с LLM API для reasoning
+// Интеграция with LLM API for reasoning
 //
 // IMPLEMENTATION STATUS:
 // - GLM (z.ai): IMPLEMENTED (working)
@@ -182,7 +182,7 @@ pub const LLMClient = struct {
         self.conversation.deinit();
     }
 
-    /// Отправить сообщение и получить ответ
+    /// Отправить сообщение and получить ответ
     pub fn chat(self: *LLMClient, user_message: []const u8) !LLMResponse {
         // Add user message to conversation
         try self.conversation.append(Message{
@@ -219,7 +219,7 @@ pub const LLMClient = struct {
         return response.content;
     }
 
-    /// Проанализировать ошибку и предложить исправление
+    /// Проанализировать ошибку and предложить исправление
     pub fn analyzeError(self: *LLMClient, error_message: []const u8, code_context: []const u8) ![]const u8 {
         var prompt = std.ArrayList(u8).init(self.allocator);
         defer prompt.deinit();
@@ -236,7 +236,7 @@ pub const LLMClient = struct {
         return response.content;
     }
 
-    /// Декомпозировать задачу на подзадачи
+    /// Декомпозировать задачу on подзадачи
     pub fn decomposeTask(self: *LLMClient, task_description: []const u8) ![]const u8 {
         var prompt = std.ArrayList(u8).init(self.allocator);
         defer prompt.deinit();

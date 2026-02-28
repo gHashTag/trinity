@@ -29,7 +29,7 @@ pub const MemoryStore = memory_store.MemoryStore;
 // MAXWELL DAEMON
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Полный демон Maxwell с всеми компонентами
+/// Полный демон Maxwell with всеми компонентами
 pub const MaxwellDaemon = struct {
     allocator: std.mem.Allocator,
     config: DaemonConfig,

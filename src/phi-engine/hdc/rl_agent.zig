@@ -1,12 +1,12 @@
-//! Ternary RL Agent - Reinforcement Learning с гиперразмерными вычислениями
+//! Ternary RL Agent - Reinforcement Learning with гиперразмерными вычислениями
 //!
-//! Состояния и действия представлены как троичные гипервекторы.
-//! Онлайн TD-learning с троичной квантизацией.
+//! Состояния and действия представлены how троичные гипервекторы.
+//! Онлайн TD-learning with троичной квантизацией.
 //!
 //! Научная база:
 //! - HDC for RL: Символьные представления состояний/действий
 //! - TD-Learning: Sutton & Barto temporal difference
-//! - Ternary Efficiency: BitNet-style сжатие весов
+//! - Ternary Efficiency: BitNet-style compression весов
 //!
 //! φ² + 1/φ² = 3 | TRINITY
 
@@ -49,7 +49,7 @@ pub const Action = struct {
     name: []const u8,
 };
 
-/// Табличная Q-функция для каждого состояния-действия
+/// Табличная Q-function for каждого состояния-действия
 pub const QTable = struct {
     values: []f64,
     num_states: usize,
@@ -118,7 +118,7 @@ pub const TrainingMetrics = struct {
     avg_reward_100: f64,
 };
 
-/// RL Агент с табличным Q-learning (для GridWorld)
+/// RL Агент with табличным Q-learning (for GridWorld)
 pub const RLAgent = struct {
     config: AgentConfig,
     q_table: ?QTable,
@@ -132,7 +132,7 @@ pub const RLAgent = struct {
     rng: std.Random.DefaultPrng,
 
     pub fn init(allocator: std.mem.Allocator, config: AgentConfig) !RLAgent {
-        // Создаём seed-векторы для действий (ортогональные)
+        // Создаём seed-векторы for действий (ортогональные)
         const action_seeds = try allocator.alloc(HyperVector, config.num_actions);
         for (action_seeds, 0..) |*seed, i| {
             seed.* = try hdc.randomVector(allocator, config.state_dim, @as(u64, i) * 12345 + 1);
@@ -165,7 +165,7 @@ pub const RLAgent = struct {
         self.episode_rewards.deinit();
     }
 
-    /// Инициализировать Q-таблицу для заданного числа состояний
+    /// Инициализировать Q-таблицу for заданного числа состояний
     pub fn initQTable(self: *RLAgent, num_states: usize) !void {
         if (self.q_table) |*qt| {
             qt.deinit();
@@ -173,7 +173,7 @@ pub const RLAgent = struct {
         self.q_table = try QTable.init(self.allocator, num_states, self.config.num_actions);
     }
 
-    /// Вычислить Q(s, a) - табличная версия
+    /// Вычислить Q(s, a) - табличная version
     pub fn computeQValue(self: *const RLAgent, state_id: usize, action_id: usize) f64 {
         if (self.q_table) |qt| {
             return qt.get(state_id, action_id);
@@ -198,7 +198,7 @@ pub const RLAgent = struct {
         return self.selectActionGreedy(state_id);
     }
 
-    /// TD(0) / Q-learning обновление
+    /// TD(0) / Q-learning update
     pub fn tdUpdate(self: *RLAgent, state_id: usize, action_id: usize, reward: f64, next_state_id: usize, done: bool) f64 {
         if (self.q_table == null) return 0;
 
@@ -263,17 +263,17 @@ pub fn encodeDiscreteState(allocator: std.mem.Allocator, state_id: usize, dim: u
     return hdc.randomVector(allocator, dim, @as(u64, state_id) * 99999 + 42);
 }
 
-/// Кодировать непрерывное состояние (через уровни)
+/// Кодировать непрерывное состояние (via уровни)
 pub fn encodeContinuousState(allocator: std.mem.Allocator, features: []const f64, dim: usize, num_levels: usize) !HyperVector {
     const result = try hdc.zeroVector(allocator, dim);
     var temp = try hdc.HyperVector.init(allocator, dim);
     defer temp.deinit();
 
     for (features, 0..) |f, i| {
-        // Дискретизируем значение в уровень
+        // Дискретизируем value in уровень
         const level: usize = @intFromFloat(@max(0, @min(@as(f64, @floatFromInt(num_levels - 1)), f * @as(f64, @floatFromInt(num_levels)))));
 
-        // Создаём вектор для (feature_id, level)
+        // Создаём vector for (feature_id, level)
         const seed = @as(u64, i) * 1000 + @as(u64, level);
         var level_vec = try hdc.randomVector(allocator, dim, seed);
         defer level_vec.deinit();
@@ -312,7 +312,7 @@ test "action seeds orthogonal" {
     var agent = try RLAgent.init(allocator, .{ .state_dim = 1000, .num_actions = 4 });
     defer agent.deinit();
 
-    // Проверяем что seed-векторы почти ортогональны
+    // Проверяем what seed-векторы почти ортогональны
     for (0..agent.config.num_actions) |i| {
         for (i + 1..agent.config.num_actions) |j| {
             const sim = hdc.similarity(agent.action_seeds[i].data, agent.action_seeds[j].data);
@@ -357,7 +357,7 @@ test "td update changes q value" {
     _ = agent.tdUpdate(0, 0, 1.0, 1, false);
     const q_after = agent.computeQValue(0, 0);
 
-    // Q-значение должно измениться
+    // Q-value должно измениться
     try std.testing.expect(q_before != q_after);
 }
 
@@ -372,7 +372,7 @@ test "greedy selects best action" {
 
     try agent.initQTable(10);
 
-    // Обучаем действие 1 с высокой наградой
+    // Обучаем действие 1 with высокой наградой
     for (0..10) |_| {
         _ = agent.tdUpdate(0, 1, 10.0, 0, true);
     }

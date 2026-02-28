@@ -2,7 +2,7 @@ const std = @import("std");
 const tvc_bigint = @import("bigint.zig");
 
 pub const TRITS_PER_BYTE: usize = 5;
-/// Максимум 12000 тритов (2400 байт) - достаточно для типичных VSA (1000-10000 измерений)
+/// Максимум 12000 тритов (2400 байт) - достаточно for типичных VSA (1000-10000 измерений)
 pub const MAX_PACKED_BYTES: usize = 2400;
 pub const MAX_TRITS: usize = MAX_PACKED_BYTES * TRITS_PER_BYTE; // = 12000
 pub const Trit = i8;
