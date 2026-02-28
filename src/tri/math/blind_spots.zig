@@ -145,7 +145,7 @@ pub const registry = [_]KnowledgeEntry{
     .{ .id = "PHYS_GRAVITY_CONST", .name = "Gravitational Constant", .domain = "physics",
        .value = 6.674e-11, .predicted_value = 6.676e-11,
        .uncertainty = 1.5e-15, .status = .{ .category = .verified, .confidence = 0.8, .discovery_date = "1798" },
-       .notes = "Nxm^2/kg^2; Poorly measured - 1.5e-15 uncertainty! BLIND SPOT!" },
+       .notes = "NxM^2/kg^2; Poorly measured - 1.5e-15 uncertainty! BLIND SPOT!" },
 
     // === BLIND: Completely unknown ===
 
@@ -389,7 +389,7 @@ pub fn generateDiscoveryReport(allocator: Allocator) ![]u8 {
     for (sorted_spots, 0..) |spot, i| {
         try writer.print("  {s}[{d}]{s} {s}{s}{s}\n", .{ GRAY, i + 1, RESET, BOLD, spot.name, RESET });
         try writer.print("      Domain: {s}{s}{s}\n", .{ CYAN, spot.domain, RESET });
-        try writer.print("      Importance: {s}{d:.0%}{s} | Feasibility: {s}{d:.0%}{s}\n", .{
+        try writer.print("      Importance: {s}{d:.0}%{s} | Feasibility: {s}{d:.0}%{s}\n", .{
             GREEN, spot.importance, RESET, WHITE, spot.feasibility, RESET,
         });
         try writer.print("      {s}Description:{s} {s}\n", .{ GRAY, RESET, spot.description });
