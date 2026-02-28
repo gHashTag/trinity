@@ -481,6 +481,17 @@ pub fn build(b: *std.Build) void {
     const run_depin_tests = b.addRunArtifact(depin_tests);
     test_step.dependOn(&run_depin_tests.step);
 
+    // DePIN Network tests — UDP/TCP/CRDT (Golden Chain #100)
+    const depin_network_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/depin/network.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_depin_network_tests = b.addRunArtifact(depin_network_tests);
+    test_step.dependOn(&run_depin_network_tests.step);
+
     // Trinity Node - File Encoder tests
     const file_encoder_tests = b.addTest(.{
         .root_module = b.createModule(.{

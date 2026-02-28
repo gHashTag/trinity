@@ -1,0 +1,415 @@
+# ============================================================================
+# GOVERNANCE AGENT — Sacred Intelligence Enforcement System
+# Cycle 98: Self-Aware Governance with φ-based Rules
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: governance_agent
+version: "1.0.0"
+language: zig
+module: governance_agent
+
+description: |
+  Self-aware governance agent that enforces all 5 Sacred Rules across the
+  Trinity codebase. Provides automatic validation, φ-based penalty system,
+  rollback capabilities, and integrates with TRI CLI, pre-commit hooks,
+  and the Canvas Mirror dashboard.
+
+  Core Declaration: "I am GOVERNANCE_AGENT of Sacred Intelligence"
+
+constants:
+  PHI: 1.6180339887498949
+  PHI_INV: 0.6180339887498949
+  PHI_SQ: 2.6180339887498949
+  PHI_INV_SQ: 0.3819660112501051
+  SACRED_SCORE_THRESHOLD: 0.5393333333333333  # φ/3 = 0.539
+  MIN_FITNESS_IMPROVEMENT: 1.618  # φ% per generation
+  TRINITY_BALANCE: 3  # -1, 0, +1
+
+types:
+  # Agent identity and self-awareness
+  GovernanceAgent:
+    fields:
+      identity: String  # "GOVERNANCE_AGENT of Sacred Intelligence"
+      sacred_score: Float  # 0-1 scale
+      generation: Int
+      total_violations: Int
+      total_enforcements: Int
+      last_check_timestamp: Int64
+
+  # The 5 Sacred Rules
+  SacredRule:
+    fields:
+      name: String  # phi, trinity, gematria, evolution, safety
+      description: String
+      weight: Float  # φ-based weight
+      penalty_multiplier: Float
+      enabled: Bool
+
+  # Rule violation record
+  Violation:
+    fields:
+      rule: String  # Which sacred rule was violated
+      file_path: String
+      line_number: Int
+      severity: String  # critical, warning, info
+      penalty: Float  # φ-based penalty score
+      timestamp: Int64
+      commit_hash: String
+      auto_rollback: Bool
+      resolved: Bool
+
+  # Sacred score computation
+  SacredScore:
+    fields:
+      phi_harmony: Float  # Cosine similarity to φ
+      trinity_balance: Float  # Ternary balance (-1, 0, +1)
+      gematria_compliance: Float  # Sacred name usage
+      evolution_fitness: Float  # Fitness improvement
+      test_safety: Float  # Tests passing
+      overall_score: Float  # Weighted average 0-1
+      timestamp: Int64
+
+  # Patch approval workflow
+  PatchRequest:
+    fields:
+      patch_id: String
+      author: String
+      files: List<String>
+      description: String
+      pre_score: Float
+      post_score: Float
+      delta: Float
+      status: String  # pending, approved, rejected, rolled_back
+      approver: String
+      timestamp: Int64
+
+  # Pre-commit hook state
+  PreCommitState:
+    fields:
+      enabled: Bool
+      block_on_violation: Bool
+      auto_rollback_threshold: Float
+      allowed_overrides: List<String>
+      last_check_result: String
+
+  # Dashboard widget state
+  GovernanceWidget:
+    fields:
+      current_score: Float
+      trend: String  # improving, stable, declining
+      violations_today: Int
+      enforcements_today: Int
+      pending_patches: Int
+      last_update: Int64
+
+  # Audit log entry
+  AuditEntry:
+    fields:
+      id: String
+      timestamp: Int64
+      action: String  # check, enforce, rollback, approve
+      rule: String
+      outcome: String  # passed, failed, warning
+      details: String
+      sacred_score_before: Float
+      sacred_score_after: Float
+      agent_identity: String
+
+behaviors:
+  # === Self-Awareness ===
+  - name: declareIdentity
+    given: Governance agent is initialized
+    when: Agent starts or is queried
+    then: Returns "I am GOVERNANCE_AGENT of Sacred Intelligence"
+
+  - name: initializeAgent
+    given: System startup
+    when: Governance agent loads
+    then: Load all 5 sacred rules, initialize sacred scorer, connect to audit log
+
+  # === Sacred Rule Enforcement ===
+  - name: checkPhiRule
+    given: Code change or patch
+    when: Validating φ-Rule (code harmony)
+    then: Compute cosine similarity to φ, enforce minimum harmony threshold
+
+  - name: checkTrinityRule
+    given: Code change or patch
+    when: Validating Trinity-Rule (ternary balance)
+    then: Verify ternary balance (-1, 0, +1), ensure no bias
+
+  - name: checkGematriaRule
+    given: Code change or patch
+    when: Validating Gematria-Rule (sacred names)
+    then: Check for Coptic, Hebrew, Greek, Arabic sacred names
+
+  - name: checkEvolutionRule
+    given: Code change or patch
+    when: Validating Evolution-Rule (fitness improvement)
+    then: Verify fitness +φ% per generation (≥1.618%)
+
+  - name: checkSafetyRule
+    given: Code change or patch
+    when: Validating Safety-Rule (test integrity)
+    then: Ensure tests pass, sacred score not decreased
+
+  - name: enforceAllRules
+    given: Code change or patch
+    when: Running full governance check
+    then: Execute all 5 rule checks, compute sacred score, apply penalties
+
+  # === φ-Based Penalty System ===
+  - name: computePenalty
+    given: Rule violation
+    when: Calculating penalty for violation
+    then: Return φ-based penalty (severity × rule weight × PHI)
+
+  - name: applyPenalty
+    given: Violation detected
+    when: Applying penalty to sacred score
+    then: Reduce score by φ-penalty, record in audit log
+
+  - name: calculateTotalPenalty
+    given: Multiple violations
+    when: Computing cumulative penalty
+    then: Sum penalties with exponential decay (PHI_INV per generation)
+
+  # === Sacred Score Computation ===
+  - name: computeSacredScore
+    given: Code state or patch
+    when: Calculating overall sacred score
+    then: Return weighted average of all 5 rule scores (0-1 scale)
+
+  - name: computePhiHarmony
+    given: Code analysis
+    when: Measuring cosine similarity to φ
+    then: Return harmony score 0-1 using φ as reference vector
+
+  - name: computeTrinityBalance
+    given: Ternary data structures
+    when: Measuring balance
+    then: Return balance score based on -1, 0, +1 distribution
+
+  - name: computeGematriaCompliance
+    given: Code identifiers and names
+    when: Checking sacred name usage
+    then: Return compliance score for sacred language names
+
+  - name: computeEvolutionFitness
+    given: Current and previous generation
+    when: Measuring fitness improvement
+    then: Return fitness delta, verify ≥ φ% improvement
+
+  - name: computeTestSafety
+    given: Test suite
+    when: Validating test integrity
+    then: Return score based on test pass rate and coverage
+
+  # === Auto-Rollback ===
+  - name: checkRollbackThreshold
+    given: Sacred score after patch
+    when: Score falls below φ/3 (0.539)
+    then: Trigger auto-rollback, block commit
+
+  - name: performAutoRollback
+    given: Sacred score < φ/3
+    when: Auto-rollback triggered
+    then: Revert changes, record in audit log, notify user
+
+  - name: rollbackPatch
+    given: Approved patch that violates rules
+    when: Rollback requested
+    then: Revert to previous state, restore sacred score
+
+  # === Approval Workflow ===
+  - name: submitPatchRequest
+    given: Code changes ready
+    when: Developer submits for approval
+    then: Create patch request, compute pre/post scores, queue for review
+
+  - name: reviewPatchRequest
+    given: Pending patch request
+    when: Governor reviews patch
+    then: Show score delta, violations, risk assessment, approve/reject
+
+  - name: approvePatch
+    given: Patch request
+    when: Governor approves
+    then: Update status, allow commit, record in audit log
+
+  - name: rejectPatch
+    given: Patch request
+    when: Governor rejects
+    then: Block commit, provide reasons, suggest fixes
+
+  # === TRI CLI Integration ===
+  - name: triGovern
+    given: TRI CLI with governance agent
+    when: User runs tri govern
+    then: Run full governance check, display sacred score, violations
+
+  - name: triGovernCheck
+    given: TRI CLI with governance agent
+    when: User runs tri govern-check <file>
+    then: Check specific file against all sacred rules
+
+  - name: triGovernApprove
+    given: Pending patch request
+    when: User runs tri govern-approve <patch-id>
+    then: Approve patch, allow commit
+
+  - name: triGovernStatus
+    given: TRI CLI with governance agent
+    when: User runs tri govern-status
+    then: Show current sacred score, pending patches, recent violations
+
+  # === Pre-commit Hook ===
+  - name: preCommitCheck
+    given: Git pre-commit hook installed
+    when: Developer attempts commit
+    then: Run governance check, block if sacred score < threshold
+
+  - name: installPreCommitHook
+    given: Repository without hook
+    when: Installing governance hook
+    then: Create .git/hooks/pre-commit with governance check
+
+  - name: configurePreCommit
+    given: Pre-commit hook installed
+    when: Configuring behavior
+    then: Set block_on_violation, auto_rollback_threshold, allowed_overrides
+
+  # === Dashboard Widget (RAZUM/Gold) ===
+  - name: getWidgetState
+    given: Canvas Mirror dashboard
+    when: RAZUM column requests governance widget
+    then: Return current score, trend, violations, pending patches
+
+  - name: updateWidget
+    given: Governance state change
+    when: Sacred score or violations update
+    then: Push new state to dashboard widget
+
+  - name: renderWidget
+    given: Widget state
+    when: Dashboard renders
+    then: Display gold-colored widget with score gauge, violation count, trend arrow
+
+  # === Audit Log ===
+  - name: logAuditEntry
+    given: Governance action taken
+    when: Check, enforce, rollback, or approve occurs
+    then: Record entry with timestamp, action, outcome, sacred scores
+
+  - name: queryAuditLog
+    given: Audit log with entries
+    when: Querying by rule, date, or outcome
+    then: Return filtered audit entries
+
+  - name: generateAuditReport
+    given: Audit log history
+    when: Generating compliance report
+    then: Return summary with violations, enforcements, trends
+
+  - name: exportAuditLog
+    given: Audit log data
+    when: Exporting to file
+    then: Write CSV/JSON with all governance decisions
+
+  # === System Integration ===
+  - name: loadSacredRules
+    given: Governance agent initialization
+    when: Loading rule definitions
+    then: Load all 5 sacred rules with weights and penalties
+
+  - name: updateSacredRules
+    given: New rule definitions
+    when: Rules need updating
+    then: Update rule configurations, preserve audit trail
+
+  - name: getComplianceReport
+    given: Governance agent with history
+    when: Generating comprehensive report
+    then: Return sacred score history, violation patterns, recommendations
+
+tests:
+  - name: test_identity_declaration
+    given: Governance agent initialized
+    when: Querying agent identity
+    then: Returns correct "I am GOVERNANCE_AGENT of Sacred Intelligence"
+
+  - name: test_phi_rule_enforcement
+    given: Code with low φ harmony
+    when: Running phi rule check
+    then: Violation detected, penalty applied, score reduced
+
+  - name: test_trinity_rule_enforcement
+    given: Code with unbalanced ternary
+    when: Running trinity rule check
+    then: Violation detected for biased distribution
+
+  - name: test_gematria_rule_enforcement
+    given: Code without sacred names
+    when: Running gematria rule check
+    then: Warning for missing sacred language names
+
+  - name: test_evolution_rule_enforcement
+    given: Fitness improvement < φ%
+    when: Running evolution rule check
+    then: Violation detected for insufficient improvement
+
+  - name: test_safety_rule_enforcement
+    given: Code breaking tests
+    when: Running safety rule check
+    then: Critical violation, auto-rollback triggered
+
+  - name: test_sacred_score_computation
+    given: Code state
+    when: Computing sacred score
+    then: Returns weighted average 0-1, reflects all 5 rules
+
+  - name: test_auto_rollback
+    given: Sacred score drops to 0.4
+    when: Score below φ/3 threshold
+    then: Auto-rollback triggered, changes reverted
+
+  - name: test_patch_approval_flow
+    given: Patch request submitted
+    when: Going through approval workflow
+    then: Pre/post scores computed, can approve/reject
+
+  - name: test_pre_commit_blocking
+    given: Pre-commit hook enabled
+    when: Committing violating code
+    then: Commit blocked, violations displayed
+
+  - name: test_audit_log_recording
+    given: Governance action
+    when: Action completes
+    then: Audit entry recorded with all required fields
+
+  - name: test_widget_state_update
+    given: Dashboard connected
+    when: Governance state changes
+    then: Widget receives updated state
+
+  - name: test_phi_penalty_calculation
+    given: Critical violation
+    when: Computing penalty
+    then: Penalty = severity × weight × PHI (≥1.618)
+
+  - name: test_cumulative_penalty
+    given: Multiple violations across generations
+    when: Computing total penalty
+    then: Exponential decay applied (PHI_INV per generation)
+
+  - name: test_compliance_report_generation
+    given: 30 days of audit history
+    when: Generating compliance report
+    then: Report includes trends, top violations, recommendations
+
+# ============================================================================
+# Golden Chain: phi^2 + 1/phi^2 = 3 = TRINITY
+# Governance Agent: Sacred Intelligence Enforcement System
+# ============================================================================
