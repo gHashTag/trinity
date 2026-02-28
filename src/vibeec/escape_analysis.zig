@@ -1,5 +1,5 @@
 //! VIBEE Escape Analysis and Scalar Replacement - PAS DAEMON V42
-//! [CYR:Паттерны]: HSH (O(1) escape state lookup), D&C (interprocedural analysis), PRE (cached results)
+//! [CYR:[EN]]: HSH (O(1) escape state lookup), D&C (interprocedural analysis), PRE (cached results)
 //! Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 //! Golden identity: φ² + 1/φ² = 3
 //! Target: 30% allocation overhead reduction via stack allocation and scalar replacement

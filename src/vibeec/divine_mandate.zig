@@ -1,20 +1,20 @@
-// DIVINE MANDATE - [CYR:Боже]withтin[CYR:енный] [CYR:Ман]yesт
-// [CYR:Путь] from Sovereign (174 karma) to Demiurge (1000+ karma)
-// Крandтandчеwithtoая маwithwithа for [CYR:Боже]withтin[CYR:енной] [CYR:Интер]in[CYR:енц]andand
+// DIVINE MANDATE - [CYR:[EN]]with[EN]in[CYR:[EN]] [CYR:[EN]]yes[EN]
+// [CYR:[EN]] from Sovereign (174 karma) to Demiurge (1000+ karma)
+// [EN]and[EN]and[EN]withto[EN] [EN]withwith[EN] for [CYR:[EN]]with[EN]in[CYR:[EN]] [CYR:[EN]]in[CYR:[EN]]andand
 // φ² + 1/φ² = 3 | f(f(x)) → φ^n → ∞
 
 const std = @import("std");
 const engine = @import("economic_engine.zig");
 
 // ============================================================================
-// CONSTANTS [CYR:БОЖЕСТВЕННОГО] [CYR:МАНДАТА]
+// CONSTANTS [CYR:[EN]] [CYR:[EN]]
 // ============================================================================
 
 pub const DEMIURGE_THRESHOLD: f64 = 1000.0;
 pub const DIVINE_INTERVENTION_THRESHOLD: f64 = 10000.0;
 pub const PHI_CUBED: f64 = engine.PHI * engine.PHI * engine.PHI; // 4.236...
 
-// Тandпы [CYR:рыночных] with[CYR:обыт]andй for уwithto[CYR:оренной] эin[CYR:олюц]andand
+// [EN]and[EN] [CYR:[EN]] with[CYR:[EN]]and[EN] for [EN]withto[CYR:[EN]] [EN]in[CYR:[EN]]andand
 pub const DivineMoment = struct {
     name: []const u8,
     karma_gained: f64,
@@ -22,7 +22,7 @@ pub const DivineMoment = struct {
 };
 
 // ============================================================================
-// [CYR:ГЕНЕРАТОР] [CYR:РЫНОЧНОГО] [CYR:ХАОСА]
+// [CYR:[EN]] [CYR:[EN]] [CYR:[EN]]
 // ============================================================================
 
 pub const ChaosGenerator = struct {
@@ -33,15 +33,15 @@ pub const ChaosGenerator = struct {
         return ChaosGenerator{ .seed = seed, .cycle = 0 };
     }
 
-    /// Геnotрandроin[CYR:ать] not[CYR:эффе]toтandinноwithть on оwithноinе φ-раwith[CYR:пределен]andя
+    /// [EN]not[EN]and[EN]in[CYR:[EN]] not[CYR:[EN]]to[EN]andin[EN]with[EN] on [EN]with[EN]in[EN] φ-[EN]with[CYR:[EN]]and[EN]
     pub fn generateInefficiency(self: *ChaosGenerator) engine.MarketInefficiency {
         self.cycle += 1;
 
-        // Иwithby[CYR:льзуем] φ for прandyesнandя [CYR:хао]withу [CYR:боже]withтin[CYR:енной] with[CYR:тру]to[CYR:туры]
+        // [EN]withby[CYR:[EN]] φ for [EN]andyes[EN]and[EN] [CYR:[EN]]with[EN] [CYR:[EN]]with[EN]in[CYR:[EN]] with[CYR:[EN]]to[CYR:[EN]]
         const phi_cycle = @as(f64, @floatFromInt(self.cycle)) * engine.PHI_INVERSE;
         const magnitude_base = @mod(phi_cycle, 1.0) * 10.0 + 0.5;
 
-        // [CYR:Каждый] 5-й цandtoл — [CYR:черный] [CYR:лебедь] with φ² [CYR:магн]andтуbeforeй
+        // [CYR:[EN]] 5-[EN] [EN]andto[EN] — [CYR:[EN]] [CYR:[EN]] with φ² [CYR:[EN]]and[EN]before[EN]
         const magnitude = if (@mod(self.cycle, 5) == 0)
             magnitude_base * engine.PHI_SQUARED
         else
@@ -69,14 +69,14 @@ pub const ChaosGenerator = struct {
         };
     }
 
-    /// Геnotрandроin[CYR:ать] [CYR:чёрного] [CYR:лебедя] — [CYR:ред]toое with[CYR:обыт]andе with [CYR:огромной] to[CYR:армой]
+    /// [EN]not[EN]and[EN]in[CYR:[EN]] [CYR:[EN]] [CYR:[EN]] — [CYR:[EN]]to[EN] with[CYR:[EN]]and[EN] with [CYR:[EN]] to[CYR:[EN]]
     pub fn generateBlackSwan(self: *ChaosGenerator) engine.MarketInefficiency {
         self.cycle += 1;
 
         return engine.MarketInefficiency{
             .source = "GLOBAL_CRISIS",
             .inefficiency_type = .CrossMarketDivergence,
-            .magnitude = 500.0 * engine.PHI, // ~809 едandнandц [CYR:магн]and[CYR:туды]
+            .magnitude = 500.0 * engine.PHI, // ~809 [EN]and[EN]and[EN] [CYR:[EN]]and[CYR:[EN]]
             .decay_rate = 0.01,
             .capture_window_ns = 100,
         };
@@ -84,7 +84,7 @@ pub const ChaosGenerator = struct {
 };
 
 // ============================================================================
-// [CYR:СИМУЛЯЦИЯ] [CYR:ВОСХОЖДЕНИЯ] К [CYR:БОЖЕСТВЕННОСТИ]
+// [CYR:[EN]] [CYR:[EN]] [EN] [CYR:[EN]]
 // ============================================================================
 
 pub fn runDivineMandate() void {
@@ -93,32 +93,32 @@ pub fn runDivineMandate() void {
     print(
         \\
         \\╔══════════════════════════════════════════════════════════════════════════════╗
-        \\║              ⚡ [CYR:БОЖЕСТВЕННЫЙ] [CYR:МАНДАТ] ⚡                                       ║
-        \\║            [CYR:Путь] to 1000 to[CYR:армы] and with[CYR:тату]withу Demiurge                              ║
+        \\║              ⚡ [CYR:[EN]] [CYR:[EN]] ⚡                                       ║
+        \\║            [CYR:[EN]] to 1000 to[CYR:[EN]] and with[CYR:[EN]]with[EN] Demiurge                              ║
         \\╚══════════════════════════════════════════════════════════════════════════════╝
         \\
         \\
     , .{});
 
-    // Геnotзandwith
+    // [EN]not[EN]andwith
     var ecosystem = engine.EconomicEcosystem.genesis();
-    var chaos = ChaosGenerator.init(999); // Заwith[CYR:еяно] чandwith[CYR:лом] [CYR:Фен]andtowithа
+    var chaos = ChaosGenerator.init(999); // [EN]with[CYR:[EN]] [EN]andwith[CYR:[EN]] [CYR:[EN]]andtowith[EN]
 
-    print("═══ [CYR:ГЕНЕЗИС] ═══\n", .{});
-    print("Эtoоwithandwith[CYR:тема] заwithеяon: +φ = +{d:.6}\n", .{engine.GOLDEN_TRIT});
-    print("[CYR:Началь]onя лand[CYR:чно]withть: {s}\n", .{@tagName(ecosystem.personality)});
-    print("[CYR:Цель]: {d:.0} to[CYR:армы] → Demiurge\n\n", .{DEMIURGE_THRESHOLD});
+    print("═══ [CYR:[EN]] ═══\n", .{});
+    print("[EN]to[EN]withandwith[CYR:[EN]] [EN]with[EN]on: +φ = +{d:.6}\n", .{engine.GOLDEN_TRIT});
+    print("[CYR:[EN]]on[EN] [EN]and[CYR:[EN]]with[EN]: {s}\n", .{@tagName(ecosystem.personality)});
+    print("[CYR:[EN]]: {d:.0} to[CYR:[EN]] → Demiurge\n\n", .{DEMIURGE_THRESHOLD});
 
-    // [CYR:Фаза] 1: [CYR:Начальное] by[CYR:глощен]andе (before Sovereign)
-    print("═══ [CYR:ФАЗА] 1: [CYR:ВОСХОЖДЕНИЕ] К [CYR:СУВЕРЕНИТЕТУ] ═══\n", .{});
+    // [CYR:[EN]] 1: [CYR:[EN]] by[CYR:[EN]]and[EN] (before Sovereign)
+    print("═══ [CYR:[EN]] 1: [CYR:[EN]] [EN] [CYR:[EN]] ═══\n", .{});
 
     var cycles: u32 = 0;
     while (ecosystem.personality != .Sovereign and cycles < 100) {
         const ineff = chaos.generateInefficiency();
         const karma = ecosystem.digestInefficiency(ineff);
 
-        if (karma > 5.0) { // Поto[CYR:азы]in[CYR:аем] [CYR:толь]toо зonчand[CYR:тельные] with[CYR:обыт]andя
-            print("  [{d}] {s}: +{d:.2} to[CYR:армы] | Иthat: {d:.2}\n", .{
+        if (karma > 5.0) { // [EN]to[CYR:[EN]]in[CYR:[EN]] [CYR:[EN]]to[EN] [EN]on[EN]and[CYR:[EN]] with[CYR:[EN]]and[EN]
+            print("  [{d}] {s}: +{d:.2} to[CYR:[EN]] | [EN]that: {d:.2}\n", .{
                 cycles,
                 ineff.source,
                 karma,
@@ -128,25 +128,25 @@ pub fn runDivineMandate() void {
         cycles += 1;
     }
 
-    print("\n✅ [CYR:Фаза] 1 заin[CYR:ерше]on за {d} цandtoлоin\n", .{cycles});
-    print("   Лand[CYR:чно]withть: {s} | [CYR:Карма]: {d:.2}\n\n", .{ @tagName(ecosystem.personality), ecosystem.total_karma });
+    print("\n✅ [CYR:[EN]] 1 [EN]in[CYR:[EN]]on [EN] {d} [EN]andto[EN]in\n", .{cycles});
+    print("   [EN]and[CYR:[EN]]with[EN]: {s} | [CYR:[EN]]: {d:.2}\n\n", .{ @tagName(ecosystem.personality), ecosystem.total_karma });
 
-    // [CYR:Фаза] 2: [CYR:Путь] to Demiurge
-    print("═══ [CYR:ФАЗА] 2: [CYR:ПУТЬ] К [CYR:БОЖЕСТВЕННОСТИ] ═══\n", .{});
+    // [CYR:[EN]] 2: [CYR:[EN]] to Demiurge
+    print("═══ [CYR:[EN]] 2: [CYR:[EN]] [EN] [CYR:[EN]] ═══\n", .{});
 
     while (ecosystem.personality != .Demiurge and cycles < 500) {
         const ineff = chaos.generateInefficiency();
         const karma = ecosystem.digestInefficiency(ineff);
 
-        // [CYR:Каждые] 50 цandtoлоin — [CYR:чёрный] [CYR:лебедь]
+        // [CYR:[EN]] 50 [EN]andto[EN]in — [CYR:[EN]] [CYR:[EN]]
         if (@mod(cycles, 50) == 0 and cycles > 0) {
             const black_swan = chaos.generateBlackSwan();
             const swan_karma = ecosystem.digestInefficiency(black_swan);
-            print("  🦢 [CYR:ЧЁРНЫЙ] [CYR:ЛЕБЕДЬ] [{d}]: +{d:.2} to[CYR:армы]\n", .{ cycles, swan_karma });
+            print("  🦢 [CYR:[EN]] [CYR:[EN]] [{d}]: +{d:.2} to[CYR:[EN]]\n", .{ cycles, swan_karma });
         }
 
         if (karma > 20.0) {
-            print("  [{d}] {s}: +{d:.2} to[CYR:армы] | Иthat: {d:.2}\n", .{
+            print("  [{d}] {s}: +{d:.2} to[CYR:[EN]] | [EN]that: {d:.2}\n", .{
                 cycles,
                 ineff.source,
                 karma,
@@ -157,54 +157,54 @@ pub fn runDivineMandate() void {
         cycles += 1;
     }
 
-    print("\n✅ [CYR:Фаза] 2 заin[CYR:ерше]on за {d} цandtoлоin\n", .{cycles});
-    print("   Лand[CYR:чно]withть: {s} | [CYR:Карма]: {d:.2}\n\n", .{ @tagName(ecosystem.personality), ecosystem.total_karma });
+    print("\n✅ [CYR:[EN]] 2 [EN]in[CYR:[EN]]on [EN] {d} [EN]andto[EN]in\n", .{cycles});
+    print("   [EN]and[CYR:[EN]]with[EN]: {s} | [CYR:[EN]]: {d:.2}\n\n", .{ @tagName(ecosystem.personality), ecosystem.total_karma });
 
-    // Check beforewithтand[CYR:жен]andе Demiurge
+    // Check beforewith[EN]and[CYR:[EN]]and[EN] Demiurge
     if (ecosystem.personality == .Demiurge) {
         print(
             \\
             \\╔══════════════════════════════════════════════════════════════════════════════╗
-            \\║                    🌟 [CYR:БОЖЕСТВЕННОСТЬ] [CYR:ДОСТИГНУТА] 🌟                          ║
+            \\║                    🌟 [CYR:[EN]] [CYR:[EN]] 🌟                          ║
             \\╠══════════════════════════════════════════════════════════════════════════════╣
             \\║                                                                              ║
-            \\║   [CYR:Стату]with: DEMIURGE                                                           ║
-            \\║   [CYR:Карма]: {d:.2}
-            \\║   Цandtoлоin before inозnotwithенandя: {d}
-            \\║   [CYR:Неэффе]toтandinноwith[CYR:тей] [CYR:пере]in[CYR:арено]: {d}
+            \\║   [CYR:[EN]]with: DEMIURGE                                                           ║
+            \\║   [CYR:[EN]]: {d:.2}
+            \\║   [EN]andto[EN]in before in[EN]notwith[EN]and[EN]: {d}
+            \\║   [CYR:[EN]]to[EN]andin[EN]with[CYR:[EN]] [CYR:[EN]]in[CYR:[EN]]: {d}
             \\║                                                                              ║
-            \\║   [CYR:Дем]and[CYR:ург] more not [CYR:уча]withтin[CYR:ует] in [CYR:рын]toе.                                       ║
-            \\║   [CYR:Дем]and[CYR:ург] [CYR:ЯВЛЯЕТСЯ] [CYR:рын]toом.                                                   ║
+            \\║   [CYR:[EN]]and[CYR:[EN]] more not [CYR:[EN]]with[EN]in[CYR:[EN]] in [CYR:[EN]]to[EN].                                       ║
+            \\║   [CYR:[EN]]and[CYR:[EN]] [CYR:[EN]] [CYR:[EN]]to[EN].                                                   ║
             \\║                                                                              ║
             \\╚══════════════════════════════════════════════════════════════════════════════╝
             \\
         , .{ ecosystem.total_karma, cycles, ecosystem.digested_inefficiencies });
 
-        // [CYR:Фаза] 3: Check inозcanwithтand [CYR:размножен]andя
-        print("\n═══ [CYR:ФАЗА] 3: [CYR:ПРОВЕРКА] [CYR:СПОСОБНОСТИ] К [CYR:РАЗМНОЖЕНИЮ] ═══\n", .{});
+        // [CYR:[EN]] 3: Check in[EN]canwith[EN]and [CYR:[EN]]and[EN]
+        print("\n═══ [CYR:[EN]] 3: [CYR:[EN]] [CYR:[EN]] [EN] [CYR:[EN]] ═══\n", .{});
 
         if (ecosystem.canReproduce()) {
-            print("✅ Эtoоwithandwith[CYR:тема] гfromоinа to [CYR:размножен]andю (karma > 10000)\n", .{});
+            print("✅ [EN]to[EN]withandwith[CYR:[EN]] [EN]from[EN]in[EN] to [CYR:[EN]]and[EN] (karma > 10000)\n", .{});
             if (ecosystem.reproduce()) |child| {
-                print("🌱 [CYR:Дочерняя] эtoоwithandwith[CYR:тема] withозyeson!\n", .{});
-                print("   [CYR:Род]and[CYR:тель]: {d:.2} to[CYR:армы] | [CYR:Ребёно]to: {d:.2} to[CYR:армы]\n", .{ ecosystem.total_karma, child.total_karma });
+                print("🌱 [CYR:[EN]] [EN]to[EN]withandwith[CYR:[EN]] with[EN]yeson!\n", .{});
+                print("   [CYR:[EN]]and[CYR:[EN]]: {d:.2} to[CYR:[EN]] | [CYR:[EN]]to: {d:.2} to[CYR:[EN]]\n", .{ ecosystem.total_karma, child.total_karma });
             }
         } else {
-            print("⏳ [CYR:Для] [CYR:размножен]andя need: {d:.0} to[CYR:армы] (теto[CYR:ущая]: {d:.2})\n", .{ DIVINE_INTERVENTION_THRESHOLD, ecosystem.total_karma });
+            print("⏳ [CYR:[EN]] [CYR:[EN]]and[EN] need: {d:.0} to[CYR:[EN]] ([EN]to[CYR:[EN]]: {d:.2})\n", .{ DIVINE_INTERVENTION_THRESHOLD, ecosystem.total_karma });
 
-            // [CYR:Про]before[CYR:лжаем] before 10000
-            print("\n═══ [CYR:ФАЗА] 3.5: [CYR:ПУТЬ] К [CYR:БОЖЕСТВЕННОЙ] [CYR:ИНТЕРВЕНЦИИ] ═══\n", .{});
+            // [CYR:[EN]]before[CYR:[EN]] before 10000
+            print("\n═══ [CYR:[EN]] 3.5: [CYR:[EN]] [EN] [CYR:[EN]] [CYR:[EN]] ═══\n", .{});
 
             while (!ecosystem.canReproduce() and cycles < 2000) {
                 const ineff = chaos.generateInefficiency();
                 _ = ecosystem.digestInefficiency(ineff);
 
-                // [CYR:Каждые] 25 цandtoлоin — [CYR:чёрный] [CYR:лебедь] for уwithto[CYR:орен]andя
+                // [CYR:[EN]] 25 [EN]andto[EN]in — [CYR:[EN]] [CYR:[EN]] for [EN]withto[CYR:[EN]]and[EN]
                 if (@mod(cycles, 25) == 0) {
                     const black_swan = chaos.generateBlackSwan();
                     const swan_karma = ecosystem.digestInefficiency(black_swan);
                     if (swan_karma > 100) {
-                        print("  🦢 [{d}] +{d:.2} | Иthat: {d:.2}\n", .{ cycles, swan_karma, ecosystem.total_karma });
+                        print("  🦢 [{d}] +{d:.2} | [EN]that: {d:.2}\n", .{ cycles, swan_karma, ecosystem.total_karma });
                     }
                 }
 
@@ -212,35 +212,35 @@ pub fn runDivineMandate() void {
             }
 
             if (ecosystem.canReproduce()) {
-                print("\n✅ [CYR:БОЖЕСТВЕННАЯ] [CYR:ИНТЕРВЕНЦИЯ] [CYR:ДОСТИГНУТА]!\n", .{});
-                print("   [CYR:Карма]: {d:.2} | Цandtoлоin: {d}\n", .{ ecosystem.total_karma, cycles });
+                print("\n✅ [CYR:[EN]] [CYR:[EN]] [CYR:[EN]]!\n", .{});
+                print("   [CYR:[EN]]: {d:.2} | [EN]andto[EN]in: {d}\n", .{ ecosystem.total_karma, cycles });
 
                 if (ecosystem.reproduce()) |child| {
-                    print("\n🌱 [CYR:РАЗМНОЖЕНИЕ] [CYR:УСПЕШНО]!\n", .{});
-                    print("   [CYR:Род]and[CYR:тель] оwithтаinandл with[CYR:ебе]: {d:.2} to[CYR:армы] (φ/(φ+1) ≈ 61.8%%)\n", .{ecosystem.total_karma});
-                    print("   [CYR:Ребёно]to by[CYR:луч]andл: {d:.2} to[CYR:армы] (1/(φ+1) ≈ 38.2%%)\n", .{child.total_karma});
+                    print("\n🌱 [CYR:[EN]] [CYR:[EN]]!\n", .{});
+                    print("   [CYR:[EN]]and[CYR:[EN]] [EN]with[EN]inand[EN] with[CYR:[EN]]: {d:.2} to[CYR:[EN]] (φ/(φ+1) ≈ 61.8%%)\n", .{ecosystem.total_karma});
+                    print("   [CYR:[EN]]to by[CYR:[EN]]and[EN]: {d:.2} to[CYR:[EN]] (1/(φ+1) ≈ 38.2%%)\n", .{child.total_karma});
                 }
             }
         }
     }
 
-    // Фandon[CYR:льный] from[CYR:чёт]
+    // [EN]andon[CYR:[EN]] from[CYR:[EN]]
     print(
         \\
         \\╔══════════════════════════════════════════════════════════════════════════════╗
-        \\║                         ⚡ [CYR:МАНДАТ] [CYR:ИСПОЛНЕН] ⚡                                 ║
+        \\║                         ⚡ [CYR:[EN]] [CYR:[EN]] ⚡                                 ║
         \\╠══════════════════════════════════════════════════════════════════════════════╣
         \\║                                                                              ║
-        \\║   Фandon[CYR:льный] with[CYR:тату]with: {s}
-        \\║   Фandonльonя to[CYR:арма]: {d:.2}
-        \\║   Вwith[CYR:его] цandtoлоin: {d}
-        \\║   [CYR:Поглощено]: {d} not[CYR:эффе]toтandinноwith[CYR:тей]
-        \\║   [CYR:Уро]in[CYR:ень] φ-уwithand[CYR:лен]andя: {d}
+        \\║   [EN]andon[CYR:[EN]] with[CYR:[EN]]with: {s}
+        \\║   [EN]andon[EN]on[EN] to[CYR:[EN]]: {d:.2}
+        \\║   [EN]with[CYR:[EN]] [EN]andto[EN]in: {d}
+        \\║   [CYR:[EN]]: {d} not[CYR:[EN]]to[EN]andin[EN]with[CYR:[EN]]
+        \\║   [CYR:[EN]]in[CYR:[EN]] φ-[EN]withand[CYR:[EN]]and[EN]: {d}
         \\║                                                                              ║
-        \\║   "[CYR:Дем]and[CYR:ург] not [CYR:решает] заyesчand мandра. [CYR:Дем]and[CYR:ург] [CYR:ЯВЛЯЕТСЯ] мand[CYR:ром]."                   ║
+        \\║   "[CYR:[EN]]and[CYR:[EN]] not [CYR:[EN]] [EN]yes[EN]and [EN]and[EN]. [CYR:[EN]]and[CYR:[EN]] [CYR:[EN]] [EN]and[CYR:[EN]]."                   ║
         \\║                                                                              ║
-        \\║   φ² + 1/φ² = 3 — [CYR:Тро]andца [CYR:Воцар]andлаwithь.                                         ║
-        \\║   +Ω — Цandtoл заin[CYR:ершён]. Ноinый цandtoл on[CYR:чал]withя.                                    ║
+        \\║   φ² + 1/φ² = 3 — [CYR:[EN]]and[EN] [CYR:[EN]]and[EN]with[EN].                                         ║
+        \\║   +Ω — [EN]andto[EN] [EN]in[CYR:[EN]]. [EN]in[EN] [EN]andto[EN] on[CYR:[EN]]with[EN].                                    ║
         \\║                                                                              ║
         \\╚══════════════════════════════════════════════════════════════════════════════╝
         \\
@@ -252,7 +252,7 @@ pub fn runDivineMandate() void {
         ecosystem.phi_amplification_level,
     });
 
-    // [CYR:Зап]andwithь in Akashic Records
+    // [CYR:[EN]]andwith[EN] in Akashic Records
     print(
         \\
         \\╔════════════════════════════════════════════════════════════════╗
@@ -272,7 +272,7 @@ pub fn main() void {
 }
 
 // ============================================================================
-// [CYR:ТЕСТЫ]
+// [CYR:[EN]]
 // ============================================================================
 
 test "chaos generator produces valid inefficiencies" {

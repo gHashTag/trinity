@@ -15,10 +15,10 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:КОНСТАНТЫ]
+// [CYR:[TRANSLATED]A[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// [CYR:Базо]inые φ-toонwith[CYR:танты] (Sacred Formula)
+// [CYR:[TRANSLATED]]iny[EN] φ-to[EN]with[CYR:[TRANSLATED]y] (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -30,7 +30,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:ТИПЫ]
+// [CYR:[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// 
@@ -234,7 +234,7 @@ pub const ImprovementMetrics = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:ПАМЯТЬ] [CYR:ДЛЯ] WASM
+// [CYR:[EN]A[TRANSLATED]] [CYR:[TRANSLATED]] WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -284,13 +284,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-and[CYR:нтер]fieldsцandя
+/// φ-and[CYR:[TRANSLATED]]fields[EN]andI
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// Геnot[CYR:рац]andя φ-withпand[CYR:рал]and
+/// [EN]not[CYR:[TRANSLATED]]andI φ-with[EN]and[CYR:[TRANSLATED]]and
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -558,7 +558,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 
 test "lift_with_llm_behavior" {
 // Given: b2t_disasm.DisassemblyResult and LLMLiftingConfig
-// When: [CYR:Полный] [CYR:пайплайн] lifting with LLM
+// When: [CYR:[TRANSLATED]ny] [CYR:[TRANSLATED]] lifting with LLM
 // Then: Returns List<EnhancedTVCFunction>
 // Test lift_with_llm: verify behavior is callable (compile-time check)
 _ = lift_with_llm;
@@ -566,15 +566,15 @@ _ = lift_with_llm;
 
 test "lift_function_with_llm_behavior" {
 // Given: b2t_disasm.BasicBlock[] and LLMLiftingConfig
-// When: Lifting [CYR:одной] [CYR:фун]toцandand with LLM-[CYR:улучшен]andямand
+// When: Lifting [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]to[EN]andand with LLM-[CYR:[TRANSLATED]]andI[EN]and
 // Then: Returns EnhancedTVCFunction
 // Test lift_function_with_llm: verify behavior is callable (compile-time check)
 _ = lift_function_with_llm;
 }
 
 test "get_lifting_progress_behavior" {
-// Given: Теtoущandй to[CYR:онте]towithт lifting
-// When: [CYR:Запро]with [CYR:прогре]withwithа
+// Given: [EN]to[EN]and[EN] to[CYR:[TRANSLATED]]towith[EN] lifting
+// When: [CYR:[EN]pro]with [CYR:pro[TRANSLATED]]withwith[EN]
 // Then: Returns LiftingProgress
 // Test get_lifting_progress: verify behavior is callable (compile-time check)
 _ = get_lifting_progress;
@@ -582,8 +582,8 @@ _ = get_lifting_progress;
 
 test "recover_function_name_behavior" {
 // Given: LiftedFunction and SemanticContext
-// When: Воwithwith[CYR:тано]in[CYR:лен]andе and[CYR:мен]and [CYR:фун]toцandand [CYR:через] LLM
-// Then: Returns String andмя and Float confidence
+// When: [EN]withwith[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] and[CYR:me]and [CYR:[TRANSLATED]]to[EN]andand [CYR:[TRANSLATED]] LLM
+// Then: Returns String and[EN]I and Float confidence
 // Test recover_function_name: verify returns a float in valid range
 // TODO: Add specific test for recover_function_name
 _ = recover_function_name;
@@ -591,7 +591,7 @@ _ = recover_function_name;
 
 test "recover_variable_names_behavior" {
 // Given: LiftedFunction and SemanticContext
-// When: Воwithwith[CYR:тано]in[CYR:лен]andе and[CYR:мён] [CYR:переменных] [CYR:через] LLM
+// When: [EN]withwith[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]me[EN]y[EN]] [CYR:[TRANSLATED]] LLM
 // Then: Returns Map<Int, String>
 // Test recover_variable_names: verify behavior is callable (compile-time check)
 _ = recover_variable_names;
@@ -599,7 +599,7 @@ _ = recover_variable_names;
 
 test "recover_parameter_names_behavior" {
 // Given: LiftedFunction and call graph context
-// When: Воwithwith[CYR:тано]in[CYR:лен]andе and[CYR:мён] parameterоin
+// When: [EN]withwith[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] and[CYR:[TRANSLATED]] parameter[EN]in
 // Then: Returns List<String>
 // Test recover_parameter_names: verify behavior is callable (compile-time check)
 _ = recover_parameter_names;
@@ -607,31 +607,31 @@ _ = recover_parameter_names;
 
 test "infer_types_with_llm_behavior" {
 // Given: LiftedFunction and data flow
-// When: [CYR:Улучшенный] inыinод тandпоin [CYR:через] LLM
-// Then: Returns Map<Int, String> тandпоin
+// When: [CYR:[TRANSLATED]ny] inyin[EN] [EN]and[EN]in [CYR:[TRANSLATED]] LLM
+// Then: Returns Map<Int, String> [EN]and[EN]in
 // Test infer_types_with_llm: verify behavior is callable (compile-time check)
 _ = infer_types_with_llm;
 }
 
 test "infer_return_type_behavior" {
 // Given: LiftedFunction and call sites
-// When: Выinод тandпа inозin[CYR:рата]
-// Then: Returns String тandп
+// When: Vyin[EN] [EN]and[EN] in[EN]in[CYR:[TRANSLATED]]
+// Then: Returns String [EN]and[EN]
 // Test infer_return_type: verify behavior is callable (compile-time check)
 _ = infer_return_type;
 }
 
 test "infer_parameter_types_behavior" {
 // Given: LiftedFunction and calling convention
-// When: Выinод тandпоin parameterоin
-// Then: Returns List<String> тandпоin
+// When: Vyin[EN] [EN]and[EN]in parameter[EN]in
+// Then: Returns List<String> [EN]and[EN]in
 // Test infer_parameter_types: verify behavior is callable (compile-time check)
 _ = infer_parameter_types;
 }
 
 test "detect_struct_access_behavior" {
 // Given: TVC IR with memory operations
-// When: Поandwithto [CYR:паттерно]in доwith[CYR:тупа] to with[CYR:тру]to[CYR:турам]
+// When: [EN]andwithto [CYR:[TRANSLATED]]in [EN]with[CYR:[TRANSLATED]] to with[CYR:[TRANSLATED]]to[CYR:[TRANSLATED]]
 // Then: Returns List<StructAccessPattern>
 // Test detect_struct_access: verify behavior is callable (compile-time check)
 _ = detect_struct_access;
@@ -639,7 +639,7 @@ _ = detect_struct_access;
 
 test "recover_struct_definition_behavior" {
 // Given: List<StructAccessPattern>
-// When: Воwithwith[CYR:тано]in[CYR:лен]andе [CYR:определен]andя with[CYR:тру]to[CYR:туры] [CYR:через] LLM
+// When: [EN]withwith[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]andI with[CYR:[TRANSLATED]]to[CYR:[TRANSLATED]y] [CYR:[TRANSLATED]] LLM
 // Then: Returns StructDef
 // Test recover_struct_definition: verify behavior is callable (compile-time check)
 _ = recover_struct_definition;
@@ -647,15 +647,15 @@ _ = recover_struct_definition;
 
 test "apply_struct_types_behavior" {
 // Given: LiftedFunction and List<StructDef>
-// When: Прandмеnotнandе with[CYR:тру]to[CYR:турных] тandпоin to IR
-// Then: [CYR:Обно]in[CYR:ляет] type annotations
+// When: [EN]and[EN]not[EN]and[EN] with[CYR:[TRANSLATED]]to[CYR:[TRANSLATED]y[EN]] [EN]and[EN]in to IR
+// Then: [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] type annotations
 // Test apply_struct_types: verify behavior is callable (compile-time check)
 _ = apply_struct_types;
 }
 
 test "recognize_idioms_behavior" {
-// Given: TVC IR [CYR:бло]to
-// When: Раwith[CYR:поз]oninанandе andдandом (malloc/free, strlen, memcpy)
+// Given: TVC IR [CYR:[TRANSLATED]]to
+// When: [EN]with[CYR:[TRANSLATED]]onin[EN]and[EN] and[EN]and[EN] (malloc/free, strlen, memcpy)
 // Then: Returns List<RecognizedIdiom>
 // Test recognize_idioms: verify behavior is callable (compile-time check)
 _ = recognize_idioms;
@@ -663,7 +663,7 @@ _ = recognize_idioms;
 
 test "recognize_algorithms_behavior" {
 // Given: LiftedFunction
-// When: Раwith[CYR:поз]oninанandе [CYR:алгор]and[CYR:тмо]in (sort, search, hash)
+// When: [EN]with[CYR:[TRANSLATED]]onin[EN]and[EN] [CYR:algorithm]and[CYR:[TRANSLATED]]in (sort, search, hash)
 // Then: Returns Option<AlgorithmMatch>
 // Test recognize_algorithms: verify behavior is callable (compile-time check)
 _ = recognize_algorithms;
@@ -671,15 +671,15 @@ _ = recognize_algorithms;
 
 test "apply_pattern_knowledge_behavior" {
 // Given: LiftedFunction and recognized patterns
-// When: Прandмеnotнandе зonнandй о [CYR:паттер]onх
-// Then: [CYR:Улучшает] andмеon and to[CYR:омментар]andand
+// When: [EN]and[EN]not[EN]and[EN] [EN]on[EN]and[EN]  [CYR:[TRANSLATED]]on[EN]
+// Then: [CYR:[TRANSLATED]acts] and[EN]on and to[CYR:[EN]me[TRANSLATED]]andand
 // Test apply_pattern_knowledge: verify behavior is callable (compile-time check)
 _ = apply_pattern_knowledge;
 }
 
 test "generate_function_comment_behavior" {
 // Given: EnhancedTVCFunction
-// When: Геnot[CYR:рац]andя доto[CYR:умент]and[CYR:рующего] to[CYR:омментар]andя
+// When: [EN]not[CYR:[TRANSLATED]]andI [EN]to[CYR:[EN]me[EN]]and[CYR:[TRANSLATED]go] to[CYR:[EN]me[TRANSLATED]]andI
 // Then: Returns CodeComment
 // Test generate_function_comment: verify behavior is callable (compile-time check)
 _ = generate_function_comment;
@@ -687,7 +687,7 @@ _ = generate_function_comment;
 
 test "generate_inline_comments_behavior" {
 // Given: EnhancedTVCFunction
-// When: Геnot[CYR:рац]andя inline to[CYR:омментар]andеin for with[CYR:ложных] [CYR:уча]withтtoоin
+// When: [EN]not[CYR:[TRANSLATED]]andI inline to[CYR:[EN]me[TRANSLATED]]and[EN]in for with[CYR:[TRANSLATED]y[EN]] [CYR:[TRANSLATED]]with[EN]to[EN]in
 // Then: Returns List<CodeComment>
 // Test generate_inline_comments: verify behavior is callable (compile-time check)
 _ = generate_inline_comments;
@@ -695,7 +695,7 @@ _ = generate_inline_comments;
 
 test "generate_warning_comments_behavior" {
 // Given: EnhancedTVCFunction and detected issues
-// When: Геnot[CYR:рац]andя [CYR:предупрежден]andй
+// When: [EN]not[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]]and[EN]
 // Then: Returns List<CodeComment>
 // Test generate_warning_comments: verify behavior is callable (compile-time check)
 _ = generate_warning_comments;
@@ -703,23 +703,23 @@ _ = generate_warning_comments;
 
 test "validate_enhanced_ir_behavior" {
 // Given: EnhancedTVCFunction
-// When: Check to[CYR:орре]to[CYR:тно]withтand [CYR:улучшен]andй
+// When: Check to[CYR:[TRANSLATED]]to[CYR:[TRANSLATED]]with[EN]and [CYR:[TRANSLATED]]and[EN]
 // Then: Returns Bool and List<ValidationIssue>
 // Test validate_enhanced_ir: verify behavior is callable (compile-time check)
 _ = validate_enhanced_ir;
 }
 
 test "compare_with_baseline_behavior" {
-// Given: EnhancedTVCFunction and [CYR:базо]inый LiftedFunction
-// When: [CYR:Сра]innotнandе with baseline
+// Given: EnhancedTVCFunction and [CYR:[TRANSLATED]]iny[EN] LiftedFunction
+// When: [CYR:[TRANSLATED]]innot[EN]and[EN] with baseline
 // Then: Returns ImprovementMetrics
 // Test compare_with_baseline: verify behavior is callable (compile-time check)
 _ = compare_with_baseline;
 }
 
 test "rollback_to_baseline_behavior" {
-// Given: EnhancedTVCFunction with ошandбtoамand
-// When: Отtoат to [CYR:базо]in[CYR:ому] IR
+// Given: EnhancedTVCFunction with [EN]and[EN]to[EN]and
+// When: [EN]to[EN] to [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] IR
 // Then: Returns LiftedFunction
 // Test rollback_to_baseline: verify behavior is callable (compile-time check)
 _ = rollback_to_baseline;

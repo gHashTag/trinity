@@ -1,5 +1,5 @@
-# Will - [CYR:Воля] [CYR:голема]
-# [CYR:Форм]and[CYR:рует] on[CYR:мерен]andя, [CYR:кон]with[CYR:ульт]and[CYR:рует]withя with AkashicRecords, обon[CYR:руж]andin[CYR:ает] [CYR:конфл]and[CYR:кты]
+# Will - [CYR:[TRANSLATED]I] [CYR:go[TRANSLATED]]
+# [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] on[CYR:[TRANSLATED]]andI, [CYR:[TRANSLATED]]with[CYR:[EN]l[EN]]and[CYR:[TRANSLATED]]withI with AkashicRecords, [EN]on[CYR:[TRANSLATED]]andin[CYR:acts] [CYR:[TRANSLATED]]and[CYR:[EN]y]
 
 name: will
 version: "1.0.0"
@@ -44,7 +44,7 @@ types:
       intent: Intent
       conflicts: List<Conflict>
       akashic_wisdom: List<WisdomExtract>
-      suggested_synthesis: Option<Synthesis>  # From [CYR:Жар]-птandца
+      suggested_synthesis: Option<Synthesis>  # From [CYR:[TRANSLATED]]-[EN]and[EN]
 
   WillState:
     description: Internal state of Will
@@ -52,7 +52,7 @@ types:
       recent_intents: List<Intent>
       conflict_history: List<Conflict>
       principle_weights: Map<String, Float>  # Current weight per principle
-      creator_consulted: Bool  # Whether [CYR:Жар]-птandца was asked
+      creator_consulted: Bool  # Whether [CYR:[TRANSLATED]]-[EN]and[EN] was asked
 
 behaviors:
   - name: form_intent
@@ -79,7 +79,7 @@ behaviors:
       - result: List<Conflict>
 
   - name: consult_creator
-    description: When paradox detected, ask [CYR:Жар]-птandца for synthesis
+    description: When paradox detected, ask [CYR:[TRANSLATED]]-[EN]and[EN] for synthesis
     given:
       - conflict: Conflict
       - akashic: AkashicRecords
@@ -131,7 +131,7 @@ constants:
     honesty: 0.8
     efficiency: 0.5
     learning: 0.6
-    synthesis: 0.7  # Weight for [CYR:Жар]-птandца principle
+    synthesis: 0.7  # Weight for [CYR:[TRANSLATED]]-[EN]and[EN] principle
 
   CONFLICT_THRESHOLD: 0.3  # Below this, one principle clearly dominates
   PARADOX_THRESHOLD: 0.15  # Below this difference, it's a true paradox

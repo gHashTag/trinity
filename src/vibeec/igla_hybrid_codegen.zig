@@ -102,11 +102,11 @@ pub const HybridCodeGen = struct {
         analysis.language_detected = trinity_swe.TrinitySWEAgent.detectInputLanguage(prompt);
 
         // Detect task type
-        if (trinity_swe.TrinitySWEAgent.containsAny(prompt, &.{ "hello world", "helloworld", "прandinет мandр" })) {
+        if (trinity_swe.TrinitySWEAgent.containsAny(prompt, &.{ "hello world", "helloworld", "[EN]andin[EN] [EN]and[EN]" })) {
             analysis.task_type = .HelloWorld;
             analysis.addConcept("print");
             analysis.addConcept("main");
-        } else if (trinity_swe.TrinitySWEAgent.containsAny(prompt, &.{ "fibonacci", "фandбоonччand" })) {
+        } else if (trinity_swe.TrinitySWEAgent.containsAny(prompt, &.{ "fibonacci", "[EN]and[EN]on[EN]and" })) {
             analysis.task_type = .Algorithm;
             analysis.addConcept("recursion");
             analysis.addConcept("loop");
@@ -127,7 +127,7 @@ pub const HybridCodeGen = struct {
             analysis.task_type = .DataStructure;
             analysis.addConcept("fields");
             analysis.addConcept("methods");
-        } else if (trinity_swe.TrinitySWEAgent.containsAny(prompt, &.{ "function", "fn", "func", "[CYR:фун]toцand" })) {
+        } else if (trinity_swe.TrinitySWEAgent.containsAny(prompt, &.{ "function", "fn", "func", "[CYR:[EN]]to[EN]and" })) {
             analysis.task_type = .Function;
             analysis.addConcept("params");
             analysis.addConcept("return");

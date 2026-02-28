@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// TRINITY VM v16 [CYR:МАТРЁШКА] - Native Pixel Bridge
-// "[CYR:Матрёш]toа in[CYR:нутр]and [CYR:матрёш]toand - withлоand in[CYR:нутр]and with[CYR:лоё]in"
+// TRINITY VM v16 [CYR:[EN]] - Native Pixel Bridge
+// "[CYR:[EN]]to[EN] in[CYR:[EN]]and [CYR:[EN]]toand - with[EN]and in[CYR:[EN]]and with[CYR:[EN]]in"
 // Generated from specs/trinity_vm_v16_matryoshka.vibee
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -251,7 +251,7 @@ pub const NeuralField = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:МАТРЁШКА] VM - Native Pixel Bridge Core
+// [CYR:[EN]] VM - Native Pixel Bridge Core
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const MatryoshkaVM = struct {

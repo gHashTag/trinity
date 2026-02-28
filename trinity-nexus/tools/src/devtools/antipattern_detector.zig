@@ -1,11 +1,11 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// ANTIPATTERN DETECTOR - Runtime [CYR:про]inерtoа on[CYR:рушен]andй VIBEE method[CYR:олог]andand
+// ANTIPATTERN DETECTOR - Runtime [CYR:pro]in[EN]to[EN] on[CYR:[TRANSLATED]]and[EN] VIBEE method[CYR:[TRANSLATED]]andand
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:СВЯЩЕННАЯ] [CYR:ФОРМУЛА]: V = n × 3^k × π^m × φ^p × e^q
-// [CYR:ЗОЛОТАЯ] [CYR:ИДЕНТИЧНОСТЬ]: φ² + 1/φ² = 3
+// [CYR:[TRANSLATED]A[EN]] [CYR:[TRANSLATED]A]: V = n × 3^k × π^m × φ^p × e^q
+// [CYR:[TRANSLATED]A[EN]] [CYR:[TRANSLATED]]: φ² + 1/φ² = 3
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:ИСКЛЮЧЕНИЕ]: [CYR:Это] bootstrap toод for [CYR:про]inерtoand [CYR:друг]andх fileоin
-// [CYR:Спец]andфandtoацandя: specs/antipatterns.vibee
+// [CYR:[TRANSLATED]]: [CYR:This] bootstrap to[EN] for [CYR:pro]in[EN]toand [CYR:[TRANSLATED]]and[EN] file[EN]in
+// [CYR:[TRANSLATED]]and[EN]andto[EN]andI: specs/antipatterns.vibee
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
@@ -16,10 +16,10 @@ const Allocator = std.mem.Allocator;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const Severity = enum {
-    critical,   // ⛔ [CYR:Бло]toand[CYR:рует] to[CYR:омм]andт
-    high,       // ⚠️ [CYR:Требует] andwith[CYR:пра]in[CYR:лен]andя
-    medium,     // ℹ️ Реto[CYR:омендует]withя andwith[CYR:пра]inandть
-    low,        // 💡 [CYR:Предложен]andе
+    critical,   // ⛔ [CYR:[TRANSLATED]]toand[CYR:[TRANSLATED]] to[CYR:[TRANSLATED]]and[EN]
+    high,       // ⚠️ [CYR:[TRANSLATED]] andwith[CYR:law]in[CYR:[TRANSLATED]]andI
+    medium,     // ℹ️ [EN]to[CYR:[EN]me[TRANSLATED]]withI andwith[CYR:law]inand[EN]
+    low,        // 💡 [CYR:[TRANSLATED]]and[EN]
     
     pub fn symbol(self: Severity) []const u8 {
         return switch (self) {
@@ -36,15 +36,15 @@ pub const Severity = enum {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const AntipatternType = enum {
-    direct_implementation,      // .zig [CYR:без] .vibee
+    direct_implementation,      // .zig [CYR:without] .vibee
     legacy_web_files,          // .html/.css/.js
-    missing_tests,             // [CYR:Нет] test_cases
-    missing_creation_pattern,  // [CYR:Нет] creation_pattern
-    false_optimization_claims, // [CYR:Ложные] to[CYR:омментар]andand
-    esoteric_over_science,     // Эзfromерandtoа [CYR:без] [CYR:обо]withноinанandя
-    missing_pas_analysis,      // [CYR:Нет] PAS аonлandза
-    manual_code_without_spec,  // [CYR:Ручной] toод [CYR:без] with[CYR:пец]andфandtoацandand
-    spec_implementation_mismatch, // [CYR:Спец]andфandtoацandя not matches to[CYR:оду]
+    missing_tests,             // [CYR:[TRANSLATED]] test_cases
+    missing_creation_pattern,  // [CYR:[TRANSLATED]] creation_pattern
+    false_optimization_claims, // [CYR:[TRANSLATED]y[EN]] to[CYR:[EN]me[TRANSLATED]]andand
+    esoteric_over_science,     // [EN]from[EN]andto[EN] [CYR:without] [CYR:[TRANSLATED]]with[EN]in[EN]andI
+    missing_pas_analysis,      // [CYR:[TRANSLATED]] PAS [EN]on[EN]and[EN]
+    manual_code_without_spec,  // [CYR:[TRANSLATED]] to[EN] [CYR:without] with[CYR:[TRANSLATED]]and[EN]andto[EN]andand
+    spec_implementation_mismatch, // [CYR:[TRANSLATED]]and[EN]andto[EN]andI not matches to[CYR:[TRANSLATED]]
     
     pub fn severity(self: AntipatternType) Severity {
         return switch (self) {
@@ -62,15 +62,15 @@ pub const AntipatternType = enum {
     
     pub fn description(self: AntipatternType) []const u8 {
         return switch (self) {
-            .direct_implementation => "[CYR:Нап]andwithанandе .zig fileа [CYR:без] .vibee with[CYR:пец]andфandtoацandand",
-            .legacy_web_files => "Creation legacy web fileоin (.html/.css/.js)",
-            .missing_tests => "[CYR:Спец]andфandtoацandя [CYR:без] test_cases",
-            .missing_creation_pattern => "[CYR:Спец]andфandtoацandя [CYR:без] creation_pattern",
-            .false_optimization_claims => "[CYR:Ложные] to[CYR:омментар]andand об [CYR:опт]andмand[CYR:зац]andях",
-            .esoteric_over_science => "Эзfromерandtoа [CYR:без] on[CYR:учного] [CYR:обо]withноinанandя",
-            .missing_pas_analysis => "[CYR:Алгор]andтм [CYR:без] PAS аonлandза",
-            .manual_code_without_spec => "[CYR:Ручной] toод [CYR:должен] геnotрandроin[CYR:ать]withя andз .vibee",
-            .spec_implementation_mismatch => "[CYR:Код] not matches with[CYR:пец]andфandtoацandand",
+            .direct_implementation => "[CYR:[TRANSLATED]]andwith[EN]and[EN] .zig file[EN] [CYR:without] .vibee with[CYR:[TRANSLATED]]and[EN]andto[EN]andand",
+            .legacy_web_files => "Creation legacy web file[EN]in (.html/.css/.js)",
+            .missing_tests => "[CYR:[TRANSLATED]]and[EN]andto[EN]andI [CYR:without] test_cases",
+            .missing_creation_pattern => "[CYR:[TRANSLATED]]and[EN]andto[EN]andI [CYR:without] creation_pattern",
+            .false_optimization_claims => "[CYR:[TRANSLATED]y[EN]] to[CYR:[EN]me[TRANSLATED]]andand [EN] [CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]]andI[EN]",
+            .esoteric_over_science => "[EN]from[EN]andto[EN] [CYR:without] on[CYR:[TRANSLATED]go] [CYR:[TRANSLATED]]with[EN]in[EN]andI",
+            .missing_pas_analysis => "[CYR:A[EN]go[EN]]and[EN] [CYR:without] PAS [EN]on[EN]and[EN]",
+            .manual_code_without_spec => "[CYR:[TRANSLATED]] to[EN] [CYR:[TRANSLATED]] [EN]not[EN]and[EN]in[CYR:ate]withI and[EN] .vibee",
+            .spec_implementation_mismatch => "[CYR:Code] not matches with[CYR:[TRANSLATED]]and[EN]andto[EN]andand",
         };
     }
 };
@@ -99,7 +99,7 @@ pub const Violation = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// EXCEPTIONS - [CYR:Файлы], tofrom[CYR:орые] [CYR:могут] [CYR:быть] onпandwith[CYR:аны] on[CYR:прямую]
+// EXCEPTIONS - [CYR:[TRANSLATED]y], tofrom[CYR:[EN]y[EN]] [CYR:[TRANSLATED]] [CYR:[EN]y[EN]] on[EN]andwith[CYR:[EN]y] on[CYR:[EN]I[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const BOOTSTRAP_EXCEPTIONS = [_][]const u8{
@@ -107,8 +107,8 @@ const BOOTSTRAP_EXCEPTIONS = [_][]const u8{
     "codegen.zig",
     "vm.zig",
     "pas.zig",
-    "antipattern_detector.zig",  // Этfrom file
-    // [CYR:Модул]and with with[CYR:уще]withтin[CYR:ующ]andмand with[CYR:пец]andфandtoацandямand
+    "antipattern_detector.zig",  // [EN]from file
+    // [CYR:[TRANSLATED]]and with with[CYR:[TRANSLATED]]with[EN]in[CYR:[TRANSLATED]]and[EN]and with[CYR:[TRANSLATED]]and[EN]andto[EN]andI[EN]and
     "vm_core.zig",      // specs/vm_core.vibee
     "vm_opcodes.zig",   // specs/vm_opcodes.vibee
     "vm_jit.zig",       // specs/vm_jit.vibee
@@ -187,7 +187,7 @@ pub const AntipatternDetector = struct {
             .antipattern = .direct_implementation,
             .file_path = file_path,
             .line = null,
-            .message = "[CYR:Нет] withоfrominетwithтin[CYR:ующей] .vibee with[CYR:пец]andфandtoацandand",
+            .message = "[CYR:[TRANSLATED]] with[EN]fromin[EN]with[EN]in[CYR:[TRANSLATED]] .vibee with[CYR:[TRANSLATED]]and[EN]andto[EN]andand",
         });
     }
     
@@ -211,7 +211,7 @@ pub const AntipatternDetector = struct {
                     .antipattern = .legacy_web_files,
                     .file_path = file_path,
                     .line = null,
-                    .message = "Legacy web file - and[CYR:нтегр]and[CYR:руйте] in runtime/runtime.html",
+                    .message = "Legacy web file - and[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] in runtime/runtime.html",
                 });
                 return;
             }

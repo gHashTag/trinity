@@ -304,7 +304,7 @@ pub const Coordinator = struct {
         if (std.mem.indexOf(u8, query, "write code") != null or
             std.mem.indexOf(u8, query, "implement") != null or
             std.mem.indexOf(u8, query, "function") != null or
-            std.mem.indexOf(u8, query, "onпandшand toод") != null or
+            std.mem.indexOf(u8, query, "on[EN]and[EN]and to[EN]") != null or
             std.mem.indexOf(u8, query, "写代码") != null)
         {
             return .CodeGeneration;
@@ -312,7 +312,7 @@ pub const Coordinator = struct {
 
         if (std.mem.indexOf(u8, query, "explain") != null or
             std.mem.indexOf(u8, query, "how does") != null or
-            std.mem.indexOf(u8, query, "[CYR:объя]withнand") != null)
+            std.mem.indexOf(u8, query, "[CYR:[EN]]with[EN]and") != null)
         {
             return .CodeExplanation;
         }
@@ -320,7 +320,7 @@ pub const Coordinator = struct {
         if (std.mem.indexOf(u8, query, "debug") != null or
             std.mem.indexOf(u8, query, "fix") != null or
             std.mem.indexOf(u8, query, "error") != null or
-            std.mem.indexOf(u8, query, "andwith[CYR:пра]inь") != null)
+            std.mem.indexOf(u8, query, "andwith[CYR:[EN]]in[EN]") != null)
         {
             return .CodeDebugging;
         }
@@ -328,7 +328,7 @@ pub const Coordinator = struct {
         // Analysis detection
         if (std.mem.indexOf(u8, query, "analyze") != null or
             std.mem.indexOf(u8, query, "compare") != null or
-            std.mem.indexOf(u8, query, "[CYR:проа]onлandзand[CYR:руй]") != null)
+            std.mem.indexOf(u8, query, "[CYR:[EN]]on[EN]and[EN]and[CYR:[EN]]") != null)
         {
             return .Analysis;
         }
@@ -336,7 +336,7 @@ pub const Coordinator = struct {
         // Planning detection
         if (std.mem.indexOf(u8, query, "plan") != null or
             std.mem.indexOf(u8, query, "strategy") != null or
-            std.mem.indexOf(u8, query, "[CYR:план]") != null)
+            std.mem.indexOf(u8, query, "[CYR:[EN]]") != null)
         {
             return .Planning;
         }
@@ -344,7 +344,7 @@ pub const Coordinator = struct {
         // Research detection
         if (std.mem.indexOf(u8, query, "search") != null or
             std.mem.indexOf(u8, query, "find") != null or
-            std.mem.indexOf(u8, query, "onйдand") != null)
+            std.mem.indexOf(u8, query, "on[EN]and") != null)
         {
             return .Research;
         }
@@ -352,7 +352,7 @@ pub const Coordinator = struct {
         // Summarization detection
         if (std.mem.indexOf(u8, query, "summarize") != null or
             std.mem.indexOf(u8, query, "brief") != null or
-            std.mem.indexOf(u8, query, "to[CYR:рат]toо") != null)
+            std.mem.indexOf(u8, query, "to[CYR:[EN]]to[EN]") != null)
         {
             return .Summarization;
         }
@@ -624,8 +624,8 @@ pub fn runBenchmark() void {
         .{ .query = "thanks for your help!", .feedback = .Acceptance },
 
         // Multilingual
-        .{ .query = "onпandшand toод for with[CYR:орт]andроintoand", .feedback = .ThumbsUp },
-        .{ .query = "[CYR:проа]onлandзand[CYR:руй] resultы", .feedback = .Acceptance },
+        .{ .query = "on[EN]and[EN]and to[EN] for with[CYR:[EN]]and[EN]intoand", .feedback = .ThumbsUp },
+        .{ .query = "[CYR:[EN]]on[EN]and[EN]and[CYR:[EN]] result[EN]", .feedback = .Acceptance },
         .{ .query = "找一下最佳实践", .feedback = .ThumbsUp },
 
         // Mixed complex tasks

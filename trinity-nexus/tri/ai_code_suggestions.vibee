@@ -17,6 +17,6 @@ behaviors:
   - name: fix_syntax_error
   - name: optimize_performance
   - name: explain_complex_code
-  - name: "Аin[CYR:тодопол]notнandе [CYR:функц]andand"
-  - name: "[CYR:Рефактор]andнг in V2 withand[CYR:нтак]withandwith"
-  - name: "Иwith[CYR:пра]in[CYR:лен]andе ошandбкand"
+  - name: "Ain[CYR:[TRANSLATED]]not[EN]and[EN] [CYR:[TRANSLATED]]andand"
+  - name: "[CYR:[EN]factor]and[EN] in V2 withand[CYR:[TRANSLATED]]withandwith"
+  - name: "[EN]with[CYR:law]in[CYR:[TRANSLATED]]and[EN] [EN]and[EN]and"

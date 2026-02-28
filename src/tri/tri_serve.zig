@@ -305,12 +305,13 @@ pub const UnifiedApiServer = struct {
             \\  <script type="importmap">
             \\  {
             \\    "imports": {
-            \\      "react": "https://unpkg.com/react@18.2.0/+esm",
-            \\      "react-dom/client": "https://unpkg.com/react-dom@18.2.0/+esm",
-            \\      "graphiql": "https://unpkg.com/graphiql@5.0.0/+esm"
+            \\      "react": "https://esm.sh/react@18.2.0",
+            \\      "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+            \\      "graphiql": "https://esm.sh/graphiql@3.0.10?deps=react@18.2.0,react-dom@18.2.0"
             \\    }
             \\  }
             \\  </script>
+            \\  <script src="https://esm.sh/graphiql@3.0.10?deps=react@18.2.0,react-dom@18.2.0&css" type="module"></script>
             \\</head>
             \\<body>
             \\  <div id="graphiql">Loading TRINITY GraphQL IDE...</div>

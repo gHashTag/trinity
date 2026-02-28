@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
-// [CYR:Золотая] and[CYR:дент]and[CYR:чно]withть: φ² + 1/φ² = 3
+// [CYR:[TRANSLATED]I] and[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]with[EN]: φ² + 1/φ² = 3
 //
 // Author: 
 // DO NOT EDIT - This file is auto-generated
@@ -15,7 +15,7 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:КОНСТАНТЫ]
+// [CYR:[TRANSLATED]A[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PHI: f64 = 0;
@@ -54,13 +54,13 @@ pub const GUARDIAN_BASE_SCORE: f64 = 0;
 
 pub const HERALD_BASE_SCORE: f64 = 0;
 
-// [CYR:Базо]inые φ-[CYR:кон]with[CYR:танты] (Sacred Formula)
+// [CYR:[TRANSLATED]]iny[EN] φ-[CYR:[TRANSLATED]]with[CYR:[TRANSLATED]y] (Sacred Formula)
 pub const SQRT5: f64 = 2.2360679774997896;
 pub const TAU: f64 = 6.283185307179586;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:ТИПЫ]
+// [CYR:[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// 
@@ -221,12 +221,12 @@ pub const Trit = enum(i8) {
     }
 };
 
-/// [CYR:Про]in[CYR:ерка] TRINITY identity: φ² + 1/φ² = 3
+/// [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] TRINITY identity: φ² + 1/φ² = 3
 fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-and[CYR:нтер]fieldsцandя
+/// φ-and[CYR:[TRANSLATED]]fields[EN]andI
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;

@@ -571,7 +571,7 @@ pub const TrinitySWEAgent = struct {
         const prompt = request.prompt;
 
         // HELLO WORLD detection (multilingual)
-        if (containsAny(prompt, &.{ "hello world", "helloworld", "[CYR:хелло] in[CYR:орлд]" })) {
+        if (containsAny(prompt, &.{ "hello world", "helloworld", "[CYR:[EN]] in[CYR:[EN]]" })) {
             return switch (request.language) {
                 .Zig => InternalResult{
                     .output =
@@ -613,7 +613,7 @@ pub const TrinitySWEAgent = struct {
         }
 
         // FIBONACCI detection (multilingual)
-        if (containsAny(prompt, &.{ "fibonacci", "фandбоonччand", "斐波那契" })) {
+        if (containsAny(prompt, &.{ "fibonacci", "[EN]and[EN]on[EN]and", "斐波那契" })) {
             return switch (request.language) {
                 .Zig => InternalResult{
                     .output =
@@ -674,10 +674,10 @@ pub const TrinitySWEAgent = struct {
             };
         }
 
-        // "Can you code?" / "toодandть [CYR:умеешь]?" detection
-        if (containsAny(prompt, &.{ "can you code", "toодandть [CYR:умеешь]", "[CYR:умеешь] toодandть", "[CYR:можешь] [CYR:программ]" })) {
+        // "Can you code?" / "to[EN]and[EN] [CYR:[EN]]?" detection
+        if (containsAny(prompt, &.{ "can you code", "to[EN]and[EN] [CYR:[EN]]", "[CYR:[EN]] to[EN]and[EN]", "[CYR:[EN]] [CYR:[EN]]" })) {
             return InternalResult{
-                .output = "Да! Я [CYR:умею] геnotрandроin[CYR:ать] toод on Zig, Python, JavaScript, Rust. [CYR:Попробуй]: 'hello world on zig' or 'fibonacci function'.",
+                .output = "[EN]! [EN] [CYR:[EN]] [EN]not[EN]and[EN]in[CYR:[EN]] to[EN] on Zig, Python, JavaScript, Rust. [CYR:[EN]]: 'hello world on zig' or 'fibonacci function'.",
                 .reasoning = "Capability question detected",
                 .confidence = 0.95,
                 .coherent = true,
@@ -1003,41 +1003,41 @@ pub const TrinitySWEAgent = struct {
 
         // Russian greetings
         if (lang == .Russian) {
-            if (containsAny(prompt, &.{ "прandinет", "[CYR:здра]inwithтinуй", "зbeforeроinо", "[CYR:хай]", "[CYR:хелло]" })) {
+            if (containsAny(prompt, &.{ "[EN]andin[EN]", "[CYR:[EN]]inwith[EN]in[EN]", "[EN]before[EN]in[EN]", "[CYR:[EN]]", "[CYR:[EN]]" })) {
                 return InternalResult{
-                    .output = "Прandinет! Я Trinity — лоto[CYR:альный] AI-аwithwithandwith[CYR:тент]. [CYR:Чем] [CYR:могу] by[CYR:мочь]?",
+                    .output = "[EN]andin[EN]! [EN] Trinity — [EN]to[CYR:[EN]] AI-[EN]withwithandwith[CYR:[EN]]. [CYR:[EN]] [CYR:[EN]] by[CYR:[EN]]?",
                     .reasoning = "Russian greeting detected",
                     .confidence = 0.98,
                     .coherent = true,
                 };
             }
-            if (containsAny(prompt, &.{ "toаto [CYR:дела]", "toаto ты", "what ноin[CYR:ого]", "toаto жand[CYR:знь]" })) {
+            if (containsAny(prompt, &.{ "to[EN]to [CYR:[EN]]", "to[EN]to [EN]", "what [EN]in[CYR:[EN]]", "to[EN]to [EN]and[CYR:[EN]]" })) {
                 return InternalResult{
-                    .output = "[CYR:Отл]and[CYR:чно]! [CYR:Раб]fromаю on 100% лоto[CYR:ально], [CYR:без] [CYR:обла]toа. Гfromоin by[CYR:мочь] with toоbeforeм, [CYR:математ]andtoой or [CYR:про]withто by[CYR:болтать]. φ² + 1/φ² = 3!",
+                    .output = "[CYR:[EN]]and[CYR:[EN]]! [CYR:[EN]]from[EN] on 100% [EN]to[CYR:[EN]], [CYR:[EN]] [CYR:[EN]]to[EN]. [EN]from[EN]in by[CYR:[EN]] with to[EN]before[EN], [CYR:[EN]]andto[EN] or [CYR:[EN]]with[EN] by[CYR:[EN]]. φ² + 1/φ² = 3!",
                     .reasoning = "Russian 'how are you' detected",
                     .confidence = 0.98,
                     .coherent = true,
                 };
             }
-            if (containsAny(prompt, &.{ "toто ты", "what ты", "раwithwithtoажand о with[CYR:ебе]" })) {
+            if (containsAny(prompt, &.{ "to[EN] [EN]", "what [EN]", "[EN]withwithto[EN]and [EN] with[CYR:[EN]]" })) {
                 return InternalResult{
-                    .output = "Я Trinity — лоto[CYR:альный] AI on [CYR:тер]on[CYR:рной] [CYR:лог]andtoе. 287KB бandonрнandto, 3.75M ops/s, 100% прandin[CYR:атно]withть. Нandtoаto[CYR:ого] [CYR:обла]toа!",
+                    .output = "[EN] Trinity — [EN]to[CYR:[EN]] AI on [CYR:[EN]]on[CYR:[EN]] [CYR:[EN]]andto[EN]. 287KB [EN]andon[EN]andto, 3.75M ops/s, 100% [EN]andin[CYR:[EN]]with[EN]. [EN]andto[EN]to[CYR:[EN]] [CYR:[EN]]to[EN]!",
                     .reasoning = "Russian 'who are you' detected",
                     .confidence = 0.97,
                     .coherent = true,
                 };
             }
-            if (containsAny(prompt, &.{ "withпаwithandбо", "[CYR:благо]yesрю" })) {
+            if (containsAny(prompt, &.{ "with[EN]withand[EN]", "[CYR:[EN]]yes[EN]" })) {
                 return InternalResult{
-                    .output = "[CYR:Пожалуй]withта! [CYR:Рад] by[CYR:мочь]. Еwithлand [CYR:нуж]on by[CYR:мощь] with toоbeforeм — [CYR:про]withто onпandшand /code.",
+                    .output = "[CYR:[EN]]with[EN]! [CYR:[EN]] by[CYR:[EN]]. [EN]with[EN]and [CYR:[EN]]on by[CYR:[EN]] with to[EN]before[EN] — [CYR:[EN]]with[EN] on[EN]and[EN]and /code.",
                     .reasoning = "Russian thanks detected",
                     .confidence = 0.98,
                     .coherent = true,
                 };
             }
-            if (containsAny(prompt, &.{ "bytoа", "before withinandyesнandя", "уinandдandмwithя" })) {
+            if (containsAny(prompt, &.{ "byto[EN]", "before withinandyes[EN]and[EN]", "[EN]inand[EN]and[EN]with[EN]" })) {
                 return InternalResult{
-                    .output = "До inwith[CYR:треч]and! φ² + 1/φ² = 3 = TRINITY. KOSCHEI IS IMMORTAL!",
+                    .output = "[EN] inwith[CYR:[EN]]and! φ² + 1/φ² = 3 = TRINITY. KOSCHEI IS IMMORTAL!",
                     .reasoning = "Russian goodbye detected",
                     .confidence = 0.98,
                     .coherent = true,
@@ -1045,7 +1045,7 @@ pub const TrinitySWEAgent = struct {
             }
             // Default Russian - honest about uncertainty
             return InternalResult{
-                .output = "Не уin[CYR:ерен] in [CYR:точном] fromin[CYR:ете] on этfrom in[CYR:опро]with. Я with[CYR:пец]andалandзand[CYR:рую]withь on: to[CYR:оде] (/code), [CYR:математ]andtoе, VSA. [CYR:Попробуй] [CYR:уточн]andть or with[CYR:про]withand [CYR:про] Fibonacci, sorting, phi!",
+                .output = "[EN] [EN]in[CYR:[EN]] in [CYR:[EN]] fromin[CYR:[EN]] on [EN]from in[CYR:[EN]]with. [EN] with[CYR:[EN]]and[EN]and[EN]and[CYR:[EN]]with[EN] on: to[CYR:[EN]] (/code), [CYR:[EN]]andto[EN], VSA. [CYR:[EN]] [CYR:[EN]]and[EN] or with[CYR:[EN]]withand [CYR:[EN]] Fibonacci, sorting, phi!",
                 .reasoning = "Russian prompt, no pattern match - honest uncertainty",
                 .confidence = 0.4, // Low confidence for unknown queries
                 .coherent = true,
@@ -1215,9 +1215,9 @@ pub const TrinitySWEAgent = struct {
         // Russian code keywords - HIGH PRIORITY
         if (lang == .Russian) {
             if (containsAny(prompt, &.{
-                "withозyesй", "withгеnotрand[CYR:руй]", "onпandшand", "toод", "toодandть", "[CYR:фун]toцand",
-                "[CYR:программ]", "[CYR:алгор]andтм", "toлаwithwith", "with[CYR:тру]to[CYR:тур]", "маwithwithandin",
-                "цandtoл", "hello world", "helloworld", "фandбоonччand",
+                "with[EN]yes[EN]", "with[EN]not[EN]and[CYR:[EN]]", "on[EN]and[EN]and", "to[EN]", "to[EN]and[EN]", "[CYR:[EN]]to[EN]and",
+                "[CYR:[EN]]", "[CYR:[EN]]and[EN]", "to[EN]withwith", "with[CYR:[EN]]to[CYR:[EN]]", "[EN]withwithandin",
+                "[EN]andto[EN]", "hello world", "helloworld", "[EN]and[EN]on[EN]and",
             })) return true;
         }
 
@@ -1255,8 +1255,8 @@ pub const TrinitySWEAgent = struct {
         // Russian conversational keywords
         if (lang == .Russian) {
             if (containsAny(prompt, &.{
-                "прandinет", "[CYR:здра]inwithтinуй", "toаto [CYR:дела]", "toаto ты", "toто ты", "what ты",
-                "withпаwithandбо", "by[CYR:жалуй]withта", "bytoа", "before withinandyesнandя", "by[CYR:мог]and",
+                "[EN]andin[EN]", "[CYR:[EN]]inwith[EN]in[EN]", "to[EN]to [CYR:[EN]]", "to[EN]to [EN]", "to[EN] [EN]", "what [EN]",
+                "with[EN]withand[EN]", "by[CYR:[EN]]with[EN]", "byto[EN]", "before withinandyes[EN]and[EN]", "by[CYR:[EN]]and",
             })) return true;
         }
 

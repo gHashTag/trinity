@@ -1,5 +1,5 @@
-// VIBEE BOGATYR 34 - [CYR:Жар]-птandца (Creator)
-// Прandнцandп: SYNTHESIS - [CYR:объед]andnotнandе прfromandinоby[CYR:ложно]with[CYR:тей] in notwhat moreе
+// VIBEE BOGATYR 34 - [CYR:[EN]]-[EN]and[EN] (Creator)
+// [EN]and[EN]and[EN]: SYNTHESIS - [CYR:[EN]]andnot[EN]and[EN] [EN]fromandin[EN]by[CYR:[EN]]with[CYR:[EN]] in notwhat more[EN]
 // φ² + 1/φ² = 3 | PHOENIX = 999
 
 const std = @import("std");
@@ -10,8 +10,8 @@ const common = @import("bogatyrs_common.zig");
 // ============================================================================
 
 pub const CREATOR_ID: u32 = 34;
-pub const CREATOR_NAME = "[CYR:Жар]-птandца";
-pub const CREATOR_WEIGHT: f32 = 2.0; // Дin[CYR:ойной] inеwith in withоin[CYR:ете] - withand[CYR:нтез] [CYR:ломает] [CYR:туп]andtoand
+pub const CREATOR_NAME = "[CYR:[EN]]-[EN]and[EN]";
+pub const CREATOR_WEIGHT: f32 = 2.0; // [EN]in[CYR:[EN]] in[EN]with in with[EN]in[CYR:[EN]] - withand[CYR:[EN]] [CYR:[EN]] [CYR:[EN]]andtoand
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_SQUARED: f64 = 2.618033988749895;
 pub const GOLDEN_IDENTITY: f64 = 3.0; // φ² + 1/φ² = 3
@@ -20,7 +20,7 @@ pub const GOLDEN_IDENTITY: f64 = 3.0; // φ² + 1/φ² = 3
 // TYPES
 // ============================================================================
 
-/// [CYR:Пара] прfromandinоby[CYR:ложных] withandл, to[CYR:ажущ]andхwithя inзаandмоandwithto[CYR:лючающ]andмand
+/// [CYR:[EN]] [EN]fromandin[EN]by[CYR:[EN]] withand[EN], to[CYR:[EN]]and[EN]with[EN] in[EN]and[EN]andwithto[CYR:[EN]]and[EN]and
 pub const Paradox = struct {
     pole_a: []const u8,
     pole_b: []const u8,
@@ -36,7 +36,7 @@ pub const Paradox = struct {
     }
 };
 
-/// [CYR:Трет]andй path, which [CYR:тран]with[CYR:ценд]and[CYR:рует] [CYR:пара]beforetowith
+/// [CYR:[EN]]and[EN] path, which [CYR:[EN]]with[CYR:[EN]]and[CYR:[EN]] [CYR:[EN]]beforetowith
 pub const Synthesis = struct {
     paradox: Paradox,
     third_path: []const u8,
@@ -49,7 +49,7 @@ pub const Synthesis = struct {
     }
 };
 
-/// [CYR:Изученный] pattern уwith[CYR:пешного] withand[CYR:нтеза]
+/// [CYR:[EN]] pattern [EN]with[CYR:[EN]] withand[CYR:[EN]]
 pub const CreationPattern = struct {
     pattern_id: []const u8,
     paradox_type: []const u8,
@@ -60,7 +60,7 @@ pub const CreationPattern = struct {
 
     pub fn successRate(self: CreationPattern) f64 {
         const total = self.success_count + self.failure_count;
-        if (total == 0) return 0.5; // Неandзinеwith[CYR:тно]
+        if (total == 0) return 0.5; // [EN]and[EN]in[EN]with[CYR:[EN]]
         return @as(f64, @floatFromInt(self.success_count)) / @as(f64, @floatFromInt(total));
     }
 };
@@ -69,7 +69,7 @@ pub const CreationPattern = struct {
 // HARDCODED SYNTHESIS PATTERNS
 // ============================================================================
 
-/// Изinеwith[CYR:тные] withand[CYR:нтезы] for тandпand[CYR:чных] [CYR:пара]beforetowithоin
+/// [EN]in[EN]with[CYR:[EN]] withand[CYR:[EN]] for [EN]and[EN]and[CYR:[EN]] [CYR:[EN]]beforetowith[EN]in
 pub const SYNTHESIS_PATTERNS = [_]struct {
     pole_a: []const u8,
     pole_b: []const u8,
@@ -131,7 +131,7 @@ pub const SYNTHESIS_PATTERNS = [_]struct {
 // CORE FUNCTIONS
 // ============================================================================
 
-/// Analyzes to[CYR:онфл]andtoт and and[CYR:дент]andфandцand[CYR:рует] [CYR:пара]beforetowith
+/// Analyzes to[CYR:[EN]]andto[EN] and and[CYR:[EN]]and[EN]and[EN]and[CYR:[EN]] [CYR:[EN]]beforetowith
 pub fn analyzeParadox(pole_a: []const u8, pole_b: []const u8, context: []const u8) Paradox {
     return Paradox{
         .pole_a = pole_a,
@@ -140,9 +140,9 @@ pub fn analyzeParadox(pole_a: []const u8, pole_b: []const u8, context: []const u
     };
 }
 
-/// Searches [CYR:трет]andй path, which [CYR:тран]with[CYR:ценд]and[CYR:рует] [CYR:пара]beforetowith
+/// Searches [CYR:[EN]]and[EN] path, which [CYR:[EN]]with[CYR:[EN]]and[CYR:[EN]] [CYR:[EN]]beforetowith
 pub fn seekSynthesis(paradox: Paradox) ?Synthesis {
-    // [CYR:Ищем] in andзinеwith[CYR:тных] [CYR:паттер]onх
+    // [CYR:[EN]] in and[EN]in[EN]with[CYR:[EN]] [CYR:[EN]]on[EN]
     for (SYNTHESIS_PATTERNS) |pattern| {
         const match_forward = std.mem.eql(u8, paradox.pole_a, pattern.pole_a) and
             std.mem.eql(u8, paradox.pole_b, pattern.pole_b);
@@ -160,29 +160,29 @@ pub fn seekSynthesis(paradox: Paradox) ?Synthesis {
         }
     }
 
-    // [CYR:Пара]beforetowith notandзinеwith[CYR:тен] — need тin[CYR:орче]withтinо
+    // [CYR:[EN]]beforetowith notand[EN]in[EN]with[CYR:[EN]] — need [EN]in[CYR:[EN]]with[EN]in[EN]
     return null;
 }
 
-/// Раwithwithчandтыin[CYR:ает] [CYR:требуемую] with[CYR:мело]withть for withand[CYR:нтеза]
+/// [EN]withwith[EN]and[EN]in[CYR:[EN]] [CYR:[EN]] with[CYR:[EN]]with[EN] for withand[CYR:[EN]]
 pub fn calculateCourageRequirement(synthesis: Synthesis) f64 {
-    // [CYR:Смело]withть = (рandwithto / 10) * (1 - reward/risk_ratio)
+    // [CYR:[EN]]with[EN] = ([EN]andwithto / 10) * (1 - reward/risk_ratio)
     const risk_normalized = @as(f64, @floatFromInt(synthesis.risk_level)) / 10.0;
     const reward_normalized = @as(f64, @floatFromInt(synthesis.reward_level)) / 10.0;
 
-    // [CYR:Чем] in[CYR:ыше] on[CYR:гра]yes fromноwithand[CYR:тельно] рandwithtoа, [CYR:тем] less need with[CYR:мело]withтand
+    // [CYR:[EN]] in[CYR:[EN]] on[CYR:[EN]]yes from[EN]withand[CYR:[EN]] [EN]andwithto[EN], [CYR:[EN]] less need with[CYR:[EN]]with[EN]and
     const risk_reward_ratio = if (reward_normalized > 0) risk_normalized / reward_normalized else 1.0;
 
     return @min(1.0, risk_normalized * risk_reward_ratio);
 }
 
-/// 34-й [CYR:голо]with — not за with[CYR:охра]notнandе, а за раwithшand[CYR:рен]andе
+/// 34-[EN] [CYR:[EN]]with — not [EN] with[CYR:[EN]]not[EN]and[EN], [EN] [EN] [EN]with[EN]and[CYR:[EN]]and[EN]
 pub fn voteAsCreator(ctx: *const common.ValidationContext) !common.BogatyrResult {
     const start_time = std.time.nanoTimestamp();
-    _ = ctx; // Иwithby[CYR:льзует]withя for inалandyesцandand to[CYR:онте]towithта
+    _ = ctx; // [EN]withby[CYR:[EN]]with[EN] for in[EN]andyes[EN]andand to[CYR:[EN]]towith[EN]
 
-    // [CYR:Жар]-птandца inwithегyes [CYR:голо]with[CYR:ует] Pass, if finds path for тin[CYR:орче]withтinа
-    // В [CYR:реальной] withandwith[CYR:теме] [CYR:зде]withь [CYR:будет] analysis [CYR:пара]beforetowithоin in to[CYR:онте]towithте
+    // [CYR:[EN]]-[EN]and[EN] inwith[EN]yes [CYR:[EN]]with[CYR:[EN]] Pass, if finds path for [EN]in[CYR:[EN]]with[EN]in[EN]
+    // [EN] [CYR:[EN]] withandwith[CYR:[EN]] [CYR:[EN]]with[EN] [CYR:[EN]] analysis [CYR:[EN]]beforetowith[EN]in in to[CYR:[EN]]towith[EN]
 
     const end_time = std.time.nanoTimestamp();
     const duration: i64 = @intCast(end_time - start_time);
@@ -205,9 +205,9 @@ pub const bogatyr = common.BogatyrPlugin{
     .name = CREATOR_NAME,
     .version = "1.0.0",
     .category = "synthesis",
-    .priority = 999, // Выwithшandй прandорand[CYR:тет] — [CYR:Жар]-птandца [CYR:решает] [CYR:туп]andtoand
-    .weight = CREATOR_WEIGHT, // 2.0 — дin[CYR:ойной] inеwith
-    .is_creator = true, // Едandнwithтin[CYR:енный] [CYR:Богатырь]-Тin[CYR:орец]
+    .priority = 999, // [EN]with[EN]and[EN] [EN]and[EN]and[CYR:[EN]] — [CYR:[EN]]-[EN]and[EN] [CYR:[EN]] [CYR:[EN]]andtoand
+    .weight = CREATOR_WEIGHT, // 2.0 — [EN]in[CYR:[EN]] in[EN]with
+    .is_creator = true, // [EN]and[EN]with[EN]in[CYR:[EN]] [CYR:[EN]]-[EN]in[CYR:[EN]]
     .validate = voteAsCreator,
 };
 
@@ -243,7 +243,7 @@ test "seek synthesis - safety vs efficiency" {
 
     try std.testing.expect(synthesis != null);
     if (synthesis) |s| {
-        try std.testing.expect(s.reward_level > s.risk_level); // [CYR:Награ]yes > рandwithto
+        try std.testing.expect(s.reward_level > s.risk_level); // [CYR:[EN]]yes > [EN]andwithto
         try std.testing.expectEqualStrings("Safe efficiency through incremental verification: fast iterations with safety gates at each step", s.third_path);
     }
 }

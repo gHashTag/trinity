@@ -1,6 +1,6 @@
 name: ai_security_scanner
 version: 1.0.0
-description: AI-powered with[CYR:кан]andроinанandе [CYR:безопа]withноwithтand - on[CYR:ход]andт [CYR:уяз]inandмоwithтand and [CYR:предлагает] andwith[CYR:пра]in[CYR:лен]andя
+description: AI-powered with[CYR:[TRANSLATED]]and[EN]in[EN]and[EN] [CYR:without[TRANSLATED]]with[EN]with[EN]and - on[CYR:[TRANSLATED]]and[EN] [CYR:[EN]I[EN]]inand[EN]with[EN]and and [CYR:[TRANSLATED]acts] andwith[CYR:law]in[CYR:[TRANSLATED]]andI
 
 metadata:
   author: VIBEE Team
@@ -45,11 +45,11 @@ constants:
   OWASP_TOP_10:
     - id: "A01"
       name: "Broken Access Control"
-      description: "[CYR:Нарушен]andе [CYR:контроля] доwith[CYR:тупа]"
+      description: "[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]I] [EN]with[CYR:[TRANSLATED]]"
       
     - id: "A02"
       name: "Cryptographic Failures"
-      description: "Крand[CYR:птограф]andчеwithкandе ошandбкand"
+      description: "[EN]and[CYR:[TRANSLATED]]and[EN]with[EN]and[EN] [EN]and[EN]and"
       
     - id: "A03"
       name: "Injection"
@@ -57,27 +57,27 @@ constants:
       
     - id: "A04"
       name: "Insecure Design"
-      description: "[CYR:Небезопа]with[CYR:ный] дfrom[CYR:айн]"
+      description: "[CYR:[EN]without[TRANSLATED]]with[CYR:ny] [EN]from[CYR:[TRANSLATED]]"
       
     - id: "A05"
       name: "Security Misconfiguration"
-      description: "[CYR:Непра]inandльonя configuration"
+      description: "[CYR:[EN]law]inandlonI configuration"
       
     - id: "A06"
       name: "Vulnerable Components"
-      description: "[CYR:Уяз]inand[CYR:мые] componentы"
+      description: "[CYR:[EN]I[EN]]inand[CYR:[EN]y[EN]] componenty"
       
     - id: "A07"
       name: "Authentication Failures"
-      description: "Ошandбкand [CYR:аутент]andфand[CYR:кац]andand"
+      description: "[EN]and[EN]and [CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]]andand"
       
     - id: "A08"
       name: "Data Integrity Failures"
-      description: "[CYR:Нарушен]andе [CYR:цело]with[CYR:тно]withтand [CYR:данных]"
+      description: "[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]with[EN]and [CYR:data]"
       
     - id: "A09"
       name: "Logging Failures"
-      description: "[CYR:Недо]with[CYR:таточное] [CYR:лог]andроinанandе"
+      description: "[CYR:[TRANSLATED]]with[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN]in[EN]and[EN]"
       
     - id: "A10"
       name: "SSRF"
@@ -88,49 +88,49 @@ constants:
       pattern: 'query("SELECT * FROM users WHERE id = " <> user_input)'
       severity: "critical"
       cwe: "CWE-89"
-      fix: "Иwith[CYR:пользо]in[CYR:ать] parameterfromоin[CYR:анные] queryы"
+      fix: "[EN]with[CYR:[EN]l[EN]]in[CYR:ate] parameterfrom[EN]in[CYR:[EN]nye] queryy"
       
     xss:
       pattern: 'html.render(user_input)'
       severity: "high"
       cwe: "CWE-79"
-      fix: "[CYR:Экран]andроin[CYR:ать] HTML"
+      fix: "[CYR:[TRANSLATED]]and[EN]in[CYR:ate] HTML"
       
     path_traversal:
       pattern: 'file.read(user_input)'
       severity: "high"
       cwe: "CWE-22"
-      fix: "[CYR:Вал]andдandроin[CYR:ать] [CYR:пут]and fileоin"
+      fix: "[CYR:[TRANSLATED]]and[EN]and[EN]in[CYR:ate] [CYR:[TRANSLATED]]and file[EN]in"
       
     weak_crypto:
       pattern: 'md5(password)'
       severity: "high"
       cwe: "CWE-327"
-      fix: "Иwith[CYR:пользо]in[CYR:ать] bcrypt or argon2"
+      fix: "[EN]with[CYR:[EN]l[EN]]in[CYR:ate] bcrypt or argon2"
       
     hardcoded_secrets:
       pattern: 'api_key = "sk-..."'
       severity: "critical"
       cwe: "CWE-798"
-      fix: "Иwith[CYR:пользо]in[CYR:ать] [CYR:переменные] [CYR:окружен]andя"
+      fix: "[EN]with[CYR:[EN]l[EN]]in[CYR:ate] [CYR:[TRANSLATED]nye] [CYR:[TRANSLATED]]andI"
 
   AI_PROMPTS:
     security_scan: |
-      Ты - экwith[CYR:перт] по [CYR:безопа]withноwithтand прand[CYR:ложен]andй (OWASP Top 10).
+      [EN]y - [EN]with[CYR:[TRANSLATED]] [EN] [CYR:without[TRANSLATED]]with[EN]with[EN]and [EN]and[CYR:[TRANSLATED]]and[EN] (OWASP Top 10).
       
-      [CYR:Код] for analysisа:
+      [CYR:Code] for analysis[EN]:
       ```vibee
       {code}
       ```
       
-      [CYR:Контек]withт:
-      - Тandп прand[CYR:ложен]andя: {app_type}
-      - Иwith[CYR:пользуемые] бandблand[CYR:отек]and: {libraries}
-      - [CYR:Обрабаты]in[CYR:аемые] [CYR:данные]: {data_types}
+      [CYR:[TRANSLATED]]with[EN]:
+      - [EN]and[EN] [EN]and[CYR:[TRANSLATED]]andI: {app_type}
+      - [EN]with[CYR:[EN]l[TRANSLATED]y[EN]] [EN]and[EN]and[CYR:[TRANSLATED]]and: {libraries}
+      - [CYR:[EN]work[EN]y]in[CYR:[TRANSLATED]y[EN]] [CYR:data]: {data_types}
       
-      [CYR:Задача]: [CYR:Найд]and inwithе [CYR:уяз]inandмоwithтand [CYR:безопа]withноwithтand.
+      [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]and inwith[EN] [CYR:[EN]I[EN]]inand[EN]with[EN]and [CYR:without[TRANSLATED]]with[EN]with[EN]and.
       
-      [CYR:Про]in[CYR:ерь] on:
+      [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] on:
       1. Injection (SQL, NoSQL, OS, LDAP)
       2. XSS (Reflected, Stored, DOM)
       3. CSRF
@@ -142,75 +142,75 @@ constants:
       9. Insecure Deserialization
       10. Using Components with Known Vulnerabilities
       
-      [CYR:Формат] responseа:
-      [CYR:Уяз]inandмоwithтand:
-      1. Тandп: <onзinанandе>
+      [CYR:[TRANSLATED]] response[EN]:
+      [CYR:[EN]I[EN]]inand[EN]with[EN]and:
+      1. [EN]and[EN]: <on[EN]in[EN]and[EN]>
          Severity: <critical/high/medium/low>
          CWE: <CWE-ID>
          OWASP: <A01-A10>
-         Меwithто: <location>
-         Опandwithанandе: <that not [CYR:так]>
-         Экwith[CYR:плойт]: <how [CYR:можно] andwith[CYR:пользо]in[CYR:ать]>
-         Иwith[CYR:пра]in[CYR:лен]andе:
+         [EN]with[EN]: <location>
+         [EN]andwith[EN]and[EN]: <that not [CYR:[TRANSLATED]]>
+         [EN]with[CYR:[TRANSLATED]]: <how [CYR:can[EN]] andwith[CYR:[EN]l[EN]]in[CYR:ate]>
+         [EN]with[CYR:law]in[CYR:[TRANSLATED]]and[EN]:
          ```vibee
-         <[CYR:безопа]with[CYR:ный] code>
+         <[CYR:without[TRANSLATED]]with[CYR:ny] code>
          ```
-         [CYR:Объя]withnotнandе: <[CYR:почему] this [CYR:безопа]withно>
+         [CYR:[TRANSLATED]I]withnot[EN]and[EN]: <[CYR:[TRANSLATED]] this [CYR:without[TRANSLATED]]with[EN]>
       
     exploit_analysis: |
-      Ты - экwith[CYR:перт] по экwith[CYR:плуатац]andand [CYR:уяз]inandмоwith[CYR:тей].
+      [EN]y - [EN]with[CYR:[TRANSLATED]] [EN] [EN]with[CYR:[TRANSLATED]]andand [CYR:[EN]I[EN]]inand[EN]with[CYR:[TRANSLATED]].
       
-      [CYR:Уяз]inandмоwithть:
+      [CYR:[EN]I[EN]]inand[EN]with[EN]:
       ```vibee
       {vulnerable_code}
       ```
       
-      Тandп: {vulnerability_type}
+      [EN]and[EN]: {vulnerability_type}
       
-      [CYR:Задача]: Опandшand withцеonрandй экwith[CYR:плуатац]andand.
+      [CYR:[TRANSLATED]]: [EN]and[EN]and with[EN]on[EN]and[EN] [EN]with[CYR:[TRANSLATED]]andand.
       
-      [CYR:Формат] responseа:
-      [CYR:Сце]onрandй [CYR:атак]and:
-      1. [CYR:Шаг]: <[CYR:дей]withтinandе [CYR:атакующего]>
+      [CYR:[TRANSLATED]] response[EN]:
+      [CYR:[TRANSLATED]]on[EN]and[EN] [CYR:[TRANSLATED]]and:
+      1. [CYR:[TRANSLATED]]: <[CYR:[TRANSLATED]]with[EN]inand[EN] [CYR:[TRANSLATED]go]>
          Payload: <example payload>
-         [CYR:Результат]: <that [CYR:про]from[CYR:ойдет]>
+         [CYR:[TRANSLATED]l[TRANSLATED]]: <that [CYR:pro]from[CYR:[TRANSLATED]]>
       
       Impact:
-      - [CYR:Конф]and[CYR:денц]and[CYR:ально]withть: <high/medium/low>
-      - [CYR:Цело]with[CYR:тно]withть: <high/medium/low>
-      - Доwith[CYR:тупно]withть: <high/medium/low>
+      - [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and[CYR:[EN]lno]with[EN]: <high/medium/low>
+      - [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]with[EN]: <high/medium/low>
+      - [EN]with[CYR:[TRANSLATED]]with[EN]: <high/medium/low>
       
       CVSS Score: <0-10>
       
     secure_coding: |
-      Ты - экwith[CYR:перт] по [CYR:безопа]with[CYR:ной] [CYR:разработке].
+      [EN]y - [EN]with[CYR:[TRANSLATED]] [EN] [CYR:without[TRANSLATED]]with[CYR:[TRANSLATED]] [CYR:[TRANSLATED]work[TRANSLATED]].
       
-      [CYR:Небезопа]with[CYR:ный] code:
+      [CYR:[EN]without[TRANSLATED]]with[CYR:ny] code:
       ```vibee
       {insecure_code}
       ```
       
-      [CYR:Проблема]: {vulnerability_description}
+      [CYR:[TRANSLATED]]: {vulnerability_description}
       
-      [CYR:Задача]: [CYR:Предлож]and [CYR:безопа]with[CYR:ную] [CYR:реал]fromацandю.
+      [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]and [CYR:without[TRANSLATED]]with[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from[EN]and[EN].
       
-      [CYR:Требо]inанandя:
-      - [CYR:Защ]andта от frominеwith[CYR:тных] [CYR:атак]
-      - [CYR:Вал]and[CYR:дац]andя entry[CYR:ных] [CYR:данных]
-      - [CYR:Пра]inandльonя handling ошand[CYR:бок]
-      - Мandнand[CYR:мальные] прandinand[CYR:лег]andand
+      [CYR:[TRANSLATED]]in[EN]andI:
+      - [CYR:[TRANSLATED]]and[EN] [EN] fromin[EN]with[CYR:[EN]y[EN]] [CYR:[TRANSLATED]]
+      - [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI entry[CYR:[EN]y[EN]] [CYR:data]
+      - [CYR:[TRANSLATED]]inandlonI handling [EN]and[CYR:[TRANSLATED]]
+      - [EN]and[EN]and[CYR:[EN]l[EN]y[EN]] [EN]andinand[CYR:[TRANSLATED]]andand
       - Defense in depth
       
-      [CYR:Формат] responseа:
-      [CYR:Безопа]with[CYR:ный] code:
+      [CYR:[TRANSLATED]] response[EN]:
+      [CYR:[TRANSLATED]]with[CYR:ny] code:
       ```vibee
-      <andwith[CYR:пра]in[CYR:ленный] code>
+      <andwith[CYR:law]in[CYR:[TRANSLATED]ny] code>
       ```
       
-      [CYR:Защ]andта:
-      - От [CYR:чего] [CYR:защ]and[CYR:щает]: <list [CYR:атак]>
-      - [CYR:Как] [CYR:работает]: <[CYR:объя]withnotнandе>
-      - [CYR:Дополн]and[CYR:тельные] [CYR:меры]: <[CYR:рекомендац]andand>
+      [CYR:[TRANSLATED]]and[EN]:
+      - [EN] [CYR:[EN]go] [CYR:[TRANSLATED]]and[CYR:[EN]acts]: <list [CYR:[TRANSLATED]]>
+      - [CYR:[TRANSLATED]] [CYR:work[EN]]: <[CYR:[TRANSLATED]I]withnot[EN]and[EN]>
+      - [CYR:[TRANSLATED]]and[CYR:[EN]l[EN]y[EN]] [CYR:[TRANSLATED]y]: <[CYR:[TRANSLATED]me[TRANSLATED]]andand>
 
 behaviors:
   scan_code:
@@ -220,14 +220,14 @@ behaviors:
     output:
       scan: SecurityScan
       vulnerabilities: list<Vulnerability>
-    description: [CYR:Скан]andроinанandе codeа on [CYR:уяз]inandмоwithтand
+    description: [CYR:[TRANSLATED]]and[EN]in[EN]and[EN] code[EN] on [CYR:[EN]I[EN]]inand[EN]with[EN]and
     steps:
-      - [CYR:Пар]withandть code in AST
-      - [CYR:Отпра]inandть on analysis AI
-      - [CYR:Получ]andть list [CYR:уяз]inandмоwith[CYR:тей]
-      - [CYR:Кла]withwithandфandцandроin[CYR:ать] по severity
-      - [CYR:Доба]inandть CWE/OWASP [CYR:категор]andand
-      - [CYR:Вернуть] resultы
+      - [CYR:[TRANSLATED]]withand[EN] code in AST
+      - [CYR:[EN]law]inand[EN] on analysis AI
+      - [CYR:[TRANSLATED]]and[EN] list [CYR:[EN]I[EN]]inand[EN]with[CYR:[TRANSLATED]]
+      - [CYR:[TRANSLATED]]withwithand[EN]and[EN]and[EN]in[CYR:ate] [EN] severity
+      - [CYR:[TRANSLATED]]inand[EN] CWE/OWASP [CYR:[TRANSLATED]go[EN]]andand
+      - [CYR:[TRANSLATED]] resulty
       
   analyze_vulnerability:
     input:
@@ -235,13 +235,13 @@ behaviors:
       code: string
     output:
       analysis: VulnerabilityAnalysis
-    description: [CYR:Детальный] analysis [CYR:уяз]inandмоwithтand
+    description: [CYR:[TRANSLATED]al] analysis [CYR:[EN]I[EN]]inand[EN]with[EN]and
     steps:
-      - [CYR:Про]analyze [CYR:уяз]inandмоwithть
-      - [CYR:Определ]andть exploit scenario
-      - [CYR:Оцен]andть impact
-      - Раwithwithread CVSS score
-      - [CYR:Вернуть] analysis
+      - [CYR:[TRANSLATED]]analyze [CYR:[EN]I[EN]]inand[EN]with[EN]
+      - [CYR:[TRANSLATED]]and[EN] exploit scenario
+      - [CYR:[TRANSLATED]]and[EN] impact
+      - [EN]withwithread CVSS score
+      - [CYR:[TRANSLATED]] analysis
       
   suggest_fix:
     input:
@@ -249,13 +249,13 @@ behaviors:
       code: string
     output:
       fix: SecurityFix
-    description: [CYR:Предложен]andе andwith[CYR:пра]in[CYR:лен]andя
+    description: [CYR:[TRANSLATED]]and[EN] andwith[CYR:law]in[CYR:[TRANSLATED]]andI
     steps:
-      - [CYR:Определ]andть type [CYR:уяз]inandмоwithтand
-      - [CYR:Сге]notрandроin[CYR:ать] [CYR:безопа]with[CYR:ный] code
-      - [CYR:Вал]andдandроin[CYR:ать] fix
-      - [CYR:Про]inерandть on ноinые [CYR:уяз]inandмоwithтand
-      - [CYR:Вернуть] fix
+      - [CYR:[TRANSLATED]]and[EN] type [CYR:[EN]I[EN]]inand[EN]with[EN]and
+      - [CYR:[TRANSLATED]]not[EN]and[EN]in[CYR:ate] [CYR:without[TRANSLATED]]with[CYR:ny] code
+      - [CYR:[TRANSLATED]]and[EN]and[EN]in[CYR:ate] fix
+      - [CYR:[TRANSLATED]]in[EN]and[EN] on [EN]iny[EN] [CYR:[EN]I[EN]]inand[EN]with[EN]and
+      - [CYR:[TRANSLATED]] fix
       
   apply_fix:
     input:
@@ -264,13 +264,13 @@ behaviors:
     output:
       patched_code: string
       validation: ValidationResult
-    description: Прandмеnotнandе andwith[CYR:пра]in[CYR:лен]andя
+    description: [EN]and[EN]not[EN]and[EN] andwith[CYR:law]in[CYR:[TRANSLATED]]andI
     steps:
-      - Прand[CYR:мен]andть patch
-      - [CYR:Запу]withтandть testы
-      - Поin[CYR:торное] with[CYR:кан]andроinанandе
-      - [CYR:Вал]andдandроin[CYR:ать] security
-      - [CYR:Вернуть] result
+      - [EN]and[CYR:me]and[EN] patch
+      - [CYR:[TRANSLATED]]with[EN]and[EN] testy
+      - [EN]in[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]and[EN]in[EN]and[EN]
+      - [CYR:[TRANSLATED]]and[EN]and[EN]in[CYR:ate] security
+      - [CYR:[TRANSLATED]] result
       
   generate_security_report:
     input:
@@ -279,32 +279,32 @@ behaviors:
     output:
       report: string
       format: string
-    description: Геnot[CYR:рац]andя [CYR:отчета] по [CYR:безопа]withноwithтand
+    description: [EN]not[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]] [EN] [CYR:without[TRANSLATED]]with[EN]with[EN]and
     steps:
-      - [CYR:Собрать] with[CYR:тат]andwithтandку
-      - [CYR:Групп]andроin[CYR:ать] по severity
-      - [CYR:Доба]inandть [CYR:рекомендац]andand
-      - [CYR:Формат]andроin[CYR:ать] [CYR:отчет]
-      - [CYR:Вернуть] report
+      - [CYR:[TRANSLATED]ate] with[CYR:[TRANSLATED]]andwith[EN]and[EN]
+      - [CYR:[TRANSLATED]]and[EN]in[CYR:ate] [EN] severity
+      - [CYR:[TRANSLATED]]inand[EN] [CYR:[TRANSLATED]me[TRANSLATED]]andand
+      - [CYR:[TRANSLATED]]and[EN]in[CYR:ate] [CYR:[TRANSLATED]]
+      - [CYR:[TRANSLATED]] report
 
 functions:
   - name: detect_injection
     params:
       code: string
     returns: list<Vulnerability>
-    description: Поandwithк injection [CYR:уяз]inandмоwith[CYR:тей]
+    description: [EN]andwith[EN] injection [CYR:[EN]I[EN]]inand[EN]with[CYR:[TRANSLATED]]
     
   - name: detect_xss
     params:
       code: string
     returns: list<Vulnerability>
-    description: Поandwithк XSS [CYR:уяз]inandмоwith[CYR:тей]
+    description: [EN]andwith[EN] XSS [CYR:[EN]I[EN]]inand[EN]with[CYR:[TRANSLATED]]
     
   - name: calculate_cvss
     params:
       vuln: Vulnerability
     returns: number
-    description: Раwith[CYR:чет] CVSS score
+    description: [EN]with[CYR:[TRANSLATED]] CVSS score
     
   - name: validate_fix
     params:
@@ -312,7 +312,7 @@ functions:
       fixed: string
       vuln_type: string
     returns: boolean
-    description: [CYR:Вал]and[CYR:дац]andя andwith[CYR:пра]in[CYR:лен]andя
+    description: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI andwith[CYR:law]in[CYR:[TRANSLATED]]andI
 
 tests:
   - name: detect_sql_injection
@@ -366,7 +366,7 @@ tests:
 
 examples:
   - name: "SQL Injection"
-    description: "AI on[CYR:ход]andт and andwith[CYR:пра]in[CYR:ляет] SQL injection"
+    description: "AI on[CYR:[TRANSLATED]]and[EN] and andwith[CYR:law]in[CYR:[EN]I[EN]] SQL injection"
     input:
       code: |
         pub get_user(id) = {
@@ -383,10 +383,10 @@ examples:
           pub get_user(id) = {
             db.query_params("SELECT * FROM users WHERE id = ?", [id])
           }
-        explanation: "[CYR:Параметр]fromоin[CYR:анный] query [CYR:защ]and[CYR:щает] от SQL injection"
+        explanation: "[CYR:[TRANSLATED]]from[EN]in[CYR:[EN]ny] query [CYR:[TRANSLATED]]and[CYR:[EN]acts] [EN] SQL injection"
         
   - name: "XSS"
-    description: "AI on[CYR:ход]andт XSS [CYR:уяз]inandмоwithть"
+    description: "AI on[CYR:[TRANSLATED]]and[EN] XSS [CYR:[EN]I[EN]]inand[EN]with[EN]"
     input:
       code: |
         pub render_comment(user_input) = {
@@ -397,7 +397,7 @@ examples:
         type: "xss"
         severity: "high"
         cwe: "CWE-79"
-        exploit: "[CYR:Атакующ]andй [CYR:может] inwithтаinandть <script>alert('XSS')</script>"
+        exploit: "[CYR:A[TRANSLATED]]and[EN] [CYR:can[EN]] inwith[EN]inand[EN] <script>alert('XSS')</script>"
       fix:
         code_after: |
           pub render_comment(user_input) = {
@@ -405,7 +405,7 @@ examples:
           }
         
   - name: "Weak Crypto"
-    description: "AI on[CYR:ход]andт with[CYR:лабую] крand[CYR:птограф]andю"
+    description: "AI on[CYR:[TRANSLATED]]and[EN] with[CYR:[TRANSLATED]] [EN]and[CYR:[TRANSLATED]]and[EN]"
     input:
       code: |
         pub hash_password(password) = {
@@ -421,7 +421,7 @@ examples:
           pub hash_password(password) = {
             crypto.bcrypt(password, rounds: 12)
           }
-        explanation: "bcrypt уwith[CYR:тойч]andin к brute-force [CYR:атакам]"
+        explanation: "bcrypt [EN]with[CYR:[TRANSLATED]]andin  brute-force [CYR:[TRANSLATED]]"
 
 security_checks:
   input_validation:

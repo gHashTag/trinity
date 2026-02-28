@@ -1044,7 +1044,7 @@ pub const ZigCodeGen = struct {
 
     fn writeConstants(self: *Self, constants: []const Constant) !void {
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
-        try self.builder.writeLine("// [CYR:КОНСТАНТЫ]");
+        try self.builder.writeLine("// [CYR:[TRANSLATED]A[TRANSLATED]]");
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.newline();
 
@@ -1079,7 +1079,7 @@ pub const ZigCodeGen = struct {
             if (std.mem.eql(u8, c.name, "PHOENIX")) has_phoenix = true;
         }
 
-        try self.builder.writeLine("// [CYR:Базо]inые φ-toонwith[CYR:танты] (Sacred Formula)");
+        try self.builder.writeLine("// [CYR:[TRANSLATED]]iny[EN] φ-to[EN]with[CYR:[TRANSLATED]y] (Sacred Formula)");
         if (!has_phi) try self.builder.writeLine("pub const PHI: f64 = 1.618033988749895;");
         if (!has_phi_inv) try self.builder.writeLine("pub const PHI_INV: f64 = 0.618033988749895;");
         if (!has_phi_sq) try self.builder.writeLine("pub const PHI_SQ: f64 = 2.618033988749895;");
@@ -1096,7 +1096,7 @@ pub const ZigCodeGen = struct {
         if (type_defs.len == 0) return;
 
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
-        try self.builder.writeLine("// [CYR:ТИПЫ]");
+        try self.builder.writeLine("// [CYR:[TRANSLATED]]");
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.newline();
 
@@ -1134,7 +1134,7 @@ pub const ZigCodeGen = struct {
 
     fn writeMemoryBuffers(self: *Self) !void {
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
-        try self.builder.writeLine("// [CYR:ПАМЯТЬ] [CYR:ДЛЯ] WASM");
+        try self.builder.writeLine("// [CYR:[EN]A[TRANSLATED]] [CYR:[TRANSLATED]] WASM");
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.newline();
 
@@ -1354,7 +1354,7 @@ pub const ZigCodeGen = struct {
         try self.builder.newline();
 
         // phi_lerp
-        try self.builder.writeLine("/// φ-and[CYR:нтер]fieldsцandя");
+        try self.builder.writeLine("/// φ-and[CYR:[TRANSLATED]]fields[EN]andI");
         try self.builder.writeLine("fn phi_lerp(a: f64, b: f64, t: f64) f64 {");
         try self.builder.writeLine("    const phi_t = math.pow(f64, t, PHI_INV);");
         try self.builder.writeLine("    return a + (b - a) * phi_t;");
@@ -1362,7 +1362,7 @@ pub const ZigCodeGen = struct {
         try self.builder.newline();
 
         // generate_phi_spiral
-        try self.builder.writeLine("/// Геnot[CYR:рац]andя φ-withпand[CYR:рал]and");
+        try self.builder.writeLine("/// [EN]not[CYR:[TRANSLATED]]andI φ-with[EN]and[CYR:[TRANSLATED]]and");
         try self.builder.writeLine("fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {");
         self.builder.incIndent();
         try self.builder.writeLine("const max_points = f64_buffer.len / 2;");

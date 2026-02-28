@@ -215,7 +215,7 @@ behaviors:
 
 test_cases:
   - name: russian_greeting_chat
-    given: "Прandinет!"
+    given: "[EN]andin[EN]!"
     expected: "Warm Russian greeting, mode=chat"
 
   - name: chinese_code_request
@@ -235,5 +235,5 @@ test_cases:
     expected: "Honest uncertainty, confidence < 0.4"
 
   - name: multilingual_code
-    given: "[CYR:Нап]andшand binary search on JavaScript"
+    given: "[CYR:[TRANSLATED]]and[EN]and binary search on JavaScript"
     expected: "Real binary search in JS"

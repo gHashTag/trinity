@@ -1,6 +1,6 @@
 // Sacred Mathematics Module for VIBEE
 // ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ: V = n × 3^k × π^m × φ^p × e^q
-// φ² + 1/φ² = 3 = [CYR:КУТРИТ] = [CYR:ТРОИЦА]
+// φ² + 1/φ² = 3 = [CYR:[TRANSLATED]] = [CYR:[TRANSLATED]A]
 // Generated from specs/tri/sacred_math.vibee
 
 const std = @import("std");
@@ -30,7 +30,7 @@ pub const E: f64 = 2.71828182845904523536;
 /// π × φ × e ≈ 13.82 (close to tryte max 13!)
 pub const TRANSCENDENTAL: f64 = 13.816890703380645;
 
-/// φ² + 1/φ² = 3 = [CYR:КУТРИТ] = [CYR:ТРОИЦА]
+/// φ² + 1/φ² = 3 = [CYR:[TRANSLATED]] = [CYR:[TRANSLATED]A]
 pub const TRINITY: i8 = 3;
 
 /// μ = 1/φ²/10 (Mutation rate)

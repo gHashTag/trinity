@@ -57,30 +57,30 @@ pub const ChromeLauncher = struct {
 
     pub fn deinit(self: *Self) void {
         _ = self;
-        // Registry deinitializeswithя withon[CYR:руж]and
+        // Registry deinitializeswith[EN] withon[CYR:[EN]]and
     }
 
-    /// [CYR:Запу]withto Chrome with [CYR:пред]inарand[CYR:тельной] inалandyesцandей
+    /// [CYR:[EN]]withto Chrome with [CYR:[EN]]in[EN]and[CYR:[EN]] in[EN]andyes[EN]and[EN]
     pub fn launchWithValidation(self: *Self) !ChromeProcess {
-        // Validation [CYR:перед] [CYR:запу]withtoом (if into[CYR:лючено])
+        // Validation [CYR:[EN]] [CYR:[EN]]withto[EN] (if into[CYR:[EN]])
         if (self.config.validate_spec_before_launch and self.config.spec_path != null) {
             const source = self.allocator.alloc(u8, 2048) catch return ChromeLauncherError.OutOfMemory;
             defer self.allocator.free(source);
 
-            // Чand[CYR:таем] .vibee file
+            // [EN]and[CYR:[EN]] .vibee file
             const spec_source = std.fs.cwd().readFileAlloc(self.allocator, self.config.spec_path.?, 4096) catch |err| {
                 _ = err;
                 return ChromeLauncherError.ValidationFailed;
             };
             defer self.allocator.free(spec_source);
 
-            // Create inалandyesцand[CYR:онный] to[CYR:онте]towithт
+            // Create in[EN]andyes[EN]and[CYR:[EN]] to[CYR:[EN]]towith[EN]
             const validation_config = registry_mod.ValidationConfig{
                 .strict_mode = self.config.strict_validation,
                 .warning_as_error = false,
                 .cache_enabled = true,
-                .parallel_enabled = false, // Сon[CYR:чала] bywithлеbeforein[CYR:ательно]
-                .timeout_ms = @min(self.config.timeout_ms / 2, 1000), // [CYR:Меньше] timeout for inалandyesцandand
+                .parallel_enabled = false, // [EN]on[CYR:[EN]] bywith[EN]beforein[CYR:[EN]]
+                .timeout_ms = @min(self.config.timeout_ms / 2, 1000), // [CYR:[EN]] timeout for in[EN]andyes[EN]andand
             };
 
             const validation_context = registry_mod.ValidationContext{
@@ -92,7 +92,7 @@ pub const ChromeLauncher = struct {
                 .symbol_table = null,
             };
 
-            // [CYR:Запу]withto[CYR:аем] all [CYR:богатыр]and
+            // [CYR:[EN]]withto[CYR:[EN]] all [CYR:[EN]]and
             const plugin_count = self.registry.pluginCount();
             var errors_found: usize = 0;
 
@@ -126,15 +126,15 @@ pub const ChromeLauncher = struct {
                 return ChromeLauncherError.ValidationFailed;
             }
 
-            // Еwithлand validation [CYR:прошла] - [CYR:про]before[CYR:лжаем]
+            // [EN]with[EN]and validation [CYR:[EN]] - [CYR:[EN]]before[CYR:[EN]]
             std.debug.print("✅ All {} bogatyrs passed validation\n", .{plugin_count});
         }
 
-        // [CYR:Запу]withto Chrome
+        // [CYR:[EN]]withto Chrome
         return self.launch();
     }
 
-    /// [CYR:Запу]withto Chrome [CYR:без] inалandyesцandand
+    /// [CYR:[EN]]withto Chrome [CYR:[EN]] in[EN]andyes[EN]andand
     pub fn launch(self: *Self) !ChromeProcess {
         const chrome_path = try self.findChromePath() catch |err| {
             std.debug.print("❌ Chrome not found: {}\n", .{err});
@@ -161,7 +161,7 @@ pub const ChromeLauncher = struct {
             return ChromeLauncherError.PortInUse;
         }
 
-        // [CYR:Форм]and[CYR:руем] arguments for [CYR:запу]withtoа
+        // [CYR:[EN]]and[CYR:[EN]] arguments for [CYR:[EN]]withto[EN]
         const allocator = self.allocator;
         var args = std.ArrayList([]const u8).init(allocator);
         defer {
@@ -238,20 +238,20 @@ pub const ChromeLauncher = struct {
             };
         }
 
-        // URL to navigate to (or пуwith[CYR:той] for чandwith[CYR:той] [CYR:запу]withtoа)
+        // URL to navigate to (or [EN]with[CYR:[EN]] for [EN]andwith[CYR:[EN]] [CYR:[EN]]withto[EN])
         const url = std.os.getenv("VIBEE_LAUNCH_URL") orelse "about:blank";
 
         const url_buf = try std.fmt.allocPrint(allocator, "{s}", .{url}) catch return ChromeLauncherError.OutOfMemory;
         defer allocator.free(url_buf);
         try args.append(url_buf) catch return ChromeLauncherError.OutOfMemory;
 
-        // [CYR:Запу]withtoа Chrome
+        // [CYR:[EN]]withto[EN] Chrome
         var process = std.process.Child.init(args.items, self.allocator) catch |err| {
             std.debug.print("❌ Failed to launch Chrome: {}\n", .{err});
             return ChromeLauncherError.LaunchFailed;
         };
 
-        // SPAWN process (startup [CYR:без] [CYR:бло]toandроintoand)
+        // SPAWN process (startup [CYR:[EN]] [CYR:[EN]]toand[EN]intoand)
         try process.spawn() catch |err| {
             std.debug.print("❌ Failed to spawn Chrome: {}\n", .{err});
             return ChromeLauncherError.LaunchFailed;
@@ -259,9 +259,9 @@ pub const ChromeLauncher = struct {
 
         const pid = process.id;
 
-        // Check what Chrome [CYR:запу]withтandлwithя ([CYR:ждем] when byрт withтаno [CYR:занят])
+        // Check what Chrome [CYR:[EN]]with[EN]and[EN]with[EN] ([CYR:[EN]] when by[EN] with[EN]no [CYR:[EN]])
         var tries: u32 = 0;
-        const max_tries = self.config.timeout_ms / 100; // 100мwith and[CYR:нтер]inал
+        const max_tries = self.config.timeout_ms / 100; // 100[EN]with and[CYR:[EN]]in[EN]
 
         while (tries < max_tries) : (tries += 1) {
             std.time.sleep(100 * std.time.ns_per_ms);
@@ -282,7 +282,7 @@ pub const ChromeLauncher = struct {
         };
     }
 
-    /// Check beforewith[CYR:тупно]withтand by[CYR:рта]
+    /// Check beforewith[CYR:[EN]]with[EN]and by[CYR:[EN]]
     fn isPortAvailable(port: u16) bool {
         const address = std.net.Address.parseIp("127.0.0.1", port) catch return false;
         const socket = std.net.tcp.getSocketToAddress(address) catch return true;
@@ -290,7 +290,7 @@ pub const ChromeLauncher = struct {
         return true;
     }
 
-    /// Поandwithto Chrome executable
+    /// [EN]andwithto Chrome executable
     fn findChromePath(self: *const Self) ![]const u8 {
         const possible_paths = [_][]const u8{
             "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
@@ -311,7 +311,7 @@ pub const ChromeLauncher = struct {
         return ChromeLauncherError.ChromeNotFound;
     }
 
-    /// [CYR:Соз]yesнandе in[CYR:ременной] дandреto[CYR:тор]andand for userwithtoandх yes[CYR:нных]
+    /// [CYR:[EN]]yes[EN]and[EN] in[CYR:[EN]] [EN]and[EN]to[CYR:[EN]]andand for userwithtoand[EN] yes[CYR:[EN]]
     fn createTempUserDataDir(self: *Self) ![]const u8 {
         const temp_dir = std.fs.getenv("TMPDIR") orelse "/tmp";
 
@@ -331,17 +331,17 @@ pub const ChromeLauncher = struct {
         return dir_path;
     }
 
-    /// Заin[CYR:ершен]andе [CYR:проце]withwithа Chrome
+    /// [EN]in[CYR:[EN]]and[EN] [CYR:[EN]]withwith[EN] Chrome
     pub fn terminate(self: *Self, chrome_process: *ChromeProcess) void {
         if (!chrome_process.is_running) return;
 
-        // Убandin[CYR:аем] process
+        // [EN]andin[CYR:[EN]] process
         if (std.process.kill(chrome_process.process_id)) |_| {
             chrome_process.is_running = false;
             std.debug.print("✓ Chrome terminated: pid={}\n", .{chrome_process.process_id});
         }
 
-        // Очand[CYR:щаем] дandреto[CYR:тор]andю by[CYR:льзо]in[CYR:ателя]
+        // [EN]and[CYR:[EN]] [EN]and[EN]to[CYR:[EN]]and[EN] by[CYR:[EN]]in[CYR:[EN]]
         if (chrome_process.user_data_dir) |dir| {
             std.fs.deleteTreeAbsolute(dir) catch |err| {
                 _ = err;
@@ -388,7 +388,7 @@ test "chrome launcher with validation disabled" {
     var launcher = try ChromeLauncher.init(allocator, config, &registry);
     defer launcher.deinit();
 
-    // Test [CYR:без] inалandyesцandand Chrome not [CYR:запу]withto[CYR:аем]
+    // Test [CYR:[EN]] in[EN]andyes[EN]andand Chrome not [CYR:[EN]]withto[CYR:[EN]]
 }
 
 test "port availability" {
@@ -401,7 +401,7 @@ test "port availability" {
     };
     defer registry.deinit();
 
-    // Check what byрт 9222 within[CYR:ободен] (Chrome not [CYR:запущен])
+    // Check what by[EN] 9222 within[CYR:[EN]] (Chrome not [CYR:[EN]])
     const config = ChromeLauncherConfig{};
     var launcher = try ChromeLauncher.init(allocator, config, &registry) catch |err| {
         _ = err;

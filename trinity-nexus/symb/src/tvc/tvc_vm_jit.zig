@@ -5,13 +5,13 @@ const tvc_jit = @import("tvc_jit.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TVC VM WITH JIT SUPPORT
-// Аin[CYR:томат]andчеwithtoand to[CYR:омп]or[CYR:рует] [CYR:горяч]andе [CYR:фун]toцandand in [CYR:маш]and[CYR:нный] toод
+// Ain[CYR:[TRANSLATED]]and[EN]withtoand to[CYR:[TRANSLATED]]or[CYR:[TRANSLATED]] [CYR:go[EN]I[EN]]and[EN] [CYR:[TRANSLATED]]to[EN]andand in [CYR:[TRANSLATED]]and[CYR:[EN]ny] to[EN]
 // ═══════════════════════════════════════════════════════════════════════════
 
 pub const ExecutionMode = enum {
-    interpret, // Вwith[CYR:егда] and[CYR:нтерпрет]andроin[CYR:ать]
-    jit,       // Вwith[CYR:егда] JIT to[CYR:омп]orроin[CYR:ать]
-    adaptive,  // [CYR:Адапт]andinно: and[CYR:нтерпрет]andроin[CYR:ать], пfromом JIT for [CYR:горяч]andх
+    interpret, // [EN]with[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]and[EN]in[CYR:ate]
+    jit,       // [EN]with[CYR:[TRANSLATED]] JIT to[CYR:[TRANSLATED]]or[EN]in[CYR:ate]
+    adaptive,  // [CYR:A[TRANSLATED]]andin[EN]: and[CYR:[TRANSLATED]]and[EN]in[CYR:ate], [EN]from[EN] JIT for [CYR:go[EN]I[EN]]and[EN]
 };
 
 pub const TVCVMJit = struct {
@@ -29,7 +29,7 @@ pub const TVCVMJit = struct {
             .jit = tvc_jit.TVCJit.init(allocator),
             .mode = .adaptive,
             .call_counts = std.StringHashMap(u64).init(allocator),
-            .jit_threshold = 100, // [CYR:Комп]orроin[CYR:ать] поwithле 100 in[CYR:ызо]inоin
+            .jit_threshold = 100, // [CYR:[TRANSLATED]]or[EN]in[CYR:ate] [EN]with[EN] 100 in[CYR:y[EN]]in[EN]in
             .total_interpreted = 0,
             .total_jit = 0,
         };
@@ -49,9 +49,9 @@ pub const TVCVMJit = struct {
         try self.vm.loadModule(module);
     }
 
-    // [CYR:Вызо]in [CYR:фун]toцandand with аin[CYR:томат]andчеwithtoandм in[CYR:ыбором] [CYR:реж]andма
+    // [CYR:Vy[EN]]in [CYR:[TRANSLATED]]to[EN]andand with [EN]in[CYR:[TRANSLATED]]and[EN]withtoand[EN] in[CYR:y[TRANSLATED]] [CYR:[TRANSLATED]]and[EN]
     pub fn callFunction(self: *TVCVMJit, func_name: []const u8) !i64 {
-        // Уinелandчandin[CYR:аем] with[CYR:чётч]andto in[CYR:ызо]inоin
+        // [EN]in[EN]and[EN]andin[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]andto in[CYR:y[EN]]in[EN]in
         const count = (self.call_counts.get(func_name) orelse 0) + 1;
         try self.call_counts.put(func_name, count);
 
@@ -63,27 +63,27 @@ pub const TVCVMJit = struct {
                 return self.executeJIT(func_name);
             },
             .adaptive => {
-                // [CYR:Про]in[CYR:еряем], еwithть лand [CYR:уже] withto[CYR:омп]orроinанonя inерwithandя
+                // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]], [EN]with[EN] [EN]and [CYR:[TRANSLATED]] withto[CYR:[TRANSLATED]]or[EN]in[EN]onI in[EN]withandI
                 if (self.jit.getCompiled(func_name)) |compiled| {
                     self.total_jit += 1;
                     return compiled.call();
                 }
 
-                // [CYR:Про]in[CYR:еряем], доwithтand[CYR:гнут] лand [CYR:порог] for JIT
+                // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]], [EN]with[EN]and[CYR:[TRANSLATED]] [EN]and [CYR:[TRANSLATED]] for JIT
                 if (count >= self.jit_threshold) {
-                    // [CYR:Пытаем]withя withto[CYR:омп]orроin[CYR:ать]
+                    // [CYR:[EN]y[TRANSLATED]]withI withto[CYR:[TRANSLATED]]or[EN]in[CYR:ate]
                     if (self.vm.getFunction(func_name)) |func| {
                         if (self.jit.compile(func)) |compiled| {
                             std.debug.print("[JIT] Compiled function: {s} (after {} calls)\n", .{ func_name, count });
                             self.total_jit += 1;
                             return compiled.call();
                         } else |_| {
-                            // Error to[CYR:омп]and[CYR:ляц]andand - [CYR:продолжаем] and[CYR:нтерпрет]andроin[CYR:ать]
+                            // Error to[CYR:[TRANSLATED]]and[CYR:[EN]I[EN]]andand - [CYR:pro[TRANSLATED]] and[CYR:[TRANSLATED]]and[EN]in[CYR:ate]
                         }
                     }
                 }
 
-                // [CYR:Интерпрет]and[CYR:руем]
+                // [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
                 return self.executeInterpreted(func_name);
             },
         }
@@ -92,18 +92,18 @@ pub const TVCVMJit = struct {
     fn executeInterpreted(self: *TVCVMJit, func_name: []const u8) !i64 {
         self.total_interpreted += 1;
         try self.vm.callFunction(func_name);
-        // [CYR:Воз]in[CYR:ращаем] зon[CYR:чен]andе andз [CYR:рег]andwith[CYR:тра] r0
+        // [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [EN]on[CYR:[TRANSLATED]]and[EN] and[EN] [CYR:[TRANSLATED]]andwith[CYR:[TRANSLATED]] r0
         return @as(i64, self.vm.registers.r0);
     }
 
     fn executeJIT(self: *TVCVMJit, func_name: []const u8) !i64 {
-        // [CYR:Про]in[CYR:еряем] toэш
+        // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] to[EN]
         if (self.jit.getCompiled(func_name)) |compiled| {
             self.total_jit += 1;
             return compiled.call();
         }
 
-        // [CYR:Комп]or[CYR:руем]
+        // [CYR:[TRANSLATED]]or[CYR:[TRANSLATED]]
         if (self.vm.getFunction(func_name)) |func| {
             const compiled = try self.jit.compile(func);
             self.total_jit += 1;
@@ -113,7 +113,7 @@ pub const TVCVMJit = struct {
         return error.InvalidFunction;
     }
 
-    // Прand[CYR:нуд]and[CYR:тель]onя JIT to[CYR:омп]and[CYR:ляц]andя [CYR:фун]toцandand
+    // [EN]and[CYR:[TRANSLATED]]and[CYR:[EN]l]onI JIT to[CYR:[TRANSLATED]]and[CYR:[EN]I[EN]]andI [CYR:[TRANSLATED]]to[EN]andand
     pub fn forceCompile(self: *TVCVMJit, func_name: []const u8) !void {
         if (self.vm.getFunction(func_name)) |func| {
             _ = try self.jit.compile(func);
@@ -121,7 +121,7 @@ pub const TVCVMJit = struct {
         }
     }
 
-    // [CYR:Стат]andwithтandtoа
+    // [CYR:[TRANSLATED]]andwith[EN]andto[EN]
     pub fn getStats(self: *const TVCVMJit) VMJitStats {
         const jit_stats = self.jit.getStats();
         return VMJitStats{
@@ -176,7 +176,7 @@ pub fn benchmarkVMvsJIT(
     func_name: []const u8,
     iterations: u64,
 ) !BenchmarkResult {
-    // [CYR:Создаём] дinе VM: [CYR:одну] for and[CYR:нтерпретац]andand, [CYR:одну] for JIT
+    // [CYR:[TRANSLATED]] [EN]in[EN] VM: [CYR:[TRANSLATED]] for and[CYR:[TRANSLATED]]andand, [CYR:[TRANSLATED]] for JIT
     var vm_only = TVCVMJit.init(allocator, 64 * 1024, 4 * 1024);
     defer vm_only.deinit();
     vm_only.setMode(.interpret);
@@ -187,14 +187,14 @@ pub fn benchmarkVMvsJIT(
     vm_jit.setMode(.jit);
     try vm_jit.loadModule(module);
 
-    // [CYR:Прогре]in
+    // [CYR:[TRANSLATED]]in
     var i: u64 = 0;
     while (i < 10) : (i += 1) {
         _ = vm_only.callFunction(func_name) catch 0;
         _ = vm_jit.callFunction(func_name) catch 0;
     }
 
-    // [CYR:Замер] and[CYR:нтерпретатора]
+    // [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]
     const vm_start = std.time.nanoTimestamp();
     i = 0;
     while (i < iterations) : (i += 1) {
@@ -202,7 +202,7 @@ pub fn benchmarkVMvsJIT(
     }
     const vm_end = std.time.nanoTimestamp();
 
-    // [CYR:Замер] JIT
+    // [CYR:[TRANSLATED]] JIT
     const jit_start = std.time.nanoTimestamp();
     i = 0;
     while (i < iterations) : (i += 1) {

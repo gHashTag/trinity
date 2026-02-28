@@ -14,13 +14,13 @@ const std = @import("std");
 const math = std.math;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:КОНСТАНТЫ]
+// [CYR:[TRANSLATED]A[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Golden ratio: φ = (1 + √5) / 2
 pub const PHI: f64 = 1.618033988749895;
 
-/// [CYR:Обратное] [CYR:зол]fromое with[CYR:ечен]andе: 1/φ = φ - 1
+/// [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from[EN] with[CYR:chen]and[EN]: 1/φ = φ - 1
 pub const PHI_INV: f64 = 0.618033988749895;
 
 /// φ² = φ + 1
@@ -29,36 +29,36 @@ pub const PHI_SQ: f64 = 2.618033988749895;
 /// TRINITY Identity: φ² + 1/φ² = 3
 pub const TRINITY: f64 = 3.0;
 
-/// √5 for [CYR:формулы] Бandnot
+/// √5 for [CYR:[TRANSLATED]y] [EN]andnot
 pub const SQRT5: f64 = 2.2360679774997896;
 
 /// τ = 2π
 pub const TAU: f64 = 6.283185307179586;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:ТИПЫ]
+// [CYR:[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Чandwithло, [CYR:опт]andмandзandроin[CYR:анное] for φ-inычandwith[CYR:лен]andй
+/// [EN]andwith[EN], [CYR:[TRANSLATED]]and[EN]and[EN]and[EN]in[CYR:[TRANSLATED]] for φ-iny[EN]andwith[CYR:[TRANSLATED]]and[EN]
 pub const PhiFloat = f64;
 
-/// [CYR:Инде]towith чandwithла Фandбоonччand
+/// [CYR:[TRANSLATED]]towith [EN]andwith[EN] [EN]and[EN]on[EN]and
 pub const FibIndex = u32;
 
-/// 2D [CYR:точ]toа
+/// 2D [CYR:[TRANSLATED]]to[EN]
 pub const Point2D = struct {
     x: f64,
     y: f64,
 };
 
-/// [CYR:Точ]toа with φ-inеwithом
+/// [CYR:[TRANSLATED]]to[EN] with φ-in[EN]with[EN]
 pub const PhiPoint = struct {
     x: f64,
     y: f64,
     phi_weight: f64,
 };
 
-/// Parameters φ-withпand[CYR:рал]and
+/// Parameters φ-with[EN]and[CYR:[TRANSLATED]]and
 pub const SpiralParams = struct {
     n: u32,
     scale: f64,
@@ -67,7 +67,7 @@ pub const SpiralParams = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:ПАМЯТЬ] [CYR:ДЛЯ] WASM
+// [CYR:[EN]A[TRANSLATED]] [CYR:[TRANSLATED]] WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -93,7 +93,7 @@ fn get_f64_buffer_size() usize {
 // CREATION PATTERNS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// φ^n inычandwith[CYR:лен]andе
+/// φ^n iny[EN]andwith[CYR:[TRANSLATED]]and[EN]
 /// Source: i32 -> Result: f64
 fn phi_power(n: i32) f64 {
     if (n == 0) return 1.0;
@@ -112,13 +112,13 @@ fn phi_power(n: i32) f64 {
     return result;
 }
 
-/// [CYR:Формула] Бandnot: (φⁿ - ψⁿ) / √5
+/// [CYR:[TRANSLATED]] [EN]andnot: (φⁿ - ψⁿ) / √5
 /// Source: FibIndex -> Result: u64
 fn fibonacci(n: u32) u64 {
     if (n == 0) return 0;
     if (n <= 2) return 1;
 
-    // [CYR:Формула] Бandnot: F(n) = (φⁿ - ψⁿ) / √5
+    // [CYR:[TRANSLATED]] [EN]andnot: F(n) = (φⁿ - ψⁿ) / √5
     const phi_n = phi_power(@intCast(n));
     const psi: f64 = -PHI_INV;
     var psi_n: f64 = 1.0;
@@ -158,7 +158,7 @@ fn phi_smoothstep(a: f64, b: f64, t: f64) f64 {
     return a + (b - a) * smooth;
 }
 
-/// Геnot[CYR:рац]andя [CYR:точе]to по [CYR:зол]from[CYR:ому] [CYR:углу]
+/// [EN]not[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]]to [EN] [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 /// Source: SpiralParams -> Result: Array<Point2D>
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
@@ -175,7 +175,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     return count;
 }
 
-/// Fermat withпand[CYR:раль] ([CYR:под]with[CYR:олнух])
+/// Fermat with[EN]and[CYR:[EN]l] ([CYR:[TRANSLATED]]with[CYR:[TRANSLATED]])
 fn generate_fermat_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -196,14 +196,14 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-раwithwith[CYR:тоян]andе [CYR:между] [CYR:точ]toамand
+/// φ-[EN]withwith[CYR:[EN]I[EN]]and[EN] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]to[EN]and
 fn phi_distance(x1: f64, y1: f64, x2: f64, y2: f64) f64 {
     const dx = x2 - x1;
     const dy = y2 - y1;
     return @sqrt(dx * dx + PHI * dy * dy);
 }
 
-/// φ-inзin[CYR:ешенное] with[CYR:ред]notе
+/// φ-in[EN]in[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]not[EN]
 fn phi_weighted_mean(len: u32) f64 {
     var sum: f64 = 0.0;
     var weight_sum: f64 = 0.0;
@@ -218,7 +218,7 @@ fn phi_weighted_mean(len: u32) f64 {
     return if (weight_sum > 0) sum / weight_sum else 0.0;
 }
 
-/// [CYR:Бенчмар]to φ-inычandwith[CYR:лен]andй
+/// [CYR:[TRANSLATED]]to φ-iny[EN]andwith[CYR:[TRANSLATED]]and[EN]
 fn benchmark_phi_ops(iterations: u32) f64 {
     var sum: f64 = 0.0;
     var i: u32 = 0;
@@ -233,7 +233,7 @@ fn benchmark_phi_ops(iterations: u32) f64 {
 // SEQUENCES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Геnot[CYR:рац]andя поwith[CYR:ледо]in[CYR:ательно]withтand Фandбоonччand
+/// [EN]not[CYR:[TRANSLATED]]andI [EN]with[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]lno]with[EN]and [EN]and[EN]on[EN]and
 fn generate_fibonacci_sequence(n: u32) u32 {
     const max_count = global_buffer.len / 8;
     const count = if (n > max_count) @as(u32, @intCast(max_count)) else n;
@@ -251,7 +251,7 @@ fn generate_fibonacci_sequence(n: u32) u32 {
     return count;
 }
 
-/// Геnot[CYR:рац]andя поwith[CYR:ледо]in[CYR:ательно]withтand Люtoа
+/// [EN]not[CYR:[TRANSLATED]]andI [EN]with[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]lno]with[EN]and [EN]to[EN]
 fn generate_lucas_sequence(n: u32) u32 {
     const max_count = global_buffer.len / 8;
     const count = if (n > max_count) @as(u32, @intCast(max_count)) else n;
@@ -269,7 +269,7 @@ fn generate_lucas_sequence(n: u32) u32 {
     return count;
 }
 
-/// Геnot[CYR:рац]andя with[CYR:тепе]notй φ
+/// [EN]not[CYR:[TRANSLATED]]andI with[CYR:[TRANSLATED]]not[EN] φ
 fn generate_phi_powers(n: u32, start: i32) u32 {
     const count = if (n > f64_buffer.len) @as(u32, @intCast(f64_buffer.len)) else n;
 
@@ -288,35 +288,35 @@ fn generate_phi_powers(n: u32, start: i32) u32 {
 
 test "phi_power_zero" {
     // Given: n = 0
-    // When: inычandwith[CYR:ляем] φ^n
+    // When: iny[EN]andwith[CYR:[EN]I[EN]] φ^n
     // Then: result = 1.0
     try std.testing.expectApproxEqAbs(phi_power(0), 1.0, 1e-10);
 }
 
 test "phi_power_one" {
     // Given: n = 1
-    // When: inычandwith[CYR:ляем] φ^n
+    // When: iny[EN]andwith[CYR:[EN]I[EN]] φ^n
     // Then: result = φ
     try std.testing.expectApproxEqAbs(phi_power(1), PHI, 1e-10);
 }
 
 test "phi_power_negative" {
     // Given: n = -1
-    // When: inычandwith[CYR:ляем] φ^n
+    // When: iny[EN]andwith[CYR:[EN]I[EN]] φ^n
     // Then: result = 1/φ
     try std.testing.expectApproxEqAbs(phi_power(-1), PHI_INV, 1e-10);
 }
 
 test "phi_power_squared" {
     // Given: n = 2
-    // When: inычandwith[CYR:ляем] φ^n
+    // When: iny[EN]andwith[CYR:[EN]I[EN]] φ^n
     // Then: result = φ² = φ + 1
     try std.testing.expectApproxEqAbs(phi_power(2), PHI_SQ, 1e-10);
 }
 
 test "fibonacci_base_cases" {
     // Given: n ∈ {0, 1}
-    // When: inычandwith[CYR:ляем] F(n)
+    // When: iny[EN]andwith[CYR:[EN]I[EN]] F(n)
     // Then: F(0) = 0, F(1) = 1
     try std.testing.expectEqual(fibonacci(0), 0);
     try std.testing.expectEqual(fibonacci(1), 1);
@@ -324,7 +324,7 @@ test "fibonacci_base_cases" {
 
 test "fibonacci_sequence" {
     // Given: n > 1
-    // When: inычandwith[CYR:ляем] F(n)
+    // When: iny[EN]andwith[CYR:[EN]I[EN]] F(n)
     // Then: F(n) = F(n-1) + F(n-2)
     try std.testing.expectEqual(fibonacci(10), 55);
     try std.testing.expectEqual(fibonacci(20), 6765);
@@ -333,7 +333,7 @@ test "fibonacci_sequence" {
 
 test "lucas_base_cases" {
     // Given: n ∈ {0, 1}
-    // When: inычandwith[CYR:ляем] L(n)
+    // When: iny[EN]andwith[CYR:[EN]I[EN]] L(n)
     // Then: L(0) = 2, L(1) = 1
     try std.testing.expectEqual(lucas(0), 2);
     try std.testing.expectEqual(lucas(1), 1);
@@ -341,22 +341,22 @@ test "lucas_base_cases" {
 
 test "lucas_sequence" {
     // Given: n > 1
-    // When: inычandwith[CYR:ляем] L(n)
+    // When: iny[EN]andwith[CYR:[EN]I[EN]] L(n)
     // Then: L(n) = L(n-1) + L(n-2)
     try std.testing.expectEqual(lucas(10), 123);
     try std.testing.expectEqual(lucas(20), 15127);
 }
 
 test "trinity_identity" {
-    // Given: φ = [CYR:зол]fromое with[CYR:ечен]andе
-    // When: inычandwith[CYR:ляем] φ² + 1/φ²
+    // Given: φ = [CYR:[TRANSLATED]]from[EN] with[CYR:chen]and[EN]
+    // When: iny[EN]andwith[CYR:[EN]I[EN]] φ² + 1/φ²
     // Then: result = 3 (TRINITY)
     try std.testing.expectApproxEqAbs(verify_trinity(), TRINITY, 1e-10);
 }
 
 test "phi_lerp_bounds" {
     // Given: a, b, t ∈ [0, 1]
-    // When: inычandwith[CYR:ляем] φ-lerp
+    // When: iny[EN]andwith[CYR:[EN]I[EN]] φ-lerp
     // Then: result ∈ [a, b]
     try std.testing.expectApproxEqAbs(phi_lerp(0.0, 100.0, 0.0), 0.0, 1e-10);
     try std.testing.expectApproxEqAbs(phi_lerp(0.0, 100.0, 1.0), 100.0, 1e-10);
@@ -378,12 +378,12 @@ test "phi_lerp_bounds" {
 const V4f32 = @Vector(4, f32);
 const V2f64 = @Vector(2, f64);
 
-// φ-toонwith[CYR:танты] toаto f32 inеto[CYR:торы] (4x [CYR:параллельно])
+// φ-to[EN]with[CYR:[TRANSLATED]y] to[EN]to f32 in[EN]to[CYR:[TRANSLATED]y] (4x [CYR:[TRANSLATED]lno])
 const PHI_F32: f32 = 1.6180340;
 const PHI_INV_F32: f32 = 0.6180340;
 
-/// SIMD: Batch verify_trinity - 4 [CYR:про]inерtoand [CYR:параллельно]
-/// Compute-bound: [CYR:толь]toо арand[CYR:фмет]andtoа, [CYR:без] memory access
+/// SIMD: Batch verify_trinity - 4 [CYR:pro]in[EN]toand [CYR:[TRANSLATED]lno]
+/// Compute-bound: [CYR:[EN]l]to[EN] [EN]and[CYR:[TRANSLATED]]andto[EN], [CYR:without] memory access
 fn simd_verify_trinity_batch(iterations: u32) f64 {
     const phi_vec: V4f32 = @splat(PHI_F32);
     const one_vec: V4f32 = @splat(1.0);
@@ -392,24 +392,24 @@ fn simd_verify_trinity_batch(iterations: u32) f64 {
     
     var i: u32 = 0;
     while (i < iterations / 4) : (i += 1) {
-        // φ² + 1/φ² = 3 (4 [CYR:раза] [CYR:параллельно])
+        // φ² + 1/φ² = 3 (4 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]lno])
         const phi_sq = phi_vec * phi_vec;
         const inv_phi_sq = one_vec / phi_sq;
         const trinity = phi_sq + inv_phi_sq;
         sum_vec += trinity;
     }
     
-    // [CYR:Гор]and[CYR:зонталь]onя with[CYR:умма]
+    // [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]l]onI with[CYR:[TRANSLATED]]
     const sum = sum_vec[0] + sum_vec[1] + sum_vec[2] + sum_vec[3];
     return @floatCast(sum);
 }
 
-/// SIMD: Batch φ-power for маwithwithandinа зon[CYR:чен]andй
-/// [CYR:Зап]andwithыin[CYR:ает] resultы in f64_buffer
+/// SIMD: Batch φ-power for [EN]withwithandin[EN] [EN]on[CYR:[TRANSLATED]]and[EN]
+/// [CYR:[TRANSLATED]]andwithyin[CYR:acts] resulty in f64_buffer
 fn simd_phi_power_batch(count: u32, start_n: i32) u32 {
     const max_count = @min(count, @as(u32, @intCast(f64_buffer.len)));
     
-    // [CYR:Обрабаты]in[CYR:аем] по 4 зon[CYR:чен]andя (andwith[CYR:пользуя] f32 for withto[CYR:оро]withтand)
+    // [CYR:[EN]work[EN]y]in[CYR:[TRANSLATED]] [EN] 4 [EN]on[CYR:[TRANSLATED]]andI (andwith[CYR:[EN]l[EN]I] f32 for withto[CYR:[TRANSLATED]]with[EN]and)
     const quads = max_count / 4;
     var i: u32 = 0;
     
@@ -420,14 +420,14 @@ fn simd_phi_power_batch(count: u32, start_n: i32) u32 {
         const n2 = n0 + 2;
         const n3 = n0 + 3;
         
-        // [CYR:Выч]andwith[CYR:ляем] 4 зon[CYR:чен]andя [CYR:параллельно]
+        // [CYR:Vy[EN]]andwith[CYR:[EN]I[EN]] 4 [EN]on[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]lno]
         f64_buffer[base_idx] = phi_power(n0);
         f64_buffer[base_idx + 1] = phi_power(n1);
         f64_buffer[base_idx + 2] = phi_power(n2);
         f64_buffer[base_idx + 3] = phi_power(n3);
     }
     
-    // Оwith[CYR:тато]to
+    // [EN]with[CYR:[TRANSLATED]]to
     var j: u32 = quads * 4;
     while (j < max_count) : (j += 1) {
         f64_buffer[j] = phi_power(start_n + @as(i32, @intCast(j)));
@@ -436,7 +436,7 @@ fn simd_phi_power_batch(count: u32, start_n: i32) u32 {
     return max_count;
 }
 
-/// SIMD: Dot product дinух inеto[CYR:торо]in in bufferе
+/// SIMD: Dot product [EN]in[EN] in[EN]to[CYR:[TRANSLATED]]in in buffer[EN]
 /// v1 = f64_buffer[0..n], v2 = f64_buffer[n..2n]
 fn simd_dot_product(n: u32) f64 {
     if (n == 0) return 0.0;
@@ -454,7 +454,7 @@ fn simd_dot_product(n: u32) f64 {
     
     var result = sum[0] + sum[1];
     
-    // [CYR:Нечётный] element
+    // [CYR:[TRANSLATED]ny] element
     if (n % 2 == 1) {
         result += f64_buffer[n - 1] * f64_buffer[2 * n - 1];
     }
@@ -462,7 +462,7 @@ fn simd_dot_product(n: u32) f64 {
     return result;
 }
 
-/// SIMD: [CYR:Сумма] toin[CYR:адрато]in (for [CYR:нормы] inеto[CYR:тора])
+/// SIMD: [CYR:[TRANSLATED]] toin[CYR:[TRANSLATED]]in (for [CYR:[TRANSLATED]y] in[EN]to[CYR:[TRANSLATED]])
 fn simd_sum_squares(n: u32) f64 {
     if (n == 0) return 0.0;
     
@@ -486,7 +486,7 @@ fn simd_sum_squares(n: u32) f64 {
     return result;
 }
 
-/// SIMD: φ-weighted sum with inеto[CYR:тор]and[CYR:зац]andей
+/// SIMD: φ-weighted sum with in[EN]to[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and[EN]
 fn simd_phi_weighted_sum(n: u32) f64 {
     if (n == 0) return 0.0;
     
@@ -499,7 +499,7 @@ fn simd_phi_weighted_sum(n: u32) f64 {
         const idx = i * 2;
         const values: V2f64 = .{ f64_buffer[idx], f64_buffer[idx + 1] };
         
-        // φ^(-idx) inеwithа
+        // φ^(-idx) in[EN]with[EN]
         const w0 = phi_power(-@as(i32, @intCast(idx)));
         const w1 = phi_power(-@as(i32, @intCast(idx + 1)));
         const weights: V2f64 = .{ w0, w1 };
@@ -508,7 +508,7 @@ fn simd_phi_weighted_sum(n: u32) f64 {
         weight_sum += weights;
     }
     
-    // [CYR:Нечётный] element
+    // [CYR:[TRANSLATED]ny] element
     if (n % 2 == 1) {
         const idx = n - 1;
         const weight = phi_power(-@as(i32, @intCast(idx)));
@@ -521,25 +521,25 @@ fn simd_phi_weighted_sum(n: u32) f64 {
     return if (total_weight > 0) total_sum / total_weight else 0.0;
 }
 
-/// SIMD: Геnot[CYR:рац]andя φ-withпand[CYR:рал]and ([CYR:опт]andмandзandроinанonя inерwithandя)
-/// Иwith[CYR:пользует] [CYR:пред]inычandwith[CYR:ленные] sin/cos [CYR:табл]andцы
+/// SIMD: [EN]not[CYR:[TRANSLATED]]andI φ-with[EN]and[CYR:[TRANSLATED]]and ([CYR:[TRANSLATED]]and[EN]and[EN]and[EN]in[EN]onI in[EN]withandI)
+/// [EN]with[CYR:[EN]l[TRANSLATED]] [CYR:[TRANSLATED]]iny[EN]andwith[CYR:[EN]nye] sin/cos [CYR:[TRANSLATED]]and[EN]y
 fn simd_generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
     
-    // Иwith[CYR:пользуем] withto[CYR:алярную] inерwithandю - оon [CYR:уже] [CYR:опт]and[CYR:маль]on for memory-bound [CYR:операц]andй
-    // SIMD not [CYR:даёт] [CYR:пре]and[CYR:муще]withтinа [CYR:зде]withь andз-за заinandwithandмоwithтand from [CYR:памят]and
+    // [EN]with[CYR:[EN]l[TRANSLATED]] withto[CYR:[EN]I[TRANSLATED]] in[EN]withand[EN] - [EN]on [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[EN]l]on for memory-bound [CYR:[TRANSLATED]]and[EN]
+    // SIMD not [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]with[EN]in[EN] [CYR:[TRANSLATED]]with[EN] and[EN]-[EN] [EN]inandwithand[EN]with[EN]and from [CYR:[TRANSLATED]I[EN]]and
     return generate_phi_spiral(count, scale, cx, cy);
 }
 
-/// SIMD: [CYR:Бенчмар]to compute-bound [CYR:операц]andй
+/// SIMD: [CYR:[TRANSLATED]]to compute-bound [CYR:[TRANSLATED]]and[EN]
 fn simd_benchmark_compute(iterations: u32) f64 {
     var sum: f64 = 0;
     
-    // Теwithт 1: verify_trinity batch (чandwith[CYR:тые] inычandwith[CYR:лен]andя)
+    // [EN]with[EN] 1: verify_trinity batch ([EN]andwith[CYR:[EN]y[EN]] iny[EN]andwith[CYR:[TRANSLATED]]andI)
     sum += simd_verify_trinity_batch(iterations);
     
-    // Теwithт 2: dot product
+    // [EN]with[EN] 2: dot product
     var i: u32 = 0;
     while (i < 100) : (i += 1) {
         f64_buffer[i] = @floatFromInt(i);
@@ -547,14 +547,14 @@ fn simd_benchmark_compute(iterations: u32) f64 {
     }
     sum += simd_dot_product(100);
     
-    // Теwithт 3: sum of squares
+    // [EN]with[EN] 3: sum of squares
     sum += simd_sum_squares(100);
     
     return sum;
 }
 
-/// SIMD: Batch φ-distance for маwithwithandinа [CYR:точе]to
-/// Computes раwithwith[CYR:тоян]andя from [CYR:точ]toand (cx, cy) до inwithех [CYR:точе]to in bufferе
+/// SIMD: Batch φ-distance for [EN]withwithandin[EN] [CYR:[TRANSLATED]]to
+/// Computes [EN]withwith[CYR:[EN]I[EN]]andI from [CYR:[TRANSLATED]]toand (cx, cy) [EN] inwith[EN] [CYR:[TRANSLATED]]to in buffer[EN]
 fn simd_phi_distances(n: u32, cx: f64, cy: f64) void {
     const center: V2f64 = .{ cx, cy };
     const phi_scale: V2f64 = .{ 1.0, PHI };
@@ -569,7 +569,7 @@ fn simd_phi_distances(n: u32, cx: f64, cy: f64) void {
     }
 }
 
-/// SIMD: Batch lerp for маwithwithandinа зon[CYR:чен]andй
+/// SIMD: Batch lerp for [EN]withwithandin[EN] [EN]on[CYR:[TRANSLATED]]and[EN]
 fn simd_phi_lerp_batch(n: u32, a: f64, b: f64) void {
     const a_vec: V2f64 = .{ a, a };
     const diff_vec: V2f64 = .{ b - a, b - a };
@@ -598,9 +598,9 @@ fn simd_phi_lerp_batch(n: u32, a: f64, b: f64) void {
 }
 
 test "simd_verify_trinity_batch" {
-    // 4 and[CYR:терац]andand = 1 SIMD [CYR:операц]andя
+    // 4 and[CYR:[TRANSLATED]]andand = 1 SIMD [CYR:[TRANSLATED]]andI
     const result = simd_verify_trinity_batch(4);
-    // [CYR:Каждая] and[CYR:терац]andя [CYR:даёт] ~3.0, andthat ~12.0
+    // [CYR:[TRANSLATED]I] and[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]] ~3.0, andthat ~12.0
     try std.testing.expectApproxEqAbs(result, 12.0, 0.01);
 }
 

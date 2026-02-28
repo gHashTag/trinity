@@ -1,5 +1,5 @@
-// SIMD BENCHMARK - [CYR:Измерен]andе withto[CYR:оро]withтand [CYR:тро]and[CYR:чных] [CYR:операц]andй
-// [CYR:Сра]innotнandе withto[CYR:алярной] and SIMD [CYR:реал]and[CYR:зац]andй
+// SIMD BENCHMARK - [CYR:[EN]]and[EN] withto[CYR:[EN]]with[EN]and [CYR:[EN]]and[CYR:[EN]] [CYR:[EN]]and[EN]
+// [CYR:[EN]]innot[EN]and[EN] withto[CYR:[EN]] and SIMD [CYR:[EN]]and[CYR:[EN]]and[EN]
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");
@@ -15,7 +15,7 @@ pub const PHI: f64 = 1.618033988749895;
 const WARMUP_ITERATIONS = 10;
 const BENCHMARK_ITERATIONS = 100;
 
-// [CYR:Размеры] for [CYR:бенчмар]toа (тandпand[CYR:чные] for LLM)
+// [CYR:[EN]] for [CYR:[EN]]to[EN] ([EN]and[EN]and[CYR:[EN]] for LLM)
 const BATCH_SIZE = 1;
 const IN_FEATURES = 4096; // hidden_size
 const OUT_FEATURES = 4096; // hidden_size
@@ -24,7 +24,7 @@ const OUT_FEATURES = 4096; // hidden_size
 // SCALAR IMPLEMENTATION (BASELINE)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Сto[CYR:аляр]onя [CYR:реал]and[CYR:зац]andя - [CYR:базо]inая лandнandя for withраinnotнandя
+/// [EN]to[CYR:[EN]]on[EN] [CYR:[EN]]and[CYR:[EN]]and[EN] - [CYR:[EN]]in[EN] [EN]and[EN]and[EN] for with[EN]innot[EN]and[EN]
 pub fn scalarMatmul(
     output: []f32,
     input: []const f32,
@@ -57,21 +57,21 @@ pub fn scalarMatmul(
 // SIMD IMPLEMENTATION - AVX2 (256-bit vectors)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// SIMD vector 8 x f32 = 256 бandт (AVX2)
+/// SIMD vector 8 x f32 = 256 [EN]and[EN] (AVX2)
 const Vec8f = @Vector(8, f32);
 
-/// SIMD vector 32 x i8 = 256 бandт (for трandтоin)
+/// SIMD vector 32 x i8 = 256 [EN]and[EN] (for [EN]and[EN]in)
 const Vec32i8 = @Vector(32, i8);
 
-/// [CYR:Кон]in[CYR:ертац]andя трandтоin in i8 array for SIMD
+/// [CYR:[EN]]in[CYR:[EN]]and[EN] [EN]and[EN]in in i8 array for SIMD
 fn tritsToI8(trits: []const prometheus.TritWeight, out: []i8) void {
     for (trits, 0..) |t, i| {
         out[i] = t.toInt();
     }
 }
 
-/// SIMD-[CYR:опт]andмandзandроin[CYR:анное] [CYR:матр]and[CYR:чное] [CYR:умножен]andе
-/// Processes 8 login[CYR:ных] зon[CYR:чен]andй за [CYR:раз]
+/// SIMD-[CYR:[EN]]and[EN]and[EN]and[EN]in[CYR:[EN]] [CYR:[EN]]and[CYR:[EN]] [CYR:[EN]]and[EN]
+/// Processes 8 login[CYR:[EN]] [EN]on[CYR:[EN]]and[EN] [EN] [CYR:[EN]]
 pub fn simdMatmul(
     output: []f32,
     input: []const f32,
@@ -82,7 +82,7 @@ pub fn simdMatmul(
 ) void {
     @memset(output, 0.0);
 
-    // [CYR:Кон]in[CYR:ерт]and[CYR:руем] трandты in i8 одandн [CYR:раз]
+    // [CYR:[EN]]in[CYR:[EN]]and[CYR:[EN]] [EN]and[EN] in i8 [EN]and[EN] [CYR:[EN]]
     for (weights, 0..) |w, i| {
         trit_buffer[i] = w.toInt();
     }
@@ -92,13 +92,13 @@ pub fn simdMatmul(
         var sum_scalar: f32 = 0.0;
         const weight_offset = o * in_features;
 
-        // [CYR:Обрабаты]in[CYR:аем] by 8 elementоin за [CYR:раз]
+        // [CYR:[EN]]in[CYR:[EN]] by 8 element[EN]in [EN] [CYR:[EN]]
         var i: usize = 0;
         while (i + 8 <= in_features) : (i += 8) {
-            // [CYR:Загружаем] 8 login[CYR:ных] зon[CYR:чен]andй
+            // [CYR:[EN]] 8 login[CYR:[EN]] [EN]on[CYR:[EN]]and[EN]
             const input_vec: Vec8f = input[i..][0..8].*;
 
-            // [CYR:Загружаем] 8 трandтоin and toонin[CYR:ерт]and[CYR:руем] in f32
+            // [CYR:[EN]] 8 [EN]and[EN]in and to[EN]in[CYR:[EN]]and[CYR:[EN]] in f32
             const t0: f32 = @floatFromInt(trit_buffer[weight_offset + i + 0]);
             const t1: f32 = @floatFromInt(trit_buffer[weight_offset + i + 1]);
             const t2: f32 = @floatFromInt(trit_buffer[weight_offset + i + 2]);
@@ -110,21 +110,21 @@ pub fn simdMatmul(
 
             const trit_vec: Vec8f = .{ t0, t1, t2, t3, t4, t5, t6, t7 };
 
-            // SIMD [CYR:умножен]andе and onto[CYR:оплен]andе
-            // [CYR:Для] трandтоin {-1, 0, +1} this эtoinandin[CYR:алентно]:
-            // +1: beforeбаinandть x
-            // -1: in[CYR:ыче]withть x
-            //  0: нand[CYR:чего]
+            // SIMD [CYR:[EN]]and[EN] and onto[CYR:[EN]]and[EN]
+            // [CYR:[EN]] [EN]and[EN]in {-1, 0, +1} this [EN]toinandin[CYR:[EN]]:
+            // +1: before[EN]inand[EN] x
+            // -1: in[CYR:[EN]]with[EN] x
+            //  0: [EN]and[CYR:[EN]]
             sum_vec += input_vec * trit_vec;
         }
 
-        // [CYR:Гор]and[CYR:зонталь]onя with[CYR:умма] SIMD inеto[CYR:тора]
+        // [CYR:[EN]]and[CYR:[EN]]on[EN] with[CYR:[EN]] SIMD in[EN]to[CYR:[EN]]
         const sum_arr: [8]f32 = sum_vec;
         for (sum_arr) |v| {
             sum_scalar += v;
         }
 
-        // Оwith[CYR:тато]to (withto[CYR:алярно])
+        // [EN]with[CYR:[EN]]to (withto[CYR:[EN]])
         while (i < in_features) : (i += 1) {
             const w = trit_buffer[weight_offset + i];
             const x = input[i];
@@ -135,7 +135,7 @@ pub fn simdMatmul(
     }
 }
 
-/// SIMD [CYR:без] [CYR:умножен]andя - [CYR:толь]toо with[CYR:ложен]andе/inычand[CYR:тан]andе via маwithtoand
+/// SIMD [CYR:[EN]] [CYR:[EN]]and[EN] - [CYR:[EN]]to[EN] with[CYR:[EN]]and[EN]/in[EN]and[CYR:[EN]]and[EN] via [EN]withtoand
 pub fn simdMatmulNoMul(
     output: []f32,
     input: []const f32,
@@ -146,7 +146,7 @@ pub fn simdMatmulNoMul(
 ) void {
     @memset(output, 0.0);
 
-    // [CYR:Кон]in[CYR:ерт]and[CYR:руем] трandты in i8
+    // [CYR:[EN]]in[CYR:[EN]]and[CYR:[EN]] [EN]and[EN] in i8
     for (weights, 0..) |w, i| {
         trit_buffer[i] = w.toInt();
     }
@@ -162,34 +162,34 @@ pub fn simdMatmulNoMul(
         while (i + 8 <= in_features) : (i += 8) {
             const input_vec: Vec8f = input[i..][0..8].*;
 
-            // [CYR:Соз]yesём маwithtoand for by[CYR:лож]and[CYR:тельных] and fromрand[CYR:цательных] трandтоin
+            // [CYR:[EN]]yes[EN] [EN]withtoand for by[CYR:[EN]]and[CYR:[EN]] and from[EN]and[CYR:[EN]] [EN]and[EN]in
             const t = trit_buffer[weight_offset + i ..][0..8];
 
-            // Маwithtoа by[CYR:лож]and[CYR:тельных] (t == 1)
+            // [EN]withto[EN] by[CYR:[EN]]and[CYR:[EN]] (t == 1)
             const pos_mask: @Vector(8, bool) = .{
                 t[0] == 1, t[1] == 1, t[2] == 1, t[3] == 1,
                 t[4] == 1, t[5] == 1, t[6] == 1, t[7] == 1,
             };
 
-            // Маwithtoа fromрand[CYR:цательных] (t == -1)
+            // [EN]withto[EN] from[EN]and[CYR:[EN]] (t == -1)
             const neg_mask: @Vector(8, bool) = .{
                 t[0] == -1, t[1] == -1, t[2] == -1, t[3] == -1,
                 t[4] == -1, t[5] == -1, t[6] == -1, t[7] == -1,
             };
 
-            // Прand[CYR:меняем] маwithtoand
+            // [EN]and[CYR:[EN]] [EN]withtoand
             const zeros: Vec8f = @splat(0.0);
             pos_sum += @select(f32, pos_mask, input_vec, zeros);
             neg_sum += @select(f32, neg_mask, input_vec, zeros);
         }
 
-        // [CYR:Гор]and[CYR:зонтальные] with[CYR:уммы]
+        // [CYR:[EN]]and[CYR:[EN]] with[CYR:[EN]]
         const pos_arr: [8]f32 = pos_sum;
         const neg_arr: [8]f32 = neg_sum;
         for (pos_arr) |v| pos_scalar += v;
         for (neg_arr) |v| neg_scalar += v;
 
-        // Оwith[CYR:тато]to
+        // [EN]with[CYR:[EN]]to
         while (i < in_features) : (i += 1) {
             const w = trit_buffer[weight_offset + i];
             const x = input[i];

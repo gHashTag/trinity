@@ -5,18 +5,18 @@ module: unknown
 
 types:
     description: String
-    description: [CYR:Запу]with[CYR:кает] Plugin Registry
-    description: [CYR:Обрабаты]in[CYR:ает] with[CYR:ообщен]andя Registry
-    description: [CYR:Вал]andдand[CYR:рует] [CYR:ман]andфеwithт [CYR:плаг]andon
-    description: [CYR:Загружает] [CYR:плаг]andн and with[CYR:оздает] instance
-    description: [CYR:Выгружает] [CYR:плаг]andн
-    description: Фand[CYR:льтрует] [CYR:плаг]andны по крand[CYR:тер]andям
-    description: Поandwithк [CYR:плаг]andноin по queryу
+    description: [CYR:[TRANSLATED]]with[CYR:[EN]acts] Plugin Registry
+    description: [CYR:[EN]work[EN]y]in[CYR:acts] with[CYR:[TRANSLATED]]andI Registry
+    description: [CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN]with[EN] [CYR:[TRANSLATED]]andon
+    description: [CYR:[TRANSLATED]acts] [CYR:[TRANSLATED]]and[EN] and with[CYR:[TRANSLATED]acts] instance
+    description: [CYR:Vy[TRANSLATED]acts] [CYR:[TRANSLATED]]and[EN]
+    description: [EN]and[CYR:l[TRANSLATED]] [CYR:[TRANSLATED]]and[EN]y [EN] [EN]and[CYR:[TRANSLATED]]andI[EN]
+    description: [EN]andwith[EN] [CYR:[TRANSLATED]]and[EN]in [EN] query[EN]
   start_registry:
-    description: [CYR:Запу]withк Registry
+    description: [CYR:[TRANSLATED]]with[EN] Registry
 
   register_plugin:
-    description: [CYR:Рег]andwith[CYR:трац]andя [CYR:плаг]andon
+    description: [CYR:[TRANSLATED]]andwith[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]]andon
 
   validate_plugin_test:
-    description: [CYR:Вал]and[CYR:дац]andя [CYR:плаг]andon
+    description: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]]andon

@@ -8,11 +8,11 @@ language: zig
 module: tri_staking
 
 description: |
-  [CYR:Реаль]onя and[CYR:нтеграц]andя $TRI tokenа for DePIN rewards.
-  Вkey[CYR:ает] staking, claiming, and wallet connection.
+  [CYR:[TRANSLATED]l]onI and[CYR:[TRANSLATED]]andI $TRI token[EN] for DePIN rewards.
+  [EN]key[CYR:acts] staking, claiming, and wallet connection.
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# [CYR:ТОКЕНОМИКА]
+# [CYR:[TRANSLATED]A]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 tokenomics:
@@ -95,7 +95,7 @@ wallets:
     abi: "ERC20 + Staking"
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# [CYR:ТИПЫ] [CYR:ДАННЫХ]
+# [CYR:[TRANSLATED]] [CYR:[EN]A[TRANSLATED]]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 types:
@@ -125,61 +125,61 @@ types:
       tx_hash: Option<String>
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# [CYR:ПОВЕДЕНИЯ]
+# [CYR:[TRANSLATED]]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 behaviors:
   - name: connect_wallet
-    description: "[CYR:Под]keyенandе [CYR:кошелька]"
-    given: [CYR:Пользо]in[CYR:атель] on[CYR:жал] Connect
-    when: Wallet provider доwith[CYR:тупен]
+    description: "[CYR:[TRANSLATED]]key[EN]and[EN] [CYR:[TRANSLATED]l[EN]]"
+    given: [CYR:[EN]l[EN]]in[CYR:[TRANSLATED]l] on[CYR:[TRANSLATED]] Connect
+    when: Wallet provider [EN]with[CYR:[TRANSLATED]]
     then: |
-      1. [CYR:Запро]withandть accounts [CYR:через] EIP-1193
-      2. [CYR:Получ]andть [CYR:адре]with and [CYR:балан]with
-      3. [CYR:Загруз]andть staking positions
-      4. [CYR:Обно]inandть UI
+      1. [CYR:[EN]pro]withand[EN] accounts [CYR:[TRANSLATED]] EIP-1193
+      2. [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]with and [CYR:[TRANSLATED]]with
+      3. [CYR:[TRANSLATED]]and[EN] staking positions
+      4. [CYR:[TRANSLATED]]inand[EN] UI
 
   - name: stake_tokens
-    description: "[CYR:Стейк]andнг tokenоin"
-    given: Wallet [CYR:под]keyён, [CYR:балан]with > 0
-    when: [CYR:Пользо]in[CYR:атель] in[CYR:ыбрал] amount and period
+    description: "[CYR:[TRANSLATED]]and[EN] token[EN]in"
+    given: Wallet [CYR:[TRANSLATED]]key[EN], [CYR:[TRANSLATED]]with > 0
+    when: [CYR:[EN]l[EN]]in[CYR:[TRANSLATED]l] in[CYR:y[TRANSLATED]] amount and period
     then: |
-      1. [CYR:Про]inерandть allowance
-      2. Еwithлand [CYR:нужно] - approve
-      3. [CYR:Выз]in[CYR:ать] stake() on [CYR:контракте]
-      4. Доwaitwithя confirmation
-      5. [CYR:Обно]inandть positions
+      1. [CYR:[TRANSLATED]]in[EN]and[EN] allowance
+      2. [EN]with[EN]and [CYR:[TRANSLATED]] - approve
+      3. [CYR:Vy[EN]]in[CYR:ate] stake() on [CYR:[TRANSLATED]]
+      4. [EN]waitwithI confirmation
+      5. [CYR:[TRANSLATED]]inand[EN] positions
 
   - name: claim_rewards
-    description: "[CYR:Получен]andе on[CYR:град]"
+    description: "[CYR:[TRANSLATED]]and[EN] on[CYR:[TRANSLATED]]"
     given: pending_rewards > 0
-    when: [CYR:Пользо]in[CYR:атель] on[CYR:жал] Claim
+    when: [CYR:[EN]l[EN]]in[CYR:[TRANSLATED]l] on[CYR:[TRANSLATED]] Claim
     then: |
-      1. [CYR:Выз]in[CYR:ать] claimRewards() on [CYR:контракте]
-      2. Доwaitwithя confirmation
-      3. [CYR:Обно]inandть [CYR:балан]with
-      4. [CYR:Показать] notification
+      1. [CYR:Vy[EN]]in[CYR:ate] claimRewards() on [CYR:[TRANSLATED]]
+      2. [EN]waitwithI confirmation
+      3. [CYR:[TRANSLATED]]inand[EN] [CYR:[TRANSLATED]]with
+      4. [CYR:[TRANSLATED]ate] notification
 
   - name: unstake_tokens
-    description: "Выinод from with[CYR:тейк]and[CYR:нга]"
-    given: Еwithть [CYR:акт]andinonя position
-    when: [CYR:Пользо]in[CYR:атель] on[CYR:жал] Unstake
+    description: "Vyin[EN] from with[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]"
+    given: [EN]with[EN] [CYR:[TRANSLATED]]andinonI position
+    when: [CYR:[EN]l[EN]]in[CYR:[TRANSLATED]l] on[CYR:[TRANSLATED]] Unstake
     then: |
-      1. [CYR:Про]inерandть lock period
-      2. Еwithлand early - while[CYR:зать] penalty warning
-      3. [CYR:Выз]in[CYR:ать] unstake() on [CYR:контракте]
-      4. [CYR:Обно]inandть positions
+      1. [CYR:[TRANSLATED]]in[EN]and[EN] lock period
+      2. [EN]with[EN]and early - while[CYR:[EN]ate] penalty warning
+      3. [CYR:Vy[EN]]in[CYR:ate] unstake() on [CYR:[TRANSLATED]]
+      4. [CYR:[TRANSLATED]]inand[EN] positions
 
   - name: calculate_rewards
-    description: "Раwith[CYR:чёт] on[CYR:град]"
-    given: [CYR:Пользо]in[CYR:атель] in[CYR:ыполн]andл [CYR:операц]andю
-    when: [CYR:Операц]andя заin[CYR:ерше]on
+    description: "[EN]with[CYR:[TRANSLATED]] on[CYR:[TRANSLATED]]"
+    given: [CYR:[EN]l[EN]]in[CYR:[TRANSLATED]l] in[CYR:y[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[EN]
+    when: [CYR:[TRANSLATED]]andI [EN]in[CYR:[TRANSLATED]]on
     then: |
-      1. [CYR:Получ]andть base reward
-      2. Прand[CYR:мен]andть staking multiplier
-      3. Прand[CYR:мен]andть streak multiplier
-      4. [CYR:Про]inерandть daily cap
-      5. [CYR:Доба]inandть к pending
+      1. [CYR:[TRANSLATED]]and[EN] base reward
+      2. [EN]and[CYR:me]and[EN] staking multiplier
+      3. [EN]and[CYR:me]and[EN] streak multiplier
+      4. [CYR:[TRANSLATED]]in[EN]and[EN] daily cap
+      5. [CYR:[TRANSLATED]]inand[EN]  pending
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SMART CONTRACT INTERFACE
@@ -222,7 +222,7 @@ contract_interface:
       params: [user: address, amount: uint256]
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# UI [CYR:КОМПОНЕНТЫ]
+# UI [CYR:[TRANSLATED]]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 ui_components:
@@ -254,24 +254,24 @@ ui_components:
       - unstake_button: "Unstake"
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# [CYR:ТЕСТЫ]
+# [CYR:[TRANSLATED]]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 tests:
   - name: test_reward_calculation
-    description: "Раwith[CYR:чёт] on[CYR:град] [CYR:корректен]"
+    description: "[EN]with[CYR:[TRANSLATED]] on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]"
     assert: reward == base * staking_mult * streak_mult
 
   - name: test_daily_cap
-    description: "Daily cap [CYR:работает]"
+    description: "Daily cap [CYR:work[EN]]"
     assert: daily_rewards <= 10
 
   - name: test_early_unstake_penalty
-    description: "Penalty прand[CYR:меняет]withя"
+    description: "Penalty [EN]and[CYR:meI[EN]]withI"
     assert: returned == staked * 0.9
 
   - name: test_multiplier_tiers
-    description: "Multiplier tiers [CYR:корректны]"
+    description: "Multiplier tiers [CYR:[TRANSLATED]y]"
     assert: |
       stake(1000) => mult == 1.1
       stake(10000) => mult == 1.25

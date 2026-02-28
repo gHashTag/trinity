@@ -1,5 +1,5 @@
 // VIBEE BOGATYR - YAML Syntax Validator
-// Checks YAML withand[CYR:нта]towithandwith .vibee fileа
+// Checks YAML withand[CYR:[EN]]towithandwith .vibee file[EN]
 // φ² + 1/φ² = 3 | PHOENIX = 999
 
 const std = @import("std");

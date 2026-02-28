@@ -4,7 +4,7 @@ language: typescript
 module: trinity_canvas
 
 description: |
-  Trinity Canvas v2.3 — Mirror of Three Worlds ([CYR:Зеркало] [CYR:Трёх] Мandроin)
+  Trinity Canvas v2.3 — Mirror of Three Worlds ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [EN]and[EN]in)
   Functional dashboard with real metrics, live logs, query path visualization.
   Three columns: RAZUM (Mind/φ), MATERIYA (Matter/π), DUKH (Spirit/e).
   Real-time polling from /health endpoint every 2 seconds.
@@ -28,7 +28,7 @@ types:
       - finder
       - vision
       - voice
-      - tools     # renamed display: [CYR:ЗЕРКАЛО] (Mirror of Three Worlds)
+      - tools     # renamed display: [CYR:[TRANSLATED]A[EN]] (Mirror of Three Worlds)
       - settings
       - viz
 
@@ -101,7 +101,7 @@ constants:
 behaviors:
   - name: mirror_auto_poll
     given: User switches to Mirror layer (key 7)
-    when: Layer becomes 'tools' (display: [CYR:ЗЕРКАЛО])
+    when: Layer becomes 'tools' (display: [CYR:[TRANSLATED]A[EN]])
     then: |
       Immediately fetch /health endpoint.
       Parse JSON into MirrorStatus with razum/materiya/dukh + logs.

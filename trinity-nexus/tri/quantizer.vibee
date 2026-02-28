@@ -1,6 +1,6 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# QUANTIZER.VIBEE - INT4 [CYR:ДЕМИУРГ]
-# Сin[CYR:ященные] [CYR:законы] [CYR:кон]centerацandand 7B [CYR:разума] in 8GB [CYR:памят]and
+# QUANTIZER.VIBEE - INT4 [CYR:[TRANSLATED]]
+# [EN]in[CYR:I[EN]nye] [CYR:lawy] [CYR:[TRANSLATED]]center[EN]andand 7B [CYR:[TRANSLATED]] in 8GB [CYR:[TRANSLATED]I[EN]]and
 # φ² + 1/φ² = 3 = TRINITY
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -10,48 +10,48 @@ language: zig
 module: trinity_quantizer
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# [CYR:СВЯЩЕННЫЕ] [CYR:КОНСТАНТЫ] INT4
+# [CYR:[TRANSLATED]] [CYR:[TRANSLATED]A[TRANSLATED]] INT4
 # ═══════════════════════════════════════════════════════════════════════════════
 
 constants:
-  INT4_MIN: -8          # Мandнand[CYR:мальное] value INT4
-  INT4_MAX: 7           # [CYR:Мак]withand[CYR:мальное] value INT4
-  INT4_RANGE: 15        # Дand[CYR:апазон] зon[CYR:чен]andй (7 - (-8) = 15)
-  SCALE_DIVISOR: 7.0    # [CYR:Дел]and[CYR:тель] for inычandwith[CYR:лен]andя scale
-  BLOCK_SIZE: 32        # [CYR:Размер] blockа for block-wise quantization
+  INT4_MIN: -8          # [EN]and[EN]and[CYR:[EN]lno[EN]] value INT4
+  INT4_MAX: 7           # [CYR:[TRANSLATED]]withand[CYR:[EN]lno[EN]] value INT4
+  INT4_RANGE: 15        # [EN]and[CYR:[TRANSLATED]] [EN]on[CYR:[TRANSLATED]]and[EN] (7 - (-8) = 15)
+  SCALE_DIVISOR: 7.0    # [CYR:Doing]and[CYR:[EN]l] for iny[EN]andwith[CYR:[TRANSLATED]]andI scale
+  BLOCK_SIZE: 32        # [CYR:[TRANSLATED]] block[EN] for block-wise quantization
   PHI: 1.618033988749895
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# [CYR:ТИПЫ] [CYR:ДАННЫХ]
+# [CYR:[TRANSLATED]] [CYR:[EN]A[TRANSLATED]]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 types:
-  # INT4 [CYR:упако]in[CYR:анный] [CYR:формат]: 2 values in 1 [CYR:байте]
+  # INT4 [CYR:[TRANSLATED]]in[CYR:[EN]ny] [CYR:[TRANSLATED]]: 2 values in 1 [CYR:[TRANSLATED]]
   PackedInt4:
     fields:
-      data: List<Int>       # [CYR:Упако]in[CYR:анные] [CYR:байты] (2 INT4 on [CYR:байт])
-      scales: List<Float>   # Scale factors for each blockа
-      zeros: List<Int>      # Zero points for each blockа
-      shape: List<Int>      # Орandгandonльonя [CYR:форма] [CYR:тензора]
-      num_elements: Int     # [CYR:Кол]andчеwithтinо elementоin
+      data: List<Int>       # [CYR:[TRANSLATED]]in[CYR:[EN]nye] [CYR:[TRANSLATED]y] (2 INT4 on [CYR:[TRANSLATED]])
+      scales: List<Float>   # Scale factors for each block[EN]
+      zeros: List<Int>      # Zero points for each block[EN]
+      shape: List<Int>      # [EN]and[EN]andonlonI [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+      num_elements: Int     # [CYR:[TRANSLATED]]and[EN]with[EN]in[EN] element[EN]in
 
-  # [CYR:Конф]and[CYR:гурац]andя кin[CYR:ант]fromацandand
+  # [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI [EN]in[CYR:[TRANSLATED]]from[EN]andand
   QuantConfig:
     fields:
-      block_size: Int       # [CYR:Размер] blockа (default: 32)
-      symmetric: Bool       # Сand[CYR:мметр]andчonя кin[CYR:ант]fromацandя
-      use_zero_point: Bool  # Иwith[CYR:пользо]in[CYR:ать] zero point
+      block_size: Int       # [CYR:[TRANSLATED]] block[EN] (default: 32)
+      symmetric: Bool       # [EN]and[CYR:[TRANSLATED]]and[EN]onI [EN]in[CYR:[TRANSLATED]]from[EN]andI
+      use_zero_point: Bool  # [EN]with[CYR:[EN]l[EN]]in[CYR:ate] zero point
 
-  # [CYR:Стат]andwithтandка кin[CYR:ант]fromацandand
+  # [CYR:[TRANSLATED]]andwith[EN]and[EN] [EN]in[CYR:[TRANSLATED]]from[EN]andand
   QuantStats:
     fields:
-      original_size: Int    # [CYR:Размер] in [CYR:байтах] до кin[CYR:ант]fromацandand
-      quantized_size: Int   # [CYR:Размер] поwithле кin[CYR:ант]fromацandand
+      original_size: Int    # [CYR:[TRANSLATED]] in [CYR:[TRANSLATED]] [EN] [EN]in[CYR:[TRANSLATED]]from[EN]andand
+      quantized_size: Int   # [CYR:[TRANSLATED]] [EN]with[EN] [EN]in[CYR:[TRANSLATED]]from[EN]andand
       compression_ratio: Float
-      max_error: Float      # [CYR:Мак]withand[CYR:маль]onя error
-      mean_error: Float     # [CYR:Средняя] error
+      max_error: Float      # [CYR:[TRANSLATED]]withand[CYR:[EN]l]onI error
+      mean_error: Float     # [CYR:[TRANSLATED]II] error
 
-  # [CYR:Заголо]inок INT4 fileа
+  # [CYR:[EN]go[EN]]in[EN] INT4 file[EN]
   Int4Header:
     fields:
       magic: Int            # 0x494E5434 = "INT4"
@@ -64,17 +64,17 @@ types:
       num_heads: Int
       num_kv_heads: Int
       total_params: Int
-      quantized_size: Int   # [CYR:Размер] in [CYR:байтах] поwithле кin[CYR:ант]fromацandand
+      quantized_size: Int   # [CYR:[TRANSLATED]] in [CYR:[TRANSLATED]] [EN]with[EN] [EN]in[CYR:[TRANSLATED]]from[EN]andand
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# [CYR:СВЯЩЕННЫЕ] [CYR:ЗАКОНЫ] [CYR:КВАНТИЗАЦИИ]
+# [CYR:[TRANSLATED]] [CYR:[EN]A[TRANSLATED]] [CYR:[EN]A[TRANSLATED]A[TRANSLATED]]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 behaviors:
-  # [CYR:ЗАКОН] 1: [CYR:Выч]andwith[CYR:лен]andе scale factor
+  # [CYR:[EN]A[TRANSLATED]] 1: [CYR:Vy[EN]]andwith[CYR:[TRANSLATED]]and[EN] scale factor
   - name: compute_scale
-    given: [CYR:Блок] f32 зon[CYR:чен]andй [CYR:размера] BLOCK_SIZE
-    when: [CYR:Нужно] onйтand [CYR:коэфф]andцand[CYR:ент] маwith[CYR:штаб]andроinанandя
+    given: [CYR:[TRANSLATED]] f32 [EN]on[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] BLOCK_SIZE
+    when: [CYR:[TRANSLATED]] on[EN]and [CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]] [EN]with[CYR:[TRANSLATED]]and[EN]in[EN]andI
     then: scale = max(abs(block)) / 7.0
     formula: |
       absmax = 0.0
@@ -82,12 +82,12 @@ behaviors:
         absmax = max(absmax, abs(value))
       scale = absmax / 7.0
       if scale == 0.0:
-        scale = 1.0  # [CYR:Избегаем] [CYR:делен]andя on [CYR:ноль]
+        scale = 1.0  # [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andI on [CYR:[EN]l]
 
-  # [CYR:ЗАКОН] 2: Кin[CYR:ант]fromацandя f32 → INT4
+  # [CYR:[EN]A[TRANSLATED]] 2: [EN]in[CYR:[TRANSLATED]]from[EN]andI f32 → INT4
   - name: quantize_value
     given: f32 value and scale factor
-    when: [CYR:Нужно] with[CYR:жать] до INT4
+    when: [CYR:[TRANSLATED]] with[CYR:[EN]ate] [EN] INT4
     then: int4 = clamp(round(f32 / scale), -8, 7)
     formula: |
       scaled = value / scale
@@ -95,75 +95,75 @@ behaviors:
       clamped = clamp(rounded, -8, 7)
       return @intCast(i4, clamped)
 
-  # [CYR:ЗАКОН] 3: [CYR:Дек]in[CYR:ант]fromацandя INT4 → f32
+  # [CYR:[EN]A[TRANSLATED]] 3: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]from[EN]andI INT4 → f32
   - name: dequantize_value
     given: INT4 value and scale factor
-    when: [CYR:Нужно] inоwithwith[CYR:тано]inandть f32 for inычandwith[CYR:лен]andй
+    when: [CYR:[TRANSLATED]] in[EN]withwith[CYR:[TRANSLATED]]inand[EN] f32 for iny[EN]andwith[CYR:[TRANSLATED]]and[EN]
     then: f32 = int4_as_f32 * scale
     formula: |
       return @as(f32, @floatFromInt(int4)) * scale
 
-  # [CYR:ЗАКОН] 4: [CYR:Упако]inка дinух INT4 in одandн [CYR:байт]
+  # [CYR:[EN]A[TRANSLATED]] 4: [CYR:[TRANSLATED]]in[EN] [EN]in[EN] INT4 in [EN]and[EN] [CYR:[TRANSLATED]]
   - name: pack_int4
-    given: Дinа INT4 values (high, low)
-    when: [CYR:Нужно] [CYR:упако]in[CYR:ать] for [CYR:хра]notнandя
+    given: [EN]in[EN] INT4 values (high, low)
+    when: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:ate] for [CYR:[TRANSLATED]]not[EN]andI
     then: byte = (high << 4) | (low & 0x0F)
     formula: |
       high_bits = (@as(u8, @bitCast(high)) & 0x0F) << 4
       low_bits = @as(u8, @bitCast(low)) & 0x0F
       return high_bits | low_bits
 
-  # [CYR:ЗАКОН] 5: Раwith[CYR:пако]inка [CYR:байта] in дinа INT4
+  # [CYR:[EN]A[TRANSLATED]] 5: [EN]with[CYR:[TRANSLATED]]in[EN] [CYR:[TRANSLATED]] in [EN]in[EN] INT4
   - name: unpack_int4
-    given: [CYR:Упако]in[CYR:анный] [CYR:байт]
-    when: [CYR:Нужно] fromin[CYR:лечь] дinа INT4 values
+    given: [CYR:[TRANSLATED]]in[CYR:[EN]ny] [CYR:[TRANSLATED]]
+    when: [CYR:[TRANSLATED]] fromin[CYR:[TRANSLATED]] [EN]in[EN] INT4 values
     then: high = byte >> 4, low = byte & 0x0F (with sign extension)
     formula: |
       high_u4 = (byte >> 4) & 0x0F
       low_u4 = byte & 0x0F
-      # Sign extension: if бandт 3 уwith[CYR:тано]in[CYR:лен], this [CYR:отр]and[CYR:цательное] number
+      # Sign extension: if [EN]and[EN] 3 [EN]with[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]], this [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]lno[EN]] number
       high = if (high_u4 & 0x08) != 0 then @as(i8, high_u4) - 16 else @as(i8, high_u4)
       low = if (low_u4 & 0x08) != 0 then @as(i8, low_u4) - 16 else @as(i8, low_u4)
 
-  # [CYR:ЗАКОН] 6: Block-wise кin[CYR:ант]fromацandя [CYR:тензора]
+  # [CYR:[EN]A[TRANSLATED]] 6: Block-wise [EN]in[CYR:[TRANSLATED]]from[EN]andI [CYR:[TRANSLATED]]
   - name: quantize_tensor
-    given: f32 [CYR:тензор] [CYR:про]fromin[CYR:ольной] [CYR:формы]
-    when: [CYR:Нужно] with[CYR:кон]in[CYR:ерт]andроin[CYR:ать] inеwithь [CYR:тензор] in INT4
-    then: [CYR:Разб]andть on blockand, inычandwithлandть scale for each, кin[CYR:ант]fromоin[CYR:ать]
+    given: f32 [CYR:[TRANSLATED]] [CYR:pro]fromin[CYR:[EN]lno[EN]] [CYR:[TRANSLATED]y]
+    when: [CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN]in[CYR:ate] in[EN]with[EN] [CYR:[TRANSLATED]] in INT4
+    then: [CYR:[TRANSLATED]]and[EN] on blockand, iny[EN]andwith[EN]and[EN] scale for each, [EN]in[CYR:[TRANSLATED]]from[EN]in[CYR:ate]
     steps:
-      - Flatten [CYR:тензор] in 1D array
-      - [CYR:Разб]andть on blockand [CYR:размера] BLOCK_SIZE
-      - [CYR:Для] each blockа inычandwithлandть scale ([CYR:ЗАКОН] 1)
-      - Кin[CYR:ант]fromоin[CYR:ать] [CYR:каждое] value ([CYR:ЗАКОН] 2)
-      - [CYR:Упако]in[CYR:ать] [CYR:пары] INT4 in [CYR:байты] ([CYR:ЗАКОН] 4)
-      - [CYR:Сохран]andть scales [CYR:отдельно]
+      - Flatten [CYR:[TRANSLATED]] in 1D array
+      - [CYR:[TRANSLATED]]and[EN] on blockand [CYR:[TRANSLATED]] BLOCK_SIZE
+      - [CYR:[EN]I] each block[EN] iny[EN]andwith[EN]and[EN] scale ([CYR:[EN]A[TRANSLATED]] 1)
+      - [EN]in[CYR:[TRANSLATED]]from[EN]in[CYR:ate] [CYR:[TRANSLATED]] value ([CYR:[EN]A[TRANSLATED]] 2)
+      - [CYR:[TRANSLATED]]in[CYR:ate] [CYR:[TRANSLATED]y] INT4 in [CYR:[TRANSLATED]y] ([CYR:[EN]A[TRANSLATED]] 4)
+      - [CYR:[TRANSLATED]]and[EN] scales [CYR:[TRANSLATED]lno]
 
-  # [CYR:ЗАКОН] 7: Block-wise [CYR:дек]in[CYR:ант]fromацandя [CYR:тензора]
+  # [CYR:[EN]A[TRANSLATED]] 7: Block-wise [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]from[EN]andI [CYR:[TRANSLATED]]
   - name: dequantize_tensor
-    given: PackedInt4 [CYR:тензор]
-    when: [CYR:Нужно] inоwithwith[CYR:тано]inandть f32 for inference
-    then: Раwith[CYR:пако]in[CYR:ать], [CYR:дек]in[CYR:ант]fromоin[CYR:ать] with withоresponsewithтin[CYR:ующ]andмand scales
+    given: PackedInt4 [CYR:[TRANSLATED]]
+    when: [CYR:[TRANSLATED]] in[EN]withwith[CYR:[TRANSLATED]]inand[EN] f32 for inference
+    then: [EN]with[CYR:[TRANSLATED]]in[CYR:ate], [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]from[EN]in[CYR:ate] with with[EN]responsewith[EN]in[CYR:[TRANSLATED]]and[EN]and scales
     steps:
-      - Раwith[CYR:пако]in[CYR:ать] [CYR:байты] in INT4 [CYR:пары] ([CYR:ЗАКОН] 5)
-      - [CYR:Для] each blockа прand[CYR:мен]andть withоresponsewithтin[CYR:ующ]andй scale
-      - [CYR:Дек]in[CYR:ант]fromоin[CYR:ать] [CYR:каждое] value ([CYR:ЗАКОН] 3)
-      - Reshape in орandгandon[CYR:льную] [CYR:форму]
+      - [EN]with[CYR:[TRANSLATED]]in[CYR:ate] [CYR:[TRANSLATED]y] in INT4 [CYR:[TRANSLATED]y] ([CYR:[EN]A[TRANSLATED]] 5)
+      - [CYR:[EN]I] each block[EN] [EN]and[CYR:me]and[EN] with[EN]responsewith[EN]in[CYR:[TRANSLATED]]and[EN] scale
+      - [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]from[EN]in[CYR:ate] [CYR:[TRANSLATED]] value ([CYR:[EN]A[TRANSLATED]] 3)
+      - Reshape in [EN]and[EN]andon[CYR:l[TRANSLATED]] [CYR:[TRANSLATED]]
 
-  # [CYR:ЗАКОН] 8: [CYR:Кон]in[CYR:ертац]andя .tri → .tri.int4
+  # [CYR:[EN]A[TRANSLATED]] 8: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andI .tri → .tri.int4
   - name: convert_tri_to_int4
-    given: [CYR:Путь] к .tri fileу with BF16/F32 inеwithамand
-    when: [CYR:Нужно] with[CYR:оздать] кin[CYR:ант]fromоin[CYR:анную] inерwithandю
-    then: [CYR:Создать] .tri.int4 file with INT4 inеwithамand and scales
+    given: [CYR:[TRANSLATED]]  .tri file[EN] with BF16/F32 in[EN]with[EN]and
+    when: [CYR:[TRANSLATED]] with[CYR:[TRANSLATED]ate] [EN]in[CYR:[TRANSLATED]]from[EN]in[CYR:[TRANSLATED]] in[EN]withand[EN]
+    then: [CYR:[TRANSLATED]ate] .tri.int4 file with INT4 in[EN]with[EN]and and scales
     steps:
-      - [CYR:Про]read [CYR:заголо]inок .tri
-      - [CYR:Для] each [CYR:тензора]:
-        - [CYR:Загруз]andть BF16/F32 inеwithа
-        - Прand[CYR:мен]andть quantize_tensor ([CYR:ЗАКОН] 6)
-        - Заwrite [CYR:упако]in[CYR:анные] INT4 + scales
-      - Заwrite ноinый [CYR:заголо]inок with quantized_size
+      - [CYR:[TRANSLATED]]read [CYR:[EN]go[EN]]in[EN] .tri
+      - [CYR:[EN]I] each [CYR:[TRANSLATED]]:
+        - [CYR:[TRANSLATED]]and[EN] BF16/F32 in[EN]with[EN]
+        - [EN]and[CYR:me]and[EN] quantize_tensor ([CYR:[EN]A[TRANSLATED]] 6)
+        - [EN]write [CYR:[TRANSLATED]]in[CYR:[EN]nye] INT4 + scales
+      - [EN]write [EN]iny[EN] [CYR:[EN]go[EN]]in[EN] with quantized_size
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# [CYR:ФОРМАТ] [CYR:ФАЙЛА] .tri.int4
+# [CYR:[TRANSLATED]A[EN]] [CYR:[EN]A[EN]A] .tri.int4
 # ═══════════════════════════════════════════════════════════════════════════════
 
 file_format:
@@ -176,7 +176,7 @@ file_format:
         - packed_data: u8[packed_size]
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# [CYR:МЕТРИКИ] [CYR:СЖАТИЯ]
+# [CYR:[TRANSLATED]] [CYR:[EN]A[TRANSLATED]]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 metrics:
@@ -188,7 +188,7 @@ metrics:
     effective_bits: 5  # 4 + 1 overhead
     compression_ratio: 3.2x  # 16 / 5
 
-  # [CYR:Для] 7B [CYR:модел]and
+  # [CYR:[EN]I] 7B [CYR:[TRANSLATED]]and
   qwen_7b:
     original_size_gb: 14.0  # BF16
     quantized_size_gb: 4.4  # INT4 + scales

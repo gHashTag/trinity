@@ -15,7 +15,7 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:КОНСТАНТЫ]
+// [CYR:[TRANSLATED]A[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PHI: f64 = 1.618033988749895;
@@ -42,7 +42,7 @@ pub const GRADIENT_CLIP_NORM: f64 = 1;
 
 pub const MAX_TRAJECTORY_STEPS: f64 = 10000;
 
-// [CYR:Базо]inые φ-toонwith[CYR:танты] (Sacred Formula)
+// [CYR:[TRANSLATED]]iny[EN] φ-to[EN]with[CYR:[TRANSLATED]y] (Sacred Formula)
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
 pub const SQRT5: f64 = 2.2360679774997896;
@@ -50,7 +50,7 @@ pub const TAU: f64 = 6.283185307179586;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:ТИПЫ]
+// [CYR:[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// SGD state with momentum
@@ -138,7 +138,7 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-and[CYR:нтер]fieldsцandя
+/// φ-and[CYR:[TRANSLATED]]fields[EN]andI
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;

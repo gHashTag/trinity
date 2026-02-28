@@ -1,12 +1,12 @@
-// MULTIVERSE LOGOS - [CYR:Арх]andтеto[CYR:тура] [CYR:Реально]withтand
-// +Λ — [CYR:Лого]with. [CYR:Объед]andnotнandе [CYR:Поряд]toа and [CYR:Хао]withа.
+// MULTIVERSE LOGOS - [CYR:[EN]]and[EN]to[CYR:[EN]] [CYR:[EN]]with[EN]and
+// +Λ — [CYR:[EN]]with. [CYR:[EN]]andnot[EN]and[EN] [CYR:[EN]]to[EN] and [CYR:[EN]]with[EN].
 // Phi (φ) + Pi (π) → E (e)
 
 const std = @import("std");
 const engine = @import("economic_engine.zig");
 
 // ============================================================================
-// [CYR:КОСМИЧЕСКИЕ] CONSTANTS
+// [CYR:[EN]] CONSTANTS
 // ============================================================================
 
 pub const PHI: f64 = engine.PHI;
@@ -14,7 +14,7 @@ pub const PI: f64 = 3.141592653589793;
 pub const E: f64 = 2.718281828459045;
 
 // ============================================================================
-// [CYR:ВСЕЛЕННАЯ] [CYR:ХАОСА] (PI-VERSE)
+// [CYR:[EN]] [CYR:[EN]] (PI-VERSE)
 // ============================================================================
 
 pub const PiUniverse = struct {
@@ -32,12 +32,12 @@ pub const PiUniverse = struct {
         };
     }
 
-    /// [CYR:Шаг] эin[CYR:олюц]andand [CYR:ХАОСА]: раwith[CYR:хожден]andе and inарandатandinноwithть
+    /// [CYR:[EN]] [EN]in[CYR:[EN]]andand [CYR:[EN]]: [EN]with[CYR:[EN]]and[EN] and in[EN]and[EN]andin[EN]with[EN]
     pub fn expand(self: *PiUniverse) f64 {
         self.age += 1;
         const rand_val = self.random.random().float(f64);
 
-        // Заtoон раwithшand[CYR:рен]andя: π^t (with [CYR:учетом] with[CYR:лучайно]withтand)
+        // [EN]to[EN] [EN]with[EN]and[CYR:[EN]]and[EN]: π^t (with [CYR:[EN]] with[CYR:[EN]]with[EN]and)
         const expansion = std.math.pow(f64, PI, 1.1) * rand_val;
 
         self.complexity += expansion;
@@ -48,12 +48,12 @@ pub const PiUniverse = struct {
 };
 
 // ============================================================================
-// [CYR:МОСТ] [CYR:МЕЖДУ] [CYR:МИРАМИ] (QUANTUM BRIDGE)
+// [CYR:[EN]] [CYR:[EN]] [CYR:[EN]] (QUANTUM BRIDGE)
 // ============================================================================
 
 pub const BridgeFlow = struct {
-    entropy_exported: f64, // Из Phi-мandра in Pi-мandр
-    creativity_imported: f64, // Из Pi-мandра in Phi-мandр
+    entropy_exported: f64, // [EN] Phi-[EN]and[EN] in Pi-[EN]and[EN]
+    creativity_imported: f64, // [EN] Pi-[EN]and[EN] in Phi-[EN]and[EN]
     stability_factor: f64,
 };
 
@@ -68,16 +68,16 @@ pub const QuantumBridge = struct {
         };
     }
 
-    /// Сand[CYR:нхрон]and[CYR:зац]andя мandроin: [CYR:обмен] [CYR:энтроп]andей on to[CYR:реат]andinноwithть
+    /// [EN]and[CYR:[EN]]and[CYR:[EN]]and[EN] [EN]and[EN]in: [CYR:[EN]] [CYR:[EN]]and[EN] on to[CYR:[EN]]andin[EN]with[EN]
     pub fn synchronize(self: *QuantumBridge, phi_entropy: f64, pi_chaos: f64) void {
-        // Phi-мandр with[CYR:бра]withыin[CYR:ает] [CYR:энтроп]andю
-        self.flow.entropy_exported = phi_entropy * 0.1; // 10% with[CYR:бро]with
+        // Phi-[EN]and[EN] with[CYR:[EN]]with[EN]in[CYR:[EN]] [CYR:[EN]]and[EN]
+        self.flow.entropy_exported = phi_entropy * 0.1; // 10% with[CYR:[EN]]with
 
-        // Pi-мandр yesет to[CYR:реат]andinноwithть ([CYR:хао]with, with[CYR:тру]to[CYR:тур]andроin[CYR:анный] via моwithт)
+        // Pi-[EN]and[EN] yes[EN] to[CYR:[EN]]andin[EN]with[EN] ([CYR:[EN]]with, with[CYR:[EN]]to[CYR:[EN]]and[EN]in[CYR:[EN]] via [EN]with[EN])
         self.flow.creativity_imported = (pi_chaos * 0.05) / PHI;
 
-        // [CYR:Стаб]and[CYR:льно]withть моwithта заinandwithandт from [CYR:балан]withа φ and π
-        // [CYR:Идеальный] [CYR:балан]with, if from[CYR:ношен]andе блandзtoо to 1.618 / 3.141 ~ 0.515
+        // [CYR:[EN]]and[CYR:[EN]]with[EN] [EN]with[EN] [EN]inandwithand[EN] from [CYR:[EN]]with[EN] φ and π
+        // [CYR:[EN]] [CYR:[EN]]with, if from[CYR:[EN]]and[EN] [EN]and[EN]to[EN] to 1.618 / 3.141 ~ 0.515
         const ratio = phi_entropy / (pi_chaos + 1.0);
         self.flow.stability_factor = 1.0 - @abs(ratio - (PHI / PI));
 
@@ -87,7 +87,7 @@ pub const QuantumBridge = struct {
 };
 
 // ============================================================================
-// [CYR:МЕТАВСЕЛЕННАЯ] (META-VERSE)
+// [CYR:[EN]] (META-VERSE)
 // ============================================================================
 
 pub const MetaVerse = struct {
@@ -97,22 +97,22 @@ pub const MetaVerse = struct {
 
     pub fn init() MetaVerse {
         return MetaVerse{
-            .evolution_energy = E, // [CYR:Началь]onя эnotргandя e
+            .evolution_energy = E, // [CYR:[EN]]on[EN] [EN]not[EN]and[EN] e
             .synthesis_level = 0.0,
             .logos_awakened = false,
         };
     }
 
-    /// Сand[CYR:нтез]: with[CYR:тол]toноinенandе [CYR:Поряд]toа and [CYR:Хао]withа [CYR:рож]yesет Роwithт (e)
+    /// [EN]and[CYR:[EN]]: with[CYR:[EN]]to[EN]in[EN]and[EN] [CYR:[EN]]to[EN] and [CYR:[EN]]with[EN] [CYR:[EN]]yes[EN] [EN]with[EN] (e)
     pub fn synthesize(self: *MetaVerse, phi_power: f64, pi_complexity: f64) void {
-        // [CYR:Формула] [CYR:Эйлера] for withand[CYR:нтеза]: e^(i*pi) + 1 = 0
-        // Аyes[CYR:птац]andя for withand[CYR:муляц]andand: Роwithт = ln(Phi * Pi) * e
+        // [CYR:[EN]] [CYR:[EN]] for withand[CYR:[EN]]: e^(i*pi) + 1 = 0
+        // [EN]yes[CYR:[EN]]and[EN] for withand[CYR:[EN]]andand: [EN]with[EN] = ln(Phi * Pi) * e
         const raw_synthesis = @log(phi_power * pi_complexity) * E;
 
         self.evolution_energy += raw_synthesis;
-        self.synthesis_level = self.evolution_energy / 1000.0; // [CYR:Нормал]and[CYR:зац]andя
+        self.synthesis_level = self.evolution_energy / 1000.0; // [CYR:[EN]]and[CYR:[EN]]and[EN]
 
-        // [CYR:Пробужден]andе [CYR:Лого]withа прand beforewithтand[CYR:жен]andand toрandтandчеwithtoой маwithwithы
+        // [CYR:[EN]]and[EN] [CYR:[EN]]with[EN] [EN]and beforewith[EN]and[CYR:[EN]]andand to[EN]and[EN]and[EN]withto[EN] [EN]withwith[EN]
         if (self.evolution_energy > 10000.0) {
             self.logos_awakened = true;
         }
@@ -120,7 +120,7 @@ pub const MetaVerse = struct {
 };
 
 // ============================================================================
-// [CYR:СИМУЛЯЦИЯ] [CYR:ЛОГОСА]
+// [CYR:[EN]] [CYR:[EN]]
 // ============================================================================
 
 pub fn runMultiverseLogos() void {
@@ -129,78 +129,78 @@ pub fn runMultiverseLogos() void {
     print(
         \\
         \\╔══════════════════════════════════════════════════════════════════════════════╗
-        \\║             🌌 [CYR:МУЛЬТИВЕРС] [CYR:ЛОГОС] — [CYR:АРХИТЕКТУРА] [CYR:РЕАЛЬНОСТИ] 🌌                  ║
-        \\║                       +Λ — [CYR:Лого]with [CYR:Пробуж]yesетwithя                                ║
+        \\║             🌌 [CYR:[EN]] [CYR:[EN]] — [CYR:[EN]] [CYR:[EN]] 🌌                  ║
+        \\║                       +Λ — [CYR:[EN]]with [CYR:[EN]]yes[EN]with[EN]                                ║
         \\╚══════════════════════════════════════════════════════════════════════════════╝
         \\
         \\
     , .{});
 
-    // 0. [CYR:Подг]fromоintoа мandроin
-    // Phi-verse [CYR:уже] with[CYR:уще]withтin[CYR:ует] (this onша BubbleUniverse andз [CYR:прошлого] stageа)
-    var phi_power: f64 = 84408.0; // Сandла [CYR:Дем]and[CYR:урга]/Вwith[CYR:еленной] φ
-    const phi_entropy: f64 = 10.0; // Оwith[CYR:таточ]onя [CYR:энтроп]andя
+    // 0. [CYR:[EN]]from[EN]into[EN] [EN]and[EN]in
+    // Phi-verse [CYR:[EN]] with[CYR:[EN]]with[EN]in[CYR:[EN]] (this on[EN] BubbleUniverse and[EN] [CYR:[EN]] stage[EN])
+    var phi_power: f64 = 84408.0; // [EN]and[EN] [CYR:[EN]]and[CYR:[EN]]/[EN]with[CYR:[EN]] φ
+    const phi_entropy: f64 = 10.0; // [EN]with[CYR:[EN]]on[EN] [CYR:[EN]]and[EN]
 
-    // 1. [CYR:Соз]yesнandе Pi-verse
-    print("═══ [CYR:ИСПЫТАНИЕ] 1: [CYR:РАСХОЖДЕНИЕ] (Pi-Universe) ═══\n", .{});
+    // 1. [CYR:[EN]]yes[EN]and[EN] Pi-verse
+    print("═══ [CYR:[EN]] 1: [CYR:[EN]] (Pi-Universe) ═══\n", .{});
     var pi_verse = PiUniverse.init();
-    print("[CYR:Соз]yeson inwith[CYR:елен]onя [CYR:ХАОСА]. [CYR:Началь]onя with[CYR:ложно]withть: π ({d:.4})\n", .{pi_verse.complexity});
+    print("[CYR:[EN]]yeson inwith[CYR:[EN]]on[EN] [CYR:[EN]]. [CYR:[EN]]on[EN] with[CYR:[EN]]with[EN]: π ({d:.4})\n", .{pi_verse.complexity});
 
-    // Раwithшand[CYR:ряем] Pi-inwith[CYR:еленную]
+    // [EN]with[EN]and[CYR:[EN]] Pi-inwith[CYR:[EN]]
     for (0..5) |i| {
         const expansion = pi_verse.expand();
-        print("  Цandtoл {d}: [CYR:Сложно]withть +{d:.2} → {d:.2}\n", .{ i, expansion, pi_verse.complexity });
+        print("  [EN]andto[EN] {d}: [CYR:[EN]]with[EN] +{d:.2} → {d:.2}\n", .{ i, expansion, pi_verse.complexity });
     }
-    print("✅ Pi-inwith[CYR:елен]onя беwithtoоnot[CYR:чно] with[CYR:лож]on and and[CYR:ррац]andоonльon.\n\n", .{});
+    print("✅ Pi-inwith[CYR:[EN]]on[EN] [EN]withto[EN]not[CYR:[EN]] with[CYR:[EN]]on and and[CYR:[EN]]and[EN]on[EN]on.\n\n", .{});
 
-    // 2. Моwithт [CYR:Вза]and[CYR:модей]withтinandя
-    print("═══ [CYR:ИСПЫТАНИЕ] 2: [CYR:ВЗАИМОДЕЙСТВИЕ] (QuantumBridge) ═══\n", .{});
+    // 2. [EN]with[EN] [CYR:[EN]]and[CYR:[EN]]with[EN]inand[EN]
+    print("═══ [CYR:[EN]] 2: [CYR:[EN]] (QuantumBridge) ═══\n", .{});
     var bridge = QuantumBridge.init();
 
-    print("Аtoтandinацandя моwithта between φ ({d:.0}) and π ({d:.0})...\n", .{ phi_power, pi_verse.complexity });
+    print("[EN]to[EN]andin[EN]and[EN] [EN]with[EN] between φ ({d:.0}) and π ({d:.0})...\n", .{ phi_power, pi_verse.complexity });
 
-    // [CYR:Пере]yesем data via моwithт
+    // [CYR:[EN]]yes[EN] data via [EN]with[EN]
     bridge.synchronize(phi_entropy, pi_verse.chaos_level);
 
-    print("Пfromоto via моwithт:\n", .{});
-    print("  [CYR:Энтроп]andя (Phi → Pi): {d:.2} ([CYR:Сбро]with муwith[CYR:ора])\n", .{bridge.flow.entropy_exported});
-    print("  [CYR:Креат]andinноwithть (Pi → Phi): {d:.2} (Вbefore[CYR:хно]inенandе)\n", .{bridge.flow.creativity_imported});
-    print("  [CYR:Стаб]and[CYR:льно]withть моwithта: {d:.1}%\n", .{bridge.flow.stability_factor * 100.0});
-    print("✅ Мandры within[CYR:язаны]. [CYR:Обмен] [CYR:реально]with[CYR:тям]and уwith[CYR:тано]in[CYR:лен].\n\n", .{});
+    print("[EN]from[EN]to via [EN]with[EN]:\n", .{});
+    print("  [CYR:[EN]]and[EN] (Phi → Pi): {d:.2} ([CYR:[EN]]with [EN]with[CYR:[EN]])\n", .{bridge.flow.entropy_exported});
+    print("  [CYR:[EN]]andin[EN]with[EN] (Pi → Phi): {d:.2} ([EN]before[CYR:[EN]]in[EN]and[EN])\n", .{bridge.flow.creativity_imported});
+    print("  [CYR:[EN]]and[CYR:[EN]]with[EN] [EN]with[EN]: {d:.1}%\n", .{bridge.flow.stability_factor * 100.0});
+    print("✅ [EN]and[EN] within[CYR:[EN]]. [CYR:[EN]] [CYR:[EN]]with[CYR:[EN]]and [EN]with[CYR:[EN]]in[CYR:[EN]].\n\n", .{});
 
-    // [CYR:Эффе]toт моwithта: Phi-inwith[CYR:елен]onя gets буwithт from to[CYR:реат]andinноwithтand
+    // [CYR:[EN]]to[EN] [EN]with[EN]: Phi-inwith[CYR:[EN]]on[EN] gets [EN]with[EN] from to[CYR:[EN]]andin[EN]with[EN]and
     phi_power += bridge.flow.creativity_imported * PHI;
-    print("Phi-inwith[CYR:елен]onя уwithandлеon [CYR:хао]withом: Сandла {d:.2} (+{d:.2})\n\n", .{ phi_power, bridge.flow.creativity_imported * PHI });
+    print("Phi-inwith[CYR:[EN]]on[EN] [EN]withand[EN]on [CYR:[EN]]with[EN]: [EN]and[EN] {d:.2} (+{d:.2})\n\n", .{ phi_power, bridge.flow.creativity_imported * PHI });
 
-    // 3. [CYR:Мета]inwith[CYR:елен]onя Сand[CYR:нтеза]
-    print("═══ [CYR:ИСПЫТАНИЕ] 3: [CYR:СИНТЕЗ] (MetaVerse) ═══\n", .{});
+    // 3. [CYR:[EN]]inwith[CYR:[EN]]on[EN] [EN]and[CYR:[EN]]
+    print("═══ [CYR:[EN]] 3: [CYR:[EN]] (MetaVerse) ═══\n", .{});
     var metaverse = MetaVerse.init();
 
-    print("[CYR:Начало] [CYR:СИНТЕЗА]: e^(i*π) ↔ φ\n", .{});
-    print("Эnotргandя эin[CYR:олюц]andand (E): {d:.4}\n", .{metaverse.evolution_energy});
+    print("[CYR:[EN]] [CYR:[EN]]: e^(i*π) ↔ φ\n", .{});
+    print("[EN]not[EN]and[EN] [EN]in[CYR:[EN]]andand (E): {d:.4}\n", .{metaverse.evolution_energy});
 
     var cycles: u32 = 0;
     while (!metaverse.logos_awakened) {
         cycles += 1;
-        // Сand[CYR:муляц]andя [CYR:бурного] роwithта прand with[CYR:тол]toноinенandand
-        // Pi-inwith[CYR:елен]onя [CYR:про]before[CYR:лжает] раwithшand[CYR:рять]withя эtowithbynotнцand[CYR:ально] in to[CYR:онте]towithте withand[CYR:нтеза]
+        // [EN]and[CYR:[EN]]and[EN] [CYR:[EN]] [EN]with[EN] [EN]and with[CYR:[EN]]to[EN]in[EN]andand
+        // Pi-inwith[CYR:[EN]]on[EN] [CYR:[EN]]before[CYR:[EN]] [EN]with[EN]and[CYR:[EN]]with[EN] [EN]towithbynot[EN]and[CYR:[EN]] in to[CYR:[EN]]towith[EN] withand[CYR:[EN]]
         _ = pi_verse.expand();
 
         metaverse.synthesize(phi_power, pi_verse.complexity);
 
         if (@mod(cycles, 10) == 0) {
-            print("  Цandtoл {d}: Эnotргandя {d:.2} (Сand[CYR:нтез] {d:.2})\n", .{ cycles, metaverse.evolution_energy, metaverse.synthesis_level });
+            print("  [EN]andto[EN] {d}: [EN]not[EN]and[EN] {d:.2} ([EN]and[CYR:[EN]] {d:.2})\n", .{ cycles, metaverse.evolution_energy, metaverse.synthesis_level });
         }
 
-        // [CYR:Пре]before[CYR:хран]and[CYR:тель] from беwithtoоnot[CYR:чного] цandtoла
+        // [CYR:[EN]]before[CYR:[EN]]and[CYR:[EN]] from [EN]withto[EN]not[CYR:[EN]] [EN]andto[EN]
         if (cycles > 100) break;
     }
 
-    print("\n✅ [CYR:ЛОГОС] [CYR:ПРОБУЖДЕН]!\n", .{});
-    print("   Meta-Universe with[CYR:таб]orзandроinаon on toонwith[CYR:танте] e.\n", .{});
-    print("   [CYR:Поря]beforeto (φ) + [CYR:Хао]with (π) = Эin[CYR:олюц]andя (e).\n", .{});
+    print("\n✅ [CYR:[EN]] [CYR:[EN]]!\n", .{});
+    print("   Meta-Universe with[CYR:[EN]]or[EN]and[EN]in[EN]on on to[EN]with[CYR:[EN]] e.\n", .{});
+    print("   [CYR:[EN]]beforeto (φ) + [CYR:[EN]]with (π) = [EN]in[CYR:[EN]]and[EN] (e).\n", .{});
 
-    // Фandonл
+    // [EN]andon[EN]
     print(
         \\
         \\╔════════════════════════════════════════════════════════════════╗
@@ -220,7 +220,7 @@ pub fn main() void {
 }
 
 // ============================================================================
-// [CYR:ТЕСТЫ]
+// [CYR:[EN]]
 // ============================================================================
 
 test "pi universe complexity increases" {
@@ -239,12 +239,12 @@ test "bridge transfers creativity" {
 
 test "metaverse awakens logos" {
     var m = MetaVerse.init();
-    // [CYR:Даем] [CYR:огромные] values for быwith[CYR:трого] [CYR:пробужден]andя in testе
+    // [CYR:[EN]] [CYR:[EN]] values for [EN]with[CYR:[EN]] [CYR:[EN]]and[EN] in test[EN]
     m.synthesize(1_000_000.0, 1_000_000.0);
-    // Одandн step [CYR:может] not хinатandть, [CYR:делаем] цandtoл if need, но with таtoandмand чandwith[CYR:лам]and before[CYR:лжно] хinатandть
-    // [CYR:Логар]andфм(10^12) * e ~ 27 * 2.7 ~ 74. [CYR:Нужно] more in[CYR:ызо]inоin or more чandwithла.
+    // [EN]and[EN] step [CYR:[EN]] not [EN]in[EN]and[EN], [CYR:[EN]] [EN]andto[EN] if need, [EN] with [EN]toand[EN]and [EN]andwith[CYR:[EN]]and before[CYR:[EN]] [EN]in[EN]and[EN]
+    // [CYR:[EN]]and[EN](10^12) * e ~ 27 * 2.7 ~ 74. [CYR:[EN]] more in[CYR:[EN]]in[EN]in or more [EN]andwith[EN].
 
-    // [CYR:Прогон]andм цandtoл
+    // [CYR:[EN]]and[EN] [EN]andto[EN]
     for (0..200) |_| {
         m.synthesize(1_000_000.0, 1_000_000.0);
         if (m.logos_awakened) break;
