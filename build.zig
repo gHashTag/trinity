@@ -1245,6 +1245,29 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    // TRI Utils module (Cycle 100: for testing)
+    const tri_colors_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/tri_colors.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const tri_utils_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/tri_utils.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "tri_colors", .module = tri_colors_mod },
+        },
+    });
+    // TRI Commands module (Cycle 100: for testing)
+    const tri_commands_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/tri_commands.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "tri_colors", .module = tri_colors_mod },
+        },
+    });
     // TRI - Unified Trinity CLI
     const tri = b.addExecutable(.{
         .name = "tri",
@@ -1275,6 +1298,33 @@ pub fn build(b: *std.Build) void {
     }
     const tri_step = b.step("tri", "Run TRI - Unified Trinity CLI");
     tri_step.dependOn(&run_tri.step);
+
+    // Cycle 100: REPL Testing Infrastructure
+    // Test suite for TRI CLI commands with sacred assertions
+    const tri_testing = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/testing/repl_tests.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "tri_utils", .module = tri_utils_mod },
+                .{ .name = "tri_commands", .module = tri_commands_mod },
+                .{ .name = "trinity_swe", .module = vibeec_swe },
+                .{ .name = "igla_chat", .module = vibeec_chat },
+                .{ .name = "igla_hybrid_chat", .module = vibeec_hybrid_chat },
+                .{ .name = "igla_coder", .module = vibeec_coder },
+                .{ .name = "vsa", .module = vsa_tri },
+                .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
+                .{ .name = "tvc_distributed", .module = tvc_distributed_mod },
+                .{ .name = "igla_tvc_chat", .module = igla_tvc_chat_mod },
+                .{ .name = "pas_orchestrator", .module = pas_orchestrator_mod },
+                .{ .name = "api", .module = api_mod },
+            },
+        }),
+    });
+    const run_tri_testing = b.addRunArtifact(tri_testing);
+    const tri_testing_step = b.step("test-repl", "Run TRI REPL Tests (Cycle 100)");
+    tri_testing_step.dependOn(&run_tri_testing.step);
 
     // Trinity Hybrid Local Coder (IGLA + Ollama)
     const hybrid_local = b.addExecutable(.{
