@@ -536,7 +536,11 @@ if (classifier.predict(&test)) |class| {
 }
 ```
 
-#### predictWithConfidence(sample: *Hypervector) → struct { class: ?[]const u8, confidence: f64 }
+#### predictWithConfidence
+
+```text
+predictWithConfidence(sample: *Hypervector) → struct { class: ?[]const u8, confidence: f64 }
+```
 
 Returns prediction with similarity score.
 
