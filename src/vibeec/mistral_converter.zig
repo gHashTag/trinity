@@ -194,7 +194,7 @@ pub fn convertMistral(
                 continue;
             }
 
-            // Получаем data how f32
+            // Get data how f32
             const f32_data = shard.getTensorF32(allocator, name) catch |err| {
                 std.debug.print("  Skip {s}: {}\n", .{ name[0..@min(name.len, 40)], err });
                 continue;
@@ -210,7 +210,7 @@ pub fn convertMistral(
                 if (t == .zero) stats.zeros_count += 1;
             }
 
-            // Добавляем in .tri file
+            // Add in .tri file
             try writer.addTensor(name, info.shape, trit_tensor.data);
 
             stats.total_tensors += 1;
@@ -229,7 +229,7 @@ pub fn convertMistral(
     // Финализируем file
     try writer.finalize();
 
-    // Вычисляем статистику
+    // Compute статистику
     stats.compressed_size_bytes = (stats.total_params + 3) / 4;
     stats.sparsity = @as(f32, @floatFromInt(stats.zeros_count)) /
         @as(f32, @floatFromInt(stats.total_params));
@@ -299,7 +299,7 @@ pub fn convertSingleFile(
         const info = entry.value_ptr.*;
         const name = info.name;
 
-        // Получаем data how f32
+        // Get data how f32
         const f32_data = sf.getTensorF32(allocator, name) catch |err| {
             std.debug.print("  Skip {s}: {}\n", .{ name[0..@min(name.len, 40)], err });
             continue;
@@ -315,7 +315,7 @@ pub fn convertSingleFile(
             if (t == .zero) stats.zeros_count += 1;
         }
 
-        // Добавляем in .tri file
+        // Add in .tri file
         try writer.addTensor(name, info.shape, trit_tensor.data);
 
         stats.total_tensors += 1;
@@ -328,7 +328,7 @@ pub fn convertSingleFile(
     // Финализируем file
     try writer.finalize();
 
-    // Вычисляем статистику
+    // Compute статистику
     stats.compressed_size_bytes = (stats.total_params + 3) / 4;
     stats.sparsity = @as(f32, @floatFromInt(stats.zeros_count)) /
         @as(f32, @floatFromInt(stats.total_params));

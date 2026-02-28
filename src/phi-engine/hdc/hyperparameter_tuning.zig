@@ -225,7 +225,7 @@ pub fn runGridSearch(allocator: std.mem.Allocator) !void {
     print("ТОП-5 КОНФИГУРАЦИЙ:\n", .{});
     print("─────────────────────────────────────────────────────────────\n", .{});
 
-    // Сортируем by win_rate
+    // Sort by win_rate
     std.mem.sort(ExperimentResult, results.items, {}, struct {
         fn lessThan(_: void, a: ExperimentResult, b: ExperimentResult) bool {
             if (a.win_rate != b.win_rate) return a.win_rate > b.win_rate;
@@ -251,7 +251,7 @@ pub fn runGridSearch(allocator: std.mem.Allocator) !void {
     print("φ² + 1/φ² = 3 | TRINITY | TUNING COMPLETE\n", .{});
 }
 
-/// Точка входа
+/// Точка loginа
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();

@@ -326,7 +326,7 @@ pub fn encodeSequence(items: []HybridBigInt) HybridBigInt {
 }
 
 /// Decode element from sequence at position
-/// Проверяет similarity with permuted версией кандидата
+/// Checks similarity with permuted версией кандидата
 pub fn probeSequence(sequence: *HybridBigInt, candidate: *HybridBigInt, position: usize) f64 {
     var permuted = permute(candidate, position);
     return cosineSimilarity(sequence, &permuted);
@@ -393,7 +393,7 @@ test "permute orthogonality" {
 }
 
 test "sequence encoding" {
-    // Тест encodeSequence - просто проверяем what function работает без ошибок
+    // Test encodeSequence - просто check what function работает без ошибок
     const a = randomVector(100, 11111);
     const b = randomVector(100, 22222);
 

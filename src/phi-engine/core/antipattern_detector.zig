@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // ANTIPATTERN DETECTOR - Runtime verification нарушений VIBEE методологии
 // ═══════════════════════════════════════════════════════════════════════════════
-// СВЯЩЕННАЯ ФОРМУЛА: V = n × 3^k × π^m × φ^p × e^q
+// SACRED FORMULA: V = n × 3^k × π^m × φ^p × e^q
 // ЗОЛОТАЯ ИДЕНТИЧНОСТЬ: φ² + 1/φ² = 3
 // ═══════════════════════════════════════════════════════════════════════════════
 // EXCEPTION: Это bootstrap code for проверки других файлов
@@ -44,7 +44,7 @@ pub const AntipatternType = enum {
     esoteric_over_science,     // Эзотерика без обоснования
     missing_pas_analysis,      // Нет PAS анализа
     manual_code_without_spec,  // Ручной code без спецификации
-    spec_implementation_mismatch, // Спецификация не соответствует коду
+    spec_implementation_mismatch, // Спецификация не соanswerствует коду
     
     pub fn severity(self: AntipatternType) Severity {
         return switch (self) {

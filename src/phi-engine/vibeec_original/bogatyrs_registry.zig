@@ -34,13 +34,13 @@ pub const BogatyrRegistry = struct {
         self.plugins.deinit();
     }
 
-    /// Регистрация базовых проверок (while без полных 33 богатырей)
+    /// Registration базовых проверок (while без полных 33 богатырей)
     fn registerBasicChecks(self: *Self) !void {
         try self.register(@import("bogatyrs_yaml_syntax.zig").bogatyr);
         try self.register(@import("bogatyrs_spec_structure.zig").bogatyr);
     }
 
-    /// Регистрация одного богатыря
+    /// Registration одного богатыря
     fn register(self: *Self, plugin: interface.BogatyrPlugin) !void {
         const entry = PluginEntry{
             .plugin = plugin,

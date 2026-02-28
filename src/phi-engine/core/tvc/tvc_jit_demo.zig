@@ -16,17 +16,17 @@ pub fn main() !void {
     std.debug.print("║  Компиляция TVC IR в нативный x86_64 код        ║\n", .{});
     std.debug.print("╚════════════════════════════════════════════════╝\n\n", .{});
 
-    // 1. Создаём тестовый module
+    // 1. Создаём testовый module
     std.debug.print("═══ [1] СОЗДАНИЕ ТЕСТОВОГО МОДУЛЯ ═══\n", .{});
     var module = try createTestModule(allocator);
     std.debug.print("✓ Модуль создан: {s}\n", .{module.name});
     std.debug.print("  Функций: {}\n", .{module.functions.count()});
 
-    // 2. Тест JIT компилятора
+    // 2. Test JIT компилятора
     std.debug.print("\n═══ [2] ТЕСТ JIT КОМПИЛЯТОРА ═══\n", .{});
     try testJITCompiler(allocator, &module);
 
-    // 3. Тест адаптивного режима
+    // 3. Test адаптивного режима
     std.debug.print("\n═══ [3] ТЕСТ АДАПТИВНОГО РЕЖИМА ═══\n", .{});
     try testAdaptiveMode(allocator, &module);
 
@@ -137,7 +137,7 @@ fn createTestModule(allocator: std.mem.Allocator) !tvc_ir.TVCModule {
     var block4 = tvc_ir.TVCBlock.init(allocator, "entry");
     block4.entry_point = 0;
     
-    // Инициализируем: i0 = 0 (сумма), i1 = 100 (счётчик)
+    // Initialize: i0 = 0 (сумма), i1 = 100 (счётчик)
     try block4.instructions.append(tvc_ir.TVCInstruction{
         .opcode = .loop_init,
         .operands = &[_]u64{100},
@@ -294,7 +294,7 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
         const jit_end = std.time.nanoTimestamp();
         const jit_ns = @as(u64, @intCast(jit_end - jit_start));
 
-        // Вычисляем метрики
+        // Compute метрики
         const vm_ns_per_call = vm_ns / iterations;
         const jit_ns_per_call = jit_ns / iterations;
         const speedup_float: f64 = if (jit_ns > 0) @as(f64, @floatFromInt(vm_ns)) / @as(f64, @floatFromInt(jit_ns)) else 0.0;

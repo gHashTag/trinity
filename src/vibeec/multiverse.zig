@@ -239,7 +239,7 @@ test "bridge transfers creativity" {
 
 test "metaverse awakens logos" {
     var m = MetaVerse.init();
-    // Даем огромные values for быстрого пробуждения in тесте
+    // Даем огромные values for быстрого пробуждения in testе
     m.synthesize(1_000_000.0, 1_000_000.0);
     // Один шаг может не хватить, делаем цикл if нужно, но with такими числами должно хватить
     // Логарифм(10^12) * e ~ 27 * 2.7 ~ 74. Нужно больше вызовов or больше числа.

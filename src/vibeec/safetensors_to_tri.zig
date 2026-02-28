@@ -81,7 +81,7 @@ pub fn convert(
         const info = entry.value_ptr.*;
         const name = info.name;
 
-        // Получаем data how f32
+        // Get data how f32
         const f32_data = sf.getTensorF32(allocator, name) catch |err| {
             std.debug.print("⚠️  Skip {s}: {}\n", .{ name, err });
             continue;
@@ -97,7 +97,7 @@ pub fn convert(
             if (t == .zero) total_zeros += 1;
         }
 
-        // Добавляем in .tri file
+        // Add in .tri file
         try writer.addTensor(name, info.shape, trit_tensor.data);
 
         stats.total_tensors += 1;
@@ -113,7 +113,7 @@ pub fn convert(
     // 5. Финализируем file
     try writer.finalize();
 
-    // 6. Вычисляем статистику
+    // 6. Compute статистику
     stats.compressed_size_bytes = (stats.total_params + 3) / 4; // 4 trits per byte
     stats.sparsity = @as(f32, @floatFromInt(total_zeros)) /
         @as(f32, @floatFromInt(stats.total_params));

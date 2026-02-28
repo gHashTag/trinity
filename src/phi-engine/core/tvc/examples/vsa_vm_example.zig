@@ -19,7 +19,7 @@ pub fn main() !void {
     std.debug.print("╚══════════════════════════════════════════════════════════════╝\n\n", .{});
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // Пример 1: Bind/Unbind roundtrip
+    // Example 1: Bind/Unbind roundtrip
     // ═══════════════════════════════════════════════════════════════════════════
 
     std.debug.print("Пример 1: Bind/Unbind roundtrip\n", .{});
@@ -39,7 +39,7 @@ pub fn main() !void {
         // Развязываем обратно
         .{ .opcode = .v_unbind, .dst = 3, .src1 = 2, .src2 = 1 }, // v3 = unbind(v2, v1)
 
-        // Проверяем сходство v0 and v3 (должно быть ~1.0)
+        // Check сходство v0 and v3 (должно быть ~1.0)
         .{ .opcode = .v_cosine, .src1 = 0, .src2 = 3 }, // f0 = cosine(v0, v3)
 
         .{ .opcode = .halt },
@@ -58,7 +58,7 @@ pub fn main() !void {
     std.debug.print("(Ожидается ~1.0, т.к. unbind(bind(a,b), b) = a)\n\n", .{});
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // Пример 2: Bundle and search
+    // Example 2: Bundle and search
     // ═══════════════════════════════════════════════════════════════════════════
 
     std.debug.print("Пример 2: Bundle и поиск\n", .{});
@@ -72,7 +72,7 @@ pub fn main() !void {
         // Объединяем in bundle
         .{ .opcode = .v_bundle2, .dst = 2, .src1 = 0, .src2 = 1 }, // v2 = bundle(A, B)
 
-        // Проверяем сходство bundle with A
+        // Check сходство bundle with A
         .{ .opcode = .v_cosine, .src1 = 0, .src2 = 2 }, // f0 = cosine(A, bundle)
 
         .{ .opcode = .halt },
@@ -90,7 +90,7 @@ pub fn main() !void {
     std.debug.print("(Bundle похож на оба входа)\n\n", .{});
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // Пример 3: Permute for последовательностей
+    // Example 3: Permute for последовательностей
     // ═══════════════════════════════════════════════════════════════════════════
 
     std.debug.print("Пример 3: Permute для последовательностей\n", .{});
@@ -106,7 +106,7 @@ pub fn main() !void {
         // Inverse permute
         .{ .opcode = .v_ipermute, .dst = 2, .src1 = 1, .imm = 5 }, // v2 = ipermute(v1, 5)
 
-        // Проверяем: v0 должен быть равен v2
+        // Check: v0 должен быть равен v2
         .{ .opcode = .v_cosine, .src1 = 0, .src2 = 2 }, // f0 = cosine(v0, v2)
 
         .{ .opcode = .halt },
@@ -124,7 +124,7 @@ pub fn main() !void {
     std.debug.print("(Ожидается 1.0, т.к. inverse отменяет permute)\n\n", .{});
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // Пример 4: Экономия памяти
+    // Example 4: Экономия памяти
     // ═══════════════════════════════════════════════════════════════════════════
 
     std.debug.print("Пример 4: Экономия памяти\n", .{});

@@ -238,7 +238,7 @@ pub fn randomPackedVector(size: usize, seed: u64) PackedBigInt {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "packed bind correctness" {
-    // Создаём тестовые векторы via HybridBigInt
+    // Создаём testовые векторы via HybridBigInt
     var h_a = vsa.randomVector(100, 12345);
     var h_b = vsa.randomVector(100, 67890);
 
@@ -250,7 +250,7 @@ test "packed bind correctness" {
     const p_b = fromHybrid(&h_b);
     const packed_result = packedBind(&p_a, &p_b);
 
-    // Сравниваем
+    // Compare
     for (0..100) |i| {
         const ref_trit = ref_result.unpacked_cache[i];
         const packed_trit_val = packed_result.getTrit(i);
@@ -312,7 +312,7 @@ test "packed unbind correctness" {
     // unbind(bind(a, b), b) должен дать vector похожий on a
     const unbound = packedUnbind(&bound, &p_b);
 
-    // Проверяем сходство with оригиналом
+    // Check сходство with оригиналом
     const sim = packedCosineSimilarity(&unbound, &p_a);
 
     // Для тритов без нулей сходство должно быть высоким
@@ -330,11 +330,11 @@ test "packed unbind retrieval" {
     const capital_of = randomPackedVector(100, Entity.hashString("capital_of") ^ 0xDEADBEEF);
     const france = randomPackedVector(100, Entity.hashString("France"));
 
-    // Кодируем факт: Paris is capital_of France
+    // Encode факт: Paris is capital_of France
     const pred_obj = packedBind(&capital_of, &france);
     const fact = packedBind(&paris, &pred_obj);
 
-    // Запрос: what является столицей Франции?
+    // Запрос: what is столицей Франции?
     // unbind(fact, bind(capital_of, France)) → Paris
     const query_pattern = packedBind(&capital_of, &france);
     const result = packedUnbind(&fact, &query_pattern);
@@ -362,7 +362,7 @@ test "large vector bind correctness (1000 trits)" {
     const p_b = fromHybrid(&h_b);
     const packed_result = packedBind(&p_a, &p_b);
 
-    // Проверяем each 100-й трит for скорости
+    // Check each 100-й трит for скорости
     var i: usize = 0;
     while (i < 1000) : (i += 100) {
         try std.testing.expectEqual(ref_result.unpacked_cache[i], packed_result.getTrit(i));
@@ -379,7 +379,7 @@ test "large vector bind correctness (5000 trits)" {
     const p_b = fromHybrid(&h_b);
     const packed_result = packedBind(&p_a, &p_b);
 
-    // Проверяем each 500-й трит
+    // Check each 500-й трит
     var i: usize = 0;
     while (i < 5000) : (i += 500) {
         try std.testing.expectEqual(ref_result.unpacked_cache[i], packed_result.getTrit(i));
@@ -396,7 +396,7 @@ test "large vector bind correctness (10000 trits)" {
     const p_b = fromHybrid(&h_b);
     const packed_result = packedBind(&p_a, &p_b);
 
-    // Проверяем each 1000-й трит
+    // Check each 1000-й трит
     var i: usize = 0;
     while (i < 10000) : (i += 1000) {
         try std.testing.expectEqual(ref_result.unpacked_cache[i], packed_result.getTrit(i));

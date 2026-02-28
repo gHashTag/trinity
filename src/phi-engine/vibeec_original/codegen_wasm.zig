@@ -2,8 +2,8 @@
 // VIBEEC CODEGEN WASM - ZIG/WASM CODE GENERATOR FROM .VIBEE SPECS
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Генерирует Zig code for компиляции in WASM из .vibee спецификаций
-// Священная формула: V = n × 3^k × π^m × φ^p × e^q
+// Generates Zig code for компиляции in WASM из .vibee спецификаций
+// Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 // Золотая идентичность: φ² + 1/φ² = 3
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -200,7 +200,7 @@ pub const WasmCodeGen = struct {
         try self.builder.writeFmt("// {s} v{s} - Generated from .vibee specification\n", .{ spec.name, spec.version });
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.writeLine("//");
-        try self.builder.writeLine("// Священная формула: V = n × 3^k × π^m × φ^p × e^q");
+        try self.builder.writeLine("// Sacred formula: V = n × 3^k × π^m × φ^p × e^q");
         try self.builder.writeLine("// Золотая идентичность: φ² + 1/φ² = 3");
         try self.builder.writeLine("//");
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");

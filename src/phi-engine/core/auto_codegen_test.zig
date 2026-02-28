@@ -2,7 +2,7 @@
 // AUTO CODEGEN INTEGRATION TEST
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Тестирует полный pipeline: VibeeSpec -> AutoCodeGenerator -> Zig code
+// Tests полный pipeline: VibeeSpec -> AutoCodeGenerator -> Zig code
 // φ² + 1/φ² = 3
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -56,7 +56,7 @@ test "generate struct from TypeDef" {
     spec.version = "1.0.0";
     spec.author = "Test";
 
-    // Добавляем type User
+    // Add type User
     var user_type = TypeDef.init(allocator);
     user_type.name = "User";
     user_type.description = "User entity";
@@ -87,7 +87,7 @@ test "generate function from Behavior" {
     spec.version = "1.0.0";
     spec.author = "Test";
 
-    // Добавляем behavior
+    // Add behavior
     var behavior = Behavior.init(allocator);
     behavior.name = "create_user";
     behavior.given = "Valid user data";
@@ -118,7 +118,7 @@ test "generate test from TestCase" {
     spec.version = "1.0.0";
     spec.author = "Test";
 
-    // Добавляем behavior with test case
+    // Add behavior with test case
     var behavior = Behavior.init(allocator);
     behavior.name = "calculate";
     behavior.given = "Numbers";

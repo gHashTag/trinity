@@ -65,7 +65,7 @@ pub const VibeeSpec = struct {
     }
 
     pub fn deinit(self: *VibeeSpec) void {
-        // Освобождаем вложенные структуры
+        // Free вложенные структуры
         for (self.types.items) |*t| {
             t.fields.deinit();
             t.constraints.deinit();
@@ -86,7 +86,7 @@ pub const VibeeSpec = struct {
             f.timers.deinit();
         }
 
-        // Освобождаем основные списки
+        // Free основные списки
         self.targets.deinit();
         self.constants.deinit();
         self.types.deinit();
@@ -491,7 +491,7 @@ pub const VibeeParser = struct {
             self.skipEmptyLinesAndComments();
             if (self.pos >= self.source.len) break;
 
-            // Проверяем отступ (константы имеют отступ 2 пробела)
+            // Check отступ (константы имеют отступ 2 пробела)
             const indent = self.countIndent();
             if (indent < 2) break; // Меньше 2 = конец секции
             if (indent > 4) {
@@ -589,7 +589,7 @@ pub const VibeeParser = struct {
                 self.line += 1;
                 continue;
             }
-            // Проверяем строку
+            // Check строку
             const line_start = self.pos;
             var spaces: usize = 0;
             while (self.pos < self.source.len and self.source[self.pos] == ' ') {

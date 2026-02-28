@@ -32,8 +32,8 @@ pub const ValidatorConfig = struct {
 
 /// Результат проверки богатыря
 pub const BogatyrVerdict = enum {
-    Pass, // ✅ Проверка прошла
-    Fail, // ❌ Проверка не прошла
+    Pass, // ✅ Check прошла
+    Fail, // ❌ Check не прошла
     Warning, // ⚠️ Предупреждение
     Skip, // ⊘ Богатырь пропущен
 };
@@ -84,7 +84,7 @@ pub const Symbol = struct {
     line: usize,
 };
 
-/// Создает ошибку валидации
+/// Creates ошибку валидации
 pub fn createError(allocator: Allocator, code: []const u8, message: []const u8, line: usize, column: usize) !ValidationError {
     return ValidationError{
         .code = try allocator.dupe(u8, code),

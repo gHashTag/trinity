@@ -141,7 +141,7 @@ test "Full Benchmark v41: Все версии токенизаторов" {
     _ = tokenizer_v41.tokenizeV41(text);
     const r41 = bench("v41 combo", iters, tokenizer_v41.tokenizeV41, text);
 
-    // Вычисляем speedup
+    // Compute speedup
     const baseline = @as(f64, @floatFromInt(r39.avg_ns));
 
     std.debug.print("\n", .{});

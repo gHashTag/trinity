@@ -1,5 +1,5 @@
 // VIBEE BOGATYR - Spec Structure Validator
-// Проверяет структуру .vibee спецификации
+// Checks структуру .vibee спецификации
 // φ² + 1/φ² = 3 | PHOENIX = 999
 
 const std = @import("std");
@@ -36,11 +36,11 @@ fn validateSpecStructure(ctx: *const common.ValidationContext) !common.BogatyrRe
 
         checks += 1;
 
-        // Проверяем обязательные keys
+        // Check обязательные keys
         if (std.mem.indexOfScalar(u8, trimmed, ':')) |colon_idx| {
             const key = std.mem.trim(u8, trimmed[0..colon_idx], " ");
 
-            // Проверяем what keys присутствуют
+            // Check what keys присутствуют
             if (std.mem.eql(u8, key, "name") or
                 std.mem.eql(u8, key, "version") or
                 std.mem.eql(u8, key, "language") or
@@ -52,7 +52,7 @@ fn validateSpecStructure(ctx: *const common.ValidationContext) !common.BogatyrRe
         }
     }
 
-    // Проверяем наличие обязательных полей
+    // Check наличие обязательных полей
     var has_name = false;
     var has_version = false;
     var has_language = false;

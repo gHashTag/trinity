@@ -115,7 +115,7 @@ pub const StreamingMemory = struct {
         // bind(key, value)
         hdc.bind(key, value, bound);
 
-        // Добавляем to аккумулятору
+        // Add to аккумулятору
         for (0..dim) |i| {
             self.accumulator[i] += @floatFromInt(bound[i]);
         }
@@ -157,7 +157,7 @@ pub const StreamingMemory = struct {
         // unbind(M, key) = bind(M, key) for троичных векторов
         hdc.unbind(self.memory, key, result);
 
-        // Вычисляем уверенность via норму результата
+        // Compute уверенность via норму результата
         var norm: f64 = 0;
         for (0..dim) |i| {
             norm += @as(f64, @floatFromInt(result[i])) * @as(f64, @floatFromInt(result[i]));
@@ -203,10 +203,10 @@ pub const StreamingMemory = struct {
         const retrieved = try self.allocator.alloc(Trit, dim);
         defer self.allocator.free(retrieved);
 
-        // Получаем текущее value
+        // Get текущее value
         _ = self.retrieve(key, retrieved);
 
-        // Вычисляем bind(key, retrieved)
+        // Compute bind(key, retrieved)
         const bound = try self.allocator.alloc(Trit, dim);
         defer self.allocator.free(bound);
         hdc.bind(key, retrieved, bound);
@@ -284,13 +284,13 @@ test "store and retrieve" {
     // Сохраняем
     try mem.store(key.data, value.data);
 
-    // Извлекаем
+    // Extract
     const result_buf = try allocator.alloc(Trit, 1000);
     defer allocator.free(result_buf);
 
     const result = mem.retrieve(key.data, result_buf);
 
-    // Проверяем сходство with оригинальным значением
+    // Check сходство with оригинальным значением
     const sim = hdc.similarity(result.value, value.data);
     try std.testing.expect(sim > 0.5);
 }
@@ -318,7 +318,7 @@ test "multiple items" {
         }
     }
 
-    // Проверяем извлечение
+    // Check извлечение
     const result_buf = try allocator.alloc(Trit, 5000);
     defer allocator.free(result_buf);
 
@@ -350,14 +350,14 @@ test "forgetting reduces old" {
     const result_buf = try allocator.alloc(Trit, 500);
     defer allocator.free(result_buf);
 
-    // Извлекаем before забывания
+    // Extract before забывания
     const before = mem.retrieve(key.data, result_buf);
     const conf_before = before.confidence;
 
     // Применяем сильное забывание
     mem.applyForgetting(0.9);
 
-    // Извлекаем after забывания
+    // Extract after забывания
     const after = mem.retrieve(key.data, result_buf);
     const conf_after = after.confidence;
 

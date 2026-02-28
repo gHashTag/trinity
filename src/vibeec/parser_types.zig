@@ -324,7 +324,7 @@ pub const VibeeSpec = struct {
             self.allocator.free(self.source_content);
         }
 
-        // Освобождаем вложенные структуры
+        // Free вложенные структуры
         for (self.types.items) |*t| {
             t.fields.deinit(self.allocator);
             t.constraints.deinit(self.allocator);
@@ -346,7 +346,7 @@ pub const VibeeSpec = struct {
             f.timers.deinit(self.allocator);
         }
 
-        // Освобождаем основные списки
+        // Free основные списки
         self.languages.deinit(self.allocator);
         self.targets.deinit(self.allocator);
         self.imports.deinit(self.allocator);
