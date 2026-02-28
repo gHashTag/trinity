@@ -1,0 +1,280 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# real_jit_x86_64 v1.0.0 - KOSCHEI Real Machine Code JIT Specification
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Священная формула: V = n × 3^k × π^m × φ^p × e^q
+# Золотая идентичность: φ² + 1/φ² = 3
+#
+# REAL x86-64 Machine Code Generation - No more Zig optimizer lies
+# Phase 5: KOSCHEI AWAKENS v7.0 FINAL ASCENSION
+#
+# Target: Generate actual x86-64 machine code for sacred opcodes
+# Methods: asm! volatile blocks, register allocation, calling convention
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: real_jit_x86_64
+version: "1.0.0"
+language: zig
+module: real_jit_x86_64
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ТИПЫ
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  # x86-64 register (System V AMD64 ABI)
+  X86Register:
+    fields:
+      name: String        # rax, rcx, rdx, rbx, rsp, rbp, rsi, rdi
+      number: UInt8       # 0-31 for extended registers
+      is_callee_saved: Bool
+      is_argument: Bool
+      is_return: Bool
+
+  # Machine code buffer
+  MachineCode:
+    fields:
+      bytes: List<UInt8>
+      size: UInt32
+      entry_point: Ptr<Void>
+      is_executable: Bool
+
+  # Compiled x86-64 function
+  X86Function:
+    fields:
+      name: String
+      opcode: UInt8
+      machine_code: MachineCode
+      prologue_size: UInt16
+      epilogue_size: UInt16
+      register_usage: List<X86Register>
+      stack_size: UInt32
+
+  # JIT compiler context
+  X86JITContext:
+    fields:
+      allocator: Ptr<Allocator>
+      compiled_functions: HashMap<UInt8, X86Function>
+      code_buffer: Ptr<u8>
+      code_buffer_size: UInt32
+      code_buffer_used: UInt32
+      total_compiled: UInt32
+
+  # Sacred opcode metadata for codegen
+  SacredOpcodeInfo:
+    fields:
+      opcode: UInt8
+      name: String
+      operand_count: UInt8
+      result_type: String  # "f64", "i64", "bool"
+      has_side_effects: Bool
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # X86-64 CODE GENERATION
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: x86_jit_init
+    given: Allocator, code_buffer_size
+    when: JIT system initialization requested
+    then: Allocate RWX memory for machine code, initialize X86JITContext
+
+  - name: x86_emit_prologue
+    given: MachineCode buffer, stack_size
+    when: Function prologue needed
+    then: Emit push rbp; mov rbp, rsp; sub rsp, stack_size
+
+  - name: x86_emit_epilogue
+    given: MachineCode buffer
+    when: Function epilogue needed
+    then: Emit leave; ret
+
+  - name: x86_emit_mov_imm64
+    given: MachineCode buffer, register, immediate_value
+    when: Load 64-bit immediate into register
+    then: Emit mov r64, imm64 (10 bytes: REX.W B8+rd id)
+
+  - name: x86_emit_movsd_reg
+    given: MachineCode buffer, dest_reg, src_reg
+    when: Move float between XMM registers
+    when: Copy double precision value
+    then: Emit movsd dest, src (F2 0F 10 /r)
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SACRED OPCODE → x86-64 TRANSLATION
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: x86_compile_phi_pow
+    given: X86JITContext
+    when: phi_pow (0x81) sacred opcode compilation requested
+    then: Generate x86-64 function that computes φ^n using inline asm with preloaded PHI constant
+
+  - name: x86_compile_fib
+    given: X86JITContext
+    when: fib (0x82) sacred opcode compilation requested
+    then: Generate x86-64 function with unrolled loop for Fibonacci
+
+  - name: x86_compile_lucas
+    given: X86JITContext
+    when: lucas (0x83) sacred opcode compilation requested
+    then: Generate x86-64 function for Lucas numbers
+
+  - name: x86_compile_sacred_identity
+    given: X86JITContext
+    when: sacred_identity (0x8E) compilation requested
+    then: Generate inline x86-64 that verifies φ² + 1/φ² = 3 (constant-time)
+
+  - name: x86_compile_molar_mass
+    given: X86JITContext
+    when: molar_mass (0xA2) compilation requested
+    then: Generate x86-64 with jump table for element lookup (first 118 elements)
+
+  - name: x86_compile_ideal_gas
+    given: X86JITContext
+    when: ideal_gas (0xA8) compilation requested
+    then: Generate x86-64 using FMA (fused multiply-add) for PV=nRT
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # CONSTANT LOADING (Precomputed Tables)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: x86_load_phi_constant
+    given: MachineCode buffer, dest_xmm_reg
+    when: PHI constant (1.618033988749895) needed
+    then: Emit movsd with memory operand from read-only PHI constant pool
+
+  - name: x86_load_pi_constant
+    given: MachineCode buffer, dest_xmm_reg
+    when: π constant (3.141592653589793) needed
+    then: Emit movsd from π constant pool
+
+  - name: x86_load_e_constant
+    given: MachineCode buffer, dest_xmm_reg
+    when: e constant (2.718281828459045) needed
+    then: Emit movsd from e constant pool
+
+  - name: create_constant_pool
+    given: X86JITContext
+    when: Constant pool initialization requested
+    then: Allocate read-only memory with PHI, π, e, √2, √3, √5 aligned to 16 bytes
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # CODE BUFFER MANAGEMENT
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: x86_alloc_code
+    given: X86JITContext, size_bytes
+    when: Machine code space needed
+    then: Return pointer to RWX memory region, update buffer_used
+
+  - name: x86_make_executable
+    given: MachineCode buffer
+    when: Code generation complete, ready to execute
+    then: Call mprotect to set RX permissions, flush instruction cache
+
+  - name: x86_free_code
+    given: X86JITContext, MachineCode
+    when: Function no longer needed
+    then: mprotect to RW, deallocate
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # VM INTEGRATION
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: vm_execute_jit_compiled
+    given: VSAVM, X86JITContext, bytecode
+    when: Program execution with JIT enabled
+    then: Use compiled x86-64 functions when available, fallback to interpreter
+
+  - name: vm_hot_compile_all
+    given: VSAVM, X86JITContext
+    when: Compile all sacred opcodes to x86-64
+    then: Iterate through 0x80-0xFF, compile each sacred opcode
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # PROFILING & STATISTICS
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: x86_jit_get_stats
+    given: X86JITContext
+    when: Statistics requested
+    then: Return total compiled, code size, execution counts
+
+  - name: x86_disassemble_function
+    given: X86Function
+    when: Debug/disassembly requested
+    then: Return human-readable x86-64 assembly listing
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TEST CASES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+test_cases:
+  - name: x86_jit_init_test
+    given: Fresh allocator with 64KB buffer
+    when: x86_jit_init called
+    then: Context created with RWX memory, buffer_size=65536
+
+  - name: phi_pow_x86_compilation_test
+    given: X86JITContext
+    when: x86_compile_phi_pow called
+    then: Machine code generated, begins with prologue, ends with ret
+
+  - name: constant_pool_test
+    given: X86JITContext
+    when: create_constant_pool called
+    then: PHI, π, e available at aligned addresses
+
+  - name: execution_test
+    given: Compiled phi_pow function, n=10
+    when: Function executed
+    then: Returns φ^10 = 122.991869..., matches interpreter
+
+  - name: code_size_test
+    given: Compiled sacred identity function
+    when: x86_jit_get_stats called
+    then: Code size < 256 bytes (compact due to constant-time check)
+
+  - name: all_sacred_opcodes_test
+    given: X86JITContext with all 41 sacred opcodes
+    when: vm_hot_compile_all called
+    then: All functions compiled, total code size < 64KB
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONSTANTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  PHI: 1.6180339887498948482
+  PI: 3.14159265358979323846
+  E: 2.71828182845904523536
+  SQRT2: 1.4142135623730950488
+  SQRT3: 1.7320508075688772935
+  SQRT5: 2.2360679774997896964
+  CODE_BUFFER_SIZE: 65536  # 64KB default
+  CONSTANT_POOL_ALIGN: 16
+
+# x86-64 opcodes (simplified)
+X86_MOV_R64_IMM64: 0xB8  # +rd (REX.W prefix)
+X86_MOVSD_XMM_XMM: 0xF20F10  # /r
+X86_RET: 0xC3
+X86_PUSH_RBP: 0x55
+X86_MOV_RBP_RSP: 0x4889E5
+X86_LEAVE: 0xC9
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# METADATA
+# ═══════════════════════════════════════════════════════════════════════════════
+
+metadata:
+  author: Trinity Cycle 109
+  date: 2026-02-28
+  cycle: 109
+  phase: 5
+  status: SPEC_COMPLETE
+  target: Real x86-64 machine code generation for 603x

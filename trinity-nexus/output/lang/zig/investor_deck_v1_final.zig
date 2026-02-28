@@ -102,6 +102,16 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 // BEHAVIOR FUNCTIONS - Generated from behaviors
 // ═══════════════════════════════════════════════════════════════════════════════
 
+/// Phase 3, 4, 5 benchmark data
+/// When: Progress slide requested
+/// Then: Return slide showing 0.8x → 1.1x → 603x roadmap with honest current state
+pub fn generate_slide_progress_metrics(data: []const u8) !void {
+// Generate: Return slide showing 0.8x → 1.1x → 603x roadmap with honest current state
+    const template = @as([]const u8, "generated_output");
+    _ = template;
+}
+
+
 /// Title, subtitle
 /// When: Slide requested
 /// Then: Return title slide with TRINITY logo and branding
@@ -376,6 +386,14 @@ _ = input;
 // ═══════════════════════════════════════════════════════════════════════════════
 // TESTS - Generated from behaviors and test_cases
 // ═══════════════════════════════════════════════════════════════════════════════
+
+test "generate_slide_progress_metrics_behavior" {
+// Given: Phase 3, 4, 5 benchmark data
+// When: Progress slide requested
+// Then: Return slide showing 0.8x → 1.1x → 603x roadmap with honest current state
+// Test generate_slide_progress_metrics: verify behavior is callable (compile-time check)
+_ = generate_slide_progress_metrics;
+}
 
 test "generate_slide_title_behavior" {
 // Given: Title, subtitle

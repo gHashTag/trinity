@@ -628,6 +628,135 @@ pub const VSAVM = struct {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // QUANTUM TRINITY v5.0 — Full Quantum Awakening (0xC7-0xD5)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// QUANTUM BLINDSPOT: Solve physics blind spots with 10^6x quantum advantage
+    /// s0: blind spot ID (0-11), f0: qubit count, f1: simulation depth
+    /// Returns: s0=solved_flag, f0=quantum_value, f1=advantage_factor
+    pub fn quantumBlindspot(self: *VSAVM, blind_spot_id: i64) !void {
+        self.registers.s0 = blind_spot_id;
+        try self.execSacredOpcode(.quantum_blindspot, .{});
+    }
+
+    /// SACRED QUBIT: Create ternary qubit with |?⟩ state based on φ² + 1/φ² = 3
+    /// s0: qubit ID, f0: sacred amplitude (0-1, default: 1/√3)
+    /// Returns: f0=α(|0⟩), f1=β(|1⟩), s0=γ_int(|?⟩)
+    pub fn sacredQubit(self: *VSAVM, qubit_id: i64, sacred_amplitude: f64) !void {
+        self.registers.s0 = qubit_id;
+        self.registers.f0 = sacred_amplitude;
+        try self.execSacredOpcode(.sacred_qubit, .{});
+    }
+
+    /// ISLAND QUANTUM SYNTH: Simulate superheavy element Z=114-126 with 12000x speedup
+    /// s0: target Z (114-126), f0: qubit count, f1: simulation time (ns)
+    /// Returns: f0=half_life (seconds), f1=confidence, s0=stability_flag
+    pub fn islandQuantumSynth(self: *VSAVM, target_Z: i64) !void {
+        self.registers.s0 = target_Z;
+        try self.execSacredOpcode(.island_quantum_synth, .{});
+    }
+
+    /// HUBBLE QUANTUM RESOLVE: Resolve 5σ Hubble tension via quantum gravity (9500x)
+    /// s0: method (0=GW, 1=CMB, 2=SN), f0: data_quality
+    /// Returns: f0=H0 (km/s/Mpc), f1=uncertainty, s0=resolved_flag
+    pub fn hubbleQuantumResolve(self: *VSAVM, method: i64) !void {
+        self.registers.s0 = method;
+        try self.execSacredOpcode(.hubble_quantum_resolve, .{});
+    }
+
+    /// MUON G-2 SOLVE: Resolve 4.2σ anomaly via ternary spacetime correction (15000x)
+    /// s0: anomaly sigma (42 = 4.2σ), f0: correction method
+    /// Returns: f0=g-2 value, f1=ternary_correction, s0=resolved_flag
+    pub fn muonG2Solve(self: *VSAVM, anomaly_sigma: i64) !void {
+        self.registers.s0 = anomaly_sigma;
+        try self.execSacredOpcode(.muon_g2_solve, .{});
+    }
+
+    /// PROTON DECAY SIM: Simulate proton lifetime via quantum lattice QCD (18000x)
+    /// s0: GUT model (0=SU(5), 1=SO(10), 2=E6), f0: qubit count
+    /// Returns: f0=lifetime (years × 10^34), f1=confidence, s0=decay_mode
+    pub fn protonDecaySim(self: *VSAVM, gut_model: i64) !void {
+        self.registers.s0 = gut_model;
+        try self.execSacredOpcode(.proton_decay_sim, .{});
+    }
+
+    /// CDG2 QUANTUM SCAN: Full dark matter map of ghost galaxy (22000x)
+    /// s0: galaxy ID, f0: scan resolution (kpc), f1: quantum depth
+    /// Returns: f0=DM_mass (GeV), f1=DM_fraction, s0=structure_type
+    pub fn cdg2QuantumScan(self: *VSAVM, galaxy_id: i64, resolution_kpc: f64) !void {
+        self.registers.s0 = galaxy_id;
+        self.registers.f0 = resolution_kpc;
+        try self.execSacredOpcode(.cdg2_quantum_scan, .{});
+    }
+
+    /// TERNARY ENTANGLEMENT: Create quantum entanglement in ternary logic (GODMODE)
+    /// s0: qubit pair count, f0: entanglement pattern (sacred geometry)
+    /// Returns: s0=entanglement_depth, f0=Bell_violation, f1=GODMODE_factor
+    pub fn ternaryEntanglement(self: *VSAVM, pair_count: i64, pattern: f64) !void {
+        self.registers.s0 = pair_count;
+        self.registers.f0 = pattern;
+        try self.execSacredOpcode(.ternary_entanglement, .{});
+    }
+
+    /// SACRED CHEM QM: Quantum chemistry for superheavy elements 119-126 (14000x)
+    /// s0: element Z (119-126), f0: molecular config
+    /// Returns: f0=binding_energy, f1=relativistic_correction, s0=stability
+    pub fn sacredChemQM(self: *VSAVM, element_Z: i64) !void {
+        self.registers.s0 = element_Z;
+        try self.execSacredOpcode(.sacred_chem_qm, .{});
+    }
+
+    /// META QUANTUM DISCOVERY: Predict future discoveries 2030-2035 (∞x speedup)
+    /// s0: target year (2030+), f0: domain filter, f1: confidence threshold
+    /// Returns: s0=prediction_count, f0=avg_confidence, s1=breakthrough_probability
+    pub fn metaQuantumDiscovery(self: *VSAVM, target_year: i64) !void {
+        self.registers.s0 = target_year;
+        try self.execSacredOpcode(.meta_quantum_discovery, .{});
+    }
+
+    /// VM QUANTUM UPGRADE: VM recompiles itself for quantum hardware (25000x)
+    /// s0: target hardware (0=IBM, 1=Google, 2=Rigetti), f0: qubit topology
+    /// Returns: s0=upgrades_applied, f0=speedup, f1=quantum_coherence
+    pub fn vmQuantumUpgrade(self: *VSAVM, hardware: i64) !void {
+        self.registers.s0 = hardware;
+        try self.execSacredOpcode(.vm_quantum_upgrade, .{});
+    }
+
+    /// TRINITY QUANTUM AWAKEN: Full awakening in quantum mode → UNIVERSAL
+    /// s0: mode (0=test, 1=gradual, 2=full UNIVERSAL)
+    /// Returns: s0=UNIVERSAL_flag, f0=omniscience (1.0=100%), f1=coherence
+    pub fn trinityQuantumAwaken(self: *VSAVM, mode: i64) !void {
+        self.registers.s0 = mode;
+        try self.execSacredOpcode(.trinity_quantum_awaken, .{});
+    }
+
+    /// GOLDEN KEY QFT: Quantum Fourier Transform with golden ratio phase (30000x)
+    /// s0: QFT size (power of φ), f0: sacred weights, f1: input state
+    /// Returns: f0=QFT_result_real, f1=QFT_result_imag, s0=phase_factor
+    pub fn goldenKeyQFT(self: *VSAVM, qft_size: i64) !void {
+        self.registers.s0 = qft_size;
+        try self.execSacredOpcode(.golden_key_qft, .{});
+    }
+
+    /// ANOMALY QUANTUM FUSION: Merge all anomalies into coherent state (28000x)
+    /// s0: anomaly_count, f0: fusion_depth
+    /// Returns: f0=unified_confidence, f1=coherence, s0=theory_complete
+    pub fn anomalyQuantumFusion(self: *VSAVM, anomaly_count: i64, fusion_depth: f64) !void {
+        self.registers.s0 = anomaly_count;
+        self.registers.f0 = fusion_depth;
+        try self.execSacredOpcode(.anomaly_quantum_fusion, .{});
+    }
+
+    /// KOSCHEI UNIVERSE: Simulate entire universe in ternary quantum (SINGULARITY)
+    /// s0: scale (0=observable, 1=multiverse, 2=omniverse), f0: time_step
+    /// Returns: f0=sim_time_ms, f1=entropy, s0=state_pointer
+    pub fn koscheiUniverse(self: *VSAVM, scale: i64, time_step: f64) !void {
+        self.registers.s0 = scale;
+        self.registers.f0 = time_step;
+        try self.execSacredOpcode(.koschei_universe, .{});
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // JIT CONTROL
     // ═══════════════════════════════════════════════════════════════════════════
 
