@@ -1,0 +1,339 @@
+# Trinity Core Binary Release Workflow
+# Builds cross-platform binaries for v1.0.1 "PURITY"
+# Targets: linux/amd64, linux/arm64, macos/amd64, macos/arm64, windows/amd64
+# φ² + 1/φ² = 3 | TRINITY v1.0.1
+
+name: Trinity Binary Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., v1.0.1)'
+        required: true
+        default: 'v1.0.1'
+
+env:
+  ZIG_VERSION: '0.15.2'
+
+jobs:
+  build-linux-amd64:
+    name: Build Linux AMD64
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: ${{ env.ZIG_VERSION }}
+
+      - name: Build TRI CLI
+        run: |
+          zig build tri -Dtarget=x86_64-linux-gnu.2.35 -Drelease-fast
+          mkdir -p release/linux-amd64
+          cp zig-out/bin/tri release/linux-amd64/
+          chmod +x release/linux-amd64/tri
+
+      - name: Build VIBEE Compiler
+        run: |
+          zig build vibee -Dtarget=x86_64-linux-gnu.2.35 -Drelease-fast
+          cp zig-out/bin/vibee release/linux-amd64/
+          chmod +x release/linux-amd64/vibee
+
+      - name: Build Firebird
+        run: |
+          zig build firebird -Dtarget=x86_64-linux-gnu.2.35 -Drelease-fast
+          cp zig-out/bin/firebird release/linux-amd64/
+          chmod +x release/linux-amd64/firebird
+
+      - name: Create tarball
+        run: |
+          cd release/linux-amd64
+          tar czvf ../trinity-${{ github.ref_name }}-linux-amd64.tar.gz *
+          cd ../..
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trinity-linux-amd64
+          path: release/trinity-*-linux-amd64.tar.gz
+
+  build-linux-arm64:
+    name: Build Linux ARM64
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: ${{ env.ZIG_VERSION }}
+
+      - name: Build TRI CLI
+        run: |
+          zig build tri -Dtarget=aarch64-linux-gnu.2.35 -Drelease-fast
+          mkdir -p release/linux-arm64
+          cp zig-out/bin/tri release/linux-arm64/
+          chmod +x release/linux-arm64/tri
+
+      - name: Build VIBEE Compiler
+        run: |
+          zig build vibee -Dtarget=aarch64-linux-gnu.2.35 -Drelease-fast
+          cp zig-out/bin/vibee release/linux-arm64/
+          chmod +x release/linux-arm64/vibee
+
+      - name: Build Firebird
+        run: |
+          zig build firebird -Dtarget=aarch64-linux-gnu.2.35 -Drelease-fast
+          cp zig-out/bin/firebird release/linux-arm64/
+          chmod +x release/linux-arm64/firebird
+
+      - name: Create tarball
+        run: |
+          cd release/linux-arm64
+          tar czvf ../trinity-${{ github.ref_name }}-linux-arm64.tar.gz *
+          cd ../..
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trinity-linux-arm64
+          path: release/trinity-*-linux-arm64.tar.gz
+
+  build-macos-amd64:
+    name: Build macOS AMD64
+    runs-on: macos-13
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: ${{ env.ZIG_VERSION }}
+
+      - name: Build TRI CLI
+        run: |
+          zig build tri -Dtarget=x86_64-macos-gnu -Drelease-fast
+          mkdir -p release/macos-amd64
+          cp zig-out/bin/tri release/macos-amd64/
+          chmod +x release/macos-amd64/tri
+
+      - name: Build VIBEE Compiler
+        run: |
+          zig build vibee -Dtarget=x86_64-macos-gnu -Drelease-fast
+          cp zig-out/bin/vibee release/macos-amd64/
+          chmod +x release/macos-amd64/vibee
+
+      - name: Build Firebird
+        run: |
+          zig build firebird -Dtarget=x86_64-macos-gnu -Drelease-fast
+          cp zig-out/bin/firebird release/macos-amd64/
+          chmod +x release/macos-amd64/firebird
+
+      - name: Create zip
+        run: |
+          cd release/macos-amd64
+          zip -r ../../trinity-${{ github.ref_name }}-macos-amd64.zip *
+          cd ../..
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trinity-macos-amd64
+          path: release/trinity-*-macos-amd64.zip
+
+  build-macos-arm64:
+    name: Build macOS ARM64
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: ${{ env.ZIG_VERSION }}
+
+      - name: Build TRI CLI
+        run: |
+          zig build tri -Dtarget=aarch64-macos-gnu -Drelease-safe
+          mkdir -p release/macos-arm64
+          cp zig-out/bin/tri release/macos-arm64/
+          chmod +x release/macos-arm64/tri
+
+      - name: Build VIBEE Compiler
+        run: |
+          zig build vibee -Dtarget=aarch64-macos-gnu -Drelease-safe
+          cp zig-out/bin/vibee release/macos-arm64/
+          chmod +x release/macos-arm64/vibee
+
+      - name: Build Firebird
+        run: |
+          zig build firebird -Dtarget=aarch64-macos-gnu -Drelease-safe
+          cp zig-out/bin/firebird release/macos-arm64/
+          chmod +x release/macos-arm64/firebird
+
+      - name: Create zip
+        run: |
+          cd release/macos-arm64
+          zip -r ../../trinity-${{ github.ref_name }}-macos-arm64.zip *
+          cd ../..
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trinity-macos-arm64
+          path: release/trinity-*-macos-arm64.zip
+
+  build-windows:
+    name: Build Windows AMD64
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: ${{ env.ZIG_VERSION }}
+
+      - name: Build TRI CLI
+        run: |
+          zig build tri -Dtarget=x86_64-windows-gnu -Drelease-fast
+          mkdir -p release/windows-amd64
+          cp zig-out/bin/tri.exe release/windows-amd64/
+
+      - name: Build VIBEE Compiler
+        run: |
+          zig build vibee -Dtarget=x86_64-windows-gnu -Drelease-fast
+          cp zig-out/bin/vibee.exe release/windows-amd64/
+
+      - name: Build Firebird
+        run: |
+          zig build firebird -Dtarget=x86_64-windows-gnu -Drelease-fast
+          cp zig-out/bin/firebird.exe release/windows-amd64/
+
+      - name: Create zip
+        run: |
+          cd release/windows-amd64
+          zip -r ../../trinity-${{ github.ref_name }}-windows-amd64.zip *
+          cd ../..
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trinity-windows-amd64
+          path: release/trinity-*-windows-amd64.zip
+
+  generate-checksums:
+    name: Generate Checksums
+    runs-on: ubuntu-latest
+    needs: [build-linux-amd64, build-linux-arm64, build-macos-amd64, build-macos-arm64, build-windows]
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release
+
+      - name: Generate SHA256 checksums
+        run: |
+          cd release
+          find . -type f \( -name "*.tar.gz" -o -name "*.zip" \) -exec sha256sum {} \; > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Upload checksums
+        uses: actions/upload-artifact@v4
+        with:
+          name: checksums
+          path: release/SHA256SUMS.txt
+
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [generate-checksums]
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          make_latest: true
+          files: |
+            release/trinity-*/*.tar.gz
+            release/trinity-*/*.zip
+            release/checksums/SHA256SUMS.txt
+          body: |
+            # Trinity ${{ github.ref_name }} "PURITY"
+
+            **φ² + 1/φ² = 3 | TRINITY v1.0.1**
+
+            ## Downloads
+
+            | Platform | Architecture | Download |
+            |----------|-------------|----------|
+            | Linux | AMD64 | `trinity-${{ github.ref_name }}-linux-amd64.tar.gz` |
+            | Linux | ARM64 | `trinity-${{ github.ref_name }}-linux-arm64.tar.gz` |
+            | macOS | Intel | `trinity-${{ github.ref_name }}-macos-amd64.zip` |
+            | macOS | Apple Silicon | `trinity-${{ github.ref_name }}-macos-arm64.zip` |
+            | Windows | AMD64 | `trinity-${{ github.ref_name }}-windows-amd64.zip` |
+
+            ## Verification
+
+            ```bash
+            # Verify SHA256 checksum
+            sha256sum -c SHA256SUMS.txt
+            ```
+
+            ## Quick Start
+
+            ```bash
+            # Extract and run
+            tar xzf trinity-${{ github.ref_name }}-linux-amd64.tar.gz
+            ./tri --help
+
+            # Or with Docker
+            docker pull ghcr.io/ghashtag/trinity:${{ github.ref_name }}
+            docker run ghcr.io/ghashtag/trinity:${{ github.ref_name }} tri --help
+            ```
+
+            ## What's Included
+
+            - **tri**: Unified Trinity CLI (195+ commands)
+            - **vibee**: VIBEE specification compiler
+            - **firebird**: BitNet-to-Ternary inference engine
+
+            ## Documentation
+
+            - Full API Reference: https://gHashTag.github.io/trinity/docs/api
+            - Quick Start: https://gHashTag.github.io/trinity/docs/quick-start
+            - GitHub Repository: https://github.com/gHashTag/trinity
+
+            ## Performance
+
+            - ARM64 NEON SIMD: 2.96x - 41.65x speedup
+            - Memory Efficiency: 20x vs float32
+            - VSA Operations: 1000+ ops/ms
+          fail_on_unmatched_files: false
