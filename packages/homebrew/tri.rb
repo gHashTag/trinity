@@ -8,7 +8,7 @@ class Tri < Formula
   desc "Unified Trinity CLI — Chat, Code, Vision, Voice, Tools, Autonomous Agents"
   homepage "https://github.com/gHashTag/trinity"
   url "https://github.com/gHashTag/trinity.git", branch: "main"
-  version "0.11.0"
+  version "1.0.0"
   license "MIT"
 
   depends_on "zig" => ["0.15", :build]
@@ -16,10 +16,10 @@ class Tri < Formula
   # Bottles for macOS (optional - prebuilt binaries)
   if OS.mac?
     if Hardware::CPU.arm?
-      url "https://github.com/gHashTag/trinity/releases/download/v0.11.0/tri-aarch64-macos.tar.gz"
+      url "https://github.com/gHashTag/trinity/releases/download/v1.0.0/tri-aarch64-macos.tar.gz"
       sha256 "tri-aarch64-macos-sha256-placeholder"  # TODO: Update on release
     else
-      url "https://github.com/gHashTag/trinity/releases/download/v0.11.0/tri-x86_64-macos.tar.gz"
+      url "https://github.com/gHashTag/trinity/releases/download/v1.0.0/tri-x86_64-macos.tar.gz"
       sha256 "tri-x86_64-macos-sha256-placeholder"  # TODO: Update on release
     end
   end
