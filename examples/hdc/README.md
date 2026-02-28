@@ -1,8 +1,8 @@
-# Примеры использования HDC модуля
+# Прandмеры andwithпользоinанandя HDC модуля
 
-## Быстрый старт
+## Быwithтрый withтарт
 
-### 1. Базовые HDC операции
+### 1. Базоinые HDC операцandand
 
 ```zig
 const std = @import("std");
@@ -13,29 +13,29 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    // Создаём два случайных вектора
+    // Создаём дinа withлучайных inеtoтора
     var a = try hdc.randomVector(allocator, 1000, 12345);
     defer a.deinit();
     var b = try hdc.randomVector(allocator, 1000, 67890);
     defer b.deinit();
 
-    // Bind - создание ассоциации
+    // Bind - withозданandе аwithwithоцandацandand
     var bound = try hdc.HyperVector.init(allocator, 1000);
     defer bound.deinit();
     hdc.bind(a.data, b.data, bound.data);
 
-    // Unbind - извлечение (самообратимость)
+    // Unbind - andзinлеченandе (withамообратandмоwithть)
     var recovered = try hdc.HyperVector.init(allocator, 1000);
     defer recovered.deinit();
     hdc.unbind(bound.data, b.data, recovered.data);
 
-    // Проверяем сходство
+    // Проinеряем withходwithтinо
     const sim = hdc.similarity(a.data, recovered.data);
-    std.debug.print("Сходство после unbind: {d:.3}\n", .{sim});
+    std.debug.print("Сходwithтinо поwithле unbind: {d:.3}\n", .{sim});
 }
 ```
 
-### 2. Онлайн классификатор
+### 2. Онлайн toлаwithwithandфandtoатор
 
 ```zig
 const clf = @import("../../src/phi-engine/hdc/online_classifier.zig");
@@ -46,33 +46,33 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    // Создаём классификатор
+    // Создаём toлаwithwithandфandtoатор
     var classifier = clf.OnlineClassifier.init(allocator, .{
         .dim = 1000,
         .learning_rate = 0.1,
     });
     defer classifier.deinit();
 
-    // Создаём примеры для двух классов
+    // Создаём прandмеры for дinух toлаwithwithоin
     var class_a = try hdc.randomVector(allocator, 1000, 11111);
     defer class_a.deinit();
     var class_b = try hdc.randomVector(allocator, 1000, 22222);
     defer class_b.deinit();
 
     // Обучаем
-    try classifier.train(class_a.data, "кошка");
-    try classifier.train(class_b.data, "собака");
+    try classifier.train(class_a.data, "toошtoа");
+    try classifier.train(class_b.data, "withобаtoа");
 
-    // Предсказываем
+    // Предwithtoазыinаем
     const result = classifier.predict(class_a.data);
-    std.debug.print("Класс: {s}, Уверенность: {d:.2}\n", .{
+    std.debug.print("Клаwithwith: {s}, Уinеренноwithть: {d:.2}\n", .{
         result.label,
         result.confidence,
     });
 }
 ```
 
-### 3. RL агент в GridWorld
+### 3. RL агент in GridWorld
 
 ```zig
 const rl = @import("../../src/phi-engine/hdc/rl_agent.zig");
@@ -83,7 +83,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    // Создаём среду 4x4
+    // Создаём withреду 4x4
     var env = try gw.GridWorld.init(allocator, .{
         .width = 4,
         .height = 4,
@@ -100,7 +100,7 @@ pub fn main() !void {
 
     try agent.initQTable(env.numStates());
 
-    // Обучаем 100 эпизодов
+    // Обучаем 100 эпandзодоin
     for (0..100) |_| {
         var state = env.reset();
         while (true) {
@@ -113,11 +113,11 @@ pub fn main() !void {
         agent.decayEpsilon();
     }
 
-    std.debug.print("Обучение завершено!\n", .{});
+    std.debug.print("Обученandе заinершено!\n", .{});
 }
 ```
 
-### 4. Потоковая память
+### 4. Пfromоtoоinая память
 
 ```zig
 const sm = @import("../../src/phi-engine/hdc/streaming_memory.zig");
@@ -135,7 +135,7 @@ pub fn main() !void {
     });
     defer mem.deinit();
 
-    // Создаём ключ и значение
+    // Создаём toлюч and зonченandе
     var key = try hdc.randomVector(allocator, 2000, 11111);
     defer key.deinit();
     var value = try hdc.randomVector(allocator, 2000, 22222);
@@ -144,26 +144,26 @@ pub fn main() !void {
     // Сохраняем
     try mem.store(key.data, value.data);
 
-    // Извлекаем
+    // Изinлеtoаем
     const result_buf = try allocator.alloc(hdc.Trit, 2000);
     defer allocator.free(result_buf);
 
     const result = mem.retrieve(key.data, result_buf);
-    std.debug.print("Найдено: {}, Уверенность: {d:.3}\n", .{
+    std.debug.print("Найдено: {}, Уinеренноwithть: {d:.3}\n", .{
         result.found,
         result.confidence,
     });
 
-    // Применяем забывание
+    // Прandменяем забыinанandе
     mem.applyForgetting(0.5);
-    std.debug.print("Память после забывания\n", .{});
+    std.debug.print("Память поwithле забыinанandя\n", .{});
 }
 ```
 
-## Запуск примеров
+## Запуwithto прandмероin
 
 ```bash
-# Компиляция и запуск
+# Компandляцandя and запуwithto
 cd examples/hdc
 zig run example_basic.zig
 zig run example_classifier.zig
@@ -174,7 +174,7 @@ zig run example_memory.zig
 ## Полное демо
 
 ```bash
-# Запуск демо GridWorld с визуализацией
+# Запуwithto демо GridWorld with inandзуалandзацandей
 cd /workspaces/trinity
 zig build-exe src/phi-engine/hdc/demo_gridworld.zig -O ReleaseFast
 ./demo_gridworld

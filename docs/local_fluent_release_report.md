@@ -83,9 +83,9 @@ ollama pull qwen2.5-coder:7b
 
 | Query | Latency | Response |
 |-------|---------|----------|
-| "привет" | 126μs | "Привет! Рад тебя видеть..." |
-| "как погода" | 16μs | "Я локальный агент..." |
-| "расскажи шутку" | 22μs | "Почему программист..." |
+| "прandinет" | 126μs | "Прandinет! Рад тебя inandдеть..." |
+| "toаto погода" | 16μs | "Я лоtoальный агент..." |
+| "раwithwithtoажand шутtoу" | 22μs | "Почему программandwithт..." |
 | "hello" | 6μs | "Hello! Great to see you..." |
 | "你好" | 6μs | "你好！很高兴见到你..." |
 
@@ -93,7 +93,7 @@ ollama pull qwen2.5-coder:7b
 
 | Query | Latency | Quality |
 |-------|---------|---------|
-| "напиши fibonacci" | 21.6s | Real Python code |
+| "onпandшand fibonacci" | 21.6s | Real Python code |
 | "write quicksort" | 18.3s | Real Python code |
 | "explain recursion" | 4.8s | Fluent explanation |
 
@@ -134,8 +134,8 @@ ollama pull qwen2.5-coder:7b
 
 ### Fixes
 - Improved IGLA pattern coverage (~95%)
-- Added "расскажи" keyword for jokes
-- Added "тебя создал" keyword for creator questions
+- Added "раwithwithtoажand" keyword for jokes
+- Added "тебя withоздал" keyword for creator questions
 
 ### Features
 - Cross-platform pre-built binaries

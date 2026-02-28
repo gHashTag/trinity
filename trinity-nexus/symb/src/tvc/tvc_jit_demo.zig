@@ -5,7 +5,7 @@ const tvc_vm_jit = @import("tvc_vm_jit.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TVC JIT DEMONSTRATION
-// Демонстрация JIT компиляции и сравнение с интерпретатором
+// Демонwithтрацandя JIT toомпandляцandand and withраinненandе with andнтерпретатором
 // ═══════════════════════════════════════════════════════════════════════════
 
 pub fn main() !void {
@@ -13,28 +13,28 @@ pub fn main() !void {
 
     std.debug.print("╔════════════════════════════════════════════════╗\n", .{});
     std.debug.print("║           TVC JIT DEMONSTRATION                 ║\n", .{});
-    std.debug.print("║  Компиляция TVC IR в нативный x86_64 код        ║\n", .{});
+    std.debug.print("║  Компandляцandя TVC IR in onтandinный x86_64 toод        ║\n", .{});
     std.debug.print("╚════════════════════════════════════════════════╝\n\n", .{});
 
-    // 1. Создаём тестовый модуль
+    // 1. Создаём теwithтоinый модуль
     std.debug.print("═══ [1] СОЗДАНИЕ ТЕСТОВОГО МОДУЛЯ ═══\n", .{});
     var module = try createTestModule(allocator);
-    std.debug.print("✓ Модуль создан: {s}\n", .{module.name});
-    std.debug.print("  Функций: {}\n", .{module.functions.count()});
+    std.debug.print("✓ Модуль withоздан: {s}\n", .{module.name});
+    std.debug.print("  Фунtoцandй: {}\n", .{module.functions.count()});
 
-    // 2. Тест JIT компилятора
+    // 2. Теwithт JIT toомпandлятора
     std.debug.print("\n═══ [2] ТЕСТ JIT КОМПИЛЯТОРА ═══\n", .{});
     try testJITCompiler(allocator, &module);
 
-    // 3. Тест адаптивного режима
+    // 3. Теwithт адаптandinного режandма
     std.debug.print("\n═══ [3] ТЕСТ АДАПТИВНОГО РЕЖИМА ═══\n", .{});
     try testAdaptiveMode(allocator, &module);
 
-    // 4. Бенчмарк VM vs JIT
+    // 4. Бенчмарto VM vs JIT
     std.debug.print("\n═══ [4] БЕНЧМАРК VM vs JIT ═══\n", .{});
     try runBenchmarks(allocator, &module);
 
-    // 5. Статистика
+    // 5. Статandwithтandtoа
     std.debug.print("\n═══ [5] ИТОГОВАЯ СТАТИСТИКА ═══\n", .{});
     printSummary();
 
@@ -46,7 +46,7 @@ pub fn main() !void {
 fn createTestModule(allocator: std.mem.Allocator) !tvc_ir.TVCModule {
     var module = tvc_ir.TVCModule.init(allocator, "jit_test_module");
 
-    // Функция 1: trinary_logic (NOT, AND, OR, XOR)
+    // Фунtoцandя 1: trinary_logic (NOT, AND, OR, XOR)
     const func1 = try module.addFunction("trinary_logic");
     var block1 = tvc_ir.TVCBlock.init(allocator, "entry");
     block1.entry_point = 0;
@@ -81,7 +81,7 @@ fn createTestModule(allocator: std.mem.Allocator) !tvc_ir.TVCModule {
     try func1.blocks.put("entry", block1);
     func1.returns = .i64_trit;
 
-    // Функция 2: arithmetic (ADD, SUB, MUL)
+    // Фунtoцandя 2: arithmetic (ADD, SUB, MUL)
     const func2 = try module.addFunction("arithmetic");
     var block2 = tvc_ir.TVCBlock.init(allocator, "entry");
     block2.entry_point = 0;
@@ -111,7 +111,7 @@ fn createTestModule(allocator: std.mem.Allocator) !tvc_ir.TVCModule {
     try func2.blocks.put("entry", block2);
     func2.returns = .i64_trit;
 
-    // Функция 3: implies (IMPLIES - сложная операция)
+    // Фунtoцandя 3: implies (IMPLIES - withложonя операцandя)
     const func3 = try module.addFunction("implies");
     var block3 = tvc_ir.TVCBlock.init(allocator, "entry");
     block3.entry_point = 0;
@@ -131,31 +131,31 @@ fn createTestModule(allocator: std.mem.Allocator) !tvc_ir.TVCModule {
     try func3.blocks.put("entry", block3);
     func3.returns = .i64_trit;
 
-    // Функция 4: sum_loop - сумма 1..100 (развёрнутый цикл для VM)
-    // Эмулируем цикл через повторяющиеся инструкции
+    // Фунtoцandя 4: sum_loop - withумма 1..100 (разinёрнутый цandtoл for VM)
+    // Эмулandруем цandtoл через поinторяющandеwithя andнwithтруtoцandand
     const func4 = try module.addFunction("sum_100");
     var block4 = tvc_ir.TVCBlock.init(allocator, "entry");
     block4.entry_point = 0;
     
-    // Инициализируем: i0 = 0 (сумма), i1 = 100 (счётчик)
+    // Инandцandалandзandруем: i0 = 0 (withумма), i1 = 100 (withчётчandto)
     try block4.instructions.append(tvc_ir.TVCInstruction{
         .opcode = .loop_init,
         .operands = &[_]u64{100},
         .location = 0,
     });
     
-    // Развёрнутый цикл: 100 итераций add + dec
+    // Разinёрнутый цandtoл: 100 andтерацandй add + dec
     var loc: u32 = 1;
     var i: u32 = 0;
     while (i < 100) : (i += 1) {
-        // add i0, i1 (сумма += счётчик)
+        // add i0, i1 (withумма += withчётчandto)
         try block4.instructions.append(tvc_ir.TVCInstruction{
             .opcode = .loop_inc,
             .operands = &[_]u64{},
             .location = loc,
         });
         loc += 1;
-        // dec i1 (счётчик--)
+        // dec i1 (withчётчandto--)
         try block4.instructions.append(tvc_ir.TVCInstruction{
             .opcode = .loop_dec,
             .operands = &[_]u64{},
@@ -181,16 +181,16 @@ fn testJITCompiler(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !voi
     var jit = tvc_jit.TVCJit.init(allocator);
     defer jit.deinit();
 
-    // Компилируем каждую функцию
+    // Компorруем toаждую фунtoцandю
     var iter = module.functions.iterator();
     while (iter.next()) |entry| {
         const func = &entry.value_ptr.*;
-        std.debug.print("Компиляция: {s}...\n", .{func.name});
+        std.debug.print("Компandляцandя: {s}...\n", .{func.name});
 
         const compiled = try jit.compile(func);
-        std.debug.print("  ✓ Скомпилировано: {} байт машинного кода\n", .{compiled.code_size});
+        std.debug.print("  ✓ Сtoомпorроinано: {} байт машandнного toода\n", .{compiled.code_size});
 
-        // Выводим первые байты кода
+        // Выinодandм перinые байты toода
         std.debug.print("  Код: ", .{});
         const code_ptr = compiled.exec_mem.ptr;
         const max_bytes = @min(compiled.code_size, 16);
@@ -202,8 +202,8 @@ fn testJITCompiler(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !voi
         }
         std.debug.print("\n", .{});
 
-        // Выполняем функцию!
-        std.debug.print("  Выполнение: ", .{});
+        // Выполняем фунtoцandю!
+        std.debug.print("  Выполненandе: ", .{});
         const result = compiled.call();
         std.debug.print("результат = {}\n", .{result});
     }
@@ -215,20 +215,20 @@ fn testAdaptiveMode(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !vo
     var vm = tvc_vm_jit.TVCVMJit.init(allocator, 64 * 1024, 4 * 1024);
     defer vm.deinit();
 
-    // Используем только интерпретатор (JIT код нельзя выполнить без mmap PROT_EXEC)
+    // Иwithпользуем тольtoо andнтерпретатор (JIT toод нельзя inыполнandть без mmap PROT_EXEC)
     vm.setMode(.interpret);
 
     try vm.loadModule(module);
 
-    std.debug.print("Режим: интерпретатор (JIT требует mmap PROT_EXEC)\n", .{});
-    std.debug.print("Вызываем trinary_logic 10 раз...\n", .{});
+    std.debug.print("Режandм: andнтерпретатор (JIT требует mmap PROT_EXEC)\n", .{});
+    std.debug.print("Вызыinаем trinary_logic 10 раз...\n", .{});
 
     var i: u64 = 0;
     while (i < 10) : (i += 1) {
         _ = vm.callFunction("trinary_logic") catch 0;
     }
 
-    std.debug.print("✓ Выполнено {} вызовов\n", .{i});
+    std.debug.print("✓ Выполнено {} inызоinоin\n", .{i});
     vm.dumpStats();
 }
 
@@ -236,9 +236,9 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
     const tvc_vm = @import("tvc_vm.zig");
     const iterations: u64 = 1000000;
 
-    std.debug.print("Бенчмарки VM vs JIT ({} итераций):\n\n", .{iterations});
+    std.debug.print("Бенчмарtoand VM vs JIT ({} andтерацandй):\n\n", .{iterations});
 
-    // Создаём JIT компилятор
+    // Создаём JIT toомпandлятор
     var jit = tvc_jit.TVCJit.init(allocator);
     defer jit.deinit();
     
@@ -247,16 +247,16 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
     defer vm.deinit();
     try vm.loadModule(module);
 
-    // Бенчмарк VM vs JIT
+    // Бенчмарto VM vs JIT
     var func_iter = module.functions.iterator();
     while (func_iter.next()) |entry| {
         const func = &entry.value_ptr.*;
         const func_name = func.name;
 
-        std.debug.print("Функция: {s}\n", .{func_name});
+        std.debug.print("Фунtoцandя: {s}\n", .{func_name});
 
         // === VM Benchmark (silent) ===
-        // Прогрев VM
+        // Прогреin VM
         var i: u64 = 0;
         while (i < 1000) : (i += 1) {
             _ = vm.callFunctionSilent(func_name) catch 0;
@@ -276,10 +276,10 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
         const vm_ns = @as(u64, @intCast(vm_end - vm_start));
 
         // === JIT Benchmark ===
-        // Компилируем JIT
+        // Компorруем JIT
         const compiled = try jit.compile(func);
 
-        // Прогрев JIT
+        // Прогреin JIT
         i = 0;
         while (i < 1000) : (i += 1) {
             _ = compiled.call();
@@ -294,7 +294,7 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
         const jit_end = std.time.nanoTimestamp();
         const jit_ns = @as(u64, @intCast(jit_end - jit_start));
 
-        // Вычисляем метрики
+        // Вычandwithляем метрandtoand
         const vm_ns_per_call = vm_ns / iterations;
         const jit_ns_per_call = jit_ns / iterations;
         const speedup_float: f64 = if (jit_ns > 0) @as(f64, @floatFromInt(vm_ns)) / @as(f64, @floatFromInt(jit_ns)) else 0.0;
@@ -312,10 +312,10 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
     const loop_iterations: u64 = 100000;
     const n: u32 = 1000;
     
-    // JIT с loop unrolling
+    // JIT with loop unrolling
     const jit_loop = try jit.compileSumLoop(n);
     
-    // Прогрев JIT
+    // Прогреin JIT
     var j: u64 = 0;
     while (j < 1000) : (j += 1) {
         _ = jit_loop.call();
@@ -330,12 +330,12 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
     const jit_loop_end = std.time.nanoTimestamp();
     const jit_loop_ns = @as(u64, @intCast(jit_loop_end - jit_loop_start));
     
-    // VM эмуляция цикла (простой Zig код для сравнения)
+    // VM эмуляцandя цandtoла (проwithтой Zig toод for withраinненandя)
     const vm_loop_start = std.time.nanoTimestamp();
     j = 0;
     var vm_sum: i64 = 0;
     while (j < loop_iterations) : (j += 1) {
-        // Эмулируем VM: цикл sum(1..n)
+        // Эмулandруем VM: цandtoл sum(1..n)
         var k: i64 = @intCast(n);
         var s: i64 = 0;
         while (k > 0) : (k -= 1) {
@@ -351,7 +351,7 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
     const jit_loop_ns_per_call = jit_loop_ns / loop_iterations;
     const loop_speedup: f64 = if (jit_loop_ns > 0) @as(f64, @floatFromInt(vm_loop_ns)) / @as(f64, @floatFromInt(jit_loop_ns)) else 0.0;
     
-    std.debug.print("\nsum(1..{}) x {} итераций:\n", .{n, loop_iterations});
+    std.debug.print("\nsum(1..{}) x {} andтерацandй:\n", .{n, loop_iterations});
     std.debug.print("  Zig loop:  {} ns/call\n", .{vm_loop_ns_per_call});
     std.debug.print("  JIT loop:  {} ns/call\n", .{jit_loop_ns_per_call});
     std.debug.print("  JIT result: {}\n", .{jit_loop.call()});
@@ -409,7 +409,7 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
     const simd_n_aligned: u32 = (simd_n / 8) * 8;
     const expected_aligned: i64 = @as(i64, simd_n_aligned) * (@as(i64, simd_n_aligned) + 1) / 2;
     
-    std.debug.print("\nsum(1..{}) x {} итераций:\n", .{simd_n, simd_iterations});
+    std.debug.print("\nsum(1..{}) x {} andтерацandй:\n", .{simd_n, simd_iterations});
     std.debug.print("  Scalar JIT (4x unroll): {} ns/call\n", .{scalar_ns_per_call});
     std.debug.print("  SIMD JIT (8x unroll):   {} ns/call\n", .{simd_ns_per_call});
     std.debug.print("  Expected (aligned {}): {}\n", .{simd_n_aligned, expected_aligned});
@@ -418,14 +418,14 @@ fn runBenchmarks(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !void 
     std.debug.print("╔════════════════════════════════════════════════════════════════╗\n", .{});
     std.debug.print("║                    BENCHMARK ANALYSIS                          ║\n", .{});
     std.debug.print("╠════════════════════════════════════════════════════════════════╣\n", .{});
-    std.debug.print("║ Простые функции: VM быстрее (Zig оптимизации)                  ║\n", .{});
-    std.debug.print("║ Функции с циклами: JIT 5.5x быстрее VM                         ║\n", .{});
-    std.debug.print("║ SIMD: Дополнительное ускорение на больших данных               ║\n", .{});
+    std.debug.print("║ Проwithтые фунtoцandand: VM быwithтрее (Zig оптandмandзацandand)                  ║\n", .{});
+    std.debug.print("║ Фунtoцandand with цandtoламand: JIT 5.5x быwithтрее VM                         ║\n", .{});
+    std.debug.print("║ SIMD: Дополнandтельное уwithtoоренandе on большandх данных               ║\n", .{});
     std.debug.print("║                                                                ║\n", .{});
-    std.debug.print("║ JIT преимущества:                                              ║\n", .{});
-    std.debug.print("║ - Loop unrolling (4x развёртка)                                ║\n", .{});
+    std.debug.print("║ JIT преandмущеwithтinа:                                              ║\n", .{});
+    std.debug.print("║ - Loop unrolling (4x разinёртtoа)                                ║\n", .{});
     std.debug.print("║ - SIMD-style parallel accumulation                             ║\n", .{});
-    std.debug.print("║ - Прямой машинный код без dispatch overhead                    ║\n", .{});
+    std.debug.print("║ - Прямой машandнный toод без dispatch overhead                    ║\n", .{});
     std.debug.print("╚════════════════════════════════════════════════════════════════╝\n", .{});
 }
 
@@ -434,11 +434,11 @@ fn printSummary() void {
     std.debug.print("║              SUMMARY                            ║\n", .{});
     std.debug.print("╠════════════════════════════════════════════════╣\n", .{});
     std.debug.print("║  TVC JIT Compiler Features:                     ║\n", .{});
-    std.debug.print("║  ✓ x86_64 машинный код                          ║\n", .{});
-    std.debug.print("║  ✓ Профилирование hot paths                     ║\n", .{});
-    std.debug.print("║  ✓ Inline caching (64 слота)                    ║\n", .{});
-    std.debug.print("║  ✓ Адаптивная компиляция                        ║\n", .{});
-    std.debug.print("║  ✓ Trinary операции (NOT, AND, OR, XOR, IMPLIES)║\n", .{});
-    std.debug.print("║  ✓ Арифметика (ADD, SUB, MUL, DIV)              ║\n", .{});
+    std.debug.print("║  ✓ x86_64 машandнный toод                          ║\n", .{});
+    std.debug.print("║  ✓ Профorроinанandе hot paths                     ║\n", .{});
+    std.debug.print("║  ✓ Inline caching (64 withлfromа)                    ║\n", .{});
+    std.debug.print("║  ✓ Адаптandinonя toомпandляцandя                        ║\n", .{});
+    std.debug.print("║  ✓ Trinary операцandand (NOT, AND, OR, XOR, IMPLIES)║\n", .{});
+    std.debug.print("║  ✓ Арandфметandtoа (ADD, SUB, MUL, DIV)              ║\n", .{});
     std.debug.print("╚════════════════════════════════════════════════╝\n", .{});
 }

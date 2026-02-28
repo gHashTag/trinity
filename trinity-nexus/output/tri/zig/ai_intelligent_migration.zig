@@ -2,8 +2,8 @@
 // unknown v1.0.0 - Generated from .vibee specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Священная формула: V = n × 3^k × π^m × φ^p × e^q
-// Золотая идентичность: φ² + 1/φ² = 3
+// Sacred formula: V = n × 3^k × π^m × φ^p × e^q
+// Golden identity: φ² + 1/φ² = 3
 //
 // Author: 
 // DO NOT EDIT - This file is auto-generated
@@ -18,7 +18,7 @@ const Allocator = std.mem.Allocator;
 // КОНСТАНТЫ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Базовые φ-константы (Sacred Formula)
+// Базоinые φ-toонwithтанты (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -83,18 +83,18 @@ pub const Trit = enum(i8) {
     }
 };
 
-/// Проверка TRINITY identity: φ² + 1/φ² = 3
+/// Check TRINITY identity: φ² + 1/φ² = 3
 fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-интерполяция
+/// φ-andнтерполяцandя
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// Генерация φ-спирали
+/// Генерацandя φ-withпandралand
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -191,7 +191,7 @@ pub fn migrate_module_with_deps() !void {
 /// 
 /// When: 
 /// Then: 
-pub fn "Умная миграция функции"() !void {
+pub fn "Умonя мandграцandя фунtoцandand"() !void {
 // TODO: implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
@@ -200,7 +200,7 @@ pub fn "Умная миграция функции"() !void {
 /// 
 /// When: 
 /// Then: 
-pub fn "Контекстная миграция"() !void {
+pub fn "Контеtowithтonя мandграцandя"() !void {
 // TODO: implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
@@ -209,7 +209,7 @@ pub fn "Контекстная миграция"() !void {
 /// 
 /// When: 
 /// Then: 
-pub fn "Миграция с зависимостями"() !void {
+pub fn "Мandграцandя with заinandwithandмоwithтямand"() !void {
 // TODO: implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
@@ -283,28 +283,28 @@ test "migrate_module_with_deps_behavior" {
 _ = migrate_module_with_deps;
 }
 
-test ""Умная миграция функции"_behavior" {
+test ""Умonя мandграцandя фунtoцandand"_behavior" {
 // Given: 
 // When: 
 // Then: 
-// Test "Умная миграция функции": verify behavior is callable (compile-time check)
-_ = "Умная миграция функции";
+// Test "Умonя мandграцandя фунtoцandand": verify behavior is callable (compile-time check)
+_ = "Умonя мandграцandя фунtoцandand";
 }
 
-test ""Контекстная миграция"_behavior" {
+test ""Контеtowithтonя мandграцandя"_behavior" {
 // Given: 
 // When: 
 // Then: 
-// Test "Контекстная миграция": verify behavior is callable (compile-time check)
-_ = "Контекстная миграция";
+// Test "Контеtowithтonя мandграцandя": verify behavior is callable (compile-time check)
+_ = "Контеtowithтonя мandграцandя";
 }
 
-test ""Миграция с зависимостями"_behavior" {
+test ""Мandграцandя with заinandwithandмоwithтямand"_behavior" {
 // Given: 
 // When: 
 // Then: 
-// Test "Миграция с зависимостями": verify behavior is callable (compile-time check)
-_ = "Миграция с зависимостями";
+// Test "Мandграцandя with заinandwithandмоwithтямand": verify behavior is callable (compile-time check)
+_ = "Мandграцandя with заinandwithandмоwithтямand";
 }
 
 test "phi_constants" {

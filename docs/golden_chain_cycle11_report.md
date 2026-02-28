@@ -109,8 +109,8 @@ Key components:
 |----------|---------|---------------|
 | English | "read file config.zig" | FileRead |
 | English | "search for TODO" | Search |
-| Russian | "покажи файл readme" | FileRead |
-| Russian | "найди ошибки" | Search |
+| Russian | "поtoажand файл readme" | FileRead |
+| Russian | "onйдand ошandбtoand" | Search |
 | Chinese | "读取文件 config" | FileRead |
 
 ## Performance (Cycles 1-11)

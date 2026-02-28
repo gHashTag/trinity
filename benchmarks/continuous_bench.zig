@@ -2,10 +2,10 @@
 // VIBEE CONTINUOUS BENCHMARK SYSTEM
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Автоматический бенчмаркинг с отслеживанием улучшений
+// Аinтоматandчеwithtoandй бенчмарtoandнг with fromwithлежandinанandем улучшенandй
 // φ² + 1/φ² = 3 | 27 = 3³
 //
-// Запуск: zig build-exe benchmarks/continuous_bench.zig -O ReleaseFast && ./continuous_bench
+// Запуwithto: zig build-exe benchmarks/continuous_bench.zig -O ReleaseFast && ./continuous_bench
 //
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -120,7 +120,7 @@ pub fn trinity_power(k: u32) u64 {
     return result;
 }
 
-/// Digital root (сумма цифр до одной)
+/// Digital root (withумма цandфр до одной)
 pub fn digital_root(n: u64) u64 {
     if (n == 0) return 0;
     const r = n % 9;

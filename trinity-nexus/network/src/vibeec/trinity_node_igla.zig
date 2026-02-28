@@ -737,7 +737,7 @@ pub const TrinityNodeIgla = struct {
 
         // Hello World (multilingual)
         if (std.mem.indexOf(u8, input, "hello") != null or
-            std.mem.indexOf(u8, input, "привет") != null or
+            std.mem.indexOf(u8, input, "прandinет") != null or
             std.mem.indexOf(u8, input, "你好") != null)
         {
             return InternalResult{

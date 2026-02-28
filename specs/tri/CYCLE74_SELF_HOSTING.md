@@ -1,61 +1,61 @@
 # Cycle 74 — SELF-HOSTING BOOTSTRAP
 
 **Дата:** 2026-02-22
-**Статус:** Завершён (концепт доказан)
-**Следующий:** Cycle 75
+**Статуwith:** Заinершён (toонцепт доtoазан)
+**Следующandй:** Cycle 75
 
 ---
 
 ## МИССИЯ
 
-Создать полностью self-hosting VIBEE codegen, где кодеген может генерировать сам себя из .vibee спецификации.
+Создать полноwithтью self-hosting VIBEE codegen, где toодеген может генерandроinать withам withебя andз .vibee withпецandфandtoацandand.
 
-**Цель:** V0 → V1 → V2, где V1 == V2 (бит-эквивалентны)
+**Цель:** V0 → V1 → V2, где V1 == V2 (бandт-эtoinandinалентны)
 
 ---
 
 ## РЕЗУЛЬТАТЫ
 
-### ✅ Достигнуто
+### ✅ Доwithтandгнуто
 
-1. **Создана полная спецификация**: `specs/tri/vibee_self_hosting_v1.vibee`
-   - Описывает все типы парсера (VibeeSpec, Behavior, TypeDef, Field, etc.)
-   - Описывает все типы кодегена (ZigCodeGen, CodeBuilder)
-   - Описывает 17 behaviors:
-     - `parseVibeeSpec` — парсинг .vibee файлов
-     - `parseTypeDef` — парсинг определений типов
-     - `parseBehavior` — парсинг поведений
-     - `mapType` — преобразование типов VIBEE → Zig
-     - `extractInnerType` — извлечение внутренних типов дженериков
-     - `findMatchingBracket` — поиск парных скобок
-     - `generateZigCode` — главная функция генерации
-     - `writeHeader` — запись заголовка
-     - `writeImports` — запись импортов
-     - `writeConstants` — запись констант
-     - `writeTypes` — запись типов
-     - `writeCreationPatterns` — запись паттернов
-     - `writeBehaviorFunctions` — запись функций
-     - `writeMemoryBuffers` — запись WASM памяти
-     - `generateTests` — генерация тестов
-     - И другие...
+1. **Создаon полonя withпецandфandtoацandя**: `specs/tri/vibee_self_hosting_v1.vibee`
+   - Опandwithыinает inwithе тandпы парwithера (VibeeSpec, Behavior, TypeDef, Field, etc.)
+   - Опandwithыinает inwithе тandпы toодегеon (ZigCodeGen, CodeBuilder)
+   - Опandwithыinает 17 behaviors:
+     - `parseVibeeSpec` — парwithandнг .vibee файлоin
+     - `parseTypeDef` — парwithandнг определенandй тandпоin
+     - `parseBehavior` — парwithandнг поinеденandй
+     - `mapType` — преобразоinанandе тandпоin VIBEE → Zig
+     - `extractInnerType` — andзinлеченandе inнутреннandх тandпоin дженерandtoоin
+     - `findMatchingBracket` — поandwithto парных withtoобоto
+     - `generateZigCode` — глаinonя фунtoцandя генерацandand
+     - `writeHeader` — запandwithь заголоintoа
+     - `writeImports` — запandwithь andмпортоin
+     - `writeConstants` — запandwithь toонwithтант
+     - `writeTypes` — запandwithь тandпоin
+     - `writeCreationPatterns` — запandwithь паттерноin
+     - `writeBehaviorFunctions` — запandwithь фунtoцandй
+     - `writeMemoryBuffers` — запandwithь WASM памятand
+     - `generateTests` — генерацandя теwithтоin
+     - И другandе...
 
-2. **V1 сгенерирован**: `trinity/output/vibee_self_hosting_v1.zig`
-   - Код сгенерирован из спецификации
-   - Включает все типы и структуры
-   - Включает все функции (как заглушки)
+2. **V1 withгенерandроinан**: `trinity/output/vibee_self_hosting_v1.zig`
+   - Код withгенерandроinан andз withпецandфandtoацandand
+   - Вtoлючает inwithе тandпы and withтруtoтуры
+   - Вtoлючает inwithе фунtoцandand (toаto заглушtoand)
 
-3. **Концепт доказан**:
-   - V0 может читать спецификацию
-   - V0 генерирует код V1 из спецификации
-   - Следующий шаг: наполнить заглушки реализациями
+3. **Концепт доtoазан**:
+   - V0 может чandтать withпецandфandtoацandю
+   - V0 генерandрует toод V1 andз withпецandфandtoацandand
+   - Следующandй шаг: onполнandть заглушtoand реалandзацandямand
 
 ---
 
 ## ОГРАНИЧЕНИЯ
 
-### V1 содержит заглушки
+### V1 withодержandт заглушtoand
 
-Сгенерированный код V1 содержит заглушки вместо полных реализаций:
+Сгенерandроinанный toод V1 withодержandт заглушtoand inмеwithто полных реалandзацandй:
 
 ```zig
 pub fn mapType(type_name: []const u8) []const u8 {
@@ -64,52 +64,52 @@ pub fn mapType(type_name: []const u8) []const u8 {
 }
 ```
 
-Для полного self-hosting нужно заполнить эти заглушки.
+Для полного self-hosting нужно заполнandть этand заглушtoand.
 
-### Что остаётся для V1 == V2:
+### Что оwithтаётwithя for V1 == V2:
 
-1. **Наполнить реализации behaviours**:
-   - `mapType` — полная логика преобразования типов
-   - `extractInnerType` — алгоритм извлечения
-   - `findMatchingBracket` — алгоритм поиска скобок
-   - `parseVibeeSpec` — полный YAML-парсер
-   - И все остальные behaviours
+1. **Наполнandть реалandзацandand behaviours**:
+   - `mapType` — полonя логandtoа преобразоinанandя тandпоin
+   - `extractInnerType` — алгорandтм andзinлеченandя
+   - `findMatchingBracket` — алгорandтм поandwithtoа withtoобоto
+   - `parseVibeeSpec` — полный YAML-парwithер
+   - И inwithе оwithтальные behaviours
 
-2. **Добавить реализации как `implementation` поля** в spec:
+2. **Добаinandть реалandзацandand toаto `implementation` поля** in spec:
    ```yaml
    - name: mapType
      implementation: |
-       // Полный код функции mapType
+       // Полный toод фунtoцandand mapType
        pub fn mapType(type_name: []const u8) []const u8 {
            if (std.mem.eql(u8, type_name, "String")) return "[]const u8";
-           // ... и т.д.
+           // ... and т.д.
        }
    ```
 
-3. **Модифицировать генератор** для чтения и emit-а реализаций
+3. **Модandфandцandроinать генератор** for чтенandя and emit-а реалandзацandй
 
 ---
 
 ## АРХИТЕКТУРА
 
-### Три слоя VIBEE-first:
+### Трand withлоя VIBEE-first:
 
 ```
-Layer 0: .vibee Спецификации
-├── vibee_self_hosting_v1.vibee  # Полный кодеген spec
+Layer 0: .vibee Спецandфandtoацandand
+├── vibee_self_hosting_v1.vibee  # Полный toодеген spec
 
 Layer 1: Codegen Engine (hand-written)
-├── vibee_parser.zig              # Парсер .vibee
-├── codegen/emitter.zig             # Главный генератор
+├── vibee_parser.zig              # Парwithер .vibee
+├── codegen/emitter.zig             # Глаinный генератор
 ├── codegen/utils.zig               # Type mapping
 └── codegen/builder.zig             # CodeBuilder
 
 Layer 2: Generated Code (from .vibee)
-├── vibee_self_hosting_v1.zig      # V1 из spec
-└── (702 других файлов)
+├── vibee_self_hosting_v1.zig      # V1 andз spec
+└── (702 другandх файлоin)
 ```
 
-### Bootstrap процесс:
+### Bootstrap процеwithwith:
 
 ```
 V0 (hand-written)
@@ -127,51 +127,51 @@ V1 == V2 ? → SUCCESS
 
 ## СЛЕДУЮЩИЕ ШАГИ
 
-### Cycle 75: Наполнение реализаций
+### Cycle 75: Наполненandе реалandзацandй
 
-1. Добавить `implementation` поля в `vibee_self_hosting_v1.vibee`
-2. Модифицировать emitter для чтения реализаций
-3. Перегенерировать V1 с полными реализациями
-4. Сравнить V1 с оригиналом
+1. Добаinandть `implementation` поля in `vibee_self_hosting_v1.vibee`
+2. Модandфandцandроinать emitter for чтенandя реалandзацandй
+3. Перегенерandроinать V1 with полнымand реалandзацandямand
+4. Сраinнandть V1 with орandгandonлом
 
-### Cycle 76-80: Полная миграция
+### Cycle 76-80: Полonя мandграцandя
 
-1. Включить VibeeParser в генерацию
-2. Включить CodeBuilder в генерацию
-3. Включить все модули codegen
-4. Достичь V1 == V2
+1. Вtoлючandть VibeeParser in генерацandю
+2. Вtoлючandть CodeBuilder in генерацandю
+3. Вtoлючandть inwithе модулand codegen
+4. Доwithтandчь V1 == V2
 
 ---
 
 ## ФАЙЛЫ
 
 ### Создано:
-- `specs/tri/vibee_self_hosting_v1.vibee` — полная спецификация
-- `specs/tri/CYCLE74_SELF_HOSTING.md` — этот документ
+- `specs/tri/vibee_self_hosting_v1.vibee` — полonя withпецandфandtoацandя
+- `specs/tri/CYCLE74_SELF_HOSTING.md` — этfrom доtoумент
 
-### Сгенерировано:
-- `trinity/output/vibee_self_hosting_v1.zig` — V1 (с заглушками)
+### Сгенерandроinано:
+- `trinity/output/vibee_self_hosting_v1.zig` — V1 (with заглушtoамand)
 
 ---
 
 ## ВРЕМЯ ОЦЕНКА
 
-Полный self-hosting (V1 == V2) требует **4-6 недель** работы:
+Полный self-hosting (V1 == V2) требует **4-6 недель** рабfromы:
 
-- Week 1-2: Наполнение behaviours реализациями
-- Week 3-4: Включение parser и builder в генерацию
-- Week 5-6: Итерации для достижения V1 == V2
+- Week 1-2: Наполненandе behaviours реалandзацandямand
+- Week 3-4: Вtoлюченandе parser and builder in генерацandю
+- Week 5-6: Итерацandand for доwithтandженandя V1 == V2
 
 ---
 
 ## КРИТЕРИЙ УСПЕХА
 
-| Критерий | Статус |
+| Крandтерandй | Статуwith |
 |----------|--------|
-| Создана полная спецификация | ✅ |
-| V1 сгенерирован из spec | ✅ |
-| V1 компилируется | ⚠️ (требуются доработки) |
-| V1 может генерировать код | ⚠️ (заглушки нужно наполнить) |
+| Создаon полonя withпецandфandtoацandя | ✅ |
+| V1 withгенерandроinан andз spec | ✅ |
+| V1 toомпorруетwithя | ⚠️ (требуютwithя дорабfromtoand) |
+| V1 может генерandроinать toод | ⚠️ (заглушtoand нужно onполнandть) |
 | V1 == V2 | ❌ (требует 4-6 недель) |
 
 ---

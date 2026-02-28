@@ -1,7 +1,7 @@
 # Trinity Local Chat Fix Report
 
 **Date:** 2026-02-06
-**Issue:** "привет" returned Zig code instead of conversational response
+**Issue:** "прandinет" returned Zig code instead of conversational response
 **Fix:** Created `igla_local_chat.zig` - separate chat module
 
 ---
@@ -22,7 +22,7 @@ For real LLM capabilities, use `gguf_chat.zig` with an actual GGUF model.
 
 | Input | Before (Bug) | After (Fixed) |
 |-------|--------------|---------------|
-| `привет` | `const std = @import("std")...` (Zig garbage) | `Привет! Рад тебя видеть. Чем могу помочь?` |
+| `прandinет` | `const std = @import("std")...` (Zig garbage) | `Прandinет! Рад тебя inandдеть. Чем могу помочь?` |
 | `hello` | Generic code template | `Hey! Trinity Local Agent here. What are we building?` |
 | `你好` | No match / fallback code | `你好！很高兴见到你。有什么可以帮助的？` |
 
@@ -48,7 +48,7 @@ For real LLM capabilities, use `gguf_chat.zig` with an actual GGUF model.
            └─────────────┘  └─────────────────┘
                 │                    │
                 ▼                    ▼
-         "Привет! Рад..."      "pub fn fibonacci..."
+         "Прandinет! Рад..."      "pub fn fibonacci..."
 ```
 
 ---
@@ -57,12 +57,12 @@ For real LLM capabilities, use `gguf_chat.zig` with an actual GGUF model.
 
 | # | Lang | Input | Response | Time |
 |---|------|-------|----------|------|
-| 1 | RU | "привет" | "Привет! Рад тебя видеть. Чем могу помочь?" | 13us |
-| 2 | RU | "как дела?" | "Хорошо! Готов писать код и решать задачи." | 2us |
-| 3 | RU | "ты кто?" | "Trinity AI — автономный агент на ternary vectors." | 2us |
-| 4 | RU | "что умеешь?" | "Помогу с: Fibonacci, QuickSort, HashMap..." | 4us |
-| 5 | RU | "спасибо" | "Пожалуйста! Обращайся, если что ещё нужно." | 2us |
-| 6 | RU | "пока" | "До свидания! Было приятно поработать." | 1us |
+| 1 | RU | "прandinет" | "Прandinет! Рад тебя inandдеть. Чем могу помочь?" | 13us |
+| 2 | RU | "toаto дела?" | "Хорошо! Гfromоin пandwithать toод and решать задачand." | 2us |
+| 3 | RU | "ты toто?" | "Trinity AI — аinтономный агент on ternary vectors." | 2us |
+| 4 | RU | "что умеешь?" | "Помогу with: Fibonacci, QuickSort, HashMap..." | 4us |
+| 5 | RU | "withпаwithandбо" | "Пожалуйwithта! Обращайwithя, еwithлand что ещё нужно." | 2us |
+| 6 | RU | "поtoа" | "До withinandданandя! Было прandятно порабfromать." | 1us |
 | 7 | EN | "hello" | "Hey! Trinity Local Agent here. What are we building?" | 0us |
 | 8 | EN | "how are you?" | "phi^2 + 1/phi^2 = 3, so everything is in perfect balance!" | 1us |
 | 9 | EN | "who are you?" | "I'm Trinity Local Agent — a 100% local AI assistant." | 1us |
@@ -73,8 +73,8 @@ For real LLM capabilities, use `gguf_chat.zig` with an actual GGUF model.
 | 14 | CN | "你是谁" | "我是IGLA — 智能生成本地代理。" | 1us |
 | 15 | CN | "谢谢" | "我的荣幸！phi^2 + 1/phi^2 = 3！" | 1us |
 | 16 | CN | "再见" | "走了！合作愉快！" | 0us |
-| 17 | RU | "phi golden ratio" | "phi = 1.618... Золотое сечение. Trinity Identity!" | 2us |
-| 18 | RU | "помоги мне" | "Готов помочь! Напиши задачу — сделаю." | 3us |
+| 17 | RU | "phi golden ratio" | "phi = 1.618... Golden ratio. Trinity Identity!" | 2us |
+| 18 | RU | "помогand мне" | "Гfromоin помочь! Напandшand задачу — withделаю." | 3us |
 | 19 | EN | "help me" | "I help with: Fibonacci, QuickSort, HashMap..." | 1us |
 
 ---
@@ -138,10 +138,10 @@ const IglaLocalChat = @import("igla_local_chat.zig").IglaLocalChat;
 var chat = IglaLocalChat.init();
 
 // Check if conversational
-if (IglaLocalChat.isConversational("привет")) {
-    const result = chat.respond("привет");
+if (IglaLocalChat.isConversational("прandinет")) {
+    const result = chat.respond("прandinет");
     std.debug.print("{s}\n", .{result.response});
-    // → "Привет! Рад тебя видеть. Чем могу помочь?"
+    // → "Прandinет! Рад тебя inandдеть. Чем могу помочь?"
 }
 
 // Check if code-related
@@ -171,7 +171,7 @@ if (IglaLocalChat.isConversational(query)) {
 
 ## Conclusion
 
-**FIXED**: "привет" now returns coherent Russian greeting instead of Zig code.
+**FIXED**: "прandinет" now returns coherent Russian greeting instead of Zig code.
 
 | Metric | Before | After |
 |--------|--------|-------|

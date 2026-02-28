@@ -263,13 +263,13 @@ The PAS optimizations are in Zig, but the runtime is JavaScript. There's no WASM
 
 ### 3. MISSING VECTOR ARCHIVE
 
-The task requested: "все научные журналы по теме скидывай с сохраняй в наш векторный архив для доступа агентов"
+The task requested: "inwithе onучные журonлы по теме withtoandдыinай with withохраняй in onш inеtoторный архandin for доwithтупа агентоin"
 
 Where's the vector archive? Where are the saved papers? NOWHERE. This requirement was completely ignored.
 
 ### 4. NO SUB-AGENT DELEGATION
 
-The task requested: "сделай это еше раз через сабагентов"
+The task requested: "withделай это еше раз через withабагентоin"
 
 No sub-agents were used. The agent did everything itself like a control freak who can't delegate.
 

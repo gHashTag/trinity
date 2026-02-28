@@ -1,56 +1,56 @@
-# FPGA.Network — Децентрализованная Сеть BitNet Inference
+# FPGA.Network — Децентралandзоinанonя Сеть BitNet Inference
 
 ## Whitepaper v1.0
 
-**"Не покупай FPGA — объедини владельцев"**
+**"Не поtoупай FPGA — объедandнand inладельцеin"**
 
 ---
 
 ## Executive Summary
 
-FPGA.Network — первая децентрализованная сеть для BitNet LLM inference на FPGA. Вместо покупки дорогого оборудования ($3,000-30,000), мы объединяем существующих владельцев FPGA в единую сеть с токеном вознаграждения $FPGA.
+FPGA.Network — перinая децентралandзоinанonя withеть for BitNet LLM inference on FPGA. Вмеwithто поtoупtoand дорогого оборудоinанandя ($3,000-30,000), мы объедandняем withущеwithтinующandх inладельцеin FPGA in едandную withеть with тоtoеном inозonгражденandя $FPGA.
 
-**Ключевая идея:** Владельцы FPGA (HFT фирмы, университеты, энтузиасты) имеют простаивающие мощности. Мы даём им готовый BitNet bitstream и платим токенами за inference.
+**Ключеinая andдея:** Владельцы FPGA (HFT фandрмы, унandinерwithandтеты, энтузandаwithты) andмеют проwithтаandinающandе мощноwithтand. Мы даём andм гfromоinый BitNet bitstream and платandм тоtoеonмand за inference.
 
 ---
 
-## 1. Анализ Конкурентов
+## 1. Аonлandз Конtoурентоin
 
-### Существующие DePIN сети:
+### Сущеwithтinующandе DePIN withетand:
 
-| Сеть | Токен | Ресурс | TVL/MCap | Модель |
+| Сеть | Тоtoен | Реwithурwith | TVL/MCap | Модель |
 |------|-------|--------|----------|--------|
 | **Akash Network** | $AKT | GPU/CPU | $500M+ | Аренда compute |
-| **Render Network** | $RENDER | GPU | $2B+ | 3D рендеринг |
-| **Golem Network** | $GLM | CPU | $300M+ | Общий compute |
-| **Grass** | $GRASS | Bandwidth | $500M+ | Продажа трафика |
+| **Render Network** | $RENDER | GPU | $2B+ | 3D рендерandнг |
+| **Golem Network** | $GLM | CPU | $300M+ | Общandй compute |
+| **Grass** | $GRASS | Bandwidth | $500M+ | Продажа трафandtoа |
 | **io.net** | $IO | GPU | $1B+ | AI inference |
 
-### Что они делают:
+### Что онand делают:
 
 ```
-Akash:   Децентрализованный AWS — любой compute
-Render:  GPU для 3D рендеринга и AI
-Golem:   CPU для научных вычислений
-Grass:   Монетизация неиспользуемого интернета
-io.net:  GPU кластеры для AI
+Akash:   Децентралandзоinанный AWS — любой compute
+Render:  GPU for 3D рендерandнга and AI
+Golem:   CPU for onучных inычandwithленandй
+Grass:   Монетandзацandя неandwithпользуемого andнтернета
+io.net:  GPU toлаwithтеры for AI
 ```
 
-### Чего НЕТ на рынке:
+### Чего НЕТ on рынtoе:
 
 ```
-❌ Специализированная сеть для FPGA
-❌ BitNet inference на децентрализованном железе
-❌ Ternary LLM как сервис
+❌ Спецandалandзandроinанonя withеть for FPGA
+❌ BitNet inference on децентралandзоinанном железе
+❌ Ternary LLM toаto withерinandwith
 ```
 
-**Это наша ниша!**
+**Это onша нandша!**
 
 ---
 
-## 2. FPGA.Network — Концепция
+## 2. FPGA.Network — Концепцandя
 
-### Архитектура:
+### Архandтеtoтура:
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════╗
@@ -59,73 +59,73 @@ io.net:  GPU кластеры для AI
 ║                                                                               ║
 ║  ┌─────────────────────────────────────────────────────────────────────────┐  ║
 ║  │                         ПОЛЬЗОВАТЕЛИ (Requestors)                       │  ║
-║  │  • Разработчики AI приложений                                           │  ║
-║  │  • Компании с LLM потребностями                                         │  ║
-║  │  • Edge/IoT устройства                                                  │  ║
+║  │  • Разрабfromчandtoand AI прandложенandй                                           │  ║
+║  │  • Компанandand with LLM пfromребноwithтямand                                         │  ║
+║  │  • Edge/IoT уwithтройwithтinа                                                  │  ║
 ║  └─────────────────────────────────────────────────────────────────────────┘  ║
 ║                                    │                                          ║
 ║                                    ▼                                          ║
 ║  ┌─────────────────────────────────────────────────────────────────────────┐  ║
 ║  │                         FPGA.NETWORK PROTOCOL                           │  ║
 ║  │  • Matching: Requestor ↔ Provider                                       │  ║
-║  │  • Pricing: Динамическое ценообразование                                │  ║
+║  │  • Pricing: Дandonмandчеwithtoое ценообразоinанandе                                │  ║
 ║  │  • Verification: Proof of Inference                                     │  ║
-║  │  • Settlement: $FPGA токен                                              │  ║
+║  │  • Settlement: $FPGA тоtoен                                              │  ║
 ║  └─────────────────────────────────────────────────────────────────────────┘  ║
 ║                                    │                                          ║
 ║                                    ▼                                          ║
 ║  ┌─────────────────────────────────────────────────────────────────────────┐  ║
 ║  │                         ПРОВАЙДЕРЫ (Providers)                          │  ║
-║  │  • HFT фирмы с простаивающими FPGA                                      │  ║
-║  │  • Университеты с FPGA лабораториями                                    │  ║
-║  │  • Энтузиасты с Alveo/Arty платами                                      │  ║
-║  │  • Дата-центры с FPGA инфраструктурой                                   │  ║
+║  │  • HFT фandрмы with проwithтаandinающandмand FPGA                                      │  ║
+║  │  • Унandinерwithandтеты with FPGA лабораторandямand                                    │  ║
+║  │  • Энтузandаwithты with Alveo/Arty платамand                                      │  ║
+║  │  • Дата-центры with FPGA andнфраwithтруtoтурой                                   │  ║
 ║  └─────────────────────────────────────────────────────────────────────────┘  ║
 ║                                                                               ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
 ```
 
-### Как это работает:
+### Каto это рабfromает:
 
 ```
-1. ПРОВАЙДЕР регистрирует FPGA в сети
-   └── Устанавливает FPGA.Network Agent
-   └── Загружает BitNet bitstream (мы предоставляем)
-   └── Указывает цену за inference
+1. ПРОВАЙДЕР регandwithтрandрует FPGA in withетand
+   └── Уwithтаoninлandinает FPGA.Network Agent
+   └── Загружает BitNet bitstream (мы предоwithтаinляем)
+   └── Уtoазыinает цену за inference
 
-2. REQUESTOR отправляет запрос
+2. REQUESTOR fromпраinляет запроwith
    └── API: POST /inference {model: "bitnet-3b", prompt: "..."}
-   └── Платит $FPGA токенами
+   └── Платandт $FPGA тоtoеonмand
 
-3. ПРОТОКОЛ выбирает провайдера
+3. ПРОТОКОЛ inыбandрает проinайдера
    └── По цене, latency, reputation
-   └── Маршрутизирует запрос
+   └── Маршрутandзandрует запроwith
 
-4. ПРОВАЙДЕР выполняет inference
-   └── BitNet на FPGA (20x эффективнее GPU)
-   └── Возвращает результат
+4. ПРОВАЙДЕР inыполняет inference
+   └── BitNet on FPGA (20x эффеtoтandinнее GPU)
+   └── Returns результат
 
 5. SETTLEMENT
    └── Proof of Inference (хэш результата)
-   └── $FPGA переводится провайдеру
-   └── Комиссия протокола: 5%
+   └── $FPGA переinодandтwithя проinайдеру
+   └── Комandwithwithandя прfromоtoола: 5%
 ```
 
 ---
 
-## 3. Токеномика $FPGA
+## 3. Тоtoеномandtoа $FPGA
 
-### Параметры токена:
+### Parameters тоtoеon:
 
 ```
-Название:        FPGA Token
-Тикер:           $FPGA
-Сеть:            Solana (низкие комиссии, высокая скорость)
-Общий supply:    1,000,000,000 (1 миллиард)
-Тип:             Utility + Governance
+Назinанandе:        FPGA Token
+Тandtoер:           $FPGA
+Сеть:            Solana (нandзtoandе toомandwithwithandand, inыwithоtoая withtoороwithть)
+Общandй supply:    1,000,000,000 (1 мandллandард)
+Тandп:             Utility + Governance
 ```
 
-### Распределение:
+### Раwithпределенandе:
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════╗
@@ -134,19 +134,19 @@ io.net:  GPU кластеры для AI
 ║                                                                               ║
 ║  ┌─────────────────────────────────────────────────────────────────────────┐  ║
 ║  │  40% — Provider Rewards (400M)                                          │  ║
-║  │        Вознаграждения провайдерам за inference                          │  ║
-║  │        Vesting: 5 лет, линейный                                         │  ║
+║  │        Возonгражденandя проinайдерам за inference                          │  ║
+║  │        Vesting: 5 лет, лandнейный                                         │  ║
 ║  └─────────────────────────────────────────────────────────────────────────┘  ║
 ║                                                                               ║
 ║  ┌─────────────────────────────────────────────────────────────────────────┐  ║
 ║  │  20% — Community & Ecosystem (200M)                                     │  ║
-║  │        Гранты, хакатоны, интеграции                                     │  ║
+║  │        Гранты, хаtoатоны, andнтеграцandand                                     │  ║
 ║  │        Vesting: 4 года                                                  │  ║
 ║  └─────────────────────────────────────────────────────────────────────────┘  ║
 ║                                                                               ║
 ║  ┌─────────────────────────────────────────────────────────────────────────┐  ║
 ║  │  15% — Team & Advisors (150M)                                           │  ║
-║  │        Команда и советники                                              │  ║
+║  │        Команда and withоinетнandtoand                                              │  ║
 ║  │        Vesting: 4 года, 1 год cliff                                     │  ║
 ║  └─────────────────────────────────────────────────────────────────────────┘  ║
 ║                                                                               ║
@@ -158,100 +158,100 @@ io.net:  GPU кластеры для AI
 ║                                                                               ║
 ║  ┌─────────────────────────────────────────────────────────────────────────┐  ║
 ║  │  10% — Treasury (100M)                                                  │  ║
-║  │        Резерв для развития протокола                                    │  ║
-║  │        Управляется DAO                                                  │  ║
+║  │        Резерin for разinandтandя прfromоtoола                                    │  ║
+║  │        Упраinляетwithя DAO                                                  │  ║
 ║  └─────────────────────────────────────────────────────────────────────────┘  ║
 ║                                                                               ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
 ```
 
-### Utility токена:
+### Utility тоtoеon:
 
 ```
 1. ОПЛАТА INFERENCE
-   Requestors платят $FPGA за каждый запрос
-   Цена: ~0.0001 $FPGA за 1K токенов (динамическая)
+   Requestors платят $FPGA за toаждый запроwith
+   Цеon: ~0.0001 $FPGA за 1K тоtoеноin (дandonмandчеwithtoая)
 
 2. STAKING ДЛЯ ПРОВАЙДЕРОВ
-   Минимум 10,000 $FPGA для регистрации
-   Slash при плохом качестве/downtime
+   Мandнandмум 10,000 $FPGA for регandwithтрацandand
+   Slash прand плохом toачеwithтinе/downtime
 
 3. GOVERNANCE
-   Голосование за параметры протокола
-   1 $FPGA = 1 голос
+   Голоwithоinанandе за параметры прfromоtoола
+   1 $FPGA = 1 голоwith
 
 4. FEE DISCOUNT
-   Держатели >100K $FPGA: -20% комиссии
-   Держатели >1M $FPGA: -50% комиссии
+   Держателand >100K $FPGA: -20% toомandwithwithandand
+   Держателand >1M $FPGA: -50% toомandwithwithandand
 ```
 
-### Экономика провайдера:
+### Эtoономandtoа проinайдера:
 
 ```
-Пример: Alveo U55C ($5,000)
+Прandмер: Alveo U55C ($5,000)
 
 Доход:
-- 700 tok/s × 86,400 сек × 0.9 uptime = 54M токенов/день
-- При $0.0001/1K токенов = $5.4/день в $FPGA
-- $162/месяц, $1,944/год
+- 700 tok/s × 86,400 withеto × 0.9 uptime = 54M тоtoеноin/день
+- Прand $0.0001/1K тоtoеноin = $5.4/день in $FPGA
+- $162/меwithяц, $1,944/год
 
-Расходы:
-- Электричество: 150W × 24h × 30d × $0.10 = $10.8/месяц
-- Интернет: ~$20/месяц
-- Итого: ~$31/месяц
+Раwithходы:
+- Элеtoтрandчеwithтinо: 150W × 24h × 30d × $0.10 = $10.8/меwithяц
+- Интернет: ~$20/меwithяц
+- Итого: ~$31/меwithяц
 
-Прибыль: $162 - $31 = $131/месяц = $1,572/год
-ROI: $1,572 / $5,000 = 31% годовых
+Прandбыль: $162 - $31 = $131/меwithяц = $1,572/год
+ROI: $1,572 / $5,000 = 31% годоinых
 
-+ Потенциальный рост цены $FPGA
++ Пfromенцandальный роwithт цены $FPGA
 ```
 
 ---
 
-## 4. Технические Компоненты
+## 4. Технandчеwithtoandе Компоненты
 
-### 4.1 FPGA Agent (устанавливается провайдером)
+### 4.1 FPGA Agent (уwithтаoninлandinаетwithя проinайдером)
 
 ```
 fpga-agent/
 ├── bitstreams/
-│   ├── bitnet_3b_alveo_u55c.bit    # Готовый bitstream
+│   ├── bitnet_3b_alveo_u55c.bit    # Гfromоinый bitstream
 │   ├── bitnet_7b_alveo_u55c.bit
-│   └── bitnet_1b_arty_a7.bit       # Для маленьких плат
-├── agent.py                         # Основной агент
-├── inference_server.py              # gRPC сервер
+│   └── bitnet_1b_arty_a7.bit       # Для маленьtoandх плат
+├── agent.py                         # Оwithноinной агент
+├── inference_server.py              # gRPC withерinер
 ├── proof_generator.py               # Proof of Inference
-└── config.yaml                      # Конфигурация
+└── config.yaml                      # Конфandгурацandя
 ```
 
 ### 4.2 Proof of Inference
 
 ```
-Проблема: Как доказать что inference выполнен честно?
+Problem: Каto доtoазать что inference inыполнен чеwithтно?
 
-Решение: Cryptographic Proof of Inference
+Решенandе: Cryptographic Proof of Inference
 
-1. Requestor отправляет: prompt + nonce
-2. Provider вычисляет: result = BitNet(prompt)
-3. Provider генерирует: proof = hash(result || nonce || provider_key)
-4. Verifier проверяет: 
-   - Детерминированность (тот же prompt → тот же result)
-   - Подпись провайдера
-   - Время выполнения (не слишком быстро = не кэш)
+1. Requestor fromпраinляет: prompt + nonce
+2. Provider inычandwithляет: result = BitNet(prompt)
+3. Provider генерandрует: proof = hash(result || nonce || provider_key)
+4. Verifier проinеряет: 
+   - Детермandнandроinанноwithть (тfrom же prompt → тfrom же result)
+   - Подпandwithь проinайдера
+   - Время inыполненandя (не withлandшtoом быwithтро = не toэш)
 ```
 
-### 4.3 Поддерживаемые FPGA
+### 4.3 Поддержandinаемые FPGA
 
 ```
 Tier 1 (Full Support):
-├── AMD/Xilinx Alveo U50      ($2,500)  — до 7B модели
-├── AMD/Xilinx Alveo U55C     ($5,000)  — до 13B модели
-└── AMD/Xilinx Alveo U280     ($12,000) — до 30B модели
+├── AMD/Xilinx Alveo U50      ($2,500)  — до 7B моделand
+├── AMD/Xilinx Alveo U55C     ($5,000)  — до 13B моделand
+└── AMD/Xilinx Alveo U280     ($12,000) — до 30B моделand
 
 Tier 2 (Community Support):
-├── Digilent Arty A7-35T      ($150)    — до 100M модели (demo)
-├── Intel Stratix 10          ($5,000+) — до 13B модели
-└── Achronix VectorPath       ($8,000)  — до 13B модели
+├── Digilent Arty A7-35T      ($150)    — до 100M моделand (demo)
+├── Intel Stratix 10          ($5,000+) — до 13B моделand
+└── Achronix VectorPath       ($8,000)  — до 13B моделand
 
 Tier 3 (Experimental):
 ├── Lattice ECP5              ($50)     — tiny models
@@ -265,123 +265,123 @@ Tier 3 (Experimental):
 ### Phase 1: Genesis (Q1 2026)
 
 ```
-Цель: 10 провайдеров, 100 пользователей
+Цель: 10 проinайдероin, 100 пользоinателей
 
-Действия:
-├── Запуск testnet на Solana Devnet
-├── Раздача bitstreams первым провайдерам
-├── Telegram бот для inference
-└── Airdrop ранним участникам
+Дейwithтinandя:
+├── Запуwithto testnet on Solana Devnet
+├── Раздача bitstreams перinым проinайдерам
+├── Telegram бfrom for inference
+└── Airdrop раннandм учаwithтнandtoам
 
-Метрики:
-├── 10 FPGA в сети
-├── 1M inference запросов
-└── 100 активных пользователей
+Метрandtoand:
+├── 10 FPGA in withетand
+├── 1M inference запроwithоin
+└── 100 аtoтandinных пользоinателей
 ```
 
 ### Phase 2: Growth (Q2-Q3 2026)
 
 ```
-Цель: 100 провайдеров, 10,000 пользователей
+Цель: 100 проinайдероin, 10,000 пользоinателей
 
-Действия:
+Дейwithтinandя:
 ├── Mainnet launch
 ├── Token Generation Event (TGE)
-├── Листинг на DEX (Raydium, Orca)
-├── Партнёрства с HFT фирмами
-└── Университетская программа
+├── Лandwithтandнг on DEX (Raydium, Orca)
+├── Партнёрwithтinа with HFT фandрмамand
+└── Унandinерwithandтетwithtoая программа
 
-Метрики:
-├── 100 FPGA в сети
-├── 100M inference запросов/месяц
-├── $100K GMV/месяц
+Метрandtoand:
+├── 100 FPGA in withетand
+├── 100M inference запроwithоin/меwithяц
+├── $100K GMV/меwithяц
 └── $10M FDV
 ```
 
 ### Phase 3: Scale (Q4 2026 - 2027)
 
 ```
-Цель: 1,000 провайдеров, 100,000 пользователей
+Цель: 1,000 проinайдероin, 100,000 пользоinателей
 
-Действия:
-├── CEX листинги (Binance, Coinbase)
+Дейwithтinandя:
+├── CEX лandwithтandнгand (Binance, Coinbase)
 ├── Enterprise API
 ├── Mobile SDK
-├── Собственные модели (fine-tuned BitNet)
+├── Собwithтinенные моделand (fine-tuned BitNet)
 └── DAO governance
 
-Метрики:
-├── 1,000 FPGA в сети
-├── 1B inference запросов/месяц
-├── $1M GMV/месяц
+Метрandtoand:
+├── 1,000 FPGA in withетand
+├── 1B inference запроwithоin/меwithяц
+├── $1M GMV/меwithяц
 └── $100M+ FDV
 ```
 
 ---
 
-## 6. Сравнение с Конкурентами
+## 6. Сраinненandе with Конtoурентамand
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════════════════╗
 ║                              FPGA.NETWORK vs КОНКУРЕНТЫ                                   ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════╣
 ║                                                                                           ║
-║  Метрика          │ Akash      │ io.net     │ Render     │ FPGA.Network                  ║
+║  Метрandtoа          │ Akash      │ io.net     │ Render     │ FPGA.Network                  ║
 ║  ─────────────────┼────────────┼────────────┼────────────┼─────────────────────────────  ║
-║  Ресурс           │ GPU/CPU    │ GPU        │ GPU        │ FPGA (BitNet)                 ║
-║  Фокус            │ Общий      │ AI         │ Rendering  │ LLM Inference                 ║
+║  Реwithурwith           │ GPU/CPU    │ GPU        │ GPU        │ FPGA (BitNet)                 ║
+║  Фоtoуwith            │ Общandй      │ AI         │ Rendering  │ LLM Inference                 ║
 ║  Энергоэфф.       │ 1x         │ 1x         │ 1x         │ 20x (BitNet)                  ║
-║  Цена/inference   │ $0.01      │ $0.005     │ N/A        │ $0.001                        ║
+║  Цеon/inference   │ $0.01      │ $0.005     │ N/A        │ $0.001                        ║
 ║  Latency          │ 100ms+     │ 50ms+      │ N/A        │ <20ms                         ║
-║  Барьер входа     │ Низкий     │ Средний    │ Средний    │ Высокий (FPGA)                ║
-║  Уникальность     │ Нет        │ Нет        │ Нет        │ Единственная FPGA сеть        ║
+║  Барьер inхода     │ Нandзtoandй     │ Среднandй    │ Среднandй    │ Выwithоtoandй (FPGA)                ║
+║  Унandtoальноwithть     │ Нет        │ Нет        │ Нет        │ Едandнwithтinенonя FPGA withеть        ║
 ║                                                                                           ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════╝
 ```
 
-### Наши преимущества:
+### Нашand преandмущеwithтinа:
 
 ```
 1. ЕДИНСТВЕННАЯ FPGA СЕТЬ
-   Нет прямых конкурентов в нише FPGA DePIN
+   Нет прямых toонtoурентоin in нandше FPGA DePIN
 
 2. 20x ЭНЕРГОЭФФЕКТИВНОСТЬ
-   BitNet на FPGA vs FP16 на GPU
+   BitNet on FPGA vs FP16 on GPU
 
 3. 10x ДЕШЕВЛЕ
-   $0.001/1K токенов vs $0.01 у конкурентов
+   $0.001/1K тоtoеноin vs $0.01 у toонtoурентоin
 
 4. НИЗКАЯ LATENCY
    FPGA streaming < GPU batch processing
 
 5. ГОТОВАЯ ТЕХНОЛОГИЯ
-   BitNet bitstreams уже работают (7/7 тестов PASS)
+   BitNet bitstreams уже рабfromают (7/7 теwithтоin PASS)
 ```
 
 ---
 
-## 7. Риски и Митигация
+## 7. Рandwithtoand and Мandтandгацandя
 
-| Риск | Вероятность | Влияние | Митигация |
+| Рandwithto | Вероятноwithть | Влandянandе | Мandтandгацandя |
 |------|-------------|---------|-----------|
-| Мало провайдеров | Высокая | Критическое | Субсидии первым провайдерам, партнёрства с HFT |
-| BitNet не станет стандартом | Средняя | Высокое | Поддержка других quantization (INT4, INT8) |
-| Регуляторные риски | Средняя | Высокое | Юрисдикция в crypto-friendly странах |
-| Конкуренция от GPU сетей | Низкая | Среднее | Фокус на энергоэффективность и edge |
-| Технические сбои | Средняя | Среднее | Redundancy, SLA, slashing |
+| Мало проinайдероin | Выwithоtoая | Крandтandчеwithtoое | Субwithandдandand перinым проinайдерам, партнёрwithтinа with HFT |
+| BitNet не withтанет withтандартом | Средняя | Выwithоtoое | Поддержtoа другandх quantization (INT4, INT8) |
+| Регуляторные рandwithtoand | Средняя | Выwithоtoое | Юрandwithдandtoцandя in crypto-friendly withтраonх |
+| Конtoуренцandя from GPU withетей | Нandзtoая | Среднее | Фоtoуwith on энергоэффеtoтandinноwithть and edge |
+| Технandчеwithtoandе withбоand | Средняя | Среднее | Redundancy, SLA, slashing |
 
 ---
 
-## 8. Команда и Advisors
+## 8. Команда and Advisors
 
 ### Core Team:
-- **CEO**: [TBD] — опыт в DePIN/crypto
-- **CTO**: [TBD] — FPGA инженер, 10+ лет
-- **Head of BD**: [TBD] — связи с HFT/enterprise
+- **CEO**: [TBD] — опыт in DePIN/crypto
+- **CTO**: [TBD] — FPGA andнженер, 10+ лет
+- **Head of BD**: [TBD] — withinязand with HFT/enterprise
 
 ### Advisors:
-- Представитель AMD/Xilinx University Program
-- Founder успешного DePIN проекта
+- Предwithтаinandтель AMD/Xilinx University Program
+- Founder уwithпешного DePIN проеtoта
 - Crypto VC partner
 
 ---
@@ -395,7 +395,7 @@ Valuation: $10M FDV
 Allocation: 10% (100M $FPGA)
 Use of funds:
 ├── 50% — Engineering (bitstreams, protocol)
-├── 20% — BD (провайдеры, партнёры)
+├── 20% — BD (проinайдеры, партнёры)
 ├── 20% — Marketing (community)
 └── 10% — Legal/Ops
 ```
@@ -405,7 +405,7 @@ Use of funds:
 ```
 Valuation: $50M FDV
 Allocation: 5% (50M $FPGA)
-Timing: После 100 провайдеров в testnet
+Timing: Поwithле 100 проinайдероin in testnet
 ```
 
 ### Public Round (TGE): $10M
@@ -413,7 +413,7 @@ Timing: После 100 провайдеров в testnet
 ```
 Valuation: $100M FDV
 Allocation: 5% (50M $FPGA)
-Timing: После mainnet launch
+Timing: Поwithле mainnet launch
 ```
 
 ---
@@ -424,29 +424,29 @@ Timing: После mainnet launch
 Q1 2026:
 ├── ✅ BitNet FPGA prototype (DONE)
 ├── [ ] Testnet launch
-├── [ ] 10 провайдеров
+├── [ ] 10 проinайдероin
 └── [ ] Seed round
 
 Q2 2026:
 ├── [ ] Mainnet launch
 ├── [ ] TGE
-├── [ ] 100 провайдеров
+├── [ ] 100 проinайдероin
 └── [ ] DEX listing
 
 Q3 2026:
 ├── [ ] Enterprise API
-├── [ ] 500 провайдеров
+├── [ ] 500 проinайдероin
 ├── [ ] CEX listing
 └── [ ] Private round
 
 Q4 2026:
-├── [ ] 1,000 провайдеров
+├── [ ] 1,000 проinайдероin
 ├── [ ] DAO governance
 ├── [ ] Mobile SDK
-└── [ ] $1M GMV/месяц
+└── [ ] $1M GMV/меwithяц
 
 2027:
-├── [ ] 10,000 провайдеров
+├── [ ] 10,000 проinайдероin
 ├── [ ] Custom BitNet models
 ├── [ ] Hardware partnerships
 └── [ ] $100M+ FDV
@@ -454,22 +454,22 @@ Q4 2026:
 
 ---
 
-## 11. Заключение
+## 11. Заtoлюченandе
 
 FPGA.Network — это:
 
-1. **Первая** децентрализованная сеть для FPGA
-2. **20x** энергоэффективнее GPU для LLM inference
-3. **10x** дешевле конкурентов
-4. **Blue ocean** — нет прямых конкурентов
+1. **Перinая** децентралandзоinанonя withеть for FPGA
+2. **20x** энергоэффеtoтandinнее GPU for LLM inference
+3. **10x** дешеinле toонtoурентоin
+4. **Blue ocean** — нет прямых toонtoурентоin
 
-Мы не покупаем FPGA — мы объединяем существующих владельцев в сеть с токеном вознаграждения.
+Мы не поtoупаем FPGA — мы объедandняем withущеwithтinующandх inладельцеin in withеть with тоtoеном inозonгражденandя.
 
 **Join the FPGA Revolution.**
 
 ---
 
-## Контакты
+## Контаtoты
 
 - **Website**: fpga.network (TBD)
 - **Telegram**: t.me/fpga_network (TBD)

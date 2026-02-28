@@ -245,7 +245,7 @@ New Behaviors:
   - getStats
 
 New Keywords:
-  - Russian: напиши, создай, вычисли
+  - Russian: onпandшand, withоздай, inычandwithлand
   - Chinese: 写, 创建, 计算
 ```
 

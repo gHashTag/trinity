@@ -1,5 +1,5 @@
 // Maxwell Daemon - Agent Loop
-// Основной цикл автономного агента
+// Оwithноinной цandtoл аinтономного агента
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -115,9 +115,9 @@ pub const DaemonConfig = struct {
     poll_interval_ms: u64,
 
     pub const SafetyMode = enum {
-        Strict, // Требует подтверждения для каждого действия
-        Normal, // Автоматически, но с ограничениями
-        Permissive, // Минимальные ограничения
+        Strict, // Требует подтinержденandя for toаждого дейwithтinandя
+        Normal, // Аinтоматandчеwithtoand, но with огранandченandямand
+        Permissive, // Мandнandмальные огранandченandя
     };
 
     pub const LogLevel = enum {
@@ -210,7 +210,7 @@ pub const AgentLoop = struct {
     // LIFECYCLE
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Запустить демона в фоновом режиме
+    /// Запуwithтandть демоon in фоноinом режandме
     pub fn start(self: *AgentLoop) !void {
         if (self.running.load(.seq_cst)) return;
         
@@ -223,7 +223,7 @@ pub const AgentLoop = struct {
         self.thread = try std.Thread.spawn(.{}, runLoop, .{self});
     }
 
-    /// Остановить демона
+    /// Оwithтаноinandть демоon
     pub fn stop(self: *AgentLoop) void {
         if (!self.running.load(.seq_cst)) return;
         
@@ -238,12 +238,12 @@ pub const AgentLoop = struct {
         self.state.status = .Stopped;
     }
 
-    /// Запустить один цикл (для тестирования)
+    /// Запуwithтandть одandн цandtoл (for теwithтandроinанandя)
     pub fn step(self: *AgentLoop) !void {
         try self.processNextTask();
     }
 
-    /// Основной цикл демона
+    /// Оwithноinной цandtoл демоon
     fn runLoop(self: *AgentLoop) void {
         while (self.running.load(.seq_cst)) {
             self.processNextTask() catch |err| {
@@ -262,7 +262,7 @@ pub const AgentLoop = struct {
     // TASK MANAGEMENT
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Добавить задачу в очередь
+    /// Добаinandть задачу in очередь
     pub fn submitTask(self: *AgentLoop, description: []const u8, task_type: TaskType) !u64 {
         const task = try self.allocator.create(Task);
         const id = @as(u64, @intCast(std.time.timestamp())) ^ @as(u64, @intFromPtr(task));
@@ -274,7 +274,7 @@ pub const AgentLoop = struct {
         return id;
     }
 
-    /// Добавить задачу с приоритетом
+    /// Добаinandть задачу with прandорandтетом
     pub fn submitTaskWithPriority(self: *AgentLoop, description: []const u8, task_type: TaskType, priority: u8) !u64 {
         const task = try self.allocator.create(Task);
         const id = @as(u64, @intCast(std.time.timestamp())) ^ @as(u64, @intFromPtr(task));
@@ -286,7 +286,7 @@ pub const AgentLoop = struct {
         return id;
     }
 
-    /// Обработать следующую задачу
+    /// Обрабfromать withледующую задачу
     fn processNextTask(self: *AgentLoop) !void {
         if (self.state.current_task != null) return; // Already working
         
@@ -337,7 +337,7 @@ pub const AgentLoop = struct {
         self.state.status = .Idle;
     }
 
-    /// Выполнить задачу
+    /// Выполнandть задачу
     fn executeTask(self: *AgentLoop, task: *Task, result: *TaskResult) !void {
         self.log(.Info, "Executing task");
         

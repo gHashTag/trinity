@@ -2,8 +2,8 @@
 // sacred_identity v1.0.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Священная формула: V = n × 3^k × π^m × φ^p × e^q
-// Золотая идентичность: φ² + 1/φ² = 3
+// Sacred formula: V = n × 3^k × π^m × φ^p × e^q
+// Golden identity: φ² + 1/φ² = 3
 //
 // Author: 
 // DO NOT EDIT - This file is auto-generated
@@ -46,7 +46,7 @@ pub const tri_commands: f64 = 0;
 
 pub const logging: f64 = 0;
 
-// Базовые φ-константы (Sacred Formula)
+// Базоinые φ-toонwithтанты (Sacred Formula)
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
 pub const TRINITY: f64 = 3.0;
@@ -149,12 +149,12 @@ pub const Trit = enum(i8) {
     }
 };
 
-/// Проверка TRINITY identity: φ² + 1/φ² = 3
+/// Check TRINITY identity: φ² + 1/φ² = 3
 fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-интерполяция
+/// φ-andнтерполяцandя
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;

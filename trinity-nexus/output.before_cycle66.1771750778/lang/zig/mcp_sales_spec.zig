@@ -2,8 +2,8 @@
 // "John Doe", v1.0.0 - Generated from .vibee specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Священная формула: V = n × 3^k × π^m × φ^p × e^q
-// Золотая идентичность: φ² + 1/φ² = 3
+// Sacred formula: V = n × 3^k × π^m × φ^p × e^q
+// Golden identity: φ² + 1/φ² = 3
 //
 // Author: VIBEE Team
 // DO NOT EDIT - This file is auto-generated
@@ -18,7 +18,7 @@ const Allocator = std.mem.Allocator;
 // КОНСТАНТЫ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Базовые φ-константы (Sacred Formula)
+// Базоinые φ-toонwithтанты (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -255,18 +255,18 @@ pub const Trit = enum(i8) {
     }
 };
 
-/// Проверка TRINITY identity: φ² + 1/φ² = 3
+/// Check TRINITY identity: φ² + 1/φ² = 3
 fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-интерполяция
+/// φ-andнтерполяцandя
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// Генерация φ-спирали
+/// Генерацandя φ-withпandралand
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;

@@ -1,5 +1,5 @@
 # Browser Agent Production Technology Tree
-# KOSCHEI CYCLE #2 - Золотая цепь на дубе том
+# KOSCHEI CYCLE #2 - Золfromая цепь on дубе том
 # φ² + 1/φ² = 3 | PHOENIX = 999
 
 ## KOSCHEI IMMORTAL CYCLE #2

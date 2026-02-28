@@ -63,8 +63,8 @@ Conversion Time: 3.0 seconds
 ```
 GENERATED TEXT:
 <s>Hello,  Trinity!  What  is  the  meaning  of cent Context Za Hunter 
-involvesistory話новоTri `< U Er locńskiego footballer ві Urbannamed:} 
-commence horse rain knockungsseiteową держав faithful ChicagoOWtwobjects weiter
+involvesistory話ноinоTri `< U Er locńskiego footballer inі Urbannamed:} 
+commence horse rain knockungsseiteową держаin faithful ChicagoOWtwobjects weiter
 
 STATISTICS:
   Prompt tokens:     18
@@ -95,8 +95,8 @@ STATISTICS:
 ```
 GENERATED TEXT:
 <s>What  is  machine  learning?ians magnific tierzeta YouTubelagen 
-crisisцо folgenden resort Gastldern blesshd Maisüller интерówn 
-Chileség estad Instit Уирииstell\<amentos describing appel Once Lord
+crisisцо folgenden resort Gastldern blesshd Maisüller andнтерówn 
+Chileség estad Instit Уandрandandstell\<amentos describing appel Once Lord
 
 STATISTICS:
   Prompt tokens:     9
@@ -110,7 +110,7 @@ STATISTICS:
 
 ```
 GENERATED TEXT:
-<s>Explain  quantum  computing Status pacскаяynapathлия Zw tématu 
+<s>Explain  quantum  computing Status pacwithtoаяynapathлandя Zw tématu 
 José cette reversefunctions initialization hang quelque untilwh 
 Cha pelosраз casostudlotű cold щ ogsårid ORDER Sub prisonersAudio
 
@@ -126,8 +126,8 @@ STATISTICS:
 
 ```
 GENERATED TEXT:
-<s>Write  a  poem  aboutlahomaorious instal continев relief Pamlait 
-Südenствии bâtuniversité activation feed<>();onymAR ba мираJan." 
+<s>Write  a  poem  aboutlahomaorious instal continеin relief Pamlait 
+Südenwithтinandand bâtuniversité activation feed<>();onymAR ba мandраJan." 
 widely effectsagram concedistica⍵ теаlage vesc должHA
 
 STATISTICS:

@@ -26,7 +26,7 @@ pub const Lang = enum {
     pub fn getWelcome(self: Lang) []const u8 {
         return switch (self) {
             .EN => "Welcome to Trinity REPL - Eighth Life: Competitive Agent",
-            .RU => "Добро пожаловать в Trinity REPL - Восьмая Жизнь: Конкурентный Агент",
+            .RU => "Добро пожалоinать in Trinity REPL - Воwithьмая Жandзнь: Конtoурентный Агент",
             .TH => "ยินดีต้อนรับสู่ Trinity REPL - ชีวิตที่แปด: ตัวแทนแข่งขัน",
         };
     }
@@ -330,9 +330,9 @@ pub const CompetitiveRepl = struct {
         try writer.print("  lang en|ru|th - Switch language\n", .{});
         try writer.print("  exit        - Exit REPL\n", .{});
         try writer.print("\n📝 Examples:\n", .{});
-        try writer.print("  Запусти инференс на Mistral-7B и застейкай earnings\n", .{});
-        try writer.print("  Оптимизируй inference для Qwen2.5-Coder-7B под 8-core CPU\n", .{});
-        try writer.print("  Максимизируй earnings на моём node в Ko Samui\n", .{});
+        try writer.print("  Запуwithтand andнференwith on Mistral-7B and заwithтейtoай earnings\n", .{});
+        try writer.print("  Оптandмandзandруй inference for Qwen2.5-Coder-7B под 8-core CPU\n", .{});
+        try writer.print("  Маtowithandмandзandруй earnings on моём node in Ko Samui\n", .{});
         try writer.print("\n", .{});
     }
 
@@ -367,7 +367,7 @@ pub const CompetitiveRepl = struct {
             try writer.print("Language set to English\n", .{});
         } else if (std.mem.eql(u8, lang_str, "ru")) {
             self.lang = .RU;
-            try writer.print("Язык установлен на русский\n", .{});
+            try writer.print("Языto уwithтаноinлен on руwithwithtoandй\n", .{});
         } else if (std.mem.eql(u8, lang_str, "th")) {
             self.lang = .TH;
             try writer.print("ตั้งค่าภาษาเป็นไทย\n", .{});

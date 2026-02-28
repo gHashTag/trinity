@@ -26,7 +26,7 @@ Fixed critical bug where CLI was stuck in explain mode, returning garbage respon
 |--------|--------|-------|
 | Coherent (non-code) | 0% | 100% |
 | Languages | English only | Russian, Chinese, English |
-| "привет" response | "This code processes..." (garbage) | "Привет! Я Trinity — локальный AI-ассистент" |
+| "прandinет" response | "This code processes..." (garbage) | "Прandinет! Я Trinity — лоtoальный AI-аwithwithandwithтент" |
 | Confidence | 70% (lie) | 98% (accurate) |
 | Prompts tested | 15 | 25 |
 
@@ -44,7 +44,7 @@ Fixed critical bug where CLI was stuck in explain mode, returning garbage respon
 ### Before (Broken)
 
 ```
-> привет
+> прandinет
 This code processes data using Zig's safety features and vector operations...
 [Confidence: 70%% | Coherent: YES]  ← LIE!
 ```
@@ -52,8 +52,8 @@ This code processes data using Zig's safety features and vector operations...
 ### After (Fixed)
 
 ```
-> привет
-Привет! Я Trinity — локальный AI-ассистент. Чем могу помочь?
+> прandinет
+Прandinет! Я Trinity — лоtoальный AI-аwithwithandwithтент. Чем могу помочь?
 [Confidence: 98%% | Coherent: YES]  ← TRUTH!
 ```
 
@@ -97,7 +97,7 @@ pub fn isConversationalPrompt(prompt: []const u8) bool {
 
     // Russian greetings
     if (lang == .Russian) {
-        if (containsAny(prompt, &.{ "привет", "здравствуй", "как дела", ... }))
+        if (containsAny(prompt, &.{ "прandinет", "здраinwithтinуй", "toаto дела", ... }))
             return true;
     }
 
@@ -122,9 +122,9 @@ fn processChat(self: *Self, request: SWERequest) InternalResult {
     const lang = detectInputLanguage(request.prompt);
 
     if (lang == .Russian) {
-        if (containsAny(prompt, &.{ "привет", "здравствуй" })) {
+        if (containsAny(prompt, &.{ "прandinет", "здраinwithтinуй" })) {
             return .{
-                .output = "Привет! Я Trinity — локальный AI-ассистент. Чем могу помочь?",
+                .output = "Прandinет! Я Trinity — лоtoальный AI-аwithwithandwithтент. Чем могу помочь?",
                 .confidence = 0.98,
                 .coherent = true,
                 .reasoning = "Russian greeting detected",
@@ -159,13 +159,13 @@ fn processQuery(state: *CLIState, query: []const u8) void {
 
 | Prompt | Response | Confidence |
 |--------|----------|------------|
-| привет | Привет! Я Trinity — локальный AI-ассистент. | 98% |
-| как дела? | Отлично! Работаю на 100% локально... | 98% |
-| кто ты? | Я Trinity — локальный AI на тернарной логике. 287KB... | 97% |
-| спасибо | Пожалуйста! Рад помочь. | 98% |
-| пока | До встречи! φ² + 1/φ² = 3 = TRINITY. | 98% |
-| что такое bind? | bind(a, b) multiplies hypervectors... | 95% |
-| объясни VSA | Понял! Я Trinity — чем могу помочь? | 85% |
+| прandinет | Прandinет! Я Trinity — лоtoальный AI-аwithwithandwithтент. | 98% |
+| toаto дела? | Отлandчно! Рабfromаю on 100% лоtoально... | 98% |
+| toто ты? | Я Trinity — лоtoальный AI on терonрной логandtoе. 287KB... | 97% |
+| withпаwithandбо | Пожалуйwithта! Рад помочь. | 98% |
+| поtoа | До inwithтречand! φ² + 1/φ² = 3 = TRINITY. | 98% |
+| что таtoое bind? | bind(a, b) multiplies hypervectors... | 95% |
+| объяwithнand VSA | Понял! Я Trinity — чем могу помочь? | 85% |
 
 ### Chinese (5/5 Coherent)
 

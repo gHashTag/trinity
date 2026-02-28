@@ -8,7 +8,7 @@
 
 ## Problem
 
-User reported: "почему стриминг не поддерживается!!"
+User reported: "почему withтрandмandнг не поддержandinаетwithя!!"
 
 The VIBEE Agent was not streaming responses from DeepSeek API - it waited for the full response before displaying.
 

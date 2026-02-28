@@ -132,9 +132,9 @@ The embedding and output projection work correctly. The issue is in the **transf
 ### Before Fixes
 ```
 Request: "What is 2+2?"
-Response: üsseld Einwoüsseld}^{(sliceellerсоadu watersandradkmessaranteüsseld
-joueotiumerateсоquelleimoineComponentурнаutatográficaadu}",üsseldinvalidreflect
-purcian siguientesfocusурна maximum소 theoretical какaduisches."adu Municipoł
+Response: üsseld Einwoüsseld}^{(sliceellerwithоadu watersandradkmessaranteüsseld
+joueotiumeratewithоquelleimoineComponentурonutatográficaadu}",üsseldinvalidreflect
+purcian siguientesfocusурon maximum소 theoretical toаtoaduisches."adu Municipoł
 ```
 
 ### After Fixes

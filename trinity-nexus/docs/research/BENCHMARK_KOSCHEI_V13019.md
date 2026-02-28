@@ -1,5 +1,5 @@
 # KOSCHEI MODE Benchmark v13019
-# Сравнение v12919 vs v13019
+# Сраinненandе v12919 vs v13019
 # φ² + 1/φ² = 3 | PHOENIX = 999
 
 ## KOSCHEI IMMORTAL CYCLE RESULTS

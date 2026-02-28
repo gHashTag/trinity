@@ -2,8 +2,8 @@
 // phi_layout v24.φ - Generated from specs/phi_layout.vibee
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Алгоритмы размещения с φ-оптимизацией
-// Золотая идентичность: φ² + 1/φ² = 3
+// Алгорandтмы размещенandя with φ-оптandмandзацandей
+// Golden identity: φ² + 1/φ² = 3
 //
 // DO NOT EDIT - This file is auto-generated from .vibee specification
 //
@@ -100,7 +100,7 @@ var layout_config: LayoutConfig = LayoutConfig{
     .iterations = 100,
     ._pad = 0,
     .damping = PHI_INV,
-    .repulsion_strength = PHI * 100.0, // Уменьшено для стабильности
+    .repulsion_strength = PHI * 100.0, // Уменьшено for withтабandльноwithтand
     .attraction_strength = 0.05,
     .phi_factor = PHI,
     .convergence_threshold = 0.1,
@@ -126,7 +126,7 @@ fn get_layout_edge_count() u32 {
 // ИНИЦИАЛИЗАЦИЯ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Инициализация layout
+/// Initialization layout
 fn layout_init(width: f64, height: f64) void {
     layout_config.width = width;
     layout_config.height = if (height > 0) height else width / PHI;
@@ -134,7 +134,7 @@ fn layout_init(width: f64, height: f64) void {
     layout_edge_count = 0;
 }
 
-/// Добавление узла
+/// Добаinленandе узла
 fn layout_add_node(id: u64, x: f64, y: f64) u32 {
     if (layout_node_count >= MAX_LAYOUT_NODES) return 0xFFFFFFFF;
     
@@ -156,7 +156,7 @@ fn layout_add_node(id: u64, x: f64, y: f64) u32 {
     return idx;
 }
 
-/// Добавление ребра
+/// Добаinленandе ребра
 fn layout_add_edge(source: u32, target: u32) u32 {
     if (layout_edge_count >= MAX_LAYOUT_EDGES) return 0xFFFFFFFF;
     if (source >= layout_node_count or target >= layout_node_count) return 0xFFFFFFFF;
@@ -177,7 +177,7 @@ fn layout_add_edge(source: u32, target: u32) u32 {
 // φ-SPIRAL LAYOUT
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Размещение узлов по φ-спирали
+/// Размещенandе узлоin по φ-withпandралand
 fn layout_phi_spiral() void {
     const cx = layout_config.width / 2.0;
     const cy = layout_config.height / 2.0;
@@ -194,7 +194,7 @@ fn layout_phi_spiral() void {
     }
 }
 
-/// Размещение по Fermat спирали (подсолнух)
+/// Размещенandе по Fermat withпandралand (подwithолнух)
 fn layout_fermat_spiral() void {
     const cx = layout_config.width / 2.0;
     const cy = layout_config.height / 2.0;
@@ -215,30 +215,30 @@ fn layout_fermat_spiral() void {
 // FORCE-DIRECTED LAYOUT
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Один шаг force-directed layout
+/// Одandн шаг force-directed layout
 fn layout_force_step() f64 {
-    // Сбрасываем силы
+    // Сбраwithыinаем withandлы
     var i: u32 = 0;
     while (i < layout_node_count) : (i += 1) {
         layout_nodes[i].fx = 0;
         layout_nodes[i].fy = 0;
     }
     
-    // Вычисляем k (оптимальное расстояние)
+    // Вычandwithляем k (оптandмальное раwithwithтоянandе)
     const area = layout_config.width * layout_config.height;
     const k = @sqrt(area / @as(f64, @floatFromInt(layout_node_count))) * PHI;
     
-    // Отталкивание между всеми парами
+    // Отталtoandinанandе между inwithемand парамand
     compute_repulsion(k);
     
-    // Притяжение по рёбрам
+    // Прandтяженandе по рёбрам
     compute_attraction(k);
     
-    // Применяем силы
+    // Прandменяем withandлы
     return apply_forces();
 }
 
-/// Вычисление сил отталкивания
+/// Вычandwithленandе withandл fromталtoandinанandя
 fn compute_repulsion(k: f64) void {
     var i: u32 = 0;
     while (i < layout_node_count) : (i += 1) {
@@ -262,7 +262,7 @@ fn compute_repulsion(k: f64) void {
     }
 }
 
-/// Вычисление сил притяжения
+/// Вычandwithленandе withandл прandтяженandя
 fn compute_attraction(k: f64) void {
     var i: u32 = 0;
     while (i < layout_edge_count) : (i += 1) {
@@ -287,7 +287,7 @@ fn compute_attraction(k: f64) void {
     }
 }
 
-/// Применение сил и возврат энергии системы
+/// Прandмененandе withandл and inозinрат энергandand withandwithтемы
 fn apply_forces() f64 {
     var energy: f64 = 0.0;
     const damping = layout_config.damping;
@@ -297,11 +297,11 @@ fn apply_forces() f64 {
         const node = &layout_nodes[i];
         if (node.fixed) continue;
         
-        // Обновляем скорость
+        // Обноinляем withtoороwithть
         node.vx = node.vx * 0.9 + node.fx * damping;
         node.vy = node.vy * 0.9 + node.fy * damping;
         
-        // Ограничиваем скорость
+        // Огранandчandinаем withtoороwithть
         const speed = @sqrt(node.vx * node.vx + node.vy * node.vy);
         const max_speed = 50.0;
         if (speed > max_speed) {
@@ -309,15 +309,15 @@ fn apply_forces() f64 {
             node.vy = node.vy / speed * max_speed;
         }
         
-        // Обновляем позицию
+        // Обноinляем позandцandю
         node.x += node.vx;
         node.y += node.vy;
         
-        // Ограничиваем границами
+        // Огранandчandinаем гранandцамand
         node.x = @max(50.0, @min(layout_config.width - 50.0, node.x));
         node.y = @max(50.0, @min(layout_config.height - 50.0, node.y));
         
-        // Накапливаем энергию
+        // Наtoаплandinаем энергandю
         energy += node.vx * node.vx + node.vy * node.vy;
     }
     
@@ -326,20 +326,20 @@ fn apply_forces() f64 {
 
 /// Полный force-directed layout
 fn layout_force_directed(iterations: u32) f64 {
-    // Начальное размещение по φ-спирали
+    // Начальное размещенandе по φ-withпandралand
     layout_phi_spiral();
     
     var iter: u32 = 0;
     var energy: f64 = 0;
     
     while (iter < iterations) : (iter += 1) {
-        // φ-адаптивное демпфирование
+        // φ-адаптandinное демпфandроinанandе
         const progress: f64 = @as(f64, @floatFromInt(iter)) / @as(f64, @floatFromInt(iterations));
         layout_config.damping = PHI_INV * math.pow(f64, PHI_INV, progress);
         
         energy = layout_force_step();
         
-        // Проверка сходимости
+        // Check withходandмоwithтand
         if (energy < layout_config.convergence_threshold) break;
     }
     
@@ -350,17 +350,17 @@ fn layout_force_directed(iterations: u32) f64 {
 // HIERARCHICAL LAYOUT
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Иерархическое размещение с φ-пропорциями
+/// Иерархandчеwithtoое размещенandе with φ-пропорцandямand
 fn layout_hierarchical(root: u32) void {
     if (root >= layout_node_count) return;
     
-    // Определяем уровни (BFS)
+    // Определяем уроinнand (BFS)
     var levels: [MAX_LAYOUT_NODES]u32 = [_]u32{0xFFFFFFFF} ** MAX_LAYOUT_NODES;
     var level_counts: [64]u32 = [_]u32{0} ** 64;
     var level_indices: [64]u32 = [_]u32{0} ** 64;
     var max_level: u32 = 0;
     
-    // BFS для определения уровней
+    // BFS for определенandя уроinней
     var queue: [MAX_LAYOUT_NODES]u32 = undefined;
     var queue_start: u32 = 0;
     var queue_end: u32 = 0;
@@ -375,7 +375,7 @@ fn layout_hierarchical(root: u32) void {
         queue_start += 1;
         const current_level = levels[current];
         
-        // Находим соседей через рёбра
+        // Находandм withоwithедей через рёбра
         var i: u32 = 0;
         while (i < layout_edge_count) : (i += 1) {
             const edge = &layout_edges[i];
@@ -397,7 +397,7 @@ fn layout_hierarchical(root: u32) void {
         }
     }
     
-    // Размещаем узлы по уровням с φ-пропорциями
+    // Размещаем узлы по уроinням with φ-пропорцandямand
     var i: u32 = 0;
     while (i < layout_node_count) : (i += 1) {
         const level = levels[i];
@@ -406,7 +406,7 @@ fn layout_hierarchical(root: u32) void {
         // y = height × (1 - φ^(-level))
         const y = layout_config.height * (1.0 - phi_core.phi_power(-@as(i32, @intCast(level + 1))));
         
-        // x = равномерно по ширине
+        // x = раinномерно по шandрandне
         const count: f64 = @floatFromInt(level_counts[level]);
         const idx: f64 = @floatFromInt(level_indices[level]);
         const spacing = layout_config.width / (count + 1.0);
@@ -422,7 +422,7 @@ fn layout_hierarchical(root: u32) void {
 // RADIAL LAYOUT
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Радиальное размещение с φ-секторами
+/// Радandальное размещенandе with φ-withеtoторамand
 fn layout_radial(center_node: u32) void {
     if (center_node >= layout_node_count) return;
     
@@ -434,14 +434,14 @@ fn layout_radial(center_node: u32) void {
     layout_nodes[center_node].x = cx;
     layout_nodes[center_node].y = cy;
     
-    // Определяем кольца (уровни от центра)
+    // Определяем toольца (уроinнand from центра)
     var rings: [MAX_LAYOUT_NODES]u32 = [_]u32{0xFFFFFFFF} ** MAX_LAYOUT_NODES;
     var ring_counts: [32]u32 = [_]u32{0} ** 32;
     var ring_indices: [32]u32 = [_]u32{0} ** 32;
     
     rings[center_node] = 0;
     
-    // BFS для определения колец
+    // BFS for определенandя toолец
     var queue: [MAX_LAYOUT_NODES]u32 = undefined;
     var queue_start: u32 = 0;
     var queue_end: u32 = 0;
@@ -474,7 +474,7 @@ fn layout_radial(center_node: u32) void {
         }
     }
     
-    // Размещаем по кольцам
+    // Размещаем по toольцам
     var i: u32 = 0;
     while (i < layout_node_count) : (i += 1) {
         if (i == center_node) continue;
@@ -485,7 +485,7 @@ fn layout_radial(center_node: u32) void {
         // radius = base × φ^ring
         const radius = base_radius * phi_core.phi_power(@intCast(ring));
         
-        // Угол в кольце
+        // Угол in toольце
         const count: f64 = @floatFromInt(ring_counts[ring]);
         const idx: f64 = @floatFromInt(ring_indices[ring]);
         const angle = TAU * idx / count;
@@ -500,7 +500,7 @@ fn layout_radial(center_node: u32) void {
 // УТИЛИТЫ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Вычисление энергии системы
+/// Вычandwithленandе энергandand withandwithтемы
 fn layout_energy() f64 {
     var energy: f64 = 0.0;
     
@@ -513,11 +513,11 @@ fn layout_energy() f64 {
     return energy;
 }
 
-/// Центрирование layout
+/// Центрandроinанandе layout
 fn layout_center() void {
     if (layout_node_count == 0) return;
     
-    // Находим центр масс
+    // Находandм центр маwithwith
     var sum_x: f64 = 0;
     var sum_y: f64 = 0;
     
@@ -531,7 +531,7 @@ fn layout_center() void {
     const cx = sum_x / n;
     const cy = sum_y / n;
     
-    // Смещаем к центру canvas
+    // Смещаем to центру canvas
     const offset_x = layout_config.width / 2.0 - cx;
     const offset_y = layout_config.height / 2.0 - cy;
     
@@ -556,7 +556,7 @@ test "layout_phi_spiral" {
     
     layout_phi_spiral();
     
-    // Проверяем что узлы размещены
+    // Проinеряем что узлы размещены
     try std.testing.expect(layout_nodes[0].x > 0);
     try std.testing.expect(layout_nodes[0].y > 0);
 }
@@ -564,7 +564,7 @@ test "layout_phi_spiral" {
 test "layout_force_directed" {
     layout_init(1000.0, 618.0);
     
-    // Создаём простой граф с начальными позициями по спирали
+    // Создаём проwithтой граф with onчальнымand позandцandямand по withпandралand
     _ = layout_add_node(0, 500, 309);
     _ = layout_add_node(1, 600, 309);
     _ = layout_add_node(2, 550, 400);
@@ -572,10 +572,10 @@ test "layout_force_directed" {
     _ = layout_add_edge(1, 2);
     _ = layout_add_edge(2, 0);
     
-    // Больше итераций для сходимости
+    // Больше andтерацandй for withходandмоwithтand
     const energy = layout_force_directed(100);
     
-    // Энергия должна быть разумной (не бесконечной)
+    // Энергandя должon быть разумной (не беwithtoонечной)
     try std.testing.expect(energy < 10000.0);
     try std.testing.expect(!std.math.isNan(energy));
     try std.testing.expect(!std.math.isInf(energy));

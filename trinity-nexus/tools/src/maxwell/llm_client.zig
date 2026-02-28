@@ -1,5 +1,5 @@
 // Maxwell Daemon - LLM Client
-// Интеграция с LLM API для reasoning
+// Интеграцandя with LLM API for reasoning
 //
 // IMPLEMENTATION STATUS:
 // - GLM (z.ai): IMPLEMENTED (working)
@@ -182,7 +182,7 @@ pub const LLMClient = struct {
         self.conversation.deinit();
     }
 
-    /// Отправить сообщение и получить ответ
+    /// Отпраinandть withообщенandе and получandть frominет
     pub fn chat(self: *LLMClient, user_message: []const u8) !LLMResponse {
         // Add user message to conversation
         try self.conversation.append(Message{
@@ -202,7 +202,7 @@ pub const LLMClient = struct {
         return response;
     }
 
-    /// Сгенерировать .vibee спецификацию
+    /// Сгенерandроinать .vibee withпецandфandtoацandю
     pub fn generateSpec(self: *LLMClient, task_description: []const u8, context: []const u8) ![]const u8 {
         var prompt = std.ArrayList(u8).init(self.allocator);
         defer prompt.deinit();
@@ -219,7 +219,7 @@ pub const LLMClient = struct {
         return response.content;
     }
 
-    /// Проанализировать ошибку и предложить исправление
+    /// Проаonлandзandроinать ошandбtoу and предложandть andwithпраinленandе
     pub fn analyzeError(self: *LLMClient, error_message: []const u8, code_context: []const u8) ![]const u8 {
         var prompt = std.ArrayList(u8).init(self.allocator);
         defer prompt.deinit();
@@ -236,7 +236,7 @@ pub const LLMClient = struct {
         return response.content;
     }
 
-    /// Декомпозировать задачу на подзадачи
+    /// Деtoомпозandроinать задачу on подзадачand
     pub fn decomposeTask(self: *LLMClient, task_description: []const u8) ![]const u8 {
         var prompt = std.ArrayList(u8).init(self.allocator);
         defer prompt.deinit();
@@ -252,7 +252,7 @@ pub const LLMClient = struct {
         return response.content;
     }
 
-    /// Очистить историю разговора
+    /// Очandwithтandть andwithторandю разгоinора
     pub fn clearHistory(self: *LLMClient) void {
         self.conversation.clearRetainingCapacity();
         self.conversation.append(Message{
