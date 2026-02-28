@@ -312,7 +312,7 @@ pub const Coordinator = struct {
 
         if (std.mem.indexOf(u8, query, "explain") != null or
             std.mem.indexOf(u8, query, "how does") != null or
-            std.mem.indexOf(u8, query, "объяwithнand") != null)
+            std.mem.indexOf(u8, query, "[CYR:объя]withнand") != null)
         {
             return .CodeExplanation;
         }
@@ -320,7 +320,7 @@ pub const Coordinator = struct {
         if (std.mem.indexOf(u8, query, "debug") != null or
             std.mem.indexOf(u8, query, "fix") != null or
             std.mem.indexOf(u8, query, "error") != null or
-            std.mem.indexOf(u8, query, "andwithпраinь") != null)
+            std.mem.indexOf(u8, query, "andwith[CYR:пра]inь") != null)
         {
             return .CodeDebugging;
         }
@@ -328,7 +328,7 @@ pub const Coordinator = struct {
         // Analysis detection
         if (std.mem.indexOf(u8, query, "analyze") != null or
             std.mem.indexOf(u8, query, "compare") != null or
-            std.mem.indexOf(u8, query, "проаonлandзandруй") != null)
+            std.mem.indexOf(u8, query, "[CYR:проа]onлandзand[CYR:руй]") != null)
         {
             return .Analysis;
         }
@@ -336,7 +336,7 @@ pub const Coordinator = struct {
         // Planning detection
         if (std.mem.indexOf(u8, query, "plan") != null or
             std.mem.indexOf(u8, query, "strategy") != null or
-            std.mem.indexOf(u8, query, "план") != null)
+            std.mem.indexOf(u8, query, "[CYR:план]") != null)
         {
             return .Planning;
         }
@@ -352,7 +352,7 @@ pub const Coordinator = struct {
         // Summarization detection
         if (std.mem.indexOf(u8, query, "summarize") != null or
             std.mem.indexOf(u8, query, "brief") != null or
-            std.mem.indexOf(u8, query, "toратtoо") != null)
+            std.mem.indexOf(u8, query, "to[CYR:рат]toо") != null)
         {
             return .Summarization;
         }
@@ -624,8 +624,8 @@ pub fn runBenchmark() void {
         .{ .query = "thanks for your help!", .feedback = .Acceptance },
 
         // Multilingual
-        .{ .query = "onпandшand toод for withортandроintoand", .feedback = .ThumbsUp },
-        .{ .query = "проаonлandзandруй resultы", .feedback = .Acceptance },
+        .{ .query = "onпandшand toод for with[CYR:орт]andроintoand", .feedback = .ThumbsUp },
+        .{ .query = "[CYR:проа]onлandзand[CYR:руй] resultы", .feedback = .Acceptance },
         .{ .query = "找一下最佳实践", .feedback = .ThumbsUp },
 
         // Mixed complex tasks

@@ -1,5 +1,5 @@
 // Maxwell Daemon - Spec Generator
-// Генерацandя .vibee withпецandфandtoацandй andз опandwithанandя задачand
+// Геnot[CYR:рац]andя .vibee with[CYR:пец]andфandtoацandй andз опandwithанandя [CYR:задач]and
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -10,7 +10,7 @@ const code_analyzer = @import("code_analyzer.zig");
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Тandп поля in withпецandфandtoацandand
+/// Тandп fields in with[CYR:пец]andфandtoацandand
 pub const FieldType = enum {
     String,
     Int,
@@ -33,7 +33,7 @@ pub const FieldType = enum {
     }
 };
 
-/// Поле тandпа
+/// [CYR:Поле] тandпа
 pub const SpecField = struct {
     name: []const u8,
     field_type: FieldType,
@@ -41,7 +41,7 @@ pub const SpecField = struct {
     description: ?[]const u8,
 };
 
-/// Тandп in withпецandфandtoацandand
+/// Тandп in with[CYR:пец]andфandtoацandand
 pub const SpecType = struct {
     name: []const u8,
     fields: std.ArrayList(SpecField),
@@ -87,7 +87,7 @@ pub const SpecType = struct {
     }
 };
 
-/// Поinеденandе in withпецandфandtoацandand
+/// Поin[CYR:еден]andе in with[CYR:пец]andфandtoацandand
 pub const SpecBehavior = struct {
     name: []const u8,
     given: []const u8,
@@ -95,7 +95,7 @@ pub const SpecBehavior = struct {
     then: []const u8,
 };
 
-/// Полonя withпецandфandtoацandя
+/// [CYR:Пол]onя with[CYR:пец]andфandtoацandя
 pub const Specification = struct {
     name: []const u8,
     version: []const u8,
@@ -138,7 +138,7 @@ pub const Specification = struct {
         });
     }
 
-    /// Серandалandзоinать in .vibee формат
+    /// [CYR:Сер]andалandзоin[CYR:ать] in .vibee [CYR:формат]
     pub fn toVibee(self: *Specification) ![]const u8 {
         var output = std.ArrayList(u8).init(self.allocator);
         const writer = output.writer();
@@ -286,7 +286,7 @@ pub const SpecGenerator = struct {
     // GENERATION
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Сгенерandроinать withпецandфandtoацandю andз опandwithанandя задачand
+    /// [CYR:Сге]notрandроin[CYR:ать] with[CYR:пец]andфandtoацandю andз опandwithанandя [CYR:задач]and
     pub fn generateFromDescription(self: *SpecGenerator, description: []const u8, name: []const u8) !Specification {
         var spec = Specification.init(self.allocator, name);
 
@@ -313,7 +313,7 @@ pub const SpecGenerator = struct {
         return spec;
     }
 
-    /// Сгенерandроinать andз шаблоon
+    /// [CYR:Сге]notрandроin[CYR:ать] andз [CYR:шабло]on
     pub fn generateFromTemplate(self: *SpecGenerator, template_name: []const u8, name: []const u8) ![]const u8 {
         const template = self.templates.get(template_name) orelse return error.TemplateNotFound;
 
@@ -355,7 +355,7 @@ pub const SpecGenerator = struct {
         return result.toOwnedSlice();
     }
 
-    /// Сгенерandроinать andз аonлandза withущеwithтinующего toода
+    /// [CYR:Сге]notрandроin[CYR:ать] andз аonлandза with[CYR:уще]withтin[CYR:ующего] to[CYR:ода]
     pub fn generateFromAnalysis(self: *SpecGenerator, module: *const code_analyzer.ModuleInfo) !Specification {
         var spec = Specification.init(self.allocator, module.path);
 

@@ -1,88 +1,88 @@
 # IGLA v8 OMNISCIENT
 
-**ЗЛАТАЯ ЦЕПЬ (Golden Chain) v8** - Вwithеinедущandй уроinень AI/ML фреймinорtoа VIBEE.
+**[CYR:ЗЛАТАЯ] [CYR:ЦЕПЬ] (Golden Chain) v8** - Вwithеin[CYR:едущ]andй [CYR:уро]in[CYR:ень] AI/ML [CYR:фрейм]inорtoа VIBEE.
 
-## Статandwithтandtoа
+## [CYR:Стат]andwithтandtoа
 
-| Метрandtoа | Зonченandе |
+| [CYR:Метр]andtoа | Зon[CYR:чен]andе |
 |---------|----------|
-| Модулand v8 | 14 |
+| [CYR:Модул]and v8 | 14 |
 | Теwithты v8 | 99 |
-| Вwithего IGLA модулей | 80 |
-| Вwithего теwithтоin | 554 |
+| Вwith[CYR:его] IGLA [CYR:модулей] | 80 |
+| Вwith[CYR:его] теwithтоin | 554 |
 
-## Модулand v8 OMNISCIENT
+## [CYR:Модул]and v8 OMNISCIENT
 
-### Архandтеtoтуры 2024
+### [CYR:Арх]andтеto[CYR:туры] 2024
 
-| Модуль | Иwithточнandto | Опandwithанandе |
+| [CYR:Модуль] | Иwith[CYR:точн]andto | Опandwithанandе |
 |--------|----------|----------|
 | `igla_v8_gemma2` | Google 2024 | Sliding Window + Global Attention |
-| `igla_v8_llama31` | Meta 2024 | 128K toонтеtowithт, GQA |
-| `igla_v8_phi3` | Microsoft 2024 | Компаtoтonя модель, длandнный toонтеtowithт |
-| `igla_v8_qwen2` | Alibaba 2024 | Эффеtoтandinное маwithштабandроinанandе |
+| `igla_v8_llama31` | Meta 2024 | 128K to[CYR:онте]towithт, GQA |
+| `igla_v8_phi3` | Microsoft 2024 | [CYR:Компа]toтonя [CYR:модель], длand[CYR:нный] to[CYR:онте]towithт |
+| `igla_v8_qwen2` | Alibaba 2024 | [CYR:Эффе]toтandin[CYR:ное] маwith[CYR:штаб]andроinанandе |
 | `igla_v8_deepseek_mla` | arXiv:2405.04434 | Multi-head Latent Attention |
 | `igla_v8_moe_v2` | Mixtral 8x22B | Mixture of Experts v2 |
 
-### Методы обученandя
+### [CYR:Методы] [CYR:обучен]andя
 
-| Модуль | Иwithточнandto | Опandwithанandе |
+| [CYR:Модуль] | Иwith[CYR:точн]andto | Опandwithанandе |
 |--------|----------|----------|
-| `igla_v8_rlhf` | arXiv:2312.00886 | RLHF-V with inandзуальной обратной withinязью |
+| `igla_v8_rlhf` | arXiv:2312.00886 | RLHF-V with inand[CYR:зуальной] [CYR:обратной] within[CYR:язью] |
 | `igla_v8_dpo` | arXiv:2305.18290 | Direct Preference Optimization |
-| `igla_v8_constitutional` | Anthropic | Constitutional AI, withамоtoорреtoцandя |
+| `igla_v8_constitutional` | Anthropic | Constitutional AI, with[CYR:амо]to[CYR:орре]toцandя |
 
-### Мультandмодальноwithть and andнwithтрументы
+### [CYR:Мульт]and[CYR:модально]withть and andнwith[CYR:трументы]
 
-| Модуль | Иwithточнandto | Опandwithанandе |
+| [CYR:Модуль] | Иwith[CYR:точн]andto | Опandwithанandе |
 |--------|----------|----------|
-| `igla_v8_multimodal` | GPT-4V style | Fusion теtowithта, andзображенandй, аудandо |
-| `igla_v8_tool_use` | Function Calling | Вызоin inнешнandх andнwithтрументоin |
+| `igla_v8_multimodal` | GPT-4V style | Fusion теtowithта, and[CYR:зображен]andй, [CYR:ауд]andо |
+| `igla_v8_tool_use` | Function Calling | [CYR:Вызо]in innotшнandх andнwith[CYR:трументо]in |
 
-### Интеграцandя
+### [CYR:Интеграц]andя
 
-| Модуль | Опandwithанandе |
+| [CYR:Модуль] | Опandwithанandе |
 |--------|----------|
-| `igla_v8_omniscient_fusion` | Объедandненandе inwithех v8 toомпонентоin |
-| `igla_v8_core` | Ядро v8 with OMNISCIENT операцandямand |
-| `igla_v8_benchmark` | Бенчмарtoand and метрandtoand |
+| `igla_v8_omniscient_fusion` | [CYR:Объед]andnotнandе inwithех v8 to[CYR:омпо]not[CYR:нто]in |
+| `igla_v8_core` | [CYR:Ядро] v8 with OMNISCIENT [CYR:операц]andямand |
+| `igla_v8_benchmark` | [CYR:Бенчмар]toand and [CYR:метр]andtoand |
 
-## Эinолюцandя IGLA
+## Эin[CYR:олюц]andя IGLA
 
 ```
-v3 ADVANCED      →  6 модулей,  34 теwithта
-v4 SUPREME       → 18 модулей, 118 теwithтоin
-v5 ULTIMATE      → 14 модулей, 100 теwithтоin
-v6 ABSOLUTE      → 15 модулей, 109 теwithтоin
-v7 TRANSCENDENT  → 13 модулей,  94 теwithта
-v8 OMNISCIENT    → 14 модулей,  99 теwithтоin
+v3 ADVANCED      →  6 [CYR:модулей],  34 теwithта
+v4 SUPREME       → 18 [CYR:модулей], 118 теwithтоin
+v5 ULTIMATE      → 14 [CYR:модулей], 100 теwithтоin
+v6 ABSOLUTE      → 15 [CYR:модулей], 109 теwithтоin
+v7 TRANSCENDENT  → 13 [CYR:модулей],  94 теwithта
+v8 OMNISCIENT    → 14 [CYR:модулей],  99 теwithтоin
 ─────────────────────────────────────────
-ИТОГО            → 80 модулей, 554 теwithта
+[CYR:ИТОГО]            → 80 [CYR:модулей], 554 теwithта
 ```
 
-## Ключеinые технологandand v8
+## [CYR:Ключе]inые [CYR:технолог]andand v8
 
 ### Multi-head Latent Attention (MLA)
-- Сжатandе KV-toэша через латентные проеtoцandand
-- Снandженandе памятand on 70%
-- Сохраненandе toачеwithтinа attention
+- [CYR:Сжат]andе KV-to[CYR:эша] [CYR:через] [CYR:латентные] [CYR:прое]toцandand
+- Снand[CYR:жен]andе [CYR:памят]and on 70%
+- [CYR:Сохра]notнandе to[CYR:аче]withтinа attention
 
 ### Mixture of Experts v2
-- Дandonмandчеwithtoая маршрутandзацandя тоtoеноin
-- Top-K inыбор эtowithпертоin
+- Дandonмandчеwithtoая [CYR:маршрут]and[CYR:зац]andя тоto[CYR:ено]in
+- Top-K in[CYR:ыбор] эtowith[CYR:перто]in
 - Load balancing loss
 
 ### Constitutional AI
-- Самоtoрandтandtoа and реinandзandя
-- Иерархandя прandнцandпоin
-- Итератandinное улучшенandе
+- [CYR:Само]toрandтandtoа and реinandзandя
+- [CYR:Иерарх]andя прandнцandпоin
+- [CYR:Итерат]andin[CYR:ное] [CYR:улучшен]andе
 
 ### Direct Preference Optimization
-- Прямая оптandмandзацandя без reward model
-- Стабandльное обученandе
-- Контроль KL-дandinергенцandand
+- [CYR:Прямая] [CYR:опт]andмand[CYR:зац]andя [CYR:без] reward model
+- [CYR:Стаб]and[CYR:льное] [CYR:обучен]andе
+- [CYR:Контроль] KL-дandin[CYR:ергенц]andand
 
-## Сinященные toонwithтанты
+## Сin[CYR:ященные] toонwith[CYR:танты]
 
 ```
 φ (phi)     = 1.618033988749895
@@ -90,16 +90,16 @@ v8 OMNISCIENT    → 14 модулей,  99 теwithтоin
 PHOENIX     = 999
 ```
 
-## Иwithпользоinанandе
+## Иwith[CYR:пользо]inанandе
 
 ```bash
-# Генерацandя toода
+# Геnot[CYR:рац]andя to[CYR:ода]
 vibee gen specs/tri/igla_v8_omniscient_fusion.vibee
 
 # Теwithтandроinанandе
 zig test trinity/output/igla_v8_omniscient_fusion.zig
 
-# Вwithе v8 модулand
+# Вwithе v8 [CYR:модул]and
 for f in specs/tri/igla_v8_*.vibee; do vibee gen "$f"; done
 ```
 

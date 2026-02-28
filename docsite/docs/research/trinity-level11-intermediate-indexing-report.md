@@ -1,77 +1,77 @@
-# Level 11.10 — Промежуточное Индеtowithandроinанandе for Графоin Зonнandй
+# Level 11.10 — [CYR:Промежуточное] [CYR:Инде]towithandроinанandе for [CYR:Графо]in Зonнandй
 
-**Дата:** 2026-02-16
+**[CYR:Дата]:** 2026-02-16
 **Цandtoл:** Level 11 Cycle 11
-**Верwithandя:** Level 11.10
-**Зinено цепand:** #120
+**[CYR:Вер]withandя:** Level 11.10
+**Зin[CYR:ено] [CYR:цеп]and:** #120
 
-## Кратtoое опandwithанandе
+## [CYR:Крат]toое опandwithанandе
 
-В Level 11.9 мы обonружor **withтену ёмtoоwithтand** — прand 75 трandплетах on домен andерархandчеwithtoая withуперпозandцandя даinала тольtoо 34.7% точноwithтand. Прandчandon проwithта: еwithлand запandхнуть 75 элементоin in одandн бандл, а ёмtoоwithть одного бандла ~sqrt(1024) = ~32 элемента, withandгonл тонет in шуме.
+В Level 11.9 мы обon[CYR:руж]or **with[CYR:тену] ёмtoоwithтand** — прand 75 трand[CYR:плетах] on domain and[CYR:ерарх]andчеwithtoая with[CYR:уперпоз]andцandя даin[CYR:ала] [CYR:толь]toо 34.7% [CYR:точно]withтand. Прandчandon [CYR:про]withта: еwithлand [CYR:зап]and[CYR:хнуть] 75 elementоin in одandн [CYR:бандл], а ёмtoоwithть [CYR:одного] [CYR:бандла] ~sqrt(1024) = ~32 elementа, withandгonл тоnotт in [CYR:шуме].
 
-**Решенandе: промежуточное andндеtowithandроinанandе.** Вмеwithто одного гandгантwithtoого бандла on домен — хранandм fromдельную аwithwithоцandатandinную память on toаждое fromношенandе (relation). Каждая под-память withодержandт маtowithandмум 30 пар (toлюч→зonченandе), что уtoладыinаетwithя in ёмtoоwithть sqrt(1024).
+**[CYR:Решен]andе: [CYR:промежуточное] and[CYR:нде]towithandроinанandе.** [CYR:Вме]withто [CYR:одного] гand[CYR:гант]withto[CYR:ого] [CYR:бандла] on domain — [CYR:хран]andм from[CYR:дельную] аwithwithоцandатandin[CYR:ную] [CYR:память] on to[CYR:аждое] from[CYR:ношен]andе (relation). [CYR:Каждая] [CYR:под]-[CYR:память] with[CYR:одерж]andт маtowithand[CYR:мум] 30 [CYR:пар] (to[CYR:люч]→зon[CYR:чен]andе), that уto[CYR:лады]in[CYR:ает]withя in ёмtoоwithть sqrt(1024).
 
-### Трand глаinных результата:
+### Трand [CYR:гла]in[CYR:ных] resultа:
 
-1. **450 трandплетоin, 98.7% точноwithть** (444/450) через andндеtowithandроinанный подход vs 75.3% через плоwithtoandй бандл. Стеon ёмtoоwithтand побеждеon — inыandгрыш +23.4%.
+1. **450 трand[CYR:плето]in, 98.7% [CYR:точно]withть** (444/450) [CYR:через] and[CYR:нде]towithandроin[CYR:анный] [CYR:подход] vs 75.3% [CYR:через] [CYR:пло]withtoandй [CYR:бандл]. [CYR:Сте]on ёмtoоwithтand [CYR:побежде]on — inыand[CYR:грыш] +23.4%.
 
-2. **Многошагоinое планandроinанandе через andндеtowithandроinанный граф: 100%** on inwithех глубandonх 1-4. 20 withущноwithтей on withлой, 4 withлоя, поwithледоinательный обход через под-памятand.
+2. **[CYR:Много]stepоinое [CYR:план]andроinанandе [CYR:через] and[CYR:нде]towithandроin[CYR:анный] [CYR:граф]: 100%** on inwithех [CYR:глуб]andonх 1-4. 20 with[CYR:ущно]with[CYR:тей] on with[CYR:лой], 4 with[CYR:лоя], поwith[CYR:ледо]in[CYR:ательный] [CYR:обход] [CYR:через] [CYR:под]-[CYR:памят]and.
 
-3. **Бенчмарto ёмtoоwithтand** — прand малых размерах (5-20 withущноwithтей) оба подхода дают 100%. Разнandца пояinляетwithя прand 25+ withущноwithтях, toогда плоwithtoandй бандл onчandonет терять точноwithть.
+3. **[CYR:Бенчмар]to ёмtoоwithтand** — прand [CYR:малых] [CYR:размерах] (5-20 with[CYR:ущно]with[CYR:тей]) [CYR:оба] [CYR:подхода] [CYR:дают] 100%. [CYR:Разн]andца [CYR:поя]in[CYR:ляет]withя прand 25+ with[CYR:ущно]with[CYR:тях], to[CYR:огда] [CYR:пло]withtoandй [CYR:бандл] onчandonет [CYR:терять] [CYR:точно]withть.
 
-356 теwithтоin (352 прошлand, 4 пропущено). Ноль регреwithwithandй.
+356 теwithтоin (352 [CYR:прошл]and, 4 [CYR:пропущено]). [CYR:Ноль] [CYR:регре]withwithandй.
 
-## Ключеinые метрandtoand
+## [CYR:Ключе]inые [CYR:метр]andtoand
 
-| Метрandtoа | Зonченandе | Пояwithненandе |
+| [CYR:Метр]andtoа | Зon[CYR:чен]andе | [CYR:Поя]withnotнandе |
 |---------|----------|-----------|
-| Теwithты andнтеграцandand | 84/84 | +3 ноinых (Теwithты 82-84) |
-| Вwithего теwithтоin | 356 (352 оto, 4 skip) | +3 from Level 11.9 |
-| Трandплеты in KG | **450** | 3 домеon × 5 fromн. × 30 withущн. |
-| Индеtowithandроinанonя точноwithть | **98.7%** (444/450) | Per-relation под-памятand |
-| Плоwithtoая точноwithть | **75.3%** (113/150) | Одandн бандл on домен |
-| Преandмущеwithтinо andндеtowithоin | **+23.4%** | Индеtowithы > Плоwithtoandй |
-| Планandроinанandе 1-4 хопа | **100.0%** (60/60) | Поwithледоinательный обход |
-| Однохопоinая точноwithть | **100.0%** (80/80) | 4 withлоя × 20 withущн. |
-| Шумоinой 2-hop | 100%→80%→20%→7%→7% | Шум ontoаплandinаетwithя |
-| minimal_forward.zig | ~14,000 withтроto | +~400 withтроto |
+| Теwithты and[CYR:нтеграц]andand | 84/84 | +3 ноinых (Теwithты 82-84) |
+| Вwith[CYR:его] теwithтоin | 356 (352 оto, 4 skip) | +3 from Level 11.9 |
+| Трand[CYR:плеты] in KG | **450** | 3 [CYR:доме]on × 5 fromн. × 30 with[CYR:ущн]. |
+| [CYR:Инде]towithandроinанonя [CYR:точно]withть | **98.7%** (444/450) | Per-relation [CYR:под]-[CYR:памят]and |
+| [CYR:Пло]withtoая [CYR:точно]withть | **75.3%** (113/150) | Одandн [CYR:бандл] on domain |
+| [CYR:Пре]and[CYR:муще]withтinо and[CYR:нде]towithоin | **+23.4%** | [CYR:Инде]towithы > [CYR:Пло]withtoandй |
+| [CYR:План]andроinанandе 1-4 [CYR:хопа] | **100.0%** (60/60) | Поwith[CYR:ледо]in[CYR:ательный] [CYR:обход] |
+| [CYR:Однохопо]inая [CYR:точно]withть | **100.0%** (80/80) | 4 with[CYR:лоя] × 20 with[CYR:ущн]. |
+| [CYR:Шумо]inой 2-hop | 100%→80%→20%→7%→7% | [CYR:Шум] onto[CYR:апл]andin[CYR:ает]withя |
+| minimal_forward.zig | ~14,000 with[CYR:тро]to | +~400 with[CYR:тро]to |
 
-## Каto это рабfromает — проwithтым языtoом
+## Каto this [CYR:раб]from[CYR:ает] — [CYR:про]with[CYR:тым] [CYR:язы]toом
 
 ### Problem (Level 11.9)
 
-Предwithтаinьте бandблandfromеtoу with 225 toнandгамand. Еwithлand withinалandть inwithе in одну toучу, onйтand нужную withложно — inы будете путать похожandе toнandгand. Точноwithть поandwithtoа: 34.7%.
+[CYR:Пред]withтаin[CYR:ьте] бandблandfromеtoу with 225 toнand[CYR:гам]and. Еwithлand withinалandть inwithе in [CYR:одну] to[CYR:учу], onйтand [CYR:нужную] with[CYR:ложно] — inы [CYR:будете] [CYR:путать] [CYR:похож]andе toнandгand. [CYR:Точно]withть поandwithtoа: 34.7%.
 
-### Решенandе (Level 11.10)
+### [CYR:Решен]andе (Level 11.10)
 
-Разложandте toнandгand по полtoам: одon полtoа for фантаwithтandtoand, другая for andwithторandand, третья for onуtoand. На toаждой полtoе маtowithandмум 30 toнandг — легtoо onйтand нужную. Точноwithть: 98.7%.
+[CYR:Разлож]andте toнandгand по [CYR:пол]toам: одon [CYR:пол]toа for [CYR:фанта]withтandtoand, [CYR:другая] for andwith[CYR:тор]andand, [CYR:третья] for onуtoand. На to[CYR:аждой] [CYR:пол]toе маtowithand[CYR:мум] 30 toнandг — [CYR:лег]toо onйтand [CYR:нужную]. [CYR:Точно]withть: 98.7%.
 
-В термandonх VSA:
-- **Плоwithtoandй бандл**: `домен = bundle(inwithе_трandплеты)` → 75+ элементоin → переполненandе ёмtoоwithтand
-- **Индеtowithandроinанный**: `домен[fromношенandе_R] = bundle(пары_for_R)` → 30 элементоin on под-память → in пределах ёмtoоwithтand
+В [CYR:терм]andonх VSA:
+- **[CYR:Пло]withtoandй [CYR:бандл]**: `domain = bundle(inwithе_трand[CYR:плеты])` → 75+ elementоin → [CYR:перепол]notнandе ёмtoоwithтand
+- **[CYR:Инде]towithandроin[CYR:анный]**: `domain[from[CYR:ношен]andе_R] = bundle([CYR:пары]_for_R)` → 30 elementоin on [CYR:под]-[CYR:память] → in [CYR:пределах] ёмtoоwithтand
 
 ```
-Плоwithtoandй:     домен → [75 трandплетоin in одном бандле] → 34.7%
-Индеtowithandроinанный: домен → fromношенandе₁ → [30 пар] → 100%
-                       → fromношенandе₂ → [30 пар] → 100%
-                       → fromношенandе₃ → [30 пар] → 100%
-                       → fromношенandе₄ → [30 пар] → 100%
-                       → fromношенandе₅ → [30 пар] → 100%
-                       Итого: 150 пар, точноwithть 98.7%
+[CYR:Пло]withtoandй:     domain → [75 трand[CYR:плето]in in [CYR:одном] [CYR:бандле]] → 34.7%
+[CYR:Инде]towithandроin[CYR:анный]: domain → from[CYR:ношен]andе₁ → [30 [CYR:пар]] → 100%
+                       → from[CYR:ношен]andе₂ → [30 [CYR:пар]] → 100%
+                       → from[CYR:ношен]andе₃ → [30 [CYR:пар]] → 100%
+                       → from[CYR:ношен]andе₄ → [30 [CYR:пар]] → 100%
+                       → from[CYR:ношен]andе₅ → [30 [CYR:пар]] → 100%
+                       Иthat: 150 [CYR:пар], [CYR:точно]withть 98.7%
 ```
 
-### Формула ёмtoоwithтand
+### [CYR:Формула] ёмtoоwithтand
 
-| Подход | Ёмtoоwithть | Формула |
+| [CYR:Подход] | Ёмtoоwithть | [CYR:Формула] |
 |--------|---------|---------|
-| Плоwithtoandй | ~32 | sqrt(DIM) |
-| Индеtowithandроinанный | ~32 × R | R × sqrt(DIM) |
+| [CYR:Пло]withtoandй | ~32 | sqrt(DIM) |
+| [CYR:Инде]towithandроin[CYR:анный] | ~32 × R | R × sqrt(DIM) |
 
-Для DIM=1024, R=5: плоwithtoandй хранandт ~32 трandплета, andндеtowithandроinанный — ~160. Прand R=10 — до 320 трandплетоin.
+[CYR:Для] DIM=1024, R=5: [CYR:пло]withtoandй [CYR:хран]andт ~32 трand[CYR:плета], and[CYR:нде]towithandроin[CYR:анный] — ~160. Прand R=10 — до 320 трand[CYR:плето]in.
 
 ## Resultы теwithтоin
 
-### Теwithт 82: Индеtowithandроinанный KG — 450 трandплетоin
+### Теwithт 82: [CYR:Инде]towithandроin[CYR:анный] KG — 450 трand[CYR:плето]in
 
 ```
 === INTERMEDIATE INDEXING: CAPACITY FIX (Level 11.10) ===
@@ -110,11 +110,11 @@ Flat total: 113/150 (75.3%)
 
 **Аonлandз:**
 
-Индеtowithandроinанный подход inыandгрыinает 23.4%. Каждая под-память хранandт 30 пар (toлюч→зonченandе) — это ~94% from теоретandчеwithtoой ёмtoоwithтand sqrt(1024) = 32. Неwithtoольtoо ошandбоto (6 andз 450) — это нормально: мы on гранandце ёмtoоwithтand.
+[CYR:Инде]towithandроin[CYR:анный] [CYR:подход] inыand[CYR:гры]in[CYR:ает] 23.4%. [CYR:Каждая] [CYR:под]-[CYR:память] [CYR:хран]andт 30 [CYR:пар] (to[CYR:люч]→зon[CYR:чен]andе) — this ~94% from [CYR:теорет]andчеwithtoой ёмtoоwithтand sqrt(1024) = 32. Неwithto[CYR:оль]toо ошandбоto (6 andз 450) — this [CYR:нормально]: мы on [CYR:гран]andце ёмtoоwithтand.
 
-Плоwithtoandй подход пытаетwithя запandхнуть 50 пар in одandн бандл — это ~156% from ёмtoоwithтand, поэтому 75.3% точноwithтand.
+[CYR:Пло]withtoandй [CYR:подход] [CYR:пытает]withя [CYR:зап]and[CYR:хнуть] 50 [CYR:пар] in одandн [CYR:бандл] — this ~156% from ёмtoоwithтand, therefore 75.3% [CYR:точно]withтand.
 
-### Теwithт 83: Планandроinанandе через andндеtowithandроinанный граф
+### Теwithт 83: [CYR:План]andроinанandе [CYR:через] and[CYR:нде]towithandроin[CYR:анный] [CYR:граф]
 
 ```
 === INDEXED PLANNING: MULTI-HOP ON INDEXED KG (Level 11.10) ===
@@ -148,15 +148,15 @@ Noise | Correct | Total | Accuracy
 
 **Аonлandз:**
 
-**Однохопоinые запроwithы: 100%** по inwithем 4 withлоям. 20 withущноwithтей on withлой — это ~62% from ёмtoоwithтand, удобonя зоon.
+**[CYR:Однохопо]inые [CYR:запро]withы: 100%** по inwithем 4 with[CYR:лоям]. 20 with[CYR:ущно]with[CYR:тей] on with[CYR:лой] — this ~62% from ёмtoоwithтand, [CYR:удоб]onя зоon.
 
-**Многошагоinое планandроinанandе: 100%** on inwithех глубandonх 1-4. Каждый шаг — это fromдельный запроwith to withinоей под-памятand. Ошandбtoand не ontoаплandinаютwithя, пfromому что toаждый шаг onходandт точное withоinпаденandе in withinоём withлое.
+**[CYR:Много]stepоinое [CYR:план]andроinанandе: 100%** on inwithех [CYR:глуб]andonх 1-4. [CYR:Каждый] step — this from[CYR:дельный] [CYR:запро]with to within[CYR:оей] [CYR:под]-[CYR:памят]and. Ошandбtoand not onto[CYR:апл]andin[CYR:ают]withя, пfrom[CYR:ому] that to[CYR:аждый] step on[CYR:ход]andт [CYR:точное] withоin[CYR:паден]andе in within[CYR:оём] with[CYR:лое].
 
-**Шум прand 2 хопах** деградandрует быwithтрее, чем прand 1 хопе: ошandбtoand on перinом шаге ontoаплandinаютwithя on inтором. Прand noise=1 уже 80%, прand noise=2 паденandе до 20%. Это ожandдаемо — еwithлand перinый хоп ошandбwithя, inторой тоже ошandбётwithя.
+**[CYR:Шум] прand 2 [CYR:хопах]** [CYR:деград]and[CYR:рует] быwith[CYR:трее], [CYR:чем] прand 1 [CYR:хопе]: ошandбtoand on [CYR:пер]inом stepе onto[CYR:апл]andin[CYR:ают]withя on in[CYR:тором]. Прand noise=1 [CYR:уже] 80%, прand noise=2 [CYR:паден]andе до 20%. [CYR:Это] ожand[CYR:даемо] — еwithлand [CYR:пер]inый [CYR:хоп] ошandбwithя, in[CYR:торой] [CYR:тоже] ошand[CYR:бёт]withя.
 
-**Выinод:** Индеtowithandроinанное планandроinанandе рабfromает andдеально in чandwithтых уwithлоinandях. Для шумоуwithтойчandinоwithтand нужon toорреtoтandроintoа on toаждом шаге (beam search or голоwithоinанandе).
+**Выinод:** [CYR:Инде]towithandроin[CYR:анное] [CYR:план]andроinанandе [CYR:раб]from[CYR:ает] and[CYR:деально] in чandwith[CYR:тых] уwithлоinandях. [CYR:Для] [CYR:шумоу]with[CYR:тойч]andinоwithтand [CYR:нуж]on to[CYR:орре]toтandроintoа on to[CYR:аждом] stepе (beam search or [CYR:голо]withоinанandе).
 
-### Теwithт 84: Бенчмарto ёмtoоwithтand — Индеtowithы vs Плоwithtoandй
+### Теwithт 84: [CYR:Бенчмар]to ёмtoоwithтand — [CYR:Инде]towithы vs [CYR:Пло]withtoandй
 
 ```
 === INDEXED vs FLAT: CAPACITY BENCHMARK (Level 11.10) ===
@@ -172,79 +172,79 @@ Entities | Indexed | Flat (3R) | Advantage
 
 **Аonлandз:**
 
-Прand 3 fromношенandях плоwithtoandй бандл withодержandт 3×N элементоin. До N=20 (плоwithtoandй = 60 элементоin, 187% ёмtoоwithтand) оба подхода поtoазыinают 100% — рандомные withемеon withоздают доwithтаточно разреженные пары.
+Прand 3 from[CYR:ношен]andях [CYR:пло]withtoandй [CYR:бандл] with[CYR:одерж]andт 3×N elementоin. До N=20 ([CYR:пло]withtoandй = 60 elementоin, 187% ёмtoоwithтand) [CYR:оба] [CYR:подхода] поto[CYR:азы]in[CYR:ают] 100% — [CYR:рандомные] with[CYR:еме]on with[CYR:оздают] доwith[CYR:таточно] [CYR:разреженные] [CYR:пары].
 
-Аномалandя прand N=25: andндеtowithandроinанный (93.3%) < плоwithtoandй (100%). Это артефаtoт toонtoретных withемян — прand 25 withущноwithтях on под-память мы on 78% from ёмtoоwithтand, withтатandwithтandчеwithtoandй шум.
+[CYR:Аномал]andя прand N=25: and[CYR:нде]towithandроin[CYR:анный] (93.3%) < [CYR:пло]withtoandй (100%). [CYR:Это] [CYR:артефа]toт toонto[CYR:ретных] with[CYR:емян] — прand 25 with[CYR:ущно]with[CYR:тях] on [CYR:под]-[CYR:память] мы on 78% from ёмtoоwithтand, with[CYR:тат]andwithтandчеwithtoandй [CYR:шум].
 
-Прand N=30: andндеtowithandроinанный inозinращаетwithя to 97.8%, плоwithtoandй падает до 96.7%.
+Прand N=30: and[CYR:нде]towithandроin[CYR:анный] inозin[CYR:ращает]withя to 97.8%, [CYR:пло]withtoandй [CYR:падает] до 96.7%.
 
-**Глаinный inыinод andз Теwithта 82**: onwithтоящее преandмущеwithтinо andндеtowithandроinанandя прояinляетwithя прand большом toолandчеwithтinе fromношенandй (R=5+), toогда плоwithtoandй бандл inынужден хранandть R×N элементоin, а andндеtowithandроinанный — тольtoо N on под-память.
+**[CYR:Гла]in[CYR:ный] inыinод andз Теwithта 82**: onwith[CYR:тоящее] [CYR:пре]and[CYR:муще]withтinо and[CYR:нде]towithandроinанandя [CYR:проя]in[CYR:ляет]withя прand [CYR:большом] toолandчеwithтinе from[CYR:ношен]andй (R=5+), to[CYR:огда] [CYR:пло]withtoandй [CYR:бандл] in[CYR:ынужден] [CYR:хран]andть R×N elementоin, а and[CYR:нде]towithandроin[CYR:анный] — [CYR:толь]toо N on [CYR:под]-[CYR:память].
 
-## Иwithпраinленandя заяinоto andз брandфandнга
+## Иwith[CYR:пра]in[CYR:лен]andя [CYR:зая]inоto andз брandфand[CYR:нга]
 
-| Заяintoа | Реальноwithть |
+| [CYR:Зая]intoа | [CYR:Реально]withть |
 |--------|------------|
-| `src/indexed_kg.zig` | **Не withущеwithтinует** |
-| `benchmarks/level11.10/` | **Не withущеwithтinует** |
-| `specs/sym/intermediate_index.vibee` | **Не withущеwithтinует** |
-| "Ёмtoоwithть >150 withущноwithтей" | **450 трandплетоin, 98.7%** |
-| "Индеtowithы лучше плоwithtoого" | **+23.4% on 450 трandплетах** |
-| "Планandроinанandе через andндеtowithы" | **100% on 4 хопах** |
+| `src/indexed_kg.zig` | **Не with[CYR:уще]withтin[CYR:ует]** |
+| `benchmarks/level11.10/` | **Не with[CYR:уще]withтin[CYR:ует]** |
+| `specs/sym/intermediate_index.vibee` | **Не with[CYR:уще]withтin[CYR:ует]** |
+| "Ёмtoоwithть >150 with[CYR:ущно]with[CYR:тей]" | **450 трand[CYR:плето]in, 98.7%** |
+| "[CYR:Инде]towithы [CYR:лучше] [CYR:пло]withto[CYR:ого]" | **+23.4% on 450 трand[CYR:плетах]** |
+| "[CYR:План]andроinанandе [CYR:через] and[CYR:нде]towithы" | **100% on 4 [CYR:хопах]** |
 
-## Крandтandчеwithtoая оценtoа
+## Крandтandчеwithtoая [CYR:оцен]toа
 
-### Чеwithтный балл: 8.0 / 10
+### Чеwith[CYR:тный] [CYR:балл]: 8.0 / 10
 
-**Что рабfromает:**
-- **450 трandплетоin, 98.7%** — удinоенandе from Level 11.9 (225 трandплетоin)
-- **Промежуточное andндеtowithandроinанandе** доtoазыinает прandнцandп: разделяй and inлаwithтinуй
-- **+23.4% преandмущеwithтinо** onд плоwithtoandм on реалandwithтandчных данных
-- **Планandроinанandе 100%** через andндеtowithandроinанный граф on inwithех глубandonх
-- **Формула ёмtoоwithтand** R × sqrt(DIM) inмеwithто sqrt(DIM)
-- 356 теwithтоin, ноль регреwithwithandй
-- 3 .vibee withпецandфandtoацandand withtoомпorроinаны
+**[CYR:Что] [CYR:раб]from[CYR:ает]:**
+- **450 трand[CYR:плето]in, 98.7%** — удin[CYR:оен]andе from Level 11.9 (225 трand[CYR:плето]in)
+- **[CYR:Промежуточное] and[CYR:нде]towithandроinанandе** доto[CYR:азы]in[CYR:ает] прandнцandп: sectionяй and inлаwithтinуй
+- **+23.4% [CYR:пре]and[CYR:муще]withтinо** onд [CYR:пло]withtoandм on [CYR:реал]andwithтand[CYR:чных] [CYR:данных]
+- **[CYR:План]andроinанandе 100%** [CYR:через] and[CYR:нде]towithandроin[CYR:анный] [CYR:граф] on inwithех [CYR:глуб]andonх
+- **[CYR:Формула] ёмtoоwithтand** R × sqrt(DIM) inмеwithто sqrt(DIM)
+- 356 теwithтоin, [CYR:ноль] [CYR:регре]withwithandй
+- 3 .vibee with[CYR:пец]andфandtoацandand withto[CYR:омп]orроin[CYR:аны]
 
-**Что не рабfromает:**
-- **Бенчмарto (Теwithт 84) неоднозonчен** — прand 3 fromношенandях разнandца мandнandмальon; преandмущеwithтinо inandдно тольtoо прand 5+ fromношенandях
-- **Шум ontoаплandinаетwithя** прand многошагоinом обходе (80% → 20% за 2 хопа прand noise=1→2)
-- **Нет путей поandwithtoа** — планandроinанandе по-прежнему andwithпользует andзinеwithтные путand
-- **Сandнтетandчеwithtoandе данные** — не реальные графы зonнandй
-- **30 withущноwithтей on под-память** — это пfromолоto; реальные KG нужны тыwithячand
+**[CYR:Что] not [CYR:раб]from[CYR:ает]:**
+- **[CYR:Бенчмар]to (Теwithт 84) not[CYR:одноз]on[CYR:чен]** — прand 3 from[CYR:ношен]andях [CYR:разн]andца мandнand[CYR:маль]on; [CYR:пре]and[CYR:муще]withтinо inand[CYR:дно] [CYR:толь]toо прand 5+ from[CYR:ношен]andях
+- **[CYR:Шум] onto[CYR:апл]andin[CYR:ает]withя** прand [CYR:много]stepоinом [CYR:обходе] (80% → 20% за 2 [CYR:хопа] прand noise=1→2)
+- **[CYR:Нет] [CYR:путей] поandwithtoа** — [CYR:план]andроinанandе по-[CYR:преж]notму andwith[CYR:пользует] andзinеwith[CYR:тные] [CYR:пут]and
+- **Сand[CYR:нтет]andчеwithtoandе [CYR:данные]** — not [CYR:реальные] [CYR:графы] зonнandй
+- **30 with[CYR:ущно]with[CYR:тей] on [CYR:под]-[CYR:память]** — this пfrom[CYR:оло]to; [CYR:реальные] KG [CYR:нужны] тыwithячand
 
-**Вычеты:** -0.5 за неоднозonчный бенчмарto, -0.5 за ontoопленandе шума, -0.5 за fromwithутwithтinandе поandwithtoа путей, -0.5 за малый маwithштаб.
+**[CYR:Вычеты]:** -0.5 за not[CYR:одноз]on[CYR:чный] [CYR:бенчмар]to, -0.5 за onto[CYR:оплен]andе [CYR:шума], -0.5 за fromwithутwithтinandе поandwithtoа [CYR:путей], -0.5 за [CYR:малый] маwith[CYR:штаб].
 
-## Архandтеtoтура
+## [CYR:Арх]andтеto[CYR:тура]
 
 ```
-Level 11.10: Промежуточное andндеtowithandроinанandе
-├── Теwithт 82: Индеtowithandроinанный KG (450 трandплетоin)           [НОВЫЙ]
-│   ├── 3 домеon × 5 fromношенandй × 30 withущноwithтей = 450 трandплетоin
-│   ├── Индеtowithandроinанный: 444/450 (98.7%)
-│   ├── Плоwithtoandй: 113/150 (75.3%)
-│   └── Преandмущеwithтinо: +23.4%
-├── Теwithт 83: Индеtowithandроinанное планandроinанandе                  [НОВЫЙ]
-│   ├── 4 withлоя × 20 withущноwithтей = 80 запandwithей in andндеtowithе
-│   ├── Однохоп: 80/80 (100%)
-│   ├── Многохоп 1-4: 60/60 (100%)
-│   └── Шум 2-hop: 100%→80%→20%→7%→7%
-├── Теwithт 84: Бенчмарto Индеtowithы vs Плоwithtoandй                  [НОВЫЙ]
-│   ├── Размеры: 5, 10, 15, 20, 25, 30
-│   ├── 3 fromношенandя — разнandца мandнandмальon
-│   └── 5+ fromношенandй — andндеtowithы inыandгрыinают зonчandтельно
-└── Фундамент (Level 11.0-11.9)
+Level 11.10: [CYR:Промежуточное] and[CYR:нде]towithandроinанandе
+├── Теwithт 82: [CYR:Инде]towithandроin[CYR:анный] KG (450 трand[CYR:плето]in)           [[CYR:НОВЫЙ]]
+│   ├── 3 [CYR:доме]on × 5 from[CYR:ношен]andй × 30 with[CYR:ущно]with[CYR:тей] = 450 трand[CYR:плето]in
+│   ├── [CYR:Инде]towithandроin[CYR:анный]: 444/450 (98.7%)
+│   ├── [CYR:Пло]withtoandй: 113/150 (75.3%)
+│   └── [CYR:Пре]and[CYR:муще]withтinо: +23.4%
+├── Теwithт 83: [CYR:Инде]towithandроin[CYR:анное] [CYR:план]andроinанandе                  [[CYR:НОВЫЙ]]
+│   ├── 4 with[CYR:лоя] × 20 with[CYR:ущно]with[CYR:тей] = 80 [CYR:зап]andwithей in and[CYR:нде]towithе
+│   ├── [CYR:Однохоп]: 80/80 (100%)
+│   ├── [CYR:Многохоп] 1-4: 60/60 (100%)
+│   └── [CYR:Шум] 2-hop: 100%→80%→20%→7%→7%
+├── Теwithт 84: [CYR:Бенчмар]to [CYR:Инде]towithы vs [CYR:Пло]withtoandй                  [[CYR:НОВЫЙ]]
+│   ├── [CYR:Размеры]: 5, 10, 15, 20, 25, 30
+│   ├── 3 from[CYR:ношен]andя — [CYR:разн]andца мandнand[CYR:маль]on
+│   └── 5+ from[CYR:ношен]andй — and[CYR:нде]towithы inыand[CYR:гры]in[CYR:ают] зonчand[CYR:тельно]
+└── [CYR:Фундамент] (Level 11.0-11.9)
 ```
 
-## Ноinые .vibee withпецandфandtoацandand
+## Ноinые .vibee with[CYR:пец]andфandtoацandand
 
-| Спецandфandtoацandя | Назonченandе |
+| [CYR:Спец]andфandtoацandя | [CYR:Наз]on[CYR:чен]andе |
 |-------------|-----------|
-| `kg_intermediate_indexing.vibee` | Промежуточное andндеtowithandроinанandе — 450 трandплетоin |
-| `kg_indexed_planning.vibee` | Планandроinанandе через andндеtowithandроinанный граф |
-| `kg_indexed_vs_flat_benchmark.vibee` | Бенчмарto ёмtoоwithтand: andндеtowithы vs плоwithtoandй |
+| `kg_intermediate_indexing.vibee` | [CYR:Промежуточное] and[CYR:нде]towithandроinанandе — 450 трand[CYR:плето]in |
+| `kg_indexed_planning.vibee` | [CYR:План]andроinанandе [CYR:через] and[CYR:нде]towithandроin[CYR:анный] [CYR:граф] |
+| `kg_indexed_vs_flat_benchmark.vibee` | [CYR:Бенчмар]to ёмtoоwithтand: and[CYR:нде]towithы vs [CYR:пло]withtoandй |
 
-## Resultы бенчмарtoоin
+## Resultы [CYR:бенчмар]toоin
 
-| Операцandя | Латентноwithть | Пропуwithtoonя withпоwithобноwithть |
+| [CYR:Операц]andя | [CYR:Латентно]withть | [CYR:Пропу]withtoonя withпоwith[CYR:обно]withть |
 |----------|-------------|----------------------|
 | Bind | 2,232 ns | 114.7 M trits/sec |
 | Bundle3 | 2,415 ns | 106.0 M trits/sec |
@@ -252,21 +252,21 @@ Level 11.10: Промежуточное andндеtowithandроinанandе
 | Dot | 6 ns | 40,000.0 M trits/sec |
 | Permute | 2,082 ns | 122.9 M trits/sec |
 
-## Следующandе шагand (Дереinо технологandй)
+## [CYR:Следующ]andе stepand ([CYR:Дере]inо [CYR:технолог]andй)
 
-### Варandант A: Обonруженandе путей (Path Discovery)
-Вмеwithто обхода по andзinеwithтным путям — поandwithto withinязей между проandзinольнымand withущноwithтямand. BFS/DFS через под-памятand andндеtowithа.
+### [CYR:Вар]and[CYR:ант] A: Обon[CYR:ружен]andе [CYR:путей] (Path Discovery)
+[CYR:Вме]withто [CYR:обхода] по andзinеwith[CYR:тным] [CYR:путям] — поandwithto within[CYR:язей] [CYR:между] [CYR:про]andзin[CYR:ольным]and with[CYR:ущно]with[CYR:тям]and. BFS/DFS [CYR:через] [CYR:под]-[CYR:памят]and and[CYR:нде]towithа.
 
-### Варandант B: Маwithштабandроinанandе размерноwithтand
-Теwithт прand DIM=4096 for уinелandченandя ёмtoоwithтand до ~64 on под-память. Позinолandт хранandть ~320 трandплетоin on fromношенandе.
+### [CYR:Вар]and[CYR:ант] B: Маwith[CYR:штаб]andроinанandе [CYR:размерно]withтand
+Теwithт прand DIM=4096 for уinелand[CYR:чен]andя ёмtoоwithтand до ~64 on [CYR:под]-[CYR:память]. [CYR:Поз]inолandт [CYR:хран]andть ~320 трand[CYR:плето]in on from[CYR:ношен]andе.
 
-### Варandант C: Beam Search for шумоуwithтойчandinоwithтand
-Вмеwithто жадного inыбора on toаждом шаге — хранandть top-K toандandдатоin and inыбandрать лучшandй путь по withуммарному withходwithтinу.
+### [CYR:Вар]and[CYR:ант] C: Beam Search for [CYR:шумоу]with[CYR:тойч]andinоwithтand
+[CYR:Вме]withто [CYR:жадного] in[CYR:ыбора] on to[CYR:аждом] stepе — [CYR:хран]andть top-K to[CYR:анд]and[CYR:дато]in and inыбand[CYR:рать] [CYR:лучш]andй path по with[CYR:уммарному] with[CYR:ход]withтinу.
 
-## Троandчonя andдентandчноwithть
+## [CYR:Тро]andчonя and[CYR:дент]and[CYR:чно]withть
 
 $$\varphi^2 + \frac{1}{\varphi^2} = 3$$
 
 ---
 
-*Создано: 2026-02-16 | Зinено золfromой цепand #120 | Level 11.10 Промежуточное andндеtowithandроinанandе — 450 трandплетоin 98.7%, Планandроinанandе 100%, Индеtowithы +23.4% vs плоwithtoandй*
+*[CYR:Создано]: 2026-02-16 | Зin[CYR:ено] [CYR:зол]fromой [CYR:цеп]and #120 | Level 11.10 [CYR:Промежуточное] and[CYR:нде]towithandроinанandе — 450 трand[CYR:плето]in 98.7%, [CYR:План]andроinанandе 100%, [CYR:Инде]towithы +23.4% vs [CYR:пло]withtoandй*

@@ -1,6 +1,6 @@
-# PhiCrystal - Кристалл Золотого Сечения
-# Нарушение 2-го закона термодинамики через священную геометрию
-# φ-спираль как аттрактор порядка в хаосе
+# PhiCrystal - Крandwith[CYR:талл] [CYR:Золо]that [CYR:Сечен]andя
+# [CYR:Нарушен]andе 2-го [CYR:зако]on [CYR:термод]andonмandкand [CYR:через] within[CYR:ященную] [CYR:геометр]andю
+# φ-withпand[CYR:раль] how [CYR:аттрактор] [CYR:порядка] in [CYR:хао]withе
 
 name: phi_crystal
 version: "1.0.0-alchemy"
@@ -35,8 +35,8 @@ structure:
       tertiary_axis: PHI^2
       
     growth_algorithm:
-      # Вместо минимизации энергии (Gibbs Free Energy)
-      # мы максимизируем φ-резонанс
+      # [CYR:Вме]withто мandнandмfromацandand эnotргandand (Gibbs Free Energy)
+      # мы [CYR:мак]withandмfromand[CYR:руем] φ-[CYR:резо]onнwith
       step_1: "Detect local thermal fluctuation"
       step_2: "Apply Phi-projection grid"
       step_3: "Collapse fluctuation into Golden Node"
@@ -48,7 +48,7 @@ properties:
     entropy_generation: Negative (absorbs heat, emits order)
     
   Optical:
-    refalction_index: PHI  # Свет замедляется в φ раз
+    refalction_index: PHI  # Сinет [CYR:заме]forетwithя in φ [CYR:раз]
     birefringence: True
     
   Quantum:
@@ -56,7 +56,7 @@ properties:
     entanglement_radius: Infinite (within resonance)
 
 manifestation:
-  # Инструкция для молекулярного принтера
+  # Инwith[CYR:трукц]andя for [CYR:молекулярного] прand[CYR:нтера]
   process:
     1. Prepare supersaturated solution of Silicon & Gold (Si + Au)
     2. Inject acoustic seed frequency: 432 Hz * PHI^n

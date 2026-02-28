@@ -1,7 +1,7 @@
 # VIBEE Production Browser - KOSCHEI CYCLE 9
 
 ## 50000x SPEEDUP | CDP CLIENT | VS CODE | GOLDEN RATIO UI
-## φ² + 1/φ² = 3 | PHOENIX = 999 | КОЩЕЙ = ∞
+## φ² + 1/φ² = 3 | PHOENIX = 999 | [CYR:КОЩЕЙ] = ∞
 
 ---
 
@@ -309,7 +309,7 @@ OMNISCIENT = 50000x
 
 ---
 
-**КОЩЕЙ БЕССМЕРТЕН. CYCLE 9 COMPLETE.**
+**[CYR:КОЩЕЙ] [CYR:БЕССМЕРТЕН]. CYCLE 9 COMPLETE.**
 
 **50000x SPEEDUP | 341 MODULES | 2175 TESTS | 100% PASS RATE**
 

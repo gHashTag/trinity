@@ -1,5 +1,5 @@
 // SAFETENSORS TO TRINITY CONVERTER
-// Конinертацandя inеwithоin andз safetensors in .tri format
+// [CYR:Кон]in[CYR:ертац]andя inеwithоin andз safetensors in .tri format
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");
@@ -36,7 +36,7 @@ pub const ConverterConfig = struct {
     num_kv_heads: u32 = 8,
 };
 
-/// Конinертацandя safetensors in .tri format
+/// [CYR:Кон]in[CYR:ертац]andя safetensors in .tri format
 pub fn convert(
     allocator: std.mem.Allocator,
     input_path: []const u8,
@@ -45,7 +45,7 @@ pub fn convert(
 ) !ConversionStats {
     var stats = ConversionStats{};
 
-    // 1. Отtoрыinаем safetensors
+    // 1. Отtoрыin[CYR:аем] safetensors
     std.debug.print("\n", .{});
     std.debug.print("╔══════════════════════════════════════════════════════════════╗\n", .{});
     std.debug.print("║           SAFETENSORS → TRINITY CONVERTER                    ║\n", .{});
@@ -57,7 +57,7 @@ pub fn convert(
     var sf = try safetensors.SafetensorsFile.open(allocator, input_path);
     defer sf.deinit();
 
-    // 2. Созyesём writer for .tri
+    // 2. [CYR:Соз]yesём writer for .tri
     var writer = try trinity.TrinityWriter.init(allocator, output_path);
     defer writer.deinit();
 
@@ -70,10 +70,10 @@ pub fn convert(
         config.num_kv_heads,
     );
 
-    // 3. Созyesём toinантandзатор
+    // 3. [CYR:Соз]yesём toin[CYR:ант]and[CYR:затор]
     var quantizer = prometheus.Quantizer.init(0.1); // threshold = 0.1
 
-    // 4. Конinертandруем each тензор
+    // 4. [CYR:Кон]in[CYR:ерт]and[CYR:руем] each [CYR:тензор]
     var tensor_it = sf.tensors.iterator();
     var total_zeros: usize = 0;
 
@@ -88,11 +88,11 @@ pub fn convert(
         };
         defer allocator.free(f32_data);
 
-        // Кinантandзуем in трandты
+        // Кin[CYR:ант]and[CYR:зуем] in трandты
         var trit_tensor = try quantizer.quantize(allocator, f32_data, info.shape);
         defer trit_tensor.deinit();
 
-        // Счandтаем нулand for sparsity
+        // Счand[CYR:таем] [CYR:нул]and for sparsity
         for (trit_tensor.data) |t| {
             if (t == .zero) total_zeros += 1;
         }
@@ -104,21 +104,21 @@ pub fn convert(
         stats.total_params += info.numElements();
         stats.original_size_bytes += info.byteSize();
 
-        // Прогреwithwith
+        // [CYR:Прогре]withwith
         if (stats.total_tensors % 10 == 0) {
             std.debug.print("  Converted {d} tensors...\n", .{stats.total_tensors});
         }
     }
 
-    // 5. Фandonлandзandруем file
+    // 5. Фandonлandзand[CYR:руем] file
     try writer.finalize();
 
-    // 6. Compute withтатandwithтandtoу
+    // 6. Compute with[CYR:тат]andwithтandtoу
     stats.compressed_size_bytes = (stats.total_params + 3) / 4; // 4 trits per byte
     stats.sparsity = @as(f32, @floatFromInt(total_zeros)) /
         @as(f32, @floatFromInt(stats.total_params));
 
-    // 7. Печатаем result
+    // 7. [CYR:Печатаем] result
     printStats(&stats);
 
     return stats;

@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// AUTO CODEGEN - Аinтоматandчеwithtoая генерацandя Zig toоyes andз .vibee withпецandфandtoацandй
+// AUTO CODEGEN - Аin[CYR:томат]andчеwithtoая геnot[CYR:рац]andя Zig toоyes andз .vibee with[CYR:пец]andфandtoацandй
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Generates byлный Zig code БЕЗ ручного ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ
-// Аinтор: Dmitrii Vasilev
+// Generates by[CYR:лный] Zig code [CYR:БЕЗ] [CYR:ручного] ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ
+// Аin[CYR:тор]: Dmitrii Vasilev
 // φ² + 1/φ² = 3
 //
 // Creation Pattern:
@@ -27,7 +27,7 @@ const Constant = vibee_parser.Constant;
 const CreationPattern = vibee_parser.CreationPattern;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// СВЯЩЕННЫЕ CONSTANTS
+// [CYR:СВЯЩЕННЫЕ] CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PHI: f64 = 1.618033988749895;
@@ -57,7 +57,7 @@ pub const AutoCodeGenerator = struct {
         self.buffer.deinit();
     }
 
-    /// Генерацandя byлного Zig fileа andз withпецandфandtoацandand
+    /// Геnot[CYR:рац]andя by[CYR:лного] Zig fileа andз with[CYR:пец]andфandtoацandand
     pub fn generate(self: *Self, spec: *const VibeeSpec) ![]const u8 {
         try self.writeHeader(spec);
         try self.writeImports();
@@ -172,13 +172,13 @@ pub const AutoCodeGenerator = struct {
             try self.writeFmt("/// {s}\n", .{t.description});
         }
 
-        // Еwithлand еwithть базоinый type - this алandаwith
+        // Еwithлand еwithть [CYR:базо]inый type - this алandаwith
         if (t.base) |base| {
             try self.writeFmt("pub const {s} = {s};\n", .{ t.name, mapType(base) });
             return;
         }
 
-        // Генерandруем withтруtoтуру
+        // Геnotрand[CYR:руем] with[CYR:тру]to[CYR:туру]
         try self.writeFmt("pub const {s} = struct {{\n", .{t.name});
         self.indent += 1;
 
@@ -212,12 +212,12 @@ pub const AutoCodeGenerator = struct {
     }
 
     fn generateFunction(self: *Self, b: *const Behavior) !void {
-        // Доtoументацandя andз given/when/then
+        // Доto[CYR:ументац]andя andз given/when/then
         try self.writeFmt("/// Given: {s}\n", .{b.given});
         try self.writeFmt("/// When: {s}\n", .{b.when});
         try self.writeFmt("/// Then: {s}\n", .{b.then});
 
-        // Генерandруем withandгonтуру фунtoцandand
+        // Геnotрand[CYR:руем] withandгon[CYR:туру] [CYR:фун]toцandand
         try self.writeFmt("pub fn {s}() void {{\n", .{b.name});
         self.indent += 1;
 
@@ -329,7 +329,7 @@ pub const AutoCodeGenerator = struct {
 // TYPE MAPPING
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Маппandнг VIBEE тandbyin in Zig тandпы
+/// [CYR:Мапп]andнг VIBEE тandbyin in Zig тandпы
 pub fn mapType(vibee_type: []const u8) []const u8 {
     if (std.mem.eql(u8, vibee_type, "String")) return "[]const u8";
     if (std.mem.eql(u8, vibee_type, "Int")) return "i64";
@@ -339,7 +339,7 @@ pub fn mapType(vibee_type: []const u8) []const u8 {
 
     // List<T> -> []T
     if (std.mem.startsWith(u8, vibee_type, "List<")) {
-        // Упрощёнonя handling - return slice
+        // [CYR:Упрощён]onя handling - return slice
         return "[]const u8"; // TODO: proper generic handling
     }
 
@@ -348,11 +348,11 @@ pub fn mapType(vibee_type: []const u8) []const u8 {
         return "?[]const u8"; // TODO: proper generic handling
     }
 
-    // Неandзinеwithтный type - return how еwithть
+    // Неandзinеwith[CYR:тный] type - return how еwithть
     return vibee_type;
 }
 
-/// Эtoранandроinанandе зарезерinandроinанных withлоin Zig
+/// Эto[CYR:ран]andроinанandе [CYR:зарезер]inandроin[CYR:анных] withлоin Zig
 pub fn escapeReservedWord(name: []const u8) []const u8 {
     const reserved = [_][]const u8{
         "type",  "error", "align", "test",

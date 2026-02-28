@@ -9,7 +9,7 @@
 // Each function takes (source, pos, line, allocator, list) → ScanState.
 // Uses parser_utils for all scanning operations.
 //
-// IGLA (Игла) — уtoол, убandinающandй ручной code
+// IGLA ([CYR:Игла]) — уtoол, убandin[CYR:ающ]andй [CYR:ручной] code
 //
 // φ² + 1/φ² = 3
 //

@@ -2,7 +2,7 @@
 // phi_structures v24.φ - Generated from specs/phi_structures.vibee
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// φ-оптandмandзandроinанные withтруtoтуры данных
+// φ-[CYR:опт]andмandзandроin[CYR:анные] with[CYR:тру]to[CYR:туры] [CYR:данных]
 // Golden identity: φ² + 1/φ² = 3
 //
 // DO NOT EDIT - This file is auto-generated from .vibee specification
@@ -19,7 +19,7 @@ const PHI_SQ = phi_core.PHI_SQ;
 const TRINITY = phi_core.TRINITY;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ПАМЯТЬ ДЛЯ WASM
+// [CYR:ПАМЯТЬ] [CYR:ДЛЯ] WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const MAX_NODES = 4096;
@@ -47,18 +47,18 @@ fn get_edge_count() u32 {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ТИПЫ
+// [CYR:ТИПЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Узел with φ-inеwithом
+/// [CYR:Узел] with φ-inеwithом
 pub const PhiNode = extern struct {
     id: u64,
     value: f64,
     phi_weight: f64,
     phi_level: u32,
-    parent: u32,      // andндеtowith родandтеля (MAX for toорня)
-    left_child: u32,  // andндеtowith леinого ребёнtoа
-    right_child: u32, // andндеtowith праinого ребёнtoа
+    parent: u32,      // and[CYR:нде]towith [CYR:род]and[CYR:теля] (MAX for to[CYR:орня])
+    left_child: u32,  // and[CYR:нде]towith леin[CYR:ого] [CYR:ребён]toа
+    right_child: u32, // and[CYR:нде]towith [CYR:пра]in[CYR:ого] [CYR:ребён]toа
     _padding: u32,
     
     pub const NONE: u32 = 0xFFFFFFFF;
@@ -77,7 +77,7 @@ pub const PhiNode = extern struct {
     }
 };
 
-/// Ребро with φ-inеwithом
+/// [CYR:Ребро] with φ-inеwithом
 pub const PhiEdge = extern struct {
     source: u64,
     target: u64,
@@ -100,30 +100,30 @@ pub const PhiEdge = extern struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// φ-TREE: Дереinо with φ-баланwithandроintoой
+// φ-TREE: [CYR:Дере]inо with φ-[CYR:балан]withandроintoой
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Initialization φ-дереinа
+/// Initialization φ-[CYR:дере]inа
 fn phi_tree_init() void {
     node_count = 0;
     edge_count = 0;
 }
 
-/// Вwithтаintoа in φ-дереinо
-/// Returns andндеtowith ноinого узла
+/// Вwithтаintoа in φ-[CYR:дере]inо
+/// Returns and[CYR:нде]towith ноin[CYR:ого] [CYR:узла]
 fn phi_tree_insert(value: f64) u32 {
     if (node_count >= MAX_NODES) return PhiNode.NONE;
     
     const new_idx = node_count;
     
     if (node_count == 0) {
-        // Корень
+        // [CYR:Корень]
         nodes_buffer[new_idx] = PhiNode.init(new_idx, value, 0);
         node_count += 1;
         return new_idx;
     }
     
-    // Поandwithto позandцandand for inwithтаintoand (BST)
+    // Поandwithto [CYR:поз]andцandand for inwithтаintoand (BST)
     var current: u32 = 0;
     var level: u32 = 0;
     
@@ -133,26 +133,26 @@ fn phi_tree_insert(value: f64) u32 {
         
         if (value < node.value) {
             if (node.left_child == PhiNode.NONE) {
-                // Вwithтаinляем withлеinа
+                // Вwithтаin[CYR:ляем] withлеinа
                 nodes_buffer[new_idx] = PhiNode.init(new_idx, value, level);
                 nodes_buffer[new_idx].parent = current;
                 node.left_child = new_idx;
                 node_count += 1;
                 
-                // Проinеряем φ-баланwith
+                // [CYR:Про]in[CYR:еряем] φ-[CYR:балан]with
                 phi_tree_rebalance(current);
                 return new_idx;
             }
             current = node.left_child;
         } else {
             if (node.right_child == PhiNode.NONE) {
-                // Вwithтаinляем withпраinа
+                // Вwithтаin[CYR:ляем] with[CYR:пра]inа
                 nodes_buffer[new_idx] = PhiNode.init(new_idx, value, level);
                 nodes_buffer[new_idx].parent = current;
                 node.right_child = new_idx;
                 node_count += 1;
                 
-                // Проinеряем φ-баланwith
+                // [CYR:Про]in[CYR:еряем] φ-[CYR:балан]with
                 phi_tree_rebalance(current);
                 return new_idx;
             }
@@ -161,11 +161,11 @@ fn phi_tree_insert(value: f64) u32 {
     }
 }
 
-/// Подwithчёт размера поддереinа (andтератandinный with огранandченandем глубandны)
+/// [CYR:Под]with[CYR:чёт] [CYR:размера] [CYR:поддере]inа (and[CYR:терат]andin[CYR:ный] with [CYR:огран]and[CYR:чен]andем [CYR:глуб]andны)
 fn subtree_size(idx: u32) u32 {
     if (idx == PhiNode.NONE or idx >= node_count) return 0;
     
-    // Итератandinный подwithчёт with andwithпользоinанandем withтеtoа
+    // [CYR:Итерат]andin[CYR:ный] [CYR:под]with[CYR:чёт] with andwith[CYR:пользо]inанandем withтеtoа
     var stack: [64]u32 = undefined;
     var stack_top: u32 = 0;
     var count: u32 = 0;
@@ -182,7 +182,7 @@ fn subtree_size(idx: u32) u32 {
         count += 1;
         const node = &nodes_buffer[current];
         
-        if (stack_top < 62) { // Защandта from переполненandя
+        if (stack_top < 62) { // [CYR:Защ]andта from [CYR:перепол]notнandя
             if (node.left_child != PhiNode.NONE and node.left_child < node_count) {
                 stack[stack_top] = node.left_child;
                 stack_top += 1;
@@ -197,18 +197,18 @@ fn subtree_size(idx: u32) u32 {
     return count;
 }
 
-/// Check and inоwithwithтаноinленandе φ-баланwithа (andтератandinный)
+/// Check and inоwithwith[CYR:тано]in[CYR:лен]andе φ-[CYR:балан]withа (and[CYR:терат]andin[CYR:ный])
 fn phi_tree_rebalance(start_idx: u32) void {
     var idx = start_idx;
     var iterations: u32 = 0;
-    const max_iterations: u32 = 64; // Защandта from беwithtoонечного цandtoла
+    const max_iterations: u32 = 64; // [CYR:Защ]andта from беwithtoоnot[CYR:чного] цandtoла
     
     while (idx != PhiNode.NONE and idx < node_count and iterations < max_iterations) : (iterations += 1) {
         const node = &nodes_buffer[idx];
         const left_size = subtree_size(node.left_child);
         const right_size = subtree_size(node.right_child);
         
-        // φ-баланwith: |left - right × φ| < 1
+        // φ-[CYR:балан]with: |left - right × φ| < 1
         const left_f: f64 = @floatFromInt(left_size);
         const right_f: f64 = @floatFromInt(right_size);
         const imbalance = @abs(left_f - right_f * PHI);
@@ -221,12 +221,12 @@ fn phi_tree_rebalance(start_idx: u32) void {
             }
         }
         
-        // Переходandм to родandтелю
+        // [CYR:Переход]andм to [CYR:род]and[CYR:телю]
         idx = node.parent;
     }
 }
 
-/// Праinая рfromацandя
+/// [CYR:Пра]inая рfromацandя
 fn phi_rotate_right(idx: u32) void {
     const node = &nodes_buffer[idx];
     const left_idx = node.left_child;
@@ -234,13 +234,13 @@ fn phi_rotate_right(idx: u32) void {
     
     const left = &nodes_buffer[left_idx];
     
-    // Перемещаем праinое поддереinо left in леinое поддереinо node
+    // [CYR:Перемещаем] [CYR:пра]inое [CYR:поддере]inо left in леinое [CYR:поддере]inо node
     node.left_child = left.right_child;
     if (left.right_child != PhiNode.NONE) {
         nodes_buffer[left.right_child].parent = idx;
     }
     
-    // left withтаноinandтwithя родandтелем node
+    // left with[CYR:тано]inandтwithя [CYR:род]and[CYR:телем] node
     left.parent = node.parent;
     if (node.parent != PhiNode.NONE) {
         const parent = &nodes_buffer[node.parent];
@@ -254,7 +254,7 @@ fn phi_rotate_right(idx: u32) void {
     left.right_child = idx;
     node.parent = left_idx;
     
-    // Обноinляем φ-inеwithа
+    // [CYR:Обно]in[CYR:ляем] φ-inеwithа
     update_phi_weights(idx);
     update_phi_weights(left_idx);
 }
@@ -289,25 +289,25 @@ fn phi_rotate_left(idx: u32) void {
     update_phi_weights(right_idx);
 }
 
-/// Обноinленandе φ-inеwithоin поwithле рfromацandand
+/// [CYR:Обно]in[CYR:лен]andе φ-inеwithоin поwithле рfromацandand
 fn update_phi_weights(idx: u32) void {
     if (idx == PhiNode.NONE) return;
     
     var level: u32 = 0;
     var current = idx;
     
-    // Счandтаем уроinень from toорня
+    // Счand[CYR:таем] [CYR:уро]in[CYR:ень] from to[CYR:орня]
     while (nodes_buffer[current].parent != PhiNode.NONE) {
         current = nodes_buffer[current].parent;
         level += 1;
     }
     
-    // Обноinляем
+    // [CYR:Обно]in[CYR:ляем]
     nodes_buffer[idx].phi_level = level;
     nodes_buffer[idx].phi_weight = phi_core.phi_power(-@as(i32, @intCast(level)));
 }
 
-/// Поandwithto in φ-дереinе
+/// Поandwithto in φ-[CYR:дере]inе
 fn phi_tree_search(value: f64) u32 {
     var current: u32 = 0;
     
@@ -330,7 +330,7 @@ fn phi_tree_search(value: f64) u32 {
     return PhiNode.NONE;
 }
 
-/// Глубandon φ-дереinа
+/// [CYR:Глуб]andon φ-[CYR:дере]inа
 fn phi_tree_depth() u32 {
     return compute_depth(0);
 }
@@ -396,7 +396,7 @@ fn fib_heap_insert(key: f64) u32 {
     if (fib_min == FibNode.NONE) {
         fib_min = idx;
     } else {
-        // Добаinляем in toорнеinой withпandwithоto
+        // [CYR:Доба]in[CYR:ляем] in toорnotinой withпandwithоto
         fib_list_insert(fib_min, idx);
         if (fib_nodes[idx].key < fib_nodes[fib_min].key) {
             fib_min = idx;
@@ -408,7 +408,7 @@ fn fib_heap_insert(key: f64) u32 {
     return idx;
 }
 
-/// Вwithтаintoа in дinуwithinязный withпandwithоto
+/// Вwithтаintoа in дinуwithin[CYR:язный] withпandwithоto
 fn fib_list_insert(list_node: u32, new_node: u32) void {
     const list = &fib_nodes[list_node];
     const new = &fib_nodes[new_node];
@@ -419,13 +419,13 @@ fn fib_list_insert(list_node: u32, new_node: u32) void {
     list.left = new_node;
 }
 
-/// Полученandе мandнandмума - O(1)
+/// [CYR:Получен]andе мandнand[CYR:мума] - O(1)
 fn fib_heap_min() f64 {
     if (fib_min == FibNode.NONE) return math.inf(f64);
     return fib_nodes[fib_min].key;
 }
 
-/// Изinлеченandе мandнandмума - O(log n) амортandзandроinанно
+/// Изin[CYR:лечен]andе мandнand[CYR:мума] - O(log n) [CYR:аморт]andзandроin[CYR:анно]
 fn fib_heap_extract_min() f64 {
     if (fib_min == FibNode.NONE) return math.inf(f64);
     
@@ -433,7 +433,7 @@ fn fib_heap_extract_min() f64 {
     const min_key = fib_nodes[min_idx].key;
     const min_node = &fib_nodes[min_idx];
     
-    // Добаinляем детей in toорнеinой withпandwithоto
+    // [CYR:Доба]in[CYR:ляем] [CYR:детей] in toорnotinой withпandwithоto
     if (min_node.child != FibNode.NONE) {
         var child = min_node.child;
         const first_child = child;
@@ -447,9 +447,9 @@ fn fib_heap_extract_min() f64 {
         }
     }
     
-    // Удаляем min andз toорнеinого withпandwithtoа
+    // [CYR:Удаляем] min andз toорnotin[CYR:ого] withпandwithtoа
     if (min_node.right == min_idx) {
-        // Едandнwithтinенный узел
+        // Едandнwithтin[CYR:енный] [CYR:узел]
         fib_min = FibNode.NONE;
     } else {
         fib_nodes[min_node.left].right = min_node.right;
@@ -462,7 +462,7 @@ fn fib_heap_extract_min() f64 {
     return min_key;
 }
 
-/// Конwithолandдацandя toорнеinого withпandwithtoа
+/// [CYR:Кон]withолand[CYR:дац]andя toорnotin[CYR:ого] withпandwithtoа
 fn fib_consolidate() void {
     if (fib_min == FibNode.NONE) return;
     
@@ -470,7 +470,7 @@ fn fib_consolidate() void {
     const max_degree: u32 = 45; // log_φ(2^32)
     var degree_table: [max_degree]u32 = [_]u32{FibNode.NONE} ** max_degree;
     
-    // Собandраем inwithе toорнand
+    // [CYR:Соб]and[CYR:раем] inwithе to[CYR:орн]and
     var roots: [MAX_NODES]u32 = undefined;
     var root_count: u32 = 0;
     
@@ -483,7 +483,7 @@ fn fib_consolidate() void {
         if (current == start) break;
     }
     
-    // Объедandняем дереinья одandontoоinой withтепенand
+    // [CYR:Объед]and[CYR:няем] [CYR:дере]inья одandontoоinой with[CYR:тепен]and
     var i: u32 = 0;
     while (i < root_count) : (i += 1) {
         var x = roots[i];
@@ -492,7 +492,7 @@ fn fib_consolidate() void {
         while (d < max_degree and degree_table[d] != FibNode.NONE) {
             var y = degree_table[d];
             
-            // x должен andметь меньшandй toлюч
+            // x [CYR:должен] and[CYR:меть] [CYR:меньш]andй to[CYR:люч]
             if (fib_nodes[x].key > fib_nodes[y].key) {
                 const tmp = x;
                 x = y;
@@ -509,7 +509,7 @@ fn fib_consolidate() void {
         }
     }
     
-    // Переwithтраandinаем toорнеinой withпandwithоto and onходandм ноinый мandнandмум
+    // [CYR:Пере]with[CYR:тра]andin[CYR:аем] toорnotinой withпandwithоto and on[CYR:ход]andм ноinый мandнand[CYR:мум]
     fib_min = FibNode.NONE;
     
     for (degree_table) |idx| {
@@ -529,13 +529,13 @@ fn fib_consolidate() void {
     }
 }
 
-/// Сinязыinанandе дinух дереinьеin
+/// Сin[CYR:язы]inанandе дinух [CYR:дере]inьеin
 fn fib_link(child: u32, parent: u32) void {
-    // Удаляем child andз toорнеinого withпandwithtoа
+    // [CYR:Удаляем] child andз toорnotin[CYR:ого] withпandwithtoа
     fib_nodes[fib_nodes[child].left].right = fib_nodes[child].right;
     fib_nodes[fib_nodes[child].right].left = fib_nodes[child].left;
     
-    // Делаем child ребёнtoом parent
+    // [CYR:Делаем] child [CYR:ребён]toом parent
     fib_nodes[child].parent = parent;
     fib_nodes[child].marked = false;
     
@@ -550,7 +550,7 @@ fn fib_link(child: u32, parent: u32) void {
     fib_nodes[parent].degree += 1;
 }
 
-/// Размер toучand
+/// [CYR:Размер] toучand
 fn fib_heap_size() u32 {
     return fib_size;
 }
@@ -567,7 +567,7 @@ fn phi_graph_init() void {
     graph_edge_count = 0;
 }
 
-/// Добаinленandе узла in граф
+/// [CYR:Доба]in[CYR:лен]andе [CYR:узла] in [CYR:граф]
 fn phi_graph_add_node(value: f64) u32 {
     if (graph_node_count >= MAX_NODES) return PhiNode.NONE;
     
@@ -578,19 +578,19 @@ fn phi_graph_add_node(value: f64) u32 {
     return idx;
 }
 
-/// Добаinленandе ребра with Fibonacci-inеwithом
+/// [CYR:Доба]in[CYR:лен]andе [CYR:ребра] with Fibonacci-inеwithом
 fn phi_graph_add_edge(source: u64, target: u64) u32 {
     if (graph_edge_count >= MAX_EDGES) return PhiNode.NONE;
     
     const idx = graph_edge_count;
-    // Иwithпользуем andндеtowith ребра for Fibonacci-inеwithа
+    // Иwith[CYR:пользуем] and[CYR:нде]towith [CYR:ребра] for Fibonacci-inеwithа
     edges_buffer[idx] = PhiEdge.init(source, target, @intCast(idx % 20 + 1));
     graph_edge_count += 1;
     
     return idx;
 }
 
-/// Плfromноwithть графа (оптandмальonя ≈ n × φ рёбер)
+/// Плfromноwithть [CYR:графа] ([CYR:опт]and[CYR:маль]onя ≈ n × φ [CYR:рёбер])
 fn phi_graph_density() f64 {
     if (graph_node_count == 0) return 0.0;
     const n: f64 = @floatFromInt(graph_node_count);
@@ -598,12 +598,12 @@ fn phi_graph_density() f64 {
     return e / (n * PHI);
 }
 
-/// Колandчеwithтinо узлоin
+/// [CYR:Кол]andчеwithтinо [CYR:узло]in
 fn phi_graph_node_count() u32 {
     return graph_node_count;
 }
 
-/// Колandчеwithтinо рёбер
+/// [CYR:Кол]andчеwithтinо [CYR:рёбер]
 fn phi_graph_edge_count() u32 {
     return graph_edge_count;
 }
@@ -615,21 +615,21 @@ fn phi_graph_edge_count() u32 {
 test "phi_tree_insert_and_search" {
     phi_tree_init();
     
-    // Вwithтаinляем элементы
+    // Вwithтаin[CYR:ляем] elementы
     const idx1 = phi_tree_insert(5.0);
     const idx2 = phi_tree_insert(3.0);
     const idx3 = phi_tree_insert(8.0);
     
-    // Проinеряем что inwithтаintoа рабfromает
+    // [CYR:Про]in[CYR:еряем] that inwithтаintoа [CYR:раб]from[CYR:ает]
     try std.testing.expect(idx1 != PhiNode.NONE);
     try std.testing.expect(idx2 != PhiNode.NONE);
     try std.testing.expect(idx3 != PhiNode.NONE);
     try std.testing.expectEqual(node_count, 3);
     
-    // Проinеряем что toорень withущеwithтinует
+    // [CYR:Про]in[CYR:еряем] that to[CYR:орень] with[CYR:уще]withтin[CYR:ует]
     try std.testing.expect(nodes_buffer[0].value == 5.0);
     
-    // Поandwithto неwithущеwithтinующего элемента
+    // Поandwithto notwith[CYR:уще]withтin[CYR:ующего] elementа
     try std.testing.expect(phi_tree_search(99.0) == PhiNode.NONE);
 }
 
@@ -654,13 +654,13 @@ test "fib_heap_operations" {
 test "phi_graph_density" {
     phi_graph_init();
     
-    // Добаinляем 10 узлоin
+    // [CYR:Доба]in[CYR:ляем] 10 [CYR:узло]in
     var i: u32 = 0;
     while (i < 10) : (i += 1) {
         _ = phi_graph_add_node(@floatFromInt(i));
     }
     
-    // Оптandмальное toолandчеwithтinо рёбер ≈ 10 × φ ≈ 16
+    // [CYR:Опт]and[CYR:мальное] toолandчеwithтinо [CYR:рёбер] ≈ 10 × φ ≈ 16
     var j: u32 = 0;
     while (j < 16) : (j += 1) {
         _ = phi_graph_add_edge(j % 10, (j + 1) % 10);

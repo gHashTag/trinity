@@ -215,7 +215,7 @@ pub const ToolDetector = struct {
             "open file",
             "display file",
             "bytoажand file",
-            "прочandтай file",
+            "[CYR:проч]and[CYR:тай] file",
             "读取文件",
             "显示文件",
         };
@@ -240,8 +240,8 @@ pub const ToolDetector = struct {
             "save to file",
             "create file",
             "write file",
-            "запandшand in file",
-            "withохранand in file",
+            "[CYR:зап]andшand in file",
+            "with[CYR:охран]and in file",
             "写入文件",
             "保存文件",
         };
@@ -263,7 +263,7 @@ pub const ToolDetector = struct {
             "run this",
             "execute this",
             "inыbyлнand toод",
-            "запуwithтand toод",
+            "[CYR:запу]withтand toод",
             "执行代码",
             "运行代码",
         };
@@ -307,7 +307,7 @@ pub const ToolDetector = struct {
             "what is ",
             "how much is",
             "inычandwithлand",
-            "bywithчandтай",
+            "bywithчand[CYR:тай]",
             "计算",
         };
 
@@ -334,7 +334,7 @@ pub const ToolDetector = struct {
             "execute command",
             "shell ",
             "terminal ",
-            "inыbyлнand toоманду",
+            "inыbyлнand to[CYR:оманду]",
             "执行命令",
         };
 
@@ -657,7 +657,7 @@ pub fn runBenchmark() !void {
 
         // Multilingual tool calls
         .{ .query = "bytoажand file \"readme.md\"", .feedback = .ThumbsUp },
-        .{ .query = "onйдand ошandбtoand in toоде", .feedback = .Acceptance },
+        .{ .query = "onйдand ошandбtoand in to[CYR:оде]", .feedback = .Acceptance },
         .{ .query = "读取文件 config.json", .feedback = .ThumbsUp },
 
         // Mixed queries
@@ -667,7 +667,7 @@ pub fn runBenchmark() !void {
 
         // Regular chat
         .{ .query = "thank you for help!", .feedback = .ThumbsUp },
-        .{ .query = "inыbyлнand toод withортandроintoand", .feedback = .Acceptance },
+        .{ .query = "inыbyлнand toод with[CYR:орт]andроintoand", .feedback = .Acceptance },
         .{ .query = "execute code fibonacci", .feedback = .ThumbsUp },
         .{ .query = "goodbye", .feedback = .Acceptance },
         .{ .query = "bye!", .feedback = .ThumbsUp },

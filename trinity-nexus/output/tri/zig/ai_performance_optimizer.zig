@@ -15,10 +15,10 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// КОНСТАНТЫ
+// [CYR:КОНСТАНТЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Базоinые φ-toонwithтанты (Sacred Formula)
+// [CYR:Базо]inые φ-toонwith[CYR:танты] (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -30,7 +30,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ТИПЫ
+// [CYR:ТИПЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// 
@@ -38,7 +38,7 @@ pub const description = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ПАМЯТЬ ДЛЯ WASM
+// [CYR:ПАМЯТЬ] [CYR:ДЛЯ] WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -88,13 +88,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-andнтерполяцandя
+/// φ-and[CYR:нтер]fieldsцandя
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// Генерацandя φ-withпandралand
+/// Геnot[CYR:рац]andя φ-withпand[CYR:рал]and
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -187,7 +187,7 @@ pub fn apply_list_comprehension() !void {
 /// 
 /// When: 
 /// Then: 
-pub fn "Оптandмandзацandя withпandwithtoоin"() !void {
+pub fn "[CYR:Опт]andмand[CYR:зац]andя withпandwithtoоin"() !void {
 // TODO: implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
@@ -196,7 +196,7 @@ pub fn "Оптandмandзацandя withпandwithtoоin"() !void {
 /// 
 /// When: 
 /// Then: 
-pub fn "Оптandмandзацandя алгорandтма"() !void {
+pub fn "[CYR:Опт]andмand[CYR:зац]andя [CYR:алгор]and[CYR:тма]"() !void {
 // TODO: implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
@@ -205,7 +205,7 @@ pub fn "Оптandмandзацandя алгорandтма"() !void {
 /// 
 /// When: 
 /// Then: 
-pub fn "Оптandмandзацandя памятand"() !void {
+pub fn "[CYR:Опт]andмand[CYR:зац]andя [CYR:памят]and"() !void {
 // TODO: implement — 
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
@@ -271,28 +271,28 @@ test "apply_list_comprehension_behavior" {
 _ = apply_list_comprehension;
 }
 
-test ""Оптandмandзацandя withпandwithtoоin"_behavior" {
+test ""[CYR:Опт]andмand[CYR:зац]andя withпandwithtoоin"_behavior" {
 // Given: 
 // When: 
 // Then: 
-// Test "Оптandмandзацandя withпandwithtoоin": verify behavior is callable (compile-time check)
-_ = "Оптandмandзацandя withпandwithtoоin";
+// Test "[CYR:Опт]andмand[CYR:зац]andя withпandwithtoоin": verify behavior is callable (compile-time check)
+_ = "[CYR:Опт]andмand[CYR:зац]andя withпandwithtoоin";
 }
 
-test ""Оптandмandзацandя алгорandтма"_behavior" {
+test ""[CYR:Опт]andмand[CYR:зац]andя [CYR:алгор]and[CYR:тма]"_behavior" {
 // Given: 
 // When: 
 // Then: 
-// Test "Оптandмandзацandя алгорandтма": verify behavior is callable (compile-time check)
-_ = "Оптandмandзацandя алгорandтма";
+// Test "[CYR:Опт]andмand[CYR:зац]andя [CYR:алгор]and[CYR:тма]": verify behavior is callable (compile-time check)
+_ = "[CYR:Опт]andмand[CYR:зац]andя [CYR:алгор]and[CYR:тма]";
 }
 
-test ""Оптandмandзацandя памятand"_behavior" {
+test ""[CYR:Опт]andмand[CYR:зац]andя [CYR:памят]and"_behavior" {
 // Given: 
 // When: 
 // Then: 
-// Test "Оптandмandзацandя памятand": verify behavior is callable (compile-time check)
-_ = "Оптandмandзацandя памятand";
+// Test "[CYR:Опт]andмand[CYR:зац]andя [CYR:памят]and": verify behavior is callable (compile-time check)
+_ = "[CYR:Опт]andмand[CYR:зац]andя [CYR:памят]and";
 }
 
 test "phi_constants" {

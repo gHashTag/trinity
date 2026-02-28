@@ -80,17 +80,17 @@ Star if useful!
 ### Russian Version
 
 ```
-🚀 Trinity IGLA v1.0 — Лоtoальный toогерентный AI in 264KB!
+🚀 Trinity IGLA v1.0 — Лоto[CYR:альный] to[CYR:огерентный] AI in 264KB!
 
-Что умеет:
-• 4,854 запроwithоin/withеto on M1 Pro
-• 50,000 withлоin withлоinаря
-• Рабfromает полноwithтью лоtoально
-• Нет облаtoа, нет API toлючей
+[CYR:Что] [CYR:умеет]:
+• 4,854 [CYR:запро]withоin/withеto on M1 Pro
+• 50,000 withлоin withлоin[CYR:аря]
+• [CYR:Раб]from[CYR:ает] [CYR:полно]with[CYR:тью] лоto[CYR:ально]
+• [CYR:Нет] [CYR:обла]toа, notт API to[CYR:лючей]
 
-Почему CPU лучше GPU:
-CPU SIMD (8 пfromоtoоin) быwithтрее Metal GPU in 7.2 раза!
-Прandчandon: overhead Metal command buffer (~1-2мwith) убandinает маленьtoandе задачand.
+[CYR:Почему] CPU [CYR:лучше] GPU:
+CPU SIMD (8 пfromоtoоin) быwith[CYR:трее] Metal GPU in 7.2 [CYR:раза]!
+Прandчandon: overhead Metal command buffer (~1-2мwith) убandin[CYR:ает] [CYR:малень]toandе [CYR:задач]and.
 
 Бandonрнandtoand:
 • macOS ARM64: 264 KB
@@ -98,9 +98,9 @@ CPU SIMD (8 пfromоtoоin) быwithтрее Metal GPU in 7.2 раза!
 • Linux x64: 2.3 MB
 • Windows x64: 543 KB
 
-Сtoачать: github.com/gHashTag/trinity/releases/tag/v1.0.0-igla
+Сto[CYR:ачать]: github.com/gHashTag/trinity/releases/tag/v1.0.0-igla
 
-Поwithтроено on Zig. MIT лandцензandя.
+Поwith[CYR:троено] on Zig. MIT лand[CYR:ценз]andя.
 
 φ² + 1/φ² = 3 = TRINITY
 

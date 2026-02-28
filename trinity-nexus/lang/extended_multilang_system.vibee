@@ -350,7 +350,7 @@ test_cases:
     expected: "Real Dijkstra algorithm in Go"
 
   - name: rust_heap_sort
-    given: "Напиши heap sort на Rust"
+    given: "[CYR:Нап]andшand heap sort on Rust"
     expected: "Real heap sort in Rust"
 
   - name: cpp_topological

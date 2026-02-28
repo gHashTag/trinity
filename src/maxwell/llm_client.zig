@@ -1,5 +1,5 @@
 // Maxwell Daemon - LLM Client
-// Интеграцandя with LLM API for reasoning
+// [CYR:Интеграц]andя with LLM API for reasoning
 //
 // IMPLEMENTATION STATUS:
 // - GLM (z.ai): IMPLEMENTED (working)
@@ -182,7 +182,7 @@ pub const LLMClient = struct {
         self.conversation.deinit();
     }
 
-    /// Отпраinandть withообщенandе and byлучandть answer
+    /// [CYR:Отпра]inandть with[CYR:ообщен]andе and by[CYR:луч]andть answer
     pub fn chat(self: *LLMClient, user_message: []const u8) !LLMResponse {
         // Add user message to conversation
         try self.conversation.append(Message{
@@ -202,7 +202,7 @@ pub const LLMClient = struct {
         return response;
     }
 
-    /// Сгенерandроinать .vibee withпецandфandtoацandю
+    /// [CYR:Сге]notрandроin[CYR:ать] .vibee with[CYR:пец]andфandtoацandю
     pub fn generateSpec(self: *LLMClient, task_description: []const u8, context: []const u8) ![]const u8 {
         var prompt = std.ArrayList(u8).init(self.allocator);
         defer prompt.deinit();
@@ -219,7 +219,7 @@ pub const LLMClient = struct {
         return response.content;
     }
 
-    /// Проаonлandзandроinать ошandбtoу and предложandть andwithпраinленandе
+    /// [CYR:Проа]onлandзandроin[CYR:ать] ошandбtoу and [CYR:предлож]andть andwith[CYR:пра]in[CYR:лен]andе
     pub fn analyzeError(self: *LLMClient, error_message: []const u8, code_context: []const u8) ![]const u8 {
         var prompt = std.ArrayList(u8).init(self.allocator);
         defer prompt.deinit();
@@ -236,7 +236,7 @@ pub const LLMClient = struct {
         return response.content;
     }
 
-    /// Деtoомbyзandроinать заyesчу on byдзаyesчand
+    /// Деtoомbyзandроin[CYR:ать] заyesчу on by[CYR:дза]yesчand
     pub fn decomposeTask(self: *LLMClient, task_description: []const u8) ![]const u8 {
         var prompt = std.ArrayList(u8).init(self.allocator);
         defer prompt.deinit();
@@ -252,7 +252,7 @@ pub const LLMClient = struct {
         return response.content;
     }
 
-    /// Очandwithтandть andwithторandю разгоinора
+    /// Очandwithтandть andwith[CYR:тор]andю [CYR:разго]in[CYR:ора]
     pub fn clearHistory(self: *LLMClient) void {
         self.conversation.clearRetainingCapacity();
         self.conversation.append(Message{

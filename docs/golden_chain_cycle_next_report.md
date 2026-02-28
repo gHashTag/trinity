@@ -127,7 +127,7 @@ Created `specs/tri/igla_fluent_chat.vibee` with:
 
 The system explicitly detects and rejects:
 ```
-- "Понял! Я Trinity..." (Russian generic)
+- "[CYR:Понял]! Я Trinity..." (Russian generic)
 - "I understand your question..."
 - "That's a great question!"
 - "Let me help you with that..."
@@ -154,7 +154,7 @@ zig build vibee -- gen specs/tri/igla_fluent_chat.vibee
 # Output: generated/igla_fluent_chat.zig (SUCCESS)
 
 # Verify NO generic patterns in output:
-grep -c "Понял" generated/igla_fluent_chat.zig
+grep -c "[CYR:Понял]" generated/igla_fluent_chat.zig
 # Output: 0 (PASS - no forbidden patterns)
 
 grep -c "I understand your question" generated/igla_fluent_chat.zig

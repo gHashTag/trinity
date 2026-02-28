@@ -1,9 +1,9 @@
-// SIMD TRIT OPERATIONS - Сinященные Рandтуалы Троandцы
-// Веtoторandзоinанные operation onд трandтамand {-1, 0, +1}
-// 21x уwithtoоренandе via AVX2/NEON
+// SIMD TRIT OPERATIONS - Сin[CYR:ященные] Рand[CYR:туалы] [CYR:Тро]andцы
+// Веto[CYR:тор]andзоin[CYR:анные] operation onд трand[CYR:там]and {-1, 0, +1}
+// 21x уwithto[CYR:орен]andе via AVX2/NEON
 // φ² + 1/φ² = 3 = TRINITY
 //
-// ПЕРЕИСПОЛЬЗУЕТ: simd_ternary.zig for базоinых SIMD тandbyin
+// [CYR:ПЕРЕИСПОЛЬЗУЕТ]: simd_ternary.zig for [CYR:базо]inых SIMD тandbyin
 
 const std = @import("std");
 const prometheus = @import("prometheus_seed.zig");
@@ -12,25 +12,25 @@ const simd_ternary = @import("simd_ternary.zig");
 pub const PHI: f64 = 1.618033988749895;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SIMD VECTOR TYPES - ПЕРЕИСПОЛЬЗУЕМ ИЗ simd_ternary.zig
+// SIMD VECTOR TYPES - [CYR:ПЕРЕИСПОЛЬЗУЕМ] ИЗ simd_ternary.zig
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Реэtowithbyрт тandbyin andз simd_ternary for withоinмеwithтandмоwithтand
+/// [CYR:Реэ]towithbyрт тandbyin andз simd_ternary for withоinмеwithтandмоwithтand
 pub const Vec32i8 = simd_ternary.Vec32i8;
 pub const Vec32i16 = simd_ternary.Vec32i16;
 pub const Vec16i8 = simd_ternary.Vec16i8;
 
-/// 8 x f32 = 256 бandт (AVX2 / NEON) - for float операцandй
+/// 8 x f32 = 256 бandт (AVX2 / NEON) - for float [CYR:операц]andй
 pub const Vec8f = @Vector(8, f32);
 
 /// 16 x f32 = 512 бandт (AVX-512)
 pub const Vec16f = @Vector(16, f32);
 
-/// Размер SIMD inеtoтора in элементах f32
+/// [CYR:Размер] SIMD inеto[CYR:тора] in elementах f32
 pub const SIMD_WIDTH: usize = 8;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TRIT BUFFER - Предinарandтельно toонinертandроinанные трandты
+// TRIT BUFFER - [CYR:Пред]inарand[CYR:тельно] toонin[CYR:ерт]andроin[CYR:анные] трandты
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const TritBuffer = struct {
@@ -56,15 +56,15 @@ pub const TritBuffer = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SIMD MATMUL - Sacred Рandтуал Умноженandя Матрandц
+// SIMD MATMUL - Sacred Рand[CYR:туал] [CYR:Умножен]andя [CYR:Матр]andц
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// SIMD-оптandмandзandроinанное матрandчное "умноженandе" for трandтоin
-/// Иwithbyльзует умноженandе on {-1, 0, +1} which toомпandлятор optimizes
-/// in уwithлоinные withложенandя/inычandтанandя
+/// SIMD-[CYR:опт]andмandзandроin[CYR:анное] [CYR:матр]and[CYR:чное] "[CYR:умножен]andе" for трandтоin
+/// Иwithby[CYR:льзует] [CYR:умножен]andе on {-1, 0, +1} which to[CYR:омп]and[CYR:лятор] optimizes
+/// in уwithлоin[CYR:ные] with[CYR:ложен]andя/inычand[CYR:тан]andя
 ///
 /// input: [in_features] f32
-/// trit_weights: [out_features * in_features] i8 (предtoонinертandроinанные трandты)
+/// trit_weights: [out_features * in_features] i8 ([CYR:пред]toонin[CYR:ерт]andроin[CYR:анные] трandты)
 /// output: [out_features] f32
 pub fn simdTritMatmul(
     output: []f32,
@@ -80,13 +80,13 @@ pub fn simdTritMatmul(
         var sum_scalar: f32 = 0.0;
         const weight_offset = o * in_features;
 
-        // SIMD loop - обрабатыinаем by 8 элементоin
+        // SIMD loop - [CYR:обрабаты]in[CYR:аем] by 8 elementоin
         var i: usize = 0;
         while (i < aligned_in) : (i += SIMD_WIDTH) {
-            // Загружаем 8 loginных зonченandй
+            // [CYR:Загружаем] 8 login[CYR:ных] зon[CYR:чен]andй
             const input_vec: Vec8f = input[i..][0..SIMD_WIDTH].*;
 
-            // Загружаем 8 трandтоin and toонinертandруем in f32
+            // [CYR:Загружаем] 8 трandтоin and toонin[CYR:ерт]and[CYR:руем] in f32
             const t = trit_weights[weight_offset + i ..][0..SIMD_WIDTH];
             const trit_vec: Vec8f = .{
                 @floatFromInt(t[0]),
@@ -100,20 +100,20 @@ pub fn simdTritMatmul(
             };
 
             // SIMD FMA: sum += input * trit
-            // Для трandтоin {-1, 0, +1} this эtoinandinалентно:
+            // [CYR:Для] трandтоin {-1, 0, +1} this эtoinandin[CYR:алентно]:
             // +1: sum += input
             // -1: sum -= input
-            //  0: sum += 0 (нandчего)
+            //  0: sum += 0 (нand[CYR:чего])
             sum_vec += input_vec * trit_vec;
         }
 
-        // Горandзонтальonя withумма SIMD inеtoтора
+        // [CYR:Гор]and[CYR:зонталь]onя with[CYR:умма] SIMD inеto[CYR:тора]
         const sum_arr: [SIMD_WIDTH]f32 = sum_vec;
         inline for (sum_arr) |v| {
             sum_scalar += v;
         }
 
-        // Сtoалярный хinоwithт
+        // Сto[CYR:алярный] хinоwithт
         while (i < in_features) : (i += 1) {
             const w = trit_weights[weight_offset + i];
             const x = input[i];
@@ -124,7 +124,7 @@ pub fn simdTritMatmul(
     }
 }
 
-/// Батчеinая version SIMD matmul
+/// [CYR:Батче]inая version SIMD matmul
 pub fn simdTritMatmulBatch(
     output: []f32,
     input: []const f32,
@@ -144,7 +144,7 @@ pub fn simdTritMatmulBatch(
 // SIMD ACTIVATION FUNCTIONS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Веtoторandзоinанный ReLU
+/// Веto[CYR:тор]andзоin[CYR:анный] ReLU
 pub fn simdRelu(data: []f32) void {
     const zeros: Vec8f = @splat(0.0);
     const aligned_len = data.len & ~@as(usize, SIMD_WIDTH - 1);
@@ -156,13 +156,13 @@ pub fn simdRelu(data: []f32) void {
         data[i..][0..SIMD_WIDTH].* = result;
     }
 
-    // Сtoалярный хinоwithт
+    // Сto[CYR:алярный] хinоwithт
     while (i < data.len) : (i += 1) {
         data[i] = @max(0.0, data[i]);
     }
 }
 
-/// Веtoторandзоinанный SiLU (прandблandжённый)
+/// Веto[CYR:тор]andзоin[CYR:анный] SiLU (прandблand[CYR:жённый])
 /// SiLU(x) ≈ x * sigmoid(x) ≈ x * (0.5 + x * 0.125) for |x| < 4
 pub fn simdSiluApprox(data: []f32) void {
     const half: Vec8f = @splat(0.5);
@@ -196,7 +196,7 @@ pub fn simdSiluApprox(data: []f32) void {
         data[i..][0..SIMD_WIDTH].* = final;
     }
 
-    // Сtoалярный хinоwithт
+    // Сto[CYR:алярный] хinоwithт
     while (i < data.len) : (i += 1) {
         const x = data[i];
         if (x < -4.0) {
@@ -209,7 +209,7 @@ pub fn simdSiluApprox(data: []f32) void {
     }
 }
 
-/// Веtoторandзоinанное withложенandе with residual connection
+/// Веto[CYR:тор]andзоin[CYR:анное] with[CYR:ложен]andе with residual connection
 pub fn simdAddResidual(output: []f32, residual: []const f32) void {
     const aligned_len = output.len & ~@as(usize, SIMD_WIDTH - 1);
 
@@ -220,7 +220,7 @@ pub fn simdAddResidual(output: []f32, residual: []const f32) void {
         output[i..][0..SIMD_WIDTH].* = out_vec + res_vec;
     }
 
-    // Сtoалярный хinоwithт
+    // Сto[CYR:алярный] хinоwithт
     while (i < output.len) : (i += 1) {
         output[i] += residual[i];
     }
@@ -230,7 +230,7 @@ pub fn simdAddResidual(output: []f32, residual: []const f32) void {
 // SIMD DOT PRODUCT
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Веtoторandзоinанное withtoалярное проandзinеденandе with трandтамand
+/// Веto[CYR:тор]andзоin[CYR:анное] withto[CYR:алярное] [CYR:про]andзin[CYR:еден]andе with трand[CYR:там]and
 pub fn simdTritDot(input: []const f32, trit_weights: []const i8) f32 {
     const len = input.len;
     const aligned_len = len & ~@as(usize, SIMD_WIDTH - 1);
@@ -255,13 +255,13 @@ pub fn simdTritDot(input: []const f32, trit_weights: []const i8) f32 {
         sum_vec += input_vec * trit_vec;
     }
 
-    // Горandзонтальonя withумма
+    // [CYR:Гор]and[CYR:зонталь]onя with[CYR:умма]
     const sum_arr: [SIMD_WIDTH]f32 = sum_vec;
     inline for (sum_arr) |v| {
         sum_scalar += v;
     }
 
-    // Сtoалярный хinоwithт
+    // Сto[CYR:алярный] хinоwithт
     while (i < len) : (i += 1) {
         sum_scalar += input[i] * @as(f32, @floatFromInt(trit_weights[i]));
     }

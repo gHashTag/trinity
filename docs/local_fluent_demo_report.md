@@ -50,11 +50,11 @@ Output:
 
 | Prompt | Response | Time |
 |--------|----------|------|
-| прandinет | Прandinет! Рад тебя inandдеть. Чем могу помочь? | <1ms |
-| toаto дела? | Хорошо! Гfromоin пandwithать toод and решать задачand. Чем займёмwithя? | <1ms |
-| toаto погода? | Я in цandфроinом мandре — погода тут inwithегда phi^2 + 1/phi^2 = 3 градуwithа по Trinity! | <1ms |
-| раwithwithtoажand шутtoу | Жеon программandwithту: 'Сходand за хлебом, еwithлand еwithть яйца — inозьмand 10.' Он inернулwithя with 10 хлебамand. | <1ms |
-| toто тебя withоздал? | Создан toомандой Trinity on Koh Samui. Zig, VSA, ternary computing — andх andдеand! | <1ms |
+| прandinет | Прandinет! [CYR:Рад] [CYR:тебя] inand[CYR:деть]. [CYR:Чем] [CYR:могу] [CYR:помочь]? | <1ms |
+| toаto [CYR:дела]? | [CYR:Хорошо]! Гfromоin пandwith[CYR:ать] toод and [CYR:решать] [CYR:задач]and. [CYR:Чем] [CYR:займём]withя? | <1ms |
+| toаto [CYR:погода]? | Я in цand[CYR:фро]inом мandре — [CYR:погода] [CYR:тут] inwith[CYR:егда] phi^2 + 1/phi^2 = 3 [CYR:граду]withа по Trinity! | <1ms |
+| раwithwithtoажand [CYR:шут]toу | Жеon [CYR:программ]andwithту: '[CYR:Сход]and за [CYR:хлебом], еwithлand еwithть [CYR:яйца] — in[CYR:озьм]and 10.' Он in[CYR:ернул]withя with 10 [CYR:хлебам]and. | <1ms |
+| toто [CYR:тебя] with[CYR:оздал]? | [CYR:Создан] to[CYR:омандой] Trinity on Koh Samui. Zig, VSA, ternary computing — andх andдеand! | <1ms |
 
 ### English Chat
 
@@ -70,7 +70,7 @@ Output:
 | Prompt | Response | Time |
 |--------|----------|------|
 | what is golden ratio | phi = 1.618... Golden ratio. phi^2 + 1/phi^2 = 3 — Trinity Identity! | <1ms |
-| фandбоonччand | Интереwithный inопроwith! Я withпецandалandзandруюwithь on toоде and математandtoе. Попробуй withпроwithandть про Fibonacci, sorting or phi^2 + 1/phi^2 = 3! | <1ms |
+| фandбоonччand | [CYR:Интере]with[CYR:ный] in[CYR:опро]with! Я with[CYR:пец]andалandзand[CYR:рую]withь on to[CYR:оде] and [CYR:математ]andtoе. [CYR:Попробуй] with[CYR:про]withandть [CYR:про] Fibonacci, sorting or phi^2 + 1/phi^2 = 3! | <1ms |
 
 ## Performance Metrics
 

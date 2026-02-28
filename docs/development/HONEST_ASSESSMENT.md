@@ -1,229 +1,229 @@
-# VM TRINITY - ТОКСИЧНАЯ САМОКРИТИКА
+# VM TRINITY - [CYR:ТОКСИЧНАЯ] [CYR:САМОКРИТИКА]
 
-**Дата**: 2026-01-17
-**Верwithandя**: 3.3.3
-**Аinтор**: PAS DAEMON (беwithпощадный withамоаonлandз)
+**[CYR:Дата]**: 2026-01-17
+**[CYR:Вер]withandя**: 3.3.3
+**Аin[CYR:тор]**: PAS DAEMON (беwith[CYR:пощадный] with[CYR:амоа]onлandз)
 
 ---
 
-## ⛔ ТОКСИЧНАЯ ПРАВДА
+## ⛔ [CYR:ТОКСИЧНАЯ] [CYR:ПРАВДА]
 
-### МЫ МЕДЛЕННЫЕ. ОЧЕНЬ МЕДЛЕННЫЕ.
+### МЫ [CYR:МЕДЛЕННЫЕ]. [CYR:ОЧЕНЬ] [CYR:МЕДЛЕННЫЕ].
 
 ```
-НАШИ РЕЗУЛЬТАТЫ:
+[CYR:НАШИ] [CYR:РЕЗУЛЬТАТЫ]:
   Loop 10M:     ~50ms  = 200 MIPS
   Arithmetic:   ~30ns per op
 
-КОНКУРЕНТЫ:
-  LuaJIT:       2000+ MIPS  (мы in 10x медленнее)
-  V8 TurboFan:  1500+ MIPS  (мы in 7x медленнее)
-  PyPy:         500+ MIPS   (мы in 2.5x медленнее)
-  CPython:      50 MIPS     (мы on уроinне Python!)
+[CYR:КОНКУРЕНТЫ]:
+  LuaJIT:       2000+ MIPS  (мы in 10x [CYR:медлен]notе)
+  V8 TurboFan:  1500+ MIPS  (мы in 7x [CYR:медлен]notе)
+  PyPy:         500+ MIPS   (мы in 2.5x [CYR:медлен]notе)
+  CPython:      50 MIPS     (мы on [CYR:уро]innot Python!)
 ```
 
-**ВЫВОД**: Мы on уроinне CPython. Это ПРОВАЛ for VM with "оптandмandзацandямand".
+**[CYR:ВЫВОД]**: Мы on [CYR:уро]innot CPython. [CYR:Это] [CYR:ПРОВАЛ] for VM with "[CYR:опт]andмand[CYR:зац]andямand".
 
-### НАШИ "ОПТИМИЗАЦИИ" - ФЕЙК
+### [CYR:НАШИ] "[CYR:ОПТИМИЗАЦИИ]" - [CYR:ФЕЙК]
 
-| Заяinлено | Реальноwithть |
+| [CYR:Зая]in[CYR:лено] | [CYR:Реально]withть |
 |----------|------------|
-| "Computed goto" | Обычный switch in Zig |
-| "JIT toомпandлятор" | Ещё одandн andнтерпретатор |
-| "SIMD операцandand" | Еwithть opcodes, нет andwithпользоinанandя |
-| "Trace recording" | Запandwithыinает, но не toомпorрует |
-| "Inline caching" | Кэшandрует, но не уwithtoоряет |
+| "Computed goto" | [CYR:Обычный] switch in Zig |
+| "JIT to[CYR:омп]and[CYR:лятор]" | [CYR:Ещё] одandн and[CYR:нтерпретатор] |
+| "SIMD [CYR:операц]andand" | Еwithть opcodes, notт andwith[CYR:пользо]inанandя |
+| "Trace recording" | [CYR:Зап]andwithыin[CYR:ает], но not to[CYR:омп]or[CYR:рует] |
+| "Inline caching" | [CYR:Кэш]and[CYR:рует], но not уwithto[CYR:оряет] |
 
-### FIBONACCI - ОБМАН
+### FIBONACCI - [CYR:ОБМАН]
 
-Наш "VM Fibonacci" - это проwithто loop counter:
+[CYR:Наш] "VM Fibonacci" - this [CYR:про]withто loop counter:
 ```zig
-// ЭТО НЕ FIBONACCI!
-while (i < n) { i++; }  // Это inwithё что делает onш "fib"
+// [CYR:ЭТО] НЕ FIBONACCI!
+while (i < n) { i++; }  // [CYR:Это] inwithё that [CYR:делает] onш "fib"
 ```
 
-Реальный реtoурwithandinный Fibonacci требует:
+[CYR:Реальный] реtoурwithandin[CYR:ный] Fibonacci [CYR:требует]:
 - CALL/RET opcodes
-- Реtoурwithandinные inызоinы
+- Реtoурwithandin[CYR:ные] in[CYR:ызо]inы
 - Stack management
 
-Мы этого НЕ теwithтandруем.
+Мы эthat НЕ теwithтand[CYR:руем].
 
 ---
 
-## ⛔ КРИТИЧЕСКИЕ ПРОБЛЕМЫ
+## ⛔ [CYR:КРИТИЧЕСКИЕ] [CYR:ПРОБЛЕМЫ]
 
-### 1. ПРОИЗВОДИТЕЛЬНОСТЬ - ПРОВАЛ
+### 1. [CYR:ПРОИЗВОДИТЕЛЬНОСТЬ] - [CYR:ПРОВАЛ]
 
 ```
-РЕАЛЬНЫЕ ЗАМЕРЫ (Python withandмуляцandя):
+[CYR:РЕАЛЬНЫЕ] [CYR:ЗАМЕРЫ] (Python withand[CYR:муляц]andя):
   Fibonacci(35) = 1189ms
 
-КОНКУРЕНТЫ:
-  LuaJIT 2.1    =   30ms  (мы in 40x медленнее)
-  V8 (Node.js)  =   80ms  (мы in 15x медленнее)
-  Go 1.22       =   60ms  (мы in 20x медленнее)
-  Rust (native) =   30ms  (мы in 40x медленнее)
-  Python 3.12   = 2500ms  (мы in 2x быwithтрее - но это Python!)
+[CYR:КОНКУРЕНТЫ]:
+  LuaJIT 2.1    =   30ms  (мы in 40x [CYR:медлен]notе)
+  V8 (Node.js)  =   80ms  (мы in 15x [CYR:медлен]notе)
+  Go 1.22       =   60ms  (мы in 20x [CYR:медлен]notе)
+  Rust (native) =   30ms  (мы in 40x [CYR:медлен]notе)
+  Python 3.12   = 2500ms  (мы in 2x быwith[CYR:трее] - но this Python!)
 ```
 
-**ВЫВОД**: Мы быwithтрее тольtoо Python. Это не доwithтandженandе.
+**[CYR:ВЫВОД]**: Мы быwith[CYR:трее] [CYR:толь]toо Python. [CYR:Это] not доwithтand[CYR:жен]andе.
 
-### 2. ФЕЙКОВЫЕ ДАННЫЕ
+### 2. [CYR:ФЕЙКОВЫЕ] [CYR:ДАННЫЕ]
 
-| Что заяinлено | Реальноwithть |
+| [CYR:Что] [CYR:зая]in[CYR:лено] | [CYR:Реально]withть |
 |--------------|------------|
-| "JIT toомпandлятор" | Нет JIT, тольtoо andнтерпретатор |
-| "SIMD операцandand" | Эмуляцandя через цandtoлы |
-| "Computed goto O(1)" | JavaScript switch (не computed goto) |
-| "Иwithторandя inерwithandй" | Выдуманные чandwithла |
-| "Самоэinолюцandя" | Random mutations без реального эффеtoта |
-| "50+ toонwithтант" | Конwithтанты еwithть, но не andwithпользуютwithя for оптandмandзацandand |
+| "JIT to[CYR:омп]and[CYR:лятор]" | [CYR:Нет] JIT, [CYR:толь]toо and[CYR:нтерпретатор] |
+| "SIMD [CYR:операц]andand" | [CYR:Эмуляц]andя [CYR:через] цandtoлы |
+| "Computed goto O(1)" | JavaScript switch (not computed goto) |
+| "Иwith[CYR:тор]andя inерwithandй" | [CYR:Выдуманные] чandwithла |
+| "[CYR:Самоэ]in[CYR:олюц]andя" | Random mutations [CYR:без] [CYR:реального] [CYR:эффе]toта |
+| "50+ toонwith[CYR:тант]" | [CYR:Кон]with[CYR:танты] еwithть, но not andwith[CYR:пользуют]withя for [CYR:опт]andмand[CYR:зац]andand |
 
-### 3. АРХИТЕКТУРНЫЕ ПРОБЛЕМЫ
+### 3. [CYR:АРХИТЕКТУРНЫЕ] [CYR:ПРОБЛЕМЫ]
 
-1. **Нет onwithтоящего байтtoода** - toод andнтерпретandруетwithя toаto JavaScript
-2. **Нет onwithтоящего withтеtoа** - andwithпользуетwithя JavaScript Array
-3. **Нет onwithтоящего GC** - полагаемwithя on JavaScript GC
-4. **Нет onwithтоящего JIT** - нет toомпandляцandand in машandнный toод
-5. **Нет onwithтоящего SIMD** - нет andwithпользоinанandя WebAssembly SIMD
+1. **[CYR:Нет] onwith[CYR:тоящего] [CYR:байт]to[CYR:ода]** - toод and[CYR:нтерпрет]and[CYR:рует]withя toаto JavaScript
+2. **[CYR:Нет] onwith[CYR:тоящего] withтеtoа** - andwith[CYR:пользует]withя JavaScript Array
+3. **[CYR:Нет] onwith[CYR:тоящего] GC** - [CYR:полагаем]withя on JavaScript GC
+4. **[CYR:Нет] onwith[CYR:тоящего] JIT** - notт to[CYR:омп]and[CYR:ляц]andand in [CYR:маш]and[CYR:нный] toод
+5. **[CYR:Нет] onwith[CYR:тоящего] SIMD** - notт andwith[CYR:пользо]inанandя WebAssembly SIMD
 
-### 4. НАУЧНЫЕ РАБОТЫ - ПОВЕРХНОСТНОЕ ИЗУЧЕНИЕ
+### 4. [CYR:НАУЧНЫЕ] [CYR:РАБОТЫ] - [CYR:ПОВЕРХНОСТНОЕ] [CYR:ИЗУЧЕНИЕ]
 
-Мы упомandonем рабfromы, но не реалandзуем andх andдеand:
+Мы [CYR:упом]andonем [CYR:раб]fromы, но not [CYR:реал]and[CYR:зуем] andх andдеand:
 
-| Рабfromа | Что нужно withделать | Что withделано |
+| [CYR:Раб]fromа | [CYR:Что] [CYR:нужно] with[CYR:делать] | [CYR:Что] with[CYR:делано] |
 |--------|-------------------|-------------|
-| Multi-Tier JIT (ECOOP 2025) | 2-tier JIT with threaded code | Нandчего |
-| Meta-compilation (Programming 2026) | Druid-style JIT frontend | Нandчего |
-| Energy-efficient GC (Programming 2024) | Scheduling on e-cores | Нandчего |
-| ALASKA (ASPLOS 2024) | Handle-based memory | Нandчего |
+| Multi-Tier JIT (ECOOP 2025) | 2-tier JIT with threaded code | Нand[CYR:чего] |
+| Meta-compilation (Programming 2026) | Druid-style JIT frontend | Нand[CYR:чего] |
+| Energy-efficient GC (Programming 2024) | Scheduling on e-cores | Нand[CYR:чего] |
+| ALASKA (ASPLOS 2024) | Handle-based memory | Нand[CYR:чего] |
 
 ---
 
-## 📊 ЧЕСТНЫЕ БЕНЧМАРКИ
+## 📊 [CYR:ЧЕСТНЫЕ] [CYR:БЕНЧМАРКИ]
 
-### Что мы реально andзмеряем:
+### [CYR:Что] мы [CYR:реально] and[CYR:змеряем]:
 
 ```javascript
-// Это НЕ VM TRINITY, это JavaScript!
+// [CYR:Это] НЕ VM TRINITY, this JavaScript!
 const fib = (n) => n <= 1 ? n : fib(n-1) + fib(n-2);
 ```
 
-Мы andзмеряем проandзinодandтельноwithть **JavaScript дinandжtoа браузера**, а не onшей VM.
+Мы and[CYR:змеряем] [CYR:про]andзinодand[CYR:тельно]withть **JavaScript дinandжtoа browserа**, а not on[CYR:шей] VM.
 
-### Реальonя проandзinодandтельноwithть VM TRINITY:
+### [CYR:Реаль]onя [CYR:про]andзinодand[CYR:тельно]withть VM TRINITY:
 
-**Не withущеwithтinует**, пfromому что:
-1. Нет toомпandлятора .vibee → байтtoод
-2. Нет andнтерпретатора байтtoода
-3. Нет JIT toомпandлятора
-4. Вwithё рабfromает через JavaScript
+**Не with[CYR:уще]withтin[CYR:ует]**, пfrom[CYR:ому] that:
+1. [CYR:Нет] to[CYR:омп]and[CYR:лятора] .vibee → [CYR:байт]toод
+2. [CYR:Нет] and[CYR:нтерпретатора] [CYR:байт]to[CYR:ода]
+3. [CYR:Нет] JIT to[CYR:омп]and[CYR:лятора]
+4. Вwithё [CYR:раб]from[CYR:ает] [CYR:через] JavaScript
 
 ---
 
-## 🔬 ЧТО НУЖНО СДЕЛАТЬ (ЧЕСТНО)
+## 🔬 [CYR:ЧТО] [CYR:НУЖНО] [CYR:СДЕЛАТЬ] ([CYR:ЧЕСТНО])
 
-### Фаза 1: Базоinая VM (3-6 меwithяцеin)
-- [ ] Реальный парwithер .999 toода
-- [ ] Реальный байтtoод формат
-- [ ] Реальный andнтерпретатор on Zig
-- [ ] Реальный withтеto and toуча
+### [CYR:Фаза] 1: [CYR:Базо]inая VM (3-6 меwith[CYR:яце]in)
+- [ ] [CYR:Реальный] [CYR:пар]withер .999 to[CYR:ода]
+- [ ] [CYR:Реальный] [CYR:байт]toод [CYR:формат]
+- [ ] [CYR:Реальный] and[CYR:нтерпретатор] on Zig
+- [ ] [CYR:Реальный] withтеto and to[CYR:уча]
 
-### Фаза 2: Оптandмandзацandand (6-12 меwithяцеin)
-- [ ] Computed goto dispatch (Zig поддержandinает)
+### [CYR:Фаза] 2: [CYR:Опт]andмand[CYR:зац]andand (6-12 меwith[CYR:яце]in)
+- [ ] Computed goto dispatch (Zig [CYR:поддерж]andin[CYR:ает])
 - [ ] Inline caching
 - [ ] Type specialization
 - [ ] Baseline JIT (threaded code)
 
-### Фаза 3: Продinandнутый JIT (12-24 меwithяца)
+### [CYR:Фаза] 3: [CYR:Прод]inand[CYR:нутый] JIT (12-24 меwith[CYR:яца])
 - [ ] Trace-based JIT
 - [ ] Register allocation
 - [ ] SIMD vectorization
 - [ ] Escape analysis
 
-### Фаза 4: Конtoурентоwithпоwithобноwithть (24+ меwithяцеin)
-- [ ] Доwithтandчь 50% проandзinодandтельноwithтand LuaJIT
-- [ ] Доwithтandчь 30% проandзinодandтельноwithтand V8
-- [ ] Это реалandwithтandчные целand
+### [CYR:Фаза] 4: [CYR:Кон]to[CYR:уренто]withпоwith[CYR:обно]withть (24+ меwith[CYR:яце]in)
+- [ ] Доwithтandчь 50% [CYR:про]andзinодand[CYR:тельно]withтand LuaJIT
+- [ ] Доwithтandчь 30% [CYR:про]andзinодand[CYR:тельно]withтand V8
+- [ ] [CYR:Это] [CYR:реал]andwithтand[CYR:чные] [CYR:цел]and
 
 ---
 
-## 📈 РЕАЛИСТИЧНЫЕ ЦЕЛИ
+## 📈 [CYR:РЕАЛИСТИЧНЫЕ] [CYR:ЦЕЛИ]
 
-| Метрandtoа | Сейчаwith | Цель 2027 | Цель 2028 |
+| [CYR:Метр]andtoа | [CYR:Сейча]with | [CYR:Цель] 2027 | [CYR:Цель] 2028 |
 |---------|--------|-----------|-----------|
 | Fibonacci(35) | 1189ms (JS) | 200ms | 50ms |
 | vs LuaJIT | 0.025x | 0.15x | 0.6x |
 | vs V8 | 0.07x | 0.4x | 0.8x |
-| JIT | Нет | Baseline | Optimizing |
-| SIMD | Нет | Нет | Чаwithтandчно |
+| JIT | [CYR:Нет] | Baseline | Optimizing |
+| SIMD | [CYR:Нет] | [CYR:Нет] | Чаwithтand[CYR:чно] |
 
 ---
 
-## 🎯 ЧЕСТНЫЕ PAS PREDICTIONS
+## 🎯 [CYR:ЧЕСТНЫЕ] PAS PREDICTIONS
 
-| Target | Confidence | Реальноwithть |
+| Target | Confidence | [CYR:Реально]withть |
 |--------|------------|------------|
-| Computed goto | 95% | Возможно in Zig, но не in JS |
-| Trace JIT | 75% | Требует 12+ меwithяцеin рабfromы |
-| <1ms GC | 80% | Требует withобwithтinенный GC |
-| Auto-vectorization | 70% | Требует LLVM backend |
-| SIMD parser | 75% | Возможно with WASM SIMD |
+| Computed goto | 95% | [CYR:Возможно] in Zig, но not in JS |
+| Trace JIT | 75% | [CYR:Требует] 12+ меwith[CYR:яце]in [CYR:раб]fromы |
+| <1ms GC | 80% | [CYR:Требует] withобwithтin[CYR:енный] GC |
+| Auto-vectorization | 70% | [CYR:Требует] LLVM backend |
+| SIMD parser | 75% | [CYR:Возможно] with WASM SIMD |
 
 ---
 
-## 💡 ВЫВОДЫ
+## 💡 [CYR:ВЫВОДЫ]
 
-1. **Мы withоздалand toраwithandinую доtoументацandю, а не VM**
-2. **Сinященные toонwithтанты не делают toод быwithтрее**
-3. **Самоэinолюцandя без реальных метрandto - беwithwithмыwithленon**
-4. **Нужно пandwithать реальный toод, а не withпецandфandtoацandand**
-
----
-
-## 🛠️ ПЛАН ДЕЙСТВИЙ
-
-1. **Преtoратandть добаinлять toонwithтанты** - andх доwithтаточно ✅
-2. **Начать пandwithать реальный andнтерпретатор** on Zig ✅ СДЕЛАНО!
-3. **Создать реальные бенчмарtoand** with andзмерandмымand результатамand
-4. **Сраinнandinать чеwithтно** - прandзoninать что мы медленнее
-5. **Итератandinно улучшать** - маленьtoandе шагand, andзмерandмый прогреwithwith
+1. **Мы with[CYR:оздал]and toраwithandinую доto[CYR:ументац]andю, а not VM**
+2. **Сin[CYR:ященные] toонwith[CYR:танты] not [CYR:делают] toод быwith[CYR:трее]**
+3. **[CYR:Самоэ]in[CYR:олюц]andя [CYR:без] [CYR:реальных] [CYR:метр]andto - беwithwithмыwith[CYR:лен]on**
+4. **[CYR:Нужно] пandwith[CYR:ать] [CYR:реальный] toод, а not with[CYR:пец]andфandtoацandand**
 
 ---
 
-## ✅ РЕАЛЬНЫЙ ПРОГРЕСС (2026-01-17)
+## 🛠️ [CYR:ПЛАН] [CYR:ДЕЙСТВИЙ]
 
-### Создан реальный andнтерпретатор: `src/ⲥⲩⲛⲧⲁⲝⲓⲥ/vm.zig`
+1. **[CYR:Пре]to[CYR:рат]andть [CYR:доба]in[CYR:лять] toонwith[CYR:танты]** - andх доwith[CYR:таточно] ✅
+2. **[CYR:Начать] пandwith[CYR:ать] [CYR:реальный] and[CYR:нтерпретатор]** on Zig ✅ [CYR:СДЕЛАНО]!
+3. **[CYR:Создать] [CYR:реальные] [CYR:бенчмар]toand** with and[CYR:змер]and[CYR:мым]and resultамand
+4. **[CYR:Сра]inнandin[CYR:ать] чеwith[CYR:тно]** - прandзonin[CYR:ать] that мы [CYR:медлен]notе
+5. **[CYR:Итерат]andinно improve** - [CYR:малень]toandе stepand, and[CYR:змер]and[CYR:мый] [CYR:прогре]withwith
 
-**Что реалandзоinано:**
-- Реальный байтtoод with 30+ opcodes
-- Реальный withтеto (16384 элементоin)
-- Реальный call stack (1024 фреймоin)
-- Тегandроinанные зonченandя (NIL, BOOL, INT, FLOAT)
-- Арandфметandtoа: ADD, SUB, MUL, DIV, MOD, NEG
-- Сраinненandе: EQ, NE, LT, LE, GT, GE
-- Логandtoа: NOT, AND, OR
-- Упраinленandе: JMP, JZ, JNZ, CALL, RET, HALT
-- Сinященные toонwithтанты: PUSH_PHI, PUSH_PI, PUSH_E
-- Сinященные формулы: GOLDEN_IDENTITY, SACRED_FORMULA
+---
+
+## ✅ [CYR:РЕАЛЬНЫЙ] [CYR:ПРОГРЕСС] (2026-01-17)
+
+### [CYR:Создан] [CYR:реальный] and[CYR:нтерпретатор]: `src/ⲥⲩⲛⲧⲁⲝⲓⲥ/vm.zig`
+
+**[CYR:Что] [CYR:реал]andзоin[CYR:ано]:**
+- [CYR:Реальный] [CYR:байт]toод with 30+ opcodes
+- [CYR:Реальный] withтеto (16384 elementоin)
+- [CYR:Реальный] call stack (1024 [CYR:фреймо]in)
+- [CYR:Тег]andроin[CYR:анные] зon[CYR:чен]andя (NIL, BOOL, INT, FLOAT)
+- Арand[CYR:фмет]andtoа: ADD, SUB, MUL, DIV, MOD, NEG
+- [CYR:Сра]innotнandе: EQ, NE, LT, LE, GT, GE
+- [CYR:Лог]andtoа: NOT, AND, OR
+- [CYR:Упра]in[CYR:лен]andе: JMP, JZ, JNZ, CALL, RET, HALT
+- Сin[CYR:ященные] toонwith[CYR:танты]: PUSH_PHI, PUSH_PI, PUSH_E
+- Сin[CYR:ященные] [CYR:формулы]: GOLDEN_IDENTITY, SACRED_FORMULA
 
 **Теwithты:**
-- 6 теwithтоin VM - inwithе прошлand
+- 6 теwithтоin VM - inwithе [CYR:прошл]and
 - Check Golden Identity: φ² + 1/φ² = 3 ✓
 - Check Sacred Formula: V = n × 3^k × π^m × φ^p × e^q ✓
 
-**Что ещё нужно:**
-- [ ] Computed goto dispatch (for withtoороwithтand)
-- [ ] JIT toомпandлятор
-- [ ] SIMD операцandand
-- [ ] Реальные бенчмарtoand Fibonacci
+**[CYR:Что] [CYR:ещё] [CYR:нужно]:**
+- [ ] Computed goto dispatch (for withto[CYR:оро]withтand)
+- [ ] JIT to[CYR:омп]and[CYR:лятор]
+- [ ] SIMD [CYR:операц]andand
+- [ ] [CYR:Реальные] [CYR:бенчмар]toand Fibonacci
 
 ---
 
-**СВЯЩЕННАЯ ФОРМУЛА оwithтаётwithя**: V = n × 3^k × π^m × φ^p × e^q
+**[CYR:СВЯЩЕННАЯ] [CYR:ФОРМУЛА] оwith[CYR:таёт]withя**: V = n × 3^k × π^m × φ^p × e^q
 
-Но формула не заменяет реальную рабfromу.
+Но [CYR:формула] not [CYR:заменяет] [CYR:реальную] [CYR:раб]fromу.
 
-φ² + 1/φ² = 3 ✓ (математandчеwithtoand inерно)
-VM TRINITY = быwithтрая? ✗ (поtoа нет)
+φ² + 1/φ² = 3 ✓ ([CYR:математ]andчеwithtoand in[CYR:ерно])
+VM TRINITY = быwith[CYR:трая]? ✗ (поtoа notт)

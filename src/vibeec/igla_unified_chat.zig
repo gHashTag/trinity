@@ -48,13 +48,13 @@ pub const ChatMode = enum {
         // Strong code indicators
         const strong_code = [_][]const u8{
             "code", "toод", "代码", "código", "programmieren",
-            "function", "фунtoцand", "函数", "función", "funktion",
+            "function", "[CYR:фун]toцand", "函数", "función", "funktion",
             "class", "toлаwithwith", "类", "clase", "klasse",
             "write", "onпandшand", "写", "escribe", "schreib",
-            "implement", "реалandз", "实现", "implementar", "implementieren",
-            "debug", "fromлад", "调试", "depurar", "debuggen",
-            "compile", "toомпandл", "编译", "compilar", "kompilieren",
-            "error", "ошandбto", "错误", "syntax", "withandнтаtowith",
+            "implement", "[CYR:реал]andз", "实现", "implementar", "implementieren",
+            "debug", "from[CYR:лад]", "调试", "depurar", "debuggen",
+            "compile", "to[CYR:омп]andл", "编译", "compilar", "kompilieren",
+            "error", "ошandбto", "错误", "syntax", "withand[CYR:нта]towith",
         };
 
         for (strong_code) |word| {
@@ -91,15 +91,15 @@ pub const ChatMode = enum {
         // Strong chat indicators
         const chat_words = [_][]const u8{
             "feel", "чуinwithтin", "感觉", "siento", "fühle",
-            "think", "думаю", "想", "creo", "denke",
-            "believe", "inерю", "相信", "creer", "glaube",
-            "opinion", "мненandе", "意见", "opinión", "meinung",
-            "story", "andwithторand", "故事", "historia", "geschichte",
-            "weather", "byгод", "天气", "tiempo", "wetter",
+            "think", "[CYR:думаю]", "想", "creo", "denke",
+            "believe", "in[CYR:ерю]", "相信", "creer", "glaube",
+            "opinion", "мnotнandе", "意见", "opinión", "meinung",
+            "story", "andwith[CYR:тор]and", "故事", "historia", "geschichte",
+            "weather", "by[CYR:год]", "天气", "tiempo", "wetter",
             "food", "еyes", "食物", "comida", "essen",
-            "music", "музыto", "音乐", "música", "musik",
-            "movie", "фandльм", "电影", "película", "film",
-            "travel", "путешеwithтin", "旅行", "viaje", "reise",
+            "music", "[CYR:музы]to", "音乐", "música", "musik",
+            "movie", "фand[CYR:льм]", "电影", "película", "film",
+            "travel", "[CYR:путеше]withтin", "旅行", "viaje", "reise",
         };
 
         for (chat_words) |word| {
@@ -393,7 +393,7 @@ pub const UnifiedChatEngine = struct {
 
         // Generate explanation about code concepts
         const explanations = switch (lang) {
-            .Russian => "Отлandчный inопроwith о программandроinанandand! Даinай разберём это byдробнее. Что andменно тебя andнтереwithует — withandнтаtowithandwith, логandtoа or праtoтandчеwithtoое прandмененandе?",
+            .Russian => "[CYR:Отл]and[CYR:чный] in[CYR:опро]with о [CYR:программ]andроinанandand! Даinай [CYR:разберём] this by[CYR:дроб]notе. [CYR:Что] and[CYR:менно] [CYR:тебя] and[CYR:нтере]with[CYR:ует] — withand[CYR:нта]towithandwith, [CYR:лог]andtoа or [CYR:пра]toтandчеwithtoое прandмеnotнandе?",
             .Chinese => "关于编程的好问题！让我们详细讨论一下。你具体想了解什么——语法、逻辑还是实际应用？",
             .Spanish => "¡Buena pregunta sobre programación! Vamos a analizarlo en detalle. ¿Qué te interesa específicamente — sintaxis, lógica o aplicación práctica?",
             .German => "Gute Frage zur Programmierung! Lass uns das genauer analysieren. Was interessiert dich konkret — Syntax, Logik oder praktische Anwendung?",
@@ -520,15 +520,15 @@ pub fn runBenchmark() !void {
     // Diverse test queries: chat, code, mixed, multilingual
     const test_queries = [_][]const u8{
         // Chat queries
-        "прandinет, toаto дела?",
+        "прandinет, toаto [CYR:дела]?",
         "hello, how are you?",
         "你好，你好吗？",
         "what is the meaning of life?",
-        "раwithwithtoажand andwithторandю",
+        "раwithwithtoажand andwith[CYR:тор]andю",
 
         // Code queries
         "write a hello world in python",
-        "onпandшand фунtoцandю fibonacci on zig",
+        "onпandшand [CYR:фун]toцandю fibonacci on zig",
         "写一个javascript函数",
         "implement a sorting algorithm",
         "debug this code please",
@@ -632,13 +632,13 @@ pub fn main() !void {
 
 test "mode detection code" {
     try std.testing.expectEqual(ChatMode.Code, ChatMode.detect("write python code"));
-    try std.testing.expectEqual(ChatMode.Code, ChatMode.detect("onпandшand фунtoцandю on zig"));
+    try std.testing.expectEqual(ChatMode.Code, ChatMode.detect("onпandшand [CYR:фун]toцandю on zig"));
     try std.testing.expectEqual(ChatMode.Code, ChatMode.detect("debug this function code"));
 }
 
 test "mode detection chat" {
     try std.testing.expectEqual(ChatMode.General, ChatMode.detect("hello how are you"));
-    try std.testing.expectEqual(ChatMode.General, ChatMode.detect("прandinет toаto дела"));
+    try std.testing.expectEqual(ChatMode.General, ChatMode.detect("прandinет toаto [CYR:дела]"));
     try std.testing.expectEqual(ChatMode.General, ChatMode.detect("tell me a story"));
 }
 

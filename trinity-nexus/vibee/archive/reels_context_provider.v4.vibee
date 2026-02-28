@@ -1455,13 +1455,13 @@ trace("agent.reels_context_provider.get")
   let all_text = string." " · join · string.lowercase()
 
   let niche_keywords = [
-    #("business", ["бизнес", "business", "предприним", "стартап"]),
-    #("productivity", ["продуктив", "productivity", "эффектив", "тайм-менедж"]),
-    #("health", ["здоров", "health", "фитнес", "спорт", "wellness"]),
-    #("finance", ["финанс", "деньг", "инвести", "крипт", "finance", "money"]),
-    #("technology", ["технолог", "tech", "программ", "it", "код"]),
-    #("education", ["образован", "учеба", "курс", "обучен", "education"]),
-    #("marketing", ["маркетинг", "рекла", "smm", "продвиж", "marketing"])
+    #("business", ["бfromnotwith", "business", "[CYR:предпр]andнandм", "with[CYR:тартап]"]),
+    #("productivity", ["[CYR:продукт]andin", "productivity", "[CYR:эффект]andin", "[CYR:тайм]-меnotдж"]),
+    #("health", ["[CYR:здоро]in", "health", "фandтnotwith", "withport", "wellness"]),
+    #("finance", ["фandonнwith", "[CYR:деньг]", "andнinеwithтand", "крandпт", "finance", "money"]),
+    #("technology", ["[CYR:технолог]", "tech", "[CYR:программ]", "it", "code"]),
+    #("education", ["[CYR:образо]inан", "[CYR:учеба]", "[CYR:кур]with", "[CYR:обучен]", "education"]),
+    #("marketing", ["[CYR:маркет]andнг", "[CYR:рекла]", "smm", "[CYR:прод]inandж", "marketing"])
   ]
 
   list.fn(item · filter_map {
@@ -1501,10 +1501,10 @@ trace("agent.reels_context_provider.get")
   let all_text = string." " · join · string.lowercase()
 
   let styles = [
-    #(["энергичн", "dynamic"], "energetic"),
-    #(["спокойн", "calm"], "calm"),
-    #(["профессион", "professional"], "professional"),
-    #(["развлекат", "fun"], "fun")
+    #(["эnotргandчн", "dynamic"], "energetic"),
+    #(["with[CYR:покойн]", "calm"], "calm"),
+    #(["[CYR:профе]withwithandон", "professional"], "professional"),
+    #(["[CYR:раз]in[CYR:лекат]", "fun"], "fun")
   ]
 
   styles · find_style
@@ -1562,7 +1562,7 @@ trace("agent.reels_context_provider.get")
 }
 
 @impl {
-  let cyrillic = ["а", "о", "е", "и", "н", "т", "с", "р", "в", "л"]
+  let cyrillic = ["а", "о", "е", "and", "н", "т", "with", "р", "in", "л"]
   let lower = string.lowercase(text)
   list.0.0, fn(acc, char · fold {
     acc +. char · count_char_occurrences
@@ -1590,7 +1590,7 @@ trace("agent.reels_context_provider.get")
 }
 
 @impl {
-  let reels_keywords = ["рилс", "reels", "создай видео", "сделай видео"]
+  let reels_keywords = ["рandлwith", "reels", "with[CYR:оздай] inand[CYR:део]", "with[CYR:делай] inand[CYR:део]"]
 
   list.fn(msg · count {
     let lower = string.lowercase(msg)

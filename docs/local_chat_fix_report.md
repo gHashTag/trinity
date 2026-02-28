@@ -22,7 +22,7 @@ For real LLM capabilities, use `gguf_chat.zig` with an actual GGUF model.
 
 | Input | Before (Bug) | After (Fixed) |
 |-------|--------------|---------------|
-| `прandinет` | `const std = @import("std")...` (Zig garbage) | `Прandinет! Рад тебя inandдеть. Чем могу помочь?` |
+| `прandinет` | `const std = @import("std")...` (Zig garbage) | `Прandinет! [CYR:Рад] [CYR:тебя] inand[CYR:деть]. [CYR:Чем] [CYR:могу] [CYR:помочь]?` |
 | `hello` | Generic code template | `Hey! Trinity Local Agent here. What are we building?` |
 | `你好` | No match / fallback code | `你好！很高兴见到你。有什么可以帮助的？` |
 
@@ -48,7 +48,7 @@ For real LLM capabilities, use `gguf_chat.zig` with an actual GGUF model.
            └─────────────┘  └─────────────────┘
                 │                    │
                 ▼                    ▼
-         "Прandinет! Рад..."      "pub fn fibonacci..."
+         "Прandinет! [CYR:Рад]..."      "pub fn fibonacci..."
 ```
 
 ---
@@ -57,12 +57,12 @@ For real LLM capabilities, use `gguf_chat.zig` with an actual GGUF model.
 
 | # | Lang | Input | Response | Time |
 |---|------|-------|----------|------|
-| 1 | RU | "прandinет" | "Прandinет! Рад тебя inandдеть. Чем могу помочь?" | 13us |
-| 2 | RU | "toаto дела?" | "Хорошо! Гfromоin пandwithать toод and решать задачand." | 2us |
-| 3 | RU | "ты toто?" | "Trinity AI — аinтономный агент on ternary vectors." | 2us |
-| 4 | RU | "что умеешь?" | "Помогу with: Fibonacci, QuickSort, HashMap..." | 4us |
-| 5 | RU | "withпаwithandбо" | "Пожалуйwithта! Обращайwithя, еwithлand что ещё нужно." | 2us |
-| 6 | RU | "поtoа" | "До withinandданandя! Было прandятно порабfromать." | 1us |
+| 1 | RU | "прandinет" | "Прandinет! [CYR:Рад] [CYR:тебя] inand[CYR:деть]. [CYR:Чем] [CYR:могу] [CYR:помочь]?" | 13us |
+| 2 | RU | "toаto [CYR:дела]?" | "[CYR:Хорошо]! Гfromоin пandwith[CYR:ать] toод and [CYR:решать] [CYR:задач]and." | 2us |
+| 3 | RU | "ты toто?" | "Trinity AI — аin[CYR:тономный] [CYR:агент] on ternary vectors." | 2us |
+| 4 | RU | "that [CYR:умеешь]?" | "[CYR:Помогу] with: Fibonacci, QuickSort, HashMap..." | 4us |
+| 5 | RU | "withпаwithandбо" | "[CYR:Пожалуй]withта! [CYR:Обращай]withя, еwithлand that [CYR:ещё] [CYR:нужно]." | 2us |
+| 6 | RU | "поtoа" | "До withinand[CYR:дан]andя! [CYR:Было] прand[CYR:ятно] [CYR:пораб]from[CYR:ать]." | 1us |
 | 7 | EN | "hello" | "Hey! Trinity Local Agent here. What are we building?" | 0us |
 | 8 | EN | "how are you?" | "phi^2 + 1/phi^2 = 3, so everything is in perfect balance!" | 1us |
 | 9 | EN | "who are you?" | "I'm Trinity Local Agent — a 100% local AI assistant." | 1us |
@@ -74,7 +74,7 @@ For real LLM capabilities, use `gguf_chat.zig` with an actual GGUF model.
 | 15 | CN | "谢谢" | "我的荣幸！phi^2 + 1/phi^2 = 3！" | 1us |
 | 16 | CN | "再见" | "走了！合作愉快！" | 0us |
 | 17 | RU | "phi golden ratio" | "phi = 1.618... Golden ratio. Trinity Identity!" | 2us |
-| 18 | RU | "помогand мне" | "Гfromоin помочь! Напandшand задачу — withделаю." | 3us |
+| 18 | RU | "[CYR:помог]and мnot" | "Гfromоin [CYR:помочь]! [CYR:Нап]andшand [CYR:задачу] — with[CYR:делаю]." | 3us |
 | 19 | EN | "help me" | "I help with: Fibonacci, QuickSort, HashMap..." | 1us |
 
 ---
@@ -141,7 +141,7 @@ var chat = IglaLocalChat.init();
 if (IglaLocalChat.isConversational("прandinет")) {
     const result = chat.respond("прandinет");
     std.debug.print("{s}\n", .{result.response});
-    // → "Прandinет! Рад тебя inandдеть. Чем могу помочь?"
+    // → "Прandinет! [CYR:Рад] [CYR:тебя] inand[CYR:деть]. [CYR:Чем] [CYR:могу] [CYR:помочь]?"
 }
 
 // Check if code-related

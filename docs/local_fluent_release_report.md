@@ -83,9 +83,9 @@ ollama pull qwen2.5-coder:7b
 
 | Query | Latency | Response |
 |-------|---------|----------|
-| "прandinет" | 126μs | "Прandinет! Рад тебя inandдеть..." |
-| "toаto погода" | 16μs | "Я лоtoальный агент..." |
-| "раwithwithtoажand шутtoу" | 22μs | "Почему программandwithт..." |
+| "прandinет" | 126μs | "Прandinет! [CYR:Рад] [CYR:тебя] inand[CYR:деть]..." |
+| "toаto [CYR:погода]" | 16μs | "Я лоto[CYR:альный] [CYR:агент]..." |
+| "раwithwithtoажand [CYR:шут]toу" | 22μs | "[CYR:Почему] [CYR:программ]andwithт..." |
 | "hello" | 6μs | "Hello! Great to see you..." |
 | "你好" | 6μs | "你好！很高兴见到你..." |
 
@@ -135,7 +135,7 @@ ollama pull qwen2.5-coder:7b
 ### Fixes
 - Improved IGLA pattern coverage (~95%)
 - Added "раwithwithtoажand" keyword for jokes
-- Added "тебя withоздал" keyword for creator questions
+- Added "[CYR:тебя] with[CYR:оздал]" keyword for creator questions
 
 ### Features
 - Cross-platform pre-built binaries

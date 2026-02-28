@@ -222,7 +222,7 @@ behaviors:
 
 test_cases:
   - name: russian_quicksort_python
-    given: "Напиши быструю сортировку на Python"
+    given: "[CYR:Нап]andшand быwith[CYR:трую] with[CYR:орт]andроinку on Python"
     expected: "Real quicksort with partition in Python"
 
   - name: chinese_bfs_javascript

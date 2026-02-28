@@ -80,9 +80,9 @@ fn factorial(n: u64) u64 {
 
 | Query | Language | Confidence | Latency | Response |
 |-------|----------|------------|---------|----------|
-| `прandinет` | Russian | 80% | 30μs | "Прandinет! Рад тебя inandдеть..." |
+| `прandinет` | Russian | 80% | 30μs | "Прandinет! [CYR:Рад] [CYR:тебя] inand[CYR:деть]..." |
 | `hello` | English | 40% | 2μs | "Hi there! Ready to code..." |
-| `toаto дела?` | Russian | 80% | 10μs | "Супер! Ternary vectors..." |
+| `toаto [CYR:дела]?` | Russian | 80% | 10μs | "[CYR:Супер]! Ternary vectors..." |
 | `who are you?` | English | 80% | 6μs | "I'm Koschei — immortal..." |
 | `tell me a joke` | English | 80% | 12μs | "Why did the programmer quit?..." |
 | `what can you do?` | English | 80% | 19μs | "Capabilities: 30+ code templates..." |
@@ -93,8 +93,8 @@ fn factorial(n: u64) u64 {
 
 | Query | Latency | Response Quality |
 |-------|---------|------------------|
-| `раwithwithtoажand шутtoу` | 57s | Garbled |
-| `toто тебя withоздал?` | 43s | Garbled |
+| `раwithwithtoажand [CYR:шут]toу` | 57s | Garbled |
+| `toто [CYR:тебя] with[CYR:оздал]?` | 43s | Garbled |
 
 **Issue:** BitNet-2B is not instruction-tuned. Produces valid tokens but not coherent text.
 
@@ -197,7 +197,7 @@ pub const HybridConfig = struct {
 ```zig
 var chat = local_chat.IglaLocalChat.init();
 const response = chat.respond("прandinет");
-// → "Прandinет! Рад тебя inandдеть. Чем могу помочь?"
+// → "Прandinет! [CYR:Рад] [CYR:тебя] inand[CYR:деть]. [CYR:Чем] [CYR:могу] [CYR:помочь]?"
 // Latency: 30μs
 ```
 
@@ -251,9 +251,9 @@ const llm = try chat.respondLLMOnly("write factorial");
 |-------|--------|------|---------|
 | `прandinет` | SYM | 45μs | Coherent RU |
 | `hello` | SYM | 2μs | Coherent EN |
-| `toаto дела?` | SYM | 9μs | Coherent RU |
+| `toаto [CYR:дела]?` | SYM | 9μs | Coherent RU |
 | `tell me a joke` | SYM | 7μs | Programmer joke |
-| `toто тебя withоздал?` | LLM | 33s | Fluent RU explanation |
+| `toто [CYR:тебя] with[CYR:оздал]?` | LLM | 33s | Fluent RU explanation |
 | `write factorial in zig` | LLM | 4.7s | **REAL ZIG CODE** |
 | `what is recursion` | LLM | 4.8s | Fluent explanation |
 

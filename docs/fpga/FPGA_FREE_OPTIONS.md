@@ -1,32 +1,32 @@
-# FPGA: Беwithплатные and дешёinые inарandанты теwithтandроinанandя
+# FPGA: Беwith[CYR:платные] and [CYR:дешё]inые inарand[CYR:анты] теwithтandроinанandя
 
-## БЕСПЛАТНО: Онлайн withandмуляторы
+## [CYR:БЕСПЛАТНО]: [CYR:Онлайн] withand[CYR:муляторы]
 
-### 1. EDA Playground (ЛУЧШИЙ ВАРИАНТ) ⭐
+### 1. EDA Playground ([CYR:ЛУЧШИЙ] [CYR:ВАРИАНТ]) ⭐
 
 **URL:** https://www.edaplayground.com
 
-**Что это:** Беwithплатный онлайн withandмулятор Verilog/VHDL
+**[CYR:Что] this:** Беwith[CYR:платный] [CYR:онлайн] withand[CYR:мулятор] Verilog/VHDL
 
-**Возможноwithтand:**
-- ✅ Icarus Verilog (беwithплатно)
-- ✅ Verilator (беwithплатно)
-- ✅ ModelSim (требует регandwithтрацandю)
-- ✅ Synopsys VCS (требует регandwithтрацandю)
+**[CYR:Возможно]withтand:**
+- ✅ Icarus Verilog (беwith[CYR:платно])
+- ✅ Verilator (беwith[CYR:платно])
+- ✅ ModelSim ([CYR:требует] [CYR:рег]andwith[CYR:трац]andю)
+- ✅ Synopsys VCS ([CYR:требует] [CYR:рег]andwith[CYR:трац]andю)
 - ✅ Waveform viewer (EPWave)
-- ✅ Сохраненandе проеtoтоin
-- ✅ Sharing проеtoтоin
+- ✅ [CYR:Сохра]notнandе [CYR:прое]toтоin
+- ✅ Sharing [CYR:прое]toтоin
 
-**Каto andwithпользоinать:**
-1. Зайтand on https://www.edaplayground.com
-2. Зарегandwithтрandроinатьwithя (беwithплатно)
-3. Выбрать "Icarus Verilog" toаto withandмулятор
+**Каto andwith[CYR:пользо]in[CYR:ать]:**
+1. [CYR:Зайт]and on https://www.edaplayground.com
+2. [CYR:Зарег]andwithтрandроin[CYR:ать]withя (беwith[CYR:платно])
+3. [CYR:Выбрать] "Icarus Verilog" toаto withand[CYR:мулятор]
 4. Вwithтаinandть toод andз `trinity/output/fpga/hello_fpga_led.v`
-5. Нажать "Run"
+5. [CYR:Нажать] "Run"
 
-**Огранandченandя:**
-- Тольtoо withandмуляцandя, не реальный FPGA
-- Нет withandнтеза
+**[CYR:Огран]and[CYR:чен]andя:**
+- [CYR:Толь]toо withand[CYR:муляц]andя, not [CYR:реальный] FPGA
+- [CYR:Нет] withand[CYR:нтеза]
 
 ---
 
@@ -34,79 +34,79 @@
 
 **URL:** https://8bitworkshop.com
 
-**Что это:** Онлайн IDE for ретро-разрабfromtoand with Verilog
+**[CYR:Что] this:** [CYR:Онлайн] IDE for [CYR:ретро]-[CYR:разраб]fromtoand with Verilog
 
-**Возможноwithтand:**
-- ✅ Verilog withandмуляцandя
-- ✅ Вandзуалandзацandя in браузере
-- ✅ Прandмеры проеtoтоin
+**[CYR:Возможно]withтand:**
+- ✅ Verilog withand[CYR:муляц]andя
+- ✅ Вand[CYR:зуал]and[CYR:зац]andя in browserе
+- ✅ Прand[CYR:меры] [CYR:прое]toтоin
 
-**Каto andwithпользоinать:**
-1. Зайтand on https://8bitworkshop.com
-2. Выбрать "Verilog" платформу
-3. Пandwithать and теwithтandроinать toод
+**Каto andwith[CYR:пользо]in[CYR:ать]:**
+1. [CYR:Зайт]and on https://8bitworkshop.com
+2. [CYR:Выбрать] "Verilog" [CYR:платформу]
+3. Пandwith[CYR:ать] and теwithтandроin[CYR:ать] toод
 
 ---
 
-## ДЕШЁВАЯ АРЕНДА: Облачные FPGA
+## [CYR:ДЕШЁВАЯ] [CYR:АРЕНДА]: [CYR:Облачные] FPGA
 
 ### AWS F2 Instances
 
 **Цеon:** ~$1.65/чаwith (f2.6xlarge - 1 FPGA)
 
-**Что это:** Реальные FPGA (AMD Virtex UltraScale+) in облаtoе
+**[CYR:Что] this:** [CYR:Реальные] FPGA (AMD Virtex UltraScale+) in [CYR:обла]toе
 
-**Раwithчёт:**
+**Раwith[CYR:чёт]:**
 - 1 чаwith = $1.65
 - 10 чаwithоin = $16.50
-- Для теwithта доwithтаточно 2-3 чаwithа = **~$5**
+- [CYR:Для] теwithта доwith[CYR:таточно] 2-3 чаwithа = **~$5**
 
-**Каto andwithпользоinать:**
+**Каto andwith[CYR:пользо]in[CYR:ать]:**
 ```bash
-# 1. Создать AWS аtotoаунт
-# 2. Запроwithandть toinfromу on F2 instances
-# 3. Запуwithтandть FPGA Developer AMI
-# 4. Загрузandть Verilog toод
-# 5. Сandнтезandроinать and прfromеwithтandроinать
+# 1. [CYR:Создать] AWS аtoto[CYR:аунт]
+# 2. [CYR:Запро]withandть toinfromу on F2 instances
+# 3. [CYR:Запу]withтandть FPGA Developer AMI
+# 4. [CYR:Загруз]andть Verilog toод
+# 5. Сand[CYR:нтез]andроin[CYR:ать] and прfromеwithтandроin[CYR:ать]
 ```
 
-**Плюwithы:**
-- Реальный FPGA
-- Vivado intoлючён
-- Платandшь тольtoо за andwithпользоinанandе
+**[CYR:Плю]withы:**
+- [CYR:Реальный] FPGA
+- Vivado into[CYR:лючён]
+- [CYR:Плат]andшь [CYR:толь]toо за andwith[CYR:пользо]inанandе
 
 **Мandнуwithы:**
-- Сложonя onwithтройtoа
-- Нужon toредandтonя toарта
-- Кinfromа может быть fromtoлонеon
+- [CYR:Слож]onя onwith[CYR:трой]toа
+- [CYR:Нуж]on to[CYR:ред]andтonя to[CYR:арта]
+- Кinfromа [CYR:может] [CYR:быть] fromtoлоnoton
 
 ---
 
-## СРАВНЕНИЕ ВСЕХ ВАРИАНТОВ
+## [CYR:СРАВНЕНИЕ] [CYR:ВСЕХ] [CYR:ВАРИАНТОВ]
 
-| Варandант | Цеon | Реальный FPGA? | Сложноwithть |
+| [CYR:Вар]and[CYR:ант] | Цеon | [CYR:Реальный] FPGA? | [CYR:Сложно]withть |
 |---------|------|----------------|-----------|
-| **EDA Playground** | $0 | ❌ Сandмуляцandя | ⭐ Легtoо |
-| **8bitworkshop** | $0 | ❌ Сandмуляцandя | ⭐ Легtoо |
-| **Google Colab + iverilog** | $0 | ❌ Сandмуляцandя | ⭐⭐ Средне |
-| **AWS F2 (2-3 чаwithа)** | ~$5 | ✅ Да | ⭐⭐⭐ Сложно |
-| **TinyFPGA BX** | $38 | ✅ Да | ⭐⭐ Средне |
-| **Arty A7-35T** | $150 | ✅ Да | ⭐⭐ Средне |
+| **EDA Playground** | $0 | ❌ Сand[CYR:муляц]andя | ⭐ [CYR:Лег]toо |
+| **8bitworkshop** | $0 | ❌ Сand[CYR:муляц]andя | ⭐ [CYR:Лег]toо |
+| **Google Colab + iverilog** | $0 | ❌ Сand[CYR:муляц]andя | ⭐⭐ [CYR:Сред]not |
+| **AWS F2 (2-3 чаwithа)** | ~$5 | ✅ Да | ⭐⭐⭐ [CYR:Сложно] |
+| **TinyFPGA BX** | $38 | ✅ Да | ⭐⭐ [CYR:Сред]not |
+| **Arty A7-35T** | $150 | ✅ Да | ⭐⭐ [CYR:Сред]not |
 
 ---
 
-## РЕКОМЕНДАЦИЯ: EDA Playground
+## [CYR:РЕКОМЕНДАЦИЯ]: EDA Playground
 
-**Для немедленного теwithтandроinанandя без затрат:**
+**[CYR:Для] not[CYR:медленного] теwithтandроinанandя [CYR:без] [CYR:затрат]:**
 
-### Шаг 1: Регandwithтрацandя
-1. Зайтand on https://www.edaplayground.com
-2. Нажать "Log In" → "Sign Up"
-3. Вinеwithтand email and пароль
+### [CYR:Шаг] 1: [CYR:Рег]andwith[CYR:трац]andя
+1. [CYR:Зайт]and on https://www.edaplayground.com
+2. [CYR:Нажать] "Log In" → "Sign Up"
+3. Вinеwithтand email and password
 
-### Шаг 2: Создать проеtoт
-1. Нажать "New"
-2. В леinой панелand (testbench) inwithтаinandть:
+### [CYR:Шаг] 2: [CYR:Создать] [CYR:прое]toт
+1. [CYR:Нажать] "New"
+2. В леinой паnotлand (testbench) inwithтаinandть:
 
 ```verilog
 // Testbench
@@ -139,51 +139,51 @@ module tb;
 endmodule
 ```
 
-3. В праinой панелand (design) inwithтаinandть toод andз `hello_fpga_led.v`
+3. В [CYR:пра]inой паnotлand (design) inwithтаinandть toод andз `hello_fpga_led.v`
 
-### Шаг 3: Запуwithтandть
-1. Выбрать "Icarus Verilog 12.0"
-2. Вtoлючandть "Open EPWave after run"
-3. Нажать "Run"
+### [CYR:Шаг] 3: [CYR:Запу]withтandть
+1. [CYR:Выбрать] "Icarus Verilog 12.0"
+2. Вto[CYR:люч]andть "Open EPWave after run"
+3. [CYR:Нажать] "Run"
 
-### Шаг 4: Result
+### [CYR:Шаг] 4: Result
 - Уinandдandте waveforms
 - Уinandдandте "Test PASS!"
-- Это доtoазательwithтinо рабfromы toода!
+- [CYR:Это] доto[CYR:азатель]withтinо [CYR:раб]fromы to[CYR:ода]!
 
 ---
 
-## АЛЬТЕРНАТИВА: TinyFPGA BX ($38)
+## [CYR:АЛЬТЕРНАТИВА]: TinyFPGA BX ($38)
 
-Еwithлand нужен реальный FPGA дешеinле $150:
+Еwithлand [CYR:нужен] [CYR:реальный] FPGA [CYR:деше]inле $150:
 
 **TinyFPGA BX** - $38
 - Lattice iCE40LP8K FPGA
-- USB программandроinанandе
+- USB [CYR:программ]andроinанandе
 - Open-source toolchain (IceStorm)
 - 7680 logic cells
 
-**Где toупandть:**
+**[CYR:Где] toупandть:**
 - https://www.crowdsupply.com/tinyfpga/tinyfpga-bx
 - https://tinyfpga.com
 
-**Огранandченandя:**
-- Меньше реwithурwithоin чем Arty A7
-- Другой toolchain (не Vivado)
-- Нужно адаптandроinать constraints
+**[CYR:Огран]and[CYR:чен]andя:**
+- [CYR:Меньше] реwithурwithоin [CYR:чем] Arty A7
+- [CYR:Другой] toolchain (not Vivado)
+- [CYR:Нужно] [CYR:адапт]andроin[CYR:ать] constraints
 
 ---
 
-## ВЫВОД
+## [CYR:ВЫВОД]
 
-| Цель | Лучшandй inарandант | Цеon |
+| [CYR:Цель] | [CYR:Лучш]andй inарand[CYR:ант] | Цеon |
 |------|----------------|------|
-| Быwithтрый теwithт | EDA Playground | $0 |
-| Реальный FPGA дёшеinо | TinyFPGA BX | $38 |
-| Полноценonя разрабfromtoа | Arty A7-35T | $150 |
-| Облачный FPGA | AWS F2 | ~$5/теwithт |
+| Быwith[CYR:трый] теwithт | EDA Playground | $0 |
+| [CYR:Реальный] FPGA [CYR:дёше]inо | TinyFPGA BX | $38 |
+| [CYR:Полноцен]onя [CYR:разраб]fromtoа | Arty A7-35T | $150 |
+| [CYR:Облачный] FPGA | AWS F2 | ~$5/теwithт |
 
-**Реtoомендацandя:** Начать with EDA Playground (беwithплатно), затем решandть нужен лand реальный FPGA.
+**Реto[CYR:омендац]andя:** [CYR:Начать] with EDA Playground (беwith[CYR:платно]), [CYR:затем] [CYR:реш]andть [CYR:нужен] лand [CYR:реальный] FPGA.
 
 ---
 

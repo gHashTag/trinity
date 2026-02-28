@@ -245,7 +245,7 @@ New Behaviors:
   - getStats
 
 New Keywords:
-  - Russian: onпandшand, withоздай, inычandwithлand
+  - Russian: onпandшand, with[CYR:оздай], inычandwithлand
   - Chinese: 写, 创建, 计算
 ```
 

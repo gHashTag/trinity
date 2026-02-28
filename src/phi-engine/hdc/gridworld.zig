@@ -1,12 +1,12 @@
-//! GridWorld - Клаwithwithandчеwithtoая withреyes for testandроinанandя RL agentоin
+//! GridWorld - [CYR:Кла]withwithandчеwithtoая withреyes for testandроinанandя RL agentоin
 //!
-//! Сетtoа NxN with:
-//! - Стартоinая byзandцandя (0,0)
-//! - Цель (N-1, N-1) with onграbeforeй +10
-//! - Стены (опцandоonльно)
-//! - Награyes -0.1 за each шаг
+//! [CYR:Сет]toа NxN with:
+//! - [CYR:Старто]inая byзandцandя (0,0)
+//! - [CYR:Цель] (N-1, N-1) with on[CYR:гра]beforeй +10
+//! - [CYR:Стены] ([CYR:опц]andоon[CYR:льно])
+//! - [CYR:Награ]yes -0.1 за each step
 //!
-//! Дейwithтinandя: UP=0, RIGHT=1, DOWN=2, LEFT=3
+//! [CYR:Дей]withтinandя: UP=0, RIGHT=1, DOWN=2, LEFT=3
 //!
 //! φ² + 1/φ² = 3 | TRINITY
 
@@ -38,7 +38,7 @@ pub const NUM_ACTIONS: usize = 4;
 // TYPES
 // ═══════════════════════════════════════════════════════════════
 
-/// Позandцandя on withетtoе
+/// [CYR:Поз]andцandя on withетtoе
 pub const Position = struct {
     x: usize,
     y: usize,
@@ -60,7 +60,7 @@ pub const StepResult = struct {
     info: []const u8,
 };
 
-/// Конфandгурацandя GridWorld
+/// [CYR:Конф]and[CYR:гурац]andя GridWorld
 pub const GridWorldConfig = struct {
     width: usize = 4,
     height: usize = 4,
@@ -70,7 +70,7 @@ pub const GridWorldConfig = struct {
     max_steps: usize = 100,
 };
 
-/// Среyes GridWorld
+/// [CYR:Сре]yes GridWorld
 pub const GridWorld = struct {
     config: GridWorldConfig,
     width: usize,
@@ -104,7 +104,7 @@ pub const GridWorld = struct {
         self.allocator.free(self.walls);
     }
 
-    /// Сброwithandть withреду
+    /// [CYR:Сбро]withandть with[CYR:реду]
     pub fn reset(self: *GridWorld) usize {
         self.agent_pos = .{ .x = 0, .y = 0 };
         self.steps = 0;
@@ -112,17 +112,17 @@ pub const GridWorld = struct {
         return self.getState();
     }
 
-    /// Получandть теtoущее withоwithтоянandе (index)
+    /// [CYR:Получ]andть теto[CYR:ущее] withоwith[CYR:тоян]andе (index)
     pub fn getState(self: *const GridWorld) usize {
         return self.agent_pos.toIndex(self.width);
     }
 
-    /// Колandчеwithтinо withоwithтоянandй
+    /// [CYR:Кол]andчеwithтinо withоwith[CYR:тоян]andй
     pub fn numStates(self: *const GridWorld) usize {
         return self.width * self.height;
     }
 
-    /// Выbyлнandть дейwithтinandе
+    /// Выbyлнandть [CYR:дей]withтinandе
     pub fn step(self: *GridWorld, action: usize) StepResult {
         self.steps += 1;
 
@@ -143,13 +143,13 @@ pub const GridWorld = struct {
             },
         }
 
-        // Check withтену
+        // Check with[CYR:тену]
         const new_idx = new_pos.toIndex(self.width);
         var reward = self.config.step_reward;
         var info: []const u8 = "step";
 
         if (self.walls[new_idx]) {
-            // Врезалandwithь in withтену - оwithтаёмwithя on меwithте
+            // [CYR:Врезал]andwithь in with[CYR:тену] - оwith[CYR:таём]withя on меwithте
             reward = self.config.wall_reward;
             info = "wall";
         } else {
@@ -164,7 +164,7 @@ pub const GridWorld = struct {
             info = "goal";
         }
 
-        // Check лandмandт шагоin
+        // Check лandмandт stepоin
         if (self.steps >= self.config.max_steps) {
             done = true;
             info = "timeout";
@@ -180,7 +180,7 @@ pub const GridWorld = struct {
         };
     }
 
-    /// Добаinandть withтену
+    /// [CYR:Доба]inandть with[CYR:тену]
     pub fn addWall(self: *GridWorld, x: usize, y: usize) void {
         if (x < self.width and y < self.height) {
             const idx = y * self.width + x;
@@ -188,7 +188,7 @@ pub const GridWorld = struct {
         }
     }
 
-    /// Вandзуалandзацandя in ASCII
+    /// Вand[CYR:зуал]and[CYR:зац]andя in ASCII
     pub fn render(self: *const GridWorld) void {
         std.debug.print("\n", .{});
         for (0..self.height) |y| {
@@ -211,7 +211,7 @@ pub const GridWorld = struct {
         std.debug.print("Steps: {d}, Reward: {d:.2}\n", .{ self.steps, self.total_reward });
     }
 
-    /// Получandть оптandмальное раwithwithтоянandе before целand (Manhattan)
+    /// [CYR:Получ]andть [CYR:опт]and[CYR:мальное] раwithwith[CYR:тоян]andе before [CYR:цел]and (Manhattan)
     pub fn distanceToGoal(self: *const GridWorld) usize {
         const dx = if (self.agent_pos.x > self.goal_pos.x)
             self.agent_pos.x - self.goal_pos.x
@@ -228,7 +228,7 @@ pub const GridWorld = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// ТЕСТЫ
+// [CYR:ТЕСТЫ]
 // ═══════════════════════════════════════════════════════════════
 
 test "gridworld init" {
@@ -274,10 +274,10 @@ test "gridworld wall collision" {
     env.addWall(1, 0);
     _ = env.reset();
 
-    // Пытаемwithя byйтand in withтену
+    // [CYR:Пытаем]withя byйтand in with[CYR:тену]
     const result = env.step(@intFromEnum(Action.RIGHT));
 
-    try std.testing.expectEqual(@as(usize, 0), result.next_state); // Оwithталandwithь on меwithте
+    try std.testing.expectEqual(@as(usize, 0), result.next_state); // Оwith[CYR:тал]andwithь on меwithте
     try std.testing.expectEqual(@as(f64, -1.0), result.reward);
 }
 
@@ -287,8 +287,8 @@ test "gridworld boundary" {
     defer env.deinit();
 
     _ = env.reset();
-    // Пытаемwithя inыйтand за гранandцу
+    // [CYR:Пытаем]withя in[CYR:ыйт]and за [CYR:гран]andцу
     const result = env.step(@intFromEnum(Action.UP));
 
-    try std.testing.expectEqual(@as(usize, 0), result.next_state); // Оwithталandwithь on меwithте
+    try std.testing.expectEqual(@as(usize, 0), result.next_state); // Оwith[CYR:тал]andwithь on меwithте
 }

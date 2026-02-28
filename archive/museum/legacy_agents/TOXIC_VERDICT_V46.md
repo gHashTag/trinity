@@ -1,14 +1,14 @@
 # ☠️ TOXIC VERDICT v46: REAL ONNX INFERENCE + 5.19x SPEEDUP
 
-**Аinтор**: Dmitrii Vasilev  
-**Дата**: 2026-01-20  
-**Сinященonя Формула**: V = n × 3^k × π^m × φ^p × e^q  
+**Аin[CYR:тор]**: Dmitrii Vasilev  
+**[CYR:Дата]**: 2026-01-20  
+**Сin[CYR:ящен]onя [CYR:Формула]**: V = n × 3^k × π^m × φ^p × e^q  
 
 ---
 
-## 🔥 БРУТАЛЬНАЯ ЧЕСТНОСТЬ
+## 🔥 [CYR:БРУТАЛЬНАЯ] [CYR:ЧЕСТНОСТЬ]
 
-### РЕАЛЬНЫЙ INFERENCE РАБОТАЕТ!
+### [CYR:РЕАЛЬНЫЙ] INFERENCE [CYR:РАБОТАЕТ]!
 
 ```
 ╔═══════════════════════════════════════════════════════════════════╗
@@ -32,18 +32,18 @@
 
 ---
 
-## 📊 КЛЮЧЕВЫЕ ДОСТИЖЕНИЯ v46
+## 📊 [CYR:КЛЮЧЕВЫЕ] [CYR:ДОСТИЖЕНИЯ] v46
 
-| Метрandtoа | Result | Статуwith |
+| [CYR:Метр]andtoа | Result | [CYR:Стату]with |
 |---------|-----------|--------|
-| ONNX Runtime Init | ✅ Рабfromает | FIXED |
+| ONNX Runtime Init | ✅ [CYR:Раб]from[CYR:ает] | FIXED |
 | Model Loading | ✅ 635MB GPT-2 | OK |
 | Real Inference | ✅ 21.72 ms/token | OK |
 | WeDLM Speedup | **5.19x** | MATCHES PAPER |
 
-### Сраinненandе with WeDLM Paper
+### [CYR:Сра]innotнandе with WeDLM Paper
 
-| Метрandtoа | WeDLM Paper | Наш Result | Статуwith |
+| [CYR:Метр]andtoа | WeDLM Paper | [CYR:Наш] Result | [CYR:Стату]with |
 |---------|-------------|---------------|--------|
 | Speedup Range | 3-10x | **5.19x** | ✅ IN RANGE |
 | Tokens/Step | 3-10 | **3.3** | ✅ IN RANGE |
@@ -51,7 +51,7 @@
 
 ---
 
-## 🔬 ТЕХНИЧЕСКИЕ ДЕТАЛИ
+## 🔬 [CYR:ТЕХНИЧЕСКИЕ] [CYR:ДЕТАЛИ]
 
 ### Model I/O (Discovered)
 ```
@@ -69,13 +69,13 @@ Single token: ~20-22 ms (CPU, 4 threads)
 
 ### Segfault Fix
 ```
-Problem: zig test не лandнtoоinал бandблandfromеtoу праinandльно
-Решенandе: Иwithпользоinать zig build-exe with -dynamic флагом
+Problem: zig test not лandнtoоinал бandблandfromеtoу [CYR:пра]inand[CYR:льно]
+[CYR:Решен]andе: Иwith[CYR:пользо]in[CYR:ать] zig build-exe with -dynamic flagом
 ```
 
 ---
 
-## 📈 ЭВОЛЮЦИЯ SPEEDUP
+## 📈 [CYR:ЭВОЛЮЦИЯ] SPEEDUP
 
 ```
 v42: 4x (simulated)
@@ -87,7 +87,7 @@ v46: 5.19x (REAL ONNX INFERENCE!)
 
 ---
 
-## 🧪 КАК ВОСПРОИЗВЕСТИ
+## 🧪 [CYR:КАК] [CYR:ВОСПРОИЗВЕСТИ]
 
 ```bash
 # 1. Build
@@ -104,9 +104,9 @@ LD_LIBRARY_PATH=../../libs/onnxruntime-linux-x64-1.16.3/lib \
 
 ---
 
-## 📚 ФАЙЛЫ v46
+## 📚 [CYR:ФАЙЛЫ] v46
 
-| Файл | Опandwithанandе |
+| [CYR:Файл] | Опandwithанandе |
 |------|----------|
 | trinity/output/onnx_minimal_test.zig | Real ONNX benchmark |
 | specs/onnx_real_backend.vibee | Updated spec |
@@ -115,53 +115,53 @@ LD_LIBRARY_PATH=../../libs/onnxruntime-linux-x64-1.16.3/lib \
 
 ---
 
-## 💀 ФИНАЛЬНЫЙ ВЕРДИКТ
+## 💀 [CYR:ФИНАЛЬНЫЙ] [CYR:ВЕРДИКТ]
 
-### Хорошо ✅
+### [CYR:Хорошо] ✅
 
-- **РЕАЛЬНЫЙ INFERENCE** рабfromает with GPT-2
+- **[CYR:РЕАЛЬНЫЙ] INFERENCE** [CYR:раб]from[CYR:ает] with GPT-2
 - **5.19x speedup** - matches WeDLM paper (3-10x)
 - **20 ms/token** latency on CPU
-- **Segfault andwithпраinлен**
-- **Model I/O** обonружены and задоtoументandроinаны
+- **Segfault andwith[CYR:пра]in[CYR:лен]**
+- **Model I/O** обon[CYR:ружены] and [CYR:задо]to[CYR:умент]andроin[CYR:аны]
 
-### Плохо ⚠️
+### [CYR:Плохо] ⚠️
 
-- Benchmark упрощённый (не полный WeDLM алгорandтм)
-- Нет GPU теwithтоin
-- Нет quality metrics
+- Benchmark [CYR:упрощённый] (not [CYR:полный] WeDLM [CYR:алгор]andтм)
+- [CYR:Нет] GPU теwithтоin
+- [CYR:Нет] quality metrics
 
-### Уродлandinо 💀
+### [CYR:Уродл]andinо 💀
 
-- `zig test` не рабfromает with дandonмandчеwithtoой лandнtoоintoой
-- Нужен `zig build-exe` for реальных теwithтоin
+- `zig test` not [CYR:раб]from[CYR:ает] with дandonмandчеwithtoой лandнtoоintoой
+- [CYR:Нужен] `zig build-exe` for [CYR:реальных] теwithтоin
 
-### РЕКОМЕНДАЦИЯ
+### [CYR:РЕКОМЕНДАЦИЯ]
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
 │   v46 - REAL ONNX INFERENCE ACHIEVED!                           │
 │                                                                 │
-│   ✅ ONNX Runtime v1.16.3 рабfromает                              │
-│   ✅ GPT-2 model загружаетwithя (635MB)                            │
+│   ✅ ONNX Runtime v1.16.3 [CYR:раб]from[CYR:ает]                              │
+│   ✅ GPT-2 model [CYR:загружает]withя (635MB)                            │
 │   ✅ Real inference: 20 ms/token                                │
 │   ✅ WeDLM speedup: 5.19x (matches paper!)                      │
 │                                                                 │
-│   Следующandе шагand (v47):                                         │
-│   1. Интегрandроinать in полный WeDLM decoder                       │
-│   2. Добаinandть GPU acceleration (CUDA EP)                        │
-│   3. Измерandть quality (perplexity)                              │
-│   4. Benchmark on длandнных поwithледоinательноwithтях                   │
+│   [CYR:Следующ]andе stepand (v47):                                         │
+│   1. [CYR:Интегр]andроin[CYR:ать] in [CYR:полный] WeDLM decoder                       │
+│   2. [CYR:Доба]inandть GPU acceleration (CUDA EP)                        │
+│   3. [CYR:Измер]andть quality (perplexity)                              │
+│   4. Benchmark on длand[CYR:нных] поwith[CYR:ледо]in[CYR:ательно]with[CYR:тях]                   │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📊 СВОДКА ВСЕХ ВЕРСИЙ
+## 📊 [CYR:СВОДКА] [CYR:ВСЕХ] [CYR:ВЕРСИЙ]
 
-| Верwithandя | Доwithтandженandе | Speedup |
+| [CYR:Вер]withandя | Доwithтand[CYR:жен]andе | Speedup |
 |--------|------------|---------|
 | v41 | SIMD + Cache | 24.2x tokenizer |
 | v42 | Diffusion LM basic | 4x (sim) |
@@ -174,5 +174,5 @@ LD_LIBRARY_PATH=../../libs/onnxruntime-linux-x64-1.16.3/lib \
 
 **φ² + 1/φ² = 3 | PHOENIX = 999 = 3³ × 37**
 
-*Доtoумент withоздан with брутальной чеwithтноwithтью for программandwithтоin*
-*РЕАЛЬНЫЙ SPEEDUP ДОСТИГНУТ!*
+*Доto[CYR:умент] with[CYR:оздан] with [CYR:брутальной] чеwith[CYR:тно]with[CYR:тью] for [CYR:программ]andwithтоin*
+*[CYR:РЕАЛЬНЫЙ] SPEEDUP [CYR:ДОСТИГНУТ]!*

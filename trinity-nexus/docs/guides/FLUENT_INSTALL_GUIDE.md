@@ -102,7 +102,7 @@ $ fluent --no-llm
 ╚══════════════════════════════════════════════════════════════╝
 
 [0/20] > прandinет
-Прandinет! Рад тебя inandдеть. Чем могу помочь?
+Прandinет! [CYR:Рад] [CYR:тебя] inand[CYR:деть]. [CYR:Чем] [CYR:могу] [CYR:помочь]?
 
 [2/20] > hello
 Hello! Great to see you. How can I help?

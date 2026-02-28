@@ -16,6 +16,6 @@ behaviors:
   - name: detect_list_operation_hotspot
   - name: suggest_algorithm_optimization
   - name: apply_list_comprehension
-  - name: "Оптимизация списков"
-  - name: "Оптимизация алгоритма"
-  - name: "Оптимизация памяти"
+  - name: "[CYR:Опт]andмfromацandя withпandwithкоin"
+  - name: "[CYR:Опт]andмfromацandя [CYR:алгор]and[CYR:тма]"
+  - name: "[CYR:Опт]andмfromацandя [CYR:памят]and"

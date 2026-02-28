@@ -12,11 +12,11 @@
 
 ```
 ✅ CORRECT PIPELINE:
-specs/tri/*.vibee → trinity/ЦАРСТВО/.../*.tri → trinity/output/*.zig
+specs/tri/*.vibee → trinity/[CYR:ЦАРСТВО]/.../*.tri → trinity/output/*.zig
 
 Files created:
 - specs/tri/pas_daemons_v2.vibee (specification)
-- trinity/ЦАРСТВО/ⲘⲈⲆⲚⲞⲈ/ⲧⲣⲓ/ⲡⲁⲥ_ⲇⲁⲉⲙⲟⲛⲥ.tri (with ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ block)
+- trinity/[CYR:ЦАРСТВО]/ⲘⲈⲆⲚⲞⲈ/ⲧⲣⲓ/ⲡⲁⲥ_ⲇⲁⲉⲙⲟⲛⲥ.tri (with ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ block)
 - trinity/output/pas_daemons.zig (extracted, 8/8 tests pass)
 ```
 
@@ -248,7 +248,7 @@ Memory:  20x more (200 MB vs 10 MB)
 vim specs/tri/feature.vibee
 
 # Create .tri with ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ block
-vim trinity/ЦАРСТВО/ⲘⲈⲆⲚⲞⲈ/ⲧⲣⲓ/feature.tri
+vim trinity/[CYR:ЦАРСТВО]/ⲘⲈⲆⲚⲞⲈ/ⲧⲣⲓ/feature.tri
 
 # Extract .zig to output
 # (copy ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ content to trinity/output/feature.zig)

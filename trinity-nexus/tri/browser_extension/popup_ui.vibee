@@ -1,5 +1,5 @@
 # Browser Extension Popup UI Specification
-# Generates popup interface for ЖАР ПТИЦА
+# Generates popup interface for [CYR:ЖАР] [CYR:ПТИЦА]
 # φ² + 1/φ² = 3 = TRINITY
 
 name: firebird_popup
@@ -8,23 +8,23 @@ language: zig
 module: popup_ui
 
 description: |
-  Popup UI для browser extension.
-  Отображает evasion метрики, управление профилями, $TRI rewards.
+  Popup UI for browser extension.
+  [CYR:Отображает] evasion [CYR:метр]andкand, control [CYR:проф]and[CYR:лям]and, $TRI rewards.
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# UI КОМПОНЕНТЫ
+# UI [CYR:КОМПОНЕНТЫ]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 components:
   Header:
-    description: "Заголовок с логотипом и статусом"
+    description: "[CYR:Заголо]inок with [CYR:лого]typeом and with[CYR:тату]withом"
     elements:
-      - logo: "ЖАР ПТИЦА 🔥"
+      - logo: "[CYR:ЖАР] [CYR:ПТИЦА] 🔥"
       - status_indicator: NodeStatus
       - version: "v1.0.0"
 
   EvasionPanel:
-    description: "Панель управления evasion"
+    description: "Паnotль [CYR:упра]in[CYR:лен]andя evasion"
     elements:
       - toggle_enabled: Bool
       - similarity_display: Float
@@ -33,7 +33,7 @@ components:
       - detection_risk: String
 
   ProfileSelector:
-    description: "Выбор и управление профилями"
+    description: "[CYR:Выбор] and control [CYR:проф]and[CYR:лям]and"
     elements:
       - current_profile: String
       - profile_list: List<ProfileItem>
@@ -41,7 +41,7 @@ components:
       - delete_button: Button
 
   NavigationPanel:
-    description: "Виртуальная навигация"
+    description: "Вand[CYR:ртуаль]onя oninand[CYR:гац]andя"
     elements:
       - steps_completed: Int
       - current_similarity: Float
@@ -49,7 +49,7 @@ components:
       - reset_button: Button
 
   DePINPanel:
-    description: "DePIN и $TRI rewards"
+    description: "DePIN and $TRI rewards"
     elements:
       - wallet_address: String
       - pending_tri: Float
@@ -58,7 +58,7 @@ components:
       - stake_button: Button
 
   FingerprintDetails:
-    description: "Детали текущего fingerprint"
+    description: "[CYR:Детал]and [CYR:текущего] fingerprint"
     elements:
       - canvas_hash: String
       - webgl_hash: String
@@ -83,17 +83,17 @@ layout:
     - FingerprintDetails (collapsible)
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# СТИЛИ (для генерации CSS)
+# [CYR:СТИЛИ] (for геnot[CYR:рац]andand CSS)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 styles:
   colors:
-    primary: "#FF6B35"      # Огненный оранжевый (Жар-Птица)
-    secondary: "#1A1A2E"    # Тёмный фон
-    accent: "#FFD700"       # Золотой ($TRI)
-    success: "#00FF88"      # Зелёный (evasion OK)
-    warning: "#FFB800"      # Жёлтый (risk)
-    danger: "#FF4444"       # Красный (detected)
+    primary: "#FF6B35"      # Огnot[CYR:нный] [CYR:оранже]inый ([CYR:Жар]-Птandца)
+    secondary: "#1A1A2E"    # [CYR:Тёмный] [CYR:фон]
+    accent: "#FFD700"       # [CYR:Золотой] ($TRI)
+    success: "#00FF88"      # [CYR:Зелёный] (evasion OK)
+    warning: "#FFB800"      # [CYR:Жёлтый] (risk)
+    danger: "#FF4444"       # [CYR:Кра]with[CYR:ный] (detected)
     text: "#FFFFFF"
     text_muted: "#888888"
 
@@ -109,7 +109,7 @@ styles:
     xl: 32
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# СОБЫТИЯ
+# [CYR:СОБЫТИЯ]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 events:
@@ -140,12 +140,12 @@ events:
     - show_notification
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ЛОКАЛИЗАЦИЯ
+# [CYR:ЛОКАЛИЗАЦИЯ]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 i18n:
   en:
-    title: "ЖАР ПТИЦА - Ternary Anti-Detect"
+    title: "[CYR:ЖАР] [CYR:ПТИЦА] - Ternary Anti-Detect"
     evasion_enabled: "Evasion Enabled"
     similarity: "Similarity"
     detection_risk: "Detection Risk"
@@ -156,12 +156,12 @@ i18n:
     earned: "Total Earned"
     
   ru:
-    title: "ЖАР ПТИЦА - Тернарный Anti-Detect"
-    evasion_enabled: "Evasion Включён"
-    similarity: "Схожесть"
-    detection_risk: "Риск Детекции"
-    generate_profile: "Создать Новый Профиль"
-    navigate: "Навигация"
-    claim_rewards: "Забрать $TRI"
-    pending: "Ожидает"
-    earned: "Всего Заработано"
+    title: "[CYR:ЖАР] [CYR:ПТИЦА] - [CYR:Тер]on[CYR:рный] Anti-Detect"
+    evasion_enabled: "Evasion Вkeyён"
+    similarity: "[CYR:Схоже]withть"
+    detection_risk: "Рandwithк [CYR:Детекц]andand"
+    generate_profile: "[CYR:Создать] Ноinый [CYR:Проф]andль"
+    navigate: "Наinand[CYR:гац]andя"
+    claim_rewards: "[CYR:Забрать] $TRI"
+    pending: "Ожand[CYR:дает]"
+    earned: "Вwith[CYR:его] [CYR:Заработано]"

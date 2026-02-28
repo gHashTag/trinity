@@ -1,14 +1,14 @@
 # LLM PROVIDER SPECIFICATION
-# Интерфейс для подключения Божественного Интеллекта
+# [CYR:Интерфей]with for [CYR:под]keyенandя [CYR:Боже]withтin[CYR:енного] [CYR:Интеллекта]
 
 ## 1. Provider Interface
 
 ```vibee
 interface LLMProvider {
-    // Основной метод генерации
+    // Оwithноin[CYR:ной] method геnot[CYR:рац]andand
     fn chat_completion(request: ChatRequest) -> Result<ChatResponse, ProviderError>;
     
-    // Проверка доступности
+    // [CYR:Про]in[CYR:ерка] доwith[CYR:тупно]withтand
     fn ping() -> bool;
 }
 ```

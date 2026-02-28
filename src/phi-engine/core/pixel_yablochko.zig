@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// TRINITY VM v15 ЯБЛОЧКО - Native Pixel Integration
-// "Катandwithь, toатandwithь, яблочtoо, by withеребряному блюдечtoу..."
+// TRINITY VM v15 [CYR:ЯБЛОЧКО] - Native Pixel Integration
+// "[CYR:Кат]andwithь, toатandwithь, [CYR:яблоч]toо, by with[CYR:еребряному] [CYR:блюдеч]toу..."
 // Generated from specs/trinity_vm_v15_yablochko.vibee
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -328,7 +328,7 @@ pub const GaussianRenderer = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ЯБЛОЧКО VM - Pixel Integration Core
+// [CYR:ЯБЛОЧКО] VM - Pixel Integration Core
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const YablochkoVM = struct {

@@ -283,7 +283,7 @@ pub const UnifiedApiServer = struct {
     }
 
     fn graphqlPlaygroundResponse(self: *const UnifiedApiServer) ![]const u8 {
-        // Monaco Editor GraphQL Playground - Pure JS (no React, no CORS issues)
+        // GraphiQL 5.x with ESM import maps - full-featured GraphQL IDE
         var buffer = std.ArrayList(u8).initCapacity(self.allocator, 8192) catch return error.OutOfMemory;
         try buffer.appendSlice(self.allocator,
             \\HTTP/1.1 200 OK
@@ -294,63 +294,39 @@ pub const UnifiedApiServer = struct {
             \\<html>
             \\<head>
             \\  <meta charset="utf-8"/>
-            \\  <title>TRINITY GraphQL Playground</title>
+            \\  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+            \\  <title>TRINITY GraphQL IDE — GraphiQL 5.x</title>
+            \\  <link rel="stylesheet" href="https://unpkg.com/graphiql@5.0.0/style.css" />
             \\  <style>
-            \\    * { box-sizing: border-box; }
-            \\    body { margin: 0; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace; background: #1e1e1e; color: #d4d4d4; }
-            \\    .toolbar { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; background: #252526; border-bottom: 1px solid #3c3c3c; }
-            \\    .toolbar h1 { margin: 0; font-size: 14px; color: #ffd700; }
-            \\    .toolbar button { background: #007acc; color: white; border: none; padding: 6px 16px; cursor: pointer; font-size: 12px; border-radius: 2px; }
-            \\    .toolbar button:hover { background: #0098ff; }
-            \\    .container { display: flex; height: calc(100vh - 45px); }
-            \\    .panel { flex: 1; display: flex; flex-direction: column; }
-            \\    .panel-header { padding: 8px 16px; background: #2d2d2d; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #858585; border-bottom: 1px solid #3c3c3c; }
-            \\    #query-editor, #result-editor { flex: 1; }
-            \\    .divider { width: 4px; background: #3c3c3c; cursor: col-resize; }
-            \\    .divider:hover { background: #007acc; }
-            \\    .history { position: fixed; top: 45px; right: 0; width: 250px; max-height: 300px; overflow-y: auto; background: #252526; border-left: 1px solid #3c3c3c; display: none; }
-            \\    .history.show { display: block; }
-            \\    .history-item { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #3c3c3c; font-size: 11px; }
-            \\    .history-item:hover { background: #2d2d2d; }
-            \\    .status { position: fixed; bottom: 10px; right: 10px; padding: 6px 12px; background: #252526; border-radius: 4px; font-size: 11px; }
-            \\    .status.success { border-left: 3px solid #4ec9b0; }
-            \\    .status.error { border-left: 3px solid #f48771; }
+            \\    body { margin: 0; height: 100vh; overflow: hidden; }
+            \\    #graphiql { height: 100vh; }
+            \\    .graphiql-container { --color-primary: #ffd700; }
             \\  </style>
+            \\  <script type="importmap">
+            \\  {
+            \\    "imports": {
+            \\      "react": "https://unpkg.com/react@18.2.0/+esm",
+            \\      "react-dom/client": "https://unpkg.com/react-dom@18.2.0/+esm",
+            \\      "graphiql": "https://unpkg.com/graphiql@5.0.0/+esm"
+            \\    }
+            \\  }
+            \\  </script>
             \\</head>
             \\<body>
-            \\  <div class="toolbar">
-            \\    <h1>TRINITY GraphQL Playground φ² + 1/φ² = 3</h1>
-            \\    <div>
-            \\      <button onclick="runQuery()">▶ Run (Ctrl+Enter)</button>
-            \\      <button onclick="toggleHistory()">📜 History</button>
-            \\      <button onclick="clearResult()">Clear</button>
-            \\    </div>
-            \\  </div>
-            \\  <div class="container">
-            \\    <div class="panel">
-            \\      <div class="panel-header">Query</div>
-            \\      <div id="query-editor"></div>
-            \\    </div>
-            \\    <div class="divider"></div>
-            \\    <div class="panel">
-            \\      <div class="panel-header">Result</div>
-            \\      <div id="result-editor"></div>
-            \\    </div>
-            \\  </div>
-            \\  <div id="history" class="history"></div>
-            \\  <div id="status" class="status" style="display:none"></div>
-            \\  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
-            \\  <script>
-            \\    let queryEditor, resultEditor;
-            \\    let queryHistory = [];
+            \\  <div id="graphiql">Loading TRINITY GraphQL IDE...</div>
+            \\  <script type="module">
+            \\    import { GraphiQL } from 'graphiql';
+            \\    import { createRoot } from 'react-dom/client';
             \\
-            \\    require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
+            \\    const fetcher = (graphQLParams) =>
+            \\      fetch('/graphql', {
+            \\        method: 'POST',
+            \\        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            \\        body: JSON.stringify(graphQLParams)
+            \\      }).then(res => res.json());
             \\
-            \\    require(['vs/editor/editor.main'], function() {
-            \\      // Query editor with GraphQL syntax highlighting
-            \\      queryEditor = monaco.editor.create(document.getElementById('query-editor'), {
-            \\        value: `# TRINITY GraphQL API
-            \\# Press Ctrl+Enter to execute
+            \\    const defaultQuery = `# TRINITY GraphQL API — φ² + 1/φ² = 3
+            \\# Press Ctrl+Enter to execute • Click Docs button for schema
             \\
             \\{
             \\  commands {
@@ -360,16 +336,19 @@ pub const UnifiedApiServer = struct {
             \\  }
             \\}
             \\
-            \\# Explore TRINITY GraphQL API:
+            \\# ────────────────────────────────────────────────────────────────
+            \\# Available Queries:
             \\#
-            \\# 📊 Data & Stats:
-            \\# { stats { commands_count protocols endpoints { rest graphql } } }
+            \\# 📊 System Stats:
+            \\# { stats { comms_count protocols endpoints { rest graphql } } }
+            \\#
+            \\# 📈 Server Status:
             \\# { status { healthy connections uptime } }
             \\#
             \\# 📐 Sacred Mathematics:
-            \\# { sacred { phi phi_sq trinity pi e golden_angle } }
+            \\# { sacred { phi phi_sq trinity pi e golden_angle lucas_2 } }
             \\#
-            \\# 📚 Documentation:
+            \\# 📚 Documentation Links:
             \\# { docs { title url category } }
             \\#
             \\# 🔧 Version Info:
@@ -377,100 +356,16 @@ pub const UnifiedApiServer = struct {
             \\#
             \\# 🔍 Introspection:
             \\# { __type(name: "Command") { fields { name description } } }
-            \\# { __schema { types { name } } }`,
-            \\        language: 'graphql',
-            \\        theme: 'vs-dark',
-            \\        automaticLayout: true,
-            \\        fontSize: 13,
-            \\        fontFamily: "'SF Mono', 'Monaco', monospace",
-            \\        minimap: { enabled: false },
-            \\        scrollBeyondLastLine: false,
-            \\        wordWrap: 'on',
-            \\        lineNumbers: 'on',
-            \\        padding: { top: 10 }
-            \\      });
+            \\# { __schema { types { name } } }
+            \\# ────────────────────────────────────────────────────────────────`;
             \\
-            \\      // Result editor (read-only JSON)
-            \\      resultEditor = monaco.editor.create(document.getElementById('result-editor'), {
-            \\        value: '// Results will appear here after running a query...',
-            \\        language: 'json',
-            \\        theme: 'vs-dark',
-            \\        automaticLayout: true,
-            \\        readOnly: true,
-            \\        fontSize: 12,
-            \\        fontFamily: "'SF Mono', 'Monaco', monospace",
-            \\        minimap: { enabled: false },
-            \\        scrollBeyondLastLine: false,
-            \\        wordWrap: 'on',
-            \\        lineNumbers: 'on'
-            \\      });
-            \\
-            \\      // Register Ctrl+Enter shortcut
-            \\      queryEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, runQuery);
-            \\    });
-            \\
-            \\    async function runQuery() {
-            \\      const query = queryEditor.getValue();
-            \\      const startTime = performance.now();
-            \\      showStatus('Running...', 'success');
-            \\
-            \\      try {
-            \\        const response = await fetch('/graphql', {
-            \\          method: 'POST',
-            \\          headers: { 'Content-Type': 'application/json' },
-            \\          body: JSON.stringify({ query })
-            \\        });
-            \\        const data = await response.json();
-            \\        const elapsed = Math.round(performance.now() - startTime);
-            \\
-            \\        // Format JSON result
-            \\        const formatted = JSON.stringify(data, null, 2);
-            \\        resultEditor.setValue(formatted);
-            \\        showStatus(`Success in ${elapsed}ms`, 'success');
-            \\
-            \\        // Add to history
-            \\        addToHistory(query.substring(0, 50) + (query.length > 50 ? '...' : ''));
-            \\      } catch (err) {
-            \\        resultEditor.setValue(JSON.stringify({ error: err.message }, null, 2));
-            \\        showStatus('Error: ' + err.message, 'error');
-            \\      }
-            \\    }
-            \\
-            \\    function showStatus(message, type) {
-            \\      const status = document.getElementById('status');
-            \\      status.textContent = message;
-            \\      status.className = 'status ' + type;
-            \\      status.style.display = 'block';
-            \\      setTimeout(() => status.style.display = 'none', 3000);
-            \\    }
-            \\
-            \\    function addToHistory(query) {
-            \\      if (!queryHistory.includes(query)) {
-            \\        queryHistory.unshift(query);
-            \\        if (queryHistory.length > 10) queryHistory.pop();
-            \\        renderHistory();
-            \\      }
-            \\    }
-            \\
-            \\    function renderHistory() {
-            \\      const history = document.getElementById('history');
-            \\      history.innerHTML = queryHistory.map((q, i) =>
-            \\        `<div class="history-item" onclick="loadHistory(${i})">${q}</div>`
-            \\      ).join('');
-            \\    }
-            \\
-            \\    function loadHistory(index) {
-            \\      queryEditor.setValue(queryHistory[index] || '');
-            \\      document.getElementById('history').classList.remove('show');
-            \\    }
-            \\
-            \\    function toggleHistory() {
-            \\      document.getElementById('history').classList.toggle('show');
-            \\    }
-            \\
-            \\    function clearResult() {
-            \\      resultEditor.setValue('// Cleared');
-            \\    }
+            \\    const root = createRoot(document.getElementById('graphiql'));
+            \\    root.render(GraphiQL({
+            \\      fetcher,
+            \\      defaultQuery,
+            \\      isHeadersEditorEnabled: true,
+            \\      shouldPersistHeaders: true
+            \\    }));
             \\  </script>
             \\</body>
             \\</html>

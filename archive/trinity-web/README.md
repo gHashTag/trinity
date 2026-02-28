@@ -46,12 +46,12 @@ Data structures optimized by Golden Ratio. Scientific visualization with Apple-s
 | Agents | AI agent arena |
 | Multi | Multiverse visualization |
 | Beings | Quantum beings |
-| Яблочtoо | Russian folklore module |
+| [CYR:Яблоч]toо | Russian folklore module |
 | Cinema | 4D cinema visualization |
 | LLM | LLM architecture |
-| Матрёшtoа | Nested architecture |
-| Богатырand | 33 heroes module |
-| Жар-птandца | Phoenix evolution |
+| [CYR:Матрёш]toа | Nested architecture |
+| [CYR:Богатыр]and | 33 heroes module |
+| [CYR:Жар]-птandца | Phoenix evolution |
 | Languages | 10 language support |
 
 ## Tech Stack
@@ -104,7 +104,7 @@ V = n × 3^k × π^m × φ^p × e^q
 Where:
 - φ = 1.618033988749895 (Golden Ratio)
 - φ² + 1/φ² = 3 (Golden Identity)
-- 3 = ТРОИЦА (Trinity)
+- 3 = [CYR:ТРОИЦА] (Trinity)
 ```
 
 ## Real Benchmark Results (v21.φ)

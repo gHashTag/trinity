@@ -378,7 +378,7 @@ tests:
     then: Returns conversation
 
   - name: test_classify_russian
-    given: "Напиши функцию сортировки"
+    given: "[CYR:Нап]andшand [CYR:функц]andю with[CYR:орт]andроinкand"
     then: Returns code_generation, language russian
 
   - name: test_classify_chinese

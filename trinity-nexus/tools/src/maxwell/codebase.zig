@@ -1,5 +1,5 @@
 // Maxwell Daemon - Codebase Interface
-// Интерфейwith for inзаandмодейwithтinandя агента with toодоinой базой
+// [CYR:Интерфей]with for inзаand[CYR:модей]withтinandя [CYR:агента] with to[CYR:одо]inой [CYR:базой]
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -9,14 +9,14 @@ const std = @import("std");
 // CODEBASE INTERFACE
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Result операцandand with файлом
+/// Result [CYR:операц]andand with fileом
 pub const FileResult = struct {
     success: bool,
     content: ?[]const u8,
     error_msg: ?[]const u8,
 };
 
-/// Result inыполненandя toоманды
+/// Result in[CYR:ыпол]notнandя to[CYR:оманды]
 pub const ExecResult = struct {
     exit_code: i32,
     stdout: []const u8,
@@ -24,7 +24,7 @@ pub const ExecResult = struct {
     duration_ms: u64,
 };
 
-/// Информацandя о файле
+/// [CYR:Информац]andя о fileе
 pub const FileInfo = struct {
     path: []const u8,
     size: u64,
@@ -32,7 +32,7 @@ pub const FileInfo = struct {
     modified_time: i128,
 };
 
-/// Тandп andзмененandя in diff
+/// Тandп and[CYR:зме]notнandя in diff
 pub const DiffType = enum {
     Added,
     Removed,
@@ -40,22 +40,22 @@ pub const DiffType = enum {
     Unchanged,
 };
 
-/// Строtoа diff
+/// [CYR:Стро]toа diff
 pub const DiffLine = struct {
     line_num: u32,
     diff_type: DiffType,
     content: []const u8,
 };
 
-/// Интерфейwith for рабfromы with toодоinой базой
+/// [CYR:Интерфей]with for [CYR:раб]fromы with to[CYR:одо]inой [CYR:базой]
 pub const Codebase = struct {
     allocator: std.mem.Allocator,
     root_path: []const u8,
     
-    // Кэш прочandтанных файлоin
+    // [CYR:Кэш] [CYR:проч]and[CYR:танных] fileоin
     file_cache: std.StringHashMap([]const u8),
     
-    // Иwithторandя andзмененandй for fromtoата
+    // Иwith[CYR:тор]andя and[CYR:зме]notнandй for fromto[CYR:ата]
     change_history: std.ArrayList(Change),
     
     const Change = struct {
@@ -94,9 +94,9 @@ pub const Codebase = struct {
     // READ OPERATIONS
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Прочandтать файл
+    /// [CYR:Проч]and[CYR:тать] file
     pub fn readFile(self: *Codebase, path: []const u8) FileResult {
-        // Проinерandть toэш
+        // [CYR:Про]inерandть toэш
         if (self.file_cache.get(path)) |cached| {
             return FileResult{
                 .success = true,
@@ -105,7 +105,7 @@ pub const Codebase = struct {
             };
         }
 
-        // Поwithтроandть полный путь
+        // Поwith[CYR:тро]andть [CYR:полный] path
         const full_path = std.fs.path.join(self.allocator, &[_][]const u8{ self.root_path, path }) catch {
             return FileResult{
                 .success = false,
@@ -115,7 +115,7 @@ pub const Codebase = struct {
         };
         defer self.allocator.free(full_path);
 
-        // Прочandтать файл
+        // [CYR:Проч]and[CYR:тать] file
         const file = std.fs.cwd().openFile(full_path, .{}) catch {
             return FileResult{
                 .success = false,
@@ -150,7 +150,7 @@ pub const Codebase = struct {
             };
         };
 
-        // Кэшandроinать
+        // [CYR:Кэш]andроin[CYR:ать]
         const path_copy = self.allocator.dupe(u8, path) catch {
             self.allocator.free(content);
             return FileResult{
@@ -168,7 +168,7 @@ pub const Codebase = struct {
         };
     }
 
-    /// Получandть withпandwithоto файлоin in дandреtoторandand
+    /// [CYR:Получ]andть withпandwithоto fileоin in дandреto[CYR:тор]andand
     pub fn listFiles(self: *Codebase, dir_path: []const u8, pattern: ?[]const u8) !std.ArrayList(FileInfo) {
         var result = std.ArrayList(FileInfo).init(self.allocator);
 
@@ -182,7 +182,7 @@ pub const Codebase = struct {
 
         var iter = dir.iterate();
         while (try iter.next()) |entry| {
-            // Фandльтр по паттерну
+            // Фand[CYR:льтр] по [CYR:паттерну]
             if (pattern) |p| {
                 if (!matchPattern(entry.name, p)) continue;
             }
@@ -199,7 +199,7 @@ pub const Codebase = struct {
         return result;
     }
 
-    /// Найтand файлы по паттерну реtoурwithandinно
+    /// [CYR:Найт]and fileы по [CYR:паттерну] реtoурwithandinно
     pub fn findFiles(self: *Codebase, pattern: []const u8) !std.ArrayList([]const u8) {
         var result = std.ArrayList([]const u8).init(self.allocator);
         try self.findFilesRecursive("", pattern, &result);
@@ -245,15 +245,15 @@ pub const Codebase = struct {
     // WRITE OPERATIONS
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Запandwithать файл
+    /// [CYR:Зап]andwith[CYR:ать] file
     pub fn writeFile(self: *Codebase, path: []const u8, content: []const u8) FileResult {
-        // Сохранandть withтарое withодержandмое for andwithторandand
+        // [CYR:Сохран]andть with[CYR:тарое] with[CYR:одерж]and[CYR:мое] for andwith[CYR:тор]andand
         const old_content = if (self.file_cache.get(path)) |cached|
             self.allocator.dupe(u8, cached) catch null
         else
             null;
 
-        // Поwithтроandть полный путь
+        // Поwith[CYR:тро]andть [CYR:полный] path
         const full_path = std.fs.path.join(self.allocator, &[_][]const u8{ self.root_path, path }) catch {
             return FileResult{
                 .success = false,
@@ -263,12 +263,12 @@ pub const Codebase = struct {
         };
         defer self.allocator.free(full_path);
 
-        // Создать дandреtoторandand еwithлand нужно
+        // [CYR:Создать] дandреto[CYR:тор]andand еwithлand [CYR:нужно]
         if (std.fs.path.dirname(full_path)) |dir| {
             std.fs.cwd().makePath(dir) catch {};
         }
 
-        // Запandwithать файл
+        // [CYR:Зап]andwith[CYR:ать] file
         const file = std.fs.cwd().createFile(full_path, .{}) catch {
             return FileResult{
                 .success = false,
@@ -286,7 +286,7 @@ pub const Codebase = struct {
             };
         };
 
-        // Обноinandть toэш
+        // [CYR:Обно]inandть toэш
         const content_copy = self.allocator.dupe(u8, content) catch {
             return FileResult{
                 .success = false,
@@ -310,7 +310,7 @@ pub const Codebase = struct {
             self.file_cache.put(path_copy, content_copy) catch {};
         }
 
-        // Запandwithать in andwithторandю
+        // [CYR:Зап]andwith[CYR:ать] in andwith[CYR:тор]andю
         self.change_history.append(Change{
             .path = self.allocator.dupe(u8, path) catch path,
             .old_content = old_content,
@@ -325,7 +325,7 @@ pub const Codebase = struct {
         };
     }
 
-    /// Удалandть файл
+    /// [CYR:Удал]andть file
     pub fn deleteFile(self: *Codebase, path: []const u8) FileResult {
         const full_path = std.fs.path.join(self.allocator, &[_][]const u8{ self.root_path, path }) catch {
             return FileResult{
@@ -344,7 +344,7 @@ pub const Codebase = struct {
             };
         };
 
-        // Удалandть andз toэша
+        // [CYR:Удал]andть andз to[CYR:эша]
         if (self.file_cache.fetchRemove(path)) |kv| {
             self.allocator.free(kv.value);
         }
@@ -356,7 +356,7 @@ pub const Codebase = struct {
         };
     }
 
-    /// Отtoатandть поwithледнее andзмененandе
+    /// Отtoатandть поwith[CYR:лед]notе and[CYR:зме]notнandе
     pub fn undo(self: *Codebase) FileResult {
         if (self.change_history.items.len == 0) {
             return FileResult{
@@ -379,7 +379,7 @@ pub const Codebase = struct {
     // EXECUTE OPERATIONS
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Выполнandть toоманду
+    /// [CYR:Выполн]andть to[CYR:оманду]
     pub fn exec(self: *Codebase, command: []const u8, args: []const []const u8) ExecResult {
         const start_time = std.time.milliTimestamp();
 
@@ -438,17 +438,17 @@ pub const Codebase = struct {
         };
     }
 
-    /// Запуwithтandть теwithты
+    /// [CYR:Запу]withтandть теwithты
     pub fn runTests(self: *Codebase, test_path: []const u8) ExecResult {
         return self.exec("zig", &[_][]const u8{ "test", test_path });
     }
 
-    /// Запуwithтandть vibee gen
+    /// [CYR:Запу]withтandть vibee gen
     pub fn runVibeeGen(self: *Codebase, spec_path: []const u8) ExecResult {
         return self.exec("./bin/vibee", &[_][]const u8{ "gen", spec_path });
     }
 
-    /// Запуwithтandть git toоманду
+    /// [CYR:Запу]withтandть git to[CYR:оманду]
     pub fn git(self: *Codebase, args: []const []const u8) ExecResult {
         return self.exec("git", args);
     }

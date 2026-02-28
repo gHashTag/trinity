@@ -1,12 +1,12 @@
 name: example_plugin
-# Example Plugin - Пример плагина с Canvas UI и документацией
+# Example Plugin - Прand[CYR:мер] [CYR:плаг]andon with Canvas UI and [CYR:документац]andей
 
 module: honeycomb/ui/plugin_system/example_plugin
 version: 1.0.0
-description: Пример плагина демонстрирующий Canvas UI и обязательные компоненты
+description: Прand[CYR:мер] [CYR:плаг]andon demoнwithтрand[CYR:рующ]andй Canvas UI and [CYR:обязательные] componentы
 
 types:
-  # Состояние плагина
+  # Соwith[CYR:тоян]andе [CYR:плаг]andon
   ExampleState:
     counter: Int
     color: Color
@@ -19,24 +19,24 @@ types:
     a: Int
 
 functions:
-  # Создание манифеста плагина
+  # [CYR:Создан]andе [CYR:ман]andфеwithта [CYR:плаг]andon
   manifest:
     params: []
     returns: PluginManifest
-    description: Возвращает манифест плагина
+    description: [CYR:Воз]in[CYR:ращает] [CYR:ман]andфеwithт [CYR:плаг]andon
     implementation: |
       PluginManifest(
-        # Идентификация
+        # [CYR:Идент]andфand[CYR:кац]andя
         id: "com.vibee.example-plugin",
         name: "Example Plugin",
         version: "1.0.0",
-        description: "Демонстрационный плагин с Canvas UI",
+        description: "[CYR:Демон]with[CYR:трац]and[CYR:онный] [CYR:плаг]andн with Canvas UI",
         author: "VIBEE Team",
         license: "MIT",
         homepage: Some("https://vibee.dev/plugins/example"),
         repository: Some("https://github.com/vibee/example-plugin"),
         
-        # UI (ОБЯЗАТЕЛЬНО)
+        # UI ([CYR:ОБЯЗАТЕЛЬНО])
         canvas_widget: create_widget(),
         documentation_page: "honeycomb/ui/plugin_system/example_plugin/docs/README.md",
         icon: Some("assets/icon.svg"),
@@ -53,12 +53,12 @@ functions:
         resizable: True,
         aspect_ratio: Some(2.0),
         
-        # Зависимости
+        # Заinandwithandмоwithтand
         dependencies: [],
         peer_dependencies: [],
         conflicts: [],
         
-        # Права
+        # [CYR:Пра]inа
         permissions: [ReadState, WriteState],
         
         # Lifecycle hooks
@@ -68,7 +68,7 @@ functions:
         on_focus: on_focus,
         on_blur: on_blur,
         
-        # Метаданные
+        # [CYR:Метаданные]
         tags: ["example", "demo", "tutorial"],
         category: Development,
         maturity: Stable,
@@ -76,11 +76,11 @@ functions:
         updated_at: "2026-01-10T00:00:00Z",
       )
   
-  # Создание Canvas Widget
+  # [CYR:Создан]andе Canvas Widget
   create_widget:
     params: []
     returns: CanvasWidget
-    description: Создает Canvas виджет для плагина
+    description: [CYR:Создает] Canvas inand[CYR:джет] for [CYR:плаг]andon
     implementation: |
       CanvasWidget(
         render: render_widget,
@@ -90,17 +90,17 @@ functions:
         animate: Some(animate_widget),
       )
   
-  # Рендеринг виджета
+  # [CYR:Рендер]andнг inand[CYR:джета]
   render_widget:
     params:
       - ctx: RenderContext
     returns: List(DrawCommand)
-    description: Рендерит виджет на Canvas
+    description: [CYR:Рендер]andт inand[CYR:джет] on Canvas
     implementation: |
       let state = get_current_state()
       
       [
-        # Фон
+        # [CYR:Фон]
         DrawRect(
           x: ctx.x,
           y: ctx.y,
@@ -110,7 +110,7 @@ functions:
           radius: Some(12.0),
         ),
         
-        # Граница (если в фокусе)
+        # [CYR:Гран]andца (if in [CYR:фоку]withе)
         case ctx.focused {
           True -> DrawRect(
             x: ctx.x,
@@ -123,7 +123,7 @@ functions:
           False -> DrawNone
         },
         
-        # Заголовок
+        # [CYR:Заголо]inок
         DrawText(
           x: ctx.x +. 20.0,
           y: ctx.y +. 30.0,
@@ -132,7 +132,7 @@ functions:
           color: Color(255, 255, 255, 255),
         ),
         
-        # Счетчик
+        # [CYR:Счетч]andк
         DrawText(
           x: ctx.x +. 20.0,
           y: ctx.y +. 60.0,
@@ -141,7 +141,7 @@ functions:
           color: state.color,
         ),
         
-        # Кнопка
+        # [CYR:Кнопка]
         DrawRect(
           x: ctx.x +. ctx.width -. 100.0,
           y: ctx.y +. ctx.height -. 50.0,
@@ -163,22 +163,22 @@ functions:
         ),
       ]
   
-  # Обработка событий
+  # [CYR:Обработка] with[CYR:обыт]andй
   handle_event:
     params:
       - event: UIEvent
     returns: Result(EventResponse, String)
-    description: Обрабатывает UI события
+    description: [CYR:Обрабаты]in[CYR:ает] UI with[CYR:обыт]andя
     implementation: |
       case event {
         Click(x, y) -> {
-          # Проверяем клик по кнопке
+          # [CYR:Про]in[CYR:еряем] клandк по [CYR:кнопке]
           let button_x = x -. 100.0
           let button_y = y -. 50.0
           
           case button_x >=. 0.0 && button_x <=. 80.0 && button_y >=. 0.0 && button_y <=. 30.0 {
             True -> {
-              # Увеличиваем счетчик
+              # Уinелandчandin[CYR:аем] with[CYR:четч]andк
               let state = get_current_state()
               let new_state = ExampleState(
                 ..state,
@@ -194,7 +194,7 @@ functions:
         }
         
         MouseMove(x, y) -> {
-          # Проверяем наведение на кнопку
+          # [CYR:Про]in[CYR:еряем] onin[CYR:еден]andе on [CYR:кнопку]
           let button_x = x -. 100.0
           let button_y = y -. 50.0
           
@@ -207,7 +207,7 @@ functions:
         KeyDown(key) -> {
           case key {
             "Space" -> {
-              # Пробел тоже увеличивает счетчик
+              # [CYR:Пробел] [CYR:тоже] уinелandчandin[CYR:ает] with[CYR:четч]andк
               let state = get_current_state()
               let new_state = ExampleState(
                 ..state,
@@ -219,7 +219,7 @@ functions:
             }
             
             "r" | "R" -> {
-              # R сбрасывает счетчик
+              # R with[CYR:бра]withыin[CYR:ает] with[CYR:четч]andк
               let state = get_current_state()
               let new_state = ExampleState(
                 ..state,
@@ -247,21 +247,21 @@ functions:
         _ -> Ok(Propagate)
       }
   
-  # Получение состояния
+  # [CYR:Получен]andе withоwith[CYR:тоян]andя
   get_state:
     params: []
     returns: WidgetState
-    description: Возвращает текущее состояние виджета
+    description: [CYR:Воз]in[CYR:ращает] [CYR:текущее] withоwith[CYR:тоян]andе inand[CYR:джета]
     implementation: |
       let state = get_current_state()
       widget_state_from_example(state)
   
-  # Обновление состояния
+  # [CYR:Обно]in[CYR:лен]andе withоwith[CYR:тоян]andя
   update_state:
     params:
       - widget_state: WidgetState
     returns: Result(Nil, String)
-    description: Обновляет состояние виджета
+    description: [CYR:Обно]in[CYR:ляет] withоwith[CYR:тоян]andе inand[CYR:джета]
     implementation: |
       case json.decode(widget_state.data, example_state_decoder) {
         Ok(state) -> {
@@ -272,16 +272,16 @@ functions:
         Error(err) -> Error("Failed to decode state: " <> string.inspect(err))
       }
   
-  # Анимация
+  # Анand[CYR:мац]andя
   animate_widget:
     params:
       - time: Float
     returns: List(DrawCommand)
-    description: Анимирует виджет
+    description: Анandмand[CYR:рует] inand[CYR:джет]
     implementation: |
       let state = get_current_state()
       
-      # Пульсация цвета
+      # [CYR:Пуль]withацandя цin[CYR:ета]
       let pulse = float.sin(time *. 2.0) *. 0.5 +. 0.5
       let animated_color = Color(
         r: float.round(255.0 *. pulse) |> float.truncate,
@@ -303,11 +303,11 @@ functions:
   on_load:
     params: []
     returns: Result(Nil, String)
-    description: Вызывается при загрузке плагина
+    description: [CYR:Вызы]in[CYR:ает]withя прand [CYR:загрузке] [CYR:плаг]andon
     implementation: |
       io.println("Example plugin loaded")
       
-      # Инициализируем состояние
+      # Инandцandалfromand[CYR:руем] withоwith[CYR:тоян]andе
       let initial_state = ExampleState(
         counter: 0,
         color: Color(99, 102, 241, 255),
@@ -320,7 +320,7 @@ functions:
   on_unload:
     params: []
     returns: Result(Nil, String)
-    description: Вызывается при выгрузке плагина
+    description: [CYR:Вызы]in[CYR:ает]withя прand in[CYR:ыгрузке] [CYR:плаг]andon
     implementation: |
       io.println("Example plugin unloaded")
       Ok(Nil)
@@ -330,7 +330,7 @@ functions:
       - width: Float
       - height: Float
     returns: Result(Nil, String)
-    description: Вызывается при изменении размера
+    description: [CYR:Вызы]in[CYR:ает]withя прand fromмеnotнandand [CYR:размера]
     implementation: |
       io.println("Example plugin resized to: " <> float.to_string(width) <> "x" <> float.to_string(height))
       Ok(Nil)
@@ -338,7 +338,7 @@ functions:
   on_focus:
     params: []
     returns: Result(Nil, String)
-    description: Вызывается при получении фокуса
+    description: [CYR:Вызы]in[CYR:ает]withя прand [CYR:получен]andand [CYR:фоку]withа
     implementation: |
       io.println("Example plugin focused")
       Ok(Nil)
@@ -346,16 +346,16 @@ functions:
   on_blur:
     params: []
     returns: Result(Nil, String)
-    description: Вызывается при потере фокуса
+    description: [CYR:Вызы]in[CYR:ает]withя прand [CYR:потере] [CYR:фоку]withа
     implementation: |
       io.println("Example plugin blurred")
       Ok(Nil)
   
-  # Вспомогательные функции
+  # Вwith[CYR:помогательные] [CYR:функц]andand
   get_current_state:
     params: []
     returns: ExampleState
-    description: Получает текущее состояние из process dictionary
+    description: [CYR:Получает] [CYR:текущее] withоwith[CYR:тоян]andе from process dictionary
     implementation: |
       case process.get("example_plugin_state") {
         Some(state) -> state
@@ -370,7 +370,7 @@ functions:
     params:
       - state: ExampleState
     returns: Nil
-    description: Сохраняет состояние в process dictionary
+    description: [CYR:Сохраняет] withоwith[CYR:тоян]andе in process dictionary
     implementation: |
       process.put("example_plugin_state", state)
   
@@ -378,7 +378,7 @@ functions:
     params:
       - state: ExampleState
     returns: WidgetState
-    description: Конвертирует ExampleState в WidgetState
+    description: [CYR:Кон]in[CYR:ерт]and[CYR:рует] ExampleState in WidgetState
     implementation: |
       let data = json.object([
         #("counter", json.int(state.counter)),
@@ -400,14 +400,14 @@ functions:
 
 tests:
   - name: create_manifest
-    description: Создание манифеста
+    description: [CYR:Создан]andе [CYR:ман]andфеwithта
     test: |
       let m = manifest()
       m.id == "com.vibee.example-plugin"
       m.name == "Example Plugin"
   
   - name: render_widget_test
-    description: Рендеринг виджета
+    description: [CYR:Рендер]andнг inand[CYR:джета]
     test: |
       let ctx = RenderContext(
         x: 0.0,
@@ -431,7 +431,7 @@ tests:
       list.length(commands) > 0
   
   - name: handle_click_test
-    description: Обработка клика
+    description: [CYR:Обработка] клandка
     test: |
       let event = Click(150.0, 70.0)
       let result = handle_event(event)

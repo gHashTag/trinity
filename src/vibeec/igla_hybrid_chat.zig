@@ -875,7 +875,7 @@ pub const IglaHybridChat = struct {
             self.error_fallbacks += 1;
             const lang = local_chat.detectLanguage(query);
             const fallback_msg = if (lang == .Russian)
-                "Без LLM-проinайдера могу: математandtoу (2+2, 5*3), inремя, yesту, withтолandцы withтран (withтолandца Францandand?), прandinетwithтinandя. Наwithтройте GROQ_API_KEY or ANTHROPIC_API_KEY for byлных frominетоin."
+                "[CYR:Без] LLM-[CYR:про]in[CYR:айдера] [CYR:могу]: [CYR:математ]andtoу (2+2, 5*3), in[CYR:ремя], yesту, with[CYR:тол]andцы with[CYR:тран] (with[CYR:тол]andца [CYR:Франц]andand?), прandinетwithтinandя. Наwith[CYR:тройте] GROQ_API_KEY or ANTHROPIC_API_KEY for by[CYR:лных] fromin[CYR:ето]in."
             else
                 "Without LLM I can do: math (2+2, 5*3), time, date, capitals (capital of France?), greetings. Set GROQ_API_KEY or ANTHROPIC_API_KEY for full answers.";
             self.logQuery(query, .Error, 0.5, elapsed);
@@ -1387,7 +1387,7 @@ pub const IglaHybridChat = struct {
         // Time patterns
         if (std.mem.indexOf(u8, q, "what time") != null or
             std.mem.indexOf(u8, q, "current time") != null or
-            std.mem.indexOf(u8, q, "tofromорый чаwith") != null)
+            std.mem.indexOf(u8, q, "tofrom[CYR:орый] чаwith") != null)
             return .Time;
 
         // Date patterns
@@ -1395,7 +1395,7 @@ pub const IglaHybridChat = struct {
             std.mem.indexOf(u8, q, "today's date") != null or
             std.mem.indexOf(u8, q, "what day") != null or
             std.mem.indexOf(u8, q, "toаtoое чandwithло") != null or
-            std.mem.indexOf(u8, q, "toаtoой день") != null)
+            std.mem.indexOf(u8, q, "toаtoой [CYR:день]") != null)
             return .Date;
 
         // System info patterns
@@ -1428,9 +1428,9 @@ pub const IglaHybridChat = struct {
             std.mem.indexOf(u8, q, "evaluate") != null)
             return .Math;
         // Russian math keywords
-        if (q.len >= 12 and std.mem.indexOf(u8, q, "\xd0\xbf\xd0\xbe\xd1\x81\xd1\x87\xd0\xb8\xd1\x82\xd0\xb0\xd0\xb9") != null) // bywithчandтай
+        if (q.len >= 12 and std.mem.indexOf(u8, q, "\xd0\xbf\xd0\xbe\xd1\x81\xd1\x87\xd0\xb8\xd1\x82\xd0\xb0\xd0\xb9") != null) // bywithчand[CYR:тай]
             return .Math;
-        if (q.len >= 14 and std.mem.indexOf(u8, q, "\xd1\x81\xd0\xba\xd0\xbe\xd0\xbb\xd1\x8c\xd0\xba\xd0\xbe") != null) // withtoольtoо
+        if (q.len >= 14 and std.mem.indexOf(u8, q, "\xd1\x81\xd0\xba\xd0\xbe\xd0\xbb\xd1\x8c\xd0\xba\xd0\xbe") != null) // withto[CYR:оль]toо
             return .Math;
         // Expression detection: digit + operator + digit
         if (containsMathExpression(q))
@@ -2126,7 +2126,7 @@ test "hybrid stats" {
     defer chat.deinit();
 
     _ = try chat.respond("прandinет"); // High confidence pattern
-    _ = try chat.respond("здраinwithтinуй"); // High confidence pattern
+    _ = try chat.respond("[CYR:здра]inwithтinуй"); // High confidence pattern
 
     const stats = chat.getStats();
     try std.testing.expectEqual(@as(usize, 2), stats.total_queries);

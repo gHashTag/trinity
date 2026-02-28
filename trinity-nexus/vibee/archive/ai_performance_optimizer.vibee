@@ -1,6 +1,6 @@
 name: ai_performance_optimizer
 version: 1.0.0
-description: AI-powered оптимизация производительности - находит узкие места и предлагает улучшения
+description: AI-powered optimization [CYR:про]frominодand[CYR:тельно]withтand - on[CYR:ход]andт [CYR:узк]andе меwithта and [CYR:предлагает] [CYR:улучшен]andя
 
 metadata:
   author: VIBEE Team
@@ -82,110 +82,110 @@ constants:
 
   AI_PROMPTS:
     analyze_performance: |
-      Ты - эксперт по оптимизации производительности VIBEE кода.
+      Ты - экwith[CYR:перт] по [CYR:опт]andмfromацandand [CYR:про]frominодand[CYR:тельно]withтand VIBEE codeа.
       
-      Код для анализа:
+      [CYR:Код] for analysisа:
       ```vibee
       {code}
       ```
       
-      Профиль производительности:
-      - Время выполнения: {execution_time}ms
-      - Память: {memory_usage}MB
+      [CYR:Проф]andль [CYR:про]frominодand[CYR:тельно]withтand:
+      - [CYR:Время] in[CYR:ыпол]notнandя: {execution_time}ms
+      - [CYR:Память]: {memory_usage}MB
       - CPU: {cpu_usage}%
-      - Количество вызовов: {call_count}
+      - [CYR:Кол]andчеwithтinо in[CYR:ызо]inоin: {call_count}
       
-      Задача: Найди узкие места и предложи оптимизации.
+      [CYR:Задача]: [CYR:Найд]and [CYR:узк]andе меwithта and [CYR:предлож]and [CYR:опт]andмfromацandand.
       
-      Проверь:
-      1. Алгоритмическую сложность (O-notation)
-      2. Использование памяти
-      3. Ненужные аллокации
-      4. Повторяющиеся вычисления
-      5. Неэффективные структуры данных
-      6. I/O операции
+      [CYR:Про]in[CYR:ерь]:
+      1. [CYR:Алгор]andтмandчеwith[CYR:кую] with[CYR:ложно]withть (O-notation)
+      2. Иwith[CYR:пользо]inанandе [CYR:памят]and
+      3. [CYR:Ненужные] [CYR:аллокац]andand
+      4. Поin[CYR:торяющ]andеwithя inычandwith[CYR:лен]andя
+      5. [CYR:Неэффект]andin[CYR:ные] with[CYR:труктуры] [CYR:данных]
+      6. I/O [CYR:операц]andand
       
-      Формат ответа:
-      Узкие места:
-      1. Место: <location>
-         Проблема: <описание>
-         Текущая сложность: <O-notation>
-         Impact: <процент от общего времени>
+      [CYR:Формат] responseа:
+      [CYR:Узк]andе меwithта:
+      1. Меwithто: <location>
+         [CYR:Проблема]: <опandwithанandе>
+         [CYR:Текущая] with[CYR:ложно]withть: <O-notation>
+         Impact: <[CYR:процент] от [CYR:общего] in[CYR:ремен]and>
       
-      Оптимизации:
-      1. Название: <краткое название>
+      [CYR:Опт]andмfromацandand:
+      1. [CYR:Наз]inанandе: <[CYR:краткое] onзinанandе>
          До:
          ```vibee
-         <текущий код>
+         <[CYR:текущ]andй code>
          ```
-         После:
+         Поwithле:
          ```vibee
-         <оптимизированный код>
+         <[CYR:опт]andмfromandроin[CYR:анный] code>
          ```
-         Улучшение: <метрики>
-         Сложность: <easy/medium/hard>
-         Приоритет: <1-10>
+         [CYR:Улучшен]andе: <[CYR:метр]andкand>
+         [CYR:Сложно]withть: <easy/medium/hard>
+         Прandорand[CYR:тет]: <1-10>
       
     suggest_algorithm: |
-      Ты - эксперт по алгоритмам и структурам данных.
+      Ты - экwith[CYR:перт] по [CYR:алгор]and[CYR:тмам] and with[CYR:труктурам] [CYR:данных].
       
-      Текущий код:
+      [CYR:Текущ]andй code:
       ```vibee
       {code}
       ```
       
-      Текущая сложность: {current_complexity}
-      Проблема: {problem_description}
+      [CYR:Текущая] with[CYR:ложно]withть: {current_complexity}
+      [CYR:Проблема]: {problem_description}
       
-      Задача: Предложи более эффективный алгоритм.
+      [CYR:Задача]: [CYR:Предлож]and [CYR:более] [CYR:эффект]andin[CYR:ный] [CYR:алгор]andтм.
       
-      Рассмотри:
-      - Хеш-таблицы для O(1) lookup
-      - Сортировка для бинарного поиска
-      - Динамическое программирование
-      - Жадные алгоритмы
+      Раwithwith[CYR:мотр]and:
+      - [CYR:Хеш]-tables for O(1) lookup
+      - [CYR:Сорт]andроinка for бandon[CYR:рного] поandwithка
+      - Дandonмandчеwith[CYR:кое] [CYR:программ]andроinанandе
+      - [CYR:Жадные] [CYR:алгор]and[CYR:тмы]
       - Divide and conquer
       
-      Формат ответа:
-      Рекомендуемый алгоритм: <название>
-      Сложность: <O-notation>
-      Код:
+      [CYR:Формат] responseа:
+      [CYR:Рекомендуемый] [CYR:алгор]andтм: <onзinанandе>
+      [CYR:Сложно]withть: <O-notation>
+      [CYR:Код]:
       ```vibee
-      <оптимизированный код>
+      <[CYR:опт]andмfromandроin[CYR:анный] code>
       ```
-      Объяснение: <почему это лучше>
-      Trade-offs: <компромиссы>
+      [CYR:Объя]withnotнandе: <[CYR:почему] this [CYR:лучше]>
+      Trade-offs: <[CYR:ком]promisewithы>
       
     memory_optimization: |
-      Ты - эксперт по оптимизации памяти.
+      Ты - экwith[CYR:перт] по [CYR:опт]andмfromацandand [CYR:памят]and.
       
-      Код:
+      [CYR:Код]:
       ```vibee
       {code}
       ```
       
-      Использование памяти: {memory_usage}MB
-      Проблема: {memory_issue}
+      Иwith[CYR:пользо]inанandе [CYR:памят]and: {memory_usage}MB
+      [CYR:Проблема]: {memory_issue}
       
-      Задача: Оптимизируй использование памяти.
+      [CYR:Задача]: [CYR:Опт]andмfromand[CYR:руй] andwith[CYR:пользо]inанandе [CYR:памят]and.
       
-      Проверь:
-      - Утечки памяти
-      - Ненужные копирования
-      - Большие временные объекты
-      - Неэффективные структуры данных
-      - Возможность streaming
+      [CYR:Про]in[CYR:ерь]:
+      - [CYR:Утечк]and [CYR:памят]and
+      - [CYR:Ненужные] [CYR:коп]andроinанandя
+      - [CYR:Больш]andе in[CYR:ременные] objectы
+      - [CYR:Неэффект]andin[CYR:ные] with[CYR:труктуры] [CYR:данных]
+      - [CYR:Возможно]withть streaming
       
-      Формат ответа:
-      Проблемы:
-      - <список проблем>
+      [CYR:Формат] responseа:
+      [CYR:Проблемы]:
+      - <list [CYR:проблем]>
       
-      Решения:
+      [CYR:Решен]andя:
       ```vibee
-      <оптимизированный код>
+      <[CYR:опт]andмfromandроin[CYR:анный] code>
       ```
       
-      Экономия памяти: <процент>
+      [CYR:Эконом]andя [CYR:памят]and: <[CYR:процент]>
 
 behaviors:
   analyze_performance:
@@ -195,14 +195,14 @@ behaviors:
     output:
       hotspots: list<Hotspot>
       hints: list<OptimizationHint>
-    description: Анализ производительности с AI
+    description: Аonлfrom [CYR:про]frominодand[CYR:тельно]withтand with AI
     steps:
-      - Профилировать код
-      - Отправить на анализ AI
-      - Получить список узких мест
-      - Сгенерировать hints
-      - Приоритизировать hints
-      - Вернуть результаты
+      - [CYR:Проф]orроin[CYR:ать] code
+      - [CYR:Отпра]inandть on analysis AI
+      - [CYR:Получ]andть list [CYR:узк]andх меwithт
+      - [CYR:Сге]notрandроin[CYR:ать] hints
+      - Прandорandтfromandроin[CYR:ать] hints
+      - [CYR:Вернуть] resultы
       
   suggest_optimizations:
     input:
@@ -210,14 +210,14 @@ behaviors:
       code: string
     output:
       hints: list<OptimizationHint>
-    description: Предложения по оптимизации
+    description: [CYR:Предложен]andя по [CYR:опт]andмfromацandand
     steps:
-      - Проанализировать узкое место
-      - Определить тип проблемы
-      - Сгенерировать варианты оптимизации
-      - Оценить улучшения
-      - Ранжировать по приоритету
-      - Вернуть hints
+      - [CYR:Про]analyze [CYR:узкое] меwithто
+      - [CYR:Определ]andть type [CYR:проблемы]
+      - [CYR:Сге]notрandроin[CYR:ать] inарand[CYR:анты] [CYR:опт]andмfromацandand
+      - [CYR:Оцен]andть [CYR:улучшен]andя
+      - [CYR:Ранж]andроin[CYR:ать] по прandорand[CYR:тету]
+      - [CYR:Вернуть] hints
       
   apply_optimization:
     input:
@@ -226,14 +226,14 @@ behaviors:
     output:
       optimized_code: string
       result: OptimizationResult
-    description: Применение оптимизации
+    description: Прandмеnotнandе [CYR:опт]andмfromацandand
     steps:
-      - Применить изменения
-      - Запустить тесты
-      - Измерить производительность
-      - Сравнить с baseline
-      - Валидировать улучшение
-      - Вернуть результат
+      - Прand[CYR:мен]andть fromмеnotнandя
+      - [CYR:Запу]withтandть testы
+      - [CYR:Измер]andть performance
+      - [CYR:Сра]inнandть with baseline
+      - [CYR:Вал]andдandроin[CYR:ать] improvement
+      - [CYR:Вернуть] result
       
   benchmark_code:
     input:
@@ -241,14 +241,14 @@ behaviors:
       iterations: number
     output:
       metrics: PerformanceMetrics
-    description: Бенчмарк кода
+    description: [CYR:Бенчмарк] codeа
     steps:
-      - Скомпилировать код
-      - Прогреть JIT
-      - Запустить iterations раз
-      - Измерить метрики
-      - Усреднить результаты
-      - Вернуть metrics
+      - Сcompile code
+      - [CYR:Прогреть] JIT
+      - [CYR:Запу]withтandть iterations [CYR:раз]
+      - [CYR:Измер]andть [CYR:метр]andкand
+      - Уwith[CYR:редн]andть resultы
+      - [CYR:Вернуть] metrics
       
   compare_algorithms:
     input:
@@ -257,13 +257,13 @@ behaviors:
       test_data: list<any>
     output:
       comparison: AlgorithmComparison
-    description: Сравнение алгоритмов
+    description: [CYR:Сра]innotнandе [CYR:алгор]and[CYR:тмо]in
     steps:
-      - Бенчмарк algorithm_a
-      - Бенчмарк algorithm_b
-      - Сравнить метрики
-      - Определить winner
-      - Вернуть comparison
+      - [CYR:Бенчмарк] algorithm_a
+      - [CYR:Бенчмарк] algorithm_b
+      - [CYR:Сра]inнandть [CYR:метр]andкand
+      - [CYR:Определ]andть winner
+      - [CYR:Вернуть] comparison
 
 functions:
   - name: profile_code
@@ -271,21 +271,21 @@ functions:
       code: string
       input_data: any
     returns: PerformanceProfile
-    description: Профилирование кода
+    description: [CYR:Проф]orроinанandе codeа
     
   - name: detect_hotspots
     params:
       profile: PerformanceProfile
       threshold_percent: number
     returns: list<Hotspot>
-    description: Определение узких мест
+    description: [CYR:Определен]andе [CYR:узк]andх меwithт
     
   - name: estimate_improvement
     params:
       current_code: string
       optimized_code: string
     returns: ImprovementMetrics
-    description: Оценка улучшения
+    description: [CYR:Оценка] [CYR:улучшен]andя
     
   - name: validate_optimization
     params:
@@ -293,7 +293,7 @@ functions:
       optimized: string
       test_cases: list<TestCase>
     returns: boolean
-    description: Валидация оптимизации
+    description: [CYR:Вал]and[CYR:дац]andя [CYR:опт]andмfromацandand
 
 tests:
   - name: detect_list_operation_hotspot
@@ -339,8 +339,8 @@ tests:
       result.actual_improvement.speed_improvement_percent: > 30
 
 examples:
-  - name: "Оптимизация списков"
-    description: "AI находит неэффективные операции со списками"
+  - name: "[CYR:Опт]andмfromацandя withпandwithкоin"
+    description: "AI on[CYR:ход]andт not[CYR:эффект]andin[CYR:ные] [CYR:операц]andand withо withпandwith[CYR:кам]and"
     input:
       code: |
         pub process_items(items) = {
@@ -354,15 +354,15 @@ examples:
         memory_usage_mb: 80
     output:
       hint:
-        title: "Объединить filter операции"
+        title: "[CYR:Объед]andнandть filter [CYR:операц]andand"
         code_after: |
           pub process_items(items) = {
             [i.price for i in items if i.active && i.price > 100]
           }
         improvement: "50% faster, 40% less memory"
         
-  - name: "Оптимизация алгоритма"
-    description: "AI предлагает более эффективный алгоритм"
+  - name: "[CYR:Опт]andмfromацandя [CYR:алгор]and[CYR:тма]"
+    description: "AI [CYR:предлагает] [CYR:более] [CYR:эффект]andin[CYR:ный] [CYR:алгор]andтм"
     input:
       code: |
         pub find_duplicates(list) = {
@@ -376,7 +376,7 @@ examples:
       complexity: "O(n²)"
     output:
       hint:
-        title: "Использовать Set для O(n)"
+        title: "Иwith[CYR:пользо]in[CYR:ать] Set for O(n)"
         code_after: |
           pub find_duplicates(list) = {
             let seen = set.new()
@@ -386,14 +386,14 @@ examples:
             }
             false
           }
-        improvement: "O(n²) → O(n), 100x faster на больших данных"
+        improvement: "O(n²) → O(n), 100x faster on [CYR:больш]andх [CYR:данных]"
         
-  - name: "Оптимизация памяти"
-    description: "AI находит утечки и лишние аллокации"
+  - name: "[CYR:Опт]andмfromацandя [CYR:памят]and"
+    description: "AI on[CYR:ход]andт [CYR:утечк]and and лandшнandе [CYR:аллокац]andand"
     input:
       code: |
         pub process_large_file(path) = {
-          let content = file.read_all(path)  // Загружает весь файл
+          let content = file.read_all(path)  // [CYR:Загружает] inеwithь file
           content
             |> string.split("\n")
             |> list.map(process_line)
@@ -401,38 +401,38 @@ examples:
       memory_usage_mb: 500
     output:
       hint:
-        title: "Использовать streaming"
+        title: "Иwith[CYR:пользо]in[CYR:ать] streaming"
         code_after: |
           pub process_large_file(path) = {
             file.stream_lines(path)
               |> stream.map(process_line)
               |> stream.collect()
           }
-        improvement: "500MB → 10MB, streaming обработка"
+        improvement: "500MB → 10MB, streaming handling"
 
 optimization_categories:
   algorithmic:
-    - "Улучшение сложности (O-notation)"
-    - "Выбор структур данных"
-    - "Кеширование результатов"
-    - "Мемоизация"
+    - "[CYR:Улучшен]andе with[CYR:ложно]withтand (O-notation)"
+    - "[CYR:Выбор] with[CYR:труктур] [CYR:данных]"
+    - "[CYR:Кеш]andроinанandе resultоin"
+    - "[CYR:Мемо]fromацandя"
     
   memory:
-    - "Уменьшение аллокаций"
-    - "Переиспользование объектов"
-    - "Streaming вместо загрузки"
-    - "Ленивые вычисления"
+    - "[CYR:Уменьшен]andе [CYR:аллокац]andй"
+    - "[CYR:Пере]andwith[CYR:пользо]inанandе objectоin"
+    - "Streaming inмеwithто [CYR:загрузк]and"
+    - "[CYR:Лен]andinые inычandwith[CYR:лен]andя"
     
   io:
-    - "Батчинг операций"
-    - "Асинхронный I/O"
-    - "Буферизация"
-    - "Параллельная обработка"
+    - "[CYR:Батч]andнг [CYR:операц]andй"
+    - "Аsynchronous I/O"
+    - "[CYR:Буфер]fromацandя"
+    - "[CYR:Параллель]onя handling"
     
   code_structure:
-    - "Инлайнинг функций"
-    - "Удаление мертвого кода"
-    - "Оптимизация циклов"
+    - "[CYR:Инлайн]andнг [CYR:функц]andй"
+    - "[CYR:Удален]andе [CYR:мерт]in[CYR:ого] codeа"
+    - "[CYR:Опт]andмfromацandя loopоin"
     - "Tail call optimization"
 
 metrics:

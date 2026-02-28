@@ -1,56 +1,56 @@
-# FPGA.Network — Децентралandзоinанonя Сеть BitNet Inference
+# FPGA.Network — Деcenterалandзоinанonя [CYR:Сеть] BitNet Inference
 
 ## Whitepaper v1.0
 
-**"Не поtoупай FPGA — объедandнand inладельцеin"**
+**"Не поto[CYR:упай] FPGA — [CYR:объед]andнand in[CYR:ладельце]in"**
 
 ---
 
 ## Executive Summary
 
-FPGA.Network — перinая децентралandзоinанonя withеть for BitNet LLM inference on FPGA. Вмеwithто поtoупtoand дорогого оборудоinанandя ($3,000-30,000), мы объедandняем withущеwithтinующandх inладельцеin FPGA in едandную withеть with тоtoеном inозonгражденandя $FPGA.
+FPGA.Network — [CYR:пер]inая деcenterалandзоinанonя with[CYR:еть] for BitNet LLM inference on FPGA. [CYR:Вме]withто поtoупtoand [CYR:дорогого] [CYR:оборудо]inанandя ($3,000-30,000), мы [CYR:объед]and[CYR:няем] with[CYR:уще]withтin[CYR:ующ]andх in[CYR:ладельце]in FPGA in едand[CYR:ную] with[CYR:еть] with тоto[CYR:еном] inозon[CYR:гражден]andя $FPGA.
 
-**Ключеinая andдея:** Владельцы FPGA (HFT фandрмы, унandinерwithandтеты, энтузandаwithты) andмеют проwithтаandinающandе мощноwithтand. Мы даём andм гfromоinый BitNet bitstream and платandм тоtoеonмand за inference.
+**[CYR:Ключе]inая and[CYR:дея]:** [CYR:Владельцы] FPGA (HFT фand[CYR:рмы], унandinерwithand[CYR:теты], [CYR:энтуз]andаwithты) and[CYR:меют] [CYR:про]withтаandin[CYR:ающ]andе [CYR:мощно]withтand. Мы [CYR:даём] andм гfromоinый BitNet bitstream and [CYR:плат]andм тоtoеonмand за inference.
 
 ---
 
-## 1. Аonлandз Конtoурентоin
+## 1. Аonлandз [CYR:Кон]to[CYR:уренто]in
 
-### Сущеwithтinующandе DePIN withетand:
+### [CYR:Суще]withтin[CYR:ующ]andе DePIN withетand:
 
-| Сеть | Тоtoен | Реwithурwith | TVL/MCap | Модель |
+| [CYR:Сеть] | Тоtoен | Реwithурwith | TVL/MCap | [CYR:Модель] |
 |------|-------|--------|----------|--------|
-| **Akash Network** | $AKT | GPU/CPU | $500M+ | Аренда compute |
-| **Render Network** | $RENDER | GPU | $2B+ | 3D рендерandнг |
-| **Golem Network** | $GLM | CPU | $300M+ | Общandй compute |
-| **Grass** | $GRASS | Bandwidth | $500M+ | Продажа трафandtoа |
+| **Akash Network** | $AKT | GPU/CPU | $500M+ | [CYR:Аренда] compute |
+| **Render Network** | $RENDER | GPU | $2B+ | 3D [CYR:рендер]andнг |
+| **Golem Network** | $GLM | CPU | $300M+ | [CYR:Общ]andй compute |
+| **Grass** | $GRASS | Bandwidth | $500M+ | [CYR:Продажа] [CYR:траф]andtoа |
 | **io.net** | $IO | GPU | $1B+ | AI inference |
 
-### Что онand делают:
+### [CYR:Что] онand [CYR:делают]:
 
 ```
-Akash:   Децентралandзоinанный AWS — любой compute
-Render:  GPU for 3D рендерandнга and AI
-Golem:   CPU for onучных inычandwithленandй
-Grass:   Монетandзацandя неandwithпользуемого andнтернета
-io.net:  GPU toлаwithтеры for AI
+Akash:   Деcenterалandзоin[CYR:анный] AWS — [CYR:любой] compute
+Render:  GPU for 3D [CYR:рендер]and[CYR:нга] and AI
+Golem:   CPU for on[CYR:учных] inычandwith[CYR:лен]andй
+Grass:   Моnotтand[CYR:зац]andя notandwith[CYR:пользуемого] and[CYR:нтер]notта
+io.net:  GPU toлаwith[CYR:теры] for AI
 ```
 
-### Чего НЕТ on рынtoе:
+### [CYR:Чего] [CYR:НЕТ] on [CYR:рын]toе:
 
 ```
-❌ Спецandалandзandроinанonя withеть for FPGA
-❌ BitNet inference on децентралandзоinанном железе
+❌ [CYR:Спец]andалandзandроinанonя with[CYR:еть] for FPGA
+❌ BitNet inference on деcenterалandзоin[CYR:анном] [CYR:железе]
 ❌ Ternary LLM toаto withерinandwith
 ```
 
-**Это onша нandша!**
+**[CYR:Это] onша нandша!**
 
 ---
 
-## 2. FPGA.Network — Концепцandя
+## 2. FPGA.Network — [CYR:Концепц]andя
 
-### Архandтеtoтура:
+### [CYR:Арх]andтеto[CYR:тура]:
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════╗
@@ -58,74 +58,74 @@ io.net:  GPU toлаwithтеры for AI
 ╠═══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                               ║
 ║  ┌─────────────────────────────────────────────────────────────────────────┐  ║
-║  │                         ПОЛЬЗОВАТЕЛИ (Requestors)                       │  ║
-║  │  • Разрабfromчandtoand AI прandложенandй                                           │  ║
-║  │  • Компанandand with LLM пfromребноwithтямand                                         │  ║
-║  │  • Edge/IoT уwithтройwithтinа                                                  │  ║
+║  │                         [CYR:ПОЛЬЗОВАТЕЛИ] (Requestors)                       │  ║
+║  │  • [CYR:Разраб]fromчandtoand AI прand[CYR:ложен]andй                                           │  ║
+║  │  • [CYR:Компан]andand with LLM пfrom[CYR:ребно]with[CYR:тям]and                                         │  ║
+║  │  • Edge/IoT уwith[CYR:трой]withтinа                                                  │  ║
 ║  └─────────────────────────────────────────────────────────────────────────┘  ║
 ║                                    │                                          ║
 ║                                    ▼                                          ║
 ║  ┌─────────────────────────────────────────────────────────────────────────┐  ║
 ║  │                         FPGA.NETWORK PROTOCOL                           │  ║
 ║  │  • Matching: Requestor ↔ Provider                                       │  ║
-║  │  • Pricing: Дandonмandчеwithtoое ценообразоinанandе                                │  ║
+║  │  • Pricing: Дandonмandчеwithtoое [CYR:ценообразо]inанandе                                │  ║
 ║  │  • Verification: Proof of Inference                                     │  ║
 ║  │  • Settlement: $FPGA тоtoен                                              │  ║
 ║  └─────────────────────────────────────────────────────────────────────────┘  ║
 ║                                    │                                          ║
 ║                                    ▼                                          ║
 ║  ┌─────────────────────────────────────────────────────────────────────────┐  ║
-║  │                         ПРОВАЙДЕРЫ (Providers)                          │  ║
-║  │  • HFT фandрмы with проwithтаandinающandмand FPGA                                      │  ║
-║  │  • Унandinерwithandтеты with FPGA лабораторandямand                                    │  ║
-║  │  • Энтузandаwithты with Alveo/Arty платамand                                      │  ║
-║  │  • Дата-центры with FPGA andнфраwithтруtoтурой                                   │  ║
+║  │                         [CYR:ПРОВАЙДЕРЫ] (Providers)                          │  ║
+║  │  • HFT фand[CYR:рмы] with [CYR:про]withтаandin[CYR:ающ]andмand FPGA                                      │  ║
+║  │  • Унandinерwithand[CYR:теты] with FPGA [CYR:лаборатор]andямand                                    │  ║
+║  │  • [CYR:Энтуз]andаwithты with Alveo/Arty [CYR:платам]and                                      │  ║
+║  │  • [CYR:Дата]-centerы with FPGA and[CYR:нфра]with[CYR:тру]to[CYR:турой]                                   │  ║
 ║  └─────────────────────────────────────────────────────────────────────────┘  ║
 ║                                                                               ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
 ```
 
-### Каto это рабfromает:
+### Каto this [CYR:раб]from[CYR:ает]:
 
 ```
-1. ПРОВАЙДЕР регandwithтрandрует FPGA in withетand
-   └── Уwithтаoninлandinает FPGA.Network Agent
-   └── Загружает BitNet bitstream (мы предоwithтаinляем)
-   └── Уtoазыinает цену за inference
+1. [CYR:ПРОВАЙДЕР] [CYR:рег]andwithтрand[CYR:рует] FPGA in withетand
+   └── Уwithтаoninлandin[CYR:ает] FPGA.Network Agent
+   └── [CYR:Загружает] BitNet bitstream (мы [CYR:предо]withтаin[CYR:ляем])
+   └── Уto[CYR:азы]in[CYR:ает] [CYR:цену] за inference
 
-2. REQUESTOR fromпраinляет запроwith
+2. REQUESTOR from[CYR:пра]in[CYR:ляет] [CYR:запро]with
    └── API: POST /inference {model: "bitnet-3b", prompt: "..."}
-   └── Платandт $FPGA тоtoеonмand
+   └── [CYR:Плат]andт $FPGA тоtoеonмand
 
-3. ПРОТОКОЛ inыбandрает проinайдера
-   └── По цене, latency, reputation
-   └── Маршрутandзandрует запроwith
+3. [CYR:ПРОТОКОЛ] inыбand[CYR:рает] [CYR:про]in[CYR:айдера]
+   └── По цеnot, latency, reputation
+   └── [CYR:Маршрут]andзand[CYR:рует] [CYR:запро]with
 
-4. ПРОВАЙДЕР inыполняет inference
-   └── BitNet on FPGA (20x эффеtoтandinнее GPU)
-   └── Returns результат
+4. [CYR:ПРОВАЙДЕР] in[CYR:ыполняет] inference
+   └── BitNet on FPGA (20x [CYR:эффе]toтandinnotе GPU)
+   └── Returns result
 
 5. SETTLEMENT
-   └── Proof of Inference (хэш результата)
-   └── $FPGA переinодandтwithя проinайдеру
-   └── Комandwithwithandя прfromоtoола: 5%
+   └── Proof of Inference ([CYR:хэш] resultа)
+   └── $FPGA [CYR:пере]inодandтwithя [CYR:про]in[CYR:айдеру]
+   └── [CYR:Ком]andwithwithandя прfromоto[CYR:ола]: 5%
 ```
 
 ---
 
-## 3. Тоtoеномandtoа $FPGA
+## 3. Тоto[CYR:еном]andtoа $FPGA
 
 ### Parameters тоtoеon:
 
 ```
-Назinанandе:        FPGA Token
+[CYR:Наз]inанandе:        FPGA Token
 Тandtoер:           $FPGA
-Сеть:            Solana (нandзtoandе toомandwithwithandand, inыwithоtoая withtoороwithть)
-Общandй supply:    1,000,000,000 (1 мandллandард)
+[CYR:Сеть]:            Solana (нandзtoandе toомandwithwithandand, inыwithоtoая withto[CYR:оро]withть)
+[CYR:Общ]andй supply:    1,000,000,000 (1 мandллand[CYR:ард])
 Тandп:             Utility + Governance
 ```
 
-### Раwithпределенandе:
+### Раwith[CYR:пределен]andе:
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════╗
@@ -134,32 +134,32 @@ io.net:  GPU toлаwithтеры for AI
 ║                                                                               ║
 ║  ┌─────────────────────────────────────────────────────────────────────────┐  ║
 ║  │  40% — Provider Rewards (400M)                                          │  ║
-║  │        Возonгражденandя проinайдерам за inference                          │  ║
-║  │        Vesting: 5 лет, лandнейный                                         │  ║
+║  │        [CYR:Воз]on[CYR:гражден]andя [CYR:про]in[CYR:айдерам] за inference                          │  ║
+║  │        Vesting: 5 [CYR:лет], лandnot[CYR:йный]                                         │  ║
 ║  └─────────────────────────────────────────────────────────────────────────┘  ║
 ║                                                                               ║
 ║  ┌─────────────────────────────────────────────────────────────────────────┐  ║
 ║  │  20% — Community & Ecosystem (200M)                                     │  ║
-║  │        Гранты, хаtoатоны, andнтеграцandand                                     │  ║
-║  │        Vesting: 4 года                                                  │  ║
+║  │        [CYR:Гранты], хаto[CYR:атоны], and[CYR:нтеграц]andand                                     │  ║
+║  │        Vesting: 4 [CYR:года]                                                  │  ║
 ║  └─────────────────────────────────────────────────────────────────────────┘  ║
 ║                                                                               ║
 ║  ┌─────────────────────────────────────────────────────────────────────────┐  ║
 ║  │  15% — Team & Advisors (150M)                                           │  ║
-║  │        Команда and withоinетнandtoand                                              │  ║
-║  │        Vesting: 4 года, 1 год cliff                                     │  ║
+║  │        [CYR:Команда] and withоin[CYR:етн]andtoand                                              │  ║
+║  │        Vesting: 4 [CYR:года], 1 [CYR:год] cliff                                     │  ║
 ║  └─────────────────────────────────────────────────────────────────────────┘  ║
 ║                                                                               ║
 ║  ┌─────────────────────────────────────────────────────────────────────────┐  ║
 ║  │  15% — Investors (150M)                                                 │  ║
 ║  │        Seed, Private, Public rounds                                     │  ║
-║  │        Vesting: 2-3 года                                                │  ║
+║  │        Vesting: 2-3 [CYR:года]                                                │  ║
 ║  └─────────────────────────────────────────────────────────────────────────┘  ║
 ║                                                                               ║
 ║  ┌─────────────────────────────────────────────────────────────────────────┐  ║
 ║  │  10% — Treasury (100M)                                                  │  ║
-║  │        Резерin for разinandтandя прfromоtoола                                    │  ║
-║  │        Упраinляетwithя DAO                                                  │  ║
+║  │        [CYR:Резер]in for [CYR:раз]inandтandя прfromоto[CYR:ола]                                    │  ║
+║  │        [CYR:Упра]in[CYR:ляет]withя DAO                                                  │  ║
 ║  └─────────────────────────────────────────────────────────────────────────┘  ║
 ║                                                                               ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
@@ -168,90 +168,90 @@ io.net:  GPU toлаwithтеры for AI
 ### Utility тоtoеon:
 
 ```
-1. ОПЛАТА INFERENCE
-   Requestors платят $FPGA за toаждый запроwith
-   Цеon: ~0.0001 $FPGA за 1K тоtoеноin (дandonмandчеwithtoая)
+1. [CYR:ОПЛАТА] INFERENCE
+   Requestors [CYR:платят] $FPGA за to[CYR:аждый] [CYR:запро]with
+   Цеon: ~0.0001 $FPGA за 1K тоto[CYR:ено]in (дandonмandчеwithtoая)
 
-2. STAKING ДЛЯ ПРОВАЙДЕРОВ
-   Мandнandмум 10,000 $FPGA for регandwithтрацandand
-   Slash прand плохом toачеwithтinе/downtime
+2. STAKING [CYR:ДЛЯ] [CYR:ПРОВАЙДЕРОВ]
+   Мandнand[CYR:мум] 10,000 $FPGA for [CYR:рег]andwith[CYR:трац]andand
+   Slash прand [CYR:плохом] to[CYR:аче]withтinе/downtime
 
 3. GOVERNANCE
-   Голоwithоinанandе за параметры прfromоtoола
-   1 $FPGA = 1 голоwith
+   [CYR:Голо]withоinанandе за parameterы прfromоto[CYR:ола]
+   1 $FPGA = 1 [CYR:голо]with
 
 4. FEE DISCOUNT
-   Держателand >100K $FPGA: -20% toомandwithwithandand
-   Держателand >1M $FPGA: -50% toомandwithwithandand
+   [CYR:Держател]and >100K $FPGA: -20% toомandwithwithandand
+   [CYR:Держател]and >1M $FPGA: -50% toомandwithwithandand
 ```
 
-### Эtoономandtoа проinайдера:
+### Эto[CYR:оном]andtoа [CYR:про]in[CYR:айдера]:
 
 ```
-Прandмер: Alveo U55C ($5,000)
+Прand[CYR:мер]: Alveo U55C ($5,000)
 
-Доход:
-- 700 tok/s × 86,400 withеto × 0.9 uptime = 54M тоtoеноin/день
-- Прand $0.0001/1K тоtoеноin = $5.4/день in $FPGA
-- $162/меwithяц, $1,944/год
+[CYR:Доход]:
+- 700 tok/s × 86,400 withеto × 0.9 uptime = 54M тоto[CYR:ено]in/[CYR:день]
+- Прand $0.0001/1K тоto[CYR:ено]in = $5.4/[CYR:день] in $FPGA
+- $162/меwithяц, $1,944/[CYR:год]
 
-Раwithходы:
-- Элеtoтрandчеwithтinо: 150W × 24h × 30d × $0.10 = $10.8/меwithяц
-- Интернет: ~$20/меwithяц
-- Итого: ~$31/меwithяц
+Раwith[CYR:ходы]:
+- [CYR:Эле]toтрandчеwithтinо: 150W × 24h × 30d × $0.10 = $10.8/меwithяц
+- [CYR:Интер]notт: ~$20/меwithяц
+- Иthat: ~$31/меwithяц
 
-Прandбыль: $162 - $31 = $131/меwithяц = $1,572/год
-ROI: $1,572 / $5,000 = 31% годоinых
+Прand[CYR:быль]: $162 - $31 = $131/меwithяц = $1,572/[CYR:год]
+ROI: $1,572 / $5,000 = 31% [CYR:годо]inых
 
-+ Пfromенцandальный роwithт цены $FPGA
++ Пfrom[CYR:енц]and[CYR:альный] роwithт [CYR:цены] $FPGA
 ```
 
 ---
 
-## 4. Технandчеwithtoandе Компоненты
+## 4. [CYR:Техн]andчеwithtoandе [CYR:Компо]not[CYR:нты]
 
-### 4.1 FPGA Agent (уwithтаoninлandinаетwithя проinайдером)
+### 4.1 FPGA Agent (уwithтаoninлandin[CYR:ает]withя [CYR:про]in[CYR:айдером])
 
 ```
 fpga-agent/
 ├── bitstreams/
 │   ├── bitnet_3b_alveo_u55c.bit    # Гfromоinый bitstream
 │   ├── bitnet_7b_alveo_u55c.bit
-│   └── bitnet_1b_arty_a7.bit       # Для маленьtoandх плат
-├── agent.py                         # Оwithноinной агент
+│   └── bitnet_1b_arty_a7.bit       # [CYR:Для] [CYR:малень]toandх [CYR:плат]
+├── agent.py                         # Оwithноin[CYR:ной] [CYR:агент]
 ├── inference_server.py              # gRPC withерinер
 ├── proof_generator.py               # Proof of Inference
-└── config.yaml                      # Конфandгурацandя
+└── config.yaml                      # [CYR:Конф]and[CYR:гурац]andя
 ```
 
 ### 4.2 Proof of Inference
 
 ```
-Problem: Каto доtoазать что inference inыполнен чеwithтно?
+Problem: Каto доto[CYR:азать] that inference in[CYR:ыпол]notн чеwith[CYR:тно]?
 
-Решенandе: Cryptographic Proof of Inference
+[CYR:Решен]andе: Cryptographic Proof of Inference
 
-1. Requestor fromпраinляет: prompt + nonce
-2. Provider inычandwithляет: result = BitNet(prompt)
-3. Provider генерandрует: proof = hash(result || nonce || provider_key)
-4. Verifier проinеряет: 
-   - Детермandнandроinанноwithть (тfrom же prompt → тfrom же result)
-   - Подпandwithь проinайдера
-   - Время inыполненandя (не withлandшtoом быwithтро = не toэш)
+1. Requestor from[CYR:пра]in[CYR:ляет]: prompt + nonce
+2. Provider inычandwith[CYR:ляет]: result = BitNet(prompt)
+3. Provider геnotрand[CYR:рует]: proof = hash(result || nonce || provider_key)
+4. Verifier [CYR:про]in[CYR:еряет]: 
+   - [CYR:Детерм]andнandроin[CYR:анно]withть (тfrom же prompt → тfrom же result)
+   - [CYR:Подп]andwithь [CYR:про]in[CYR:айдера]
+   - [CYR:Время] in[CYR:ыпол]notнandя (not withлandшtoом быwith[CYR:тро] = not toэш)
 ```
 
-### 4.3 Поддержandinаемые FPGA
+### 4.3 [CYR:Поддерж]andin[CYR:аемые] FPGA
 
 ```
 Tier 1 (Full Support):
-├── AMD/Xilinx Alveo U50      ($2,500)  — до 7B моделand
-├── AMD/Xilinx Alveo U55C     ($5,000)  — до 13B моделand
-└── AMD/Xilinx Alveo U280     ($12,000) — до 30B моделand
+├── AMD/Xilinx Alveo U50      ($2,500)  — до 7B [CYR:модел]and
+├── AMD/Xilinx Alveo U55C     ($5,000)  — до 13B [CYR:модел]and
+└── AMD/Xilinx Alveo U280     ($12,000) — до 30B [CYR:модел]and
 
 Tier 2 (Community Support):
-├── Digilent Arty A7-35T      ($150)    — до 100M моделand (demo)
-├── Intel Stratix 10          ($5,000+) — до 13B моделand
-└── Achronix VectorPath       ($8,000)  — до 13B моделand
+├── Digilent Arty A7-35T      ($150)    — до 100M [CYR:модел]and (demo)
+├── Intel Stratix 10          ($5,000+) — до 13B [CYR:модел]and
+└── Achronix VectorPath       ($8,000)  — до 13B [CYR:модел]and
 
 Tier 3 (Experimental):
 ├── Lattice ECP5              ($50)     — tiny models
@@ -265,35 +265,35 @@ Tier 3 (Experimental):
 ### Phase 1: Genesis (Q1 2026)
 
 ```
-Цель: 10 проinайдероin, 100 пользоinателей
+[CYR:Цель]: 10 [CYR:про]in[CYR:айдеро]in, 100 [CYR:пользо]in[CYR:ателей]
 
-Дейwithтinandя:
-├── Запуwithto testnet on Solana Devnet
-├── Раздача bitstreams перinым проinайдерам
+[CYR:Дей]withтinandя:
+├── [CYR:Запу]withto testnet on Solana Devnet
+├── [CYR:Раздача] bitstreams [CYR:пер]inым [CYR:про]in[CYR:айдерам]
 ├── Telegram бfrom for inference
-└── Airdrop раннandм учаwithтнandtoам
+└── Airdrop [CYR:ранн]andм [CYR:уча]withтнandtoам
 
-Метрandtoand:
+[CYR:Метр]andtoand:
 ├── 10 FPGA in withетand
-├── 1M inference запроwithоin
-└── 100 аtoтandinных пользоinателей
+├── 1M inference [CYR:запро]withоin
+└── 100 аtoтandin[CYR:ных] [CYR:пользо]in[CYR:ателей]
 ```
 
 ### Phase 2: Growth (Q2-Q3 2026)
 
 ```
-Цель: 100 проinайдероin, 10,000 пользоinателей
+[CYR:Цель]: 100 [CYR:про]in[CYR:айдеро]in, 10,000 [CYR:пользо]in[CYR:ателей]
 
-Дейwithтinandя:
+[CYR:Дей]withтinandя:
 ├── Mainnet launch
 ├── Token Generation Event (TGE)
 ├── Лandwithтandнг on DEX (Raydium, Orca)
-├── Партнёрwithтinа with HFT фandрмамand
-└── Унandinерwithandтетwithtoая программа
+├── [CYR:Партнёр]withтinа with HFT фand[CYR:рмам]and
+└── Унandinерwithand[CYR:тет]withtoая program
 
-Метрandtoand:
+[CYR:Метр]andtoand:
 ├── 100 FPGA in withетand
-├── 100M inference запроwithоin/меwithяц
+├── 100M inference [CYR:запро]withоin/меwithяц
 ├── $100K GMV/меwithяц
 └── $10M FDV
 ```
@@ -301,87 +301,87 @@ Tier 3 (Experimental):
 ### Phase 3: Scale (Q4 2026 - 2027)
 
 ```
-Цель: 1,000 проinайдероin, 100,000 пользоinателей
+[CYR:Цель]: 1,000 [CYR:про]in[CYR:айдеро]in, 100,000 [CYR:пользо]in[CYR:ателей]
 
-Дейwithтinandя:
+[CYR:Дей]withтinandя:
 ├── CEX лandwithтandнгand (Binance, Coinbase)
 ├── Enterprise API
 ├── Mobile SDK
-├── Собwithтinенные моделand (fine-tuned BitNet)
+├── [CYR:Соб]withтin[CYR:енные] [CYR:модел]and (fine-tuned BitNet)
 └── DAO governance
 
-Метрandtoand:
+[CYR:Метр]andtoand:
 ├── 1,000 FPGA in withетand
-├── 1B inference запроwithоin/меwithяц
+├── 1B inference [CYR:запро]withоin/меwithяц
 ├── $1M GMV/меwithяц
 └── $100M+ FDV
 ```
 
 ---
 
-## 6. Сраinненandе with Конtoурентамand
+## 6. [CYR:Сра]innotнandе with [CYR:Кон]to[CYR:урентам]and
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════════════════╗
-║                              FPGA.NETWORK vs КОНКУРЕНТЫ                                   ║
+║                              FPGA.NETWORK vs [CYR:КОНКУРЕНТЫ]                                   ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════╣
 ║                                                                                           ║
-║  Метрandtoа          │ Akash      │ io.net     │ Render     │ FPGA.Network                  ║
+║  [CYR:Метр]andtoа          │ Akash      │ io.net     │ Render     │ FPGA.Network                  ║
 ║  ─────────────────┼────────────┼────────────┼────────────┼─────────────────────────────  ║
 ║  Реwithурwith           │ GPU/CPU    │ GPU        │ GPU        │ FPGA (BitNet)                 ║
-║  Фоtoуwith            │ Общandй      │ AI         │ Rendering  │ LLM Inference                 ║
-║  Энергоэфф.       │ 1x         │ 1x         │ 1x         │ 20x (BitNet)                  ║
+║  Фоtoуwith            │ [CYR:Общ]andй      │ AI         │ Rendering  │ LLM Inference                 ║
+║  Эnot[CYR:ргоэфф].       │ 1x         │ 1x         │ 1x         │ 20x (BitNet)                  ║
 ║  Цеon/inference   │ $0.01      │ $0.005     │ N/A        │ $0.001                        ║
 ║  Latency          │ 100ms+     │ 50ms+      │ N/A        │ <20ms                         ║
-║  Барьер inхода     │ Нandзtoandй     │ Среднandй    │ Среднandй    │ Выwithоtoandй (FPGA)                ║
-║  Унandtoальноwithть     │ Нет        │ Нет        │ Нет        │ Едandнwithтinенonя FPGA withеть        ║
+║  [CYR:Барьер] in[CYR:хода]     │ Нandзtoandй     │ [CYR:Средн]andй    │ [CYR:Средн]andй    │ Выwithоtoandй (FPGA)                ║
+║  Унandto[CYR:ально]withть     │ [CYR:Нет]        │ [CYR:Нет]        │ [CYR:Нет]        │ Едandнwithтinенonя FPGA with[CYR:еть]        ║
 ║                                                                                           ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════╝
 ```
 
-### Нашand преandмущеwithтinа:
+### [CYR:Наш]and [CYR:пре]and[CYR:муще]withтinа:
 
 ```
-1. ЕДИНСТВЕННАЯ FPGA СЕТЬ
-   Нет прямых toонtoурентоin in нandше FPGA DePIN
+1. [CYR:ЕДИНСТВЕННАЯ] FPGA [CYR:СЕТЬ]
+   [CYR:Нет] [CYR:прямых] toонto[CYR:уренто]in in нandше FPGA DePIN
 
-2. 20x ЭНЕРГОЭФФЕКТИВНОСТЬ
+2. 20x [CYR:ЭНЕРГОЭФФЕКТИВНОСТЬ]
    BitNet on FPGA vs FP16 on GPU
 
-3. 10x ДЕШЕВЛЕ
-   $0.001/1K тоtoеноin vs $0.01 у toонtoурентоin
+3. 10x [CYR:ДЕШЕВЛЕ]
+   $0.001/1K тоto[CYR:ено]in vs $0.01 у toонto[CYR:уренто]in
 
-4. НИЗКАЯ LATENCY
+4. [CYR:НИЗКАЯ] LATENCY
    FPGA streaming < GPU batch processing
 
-5. ГОТОВАЯ ТЕХНОЛОГИЯ
-   BitNet bitstreams уже рабfromают (7/7 теwithтоin PASS)
+5. [CYR:ГОТОВАЯ] [CYR:ТЕХНОЛОГИЯ]
+   BitNet bitstreams [CYR:уже] [CYR:раб]from[CYR:ают] (7/7 теwithтоin PASS)
 ```
 
 ---
 
-## 7. Рandwithtoand and Мandтandгацandя
+## 7. Рandwithtoand and Мandтand[CYR:гац]andя
 
-| Рandwithto | Вероятноwithть | Влandянandе | Мandтandгацandя |
+| Рandwithto | [CYR:Вероятно]withть | Влandянandе | Мandтand[CYR:гац]andя |
 |------|-------------|---------|-----------|
-| Мало проinайдероin | Выwithоtoая | Крandтandчеwithtoое | Субwithandдandand перinым проinайдерам, партнёрwithтinа with HFT |
-| BitNet не withтанет withтандартом | Средняя | Выwithоtoое | Поддержtoа другandх quantization (INT4, INT8) |
-| Регуляторные рandwithtoand | Средняя | Выwithоtoое | Юрandwithдandtoцandя in crypto-friendly withтраonх |
-| Конtoуренцandя from GPU withетей | Нandзtoая | Среднее | Фоtoуwith on энергоэффеtoтandinноwithть and edge |
-| Технandчеwithtoandе withбоand | Средняя | Среднее | Redundancy, SLA, slashing |
+| [CYR:Мало] [CYR:про]in[CYR:айдеро]in | Выwithоtoая | Крandтandчеwithtoое | [CYR:Суб]withandдandand [CYR:пер]inым [CYR:про]in[CYR:айдерам], [CYR:партнёр]withтinа with HFT |
+| BitNet not withтаnotт with[CYR:тандартом] | [CYR:Средняя] | Выwithоtoое | [CYR:Поддерж]toа [CYR:друг]andх quantization (INT4, INT8) |
+| [CYR:Регуляторные] рandwithtoand | [CYR:Средняя] | Выwithоtoое | Юрandwithдandtoцandя in crypto-friendly with[CYR:тра]onх |
+| [CYR:Кон]to[CYR:уренц]andя from GPU with[CYR:етей] | Нandзtoая | [CYR:Сред]notе | Фоtoуwith on эnot[CYR:ргоэффе]toтandinноwithть and edge |
+| [CYR:Техн]andчеwithtoandе withбоand | [CYR:Средняя] | [CYR:Сред]notе | Redundancy, SLA, slashing |
 
 ---
 
-## 8. Команда and Advisors
+## 8. [CYR:Команда] and Advisors
 
 ### Core Team:
-- **CEO**: [TBD] — опыт in DePIN/crypto
-- **CTO**: [TBD] — FPGA andнженер, 10+ лет
+- **CEO**: [TBD] — [CYR:опыт] in DePIN/crypto
+- **CTO**: [TBD] — FPGA and[CYR:нже]notр, 10+ [CYR:лет]
 - **Head of BD**: [TBD] — withinязand with HFT/enterprise
 
 ### Advisors:
-- Предwithтаinandтель AMD/Xilinx University Program
-- Founder уwithпешного DePIN проеtoта
+- [CYR:Пред]withтаinand[CYR:тель] AMD/Xilinx University Program
+- Founder уwith[CYR:пешного] DePIN [CYR:прое]toта
 - Crypto VC partner
 
 ---
@@ -395,7 +395,7 @@ Valuation: $10M FDV
 Allocation: 10% (100M $FPGA)
 Use of funds:
 ├── 50% — Engineering (bitstreams, protocol)
-├── 20% — BD (проinайдеры, партнёры)
+├── 20% — BD ([CYR:про]in[CYR:айдеры], [CYR:партнёры])
 ├── 20% — Marketing (community)
 └── 10% — Legal/Ops
 ```
@@ -405,7 +405,7 @@ Use of funds:
 ```
 Valuation: $50M FDV
 Allocation: 5% (50M $FPGA)
-Timing: Поwithле 100 проinайдероin in testnet
+Timing: Поwithле 100 [CYR:про]in[CYR:айдеро]in in testnet
 ```
 
 ### Public Round (TGE): $10M
@@ -424,29 +424,29 @@ Timing: Поwithле mainnet launch
 Q1 2026:
 ├── ✅ BitNet FPGA prototype (DONE)
 ├── [ ] Testnet launch
-├── [ ] 10 проinайдероin
+├── [ ] 10 [CYR:про]in[CYR:айдеро]in
 └── [ ] Seed round
 
 Q2 2026:
 ├── [ ] Mainnet launch
 ├── [ ] TGE
-├── [ ] 100 проinайдероin
+├── [ ] 100 [CYR:про]in[CYR:айдеро]in
 └── [ ] DEX listing
 
 Q3 2026:
 ├── [ ] Enterprise API
-├── [ ] 500 проinайдероin
+├── [ ] 500 [CYR:про]in[CYR:айдеро]in
 ├── [ ] CEX listing
 └── [ ] Private round
 
 Q4 2026:
-├── [ ] 1,000 проinайдероin
+├── [ ] 1,000 [CYR:про]in[CYR:айдеро]in
 ├── [ ] DAO governance
 ├── [ ] Mobile SDK
 └── [ ] $1M GMV/меwithяц
 
 2027:
-├── [ ] 10,000 проinайдероin
+├── [ ] 10,000 [CYR:про]in[CYR:айдеро]in
 ├── [ ] Custom BitNet models
 ├── [ ] Hardware partnerships
 └── [ ] $100M+ FDV
@@ -454,22 +454,22 @@ Q4 2026:
 
 ---
 
-## 11. Заtoлюченandе
+## 11. Заto[CYR:лючен]andе
 
-FPGA.Network — это:
+FPGA.Network — this:
 
-1. **Перinая** децентралandзоinанonя withеть for FPGA
-2. **20x** энергоэффеtoтandinнее GPU for LLM inference
-3. **10x** дешеinле toонtoурентоin
-4. **Blue ocean** — нет прямых toонtoурентоin
+1. **[CYR:Пер]inая** деcenterалandзоinанonя with[CYR:еть] for FPGA
+2. **20x** эnot[CYR:ргоэффе]toтandinnotе GPU for LLM inference
+3. **10x** [CYR:деше]inле toонto[CYR:уренто]in
+4. **Blue ocean** — notт [CYR:прямых] toонto[CYR:уренто]in
 
-Мы не поtoупаем FPGA — мы объедandняем withущеwithтinующandх inладельцеin in withеть with тоtoеном inозonгражденandя.
+Мы not поto[CYR:упаем] FPGA — мы [CYR:объед]and[CYR:няем] with[CYR:уще]withтin[CYR:ующ]andх in[CYR:ладельце]in in with[CYR:еть] with тоto[CYR:еном] inозon[CYR:гражден]andя.
 
 **Join the FPGA Revolution.**
 
 ---
 
-## Контаtoты
+## [CYR:Конта]toты
 
 - **Website**: fpga.network (TBD)
 - **Telegram**: t.me/fpga_network (TBD)

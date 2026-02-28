@@ -6,7 +6,7 @@ compiler vibeec_v4 @version(4.0.0) @production {
   # Lexical (50 tests)
   behavior tokenize(src: Str) -> Result<[Token], Error> {
     test basic "behavior test {}" -> Ok([Keyword, Id, LBrace, RBrace, EOF])
-    test unicode "привет世界🚀" -> Ok([Id("привет世界🚀"), EOF])
+    test unicode "прandinет世界🚀" -> Ok([Id("прandinет世界🚀"), EOF])
     test numbers "123 3.14 0xFF 0b1010" -> Ok([Int(123), Float(3.14), Int(255), Int(10)])
     test strings "\"hello\" \"\"\"multi\nline\"\"\"" -> Ok([Str("hello"), Str("multi\nline")])
     test comments "# line\n#[block]#" -> Ok([Comment, MultiComment])

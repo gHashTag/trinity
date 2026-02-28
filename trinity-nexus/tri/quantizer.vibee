@@ -1,6 +1,6 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# QUANTIZER.VIBEE - INT4 ДЕМИУРГ
-# Священные законы концентрации 7B разума в 8GB памяти
+# QUANTIZER.VIBEE - INT4 [CYR:ДЕМИУРГ]
+# Сin[CYR:ященные] [CYR:законы] [CYR:кон]centerацandand 7B [CYR:разума] in 8GB [CYR:памят]and
 # φ² + 1/φ² = 3 = TRINITY
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -10,48 +10,48 @@ language: zig
 module: trinity_quantizer
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# СВЯЩЕННЫЕ КОНСТАНТЫ INT4
+# [CYR:СВЯЩЕННЫЕ] [CYR:КОНСТАНТЫ] INT4
 # ═══════════════════════════════════════════════════════════════════════════════
 
 constants:
-  INT4_MIN: -8          # Минимальное значение INT4
-  INT4_MAX: 7           # Максимальное значение INT4
-  INT4_RANGE: 15        # Диапазон значений (7 - (-8) = 15)
-  SCALE_DIVISOR: 7.0    # Делитель для вычисления scale
-  BLOCK_SIZE: 32        # Размер блока для block-wise quantization
+  INT4_MIN: -8          # Мandнand[CYR:мальное] value INT4
+  INT4_MAX: 7           # [CYR:Мак]withand[CYR:мальное] value INT4
+  INT4_RANGE: 15        # Дand[CYR:апазон] зon[CYR:чен]andй (7 - (-8) = 15)
+  SCALE_DIVISOR: 7.0    # [CYR:Дел]and[CYR:тель] for inычandwith[CYR:лен]andя scale
+  BLOCK_SIZE: 32        # [CYR:Размер] blockа for block-wise quantization
   PHI: 1.618033988749895
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ТИПЫ ДАННЫХ
+# [CYR:ТИПЫ] [CYR:ДАННЫХ]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 types:
-  # INT4 упакованный формат: 2 значения в 1 байте
+  # INT4 [CYR:упако]in[CYR:анный] [CYR:формат]: 2 values in 1 [CYR:байте]
   PackedInt4:
     fields:
-      data: List<Int>       # Упакованные байты (2 INT4 на байт)
-      scales: List<Float>   # Scale factors для каждого блока
-      zeros: List<Int>      # Zero points для каждого блока
-      shape: List<Int>      # Оригинальная форма тензора
-      num_elements: Int     # Количество элементов
+      data: List<Int>       # [CYR:Упако]in[CYR:анные] [CYR:байты] (2 INT4 on [CYR:байт])
+      scales: List<Float>   # Scale factors for each blockа
+      zeros: List<Int>      # Zero points for each blockа
+      shape: List<Int>      # Орandгandonльonя [CYR:форма] [CYR:тензора]
+      num_elements: Int     # [CYR:Кол]andчеwithтinо elementоin
 
-  # Конфигурация квантизации
+  # [CYR:Конф]and[CYR:гурац]andя кin[CYR:ант]fromацandand
   QuantConfig:
     fields:
-      block_size: Int       # Размер блока (default: 32)
-      symmetric: Bool       # Симметричная квантизация
-      use_zero_point: Bool  # Использовать zero point
+      block_size: Int       # [CYR:Размер] blockа (default: 32)
+      symmetric: Bool       # Сand[CYR:мметр]andчonя кin[CYR:ант]fromацandя
+      use_zero_point: Bool  # Иwith[CYR:пользо]in[CYR:ать] zero point
 
-  # Статистика квантизации
+  # [CYR:Стат]andwithтandка кin[CYR:ант]fromацandand
   QuantStats:
     fields:
-      original_size: Int    # Размер в байтах до квантизации
-      quantized_size: Int   # Размер после квантизации
+      original_size: Int    # [CYR:Размер] in [CYR:байтах] до кin[CYR:ант]fromацandand
+      quantized_size: Int   # [CYR:Размер] поwithле кin[CYR:ант]fromацandand
       compression_ratio: Float
-      max_error: Float      # Максимальная ошибка
-      mean_error: Float     # Средняя ошибка
+      max_error: Float      # [CYR:Мак]withand[CYR:маль]onя error
+      mean_error: Float     # [CYR:Средняя] error
 
-  # Заголовок INT4 файла
+  # [CYR:Заголо]inок INT4 fileа
   Int4Header:
     fields:
       magic: Int            # 0x494E5434 = "INT4"
@@ -64,17 +64,17 @@ types:
       num_heads: Int
       num_kv_heads: Int
       total_params: Int
-      quantized_size: Int   # Размер в байтах после квантизации
+      quantized_size: Int   # [CYR:Размер] in [CYR:байтах] поwithле кin[CYR:ант]fromацandand
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# СВЯЩЕННЫЕ ЗАКОНЫ КВАНТИЗАЦИИ
+# [CYR:СВЯЩЕННЫЕ] [CYR:ЗАКОНЫ] [CYR:КВАНТИЗАЦИИ]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 behaviors:
-  # ЗАКОН 1: Вычисление scale factor
+  # [CYR:ЗАКОН] 1: [CYR:Выч]andwith[CYR:лен]andе scale factor
   - name: compute_scale
-    given: Блок f32 значений размера BLOCK_SIZE
-    when: Нужно найти коэффициент масштабирования
+    given: [CYR:Блок] f32 зon[CYR:чен]andй [CYR:размера] BLOCK_SIZE
+    when: [CYR:Нужно] onйтand [CYR:коэфф]andцand[CYR:ент] маwith[CYR:штаб]andроinанandя
     then: scale = max(abs(block)) / 7.0
     formula: |
       absmax = 0.0
@@ -82,12 +82,12 @@ behaviors:
         absmax = max(absmax, abs(value))
       scale = absmax / 7.0
       if scale == 0.0:
-        scale = 1.0  # Избегаем деления на ноль
+        scale = 1.0  # [CYR:Избегаем] [CYR:делен]andя on [CYR:ноль]
 
-  # ЗАКОН 2: Квантизация f32 → INT4
+  # [CYR:ЗАКОН] 2: Кin[CYR:ант]fromацandя f32 → INT4
   - name: quantize_value
-    given: f32 значение и scale factor
-    when: Нужно сжать до INT4
+    given: f32 value and scale factor
+    when: [CYR:Нужно] with[CYR:жать] до INT4
     then: int4 = clamp(round(f32 / scale), -8, 7)
     formula: |
       scaled = value / scale
@@ -95,75 +95,75 @@ behaviors:
       clamped = clamp(rounded, -8, 7)
       return @intCast(i4, clamped)
 
-  # ЗАКОН 3: Деквантизация INT4 → f32
+  # [CYR:ЗАКОН] 3: [CYR:Дек]in[CYR:ант]fromацandя INT4 → f32
   - name: dequantize_value
-    given: INT4 значение и scale factor
-    when: Нужно восстановить f32 для вычислений
+    given: INT4 value and scale factor
+    when: [CYR:Нужно] inоwithwith[CYR:тано]inandть f32 for inычandwith[CYR:лен]andй
     then: f32 = int4_as_f32 * scale
     formula: |
       return @as(f32, @floatFromInt(int4)) * scale
 
-  # ЗАКОН 4: Упаковка двух INT4 в один байт
+  # [CYR:ЗАКОН] 4: [CYR:Упако]inка дinух INT4 in одandн [CYR:байт]
   - name: pack_int4
-    given: Два INT4 значения (high, low)
-    when: Нужно упаковать для хранения
+    given: Дinа INT4 values (high, low)
+    when: [CYR:Нужно] [CYR:упако]in[CYR:ать] for [CYR:хра]notнandя
     then: byte = (high << 4) | (low & 0x0F)
     formula: |
       high_bits = (@as(u8, @bitCast(high)) & 0x0F) << 4
       low_bits = @as(u8, @bitCast(low)) & 0x0F
       return high_bits | low_bits
 
-  # ЗАКОН 5: Распаковка байта в два INT4
+  # [CYR:ЗАКОН] 5: Раwith[CYR:пако]inка [CYR:байта] in дinа INT4
   - name: unpack_int4
-    given: Упакованный байт
-    when: Нужно извлечь два INT4 значения
-    then: high = byte >> 4, low = byte & 0x0F (с sign extension)
+    given: [CYR:Упако]in[CYR:анный] [CYR:байт]
+    when: [CYR:Нужно] fromin[CYR:лечь] дinа INT4 values
+    then: high = byte >> 4, low = byte & 0x0F (with sign extension)
     formula: |
       high_u4 = (byte >> 4) & 0x0F
       low_u4 = byte & 0x0F
-      # Sign extension: если бит 3 установлен, это отрицательное число
+      # Sign extension: if бandт 3 уwith[CYR:тано]in[CYR:лен], this [CYR:отр]and[CYR:цательное] number
       high = if (high_u4 & 0x08) != 0 then @as(i8, high_u4) - 16 else @as(i8, high_u4)
       low = if (low_u4 & 0x08) != 0 then @as(i8, low_u4) - 16 else @as(i8, low_u4)
 
-  # ЗАКОН 6: Block-wise квантизация тензора
+  # [CYR:ЗАКОН] 6: Block-wise кin[CYR:ант]fromацandя [CYR:тензора]
   - name: quantize_tensor
-    given: f32 тензор произвольной формы
-    when: Нужно сконвертировать весь тензор в INT4
-    then: Разбить на блоки, вычислить scale для каждого, квантизовать
+    given: f32 [CYR:тензор] [CYR:про]fromin[CYR:ольной] [CYR:формы]
+    when: [CYR:Нужно] with[CYR:кон]in[CYR:ерт]andроin[CYR:ать] inеwithь [CYR:тензор] in INT4
+    then: [CYR:Разб]andть on blockand, inычandwithлandть scale for each, кin[CYR:ант]fromоin[CYR:ать]
     steps:
-      - Flatten тензор в 1D массив
-      - Разбить на блоки размера BLOCK_SIZE
-      - Для каждого блока вычислить scale (ЗАКОН 1)
-      - Квантизовать каждое значение (ЗАКОН 2)
-      - Упаковать пары INT4 в байты (ЗАКОН 4)
-      - Сохранить scales отдельно
+      - Flatten [CYR:тензор] in 1D array
+      - [CYR:Разб]andть on blockand [CYR:размера] BLOCK_SIZE
+      - [CYR:Для] each blockа inычandwithлandть scale ([CYR:ЗАКОН] 1)
+      - Кin[CYR:ант]fromоin[CYR:ать] [CYR:каждое] value ([CYR:ЗАКОН] 2)
+      - [CYR:Упако]in[CYR:ать] [CYR:пары] INT4 in [CYR:байты] ([CYR:ЗАКОН] 4)
+      - [CYR:Сохран]andть scales [CYR:отдельно]
 
-  # ЗАКОН 7: Block-wise деквантизация тензора
+  # [CYR:ЗАКОН] 7: Block-wise [CYR:дек]in[CYR:ант]fromацandя [CYR:тензора]
   - name: dequantize_tensor
-    given: PackedInt4 тензор
-    when: Нужно восстановить f32 для inference
-    then: Распаковать, деквантизовать с соответствующими scales
+    given: PackedInt4 [CYR:тензор]
+    when: [CYR:Нужно] inоwithwith[CYR:тано]inandть f32 for inference
+    then: Раwith[CYR:пако]in[CYR:ать], [CYR:дек]in[CYR:ант]fromоin[CYR:ать] with withоresponsewithтin[CYR:ующ]andмand scales
     steps:
-      - Распаковать байты в INT4 пары (ЗАКОН 5)
-      - Для каждого блока применить соответствующий scale
-      - Деквантизовать каждое значение (ЗАКОН 3)
-      - Reshape в оригинальную форму
+      - Раwith[CYR:пако]in[CYR:ать] [CYR:байты] in INT4 [CYR:пары] ([CYR:ЗАКОН] 5)
+      - [CYR:Для] each blockа прand[CYR:мен]andть withоresponsewithтin[CYR:ующ]andй scale
+      - [CYR:Дек]in[CYR:ант]fromоin[CYR:ать] [CYR:каждое] value ([CYR:ЗАКОН] 3)
+      - Reshape in орandгandon[CYR:льную] [CYR:форму]
 
-  # ЗАКОН 8: Конвертация .tri → .tri.int4
+  # [CYR:ЗАКОН] 8: [CYR:Кон]in[CYR:ертац]andя .tri → .tri.int4
   - name: convert_tri_to_int4
-    given: Путь к .tri файлу с BF16/F32 весами
-    when: Нужно создать квантизованную версию
-    then: Создать .tri.int4 файл с INT4 весами и scales
+    given: [CYR:Путь] к .tri fileу with BF16/F32 inеwithамand
+    when: [CYR:Нужно] with[CYR:оздать] кin[CYR:ант]fromоin[CYR:анную] inерwithandю
+    then: [CYR:Создать] .tri.int4 file with INT4 inеwithамand and scales
     steps:
-      - Прочитать заголовок .tri
-      - Для каждого тензора:
-        - Загрузить BF16/F32 веса
-        - Применить quantize_tensor (ЗАКОН 6)
-        - Записать упакованные INT4 + scales
-      - Записать новый заголовок с quantized_size
+      - [CYR:Про]read [CYR:заголо]inок .tri
+      - [CYR:Для] each [CYR:тензора]:
+        - [CYR:Загруз]andть BF16/F32 inеwithа
+        - Прand[CYR:мен]andть quantize_tensor ([CYR:ЗАКОН] 6)
+        - Заwrite [CYR:упако]in[CYR:анные] INT4 + scales
+      - Заwrite ноinый [CYR:заголо]inок with quantized_size
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ФОРМАТ ФАЙЛА .tri.int4
+# [CYR:ФОРМАТ] [CYR:ФАЙЛА] .tri.int4
 # ═══════════════════════════════════════════════════════════════════════════════
 
 file_format:
@@ -176,7 +176,7 @@ file_format:
         - packed_data: u8[packed_size]
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# МЕТРИКИ СЖАТИЯ
+# [CYR:МЕТРИКИ] [CYR:СЖАТИЯ]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 metrics:
@@ -188,7 +188,7 @@ metrics:
     effective_bits: 5  # 4 + 1 overhead
     compression_ratio: 3.2x  # 16 / 5
 
-  # Для 7B модели
+  # [CYR:Для] 7B [CYR:модел]and
   qwen_7b:
     original_size_gb: 14.0  # BF16
     quantized_size_gb: 4.4  # INT4 + scales

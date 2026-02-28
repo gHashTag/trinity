@@ -224,7 +224,7 @@ behaviors:
 
 test_cases:
   - name: russian_greeting
-    given: "Привет! Как дела?"
+    given: "Прandinет! [CYR:Как] [CYR:дела]?"
     expected: "Warm Russian greeting, ask about user"
 
   - name: chinese_farewell

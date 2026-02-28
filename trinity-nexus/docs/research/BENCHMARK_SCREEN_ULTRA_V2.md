@@ -179,4 +179,4 @@ Frame Time = 2.08ms = 1000ms / 480
 
 ---
 
-**φ² + 1/φ² = 3 | PHOENIX = 999 | KOSCHEI = БЕССМЕРТИЕ**
+**φ² + 1/φ² = 3 | PHOENIX = 999 | KOSCHEI = [CYR:БЕССМЕРТИЕ]**

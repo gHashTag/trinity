@@ -284,7 +284,7 @@ pub const AgentTools = struct {
         // Staking keywords
         if (std.mem.indexOf(u8, input, "stake") != null or
             std.mem.indexOf(u8, input, "Stake") != null or
-            std.mem.indexOf(u8, input, "заwithтейto") != null)
+            std.mem.indexOf(u8, input, "заwith[CYR:тей]to") != null)
         {
             steps[step_count] = .{
                 .tool = .Stake,
@@ -300,7 +300,7 @@ pub const AgentTools = struct {
         if (std.mem.indexOf(u8, input, "code") != null or
             std.mem.indexOf(u8, input, "generate") != null or
             std.mem.indexOf(u8, input, "optimize") != null or
-            std.mem.indexOf(u8, input, "Оптandмandзandруй") != null)
+            std.mem.indexOf(u8, input, "[CYR:Опт]andмandзand[CYR:руй]") != null)
         {
             steps[step_count] = .{
                 .tool = .GenerateCode,
@@ -315,8 +315,8 @@ pub const AgentTools = struct {
         // Jobs/earnings keywords
         if (std.mem.indexOf(u8, input, "job") != null or
             std.mem.indexOf(u8, input, "earning") != null or
-            std.mem.indexOf(u8, input, "маtowithandмandзandруй") != null or
-            std.mem.indexOf(u8, input, "Маtowithandмandзandруй") != null)
+            std.mem.indexOf(u8, input, "маtowithandмandзand[CYR:руй]") != null or
+            std.mem.indexOf(u8, input, "Маtowithandмandзand[CYR:руй]") != null)
         {
             steps[step_count] = .{
                 .tool = .Jobs,
@@ -370,9 +370,9 @@ pub fn main() !void {
 
     // Natural language parsing demo
     const nl_tasks = [_][]const u8{
-        "Запуwithтand andнференwith on Mistral-7B and заwithтейtoай earnings",
-        "Оптandмandзandруй inference for Qwen2.5-Coder-7B byд 8-core CPU",
-        "Маtowithandмandзandруй earnings on моём node in Ko Samui",
+        "[CYR:Запу]withтand and[CYR:нферен]with on Mistral-7B and заwith[CYR:тей]toай earnings",
+        "[CYR:Опт]andмandзand[CYR:руй] inference for Qwen2.5-Coder-7B byд 8-core CPU",
+        "Маtowithandмandзand[CYR:руй] earnings on [CYR:моём] node in Ko Samui",
     };
 
     for (nl_tasks) |task| {

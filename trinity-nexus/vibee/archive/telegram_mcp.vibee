@@ -1,9 +1,9 @@
 # telegram_mcp.vibee
-# Telegram MCP Plugin на языке VIBEE
-# Компилируется в Gleam/Erlang через vibeec
+# Telegram MCP Plugin on [CYR:языке] VIBEE
+# [CYR:Комп]or[CYR:рует]withя in Gleam/Erlang [CYR:через] vibeec
 
 # ==============================================================================
-# МЕТАДАННЫЕ ПЛАГИНА
+# [CYR:МЕТАДАННЫЕ] [CYR:ПЛАГИНА]
 # ==============================================================================
 
 plugin:
@@ -15,7 +15,7 @@ plugin:
   license: MIT
 
 # ==============================================================================
-# ИМПОРТЫ
+# [CYR:ИМПОРТЫ]
 # ==============================================================================
 
 imports:
@@ -30,7 +30,7 @@ imports:
     import: [Tool, ToolResult, ToolError]
 
 # ==============================================================================
-# ТИПЫ
+# [CYR:ТИПЫ]
 # ==============================================================================
 
 types:
@@ -108,11 +108,11 @@ types:
         type: Option(DateTime)
 
 # ==============================================================================
-# ФУНКЦИИ
+# [CYR:ФУНКЦИИ]
 # ==============================================================================
 
 functions:
-  # Список диалогов
+  # Спandwithок дand[CYR:алого]in
   - name: list_dialogs
     visibility: public
     async: true
@@ -131,14 +131,14 @@ functions:
     returns: Result(List(Dialog), Error)
     
     implementation:
-      # Валидация
+      # [CYR:Вал]and[CYR:дац]andя
       - guard: limit is None or limit > 0
         else: return Error("Limit must be positive")
       
-      # Вызов Telegram API
+      # [CYR:Вызо]in Telegram API
       - await: telegram_api.get_dialogs(limit, filter)
       
-      # Обработка результата
+      # [CYR:Обработка] resultа
       - case: result
         of:
           - pattern: Ok(dialogs)
@@ -149,9 +149,9 @@ functions:
     properties:
       idempotent: true
       memoize: true
-      cache_ttl: 300  # 5 минут
+      cache_ttl: 300  # 5 мand[CYR:нут]
   
-  # Получить сообщения из диалога
+  # [CYR:Получ]andть with[CYR:ообщен]andя from дand[CYR:алога]
   - name: get_dialog_messages
     visibility: public
     async: true
@@ -175,14 +175,14 @@ functions:
     returns: Result(List(Message), Error)
     
     implementation:
-      # Валидация
+      # [CYR:Вал]and[CYR:дац]andя
       - guard: dialog_id != 0
         else: return Error("Invalid dialog_id")
       
-      # Получить сообщения
+      # [CYR:Получ]andть with[CYR:ообщен]andя
       - await: telegram_api.get_history(dialog_id, limit)
       
-      # Применить фильтр
+      # Прand[CYR:мен]andть фand[CYR:льтр]
       - if: filter is Some(f)
         then:
           - let: filtered = messages |> filter_messages(f)
@@ -193,7 +193,7 @@ functions:
     properties:
       idempotent: true
   
-  # Поиск сообщений
+  # Поandwithк with[CYR:ообщен]andй
   - name: search_messages
     visibility: public
     async: true
@@ -218,20 +218,20 @@ functions:
     returns: Result(List(Message), Error)
     
     implementation:
-      # Валидация
+      # [CYR:Вал]and[CYR:дац]andя
       - guard: query is not empty
         else: return Error("Query cannot be empty")
       
-      # Поиск
+      # Поandwithк
       - await: telegram_api.search_global(query, dialog_id, limit)
       
-      # Возврат результата
+      # [CYR:Воз]in[CYR:рат] resultа
       - return: result
     
     properties:
       idempotent: true
   
-  # Отправить сообщение
+  # [CYR:Отпра]inandть with[CYR:ообщен]andе
   - name: send_message
     visibility: public
     async: true
@@ -250,7 +250,7 @@ functions:
     returns: Result(Message, Error)
     
     implementation:
-      # Валидация
+      # [CYR:Вал]and[CYR:дац]andя
       - guard: chat_id != 0
         else: return Error("Invalid chat_id")
       
@@ -260,10 +260,10 @@ functions:
       - guard: text.length <= 4096
         else: return Error("Text too long (max 4096 chars)")
       
-      # Отправка
+      # [CYR:Отпра]inка
       - await: telegram_api.send_message(chat_id, text)
       
-      # Возврат результата
+      # [CYR:Воз]in[CYR:рат] resultа
       - case: result
         of:
           - pattern: Ok(message)
@@ -274,7 +274,7 @@ functions:
     properties:
       idempotent: false
   
-  # Выполнить MCP tool
+  # [CYR:Выполн]andть MCP tool
   - name: execute_tool
     visibility: public
     async: true
@@ -285,7 +285,7 @@ functions:
     returns: Result(ToolResult, ToolError)
     
     implementation:
-      # Диспетчеризация по типу tool
+      # Дandwith[CYR:петчер]fromацandя по typeу tool
       - case: tool
         of:
           - pattern: ListDialogs(limit, filter)
@@ -311,7 +311,7 @@ functions:
     properties:
       idempotent: false
   
-  # Вспомогательная функция: фильтрация сообщений
+  # Вwith[CYR:помогатель]onя function: фand[CYR:льтрац]andя with[CYR:ообщен]andй
   - name: filter_messages
     visibility: private
     params:
@@ -325,17 +325,17 @@ functions:
     implementation:
       - let: filtered = messages
       
-      # Фильтр по отправителю
+      # Фand[CYR:льтр] по [CYR:отпра]inand[CYR:телю]
       - if: filter.from_user is Some(user_id)
         then:
           - let: filtered = filtered |> filter(m => m.from.id == user_id)
       
-      # Фильтр по медиа
+      # Фand[CYR:льтр] по [CYR:мед]andа
       - if: filter.has_media is Some(has_media)
         then:
           - let: filtered = filtered |> filter(m => m.has_media == has_media)
       
-      # Фильтр по дате
+      # Фand[CYR:льтр] по [CYR:дате]
       - if: filter.date_from is Some(date)
         then:
           - let: filtered = filtered |> filter(m => m.date >= date)
@@ -346,7 +346,7 @@ functions:
       
       - return: filtered
   
-  # Вспомогательная функция: обертка результата
+  # Вwith[CYR:помогатель]onя function: [CYR:обертка] resultа
   - name: wrap_result
     visibility: private
     params:
@@ -364,11 +364,11 @@ functions:
             return: Error(ToolError { message: e })
 
 # ==============================================================================
-# ПОВЕДЕНИЯ (Given-When-Then)
+# [CYR:ПОВЕДЕНИЯ] (Given-When-Then)
 # ==============================================================================
 
 behaviors:
-  # Поведение: список диалогов
+  # Поin[CYR:еден]andе: list дand[CYR:алого]in
   - name: list_dialogs_behavior
     given: |
       - User is authenticated with Telegram
@@ -405,7 +405,7 @@ behaviors:
     
     implements: [list_dialogs]
   
-  # Поведение: отправка сообщения
+  # Поin[CYR:еден]andе: [CYR:отпра]inка with[CYR:ообщен]andя
   - name: send_message_behavior
     given: |
       - User is authenticated
@@ -450,7 +450,7 @@ behaviors:
     
     implements: [send_message]
   
-  # Поведение: поиск сообщений
+  # Поin[CYR:еден]andе: поandwithк with[CYR:ообщен]andй
   - name: search_messages_behavior
     given: |
       - User is authenticated
@@ -489,11 +489,11 @@ behaviors:
     implements: [search_messages]
 
 # ==============================================================================
-# ТЕСТЫ
+# [CYR:ТЕСТЫ]
 # ==============================================================================
 
 tests:
-  # Тест: список диалогов
+  # Теwithт: list дand[CYR:алого]in
   - name: test_list_dialogs
     type: unit
     
@@ -518,7 +518,7 @@ tests:
     teardown:
       - cleanup: mocks
   
-  # Тест: список диалогов с фильтром
+  # Теwithт: list дand[CYR:алого]in with фand[CYR:льтром]
   - name: test_list_dialogs_with_filter
     type: unit
     
@@ -538,7 +538,7 @@ tests:
       - result.dialogs.length == 1
       - result.dialogs[0].unread > 0
   
-  # Тест: отправка сообщения
+  # Теwithт: [CYR:отпра]inка with[CYR:ообщен]andя
   - name: test_send_message
     type: unit
     
@@ -558,7 +558,7 @@ tests:
       - result.message.text == "Test"
       - telegram_api.send_message was called once
   
-  # Тест: отправка пустого сообщения
+  # Теwithт: [CYR:отпра]inка пуwiththat with[CYR:ообщен]andя
   - name: test_send_message_empty_text
     type: unit
     
@@ -572,7 +572,7 @@ tests:
       - result is Error
       - result.error contains "cannot be empty"
   
-  # Тест: отправка с невалидным chat_id
+  # Теwithт: [CYR:отпра]inка with notinалand[CYR:дным] chat_id
   - name: test_send_message_invalid_chat_id
     type: unit
     
@@ -586,7 +586,7 @@ tests:
       - result is Error
       - result.error contains "Invalid chat_id"
   
-  # Тест: поиск сообщений
+  # Теwithт: поandwithк with[CYR:ообщен]andй
   - name: test_search_messages
     type: unit
     
@@ -608,7 +608,7 @@ tests:
       - result.messages.length == 2
       - all messages contain "hello"
   
-  # Property-based тест: list_dialogs всегда возвращает <= limit
+  # Property-based test: list_dialogs inwith[CYR:егда] inозin[CYR:ращает] <= limit
   - name: test_list_dialogs_respects_limit
     type: property
     
@@ -616,7 +616,7 @@ tests:
     
     setup:
       - mock: telegram_api.get_dialogs
-        returns: generate_dialogs(limit * 2)  # Больше чем limit
+        returns: generate_dialogs(limit * 2)  # [CYR:Больше] [CYR:чем] limit
     
     when:
       call: list_dialogs
@@ -629,7 +629,7 @@ tests:
       - result.dialogs.length <= limit
 
 # ==============================================================================
-# КОНФИГУРАЦИЯ
+# [CYR:КОНФИГУРАЦИЯ]
 # ==============================================================================
 
 config:
@@ -657,7 +657,7 @@ config:
     cache_size_mb: 64
 
 # ==============================================================================
-# ЭКСПОРТЫ
+# [CYR:ЭКСПОРТЫ]
 # ==============================================================================
 
 exports:
@@ -675,7 +675,7 @@ exports:
     - execute_tool
 
 # ==============================================================================
-# ДОКУМЕНТАЦИЯ
+# [CYR:ДОКУМЕНТАЦИЯ]
 # ==============================================================================
 
 documentation:
@@ -717,7 +717,7 @@ documentation:
         }
 
 # ==============================================================================
-# МЕТАДАННЫЕ
+# [CYR:МЕТАДАННЫЕ]
 # ==============================================================================
 
 metadata:

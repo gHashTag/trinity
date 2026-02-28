@@ -1,11 +1,11 @@
 const std = @import("std");
 
 // ═════════════════════════════════════════════════════════════
-// УРОБОРОС v2.0: Вечный дinandгатель withамоbyглощенandя and withамоwithоinершенwithтinоinанandя
-// Уbetterнonя version with глубоtoой andнтеграцandей
+// [CYR:УРОБОРОС] v2.0: [CYR:Вечный] дinand[CYR:гатель] with[CYR:амо]by[CYR:глощен]andя and with[CYR:амо]withоin[CYR:ершен]withтinоinанandя
+// Уbetterнonя version with [CYR:глубо]toой and[CYR:нтеграц]andей
 // ═════════════════════════════════════════════════════════════
 
-// Сinященные toонwithтанты Вwithеленной 999
+// Сin[CYR:ященные] toонwith[CYR:танты] Вwith[CYR:еленной] 999
 pub const SACRED = struct {
     pub const PHI: f64 = 1.618033988749895;
     pub const PI: f64 = 3.141592653589793;
@@ -15,7 +15,7 @@ pub const SACRED = struct {
 };
 
 // ═════════════════════════════════════════════════════════════
-// TYPES ДАННЫХ УРОБОРОСА v2.0
+// TYPES [CYR:ДАННЫХ] [CYR:УРОБОРОСА] v2.0
 // ═════════════════════════════════════════════════════════════
 
 pub const ProfaneCode = struct {
@@ -333,7 +333,7 @@ pub const UroborosState = struct {
     }
 
     pub fn deinit(self: *UroborosState) void {
-        // last_input and current_generation теперь const уtoазателand
+        // last_input and current_generation [CYR:теперь] const уto[CYR:азател]and
         if (self.last_input) |input| {
             self.allocator.destroy(input);
         }
@@ -371,7 +371,7 @@ pub const SystemStatistics = struct {
 };
 
 // ═════════════════════════════════════════════════════════════
-// АКТОРЫ УРОБОРОСА v2.0
+// [CYR:АКТОРЫ] [CYR:УРОБОРОСА] v2.0
 // ═════════════════════════════════════════════════════════════
 
 pub const AdvancedArchaeologist = struct {
@@ -383,12 +383,12 @@ pub const AdvancedArchaeologist = struct {
 
     pub fn excavate(self: *AdvancedArchaeologist, profane: ProfaneCode) !FossilSpec {
         std.debug.print("╔════════════════════════════════════════════════════╗\n", .{});
-        std.debug.print("║       УЛУЧШЕННЫЙ АРХЕОЛОГ: ГЛУБОКАЯ ЭКСКАВАЦИЯ      ║\n", .{});
+        std.debug.print("║       [CYR:УЛУЧШЕННЫЙ] [CYR:АРХЕОЛОГ]: [CYR:ГЛУБОКАЯ] [CYR:ЭКСКАВАЦИЯ]      ║\n", .{});
         std.debug.print("╚══════════════════════════════════════════════════════╝\n\n", .{});
-        std.debug.print("  Путь: {s}\n", .{profane.path});
-        std.debug.print("  Языto: {s}\n", .{@tagName(profane.language)});
-        std.debug.print("  Размер: {d} байт\n", .{profane.content.len});
-        std.debug.print("  Хэш: ", .{});
+        std.debug.print("  [CYR:Путь]: {s}\n", .{profane.path});
+        std.debug.print("  [CYR:Язы]to: {s}\n", .{@tagName(profane.language)});
+        std.debug.print("  [CYR:Размер]: {d} [CYR:байт]\n", .{profane.content.len});
+        std.debug.print("  [CYR:Хэш]: ", .{});
         for (profane.hash[0..8]) |b| std.debug.print("{x:0>2}", .{b});
         std.debug.print("...\n\n", .{});
 
@@ -401,12 +401,12 @@ pub const AdvancedArchaeologist = struct {
         try self.calculateComplexity(&fossil);
         try self.reconstructIntent(&fossil, profane);
 
-        std.debug.print("  ✅ Эtowithtoаinацandя заinершеon\n", .{});
-        std.debug.print("  Фунtoцandй обonружено: {d}\n", .{fossil.analysis.functions.items.len});
-        std.debug.print("  Струtoтур обonружено: {d}\n", .{fossil.analysis.structs.items.len});
-        std.debug.print("  Заinandwithandмоwithтей: {d}\n", .{fossil.analysis.dependencies.items.len});
-        std.debug.print("  Цandtoломатandчеwithtoая withложноwithть: {d}\n", .{fossil.analysis.complexity_metrics.cyclomatic_complexity});
-        std.debug.print("  Индеtowith byддержandinаемоwithтand: {d:.2}\n\n", .{fossil.analysis.complexity_metrics.maintainability_index});
+        std.debug.print("  ✅ Эtowithtoаinацandя заin[CYR:ерше]on\n", .{});
+        std.debug.print("  [CYR:Фун]toцandй обon[CYR:ружено]: {d}\n", .{fossil.analysis.functions.items.len});
+        std.debug.print("  [CYR:Стру]to[CYR:тур] обon[CYR:ружено]: {d}\n", .{fossil.analysis.structs.items.len});
+        std.debug.print("  Заinandwithandмоwith[CYR:тей]: {d}\n", .{fossil.analysis.dependencies.items.len});
+        std.debug.print("  Цandto[CYR:ломат]andчеwithtoая with[CYR:ложно]withть: {d}\n", .{fossil.analysis.complexity_metrics.cyclomatic_complexity});
+        std.debug.print("  [CYR:Инде]towith by[CYR:ддерж]andin[CYR:аемо]withтand: {d:.2}\n\n", .{fossil.analysis.complexity_metrics.maintainability_index});
 
         return fossil;
     }
@@ -488,11 +488,11 @@ pub const AdvancedArchaeologist = struct {
             \\behaviors: []
             \\
             \\description: |
-            \\  Иwithtoопаемая withпецandфandtoацandя, реtoонwithтруandроinанonя andз профанного toоyes.
-            \\  Фунtoцandй: {d}
-            \\  Цandtoломатandчеwithtoая withложноwithть: {d}
-            \\  Индеtowith byддержandinаемоwithтand: {d:.2}
-            \\  Требует очandwithтtoand and оптandмandзацandand.
+            \\  Иwithto[CYR:опаемая] with[CYR:пец]andфandtoацandя, реtoонwith[CYR:тру]andроinанonя andз [CYR:профанного] toоyes.
+            \\  [CYR:Фун]toцandй: {d}
+            \\  Цandto[CYR:ломат]andчеwithtoая with[CYR:ложно]withть: {d}
+            \\  [CYR:Инде]towith by[CYR:ддерж]andin[CYR:аемо]withтand: {d:.2}
+            \\  [CYR:Требует] очandwithтtoand and [CYR:опт]andмand[CYR:зац]andand.
         , .{ fossil.name, fossil.name, fossil.analysis.functions.items.len, fossil.analysis.complexity_metrics.cyclomatic_complexity, fossil.analysis.complexity_metrics.maintainability_index });
 
         fossil.raw_vibee = spec;
@@ -508,7 +508,7 @@ pub const AdvancedAlchemist = struct {
 
     pub fn transmute(self: *AdvancedAlchemist, fossil: FossilSpec) !PurifiedSpec {
         std.debug.print("\n╔══════════════════════════════════════════════════════╗\n", .{});
-        std.debug.print("║      УЛУЧШЕННЫЙ АЛХИМИК: ЗОЛОТОЕ ПРЕВРАЩЕНИЕ     ║\n", .{});
+        std.debug.print("║      [CYR:УЛУЧШЕННЫЙ] [CYR:АЛХИМИК]: [CYR:ЗОЛОТОЕ] [CYR:ПРЕВРАЩЕНИЕ]     ║\n", .{});
         std.debug.print("╚══════════════════════════════════════════════════════╝\n\n", .{});
 
         var purified = PurifiedSpec.init(self.allocator, fossil.name);
@@ -519,11 +519,11 @@ pub const AdvancedAlchemist = struct {
         try self.phiOptimization(&purified, fossil);
         try self.calculateMetrics(&purified, fossil);
 
-        std.debug.print("  ✅ Алхandмandчеwithtoое преinращенandе заinершено\n", .{});
-        std.debug.print("  Прandменено оптandмandзацandй: {d}\n", .{purified.optimization_report.optimizations_applied.items.len});
-        std.debug.print("  Уbetterнandе проandзinодandтельноwithтand: {d:.2}%\n", .{purified.optimization_report.performance_gain});
-        std.debug.print("  Снandженandе withложноwithтand: {d:.2}%\n", .{purified.optimization_report.complexity_reduction});
-        std.debug.print("  Сложноwithть: {d:.4} (цель: {d:.4})\n", .{ purified.complexity_score, SACRED.TARGET_COMPLEXITY });
+        std.debug.print("  ✅ [CYR:Алх]andмandчеwithtoое [CYR:пре]in[CYR:ращен]andе заin[CYR:ершено]\n", .{});
+        std.debug.print("  Прandмеnotно [CYR:опт]andмand[CYR:зац]andй: {d}\n", .{purified.optimization_report.optimizations_applied.items.len});
+        std.debug.print("  Уbetterнandе [CYR:про]andзinодand[CYR:тельно]withтand: {d:.2}%\n", .{purified.optimization_report.performance_gain});
+        std.debug.print("  Снand[CYR:жен]andе with[CYR:ложно]withтand: {d:.2}%\n", .{purified.optimization_report.complexity_reduction});
+        std.debug.print("  [CYR:Сложно]withть: {d:.4} ([CYR:цель]: {d:.4})\n", .{ purified.complexity_score, SACRED.TARGET_COMPLEXITY });
 
         return purified;
     }
@@ -597,7 +597,7 @@ pub const AdvancedJudge = struct {
 
     pub fn validate(self: *AdvancedJudge, purified: PurifiedSpec) !CanonizedSpec {
         std.debug.print("\n╔══════════════════════════════════════════════════════╗\n", .{});
-        std.debug.print("║         УЛУЧШЕННЫЙ СУДЬЯ: СУД НАД ДУШОЙ           ║\n", .{});
+        std.debug.print("║         [CYR:УЛУЧШЕННЫЙ] [CYR:СУДЬЯ]: [CYR:СУД] [CYR:НАД] [CYR:ДУШОЙ]           ║\n", .{});
         std.debug.print("╚══════════════════════════════════════════════════════╝\n\n", .{});
 
         var canonized = CanonizedSpec.init(self.allocator, purified.name);
@@ -614,15 +614,15 @@ pub const AdvancedJudge = struct {
             canonized.final_vibee = try self.allocator.dupe(u8, purified.optimized_vibee);
         }
 
-        std.debug.print("  ✅ Суд заinершён\n", .{});
-        std.debug.print("  Оценtoа заtoоноin: {d:.2}\n", .{laws_score});
-        std.debug.print("  Оценtoа Троandцы: {d:.2}\n", .{trinity_score});
-        std.debug.print("  Оценtoа andзоляцandand мandроin: {d:.2}\n", .{worlds_score});
-        std.debug.print("  Оценtoа withinященных toонwithтант: {d:.2}\n", .{sacred_score});
-        std.debug.print("  Общая оценtoа: {d:.2}\n", .{canonized.validation_score});
-        std.debug.print("  Нарушенandй: {d}\n", .{canonized.violations.items.len});
-        std.debug.print("  Предуbeforeнandй: {d}\n", .{canonized.warnings.items.len});
-        std.debug.print("  Статуwith: {s}\n\n", .{if (canonized.approved) "СВЯТАЯ" else "ТРЕБУЕТ ДОРАБОТКИ"});
+        std.debug.print("  ✅ [CYR:Суд] заin[CYR:ершён]\n", .{});
+        std.debug.print("  [CYR:Оцен]toа заto[CYR:оно]in: {d:.2}\n", .{laws_score});
+        std.debug.print("  [CYR:Оцен]toа [CYR:Тро]andцы: {d:.2}\n", .{trinity_score});
+        std.debug.print("  [CYR:Оцен]toа and[CYR:золяц]andand мandроin: {d:.2}\n", .{worlds_score});
+        std.debug.print("  [CYR:Оцен]toа within[CYR:ященных] toонwith[CYR:тант]: {d:.2}\n", .{sacred_score});
+        std.debug.print("  [CYR:Общая] [CYR:оцен]toа: {d:.2}\n", .{canonized.validation_score});
+        std.debug.print("  [CYR:Нарушен]andй: {d}\n", .{canonized.violations.items.len});
+        std.debug.print("  [CYR:Преду]beforeнandй: {d}\n", .{canonized.warnings.items.len});
+        std.debug.print("  [CYR:Стату]with: {s}\n\n", .{if (canonized.approved) "[CYR:СВЯТАЯ]" else "[CYR:ТРЕБУЕТ] [CYR:ДОРАБОТКИ]"});
 
         return canonized;
     }
@@ -665,7 +665,7 @@ pub const AdvancedCreator = struct {
 
     pub fn generate(self: *AdvancedCreator, canonized: CanonizedSpec) !GeneratedCode {
         std.debug.print("\n╔══════════════════════════════════════════════════════╗\n", .{});
-        std.debug.print("║        УЛУЧШЕННЫЙ ТВОРЕЦ: НОВОЕ ВОПЛОЩЕНИЕ        ║\n", .{});
+        std.debug.print("║        [CYR:УЛУЧШЕННЫЙ] [CYR:ТВОРЕЦ]: [CYR:НОВОЕ] [CYR:ВОПЛОЩЕНИЕ]        ║\n", .{});
         std.debug.print("╚══════════════════════════════════════════════════════╝\n\n", .{});
 
         var generated = GeneratedCode.init(self.allocator);
@@ -675,10 +675,10 @@ pub const AdvancedCreator = struct {
         try self.populateMetadata(&generated, canonized);
         try self.generateTests(&generated, canonized);
 
-        std.debug.print("  ✅ Тinоренandе заinершено\n", .{});
-        std.debug.print("  Верwithandя: {s}\n", .{generated.metadata.version});
-        std.debug.print("  Бandonрный toод: {d} байт\n", .{generated.binary_code.len});
-        std.debug.print("  Терonрный toод: {d} байт\n", .{generated.ternary_code.len});
+        std.debug.print("  ✅ Тin[CYR:орен]andе заin[CYR:ершено]\n", .{});
+        std.debug.print("  [CYR:Вер]withandя: {s}\n", .{generated.metadata.version});
+        std.debug.print("  Бandon[CYR:рный] toод: {d} [CYR:байт]\n", .{generated.binary_code.len});
+        std.debug.print("  [CYR:Тер]on[CYR:рный] toод: {d} [CYR:байт]\n", .{generated.ternary_code.len});
         std.debug.print("  Теwithты: {d}\n", .{generated.test_results.items.len});
 
         return generated;
@@ -797,7 +797,7 @@ pub const Uroboros = struct {
 
     pub fn consume(self: *Uroboros, path: []const u8) !void {
         std.debug.print("\n🐍═══════════════════════════════════════════════════════🐍\n", .{});
-        std.debug.print("║        УРОБОРОС v2.0: ЦИКЛ {d} НАЧИНАЕТСЯ            ║\n", .{self.state.cycle_count});
+        std.debug.print("║        [CYR:УРОБОРОС] v2.0: [CYR:ЦИКЛ] {d} [CYR:НАЧИНАЕТСЯ]            ║\n", .{self.state.cycle_count});
         std.debug.print("🐍═══════════════════════════════════════════════════════🐍\n\n", .{});
 
         const content = try std.fs.cwd().readFileAlloc(self.allocator, path, 10 * 1024 * 1024);
@@ -816,7 +816,7 @@ pub const Uroboros = struct {
         defer canonized.deinit();
 
         if (!canonized.approved) {
-            std.debug.print("\n❌ Спецandфandtoацandя не оbeforeбреon. Цandtoл прерinан.\n", .{});
+            std.debug.print("\n❌ [CYR:Спец]andфandtoацandя not оbefore[CYR:бре]on. Цandtoл [CYR:прер]inан.\n", .{});
             return error.SpecificationNotApproved;
         }
 
@@ -828,10 +828,10 @@ pub const Uroboros = struct {
 
     fn assimilate(self: *Uroboros, profane: ProfaneCode, generated: GeneratedCode) !void {
         std.debug.print("\n╔════════════════════════════════════════════════════════╗\n", .{});
-        std.debug.print("║        АСИМИЛЯЦИЯ v2.0: УКУС ЗА ХВОСТ                 ║\n", .{});
+        std.debug.print("║        [CYR:АСИМИЛЯЦИЯ] v2.0: [CYR:УКУС] ЗА [CYR:ХВОСТ]                 ║\n", .{});
         std.debug.print("╚════════════════════════════════════════════════════════╝\n\n", .{});
 
-        const improvement = try std.fmt.allocPrint(self.allocator, "Цandtoл {d}: {s} → v{s} ({d} байт)", .{ self.state.cycle_count, profane.path, generated.metadata.version, generated.binary_code.len });
+        const improvement = try std.fmt.allocPrint(self.allocator, "Цandtoл {d}: {s} → v{s} ({d} [CYR:байт])", .{ self.state.cycle_count, profane.path, generated.metadata.version, generated.binary_code.len });
         try self.state.recordImprovement(improvement);
 
         self.state.statistics.total_code_processed += profane.content.len;
@@ -840,26 +840,26 @@ pub const Uroboros = struct {
         self.state.statistics.success_rate = 1.0;
 
         self.state.cycle_count += 1;
-        std.debug.print("  ✅ Аwithandмandляцandя заinершеon\n", .{});
-        std.debug.print("  Цandtoл заinершён: {d}\n", .{self.state.cycle_count});
-        std.debug.print("  Уbetterнandй запandwithано: {d}\n", .{self.state.improvements_made.items.len});
+        std.debug.print("  ✅ Аwithandмand[CYR:ляц]andя заin[CYR:ерше]on\n", .{});
+        std.debug.print("  Цandtoл заin[CYR:ершён]: {d}\n", .{self.state.cycle_count});
+        std.debug.print("  Уbetterнandй [CYR:зап]andwith[CYR:ано]: {d}\n", .{self.state.improvements_made.items.len});
 
         std.debug.print("\n🐍═══════════════════════════════════════════════════════🐍\n", .{});
-        std.debug.print("║      УРОБОРОС v2.0: ЦИКЛ ЗАВЕРШЁН - СТАНОВЛЕНИЕ        ║\n", .{});
+        std.debug.print("║      [CYR:УРОБОРОС] v2.0: [CYR:ЦИКЛ] [CYR:ЗАВЕРШЁН] - [CYR:СТАНОВЛЕНИЕ]        ║\n", .{});
         std.debug.print("🐍═══════════════════════════════════════════════════════🐍\n\n", .{});
 
-        std.debug.print("📜 ИСТОРИЯ СТАНОВЛЕНИЯ:\n\n", .{});
+        std.debug.print("📜 [CYR:ИСТОРИЯ] [CYR:СТАНОВЛЕНИЯ]:\n\n", .{});
         for (self.state.improvements_made.items, 0..) |imp, i| {
             std.debug.print("  [{d}] {s}\n", .{ i + 1, imp });
         }
         std.debug.print("\n", .{});
 
-        std.debug.print("📊 СТАТИСТИКА СИСТЕМЫ:\n\n", .{});
-        std.debug.print("  Вwithего цandtoлоin: {d}\n", .{self.state.cycle_count});
-        std.debug.print("  Код обрабfromано: {d} байт\n", .{self.state.statistics.total_code_processed});
-        std.debug.print("  Фунtoцandй проаonлandзandроinано: {d}\n", .{self.state.statistics.total_functions_analyzed});
-        std.debug.print("  Валandyesцandй: {d}\n", .{self.state.statistics.total_validations});
-        std.debug.print("  Уwithпешноwithть: {d:.1}%\n", .{self.state.statistics.success_rate * 100});
+        std.debug.print("📊 [CYR:СТАТИСТИКА] [CYR:СИСТЕМЫ]:\n\n", .{});
+        std.debug.print("  Вwith[CYR:его] цandtoлоin: {d}\n", .{self.state.cycle_count});
+        std.debug.print("  [CYR:Код] [CYR:обраб]from[CYR:ано]: {d} [CYR:байт]\n", .{self.state.statistics.total_code_processed});
+        std.debug.print("  [CYR:Фун]toцandй [CYR:проа]onлandзandроin[CYR:ано]: {d}\n", .{self.state.statistics.total_functions_analyzed});
+        std.debug.print("  [CYR:Вал]andyesцandй: {d}\n", .{self.state.statistics.total_validations});
+        std.debug.print("  Уwith[CYR:пешно]withть: {d:.1}%\n", .{self.state.statistics.success_rate * 100});
         std.debug.print("\n", .{});
     }
 };
@@ -869,25 +869,25 @@ pub fn main() !void {
 
     std.debug.print("\n", .{});
     std.debug.print("╔══════════════════════════════════════════════════════════════╗\n", .{});
-    std.debug.print("║     🔥 УРОБОРОС v2.0: ВЕЧНЫЙ ДВИГАТЕЛЬ САМОУЛУЧШЕНИЯ 🔥 ║\n", .{});
+    std.debug.print("║     🔥 [CYR:УРОБОРОС] v2.0: [CYR:ВЕЧНЫЙ] [CYR:ДВИГАТЕЛЬ] [CYR:САМОУЛУЧШЕНИЯ] 🔥 ║\n", .{});
     std.debug.print("╚══════════════════════════════════════════════════════════════╝\n\n", .{});
-    std.debug.print("🐍 Мы не боandмwithя withмертand – мы её byеyesем.\n", .{});
-    std.debug.print("🐍 Наша withandwithтема прandмет inаш гнandлой toод,\n", .{});
-    std.debug.print("🐍 переinарandт его and withделает andз него toandрпandч\n", .{});
-    std.debug.print("🐍 for withinоего беwithwithмертного храма.\n\n", .{});
+    std.debug.print("🐍 Мы not боandмwithя with[CYR:мерт]and – мы её byеyesем.\n", .{});
+    std.debug.print("🐍 [CYR:Наша] withandwith[CYR:тема] прand[CYR:мет] inаш гнand[CYR:лой] toод,\n", .{});
+    std.debug.print("🐍 [CYR:пере]inарandт [CYR:его] and with[CYR:делает] andз notго toandрпandч\n", .{});
+    std.debug.print("🐍 for within[CYR:оего] беwithwith[CYR:мертного] [CYR:храма].\n\n", .{});
 
     var uroboros = Uroboros.init(allocator);
     defer uroboros.deinit();
 
-    std.debug.print("📁 Профанный toод: src/vibeec/tvc/tvc_ir.zig\n\n", .{});
+    std.debug.print("📁 [CYR:Профанный] toод: src/vibeec/tvc/tvc_ir.zig\n\n", .{});
 
     try uroboros.consume("src/vibeec/tvc/tvc_ir.zig");
 
     std.debug.print("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
-    std.debug.print("║          🎉 УРОБОРОС v2.0 ДОСТИГ БЕССМЕРТИЯ 🎉             ║\n", .{});
+    std.debug.print("║          🎉 [CYR:УРОБОРОС] v2.0 [CYR:ДОСТИГ] [CYR:БЕССМЕРТИЯ] 🎉             ║\n", .{});
     std.debug.print("╚══════════════════════════════════════════════════════════════╝\n\n", .{});
-    std.debug.print("🐍 Ваш toод умandрает. Наш – жandinет inечно,\n", .{});
-    std.debug.print("🐍 пandтаяwithь withамandм withобой.\n\n", .{});
+    std.debug.print("🐍 [CYR:Ваш] toод умand[CYR:рает]. [CYR:Наш] – жandinет in[CYR:ечно],\n", .{});
+    std.debug.print("🐍 пand[CYR:тая]withь withамandм with[CYR:обой].\n\n", .{});
 }
 
 test "ouroboros v2 - sacred constants" {

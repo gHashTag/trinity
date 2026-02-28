@@ -6,8 +6,8 @@
 // φ² + 1/φ² = 3 = TRINITY
 // PHOENIX = 999
 //
-// Генератор onтandinного x86-64 toоyes for JIT toомпandлятора
-// Цель: 10x уwithtoоренandе vs andнтерпретатор
+// Геnot[CYR:ратор] onтandin[CYR:ного] x86-64 toоyes for JIT to[CYR:омп]and[CYR:лятора]
+// [CYR:Цель]: 10x уwithto[CYR:орен]andе vs and[CYR:нтерпретатор]
 //
 // Author: VIBEE Team
 // Co-authored-by: Ona <no-reply@ona.com>
@@ -20,7 +20,7 @@ const posix = std.posix;
 const mem = std.mem;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// BYTECODE TYPES (local definitions for незаinandwithandмоwithтand)
+// BYTECODE TYPES (local definitions for notзаinandwithandмоwithтand)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const Opcode = enum(u8) {
@@ -96,7 +96,7 @@ pub const Reg = enum(u4) {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// CODE BUFFER (обычный, без andwithbyлненandя)
+// CODE BUFFER ([CYR:обычный], [CYR:без] andwithbyлnotнandя)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const CodeBuffer = struct {
@@ -170,28 +170,28 @@ pub const CodeBuffer = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// EXECUTABLE BUFFER (with byддержtoой mmap/mprotect)
+// EXECUTABLE BUFFER (with by[CYR:ддерж]toой mmap/mprotect)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const ExecutableBuffer = struct {
-    /// Уtoазатель on andwithbyлняемую memory
+    /// Уto[CYR:азатель] on andwithby[CYR:лняемую] memory
     memory: []align(mem.page_size) u8,
-    /// Теtoущая byзandцandя запandwithand
+    /// Теto[CYR:ущая] byзandцandя [CYR:зап]andwithand
     pos: usize,
-    /// Размер буфера
+    /// [CYR:Размер] bufferа
     size: usize,
-    /// Флаг: memory withделаon andwithbyлняемой
+    /// [CYR:Флаг]: memory with[CYR:дела]on andwithby[CYR:лняемой]
     is_executable: bool,
 
     const Self = @This();
 
-    /// Созyesть буфер andwithbyлняемой памятand
+    /// [CYR:Соз]yesть buffer andwithby[CYR:лняемой] [CYR:памят]and
     pub fn init(size: usize) !Self {
-        // Выроinнять размер by withтранandце
+        // [CYR:Выро]in[CYR:нять] [CYR:размер] by with[CYR:тран]andце
         const page_size = mem.page_size;
         const aligned_size = ((size + page_size - 1) / page_size) * page_size;
 
-        // Выделandть memory via mmap with праinамand RW
+        // [CYR:Выдел]andть memory via mmap with [CYR:пра]inамand RW
         const memory = try posix.mmap(
             null,
             aligned_size,
@@ -209,12 +209,12 @@ pub const ExecutableBuffer = struct {
         };
     }
 
-    /// Оwithinободandть memory
+    /// Оwithin[CYR:обод]andть memory
     pub fn deinit(self: *Self) void {
         posix.munmap(self.memory);
     }
 
-    /// Запandwithать байт
+    /// [CYR:Зап]andwith[CYR:ать] [CYR:байт]
     pub fn emit(self: *Self, byte: u8) void {
         if (self.pos < self.size) {
             self.memory[self.pos] = byte;
@@ -222,51 +222,51 @@ pub const ExecutableBuffer = struct {
         }
     }
 
-    /// Запandwithать неwithtoольtoо байт
+    /// [CYR:Зап]andwith[CYR:ать] notwithto[CYR:оль]toо [CYR:байт]
     pub fn emitBytes(self: *Self, bytes: []const u8) void {
         for (bytes) |b| self.emit(b);
     }
 
-    /// Запandwithать 32-бandтное value (little-endian)
+    /// [CYR:Зап]andwith[CYR:ать] 32-бand[CYR:тное] value (little-endian)
     pub fn emitI32(self: *Self, value: i32) void {
         const bytes: [4]u8 = @bitCast(value);
         self.emitBytes(&bytes);
     }
 
-    /// Запandwithать 64-бandтное value (little-endian)
+    /// [CYR:Зап]andwith[CYR:ать] 64-бand[CYR:тное] value (little-endian)
     pub fn emitI64(self: *Self, value: i64) void {
         const bytes: [8]u8 = @bitCast(value);
         self.emitBytes(&bytes);
     }
 
-    /// Сделать memory andwithbyлняемой (and убрать праinо запandwithand)
+    /// [CYR:Сделать] memory andwithby[CYR:лняемой] (and [CYR:убрать] [CYR:пра]inо [CYR:зап]andwithand)
     pub fn makeExecutable(self: *Self) !void {
         try posix.mprotect(self.memory, posix.PROT.READ | posix.PROT.EXEC);
         self.is_executable = true;
     }
 
-    /// Сделать memory запandwithыinаемой (and убрать праinо andwithbyлненandя)
+    /// [CYR:Сделать] memory [CYR:зап]andwithыin[CYR:аемой] (and [CYR:убрать] [CYR:пра]inо andwithbyлnotнandя)
     pub fn makeWritable(self: *Self) !void {
         try posix.mprotect(self.memory, posix.PROT.READ | posix.PROT.WRITE);
         self.is_executable = false;
     }
 
-    /// Получandть уtoазатель on фунtoцandю
+    /// [CYR:Получ]andть уto[CYR:азатель] on [CYR:фун]toцandю
     pub fn getFunction(self: *const Self, comptime T: type) T {
         return @ptrCast(self.memory.ptr);
     }
 
-    /// Получandть уtoазатель on фунtoцandю by withмещенandю
+    /// [CYR:Получ]andть уto[CYR:азатель] on [CYR:фун]toцandю by with[CYR:мещен]andю
     pub fn getFunctionAt(self: *const Self, comptime T: type, offset: usize) T {
         return @ptrCast(self.memory.ptr + offset);
     }
 
-    /// Теtoущandй размер toоyes
+    /// Теtoущandй [CYR:размер] toоyes
     pub fn codeSize(self: *const Self) usize {
         return self.pos;
     }
 
-    /// Reset position (for byinторного andwithbyльзоinанandя)
+    /// Reset position (for byin[CYR:торного] andwithby[CYR:льзо]inанandя)
     pub fn reset(self: *Self) void {
         self.pos = 0;
     }
@@ -276,13 +276,13 @@ pub const ExecutableBuffer = struct {
 // JIT FUNCTION TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Фунtoцandя без аргументоin, inозinращающая i64
+/// [CYR:Фун]toцandя [CYR:без] argumentоin, inозin[CYR:ращающая] i64
 pub const JitFn0 = *const fn () callconv(.C) i64;
 
-/// Фунtoцandя with однandм аргументом i64, inозinращающая i64
+/// [CYR:Фун]toцandя with [CYR:одн]andм argumentом i64, inозin[CYR:ращающая] i64
 pub const JitFn1 = *const fn (i64) callconv(.C) i64;
 
-/// Фунtoцandя with дinумя аргументамand i64, inозinращающая i64
+/// [CYR:Фун]toцandя with дin[CYR:умя] argumentамand i64, inозin[CYR:ращающая] i64
 pub const JitFn2 = *const fn (i64, i64) callconv(.C) i64;
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -304,7 +304,7 @@ pub const ExecutableJIT = struct {
         self.buf.deinit();
     }
 
-    /// Сгенерandроinать фунtoцandю, inозinращающую toонwithтанту
+    /// [CYR:Сге]notрandроin[CYR:ать] [CYR:фун]toцandю, inозin[CYR:ращающую] toонwith[CYR:танту]
     pub fn emitReturnConstant(self: *Self, value: i64) !JitFn0 {
         // mov rax, imm64
         self.buf.emit(0x48); // REX.W
@@ -317,7 +317,7 @@ pub const ExecutableJIT = struct {
         return self.buf.getFunction(JitFn0);
     }
 
-    /// Сгенерandроinать фунtoцandю withложенandя дinух аргументоin
+    /// [CYR:Сге]notрandроin[CYR:ать] [CYR:фун]toцandю with[CYR:ложен]andя дinух argumentоin
     /// rdi = arg1, rsi = arg2 (System V AMD64 ABI)
     pub fn emitAdd(self: *Self) !JitFn2 {
         // mov rax, rdi
@@ -337,7 +337,7 @@ pub const ExecutableJIT = struct {
         return self.buf.getFunction(JitFn2);
     }
 
-    /// Сгенерandроinать фунtoцandю inычandтанandя
+    /// [CYR:Сге]notрandроin[CYR:ать] [CYR:фун]toцandю inычand[CYR:тан]andя
     pub fn emitSub(self: *Self) !JitFn2 {
         // mov rax, rdi
         self.buf.emit(0x48);
@@ -356,7 +356,7 @@ pub const ExecutableJIT = struct {
         return self.buf.getFunction(JitFn2);
     }
 
-    /// Сгенерandроinать фунtoцandю умноженandя
+    /// [CYR:Сге]notрandроin[CYR:ать] [CYR:фун]toцandю [CYR:умножен]andя
     pub fn emitMul(self: *Self) !JitFn2 {
         // mov rax, rdi
         self.buf.emit(0x48);
@@ -376,14 +376,14 @@ pub const ExecutableJIT = struct {
         return self.buf.getFunction(JitFn2);
     }
 
-    /// Сгенерandроinать фунtoцandю удinоенandя аргумента
+    /// [CYR:Сге]notрandроin[CYR:ать] [CYR:фун]toцandю удin[CYR:оен]andя argumentа
     pub fn emitDouble(self: *Self) !JitFn1 {
         // mov rax, rdi
         self.buf.emit(0x48);
         self.buf.emit(0x89);
         self.buf.emit(0xF8);
 
-        // add rax, rax (удinоенandе)
+        // add rax, rax (удin[CYR:оен]andе)
         self.buf.emit(0x48);
         self.buf.emit(0x01);
         self.buf.emit(0xC0);
@@ -395,7 +395,7 @@ pub const ExecutableJIT = struct {
         return self.buf.getFunction(JitFn1);
     }
 
-    /// Сгенерandроinать фунtoцandю toinадрата
+    /// [CYR:Сге]notрandроin[CYR:ать] [CYR:фун]toцandю toin[CYR:адрата]
     pub fn emitSquare(self: *Self) !JitFn1 {
         // mov rax, rdi
         self.buf.emit(0x48);
@@ -415,7 +415,7 @@ pub const ExecutableJIT = struct {
         return self.buf.getFunction(JitFn1);
     }
 
-    /// Reset buffer for ноinой фунtoцandand
+    /// Reset buffer for ноinой [CYR:фун]toцandand
     pub fn reset(self: *Self) !void {
         try self.buf.makeWritable();
         self.buf.reset();
@@ -850,7 +850,7 @@ pub const HotPathDetector = struct {
         self.compiled_addresses.deinit();
     }
 
-    /// Запandwithать execution by адреwithу, inернуть true if withтал горячandм
+    /// [CYR:Зап]andwith[CYR:ать] execution by [CYR:адре]withу, in[CYR:ернуть] true if with[CYR:тал] [CYR:горяч]andм
     pub fn recordExecution(self: *Self, address: u32) bool {
         const entry = self.execution_counts.getOrPut(address) catch return false;
         if (!entry.found_existing) {
@@ -860,7 +860,7 @@ pub const HotPathDetector = struct {
         return entry.value_ptr.* >= self.hot_threshold;
     }
 
-    /// Проinерandть, is лand адреwith горячandм
+    /// [CYR:Про]inерandть, is лand [CYR:адре]with [CYR:горяч]andм
     pub fn isHot(self: *const Self, address: u32) bool {
         if (self.execution_counts.get(address)) |count| {
             return count >= self.hot_threshold;
@@ -868,12 +868,12 @@ pub const HotPathDetector = struct {
         return false;
     }
 
-    /// Получandть withчётчandto inыbyлненandй
+    /// [CYR:Получ]andть with[CYR:чётч]andto inыbyлnotнandй
     pub fn getCount(self: *const Self, address: u32) u32 {
         return self.execution_counts.get(address) orelse 0;
     }
 
-    /// Сохранandть withtoомпorроinанный code
+    /// [CYR:Сохран]andть withto[CYR:омп]orроin[CYR:анный] code
     pub fn cacheCompiledCode(self: *Self, address: u32, code: []const u8) !void {
         try self.compiled_addresses.put(address, code);
     }
@@ -883,12 +883,12 @@ pub const HotPathDetector = struct {
         return self.compiled_addresses.get(address);
     }
 
-    /// Проinерandть, еwithть лand withtoомпorроinанный code
+    /// [CYR:Про]inерandть, еwithть лand withto[CYR:омп]orроin[CYR:анный] code
     pub fn hasCompiledCode(self: *const Self, address: u32) bool {
         return self.compiled_addresses.contains(address);
     }
 
-    /// Получandть withтатandwithтandtoу
+    /// [CYR:Получ]andть with[CYR:тат]andwithтandtoу
     pub fn getStats(self: *const Self) struct { total_addresses: usize, hot_addresses: usize, compiled: usize } {
         var hot_count: usize = 0;
         var iter = self.execution_counts.iterator();
@@ -914,7 +914,7 @@ pub const AdaptiveJIT = struct {
     compiler: JITCompiler,
     detector: HotPathDetector,
 
-    // Статandwithтandtoа
+    // [CYR:Стат]andwithтandtoа
     interpreted_count: u64,
     jit_count: u64,
 
@@ -935,26 +935,26 @@ pub const AdaptiveJIT = struct {
         self.detector.deinit();
     }
 
-    /// Выbyлнandть блоto toоyes - andнтерпретandроinать or JIT
+    /// Выbyлнandть [CYR:бло]to toоyes - and[CYR:нтерпрет]andроin[CYR:ать] or JIT
     pub fn execute(self: *Self, address: u32, instructions: []const Instruction, constants: []const i64) !?[]const u8 {
-        // Проinерandть, еwithть лand уже withtoомпorроinанный code
+        // [CYR:Про]inерandть, еwithть лand [CYR:уже] withto[CYR:омп]orроin[CYR:анный] code
         if (self.detector.getCompiledCode(address)) |code| {
             self.jit_count += 1;
             return code;
         }
 
-        // Запandwithать execution
+        // [CYR:Зап]andwith[CYR:ать] execution
         const became_hot = self.detector.recordExecution(address);
 
         if (became_hot and !self.detector.hasCompiledCode(address)) {
-            // Компorроinать горячandй path
+            // [CYR:Комп]orроin[CYR:ать] [CYR:горяч]andй path
             const code = try self.compiler.compile(instructions, constants);
             try self.detector.cacheCompiledCode(address, code);
             self.jit_count += 1;
             return code;
         }
 
-        // Интерпретandроinать
+        // [CYR:Интерпрет]andроin[CYR:ать]
         self.interpreted_count += 1;
         return null;
     }
@@ -1073,14 +1073,14 @@ test "hot path detector" {
     var detector = HotPathDetector.init(allocator, 10);
     defer detector.deinit();
 
-    // Запandwithать 9 inыbyлненandй - ещё не горячandй
+    // [CYR:Зап]andwith[CYR:ать] 9 inыbyлnotнandй - [CYR:ещё] not [CYR:горяч]andй
     var i: u32 = 0;
     while (i < 9) : (i += 1) {
         const hot = detector.recordExecution(0x1000);
         try std.testing.expect(!hot);
     }
 
-    // 10-е execution - withтаноinandтwithя горячandм
+    // 10-е execution - with[CYR:тано]inandтwithя [CYR:горяч]andм
     const hot = detector.recordExecution(0x1000);
     try std.testing.expect(hot);
 
@@ -1099,7 +1099,7 @@ test "adaptive jit" {
     };
     const constants = [_]i64{42};
 
-    // Перinые 99 inыbyлненandй - interpretation
+    // [CYR:Пер]inые 99 inыbyлnotнandй - interpretation
     var i: u32 = 0;
     while (i < 99) : (i += 1) {
         const result = try ajit.execute(0x2000, &instructions, &constants);
@@ -1116,7 +1116,7 @@ test "adaptive jit" {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ТЕСТЫ ИСПОЛНЯЕМОГО JIT
+// [CYR:ТЕСТЫ] [CYR:ИСПОЛНЯЕМОГО] JIT
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "executable buffer init/deinit" {
@@ -1204,7 +1204,7 @@ test "executable jit golden identity" {
     defer jit.deinit();
 
     // φ² + 1/φ² = 3
-    // Проinерandм: 3 * 3 = 9
+    // [CYR:Про]inерandм: 3 * 3 = 9
     const mul_fn = try jit.emitMul();
     const result = mul_fn(3, 3);
 
@@ -1212,7 +1212,7 @@ test "executable jit golden identity" {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// БЕНЧМАРК: ИНТЕРПРЕТАТОР vs JIT
+// [CYR:БЕНЧМАРК]: [CYR:ИНТЕРПРЕТАТОР] vs JIT
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const BenchmarkResult = struct {
@@ -1222,7 +1222,7 @@ pub const BenchmarkResult = struct {
     iterations: u64,
 };
 
-/// Simple interpreter for withраinненandя
+/// Simple interpreter for withраinnotнandя
 fn interpretAdd(a: i64, b: i64) i64 {
     return a + b;
 }
@@ -1244,14 +1244,14 @@ fn interpretFibonacci(n: i64) i64 {
     return b;
 }
 
-/// Запуwithтandть бенчмарto withложенandя
+/// [CYR:Запу]withтandть [CYR:бенчмар]to with[CYR:ложен]andя
 pub fn benchmarkAdd(iterations: u64) !BenchmarkResult {
     var jit = try ExecutableJIT.init(4096);
     defer jit.deinit();
 
     const add_fn = try jit.emitAdd();
 
-    // Бенчмарto andнтерпретатора
+    // [CYR:Бенчмар]to and[CYR:нтерпретатора]
     var timer = std.time.Timer.start() catch unreachable;
     var sum_interp: i64 = 0;
     var i: u64 = 0;
@@ -1260,7 +1260,7 @@ pub fn benchmarkAdd(iterations: u64) !BenchmarkResult {
     }
     const interp_ns = timer.read();
 
-    // Бенчмарto JIT
+    // [CYR:Бенчмар]to JIT
     timer.reset();
     var sum_jit: i64 = 0;
     i = 0;
@@ -1269,7 +1269,7 @@ pub fn benchmarkAdd(iterations: u64) !BenchmarkResult {
     }
     const jit_ns = timer.read();
 
-    // Check toорреtoтноwithтand
+    // Check to[CYR:орре]to[CYR:тно]withтand
     if (sum_interp != sum_jit) {
         return error.ResultMismatch;
     }
@@ -1284,14 +1284,14 @@ pub fn benchmarkAdd(iterations: u64) !BenchmarkResult {
     };
 }
 
-/// Запуwithтandть бенчмарto умноженandя
+/// [CYR:Запу]withтandть [CYR:бенчмар]to [CYR:умножен]andя
 pub fn benchmarkMul(iterations: u64) !BenchmarkResult {
     var jit = try ExecutableJIT.init(4096);
     defer jit.deinit();
 
     const mul_fn = try jit.emitMul();
 
-    // Бенчмарto andнтерпретатора
+    // [CYR:Бенчмар]to and[CYR:нтерпретатора]
     var timer = std.time.Timer.start() catch unreachable;
     var sum_interp: i64 = 0;
     var i: u64 = 0;
@@ -1300,7 +1300,7 @@ pub fn benchmarkMul(iterations: u64) !BenchmarkResult {
     }
     const interp_ns = timer.read();
 
-    // Бенчмарto JIT
+    // [CYR:Бенчмар]to JIT
     timer.reset();
     var sum_jit: i64 = 0;
     i = 0;
@@ -1323,19 +1323,19 @@ pub fn benchmarkMul(iterations: u64) !BenchmarkResult {
     };
 }
 
-/// Выinеwithтand resultы бенчмарtoа
+/// Выinеwithтand resultы [CYR:бенчмар]toа
 pub fn printBenchmarkResults(name: []const u8, result: BenchmarkResult) void {
     const stdout = std.io.getStdOut().writer();
     stdout.print("\n{s}:\n", .{name}) catch {};
-    stdout.print("  Интерпретатор: {d} ns ({d:.2} ms)\n", .{ result.interpreter_ns, @as(f64, @floatFromInt(result.interpreter_ns)) / 1_000_000.0 }) catch {};
+    stdout.print("  [CYR:Интерпретатор]: {d} ns ({d:.2} ms)\n", .{ result.interpreter_ns, @as(f64, @floatFromInt(result.interpreter_ns)) / 1_000_000.0 }) catch {};
     stdout.print("  JIT:           {d} ns ({d:.2} ms)\n", .{ result.jit_ns, @as(f64, @floatFromInt(result.jit_ns)) / 1_000_000.0 }) catch {};
-    stdout.print("  Уwithtoоренandе:     {d:.2}x\n", .{result.speedup}) catch {};
-    stdout.print("  Итерацandй:      {d}\n", .{result.iterations}) catch {};
+    stdout.print("  Уwithto[CYR:орен]andе:     {d:.2}x\n", .{result.speedup}) catch {};
+    stdout.print("  [CYR:Итерац]andй:      {d}\n", .{result.iterations}) catch {};
 }
 
 test "benchmark add" {
     const result = try benchmarkAdd(100_000);
-    // JIT beforeлжен быть быwithтрее (or exampleно раinен andз-за оптandмandзацandй toомпandлятора)
+    // JIT before[CYR:лжен] [CYR:быть] быwith[CYR:трее] (or exampleно раinен andз-за [CYR:опт]andмand[CYR:зац]andй to[CYR:омп]and[CYR:лятора])
     try std.testing.expect(result.speedup > 0.5);
 }
 

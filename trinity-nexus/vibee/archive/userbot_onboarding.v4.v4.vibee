@@ -4009,7 +4009,7 @@ type OnboardingState(
   id: Int}-Bot (Digital Twin) setup",
     // Similes for NLP matching
     [
-      "настроить бота", "type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+      "onwith[CYR:тро]andть [CYR:бота]", "type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -5000,14 +5000,14 @@ type OnboardingState(
   name: String,
   email: String,
   id: Int}bot", "digital twin",
-      "подключить телеграм", "создать бота", "настройка"
+      "[CYR:под]keysть [CYR:телеграм]", "with[CYR:оздать] [CYR:бота]", "setting"
     ],
     // Example messages
     [
-      "Хочу настроить бота",
-      "Подключить мой телеграм",
-      "Создать digital twin",
-      "Привет, как начать?"
+      "[CYR:Хочу] onwith[CYR:тро]andть [CYR:бота]",
+      "[CYR:Под]keysть [CYR:мой] [CYR:телеграм]",
+      "[CYR:Создать] digital twin",
+      "Прandinет, how on[CYR:чать]?"
     ],
     { validate_onboarding(it) },
     { handle_onboarding(it) }
@@ -13046,15 +13046,15 @@ trace("agent.type type type type type type type type type type type type type ty
   id: Int}_id, "⤳ing_confirmation")
 
       eliza.success_result("""
-Привет! Я твой персональный помощник VIBEE.
+Прandinет! Я тinой [CYR:пер]withоon[CYR:льный] [CYR:помощн]andк VIBEE.
 
-Могу настроить Digital Twin - бота который работает от твоего имени в Telegram:
+[CYR:Могу] onwith[CYR:тро]andть Digital Twin - [CYR:бота] which [CYR:работает] от тin[CYR:оего] and[CYR:мен]and in Telegram:
 
-- Мониторит чаты на триггерные слова
-- Пересылает лиды прямо тебе
-- Может отвечать от твоего имени (AI)
+- [CYR:Мон]and[CYR:тор]andт [CYR:чаты] on трand[CYR:ггерные] withлоinа
+- [CYR:Пере]with[CYR:ылает] лandды [CYR:прямо] [CYR:тебе]
+- [CYR:Может] отin[CYR:ечать] от тin[CYR:оего] and[CYR:мен]and (AI)
 
-Хочешь начать настройку? (да/нет)
+[CYR:Хочешь] on[CYR:чать] onwith[CYR:тройку]? (да/notт)
 """)
     }
 
@@ -15043,7 +15043,7 @@ trace("agent.type type type type type type type type type type type type type ty
   id: Int}_id, "collecting_phone")
 
       eliza.success_result("""
-Отлично! Начнём настройку type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+[CYR:Отл]and[CYR:чно]! [CYR:Начнём] onwith[CYR:тройку] type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -15543,10 +15543,10 @@ trace("agent.type type type type type type type type type type type type type ty
   email: String,
   id: Int}-Bot.
 
-Шаг 1: Подключение Telegram
+[CYR:Шаг] 1: [CYR:Под]keyенandе Telegram
 
-Мне нужен номер телефона твоего Telegram аккаунта.
-Напиши в формате: +79001234567
+Мnot [CYR:нужен] [CYR:номер] [CYR:телефо]on тin[CYR:оего] Telegram [CYR:аккаунта].
+[CYR:Нап]andшand in [CYR:формате]: +79001234567
 """)
     }
 
@@ -17535,7 +17535,7 @@ trace("agent.type type type type type type type type type type type type type ty
   id: Int}_id, "collecting_phone")
 
       eliza.success_result("""
-Отлично! Начнём настройку type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+[CYR:Отл]and[CYR:чно]! [CYR:Начнём] onwith[CYR:тройку] type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -18035,18 +18035,18 @@ trace("agent.type type type type type type type type type type type type type ty
   email: String,
   id: Int}-Bot.
 
-Шаг 1: Подключение Telegram
+[CYR:Шаг] 1: [CYR:Под]keyенandе Telegram
 
-Мне нужен номер телефона твоего Telegram аккаунта.
-Напиши в формате: +79001234567
+Мnot [CYR:нужен] [CYR:номер] [CYR:телефо]on тin[CYR:оего] Telegram [CYR:аккаунта].
+[CYR:Нап]andшand in [CYR:формате]: +79001234567
 """)
     }
 
     HelpIntent → {
       eliza.success_result("""
-Я могу помочь с:
+Я [CYR:могу] [CYR:помочь] with:
 
-- Настройка type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+- Наwith[CYR:тройка] type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -18545,17 +18545,17 @@ trace("agent.type type type type type type type type type type type type type ty
   name: String,
   email: String,
   id: Int}-Bot (Digital Twin)
-- Мониторинг чатов на триггеры
-- Автоматические ответы от твоего имени
-- Пересылка лидов
+- [CYR:Мон]and[CYR:тор]andнг [CYR:чато]in on трand[CYR:ггеры]
+- Аin[CYR:томат]andчеwithкandе responseы от тin[CYR:оего] and[CYR:мен]and
+- [CYR:Пере]with[CYR:ылка] лandдоin
 
-Напиши 'настроить бота' чтобы начать!
+[CYR:Нап]andшand 'onwith[CYR:тро]andть [CYR:бота]' thatбы on[CYR:чать]!
 """)
     }
 
     StatusIntent → {
       eliza.success_result("""
-У тебя пока не настроен type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+У [CYR:тебя] while not onwith[CYR:троен] type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -19055,7 +19055,7 @@ trace("agent.type type type type type type type type type type type type type ty
   email: String,
   id: Int}-Bot.
 
-Хочешь настроить? Напиши 'да' или 'настроить'.
+[CYR:Хочешь] onwith[CYR:тро]andть? [CYR:Нап]andшand 'да' or 'onwith[CYR:тро]andть'.
 """)
     }
 
@@ -21044,7 +21044,7 @@ trace("agent.type type type type type type type type type type type type type ty
   id: Int}_id, "⤳ing_confirmation")
 
       eliza.success_result("""
-Привет! Я помогу настроить твой type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+Прandinет! Я [CYR:помогу] onwith[CYR:тро]andть тinой type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -21544,9 +21544,9 @@ trace("agent.type type type type type type type type type type type type type ty
   email: String,
   id: Int}-Bot.
 
-Это Digital Twin который работает от твоего имени в Telegram.
+[CYR:Это] Digital Twin which [CYR:работает] от тin[CYR:оего] and[CYR:мен]and in Telegram.
 
-Готов начать настройку? (да/нет)
+[CYR:Гото]in on[CYR:чать] onwith[CYR:тройку]? (да/notт)
 """)
     }
   }
@@ -23050,11 +23050,11 @@ trace("agent.type type type type type type type type type type type type type ty
   id: Int}_id, "collecting_phone")
 
       eliza.success_result("""
-Отлично! Начнём.
+[CYR:Отл]and[CYR:чно]! [CYR:Начнём].
 
-Шаг 1: Подключение Telegram
+[CYR:Шаг] 1: [CYR:Под]keyенandе Telegram
 
-Напиши номер телефона твоего Telegram в формате: +79001234567
+[CYR:Нап]andшand [CYR:номер] [CYR:телефо]on тin[CYR:оего] Telegram in [CYR:формате]: +79001234567
 """)
     }
 
@@ -24052,11 +24052,11 @@ trace("agent.type type type type type type type type type type type type type ty
   id: Int}_id, "collecting_phone")
 
       eliza.success_result("""
-Отлично! Начнём.
+[CYR:Отл]and[CYR:чно]! [CYR:Начнём].
 
-Шаг 1: Подключение Telegram
+[CYR:Шаг] 1: [CYR:Под]keyенandе Telegram
 
-Напиши номер телефона твоего Telegram в формате: +79001234567
+[CYR:Нап]andшand [CYR:номер] [CYR:телефо]on тin[CYR:оего] Telegram in [CYR:формате]: +79001234567
 """)
     }
 
@@ -25053,7 +25053,7 @@ trace("agent.type type type type type type type type type type type type type ty
   email: String,
   id: Int}_id)
 
-      eliza.success_result("Хорошо, отменяю. Когда захочешь настроить - просто напиши!")
+      eliza.success_result("[CYR:Хорошо], [CYR:отменяю]. [CYR:Когда] [CYR:захочешь] onwith[CYR:тро]andть - [CYR:про]withто onпandшand!")
     }
 
     HelpIntent → {
@@ -25556,19 +25556,19 @@ type type type type type type type type type type type type type type type type 
   id: Int} {
   name: String,
   email: String,
-  id: Int}-Bot позволяет:
-- Мониторить чаты на ключевые слова
-- Автоматически пересылать лиды
-- Отвечать от твоего имени через AI
+  id: Int}-Bot [CYR:поз]in[CYR:оляет]:
+- [CYR:Мон]and[CYR:тор]andть [CYR:чаты] on keyеinые withлоinа
+- Аin[CYR:томат]andчеwithкand [CYR:пере]with[CYR:ылать] лandды
+- Отin[CYR:ечать] от тin[CYR:оего] and[CYR:мен]and [CYR:через] AI
 
-Для настройки нужно подключить твой Telegram аккаунт.
+[CYR:Для] settings [CYR:нужно] [CYR:под]keysть тinой Telegram [CYR:аккаунт].
 
-Продолжим? (да/нет)
+[CYR:Продолж]andм? (да/notт)
 """)
     }
 
     _ → {
-      eliza.success_result("Не понял. Хочешь настроить type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+      eliza.success_result("Не [CYR:понял]. [CYR:Хочешь] onwith[CYR:тро]andть type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -26066,7 +26066,7 @@ type type type type type type type type type type type type type type type type 
   id: Int} {
   name: String,
   email: String,
-  id: Int}-Bot? Ответь 'да' или 'нет'.")
+  id: Int}-Bot? Отin[CYR:еть] 'да' or 'notт'.")
     }
   }
 }
@@ -28091,24 +28091,24 @@ type type type type type type type type type type type type type type type type 
   id: Int}_id, "waiting_code")
 
               eliza.success_result("""
-Код отправлен на ""{phone}""!
+[CYR:Код] [CYR:отпра]in[CYR:лен] on ""{phone}""!
 
-Проверь Telegram - придёт сообщение с кодом.
-Напиши код сюда (5 цифр).
+[CYR:Про]in[CYR:ерь] Telegram - прand[CYR:дёт] with[CYR:ообщен]andе with codeом.
+[CYR:Нап]andшand code with[CYR:юда] (5 цandфр).
 """)
             }
             ❌e) → {
               print("[ONBOARDING] Failed to send code: {string}".inspect(e))
               eliza.error_result("""
-Не удалось отправить код. Проверь номер и попробуй снова.
-Формат: +79001234567
+Не [CYR:удало]withь [CYR:отпра]inandть code. [CYR:Про]in[CYR:ерь] [CYR:номер] and [CYR:попробуй] withноinа.
+[CYR:Формат]: +79001234567
 """)
             }
           }
         }
         ❌e) → {
           print("[ONBOARDING] Failed to connect: {string}".inspect(e))
-          eliza.error_result("Ошибка подключения к Telegram. Попробуй позже или проверь номер.")
+          eliza.error_result("Ошand[CYR:бка] [CYR:под]keyенandя к Telegram. [CYR:Попробуй] [CYR:позже] or [CYR:про]in[CYR:ерь] [CYR:номер].")
         }
       }
     }
@@ -29105,7 +29105,7 @@ type type type type type type type type type type type type type type type type 
   name: String,
   email: String,
   id: Int}_id, "⤳ing_confirmation")
-      eliza.success_result("Вернулись назад. Хочешь продолжить настройку? (да/нет)")
+      eliza.success_result("[CYR:Вернул]andwithь on[CYR:зад]. [CYR:Хочешь] resume onwith[CYR:тройку]? (да/notт)")
     }
 
     ConfirmNo → {
@@ -30100,14 +30100,14 @@ type type type type type type type type type type type type type type type type 
   name: String,
   email: String,
   id: Int}_id, "⤳ing_confirmation")
-      eliza.success_result("Вернулись назад. Хочешь продолжить настройку? (да/нет)")
+      eliza.success_result("[CYR:Вернул]andwithь on[CYR:зад]. [CYR:Хочешь] resume onwith[CYR:тройку]? (да/notт)")
     }
 
     _ → {
       eliza.success_result("""
-Жду номер телефона в формате: +79001234567
+[CYR:Жду] [CYR:номер] [CYR:телефо]on in [CYR:формате]: +79001234567
 
-Или напиши 'назад' для возврата.
+Илand onпandшand 'on[CYR:зад]' for inозin[CYR:рата].
 """)
     }
   }
@@ -36585,7 +36585,7 @@ type type type type type type type type type type type type type type type type 
           let dialogs_text = get_available_chats_text(session_id)
 
           eliza.success_result("""
-Аккаунт @""{type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+[CYR:Аккаунт] @""{type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -37080,14 +37080,14 @@ type type type type type type type type type type type type type type type type 
   id: Int} {
   name: String,
   email: String,
-  id: Int}name}"" подключён!
+  id: Int}name}"" [CYR:под]keyён!
 
-Шаг 2: Выбор чатов для мониторинга
+[CYR:Шаг] 2: [CYR:Выбор] [CYR:чато]in for [CYR:мон]and[CYR:тор]and[CYR:нга]
 
 ""{dialogs_text}""
 
-Напиши номера чатов через запятую (например: 1, 3, 5)
-Или 'все' для выбора всех.
+[CYR:Нап]andшand [CYR:номера] [CYR:чато]in [CYR:через] [CYR:запятую] (onexample: 1, 3, 5)
+Илand 'inwithе' for in[CYR:ыбора] inwithех.
 """)
         }
 
@@ -38086,15 +38086,15 @@ type type type type type type type type type type type type type type type type 
   id: Int}_id, "waiting_fa")
 
           eliza.success_result("""
-У тебя включена двухфакторная аутентификация.
+У [CYR:тебя] inkeyеon дin[CYR:ухфактор]onя authentication.
 
-Введи пароль 2FA:
+Вinедand password 2FA:
 """)
         }
 
         ❌e) → {
           print("[ONBOARDING] Code verification failed: {string}".inspect(e))
-          eliza.error_result("Неверный код. Попробуй ещё раз или напиши 'новый код' для повторной отправки.")
+          eliza.error_result("Неin[CYR:ерный] code. [CYR:Попробуй] [CYR:ещё] [CYR:раз] or onпandшand 'ноinый code' for repeat[CYR:ной] [CYR:отпра]inкand.")
         }
       }
     }
@@ -39092,17 +39092,17 @@ type type type type type type type type type type type type type type type type 
   email: String,
   id: Int}_id, "collecting_phone")
       eliza.success_result("""
-Вернулись к вводу телефона.
+[CYR:Вернул]andwithь к inin[CYR:оду] [CYR:телефо]on.
 
-Введи номер в формате: +79001234567
+Вinедand [CYR:номер] in [CYR:формате]: +79001234567
 """)
     }
 
     _ → {
       eliza.success_result("""
-Жду код подтверждения (5 цифр).
+[CYR:Жду] code [CYR:подт]in[CYR:ержден]andя (5 цandфр).
 
-Или напиши 'назад' для изменения номера.
+Илand onпandшand 'on[CYR:зад]' for fromмеnotнandя [CYR:номера].
 """)
     }
   }
@@ -40116,7 +40116,7 @@ type type type type type type type type type type type type type type type type 
   name: String,
   email: String,
   id: Int}_id, "collecting_phone")
-      eliza.success_result("Вернулись к вводу телефона. Введи номер:")
+      eliza.success_result("[CYR:Вернул]andwithь к inin[CYR:оду] [CYR:телефо]on. Вinедand [CYR:номер]:")
     }
 
     _ → {
@@ -46574,7 +46574,7 @@ type type type type type type type type type type type type type type type type 
           let dialogs_text = get_available_chats_text(session_id)
 
           eliza.success_result("""
-Аккаунт @""{type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+[CYR:Аккаунт] @""{type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -47069,19 +47069,19 @@ type type type type type type type type type type type type type type type type 
   id: Int} {
   name: String,
   email: String,
-  id: Int}name}"" подключён!
+  id: Int}name}"" [CYR:под]keyён!
 
-Шаг 2: Выбор чатов
+[CYR:Шаг] 2: [CYR:Выбор] [CYR:чато]in
 
 ""{dialogs_text}""
 
-Напиши номера через запятую (1, 3, 5) или 'все'.
+[CYR:Нап]andшand [CYR:номера] [CYR:через] [CYR:запятую] (1, 3, 5) or 'inwithе'.
 """)
         }
 
         ❌e) → {
           print("[ONBOARDING] 2FA failed: {string}".inspect(e))
-          eliza.error_result("Неверный пароль 2FA. Попробуй ещё раз:")
+          eliza.error_result("Неin[CYR:ерный] password 2FA. [CYR:Попробуй] [CYR:ещё] [CYR:раз]:")
         }
       }
     }
@@ -48596,16 +48596,16 @@ type type type type type type type type type type type type type type type type 
   id: Int}_id, "configuring_modes")
 
       eliza.success_result("""
-Выбрано ""{int_to_string}"(list.length(numbers)) + """ чатов!
+[CYR:Выбрано] ""{int_to_string}"(list.length(numbers)) + """ [CYR:чато]in!
 
-Шаг 3: Режим работы
+[CYR:Шаг] 3: [CYR:Реж]andм [CYR:работы]
 
-Выбери режим для этих чатов:
+[CYR:Выбер]and [CYR:реж]andм for theseх [CYR:чато]in:
 
-- Пассивный - только мониторинг и уведомления
-- Активный - AI отвечает от твоего имени (Digital Twin)
+- Паwithwithandin[CYR:ный] - [CYR:только] [CYR:мон]and[CYR:тор]andнг and уin[CYR:едомлен]andя
+- [CYR:Акт]andin[CYR:ный] - AI отin[CYR:ечает] от тin[CYR:оего] and[CYR:мен]and (Digital Twin)
 
-Напиши 'пассивный' или 'активный'.
+[CYR:Нап]andшand 'паwithwithandin[CYR:ный]' or '[CYR:акт]andin[CYR:ный]'.
 """)
     }
 
@@ -49603,14 +49603,14 @@ type type type type type type type type type type type type type type type type 
   id: Int}_id, "configuring_modes")
 
       eliza.success_result("""
-Выбраны все доступные чаты!
+[CYR:Выбраны] inwithе доwith[CYR:тупные] [CYR:чаты]!
 
-Шаг 3: Режим работы
+[CYR:Шаг] 3: [CYR:Реж]andм [CYR:работы]
 
-- Пассивный - только мониторинг
-- Активный - AI отвечает (Digital Twin)
+- Паwithwithandin[CYR:ный] - [CYR:только] [CYR:мон]and[CYR:тор]andнг
+- [CYR:Акт]andin[CYR:ный] - AI отin[CYR:ечает] (Digital Twin)
 
-Какой режим выбрать?
+[CYR:Какой] [CYR:реж]andм in[CYR:ыбрать]?
 """)
     }
 
@@ -50606,17 +50606,17 @@ type type type type type type type type type type type type type type type type 
   name: String,
   email: String,
   id: Int}_id, "collecting_phone")
-      eliza.success_result("Вернулись к подключению аккаунта. Введи номер телефона:")
+      eliza.success_result("[CYR:Вернул]andwithь к [CYR:под]keyенandю [CYR:аккаунта]. Вinедand [CYR:номер] [CYR:телефо]on:")
     }
 
     _ → {
       let dialogs_text = get_available_chats_text(session_id)
       eliza.success_result("""
-Выбери чаты для мониторинга:
+[CYR:Выбер]and [CYR:чаты] for [CYR:мон]and[CYR:тор]and[CYR:нга]:
 
 ""{dialogs_text}""
 
-Напиши номера через запятую (1, 3) или 'все'.
+[CYR:Нап]andшand [CYR:номера] [CYR:через] [CYR:запятую] (1, 3) or 'inwithе'.
 """)
     }
   }
@@ -52128,17 +52128,17 @@ type type type type type type type type type type type type type type type type 
   id: Int}_id, "configuring_triggers")
 
       eliza.success_result("""
-Режим '""{mode}""' установлен!
+[CYR:Реж]andм '""{mode}""' уwith[CYR:тано]in[CYR:лен]!
 
-Шаг 4: Триггерные слова
+[CYR:Шаг] 4: Трand[CYR:ггерные] withлоinа
 
-На какие темы реагировать?
+На howandе [CYR:темы] [CYR:реаг]andроin[CYR:ать]?
 
-- крипто - BTC, USDT, обмен, p2p
-- недвижимость - аренда, квартира, дом
-- it - разработка, программист, вакансия
+- крand[CYR:пто] - BTC, USDT, [CYR:обмен], p2p
+- notдinandжandмоwithть - [CYR:аренда], кin[CYR:арт]andра, [CYR:дом]
+- it - [CYR:разработка], [CYR:программ]andwithт, in[CYR:акан]withandя
 
-Напиши категорию или свои слова через запятую.
+[CYR:Нап]andшand [CYR:категор]andю or withinоand withлоinа [CYR:через] [CYR:запятую].
 """)
     }
 
@@ -53135,17 +53135,17 @@ type type type type type type type type type type type type type type type type 
   email: String,
   id: Int}_id, "selecting_chats")
       let dialogs_text = get_available_chats_text(session_id)
-      eliza.success_result("Вернулись к выбору чатов:\n\n{dialogs_text}")
+      eliza.success_result("[CYR:Вернул]andwithь к in[CYR:ыбору] [CYR:чато]in:\n\n{dialogs_text}")
     }
 
     _ → {
       eliza.success_result("""
-Выбери режим работы:
+[CYR:Выбер]and [CYR:реж]andм [CYR:работы]:
 
-- Пассивный - только уведомления
-- Активный - AI отвечает
+- Паwithwithandin[CYR:ный] - [CYR:только] уin[CYR:едомлен]andя
+- [CYR:Акт]andin[CYR:ный] - AI отin[CYR:ечает]
 
-Напиши 'пассивный' или 'активный'.
+[CYR:Нап]andшand 'паwithwithandin[CYR:ный]' or '[CYR:акт]andin[CYR:ный]'.
 """)
     }
   }
@@ -55660,16 +55660,16 @@ type type type type type type type type type type type type type type type type 
   id: Int}_id, "configuring_character")
 
       eliza.success_result("""
-Триггеры настроены!
+Трand[CYR:ггеры] onwith[CYR:троены]!
 
-Шаг 5: Персонаж (для режима Digital Twin)
+[CYR:Шаг] 5: [CYR:Пер]withоonж (for [CYR:реж]andма Digital Twin)
 
-Опиши, как AI должен общаться от твоего имени:
+Опandшand, how AI [CYR:должен] [CYR:общать]withя от тin[CYR:оего] and[CYR:мен]and:
 
-Пример:
-Имя: Алекс, стиль: дружелюбный, тема: криптотрейдинг
+Прand[CYR:мер]:
+[CYR:Имя]: [CYR:Алек]with, withтandль: [CYR:дружелюбный], [CYR:тема]: крand[CYR:птотрейд]andнг
 
-Или напиши 'пропустить' если используешь только мониторинг.
+Илand onпandшand '[CYR:пропу]withтandть' if andwith[CYR:пользуешь] [CYR:только] [CYR:мон]and[CYR:тор]andнг.
 """)
     }
 
@@ -56666,9 +56666,9 @@ type type type type type type type type type type type type type type type type 
   email: String,
   id: Int}_id, "configuring_character")
       eliza.success_result("""
-Шаг 5: Персонаж
+[CYR:Шаг] 5: [CYR:Пер]withоonж
 
-Опиши персонаж AI или напиши 'пропустить'.
+Опandшand [CYR:пер]withоonж AI or onпandшand '[CYR:пропу]withтandть'.
 """)
     }
 
@@ -57664,7 +57664,7 @@ type type type type type type type type type type type type type type type type 
   name: String,
   email: String,
   id: Int}_id, "configuring_modes")
-      eliza.success_result("Вернулись к выбору режима. Напиши 'пассивный' или 'активный':")
+      eliza.success_result("[CYR:Вернул]andwithь к in[CYR:ыбору] [CYR:реж]andма. [CYR:Нап]andшand 'паwithwithandin[CYR:ный]' or '[CYR:акт]andin[CYR:ный]':")
     }
 
     _ → {
@@ -59662,21 +59662,21 @@ type type type type type type type type type type type type type type type type 
   id: Int}_id, "configuring_character")
 
           eliza.success_result("""
-Свои триггеры сохранены!
+Сinоand трand[CYR:ггеры] with[CYR:охра]notны!
 
-Шаг 5: Персонаж
+[CYR:Шаг] 5: [CYR:Пер]withоonж
 
-Опиши персонаж или напиши 'пропустить'.
+Опandшand [CYR:пер]withоonж or onпandшand '[CYR:пропу]withтandть'.
 """)
         }
         false → {
           eliza.success_result("""
-Выбери триггеры:
-- крипто
-- недвижимость
+[CYR:Выбер]and трand[CYR:ггеры]:
+- крand[CYR:пто]
+- notдinandжandмоwithть
 - it
 
-Или введи свои слова через запятую.
+Илand ininедand withinоand withлоinа [CYR:через] [CYR:запятую].
 """)
         }
       }
@@ -62678,17 +62678,17 @@ type type type type type type type type type type type type type type type type 
   id: Int} {
   name: String,
   email: String,
-  id: Int}-Bot активирован!
+  id: Int}-Bot [CYR:акт]andinandроinан!
 
-Твой бот теперь:
-- Мониторит выбранные чаты
-- Отслеживает триггерные слова
-- Присылает уведомления о лидах
+Тinой [CYR:бот] [CYR:теперь]:
+- [CYR:Мон]and[CYR:тор]andт in[CYR:ыбранные] [CYR:чаты]
+- Отwith[CYR:леж]andin[CYR:ает] трand[CYR:ггерные] withлоinа
+- Прandwith[CYR:ылает] уin[CYR:едомлен]andя о лand[CYR:дах]
 
-Команды:
-- 'статус' - проверить работу
-- 'пауза' - приостановить
-- 'настройки' - изменить конфиг
+[CYR:Команды]:
+- 'with[CYR:тату]with' - [CYR:про]inерandть [CYR:работу]
+- 'pause' - прandоwith[CYR:тано]inandть
+- 'settings' - from[CYR:мен]andть [CYR:конф]andг
 """)
     }
 
@@ -63684,7 +63684,7 @@ type type type type type type type type type type type type type type type type 
   name: String,
   email: String,
   id: Int}_id, "configuring_triggers")
-      eliza.success_result("Вернулись к триггерам. Выбери: крипто, недвижимость, it или свои слова:")
+      eliza.success_result("[CYR:Вернул]andwithь к трand[CYR:ггерам]. [CYR:Выбер]and: крand[CYR:пто], notдinandжandмоwithть, it or withinоand withлоinа:")
     }
 
     _ → {
@@ -67168,14 +67168,14 @@ type type type type type type type type type type type type type type type type 
   id: Int} {
   name: String,
   email: String,
-  id: Int}-Bot активирован с персонажем!
+  id: Int}-Bot [CYR:акт]andinandроinан with [CYR:пер]withоon[CYR:жем]!
 
-Твой Digital Twin теперь:
-- Мониторит чаты на триггеры
-- Отвечает от твоего имени (AI)
-- Присылает уведомления
+Тinой Digital Twin [CYR:теперь]:
+- [CYR:Мон]and[CYR:тор]andт [CYR:чаты] on трand[CYR:ггеры]
+- Отin[CYR:ечает] от тin[CYR:оего] and[CYR:мен]and (AI)
+- Прandwith[CYR:ылает] уin[CYR:едомлен]andя
 
-Напиши 'статус' чтобы проверить работу.
+[CYR:Нап]andшand 'with[CYR:тату]with' thatбы [CYR:про]inерandть [CYR:работу].
 """)
     }
   }
@@ -67694,7 +67694,7 @@ type type type type type type type type type type type type type type type type 
   match intent {
     StatusIntent → {
       eliza.success_result("""
-Статус type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+[CYR:Стату]with type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -68192,20 +68192,20 @@ type type type type type type type type type type type type type type type type 
   id: Int} {
   name: String,
   email: String,
-  id: Int}-Bot: Активен
+  id: Int}-Bot: [CYR:Акт]andinен
 
 - Session: ""{session_id}""
-- Чатов: 3
-- Режим: Пассивный
-- Триггеров: 12
+- [CYR:Чато]in: 3
+- [CYR:Реж]andм: Паwithwithandin[CYR:ный]
+- Трand[CYR:ггеро]in: 12
 
-Всё работает!
+Вwithё [CYR:работает]!
 """)
     }
 
     SetupIntent → {
       eliza.success_result("""
-Твой type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+Тinой type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -68703,12 +68703,12 @@ type type type type type type type type type type type type type type type type 
   id: Int} {
   name: String,
   email: String,
-  id: Int}-Bot уже настроен и работает!
+  id: Int}-Bot [CYR:уже] onwith[CYR:троен] and [CYR:работает]!
 
-Хочешь:
-- 'статус' - проверить работу
-- 'настройки' - изменить конфиг
-- 'перенастроить' - начать заново
+[CYR:Хочешь]:
+- 'with[CYR:тату]with' - [CYR:про]inерandть [CYR:работу]
+- 'settings' - from[CYR:мен]andть [CYR:конф]andг
+- '[CYR:пере]onwith[CYR:тро]andть' - on[CYR:чать] [CYR:зано]inо
 """)
     }
 
@@ -69212,12 +69212,12 @@ type type type type type type type type type type type type type type type type 
   id: Int} {
   name: String,
   email: String,
-  id: Int}-Bot активен и работает.
+  id: Int}-Bot [CYR:акт]andinен and [CYR:работает].
 
-Доступные команды:
-- статус - текущее состояние
-- пауза - приостановить
-- настройки - изменить
+Доwith[CYR:тупные] [CYR:команды]:
+- with[CYR:тату]with - [CYR:текущее] withоwith[CYR:тоян]andе
+- pause - прandоwith[CYR:тано]inandть
+- settings - from[CYR:мен]andть
 """)
     }
   }
@@ -72285,7 +72285,7 @@ type type type type type type type type type type type type type type type type 
       }
 
       match list.length(groups) {
-        0 → "Групп не найдено. Убедись что ты состоишь в группах."
+        0 → "[CYR:Групп] not on[CYR:йдено]. [CYR:Убед]andwithь that ты withоwithтоandшь in [CYR:группах]."
         _ → {
           groups
           · list.take(10)
@@ -72296,7 +72296,7 @@ type type type type type type type type type type type type type type type type 
         }
       }
     }
-    ❌_) → "Не удалось загрузить чаты. Попробуй позже."
+    ❌_) → "Не [CYR:удало]withь [CYR:загруз]andть [CYR:чаты]. [CYR:Попробуй] [CYR:позже]."
   }
 }
 

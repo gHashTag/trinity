@@ -2,7 +2,7 @@
 // VIBEEC CODEGEN WASM - ZIG/WASM CODE GENERATOR FROM .VIBEE SPECS
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Generates Zig code for toомпandляцandand in WASM andз .vibee withпецandфandtoацandй
+// Generates Zig code for to[CYR:омп]and[CYR:ляц]andand in WASM andз .vibee with[CYR:пец]andфandtoацandй
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 // Golden identity: φ² + 1/φ² = 3
 //
@@ -14,7 +14,7 @@ const ArrayList = std.ArrayList;
 const parser = @import("parser_v3.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// СВЯЩЕННЫЕ CONSTANTS
+// [CYR:СВЯЩЕННЫЕ] CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PHI: f64 = 1.618033988749895;
@@ -24,7 +24,7 @@ pub const TRINITY: f64 = 3.0;
 pub const VERSION = "24.φ";
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TYPES СПЕЦИФИКАЦИИ
+// TYPES [CYR:СПЕЦИФИКАЦИИ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const VibeeSpec = struct {
@@ -182,7 +182,7 @@ pub const WasmCodeGen = struct {
         self.builder.deinit();
     }
 
-    /// Генерацandя byлного Zig fileа andз withпецandфandtoацandand
+    /// Геnot[CYR:рац]andя by[CYR:лного] Zig fileа andз with[CYR:пец]andфandtoацandand
     pub fn generate(self: *Self, spec: VibeeSpec) ![]const u8 {
         try self.writeHeader(spec);
         try self.writeConstants(spec.constants);
@@ -327,7 +327,7 @@ pub const WasmCodeGen = struct {
             try self.builder.writeLine("if (n == 0) return 0;");
             try self.builder.writeLine("if (n <= 2) return 1;");
             try self.builder.newline();
-            try self.builder.writeLine("// Формула Бandне: F(n) = (φⁿ - ψⁿ) / √5");
+            try self.builder.writeLine("// [CYR:Формула] Бandnot: F(n) = (φⁿ - ψⁿ) / √5");
             try self.builder.writeLine("const phi_n = phi_power(@intCast(n));");
             try self.builder.writeLine("const psi: f64 = -PHI_INV;");
             try self.builder.writeLine("var psi_n: f64 = 1.0;");

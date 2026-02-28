@@ -1,4 +1,4 @@
-# ЖАР ПТИЦА (FIREBIRD)
+# [CYR:ЖАР] [CYR:ПТИЦА] (FIREBIRD)
 
 **Ternary Virtual Anti-Detect Browser**
 

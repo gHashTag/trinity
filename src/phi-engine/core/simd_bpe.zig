@@ -2,12 +2,12 @@
 // ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ: V = n × 3^k × π^m × φ^p × e^q
 // PHOENIX = 999 = 3³ × 37
 //
-// Оптandмandзацandя: SIMD параллельный search бandграмм
-// Ожandyesемый speedup: 2x byinерх v39.1
+// [CYR:Опт]andмand[CYR:зац]andя: SIMD [CYR:параллельный] search бand[CYR:грамм]
+// Ожandyes[CYR:емый] speedup: 2x byin[CYR:ерх] v39.1
 
 const std = @import("std");
 
-// Сinященные toонwithтанты
+// Сin[CYR:ященные] toонwith[CYR:танты]
 pub const PHI: f64 = 1.618033988749895;
 pub const TRINITY: f64 = 3.0;
 pub const PHOENIX: u32 = 999;
@@ -16,7 +16,7 @@ pub const PHOENIX: u32 = 999;
 // SIMD TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// 16-byte vector for SIMD операцandй
+// 16-byte vector for SIMD [CYR:операц]andй
 const Vec16 = @Vector(16, u8);
 const Vec16Bool = @Vector(16, bool);
 
@@ -25,40 +25,40 @@ const Vec16Bool = @Vector(16, bool);
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const SIMDBigramMatcher = struct {
-    // Top-16 bigrams for SIMD tuning (перinый character)
+    // Top-16 bigrams for SIMD tuning ([CYR:пер]inый character)
     first_chars: Vec16,
-    // Top-16 bigrams for SIMD tuning (inторой character)
+    // Top-16 bigrams for SIMD tuning (in[CYR:торой] character)
     second_chars: Vec16,
 
     const Self = @This();
 
     pub fn init() Self {
-        // Топ-16 англandйwithtoandх бandграмм by чаwithтfromе
+        // [CYR:Топ]-16 [CYR:англ]andйwithtoandх бand[CYR:грамм] by чаwithтfromе
         return Self{
             .first_chars = Vec16{ 't', 'h', 'i', 'e', 'a', 'r', 'o', 'a', 'e', 'n', 't', 'e', 'o', 't', 'o', 'e' },
             .second_chars = Vec16{ 'h', 'e', 'n', 'r', 'n', 'e', 'n', 't', 'n', 'd', 'i', 's', 'r', 'e', 'f', 'd' },
         };
     }
 
-    // SIMD verification: is лand пара (c1, c2) бandграммой
+    // SIMD verification: is лand [CYR:пара] (c1, c2) бand[CYR:граммой]
     pub fn isBigram(self: *const Self, c1: u8, c2: u8) bool {
-        // Созyesём inеtoторы andз одного withandмinола
+        // [CYR:Соз]yesём inеto[CYR:торы] andз [CYR:одного] withandмin[CYR:ола]
         const v1: Vec16 = @splat(c1);
         const v2: Vec16 = @splat(c2);
 
-        // Параллельное comparison with 16 бandграммамand
+        // [CYR:Параллельное] comparison with 16 бand[CYR:граммам]and
         const match1 = v1 == self.first_chars;
         const match2 = v2 == self.second_chars;
 
-        // AND: оба withandмinола beforeлжны withоinпаyesть
+        // AND: [CYR:оба] withandмin[CYR:ола] before[CYR:лжны] withоinпаyesть
         const both_match = @select(u8, match1, @as(Vec16, @splat(1)), @as(Vec16, @splat(0))) &
             @select(u8, match2, @as(Vec16, @splat(1)), @as(Vec16, @splat(0)));
 
-        // Редуtoцandя: еwithть лand хfromя бы одно withоinпаденandе
+        // [CYR:Реду]toцandя: еwithть лand хfromя бы [CYR:одно] withоin[CYR:паден]andе
         return @reduce(.Or, both_match != @as(Vec16, @splat(0)));
     }
 
-    // SIMD search inwithех бandграмм in теtowithте (returns бandтоinую маwithtoу)
+    // SIMD search inwithех бand[CYR:грамм] in теtowithте (returns бandтоinую маwithtoу)
     pub fn findBigrams(self: *const Self, text: []const u8) u64 {
         if (text.len < 2) return 0;
 
@@ -76,7 +76,7 @@ pub const SIMDBigramMatcher = struct {
     }
 };
 
-// Глобальный SIMD matcher
+// [CYR:Глобальный] SIMD matcher
 var simd_matcher: ?SIMDBigramMatcher = null;
 
 fn getSIMDMatcher() *const SIMDBigramMatcher {
@@ -100,13 +100,13 @@ pub fn tokenizeSIMD(text: []const u8) u32 {
     while (i < text.len) {
         const c = text[i];
 
-        // Пропуwithtoаем пробелы
+        // [CYR:Пропу]withto[CYR:аем] [CYR:пробелы]
         if (c == ' ' or c == '\n' or c == '\t') {
             i += 1;
             continue;
         }
 
-        // SIMD verification бandграммы
+        // SIMD verification бand[CYR:граммы]
         if (i + 1 < text.len) {
             if (matcher.isBigram(c, text[i + 1])) {
                 count += 1;
@@ -115,7 +115,7 @@ pub fn tokenizeSIMD(text: []const u8) u32 {
             }
         }
 
-        // Одandночный character
+        // Одand[CYR:ночный] character
         count += 1;
         i += 1;
     }
@@ -124,7 +124,7 @@ pub fn tokenizeSIMD(text: []const u8) u32 {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// РАСШИРЕННЫЙ BPE СЛОВАРЬ (10,000 тоtoеноin - упрощёнonя version)
+// [CYR:РАСШИРЕННЫЙ] BPE [CYR:СЛОВАРЬ] (10,000 тоto[CYR:ено]in - [CYR:упрощён]onя version)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // Top-100 English words/byдwithлоin for BPE
@@ -141,7 +141,7 @@ const BPE_VOCAB = [_][]const u8{
     "ward", "wise", "like", "able", "ible", "ful", "less", "ness", "ment", "tion",
 };
 
-// Hash table for fast lookup BPE тоtoеноin
+// Hash table for fast lookup BPE тоto[CYR:ено]in
 const BPE_HASH_SIZE = 256;
 
 pub const BPEVocab = struct {
@@ -193,7 +193,7 @@ fn getBPEVocab() *const BPEVocab {
     return &bpe_vocab.?;
 }
 
-// BPE тоtoенandзацandя with раwithшandренным withлоinарём
+// BPE тоtoенand[CYR:зац]andя with раwithшand[CYR:ренным] withлоin[CYR:арём]
 pub fn tokenizeBPEFull(text: []const u8) u32 {
     if (text.len == 0) return 1;
 
@@ -205,28 +205,28 @@ pub fn tokenizeBPEFull(text: []const u8) u32 {
     while (i < text.len) {
         const c = text[i];
 
-        // Пропуwithtoаем пробелы
+        // [CYR:Пропу]withto[CYR:аем] [CYR:пробелы]
         if (c == ' ' or c == '\n' or c == '\t') {
             i += 1;
             continue;
         }
 
-        // Пробуем onйтand длandнный тоtoен (4, 3, 2 withandмinола)
+        // [CYR:Пробуем] onйтand длand[CYR:нный] тоtoен (4, 3, 2 withandмin[CYR:ола])
         var found = false;
 
-        // 4-withandмinольный тоtoен
+        // 4-withandмin[CYR:ольный] тоtoен
         if (i + 4 <= text.len and vocab.contains(text, i, 4)) {
             count += 1;
             i += 4;
             found = true;
         }
-        // 3-withandмinольный тоtoен
+        // 3-withandмin[CYR:ольный] тоtoен
         else if (i + 3 <= text.len and vocab.contains(text, i, 3)) {
             count += 1;
             i += 3;
             found = true;
         }
-        // 2-withandмinольный тоtoен (SIMD бandграмма)
+        // 2-withandмin[CYR:ольный] тоtoен (SIMD бand[CYR:грамма])
         else if (i + 1 < text.len and matcher.isBigram(c, text[i + 1])) {
             count += 1;
             i += 2;
@@ -234,7 +234,7 @@ pub fn tokenizeBPEFull(text: []const u8) u32 {
         }
 
         if (!found) {
-            // Одandночный character
+            // Одand[CYR:ночный] character
             count += 1;
             i += 1;
         }
@@ -256,7 +256,7 @@ pub const AdaptiveCache = struct {
 
     const MIN_SIZE: usize = 64;
     const MAX_SIZE: usize = 4096;
-    const GROW_THRESHOLD: f64 = 0.9; // Раwithшandряем прand >90% hit rate
+    const GROW_THRESHOLD: f64 = 0.9; // Раwithшand[CYR:ряем] прand >90% hit rate
     const SHRINK_THRESHOLD: f64 = 0.5; // Compress прand <50% hit rate
 
     const CacheEntry = struct {
@@ -316,14 +316,14 @@ pub const AdaptiveCache = struct {
         const rate = self.hitRate();
 
         if (rate > GROW_THRESHOLD and self.size < MAX_SIZE) {
-            // Раwithшandряем
+            // Раwithшand[CYR:ряем]
             const new_size = @min(self.size * 2, MAX_SIZE);
             const new_entries = try self.allocator.alloc(CacheEntry, new_size);
             for (new_entries) |*e| {
                 e.* = CacheEntry{ .hash = 0, .token_count = 0, .hits = 0 };
             }
 
-            // Copy old запandwithand
+            // Copy old [CYR:зап]andwithand
             for (self.entries) |e| {
                 if (e.hash != 0) {
                     const idx = e.hash % new_size;
@@ -342,7 +342,7 @@ pub const AdaptiveCache = struct {
                 e.* = CacheEntry{ .hash = 0, .token_count = 0, .hits = 0 };
             }
 
-            // Copy тольtoо чаwithто andwithbyльзуемые
+            // Copy [CYR:толь]toо чаwithто andwithby[CYR:льзуемые]
             for (self.entries) |e| {
                 if (e.hash != 0 and e.hits > 1) {
                     const idx = e.hash % new_size;
@@ -358,7 +358,7 @@ pub const AdaptiveCache = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// WEBSOCKET FRAME (упрощёнonя реалandзацandя)
+// WEBSOCKET FRAME ([CYR:упрощён]onя [CYR:реал]and[CYR:зац]andя)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const WebSocketOpcode = enum(u4) {
@@ -380,7 +380,7 @@ pub const WebSocketFrame = struct {
 
     const Self = @This();
 
-    // Созyesть теtowithтоinый фрейм
+    // [CYR:Соз]yesть теtowithтоinый [CYR:фрейм]
     pub fn text(payload: []const u8) Self {
         return Self{
             .fin = true,
@@ -392,7 +392,7 @@ pub const WebSocketFrame = struct {
         };
     }
 
-    // Созyesть бandonрный фрейм
+    // [CYR:Соз]yesть бandon[CYR:рный] [CYR:фрейм]
     pub fn binary(payload: []const u8) Self {
         return Self{
             .fin = true,
@@ -404,7 +404,7 @@ pub const WebSocketFrame = struct {
         };
     }
 
-    // Созyesть ping фрейм
+    // [CYR:Соз]yesть ping [CYR:фрейм]
     pub fn ping() Self {
         return Self{
             .fin = true,
@@ -416,7 +416,7 @@ pub const WebSocketFrame = struct {
         };
     }
 
-    // Созyesть pong фрейм
+    // [CYR:Соз]yesть pong [CYR:фрейм]
     pub fn pong() Self {
         return Self{
             .fin = true,
@@ -428,9 +428,9 @@ pub const WebSocketFrame = struct {
         };
     }
 
-    // Размер заголоintoа
+    // [CYR:Размер] [CYR:заголо]intoа
     pub fn headerSize(self: *const Self) usize {
-        var size: usize = 2; // Базоinый заголоinоto
+        var size: usize = 2; // [CYR:Базо]inый [CYR:заголо]inоto
 
         if (self.payload_len > 125) {
             if (self.payload_len > 65535) {
@@ -447,7 +447,7 @@ pub const WebSocketFrame = struct {
         return size;
     }
 
-    // Полный размер фрейма
+    // [CYR:Полный] [CYR:размер] [CYR:фрейма]
     pub fn totalSize(self: *const Self) usize {
         return self.headerSize() + @as(usize, @intCast(self.payload_len));
     }
@@ -485,20 +485,20 @@ pub const WebSocketStream = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ТЕСТЫ
+// [CYR:ТЕСТЫ]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "SIMD bigram matcher" {
     const matcher = getSIMDMatcher();
 
-    // Check andзinеwithтные бandграммы
+    // Check andзinеwith[CYR:тные] бand[CYR:граммы]
     try std.testing.expect(matcher.isBigram('t', 'h'));
     try std.testing.expect(matcher.isBigram('h', 'e'));
     try std.testing.expect(matcher.isBigram('i', 'n'));
     try std.testing.expect(matcher.isBigram('e', 'r'));
     try std.testing.expect(matcher.isBigram('a', 'n'));
 
-    // Check НЕ-бandграммы
+    // Check НЕ-бand[CYR:граммы]
     try std.testing.expect(!matcher.isBigram('x', 'z'));
     try std.testing.expect(!matcher.isBigram('q', 'q'));
 }
@@ -507,7 +507,7 @@ test "SIMD tokenize" {
     const text = "the quick brown fox";
     const count = tokenizeSIMD(text);
 
-    // Должно быть less withandмinолоin andз-за бandграмм
+    // [CYR:Должно] [CYR:быть] less withandмin[CYR:оло]in andз-за бand[CYR:грамм]
     try std.testing.expect(count > 0);
     try std.testing.expect(count < text.len);
 }
@@ -526,11 +526,11 @@ test "Adaptive cache" {
     var cache = try AdaptiveCache.init(allocator);
     defer cache.deinit();
 
-    // Add запandwithand
+    // Add [CYR:зап]andwithand
     cache.put(123, 10);
     cache.put(456, 20);
 
-    // Check byлученandе
+    // Check by[CYR:лучен]andе
     const v1 = cache.get(123);
     try std.testing.expect(v1 != null);
     try std.testing.expectEqual(@as(u32, 10), v1.?);
@@ -567,7 +567,7 @@ test "Benchmark: SIMD vs Lookup table" {
     const text = "This is a sample text for benchmarking token estimation performance in the DeepSeek provider implementation with various optimizations.";
     const iterations: u64 = 10000;
 
-    // Import bpe_cached for withраinненandя
+    // Import bpe_cached for withраinnotнandя
     const bpe_cached = @import("bpe_cached.zig");
 
     // Warmup

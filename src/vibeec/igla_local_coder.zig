@@ -153,7 +153,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "factorial",
-        .keywords = &.{ "factorial", "фаtoторandал", "n!", "multiply" },
+        .keywords = &.{ "factorial", "фаto[CYR:тор]andал", "n!", "multiply" },
         .category = .Algorithm,
         .code =
         \\const std = @import("std");
@@ -189,7 +189,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "is_prime",
-        .keywords = &.{ "prime", "проwithтое", "чandwithло", "divisible" },
+        .keywords = &.{ "prime", "[CYR:про]with[CYR:тое]", "чandwithло", "divisible" },
         .category = .Algorithm,
         .code =
         \\const std = @import("std");
@@ -232,7 +232,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "gcd_euclidean",
-        .keywords = &.{ "gcd", "greatest", "common", "divisor", "euclidean", "нод" },
+        .keywords = &.{ "gcd", "greatest", "common", "divisor", "euclidean", "[CYR:нод]" },
         .category = .Algorithm,
         .code =
         \\const std = @import("std");
@@ -273,7 +273,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "binary_search",
-        .keywords = &.{ "binary", "search", "find", "бandonрный", "byandwithto" },
+        .keywords = &.{ "binary", "search", "find", "бandon[CYR:рный]", "byandwithto" },
         .category = .Algorithm,
         .code =
         \\const std = @import("std");
@@ -320,7 +320,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "quick_sort",
-        .keywords = &.{ "quick", "sort", "быwithтрая", "withортandроintoа", "partition" },
+        .keywords = &.{ "quick", "sort", "быwith[CYR:трая]", "with[CYR:орт]andроintoа", "partition" },
         .category = .Algorithm,
         .code =
         \\const std = @import("std");
@@ -373,7 +373,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "bubble_sort",
-        .keywords = &.{ "bubble", "sort", "пузырьtoоinая", "withортandроintoа", "simple" },
+        .keywords = &.{ "bubble", "sort", "[CYR:пузырь]toоinая", "with[CYR:орт]andроintoа", "simple" },
         .category = .Algorithm,
         .code =
         \\const std = @import("std");
@@ -414,7 +414,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "merge_sort",
-        .keywords = &.{ "merge", "sort", "withортandроintoа", "withлandянandем", "divide" },
+        .keywords = &.{ "merge", "sort", "with[CYR:орт]andроintoа", "withлandянandем", "divide" },
         .category = .Algorithm,
         .code =
         \\const std = @import("std");
@@ -483,7 +483,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     // ───────────────────────────────────────────────────────────────────────────
     .{
         .name = "vsa_bind",
-        .keywords = &.{ "bind", "withinязать", "multiply", "vsa", "hdc" },
+        .keywords = &.{ "bind", "within[CYR:язать]", "multiply", "vsa", "hdc" },
         .category = .VSA,
         .code =
         \\const std = @import("std");
@@ -623,7 +623,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "vsa_similarity",
-        .keywords = &.{ "similarity", "cosine", "dot", "withходwithтinо", "compare" },
+        .keywords = &.{ "similarity", "cosine", "dot", "with[CYR:ход]withтinо", "compare" },
         .category = .VSA,
         .code =
         \\const std = @import("std");
@@ -856,7 +856,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     // ───────────────────────────────────────────────────────────────────────────
     .{
         .name = "struct_basic",
-        .keywords = &.{ "struct", "withтруtoтура", "record", "type", "fields" },
+        .keywords = &.{ "struct", "with[CYR:тру]to[CYR:тура]", "record", "type", "fields" },
         .category = .DataStructure,
         .code =
         \\const std = @import("std");
@@ -915,7 +915,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "enum_with_methods",
-        .keywords = &.{ "enum", "перечandwithленandе", "variant", "state", "switch" },
+        .keywords = &.{ "enum", "[CYR:переч]andwith[CYR:лен]andе", "variant", "state", "switch" },
         .category = .DataStructure,
         .code =
         \\const std = @import("std");
@@ -1395,7 +1395,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     // ───────────────────────────────────────────────────────────────────────────
     .{
         .name = "math_golden_ratio",
-        .keywords = &.{ "phi", "golden", "ratio", "fibonacci", "золfromое", "withеченandе" },
+        .keywords = &.{ "phi", "golden", "ratio", "fibonacci", "[CYR:зол]fromое", "with[CYR:ечен]andе" },
         .category = .Math,
         .code =
         \\const std = @import("std");
@@ -1455,7 +1455,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "matrix_multiply",
-        .keywords = &.{ "matrix", "matmul", "multiply", "матрandца", "умноженandе" },
+        .keywords = &.{ "matrix", "matmul", "multiply", "[CYR:матр]andца", "[CYR:умножен]andе" },
         .category = .Math,
         .code =
         \\const std = @import("std");
@@ -1537,7 +1537,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     // ───────────────────────────────────────────────────────────────────────────
     .{
         .name = "vibee_basic",
-        .keywords = &.{ "vibee", "spec", "specification", "yaml", "withпецandфandtoацandя" },
+        .keywords = &.{ "vibee", "spec", "specification", "yaml", "with[CYR:пец]andфandtoацandя" },
         .category = .VIBEE,
         .code =
         \\// VIBEE Specification Example
@@ -1722,7 +1722,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     // ───────────────────────────────────────────────────────────────────────────
     .{
         .name = "string_operations",
-        .keywords = &.{ "string", "withтроtoа", "concat", "split", "trim", "text" },
+        .keywords = &.{ "string", "with[CYR:тро]toа", "concat", "split", "trim", "text" },
         .category = .String,
         .code =
         \\const std = @import("std");
