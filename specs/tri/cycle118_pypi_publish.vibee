@@ -1,0 +1,125 @@
+name: cycle118_pypi_publish
+version: "1.0.0"
+language: zig
+module: pypi_publish
+
+types:
+  PyPICredentials:
+    fields:
+      has_pypirc: Bool
+      has_env_vars: Bool
+      username: String
+      token_present: Bool
+
+  WheelMetadata:
+    fields:
+      path: String
+      exists: Bool
+      size_bytes: Int
+      filename: String
+      is_valid: Bool
+
+  UploadResult:
+    fields:
+      success: Bool
+      url: String
+      version: String
+      upload_time: String
+
+  VerificationResult:
+    fields:
+      installed: Bool
+      version_match: Bool
+      import_works: Bool
+      can_create_hypervector: Bool
+      can_bind: Bool
+
+behaviors:
+  - name: check_pypi_credentials
+    given: System environment with potential PyPI credentials
+    when: Checking for ~/.pypirc or TWINE_USERNAME/TWINE_PASSWORD environment variables
+    then: Return credential availability status and warn if missing
+
+  - name: verify_wheel_file_exists
+    given: Expected wheel path at libs/python/trinity_vsa/dist/trinity_vsa-0.1.0-py3-none-any.whl
+    when: Checking file system and validating wheel format
+    then: Return wheel metadata including existence, size, and validity
+
+  - name: validate_wheel_contents
+    given: Existing wheel file
+    when: Running unzip -l to inspect contents and validate structure
+    then: Confirm all required files are present (METADATA, WHEEL, trinity_vsa/)
+
+  - name: check_wheel_metadata
+    given: Valid wheel file
+    when: Extracting and reading metadata (name, version, author, description)
+    then: Return parsed metadata fields for verification
+
+  - name: verify_twine_installed
+    given: Python environment
+    when: Checking if twine package is available (twine --version)
+    then: Install twine via pip if missing, return version
+
+  - name: execute_pypi_upload
+    given: Valid wheel file and PyPI credentials present
+    when: Executing ACTUAL upload command: cd libs/python/trinity_vsa && twine upload dist/trinity_vsa-0.1.0-py3-none-any.whl
+    then: Return upload result with PyPI URL and confirmation
+
+  - name: verify_upload_on_pypi
+    given: Successful upload
+    when: Checking pypi.org/project/trinity-vsa/ via curl or browser
+    then: Confirm package is publicly accessible and version is listed
+
+  - name: test_pypi_install_fresh
+    given: Package uploaded to PyPI
+    when: Creating fresh virtualenv and running pip install trinity-vsa
+    then: Verify installation succeeds without errors
+
+  - name: verify_import_works
+    given: Fresh installation from PyPI
+    when: Running python -c "import trinity_vsa; print(trinity_vsa.__version__)"
+    then: Confirm import succeeds and version matches 0.1.0
+
+  - name: verify_hypervector_creation
+    given: Imported trinity_vsa module
+    when: Creating Hypervector instance: hv = trinity_vsa.Hypervector(dimensions=10000)
+    then: Confirm object instantiation works without errors
+
+  - name: verify_bind_operation
+    given: Hypervector instance
+    when: Testing bind operation: result = trinity_vsa.bind(hv.vector, hv.vector)
+    then: Confirm bind executes and returns valid result
+
+  - name: verify_similarity_operation
+    given: Two bound vectors
+    when: Testing cosine similarity: sim = trinity_vsa.cosine_similarity(v1, v2)
+    then: Confirm similarity calculation works
+
+  - name: generate_pypi_badge
+    given: Successful PyPI upload
+    then: Generate markdown badge: ![PyPI](https://img.shields.io/pypi/v/trinity-vsa)
+
+  - name: create_installation_guide
+    given: Verified PyPI package
+    when: Generating usage documentation with pip install trinity-vsa command
+    then: Create comprehensive guide with import examples and API usage
+
+  - name: update_readme_with_pypi_link
+    given: PyPI badge and installation guide
+    when: Updating README.md with PyPI section
+    then: Add badge, installation command, and link to pypi.org/project/trinity-vsa/
+
+  - name: generate_upload_report
+    given: All verification steps completed
+    when: Compiling results into JSON report
+    then: Return comprehensive report with upload URL, verification status, and test results
+
+  - name: cleanup_test_installation
+    given: Successful verification
+    when: Removing test virtualenv and temporary installations
+    then: Clean up test artifacts while keeping source intact
+
+  - name: commit_pypi_publication
+    given: PyPI publication verified and documented
+    when: Creating git commit with updated README and documentation
+    then: Commit with message "feat(pypi): Publish trinity-vsa 0.1.0 to PyPI"

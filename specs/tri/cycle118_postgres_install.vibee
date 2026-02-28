@@ -1,0 +1,183 @@
+name: cycle118_postgres_install
+version: "1.0.0"
+language: zig
+module: postgres_install
+
+types:
+  PostgresStatus:
+    fields:
+      isRunning: Bool
+      version: String
+      pgConfigPath: String
+      connectionSuccess: Bool
+      error: Option<String>
+
+  BuildStatus:
+    fields:
+      directoryExists: Bool
+      makefileExists: Bool
+      buildSuccess: Bool
+      installSuccess: Bool
+      soFileExists: Bool
+      controlFileExists: Bool
+      error: Option<String>
+
+  ExtensionStatus:
+    fields:
+      databaseExists: Bool
+      extensionInstalled: Bool
+      functionsWork: Bool
+      version: Option<String>
+      error: Option<String>
+
+  InstallationResult:
+    fields:
+      postgresRunning: Bool
+      buildSuccess: Bool
+      installSuccess: Bool
+      extensionCreated: Bool
+      testsPassed: Bool
+      canProceed: Bool
+      errors: List<String>
+      warnings: List<String>
+
+behaviors:
+  - name: verify_postgres_server_running
+    given: PostgreSQL server is installed
+    when: Checking if server is actually running
+    then: Use pg_isready to check server status and return running state
+
+  - name: verify_pg_config_available
+    given: PostgreSQL installation
+    when: Checking for pg_config utility
+    then: Locate pg_config and get PostgreSQL version and paths
+
+  - name: test_database_connection
+    given: PostgreSQL server is running
+    when: Attempting to connect with psql
+    then: Execute psql -c "SELECT version();" to verify connection works
+
+  - name: list_existing_databases
+    given: Working database connection
+    when: Checking what databases exist
+    then: Execute psql -l to list all databases
+
+  - name: navigate_to_extension_directory
+    given: Project repository
+    when: Checking extension source location
+    then: Navigate to extensions/pg_trinity and verify directory exists
+
+  - name: verify_extension_source_files
+    given: Extension directory exists
+    when: Checking required source files
+    then: Verify pg_trinity.c, pg_trinity.control, and Makefile exist
+
+  - name: clean_previous_build
+    given: Extension directory with potential build artifacts
+    when: Starting fresh build
+    then: Execute make clean to remove previous build artifacts
+
+  - name: compile_extension
+    given: Clean extension directory with pg_config available
+    when: Building shared library
+    then: Execute make with PG_CONFIG pointed to correct pg_config path
+
+  - name: verify_compilation_output
+    given: Make command executed
+    when: Checking if compilation succeeded
+    then: Verify pg_trinity.so file was created in current directory
+
+  - name: install_extension_with_sudo
+    given: Successfully compiled extension
+    when: Installing to PostgreSQL directory
+    then: Execute sudo make install to copy .so and .control files to pg_config sharedir
+
+  - name: verify_installation_files
+    given: Installation command executed
+    when: Checking if files were copied correctly
+    then: Verify pg_trinity.so exists in $(pg_config --sharedir)/extension/ or $(pg_config --pkglibdir)/
+
+  - name: verify_control_file_installed
+    given: Extension installation attempted
+    when: Checking control file location
+    then: Verify pg_trinity.control exists in $(pg_config --sharedir)/extension/
+
+  - name: check_postgres_data_directory
+    given: PostgreSQL installation
+    when: Verifying extension files in data directory
+    then: List files in PostgreSQL data directory's extension folder
+
+  - name: create_test_database
+    given: Working PostgreSQL connection
+    when: Creating database for testing
+    then: Execute createdb trinity_test or psql -c "CREATE DATABASE trinity_test;"
+
+  - name: verify_database_created
+    given: Database creation command executed
+    when: Checking if database exists
+    then: Execute psql -l | grep trinity_test or psql -c "\l" | grep trinity_test
+
+  - name: connect_to_test_database
+    given: Test database exists
+    when: Establishing connection for extension creation
+    then: Execute psql -d trinity_test -c "SELECT current_database();"
+
+  - name: create_extension_sql
+    given: Connected to test database
+    when: Loading pg_trinity extension
+    then: Execute psql -d trinity_test -c "CREATE EXTENSION IF NOT EXISTS pg_trinity;"
+
+  - name: verify_extension_loaded
+    given: CREATE EXTENSION command executed
+    when: Checking if extension is active
+    then: Execute psql -d trinity_test -c "\dx" and look for pg_trinity
+
+  - name: test_bind_function
+    given: Extension loaded successfully
+    when: Testing pg_trinity_bind function
+    then: Execute psql -d trinity_test -c "SELECT pg_trinity_bind('\\x0102', '\\x0304');"
+
+  - name: test_unbind_function
+    given: Extension loaded with bind working
+    when: Testing pg_trinity_unbind function
+    then: Execute psql -d trinity_test -c "SELECT pg_trinity_unbind(pg_trinity_bind('\\x0102', '\\x0304'), '\\x0304');"
+
+  - name: test_bundle_function
+    given: Basic bind/unbind working
+    when: Testing pg_trinity_bundle function
+    then: Execute psql -d trinity_test -c "SELECT pg_trinity_bundle('\\x0102', '\\x0304');"
+
+  - name: verify_extension_details
+    given: Extension created and functions tested
+    when: Getting detailed extension information
+    then: Execute psql -d trinity_test -c "\dx+ pg_trinity" to show version and description
+
+  - name: test_error_handling
+    given: Extension loaded
+    when: Testing error conditions with invalid inputs
+    then: Execute psql -d trinity_test -c "SELECT pg_trinity_bind(NULL, '\\x0102');" and verify proper error
+
+  - name: check_function_signatures
+    given: Extension loaded
+    when: Inspecting available functions
+    then: Execute psql -d trinity_test -c "\df pg_trinity*" to list all functions
+
+  - name: handle_permission_denied
+    given: Installation requires elevated privileges
+    when: make install fails with permission error
+    then: Retry with sudo and provide clear error message if sudo fails
+
+  - name: handle_pg_config_not_found
+    given: PostgreSQL installation but pg_config missing
+    when: make cannot find pg_config
+    then: Search common paths for pg_config and set PG_CONFIG environment variable
+
+  - name: handle_missing_postgres_service
+    given: pg_config exists but server not running
+    when: psql connection fails
+    then: Provide instructions to start PostgreSQL service (brew services start postgresql or systemctl start postgresql)
+
+  - name: generate_installation_report
+    given: All installation steps attempted
+    when: Creating summary of installation process
+    then: Compile results into InstallationResult with status, errors, and recommendations

@@ -1,0 +1,339 @@
+name: cycle118_dashboard_deploy
+version: "1.0.0"
+language: zig
+module: dashboard_deploy
+
+description: |
+  ACTUAL EXECUTION - Deploy production dashboard to GitHub Pages (gh-pages branch).
+  This spec performs real deployment with verification, monitoring, and health checks.
+  Target: https://gHashTag.github.io/trinity/
+
+types:
+  DeploymentConfig:
+    fields:
+      website_dir: String
+      docsite_dir: String
+      deploy_branch: String
+      deploy_url: String
+      health_endpoint: String
+      metrics_endpoint: String
+
+  BuildStatus:
+    fields:
+      website_built: Bool
+      docsite_built: Bool
+      assets_ready: Bool
+      timestamp: String
+
+  DeploymentStatus:
+    fields:
+      branch_created: Bool
+      assets_pushed: Bool
+      url_accessible: Bool
+      health_passing: Bool
+      deployment_url: String
+
+  HealthMetrics:
+    fields:
+      uptime_seconds: Int
+      cycle_count: Int
+      agent_count: Int
+      task_success_rate: Float
+      memory_usage_mb: Int
+      cpu_usage_percent: Float
+
+  MonitoringConfig:
+    fields:
+      interval_seconds: Int
+      alert_threshold: Float
+      log_file: String
+      webhook_url: String
+
+behaviors:
+  - name: check_existing_structure
+    given: Project root directory
+    when: Checking website and docsite directories
+    then:
+      - Verify website/ directory exists and has package.json
+      - Verify docsite/ directory exists and has docusaurus.config.js
+      - Check for node_modules in both directories
+      - Report missing dependencies or structure issues
+
+  - name: install_dependencies
+    given: Website and docsource directories
+    when: Installing npm dependencies
+    then:
+      - Run cd website && npm install --production
+      - Run cd docsite && npm install --production
+      - Verify package-lock.json files exist
+      - Report any installation failures
+
+  - name: build_website_assets
+    given: Clean website directory with dependencies
+    when: Building production website bundle
+    then:
+      - Run cd website && npm run build
+      - Verify dist/ directory created
+      - Check for index.html in dist/
+      - Check for assets/ directory in dist/
+      - Report build size and file count
+      - Log build timestamp
+
+  - name: build_docsite_assets
+    given: Clean docsite directory with dependencies
+    when: Building documentation site
+    then:
+      - Run cd docsite && npm run build
+      - Verify build/ directory created
+      - Check for docs/ structure in build/
+      - Verify all sidebar links resolve
+      - Report build size and page count
+
+  - name: create_status_page_html
+    given: Website dist directory
+    when: Creating real-time status page
+    then:
+      - Create dist/status.html with dashboard metrics
+      - Include auto-refresh meta tag (every 30 seconds)
+      - Add cycle counter, agent status, task queue
+      - Add QR code section for mobile access
+      - Style with gold/cyan/purple theme
+      - Minify HTML for production
+
+  - name: create_health_endpoint_javascript
+    given: Website source directory
+    when: Creating health check endpoint logic
+    then:
+      - Create src/utils/healthCheck.ts with real metrics
+      - Implement uptime tracking (localStorage)
+      - Add cycle counter display
+      - Add agent status polling
+      - Add task success rate calculation
+      - Export for status.html consumption
+
+  - name: create_metrics_endpoint
+    given: Website API structure
+    when: Creating Prometheus-compatible metrics endpoint
+    then:
+      - Create src/api/metrics.ts with metrics collector
+      - Implement standard Prometheus format
+      - Track: trinity_uptime_seconds, trinity_cycle_count, trinity_agents_active
+      - Track: trinity_tasks_total, trinity_tasks_success_rate
+      - Track: trinity_memory_usage_bytes, trinity_cpu_usage_percent
+      - Add Content-Type: text/plain header
+
+  - name: create_deployment_script
+    given: Project root directory
+    when: Creating automated deployment script
+    then:
+      - Create bin/deploy-gh-pages.sh with full deployment logic
+      - Implement: clean temp directory
+      - Implement: copy website dist to temp
+      - Implement: copy docsite build to temp/docs
+      - Implement: git init and force push to gh-pages
+      - Add error handling and rollback support
+      - Make script executable (chmod +x)
+
+  - name: verify_current_gh_pages
+    given: GitHub repository access
+    when: Checking existing gh-pages branch
+    then:
+      - Run git ls-remote --heads origin gh-pages
+      - If exists: fetch current state to /tmp/gh-pages-backup
+      - Report current branch size and file count
+      - Create backup before overwriting
+
+  - name: assemble_deployment_bundle
+    given: Built website and docsite assets
+    when: Combining into single gh-pages structure
+    then:
+      - Create /tmp/gh-pages-deploy directory
+      - Copy website/dist/* to /tmp/gh-pages-deploy/
+      - Create /tmp/gh-pages-deploy/docs directory
+      - Copy docsite/build/* to /tmp/gh-pages-deploy/docs/
+      - Verify index.html exists at root
+      - Verify docs/index.html exists
+      - Generate file manifest
+
+  - name: deploy_to_gh_pages
+    given: Assembled deployment bundle in /tmp/gh-pages-deploy
+    when: Force pushing to gh-pages branch
+    then:
+      - Run cd /tmp/gh-pages-deploy && git init
+      - Run git checkout -b gh-pages
+      - Run git add -A
+      - Run git commit -m "Deploy: Cycle 118 - Production Dashboard"
+      - Run git remote add origin git@github.com:gHashTag/trinity.git
+      - Run git push origin gh-pages --force
+      - Capture deployment timestamp
+
+  - name: verify_deployment_url
+    given: Deployed gh-pages branch
+    when: Checking main URL accessibility
+    then:
+      - Wait 30 seconds for GitHub Pages to update
+      - Run curl -I https://gHashTag.github.io/trinity/
+      - Check HTTP 200 response
+      - Verify content-type: text/html
+      - Report response time
+      - Fail if timeout or error
+
+  - name: verify_status_page
+    given: Deployed status.html page
+    when: Checking status page accessibility
+    then:
+      - Run curl -s https://gHashTag.github.io/trinity/status.html
+      - Verify HTML contains "Trinity Production Dashboard"
+      - Check for cycle counter element
+      - Check for QR code section
+      - Verify auto-refresh meta tag present
+      - Report page load time
+
+  - name: verify_docsite_links
+    given: Deployed documentation
+    when: Checking documentation URLs
+    then:
+      - Run curl -I https://gHashTag.github.io/trinity/docs/
+      - Check for research/ page
+      - Check for benchmarks/ page
+      - Check for api/ page
+      - Report any broken links
+      - Verify baseUrl is /trinity/docs/
+
+  - name: test_health_endpoint
+    given: Deployed health check JavaScript
+    when: Simulating health endpoint call
+    then:
+      - Extract healthCheck.ts logic
+      - Run test with mock metrics
+      - Verify JSON response format
+      - Check uptime_seconds > 0
+      - Check cycle_count >= 118
+      - Validate success_rate between 0-100
+
+  - name: test_metrics_endpoint
+    given: Deployed metrics endpoint
+    when: Simulating Prometheus metrics call
+    then:
+      - Extract metrics.ts logic
+      - Run test with standard metrics
+      - Verify output in Prometheus format
+      - Check for HELP and TYPE comments
+      - Validate metric names (trinity_*)
+      - Ensure all numeric values valid
+
+  - name: generate_qr_code
+    given: Deployment URL
+    when: Creating QR code for mobile access
+    then:
+      - Use qrencode or online API
+      - Generate QR for https://gHashTag.github.io/trinity/status.html
+      - Save to website/dist/assets/qr-status.png
+      - Add to status.html for display
+      - Report QR code dimensions and size
+
+  - name: create_monitoring_cron
+    given: Deployment URL and health endpoints
+    when: Creating automated monitoring job
+    then:
+      - Create bin/monitor-dashboard.sh with health checks
+      - Check main URL every 5 minutes
+      - Check status page every 5 minutes
+      - Check docs URL every 15 minutes
+      - Log results to .ralph/logs/dashboard-monitor.log
+      - Send alert on 3 consecutive failures
+      - Create crontab entry: */5 * * * * /path/to/monitor-dashboard.sh
+
+  - name: setup_alerting
+    given: Monitoring cron job
+    when: Configuring failure alerts
+    then:
+      - Create .ralph/config/dashboard-alerts.conf
+      - Define alert thresholds (response time > 5s, HTTP != 200)
+      - Configure log rotation for monitor logs
+      - Add webhook URL for notifications (optional)
+      - Test alert with simulated failure
+      - Report alert configuration
+
+  - name: create_deployment_documentation
+    given: Successful deployment
+    when: Documenting deployment process
+    then:
+      - Create docsite/docs/deployment/cycle-118-dashboard.md
+      - Document: URLs, endpoints, monitoring
+      - Document: Deployment process (deploy-gh-pages.sh)
+      - Document: Rollback procedure
+      - Add architecture diagram
+      - Update sidebars.ts with deployment section
+
+  - name: run_smoke_tests
+    given: Fully deployed dashboard
+    when: Executing comprehensive smoke test suite
+    then:
+      - Test 1: Main page loads in < 3 seconds
+      - Test 2: Status page auto-refreshes
+      - Test 3: All documentation links resolve
+      - Test 4: QR code scans to correct URL
+      - Test 5: Health metrics display correctly
+      - Test 6: Mobile responsive (use user-agent)
+      - Test 7: Assets load (CSS, JS, images)
+      - Report pass/fail for each test
+
+  - name: create_rollback_procedure
+    given: Backup of previous gh-pages
+    when: Documenting rollback steps
+    then:
+      - Create bin/rollback-gh-pages.sh
+      - Implement: restore from /tmp/gh-pages-backup
+      - Implement: force push previous version
+      - Document manual rollback steps
+      - Add rollback to deployment documentation
+      - Test rollback with dry-run
+
+  - name: generate_deployment_report
+    given: Completed deployment with verification
+    when: Creating final deployment report
+    then:
+      - Compile all verification results
+      - Report: URL accessibility, response times
+      - Report: File counts, build sizes
+      - Report: Smoke test results
+      - Report: Monitoring configuration
+      - Save to .ralph/docs/cycle-118-deployment-report.md
+      - Include deployment timestamp and commit hash
+
+  - name: update_dashboard_widget
+    given: Successful deployment
+    when: Updating TrinityCanvas dashboard widget
+    then:
+      - Add deployment status to RAZUM column
+      - Show URL: https://gHashTag.github.io/trinity/
+      - Show health check status (passing/failing)
+      - Show last deployment timestamp
+      - Add "View Status" button
+      - Add "View Docs" button
+      - Color-code: green (healthy), red (error)
+
+  - name: commit_deployment_artifacts
+    given: All deployment scripts and documentation
+    when: Committing to repository
+    then:
+      - Add bin/deploy-gh-pages.sh
+      - Add bin/monitor-dashboard.sh
+      - Add bin/rollback-gh-pages.sh
+      - Add specs/tri/cycle118_dashboard_deploy.vibee
+      - Add docsite/docs/deployment/cycle-118-dashboard.md
+      - Add .ralph/docs/cycle-118-deployment-report.md
+      - Commit with message: "feat(cycle-118): Production Dashboard Deployment"
+      - Push to main branch
+
+  - name: setup_continuous_monitoring
+    given: Deployed dashboard with monitoring
+    when: Enabling continuous health checks
+    then:
+      - Activate cron job for monitoring
+      - Start log rotation for monitor logs
+      - Create systemd service (optional, Linux)
+      - Create launchd plist (optional, macOS)
+      - Test first monitoring cycle
+      - Report monitoring active status
