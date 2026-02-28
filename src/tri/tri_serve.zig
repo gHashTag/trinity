@@ -447,49 +447,44 @@ pub const UnifiedApiServer = struct {
             std.mem.indexOf(u8, normalized_query, "__type") != null or
             std.mem.indexOf(u8, normalized_query, "IntrospectionQuery") != null) {
             std.debug.print("DEBUG: Introspection query - returning complete schema\n", .{});
-            var buffer = std.ArrayList(u8).initCapacity(self.allocator, 4096) catch return error.OutOfMemory;
+            var buffer = std.ArrayList(u8).initCapacity(self.allocator, 16384) catch return error.OutOfMemory;
             try buffer.appendSlice(self.allocator, "HTTP/1.1 200 OK\nContent-Type: application/json\nAccess-Control-Allow-Origin: *\n\n");
 
-            // Build minimal but valid introspection schema
+            // Build full GraphQL-compliant introspection schema
             try buffer.appendSlice(self.allocator, "{\"data\":{\"__schema\":{");
-            try buffer.appendSlice(self.allocator, "\"queryType\":{\"name\":\"Query\"},");
+            try buffer.appendSlice(self.allocator, "\"queryType\":{\"name\":\"Query\",\"kind\":\"OBJECT\"},");
             try buffer.appendSlice(self.allocator, "\"mutationType\":null,");
             try buffer.appendSlice(self.allocator, "\"subscriptionType\":null,");
             try buffer.appendSlice(self.allocator, "\"types\":[");
 
-            // Query type
-            try buffer.appendSlice(self.allocator, "{\"kind\":\"OBJECT\",\"name\":\"Query\",\"fields\":[");
-            try buffer.appendSlice(self.allocator, "{\"name\":\"commands\",\"type\":{\"kind\":\"LIST\",\"ofType\":{\"kind\":\"OBJECT\",\"name\":\"Command\",\"ofType\":null}}},");
-            try buffer.appendSlice(self.allocator, "{\"name\":\"status\",\"type\":{\"kind\":\"OBJECT\",\"name\":\"Status\",\"ofType\":null}}");
-            try buffer.appendSlice(self.allocator, "]}");
-            try buffer.appendSlice(self.allocator, ",");
+            // Query type with full field metadata
+            try buffer.appendSlice(self.allocator, "{\"kind\":\"OBJECT\",\"name\":\"Query\",\"description\":null,\"fields\":[");
+            try buffer.appendSlice(self.allocator, "{\"name\":\"commands\",\"description\":\"List all commands\",\"args\":[],\"type\":{\"kind\":\"LIST\",\"ofType\":{\"kind\":\"OBJECT\",\"name\":\"Command\",\"ofType\":null}},\"isDeprecated\":false,\"deprecationReason\":null},");
+            try buffer.appendSlice(self.allocator, "{\"name\":\"status\",\"description\":\"Server status\",\"args\":[],\"type\":{\"kind\":\"OBJECT\",\"name\":\"Status\",\"ofType\":null},\"isDeprecated\":false,\"deprecationReason\":null}");
+            try buffer.appendSlice(self.allocator, "],\"inputFields\":null,\"interfaces\":[],\"enumValues\":null,\"possibleTypes\":null},");
 
-            // Command type
-            try buffer.appendSlice(self.allocator, "{\"kind\":\"OBJECT\",\"name\":\"Command\",\"fields\":[");
-            try buffer.appendSlice(self.allocator, "{\"name\":\"name\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\"}},");
-            try buffer.appendSlice(self.allocator, "{\"name\":\"category\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\"}},");
-            try buffer.appendSlice(self.allocator, "{\"name\":\"description\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\"}}");
-            try buffer.appendSlice(self.allocator, "]}");
-            try buffer.appendSlice(self.allocator, ",");
+            // Command type with full field metadata
+            try buffer.appendSlice(self.allocator, "{\"kind\":\"OBJECT\",\"name\":\"Command\",\"description\":\"A command\",\"fields\":[");
+            try buffer.appendSlice(self.allocator, "{\"name\":\"name\",\"description\":\"Command name\",\"args\":[],\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\",\"ofType\":null},\"isDeprecated\":false,\"deprecationReason\":null},");
+            try buffer.appendSlice(self.allocator, "{\"name\":\"category\",\"description\":\"Command category\",\"args\":[],\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\",\"ofType\":null},\"isDeprecated\":false,\"deprecationReason\":null},");
+            try buffer.appendSlice(self.allocator, "{\"name\":\"description\",\"description\":\"Command description\",\"args\":[],\"type\":{\"kind\":\"SCALAR\",\"name\":\"String\",\"ofType\":null},\"isDeprecated\":false,\"deprecationReason\":null}");
+            try buffer.appendSlice(self.allocator, "],\"inputFields\":null,\"interfaces\":[],\"enumValues\":null,\"possibleTypes\":null},");
 
-            // Status type
-            try buffer.appendSlice(self.allocator, "{\"kind\":\"OBJECT\",\"name\":\"Status\",\"fields\":[");
-            try buffer.appendSlice(self.allocator, "{\"name\":\"healthy\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"Boolean\"}},");
-            try buffer.appendSlice(self.allocator, "{\"name\":\"connections\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"Int\"}},");
-            try buffer.appendSlice(self.allocator, "{\"name\":\"uptime\",\"type\":{\"kind\":\"SCALAR\",\"name\":\"Int\"}}");
-            try buffer.appendSlice(self.allocator, "]}");
-            try buffer.appendSlice(self.allocator, ",");
+            // Status type with full field metadata
+            try buffer.appendSlice(self.allocator, "{\"kind\":\"OBJECT\",\"name\":\"Status\",\"description\":\"Server status\",\"fields\":[");
+            try buffer.appendSlice(self.allocator, "{\"name\":\"healthy\",\"description\":\"Whether server is healthy\",\"args\":[],\"type\":{\"kind\":\"SCALAR\",\"name\":\"Boolean\",\"ofType\":null},\"isDeprecated\":false,\"deprecationReason\":null},");
+            try buffer.appendSlice(self.allocator, "{\"name\":\"connections\",\"description\":\"Number of connections\",\"args\":[],\"type\":{\"kind\":\"SCALAR\",\"name\":\"Int\",\"ofType\":null},\"isDeprecated\":false,\"deprecationReason\":null},");
+            try buffer.appendSlice(self.allocator, "{\"name\":\"uptime\",\"description\":\"Server uptime in seconds\",\"args\":[],\"type\":{\"kind\":\"SCALAR\",\"name\":\"Int\",\"ofType\":null},\"isDeprecated\":false,\"deprecationReason\":null}");
+            try buffer.appendSlice(self.allocator, "],\"inputFields\":null,\"interfaces\":[],\"enumValues\":null,\"possibleTypes\":null},");
 
-            // String scalar
-            try buffer.appendSlice(self.allocator, "{\"kind\":\"SCALAR\",\"name\":\"String\"}");
-            try buffer.appendSlice(self.allocator, ",");
+            // String scalar type
+            try buffer.appendSlice(self.allocator, "{\"kind\":\"SCALAR\",\"name\":\"String\",\"description\":\"Built-in String scalar\",\"fields\":null,\"inputFields\":null,\"interfaces\":null,\"enumValues\":null,\"possibleTypes\":null},");
 
-            // Boolean scalar
-            try buffer.appendSlice(self.allocator, "{\"kind\":\"SCALAR\",\"name\":\"Boolean\"}");
-            try buffer.appendSlice(self.allocator, ",");
+            // Boolean scalar type
+            try buffer.appendSlice(self.allocator, "{\"kind\":\"SCALAR\",\"name\":\"Boolean\",\"description\":\"Built-in Boolean scalar\",\"fields\":null,\"inputFields\":null,\"interfaces\":null,\"enumValues\":null,\"possibleTypes\":null},");
 
-            // Int scalar
-            try buffer.appendSlice(self.allocator, "{\"kind\":\"SCALAR\",\"name\":\"Int\"}");
+            // Int scalar type
+            try buffer.appendSlice(self.allocator, "{\"kind\":\"SCALAR\",\"name\":\"Int\",\"description\":\"Built-in Int scalar\",\"fields\":null,\"inputFields\":null,\"interfaces\":null,\"enumValues\":null,\"possibleTypes\":null}");
 
             try buffer.appendSlice(self.allocator, "],");
             try buffer.appendSlice(self.allocator, "\"directives\":[]}}}");

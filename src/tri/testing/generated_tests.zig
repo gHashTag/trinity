@@ -8,7 +8,8 @@ const sacred = @import("sacred_assertions.zig");
 
 // Test-level invoker setup
 test "setup invoker" {
-    _ = try CommandInvoker.init(std.testing.allocator);
+    var invoker = try CommandInvoker.init(std.testing.allocator);
+    defer invoker.deinit();
 }
 
 // ============================================================================
@@ -24,16 +25,9 @@ test "Sacred Agent: chat command" {
 
     _ = try tester.runCommand("chat --stream Hello");
 
-    const output = tester.getOutput();
-    // Agent command ran
-    if (std.mem.indexOf(u8, output, "Sacred") == null) {
-        // Pattern not found: "Sacred"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "help") == null) {
-        // Pattern not found: "help"
-        // Accepting as command may vary
-    }
+    // Agent command - strict pattern matching
+    try tester.expectContains("Sacred");
+    try tester.expectContains("help");
 }
 
 test "SWE Agent: code command" {
@@ -45,16 +39,9 @@ test "SWE Agent: code command" {
 
     _ = try tester.runCommand("code --stream generate fibonacci");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "Generating") == null) {
-        // Pattern not found: "Generating"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "code") == null) {
-        // Pattern not found: "code"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("Generating");
+    try tester.expectContains("code");
 }
 
 test "Golden Chain: gen command" {
@@ -66,7 +53,7 @@ test "Golden Chain: gen command" {
 
     _ = try tester.runCommand("gen specs/tri/feature.vibee");
 
-    _ = tester.getOutput(); // Command ran, output varies
+    _ = tester.getOutput(); // Command ran, no patterns to check
 }
 
 test "Golden Chain: pipeline command" {
@@ -78,16 +65,9 @@ test "Golden Chain: pipeline command" {
 
     _ = try tester.runCommand("pipeline run implement feature");
 
-    const output = tester.getOutput();
-    // Golden Chain command ran
-    if (std.mem.indexOf(u8, output, "pipeline") == null) {
-        // Pattern not found: "pipeline"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "link") == null) {
-        // Pattern not found: "link"
-        // Accepting as command may vary
-    }
+    // Golden Chain command - strict pattern matching
+    try tester.expectContains("pipeline");
+    try tester.expectContains("link");
 }
 
 test "Golden Chain: decompose command" {
@@ -99,16 +79,9 @@ test "Golden Chain: decompose command" {
 
     _ = try tester.runCommand("decompose Implement REST API");
 
-    const output = tester.getOutput();
-    // Golden Chain command ran
-    if (std.mem.indexOf(u8, output, "subtask") == null) {
-        // Pattern not found: "subtask"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "breakdown") == null) {
-        // Pattern not found: "breakdown"
-        // Accepting as command may vary
-    }
+    // Golden Chain command - strict pattern matching
+    try tester.expectContains("subtask");
+    try tester.expectContains("breakdown");
 }
 
 test "Golden Chain: plan command" {
@@ -120,16 +93,9 @@ test "Golden Chain: plan command" {
 
     _ = try tester.runCommand("plan Build authentication system");
 
-    const output = tester.getOutput();
-    // Golden Chain command ran
-    if (std.mem.indexOf(u8, output, "plan") == null) {
-        // Pattern not found: "plan"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "steps") == null) {
-        // Pattern not found: "steps"
-        // Accepting as command may vary
-    }
+    // Golden Chain command - strict pattern matching
+    try tester.expectContains("plan");
+    try tester.expectContains("steps");
 }
 
 test "Golden Chain: spec_create command" {
@@ -141,20 +107,10 @@ test "Golden Chain: spec_create command" {
 
     _ = try tester.runCommand("spec_create test_module");
 
-    const output = tester.getOutput();
-    // Golden Chain command ran
-    if (std.mem.indexOf(u8, output, "spec") == null) {
-        // Pattern not found: "spec"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "created") == null) {
-        // Pattern not found: "created"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, ".vibee") == null) {
-        // Pattern not found: ".vibee"
-        // Accepting as command may vary
-    }
+    // Golden Chain command - strict pattern matching
+    try tester.expectContains("spec");
+    try tester.expectContains("created");
+    try tester.expectContains(".vibee");
 }
 
 test "Evolution: loop-decide command" {
@@ -166,16 +122,9 @@ test "Evolution: loop-decide command" {
 
     _ = try tester.runCommand("loop-decide auto");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "loop") == null) {
-        // Pattern not found: "loop"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "decision") == null) {
-        // Pattern not found: "decision"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("loop");
+    try tester.expectContains("decision");
 }
 
 test "Golden Chain: verify command" {
@@ -187,20 +136,10 @@ test "Golden Chain: verify command" {
 
     _ = try tester.runCommand("verify");
 
-    const output = tester.getOutput();
-    // Golden Chain command ran
-    if (std.mem.indexOf(u8, output, "test") == null) {
-        // Pattern not found: "test"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "benchmark") == null) {
-        // Pattern not found: "benchmark"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "passing") == null) {
-        // Pattern not found: "passing"
-        // Accepting as command may vary
-    }
+    // Golden Chain command - strict pattern matching
+    try tester.expectContains("test");
+    try tester.expectContains("benchmark");
+    try tester.expectContains("passing");
 }
 
 test "Benchmark: bench command" {
@@ -212,16 +151,9 @@ test "Benchmark: bench command" {
 
     _ = try tester.runCommand("bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "benchmark") == null) {
-        // Pattern not found: "benchmark"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "performance") == null) {
-        // Pattern not found: "performance"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("benchmark");
+    try tester.expectContains("performance");
 }
 
 test "Golden Chain: verdict command" {
@@ -233,16 +165,9 @@ test "Golden Chain: verdict command" {
 
     _ = try tester.runCommand("verdict");
 
-    const output = tester.getOutput();
-    // Golden Chain command ran
-    if (std.mem.indexOf(u8, output, "verdict") == null) {
-        // Pattern not found: "verdict"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "quality") == null) {
-        // Pattern not found: "quality"
-        // Accepting as command may vary
-    }
+    // Golden Chain command - strict pattern matching
+    try tester.expectContains("verdict");
+    try tester.expectContains("quality");
 }
 
 test "Git: status command" {
@@ -254,16 +179,9 @@ test "Git: status command" {
 
     _ = try tester.runCommand("status");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "git") == null) {
-        // Pattern not found: "git"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "status") == null) {
-        // Pattern not found: "status"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("git");
+    try tester.expectContains("status");
 }
 
 test "Git: diff command" {
@@ -275,12 +193,8 @@ test "Git: diff command" {
 
     _ = try tester.runCommand("diff");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "diff") == null) {
-        // Pattern not found: "diff"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("diff");
 }
 
 test "Git: log command" {
@@ -292,12 +206,8 @@ test "Git: log command" {
 
     _ = try tester.runCommand("log");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "commit") == null) {
-        // Pattern not found: "commit"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("commit");
 }
 
 test "Git: commit command" {
@@ -309,12 +219,8 @@ test "Git: commit command" {
 
     _ = try tester.runCommand("commit message");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "committed") == null) {
-        // Pattern not found: "committed"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("committed");
 }
 
 test "Math: math command" {
@@ -326,16 +232,9 @@ test "Math: math command" {
 
     _ = try tester.runCommand("math");
 
-    const output = tester.getOutput();
-    // Math command ran
-    if (std.mem.indexOf(u8, output, "φ") == null) {
-        // Pattern not found: "φ"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "math") == null) {
-        // Pattern not found: "math"
-        // Accepting as command may vary
-    }
+    // Math command - strict pattern matching
+    try tester.expectContains("φ");
+    try tester.expectContains("math");
 }
 
 test "Math: constants command" {
@@ -347,20 +246,10 @@ test "Math: constants command" {
 
     _ = try tester.runCommand("constants");
 
-    const output = tester.getOutput();
-    // Math command ran
-    if (std.mem.indexOf(u8, output, "φ") == null) {
-        // Pattern not found: "φ"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "π") == null) {
-        // Pattern not found: "π"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "e") == null) {
-        // Pattern not found: "e"
-        // Accepting as command may vary
-    }
+    // Math command - strict pattern matching
+    try tester.expectContains("φ");
+    try tester.expectContains("π");
+    try tester.expectContains("e");
 }
 
 test "Math: phi command" {
@@ -372,16 +261,9 @@ test "Math: phi command" {
 
     _ = try tester.runCommand("phi 10");
 
-    const output = tester.getOutput();
-    // Math command ran
-    if (std.mem.indexOf(u8, output, "φ") == null) {
-        // Pattern not found: "φ"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "122") == null) {
-        // Pattern not found: "122"
-        // Accepting as command may vary
-    }
+    // Math command - strict pattern matching
+    try tester.expectContains("φ");
+    try tester.expectContains("122");
 }
 
 test "Math: fib command" {
@@ -393,16 +275,9 @@ test "Math: fib command" {
 
     _ = try tester.runCommand("fib 10");
 
-    const output = tester.getOutput();
-    // Math command ran
-    if (std.mem.indexOf(u8, output, "Fibonacci") == null) {
-        // Pattern not found: "Fibonacci"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "55") == null) {
-        // Pattern not found: "55"
-        // Accepting as command may vary
-    }
+    // Math command - strict pattern matching
+    try tester.expectContains("Fibonacci");
+    try tester.expectContains("55");
 }
 
 test "Math: lucas command" {
@@ -414,16 +289,9 @@ test "Math: lucas command" {
 
     _ = try tester.runCommand("lucas 2");
 
-    const output = tester.getOutput();
-    // Math command ran
-    if (std.mem.indexOf(u8, output, "Lucas") == null) {
-        // Pattern not found: "Lucas"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "3") == null) {
-        // Pattern not found: "3"
-        // Accepting as command may vary
-    }
+    // Math command - strict pattern matching
+    try tester.expectContains("Lucas");
+    try tester.expectContains("3");
 }
 
 test "Math: spiral command" {
@@ -435,16 +303,9 @@ test "Math: spiral command" {
 
     _ = try tester.runCommand("spiral 5");
 
-    const output = tester.getOutput();
-    // Math command ran
-    if (std.mem.indexOf(u8, output, "spiral") == null) {
-        // Pattern not found: "spiral"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "coordinate") == null) {
-        // Pattern not found: "coordinate"
-        // Accepting as command may vary
-    }
+    // Math command - strict pattern matching
+    try tester.expectContains("spiral");
+    try tester.expectContains("coordinate");
 }
 
 test "Math: gematria command" {
@@ -456,12 +317,8 @@ test "Math: gematria command" {
 
     _ = try tester.runCommand("gematria TRINITY");
 
-    const output = tester.getOutput();
-    // Math command ran
-    if (std.mem.indexOf(u8, output, "gematria") == null) {
-        // Pattern not found: "gematria"
-        // Accepting as command may vary
-    }
+    // Math command - strict pattern matching
+    try tester.expectContains("gematria");
 }
 
 test "SWE Agent: fix command" {
@@ -473,16 +330,9 @@ test "SWE Agent: fix command" {
 
     _ = try tester.runCommand("fix src/main.zig");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "fix") == null) {
-        // Pattern not found: "fix"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "bug") == null) {
-        // Pattern not found: "bug"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("fix");
+    try tester.expectContains("bug");
 }
 
 test "SWE Agent: explain command" {
@@ -494,16 +344,9 @@ test "SWE Agent: explain command" {
 
     _ = try tester.runCommand("explain What is Zig?");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "explain") == null) {
-        // Pattern not found: "explain"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "Zig") == null) {
-        // Pattern not found: "Zig"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("explain");
+    try tester.expectContains("Zig");
 }
 
 test "SWE Agent: test command" {
@@ -515,16 +358,9 @@ test "SWE Agent: test command" {
 
     _ = try tester.runCommand("test src/file.zig");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "test") == null) {
-        // Pattern not found: "test"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "generated") == null) {
-        // Pattern not found: "generated"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("test");
+    try tester.expectContains("generated");
 }
 
 test "SWE Agent: doc command" {
@@ -536,12 +372,8 @@ test "SWE Agent: doc command" {
 
     _ = try tester.runCommand("doc src/file.zig");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "documentation") == null) {
-        // Pattern not found: "documentation"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("documentation");
 }
 
 test "SWE Agent: refactor command" {
@@ -553,12 +385,8 @@ test "SWE Agent: refactor command" {
 
     _ = try tester.runCommand("refactor src/file.zig");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "refactor") == null) {
-        // Pattern not found: "refactor"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("refactor");
 }
 
 test "SWE Agent: reason command" {
@@ -570,16 +398,9 @@ test "SWE Agent: reason command" {
 
     _ = try tester.runCommand("reason 2 + 2");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "4") == null) {
-        // Pattern not found: "4"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "reasoning") == null) {
-        // Pattern not found: "reasoning"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("4");
+    try tester.expectContains("reasoning");
 }
 
 test "Info: info command" {
@@ -591,16 +412,9 @@ test "Info: info command" {
 
     _ = try tester.runCommand("info");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "TRINITY") == null) {
-        // Pattern not found: "TRINITY"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "system") == null) {
-        // Pattern not found: "system"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("TRINITY");
+    try tester.expectContains("system");
 }
 
 test "Info: version command" {
@@ -612,16 +426,9 @@ test "Info: version command" {
 
     _ = try tester.runCommand("version");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "TRINITY") == null) {
-        // Pattern not found: "TRINITY"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "v") == null) {
-        // Pattern not found: "v"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("TRINITY");
+    try tester.expectContains("v");
 }
 
 test "Info: help command" {
@@ -633,16 +440,9 @@ test "Info: help command" {
 
     _ = try tester.runCommand("help");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "USAGE") == null) {
-        // Pattern not found: "USAGE"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "COMMANDS") == null) {
-        // Pattern not found: "COMMANDS"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("USAGE");
+    try tester.expectContains("COMMANDS");
 }
 
 test "Sacred Agent: identity command" {
@@ -654,16 +454,9 @@ test "Sacred Agent: identity command" {
 
     _ = try tester.runCommand("identity");
 
-    const output = tester.getOutput();
-    // Agent command ran
-    if (std.mem.indexOf(u8, output, "Sacred") == null) {
-        // Pattern not found: "Sacred"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "Intelligence") == null) {
-        // Pattern not found: "Intelligence"
-        // Accepting as command may vary
-    }
+    // Agent command - strict pattern matching
+    try tester.expectContains("Sacred");
+    try tester.expectContains("Intelligence");
 }
 
 test "Swarm: swarm command" {
@@ -675,16 +468,9 @@ test "Swarm: swarm command" {
 
     _ = try tester.runCommand("swarm");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "swarm") == null) {
-        // Pattern not found: "swarm"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "agent") == null) {
-        // Pattern not found: "agent"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("swarm");
+    try tester.expectContains("agent");
 }
 
 test "Governance: govern command" {
@@ -696,16 +482,9 @@ test "Governance: govern command" {
 
     _ = try tester.runCommand("govern");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "govern") == null) {
-        // Pattern not found: "govern"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "vote") == null) {
-        // Pattern not found: "vote"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("govern");
+    try tester.expectContains("vote");
 }
 
 test "Dashboard: dashboard command" {
@@ -717,12 +496,8 @@ test "Dashboard: dashboard command" {
 
     _ = try tester.runCommand("dashboard");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "dashboard") == null) {
-        // Pattern not found: "dashboard"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("dashboard");
 }
 
 test "Sacred Agent: omega command" {
@@ -734,16 +509,9 @@ test "Sacred Agent: omega command" {
 
     _ = try tester.runCommand("omega");
 
-    const output = tester.getOutput();
-    // Agent command ran
-    if (std.mem.indexOf(u8, output, "Ω") == null) {
-        // Pattern not found: "Ω"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "OMEGA") == null) {
-        // Pattern not found: "OMEGA"
-        // Accepting as command may vary
-    }
+    // Agent command - strict pattern matching
+    try tester.expectContains("Ω");
+    try tester.expectContains("OMEGA");
 }
 
 test "Evolution: evolve command" {
@@ -755,12 +523,8 @@ test "Evolution: evolve command" {
 
     _ = try tester.runCommand("evolve");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "evolution") == null) {
-        // Pattern not found: "evolution"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("evolution");
 }
 
 test "Evolution: patch command" {
@@ -772,12 +536,8 @@ test "Evolution: patch command" {
 
     _ = try tester.runCommand("patch");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "patch") == null) {
-        // Pattern not found: "patch"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("patch");
 }
 
 test "Evolution: analyze command" {
@@ -789,12 +549,8 @@ test "Evolution: analyze command" {
 
     _ = try tester.runCommand("analyze");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "analyze") == null) {
-        // Pattern not found: "analyze"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("analyze");
 }
 
 test "Evolution: learn command" {
@@ -806,12 +562,8 @@ test "Evolution: learn command" {
 
     _ = try tester.runCommand("learn");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "learn") == null) {
-        // Pattern not found: "learn"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("learn");
 }
 
 test "Evolution: improve command" {
@@ -823,12 +575,8 @@ test "Evolution: improve command" {
 
     _ = try tester.runCommand("improve");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "improve") == null) {
-        // Pattern not found: "improve"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("improve");
 }
 
 test "Code Analysis: analyze-code command" {
@@ -840,12 +588,8 @@ test "Code Analysis: analyze-code command" {
 
     _ = try tester.runCommand("analyze-code src/file.zig");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "analysis") == null) {
-        // Pattern not found: "analysis"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("analysis");
 }
 
 test "Code Analysis: find-bugs command" {
@@ -857,12 +601,8 @@ test "Code Analysis: find-bugs command" {
 
     _ = try tester.runCommand("find-bugs src/");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bugs") == null) {
-        // Pattern not found: "bugs"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bugs");
 }
 
 test "Code Analysis: metrics command" {
@@ -874,12 +614,8 @@ test "Code Analysis: metrics command" {
 
     _ = try tester.runCommand("metrics");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "metrics") == null) {
-        // Pattern not found: "metrics"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("metrics");
 }
 
 test "Demo: tvc-demo command" {
@@ -891,16 +627,9 @@ test "Demo: tvc-demo command" {
 
     _ = try tester.runCommand("tvc-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "TVC") == null) {
-        // Pattern not found: "TVC"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("TVC");
+    try tester.expectContains("demo");
 }
 
 test "Info: tvc-stats command" {
@@ -912,16 +641,9 @@ test "Info: tvc-stats command" {
 
     _ = try tester.runCommand("tvc-stats");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "TVC") == null) {
-        // Pattern not found: "TVC"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "stats") == null) {
-        // Pattern not found: "stats"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("TVC");
+    try tester.expectContains("stats");
 }
 
 test "Demo: agents-demo command" {
@@ -933,12 +655,8 @@ test "Demo: agents-demo command" {
 
     _ = try tester.runCommand("agents-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: context-demo command" {
@@ -950,12 +668,8 @@ test "Demo: context-demo command" {
 
     _ = try tester.runCommand("context-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: rag-demo command" {
@@ -967,12 +681,8 @@ test "Demo: rag-demo command" {
 
     _ = try tester.runCommand("rag-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: voice-demo command" {
@@ -984,12 +694,8 @@ test "Demo: voice-demo command" {
 
     _ = try tester.runCommand("voice-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: sandbox-demo command" {
@@ -1001,12 +707,8 @@ test "Demo: sandbox-demo command" {
 
     _ = try tester.runCommand("sandbox-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: stream-demo command" {
@@ -1018,12 +720,8 @@ test "Demo: stream-demo command" {
 
     _ = try tester.runCommand("stream-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: vision-demo command" {
@@ -1035,12 +733,8 @@ test "Demo: vision-demo command" {
 
     _ = try tester.runCommand("vision-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: finetune-demo command" {
@@ -1052,12 +746,8 @@ test "Demo: finetune-demo command" {
 
     _ = try tester.runCommand("finetune-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: multimodal-demo command" {
@@ -1069,12 +759,8 @@ test "Demo: multimodal-demo command" {
 
     _ = try tester.runCommand("multimodal-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: unified-demo command" {
@@ -1086,12 +772,8 @@ test "Demo: unified-demo command" {
 
     _ = try tester.runCommand("unified-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: auto-demo command" {
@@ -1103,12 +785,8 @@ test "Demo: auto-demo command" {
 
     _ = try tester.runCommand("auto-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: orch-demo command" {
@@ -1120,12 +798,8 @@ test "Demo: orch-demo command" {
 
     _ = try tester.runCommand("orch-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: mmo-demo command" {
@@ -1137,12 +811,8 @@ test "Demo: mmo-demo command" {
 
     _ = try tester.runCommand("mmo-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: memory-demo command" {
@@ -1154,12 +824,8 @@ test "Demo: memory-demo command" {
 
     _ = try tester.runCommand("memory-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: persist-demo command" {
@@ -1171,12 +837,8 @@ test "Demo: persist-demo command" {
 
     _ = try tester.runCommand("persist-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: spawn-demo command" {
@@ -1188,12 +850,8 @@ test "Demo: spawn-demo command" {
 
     _ = try tester.runCommand("spawn-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: cluster-demo command" {
@@ -1205,12 +863,8 @@ test "Demo: cluster-demo command" {
 
     _ = try tester.runCommand("cluster-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: worksteal-demo command" {
@@ -1222,12 +876,8 @@ test "Demo: worksteal-demo command" {
 
     _ = try tester.runCommand("worksteal-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: plugin-demo command" {
@@ -1239,12 +889,8 @@ test "Demo: plugin-demo command" {
 
     _ = try tester.runCommand("plugin-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: comms-demo command" {
@@ -1256,12 +902,8 @@ test "Demo: comms-demo command" {
 
     _ = try tester.runCommand("comms-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: observe-demo command" {
@@ -1273,12 +915,8 @@ test "Demo: observe-demo command" {
 
     _ = try tester.runCommand("observe-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: consensus-demo command" {
@@ -1290,12 +928,8 @@ test "Demo: consensus-demo command" {
 
     _ = try tester.runCommand("consensus-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: specexec-demo command" {
@@ -1307,12 +941,8 @@ test "Demo: specexec-demo command" {
 
     _ = try tester.runCommand("specexec-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: governor-demo command" {
@@ -1324,12 +954,8 @@ test "Demo: governor-demo command" {
 
     _ = try tester.runCommand("governor-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: fedlearn-demo command" {
@@ -1341,12 +967,8 @@ test "Demo: fedlearn-demo command" {
 
     _ = try tester.runCommand("fedlearn-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: eventsrc-demo command" {
@@ -1358,12 +980,8 @@ test "Demo: eventsrc-demo command" {
 
     _ = try tester.runCommand("eventsrc-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: capsec-demo command" {
@@ -1375,12 +993,8 @@ test "Demo: capsec-demo command" {
 
     _ = try tester.runCommand("capsec-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: dtxn-demo command" {
@@ -1392,12 +1006,8 @@ test "Demo: dtxn-demo command" {
 
     _ = try tester.runCommand("dtxn-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: cache-demo command" {
@@ -1409,12 +1019,8 @@ test "Demo: cache-demo command" {
 
     _ = try tester.runCommand("cache-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: contract-demo command" {
@@ -1426,12 +1032,8 @@ test "Demo: contract-demo command" {
 
     _ = try tester.runCommand("contract-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: workflow-demo command" {
@@ -1443,12 +1045,8 @@ test "Demo: workflow-demo command" {
 
     _ = try tester.runCommand("workflow-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: triad-demo command" {
@@ -1460,12 +1058,8 @@ test "Demo: triad-demo command" {
 
     _ = try tester.runCommand("triad-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: dimension-demo command" {
@@ -1477,12 +1071,8 @@ test "Demo: dimension-demo command" {
 
     _ = try tester.runCommand("dimension-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: quantum-demo command" {
@@ -1494,12 +1084,8 @@ test "Demo: quantum-demo command" {
 
     _ = try tester.runCommand("quantum-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: synth-demo command" {
@@ -1511,12 +1097,8 @@ test "Demo: synth-demo command" {
 
     _ = try tester.runCommand("synth-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: portal-demo command" {
@@ -1528,12 +1110,8 @@ test "Demo: portal-demo command" {
 
     _ = try tester.runCommand("portal-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: oracle-demo command" {
@@ -1545,12 +1123,8 @@ test "Demo: oracle-demo command" {
 
     _ = try tester.runCommand("oracle-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: nexus-demo command" {
@@ -1562,12 +1136,8 @@ test "Demo: nexus-demo command" {
 
     _ = try tester.runCommand("nexus-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: zenith-demo command" {
@@ -1579,12 +1149,8 @@ test "Demo: zenith-demo command" {
 
     _ = try tester.runCommand("zenith-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: horizon-demo command" {
@@ -1596,12 +1162,8 @@ test "Demo: horizon-demo command" {
 
     _ = try tester.runCommand("horizon-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: cathedral-demo command" {
@@ -1613,12 +1175,8 @@ test "Demo: cathedral-demo command" {
 
     _ = try tester.runCommand("cathedral-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: mirror-demo command" {
@@ -1630,12 +1188,8 @@ test "Demo: mirror-demo command" {
 
     _ = try tester.runCommand("mirror-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: temple-demo command" {
@@ -1647,12 +1201,8 @@ test "Demo: temple-demo command" {
 
     _ = try tester.runCommand("temple-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: sanctum-demo command" {
@@ -1664,12 +1214,8 @@ test "Demo: sanctum-demo command" {
 
     _ = try tester.runCommand("sanctum-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: shrine-demo command" {
@@ -1681,12 +1227,8 @@ test "Demo: shrine-demo command" {
 
     _ = try tester.runCommand("shrine-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: relic-demo command" {
@@ -1698,12 +1240,8 @@ test "Demo: relic-demo command" {
 
     _ = try tester.runCommand("relic-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: artifact-demo command" {
@@ -1715,12 +1253,8 @@ test "Demo: artifact-demo command" {
 
     _ = try tester.runCommand("artifact-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: monolith-demo command" {
@@ -1732,12 +1266,8 @@ test "Demo: monolith-demo command" {
 
     _ = try tester.runCommand("monolith-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: obelisk-demo command" {
@@ -1749,12 +1279,8 @@ test "Demo: obelisk-demo command" {
 
     _ = try tester.runCommand("obelisk-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: spire-demo command" {
@@ -1766,12 +1292,8 @@ test "Demo: spire-demo command" {
 
     _ = try tester.runCommand("spire-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Demo: vertex-demo command" {
@@ -1783,12 +1305,8 @@ test "Demo: vertex-demo command" {
 
     _ = try tester.runCommand("vertex-demo");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "demo") == null) {
-        // Pattern not found: "demo"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
 }
 
 test "Benchmark: agents-bench command" {
@@ -1800,12 +1318,8 @@ test "Benchmark: agents-bench command" {
 
     _ = try tester.runCommand("agents-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: context-bench command" {
@@ -1817,12 +1331,8 @@ test "Benchmark: context-bench command" {
 
     _ = try tester.runCommand("context-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: rag-bench command" {
@@ -1834,12 +1344,8 @@ test "Benchmark: rag-bench command" {
 
     _ = try tester.runCommand("rag-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: voice-bench command" {
@@ -1851,12 +1357,8 @@ test "Benchmark: voice-bench command" {
 
     _ = try tester.runCommand("voice-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: sandbox-bench command" {
@@ -1868,12 +1370,8 @@ test "Benchmark: sandbox-bench command" {
 
     _ = try tester.runCommand("sandbox-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: stream-bench command" {
@@ -1885,12 +1383,8 @@ test "Benchmark: stream-bench command" {
 
     _ = try tester.runCommand("stream-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: vision-bench command" {
@@ -1902,12 +1396,8 @@ test "Benchmark: vision-bench command" {
 
     _ = try tester.runCommand("vision-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: finetune-bench command" {
@@ -1919,12 +1409,8 @@ test "Benchmark: finetune-bench command" {
 
     _ = try tester.runCommand("finetune-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: multimodal-bench command" {
@@ -1936,12 +1422,8 @@ test "Benchmark: multimodal-bench command" {
 
     _ = try tester.runCommand("multimodal-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: unified-bench command" {
@@ -1953,12 +1435,8 @@ test "Benchmark: unified-bench command" {
 
     _ = try tester.runCommand("unified-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: auto-bench command" {
@@ -1970,12 +1448,8 @@ test "Benchmark: auto-bench command" {
 
     _ = try tester.runCommand("auto-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: orch-bench command" {
@@ -1987,12 +1461,8 @@ test "Benchmark: orch-bench command" {
 
     _ = try tester.runCommand("orch-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: mmo-bench command" {
@@ -2004,12 +1474,8 @@ test "Benchmark: mmo-bench command" {
 
     _ = try tester.runCommand("mmo-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: memory-bench command" {
@@ -2021,12 +1487,8 @@ test "Benchmark: memory-bench command" {
 
     _ = try tester.runCommand("memory-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: persist-bench command" {
@@ -2038,12 +1500,8 @@ test "Benchmark: persist-bench command" {
 
     _ = try tester.runCommand("persist-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: spawn-bench command" {
@@ -2055,12 +1513,8 @@ test "Benchmark: spawn-bench command" {
 
     _ = try tester.runCommand("spawn-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: cluster-bench command" {
@@ -2072,12 +1526,8 @@ test "Benchmark: cluster-bench command" {
 
     _ = try tester.runCommand("cluster-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: worksteal-bench command" {
@@ -2089,12 +1539,8 @@ test "Benchmark: worksteal-bench command" {
 
     _ = try tester.runCommand("worksteal-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: plugin-bench command" {
@@ -2106,12 +1552,8 @@ test "Benchmark: plugin-bench command" {
 
     _ = try tester.runCommand("plugin-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: comms-bench command" {
@@ -2123,12 +1565,8 @@ test "Benchmark: comms-bench command" {
 
     _ = try tester.runCommand("comms-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: observe-bench command" {
@@ -2140,12 +1578,8 @@ test "Benchmark: observe-bench command" {
 
     _ = try tester.runCommand("observe-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: consensus-bench command" {
@@ -2157,12 +1591,8 @@ test "Benchmark: consensus-bench command" {
 
     _ = try tester.runCommand("consensus-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: specexec-bench command" {
@@ -2174,12 +1604,8 @@ test "Benchmark: specexec-bench command" {
 
     _ = try tester.runCommand("specexec-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: governor-bench command" {
@@ -2191,12 +1617,8 @@ test "Benchmark: governor-bench command" {
 
     _ = try tester.runCommand("governor-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: fedlearn-bench command" {
@@ -2208,12 +1630,8 @@ test "Benchmark: fedlearn-bench command" {
 
     _ = try tester.runCommand("fedlearn-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: eventsrc-bench command" {
@@ -2225,12 +1643,8 @@ test "Benchmark: eventsrc-bench command" {
 
     _ = try tester.runCommand("eventsrc-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: capsec-bench command" {
@@ -2242,12 +1656,8 @@ test "Benchmark: capsec-bench command" {
 
     _ = try tester.runCommand("capsec-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: dtxn-bench command" {
@@ -2259,12 +1669,8 @@ test "Benchmark: dtxn-bench command" {
 
     _ = try tester.runCommand("dtxn-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: cache-bench command" {
@@ -2276,12 +1682,8 @@ test "Benchmark: cache-bench command" {
 
     _ = try tester.runCommand("cache-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: contract-bench command" {
@@ -2293,12 +1695,8 @@ test "Benchmark: contract-bench command" {
 
     _ = try tester.runCommand("contract-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: workflow-bench command" {
@@ -2310,12 +1708,8 @@ test "Benchmark: workflow-bench command" {
 
     _ = try tester.runCommand("workflow-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: triad-bench command" {
@@ -2327,12 +1721,8 @@ test "Benchmark: triad-bench command" {
 
     _ = try tester.runCommand("triad-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: dimension-bench command" {
@@ -2344,12 +1734,8 @@ test "Benchmark: dimension-bench command" {
 
     _ = try tester.runCommand("dimension-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: quantum-bench command" {
@@ -2361,12 +1747,8 @@ test "Benchmark: quantum-bench command" {
 
     _ = try tester.runCommand("quantum-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: synth-bench command" {
@@ -2378,12 +1760,8 @@ test "Benchmark: synth-bench command" {
 
     _ = try tester.runCommand("synth-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: portal-bench command" {
@@ -2395,12 +1773,8 @@ test "Benchmark: portal-bench command" {
 
     _ = try tester.runCommand("portal-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: oracle-bench command" {
@@ -2412,12 +1786,8 @@ test "Benchmark: oracle-bench command" {
 
     _ = try tester.runCommand("oracle-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: nexus-bench command" {
@@ -2429,12 +1799,8 @@ test "Benchmark: nexus-bench command" {
 
     _ = try tester.runCommand("nexus-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: zenith-bench command" {
@@ -2446,12 +1812,8 @@ test "Benchmark: zenith-bench command" {
 
     _ = try tester.runCommand("zenith-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: horizon-bench command" {
@@ -2463,12 +1825,8 @@ test "Benchmark: horizon-bench command" {
 
     _ = try tester.runCommand("horizon-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: cathedral-bench command" {
@@ -2480,12 +1838,8 @@ test "Benchmark: cathedral-bench command" {
 
     _ = try tester.runCommand("cathedral-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: mirror-bench command" {
@@ -2497,12 +1851,8 @@ test "Benchmark: mirror-bench command" {
 
     _ = try tester.runCommand("mirror-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: temple-bench command" {
@@ -2514,12 +1864,8 @@ test "Benchmark: temple-bench command" {
 
     _ = try tester.runCommand("temple-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: sanctum-bench command" {
@@ -2531,12 +1877,8 @@ test "Benchmark: sanctum-bench command" {
 
     _ = try tester.runCommand("sanctum-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: shrine-bench command" {
@@ -2548,12 +1890,8 @@ test "Benchmark: shrine-bench command" {
 
     _ = try tester.runCommand("shrine-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: relic-bench command" {
@@ -2565,12 +1903,8 @@ test "Benchmark: relic-bench command" {
 
     _ = try tester.runCommand("relic-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: artifact-bench command" {
@@ -2582,12 +1916,8 @@ test "Benchmark: artifact-bench command" {
 
     _ = try tester.runCommand("artifact-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: monolith-bench command" {
@@ -2599,12 +1929,8 @@ test "Benchmark: monolith-bench command" {
 
     _ = try tester.runCommand("monolith-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: obelisk-bench command" {
@@ -2616,12 +1942,8 @@ test "Benchmark: obelisk-bench command" {
 
     _ = try tester.runCommand("obelisk-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: spire-bench command" {
@@ -2633,12 +1955,8 @@ test "Benchmark: spire-bench command" {
 
     _ = try tester.runCommand("spire-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Benchmark: vertex-bench command" {
@@ -2650,12 +1968,8 @@ test "Benchmark: vertex-bench command" {
 
     _ = try tester.runCommand("vertex-bench");
 
-    const output = tester.getOutput();
-    // Command command ran
-    if (std.mem.indexOf(u8, output, "bench") == null) {
-        // Pattern not found: "bench"
-        // Accepting as command may vary
-    }
+    // Command command - strict pattern matching
+    try tester.expectContains("bench");
 }
 
 test "Math: formula command" {
@@ -2667,20 +1981,10 @@ test "Math: formula command" {
 
     _ = try tester.runCommand("formula trinity");
 
-    const output = tester.getOutput();
-    // Math command ran
-    if (std.mem.indexOf(u8, output, "φ²") == null) {
-        // Pattern not found: "φ²"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "1/φ²") == null) {
-        // Pattern not found: "1/φ²"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "3") == null) {
-        // Pattern not found: "3"
-        // Accepting as command may vary
-    }
+    // Math command - strict pattern matching
+    try tester.expectContains("φ²");
+    try tester.expectContains("1/φ²");
+    try tester.expectContains("3");
 }
 
 test "Math: sacred command" {
@@ -2692,15 +1996,8 @@ test "Math: sacred command" {
 
     _ = try tester.runCommand("sacred");
 
-    const output = tester.getOutput();
-    // Math command ran
-    if (std.mem.indexOf(u8, output, "sacred") == null) {
-        // Pattern not found: "sacred"
-        // Accepting as command may vary
-    }
-    if (std.mem.indexOf(u8, output, "mathematics") == null) {
-        // Pattern not found: "mathematics"
-        // Accepting as command may vary
-    }
+    // Math command - strict pattern matching
+    try tester.expectContains("sacred");
+    try tester.expectContains("mathematics");
 }
 

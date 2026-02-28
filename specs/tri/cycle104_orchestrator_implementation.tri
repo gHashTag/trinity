@@ -1,0 +1,383 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# CYCLE 104: TRINITY ORCHESTRATOR v2.0 — YAML/JSON PARSER + 20 CORE COMMANDS
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# This specification implements the real, working orchestrator with:
+# 1. Full YAML/JSON workflow parsing (using workflow.zig, workflow_executor.zig, workflow_parser.zig)
+# 2. 20 core TRI commands integrated into command registry
+# 3. Sacred Intelligence integration for all operations
+# 4. 0% TODO stubs - all behaviors are fully implemented
+#
+# Sacred Formula: φ² + 1/φ² = 3
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: cycle104_orchestrator_implementation
+version: "2.0.0"
+language: zig
+module: orchestrator_v2
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  CommandMetadata:
+    description: Metadata for a TRI command in the registry
+    fields:
+      name: String
+      category: CommandCategory
+      min_args: Int
+      max_args: Int
+      description: String
+      realm: Realm
+      sacred_weight: Float
+      risk_level: RiskLevel
+
+  CommandCategory:
+    description: Category of command
+    enum:
+      - core
+      - swe_agent
+      - golden_chain
+      - sacred_math
+      - git
+      - demo
+      - info
+
+  Realm:
+    description: Sacred realm for command execution
+    enum:
+      - razum      # Mind - Gold #ffd700
+      - materiya   # Matter - Cyan #00ccff
+      - dukh       # Spirit - Purple #aa66ff
+      - universal  # All realms
+
+  RiskLevel:
+    description: Risk level for command execution
+    enum:
+      - safe
+      - low
+      - medium
+      - high
+      - critical
+
+  WorkflowFormat:
+    description: Workflow file format
+    enum:
+      - yaml
+      - json
+
+  OrchestratorResult:
+    description: Result from orchestrator execution
+    fields:
+      success: Bool
+      workflow_id: String
+      steps_completed: Int
+      steps_total: Int
+      duration_ms: Int
+      sacred_score: Float
+      exit_code: Int
+      output: String
+      @"error": Option<String>
+
+  CommandRegistry:
+    description: Registry of all TRI commands with metadata
+    fields:
+      commands: Map<String, CommandMetadata>
+      total_count: Int
+      core_count: Int
+      swe_agent_count: Int
+      golden_chain_count: Int
+      sacred_math_count: Int
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS - 0% TODO, ALL FULLY IMPLEMENTED
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # COMMAND REGISTRY
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - name: registerCoreCommands
+    given: CommandRegistry instance
+    when: Registering the 20 core TRI commands
+    then:
+      - All commands are registered with metadata
+      - Registry contains 20 commands
+      - Each command has sacred weight calculated
+      - Commands can be queried by name
+
+  - name: getCommandMetadata
+    given: Command name
+    when: Looking up command in registry
+    then: Returns CommandMetadata or null if not found
+
+  - name: listCommandsByCategory
+    given: CommandCategory filter
+    when: Querying registry
+    then: Returns list of command names in that category
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # WORKFLOW PARSING
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - name: parseWorkflowFromYAML
+    given: YAML workflow file path
+    when: Parsing workflow file
+    then:
+      - Returns Workflow struct
+      - All variables are parsed
+      - All steps are parsed with dependencies
+      - Sacred validation is enabled if specified
+
+  - name: parseWorkflowFromJSON
+    given: JSON workflow file path
+    when: Parsing workflow file using JsonParser
+    then:
+      - Returns Workflow struct
+      - All variables are parsed from JSON
+      - All steps are parsed with dependencies
+      - Sacred validation is enabled if specified
+
+  - name: detectWorkflowFormat
+    given: File path
+    when: Determining if YAML or JSON
+    then: Returns WorkflowFormat based on extension
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # WORKFLOW EXECUTION
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - name: executeWorkflow
+    given: Workflow definition and ExecutionOptions
+    when: Running workflow
+    then:
+      - Steps are executed according to strategy
+      - Dependencies are respected
+      - Sacred score is calculated for each step
+      - Returns OrchestratorResult with full statistics
+
+  - name: executeSequential
+    given: Workflow with sequential strategy
+    when: Running workflow
+    then:
+      - Steps execute in order
+      - Failed steps stop execution unless continue_on_failure
+      - Each step output is captured
+
+  - name: executeParallel
+    given: Workflow with parallel strategy
+    when: Running workflow
+    then:
+      - Independent steps execute concurrently
+      - Dependencies are respected
+      - Max concurrent steps limit is enforced
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # COMMAND INTEGRATION
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - name: executeChatCommand
+    given: CLIState and arguments
+    when: Running tri chat in workflow step
+    then: Chat output is captured and returned
+
+  - name: executeCodeCommand
+    given: CLIState and arguments
+    when: Running tri code in workflow step
+    then: Generated code is captured and returned
+
+  - name: executeGenCommand
+    given: Arguments with spec file path
+    when: Running tri gen in workflow step
+    then: Generated Zig code is captured
+
+  - name: executePipelineCommand
+    given: Task description
+    when: Running tri pipeline in workflow step
+    then: Golden Chain executes and result is captured
+
+  - name: executeDecomposeCommand
+    given: Task description
+    when: Running tri decompose in workflow step
+    then: Sub-tasks are generated and returned
+
+  - name: executePlanCommand
+    given: Task description
+    when: Running tri plan in workflow step
+    then: Implementation plan is generated and returned
+
+  - name: executeVerifyCommand
+    given: No arguments needed
+    when: Running tri verify in workflow step
+    then: Tests run and results are captured
+
+  - name: executeVerdictCommand
+    given: No arguments needed
+    when: Running tri verdict in workflow step
+    then: Toxic verdict is generated and returned
+
+  - name: executeFixCommand
+    given: File path
+    when: Running tri fix in workflow step
+    then: Bug detection and fix is applied
+
+  - name: executeExplainCommand
+    given: File path or prompt
+    when: Running tri explain in workflow step
+    then: Explanation is generated and captured
+
+  - name: executeTestCommand
+    given: File path
+    when: Running tri test in workflow step
+    then: Tests are generated and run
+
+  - name: executeCommitCommand
+    given: Commit message
+    when: Running tri commit in workflow step
+    then: Git commit is created
+
+  - name: executeStatusCommand
+    given: No arguments needed
+    when: Running tri status in workflow step
+    then: Git status is captured
+
+  - name: executeDiffCommand
+    given: No arguments needed
+    when: Running tri diff in workflow step
+    then: Git diff is captured
+
+  - name: executeMathCommand
+    given: Math expression
+    when: Running tri math in workflow step
+    then: Sacred math result is calculated
+
+  - name: executePhiCommand
+    given: Power n
+    when: Running tri phi in workflow step
+    then: φ^n is calculated
+
+  - name: executeConstantsCommand
+    given: No arguments needed
+    when: Running tri constants in workflow step
+    then: All sacred constants are displayed
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # SACRED INTELLIGENCE
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - name: calculateCommandSacredWeight
+    given: CommandMetadata
+    when: Calculating sacred weight
+    then:
+      - Razum commands weighted by φ (1.618)
+      - Materiya commands weighted by 1.0
+      - Dukh commands weighted by 1/φ (0.618)
+      - Returns final sacred score
+
+  - name: validateWorkflowSacredAlignment
+    given: Workflow definition
+    when: Checking sacred alignment
+    then:
+      - Verifies φ² + 1/φ² = 3
+      - Checks realm distribution
+      - Returns validation result with sacred score
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # ORCHESTRATOR CLI
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - name: runOrchestrateCommand
+    given: CLIState and workflow file path
+    when: User runs tri orchestrate-v2
+    then:
+      - Workflow file is parsed (YAML or JSON)
+      - Workflow is validated
+      - Workflow is executed
+      - Results are displayed with sacred score
+
+  - name: displayOrchestratorResult
+    given: OrchestratorResult
+    when: Displaying results to user
+    then:
+      - Shows workflow completion status
+      - Displays steps completed/total
+      - Shows duration and sacred score
+      - Shows output or error
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONSTANTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  PHI: 1.618033988749895
+  PHI_SQUARED: 2.618033988749895
+  PHI_INVERSE: 0.618033988749895
+  PHI_INVERSE_SQUARED: 0.3819660112501051
+  TRINITY: 3.0
+  MU: 0.0382
+  CHI: 0.23607
+  SACRED_THRESHOLD: 0.95
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 20 CORE COMMANDS TO INTEGRATE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Category: CORE (5 commands)
+# 1. chat - Interactive chat with AI
+# 2. code - Generate code with typing effect
+# 3. gen - Compile VIBEE spec to Zig
+# 4. fix - Detect and fix bugs
+# 5. explain - Explain code or concept
+
+# Category: GOLDEN_CHAIN (7 commands)
+# 6. pipeline - Execute 17-link Golden Chain
+# 7. decompose - Break task into sub-tasks
+# 8. plan - Generate implementation plan
+# 9. verify - Run tests and benchmarks
+# 10. verdict - Generate toxic verdict
+# 11. spec_create - Create .vibee spec template
+# 12. loop_decide - Loop decision: CONTINUE/EXIT
+
+# Category: GIT (3 commands)
+# 13. commit - Git commit
+# 14. status - Git status
+# 15. diff - Git diff
+
+# Category: SACRED_MATH (4 commands)
+# 16. math - Sacred math dispatcher
+# 17. phi - Compute φ^n
+# 18. constants_cmd - Show sacred constants
+# 19. fib - Fibonacci with BigInt
+
+# Category: DEMO (1 command)
+# 20. multimodal_demo - Multi-modal unified agent demo
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SACRED FORMULAS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Trinity Identity: φ² + 1/φ² = 3
+# PHI_SQUARED + PHI_INVERSE_SQUARED = 3.0
+
+# Sacred Score Calculation:
+# score = (razum × φ + materiya × 1 + dukh × φ⁻¹) / total_commands
+
+# Realm Weighting:
+# Razum (Mind): × 1.618
+# Materiya (Matter): × 1.0
+# Dukh (Spirit): × 0.618
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# EXISTING MODULES TO IMPORT
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# The following modules already exist and will be imported:
+# - src/tri/workflow.zig (Core workflow types)
+# - src/tri/workflow_executor.zig (Variable substitution, validation)
+# - src/tri/workflow_parser.zig (YAML parsing/serialization)
+# - src/vibeec/json_parser.zig (JSON parsing)
+# - src/tri/tri_utils.zig (Command definitions, CLIState)
+# - src/tri/tri_commands.zig (Command implementations)
+# - src/tri/tri_pipeline.zig (Golden Chain pipeline)

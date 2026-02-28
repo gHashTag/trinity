@@ -39,6 +39,12 @@ export default memo(function Navigation() {
         </a>
       ))}
       <a
+        href="/trinity/dashboard"
+        style={{ color: '#00ccff', fontWeight: 600 }}
+      >
+        Dashboard
+      </a>
+      <a
         href="/trinity/docs/"
         target="_blank"
         rel="noopener noreferrer"

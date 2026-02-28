@@ -2,7 +2,7 @@ const std = @import("std");
 
 // ============================================================================
 // TRINITY: Test Registry (Cycle 101)
-// Complete registry of all 195 TRI CLI commands with metadata
+// Complete registry of all 134 TRI CLI commands with metadata
 // ============================================================================
 
 /// Command category for organizing tests
@@ -71,7 +71,7 @@ pub const CommandTestInfo = struct {
     }
 };
 
-/// Registry of all 195 TRI commands
+/// Registry of all 134 TRI commands
 pub const CommandRegistry = struct {
     allocator: std.mem.Allocator,
     commands: std.ArrayList(CommandTestInfo),
@@ -128,7 +128,7 @@ pub const CommandRegistry = struct {
 };
 
 // ============================================================================
-// Command Definitions (195 total)
+// Command Definitions (134 total)
 // ============================================================================
 
 /// Initialize registry with all commands
@@ -226,6 +226,30 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .expected_patterns = &[_][]const u8{"verdict", "quality"},
         .description = "Generate toxic verdict (Link 14)",
     });
+    try registry.commands.append(allocator, .{
+        .name = "deps",
+        .category = .golden_chain,
+        .priority = .medium,
+        .example_args = &[_][]const u8{},
+        .expected_patterns = &[_][]const u8{"dependencies"},
+        .description = "List project dependencies",
+    });
+    try registry.commands.append(allocator, .{
+        .name = "distributed",
+        .category = .golden_chain,
+        .priority = .high,
+        .example_args = &[_][]const u8{},
+        .expected_patterns = &[_][]const u8{"distributed", "inference"},
+        .description = "Distributed inference",
+    });
+    try registry.commands.append(allocator, .{
+        .name = "multi_cluster",
+        .category = .golden_chain,
+        .priority = .high,
+        .example_args = &[_][]const u8{},
+        .expected_patterns = &[_][]const u8{"cluster", "multi"},
+        .description = "Multi-cluster management (Cycle #97)",
+    });
 
     // ========================================================================
     // Git Commands (4)
@@ -275,14 +299,6 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .description = "Sacred math dispatcher",
     });
     try registry.commands.append(allocator, .{
-        .name = "constants",
-        .category = .math,
-        .priority = .critical,
-        .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{"φ", "π", "e"},
-        .description = "Show φ, π, e, μ, χ, σ, ε...",
-    });
-    try registry.commands.append(allocator, .{
         .name = "phi",
         .category = .math,
         .priority = .critical,
@@ -321,6 +337,30 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .example_args = &[_][]const u8{"TRINITY"},
         .expected_patterns = &[_][]const u8{"gematria"},
         .description = "Calculate gematria value",
+    });
+    try registry.commands.append(allocator, .{
+        .name = "sacred",
+        .category = .math,
+        .priority = .medium,
+        .example_args = &[_][]const u8{},
+        .expected_patterns = &[_][]const u8{"sacred", "mathematics"},
+        .description = "Sacred mathematics overview",
+    });
+    try registry.commands.append(allocator, .{
+        .name = "formula_cmd",
+        .category = .math,
+        .priority = .medium,
+        .example_args = &[_][]const u8{"trinity"},
+        .expected_patterns = &[_][]const u8{"φ²", "1/φ²", "3"},
+        .description = "Sacred formula decomposition",
+    });
+    try registry.commands.append(allocator, .{
+        .name = "constants",
+        .category = .math,
+        .priority = .critical,
+        .example_args = &[_][]const u8{},
+        .expected_patterns = &[_][]const u8{"φ", "π", "e"},
+        .description = "Show φ, π, e, μ, χ, σ, ε...",
     });
 
     // ========================================================================
@@ -373,6 +413,30 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .example_args = &[_][]const u8{"2 + 2"},
         .expected_patterns = &[_][]const u8{"4", "reasoning"},
         .description = "Chain-of-thought reasoning",
+    });
+    try registry.commands.append(allocator, .{
+        .name = "analyze",
+        .category = .code_analysis,
+        .priority = .high,
+        .example_args = &[_][]const u8{},
+        .expected_patterns = &[_][]const u8{"analyze"},
+        .description = "Analyze codebase",
+    });
+    try registry.commands.append(allocator, .{
+        .name = "search_cmd",
+        .category = .code_analysis,
+        .priority = .high,
+        .example_args = &[_][]const u8{},
+        .expected_patterns = &[_][]const u8{"search"},
+        .description = "Search functionality",
+    });
+    try registry.commands.append(allocator, .{
+        .name = "context_info",
+        .category = .code_analysis,
+        .priority = .medium,
+        .example_args = &[_][]const u8{},
+        .expected_patterns = &[_][]const u8{"context"},
+        .description = "Context information (Cycle 92)",
     });
 
     // ========================================================================
@@ -490,6 +554,54 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .expected_patterns = &[_][]const u8{"improve"},
         .description = "Self-improvement",
     });
+    try registry.commands.append(allocator, .{
+        .name = "auto_commit",
+        .category = .evolution,
+        .priority = .high,
+        .example_args = &[_][]const u8{},
+        .expected_patterns = &[_][]const u8{"auto", "commit"},
+        .description = "Auto-commit functionality (Cycle 97)",
+    });
+    try registry.commands.append(allocator, .{
+        .name = "ml_optimize",
+        .category = .evolution,
+        .priority = .high,
+        .example_args = &[_][]const u8{},
+        .expected_patterns = &[_][]const u8{"ML", "optimize"},
+        .description = "ML optimization (Cycle 97)",
+    });
+    try registry.commands.append(allocator, .{
+        .name = "deploy_dashboard",
+        .category = .evolution,
+        .priority = .medium,
+        .example_args = &[_][]const u8{},
+        .expected_patterns = &[_][]const u8{"dashboard", "deploy"},
+        .description = "Dashboard deployment (Cycle 97)",
+    });
+    try registry.commands.append(allocator, .{
+        .name = "self_host",
+        .category = .evolution,
+        .priority = .medium,
+        .example_args = &[_][]const u8{},
+        .expected_patterns = &[_][]const u8{"self", "host"},
+        .description = "Self-hosting (Cycle 97)",
+    });
+    try registry.commands.append(allocator, .{
+        .name = "safeguards_show",
+        .category = .evolution,
+        .priority = .medium,
+        .example_args = &[_][]const u8{},
+        .expected_patterns = &[_][]const u8{"safeguards"},
+        .description = "Show safeguards",
+    });
+    try registry.commands.append(allocator, .{
+        .name = "safeguards_disable",
+        .category = .evolution,
+        .priority = .low,
+        .example_args = &[_][]const u8{},
+        .expected_patterns = &[_][]const u8{"safeguards", "disabled"},
+        .description = "Disable safeguards",
+    });
 
     // ========================================================================
     // Code Analysis Commands (3)
@@ -540,22 +652,18 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
     });
 
     // ========================================================================
-    // Demo Commands (47) - One per cycle
+    // Demo Commands (33) - One per cycle
     // ========================================================================
     const demo_commands = [_][]const u8{
-        "agents-demo",    "context-demo",   "rag-demo",       "voice-demo",
-        "sandbox-demo",   "stream-demo",    "vision-demo",    "finetune-demo",
-        "multimodal-demo","unified-demo",   "auto-demo",      "orch-demo",
-        "mmo-demo",       "memory-demo",    "persist-demo",   "spawn-demo",
-        "cluster-demo",   "worksteal-demo", "plugin-demo",    "comms-demo",
-        "observe-demo",   "consensus-demo", "specexec-demo",  "governor-demo",
-        "fedlearn-demo",  "eventsrc-demo",  "capsec-demo",    "dtxn-demo",
-        "cache-demo",     "contract-demo",  "workflow-demo",  "triad-demo",
-        "dimension-demo", "quantum-demo",   "synth-demo",     "portal-demo",
-        "oracle-demo",    "nexus-demo",     "zenith-demo",    "horizon-demo",
-        "cathedral-demo", "mirror-demo",    "temple-demo",    "sanctum-demo",
-        "shrine-demo",    "relic-demo",     "artifact-demo",  "monolith-demo",
-        "obelisk-demo",   "spire-demo",     "vertex-demo",
+        "tvc_demo",       "agents_demo",    "context_demo",   "rag_demo",
+        "voice_demo",     "sandbox_demo",   "stream_demo",    "vision_demo",
+        "finetune_demo",  "batched_demo",   "priority_demo",  "deadline_demo",
+        "multimodal_demo","tooluse_demo",   "unified_demo",   "autonomous_demo",
+        "orchestration_demo", "mm_orch_demo", "memory_demo",  "persist_demo",
+        "spawn_demo",     "cluster_demo",   "worksteal_demo", "plugin_demo",
+        "comms_demo",     "observe_demo",   "consensus_demo", "specexec_demo",
+        "governor_demo",  "fedlearn_demo",  "eventsrc_demo",  "capsec_demo",
+        "dtxn_demo",      "cache_demo",     "contract_demo",  "workflow_demo",
     };
 
     for (demo_commands) |cmd| {
@@ -570,22 +678,18 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
     }
 
     // ========================================================================
-    // Benchmark Commands (47) - One per cycle
+    // Benchmark Commands (33) - One per cycle
     // ========================================================================
     const bench_commands = [_][]const u8{
-        "agents-bench",    "context-bench",   "rag-bench",       "voice-bench",
-        "sandbox-bench",   "stream-bench",    "vision-bench",    "finetune-bench",
-        "multimodal-bench","unified-bench",   "auto-bench",      "orch-bench",
-        "mmo-bench",       "memory-bench",    "persist-bench",   "spawn-bench",
-        "cluster-bench",   "worksteal-bench", "plugin-bench",    "comms-bench",
-        "observe-bench",   "consensus-bench", "specexec-bench",  "governor-bench",
-        "fedlearn-bench",  "eventsrc-bench",  "capsec-bench",    "dtxn-bench",
-        "cache-bench",     "contract-bench",  "workflow-bench",  "triad-bench",
-        "dimension-bench", "quantum-bench",   "synth-bench",     "portal-bench",
-        "oracle-bench",    "nexus-bench",     "zenith-bench",    "horizon-bench",
-        "cathedral-bench", "mirror-bench",    "temple-bench",    "sanctum-bench",
-        "shrine-bench",    "relic-bench",     "artifact-bench",  "monolith-bench",
-        "obelisk-bench",   "spire-bench",     "vertex-bench",
+        "agents_bench",   "context_bench",  "rag_bench",      "voice_bench",
+        "sandbox_bench",  "stream_bench",   "vision_bench",   "finetune_bench",
+        "batched_bench",  "priority_bench", "deadline_bench", "multimodal_bench",
+        "tooluse_bench",  "unified_bench",  "autonomous_bench","orchestration_bench",
+        "mm_orch_bench",  "memory_bench",   "persist_bench",  "spawn_bench",
+        "cluster_bench",  "worksteal_bench","plugin_bench",   "comms_bench",
+        "observe_bench",  "consensus_bench","specexec_bench", "governor_bench",
+        "fedlearn_bench", "eventsrc_bench", "capsec_bench",   "dtxn_bench",
+        "cache_bench",    "contract_bench", "workflow_bench",
     };
 
     for (bench_commands) |cmd| {
@@ -600,23 +704,87 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
     }
 
     // ========================================================================
-    // Additional Commands (based on exploration)
+    // Additional Commands (Chem, Intelligence, Dev Utils, Monitor)
     // ========================================================================
     try registry.commands.append(allocator, .{
-        .name = "formula",
-        .category = .math,
-        .priority = .medium,
-        .example_args = &[_][]const u8{"trinity"},
-        .expected_patterns = &[_][]const u8{"φ²", "1/φ²", "3"},
-        .description = "Show sacred formulas",
+        .name = "chem",
+        .category = .misc,
+        .priority = .low,
+        .example_args = &[_][]const u8{},
+        .expected_patterns = &[_][]const u8{"chemistry"},
+        .description = "Chemistry commands (v6.0)",
     });
     try registry.commands.append(allocator, .{
-        .name = "sacred",
-        .category = .math,
+        .name = "intelligence",
+        .category = .misc,
         .priority = .medium,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{"sacred", "mathematics"},
-        .description = "Sacred mathematics overview",
+        .expected_patterns = &[_][]const u8{"intelligence"},
+        .description = "Intelligence system",
+    });
+    try registry.commands.append(allocator, .{
+        .name = "doctor",
+        .category = .misc,
+        .priority = .medium,
+        .example_args = &[_][]const u8{},
+        .expected_patterns = &[_][]const u8{"doctor"},
+        .description = "Dev utility: doctor",
+    });
+    try registry.commands.append(allocator, .{
+        .name = "clean",
+        .category = .misc,
+        .priority = .low,
+        .example_args = &[_][]const u8{},
+        .expected_patterns = &[_][]const u8{"clean"},
+        .description = "Dev utility: clean",
+    });
+    try registry.commands.append(allocator, .{
+        .name = "fmt_cmd",
+        .category = .misc,
+        .priority = .low,
+        .example_args = &[_][]const u8{},
+        .expected_patterns = &[_][]const u8{"format"},
+        .description = "Dev utility: format",
+    });
+    try registry.commands.append(allocator, .{
+        .name = "stats_cmd",
+        .category = .misc,
+        .priority = .low,
+        .example_args = &[_][]const u8{},
+        .expected_patterns = &[_][]const u8{"stats"},
+        .description = "Dev utility: stats",
+    });
+    try registry.commands.append(allocator, .{
+        .name = "igla",
+        .category = .misc,
+        .priority = .low,
+        .example_args = &[_][]const u8{},
+        .expected_patterns = &[_][]const u8{"igla"},
+        .description = "Dev utility: igla",
+    });
+    try registry.commands.append(allocator, .{
+        .name = "monitor",
+        .category = .misc,
+        .priority = .low,
+        .example_args = &[_][]const u8{},
+        .expected_patterns = &[_][]const u8{"monitor"},
+        .description = "Eternal monitor",
+    });
+    try registry.commands.append(allocator, .{
+        .name = "orchestrate_v2",
+        .category = .misc,
+        .priority = .medium,
+        .example_args = &[_][]const u8{},
+        .expected_patterns = &[_][]const u8{"orchestrator"},
+        .description = "Orchestrator v2.0 (Cycle 101)",
+    });
+    try registry.commands.append(allocator, .{
+        .name = "math_agent",
+        .category = .sacred_agent,
+        .priority = .medium,
+        .example_args = &[_][]const u8{},
+        .expected_patterns = &[_][]const u8{"math", "agent"},
+        .description = "Math agent (Cycle 98)",
     });
 
     return registry;
@@ -642,7 +810,7 @@ test "CommandRegistry initialization" {
     defer registry.deinit();
 
     // Should have all commands
-    try std.testing.expect(registry.commands.items.len >= 150);
+    try std.testing.expect(registry.commands.items.len >= 134);
 }
 
 test "CommandRegistry category filtering" {
