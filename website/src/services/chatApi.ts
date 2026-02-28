@@ -1360,8 +1360,8 @@ export async function fetchSacredFormula(): Promise<SacredFormulaResponse> {
       { name: 'N_eff hint', formula: '1\u00D73\u00B3\u00D7\u03C0\u207B\u00B9\u00D7\u03C6\u00B2\u00D7e\u207B\u00B2', value: 3.045091, unit: '\u2014', n: 1, k: 3, m: -1, p: 2, q: -2 },
       { name: 'M-theory dim', formula: '4\u00D73\u207B\u2074\u00D7\u03C6\u2075\u00D7e\u00B3', value: 11.0001, unit: 'dim', n: 4, k: -4, m: 0, p: 5, q: 3 },
       { name: 'Bosonic string dim', formula: '2\u00D73\u207B\u00B9\u00D7\u03C0\u00B9\u00D7\u03C6\u207B\u00B9\u00D7e\u00B3', value: 25.99887, unit: 'dim', n: 2, k: -1, m: 1, p: -1, q: 3 },
-      { name: '\u0394m\u00B2\u2083\u2082 hint', formula: '1\u00D73\u207B\u00B3\u00D7\u03C0\u207B\u00B2\u00D7\u03C6\u207B\u2075\u00D7e\u00B2', value: 0.002500272, unit: 'eV\u00B2', n: 1, k: -3, m: -2, p: -5, q: 2 },
-      { name: 'S\u2088 (\u03C3\u2088\u03A9\u1D50\u00B9\u00B2)', formula: '8\u00D73\u207B\u2075\u00D7\u03C0\u207B\u00B2\u00D7e\u00B3', value: 0.06699886, unit: '\u2014', n: 8, k: -5, m: -2, p: 0, q: 3 },
+      { name: '\u0394m\u00B2\u2083\u2082 hint', formula: '1\u00D73\u207B\u00B3\u00D7\u03C0\u207B\u00B2\u00D7\u03C6\u207B\u2075\u00D7e\u00B2', value: 0.002500272, unit: 'eV\u00B2' },
+      { name: 'S\u2088 (\u03C3\u2088\u03A9\u1D50\u00B9\u00B2)', formula: '8\u00D73\u207B\u2075\u00D7\u03C0\u207B\u00B2\u00D7e\u00B3', value: 0.06699886, unit: '\u2014' },
     ],
     search_bounds: { n: [1, 9], k: [-4, 4], m: [-3, 0], p: [-4, 4], q: [-3, 3] },
   };
