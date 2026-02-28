@@ -256,7 +256,7 @@ fn printStats(stats: *const ConversionStats) void {
     std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 }
 
-/// Конinертацandя одного safetensors файла (не sharded)
+/// Конinертацandя одного safetensors fileа (не sharded)
 pub fn convertSingleFile(
     allocator: std.mem.Allocator,
     input_path: []const u8,

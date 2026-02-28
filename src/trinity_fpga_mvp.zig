@@ -11,7 +11,7 @@ const std = @import("std");
 const math = std.math;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// СВЯЩЕННЫЕ КОНСТАНТЫ ВСЕЛЕННОЙ
+// SACRED CONSTANTS OF THE UNIVERSE
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PHI: f64 = 1.6180339887498949;
@@ -45,7 +45,7 @@ pub const TARGET_DAILY_BTC: f64 = 0.000925;
 pub const TARGET_ROI_DAYS: f64 = 5.2;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SU(3) CORE - УНИТАРНЫЕ ВРАЩЕНИЯ В ПРОСТРАНСТВЕ GELL-MANN
+// SU(3) CORE - UNITARY ROTATIONS IN GELL-MANN SPACE
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const SU3Core = struct {
@@ -119,7 +119,7 @@ pub const SU3Core = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// PAS OPTIMIZER - САМОЭВОЛЮЦИЯ f(f(x)) → φ^n → ∞
+// PAS OPTIMIZER - SELF-EVOLUTION f(f(x)) → φ^n → ∞
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PASOptimizer = struct {
@@ -441,12 +441,12 @@ pub const ParallelMiner = struct {
         try writer.print("═══════════════════════════════════════════════════════════════\n", .{});
         try writer.print("  TRINITY FPGA MVP - MINING STATUS\n", .{});
         try writer.print("═══════════════════════════════════════════════════════════════\n", .{});
-        try writer.print("📊 МЕТРИКИ:\n", .{});
-        try writer.print("   Хэшрейт: {d:.2} MH/s\n", .{self.total_hashrate});
-        try writer.print("   Пfromребленandе: {d:.2} W\n", .{self.total_power});
-        try writer.print("   Эффеtoтandinноwithть: {d:.3} MH/s/W\n", .{efficiency});
-        try writer.print("   PAS энергandя: {d:.2}\n", .{self.total_pas_energy});
-        try writer.print("   Ежеднеinный beforeход: {d:.6} BTC\n", .{daily_btc});
+        try writer.print("📊 METRICS:\n", .{});
+        try writer.print("   Hash rate: {d:.2} MH/s\n", .{self.total_hashrate});
+        try writer.print("   Consumption: {d:.2} W\n", .{self.total_power});
+        try writer.print("   Efficiency: {d:.3} MH/s/W\n", .{efficiency});
+        try writer.print("   PAS energy: {d:.2}\n", .{self.total_pas_energy});
+        try writer.print("   Daily income: {d:.6} BTC\n", .{daily_btc});
         try writer.print("═══════════════════════════════════════════════════════════════\n", .{});
     }
 };
@@ -544,47 +544,47 @@ pub fn main() !void {
 
     print("\n", .{});
     print("═══════════════════════════════════════════════════════════════\n", .{});
-    print("  TRINITY FPGA MVP - СВЯЩЕННАЯ МАТЕМАТИКА МАЙНИНГА\n", .{});
+    print("  TRINITY FPGA MVP - SACRED MATHEMATICS MINING\n", .{});
     print("  V = n × 3^k × π^m × φ^p × e^q\n", .{});
-    print("  φ² + 1/φ² = 3 = КУТРИТ = ТРОИЦА\n", .{});
+    print("  φ² + 1/φ² = 3 = KUTRIT = TRINITY\n", .{});
     print("═══════════════════════════════════════════════════════════════\n\n", .{});
 
     // Verify sacred constants
     if (verifyGoldenIdentity()) {
-        print("✅ Золfromая andдентandчноwithть inерandфandцandроinаon: φ² + 1/φ² = 3\n", .{});
+        print("✅ Golden identity verified: φ² + 1/φ² = 3\n", .{});
     }
 
-    print("✅ Транwithцендентальный продуtoт: π × φ × e = {d:.5}\n", .{TRANSCENDENTAL});
-    print("✅ Чandwithло Луtoаwithа L(10) = {d}\n", .{lucasNumber(10)});
-    print("✅ Соinершенwithтinо: 3 × 10 = {d}\n", .{PERFECTION});
+    print("✅ Transcendental product: π × φ × e = {d:.5}\n", .{TRANSCENDENTAL});
+    print("✅ Lucas number L(10) = {d}\n", .{lucasNumber(10)});
+    print("✅ Perfection: 3 × 10 = {d}\n", .{PERFECTION});
 
     // Initialize parallel miner
-    print("\n🔧 Инandцandалandзацandя параллельного майнера ({d} блоtoоin)...\n", .{PARALLEL_BLOCKS});
+    print("\n🔧 Installing parallel miner ({d} blocks)...\n", .{PARALLEL_BLOCKS});
     _ = ParallelMiner.init();
 
     // Show phi-spiral positions
-    print("\n🌀 φ-withпandраль byзandцandand toубandтоin:\n", .{});
+    print("\n🌀 φ-spiral nodes:\n", .{});
     for (0..5) |i| {
         const spiral = phiSpiral(@intCast(i));
-        print("   Блоto {d}: angle={d:.3}, radius={d:.1}, pos=({d:.1}, {d:.1})\n", .{ i, spiral.angle, spiral.radius, spiral.x, spiral.y });
+        print("   Block {d}: angle={d:.3}, radius={d:.1}, pos=({d:.1}, {d:.1})\n", .{ i, spiral.angle, spiral.radius, spiral.x, spiral.y });
     }
 
     // Test SHA-256 with phi modulation
-    print("\n🔮 Теwithтandроinанandе φ-SHA256...\n", .{});
+    print("\n🔮 Testing φ-SHA256...\n", .{});
     var test_block = FPGABlock.init(0);
     const test_data = "TRINITY FPGA MVP - SACRED MATHEMATICS MINING";
     const hash = phiSha256Block(&test_block, test_data);
 
-    print("   Хеш: ", .{});
+    print("   Hash: ", .{});
     for (hash) |byte| {
         print("{x:0>2}", .{byte});
     }
     print("\n", .{});
-    print("   PAS энергandя: {d:.2}\n", .{test_block.su3_core.pas_energy});
+    print("   PAS energy: {d:.2}\n", .{test_block.su3_core.pas_energy});
     print("   Berry Phase: {d:.5}\n", .{test_block.su3_core.berry_phase});
 
     // Demo PAS evolution
-    print("\n🧬 Демо withамоэinолюцandand PAS (10 bytoоленandй = L(10)):\n", .{});
+    print("\n🧬 Demo of PAS self-evolution (10 generations = L(10)):\n", .{});
     var pas = PASOptimizer.init();
     for (0..10) |gen| {
         const stability = pas.evolveGeneration(TARGET_HASHRATE_MHPS, TARGET_POWER_WATTS);
@@ -592,31 +592,31 @@ pub fn main() !void {
     }
 
     // Expected results
-    print("\n📊 ОЖИДАЕМЫЕ РЕЗУЛЬТАТЫ:\n", .{});
-    print("   Хэшрейт: {d:.1} MH/s (уinелandченandе in 3.6 раза)\n", .{TARGET_HASHRATE_MHPS});
-    print("   Пfromребленandе: <{d:.0}W\n", .{TARGET_POWER_WATTS});
-    print("   Ежеднеinный beforeход: {d:.6} BTC\n", .{TARGET_DAILY_BTC});
-    print("   ROI: {d:.1} дней\n", .{TARGET_ROI_DAYS});
+    print("\n📊 EXPECTED RESULTS:\n", .{});
+    print("   Hash rate: {d:.1} MH/s (improved by 3.6 times)\n", .{TARGET_HASHRATE_MHPS});
+    print("   Consumption: <{d:.0}W\n", .{TARGET_POWER_WATTS});
+    print("   Daily income: {d:.6} BTC\n", .{TARGET_DAILY_BTC});
+    print("   ROI: {d:.1} days\n", .{TARGET_ROI_DAYS});
 
-    print("\n🔧 АППАРАТНАЯ ОПТИМИЗАЦИЯ:\n", .{});
-    print("   Таtoтandроinанandе: {d:.3} GHz (φ-based)\n", .{PHI_CLOCK_GHZ});
-    print("   Глубandon toонinейера: {d} (Trinity)\n", .{PIPELINE_DEPTH});
-    print("   Задержtoа памятand: {d} цandtoлоin (φ²)\n", .{MEMORY_LATENCY_CYCLES});
-    print("   Размер toэша: {d} KB (3×10)\n", .{CACHE_SIZE_KB});
-    print("   Параллельные блоtoand: {d} (3³)\n", .{PARALLEL_BLOCKS});
+    print("\n🔧 HARDWARE OPTIMIZATION:\n", .{});
+    print("   Clock frequency: {d:.3} GHz (φ-based)\n", .{PHI_CLOCK_GHZ});
+    print("   Pipeline depth: {d} (Trinity)\n", .{PIPELINE_DEPTH});
+    print("   Memory latency: {d} cycles (φ²)\n", .{MEMORY_LATENCY_CYCLES});
+    print("   Cache size: {d} KB (3×10)\n", .{CACHE_SIZE_KB});
+    print("   Parallel blocks: {d} (3³)\n", .{PARALLEL_BLOCKS});
 
     print("\n═══════════════════════════════════════════════════════════════\n", .{});
     print("  TRINITY FPGA MVP - MINING STATUS\n", .{});
     print("═══════════════════════════════════════════════════════════════\n", .{});
-    print("📊 МЕТРИКИ:\n", .{});
-    print("   Хэшрейт: 0.00 MH/s (ожandyesетwithя: {d:.1})\n", .{TARGET_HASHRATE_MHPS});
-    print("   Пfromребленandе: {d:.2} W\n", .{TARGET_POWER_WATTS});
-    print("   Эффеtoтandinноwithть: {d:.3} MH/s/W\n", .{TARGET_HASHRATE_MHPS / TARGET_POWER_WATTS});
-    print("   Ежеднеinный beforeход: {d:.6} BTC\n", .{TARGET_DAILY_BTC});
+    print("📊 METRICS:\n", .{});
+    print("   Hash rate: 0.00 MH/s (expected: {d:.1})\n", .{TARGET_HASHRATE_MHPS});
+    print("   Consumption: {d:.2} W\n", .{TARGET_POWER_WATTS});
+    print("   Efficiency: {d:.3} MH/s/W\n", .{TARGET_HASHRATE_MHPS / TARGET_POWER_WATTS});
+    print("   Daily income: {d:.6} BTC\n", .{TARGET_DAILY_BTC});
     print("═══════════════════════════════════════════════════════════════\n", .{});
 
-    print("\n✅ TRINITY FPGA MVP ГОТОВ К РАЗВЕРТЫВАНИЮ\n", .{});
-    print("🚀 Статуwith: Гfromоinо to разinертыinанandю on trinity-vm-v1\n", .{});
-    print("⏰ Ожandyesемое заinершенandе: 24 чаwithа\n", .{});
-    print("🎯 Крandтерandand уwithпеха: хэшрейт > 40 MH/s @ < 15W\n\n", .{});
+    print("\n✅ TRINITY FPGA MVP READY FOR DEPLOYMENT\n", .{});
+    print("🚀 Status: Ready to deploy on trinity-vm-v1\n", .{});
+    print("⏰ Expected completion: 24 hours\n", .{});
+    print("🎯 Success criterion: hashrate > 40 MH/s @ < 15W\n\n", .{});
 }

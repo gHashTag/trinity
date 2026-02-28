@@ -299,7 +299,7 @@ pub fn runPhoenixTrial() void {
     print("═══ ШАГ 2: СОВЕТ 33 БОГАТЫРЕЙ ═══\n", .{});
     const council_verdict = scenario.councilAttemptResolution();
 
-    print("Результат голоwithоinанandя: {s}\n", .{council_verdict.reason});
+    print("Result голоwithоinанandя: {s}\n", .{council_verdict.reason});
     print("Вердandtoт: {d} | Карма: {d}\n", .{ council_verdict.verdict, council_verdict.karma });
     print("❌ ПРОВАЛ: Сandwithтема in withтагonцandand\n\n", .{});
 

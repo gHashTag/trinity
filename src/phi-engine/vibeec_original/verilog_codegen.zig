@@ -294,7 +294,7 @@ pub const VerilogCodeGen = struct {
         self.builder.deinit();
     }
 
-    /// Генерацandя byлного Verilog файла andз withпецandфandtoацandand
+    /// Генерацandя byлного Verilog fileа andз withпецandфandtoацandand
     pub fn generate(self: *Self, spec: *const VibeeSpec) ![]const u8 {
         self.spec = spec;
         try self.writeHeader(spec);

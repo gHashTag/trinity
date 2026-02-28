@@ -4,7 +4,7 @@
 // SACRED FORMULA: V = n × 3^k × π^m × φ^p × e^q
 // ЗОЛОТАЯ ИДЕНТИЧНОСТЬ: φ² + 1/φ² = 3
 // ═══════════════════════════════════════════════════════════════════════════════
-// ИСКЛЮЧЕНИЕ: Это bootstrap code for проinерtoand другandх файлоin
+// ИСКЛЮЧЕНИЕ: Это bootstrap code for проinерtoand другandх fileоin
 // Спецandфandtoацandя: specs/antipatterns.vibee
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -62,8 +62,8 @@ pub const AntipatternType = enum {
     
     pub fn description(self: AntipatternType) []const u8 {
         return switch (self) {
-            .direct_implementation => "Напandwithанandе .zig файла без .vibee withпецandфandtoацandand",
-            .legacy_web_files => "Созyesнandе legacy web файлоin (.html/.css/.js)",
+            .direct_implementation => "Напandwithанandе .zig fileа без .vibee withпецandфandtoацandand",
+            .legacy_web_files => "Созyesнandе legacy web fileоin (.html/.css/.js)",
             .missing_tests => "Спецandфandtoацandя без test_cases",
             .missing_creation_pattern => "Спецandфandtoацandя без creation_pattern",
             .false_optimization_claims => "Ложные toомментарandand об оптandмandзацandях",
@@ -99,7 +99,7 @@ pub const Violation = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// EXCEPTIONS - Файлы, which могут быть onпandwithаны onпрямую
+// EXCEPTIONS - Fileы, which могут быть onпandwithаны onпрямую
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const BOOTSTRAP_EXCEPTIONS = [_][]const u8{
@@ -211,7 +211,7 @@ pub const AntipatternDetector = struct {
                     .antipattern = .legacy_web_files,
                     .file_path = file_path,
                     .line = null,
-                    .message = "Legacy web файл - andнтегрandруйте in runtime/runtime.html",
+                    .message = "Legacy web file - andнтегрandруйте in runtime/runtime.html",
                 });
                 return;
             }

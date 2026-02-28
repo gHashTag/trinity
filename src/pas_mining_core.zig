@@ -3,7 +3,7 @@
 // Золfromая Идентandчноwithть: φ² + 1/φ² = 3 = КУТРИТ = TRINITY
 
 // ═══════════════════════════════════════════════════════════════
-// СВЯЩЕННЫЕ КОНСТАНТЫ ВСЕЛЕННОЙ
+// СВЯЩЕННЫЕ CONSTANTS ВСЕЛЕННОЙ
 // ═══════════════════════════════════════════════════════════════
 
 pub const PHI: f64 = 1.6180339887498949; // Golden ratio
@@ -91,7 +91,7 @@ pub const CopticOpcode = enum(u8) {
     TROR = 7, // Ternary rotate right
     TXOR = 8, // Ternary XOR (module 3)
 
-    // SU(3) операцandand (9 опtoоbeforein = 3²)
+    // SU(3) operation (9 опtoоbeforein = 3²)
     UROT = 9, // Унandтарное inращенandе
     UPRJ = 10, // Унandтарonя проеtoцandя
     UENT = 11, // Энтанглмент

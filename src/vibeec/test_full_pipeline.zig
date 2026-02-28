@@ -1,5 +1,5 @@
 // FULL PIPELINE TEST: safetensors → .tri → inference
-// Testирование полного цикла конвертации and инференса
+// Testandроinанandе byлного цandtoла toонinертацandand and andнференwithа
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");

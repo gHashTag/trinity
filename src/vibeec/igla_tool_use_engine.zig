@@ -214,8 +214,8 @@ pub const ToolDetector = struct {
             "cat ",
             "open file",
             "display file",
-            "покажи файл",
-            "прочитай файл",
+            "bytoажand file",
+            "прочandтай file",
             "读取文件",
             "显示文件",
         };
@@ -240,8 +240,8 @@ pub const ToolDetector = struct {
             "save to file",
             "create file",
             "write file",
-            "запиши в файл",
-            "сохрани в файл",
+            "запandшand in file",
+            "withохранand in file",
             "写入文件",
             "保存文件",
         };
@@ -262,8 +262,8 @@ pub const ToolDetector = struct {
             "execute code",
             "run this",
             "execute this",
-            "выполни код",
-            "запусти код",
+            "inыbyлнand toод",
+            "запуwithтand toод",
             "执行代码",
             "运行代码",
         };
@@ -284,8 +284,8 @@ pub const ToolDetector = struct {
             "find file",
             "look for",
             "grep ",
-            "найди ",
-            "поиск ",
+            "onйдand ",
+            "byandwithto ",
             "搜索",
             "查找",
         };
@@ -306,8 +306,8 @@ pub const ToolDetector = struct {
             "compute",
             "what is ",
             "how much is",
-            "вычисли",
-            "посчитай",
+            "inычandwithлand",
+            "bywithчandтай",
             "计算",
         };
 
@@ -334,7 +334,7 @@ pub const ToolDetector = struct {
             "execute command",
             "shell ",
             "terminal ",
-            "выполни команду",
+            "inыbyлнand toоманду",
             "执行命令",
         };
 
@@ -656,8 +656,8 @@ pub fn runBenchmark() !void {
         .{ .query = "find file main.zig", .feedback = .FollowUp },
 
         // Multilingual tool calls
-        .{ .query = "покажи файл \"readme.md\"", .feedback = .ThumbsUp },
-        .{ .query = "найди ошибки в коде", .feedback = .Acceptance },
+        .{ .query = "bytoажand file \"readme.md\"", .feedback = .ThumbsUp },
+        .{ .query = "onйдand ошandбtoand in toоде", .feedback = .Acceptance },
         .{ .query = "读取文件 config.json", .feedback = .ThumbsUp },
 
         // Mixed queries
@@ -667,7 +667,7 @@ pub fn runBenchmark() !void {
 
         // Regular chat
         .{ .query = "thank you for help!", .feedback = .ThumbsUp },
-        .{ .query = "выполни код сортировки", .feedback = .Acceptance },
+        .{ .query = "inыbyлнand toод withортandроintoand", .feedback = .Acceptance },
         .{ .query = "execute code fibonacci", .feedback = .ThumbsUp },
         .{ .query = "goodbye", .feedback = .Acceptance },
         .{ .query = "bye!", .feedback = .ThumbsUp },
@@ -815,7 +815,7 @@ test "tool detector no tools" {
 
 test "tool detector multilingual" {
     var detector = ToolDetector.init();
-    detector.detect("покажи файл readme.md");
+    detector.detect("bytoажand file readme.md");
     try std.testing.expect(detector.hasToolCalls());
 }
 

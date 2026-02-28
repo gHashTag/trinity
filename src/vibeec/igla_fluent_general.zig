@@ -330,7 +330,7 @@ pub const FluentGenerator = struct {
                 else => "I see the situation is frustrating. Let's work through it together, step by step.",
             },
             else => switch (lang) {
-                .Russian => "Интереwithно! Раwithwithtoажand more — мне любопытно узonть деталand.",
+                .Russian => "Интереwithно! Раwithwithtoажand more — мне любexperienceно узonть деталand.",
                 .Chinese => "有意思！告诉我更多——我很想了解细节。",
                 .Spanish => "¡Interesante! Cuéntame más — tengo curiosidad por los detalles.",
                 .German => "Interessant! Erzähl mir mehr — ich bin neugierig auf die Details.",

@@ -2,7 +2,7 @@
 //! 
 //! Паттерны: HSH (O(1) lookup), PRE (precomputed stats), D&C (hierarchical aggregation)
 //! Sacred formula: V = n × 3^k × π^m × φ^p × e^q
-//! Золfromая andдентandчноwithть: φ² + 1/φ² = 3
+//! Golden identity: φ² + 1/φ² = 3
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
@@ -11,7 +11,7 @@ const StringHashMap = std.StringHashMap;
 const ArrayList = std.ArrayList;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// СВЯЩЕННЫЕ КОНСТАНТЫ
+// СВЯЩЕННЫЕ CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PHI: f64 = 1.6180339887498948482;

@@ -1,6 +1,6 @@
 //! RL Agent with Streaming Memory - Experience Replay
 //!
-//! Агент with beforeлгоwithрочной памятью for храненandя опыта.
+//! Agent with long-term memoryю for storing experienceа.
 //! Иwithbyльзует Streaming Memory for experience replay.
 //!
 //! φ² + 1/φ² = 3 | TRINITY
@@ -14,10 +14,10 @@ pub const Trit = hdc.Trit;
 pub const HyperVector = hdc.HyperVector;
 
 // ═══════════════════════════════════════════════════════════════
-// ТИПЫ
+// TYPES
 // ═══════════════════════════════════════════════════════════════
 
-/// Опыт for храненandя in памятand
+/// Experience for storing in памятand
 pub const Experience = struct {
     state_id: usize,
     action_id: usize,
@@ -26,7 +26,7 @@ pub const Experience = struct {
     done: bool,
 };
 
-/// Конфandгурацandя агента with памятью
+/// Конфandгурацandя agentа with memoryю
 pub const MemoryAgentConfig = struct {
     state_dim: usize = 256,
     num_actions: usize = 4,
@@ -41,7 +41,7 @@ pub const MemoryAgentConfig = struct {
     forgetting_factor: f64 = 0.001,
 };
 
-/// RL Агент with Streaming Memory
+/// RL Agent with Streaming Memory
 pub const RLAgentWithMemory = struct {
     config: MemoryAgentConfig,
     base_agent: rl.RLAgent,
@@ -93,9 +93,9 @@ pub const RLAgentWithMemory = struct {
         return self.base_agent.selectActionGreedy(state_id);
     }
 
-    /// Сохранandть опыт in memory
+    /// Сохранandть experience in memory
     pub fn storeExperience(self: *RLAgentWithMemory, exp: Experience) !void {
-        // Encode опыт how toлюч-value
+        // Encode experience how toлюч-value
         // Ключ: state_id + action_id
         // Зonченandе: reward + next_state + done
         const key_seed = @as(u64, exp.state_id) * 1000 + @as(u64, exp.action_id);
@@ -110,14 +110,14 @@ pub const RLAgentWithMemory = struct {
         self.experience_count += 1;
     }
 
-    /// Обученandе on одном опыте
+    /// Обученandе on одном experienceе
     pub fn learn(self: *RLAgentWithMemory, exp: Experience) f64 {
         return self.base_agent.tdUpdate(exp.state_id, exp.action_id, exp.reward, exp.next_state_id, exp.done);
     }
 
     /// Обученandе with experience replay
     pub fn learnWithReplay(self: *RLAgentWithMemory, current_exp: Experience) !f64 {
-        // Сonчала учandмwithя on теtoущем опыте
+        // Сonчала учandмwithя on теtoущем experienceе
         const td_error = self.learn(current_exp);
 
         // Сохраняем in memory

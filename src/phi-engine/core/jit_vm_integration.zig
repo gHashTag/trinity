@@ -294,7 +294,7 @@ pub const HybridVM = struct {
                 const arg2 = if (self.sp > 1) self.stack[self.sp - 2] else 0;
 
                 if (self.jit_runtime.executeBlock(block_start, arg1, arg2)) |result| {
-                    // Заменяем inерхнandе дinа элемента withтеtoа результатом
+                    // Заменяем inерхнandе дinа элемента withтеtoа resultом
                     if (self.sp >= 2) {
                         self.sp -= 1;
                         self.stack[self.sp - 1] = result;

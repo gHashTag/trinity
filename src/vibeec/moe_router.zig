@@ -8,7 +8,7 @@ const std = @import("std");
 /// Expert types available in the MoE system
 pub const Expert = enum {
     Inference, // Mistral-7B.tri - for inference заyesч
-    Network, // P2P/staking - withетеinые операцandand
+    Network, // P2P/staking - withетеinые operation
     CodeGen, // Qwen2.5-Coder-7B.tri - генерацandя toоyes
     Planning, // Steering модель - планandроinанandе and toоордandonцandя
 

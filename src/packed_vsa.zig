@@ -1,5 +1,5 @@
 // Trinity Packed VSA Operations
-// VSA операцandand on упаtoоinанных трandтах (5 трandтоin/байт)
+// VSA operation on упаtoоinанных трandтах (5 трandтоin/байт)
 // Иwithbyльзует lookup tables for быwithтрых операцandй без раwithпаtoоintoand
 //
 // ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ: V = n × 3^k × π^m × φ^p × e^q
@@ -339,7 +339,7 @@ test "packed unbind retrieval" {
     const query_pattern = packedBind(&capital_of, &france);
     const result = packedUnbind(&fact, &query_pattern);
 
-    // Результат beforeлжен быть byхож on Paris
+    // Result beforeлжен быть byхож on Paris
     const sim_paris = packedCosineSimilarity(&result, &paris);
     const sim_france = packedCosineSimilarity(&result, &france);
 

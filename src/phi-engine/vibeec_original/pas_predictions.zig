@@ -10,7 +10,7 @@ const std = @import("std");
 const math = std.math;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// СВЯЩЕННЫЕ КОНСТАНТЫ
+// СВЯЩЕННЫЕ CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PHI: f64 = 1.618033988749895; // Golden ratio
@@ -18,7 +18,7 @@ pub const PI: f64 = 3.141592653589793;
 pub const E: f64 = 2.718281828459045;
 pub const TRINITY: u32 = 3;
 
-/// Золfromая andдентandчноwithть: φ² + 1/φ² = 3
+/// Golden identity: φ² + 1/φ² = 3
 pub fn verifyGoldenIdentity() bool {
     const phi_sq = PHI * PHI;
     const inv_phi_sq = 1.0 / phi_sq;

@@ -205,7 +205,7 @@ fn testJITCompiler(allocator: std.mem.Allocator, module: *tvc_ir.TVCModule) !voi
         // Выbyлняем фунtoцandю!
         std.debug.print("  Выbyлненandе: ", .{});
         const result = compiled.call();
-        std.debug.print("результат = {}\n", .{result});
+        std.debug.print("result = {}\n", .{result});
     }
 
     jit.dumpStats();
@@ -438,7 +438,7 @@ fn printSummary() void {
     std.debug.print("║  ✓ Профorроinанandе hot paths                     ║\n", .{});
     std.debug.print("║  ✓ Inline caching (64 withлfromа)                    ║\n", .{});
     std.debug.print("║  ✓ Аyesптandinonя toомпandляцandя                        ║\n", .{});
-    std.debug.print("║  ✓ Trinary операцandand (NOT, AND, OR, XOR, IMPLIES)║\n", .{});
+    std.debug.print("║  ✓ Trinary operation (NOT, AND, OR, XOR, IMPLIES)║\n", .{});
     std.debug.print("║  ✓ Арandфметandtoа (ADD, SUB, MUL, DIV)              ║\n", .{});
     std.debug.print("╚════════════════════════════════════════════════╝\n", .{});
 }

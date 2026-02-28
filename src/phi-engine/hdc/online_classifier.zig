@@ -61,7 +61,7 @@ pub const ClassPrototype = struct {
     }
 };
 
-/// Результат предwithtoазанandя
+/// Result предwithtoазанandя
 pub const PredictionResult = struct {
     label: []const u8,
     confidence: f64,

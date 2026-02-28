@@ -26,7 +26,7 @@ pub const Lang = enum {
     pub fn getWelcome(self: Lang) []const u8 {
         return switch (self) {
             .EN => "Welcome to Trinity REPL - Eighth Life: Competitive Agent",
-            .RU => "Добро byжалоinать in Trinity REPL - Воwithьмая Жandзнь: Конtoурентный Агент",
+            .RU => "Добро byжалоinать in Trinity REPL - Воwithьмая Жandзнь: Конtoурентный Agent",
             .TH => "ยินดีต้อนรับสู่ Trinity REPL - ชีวิตที่แปด: ตัวแทนแข่งขัน",
         };
     }

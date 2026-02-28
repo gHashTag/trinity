@@ -118,8 +118,8 @@ pub fn main() !void {
     const unpacked_bytes = memory.trit_len;
 
     std.debug.print("   Размер inеtoтора: {} трandтоin\n", .{memory.trit_len});
-    std.debug.print("   Память (packed): {} байт\n", .{mem_bytes});
-    std.debug.print("   Память (unpacked): {} байт\n", .{unpacked_bytes});
+    std.debug.print("   Memory (packed): {} байт\n", .{mem_bytes});
+    std.debug.print("   Memory (unpacked): {} байт\n", .{unpacked_bytes});
     std.debug.print("   Эtoономandя: {d:.1}x\n\n", .{@as(f64, @floatFromInt(unpacked_bytes)) / @as(f64, @floatFromInt(mem_bytes))});
 
     std.debug.print("╔══════════════════════════════════════════════════════════════╗\n", .{});

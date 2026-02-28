@@ -13,7 +13,7 @@ pub const TRINITY: f64 = 3.0;
 pub const PHOENIX: u32 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SIMD ТИПЫ
+// SIMD TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // 16-байтный vector for SIMD операцandй
@@ -25,9 +25,9 @@ const Vec16Bool = @Vector(16, bool);
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const SIMDBigramMatcher = struct {
-    // Топ-16 бandграмм for SIMD byandwithtoа (перinый character)
+    // Топ-16 бandграмм for SIMD tuning (перinый character)
     first_chars: Vec16,
-    // Топ-16 бandграмм for SIMD byandwithtoа (inторой character)
+    // Топ-16 бandграмм for SIMD tuning (inторой character)
     second_chars: Vec16,
 
     const Self = @This();
@@ -141,7 +141,7 @@ const BPE_VOCAB = [_][]const u8{
     "ward", "wise", "like", "able", "ible", "ful", "less", "ness", "ment", "tion",
 };
 
-// Хэш-таблandца for быwithтрого byandwithtoа BPE тоtoеноin
+// Хэш-таблandца for быwithтрого tuning BPE тоtoеноin
 const BPE_HASH_SIZE = 256;
 
 pub const BPEVocab = struct {
@@ -453,7 +453,7 @@ pub const WebSocketFrame = struct {
     }
 };
 
-// WebSocket withтрandмandнг for агентоin
+// WebSocket withтрandмandнг for agentоin
 pub const WebSocketStream = struct {
     frames_sent: u64,
     bytes_sent: u64,

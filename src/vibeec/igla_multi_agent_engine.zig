@@ -304,7 +304,7 @@ pub const Coordinator = struct {
         if (std.mem.indexOf(u8, query, "write code") != null or
             std.mem.indexOf(u8, query, "implement") != null or
             std.mem.indexOf(u8, query, "function") != null or
-            std.mem.indexOf(u8, query, "напиши код") != null or
+            std.mem.indexOf(u8, query, "onпandшand toод") != null or
             std.mem.indexOf(u8, query, "写代码") != null)
         {
             return .CodeGeneration;
@@ -312,7 +312,7 @@ pub const Coordinator = struct {
 
         if (std.mem.indexOf(u8, query, "explain") != null or
             std.mem.indexOf(u8, query, "how does") != null or
-            std.mem.indexOf(u8, query, "объясни") != null)
+            std.mem.indexOf(u8, query, "объяwithнand") != null)
         {
             return .CodeExplanation;
         }
@@ -320,7 +320,7 @@ pub const Coordinator = struct {
         if (std.mem.indexOf(u8, query, "debug") != null or
             std.mem.indexOf(u8, query, "fix") != null or
             std.mem.indexOf(u8, query, "error") != null or
-            std.mem.indexOf(u8, query, "исправь") != null)
+            std.mem.indexOf(u8, query, "andwithпраinь") != null)
         {
             return .CodeDebugging;
         }
@@ -328,7 +328,7 @@ pub const Coordinator = struct {
         // Analysis detection
         if (std.mem.indexOf(u8, query, "analyze") != null or
             std.mem.indexOf(u8, query, "compare") != null or
-            std.mem.indexOf(u8, query, "проанализируй") != null)
+            std.mem.indexOf(u8, query, "проаonлandзandруй") != null)
         {
             return .Analysis;
         }
@@ -344,7 +344,7 @@ pub const Coordinator = struct {
         // Research detection
         if (std.mem.indexOf(u8, query, "search") != null or
             std.mem.indexOf(u8, query, "find") != null or
-            std.mem.indexOf(u8, query, "найди") != null)
+            std.mem.indexOf(u8, query, "onйдand") != null)
         {
             return .Research;
         }
@@ -352,7 +352,7 @@ pub const Coordinator = struct {
         // Summarization detection
         if (std.mem.indexOf(u8, query, "summarize") != null or
             std.mem.indexOf(u8, query, "brief") != null or
-            std.mem.indexOf(u8, query, "кратко") != null)
+            std.mem.indexOf(u8, query, "toратtoо") != null)
         {
             return .Summarization;
         }
@@ -624,8 +624,8 @@ pub fn runBenchmark() void {
         .{ .query = "thanks for your help!", .feedback = .Acceptance },
 
         // Multilingual
-        .{ .query = "напиши код для сортировки", .feedback = .ThumbsUp },
-        .{ .query = "проанализируй результаты", .feedback = .Acceptance },
+        .{ .query = "onпandшand toод for withортandроintoand", .feedback = .ThumbsUp },
+        .{ .query = "проаonлandзandруй resultы", .feedback = .Acceptance },
         .{ .query = "找一下最佳实践", .feedback = .ThumbsUp },
 
         // Mixed complex tasks

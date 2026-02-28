@@ -27,7 +27,7 @@ const Constant = vibee_parser.Constant;
 const CreationPattern = vibee_parser.CreationPattern;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// СВЯЩЕННЫЕ КОНСТАНТЫ
+// СВЯЩЕННЫЕ CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PHI: f64 = 1.618033988749895;
@@ -57,7 +57,7 @@ pub const AutoCodeGenerator = struct {
         self.buffer.deinit();
     }
 
-    /// Генерацandя byлного Zig файла andз withпецandфandtoацandand
+    /// Генерацandя byлного Zig fileа andз withпецandфandtoацandand
     pub fn generate(self: *Self, spec: *const VibeeSpec) ![]const u8 {
         try self.writeHeader(spec);
         try self.writeImports();

@@ -1,7 +1,7 @@
 //! VIBEE E-Graph Pattern Matcher - PAS DAEMON V40
 //! Паттерны: ALG (algebraic rewrites), HSH (hash-consing), PRE (canonical forms)
 //! Sacred formula: V = n × 3^k × π^m × φ^p × e^q
-//! Золfromая andдентandчноwithть: φ² + 1/φ² = 3
+//! Golden identity: φ² + 1/φ² = 3
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;

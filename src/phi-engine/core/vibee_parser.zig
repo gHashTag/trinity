@@ -2,7 +2,7 @@
 // VIBEE PARSER - Парwithер .vibee withпецandфandtoацandй
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Парwithandт YAML-bybeforeбный format .vibee файлоin
+// Парwithandт YAML-bybeforeбный format .vibee fileоin
 // Аinтор: Dmitrii Vasilev
 // φ² + 1/φ² = 3
 //
@@ -13,7 +13,7 @@ const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayList;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ТИПЫ СПЕЦИФИКАЦИИ
+// TYPES СПЕЦИФИКАЦИИ
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const VibeeSpec = struct {

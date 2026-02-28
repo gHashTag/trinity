@@ -533,7 +533,7 @@ test "phi constant" {
 // VERILOG BACKEND (FPGA Target)
 // ═══════════════════════════════════════════════════════════════════════════════
 // Verilog code generation for withandнтеза on FPGA
-// Прandорandтет: BitNet операцandand (Ternary MAC без умноженandй)
+// Прandорandтет: BitNet operation (Ternary MAC без умноженandй)
 // φ² + 1/φ² = 3
 
 pub const VerilogGen = struct {
@@ -632,7 +632,7 @@ pub const VerilogGen = struct {
     }
 
     fn visitBinaryVerilog(self: *VerilogGen, node: *const AstNode) !void {
-        // Троandчные операцandand без умноженandя!
+        // Троandчные operation без умноженandя!
         try self.write("            // Ternary binary op (BitNet optimized)\n");
         try self.write("            case (weight_in)\n");
         try self.write("                2'b00: result <= result - activation_in; // -1\n");
