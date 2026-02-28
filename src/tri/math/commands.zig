@@ -16,6 +16,7 @@ const bench_mod = @import("bench.zig");
 const identities_mod = @import("identities.zig");
 const gematria_math = @import("gematria.zig");
 const sacred_formula = @import("sacred_formula.zig");
+const blind_spots_mod = @import("blind_spots.zig"); // TODO: Fix Zig 0.15 compatibility
 
 // Direct writer that works with the compute/eval modules
 // This works because it implements the Writer interface without std.io
@@ -86,6 +87,8 @@ pub fn runMathCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         try runFormulaCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "sacred")) {
         try runSacredCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "blindspots") or std.mem.eql(u8, subcommand, "blind")) {
+        try runBlindSpotsCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "help")) {
         try showMathHelp();
     } else {
@@ -268,10 +271,17 @@ pub fn runSacredCommand(allocator: std.mem.Allocator, args: []const []const u8) 
     }
 }
 
+pub fn runBlindSpotsCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = args;
+    const report = try blind_spots_mod.generateDiscoveryReport(allocator);
+    defer allocator.free(report);
+    std.debug.print("{s}\n", .{report});
+}
+
 fn showMathHelp() !void {
     var wr = DirectWriter{};
     try wr.writeAll("+====================================================================+\n");
-    try wr.writeAll("|                    SACRED MATHEMATICS v3.6                          |\n");
+    try wr.writeAll("|                    SACRED MATHEMATICS v4.0                          |\n");
     try wr.writeAll("|            V = n × 3^k × π^m × φ^p × e^q                       |\n");
     try wr.writeAll("|                phi^2 + 1/phi^2 = 3 = TRINITY                       |\n");
     try wr.writeAll("+====================================================================+\n");
@@ -291,6 +301,7 @@ fn showMathHelp() !void {
     try wr.writeAll("  tri math formula <value>        Sacred formula decomposition\n");
     try wr.writeAll("  tri math sacred                 Show 32 constants + 9 predictions\n");
     try wr.writeAll("  tri math sacred search <value>  Search formula for any value\n");
+    try wr.writeAll("  tri math blindspots            Show blind spots & discovery predictions\n");
     try wr.writeAll("\n");
     try wr.writeAll("  ALIASES (Quick Access)\n");
     try wr.writeAll("  ----------------------------------------------------------------\n");
@@ -303,6 +314,7 @@ fn showMathHelp() !void {
     try wr.writeAll("  tri gematria <n>   Same as 'tri math gematria <n>'\n");
     try wr.writeAll("  tri formula <v>    Same as 'tri math formula <v>'\n");
     try wr.writeAll("  tri sacred         Same as 'tri math sacred'\n");
+    try wr.writeAll("  tri blindspots     Same as 'tri math blindspots'\n");
     try wr.writeAll("\n");
     try wr.writeAll("  FLAGS\n");
     try wr.writeAll("  ----------------------------------------------------------------\n");
