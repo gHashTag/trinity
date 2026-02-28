@@ -184,6 +184,8 @@ pub const Command = enum {
     gematria,
     formula_cmd,
     sacred,
+    // Chemistry (v6.0)
+    chem,
     // Intelligence System
     intelligence,
     // Dev Utilities
@@ -218,6 +220,8 @@ pub const Command = enum {
     help,
     // Cycle 101: Orchestrator v2.0
     orchestrate_v2,
+    // Eternal Monitor
+    monitor,
 };
 
 pub const CLIState = struct {
@@ -784,6 +788,8 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "gematria") or std.mem.eql(u8, arg, "gem")) return .gematria;
     if (std.mem.eql(u8, arg, "formula")) return .formula_cmd;
     if (std.mem.eql(u8, arg, "sacred")) return .sacred;
+    // Chemistry (v6.0)
+    if (std.mem.eql(u8, arg, "chem") or std.mem.eql(u8, arg, "chemistry")) return .chem;
     // Intelligence System
     if (std.mem.eql(u8, arg, "intelligence") or std.mem.eql(u8, arg, "intel")) return .intelligence;
     // Dev Utilities
@@ -816,6 +822,8 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "help") or std.mem.eql(u8, arg, "--help") or std.mem.eql(u8, arg, "-h")) return .help;
     // Cycle 101: Orchestrator v2.0
     if (std.mem.eql(u8, arg, "orchestrate-v2") or std.mem.eql(u8, arg, "orchestrator") or std.mem.eql(u8, arg, "flow")) return .orchestrate_v2;
+    // Eternal Monitor
+    if (std.mem.eql(u8, arg, "monitor")) return .monitor;
     return .none;
 }
 

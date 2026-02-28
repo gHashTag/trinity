@@ -1269,6 +1269,21 @@ pub fn build(b: *std.Build) void {
         },
     });
     // TRI - Unified Trinity CLI
+    // Sacred modules (v6.0)
+    const sacred_const_mod = b.createModule(.{
+        .root_source_file = b.path("src/sacred/const.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const sacred_mod = b.createModule(.{
+        .root_source_file = b.path("src/sacred/chemistry.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "const", .module = sacred_const_mod },
+        },
+    });
+
     const tri = b.addExecutable(.{
         .name = "tri",
         .root_module = b.createModule(.{
@@ -1287,6 +1302,8 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "pas_orchestrator", .module = pas_orchestrator_mod },
                 // Unified API Layer (Golden Chain #102)
                 .{ .name = "api", .module = api_mod },
+                // Sacred modules (v6.0)
+                .{ .name = "sacred", .module = sacred_mod },
             },
         }),
     });

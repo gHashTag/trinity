@@ -30,6 +30,7 @@ const commands = @import("tri_commands.zig");
 const pipeline = @import("tri_pipeline.zig");
 const demos = @import("tri_demos.zig");
 const math_commands = @import("math/commands.zig");
+// const chemistry_commands = @import("tri_chemistry.zig"); // TODO: fix build errors
 const tri_context = @import("tri_context.zig");
 const orchestrator = @import("orchestrator_v2_full.zig");
 
@@ -254,6 +255,10 @@ pub fn main() !void {
         .sacred => math_commands.runSacredCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Sacred error: {}\n", .{err});
         },
+        // Chemistry (v6.0) - TODO: fix build errors
+        .chem => {
+            std.debug.print("Chemistry commands temporarily disabled due to build errors\n", .{});
+        },
         // Intelligence System
         .intelligence => tri_context.runIntelligenceCommand(allocator, &state, cmd_args) catch |err| {
             std.debug.print("Intelligence error: {}\n", .{err});
@@ -298,6 +303,11 @@ pub fn main() !void {
         .info => utils.printInfo(),
         .version => utils.printVersion(),
         .help => utils.printHelp(),
+        .monitor => {
+            const eternal_monitor = @import("eternal_monitor.zig");
+            const exit_code = try eternal_monitor.execute(allocator, cmd_args);
+            std.process.exit(exit_code);
+        },
         .orchestrate_v2 => {
             // TRI Orchestrator v2.0 - Universal command orchestration
             if (cmd_args.len == 0) {

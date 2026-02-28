@@ -1,0 +1,253 @@
+# CHEMISTRY CLI — TRI Commands v6.0
+# All `tri chem` commands specification
+
+name: chemistry_cli
+version: "6.0.0"
+language: zig
+module: tri.chemistry
+
+types:
+  CLICommand:
+    description: "TRI chemistry CLI command"
+    fields:
+      name: String        # Command name
+      args: List[String]   # Arguments
+      output: String       # Result output
+
+  BalanceResult:
+    description: "Chemical equation balancing result"
+    fields:
+      original: String     # Original unbalanced equation
+      balanced: String     # Balanced equation
+      coefficients: List[Int] # Stoichiometric coefficients
+
+behaviors:
+  # === Core Commands ===
+
+  - name: chemPeriodic
+    given: "No parameters or optional group/period filter"
+    when: "User runs 'tri chem periodic'"
+    then: "Display ASCII periodic table of 118 elements"
+    output: "Formatted table with symbols, atomic numbers, atomic masses"
+    notes: "Color code by block (s=yellow, p=blue, d=red, f=green)"
+
+  - name: chemElement
+    given: "Element symbol or atomic number"
+    when: "User runs 'tri chem element H' or 'tri chem element 1'"
+    then: "Display complete element information card"
+    output: "Element card with: symbol, name, number, mass, config, group, period, electronegativity, ionization, discovery, etymology"
+    example: "tri chem element Au → gold card with all properties"
+
+  - name: chemMass
+    given: "Chemical formula (e.g., H2O, C6H12O6, Ca(NO3)2)"
+    when: "User runs 'tri chem mass H2O'"
+    then: "Calculate and display molar mass"
+    output: "Formula breakdown + total molar mass in g/mol"
+    example: "H2O → H: 2×1.008 = 2.016; O: 1×15.999 = 15.999; Total: 18.015 g/mol"
+
+  - name: chemFormula
+    given: "Chemical formula"
+    when: "User runs 'tri chem formula C6H12O6'"
+    then: "Parse and display formula composition"
+    output: "Element count breakdown, percent composition, empirical formula check"
+    example: "C6H12O6 → C:6, H:12, O:6; C:40.00%, H:6.71%, O:53.29%"
+
+  # === Equation Balancing ===
+
+  - name: chemBalance
+    given: "Unbalanced chemical equation (reactants -> products)"
+    when: "User runs 'tri chem balance H2 + O2 -> H2O'"
+    then: "Balance equation using matrix method or algebraic method"
+    output: "Balanced equation with coefficients"
+    example: "2 H2 + 1 O2 -> 2 H2O"
+    notes: "Supports complex equations with parentheses and polyatomic ions"
+
+  - name: chemBalanceVerify
+    given: "Balanced equation"
+    when: "Verify conservation of mass and charge"
+    then: "Confirm element counts match on both sides"
+
+  # === Stoichiometry ===
+
+  - name: chemMoles
+    given: "Mass (g) and formula, or moles and formula"
+    when: "User runs 'tri chem moles 18.015 H2O'"
+    then: "Calculate moles, molecules, atoms"
+    output: "Moles = mass/molar_mass; molecules = moles×N_A; total atoms calculation"
+    example: "18.015 g H2O = 1.000 mol = 6.022×10²³ molecules = 1.807×10²⁴ atoms"
+
+  - name: chemAtoms
+    given: "Moles and formula"
+    when: "User runs 'tri chem atoms 2.5 H2SO4'"
+    then: "Calculate total atoms of each type"
+    output: "Atom count breakdown"
+    example: "2.5 mol H2SO4 → H: 3.01×10²⁴, S: 1.51×10²⁴, O: 6.02×10²⁴"
+
+  - name: chemLimiting
+    given: "Reactants with amounts"
+    when: "User runs 'tri chem limiting 2mol H2 + 1mol O2'"
+    then: "Determine limiting reagent and theoretical yield"
+    output: "Limiting reagent, excess reagent, theoretical yield"
+
+  - name: chemYield
+    given: "Theoretical yield, actual yield"
+    when: "Calculate percent yield"
+    then: "Return percent yield = (actual/theoretical)×100%"
+
+  # === Gas Laws ===
+
+  - name: chemIdealGas
+    given: "Three of: pressure, volume, moles, temperature"
+    when: "User runs 'tri chem ideal-gas PV= nRT'"
+    then: "Solve for unknown variable using PV=nRT"
+    output: "Calculated value with units"
+    example: "tri chem ideal-gas V= n=2 T=298 P=101325 → V = 0.0489 m³"
+
+  - name: chemSTP
+    given: "Moles of gas"
+    when: "Calculate volume at STP"
+    then: "Return V = n × 22.414 L"
+
+  # === Solutions ===
+
+  - name: chemMolarity
+    given: "Moles of solute and volume of solution (L)"
+    when: "Calculate molarity M = n/V"
+    then: "Return molarity in mol/L"
+
+  - name: chemDilution
+    given: "Initial concentration C1, initial volume V1, final volume V2"
+    when: "Calculate final concentration using C1V1=C2V2"
+    then: "Return C2 = C1V1/V2"
+
+  - name: chemPH
+    given: "H+ concentration (M) or strong acid name and molarity"
+    when: "User runs 'tri chem ph 0.01' or 'tri chem ph HCl 0.01M'"
+    then: "Calculate pH = -log[H+]"
+    output: "pH value, classification (acidic/basic/neutral)"
+    example: "0.01 M HCl → pH = 2.00 (strong acid)"
+
+  - name: chemPOH
+    given: "OH- concentration or pOH value"
+    when: "Calculate pOH and derive pH"
+    then: "Return pH + pOH = 14 (at 25°C)"
+
+  # === Redox ===
+
+  - name: chemRedox
+    given: "Redox reaction"
+    when: "User runs 'tri chem redox MnO4- + Fe2+ -> Mn2+ + Fe3+'"
+    then: "Balance using half-reaction method (acidic or basic)"
+    output: "Balanced redox equation, identify oxidizing/reducing agents"
+    notes: "Supports acidic (H+, H2O) and basic (OH-, H2O) conditions"
+
+  - name: chemOxidationStates
+    given: "Compound formula"
+    when: "Determine oxidation states"
+    then: "Return oxidation state for each atom"
+    example: "H2SO4 → H: +1, S: +6, O: -2"
+
+  # === Thermochemistry ===
+
+  - name: chemEnthalpy
+    given: "Reaction with ΔH_f° values"
+    when: "Calculate enthalpy of reaction"
+    then: "Return ΔH_rxn = ΣΔH_f(products) - ΣΔH_f(reactants)"
+
+  - name: chemGibbs
+    given: "ΔH and ΔS, or ΔG_f° values"
+    when: "Calculate Gibbs free energy"
+    then: "Return ΔG = ΔH - TΔS"
+
+  - name: chemEntropy
+    given: "Reaction or phase change"
+    when: "Calculate entropy change"
+    then: "Return ΔS in J/(mol·K)"
+
+  # === Nuclear Chemistry ===
+
+  - name: chemHalfLife
+    given: "Isotope and initial amount, time elapsed"
+    when: "Calculate remaining amount using half-life"
+    then: "Return N = N₀ × (1/2)^(t/t½)"
+
+  - name: chemDecay
+    given: "Parent nucleus"
+    when: "Determine decay mode and daughter nucleus"
+    then: "Return decay chain info"
+
+  # === Acid-Base ===
+
+  - name: chemTitration
+    given: "Acid, base, volumes, concentrations"
+    when: "Calculate equivalence point"
+    then: "Return volume needed, pH at equivalence"
+
+  - name: chemBuffer
+    given: "Weak acid/conjugate base or weak base/conjugate acid"
+    when: "Calculate buffer pH using Henderson-Hasselbalch"
+    then: "Return pH = pKa + log([A-]/[HA])"
+
+  # === Solubility ===
+
+  - name: chemKsp
+    given: "Sparingly soluble salt formula"
+    when: "Calculate molar solubility from Ksp"
+    then: "Return solubility in mol/L and g/L"
+    example: "AgCl Ksp=1.8×10⁻¹⁰ → s = 1.34×10⁻⁵ M"
+
+  # === Electrochemistry ===
+
+  - name: chemNernst
+    given: "Half-reaction E°, concentrations"
+    when: "Calculate cell potential under non-standard conditions"
+    then: "Return E = E° - (RT/nF)ln(Q)"
+
+  # === Utilities ===
+
+  - name: chemConvert
+    given: "Value, from unit, to unit"
+    when: "Convert between chemical units"
+    then: "Return converted value"
+    notes: "Support: mass, moles, atoms, L→mL, atm→Pa→bar, °C↔K, eV↔kJ/mol"
+
+  - name: chemDensity
+    given: "Mass and volume, or molar mass and molar volume"
+    when: "Calculate density"
+    then: "Return density in g/cm³"
+
+  - name: chemConcentration
+    given: "Mass of solute, volume of solution"
+    when: "Calculate concentration in various units"
+    then: "Return molarity, molality, mass percent, mole fraction"
+
+  # === Search & Info ===
+
+  - name: chemSearch
+    given: "Search term (name part, symbol part, property range)"
+    when: "Find matching elements"
+    then: "Return list of elements with brief info"
+    example: "tri chem search metal → lists all metals"
+
+  - name: chemGroup
+    given: "Group number (1-18)"
+    when: "Display all elements in group"
+    then: "Return group with trends noted"
+
+  - name: chemPeriod
+    given: "Period number (1-7)"
+    when: "Display all elements in period"
+    then: "Return period with trends noted"
+
+  - name: chemBlock
+    given: "Block letter (s, p, d, f)"
+    when: "Display all elements in block"
+    then: "Return block elements with electron configuration pattern"
+
+  # === Help ===
+
+  - name: chemHelp
+    given: "No parameters or specific command"
+    when: "User runs 'tri chem help'"
+    then: "Display help text for all chemistry commands"
+    output: "Command list with usage examples"

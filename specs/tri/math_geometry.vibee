@@ -1,0 +1,200 @@
+# GEOMETRY & FRACTALS — Platonic Solids, Archimedean Solids, Fractals v6.0
+
+name: math_geometry
+version: "6.0.0"
+language: zig
+module: sacred.geometry
+
+types:
+  PlatonicSolid:
+    description: "One of 5 Platonic solids (regular convex polyhedra)"
+    fields:
+      name: String          # "Tetrahedron", "Cube", "Octahedron", "Dodecahedron", "Icosahedron"
+      faces: Int            # Number of faces (4, 6, 8, 12, 20)
+      vertices: Int         # Number of vertices (4, 8, 6, 20, 12)
+      edges: Int            # Number of edges (6, 12, 12, 30, 30)
+      face_type: String     # "triangle", "square", "pentagon"
+      faces_per_vertex: Int # 3, 3, 4, 3, 5
+      edge_length: Float    # Default a=1
+      volume: Float         # Volume at a=1
+      surface_area: Float   # Surface area at a=1
+      face_angle: Float     # Interior angle of face (degrees)
+      dihedral_angle: Float # Angle between faces (degrees)
+      circumscribed_radius: Float # R (circumsphere)
+      inscribed_radius: Float   # r (insphere)
+      midradius: Float       # ρ (midradius, edge-tangent)
+      symmetry_group: String  # Tetrahedral, Octahedral, Icosahedral
+
+  ArchimedeanSolid:
+    description: "One of 13 Archimedean solids (semi-regular convex polyhedra)"
+    fields:
+      name: String          # TruncatedTetrahedron, Cuboctahedron, etc.
+      faces: Int            # Total faces
+      vertices: Int         # Total vertices
+      edges: Int            # Total edges
+      face_types: List[String] # Types of faces present
+      face_counts: List[Int]    # Count of each face type
+      volume: Float
+      surface_area: Float
+
+  GoldenAngle:
+    description: "Golden ratio in circular geometry"
+    fields:
+      degrees: Float        # 360/φ² ≈ 137.507764°
+      radians: Float        # 2π/φ² ≈ 2.399963 rad
+      fraction: Float       # 1/φ² of full circle
+
+  FractalConfig:
+    description: "Configuration for fractal generation"
+    fields:
+      type: String          # "sierpinski", "mandelbrot", "julia", "fern", "tree"
+      depth: Int            # Recursion depth
+      width: Int            # ASCII width
+      height: Int           # ASCII height
+      params: Map<String,Float> # Additional parameters (c_re, c_im for Julia)
+
+behaviors:
+  # Platonic Solids
+  - name: getPlatonicSolid
+    given: "Solid name or index 0-4"
+    when: "Query Platonic solid properties"
+    then: "Return complete PlatonicSolid struct"
+    notes: "Euler's formula: V - E + F = 2 (all convex polyhedra)"
+
+  - name: listPlatonicSolids
+    given: "No parameters"
+    when: "Display all 5 Platonic solids"
+    then: "Return table with all properties"
+
+  - name: platonicVolume
+    given: "Solid name, edge length a"
+    when: "Calculate volume V = ka³"
+    then: "Return volume using formula k from PlatonicSolid"
+
+  - name: platonicSurfaceArea
+    given: "Solid name, edge length a"
+    when: "Calculate surface area A = sa²"
+    then: "Return surface area using formula s from PlatonicSolid"
+
+  # Archimedean Solids
+  - name: getArchimedeanSolid
+    given: "Solid name or index 0-12"
+    when: "Query Archimedean solid properties"
+    then: "Return ArchimedeanSolid struct"
+
+  - name: listArchimedeanSolids
+    given: "No parameters"
+    when: "Display all 13 Archimedean solids"
+    then: "Return table with key properties"
+    notes: "TruncatedTetrahedron, Cuboctahedron, TruncatedCube, TruncatedOctahedodon, Rhombicuboctahedron, TruncatedCuboctahedron, SnubCube, Icosidodecahedron, TruncatedDodecahedron, TruncatedIcosahedron, Rhombicosidodecahedron, TruncatedIcosidodecahedron, SnubDodecahedron"
+
+  # Golden Angle (phyllotaxis, spiral sunflowers)
+  - name: goldenAngle
+    given: "No parameters or unit ('deg', 'rad', 'frac')"
+    when: "Query golden angle"
+    then: "Return 360/φ² ≈ 137.507764°"
+
+  - name: phyllotaxisCoordinates
+    given: "Index n, scaling factor c"
+    when: "Calculate phyllotaxis (leaf arrangement) coordinates"
+    then: "Return (r, θ) = (c√n, n×golden_angle)"
+
+  # Fractals - ASCII Visualization
+  - name: sierpinski
+    given: "Recursion depth (1-8 recommended)"
+    when: "Generate Sierpinski triangle ASCII art"
+    then: "Return ASCII string representing fractal"
+    notes: "Dimension = ln(3)/ln(2) ≈ 1.585"
+
+  - name: mandelbrot
+    given: "Center x, y, zoom level, max iterations"
+    when: "Generate Mandelbrot set ASCII art"
+    then: "Return ASCII representation of set"
+    notes: "z_{n+1} = z_n² + c ; escape |z| > 2"
+
+  - name: julia
+    given: "Complex constant c = c_re + i×c_im, bounds"
+    when: "Generate Julia set ASCII art"
+    then: "Return ASCII representation of set"
+    notes: "z_{n+1} = z_n² + c ; different c gives different shapes"
+
+  - name: barnsleyFern
+    given: "Number of iterations (points)"
+    when: "Generate Barnsley fern fractal ASCII"
+    then: "Return ASCII fern using IFS (iterated function system)"
+    notes: "4 affine transformations with probabilities"
+
+  - name: fractalTree
+    given: "Recursion depth, branching angle, length ratio"
+    when: "Generate fractal tree (Y-fractal) ASCII"
+    then: "Return ASCII tree structure"
+    notes: "L-system: F → FF+[+F-F-F]-[-F+F+F]"
+
+  - name: kochSnowflake
+    given: "Recursion depth (1-5 recommended)"
+    when: "Generate Koch snowflake ASCII"
+    then: "Return ASCII snowflake"
+    notes: "Dimension = ln(4)/ln(3) ≈ 1.262"
+
+  - name: cantorSet
+    given: "Iterations (1-6)"
+    when: "Generate Cantor set representation"
+    then: "Return ASCII showing removed middle thirds"
+    notes: "Dimension = ln(2)/ln(3) ≈ 0.631"
+
+  - name: mengerSponge
+    given: "Iteration (1-3, gets large quickly)"
+    when: "Generate Menger sponge 2D projection ASCII"
+    then: "Return ASCII showing square-with-holes pattern"
+    notes: "Dimension = ln(20)/ln(3) ≈ 2.727"
+
+  - name: hilbertCurve
+    given: "Order n (1-5 recommended)"
+    when: "Generate Hilbert curve space-filling pattern"
+    then: "Return ASCII path representation"
+    notes: "Dimension = 2 ; fills square completely"
+
+  # Sacred Geometry
+  - name: vesicaPiscis
+    given: "Radius r"
+    when: "Calculate vesica piscis dimensions"
+    then: "Return width, height, area of lens intersection"
+    notes: "Two circles of radius r, centers separated by r"
+
+  - name: flowerOfLife
+    given: "Radius r, number of circles (default 7)"
+    when: "Generate flower of life pattern coordinates"
+    then: "Return list of (x,y) center positions"
+    notes: "19 circles in complete flower; 7 in seed of life"
+
+  - name: metatronsCube
+    given: "No parameters"
+    when: "Generate Metatron's Cube vertex coordinates"
+    then: "Return 13 points (center + 12 around)"
+    notes: "Connected to all 5 Platonic solids"
+
+  # Fibonacci Spiral
+  - name: fibonacciSpiral
+    given: "Number of points n"
+    when: "Calculate spiral coordinates using golden angle"
+    then: "Return list of (x,y) using Vogel's formula"
+    notes: "θ = n×137.5°, r = c√n ; sunflower pattern"
+
+  # Geometric Calculations
+  - name: regularPolygon
+    given: "Number of sides n, circumradius R"
+    when: "Calculate regular polygon properties"
+    then: "Return area, perimeter, interior angle, central angle"
+    notes: "Area = (n/2)R²sin(2π/n) ; interior = (n-2)×180°/n"
+
+  - name: goldenRectangle
+    given: "Short side a"
+    when: "Calculate golden rectangle dimensions"
+    then: "Return sides (a, a×φ), diagonal, area"
+    notes: "Removing square leaves similar rectangle (φ-1 = 1/φ)"
+
+  - name: goldenTriangle
+    given: "Base length b"
+    when: "Calculate golden triangle (isosceles, apex 36°)"
+    then: "Return equal sides, base angles, height, area"
+    notes: "Apex angle = 36°, base angles = 72° ; sides/base = φ"

@@ -134,13 +134,12 @@ pub const AutoTestGenerator = struct {
         return true;
     }
 
-    /// Generate sacred assertions for command output
+    /// Generate sacred assertions for command output (STRICT - will fail on missing patterns)
     fn generateSacredAssertions(self: *const Self, writer: anytype, cmd_info: *const CommandTestInfo) !void {
         _ = self;
 
-        // Add expected patterns from command info (non-blocking)
+        // Add expected patterns from command info (STRICT - failures will abort test)
         if (cmd_info.expected_patterns.len > 0) {
-            try writer.writeAll("    const output = tester.getOutput();\n");
             try writer.writeAll("    // ");
             const category_name = switch (cmd_info.category) {
                 .math => "Math",
@@ -149,44 +148,32 @@ pub const AutoTestGenerator = struct {
                 else => "Command",
             };
             try writer.writeAll(category_name);
-            try writer.writeAll(" command ran\n");
+            try writer.writeAll(" command - strict pattern matching\n");
             for (cmd_info.expected_patterns) |pattern| {
-                try writer.writeAll("    if (std.mem.indexOf(u8, output, \"");
+                try writer.writeAll("    try tester.expectContains(\"");
                 try writer.writeAll(pattern);
-                try writer.writeAll("\") == null) {\n");
-                try writer.writeAll("        // Pattern not found: \"");
-                try writer.writeAll(pattern);
-                try writer.writeAll("\"\n");
-                try writer.writeAll("        // Accepting as command may vary\n");
-                try writer.writeAll("    }\n");
+                try writer.writeAll("\");\n");
             }
         } else {
-            try writer.writeAll("    _ = tester.getOutput(); // Command ran, output varies\n");
+            try writer.writeAll("    _ = tester.getOutput(); // Command ran, no patterns to check\n");
         }
     }
 
-    /// Generate basic assertions
+    /// Generate basic assertions (STRICT - will fail on missing patterns)
     fn generateBasicAssertions(self: *const Self, writer: anytype, cmd_info: *const CommandTestInfo) !void {
         _ = self;
 
-        try writer.writeAll("    // Basic assertions\n");
-        try writer.writeAll("    // Verify command produced output\n");
-        try writer.writeAll("    const output = tester.getOutput();\n");
+        try writer.writeAll("    // Basic assertions (strict pattern matching)\n");
 
-        // Only check patterns if they exist, otherwise just verify output exists
+        // Check patterns if they exist, otherwise just verify output exists
         if (cmd_info.expected_patterns.len > 0) {
             for (cmd_info.expected_patterns) |pattern| {
-                try writer.writeAll("    if (std.mem.indexOf(u8, output, \"");
+                try writer.writeAll("    try tester.expectContains(\"");
                 try writer.writeAll(pattern);
-                try writer.writeAll("\") == null) {\n");
-                try writer.writeAll("        // Pattern not found: \"");
-                try writer.writeAll(pattern);
-                try writer.writeAll("\"\n");
-                try writer.writeAll("        // Accepting as command may vary\n");
-                try writer.writeAll("    }\n");
+                try writer.writeAll("\");\n");
             }
         } else {
-            try writer.writeAll("    _ = output; // Command ran, output varies\n");
+            try writer.writeAll("    _ = tester.getOutput(); // Command ran, no patterns to check\n");
         }
     }
 
