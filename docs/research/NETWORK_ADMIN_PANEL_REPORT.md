@@ -62,7 +62,7 @@
 
 Замена статических данных на реальное обнаружение:
 
-| Данные | Источник |
+| Данные | Source |
 |--------|----------|
 | Hostname | `std.posix.gethostname()` |
 | RAM | Чтение `/proc/meminfo` (Linux) / `sysctl hw.memsize` (macOS) |
