@@ -1,6 +1,6 @@
-# ConstantRewriter - [CYR:Переп]andwithь [CYR:Кон]with[CYR:тант]
-# Инwith[CYR:трумент] Аwhileтаwithтаwithandwithа
-# Иwith[CYR:целен]andе [CYR:реально]withтand [CYR:через] [CYR:замену] ошand[CYR:бочных] [CYR:кон]with[CYR:тант]
+# ConstantRewriter - [CYR:[TRANSLATED]]andwith[EN] [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]
+# [EN]with[CYR:[TRANSLATED]me[EN]] Awhile[EN]with[EN]withandwith[EN]
+# [EN]with[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]lno]with[EN]and [CYR:[TRANSLATED]] [CYR:[EN]me[EN]] [EN]and[CYR:[TRANSLATED]y[EN]] [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]
 
 name: constant_rewriter
 version: "7.0.0-final"

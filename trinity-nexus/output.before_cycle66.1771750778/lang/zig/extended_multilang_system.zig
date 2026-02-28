@@ -15,7 +15,7 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:КОНСТАНТЫ]
+// [CYR:[EN]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const HIGH_CONFIDENCE: f64 = 0.95;
@@ -34,7 +34,7 @@ pub const TEMPLATE_COMBINATIONS: f64 = 126;
 
 pub const TOPIC_COUNT: f64 = 10;
 
-// [CYR:Базо]inые φ-toонwith[CYR:танты] (Sacred Formula)
+// [CYR:[EN]]in[EN] φ-to[EN]with[CYR:[EN]] (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -46,7 +46,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:ТИПЫ]
+// [CYR:[EN]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Operating mode
@@ -152,7 +152,7 @@ pub const ExtendedResponse = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:ПАМЯТЬ] [CYR:ДЛЯ] WASM
+// [CYR:[EN]] [CYR:[EN]] WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -202,13 +202,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-and[CYR:нтер]fieldsцandя
+/// φ-and[CYR:[EN]]fields[EN]and[EN]
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// Геnot[CYR:рац]andя φ-withпand[CYR:рал]and
+/// [EN]not[CYR:[EN]]and[EN] φ-with[EN]and[CYR:[EN]]and
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -1097,7 +1097,7 @@ test "go_dijkstra" {
 }
 
 test "rust_heap_sort" {
-// Given: "[CYR:Нап]andшand heap sort on Rust"
+// Given: "[CYR:[EN]]and[EN]and heap sort on Rust"
 // Expected: "Real heap sort in Rust"
 // Test: rust_heap_sort
     // (Test setup and assertions to be implemented)

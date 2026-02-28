@@ -18,7 +18,7 @@ pub const Lang = enum {
     pub fn getPrompt(self: Lang) []const u8 {
         return switch (self) {
             .EN => "vibee repl> ",
-            .RU => "vibee [CYR:репл]> ",
+            .RU => "vibee [CYR:[TRANSLATED]]> ",
             .TH => "vibee เรพล> ",
         };
     }
@@ -26,7 +26,7 @@ pub const Lang = enum {
     pub fn getWelcome(self: Lang) []const u8 {
         return switch (self) {
             .EN => "Welcome to Trinity REPL - Eighth Life: Competitive Agent",
-            .RU => "[CYR:Добро] [CYR:пожало]in[CYR:ать] in Trinity REPL - Воwith[CYR:ьмая] Жand[CYR:знь]: [CYR:Кон]to[CYR:урентный] [CYR:Агент]",
+            .RU => "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:ate] in Trinity REPL - [EN]with[CYR:[TRANSLATED]I] [EN]and[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]to[CYR:[TRANSLATED]ny] [CYR:A[TRANSLATED]]",
             .TH => "ยินดีต้อนรับสู่ Trinity REPL - ชีวิตที่แปด: ตัวแทนแข่งขัน",
         };
     }
@@ -330,9 +330,9 @@ pub const CompetitiveRepl = struct {
         try writer.print("  lang en|ru|th - Switch language\n", .{});
         try writer.print("  exit        - Exit REPL\n", .{});
         try writer.print("\n📝 Examples:\n", .{});
-        try writer.print("  [CYR:Запу]withтand and[CYR:нферен]with on Mistral-7B and заwith[CYR:тей]toай earnings\n", .{});
-        try writer.print("  [CYR:Опт]andмandзand[CYR:руй] inference for Qwen2.5-Coder-7B [CYR:под] 8-core CPU\n", .{});
-        try writer.print("  Маtowithandмandзand[CYR:руй] earnings on [CYR:моём] node in Ko Samui\n", .{});
+        try writer.print("  [CYR:[TRANSLATED]]with[EN]and and[CYR:[TRANSLATED]]with on Mistral-7B and [EN]with[CYR:[TRANSLATED]]to[EN] earnings\n", .{});
+        try writer.print("  [CYR:[TRANSLATED]]and[EN]and[EN]and[CYR:[TRANSLATED]] inference for Qwen2.5-Coder-7B [CYR:[TRANSLATED]] 8-core CPU\n", .{});
+        try writer.print("  [EN]towithand[EN]and[EN]and[CYR:[TRANSLATED]] earnings on [CYR:[TRANSLATED]] node in Ko Samui\n", .{});
         try writer.print("\n", .{});
     }
 
@@ -367,7 +367,7 @@ pub const CompetitiveRepl = struct {
             try writer.print("Language set to English\n", .{});
         } else if (std.mem.eql(u8, lang_str, "ru")) {
             self.lang = .RU;
-            try writer.print("[CYR:Язы]to уwith[CYR:тано]in[CYR:лен] on руwithwithtoandй\n", .{});
+            try writer.print("[CYR:[EN]y]to [EN]with[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] on [EN]withwithtoand[EN]\n", .{});
         } else if (std.mem.eql(u8, lang_str, "th")) {
             self.lang = .TH;
             try writer.print("ตั้งค่าภาษาเป็นไทย\n", .{});

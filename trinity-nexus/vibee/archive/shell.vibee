@@ -1,16 +1,16 @@
 name: shell
-# Shell Page - Едandonя page-[CYR:оболочка] for inwithех [CYR:плаг]andноin
+# Shell Page - [EN]andonI page-[CYR:[TRANSLATED]] for inwith[EN] [CYR:[TRANSLATED]]and[EN]in
 
 module: honeycomb/ui/shell
 version: 1.0.0
-description: [CYR:Гла]inonя page with Canvas, sidebar [CYR:плаг]andноin, [CYR:документац]andей and settingмand
+description: [CYR:[TRANSLATED]]inonI page with Canvas, sidebar [CYR:[TRANSLATED]]and[EN]in, [CYR:[TRANSLATED]me[TRANSLATED]]and[EN] and setting[EN]and
 
 functions:
-  # Геnot[CYR:рац]andя HTML with[CYR:тран]andцы
+  # [EN]not[CYR:[TRANSLATED]]andI HTML with[CYR:[TRANSLATED]]and[EN]y
   shell_page:
     params: []
     returns: String
-    description: [CYR:Воз]in[CYR:ращает] HTML едand[CYR:ной] with[CYR:тран]andцы-[CYR:оболочк]and
+    description: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] HTML [EN]and[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]and[EN]y-[CYR:[TRANSLATED]]and
     implementation: |
       "<!DOCTYPE html>
       <html lang=\"en\">
@@ -509,7 +509,7 @@ functions:
   shell_js:
     params: []
     returns: String
-    description: [CYR:Воз]in[CYR:ращает] JavaScript code for Shell
+    description: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] JavaScript code for Shell
     implementation: |
       "// VIBEE Plugin Shell - Client-side JavaScript
       
@@ -828,13 +828,13 @@ imports:
 
 tests:
   - name: generate_shell_page
-    description: Геnot[CYR:рац]andя HTML with[CYR:тран]andцы
+    description: [EN]not[CYR:[TRANSLATED]]andI HTML with[CYR:[TRANSLATED]]and[EN]y
     test: |
       let html = shell_page()
       string.contains(html, "VIBEE Plugin Shell")
   
   - name: generate_shell_js
-    description: Геnot[CYR:рац]andя JavaScript
+    description: [EN]not[CYR:[TRANSLATED]]andI JavaScript
     test: |
       let js = shell_js()
       string.contains(js, "WebSocket")

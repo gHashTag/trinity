@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// VERILOG CODEGEN - Геnot[CYR:ратор] Verilog to[CYR:ода] andз .vibee with[CYR:пец]andфandtoацandй
+// VERILOG CODEGEN - [EN]not[CYR:[TRANSLATED]] Verilog to[CYR:[TRANSLATED]] and[EN] .vibee with[CYR:[TRANSLATED]]and[EN]andto[EN]and[EN]
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Геnotрand[CYR:рует] Verilog toод for FPGA withand[CYR:нтеза]
-// Аin[CYR:тор]: Dmitrii Vasilev
+// [EN]not[EN]and[CYR:[TRANSLATED]] Verilog to[EN] for FPGA withand[CYR:[TRANSLATED]]
+// Ain[CYR:[TRANSLATED]]: Dmitrii Vasilev
 // φ² + 1/φ² = 3 | PHOENIX = 999
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -294,7 +294,7 @@ pub const VerilogCodeGen = struct {
         self.builder.deinit();
     }
 
-    /// Геnot[CYR:рац]andя [CYR:полного] Verilog fileа andз with[CYR:пец]andфandtoацandand
+    /// [EN]not[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]go] Verilog file[EN] and[EN] with[CYR:[TRANSLATED]]and[EN]andto[EN]andand
     pub fn generate(self: *Self, spec: *const VibeeSpec) ![]const u8 {
         self.spec = spec;
         try self.writeHeader(spec);

@@ -1,7 +1,7 @@
 //! RL Agent with Streaming Memory - Experience Replay
 //!
-//! Agent with long-term memoryю for storing experienceа.
-//! Иwithby[CYR:льзует] Streaming Memory for experience replay.
+//! Agent with long-term memory[EN] for storing experience[EN].
+//! [EN]withby[CYR:[EN]] Streaming Memory for experience replay.
 //!
 //! φ² + 1/φ² = 3 | TRINITY
 
@@ -17,7 +17,7 @@ pub const HyperVector = hdc.HyperVector;
 // TYPES
 // ═══════════════════════════════════════════════════════════════
 
-/// Experience for storing in [CYR:памят]and
+/// Experience for storing in [CYR:[EN]]and
 pub const Experience = struct {
     state_id: usize,
     action_id: usize,
@@ -26,7 +26,7 @@ pub const Experience = struct {
     done: bool,
 };
 
-/// [CYR:Конф]and[CYR:гурац]andя agentа with memoryю
+/// [CYR:[EN]]and[CYR:[EN]]and[EN] agent[EN] with memory[EN]
 pub const MemoryAgentConfig = struct {
     state_dim: usize = 256,
     num_actions: usize = 4,
@@ -83,21 +83,21 @@ pub const RLAgentWithMemory = struct {
         self.memory.deinit();
     }
 
-    /// [CYR:Выбрать] [CYR:дей]withтinandе
+    /// [CYR:[EN]] [CYR:[EN]]with[EN]inand[EN]
     pub fn selectAction(self: *RLAgentWithMemory, state_id: usize) usize {
         return self.base_agent.selectAction(state_id);
     }
 
-    /// [CYR:Выбрать] betterе [CYR:дей]withтinandе (greedy)
+    /// [CYR:[EN]] better[EN] [CYR:[EN]]with[EN]inand[EN] (greedy)
     pub fn selectActionGreedy(self: *const RLAgentWithMemory, state_id: usize) usize {
         return self.base_agent.selectActionGreedy(state_id);
     }
 
-    /// [CYR:Сохран]andть experience in memory
+    /// [CYR:[EN]]and[EN] experience in memory
     pub fn storeExperience(self: *RLAgentWithMemory, exp: Experience) !void {
-        // Encode experience how to[CYR:люч]-value
-        // [CYR:Ключ]: state_id + action_id
-        // Зon[CYR:чен]andе: reward + next_state + done
+        // Encode experience how to[CYR:[EN]]-value
+        // [CYR:[EN]]: state_id + action_id
+        // [EN]on[CYR:[EN]]and[EN]: reward + next_state + done
         const key_seed = @as(u64, exp.state_id) * 1000 + @as(u64, exp.action_id);
         const value_seed = @as(u64, @intFromFloat(exp.reward * 1000)) + @as(u64, exp.next_state_id) * 10000;
 
@@ -110,51 +110,51 @@ pub const RLAgentWithMemory = struct {
         self.experience_count += 1;
     }
 
-    /// [CYR:Обучен]andе on [CYR:одном] experienceе
+    /// [CYR:[EN]]and[EN] on [CYR:[EN]] experience[EN]
     pub fn learn(self: *RLAgentWithMemory, exp: Experience) f64 {
         return self.base_agent.tdUpdate(exp.state_id, exp.action_id, exp.reward, exp.next_state_id, exp.done);
     }
 
-    /// [CYR:Обучен]andе with experience replay
+    /// [CYR:[EN]]and[EN] with experience replay
     pub fn learnWithReplay(self: *RLAgentWithMemory, current_exp: Experience) !f64 {
-        // Сon[CYR:чала] учandмwithя on теto[CYR:ущем] experienceе
+        // [EN]on[CYR:[EN]] [EN]and[EN]with[EN] on [EN]to[CYR:[EN]] experience[EN]
         const td_error = self.learn(current_exp);
 
-        // [CYR:Сохраняем] in memory
+        // [CYR:[EN]] in memory
         try self.storeExperience(current_exp);
 
         self.replay_count += 1;
         return td_error;
     }
 
-    /// [CYR:Уменьш]andть epsilon
+    /// [CYR:[EN]]and[EN] epsilon
     pub fn decayEpsilon(self: *RLAgentWithMemory) void {
         self.base_agent.decayEpsilon();
     }
 
-    /// Заin[CYR:ерш]andть эпand[CYR:зод]
+    /// [EN]in[CYR:[EN]]and[EN] [EN]and[CYR:[EN]]
     pub fn endEpisode(self: *RLAgentWithMemory, episode_reward: f64) void {
         self.base_agent.endEpisode(episode_reward);
     }
 
-    /// [CYR:Получ]andть epsilon
+    /// [CYR:[EN]]and[EN] epsilon
     pub fn getEpsilon(self: *const RLAgentWithMemory) f64 {
         return self.base_agent.epsilon;
     }
 
-    /// [CYR:Получ]andть [CYR:метр]andtoand
+    /// [CYR:[EN]]and[EN] [CYR:[EN]]andtoand
     pub fn getMetrics(self: *const RLAgentWithMemory) rl.TrainingMetrics {
         return self.base_agent.getMetrics();
     }
 
-    /// [CYR:Получ]andть [CYR:метр]andtoand [CYR:памят]and
+    /// [CYR:[EN]]and[EN] [CYR:[EN]]andtoand [CYR:[EN]]and
     pub fn getMemoryMetrics(self: *const RLAgentWithMemory) sm.MemoryMetrics {
         return self.memory.getMetrics();
     }
 };
 
 // ═══════════════════════════════════════════════════════════════
-// [CYR:ТЕСТЫ]
+// [CYR:[EN]]
 // ═══════════════════════════════════════════════════════════════
 
 test "agent with memory init/deinit" {

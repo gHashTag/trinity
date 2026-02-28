@@ -9,7 +9,7 @@ const Behavior = struct {
     when: []const u8,
     then: []const u8,
     description: []const u8,
-    code: []const u8, // ✅ [CYR:ВАЖНОЕ] [CYR:ПОЛЕ]
+    code: []const u8, // ✅ [CYR:[EN]] [CYR:[EN]]
 };
 
 pub fn main() !void {

@@ -43,7 +43,7 @@ pub const Keyword = enum(u8) {
     given = 10,
     when = 11,
     then = 12,
-    code = 25, // ✅ [CYR:ДОБАВЛЕНО]
+    code = 25, // ✅ [CYR:[TRANSLATED]A[TRANSLATED]]
     test_cases = 13,
     // Types
     types = 14,
@@ -184,23 +184,23 @@ pub const Behavior = struct {
     given: []const u8 = "",
     when: []const u8 = "",
     then: []const u8 = "",
-    description: []const u8 = "", // ✅ [CYR:ДОБАВЛЕНО]
-    implementation: []const u8 = "", // ✅ [CYR:ДОБАВЛЕНО]
+    description: []const u8 = "", // ✅ [CYR:[TRANSLATED]A[TRANSLATED]]
+    implementation: []const u8 = "", // ✅ [CYR:[TRANSLATED]A[TRANSLATED]]
     test_cases: ArrayList(TestCase),
 
     pub fn init(allocator: Allocator) Behavior {
         _ = allocator;
         return .{
             .test_cases = .{},
-            .description = "", // ✅ [CYR:ДОБАВЛЕНО]
-            .implementation = "", // ✅ [CYR:ДОБАВЛЕНО]
+            .description = "", // ✅ [CYR:[TRANSLATED]A[TRANSLATED]]
+            .implementation = "", // ✅ [CYR:[TRANSLATED]A[TRANSLATED]]
         };
     }
 
     pub fn deinit(self: *Behavior, allocator: Allocator) void {
         self.test_cases.deinit(allocator);
-        if (self.description.len > 0) allocator.free(self.description); // ✅ [CYR:ДОБАВЛЕНО]
-        if (self.implementation.len > 0) allocator.free(self.implementation); // ✅ [CYR:ДОБАВЛЕНО]
+        if (self.description.len > 0) allocator.free(self.description); // ✅ [CYR:[TRANSLATED]A[TRANSLATED]]
+        if (self.implementation.len > 0) allocator.free(self.implementation); // ✅ [CYR:[TRANSLATED]A[TRANSLATED]]
     }
 };
 

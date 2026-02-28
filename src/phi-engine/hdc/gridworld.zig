@@ -1,12 +1,12 @@
-//! GridWorld - [CYR:Кла]withwithandчеwithtoая withреyes for testandроinанandя RL agentоin
+//! GridWorld - [CYR:[EN]]withwithand[EN]withto[EN] with[EN]yes for testand[EN]in[EN]and[EN] RL agent[EN]in
 //!
-//! [CYR:Сет]toа NxN with:
-//! - [CYR:Старто]inая byзandцandя (0,0)
-//! - [CYR:Цель] (N-1, N-1) with on[CYR:гра]beforeй +10
-//! - [CYR:Стены] ([CYR:опц]andоon[CYR:льно])
-//! - [CYR:Награ]yes -0.1 за each step
+//! [CYR:[EN]]to[EN] NxN with:
+//! - [CYR:[EN]]in[EN] by[EN]and[EN]and[EN] (0,0)
+//! - [CYR:[EN]] (N-1, N-1) with on[CYR:[EN]]before[EN] +10
+//! - [CYR:[EN]] ([CYR:[EN]]and[EN]on[CYR:[EN]])
+//! - [CYR:[EN]]yes -0.1 [EN] each step
 //!
-//! [CYR:Дей]withтinandя: UP=0, RIGHT=1, DOWN=2, LEFT=3
+//! [CYR:[EN]]with[EN]inand[EN]: UP=0, RIGHT=1, DOWN=2, LEFT=3
 //!
 //! φ² + 1/φ² = 3 | TRINITY
 
@@ -38,7 +38,7 @@ pub const NUM_ACTIONS: usize = 4;
 // TYPES
 // ═══════════════════════════════════════════════════════════════
 
-/// [CYR:Поз]andцandя on withетtoе
+/// [CYR:[EN]]and[EN]and[EN] on with[EN]to[EN]
 pub const Position = struct {
     x: usize,
     y: usize,
@@ -60,7 +60,7 @@ pub const StepResult = struct {
     info: []const u8,
 };
 
-/// [CYR:Конф]and[CYR:гурац]andя GridWorld
+/// [CYR:[EN]]and[CYR:[EN]]and[EN] GridWorld
 pub const GridWorldConfig = struct {
     width: usize = 4,
     height: usize = 4,
@@ -70,7 +70,7 @@ pub const GridWorldConfig = struct {
     max_steps: usize = 100,
 };
 
-/// [CYR:Сре]yes GridWorld
+/// [CYR:[EN]]yes GridWorld
 pub const GridWorld = struct {
     config: GridWorldConfig,
     width: usize,
@@ -104,7 +104,7 @@ pub const GridWorld = struct {
         self.allocator.free(self.walls);
     }
 
-    /// [CYR:Сбро]withandть with[CYR:реду]
+    /// [CYR:[EN]]withand[EN] with[CYR:[EN]]
     pub fn reset(self: *GridWorld) usize {
         self.agent_pos = .{ .x = 0, .y = 0 };
         self.steps = 0;
@@ -112,21 +112,21 @@ pub const GridWorld = struct {
         return self.getState();
     }
 
-    /// [CYR:Получ]andть теto[CYR:ущее] withоwith[CYR:тоян]andе (index)
+    /// [CYR:[EN]]and[EN] [EN]to[CYR:[EN]] with[EN]with[CYR:[EN]]and[EN] (index)
     pub fn getState(self: *const GridWorld) usize {
         return self.agent_pos.toIndex(self.width);
     }
 
-    /// [CYR:Кол]andчеwithтinо withоwith[CYR:тоян]andй
+    /// [CYR:[EN]]and[EN]with[EN]in[EN] with[EN]with[CYR:[EN]]and[EN]
     pub fn numStates(self: *const GridWorld) usize {
         return self.width * self.height;
     }
 
-    /// Выbyлнandть [CYR:дей]withтinandе
+    /// [EN]by[EN]and[EN] [CYR:[EN]]with[EN]inand[EN]
     pub fn step(self: *GridWorld, action: usize) StepResult {
         self.steps += 1;
 
-        // Compute ноinую byзandцandю
+        // Compute [EN]in[EN] by[EN]and[EN]and[EN]
         var new_pos = self.agent_pos;
         switch (@as(Action, @enumFromInt(action))) {
             .UP => {
@@ -143,13 +143,13 @@ pub const GridWorld = struct {
             },
         }
 
-        // Check with[CYR:тену]
+        // Check with[CYR:[EN]]
         const new_idx = new_pos.toIndex(self.width);
         var reward = self.config.step_reward;
         var info: []const u8 = "step";
 
         if (self.walls[new_idx]) {
-            // [CYR:Врезал]andwithь in with[CYR:тену] - оwith[CYR:таём]withя on меwithте
+            // [CYR:[EN]]andwith[EN] in with[CYR:[EN]] - [EN]with[CYR:[EN]]with[EN] on [EN]with[EN]
             reward = self.config.wall_reward;
             info = "wall";
         } else {
@@ -164,7 +164,7 @@ pub const GridWorld = struct {
             info = "goal";
         }
 
-        // Check лandмandт stepоin
+        // Check [EN]and[EN]and[EN] step[EN]in
         if (self.steps >= self.config.max_steps) {
             done = true;
             info = "timeout";
@@ -180,7 +180,7 @@ pub const GridWorld = struct {
         };
     }
 
-    /// [CYR:Доба]inandть with[CYR:тену]
+    /// [CYR:[EN]]inand[EN] with[CYR:[EN]]
     pub fn addWall(self: *GridWorld, x: usize, y: usize) void {
         if (x < self.width and y < self.height) {
             const idx = y * self.width + x;
@@ -188,7 +188,7 @@ pub const GridWorld = struct {
         }
     }
 
-    /// Вand[CYR:зуал]and[CYR:зац]andя in ASCII
+    /// [EN]and[CYR:[EN]]and[CYR:[EN]]and[EN] in ASCII
     pub fn render(self: *const GridWorld) void {
         std.debug.print("\n", .{});
         for (0..self.height) |y| {
@@ -211,7 +211,7 @@ pub const GridWorld = struct {
         std.debug.print("Steps: {d}, Reward: {d:.2}\n", .{ self.steps, self.total_reward });
     }
 
-    /// [CYR:Получ]andть [CYR:опт]and[CYR:мальное] раwithwith[CYR:тоян]andе before [CYR:цел]and (Manhattan)
+    /// [CYR:[EN]]and[EN] [CYR:[EN]]and[CYR:[EN]] [EN]withwith[CYR:[EN]]and[EN] before [CYR:[EN]]and (Manhattan)
     pub fn distanceToGoal(self: *const GridWorld) usize {
         const dx = if (self.agent_pos.x > self.goal_pos.x)
             self.agent_pos.x - self.goal_pos.x
@@ -228,7 +228,7 @@ pub const GridWorld = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// [CYR:ТЕСТЫ]
+// [CYR:[EN]]
 // ═══════════════════════════════════════════════════════════════
 
 test "gridworld init" {
@@ -274,10 +274,10 @@ test "gridworld wall collision" {
     env.addWall(1, 0);
     _ = env.reset();
 
-    // [CYR:Пытаем]withя byйтand in with[CYR:тену]
+    // [CYR:[EN]]with[EN] by[EN]and in with[CYR:[EN]]
     const result = env.step(@intFromEnum(Action.RIGHT));
 
-    try std.testing.expectEqual(@as(usize, 0), result.next_state); // Оwith[CYR:тал]andwithь on меwithте
+    try std.testing.expectEqual(@as(usize, 0), result.next_state); // [EN]with[CYR:[EN]]andwith[EN] on [EN]with[EN]
     try std.testing.expectEqual(@as(f64, -1.0), result.reward);
 }
 
@@ -287,8 +287,8 @@ test "gridworld boundary" {
     defer env.deinit();
 
     _ = env.reset();
-    // [CYR:Пытаем]withя in[CYR:ыйт]and за [CYR:гран]andцу
+    // [CYR:[EN]]with[EN] in[CYR:[EN]]and [EN] [CYR:[EN]]and[EN]
     const result = env.step(@intFromEnum(Action.UP));
 
-    try std.testing.expectEqual(@as(usize, 0), result.next_state); // Оwith[CYR:тал]andwithь on меwithте
+    try std.testing.expectEqual(@as(usize, 0), result.next_state); // [EN]with[CYR:[EN]]andwith[EN] on [EN]with[EN]
 }

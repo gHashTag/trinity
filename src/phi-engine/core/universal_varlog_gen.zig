@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// UNIVERSAL VARLOG GENERATOR - Геnot[CYR:рац]andя Verilog andз [CYR:ЛЮБЫХ] .vibee specs
+// UNIVERSAL VARLOG GENERATOR - [EN]not[CYR:[EN]]and[EN] Verilog and[EN] [CYR:[EN]] .vibee specs
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Generates Verilog HDL for [CYR:ВСЕХ] .vibee with[CYR:пец]andфandtoацandй (and[CYR:гнор]and[CYR:рует] language field)
-// Аin[CYR:тор]: Dmitrii Vasilev
+// Generates Verilog HDL for [CYR:[EN]] .vibee with[CYR:[EN]]and[EN]andto[EN]and[EN] (and[CYR:[EN]]and[CYR:[EN]] language field)
+// [EN]in[CYR:[EN]]: Dmitrii Vasilev
 // φ² + 1/φ² = 3
 //
 // ═══════════════════════════════════════════════════════════════════════════════

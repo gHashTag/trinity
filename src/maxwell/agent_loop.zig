@@ -1,5 +1,5 @@
 // Maxwell Daemon - Agent Loop
-// Оwithноin[CYR:ной] цandtoл аin[CYR:тономного] agentа
+// [EN]with[EN]in[CYR:[EN]] [EN]andto[EN] [EN]in[CYR:[EN]] agent[EN]
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -115,9 +115,9 @@ pub const DaemonConfig = struct {
     poll_interval_ms: u64,
 
     pub const SafetyMode = enum {
-        Strict, // [CYR:Требует] byдтin[CYR:ержден]andя for toажbeforeго [CYR:дей]withтinandя
-        Normal, // Аin[CYR:томат]andчеwithtoand, но with [CYR:огран]and[CYR:чен]andямand
-        Permissive, // Мandнand[CYR:мальные] [CYR:огран]and[CYR:чен]andя
+        Strict, // [CYR:[EN]] by[EN]in[CYR:[EN]]and[EN] for to[EN]before[EN] [CYR:[EN]]with[EN]inand[EN]
+        Normal, // [EN]in[CYR:[EN]]and[EN]withtoand, [EN] with [CYR:[EN]]and[CYR:[EN]]and[EN]and
+        Permissive, // [EN]and[EN]and[CYR:[EN]] [CYR:[EN]]and[CYR:[EN]]and[EN]
     };
 
     pub const LogLevel = enum {
@@ -210,7 +210,7 @@ pub const AgentLoop = struct {
     // LIFECYCLE
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// [CYR:Запу]withтandть demoon in [CYR:фоно]inом [CYR:реж]andме
+    /// [CYR:[EN]]with[EN]and[EN] demoon in [CYR:[EN]]in[EN] [CYR:[EN]]and[EN]
     pub fn start(self: *AgentLoop) !void {
         if (self.running.load(.seq_cst)) return;
         
@@ -223,7 +223,7 @@ pub const AgentLoop = struct {
         self.thread = try std.Thread.spawn(.{}, runLoop, .{self});
     }
 
-    /// Оwith[CYR:тано]inandть demoon
+    /// [EN]with[CYR:[EN]]inand[EN] demoon
     pub fn stop(self: *AgentLoop) void {
         if (!self.running.load(.seq_cst)) return;
         
@@ -238,12 +238,12 @@ pub const AgentLoop = struct {
         self.state.status = .Stopped;
     }
 
-    /// [CYR:Запу]withтandть одandн цandtoл (for testandроinанandя)
+    /// [CYR:[EN]]with[EN]and[EN] [EN]and[EN] [EN]andto[EN] (for testand[EN]in[EN]and[EN])
     pub fn step(self: *AgentLoop) !void {
         try self.processNextTask();
     }
 
-    /// Оwithноin[CYR:ной] цandtoл demoon
+    /// [EN]with[EN]in[CYR:[EN]] [EN]andto[EN] demoon
     fn runLoop(self: *AgentLoop) void {
         while (self.running.load(.seq_cst)) {
             self.processNextTask() catch |err| {
@@ -262,7 +262,7 @@ pub const AgentLoop = struct {
     // TASK MANAGEMENT
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// [CYR:Доба]inandть заyesчу in [CYR:очередь]
+    /// [CYR:[EN]]inand[EN] [EN]yes[EN] in [CYR:[EN]]
     pub fn submitTask(self: *AgentLoop, description: []const u8, task_type: TaskType) !u64 {
         const task = try self.allocator.create(Task);
         const id = @as(u64, @intCast(std.time.timestamp())) ^ @as(u64, @intFromPtr(task));
@@ -274,7 +274,7 @@ pub const AgentLoop = struct {
         return id;
     }
 
-    /// [CYR:Доба]inandть заyesчу with прandорand[CYR:тетом]
+    /// [CYR:[EN]]inand[EN] [EN]yes[EN] with [EN]and[EN]and[CYR:[EN]]
     pub fn submitTaskWithPriority(self: *AgentLoop, description: []const u8, task_type: TaskType, priority: u8) !u64 {
         const task = try self.allocator.create(Task);
         const id = @as(u64, @intCast(std.time.timestamp())) ^ @as(u64, @intFromPtr(task));
@@ -286,7 +286,7 @@ pub const AgentLoop = struct {
         return id;
     }
 
-    /// [CYR:Обраб]from[CYR:ать] with[CYR:ледующую] заyesчу
+    /// [CYR:[EN]]from[CYR:[EN]] with[CYR:[EN]] [EN]yes[EN]
     fn processNextTask(self: *AgentLoop) !void {
         if (self.state.current_task != null) return; // Already working
         
@@ -337,7 +337,7 @@ pub const AgentLoop = struct {
         self.state.status = .Idle;
     }
 
-    /// Выbyлнandть заyesчу
+    /// [EN]by[EN]and[EN] [EN]yes[EN]
     fn executeTask(self: *AgentLoop, task: *Task, result: *TaskResult) !void {
         self.log(.Info, "Executing task");
         

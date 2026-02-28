@@ -5,7 +5,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const interface = @import("bogatyrs_common.zig");
 
-/// [CYR:Рее]withтр inwithех [CYR:богатырей]
+/// [CYR:[EN]]with[EN] inwith[EN] [CYR:[EN]]
 pub const BogatyrRegistry = struct {
     allocator: Allocator,
     plugins: std.StringHashMap(PluginEntry),
@@ -23,8 +23,8 @@ pub const BogatyrRegistry = struct {
             .plugins = std.StringHashMap(PluginEntry).init(allocator),
         };
 
-        // [CYR:Рег]andwithтрand[CYR:руем] with[CYR:уще]withтin[CYR:ующ]andе [CYR:базо]inые [CYR:про]inерtoand (andз validate_cmd.zig)
-        // TODO: [CYR:Доба]inandть оwith[CYR:тальные] 33 [CYR:богатыря] by [CYR:мере] [CYR:реал]and[CYR:зац]andand
+        // [CYR:[EN]]andwith[EN]and[CYR:[EN]] with[CYR:[EN]]with[EN]in[CYR:[EN]]and[EN] [CYR:[EN]]in[EN] [CYR:[EN]]in[EN]toand (and[EN] validate_cmd.zig)
+        // TODO: [CYR:[EN]]inand[EN] [EN]with[CYR:[EN]] 33 [CYR:[EN]] by [CYR:[EN]] [CYR:[EN]]and[CYR:[EN]]andand
         try registry.registerBasicChecks();
 
         return registry;
@@ -34,15 +34,15 @@ pub const BogatyrRegistry = struct {
         self.plugins.deinit();
     }
 
-    /// Registration [CYR:базо]inых [CYR:про]in[CYR:еро]to (while [CYR:без] by[CYR:лных] 33 [CYR:богатырей])
+    /// Registration [CYR:[EN]]in[EN] [CYR:[EN]]in[CYR:[EN]]to (while [CYR:[EN]] by[CYR:[EN]] 33 [CYR:[EN]])
     fn registerBasicChecks(self: *Self) !void {
         try self.register(@import("bogatyrs_yaml_syntax.zig").bogatyr);
         try self.register(@import("bogatyrs_spec_structure.zig").bogatyr);
-        // [CYR:Жар]-птandца — 34-й [CYR:Богатырь]-Тin[CYR:орец] with прandнцandbyм synthesis
+        // [CYR:[EN]]-[EN]and[EN] — 34-[EN] [CYR:[EN]]-[EN]in[CYR:[EN]] with [EN]and[EN]andby[EN] synthesis
         try self.register(@import("bogatyr_34_creator.zig").bogatyr);
     }
 
-    /// Registration [CYR:одного] [CYR:богатыря]
+    /// Registration [CYR:[EN]] [CYR:[EN]]
     fn register(self: *Self, plugin: interface.BogatyrPlugin) !void {
         const entry = PluginEntry{
             .plugin = plugin,
@@ -51,12 +51,12 @@ pub const BogatyrRegistry = struct {
         try self.plugins.put(plugin.name, entry);
     }
 
-    /// [CYR:Получ]andть [CYR:плаг]andн by and[CYR:мен]and
+    /// [CYR:[EN]]and[EN] [CYR:[EN]]and[EN] by and[CYR:[EN]]and
     pub fn getPlugin(self: *Self, name: []const u8) ?PluginEntry {
         return self.plugins.get(name);
     }
 
-    /// [CYR:Получ]andть all [CYR:плаг]andны
+    /// [CYR:[EN]]and[EN] all [CYR:[EN]]and[EN]
     pub fn getAllPlugins(self: *Self) ![]interface.BogatyrPlugin {
         var list = std.ArrayList(interface.BogatyrPlugin).init(self.allocator);
         defer list.deinit();
@@ -69,7 +69,7 @@ pub const BogatyrRegistry = struct {
         return list.toOwnedSlice();
     }
 
-    /// [CYR:Получ]andть toолandчеwithтinо [CYR:зарег]andwithтрandроin[CYR:анных] [CYR:богатырей]
+    /// [CYR:[EN]]and[EN] to[EN]and[EN]with[EN]in[EN] [CYR:[EN]]andwith[EN]and[EN]in[CYR:[EN]] [CYR:[EN]]
     pub fn pluginCount(self: *const Self) usize {
         return self.plugins.count();
     }
@@ -84,7 +84,7 @@ test "bogatyr registry initialization" {
     var registry = try BogatyrRegistry.init(allocator);
     defer registry.deinit();
 
-    // Basic [CYR:про]inерtoand before[CYR:лжны] [CYR:быть] [CYR:зарег]andwithтрandроin[CYR:аны]
+    // Basic [CYR:[EN]]in[EN]toand before[CYR:[EN]] [CYR:[EN]] [CYR:[EN]]andwith[EN]and[EN]in[CYR:[EN]]
     const num_plugins = registry.pluginCount();
     try std.testing.expect(num_plugins >= 0);
 }

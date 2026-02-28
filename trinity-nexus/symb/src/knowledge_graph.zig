@@ -1,9 +1,9 @@
 // Trinity VSA Knowledge Graph
-// [CYR:Граф] зonнandй on оwithноinе Vector Symbolic Architecture
+// [CYR:[TRANSLATED]] [EN]on[EN]and[EN] on [EN]with[EN]in[EN] Vector Symbolic Architecture
 //
-// [CYR:Стру]to[CYR:тура]: Triple = (Subject, Predicate, Object)
-// [CYR:Код]andроinанandе: bind(subject, bind(predicate, object))
-// [CYR:Граф]: bundle inwithех трand[CYR:плето]in
+// [CYR:[TRANSLATED]]to[CYR:[TRANSLATED]]: Triple = (Subject, Predicate, Object)
+// [CYR:Code]and[EN]in[EN]and[EN]: bind(subject, bind(predicate, object))
+// [CYR:[TRANSLATED]]: bundle inwith[EN] [EN]and[CYR:[TRANSLATED]]in
 //
 // ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ: V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3
@@ -21,36 +21,36 @@ const PackedBigInt = packed_trit.PackedBigInt;
 // FILE FORMAT CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Magic bytes for and[CYR:дент]andфandtoацandand fileа
+/// Magic bytes for and[CYR:[TRANSLATED]]and[EN]andto[EN]andand file[EN]
 pub const FILE_MAGIC = [4]u8{ 'T', 'R', 'K', 'G' };
 
-/// [CYR:Вер]withandя [CYR:формата] fileа
+/// [CYR:[TRANSLATED]]withandI [CYR:[TRANSLATED]] file[EN]
 pub const FILE_VERSION: u32 = 1;
 
-/// [CYR:Размер] packed inеto[CYR:тора] in [CYR:байтах]
-pub const PACKED_VECTOR_BYTES = (VECTOR_DIM + 4) / 5; // 5 трandтоin on [CYR:байт]
+/// [CYR:[TRANSLATED]] packed in[EN]to[CYR:[TRANSLATED]] in [CYR:[TRANSLATED]]
+pub const PACKED_VECTOR_BYTES = (VECTOR_DIM + 4) / 5; // 5 [EN]and[EN]in on [CYR:[TRANSLATED]]
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:КОНФИГУРАЦИЯ]
+// [CYR:[TRANSLATED]A[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:Размерно]withть VSA inеto[CYR:торо]in (toолandчеwithтinо трandтоin)
+/// [CYR:[TRANSLATED]]with[EN] VSA in[EN]to[CYR:[TRANSLATED]]in (to[EN]and[EN]with[EN]in[EN] [EN]and[EN]in)
 pub const VECTOR_DIM = 500;
 
-/// Маtowithand[CYR:мальное] toолandчеwithтinо with[CYR:ущно]with[CYR:тей] in [CYR:графе]
+/// [EN]towithand[CYR:[EN]lno[EN]] to[EN]and[EN]with[EN]in[EN] with[CYR:[TRANSLATED]]with[CYR:[TRANSLATED]] in [CYR:[TRANSLATED]]
 pub const MAX_ENTITIES = 100;
 
-/// Маtowithand[CYR:мальное] toолandчеwithтinо трand[CYR:плето]in
+/// [EN]towithand[CYR:[EN]lno[EN]] to[EN]and[EN]with[EN]in[EN] [EN]and[CYR:[TRANSLATED]]in
 pub const MAX_TRIPLES = 200;
 
-/// [CYR:Порог] with[CYR:ход]withтinа for поandwithtoа
+/// [CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]with[EN]in[EN] for [EN]andwithto[EN]
 pub const SIMILARITY_THRESHOLD = 0.3;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:БАЗОВЫЕ] [CYR:СТРУКТУРЫ]
+// [CYR:[EN]A[TRANSLATED]] [CYR:[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:Сущно]withть in [CYR:графе] зonнandй (andwith[CYR:пользует] PackedBigInt for эto[CYR:оном]andand [CYR:памят]and)
+/// [CYR:[TRANSLATED]]with[EN] in [CYR:[TRANSLATED]] [EN]on[EN]and[EN] (andwith[CYR:[EN]l[TRANSLATED]] PackedBigInt for [EN]to[CYR:[TRANSLATED]]andand [CYR:[TRANSLATED]I[EN]]and)
 pub const Entity = struct {
     name: []const u8,
     vector: PackedBigInt,
@@ -58,9 +58,9 @@ pub const Entity = struct {
 
     const Self = @This();
 
-    /// [CYR:Создать] with[CYR:ущно]withть andз and[CYR:мен]and
+    /// [CYR:[TRANSLATED]ate] with[CYR:[TRANSLATED]]with[EN] and[EN] and[CYR:me]and
     pub fn init(name: []const u8, id: u32) Self {
-        // Геnotрand[CYR:руем] inеto[CYR:тор] andз [CYR:хэша] and[CYR:мен]and
+        // [EN]not[EN]and[CYR:[TRANSLATED]] in[EN]to[CYR:[TRANSLATED]] and[EN] [CYR:[TRANSLATED]] and[CYR:me]and
         const seed = hashString(name);
         const packed_vec = packed_vsa.randomPackedVector(VECTOR_DIM, seed);
         return Self{
@@ -70,7 +70,7 @@ pub const Entity = struct {
         };
     }
 
-    /// [CYR:Хэш] with[CYR:тро]toand for seed
+    /// [CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]toand for seed
     pub fn hashString(s: []const u8) u64 {
         var hash: u64 = 5381;
         for (s) |c| {
@@ -80,7 +80,7 @@ pub const Entity = struct {
     }
 };
 
-/// [CYR:Отношен]andе [CYR:между] with[CYR:ущно]with[CYR:тям]and
+/// [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]with[CYR:[EN]I[EN]]and
 pub const Relation = struct {
     name: []const u8,
     vector: PackedBigInt,
@@ -89,7 +89,7 @@ pub const Relation = struct {
     const Self = @This();
 
     pub fn init(name: []const u8, id: u32) Self {
-        const seed = Entity.hashString(name) ^ 0xDEADBEEF; // [CYR:Другой] seed for from[CYR:ношен]andй
+        const seed = Entity.hashString(name) ^ 0xDEADBEEF; // [CYR:[TRANSLATED]go[EN]] seed for from[CYR:[TRANSLATED]]and[EN]
         const packed_vec = packed_vsa.randomPackedVector(VECTOR_DIM, seed);
         return Self{
             .name = name,
@@ -99,7 +99,7 @@ pub const Relation = struct {
     }
 };
 
-/// Трand[CYR:плет] (Subject, Predicate, Object)
+/// [EN]and[CYR:[TRANSLATED]] (Subject, Predicate, Object)
 pub const Triple = struct {
     subject_id: u32,
     predicate_id: u32,
@@ -108,13 +108,13 @@ pub const Triple = struct {
 
     const Self = @This();
 
-    /// [CYR:Создать] трand[CYR:плет] and заtoодandроin[CYR:ать] in inеto[CYR:тор]
+    /// [CYR:[TRANSLATED]ate] [EN]and[CYR:[TRANSLATED]] and [EN]to[EN]and[EN]in[CYR:ate] in in[EN]to[CYR:[TRANSLATED]]
     pub fn init(
         subject: *const Entity,
         predicate: *const Relation,
         object: *const Entity,
     ) Self {
-        // [CYR:Код]andроinанandе: bind(subject, bind(predicate, object))
+        // [CYR:Code]and[EN]in[EN]and[EN]: bind(subject, bind(predicate, object))
         const pred_obj = packed_vsa.packedBind(&predicate.vector, &object.vector);
         const triple_vec = packed_vsa.packedBind(&subject.vector, &pred_obj);
 
@@ -131,26 +131,26 @@ pub const Triple = struct {
 // KNOWLEDGE GRAPH
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:Граф] зonнandй on оwithноinе VSA (andwith[CYR:пользует] PackedBigInt)
+/// [CYR:[TRANSLATED]] [EN]on[EN]and[EN] on [EN]with[EN]in[EN] VSA (andwith[CYR:[EN]l[TRANSLATED]] PackedBigInt)
 pub const KnowledgeGraph = struct {
-    /// Вwithе with[CYR:ущно]withтand
+    /// [EN]with[EN] with[CYR:[TRANSLATED]]with[EN]and
     entities: [MAX_ENTITIES]?Entity,
     entity_count: u32,
 
-    /// Вwithе from[CYR:ношен]andя
+    /// [EN]with[EN] from[CYR:[TRANSLATED]]andI
     relations: [MAX_ENTITIES]?Relation,
     relation_count: u32,
 
-    /// Вwithе трand[CYR:плеты]
+    /// [EN]with[EN] [EN]and[CYR:[TRANSLATED]y]
     triples: [MAX_TRIPLES]?Triple,
     triple_count: u32,
 
-    /// [CYR:Суперпоз]andцandя inwithех трand[CYR:плето]in ([CYR:граф] toаto одandн inеto[CYR:тор])
+    /// [CYR:[TRANSLATED]]and[EN]andI inwith[EN] [EN]and[CYR:[TRANSLATED]]in ([CYR:[TRANSLATED]] to[EN]to [EN]and[EN] in[EN]to[CYR:[TRANSLATED]])
     graph_vector: PackedBigInt,
 
     const Self = @This();
 
-    /// [CYR:Создать] пуwith[CYR:той] [CYR:граф]
+    /// [CYR:[TRANSLATED]ate] [EN]with[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
     pub fn init() Self {
         return Self{
             .entities = [_]?Entity{null} ** MAX_ENTITIES,
@@ -163,9 +163,9 @@ pub const KnowledgeGraph = struct {
         };
     }
 
-    /// [CYR:Доба]inandть or onйтand with[CYR:ущно]withть
+    /// [CYR:[TRANSLATED]]inand[EN] or on[EN]and with[CYR:[TRANSLATED]]with[EN]
     pub fn getOrCreateEntity(self: *Self, name: []const u8) *Entity {
-        // Поandwithto with[CYR:уще]withтin[CYR:ующей]
+        // [EN]andwithto with[CYR:[TRANSLATED]]with[EN]in[CYR:[TRANSLATED]]
         for (0..self.entity_count) |i| {
             if (self.entities[i]) |*e| {
                 if (std.mem.eql(u8, e.name, name)) {
@@ -174,14 +174,14 @@ pub const KnowledgeGraph = struct {
             }
         }
 
-        // [CYR:Создать] ноinую
+        // [CYR:[TRANSLATED]ate] [EN]in[EN]
         const id = self.entity_count;
         self.entities[id] = Entity.init(name, id);
         self.entity_count += 1;
         return &self.entities[id].?;
     }
 
-    /// [CYR:Доба]inandть or onйтand from[CYR:ношен]andе
+    /// [CYR:[TRANSLATED]]inand[EN] or on[EN]and from[CYR:[TRANSLATED]]and[EN]
     pub fn getOrCreateRelation(self: *Self, name: []const u8) *Relation {
         for (0..self.relation_count) |i| {
             if (self.relations[i]) |*r| {
@@ -197,7 +197,7 @@ pub const KnowledgeGraph = struct {
         return &self.relations[id].?;
     }
 
-    /// [CYR:Доба]inandть трand[CYR:плет] in [CYR:граф]
+    /// [CYR:[TRANSLATED]]inand[EN] [EN]and[CYR:[TRANSLATED]] in [CYR:[TRANSLATED]]
     pub fn addTriple(self: *Self, subject: []const u8, predicate: []const u8, object: []const u8) void {
         const subj = self.getOrCreateEntity(subject);
         const pred = self.getOrCreateRelation(predicate);
@@ -205,11 +205,11 @@ pub const KnowledgeGraph = struct {
 
         const triple = Triple.init(subj, pred, obj);
 
-        // [CYR:Доба]inandть in withпandwithоto трand[CYR:плето]in
+        // [CYR:[TRANSLATED]]inand[EN] in with[EN]andwith[EN]to [EN]and[CYR:[TRANSLATED]]in
         self.triples[self.triple_count] = triple;
         self.triple_count += 1;
 
-        // [CYR:Обно]inandть [CYR:граф]-inеto[CYR:тор] (bundle)
+        // [CYR:[TRANSLATED]]inand[EN] [CYR:[TRANSLATED]]-in[EN]to[CYR:[TRANSLATED]] (bundle)
         if (self.triple_count == 1) {
             self.graph_vector = triple.vector;
         } else {
@@ -217,46 +217,46 @@ pub const KnowledgeGraph = struct {
         }
     }
 
-    /// [CYR:Запро]with: onйтand object по subject and predicate
+    /// [CYR:[EN]pro]with: on[EN]and object [EN] subject and predicate
     /// query(subject, predicate, ?) → object
-    /// Иwith[CYR:пользует] unbind: result = unbind(graph, bind(subject, predicate))
+    /// [EN]with[CYR:[EN]l[TRANSLATED]] unbind: result = unbind(graph, bind(subject, predicate))
     pub fn queryObject(self: *Self, subject: []const u8, predicate: []const u8) ?*Entity {
         const subj = self.findEntity(subject) orelse return null;
         const pred = self.findRelation(predicate) orelse return null;
 
-        // [CYR:Создаём] [CYR:паттерн] [CYR:запро]withа: bind(subject, predicate)
+        // [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[EN]pro]with[EN]: bind(subject, predicate)
         const query_pattern = packed_vsa.packedBind(&subj.vector, &pred.vector);
 
-        // Unbind from [CYR:графа]: unbind(graph, query_pattern) ≈ object
+        // Unbind from [CYR:[TRANSLATED]]: unbind(graph, query_pattern) ≈ object
         const result_vec = packed_vsa.packedUnbind(&self.graph_vector, &query_pattern);
 
-        // [CYR:Найт]and блand[CYR:жайшую] with[CYR:ущно]withть to resultу
+        // [CYR:[TRANSLATED]]and [EN]and[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]with[EN] to result[EN]
         return self.findClosestEntityPacked(&result_vec);
     }
 
-    /// [CYR:Запро]with: onйтand subject по predicate and object
+    /// [CYR:[EN]pro]with: on[EN]and subject [EN] predicate and object
     /// query(?, predicate, object) → subject
-    /// Иwith[CYR:пользует] unbind: result = unbind(graph, bind(predicate, object))
+    /// [EN]with[CYR:[EN]l[TRANSLATED]] unbind: result = unbind(graph, bind(predicate, object))
     pub fn querySubject(self: *Self, predicate: []const u8, object: []const u8) ?*Entity {
         const pred = self.findRelation(predicate) orelse return null;
         const obj = self.findEntity(object) orelse return null;
 
-        // [CYR:Создаём] [CYR:паттерн] [CYR:запро]withа: bind(predicate, object)
+        // [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[EN]pro]with[EN]: bind(predicate, object)
         const query_pattern = packed_vsa.packedBind(&pred.vector, &obj.vector);
 
-        // Unbind from [CYR:графа]: unbind(graph, query_pattern) ≈ subject
+        // Unbind from [CYR:[TRANSLATED]]: unbind(graph, query_pattern) ≈ subject
         const result_vec = packed_vsa.packedUnbind(&self.graph_vector, &query_pattern);
 
         return self.findClosestEntityPacked(&result_vec);
     }
 
-    /// [CYR:Найт]and N onand[CYR:более] [CYR:похож]andх with[CYR:ущно]with[CYR:тей]
+    /// [CYR:[TRANSLATED]]and N onand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN] with[CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]
     pub fn findSimilar(self: *Self, entity_name: []const u8, n: usize) [10]?struct { entity: *Entity, similarity: f64 } {
         var results: [10]?struct { entity: *Entity, similarity: f64 } = [_]?struct { entity: *Entity, similarity: f64 }{null} ** 10;
 
         const target = self.findEntity(entity_name) orelse return results;
 
-        // [CYR:Выч]andwithлandть with[CYR:ход]withтinо withо inwithемand with[CYR:ущно]with[CYR:тям]and
+        // [CYR:Vy[EN]]andwith[EN]and[EN] with[CYR:[TRANSLATED]]with[EN]in[EN] with[EN] inwith[EN]and with[CYR:[TRANSLATED]]with[CYR:[EN]I[EN]]and
         var similarities: [MAX_ENTITIES]f64 = [_]f64{0} ** MAX_ENTITIES;
 
         for (0..self.entity_count) |i| {
@@ -267,7 +267,7 @@ pub const KnowledgeGraph = struct {
             }
         }
 
-        // [CYR:Найт]and [CYR:топ]-N ([CYR:про]with[CYR:тая] with[CYR:орт]andроintoа)
+        // [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]-N ([CYR:pro]with[CYR:[EN]I] with[CYR:[TRANSLATED]]and[EN]into[EN])
         const result_count = @min(n, 10);
         for (0..result_count) |r| {
             var best_idx: ?usize = null;
@@ -275,7 +275,7 @@ pub const KnowledgeGraph = struct {
 
             for (0..self.entity_count) |i| {
                 if (similarities[i] > best_sim) {
-                    // [CYR:Про]inерandть that [CYR:ещё] not [CYR:доба]in[CYR:лен]
+                    // [CYR:[TRANSLATED]]in[EN]and[EN] that [CYR:[TRANSLATED]] not [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]
                     var already_added = false;
                     for (0..r) |prev| {
                         if (results[prev]) |res| {
@@ -302,7 +302,7 @@ pub const KnowledgeGraph = struct {
         return results;
     }
 
-    /// [CYR:Найт]and with[CYR:ущно]withть по and[CYR:мен]and
+    /// [CYR:[TRANSLATED]]and with[CYR:[TRANSLATED]]with[EN] [EN] and[CYR:me]and
     fn findEntity(self: *Self, name: []const u8) ?*Entity {
         for (0..self.entity_count) |i| {
             if (self.entities[i]) |*e| {
@@ -314,7 +314,7 @@ pub const KnowledgeGraph = struct {
         return null;
     }
 
-    /// [CYR:Найт]and from[CYR:ношен]andе по and[CYR:мен]and
+    /// [CYR:[TRANSLATED]]and from[CYR:[TRANSLATED]]and[EN] [EN] and[CYR:me]and
     fn findRelation(self: *Self, name: []const u8) ?*Relation {
         for (0..self.relation_count) |i| {
             if (self.relations[i]) |*r| {
@@ -326,7 +326,7 @@ pub const KnowledgeGraph = struct {
         return null;
     }
 
-    /// [CYR:Найт]and блand[CYR:жайшую] with[CYR:ущно]withть to packed inеto[CYR:тору]
+    /// [CYR:[TRANSLATED]]and [EN]and[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]with[EN] to packed in[EN]to[CYR:[TRANSLATED]]
     fn findClosestEntityPacked(self: *Self, query_vec: *const PackedBigInt) ?*Entity {
         var best_entity: ?*Entity = null;
         var best_similarity: f64 = SIMILARITY_THRESHOLD;
@@ -344,7 +344,7 @@ pub const KnowledgeGraph = struct {
         return best_entity;
     }
 
-    /// [CYR:Стат]andwithтandtoа [CYR:графа]
+    /// [CYR:[TRANSLATED]]andwith[EN]andto[EN] [CYR:[TRANSLATED]]
     pub fn stats(self: *const Self) struct { entities: u32, relations: u32, triples: u32 } {
         return .{
             .entities = self.entity_count,
@@ -357,7 +357,7 @@ pub const KnowledgeGraph = struct {
     // PERSISTENCE - Save/Load
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// [CYR:Сохран]andть [CYR:граф] in file
+    /// [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] in file
     pub fn save(self: *const Self, path: []const u8) !void {
         const file = try std.fs.cwd().createFile(path, .{});
         defer file.close();
@@ -422,7 +422,7 @@ pub const KnowledgeGraph = struct {
         try writer.writeAll(self.graph_vector.data[0..graph_packed_len]);
     }
 
-    /// [CYR:Загруз]andть [CYR:граф] andз fileа
+    /// [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] and[EN] file[EN]
     pub fn load(path: []const u8, name_buffer: []u8) !Self {
         const file = try std.fs.cwd().openFile(path, .{});
         defer file.close();
@@ -445,14 +445,14 @@ pub const KnowledgeGraph = struct {
         const entity_count = try reader.readInt(u32, .little);
         const relation_count = try reader.readInt(u32, .little);
 
-        // Иwith[CYR:пользуем] buffer for and[CYR:мён]
+        // [EN]with[CYR:[EN]l[TRANSLATED]] buffer for and[CYR:[TRANSLATED]]
         var name_offset: usize = 0;
 
         // Entities
         for (0..entity_count) |i| {
             const name_len = try reader.readInt(u16, .little);
 
-            // Чand[CYR:таем] andмя in buffer
+            // [EN]and[CYR:[TRANSLATED]] and[EN]I in buffer
             const name_start = name_offset;
             _ = try reader.readAll(name_buffer[name_offset .. name_offset + name_len]);
             name_offset += name_len;
@@ -530,28 +530,28 @@ pub const KnowledgeGraph = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:ТЕСТЫ]
+// [CYR:[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "Entity creation" {
     const paris = Entity.init("Paris", 0);
     const france = Entity.init("France", 1);
 
-    // [CYR:Разные] with[CYR:ущно]withтand [CYR:должны] and[CYR:меть] [CYR:разные] inеto[CYR:торы]
+    // [CYR:[TRANSLATED]y[EN]] with[CYR:[TRANSLATED]]with[EN]and [CYR:[TRANSLATED]y] and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]y[EN]] in[EN]to[CYR:[TRANSLATED]y]
     const sim = packed_vsa.packedCosineSimilarity(&paris.vector, &france.vector);
-    try std.testing.expect(sim < 0.5); // [CYR:Почт]and орthaton[CYR:льны]
+    try std.testing.expect(sim < 0.5); // [CYR:[TRANSLATED]]and [EN]thaton[CYR:l[EN]y]
 }
 
 test "KnowledgeGraph basic operations" {
     var kg = KnowledgeGraph.init();
 
-    // [CYR:Доба]in[CYR:ляем] фаtoты о with[CYR:тол]and[CYR:цах]
+    // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [EN]to[EN]y  with[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
     kg.addTriple("Paris", "capital_of", "France");
     kg.addTriple("Berlin", "capital_of", "Germany");
     kg.addTriple("Rome", "capital_of", "Italy");
 
     const s = kg.stats();
-    try std.testing.expectEqual(@as(u32, 6), s.entities); // 3 [CYR:города] + 3 with[CYR:траны]
+    try std.testing.expectEqual(@as(u32, 6), s.entities); // 3 [CYR:go[TRANSLATED]] + 3 with[CYR:[TRANSLATED]y]
     try std.testing.expectEqual(@as(u32, 1), s.relations); // capital_of
     try std.testing.expectEqual(@as(u32, 3), s.triples);
 }
@@ -563,18 +563,18 @@ test "KnowledgeGraph query object with unbind" {
     kg.addTriple("Berlin", "capital_of", "Germany");
     kg.addTriple("Rome", "capital_of", "Italy");
 
-    // [CYR:Запро]with: [CYR:Пар]andж - with[CYR:тол]andца [CYR:чего]?
+    // [CYR:[EN]pro]with: [CYR:[TRANSLATED]]and[EN] - with[CYR:[TRANSLATED]]and[EN] [CYR:[EN]go]?
     // unbind(graph, bind(Paris, capital_of)) → France
     const result = kg.queryObject("Paris", "capital_of");
 
     std.debug.print("\n\nQuery: Paris capital_of ?\n", .{});
     if (result) |entity| {
         std.debug.print("Result: {s}\n", .{entity.name});
-        // [CYR:Про]in[CYR:еряем] that result - France
+        // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] that result - France
         try std.testing.expectEqualStrings("France", entity.name);
     } else {
         std.debug.print("Result: null\n", .{});
-        // Еwithлand null, теwithт [CYR:про]in[CYR:ален]
+        // [EN]with[EN]and null, [EN]with[EN] [CYR:pro]in[CYR:[TRANSLATED]]
         try std.testing.expect(false);
     }
 }
@@ -585,7 +585,7 @@ test "KnowledgeGraph query subject with unbind" {
     kg.addTriple("Paris", "capital_of", "France");
     kg.addTriple("Berlin", "capital_of", "Germany");
 
-    // [CYR:Запро]with: that яin[CYR:ляет]withя with[CYR:тол]and[CYR:цей] [CYR:Франц]andand?
+    // [CYR:[EN]pro]with: that Iin[CYR:[EN]I[EN]]withI with[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andand?
     // unbind(graph, bind(capital_of, France)) → Paris
     const result = kg.querySubject("capital_of", "France");
 
@@ -600,7 +600,7 @@ test "KnowledgeGraph query subject with unbind" {
 }
 
 test "save and load roundtrip" {
-    // [CYR:Создаём] [CYR:граф]
+    // [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
     var kg = KnowledgeGraph.init();
     kg.addTriple("Paris", "capital_of", "France");
     kg.addTriple("Berlin", "capital_of", "Germany");
@@ -608,14 +608,14 @@ test "save and load roundtrip" {
 
     const original_stats = kg.stats();
 
-    // [CYR:Сохраняем]
+    // [CYR:[TRANSLATED]I[EN]]
     try kg.save("/tmp/test_kg.trkg");
 
-    // [CYR:Загружаем]
+    // [CYR:[TRANSLATED]]
     var name_buffer: [4096]u8 = undefined;
     var loaded_kg = try KnowledgeGraph.load("/tmp/test_kg.trkg", &name_buffer);
 
-    // [CYR:Про]in[CYR:еряем] with[CYR:тат]andwithтandtoу
+    // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] with[CYR:[TRANSLATED]]andwith[EN]andto[EN]
     const loaded_stats = loaded_kg.stats();
     try std.testing.expectEqual(original_stats.entities, loaded_stats.entities);
     try std.testing.expectEqual(original_stats.relations, loaded_stats.relations);
@@ -625,23 +625,23 @@ test "save and load roundtrip" {
     std.debug.print("Original: {d} entities, {d} relations, {d} triples\n", .{ original_stats.entities, original_stats.relations, original_stats.triples });
     std.debug.print("Loaded: {d} entities, {d} relations, {d} triples\n", .{ loaded_stats.entities, loaded_stats.relations, loaded_stats.triples });
 
-    // [CYR:Удаляем] теwithтоinый file
+    // [CYR:[TRANSLATED]I[EN]] [EN]with[EN]iny[EN] file
     std.fs.cwd().deleteFile("/tmp/test_kg.trkg") catch {};
 }
 
 test "queries work after load" {
-    // [CYR:Создаём] and with[CYR:охраняем] [CYR:граф]
+    // [CYR:[TRANSLATED]] and with[CYR:[TRANSLATED]I[EN]] [CYR:[TRANSLATED]]
     var kg = KnowledgeGraph.init();
     kg.addTriple("Paris", "capital_of", "France");
     kg.addTriple("Berlin", "capital_of", "Germany");
 
     try kg.save("/tmp/test_kg_query.trkg");
 
-    // [CYR:Загружаем]
+    // [CYR:[TRANSLATED]]
     var name_buffer: [4096]u8 = undefined;
     var loaded_kg = try KnowledgeGraph.load("/tmp/test_kg_query.trkg", &name_buffer);
 
-    // [CYR:Про]in[CYR:еряем] [CYR:запро]withы
+    // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [CYR:[EN]pro]withy
     const result = loaded_kg.queryObject("Paris", "capital_of");
 
     std.debug.print("\n\nQuery after load:\n", .{});
@@ -655,27 +655,27 @@ test "queries work after load" {
         try std.testing.expect(false);
     }
 
-    // [CYR:Удаляем] теwithтоinый file
+    // [CYR:[TRANSLATED]I[EN]] [EN]with[EN]iny[EN] file
     std.fs.cwd().deleteFile("/tmp/test_kg_query.trkg") catch {};
 }
 
 test "benchmark KnowledgeGraph" {
     var kg = KnowledgeGraph.init();
 
-    // [CYR:Доба]in[CYR:ляем] [CYR:много] фаtoтоin
+    // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [CYR:[TRANSLATED]go] [EN]to[EN]in
     const countries = [_][]const u8{ "France", "Germany", "Italy", "Spain", "UK", "Poland", "Sweden", "Norway", "Finland", "Denmark" };
     const capitals = [_][]const u8{ "Paris", "Berlin", "Rome", "Madrid", "London", "Warsaw", "Stockholm", "Oslo", "Helsinki", "Copenhagen" };
 
     var timer = std.time.Timer.start() catch unreachable;
 
-    // [CYR:Доба]in[CYR:лен]andе трand[CYR:плето]in
+    // [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] [EN]and[CYR:[TRANSLATED]]in
     for (countries, capitals) |country, capital| {
         kg.addTriple(capital, "capital_of", country);
     }
 
     const add_ns = timer.read();
 
-    // [CYR:Запро]withы
+    // [CYR:[EN]pro]withy
     timer.reset();
     const iterations = 100;
     for (0..iterations) |_| {

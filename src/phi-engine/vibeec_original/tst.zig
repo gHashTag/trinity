@@ -53,7 +53,7 @@ fn transmuteFile(path: []const u8, allocator: std.mem.Allocator) !void {
         var hash: u32 = 0;
         for (chunk) |c| hash += c;
 
-        // [CYR:Мапп]andнг on 27 буtoin (CIS range: 0x2C80 - 0x2C9A)
+        // [CYR:[EN]]and[EN] on 27 [EN]toin (CIS range: 0x2C80 - 0x2C9A)
         const op_idx: u21 = @intCast(hash % 27);
         try triads.append(allocator, @as(u21, 0x2C80) + op_idx);
     }

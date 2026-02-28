@@ -589,7 +589,7 @@ pub const StreamingEngine = struct {
             "Tell me about programming",
             "I need help with my code",
             "What's the weather like?",
-            "Прandinет! Каto [CYR:дела]?",
+            "[EN]andin[EN]! [EN]to [CYR:[EN]]?",
             "Explain machine learning",
             "I'm excited about this project",
             "Thank you for your help!",

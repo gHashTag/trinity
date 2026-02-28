@@ -15,7 +15,7 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:КОНСТАНТЫ]
+// [CYR:[TRANSLATED]A[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const DEFAULT_DIM: f64 = 10240;
@@ -30,7 +30,7 @@ pub const QUANTIZE_NEG: f64 = -0.5;
 
 pub const MAX_PROTOTYPES: f64 = 1000;
 
-// [CYR:Базо]inые φ-toонwith[CYR:танты] (Sacred Formula)
+// [CYR:[TRANSLATED]]iny[EN] φ-to[EN]with[CYR:[TRANSLATED]y] (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -42,26 +42,26 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:ТИПЫ]
+// [CYR:[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:Сбалан]withandроin[CYR:анный] [CYR:тро]and[CYR:чный] [CYR:разряд]
+/// [CYR:[TRANSLATED]]withand[EN]in[CYR:[EN]ny] [CYR:[TRANSLATED]]and[CYR:[EN]ny] [CYR:[TRANSLATED]I[EN]]
 pub const Trit = struct {
 };
 
-/// [CYR:Тро]and[CYR:чный] гand[CYR:пер]inеto[CYR:тор] for HDC
+/// [CYR:[TRANSLATED]]and[CYR:[EN]ny] [EN]and[CYR:[TRANSLATED]]in[EN]to[CYR:[TRANSLATED]] for HDC
 pub const HyperVector = struct {
     data: []i64,
     dim: i64,
 };
 
-/// Float аtoto[CYR:умулятор] for [CYR:онлайн] уwith[CYR:ред]notнandя
+/// Float [EN]toto[CYR:[TRANSLATED]I[TRANSLATED]] for [CYR:[TRANSLATED]] [EN]with[CYR:[TRANSLATED]]not[EN]andI
 pub const FloatAccumulator = struct {
     data: []f64,
     dim: i64,
 };
 
-/// Прfromfromandп toлаwithwithа with аtoto[CYR:умулятором]
+/// [EN]fromfromand[EN] to[EN]withwith[EN] with [EN]toto[CYR:[TRANSLATED]I[TRANSLATED]]
 pub const Prototype = struct {
     label: []const u8,
     accumulator: FloatAccumulator,
@@ -69,7 +69,7 @@ pub const Prototype = struct {
     count: i64,
 };
 
-/// [CYR:Онлайн] HDC withandwith[CYR:тема]
+/// [CYR:[TRANSLATED]] HDC withandwith[CYR:[TRANSLATED]]
 pub const OnlineHDC = struct {
     prototypes: std.StringHashMap([]const u8),
     dim: i64,
@@ -77,14 +77,14 @@ pub const OnlineHDC = struct {
     samples_seen: i64,
 };
 
-/// Result inычandwith[CYR:лен]andя with[CYR:ход]withтinа
+/// Result iny[EN]andwith[CYR:[TRANSLATED]]andI with[CYR:[TRANSLATED]]with[EN]in[EN]
 pub const SimilarityResult = struct {
     similarity: f64,
     label: []const u8,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:ПАМЯТЬ] [CYR:ДЛЯ] WASM
+// [CYR:[EN]A[TRANSLATED]] [CYR:[TRANSLATED]] WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -107,13 +107,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-and[CYR:нтер]fieldsцandя
+/// φ-and[CYR:[TRANSLATED]]fields[EN]andI
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// Геnot[CYR:рац]andя φ-withпand[CYR:рал]and
+/// [EN]not[CYR:[TRANSLATED]]andI φ-with[EN]and[CYR:[TRANSLATED]]and
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -132,8 +132,8 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 // BEHAVIOR FUNCTIONS - Generated from behaviors
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Дinа гand[CYR:пер]inеto[CYR:тора] a and b одandontoоinой [CYR:размерно]withтand
-/// When: Creation аwithwithоцandацandand [CYR:через] поelement[CYR:ное] [CYR:умножен]andе
+/// [EN]in[EN] [EN]and[CYR:[TRANSLATED]]in[EN]to[CYR:[TRANSLATED]] a and b [EN]andonto[EN]in[EN] [CYR:[TRANSLATED]]with[EN]and
+/// When: Creation [EN]withwith[EN]and[EN]andand [CYR:[TRANSLATED]] [EN]element[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN]
 /// Then: Returns HyperVector where c[i] = a[i] * b[i]
 pub fn bind() []i8 {
 // TODO: implement — Returns HyperVector where c[i] = a[i] * b[i]
@@ -141,120 +141,120 @@ pub fn bind() []i8 {
 }
 
 
-/// Сin[CYR:язанный] inеto[CYR:тор] and to[CYR:люч]
-/// When: Изin[CYR:лечен]andе within[CYR:язанного] зon[CYR:чен]andя
-/// Then: Returns bind(bound, key) т.to. [CYR:тро]and[CYR:чный] bind with[CYR:амообрат]andм
+/// [EN]in[CYR:I[TRANSLATED]ny] in[EN]to[CYR:[TRANSLATED]] and to[CYR:[TRANSLATED]]
+/// When: [EN]in[CYR:[EN]chen]and[EN] within[CYR:I[TRANSLATED]go] [EN]on[CYR:[TRANSLATED]]andI
+/// Then: Returns bind(bound, key) .to. [CYR:[TRANSLATED]]and[CYR:[EN]ny] bind with[CYR:[TRANSLATED]]and[EN]
 pub fn unbind() !void {
-// TODO: implement — Returns bind(bound, key) т.to. [CYR:тро]and[CYR:чный] bind with[CYR:амообрат]andм
+// TODO: implement — Returns bind(bound, key) .to. [CYR:[TRANSLATED]]and[CYR:[EN]ny] bind with[CYR:[TRANSLATED]]and[EN]
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// Спandwithоto гand[CYR:пер]inеto[CYR:торо]in
-/// When: Creation with[CYR:уперпоз]andцandand [CYR:через] [CYR:мажор]and[CYR:тарное] [CYR:голо]withоinанandе
-/// Then: Returns HyperVector with [CYR:мажор]and[CYR:тарным] трand[CYR:том] on to[CYR:аждой] [CYR:поз]andцandand
+/// [EN]andwith[EN]to [EN]and[CYR:[TRANSLATED]]in[EN]to[CYR:[TRANSLATED]]in
+/// When: Creation with[CYR:[TRANSLATED]]and[EN]andand [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:go[EN]]with[EN]in[EN]and[EN]
+/// Then: Returns HyperVector with [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]y[EN]] [EN]and[CYR:[TRANSLATED]] on to[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN]andand
 pub fn bundle() []i8 {
-// TODO: implement — Returns HyperVector with [CYR:мажор]and[CYR:тарным] трand[CYR:том] on to[CYR:аждой] [CYR:поз]andцandand
+// TODO: implement — Returns HyperVector with [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]y[EN]] [EN]and[CYR:[TRANSLATED]] on to[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN]andand
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// Спandwithоto гand[CYR:пер]inеto[CYR:торо]in
-/// When: SIMD-[CYR:опт]andмandзandроin[CYR:анное] bundling (32 трandта [CYR:параллельно])
-/// Then: Returns HyperVector with andwith[CYR:пользо]inанandем Vec32i8
+/// [EN]andwith[EN]to [EN]and[CYR:[TRANSLATED]]in[EN]to[CYR:[TRANSLATED]]in
+/// When: SIMD-[CYR:[TRANSLATED]]and[EN]and[EN]and[EN]in[CYR:[TRANSLATED]] bundling (32 [EN]and[EN] [CYR:[TRANSLATED]lno])
+/// Then: Returns HyperVector with andwith[CYR:[EN]l[EN]]in[EN]and[EN] Vec32i8
 pub fn bundle_simd() []i8 {
-// TODO: implement — Returns HyperVector with andwith[CYR:пользо]inанandем Vec32i8
+// TODO: implement — Returns HyperVector with andwith[CYR:[EN]l[EN]]in[EN]and[EN] Vec32i8
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// HyperVector and inелandчandon withдinandга k
-/// When: Цandtoлandчеwithtoая [CYR:пере]with[CYR:тано]intoа for toодandроinанandя поwith[CYR:ледо]in[CYR:ательно]with[CYR:тей]
-/// Then: Returns HyperVector withдinand[CYR:нутый] on k [CYR:поз]andцandй
+/// HyperVector and in[EN]and[EN]andon with[EN]inand[EN] k
+/// When: [EN]andto[EN]and[EN]withto[EN]I [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]into[EN] for to[EN]and[EN]in[EN]andI [EN]with[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]lno]with[CYR:[TRANSLATED]]
+/// Then: Returns HyperVector with[EN]inand[CYR:[TRANSLATED]y[EN]] on k [CYR:[TRANSLATED]]and[EN]and[EN]
 pub fn permute(input: []const i8) []i8 {
-// TODO: implement — Returns HyperVector withдinand[CYR:нутый] on k [CYR:поз]andцandй
+// TODO: implement — Returns HyperVector with[EN]inand[CYR:[TRANSLATED]y[EN]] on k [CYR:[TRANSLATED]]and[EN]and[EN]
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
 
 
-/// Дinа гand[CYR:пер]inеto[CYR:тора] a and b
-/// When: [CYR:Выч]andwith[CYR:лен]andе toоwithandнуwith[CYR:ного] with[CYR:ход]withтinа
-/// Then: Returns float in дand[CYR:апазо]not [-1, 1]
+/// [EN]in[EN] [EN]and[CYR:[TRANSLATED]]in[EN]to[CYR:[TRANSLATED]] a and b
+/// When: [CYR:Vy[EN]]andwith[CYR:[TRANSLATED]]and[EN] to[EN]withand[EN]with[CYR:[EN]go] with[CYR:[TRANSLATED]]with[EN]in[EN]
+/// Then: Returns float in [EN]and[CYR:[TRANSLATED]]not [-1, 1]
 pub fn similarity() !void {
-// TODO: implement — Returns float in дand[CYR:апазо]not [-1, 1]
+// TODO: implement — Returns float in [EN]and[CYR:[TRANSLATED]]not [-1, 1]
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// Дinа гand[CYR:пер]inеto[CYR:тора] a and b
-/// When: SIMD-[CYR:опт]andмandзandроin[CYR:анное] inычandwith[CYR:лен]andе with[CYR:ход]withтinа
-/// Then: Returns float andwith[CYR:пользуя] simdDotProduct
+/// [EN]in[EN] [EN]and[CYR:[TRANSLATED]]in[EN]to[CYR:[TRANSLATED]] a and b
+/// When: SIMD-[CYR:[TRANSLATED]]and[EN]and[EN]and[EN]in[CYR:[TRANSLATED]] iny[EN]andwith[CYR:[TRANSLATED]]and[EN] with[CYR:[TRANSLATED]]with[EN]in[EN]
+/// Then: Returns float andwith[CYR:[EN]l[EN]I] simdDotProduct
 pub fn similarity_simd() !void {
-// TODO: implement — Returns float andwith[CYR:пользуя] simdDotProduct
+// TODO: implement — Returns float andwith[CYR:[EN]l[EN]I] simdDotProduct
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// Дinа гand[CYR:пер]inеto[CYR:тора] a and b
-/// When: [CYR:Под]with[CYR:чёт] [CYR:разл]and[CYR:чающ]andхwithя [CYR:поз]andцandй
-/// Then: Returns [CYR:целое] чandwithло
+/// [EN]in[EN] [EN]and[CYR:[TRANSLATED]]in[EN]to[CYR:[TRANSLATED]] a and b
+/// When: [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and[EN]withI [CYR:[TRANSLATED]]and[EN]and[EN]
+/// Then: Returns [CYR:[TRANSLATED]] [EN]andwith[EN]
 pub fn hamming_distance() !void {
-// TODO: implement — Returns [CYR:целое] чandwithло
+// TODO: implement — Returns [CYR:[TRANSLATED]] [EN]andwith[EN]
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// [CYR:Размерно]withть and seed
-/// When: Геnot[CYR:рац]andя with[CYR:лучайного] [CYR:тро]and[CYR:чного] гand[CYR:пер]inеto[CYR:тора]
-/// Then: Returns HyperVector with раin[CYR:номерным] раwith[CYR:пределен]andем трandтоin
+/// [CYR:[TRANSLATED]]with[EN] and seed
+/// When: [EN]not[CYR:[TRANSLATED]]andI with[CYR:[TRANSLATED]go] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]go] [EN]and[CYR:[TRANSLATED]]in[EN]to[CYR:[TRANSLATED]]
+/// Then: Returns HyperVector with [EN]in[CYR:[TRANSLATED]y[EN]] [EN]with[CYR:[TRANSLATED]]and[EN] [EN]and[EN]in
 pub fn random_vector() []i8 {
-// TODO: implement — Returns HyperVector with раin[CYR:номерным] раwith[CYR:пределен]andем трandтоin
+// TODO: implement — Returns HyperVector with [EN]in[CYR:[TRANSLATED]y[EN]] [EN]with[CYR:[TRANSLATED]]and[EN] [EN]and[EN]in
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// [CYR:Размерно]withть
-/// When: Creation [CYR:нуле]in[CYR:ого] inеto[CYR:тора]
-/// Then: Returns HyperVector [CYR:запол]not[CYR:нный] [CYR:нулям]and
+/// [CYR:[TRANSLATED]]with[EN]
+/// When: Creation [CYR:[TRANSLATED]]in[CYR:[EN]go] in[EN]to[CYR:[TRANSLATED]]
+/// Then: Returns HyperVector [CYR:[TRANSLATED]]not[CYR:[EN]ny] [CYR:[TRANSLATED]I[EN]]and
 pub fn zero_vector() []i8 {
-// TODO: implement — Returns HyperVector [CYR:запол]not[CYR:нный] [CYR:нулям]and
+// TODO: implement — Returns HyperVector [CYR:[TRANSLATED]]not[CYR:[EN]ny] [CYR:[TRANSLATED]I[EN]]and
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// [CYR:Размерно]withть
-/// When: Creation inеto[CYR:тора] andз едandнandц
-/// Then: Returns HyperVector [CYR:запол]not[CYR:нный] +1
+/// [CYR:[TRANSLATED]]with[EN]
+/// When: Creation in[EN]to[CYR:[TRANSLATED]] and[EN] [EN]and[EN]and[EN]
+/// Then: Returns HyperVector [CYR:[TRANSLATED]]not[CYR:[EN]ny] +1
 pub fn ones_vector() []i8 {
-// TODO: implement — Returns HyperVector [CYR:запол]not[CYR:нный] +1
+// TODO: implement — Returns HyperVector [CYR:[TRANSLATED]]not[CYR:[EN]ny] +1
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// [CYR:Размерно]withть and learning_rate
-/// When: Initialization [CYR:онлайн] HDC withandwith[CYR:темы]
-/// Then: Returns пуwith[CYR:тую] OnlineHDC
+/// [CYR:[TRANSLATED]]with[EN] and learning_rate
+/// When: Initialization [CYR:[TRANSLATED]] HDC withandwith[CYR:[TRANSLATED]y]
+/// Then: Returns [EN]with[CYR:[TRANSLATED]] OnlineHDC
 pub fn create_online_hdc() !void {
-// TODO: implement — Returns пуwith[CYR:тую] OnlineHDC
+// TODO: implement — Returns [EN]with[CYR:[TRANSLATED]] OnlineHDC
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// [CYR:Входной] inеto[CYR:тор], [CYR:мет]toа and OnlineHDC
-/// When: [CYR:Обучен]andе on ноinом [CYR:размеченном] прand[CYR:мере]
-/// Then: [CYR:Обно]in[CYR:ляет] прfromfromandп: P ← P + η(v - P)
+/// [CYR:[TRANSLATED]] in[EN]to[CYR:[TRANSLATED]], [CYR:[TRANSLATED]]to[EN] and OnlineHDC
+/// When: [CYR:[TRANSLATED]]and[EN] on [EN]in[EN] [CYR:[TRANSLATED]chen[TRANSLATED]] [EN]and[CYR:[TRANSLATED]]
+/// Then: [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [EN]fromfromand[EN]: P ← P + η(v - P)
 pub fn online_update() !void {
-// TODO: implement — [CYR:Обно]in[CYR:ляет] прfromfromandп: P ← P + η(v - P)
+// TODO: implement — [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [EN]fromfromand[EN]: P ← P + η(v - P)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// [CYR:Входной] inеto[CYR:тор] and OnlineHDC
-/// When: [CYR:Самообучен]andе on not[CYR:размеченном] прand[CYR:мере]
-/// Then: [CYR:Обно]in[CYR:ляет] блand[CYR:жайш]andй прfromfromandп еwithлand similarity > threshold
+/// [CYR:[TRANSLATED]] in[EN]to[CYR:[TRANSLATED]] and OnlineHDC
+/// When: [CYR:[TRANSLATED]]and[EN] on not[CYR:[TRANSLATED]chen[TRANSLATED]] [EN]and[CYR:[TRANSLATED]]
+/// Then: [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [EN]and[CYR:[TRANSLATED]]and[EN] [EN]fromfromand[EN] [EN]with[EN]and similarity > threshold
 pub fn online_update_unlabeled() f32 {
-// TODO: implement — [CYR:Обно]in[CYR:ляет] блand[CYR:жайш]andй прfromfromandп еwithлand similarity > threshold
+// TODO: implement — [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [EN]and[CYR:[TRANSLATED]]and[EN] [EN]fromfromand[EN] [EN]with[EN]and similarity > threshold
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -280,16 +280,16 @@ pub fn predict_top_k(logits: []const f32) u32 {
 }
 
 /// FloatAccumulator
-/// When: [CYR:Преобразо]inанandе float in [CYR:тро]and[CYR:чное] [CYR:пред]withтаin[CYR:лен]andе
-/// Then: Returns HyperVector with зon[CYR:чен]andямand {-1, 0, +1}
+/// When: [CYR:[TRANSLATED]]in[EN]and[EN] float in [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[EN]in[CYR:[TRANSLATED]]and[EN]
+/// Then: Returns HyperVector with [EN]on[CYR:[TRANSLATED]]andI[EN]and {-1, 0, +1}
 pub fn quantize_to_ternary() []i8 {
-// TODO: implement — Returns HyperVector with зon[CYR:чен]andямand {-1, 0, +1}
+// TODO: implement — Returns HyperVector with [EN]on[CYR:[TRANSLATED]]andI[EN]and {-1, 0, +1}
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
 /// HyperVector
-/// When: [CYR:Преобразо]inанandе [CYR:тро]and[CYR:чного] in float for onto[CYR:оплен]andя
+/// When: [CYR:[TRANSLATED]]in[EN]and[EN] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]go] in float for onto[CYR:[TRANSLATED]]andI
 /// Then: Returns FloatAccumulator
 pub fn dequantize_to_float(input: []const i8) !void {
 // TODO: implement — Returns FloatAccumulator
@@ -298,17 +298,17 @@ _ = input;
 }
 
 
-/// Маwithwithandin [CYR:байто]in and to[CYR:онф]and[CYR:гурац]andя
-/// When: [CYR:Преобразо]inанandе [CYR:байто]in in гand[CYR:пер]inеto[CYR:тор]
-/// Then: Returns HyperVector [CYR:пред]withтаin[CYR:лен]andе
+/// [EN]withwithandin [CYR:[TRANSLATED]]in and to[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI
+/// When: [CYR:[TRANSLATED]]in[EN]and[EN] [CYR:[TRANSLATED]]in in [EN]and[CYR:[TRANSLATED]]in[EN]to[CYR:[TRANSLATED]]
+/// Then: Returns HyperVector [CYR:[TRANSLATED]]with[EN]in[CYR:[TRANSLATED]]and[EN]
 pub fn encode_bytes() []i8 {
-// TODO: implement — Returns HyperVector [CYR:пред]withтаin[CYR:лен]andе
+// TODO: implement — Returns HyperVector [CYR:[TRANSLATED]]with[EN]in[CYR:[TRANSLATED]]and[EN]
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// Спandwithоto тоto[CYR:ено]in
-/// VSA ops: [CYR:Код]andроinанandе поwith[CYR:ледо]in[CYR:ательно]withтand with [CYR:поз]andцand[CYR:онным] binding
+/// [EN]andwith[EN]to [EN]to[CYR:[TRANSLATED]]in
+/// VSA ops: [CYR:Code]and[EN]in[EN]and[EN] [EN]with[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]lno]with[EN]and with [CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]y[EN]] binding
 /// Result: Returns HyperVector: sum(permute(token[i], i))
 pub fn encode_sequence() void {
     // VSA operation detected from spec keywords.
@@ -317,30 +317,30 @@ pub fn encode_sequence() void {
 }
 
 /// HyperVector
-/// When: [CYR:Под]with[CYR:чёт] not[CYR:нуле]inых elementоin
-/// Then: Returns [CYR:целое] чandwithло
+/// When: [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]] not[CYR:[TRANSLATED]]iny[EN] element[EN]in
+/// Then: Returns [CYR:[TRANSLATED]] [EN]andwith[EN]
 pub fn count_nonzero(input: []const i8) !void {
-// TODO: implement — Returns [CYR:целое] чandwithло
+// TODO: implement — Returns [CYR:[TRANSLATED]] [EN]andwith[EN]
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
 
 
 /// HyperVector
-/// When: [CYR:Выч]andwith[CYR:лен]andе [CYR:разреженно]withтand
-/// Then: Returns [CYR:долю] [CYR:нулей] (0.0 до 1.0)
+/// When: [CYR:Vy[EN]]andwith[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]with[EN]and
+/// Then: Returns [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (0.0 [EN] 1.0)
 pub fn sparsity(input: []const i8) !void {
-// TODO: implement — Returns [CYR:долю] [CYR:нулей] (0.0 до 1.0)
+// TODO: implement — Returns [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (0.0 [EN] 1.0)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
 
 
 /// HyperVector
-/// When: [CYR:Нормал]and[CYR:зац]andя inеto[CYR:тора]
-/// Then: Returns inеto[CYR:тор] with едandнand[CYR:чной] [CYR:нормой]
+/// When: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI in[EN]to[CYR:[TRANSLATED]]
+/// Then: Returns in[EN]to[CYR:[TRANSLATED]] with [EN]and[EN]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 pub fn normalize(input: []const i8) !void {
-// TODO: implement — Returns inеto[CYR:тор] with едandнand[CYR:чной] [CYR:нормой]
+// TODO: implement — Returns in[EN]to[CYR:[TRANSLATED]] with [EN]and[EN]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -351,161 +351,161 @@ _ = input;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "bind_behavior" {
-// Given: Дinа гand[CYR:пер]inеto[CYR:тора] a and b одandontoоinой [CYR:размерно]withтand
-// When: Creation аwithwithоцandацandand [CYR:через] поelement[CYR:ное] [CYR:умножен]andе
+// Given: [EN]in[EN] [EN]and[CYR:[TRANSLATED]]in[EN]to[CYR:[TRANSLATED]] a and b [EN]andonto[EN]in[EN] [CYR:[TRANSLATED]]with[EN]and
+// When: Creation [EN]withwith[EN]and[EN]andand [CYR:[TRANSLATED]] [EN]element[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN]
 // Then: Returns HyperVector where c[i] = a[i] * b[i]
 // Test bind: verify behavior is callable (compile-time check)
 _ = bind;
 }
 
 test "unbind_behavior" {
-// Given: Сin[CYR:язанный] inеto[CYR:тор] and to[CYR:люч]
-// When: Изin[CYR:лечен]andе within[CYR:язанного] зon[CYR:чен]andя
-// Then: Returns bind(bound, key) т.to. [CYR:тро]and[CYR:чный] bind with[CYR:амообрат]andм
+// Given: [EN]in[CYR:I[TRANSLATED]ny] in[EN]to[CYR:[TRANSLATED]] and to[CYR:[TRANSLATED]]
+// When: [EN]in[CYR:[EN]chen]and[EN] within[CYR:I[TRANSLATED]go] [EN]on[CYR:[TRANSLATED]]andI
+// Then: Returns bind(bound, key) .to. [CYR:[TRANSLATED]]and[CYR:[EN]ny] bind with[CYR:[TRANSLATED]]and[EN]
 // Test unbind: verify behavior is callable (compile-time check)
 _ = unbind;
 }
 
 test "bundle_behavior" {
-// Given: Спandwithоto гand[CYR:пер]inеto[CYR:торо]in
-// When: Creation with[CYR:уперпоз]andцandand [CYR:через] [CYR:мажор]and[CYR:тарное] [CYR:голо]withоinанandе
-// Then: Returns HyperVector with [CYR:мажор]and[CYR:тарным] трand[CYR:том] on to[CYR:аждой] [CYR:поз]andцandand
+// Given: [EN]andwith[EN]to [EN]and[CYR:[TRANSLATED]]in[EN]to[CYR:[TRANSLATED]]in
+// When: Creation with[CYR:[TRANSLATED]]and[EN]andand [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:go[EN]]with[EN]in[EN]and[EN]
+// Then: Returns HyperVector with [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]y[EN]] [EN]and[CYR:[TRANSLATED]] on to[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN]andand
 // Test bundle: verify behavior is callable (compile-time check)
 _ = bundle;
 }
 
 test "bundle_simd_behavior" {
-// Given: Спandwithоto гand[CYR:пер]inеto[CYR:торо]in
-// When: SIMD-[CYR:опт]andмandзandроin[CYR:анное] bundling (32 трandта [CYR:параллельно])
-// Then: Returns HyperVector with andwith[CYR:пользо]inанandем Vec32i8
+// Given: [EN]andwith[EN]to [EN]and[CYR:[TRANSLATED]]in[EN]to[CYR:[TRANSLATED]]in
+// When: SIMD-[CYR:[TRANSLATED]]and[EN]and[EN]and[EN]in[CYR:[TRANSLATED]] bundling (32 [EN]and[EN] [CYR:[TRANSLATED]lno])
+// Then: Returns HyperVector with andwith[CYR:[EN]l[EN]]in[EN]and[EN] Vec32i8
 // Test bundle_simd: verify behavior is callable (compile-time check)
 _ = bundle_simd;
 }
 
 test "permute_behavior" {
-// Given: HyperVector and inелandчandon withдinandга k
-// When: Цandtoлandчеwithtoая [CYR:пере]with[CYR:тано]intoа for toодandроinанandя поwith[CYR:ледо]in[CYR:ательно]with[CYR:тей]
-// Then: Returns HyperVector withдinand[CYR:нутый] on k [CYR:поз]andцandй
+// Given: HyperVector and in[EN]and[EN]andon with[EN]inand[EN] k
+// When: [EN]andto[EN]and[EN]withto[EN]I [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]into[EN] for to[EN]and[EN]in[EN]andI [EN]with[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]lno]with[CYR:[TRANSLATED]]
+// Then: Returns HyperVector with[EN]inand[CYR:[TRANSLATED]y[EN]] on k [CYR:[TRANSLATED]]and[EN]and[EN]
 // Test permute: verify behavior is callable (compile-time check)
 _ = permute;
 }
 
 test "similarity_behavior" {
-// Given: Дinа гand[CYR:пер]inеto[CYR:тора] a and b
-// When: [CYR:Выч]andwith[CYR:лен]andе toоwithandнуwith[CYR:ного] with[CYR:ход]withтinа
-// Then: Returns float in дand[CYR:апазо]not [-1, 1]
+// Given: [EN]in[EN] [EN]and[CYR:[TRANSLATED]]in[EN]to[CYR:[TRANSLATED]] a and b
+// When: [CYR:Vy[EN]]andwith[CYR:[TRANSLATED]]and[EN] to[EN]withand[EN]with[CYR:[EN]go] with[CYR:[TRANSLATED]]with[EN]in[EN]
+// Then: Returns float in [EN]and[CYR:[TRANSLATED]]not [-1, 1]
 // Test similarity: verify behavior is callable (compile-time check)
 _ = similarity;
 }
 
 test "similarity_simd_behavior" {
-// Given: Дinа гand[CYR:пер]inеto[CYR:тора] a and b
-// When: SIMD-[CYR:опт]andмandзandроin[CYR:анное] inычandwith[CYR:лен]andе with[CYR:ход]withтinа
-// Then: Returns float andwith[CYR:пользуя] simdDotProduct
+// Given: [EN]in[EN] [EN]and[CYR:[TRANSLATED]]in[EN]to[CYR:[TRANSLATED]] a and b
+// When: SIMD-[CYR:[TRANSLATED]]and[EN]and[EN]and[EN]in[CYR:[TRANSLATED]] iny[EN]andwith[CYR:[TRANSLATED]]and[EN] with[CYR:[TRANSLATED]]with[EN]in[EN]
+// Then: Returns float andwith[CYR:[EN]l[EN]I] simdDotProduct
 // Test similarity_simd: verify behavior is callable (compile-time check)
 _ = similarity_simd;
 }
 
 test "hamming_distance_behavior" {
-// Given: Дinа гand[CYR:пер]inеto[CYR:тора] a and b
-// When: [CYR:Под]with[CYR:чёт] [CYR:разл]and[CYR:чающ]andхwithя [CYR:поз]andцandй
-// Then: Returns [CYR:целое] чandwithло
+// Given: [EN]in[EN] [EN]and[CYR:[TRANSLATED]]in[EN]to[CYR:[TRANSLATED]] a and b
+// When: [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and[EN]withI [CYR:[TRANSLATED]]and[EN]and[EN]
+// Then: Returns [CYR:[TRANSLATED]] [EN]andwith[EN]
 // Test hamming_distance: verify behavior is callable (compile-time check)
 _ = hamming_distance;
 }
 
 test "random_vector_behavior" {
-// Given: [CYR:Размерно]withть and seed
-// When: Геnot[CYR:рац]andя with[CYR:лучайного] [CYR:тро]and[CYR:чного] гand[CYR:пер]inеto[CYR:тора]
-// Then: Returns HyperVector with раin[CYR:номерным] раwith[CYR:пределен]andем трandтоin
+// Given: [CYR:[TRANSLATED]]with[EN] and seed
+// When: [EN]not[CYR:[TRANSLATED]]andI with[CYR:[TRANSLATED]go] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]go] [EN]and[CYR:[TRANSLATED]]in[EN]to[CYR:[TRANSLATED]]
+// Then: Returns HyperVector with [EN]in[CYR:[TRANSLATED]y[EN]] [EN]with[CYR:[TRANSLATED]]and[EN] [EN]and[EN]in
 // Test random_vector: verify behavior is callable (compile-time check)
 _ = random_vector;
 }
 
 test "zero_vector_behavior" {
-// Given: [CYR:Размерно]withть
-// When: Creation [CYR:нуле]in[CYR:ого] inеto[CYR:тора]
-// Then: Returns HyperVector [CYR:запол]not[CYR:нный] [CYR:нулям]and
+// Given: [CYR:[TRANSLATED]]with[EN]
+// When: Creation [CYR:[TRANSLATED]]in[CYR:[EN]go] in[EN]to[CYR:[TRANSLATED]]
+// Then: Returns HyperVector [CYR:[TRANSLATED]]not[CYR:[EN]ny] [CYR:[TRANSLATED]I[EN]]and
 // Test zero_vector: verify behavior is callable (compile-time check)
 _ = zero_vector;
 }
 
 test "ones_vector_behavior" {
-// Given: [CYR:Размерно]withть
-// When: Creation inеto[CYR:тора] andз едandнandц
-// Then: Returns HyperVector [CYR:запол]not[CYR:нный] +1
+// Given: [CYR:[TRANSLATED]]with[EN]
+// When: Creation in[EN]to[CYR:[TRANSLATED]] and[EN] [EN]and[EN]and[EN]
+// Then: Returns HyperVector [CYR:[TRANSLATED]]not[CYR:[EN]ny] +1
 // Test ones_vector: verify behavior is callable (compile-time check)
 _ = ones_vector;
 }
 
 test "create_online_hdc_behavior" {
-// Given: [CYR:Размерно]withть and learning_rate
-// When: Initialization [CYR:онлайн] HDC withandwith[CYR:темы]
-// Then: Returns пуwith[CYR:тую] OnlineHDC
+// Given: [CYR:[TRANSLATED]]with[EN] and learning_rate
+// When: Initialization [CYR:[TRANSLATED]] HDC withandwith[CYR:[TRANSLATED]y]
+// Then: Returns [EN]with[CYR:[TRANSLATED]] OnlineHDC
 // Test create_online_hdc: verify behavior is callable (compile-time check)
 _ = create_online_hdc;
 }
 
 test "online_update_behavior" {
-// Given: [CYR:Входной] inеto[CYR:тор], [CYR:мет]toа and OnlineHDC
-// When: [CYR:Обучен]andе on ноinом [CYR:размеченном] прand[CYR:мере]
-// Then: [CYR:Обно]in[CYR:ляет] прfromfromandп: P ← P + η(v - P)
+// Given: [CYR:[TRANSLATED]] in[EN]to[CYR:[TRANSLATED]], [CYR:[TRANSLATED]]to[EN] and OnlineHDC
+// When: [CYR:[TRANSLATED]]and[EN] on [EN]in[EN] [CYR:[TRANSLATED]chen[TRANSLATED]] [EN]and[CYR:[TRANSLATED]]
+// Then: [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [EN]fromfromand[EN]: P ← P + η(v - P)
 // Test online_update: verify behavior is callable (compile-time check)
 _ = online_update;
 }
 
 test "online_update_unlabeled_behavior" {
-// Given: [CYR:Входной] inеto[CYR:тор] and OnlineHDC
-// When: [CYR:Самообучен]andе on not[CYR:размеченном] прand[CYR:мере]
-// Then: [CYR:Обно]in[CYR:ляет] блand[CYR:жайш]andй прfromfromandп еwithлand similarity > threshold
+// Given: [CYR:[TRANSLATED]] in[EN]to[CYR:[TRANSLATED]] and OnlineHDC
+// When: [CYR:[TRANSLATED]]and[EN] on not[CYR:[TRANSLATED]chen[TRANSLATED]] [EN]and[CYR:[TRANSLATED]]
+// Then: [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [EN]and[CYR:[TRANSLATED]]and[EN] [EN]fromfromand[EN] [EN]with[EN]and similarity > threshold
 // Test online_update_unlabeled: verify returns a float in valid range
 // TODO: Add specific test for online_update_unlabeled
 _ = online_update_unlabeled;
 }
 
 test "predict_behavior" {
-// Given: [CYR:Входной] inеto[CYR:тор] and OnlineHDC
-// When: Поandwithto onand[CYR:более] [CYR:похожего] прfromfromandпа
-// Then: Returns SimilarityResult with [CYR:мет]toой and уin[CYR:еренно]with[CYR:тью]
+// Given: [CYR:[TRANSLATED]] in[EN]to[CYR:[TRANSLATED]] and OnlineHDC
+// When: [EN]andwithto onand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]go] [EN]fromfromand[EN]
+// Then: Returns SimilarityResult with [CYR:[TRANSLATED]]to[EN] and [EN]in[CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]
 // Test predict: verify behavior is callable (compile-time check)
 _ = predict;
 }
 
 test "predict_top_k_behavior" {
-// Given: [CYR:Входной] inеto[CYR:тор], OnlineHDC and k
-// When: Поandwithto k onand[CYR:более] [CYR:похож]andх прfromfromandпоin
-// Then: Returns withпandwithоto SimilarityResult fromwith[CYR:орт]andроin[CYR:анный] по with[CYR:ход]withтinу
+// Given: [CYR:[TRANSLATED]] in[EN]to[CYR:[TRANSLATED]], OnlineHDC and k
+// When: [EN]andwithto k onand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN] [EN]fromfromand[EN]in
+// Then: Returns with[EN]andwith[EN]to SimilarityResult fromwith[CYR:[TRANSLATED]]and[EN]in[CYR:[EN]ny] [EN] with[CYR:[TRANSLATED]]with[EN]in[EN]
 // Test predict_top_k: verify behavior is callable (compile-time check)
 _ = predict_top_k;
 }
 
 test "quantize_to_ternary_behavior" {
 // Given: FloatAccumulator
-// When: [CYR:Преобразо]inанandе float in [CYR:тро]and[CYR:чное] [CYR:пред]withтаin[CYR:лен]andе
-// Then: Returns HyperVector with зon[CYR:чен]andямand {-1, 0, +1}
+// When: [CYR:[TRANSLATED]]in[EN]and[EN] float in [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[EN]in[CYR:[TRANSLATED]]and[EN]
+// Then: Returns HyperVector with [EN]on[CYR:[TRANSLATED]]andI[EN]and {-1, 0, +1}
 // Test quantize_to_ternary: verify behavior is callable (compile-time check)
 _ = quantize_to_ternary;
 }
 
 test "dequantize_to_float_behavior" {
 // Given: HyperVector
-// When: [CYR:Преобразо]inанandе [CYR:тро]and[CYR:чного] in float for onto[CYR:оплен]andя
+// When: [CYR:[TRANSLATED]]in[EN]and[EN] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]go] in float for onto[CYR:[TRANSLATED]]andI
 // Then: Returns FloatAccumulator
 // Test dequantize_to_float: verify behavior is callable (compile-time check)
 _ = dequantize_to_float;
 }
 
 test "encode_bytes_behavior" {
-// Given: Маwithwithandin [CYR:байто]in and to[CYR:онф]and[CYR:гурац]andя
-// When: [CYR:Преобразо]inанandе [CYR:байто]in in гand[CYR:пер]inеto[CYR:тор]
-// Then: Returns HyperVector [CYR:пред]withтаin[CYR:лен]andе
+// Given: [EN]withwithandin [CYR:[TRANSLATED]]in and to[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI
+// When: [CYR:[TRANSLATED]]in[EN]and[EN] [CYR:[TRANSLATED]]in in [EN]and[CYR:[TRANSLATED]]in[EN]to[CYR:[TRANSLATED]]
+// Then: Returns HyperVector [CYR:[TRANSLATED]]with[EN]in[CYR:[TRANSLATED]]and[EN]
 // Test encode_bytes: verify behavior is callable (compile-time check)
 _ = encode_bytes;
 }
 
 test "encode_sequence_behavior" {
-// Given: Спandwithоto тоto[CYR:ено]in
-// When: [CYR:Код]andроinанandе поwith[CYR:ледо]in[CYR:ательно]withтand with [CYR:поз]andцand[CYR:онным] binding
+// Given: [EN]andwith[EN]to [EN]to[CYR:[TRANSLATED]]in
+// When: [CYR:Code]and[EN]in[EN]and[EN] [EN]with[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]lno]with[EN]and with [CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]y[EN]] binding
 // Then: Returns HyperVector: sum(permute(token[i], i))
 // Test encode_sequence: verify behavior is callable (compile-time check)
 _ = encode_sequence;
@@ -513,24 +513,24 @@ _ = encode_sequence;
 
 test "count_nonzero_behavior" {
 // Given: HyperVector
-// When: [CYR:Под]with[CYR:чёт] not[CYR:нуле]inых elementоin
-// Then: Returns [CYR:целое] чandwithло
+// When: [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]] not[CYR:[TRANSLATED]]iny[EN] element[EN]in
+// Then: Returns [CYR:[TRANSLATED]] [EN]andwith[EN]
 // Test count_nonzero: verify behavior is callable (compile-time check)
 _ = count_nonzero;
 }
 
 test "sparsity_behavior" {
 // Given: HyperVector
-// When: [CYR:Выч]andwith[CYR:лен]andе [CYR:разреженно]withтand
-// Then: Returns [CYR:долю] [CYR:нулей] (0.0 до 1.0)
+// When: [CYR:Vy[EN]]andwith[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]with[EN]and
+// Then: Returns [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (0.0 [EN] 1.0)
 // Test sparsity: verify behavior is callable (compile-time check)
 _ = sparsity;
 }
 
 test "normalize_behavior" {
 // Given: HyperVector
-// When: [CYR:Нормал]and[CYR:зац]andя inеto[CYR:тора]
-// Then: Returns inеto[CYR:тор] with едandнand[CYR:чной] [CYR:нормой]
+// When: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI in[EN]to[CYR:[TRANSLATED]]
+// Then: Returns in[EN]to[CYR:[TRANSLATED]] with [EN]and[EN]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 // Test normalize: verify behavior is callable (compile-time check)
 _ = normalize;
 }

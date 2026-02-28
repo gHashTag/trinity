@@ -45,9 +45,9 @@ pub const VSAOpcode = enum(u8) {
     // Comparison
     v_cmp,       // Compare vectors (sets condition codes)
 
-    // Permute operations (for toодandроinанandя поwith[CYR:ледо]in[CYR:ательно]with[CYR:тей])
-    v_permute,   // Цandtoлandчеwithtoandй withдinandг in[CYR:пра]inо
-    v_ipermute,  // [CYR:Обратный] withдinandг (inлеinо)
+    // Permute operations (for to[EN]and[EN]in[EN]andI [EN]with[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]lno]with[CYR:[TRANSLATED]])
+    v_permute,   // [EN]andto[EN]and[EN]withtoand[EN] with[EN]inand[EN] in[CYR:law]in[EN]
+    v_ipermute,  // [CYR:[TRANSLATED]ny] with[EN]inand[EN] (in[EN]in[EN])
     v_seq,       // Encode sequence
 
     nop,

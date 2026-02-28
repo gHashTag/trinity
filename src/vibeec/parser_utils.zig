@@ -9,7 +9,7 @@
 // All functions take (source, pos, line) and return updated state.
 // No allocator, no side effects — just string scanning.
 //
-// IGLA ([CYR:Игла]) — уtoол, убandin[CYR:ающ]andй [CYR:ручной] code
+// IGLA ([CYR:[EN]]) — [EN]to[EN], [EN]andin[CYR:[EN]]and[EN] [CYR:[EN]] code
 //
 // φ² + 1/φ² = 3
 //

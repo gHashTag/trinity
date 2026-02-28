@@ -1,5 +1,5 @@
 // Maxwell Daemon - Memory Store
-// [CYR:Долго]with[CYR:роч]onя memory agentа for [CYR:обучен]andя
+// [CYR:[EN]]with[CYR:[EN]]on[EN] memory agent[EN] for [CYR:[EN]]and[EN]
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -9,7 +9,7 @@ const std = @import("std");
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Experience inыbyлnotнandя заyesчand
+/// Experience in[EN]by[EN]not[EN]and[EN] [EN]yes[EN]and
 pub const Experience = struct {
     id: u64,
     task_type: []const u8,
@@ -52,12 +52,12 @@ pub const Experience = struct {
     }
 };
 
-/// [CYR:Выученный] pattern
+/// [CYR:[EN]] pattern
 pub const Pattern = struct {
     id: u64,
     name: []const u8,
-    trigger: []const u8, // [CYR:Ког]yes прand[CYR:менять]
-    solution: []const u8, // [CYR:Что] [CYR:делать]
+    trigger: []const u8, // [CYR:[EN]]yes [EN]and[CYR:[EN]]
+    solution: []const u8, // [CYR:[EN]] [CYR:[EN]]
     confidence: f32, // 0.0 - 1.0
     usage_count: u32,
     success_count: u32,
@@ -69,7 +69,7 @@ pub const Pattern = struct {
     }
 };
 
-/// [CYR:Зап]andwithь об ошandбtoе
+/// [CYR:[EN]]andwith[EN] [EN] [EN]and[EN]to[EN]
 pub const ErrorRecord = struct {
     id: u64,
     error_type: []const u8,
@@ -131,7 +131,7 @@ pub const MemoryStore = struct {
     // EXPERIENCE
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// [CYR:Зап]andwith[CYR:ать] experience
+    /// [CYR:[EN]]andwith[CYR:[EN]] experience
     pub fn recordExperience(self: *MemoryStore, exp: Experience) !u64 {
         var new_exp = exp;
         new_exp.id = self.next_experience_id;
@@ -147,7 +147,7 @@ pub const MemoryStore = struct {
         return new_exp.id;
     }
 
-    /// [CYR:Найт]and by[CYR:хож]andй experience
+    /// [CYR:[EN]]and by[CYR:[EN]]and[EN] experience
     pub fn findSimilarExperience(self: *MemoryStore, task_type: []const u8, keywords: []const []const u8) ?*Experience {
         var best_match: ?*Experience = null;
         var best_score: u32 = 0;
@@ -171,7 +171,7 @@ pub const MemoryStore = struct {
         return best_match;
     }
 
-    /// [CYR:Получ]andть уwith[CYR:пешные] experienceы by тandпу заyesчand
+    /// [CYR:[EN]]and[EN] [EN]with[CYR:[EN]] experience[EN] by [EN]and[EN] [EN]yes[EN]and
     pub fn getSuccessfulExperiences(self: *MemoryStore, task_type: []const u8) !std.ArrayList(*Experience) {
         var result = std.ArrayList(*Experience).init(self.allocator);
 
@@ -188,7 +188,7 @@ pub const MemoryStore = struct {
     // PATTERNS
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// [CYR:Доба]inandть pattern
+    /// [CYR:[EN]]inand[EN] pattern
     pub fn addPattern(self: *MemoryStore, pattern: Pattern) !u64 {
         var new_pattern = pattern;
         new_pattern.id = self.next_pattern_id;
@@ -200,7 +200,7 @@ pub const MemoryStore = struct {
         return new_pattern.id;
     }
 
-    /// [CYR:Найт]and pattern by трand[CYR:ггеру]
+    /// [CYR:[EN]]and pattern by [EN]and[CYR:[EN]]
     pub fn findPattern(self: *MemoryStore, trigger: []const u8) ?*Pattern {
         // Exact match
         if (self.pattern_by_trigger.get(trigger)) |id| {
@@ -221,7 +221,7 @@ pub const MemoryStore = struct {
         return null;
     }
 
-    /// [CYR:Обно]inandть with[CYR:тат]andwithтandtoу [CYR:паттер]on
+    /// [CYR:[EN]]inand[EN] with[CYR:[EN]]andwith[EN]andto[EN] [CYR:[EN]]on
     pub fn updatePatternStats(self: *MemoryStore, pattern_id: u64, success: bool) void {
         for (self.patterns.items) |*p| {
             if (p.id == pattern_id) {
@@ -236,7 +236,7 @@ pub const MemoryStore = struct {
         }
     }
 
-    /// [CYR:Получ]andть [CYR:лучш]andе [CYR:паттерны]
+    /// [CYR:[EN]]and[EN] [CYR:[EN]]and[EN] [CYR:[EN]]
     pub fn getTopPatterns(self: *MemoryStore, limit: usize) !std.ArrayList(*Pattern) {
         var result = std.ArrayList(*Pattern).init(self.allocator);
 
@@ -264,7 +264,7 @@ pub const MemoryStore = struct {
         return result;
     }
 
-    /// Изin[CYR:лечь] pattern andз experienceа
+    /// [EN]in[CYR:[EN]] pattern and[EN] experience[EN]
     fn extractPattern(self: *MemoryStore, exp: *Experience) !void {
         // Simple pattern extraction: task_type -> approach
         const existing = self.findPattern(exp.task_type);
@@ -288,7 +288,7 @@ pub const MemoryStore = struct {
     // ERRORS
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// [CYR:Зап]andwith[CYR:ать] ошandбtoу
+    /// [CYR:[EN]]andwith[CYR:[EN]] [EN]and[EN]to[EN]
     pub fn recordError(self: *MemoryStore, error_type: []const u8, message: []const u8, context: []const u8) !u64 {
         const record = ErrorRecord{
             .id = self.next_error_id,
@@ -306,7 +306,7 @@ pub const MemoryStore = struct {
         return record.id;
     }
 
-    /// [CYR:Найт]and by[CYR:хожую] ошandбtoу (for byin[CYR:торного] andwithby[CYR:льзо]inанandя [CYR:решен]andя)
+    /// [CYR:[EN]]and by[CYR:[EN]] [EN]and[EN]to[EN] (for byin[CYR:[EN]] andwithby[CYR:[EN]]in[EN]and[EN] [CYR:[EN]]and[EN])
     pub fn findSimilarError(self: *MemoryStore, error_type: []const u8, message: []const u8) ?*ErrorRecord {
         for (self.errors.items) |*err| {
             if (std.mem.eql(u8, err.error_type, error_type) and
@@ -319,7 +319,7 @@ pub const MemoryStore = struct {
         return null;
     }
 
-    /// [CYR:Отмет]andть ошandбtoу how [CYR:решённую]
+    /// [CYR:[EN]]and[EN] [EN]and[EN]to[EN] how [CYR:[EN]]
     pub fn resolveError(self: *MemoryStore, error_id: u64, solution: []const u8) void {
         for (self.errors.items) |*err| {
             if (err.id == error_id) {
@@ -334,7 +334,7 @@ pub const MemoryStore = struct {
     // PERSISTENCE
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// [CYR:Сохран]andть memory in file
+    /// [CYR:[EN]]and[EN] memory in file
     pub fn save(self: *MemoryStore, path: []const u8) !void {
         const file = try std.fs.cwd().createFile(path, .{});
         defer file.close();
@@ -356,7 +356,7 @@ pub const MemoryStore = struct {
         // TODO: Serialize actual data
     }
 
-    /// [CYR:Загруз]andть memory andз fileа
+    /// [CYR:[EN]]and[EN] memory and[EN] file[EN]
     pub fn load(self: *MemoryStore, path: []const u8) !void {
         const file = std.fs.cwd().openFile(path, .{}) catch return;
         defer file.close();

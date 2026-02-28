@@ -2,7 +2,7 @@
 // AUTO CODEGEN INTEGRATION TEST
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Tests by[CYR:лный] pipeline: VibeeSpec -> AutoCodeGenerator -> Zig code
+// Tests by[CYR:[EN]] pipeline: VibeeSpec -> AutoCodeGenerator -> Zig code
 // φ² + 1/φ² = 3
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -156,7 +156,7 @@ test "mapType handles all basic types" {
 }
 
 test "mapType handles unknown types" {
-    // Неandзinеwith[CYR:тные] тandпы inозin[CYR:ращают]withя how еwithть
+    // [EN]and[EN]in[EN]with[CYR:[EN]] [EN]and[EN] in[EN]in[CYR:[EN]]with[EN] how [EN]with[EN]
     try testing.expectEqualStrings("CustomType", auto_codegen.mapType("CustomType"));
 }
 

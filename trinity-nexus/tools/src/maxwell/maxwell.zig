@@ -1,5 +1,5 @@
 // Maxwell Daemon - Main Module
-// Аin[CYR:тономный] [CYR:агент]-[CYR:программ]andwithт
+// Ain[CYR:[TRANSLATED]ny] [CYR:agent]-[CYR:pro[TRANSLATED]]andwith[EN]
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -29,7 +29,7 @@ pub const MemoryStore = memory_store.MemoryStore;
 // MAXWELL DAEMON
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:Полный] demoн Maxwell with inwithемand to[CYR:омпо]not[CYR:нтам]and
+/// [CYR:[TRANSLATED]ny] demo[EN] Maxwell with inwith[EN]and to[CYR:[TRANSLATED]]not[CYR:[TRANSLATED]]and
 pub const MaxwellDaemon = struct {
     allocator: std.mem.Allocator,
     config: DaemonConfig,
@@ -63,13 +63,13 @@ pub const MaxwellDaemon = struct {
         self.memory.deinit();
     }
 
-    /// [CYR:Запу]withтandть demoon
+    /// [CYR:[TRANSLATED]]with[EN]and[EN] demoon
     pub fn start(self: *MaxwellDaemon) !void {
         std.debug.print(
             \\
             \\╔══════════════════════════════════════════════════════════════╗
             \\║                    🧠 MAXWELL DAEMON                         ║
-            \\║              "[CYR:Демон], tofrom[CYR:орый] with[CYR:орт]and[CYR:рует] toод"                  ║
+            \\║              "[CYR:[TRANSLATED]], tofrom[CYR:[EN]y[EN]] with[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] to[EN]"                  ║
             \\║                                                              ║
             \\║  φ² + 1/φ² = 3 = TRINITY                                    ║
             \\╚══════════════════════════════════════════════════════════════╝
@@ -88,7 +88,7 @@ pub const MaxwellDaemon = struct {
         std.debug.print("[MAXWELL] Daemon started. Waiting for tasks...\n", .{});
     }
 
-    /// Оwith[CYR:тано]inandть demoon
+    /// [EN]with[CYR:[TRANSLATED]]inand[EN] demoon
     pub fn stop(self: *MaxwellDaemon) void {
         std.debug.print("[MAXWELL] Stopping daemon...\n", .{});
 
@@ -100,12 +100,12 @@ pub const MaxwellDaemon = struct {
         std.debug.print("[MAXWELL] Daemon stopped.\n", .{});
     }
 
-    /// [CYR:Отпра]inandть [CYR:задачу]
+    /// [CYR:[EN]law]inand[EN] [CYR:[TRANSLATED]]
     pub fn submitTask(self: *MaxwellDaemon, description: []const u8, task_type: TaskType) !u64 {
         return self.agent.submitTask(description, task_type);
     }
 
-    /// [CYR:Получ]andть with[CYR:тату]with
+    /// [CYR:[TRANSLATED]]and[EN] with[CYR:[TRANSLATED]]with
     pub fn getStatus(self: *MaxwellDaemon) Status {
         const agent_state = self.agent.getState();
         const memory_stats = self.memory.getStats();

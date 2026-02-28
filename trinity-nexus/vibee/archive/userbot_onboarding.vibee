@@ -4047,7 +4047,7 @@ fn session_id(self) · self.session_id
   id: Int}-Bot (Digital Twin) setup",
     // Similes for NLP matching
     [
-      "onwith[CYR:тро]andть [CYR:бота]", "type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+      "onwith[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]", "type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -5038,14 +5038,14 @@ fn session_id(self) · self.session_id
   name: String,
   email: String,
   id: Int}bot", "digital twin",
-      "[CYR:под]keysть [CYR:телеграм]", "with[CYR:оздать] [CYR:бота]", "setting"
+      "[CYR:[TRANSLATED]]keys[EN] [CYR:[TRANSLATED]]", "with[CYR:[TRANSLATED]ate] [CYR:[TRANSLATED]]", "setting"
     ],
     // Example messages
     [
-      "[CYR:Хочу] onwith[CYR:тро]andть [CYR:бота]",
-      "[CYR:Под]keysть [CYR:мой] [CYR:телеграм]",
-      "[CYR:Создать] digital twin",
-      "Прandinет, how on[CYR:чать]?"
+      "[CYR:[TRANSLATED]] onwith[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]",
+      "[CYR:[TRANSLATED]]keys[EN] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]",
+      "[CYR:[TRANSLATED]ate] digital twin",
+      "[EN]andin[EN], how on[CYR:[EN]ate]?"
     ],
     { validate_onboarding(it) },
     { handle_onboarding(it) }
@@ -13084,15 +13084,15 @@ trace("agent.type type type type type type type type type type type type type ty
   id: Int}_id, "⤳ing_confirmation")
 
       eliza.success_result("""
-Прandinет! Я тinой [CYR:пер]withоon[CYR:льный] [CYR:помощн]andк VIBEE.
+[EN]andin[EN]!  [EN]in[EN] [CYR:[TRANSLATED]]with[EN]on[CYR:lny] [CYR:[TRANSLATED]]and[EN] VIBEE.
 
-[CYR:Могу] onwith[CYR:тро]andть Digital Twin - [CYR:бота] which [CYR:работает] от тin[CYR:оего] and[CYR:мен]and in Telegram:
+[CYR:[TRANSLATED]] onwith[CYR:[TRANSLATED]]and[EN] Digital Twin - [CYR:[TRANSLATED]] which [CYR:work[EN]] [EN] [EN]in[CYR:[EN]go] and[CYR:me]and in Telegram:
 
-- [CYR:Мон]and[CYR:тор]andт [CYR:чаты] on трand[CYR:ггерные] withлоinа
-- [CYR:Пере]with[CYR:ылает] лandды [CYR:прямо] [CYR:тебе]
-- [CYR:Может] отin[CYR:ечать] от тin[CYR:оего] and[CYR:мен]and (AI)
+- [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]y] on [EN]and[CYR:[TRANSLATED]y[EN]] with[EN]in[EN]
+- [CYR:[TRANSLATED]]with[CYR:y[EN]acts] [EN]and[EN]y [CYR:[EN]I[EN]] [CYR:you[EN]]
+- [CYR:[TRANSLATED]] [EN]in[CYR:[EN]ate] [EN] [EN]in[CYR:[EN]go] and[CYR:me]and (AI)
 
-[CYR:Хочешь] on[CYR:чать] onwith[CYR:тройку]? (да/notт)
+[CYR:[TRANSLATED]] on[CYR:[EN]ate] onwith[CYR:[TRANSLATED]]? ([EN]/not[EN])
 """)
     }
 
@@ -15081,7 +15081,7 @@ trace("agent.type type type type type type type type type type type type type ty
   id: Int}_id, "collecting_phone")
 
       eliza.success_result("""
-[CYR:Отл]and[CYR:чно]! [CYR:Начнём] onwith[CYR:тройку] type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]! [CYR:[TRANSLATED]] onwith[CYR:[TRANSLATED]] type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -15581,10 +15581,10 @@ trace("agent.type type type type type type type type type type type type type ty
   email: String,
   id: Int}-Bot.
 
-[CYR:Шаг] 1: [CYR:Под]keyенandе Telegram
+[CYR:[TRANSLATED]] 1: [CYR:[TRANSLATED]]key[EN]and[EN] Telegram
 
-Мnot [CYR:нужен] [CYR:номер] [CYR:телефо]on тin[CYR:оего] Telegram [CYR:аккаунта].
-[CYR:Нап]andшand in [CYR:формате]: +79001234567
+[EN]not [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]on [EN]in[CYR:[EN]go] Telegram [CYR:account[EN]].
+[CYR:[TRANSLATED]]and[EN]and in [CYR:[TRANSLATED]]: +79001234567
 """)
     }
 
@@ -17573,7 +17573,7 @@ trace("agent.type type type type type type type type type type type type type ty
   id: Int}_id, "collecting_phone")
 
       eliza.success_result("""
-[CYR:Отл]and[CYR:чно]! [CYR:Начнём] onwith[CYR:тройку] type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]! [CYR:[TRANSLATED]] onwith[CYR:[TRANSLATED]] type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -18073,18 +18073,18 @@ trace("agent.type type type type type type type type type type type type type ty
   email: String,
   id: Int}-Bot.
 
-[CYR:Шаг] 1: [CYR:Под]keyенandе Telegram
+[CYR:[TRANSLATED]] 1: [CYR:[TRANSLATED]]key[EN]and[EN] Telegram
 
-Мnot [CYR:нужен] [CYR:номер] [CYR:телефо]on тin[CYR:оего] Telegram [CYR:аккаунта].
-[CYR:Нап]andшand in [CYR:формате]: +79001234567
+[EN]not [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]on [EN]in[CYR:[EN]go] Telegram [CYR:account[EN]].
+[CYR:[TRANSLATED]]and[EN]and in [CYR:[TRANSLATED]]: +79001234567
 """)
     }
 
     HelpIntent → {
       eliza.success_result("""
-Я [CYR:могу] [CYR:помочь] with:
+ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] with:
 
-- Наwith[CYR:тройка] type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+- [EN]with[CYR:[TRANSLATED]] type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -18583,17 +18583,17 @@ trace("agent.type type type type type type type type type type type type type ty
   name: String,
   email: String,
   id: Int}-Bot (Digital Twin)
-- [CYR:Мон]and[CYR:тор]andнг [CYR:чато]in on трand[CYR:ггеры]
-- Аin[CYR:томат]andчеwithкandе responseы от тin[CYR:оего] and[CYR:мен]and
-- [CYR:Пере]with[CYR:ылка] лandдоin
+- [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]in on [EN]and[CYR:[TRANSLATED]y]
+- Ain[CYR:[TRANSLATED]]and[EN]with[EN]and[EN] responsey [EN] [EN]in[CYR:[EN]go] and[CYR:me]and
+- [CYR:[TRANSLATED]]with[CYR:y[TRANSLATED]] [EN]and[EN]in
 
-[CYR:Нап]andшand 'onwith[CYR:тро]andть [CYR:бота]' thatбы on[CYR:чать]!
+[CYR:[TRANSLATED]]and[EN]and 'onwith[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]' that[EN]y on[CYR:[EN]ate]!
 """)
     }
 
     StatusIntent → {
       eliza.success_result("""
-У [CYR:тебя] while not onwith[CYR:троен] type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+ [CYR:youI] while not onwith[CYR:[TRANSLATED]] type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -19093,7 +19093,7 @@ trace("agent.type type type type type type type type type type type type type ty
   email: String,
   id: Int}-Bot.
 
-[CYR:Хочешь] onwith[CYR:тро]andть? [CYR:Нап]andшand 'да' or 'onwith[CYR:тро]andть'.
+[CYR:[TRANSLATED]] onwith[CYR:[TRANSLATED]]and[EN]? [CYR:[TRANSLATED]]and[EN]and '[EN]' or 'onwith[CYR:[TRANSLATED]]and[EN]'.
 """)
     }
 
@@ -21082,7 +21082,7 @@ trace("agent.type type type type type type type type type type type type type ty
   id: Int}_id, "⤳ing_confirmation")
 
       eliza.success_result("""
-Прandinет! Я [CYR:помогу] onwith[CYR:тро]andть тinой type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+[EN]andin[EN]!  [CYR:[TRANSLATED]] onwith[CYR:[TRANSLATED]]and[EN] [EN]in[EN] type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -21582,9 +21582,9 @@ trace("agent.type type type type type type type type type type type type type ty
   email: String,
   id: Int}-Bot.
 
-[CYR:Это] Digital Twin which [CYR:работает] от тin[CYR:оего] and[CYR:мен]and in Telegram.
+[CYR:This] Digital Twin which [CYR:work[EN]] [EN] [EN]in[CYR:[EN]go] and[CYR:me]and in Telegram.
 
-[CYR:Гото]in on[CYR:чать] onwith[CYR:тройку]? (да/notт)
+[CYR:[TRANSLATED]]in on[CYR:[EN]ate] onwith[CYR:[TRANSLATED]]? ([EN]/not[EN])
 """)
     }
   }
@@ -23088,11 +23088,11 @@ trace("agent.type type type type type type type type type type type type type ty
   id: Int}_id, "collecting_phone")
 
       eliza.success_result("""
-[CYR:Отл]and[CYR:чно]! [CYR:Начнём].
+[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]! [CYR:[TRANSLATED]].
 
-[CYR:Шаг] 1: [CYR:Под]keyенandе Telegram
+[CYR:[TRANSLATED]] 1: [CYR:[TRANSLATED]]key[EN]and[EN] Telegram
 
-[CYR:Нап]andшand [CYR:номер] [CYR:телефо]on тin[CYR:оего] Telegram in [CYR:формате]: +79001234567
+[CYR:[TRANSLATED]]and[EN]and [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]on [EN]in[CYR:[EN]go] Telegram in [CYR:[TRANSLATED]]: +79001234567
 """)
     }
 
@@ -24090,11 +24090,11 @@ trace("agent.type type type type type type type type type type type type type ty
   id: Int}_id, "collecting_phone")
 
       eliza.success_result("""
-[CYR:Отл]and[CYR:чно]! [CYR:Начнём].
+[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]! [CYR:[TRANSLATED]].
 
-[CYR:Шаг] 1: [CYR:Под]keyенandе Telegram
+[CYR:[TRANSLATED]] 1: [CYR:[TRANSLATED]]key[EN]and[EN] Telegram
 
-[CYR:Нап]andшand [CYR:номер] [CYR:телефо]on тin[CYR:оего] Telegram in [CYR:формате]: +79001234567
+[CYR:[TRANSLATED]]and[EN]and [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]on [EN]in[CYR:[EN]go] Telegram in [CYR:[TRANSLATED]]: +79001234567
 """)
     }
 
@@ -25091,7 +25091,7 @@ trace("agent.type type type type type type type type type type type type type ty
   email: String,
   id: Int}_id)
 
-      eliza.success_result("[CYR:Хорошо], [CYR:отменяю]. [CYR:Когда] [CYR:захочешь] onwith[CYR:тро]andть - [CYR:про]withто onпandшand!")
+      eliza.success_result("[CYR:[TRANSLATED]], [CYR:[EN]meI[EN]]. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] onwith[CYR:[TRANSLATED]]and[EN] - [CYR:pro]with[EN] on[EN]and[EN]and!")
     }
 
     HelpIntent → {
@@ -25594,19 +25594,19 @@ type type type type type type type type type type type type type type type type 
   id: Int} {
   name: String,
   email: String,
-  id: Int}-Bot [CYR:поз]in[CYR:оляет]:
-- [CYR:Мон]and[CYR:тор]andть [CYR:чаты] on keyеinые withлоinа
-- Аin[CYR:томат]andчеwithкand [CYR:пере]with[CYR:ылать] лandды
-- Отin[CYR:ечать] от тin[CYR:оего] and[CYR:мен]and [CYR:через] AI
+  id: Int}-Bot [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]]:
+- [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]y] on key[EN]iny[EN] with[EN]in[EN]
+- Ain[CYR:[TRANSLATED]]and[EN]with[EN]and [CYR:[TRANSLATED]]with[CYR:y[EN]ate] [EN]and[EN]y
+- [EN]in[CYR:[EN]ate] [EN] [EN]in[CYR:[EN]go] and[CYR:me]and [CYR:[TRANSLATED]] AI
 
-[CYR:Для] settings [CYR:нужно] [CYR:под]keysть тinой Telegram [CYR:аккаунт].
+[CYR:[EN]I] settings [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]keys[EN] [EN]in[EN] Telegram [CYR:account].
 
-[CYR:Продолж]andм? (да/notт)
+[CYR:[TRANSLATED]]and[EN]? ([EN]/not[EN])
 """)
     }
 
     _ → {
-      eliza.success_result("Не [CYR:понял]. [CYR:Хочешь] onwith[CYR:тро]andть type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+      eliza.success_result("[EN] [CYR:[TRANSLATED]yael]. [CYR:[TRANSLATED]] onwith[CYR:[TRANSLATED]]and[EN] type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -26104,7 +26104,7 @@ type type type type type type type type type type type type type type type type 
   id: Int} {
   name: String,
   email: String,
-  id: Int}-Bot? Отin[CYR:еть] 'да' or 'notт'.")
+  id: Int}-Bot? [EN]in[CYR:[TRANSLATED]] '[EN]' or 'not[EN]'.")
     }
   }
 }
@@ -28129,24 +28129,24 @@ type type type type type type type type type type type type type type type type 
   id: Int}_id, "waiting_code")
 
               eliza.success_result("""
-[CYR:Код] [CYR:отпра]in[CYR:лен] on ""{phone}""!
+[CYR:Code] [CYR:[EN]law]in[CYR:[TRANSLATED]] on ""{phone}""!
 
-[CYR:Про]in[CYR:ерь] Telegram - прand[CYR:дёт] with[CYR:ообщен]andе with codeом.
-[CYR:Нап]andшand code with[CYR:юда] (5 цandфр).
+[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] Telegram - [EN]and[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]and[EN] with code[EN].
+[CYR:[TRANSLATED]]and[EN]and code with[CYR:[TRANSLATED]] (5 [EN]and[EN]).
 """)
             }
             ❌e) → {
               print("[ONBOARDING] Failed to send code: {string}".inspect(e))
               eliza.error_result("""
-Не [CYR:удало]withь [CYR:отпра]inandть code. [CYR:Про]in[CYR:ерь] [CYR:номер] and [CYR:попробуй] withноinа.
-[CYR:Формат]: +79001234567
+[EN] [CYR:[TRANSLATED]]with[EN] [CYR:[EN]law]inand[EN] code. [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] and [CYR:[EN]pro[TRANSLATED]] with[EN]in[EN].
+[CYR:[TRANSLATED]]: +79001234567
 """)
             }
           }
         }
         ❌e) → {
           print("[ONBOARDING] Failed to connect: {string}".inspect(e))
-          eliza.error_result("Ошand[CYR:бка] [CYR:под]keyенandя к Telegram. [CYR:Попробуй] [CYR:позже] or [CYR:про]in[CYR:ерь] [CYR:номер].")
+          eliza.error_result("[EN]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]key[EN]andI  Telegram. [CYR:[EN]pro[TRANSLATED]] [CYR:[TRANSLATED]] or [CYR:pro]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]].")
         }
       }
     }
@@ -29143,7 +29143,7 @@ type type type type type type type type type type type type type type type type 
   name: String,
   email: String,
   id: Int}_id, "⤳ing_confirmation")
-      eliza.success_result("[CYR:Вернул]andwithь on[CYR:зад]. [CYR:Хочешь] resume onwith[CYR:тройку]? (да/notт)")
+      eliza.success_result("[CYR:[TRANSLATED]]andwith[EN] on[CYR:[TRANSLATED]]. [CYR:[TRANSLATED]] resume onwith[CYR:[TRANSLATED]]? ([EN]/not[EN])")
     }
 
     ConfirmNo → {
@@ -30138,14 +30138,14 @@ type type type type type type type type type type type type type type type type 
   name: String,
   email: String,
   id: Int}_id, "⤳ing_confirmation")
-      eliza.success_result("[CYR:Вернул]andwithь on[CYR:зад]. [CYR:Хочешь] resume onwith[CYR:тройку]? (да/notт)")
+      eliza.success_result("[CYR:[TRANSLATED]]andwith[EN] on[CYR:[TRANSLATED]]. [CYR:[TRANSLATED]] resume onwith[CYR:[TRANSLATED]]? ([EN]/not[EN])")
     }
 
     _ → {
       eliza.success_result("""
-[CYR:Жду] [CYR:номер] [CYR:телефо]on in [CYR:формате]: +79001234567
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]on in [CYR:[TRANSLATED]]: +79001234567
 
-Илand onпandшand 'on[CYR:зад]' for inозin[CYR:рата].
+[EN]and on[EN]and[EN]and 'on[CYR:[TRANSLATED]]' for in[EN]in[CYR:[TRANSLATED]].
 """)
     }
   }
@@ -36623,7 +36623,7 @@ type type type type type type type type type type type type type type type type 
           let dialogs_text = get_available_chats_text(session_id)
 
           eliza.success_result("""
-[CYR:Аккаунт] @""{type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+[CYR:A[TRANSLATED]] @""{type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -37118,14 +37118,14 @@ type type type type type type type type type type type type type type type type 
   id: Int} {
   name: String,
   email: String,
-  id: Int}name}"" [CYR:под]keyён!
+  id: Int}name}"" [CYR:[TRANSLATED]]key[EN]!
 
-[CYR:Шаг] 2: [CYR:Выбор] [CYR:чато]in for [CYR:мон]and[CYR:тор]and[CYR:нга]
+[CYR:[TRANSLATED]] 2: [CYR:Vy[TRANSLATED]] [CYR:[TRANSLATED]]in for [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
 
 ""{dialogs_text}""
 
-[CYR:Нап]andшand [CYR:номера] [CYR:чато]in [CYR:через] [CYR:запятую] (onexample: 1, 3, 5)
-Илand 'inwithе' for in[CYR:ыбора] inwithех.
+[CYR:[TRANSLATED]]and[EN]and [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in [CYR:[TRANSLATED]] [CYR:[TRANSLATED]I[TRANSLATED]] (onexample: 1, 3, 5)
+[EN]and 'inwith[EN]' for in[CYR:y[TRANSLATED]] inwith[EN].
 """)
         }
 
@@ -38124,15 +38124,15 @@ type type type type type type type type type type type type type type type type 
   id: Int}_id, "waiting_fa")
 
           eliza.success_result("""
-У [CYR:тебя] inkeyеon дin[CYR:ухфактор]onя authentication.
+ [CYR:youI] inkey[EN]on [EN]in[CYR:[EN]factor]onI authentication.
 
-Вinедand password 2FA:
+[EN]in[EN]and password 2FA:
 """)
         }
 
         ❌e) → {
           print("[ONBOARDING] Code verification failed: {string}".inspect(e))
-          eliza.error_result("Неin[CYR:ерный] code. [CYR:Попробуй] [CYR:ещё] [CYR:раз] or onпandшand 'ноinый code' for repeat[CYR:ной] [CYR:отпра]inкand.")
+          eliza.error_result("[EN]in[CYR:[EN]ny] code. [CYR:[EN]pro[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] or on[EN]and[EN]and '[EN]iny[EN] code' for repeat[CYR:[TRANSLATED]] [CYR:[EN]law]in[EN]and.")
         }
       }
     }
@@ -39130,17 +39130,17 @@ type type type type type type type type type type type type type type type type 
   email: String,
   id: Int}_id, "collecting_phone")
       eliza.success_result("""
-[CYR:Вернул]andwithь к inin[CYR:оду] [CYR:телефо]on.
+[CYR:[TRANSLATED]]andwith[EN]  inin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]on.
 
-Вinедand [CYR:номер] in [CYR:формате]: +79001234567
+[EN]in[EN]and [CYR:[TRANSLATED]] in [CYR:[TRANSLATED]]: +79001234567
 """)
     }
 
     _ → {
       eliza.success_result("""
-[CYR:Жду] code [CYR:подт]in[CYR:ержден]andя (5 цandфр).
+[CYR:[TRANSLATED]] code [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andI (5 [EN]and[EN]).
 
-Илand onпandшand 'on[CYR:зад]' for fromмеnotнandя [CYR:номера].
+[EN]and on[EN]and[EN]and 'on[CYR:[TRANSLATED]]' for from[EN]not[EN]andI [CYR:[TRANSLATED]].
 """)
     }
   }
@@ -40154,7 +40154,7 @@ type type type type type type type type type type type type type type type type 
   name: String,
   email: String,
   id: Int}_id, "collecting_phone")
-      eliza.success_result("[CYR:Вернул]andwithь к inin[CYR:оду] [CYR:телефо]on. Вinедand [CYR:номер]:")
+      eliza.success_result("[CYR:[TRANSLATED]]andwith[EN]  inin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]on. [EN]in[EN]and [CYR:[TRANSLATED]]:")
     }
 
     _ → {
@@ -46612,7 +46612,7 @@ type type type type type type type type type type type type type type type type 
           let dialogs_text = get_available_chats_text(session_id)
 
           eliza.success_result("""
-[CYR:Аккаунт] @""{type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+[CYR:A[TRANSLATED]] @""{type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -47107,19 +47107,19 @@ type type type type type type type type type type type type type type type type 
   id: Int} {
   name: String,
   email: String,
-  id: Int}name}"" [CYR:под]keyён!
+  id: Int}name}"" [CYR:[TRANSLATED]]key[EN]!
 
-[CYR:Шаг] 2: [CYR:Выбор] [CYR:чато]in
+[CYR:[TRANSLATED]] 2: [CYR:Vy[TRANSLATED]] [CYR:[TRANSLATED]]in
 
 ""{dialogs_text}""
 
-[CYR:Нап]andшand [CYR:номера] [CYR:через] [CYR:запятую] (1, 3, 5) or 'inwithе'.
+[CYR:[TRANSLATED]]and[EN]and [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]I[TRANSLATED]] (1, 3, 5) or 'inwith[EN]'.
 """)
         }
 
         ❌e) → {
           print("[ONBOARDING] 2FA failed: {string}".inspect(e))
-          eliza.error_result("Неin[CYR:ерный] password 2FA. [CYR:Попробуй] [CYR:ещё] [CYR:раз]:")
+          eliza.error_result("[EN]in[CYR:[EN]ny] password 2FA. [CYR:[EN]pro[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:")
         }
       }
     }
@@ -48634,16 +48634,16 @@ type type type type type type type type type type type type type type type type 
   id: Int}_id, "configuring_modes")
 
       eliza.success_result("""
-[CYR:Выбрано] ""{int_to_string}"(list.len(numbers)) + """ [CYR:чато]in!
+[CYR:Vy[TRANSLATED]] ""{int_to_string}"(list.len(numbers)) + """ [CYR:[TRANSLATED]]in!
 
-[CYR:Шаг] 3: [CYR:Реж]andм [CYR:работы]
+[CYR:[TRANSLATED]] 3: [CYR:[TRANSLATED]]and[EN] [CYR:work[EN]y]
 
-[CYR:Выбер]and [CYR:реж]andм for theseх [CYR:чато]in:
+[CYR:Vy[TRANSLATED]]and [CYR:[TRANSLATED]]and[EN] for these[EN] [CYR:[TRANSLATED]]in:
 
-- Паwithwithandin[CYR:ный] - [CYR:только] [CYR:мон]and[CYR:тор]andнг and уin[CYR:едомлен]andя
-- [CYR:Акт]andin[CYR:ный] - AI отin[CYR:ечает] от тin[CYR:оего] and[CYR:мен]and (Digital Twin)
+- [EN]withwithandin[CYR:ny] - [CYR:[EN]l[EN]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and[EN] and [EN]in[CYR:[TRANSLATED]]andI
+- [CYR:A[EN]]andin[CYR:ny] - AI [EN]in[CYR:[EN]acts] [EN] [EN]in[CYR:[EN]go] and[CYR:me]and (Digital Twin)
 
-[CYR:Нап]andшand 'паwithwithandin[CYR:ный]' or '[CYR:акт]andin[CYR:ный]'.
+[CYR:[TRANSLATED]]and[EN]and '[EN]withwithandin[CYR:ny]' or '[CYR:[TRANSLATED]]andin[CYR:ny]'.
 """)
     }
 
@@ -49641,14 +49641,14 @@ type type type type type type type type type type type type type type type type 
   id: Int}_id, "configuring_modes")
 
       eliza.success_result("""
-[CYR:Выбраны] inwithе доwith[CYR:тупные] [CYR:чаты]!
+[CYR:Vy[TRANSLATED]y] inwith[EN] [EN]with[CYR:[TRANSLATED]y[EN]] [CYR:[TRANSLATED]y]!
 
-[CYR:Шаг] 3: [CYR:Реж]andм [CYR:работы]
+[CYR:[TRANSLATED]] 3: [CYR:[TRANSLATED]]and[EN] [CYR:work[EN]y]
 
-- Паwithwithandin[CYR:ный] - [CYR:только] [CYR:мон]and[CYR:тор]andнг
-- [CYR:Акт]andin[CYR:ный] - AI отin[CYR:ечает] (Digital Twin)
+- [EN]withwithandin[CYR:ny] - [CYR:[EN]l[EN]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and[EN]
+- [CYR:A[EN]]andin[CYR:ny] - AI [EN]in[CYR:[EN]acts] (Digital Twin)
 
-[CYR:Какой] [CYR:реж]andм in[CYR:ыбрать]?
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN] in[CYR:y[EN]ate]?
 """)
     }
 
@@ -50644,17 +50644,17 @@ type type type type type type type type type type type type type type type type 
   name: String,
   email: String,
   id: Int}_id, "collecting_phone")
-      eliza.success_result("[CYR:Вернул]andwithь к [CYR:под]keyенandю [CYR:аккаунта]. Вinедand [CYR:номер] [CYR:телефо]on:")
+      eliza.success_result("[CYR:[TRANSLATED]]andwith[EN]  [CYR:[TRANSLATED]]key[EN]and[EN] [CYR:account[EN]]. [EN]in[EN]and [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]on:")
     }
 
     _ → {
       let dialogs_text = get_available_chats_text(session_id)
       eliza.success_result("""
-[CYR:Выбер]and [CYR:чаты] for [CYR:мон]and[CYR:тор]and[CYR:нга]:
+[CYR:Vy[TRANSLATED]]and [CYR:[TRANSLATED]y] for [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]:
 
 ""{dialogs_text}""
 
-[CYR:Нап]andшand [CYR:номера] [CYR:через] [CYR:запятую] (1, 3) or 'inwithе'.
+[CYR:[TRANSLATED]]and[EN]and [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]I[TRANSLATED]] (1, 3) or 'inwith[EN]'.
 """)
     }
   }
@@ -52166,17 +52166,17 @@ type type type type type type type type type type type type type type type type 
   id: Int}_id, "configuring_triggers")
 
       eliza.success_result("""
-[CYR:Реж]andм '""{mode}""' уwith[CYR:тано]in[CYR:лен]!
+[CYR:[TRANSLATED]]and[EN] '""{mode}""' [EN]with[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]!
 
-[CYR:Шаг] 4: Трand[CYR:ггерные] withлоinа
+[CYR:[TRANSLATED]] 4: [EN]and[CYR:[TRANSLATED]y[EN]] with[EN]in[EN]
 
-На howandе [CYR:темы] [CYR:реаг]andроin[CYR:ать]?
+[EN] howand[EN] [CYR:[TRANSLATED]y] [CYR:[TRANSLATED]]and[EN]in[CYR:ate]?
 
-- крand[CYR:пто] - BTC, USDT, [CYR:обмен], p2p
-- notдinandжandмоwithть - [CYR:аренда], кin[CYR:арт]andра, [CYR:дом]
-- it - [CYR:разработка], [CYR:программ]andwithт, in[CYR:акан]withandя
+- [EN]and[CYR:[TRANSLATED]] - BTC, USDT, [CYR:swap], p2p
+- not[EN]inand[EN]and[EN]with[EN] - [CYR:[TRANSLATED]], [EN]in[CYR:[TRANSLATED]]and[EN], [CYR:[TRANSLATED]]
+- it - [CYR:development], [CYR:pro[TRANSLATED]]andwith[EN], in[CYR:[TRANSLATED]]withandI
 
-[CYR:Нап]andшand [CYR:категор]andю or withinоand withлоinа [CYR:через] [CYR:запятую].
+[CYR:[TRANSLATED]]and[EN]and [CYR:[TRANSLATED]go[EN]]and[EN] or within[EN]and with[EN]in[EN] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]I[TRANSLATED]].
 """)
     }
 
@@ -53173,17 +53173,17 @@ type type type type type type type type type type type type type type type type 
   email: String,
   id: Int}_id, "selecting_chats")
       let dialogs_text = get_available_chats_text(session_id)
-      eliza.success_result("[CYR:Вернул]andwithь к in[CYR:ыбору] [CYR:чато]in:\n\n{dialogs_text}")
+      eliza.success_result("[CYR:[TRANSLATED]]andwith[EN]  in[CYR:y[TRANSLATED]] [CYR:[TRANSLATED]]in:\n\n{dialogs_text}")
     }
 
     _ → {
       eliza.success_result("""
-[CYR:Выбер]and [CYR:реж]andм [CYR:работы]:
+[CYR:Vy[TRANSLATED]]and [CYR:[TRANSLATED]]and[EN] [CYR:work[EN]y]:
 
-- Паwithwithandin[CYR:ный] - [CYR:только] уin[CYR:едомлен]andя
-- [CYR:Акт]andin[CYR:ный] - AI отin[CYR:ечает]
+- [EN]withwithandin[CYR:ny] - [CYR:[EN]l[EN]] [EN]in[CYR:[TRANSLATED]]andI
+- [CYR:A[EN]]andin[CYR:ny] - AI [EN]in[CYR:[EN]acts]
 
-[CYR:Нап]andшand 'паwithwithandin[CYR:ный]' or '[CYR:акт]andin[CYR:ный]'.
+[CYR:[TRANSLATED]]and[EN]and '[EN]withwithandin[CYR:ny]' or '[CYR:[TRANSLATED]]andin[CYR:ny]'.
 """)
     }
   }
@@ -55698,16 +55698,16 @@ type type type type type type type type type type type type type type type type 
   id: Int}_id, "configuring_character")
 
       eliza.success_result("""
-Трand[CYR:ггеры] onwith[CYR:троены]!
+[EN]and[CYR:[TRANSLATED]y] onwith[CYR:[TRANSLATED]y]!
 
-[CYR:Шаг] 5: [CYR:Пер]withоonж (for [CYR:реж]andма Digital Twin)
+[CYR:[TRANSLATED]] 5: [CYR:[TRANSLATED]]with[EN]on[EN] (for [CYR:[TRANSLATED]]and[EN] Digital Twin)
 
-Опandшand, how AI [CYR:должен] [CYR:общать]withя от тin[CYR:оего] and[CYR:мен]and:
+[EN]and[EN]and, how AI [CYR:[TRANSLATED]] [CYR:[TRANSLATED]ate]withI [EN] [EN]in[CYR:[EN]go] and[CYR:me]and:
 
-Прand[CYR:мер]:
-[CYR:Имя]: [CYR:Алек]with, withтandль: [CYR:дружелюбный], [CYR:тема]: крand[CYR:птотрейд]andнг
+[EN]and[CYR:[TRANSLATED]]:
+[CYR:[EN]I]: [CYR:A[TRANSLATED]]with, with[EN]andl: [CYR:[TRANSLATED]ny], [CYR:[TRANSLATED]]: [EN]and[CYR:[TRANSLATED]trade]and[EN]
 
-Илand onпandшand '[CYR:пропу]withтandть' if andwith[CYR:пользуешь] [CYR:только] [CYR:мон]and[CYR:тор]andнг.
+[EN]and on[EN]and[EN]and '[CYR:pro[EN]]with[EN]and[EN]' if andwith[CYR:[EN]l[EN]uesh] [CYR:[EN]l[EN]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and[EN].
 """)
     }
 
@@ -56704,9 +56704,9 @@ type type type type type type type type type type type type type type type type 
   email: String,
   id: Int}_id, "configuring_character")
       eliza.success_result("""
-[CYR:Шаг] 5: [CYR:Пер]withоonж
+[CYR:[TRANSLATED]] 5: [CYR:[TRANSLATED]]with[EN]on[EN]
 
-Опandшand [CYR:пер]withоonж AI or onпandшand '[CYR:пропу]withтandть'.
+[EN]and[EN]and [CYR:[TRANSLATED]]with[EN]on[EN] AI or on[EN]and[EN]and '[CYR:pro[EN]]with[EN]and[EN]'.
 """)
     }
 
@@ -57702,7 +57702,7 @@ type type type type type type type type type type type type type type type type 
   name: String,
   email: String,
   id: Int}_id, "configuring_modes")
-      eliza.success_result("[CYR:Вернул]andwithь к in[CYR:ыбору] [CYR:реж]andма. [CYR:Нап]andшand 'паwithwithandin[CYR:ный]' or '[CYR:акт]andin[CYR:ный]':")
+      eliza.success_result("[CYR:[TRANSLATED]]andwith[EN]  in[CYR:y[TRANSLATED]] [CYR:[TRANSLATED]]and[EN]. [CYR:[TRANSLATED]]and[EN]and '[EN]withwithandin[CYR:ny]' or '[CYR:[TRANSLATED]]andin[CYR:ny]':")
     }
 
     _ → {
@@ -59700,21 +59700,21 @@ type type type type type type type type type type type type type type type type 
   id: Int}_id, "configuring_character")
 
           eliza.success_result("""
-Сinоand трand[CYR:ггеры] with[CYR:охра]notны!
+[EN]in[EN]and [EN]and[CYR:[TRANSLATED]y] with[CYR:[TRANSLATED]]not[EN]y!
 
-[CYR:Шаг] 5: [CYR:Пер]withоonж
+[CYR:[TRANSLATED]] 5: [CYR:[TRANSLATED]]with[EN]on[EN]
 
-Опandшand [CYR:пер]withоonж or onпandшand '[CYR:пропу]withтandть'.
+[EN]and[EN]and [CYR:[TRANSLATED]]with[EN]on[EN] or on[EN]and[EN]and '[CYR:pro[EN]]with[EN]and[EN]'.
 """)
         }
         false → {
           eliza.success_result("""
-[CYR:Выбер]and трand[CYR:ггеры]:
-- крand[CYR:пто]
-- notдinandжandмоwithть
+[CYR:Vy[TRANSLATED]]and [EN]and[CYR:[TRANSLATED]y]:
+- [EN]and[CYR:[TRANSLATED]]
+- not[EN]inand[EN]and[EN]with[EN]
 - it
 
-Илand ininедand withinоand withлоinа [CYR:через] [CYR:запятую].
+[EN]and inin[EN]and within[EN]and with[EN]in[EN] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]I[TRANSLATED]].
 """)
         }
       }
@@ -62716,17 +62716,17 @@ type type type type type type type type type type type type type type type type 
   id: Int} {
   name: String,
   email: String,
-  id: Int}-Bot [CYR:акт]andinandроinан!
+  id: Int}-Bot [CYR:[TRANSLATED]]andinand[EN]in[EN]!
 
-Тinой [CYR:бот] [CYR:теперь]:
-- [CYR:Мон]and[CYR:тор]andт in[CYR:ыбранные] [CYR:чаты]
-- Отwith[CYR:леж]andin[CYR:ает] трand[CYR:ггерные] withлоinа
-- Прandwith[CYR:ылает] уin[CYR:едомлен]andя о лand[CYR:дах]
+[EN]in[EN] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
+- [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and[EN] in[CYR:y[TRANSLATED]nye] [CYR:[TRANSLATED]y]
+- [EN]with[CYR:[TRANSLATED]]andin[CYR:acts] [EN]and[CYR:[TRANSLATED]y[EN]] with[EN]in[EN]
+- [EN]andwith[CYR:y[EN]acts] [EN]in[CYR:[TRANSLATED]]andI  [EN]and[CYR:[TRANSLATED]]
 
-[CYR:Команды]:
-- 'with[CYR:тату]with' - [CYR:про]inерandть [CYR:работу]
-- 'pause' - прandоwith[CYR:тано]inandть
-- 'settings' - from[CYR:мен]andть [CYR:конф]andг
+[CYR:[TRANSLATED]y]:
+- 'with[CYR:[TRANSLATED]]with' - [CYR:pro]in[EN]and[EN] [CYR:work[TRANSLATED]]
+- 'pause' - [EN]and[EN]with[CYR:[TRANSLATED]]inand[EN]
+- 'settings' - from[CYR:me]and[EN] [CYR:[TRANSLATED]]and[EN]
 """)
     }
 
@@ -63722,7 +63722,7 @@ type type type type type type type type type type type type type type type type 
   name: String,
   email: String,
   id: Int}_id, "configuring_triggers")
-      eliza.success_result("[CYR:Вернул]andwithь к трand[CYR:ггерам]. [CYR:Выбер]and: крand[CYR:пто], notдinandжandмоwithть, it or withinоand withлоinа:")
+      eliza.success_result("[CYR:[TRANSLATED]]andwith[EN]  [EN]and[CYR:[TRANSLATED]]. [CYR:Vy[TRANSLATED]]and: [EN]and[CYR:[TRANSLATED]], not[EN]inand[EN]and[EN]with[EN], it or within[EN]and with[EN]in[EN]:")
     }
 
     _ → {
@@ -67206,14 +67206,14 @@ type type type type type type type type type type type type type type type type 
   id: Int} {
   name: String,
   email: String,
-  id: Int}-Bot [CYR:акт]andinandроinан with [CYR:пер]withоon[CYR:жем]!
+  id: Int}-Bot [CYR:[TRANSLATED]]andinand[EN]in[EN] with [CYR:[TRANSLATED]]with[EN]on[CYR:[TRANSLATED]]!
 
-Тinой Digital Twin [CYR:теперь]:
-- [CYR:Мон]and[CYR:тор]andт [CYR:чаты] on трand[CYR:ггеры]
-- Отin[CYR:ечает] от тin[CYR:оего] and[CYR:мен]and (AI)
-- Прandwith[CYR:ылает] уin[CYR:едомлен]andя
+[EN]in[EN] Digital Twin [CYR:[TRANSLATED]]:
+- [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]y] on [EN]and[CYR:[TRANSLATED]y]
+- [EN]in[CYR:[EN]acts] [EN] [EN]in[CYR:[EN]go] and[CYR:me]and (AI)
+- [EN]andwith[CYR:y[EN]acts] [EN]in[CYR:[TRANSLATED]]andI
 
-[CYR:Нап]andшand 'with[CYR:тату]with' thatбы [CYR:про]inерandть [CYR:работу].
+[CYR:[TRANSLATED]]and[EN]and 'with[CYR:[TRANSLATED]]with' that[EN]y [CYR:pro]in[EN]and[EN] [CYR:work[TRANSLATED]].
 """)
     }
   }
@@ -67732,7 +67732,7 @@ type type type type type type type type type type type type type type type type 
   match intent {
     StatusIntent → {
       eliza.success_result("""
-[CYR:Стату]with type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+[CYR:[TRANSLATED]]with type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -68230,20 +68230,20 @@ type type type type type type type type type type type type type type type type 
   id: Int} {
   name: String,
   email: String,
-  id: Int}-Bot: [CYR:Акт]andinен
+  id: Int}-Bot: [CYR:A[EN]]andin[EN]
 
 - Session: ""{session_id}""
-- [CYR:Чато]in: 3
-- [CYR:Реж]andм: Паwithwithandin[CYR:ный]
-- Трand[CYR:ггеро]in: 12
+- [CYR:[TRANSLATED]]in: 3
+- [CYR:[TRANSLATED]]and[EN]: [EN]withwithandin[CYR:ny]
+- [EN]and[CYR:[TRANSLATED]]in: 12
 
-Вwithё [CYR:работает]!
+[EN]with[EN] [CYR:work[EN]]!
 """)
     }
 
     SetupIntent → {
       eliza.success_result("""
-Тinой type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
+[EN]in[EN] type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type type User {
   name: String,
   email: String,
   id: Int} {
@@ -68741,12 +68741,12 @@ type type type type type type type type type type type type type type type type 
   id: Int} {
   name: String,
   email: String,
-  id: Int}-Bot [CYR:уже] onwith[CYR:троен] and [CYR:работает]!
+  id: Int}-Bot [CYR:[TRANSLATED]] onwith[CYR:[TRANSLATED]] and [CYR:work[EN]]!
 
-[CYR:Хочешь]:
-- 'with[CYR:тату]with' - [CYR:про]inерandть [CYR:работу]
-- 'settings' - from[CYR:мен]andть [CYR:конф]andг
-- '[CYR:пере]onwith[CYR:тро]andть' - on[CYR:чать] [CYR:зано]inо
+[CYR:[TRANSLATED]]:
+- 'with[CYR:[TRANSLATED]]with' - [CYR:pro]in[EN]and[EN] [CYR:work[TRANSLATED]]
+- 'settings' - from[CYR:me]and[EN] [CYR:[TRANSLATED]]and[EN]
+- '[CYR:[TRANSLATED]]onwith[CYR:[TRANSLATED]]and[EN]' - on[CYR:[EN]ate] [CYR:[TRANSLATED]]in[EN]
 """)
     }
 
@@ -69250,12 +69250,12 @@ type type type type type type type type type type type type type type type type 
   id: Int} {
   name: String,
   email: String,
-  id: Int}-Bot [CYR:акт]andinен and [CYR:работает].
+  id: Int}-Bot [CYR:[TRANSLATED]]andin[EN] and [CYR:work[EN]].
 
-Доwith[CYR:тупные] [CYR:команды]:
-- with[CYR:тату]with - [CYR:текущее] withоwith[CYR:тоян]andе
-- pause - прandоwith[CYR:тано]inandть
-- settings - from[CYR:мен]andть
+[EN]with[CYR:[TRANSLATED]y[EN]] [CYR:[TRANSLATED]y]:
+- with[CYR:[TRANSLATED]]with - [CYR:[TRANSLATED]] with[EN]with[CYR:[EN]I[EN]]and[EN]
+- pause - [EN]and[EN]with[CYR:[TRANSLATED]]inand[EN]
+- settings - from[CYR:me]and[EN]
 """)
     }
   }
@@ -72323,7 +72323,7 @@ type type type type type type type type type type type type type type type type 
       }
 
       match list.len(groups) {
-        0 → "[CYR:Групп] not on[CYR:йдено]. [CYR:Убед]andwithь that ты withоwithтоandшь in [CYR:группах]."
+        0 → "[CYR:[TRANSLATED]] not on[CYR:[TRANSLATED]]. [CYR:[TRANSLATED]]andwith[EN] that [EN]y with[EN]with[EN]and[EN] in [CYR:group[EN]]."
         _ → {
           groups
           · list.take(10)
@@ -72334,7 +72334,7 @@ type type type type type type type type type type type type type type type type 
         }
       }
     }
-    ❌_) → "Не [CYR:удало]withь [CYR:загруз]andть [CYR:чаты]. [CYR:Попробуй] [CYR:позже]."
+    ❌_) → "[EN] [CYR:[TRANSLATED]]with[EN] [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]y]. [CYR:[EN]pro[TRANSLATED]] [CYR:[TRANSLATED]]."
   }
 }
 

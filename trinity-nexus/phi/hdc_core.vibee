@@ -4,19 +4,19 @@ language: zig
 module: hdc_core
 
 description: |
-  HDC Core - [CYR:Базо]inые [CYR:операц]andand гand[CYR:перразмерных] inычandwith[CYR:лен]andй
-  with [CYR:онлайн]-[CYR:обучен]andем for with[CYR:амообучающ]andхwithя AI [CYR:моделей].
+  HDC Core - [CYR:[TRANSLATED]]iny[EN] [CYR:[TRANSLATED]]andand [EN]and[CYR:[TRANSLATED]y[EN]] iny[EN]andwith[CYR:[TRANSLATED]]and[EN]
+  with [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]and[EN] for with[CYR:[TRANSLATED]]and[EN]withI AI [CYR:[TRANSLATED]].
   
-  [CYR:Науч]onя [CYR:база]:
+  [CYR:[TRANSLATED]]onI [CYR:base]:
   - Kanerva (2009): Hyperdimensional Computing
-  - BitNet b1.58 (2024): [CYR:Тро]and[CYR:чные] inеwithа {-1, 0, +1}
-  - Setun (1958): [CYR:Сбалан]withandроinанonя [CYR:тро]andчonя system
+  - BitNet b1.58 (2024): [CYR:[TRANSLATED]]and[CYR:[EN]y[EN]] in[EN]with[EN] {-1, 0, +1}
+  - Setun (1958): [CYR:[TRANSLATED]]withand[EN]in[EN]onI [CYR:[TRANSLATED]]and[EN]onI system
   
-  [CYR:Математ]andка:
-  - Binding: a ⊗ b = поelement[CYR:ное] [CYR:умножен]andе
-  - Bundling: [CYR:мажор]and[CYR:тарное] [CYR:голо]withоinанandе
-  - Similarity: коwithandнуwith[CYR:ное] with[CYR:ход]withтinо
-  - Online Update: P ← P + η(v - P), [CYR:затем] кin[CYR:ант]fromацandя
+  [CYR:[TRANSLATED]]and[EN]:
+  - Binding: a ⊗ b = [EN]element[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN]
+  - Bundling: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:go[EN]]with[EN]in[EN]and[EN]
+  - Similarity: [EN]withand[EN]with[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]with[EN]in[EN]
+  - Online Update: P ← P + η(v - P), [CYR:[TRANSLATED]] [EN]in[CYR:[TRANSLATED]]from[EN]andI
 
 imports:
   - hybrid  # HybridBigInt, Vec32i8, SIMD_WIDTH
@@ -31,26 +31,26 @@ constants:
 
 types:
   Trit:
-    description: "[CYR:Сбалан]withandроin[CYR:анный] [CYR:тро]and[CYR:чный] [CYR:разряд]"
+    description: "[CYR:[TRANSLATED]]withand[EN]in[CYR:[EN]ny] [CYR:[TRANSLATED]]and[CYR:[EN]ny] [CYR:[TRANSLATED]I[EN]]"
     values:
       - Neg: -1
       - Zero: 0
       - Pos: 1
 
   HyperVector:
-    description: "[CYR:Тро]and[CYR:чный] гand[CYR:пер]in[CYR:ектор] for HDC"
+    description: "[CYR:[TRANSLATED]]and[CYR:[EN]ny] [EN]and[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] for HDC"
     fields:
       data: List<Int>
       dim: Int
 
   FloatAccumulator:
-    description: "Float [CYR:аккумулятор] for [CYR:онлайн] уwith[CYR:ред]notнandя"
+    description: "Float [CYR:[TRANSLATED]I[TRANSLATED]] for [CYR:[TRANSLATED]] [EN]with[CYR:[TRANSLATED]]not[EN]andI"
     fields:
       data: List<Float>
       dim: Int
 
   Prototype:
-    description: "[CYR:Прото]type classа with [CYR:аккумулятором]"
+    description: "[CYR:[TRANSLATED]]type class[EN] with [CYR:[TRANSLATED]I[TRANSLATED]]"
     fields:
       label: String
       accumulator: FloatAccumulator
@@ -58,7 +58,7 @@ types:
       count: Int
 
   OnlineHDC:
-    description: "[CYR:Онлайн] HDC system"
+    description: "[CYR:[TRANSLATED]] HDC system"
     fields:
       prototypes: Map<String, Prototype>
       dim: Int
@@ -66,138 +66,138 @@ types:
       samples_seen: Int
 
   SimilarityResult:
-    description: "[CYR:Результат] inычandwith[CYR:лен]andя with[CYR:ход]withтinа"
+    description: "[CYR:[TRANSLATED]l[TRANSLATED]] iny[EN]andwith[CYR:[TRANSLATED]]andI with[CYR:[TRANSLATED]]with[EN]in[EN]"
     fields:
       similarity: Float
       label: String
 
 behaviors:
-  # === [CYR:БАЗОВЫЕ] HDC [CYR:ОПЕРАЦИИ] ===
+  # === [CYR:[EN]A[TRANSLATED]] HDC [CYR:[TRANSLATED]A[TRANSLATED]] ===
   
   - name: bind
-    given: Дinа гand[CYR:пер]in[CYR:ектора] a and b одandonкоinой [CYR:размерно]withтand
-    when: [CYR:Создан]andе аwithwithоцandацandand [CYR:через] поelement[CYR:ное] [CYR:умножен]andе
-    then: [CYR:Воз]in[CYR:ращает] HyperVector where c[i] = a[i] * b[i]
+    given: [EN]in[EN] [EN]and[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] a and b [EN]andon[EN]in[EN] [CYR:[TRANSLATED]]with[EN]and
+    when: [CYR:[TRANSLATED]]and[EN] [EN]withwith[EN]and[EN]andand [CYR:[TRANSLATED]] [EN]element[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN]
+    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] HyperVector where c[i] = a[i] * b[i]
 
   - name: unbind
-    given: Сin[CYR:язанный] in[CYR:ектор] and key
-    when: Изin[CYR:лечен]andе within[CYR:язанного] values
-    then: [CYR:Воз]in[CYR:ращает] bind(bound, key) т.к. [CYR:тро]and[CYR:чный] bind with[CYR:амообрат]andм
+    given: [EN]in[CYR:I[TRANSLATED]ny] in[CYR:[TRANSLATED]] and key
+    when: [EN]in[CYR:[EN]chen]and[EN] within[CYR:I[TRANSLATED]go] values
+    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] bind(bound, key) .. [CYR:[TRANSLATED]]and[CYR:[EN]ny] bind with[CYR:[TRANSLATED]]and[EN]
 
   - name: bundle
-    given: Спandwithок гand[CYR:пер]in[CYR:екторо]in
-    when: [CYR:Создан]andе with[CYR:уперпоз]andцandand [CYR:через] [CYR:мажор]and[CYR:тарное] [CYR:голо]withоinанandе
-    then: [CYR:Воз]in[CYR:ращает] HyperVector with [CYR:мажор]and[CYR:тарным] трand[CYR:том] on [CYR:каждой] [CYR:поз]andцandand
+    given: [EN]andwith[EN] [EN]and[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]in
+    when: [CYR:[TRANSLATED]]and[EN] with[CYR:[TRANSLATED]]and[EN]andand [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:go[EN]]with[EN]in[EN]and[EN]
+    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] HyperVector with [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]y[EN]] [EN]and[CYR:[TRANSLATED]] on [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN]andand
 
   - name: bundle_simd
-    given: Спandwithок гand[CYR:пер]in[CYR:екторо]in
-    when: SIMD-[CYR:опт]andмfromandроin[CYR:анное] bundling (32 трandта [CYR:параллельно])
-    then: [CYR:Воз]in[CYR:ращает] HyperVector with andwith[CYR:пользо]inанandем Vec32i8
+    given: [EN]andwith[EN] [EN]and[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]in
+    when: SIMD-[CYR:[TRANSLATED]]and[EN]fromand[EN]in[CYR:[TRANSLATED]] bundling (32 [EN]and[EN] [CYR:[TRANSLATED]lno])
+    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] HyperVector with andwith[CYR:[EN]l[EN]]in[EN]and[EN] Vec32i8
 
   - name: permute
-    given: HyperVector and inелandчandon withдinandга k
-    when: Цandклandчеwith[CYR:кая] [CYR:пере]with[CYR:тано]inка for codeandроinанandя поwith[CYR:ледо]in[CYR:ательно]with[CYR:тей]
-    then: [CYR:Воз]in[CYR:ращает] HyperVector withдinand[CYR:нутый] on k [CYR:поз]andцandй
+    given: HyperVector and in[EN]and[EN]andon with[EN]inand[EN] k
+    when: [EN]and[EN]and[EN]with[CYR:[EN]I] [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]in[EN] for codeand[EN]in[EN]andI [EN]with[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]lno]with[CYR:[TRANSLATED]]
+    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] HyperVector with[EN]inand[CYR:[TRANSLATED]y[EN]] on k [CYR:[TRANSLATED]]and[EN]and[EN]
 
   - name: similarity
-    given: Дinа гand[CYR:пер]in[CYR:ектора] a and b
-    when: [CYR:Выч]andwith[CYR:лен]andе коwithandнуwith[CYR:ного] with[CYR:ход]withтinа
-    then: [CYR:Воз]in[CYR:ращает] float in дand[CYR:апазо]not [-1, 1]
+    given: [EN]in[EN] [EN]and[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] a and b
+    when: [CYR:Vy[EN]]andwith[CYR:[TRANSLATED]]and[EN] [EN]withand[EN]with[CYR:[EN]go] with[CYR:[TRANSLATED]]with[EN]in[EN]
+    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] float in [EN]and[CYR:[TRANSLATED]]not [-1, 1]
 
   - name: similarity_simd
-    given: Дinа гand[CYR:пер]in[CYR:ектора] a and b
-    when: SIMD-[CYR:опт]andмfromandроin[CYR:анное] calculation with[CYR:ход]withтinа
-    then: [CYR:Воз]in[CYR:ращает] float andwith[CYR:пользуя] simdDotProduct
+    given: [EN]in[EN] [EN]and[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] a and b
+    when: SIMD-[CYR:[TRANSLATED]]and[EN]fromand[EN]in[CYR:[TRANSLATED]] calculation with[CYR:[TRANSLATED]]with[EN]in[EN]
+    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] float andwith[CYR:[EN]l[EN]I] simdDotProduct
 
   - name: hamming_distance
-    given: Дinа гand[CYR:пер]in[CYR:ектора] a and b
-    when: [CYR:Под]with[CYR:чёт] [CYR:разл]and[CYR:чающ]andхwithя [CYR:поз]andцandй
-    then: [CYR:Воз]in[CYR:ращает] [CYR:целое] number
+    given: [EN]in[EN] [EN]and[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] a and b
+    when: [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and[EN]withI [CYR:[TRANSLATED]]and[EN]and[EN]
+    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] [CYR:[TRANSLATED]] number
 
-  # === [CYR:СОЗДАНИЕ] [CYR:ВЕКТОРОВ] ===
+  # === [CYR:[TRANSLATED]A[TRANSLATED]] [CYR:[TRANSLATED]] ===
 
   - name: random_vector
-    given: [CYR:Размерно]withть and seed
-    when: Геnot[CYR:рац]andя with[CYR:лучайного] [CYR:тро]and[CYR:чного] гand[CYR:пер]in[CYR:ектора]
-    then: [CYR:Воз]in[CYR:ращает] HyperVector with раin[CYR:номерным] раwith[CYR:пределен]andем трandтоin
+    given: [CYR:[TRANSLATED]]with[EN] and seed
+    when: [EN]not[CYR:[TRANSLATED]]andI with[CYR:[TRANSLATED]go] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]go] [EN]and[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]
+    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] HyperVector with [EN]in[CYR:[TRANSLATED]y[EN]] [EN]with[CYR:[TRANSLATED]]and[EN] [EN]and[EN]in
 
   - name: zero_vector
-    given: [CYR:Размерно]withть
-    when: [CYR:Создан]andе [CYR:нуле]in[CYR:ого] in[CYR:ектора]
-    then: [CYR:Воз]in[CYR:ращает] HyperVector [CYR:запол]not[CYR:нный] [CYR:нулям]and
+    given: [CYR:[TRANSLATED]]with[EN]
+    when: [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]in[CYR:[EN]go] in[CYR:[TRANSLATED]]
+    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] HyperVector [CYR:[TRANSLATED]]not[CYR:[EN]ny] [CYR:[TRANSLATED]I[EN]]and
 
   - name: ones_vector
-    given: [CYR:Размерно]withть
-    when: [CYR:Создан]andе in[CYR:ектора] from едandнandц
-    then: [CYR:Воз]in[CYR:ращает] HyperVector [CYR:запол]not[CYR:нный] +1
+    given: [CYR:[TRANSLATED]]with[EN]
+    when: [CYR:[TRANSLATED]]and[EN] in[CYR:[TRANSLATED]] from [EN]and[EN]and[EN]
+    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] HyperVector [CYR:[TRANSLATED]]not[CYR:[EN]ny] +1
 
-  # === [CYR:ОНЛАЙН] [CYR:ОБУЧЕНИЕ] ===
+  # === [CYR:[TRANSLATED]A[EN]] [CYR:[TRANSLATED]] ===
 
   - name: create_online_hdc
-    given: [CYR:Размерно]withть and learning_rate
-    when: Инandцandалfromацandя [CYR:онлайн] HDC withandwith[CYR:темы]
-    then: [CYR:Воз]in[CYR:ращает] пуwith[CYR:тую] OnlineHDC
+    given: [CYR:[TRANSLATED]]with[EN] and learning_rate
+    when: [EN]and[EN]and[EN]from[EN]andI [CYR:[TRANSLATED]] HDC withandwith[CYR:[TRANSLATED]y]
+    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] [EN]with[CYR:[TRANSLATED]] OnlineHDC
 
   - name: online_update
-    given: [CYR:Входной] in[CYR:ектор], [CYR:метка] and OnlineHDC
-    when: [CYR:Обучен]andе on ноinом [CYR:размеченном] exampleе
-    then: [CYR:Обно]in[CYR:ляет] [CYR:прото]type: P ← P + η(v - P)
+    given: [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]], [CYR:[TRANSLATED]] and OnlineHDC
+    when: [CYR:[TRANSLATED]]and[EN] on [EN]in[EN] [CYR:[TRANSLATED]chen[TRANSLATED]] example[EN]
+    then: [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [CYR:pro[EN]]type: P ← P + η(v - P)
 
   - name: online_update_unlabeled
-    given: [CYR:Входной] in[CYR:ектор] and OnlineHDC
-    when: [CYR:Самообучен]andе on not[CYR:размеченном] exampleе
-    then: [CYR:Обно]in[CYR:ляет] блand[CYR:жайш]andй [CYR:прото]type if similarity > threshold
+    given: [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]] and OnlineHDC
+    when: [CYR:[TRANSLATED]]and[EN] on not[CYR:[TRANSLATED]chen[TRANSLATED]] example[EN]
+    then: [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [EN]and[CYR:[TRANSLATED]]and[EN] [CYR:pro[EN]]type if similarity > threshold
 
   - name: predict
-    given: [CYR:Входной] in[CYR:ектор] and OnlineHDC
-    when: Поandwithк onand[CYR:более] [CYR:похожего] [CYR:прото]typeа
-    then: [CYR:Воз]in[CYR:ращает] SimilarityResult with [CYR:меткой] and уin[CYR:еренно]with[CYR:тью]
+    given: [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]] and OnlineHDC
+    when: [EN]andwith[EN] onand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]go] [CYR:pro[EN]]type[EN]
+    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] SimilarityResult with [CYR:[TRANSLATED]] and [EN]in[CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]
 
   - name: predict_top_k
-    given: [CYR:Входной] in[CYR:ектор], OnlineHDC and k
-    when: Поandwithк k onand[CYR:более] [CYR:похож]andх [CYR:прото]typeоin
-    then: [CYR:Воз]in[CYR:ращает] list SimilarityResult отwith[CYR:орт]andроin[CYR:анный] по with[CYR:ход]withтinу
+    given: [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]], OnlineHDC and k
+    when: [EN]andwith[EN] k onand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN] [CYR:pro[EN]]type[EN]in
+    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] list SimilarityResult [EN]with[CYR:[TRANSLATED]]and[EN]in[CYR:[EN]ny] [EN] with[CYR:[TRANSLATED]]with[EN]in[EN]
 
-  # === [CYR:КВАНТИЗАЦИЯ] ===
+  # === [CYR:[EN]A[TRANSLATED]A[TRANSLATED]] ===
 
   - name: quantize_to_ternary
     given: FloatAccumulator
-    when: [CYR:Преобразо]inанandе float in [CYR:тро]and[CYR:чное] [CYR:пред]withтаin[CYR:лен]andе
-    then: [CYR:Воз]in[CYR:ращает] HyperVector with valuesмand {-1, 0, +1}
+    when: [CYR:[TRANSLATED]]in[EN]and[EN] float in [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[EN]in[CYR:[TRANSLATED]]and[EN]
+    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] HyperVector with values[EN]and {-1, 0, +1}
 
   - name: dequantize_to_float
     given: HyperVector
-    when: [CYR:Преобразо]inанandе [CYR:тро]and[CYR:чного] in float for on[CYR:коплен]andя
-    then: [CYR:Воз]in[CYR:ращает] FloatAccumulator
+    when: [CYR:[TRANSLATED]]in[EN]and[EN] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]go] in float for on[CYR:[TRANSLATED]]andI
+    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] FloatAccumulator
 
-  # === [CYR:КОДИРОВАНИЕ] ===
+  # === [CYR:[TRANSLATED]A[TRANSLATED]] ===
 
   - name: encode_bytes
-    given: Маwithwithandin [CYR:байто]in and configuration
-    when: [CYR:Преобразо]inанandе [CYR:байто]in in гand[CYR:пер]in[CYR:ектор]
-    then: [CYR:Воз]in[CYR:ращает] HyperVector [CYR:пред]withтаin[CYR:лен]andе
+    given: [EN]withwithandin [CYR:[TRANSLATED]]in and configuration
+    when: [CYR:[TRANSLATED]]in[EN]and[EN] [CYR:[TRANSLATED]]in in [EN]and[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]
+    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] HyperVector [CYR:[TRANSLATED]]with[EN]in[CYR:[TRANSLATED]]and[EN]
 
   - name: encode_sequence
-    given: Спandwithок tokenоin
-    when: [CYR:Код]andроinанandе поwith[CYR:ледо]in[CYR:ательно]withтand with [CYR:поз]andцand[CYR:онным] binding
-    then: [CYR:Воз]in[CYR:ращает] HyperVector: sum(permute(token[i], i))
+    given: [EN]andwith[EN] token[EN]in
+    when: [CYR:Code]and[EN]in[EN]and[EN] [EN]with[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]lno]with[EN]and with [CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]y[EN]] binding
+    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] HyperVector: sum(permute(token[i], i))
 
-  # === [CYR:УТИЛИТЫ] ===
+  # === [CYR:[TRANSLATED]] ===
 
   - name: count_nonzero
     given: HyperVector
-    when: [CYR:Под]with[CYR:чёт] not[CYR:нуле]inых elementоin
-    then: [CYR:Воз]in[CYR:ращает] [CYR:целое] number
+    when: [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]] not[CYR:[TRANSLATED]]iny[EN] element[EN]in
+    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] [CYR:[TRANSLATED]] number
 
   - name: sparsity
     given: HyperVector
-    when: [CYR:Выч]andwith[CYR:лен]andе [CYR:разреженно]withтand
-    then: [CYR:Воз]in[CYR:ращает] [CYR:долю] [CYR:нулей] (0.0 до 1.0)
+    when: [CYR:Vy[EN]]andwith[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]with[EN]and
+    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (0.0 [EN] 1.0)
 
   - name: normalize
     given: HyperVector
-    when: [CYR:Нормал]fromацandя in[CYR:ектора]
-    then: [CYR:Воз]in[CYR:ращает] in[CYR:ектор] with едandнand[CYR:чной] [CYR:нормой]
+    when: [CYR:[TRANSLATED]]from[EN]andI in[CYR:[TRANSLATED]]
+    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] in[CYR:[TRANSLATED]] with [EN]and[EN]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 tests:
   - name: test_bind_self_inverse

@@ -170,7 +170,7 @@ behaviors:
 
 test_cases:
   - name: russian_quicksort_python
-    given: "[CYR:Нап]andшand быwith[CYR:трую] with[CYR:орт]andроinку on Python"
+    given: "[CYR:[TRANSLATED]]and[EN]and [EN]ywith[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]and[EN]in[EN] on Python"
     expected: "Real quicksort in Python"
 
   - name: chinese_fibonacci_javascript

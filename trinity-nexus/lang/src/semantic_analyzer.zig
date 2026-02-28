@@ -1,5 +1,5 @@
 //! VIBEE Semantic Analyzer - PAS DAEMON V39
-//! [CYR:Паттерны]: HSH (O(1) symbol lookup), D&C (scope tree), PRE (cached analysis)
+//! [CYR:[TRANSLATED]y]: HSH (O(1) symbol lookup), D&C (scope tree), PRE (cached analysis)
 //! Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 //! Golden identity: φ² + 1/φ² = 3
 

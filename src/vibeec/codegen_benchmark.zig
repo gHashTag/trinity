@@ -2,10 +2,10 @@
 // CODEGEN PERFORMANCE BENCHMARK SUITE v1.0
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// [CYR:Измеряет] produces[CYR:ельно]withть [CYR:мульт]and[CYR:язычной] геnot[CYR:рац]andand toоyes.
-// Compares in[CYR:ремя] [CYR:пар]withand[CYR:нга], энtoодand[CYR:нга] in HV and геnot[CYR:рац]andand теtowithта.
+// [CYR:[EN]] produces[CYR:[EN]]with[EN] [CYR:[EN]]and[CYR:[EN]] [EN]not[CYR:[EN]]andand to[EN]yes.
+// Compares in[CYR:[EN]] [CYR:[EN]]withand[CYR:[EN]], [EN]to[EN]and[CYR:[EN]] in HV and [EN]not[CYR:[EN]]andand [EN]towith[EN].
 //
-// [CYR:Цель]: <100ms for 10k LOC.
+// [CYR:[EN]]: <100ms for 10k LOC.
 // φ² + 1/φ² = 3 | PHOENIX
 // ═══════════════════════════════════════════════════════════════════════════════
 

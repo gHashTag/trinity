@@ -4,19 +4,19 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-/// [CYR:Конте]towithт inалandyesцandand - [CYR:общ]andе data for inwithех [CYR:богатырей]
+/// [CYR:[EN]]towith[EN] in[EN]andyes[EN]andand - [CYR:[EN]]and[EN] data for inwith[EN] [CYR:[EN]]
 pub const ValidationContext = struct {
     allocator: Allocator,
     spec_path: []const u8,
     source: []const u8,
     config: ValidatorConfig,
 
-    // AST (if [CYR:уже] with[CYR:пар]withен)
+    // AST (if [CYR:[EN]] with[CYR:[EN]]with[EN])
     ast: ?*const struct {
         nodes: []const AstNode,
     },
 
-    // [CYR:Табл]andца withandмin[CYR:оло]in (if [CYR:уже] bywith[CYR:трое]on)
+    // [CYR:[EN]]and[EN] withand[EN]in[CYR:[EN]]in (if [CYR:[EN]] bywith[CYR:[EN]]on)
     symbol_table: ?*const struct {
         symbols: std.StringHashMap(Symbol),
     },
@@ -30,15 +30,15 @@ pub const ValidatorConfig = struct {
     timeout_ms: u32 = 30000,
 };
 
-/// Result [CYR:про]inерtoand [CYR:богатыря]
+/// Result [CYR:[EN]]in[EN]toand [CYR:[EN]]
 pub const BogatyrVerdict = enum {
-    Pass, // ✅ Check [CYR:прошла]
-    Fail, // ❌ Check not [CYR:прошла]
-    Warning, // ⚠️ [CYR:Преду]beforeнandе
-    Skip, // ⊘ [CYR:Богатырь] [CYR:пропущен]
+    Pass, // ✅ Check [CYR:[EN]]
+    Fail, // ❌ Check not [CYR:[EN]]
+    Warning, // ⚠️ [CYR:[EN]]before[EN]and[EN]
+    Skip, // ⊘ [CYR:[EN]] [CYR:[EN]]
 };
 
-/// Ошandбtoа inалandyesцandand
+/// [EN]and[EN]to[EN] in[EN]andyes[EN]andand
 pub const ValidationError = struct {
     code: []const u8,
     message: []const u8,
@@ -47,31 +47,31 @@ pub const ValidationError = struct {
     column: usize,
 };
 
-/// [CYR:Метр]andtoand inыbyлnotнandя [CYR:богатыря]
+/// [CYR:[EN]]andtoand in[EN]by[EN]not[EN]and[EN] [CYR:[EN]]
 pub const BogatyrMetrics = struct {
     duration_ns: i64,
     checks_performed: usize,
 };
 
-/// [CYR:Интерфей]with [CYR:Богатыря] - each [CYR:богатырь] [CYR:реал]and[CYR:зует] this [CYR:трейт]
+/// [CYR:[EN]]with [CYR:[EN]] - each [CYR:[EN]] [CYR:[EN]]and[CYR:[EN]] this [CYR:[EN]]
 pub const BogatyrPlugin = struct {
     name: []const u8,
     version: []const u8,
     category: []const u8,
     priority: u32,
 
-    /// [CYR:Фун]toцandя inалandyesцandand - [CYR:реал]and[CYR:зует]withя to[CYR:аждым] [CYR:богатырем]
+    /// [CYR:[EN]]to[EN]and[EN] in[EN]andyes[EN]andand - [CYR:[EN]]and[CYR:[EN]]with[EN] to[CYR:[EN]] [CYR:[EN]]
     validate: *const fn (*const ValidationContext) anyerror!BogatyrResult,
 };
 
-/// Result [CYR:раб]fromы [CYR:богатыря]
+/// Result [CYR:[EN]]from[EN] [CYR:[EN]]
 pub const BogatyrResult = struct {
     verdict: BogatyrVerdict,
     errors: []const ValidationError,
     metrics: BogatyrMetrics,
 };
 
-/// Вwithby[CYR:могательные] тandпы
+/// [EN]withby[CYR:[EN]] [EN]and[EN]
 pub const AstNode = struct {
     kind: []const u8,
     value: ?[]const u8,
@@ -84,7 +84,7 @@ pub const Symbol = struct {
     line: usize,
 };
 
-/// Creates ошandбtoу inалandyesцandand
+/// Creates [EN]and[EN]to[EN] in[EN]andyes[EN]andand
 pub fn createError(allocator: Allocator, code: []const u8, message: []const u8, line: usize, column: usize) !ValidationError {
     return ValidationError{
         .code = try allocator.dupe(u8, code),

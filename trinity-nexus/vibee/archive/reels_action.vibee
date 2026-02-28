@@ -5,10 +5,10 @@
 // validate() detects intent through NLP patterns, not /reels command.
 //
 // Trigger patterns (similes):
-// - "with[CYR:оздай] рandлwith", "with[CYR:делай] inand[CYR:део] for рandлwith"
-// - "[CYR:хочу] inand[CYR:део] for andнwith[CYR:таграм]"
-// - "[CYR:нужен] [CYR:контент] for withоцwith[CYR:етей]"
-// - "геnotрand[CYR:руй] reels", "make a reel"
+// - "with[CYR:[TRANSLATED]] [EN]and[EN]with", "with[CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]] for [EN]and[EN]with"
+// - "[CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]] for and[EN]with[CYR:[TRANSLATED]]"
+// - "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] for with[EN]with[CYR:[TRANSLATED]]"
+// - "[EN]not[EN]and[CYR:[TRANSLATED]] reels", "make a reel"
 
 import ../eliza.vibee as eliza
 
@@ -79,19 +79,19 @@ fn error(self) · self.error
   id: Int}'s photo for avatar, generates script, TTS, lipsync, and B-roll.",
     // Similes for NLP matching
     [
-      "with[CYR:оздай] рandлwith", "with[CYR:делай] рandлwith", "рandлwith inand[CYR:део]",
-      "with[CYR:оздай] inand[CYR:део] for andнwith[CYR:таграм]", "inand[CYR:део] for andнwithты",
+      "with[CYR:[TRANSLATED]] [EN]and[EN]with", "with[CYR:[TRANSLATED]] [EN]and[EN]with", "[EN]and[EN]with inand[CYR:[TRANSLATED]]",
+      "with[CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]] for and[EN]with[CYR:[TRANSLATED]]", "inand[CYR:[TRANSLATED]] for and[EN]with[EN]y",
       "make a reel", "create reels", "instagram video",
-      "withгеnotрand[CYR:руй] inand[CYR:део]", "[CYR:хочу] рandлwith", "[CYR:нужен] рandлwith",
-      "[CYR:контент] for reels", "reels creator"
+      "with[EN]not[EN]and[CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]]", "[CYR:[TRANSLATED]] [EN]and[EN]with", "[CYR:[TRANSLATED]] [EN]and[EN]with",
+      "[CYR:[TRANSLATED]] for reels", "reels creator"
     ],
     // Example messages
     [
-      "[CYR:Создай] рandлwith [CYR:про] [CYR:продукт]andinноwithть",
-      "[CYR:Хочу] inand[CYR:део] for andнwith[CYR:таграма] о бfromnotwithе",
-      "[CYR:Сделай] мnot reels on [CYR:тему] [CYR:заработка]",
+      "[CYR:[TRANSLATED]] [EN]and[EN]with [CYR:pro] [CYR:pro[TRANSLATED]]andin[EN]with[EN]",
+      "[CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]] for and[EN]with[CYR:[TRANSLATED]]  [EN]fromnotwith[EN]",
+      "[CYR:[TRANSLATED]] [EN]not reels on [CYR:[TRANSLATED]] [CYR:[EN]work[TRANSLATED]]",
       "Make a reel about productivity tips",
-      "[CYR:Нужен] рandлwith for [CYR:моего] [CYR:продукта]"
+      "[CYR:[TRANSLATED]] [EN]and[EN]with for [CYR:[TRANSLATED]go] [CYR:pro[TRANSLATED]]"
     ],
     { validate_reels_request(it) },
     { handle_reels_creation(it) }
@@ -116,14 +116,14 @@ trace("agent.reels_action.validate")
 
   // Check for explicit reels keywords
   let reels_keywords = [
-    "рandлwith", "reels", "рandлз",
-    "inand[CYR:део] for andнwithта", "video for insta",
-    "inand[CYR:део] for withоцwithет", "social media video"
+    "[EN]and[EN]with", "reels", "[EN]and[EN]",
+    "inand[CYR:[TRANSLATED]] for and[EN]with[EN]", "video for insta",
+    "inand[CYR:[TRANSLATED]] for with[EN]with[EN]", "social media video"
   ]
 
   // Check for creation intent
   let creation_intent = [
-    "with[CYR:оздай]", "with[CYR:делай]", "withгеnotрand[CYR:руй]", "[CYR:хочу]",
+    "with[CYR:[TRANSLATED]]", "with[CYR:[TRANSLATED]]", "with[EN]not[EN]and[CYR:[TRANSLATED]]", "[CYR:[TRANSLATED]]",
     "create", "make", "generate", "need"
   ]
 
@@ -261,14 +261,14 @@ timeout(300s)
             · dict.insert("niche", niche)
 
           eliza.success_result_with_data(
-            "[CYR:Ваш] рandлwith [CYR:гото]in! [CYR:Тема]: {idea}",
+            "[CYR:[TRANSLATED]] [EN]and[EN]with [CYR:go[EN]]in! [CYR:[TRANSLATED]]: {idea}",
             data
           )
         }
 
         ❌err) → {
           print("[REELS_ACTION] Render failed: {err}")
-          eliza.error_result("Ошand[CYR:бка] [CYR:рендер]and[CYR:нга]: {err}")
+          eliza.error_result("[EN]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]: {err}")
         }
       }
     }
@@ -276,7 +276,7 @@ timeout(300s)
     ❌err) → {
       let err_str = pipeline_error_$(err)
       print("[REELS_ACTION] Pipeline error: {err_str}")
-      eliza.error_result("Ошand[CYR:бка] [CYR:пайплай]on: {err_str}")
+      eliza.error_result("[EN]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]on: {err_str}")
     }
   }
 }
@@ -316,19 +316,19 @@ timeout(300s)
 @impl {
   let cleaned = message
     · string.lowercase()
-    · remove_prefix("with[CYR:оздай] рandлwith")
-    · remove_prefix("with[CYR:делай] рandлwith")
-    · remove_prefix("[CYR:хочу] рandлwith")
+    · remove_prefix("with[CYR:[TRANSLATED]] [EN]and[EN]with")
+    · remove_prefix("with[CYR:[TRANSLATED]] [EN]and[EN]with")
+    · remove_prefix("[CYR:[TRANSLATED]] [EN]and[EN]with")
     · remove_prefix("create reels")
     · remove_prefix("make a reel")
-    · remove_prefix("[CYR:про] ")
-    · remove_prefix("о ")
-    · remove_prefix("on [CYR:тему] ")
+    · remove_prefix("[CYR:pro] ")
+    · remove_prefix(" ")
+    · remove_prefix("on [CYR:[TRANSLATED]] ")
     · remove_prefix("about ")
     · string.trim()
 
   match cleaned {
-    "" → "5 field[CYR:зных] withоin[CYR:ето]in for [CYR:продукт]andinноwithтand"
+    "" → "5 field[CYR:[EN]y[EN]] with[EN]in[CYR:[TRANSLATED]]in for [CYR:pro[TRANSLATED]]andin[EN]with[EN]and"
     idea → idea
   }
 }
@@ -379,13 +379,13 @@ timeout(300s)
   let msg = string.lowercase(message)
 
   let niches = [
-    #(["бfromnotwith", "business"], "business"),
-    #(["[CYR:продукт]andin", "productiv"], "productivity"),
-    #(["[CYR:здоро]in", "health"], "health"),
-    #(["фandonнwith", "finance"], "finance"),
-    #(["[CYR:технолог]", "tech"], "technology"),
-    #(["[CYR:образо]inан", "educat"], "education"),
-    #(["[CYR:маркет]andнг", "marketing"], "marketing")
+    #(["[EN]fromnotwith", "business"], "business"),
+    #(["[CYR:pro[TRANSLATED]]andin", "productiv"], "productivity"),
+    #(["[CYR:[TRANSLATED]]in", "health"], "health"),
+    #(["[EN]andon[EN]with", "finance"], "finance"),
+    #(["[CYR:[TRANSLATED]]", "tech"], "technology"),
+    #(["[CYR:[TRANSLATED]]in[EN]", "educat"], "education"),
+    #(["[CYR:[TRANSLATED]]and[EN]", "marketing"], "marketing")
   ]
 
   niches · find_niche
@@ -419,17 +419,17 @@ timeout(300s)
 
 @impl {
   let intro = match niche {
-    "business" → "[CYR:Вот] that [CYR:должен] зonть [CYR:каждый] [CYR:предпр]andнand[CYR:матель]..."
-    "productivity" → "[CYR:Хот]andте [CYR:быть] [CYR:продукт]andinnotе? [CYR:Вот] [CYR:мой] with[CYR:екрет]..."
-    "health" → "[CYR:Ваше] [CYR:здоро]inье - [CYR:гла]in[CYR:ный] прandорand[CYR:тет]..."
-    "finance" → "[CYR:Деньг]and [CYR:любят] with[CYR:чёт]. И inот [CYR:почему]..."
-    "technology" → "[CYR:Технолог]andand [CYR:меняют] мandр. А inы [CYR:гото]inы?"
-    "education" → "Учandтьwithя нandwhen not [CYR:поздно]..."
-    "marketing" → "[CYR:Маркет]andнг - this not [CYR:реклама], this with[CYR:тратег]andя..."
-    _ → "[CYR:Сегодня] я раwithwith[CYR:кажу] inам [CYR:кое]-that in[CYR:ажное]..."
+    "business" → "[CYR:[TRANSLATED]] that [CYR:[TRANSLATED]] [EN]on[EN] [CYR:[TRANSLATED]y[EN]] [CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]l]..."
+    "productivity" → "[CYR:[TRANSLATED]]and[EN] [CYR:[EN]y[EN]] [CYR:pro[TRANSLATED]]andinnot[EN]? [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]..."
+    "health" → "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[EN] - [CYR:[TRANSLATED]]in[CYR:ny] [EN]and[EN]and[CYR:[TRANSLATED]]..."
+    "finance" → "[CYR:[TRANSLATED]]and [CYR:[TRANSLATED]I[EN]] with[CYR:[TRANSLATED]].  in[EN] [CYR:[TRANSLATED]]..."
+    "technology" → "[CYR:[TRANSLATED]]andand [CYR:meI[EN]] [EN]and[EN]. A iny [CYR:go[EN]]iny?"
+    "education" → "[EN]and[EN]withI [EN]andwhen not [CYR:[TRANSLATED]]..."
+    "marketing" → "[CYR:[TRANSLATED]]and[EN] - this not [CYR:[TRANSLATED]], this with[CYR:[TRANSLATED]]andI..."
+    _ → "[CYR:[EN]go[EN]I] I [EN]withwith[CYR:[TRANSLATED]] in[EN] [CYR:[TRANSLATED]]-that in[CYR:[TRANSLATED]]..."
   }
 
-  "{intro}\n\n{idea}\n\n[CYR:Подп]andwithыin[CYR:айте]withь and withтаin[CYR:ьте] [CYR:лайк]!"
+  "{intro}\n\n{idea}\n\n[CYR:[TRANSLATED]]andwithyin[CYR:[TRANSLATED]]with[EN] and with[EN]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]!"
 }
 
 @spec poll_render_job(remotion_url: str, job: PipelineJob) → str · Result {

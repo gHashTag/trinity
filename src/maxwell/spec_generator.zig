@@ -1,5 +1,5 @@
 // Maxwell Daemon - Spec Generator
-// Геnot[CYR:рац]andя .vibee with[CYR:пец]andфandtoацandй andз опandwithанandя заyesчand
+// [EN]not[CYR:[EN]]and[EN] .vibee with[CYR:[EN]]and[EN]andto[EN]and[EN] and[EN] [EN]andwith[EN]and[EN] [EN]yes[EN]and
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -10,7 +10,7 @@ const code_analyzer = @import("code_analyzer.zig");
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Тandп byля in with[CYR:пец]andфandtoацandand
+/// [EN]and[EN] by[EN] in with[CYR:[EN]]and[EN]andto[EN]andand
 pub const FieldType = enum {
     String,
     Int,
@@ -33,7 +33,7 @@ pub const FieldType = enum {
     }
 };
 
-/// [CYR:Поле] тandпа
+/// [CYR:[EN]] [EN]and[EN]
 pub const SpecField = struct {
     name: []const u8,
     field_type: FieldType,
@@ -41,7 +41,7 @@ pub const SpecField = struct {
     description: ?[]const u8,
 };
 
-/// Тandп in with[CYR:пец]andфandtoацandand
+/// [EN]and[EN] in with[CYR:[EN]]and[EN]andto[EN]andand
 pub const SpecType = struct {
     name: []const u8,
     fields: std.ArrayList(SpecField),
@@ -87,7 +87,7 @@ pub const SpecType = struct {
     }
 };
 
-/// Поin[CYR:еден]andе in with[CYR:пец]andфandtoацandand
+/// [EN]in[CYR:[EN]]and[EN] in with[CYR:[EN]]and[EN]andto[EN]andand
 pub const SpecBehavior = struct {
     name: []const u8,
     given: []const u8,
@@ -95,7 +95,7 @@ pub const SpecBehavior = struct {
     then: []const u8,
 };
 
-/// [CYR:Пол]onя specification
+/// [CYR:[EN]]on[EN] specification
 pub const Specification = struct {
     name: []const u8,
     version: []const u8,
@@ -138,7 +138,7 @@ pub const Specification = struct {
         });
     }
 
-    /// [CYR:Сер]andалandзоin[CYR:ать] in .vibee format
+    /// [CYR:[EN]]and[EN]and[EN]in[CYR:[EN]] in .vibee format
     pub fn toVibee(self: *Specification) ![]const u8 {
         var output = std.ArrayList(u8).init(self.allocator);
         const writer = output.writer();
@@ -286,7 +286,7 @@ pub const SpecGenerator = struct {
     // GENERATION
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// [CYR:Сге]notрandроin[CYR:ать] with[CYR:пец]andфandtoацandю andз опandwithанandя заyesчand
+    /// [CYR:[EN]]not[EN]and[EN]in[CYR:[EN]] with[CYR:[EN]]and[EN]andto[EN]and[EN] and[EN] [EN]andwith[EN]and[EN] [EN]yes[EN]and
     pub fn generateFromDescription(self: *SpecGenerator, description: []const u8, name: []const u8) !Specification {
         var spec = Specification.init(self.allocator, name);
 
@@ -313,7 +313,7 @@ pub const SpecGenerator = struct {
         return spec;
     }
 
-    /// [CYR:Сге]notрandроin[CYR:ать] andз [CYR:шабло]on
+    /// [CYR:[EN]]not[EN]and[EN]in[CYR:[EN]] and[EN] [CYR:[EN]]on
     pub fn generateFromTemplate(self: *SpecGenerator, template_name: []const u8, name: []const u8) ![]const u8 {
         const template = self.templates.get(template_name) orelse return error.TemplateNotFound;
 
@@ -355,7 +355,7 @@ pub const SpecGenerator = struct {
         return result.toOwnedSlice();
     }
 
-    /// [CYR:Сге]notрandроin[CYR:ать] andз аonлandза with[CYR:уще]withтin[CYR:ующего] toоyes
+    /// [CYR:[EN]]not[EN]and[EN]in[CYR:[EN]] and[EN] [EN]on[EN]and[EN] with[CYR:[EN]]with[EN]in[CYR:[EN]] to[EN]yes
     pub fn generateFromAnalysis(self: *SpecGenerator, module: *const code_analyzer.ModuleInfo) !Specification {
         var spec = Specification.init(self.allocator, module.path);
 

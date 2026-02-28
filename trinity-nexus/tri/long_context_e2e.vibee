@@ -395,7 +395,7 @@ test_cases:
     expected: "All languages in context"
 
   - name: ml04_russian_facts
-    given: "[CYR:Меня] зоinут [CYR:Алек]withей"
+    given: "[CYR:[TRANSLATED]I] [EN]in[EN] [CYR:A[TRANSLATED]]with[EN]"
     expected: "Fact extracted in Russian"
 
   - name: ml05_chinese_topics

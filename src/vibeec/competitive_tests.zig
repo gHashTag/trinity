@@ -156,7 +156,7 @@ test "Error suggester for InvalidAmount" {
 
 test "Language prompts" {
     try std.testing.expect(std.mem.indexOf(u8, repl.Lang.EN.getPrompt(), "repl") != null);
-    try std.testing.expect(std.mem.indexOf(u8, repl.Lang.RU.getPrompt(), "[CYR:репл]") != null);
+    try std.testing.expect(std.mem.indexOf(u8, repl.Lang.RU.getPrompt(), "[CYR:[EN]]") != null);
 }
 
 test "Competitive REPL initialization" {

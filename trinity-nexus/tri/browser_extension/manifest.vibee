@@ -8,13 +8,13 @@ language: json
 module: manifest
 
 description: |
-  Chrome Extension Manifest V3 for [CYR:ЖАР] [CYR:ПТИЦА].
-  [CYR:Определяет] permissions, scripts, and UI componentы.
+  Chrome Extension Manifest V3 for [CYR:[EN]A[EN]] [CYR:[TRANSLATED]A].
+  [CYR:[TRANSLATED]I[EN]] permissions, scripts, and UI componenty.
 
 manifest_version: 3
 
 extension:
-  name: "[CYR:ЖАР] [CYR:ПТИЦА] - Ternary Anti-Detect"
+  name: "[CYR:[EN]A[EN]] [CYR:[TRANSLATED]A] - Ternary Anti-Detect"
   short_name: "Firebird"
   version: "1.0.0"
   description: "Ternary fingerprint evasion browser with DePIN rewards. φ² + 1/φ² = 3"
@@ -29,14 +29,14 @@ icons:
   128: "icons/firebird-128.png"
 
 permissions:
-  - storage           # [CYR:Сохра]notнandе [CYR:проф]and[CYR:лей] and onwith[CYR:троек]
-  - activeTab         # Доwith[CYR:туп] к [CYR:текущей] in[CYR:кладке]
-  - scripting         # [CYR:Инъекц]andя content scripts
-  - webNavigation     # Отwith[CYR:леж]andinанandе oninand[CYR:гац]andand
-  - alarms            # [CYR:Пер]andодandчеwithкandе [CYR:задач]and (DePIN sync)
+  - storage           # [CYR:[TRANSLATED]]not[EN]and[EN] [CYR:pro[EN]]and[CYR:[TRANSLATED]] and onwith[CYR:[TRANSLATED]]
+  - activeTab         # [EN]with[CYR:[TRANSLATED]]  [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]
+  - scripting         # [CYR:[TRANSLATED]]andI content scripts
+  - webNavigation     # [EN]with[CYR:[TRANSLATED]]andin[EN]and[EN] oninand[CYR:[TRANSLATED]]andand
+  - alarms            # [CYR:[TRANSLATED]]and[EN]and[EN]with[EN]and[EN] [CYR:[TRANSLATED]]and (DePIN sync)
 
 host_permissions:
-  - "<all_urls>"      # Доwith[CYR:туп] ко inwithем websiteам for evasion
+  - "<all_urls>"      # [EN]with[CYR:[TRANSLATED]] [EN] inwith[EN] website[EN] for evasion
 
 background:
   service_worker: "background.js"
@@ -52,7 +52,7 @@ content_scripts:
 
 action:
   default_popup: "popup.html"
-  default_title: "[CYR:ЖАР] [CYR:ПТИЦА]"
+  default_title: "[CYR:[EN]A[EN]] [CYR:[TRANSLATED]A]"
   default_icon:
     16: "icons/firebird-16.png"
     32: "icons/firebird-32.png"
@@ -70,10 +70,10 @@ web_accessible_resources:
 content_security_policy:
   extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
 
-# Мandнand[CYR:маль]onя version Chrome
+# [EN]and[EN]and[CYR:[EN]l]onI version Chrome
 minimum_chrome_version: "102"
 
-# [CYR:Ключе]inые withлоinа for Chrome Web Store
+# [CYR:[TRANSLATED]]iny[EN] with[EN]in[EN] for Chrome Web Store
 key_words:
   - anti-detect
   - fingerprint

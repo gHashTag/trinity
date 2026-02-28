@@ -1,5 +1,5 @@
 //! VIBEE Package Manager - PAS DAEMON V38
-//! [CYR:Паттерны]: HSH (O(1) lookup), D&C (dependency resolution), PRE (cached metadata)
+//! [CYR:[EN]]: HSH (O(1) lookup), D&C (dependency resolution), PRE (cached metadata)
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;

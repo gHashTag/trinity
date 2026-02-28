@@ -1,8 +1,8 @@
 // Trinity Knowledge Graph CLI
-// [CYR:Интера]toтandin[CYR:ный] and[CYR:нтерфей]with for [CYR:раб]fromы with [CYR:графом] зonнandй
+// [CYR:[TRANSLATED]]to[EN]andin[CYR:ny] and[CYR:[TRANSLATED]]with for [CYR:work]fromy with [CYR:[TRANSLATED]] [EN]on[EN]and[EN]
 //
 // USAGE: trinity-kg [command] [args...]
-// REPL:  trinity-kg ([CYR:без] argumentоin)
+// REPL:  trinity-kg ([CYR:without] argument[EN]in)
 //
 // ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ: V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3
@@ -13,19 +13,19 @@ const kg = @import("knowledge_graph.zig");
 const KnowledgeGraph = kg.KnowledgeGraph;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:ГЛОБАЛЬНОЕ] [CYR:СОСТОЯНИЕ]
+// [CYR:[TRANSLATED]A[TRANSLATED]] [CYR:[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var graph: KnowledgeGraph = KnowledgeGraph.init();
-var name_buffer: [16384]u8 = undefined; // [CYR:Буфер] for and[CYR:мён] прand [CYR:загруз]toе
-var string_pool: [32768]u8 = undefined; // [CYR:Буфер] for [CYR:хра]notнandя with[CYR:тро]to
+var name_buffer: [16384]u8 = undefined; // [CYR:[TRANSLATED]] for and[CYR:[TRANSLATED]] [EN]and [CYR:[TRANSLATED]]to[EN]
+var string_pool: [32768]u8 = undefined; // [CYR:[TRANSLATED]] for [CYR:[TRANSLATED]]not[EN]andI with[CYR:[TRANSLATED]]to
 var string_pool_offset: usize = 0;
 var current_file: ?[]const u8 = null;
 
-/// [CYR:Коп]and[CYR:рует] with[CYR:тро]toу in [CYR:пул] and inозin[CYR:ращает] slice
+/// [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]to[EN] in [CYR:[TRANSLATED]] and in[EN]in[CYR:[TRANSLATED]acts] slice
 fn internString(s: []const u8) []const u8 {
     if (string_pool_offset + s.len > string_pool.len) {
-        return s; // [CYR:Пул] [CYR:перепол]notн, inозin[CYR:ращаем] орandгandonл
+        return s; // [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]not[EN], in[EN]in[CYR:[TRANSLATED]] [EN]and[EN]andon[EN]
     }
     const start = string_pool_offset;
     @memcpy(string_pool[start .. start + s.len], s);
@@ -42,9 +42,9 @@ pub fn main() !void {
     const stdin = std.io.getStdIn().reader();
 
     var args = std.process.args();
-    _ = args.skip(); // [CYR:Пропу]withto[CYR:аем] andмя [CYR:программы]
+    _ = args.skip(); // [CYR:[TRANSLATED]]withto[CYR:[TRANSLATED]] and[EN]I [CYR:pro[TRANSLATED]y]
 
-    // Еwithлand еwithть argumentы - in[CYR:ыполняем] to[CYR:оманду] and in[CYR:ыход]andм
+    // [EN]with[EN]and [EN]with[EN] argumenty - in[CYR:y[TRANSLATED]I[EN]] to[CYR:[TRANSLATED]] and in[CYR:y[TRANSLATED]]and[EN]
     if (args.next()) |cmd| {
         var arg_list: [10][]const u8 = undefined;
         var arg_count: usize = 0;
@@ -60,7 +60,7 @@ pub fn main() !void {
         return;
     }
 
-    // REPL [CYR:реж]andм
+    // REPL [CYR:[TRANSLATED]]and[EN]
     try printBanner(stdout);
 
     var line_buf: [1024]u8 = undefined;
@@ -76,7 +76,7 @@ pub fn main() !void {
         const trimmed = std.mem.trim(u8, line, " \t\r\n");
         if (trimmed.len == 0) continue;
 
-        // [CYR:Пар]withandм to[CYR:оманду]
+        // [CYR:[TRANSLATED]]withand[EN] to[CYR:[TRANSLATED]]
         var tokens = std.mem.tokenizeAny(u8, trimmed, " \t");
         const cmd = tokens.next() orelse continue;
 
@@ -91,7 +91,7 @@ pub fn main() !void {
         }
 
         if (std.mem.eql(u8, cmd, "exit") or std.mem.eql(u8, cmd, "quit")) {
-            try stdout.print("\x1b[33m[CYR:Гудбай]! φ² + 1/φ² = 3\x1b[0m\n", .{});
+            try stdout.print("\x1b[33m[CYR:[TRANSLATED]]! φ² + 1/φ² = 3\x1b[0m\n", .{});
             break;
         }
 
@@ -102,7 +102,7 @@ pub fn main() !void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:КОМАНДЫ]
+// [CYR:[TRANSLATED]A[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn executeCommand(cmd: []const u8, args: [][]const u8, writer: anytype) !void {
@@ -122,41 +122,41 @@ fn executeCommand(cmd: []const u8, args: [][]const u8, writer: anytype) !void {
         try cmdList(writer);
     } else if (std.mem.eql(u8, cmd, "clear")) {
         graph = KnowledgeGraph.init();
-        try writer.print("\x1b[32m[CYR:Граф] очand[CYR:щен].\x1b[0m\n", .{});
+        try writer.print("\x1b[32m[CYR:[TRANSLATED]] [EN]and[CYR:[TRANSLATED]].\x1b[0m\n", .{});
     } else {
-        try writer.print("\x1b[31mНеandзinеwithтonя to[CYR:оманда]: {s}\x1b[0m\n", .{cmd});
-        try writer.print("Вinедandте 'help' for with[CYR:пра]intoand.\n", .{});
+        try writer.print("\x1b[31m[EN]and[EN]in[EN]with[EN]onI to[CYR:[TRANSLATED]]: {s}\x1b[0m\n", .{cmd});
+        try writer.print("[EN]in[EN]and[EN] 'help' for with[CYR:law]intoand.\n", .{});
     }
 }
 
-/// [CYR:Команда] add: [CYR:доба]inandть фаtoт
+/// [CYR:[TRANSLATED]] add: [CYR:[TRANSLATED]]inand[EN] [EN]to[EN]
 fn cmdAdd(args: [][]const u8, writer: anytype) !void {
     if (args.len < 3) {
-        try writer.print("\x1b[31mИwith[CYR:пользо]inанandе: add <subject> <predicate> <object>\x1b[0m\n", .{});
-        try writer.print("Прand[CYR:мер]: add Paris capital_of France\n", .{});
+        try writer.print("\x1b[31m[EN]with[CYR:[EN]l[EN]]in[EN]and[EN]: add <subject> <predicate> <object>\x1b[0m\n", .{});
+        try writer.print("[EN]and[CYR:[TRANSLATED]]: add Paris capital_of France\n", .{});
         return;
     }
 
-    // [CYR:Интерн]and[CYR:руем] with[CYR:тро]toand thatбы онand жor in [CYR:памят]and
+    // [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]toand that[EN]y [EN]and [EN]or in [CYR:[TRANSLATED]I[EN]]and
     const subject = internString(args[0]);
     const predicate = internString(args[1]);
     const object = internString(args[2]);
 
     graph.addTriple(subject, predicate, object);
 
-    try writer.print("\x1b[32m✓ [CYR:Доба]in[CYR:лено]:\x1b[0m {s} \x1b[33m{s}\x1b[0m {s}\n", .{ subject, predicate, object });
+    try writer.print("\x1b[32m✓ [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]:\x1b[0m {s} \x1b[33m{s}\x1b[0m {s}\n", .{ subject, predicate, object });
 }
 
-/// [CYR:Команда] query: [CYR:запро]with to [CYR:графу]
+/// [CYR:[TRANSLATED]] query: [CYR:[EN]pro]with to [CYR:[TRANSLATED]]
 fn cmdQuery(args: [][]const u8, writer: anytype) !void {
     if (args.len < 3) {
-        try writer.print("\x1b[31mИwith[CYR:пользо]inанandе: query <subject|?> <predicate> <object|?>\x1b[0m\n", .{});
-        try writer.print("Прand[CYR:мер]: query Paris capital_of ?\n", .{});
-        try writer.print("Прand[CYR:мер]: query ? capital_of France\n", .{});
+        try writer.print("\x1b[31m[EN]with[CYR:[EN]l[EN]]in[EN]and[EN]: query <subject|?> <predicate> <object|?>\x1b[0m\n", .{});
+        try writer.print("[EN]and[CYR:[TRANSLATED]]: query Paris capital_of ?\n", .{});
+        try writer.print("[EN]and[CYR:[TRANSLATED]]: query ? capital_of France\n", .{});
         return;
     }
 
-    // [CYR:Интерн]and[CYR:руем] with[CYR:тро]toand for поandwithtoа
+    // [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]toand for [EN]andwithto[EN]
     const subject = internString(args[0]);
     const predicate = internString(args[1]);
     const object = internString(args[2]);
@@ -165,50 +165,50 @@ fn cmdQuery(args: [][]const u8, writer: anytype) !void {
     const is_object_query = std.mem.eql(u8, object, "?");
 
     if (is_subject_query and is_object_query) {
-        try writer.print("\x1b[31m[CYR:Можно] andwithto[CYR:ать] [CYR:толь]toо subject [CYR:ИЛИ] object, not [CYR:оба].\x1b[0m\n", .{});
+        try writer.print("\x1b[31m[CYR:[TRANSLATED]] andwithto[CYR:ate] [CYR:[EN]l]to[EN] subject [CYR:[TRANSLATED]] object, not [CYR:[TRANSLATED]].\x1b[0m\n", .{});
         return;
     }
 
     if (!is_subject_query and !is_object_query) {
-        try writer.print("\x1b[31m[CYR:Нужно] уto[CYR:азать] ? for andwithto[CYR:омого] elementа.\x1b[0m\n", .{});
+        try writer.print("\x1b[31m[CYR:[TRANSLATED]] [EN]to[CYR:[EN]ate] ? for andwithto[CYR:[TRANSLATED]go] element[EN].\x1b[0m\n", .{});
         return;
     }
 
-    try writer.print("\x1b[36m[CYR:Запро]with:\x1b[0m {s} {s} {s}\n", .{ subject, predicate, object });
+    try writer.print("\x1b[36m[CYR:[EN]pro]with:\x1b[0m {s} {s} {s}\n", .{ subject, predicate, object });
 
     if (is_object_query) {
-        // [CYR:Ищем] object: query(subject, predicate, ?)
+        // [CYR:[TRANSLATED]] object: query(subject, predicate, ?)
         const result = graph.queryObject(subject, predicate);
         if (result) |entity| {
             try writer.print("\x1b[32m✓ Result:\x1b[0m {s}\n", .{entity.name});
         } else {
-            try writer.print("\x1b[33m✗ Не on[CYR:йдено]\x1b[0m\n", .{});
+            try writer.print("\x1b[33m✗ [EN] on[CYR:[TRANSLATED]]\x1b[0m\n", .{});
         }
     } else {
-        // [CYR:Ищем] subject: query(?, predicate, object)
+        // [CYR:[TRANSLATED]] subject: query(?, predicate, object)
         const result = graph.querySubject(predicate, object);
         if (result) |entity| {
             try writer.print("\x1b[32m✓ Result:\x1b[0m {s}\n", .{entity.name});
         } else {
-            try writer.print("\x1b[33m✗ Не on[CYR:йдено]\x1b[0m\n", .{});
+            try writer.print("\x1b[33m✗ [EN] on[CYR:[TRANSLATED]]\x1b[0m\n", .{});
         }
     }
 }
 
-/// [CYR:Команда] save: with[CYR:охран]andть [CYR:граф]
+/// [CYR:[TRANSLATED]] save: with[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]
 fn cmdSave(args: [][]const u8, writer: anytype) !void {
     const path = if (args.len > 0) args[0] else (current_file orelse "graph.trkg");
 
     try graph.save(path);
     current_file = path;
 
-    try writer.print("\x1b[32m✓ [CYR:Граф] with[CYR:охранён]:\x1b[0m {s}\n", .{path});
+    try writer.print("\x1b[32m✓ [CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]:\x1b[0m {s}\n", .{path});
 }
 
-/// [CYR:Команда] load: [CYR:загруз]andть [CYR:граф]
+/// [CYR:[TRANSLATED]] load: [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]
 fn cmdLoad(args: [][]const u8, writer: anytype) !void {
     if (args.len < 1) {
-        try writer.print("\x1b[31mИwith[CYR:пользо]inанandе: load <path>\x1b[0m\n", .{});
+        try writer.print("\x1b[31m[EN]with[CYR:[EN]l[EN]]in[EN]and[EN]: load <path>\x1b[0m\n", .{});
         return;
     }
 
@@ -218,37 +218,37 @@ fn cmdLoad(args: [][]const u8, writer: anytype) !void {
     current_file = path;
 
     const s = graph.stats();
-    try writer.print("\x1b[32m✓ [CYR:Граф] [CYR:загружен]:\x1b[0m {s}\n", .{path});
-    try writer.print("  [CYR:Сущно]with[CYR:тей]: {d}, [CYR:Отношен]andй: {d}, Фаtoтоin: {d}\n", .{ s.entities, s.relations, s.triples });
+    try writer.print("\x1b[32m✓ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:\x1b[0m {s}\n", .{path});
+    try writer.print("  [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]: {d}, [CYR:[TRANSLATED]]and[EN]: {d}, [EN]to[EN]in: {d}\n", .{ s.entities, s.relations, s.triples });
 }
 
-/// [CYR:Команда] stats: with[CYR:тат]andwithтandtoа
+/// [CYR:[TRANSLATED]] stats: with[CYR:[TRANSLATED]]andwith[EN]andto[EN]
 fn cmdStats(writer: anytype) !void {
     const s = graph.stats();
 
     try writer.print("\n\x1b[36m╔═══════════════════════════════════════╗\x1b[0m\n", .{});
     try writer.print("\x1b[36m║\x1b[0m       TRINITY KNOWLEDGE GRAPH         \x1b[36m║\x1b[0m\n", .{});
     try writer.print("\x1b[36m╠═══════════════════════════════════════╣\x1b[0m\n", .{});
-    try writer.print("\x1b[36m║\x1b[0m  [CYR:Сущно]with[CYR:тей]:  \x1b[33m{d:5}\x1b[0m                    \x1b[36m║\x1b[0m\n", .{s.entities});
-    try writer.print("\x1b[36m║\x1b[0m  [CYR:Отношен]andй:  \x1b[33m{d:5}\x1b[0m                    \x1b[36m║\x1b[0m\n", .{s.relations});
-    try writer.print("\x1b[36m║\x1b[0m  Фаtoтоin:     \x1b[33m{d:5}\x1b[0m                    \x1b[36m║\x1b[0m\n", .{s.triples});
+    try writer.print("\x1b[36m║\x1b[0m  [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]:  \x1b[33m{d:5}\x1b[0m                    \x1b[36m║\x1b[0m\n", .{s.entities});
+    try writer.print("\x1b[36m║\x1b[0m  [CYR:[TRANSLATED]]and[EN]:  \x1b[33m{d:5}\x1b[0m                    \x1b[36m║\x1b[0m\n", .{s.relations});
+    try writer.print("\x1b[36m║\x1b[0m  [EN]to[EN]in:     \x1b[33m{d:5}\x1b[0m                    \x1b[36m║\x1b[0m\n", .{s.triples});
     try writer.print("\x1b[36m╚═══════════════════════════════════════╝\x1b[0m\n", .{});
 
     if (current_file) |f| {
-        try writer.print("  [CYR:Файл]: {s}\n", .{f});
+        try writer.print("  [CYR:[TRANSLATED]]: {s}\n", .{f});
     }
 }
 
-/// [CYR:Команда] list: withпandwithоto with[CYR:ущно]with[CYR:тей]
+/// [CYR:[TRANSLATED]] list: with[EN]andwith[EN]to with[CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]
 fn cmdList(writer: anytype) !void {
-    try writer.print("\n\x1b[36m[CYR:Сущно]withтand:\x1b[0m\n", .{});
+    try writer.print("\n\x1b[36m[CYR:[TRANSLATED]]with[EN]and:\x1b[0m\n", .{});
     for (0..graph.entity_count) |i| {
         if (graph.entities[i]) |e| {
             try writer.print("  [{d}] {s}\n", .{ e.id, e.name });
         }
     }
 
-    try writer.print("\n\x1b[36m[CYR:Отношен]andя:\x1b[0m\n", .{});
+    try writer.print("\n\x1b[36m[CYR:[TRANSLATED]]andI:\x1b[0m\n", .{});
     for (0..graph.relation_count) |i| {
         if (graph.relations[i]) |r| {
             try writer.print("  [{d}] {s}\n", .{ r.id, r.name });
@@ -274,39 +274,39 @@ fn printBanner(writer: anytype) !void {
     try writer.print("\x1b[36m║\x1b[0m              \x1b[90mφ² + 1/φ² = 3\x1b[0m                                  \x1b[36m║\x1b[0m\n", .{});
     try writer.print("\x1b[36m╚═══════════════════════════════════════════════════════════════╝\x1b[0m\n", .{});
     try writer.print("\n", .{});
-    try writer.print("Вinедandте \x1b[33mhelp\x1b[0m for with[CYR:пра]intoand, \x1b[33mexit\x1b[0m for in[CYR:ыхода].\n", .{});
+    try writer.print("[EN]in[EN]and[EN] \x1b[33mhelp\x1b[0m for with[CYR:law]intoand, \x1b[33mexit\x1b[0m for in[CYR:y[TRANSLATED]].\n", .{});
 }
 
 fn printHelp(writer: anytype) !void {
     try writer.print("\n\x1b[36m═══════════════════════════════════════════════════════════════\x1b[0m\n", .{});
-    try writer.print("\x1b[33m[CYR:КОМАНДЫ]:\x1b[0m\n", .{});
+    try writer.print("\x1b[33m[CYR:[TRANSLATED]A[TRANSLATED]]:\x1b[0m\n", .{});
     try writer.print("\x1b[36m═══════════════════════════════════════════════════════════════\x1b[0m\n", .{});
     try writer.print("\n", .{});
     try writer.print("  \x1b[32madd\x1b[0m <subject> <predicate> <object>\n", .{});
-    try writer.print("      [CYR:Доба]inandть фаtoт in [CYR:граф]\n", .{});
-    try writer.print("      Прand[CYR:мер]: \x1b[90madd Paris capital_of France\x1b[0m\n", .{});
+    try writer.print("      [CYR:[TRANSLATED]]inand[EN] [EN]to[EN] in [CYR:[TRANSLATED]]\n", .{});
+    try writer.print("      [EN]and[CYR:[TRANSLATED]]: \x1b[90madd Paris capital_of France\x1b[0m\n", .{});
     try writer.print("\n", .{});
     try writer.print("  \x1b[32mquery\x1b[0m <subject|?> <predicate> <object|?>\n", .{});
-    try writer.print("      [CYR:Запро]with to [CYR:графу] (? = andwithto[CYR:омое])\n", .{});
-    try writer.print("      Прand[CYR:мер]: \x1b[90mquery Paris capital_of ?\x1b[0m\n", .{});
-    try writer.print("      Прand[CYR:мер]: \x1b[90mquery ? capital_of France\x1b[0m\n", .{});
+    try writer.print("      [CYR:[EN]pro]with to [CYR:[TRANSLATED]] (? = andwithto[CYR:[TRANSLATED]])\n", .{});
+    try writer.print("      [EN]and[CYR:[TRANSLATED]]: \x1b[90mquery Paris capital_of ?\x1b[0m\n", .{});
+    try writer.print("      [EN]and[CYR:[TRANSLATED]]: \x1b[90mquery ? capital_of France\x1b[0m\n", .{});
     try writer.print("\n", .{});
     try writer.print("  \x1b[32msave\x1b[0m [path]\n", .{});
-    try writer.print("      [CYR:Сохран]andть [CYR:граф] in file\n", .{});
+    try writer.print("      [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] in file\n", .{});
     try writer.print("\n", .{});
     try writer.print("  \x1b[32mload\x1b[0m <path>\n", .{});
-    try writer.print("      [CYR:Загруз]andть [CYR:граф] andз fileа\n", .{});
+    try writer.print("      [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] and[EN] file[EN]\n", .{});
     try writer.print("\n", .{});
     try writer.print("  \x1b[32mstats\x1b[0m\n", .{});
-    try writer.print("      Поto[CYR:азать] with[CYR:тат]andwithтandtoу [CYR:графа]\n", .{});
+    try writer.print("      [EN]to[CYR:[EN]ate] with[CYR:[TRANSLATED]]andwith[EN]andto[EN] [CYR:[TRANSLATED]]\n", .{});
     try writer.print("\n", .{});
     try writer.print("  \x1b[32mlist\x1b[0m\n", .{});
-    try writer.print("      Поto[CYR:азать] inwithе with[CYR:ущно]withтand and from[CYR:ношен]andя\n", .{});
+    try writer.print("      [EN]to[CYR:[EN]ate] inwith[EN] with[CYR:[TRANSLATED]]with[EN]and and from[CYR:[TRANSLATED]]andI\n", .{});
     try writer.print("\n", .{});
     try writer.print("  \x1b[32mclear\x1b[0m\n", .{});
-    try writer.print("      Очandwithтandть [CYR:граф]\n", .{});
+    try writer.print("      [EN]andwith[EN]and[EN] [CYR:[TRANSLATED]]\n", .{});
     try writer.print("\n", .{});
     try writer.print("  \x1b[32mexit\x1b[0m\n", .{});
-    try writer.print("      [CYR:Выйт]and andз [CYR:программы]\n", .{});
+    try writer.print("      [CYR:Vy[EN]]and and[EN] [CYR:pro[TRANSLATED]y]\n", .{});
     try writer.print("\n", .{});
 }

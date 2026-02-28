@@ -532,8 +532,8 @@ test "phi constant" {
 // ═══════════════════════════════════════════════════════════════════════════════
 // VERILOG BACKEND (FPGA Target)
 // ═══════════════════════════════════════════════════════════════════════════════
-// Verilog code generation for withand[CYR:нтеза] on FPGA
-// Прandорand[CYR:тет]: BitNet operation (Ternary MAC [CYR:без] [CYR:умножен]andй)
+// Verilog code generation for withand[CYR:[EN]] on FPGA
+// [EN]and[EN]and[CYR:[EN]]: BitNet operation (Ternary MAC [CYR:[EN]] [CYR:[EN]]and[EN])
 // φ² + 1/φ² = 3
 
 pub const VerilogGen = struct {
@@ -606,7 +606,7 @@ pub const VerilogGen = struct {
     }
 
     fn visitFuncDeclVerilog(self: *VerilogGen, node: *const AstNode) !void {
-        // В Verilog [CYR:фун]toцandand with[CYR:тано]inятwithя [CYR:модулям]and or always [CYR:бло]toамand
+        // [EN] Verilog [CYR:[EN]]to[EN]andand with[CYR:[EN]]in[EN]with[EN] [CYR:[EN]]and or always [CYR:[EN]]to[EN]and
         try self.write("    // Function: ");
         if (node.children.items.len > 0) {
             const name = node.children.items[0].token.lexeme(self.source);
@@ -632,7 +632,7 @@ pub const VerilogGen = struct {
     }
 
     fn visitBinaryVerilog(self: *VerilogGen, node: *const AstNode) !void {
-        // [CYR:Тро]and[CYR:чные] operation [CYR:без] [CYR:умножен]andя!
+        // [CYR:[EN]]and[CYR:[EN]] operation [CYR:[EN]] [CYR:[EN]]and[EN]!
         try self.write("            // Ternary binary op (BitNet optimized)\n");
         try self.write("            case (weight_in)\n");
         try self.write("                2'b00: result <= result - activation_in; // -1\n");

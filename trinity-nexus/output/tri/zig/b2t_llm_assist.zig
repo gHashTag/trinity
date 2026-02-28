@@ -15,10 +15,10 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:КОНСТАНТЫ]
+// [CYR:[TRANSLATED]A[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// [CYR:Базо]inые φ-toонwith[CYR:танты] (Sacred Formula)
+// [CYR:[TRANSLATED]]iny[EN] φ-to[EN]with[CYR:[TRANSLATED]y] (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -30,7 +30,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:ТИПЫ]
+// [CYR:[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// 
@@ -152,7 +152,7 @@ pub const DecompilationResult = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:ПАМЯТЬ] [CYR:ДЛЯ] WASM
+// [CYR:[EN]A[TRANSLATED]] [CYR:[TRANSLATED]] WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -202,13 +202,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-and[CYR:нтер]fieldsцandя
+/// φ-and[CYR:[TRANSLATED]]fields[EN]andI
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// Геnot[CYR:рац]andя φ-withпand[CYR:рал]and
+/// [EN]not[CYR:[TRANSLATED]]andI φ-with[EN]and[CYR:[TRANSLATED]]and
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -261,8 +261,8 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 
 
 
-/// TVC IR [CYR:фун]toцandand
-/// When: Аonлandз def-use chains
+/// TVC IR [CYR:[TRANSLATED]]to[EN]andand
+/// When: Aon[EN]and[EN] def-use chains
 /// Then: Returns List<DataFlowNode>
 pub fn extract_data_flow() !void {
 // Extract: Returns List<DataFlowNode>
@@ -440,57 +440,57 @@ pub fn extract_data_flow() !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "detect_distortions_behavior" {
-// Given: Деto[CYR:омп]orроin[CYR:анный] toод and TVC IR
-// When: Аonлandз with[CYR:емант]andчеwithtoandх andwithto[CYR:ажен]andй
-// Then: Returns withпandwithоto Distortion with лоtoацandямand and severity
+// Given: [EN]to[CYR:[TRANSLATED]]or[EN]in[CYR:[EN]ny] to[EN] and TVC IR
+// When: Aon[EN]and[EN] with[CYR:[TRANSLATED]]and[EN]withtoand[EN] andwithto[CYR:[TRANSLATED]]and[EN]
+// Then: Returns with[EN]andwith[EN]to Distortion with [EN]to[EN]andI[EN]and and severity
 // Test detect_distortions: verify behavior is callable (compile-time check)
 _ = detect_distortions;
 }
 
 test "compute_semantic_intensity_behavior" {
-// Given: [CYR:Стро]toа деto[CYR:омп]orроin[CYR:анного] to[CYR:ода]
-// When: [CYR:Выч]andwith[CYR:лен]andе "with[CYR:емант]andчеwithtoой and[CYR:нтен]withandinноwithтand" (по FidelityGPT)
-// Then: Returns Float score for прandорandтand[CYR:зац]andand andwith[CYR:пра]in[CYR:лен]andй
+// Given: [CYR:[TRANSLATED]]to[EN] [EN]to[CYR:[TRANSLATED]]or[EN]in[CYR:[TRANSLATED]go] to[CYR:[TRANSLATED]]
+// When: [CYR:Vy[EN]]andwith[CYR:[TRANSLATED]]and[EN] "with[CYR:[TRANSLATED]]and[EN]withto[EN] and[CYR:[TRANSLATED]]withandin[EN]with[EN]and" ([EN] FidelityGPT)
+// Then: Returns Float score for [EN]and[EN]and[EN]and[CYR:[TRANSLATED]]andand andwith[CYR:law]in[CYR:[TRANSLATED]]and[EN]
 // Test compute_semantic_intensity: verify returns a float in valid range
 // TODO: Add specific test for compute_semantic_intensity
 _ = compute_semantic_intensity;
 }
 
 test "analyze_variable_dependencies_behavior" {
-// Given: Спandwithоto [CYR:переменных] with andwithto[CYR:ажен]andямand
-// When: Поwith[CYR:троен]andе [CYR:графа] заinandwithandмоwith[CYR:тей]
-// Then: Returns [CYR:упорядоченный] withпandwithоto for andwith[CYR:пра]in[CYR:лен]andя
+// Given: [EN]andwith[EN]to [CYR:[TRANSLATED]me[EN]y[EN]] with andwithto[CYR:[TRANSLATED]]andI[EN]and
+// When: [EN]with[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] [EN]inandwithand[EN]with[CYR:[TRANSLATED]]
+// Then: Returns [CYR:[TRANSLATED]I[TRANSLATED]ny] with[EN]andwith[EN]to for andwith[CYR:law]in[CYR:[TRANSLATED]]andI
 // Test analyze_variable_dependencies: verify behavior is callable (compile-time check)
 _ = analyze_variable_dependencies;
 }
 
 test "extract_data_flow_behavior" {
-// Given: TVC IR [CYR:фун]toцandand
-// When: Аonлandз def-use chains
+// Given: TVC IR [CYR:[TRANSLATED]]to[EN]andand
+// When: Aon[EN]and[EN] def-use chains
 // Then: Returns List<DataFlowNode>
 // Test extract_data_flow: verify behavior is callable (compile-time check)
 _ = extract_data_flow;
 }
 
 test "extract_call_graph_behavior" {
-// Given: TVC IR [CYR:модуля]
-// When: Поwith[CYR:троен]andе [CYR:графа] in[CYR:ызо]inоin
+// Given: TVC IR [CYR:[TRANSLATED]I]
+// When: [EN]with[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] in[CYR:y[EN]]in[EN]in
 // Then: Returns List<CallGraphNode>
 // Test extract_call_graph: verify behavior is callable (compile-time check)
 _ = extract_call_graph;
 }
 
 test "build_semantic_context_behavior" {
-// Given: TVC IR and resultы дandзаwithwith[CYR:ембл]andроinанandя
-// When: [CYR:Агрегац]andя inwith[CYR:его] to[CYR:онте]towithта
+// Given: TVC IR and resulty [EN]and[EN]withwith[CYR:[TRANSLATED]]and[EN]in[EN]andI
+// When: [CYR:A[TRANSLATED]]andI inwith[CYR:[EN]go] to[CYR:[TRANSLATED]]towith[EN]
 // Then: Returns SemanticContext
 // Test build_semantic_context: verify behavior is callable (compile-time check)
 _ = build_semantic_context;
 }
 
 test "embed_code_behavior" {
-// Given: [CYR:Фрагмент] to[CYR:ода]
-// When: Геnot[CYR:рац]andя [CYR:эмбедд]and[CYR:нга] [CYR:через] LLM
+// Given: [CYR:[TRANSLATED]me[EN]] to[CYR:[TRANSLATED]]
+// When: [EN]not[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] LLM
 // Then: Returns CodeEmbedding
 // Test embed_code: verify behavior is callable (compile-time check)
 _ = embed_code;
@@ -498,32 +498,32 @@ _ = embed_code;
 
 test "search_similar_behavior" {
 // Given: CodeEmbedding and RAGDatabase
-// When: Поandwithto k блand[CYR:жайш]andх withоwith[CYR:едей]
-// Then: Returns List<SimilarCode> fromwith[CYR:орт]andроin[CYR:анный] по similarity
+// When: [EN]andwithto k [EN]and[CYR:[TRANSLATED]]and[EN] with[EN]with[CYR:[TRANSLATED]]
+// Then: Returns List<SimilarCode> fromwith[CYR:[TRANSLATED]]and[EN]in[CYR:[EN]ny] [EN] similarity
 // Test search_similar: verify returns a float in valid range
 // TODO: Add specific test for search_similar
 _ = search_similar;
 }
 
 test "retrieve_examples_behavior" {
-// Given: Деto[CYR:омп]orроin[CYR:анный] toод and тandп andwithto[CYR:ажен]andя
-// When: Поandwithto [CYR:реле]in[CYR:антных] прand[CYR:меро]in for ICL
-// Then: Returns List<SimilarCode> for [CYR:промпта]
+// Given: [EN]to[CYR:[TRANSLATED]]or[EN]in[CYR:[EN]ny] to[EN] and [EN]and[EN] andwithto[CYR:[TRANSLATED]]andI
+// When: [EN]andwithto [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]y[EN]] [EN]and[CYR:[TRANSLATED]]in for ICL
+// Then: Returns List<SimilarCode> for [CYR:pro[TRANSLATED]]
 // Test retrieve_examples: verify behavior is callable (compile-time check)
 _ = retrieve_examples;
 }
 
 test "select_template_behavior" {
-// Given: Тandп andwithto[CYR:ажен]andя and [CYR:целе]inое to[CYR:аче]withтinо
-// When: [CYR:Выбор] [CYR:опт]and[CYR:мального] [CYR:шабло]on [CYR:промпта]
+// Given: [EN]and[EN] andwithto[CYR:[TRANSLATED]]andI and [CYR:[TRANSLATED]]in[EN] to[CYR:[TRANSLATED]]with[EN]in[EN]
+// When: [CYR:Vy[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[EN]lnogo] [CYR:[TRANSLATED]]on [CYR:pro[TRANSLATED]]
 // Then: Returns PromptTemplate
 // Test select_template: verify behavior is callable (compile-time check)
 _ = select_template;
 }
 
 test "build_prompt_behavior" {
-// Given: Вwithе to[CYR:омпо]not[CYR:нты] to[CYR:онте]towithта
-// When: [CYR:Сбор]toа фandon[CYR:льного] [CYR:промпта]
+// Given: [EN]with[EN] to[CYR:[TRANSLATED]]not[CYR:[EN]y] to[CYR:[TRANSLATED]]towith[EN]
+// When: [CYR:[TRANSLATED]]to[EN] [EN]andon[CYR:lnogo] [CYR:pro[TRANSLATED]]
 // Then: Returns DecompilationPrompt
 // Test build_prompt: verify behavior is callable (compile-time check)
 _ = build_prompt;
@@ -531,15 +531,15 @@ _ = build_prompt;
 
 test "format_icl_examples_behavior" {
 // Given: List<SimilarCode>
-// When: [CYR:Формат]andроinанandе прand[CYR:меро]in for in-context learning
-// Then: Returns String with прand[CYR:мерам]and in [CYR:формате] few-shot
+// When: [CYR:[TRANSLATED]]and[EN]in[EN]and[EN] [EN]and[CYR:[TRANSLATED]]in for in-context learning
+// Then: Returns String with [EN]and[CYR:[TRANSLATED]]and in [CYR:[TRANSLATED]] few-shot
 // Test format_icl_examples: verify behavior is callable (compile-time check)
 _ = format_icl_examples;
 }
 
 test "correct_code_behavior" {
 // Given: DecompilationPrompt
-// When: [CYR:Отпра]intoа in LLM and [CYR:получен]andе andwith[CYR:пра]in[CYR:лен]andй
+// When: [CYR:[EN]law]into[EN] in LLM and [CYR:[TRANSLATED]]and[EN] andwith[CYR:law]in[CYR:[TRANSLATED]]and[EN]
 // Then: Returns CorrectedCode
 // Test correct_code: verify behavior is callable (compile-time check)
 _ = correct_code;
@@ -547,31 +547,31 @@ _ = correct_code;
 
 test "validate_correction_behavior" {
 // Given: CorrectedCode
-// When: Check withand[CYR:нта]towithandwithа and with[CYR:емант]andtoand
-// Then: Returns Bool (inалand[CYR:дно] or notт)
+// When: Check withand[CYR:[TRANSLATED]]towithandwith[EN] and with[CYR:[TRANSLATED]]andtoand
+// Then: Returns Bool (in[EN]and[CYR:[TRANSLATED]] or not[EN])
 // Test validate_correction: verify behavior is callable (compile-time check)
 _ = validate_correction;
 }
 
 test "apply_corrections_behavior" {
-// Given: Орandгandon[CYR:льный] toод and List<CodeChange>
-// When: Прandмеnotнandе andwith[CYR:пра]in[CYR:лен]andй
-// Then: Returns andwith[CYR:пра]in[CYR:ленный] toод
+// Given: [EN]and[EN]andon[CYR:lny] to[EN] and List<CodeChange>
+// When: [EN]and[EN]not[EN]and[EN] andwith[CYR:law]in[CYR:[TRANSLATED]]and[EN]
+// Then: Returns andwith[CYR:law]in[CYR:[TRANSLATED]ny] to[EN]
 // Test apply_corrections: verify behavior is callable (compile-time check)
 _ = apply_corrections;
 }
 
 test "decompile_with_llm_behavior" {
-// Given: Бandon[CYR:рный] file and [CYR:адре]with [CYR:фун]toцandand
-// When: [CYR:Полный] [CYR:пайплайн] деto[CYR:омп]and[CYR:ляц]andand with LLM
+// Given: [EN]andon[CYR:[EN]ny] file and [CYR:[TRANSLATED]]with [CYR:[TRANSLATED]]to[EN]andand
+// When: [CYR:[TRANSLATED]ny] [CYR:[TRANSLATED]] [EN]to[CYR:[TRANSLATED]]and[CYR:[EN]I[EN]]andand with LLM
 // Then: Returns DecompilationResult
 // Test decompile_with_llm: verify behavior is callable (compile-time check)
 _ = decompile_with_llm;
 }
 
 test "batch_decompile_behavior" {
-// Given: Бandon[CYR:рный] file and withпandwithоto [CYR:адре]withоin
-// When: Паtoетonя деto[CYR:омп]and[CYR:ляц]andя inwithех [CYR:фун]toцandй
+// Given: [EN]andon[CYR:[EN]ny] file and with[EN]andwith[EN]to [CYR:[TRANSLATED]]with[EN]in
+// When: [EN]to[EN]onI [EN]to[CYR:[TRANSLATED]]and[CYR:[EN]I[EN]]andI inwith[EN] [CYR:[TRANSLATED]]to[EN]and[EN]
 // Then: Returns List<DecompilationResult>
 // Test batch_decompile: verify behavior is callable (compile-time check)
 _ = batch_decompile;
@@ -579,8 +579,8 @@ _ = batch_decompile;
 
 test "learn_from_result_behavior" {
 // Given: DecompilationResult with feedback
-// When: [CYR:Обно]in[CYR:лен]andе RAG [CYR:базы] уwith[CYR:пешным]and прand[CYR:мерам]and
-// Then: [CYR:Доба]in[CYR:ляет] ноinые [CYR:эмбедд]andнгand in [CYR:базу]
+// When: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] RAG [CYR:[TRANSLATED]y] [EN]with[CYR:[TRANSLATED]y[EN]]and [EN]and[CYR:[TRANSLATED]]and
+// Then: [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [EN]iny[EN] [CYR:[TRANSLATED]]and[EN]and in [CYR:[TRANSLATED]]
 // Test learn_from_result: verify behavior is callable (compile-time check)
 _ = learn_from_result;
 }

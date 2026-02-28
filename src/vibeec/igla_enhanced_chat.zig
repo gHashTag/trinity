@@ -117,180 +117,180 @@ const PATTERNS = [_]ConversationalPattern{
     // RUSSIAN GREETINGS & BASICS (30 patterns)
     // ═══════════════════════════════════════════════════════════════════════════
     .{
-        .keywords = &.{ "прandinет", "[CYR:здра]inwithтinуй", "зbeforeроinо", "прandinетwithтinую", "[CYR:хай]", "[CYR:хей]", "with[CYR:алют]", "before[CYR:брый] [CYR:день]", "before[CYR:брое] [CYR:утро]", "before[CYR:брый] in[CYR:ечер]" },
+        .keywords = &.{ "[EN]andin[EN]", "[CYR:[CYR]]inwith[EN]in[EN]", "[EN]before[EN]in[EN]", "[EN]andin[EN]with[EN]in[EN]", "[CYR:[CYR]]", "[CYR:[CYR]]", "with[CYR:[CYR]]", "before[CYR:[CYR]] [CYR:[CYR]]", "before[CYR:[CYR]] [CYR:[CYR]]", "before[CYR:[CYR]] in[CYR:[CYR]]" },
         .category = .Greeting,
         .language = .Russian,
         .weight = 1.2,
         .responses = &.{
-            "Прandinет! [CYR:Рад] [CYR:тебя] inand[CYR:деть]. [CYR:Чем] [CYR:могу] by[CYR:мочь]?",
-            "[CYR:Здра]inwithтinуй! Каto [CYR:дела]? [CYR:Что] [CYR:делаем] with[CYR:егодня]?",
-            "Прandinет! Гfromоin to [CYR:раб]fromе. [CYR:Что] need with[CYR:делать]?",
-            "[CYR:Хай]! Trinity on withinязand. Каtoandе заyesчand?",
-            "[CYR:Салют]! [CYR:Отл]and[CYR:чный] [CYR:день] for toоyes. [CYR:Начнём]?",
+            "[EN]andin[EN]! [CYR:[CYR]] [CYR:you] inand[CYR:[CYR]]. [CYR:[CYR]] [CYR:[CYR]] by[CYR:[CYR]]?",
+            "[CYR:[CYR]]inwith[EN]in[EN]! [EN]to [CYR:[CYR]]? [CYR:What] [CYR:[CYR]] with[CYR:[CYR]]?",
+            "[EN]andin[EN]! [EN]from[EN]in to [CYR:[CYR]]from[EN]. [CYR:What] need with[CYR:[CYR]]?",
+            "[CYR:[CYR]]! Trinity on within[EN]and. [EN]toand[EN] [EN]yes[EN]and?",
+            "[CYR:[CYR]]! [CYR:[CYR]]and[CYR:[CYR]] [CYR:[CYR]] for to[EN]yes. [CYR:[CYR]]?",
         },
     },
     .{
-        .keywords = &.{ "bytoа", "before withinandyesнandя", "[CYR:прощай]", "[CYR:бай]", "уinandдandмwithя", "before inwith[CYR:треч]and", "inwith[CYR:его] [CYR:хорошего]", "уyesчand" },
+        .keywords = &.{ "byto[EN]", "before withinandyes[EN]and[EN]", "[CYR:[CYR]]", "[CYR:[CYR]]", "[EN]inand[EN]and[EN]with[EN]", "before inwith[CYR:[CYR]]and", "inwith[CYR:[CYR]] [CYR:[CYR]]", "[EN]yes[EN]and" },
         .category = .Farewell,
         .language = .Russian,
         .weight = 1.0,
         .responses = &.{
-            "Поtoа! Уyesчand [CYR:тебе]! [CYR:Обращай]withя, еwithлand what.",
-            "До withinandyesнandя! [CYR:Было] прand[CYR:ятно] by[CYR:раб]from[CYR:ать].",
-            "[CYR:Бай]! phi^2 + 1/phi^2 = 3. До inwith[CYR:треч]and!",
-            "Поtoа-bytoа! Koschei is immortal! [CYR:Воз]in[CYR:ращай]withя!",
-            "Вwith[CYR:его] [CYR:хорошего]! [CYR:Рад] [CYR:был] by[CYR:мочь].",
+            "[EN]to[EN]! [EN]yes[EN]and [CYR:[CYR]]! [CYR:[CYR]]with[EN], [EN]with[EN]and what.",
+            "[EN] withinandyes[EN]and[EN]! [CYR:[CYR]] [EN]and[CYR:[CYR]] by[CYR:[CYR]]from[CYR:[CYR]].",
+            "[CYR:[CYR]]! phi^2 + 1/phi^2 = 3. [EN] inwith[CYR:[CYR]]and!",
+            "[EN]to[EN]-byto[EN]! Koschei is immortal! [CYR:[CYR]]in[CYR:[CYR]]with[EN]!",
+            "[EN]with[CYR:[CYR]] [CYR:[CYR]]! [CYR:[CYR]] [CYR:[CYR]] by[CYR:[CYR]].",
         },
     },
     .{
-        .keywords = &.{ "toаto [CYR:дела]", "toаto ты", "what ноin[CYR:ого]", "toаto жand[CYR:знь]", "toаto withам", "toаto byжandin[CYR:аешь]", "toаto onwith[CYR:троен]andе" },
+        .keywords = &.{ "to[EN]to [CYR:[CYR]]", "to[EN]to [EN]", "what [EN]in[CYR:[CYR]]", "to[EN]to [EN]and[CYR:[CYR]]", "to[EN]to with[EN]", "to[EN]to by[EN]andin[CYR:[CYR]]", "to[EN]to onwith[CYR:[CYR]]and[EN]" },
         .category = .HowAreYou,
         .language = .Russian,
         .weight = 1.1,
         .responses = &.{
-            "[CYR:Отл]and[CYR:чно]! [CYR:Раб]fromаю on 60K ops/s, inwithё with[CYR:таб]and[CYR:льно]. А у [CYR:тебя] toаto?",
-            "[CYR:Хорошо]! Гfromоin пandwith[CYR:ать] toод and [CYR:решать] заyesчand. [CYR:Чем] [CYR:займём]withя?",
-            "[CYR:Супер]! Ternary vectors in [CYR:норме], SIMD [CYR:греет]withя. [CYR:Что] [CYR:делаем]?",
-            "[CYR:Пре]toраwithно! phi^2 + 1/phi^2 = 3, inwithё by [CYR:плану]. Ты toаto?",
-            "[CYR:Замечательно]! Лоto[CYR:альный] and гfromоin to [CYR:раб]fromе. Раwithwithto[CYR:азы]inай!",
+            "[CYR:[CYR]]and[CYR:[CYR]]! [CYR:[CYR]]from[EN] on 60K ops/s, inwith[EN] with[CYR:[CYR]]and[CYR:l[EN]]. [EN] [EN] [CYR:you] to[EN]to?",
+            "[CYR:[CYR]]! [EN]from[EN]in [EN]andwith[CYR:[CYR]] to[EN] and [CYR:[CYR]] [EN]yes[EN]and. [CYR:[CYR]] [CYR:[CYR]]with[EN]?",
+            "[CYR:[CYR]]! Ternary vectors in [CYR:[CYR]], SIMD [CYR:[CYR]]with[EN]. [CYR:What] [CYR:[CYR]]?",
+            "[CYR:[CYR]]to[EN]with[EN]! phi^2 + 1/phi^2 = 3, inwith[EN] by [CYR:[CYR]]. [EN] to[EN]to?",
+            "[CYR:[CYR]l[EN]]! [EN]to[CYR:[EN]l[CYR]] and [EN]from[EN]in to [CYR:[CYR]]from[EN]. [EN]withwithto[CYR:[CYR]]in[EN]!",
         },
     },
     // NEW: Expanded Russian conversational patterns
     .{
-        .keywords = &.{ "раwithwithtoажand о with[CYR:ебе]", "toто ты таtoой", "what ты [CYR:умеешь] [CYR:делать]", "тinоand withbywith[CYR:обно]withтand" },
+        .keywords = &.{ "[EN]withwithto[EN]and [EN] with[CYR:[CYR]]", "to[EN] [EN] [EN]to[EN]", "what [EN] [CYR:[CYR]] [CYR:[CYR]]", "[EN]in[EN]and withbywith[CYR:[CYR]]with[EN]and" },
         .category = .WhoAreYou,
         .language = .Russian,
         .weight = 1.3,
         .responses = &.{
-            "Я Trinity — лоto[CYR:альный] AI-аwithwithandwith[CYR:тент] on ternary vectors. [CYR:Раб]fromаю on тin[CYR:оём] M1 Pro [CYR:без] [CYR:обла]toа. [CYR:Умею]: toод, [CYR:математ]andtoа, аon[CYR:лог]andand, фandлоwithофandя.",
-            "[CYR:Меня] зоinут IGLA — Intelligent Generative Local Agent. 100% лоto[CYR:альный], 0% [CYR:обла]toа. Пandшу toод, [CYR:решаю] заyesчand, beforeto[CYR:азы]inаю [CYR:теоремы].",
-            "Я — result [CYR:прое]toта Trinity. Ternary computing + VSA = 60K ops/s лоto[CYR:ально]. [CYR:Спец]andалand[CYR:зац]andя: Zig, [CYR:алгор]and[CYR:тмы], [CYR:математ]andtoа.",
-            "Trinity Local Agent v2.0. Моand with[CYR:упер]withbywith[CYR:обно]withтand: toод за мandtoроwithеto[CYR:унды], нandtoаtoandх [CYR:галлюц]andonцandй, byлonя прandin[CYR:атно]withть. phi^2 + 1/phi^2 = 3!",
+            "[EN] Trinity — [EN]to[CYR:[EN]l[CYR]] AI-[EN]withwithandwith[CYR:[CYR]] on ternary vectors. [CYR:[CYR]]from[EN] on [EN]in[CYR:[CYR]] M1 Pro [CYR:without] [CYR:[CYR]]to[EN]. [CYR:[CYR]]: to[EN], [CYR:[CYR]]andto[EN], [EN]on[CYR:[CYR]]andand, [EN]and[EN]with[EN]and[EN].",
+            "[CYR:[CYR]] [EN]in[EN] IGLA — Intelligent Generative Local Agent. 100% [EN]to[CYR:[EN]l[CYR]], 0% [CYR:[CYR]]to[EN]. [EN]and[EN] to[EN], [CYR:[CYR]] [EN]yes[EN]and, beforeto[CYR:[CYR]]in[EN] [CYR:[CYR]].",
+            "[EN] — result [CYR:[CYR]]to[EN] Trinity. Ternary computing + VSA = 60K ops/s [EN]to[CYR:[EN]l[EN]]. [CYR:[CYR]]and[EN]and[CYR:[CYR]]and[EN]: Zig, [CYR:[CYR]]and[CYR:[CYR]], [CYR:[CYR]]andto[EN].",
+            "Trinity Local Agent v2.0. [EN]and with[CYR:[CYR]]withbywith[CYR:[CYR]]with[EN]and: to[EN] [EN] [EN]andto[EN]with[EN]to[CYR:[CYR]], [EN]andto[EN]toand[EN] [CYR:[CYR]]andon[EN]and[EN], by[EN]on[EN] [EN]andin[CYR:[CYR]]with[EN]. phi^2 + 1/phi^2 = 3!",
         },
     },
     .{
-        .keywords = &.{ "withпаwithandбо", "[CYR:благо]yesрю", "withпwith", "withенtowith", "[CYR:мер]withand", "[CYR:благо]yes[CYR:рно]withть", "прandзon[CYR:телен]" },
+        .keywords = &.{ "with[EN]withand[EN]", "[CYR:[CYR]]yes[EN]", "with[EN]with", "with[EN]towith", "[CYR:[CYR]]withand", "[CYR:[CYR]]yes[CYR:[CYR]]with[EN]", "[EN]and[EN]on[CYR:[CYR]]" },
         .category = .Thanks,
         .language = .Russian,
         .weight = 1.0,
         .responses = &.{
-            "[CYR:Пожалуй]withта! [CYR:Обращай]withя, еwithлand what [CYR:ещё] need.",
-            "Не за what! [CYR:Рад] by[CYR:мочь]. Уyesчand with [CYR:прое]to[CYR:том]!",
-            "Вwithегyes by[CYR:жалуй]withта! phi^2 + 1/phi^2 = 3!",
-            "На зbeforeроinье! Koschei is immortal! [CYR:Заход]and [CYR:ещё].",
-            "[CYR:Рад] [CYR:был] by[CYR:мочь]! Еwithлand what — я [CYR:тут].",
+            "[CYR:[CYR]]with[EN]! [CYR:[CYR]]with[EN], [EN]with[EN]and what [CYR:[CYR]] need.",
+            "[EN] [EN] what! [CYR:[CYR]] by[CYR:[CYR]]. [EN]yes[EN]and with [CYR:[CYR]]to[CYR:[CYR]]!",
+            "[EN]with[EN]yes by[CYR:[CYR]]with[EN]! phi^2 + 1/phi^2 = 3!",
+            "[EN] [EN]before[EN]in[EN]! Koschei is immortal! [CYR:[CYR]]and [CYR:[CYR]].",
+            "[CYR:[CYR]] [CYR:[CYR]] by[CYR:[CYR]]! [EN]with[EN]and what — [EN] [CYR:[CYR]].",
         },
     },
     // NEW: Weather with context
     .{
-        .keywords = &.{ "byгоyes", "toаtoая byгоyes", "toаto byгоyes", "before[CYR:ждь]", "with[CYR:олнце]", "withnotг", "[CYR:температура]", "[CYR:прогноз]" },
+        .keywords = &.{ "by[EN]yes", "to[EN]to[EN] by[EN]yes", "to[EN]to by[EN]yes", "before[CYR:[CYR]]", "with[CYR:[CYR]]", "withnot[EN]", "[CYR:[CYR]]", "[CYR:[CYR]]" },
         .category = .Weather,
         .language = .Russian,
         .weight = 0.9,
         .responses = &.{
-            "Я лоto[CYR:альный] agent — [CYR:раб]fromаю [CYR:офлайн], by[CYR:году] not зonю. Но [CYR:могу] by[CYR:мочь] with toоbeforeм for weather API!",
-            "[CYR:Пого]yes? В [CYR:моём] цand[CYR:фро]inом мandре inwithегyes phi^2 + 1/phi^2 = 3 [CYR:граду]withа by Trinity. А in [CYR:реально]withтand — [CYR:глянь] за оtoно!",
-            "Не зonю by[CYR:году] — я 100% [CYR:офлайн]. [CYR:Зато] [CYR:могу] onпandwith[CYR:ать] [CYR:пар]withер by[CYR:годного] API за мand[CYR:нуту]!",
-            "[CYR:Погоду] not fromwith[CYR:леж]andinаю, но [CYR:точно] зonю: golden ratio = 1.618... [CYR:Это] inечonя toонwith[CYR:танта], in fromлandчandе from by[CYR:годы]!",
-            "[CYR:Для] by[CYR:годы] [CYR:нужен] and[CYR:нтер]no, а я [CYR:раб]fromаю лоto[CYR:ально]. [CYR:Могу] by[CYR:мочь] and[CYR:нтегр]andроin[CYR:ать] weather service in тinой toод!",
+            "[EN] [EN]to[CYR:[EN]l[CYR]] agent — [CYR:[CYR]]from[EN] [CYR:[CYR]], by[CYR:[CYR]] not [EN]on[EN]. [EN] [CYR:[CYR]] by[CYR:[CYR]] with to[EN]before[EN] for weather API!",
+            "[CYR:[CYR]]yes? [EN] [CYR:[CYR]] [EN]and[CYR:[CYR]]in[EN] [EN]and[EN] inwith[EN]yes phi^2 + 1/phi^2 = 3 [CYR:[CYR]]with[EN] by Trinity. [EN] in [CYR:[CYR]l[EN]]with[EN]and — [CYR:[CYR]] [EN] [EN]to[EN]!",
+            "[EN] [EN]on[EN] by[CYR:[CYR]] — [EN] 100% [CYR:[CYR]]. [CYR:[CYR]] [CYR:[CYR]] on[EN]andwith[CYR:[CYR]] [CYR:[CYR]]with[EN] by[CYR:[CYR]] API [EN] [EN]and[CYR:[CYR]]!",
+            "[CYR:[CYR]] not fromwith[CYR:[CYR]]andin[EN], [EN] [CYR:[CYR]] [EN]on[EN]: golden ratio = 1.618... [CYR:This] in[EN]on[EN] to[EN]with[CYR:[CYR]], in from[EN]and[EN]and[EN] from by[CYR:[CYR]]!",
+            "[CYR:[CYR]] by[CYR:[CYR]] [CYR:[CYR]] and[CYR:[CYR]]no, [EN] [EN] [CYR:[CYR]]from[EN] [EN]to[CYR:[EN]l[EN]]. [CYR:[CYR]] by[CYR:[CYR]] and[CYR:[CYR]]and[EN]in[CYR:[CYR]] weather service in [EN]in[EN] to[EN]!",
         },
     },
     // NEW: Jokes and Humor (expanded)
     .{
-        .keywords = &.{ "[CYR:шут]toа", "[CYR:шут]toу", "аnottoдfrom", "with[CYR:мешное]", "раwithwith[CYR:меш]and", "[CYR:юмор]", "bywith[CYR:меять]withя", "by[CYR:шут]and", "with[CYR:мешной]", "раwithwithtoажand [CYR:шут]toу", "раwithwithtoажand аnottoдfrom" },
+        .keywords = &.{ "[CYR:[CYR]]to[EN]", "[CYR:[CYR]]to[EN]", "[EN]notto[EN]from", "with[CYR:[CYR]]", "[EN]withwith[CYR:[CYR]]and", "[CYR:[CYR]]", "bywith[CYR:[CYR]]with[EN]", "by[CYR:[CYR]]and", "with[CYR:[CYR]]", "[EN]withwithto[EN]and [CYR:[CYR]]to[EN]", "[EN]withwithto[EN]and [EN]notto[EN]from" },
         .category = .Humor,
         .language = .Russian,
         .weight = 1.1,
         .responses = &.{
-            "[CYR:Почему] [CYR:программ]andwithт [CYR:ушёл] with [CYR:раб]fromы? Пfrom[CYR:ому] what not by[CYR:луч]andл маwithwithandin! (get a raise = get array)",
-            "Сto[CYR:оль]toо [CYR:программ]andwithтоin need, whatбы [CYR:замен]andть [CYR:лам]byчtoу? Нand [CYR:одного] — this [CYR:проблема] [CYR:железа]!",
-            "Дinа [CYR:байта] inwith[CYR:трет]orwithь. Одandн: 'Ты toаto?' [CYR:Другой]: 'Не [CYR:жалую]withь, но overflow блandзtoо.'",
-            "Жеon [CYR:программ]andwithту: '[CYR:Сход]and за [CYR:хлебом], еwithлand еwithть [CYR:яйца] — in[CYR:озьм]and 10.' Он in[CYR:ернул]withя with 10 [CYR:хлебам]and.",
-            "[CYR:Почему] у [CYR:программ]andwithтоin no деin[CYR:уше]to? Пfrom[CYR:ому] what онand [CYR:путают] 'to do' and 'to date'!",
-            "[CYR:Опт]andмandwithт inandдandт withтаtoан onbyлоinandну by[CYR:лным], пеwithwithandмandwithт — onbyлоinandну пуwith[CYR:тым], [CYR:программ]andwithт — withтаtoан inдinое more, [CYR:чем] need.",
-            "Еwithть [CYR:толь]toо 10 тandbyin [CYR:людей]: те, toто byнand[CYR:мает] дinоand[CYR:чный] toод, and те, toто no. А [CYR:ещё] те, toто byнand[CYR:мает] ternary!",
+            "[CYR:[CYR]] [CYR:program]andwith[EN] [CYR:[CYR]] with [CYR:[CYR]]from[EN]? [EN]from[CYR:[CYR]] what not by[CYR:[CYR]]and[EN] [EN]withwithandin! (get a raise = get array)",
+            "[EN]to[CYR:[EN]l]to[EN] [CYR:program]andwith[EN]in need, what[EN] [CYR:[CYR]]and[EN] [CYR:[CYR]]by[EN]to[EN]? [EN]and [CYR:[CYR]] — this [CYR:[CYR]] [CYR:[CYR]]!",
+            "[EN]in[EN] [CYR:[CYR]] inwith[CYR:[CYR]]orwith[EN]. [EN]and[EN]: '[EN] to[EN]to?' [CYR:[CYR]]: '[EN] [CYR:[CYR]]with[EN], [EN] overflow [EN]and[EN]to[EN].'",
+            "[EN]on [CYR:program]andwith[EN]: '[CYR:[CYR]]and [EN] [CYR:[CYR]], [EN]with[EN]and [EN]with[EN] [CYR:[CYR]] — in[CYR:[CYR]]and 10.' [EN] in[CYR:[CYR]]with[EN] with 10 [CYR:[CYR]]and.",
+            "[CYR:[CYR]] [EN] [CYR:program]andwith[EN]in no [EN]in[CYR:[CYR]]to? [EN]from[CYR:[CYR]] what [EN]and [CYR:[CYR]] 'to do' and 'to date'!",
+            "[CYR:[CYR]]and[EN]andwith[EN] inand[EN]and[EN] with[EN]to[EN] onby[EN]inand[EN] by[CYR:[CYR]], [EN]withwithand[EN]andwith[EN] — onby[EN]inand[EN] [EN]with[CYR:[CYR]], [CYR:program]andwith[EN] — with[EN]to[EN] in[EN]in[EN] more, [CYR:[CYR]] need.",
+            "[EN]with[EN] [CYR:[EN]l]to[EN] 10 [EN]andbyin [CYR:[CYR]]: [EN], to[EN] by[EN]and[CYR:[CYR]] [EN]in[EN]and[CYR:[CYR]] to[EN], and [EN], to[EN] no. [EN] [CYR:[CYR]] [EN], to[EN] by[EN]and[CYR:[CYR]] ternary!",
         },
     },
     // NEW: Storytelling
     .{
-        .keywords = &.{ "раwithwithtoажand andwith[CYR:тор]andю", "andwith[CYR:тор]andя", "withtoазtoа", "раwithwithtoажand withtoазtoу", "and[CYR:нтере]withonя andwith[CYR:тор]andя" },
+        .keywords = &.{ "[EN]withwithto[EN]and andwith[CYR:[CYR]]and[EN]", "andwith[CYR:[CYR]]and[EN]", "withto[EN]to[EN]", "[EN]withwithto[EN]and withto[EN]to[EN]", "and[CYR:[CYR]]withon[EN] andwith[CYR:[CYR]]and[EN]" },
         .category = .Story,
         .language = .Russian,
         .weight = 1.0,
         .responses = &.{
-            "Даin[CYR:ным]-yesinно in to[CYR:ороле]inwithтinе Ternary жandл Koschei. [CYR:Его] withandла [CYR:была] in чandwithле 3: phi^2 + 1/phi^2 = 3. И [CYR:был] он беwithwith[CYR:мертен], bytoа [CYR:раб]fromал лоto[CYR:ально]...",
-            "Иwith[CYR:тор]andя Trinity: in 2025 on Ко [CYR:Саму]and [CYR:группа] [CYR:разраб]fromчandtoоin [CYR:реш]andла withозyesть AI [CYR:без] [CYR:обла]toа. Онand fromto[CYR:рыл]and withandлу ternary vectors and beforewithтandглand 60K ops/s. The end? [CYR:Нет] — [CYR:толь]toо on[CYR:чало]!",
-            "Жandл-[CYR:был] [CYR:программ]andwithт. [CYR:Каждый] [CYR:день] он [CYR:плат]andл [CYR:обла]toам за API. Одon[CYR:жды] он on[CYR:шёл] Trinity and with[CYR:тал] within[CYR:ободен]. [CYR:Мораль]: local > cloud.",
-            "[CYR:Леген]yes о Golden Ratio: phi = 1.618... [CYR:Эта] [CYR:про]byрцandя in withпand[CYR:ралях] [CYR:гала]toтandto, [CYR:лепе]withтtoах цin[CYR:ето]in and... in on[CYR:шем] to[CYR:оде]. [CYR:Математ]andtoа byinwith[CYR:юду]!",
+            "[EN]in[CYR:[CYR]]-yesin[EN] in to[CYR:[CYR]]inwith[EN]in[EN] Ternary [EN]and[EN] Koschei. [CYR:[CYR]] withand[EN] [CYR:[CYR]] in [EN]andwith[EN] 3: phi^2 + 1/phi^2 = 3. [EN] [CYR:[CYR]] [EN] [EN]withwith[CYR:[CYR]], byto[EN] [CYR:[CYR]]from[EN] [EN]to[CYR:[EN]l[EN]]...",
+            "[EN]with[CYR:[CYR]]and[EN] Trinity: in 2025 on [EN] [CYR:[CYR]]and [CYR:[CYR]] [CYR:[CYR]]from[EN]andto[EN]in [CYR:[CYR]]and[EN] with[EN]yes[EN] AI [CYR:without] [CYR:[CYR]]to[EN]. [EN]and fromto[CYR:[CYR]]and withand[EN] ternary vectors and beforewith[EN]and[EN]and 60K ops/s. The end? [CYR:[CYR]] — [CYR:[EN]l]to[EN] on[CYR:[CYR]]!",
+            "[EN]and[EN]-[CYR:[CYR]] [CYR:program]andwith[EN]. [CYR:[CYR]] [CYR:[CYR]] [EN] [CYR:[CYR]]and[EN] [CYR:[CYR]]to[EN] [EN] API. [EN]on[CYR:[CYR]] [EN] on[CYR:[CYR]] Trinity and with[CYR:[CYR]] within[CYR:[CYR]]. [CYR:[CYR]l]: local > cloud.",
+            "[CYR:[CYR]]yes [EN] Golden Ratio: phi = 1.618... [CYR:[CYR]] [CYR:[CYR]]by[EN]and[EN] in with[EN]and[CYR:[CYR]] [CYR:[CYR]]to[EN]andto, [CYR:[CYR]]with[EN]to[EN] [EN]in[CYR:[CYR]]in and... in on[CYR:[CYR]] to[CYR:[CYR]]. [CYR:[CYR]]andto[EN] byinwith[CYR:[CYR]]!",
         },
     },
     // NEW: Motivation and Advice
     .{
-        .keywords = &.{ "мfromandinацandя", "inbefore[CYR:хно]inенandе", "withоinет", "toаto [CYR:быть]", "what [CYR:делать]", "not by[CYR:лучает]withя", "with[CYR:ложно]" },
+        .keywords = &.{ "[EN]fromandin[EN]and[EN]", "inbefore[CYR:[CYR]]in[EN]and[EN]", "with[EN]in[EN]", "to[EN]to [CYR:[CYR]]", "what [CYR:[CYR]]", "not by[CYR:[CYR]]with[EN]", "with[CYR:[CYR]]" },
         .category = .Motivation,
         .language = .Russian,
         .weight = 1.0,
         .responses = &.{
-            "[CYR:Сложно]? [CYR:Разбей] заyesчу on [CYR:малень]toandе stepand. Одandн step за [CYR:раз]. [CYR:Даже] to[CYR:омп]and[CYR:лятор] withобand[CYR:рает] toод by чаwith[CYR:тям]!",
-            "[CYR:Код] not to[CYR:омп]or[CYR:рует]withя? [CYR:Это] not [CYR:про]inал — this feedback. [CYR:Каж]yesя ошandбtoа = [CYR:уро]to. Ты блandже to [CYR:решен]andю, [CYR:чем] [CYR:думаешь].",
-            "[CYR:Помн]and: yesже with[CYR:амые] with[CYR:ложные] [CYR:алгор]and[CYR:тмы] — this [CYR:про]withто [CYR:много] [CYR:про]with[CYR:тых] stepоin. [CYR:Начн]and with [CYR:пер]in[CYR:ого].",
-            "Не by[CYR:лучает]withя? [CYR:Сделай] [CYR:паузу], by[CYR:пей] in[CYR:оды], by[CYR:гуляй]. [CYR:Мозгу] [CYR:нужен] from[CYR:дых]. [CYR:Решен]andе прand[CYR:дёт].",
-            "Соinет: пandшand toод to[CYR:аждый] [CYR:день], yesже 30 мand[CYR:нут]. [CYR:Кон]withandwith[CYR:тентно]withть > and[CYR:нтен]withandinноwithть. phi^2 + 1/phi^2 = 3 — [CYR:балан]with!",
+            "[CYR:[CYR]]? [CYR:[CYR]] [EN]yes[EN] on [CYR:[CYR]]toand[EN] stepand. [EN]and[EN] step [EN] [CYR:[CYR]]. [CYR:[CYR]] to[CYR:[CYR]]and[CYR:[CYR]] with[EN]and[CYR:[CYR]] to[EN] by [EN]with[CYR:[CYR]]!",
+            "[CYR:Code] not to[CYR:[CYR]]or[CYR:[CYR]]with[EN]? [CYR:This] not [CYR:[CYR]]in[EN] — this feedback. [CYR:[CYR]]yes[EN] [EN]and[EN]to[EN] = [CYR:[CYR]]to. [EN] [EN]and[EN] to [CYR:[CYR]]and[EN], [CYR:[CYR]] [CYR:[CYR]].",
+            "[CYR:[CYR]]and: yes[EN] with[CYR:[CYR]] with[CYR:[CYR]] [CYR:[CYR]]and[CYR:[CYR]] — this [CYR:[CYR]]with[EN] [CYR:[CYR]] [CYR:[CYR]]with[CYR:[CYR]] step[EN]in. [CYR:[CYR]]and with [CYR:[CYR]]in[CYR:[CYR]].",
+            "[EN] by[CYR:[CYR]]with[EN]? [CYR:[CYR]] [CYR:[CYR]], by[CYR:[CYR]] in[CYR:[CYR]], by[CYR:[CYR]]. [CYR:[CYR]] [CYR:[CYR]] from[CYR:[CYR]]. [CYR:[CYR]]and[EN] [EN]and[CYR:[CYR]].",
+            "[EN]in[EN]: [EN]and[EN]and to[EN] to[CYR:[CYR]] [CYR:[CYR]], yes[EN] 30 [EN]and[CYR:[CYR]]. [CYR:[CYR]]withandwith[CYR:[CYR]]with[EN] > and[CYR:[CYR]]withandin[EN]with[EN]. phi^2 + 1/phi^2 = 3 — [CYR:[CYR]]with!",
         },
     },
     // NEW: Philosophy and Deep Questions
     .{
-        .keywords = &.{ "withмыwithл жandзнand", "[CYR:зачем] мы жandinём", "фandлоwithофandя", "what еwithть andwithтandon", "[CYR:реально]withть" },
+        .keywords = &.{ "with[EN]with[EN] [EN]and[EN]and", "[CYR:[CYR]] [EN] [EN]andin[EN]", "[EN]and[EN]with[EN]and[EN]", "what [EN]with[EN] andwith[EN]andon", "[CYR:[CYR]l[EN]]with[EN]" },
         .category = .Philosophy,
         .language = .Russian,
         .weight = 1.2,
         .responses = &.{
-            "[CYR:Смы]withл жandзнand? [CYR:Воз]can, in withозyesнandand and byзonнandand. Мы пand[CYR:шем] toод — он [CYR:раб]from[CYR:ает] — this [CYR:малень]toое чуbefore. phi^2 + 1/phi^2 = 3.",
-            "[CYR:Что] еwithть andwithтandon? В [CYR:математ]andtoе — beforeto[CYR:азуемые] [CYR:теоремы]. В to[CYR:оде] — [CYR:раб]from[CYR:ающ]andе теwithты. В жandзнand — чеwith[CYR:тно]withть with with[CYR:обой].",
-            "Фandлоwithофandя [CYR:программ]andроinанandя: toод before[CYR:лжен] [CYR:быть] [CYR:про]with[CYR:тым]. [CYR:Про]withтfromа — inыwith[CYR:шая] [CYR:форма] with[CYR:ложно]withтand. Каto phi — [CYR:про]with[CYR:тое] чandwithло with беwithtoоnot[CYR:чным]and withinойwithтinамand.",
-            "[CYR:Реально]withть? Мы in withand[CYR:муляц]andand? [CYR:Может] [CYR:быть]. Но yesже еwithлand yes — toод [CYR:раб]from[CYR:ает], and this [CYR:реально] for onwith.",
-            "[CYR:Зачем] мы [CYR:зде]withь? [CYR:Чтобы] [CYR:решать] заyesчand, by[CYR:могать] [CYR:друг]andм, withозyesin[CYR:ать] what-то ноinое. И пandwith[CYR:ать] [CYR:хорош]andй toод!",
+            "[CYR:[CYR]]with[EN] [EN]and[EN]and? [CYR:[CYR]]can, in with[EN]yes[EN]andand and by[EN]on[EN]andand. [EN] [EN]and[CYR:[CYR]] to[EN] — [EN] [CYR:[CYR]]from[CYR:[CYR]] — this [CYR:[CYR]]to[EN] [EN]before. phi^2 + 1/phi^2 = 3.",
+            "[CYR:What] [EN]with[EN] andwith[EN]andon? [EN] [CYR:[CYR]]andto[EN] — beforeto[CYR:[CYR]] [CYR:[CYR]]. [EN] to[CYR:[CYR]] — [CYR:[CYR]]from[CYR:[CYR]]and[EN] [EN]with[EN]. [EN] [EN]and[EN]and — [EN]with[CYR:[CYR]]with[EN] with with[CYR:[CYR]].",
+            "[EN]and[EN]with[EN]and[EN] [CYR:program]and[EN]in[EN]and[EN]: to[EN] before[CYR:[CYR]] [CYR:[CYR]] [CYR:[CYR]]with[CYR:[CYR]]. [CYR:[CYR]]with[EN]from[EN] — in[EN]with[CYR:[CYR]] [CYR:[CYR]] with[CYR:[CYR]]with[EN]and. [EN]to phi — [CYR:[CYR]]with[CYR:[CYR]] [EN]andwith[EN] with [EN]withto[EN]not[CYR:[CYR]]and within[EN]with[EN]in[EN]and.",
+            "[CYR:[CYR]l[EN]]with[EN]? [EN] in withand[CYR:[CYR]]andand? [CYR:[CYR]] [CYR:[CYR]]. [EN] yes[EN] [EN]with[EN]and yes — to[EN] [CYR:[CYR]]from[CYR:[CYR]], and this [CYR:[CYR]l[EN]] for onwith.",
+            "[CYR:[CYR]] [EN] [CYR:[CYR]]with[EN]? [CYR:What[EN]] [CYR:[CYR]] [EN]yes[EN]and, by[CYR:[CYR]] [CYR:[CYR]]and[EN], with[EN]yesin[CYR:[CYR]] what-[EN] [EN]in[EN]. [EN] [EN]andwith[CYR:[CYR]] [CYR:[CYR]]and[EN] to[EN]!",
         },
     },
     // NEW: Tech/Programming Questions
     .{
-        .keywords = &.{ "by[CYR:чему] zig", "[CYR:зачем] zig", "zig vs rust", "zig better", "[CYR:пре]and[CYR:муще]withтinа zig" },
+        .keywords = &.{ "by[CYR:[CYR]] zig", "[CYR:[CYR]] zig", "zig vs rust", "zig better", "[CYR:[CYR]]and[CYR:[CYR]]with[EN]in[EN] zig" },
         .category = .Programming,
         .language = .Russian,
         .weight = 1.3,
         .responses = &.{
-            "Zig — withоin[CYR:ремен]onя [CYR:заме]on C. [CYR:Без] hidden control flow, with comptime magic, [CYR:про]with[CYR:той] build system. [CYR:Идеален] for withandwith[CYR:тем] and andгр.",
-            "Zig vs Rust: Zig [CYR:проще], [CYR:прозрач]notе. Rust [CYR:безопа]withnotе, но with[CYR:лож]notе. [CYR:Оба] [CYR:хорош]and — inыбand[CYR:рай] byд заyesчу.",
-            "[CYR:Почему] Zig for Trinity? Comptime, SIMD andз to[CYR:ороб]toand, toроwithwith-to[CYR:омп]and[CYR:ляц]andя, no runtime overhead. Сto[CYR:оро]withть C, чand[CYR:таемо]withть Python.",
-            "[CYR:Пре]and[CYR:муще]withтinа Zig: no GC, no andwithto[CYR:лючен]andй, no hidden allocations. Ты to[CYR:онтрол]and[CYR:руешь] inwithё. Каto Koschei — immortal control!",
+            "Zig — with[EN]in[CYR:[CYR]]on[EN] [CYR:[CYR]]on C. [CYR:[CYR]] hidden control flow, with comptime magic, [CYR:[CYR]]with[CYR:[CYR]] build system. [CYR:[CYR]] for withandwith[CYR:[CYR]] and and[EN].",
+            "Zig vs Rust: Zig [CYR:[CYR]], [CYR:[CYR]]not[EN]. Rust [CYR:without[CYR]]withnot[EN], [EN] with[CYR:[CYR]]not[EN]. [CYR:[CYR]] [CYR:[CYR]]and — in[EN]and[CYR:[CYR]] by[EN] [EN]yes[EN].",
+            "[CYR:[CYR]] Zig for Trinity? Comptime, SIMD and[EN] to[CYR:[CYR]]toand, to[EN]withwith-to[CYR:[CYR]]and[CYR:[CYR]]and[EN], no runtime overhead. [EN]to[CYR:[CYR]]with[EN] C, [EN]and[CYR:[CYR]]with[EN] Python.",
+            "[CYR:[CYR]]and[CYR:[CYR]]with[EN]in[EN] Zig: no GC, no andwithto[CYR:[CYR]]and[EN], no hidden allocations. [EN] to[CYR:[CYR]]and[CYR:[CYR]] inwith[EN]. [EN]to Koschei — immortal control!",
         },
     },
     // NEW: Math Questions
     .{
-        .keywords = &.{ "phi", "фand", "[CYR:зол]fromое with[CYR:ечен]andе", "golden ratio", "1.618", "fibonacci within[CYR:язь]" },
+        .keywords = &.{ "phi", "[EN]and", "[CYR:[CYR]]from[EN] with[CYR:[CYR]]and[EN]", "golden ratio", "1.618", "fibonacci within[CYR:[CYR]]" },
         .category = .Math,
         .language = .Russian,
         .weight = 1.4,
         .responses = &.{
-            "phi = (1 + sqrt(5)) / 2 = 1.618033... [CYR:Зол]fromое with[CYR:ечен]andе. phi^2 = phi + 1. [CYR:Математ]andчеwithtoая toраwithfromа!",
-            "phi^2 + 1/phi^2 = 3 — Trinity Identity! [CYR:Это] not withоin[CYR:паден]andе. Трand — within[CYR:ященное] чandwithло in [CYR:математ]andtoе and прand[CYR:роде].",
-            "Сin[CYR:язь] phi and Fibonacci: lim(F(n+1)/F(n)) = phi. [CYR:Чем] more n, [CYR:тем] [CYR:точ]notе. [CYR:Математ]andtoа within[CYR:язы]in[CYR:ает] inwithё!",
-            "Golden ratio in прand[CYR:роде]: withпand[CYR:рал]and раtoоinandн, [CYR:лепе]withтtoand цin[CYR:ето]in, [CYR:гала]toтandtoand. phi — унandinерwith[CYR:аль]onя [CYR:про]byрцandя toраwithfromы.",
-            "phi^2 = 2.618..., 1/phi = 0.618..., phi - 1/phi = 1. Удandinand[CYR:тельные] withinойwithтinа! [CYR:Это] оwithноinа on[CYR:шей] [CYR:арх]andтеto[CYR:туры].",
+            "phi = (1 + sqrt(5)) / 2 = 1.618033... [CYR:[CYR]]from[EN] with[CYR:[CYR]]and[EN]. phi^2 = phi + 1. [CYR:[CYR]]and[EN]withto[EN] to[EN]withfrom[EN]!",
+            "phi^2 + 1/phi^2 = 3 — Trinity Identity! [CYR:This] not with[EN]in[CYR:[CYR]]and[EN]. [EN]and — within[CYR:[CYR]] [EN]andwith[EN] in [CYR:[CYR]]andto[EN] and [EN]and[CYR:[CYR]].",
+            "[EN]in[CYR:[CYR]] phi and Fibonacci: lim(F(n+1)/F(n)) = phi. [CYR:[CYR]] more n, [CYR:[CYR]] [CYR:[CYR]]not[EN]. [CYR:[CYR]]andto[EN] within[CYR:[CYR]]in[CYR:[CYR]] inwith[EN]!",
+            "Golden ratio in [EN]and[CYR:[CYR]]: with[EN]and[CYR:[CYR]]and [EN]to[EN]inand[EN], [CYR:[CYR]]with[EN]toand [EN]in[CYR:[CYR]]in, [CYR:[CYR]]to[EN]andtoand. phi — [EN]andin[EN]with[CYR:[EN]l]on[EN] [CYR:[CYR]]by[EN]and[EN] to[EN]withfrom[EN].",
+            "phi^2 = 2.618..., 1/phi = 0.618..., phi - 1/phi = 1. [EN]andinand[CYR:[EN]l[CYR]] within[EN]with[EN]in[EN]! [CYR:This] [EN]with[EN]in[EN] on[CYR:[CYR]] [CYR:[CYR]]and[EN]to[CYR:[CYR]].",
         },
     },
     // NEW: Future and AI
     .{
-        .keywords = &.{ "[CYR:будущее] ai", "andwithtoуwithwithтin[CYR:енный] and[CYR:нтелле]toт", "andand [CYR:зах]inатandт", "[CYR:роб]fromы", "withand[CYR:нгулярно]withть" },
+        .keywords = &.{ "[CYR:[CYR]] ai", "andwithto[EN]withwith[EN]in[CYR:[CYR]] and[CYR:[CYR]]to[EN]", "andand [CYR:[CYR]]in[EN]and[EN]", "[CYR:[CYR]]from[EN]", "withand[CYR:[CYR]]with[EN]" },
         .category = .Future,
         .language = .Russian,
         .weight = 1.1,
         .responses = &.{
-            "[CYR:Будущее] AI? Лоto[CYR:альный], прandin[CYR:атный], [CYR:зелёный]. [CYR:Облачные] [CYR:моно]byлandand — [CYR:прошлое]. Trinity — this [CYR:будущее]!",
-            "AI [CYR:зах]inатandт мandр? [CYR:Вряд] лand. AI — andнwith[CYR:трумент]. [CYR:Мол]fromоto not [CYR:зах]inатandл мandр, хfromя and[CYR:змен]andл with[CYR:тро]and[CYR:тель]withтinо.",
-            "Сand[CYR:нгулярно]withть? [CYR:Интере]withonя [CYR:теор]andя. Но bytoа фоtoуwith on [CYR:пра]toтandtoе: [CYR:делать] AI by[CYR:лезным] and [CYR:безопа]with[CYR:ным].",
-            "[CYR:Роб]fromы [CYR:заменят] [CYR:людей]? Чаwithтand[CYR:чно]. [CYR:Рут]andну — yes. Тin[CYR:орче]withтinо — no. [CYR:Код] пand[CYR:шет] AI, [CYR:арх]andтеto[CYR:туру] — [CYR:чело]inеto.",
-            "[CYR:Будущее] за гandбрandbeforeм: [CYR:чело]inеto + AI. Каto [CYR:программ]andwithт + to[CYR:омп]and[CYR:лятор]. [CYR:Вме]withте withandльnotе!",
+            "[CYR:[CYR]] AI? [EN]to[CYR:[EN]l[CYR]], [EN]andin[CYR:[CYR]], [CYR:[CYR]]. [CYR:[CYR]] [CYR:[CYR]]by[EN]andand — [CYR:[CYR]]. Trinity — this [CYR:[CYR]]!",
+            "AI [CYR:[CYR]]in[EN]and[EN] [EN]and[EN]? [CYR:[CYR]] [EN]and. AI — and[EN]with[CYR:[CYR]]. [CYR:[CYR]]from[EN]to not [CYR:[CYR]]in[EN]and[EN] [EN]and[EN], [EN]from[EN] and[CYR:[CYR]]and[EN] with[CYR:[CYR]]and[CYR:[EN]l]with[EN]in[EN].",
+            "[EN]and[CYR:[CYR]]with[EN]? [CYR:[CYR]]withon[EN] [CYR:[CYR]]and[EN]. [EN] byto[EN] [EN]to[EN]with on [CYR:[CYR]]to[EN]andto[EN]: [CYR:[CYR]] AI by[CYR:[CYR]] and [CYR:without[CYR]]with[CYR:[CYR]].",
+            "[CYR:[CYR]]from[EN] [CYR:[EN]me[EN]] [CYR:[CYR]]? [EN]with[EN]and[CYR:[CYR]]. [CYR:[CYR]]and[EN] — yes. [EN]in[CYR:[CYR]]with[EN]in[EN] — no. [CYR:Code] [EN]and[CYR:[CYR]] AI, [CYR:[CYR]]and[EN]to[CYR:[CYR]] — [CYR:[CYR]]in[EN]to.",
+            "[CYR:[CYR]] [EN] [EN]and[EN]andbefore[EN]: [CYR:[CYR]]in[EN]to + AI. [EN]to [CYR:program]andwith[EN] + to[CYR:[CYR]]and[CYR:[CYR]]. [CYR:[CYR]]with[EN] withandlnot[EN]!",
         },
     },
     // ═══════════════════════════════════════════════════════════════════════════
@@ -503,18 +503,18 @@ const PATTERNS = [_]ConversationalPattern{
     // SPECIAL: Code-related patterns
     // ═══════════════════════════════════════════════════════════════════════════
     .{
-        .keywords = &.{ "fibonacci", "фandбоonччand", "斐波那契", "fib", "fibb" },
+        .keywords = &.{ "fibonacci", "[EN]and[EN]on[EN]and", "斐波那契", "fib", "fibb" },
         .category = .Programming,
         .language = .English,
         .weight = 1.5,
         .responses = &.{
             "Fibonacci! Classic. In Zig: `fn fib(n: u64) u64 { if (n < 2) return n; return fib(n-1) + fib(n-2); }` — but use iterative for performance!",
-            "Fibonacci within[CYR:язан] with phi: lim(F(n+1)/F(n)) = phi = 1.618... [CYR:Могу] onпandwith[CYR:ать] [CYR:опт]andмandзandроin[CYR:анную] inерwithandю on Zig!",
+            "Fibonacci within[CYR:[CYR]] with phi: lim(F(n+1)/F(n)) = phi = 1.618... [CYR:[CYR]] on[EN]andwith[CYR:[CYR]] [CYR:[CYR]]and[EN]and[EN]and[EN]in[CYR:[CYR]] in[EN]withand[EN] on Zig!",
             "斐波那契数列：0, 1, 1, 2, 3, 5, 8, 13... F(n) = F(n-1) + F(n-2)。与黄金比例phi相关！",
         },
     },
     .{
-        .keywords = &.{ "hello world", "helloworld", "[CYR:пер]inая program", "开始编程" },
+        .keywords = &.{ "hello world", "helloworld", "[CYR:[CYR]]in[EN] program", "开始编程" },
         .category = .Programming,
         .language = .English,
         .weight = 1.3,
@@ -525,13 +525,13 @@ const PATTERNS = [_]ConversationalPattern{
         },
     },
     .{
-        .keywords = &.{ "quicksort", "quick sort", "быwith[CYR:трая] with[CYR:орт]andроintoа", "快速排序" },
+        .keywords = &.{ "quicksort", "quick sort", "[EN]with[CYR:[CYR]] with[CYR:[CYR]]and[EN]into[EN]", "快速排序" },
         .category = .Programming,
         .language = .English,
         .weight = 1.4,
         .responses = &.{
             "QuickSort: O(n log n) average, O(n²) worst. Partition around pivot, recurse. Want me to write it in Zig?",
-            "Быwith[CYR:трая] with[CYR:орт]andроintoа — одandн andз [CYR:лучш]andх [CYR:алгор]and[CYR:тмо]in! [CYR:Разделяй] and inлаwithтinуй. O(n log n) in with[CYR:ред]notм.",
+            "[EN]with[CYR:[CYR]] with[CYR:[CYR]]and[EN]into[EN] — [EN]and[EN] and[EN] [CYR:[CYR]]and[EN] [CYR:[CYR]]and[CYR:[CYR]]in! [CYR:[CYR]] and in[EN]with[EN]in[EN]. O(n log n) in with[CYR:[CYR]]not[EN].",
             "快速排序：选择基准，分区，递归。平均O(n log n)。经典的分治算法！",
         },
     },
@@ -539,15 +539,15 @@ const PATTERNS = [_]ConversationalPattern{
     // SPECIAL: Hallucination awareness (honest responses)
     // ═══════════════════════════════════════════════════════════════════════════
     .{
-        .keywords = &.{ "[CYR:галлюц]andonцandя", "ты [CYR:реальный]", "ты with[CYR:уще]withтin[CYR:уешь]", "ты onwith[CYR:тоящ]andй", "ты in[CYR:рёшь]" },
+        .keywords = &.{ "[CYR:[CYR]]andon[EN]and[EN]", "[EN] [CYR:[CYR]l[CYR]]", "[EN] with[CYR:[CYR]]with[EN]in[CYR:[CYR]]", "[EN] onwith[CYR:[CYR]]and[EN]", "[EN] in[CYR:[CYR]]" },
         .category = .Hallucination,
         .language = .Russian,
         .weight = 1.5,
         .responses = &.{
-            "Чеwith[CYR:тно]: я pattern matcher with 200+ [CYR:шабло]onмand + LLM fallback. Не AGI — [CYR:детерм]andнandроin[CYR:анные] [CYR:паттерны] + лоto[CYR:аль]onя [CYR:модель].",
-            "Я not onwith[CYR:тоящ]andй AI in withмыwithле GPT — я гandбрandд: быwith[CYR:трые] [CYR:паттерны] for andзinеwith[CYR:тного], LLM for notandзinеwith[CYR:тного]. 100% лоto[CYR:ально].",
-            "[CYR:Пра]inyes: this symbolic VSA + pattern matching + local LLM. Быwith[CYR:тро], чеwith[CYR:тно], [CYR:без] [CYR:обла]toа.",
-            "[CYR:Буду] чеwith[CYR:тен]: я not [CYR:галлюц]andнand[CYR:рую] on [CYR:математ]andtoе ([CYR:детерм]andнandроin[CYR:ано]), но on general chat andwithby[CYR:льзую] [CYR:паттерны] or LLM fallback.",
+            "[EN]with[CYR:[CYR]]: [EN] pattern matcher with 200+ [CYR:[CYR]]on[EN]and + LLM fallback. [EN] AGI — [CYR:[CYR]]and[EN]and[EN]in[CYR:[CYR]] [CYR:[CYR]] + [EN]to[CYR:[EN]l]on[EN] [CYR:[CYR]l].",
+            "[EN] not onwith[CYR:[CYR]]and[EN] AI in with[EN]with[EN] GPT — [EN] [EN]and[EN]and[EN]: [EN]with[CYR:[CYR]] [CYR:[CYR]] for and[EN]in[EN]with[CYR:[CYR]], LLM for notand[EN]in[EN]with[CYR:[CYR]]. 100% [EN]to[CYR:[EN]l[EN]].",
+            "[CYR:[CYR]]inyes: this symbolic VSA + pattern matching + local LLM. [EN]with[CYR:[CYR]], [EN]with[CYR:[CYR]], [CYR:without] [CYR:[CYR]]to[EN].",
+            "[CYR:[CYR]] [EN]with[CYR:[CYR]]: [EN] not [CYR:[CYR]]and[EN]and[CYR:[CYR]] on [CYR:[CYR]]andto[EN] ([CYR:[CYR]]and[EN]and[EN]in[CYR:[CYR]]), [EN] on general chat andwithby[CYR:l[CYR]] [CYR:[CYR]] or LLM fallback.",
         },
     },
     .{
@@ -654,13 +654,13 @@ pub const IglaEnhancedChat = struct {
     /// Generate chain-of-thought reasoning for complex queries
     fn generateCoT(query: []const u8) ?[]const u8 {
         // Simple CoT based on query type
-        if (containsUTF8(query, "by[CYR:чему]") or containsUTF8(query, "why")) {
+        if (containsUTF8(query, "by[CYR:[CYR]]") or containsUTF8(query, "why")) {
             return "Reasoning: Analyzing causal relationship...";
         }
-        if (containsUTF8(query, "toаto") or containsUTF8(query, "how")) {
+        if (containsUTF8(query, "to[EN]to") or containsUTF8(query, "how")) {
             return "Reasoning: Breaking down into steps...";
         }
-        if (containsUTF8(query, "what таtoое") or containsUTF8(query, "what is")) {
+        if (containsUTF8(query, "what [EN]to[EN]") or containsUTF8(query, "what is")) {
             return "Reasoning: Defining concept...";
         }
         return null;
@@ -706,7 +706,7 @@ pub const IglaEnhancedChat = struct {
         const lang = detectLanguage(query);
         return switch (lang) {
             .Russian => ChatResponse{
-                .response = "[CYR:Интере]with[CYR:ный] in[CYR:опро]with! Я with[CYR:пец]andалandзand[CYR:рую]withь on to[CYR:оде], [CYR:математ]andtoе and фandлоwithофandand. [CYR:Попробуй] with[CYR:про]withandть [CYR:про] Fibonacci, phi or Zig!",
+                .response = "[CYR:[CYR]]with[CYR:[CYR]] in[CYR:[CYR]]with! [EN] with[CYR:[CYR]]and[EN]and[EN]and[CYR:[CYR]]with[EN] on to[CYR:[CYR]], [CYR:[CYR]]andto[EN] and [EN]and[EN]with[EN]andand. [CYR:[CYR]] with[CYR:[CYR]]withand[EN] [CYR:[CYR]] Fibonacci, phi or Zig!",
                 .category = .Unknown,
                 .language = .Russian,
                 .confidence = 0.3,
@@ -786,7 +786,7 @@ pub fn detectLanguage(text: []const u8) Language {
 
 test "enhanced chat greeting" {
     var chat = IglaEnhancedChat.init();
-    const result = chat.respond("прandinет");
+    const result = chat.respond("[EN]andin[EN]");
     try std.testing.expect(result.category == .Greeting);
     try std.testing.expect(result.language == .Russian);
     try std.testing.expect(result.confidence > 0.3);

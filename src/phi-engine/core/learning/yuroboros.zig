@@ -6,7 +6,7 @@ pub const PHI = level0.PHI;
 pub const TRINITY = level0.TRINITY;
 
 // ═══════════════════════════════════════════════════════════
-// LEVEL 2: YUROBOROS ENGINE ([CYR:Уро]in[CYR:ень] [CYR:Балан]withandроintoand)
+// LEVEL 2: YUROBOROS ENGINE ([CYR:[EN]]in[CYR:[EN]] [CYR:[EN]]withand[EN]intoand)
 // Dynamic Difficulty & Network Balancing for VIBEE
 // ═══════════════════════════════════════════════════════════
 
@@ -23,19 +23,19 @@ pub const DifficultyRating = enum(u16) {
 };
 
 pub const YuroborosDifficulty = struct {
-    // Base Difficulty ([CYR:базо]inая with[CYR:ложно]withть)
+    // Base Difficulty ([CYR:[EN]]in[EN] with[CYR:[EN]]with[EN])
     base: f64 = 1.0,
 
-    // Scaling Factor (coefficient маwith[CYR:штаб]andроinанandя)
+    // Scaling Factor (coefficient [EN]with[CYR:[EN]]and[EN]in[EN]and[EN])
     scaling: f64 = 1.0,
 
-    // Adaptive Difficulty (аyesптandinonя with[CYR:ложно]withть)
+    // Adaptive Difficulty ([EN]yes[EN]andinon[EN] with[CYR:[EN]]with[EN])
     adaptive: f64 = 0.0,
 
-    // Target Difficulty ([CYR:целе]inая with[CYR:ложно]withть)
+    // Target Difficulty ([CYR:[EN]]in[EN] with[CYR:[EN]]with[EN])
     target: f64 = 100.0,
 
-    // Difficulty Rating ([CYR:оцен]toа with[CYR:ложно]withтand 1-999)
+    // Difficulty Rating ([CYR:[EN]]to[EN] with[CYR:[EN]]with[EN]and 1-999)
     pub fn getRating(self: *const YuroborosDifficulty) DifficultyRating {
         const D = self.adaptive;
         if (D < 1.0) return .EASY else if (D < 10.0) return .NORMAL else if (D < 50.0) return .HARD else if (D < 100.0) return .EXPERT else if (D < 500.0) return .GODLIKE else return .GODLIKE;
@@ -57,16 +57,16 @@ pub const YuroborosDifficulty = struct {
 // ═══════════════════════════════════════════════════════════
 
 pub const YuroborosNetworkState = struct {
-    // Total Tasks ([CYR:общее] toолandчеwithтinо заyesч)
+    // Total Tasks ([CYR:[EN]] to[EN]and[EN]with[EN]in[EN] [EN]yes[EN])
     total_tasks: u64 = 0,
 
-    // Pending Tasks (ожandyesющandе inыbyлnotнandя)
+    // Pending Tasks ([EN]andyes[EN]and[EN] in[EN]by[EN]not[EN]and[EN])
     pending_tasks: u64 = 0,
 
-    // Completed Tasks (inыbyлnot[CYR:нные] заyesчand)
+    // Completed Tasks (in[EN]by[EN]not[CYR:[EN]] [EN]yes[EN]and)
     completed_tasks: u64 = 0,
 
-    // Network Utility (by[CYR:лезно]withть withетand 0.0 to 1.0)
+    // Network Utility (by[CYR:[EN]]with[EN] with[EN]and 0.0 to 1.0)
     utility: f64 = 1.0,
 
     // Calculate network utility based on task completion
@@ -103,7 +103,7 @@ pub const YuroborosTask = struct {
 };
 
 // ═══════════════════════════════════════════════════════════
-// YUROBOROS ENGINE (Оwithноin[CYR:ной] toомbynotнт)
+// YUROBOROS ENGINE ([EN]with[EN]in[CYR:[EN]] to[EN]bynot[EN])
 // ═══════════════════════════════════════════════════════════
 
 pub const YuroborosEngine = struct {

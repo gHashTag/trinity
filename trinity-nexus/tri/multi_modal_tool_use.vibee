@@ -279,16 +279,16 @@ behaviors:
     then: Match against intent patterns
     impl: |
       Patterns (multilingual):
-        "read file X" / "[CYR:проч]and[CYR:тай] file X" → file_read
-        "write to X" / "[CYR:зап]andшand in X" → file_write
-        "list files" / "whileжand fileы" → file_list
-        "search for X" / "onйдand X" → file_search
-        "run X" / "[CYR:запу]withтand X" → code_run
-        "test X" / "testand[CYR:руй] X" → code_test
-        "compile X" / "[CYR:комп]or[CYR:руй] X" → code_compile
+        "read file X" / "[CYR:pro[EN]]and[CYR:[TRANSLATED]] file X" → file_read
+        "write to X" / "[CYR:[TRANSLATED]]and[EN]and in X" → file_write
+        "list files" / "while[EN]and filey" → file_list
+        "search for X" / "on[EN]and X" → file_search
+        "run X" / "[CYR:[TRANSLATED]]with[EN]and X" → code_run
+        "test X" / "testand[CYR:[TRANSLATED]] X" → code_test
+        "compile X" / "[CYR:[TRANSLATED]]or[CYR:[TRANSLATED]] X" → code_compile
         "benchmark" / "benchmark" → code_bench
-        "fix X" / "andwith[CYR:пра]inь X" → code_lint + code_compile
-        "review X" / "[CYR:про]in[CYR:ерь] X" → analysis_review
+        "fix X" / "andwith[CYR:law]in[EN] X" → code_lint + code_compile
+        "review X" / "[CYR:pro]in[CYR:[TRANSLATED]] X" → analysis_review
 
   - name: extractParams
     given: Detected intent and raw input
@@ -424,7 +424,7 @@ tests:
     then: Detects file_read intent with path "src/vsa.zig"
 
   - name: test_intent_detection_russian
-    given: "[CYR:Проч]and[CYR:тай] file main.zig"
+    given: "[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] file main.zig"
     then: Detects file_read intent with path "main.zig"
 
   - name: test_file_read

@@ -1040,7 +1040,7 @@ pub fn detectMode(input: []const u8) ?trinity_swe.SWETaskType {
     };
 
     // Code generation patterns
-    if (std.mem.indexOf(u8, lower, "onпandшand") != null or
+    if (std.mem.indexOf(u8, lower, "on[EN]and[EN]and") != null or
         std.mem.indexOf(u8, lower, "create") != null or
         std.mem.indexOf(u8, lower, "generate") != null or
         std.mem.indexOf(u8, lower, "write") != null or

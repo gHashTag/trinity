@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// DePIN INTEGRATION - $TRI Token Mock for [CYR:ЖАР] [CYR:ПТИЦА]
+// DePIN INTEGRATION - $TRI Token Mock for [CYR:[EN]] [CYR:[EN]]
 // Decentralized Physical Infrastructure Network
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL

@@ -1,4 +1,4 @@
-// KV-CACHE BENCHMARK - [CYR:Сра]innotнandе withto[CYR:оро]withтand with and [CYR:без] KV-cache
+// KV-CACHE BENCHMARK - [CYR:[EN]]innot[EN]and[EN] withto[CYR:[EN]]with[EN]and with and [CYR:[EN]] KV-cache
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");

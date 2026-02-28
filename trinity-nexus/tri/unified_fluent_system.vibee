@@ -324,7 +324,7 @@ behaviors:
 
 test_cases:
   - name: russian_greeting_code
-    given: "Прandinет! [CYR:Нап]andшand quicksort on Python"
+    given: "[EN]andin[EN]! [CYR:[TRANSLATED]]and[EN]and quicksort on Python"
     expected: "Greeting + quicksort Python (hybrid mode)"
 
   - name: chinese_bfs_request

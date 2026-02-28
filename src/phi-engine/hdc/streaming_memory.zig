@@ -1,14 +1,14 @@
-//! Streaming Memory - Пfromоtoоinая аwithwithоцandатandinonя memory on HDC
+//! Streaming Memory - [EN]from[EN]to[EN]in[EN] [EN]withwith[EN]and[EN]andinon[EN] memory on HDC
 //!
-//! [CYR:Непреры]in[CYR:ное] [CYR:обучен]andе with bind/unbind for key-value storing.
-//! [CYR:Поддерж]toа forgetting factor for аyes[CYR:птац]andand to concept drift.
+//! [CYR:[EN]]in[CYR:[EN]] [CYR:[EN]]and[EN] with bind/unbind for key-value storing.
+//! [CYR:[EN]]to[EN] forgetting factor for [EN]yes[CYR:[EN]]andand to concept drift.
 //!
-//! [CYR:Науч]onя [CYR:база]:
+//! [CYR:[EN]]on[EN] [CYR:base]:
 //! - Holographic Reduced Representations (Plate, 1995)
 //! - Sparse Distributed Memory (Kanerva, 1988)
 //! - Online Learning with Forgetting
 //!
-//! [CYR:Алгор]andтм:
+//! [CYR:[EN]]and[EN]:
 //! - Store: M ← M + bind(key, value)
 //! - Retrieve: value ≈ unbind(M, key)
 //! - Forgetting: M ← (1-λ)M + λ×bind(k,v)
@@ -34,7 +34,7 @@ pub const DEFAULT_MAX_ITEMS: usize = 10000;
 // TYPES
 // ═══════════════════════════════════════════════════════════════
 
-/// [CYR:Конф]and[CYR:гурац]andя [CYR:памят]and
+/// [CYR:[EN]]and[CYR:[EN]]and[EN] [CYR:[EN]]and
 pub const MemoryConfig = struct {
     dim: usize = DEFAULT_DIM,
     forgetting_factor: f64 = DEFAULT_FORGETTING_FACTOR,
@@ -49,7 +49,7 @@ pub const RetrievalResult = struct {
     found: bool,
 };
 
-/// [CYR:Метр]andtoand [CYR:памят]and
+/// [CYR:[EN]]andtoand [CYR:[EN]]and
 pub const MemoryMetrics = struct {
     total_writes: u64,
     total_reads: u64,
@@ -58,14 +58,14 @@ pub const MemoryMetrics = struct {
     memory_utilization: f64,
 };
 
-/// Пfromоtoоinая аwithwithоцandатandinonя memory
+/// [EN]from[EN]to[EN]in[EN] [EN]withwith[EN]and[EN]andinon[EN] memory
 pub const StreamingMemory = struct {
     config: MemoryConfig,
-    // Float аtoto[CYR:умулятор] for [CYR:пла]in[CYR:ного] [CYR:обно]in[CYR:лен]andя
+    // Float [EN]toto[CYR:[EN]] for [CYR:[EN]]in[CYR:[EN]] [CYR:[EN]]in[CYR:[EN]]and[EN]
     accumulator: []f64,
-    // Кin[CYR:ант]andзоinанonя [CYR:тро]andчonя memory
+    // [EN]in[CYR:[EN]]and[EN]in[EN]on[EN] [CYR:[EN]]and[EN]on[EN] memory
     memory: []Trit,
-    // [CYR:Стат]andwithтandtoа
+    // [CYR:[EN]]andwith[EN]andto[EN]
     item_count: usize,
     total_writes: u64,
     total_reads: u64,
@@ -95,7 +95,7 @@ pub const StreamingMemory = struct {
         self.allocator.free(self.memory);
     }
 
-    /// [CYR:Сбро]withandть memory
+    /// [CYR:[EN]]withand[EN] memory
     pub fn reset(self: *StreamingMemory) void {
         @memset(self.accumulator, 0.0);
         @memset(self.memory, 0);
@@ -105,7 +105,7 @@ pub const StreamingMemory = struct {
         self.total_confidence = 0;
     }
 
-    /// [CYR:Сохран]andть [CYR:пару] to[CYR:люч]-value
+    /// [CYR:[EN]]and[EN] [CYR:[EN]] to[CYR:[EN]]-value
     /// M ← M + bind(key, value)
     pub fn store(self: *StreamingMemory, key: []const Trit, value: []const Trit) !void {
         const dim = self.config.dim;
@@ -115,19 +115,19 @@ pub const StreamingMemory = struct {
         // bind(key, value)
         hdc.bind(key, value, bound);
 
-        // Add to аtoto[CYR:умулятору]
+        // Add to [EN]toto[CYR:[EN]]
         for (0..dim) |i| {
             self.accumulator[i] += @floatFromInt(bound[i]);
         }
 
-        // Кin[CYR:ант]and[CYR:зуем]
+        // [EN]in[CYR:[EN]]and[CYR:[EN]]
         hdc.quantizeToTernary(self.accumulator, self.memory);
 
         self.item_count += 1;
         self.total_writes += 1;
     }
 
-    /// [CYR:Сохран]andть with [CYR:забы]inанandем
+    /// [CYR:[EN]]and[EN] with [CYR:[EN]]in[EN]and[EN]
     /// M ← (1-λ)M + λ×bind(k,v)
     pub fn storeWithForgetting(self: *StreamingMemory, key: []const Trit, value: []const Trit, lambda: f64) !void {
         const dim = self.config.dim;
@@ -137,34 +137,34 @@ pub const StreamingMemory = struct {
         // bind(key, value)
         hdc.bind(key, value, bound);
 
-        // Эtowithbynotнцand[CYR:альное] [CYR:забы]inанandе + new element
+        // [EN]towithbynot[EN]and[CYR:[EN]] [CYR:[EN]]in[EN]and[EN] + new element
         for (0..dim) |i| {
             self.accumulator[i] = (1.0 - lambda) * self.accumulator[i] + lambda * @as(f64, @floatFromInt(bound[i]));
         }
 
-        // Кin[CYR:ант]and[CYR:зуем]
+        // [EN]in[CYR:[EN]]and[CYR:[EN]]
         hdc.quantizeToTernary(self.accumulator, self.memory);
 
         self.item_count += 1;
         self.total_writes += 1;
     }
 
-    /// Изin[CYR:лечь] value by to[CYR:лючу]
+    /// [EN]in[CYR:[EN]] value by to[CYR:[EN]]
     /// value ≈ unbind(M, key)
     pub fn retrieve(self: *StreamingMemory, key: []const Trit, result: []Trit) RetrievalResult {
         const dim = self.config.dim;
 
-        // unbind(M, key) = bind(M, key) for [CYR:тро]and[CYR:чных] inеto[CYR:торо]in
+        // unbind(M, key) = bind(M, key) for [CYR:[EN]]and[CYR:[EN]] in[EN]to[CYR:[EN]]in
         hdc.unbind(self.memory, key, result);
 
-        // Compute уin[CYR:еренно]withть via [CYR:норму] resultа
+        // Compute [EN]in[CYR:[EN]]with[EN] via [CYR:[EN]] result[EN]
         var norm: f64 = 0;
         for (0..dim) |i| {
             norm += @as(f64, @floatFromInt(result[i])) * @as(f64, @floatFromInt(result[i]));
         }
         norm = @sqrt(norm);
 
-        // [CYR:Нормал]and[CYR:зуем] уin[CYR:еренно]withть
+        // [CYR:[EN]]and[CYR:[EN]] [EN]in[CYR:[EN]]with[EN]
         const max_norm = @sqrt(@as(f64, @floatFromInt(dim)));
         const confidence = norm / max_norm;
 
@@ -178,7 +178,7 @@ pub const StreamingMemory = struct {
         };
     }
 
-    /// [CYR:Про]inерandть onлandчandе to[CYR:люча]
+    /// [CYR:[EN]]in[EN]and[EN] on[EN]and[EN]and[EN] to[CYR:[EN]]
     pub fn contains(self: *StreamingMemory, key: []const Trit) !bool {
         const result = try self.allocator.alloc(Trit, self.config.dim);
         defer self.allocator.free(result);
@@ -187,7 +187,7 @@ pub const StreamingMemory = struct {
         return retrieval.found;
     }
 
-    /// Прand[CYR:мен]andть [CYR:забы]inанandе toо inwithей [CYR:памят]and
+    /// [EN]and[CYR:[EN]]and[EN] [CYR:[EN]]in[EN]and[EN] to[EN] inwith[EN] [CYR:[EN]]and
     /// M ← (1-λ)M
     pub fn applyForgetting(self: *StreamingMemory, lambda: f64) void {
         for (self.accumulator) |*a| {
@@ -196,14 +196,14 @@ pub const StreamingMemory = struct {
         hdc.quantizeToTernary(self.accumulator, self.memory);
     }
 
-    /// Уyesлandть toонto[CYR:ретный] to[CYR:люч]
+    /// [EN]yes[EN]and[EN] to[EN]to[CYR:[EN]] to[CYR:[EN]]
     /// M ← M - bind(k, retrieve(k))
     pub fn forget(self: *StreamingMemory, key: []const Trit) !void {
         const dim = self.config.dim;
         const retrieved = try self.allocator.alloc(Trit, dim);
         defer self.allocator.free(retrieved);
 
-        // Get теto[CYR:ущее] value
+        // Get [EN]to[CYR:[EN]] value
         _ = self.retrieve(key, retrieved);
 
         // Compute bind(key, retrieved)
@@ -211,18 +211,18 @@ pub const StreamingMemory = struct {
         defer self.allocator.free(bound);
         hdc.bind(key, retrieved, bound);
 
-        // [CYR:Выч]and[CYR:таем] andз аtoto[CYR:умулятора]
+        // [CYR:[EN]]and[CYR:[EN]] and[EN] [EN]toto[CYR:[EN]]
         for (0..dim) |i| {
             self.accumulator[i] -= @floatFromInt(bound[i]);
         }
 
-        // Кin[CYR:ант]and[CYR:зуем]
+        // [EN]in[CYR:[EN]]and[CYR:[EN]]
         hdc.quantizeToTernary(self.accumulator, self.memory);
 
         if (self.item_count > 0) self.item_count -= 1;
     }
 
-    /// [CYR:Объед]andнandть дinе [CYR:памят]and
+    /// [CYR:[EN]]and[EN]and[EN] [EN]in[EN] [CYR:[EN]]and
     pub fn merge(self: *StreamingMemory, other: *const StreamingMemory) void {
         const dim = @min(self.config.dim, other.config.dim);
         for (0..dim) |i| {
@@ -232,7 +232,7 @@ pub const StreamingMemory = struct {
         self.item_count += other.item_count;
     }
 
-    /// [CYR:Получ]andть [CYR:метр]andtoand
+    /// [CYR:[EN]]and[EN] [CYR:[EN]]andtoand
     pub fn getMetrics(self: *const StreamingMemory) MemoryMetrics {
         const avg_conf = if (self.total_reads > 0)
             self.total_confidence / @as(f64, @floatFromInt(self.total_reads))
@@ -251,14 +251,14 @@ pub const StreamingMemory = struct {
         };
     }
 
-    /// [CYR:Получ]andть with[CYR:ырой] vector [CYR:памят]and
+    /// [CYR:[EN]]and[EN] with[CYR:[EN]] vector [CYR:[EN]]and
     pub fn getMemoryVector(self: *const StreamingMemory) []const Trit {
         return self.memory;
     }
 };
 
 // ═══════════════════════════════════════════════════════════════
-// [CYR:ТЕСТЫ]
+// [CYR:[EN]]
 // ═══════════════════════════════════════════════════════════════
 
 test "memory init/deinit" {
@@ -275,13 +275,13 @@ test "store and retrieve" {
     var mem = try StreamingMemory.init(allocator, .{ .dim = 1000 });
     defer mem.deinit();
 
-    // [CYR:Соз]yesём to[CYR:люч] and value
+    // [CYR:[EN]]yes[EN] to[CYR:[EN]] and value
     var key = try hdc.randomVector(allocator, 1000, 11111);
     defer key.deinit();
     var value = try hdc.randomVector(allocator, 1000, 22222);
     defer value.deinit();
 
-    // [CYR:Сохраняем]
+    // [CYR:[EN]]
     try mem.store(key.data, value.data);
 
     // Extract
@@ -290,18 +290,18 @@ test "store and retrieve" {
 
     const result = mem.retrieve(key.data, result_buf);
 
-    // Check with[CYR:ход]withтinо with орandгandon[CYR:льным] зon[CYR:чен]andем
+    // Check with[CYR:[EN]]with[EN]in[EN] with [EN]and[EN]andon[CYR:[EN]] [EN]on[CYR:[EN]]and[EN]
     const sim = hdc.similarity(result.value, value.data);
     try std.testing.expect(sim > 0.5);
 }
 
 test "multiple items" {
     const allocator = std.testing.allocator;
-    // Иwithby[CYR:льзуем] [CYR:большую] [CYR:размерно]withть for betterй ёмtoоwithтand
+    // [EN]withby[CYR:[EN]] [CYR:[EN]] [CYR:[EN]]with[EN] for better[EN] [EN]to[EN]with[EN]and
     var mem = try StreamingMemory.init(allocator, .{ .dim = 5000 });
     defer mem.deinit();
 
-    // [CYR:Сохраняем] notwithto[CYR:оль]toо [CYR:пар] (less for betterго to[CYR:аче]withтinа)
+    // [CYR:[EN]] notwithto[CYR:[EN]]to[EN] [CYR:[EN]] (less for better[EN] to[CYR:[EN]]with[EN]in[EN])
     const num_items = 5;
     var keys: [num_items]HyperVector = undefined;
     var values: [num_items]HyperVector = undefined;
@@ -318,7 +318,7 @@ test "multiple items" {
         }
     }
 
-    // Check andзin[CYR:лечен]andе
+    // Check and[EN]in[CYR:[EN]]and[EN]
     const result_buf = try allocator.alloc(Trit, 5000);
     defer allocator.free(result_buf);
 
@@ -330,7 +330,7 @@ test "multiple items" {
     }
 
     const avg_sim = total_sim / @as(f64, num_items);
-    // HDC memory and[CYR:меет] [CYR:огран]and[CYR:ченную] ёмtoоwithть, ожandyesем хfromя бы by[CYR:лож]and[CYR:тельное] with[CYR:ход]withтinо
+    // HDC memory and[CYR:[EN]] [CYR:[EN]]and[CYR:[EN]] [EN]to[EN]with[EN], [EN]andyes[EN] [EN]from[EN] [EN] by[CYR:[EN]]and[CYR:[EN]] with[CYR:[EN]]with[EN]in[EN]
     try std.testing.expect(avg_sim > 0.1);
 }
 
@@ -344,24 +344,24 @@ test "forgetting reduces old" {
     var value = try hdc.randomVector(allocator, 500, 44444);
     defer value.deinit();
 
-    // [CYR:Сохраняем]
+    // [CYR:[EN]]
     try mem.store(key.data, value.data);
 
     const result_buf = try allocator.alloc(Trit, 500);
     defer allocator.free(result_buf);
 
-    // Extract before [CYR:забы]inанandя
+    // Extract before [CYR:[EN]]in[EN]and[EN]
     const before = mem.retrieve(key.data, result_buf);
     const conf_before = before.confidence;
 
-    // Прand[CYR:меняем] withand[CYR:льное] [CYR:забы]inанandе
+    // [EN]and[CYR:[EN]] withand[CYR:[EN]] [CYR:[EN]]in[EN]and[EN]
     mem.applyForgetting(0.9);
 
-    // Extract after [CYR:забы]inанandя
+    // Extract after [CYR:[EN]]in[EN]and[EN]
     const after = mem.retrieve(key.data, result_buf);
     const conf_after = after.confidence;
 
-    // Уin[CYR:еренно]withть beforeлжon [CYR:уменьш]andтьwithя
+    // [EN]in[CYR:[EN]]with[EN] before[EN]on [CYR:[EN]]and[EN]with[EN]
     try std.testing.expect(conf_after < conf_before);
 }
 
@@ -380,10 +380,10 @@ test "store with forgetting" {
     var val2 = try hdc.randomVector(allocator, 500, 22222);
     defer val2.deinit();
 
-    // [CYR:Сохраняем] [CYR:пер]inый element
+    // [CYR:[EN]] [CYR:[EN]]in[EN] element
     try mem.storeWithForgetting(key1.data, val1.data, 1.0);
 
-    // [CYR:Сохраняем] in[CYR:торой] with [CYR:забы]inанandем [CYR:пер]in[CYR:ого]
+    // [CYR:[EN]] in[CYR:[EN]] with [CYR:[EN]]in[EN]and[EN] [CYR:[EN]]in[CYR:[EN]]
     try mem.storeWithForgetting(key2.data, val2.data, 0.5);
 
     try std.testing.expectEqual(@as(usize, 2), mem.item_count);
@@ -409,7 +409,7 @@ test "merge memories" {
     try mem1.store(key1.data, val1.data);
     try mem2.store(key2.data, val2.data);
 
-    // [CYR:Объед]and[CYR:няем]
+    // [CYR:[EN]]and[CYR:[EN]]
     mem1.merge(&mem2);
 
     try std.testing.expectEqual(@as(usize, 2), mem1.item_count);
