@@ -1,0 +1,305 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# jit_compiler_v7 v1.0.0 - KOSCHEI JIT Compiler Specification
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Священная формула: V = n × 3^k × π^m × φ^p × e^q
+# Золотая идентичность: φ² + 1/φ² = 3
+#
+# JIT Compiler for Sacred Opcodes - Dynamic native code generation
+# Phase 4: KOSCHEI AWAKENS v7.0
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: jit_compiler_v7
+version: "1.0.0"
+language: zig
+module: jit_compiler_v7
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ТИПЫ
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  # JIT-compiled function pointer
+  JITFunction:
+    fields:
+      code_ptr: Ptr<Void>
+      size: UInt32
+      opcode: UInt8
+      compile_time_ns: UInt64
+      execution_count: UInt64
+
+  # JIT compilation cache entry
+  JITCacheEntry:
+    fields:
+      opcode: UInt8
+      bytecode_hash: UInt64
+      native_func: JITFunction
+      valid: Bool
+      hotness: UInt32
+
+  # Compilation context
+  JITContext:
+    fields:
+      allocator: Ptr<Allocator>
+      cache: HashMap<UInt64, JITCacheEntry>
+      hot_threshold: UInt32
+      total_compiled: UInt32
+      cache_hits: UInt64
+      cache_misses: UInt64
+
+  # Generated native code block
+  NativeBlock:
+    fields:
+      bytes: List<UInt8>
+      entry_point: Ptr<Void>
+      size: UInt32
+
+  # Hot opcode tracking for compilation decisions
+  HotOpcode:
+    fields:
+      opcode: UInt8
+      execution_count: UInt32
+      last_seen: UInt64
+      should_compile: Bool
+
+  # JIT compiler statistics
+  JITStats:
+    fields:
+      total_opcodes: UInt32
+      compiled_opcodes: UInt32
+      interpreted_opcodes: UInt64
+      jitted_executions: UInt64
+      avg_compile_ns: UInt64
+      speedup_factor: Float64
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # CORE JIT COMPILATION
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: jit_init
+    given: Allocator
+    when: JIT system initialization requested
+    then: Initialize JITContext with empty cache and hot_threshold=100
+
+  - name: jit_compile_phi_pow
+    given: JITContext, bytecode instruction
+    when: phi_pow opcode (0x81) is hot
+    then: Generate native Zig function for φ^n computation, cache it, return JITFunction
+
+  - name: jit_compile_fib
+    given: JITContext, bytecode instruction
+    when: fib opcode (0x82) is hot
+    then: Generate native Zig function for Fibonacci, cache it, return JITFunction
+
+  - name: jit_compile_lucas
+    given: JITContext, bytecode instruction
+    when: lucas opcode (0x83) is hot
+    then: Generate native Zig function for Lucas numbers, cache it, return JITFunction
+
+  - name: jit_compile_sacred_identity
+    given: JITContext, bytecode instruction
+    when: sacred_identity opcode (0x8E) is hot
+    then: Generate inline native verification, cache it, return JITFunction
+
+  - name: jit_compile_molar_mass
+    given: JITContext, bytecode instruction
+    when: molar_mass opcode (0xA2) is hot
+    then: Generate native function with element lookup table, cache it, return JITFunction
+
+  - name: jit_compile_ideal_gas
+    given: JITContext, bytecode instruction
+    when: ideal_gas opcode (0xA8) is hot
+    then: Generate native PV=nRT solver, cache it, return JITFunction
+
+  - name: jit_execute
+    given: JITFunction, VM registers, SacredContext
+    when: Execution requested
+    then: Call native function directly (bypass VM dispatch), update registers
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # HOTNESS TRACKING
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: track_hotness
+    given: JITContext, opcode
+    when: Opcode executed
+    then: Increment execution count, check if hot_threshold exceeded
+
+  - name: should_compile_opcode
+    given: JITContext, opcode
+    when: Compilation decision needed
+    then: Return true if execution_count >= hot_threshold AND not already compiled
+
+  - name: get_hot_opcodes
+    given: JITContext
+    when: Hot opcode list requested
+    then: Return all opcodes with execution_count >= hot_threshold
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # CODE GENERATION
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: generate_native_phi_pow
+    given: exponent register
+    when: phi_pow JIT requested
+    then: Generate x86-64 assembly for fast φ^n using precomputed φ constant and pow instruction
+
+  - name: generate_native_fib
+    given: n register
+    when: fib JIT requested
+    then: Generate optimized loop for Fibonacci with register-based accumulation
+
+  - name: generate_native_chemistry_lookup
+    given: element symbol or number
+    when: chemistry JIT requested
+    then: Generate inline lookup table with cached element data
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # CACHE MANAGEMENT
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: cache_lookup
+    given: JITContext, bytecode_hash
+    when: Cache lookup requested
+    then: Return cached JITFunction if exists and valid, else null
+
+  - name: cache_insert
+    given: JITContext, bytecode_hash, JITFunction
+    when: New function compiled
+    then: Insert into cache, evict LRU if cache full
+
+  - name: cache_invalidate
+    given: JITContext, bytecode_hash
+    when: Cache invalidation requested
+    then: Mark entry as invalid, free native memory
+
+  - name: cache_clear_all
+    given: JITContext
+    when: Full cache flush requested
+    then: Free all native code, clear cache map
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # PROFILING & STATISTICS
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: jit_get_stats
+    given: JITContext
+    when: Statistics requested
+    then: Return JITStats with compile counts, cache hit rates, speedup metrics
+
+  - name: jit_reset_stats
+    given: JITContext
+    when: Statistics reset requested
+    then: Reset all counters to zero, keep compiled functions
+
+  - name: jit_print_profile
+    given: JITContext
+    when: Profile report requested
+    then: Output ASCII table showing opcode execution counts, compile status, speedup
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # VM INTEGRATION
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: vm_execute_with_jit
+    given: VSAVM, bytecode program
+    when: Program execution requested
+    then: Track hotness, compile hot opcodes, execute via JIT when available
+
+  - name: vm_warmup
+    given: VSAVM, bytecode program, iterations
+    when: JIT warmup requested
+    then: Execute program N times to identify hot opcodes without compiling
+
+  - name: vm_compile_hot_path
+    given: VSAVM
+    when: Hot path compilation requested
+    then: Compile all opcodes above hot_threshold, generate report
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # DEINITIALIZATION
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: jit_deinit
+    given: JITContext
+    when: JIT system shutdown requested
+    then: Free all cached native code, deallocate cache map, print final stats
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TEST CASES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+test_cases:
+  - name: jit_init_test
+    given: Fresh allocator
+    when: jit_init called
+    then: JITContext created with empty cache, hot_threshold=100
+
+  - name: phi_pow_jit_test
+    given: JITContext, phi_pow bytecode
+    when: Compiled and executed 10000 times
+    then: Speedup >= 2x vs interpreted, result matches
+
+  - name: fib_jit_test
+    given: JITContext, fib bytecode
+    when: Compiled and executed for n=100
+    then: Returns correct F(100), JIT execution >= 3x faster
+
+  - name: hotness_tracking_test
+    given: JITContext with hot_threshold=10
+    when: Same opcode executed 15 times
+    then: should_compile_opcode returns true after 10th execution
+
+  - name: cache_hit_test
+    given: JITContext with compiled phi_pow
+    when: Same bytecode executed again
+    then: cache_lookup returns cached function, no recompilation
+
+  - name: cache_eviction_test
+    given: JITContext with max_size=3, 4 functions compiled
+    when: 4th function compiled
+    then: LRU function evicted, cache size <= 3
+
+  - name: stats_accuracy_test
+    given: JITContext after mixed workload
+    when: jit_get_stats called
+    then: Compiled + interpreted = total executions, cache hit rate accurate
+
+  - name: vm_integration_test
+    given: VSAVM with JIT enabled
+    when: Full program with loop executed
+    then: Hot opcodes compiled, cold opcodes interpreted, correct result
+
+  - name: deinit_cleanup_test
+    given: JITContext with compiled functions
+    when: jit_deinit called
+    then: All native memory freed, no leaks
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONSTANTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  HOT_THRESHOLD_DEFAULT: 100
+  CACHE_SIZE_DEFAULT: 256
+  PHI: 1.6180339887498948482
+  EXPECTED_JIT_SPEEDUP_MIN: 2.0
+  EXPECTED_JIT_SPEEDUP_MAX: 50.0
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# METADATA
+# ═══════════════════════════════════════════════════════════════════════════════
+
+metadata:
+  author: Trinity Cycle 108
+  date: 2026-02-28
+  cycle: 108
+  phase: 4
+  status: SPEC_COMPLETE
+  target: 603x with JIT + Batch + Large Workloads
