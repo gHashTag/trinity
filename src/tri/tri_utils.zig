@@ -194,6 +194,9 @@ pub const Command = enum {
     identity,
     swarm,
     govern,
+    dashboard,
+    omega,
+    math_agent,
     // Code Analysis
     analyze,
     search_cmd,
@@ -555,6 +558,15 @@ pub fn printHelp() void {
     std.debug.print("  {s}intel{s} [<symbol>.]          Alias for intelligence\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
+    std.debug.print("{s}SACRED AGENTS (Cycle 98):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}identity{s}                   Show Sacred Intelligence identity\n", .{ GREEN, RESET });
+    std.debug.print("  {s}swarm{s}                      Multi-agent Sacred Swarm status\n", .{ GREEN, RESET });
+    std.debug.print("  {s}govern{s}                     Sacred Governance rules (φ-Rules)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}dashboard{s} [--stream]       3-column Sacred Dashboard (RAZUM/MATERIYA/DUKH)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}omega{s} [status|validate]    Master coordinator - all agents\n", .{ GREEN, RESET });
+    std.debug.print("  {s}math-agent{s} [phi|fib|...]   Sacred Math Agent - self-aware\n", .{ GREEN, RESET });
+    std.debug.print("\n", .{});
+
     std.debug.print("{s}AUTONOMOUS EVOLUTION (Cycle 97):{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}auto-commit{s} [--dry-run] [--approve] [--max N]\n", .{ GREEN, RESET });
     std.debug.print("         Autonomous sacred patch commits (φ-guided)\n", .{});
@@ -773,6 +785,9 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "identity")) return .identity;
     if (std.mem.eql(u8, arg, "swarm")) return .swarm;
     if (std.mem.eql(u8, arg, "govern")) return .govern;
+    if (std.mem.eql(u8, arg, "dashboard") or std.mem.eql(u8, arg, "dash")) return .dashboard;
+    if (std.mem.eql(u8, arg, "omega")) return .omega;
+    if (std.mem.eql(u8, arg, "math-agent") or std.mem.eql(u8, arg, "mathagent")) return .math_agent;
     // Code Analysis & Context (Cycle 92)
     if (std.mem.eql(u8, arg, "analyze") or std.mem.eql(u8, arg, "scan")) return .analyze;
     if (std.mem.eql(u8, arg, "search")) return .search_cmd;
