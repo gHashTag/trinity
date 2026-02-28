@@ -10,6 +10,12 @@ pub const HybridBigInt = tvc_hybrid.HybridBigInt;
 pub const Trit = tvc_hybrid.Trit;
 pub const MAX_TRITS = tvc_hybrid.MAX_TRITS;
 
+// Sacred opcodes module (v7.0)
+const sacred_opcodes = @import("vm/sacred_opcodes.zig");
+const SacredOpcode = sacred_opcodes.SacredOpcode;
+const SacredContext = sacred_opcodes.SacredContext;
+const SacredOperands = sacred_opcodes.SacredOperands;
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // VSA OPCODES
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -70,6 +76,8 @@ pub const VSARegisters = struct {
     s1: i64 = 0,
     f0: f64 = 0.0, // For similarity results
     f1: f64 = 0.0,
+    f2: f64 = 0.0, // KOSCHEI v7.0: Additional float registers for chemistry/physics
+    f3: f64 = 0.0,
 
     // Program counter
     pc: u32 = 0,
@@ -124,12 +132,16 @@ pub const VSAVM = struct {
     jit_engine: ?vsa_jit.JitVSAEngine = null,
     jit_enabled: bool = true,
 
+    // KOSCHEI v7.0: Sacred execution context
+    sacred_ctx: SacredContext,
+
     pub fn init(allocator: std.mem.Allocator) VSAVM {
         return VSAVM{
             .registers = .{},
             .program = .{},
             .allocator = allocator,
             .jit_engine = vsa_jit.JitVSAEngine.init(allocator),
+            .sacred_ctx = SacredContext.init(allocator),
         };
     }
 
@@ -138,6 +150,7 @@ pub const VSAVM = struct {
         if (self.jit_engine) |*engine| {
             engine.deinit();
         }
+        self.sacred_ctx.deinit();
     }
 
     pub fn loadProgram(self: *VSAVM, instructions: []const VSAInstruction) !void {
@@ -428,6 +441,35 @@ pub const VSAVM = struct {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // KOSCHEI v7.0: SACRED OPCODE EXECUTION
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// Execute a sacred opcode (0x80-0xFF range)
+    pub fn execSacredOpcode(self: *VSAVM, opcode: SacredOpcode, operands: SacredOperands) !void {
+        try sacred_opcodes.executeSacred(&self.sacred_ctx, &self.registers, opcode, operands);
+    }
+
+    /// Convenience: Load φ constant into f0
+    pub fn loadPhi(self: *VSAVM) !void {
+        try self.execSacredOpcode(.phi_const, .{ .dest = "f0" });
+    }
+
+    /// Convenience: Compute φ^n where n is in s0
+    pub fn phiPow(self: *VSAVM) !void {
+        try self.execSacredOpcode(.phi_pow, .{ .dest = "f0" });
+    }
+
+    /// Convenience: Compute Fibonacci F(n) where n is in s0
+    pub fn fib(self: *VSAVM) !void {
+        try self.execSacredOpcode(.fib, .{});
+    }
+
+    /// Convenience: Verify sacred identity φ² + 1/φ² = 3
+    pub fn verifySacredIdentity(self: *VSAVM) !void {
+        try self.execSacredOpcode(.sacred_identity, .{});
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // JIT CONTROL
     // ═══════════════════════════════════════════════════════════════════════════
 
@@ -685,6 +727,58 @@ pub fn runBenchmarks() void {
     std.debug.print("  4 vectors packed: {} bytes\n", .{vm.registers.total_packed_bytes});
     std.debug.print("  4 vectors unpacked: {} bytes\n", .{4 * MAX_TRITS});
     std.debug.print("  Savings: {d:.1}x\n", .{@as(f64, @floatFromInt(4 * MAX_TRITS)) / @as(f64, @floatFromInt(vm.registers.total_packed_bytes))});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// KOSCHEI v7.0: SACRED OPCODE TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "VSA VM sacred: phi_const" {
+    var vm = VSAVM.init(std.testing.allocator);
+    defer vm.deinit();
+
+    try vm.loadPhi();
+    try std.testing.expect(vm.registers.f0 > 1.6 and vm.registers.f0 < 1.62);
+}
+
+test "VSA VM sacred: phi_pow" {
+    var vm = VSAVM.init(std.testing.allocator);
+    defer vm.deinit();
+
+    vm.registers.s0 = 10; // φ^10
+    try vm.phiPow();
+    try std.testing.expect(vm.registers.f0 > 122.9 and vm.registers.f0 < 123.0);
+}
+
+test "VSA VM sacred: fib(10)" {
+    var vm = VSAVM.init(std.testing.allocator);
+    defer vm.deinit();
+
+    vm.registers.s0 = 10;
+    try vm.fib();
+    try std.testing.expectEqual(@as(i64, 55), vm.registers.s0);
+}
+
+test "VSA VM sacred: sacred_identity" {
+    var vm = VSAVM.init(std.testing.allocator);
+    defer vm.deinit();
+
+    try vm.verifySacredIdentity();
+    try std.testing.expect(vm.registers.cc_zero); // φ² + 1/φ² = 3 verified
+    try std.testing.expectApproxEqAbs(@as(f64, 3.0), vm.registers.f0, 1e-10);
+}
+
+test "VSA VM sacred: direct opcode execution" {
+    var vm = VSAVM.init(std.testing.allocator);
+    defer vm.deinit();
+
+    // Test golden angle
+    try vm.execSacredOpcode(.golden_angle, .{ .dest = "f0" });
+    try std.testing.expect(vm.registers.f0 > 137.5 and vm.registers.f0 < 137.51);
+
+    // Test physics constant
+    try vm.execSacredOpcode(.light_speed, .{ .dest = "f0" });
+    try std.testing.expectApproxEqAbs(@as(f64, 299792458.0), vm.registers.f0, 1.0);
 }
 
 pub fn main() !void {
