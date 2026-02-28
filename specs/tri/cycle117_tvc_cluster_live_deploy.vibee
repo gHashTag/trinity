@@ -1,0 +1,270 @@
+name: cycle117_tvc_cluster_live_deploy
+version: "1.0.0"
+language: zig
+module: tvc_cluster_deploy
+
+types:
+  DockerInfo:
+    fields:
+      installed: Bool
+      version: String
+      running: Bool
+
+  ContainerStatus:
+    fields:
+      name: String
+      state: String
+      health: String
+      uptime: String
+
+  ClusterHealth:
+    fields:
+      coordinator: String
+      workers: List<String>
+      total_nodes: Int
+      healthy_nodes: Int
+
+  HealthCheckResponse:
+    fields:
+      status: String
+      role: String
+      node_id: String
+      uptime_seconds: Float
+      phi_interval: Float
+      election_timeout: Float
+
+  TVCInsertResponse:
+    fields:
+      success: Bool
+      key: String
+      vector_hash: String
+      replication_count: Int
+      latency_ms: Float
+
+  TVCQueryResponse:
+    fields:
+      success: Bool
+      results_count: Int
+      similarity_threshold: Float
+      latency_ms: Float
+
+  FailoverMetrics:
+    fields:
+      coordinator_stopped: String
+      new_coordinator_elected: String
+      failover_time_ms: Float
+      data_lost: Bool
+      consistent_state: Bool
+
+  ThroughputMetrics:
+    fields:
+      total_operations: Int
+      duration_seconds: Float
+      qps: Float
+      avg_latency_ms: Float
+      p99_latency_ms: Float
+
+  ClusterStatusReport:
+    fields:
+      timestamp: String
+      cluster_size: Int
+      coordinator: String
+      workers: List<String>
+      health_status: String
+      total_vectors: Int
+      qps: Float
+      failover_time_ms: Float
+      uptime_minutes: Float
+
+  DashboardData:
+    fields:
+      cluster_health: ClusterHealth
+      throughput: ThroughputMetrics
+      last_failover: Option<FailoverMetrics>
+      node_statuses: List<ContainerStatus>
+
+behaviors:
+  - name: check_docker_installation
+    given: System with Trinity TVC codebase
+    when: User checks if Docker is installed
+    then: Returns DockerInfo with installed flag, version string, and running status
+
+  - name: verify_docker_version_minimum
+    given: Docker is installed
+    when: User checks Docker version meets minimum requirements (20.10+)
+    then: Returns true if version >= 20.10.0 with detailed version comparison
+
+  - name: check_docker_compose_available
+    given: Docker is installed
+    when: User checks if docker-compose or Docker Compose plugin is available
+    then: Returns availability status and compose version (v2 or v1)
+
+  - name: generate_dockerfile_tvc_node
+    given: Trinity TVC source code in src/
+    when: User generates Dockerfile for TVC node service
+    then: Creates multi-stage Dockerfile with Zig 0.15.x, builds TVC binary, exposes port 8080
+
+  - name: generate_docker_compose_cluster_config
+    given: Dockerfile for TVC node exists
+    when: User generates docker-compose.yml for 3-node cluster
+    then: Creates docker-compose.yml with 1 coordinator (tvc-coord) and 2 workers (tvc-worker-1, tvc-worker-2)
+
+  - name: configure_coordinator_service
+    given: docker-compose.yml template
+    when: User configures coordinator service with φ-based timeouts
+    then: Sets environment variables PHI_HEARTBEAT_MS=618, PHI_ELECTION_MS=1618, COORDINATOR_MODE=true
+
+  - name: configure_worker_services
+    given: docker-compose.yml template
+    when: User configures worker services with coordinator endpoint
+    then: Sets COORDINATOR_HOST=tvc-coord, COORDINATOR_PORT=8080, WORKER_ID for each worker
+
+  - name: setup_cluster_networking
+    given: docker-compose.yml with services defined
+    when: User configures Docker network for cluster communication
+    then: Creates bridge network 'tvc-cluster-net' with driver: bridge, internal: false
+
+  - name: configure_persistent_volumes
+    given: docker-compose.yml with services
+    when: User sets up volume mounts for data persistence
+    then: Mounts ./data/coordinator:/data, ./data/worker1:/data, ./data/worker2:/data
+
+  - name: setup_port_mappings
+    given: docker-compose.yml with services
+    when: User configures external port access for each node
+    then: Maps coordinator:8080->8080, worker1:8081->8080, worker2:8082->8080
+
+  - name: build_docker_image_tvc
+    given: Dockerfile exists in project root
+    when: User executes 'docker build -t trinity-tvc:v1.0.0-prod .'
+    then: Builds Docker image with tag trinity-tvc:v1.0.0-prod, returns image ID and size
+
+  - name: create_data_directories
+    given: Project directory with docker-compose.yml
+    when: User creates persistent data directories
+    then: Creates ./data/coordinator, ./data/worker1, ./data/worker2 directories with 755 permissions
+
+  - name: deploy_cluster_startup
+    given: Docker image built and data directories ready
+    when: User executes 'docker-compose up -d'
+    then: Starts 3 containers in detached mode, returns container IDs and startup status
+
+  - name: verify_all_containers_running
+    given: Cluster deployment initiated
+    when: User checks container status after 10 seconds
+    then: Returns list of ContainerStatus with all containers in 'running' state
+
+  - name: get_coordinator_logs
+    given: All containers running
+    when: User fetches coordinator startup logs
+    then: Returns docker logs output showing coordinator initialization and node registration
+
+  - name: test_coordinator_health_endpoint
+    given: Coordinator container running on port 8080
+    when: User curls http://localhost:8080/health
+    then: Returns HealthCheckResponse with status='healthy', role='coordinator', node_id, uptime
+
+  - name: test_worker1_health_endpoint
+    given: Worker1 container running on port 8081
+    when: User curls http://localhost:8081/health
+    then: Returns HealthCheckResponse with status='healthy', role='worker', node_id='worker-1'
+
+  - name: test_worker2_health_endpoint
+    given: Worker2 container running on port 8082
+    when: User curls http://localhost:8082/health
+    then: Returns HealthCheckResponse with status='healthy', role='worker', node_id='worker-2'
+
+  - name: verify_cluster_formation
+    given: All health endpoints responding
+    when: User queries coordinator for cluster status
+    then: Returns ClusterHealth with 3 nodes, coordinator_id, and list of connected worker IDs
+
+  - name: test_tvc_insert_vector
+    given: Cluster healthy and formed
+    when: User POSTs vector to http://localhost:8080/api/v1/insert with key='test-key-1'
+    then: Returns TVCInsertResponse with success=true, vector_hash, replication_count=3
+
+  - name: test_tvc_batch_insert
+    given: Single insert working
+    when: User inserts 100 test vectors via batch API
+    then: Returns success=true with count=100, avg_latency_ms < 50ms
+
+  - name: test_tvc_query_similarity
+    given: 100 vectors inserted
+    when: User queries with similarity threshold 0.8
+    then: Returns TVCQueryResponse with results_count > 0, similarity scores, latency_ms
+
+  - name: measure_cluster_throughput
+    given: Cluster operational with test data
+    when: User runs 1000 insert operations and measures QPS
+    then: Returns ThroughputMetrics with qps > 100, avg_latency_ms, p99_latency_ms
+
+  - name: simulate_coordinator_failure
+    given: Cluster running under load
+    when: User executes 'docker stop tvc-coord'
+    then: Stops coordinator container, triggers election among workers
+
+  - name: detect_coordinator_failure
+    given: Coordinator stopped
+    when: Workers detect heartbeat timeout (618ms * 3 = 1.854s)
+    then: Workers initiate election protocol with phi-based timing
+
+  - name: verify_automatic_failover
+    given: Coordinator failure detected
+    when: Workers elect new coordinator from remaining nodes
+    then: New coordinator elected within 5 seconds, cluster continues operation
+
+  - name: measure_failover_time
+    given: Coordinator stopped and election initiated
+    when: User tracks time from stop to new coordinator serving requests
+    then: Returns FailoverMetrics with failover_time_ms < 5000
+
+  - name: verify_data_consistency_after_failover
+    given: New coordinator elected
+    when: User queries previously inserted vectors
+    then: All 100 vectors retrievable, data_lost=false, consistent_state=true
+
+  - name: test_write_operations_during_failover
+    given: Failover in progress
+    when: User attempts insert during election
+    then: Either accepted by new coordinator or buffered, no data loss
+
+  - name: verify_worker_registration_after_failover
+    given: New coordinator elected
+    when: User checks cluster status via new coordinator
+    then: Both workers registered, cluster_size=2 (degraded mode)
+
+  - name: restart_original_coordinator
+    given: Cluster running with 2 nodes
+    when: User executes 'docker start tvc-coord'
+    then: Original coordinator starts as worker, rejoins cluster
+
+  - name: verify_cluster_recovery_to_3_nodes
+    given: Original coordinator restarted as worker
+    when: User checks cluster status after 10 seconds
+    then: Cluster size returns to 3, all nodes healthy
+
+  - name: generate_cluster_status_report
+    given: Cluster fully recovered with metrics collected
+    when: User compiles all test results into report
+    then: Returns ClusterStatusReport with timestamp, health, throughput, failover data
+
+  - name: create_monitoring_dashboard_endpoint
+    given: Cluster operational with metrics
+    when: User exposes /dashboard endpoint on coordinator
+    then: Returns DashboardData JSON with cluster_health, throughput, last_failover, node_statuses
+
+  - name: cleanup_cluster_deployment
+    given: Testing complete or cleanup requested
+    when: User executes 'docker-compose down -v'
+    then: Stops all containers, removes volumes, returns cleanup status
+
+  - name: export_cluster_logs
+    given: Cluster deployment with test results
+    when: User exports logs for analysis
+    then: Creates ./logs/cluster-export.tar.gz with all container logs
+
+  - name: validate_golden_ratio_timing
+    given: Cluster configuration with φ-based intervals
+    when: User measures actual heartbeat and election timeouts
+    then: Verifies heartbeat ~618ms, election ~1618ms within 5% tolerance

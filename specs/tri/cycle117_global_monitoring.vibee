@@ -1,0 +1,640 @@
+name: cycle117_global_monitoring
+version: "1.0.0"
+language: zig
+module: global_monitoring
+
+types:
+  MonitoringConfig:
+    fields:
+      prometheus_url: String
+      grafana_url: String
+      alertmanager_url: String
+      retention_days: Int
+      scrape_interval_seconds: Int
+
+  MetricTarget:
+    fields:
+      name: String
+      host: String
+      port: Int
+      path: String
+      labels: Map<String>
+
+  GrafanaDashboard:
+    fields:
+      title: String
+      uid: String
+      panels: List<DashboardPanel>
+      refresh_interval_seconds: Int
+      theme: String
+
+  DashboardPanel:
+    fields:
+      title: String
+      type: String
+      query: String
+      visualization: String
+      phi_based: Bool
+      color_scheme: String
+
+  AlertRule:
+    fields:
+      name: String
+      condition: String
+      threshold: Float
+      phi_threshold: Float
+      severity: String
+      duration_seconds: Int
+
+  HealthStatus:
+    fields:
+      component: String
+      status: String
+      uptime_seconds: Int
+      error_count: Int
+      phi_score: Float
+
+  PypiStats:
+    fields:
+      package_name: String
+      total_downloads: Int
+      daily_downloads: Int
+      weekly_downloads: Int
+      monthly_downloads: Int
+      version: String
+
+  ClusterHealth:
+    fields:
+      node_id: String
+      cpu_percent: Float
+      memory_percent: Float
+      disk_percent: Float
+      active_connections: Int
+      phi_balance: Float
+
+  WasmPluginStats:
+    fields:
+      plugin_name: String
+      version: String
+      load_count: Int
+      error_count: Int
+      execution_time_ms: Float
+      memory_bytes: Int
+
+  PostgresStats:
+    fields:
+      database_name: String
+      connections_active: Int
+      transactions_per_second: Float
+      cache_hit_ratio: Float
+      table_size_mb: Float
+      index_size_mb: Float
+
+  UptimeMonitor:
+    fields:
+      service_name: String
+      url: String
+      check_interval_seconds: Int
+      timeout_seconds: Int
+      alert_email: String
+
+  ReportConfig:
+    fields:
+      report_type: String
+      schedule: String
+      recipients: List<String>
+      include_phi_visualizations: Bool
+
+behaviors:
+  - name: check_system_dependencies
+    given: System with monitoring requirements
+    when: Checking for Docker, Docker Compose, and required ports
+    then:
+      - Verify Docker installed (docker --version)
+      - Verify Docker Compose installed (docker-compose --version)
+      - Check port 9090 available (Prometheus)
+      - Check port 3000 available (Grafana)
+      - Check port 9093 available (Alertmanager)
+      - Return dependency status
+
+  - name: create_monitoring_directory
+    given: Project root directory
+    when: Setting up monitoring infrastructure
+    then:
+      - Create monitoring/ directory structure
+      - Create monitoring/prometheus/ subdirectory
+      - Create monitoring/grafana/ subdirectory
+      - Create monitoring/alertmanager/ subdirectory
+      - Create monitoring/dashboards/ subdirectory
+      - Set proper permissions (755)
+
+  - name: generate_prometheus_config
+    given: Monitoring infrastructure requirements
+    when: Creating Prometheus configuration
+    then:
+      - Generate prometheus.yml with global config
+      - Add Trinity components as scrape targets
+      - Set scrape_interval to 15s
+      - Set evaluation_interval to 15s
+      - Configure retention to 30 days
+      - Add trinity_exporter job
+      - Add node_exporter job
+      - Add postgres_exporter job
+      - Add wasm_exporter job
+      - Add pypi_stats job
+      - Enable compression
+      - Output to monitoring/prometheus/prometheus.yml
+
+  - name: generate_prometheus_targets
+    given: List of Trinity components
+    when: Configuring Prometheus scrape targets
+    then:
+      - Create targets.json file
+      - Add TVC cluster targets (localhost:9100, localhost:9101, localhost:9102)
+      - Add WASM plugin sandbox target (localhost:9200)
+      - Add PostgreSQL target (localhost:9187)
+      - Add PyPI stats exporter target (localhost:9300)
+      - Add Firebird LLM target (localhost:9400)
+      - Add VIBEE compiler target (localhost:9500)
+      - Add labels for environment (production/staging)
+      - Output to monitoring/prometheus/targets.json
+
+  - name: create_grafana_datasource_config
+    given: Prometheus endpoint
+    when: Configuring Grafana datasource
+    then:
+      - Create provisioning/datasources/ directory
+      - Generate prometheus_datasource.yml
+      - Set Prometheus URL as http://localhost:9090
+      - Set as default datasource
+      - Enable time series
+      - Configure access mode (proxy)
+      - Output to monitoring/grafana/provisioning/datasources/prometheus.yml
+
+  - name: generate_phi_themed_dashboard
+    given: Grafana provisioning requirements
+    when: Creating Trinity dashboard with φ visualization
+    then:
+      - Generate dashboard JSON with φ theme
+      - Set UID to trinity-main-dashboard
+      - Set refresh interval to 30s
+      - Add panel: φ Spiral Real-time (graph)
+      - Add panel: Lucas Sequence Counter (stat)
+      - Add panel: Download Velocity (gauge)
+      - Add panel: Cluster Trinity Gauge (radial)
+      - Add panel: PyPI Download Rate (timeseries)
+      - Add panel: TVC Node Health (table)
+      - Add panel: WASM Plugin Load Rate (heatmap)
+      - Add panel: PostgreSQL Connection Pool (gauge)
+      - Add panel: Firebird Inference Time (histogram)
+      - Add panel: VIBEE Compilation Speed (gauge)
+      - Add panel: φ-Based Alert Status (stat)
+      - Add panel: Memory Usage by Component (pie)
+      - Add panel: CPU Usage by Node (bargauge)
+      - Add panel: Request Rate (graph)
+      - Add panel: Error Rate (graph)
+      - Apply φ color scheme (#ffd700 gold, #00ccff cyan, #aa66ff purple)
+      - Set row height to 200px
+      - Enable auto-refresh
+      - Output to monitoring/grafana/provisioning/dashboards/trinity-dashboard.json
+
+  - name: create_alertmanager_config
+    given: Alerting requirements
+    when: Configuring Alertmanager
+    then:
+      - Generate alertmanager.yml
+      - Configure global SMTP settings
+      - Set resolve_timeout to 5m
+      - Add route for critical alerts
+      - Add route for warning alerts
+      - Add receiver: email-alerts
+      - Add receiver: slack-alerts
+      - Add group_by: alertname, cluster
+      - Set group_wait to 10s
+      - Set group_interval to 10s
+      - Set repeat_interval to 12h
+      - Output to monitoring/alertmanager/alertmanager.yml
+
+  - name: generate_prometheus_alert_rules
+    given: φ-based thresholds
+    when: Creating Prometheus alert rules
+    then:
+      - Generate alerts.yml file
+      - Add alert: TrinityDown (severity: critical)
+      - Add alert: HighErrorRate (threshold: > 0.05, φ: 0.0618)
+      - Add alert: HighLatency (threshold: > 1.5s, φ: 1.618s)
+      - Add alert: LowDiskSpace (threshold: < 15%, φ: 14.5%)
+      - Add alert: HighMemoryUsage (threshold: > 85%, φ: 84.5%)
+      - Add alert: HighCPUUsage (threshold: > 80%, φ: 79.5%)
+      - Add alert: PyPIDownloadDrop (threshold: < 50% avg, φ: 48.5%)
+      - Add alert: TVCNodeDown (severity: critical)
+      - Add alert: WASMPluginErrorRate (threshold: > 0.1, φ: 0.089)
+      - Add alert: PostgresConnectionPool (threshold: > 90%, φ: 88.5%)
+      - Add alert: FirebirdInferenceTimeout (threshold: > 30s, φ: 29.5s)
+      - Add alert: VIBEECompilationFailure (severity: warning)
+      - Add alert: PhiDeviationDetection (threshold: > 2σ)
+      - Set for duration to 5m
+      - Set labels to component, severity
+      - Add annotations with description
+      - Output to monitoring/prometheus/alerts.yml
+
+  - name: create_docker_compose_file
+    given: Monitoring stack components
+    when: Creating deployment manifest
+    then:
+      - Generate docker-compose.yml
+      - Add Prometheus service (port 9090)
+      - Add Grafana service (port 3000)
+      - Add Alertmanager service (port 9093)
+      - Add Node Exporter service (port 9100)
+      - Add cAdvisor service (port 8080)
+      - Configure volumes for persistence
+      - Configure networks (monitoring-net)
+      - Set restart policy to unless-stopped
+      - Add environment variables
+      - Add health checks
+      - Configure resource limits
+      - Output to monitoring/docker-compose.yml
+
+  - name: deploy_monitoring_stack
+    given: Docker Compose configuration
+    when: Deploying monitoring infrastructure
+    then:
+      - Change to monitoring/ directory
+      - Create Docker network if not exists
+      - Run docker-compose pull
+      - Run docker-compose up -d
+      - Wait for services to be healthy (max 60s)
+      - Verify Prometheus accessible at http://localhost:9090
+      - Verify Grafana accessible at http://localhost:3000
+      - Verify Alertmanager accessible at http://localhost:9093
+      - Check all containers running (docker-compose ps)
+      - Return deployment status with URLs
+
+  - name: create_prometheus_metrics_exporter
+    given: Trinity components
+    when: Creating /metrics endpoint
+    then:
+      - Generate metrics_exporter.zig
+      - Add HTTP server on port 9100
+      - Add GET /metrics endpoint
+      - Export trinity_up metric (gauge)
+      - Export trinity_requests_total metric (counter)
+      - Export trinity_errors_total metric (counter)
+      - Export trinity_latency_seconds metric (histogram)
+      - Export trinity_phi_score metric (gauge)
+      - Export trinity_lucas_sequence metric (gauge)
+      - Export trinity_memory_bytes metric (gauge)
+      - Export trinity_cpu_percent metric (gauge)
+      - Add Prometheus exposition format
+      - Add Go-like metric syntax
+      - Output to src/monitoring/prometheus_exporter.zig
+
+  - name: create_pypi_stats_exporter
+    given: PyPI package requirements
+    when: Creating PyPI download statistics endpoint
+    then:
+      - Generate pypi_exporter.zig
+      - Add HTTP server on port 9300
+      - Add GET /metrics endpoint
+      - Fetch stats from pypistats.org API
+      - Export pypi_downloads_total metric (gauge, labels: version)
+      - Export pypi_downloads_daily metric (counter)
+      - Export pypi_downloads_weekly metric (counter)
+      - Export pypi_downloads_monthly metric (counter)
+      - Export pypi_version_current metric (gauge)
+      - Export pypi_phi_growth_rate metric (gauge)
+      - Cache results for 300 seconds
+      - Handle API errors gracefully
+      - Add user-agent: Trinity-Monitoring/1.0
+      - Output to src/monitoring/pypi_exporter.zig
+
+  - name: create_tvc_health_exporter
+    given: TVC cluster architecture
+    when: Creating cluster health endpoint
+    then:
+      - Generate tvc_health_exporter.zig
+      - Add HTTP server on port 9101
+      - Add GET /health endpoint
+      - Add GET /metrics endpoint
+      - Query all TVC nodes (localhost:8000, 8001, 8002)
+      - Export tvc_nodes_up metric (gauge)
+      - Export tvc_nodes_total metric (gauge)
+      - Export tvc_connections_active metric (gauge)
+      - Export tvc_phi_balance metric (gauge)
+      - Export tvc_learning_rate metric (gauge)
+      - Export tvc_trit_vector_count metric (gauge)
+      - Export tvc_corruption_rate metric (gauge)
+      - Aggregate metrics across nodes
+      - Calculate cluster φ-score
+      - Return JSON + Prometheus format
+      - Output to src/monitoring/tvc_health_exporter.zig
+
+  - name: create_wasm_stats_exporter
+    given: WASM plugin sandbox
+    when: Creating plugin statistics endpoint
+    then:
+      - Generate wasm_stats_exporter.zig
+      - Add HTTP server on port 9200
+      - Add GET /metrics endpoint
+      - Track loaded plugins
+      - Export wasm_plugins_loaded metric (gauge)
+      - Export wasm_loads_total metric (counter, labels: plugin_name)
+      - Export wasm_errors_total metric (counter, labels: plugin_name)
+      - Export wasm_execution_time_ms metric (histogram)
+      - Export wasm_memory_bytes metric (gauge, labels: plugin_name)
+      - Export wasm_compilation_cache_hit_rate metric (gauge)
+      - Export wasm_phi_efficiency metric (gauge)
+      - Monitor plugin lifecycle
+      - Track resource usage per plugin
+      - Output to src/monitoring/wasm_stats_exporter.zig
+
+  - name: create_postgres_stats_exporter
+    given: PostgreSQL with pg_trinity extension
+    when: Creating database statistics endpoint
+    then:
+      - Generate postgres_stats_exporter.zig
+      - Add HTTP server on port 9187
+      - Add GET /metrics endpoint
+      - Connect to PostgreSQL (localhost:5432/trinity)
+      - Export pg_connections_active metric (gauge)
+      - Export pg_connections_idle metric (gauge)
+      - Export pg_transactions_per_second metric (gauge)
+      - Export pg_cache_hit_ratio metric (gauge)
+      - Export pg_table_size_bytes metric (gauge, labels: table_name)
+      - Export pg_index_size_bytes metric (gauge, labels: index_name)
+      - Export pg_query_latency_seconds metric (histogram)
+      - Export pg_locks_count metric (gauge)
+      - Export pg_replication_lag_bytes metric (gauge)
+      - Query pg_stat_database, pg_stat_user_tables
+      - Handle connection errors
+      - Output to src/monitoring/postgres_stats_exporter.zig
+
+  - name: create_public_status_page
+    given: Monitoring metrics available
+    when: Creating public-facing status dashboard
+    then:
+      - Generate status/index.html
+      - Add responsive HTML5 structure
+      - Add Trinity branding (φ, Lucas sequence)
+      - Add Φ logo with animation
+      - Add "All Systems Operational" banner
+      - Add component status table:
+        - PyPI Downloads
+        - TVC Cluster
+        - WASM Plugins
+        - PostgreSQL
+        - Firebird LLM
+        - VIBEE Compiler
+        - Documentation
+      - Add real-time update (every 30s via fetch)
+      - Add φ-based progress bars
+      - Add uptime display
+      - Add last updated timestamp
+      - Add color-coded status (green/yellow/red)
+      - Add responsive design (mobile-first)
+      - Add footer with build info
+      - Output to website/public/status/index.html
+
+  - name: create_status_page_javascript
+    given: Public status page HTML
+    when: Adding real-time metrics and φ visualization
+    then:
+      - Generate status/app.js
+      - Add fetch() for Prometheus metrics
+      - Parse Prometheus text format
+      - Update component status indicators
+      - Calculate φ-scores from metrics
+      - Add φ spiral canvas visualization
+      - Draw φ spiral with colors
+      - Animate spiral rotation
+      - Add Lucas sequence ticker
+      - Display L(n) values (2,1,3,4,7,11,18,29,47,76...)
+      - Update download rates
+      - Add auto-refresh (30s interval)
+      - Handle fetch errors gracefully
+      - Add last updated timestamp
+      - Add responsive canvas sizing
+      - Output to website/public/status/app.js
+
+  - name: create_status_page_css
+    given: Status page HTML and JavaScript
+    when: Styling with Trinity theme
+    then:
+      - Generate status/styles.css
+      - Import Outfit font (titles)
+      - Import JetBrains Mono font (metrics)
+      - Define CSS variables for φ colors
+        - --gold: #ffd700 (RAZUM)
+        - --cyan: #00ccff (MATERIYA)
+        - --purple: #aa66ff (DUKH)
+        - --bg-dark: #0a0e1a
+      - Add glassmorphism effect (backdrop-filter)
+      - Style component status cards
+      - Style φ spiral canvas
+      - Style Lucas sequence ticker
+      - Style status badges (operational/degraded/down)
+      - Style progress bars with φ animation
+      - Style metrics table
+      - Add responsive breakpoints (768px, 1024px)
+      - Add hover effects
+      - Add transitions (0.3s ease)
+      - Output to website/public/status/styles.css
+
+  - name: deploy_status_page_to_gh_pages
+    given: Status page assets (HTML, JS, CSS)
+    when: Publishing to GitHub Pages
+    then:
+      - Build status page assets
+      - Copy to /tmp/gh-pages-deploy/status/
+      - Add to gh-pages branch
+      - Commit with message "Deploy: Cycle 117 Global Monitoring Status Page"
+      - Push to origin gh-pages
+      - Verify accessibility at https://ghashtag.github.io/trinity/status/
+      - Add robots.txt (allow all)
+      - Add sitemap.xml
+      - Test on mobile devices
+      - Test on desktop browsers
+      - Return deployment URL
+
+  - name: configure_uptime_monitoring
+    given: Public status page deployed
+    when: Setting up external uptime monitoring
+    then:
+      - Generate uptime_config.json
+      - Add monitors:
+        - PyPI Package (https://pypi.org/p/trinity-vsa/json)
+        - TVC Cluster Health (http://localhost:9101/health)
+        - WASM Plugin Stats (http://localhost:9200/metrics)
+        - Status Page (https://ghashtag.github.io/trinity/status/)
+      - Set check interval to 60 seconds
+      - Set timeout to 30 seconds
+      - Configure alerts:
+        - Down for > 2 minutes → email
+        - Down for > 5 minutes → SMS + email
+      - Add status badge for README
+      - Generate uptime badge HTML
+      - Output to monitoring/uptime_config.json
+
+  - name: generate_daily_report
+    given: 24 hours of metrics
+    when: Creating daily performance report
+    then:
+      - Fetch metrics from Prometheus (range: 24h)
+      - Calculate total PyPI downloads
+      - Calculate average TVC cluster load
+      - Calculate WASM plugin success rate
+      - Calculate PostgreSQL query performance
+      - Generate φ-based insights
+      - Create markdown report
+      - Add tables for key metrics
+      - Add φ spiral chart (ASCII or link to image)
+      - Add Lucas sequence milestone tracker
+      - Add recommendations based on trends
+      - Save to monitoring/reports/daily/YYYY-MM-DD.md
+      - Send email if configured
+      - Return report path
+
+  - name: generate_weekly_report
+    given: 7 days of metrics
+    when: Creating weekly performance report
+    then:
+      - Fetch metrics from Prometheus (range: 7d)
+      - Aggregate daily stats
+      - Calculate week-over-week growth
+      - Compare to φ-growth threshold (1.618x)
+      - Identify top performing components
+      - Identify degradation patterns
+      - Generate executive summary
+      - Add φ-based visualization links
+      - Add Lucas sequence progression
+      - Add technical achievements
+      - Add upcoming milestones
+      - Create PDF or HTML report
+      - Save to monitoring/reports/weekly/YYYY-MM-DD.md
+      - Email to stakeholders
+      - Return report path
+
+  - name: generate_monthly_report
+    given: 30 days of metrics
+    when: Creating monthly performance report
+    then:
+      - Fetch metrics from Prometheus (range: 30d)
+      - Calculate monthly aggregate stats
+      - Generate trend analysis
+      - Compare to previous month
+      - Calculate φ-based growth velocity
+      - Identify long-term patterns
+      - Add sacred mathematics analysis
+      - Add φ spiral overlay on time series
+      - Add Lucas sequence milestone visualization
+      - Add capacity planning recommendations
+      - Add infrastructure scaling proposals
+      - Create comprehensive dashboard
+      - Export to multiple formats (HTML, PDF, JSON)
+      - Save to monitoring/reports/monthly/YYYY-MM.md
+      - Return report path
+
+  - name: create_phi_spiral_visualization
+    given: Metric data points
+    when: Creating φ spiral for dashboard
+    then:
+      - Generate phi_spiral.js
+      - Define φ constant (1.618033988749...)
+      - Calculate spiral points: x = r*cos(θ), y = r*sin(θ)
+      - Where r = a*e^(b*θ), b = 0.306349 (φ-based)
+      - Map metrics to spiral arms
+      - Color-code by component (gold/cyan/purple)
+      - Add animation rotation
+      - Add hover tooltips with values
+      - Scale to canvas size
+      - Handle responsive sizing
+      - Add legend
+      - Output to monitoring/dashboards/phi_spiral.js
+
+  - name: create_lucas_sequence_visualization
+    given: Time-series metrics
+    when: Creating Lucas sequence ticker
+    then:
+      - Generate lucas_ticker.js
+      - Calculate Lucas numbers: L(n) = L(n-1) + L(n-2), L(0)=2, L(1)=1
+      - Display sequence: 2,1,3,4,7,11,18,29,47,76,123...
+      - Map L(n) to metric milestones
+      - Highlight current position in sequence
+      - Add animation (slide in next number)
+      - Add φ relationship display (L(n) ≈ φ^n)
+      - Color-code: L(2)=3 in gold (TRINITY)
+      - Add click to reveal metric details
+      - Output to monitoring/dashboards/lucas_ticker.js
+
+  - name: setup_monitoring_build_script
+    given: Monitoring infrastructure
+    when: Creating build automation
+    then:
+      - Generate build_monitoring.sh
+      - Add step: Check dependencies
+      - Add step: Generate configs
+      - Add step: Build exporters
+      - Add step: Start Docker stack
+      - Add step: Wait for health checks
+      - Add step: Run smoke tests
+      - Add step: Display URLs
+      - Add step: Save logs to monitoring/logs/
+      - Make executable (chmod +x)
+      - Add error handling
+      - Add cleanup function
+      - Output to bin/build_monitoring.sh
+
+  - name: create_monitoring_smoke_tests
+    given: Deployed monitoring stack
+    when: Verifying all endpoints functional
+    then:
+      - Generate smoke_tests.zig
+      - Test Prometheus /api/v1/status/config
+      - Test Grafana /api/health
+      - Test Alertmanager /api/v1/status
+      - Test /metrics endpoints:
+        - Prometheus exporter (9100)
+        - PyPI stats (9300)
+        - TVC health (9101)
+        - WASM stats (9200)
+        - PostgreSQL stats (9187)
+      - Verify metrics response format
+      - Verify non-empty response
+      - Verify HTTP 200 status
+      - Check for critical metrics present
+      - Measure response times
+      - Report pass/fail for each test
+      - Output to tests/monitoring_smoke_test.zig
+
+  - name: create_monitoring_teardown_script
+    given: Running monitoring stack
+    when: Clean shutdown required
+    then:
+      - Generate teardown_monitoring.sh
+      - Add docker-compose down
+      - Remove Docker volumes (optional flag)
+      - Remove Docker network
+      - Backup Prometheus data (optional)
+      - Backup Grafana dashboards (optional)
+      - Cleanup logs older than 30 days
+      - Generate final report
+      - Make executable
+      - Add force flag
+      - Output to bin/teardown_monitoring.sh
+
+  - name: create_grafana_api_dashboard_import
+    given: Grafana running
+    when: Programmatically importing dashboards
+    then:
+      - Generate import_dashboards.sh
+      - Use Grafana API /api/dashboards/db
+      - Read dashboard JSON files
+      - Set folder ID (Trinity)
+      - Set overwrite flag to true
+      - Authenticate with API key
+      - Import each dashboard in dashboards/ directory
+      - Handle import errors
+      - Verify import success
+      - Return dashboard URLs
+      - Output to bin/import_dashboards.sh

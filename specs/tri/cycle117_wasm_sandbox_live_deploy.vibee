@@ -1,0 +1,355 @@
+name: cycle117_wasm_sandbox_live_deploy
+version: "1.0.0"
+language: zig
+module: wasm_sandbox
+
+types:
+  WasmRuntime:
+    fields:
+      engine: WasmEngine
+      store_mut: *Store
+      linker: Linker
+      instance: Option Instance
+      plugin_name: String
+
+  HostApi:
+    fields:
+      output_buffer: ArrayList(u8)
+      input_buffer: ArrayList(u8)
+      allocation_count: usize
+      allocation_limit: usize
+
+  PluginConfig:
+    fields:
+      name: String
+      path: String
+      wasi_enabled: Bool
+      memory_limit: usize
+      fuel_enabled: Bool
+      fuel_limit: u64
+
+  CompilationResult:
+    fields:
+      success: Bool
+      wasm_path: String
+      file_size: usize
+      compile_time_ms: u64
+      error_message: Option String
+
+  SandboxMetrics:
+    fields:
+      execution_time_ns: u64
+      memory_used: usize
+      fuel_consumed: u64
+      host_calls: usize
+
+  BenchmarkResult:
+    fields:
+      plugin_name: String
+      wasm_time_ns: u64
+      native_time_ns: u64
+      overhead_percent: Float
+      iterations: usize
+
+behaviors:
+  # === Environment Detection ===
+
+  - name: check_wasmtime_installation
+    given: System requires Wasmtime runtime
+    when: Checking wasmtime availability
+    then: Execute "wasmtime --version" and return version string or error if not found
+
+  - name: detect_c_compiler
+    given: C plugin compilation requires clang
+    when: Checking C compiler availability
+    then: Execute "clang --version" and return version or suggest installation
+
+  - name: detect_zig_compiler
+    given: Zig plugin compilation requires zig
+    when: Checking Zig compiler availability
+    then: Execute "zig version" and return version or suggest installation
+
+  - name: detect_rust_toolchain
+    given: Rust plugin compilation requires cargo
+    when: Checking Rust toolchain availability
+    then: Execute "cargo --version" and "rustc --version" returning versions or suggest installation
+
+  # === C Plugin Compilation ===
+
+  - name: compile_hello_world_c
+    given: hello_world.c with host_print import
+    when: Compiling to WASM with clang
+    then: Execute "clang --target=wasm32-wasi --sysroot=/wasm32-wasi -nostartfiles -o zig-out/plugins/hello_world.wasm specs/tri/plugins/hello_world.c" and verify WASM binary output
+
+  - name: validate_c_wasm_binary
+    given: Compiled hello_world.wasm
+    when: Validating WASM binary structure
+    then: Check magic number (0x00 0x61 0x73 0x6D) and version (0x01) in first 8 bytes
+
+  - name: read_c_wasm_imports
+    given: Valid hello_world.wasm
+    when: Reading import section
+    then: Parse and return list of imported functions (e.g., "env", "host_print")
+
+  # === Zig Plugin Compilation ===
+
+  - name: compile_fibonacci_zig
+    given: fibonacci.zig with host exports
+    when: Compiling to WASM with zig build-exe
+    then: Execute "zig build-exe -target wasm32-wasi -O ReleaseFast specs/tri/plugins/fibonacci.zig -femit-bin=zig-out/plugins/fibonacci.wasm --strip" and verify output
+
+  - name: validate_zig_wasm_binary
+    given: Compiled fibonacci.wasm
+    when: Validating WASM structure
+    then: Parse WASM sections and verify type, import, export, function sections exist
+
+  - name: read_zig_wasm_exports
+    given: Valid fibonacci.wasm
+    when: Reading export section
+    then: Return list of exported functions (e.g., "fib", "memory")
+
+  # === Rust Plugin Compilation ===
+
+  - name: compile_string_reverse_rust
+    given: string_reverse.rs with Cargo.toml configuration
+    when: Compiling to WASM with cargo
+    then: Execute "cargo build --target wasm32-wasi --release -p string_reverse" and copy target/wasm32-wasi/release/string_reverse.wasm to zig-out/plugins/
+
+  - name: create_rust_cargo_toml
+    given: Rust plugin project structure
+    when: Creating Cargo.toml for WASM target
+    then: Generate [lib] crate-type = ["cdylib"] and [dependencies] sections
+
+  - name: optimize_rust_wasm_binary
+    given: Compiled string_reverse.wasm
+    when: Optimizing binary size with wasm-opt
+    then: Execute "wasm-opt -Oz -o zig-out/plugins/string_reverse_opt.wasm zig-out/plugins/string_reverse.wasm" if wasm-opt available
+
+  # === Zig Bindings Generation ===
+
+  - name: generate_host_api_bindings
+    given: Host functions to expose to WASM
+    when: Generating Zig wrapper bindings
+    then: Create struct with function pointers matching WasmTic.Value type signature
+
+  - name: define_host_print_function
+    given: Plugin needs to output text
+    when: Defining host_print in Zig
+    then: Create function signature: fn (*const WasmRuntime, [*]const u8, usize) callconv(.C) void
+
+  - name: define_host_alloc_function
+    given: Plugin needs to allocate memory
+    when: Defining host_alloc in Zig
+    then: Create function that allocates from HostApi.output_buffer and returns pointer
+
+  - name: define_host_free_function
+    given: Plugin needs to free memory
+    when: Defining host_free in Zig
+    then: Create function tracking deallocations in HostApi.allocation_count
+
+  - name: define_host_get_input_function
+    given: Plugin needs to read host input
+    when: Defining host_get_input in Zig
+    then: Create function reading from HostApi.input_buffer and writing to plugin memory
+
+  - name: define_host_set_output_function
+    given: Plugin needs to write host output
+    when: Defining host_set_output in Zig
+    then: Create function copying plugin memory to HostApi.output_buffer
+
+  - name: define_host_panic_function
+    given: Plugin needs to report errors
+    when: Defining host_panic in Zig
+    then: Create function capturing panic message and returning trap to WASM
+
+  # === WasmRuntime Creation ===
+
+  - name: create_wasm_engine
+    given: Wasmtime integration
+    when: Creating WasmEngine configuration
+    then: Initialize engine with strategy: auto or cranelift, enable fuel for metering
+
+  - name: create_wasm_store
+    given: WasmEngine instance
+    when: Creating Store for WASM state
+    then: Initialize store with WasmConfig and fuel limit (e.g., 1_000_000 fuel units)
+
+  - name: create_wasm_linker
+    given: Store instance
+    when: Creating Linker for function resolution
+    then: Initialize linker allowing WASI commands and host function namespace "env"
+
+  - name: register_host_print_linker
+    given: Linker and host_print function
+    when: Registering host_print in linker
+    then: Add function "host_print" to "env" namespace with FuncType params=[i32, i32] results=[]
+
+  - name: register_host_alloc_linker
+    given: Linker and host_alloc function
+    when: Registering host_alloc in linker
+    then: Add function "host_alloc" to "env" namespace with FuncType params=[i32] results=[i32]
+
+  - name: register_host_free_linker
+    given: Linker and host_free function
+    when: Registering host_free in linker
+    then: Add function "host_free" to "env" namespace with FuncType params=[i32] results=[]
+
+  - name: register_host_get_input_linker
+    given: Linker and host_get_input function
+    when: Registering host_get_input in linker
+    then: Add function "host_get_input" to "env" namespace with FuncType params=[i32, i32] results=[i32]
+
+  - name: register_host_set_output_linker
+    given: Linker and host_set_output function
+    when: Registering host_set_output in linker
+    then: Add function "host_set_output" to "env" namespace with FuncType params=[i32, i32] results=[i32]
+
+  - name: register_host_panic_linker
+    given: Linker and host_panic function
+    when: Registering host_panic in linker
+    then: Add function "host_panic" to "env" namespace with FuncType params=[i32, i32] results=[] (never returns)
+
+  # === Plugin Loading and Execution ===
+
+  - name: load_hello_world_plugin
+    given: Valid hello_world.wasm and configured linker
+    when: Loading WASM module
+    then: Read file bytes, create Module from bytes, instantiate with linker, capture Instance
+
+  - name: run_hello_world_test
+    given: Loaded hello_world instance
+    when: Calling exported "run" function
+    then: Invoke "run" with no parameters, verify host_print called with "Hello from WASM!"
+
+  - name: load_fibonacci_plugin
+    given: Valid fibonacci.wasm and configured linker
+    when: Loading WASM module
+    then: Read file bytes, create Module, instantiate, get exported "fib" function
+
+  - name: run_fibonacci_test
+    given: Loaded fibonacci instance with fib export
+    when: Calling fib(20)
+    then: Invoke "fib" with parameter 20, verify result equals 6765
+
+  - name: load_string_reverse_plugin
+    given: Valid string_reverse_opt.wasm and configured linker
+    when: Loading WASM module
+    then: Read file bytes, create Module, instantiate, get exported "reverse" function
+
+  - name: run_string_reverse_test
+    given: Loaded string_reverse instance
+    when: Calling reverse("Trinity WASM")
+    then: Invoke "reverse" with input string, verify output equals "MSAW ynirtT"
+
+  # === Sandbox Measurements ===
+
+  - name: measure_sandbox_overhead
+    given: Fibonacci plugin and native implementation
+    when: Comparing execution times
+    then: Run fib(20) 1000 times in WASM and native, calculate overhead percentage = (wasm_time - native_time) / native_time * 100
+
+  - name: verify_sandbox_file_isolation
+    given: Plugin attempting file access
+    when: Calling WASI fd_write or fd_read
+    then: Verify all filesystem operations return error (no WASI preopened directories)
+
+  - name: verify_sandbox_network_isolation
+    given: Plugin attempting network access
+    when: Calling socket/connect syscalls
+    then: Verify all network operations fail (WASI does not provide networking)
+
+  - name: verify_fuel_metering
+    given: Plugin with fuel limit
+    when: Plugin exceeds fuel_limit
+    then: Catch fuel exhaustion trap, return error before completion
+
+  - name: measure_memory_usage
+    given: Running plugin instance
+    when: Tracking memory allocations
+    then: Return peak memory used from Instance.memory.size() * 65536 (page size)
+
+  - name: count_host_api_calls
+    given: HostApi with counter
+    when: Plugin executes multiple host calls
+    then: Return total count of host function invocations (print, alloc, free, etc.)
+
+  # === Hot Reload Testing ===
+
+  - name: test_hot_reload_hello_world
+    given: Running hello_world plugin
+    when: Recompiling hello_world.c with modified message
+    then: Reload module, verify new message printed without restarting runtime
+
+  - name: test_hot_reload_fibonacci
+    given: Running fibonacci plugin
+    when: Recompiling fibonacci.zig with optimized algorithm
+    then: Reload module, verify fib(20) still returns 6765 with faster execution
+
+  - name: test_hot_reload_string_reverse
+    given: Running string_reverse plugin
+    when: Recompiling string_reverse.rs with bug fix
+    then: Reload module, verify reverse("hello") returns "olleh" correctly
+
+  # === Benchmark Generation ===
+
+  - name: benchmark_hello_world_native
+    given: Native hello_world implementation
+    when: Measuring execution time
+    then: Run 10000 iterations, return average nanoseconds
+
+  - name: benchmark_hello_world_wasm
+    given: WASM hello_world plugin
+    when: Measuring execution time
+    then: Run 10000 iterations, return average nanoseconds
+
+  - name: benchmark_fibonacci_native
+    given: Native fibonacci implementation
+    when: Measuring execution time
+    then: Run fib(20) for 10000 iterations, return average nanoseconds
+
+  - name: benchmark_fibonacci_wasm
+    given: WASM fibonacci plugin
+    when: Measuring execution time
+    then: Run fib(20) for 10000 iterations, return average nanoseconds
+
+  - name: benchmark_string_reverse_native
+    given: Native string_reverse implementation
+    when: Measuring execution time
+    then: Run reverse("Trinity WASM") for 10000 iterations, return average nanoseconds
+
+  - name: benchmark_string_reverse_wasm
+    given: WASM string_reverse plugin
+    when: Measuring execution time
+    then: Run reverse("Trinity WASM") for 10000 iterations, return average nanoseconds
+
+  - name: generate_benchmark_report
+    given: All benchmark results
+    when: Creating comparison report
+    then: Generate table with columns: Plugin, Native (ns), WASM (ns), Overhead (%), Status (PASS/FAIL)
+
+  # === Final Integration ===
+
+  - name: create_plugin_registry
+    given: Multiple compiled plugins
+    when: Creating registry for dynamic loading
+    then: Create HashMap(String, PluginConfig) mapping plugin names to file paths and configs
+
+  - name: implement_plugin_loader
+    given: Plugin registry and WasmRuntime
+    when: Loading plugin by name
+    then: Lookup in registry, compile if needed, load WASM, register instance, return handle
+
+  - name: create_sandbox_cli
+    given: Complete WASM sandbox system
+    when: Creating CLI interface
+    then: Add commands: load <plugin>, run <function> <args>, reload, list, benchmark, status
+
+  - name: run_integration_tests
+    given: All components integrated
+    when: Executing full test suite
+    then: Run all 3 plugin tests, isolation tests, hot reload tests, benchmarks, return PASS/FAIL status
+
+  - name: generate_deployment_report
+    given: Successful integration test results
+    when: Creating deployment report
+    then: Generate markdown with: compilation status, test results, performance metrics, overhead analysis, deployment checklist

@@ -1,0 +1,224 @@
+name: cycle117_postgres_live_deploy
+version: "1.0.0"
+language: zig
+module: postgres_live_deploy
+
+types:
+  PgConfig:
+    fields:
+      pg_version: String
+      pg_config_path: String
+      pgxs_path: String
+      share_dir: String
+      pkglibdir: String
+      extension_dir: String
+
+  ExtensionSource:
+    fields:
+      control_file: String
+      sql_file: String
+      c_sources: List<String>
+      makefile: String
+      is_valid: Bool
+
+  CompilationResult:
+    fields:
+      success: Bool
+      so_file_path: String
+      sql_file_path: String
+      control_file_path: String
+      compile_time_ms: Int
+      warning_count: Int
+
+  TestResult:
+    fields:
+      test_name: String
+      passed: Bool
+      execution_time_ms: Int
+      output: String
+      error_message: Option<String>
+
+  BenchmarkMetrics:
+    fields:
+      vector_size: Int
+      bind_time_us: Float
+      unbind_time_us: Float
+      bundle_time_us: Float
+      similarity_time_us: Float
+      memory_kb: Int
+
+behaviors:
+  - name: detect_postgres_installation
+    given: System with potential PostgreSQL installation
+    when: Execute pg_config --version
+    then: Return version string or error if not found
+
+  - name: validate_pg_config_path
+    given: PostgreSQL is installed
+    when: Execute which pg_config and check PATH
+    then: Return absolute path to pg_config binary
+
+  - name: get_pgxs_location
+    given: Valid pg_config binary
+    when: Execute pg_config --pgxs
+    then: Return path to PGXS directory for extension building
+
+  - name: get_pg_share_dir
+    given: Valid pg_config binary
+    when: Execute pg_config --sharedir
+    then: Return path to share directory for SQL/control files
+
+  - name: get_pg_pkglibdir
+    given: Valid pg_config binary
+    when: Execute pg_config --pkglibdir
+    then: Return path where .so extension files are installed
+
+  - name: check_extension_source_exists
+    given: Project directory structure
+    when: Check extensions/pg_trinity/pg_trinity.control exists
+    then: Return true if extension source directory exists
+
+  - name: validate_control_file
+    given: Extension source directory
+    when: Read and parse pg_trinity.control file
+    then: Validate default_version, comment, module_pathname fields
+
+  - name: validate_sql_file
+    given: Extension source directory
+    when: Read pg_trinity--1.0.sql file
+    then: Validate CREATE TYPE, CREATE FUNCTION, OPERATOR statements
+
+  - name: check_c_source_files
+    given: Extension source directory
+    when: List .c files in pg_trinity/ directory
+    then: Return array of C source file paths
+
+  - name: validate_makefile
+    given: Extension source directory
+    when: Check for Makefile with PGXS include
+    then: Validate PG_CONFIG and PGXS vars are correctly set
+
+  - name: check_pg_trinity_h
+    given: Extension source directory
+    when: Verify pg_trinity.h header file exists
+    then: Return true if header with VSA function declarations exists
+
+  - name: prepare_build_environment
+    given: Validated extension sources
+    when: Export PG_CONFIG=/usr/bin/pg_config and clear build cache
+    then: Return environment variables ready for compilation
+
+  - name: compile_extension_clean
+    given: Extension source directory with Makefile
+    when: Execute cd extensions/pg_trinity && make clean
+    then: Remove previous build artifacts
+
+  - name: compile_extension_build
+    given: Clean build directory and PGXS environment
+    when: Execute make with PGXS
+    then: Compile pg_trinity.so and report warnings/errors
+
+  - name: install_extension_sudo
+    given: Successfully compiled extension
+    when: Execute sudo make install with password prompt
+    then: Copy .so to pkglibdir and .control/.sql to share/extension
+
+  - name: verify_so_file_installed
+    given: Installed extension
+    when: Check $(pg_config --pkglibdir)/pg_trinity.so exists
+    then: Return true if shared object file is in correct location
+
+  - name: verify_control_file_installed
+    given: Installed extension
+    when: Check $(pg_config --sharedir)/extension/pg_trinity.control exists
+    then: Return true if control file is in extension directory
+
+  - name: verify_sql_file_installed
+    given: Installed extension
+    when: Check $(pg_config --sharedir)/extension/pg_trinity--1.0.sql exists
+    then: Return true if SQL installation script is in extension directory
+
+  - name: create_test_database
+    given: Running PostgreSQL server
+    when: Execute createdb trinity_test or psql -c "CREATE DATABASE trinity_test;"
+    then: Return success if database created or already exists
+
+  - name: drop_existing_extension
+    given: Test database with previous extension
+    when: Execute psql -d trinity_test -c "DROP EXTENSION IF EXISTS pg_trinity;"
+    then: Clean state for fresh installation test
+
+  - name: create_extension_sql
+    given: Test database and installed extension files
+    when: Execute psql -d trinity_test -c "CREATE EXTENSION pg_trinity;"
+    then: Return success with NOTICE: extension loaded
+
+  - name: verify_trinity_vector_type
+    given: Active pg_trinity extension
+    when: Execute psql -d trinity_test -c "SELECT typname FROM pg_type WHERE typname = 'trinity_vector';"
+    then: Return row confirming trinity_vector type exists
+
+  - name: test_bind_function
+    given: Active pg_trinity extension
+    when: Execute psql -d trinity_test -c "SELECT pg_trinity_bind('{1,-1,0}'::trinity_vector, '{0,1,1}'::trinity_vector);"
+    then: Return bound trinity_vector result
+
+  - name: test_unbind_function
+    given: Active pg_trinity extension
+    when: Execute psql -d trinity_test -c "SELECT pg_trinity_unbind(pg_trinity_bind('{1,-1,0}'::trinity_vector, '{0,1,1}'::trinity_vector), '{0,1,1}'::trinity_vector);"
+    then: Return original vector confirming unbind works
+
+  - name: test_bundle_function
+    given: Active pg_trinity extension
+    when: Execute psql -d trinity_test -c "SELECT pg_trinity_bundle('{1,-1,0}'::trinity_vector, '{0,1,1}'::trinity_vector);"
+    then: Return bundled vector with majority vote
+
+  - name: test_similarity_operator
+    given: Active pg_trinity extension
+    when: Execute psql -d trinity_test -c "SELECT '{1,-1,0}'::trinity_vector %% '{1,0,1}'::trinity_vector;"
+    then: Return cosine similarity value between -1 and 1
+
+  - name: test_hamming_operator
+    given: Active pg_trincess extension
+    when: Execute psql -d trinity_test -c "SELECT '{1,-1,0,1}'::trinity_vector #@ '{1,1,0,1}'::trinity_vector;"
+    then: Return Hamming distance count
+
+  - name: run_explain_analyze_bind
+    given: Active pg_trinity extension with test table
+    when: Execute psql -d trinity_test -c "EXPLAIN ANALYZE SELECT pg_trinity_bind(v1, v2) FROM test_vectors;"
+    then: Return execution plan with timing for bind operation
+
+  - name: run_explain_analyze_similarity
+    given: Active pg_trinity extension with test table
+    when: Execute psql -d trinity_test -c "EXPLAIN ANALYZE SELECT * FROM test_vectors ORDER BY v %% '{1,0,-1}'::trinity_vector LIMIT 10;"
+    then: Return execution plan showing index usage if available
+
+  - name: benchmark_vector_operations
+    given: Active pg_trinity extension
+    when: Execute timing tests for 1000 iterations of bind/unbind/bundle/similarity
+    then: Return BenchmarkMetrics with microseconds per operation
+
+  - name: test_large_vector_performance
+    given: Active pg_trinity extension
+    when: Execute operations on vectors of size 1000, 10000, 100000 trits
+    then: Return timing data showing O(n) scaling behavior
+
+  - name: generate_performance_report
+    given: Benchmark results and test outcomes
+    when: Compile metrics into Markdown report with tables and analysis
+    then: Return complete report file path with all statistics
+
+  - name: cleanup_test_database
+    given: Completed testing
+    when: Execute psql -c "DROP DATABASE IF EXISTS trinity_test;"
+    then: Return success confirming cleanup
+
+  - name: uninstall_extension
+    given: Installed extension
+    when: Execute sudo make uninstall from extension directory
+    then: Remove .so, .control, and .sql files from PostgreSQL directories
+
+  - name: generate_deployment_checklist
+    given: Successful installation and testing
+    when: Create checklist document with all verification steps
+    then: Return path to deployment checklist markdown file
