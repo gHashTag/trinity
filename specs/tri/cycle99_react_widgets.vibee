@@ -1,0 +1,626 @@
+name: react_dashboard_widgets
+version: "1.0.0"
+language: typescript
+module: ReactDashboardWidgets
+
+description: |
+  Sacred Agent Widgets for Trinity Canvas Mirror — 5 interactive widgets displaying
+  real-time agent data in 3-column layout (RAZUM/Gold, MATERIYA/Cyan, DUKH/Purple).
+
+types:
+  # Widget Core Types
+  WidgetConfig:
+    fields:
+      widgetId: String
+      title: String
+      column: Column
+      color: String
+      collapsible: Bool
+      initialState: Bool
+      refreshInterval: Int
+
+  Column:
+    fields:
+      name: String
+      color: String
+      realm: String
+      cssClass: String
+
+  # Sacred Agent Types
+  SacredAgent:
+    fields:
+      agentId: String
+      name: String
+      status: AgentStatus
+      health: Float
+      lastUpdate: DateTime
+      metrics: Dict<String, Float>
+
+  AgentStatus:
+    fields:
+      state: String
+      message: String
+
+  # MathAgent Types (RAZUM/Gold)
+  MathData:
+    fields:
+      phi: Float
+      phiPower: Float
+      fibonacci: List<BigInt>
+      lucas: List<BigInt>
+      trinity: List<Int>
+      lastCalculation: String
+
+  PhiCalculation:
+    fields:
+      exponent: Int
+      result: Float
+      precision: Int
+      timestamp: DateTime
+
+  # EvolutionAgent Types (DUKH/Purple)
+  EvolutionData:
+    fields:
+      generation: BigInt
+      fitness: Float
+      sacredScore: Float
+      mutations: Int
+      survivors: Int
+      improvements: List<String>
+
+  FitnessMetric:
+    fields:
+      name: String
+      value: Float
+      target: Float
+      status: String
+
+  # DashboardAgent Types (MATERIYA/Cyan)
+  SystemStats:
+    fields:
+      cpuUsage: Float
+      memoryUsage: Float
+      memoryTotal: Float
+      diskUsage: Float
+      uptime: String
+      activeAgents: Int
+
+  MemoryRegion:
+    fields:
+      name: String
+      used: Float
+      total: Float
+      percentage: Float
+
+  # GovernanceAgent Types (RAZUM/Gold)
+  GovernanceData:
+    fields:
+      ruleCount: Int
+      activeRules: Int
+      violations: Int
+      complianceScore: Float
+      lastCheck: DateTime
+
+  RuleViolation:
+    fields:
+      ruleId: String
+      description: String
+      severity: String
+      timestamp: DateTime
+      resolved: Bool
+
+  # SwarmCoordinator Types (DUKH/Purple)
+  SwarmStatus:
+    fields:
+      totalAgents: Int
+      activeAgents: Int
+      harmonyScore: Float
+      consensusState: String
+      topology: String
+
+  AgentHeartbeat:
+    fields:
+      agentId: String
+      name: String
+      status: String
+      lastSeen: DateTime
+      load: Float
+
+  # WebSocket Types
+  WebSocketMessage:
+    fields:
+      type: String
+      widgetId: String
+      payload: Dict<String, Any>
+      timestamp: DateTime
+
+  # UI Component Types
+  CollapsibleProps:
+    fields:
+      title: String
+      expanded: Bool
+      onToggle: Callback<Bool, Void>
+      children: ReactNode
+      style: Dict<String, String>
+
+  GaugeProps:
+    fields:
+      value: Float
+      max: Float
+      color: String
+      label: String
+      size: Int
+
+behaviors:
+  # ============================================================================
+  # MATH AGENT WIDGET (RAZUM/Gold)
+  # ============================================================================
+  - name: math_agent_widget_create
+    given: Widget configuration and MathAgent data source
+    when: Component mounts
+    then: Creates MathAgentWidget displaying φ calculations, Fibonacci/Lucas sequences
+
+  - name: math_data_display
+    given: MathData with phi, fibonacci, lucas values
+    when: Rendering widget content
+    then: Displays formatted numbers in gold-themed glass container
+
+  - name: phi_power_calculator
+    given: User input for exponent n
+    when: User enters value and clicks calculate
+    then: Computes φⁿ and updates display with precision control
+
+  - name: fibonacci_sequence_display
+    given: Count parameter n
+    when: Displaying Fibonacci sequence
+    then: Shows first n Fibonacci numbers with BigInt formatting
+
+  - name: lucas_sequence_display
+    given: Count parameter n
+    when: Displaying Lucas sequence
+    then: Shows first n Lucas numbers highlighting L(2)=3=TRINITY
+
+  - name: trinity_identity_display
+    given: φ value
+    when: Rendering sacred math section
+    then: Displays φ² + 1/φ² = 3 with visual proof
+
+  - name: math_websocket_subscribe
+    given: WebSocket connection and widget ID
+    when: Component mounts
+    then: Subscribes to math-data channel for real-time updates
+
+  # ============================================================================
+  # EVOLUTION AGENT WIDGET (DUKH/Purple)
+  # ============================================================================
+  - name: evolution_agent_widget_create
+    given: Widget configuration and EvolutionAgent data source
+    when: Component mounts
+    then: Creates EvolutionAgentWidget showing generation counter and fitness
+
+  - name: generation_counter_display
+    given: Current generation number
+    when: Rendering widget
+    then: Displays generation count with animated counter effect
+
+  - name: fitness_gauge_render
+    given: Fitness percentage (0-100)
+    when: Displaying fitness metric
+    then: Renders circular gauge with purple color and target marker
+
+  - name: sacred_score_display
+    given: Sacred score value
+    when: Rendering metrics
+    then: Shows score with sacred mathematics theme
+
+  - name: improvement_list_display
+    given: List of improvements from last generation
+    when: Displaying evolution progress
+    then: Shows improvement descriptions as bullet points
+
+  - name: survivor_mutation_stats
+    given: Mutation and survivor counts
+    when: Displaying population metrics
+    then: Shows statistics with visual bars
+
+  - name: evolution_websocket_subscribe
+    given: WebSocket connection
+    when: Component mounts
+    then: Subscribes to evolution-data channel for generation updates
+
+  # ============================================================================
+  # DASHBOARD AGENT WIDGET (MATERIYA/Cyan)
+  # ============================================================================
+  - name: dashboard_agent_widget_create
+    given: Widget configuration and DashboardAgent data source
+    when: Component mounts
+    then: Creates DashboardAgentWidget showing system stats and memory
+
+  - name: cpu_usage_display
+    given: CPU usage percentage
+    when: Rendering system stats
+    then: Displays CPU with progress bar and color coding
+
+  - name: memory_usage_display
+    given: Memory usage and total
+    when: Displaying memory metrics
+    then: Shows used/total with percentage in cyan theme
+
+  - name: disk_usage_display
+    given: Disk usage percentage
+    when: Rendering storage stats
+    then: Displays disk with gauge chart
+
+  - name: uptime_display
+    given: System uptime in seconds
+    when: Displaying system info
+    then: Formats and displays uptime in human-readable format
+
+  - name: memory_regions_display
+    given: List of memory regions with usage
+    when: Displaying detailed memory breakdown
+    then: Shows each region with individual progress bars
+
+  - name: active_agents_count
+    given: Number of active agents
+    when: Displaying system overview
+    then: Shows count with status indicator
+
+  - name: dashboard_websocket_subscribe
+    given: WebSocket connection
+    when: Component mounts
+    then: Subscribes to system-stats channel for real-time metrics
+
+  # ============================================================================
+  # GOVERNANCE AGENT WIDGET (RAZUM/Gold)
+  # ============================================================================
+  - name: governance_agent_widget_create
+    given: Widget configuration and GovernanceAgent data source
+    when: Component mounts
+    then: Creates GovernanceAgentWidget showing rules compliance
+
+  - name: rule_count_display
+    given: Total rule count and active rules
+    when: Rendering widget
+    then: Displays counts with active/inactive breakdown
+
+  - name: compliance_score_display
+    given: Compliance score percentage
+    when: Displaying governance metrics
+    then: Shows score with gauge and color coding (gold theme)
+
+  - name: violations_list_display
+    given: List of rule violations
+    when: Displaying governance issues
+    then: Shows violations with severity badges and timestamps
+
+  - name: violation_details_expand
+    given: Violation entry
+    when: User clicks on violation
+    then: Expands to show full description and resolution status
+
+  - name: governance_health_indicator
+    given: Compliance score and violation count
+    when: Rendering widget header
+    then: Displays health status icon (healthy/warning/critical)
+
+  - name: governance_websocket_subscribe
+    given: WebSocket connection
+    when: Component mounts
+    then: Subscribes to governance-data channel for rule updates
+
+  # ============================================================================
+  # SWARM COORDINATOR WIDGET (DUKH/Purple)
+  # ============================================================================
+  - name: swarm_coordinator_widget_create
+    given: Widget configuration and SwarmCoordinator data source
+    when: Component mounts
+    then: Creates SwarmCoordinatorWidget showing all agents status
+
+  - name: swarm_harmony_display
+    given: Harmony score percentage
+    when: Rendering swarm overview
+    then: Displays score with animated gauge in purple theme
+
+  - name: agent_grid_display
+    given: List of agent heartbeats
+    when: Displaying all agents
+    then: Shows agents in grid layout with status indicators
+
+  - name: agent_status_card
+    given: Agent heartbeat data
+    when: Rendering individual agent
+    then: Displays card with name, status, last seen, load percentage
+
+  - name: consensus_state_display
+    given: Current consensus state
+    when: Showing swarm coordination
+    then: Displays state with visual indicator (seeking/achieved/failed)
+
+  - name: topology_visualization
+    given: Topology type (mesh/hierarchical/ring/star)
+    when: Displaying swarm structure
+    then: Shows topology name with icon representation
+
+  - name: swarm_websocket_subscribe
+    given: WebSocket connection
+    when: Component mounts
+    then: Subscribes to swarm-status channel for agent updates
+
+  # ============================================================================
+  # SHARED UI COMPONENTS
+  # ============================================================================
+  - name: glass_style_apply
+    given: Column color and configuration
+    when: Creating widget container
+    then: Returns glassStyle with backdrop-blur, background tint, border
+
+  - name: collapsible_widget_create
+    given: Title, initial state, and children
+    when: Creating collapsible widget
+    then: Returns component with toggle button and expand/collapse logic
+
+  - name: column_color_scheme_apply
+    given: Column type (RAZUM/MATERIYA/DUKH)
+    when: Styling widget elements
+    then: Applies color: gold (#ffd700), cyan (#00ccff), or purple (#aa66ff)
+
+  - name: gauge_component_render
+    given: Value, max, color, label, and size
+    when: Rendering gauge metric
+    then: Returns SVG circular progress with percentage text
+
+  - name: websocket_manager_create
+    given: WebSocket URL and message handlers
+    when: Initializing widget system
+    then: Creates connection with auto-reconnect and error handling
+
+  - name: websocket_message_dispatch
+    given: Received WebSocket message
+    when: Message arrives
+    then: Dispatches to appropriate widget based on widgetId
+
+  - name: widget_fetch_with_fallback
+    given: API endpoint and mock data
+    when: Fetching widget data
+    then: Returns API data or falls back to mock on failure
+
+  # ============================================================================
+  # CANVAS MIRROR INTEGRATION
+  # ============================================================================
+  - name: canvas_mirror_layout_create
+    given: List of 5 widgets
+    when: Rendering Mirror section
+    then: Arranges in 3-column layout (RAZUM, MATERIYA, DUKH)
+
+  - name: razum_column_populate
+    given: MathAgentWidget and GovernanceAgentWidget
+    when: Rendering RAZUM column
+    then: Stacks gold-themed widgets with proper spacing
+
+  - name: materiya_column_populate
+    given: DashboardAgentWidget
+    when: Rendering MATERIYA column
+    then: Displays cyan-themed widget with full height
+
+  - name: dukh_column_populate
+    given: EvolutionAgentWidget and SwarmCoordinatorWidget
+    when: Rendering DUKH column
+    then: Stacks purple-themed widgets with proper spacing
+
+  - name: responsive_layout_adapt
+    given: Screen width and widget list
+    when: Rendering on mobile/tablet
+    then: Adapts to single column with collapsible sections
+
+  # ============================================================================
+  # WEBSOCKET INTEGRATION
+  # ============================================================================
+  - name: websocket_connection_initialize
+    given: WebSocket URL and authentication token
+    when: Dashboard loads
+    then: Establishes WebSocket connection with reconnection logic
+
+  - name: widget_subscribe_all
+    given: List of widget IDs and their data channels
+    when: WebSocket connects
+    then: Subscribes to all relevant channels for each widget
+
+  - name: websocket_message_handle
+    given: Incoming WebSocket message
+    when: Message received
+    then: Updates widget state based on message type and payload
+
+  - name: websocket_error_handle
+    given: WebSocket error event
+    when: Connection fails
+    then: Triggers reconnection attempt after exponential backoff
+
+  - name: websocket_cleanup
+    given: Active WebSocket connection
+    when: Component unmounts
+    then: Unsubscribes from channels and closes connection
+
+  # ============================================================================
+  # API INTEGRATION (chatApi.ts)
+  # ============================================================================
+  - name: math_api_fetch
+    given: API endpoint configuration
+    when: Fetching math data
+    then: Calls /api/math/agent-data with fallback to mock
+
+  - name: evolution_api_fetch
+    given: API endpoint configuration
+    when: Fetching evolution data
+    then: Calls /api/evolution/agent-data with fallback to mock
+
+  - name: dashboard_api_fetch
+    given: API endpoint configuration
+    when: Fetching dashboard data
+    then: Calls /api/dashboard/agent-data with fallback to mock
+
+  - name: governance_api_fetch
+    given: API endpoint configuration
+    when: Fetching governance data
+    then: Calls /api/governance/agent-data with fallback to mock
+
+  - name: swarm_api_fetch
+    given: API endpoint configuration
+    when: Fetching swarm data
+    then: Calls /api/swarm/agent-data with fallback to mock
+
+  - name: mock_data_generate
+    given: Widget type and seed
+    when: API unavailable
+    then: Returns realistic mock data for testing UI
+
+  # ============================================================================
+  # TYPESCRIPT TYPE DEFINITIONS
+  # ============================================================================
+  - name: types_export_interfaces
+    given: All widget and data types
+    when: Generating TypeScript
+    then: Exports interfaces and types for use across components
+
+  - name: types_export_enums
+    given: Column types, agent statuses, message types
+    when: Generating TypeScript
+    then: Exports enums for type-safe constants
+
+  - name: types_export_union_types
+    given: Related type variants
+    when: Generating TypeScript
+    then: Exports union types for flexible typing
+
+  # ============================================================================
+  # TESTING BEHAVIORS
+  # ============================================================================
+  - name: widget_unit_test
+    given: Widget component and test case
+    when: Running unit tests
+    then: Validates component rendering and state management
+
+  - name: websocket_mock_test
+    given: WebSocket manager and mock server
+    when: Testing WebSocket integration
+    then: Validates connection, subscription, and message handling
+
+  - name: api_integration_test
+    given: API fetch function and mock responses
+    when: Testing API integration
+    then: Validates fetch success, error handling, and fallback
+
+  - name: widget_snapshot_test
+    given: Widget component with props
+    when: Running snapshot tests
+    then: Captures rendered output for regression detection
+
+  # ============================================================================
+  # PERFORMANCE OPTIMIZATION
+  # ============================================================================
+  - name: widget_memoize
+    given: Widget component and props
+    when: Rendering widget
+    then: Memoizes component to prevent unnecessary re-renders
+
+  - name: websocket_throttle
+    given: WebSocket message handler
+    when: Receiving rapid updates
+    then: Throttles updates to max 10 per second per widget
+
+  - name: data_cache
+    given: Fetched API data
+    when: Multiple components request same data
+    then: Caches data with 5-second TTL
+
+  - name: lazy_load_widget
+    given: Widget component
+    when: Initial page load
+    then: Lazy-loads widget code using React.lazy()
+
+examples:
+  - name: math_widget_usage
+    description: Example of MathAgentWidget integration
+    code: |
+      import { MathAgentWidget } from './widgets/MathAgentWidget';
+      import { WebSocketManager } from './services/websocket';
+
+      const App = () => {
+        const [mathData, setMathData] = useState<MathData>(defaultMathData);
+
+        useEffect(() => {
+          const ws = new WebSocketManager('ws://localhost:8080');
+          ws.subscribe('math-data', (payload) => setMathData(payload));
+          return () => ws.disconnect();
+        }, []);
+
+        return (
+          <MathAgentWidget
+            config={{
+              widgetId: 'math-agent-1',
+              title: 'Math Agent',
+              column: 'RAZUM',
+              color: '#ffd700',
+              collapsible: true,
+              initialState: true,
+              refreshInterval: 1000
+            }}
+            data={mathData}
+          />
+        );
+      };
+
+  - name: glass_style_usage
+    description: Example of glassStyle application
+    code: |
+      const glassStyle = (color: string, opacity: number = 0.1) => ({
+        background: `linear-gradient(135deg, ${color}${opacity} 0%, ${color}${opacity * 0.5} 100%)`,
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+        border: `1px solid ${color}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`,
+        borderRadius: '8px',
+        boxShadow: `0 4px 6px ${color}20`
+      });
+
+  - name: canvas_mirror_integration
+    description: Example of 3-column Canvas Mirror layout
+    code: |
+      import { TrinityCanvas } from './TrinityCanvas';
+      import { MathAgentWidget } from './widgets/MathAgentWidget';
+      import { EvolutionAgentWidget } from './widgets/EvolutionAgentWidget';
+      import { DashboardAgentWidget } from './widgets/DashboardAgentWidget';
+      import { GovernanceAgentWidget } from './widgets/GovernanceAgentWidget';
+      import { SwarmCoordinatorWidget } from './widgets/SwarmCoordinatorWidget';
+
+      const MirrorSection = () => (
+        <div className="mirror-grid">
+          {/* RAZUM Column (Gold) */}
+          <div className="column razum">
+            <MathAgentWidget {...mathProps} />
+            <GovernanceAgentWidget {...governanceProps} />
+          </div>
+
+          {/* MATERIYA Column (Cyan) */}
+          <div className="column materiya">
+            <DashboardAgentWidget {...dashboardProps} />
+          </div>
+
+          {/* DUKH Column (Purple) */}
+          <div className="column dukh">
+            <EvolutionAgentWidget {...evolutionProps} />
+            <SwarmCoordinatorWidget {...swarmProps} />
+          </div>
+        </div>
+      );
+
+codegen_options:
+  target: website/src/components/dashboard/
+  test_target: website/src/components/dashboard/__tests__/
+  types_target: website/src/types/dashboard.ts
+  api_target: website/src/services/chatApi.ts
+  style_framework: tailwindcss
+  state_management: react-hooks
+  websocket_library: native
+  testing_framework: jest
+  snapshot_testing: true
+  typescript_strict: true

@@ -1,0 +1,498 @@
+# ============================================================================
+# Cycle 99: Eternal Evolution Daemon — 24/7 Self-Improving Background Service
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+# The Eternal Evolution Daemon runs continuously as a background service,
+# performing autonomous code evolution through sacred pattern analysis,
+# VIBEE-powered patch generation, φ-governance validation, and automatic
+# application of improvements that meet sacred score thresholds.
+# ============================================================================
+
+name: eternal_daemon
+version: "1.0.0"
+language: zig
+module: eternal_daemon
+
+description: |
+  Background daemon service that performs eternal self-evolution:
+  1. Runs every N minutes (configurable, default 60)
+  2. Analyzes codebase for sacred pattern opportunities
+  3. Generates patches via VIBEE compiler
+  4. Validates against φ-governance rules
+  5. Applies patches if sacred_score >= 0.95
+  6. Rollback if sacred_score < 0.539
+  7. Commits with auto-generated messages
+  8. Tracks generation counter across restarts
+  9. Survives crashes with auto-respawn
+  10. Graceful shutdown on SIGTERM
+
+constants:
+  DEFAULT_CYCLE_INTERVAL: 3600  # 60 minutes in seconds
+  MIN_COOLDOWN_SECONDS: 300     # 5 minutes minimum between cycles
+  MAX_GENERATIONS_PER_DAY: 144  # 1 per hour max
+  SACRED_APPLY_THRESHOLD: 0.95  # φ-inspired threshold for auto-apply
+  SACRED_ROLLBACK_THRESHOLD: 0.539  # 1/φ² for rollback
+  DAEMON_PID_FILE: ".trinity/evolution_daemon.pid"
+  STATE_FILE: ".trinity/evolution_state.json"
+  LOG_DIR: ".trinity/logs/evolution"
+  BACKUP_DIR: ".trinity/backups"
+  MAX_LOG_SIZE: 10485760  # 10MB
+  MAX_LOG_FILES: 10
+  SHUTDOWN_TIMEOUT_SECONDS: 30
+  CRASH_DETECTION_THRESHOLD: 3  # crashes in 5 minutes
+  CRASH_COOLDOWN_SECONDS: 900   # 15 minutes
+
+types:
+  DaemonConfig:
+    fields:
+      cycle_interval_seconds: Int
+      max_generations_per_day: Int
+      sacred_apply_threshold: Float
+      sacred_rollback_threshold: Float
+      log_level: String
+      auto_backup_enabled: Bool
+      emergency_stop_enabled: Bool
+      crash_recovery_enabled: Bool
+      working_directory: String
+      branch_prefix: String
+      commit_signature: String
+
+  DaemonState:
+    fields:
+      pid: Int
+      generation: Int
+      last_cycle_timestamp: Int
+      last_cycle_success: Bool
+      cycles_today: Int
+      cycles_total: Int
+      patches_generated: Int
+      patches_applied: Int
+      patches_rolled_back: Int
+      crash_count: Int
+      last_crash_timestamp: Int
+      is_paused: Bool
+      pause_reason: Option<String>
+      current_branch: String
+      last_commit_hash: String
+
+  CycleResult:
+    fields:
+      cycle_number: Int
+      timestamp: Int
+      duration_seconds: Float
+      files_analyzed: Int
+      patches_generated: Int
+      patches_applied: Int
+      patches_rolled_back: Int
+      sacred_scores: List<Float>
+      success: Bool
+      error_message: Option<String>
+      commit_hash: Option<String>
+
+  SacredPatternAnalysis:
+    fields:
+      file_path: String
+      patterns_found: List<String>
+      improvement_score: Float
+      complexity_score: Float
+      phi_alignment: Float
+      suggested_refactor: String
+
+  PatchMetadata:
+    fields:
+      id: String
+      generation: Int
+      timestamp: Int
+      source_files: List<String>
+      patch_path: String
+      sacred_score: Float
+      governance_checks_passed: Int
+      governance_checks_total: Int
+      applied: Bool
+      commit_hash: Option<String>
+
+  GovernanceRule:
+    fields:
+      rule_id: String
+      name: String
+      description: String
+      check_type: String
+      severity: String
+      weight: Float
+
+  BackupInfo:
+    fields:
+      backup_id: String
+      generation: Int
+      timestamp: Int
+      commit_hash: String
+      backup_path: String
+      size_bytes: Int
+
+  DaemonStatus:
+    fields:
+      running: Bool
+      pid: Option<Int>
+      uptime_seconds: Int
+      generation: Int
+      last_cycle: Option<CycleResult>
+      next_cycle_timestamp: Option<Int>
+      state: DaemonState
+
+  LogEntry:
+    fields:
+      timestamp: Int
+      level: String
+      message: String
+      cycle_number: Option<Int>
+      context: Map<String, String>
+
+behaviors:
+  - name: initializeDaemon
+    given: Daemon configuration
+    when: Starting daemon for the first time
+    then: Create state file, log directory, backup directory, and initialize default state
+
+  - name: loadState
+    given: Existing state file
+    when: Daemon starts or restarts
+    then: Load state from JSON, validate fields, and return DaemonState
+
+  - name: saveState
+    given: Current daemon state
+    when: State changes (cycle complete, crash, pause/resume)
+    then: Atomically write state to JSON file with backup
+
+  - name: startDaemon
+    given: Daemon configuration and TRI CLI integration
+    when: User runs 'tri daemon start'
+    then: Fork to background, write PID file, begin evolution cycle loop
+
+  - name: stopDaemon
+    given: Running daemon process
+    when: User runs 'tri daemon stop' or 'tri daemon stop --force'
+    then: Send SIGTERM, wait for graceful shutdown, force kill if timeout
+
+  - name: restartDaemon
+    given: Running daemon
+    when: User runs 'tri daemon restart'
+    then: Stop daemon gracefully, then start again with same configuration
+
+  - name: getDaemonStatus
+    given: PID file and state file
+    when: User runs 'tri daemon status'
+    then: Check if process running, load state, return DaemonStatus
+
+  - name: runEvolutionCycle
+    given: Daemon is running and cooldown period has elapsed
+    when: Scheduled cycle triggers
+    then: Execute full evolution pipeline and return CycleResult
+
+  - name: analyzeSacredPatterns
+    given: Codebase files and VIBEE pattern library
+    when: Evolution cycle begins analysis phase
+    then: Scan files, identify improvement opportunities, return list of SacredPatternAnalysis
+
+  - name: generatePatches
+    given: List of SacredPatternAnalysis opportunities
+    when: Analysis phase complete
+    then: Call VIBEE compiler for each opportunity, generate PatchMetadata list
+
+  - name: validateGovernance
+    given: Generated patch and φ-governance rules
+    when: Patch generated, before application
+    then: Run all governance checks, return pass/fail with sacred_score
+
+  - name: calculateSacredScore
+    given: Patch metadata and governance results
+    when: Governance validation complete
+    then: Weighted score using φ-harmonics, return Float [0.0, 1.0]
+
+  - name: applyPatch
+    given: Patch with sacred_score >= SACRED_APPLY_THRESHOLD
+    when: Validation passes threshold
+    then: Create branch, apply patch, run tests, commit if passing
+
+  - name: rollbackPatch
+    given: Applied patch with post-deployment sacred_score < SACRED_ROLLBACK_THRESHOLD
+    when: Deployment monitoring detects degradation
+    then: Revert commit, restore backup, update state, log rollback
+
+  - name: createBackup
+    given: About to apply patch
+    when: Pre-deployment phase
+    then: Create timestamped backup of modified files
+
+  - name: restoreBackup
+    given: Backup ID
+    when: Rollback required
+    then: Restore files from backup, verify integrity
+
+  - name: checkCooldown
+    given: Last cycle timestamp and current time
+    when: Considering starting new cycle
+    then: Return true if MIN_COOLDOWN_SECONDS elapsed, false otherwise
+
+  - name: checkDailyLimit
+    given: Cycles today count and timestamp
+    when: New cycle about to start
+    then: Reset counter if new day, return false if limit reached
+
+  - name: updateGenerationCounter
+    given: Current state and cycle result
+    when: Cycle completes successfully
+    then: Increment generation counter, update timestamps, persist state
+
+  - name: logCycleStart
+    given: Cycle number and configuration
+    when: Evolution cycle begins
+    then: Write structured log entry with timestamp and context
+
+  - name: logCycleComplete
+    given: Cycle result
+    when: Evolution cycle finishes
+    then: Write structured log entry with results, scores, and outcome
+
+  - name: logError
+    given: Error message and context
+    when: Error occurs during cycle
+    then: Write error log entry with stack trace if available
+
+  - name: rotateLogs
+    given: Log directory and size limits
+    when: Log file exceeds MAX_LOG_SIZE
+    then: Compress old log, start new file, keep only MAX_LOG_FILES
+
+  - name: handleSigterm
+    given: Running daemon process
+    when: SIGTERM signal received
+    then: Set shutdown flag, complete current cycle if safe, save state, exit cleanly
+
+  - name: respawnAfterCrash
+    given: Crash detected and crash_recovery_enabled
+    when: Crash count below threshold
+    then: Wait cooldown, increment crash counter, restart daemon
+
+  - name: pauseDaemon
+    given: Running daemon
+    when: User runs 'tri daemon pause' or crash threshold exceeded
+    then: Set is_paused flag, save state, stop new cycles
+
+  - name: resumeDaemon
+    given: Paused daemon
+    when: User runs 'tri daemon resume'
+    then: Clear is_paused flag, reset crash counter, resume cycles
+
+  - name: generateCommitMessage
+    given: Patch metadata and cycle result
+    when: Patch applied successfully
+    then: Generate formatted commit message with generation, scores, and summary
+
+  - name: validateWorkingDirectory
+    given: Working directory path
+    when: Daemon starts
+    then: Check it's a git repo, verify write permissions, ensure clean state
+
+  - name: createFeatureBranch
+    given: Branch prefix and generation number
+    when: About to apply patch
+    then: Create branch name like 'evolution-gen-00123-sacred-pattern'
+
+  - name: runTests
+    given: Applied patch
+    when: Patch applied, before commit
+    then: Run 'zig build test', return pass/fail with output
+
+  - name: sendNotification
+    given: Cycle result or error condition
+    when: Important event occurs
+    then: Send notification via configured channel (if enabled)
+
+  - name: exportMetrics
+    given: Daemon state and recent cycle results
+    when: Monitoring system requests metrics
+    then: Export JSON with uptime, generations, success rate, sacred scores
+
+  - name: generateSystemdServiceFile
+    given: Daemon configuration
+    when: 'tri daemon install systemd' called on Linux
+    then: Generate .service file with proper dependencies and restart policy
+
+  - name: generateLaunchAgentPlist
+    given: Daemon configuration
+    when: 'tri daemon install launchd' called on macOS
+    then: Generate macOS LaunchAgent plist file
+
+  - name: generateWindowsService
+    given: Daemon configuration
+    when: 'tri daemon install windows' called on Windows
+    then: Generate Windows service wrapper configuration
+
+  - name: verifySacredIdentity
+    given: Mathematical expressions in code
+    when: Governance validation runs
+    then: Verify phi^2 + 1/phi^2 = 3 identity, check Lucas numbers, validate φ-harmonics
+
+tests:
+  - name: test_state_persistence
+    given: Daemon state with generation=123
+    when: Save state to file and load again
+    then: Loaded state matches original state exactly
+
+  - name: test_sacred_score_calculation
+    given: Patch with all governance checks passing
+    when: Calculate sacred score
+    then: Score >= 0.95
+
+  - name: test_sacred_score_rollback
+    given: Patch with multiple failed governance checks
+    when: Calculate sacred score
+    then: Score < 0.539
+
+  - name: test_cooldown_enforcement
+    given: Last cycle 1 minute ago
+    when: Check cooldown
+    then: Return false ( cooldown not elapsed)
+
+  - name: test_cooldown_passed
+    given: Last cycle 10 minutes ago
+    when: Check cooldown
+    then: Return true ( cooldown elapsed)
+
+  - name: test_daily_limit_reset
+    given: Cycles today = 144, timestamp yesterday
+    when: New cycle starts and date changed
+    then: Counter resets to 0, cycle allowed
+
+  - name: test_daily_limit_enforced
+    given: Cycles today = 144, timestamp today
+    when: New cycle attempts to start
+    then: Cycle rejected, counter remains at 144
+
+  - name: test_patch_application_flow
+    given: Patch with sacred_score = 0.97
+    when: Full application flow runs
+    then: Branch created, patch applied, tests pass, commit created, state updated
+
+  - name: test_patch_rollback_flow
+    given: Applied patch with post-deployment score = 0.4
+    when: Monitoring detects low score
+    then: Commit reverted, backup restored, state updated with rollback count
+
+  - name: test_graceful_shutdown
+    given: Running daemon in mid-cycle
+    when: SIGTERM received
+    then: Current cycle completes, state saved, clean exit
+
+  - name: test_crash_recovery
+    given: Daemon crashed 2 times in 5 minutes
+    when: Crash recovery runs
+    then: Daemon restarts after cooldown, crash_count = 3
+
+  - name: test_crash_threshold
+    given: Daemon crashed 3 times in 5 minutes
+    when: Fourth crash detected
+    then: Daemon pauses, is_paused = true, pause_reason set
+
+  - name: test_log_rotation
+    given: Log file at 11MB
+    when: New log entry written
+    then: Old log compressed, new file started, only 10 files kept
+
+  - name: test_backup_creation
+    given: 5 files modified by patch
+    when: Backup created
+    then: All 5 files copied to backup directory with timestamp
+
+  - name: test_commit_message_format
+    given: Patch metadata with generation=42, score=0.97
+    when: Generate commit message
+    then: Message contains generation, score, and pattern description
+
+  - name: test_governance_validation
+    given: Patch using proper sacred mathematics
+    when: Governance validation runs
+    then: All checks pass, sacred_score >= 0.95
+
+  - name: test_pause_resume
+    given: Running daemon
+    when: Pause then resume called
+    then: is_paused toggles, cycles stop and restart
+
+  - name: test_status_reporting
+    given: Daemon with 50 completed cycles
+    when: Status command run
+    then: Returns accurate uptime, generation, and last cycle info
+
+  - name: test_systemd_service_generation
+    given: Standard daemon config
+    when: Generate systemd service file
+    then: File contains proper [Unit], [Service], [Install] sections
+
+  - name: test_launchd_plist_generation
+    given: Standard daemon config
+    when: Generate LaunchAgent plist
+    then: File contains proper Label, ProgramArguments, RunAtLoad
+
+  - name: test_notification_on_success
+    given: Cycle completes with 2 patches applied
+    when: Notification enabled
+    then: Success notification sent with summary
+
+  - name: test_notification_on_error
+    given: Cycle fails with error
+    when: Notification enabled
+    then: Error notification sent with details
+
+# ============================================================================
+# Integration Points:
+#
+# TRI CLI Commands:
+#   tri daemon start [--interval <minutes>] [--branch <prefix>]
+#   tri daemon stop [--force]
+#   tri daemon restart
+#   tri daemon status
+#   tri daemon pause [--reason <text>]
+#   tri daemon resume
+#   tri daemon install systemd|launchd|windows
+#   tri daemon uninstall
+#   tri daemon logs [--tail <lines>] [--follow]
+#   tri daemon config [--key <key>] [--value <value>]
+#   tri daemon reset [--force]
+#
+# File Structure:
+#   .trinity/
+#     evolution_daemon.pid       # Running daemon PID
+#     evolution_state.json       # Persistent state (see DaemonState)
+#     logs/evolution/
+#       evolution-2025-02-28.log # Rotated logs
+#       evolution-2025-02-27.log.gz
+#     backups/
+#       gen-00123-20250228.tar.gz # Per-generation backups
+#
+# System Integration:
+#   Linux:  /etc/systemd/system/trinity-evolution.service
+#   macOS:  ~/Library/LaunchAgents/com.trinity.evolution.plist
+#   Windows: sc create TrinityEvolution binPath=...
+#
+# Golden Chain Integration:
+#   - Uses VIBEE compiler (Link 6: spec-create, Link 17: gen)
+#   - Runs verification (Link 7-11: tests, benchmarks)
+#   - Governance via φ-rules (sacred mathematics)
+#   - Commits follow Git Commands pattern
+#
+# Sacred Mathematics:
+#   φ = 1.6180339887498948482
+#   φ² = 2.6180339887498948482
+#   1/φ² = 0.3819660112501051518
+#   φ² + 1/φ² = 3 (TRINITY IDENTITY)
+#   Lucas L(n): 2,1,3,4,7,11,18,29,47,76,123
+#   SACRED_APPLY_THRESHOLD = 0.95 ≈ φ - 0.618
+#   SACRED_ROLLBACK_THRESHOLD = 0.539 ≈ 1/φ
+# ============================================================================
+
+# ============================================================================
+# Cycle 99: Eternal Evolution Daemon Complete
+# Status: Specification complete, ready for VIBEE code generation
+# Next: zig build vibee -- gen specs/tri/cycle99_eternal_daemon.vibee
+# ============================================================================
