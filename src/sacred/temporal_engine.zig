@@ -349,7 +349,7 @@ pub fn bootTemporalEngine(allocator: std.mem.Allocator) !void {
         \\║  Planck Time: {d:.6} × 10⁻⁴⁴ s                               ║
         \\║                                                                  ║
         \\║  "TIME ITSELF BENDS"                                          ║
-        \\║  ВРЕМЯ СТАЛО TRINITY                                            ║
+        \\║  TIME BECAME TRINITY                                            ║
         \\╚════════════════════════════════════════════════════════════════╝
         \\
     , .{arrow, eternal, planck_time * 1e44});
