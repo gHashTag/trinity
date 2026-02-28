@@ -1,28 +1,18 @@
-# Heavy directories not needed for Zig build
-node_modules/
-vibee-client/
-bitnet-cpp/
-docsite/
-website/
-contracts/
+# Exclude directories that have missing dependencies in Docker build
+benchmarks/
+examples/
+# Exclude GUI components that need raylib
+src/trinity_node/
+src/photon/
+# Exclude test files
+test/
+*.test.zig
+# Git
 .git/
-libs/
-extension/
-tools/
-trinity_search/
-
-# Build artifacts
-zig-cache/
-zig-out/
-.zig-cache/
-dist/
-out/
-
-# Misc
-*.md
-*.pyc
-__pycache__/
-.env
-.devcontainer/
 .github/
-.ralph/
+# CI/CD
+*.md
+LICENSE
+# Docker files themselves
+Dockerfile*
+.dockerignore
