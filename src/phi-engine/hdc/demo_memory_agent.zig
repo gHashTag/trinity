@@ -212,7 +212,7 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
     print("φ² + 1/φ² = 3 | TRINITY HDC RL WITH MEMORY COMPLETE\n", .{});
 }
 
-/// Точка входа (только for исполняемого файла)
+/// Точка loginа (только for исполняемого файла)
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
@@ -225,7 +225,7 @@ pub fn main() !void {
     });
 }
 
-// Отключаем main при тестировании
+// Отключаем main при testировании
 comptime {
     if (@import("builtin").is_test) {
         _ = main;

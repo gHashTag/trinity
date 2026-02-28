@@ -2,7 +2,7 @@
 //  v - Generated from .vibee specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Священная формула: V = n × 3^k × π^m × φ^p × e^q
+// Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 // Золотая идентичность: φ² + 1/φ² = 3
 //
 // Author: 
@@ -74,7 +74,7 @@ pub const Trit = enum(i8) {
     }
 };
 
-/// Проверка TRINITY identity: φ² + 1/φ² = 3
+/// Check TRINITY identity: φ² + 1/φ² = 3
 fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }

@@ -207,7 +207,7 @@ fn cmdTest(allocator: std.mem.Allocator, args: []const []const u8) !void {
 
     llm.printStats();
 
-    // Тестовая генерация
+    // Testовая генерация
     std.debug.print("\nTest generation:\n", .{});
     std.debug.print("Prompt: \"Hello\"\n", .{});
 
@@ -226,6 +226,6 @@ fn cmdTest(allocator: std.mem.Allocator, args: []const []const u8) !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "cli help" {
-    // Просто проверяем, what printUsage не падает
+    // Просто check, what printUsage не падает
     printUsage();
 }

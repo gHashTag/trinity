@@ -238,7 +238,7 @@ pub const AgentLoop = struct {
         self.state.status = .Stopped;
     }
 
-    /// Запустить один цикл (for тестирования)
+    /// Запустить один цикл (for testирования)
     pub fn step(self: *AgentLoop) !void {
         try self.processNextTask();
     }

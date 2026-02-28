@@ -2,7 +2,7 @@
 // self_improving_formula_discovery v4.0.0 - Generated from .vibee specification
 // ═════════════════════════════════════════════════════════════════════════════
 //
-// Священная формула: V = n × 3^k × π^m × φ^p × e^q
+// Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 // Золотая идентичность: φ² + 1/φ² = 3
 //
 // Author:

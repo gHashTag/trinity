@@ -148,9 +148,9 @@ pub const PhoenixSynthesis = struct {
     }
 };
 
-/// Жар-птица генерирует НОВЫЙ синтез, которого нет in известных паттернах
+/// Жар-птица generates НОВЫЙ синтез, которого нет in известных паттернах
 pub fn phoenixAwakens(scenario: *DeadlockScenario) PhoenixSynthesis {
-    // Проверяем, what this действительно deadlock, which не решили старики
+    // Check, what this действительно deadlock, which не решили старики
     std.debug.assert(scenario.deadlock_detected);
     std.debug.assert(scenario.council_failed);
 
@@ -189,7 +189,7 @@ pub fn applyPhoenixSynthesis(scenario: *DeadlockScenario, synthesis: PhoenixSynt
     scenario.process_a.waiting_since = null; // Больше не ждёт
     scenario.process_b.waiting_since = null; // Больше не ждёт
 
-    // Шаг 3: Разрешение via огонь
+    // Шаг 3: Разsolution via огонь
     scenario.resource_state = .PhoenixResolved;
     scenario.deadlock_detected = false;
 

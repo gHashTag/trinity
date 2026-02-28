@@ -138,7 +138,7 @@ pub const ZigCodeGen = struct {
         try self.builder.writeFmt("// {s} v{s} - Generated from .tri specification\n", .{ spec.name, spec.version });
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.writeLine("//");
-        try self.builder.writeLine("// Священная формула: V = n × 3^k × π^m × φ^p × e^q");
+        try self.builder.writeLine("// Sacred formula: V = n × 3^k × π^m × φ^p × e^q");
         try self.builder.writeLine("// Золотая идентичность: φ² + 1/φ² = 3");
         try self.builder.writeLine("//");
         try self.builder.writeFmt("// Author: {s}\n", .{spec.author});
@@ -513,7 +513,7 @@ pub const ZigCodeGen = struct {
         }
 
         // verify_trinity
-        try self.builder.writeLine("/// Проверка TRINITY identity: φ² + 1/φ² = 3");
+        try self.builder.writeLine("/// Check TRINITY identity: φ² + 1/φ² = 3");
         try self.builder.writeLine("fn verify_trinity() f64 {");
         try self.builder.writeLine("    return PHI * PHI + 1.0 / (PHI * PHI);");
         try self.builder.writeLine("}");

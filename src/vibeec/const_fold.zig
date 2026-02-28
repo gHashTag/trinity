@@ -1,6 +1,6 @@
 //! VIBEE Constant Folder - PAS DAEMON V40
 //! Паттерны: PRE (compile-time evaluation), ALG (algebraic simplification), D&C (recursive folding)
-//! Священная формула: V = n × 3^k × π^m × φ^p × e^q
+//! Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 //! Золотая идентичность: φ² + 1/φ² = 3
 
 const std = @import("std");

@@ -2,7 +2,7 @@
 // AUTO CODEGEN INTEGRATION TEST
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Тестирует полный pipeline: VibeeSpec -> AutoCodeGenerator -> Zig code
+// Tests полный pipeline: VibeeSpec -> AutoCodeGenerator -> Zig code
 // φ² + 1/φ² = 3
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -38,7 +38,7 @@ test "generate code from minimal spec" {
 
     const output = try gen.generate(&spec);
 
-    // Проверяем наличие ключевых элементов
+    // Check наличие ключевых элементов
     try testing.expect(std.mem.indexOf(u8, output, "test_spec v1.0.0") != null);
     try testing.expect(std.mem.indexOf(u8, output, "AUTO-GENERATED") != null);
     try testing.expect(std.mem.indexOf(u8, output, "PHI: f64 = 1.618033988749895") != null);
@@ -56,7 +56,7 @@ test "generate struct from TypeDef" {
     spec.version = "1.0.0";
     spec.author = "Test";
 
-    // Добавляем type User
+    // Add type User
     var user_type = TypeDef.init(allocator);
     user_type.name = "User";
     user_type.description = "User entity";
@@ -71,7 +71,7 @@ test "generate struct from TypeDef" {
 
     const output = try gen.generate(&spec);
 
-    // Проверяем генерацию структуры
+    // Check генерацию структуры
     try testing.expect(std.mem.indexOf(u8, output, "pub const User = struct {") != null);
     try testing.expect(std.mem.indexOf(u8, output, "id: i64,") != null);
     try testing.expect(std.mem.indexOf(u8, output, "name: []const u8,") != null);
@@ -87,7 +87,7 @@ test "generate function from Behavior" {
     spec.version = "1.0.0";
     spec.author = "Test";
 
-    // Добавляем behavior
+    // Add behavior
     var behavior = Behavior.init(allocator);
     behavior.name = "create_user";
     behavior.given = "Valid user data";
@@ -101,7 +101,7 @@ test "generate function from Behavior" {
 
     const output = try gen.generate(&spec);
 
-    // Проверяем генерацию функции
+    // Check генерацию функции
     try testing.expect(std.mem.indexOf(u8, output, "pub fn create_user()") != null);
     try testing.expect(std.mem.indexOf(u8, output, "Given: Valid user data") != null);
     try testing.expect(std.mem.indexOf(u8, output, "When: create_user is called") != null);
@@ -118,7 +118,7 @@ test "generate test from TestCase" {
     spec.version = "1.0.0";
     spec.author = "Test";
 
-    // Добавляем behavior with test case
+    // Add behavior with test case
     var behavior = Behavior.init(allocator);
     behavior.name = "calculate";
     behavior.given = "Numbers";
@@ -139,7 +139,7 @@ test "generate test from TestCase" {
 
     const output = try gen.generate(&spec);
 
-    // Проверяем генерацию теста
+    // Check генерацию testа
     try testing.expect(std.mem.indexOf(u8, output, "test \"test_basic_calc\"") != null);
 }
 

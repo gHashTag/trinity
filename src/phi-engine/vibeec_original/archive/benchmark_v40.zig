@@ -137,7 +137,7 @@ test "Full Benchmark v40: Все версии токенизаторов" {
     const r40_simd = bench("v40 SIMD", iters, simd_bpe.tokenizeSIMD, text);
     const r40_bpe = bench("v40 Full BPE", iters, simd_bpe.tokenizeBPEFull, text);
 
-    // Вычисляем speedup
+    // Compute speedup
     const baseline = @as(f64, @floatFromInt(r39.avg_ns));
     const speedup_fast = baseline / @as(f64, @floatFromInt(@max(1, r39_fast.avg_ns)));
     const speedup_cache = baseline / @as(f64, @floatFromInt(@max(1, r39_cache.avg_ns)));
@@ -194,7 +194,7 @@ test "Full Benchmark v40: Все версии токенизаторов" {
     std.debug.print("║                                                                                           ║\n", .{});
     std.debug.print("╚═══════════════════════════════════════════════════════════════════════════════════════════╝\n", .{});
 
-    // Проверяем what SIMD быстрее lookup
+    // Check what SIMD быстрее lookup
     try testing.expect(speedup_simd > speedup_fast);
 }
 

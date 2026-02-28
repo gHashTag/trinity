@@ -63,13 +63,13 @@ pub const TVCVMJit = struct {
                 return self.executeJIT(func_name);
             },
             .adaptive => {
-                // Проверяем, есть ли уже скомпилированная version
+                // Check, есть ли уже скомпилированная version
                 if (self.jit.getCompiled(func_name)) |compiled| {
                     self.total_jit += 1;
                     return compiled.call();
                 }
 
-                // Проверяем, достигнут ли порог for JIT
+                // Check, достигнут ли порог for JIT
                 if (count >= self.jit_threshold) {
                     // Пытаемся скомпилировать
                     if (self.vm.getFunction(func_name)) |func| {
@@ -92,12 +92,12 @@ pub const TVCVMJit = struct {
     fn executeInterpreted(self: *TVCVMJit, func_name: []const u8) !i64 {
         self.total_interpreted += 1;
         try self.vm.callFunction(func_name);
-        // Возвращаем value из регистра r0
+        // Return value из регистра r0
         return @as(i64, self.vm.registers.r0);
     }
 
     fn executeJIT(self: *TVCVMJit, func_name: []const u8) !i64 {
-        // Проверяем кэш
+        // Check кэш
         if (self.jit.getCompiled(func_name)) |compiled| {
             self.total_jit += 1;
             return compiled.call();

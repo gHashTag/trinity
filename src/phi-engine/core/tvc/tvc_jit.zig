@@ -21,7 +21,7 @@ pub const JITError = error{
 
 // ═══════════════════════════════════════════════════════════════════════════
 // EXECUTABLE MEMORY ALLOCATOR
-// Выделяет memory with правами on execution (PROT_EXEC)
+// Allocates memory with правами on execution (PROT_EXEC)
 // ═══════════════════════════════════════════════════════════════════════════
 
 pub const ExecutableMemory = struct {
@@ -93,7 +93,7 @@ pub const ProfileStats = struct {
         self.total_cycles += cycles;
         self.last_cycles = cycles;
 
-        // Функция считается "горячей" after 100 вызовов
+        // Функция сreadsся "горячей" after 100 вызовов
         if (self.call_count >= 100) {
             self.is_hot = true;
         }
@@ -184,7 +184,7 @@ pub const TVCJit = struct {
     }
 
     pub fn deinit(self: *TVCJit) void {
-        // Освобождаем скомпилированный code
+        // Free скомпилированный code
         var iter = self.compiled_functions.iterator();
         while (iter.next()) |entry| {
             entry.value_ptr.deinit();
@@ -205,7 +205,7 @@ pub const TVCJit = struct {
         }
     }
 
-    // Проверка, нужна ли JIT compilation
+    // Check, нужна ли JIT compilation
     pub fn shouldCompile(self: *TVCJit, func_name: []const u8) bool {
         if (self.compiled_functions.contains(func_name)) {
             return false; // Уже скомпилировано
@@ -234,10 +234,10 @@ pub const TVCJit = struct {
         // Эпилог функции
         try self.emitEpilogue();
 
-        // Выделяем executable memory
+        // Allocate executable memory
         var exec_mem = try ExecutableMemory.alloc(self.code_buffer.items.len);
 
-        // Копируем code in executable memory
+        // Copy code in executable memory
         exec_mem.write(0, self.code_buffer.items);
 
         // Создаём CompiledFunction
@@ -421,7 +421,7 @@ pub const TVCJit = struct {
                 try self.code_buffer.appendSlice(&[_]u8{ 0x48, 0x85, 0xC9 });
             },
             else => {
-                // Неподдерживаемый opcode - nop
+                // Неsupportый opcode - nop
                 try self.code_buffer.append(0x90);
             },
         }

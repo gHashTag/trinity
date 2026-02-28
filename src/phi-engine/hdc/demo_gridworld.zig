@@ -71,7 +71,7 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
     });
     print("\n", .{});
 
-    // Инициализируем Q-таблицу
+    // Initialize Q-таблицу
     try agent.initQTable(env.numStates());
 
     print("Начинаю обучение ({d} эпизодов)...\n", .{config.num_episodes});
@@ -193,7 +193,7 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
     print("φ² + 1/φ² = 3 | TRINITY HDC RL DEMO COMPLETE\n", .{});
 }
 
-/// Точка входа
+/// Точка loginа
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();

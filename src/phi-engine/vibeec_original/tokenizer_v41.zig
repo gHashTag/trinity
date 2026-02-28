@@ -176,13 +176,13 @@ pub const SIMDCacheTokenizer = struct {
         const v2_lo: Vec16 = @splat(c2);
         const v2_hi: Vec16 = @splat(c2);
 
-        // Проверяем первые 16 биграмм
+        // Check первые 16 биграмм
         const match1_lo = v1_lo == self.first_chars_lo;
         const match2_lo = v2_lo == self.second_chars_lo;
         const both_lo = @select(u8, match1_lo, @as(Vec16, @splat(1)), @as(Vec16, @splat(0))) &
             @select(u8, match2_lo, @as(Vec16, @splat(1)), @as(Vec16, @splat(0)));
 
-        // Проверяем вторые 16 биграмм
+        // Check вторые 16 биграмм
         const match1_hi = v1_hi == self.first_chars_hi;
         const match2_hi = v2_hi == self.second_chars_hi;
         const both_hi = @select(u8, match1_hi, @as(Vec16, @splat(1)), @as(Vec16, @splat(0))) &
@@ -206,7 +206,7 @@ pub const SIMDCacheTokenizer = struct {
     pub fn tokenize(self: *Self, text: []const u8) u32 {
         if (text.len == 0) return 1;
 
-        // Проверяем кэш
+        // Check кэш
         const hash = hashText(text);
         const cache_idx = hash % CACHE_SIZE;
 
@@ -394,7 +394,7 @@ test "SIMDCacheTokenizer basic" {
 test "AVX-256 emulation (32-way bigram)" {
     const tokenizer = SIMDCacheTokenizer.init();
 
-    // Проверяем биграммы из обоих наборов
+    // Check биграммы из обоих наборов
     try std.testing.expect(tokenizer.isBigram32('t', 'h')); // Lo set
     try std.testing.expect(tokenizer.isBigram32('h', 'e')); // Lo set
     try std.testing.expect(tokenizer.isBigram32('s', 't')); // Hi set
@@ -408,7 +408,7 @@ test "AVX-256 emulation (32-way bigram)" {
 test "Full BPE vocab" {
     const vocab = FullBPEVocab.init();
 
-    // Проверяем search токенов
+    // Check search токенов
     const text = "the quick";
 
     // "the" должен найтись

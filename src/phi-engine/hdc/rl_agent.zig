@@ -312,7 +312,7 @@ test "action seeds orthogonal" {
     var agent = try RLAgent.init(allocator, .{ .state_dim = 1000, .num_actions = 4 });
     defer agent.deinit();
 
-    // Проверяем what seed-векторы почти ортогональны
+    // Check what seed-векторы почти ортогональны
     for (0..agent.config.num_actions) |i| {
         for (i + 1..agent.config.num_actions) |j| {
             const sim = hdc.similarity(agent.action_seeds[i].data, agent.action_seeds[j].data);

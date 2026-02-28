@@ -100,7 +100,7 @@ pub const CopticOpcode = enum(u8) {
     UHRV = 14, // Harvest entropy
     USYN = 15, // Синхронизация
     ULCK = 16, // Chern Lock
-    UVRF = 17, // Верификация
+    UVRF = 17, // Verification
 
     // Поток управления (9 опкодов = 3²)
     TJMP = 18, // Ternary jump
@@ -138,7 +138,7 @@ pub const PASSHA256 = struct {
 
     /// Хеширование блока with PAS оптимизацией
     pub fn hashBlock(self: *PASSHA256, block: []const u8) [32]u8 {
-        // 1. Захват энтропии из входных данных
+        // 1. Захват энтропии из loginных данных
         const energy = self.su3_core.harvestEntropy(block);
         self.energy_harvested += energy;
 
@@ -221,7 +221,7 @@ pub const PASSHA256 = struct {
             const hash1 = self.hashBlock(header);
             const hash2 = self.hashBlock(&hash1);
 
-            // Проверка target
+            // Check target
             if (compareHashes(hash2, target)) {
                 return nonce;
             }
@@ -330,7 +330,7 @@ pub fn main() !void {
     // Инициализация
     var hasher = PASSHA256.init();
 
-    // Тестовый блок
+    // Testовый блок
     const test_block = "TRINITY MINING TEST BLOCK - SACRED MATHEMATICS";
 
     try stdout.print("🔮 Тестирование PAS-SHA256...\n", .{});

@@ -93,7 +93,7 @@ pub const TRANSCENDENTAL_PRODUCT: f64 = PI * PHI * E;
 pub const LUCAS_10: u32 = 123;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 2. СВЯЩЕННАЯ ФОРМУЛА: V = n × 3^k × π^m × φ^p × e^q
+// 2. SACRED FORMULA: V = n × 3^k × π^m × φ^p × e^q
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Вычислить священную формулу
@@ -183,7 +183,7 @@ pub const LIFNeuron = struct {
         const dv = (-(self.membrane_potential - self.v_rest) + input_current) / self.tau;
         self.membrane_potential += dv * dt;
 
-        // Проверка порогов (3 уровня = φ² + 1/φ²)
+        // Check порогов (3 уровня = φ² + 1/φ²)
         if (self.membrane_potential >= self.v_threshold + PHI) {
             self.spike_level = 3;
             self.membrane_potential = self.v_rest;
@@ -280,7 +280,7 @@ pub const EvolutionOperators = struct {
 // 8. TSL ТИПЫ (3 типа = TRINITY)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Тип 1: Священное Вычисление
+/// Тип 1: Священное Computation
 pub const SacredComputation = struct {
     n: u32,
     k: i32,

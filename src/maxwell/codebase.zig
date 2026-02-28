@@ -105,7 +105,7 @@ pub const Codebase = struct {
             };
         }
 
-        // Построить полный path
+        // Поbuildsь полный path
         const full_path = std.fs.path.join(self.allocator, &[_][]const u8{ self.root_path, path }) catch {
             return FileResult{
                 .success = false,
@@ -253,7 +253,7 @@ pub const Codebase = struct {
         else
             null;
 
-        // Построить полный path
+        // Поbuildsь полный path
         const full_path = std.fs.path.join(self.allocator, &[_][]const u8{ self.root_path, path }) catch {
             return FileResult{
                 .success = false,
@@ -438,7 +438,7 @@ pub const Codebase = struct {
         };
     }
 
-    /// Запустить тесты
+    /// Запустить testы
     pub fn runTests(self: *Codebase, test_path: []const u8) ExecResult {
         return self.exec("zig", &[_][]const u8{ "test", test_path });
     }

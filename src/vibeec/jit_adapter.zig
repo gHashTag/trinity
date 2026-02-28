@@ -1486,14 +1486,14 @@ pub const SIMDVectorizer = struct {
         var has_dependency = false;
         var array_stride: i64 = 0;
 
-        // Анализируем тело цикла
+        // Analyze тело цикла
         for (ir[loop_start..loop_end]) |instr| {
             switch (instr.opcode) {
                 // Простые арифметические операции - векторизуемы
                 .ADD_INT, .SUB_INT, .MUL_INT => {
                     has_simple_arithmetic = true;
                 },
-                // Загрузка/сохранение - проверяем stride
+                // Загрузка/сохранение - check stride
                 .LOAD_LOCAL, .STORE_LOCAL => {
                     has_array_access = true;
                     // Простая эвристика: if есть последовательный доступ
@@ -1512,7 +1512,7 @@ pub const SIMDVectorizer = struct {
             }
         }
 
-        // Проверяем условия векторизации
+        // Check условия векторизации
         if (!has_simple_arithmetic or has_dependency) {
             return null;
         }
@@ -1631,7 +1631,7 @@ pub const SIMDVectorizer = struct {
             return self.allocator.dupe(IRInstruction, ir);
         }
 
-        // Анализируем цикл
+        // Analyze цикл
         if (self.analyzeLoop(ir, loop_start.?, loop_end.?)) |info| {
             return self.vectorizeLoop(ir, info);
         }
@@ -6992,7 +6992,7 @@ pub const PolymorphicInlineCache = struct {
                 pic.value_ptr.state = .Monomorphic;
             },
             .Monomorphic => {
-                // Проверяем, не that же ли this type
+                // Check, не that же ли this type
                 if (pic.value_ptr.entries[0]) |existing| {
                     if (existing.type_id == type_id) {
                         // Обновляем существующий
@@ -7031,7 +7031,7 @@ pub const PolymorphicInlineCache = struct {
                 }
             },
             .Megamorphic => {
-                // Добавляем in hash map
+                // Add in hash map
                 if (pic.value_ptr.megamorphic_map) |*map| {
                     try map.put(type_id, entry);
                 }
@@ -7043,14 +7043,14 @@ pub const PolymorphicInlineCache = struct {
     fn transitionToMegamorphic(self: *Self, pic: *PICEntry, new_entry: ICEntry) !void {
         var map = std.AutoHashMap(u32, ICEntry).init(self.allocator);
 
-        // Копируем существующие entries
+        // Copy существующие entries
         for (pic.entries) |maybe_entry| {
             if (maybe_entry) |entry| {
                 try map.put(entry.type_id, entry);
             }
         }
 
-        // Добавляем new
+        // Add new
         try map.put(new_entry.type_id, new_entry);
 
         pic.megamorphic_map = map;
@@ -7058,7 +7058,7 @@ pub const PolymorphicInlineCache = struct {
         self.transitions += 1;
     }
 
-    /// Инвалидация IC for call site
+    /// Инvalidation IC for call site
     pub fn invalidate(self: *Self, call_site: u32) void {
         if (self.cache.getPtr(call_site)) |pic| {
             if (pic.megamorphic_map) |*map| {
@@ -7140,7 +7140,7 @@ pub const ICRuntime = struct {
     }
 
     /// IC Miss Handler - вызывается при промахе in IC
-    /// Возвращает result вызова метода and updates IC
+    /// Returns result вызова метода and updates IC
     pub fn handleICMiss(self: *Self, call_site: u32, type_id: u32, method_id: u32) !i64 {
         self.lookups += 1;
 
@@ -11626,7 +11626,7 @@ test "JITAdapter автоматический JIT при повторном вы
     // (if hot_threshold = 1)
     const metrics = adapter.getNativeMetrics();
 
-    // Проверяем what compilation произошла
+    // Check what compilation произошла
     if (@import("builtin").mode == .Debug) {
         std.debug.print("\n=== Автоматический JIT тест ===\n", .{});
         std.debug.print("Кэшированных функций: {d}\n", .{metrics.cached_functions});
@@ -11662,7 +11662,7 @@ test "Benchmark: VM vs JIT IR vs Native" {
     const native_end = std.time.nanoTimestamp();
     const native_time = native_end - native_start;
 
-    // Проверяем result
+    // Check result
     try std.testing.expectEqual(@as(i64, 35), native_result);
 
     // Выводим результаты бенчмарка
@@ -11703,7 +11703,7 @@ test "Бенчмарк: нативный код vs интерпретатор" {
     const end = std.time.nanoTimestamp();
     const native_time: u64 = @intCast(@max(0, end - start));
 
-    // Проверяем result
+    // Check result
     try std.testing.expectEqual(@as(i64, 5), result);
 
     // Выводим результаты
@@ -14892,7 +14892,7 @@ test "PolymorphicIC monomorphic hit" {
     const type_id: u32 = 1;
     const target: u32 = 0x2000;
 
-    // Первый вызов - miss, добавляем in кэш
+    // Первый вызов - miss, add in кэш
     const result1 = pic.lookup(call_site, type_id);
     try std.testing.expect(result1 == null);
 
@@ -14917,10 +14917,10 @@ test "PolymorphicIC polymorphic transition" {
 
     const call_site: u32 = 0x1000;
 
-    // Добавляем первый type -> monomorphic
+    // Add первый type -> monomorphic
     try pic.update(call_site, 1, 0x2000, null);
 
-    // Добавляем второй type -> polymorphic
+    // Add второй type -> polymorphic
     try pic.update(call_site, 2, 0x3000, null);
 
     const stats = pic.getStats();
@@ -14942,7 +14942,7 @@ test "PolymorphicIC megamorphic transition" {
 
     const call_site: u32 = 0x1000;
 
-    // Добавляем 5 разных типов -> megamorphic
+    // Add 5 разных типов -> megamorphic
     try pic.update(call_site, 1, 0x2000, null);
     try pic.update(call_site, 2, 0x3000, null);
     try pic.update(call_site, 3, 0x4000, null);
@@ -14967,11 +14967,11 @@ test "PolymorphicIC invalidation" {
 
     const call_site: u32 = 0x1000;
 
-    // Добавляем entry
+    // Add entry
     try pic.update(call_site, 1, 0x2000, null);
     _ = pic.lookup(call_site, 1);
 
-    // Инвалидируем
+    // Инvalidate
     pic.invalidate(call_site);
 
     // После инвалидации - miss
@@ -14990,7 +14990,7 @@ test "PolymorphicIC hit rate calculation" {
 
     const call_site: u32 = 0x1000;
 
-    // Добавляем entry
+    // Add entry
     try pic.update(call_site, 1, 0x2000, null);
 
     // 10 hits

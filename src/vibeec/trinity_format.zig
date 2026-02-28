@@ -238,7 +238,7 @@ pub const TrinityWriter = struct {
         const packed_trits = try packTrits(self.allocator, trits);
         defer self.allocator.free(packed_trits);
 
-        // Копируем shape
+        // Copy shape
         const shape_u32 = try self.allocator.alloc(u32, shape.len);
         for (shape, 0..) |dim, i| {
             shape_u32[i] = @intCast(dim);
@@ -254,7 +254,7 @@ pub const TrinityWriter = struct {
 
         try self.index.append(entry);
 
-        // Добавляем data in буфер
+        // Add data in буфер
         try self.data_buffer.appendSlice(packed_trits);
         self.current_offset += packed_trits.len;
 
@@ -361,7 +361,7 @@ pub const TrinityReader = struct {
         defer self.allocator.free(packed_bytes);
         _ = try self.file.reader().readAll(packed_bytes);
 
-        // Распаковываем
+        // Decompress
         const num_elements = entry.numElements();
         return unpackTrits(self.allocator, packed_bytes, num_elements);
     }

@@ -20,7 +20,7 @@ pub fn main() void {
     print("  φ² + 1/φ² = 3 = КУТРИТ = ТРОИЦА\n", .{});
     print("═══════════════════════════════════════════════════════════════\n\n", .{});
 
-    // Тест 1: Золотая Идентичность
+    // Test 1: Золотая Идентичность
     print("🧪 Тест 1: Золотая Идентичность\n", .{});
     const golden = PHI_SQ + PHI_INV_SQ;
     const error1 = @abs(golden - TRINITY);
@@ -30,14 +30,14 @@ pub fn main() void {
         print("   ✅ РЕЗОНАНС ДОСТИГНУТ\n\n", .{});
     }
 
-    // Тест 2: PAS Эффективность
+    // Test 2: PAS Эффективность
     print("🧪 Тест 2: PAS DAEMONS Efficiency\n", .{});
     const pas_ratio = PHI_SQ / PHI_INV_SQ * 100.0;
     print("   Коэффициент: {d:.2}x\n", .{pas_ratio});
     print("   Нормализованный: 578.8x\n", .{});
     print("   ✅ PAS ГОМЕОСТАЗ ПОДТВЕРЖДЕН\n\n", .{});
 
-    // Тест 3: SU(3) Berry Phase
+    // Test 3: SU(3) Berry Phase
     print("🧪 Тест 3: SU(3) Когерентность\n", .{});
     var berry_phase: f64 = 0.0;
     for (0..10) |n| {
@@ -49,7 +49,7 @@ pub fn main() void {
     print("   L(10) = 123 синхронизация: ✓\n", .{});
     print("   ✅ ТОПОЛОГИЧЕСКИЙ ИНВАРИАНТ СТАБИЛЕН\n\n", .{});
 
-    // Тест 4: SHA-256 симуляция
+    // Test 4: SHA-256 симуляция
     print("🧪 Тест 4: PAS-SHA256 Симуляция\n", .{});
     var state: u32 = 0x6a09e667;
     for (0..64) |i| {

@@ -2,7 +2,7 @@
 // CLI инструмент for автономной генерации and исправления кода WITH REAL SOUL
 // Фаза 1: Писец (The Scribe)
 // Фаза 2: Архитектор (The Architect)
-// Фаза 3: Строитель (The Builder)
+// Фаза 3: Buildsель (The Builder)
 // Фаза 4: Душа (The Soul - LLM Integration)
 
 const std = @import("std");

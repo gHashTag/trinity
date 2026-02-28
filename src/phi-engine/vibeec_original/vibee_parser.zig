@@ -65,7 +65,7 @@ pub const VibeeSpec = struct {
     }
 
     pub fn deinit(self: *VibeeSpec) void {
-        // Освобождаем вложенные структуры
+        // Free вложенные структуры
         for (self.types.items) |*t| {
             t.fields.deinit(self.allocator);
             t.constraints.deinit(self.allocator);
@@ -86,7 +86,7 @@ pub const VibeeSpec = struct {
             f.timers.deinit(self.allocator);
         }
 
-        // Освобождаем основные списки
+        // Free основные списки
         self.targets.deinit(self.allocator);
         self.constants.deinit(self.allocator);
         self.types.deinit(self.allocator);
@@ -496,7 +496,7 @@ pub const VibeeParser = struct {
             self.skipEmptyLinesAndComments();
             if (self.pos >= self.source.len) break;
 
-            // Проверяем отступ (константы имеют отступ 2 пробела)
+            // Check отступ (константы имеют отступ 2 пробела)
             const indent = self.countIndent();
             if (indent < 2) break; // Меньше 2 = конец секции
             if (indent > 4) {
@@ -509,7 +509,7 @@ pub const VibeeParser = struct {
             const name = self.readKey();
             if (name.len == 0) break;
 
-            // Проверяем what this не следующая секция (без отступа)
+            // Check what this не следующая секция (без отступа)
             if (indent == 0 and (std.mem.eql(u8, name, "types") or
                 std.mem.eql(u8, name, "creation_patterns") or
                 std.mem.eql(u8, name, "behaviors")))
@@ -594,7 +594,7 @@ pub const VibeeParser = struct {
                 self.line += 1;
                 continue;
             }
-            // Проверяем строку
+            // Check строку
             const line_start = self.pos;
             var spaces: usize = 0;
             while (self.pos < self.source.len and self.source[self.pos] == ' ') {
@@ -630,7 +630,7 @@ pub const VibeeParser = struct {
             const name = self.readKey();
             if (name.len == 0) break;
 
-            // Проверяем what this не следующая секция
+            // Check what this не следующая секция
             if (std.mem.eql(u8, name, "creation_patterns") or
                 std.mem.eql(u8, name, "behaviors") or
                 std.mem.eql(u8, name, "algorithms") or
@@ -1121,7 +1121,7 @@ pub const VibeeParser = struct {
             const name = self.readKey();
             if (name.len == 0) break;
 
-            // Проверяем what this не следующая секция
+            // Check what this не следующая секция
             if (std.mem.eql(u8, name, "behaviors") or
                 std.mem.eql(u8, name, "algorithms") or
                 std.mem.eql(u8, name, "wasm_exports") or

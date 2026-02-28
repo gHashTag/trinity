@@ -40,7 +40,7 @@ pub const SIMDBigramMatcher = struct {
         };
     }
 
-    // SIMD verification: является ли пара (c1, c2) биграммой
+    // SIMD verification: is ли пара (c1, c2) биграммой
     pub fn isBigram(self: *const Self, c1: u8, c2: u8) bool {
         // Создаём векторы из одного символа
         const v1: Vec16 = @splat(c1);
@@ -257,7 +257,7 @@ pub const AdaptiveCache = struct {
     const MIN_SIZE: usize = 64;
     const MAX_SIZE: usize = 4096;
     const GROW_THRESHOLD: f64 = 0.9; // Расширяем при >90% hit rate
-    const SHRINK_THRESHOLD: f64 = 0.5; // Сжимаем при <50% hit rate
+    const SHRINK_THRESHOLD: f64 = 0.5; // Compress при <50% hit rate
 
     const CacheEntry = struct {
         hash: u64,
@@ -323,7 +323,7 @@ pub const AdaptiveCache = struct {
                 e.* = CacheEntry{ .hash = 0, .token_count = 0, .hits = 0 };
             }
 
-            // Копируем old записи
+            // Copy old записи
             for (self.entries) |e| {
                 if (e.hash != 0) {
                     const idx = e.hash % new_size;
@@ -335,14 +335,14 @@ pub const AdaptiveCache = struct {
             self.entries = new_entries;
             self.size = new_size;
         } else if (rate < SHRINK_THRESHOLD and self.size > MIN_SIZE) {
-            // Сжимаем
+            // Compress
             const new_size = @max(self.size / 2, MIN_SIZE);
             const new_entries = try self.allocator.alloc(CacheEntry, new_size);
             for (new_entries) |*e| {
                 e.* = CacheEntry{ .hash = 0, .token_count = 0, .hits = 0 };
             }
 
-            // Копируем только часто используемые
+            // Copy только часто используемые
             for (self.entries) |e| {
                 if (e.hash != 0 and e.hits > 1) {
                     const idx = e.hash % new_size;
@@ -491,14 +491,14 @@ pub const WebSocketStream = struct {
 test "SIMD bigram matcher" {
     const matcher = getSIMDMatcher();
 
-    // Проверяем известные биграммы
+    // Check известные биграммы
     try std.testing.expect(matcher.isBigram('t', 'h'));
     try std.testing.expect(matcher.isBigram('h', 'e'));
     try std.testing.expect(matcher.isBigram('i', 'n'));
     try std.testing.expect(matcher.isBigram('e', 'r'));
     try std.testing.expect(matcher.isBigram('a', 'n'));
 
-    // Проверяем НЕ-биграммы
+    // Check НЕ-биграммы
     try std.testing.expect(!matcher.isBigram('x', 'z'));
     try std.testing.expect(!matcher.isBigram('q', 'q'));
 }
@@ -526,20 +526,20 @@ test "Adaptive cache" {
     var cache = try AdaptiveCache.init(allocator);
     defer cache.deinit();
 
-    // Добавляем записи
+    // Add записи
     cache.put(123, 10);
     cache.put(456, 20);
 
-    // Проверяем получение
+    // Check получение
     const v1 = cache.get(123);
     try std.testing.expect(v1 != null);
     try std.testing.expectEqual(@as(u32, 10), v1.?);
 
-    // Проверяем miss
+    // Check miss
     const v2 = cache.get(999);
     try std.testing.expect(v2 == null);
 
-    // Проверяем hit rate
+    // Check hit rate
     try std.testing.expect(cache.hitRate() > 0);
 }
 

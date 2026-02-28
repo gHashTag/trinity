@@ -545,7 +545,7 @@ test "Entity creation" {
 test "KnowledgeGraph basic operations" {
     var kg = KnowledgeGraph.init();
 
-    // Добавляем факты о столицах
+    // Add факты о столицах
     kg.addTriple("Paris", "capital_of", "France");
     kg.addTriple("Berlin", "capital_of", "Germany");
     kg.addTriple("Rome", "capital_of", "Italy");
@@ -570,7 +570,7 @@ test "KnowledgeGraph query object with unbind" {
     std.debug.print("\n\nQuery: Paris capital_of ?\n", .{});
     if (result) |entity| {
         std.debug.print("Result: {s}\n", .{entity.name});
-        // Проверяем what result - France
+        // Check what result - France
         try std.testing.expectEqualStrings("France", entity.name);
     } else {
         std.debug.print("Result: null\n", .{});
@@ -585,7 +585,7 @@ test "KnowledgeGraph query subject with unbind" {
     kg.addTriple("Paris", "capital_of", "France");
     kg.addTriple("Berlin", "capital_of", "Germany");
 
-    // Запрос: what является столицей Франции?
+    // Запрос: what is столицей Франции?
     // unbind(graph, bind(capital_of, France)) → Paris
     const result = kg.querySubject("capital_of", "France");
 
@@ -615,7 +615,7 @@ test "save and load roundtrip" {
     var name_buffer: [4096]u8 = undefined;
     var loaded_kg = try KnowledgeGraph.load("/tmp/test_kg.trkg", &name_buffer);
 
-    // Проверяем статистику
+    // Check статистику
     const loaded_stats = loaded_kg.stats();
     try std.testing.expectEqual(original_stats.entities, loaded_stats.entities);
     try std.testing.expectEqual(original_stats.relations, loaded_stats.relations);
@@ -625,7 +625,7 @@ test "save and load roundtrip" {
     std.debug.print("Original: {d} entities, {d} relations, {d} triples\n", .{ original_stats.entities, original_stats.relations, original_stats.triples });
     std.debug.print("Loaded: {d} entities, {d} relations, {d} triples\n", .{ loaded_stats.entities, loaded_stats.relations, loaded_stats.triples });
 
-    // Удаляем тестовый file
+    // Delete testовый file
     std.fs.cwd().deleteFile("/tmp/test_kg.trkg") catch {};
 }
 
@@ -641,7 +641,7 @@ test "queries work after load" {
     var name_buffer: [4096]u8 = undefined;
     var loaded_kg = try KnowledgeGraph.load("/tmp/test_kg_query.trkg", &name_buffer);
 
-    // Проверяем запросы
+    // Check запросы
     const result = loaded_kg.queryObject("Paris", "capital_of");
 
     std.debug.print("\n\nQuery after load:\n", .{});
@@ -655,14 +655,14 @@ test "queries work after load" {
         try std.testing.expect(false);
     }
 
-    // Удаляем тестовый file
+    // Delete testовый file
     std.fs.cwd().deleteFile("/tmp/test_kg_query.trkg") catch {};
 }
 
 test "benchmark KnowledgeGraph" {
     var kg = KnowledgeGraph.init();
 
-    // Добавляем много фактов
+    // Add много фактов
     const countries = [_][]const u8{ "France", "Germany", "Italy", "Spain", "UK", "Poland", "Sweden", "Norway", "Finland", "Denmark" };
     const capitals = [_][]const u8{ "Paris", "Berlin", "Rome", "Madrid", "London", "Warsaw", "Stockholm", "Oslo", "Helsinki", "Copenhagen" };
 
