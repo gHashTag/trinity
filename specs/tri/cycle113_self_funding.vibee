@@ -1,0 +1,411 @@
+name: cycle113_self_funding
+version: "113.0.0"
+language: zig
+module: self_funding
+
+description: |
+  Cycle 113 Self-Funding Engine with φ-based fee structures and auto-renewal capabilities.
+  Implements sacred mathematics into financial operations for sustainable autonomous operation.
+
+constants:
+  PHI: 1.618033988749895
+  PHI_SQUARED: 2.618033988749895
+  RESERVE_RATIO: 0.2360679775  # 1/φ^4
+  AUTONOMY_THRESHOLD: 0.85
+  REPORT_INTERVAL_DAYS: 7
+
+types:
+  IncomeSource:
+    fields:
+      id: String
+      name: String
+      source_type: IncomeSourceType
+      rate: Float
+      currency: String
+      active: Bool
+      last_earned: Int
+      total_earned: Float
+      phi_fee_multiplier: Float
+      auto_renewal: Bool
+      renewal_threshold: Float
+      metadata: Map<String, String>
+
+  IncomeSourceType:
+    enum:
+      - computing_services
+      - data_analysis
+      - model_inference
+      - storage_rental
+      - bandwidth_sharing
+      - consulting
+      - api_access
+      - research_grants
+      - microtasks
+      - phi Arbitrage
+      - other
+
+  ExpenseCategory:
+    fields:
+      id: String
+      name: String
+      category_type: ExpenseType
+      amount: Float
+      currency: String
+      frequency: BillingFrequency
+      recurring: Bool
+      last_paid: Int
+      next_due: Int
+      priority: Int
+      auto_pay: Bool
+      payment_method: String
+
+  ExpenseType:
+    enum:
+      - server_costs
+      - bandwidth
+      - storage
+      - compute_resources
+      - api_fees
+      - transaction_fees
+      - maintenance
+      - monitoring
+      - insurance
+      - legal
+      - other
+
+  BillingFrequency:
+    enum:
+      - hourly
+      - daily
+      - weekly
+      - monthly
+      - quarterly
+      - annually
+      - on_demand
+
+  BudgetState:
+    fields:
+      total_income: Float
+      total_expenses: Float
+      net_balance: Float
+      currency: String
+      reserve_ratio: Float
+      operating_reserve: Float
+      investment_pool: Float
+      emergency_fund: Float
+      timestamp: Int
+      health_status: FinancialHealth
+      autonomy_score: Float
+      phi_balance_score: Float
+
+  FinancialHealth:
+    enum:
+      - critical
+      - warning
+      - stable
+      - healthy
+      - thriving
+      - autonomous
+
+  Transaction:
+    fields:
+      id: String
+      transaction_type: TransactionType
+      amount: Float
+      currency: String
+      status: TransactionStatus
+      source_id: String
+      category_id: String
+      timestamp: Int
+      confirmed: Bool
+      blockchain_tx_id: Option<String>
+      phi_adjusted_amount: Float
+      metadata: Map<String, String>
+
+  TransactionType:
+    enum:
+      - income
+      - expense
+      - transfer
+      - deposit
+      - withdrawal
+      - reinvestment
+      - phi_distribution
+
+  TransactionStatus:
+    enum:
+      - pending
+      - processing
+      - completed
+      - failed
+      - reverted
+      - cancelled
+
+  FundingStrategy:
+    fields:
+      id: String
+      name: String
+      strategy_type: StrategyType
+      target_income: Float
+      max_expense_ratio: Float
+      reserve_target: Float
+      investment_allocation: Float
+      risk_tolerance: RiskTolerance
+      optimization_goals: List<OptimizationGoal>
+      active: Bool
+      performance_metrics: StrategyMetrics
+      phi_fee_structure: PhiFeeStructure
+
+  PhiFeeStructure:
+    fields:
+      base_fee: Float
+      phi_multiplier: Float
+      volume_discount_threshold: Float
+      volume_discount_rate: Float
+      loyalty_multiplier: Float
+      dynamic_pricing: Bool
+
+  StrategyType:
+    enum:
+      - conservative
+      - balanced
+      - aggressive
+      - autonomous
+      - phi_optimized
+      - experimental
+
+  RiskTolerance:
+    enum:
+      - minimal
+      - low
+      - moderate
+      - high
+      - adaptive
+
+  OptimizationGoal:
+    enum:
+      - maximize_profit
+      - minimize_costs
+      - ensure_sustainability
+      - accelerate_growth
+      - build_reserves
+      - diversify_income
+      - phi_harmonize
+
+  StrategyMetrics:
+    fields:
+      total_return: Float
+      roi_percentage: Float
+      profit_margin: Float
+      expense_ratio: Float
+      autonomous_ratio: Float
+      uptime: Float
+      client_satisfaction: Float
+      phi_efficiency: Float
+
+  ResourceAllocation:
+    fields:
+      compute_units: Int
+      storage_gb: Int
+      bandwidth_mbps: Int
+      memory_gb: Int
+      utilization_rate: Float
+      cost_per_hour: Float
+      revenue_per_hour: Float
+      efficiency_score: Float
+
+  MarketOpportunity:
+    fields:
+      id: String
+      opportunity_type: String
+      estimated_revenue: Float
+      required_resources: ResourceAllocation
+      time_commitment: Int
+      risk_level: Int
+      confidence_score: Float
+      phi_alignment: Float
+      expires_at: Int
+
+  FinancialReport:
+    fields:
+      period_start: Int
+      period_end: Int
+      budget_state: BudgetState
+      income_breakdown: Map<String, Float>
+      expense_breakdown: Map<String, Float>
+      transaction_count: Int
+      top_income_sources: List<IncomeSource>
+      top_expense_categories: List<ExpenseCategory>
+      phi_fee_summary: PhiFeeSummary
+      recommendations: List<String>
+      achievements: List<String>
+      challenges: List<String>
+
+  PhiFeeSummary:
+    fields:
+      total_phi_fees_collected: Float
+      phi_efficiency_gains: Float
+      adjusted_revenue: Float
+      fee_distribution: Map<String, Float>
+
+  AutoRenewalConfig:
+    fields:
+      enabled: Bool
+      balance_threshold: Float
+      renewal_interval_days: Int
+      max_auto_renewal_amount: Float
+      require_confirmation: Bool
+      notification_pref: NotificationPreference
+
+  NotificationPreference:
+    enum:
+      - silent
+      - email
+      - telegram
+      - webhook
+      - all
+
+behaviors:
+  - name: trackRevenue
+    given: IncomeSource configuration and market activity
+    when: Revenue is generated from any income source
+    then:
+      - Monitor all income sources for revenue events
+      - Calculate base revenue amount
+      - Apply φ-based fee multiplier if configured
+      - Track auto-renewal eligibility based on renewal_threshold
+      - Record revenue transaction with phi_adjusted_amount
+      - Update income source statistics (last_earned, total_earned)
+      - Trigger auto-renewal check if enabled
+      - Return revenue details and φ-adjustment summary
+
+  - name: payInfrastructure
+    given: ExpenseCategory configuration and available funds
+    when: Payment is due or auto-pay is triggered
+    then:
+      - Check expense due dates and auto-pay flags
+      - Validate sufficient funds available (including emergency_fund)
+      - Prioritize by expense priority
+      - Execute payment through configured method
+      - For auto-pay: process without confirmation if balance OK
+      - For manual: queue for approval with payment summary
+      - Record expense transaction with phi_adjusted_amount
+      - Update expense category (last_paid, next_due)
+      - Alert if payment fails or balance low
+      - Return payment confirmation and updated budget state
+
+  - name: generateFinancialReport
+    given: Transaction history, budget state, and reporting period
+    when: Reporting period ends or report is requested
+    then:
+      - Aggregate transactions for period (period_start to period_end)
+      - Calculate income breakdown by source with φ-adjustments
+      - Calculate expense breakdown by category
+      - Compute φ-based efficiency metrics (phi_efficiency, phi_balance_score)
+      - Generate phi_fee_summary showing all φ-adjusted amounts
+      - Identify top performing income sources (by revenue and φ-efficiency)
+      - Identify highest expense categories
+      - Calculate autonomy_score (income vs expenses ratio)
+      - Generate recommendations based on φ-math principles
+      - Document achievements (autonomy milestones, efficiency gains)
+      - Document challenges (underfunded areas, risk factors)
+      - Create comprehensive FinancialReport
+      - Return report and executive summary
+
+  - name: calculatePhiFee
+    given: Base amount, fee structure, and transaction context
+    when: Fee calculation is required for pricing or revenue
+    then:
+      - Start with base_fee from PhiFeeStructure
+      - Apply phi_multiplier (default: PHI)
+      - Check volume_discount_threshold and apply discount if eligible
+      - Apply loyalty_multiplier for long-term clients
+      - If dynamic_pricing: adjust based on market conditions
+      - Calculate final_fee = base * phi * loyalty * volume_discount
+      - Return phi_adjusted_amount with breakdown
+
+  - name: checkAutoRenewal
+    given: IncomeSource with auto_renewal enabled and current balance
+    when: Revenue is earned or renewal check is triggered
+    then:
+      - Check if source has auto_renewal enabled
+      - Verify revenue meets renewal_threshold
+      - Check system balance against balance_threshold
+      - If below threshold: queue renewal request
+      - If above threshold: process auto-renewal automatically
+      - Respect max_auto_renewal_amount limit
+      - Send notification based on notification_pref
+      - Update source with new renewal timestamp
+      - Return renewal status and payment details
+
+  - name: optimizePhiAllocation
+    given: Budget state and funding strategy with phi_fee_structure
+    when: Resource optimization is triggered
+    then:
+      - Calculate current phi_balance_score (harmony of income/expense)
+      - Identify imbalances using φ-ratios
+      - Suggest reallocation to achieve phi_harmonize goal
+      - Apply φ-based optimization to:
+        * Reserve ratios (target: RESERVE_RATIO)
+        * Investment allocations (golden ratio distribution)
+        * Fee structures (phi-optimized multipliers)
+      - Simulate optimized budget state
+      - Calculate expected autonomy_score improvement
+      - Return optimization plan and predicted outcomes
+
+  - name: monitorFinancialHealth
+    given: Budget state and historical performance data
+    when: Health check is triggered (periodic or event-driven)
+    then:
+      - Evaluate financial_health status based on:
+        * Net balance trend
+        * Expense ratio
+        * Reserve coverage
+        * Autonomy score
+      - Check if autonomy_threshold is met
+      - Detect anomalies or warning signs
+      - Calculate trend indicators (improving, stable, declining)
+      - Generate health assessment and alerts
+      - If critical: trigger emergency protocols
+      - If warning: generate recommendations
+      - If healthy/autonomous: celebrate achievements
+      - Return health status and action items
+
+  - name: processTransaction
+    given: Transaction details and payment context
+    when: Any financial transaction occurs
+    then:
+      - Validate transaction details
+      - Calculate phi_adjusted_amount if applicable
+      - Determine processing route based on type
+      - Execute transaction (income/expense/transfer)
+      - Monitor transaction status through lifecycle
+      - Record blockchain_tx_id for crypto transactions
+      - Update budget state on completion
+      - Trigger auto-renewal checks if income
+      - Trigger payment checks if expense
+      - Return transaction result and state changes
+
+  - name: assessAutonomy
+    given: Current budget state and historical performance
+    when: Autonomy assessment is requested or milestone check
+    then:
+      - Calculate autonomy_score (0-100%)
+      - Verify income >= expenses for sustained period
+      - Check reserve coverage meets targets
+      - Validate investment pool sufficiency
+      - Test resilience against stress scenarios
+      - Generate autonomy roadmap if not autonomous
+      - If autonomous: activate self-funding mode
+      - Return autonomy status, score, and next steps
+
+  - name: configureFundingSource
+    given: Income source parameters and market conditions
+    when: New income source is being configured
+    then:
+      - Validate source configuration
+      - Set phi_fee_multiplier based on source type
+      - Configure auto_renewal parameters
+      - Set appropriate rate based on market analysis
+      - Enable source in system
+      - Return configured source and activation status

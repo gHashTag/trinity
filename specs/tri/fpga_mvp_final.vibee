@@ -1,0 +1,140 @@
+# FPGA MVP v1.0 — Lattice iCE40 Production Bitstream
+# Real hardware deployment for TRINITY OS v1.0
+
+name: fpga_mvp_final
+version: "1.0.0"
+language: varlog
+module: trinity.fpga.mvp
+
+types:
+  # Bitstream Configuration
+  BitstreamConfig:
+    description: "FPGA bitstream configuration"
+    fields:
+      target: String             # "ice40-hx4k", "ice40-hx8k", "ice40-up5k"
+      luts: Int                  # LUTs utilized
+      bram: Int                  # BRAM blocks (KB)
+      mhz: Int                   # Clock frequency
+      trits: Int                 # Trit width (1, 2, 4, 8, 16)
+      features: String           # "sacred", "quantum", "koschei"
+
+  # LED Pattern (visual feedback)
+  LEDPattern:
+    description: "LED blink pattern for visual demo"
+    fields:
+      pattern: String            # "phi", "trinity", "koschei", "heartbeat"
+      freq_hz: Float             # Blink frequency
+      duration_ms: Int           # Pattern duration
+
+  # Flash Result
+  FlashResult:
+    description: "FPGA programming result"
+    fields:
+      success: Bool              # Programming successful
+      verify_crc: Bool           # CRC check passed
+      led_active: Bool           # LED blink pattern active
+      uptime_ms: Float           # Time since flash
+
+behaviors:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # VERILOG GENERATION
+  # ═══════════════════════════════════════════════════════════════════════════
+  - name: generateTernaryALU_FPGA
+    given: "Trit width (8), target FPGA"
+    when: "VIBEE compiles to Verilog for FPGA"
+    then: "Generate synthesizable Verilog for ternary ALU"
+    notes: |
+      Balanced ternary encoding: 2 bits/trit
+      00 = 0, 01 = -1, 10 = +1, 11 = invalid
+      Operations: ADD, SUB, MUL, SACRED_MUL (phi)
+      Result: rtl/fpga/ternary_alu.v
+      Synthesis target: Lattice iCE40-HX8K (7680 LUTs)
+
+  - name: generateSacredOpcodeUnit_FPGA
+    given: "Opcode range (0x80-0xD5), sacred constants ROM"
+    when: "Sacred opcodes enabled for hardware"
+    then: "Generate hardware sacred opcode decoder with ROM"
+    notes: |
+      Opcodes 0x80-0x96: Sacred Mathematics (phi, fib, lucas)
+      Opcodes 0xB0-0xC6: KOSCHEI EYE (blind spots, infinite loop)
+      Opcodes 0xC7-0xD5: QUANTUM TRINITY (ternary qubits, universe sim)
+      Hardware ROM: φ, π, e constants (32-bit fixed point)
+      Result: rtl/fpga/sacred_opcodes.v + rtl/fpga/sacred_rom.v
+
+  - name: generateTernaryMemory_FPGA
+    given: "Address width (12), data width (8 trits)"
+    when: "Memory blocks needed for kernel"
+    then: "Generate BRAM-based ternary memory"
+    notes: |
+      Block RAM: 256x 8-trit words
+      Dual-port for simultaneous read/write
+      20x memory savings vs binary
+      Result: rtl/fpga/ternary_memory.v
+
+  - name: generateLEDController
+    given: "Pattern (phi, trinity, koschei)"
+    when: "LED feedback needed"
+    then: "Generate LED PWM controller"
+    notes: |
+      Pattern "phi": LED blinks at φ Hz (1.618 Hz)
+      Pattern "trinity": 3 LEDs sequence (TRI pattern)
+      Pattern "koschei": heartbeat pulse (0.5 Hz)
+      Result: rtl/fpga/led_controller.v
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SYNTHESIS & BITSTREAM
+  # ═══════════════════════════════════════════════════════════════════════════
+  - name: synthesizeIce40
+    given: "Verilog sources, target (ice40-hx8k)"
+    when: "User runs 'tri fpga synth --target=ice40-hx8k'"
+    then: "Run Yosys + NextPNR → generate .ice bitstream"
+    notes: |
+      Yosys: synthesize (Verilog → BLIF)
+      NextPNR: place & route (BLIF → ASCII)
+      icepack: bitstream (ASCII → .ice)
+      Target utilization: ~60% LUTs (4608/7680)
+      Clock target: 48 MHz
+      Output: build/trinity_os_v1_0.ice
+
+  - name: flashFPGA
+    given: "Bitstream (.ice file), programmer (iceprog)"
+    when: "User runs 'tri hardware flash --target=ice40'"
+    then: "Flash bitstream via iceprog + verify CRC"
+    notes: |
+      iceprog: flash .ice file to iCE40
+      Time: <5 seconds
+      Verify: CRC check after flash
+      LED: immediate blink on success
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # LIVE DEMO ON HARDWARE
+  # ═══════════════════════════════════════════════════════════════════════════
+  - name: fpgaQuantumDemo
+    given: "Query (Z=120, Muon g-2, etc.)"
+    when: "User queries via UART/USB"
+    then: "Return result via hardware sacred lookup tables"
+    notes: |
+      Z=120: 27.4 seconds half-life (displayed via LED pattern)
+      Muon g-2: 0.002332841 (LED morse code)
+      Hubble: 73.042 km/s/Mpc (3 LED pulses)
+      Response time: <1ms (hardware LUT)
+
+  - name: fpgaKoscheiHeartbeat
+    given: "KOSCHEI UNIVERSE mode active"
+    when: "OS boots on FPGA"
+    then: "LED heartbeat pattern indicates omniscience level"
+    notes: |
+      Omniscience 100%: rapid heartbeat (2 Hz)
+      Omniscience 0-99%: slow heartbeat (0.5 Hz)
+      LED color: RGB (if available) → GOLD at 100%
+
+# FPGA MVP v1.0 — HARDWARE SPECIFICATION
+# ═══════════════════════════════════════════════════════════════════════════
+# Target: Lattice iCE40-HX8K TQFP144
+# LUTs: 7680 (use ~60% for trinity core)
+# RAM: 256 KB BRAM
+# Clock: 48 MHz internal
+# IO: 8 LEDs + USB (Fomu) or UART (iCEStick)
+
+# DEMO: "tri hardware flash --target=ice40-hx8k"
+# Expected: LED blinks φ pattern, Z=120 sim live, USB terminal active

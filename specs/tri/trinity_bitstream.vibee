@@ -1,0 +1,138 @@
+# TRINITY BITSTREAM v1.0 — Hardware Compilation Pipeline
+# .vibee → Verilog → Bitstream → Hardware
+
+name: trinity_bitstream
+version: "1.0.0"
+language: zig
+module: trinity.hardware.bitstream
+
+types:
+  # Compilation Stage
+  CompilationStage:
+    description: "Bitstream compilation stage"
+    fields:
+      stage: String              # "vibee", "verilog", "synth", "pnr", "bitstream"
+      file_ext: String          # File extension at this stage
+      output_size_kb: Int        # File size in KB
+
+  # Bitstream Metadata
+  BitstreamMeta:
+    description: "Compiled bitstream information"
+    fields:
+      luts_used: Int             # LUTs utilized
+      luts_total: Int            # Total LUTs available
+      bram_used: Int             # BRAM utilized
+      clock_mhz: Float           # Achieved clock
+      timing_met: Bool           # Timing closure
+      crc32: Int                 # CRC32 checksum
+
+behaviors:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # COMPILATION PIPELINE
+  # ═══════════════════════════════════════════════════════════════════════════
+  - name: compileVibeeToVerilog
+    given: ".vibee spec file, language: varlog"
+    when: "tri gen --only=hardware"
+    then: "Generate .v Verilog files from .vibee specification"
+    notes: |
+      Input: specs/tri/fpga_mvp_final.vibee
+      Output: rtl/fpga/*.v (5-10 files)
+      Files: ternary_alu.v, sacred_opcodes.v, sacred_rom.v, led_controller.v, top.v
+      Time: <1 second
+
+  - name: synthesizeVerilog
+    given: "Verilog sources, target FPGA"
+    when: "tri fpga synth --target=ice40-hx8k"
+    then: "Run Yosys synthesis (Verilog → BLIF)"
+    notes: |
+      Command: yosys -p "synth_ice40 -top trinity_top -blif trinity.blif"
+      Input: rtl/fpga/*.v
+      Output: build/trinity.blif
+      Time: ~10 seconds
+      LUT utilization estimate shown
+
+  - name: placeAndRoute
+    given: "BLIF file, target constraints (.pcf)"
+    when: "tri fpga pnr --target=ice40-hx8k"
+    then: "Run NextPNR place & route (BLIF → ASCII)"
+    notes: |
+      Command: nextpnr-ice40 --pcf constraints.pcf --asc trinity.asc trinity.blif
+      Input: build/trinity.blif + constraints.pcf
+      Output: build/trinity.asc
+      Time: ~30 seconds
+      Timing analysis: critical path shown
+
+  - name: packBitstream
+    given: "ASCII placed design"
+    when: "tri fpga pack --target=ice40-hx8k"
+    then: "Run icepack (ASCII → .ice bitstream)"
+    notes: |
+      Command: icepack trinity.asc trinity_os_v1_0.ice
+      Input: build/trinity.asc
+      Output: build/trinity_os_v1_0.ice (~100 KB)
+      Time: <1 second
+      Ready for flashing
+
+  - name: verifyBitstream
+    given: ".ice bitstream file"
+    when: "tri fpga verify --file=trinity_os_v1_0.ice"
+    then: "Check CRC32 + metadata extraction"
+    notes: |
+      Extract metadata: LUTs, BRAM, timing
+      Verify CRC32: ensure bitstream integrity
+      Output: BitstreamMeta struct
+      Validation: pass/fail report
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # ONE-COMMAND BUILD
+  # ═══════════════════════════════════════════════════════════════════════════
+  - name: buildBitstream
+    given: ".vibee spec, target FPGA"
+    when: "tri fpga build --all"
+    then: "Run full pipeline: vibee → verilog → synth → pnr → bitstream"
+    notes: |
+      Full pipeline automatically:
+      1. VIBEE → Verilog (gen_verilog)
+      2. Verilog → BLIF (yosys synth)
+      3. BLIF → ASCII (nextpnr pnr)
+      4. ASCII → .ice (icepack)
+      5. Verify (metadata extraction)
+      Total time: ~45 seconds
+      Output: build/trinity_os_v1_0.ice (ready to flash)
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # FLASH SCRIPTS
+  # ═══════════════════════════════════════════════════════════════════════════
+  - name: flashIce40
+    given: "Bitstream file, programmer"
+    when: "tri hardware flash --target=ice40"
+    then: "Flash via iceprog + verify + LED demo"
+    notes: |
+      Script: scripts/flash_fpga.sh
+      Commands: iceprog -w trinity_os_v1_0.ice
+      Verify: iceprog -c trinity_os_v1_0.ice (CRC check)
+      Demo: ./trinity_os_v1_0.ice --demo (if supported)
+      Time: <5 seconds
+      Status: LED blink pattern confirms success
+
+  - name: flashFomu
+    given: "Bitstream file, Fomu board (USB)"
+    when: "tri hardware flash --target=fomu"
+    then: "Flash via dfu-util + USB CDC"
+    notes: |
+      Command: dfu-util -d 1d50:613d -D trinity_os_v1_0.ice
+      Verify: USB CDC connection test
+      Demo: USB terminal shows boot banner
+      Time: <10 seconds
+      Status: RGB LED confirms success
+
+# TRINITY BITSTREAM v1.0 — COMPILATION PIPELINE
+# ═══════════════════════════════════════════════════════════════════════════
+# Pipeline: .vibee → .v → .blif → .asc → .ice → HARDWARE
+# Target: Lattice iCE40-HX8K ($12) or Fomu ($25)
+# Tools: Yosys, NextPNR, iceprog, dfu-util
+# Build time: ~45 seconds
+# Flash time: <5 seconds
+
+# ONE COMMAND: "tri fpga build --all --flash"
+# RESULT: Real TRINITY OS on hardware with LED feedback

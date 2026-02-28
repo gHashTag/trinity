@@ -283,7 +283,7 @@ pub const UnifiedApiServer = struct {
     }
 
     fn graphqlPlaygroundResponse(self: *const UnifiedApiServer) ![]const u8 {
-        // GraphiQL 5.x - Official GraphQL Foundation playground
+        // GraphiQL 3.x - Uses UMD build (simpler CDN, no ESM issues)
         var buffer = std.ArrayList(u8).initCapacity(self.allocator, 8192) catch return error.OutOfMemory;
         try buffer.appendSlice(self.allocator,
             \\HTTP/1.1 200 OK
@@ -295,27 +295,22 @@ pub const UnifiedApiServer = struct {
             \\<head>
             \\  <meta charset="utf-8"/>
             \\  <title>TRINITY GraphQL - GraphiQL</title>
-            \\  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/graphiql@5.0.0/style.css" />
+            \\  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/graphiql@3/dist/graphiql.min.css" />
             \\  <style>
-            \\    body { margin: 0; height: 100vh; overflow: hidden; }
+            \\    body { margin: 0; height: 100vh; }
             \\    #graphiql { height: 100vh; }
-            \\    .graphiql-container { --color-primary: #ffd700; }
             \\  </style>
             \\</head>
             \\<body>
             \\  <div id="graphiql">Loading...</div>
-            \\  <script type="module">
-            \\    import { GraphiQL } from 'https://cdn.jsdelivr.net/npm/graphiql@5.0.0/dist/esm/index.js';
-            \\    import { createGraphiQLFetcher } from 'https://cdn.jsdelivr.net/npm/@graphiql/toolkit@0.8.3/esm/createFetcher.js';
-            \\
-            \\    const fetcher = createGraphiQLFetcher({ url: '/graphql' });
-            \\
-            \\    const root = document.getElementById('graphiql');
-            \\    root.innerHTML = '';
-            \\
-            \\    const graphiql = new GraphiQL({
-            \\      fetcher,
-            \\      root,
+            \\  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+            \\  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+            \\  <script src="https://cdn.jsdelivr.net/npm/graphiql@3/graphiql.min.js"></script>
+            \\  <script>
+            \\    const fetcher = GraphiQL.createFetcher({ url: '/graphql' });
+            \\    const root = ReactDOM.createRoot(document.getElementById('graphiql'));
+            \\    root.render(React.createElement(GraphiQL, {
+            \\      fetcher: fetcher,
             \\      defaultQuery: `# TRINITY GraphQL API
             \\# Press Ctrl+Enter to execute
             \\
@@ -329,10 +324,8 @@ pub const UnifiedApiServer = struct {
             \\
             \\# Try these:
             \\# { status { healthy connections uptime } }
-            \\# { __type(name: "Command") { fields { name description } } }`,
-            \\      isHeadersEditorEnabled: false,
-            \\      shouldPersistHeaders: false
-            \\    });
+            \\# { __type(name: "Command") { fields { name description } } }`
+            \\    }));
             \\  </script>
             \\</body>
             \\</html>
