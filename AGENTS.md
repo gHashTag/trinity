@@ -294,6 +294,31 @@ zig build tri                    # Build TRI binary
 ./zig-out/bin/tri lucas <n>             # Lucas L(n) — L(2)=3=TRINITY
 ```
 
+# Chemistry (v6.0)
+
+```bash
+# Periodic Table (118 elements)
+./zig-out/bin/tri chem periodic                           # ASCII table
+./zig-out/bin/tri chem element Au                         # Gold details
+./zig-out/bin/tri chem element 79                         # Same (atomic number)
+
+# Formula Calculations
+./zig-out/bin/tri chem mass H2O                           # Molar mass: 18.015 g/mol
+./zig-out/bin/tri chem formula C6H12O6                    # Analyze glucose
+./zig-out/bin/tri chem balance "H2 + O2 -> H2O"           # Balance equations
+
+# Stoichiometry
+./zig-out/bin/tri chem moles 36 H2O                       # Moles, molecules, atoms
+./zig-out/bin/tri chem atoms 2.5 C6H12O6                   # Atom counts
+
+# Gas Laws
+./zig-out/bin/tri chem ideal-gas P=1 V=22.4 n=1 T=273.15  # PV=nRT solver
+
+# Solutions & Redox
+./zig-out/bin/tri chem ph 0.01 HCl                         # pH calculation
+./zig-out/bin/tri chem redox "MnO4- + Fe2+ -> Mn2+ + Fe3+" # Balance redox
+```
+
 ### VIBEE Compiler
 
 ```bash
