@@ -1,0 +1,702 @@
+name: wasm_execute
+version: "1.0.0"
+language: zig
+module: wasm_execute
+
+description: |
+  ACTUAL WASM INTEGRATION - Not design, but execution.
+  This spec implements real WASM plugin loading with wasmtime,
+  plugin API bridge, sandbox overhead measurement, and production
+  validation of 3 example plugins.
+
+types:
+  WasmRuntime:
+    fields:
+      engine: WasmEngine
+      linker: WasmLinker
+      store_ptr: *mut c_void
+      plugin_registry: Map<String, WasmPlugin>
+      sandbox_overhead_ns: u64
+
+  WasmPlugin:
+    fields:
+      name: String
+      module_path: String
+      instance: WasmInstance
+      memory: WasmMemory
+      guest_error: Option<GuestError>
+      state: PluginState
+      last_execution_ns: u64
+
+  PluginState:
+    enum:
+      - Loaded
+      - Initialized
+      - Running
+      - Failed
+      - Unloaded
+
+  GuestError:
+    fields:
+      code: u32
+      message: String
+      backtrace: List<String>
+
+  SandboxConfig:
+    fields:
+      max_memory_pages: u32
+      max_execution_time_ms: u64
+      max_table_elements: u32
+      enable_fuel: Bool
+      fuel_per_call: u64
+
+  PluginAPI:
+    fields:
+      host_print: HostFunction
+      host_alloc: HostFunction
+      host_free: HostFunction
+      host_get_input: HostFunction
+      host_set_output: HostFunction
+      host_panic: HostFunction
+
+  HostFunction:
+    fields:
+      name: String
+      callback: FunctionPointer
+      signature: String
+
+  ExecutionResult:
+    fields:
+      success: Bool
+      return_value: u64
+      execution_time_ns: u64
+      fuel_consumed: u64
+      memory_peak_bytes: u64
+      error: Option<String>
+
+  BenchmarkMetrics:
+    fields:
+      native_time_ns: u64
+      wasm_time_ns: u64
+      overhead_ns: u64
+      overhead_percent: f64
+      iterations: u32
+
+behaviors:
+  - name: check_wasmtime_installation
+    given: System environment
+    when: Checking for wasmtime library availability
+    then: |
+      Returns installation status:
+      - Check /usr/local/lib/libwasmtime.a
+      - Check /usr/local/include/wasmtime.h
+      - Try pkg-config --libs wasmtime
+      - Return bool: true if available, false if missing
+      - If false, provide installation command
+
+  - name: create_wasm_runtime
+    given: SandboxConfig with limits
+    when: Initializing WASM runtime
+    then: |
+      Creates configured WasmRuntime:
+      - Initialize wasmtime engine with config
+      - Create linker with WASI support
+      - Configure fuel metering if enabled
+      - Set memory limits (max_memory_pages)
+      - Set execution time limits
+      - Return ready WasmRuntime or error
+
+  - name: register_host_functions
+    given: WasmRuntime with linker
+    when: Registering Trinity host API
+    then: |
+      Adds all host functions to linker:
+      - host_print: prints to stdout with plugin name prefix
+      - host_alloc: allocate from plugin memory region
+      - host_free: deallocate, validate pointer
+      - host_get_input: retrieve input buffer pointer
+      - host_set_output: set output buffer, validate size
+      - host_panic: trap with error message
+      - Return success or registration error
+
+  - name: load_plugin_from_bytes
+    given: WasmRuntime and WASM binary bytes
+    when: Loading WASM module
+    then: |
+      Loads and validates plugin:
+      - Validate WASM binary header (magic: 0x6d736100)
+      - Compile module with engine
+      - Instantiate via linker
+      - Extract memory export
+      - Extract guest_error export
+      - Run _initialize() if present
+      - Return WasmPlugin or LoadError
+
+  - name: load_plugin_from_file
+    given: WasmRuntime and file path
+    when: Loading WASM plugin from disk
+    then: |
+      File-based plugin loading:
+      - Read file to bytes
+      - Validate .wasm extension
+      - Call load_plugin_from_bytes
+      - Store in plugin registry by name
+      - Return WasmPlugin or FileNotFoundError
+
+  - name: execute_plugin_function
+    given: WasmPlugin and function name with input
+    when: Calling plugin function
+    then: |
+      Executes plugin with sandboxing:
+      - Set input buffer in host memory
+      - Enable fuel metering if configured
+      - Start high-resolution timer
+      - Call plugin function via linker
+      - Stop timer, calculate overhead
+      - Read output buffer
+      - Check guest_error for plugin panic
+      - Return ExecutionResult with metrics
+
+  - name: measure_sandbox_overhead
+    given: WasmRuntime and plugin
+    when: Benchmarking native vs WASM
+    then: |
+      Measures real sandbox cost:
+      - Run native equivalent function 1000 iterations
+      - Run WASM plugin 1000 iterations
+      - Calculate: overhead = wasm_time - native_time
+      - Calculate: overhead_percent = (overhead / native_time) * 100
+      - Return BenchmarkMetrics with detailed breakdown
+      - Include memory_peak_bytes tracking
+
+  - name: compile_example_plugin_native
+    given: Plugin source code
+    when: Building native version for comparison
+    then: |
+      Creates native benchmark baseline:
+      - Write C/Rust/Zig implementation
+      - Compile with -O3 -march=native
+      - Create shared library (.so/.dylib)
+      - Return binary path or compilation error
+
+  - name: compile_example_plugin_wasm
+    given: Plugin source code
+    when: Building WASM plugin
+    then: |
+      Compiles source to WASM:
+      - Detect source language (C/Rust/Zig)
+      - C: clang --target=wasm32-wasi -O3
+      - Rust: cargo build --target wasm32-wasi --release
+      - Zig: zig build-exe -target wasm32-wasi -O ReleaseFast
+      - Optimize with wasm-opt (Binaryen)
+      - Return .wasm path or compilation error
+
+  - name: test_plugin_hello_world
+    given: Loaded hello_world plugin
+    when: Running hello_world example
+    then: |
+      Validates basic plugin:
+      - Load plugin from output/hello_world.wasm
+      - Call run() function
+      - Verify output: "Hello from WASM!"
+      - Verify guest_error is None
+      - Return test result with overhead measurement
+
+  - name: test_plugin_fibonacci
+    given: Loaded fibonacci plugin
+    when: Computing fib(20) in WASM
+    then: |
+      Validates computation plugin:
+      - Load plugin from output/fibonacci.wasm
+      - Call fib(20)
+      - Verify result: 6765
+      - Benchmark vs native Zig implementation
+      - Return test result + overhead metrics
+      - Expected overhead: <500ns per call
+
+  - name: test_plugin_string_reverse
+    given: Loaded string_reverse plugin
+    when: Reversing "Trinity WASM"
+    then: |
+      Validates memory manipulation:
+      - Load plugin from output/string_reverse.wasm
+      - Call reverse("Trinity WASM")
+      - Verify result: "MSAW ynirtT"
+      - Verify memory cleanup (no leaks)
+      - Return test result with memory usage stats
+
+  - name: create_plugin_scaffolding
+    given: Plugin name and language
+    when: Generating plugin template
+    then: |
+      Creates ready-to-compile plugin:
+      - Generate main.c/main.rs/main.zig
+      - Include host API bindings
+      - Provide example host_print() call
+      - Provide Makefile with WASM target
+      - Provide compilation instructions
+      - Return project path
+
+  - name: validate_plugin_sandbox
+    given: Running WasmPlugin
+    when: Checking sandbox isolation
+    then: |
+      Verifies sandbox guarantees:
+      - Try to access host file system (should fail)
+      - Try to access network (should fail)
+      - Try infinite loop (fuel should stop it)
+      - Try memory bomb (should hit limit)
+      - Verify guest_error captures violation
+      - Return list of blocked attempts
+      - All must be blocked for validation pass
+
+  - name: hot_reload_plugin
+    given: WasmRuntime, plugin name, new WASM bytes
+    when: Reloading running plugin
+    then: |
+      Zero-downtime plugin reload:
+      - Load new module in parallel
+      - Validate new module interface
+      - Swap instance pointer atomically
+      - Call cleanup on old instance
+      - Update plugin registry
+      - Return success or validation error
+
+  - name: unload_plugin
+    given: Loaded WasmPlugin
+    when: Removing plugin from runtime
+    then: |
+      Clean plugin shutdown:
+      - Call plugin's _cleanup() if present
+      - Drop instance reference
+      - Remove from registry
+      - Return memory to pool
+      - Verify no dangling references
+      - Return success or cleanup error
+
+  - name: get_plugin_metrics
+    given: WasmPlugin
+    when: Querying performance statistics
+    then: |
+      Returns detailed metrics:
+      - Total execution count
+      - Average execution time (ns)
+      - Peak memory usage (bytes)
+      - Total fuel consumed
+      - Error count
+      - Last error message
+      - Return PluginMetrics struct
+
+  - name: create_plugin_compatibility_test
+    given: Two WasmRuntime instances
+    when: Testing cross-instance compatibility
+    then: |
+      Validates plugin portability:
+      - Load plugin in runtime A
+      - Load plugin in runtime B
+      - Execute same function in both
+      - Verify identical results
+      - Compare performance metrics
+      - Return compatibility report
+      - Must pass for production use
+
+  - name: generate_wasm_bindings
+    given: Plugin API specification
+    when: Creating language bindings
+    then: |
+      Generates host API headers:
+      - Generate wasm_plugin.h for C
+      - Generate wasm_plugin.zig for Zig
+      - Generate wasm_plugin.rs for Rust
+      - Include function signatures
+      - Include error codes
+      - Include memory layout documentation
+      - Return generated files paths
+
+  - name: run_integration_suite
+    given: All 3 example plugins compiled
+    when: Executing full integration test
+    then: |
+      Production validation suite:
+      1. Load all 3 plugins
+      2. Run each plugin 100 iterations
+      3. Verify outputs match expected
+      4. Measure sandbox overhead (must be <1%)
+      5. Verify memory cleanup (no leaks)
+      6. Test hot reload on each plugin
+      7. Test sandbox isolation on each
+      8. Generate test report with metrics
+      9. Return PASS/FAIL with detailed breakdown
+
+  - name: create_production_example
+    given: Real-world use case
+    when: Demonstrating production deployment
+    then: |
+      Creates deployable plugin example:
+      - Use case: Custom text transformation
+      - Plugin: markdown_formatter.wasm
+      - Host integration: Add to CLI pipeline
+      - Configuration: Load from ~/.trinity/plugins/
+      - Error handling: Graceful fallback
+      - Documentation: README with plugin API
+      - Return working example
+
+  - name: setup_wasmtime_cmake
+    given: Project without wasmtime
+    when: Adding wasmtime dependency
+    then: |
+      Automates wasmtime integration:
+      - Check if wasmtime installed (check_wasmtime_installation)
+      - If missing, display install commands:
+        * macOS: brew install wasmtime
+        * Linux: curl https://wasmtime.dev/install.sh | sh
+        * Build from source: git clone https://github.com/bytecodealliance/wasmtime
+      - Add find_package(wasmtime) to CMakeLists.txt
+      - Link wasmtime::wasmtime
+      - Add include path for wasmtime.h
+      - Return setup success with next steps
+
+  - name: validate_wasm_binary
+    given: Compiled .wasm file
+    when: Checking binary validity
+    then: |
+      Validates WASM file:
+      - Check magic number: 0x6d736100
+      - Check version: 0x01
+      - Validate module structure
+      - Check required exports (memory, _initialize)
+      - Check for forbidden imports (fd_write, clock_time_get if sandboxing)
+      - Return validation report with issues
+      - File is ready to load if valid
+
+  - name: measure_memory_overhead
+    given: WasmRuntime and plugin
+    when: Calculating memory cost
+    then: |
+      Measures per-plugin memory usage:
+      - Record baseline memory
+      - Load plugin
+      - Execute 10 iterations
+      - Record peak memory
+      - Unload plugin
+      - Check for leaks (should return to baseline)
+      - Return memory overhead in bytes
+      - Expected: <1MB per plugin
+
+  - name: create_plugin_dev_workflow
+    given: Developer environment
+    when: Setting up plugin development
+    then: |
+      Creates plugin development toolkit:
+      - Generate plugin template (create_plugin_scaffolding)
+      - Create Makefile with dev commands
+      - Add watch script for auto-reload
+      - Add test harness
+      - Add documentation template
+      - Return project structure with README
+      - Developer can run 'make watch' for dev loop
+
+example_plugins:
+  - name: hello_world
+    language: c
+    source_path: examples/wasm/hello_world.c
+    description: |
+      Minimal plugin that prints "Hello from WASM!"
+      Demonstrates host_print() usage and basic structure.
+    compilation: |
+      clang --target=wasm32-wasi \
+        -O3 \
+        -nostartfiles \
+        -Wl,--export=run \
+        -Wl,--export=_initialize \
+        -Wl,--allow-undefined \
+        -o hello_world.wasm \
+        hello_world.c
+    validation:
+      function: run
+      expected_output: "Hello from WASM!"
+      max_overhead_ns: 100
+
+  - name: fibonacci
+    language: zig
+    source_path: examples/wasm/fibonacci.zig
+    description: |
+      Compute Fibonacci number F(n) using iterative algorithm.
+      Demonstrates performance benchmarking vs native code.
+    compilation: |
+      zig build-exe \
+        -target wasm32-wasi \
+        -O ReleaseFast \
+        -fno-entry \
+        --export fib \
+        --export _initialize \
+        -of fibonacci.wasm \
+        fibonacci.zig
+    validation:
+      function: fib
+      input: 20
+      expected_output: 6765
+      max_overhead_ns: 500
+      benchmark_iterations: 1000
+
+  - name: string_reverse
+    language: rust
+    source_path: examples/wasm/string_reverse.rs
+    description: |
+      Reverse string in-place using WASM memory manipulation.
+      Demonstrates memory passing and buffer management.
+    compilation: |
+      cargo build \
+        --target wasm32-wasi \
+        --release \
+        && wasm-opt \
+        -O3 \
+        -o string_reverse.wasm \
+        target/wasm32-wasi/release/string_reverse.wasm
+    validation:
+      function: reverse
+      input: "Trinity WASM"
+      expected_output: "MSAW ynirtT"
+      max_overhead_ns: 200
+      check_memory_leaks: true
+
+host_api_signature: |
+  // C-compatible host API exposed to plugins
+  #define HOST_API_VERSION 1
+
+  // Print to host stdout (prefixed with plugin name)
+  void host_print(const char* message, usize len);
+
+  // Allocate memory in plugin's linear memory
+  usize host_alloc(usize bytes);
+
+  // Free previously allocated memory
+  void host_free(usize ptr);
+
+  // Get input buffer pointer and length
+  void host_get_input(const char** buf_ptr, usize* len_ptr);
+
+  // Set output buffer (copies to host memory)
+  void host_set_output(const char* buf, usize len);
+
+  // Trap with error message
+  void host_panic(const char* message, usize len) __attribute__((noreturn));
+
+  // Guest error structure (exported by plugin)
+  typedef struct {
+    u32 code;
+    const char* message;
+    usize message_len;
+  } guest_error_t;
+
+error_codes:
+  - name: SUCCESS
+    code: 0
+    description: Operation completed successfully
+
+  - name: ERROR_LOAD_FAILED
+    code: 1
+    description: Failed to load WASM module
+
+  - name: ERROR_MISSING_EXPORT
+    code: 2
+    description: Required export not found
+
+  - name: ERROR_MEMORY_LIMIT
+    code: 3
+    description: Exceeded memory limit
+
+  - name: ERROR_FUEL_EXHAUSTED
+    code: 4
+    description: Computation exceeded fuel limit
+
+  - name: ERROR_INVALID_POINTER
+    code: 5
+    description: Invalid memory access
+
+  - name: ERROR_PANIC
+    code: 6
+    description: Plugin called host_panic
+
+  - name: ERROR_SANDBOX_VIOLATION
+    code: 7
+    description: Attempted forbidden operation
+
+  - name: ERROR_VERSION_MISMATCH
+    code: 8
+    description: Host API version mismatch
+
+  - name: ERROR_UNKNOWN
+    code: 255
+    description: Unknown error
+
+integration_tests:
+  - name: test_plugin_lifecycle
+    steps:
+      - Load plugin
+      - Verify state = Loaded
+      - Run _initialize
+      - Verify state = Initialized
+      - Execute function
+      - Verify state = Running
+      - Unload plugin
+      - Verify state = Unloaded
+      - Verify no memory leaks
+
+  - name: test_sandbox_isolation
+    steps:
+      - Load plugin
+      - Try to read host file (should fail)
+      - Try network access (should fail)
+      - Try infinite loop (fuel stops it)
+      - Verify all attempts blocked
+      - Verify guest_error set
+
+  - name: test_hot_reload
+    steps:
+      - Load plugin v1
+      - Execute function
+      - Load plugin v2 (different implementation)
+      - Execute function
+      - Verify new behavior
+      - Verify old memory cleaned up
+
+  - name: test_multiple_plugins
+    steps:
+      - Load 3 plugins simultaneously
+      - Execute all concurrently
+      - Verify no cross-plugin interference
+      - Verify separate memory spaces
+      - Unload all
+      - Verify all memory returned
+
+benchmarks:
+  - name: hello_world_overhead
+    description: Measure overhead of simple host_print call
+    iterations: 10000
+    max_overhead_ns: 50
+    max_overhead_percent: 5.0
+
+  - name: fibonacci_computation
+    description: Compare native vs WASM for fib(20)
+    iterations: 1000
+    max_overhead_ns: 500
+    max_overhead_percent: 1.0
+
+  - name: string_reverse_memory
+    description: Measure memory copy overhead
+    iterations: 1000
+    max_overhead_ns: 200
+    max_overhead_percent: 2.0
+
+  - name: plugin_load_time
+    description: Time to load and initialize plugin
+    iterations: 100
+    max_load_time_ms: 10
+
+  - name: memory_per_plugin
+    description: Memory usage per loaded plugin
+    max_bytes: 1048576  # 1MB
+
+deliverables:
+  - name: wasm_runtime.zig
+    description: Core WASM runtime implementation
+    path: src/wasm/runtime.zig
+
+  - name: plugin_api.zig
+    description: Host function bridge implementation
+    path: src/wasm/plugin_api.zig
+
+  - name: example_plugins
+    description: Three working example plugins
+    path: examples/wasm/
+    files:
+      - hello_world.c
+      - fibonacci.zig
+      - string_reverse.rs
+
+  - name: integration_tests
+    description: Full test suite
+    path: src/wasm/test_integration.zig
+
+  - name: benchmark_results
+    description: Performance metrics
+    path: trinity/output/wasm_benchmarks.json
+    format: json
+
+  - name: documentation
+    description: Plugin development guide
+    path: docs/wasm_plugin_guide.md
+
+exit_criteria:
+  - label: All example plugins compile successfully
+    check: bash -c "ls -lh output/*.wasm | wc -l | grep -q 3"
+
+  - label: All plugins load without errors
+    check: zig build wasm-test
+
+  - label: Sandbox overhead < 1%
+    check: bash -c "jq '.overhead_percent < 1.0' trinity/output/wasm_benchmarks.json"
+
+  - label: No memory leaks
+    check: bash -c "jq '.memory_leaks == 0' trinity/output/wasm_benchmarks.json"
+
+  - label: All integration tests pass
+    check: zig build wasm-integration-test
+
+  - label: Hot reload works
+    check: zig build wasm-hot-reload-test
+
+  - label: Documentation complete
+    check: bash -c "test -f docs/wasm_plugin_guide.md && wc -l docs/wasm_plugin_guide.md | grep -q '[1-9][0-9][0-9]'"
+
+next_steps:
+  - name: Add plugin marketplace
+    description: Share and discover community plugins
+    priority: high
+
+  - name: Add plugin signing
+    description: Verify plugin authenticity and integrity
+    priority: high
+
+  - name: Add async plugin support
+    description: Support async/await in plugins
+    priority: medium
+
+  - name: Add streaming data support
+    description: Process large data in chunks
+    priority: medium
+
+  - name: Add plugin debugger
+    description: Debug WASM plugins with breakpoints
+    priority: low
+
+tech_tree_branch: Runtime Architecture
+dependencies:
+  - wasmtime >= 15.0
+  - zig 0.15.x
+  - clang >= 14 (for C plugins)
+  - cargo >= 1.75 (for Rust plugins)
+  - wasm-opt (Binaryen, optional but recommended)
+
+notes: |
+  This spec is about ACTUAL EXECUTION, not design.
+
+  Every behavior must include:
+  - Real implementation (not "TODO")
+  - Measurable success criteria
+  - Error handling
+  - Performance metrics
+
+  The 3 example plugins MUST:
+  - Compile successfully
+  - Load in runtime
+  - Execute correctly
+  - Pass all tests
+  - Demonstrate < 1% overhead
+
+  If wasmtime is not available, setup_wasmtime_cmake will
+  provide platform-specific installation commands.
+
+  All behaviors are production-ready with real error handling,
+  memory management, and performance measurement.

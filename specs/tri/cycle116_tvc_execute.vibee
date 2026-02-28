@@ -1,0 +1,726 @@
+name: cycle116_tvc_execute
+version: "116.0.0"
+language: zig
+module: tvc_cluster_execute
+
+description: |
+  TVC Cluster ACTUAL Deployment — Real execution of 3-node cluster with Docker Compose.
+  Focuses on PRODUCTION deployment: create docker-compose.yml, start cluster, verify health,
+  test failover, measure performance, and provide real metrics. NOT design—REAL EXECUTION.
+
+types:
+  DeploymentConfig:
+    fields:
+      projectName: String
+      networkName: String
+      imageName: String
+      imageTag: String
+      coordinatorContainer: String
+      workerContainers: List<String>
+      volumeName: String
+      deploymentDir: String
+      logDir: String
+
+  DockerComposeConfig:
+    fields:
+      version: String
+      services: Map<String, DockerServiceDefinition>
+      networks: Map<String, DockerNetworkDefinition>
+      volumes: Map<String, DockerVolumeDefinition>
+
+  DockerServiceDefinition:
+    fields:
+      image: String
+      build: String
+      container_name: String
+      environment: Map<String, String>
+      ports: List<String>
+      volumes: List<String>
+      depends_on: List<String>
+      networks: List<String>
+      restart: String
+      healthcheck: Option<HealthCheckDefinition>
+
+  HealthCheckDefinition:
+    fields:
+      test: List<String>
+      interval: String
+      timeout: String
+      retries: Int
+      startPeriod: String
+
+  DockerNetworkDefinition:
+    fields:
+      driver: String
+      ipam: Option<IpamConfig>
+
+  DockerVolumeDefinition:
+    fields:
+      driver: String
+      driverOpts: Option<Map<String, String>>
+
+  ContainerStatus:
+    fields:
+      containerName: String
+      containerId: String
+      status: String
+      uptime: String
+      health: String
+      ports: String
+      createdAt: String
+
+  ClusterHealthReport:
+    fields:
+      timestamp: String
+      allContainersRunning: Bool
+      healthyContainers: Int
+      totalContainers: Int
+      coordinatorHealthy: Bool
+      allWorkersHealthy: Bool
+      networkReachable: Bool
+      volumesMounted: Bool
+      readinessStatus: String
+
+  ApiEndpointTest:
+    fields:
+      endpoint: String
+      method: String
+      statusCode: Int
+      responseTimeMs: Int
+      responseSize: Int
+      success: Bool
+      errorMessage: Option<String>
+
+  FailoverScenario:
+    fields:
+      scenarioName: String
+      targetContainer: String
+      action: String
+      timestampBefore: String
+      timestampAfter: String
+      killDurationSec: Int
+      clusterStateBefore: ClusterHealthReport
+      clusterStateAfter: ClusterHealthReport
+      failoverTimeMs: Int
+      dataLossDetected: Bool
+      leaderRe-elected: Bool
+      shardsReassigned: Int
+      recoverySuccessful: Bool
+
+  PerformanceMetrics:
+    fields:
+      testName: String
+      nodeCount: Int
+      durationSec: Int
+      totalOperations: Int
+      operationsPerSecond: Float
+      avgLatencyMs: Float
+      p50LatencyMs: Float
+      p95LatencyMs: Float
+      p99LatencyMs: Float
+      errorCount: Int
+      errorRate: Float
+      cpuUsagePercent: Float
+      memoryUsageMb: Int
+      networkThroughputMbps: Float
+
+  WriteWorkloadResult:
+    fields:
+      documentsWritten: Int
+      writesPerSecond: Float
+      avgWriteLatencyMs: Float
+      failedWrites: Int
+      replicationSuccessRate: Float
+      dataWrittenMb: Float
+
+  ReadWorkloadResult:
+    fields:
+      documentsRead: Int
+      readsPerSecond: Float
+      avgReadLatencyMs: Float
+      cacheHitRate: Float
+      failedReads: Int
+
+  ReplicationVerification:
+    fields:
+      documentId: String
+      shardId: Int
+      writtenToNode: String
+      foundOnNodes: List<String>
+      expectedReplicas: Int
+      actualReplicas: Int
+      replicationLagMs: Int
+      dataConsistent: Bool
+      verificationMethod: String
+
+  ClusterBenchmarkSuite:
+    fields:
+      suiteName: String
+      startTime: String
+      endTime: String
+      singleNodeMetrics: PerformanceMetrics
+      threeNodeMetrics: PerformanceMetrics
+      failoverResults: List<FailoverScenario>
+      replicationTests: List<ReplicationVerification>
+      writeWorkload: WriteWorkloadResult
+      readWorkload: ReadWorkloadResult
+      overallHealth: ClusterHealthReport
+      productionReady: Bool
+      recommendations: List<String>
+
+  DockerCommandResult:
+    fields:
+      command: String
+      exitCode: Int
+      stdout: String
+      stderr: String
+      executionTimeMs: Int
+
+  LogExtraction:
+    fields:
+      containerName: String
+      logPath: String
+      lineCount: Int
+      lastModified: String
+      sizeKb: Int
+      containsErrors: Bool
+      errorCount: Int
+
+  ResourceUsage:
+    fields:
+      containerName: String
+      cpuPercent: Float
+      memoryMb: Int
+      memoryPercent: Float
+      networkRxMb: Float
+      networkTxMb: Float
+      blockReadMb: Float
+      blockWriteMb: Float
+
+  ClusterTopology:
+    fields:
+      coordinatorId: String
+      coordinatorAddress: String
+      coordinatorPort: Int
+      workerIds: List<String>
+      workerAddresses: List<String>
+      workerPorts: List<Int>
+      shardDistribution: Map<Int, String>
+      replicationFactor: Int
+      totalShards: Int
+
+constants:
+  # Sacred Constants
+  PHI: "1.618033988749895"
+  PHI_SQUARED: "2.618033988749895"
+  MU: "0.0382"
+  CHI: "0.0618"
+  SIGMA: "1.618033988749895"
+  EPSILON: "0.333333333333333"
+
+  # Deployment Configuration
+  PROJECT_NAME: "tvc-cluster-prod"
+  NETWORK_NAME: "tvc-network"
+  IMAGE_NAME: "trinity-tvc"
+  IMAGE_TAG: "v1.0.0-prod"
+  VOLUME_NAME: "tvc-data"
+  DEPLOYMENT_DIR: "/tmp/tvc-deploy"
+  LOG_DIR: "/tmp/tvc-logs"
+
+  # Container Names
+  COORDINATOR_CONTAINER: "tvc-coordinator"
+  WORKER_CONTAINER_PREFIX: "tvc-worker"
+  WORKER_COUNT: 2
+
+  # Port Mappings (Host : Container)
+  COORDINATOR_API_PORT: "8080:8080"
+  COORDINATOR_METRICS_PORT: "9090:9090"
+  WORKER1_API_PORT: "8081:8081"
+  WORKER1_METRICS_PORT: "9091:9091"
+  WORKER2_API_PORT: "8082:8082"
+  WORKER2_METRICS_PORT: "9092:9092"
+
+  # Health Check Configuration
+  HEALTH_CHECK_INTERVAL: "5s"
+  HEALTH_CHECK_TIMEOUT: "3s"
+  HEALTH_CHECK_RETRIES: 5
+  HEALTH_CHECK_START_PERIOD: "15s"
+
+  # φ-based Timeouts (seconds)
+  CLUSTER_READY_TIMEOUT_SEC: 30  # φ * 20
+  FAILOVER_DETECTION_TIMEOUT_SEC: 5
+  LEADER_ELECTION_TIMEOUT_SEC: 10
+
+  # Performance Test Configuration
+  WARMUP_DURATION_SEC: 10
+  BENCHMARK_DURATION_SEC: 60
+  DOCUMENT_COUNT_SMALL: 100
+  DOCUMENT_COUNT_MEDIUM: 1000
+  DOCUMENT_COUNT_LARGE: 10000
+  CONCURRENT_CLIENTS: 10
+  REQUEST_TIMEOUT_MS: 5000
+
+  # Resource Limits
+  CONTAINER_MEMORY_LIMIT: "1g"
+  CONTAINER_CPU_LIMIT: "1.0"
+  CONTAINER_MEMORY_RESERVATION: "512m"
+
+  # Failure Injection
+  FAILTEST_KILL_DURATION_SEC: 30
+  FAILTEST_NETWORK_PARTITION_DURATION_SEC: 20
+
+  # Performance Thresholds (Production Ready Criteria)
+  MAX_P99_LATENCY_MS: 500
+  MAX_ERROR_RATE: 0.01  # 1%
+  MIN_THROUGHPUT_QPS: 100.0
+  MAX_REPLICATION_LAG_MS: 200
+  MAX_FAILOVER_TIME_MS: 5000
+  MIN_CLUSTER_HEALTH_PERCENT: 100.0
+
+behaviors:
+  - name: create_deployment_directory_structure
+    given: Deployment directory path
+    when: Setting up deployment environment
+    then: Creates deployment directory with subdirectories for logs, data, and configs
+
+  - name: generate_dockerfile_for_tvc_node
+    given: Base image and build context
+    when: Creating Dockerfile for TVC nodes
+    then: Writes multi-stage Dockerfile with Zig build, minimal Alpine runtime, health checks
+
+  - name: create_docker_compose_configuration
+    given: Node topology and port mappings
+    when: Generating docker-compose.yml
+    then: Returns DockerComposeConfig with coordinator, workers, networks, volumes, health checks
+
+  - name: configure_coordinator_service
+    given: Coordinator container name and ports
+    when: Adding coordinator service to docker-compose
+    then: Returns DockerServiceDefinition with API port, metrics port, environment variables
+
+  - name: configure_worker_service
+    given: Worker ID and port offset
+    when: Adding worker service to docker-compose
+    then: Returns DockerServiceDefinition with dependency on coordinator, shard assignment
+
+  - name: add_container_health_checks
+    given: Service definition and health check parameters
+    when: Configuring health checks for service
+    then: Returns DockerServiceDefinition with curl-based health endpoint checks
+
+  - name: add_environment_variables_for_coordination
+    given: Service definition and cluster topology
+    when: Adding coordination environment variables
+    then: Returns DockerServiceDefinition with CLUSTER_ID, PEER_ADDRS, SHARD_COUNT settings
+
+  - name: write_docker_compose_file_to_disk
+    given: DockerComposeConfig and output path
+    when: Persisting docker-compose.yml
+    then: Writes valid YAML file with proper indentation and formatting
+
+  - name: create_prometheus_config
+    given: Service endpoints and scrape intervals
+    when: Creating prometheus.yml configuration
+    then: Writes Prometheus config with targets for coordinator and worker metrics
+
+  - name: build_tvc_docker_image
+    given: Image name, tag, and Dockerfile path
+    when: Building Docker image via docker build
+    then: Returns DockerCommandResult with built image ID and build time
+
+  - name: start_cluster_with_docker_compose
+    given: Docker Compose file path and options
+    when: Starting cluster via docker-compose up -d
+    then: Returns DockerCommandResult with container IDs and startup status
+
+  - name: wait_for_containers_to_be_healthy
+    given: Container names and timeout
+    when: Waiting for all containers to report healthy
+    then: Returns boolean indicating all healthy or timeout after CLUSTER_READY_TIMEOUT_SEC
+
+  - name: check_container_status_with_docker_ps
+    given: Optional container name filter
+    when: Checking container status via docker ps
+    then: Returns list of ContainerStatus with uptime, health, port mappings
+
+  - name: get_container_logs
+    given: Container name and line count
+    when: Extracting logs via docker logs
+    then: Returns DockerCommandResult with stdout containing log lines
+
+  - name: inspect_container_health_details
+    given: Container name
+    when: Getting detailed health status via docker inspect
+    then: Returns ContainerStatus with detailed health check output
+
+  - name: test_coordinator_api_endpoint
+    given: Coordinator URL and API endpoint path
+    when: Querying coordinator via curl or HTTP client
+    then: Returns ApiEndpointTest with status code, response time, response data
+
+  - name: test_worker_api_endpoints
+    given: Worker URLs and API endpoint paths
+    when: Querying all workers via curl or HTTP client
+    then: Returns list of ApiEndpointTest for each worker endpoint
+
+  - name: verify_cluster_readiness
+    given: Cluster topology and health endpoints
+    when: Checking if cluster is fully ready
+    then: Returns ClusterHealthReport with all containers healthy, endpoints reachable
+
+  - name: check_leader_election_status
+    given: Coordinator API endpoint
+    when: Querying leader election status
+    then: Returns ElectionState with leader ID, term, quorum achievement
+
+  - name: get_shard_distribution_from_api
+    given: Coordinator API endpoint
+    when: Querying shard distribution
+    then: Returns ClusterTopology with shard assignments and node mappings
+
+  - name: execute_write_operation_via_api
+    given: Document data and coordinator URL
+    when: Writing document via POST request
+    then: Returns ApiEndpointTest with document ID and write confirmation
+
+  - name: execute_read_operation_via_api
+    given: Document ID and node URL
+    when: Reading document via GET request
+    then: Returns ApiEndpointTest with document data and read latency
+
+  - name: verify_data_replication_across_nodes
+    given: Document ID and expected replica nodes
+    when: Querying all nodes for document presence
+    then: Returns ReplicationVerification with found nodes and consistency check
+
+  - name: measure_write_latency_distribution
+    given: Document count and coordinator URL
+    when: Performing multiple write operations
+    then: Returns PerformanceMetrics with latency percentiles and throughput
+
+  - name: measure_read_latency_distribution
+    given: Document count and node URLs
+    when: Performing multiple read operations
+    then: Returns PerformanceMetrics with latency percentiles and throughput
+
+  - name: run_write_heavy_workload_test
+    given: Write percentage (e.g., 90% write) and duration
+    when: Executing write-heavy workload against cluster
+    then: Returns WriteWorkloadResult with throughput, latency, replication stats
+
+  - name: run_read_heavy_workload_test
+    given: Read percentage (e.g., 90% read) and duration
+    when: Executing read-heavy workload against cluster
+    then: Returns ReadWorkloadResult with throughput, latency, cache hit rate
+
+  - name: run_balanced_workload_test
+    given: Duration and document count
+    when: Executing balanced 50/50 read/write workload
+    then: Returns PerformanceMetrics with mixed operation statistics
+
+  - name: kill_container_for_failover_test
+    given: Container name and duration
+    when: Stopping container via docker stop
+    then: Returns DockerCommandResult with stop confirmation
+
+  - name: monitor_failover_detection_time
+    given: Failed container name and cluster monitoring
+    when: Tracking failover detection latency
+    then: Returns FailoverScenario with detection time and recovery actions
+
+  - name: verify_leader_reassignment_after_failure
+    given: Previous leader and remaining nodes
+    when: Checking new leader election
+    then: Returns ElectionState with new leader ID and term increment
+
+  - name: verify_shard_reassignment_after_failure
+    given: Failed node and cluster topology
+    when: Checking shard replica promotion
+    then: Returns ClusterTopology with updated shard assignments
+
+  - name: verify_data_integrity_after_failover
+    given: Document set before failure
+    when: Querying remaining nodes for data
+    then: Returns boolean indicating no data loss and full data availability
+
+  - name: restart_container_for_recovery_test
+    given: Container name and original configuration
+    when: Starting container via docker start
+    then: Returns DockerCommandResult with start confirmation
+
+  - name: verify_data_reconciliation_after_rejoin
+    given: Rejoined node and cluster state
+    when: Checking data synchronization
+    then: Returns boolean indicating node caught up with cluster state
+
+  - name: extract_container_logs_for_analysis
+    given: Container names and output directory
+    when: Exporting logs via docker logs > file
+    then: Returns list of LogExtraction with file paths and error counts
+
+  - name: get_container_resource_usage
+    given: Container name
+    when: Querying stats via docker stats
+    then: Returns ResourceUsage with CPU, memory, network, block I/O metrics
+
+  - name: measure_cluster_resource_efficiency
+    given: Cluster topology and monitoring duration
+    when: Collecting aggregate resource metrics
+    then: Returns map of node IDs to ResourceUsage with efficiency calculations
+
+  - name: run_single_node_benchmark_baseline
+    given: Document count and duration
+    when: Running benchmark on single node
+    then: Returns PerformanceMetrics with baseline single-node performance
+
+  - name: run_three_node_cluster_benchmark
+    given: Document count and duration
+    when: Running benchmark on 3-node cluster
+    then: Returns PerformanceMetrics with distributed cluster performance
+
+  - name: compare_single_vs_cluster_performance
+    given: Single-node and cluster benchmark results
+    when: Calculating performance difference
+    then: Returns performance ratio showing overhead or benefit of clustering
+
+  - name: test_concurrent_write_conflict_resolution
+    given: Multiple clients writing to same document
+    when: Simulating concurrent write conflicts
+    then: Returns conflict resolution result with last-write-wins or version merge
+
+  - name: test_network_partition_failure
+    given: Cluster and partition target
+    when: Simulating network partition via Docker network manipulation
+    then: Returns FailoverScenario with partition detection and recovery
+
+  - name: verify_cluster_formation_topology
+    given: Expected topology and actual state
+    when: Validating cluster topology matches expectations
+    then: Returns boolean with topology validation details
+
+  - name: generate_cluster_metrics_dashboard_json
+    given: Cluster metrics and test results
+    when: Exporting metrics for dashboard visualization
+    then: Returns JSON string with all metrics formatted for dashboard consumption
+
+  - name: cleanup_deployment_artifacts
+    given: Deployment directory and container names
+    when: Removing containers, volumes, networks via docker-compose down
+    then: Returns DockerCommandResult with cleanup confirmation
+
+  - name: verify_cleanup_completion
+    given: Previous deployment state
+    when: Checking for remaining artifacts
+    then: Returns boolean indicating all resources removed
+
+  - name: create_deployment_report_markdown
+    given: All test results, metrics, and logs
+    when: Generating comprehensive deployment report
+    then: Writes markdown file with test results, performance metrics, recommendations
+
+  - name: validate_production_readiness_checklist
+    given: All test results and metrics
+    when: Checking production readiness criteria
+    then: Returns boolean with checklist of passed/failed requirements and score
+
+examples:
+  - name: deploy_and_verify_3_node_tvc_cluster
+    description: Deploy actual 3-node TVC cluster with Docker Compose and verify health
+    given: |
+      deployment_config = DeploymentConfig {
+        projectName = "tvc-cluster-prod",
+        networkName = "tvc-network",
+        imageName = "trinity-tvc",
+        imageTag = "v1.0.0-prod",
+        deploymentDir = "/tmp/tvc-deploy"
+      }
+    when: |
+      1. Create deployment directory structure
+      2. Generate Dockerfile for TVC nodes
+      3. Create docker-compose.yml with coordinator + 2 workers
+      4. Build Docker image: docker build -t trinity-tvc:v1.0.0-prod
+      5. Start cluster: docker-compose up -d
+      6. Wait for health checks: poll /health endpoints for 30 seconds
+      7. Verify all containers: docker ps
+      8. Test coordinator API: curl http://localhost:8080/health
+      9. Test worker APIs: curl http://localhost:8081/health
+      10. Check leader election: curl http://localhost:8080/api/leader
+    then: |
+      Returns ClusterHealthReport:
+      - allContainersRunning: true
+      - healthyContainers: 3
+      - totalContainers: 3
+      - coordinatorHealthy: true
+      - allWorkersHealthy: true
+      - networkReachable: true
+      - volumesMounted: true
+      - readinessStatus: "READY"
+      Container status shows:
+      - tvc-coordinator: Up 30s, healthy
+      - tvc-worker-1: Up 28s, healthy
+      - tvc-worker-2: Up 28s, healthy
+
+  - name: test_actual_failover_by_killing_coordinator
+    description: Kill coordinator container and measure real failover time
+    given: |
+      Running 3-node cluster with confirmed healthy status
+      failover_scenario = FailoverScenario {
+        scenarioName = "coordinator-kill-test",
+        targetContainer = "tvc-coordinator",
+        action = "docker stop tvc-coordinator",
+        killDurationSec = 30
+      }
+    when: |
+      1. Record cluster state before failure
+      2. Kill coordinator: docker stop tvc-coordinator
+      3. Monitor cluster for failover detection (poll health endpoints)
+      4. Measure time to detect failure
+      5. Measure time to elect new leader
+      6. Verify shards reassigned (coordinator shards → worker replicas)
+      7. Test data availability (read documents from coordinator shards)
+      8. Restart coordinator: docker start tvc-coordinator
+      9. Monitor data reconciliation
+      10. Verify coordinator rejoins as follower
+    then: |
+      Returns FailoverScenario:
+      - failoverTimeMs: < 5000
+      - leaderRe-elected: true
+      - shardsReassigned: 9 (coordinator had 9 primary shards)
+      - dataLossDetected: false
+      - recoverySuccessful: true
+      docker ps shows:
+      - tvc-coordinator: Exited (then restarting)
+      - tvc-worker-1: Up, healthy, now LEADER
+      - tvc-worker-2: Up, healthy, following new leader
+      API test confirms:
+      - curl http://localhost:8081/api/leader → {"leaderId": "tvc-worker-1", "term": 2}
+      - All 9 coordinator shards accessible via worker-1 replicas
+      - No documents lost (1000 documents before, 1000 after)
+
+  - name: run_real_performance_benchmark_with_actual_load
+    description: Execute actual benchmark with 10,000 documents and measure QPS
+    given: |
+      Healthy 3-node cluster
+      benchmark_config = {
+        documentCount = 10000,
+        durationSec = 60,
+        concurrentClients = 10,
+        workload = "balanced"  # 50% read, 50% write
+      }
+    when: |
+      1. Warm up cluster with 1000 write operations
+      2. Start benchmark timer
+      3. Spawn 10 concurrent clients
+      4. Each client executes:
+         - 50% write operations (POST /api/documents)
+         - 50% read operations (GET /api/documents/{id})
+      5. Record operation latency for each request
+      6. Track errors (timeouts, 5xx responses)
+      7. After 60 seconds, stop clients
+      8. Calculate statistics:
+         - Total operations
+         - Operations per second
+         - Latency percentiles (p50, p95, p99)
+         - Error rate
+         - CPU/memory usage via docker stats
+      10. Compare with single-node baseline
+    then: |
+      Returns PerformanceMetrics:
+      - testName: "3-node-balanced-workload-actual"
+      - nodeCount: 3
+      - durationSec: 60
+      - totalOperations: 15000 (7500 writes + 7500 reads)
+      - operationsPerSecond: 250.0
+      - avgLatencyMs: 40.0
+      - p50LatencyMs: 35.0
+      - p95LatencyMs: 80.0
+      - p99LatencyMs: 150.0
+      - errorCount: 5
+      - errorRate: 0.0003 (0.03%)
+      - cpuUsagePercent: 65.0
+      - memoryUsageMb: 512
+      docker stats output:
+      - tvc-coordinator: 65% CPU, 512MB MEM
+      - tvc-worker-1: 60% CPU, 480MB MEM
+      - tvc-worker-2: 58% CPU, 475MB MEM
+      Production ready: TRUE (all thresholds met)
+
+  - name: verify_data_replication_with_actual_writes
+    description: Write documents and verify they exist on all replica nodes
+    given: |
+      Healthy 3-node cluster
+      test_document = {
+        id: "test-doc-phi-27",
+        shard: 9,
+        data: "TVC replication test data with φ constant"
+      }
+    when: |
+      1. Write document through coordinator: curl -X POST http://localhost:8080/api/documents
+      2. Capture write timestamp (T1)
+      3. Query coordinator for document: curl http://localhost:8080/api/documents/test-doc-phi-27
+      4. Query worker-1 for document: curl http://localhost:8081/api/documents/test-doc-phi-27
+      5. Query worker-2 for document: curl http://localhost:8082/api/documents/test-doc-phi-27
+      6. Capture read timestamps (T2, T3, T4)
+      7. Calculate replication lag: T2 - T1, T3 - T1, T4 - T1
+      8. Compare document data across nodes (checksum verification)
+      9. Verify document version consistency
+    then: |
+      Returns ReplicationVerification:
+      - documentId: "test-doc-phi-27"
+      - shardId: 9
+      - writtenToNode: "tvc-coordinator"
+      - foundOnNodes: ["tvc-coordinator", "tvc-worker-1", "tvc-worker-2"]
+      - expectedReplicas: 3
+      - actualReplicas: 3
+      - replicationLagMs: 45 (max across replicas)
+      - dataConsistent: true
+      - verificationMethod: "api-checksum-comparison"
+      curl outputs:
+      - Coordinator (T1+0ms): {"id": "test-doc-phi-27", "version": 1, "checksum": "abc123"}
+      - Worker-1 (T1+35ms): {"id": "test-doc-phi-27", "version": 1, "checksum": "abc123"}
+      - Worker-2 (T1+45ms): {"id": "test-doc-phi-27", "version": 1, "checksum": "abc123"}
+      All replicas consistent, replication < 50ms (threshold: 200ms) ✓
+
+  - name: generate_production_deployment_report
+    description: Create comprehensive deployment report with all metrics
+    given: |
+      All test results:
+      - ClusterHealthReport (all healthy)
+      - PerformanceMetrics (250 QPS, 40ms avg latency)
+      - FailoverScenario (failover < 5s, no data loss)
+      - ReplicationVerification (100% consistent)
+      - WriteWorkloadResult (120 WPS, 35ms avg)
+      - ReadWorkloadResult (380 RPS, 38ms avg)
+      - ResourceUsage (all nodes < 70% CPU, < 600MB RAM)
+    when: |
+      1. Aggregate all test results
+      2. Calculate production readiness score
+      3. Check all thresholds:
+         - MAX_P99_LATENCY_MS: 150 < 500 ✓
+         - MAX_ERROR_RATE: 0.0003 < 0.01 ✓
+         - MIN_THROUGHPUT_QPS: 250 > 100 ✓
+         - MAX_REPLICATION_LAG_MS: 45 < 200 ✓
+         - MAX_FAILOVER_TIME_MS: 4200 < 5000 ✓
+         - MIN_CLUSTER_HEALTH_PERCENT: 100% ✓
+      4. Generate recommendations
+      5. Write markdown report to: /tmp/tvc-deploy/REPORT.md
+      6. Extract logs to: /tmp/tvc-logs/
+      7. Generate dashboard JSON for visualization
+    then: |
+      Returns deployment report file:
+      /tmp/tvc-deploy/REPORT.md with sections:
+      - Executive Summary
+      - Cluster Health Status
+      - Performance Metrics
+      - Failover Test Results
+      - Replication Verification
+      - Resource Usage
+      - Production Readiness Checklist
+      - Recommendations
+      Production Ready: TRUE
+      Score: 6/6 criteria passed (100%)
+      Recommendations:
+      - ✓ Ready for production deployment
+      - ✓ Consider scaling to 5 nodes for higher fault tolerance
+      - ✓ Monitor p99 latency during peak traffic
+      - ✓ Set up automated backup of shard data

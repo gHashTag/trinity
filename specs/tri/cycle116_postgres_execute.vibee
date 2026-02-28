@@ -1,0 +1,281 @@
+name: cycle116_postgres_execute
+version: "1.0.0"
+language: zig
+module: postgres_execute
+
+description: |
+  ACTUAL EXECUTION of PostgreSQL extension compilation and deployment.
+  This specification implements the real build, install, test, and verification
+  of the pg_trinity extension using PGXS against PostgreSQL 16.
+
+types:
+  BuildEnvironment:
+    fields:
+      pg_config: String           # Path to pg_config
+      postgres_version: String    # Target PostgreSQL version
+      pgxs_dir: String            # PGXS directory location
+      extension_dir: String       # Extension build directory
+      install_dir: String         # Installation directory
+      build_success: Bool         # Build status
+      install_success: Bool       # Installation status
+
+  ExtensionFile:
+    fields:
+      name: String                # File name
+      type: String                # control, sql, c
+      path: String                # Full path
+      exists: Bool                # File exists check
+      size: Int                   # File size in bytes
+      checksum: String            # SHA256 checksum
+
+  TestResult:
+    fields:
+      test_name: String           # Test name
+      sql_query: String           # SQL query executed
+      expected: String            # Expected result
+      actual: String              # Actual result
+      passed: Bool                # Test pass/fail
+      execution_time: Float       # Execution time in ms
+      error_message: String       # Error if any
+
+  VerificationStatus:
+    fields:
+      extension_loaded: Bool      # Extension in pg_extension
+      functions_exist: Bool       # Functions in pg_proc
+      tables_exist: Bool          # Tables created
+      indexes_exist: Bool         # Indexes created
+      test_results: List<TestResult>
+      overall_status: String      # SUCCESS, FAILED, PARTIAL
+
+behaviors:
+  - name: verify_postgres_installation
+    given: System with PostgreSQL 16 installed
+    when: Checking pg_config availability and version
+    then: PostgreSQL 16 is confirmed with pg_config accessible
+    notes: |
+      which pg_config
+      pg_config --version
+      pg_config --configure
+
+  - name: detect_pgxs_location
+    given: PostgreSQL installation with PGXS support
+    when: Querying pg_config for PGXS directory
+    then: PGXS directory path is resolved and validated
+    notes: |
+      pg_config --pgxs
+      Verify /usr/share/postgresql/extension/ or similar
+
+  - name: create_extension_directory
+    given: Project root with trinity/postgres/ directory
+    when: Creating extension build directory structure
+    then: Directory exists with proper Makefile and source files
+    notes: |
+      mkdir -p trinity/postgres/
+      Verify pg_trinity--1.0.sql, pg_trinity.control, trinity.c exist
+
+  - name: validate_extension_files
+    given: Extension directory with source files
+    when: Checking all required files are present
+    then: All .control, .sql, and .c files are validated
+    notes: |
+      Check for: pg_trinity.control, pg_trinity--1.0.sql, trinity.c, Makefile
+      Verify file syntax and content
+
+  - name: compile_extension_with_pgxs
+    given: Valid Makefile with PGXS and source files
+    when: Running make with PGXS against PostgreSQL 16
+    then: Extension compiles without errors, produces .so file
+    notes: |
+      make clean
+      make PG_CONFIG=pg_config
+      Verify pg_trinity.so is created
+
+  - name: handle_compile_warnings
+    given: Compilation may produce warnings
+    when: Compiling extension with PGXS
+    then: Warnings are acknowledged but build succeeds
+    notes: |
+      Check for -Wmissing-prototypes, -Wdeclaration-after-statement
+      Ensure no actual errors block compilation
+
+  - name: install_extension_to_pg
+    given: Successfully compiled .so file
+    when: Running make install with proper privileges
+    then: Extension files are copied to PostgreSQL directory
+    notes: |
+      sudo make install
+      OR: make install PG_CONFIG=/usr/local/bin/pg_config
+      Files copied to: /usr/lib/postgresql/16/lib/ and /usr/share/postgresql/16/extension/
+
+  - name: verify_installation_files
+    given: Extension installed to PostgreSQL directory
+    when: Checking .so, .control, and .sql files in pg directories
+    then: All files are present and accessible
+    notes: |
+      ls -la $(pg_config --pkglibdir)/pg_trinity.so
+      ls -la $(pg_config --sharedir)/extension/pg_trinity*.control
+      ls -la $(pg_config --sharedir)/extension/pg_trinity--*.sql
+
+  - name: create_test_database
+    given: PostgreSQL server running
+    when: Creating dedicated test database
+    then: Database 'trinity_test' is ready for extension testing
+    notes: |
+      createdb trinity_test
+      OR: psql -c "CREATE DATABASE trinity_test;"
+
+  - name: connect_to_test_database
+    given: Test database exists
+    when: Establishing psql connection
+    then: Interactive session is ready for SQL commands
+    notes: |
+      psql -d trinity_test
+      Verify connection info with \conninfo
+
+  - name: create_extension_in_db
+    given: Connected to test database
+    when: Executing CREATE EXTENSION pg_trinity
+    then: Extension is loaded and functions are available
+    notes: |
+      CREATE EXTENSION pg_trinity;
+      Check for any errors in loading shared library
+
+  - name: verify_extension_loaded
+    given: Extension created in database
+    when: Querying pg_extension table
+    then: pg_trinity appears in extension list with version 1.0
+    notes: |
+      SELECT * FROM pg_extension WHERE extname = 'pg_trinity';
+      Should show: extname, extversion, extrelocatable, extowner
+
+  - name: list_available_functions
+    given: Extension loaded successfully
+    when: Querying pg_proc for extension functions
+    then: All trinity_* functions are listed and accessible
+    notes: |
+      SELECT proname, prorettype::regtype, pronargs
+      FROM pg_proc
+      WHERE proname LIKE 'trinity_%'
+      ORDER BY proname;
+
+  - name: test_bind_function
+    given: Extension with trinity_bind function available
+    when: Executing SELECT trinity_bind(vector_a, vector_b)
+    then: Function executes and returns bound vector
+    notes: |
+      SELECT trinity_bind('[1, -1, 0, 1]'::int[], '[0, 1, -1, 0]'::int[]);
+      Verify result is integer array
+
+  - name: test_cosine_similarity_function
+    given: Extension with trinity_cosine_similarity function
+    when: Computing similarity between two vectors
+    then: Returns float value between -1.0 and 1.0
+    notes: |
+      SELECT trinity_cosine_similarity('[1, 1, 1]'::int[], '[1, 1, 1]'::int[]);
+      Should return 1.0 for identical vectors
+
+  - name: test_bundle_function
+    given: Extension with trinity_bundle function
+    when: Bundling multiple vectors together
+    then: Returns majority-vote result vector
+    notes: |
+      SELECT trinity_bundle('[1, 0, -1]'::int[], '[1, 1, 0]'::int[]);
+      Verify trit-wise majority logic
+
+  - name: test_permute_function
+    given: Extension with trinity_permute function
+    when: Applying cyclic permutation to vector
+    then: Returns rotated vector
+    notes: |
+      SELECT trinity_permute('[1, 2, 3, 4]'::int[], 1);
+      Should shift elements circularly
+
+  - name: test_hamming_distance_function
+    given: Extension with trinity_hamming_distance function
+    when: Computing distance between two vectors
+    then: Returns integer count of differing positions
+    notes: |
+      SELECT trinity_hamming_distance('[1, 1, 1]'::int[], '[1, 1, 1]'::int[]);
+      Should return 0 for identical vectors
+
+  - name: run_full_test_suite
+    given: All functions available and individual tests passing
+    when: Executing complete test script
+    then: All tests pass, output shows PASS/FAIL for each
+    notes: |
+      Run SQL test file: psql -d trinity_test -f test/trinity_test.sql
+      Capture and verify all test results
+
+  - name: verify_extension_tables
+    given: Extension that creates tables
+    when: Querying information_schema.tables
+    then: Extension-specific tables are present
+    notes: |
+      SELECT tablename FROM pg_tables WHERE schemaname = 'public';
+      Check for any trinity-specific tables
+
+  - name: verify_extension_indexes
+    given: Extension with indexes
+    when: Querying pg_indexes
+    then: All indexes are created and valid
+    notes: |
+      SELECT indexname, tablename FROM pg_indexes WHERE schemaname = 'public';
+      Verify trinity indexes exist
+
+  - name: check_extension_dependencies
+    given: Extension loaded in database
+    when: Querying pg_depend for relationships
+    then: All dependencies are satisfied and valid
+    notes: |
+      Check if extension depends on other extensions
+      Verify no circular dependencies
+
+  - name: test_error_handling
+    given: Extension with error scenarios
+    when: Passing invalid inputs (null, wrong types, wrong sizes)
+    then: Appropriate error messages are returned
+    notes: |
+      Test NULL inputs
+      Test mismatched array sizes
+      Test invalid trit values (not -1, 0, 1)
+
+  - name: test_performance_benchmark
+    given: Extension with working functions
+    when: Executing performance queries with EXPLAIN ANALYZE
+    then: Functions complete within acceptable time limits
+    notes: |
+      EXPLAIN ANALYZE SELECT trinity_bind(...);
+      Measure execution time for large vectors (1000+ trits)
+
+  - name: cleanup_test_database
+    given: Completed testing session
+    when: Dropping test database
+    then: Database is removed cleanly
+    notes: |
+      DROP DATABASE trinity_test;
+      OR: psql -c "DROP DATABASE trinity_test;"
+
+  - name: generate_installation_report
+    given: Completed installation and testing
+    when: Collecting all metrics and results
+    then: Comprehensive report is generated with all details
+    notes: |
+      Include: build time, install location, test results, performance metrics
+      Save to: trinity/postgres/INSTALLATION_REPORT.md
+
+  - name: document_extension_api
+    given: Working extension with verified functions
+    when: Generating API documentation
+    then: Complete function reference with signatures and examples
+    notes: |
+      Document each function: name, parameters, return type, example
+      Include: trinity_bind, trinity_cosine_similarity, trinity_bundle, etc.
+      Save to: docs/postgres_extension_api.md
+
+  - name: verify_production_readiness
+    given: All tests passing and documentation complete
+    when: Running production readiness checklist
+    then: Extension is marked production-ready or issues are identified
+    notes: |
+      Checklist: error handling, memory management, SQL injection safety,
+                 performance, documentation, test coverage
