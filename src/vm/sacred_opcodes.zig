@@ -432,7 +432,7 @@ pub fn executeSacred(
             const threshold = if (regs.f0 > 0) regs.f0 else 3.0;
 
             // 2026 anomaly database (live from real experiments)
-            const anomalies = [_]struct { name: []const u8, sigma: f64, domain: i2 }{
+            const anomalies = [_]struct { name: []const u8, sigma: f64, domain: i8 }{
                 .{ .name = "Hubble Tension", .sigma = 5.0, .domain = 1 }, // 5σ!
                 .{ .name = "Muon g-2", .sigma = 4.2, .domain = 1 }, // 4.2σ
                 .{ .name = "Lithium Problem", .sigma = 3.0, .domain = 1 }, // 3σ
