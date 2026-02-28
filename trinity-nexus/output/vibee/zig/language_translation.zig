@@ -15,10 +15,10 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]A[TRANSLATED]]
+// [CYR:A]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// [CYR:[TRANSLATED]]iny[EN] φ-to[EN]with[CYR:[TRANSLATED]y] (Sacred Formula)
+// iny φ-towithy] (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -30,7 +30,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// 
@@ -74,7 +74,7 @@ pub const GrammarRule = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]A[TRANSLATED]] [CYR:[TRANSLATED]] WASM
+// [CYR:A]  WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -124,13 +124,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-and[CYR:[TRANSLATED]]fields[EN]andI
+/// φ-andfieldsandI
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// [EN]not[CYR:[TRANSLATED]]andI φ-with[EN]and[CYR:[TRANSLATED]]and
+/// notandI φ-withand
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -151,9 +151,9 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 
 /// English greeting "Hello"
 /// When: translate function called with target "russian"
-/// Then: Russian greeting "[EN]andin[EN]" returned
+/// Then: Russian greeting "andin" returned
 pub fn translate_simple_greeting() !void {
-// TODO: implement — Russian greeting "[EN]andin[EN]" returned
+// TODO: implement — Russian greeting "andin" returned
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -183,25 +183,25 @@ pub fn translate_sentence() !void {
 test "translate_simple_greeting_behavior" {
 // Given: English greeting "Hello"
 // When: translate function called with target "russian"
-// Then: Russian greeting "[EN]andin[EN]" returned
-// Test case: input={text: "Hello", source: "english", target: "russian"}, expected={translation: "[EN]andin[EN]", confidence: 1.0}
-// Test case: input={text: "Good morning", source: "english", target: "russian"}, expected={translation: "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]", confidence: 1.0}
+// Then: Russian greeting "andin" returned
+// Test case: input={text: "Hello", source: "english", target: "russian"}, expected={translation: "andin", confidence: 1.0}
+// Test case: input={text: "Good morning", source: "english", target: "russian"}, expected={translation: " ", confidence: 1.0}
 }
 
 test "translate_technical_term_behavior" {
 // Given: English technical term
 // When: translate function called
 // Then: Russian technical term returned
-// Test case: input={text: "compiler", source: "english", target: "russian"}, expected={translation: "to[CYR:[TRANSLATED]]and[CYR:[EN]I[TRANSLATED]]", confidence: 1.0}
-// Test case: input={text: "algorithm", source: "english", target: "russian"}, expected={translation: "[CYR:algorithm]and[EN]", confidence: 1.0}
+// Test case: input={text: "compiler", source: "english", target: "russian"}, expected={translation: "toand[CYR:I]", confidence: 1.0}
+// Test case: input={text: "algorithm", source: "english", target: "russian"}, expected={translation: "[CYR:algorithm]and", confidence: 1.0}
 }
 
 test "translate_sentence_behavior" {
 // Given: English sentence with subject-verb-object structure
 // When: translate function called
 // Then: Russian sentence with correct grammar returned
-// Test case: input={text: "I love programming", source: "english", target: "russian"}, expected={translation: " [CYR:[TRANSLATED]] [CYR:pro[TRANSLATED]]and[EN]in[EN]and[EN]", confidence: 0.95}
-// Test case: input={text: "We are building a compiler", source: "english", target: "russian"}, expected={translation: "[EN]y with[CYR:[TRANSLATED]]and[EN] to[CYR:[TRANSLATED]]and[CYR:[EN]I[TRANSLATED]]", confidence: 0.95}
+// Test case: input={text: "I love programming", source: "english", target: "russian"}, expected={translation: "  [CYR:pro]andinand", confidence: 0.95}
+// Test case: input={text: "We are building a compiler", source: "english", target: "russian"}, expected={translation: "y withand toand[CYR:I]", confidence: 0.95}
 }
 
 test "phi_constants" {

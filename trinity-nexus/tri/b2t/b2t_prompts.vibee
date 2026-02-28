@@ -49,9 +49,9 @@ types:
 
 behaviors:
   - name: build_system_prompt
-    given: [CYR:[EN]l] [CYR:agent[EN]] and [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI
-    when: [CYR:[TRANSLATED]]and[EN] withandwith[CYR:[TRANSLATED]go] [CYR:pro[TRANSLATED]]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] PromptSection with role=system
+    given: [CYR:l] [CYR:agent] and andI
+    when: and withandwithgo] [CYR:pro]
+    then: in[CYR:acts] PromptSection with role=system
     implementation: |
                     pub fn build_system_prompt(role: []const u8, constraints: []const u8) PromptSection {
                         _ = role;
@@ -65,8 +65,8 @@ behaviors:
 
   - name: build_context_section
     given: SemanticContext from b2t_llm_assist
-    when: [CYR:[TRANSLATED]]and[EN]in[EN]and[EN] [CYR:[TRANSLATED]]with[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] PromptSection with role=context
+    when: andinand with
+    then: in[CYR:acts] PromptSection with role=context
     implementation: |
                     pub fn build_context_section(context: anytype) PromptSection {
                         _ = context;
@@ -79,8 +79,8 @@ behaviors:
 
   - name: build_icl_examples
     given: List<SimilarCode> and max_examples
-    when: [CYR:[TRANSLATED]]and[EN]in[EN]and[EN] example[EN]in for ICL
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] PromptSection with role=example
+    when: andinand examplein for ICL
+    then: in[CYR:acts] PromptSection with role=example
     implementation: |
                     pub fn build_icl_examples(examples: anytype, max_examples: usize) PromptSection {
                         _ = examples;
@@ -93,9 +93,9 @@ behaviors:
       
 
   - name: build_query
-    given: [CYR:[TRANSLATED]]or[EN]in[CYR:[EN]ny] code and task
-    when: [CYR:[TRANSLATED]]and[EN]in[EN]and[EN] query[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] PromptSection with role=query
+    given: orin[CYR:ny] code and task
+    when: andinand query
+    then: in[CYR:acts] PromptSection with role=query
     implementation: |
                     pub fn build_query(code: []const u8, task: []const u8) PromptSection {
                         _ = code;
@@ -109,8 +109,8 @@ behaviors:
 
   - name: assemble_prompt
     given: List<PromptSection> and PromptConfig
-    when: [CYR:[TRANSLATED]] [EN]andon[CYR:lnogo] [CYR:pro[TRANSLATED]] with [CYR:[TRANSLATED]] [EN]and[EN]and[EN]in
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] String [CYR:pro[TRANSLATED]]
+    when:  andon[CYR:lnogo] [CYR:pro] with  andin
+    then: in[CYR:acts] String [CYR:pro]
     implementation: |
                     pub fn assemble_prompt(sections: []const PromptSection, config: PromptConfig) []const u8 {
                         _ = sections;
@@ -124,8 +124,8 @@ behaviors:
 
   - name: get_distortion_template
     given: DistortionType
-    when: [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]on for [CYR:[TRANSLATED]go] andwith[CYR:[TRANSLATED]]andI
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] DistortionTemplate
+    when: and on for [CYR:go] andwithandI
+    then: in[CYR:acts] DistortionTemplate
     implementation: |
                     pub fn get_distortion_template(dist_type: anytype) DistortionTemplate {
                         _ = dist_type;
@@ -138,8 +138,8 @@ behaviors:
 
   - name: format_detection_prompt
     given: [CYR:Code] and DistortionTemplate
-    when: [CYR:[TRANSLATED]]and[EN] [CYR:pro[TRANSLATED]] for [CYR:[TRANSLATED]]andand andwith[CYR:[TRANSLATED]]and[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] String [CYR:pro[TRANSLATED]]
+    when: and [CYR:pro] for and andwithand
+    then: in[CYR:acts] String [CYR:pro]
     implementation: |
                     pub fn format_detection_prompt(code: []const u8, template: anytype) []const u8 {
                         _ = code;
@@ -152,9 +152,9 @@ behaviors:
       
 
   - name: format_correction_prompt
-    given: [CYR:Code], andwith[CYR:[TRANSLATED]]andI and DistortionTemplate
-    when: [CYR:[TRANSLATED]]and[EN] [CYR:pro[TRANSLATED]] for andwith[CYR:law]in[CYR:[TRANSLATED]]andI
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] String [CYR:pro[TRANSLATED]]
+    given: [CYR:Code], andwithandI and DistortionTemplate
+    when: and [CYR:pro] for andwithlaw]inandI
+    then: in[CYR:acts] String [CYR:pro]
     implementation: |
                     pub fn format_correction_prompt(code: []const u8, distortions: anytype, template: anytype) []const u8 {
                         _ = code;
@@ -168,9 +168,9 @@ behaviors:
       
 
   - name: format_validation_prompt
-    given: [EN]and[EN]andon[EN], fix and DistortionTemplate
-    when: [CYR:[TRANSLATED]]and[EN] [CYR:pro[TRANSLATED]] for in[EN]and[CYR:[TRANSLATED]]andand
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] String [CYR:pro[TRANSLATED]]
+    given: andon, fix and DistortionTemplate
+    when: and [CYR:pro] for inandand
+    then: in[CYR:acts] String [CYR:pro]
     implementation: |
                     pub fn format_validation_prompt(original: []const u8, corrected: []const u8, template: anytype) []const u8 {
                         _ = original;
@@ -184,9 +184,9 @@ behaviors:
       
 
   - name: create_cot_prompt
-    given: [CYR:[TRANSLATED]] and ChainOfThought
-    when: [CYR:[TRANSLATED]]and[EN] [CYR:pro[TRANSLATED]] with [EN]step[EN]iny[EN] [EN]withwith[CYR:[TRANSLATED]]and[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] String [CYR:pro[TRANSLATED]]
+    given:  and ChainOfThought
+    when: and [CYR:pro] with stepiny withand
+    then: in[CYR:acts] String [CYR:pro]
     implementation: |
                     pub fn create_cot_prompt(task: []const u8, cot: anytype) []const u8 {
                         _ = task;
@@ -199,9 +199,9 @@ behaviors:
       
 
   - name: parse_cot_response
-    given: [EN]in[EN] LLM with [EN]withwith[CYR:[TRANSLATED]]andI[EN]and
-    when: [EN]in[CYR:[EN]chen]and[EN] step[EN]in and [EN]andon[CYR:lnogo] response[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] with[CYR:[TRANSLATED]]and[EN]in[CYR:[EN]ny] result
+    given: in LLM with withandIand
+    when: in[CYR:chen]and stepin and andon[CYR:lnogo] response
+    then: in[CYR:acts] withandin[CYR:ny] result
     implementation: |
                     pub fn parse_cot_response(response: []const u8) CoTParseResult {
                         _ = response;

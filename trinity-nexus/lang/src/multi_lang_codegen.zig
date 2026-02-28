@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// MULTI-LANGUAGE CODEGEN - [EN]not[CYR:[TRANSLATED]] to[CYR:[TRANSLATED]] for inwith[EN] [CYR:I[EN]y]to[EN]in
+// MULTI-LANGUAGE CODEGEN - not to for inwith [CYR:Iy]toin
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// [EN]not[EN]and[CYR:[TRANSLATED]] to[EN] for 39 [CYR:I[EN]y]to[EN]in and[EN] .vibee with[CYR:[TRANSLATED]]and[EN]andto[EN]and[EN]
-// Ain[CYR:[TRANSLATED]]: Dmitrii Vasilev
+// notand to for 39 [CYR:Iy]toin and .vibee withandtoand
+// Ain: Dmitrii Vasilev
 // φ² + 1/φ² = 3 | PHOENIX = 999
 //
 // ═══════════════════════════════════════════════════════════════════════════════

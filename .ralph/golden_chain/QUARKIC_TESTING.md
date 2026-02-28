@@ -1,12 +1,12 @@
-# Кinарtoоinое Теwithтandроinанandе Сandмinолandчеwithto[CYR:ого] ИИ
+# Кinарtoоinое Теwithтandроinанandе Сandмinолandчеwithfor[TRANSLATED]] ИИ
 
-## 🎯 [CYR:Цель]
+## 🎯 [CYR:[TRANSLATED]]
 
-[CYR:Про]inеwithтand [CYR:глубо]toое теwithтandроinанandе Сandмinолandчеwithto[CYR:ого] ИИ (Symbolic AI branch) in Trinity:
-- [CYR:Вал]and[CYR:дац]andя Knowledge Graph pipeline
-- Check VSA (Vector Symbolic Architecture) [CYR:операц]andй
+[CYR:[TRANSLATED]]inеwithтand [CYR:[TRANSLATED]]toое теwithтandроinанandе Сandмinолandчеwithfor[TRANSLATED]] ИИ (Symbolic AI branch) in Trinity:
+- [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя Knowledge Graph pipeline
+- Check VSA (Vector Symbolic Architecture) [CYR:[TRANSLATED]]andй
 - Теwithтandроinанandе triples extraction
-- [CYR:Вер]andфandtoацandя DHT sync and $TRI rewards
+- [CYR:[TRANSLATED]]andфandtoацandя DHT sync and $TRI rewards
 - E2E pipeline testing
 
 ---

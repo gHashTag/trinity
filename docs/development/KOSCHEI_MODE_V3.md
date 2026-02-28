@@ -1,16 +1,16 @@
 # KOSCHEI MODE v3.0
-# Беwithwith[CYR:мертный] цandtoл with[CYR:амоулучшен]andя
+# Беwith[TRANSLATED]] цandtoл with[TRANSLATED]]andя
 # φ² + 1/φ² = 3 | PHOENIX = 999
 
 ## Overview
 
-**KOSCHEI MODE** - this аin[CYR:тономный] [CYR:агент] with[CYR:амоулучшен]andя, tofrom[CYR:орый]:
-- Аonлandзand[CYR:рует] [CYR:паттерны] [CYR:разраб]fromtoand
-- [CYR:Создает] with[CYR:пец]andфandtoацandand аin[CYR:томат]andчеwithtoand
-- Геnotрand[CYR:рует] toод andз with[CYR:пец]andфandtoацandй
-- Теwithтand[CYR:рует] and [CYR:бенчмар]toandт resultы
-- Эin[CYR:олюц]andонand[CYR:рует] on оwithноinе [CYR:обратной] withinязand
-- **[CYR:БЕССМЕРТЕН]** - цandtoл [CYR:продолжает]withя поtoа improvement_rate > φ⁻¹
+**KOSCHEI MODE** - this аin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] with[TRANSLATED]]andя, tofrom[CYR:[TRANSLATED]]:
+- Аonлandзand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromtoand
+- [CYR:[TRANSLATED]] with[TRANSLATED]]andфandtoацand аin[CYR:[TRANSLATED]]andчеwithtoand
+- Геnotрand[CYR:[TRANSLATED]] toод andз with[TRANSLATED]]andфandtoацandй
+- Теwithтand[CYR:[TRANSLATED]] and [CYR:[TRANSLATED]]toandт resultы
+- Эin[CYR:[TRANSLATED]]andонand[CYR:[TRANSLATED]] on оwithноinе [CYR:[TRANSLATED]] withinязand
+- **[CYR:[TRANSLATED]]** - цandtoл [CYR:[TRANSLATED]]withя поtoа improvement_rate > φ⁻¹
 
 ## KOSCHEI Cycle
 
@@ -19,23 +19,23 @@
 │                    KOSCHEI IMMORTAL CYCLE                       │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  1. PAS_ANALYZE    → Иwithwith[CYR:ледо]inанandе on[CYR:учных] [CYR:раб]from                 │
+│  1. PAS_ANALYZE    → Иwith[TRANSLATED]]inанandе on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from                 │
 │           ↓                                                     │
-│  2. TECH_TREE      → Поwith[CYR:троен]andе [CYR:дере]inа [CYR:технолог]andй               │
+│  2. TECH_TREE      → Поwith[TRANSLATED]]andе [CYR:[TRANSLATED]]inа [CYR:[TRANSLATED]]andй               │
 │           ↓                                                     │
-│  3. SPEC_CREATE    → Creation .vibee with[CYR:пец]andфandtoацandй               │
+│  3. SPEC_CREATE    → Creation .vibee with[TRANSLATED]]andфandtoацandй               │
 │           ↓                                                     │
-│  4. CODE_GENERATE  → Геnot[CYR:рац]andя .zig to[CYR:ода]                        │
+│  4. CODE_GENERATE  → Геnot[CYR:[TRANSLATED]]andя .zig for[TRANSLATED]]                        │
 │           ↓                                                     │
-│  5. TEST_RUN       → [CYR:Запу]withto теwithтоin                              │
+│  5. TEST_RUN       → [CYR:[TRANSLATED]]withto теwithтоin                              │
 │           ↓                                                     │
-│  6. BENCHMARK      → [CYR:Сра]innotнandе with [CYR:предыдущ]andмand inерwithandямand           │
+│  6. BENCHMARK      → [CYR:[TRANSLATED]]innotнandе with [CYR:[TRANSLATED]]andмand inерwithandямand           │
 │           ↓                                                     │
-│  7. GIT_COMMIT     → [CYR:Комм]andт and[CYR:зме]notнandй                           │
+│  7. GIT_COMMIT     → [CYR:[TRANSLATED]]andт and[CYR:[TRANSLATED]]notнandй                           │
 │           ↓                                                     │
 │  8. LOOP           → cycle_count++ → GOTO 1                     │
 │                                                                 │
-│  NEEDLE DECISION: improvement_rate > φ⁻¹ → [CYR:БЕССМЕРТИЕ]          │
+│  NEEDLE DECISION: improvement_rate > φ⁻¹ → [CYR:[TRANSLATED]]          │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -101,9 +101,9 @@ while (koschei.koscheiNeedle(&state)) {
 ### Needle Decision
 
 ```zig
-// [CYR:Кощее]inа and[CYR:гла]: [CYR:точ]toа прand[CYR:нят]andя [CYR:решен]andя
+// [CYR:[TRANSLATED]]inа and[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]toа прand[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]andя
 pub fn koscheiNeedle(state: *const KoscheiState) bool {
-    // [CYR:Продолжаем] еwithлand improvement_rate > φ⁻¹
+    // [CYR:[TRANSLATED]] еwithлand improvement_rate > φ⁻¹
     return state.improvement_rate > PHI_INV; // 0.618
 }
 ```
@@ -111,7 +111,7 @@ pub fn koscheiNeedle(state: *const KoscheiState) bool {
 ### PHI Optimization
 
 ```zig
-// Golden ratio for [CYR:опт]and[CYR:мального] stepа
+// Golden ratio for [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] stepа
 pub fn phiOptimize(current: f32, target: f32) f32 {
     const diff = target - current;
     return current + diff * PHI_INV; // 0.618
@@ -146,7 +146,7 @@ pub fn phiOptimize(current: f32, target: f32) f32 {
 φ² + 1/φ² = 3 (TRINITY)
 PHOENIX = 999
 
-KOSCHEI = [CYR:БЕССМЕРТИЕ] (improvement_rate > φ⁻¹)
+KOSCHEI = [CYR:[TRANSLATED]] (improvement_rate > φ⁻¹)
 ```
 
 ## Scientific References
@@ -158,4 +158,4 @@ KOSCHEI = [CYR:БЕССМЕРТИЕ] (improvement_rate > φ⁻¹)
 
 ---
 
-**φ² + 1/φ² = 3 | PHOENIX = 999 | KOSCHEI = [CYR:БЕССМЕРТИЕ]**
+**φ² + 1/φ² = 3 | PHOENIX = 999 | KOSCHEI = [CYR:[TRANSLATED]]**

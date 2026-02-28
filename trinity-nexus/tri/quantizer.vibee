@@ -1,6 +1,6 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# QUANTIZER.VIBEE - INT4 [CYR:[TRANSLATED]]
-# [EN]in[CYR:I[EN]nye] [CYR:lawy] [CYR:[TRANSLATED]]center[EN]andand 7B [CYR:[TRANSLATED]] in 8GB [CYR:[TRANSLATED]I[EN]]and
+# QUANTIZER.VIBEE - INT4 
+# in[CYR:Inye] [CYR:lawy] centerand 7B  in 8GB [CYR:I]and
 # φ² + 1/φ² = 3 = TRINITY
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -10,48 +10,48 @@ language: zig
 module: trinity_quantizer
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# [CYR:[TRANSLATED]] [CYR:[TRANSLATED]A[TRANSLATED]] INT4
+#  [CYR:A] INT4
 # ═══════════════════════════════════════════════════════════════════════════════
 
 constants:
-  INT4_MIN: -8          # [EN]and[EN]and[CYR:[EN]lno[EN]] value INT4
-  INT4_MAX: 7           # [CYR:[TRANSLATED]]withand[CYR:[EN]lno[EN]] value INT4
-  INT4_RANGE: 15        # [EN]and[CYR:[TRANSLATED]] [EN]on[CYR:[TRANSLATED]]and[EN] (7 - (-8) = 15)
-  SCALE_DIVISOR: 7.0    # [CYR:Doing]and[CYR:[EN]l] for iny[EN]andwith[CYR:[TRANSLATED]]andI scale
-  BLOCK_SIZE: 32        # [CYR:[TRANSLATED]] block[EN] for block-wise quantization
+  INT4_MIN: -8          # and[CYR:lno] value INT4
+  INT4_MAX: 7           # withand[CYR:lno] value INT4
+  INT4_RANGE: 15        # and onand (7 - (-8) = 15)
+  SCALE_DIVISOR: 7.0    # [CYR:Doing]and[CYR:l] for inyandwithandI scale
+  BLOCK_SIZE: 32        #  block for block-wise quantization
   PHI: 1.618033988749895
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# [CYR:[TRANSLATED]] [CYR:[EN]A[TRANSLATED]]
+#  [CYR:A]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 types:
-  # INT4 [CYR:[TRANSLATED]]in[CYR:[EN]ny] [CYR:[TRANSLATED]]: 2 values in 1 [CYR:[TRANSLATED]]
+  # INT4 in[CYR:ny] : 2 values in 1 
   PackedInt4:
     fields:
-      data: List<Int>       # [CYR:[TRANSLATED]]in[CYR:[EN]nye] [CYR:[TRANSLATED]y] (2 INT4 on [CYR:[TRANSLATED]])
-      scales: List<Float>   # Scale factors for each block[EN]
-      zeros: List<Int>      # Zero points for each block[EN]
-      shape: List<Int>      # [EN]and[EN]andonlonI [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
-      num_elements: Int     # [CYR:[TRANSLATED]]and[EN]with[EN]in[EN] element[EN]in
+      data: List<Int>       # in[CYR:nye] [CYR:y] (2 INT4 on )
+      scales: List<Float>   # Scale factors for each block
+      zeros: List<Int>      # Zero points for each block
+      shape: List<Int>      # andonlonI  
+      num_elements: Int     # andwithin elementin
 
-  # [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI [EN]in[CYR:[TRANSLATED]]from[EN]andand
+  # andI infromand
   QuantConfig:
     fields:
-      block_size: Int       # [CYR:[TRANSLATED]] block[EN] (default: 32)
-      symmetric: Bool       # [EN]and[CYR:[TRANSLATED]]and[EN]onI [EN]in[CYR:[TRANSLATED]]from[EN]andI
-      use_zero_point: Bool  # [EN]with[CYR:[EN]l[EN]]in[CYR:ate] zero point
+      block_size: Int       #  block (default: 32)
+      symmetric: Bool       # andonI infromandI
+      use_zero_point: Bool  # withl]in[CYR:ate] zero point
 
-  # [CYR:[TRANSLATED]]andwith[EN]and[EN] [EN]in[CYR:[TRANSLATED]]from[EN]andand
+  # andwithand infromand
   QuantStats:
     fields:
-      original_size: Int    # [CYR:[TRANSLATED]] in [CYR:[TRANSLATED]] [EN] [EN]in[CYR:[TRANSLATED]]from[EN]andand
-      quantized_size: Int   # [CYR:[TRANSLATED]] [EN]with[EN] [EN]in[CYR:[TRANSLATED]]from[EN]andand
+      original_size: Int    #  in   infromand
+      quantized_size: Int   #  with infromand
       compression_ratio: Float
-      max_error: Float      # [CYR:[TRANSLATED]]withand[CYR:[EN]l]onI error
-      mean_error: Float     # [CYR:[TRANSLATED]II] error
+      max_error: Float      # withand[CYR:l]onI error
+      mean_error: Float     # [CYR:II] error
 
-  # [CYR:[EN]go[EN]]in[EN] INT4 file[EN]
+  # [CYR:go]in INT4 file
   Int4Header:
     fields:
       magic: Int            # 0x494E5434 = "INT4"
@@ -64,17 +64,17 @@ types:
       num_heads: Int
       num_kv_heads: Int
       total_params: Int
-      quantized_size: Int   # [CYR:[TRANSLATED]] in [CYR:[TRANSLATED]] [EN]with[EN] [EN]in[CYR:[TRANSLATED]]from[EN]andand
+      quantized_size: Int   #  in  with infromand
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# [CYR:[TRANSLATED]] [CYR:[EN]A[TRANSLATED]] [CYR:[EN]A[TRANSLATED]A[TRANSLATED]]
+#  [CYR:A] [CYR:AA]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 behaviors:
-  # [CYR:[EN]A[TRANSLATED]] 1: [CYR:Vy[EN]]andwith[CYR:[TRANSLATED]]and[EN] scale factor
+  # [CYR:A] 1: [CYR:Vy]andwithand scale factor
   - name: compute_scale
-    given: [CYR:[TRANSLATED]] f32 [EN]on[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] BLOCK_SIZE
-    when: [CYR:[TRANSLATED]] on[EN]and [CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]] [EN]with[CYR:[TRANSLATED]]and[EN]in[EN]andI
+    given:  f32 onand  BLOCK_SIZE
+    when:  onand and withandinandI
     then: scale = max(abs(block)) / 7.0
     formula: |
       absmax = 0.0
@@ -82,12 +82,12 @@ behaviors:
         absmax = max(absmax, abs(value))
       scale = absmax / 7.0
       if scale == 0.0:
-        scale = 1.0  # [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andI on [CYR:[EN]l]
+        scale = 1.0  #  andI on [CYR:l]
 
-  # [CYR:[EN]A[TRANSLATED]] 2: [EN]in[CYR:[TRANSLATED]]from[EN]andI f32 → INT4
+  # [CYR:A] 2: infromandI f32 → INT4
   - name: quantize_value
     given: f32 value and scale factor
-    when: [CYR:[TRANSLATED]] with[CYR:[EN]ate] [EN] INT4
+    when:  withate]  INT4
     then: int4 = clamp(round(f32 / scale), -8, 7)
     formula: |
       scaled = value / scale
@@ -95,75 +95,75 @@ behaviors:
       clamped = clamp(rounded, -8, 7)
       return @intCast(i4, clamped)
 
-  # [CYR:[EN]A[TRANSLATED]] 3: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]from[EN]andI INT4 → f32
+  # [CYR:A] 3: infromandI INT4 → f32
   - name: dequantize_value
     given: INT4 value and scale factor
-    when: [CYR:[TRANSLATED]] in[EN]withwith[CYR:[TRANSLATED]]inand[EN] f32 for iny[EN]andwith[CYR:[TRANSLATED]]and[EN]
+    when:  inwithinand f32 for inyandwithand
     then: f32 = int4_as_f32 * scale
     formula: |
       return @as(f32, @floatFromInt(int4)) * scale
 
-  # [CYR:[EN]A[TRANSLATED]] 4: [CYR:[TRANSLATED]]in[EN] [EN]in[EN] INT4 in [EN]and[EN] [CYR:[TRANSLATED]]
+  # [CYR:A] 4: in in INT4 in and 
   - name: pack_int4
-    given: [EN]in[EN] INT4 values (high, low)
-    when: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:ate] for [CYR:[TRANSLATED]]not[EN]andI
+    given: in INT4 values (high, low)
+    when:  in[CYR:ate] for notandI
     then: byte = (high << 4) | (low & 0x0F)
     formula: |
       high_bits = (@as(u8, @bitCast(high)) & 0x0F) << 4
       low_bits = @as(u8, @bitCast(low)) & 0x0F
       return high_bits | low_bits
 
-  # [CYR:[EN]A[TRANSLATED]] 5: [EN]with[CYR:[TRANSLATED]]in[EN] [CYR:[TRANSLATED]] in [EN]in[EN] INT4
+  # [CYR:A] 5: within  in in INT4
   - name: unpack_int4
-    given: [CYR:[TRANSLATED]]in[CYR:[EN]ny] [CYR:[TRANSLATED]]
-    when: [CYR:[TRANSLATED]] fromin[CYR:[TRANSLATED]] [EN]in[EN] INT4 values
+    given: in[CYR:ny] 
+    when:  fromin in INT4 values
     then: high = byte >> 4, low = byte & 0x0F (with sign extension)
     formula: |
       high_u4 = (byte >> 4) & 0x0F
       low_u4 = byte & 0x0F
-      # Sign extension: if [EN]and[EN] 3 [EN]with[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]], this [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]lno[EN]] number
+      # Sign extension: if and 3 within, this and[CYR:lno] number
       high = if (high_u4 & 0x08) != 0 then @as(i8, high_u4) - 16 else @as(i8, high_u4)
       low = if (low_u4 & 0x08) != 0 then @as(i8, low_u4) - 16 else @as(i8, low_u4)
 
-  # [CYR:[EN]A[TRANSLATED]] 6: Block-wise [EN]in[CYR:[TRANSLATED]]from[EN]andI [CYR:[TRANSLATED]]
+  # [CYR:A] 6: Block-wise infromandI 
   - name: quantize_tensor
-    given: f32 [CYR:[TRANSLATED]] [CYR:pro]fromin[CYR:[EN]lno[EN]] [CYR:[TRANSLATED]y]
-    when: [CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN]in[CYR:ate] in[EN]with[EN] [CYR:[TRANSLATED]] in INT4
-    then: [CYR:[TRANSLATED]]and[EN] on blockand, iny[EN]andwith[EN]and[EN] scale for each, [EN]in[CYR:[TRANSLATED]]from[EN]in[CYR:ate]
+    given: f32  [CYR:pro]fromin[CYR:lno] [CYR:y]
+    when:  withinandin[CYR:ate] inwith  in INT4
+    then: and on blockand, inyandwithand scale for each, infromin[CYR:ate]
     steps:
-      - Flatten [CYR:[TRANSLATED]] in 1D array
-      - [CYR:[TRANSLATED]]and[EN] on blockand [CYR:[TRANSLATED]] BLOCK_SIZE
-      - [CYR:[EN]I] each block[EN] iny[EN]andwith[EN]and[EN] scale ([CYR:[EN]A[TRANSLATED]] 1)
-      - [EN]in[CYR:[TRANSLATED]]from[EN]in[CYR:ate] [CYR:[TRANSLATED]] value ([CYR:[EN]A[TRANSLATED]] 2)
-      - [CYR:[TRANSLATED]]in[CYR:ate] [CYR:[TRANSLATED]y] INT4 in [CYR:[TRANSLATED]y] ([CYR:[EN]A[TRANSLATED]] 4)
-      - [CYR:[TRANSLATED]]and[EN] scales [CYR:[TRANSLATED]lno]
+      - Flatten  in 1D array
+      - and on blockand  BLOCK_SIZE
+      - [CYR:I] each block inyandwithand scale ([CYR:A] 1)
+      - infromin[CYR:ate]  value ([CYR:A] 2)
+      - in[CYR:ate] [CYR:y] INT4 in [CYR:y] ([CYR:A] 4)
+      - and scales [CYR:lno]
 
-  # [CYR:[EN]A[TRANSLATED]] 7: Block-wise [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]from[EN]andI [CYR:[TRANSLATED]]
+  # [CYR:A] 7: Block-wise infromandI 
   - name: dequantize_tensor
-    given: PackedInt4 [CYR:[TRANSLATED]]
-    when: [CYR:[TRANSLATED]] in[EN]withwith[CYR:[TRANSLATED]]inand[EN] f32 for inference
-    then: [EN]with[CYR:[TRANSLATED]]in[CYR:ate], [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]from[EN]in[CYR:ate] with with[EN]responsewith[EN]in[CYR:[TRANSLATED]]and[EN]and scales
+    given: PackedInt4 
+    when:  inwithinand f32 for inference
+    then: within[CYR:ate], infromin[CYR:ate] with withresponsewithinand scales
     steps:
-      - [EN]with[CYR:[TRANSLATED]]in[CYR:ate] [CYR:[TRANSLATED]y] in INT4 [CYR:[TRANSLATED]y] ([CYR:[EN]A[TRANSLATED]] 5)
-      - [CYR:[EN]I] each block[EN] [EN]and[CYR:me]and[EN] with[EN]responsewith[EN]in[CYR:[TRANSLATED]]and[EN] scale
-      - [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]from[EN]in[CYR:ate] [CYR:[TRANSLATED]] value ([CYR:[EN]A[TRANSLATED]] 3)
-      - Reshape in [EN]and[EN]andon[CYR:l[TRANSLATED]] [CYR:[TRANSLATED]]
+      - within[CYR:ate] [CYR:y] in INT4 [CYR:y] ([CYR:A] 5)
+      - [CYR:I] each block and[CYR:me]and withresponsewithinand scale
+      - infromin[CYR:ate]  value ([CYR:A] 3)
+      - Reshape in andon[CYR:l] 
 
-  # [CYR:[EN]A[TRANSLATED]] 8: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andI .tri → .tri.int4
+  # [CYR:A] 8: inandI .tri → .tri.int4
   - name: convert_tri_to_int4
-    given: [CYR:[TRANSLATED]]  .tri file[EN] with BF16/F32 in[EN]with[EN]and
-    when: [CYR:[TRANSLATED]] with[CYR:[TRANSLATED]ate] [EN]in[CYR:[TRANSLATED]]from[EN]in[CYR:[TRANSLATED]] in[EN]withand[EN]
-    then: [CYR:[TRANSLATED]ate] .tri.int4 file with INT4 in[EN]with[EN]and and scales
+    given:   .tri file with BF16/F32 inwithand
+    when:  withate] infromin inwithand
+    then: [CYR:ate] .tri.int4 file with INT4 inwithand and scales
     steps:
-      - [CYR:[TRANSLATED]]read [CYR:[EN]go[EN]]in[EN] .tri
-      - [CYR:[EN]I] each [CYR:[TRANSLATED]]:
-        - [CYR:[TRANSLATED]]and[EN] BF16/F32 in[EN]with[EN]
-        - [EN]and[CYR:me]and[EN] quantize_tensor ([CYR:[EN]A[TRANSLATED]] 6)
-        - [EN]write [CYR:[TRANSLATED]]in[CYR:[EN]nye] INT4 + scales
-      - [EN]write [EN]iny[EN] [CYR:[EN]go[EN]]in[EN] with quantized_size
+      - read [CYR:go]in .tri
+      - [CYR:I] each :
+        - and BF16/F32 inwith
+        - and[CYR:me]and quantize_tensor ([CYR:A] 6)
+        - write in[CYR:nye] INT4 + scales
+      - write iny [CYR:go]in with quantized_size
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# [CYR:[TRANSLATED]A[EN]] [CYR:[EN]A[EN]A] .tri.int4
+# [CYR:A] [CYR:AA] .tri.int4
 # ═══════════════════════════════════════════════════════════════════════════════
 
 file_format:
@@ -176,7 +176,7 @@ file_format:
         - packed_data: u8[packed_size]
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# [CYR:[TRANSLATED]] [CYR:[EN]A[TRANSLATED]]
+#  [CYR:A]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 metrics:
@@ -188,7 +188,7 @@ metrics:
     effective_bits: 5  # 4 + 1 overhead
     compression_ratio: 3.2x  # 16 / 5
 
-  # [CYR:[EN]I] 7B [CYR:[TRANSLATED]]and
+  # [CYR:I] 7B and
   qwen_7b:
     original_size_gb: 14.0  # BF16
     quantized_size_gb: 4.4  # INT4 + scales

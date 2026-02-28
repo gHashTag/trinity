@@ -1,16 +1,16 @@
 name: shell
-# Shell Page - [EN]andonI page-[CYR:[TRANSLATED]] for inwith[EN] [CYR:[TRANSLATED]]and[EN]in
+# Shell Page - andonI page- for inwith andin
 
 module: honeycomb/ui/shell
 version: 1.0.0
-description: [CYR:[TRANSLATED]]inonI page with Canvas, sidebar [CYR:[TRANSLATED]]and[EN]in, [CYR:[TRANSLATED]me[TRANSLATED]]and[EN] and setting[EN]and
+description: inonI page with Canvas, sidebar andin, [CYR:me]and and settingand
 
 functions:
-  # [EN]not[CYR:[TRANSLATED]]andI HTML with[CYR:[TRANSLATED]]and[EN]y
+  # notandI HTML withandy
   shell_page:
     params: []
     returns: String
-    description: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] HTML [EN]and[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]and[EN]y-[CYR:[TRANSLATED]]and
+    description: in[CYR:acts] HTML and withandy-and
     implementation: |
       "<!DOCTYPE html>
       <html lang=\"en\">
@@ -509,7 +509,7 @@ functions:
   shell_js:
     params: []
     returns: String
-    description: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] JavaScript code for Shell
+    description: in[CYR:acts] JavaScript code for Shell
     implementation: |
       "// VIBEE Plugin Shell - Client-side JavaScript
       
@@ -828,13 +828,13 @@ imports:
 
 tests:
   - name: generate_shell_page
-    description: [EN]not[CYR:[TRANSLATED]]andI HTML with[CYR:[TRANSLATED]]and[EN]y
+    description: notandI HTML withandy
     test: |
       let html = shell_page()
       string.contains(html, "VIBEE Plugin Shell")
   
   - name: generate_shell_js
-    description: [EN]not[CYR:[TRANSLATED]]andI JavaScript
+    description: notandI JavaScript
     test: |
       let js = shell_js()
       string.contains(js, "WebSocket")

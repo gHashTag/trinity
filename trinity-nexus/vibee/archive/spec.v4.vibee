@@ -23,7 +23,7 @@ compiler vibeec_v4 @version(4.0.0) @self_hosting @production_ready {
     test multiple_comments "# c1\n# c2\n# c3" -> Ok([Comment, Comment, Comment, EOF])
     test comment_after_code "behavior # comment" -> Ok([Keyword, Comment, EOF])
     test empty_comment "#" -> Ok([Comment("#"), EOF])
-    test comment_with_unicode "# [EN]andin[EN] [EN]and[EN] 🚀" -> Ok([Comment, EOF])
+    test comment_with_unicode "# andin and 🚀" -> Ok([Comment, EOF])
     test nested_comment_markers "# comment with # inside" -> Ok([Comment, EOF])
     test comment_at_eof "behavior test #" -> Ok([Keyword, Id, Comment, EOF])
     test multiline_comment "#[\nline1\nline2\n]#" -> Ok([MultiComment, EOF])
@@ -34,7 +34,7 @@ compiler vibeec_v4 @version(4.0.0) @self_hosting @production_ready {
     test camel_case "helloWorld" -> Ok([Id("helloWorld"), EOF])
     test snake_case "hello_world_test" -> Ok([Id("hello_world_test"), EOF])
     test with_numbers "test123" -> Ok([Id("test123"), EOF])
-    test unicode_id "[EN]andin[EN]" -> Ok([Id("[EN]andin[EN]"), EOF])
+    test unicode_id "andin" -> Ok([Id("andin"), EOF])
     test emoji_id "test🚀" -> Ok([Id("test🚀"), EOF])
     test mixed_unicode "hello世界test" -> Ok([Id("hello世界test"), EOF])
     test very_long_id ${repeat("a", 10000)} -> Ok([Id(${repeat("a", 10000)}), EOF])
@@ -57,7 +57,7 @@ compiler vibeec_v4 @version(4.0.0) @self_hosting @production_ready {
     test string_with_quote "\"say \\\"hi\\\"\"" -> Ok([String("say \"hi\""), EOF])
     test multiline_string "\"\"\"line1\nline2\"\"\"" -> Ok([String("line1\nline2"), EOF])
     test string_interpolation "\"{x}\"" -> Ok([StringStart, Id("x"), StringEnd, EOF])
-    test unicode_string "\"[EN]andin[EN] 世界 🚀\"" -> Ok([String("[EN]andin[EN] 世界 🚀"), EOF])
+    test unicode_string "\"andin 世界 🚀\"" -> Ok([String("andin 世界 🚀"), EOF])
     test raw_string "r\"no\\nescape\"" -> Ok([String("no\\nescape"), EOF])
     test unterminated_string "\"hello" !> "Unterminated string at line 1"
     test invalid_escape "\"\\x\"" !> "Invalid escape sequence '\\x'"

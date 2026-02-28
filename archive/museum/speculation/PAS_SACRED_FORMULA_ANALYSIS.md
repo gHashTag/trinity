@@ -1,16 +1,16 @@
-# PAS-аonлandз Сin[CYR:ященной] [CYR:Формулы]
+# PAS-аonлandз Сin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ## V = n × 3^k × π^m × φ^p
 
-**Predictive Algorithmic Systematics for [CYR:математ]andчеwithtoandх fromto[CYR:рыт]andй**
+**Predictive Algorithmic Systematics for [CYR:[TRANSLATED]]andчеwithtoandх fromfor[TRANSLATED]]andй**
 
 ---
 
-## 1. Теto[CYR:ущее] withоwith[CYR:тоян]andе
+## 1. Теfor[TRANSLATED]] withоwith[TRANSLATED]]andе
 
-### 1.1 Изinеwith[CYR:тные] resultы
+### 1.1 Изinеwith[TRANSLATED]] resultы
 
-| [CYR:Кон]with[CYR:танта] | [CYR:Формула] | [CYR:Точно]withть |
+| [CYR:[TRANSLATED]]with[TRANSLATED]] | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]withть |
 |-----------|---------|----------|
 | 1/α | 4π³ + π² + π | 0.0002% |
 | m_p/m_e | 6π⁵ | 0.002% |
@@ -18,95 +18,95 @@
 | Ω_m | 1/π | 1.05% |
 | n_s | 94/π⁴ | 0.0002% |
 
-### 1.2 [CYR:Фундаментальное] [CYR:тожде]withтinо
+### 1.2 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinо
 
 ```
-φ² + 1/φ² = 3 ([CYR:ТОЧНО]!)
+φ² + 1/φ² = 3 ([CYR:[TRANSLATED]]!)
 ```
 
-[CYR:Это] within[CYR:язы]in[CYR:ает] [CYR:зол]fromое with[CYR:ечен]andе φ with чandwith[CYR:лом] 3.
+[CYR:[TRANSLATED]] within[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromое with[TRANSLATED]]andе φ with чandwith[TRANSLATED]] 3.
 
 ---
 
 ## 2. PAS-аonлandз
 
-### 2.1 [CYR:Паттерны] fromto[CYR:рыт]andй
+### 2.1 [CYR:[TRANSLATED]] fromfor[TRANSLATED]]andй
 
-| [CYR:Паттерн] | Прandмеnotнandе | Уwith[CYR:пешно]withть |
+| [CYR:[TRANSLATED]] | Прandмеnotнandе | Уwith[TRANSLATED]]withть |
 |---------|------------|------------|
 | **ALG** (Algebraic) | φ² + 1/φ² = 3 | 100% |
-| **D&C** (Divide-and-Conquer) | [CYR:Разложен]andе toонwith[CYR:тант] | 85% |
-| **PRE** (Precomputation) | [CYR:Табл]andцы with[CYR:тепе]notй | 90% |
-| **FDT** (Frequency Domain) | [CYR:Фурье]-аonлandз | 60% |
+| **D&C** (Divide-and-Conquer) | [CYR:[TRANSLATED]]andе toонwith[TRANSLATED]] | 85% |
+| **PRE** (Precomputation) | [CYR:[TRANSLATED]]andцы with[TRANSLATED]]notй | 90% |
+| **FDT** (Frequency Domain) | [CYR:[TRANSLATED]]-аonлandз | 60% |
 
-### 2.2 [CYR:Пред]withto[CYR:азан]andя ноinых [CYR:формул]
+### 2.2 [CYR:[TRANSLATED]]withfor[TRANSLATED]]andя ноinых [CYR:[TRANSLATED]]
 
-#### [CYR:Пред]withto[CYR:азан]andе 1: [CYR:Гра]inand[CYR:тац]andонonя поwith[CYR:тоян]onя
+#### [CYR:[TRANSLATED]]withfor[TRANSLATED]]andе 1: [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]]andонonя поwith[TRANSLATED]]onя
 
 ```yaml
-target: "G ([CYR:гра]inand[CYR:тац]andонonя поwith[CYR:тоян]onя)"
-current: "[CYR:Нет] [CYR:точной] [CYR:формулы]"
+target: "G ([CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]]andонonя поwith[TRANSLATED]]onя)"
+current: "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]"
 predicted: "G = n × 3^k × π^m × φ^p × ℏ × c"
 confidence: 65%
 patterns: [ALG, D&C]
-reasoning: "G within[CYR:яза]on with ℏ and c [CYR:через] [CYR:план]toоinwithtoandе едandнandцы"
+reasoning: "G within[CYR:[TRANSLATED]]on with ℏ and c [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toоinwithtoandе едandнandцы"
 ```
 
-**Гandпfrom[CYR:еза]:**
+**Гandпfrom[CYR:[TRANSLATED]]:**
 ```
 G × c² / ℏ = n × 3^k × π^m × φ^p
 ```
 
-#### [CYR:Пред]withto[CYR:азан]andе 2: Поwith[CYR:тоян]onя [CYR:Хаббла]
+#### [CYR:[TRANSLATED]]withfor[TRANSLATED]]andе 2: Поwith[TRANSLATED]]onя [CYR:[TRANSLATED]]
 
 ```yaml
-target: "H₀ (поwith[CYR:тоян]onя [CYR:Хаббла])"
+target: "H₀ (поwith[TRANSLATED]]onя [CYR:[TRANSLATED]])"
 current: "~70 toм/with/Мпto"
 predicted: "H₀ = 22 × 3 × π × φ⁻¹ toм/with/Мпto"
 confidence: 55%
 patterns: [ALG]
-calculation: "22 × 3 × 3.14 × 0.618 ≈ 128... ([CYR:требует] [CYR:уточ]notнandя)"
+calculation: "22 × 3 × 3.14 × 0.618 ≈ 128... ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]]notнandя)"
 ```
 
-#### [CYR:Пред]withto[CYR:азан]andе 3: Маwithwithа not[CYR:йтр]andно
+#### [CYR:[TRANSLATED]]withfor[TRANSLATED]]andе 3: Маwithа not[CYR:[TRANSLATED]]andно
 
 ```yaml
-target: "m_ν (маwithwithа not[CYR:йтр]andно)"
+target: "m_ν (маwithа not[CYR:[TRANSLATED]]andно)"
 current: "< 0.1 эВ"
 predicted: "m_ν = n × 3^(-k) × π^(-m) × φ^(-p) эВ"
 confidence: 70%
 patterns: [ALG, D&C]
-reasoning: "[CYR:Малые] маwithwithы [CYR:требуют] fromрand[CYR:цательных] with[CYR:тепе]notй"
+reasoning: "[CYR:[TRANSLATED]] маwithы [CYR:[TRANSLATED]] fromрand[CYR:[TRANSLATED]] with[TRANSLATED]]notй"
 ```
 
-### 2.3 Раwithшand[CYR:рен]andе [CYR:формулы]
+### 2.3 Раwithшand[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]
 
-#### [CYR:Доба]in[CYR:лен]andе e (чandwithло [CYR:Эйлера])
+#### [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе e (чandwithло [CYR:[TRANSLATED]])
 
 ```
 V_extended = n × 3^k × π^m × φ^p × e^q
 ```
 
-**[CYR:Обо]withноinанandе:**
-- e^(iπ) + 1 = 0 ([CYR:тожде]withтinо [CYR:Эйлера])
-- e within[CYR:язано] with π [CYR:через] to[CYR:омпле]towith[CYR:ную] эtowithпоnot[CYR:нту]
-- [CYR:Доба]in[CYR:ляет] [CYR:ещё] [CYR:одну] with[CYR:тепень] within[CYR:ободы]
+**[CYR:[TRANSLATED]]withноinанandе:**
+- e^(iπ) + 1 = 0 ([CYR:[TRANSLATED]]withтinо [CYR:[TRANSLATED]])
+- e within[CYR:[TRANSLATED]] with π [CYR:[TRANSLATED]] for[TRANSLATED]]towith[TRANSLATED]] эtowithпоnot[CYR:[TRANSLATED]]
+- [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] with[TRANSLATED]] within[CYR:[TRANSLATED]]
 
-#### [CYR:Доба]in[CYR:лен]andе √2
+#### [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе √2
 
 ```
 V_sqrt2 = n × 3^k × π^m × φ^p × (√2)^r
 ```
 
-**[CYR:Обо]withноinанandе:**
-- √2 — дand[CYR:аго]onль едandнand[CYR:чного] toin[CYR:адрата]
-- [CYR:Поя]in[CYR:ляет]withя in toin[CYR:анто]inой [CYR:механ]andtoе ([CYR:норм]andроintoа)
+**[CYR:[TRANSLATED]]withноinанandе:**
+- √2 — дand[CYR:[TRANSLATED]]onль едandнand[CYR:[TRANSLATED]] toin[CYR:[TRANSLATED]]
+- [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]withя in toin[CYR:[TRANSLATED]]inой [CYR:[TRANSLATED]]andtoе ([CYR:[TRANSLATED]]andроintoа)
 
 ---
 
-## 3. [CYR:Математ]andчеwithtoandе раwithшand[CYR:рен]andя
+## 3. [CYR:[TRANSLATED]]andчеwithtoandе раwithшand[CYR:[TRANSLATED]]andя
 
-### 3.1 [CYR:Обобщён]onя [CYR:формула]
+### 3.1 [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]
 
 ```
 V = n × ∏ᵢ pᵢ^kᵢ
@@ -114,17 +114,17 @@ V = n × ∏ᵢ pᵢ^kᵢ
 
 where pᵢ ∈ {3, π, φ, e, √2, ...}
 
-### 3.2 Сin[CYR:язь] with E8
+### 3.2 Сin[CYR:[TRANSLATED]] with E8
 
 ```
 dim(E8) = 248 = 3⁵ + 5
 roots(E8) = 240 = 3⁵ - 3
 
-Гandпfrom[CYR:еза]: 5 = F₅ (чandwithло Фandбоonччand)
+Гandпfrom[CYR:[TRANSLATED]]: 5 = F₅ (чandwithло Фandбоonччand)
           3 = φ² + 1/φ²
 ```
 
-### 3.3 Сin[CYR:язь] with [CYR:теор]andей with[CYR:трун]
+### 3.3 Сin[CYR:[TRANSLATED]] with [CYR:[TRANSLATED]]andей with[TRANSLATED]]
 
 ```
 D_bosonic = 26 = 2 × 13 = 2 × F₇
@@ -134,14 +134,14 @@ D_M = 11 = F₆ + F₄ = 8 + 3
 
 ---
 
-## 4. [CYR:Алгор]andтм поandwithtoа [CYR:формул]
+## 4. [CYR:[TRANSLATED]]andтм поandwithtoа [CYR:[TRANSLATED]]
 
 ### 4.1 Пwithеinдоtoод
 
 ```python
 def find_sacred_formula(target_value, max_n=1000, max_k=10):
     """
-    Поandwithto [CYR:формулы] V = n × 3^k × π^m × φ^p for [CYR:заданного] зon[CYR:чен]andя
+    Поandwithto [CYR:[TRANSLATED]] V = n × 3^k × π^m × φ^p for [CYR:[TRANSLATED]] зon[CYR:[TRANSLATED]]andя
     """
     best_error = float('inf')
     best_params = None
@@ -160,93 +160,93 @@ def find_sacred_formula(target_value, max_n=1000, max_k=10):
     return best_params, best_error
 ```
 
-### 4.2 [CYR:Опт]andмand[CYR:зац]andя [CYR:через] PAS
+### 4.2 [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]] PAS
 
 ```python
 def pas_optimized_search(target_value):
     """
-    PAS-[CYR:опт]andмandзandроin[CYR:анный] поandwithto with andwith[CYR:пользо]inанandем [CYR:паттерно]in
+    PAS-[CYR:[TRANSLATED]]andмandзandроin[CYR:[TRANSLATED]] поandwithto with andwith[TRANSLATED]]inанandем [CYR:[TRANSLATED]]in
     """
-    # [CYR:Паттерн] PRE: [CYR:пред]inычandwith[CYR:ленные] with[CYR:тепен]and
+    # [CYR:[TRANSLATED]] PRE: [CYR:[TRANSLATED]]inычandwith[TRANSLATED]] with[TRANSLATED]]and
     powers_3 = [3**k for k in range(-10, 11)]
     powers_π = [π**m for m in range(-10, 11)]
     powers_φ = [φ**p for p in range(-10, 11)]
     
-    # [CYR:Паттерн] D&C: sectionяй and inлаwithтinуй
-    # Сon[CYR:чала] and[CYR:щем] [CYR:порядо]to inелandчandны [CYR:через] k
-    # [CYR:Затем] [CYR:уточняем] [CYR:через] m and p
+    # [CYR:[TRANSLATED]] D&C: sectionяй and inлаwithтinуй
+    # Сon[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]to inелandчandны [CYR:[TRANSLATED]] k
+    # [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] m and p
     
-    # [CYR:Паттерн] ALG: [CYR:алгебра]andчеwithtoandе withоfrom[CYR:ношен]andя
-    # Иwith[CYR:пользуем] φ² + 1/φ² = 3 for withоto[CYR:ращен]andя [CYR:про]with[CYR:тран]withтinа поandwithtoа
+    # [CYR:[TRANSLATED]] ALG: [CYR:[TRANSLATED]]andчеwithtoandе withоfrom[CYR:[TRANSLATED]]andя
+    # Иwith[TRANSLATED]] φ² + 1/φ² = 3 for withоfor[TRANSLATED]]andя [CYR:[TRANSLATED]]with[TRANSLATED]]withтinа поandwithtoа
     
     ...
 ```
 
 ---
 
-## 5. [CYR:Вер]andфandtoацandя [CYR:формул]
+## 5. [CYR:[TRANSLATED]]andфandtoацandя [CYR:[TRANSLATED]]
 
-### 5.1 Крand[CYR:тер]andand to[CYR:аче]withтinа
+### 5.1 Крand[CYR:[TRANSLATED]]and for[TRANSLATED]]withтinа
 
-1. **[CYR:Точно]withть**: ошandбtoа < 0.01%
-2. **[CYR:Про]withтfromа**: |n| < 1000, |k|, |m|, |p| < 10
-3. **Унandto[CYR:ально]withть**: едandнwithтin[CYR:енное] [CYR:решен]andе in [CYR:про]with[CYR:тран]withтinе parameterоin
-4. **Фandзandчеwithtoandй withмыwithл**: and[CYR:нтерпрет]and[CYR:руемо]withть to[CYR:оэфф]andцand[CYR:енто]in
+1. **[CYR:[TRANSLATED]]withть**: ошandбtoа < 0.01%
+2. **[CYR:[TRANSLATED]]withтfromа**: |n| < 1000, |k|, |m|, |p| < 10
+3. **Унandfor[TRANSLATED]]withть**: едandнwithтin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andе in [CYR:[TRANSLATED]]with[TRANSLATED]]withтinе parameterоin
+4. **Фandзandчеwithtoandй withмыwithл**: and[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withть for[TRANSLATED]]andцand[CYR:[TRANSLATED]]in
 
-### 5.2 [CYR:Стат]andwithтandчеwithtoandй теwithт
+### 5.2 [CYR:[TRANSLATED]]andwithтandчеwithtoandй теwithт
 
 ```
-H₀: [CYR:Формула] with[CYR:лучай]on
-H₁: [CYR:Формула] notwith[CYR:лучай]on
+H₀: [CYR:[TRANSLATED]] with[TRANSLATED]]on
+H₁: [CYR:[TRANSLATED]] notwith[TRANSLATED]]on
 
-P(ошandбtoа < 0.01% | with[CYR:лучайно]) ≈ 10⁻⁴
-P(15 [CYR:формул] with ошandбtoой < 0.01% | with[CYR:лучайно]) < 10⁻³⁰
+P(ошandбtoа < 0.01% | with[TRANSLATED]]) ≈ 10⁻⁴
+P(15 [CYR:[TRANSLATED]] with ошandбtoой < 0.01% | with[TRANSLATED]]) < 10⁻³⁰
 
-Выinод: H₀ fromin[CYR:ергает]withя with [CYR:уро]innotм зonчandмоwithтand < 10⁻³⁰
+Выinод: H₀ fromin[CYR:[TRANSLATED]]withя with [CYR:[TRANSLATED]]innotм зonчandмоwithтand < 10⁻³⁰
 ```
 
 ---
 
 ## 6. Прandмеnotнandе to toнandге 999
 
-### 6.1 [CYR:Стру]to[CYR:тура] toнandгand
+### 6.1 [CYR:[TRANSLATED]]for[TRANSLATED]] toнandгand
 
 ```
 999 = 37 × 27 = 37 × 3³
 
-В [CYR:терм]andonх Сin[CYR:ященной] [CYR:Формулы]:
+ [CYR:[TRANSLATED]]andonх Сin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
 999 = 37 × 3³ × π⁰ × φ⁰
     = V(37, 3, 0, 0)
 ```
 
-### 6.2 [CYR:Номера] [CYR:гла]in
+### 6.2 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in
 
 ```
-[CYR:Гла]inа 1:   V(1, 0, 0, 0) = 1
-[CYR:Гла]inа 3:   V(1, 1, 0, 0) = 3
-[CYR:Гла]inа 9:   V(1, 2, 0, 0) = 9
-[CYR:Гла]inа 27:  V(1, 3, 0, 0) = 27
-[CYR:Гла]inа 81:  V(1, 4, 0, 0) = 81
-[CYR:Гла]inа 243: V(1, 5, 0, 0) = 243
-[CYR:Гла]inа 333: V(37, 2, 0, 0) = 333
-[CYR:Гла]inа 666: V(74, 2, 0, 0) = 666
-[CYR:Гла]inа 999: V(37, 3, 0, 0) = 999
+[CYR:[TRANSLATED]]inа 1:   V(1, 0, 0, 0) = 1
+[CYR:[TRANSLATED]]inа 3:   V(1, 1, 0, 0) = 3
+[CYR:[TRANSLATED]]inа 9:   V(1, 2, 0, 0) = 9
+[CYR:[TRANSLATED]]inа 27:  V(1, 3, 0, 0) = 27
+[CYR:[TRANSLATED]]inа 81:  V(1, 4, 0, 0) = 81
+[CYR:[TRANSLATED]]inа 243: V(1, 5, 0, 0) = 243
+[CYR:[TRANSLATED]]inа 333: V(37, 2, 0, 0) = 333
+[CYR:[TRANSLATED]]inа 666: V(74, 2, 0, 0) = 666
+[CYR:[TRANSLATED]]inа 999: V(37, 3, 0, 0) = 999
 ```
 
-### 6.3 Геnot[CYR:рац]andя to[CYR:онтента]
+### 6.3 Геnot[CYR:[TRANSLATED]]andя for[TRANSLATED]]
 
-[CYR:Каждая] [CYR:гла]inа N and[CYR:меет] унandto[CYR:альную] withandгon[CYR:туру] (n, k, m, p):
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inа N and[CYR:[TRANSLATED]] унandfor[TRANSLATED]] withandгon[CYR:[TRANSLATED]] (n, k, m, p):
 
 ```python
 def chapter_signature(N):
     """Computes chapter signature"""
     n, k = sacred_decomposition(N)  # N = n × 3^k
-    m = 0  # π not [CYR:уча]withтin[CYR:ует] in [CYR:номерах]
-    p = 0  # φ not [CYR:уча]withтin[CYR:ует] in [CYR:номерах]
+    m = 0  # π not [CYR:[TRANSLATED]]withтin[CYR:[TRANSLATED]] in [CYR:[TRANSLATED]]
+    p = 0  # φ not [CYR:[TRANSLATED]]withтin[CYR:[TRANSLATED]] in [CYR:[TRANSLATED]]
     return (n, k, m, p)
 
 def sacred_decomposition(N):
-    """[CYR:Разложен]andе N = n × 3^k"""
+    """[CYR:[TRANSLATED]]andе N = n × 3^k"""
     k = 0
     while N % 3 == 0:
         N //= 3
@@ -256,21 +256,21 @@ def sacred_decomposition(N):
 
 ---
 
-## 7. Заto[CYR:лючен]andе
+## 7. Заfor[TRANSLATED]]andе
 
-### 7.1 [CYR:Ключе]inые resultы PAS-аonлandза
+### 7.1 [CYR:[TRANSLATED]]inые resultы PAS-аonлandза
 
-1. **[CYR:Паттерн] ALG** onand[CYR:более] уwith[CYR:пешен] for Сin[CYR:ященной] [CYR:Формулы]
-2. **[CYR:Фундаментальное] [CYR:тожде]withтinо** φ² + 1/φ² = 3 — to[CYR:люч] to [CYR:пон]and[CYR:ман]andю
-3. **[CYR:Пред]withto[CYR:азан]andя** for G, H₀, m_ν [CYR:требуют] эtowith[CYR:пер]and[CYR:ментальной] [CYR:про]inерtoand
+1. **[CYR:[TRANSLATED]] ALG** onand[CYR:[TRANSLATED]] уwith[TRANSLATED]] for Сin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+2. **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinо** φ² + 1/φ² = 3 — for[TRANSLATED]] to [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andю
+3. **[CYR:[TRANSLATED]]withfor[TRANSLATED]]andя** for G, H₀, m_ν [CYR:[TRANSLATED]] эtowith[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inерtoand
 
-### 7.2 [CYR:Напра]in[CYR:лен]andя andwithwith[CYR:ледо]inанandй
+### 7.2 [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andя andwith[TRANSLATED]]inанandй
 
-1. Раwithшand[CYR:рен]andе [CYR:формулы]: V = n × 3^k × π^m × φ^p × e^q
-2. Сin[CYR:язь] with E8 and [CYR:теор]andей with[CYR:трун]
-3. Прandмеnotнandе to toin[CYR:анто]inой [CYR:гра]inand[CYR:тац]andand
+1. Раwithшand[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]: V = n × 3^k × π^m × φ^p × e^q
+2. Сin[CYR:[TRANSLATED]] with E8 and [CYR:[TRANSLATED]]andей with[TRANSLATED]]
+3. Прandмеnotнandе to toin[CYR:[TRANSLATED]]inой [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]]and
 
-### 7.3 Сin[CYR:ящен]onя [CYR:Формула]
+### 7.3 Сin[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]
 
 ```
 ╔═══════════════════════════════════════════════════════════════╗
@@ -278,12 +278,12 @@ def sacred_decomposition(N):
 ║   V = n × 3^k × π^m × φ^p                                    ║
 ║                                                               ║
 ║   where:                                                        ║
-║   • n — [CYR:целое] чandwithло (оwithноinа)                                 ║
-║   • k — with[CYR:тепень] [CYR:трой]toand ([CYR:тро]and[CYR:чно]withть)                          ║
-║   • m — with[CYR:тепень] π ([CYR:геометр]andя)                                ║
-║   • p — with[CYR:тепень] φ ([CYR:гармон]andя)                                 ║
+║   • n — [CYR:[TRANSLATED]] чandwithло (оwithноinа)                                 ║
+║   • k — with[TRANSLATED]] [CYR:[TRANSLATED]]toand ([CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withть)                          ║
+║   • m — with[TRANSLATED]] π ([CYR:[TRANSLATED]]andя)                                ║
+║   • p — with[TRANSLATED]] φ ([CYR:[TRANSLATED]]andя)                                 ║
 ║                                                               ║
-║   [CYR:Фундаментальное] [CYR:тожде]withтinо: φ² + 1/φ² = 3                   ║
+║   [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinо: φ² + 1/φ² = 3                   ║
 ║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
 ```

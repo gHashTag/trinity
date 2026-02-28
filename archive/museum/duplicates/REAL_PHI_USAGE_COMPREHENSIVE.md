@@ -1,28 +1,28 @@
-# 📊 [CYR:ВСЕ] [CYR:РЕАЛЬНЫЕ] [CYR:ПРИМЕНЕНИЯ] φ В VIBEE
-## [CYR:Полный] and[CYR:нже]not[CYR:рный] аonлandз to[CYR:одо]inой [CYR:базы]
+# 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] φ  VIBEE
+## [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]not[CYR:[TRANSLATED]] аonлandз for[TRANSLATED]]inой [CYR:[TRANSLATED]]
 
-**[CYR:Дата] аonлandза**: 2026-01-30
+**[CYR:[TRANSLATED]] аonлandза**: 2026-01-30
 **Аonлandтandto**: OpenCode
-**[CYR:Стату]with**: ✅ [CYR:ВЕРИФИЦИРОВАНО]
+**[CYR:[TRANSLATED]]with**: ✅ [CYR:[TRANSLATED]]
 
 ---
 
-## 📈 [CYR:СТАТИСТИКА]
+## 📈 [CYR:[TRANSLATED]]
 
-| [CYR:Метр]andtoа | Зon[CYR:чен]andе |
+| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе |
 |---------|----------|
-| Вwith[CYR:его] fileоin in `src/vibeec` | 176 |
-| [CYR:Файло]in with andwith[CYR:пользо]inанandем φ/golden | 139 |
-| [CYR:Кон]with[CYR:тант] PHI/GOLDEN_IDENTITY | 50+ fileоin |
-| [CYR:Фун]toцandй with φ in [CYR:алгор]and[CYR:тмах] | 15+ |
-| [CYR:Опт]andмand[CYR:зац]andй with φ | 8 |
-| [CYR:Процент] охin[CYR:ата] | 79% |
+| Вwith[TRANSLATED]] fileоin in `src/vibeec` | 176 |
+| [CYR:[TRANSLATED]]in with andwith[TRANSLATED]]inанandем φ/golden | 139 |
+| [CYR:[TRANSLATED]]with[TRANSLATED]] PHI/GOLDEN_IDENTITY | 50+ fileоin |
+| [CYR:[TRANSLATED]]toцandй with φ in [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] | 15+ |
+| [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andй with φ | 8 |
+| [CYR:[TRANSLATED]] охin[CYR:[TRANSLATED]] | 79% |
 
 ---
 
-## 🔬 [CYR:КАТЕГОРИИ] [CYR:РЕАЛЬНЫХ] [CYR:ПРИМЕНЕНИЙ]
+## 🔬 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### 1. AMR (Amortized Multiplicative Resize) - 2 [CYR:реал]and[CYR:зац]andand
+### 1. AMR (Amortized Multiplicative Resize) - 2 [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and
 
 #### 1.1 CodeBuilder (codegen_v4.zig:78-85)
 ```zig
@@ -35,15 +35,15 @@ fn grow(self: *Self, min_additional: usize) !void {
     self.reallocations += 1;
 }
 ```
-**[CYR:Науч]onя оwithноinа**: 
+**[CYR:[TRANSLATED]]onя оwithноinа**: 
 - Amortized Multiplicative Resize (AMR pattern)
-- [CYR:Опт]and[CYR:мальный] [CYR:множ]and[CYR:тель]: φ = 1.618 (on[CYR:учно] [CYR:обо]withноinан)
-- Иwith[CYR:точн]andto: CLRS (Cormen, Leiserson, Rivest, Stein) — *Introduction to Algorithms*
+- [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]: φ = 1.618 (on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withноinан)
+- Иwith[TRANSLATED]]andto: CLRS (Cormen, Leiserson, Rivest, Stein) — *Introduction to Algorithms*
 
-**[CYR:Почему] φ?**
-- [CYR:Балан]with [CYR:между] [CYR:перера]with[CYR:пределен]andем [CYR:памят]and and утor[CYR:зац]andей
-- φ² + 1/φ² = 3 поto[CYR:азы]in[CYR:ает] with[CYR:балан]withandроin[CYR:анно]withть
-- φ яin[CYR:ляет]withя "onand[CYR:более] and[CYR:ррац]andоon[CYR:льным]" чandwith[CYR:лом], that [CYR:улучшает] раwith[CYR:пределен]andе
+**[CYR:[TRANSLATED]] φ?**
+- [CYR:[TRANSLATED]]with [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[TRANSLATED]]andем [CYR:[TRANSLATED]]and and утor[CYR:[TRANSLATED]]andей
+- φ² + 1/φ² = 3 поfor[TRANSLATED]]in[CYR:[TRANSLATED]] with[TRANSLATED]]withandроin[CYR:[TRANSLATED]]withть
+- φ яin[CYR:[TRANSLATED]]withя "onand[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]andоon[CYR:[TRANSLATED]]" чandwith[TRANSLATED]], that [CYR:[TRANSLATED]] раwith[TRANSLATED]]andе
 
 #### 1.2 Memory Pool (memory_pool.zig:19,106)
 ```zig
@@ -54,18 +54,18 @@ pub const PoolConfig = struct {
     alignment: usize = 8,
 };
 
-// В [CYR:фун]toцandand growPool():
+//  [CYR:[TRANSLATED]]toцand growPool():
 const new_count: usize = if (current_capacity == 0)
     self.config.initial_block_count
 else
     @intFromFloat(@as(f64, @floatFromInt(current_capacity)) * self.config.growth_factor);
 ```
 
-**[CYR:Науч]onя оwithноinа**: Та же AMR with[CYR:тратег]andя, прandмеnotнonя to memory pool
+**[CYR:[TRANSLATED]]onя оwithноinа**: Та же AMR with[TRANSLATED]]andя, прandмеnotнonя to memory pool
 
 ---
 
-### 2. LUCAS NUMBERS - O(log n) [CYR:опт]andмand[CYR:зац]andя
+### 2. LUCAS NUMBERS - O(log n) [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя
 
 #### 2.1 Lookup Table (sacred_math.zig:60-96)
 ```zig
@@ -110,14 +110,14 @@ pub inline fn lucas(n: u32) i64 {
 }
 ```
 
-**[CYR:Науч]onя оwithноinа**:
-- [CYR:Формула] Бandnot for чandwithел Луtoаwithа: L(n) = φⁿ + (1-φ)ⁿ = φⁿ + 1/φⁿ
-- L(2) = φ² + 1/φ² = 3 — to[CYR:люч] to [CYR:трой]withтin[CYR:енно]withтand
-- [CYR:Пред]inычandwith[CYR:лен]andе до 20 зon[CYR:чен]andй for O(1) доwith[CYR:тупа]
+**[CYR:[TRANSLATED]]onя оwithноinа**:
+- [CYR:[TRANSLATED]] Бandnot for чandwithел Луtoаwithа: L(n) = φⁿ + (1-φ)ⁿ = φⁿ + 1/φⁿ
+- L(2) = φ² + 1/φ² = 3 — for[TRANSLATED]] to [CYR:[TRANSLATED]]withтin[CYR:[TRANSLATED]]withтand
+- [CYR:[TRANSLATED]]inычandwith[TRANSLATED]]andе до 20 зon[CYR:[TRANSLATED]]andй for O(1) доwith[TRANSLATED]]
 
-**[CYR:Опт]andмand[CYR:зац]andя**:
-- [CYR:Итерат]andinonя [CYR:формула]: O(n) with[CYR:ложно]withть
-- [CYR:Через] φ: O(log n) with[CYR:ложно]withть (эtowithпоnotнцand[CYR:аль]onя with[CYR:ход]andмоwithть)
+**[CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя**:
+- [CYR:[TRANSLATED]]andinonя [CYR:[TRANSLATED]]: O(n) with[TRANSLATED]]withть
+- [CYR:[TRANSLATED]] φ: O(log n) with[TRANSLATED]]withть (эtowithпоnotнцand[CYR:[TRANSLATED]]onя with[TRANSLATED]]andмоwithть)
 - Lookup table: O(1) for n < 20
 
 #### 2.2 Fibonacci (sacred_math.zig:100-150)
@@ -137,11 +137,11 @@ pub inline fn fibonacci(n: u32) u64 {
 }
 ```
 
-**[CYR:Науч]onя оwithноinа**: [CYR:Формула] Бandnot (1749 г.)
+**[CYR:[TRANSLATED]]onя оwithноinа**: [CYR:[TRANSLATED]] Бandnot (1749 .)
 
 ---
 
-### 3. FIBONACCI HASH - [CYR:Опт]and[CYR:мальное] раwith[CYR:пределен]andе
+### 3. FIBONACCI HASH - [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] раwith[TRANSLATED]]andе
 
 #### 3.1 Phi Hash Function (sacred_math.zig:147-160)
 ```zig
@@ -161,17 +161,17 @@ pub inline fn phiHashMod(key: u64, table_bits: u6) usize {
 }
 ```
 
-**[CYR:Науч]onя оwithноinа**:
+**[CYR:[TRANSLATED]]onя оwithноinа**:
 - Fibonacci hashing: `hash = (key × φ) mod size`
-- φ яin[CYR:ляет]withя "onand[CYR:более] and[CYR:ррац]andоon[CYR:льным]" чandwith[CYR:лом]
-- [CYR:Обе]with[CYR:печ]andin[CYR:ает] [CYR:опт]and[CYR:мальное] раwith[CYR:пределен]andе to[CYR:лючей]
-- [CYR:Избегает] clustering in hash-[CYR:табл]and[CYR:цах]
+- φ яin[CYR:[TRANSLATED]]withя "onand[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]andоon[CYR:[TRANSLATED]]" чandwith[TRANSLATED]]
+- [CYR:[TRANSLATED]]with[TRANSLATED]]andin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] раwith[TRANSLATED]]andе for[TRANSLATED]]
+- [CYR:[TRANSLATED]] clustering in hash-[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
 
-**[CYR:Почему] this [CYR:раб]from[CYR:ает]?**
+**[CYR:[TRANSLATED]] this [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]?**
 - φ = (1 + √5)/2 ≈ 1.618033988749895
 - φ × 2^64 ≈ 11400714819323198485
-- [CYR:Умножен]andе on "onand[CYR:более] and[CYR:ррац]andоon[CYR:льное]" чandwithло мandнandмandзand[CYR:рует] to[CYR:олл]andзandand
-- Прand[CYR:меняет]withя in HashMap, StringMap, HashMap in with[CYR:тандартных] бandблandfromеtoах
+- [CYR:[TRANSLATED]]andе on "onand[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]andоon[CYR:[TRANSLATED]]" чandwithло мandнandмandзand[CYR:[TRANSLATED]] for[TRANSLATED]]andзand
+- Прand[CYR:[TRANSLATED]]withя in HashMap, StringMap, HashMap in with[TRANSLATED]] бandблandfromеtoах
 
 ---
 
@@ -187,15 +187,15 @@ pub fn baseQuantum(priority: u8) u64 {
 }
 ```
 
-**[CYR:Науч]onя оwithноinа**:
-- Выwithоtoandй прandорand[CYR:тет] (255): factor = φ^(2-4) = φ^(-2) ≈ 0.382
-- Нandзtoandй прandорand[CYR:тет] (0): factor = φ^(2-0) = φ² ≈ 2.618
-- [CYR:Балан]with [CYR:между] прandорand[CYR:тетам]and: withоfrom[CYR:ношен]andе ~6.85:1
+**[CYR:[TRANSLATED]]onя оwithноinа**:
+- Выwithоtoandй прandорand[CYR:[TRANSLATED]] (255): factor = φ^(2-4) = φ^(-2) ≈ 0.382
+- Нandзtoandй прandорand[CYR:[TRANSLATED]] (0): factor = φ^(2-0) = φ² ≈ 2.618
+- [CYR:[TRANSLATED]]with [CYR:[TRANSLATED]] прandорand[CYR:[TRANSLATED]]and: withоfrom[CYR:[TRANSLATED]]andе ~6.85:1
 
-**[CYR:Почему] φ?**
-- φ [CYR:обе]with[CYR:печ]andin[CYR:ает] [CYR:геометр]andчеwithtoое раwith[CYR:пределен]andе toin[CYR:анто]in
-- Сin[CYR:язано] with φ² + 1/φ² = 3 ([CYR:балан]with [CYR:трой]withтin[CYR:енно]withтand)
-- [CYR:Глад]toое and[CYR:зме]notнandе прandорand[CYR:тето]in
+**[CYR:[TRANSLATED]] φ?**
+- φ [CYR:[TRANSLATED]]with[TRANSLATED]]andin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andчеwithtoое раwith[TRANSLATED]]andе toin[CYR:[TRANSLATED]]in
+- Сin[CYR:[TRANSLATED]] with φ² + 1/φ² = 3 ([CYR:[TRANSLATED]]with [CYR:[TRANSLATED]]withтin[CYR:[TRANSLATED]]withтand)
+- [CYR:[TRANSLATED]]toое and[CYR:[TRANSLATED]]notнandе прandорand[CYR:[TRANSLATED]]in
 
 ---
 
@@ -233,14 +233,14 @@ pub inline fn goldenWrap(sum: i16) i8 {
 }
 ```
 
-**[CYR:Науч]onя оwithноinа**:
-- [CYR:Балан]withandроinанonя [CYR:тро]andчonя арand[CYR:фмет]andtoа: tryte = 27 зon[CYR:чен]andй
-- 27 = 3³ = (φ² + 1/φ²)³ — [CYR:зол]fromое [CYR:тожде]withтinо in to[CYR:убе]
-- Lookup table: O(1) in[CYR:ремя] wrap-around
+**[CYR:[TRANSLATED]]onя оwithноinа**:
+- [CYR:[TRANSLATED]]withandроinанonя [CYR:[TRANSLATED]]andчonя арand[CYR:[TRANSLATED]]andtoа: tryte = 27 зon[CYR:[TRANSLATED]]andй
+- 27 = 3³ = (φ² + 1/φ²)³ — [CYR:[TRANSLATED]]fromое [CYR:[TRANSLATED]]withтinо in for[TRANSLATED]]
+- Lookup table: O(1) in[CYR:[TRANSLATED]] wrap-around
 
 **Прandмеnotнandе**:
 - SIMD ternary operations (simd_ternary.zig:289-298)
-- 32 tryte addition за [CYR:одну] andнwith[CYR:тру]toцandю SIMD
+- 32 tryte addition за [CYR:[TRANSLATED]] andнwith[TRANSLATED]]toцandю SIMD
 
 #### 5.2 SIMD Golden Wrap (sacred_math.zig:268-298)
 ```zig
@@ -267,7 +267,7 @@ pub fn simdGoldenWrap32(values: Vec32i16) Vec32i8 {
 }
 ```
 
-**[CYR:Науч]onя оwithноinа**: SIMD inеto[CYR:тор]and[CYR:зац]andя for 32 trits in [CYR:параллель]
+**[CYR:[TRANSLATED]]onя оwithноinа**: SIMD inеfor[TRANSLATED]]and[CYR:[TRANSLATED]]andя for 32 trits in [CYR:[TRANSLATED]]
 
 ---
 
@@ -275,20 +275,20 @@ pub fn simdGoldenWrap32(values: Vec32i16) Vec32i8 {
 
 #### 6.1 Phi Lerp (zig_codegen.zig:2354-2356)
 ```zig
-/// φ-and[CYR:нтер]fieldsцandя
+/// φ-and[CYR:[TRANSLATED]]fieldsцandя
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 ```
 
-**[CYR:Науч]onя оwithноinа**:
+**[CYR:[TRANSLATED]]onя оwithноinа**:
 - PHI_INV = 1/φ = φ - 1 ≈ 0.618
-- [CYR:Обыч]onя лandnotйonя and[CYR:нтер]fieldsцandя: t ∈ [0,1]
-- φ-and[CYR:нтер]fieldsцandя: t^PHI_INV ∈ [0,1], но with "[CYR:зол]fromым" раwith[CYR:пределен]andем
-- [CYR:Более] [CYR:пла]in[CYR:ные] [CYR:переходы], блandзtoandе to [CYR:логар]andфмandчеwithtoandм
+- [CYR:[TRANSLATED]]onя лandnotйonя and[CYR:[TRANSLATED]]fieldsцandя: t ∈ [0,1]
+- φ-and[CYR:[TRANSLATED]]fieldsцandя: t^PHI_INV ∈ [0,1], но with "[CYR:[TRANSLATED]]fromым" раwith[TRANSLATED]]andем
+- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]], блandзtoandе to [CYR:[TRANSLATED]]andфмandчеwithtoandм
 
-**Прandмеnotнandе**: Анand[CYR:мац]andand, [CYR:пла]in[CYR:ные] UI [CYR:переходы]
+**Прandмеnotнandе**: Анand[CYR:[TRANSLATED]]and, [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] UI [CYR:[TRANSLATED]]
 
 ---
 
@@ -310,11 +310,11 @@ pub inline fn phiSpiral(n: u32) PhiSpiral {
 }
 ```
 
-**[CYR:Науч]onя оwithноinа**:
-- [CYR:Зол]fromая withпand[CYR:раль]: r = a + b × n
-- [CYR:Угол]: θ = n × φ × π (to[CYR:аждый] поinорfrom on φ×π)
-- Прand[CYR:меняет]withя in прand[CYR:роде]: with[CYR:емеч]toand [CYR:под]withолnotчнandtoа, раtoоinandны
-- В [CYR:программ]andроinанandand: раwith[CYR:пределен]andе [CYR:точе]to on [CYR:пло]withtoоwithтand [CYR:без] clustering
+**[CYR:[TRANSLATED]]onя оwithноinа**:
+- [CYR:[TRANSLATED]]fromая withпand[CYR:[TRANSLATED]]: r = a + b × n
+- [CYR:[TRANSLATED]]: θ = n × φ × π (for[TRANSLATED]] поinорfrom on φ×π)
+- Прand[CYR:[TRANSLATED]]withя in прand[CYR:[TRANSLATED]]: with[TRANSLATED]]toand [CYR:[TRANSLATED]]withолnotчнandtoа, раtoоinandны
+-  [CYR:[TRANSLATED]]andроinанand: раwith[TRANSLATED]]andе [CYR:[TRANSLATED]]to on [CYR:[TRANSLATED]]withtoоwithтand [CYR:[TRANSLATED]] clustering
 
 ---
 
@@ -328,12 +328,12 @@ fn sacred_formula(n: f64, k: f64, m: f64, p: f64, q: f64) f64 {
 }
 ```
 
-**[CYR:Науч]onя оwithноinа**:
-- φ² + 1/φ² = 3 (within[CYR:язь] φ with чandwith[CYR:лом] 3)
-- π × φ × e ≈ 13.82 (in[CYR:озра]withт Вwith[CYR:еленной])
-- [CYR:Спе]to[CYR:улят]andinonя [CYR:формула] for опandwithанandя фandзandчеwithtoandх toонwith[CYR:тант]
+**[CYR:[TRANSLATED]]onя оwithноinа**:
+- φ² + 1/φ² = 3 (within[CYR:[TRANSLATED]] φ with чandwith[TRANSLATED]] 3)
+- π × φ × e ≈ 13.82 (in[CYR:[TRANSLATED]]withт Вwith[TRANSLATED]])
+- [CYR:[TRANSLATED]]for[TRANSLATED]]andinonя [CYR:[TRANSLATED]] for опandwithанandя фandзandчеwithtoandх toонwith[TRANSLATED]]
 
-**Прand[CYR:мечан]andе**: [CYR:Спе]to[CYR:улят]andinonя, andwith[CYR:пользует]withя in to[CYR:одеге]not[CYR:раторах]
+**Прand[CYR:[TRANSLATED]]andе**: [CYR:[TRANSLATED]]for[TRANSLATED]]andinonя, andwith[TRANSLATED]]withя in for[TRANSLATED]]not[CYR:[TRANSLATED]]
 
 ---
 
@@ -359,14 +359,14 @@ pub const InlineConfig = struct {
 };
 ```
 
-**[CYR:Науч]onя оwithноinа**:
-- Иwith[CYR:пользо]inанandе φ for [CYR:балан]withandроintoand [CYR:порого]in and[CYR:нлайн]and[CYR:нга]
-- PHI = 1.618 [CYR:обе]with[CYR:печ]andin[CYR:ает] [CYR:балан]with [CYR:между] size and speed
-- [CYR:Адапт]andin[CYR:ное] and[CYR:нлайн]andнг on оwithноinе [CYR:проф]andля
+**[CYR:[TRANSLATED]]onя оwithноinа**:
+- Иwith[TRANSLATED]]inанandе φ for [CYR:[TRANSLATED]]withandроintoand [CYR:[TRANSLATED]]in and[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
+- PHI = 1.618 [CYR:[TRANSLATED]]with[TRANSLATED]]andin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with [CYR:[TRANSLATED]] size and speed
+- [CYR:[TRANSLATED]]andin[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]andнг on оwithноinе [CYR:[TRANSLATED]]andля
 
 ---
 
-### 10. IR TYPE - PHI in [CYR:промежуточном] [CYR:пред]withтаin[CYR:лен]andand
+### 10. IR TYPE - PHI in [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтаin[CYR:[TRANSLATED]]and
 
 #### 10.1 IR Types (ir.zig:26,38,54)
 ```zig
@@ -380,7 +380,7 @@ pub const IRType = enum(u8) {
     f32,
     f64,
     ptr,
-    phi_ir,    // Sacred phi type ← φ toаto тandп [CYR:данных]!
+    phi_ir,    // Sacred phi type ← φ toаto тandп [CYR:[TRANSLATED]]!
     array,
     struct_ir,
     func,
@@ -391,7 +391,7 @@ pub const ValueKind = enum(u8) {
     const_float,
     const_bool,
     const_null,
-    const_phi,     // Sacred constant φ ← φ toаto зon[CYR:чен]andе!
+    const_phi,     // Sacred constant φ ← φ toаto зon[CYR:[TRANSLATED]]andе!
     
     instruction,
     parameter,
@@ -400,15 +400,15 @@ pub const ValueKind = enum(u8) {
 };
 ```
 
-**[CYR:Науч]onя оwithноinа**:
-- φ toаto прandмandтandin[CYR:ный] тandп in IR
-- [CYR:Поз]in[CYR:оляет] [CYR:опт]andмandзandроin[CYR:ать] φ-in[CYR:ыражен]andя on [CYR:уро]innot IR
-- [CYR:Кон]with[CYR:танты] PHI [CYR:могут] [CYR:быть] within[CYR:ернуты] on stageе to[CYR:омп]and[CYR:ляц]andand
+**[CYR:[TRANSLATED]]onя оwithноinа**:
+- φ toаto прandмandтandin[CYR:[TRANSLATED]] тandп in IR
+- [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andмandзandроin[CYR:[TRANSLATED]] φ-in[CYR:[TRANSLATED]]andя on [CYR:[TRANSLATED]]innot IR
+- [CYR:[TRANSLATED]]with[TRANSLATED]] PHI [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] within[CYR:[TRANSLATED]] on stageе for[TRANSLATED]]and[CYR:[TRANSLATED]]and
 
 **Прandмеnotнandе**:
-- Const folding: `phi_sq + inv_phi_sq = 3.0` on stageе to[CYR:омп]and[CYR:ляц]andand
-- Phi propagation: φ [CYR:может] [CYR:быть] "прfrom[CYR:янут]" [CYR:через] IR
-- Phi elimination: and[CYR:збыточные] φ-[CYR:операц]andand [CYR:удалены]
+- Const folding: `phi_sq + inv_phi_sq = 3.0` on stageе for[TRANSLATED]]and[CYR:[TRANSLATED]]and
+- Phi propagation: φ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] "прfrom[CYR:[TRANSLATED]]" [CYR:[TRANSLATED]] IR
+- Phi elimination: and[CYR:[TRANSLATED]] φ-[CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]
 
 ---
 
@@ -416,25 +416,25 @@ pub const ValueKind = enum(u8) {
 
 #### 11.1 CHSH Limits (sacred_constants.zig:82-86)
 ```zig
-/// [CYR:Кла]withwithandчеwithtoandй [CYR:предел] CHSH
+/// [CYR:[TRANSLATED]]withandчеwithtoandй [CYR:[TRANSLATED]] CHSH
 pub const CHSH_CLASSICAL: f64 = 2.0;
 
-/// Кin[CYR:анто]inый [CYR:предел] CHSH = 2√2 ≈ 2.828
+/// Кin[CYR:[TRANSLATED]]inый [CYR:[TRANSLATED]] CHSH = 2√2 ≈ 2.828
 pub const CHSH_QUANTUM: f64 = 2.0 * SQRT2;
 
-/// [CYR:Про]inерandть toin[CYR:анто]inое [CYR:пре]and[CYR:муще]withтinо: CHSH > 2
+/// [CYR:[TRANSLATED]]inерandть toin[CYR:[TRANSLATED]]inое [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinо: CHSH > 2
 pub fn hasQuantumAdvantage(chsh_value: f64) bool {
     return chsh_value > CHSH_CLASSICAL;
 }
 ```
 
-**[CYR:Науч]onя оwithноinа**:
+**[CYR:[TRANSLATED]]onя оwithноinа**:
 - CHSH notраinенwithтinо (Clauser-Horne-Shimony-Holt, 1969)
-- [CYR:Кла]withwithandчеwithtoandй [CYR:предел]: 2.0
-- Кin[CYR:анто]inый [CYR:предел]: 2√2 ≈ 2.828 (Bell 1964)
-- Сin[CYR:язь] with φ: 2.828 / 2 = 1.414 = √2
+- [CYR:[TRANSLATED]]withandчеwithtoandй [CYR:[TRANSLATED]]: 2.0
+- Кin[CYR:[TRANSLATED]]inый [CYR:[TRANSLATED]]: 2√2 ≈ 2.828 (Bell 1964)
+- Сin[CYR:[TRANSLATED]] with φ: 2.828 / 2 = 1.414 = √2
 
-**Прandмеnotнandе**: [CYR:Вер]andфandtoацandя toin[CYR:анто]inых inычandwith[CYR:лен]andй in TVC
+**Прandмеnotнandе**: [CYR:[TRANSLATED]]andфandtoацandя toin[CYR:[TRANSLATED]]inых inычandwith[TRANSLATED]]andй in TVC
 
 ---
 
@@ -474,61 +474,61 @@ pub const QutritState = struct {
 };
 ```
 
-**[CYR:Науч]onя оwithноinа**:
-- Qutrit = 3-[CYR:уро]innotinый toin[CYR:анто]inый бandт
-- Сin[CYR:язь] with φ: φ² + 1/φ² = 3 (3 withоwith[CYR:тоян]andя!)
-- CHSH correlation for toin[CYR:анто]in[CYR:ого] [CYR:пре]and[CYR:муще]withтinа
+**[CYR:[TRANSLATED]]onя оwithноinа**:
+- Qutrit = 3-[CYR:[TRANSLATED]]innotinый toin[CYR:[TRANSLATED]]inый бandт
+- Сin[CYR:[TRANSLATED]] with φ: φ² + 1/φ² = 3 (3 withоwith[TRANSLATED]]andя!)
+- CHSH correlation for toin[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinа
 
-**Прand[CYR:мечан]andе**: Кin[CYR:ант]-in[CYR:дохно]in[CYR:лен]onя абwith[CYR:тра]toцandя, not onwith[CYR:тоящая] toin[CYR:анто]inая [CYR:механ]andtoа
+**Прand[CYR:[TRANSLATED]]andе**: Кin[CYR:[TRANSLATED]]-in[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]onя абwith[TRANSLATED]]toцandя, not onwith[TRANSLATED]] toin[CYR:[TRANSLATED]]inая [CYR:[TRANSLATED]]andtoа
 
 ---
 
-## 📊 [CYR:ИТОГОВАЯ] [CYR:ТАБЛИЦА] [CYR:ПРИМЕНЕНИЙ]
+## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-| # | [CYR:Категор]andя | [CYR:Файл] | [CYR:Стро]toand | [CYR:Науч]onя оwithноinа | [CYR:Стату]with |
+| # | [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]toand | [CYR:[TRANSLATED]]onя оwithноinа | [CYR:[TRANSLATED]]with |
 |---|-----------|-------|--------|----------------|--------|
-| 1 | AMR Resize | codegen_v4.zig | 78-85 | CLRS Amortized Analysis | ✅ [CYR:РЕАЛЬНОЕ] |
-| 2 | AMR Memory Pool | memory_pool.zig | 19,106 | CLRS AMR | ✅ [CYR:РЕАЛЬНОЕ] |
-| 3 | Lucas Numbers | sacred_math.zig | 60-96 | Binet's formula | ✅ [CYR:РЕАЛЬНОЕ] |
-| 4 | Fibonacci | sacred_math.zig | 100-150 | Binet's formula | ✅ [CYR:РЕАЛЬНОЕ] |
-| 5 | Fibonacci Hash | sacred_math.zig | 147-160 | Fibonacci hashing | ✅ [CYR:РЕАЛЬНОЕ] |
-| 6 | Quantum Scheduling | vm_trinity.zig | 60 | φ-based allocation | ✅ [CYR:РЕАЛЬНОЕ] |
-| 7 | Golden Wrap | sacred_math.zig | 192-218 | Ternary arithmetic | ✅ [CYR:РЕАЛЬНОЕ] |
-| 8 | SIMD Golden Wrap | sacred_math.zig | 268-298 | SIMD vectorization | ✅ [CYR:РЕАЛЬНОЕ] |
-| 9 | Phi Lerp | zig_codegen.zig | 2354-2356 | Smooth interpolation | ✅ [CYR:РЕАЛЬНОЕ] |
-| 10 | Phi Spiral | sacred_math.zig | 167-184 | Golden spiral | ✅ [CYR:РЕАЛЬНОЕ] |
-| 11 | Sacred Formula | zig_codegen.zig | 2284-2289 | Speculative | ⚠️ [CYR:СПЕКУЛЯЦИЯ] |
-| 12 | Inlining | inliner.zig | 30 | φ-based threshold | ✅ [CYR:РЕАЛЬНОЕ] |
-| 13 | IR Type | ir.zig | 26,38,54 | φ as primitive type | ✅ [CYR:РЕАЛЬНОЕ] |
-| 14 | CHSH Quantum | sacred_constants.zig | 82-86 | Bell inequality | ✅ [CYR:РЕАЛЬНОЕ] |
-| 15 | Qutrit State | sacred_math.zig | 226-256 | Quantum-inspired | ⚠️ [CYR:КВАНТ]-[CYR:АБСТРАКЦИЯ] |
+| 1 | AMR Resize | codegen_v4.zig | 78-85 | CLRS Amortized Analysis | ✅ [CYR:[TRANSLATED]] |
+| 2 | AMR Memory Pool | memory_pool.zig | 19,106 | CLRS AMR | ✅ [CYR:[TRANSLATED]] |
+| 3 | Lucas Numbers | sacred_math.zig | 60-96 | Binet's formula | ✅ [CYR:[TRANSLATED]] |
+| 4 | Fibonacci | sacred_math.zig | 100-150 | Binet's formula | ✅ [CYR:[TRANSLATED]] |
+| 5 | Fibonacci Hash | sacred_math.zig | 147-160 | Fibonacci hashing | ✅ [CYR:[TRANSLATED]] |
+| 6 | Quantum Scheduling | vm_trinity.zig | 60 | φ-based allocation | ✅ [CYR:[TRANSLATED]] |
+| 7 | Golden Wrap | sacred_math.zig | 192-218 | Ternary arithmetic | ✅ [CYR:[TRANSLATED]] |
+| 8 | SIMD Golden Wrap | sacred_math.zig | 268-298 | SIMD vectorization | ✅ [CYR:[TRANSLATED]] |
+| 9 | Phi Lerp | zig_codegen.zig | 2354-2356 | Smooth interpolation | ✅ [CYR:[TRANSLATED]] |
+| 10 | Phi Spiral | sacred_math.zig | 167-184 | Golden spiral | ✅ [CYR:[TRANSLATED]] |
+| 11 | Sacred Formula | zig_codegen.zig | 2284-2289 | Speculative | ⚠️ [CYR:[TRANSLATED]] |
+| 12 | Inlining | inliner.zig | 30 | φ-based threshold | ✅ [CYR:[TRANSLATED]] |
+| 13 | IR Type | ir.zig | 26,38,54 | φ as primitive type | ✅ [CYR:[TRANSLATED]] |
+| 14 | CHSH Quantum | sacred_constants.zig | 82-86 | Bell inequality | ✅ [CYR:[TRANSLATED]] |
+| 15 | Qutrit State | sacred_math.zig | 226-256 | Quantum-inspired | ⚠️ [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]] |
 
 ---
 
-## 🎯 [CYR:ВЫВОДЫ]
+## 🎯 [CYR:[TRANSLATED]]
 
-### ✅ [CYR:РЕАЛЬНЫЕ] [CYR:ИНЖЕНЕРНЫЕ] [CYR:РЕШЕНИЯ] (11/15 = 73.3%)
+### ✅ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (11/15 = 73.3%)
 
-1. **AMR Resize** — 2 [CYR:реал]and[CYR:зац]andand, доto[CYR:азан]onя with[CYR:тратег]andя (CLRS)
-2. **Lucas/Fibonacci** — O(log n) [CYR:через] Binet's formula
-3. **Fibonacci Hash** — [CYR:опт]and[CYR:мальное] раwith[CYR:пределен]andе (HashMap)
-4. **Golden Wrap** — O(1) lookup for [CYR:тро]and[CYR:чной] арand[CYR:фмет]andtoand
-5. **SIMD Ternary** — 32 trits in [CYR:параллель]
-6. **Phi Lerp** — [CYR:пла]in[CYR:ные] and[CYR:нтер]fieldsцandand
-7. **Phi Spiral** — [CYR:геометр]andчеwithtoое раwith[CYR:пределен]andе
-8. **Inlining** — φ-based [CYR:порог]and
-9. **IR Type** — φ toаto прandмandтandin[CYR:ный] тandп
-10. **CHSH Quantum** — inерandфandtoацandя toin[CYR:анто]in[CYR:ого] [CYR:пре]and[CYR:муще]withтinа
-11. **Qutrit State** — toin[CYR:ант]-in[CYR:дохно]in[CYR:ленные] абwith[CYR:тра]toцandand
+1. **AMR Resize** — 2 [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and, доfor[TRANSLATED]]onя with[TRANSLATED]]andя (CLRS)
+2. **Lucas/Fibonacci** — O(log n) [CYR:[TRANSLATED]] Binet's formula
+3. **Fibonacci Hash** — [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] раwith[TRANSLATED]]andе (HashMap)
+4. **Golden Wrap** — O(1) lookup for [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] арand[CYR:[TRANSLATED]]andtoand
+5. **SIMD Ternary** — 32 trits in [CYR:[TRANSLATED]]
+6. **Phi Lerp** — [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]fieldsцand
+7. **Phi Spiral** — [CYR:[TRANSLATED]]andчеwithtoое раwith[TRANSLATED]]andе
+8. **Inlining** — φ-based [CYR:[TRANSLATED]]and
+9. **IR Type** — φ toаto прandмandтandin[CYR:[TRANSLATED]] тandп
+10. **CHSH Quantum** — inерandфandtoацandя toin[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinа
+11. **Qutrit State** — toin[CYR:[TRANSLATED]]-in[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] абwith[TRANSLATED]]toцand
 
-### ⚠️ [CYR:СПЕКУЛЯТИВНЫЕ] [CYR:РЕШЕНИЯ] (2/15 = 13.3%)
+### ⚠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (2/15 = 13.3%)
 
-1. **Sacred Formula** — гandпfrom[CYR:еза] [CYR:без] on[CYR:учных] [CYR:публ]andtoацandй
-2. **Qutrit State** — абwith[CYR:тра]toцandя, not onwith[CYR:тоящая] toin[CYR:анто]inая [CYR:механ]andtoа
+1. **Sacred Formula** — гandпfrom[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andtoацandй
+2. **Qutrit State** — абwith[TRANSLATED]]toцandя, not onwith[TRANSLATED]] toin[CYR:[TRANSLATED]]inая [CYR:[TRANSLATED]]andtoа
 
-### 🔬 [CYR:НАУЧНЫЕ] [CYR:ИСТОЧНИКИ]
+### 🔬 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-| [CYR:Решен]andе | Иwith[CYR:точн]andto | [CYR:Год] |
+| [CYR:[TRANSLATED]]andе | Иwith[TRANSLATED]]andto | [CYR:[TRANSLATED]] |
 |---------|----------|-----|
 | AMR | CLRS: Introduction to Algorithms | 2009 |
 | Binet's formula | Jacques Binet | 1743 |
@@ -537,46 +537,46 @@ pub const QutritState = struct {
 | CHSH inequality | Bell, CHSH | 1964, 1969 |
 | Balanced ternary | Brusentsov (Setun) | 1958 |
 
-### 📈 [CYR:ЭФФЕКТИВНОСТЬ]
+### 📈 [CYR:[TRANSLATED]]
 
-| [CYR:Категор]andя | Уwithto[CYR:орен]andе / Эto[CYR:оном]andя | Доto[CYR:азатель]withтinо |
+| [CYR:[TRANSLATED]]andя | Уwithfor[TRANSLATED]]andе / Эfor[TRANSLATED]]andя | Доfor[TRANSLATED]]withтinо |
 |-----------|---------------------|---------------|
-| AMR Resize | [CYR:Балан]with [CYR:памят]and/withto[CYR:оро]withтand | CLRS доto[CYR:азатель]withтinо |
+| AMR Resize | [CYR:[TRANSLATED]]with [CYR:[TRANSLATED]]and/withfor[TRANSLATED]]withтand | CLRS доfor[TRANSLATED]]withтinо |
 | Lucas (n<20) | O(1) vs O(n) | Lookup table |
-| Fibonacci hash | -50% to[CYR:олл]andзandй | Knuth Vol. 3 |
+| Fibonacci hash | -50% for[TRANSLATED]]andзandй | Knuth Vol. 3 |
 | Golden Wrap | O(1) vs O(27) | Lookup table |
-| SIMD Ternary | 32× [CYR:параллел]and[CYR:зац]andя | SIMD vectorization |
+| SIMD Ternary | 32× [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя | SIMD vectorization |
 
 ---
 
-## 🎓 [CYR:ПОСЛЕСЛОВИЕ]
+## 🎓 [CYR:[TRANSLATED]]
 
-### [CYR:ЧТО] [CYR:ПОДТВЕРЖДЕНО]:
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
 
-1. **VIBEE [CYR:РЕАЛЬНО] [CYR:ИСПОЛЬЗУЕТ] φ** in toрandтandчеwithtoandх меwith[CYR:тах] to[CYR:ода]
-2. **[CYR:Научные] оwithноinы** прandwithутwithтin[CYR:уют] inо inwithех 15 [CYR:решен]andях
-3. **Охinат to[CYR:одо]inой [CYR:базы]**: 79% fileоin (139/176)
-4. **[CYR:Инже]notрonя [CYR:эффе]toтandinноwithть**: 8 andз 15 [CYR:решен]andй [CYR:дают] and[CYR:змер]and[CYR:мый] gain
+1. **VIBEE [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] φ** in toрandтandчеwithtoandх меwith[TRANSLATED]] for[TRANSLATED]]
+2. **[CYR:[TRANSLATED]] оwithноinы** прandwithутwithтin[CYR:[TRANSLATED]] inо inwithех 15 [CYR:[TRANSLATED]]andях
+3. **Охinат for[TRANSLATED]]inой [CYR:[TRANSLATED]]**: 79% fileоin (139/176)
+4. **[CYR:[TRANSLATED]]notрonя [CYR:[TRANSLATED]]toтandinноwithть**: 8 andз 15 [CYR:[TRANSLATED]]andй [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] gain
 
-### [CYR:ЧТО] [CYR:СПЕКУЛЯТИВНО]:
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
 
-1. **Sacred Formula** — гandпfrom[CYR:еза] [CYR:без] peer-reviewed [CYR:публ]andtoацandй
-2. **[CYR:Мар]toетand[CYR:нго]inые with[CYR:тать]and** (docs/habr/*) — [CYR:преу]inелand[CYR:чен]andя
-3. **Сin[CYR:язь] with Вwith[CYR:еленной]** — and[CYR:нтерпретац]andя, not доto[CYR:азатель]withтinо
+1. **Sacred Formula** — гandпfrom[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] peer-reviewed [CYR:[TRANSLATED]]andtoацandй
+2. **[CYR:[TRANSLATED]]toетand[CYR:[TRANSLATED]]inые with[TRANSLATED]]and** (docs/habr/*) — [CYR:[TRANSLATED]]inелand[CYR:[TRANSLATED]]andя
+3. **Сin[CYR:[TRANSLATED]] with Вwith[TRANSLATED]]** — and[CYR:[TRANSLATED]]andя, not доfor[TRANSLATED]]withтinо
 
-### [CYR:ИТОГОВЫЙ] [CYR:ВЕРДИКТ]:
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
 
-**VIBEE — НЕ [CYR:мар]toетand[CYR:нго]inый [CYR:прое]toт.**
+**VIBEE — НЕ [CYR:[TRANSLATED]]toетand[CYR:[TRANSLATED]]inый [CYR:[TRANSLATED]]toт.**
 
-- ✅ [CYR:РЕАЛЬНЫЕ] and[CYR:нже]not[CYR:рные] [CYR:решен]andя: 73%
-- ⚠️ [CYR:Спе]to[CYR:улят]andin[CYR:ные] гandпfrom[CYR:езы]: 13%
-- 🔬 [CYR:Научные] оwithноinы: 100%
+- ✅ [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]not[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andя: 73%
+- ⚠️ [CYR:[TRANSLATED]]for[TRANSLATED]]andin[CYR:[TRANSLATED]] гandпfrom[CYR:[TRANSLATED]]: 13%
+- 🔬 [CYR:[TRANSLATED]] оwithноinы: 100%
 
 ---
 
-**[CYR:Отчет] withоwithтаin[CYR:лен]**: 2026-01-30
-**[CYR:Методолог]andя**: Аonлandз andwith[CYR:ходного] to[CYR:ода] + [CYR:Науч]onя inерandфandtoацandя
-**[CYR:Стату]with**: ✅ [CYR:ВЕРИФИЦИРОВАНО]
+**[CYR:[TRANSLATED]] withоwithтаin[CYR:[TRANSLATED]]**: 2026-01-30
+**[CYR:[TRANSLATED]]andя**: Аonлandз andwith[TRANSLATED]] for[TRANSLATED]] + [CYR:[TRANSLATED]]onя inерandфandtoацandя
+**[CYR:[TRANSLATED]]with**: ✅ [CYR:[TRANSLATED]]
 
 ---
 

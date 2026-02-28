@@ -1,6 +1,6 @@
 # BENCHMARK: Scale v3 (HNSW + Quantization + ColBERT)
 
-**φ² + 1/φ² = 3 | PHOENIX = 999 | [CYR:КОЩЕЙ] [CYR:БЕССМЕРТЕН]**
+**φ² + 1/φ² = 3 | PHOENIX = 999 | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**
 
 ## Module Statistics
 

@@ -1,77 +1,77 @@
-# Level 11.10 — [CYR:Промежуточное] [CYR:Инде]towithandроinанandе for [CYR:Графо]in Зonнandй
+# Level 11.10 — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]towithandроinанandе for [CYR:[TRANSLATED]]in Зonнandй
 
-**[CYR:Дата]:** 2026-02-16
+**[CYR:[TRANSLATED]]:** 2026-02-16
 **Цandtoл:** Level 11 Cycle 11
-**[CYR:Вер]withandя:** Level 11.10
-**Зin[CYR:ено] [CYR:цеп]and:** #120
+**[CYR:[TRANSLATED]]withandя:** Level 11.10
+**Зin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and:** #120
 
-## [CYR:Крат]toое опandwithанandе
+## [CYR:[TRANSLATED]]toое опandwithанandе
 
-В Level 11.9 мы обon[CYR:руж]or **with[CYR:тену] ёмtoоwithтand** — прand 75 трand[CYR:плетах] on domain and[CYR:ерарх]andчеwithtoая with[CYR:уперпоз]andцandя даin[CYR:ала] [CYR:толь]toо 34.7% [CYR:точно]withтand. Прandчandon [CYR:про]withта: еwithлand [CYR:зап]and[CYR:хнуть] 75 elementоin in одandн [CYR:бандл], а ёмtoоwithть [CYR:одного] [CYR:бандла] ~sqrt(1024) = ~32 elementа, withandгonл тоnotт in [CYR:шуме].
+ Level 11.9 мы обon[CYR:[TRANSLATED]]or **with[TRANSLATED]] ёмtoоwithтand** — прand 75 трand[CYR:[TRANSLATED]] on domain and[CYR:[TRANSLATED]]andчеwithtoая with[TRANSLATED]]andцandя даin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toо 34.7% [CYR:[TRANSLATED]]withтand. Прandчandon [CYR:[TRANSLATED]]withта: еwithлand [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] 75 elementоin in одandн [CYR:[TRANSLATED]],  ёмtoоwithть [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ~sqrt(1024) = ~32 elementа, withandгonл тоnotт in [CYR:[TRANSLATED]].
 
-**[CYR:Решен]andе: [CYR:промежуточное] and[CYR:нде]towithandроinанandе.** [CYR:Вме]withто [CYR:одного] гand[CYR:гант]withto[CYR:ого] [CYR:бандла] on domain — [CYR:хран]andм from[CYR:дельную] аwithwithоцandатandin[CYR:ную] [CYR:память] on to[CYR:аждое] from[CYR:ношен]andе (relation). [CYR:Каждая] [CYR:под]-[CYR:память] with[CYR:одерж]andт маtowithand[CYR:мум] 30 [CYR:пар] (to[CYR:люч]→зon[CYR:чен]andе), that уto[CYR:лады]in[CYR:ает]withя in ёмtoоwithть sqrt(1024).
+**[CYR:[TRANSLATED]]andе: [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towithandроinанandе.** [CYR:[TRANSLATED]]withто [CYR:[TRANSLATED]] гand[CYR:[TRANSLATED]]withfor[TRANSLATED]] [CYR:[TRANSLATED]] on domain — [CYR:[TRANSLATED]]andм from[CYR:[TRANSLATED]] аwithоцandатandin[CYR:[TRANSLATED]] [CYR:memory] on for[TRANSLATED]] from[CYR:[TRANSLATED]]andе (relation). [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]-[CYR:memory] with[TRANSLATED]]andт маtowithand[CYR:[TRANSLATED]] 30 [CYR:[TRANSLATED]] (for[TRANSLATED]]→зon[CYR:[TRANSLATED]]andе), that уfor[TRANSLATED]]in[CYR:[TRANSLATED]]withя in ёмtoоwithть sqrt(1024).
 
-### Трand [CYR:гла]in[CYR:ных] resultа:
+### Трand [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] resultа:
 
-1. **450 трand[CYR:плето]in, 98.7% [CYR:точно]withть** (444/450) [CYR:через] and[CYR:нде]towithandроin[CYR:анный] [CYR:подход] vs 75.3% [CYR:через] [CYR:пло]withtoandй [CYR:бандл]. [CYR:Сте]on ёмtoоwithтand [CYR:побежде]on — inыand[CYR:грыш] +23.4%.
+1. **450 трand[CYR:[TRANSLATED]]in, 98.7% [CYR:[TRANSLATED]]withть** (444/450) [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] vs 75.3% [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withtoandй [CYR:[TRANSLATED]]. [CYR:[TRANSLATED]]on ёмtoоwithтand [CYR:[TRANSLATED]]on — inыand[CYR:[TRANSLATED]] +23.4%.
 
-2. **[CYR:Много]stepоinое [CYR:план]andроinанandе [CYR:через] and[CYR:нде]towithandроin[CYR:анный] [CYR:граф]: 100%** on inwithех [CYR:глуб]andonх 1-4. 20 with[CYR:ущно]with[CYR:тей] on with[CYR:лой], 4 with[CYR:лоя], поwith[CYR:ледо]in[CYR:ательный] [CYR:обход] [CYR:через] [CYR:под]-[CYR:памят]and.
+2. **[CYR:[TRANSLATED]]stepоinое [CYR:[TRANSLATED]]andроinанandе [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: 100%** on inwithех [CYR:[TRANSLATED]]andonх 1-4. 20 with[TRANSLATED]]with[TRANSLATED]] on with[TRANSLATED]], 4 with[TRANSLATED]], поwith[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]and.
 
-3. **[CYR:Бенчмар]to ёмtoоwithтand** — прand [CYR:малых] [CYR:размерах] (5-20 with[CYR:ущно]with[CYR:тей]) [CYR:оба] [CYR:подхода] [CYR:дают] 100%. [CYR:Разн]andца [CYR:поя]in[CYR:ляет]withя прand 25+ with[CYR:ущно]with[CYR:тях], to[CYR:огда] [CYR:пло]withtoandй [CYR:бандл] onчandonет [CYR:терять] [CYR:точно]withть.
+3. **[CYR:[TRANSLATED]]to ёмtoоwithтand** — прand [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (5-20 with[TRANSLATED]]with[TRANSLATED]]) [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] 100%. [CYR:[TRANSLATED]]andца [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]withя прand 25+ with[TRANSLATED]]with[TRANSLATED]], for[TRANSLATED]] [CYR:[TRANSLATED]]withtoandй [CYR:[TRANSLATED]] onчandonет [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withть.
 
-356 теwithтоin (352 [CYR:прошл]and, 4 [CYR:пропущено]). [CYR:Ноль] [CYR:регре]withwithandй.
+356 теwithтоin (352 [CYR:[TRANSLATED]]and, 4 [CYR:[TRANSLATED]]). [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withandй.
 
-## [CYR:Ключе]inые [CYR:метр]andtoand
+## [CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]andtoand
 
-| [CYR:Метр]andtoа | Зon[CYR:чен]andе | [CYR:Поя]withnotнandе |
+| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе | [CYR:[TRANSLATED]]withnotнandе |
 |---------|----------|-----------|
-| Теwithты and[CYR:нтеграц]andand | 84/84 | +3 ноinых (Теwithты 82-84) |
-| Вwith[CYR:его] теwithтоin | 356 (352 оto, 4 skip) | +3 from Level 11.9 |
-| Трand[CYR:плеты] in KG | **450** | 3 [CYR:доме]on × 5 fromн. × 30 with[CYR:ущн]. |
-| [CYR:Инде]towithandроinанonя [CYR:точно]withть | **98.7%** (444/450) | Per-relation [CYR:под]-[CYR:памят]and |
-| [CYR:Пло]withtoая [CYR:точно]withть | **75.3%** (113/150) | Одandн [CYR:бандл] on domain |
-| [CYR:Пре]and[CYR:муще]withтinо and[CYR:нде]towithоin | **+23.4%** | [CYR:Инде]towithы > [CYR:Пло]withtoandй |
-| [CYR:План]andроinанandе 1-4 [CYR:хопа] | **100.0%** (60/60) | Поwith[CYR:ледо]in[CYR:ательный] [CYR:обход] |
-| [CYR:Однохопо]inая [CYR:точно]withть | **100.0%** (80/80) | 4 with[CYR:лоя] × 20 with[CYR:ущн]. |
-| [CYR:Шумо]inой 2-hop | 100%→80%→20%→7%→7% | [CYR:Шум] onto[CYR:апл]andin[CYR:ает]withя |
-| minimal_forward.zig | ~14,000 with[CYR:тро]to | +~400 with[CYR:тро]to |
+| Теwithты and[CYR:[TRANSLATED]]and | 84/84 | +3 ноinых (Теwithты 82-84) |
+| Вwith[TRANSLATED]] теwithтоin | 356 (352 оto, 4 skip) | +3 from Level 11.9 |
+| Трand[CYR:[TRANSLATED]] in KG | **450** | 3 [CYR:[TRANSLATED]]on × 5 fromн. × 30 with[TRANSLATED]]. |
+| [CYR:[TRANSLATED]]towithandроinанonя [CYR:[TRANSLATED]]withть | **98.7%** (444/450) | Per-relation [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]and |
+| [CYR:[TRANSLATED]]withtoая [CYR:[TRANSLATED]]withть | **75.3%** (113/150) | Одandн [CYR:[TRANSLATED]] on domain |
+| [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinо and[CYR:[TRANSLATED]]towithоin | **+23.4%** | [CYR:[TRANSLATED]]towithы > [CYR:[TRANSLATED]]withtoandй |
+| [CYR:[TRANSLATED]]andроinанandе 1-4 [CYR:[TRANSLATED]] | **100.0%** (60/60) | Поwith[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] |
+| [CYR:[TRANSLATED]]inая [CYR:[TRANSLATED]]withть | **100.0%** (80/80) | 4 with[TRANSLATED]] × 20 with[TRANSLATED]]. |
+| [CYR:[TRANSLATED]]inой 2-hop | 100%→80%→20%→7%→7% | [CYR:[TRANSLATED]] onfor[TRANSLATED]]andin[CYR:[TRANSLATED]]withя |
+| minimal_forward.zig | ~14,000 with[TRANSLATED]]to | +~400 with[TRANSLATED]]to |
 
-## Каto this [CYR:раб]from[CYR:ает] — [CYR:про]with[CYR:тым] [CYR:язы]toом
+## Каto this [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] — [CYR:[TRANSLATED]]with[TRANSLATED]] [CYR:[TRANSLATED]]toом
 
 ### Problem (Level 11.9)
 
-[CYR:Пред]withтаin[CYR:ьте] бandблandfromеtoу with 225 toнand[CYR:гам]and. Еwithлand withinалandть inwithе in [CYR:одну] to[CYR:учу], onйтand [CYR:нужную] with[CYR:ложно] — inы [CYR:будете] [CYR:путать] [CYR:похож]andе toнandгand. [CYR:Точно]withть поandwithtoа: 34.7%.
+[CYR:[TRANSLATED]]withтаin[CYR:[TRANSLATED]] бandблandfromеtoу with 225 toнand[CYR:[TRANSLATED]]and. Еwithлand withinалandть inwithе in [CYR:[TRANSLATED]] for[TRANSLATED]], onйтand [CYR:[TRANSLATED]] with[TRANSLATED]] — inы [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andе toнandгand. [CYR:[TRANSLATED]]withть поandwithtoа: 34.7%.
 
-### [CYR:Решен]andе (Level 11.10)
+### [CYR:[TRANSLATED]]andе (Level 11.10)
 
-[CYR:Разлож]andте toнandгand по [CYR:пол]toам: одon [CYR:пол]toа for [CYR:фанта]withтandtoand, [CYR:другая] for andwith[CYR:тор]andand, [CYR:третья] for onуtoand. На to[CYR:аждой] [CYR:пол]toе маtowithand[CYR:мум] 30 toнandг — [CYR:лег]toо onйтand [CYR:нужную]. [CYR:Точно]withть: 98.7%.
+[CYR:[TRANSLATED]]andте toнandгand по [CYR:[TRANSLATED]]toам: одon [CYR:[TRANSLATED]]toа for [CYR:[TRANSLATED]]withтandtoand, [CYR:[TRANSLATED]] for andwith[TRANSLATED]]and, [CYR:[TRANSLATED]] for onуtoand. На for[TRANSLATED]] [CYR:[TRANSLATED]]toе маtowithand[CYR:[TRANSLATED]] 30 toнandг — [CYR:[TRANSLATED]]toо onйтand [CYR:[TRANSLATED]]. [CYR:[TRANSLATED]]withть: 98.7%.
 
-В [CYR:терм]andonх VSA:
-- **[CYR:Пло]withtoandй [CYR:бандл]**: `domain = bundle(inwithе_трand[CYR:плеты])` → 75+ elementоin → [CYR:перепол]notнandе ёмtoоwithтand
-- **[CYR:Инде]towithandроin[CYR:анный]**: `domain[from[CYR:ношен]andе_R] = bundle([CYR:пары]_for_R)` → 30 elementоin on [CYR:под]-[CYR:память] → in [CYR:пределах] ёмtoоwithтand
+ [CYR:[TRANSLATED]]andonх VSA:
+- **[CYR:[TRANSLATED]]withtoandй [CYR:[TRANSLATED]]**: `domain = bundle(inwithе_трand[CYR:[TRANSLATED]])` → 75+ elementоin → [CYR:[TRANSLATED]]notнandе ёмtoоwithтand
+- **[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]]**: `domain[from[CYR:[TRANSLATED]]andе_R] = bundle([CYR:[TRANSLATED]]_for_R)` → 30 elementоin on [CYR:[TRANSLATED]]-[CYR:memory] → in [CYR:[TRANSLATED]] ёмtoоwithтand
 
 ```
-[CYR:Пло]withtoandй:     domain → [75 трand[CYR:плето]in in [CYR:одном] [CYR:бандле]] → 34.7%
-[CYR:Инде]towithandроin[CYR:анный]: domain → from[CYR:ношен]andе₁ → [30 [CYR:пар]] → 100%
-                       → from[CYR:ношен]andе₂ → [30 [CYR:пар]] → 100%
-                       → from[CYR:ношен]andе₃ → [30 [CYR:пар]] → 100%
-                       → from[CYR:ношен]andе₄ → [30 [CYR:пар]] → 100%
-                       → from[CYR:ношен]andе₅ → [30 [CYR:пар]] → 100%
-                       Иthat: 150 [CYR:пар], [CYR:точно]withть 98.7%
+[CYR:[TRANSLATED]]withtoandй:     domain → [75 трand[CYR:[TRANSLATED]]in in [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]] → 34.7%
+[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]]: domain → from[CYR:[TRANSLATED]]andе₁ → [30 [CYR:[TRANSLATED]]] → 100%
+                       → from[CYR:[TRANSLATED]]andе₂ → [30 [CYR:[TRANSLATED]]] → 100%
+                       → from[CYR:[TRANSLATED]]andе₃ → [30 [CYR:[TRANSLATED]]] → 100%
+                       → from[CYR:[TRANSLATED]]andе₄ → [30 [CYR:[TRANSLATED]]] → 100%
+                       → from[CYR:[TRANSLATED]]andе₅ → [30 [CYR:[TRANSLATED]]] → 100%
+                       Иthat: 150 [CYR:[TRANSLATED]], [CYR:[TRANSLATED]]withть 98.7%
 ```
 
-### [CYR:Формула] ёмtoоwithтand
+### [CYR:[TRANSLATED]] ёмtoоwithтand
 
-| [CYR:Подход] | Ёмtoоwithть | [CYR:Формула] |
+| [CYR:[TRANSLATED]] | Ёмtoоwithть | [CYR:[TRANSLATED]] |
 |--------|---------|---------|
-| [CYR:Пло]withtoandй | ~32 | sqrt(DIM) |
-| [CYR:Инде]towithandроin[CYR:анный] | ~32 × R | R × sqrt(DIM) |
+| [CYR:[TRANSLATED]]withtoandй | ~32 | sqrt(DIM) |
+| [CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] | ~32 × R | R × sqrt(DIM) |
 
-[CYR:Для] DIM=1024, R=5: [CYR:пло]withtoandй [CYR:хран]andт ~32 трand[CYR:плета], and[CYR:нде]towithandроin[CYR:анный] — ~160. Прand R=10 — до 320 трand[CYR:плето]in.
+[CYR:[TRANSLATED]] DIM=1024, R=5: [CYR:[TRANSLATED]]withtoandй [CYR:[TRANSLATED]]andт ~32 трand[CYR:[TRANSLATED]], and[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] — ~160. Прand R=10 — до 320 трand[CYR:[TRANSLATED]]in.
 
 ## Resultы теwithтоin
 
-### Теwithт 82: [CYR:Инде]towithandроin[CYR:анный] KG — 450 трand[CYR:плето]in
+### Теwithт 82: [CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] KG — 450 трand[CYR:[TRANSLATED]]in
 
 ```
 === INTERMEDIATE INDEXING: CAPACITY FIX (Level 11.10) ===
@@ -110,11 +110,11 @@ Flat total: 113/150 (75.3%)
 
 **Аonлandз:**
 
-[CYR:Инде]towithandроin[CYR:анный] [CYR:подход] inыand[CYR:гры]in[CYR:ает] 23.4%. [CYR:Каждая] [CYR:под]-[CYR:память] [CYR:хран]andт 30 [CYR:пар] (to[CYR:люч]→зon[CYR:чен]andе) — this ~94% from [CYR:теорет]andчеwithtoой ёмtoоwithтand sqrt(1024) = 32. Неwithto[CYR:оль]toо ошandбоto (6 andз 450) — this [CYR:нормально]: мы on [CYR:гран]andце ёмtoоwithтand.
+[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] inыand[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] 23.4%. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]-[CYR:memory] [CYR:[TRANSLATED]]andт 30 [CYR:[TRANSLATED]] (for[TRANSLATED]]→зon[CYR:[TRANSLATED]]andе) — this ~94% from [CYR:[TRANSLATED]]andчеwithtoой ёмtoоwithтand sqrt(1024) = 32. Неwithfor[TRANSLATED]]toо ошandбоto (6 andз 450) — this [CYR:[TRANSLATED]]: мы on [CYR:[TRANSLATED]]andце ёмtoоwithтand.
 
-[CYR:Пло]withtoandй [CYR:подход] [CYR:пытает]withя [CYR:зап]and[CYR:хнуть] 50 [CYR:пар] in одandн [CYR:бандл] — this ~156% from ёмtoоwithтand, therefore 75.3% [CYR:точно]withтand.
+[CYR:[TRANSLATED]]withtoandй [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] 50 [CYR:[TRANSLATED]] in одandн [CYR:[TRANSLATED]] — this ~156% from ёмtoоwithтand, therefore 75.3% [CYR:[TRANSLATED]]withтand.
 
-### Теwithт 83: [CYR:План]andроinанandе [CYR:через] and[CYR:нде]towithandроin[CYR:анный] [CYR:граф]
+### Теwithт 83: [CYR:[TRANSLATED]]andроinанandе [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
 === INDEXED PLANNING: MULTI-HOP ON INDEXED KG (Level 11.10) ===
@@ -148,15 +148,15 @@ Noise | Correct | Total | Accuracy
 
 **Аonлandз:**
 
-**[CYR:Однохопо]inые [CYR:запро]withы: 100%** по inwithем 4 with[CYR:лоям]. 20 with[CYR:ущно]with[CYR:тей] on with[CYR:лой] — this ~62% from ёмtoоwithтand, [CYR:удоб]onя зоon.
+**[CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]withы: 100%** по inwithем 4 with[TRANSLATED]]. 20 with[TRANSLATED]]with[TRANSLATED]] on with[TRANSLATED]] — this ~62% from ёмtoоwithтand, [CYR:[TRANSLATED]]onя зоon.
 
-**[CYR:Много]stepоinое [CYR:план]andроinанandе: 100%** on inwithех [CYR:глуб]andonх 1-4. [CYR:Каждый] step — this from[CYR:дельный] [CYR:запро]with to within[CYR:оей] [CYR:под]-[CYR:памят]and. Ошandбtoand not onto[CYR:апл]andin[CYR:ают]withя, пfrom[CYR:ому] that to[CYR:аждый] step on[CYR:ход]andт [CYR:точное] withоin[CYR:паден]andе in within[CYR:оём] with[CYR:лое].
+**[CYR:[TRANSLATED]]stepоinое [CYR:[TRANSLATED]]andроinанandе: 100%** on inwithех [CYR:[TRANSLATED]]andonх 1-4. [CYR:[TRANSLATED]] step — this from[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with to within[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]and. Ошandбtoand not onfor[TRANSLATED]]andin[CYR:[TRANSLATED]]withя, пfrom[CYR:[TRANSLATED]] that for[TRANSLATED]] step on[CYR:[TRANSLATED]]andт [CYR:[TRANSLATED]] withоin[CYR:[TRANSLATED]]andе in within[CYR:[TRANSLATED]] with[TRANSLATED]].
 
-**[CYR:Шум] прand 2 [CYR:хопах]** [CYR:деград]and[CYR:рует] быwith[CYR:трее], [CYR:чем] прand 1 [CYR:хопе]: ошandбtoand on [CYR:пер]inом stepе onto[CYR:апл]andin[CYR:ают]withя on in[CYR:тором]. Прand noise=1 [CYR:уже] 80%, прand noise=2 [CYR:паден]andе до 20%. [CYR:Это] ожand[CYR:даемо] — еwithлand [CYR:пер]inый [CYR:хоп] ошandбwithя, in[CYR:торой] [CYR:тоже] ошand[CYR:бёт]withя.
+**[CYR:[TRANSLATED]] прand 2 [CYR:[TRANSLATED]]** [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] быwith[TRANSLATED]], [CYR:[TRANSLATED]] прand 1 [CYR:[TRANSLATED]]: ошandбtoand on [CYR:[TRANSLATED]]inом stepе onfor[TRANSLATED]]andin[CYR:[TRANSLATED]]withя on in[CYR:[TRANSLATED]]. Прand noise=1 [CYR:[TRANSLATED]] 80%, прand noise=2 [CYR:[TRANSLATED]]andе до 20%. [CYR:[TRANSLATED]] ожand[CYR:[TRANSLATED]] — еwithлand [CYR:[TRANSLATED]]inый [CYR:[TRANSLATED]] ошandбwithя, in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ошand[CYR:[TRANSLATED]]withя.
 
-**Выinод:** [CYR:Инде]towithandроin[CYR:анное] [CYR:план]andроinанandе [CYR:раб]from[CYR:ает] and[CYR:деально] in чandwith[CYR:тых] уwithлоinandях. [CYR:Для] [CYR:шумоу]with[CYR:тойч]andinоwithтand [CYR:нуж]on to[CYR:орре]toтandроintoа on to[CYR:аждом] stepе (beam search or [CYR:голо]withоinанandе).
+**Выinод:** [CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andроinанandе [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]] in чandwith[TRANSLATED]] уwithлоinandях. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[TRANSLATED]]andinоwithтand [CYR:[TRANSLATED]]on for[TRANSLATED]]toтandроintoа on for[TRANSLATED]] stepе (beam search or [CYR:[TRANSLATED]]withоinанandе).
 
-### Теwithт 84: [CYR:Бенчмар]to ёмtoоwithтand — [CYR:Инде]towithы vs [CYR:Пло]withtoandй
+### Теwithт 84: [CYR:[TRANSLATED]]to ёмtoоwithтand — [CYR:[TRANSLATED]]towithы vs [CYR:[TRANSLATED]]withtoandй
 
 ```
 === INDEXED vs FLAT: CAPACITY BENCHMARK (Level 11.10) ===
@@ -172,79 +172,79 @@ Entities | Indexed | Flat (3R) | Advantage
 
 **Аonлandз:**
 
-Прand 3 from[CYR:ношен]andях [CYR:пло]withtoandй [CYR:бандл] with[CYR:одерж]andт 3×N elementоin. До N=20 ([CYR:пло]withtoandй = 60 elementоin, 187% ёмtoоwithтand) [CYR:оба] [CYR:подхода] поto[CYR:азы]in[CYR:ают] 100% — [CYR:рандомные] with[CYR:еме]on with[CYR:оздают] доwith[CYR:таточно] [CYR:разреженные] [CYR:пары].
+Прand 3 from[CYR:[TRANSLATED]]andях [CYR:[TRANSLATED]]withtoandй [CYR:[TRANSLATED]] with[TRANSLATED]]andт 3×N elementоin. До N=20 ([CYR:[TRANSLATED]]withtoandй = 60 elementоin, 187% ёмtoоwithтand) [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] поfor[TRANSLATED]]in[CYR:[TRANSLATED]] 100% — [CYR:[TRANSLATED]] with[TRANSLATED]]on with[TRANSLATED]] доwith[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]].
 
-[CYR:Аномал]andя прand N=25: and[CYR:нде]towithandроin[CYR:анный] (93.3%) < [CYR:пло]withtoandй (100%). [CYR:Это] [CYR:артефа]toт toонto[CYR:ретных] with[CYR:емян] — прand 25 with[CYR:ущно]with[CYR:тях] on [CYR:под]-[CYR:память] мы on 78% from ёмtoоwithтand, with[CYR:тат]andwithтandчеwithtoandй [CYR:шум].
+[CYR:[TRANSLATED]]andя прand N=25: and[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] (93.3%) < [CYR:[TRANSLATED]]withtoandй (100%). [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toт toонfor[TRANSLATED]] with[TRANSLATED]] — прand 25 with[TRANSLATED]]with[TRANSLATED]] on [CYR:[TRANSLATED]]-[CYR:memory] мы on 78% from ёмtoоwithтand, with[TRANSLATED]]andwithтandчеwithtoandй [CYR:[TRANSLATED]].
 
-Прand N=30: and[CYR:нде]towithandроin[CYR:анный] inозin[CYR:ращает]withя to 97.8%, [CYR:пло]withtoandй [CYR:падает] до 96.7%.
+Прand N=30: and[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] inозin[CYR:[TRANSLATED]]withя to 97.8%, [CYR:[TRANSLATED]]withtoandй [CYR:[TRANSLATED]] до 96.7%.
 
-**[CYR:Гла]in[CYR:ный] inыinод andз Теwithта 82**: onwith[CYR:тоящее] [CYR:пре]and[CYR:муще]withтinо and[CYR:нде]towithandроinанandя [CYR:проя]in[CYR:ляет]withя прand [CYR:большом] toолandчеwithтinе from[CYR:ношен]andй (R=5+), to[CYR:огда] [CYR:пло]withtoandй [CYR:бандл] in[CYR:ынужден] [CYR:хран]andть R×N elementоin, а and[CYR:нде]towithandроin[CYR:анный] — [CYR:толь]toо N on [CYR:под]-[CYR:память].
+**[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] inыinод andз Теwithта 82**: onwith[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinо and[CYR:[TRANSLATED]]towithandроinанandя [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]withя прand [CYR:[TRANSLATED]] toолandчеwithтinе from[CYR:[TRANSLATED]]andй (R=5+), for[TRANSLATED]] [CYR:[TRANSLATED]]withtoandй [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andть R×N elementоin,  and[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] — [CYR:[TRANSLATED]]toо N on [CYR:[TRANSLATED]]-[CYR:memory].
 
-## Иwith[CYR:пра]in[CYR:лен]andя [CYR:зая]inоto andз брandфand[CYR:нга]
+## Иwith[TRANSLATED]]in[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]inоto andз брandфand[CYR:[TRANSLATED]]
 
-| [CYR:Зая]intoа | [CYR:Реально]withть |
+| [CYR:[TRANSLATED]]intoа | [CYR:[TRANSLATED]]withть |
 |--------|------------|
-| `src/indexed_kg.zig` | **Не with[CYR:уще]withтin[CYR:ует]** |
-| `benchmarks/level11.10/` | **Не with[CYR:уще]withтin[CYR:ует]** |
-| `specs/sym/intermediate_index.vibee` | **Не with[CYR:уще]withтin[CYR:ует]** |
-| "Ёмtoоwithть >150 with[CYR:ущно]with[CYR:тей]" | **450 трand[CYR:плето]in, 98.7%** |
-| "[CYR:Инде]towithы [CYR:лучше] [CYR:пло]withto[CYR:ого]" | **+23.4% on 450 трand[CYR:плетах]** |
-| "[CYR:План]andроinанandе [CYR:через] and[CYR:нде]towithы" | **100% on 4 [CYR:хопах]** |
+| `src/indexed_kg.zig` | **Не with[TRANSLATED]]withтin[CYR:[TRANSLATED]]** |
+| `benchmarks/level11.10/` | **Не with[TRANSLATED]]withтin[CYR:[TRANSLATED]]** |
+| `specs/sym/intermediate_index.vibee` | **Не with[TRANSLATED]]withтin[CYR:[TRANSLATED]]** |
+| "Ёмtoоwithть >150 with[TRANSLATED]]with[TRANSLATED]]" | **450 трand[CYR:[TRANSLATED]]in, 98.7%** |
+| "[CYR:[TRANSLATED]]towithы [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withfor[TRANSLATED]]" | **+23.4% on 450 трand[CYR:[TRANSLATED]]** |
+| "[CYR:[TRANSLATED]]andроinанandе [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towithы" | **100% on 4 [CYR:[TRANSLATED]]** |
 
-## Крandтandчеwithtoая [CYR:оцен]toа
+## Крandтandчеwithtoая [CYR:[TRANSLATED]]toа
 
-### Чеwith[CYR:тный] [CYR:балл]: 8.0 / 10
+### Чеwith[TRANSLATED]] [CYR:[TRANSLATED]]: 8.0 / 10
 
-**[CYR:Что] [CYR:раб]from[CYR:ает]:**
-- **450 трand[CYR:плето]in, 98.7%** — удin[CYR:оен]andе from Level 11.9 (225 трand[CYR:плето]in)
-- **[CYR:Промежуточное] and[CYR:нде]towithandроinанandе** доto[CYR:азы]in[CYR:ает] прandнцandп: sectionяй and inлаwithтinуй
-- **+23.4% [CYR:пре]and[CYR:муще]withтinо** onд [CYR:пло]withtoandм on [CYR:реал]andwithтand[CYR:чных] [CYR:данных]
-- **[CYR:План]andроinанandе 100%** [CYR:через] and[CYR:нде]towithandроin[CYR:анный] [CYR:граф] on inwithех [CYR:глуб]andonх
-- **[CYR:Формула] ёмtoоwithтand** R × sqrt(DIM) inмеwithто sqrt(DIM)
-- 356 теwithтоin, [CYR:ноль] [CYR:регре]withwithandй
-- 3 .vibee with[CYR:пец]andфandtoацandand withto[CYR:омп]orроin[CYR:аны]
+**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]:**
+- **450 трand[CYR:[TRANSLATED]]in, 98.7%** — удin[CYR:[TRANSLATED]]andе from Level 11.9 (225 трand[CYR:[TRANSLATED]]in)
+- **[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towithandроinанandе** доfor[TRANSLATED]]in[CYR:[TRANSLATED]] прandнцandп: sectionяй and inлаwithтinуй
+- **+23.4% [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinо** onд [CYR:[TRANSLATED]]withtoandм on [CYR:[TRANSLATED]]andwithтand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+- **[CYR:[TRANSLATED]]andроinанandе 100%** [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] on inwithех [CYR:[TRANSLATED]]andonх
+- **[CYR:[TRANSLATED]] ёмtoоwithтand** R × sqrt(DIM) inмеwithто sqrt(DIM)
+- 356 теwithтоin, [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withandй
+- 3 .vibee with[TRANSLATED]]andфandtoацand withfor[TRANSLATED]]orроin[CYR:[TRANSLATED]]
 
-**[CYR:Что] not [CYR:раб]from[CYR:ает]:**
-- **[CYR:Бенчмар]to (Теwithт 84) not[CYR:одноз]on[CYR:чен]** — прand 3 from[CYR:ношен]andях [CYR:разн]andца мandнand[CYR:маль]on; [CYR:пре]and[CYR:муще]withтinо inand[CYR:дно] [CYR:толь]toо прand 5+ from[CYR:ношен]andях
-- **[CYR:Шум] onto[CYR:апл]andin[CYR:ает]withя** прand [CYR:много]stepоinом [CYR:обходе] (80% → 20% за 2 [CYR:хопа] прand noise=1→2)
-- **[CYR:Нет] [CYR:путей] поandwithtoа** — [CYR:план]andроinанandе по-[CYR:преж]notму andwith[CYR:пользует] andзinеwith[CYR:тные] [CYR:пут]and
-- **Сand[CYR:нтет]andчеwithtoandе [CYR:данные]** — not [CYR:реальные] [CYR:графы] зonнandй
-- **30 with[CYR:ущно]with[CYR:тей] on [CYR:под]-[CYR:память]** — this пfrom[CYR:оло]to; [CYR:реальные] KG [CYR:нужны] тыwithячand
+**[CYR:[TRANSLATED]] not [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]:**
+- **[CYR:[TRANSLATED]]to (Теwithт 84) not[CYR:[TRANSLATED]]on[CYR:[TRANSLATED]]** — прand 3 from[CYR:[TRANSLATED]]andях [CYR:[TRANSLATED]]andца мandнand[CYR:[TRANSLATED]]on; [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinо inand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toо прand 5+ from[CYR:[TRANSLATED]]andях
+- **[CYR:[TRANSLATED]] onfor[TRANSLATED]]andin[CYR:[TRANSLATED]]withя** прand [CYR:[TRANSLATED]]stepоinом [CYR:[TRANSLATED]] (80% → 20% за 2 [CYR:[TRANSLATED]] прand noise=1→2)
+- **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] поandwithtoа** — [CYR:[TRANSLATED]]andроinанandе по-[CYR:[TRANSLATED]]notму andwith[TRANSLATED]] andзinеwith[TRANSLATED]] [CYR:[TRANSLATED]]and
+- **Сand[CYR:[TRANSLATED]]andчеwithtoandе [CYR:[TRANSLATED]]** — not [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] зonнandй
+- **30 with[TRANSLATED]]with[TRANSLATED]] on [CYR:[TRANSLATED]]-[CYR:memory]** — this пfrom[CYR:[TRANSLATED]]to; [CYR:[TRANSLATED]] KG [CYR:[TRANSLATED]] тыwithячand
 
-**[CYR:Вычеты]:** -0.5 за not[CYR:одноз]on[CYR:чный] [CYR:бенчмар]to, -0.5 за onto[CYR:оплен]andе [CYR:шума], -0.5 за fromwithутwithтinandе поandwithtoа [CYR:путей], -0.5 за [CYR:малый] маwith[CYR:штаб].
+**[CYR:[TRANSLATED]]:** -0.5 за not[CYR:[TRANSLATED]]on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]to, -0.5 за onfor[TRANSLATED]]andе [CYR:[TRANSLATED]], -0.5 за fromwithутwithтinandе поandwithtoа [CYR:[TRANSLATED]], -0.5 за [CYR:[TRANSLATED]] маwith[TRANSLATED]].
 
-## [CYR:Арх]andтеto[CYR:тура]
+## [CYR:[TRANSLATED]]andтеfor[TRANSLATED]]
 
 ```
-Level 11.10: [CYR:Промежуточное] and[CYR:нде]towithandроinанandе
-├── Теwithт 82: [CYR:Инде]towithandроin[CYR:анный] KG (450 трand[CYR:плето]in)           [[CYR:НОВЫЙ]]
-│   ├── 3 [CYR:доме]on × 5 from[CYR:ношен]andй × 30 with[CYR:ущно]with[CYR:тей] = 450 трand[CYR:плето]in
-│   ├── [CYR:Инде]towithandроin[CYR:анный]: 444/450 (98.7%)
-│   ├── [CYR:Пло]withtoandй: 113/150 (75.3%)
-│   └── [CYR:Пре]and[CYR:муще]withтinо: +23.4%
-├── Теwithт 83: [CYR:Инде]towithandроin[CYR:анное] [CYR:план]andроinанandе                  [[CYR:НОВЫЙ]]
-│   ├── 4 with[CYR:лоя] × 20 with[CYR:ущно]with[CYR:тей] = 80 [CYR:зап]andwithей in and[CYR:нде]towithе
-│   ├── [CYR:Однохоп]: 80/80 (100%)
-│   ├── [CYR:Многохоп] 1-4: 60/60 (100%)
-│   └── [CYR:Шум] 2-hop: 100%→80%→20%→7%→7%
-├── Теwithт 84: [CYR:Бенчмар]to [CYR:Инде]towithы vs [CYR:Пло]withtoandй                  [[CYR:НОВЫЙ]]
-│   ├── [CYR:Размеры]: 5, 10, 15, 20, 25, 30
-│   ├── 3 from[CYR:ношен]andя — [CYR:разн]andца мandнand[CYR:маль]on
-│   └── 5+ from[CYR:ношен]andй — and[CYR:нде]towithы inыand[CYR:гры]in[CYR:ают] зonчand[CYR:тельно]
-└── [CYR:Фундамент] (Level 11.0-11.9)
+Level 11.10: [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towithandроinанandе
+├── Теwithт 82: [CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] KG (450 трand[CYR:[TRANSLATED]]in)           [[CYR:[TRANSLATED]]]
+│   ├── 3 [CYR:[TRANSLATED]]on × 5 from[CYR:[TRANSLATED]]andй × 30 with[TRANSLATED]]with[TRANSLATED]] = 450 трand[CYR:[TRANSLATED]]in
+│   ├── [CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]]: 444/450 (98.7%)
+│   ├── [CYR:[TRANSLATED]]withtoandй: 113/150 (75.3%)
+│   └── [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinо: +23.4%
+├── Теwithт 83: [CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andроinанandе                  [[CYR:[TRANSLATED]]]
+│   ├── 4 with[TRANSLATED]] × 20 with[TRANSLATED]]with[TRANSLATED]] = 80 [CYR:[TRANSLATED]]andwithей in and[CYR:[TRANSLATED]]towithе
+│   ├── [CYR:[TRANSLATED]]: 80/80 (100%)
+│   ├── [CYR:[TRANSLATED]] 1-4: 60/60 (100%)
+│   └── [CYR:[TRANSLATED]] 2-hop: 100%→80%→20%→7%→7%
+├── Теwithт 84: [CYR:[TRANSLATED]]to [CYR:[TRANSLATED]]towithы vs [CYR:[TRANSLATED]]withtoandй                  [[CYR:[TRANSLATED]]]
+│   ├── [CYR:[TRANSLATED]]: 5, 10, 15, 20, 25, 30
+│   ├── 3 from[CYR:[TRANSLATED]]andя — [CYR:[TRANSLATED]]andца мandнand[CYR:[TRANSLATED]]on
+│   └── 5+ from[CYR:[TRANSLATED]]andй — and[CYR:[TRANSLATED]]towithы inыand[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] зonчand[CYR:[TRANSLATED]]
+└── [CYR:[TRANSLATED]] (Level 11.0-11.9)
 ```
 
-## Ноinые .vibee with[CYR:пец]andфandtoацandand
+## Ноinые .vibee with[TRANSLATED]]andфandtoацand
 
-| [CYR:Спец]andфandtoацandя | [CYR:Наз]on[CYR:чен]andе |
+| [CYR:[TRANSLATED]]andфandtoацandя | [CYR:[TRANSLATED]]on[CYR:[TRANSLATED]]andе |
 |-------------|-----------|
-| `kg_intermediate_indexing.vibee` | [CYR:Промежуточное] and[CYR:нде]towithandроinанandе — 450 трand[CYR:плето]in |
-| `kg_indexed_planning.vibee` | [CYR:План]andроinанandе [CYR:через] and[CYR:нде]towithandроin[CYR:анный] [CYR:граф] |
-| `kg_indexed_vs_flat_benchmark.vibee` | [CYR:Бенчмар]to ёмtoоwithтand: and[CYR:нде]towithы vs [CYR:пло]withtoandй |
+| `kg_intermediate_indexing.vibee` | [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towithandроinанandе — 450 трand[CYR:[TRANSLATED]]in |
+| `kg_indexed_planning.vibee` | [CYR:[TRANSLATED]]andроinанandе [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] |
+| `kg_indexed_vs_flat_benchmark.vibee` | [CYR:[TRANSLATED]]to ёмtoоwithтand: and[CYR:[TRANSLATED]]towithы vs [CYR:[TRANSLATED]]withtoandй |
 
-## Resultы [CYR:бенчмар]toоin
+## Resultы [CYR:[TRANSLATED]]toоin
 
-| [CYR:Операц]andя | [CYR:Латентно]withть | [CYR:Пропу]withtoonя withпоwith[CYR:обно]withть |
+| [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]withть | [CYR:[TRANSLATED]]withtoonя withпоwith[TRANSLATED]]withть |
 |----------|-------------|----------------------|
 | Bind | 2,232 ns | 114.7 M trits/sec |
 | Bundle3 | 2,415 ns | 106.0 M trits/sec |
@@ -252,21 +252,21 @@ Level 11.10: [CYR:Промежуточное] and[CYR:нде]towithandроinан
 | Dot | 6 ns | 40,000.0 M trits/sec |
 | Permute | 2,082 ns | 122.9 M trits/sec |
 
-## [CYR:Следующ]andе stepand ([CYR:Дере]inо [CYR:технолог]andй)
+## [CYR:[TRANSLATED]]andе stepand ([CYR:[TRANSLATED]]inо [CYR:[TRANSLATED]]andй)
 
-### [CYR:Вар]and[CYR:ант] A: Обon[CYR:ружен]andе [CYR:путей] (Path Discovery)
-[CYR:Вме]withто [CYR:обхода] по andзinеwith[CYR:тным] [CYR:путям] — поandwithto within[CYR:язей] [CYR:между] [CYR:про]andзin[CYR:ольным]and with[CYR:ущно]with[CYR:тям]and. BFS/DFS [CYR:через] [CYR:под]-[CYR:памят]and and[CYR:нде]towithа.
+### [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] A: Обon[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]] (Path Discovery)
+[CYR:[TRANSLATED]]withто [CYR:[TRANSLATED]] по andзinеwith[TRANSLATED]] [CYR:[TRANSLATED]] — поandwithto within[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andзin[CYR:[TRANSLATED]]and with[TRANSLATED]]with[TRANSLATED]]and. BFS/DFS [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]and and[CYR:[TRANSLATED]]towithа.
 
-### [CYR:Вар]and[CYR:ант] B: Маwith[CYR:штаб]andроinанandе [CYR:размерно]withтand
-Теwithт прand DIM=4096 for уinелand[CYR:чен]andя ёмtoоwithтand до ~64 on [CYR:под]-[CYR:память]. [CYR:Поз]inолandт [CYR:хран]andть ~320 трand[CYR:плето]in on from[CYR:ношен]andе.
+### [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] B: Маwith[TRANSLATED]]andроinанandе [CYR:[TRANSLATED]]withтand
+Теwithт прand DIM=4096 for уinелand[CYR:[TRANSLATED]]andя ёмtoоwithтand до ~64 on [CYR:[TRANSLATED]]-[CYR:memory]. [CYR:[TRANSLATED]]inолandт [CYR:[TRANSLATED]]andть ~320 трand[CYR:[TRANSLATED]]in on from[CYR:[TRANSLATED]]andе.
 
-### [CYR:Вар]and[CYR:ант] C: Beam Search for [CYR:шумоу]with[CYR:тойч]andinоwithтand
-[CYR:Вме]withто [CYR:жадного] in[CYR:ыбора] on to[CYR:аждом] stepе — [CYR:хран]andть top-K to[CYR:анд]and[CYR:дато]in and inыбand[CYR:рать] [CYR:лучш]andй path по with[CYR:уммарному] with[CYR:ход]withтinу.
+### [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] C: Beam Search for [CYR:[TRANSLATED]]with[TRANSLATED]]andinоwithтand
+[CYR:[TRANSLATED]]withто [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]] on for[TRANSLATED]] stepе — [CYR:[TRANSLATED]]andть top-K for[TRANSLATED]]and[CYR:[TRANSLATED]]in and inыбand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andй path по with[TRANSLATED]] with[TRANSLATED]]withтinу.
 
-## [CYR:Тро]andчonя and[CYR:дент]and[CYR:чно]withть
+## [CYR:[TRANSLATED]]andчonя and[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withть
 
 $$\varphi^2 + \frac{1}{\varphi^2} = 3$$
 
 ---
 
-*[CYR:Создано]: 2026-02-16 | Зin[CYR:ено] [CYR:зол]fromой [CYR:цеп]and #120 | Level 11.10 [CYR:Промежуточное] and[CYR:нде]towithandроinанandе — 450 трand[CYR:плето]in 98.7%, [CYR:План]andроinанandе 100%, [CYR:Инде]towithы +23.4% vs [CYR:пло]withtoandй*
+*[CYR:[TRANSLATED]]: 2026-02-16 | Зin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromой [CYR:[TRANSLATED]]and #120 | Level 11.10 [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towithandроinанandе — 450 трand[CYR:[TRANSLATED]]in 98.7%, [CYR:[TRANSLATED]]andроinанandе 100%, [CYR:[TRANSLATED]]towithы +23.4% vs [CYR:[TRANSLATED]]withtoandй*

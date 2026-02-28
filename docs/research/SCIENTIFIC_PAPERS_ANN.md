@@ -1,6 +1,6 @@
 # Scientific Papers: ANN & Vector Search
 
-**φ² + 1/φ² = 3 | PHOENIX = 999 | [CYR:КОЩЕЙ] [CYR:БЕССМЕРТЕН]**
+**φ² + 1/φ² = 3 | PHOENIX = 999 | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**
 
 ## HNSW Papers
 

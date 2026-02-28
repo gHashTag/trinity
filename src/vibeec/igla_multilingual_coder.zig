@@ -342,7 +342,7 @@ pub const MultilingualResponse = struct {
 };
 
 pub const multilingual_greetings = MultilingualResponse{
-    .russian = "[EN]andin[EN]! [EN] IGLA — [EN]to[CYR:[EN]] AI-[EN]withwithandwith[CYR:[EN]]. [CYR:[EN]] [CYR:[EN]] by[CYR:[EN]]?",
+    .russian = "andin!  IGLA — to AI-withandwith.   by?",
     .english = "Hello! I'm IGLA — a local AI assistant. How can I help you?",
     .chinese = "你好！我是IGLA——本地AI助手。有什么可以帮助你的？",
     .spanish = "¡Hola! Soy IGLA — un asistente de IA local. ¿En qué puedo ayudarte?",
@@ -350,7 +350,7 @@ pub const multilingual_greetings = MultilingualResponse{
 };
 
 pub const multilingual_code_intro = MultilingualResponse{
-    .russian = "[EN]from to[EN] for [EN]in[CYR:[EN]] [EN]yes[EN]and:",
+    .russian = "from to for in yesand:",
     .english = "Here's the code for your task:",
     .chinese = "这是你任务的代码：",
     .spanish = "Aquí está el código para tu tarea:",
@@ -358,7 +358,7 @@ pub const multilingual_code_intro = MultilingualResponse{
 };
 
 pub const multilingual_explanation = MultilingualResponse{
-    .russian = "[CYR:[EN]]withnot[EN]and[EN]:",
+    .russian = "withnotand:",
     .english = "Explanation:",
     .chinese = "解释：",
     .spanish = "Explicación:",
@@ -366,7 +366,7 @@ pub const multilingual_explanation = MultilingualResponse{
 };
 
 pub const multilingual_unknown = MultilingualResponse{
-    .russian = "[EN] with[EN]inwith[EN] by[CYR:[EN]] [CYR:[EN]]with. [CYR:[EN]] [CYR:[EN]]and[EN]?",
+    .russian = " withinwith by with.  and?",
     .english = "I didn't quite understand. Can you clarify?",
     .chinese = "我不太明白。你能说明一下吗？",
     .spanish = "No entendí bien. ¿Puedes aclarar?",
@@ -502,28 +502,28 @@ pub const MultilingualCoder = struct {
         _ = self;
         const code_keywords = [_][]const u8{
             "code",
-            "to[EN]",
+            "to",
             "代码",
             "función",
             "funktion",
             "function",
             "write",
-            "on[EN]and[EN]and",
+            "onand",
             "写",
             "escribe",
             "schreib",
             "example",
-            "[EN]and[CYR:[EN]]",
+            "and",
             "例子",
             "ejemplo",
             "beispiel",
             "how to",
-            "to[EN]to",
+            "toto",
             "怎么",
             "cómo",
             "wie",
             "implement",
-            "[CYR:[EN]]and[EN]",
+            "and",
             "实现",
         };
 
@@ -696,9 +696,9 @@ pub fn runBenchmark() !void {
     // Test queries in multiple languages
     const test_queries = [_][]const u8{
         // Russian
-        "[EN]andin[EN]",
-        "on[EN]and[EN]and to[EN] fibonacci on python",
-        "to[EN]to fromwith[CYR:[EN]]and[EN]in[CYR:[EN]] [EN]withwithandin in zig",
+        "andin",
+        "onand to fibonacci on python",
+        "toto fromwithandin withandin in zig",
         // English
         "hello",
         "write a hello world in javascript",
@@ -793,7 +793,7 @@ pub fn main() !void {
 }
 
 test "language detection russian" {
-    const lang = Language.detect("[EN]andin[EN] [EN]and[EN]");
+    const lang = Language.detect("andin and");
     try std.testing.expectEqual(Language.Russian, lang);
 }
 
@@ -816,7 +816,7 @@ test "code language detection" {
 
 test "multilingual coder greeting" {
     var engine = MultilingualCoder.init();
-    const response = engine.respond("[EN]andin[EN]");
+    const response = engine.respond("andin");
     try std.testing.expectEqual(Language.Russian, response.language);
     try std.testing.expectEqual(ResponseCategory.Greeting, response.category);
 }

@@ -1,87 +1,87 @@
-# Level 11.11 — Обon[CYR:ружен]andе [CYR:Путей] (Path Discovery)
+# Level 11.11 — Обon[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]] (Path Discovery)
 
-**[CYR:Дата]:** 2026-02-16
+**[CYR:[TRANSLATED]]:** 2026-02-16
 **Цandtoл:** Level 11 Cycle 12
-**[CYR:Вер]withandя:** Level 11.11
-**Зin[CYR:ено] [CYR:цеп]and:** #121
+**[CYR:[TRANSLATED]]withandя:** Level 11.11
+**Зin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and:** #121
 
-## [CYR:Крат]toое опandwithанandе
+## [CYR:[TRANSLATED]]toое опandwithанandе
 
-До эthat [CYR:уро]inня onша withandwith[CYR:тема] [CYR:могла] [CYR:толь]toо **[CYR:обход]andть [CYR:зара]notе andзinеwith[CYR:тные] [CYR:пут]and**. Еwithлand ты зonл, that [CYR:Пар]andж → [CYR:Франц]andя → Еin[CYR:ропа], [CYR:можно] [CYR:было] withоwithтаinandть [CYR:цепоч]toу. Но еwithлand path notandзinеwith[CYR:тен] — withandwith[CYR:тема] [CYR:была] беwithwithandльon.
+До эthat [CYR:[TRANSLATED]]inня onша withandwith[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toо **[CYR:[TRANSLATED]]andть [CYR:[TRANSLATED]]notе andзinеwith[TRANSLATED]] [CYR:[TRANSLATED]]and**. Еwithлand ты зonл, that [CYR:[TRANSLATED]]andж → [CYR:[TRANSLATED]]andя → Еin[CYR:[TRANSLATED]], [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] withоwithтаinandть [CYR:[TRANSLATED]]toу. Но еwithлand path notandзinеwith[TRANSLATED]] — withandwith[TRANSLATED]] [CYR:[TRANSLATED]] беwithandльon.
 
-**Level 11.11 [CYR:доба]in[CYR:ляет] onwith[CYR:тоящее] обon[CYR:ружен]andе [CYR:путей].** Сandwith[CYR:тема] with[CYR:ама] on[CYR:ход]andт withinязand [CYR:между] with[CYR:ущно]with[CYR:тям]and, [CYR:обходя] [CYR:граф] зonнandй [CYR:через] and[CYR:нде]towithandроin[CYR:анные] [CYR:под]-[CYR:памят]and. [CYR:Плю]with **beam search** — [CYR:алгор]andтм, tofrom[CYR:орый] зonчand[CYR:тельно] поin[CYR:ышает] [CYR:точно]withть прand [CYR:шуме].
+**Level 11.11 [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] onwith[TRANSLATED]] обon[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]].** Сandwith[TRANSLATED]] with[TRANSLATED]] on[CYR:[TRANSLATED]]andт withinязand [CYR:[TRANSLATED]] with[TRANSLATED]]with[TRANSLATED]]and, [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] зonнandй [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]and. [CYR:[TRANSLATED]]with **beam search** — [CYR:[TRANSLATED]]andтм, tofrom[CYR:[TRANSLATED]] зonчand[CYR:[TRANSLATED]] поin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withть прand [CYR:[TRANSLATED]].
 
-### Трand [CYR:гла]in[CYR:ных] resultа:
+### Трand [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] resultа:
 
-1. **BFS Discovery: 100% [CYR:точно]withть.** [CYR:Прямое] обon[CYR:ружен]andе (32/32), [CYR:обратное] (32/32), toроwithwith-with[CYR:ущно]withтand (100% precision). Сandwith[CYR:тема] on[CYR:ход]andт [CYR:пут]and from 1 до 4 [CYR:хопо]in [CYR:через] and[CYR:нде]towithandроin[CYR:анный] [CYR:граф].
+1. **BFS Discovery: 100% [CYR:[TRANSLATED]]withть.** [CYR:[TRANSLATED]] обon[CYR:[TRANSLATED]]andе (32/32), [CYR:[TRANSLATED]] (32/32), toроwith-with[TRANSLATED]]withтand (100% precision). Сandwith[TRANSLATED]] on[CYR:[TRANSLATED]]andт [CYR:[TRANSLATED]]and from 1 до 4 [CYR:[TRANSLATED]]in [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]].
 
-2. **[CYR:Большой] KG: 225 трand[CYR:плето]in, 100% обon[CYR:ружен]andе from[CYR:ношен]andй.** [CYR:Дано]: with[CYR:ущно]withть and [CYR:объе]toт — toаtoое from[CYR:ношен]andе andх within[CYR:язы]in[CYR:ает]? Сandwith[CYR:тема] [CYR:безош]and[CYR:бочно] [CYR:определяет] andз 5 in[CYR:озможных]. [CYR:Цепоч]toand 2 and 3 [CYR:хопа] — 100%.
+2. **[CYR:[TRANSLATED]] KG: 225 трand[CYR:[TRANSLATED]]in, 100% обon[CYR:[TRANSLATED]]andе from[CYR:[TRANSLATED]]andй.** [CYR:[TRANSLATED]]: with[TRANSLATED]]withть and [CYR:[TRANSLATED]]toт — toаtoое from[CYR:[TRANSLATED]]andе andх within[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]? Сandwith[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] andз 5 in[CYR:[TRANSLATED]]. [CYR:[TRANSLATED]]toand 2 and 3 [CYR:[TRANSLATED]] — 100%.
 
-3. **Beam Search [CYR:побеждает] [CYR:жадный] поandwithto прand [CYR:шуме]:**
+3. **Beam Search [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] поandwithto прand [CYR:[TRANSLATED]]:**
 
-| [CYR:Шум] | [CYR:Жадный] | Beam-3 | Beam-5 |
+| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | Beam-3 | Beam-5 |
 |-----|--------|--------|--------|
 | 0 | 100% | 100% | 100% |
 | 2 | 80% | 90% | 90% |
 | 3 | 50% | 70% | 80% |
 | 5 | 10% | 30% | **60%** |
 
-Прand noise=5 beam-5 in 6 [CYR:раз] [CYR:лучше] [CYR:жадного]! [CYR:Это] toрandтandчеwithtoand in[CYR:ажно] for [CYR:реального] прandмеnotнandя.
+Прand noise=5 beam-5 in 6 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]! [CYR:[TRANSLATED]] toрandтandчеwithtoand in[CYR:[TRANSLATED]] for [CYR:[TRANSLATED]] прandмеnotнandя.
 
-359 теwithтоin (355 pass, 4 skip). [CYR:Ноль] [CYR:регре]withwithandй.
+359 теwithтоin (355 pass, 4 skip). [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withandй.
 
-## [CYR:Ключе]inые [CYR:метр]andtoand
+## [CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]andtoand
 
-| [CYR:Метр]andtoа | Зon[CYR:чен]andе | [CYR:Поя]withnotнandе |
+| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе | [CYR:[TRANSLATED]]withnotнandе |
 |---------|----------|-----------|
-| Теwithты and[CYR:нтеграц]andand | 87/87 | +3 ноinых (Теwithты 85-87) |
-| Вwith[CYR:его] теwithтоin | 359 (355 оto, 4 skip) | +3 from Level 11.10 |
-| [CYR:Прямое] обon[CYR:ружен]andе | **100%** (32/32) | BFS [CYR:через] 4 [CYR:хопа] |
-| [CYR:Обратное] обon[CYR:ружен]andе | **100%** (32/32) | [CYR:Обратный] [CYR:обход] |
-| [CYR:Кро]withwith-with[CYR:ущно]withтand | **100%** precision | true_pos=6, true_neg=30 |
-| Обon[CYR:ружен]andе from[CYR:ношен]andй | **100%** (225/225) | 3 [CYR:доме]on × 5 from[CYR:ношен]andй |
-| 2-hop [CYR:цепоч]toand | **100%** (10/10) | Поwith[CYR:ледо]in[CYR:ательный] [CYR:обход] |
-| 3-hop [CYR:цепоч]toand | **100%** (10/10) | Поwith[CYR:ледо]in[CYR:ательный] [CYR:обход] |
-| Beam-5 прand noise=5 | **60%** vs 10% greedy | +50% [CYR:улучшен]andе |
-| minimal_forward.zig | ~14,500 with[CYR:тро]to | +~500 with[CYR:тро]to |
+| Теwithты and[CYR:[TRANSLATED]]and | 87/87 | +3 ноinых (Теwithты 85-87) |
+| Вwith[TRANSLATED]] теwithтоin | 359 (355 оto, 4 skip) | +3 from Level 11.10 |
+| [CYR:[TRANSLATED]] обon[CYR:[TRANSLATED]]andе | **100%** (32/32) | BFS [CYR:[TRANSLATED]] 4 [CYR:[TRANSLATED]] |
+| [CYR:[TRANSLATED]] обon[CYR:[TRANSLATED]]andе | **100%** (32/32) | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] |
+| [CYR:[TRANSLATED]]with-with[TRANSLATED]]withтand | **100%** precision | true_pos=6, true_neg=30 |
+| Обon[CYR:[TRANSLATED]]andе from[CYR:[TRANSLATED]]andй | **100%** (225/225) | 3 [CYR:[TRANSLATED]]on × 5 from[CYR:[TRANSLATED]]andй |
+| 2-hop [CYR:[TRANSLATED]]toand | **100%** (10/10) | Поwith[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] |
+| 3-hop [CYR:[TRANSLATED]]toand | **100%** (10/10) | Поwith[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] |
+| Beam-5 прand noise=5 | **60%** vs 10% greedy | +50% [CYR:[TRANSLATED]]andе |
+| minimal_forward.zig | ~14,500 with[TRANSLATED]]to | +~500 with[TRANSLATED]]to |
 
-## Каto this [CYR:раб]from[CYR:ает] — [CYR:про]with[CYR:тым] [CYR:язы]toом
+## Каto this [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] — [CYR:[TRANSLATED]]with[TRANSLATED]] [CYR:[TRANSLATED]]toом
 
-### [CYR:Что] таtoое обon[CYR:ружен]andе [CYR:путей]?
+### [CYR:[TRANSLATED]] таtoое обon[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]?
 
-[CYR:Пред]withтаinь to[CYR:арту] [CYR:метро], where ты зon[CYR:ешь] [CYR:толь]toо with[CYR:танц]andand, но not [CYR:маршруты]. [CYR:Тебе] [CYR:нужно] [CYR:добрать]withя andз [CYR:точ]toand А in [CYR:точ]toу Б. Обon[CYR:ружен]andе [CYR:путей] — this to[CYR:огда] withandwith[CYR:тема] **with[CYR:ама] on[CYR:ход]andт [CYR:маршрут]**, [CYR:пробуя] [CYR:разные] лandнandand.
+[CYR:[TRANSLATED]]withтаinь for[TRANSLATED]] [CYR:[TRANSLATED]], where ты зon[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toо with[TRANSLATED]]and, но not [CYR:[TRANSLATED]]. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withя andз [CYR:[TRANSLATED]]toand  in [CYR:[TRANSLATED]]toу . Обon[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]] — this for[TRANSLATED]] withandwith[TRANSLATED]] **with[TRANSLATED]] on[CYR:[TRANSLATED]]andт [CYR:[TRANSLATED]]**, [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] лandнand.
 
-В [CYR:терм]andonх VSA:
+ [CYR:[TRANSLATED]]andonх VSA:
 ```
-[CYR:Старый] [CYR:подход] (Level 11.9-11.10):
-  Я зonю path: [CYR:Пар]andж →[with[CYR:тол]andца]→ [CYR:Франц]andя →[to[CYR:онт]andnotнт]→ Еin[CYR:ропа]
-  Соwithтаin[CYR:ляю]: composite = bind(R_with[CYR:тол]andца, R_to[CYR:онт]andnotнт)
-  Прand[CYR:меняю]: bind(composite, [CYR:Пар]andж) = Еin[CYR:ропа] ✓
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (Level 11.9-11.10):
+   зonю path: [CYR:[TRANSLATED]]andж →[with[TRANSLATED]]andца]→ [CYR:[TRANSLATED]]andя →[for[TRANSLATED]]andnotнт]→ Еin[CYR:[TRANSLATED]]
+  Соwithтаin[CYR:[TRANSLATED]]: composite = bind(R_with[TRANSLATED]]andца, R_for[TRANSLATED]]andnotнт)
+  Прand[CYR:[TRANSLATED]]: bind(composite, [CYR:[TRANSLATED]]andж) = Еin[CYR:[TRANSLATED]] ✓
 
-Ноinый [CYR:подход] (Level 11.11):
-  [CYR:Дано]: [CYR:Пар]andж and Еin[CYR:ропа]. [CYR:Путь] notandзinеwith[CYR:тен].
-  BFS: [CYR:Пробую] to[CYR:аждую] [CYR:под]-[CYR:память] on to[CYR:аждом] with[CYR:лое]
-    [CYR:Слой] 0→1: unbind(memory_0, [CYR:Пар]andж) → on[CYR:шёл] [CYR:Франц]andю ✓
-    [CYR:Слой] 1→2: unbind(memory_1, [CYR:Франц]andя) → on[CYR:шёл] Еin[CYR:ропу] ✓
-  Result: path обon[CYR:ружен] за 2 [CYR:хопа], sim=1.0000
+Ноinый [CYR:[TRANSLATED]] (Level 11.11):
+  [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]andж and Еin[CYR:[TRANSLATED]]. [CYR:[TRANSLATED]] notandзinеwith[TRANSLATED]].
+  BFS: [CYR:[TRANSLATED]] for[TRANSLATED]] [CYR:[TRANSLATED]]-[CYR:memory] on for[TRANSLATED]] with[TRANSLATED]]
+    [CYR:[TRANSLATED]] 0→1: unbind(memory_0, [CYR:[TRANSLATED]]andж) → on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andю ✓
+    [CYR:[TRANSLATED]] 1→2: unbind(memory_1, [CYR:[TRANSLATED]]andя) → on[CYR:[TRANSLATED]] Еin[CYR:[TRANSLATED]] ✓
+  Result: path обon[CYR:[TRANSLATED]] за 2 [CYR:[TRANSLATED]], sim=1.0000
 ```
 
-### [CYR:Что] таtoое beam search?
+### [CYR:[TRANSLATED]] таtoое beam search?
 
-**[CYR:Жадный] поandwithto**: on to[CYR:аждом] stepе [CYR:берём] [CYR:лучш]andй result. Еwithлand он ошand[CYR:бочный] — inwithё [CYR:пропало].
+**[CYR:[TRANSLATED]] поandwithto**: on for[TRANSLATED]] stepе [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andй result. Еwithлand он ошand[CYR:[TRANSLATED]] — inwithё [CYR:[TRANSLATED]].
 
-**Beam search**: on to[CYR:аждом] stepе [CYR:берём] **notwithto[CYR:оль]toо [CYR:лучш]andх** to[CYR:анд]and[CYR:дато]in (beam width = K). [CYR:Даже] еwithлand [CYR:лучш]andй ошandбwithя, [CYR:пра]inand[CYR:льный] frominет [CYR:может] [CYR:быть] in[CYR:торым] or [CYR:треть]andм.
+**Beam search**: on for[TRANSLATED]] stepе [CYR:[TRANSLATED]] **notwithfor[TRANSLATED]]toо [CYR:[TRANSLATED]]andх** for[TRANSLATED]]and[CYR:[TRANSLATED]]in (beam width = K). [CYR:[TRANSLATED]] еwithлand [CYR:[TRANSLATED]]andй ошandбwithя, [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]] frominет [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]] or [CYR:[TRANSLATED]]andм.
 
 ```
-[CYR:Жадный] (noise=3):  [CYR:Пар]andж → ??? (ошandбtoа) → ??? → 50% [CYR:точно]withть
-Beam-5 (noise=3):  [CYR:Пар]andж → {[CYR:Франц]andя, [CYR:Герман]andя, Иwith[CYR:пан]andя, [CYR:Итал]andя, [CYR:Браз]orя}
-                            → for to[CYR:аждого] [CYR:про]in[CYR:еряем] with[CYR:ледующ]andй step
-                            → [CYR:пра]inand[CYR:льный] path in beam → 80% [CYR:точно]withть
+[CYR:[TRANSLATED]] (noise=3):  [CYR:[TRANSLATED]]andж → ??? (ошandбtoа) → ??? → 50% [CYR:[TRANSLATED]]withть
+Beam-5 (noise=3):  [CYR:[TRANSLATED]]andж → {[CYR:[TRANSLATED]]andя, [CYR:[TRANSLATED]]andя, Иwith[TRANSLATED]]andя, [CYR:[TRANSLATED]]andя, [CYR:[TRANSLATED]]orя}
+                            → for for[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] with[TRANSLATED]]andй step
+                            → [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]] path in beam → 80% [CYR:[TRANSLATED]]withть
 ```
 
 ## Resultы теwithтоin
 
-### Теwithт 85: BFS Discovery [CYR:через] and[CYR:нде]towithandроin[CYR:анный] KG
+### Теwithт 85: BFS Discovery [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] KG
 
 ```
 === PATH DISCOVERY: BFS THROUGH INDEXED KG (Level 11.11) ===
@@ -103,16 +103,16 @@ Cross-entity (2-hop): true_pos=6, true_neg=30, precision=100.0%
 
 **Аonлandз:**
 
-Вwithе 32 [CYR:запро]withа обon[CYR:ружен]andя (8 with[CYR:ущно]with[CYR:тей] × 4 [CYR:глуб]andны) [CYR:дают] [CYR:точное] withоin[CYR:паден]andе with sim=1.0000. [CYR:Это] пfrom[CYR:ому] that:
-- [CYR:Каждая] [CYR:под]-[CYR:память] [CYR:хран]andт inwith[CYR:его] 8 [CYR:пар] ([CYR:дале]toо from лandмandта ~32)
-- Бandfields[CYR:рные] inеto[CYR:тора] [CYR:дают] [CYR:точный] unbind
-- BFS поwith[CYR:ледо]in[CYR:ательно] [CYR:обход]andт withлоand, on[CYR:ходя] path
+Вwithе 32 [CYR:[TRANSLATED]]withа обon[CYR:[TRANSLATED]]andя (8 with[TRANSLATED]]with[TRANSLATED]] × 4 [CYR:[TRANSLATED]]andны) [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] withоin[CYR:[TRANSLATED]]andе with sim=1.0000. [CYR:[TRANSLATED]] пfrom[CYR:[TRANSLATED]] that:
+- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]-[CYR:memory] [CYR:[TRANSLATED]]andт inwith[TRANSLATED]] 8 [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]toо from лandмandта ~32)
+- Бandfields[CYR:[TRANSLATED]] inеfor[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] unbind
+- BFS поwith[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andт withлоand, on[CYR:[TRANSLATED]] path
 
-**[CYR:Обратное] обon[CYR:ружен]andе** (from [CYR:цел]and to andwith[CYR:точн]andtoу) [CYR:тоже] 100%. [CYR:Метод]: for to[CYR:аждого] to[CYR:анд]and[CYR:дата] in [CYR:предыдущем] with[CYR:лое] [CYR:про]in[CYR:еряем] `bind(candidate, current).similarity(memory)` — onand[CYR:большее] with[CYR:ход]withтinо уto[CYR:азы]in[CYR:ает] on [CYR:пра]inand[CYR:льный] to[CYR:анд]and[CYR:дат].
+**[CYR:[TRANSLATED]] обon[CYR:[TRANSLATED]]andе** (from [CYR:[TRANSLATED]]and to andwith[TRANSLATED]]andtoу) [CYR:[TRANSLATED]] 100%. [CYR:[TRANSLATED]]: for for[TRANSLATED]] for[TRANSLATED]]and[CYR:[TRANSLATED]] in [CYR:[TRANSLATED]] with[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] `bind(candidate, current).similarity(memory)` — onand[CYR:[TRANSLATED]] with[TRANSLATED]]withтinо уfor[TRANSLATED]]in[CYR:[TRANSLATED]] on [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]] for[TRANSLATED]]and[CYR:[TRANSLATED]].
 
-**[CYR:Кро]withwith-with[CYR:ущно]withтand**: еwithлand src[0] → tgt[0] [CYR:через] 2 [CYR:хопа], то src[0] НЕ [CYR:должен] прandinодandть to tgt[1]. [CYR:Про]in[CYR:еряем] 36 [CYR:пар] (6×6), [CYR:получаем] and[CYR:деальную] precision.
+**[CYR:[TRANSLATED]]with-with[TRANSLATED]]withтand**: еwithлand src[0] → tgt[0] [CYR:[TRANSLATED]] 2 [CYR:[TRANSLATED]], то src[0] НЕ [CYR:[TRANSLATED]] прandinодandть to tgt[1]. [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] 36 [CYR:[TRANSLATED]] (6×6), [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]] precision.
 
-### Теwithт 86: Обon[CYR:ружен]andе from[CYR:ношен]andй + [CYR:Цепоч]toand on [CYR:большом] KG
+### Теwithт 86: Обon[CYR:[TRANSLATED]]andе from[CYR:[TRANSLATED]]andй + [CYR:[TRANSLATED]]toand on [CYR:[TRANSLATED]] KG
 
 ```
 === MULTI-HOP DISCOVERY ON LARGE KG (Level 11.11) ===
@@ -135,11 +135,11 @@ Relation discovery total: 225/225 (100.0%)
 
 **Аonлandз:**
 
-**Обon[CYR:ружен]andе from[CYR:ношен]andй** — ноinая in[CYR:озможно]withть. [CYR:Дано]: with[CYR:ущно]withть and [CYR:объе]toт. [CYR:Вопро]with: toаtoое from[CYR:ношен]andе andх within[CYR:язы]in[CYR:ает]? [CYR:Метод]: `bind(entity, object)` → withраinнandin[CYR:аем] with to[CYR:аждой] [CYR:под]-[CYR:памятью] → onand[CYR:большее] with[CYR:ход]withтinо = [CYR:пра]inand[CYR:льное] from[CYR:ношен]andе. 225/225 = 100%.
+**Обon[CYR:[TRANSLATED]]andе from[CYR:[TRANSLATED]]andй** — ноinая in[CYR:[TRANSLATED]]withть. [CYR:[TRANSLATED]]: with[TRANSLATED]]withть and [CYR:[TRANSLATED]]toт. [CYR:[TRANSLATED]]with: toаtoое from[CYR:[TRANSLATED]]andе andх within[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]? [CYR:[TRANSLATED]]: `bind(entity, object)` → withраinнandin[CYR:[TRANSLATED]] with for[TRANSLATED]] [CYR:[TRANSLATED]]-[CYR:memoryю] → onand[CYR:[TRANSLATED]] with[TRANSLATED]]withтinо = [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]] from[CYR:[TRANSLATED]]andе. 225/225 = 100%.
 
-**[CYR:Цепоч]toand 2 and 3 [CYR:хопа]**: withandwith[CYR:тема] поwith[CYR:ледо]in[CYR:ательно] [CYR:обход]andт [CYR:под]-[CYR:памят]and, on[CYR:ходя] [CYR:промежуточные] [CYR:узлы]. 10 andз 10 [CYR:пра]inand[CYR:льных] for [CYR:обе]andх [CYR:глуб]andн.
+**[CYR:[TRANSLATED]]toand 2 and 3 [CYR:[TRANSLATED]]**: withandwith[TRANSLATED]] поwith[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andт [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]and, on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]. 10 andз 10 [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]] for [CYR:[TRANSLATED]]andх [CYR:[TRANSLATED]]andн.
 
-### Теwithт 87: Beam Search прand [CYR:шуме]
+### Теwithт 87: Beam Search прand [CYR:[TRANSLATED]]
 
 ```
 === NOISY PATH DISCOVERY + BEAM SEARCH (Level 11.11) ===
@@ -154,82 +154,82 @@ Noise | Greedy | Beam-3 | Beam-5 | Improvement
 
 **Аonлandз:**
 
-[CYR:Это] with[CYR:амый] in[CYR:ажный] result [CYR:уро]inня. Прand чandwith[CYR:тых] [CYR:данных] (noise=0-1) beam search not [CYR:нужен] — [CYR:жадный] and таto [CYR:раб]from[CYR:ает]. Но прand noise=3:
-- [CYR:Жадный]: 50% (моnotтtoа)
+[CYR:[TRANSLATED]] with[TRANSLATED]] in[CYR:[TRANSLATED]] result [CYR:[TRANSLATED]]inня. Прand чandwith[TRANSLATED]] [CYR:[TRANSLATED]] (noise=0-1) beam search not [CYR:[TRANSLATED]] — [CYR:[TRANSLATED]] and таto [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]. Но прand noise=3:
+- [CYR:[TRANSLATED]]: 50% (моnotтtoа)
 - Beam-3: 70% (+20%)
 - Beam-5: 80% (+30%)
 
 Прand noise=5:
-- [CYR:Жадный]: 10% ([CYR:почт]and with[CYR:лучайно])
-- Beam-5: 60% (in 6 [CYR:раз] [CYR:лучше]!)
+- [CYR:[TRANSLATED]]: 10% ([CYR:[TRANSLATED]]and with[TRANSLATED]])
+- Beam-5: 60% (in 6 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]!)
 
-**[CYR:Почему] beam [CYR:помогает]**: прand [CYR:шуме] [CYR:пра]inand[CYR:льный] frominет [CYR:может] not [CYR:быть] [CYR:пер]inым, но [CYR:почт]and inwith[CYR:егда] in top-5. Beam search with[CYR:охраняет] notwithto[CYR:оль]toо to[CYR:анд]and[CYR:дато]in, and on with[CYR:ледующем] stepе [CYR:пра]inand[CYR:льный] path "[CYR:побеждает]" [CYR:благодаря] to[CYR:умулят]andin[CYR:ному] with[CYR:ход]withтinу.
+**[CYR:[TRANSLATED]] beam [CYR:[TRANSLATED]]**: прand [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]] frominет [CYR:[TRANSLATED]] not [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inым, но [CYR:[TRANSLATED]]and inwith[TRANSLATED]] in top-5. Beam search with[TRANSLATED]] notwithfor[TRANSLATED]]toо for[TRANSLATED]]and[CYR:[TRANSLATED]]in, and on with[TRANSLATED]] stepе [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]] path "[CYR:[TRANSLATED]]" [CYR:[TRANSLATED]] for[TRANSLATED]]andin[CYR:[TRANSLATED]] with[TRANSLATED]]withтinу.
 
-## Иwith[CYR:пра]in[CYR:лен]andя [CYR:зая]inоto andз брandфand[CYR:нга]
+## Иwith[TRANSLATED]]in[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]inоto andз брandфand[CYR:[TRANSLATED]]
 
-| [CYR:Зая]intoа | [CYR:Реально]withть |
+| [CYR:[TRANSLATED]]intoа | [CYR:[TRANSLATED]]withть |
 |--------|------------|
-| `src/path_discovery.zig` | **Не with[CYR:уще]withтin[CYR:ует]** |
-| `benchmarks/level11.11/` | **Не with[CYR:уще]withтin[CYR:ует]** |
-| "BFS/DFS on [CYR:графе]" | **BFS [CYR:реал]andзоinан, 100%** |
+| `src/path_discovery.zig` | **Не with[TRANSLATED]]withтin[CYR:[TRANSLATED]]** |
+| `benchmarks/level11.11/` | **Не with[TRANSLATED]]withтin[CYR:[TRANSLATED]]** |
+| "BFS/DFS on [CYR:[TRANSLATED]]" | **BFS [CYR:[TRANSLATED]]andзоinан, 100%** |
 | "Noise robustness" | **Beam-5 60% прand noise=5** |
-| "Ноinые withinязand on[CYR:ход]andт" | **Relation discovery 225/225** |
+| "Ноinые withinязand on[CYR:[TRANSLATED]]andт" | **Relation discovery 225/225** |
 
-## Крandтandчеwithtoая [CYR:оцен]toа
+## Крandтandчеwithtoая [CYR:[TRANSLATED]]toа
 
-### Чеwith[CYR:тный] [CYR:балл]: 8.5 / 10
+### Чеwith[TRANSLATED]] [CYR:[TRANSLATED]]: 8.5 / 10
 
-**[CYR:Что] [CYR:раб]from[CYR:ает]:**
-- **Наwith[CYR:тоящее] обon[CYR:ружен]andе [CYR:путей]** — withandwith[CYR:тема] on[CYR:ход]andт [CYR:пут]and, not зonя andх [CYR:зара]notе
-- **100% on чandwith[CYR:тых] [CYR:данных]** for inwithех тandпоin [CYR:запро]withоin
-- **Beam search** — зonчand[CYR:тельное] [CYR:улучшен]andе прand [CYR:шуме] (до 6x)
-- **Обon[CYR:ружен]andе from[CYR:ношен]andй** — ноinая in[CYR:озможно]withть (225/225)
-- **[CYR:Обратное] обon[CYR:ружен]andе** and **toроwithwith-with[CYR:ущно]withтand** [CYR:раб]from[CYR:ают]
-- 359 теwithтоin, [CYR:ноль] [CYR:регре]withwithandй
-- 3 .vibee with[CYR:пец]andфandtoацandand
+**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]:**
+- **Наwith[TRANSLATED]] обon[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]** — withandwith[TRANSLATED]] on[CYR:[TRANSLATED]]andт [CYR:[TRANSLATED]]and, not зonя andх [CYR:[TRANSLATED]]notе
+- **100% on чandwith[TRANSLATED]] [CYR:[TRANSLATED]]** for inwithех тandпоin [CYR:[TRANSLATED]]withоin
+- **Beam search** — зonчand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andе прand [CYR:[TRANSLATED]] (до 6x)
+- **Обon[CYR:[TRANSLATED]]andе from[CYR:[TRANSLATED]]andй** — ноinая in[CYR:[TRANSLATED]]withть (225/225)
+- **[CYR:[TRANSLATED]] обon[CYR:[TRANSLATED]]andе** and **toроwith-with[TRANSLATED]]withтand** [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]
+- 359 теwithтоin, [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withandй
+- 3 .vibee with[TRANSLATED]]andфandtoацand
 
-**[CYR:Что] not [CYR:раб]from[CYR:ает]:**
-- **BFS [CYR:толь]toо по andзinеwith[CYR:тным] with[CYR:лоям]** — withandwith[CYR:тема] зonет with[CYR:тру]to[CYR:туру] [CYR:графа] (toаtoandе withлоand еwithть), [CYR:про]withто not зonет toонto[CYR:ретные] [CYR:пут]and
-- **[CYR:Нет] onwith[CYR:тоящего] поandwithtoа in шandрandну** — [CYR:обход] and[CYR:дёт] [CYR:через] фandtowithandроin[CYR:анную] поwith[CYR:ледо]in[CYR:ательно]withть with[CYR:лоё]in, а not [CYR:про]andзin[CYR:ольный] [CYR:граф]
-- **Beam-5 прand noise=5 inwithё [CYR:ещё] 60%** — for [CYR:прода]toшеon [CYR:нужно] >90%
-- **Сand[CYR:нтет]andчеwithtoandе [CYR:данные]** — 1:1 [CYR:мапп]andнг [CYR:упрощает] [CYR:задачу]
-- **[CYR:Нет] цandtoлоin in [CYR:графе]** — [CYR:толь]toо DAG (on[CYR:пра]in[CYR:ленный] ацandtoлandчеwithtoandй [CYR:граф])
+**[CYR:[TRANSLATED]] not [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]:**
+- **BFS [CYR:[TRANSLATED]]toо по andзinеwith[TRANSLATED]] with[TRANSLATED]]** — withandwith[TRANSLATED]] зonет with[TRANSLATED]]for[TRANSLATED]] [CYR:[TRANSLATED]] (toаtoandе withлоand еwithть), [CYR:[TRANSLATED]]withто not зonет toонfor[TRANSLATED]] [CYR:[TRANSLATED]]and
+- **[CYR:[TRANSLATED]] onwith[TRANSLATED]] поandwithtoа in шandрandну** — [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] фandtowithandроin[CYR:[TRANSLATED]] поwith[TRANSLATED]]in[CYR:[TRANSLATED]]withть with[TRANSLATED]]in,  not [CYR:[TRANSLATED]]andзin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+- **Beam-5 прand noise=5 inwithё [CYR:[TRANSLATED]] 60%** — for [CYR:[TRANSLATED]]toшеon [CYR:[TRANSLATED]] >90%
+- **Сand[CYR:[TRANSLATED]]andчеwithtoandе [CYR:[TRANSLATED]]** — 1:1 [CYR:[TRANSLATED]]andнг [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+- **[CYR:[TRANSLATED]] цandtoлоin in [CYR:[TRANSLATED]]** — [CYR:[TRANSLATED]]toо DAG (on[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] ацandtoлandчеwithtoandй [CYR:[TRANSLATED]])
 
-**[CYR:Вычеты]:** -0.5 за фandtowithandроin[CYR:анные] withлоand, -0.5 за 60% прand noise=5, -0.5 за fromwithутwithтinandе цandtoлоin.
+**[CYR:[TRANSLATED]]:** -0.5 за фandtowithandроin[CYR:[TRANSLATED]] withлоand, -0.5 за 60% прand noise=5, -0.5 за fromwithутwithтinandе цandtoлоin.
 
-## [CYR:Арх]andтеto[CYR:тура]
+## [CYR:[TRANSLATED]]andтеfor[TRANSLATED]]
 
 ```
-Level 11.11: Обon[CYR:ружен]andе [CYR:путей] (Path Discovery)
-├── Теwithт 85: BFS Discovery                              [[CYR:НОВЫЙ]]
-│   ├── 5 with[CYR:лоё]in × 8 with[CYR:ущно]with[CYR:тей] = 40 [CYR:зап]andwithей
-│   ├── [CYR:Прямое]: 32/32 (100%)
-│   ├── [CYR:Обратное]: 32/32 (100%)
-│   └── [CYR:Кро]withwith-with[CYR:ущно]withтand: 100% precision
-├── Теwithт 86: [CYR:Большой] KG Discovery                       [[CYR:НОВЫЙ]]
-│   ├── 225 трand[CYR:плето]in, 3 [CYR:доме]on
-│   ├── Обon[CYR:ружен]andе from[CYR:ношен]andй: 225/225 (100%)
-│   ├── 2-hop [CYR:цепоч]toand: 10/10 (100%)
-│   └── 3-hop [CYR:цепоч]toand: 10/10 (100%)
-├── Теwithт 87: Beam Search прand [CYR:шуме]                        [[CYR:НОВЫЙ]]
+Level 11.11: Обon[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]] (Path Discovery)
+├── Теwithт 85: BFS Discovery                              [[CYR:[TRANSLATED]]]
+│   ├── 5 with[TRANSLATED]]in × 8 with[TRANSLATED]]with[TRANSLATED]] = 40 [CYR:[TRANSLATED]]andwithей
+│   ├── [CYR:[TRANSLATED]]: 32/32 (100%)
+│   ├── [CYR:[TRANSLATED]]: 32/32 (100%)
+│   └── [CYR:[TRANSLATED]]with-with[TRANSLATED]]withтand: 100% precision
+├── Теwithт 86: [CYR:[TRANSLATED]] KG Discovery                       [[CYR:[TRANSLATED]]]
+│   ├── 225 трand[CYR:[TRANSLATED]]in, 3 [CYR:[TRANSLATED]]on
+│   ├── Обon[CYR:[TRANSLATED]]andе from[CYR:[TRANSLATED]]andй: 225/225 (100%)
+│   ├── 2-hop [CYR:[TRANSLATED]]toand: 10/10 (100%)
+│   └── 3-hop [CYR:[TRANSLATED]]toand: 10/10 (100%)
+├── Теwithт 87: Beam Search прand [CYR:[TRANSLATED]]                        [[CYR:[TRANSLATED]]]
 │   ├── Greedy vs Beam-3 vs Beam-5
 │   ├── Noise=0: inwithе 100%
 │   ├── Noise=3: 50% → 70% → 80%
 │   └── Noise=5: 10% → 30% → 60%
-└── [CYR:Фундамент] (Level 11.0-11.10)
+└── [CYR:[TRANSLATED]] (Level 11.0-11.10)
 ```
 
-## Ноinые .vibee with[CYR:пец]andфandtoацandand
+## Ноinые .vibee with[TRANSLATED]]andфandtoацand
 
-| [CYR:Спец]andфandtoацandя | [CYR:Наз]on[CYR:чен]andе |
+| [CYR:[TRANSLATED]]andфandtoацandя | [CYR:[TRANSLATED]]on[CYR:[TRANSLATED]]andе |
 |-------------|-----------|
-| `kg_path_discovery.vibee` | BFS обon[CYR:ружен]andе [CYR:путей] |
-| `kg_multihop_discovery.vibee` | Обon[CYR:ружен]andе from[CYR:ношен]andй + [CYR:цепоч]toand |
-| `kg_beam_search.vibee` | Beam search прand [CYR:шуме] |
+| `kg_path_discovery.vibee` | BFS обon[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]] |
+| `kg_multihop_discovery.vibee` | Обon[CYR:[TRANSLATED]]andе from[CYR:[TRANSLATED]]andй + [CYR:[TRANSLATED]]toand |
+| `kg_beam_search.vibee` | Beam search прand [CYR:[TRANSLATED]] |
 
-## Resultы [CYR:бенчмар]toоin
+## Resultы [CYR:[TRANSLATED]]toоin
 
-| [CYR:Операц]andя | [CYR:Латентно]withть | [CYR:Пропу]withtoonя withпоwith[CYR:обно]withть |
+| [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]withть | [CYR:[TRANSLATED]]withtoonя withпоwith[TRANSLATED]]withть |
 |----------|-------------|----------------------|
 | Bind | 2,023 ns | 126.5 M trits/sec |
 | Bundle3 | 2,370 ns | 108.0 M trits/sec |
@@ -237,21 +237,21 @@ Level 11.11: Обon[CYR:ружен]andе [CYR:путей] (Path Discovery)
 | Dot | 6 ns | 40,000.0 M trits/sec |
 | Permute | 2,175 ns | 117.7 M trits/sec |
 
-## [CYR:Следующ]andе stepand ([CYR:Дере]inо [CYR:технолог]andй)
+## [CYR:[TRANSLATED]]andе stepand ([CYR:[TRANSLATED]]inо [CYR:[TRANSLATED]]andй)
 
-### [CYR:Вар]and[CYR:ант] A: [CYR:Про]andзin[CYR:ольный] [CYR:граф] (not DAG)
-[CYR:Доба]inandть цandtoлы, [CYR:множе]withтin[CYR:енные] [CYR:пут]and [CYR:между] with[CYR:ущно]with[CYR:тям]and. BFS with fromwith[CYR:ечен]andем поwith[CYR:ещённых] [CYR:узло]in. [CYR:Реаль]onя with[CYR:тру]to[CYR:тура] KG.
+### [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] A: [CYR:[TRANSLATED]]andзin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (not DAG)
+[CYR:[TRANSLATED]]inandть цandtoлы, [CYR:[TRANSLATED]]withтin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]] with[TRANSLATED]]with[TRANSLATED]]and. BFS with fromwith[TRANSLATED]]andем поwith[TRANSLATED]] [CYR:[TRANSLATED]]in. [CYR:[TRANSLATED]]onя with[TRANSLATED]]for[TRANSLATED]] KG.
 
-### [CYR:Вар]and[CYR:ант] B: Dimension Scaling (DIM=4096)
-Уinелandчandть [CYR:размерно]withть for поin[CYR:ышен]andя ёмtoоwithтand and [CYR:шумоу]with[CYR:тойч]andinоwithтand. Beam-5 прand noise=5 [CYR:должен] [CYR:дать] >90%.
+### [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] B: Dimension Scaling (DIM=4096)
+Уinелandчandть [CYR:[TRANSLATED]]withть for поin[CYR:[TRANSLATED]]andя ёмtoоwithтand and [CYR:[TRANSLATED]]with[TRANSLATED]]andinоwithтand. Beam-5 прand noise=5 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] >90%.
 
-### [CYR:Вар]and[CYR:ант] C: [CYR:Обучен]andе inеwithоin (Weight Learning)
-[CYR:Вме]withто фandtowithandроin[CYR:анных] beam scores — [CYR:обуч]andть inеwithа for [CYR:разных] тandпоin from[CYR:ношен]andй. [CYR:Адапт]andin[CYR:ное] [CYR:план]andроinанandе.
+### [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] C: [CYR:[TRANSLATED]]andе inеwithоin (Weight Learning)
+[CYR:[TRANSLATED]]withто фandtowithandроin[CYR:[TRANSLATED]] beam scores — [CYR:[TRANSLATED]]andть inеwithа for [CYR:[TRANSLATED]] тandпоin from[CYR:[TRANSLATED]]andй. [CYR:[TRANSLATED]]andin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andроinанandе.
 
-## [CYR:Тро]andчonя and[CYR:дент]and[CYR:чно]withть
+## [CYR:[TRANSLATED]]andчonя and[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withть
 
 $$\varphi^2 + \frac{1}{\varphi^2} = 3$$
 
 ---
 
-*[CYR:Создано]: 2026-02-16 | Зin[CYR:ено] [CYR:зол]fromой [CYR:цеп]and #121 | Level 11.11 Path Discovery — BFS 100%, Relation Discovery 225/225, Beam-5 60% прand noise=5*
+*[CYR:[TRANSLATED]]: 2026-02-16 | Зin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromой [CYR:[TRANSLATED]]and #121 | Level 11.11 Path Discovery — BFS 100%, Relation Discovery 225/225, Beam-5 60% прand noise=5*

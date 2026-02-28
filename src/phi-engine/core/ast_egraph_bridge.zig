@@ -1,5 +1,5 @@
 //! VIBEE AST ↔ E-Graph Bridge (v3)
-//! [CYR:[EN]]in[EN]and[EN] AstNode in E-Classes and [CYR:[EN]] after [CYR:[EN]]and[EN]and[CYR:[EN]]andand
+//! inand AstNode in E-Classes and  after andand
 //! φ² + 1/φ² = 3
 
 const std = @import("std");
@@ -23,7 +23,7 @@ pub const Bridge = struct {
         };
     }
 
-    /// [EN]to[EN]withandin[EN] adds AST [CYR:[EN]] in E-graph
+    /// towithandin adds AST  in E-graph
     pub fn astToEGraph(self: *Bridge, node: *const AstNode) !EClassId {
         return switch (node.kind) {
             .literal_int => {
@@ -65,7 +65,7 @@ pub const Bridge = struct {
         };
     }
 
-    /// Extracts [CYR:[EN]]and[EN] (onandmore "sacred") in[EN]and[CYR:[EN]] [CYR:[EN]]in[EN]
+    /// Extracts and (onandmore "sacred") inand in
     pub fn extractBest(self: *Bridge, class_id: EClassId) !*AstNode {
         const best_enode = try self.graph.extractBest(class_id);
 

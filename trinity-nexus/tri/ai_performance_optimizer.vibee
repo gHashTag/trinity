@@ -16,6 +16,6 @@ behaviors:
   - name: detect_list_operation_hotspot
   - name: suggest_algorithm_optimization
   - name: apply_list_comprehension
-  - name: "[CYR:[TRANSLATED]]and[EN]from[EN]andI with[EN]andwith[EN]in"
-  - name: "[CYR:[TRANSLATED]]and[EN]from[EN]andI [CYR:algorithm]and[CYR:[TRANSLATED]]"
-  - name: "[CYR:[TRANSLATED]]and[EN]from[EN]andI [CYR:[TRANSLATED]I[EN]]and"
+  - name: "andfromandI withandwithin"
+  - name: "andfromandI [CYR:algorithm]and"
+  - name: "andfromandI [CYR:I]and"

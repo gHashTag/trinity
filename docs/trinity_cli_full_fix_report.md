@@ -10,7 +10,7 @@
 
 **This is NOT real AI code generation.** The "code generation" is:
 - Hardcoded templates (Hello World, Fibonacci, etc.)
-- Pattern matching for keywords ("with[CYR:оздай]", "onпandшand", "toод")
+- Pattern matching for keywords ("with[TRANSLATED]]", "onпandшand", "toод")
 - NOT actual code synthesis or understanding
 - Confidence scores are FAKE (hardcoded values)
 
@@ -27,7 +27,7 @@ Fixed critical bug where CLI failed to detect code prompts, returning garbage/ge
 | Code prompts coherent | 0% | 100% |
 | Chat prompts coherent | 100% | 100% |
 | Languages | Chat only | Code + Chat |
-| "toодandть [CYR:умеешь]?" | Garbage | "Да! Я [CYR:умею] геnotрandроin[CYR:ать] toод..." |
+| "toодandть [CYR:[TRANSLATED]]?" | Garbage | "Да!  [CYR:[TRANSLATED]] геnotрandроin[CYR:[TRANSLATED]] toод..." |
 | "hello world on zig" | "This code processes..." | Real Zig code |
 | Total prompts tested | 25 | 35 |
 
@@ -38,18 +38,18 @@ Fixed critical bug where CLI failed to detect code prompts, returning garbage/ge
 ### Root Cause
 
 1. **isConversationalPrompt()** matched "hello" in "hello world" as greeting
-2. **No code prompt detection** - Russian "with[CYR:оздай]", "onпandшand", "toод" ignored
+2. **No code prompt detection** - Russian "with[TRANSLATED]]", "onпandшand", "toод" ignored
 3. **Mode priority wrong** - Chat mode activated before code check
 4. **processCodeGen** lacked hello world/fibonacci templates
 
 ### Before (Broken)
 
 ```
-> toодandть [CYR:умеешь]?
+> toодandть [CYR:[TRANSLATED]]?
 This code processes data using Zig's safety features...
 [Confidence: 70% | Coherent: YES]  ← LIE!
 
-> hello world with[CYR:оздай] on zig
+> hello world with[TRANSLATED]] on zig
 Hello! I'm Trinity — a 100% local AI assistant...
 [Confidence: 98% | Coherent: YES]  ← WRONG MODE!
 ```
@@ -57,8 +57,8 @@ Hello! I'm Trinity — a 100% local AI assistant...
 ### After (Fixed)
 
 ```
-> toодandть [CYR:умеешь]?
-Да! Я [CYR:умею] геnotрandроin[CYR:ать] toод on Zig, Python, JavaScript, Rust.
+> toодandть [CYR:[TRANSLATED]]?
+Да!  [CYR:[TRANSLATED]] геnotрandроin[CYR:[TRANSLATED]] toод on Zig, Python, JavaScript, Rust.
 [Confidence: 95% | Coherent: YES]  ← TRUTH!
 
 > onпandшand hello world on zig
@@ -85,8 +85,8 @@ pub fn isCodePrompt(prompt: []const u8) bool {
     // Russian code keywords - HIGH PRIORITY
     if (lang == .Russian) {
         if (containsAny(prompt, &.{
-            "with[CYR:оздай]", "withгеnotрand[CYR:руй]", "onпandшand", "toод", "toодandть", "[CYR:фун]toцand",
-            "[CYR:программ]", "[CYR:алгор]andтм", "toлаwithwith", "with[CYR:тру]to[CYR:тур]", "маwithwithandin",
+            "with[TRANSLATED]]", "withгеnotрand[CYR:[TRANSLATED]]", "onпandшand", "toод", "toодandть", "[CYR:[TRANSLATED]]toцand",
+            "[CYR:[TRANSLATED]]", "[CYR:[TRANSLATED]]andтм", "toлаwith", "with[TRANSLATED]]for[TRANSLATED]]", "маwithandin",
             "цandtoл", "hello world", "helloworld", "фandбоonччand",
         })) return true;
     }
@@ -127,7 +127,7 @@ pub fn isConversationalPrompt(prompt: []const u8) bool {
 ```zig
 fn processCodeGen(self: *Self, request: SWERequest) InternalResult {
     // HELLO WORLD detection (multilingual)
-    if (containsAny(prompt, &.{ "hello world", "helloworld", "[CYR:хелло] in[CYR:орлд]" })) {
+    if (containsAny(prompt, &.{ "hello world", "helloworld", "[CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]" })) {
         return InternalResult{
             .output = "const std = @import(\"std\");\n\npub fn main() void {\n    std.debug.print(\"Hello, World!\\n\", .{});\n}",
             .confidence = 0.98,
@@ -172,13 +172,13 @@ fn processQuery(state: *CLIState, query: []const u8) void {
 | Prompt | Response | Confidence |
 |--------|----------|------------|
 | onпandшand hello world on zig | Real Zig code | 98% |
-| with[CYR:оздай] [CYR:фун]toцandю bind on zig | Zig bind function | 92% |
-| toодandть [CYR:умеешь]? | "Да! Я [CYR:умею] геnotрandроin[CYR:ать] toод..." | 95% |
-| withгеnotрand[CYR:руй] fibonacci | Zig fibonacci | 95% |
+| with[TRANSLATED]] [CYR:[TRANSLATED]]toцandю bind on zig | Zig bind function | 92% |
+| toодandть [CYR:[TRANSLATED]]? | "Да!  [CYR:[TRANSLATED]] геnotрandроin[CYR:[TRANSLATED]] toод..." | 95% |
+| withгеnotрand[CYR:[TRANSLATED]] fibonacci | Zig fibonacci | 95% |
 | that таtoое bind? | VSA explanation | 95% |
-| with[CYR:оздай] hello world | Zig code | 98% |
+| with[TRANSLATED]] hello world | Zig code | 98% |
 | onпandшand fibonacci | Zig fibonacci | 95% |
-| [CYR:фун]toцandя on zig | Zig function | 95% |
+| [CYR:[TRANSLATED]]toцandя on zig | Zig function | 95% |
 
 ### Chinese Code Prompts (5/5 Coherent)
 
@@ -210,7 +210,7 @@ fn processQuery(state: *CLIState, query: []const u8) void {
 | Prompt | Response | Confidence |
 |--------|----------|------------|
 | прandinет | Russian greeting | 98% |
-| toаto [CYR:дела]? | Russian how are you | 98% |
+| toаto [CYR:[TRANSLATED]]? | Russian how are you | 98% |
 | toто ты? | Russian who are you | 97% |
 | withпаwithandбо | Russian thanks | 98% |
 | поtoа | Russian goodbye | 98% |
@@ -255,7 +255,7 @@ fn processQuery(state: *CLIState, query: []const u8) void {
 
 ### Keywords Detected
 
-**Russian:** with[CYR:оздай], withгеnotрand[CYR:руй], onпandшand, toод, toодandть, [CYR:фун]toцand, [CYR:программ], [CYR:алгор]andтм, фandбоonччand
+**Russian:** with[TRANSLATED]], withгеnotрand[CYR:[TRANSLATED]], onпandшand, toод, toодandть, [CYR:[TRANSLATED]]toцand, [CYR:[TRANSLATED]], [CYR:[TRANSLATED]]andтм, фandбоonччand
 **Chinese:** 代码, 编程, 函数, 程序, 生成, 创建, 编写, 算法
 **English:** hello world, fibonacci, generate, create, write code, function, struct, code, zig
 

@@ -4,19 +4,19 @@ language: zig
 module: hdc_core
 
 description: |
-  HDC Core - [CYR:[TRANSLATED]]iny[EN] [CYR:[TRANSLATED]]andand [EN]and[CYR:[TRANSLATED]y[EN]] iny[EN]andwith[CYR:[TRANSLATED]]and[EN]
-  with [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]and[EN] for with[CYR:[TRANSLATED]]and[EN]withI AI [CYR:[TRANSLATED]].
+  HDC Core - iny and and[CYR:y] inyandwithand
+  with -and for withandwithI AI .
   
-  [CYR:[TRANSLATED]]onI [CYR:base]:
+  onI [CYR:base]:
   - Kanerva (2009): Hyperdimensional Computing
-  - BitNet b1.58 (2024): [CYR:[TRANSLATED]]and[CYR:[EN]y[EN]] in[EN]with[EN] {-1, 0, +1}
-  - Setun (1958): [CYR:[TRANSLATED]]withand[EN]in[EN]onI [CYR:[TRANSLATED]]and[EN]onI system
+  - BitNet b1.58 (2024): and[CYR:y] inwith {-1, 0, +1}
+  - Setun (1958): withandinonI andonI system
   
-  [CYR:[TRANSLATED]]and[EN]:
-  - Binding: a ⊗ b = [EN]element[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN]
-  - Bundling: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:go[EN]]with[EN]in[EN]and[EN]
-  - Similarity: [EN]withand[EN]with[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]with[EN]in[EN]
-  - Online Update: P ← P + η(v - P), [CYR:[TRANSLATED]] [EN]in[CYR:[TRANSLATED]]from[EN]andI
+  and:
+  - Binding: a ⊗ b = element and
+  - Bundling: and [CYR:go]withinand
+  - Similarity: withandwith within
+  - Online Update: P ← P + η(v - P),  infromandI
 
 imports:
   - hybrid  # HybridBigInt, Vec32i8, SIMD_WIDTH
@@ -31,26 +31,26 @@ constants:
 
 types:
   Trit:
-    description: "[CYR:[TRANSLATED]]withand[EN]in[CYR:[EN]ny] [CYR:[TRANSLATED]]and[CYR:[EN]ny] [CYR:[TRANSLATED]I[EN]]"
+    description: "withandin[CYR:ny] and[CYR:ny] [CYR:I]"
     values:
       - Neg: -1
       - Zero: 0
       - Pos: 1
 
   HyperVector:
-    description: "[CYR:[TRANSLATED]]and[CYR:[EN]ny] [EN]and[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] for HDC"
+    description: "and[CYR:ny] andin for HDC"
     fields:
       data: List<Int>
       dim: Int
 
   FloatAccumulator:
-    description: "Float [CYR:[TRANSLATED]I[TRANSLATED]] for [CYR:[TRANSLATED]] [EN]with[CYR:[TRANSLATED]]not[EN]andI"
+    description: "Float [CYR:I] for  withnotandI"
     fields:
       data: List<Float>
       dim: Int
 
   Prototype:
-    description: "[CYR:[TRANSLATED]]type class[EN] with [CYR:[TRANSLATED]I[TRANSLATED]]"
+    description: "type class with [CYR:I]"
     fields:
       label: String
       accumulator: FloatAccumulator
@@ -58,7 +58,7 @@ types:
       count: Int
 
   OnlineHDC:
-    description: "[CYR:[TRANSLATED]] HDC system"
+    description: " HDC system"
     fields:
       prototypes: Map<String, Prototype>
       dim: Int
@@ -66,138 +66,138 @@ types:
       samples_seen: Int
 
   SimilarityResult:
-    description: "[CYR:[TRANSLATED]l[TRANSLATED]] iny[EN]andwith[CYR:[TRANSLATED]]andI with[CYR:[TRANSLATED]]with[EN]in[EN]"
+    description: "[CYR:l] inyandwithandI within"
     fields:
       similarity: Float
       label: String
 
 behaviors:
-  # === [CYR:[EN]A[TRANSLATED]] HDC [CYR:[TRANSLATED]A[TRANSLATED]] ===
+  # === [CYR:A] HDC [CYR:A] ===
   
   - name: bind
-    given: [EN]in[EN] [EN]and[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] a and b [EN]andon[EN]in[EN] [CYR:[TRANSLATED]]with[EN]and
-    when: [CYR:[TRANSLATED]]and[EN] [EN]withwith[EN]and[EN]andand [CYR:[TRANSLATED]] [EN]element[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] HyperVector where c[i] = a[i] * b[i]
+    given: in andin a and b andonin withand
+    when: and withandand  element and
+    then: in[CYR:acts] HyperVector where c[i] = a[i] * b[i]
 
   - name: unbind
-    given: [EN]in[CYR:I[TRANSLATED]ny] in[CYR:[TRANSLATED]] and key
-    when: [EN]in[CYR:[EN]chen]and[EN] within[CYR:I[TRANSLATED]go] values
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] bind(bound, key) .. [CYR:[TRANSLATED]]and[CYR:[EN]ny] bind with[CYR:[TRANSLATED]]and[EN]
+    given: in[CYR:Iny] in and key
+    when: in[CYR:chen]and within[CYR:Igo] values
+    then: in[CYR:acts] bind(bound, key) .. and[CYR:ny] bind withand
 
   - name: bundle
-    given: [EN]andwith[EN] [EN]and[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]in
-    when: [CYR:[TRANSLATED]]and[EN] with[CYR:[TRANSLATED]]and[EN]andand [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:go[EN]]with[EN]in[EN]and[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] HyperVector with [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]y[EN]] [EN]and[CYR:[TRANSLATED]] on [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN]andand
+    given: andwith andinin
+    when: and withandand  and [CYR:go]withinand
+    then: in[CYR:acts] HyperVector with and[CYR:y] and on  andand
 
   - name: bundle_simd
-    given: [EN]andwith[EN] [EN]and[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]in
-    when: SIMD-[CYR:[TRANSLATED]]and[EN]fromand[EN]in[CYR:[TRANSLATED]] bundling (32 [EN]and[EN] [CYR:[TRANSLATED]lno])
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] HyperVector with andwith[CYR:[EN]l[EN]]in[EN]and[EN] Vec32i8
+    given: andwith andinin
+    when: SIMD-andfromandin bundling (32 and [CYR:lno])
+    then: in[CYR:acts] HyperVector with andwithl]inand Vec32i8
 
   - name: permute
-    given: HyperVector and in[EN]and[EN]andon with[EN]inand[EN] k
-    when: [EN]and[EN]and[EN]with[CYR:[EN]I] [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]in[EN] for codeand[EN]in[EN]andI [EN]with[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]lno]with[CYR:[TRANSLATED]]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] HyperVector with[EN]inand[CYR:[TRANSLATED]y[EN]] on k [CYR:[TRANSLATED]]and[EN]and[EN]
+    given: HyperVector and inandon withinand k
+    when: andwithI] within for codeandinandI within[CYR:lno]with
+    then: in[CYR:acts] HyperVector withinand[CYR:y] on k and
 
   - name: similarity
-    given: [EN]in[EN] [EN]and[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] a and b
-    when: [CYR:Vy[EN]]andwith[CYR:[TRANSLATED]]and[EN] [EN]withand[EN]with[CYR:[EN]go] with[CYR:[TRANSLATED]]with[EN]in[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] float in [EN]and[CYR:[TRANSLATED]]not [-1, 1]
+    given: in andin a and b
+    when: [CYR:Vy]andwithand withandwithgo] within
+    then: in[CYR:acts] float in andnot [-1, 1]
 
   - name: similarity_simd
-    given: [EN]in[EN] [EN]and[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] a and b
-    when: SIMD-[CYR:[TRANSLATED]]and[EN]fromand[EN]in[CYR:[TRANSLATED]] calculation with[CYR:[TRANSLATED]]with[EN]in[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] float andwith[CYR:[EN]l[EN]I] simdDotProduct
+    given: in andin a and b
+    when: SIMD-andfromandin calculation within
+    then: in[CYR:acts] float andwithlI] simdDotProduct
 
   - name: hamming_distance
-    given: [EN]in[EN] [EN]and[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] a and b
-    when: [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and[EN]withI [CYR:[TRANSLATED]]and[EN]and[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] [CYR:[TRANSLATED]] number
+    given: in andin a and b
+    when: with andwithI and
+    then: in[CYR:acts]  number
 
-  # === [CYR:[TRANSLATED]A[TRANSLATED]] [CYR:[TRANSLATED]] ===
+  # === [CYR:A]  ===
 
   - name: random_vector
-    given: [CYR:[TRANSLATED]]with[EN] and seed
-    when: [EN]not[CYR:[TRANSLATED]]andI with[CYR:[TRANSLATED]go] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]go] [EN]and[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] HyperVector with [EN]in[CYR:[TRANSLATED]y[EN]] [EN]with[CYR:[TRANSLATED]]and[EN] [EN]and[EN]in
+    given: with and seed
+    when: notandI withgo] and[CYR:go] andin
+    then: in[CYR:acts] HyperVector with in[CYR:y] withand andin
 
   - name: zero_vector
-    given: [CYR:[TRANSLATED]]with[EN]
-    when: [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]in[CYR:[EN]go] in[CYR:[TRANSLATED]]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] HyperVector [CYR:[TRANSLATED]]not[CYR:[EN]ny] [CYR:[TRANSLATED]I[EN]]and
+    given: with
+    when: and in[CYR:go] in
+    then: in[CYR:acts] HyperVector not[CYR:ny] [CYR:I]and
 
   - name: ones_vector
-    given: [CYR:[TRANSLATED]]with[EN]
-    when: [CYR:[TRANSLATED]]and[EN] in[CYR:[TRANSLATED]] from [EN]and[EN]and[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] HyperVector [CYR:[TRANSLATED]]not[CYR:[EN]ny] +1
+    given: with
+    when: and in from and
+    then: in[CYR:acts] HyperVector not[CYR:ny] +1
 
-  # === [CYR:[TRANSLATED]A[EN]] [CYR:[TRANSLATED]] ===
+  # === [CYR:A]  ===
 
   - name: create_online_hdc
-    given: [CYR:[TRANSLATED]]with[EN] and learning_rate
-    when: [EN]and[EN]and[EN]from[EN]andI [CYR:[TRANSLATED]] HDC withandwith[CYR:[TRANSLATED]y]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] [EN]with[CYR:[TRANSLATED]] OnlineHDC
+    given: with and learning_rate
+    when: andfromandI  HDC withandwithy]
+    then: in[CYR:acts] with OnlineHDC
 
   - name: online_update
-    given: [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]], [CYR:[TRANSLATED]] and OnlineHDC
-    when: [CYR:[TRANSLATED]]and[EN] on [EN]in[EN] [CYR:[TRANSLATED]chen[TRANSLATED]] example[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [CYR:pro[EN]]type: P ← P + η(v - P)
+    given:  in,  and OnlineHDC
+    when: and on in [CYR:chen] example
+    then: in[CYR:I] [CYR:pro]type: P ← P + η(v - P)
 
   - name: online_update_unlabeled
-    given: [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]] and OnlineHDC
-    when: [CYR:[TRANSLATED]]and[EN] on not[CYR:[TRANSLATED]chen[TRANSLATED]] example[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [EN]and[CYR:[TRANSLATED]]and[EN] [CYR:pro[EN]]type if similarity > threshold
+    given:  in and OnlineHDC
+    when: and on not[CYR:chen] example
+    then: in[CYR:I] and [CYR:pro]type if similarity > threshold
 
   - name: predict
-    given: [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]] and OnlineHDC
-    when: [EN]andwith[EN] onand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]go] [CYR:pro[EN]]type[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] SimilarityResult with [CYR:[TRANSLATED]] and [EN]in[CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]
+    given:  in and OnlineHDC
+    when: andwith onand [CYR:go] [CYR:pro]type
+    then: in[CYR:acts] SimilarityResult with  and inwith
 
   - name: predict_top_k
-    given: [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]], OnlineHDC and k
-    when: [EN]andwith[EN] k onand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN] [CYR:pro[EN]]type[EN]in
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] list SimilarityResult [EN]with[CYR:[TRANSLATED]]and[EN]in[CYR:[EN]ny] [EN] with[CYR:[TRANSLATED]]with[EN]in[EN]
+    given:  in, OnlineHDC and k
+    when: andwith k onand and [CYR:pro]typein
+    then: in[CYR:acts] list SimilarityResult withandin[CYR:ny]  within
 
-  # === [CYR:[EN]A[TRANSLATED]A[TRANSLATED]] ===
+  # === [CYR:AA] ===
 
   - name: quantize_to_ternary
     given: FloatAccumulator
-    when: [CYR:[TRANSLATED]]in[EN]and[EN] float in [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[EN]in[CYR:[TRANSLATED]]and[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] HyperVector with values[EN]and {-1, 0, +1}
+    when: inand float in and withinand
+    then: in[CYR:acts] HyperVector with valuesand {-1, 0, +1}
 
   - name: dequantize_to_float
     given: HyperVector
-    when: [CYR:[TRANSLATED]]in[EN]and[EN] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]go] in float for on[CYR:[TRANSLATED]]andI
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] FloatAccumulator
+    when: inand and[CYR:go] in float for onandI
+    then: in[CYR:acts] FloatAccumulator
 
-  # === [CYR:[TRANSLATED]A[TRANSLATED]] ===
+  # === [CYR:A] ===
 
   - name: encode_bytes
-    given: [EN]withwithandin [CYR:[TRANSLATED]]in and configuration
-    when: [CYR:[TRANSLATED]]in[EN]and[EN] [CYR:[TRANSLATED]]in in [EN]and[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] HyperVector [CYR:[TRANSLATED]]with[EN]in[CYR:[TRANSLATED]]and[EN]
+    given: withandin in and configuration
+    when: inand in in andin
+    then: in[CYR:acts] HyperVector withinand
 
   - name: encode_sequence
-    given: [EN]andwith[EN] token[EN]in
-    when: [CYR:Code]and[EN]in[EN]and[EN] [EN]with[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]lno]with[EN]and with [CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]y[EN]] binding
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] HyperVector: sum(permute(token[i], i))
+    given: andwith tokenin
+    when: [CYR:Code]andinand within[CYR:lno]withand with and[CYR:y] binding
+    then: in[CYR:acts] HyperVector: sum(permute(token[i], i))
 
-  # === [CYR:[TRANSLATED]] ===
+  # ===  ===
 
   - name: count_nonzero
     given: HyperVector
-    when: [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]] not[CYR:[TRANSLATED]]iny[EN] element[EN]in
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] [CYR:[TRANSLATED]] number
+    when: with notiny elementin
+    then: in[CYR:acts]  number
 
   - name: sparsity
     given: HyperVector
-    when: [CYR:Vy[EN]]andwith[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]with[EN]and
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (0.0 [EN] 1.0)
+    when: [CYR:Vy]andwithand withand
+    then: in[CYR:acts]   (0.0  1.0)
 
   - name: normalize
     given: HyperVector
-    when: [CYR:[TRANSLATED]]from[EN]andI in[CYR:[TRANSLATED]]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] in[CYR:[TRANSLATED]] with [EN]and[EN]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+    when: fromandI in
+    then: in[CYR:acts] in with and 
 
 tests:
   - name: test_bind_self_inverse

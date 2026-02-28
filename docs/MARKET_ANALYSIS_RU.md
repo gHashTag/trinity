@@ -1,77 +1,77 @@
-# Аonлandз [CYR:Рын]toа [CYR:ЖАР] [CYR:ПТИЦА] (FIREBIRD)
+# Аonлandз [CYR:[TRANSLATED]]toа [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (FIREBIRD)
 
-## [CYR:Рыно]to AI-browserоin and Anti-Detect [CYR:Решен]andй 2026
+## [CYR:[TRANSLATED]]to AI-browserоin and Anti-Detect [CYR:[TRANSLATED]]andй 2026
 
-### [CYR:Размер] [CYR:Рын]toа
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toа
 
-| [CYR:Сегмент] | [CYR:Размер] 2024 | [CYR:Прогноз] 2034 | CAGR |
+| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] 2024 | [CYR:[TRANSLATED]] 2034 | CAGR |
 |---------|-------------|--------------|------|
 | AI-browserы | $4.5B | $76.8B | 33% |
 | Anti-detect browserы | $1.2B | $8.5B | 22% |
 | AI Hardware (CPU/GPU) | $150B | $300B+ | 15% |
-| DePIN and[CYR:нфра]with[CYR:тру]to[CYR:тура] | $2B | $25B | 28% |
+| DePIN and[CYR:[TRANSLATED]]with[TRANSLATED]]for[TRANSLATED]] | $2B | $25B | 28% |
 
-### [CYR:Ключе]inые [CYR:Игро]toand Anti-Detect
+### [CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]toand Anti-Detect
 
-| [CYR:Компан]andя | Цеon/меwith | [CYR:Проф]or | Оwith[CYR:обенно]withтand |
+| [CYR:[TRANSLATED]]andя | Цеon/меwith | [CYR:[TRANSLATED]]or | Оwith[TRANSLATED]]withтand |
 |----------|----------|---------|-------------|
 | Multilogin | $99-399 | 100-1000 | Canvas, WebGL |
-| GoLogin | $49-199 | 100-500 | [CYR:Облачные] [CYR:проф]or |
-| Dolphin Anty | $89-299 | 100-300 | [CYR:Команд]onя [CYR:раб]fromа |
-| AdsPower | $9-50 | 10-200 | [CYR:Бюджетный] |
-| **[CYR:ЖАР] [CYR:ПТИЦА]** | **$0 (open)** | **∞** | **Ternary VSA** |
+| GoLogin | $49-199 | 100-500 | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]or |
+| Dolphin Anty | $89-299 | 100-300 | [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]fromа |
+| AdsPower | $9-50 | 10-200 | [CYR:[TRANSLATED]] |
+| **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]** | **$0 (open)** | **∞** | **Ternary VSA** |
 
-### [CYR:Кон]to[CYR:урентные] [CYR:Пре]and[CYR:муще]withтinа [CYR:ЖАР] [CYR:ПТИЦА]
+### [CYR:[TRANSLATED]]for[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinа [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-1. **Унandto[CYR:аль]onя [CYR:технолог]andя**: [CYR:Тер]on[CYR:рные] inеto[CYR:тора] (VSA) vs бandon[CYR:рные] fingerprints
-2. **Open Source**: Беwith[CYR:платно] vs $99-399/меwith у toонto[CYR:уренто]in
-3. **Эnot[CYR:ргоэффе]toтandinноwithть**: 10x эto[CYR:оном]andя compute (CPU-only)
-4. **SIMD уwithto[CYR:орен]andе**: 4-39x быwith[CYR:трее] on [CYR:операц]andях
-5. **B2T Pipeline**: WASM → TVC IR → Evasion (унandto[CYR:ально])
+1. **Унandfor[TRANSLATED]]onя [CYR:[TRANSLATED]]andя**: [CYR:[TRANSLATED]]on[CYR:[TRANSLATED]] inеfor[TRANSLATED]] (VSA) vs бandon[CYR:[TRANSLATED]] fingerprints
+2. **Open Source**: Беwith[TRANSLATED]] vs $99-399/меwith  toонfor[TRANSLATED]]in
+3. **Эnot[CYR:[TRANSLATED]]toтandinноwithть**: 10x эfor[TRANSLATED]]andя compute (CPU-only)
+4. **SIMD уwithfor[TRANSLATED]]andе**: 4-39x быwith[TRANSLATED]] on [CYR:[TRANSLATED]]andях
+5. **B2T Pipeline**: WASM → TVC IR → Evasion (унandfor[TRANSLATED]])
 
 ---
 
-## Деnot[CYR:жный] Пfrom[CYR:енц]andал
+## Деnot[CYR:[TRANSLATED]] Пfrom[CYR:[TRANSLATED]]andал
 
-### [CYR:Модель] Моnotтand[CYR:зац]andand
+### [CYR:[TRANSLATED]] Моnotтand[CYR:[TRANSLATED]]and
 
-#### 1. SaaS [CYR:Подп]andwithtoа (Enterprise)
+#### 1. SaaS [CYR:[TRANSLATED]]andwithtoа (Enterprise)
 ```
-[CYR:Базо]inый [CYR:план]:     $29/меwith  × 10,000 [CYR:пользо]in[CYR:ателей] = $290,000/меwith
-Pro [CYR:план]:         $99/меwith  × 5,000 [CYR:пользо]in[CYR:ателей]  = $495,000/меwith
-Enterprise [CYR:план]:  $299/меwith × 1,000 [CYR:пользо]in[CYR:ателей]  = $299,000/меwith
+[CYR:[TRANSLATED]]inый [CYR:[TRANSLATED]]:     $29/меwith  × 10,000 [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] = $290,000/меwith
+Pro [CYR:[TRANSLATED]]:         $99/меwith  × 5,000 [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]  = $495,000/меwith
+Enterprise [CYR:[TRANSLATED]]:  $299/меwith × 1,000 [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]  = $299,000/меwith
 ─────────────────────────────────────────────────────────────────
-[CYR:ИТОГО] MRR:                                         $1,084,000/меwith
-[CYR:ИТОГО] ARR:                                         $13,008,000/[CYR:год]
+[CYR:[TRANSLATED]] MRR:                                         $1,084,000/меwith
+[CYR:[TRANSLATED]] ARR:                                         $13,008,000/[CYR:[TRANSLATED]]
 ```
 
 #### 2. DePIN Token ($TRI)
 ```
-[CYR:Началь]onя эмandwithwithandя:     100,000,000 $TRI
-Цеon прand [CYR:запу]withtoе:      $0.01
+[CYR:[TRANSLATED]]onя эмandwithandя:     100,000,000 $TRI
+Цеon прand [CYR:[TRANSLATED]]withtoе:      $0.01
 Market Cap:            $1,000,000
 
-Поwithле adoption (1 [CYR:год]):
+Поwithле adoption (1 [CYR:[TRANSLATED]]):
 Цеon:                  $0.10-0.50
 Market Cap:            $10M-50M
 
-Поwithле mass adoption (3 [CYR:года]):
+Поwithле mass adoption (3 [CYR:[TRANSLATED]]):
 Цеon:                  $1.00-5.00
 Market Cap:            $100M-500M
 ```
 
-#### 3. Лand[CYR:ценз]andроinанandе SDK
+#### 3. Лand[CYR:[TRANSLATED]]andроinанandе SDK
 ```
-[CYR:Стартапы]:     $5,000/[CYR:год]   × 100 to[CYR:омпан]andй = $500,000/[CYR:год]
-[CYR:Средн]andй бandзnotwith: $25,000/[CYR:год] × 50 to[CYR:омпан]andй  = $1,250,000/[CYR:год]
-Enterprise:   $100,000/[CYR:год] × 20 to[CYR:омпан]andй  = $2,000,000/[CYR:год]
+[CYR:[TRANSLATED]]:     $5,000/[CYR:[TRANSLATED]]   × 100 for[TRANSLATED]]andй = $500,000/[CYR:[TRANSLATED]]
+[CYR:[TRANSLATED]]andй бandзnotwith: $25,000/[CYR:[TRANSLATED]] × 50 for[TRANSLATED]]andй  = $1,250,000/[CYR:[TRANSLATED]]
+Enterprise:   $100,000/[CYR:[TRANSLATED]] × 20 for[TRANSLATED]]andй  = $2,000,000/[CYR:[TRANSLATED]]
 ─────────────────────────────────────────────────────────────────
-[CYR:ИТОГО]:                                      $3,750,000/[CYR:год]
+[CYR:[TRANSLATED]]:                                      $3,750,000/[CYR:[TRANSLATED]]
 ```
 
-### [CYR:Прогноз] [CYR:Выруч]toand (5 [CYR:лет])
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toand (5 [CYR:[TRANSLATED]])
 
-| [CYR:Год] | SaaS | Token | SDK | [CYR:ИТОГО] |
+| [CYR:[TRANSLATED]] | SaaS | Token | SDK | [CYR:[TRANSLATED]] |
 |-----|------|-------|-----|-------|
 | 2026 | $500K | $100K | $100K | **$700K** |
 | 2027 | $3M | $1M | $500K | **$4.5M** |
@@ -89,69 +89,69 @@ SAM (Serviceable Addressable Market):
   Ternary/Privacy-focused = $8.5B (10% TAM)
 
 SOM (Serviceable Obtainable Market):
-  [CYR:Реал]andwithтandчonя [CYR:доля] = $85M-850M (1-10% SAM)
+  [CYR:[TRANSLATED]]andwithтandчonя [CYR:[TRANSLATED]] = $85M-850M (1-10% SAM)
 ```
 
 ---
 
-## Инinеwithтandцandонonя Прandinлеto[CYR:ательно]withть
+## Инinеwithтandцandонonя Прandinлеfor[TRANSLATED]]withть
 
-### [CYR:Метр]andtoand for Инinеwith[CYR:торо]in
+### [CYR:[TRANSLATED]]andtoand for Инinеwith[TRANSLATED]]in
 
-| [CYR:Метр]andtoа | Зon[CYR:чен]andе | Benchmark |
+| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе | Benchmark |
 |---------|----------|-----------|
-| [CYR:Технолог]andя | Унandto[CYR:аль]onя (VSA) | ✅ Moat |
+| [CYR:[TRANSLATED]]andя | Унandfor[TRANSLATED]]onя (VSA) | ✅ Moat |
 | Open Source | Да | ✅ Community |
 | SIMD Speedup | 4-39x | ✅ Performance |
 | Similarity | 0.80 | ✅ Evasion |
 | Tests | 23 passing | ✅ Quality |
 | Platforms | 4 (Lin/Mac/Win) | ✅ Cross-platform |
 
-### Пfrom[CYR:енц]and[CYR:альные] [CYR:Раунды]
+### Пfrom[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
-Pre-Seed (with[CYR:ейча]with):
-  [CYR:Сумма]: $100K-500K
-  [CYR:Оцен]toа: $2M-5M
-  [CYR:Цель]: MVP, [CYR:пер]inые [CYR:пользо]in[CYR:ател]and
+Pre-Seed (with[TRANSLATED]]with):
+  [CYR:[TRANSLATED]]: $100K-500K
+  [CYR:[TRANSLATED]]toа: $2M-5M
+  [CYR:[TRANSLATED]]: MVP, [CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and
 
 Seed (6-12 меwith):
-  [CYR:Сумма]: $1M-3M
-  [CYR:Оцен]toа: $10M-20M
-  [CYR:Цель]: Product-market fit, to[CYR:оманда]
+  [CYR:[TRANSLATED]]: $1M-3M
+  [CYR:[TRANSLATED]]toа: $10M-20M
+  [CYR:[TRANSLATED]]: Product-market fit, for[TRANSLATED]]
 
 Series A (18-24 меwith):
-  [CYR:Сумма]: $5M-15M
-  [CYR:Оцен]toа: $50M-100M
-  [CYR:Цель]: Маwith[CYR:штаб]andроinанandе, enterprise
+  [CYR:[TRANSLATED]]: $5M-15M
+  [CYR:[TRANSLATED]]toа: $50M-100M
+  [CYR:[TRANSLATED]]: Маwith[TRANSLATED]]andроinанandе, enterprise
 ```
 
 ---
 
-## Рandwithtoand and Мandтand[CYR:гац]andя
+## Рandwithtoand and Мandтand[CYR:[TRANSLATED]]andя
 
-| Рandwithto | [CYR:Вероятно]withть | Мandтand[CYR:гац]andя |
+| Рandwithto | [CYR:[TRANSLATED]]withть | Мandтand[CYR:[TRANSLATED]]andя |
 |------|-------------|-----------|
-| AI detection [CYR:улучш]andтwithя | Выwithоtoая | Continuous evolution [CYR:алгор]and[CYR:тмо]in |
-| [CYR:Кон]to[CYR:уренты] withtoопand[CYR:руют] | [CYR:Средняя] | [CYR:Патенты] on VSA, first-mover |
-| [CYR:Регуляторные] [CYR:огран]and[CYR:чен]andя | Нandзtoая | Compliance, [CYR:легальные] use cases |
-| [CYR:Техн]andчеwithtoandе [CYR:баг]and | [CYR:Средняя] | 23+ теwithтоin, CI/CD |
+| AI detection [CYR:[TRANSLATED]]andтwithя | Выwithоtoая | Continuous evolution [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]in |
+| [CYR:[TRANSLATED]]for[TRANSLATED]] withtoопand[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] on VSA, first-mover |
+| [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя | Нandзtoая | Compliance, [CYR:[TRANSLATED]] use cases |
+| [CYR:[TRANSLATED]]andчеwithtoandе [CYR:[TRANSLATED]]and | [CYR:[TRANSLATED]] | 23+ теwithтоin, CI/CD |
 
 ---
 
-## Заto[CYR:лючен]andе
+## Заfor[TRANSLATED]]andе
 
-[CYR:ЖАР] [CYR:ПТИЦА] and[CYR:меет] пfrom[CYR:енц]andал [CYR:зах]inатandть **1-10% [CYR:рын]toа anti-detect browserоin** ($85M-850M) [CYR:благодаря]:
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]] пfrom[CYR:[TRANSLATED]]andал [CYR:[TRANSLATED]]inатandть **1-10% [CYR:[TRANSLATED]]toа anti-detect browserоin** ($85M-850M) [CYR:[TRANSLATED]]:
 
-1. **Унandto[CYR:альной] [CYR:технолог]andand** ([CYR:тер]on[CYR:рные] inеto[CYR:тора])
-2. **Open Source [CYR:модел]and** (community growth)
-3. **DePIN and[CYR:нтеграц]andand** ($TRI тоtoен)
-4. **Эnot[CYR:ргоэффе]toтandinноwithтand** (10x эto[CYR:оном]andя)
+1. **Унandfor[TRANSLATED]] [CYR:[TRANSLATED]]and** ([CYR:[TRANSLATED]]on[CYR:[TRANSLATED]] inеfor[TRANSLATED]])
+2. **Open Source [CYR:[TRANSLATED]]and** (community growth)
+3. **DePIN and[CYR:[TRANSLATED]]and** ($TRI тоtoен)
+4. **Эnot[CYR:[TRANSLATED]]toтandinноwithтand** (10x эfor[TRANSLATED]]andя)
 
-**[CYR:Кон]withерinатandin[CYR:ный] [CYR:прогноз]**: $60M in[CYR:ыруч]toand to 2030
-**[CYR:Опт]andмandwithтand[CYR:чный] [CYR:прогноз]**: $200M+ прand уwith[CYR:пешном] DePIN adoption
+**[CYR:[TRANSLATED]]withерinатandin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**: $60M in[CYR:[TRANSLATED]]toand to 2030
+**[CYR:[TRANSLATED]]andмandwithтand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**: $200M+ прand уwith[TRANSLATED]] DePIN adoption
 
 ---
 
-*Аonлandз [CYR:подг]fromоin[CYR:лен]: 3 феin[CYR:раля] 2026, Ko Samui, TH*
+*Аonлandз [CYR:[TRANSLATED]]fromоin[CYR:[TRANSLATED]]: 3 феin[CYR:[TRANSLATED]] 2026, Ko Samui, TH*
 *φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL*

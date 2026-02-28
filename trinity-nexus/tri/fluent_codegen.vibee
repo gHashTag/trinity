@@ -148,7 +148,7 @@ behaviors:
 
 test_cases:
   - name: russian_sort_zig
-    given: "[CYR:[TRANSLATED]]and[EN]and with[CYR:[TRANSLATED]]and[EN]in[EN] array[EN] on Zig"
+    given: "and withandin array on Zig"
     expected: "Real bubble/quick sort in Zig"
 
   - name: chinese_fibonacci_python
@@ -160,7 +160,7 @@ test_cases:
     expected: "Real binary search in JS"
 
   - name: russian_stack_python
-    given: "[CYR:[TRANSLATED]] class with[CYR:[TRANSLATED]] on Python"
+    given: " class with on Python"
     expected: "Real Stack class in Python"
 
   - name: multilingual_detection

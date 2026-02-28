@@ -47,14 +47,14 @@ pub const ChatMode = enum {
 
         // Strong code indicators
         const strong_code = [_][]const u8{
-            "code", "to[EN]", "代码", "código", "programmieren",
-            "function", "[CYR:[EN]]to[EN]and", "函数", "función", "funktion",
-            "class", "to[EN]withwith", "类", "clase", "klasse",
-            "write", "on[EN]and[EN]and", "写", "escribe", "schreib",
-            "implement", "[CYR:[EN]]and[EN]", "实现", "implementar", "implementieren",
-            "debug", "from[CYR:[EN]]", "调试", "depurar", "debuggen",
-            "compile", "to[CYR:[EN]]and[EN]", "编译", "compilar", "kompilieren",
-            "error", "[EN]and[EN]to", "错误", "syntax", "withand[CYR:[EN]]towith",
+            "code", "to", "代码", "código", "programmieren",
+            "function", "toand", "函数", "función", "funktion",
+            "class", "towith", "类", "clase", "klasse",
+            "write", "onand", "写", "escribe", "schreib",
+            "implement", "and", "实现", "implementar", "implementieren",
+            "debug", "from", "调试", "depurar", "debuggen",
+            "compile", "toand", "编译", "compilar", "kompilieren",
+            "error", "andto", "错误", "syntax", "withandtowith",
         };
 
         for (strong_code) |word| {
@@ -90,16 +90,16 @@ pub const ChatMode = enum {
 
         // Strong chat indicators
         const chat_words = [_][]const u8{
-            "feel", "[EN]inwith[EN]in", "感觉", "siento", "fühle",
-            "think", "[CYR:[EN]]", "想", "creo", "denke",
-            "believe", "in[CYR:[EN]]", "相信", "creer", "glaube",
-            "opinion", "[EN]not[EN]and[EN]", "意见", "opinión", "meinung",
-            "story", "andwith[CYR:[EN]]and", "故事", "historia", "geschichte",
-            "weather", "by[CYR:[EN]]", "天气", "tiempo", "wetter",
-            "food", "[EN]yes", "食物", "comida", "essen",
-            "music", "[CYR:[EN]]to", "音乐", "música", "musik",
-            "movie", "[EN]and[CYR:[EN]]", "电影", "película", "film",
-            "travel", "[CYR:[EN]]with[EN]in", "旅行", "viaje", "reise",
+            "feel", "inwithin", "感觉", "siento", "fühle",
+            "think", "", "想", "creo", "denke",
+            "believe", "in", "相信", "creer", "glaube",
+            "opinion", "notand", "意见", "opinión", "meinung",
+            "story", "andwithand", "故事", "historia", "geschichte",
+            "weather", "by", "天气", "tiempo", "wetter",
+            "food", "yes", "食物", "comida", "essen",
+            "music", "to", "音乐", "música", "musik",
+            "movie", "and", "电影", "película", "film",
+            "travel", "within", "旅行", "viaje", "reise",
         };
 
         for (chat_words) |word| {
@@ -110,9 +110,9 @@ pub const ChatMode = enum {
 
         // Greeting/farewell boost
         const social = [_][]const u8{
-            "hello", "hi", "hey", "[EN]andin[EN]", "你好", "hola", "hallo",
-            "bye", "goodbye", "byto[EN]", "再见", "adiós", "tschüss",
-            "thanks", "with[EN]withand[EN]", "谢谢", "gracias", "danke",
+            "hello", "hi", "hey", "andin", "你好", "hola", "hallo",
+            "bye", "goodbye", "byto", "再见", "adiós", "tschüss",
+            "thanks", "withand", "谢谢", "gracias", "danke",
         };
 
         for (social) |word| {
@@ -393,7 +393,7 @@ pub const UnifiedChatEngine = struct {
 
         // Generate explanation about code concepts
         const explanations = switch (lang) {
-            .Russian => "[CYR:[EN]]and[CYR:[EN]] in[CYR:[EN]]with [EN] [CYR:[EN]]and[EN]in[EN]andand! [EN]in[EN] [CYR:[EN]] this by[CYR:[EN]]not[EN]. [CYR:[EN]] and[CYR:[EN]] [CYR:[EN]] and[CYR:[EN]]with[CYR:[EN]] — withand[CYR:[EN]]towithandwith, [CYR:[EN]]andto[EN] or [CYR:[EN]]to[EN]and[EN]withto[EN] [EN]and[EN]not[EN]and[EN]?",
+            .Russian => "and inwith  andinand! in  this bynot.  and  andwith — withandtowithandwith, andto or toandwithto andnotand?",
             .Chinese => "关于编程的好问题！让我们详细讨论一下。你具体想了解什么——语法、逻辑还是实际应用？",
             .Spanish => "¡Buena pregunta sobre programación! Vamos a analizarlo en detalle. ¿Qué te interesa específicamente — sintaxis, lógica o aplicación práctica?",
             .German => "Gute Frage zur Programmierung! Lass uns das genauer analysieren. Was interessiert dich konkret — Syntax, Logik oder praktische Anwendung?",
@@ -520,22 +520,22 @@ pub fn runBenchmark() !void {
     // Diverse test queries: chat, code, mixed, multilingual
     const test_queries = [_][]const u8{
         // Chat queries
-        "[EN]andin[EN], to[EN]to [CYR:[EN]]?",
+        "andin, toto ?",
         "hello, how are you?",
         "你好，你好吗？",
         "what is the meaning of life?",
-        "[EN]withwithto[EN]and andwith[CYR:[EN]]and[EN]",
+        "withtoand andwithand",
 
         // Code queries
         "write a hello world in python",
-        "on[EN]and[EN]and [CYR:[EN]]to[EN]and[EN] fibonacci on zig",
+        "onand toand fibonacci on zig",
         "写一个javascript函数",
         "implement a sorting algorithm",
         "debug this code please",
 
         // Mixed queries
         "can you explain how functions work?",
-        "what [EN]to[EN] [EN]to[EN]withand[EN]?",
+        "what to towithand?",
         "tell me about programming",
         "哪种编程语言最好？",
 
@@ -632,13 +632,13 @@ pub fn main() !void {
 
 test "mode detection code" {
     try std.testing.expectEqual(ChatMode.Code, ChatMode.detect("write python code"));
-    try std.testing.expectEqual(ChatMode.Code, ChatMode.detect("on[EN]and[EN]and [CYR:[EN]]to[EN]and[EN] on zig"));
+    try std.testing.expectEqual(ChatMode.Code, ChatMode.detect("onand toand on zig"));
     try std.testing.expectEqual(ChatMode.Code, ChatMode.detect("debug this function code"));
 }
 
 test "mode detection chat" {
     try std.testing.expectEqual(ChatMode.General, ChatMode.detect("hello how are you"));
-    try std.testing.expectEqual(ChatMode.General, ChatMode.detect("[EN]andin[EN] to[EN]to [CYR:[EN]]"));
+    try std.testing.expectEqual(ChatMode.General, ChatMode.detect("andin toto "));
     try std.testing.expectEqual(ChatMode.General, ChatMode.detect("tell me a story"));
 }
 
@@ -675,7 +675,7 @@ test "unified engine mode switching" {
 test "unified engine multilingual" {
     var engine = UnifiedChatEngine.init();
 
-    const ru = engine.respond("[EN]andin[EN]");
+    const ru = engine.respond("andin");
     try std.testing.expectEqual(multilingual.Language.Russian, ru.language);
 
     const en = engine.respond("hello");

@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // BEAM PHOTON WASM MODULE
-// [CYR:[TRANSLATED]]or[CYR:[TRANSLATED]]withI in WebAssembly for browser[EN]
+// orwithI in WebAssembly for browser
 // φ² + 1/φ² = 3 | PHOENIX = 999
 // ═══════════════════════════════════════════════════════════════════════════════
 

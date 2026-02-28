@@ -1474,13 +1474,13 @@ trace("agent.reels_context_provider.get")
   let all_text = string." " · join · string.lowercase()
 
   let niche_keywords = [
-    #("business", ["[EN]fromnotwith", "business", "[CYR:[TRANSLATED]]and[EN]and[EN]", "with[CYR:[TRANSLATED]]"]),
-    #("productivity", ["[CYR:pro[TRANSLATED]]andin", "productivity", "[CYR:effect]andin", "[CYR:[TRANSLATED]]-[EN]not[EN]"]),
-    #("health", ["[CYR:[TRANSLATED]]in", "health", "[EN]and[EN]notwith", "withport", "wellness"]),
-    #("finance", ["[EN]andon[EN]with", "[CYR:[TRANSLATED]]", "and[EN]in[EN]with[EN]and", "[EN]and[EN]", "finance", "money"]),
-    #("technology", ["[CYR:[TRANSLATED]]", "tech", "[CYR:pro[TRANSLATED]]", "it", "code"]),
-    #("education", ["[CYR:[TRANSLATED]]in[EN]", "[CYR:[TRANSLATED]]", "[CYR:[TRANSLATED]]with", "[CYR:[TRANSLATED]]", "education"]),
-    #("marketing", ["[CYR:[TRANSLATED]]and[EN]", "[CYR:[TRANSLATED]]", "smm", "[CYR:pro[EN]]inand[EN]", "marketing"])
+    #("business", ["fromnotwith", "business", "and", "with"]),
+    #("productivity", ["[CYR:pro]andin", "productivity", "[CYR:effect]andin", "-not"]),
+    #("health", ["in", "health", "andnotwith", "withport", "wellness"]),
+    #("finance", ["andonwith", "", "andinwithand", "and", "finance", "money"]),
+    #("technology", ["", "tech", "[CYR:pro]", "it", "code"]),
+    #("education", ["in", "", "with", "", "education"]),
+    #("marketing", ["and", "", "smm", "[CYR:pro]inand", "marketing"])
   ]
 
   list.fn(item · filter_map {
@@ -1520,10 +1520,10 @@ trace("agent.reels_context_provider.get")
   let all_text = string." " · join · string.lowercase()
 
   let styles = [
-    #(["[EN]not[EN]and[EN]", "dynamic"], "energetic"),
-    #(["with[CYR:[TRANSLATED]]", "calm"], "calm"),
-    #(["[CYR:pro[EN]]withwithand[EN]", "professional"], "professional"),
-    #(["[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]", "fun"], "fun")
+    #(["notand", "dynamic"], "energetic"),
+    #(["with", "calm"], "calm"),
+    #(["[CYR:pro]withand", "professional"], "professional"),
+    #(["in", "fun"], "fun")
   ]
 
   styles · find_style
@@ -1609,7 +1609,7 @@ trace("agent.reels_context_provider.get")
 }
 
 @impl {
-  let reels_keywords = ["[EN]and[EN]with", "reels", "with[CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]]", "with[CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]]"]
+  let reels_keywords = ["andwith", "reels", "with inand", "with inand"]
 
   list.fn(msg · count {
     let lower = string.lowercase(msg)

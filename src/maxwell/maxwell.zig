@@ -1,5 +1,5 @@
 // Maxwell Daemon - Main Module
-// [EN]in[CYR:[EN]] agent-[CYR:[EN]]andwith[EN]
+// in agent-andwith
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -29,7 +29,7 @@ pub const MemoryStore = memory_store.MemoryStore;
 // MAXWELL DAEMON
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:[EN]] demo[EN] Maxwell with inwith[EN]and to[EN]bynot[CYR:[EN]]and
+///  demo Maxwell with inwithand tobynotand
 pub const MaxwellDaemon = struct {
     allocator: std.mem.Allocator,
     config: DaemonConfig,
@@ -63,13 +63,13 @@ pub const MaxwellDaemon = struct {
         self.memory.deinit();
     }
 
-    /// [CYR:[EN]]with[EN]and[EN] demoon
+    /// withand demoon
     pub fn start(self: *MaxwellDaemon) !void {
         std.debug.print(
             \\
             \\╔══════════════════════════════════════════════════════════════╗
             \\║                    🧠 MAXWELL DAEMON                         ║
-            \\║              "[CYR:[EN]], tofrom[CYR:[EN]] with[CYR:[EN]]and[CYR:[EN]] to[EN]"                  ║
+            \\║              ", tofrom withand to"                  ║
             \\║                                                              ║
             \\║  φ² + 1/φ² = 3 = TRINITY                                    ║
             \\╚══════════════════════════════════════════════════════════════╝
@@ -88,7 +88,7 @@ pub const MaxwellDaemon = struct {
         std.debug.print("[MAXWELL] Daemon started. Waiting for tasks...\n", .{});
     }
 
-    /// [EN]with[CYR:[EN]]inand[EN] demoon
+    /// withinand demoon
     pub fn stop(self: *MaxwellDaemon) void {
         std.debug.print("[MAXWELL] Stopping daemon...\n", .{});
 
@@ -100,12 +100,12 @@ pub const MaxwellDaemon = struct {
         std.debug.print("[MAXWELL] Daemon stopped.\n", .{});
     }
 
-    /// [CYR:[EN]]inand[EN] [EN]yes[EN]
+    /// inand yes
     pub fn submitTask(self: *MaxwellDaemon, description: []const u8, task_type: TaskType) !u64 {
         return self.agent.submitTask(description, task_type);
     }
 
-    /// [CYR:[EN]]and[EN] with[CYR:[EN]]with
+    /// and with
     pub fn getStatus(self: *MaxwellDaemon) Status {
         const agent_state = self.agent.getState();
         const memory_stats = self.memory.getStats();

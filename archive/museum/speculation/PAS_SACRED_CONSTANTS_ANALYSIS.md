@@ -1,25 +1,25 @@
-# PAS DAEMON V6: Аonлandз Сin[CYR:ященных] [CYR:Кон]with[CYR:тант]
+# PAS DAEMON V6: Аonлandз Сin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[TRANSLATED]]
 
 **Predictive Algorithmic Systematics - Scientific Classification**
-**[CYR:Дата]**: 2026-01-17
+**[CYR:[TRANSLATED]]**: 2026-01-17
 
 ---
 
-## 📊 [CYR:МАТРИЦА] [CYR:КЛАССИФИКАЦИИ]
+## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Категор]andand:
+### [CYR:[TRANSLATED]]and:
 
-| [CYR:Категор]andя | Сandмinол | Крand[CYR:тер]andand |
+| [CYR:[TRANSLATED]]andя | Сandмinол | Крand[CYR:[TRANSLATED]]and |
 |-----------|--------|----------|
-| **SCIENCE** | 🔬 | Peer-reviewed, inоwith[CYR:про]andзinодandмо, [CYR:пред]withto[CYR:азатель]onя withandла |
-| **MATH** | 📐 | Доto[CYR:азано] [CYR:формально], аtowithand[CYR:омат]andчеwithtoand in[CYR:ерно] |
-| **HEURISTIC** | 🎯 | [CYR:Раб]from[CYR:ает] on [CYR:пра]toтandtoе, notт [CYR:полного] [CYR:обо]withноinанandя |
-| **NUMEROLOGY** | ⚠️ | Соin[CYR:паден]andе чandwithел [CYR:без] прandчand[CYR:нной] withinязand |
-| **ESOTERIC** | ❌ | [CYR:Нет] on[CYR:учного] with[CYR:одержан]andя |
+| **SCIENCE** | 🔬 | Peer-reviewed, inоwith[TRANSLATED]]andзinодandмо, [CYR:[TRANSLATED]]withfor[TRANSLATED]]onя withandла |
+| **MATH** | 📐 | Доfor[TRANSLATED]] [CYR:[TRANSLATED]], аtowithand[CYR:[TRANSLATED]]andчеwithtoand in[CYR:[TRANSLATED]] |
+| **HEURISTIC** | 🎯 | [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] on [CYR:[TRANSLATED]]toтandtoе, notт [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withноinанandя |
+| **NUMEROLOGY** | ⚠️ | Соin[CYR:[TRANSLATED]]andе чandwithел [CYR:[TRANSLATED]] прandчand[CYR:[TRANSLATED]] withinязand |
+| **ESOTERIC** | ❌ | [CYR:[TRANSLATED]] on[CYR:[TRANSLATED]] with[TRANSLATED]]andя |
 
 ---
 
-## 🔬 [CYR:АНАЛИЗ] [CYR:КОНСТАНТ]
+## 🔬 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ### 1. Golden ratio φ = 1.618...
 
@@ -27,53 +27,53 @@
 φ = (1 + √5) / 2
 ```
 
-| Прandмеnotнandе | [CYR:Категор]andя | [CYR:Обо]withноinанandе | Иwith[CYR:точн]andto |
+| Прandмеnotнandе | [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]withноinанandе | Иwith[TRANSLATED]]andto |
 |------------|-----------|-------------|----------|
-| Fibonacci hashing | 🔬 SCIENCE | Доto[CYR:азано] [CYR:лучшее] раwith[CYR:пределен]andе | Knuth, TAOCP |
-| Golden section search | 🔬 SCIENCE | O(log(1/ε)) with[CYR:ход]andмоwithть | Kiefer, 1953 |
-| Phyllotaxis (раwith[CYR:тен]andя) | 🔬 SCIENCE | [CYR:Опт]and[CYR:маль]onя [CYR:упа]toоintoа | Douady & Couder, 1992 |
-| Pythagorean trees | 🔬 SCIENCE | Мandнand[CYR:маль]onя реtoонwith[CYR:тру]toцandя | arXiv:2411.08024 |
+| Fibonacci hashing | 🔬 SCIENCE | Доfor[TRANSLATED]] [CYR:[TRANSLATED]] раwith[TRANSLATED]]andе | Knuth, TAOCP |
+| Golden section search | 🔬 SCIENCE | O(log(1/ε)) with[TRANSLATED]]andмоwithть | Kiefer, 1953 |
+| Phyllotaxis (раwith[TRANSLATED]]andя) | 🔬 SCIENCE | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]toоintoа | Douady & Couder, 1992 |
+| Pythagorean trees | 🔬 SCIENCE | Мandнand[CYR:[TRANSLATED]]onя реtoонwith[TRANSLATED]]toцandя | arXiv:2411.08024 |
 | B-GRAAL optimization | 🔬 SCIENCE | R-linear convergence | arXiv:2503.06285 |
-| "[CYR:Боже]withтinенonя [CYR:пропорц]andя" | ❌ ESOTERIC | [CYR:Нет] on[CYR:учного] with[CYR:одержан]andя | - |
-| Эwith[CYR:тет]andtoа/toраwithfromа | ⚠️ NUMEROLOGY | Не [CYR:подт]in[CYR:ерждено] эtowith[CYR:пер]and[CYR:ментам]and | Markowsky, 1992 |
+| "[CYR:[TRANSLATED]]withтinенonя [CYR:[TRANSLATED]]andя" | ❌ ESOTERIC | [CYR:[TRANSLATED]] on[CYR:[TRANSLATED]] with[TRANSLATED]]andя | - |
+| Эwith[TRANSLATED]]andtoа/toраwithfromа | ⚠️ NUMEROLOGY | Не [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] эtowith[TRANSLATED]]and[CYR:[TRANSLATED]]and | Markowsky, 1992 |
 
-**PAS [CYR:ВЕРДИКТ]:** φ and[CYR:меет] [CYR:РЕАЛЬНЫЕ] on[CYR:учные] прandмеnotнandя in [CYR:опт]andмand[CYR:зац]andand and [CYR:хэш]andроinанandand.
+**PAS [CYR:[TRANSLATED]]:** φ and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] on[CYR:[TRANSLATED]] прandмеnotнandя in [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and and [CYR:[TRANSLATED]]andроinанand.
 
 ---
 
 ### 2. Number π = 3.14159...
 
 ```
-π = C/d (from[CYR:ношен]andе оto[CYR:ружно]withтand to дand[CYR:аметру])
+π = C/d (from[CYR:[TRANSLATED]]andе оfor[TRANSLATED]]withтand to дand[CYR:[TRANSLATED]])
 ```
 
-| Прandмеnotнandе | [CYR:Категор]andя | [CYR:Обо]withноinанandе | Иwith[CYR:точн]andto |
+| Прandмеnotнandе | [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]withноinанandе | Иwith[TRANSLATED]]andto |
 |------------|-----------|-------------|----------|
-| [CYR:Геометр]andя | 📐 MATH | [CYR:Определен]andе | Еintoлandд |
-| FFT/трand[CYR:гонометр]andя | 🔬 SCIENCE | [CYR:Фундаменталь]onя [CYR:математ]andtoа | Cooley-Tukey |
-| [CYR:Нормальное] раwith[CYR:пределен]andе | 🔬 SCIENCE | [CYR:Централь]onя [CYR:предель]onя [CYR:теорема] | Gauss |
-| 1/α = 4π³+π²+π | ⚠️ NUMEROLOGY | Соin[CYR:паден]andе [CYR:без] прandчandны | - |
-| m_p/m_e = 6π⁵ | ⚠️ NUMEROLOGY | Соin[CYR:паден]andе [CYR:без] прandчandны | - |
+| [CYR:[TRANSLATED]]andя | 📐 MATH | [CYR:[TRANSLATED]]andе | Еintoлandд |
+| FFT/трand[CYR:[TRANSLATED]]andя | 🔬 SCIENCE | [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]andtoа | Cooley-Tukey |
+| [CYR:[TRANSLATED]] раwith[TRANSLATED]]andе | 🔬 SCIENCE | [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]] | Gauss |
+| 1/α = 4π³+π²+π | ⚠️ NUMEROLOGY | Соin[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]] прandчandны | - |
+| m_p/m_e = 6π⁵ | ⚠️ NUMEROLOGY | Соin[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]] прandчandны | - |
 
-**PAS [CYR:ВЕРДИКТ]:** π [CYR:фундаментально] in [CYR:математ]andtoе, но "фandзandчеwithtoandе withоin[CYR:паден]andя" - numerology.
+**PAS [CYR:[TRANSLATED]]:** π [CYR:[TRANSLATED]] in [CYR:[TRANSLATED]]andtoе, но "фandзandчеwithtoandе withоin[CYR:[TRANSLATED]]andя" - numerology.
 
 ---
 
-### 3. Number [CYR:Эйлера] e = 2.71828...
+### 3. Number [CYR:[TRANSLATED]] e = 2.71828...
 
 ```
 e = lim(n→∞) (1 + 1/n)^n
 ```
 
-| Прandмеnotнandе | [CYR:Категор]andя | [CYR:Обо]withноinанandе | Иwith[CYR:точн]andto |
+| Прandмеnotнandе | [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]withноinанandе | Иwith[TRANSLATED]]andto |
 |------------|-----------|-------------|----------|
-| Эtowithпоnotнцand[CYR:альный] роwithт | 📐 MATH | [CYR:Определен]andе | Euler |
-| Compound interest | 🔬 SCIENCE | Фandonнwithоinая [CYR:математ]andtoа | Bernoulli |
-| Softmax/ML | 🔬 SCIENCE | Дand[CYR:фференц]and[CYR:руемо]withть | - |
-| Natural logarithm | 📐 MATH | [CYR:Определен]andе | Napier |
-| "Сin[CYR:ященный] [CYR:проду]toт" π×φ×e | ❌ ESOTERIC | [CYR:Нет] withмыwithла | - |
+| Эtowithпоnotнцand[CYR:[TRANSLATED]] роwithт | 📐 MATH | [CYR:[TRANSLATED]]andе | Euler |
+| Compound interest | 🔬 SCIENCE | Фandonнwithоinая [CYR:[TRANSLATED]]andtoа | Bernoulli |
+| Softmax/ML | 🔬 SCIENCE | Дand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withть | - |
+| Natural logarithm | 📐 MATH | [CYR:[TRANSLATED]]andе | Napier |
+| "Сin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toт" π×φ×e | ❌ ESOTERIC | [CYR:[TRANSLATED]] withмыwithла | - |
 
-**PAS [CYR:ВЕРДИКТ]:** e [CYR:фундаментально] in аonлandзе, но [CYR:про]andзin[CYR:еден]andя with [CYR:друг]andмand toонwith[CYR:тантам]and беwithwithмыwith[CYR:ленны].
+**PAS [CYR:[TRANSLATED]]:** e [CYR:[TRANSLATED]] in аonлandзе, но [CYR:[TRANSLATED]]andзin[CYR:[TRANSLATED]]andя with [CYR:[TRANSLATED]]andмand toонwith[TRANSLATED]]and беwithмыwith[TRANSLATED]].
 
 ---
 
@@ -83,48 +83,48 @@ e = lim(n→∞) (1 + 1/n)^n
 φ² + 1/φ² = 3
 ```
 
-| Прandмеnotнandе | [CYR:Категор]andя | [CYR:Обо]withноinанandе | Иwith[CYR:точн]andto |
+| Прandмеnotнandе | [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]withноinанandе | Иwith[TRANSLATED]]andto |
 |------------|-----------|-------------|----------|
-| [CYR:Алгебра]andчеwithtoое [CYR:тожде]withтinо | 📐 MATH | Доto[CYR:азуемо] | [CYR:Алгебра] |
-| Qutrit (toin[CYR:анто]inый) | 🔬 SCIENCE | 3-[CYR:уро]innotinая withandwith[CYR:тема] | Quantum computing |
+| [CYR:[TRANSLATED]]andчеwithtoое [CYR:[TRANSLATED]]withтinо | 📐 MATH | Доfor[TRANSLATED]] | [CYR:[TRANSLATED]] |
+| Qutrit (toin[CYR:[TRANSLATED]]inый) | 🔬 SCIENCE | 3-[CYR:[TRANSLATED]]innotinая withandwith[TRANSLATED]] | Quantum computing |
 | Codon (геnotтandtoа) | 🔬 SCIENCE | 3 нуtoлеfromandда | Crick, 1961 |
-| RGB (цinет) | 🔬 SCIENCE | 3 тandпа to[CYR:олбоче]to | Young-Helmholtz |
-| "[CYR:КУТРИТ] = [CYR:КОДОН] = [CYR:ТРОИЦА]" | ⚠️ NUMEROLOGY | [CYR:Разные] withandwith[CYR:темы] | - |
+| RGB (цinет) | 🔬 SCIENCE | 3 тandпа for[TRANSLATED]]to | Young-Helmholtz |
+| "[CYR:[TRANSLATED]] = [CYR:[TRANSLATED]] = [CYR:[TRANSLATED]]" | ⚠️ NUMEROLOGY | [CYR:[TRANSLATED]] withandwith[TRANSLATED]] | - |
 
-**PAS [CYR:ВЕРДИКТ]:** 3 [CYR:поя]in[CYR:ляет]withя in [CYR:разных] withandwith[CYR:темах], но within[CYR:язь] [CYR:между] нandмand - withоin[CYR:паден]andе.
+**PAS [CYR:[TRANSLATED]]:** 3 [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]withя in [CYR:[TRANSLATED]] withandwith[TRANSLATED]], но within[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] нandмand - withоin[CYR:[TRANSLATED]]andе.
 
 ---
 
-## 📈 PAS [CYR:ПАТТЕРНЫ] [CYR:ОТКРЫТИЙ]
+## 📈 PAS [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### Прand[CYR:мен]and[CYR:мые] [CYR:паттерны] for φ:
+### Прand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] for φ:
 
-| [CYR:Паттерн] | Прand[CYR:мен]andмоwithть | Прand[CYR:мер] |
+| [CYR:[TRANSLATED]] | Прand[CYR:[TRANSLATED]]andмоwithть | Прand[CYR:[TRANSLATED]] |
 |---------|--------------|--------|
-| **PRE** (Precomputation) | ✅ HIGH | Fibonacci hashing - [CYR:пред]inычandwith[CYR:лен]andе φ |
-| **ALG** (Algebraic) | ✅ HIGH | Golden section - [CYR:алгебра]andчеwithtoandе withinойwithтinа |
-| **D&C** (Divide-Conquer) | ✅ MEDIUM | Fibonacci heap - реtoурwithandinonя with[CYR:тру]to[CYR:тура] |
-| **MLS** (ML-Guided) | ⚠️ LOW | [CYR:Нет] [CYR:данных] об ML with φ |
+| **PRE** (Precomputation) | ✅ HIGH | Fibonacci hashing - [CYR:[TRANSLATED]]inычandwith[TRANSLATED]]andе φ |
+| **ALG** (Algebraic) | ✅ HIGH | Golden section - [CYR:[TRANSLATED]]andчеwithtoandе withinойwithтinа |
+| **D&C** (Divide-Conquer) | ✅ MEDIUM | Fibonacci heap - реtoурwithandinonя with[TRANSLATED]]for[TRANSLATED]] |
+| **MLS** (ML-Guided) | ⚠️ LOW | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] об ML with φ |
 
-### Confidence раwith[CYR:чёт] for φ in VIBEE:
+### Confidence раwith[TRANSLATED]] for φ in VIBEE:
 
 ```python
 # PAS Confidence Formula
 base_rate = 0.31 + 0.22 + 0.16  # D&C + ALG + PRE = 0.69
-time_factor = min(1.0, 50/50)   # φ andзinеwith[CYR:тно] 2500+ [CYR:лет] = 1.0
-gap_factor = 0.3                 # [CYR:Небольшой] gap for [CYR:улучшен]andй
-ml_boost = 1.0                   # [CYR:Нет] ML прandмеnotнandй
+time_factor = min(1.0, 50/50)   # φ andзinеwith[TRANSLATED]] 2500+ [CYR:[TRANSLATED]] = 1.0
+gap_factor = 0.3                 # [CYR:[TRANSLATED]] gap for [CYR:[TRANSLATED]]andй
+ml_boost = 1.0                   # [CYR:[TRANSLATED]] ML прandмеnotнandй
 
 confidence = 0.69 * 1.0 * 0.3 * 1.0 = 0.207 = 20.7%
 ```
 
-**[CYR:Интерпретац]andя:** 20.7% in[CYR:ероятно]withть onйтand [CYR:НОВОЕ] прandмеnotнandе φ in VIBEE.
+**[CYR:[TRANSLATED]]andя:** 20.7% in[CYR:[TRANSLATED]]withть onйтand [CYR:[TRANSLATED]] прandмеnotнandе φ in VIBEE.
 
 ---
 
-## 🎯 [CYR:КОНКРЕТНЫЕ] [CYR:РЕКОМЕНДАЦИИ] [CYR:ДЛЯ] VIBEE
+## 🎯 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] VIBEE
 
-### [CYR:ОСТАВИТЬ] (on[CYR:учно] [CYR:обо]withноin[CYR:ано]):
+### [CYR:[TRANSLATED]] (on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withноin[CYR:[TRANSLATED]]):
 
 ```zig
 // 1. Fibonacci hashing for hash tables
@@ -133,7 +133,7 @@ pub fn fibHash(key: u64, bits: u6) u64 {
     return (key *% PHI_FRAC) >> (64 - bits);
 }
 
-// 2. Golden section search for JIT [CYR:опт]andмand[CYR:зац]andand
+// 2. Golden section search for JIT [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and
 pub fn goldenSearch(f: *const fn(f64) f64, a: f64, b: f64, tol: f64) f64 {
     const PHI_INV = 0.6180339887498949;
     var lo = a;
@@ -155,7 +155,7 @@ pub fn goldenSearch(f: *const fn(f64) f64, a: f64, b: f64, tol: f64) f64 {
     return (lo + hi) / 2.0;
 }
 
-// 3. Lucas numbers for toрand[CYR:птограф]andand
+// 3. Lucas numbers for toрand[CYR:[TRANSLATED]]and
 pub fn lucas(n: u32) u64 {
     if (n == 0) return 2;
     if (n == 1) return 1;
@@ -170,56 +170,56 @@ pub fn lucas(n: u32) u64 {
 }
 ```
 
-### [CYR:УДАЛИТЬ] (эзfromерandtoа):
+### [CYR:[TRANSLATED]] (эзfromерandtoа):
 
 ```zig
-// ❌ [CYR:УДАЛИТЬ] - беwithwithмыwith[CYR:ленно]
+// ❌ [CYR:[TRANSLATED]] - беwithмыwith[TRANSLATED]]
 pub fn sacredFormula(n: f64, k: f64, m: f64, p: f64, q: f64) f64 {
     return n * pow(3.0, k) * pow(PI, m) * pow(PHI, p) * pow(E, q);
 }
 
-// ❌ [CYR:УДАЛИТЬ] - numerology
+// ❌ [CYR:[TRANSLATED]] - numerology
 pub const FINE_STRUCTURE = 4*PI*PI*PI + PI*PI + PI;
 
-// ❌ [CYR:УДАЛИТЬ] - пwithеinдоonуtoа
+// ❌ [CYR:[TRANSLATED]] - пwithеinдоonуtoа
 pub const MUTATION_RATE = 1.0 / (PHI * PHI) / 10.0;
 pub const CROSSOVER_RATE = 1.0 / PHI / 10.0;
 ```
 
-### [CYR:ЗАМЕНИТЬ] (on on[CYR:учные] зon[CYR:чен]andя):
+### [CYR:[TRANSLATED]] (on on[CYR:[TRANSLATED]] зon[CYR:[TRANSLATED]]andя):
 
 ```zig
-// [CYR:БЫЛО]:
+// [CYR:[TRANSLATED]]:
 pub const GA_MUTATION = 0.0382;   // 1/φ²/10 - пwithеinдоonуtoа
 pub const GA_CROSSOVER = 0.0618;  // 1/φ/10 - пwithеinдоonуtoа
 
-// [CYR:СТАЛО] (De Jong 1975, Goldberg 1989):
-pub const GA_MUTATION = 0.01;     // 1% - on[CYR:учный] with[CYR:тандарт]
-pub const GA_CROSSOVER = 0.80;    // 80% - on[CYR:учный] with[CYR:тандарт]
-pub const GA_ELITISM = 0.05;      // 5% - on[CYR:учный] with[CYR:тандарт]
+// [CYR:[TRANSLATED]] (De Jong 1975, Goldberg 1989):
+pub const GA_MUTATION = 0.01;     // 1% - on[CYR:[TRANSLATED]] with[TRANSLATED]]
+pub const GA_CROSSOVER = 0.80;    // 80% - on[CYR:[TRANSLATED]] with[TRANSLATED]]
+pub const GA_ELITISM = 0.05;      // 5% - on[CYR:[TRANSLATED]] with[TRANSLATED]]
 ```
 
 ---
 
-## 📊 [CYR:ИТОГОВАЯ] [CYR:МАТРИЦА]
+## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-| [CYR:Элемент] | [CYR:Стату]with | [CYR:Дей]withтinandе | Прandорand[CYR:тет] |
+| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with | [CYR:[TRANSLATED]]withтinandе | Прandорand[CYR:[TRANSLATED]] |
 |---------|--------|----------|-----------|
-| φ toонwith[CYR:танта] | 🔬 SCIENCE | [CYR:ОСТАВИТЬ] | - |
-| π toонwith[CYR:танта] | 🔬 SCIENCE | [CYR:ОСТАВИТЬ] | - |
-| e toонwith[CYR:танта] | 🔬 SCIENCE | [CYR:ОСТАВИТЬ] | - |
-| Fibonacci hash | 🔬 SCIENCE | [CYR:ДОБАВИТЬ] | HIGH |
-| Golden search | 🔬 SCIENCE | [CYR:ДОБАВИТЬ] | HIGH |
-| Lucas numbers | 📐 MATH | [CYR:ОСТАВИТЬ] | - |
-| φ² + 1/φ² = 3 | 📐 MATH | [CYR:ОСТАВИТЬ] | - |
-| SACRED_FORMULA | ❌ ESOTERIC | [CYR:УДАЛИТЬ] | HIGH |
-| 1/α = 4π³+... | ⚠️ NUMEROLOGY | [CYR:УДАЛИТЬ] | MEDIUM |
-| GA parameterы | ⚠️ NUMEROLOGY | [CYR:ЗАМЕНИТЬ] | HIGH |
-| π×φ×e | ❌ ESOTERIC | [CYR:УДАЛИТЬ] | LOW |
+| φ toонwith[TRANSLATED]] | 🔬 SCIENCE | [CYR:[TRANSLATED]] | - |
+| π toонwith[TRANSLATED]] | 🔬 SCIENCE | [CYR:[TRANSLATED]] | - |
+| e toонwith[TRANSLATED]] | 🔬 SCIENCE | [CYR:[TRANSLATED]] | - |
+| Fibonacci hash | 🔬 SCIENCE | [CYR:[TRANSLATED]] | HIGH |
+| Golden search | 🔬 SCIENCE | [CYR:[TRANSLATED]] | HIGH |
+| Lucas numbers | 📐 MATH | [CYR:[TRANSLATED]] | - |
+| φ² + 1/φ² = 3 | 📐 MATH | [CYR:[TRANSLATED]] | - |
+| SACRED_FORMULA | ❌ ESOTERIC | [CYR:[TRANSLATED]] | HIGH |
+| 1/α = 4π³+... | ⚠️ NUMEROLOGY | [CYR:[TRANSLATED]] | MEDIUM |
+| GA parameterы | ⚠️ NUMEROLOGY | [CYR:[TRANSLATED]] | HIGH |
+| π×φ×e | ❌ ESOTERIC | [CYR:[TRANSLATED]] | LOW |
 
 ---
 
-## 🔮 PAS [CYR:ПРЕДСКАЗАНИЯ]
+## 🔮 PAS [CYR:[TRANSLATED]]
 
 ### Prediction 1: Fibonacci Hashing in VM
 
@@ -232,7 +232,7 @@ prediction:
   confidence: 0.75
   patterns: [PRE, ALG]
   timeline: "1 week"
-  reasoning: "Knuth доto[CYR:азал] [CYR:лучшее] раwith[CYR:пределен]andе"
+  reasoning: "Knuth доfor[TRANSLATED]] [CYR:[TRANSLATED]] раwith[TRANSLATED]]andе"
 ```
 
 ### Prediction 2: Golden Section for JIT
@@ -246,10 +246,10 @@ prediction:
   confidence: 0.65
   patterns: [ALG]
   timeline: "2 weeks"
-  reasoning: "[CYR:Кла]withwithandчеwithtoandй [CYR:алгор]andтм [CYR:опт]andмand[CYR:зац]andand"
+  reasoning: "[CYR:[TRANSLATED]]withandчеwithtoandй [CYR:[TRANSLATED]]andтм [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and"
 ```
 
-### Prediction 3: [CYR:Удален]andе эзfromерandtoand
+### Prediction 3: [CYR:[TRANSLATED]]andе эзfromерandtoand
 
 ```yaml
 prediction:
@@ -260,31 +260,31 @@ prediction:
   confidence: 0.90
   patterns: [ALG]
   timeline: "1 day"
-  reasoning: "[CYR:Удален]andе беwithwithмыwith[CYR:ленного] to[CYR:ода]"
+  reasoning: "[CYR:[TRANSLATED]]andе беwithмыwith[TRANSLATED]] for[TRANSLATED]]"
 ```
 
 ---
 
-## ✅ [CYR:ЗАКЛЮЧЕНИЕ]
+## ✅ [CYR:[TRANSLATED]]
 
-### [CYR:Научное] with[CYR:одержан]andе VIBEE:
+### [CYR:[TRANSLATED]] with[TRANSLATED]]andе VIBEE:
 
-| [CYR:Категор]andя | [CYR:Процент] | Реto[CYR:омендац]andя |
+| [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]] | Реfor[TRANSLATED]]andя |
 |-----------|---------|--------------|
-| 🔬 SCIENCE | 25% | [CYR:РАСШИРИТЬ] |
-| 📐 MATH | 15% | [CYR:ОСТАВИТЬ] |
-| 🎯 HEURISTIC | 10% | [CYR:ПРОВЕРИТЬ] |
-| ⚠️ NUMEROLOGY | 30% | [CYR:УДАЛИТЬ] |
-| ❌ ESOTERIC | 20% | [CYR:УДАЛИТЬ] |
+| 🔬 SCIENCE | 25% | [CYR:[TRANSLATED]] |
+| 📐 MATH | 15% | [CYR:[TRANSLATED]] |
+| 🎯 HEURISTIC | 10% | [CYR:[TRANSLATED]] |
+| ⚠️ NUMEROLOGY | 30% | [CYR:[TRANSLATED]] |
+| ❌ ESOTERIC | 20% | [CYR:[TRANSLATED]] |
 
-### [CYR:План] [CYR:дей]withтinandй:
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinandй:
 
-1. **[CYR:Немедленно]:** [CYR:Удал]andть SACRED_FORMULA and numerology
-2. **[CYR:Крат]toоwith[CYR:рочно]:** [CYR:Доба]inandть Fibonacci hashing
-3. **[CYR:Сред]notwith[CYR:рочно]:** [CYR:Доба]inandть Golden section search
-4. **[CYR:Долго]with[CYR:рочно]:** Иwithwith[CYR:ледо]in[CYR:ать] B-GRAAL for JIT
+1. **[CYR:[TRANSLATED]]:** [CYR:[TRANSLATED]]andть SACRED_FORMULA and numerology
+2. **[CYR:[TRANSLATED]]toоwith[TRANSLATED]]:** [CYR:[TRANSLATED]]inandть Fibonacci hashing
+3. **[CYR:[TRANSLATED]]notwith[TRANSLATED]]:** [CYR:[TRANSLATED]]inandть Golden section search
+4. **[CYR:[TRANSLATED]]with[TRANSLATED]]:** Иwith[TRANSLATED]]in[CYR:[TRANSLATED]] B-GRAAL for JIT
 
 ---
 
 *PAS DAEMON V6 - Brutal Scientific Honesty*
-*"[CYR:Математ]andtoа - [CYR:цар]andца onуto, но numerology - её with[CYR:амоз]inанtoа"*
+*"[CYR:[TRANSLATED]]andtoа - [CYR:[TRANSLATED]]andца onуto, но numerology - её with[TRANSLATED]]inанtoа"*

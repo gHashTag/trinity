@@ -18,6 +18,6 @@ behaviors:
   - name: migrate_with_context
   - name: validate_semantic_equivalence
   - name: migrate_module_with_deps
-  - name: "[EN]onI [EN]and[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]]andand"
-  - name: "[CYR:[TRANSLATED]]with[EN]onI [EN]and[CYR:[TRANSLATED]]andI"
-  - name: "[EN]and[CYR:[TRANSLATED]]andI with [EN]inandwithand[EN]with[CYR:[EN]I[EN]]and"
+  - name: "onI andI and"
+  - name: "withonI andI"
+  - name: "andI with inandwithandwithI]and"

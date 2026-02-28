@@ -4,74 +4,74 @@ const tvc_vm = @import("tvc_vm.zig");
 const tvc_ir = @import("tvc_ir.zig");
 const tvc_parser = @import("tvc_parser.zig");
 
-// TVC Runtime Demo - [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]go] [EN]andto[EN] in[CYR:y[TRANSLATED]]not[EN]andI
+// TVC Runtime Demo - withandI [CYR:go] andto in[CYR:y]notandI
 
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
 
     std.debug.print("╔════════════════════════════════════════════════╗\n", .{});
     std.debug.print("║         TVC RUNTIME DEMONSTRATION               ║\n", .{});
-    std.debug.print("║  [CYR:[TRANSLATED]ny] [EN]andto[EN]: .vibee → IR → VM → Execution      ║\n", .{});
+    std.debug.print("║  [CYR:ny] andto: .vibee → IR → VM → Execution      ║\n", .{});
     std.debug.print("╚════════════════════════════════════════════════╝\n\n", .{});
 
     // 1. Initialization Runtime
-    std.debug.print("═══ [1] [CYR:[TRANSLATED]A[TRANSLATED]A[TRANSLATED]] RUNTIME ═══\n", .{});
+    std.debug.print("═══ [1] [CYR:AA] RUNTIME ═══\n", .{});
     var runtime = try tvc_runtime.TVCRuntime.init(allocator, 1024 * 1024, 512 * 1024);
     defer runtime.deinit();
 
     try runtime.createVM(64 * 1024, 4 * 1024);
     runtime.start();
 
-    // 2. [EN]with[EN] Memory Manager
-    std.debug.print("\n═══ [2] [CYR:[TRANSLATED]] MEMORY MANAGER ═══\n", .{});
+    // 2. with Memory Manager
+    std.debug.print("\n═══ [2]  MEMORY MANAGER ═══\n", .{});
     testMemoryManager(&runtime);
 
-    // 3. [EN]with[EN] Math Library
-    std.debug.print("\n═══ [3] [CYR:[TRANSLATED]] MATH LIBRARY ═══\n", .{});
+    // 3. with Math Library
+    std.debug.print("\n═══ [3]  MATH LIBRARY ═══\n", .{});
     testMathLibrary();
 
-    // 4. [EN]with[EN] Balanced Ternary
-    std.debug.print("\n═══ [4] [CYR:[TRANSLATED]] BALANCED TERNARY ═══\n", .{});
+    // 4. with Balanced Ternary
+    std.debug.print("\n═══ [4]  BALANCED TERNARY ═══\n", .{});
     try testBalancedTernary(allocator);
 
-    // 5. Creation and in[CYR:y[TRANSLATED]]not[EN]and[EN] [CYR:[TRANSLATED]I]
-    std.debug.print("\n═══ [5] [CYR:[TRANSLATED]] TVC [CYR:[TRANSLATED]] ═══\n", .{});
+    // 5. Creation and in[CYR:y]notand [CYR:I]
+    std.debug.print("\n═══ [5]  TVC  ═══\n", .{});
     try testModuleExecution(&runtime, allocator);
 
-    // 6. [CYR:[TRANSLATED]]andwith[EN]andto[EN]
-    std.debug.print("\n═══ [6] [CYR:[EN]A[TRANSLATED]A] RUNTIME ═══\n", .{});
+    // 6. andwithandto
+    std.debug.print("\n═══ [6] [CYR:AA] RUNTIME ═══\n", .{});
     runtime.dumpState();
 
-    // 7. [CYR:[TRANSLATED]]to[EN] [EN]with[CYR:[TRANSLATED]]
-    std.debug.print("\n═══ [7] [CYR:[TRANSLATED]A] [CYR:[TRANSLATED]A] ═══\n", .{});
+    // 7. to with
+    std.debug.print("\n═══ [7] [CYR:A] [CYR:A] ═══\n", .{});
     runtime.gc();
-    std.debug.print("✓ GC in[CYR:y[TRANSLATED]]not[EN]\n", .{});
+    std.debug.print("✓ GC in[CYR:y]not\n", .{});
 
     runtime.stop();
 
     std.debug.print("\n╔════════════════════════════════════════════════╗\n", .{});
-    std.debug.print("║         [CYR:[TRANSLATED]A[TRANSLATED]] [CYR:[EN]A[TRANSLATED]A]                  ║\n", .{});
+    std.debug.print("║         [CYR:A] [CYR:AA]                  ║\n", .{});
     std.debug.print("╚════════════════════════════════════════════════╝\n", .{});
 }
 
 fn testMemoryManager(runtime: *tvc_runtime.TVCRuntime) void {
-    // [EN]with[EN] Arena Allocator
+    // with Arena Allocator
     const arena_data = runtime.memory.allocFast(256) catch {
         std.debug.print("✗ Arena alloc failed\n", .{});
         return;
     };
-    std.debug.print("✓ Arena: in[CYR:y[TRANSLATED]] 256 [CYR:[TRANSLATED]]\n", .{});
+    std.debug.print("✓ Arena: in[CYR:y] 256 \n", .{});
     _ = arena_data;
 
-    // [EN]with[EN] GC Allocator
+    // with GC Allocator
     const gc_data = runtime.memory.allocManaged(128) catch {
         std.debug.print("✗ GC alloc failed\n", .{});
         return;
     };
-    std.debug.print("✓ GC: in[CYR:y[TRANSLATED]] 128 [CYR:[TRANSLATED]]\n", .{});
+    std.debug.print("✓ GC: in[CYR:y] 128 \n", .{});
     _ = gc_data;
 
-    // [CYR:[TRANSLATED]]andwith[EN]andto[EN] [CYR:[TRANSLATED]I[EN]]and
+    // andwithandto [CYR:I]and
     const stats = runtime.memory.getStats();
     std.debug.print("  Arena used: {} bytes\n", .{stats.arena_used});
     std.debug.print("  GC objects: {}\n", .{stats.gc_objects});
@@ -84,33 +84,33 @@ fn testMathLibrary() void {
     const ZERO = tvc_vm.ZERO;
     const POS1 = tvc_vm.POS1;
 
-    // [EN]with[EN] [CYR:[TRANSLATED]]iny[EN] [CYR:[TRANSLATED]]and[EN]
-    std.debug.print("Trinary [EN]and[CYR:[TRANSLATED]]andto[EN]:\n", .{});
+    // with iny and
+    std.debug.print("Trinary andto:\n", .{});
     std.debug.print("  add(+1, -1) = {}\n", .{Math.add(POS1, NEG1)});
     std.debug.print("  sub(+1, -1) = {}\n", .{Math.sub(POS1, NEG1)});
     std.debug.print("  mul(+1, -1) = {}\n", .{Math.mul(POS1, NEG1)});
 
-    // [EN]with[EN] [CYR:[TRANSLATED]]and[EN]withtoand[EN] [CYR:[TRANSLATED]]and[EN]
-    std.debug.print("Trinary [CYR:[TRANSLATED]]andto[EN]:\n", .{});
+    // with andwithtoand and
+    std.debug.print("Trinary andto:\n", .{});
     std.debug.print("  AND(+1, 0) = {}\n", .{Math.tritAnd(POS1, ZERO)});
     std.debug.print("  OR(+1, 0) = {}\n", .{Math.tritOr(POS1, ZERO)});
     std.debug.print("  XOR(+1, -1) = {}\n", .{Math.tritXor(POS1, NEG1)});
     std.debug.print("  NOT(+1) = {}\n", .{Math.tritNot(POS1)});
     std.debug.print("  IMPLIES(+1, -1) = {}\n", .{Math.tritImplies(POS1, NEG1)});
 
-    // [EN]with[EN] Golden Identity
+    // with Golden Identity
     std.debug.print("Golden Identity:\n", .{});
     std.debug.print("  φ = {}\n", .{Math.PHI});
-    std.debug.print("  φ² + 1/φ² = {} ([CYR:[TRANSLATED]] [CYR:[EN]y[EN]] 3)\n", .{Math.goldenIdentity()});
+    std.debug.print("  φ² + 1/φ² = {} ( [CYR:y] 3)\n", .{Math.goldenIdentity()});
 }
 
 fn testBalancedTernary(allocator: std.mem.Allocator) !void {
     const Math = tvc_runtime.TVCMath;
 
-    // [CYR:[TRANSLATED]]iny[EN] [EN]with[EN]y to[EN]in[EN]withandand
+    // iny withy toinwithand
     const test_numbers = [_]i64{ 0, 1, -1, 5, -5, 13, -13, 42, -42, 100, -100 };
 
-    std.debug.print("Balanced Ternary to[EN]in[EN]withandI:\n", .{});
+    std.debug.print("Balanced Ternary toinwithandI:\n", .{});
     var passed: usize = 0;
     var failed: usize = 0;
 
@@ -130,11 +130,11 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
         if (ok) passed += 1 else failed += 1;
     }
 
-    // [EN]with[EN]y [EN]and[CYR:[TRANSLATED]]andtoand
-    std.debug.print("\nA[EN]and[CYR:[TRANSLATED]]andto[EN] [EN]and[EN]iny[EN] [EN]withwithandin[EN]in:\n", .{});
+    // withy andtoand
+    std.debug.print("\nAandto andiny withandinin:\n", .{});
 
-    // [EN]with[EN] with[CYR:[TRANSLATED]]andI
-    std.debug.print("  [CYR:[TRANSLATED]]:\n", .{});
+    // with withandI
+    std.debug.print("  :\n", .{});
     const add_tests = [_]struct { a: i64, b: i64 }{
         .{ .a = 5, .b = 3 },     // 5 + 3 = 8
         .{ .a = -5, .b = 3 },    // -5 + 3 = -2
@@ -160,8 +160,8 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
         if (ok) passed += 1 else failed += 1;
     }
 
-    // [EN]with[EN] iny[EN]and[CYR:[TRANSLATED]]andI
-    std.debug.print("  [CYR:[TRANSLATED]A[TRANSLATED]]:\n", .{});
+    // with inyandI
+    std.debug.print("  [CYR:A]:\n", .{});
     const sub_tests = [_]struct { a: i64, b: i64 }{
         .{ .a = 10, .b = 3 },    // 10 - 3 = 7
         .{ .a = 5, .b = 8 },     // 5 - 8 = -3
@@ -186,8 +186,8 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
         if (ok) passed += 1 else failed += 1;
     }
 
-    // [EN]with[EN] [CYR:[TRANSLATED]]andI
-    std.debug.print("  [CYR:[TRANSLATED]]:\n", .{});
+    // with andI
+    std.debug.print("  :\n", .{});
     const mul_tests = [_]struct { a: i64, b: i64 }{
         .{ .a = 3, .b = 4 },     // 3 * 4 = 12
         .{ .a = -3, .b = 4 },    // -3 * 4 = -12
@@ -214,11 +214,11 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
         if (ok) passed += 1 else failed += 1;
     }
 
-    // [EN]with[EN] [CYR:[TRANSLATED]]andI
-    std.debug.print("  [CYR:[TRANSLATED]]:\n", .{});
+    // with andI
+    std.debug.print("  :\n", .{});
     const div_tests = [_]struct { a: i64, b: i64 }{
         .{ .a = 12, .b = 4 },    // 12 / 4 = 3
-        .{ .a = 13, .b = 4 },    // 13 / 4 = 3 ([CYR:[TRANSLATED]]andwith[CYR:[TRANSLATED]])
+        .{ .a = 13, .b = 4 },    // 13 / 4 = 3 (andwith)
         .{ .a = -12, .b = 4 },   // -12 / 4 = -3
         .{ .a = 81, .b = 9 },    // 81 / 9 = 9
         .{ .a = 100, .b = 10 },  // 100 / 10 = 10
@@ -241,8 +241,8 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
         if (ok) passed += 1 else failed += 1;
     }
 
-    // [EN]with[EN] with[EN]innot[EN]andI
-    std.debug.print("  [CYR:[EN]A[TRANSLATED]]:\n", .{});
+    // with withinnotandI
+    std.debug.print("  [CYR:A]:\n", .{});
     const cmp_tests = [_]struct { a: i64, b: i64, expected: i8 }{
         .{ .a = 5, .b = 3, .expected = 1 },      // 5 > 3
         .{ .a = 3, .b = 5, .expected = -1 },     // 3 < 5
@@ -265,8 +265,8 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
         if (ok) passed += 1 else failed += 1;
     }
 
-    // [EN]with[EN] in[EN]in[CYR:[TRANSLATED]]andI in with[CYR:[TRANSLATED]]
-    std.debug.print("  [CYR:[TRANSLATED]]:\n", .{});
+    // with ininandI in with
+    std.debug.print("  :\n", .{});
     const pow_tests = [_]struct { base: i64, exp: u32, expected: i64 }{
         .{ .base = 2, .exp = 0, .expected = 1 },   // 2^0 = 1
         .{ .base = 2, .exp = 1, .expected = 2 },   // 2^1 = 2
@@ -289,21 +289,21 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
         if (ok) passed += 1 else failed += 1;
     }
 
-    // [CYR:[TRANSLATED]]and
+    // and
     std.debug.print("\nResulty: {} passed, {} failed\n", .{ passed, failed });
 }
 
 fn testModuleExecution(runtime: *tvc_runtime.TVCRuntime, allocator: std.mem.Allocator) !void {
-    // [CYR:[TRANSLATED]] [EN]with[EN]iny[EN] module
+    //  withiny module
     var module = tvc_ir.TVCModule.init(allocator, "test_runtime_module");
 
-    // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [CYR:[TRANSLATED]]to[EN]and[EN] trinary_logic
+    // in[CYR:I] toand trinary_logic
     const func = try module.addFunction("trinary_logic");
 
     var block = tvc_ir.TVCBlock.init(allocator, "entry");
     block.entry_point = 0;
 
-    // [EN]with[CYR:[TRANSLATED]]to[EN]andand: NOT, AND, OR, XOR, IMPLIES, RET
+    // withtoand: NOT, AND, OR, XOR, IMPLIES, RET
     try block.instructions.append(tvc_ir.TVCInstruction{
         .opcode = .t_not,
         .operands = &[_]u64{},
@@ -344,10 +344,10 @@ fn testModuleExecution(runtime: *tvc_runtime.TVCRuntime, allocator: std.mem.Allo
     try func.blocks.put("entry", block);
     func.returns = .i64_trit;
 
-    // [CYR:[TRANSLATED]] and in[CYR:y[TRANSLATED]I[EN]]
+    //  and in[CYR:yI]
     try runtime.loadModule(&module);
-    std.debug.print("✓ [CYR:[TRANSLATED]l] [CYR:[TRANSLATED]]: {s}\n", .{module.name});
+    std.debug.print("✓ [CYR:l] : {s}\n", .{module.name});
 
     try runtime.callFunction("trinary_logic");
-    std.debug.print("✓ [CYR:[TRANSLATED]]to[EN]andI trinary_logic in[CYR:y[TRANSLATED]]noton\n", .{});
+    std.debug.print("✓ toandI trinary_logic in[CYR:y]noton\n", .{});
 }

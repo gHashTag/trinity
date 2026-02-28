@@ -8,13 +8,13 @@ language: json
 module: manifest
 
 description: |
-  Chrome Extension Manifest V3 for [CYR:[EN]A[EN]] [CYR:[TRANSLATED]A].
-  [CYR:[TRANSLATED]I[EN]] permissions, scripts, and UI componenty.
+  Chrome Extension Manifest V3 for [CYR:A] [CYR:A].
+  [CYR:I] permissions, scripts, and UI componenty.
 
 manifest_version: 3
 
 extension:
-  name: "[CYR:[EN]A[EN]] [CYR:[TRANSLATED]A] - Ternary Anti-Detect"
+  name: "[CYR:A] [CYR:A] - Ternary Anti-Detect"
   short_name: "Firebird"
   version: "1.0.0"
   description: "Ternary fingerprint evasion browser with DePIN rewards. φ² + 1/φ² = 3"
@@ -29,14 +29,14 @@ icons:
   128: "icons/firebird-128.png"
 
 permissions:
-  - storage           # [CYR:[TRANSLATED]]not[EN]and[EN] [CYR:pro[EN]]and[CYR:[TRANSLATED]] and onwith[CYR:[TRANSLATED]]
-  - activeTab         # [EN]with[CYR:[TRANSLATED]]  [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]
-  - scripting         # [CYR:[TRANSLATED]]andI content scripts
-  - webNavigation     # [EN]with[CYR:[TRANSLATED]]andin[EN]and[EN] oninand[CYR:[TRANSLATED]]andand
-  - alarms            # [CYR:[TRANSLATED]]and[EN]and[EN]with[EN]and[EN] [CYR:[TRANSLATED]]and (DePIN sync)
+  - storage           # notand [CYR:pro]and and onwith
+  - activeTab         # with   in
+  - scripting         # andI content scripts
+  - webNavigation     # withandinand oninandand
+  - alarms            # andwithand and (DePIN sync)
 
 host_permissions:
-  - "<all_urls>"      # [EN]with[CYR:[TRANSLATED]] [EN] inwith[EN] website[EN] for evasion
+  - "<all_urls>"      # with  inwith website for evasion
 
 background:
   service_worker: "background.js"
@@ -52,7 +52,7 @@ content_scripts:
 
 action:
   default_popup: "popup.html"
-  default_title: "[CYR:[EN]A[EN]] [CYR:[TRANSLATED]A]"
+  default_title: "[CYR:A] [CYR:A]"
   default_icon:
     16: "icons/firebird-16.png"
     32: "icons/firebird-32.png"
@@ -70,10 +70,10 @@ web_accessible_resources:
 content_security_policy:
   extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
 
-# [EN]and[EN]and[CYR:[EN]l]onI version Chrome
+# and[CYR:l]onI version Chrome
 minimum_chrome_version: "102"
 
-# [CYR:[TRANSLATED]]iny[EN] with[EN]in[EN] for Chrome Web Store
+# iny within for Chrome Web Store
 key_words:
   - anti-detect
   - fingerprint

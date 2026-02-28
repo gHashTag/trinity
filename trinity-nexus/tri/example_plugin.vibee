@@ -4,29 +4,29 @@ language: zig
 module: unknown
 
 types:
-    description: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] [CYR:[TRANSLATED]]and[EN]with[EN] [CYR:[TRANSLATED]]andon
-    description: [CYR:[TRANSLATED]acts] Canvas inand[CYR:[TRANSLATED]] for [CYR:[TRANSLATED]]andon
-    description: [CYR:[TRANSLATED]]and[EN] inand[CYR:[TRANSLATED]] on Canvas
-    description: [CYR:[EN]work[EN]y]in[CYR:acts] UI with[CYR:[EN]y[EN]]andI
-    description: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] [CYR:[TRANSLATED]] with[EN]with[CYR:[EN]I[EN]]and[EN] inand[CYR:[TRANSLATED]]
-    description: [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] with[EN]with[CYR:[EN]I[EN]]and[EN] inand[CYR:[TRANSLATED]]
-    description: A[EN]and[EN]and[CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]]
-    description: [CYR:Vy[EN]y]in[CYR:acts]withI [EN]and [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andon
-    description: [CYR:Vy[EN]y]in[CYR:acts]withI [EN]and in[CYR:y[TRANSLATED]] [CYR:[TRANSLATED]]andon
-    description: [CYR:Vy[EN]y]in[CYR:acts]withI [EN]and from[EN]not[EN]andand [CYR:[TRANSLATED]]
-    description: [CYR:Vy[EN]y]in[CYR:acts]withI [EN]and [CYR:[TRANSLATED]]andand [CYR:[TRANSLATED]]with[EN]
-    description: [CYR:Vy[EN]y]in[CYR:acts]withI [EN]and [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[EN]
-    description: [CYR:[TRANSLATED]acts] [CYR:[TRANSLATED]] with[EN]with[CYR:[EN]I[EN]]and[EN] from process dictionary
-    description: [CYR:[TRANSLATED]I[EN]] with[EN]with[CYR:[EN]I[EN]]and[EN] in process dictionary
-    description: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] ExampleState in WidgetState
+    description: in[CYR:acts] andwith andon
+    description: [CYR:acts] Canvas inand for andon
+    description: and inand on Canvas
+    description: [CYR:worky]in[CYR:acts] UI withy]andI
+    description: in[CYR:acts]  withI]and inand
+    description: in[CYR:I] withI]and inand
+    description: Aand inand
+    description: [CYR:Vyy]in[CYR:acts]withI and  andon
+    description: [CYR:Vyy]in[CYR:acts]withI and in[CYR:y] andon
+    description: [CYR:Vyy]in[CYR:acts]withI and fromnotand 
+    description: [CYR:Vyy]in[CYR:acts]withI and and with
+    description: [CYR:Vyy]in[CYR:acts]withI and  with
+    description: [CYR:acts]  withI]and from process dictionary
+    description: [CYR:I] withI]and in process dictionary
+    description: inand ExampleState in WidgetState
   create_manifest:
-    description: [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[EN]with[EN]
+    description: and andwith
 
   render_widget_test:
-    description: [CYR:[TRANSLATED]]and[EN] inand[CYR:[TRANSLATED]]
+    description: and inand
 
   handle_click_test:
-    description: [CYR:[EN]work[TRANSLATED]] [EN]and[EN]
+    description: [CYR:work] and
 
   lifecycle_test:
     description: Lifecycle hooks

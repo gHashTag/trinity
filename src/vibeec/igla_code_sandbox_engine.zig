@@ -621,8 +621,8 @@ pub const CodeSandboxEngine = struct {
         const execute_keywords = [_][]const u8{
             "run",
             "execute",
-            "in[EN]by[EN]and",
-            "[CYR:[EN]]with[EN]and",
+            "inbyand",
+            "withand",
             "执行",
             "test this",
             "try this",
@@ -737,8 +737,8 @@ pub fn runBenchmark() void {
         .{ .query = "explain this code", .language = .Zig, .feedback = .Acceptance },
 
         // Multilingual
-        .{ .query = "in[EN]by[EN]and zig to[EN]: const y = 2;", .language = .Zig, .feedback = .ThumbsUp },
-        .{ .query = "[CYR:[EN]]with[EN]and python: print('[EN]andin[EN]')", .language = .Python, .feedback = .Acceptance },
+        .{ .query = "inbyand zig to: const y = 2;", .language = .Zig, .feedback = .ThumbsUp },
+        .{ .query = "withand python: print('andin')", .language = .Python, .feedback = .Acceptance },
         .{ .query = "执行 javascript: let x = 1;", .language = .JavaScript, .feedback = .ThumbsUp },
 
         // More executions

@@ -875,7 +875,7 @@ pub const IglaHybridChat = struct {
             self.error_fallbacks += 1;
             const lang = local_chat.detectLanguage(query);
             const fallback_msg = if (lang == .Russian)
-                "[CYR:[EN]] LLM-[CYR:[EN]]in[CYR:[EN]] [CYR:[EN]]: [CYR:[EN]]andto[EN] (2+2, 5*3), in[CYR:[EN]], yes[EN], with[CYR:[EN]]and[EN] with[CYR:[EN]] (with[CYR:[EN]]and[EN] [CYR:[EN]]andand?), [EN]andin[EN]with[EN]inand[EN]. [EN]with[CYR:[EN]] GROQ_API_KEY or ANTHROPIC_API_KEY for by[CYR:[EN]] fromin[CYR:[EN]]in."
+                " LLM-in : andto (2+2, 5*3), in, yes, withand with (withand and?), andinwithinand. with GROQ_API_KEY or ANTHROPIC_API_KEY for by frominin."
             else
                 "Without LLM I can do: math (2+2, 5*3), time, date, capitals (capital of France?), greetings. Set GROQ_API_KEY or ANTHROPIC_API_KEY for full answers.";
             self.logQuery(query, .Error, 0.5, elapsed);
@@ -1387,15 +1387,15 @@ pub const IglaHybridChat = struct {
         // Time patterns
         if (std.mem.indexOf(u8, q, "what time") != null or
             std.mem.indexOf(u8, q, "current time") != null or
-            std.mem.indexOf(u8, q, "tofrom[CYR:[EN]] [EN]with") != null)
+            std.mem.indexOf(u8, q, "tofrom with") != null)
             return .Time;
 
         // Date patterns
         if (std.mem.indexOf(u8, q, "what date") != null or
             std.mem.indexOf(u8, q, "today's date") != null or
             std.mem.indexOf(u8, q, "what day") != null or
-            std.mem.indexOf(u8, q, "to[EN]to[EN] [EN]andwith[EN]") != null or
-            std.mem.indexOf(u8, q, "to[EN]to[EN] [CYR:[EN]]") != null)
+            std.mem.indexOf(u8, q, "toto andwith") != null or
+            std.mem.indexOf(u8, q, "toto ") != null)
             return .Date;
 
         // System info patterns
@@ -1428,9 +1428,9 @@ pub const IglaHybridChat = struct {
             std.mem.indexOf(u8, q, "evaluate") != null)
             return .Math;
         // Russian math keywords
-        if (q.len >= 12 and std.mem.indexOf(u8, q, "\xd0\xbf\xd0\xbe\xd1\x81\xd1\x87\xd0\xb8\xd1\x82\xd0\xb0\xd0\xb9") != null) // bywith[EN]and[CYR:[EN]]
+        if (q.len >= 12 and std.mem.indexOf(u8, q, "\xd0\xbf\xd0\xbe\xd1\x81\xd1\x87\xd0\xb8\xd1\x82\xd0\xb0\xd0\xb9") != null) // bywithand
             return .Math;
-        if (q.len >= 14 and std.mem.indexOf(u8, q, "\xd1\x81\xd0\xba\xd0\xbe\xd0\xbb\xd1\x8c\xd0\xba\xd0\xbe") != null) // withto[CYR:[EN]]to[EN]
+        if (q.len >= 14 and std.mem.indexOf(u8, q, "\xd1\x81\xd0\xba\xd0\xbe\xd0\xbb\xd1\x8c\xd0\xba\xd0\xbe") != null) // withtoto
             return .Math;
         // Expression detection: digit + operator + digit
         if (containsMathExpression(q))
@@ -2104,7 +2104,7 @@ test "hybrid init without model" {
     defer chat.deinit();
 
     // Should work with symbolic only
-    const response = try chat.respond("[EN]andin[EN]");
+    const response = try chat.respond("andin");
     try std.testing.expect(response.source == .Symbolic);
     try std.testing.expect(response.latency_us < 1000); // Fast
 }
@@ -2115,7 +2115,7 @@ test "hybrid symbolic hit" {
     defer chat.deinit();
 
     // Known pattern should hit symbolic
-    const response = try chat.respond("[EN]andin[EN]"); // Russian greeting has higher confidence
+    const response = try chat.respond("andin"); // Russian greeting has higher confidence
     try std.testing.expect(response.source == .Symbolic);
     try std.testing.expect(response.confidence >= 0.3); // Pattern matching confidence
 }
@@ -2125,8 +2125,8 @@ test "hybrid stats" {
     var chat = try IglaHybridChat.init(allocator, null);
     defer chat.deinit();
 
-    _ = try chat.respond("[EN]andin[EN]"); // High confidence pattern
-    _ = try chat.respond("[CYR:[EN]]inwith[EN]in[EN]"); // High confidence pattern
+    _ = try chat.respond("andin"); // High confidence pattern
+    _ = try chat.respond("inwithin"); // High confidence pattern
 
     const stats = chat.getStats();
     try std.testing.expectEqual(@as(usize, 2), stats.total_queries);
@@ -2142,7 +2142,7 @@ test "wouldUseSymbolic" {
     var chat = try IglaHybridChat.init(allocator, null);
     defer chat.deinit();
 
-    try std.testing.expect(chat.wouldUseSymbolic("[EN]andin[EN]"));
+    try std.testing.expect(chat.wouldUseSymbolic("andin"));
     // Unknown query - would fall back to LLM
     try std.testing.expect(!chat.wouldUseSymbolic("explain quantum entanglement in detail"));
 }
@@ -2157,7 +2157,7 @@ test "hybrid init with TVC corpus" {
     defer chat.deinit();
 
     // Symbolic still works
-    const r1 = try chat.respond("[EN]andin[EN]");
+    const r1 = try chat.respond("andin");
     try std.testing.expect(r1.source == .Symbolic);
 
     // TVC should be enabled
@@ -2313,7 +2313,7 @@ test "v2.3 context tracking in respond flow" {
     try std.testing.expect(chat.config.enable_context);
 
     // Send two queries (both will hit symbolic)
-    _ = try chat.respond("[EN]andin[EN]");
+    _ = try chat.respond("andin");
     _ = try chat.respond("hello");
 
     // Should have 4 messages in context: 2 user + 2 assistant
@@ -2334,7 +2334,7 @@ test "v2.3 clearContext resets state" {
     var chat = try IglaHybridChat.init(allocator, null);
     defer chat.deinit();
 
-    _ = try chat.respond("[EN]andin[EN]");
+    _ = try chat.respond("andin");
     try std.testing.expect(chat.getContextStats().total_messages > 0);
 
     chat.clearContext();
@@ -2427,7 +2427,7 @@ test "v2.4 symbolic response has no tool_name and NotApplicable reflection" {
     var chat = try IglaHybridChat.init(allocator, null);
     defer chat.deinit();
 
-    const response = try chat.respond("[EN]andin[EN]");
+    const response = try chat.respond("andin");
     try std.testing.expect(response.source == .Symbolic);
     try std.testing.expect(response.tool_name == null);
     try std.testing.expect(response.reflection == .NotApplicable);

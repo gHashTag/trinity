@@ -2,7 +2,7 @@
 // phi_layout v24.φ - Generated from specs/phi_layout.vibee
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// [CYR:A[EN]go[EN]]and[CYR:tmy] [CYR:[TRANSLATED]]andI with φ-[CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]]and[EN]
+// [CYR:Ago]and[CYR:tmy] andI with φ-andand
 // Golden identity: φ² + 1/φ² = 3
 //
 // DO NOT EDIT - This file is auto-generated from .vibee specification
@@ -18,7 +18,7 @@ const PHI_INV = phi_core.PHI_INV;
 const TAU = phi_core.TAU;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const Vec2 = extern struct {
@@ -83,7 +83,7 @@ pub const LayoutConfig = extern struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]A[TRANSLATED]] [CYR:[TRANSLATED]] WASM
+// [CYR:A]  WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const MAX_LAYOUT_NODES = 2048;
@@ -100,7 +100,7 @@ var layout_config: LayoutConfig = LayoutConfig{
     .iterations = 100,
     ._pad = 0,
     .damping = PHI_INV,
-    .repulsion_strength = PHI * 100.0, // [CYR:[EN]me[TRANSLATED]] for with[CYR:[TRANSLATED]]and[CYR:lno]with[EN]and
+    .repulsion_strength = PHI * 100.0, // [CYR:me] for withand[CYR:lno]withand
     .attraction_strength = 0.05,
     .phi_factor = PHI,
     .convergence_threshold = 0.1,
@@ -123,7 +123,7 @@ fn get_layout_edge_count() u32 {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]A[TRANSLATED]A[TRANSLATED]]
+// [CYR:AA]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Initialization layout
@@ -134,7 +134,7 @@ fn layout_init(width: f64, height: f64) void {
     layout_edge_count = 0;
 }
 
-/// [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]
+/// inand 
 fn layout_add_node(id: u64, x: f64, y: f64) u32 {
     if (layout_node_count >= MAX_LAYOUT_NODES) return 0xFFFFFFFF;
     
@@ -156,7 +156,7 @@ fn layout_add_node(id: u64, x: f64, y: f64) u32 {
     return idx;
 }
 
-/// [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]
+/// inand 
 fn layout_add_edge(source: u32, target: u32) u32 {
     if (layout_edge_count >= MAX_LAYOUT_EDGES) return 0xFFFFFFFF;
     if (source >= layout_node_count or target >= layout_node_count) return 0xFFFFFFFF;
@@ -177,7 +177,7 @@ fn layout_add_edge(source: u32, target: u32) u32 {
 // φ-SPIRAL LAYOUT
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]in [EN] φ-with[EN]and[CYR:[TRANSLATED]]and
+/// and in  φ-withand
 fn layout_phi_spiral() void {
     const cx = layout_config.width / 2.0;
     const cy = layout_config.height / 2.0;
@@ -194,7 +194,7 @@ fn layout_phi_spiral() void {
     }
 }
 
-/// [CYR:[TRANSLATED]]and[EN] [EN] Fermat with[EN]and[CYR:[TRANSLATED]]and ([CYR:[TRANSLATED]]with[CYR:[TRANSLATED]])
+/// and  Fermat withand (with)
 fn layout_fermat_spiral() void {
     const cx = layout_config.width / 2.0;
     const cy = layout_config.height / 2.0;
@@ -215,30 +215,30 @@ fn layout_fermat_spiral() void {
 // FORCE-DIRECTED LAYOUT
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [EN]and[EN] step force-directed layout
+/// and step force-directed layout
 fn layout_force_step() f64 {
-    // [CYR:[TRANSLATED]]withyin[CYR:[TRANSLATED]] withand[EN]y
+    // withyin withandy
     var i: u32 = 0;
     while (i < layout_node_count) : (i += 1) {
         layout_nodes[i].fx = 0;
         layout_nodes[i].fy = 0;
     }
     
-    // [CYR:Vy[EN]]andwith[CYR:[EN]I[EN]] k ([CYR:[TRANSLATED]]and[CYR:[EN]lno[EN]] [EN]withwith[CYR:[EN]I[EN]]and[EN])
+    // [CYR:Vy]andwithI] k (and[CYR:lno] withI]and)
     const area = layout_config.width * layout_config.height;
     const k = @sqrt(area / @as(f64, @floatFromInt(layout_node_count))) * PHI;
     
-    // [CYR:[TRANSLATED]]toandin[EN]and[EN] [CYR:[TRANSLATED]] inwith[EN]and [CYR:[TRANSLATED]]and
+    // toandinand  inwithand and
     compute_repulsion(k);
     
-    // [EN]and[CYR:[EN]I[TRANSLATED]]and[EN] [EN] [CYR:[TRANSLATED]]
+    // and[CYR:I]and  
     compute_attraction(k);
     
-    // [EN]and[CYR:meI[EN]] withand[EN]y
+    // and[CYR:meI] withandy
     return apply_forces();
 }
 
-/// [CYR:Vy[EN]]andwith[CYR:[TRANSLATED]]and[EN] withand[EN] from[CYR:[TRANSLATED]]toandin[EN]andI
+/// [CYR:Vy]andwithand withand fromtoandinandI
 fn compute_repulsion(k: f64) void {
     var i: u32 = 0;
     while (i < layout_node_count) : (i += 1) {
@@ -262,7 +262,7 @@ fn compute_repulsion(k: f64) void {
     }
 }
 
-/// [CYR:Vy[EN]]andwith[CYR:[TRANSLATED]]and[EN] withand[EN] [EN]and[CYR:[EN]I[TRANSLATED]]andI
+/// [CYR:Vy]andwithand withand and[CYR:I]andI
 fn compute_attraction(k: f64) void {
     var i: u32 = 0;
     while (i < layout_edge_count) : (i += 1) {
@@ -287,7 +287,7 @@ fn compute_attraction(k: f64) void {
     }
 }
 
-/// [EN]and[EN]not[EN]and[EN] withand[EN] and in[EN]in[CYR:[TRANSLATED]] [EN]not[EN]andand withandwith[CYR:[TRANSLATED]y]
+/// andnotand withand and inin notand withandwithy]
 fn apply_forces() f64 {
     var energy: f64 = 0.0;
     const damping = layout_config.damping;
@@ -297,11 +297,11 @@ fn apply_forces() f64 {
         const node = &layout_nodes[i];
         if (node.fixed) continue;
         
-        // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] withto[CYR:[TRANSLATED]]with[EN]
+        // in[CYR:I] withtowith
         node.vx = node.vx * 0.9 + node.fx * damping;
         node.vy = node.vy * 0.9 + node.fy * damping;
         
-        // [CYR:[TRANSLATED]]and[EN]andin[CYR:[TRANSLATED]] withto[CYR:[TRANSLATED]]with[EN]
+        // andin withtowith
         const speed = @sqrt(node.vx * node.vx + node.vy * node.vy);
         const max_speed = 50.0;
         if (speed > max_speed) {
@@ -309,37 +309,37 @@ fn apply_forces() f64 {
             node.vy = node.vy / speed * max_speed;
         }
         
-        // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [CYR:[TRANSLATED]]and[EN]and[EN]
+        // in[CYR:I] and
         node.x += node.vx;
         node.y += node.vy;
         
-        // [CYR:[TRANSLATED]]and[EN]andin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and
+        // andin and
         node.x = @max(50.0, @min(layout_config.width - 50.0, node.x));
         node.y = @max(50.0, @min(layout_config.height - 50.0, node.y));
         
-        // [EN]to[CYR:[TRANSLATED]]andin[CYR:[TRANSLATED]] [EN]not[EN]and[EN]
+        // toandin notand
         energy += node.vx * node.vx + node.vy * node.vy;
     }
     
     return energy;
 }
 
-/// [CYR:[TRANSLATED]ny] force-directed layout
+/// [CYR:ny] force-directed layout
 fn layout_force_directed(iterations: u32) f64 {
-    // [CYR:[TRANSLATED]lno[EN]] [CYR:[TRANSLATED]]and[EN] [EN] φ-with[EN]and[CYR:[TRANSLATED]]and
+    // [CYR:lno] and  φ-withand
     layout_phi_spiral();
     
     var iter: u32 = 0;
     var energy: f64 = 0;
     
     while (iter < iterations) : (iter += 1) {
-        // φ-[CYR:[TRANSLATED]]andin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN]in[EN]and[EN]
+        // φ-andin andinand
         const progress: f64 = @as(f64, @floatFromInt(iter)) / @as(f64, @floatFromInt(iterations));
         layout_config.damping = PHI_INV * math.pow(f64, PHI_INV, progress);
         
         energy = layout_force_step();
         
-        // Check with[CYR:[TRANSLATED]]and[EN]with[EN]and
+        // Check withandwithand
         if (energy < layout_config.convergence_threshold) break;
     }
     
@@ -350,17 +350,17 @@ fn layout_force_directed(iterations: u32) f64 {
 // HIERARCHICAL LAYOUT
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:[TRANSLATED]]and[EN]withto[EN] [CYR:[TRANSLATED]]and[EN] with φ-[CYR:pro[TRANSLATED]]andI[EN]and
+/// andwithto and with φ-[CYR:pro]andIand
 fn layout_hierarchical(root: u32) void {
     if (root >= layout_node_count) return;
     
-    // [CYR:[TRANSLATED]I[EN]] [CYR:[TRANSLATED]]in[EN]and (BFS)
+    // [CYR:I] inand (BFS)
     var levels: [MAX_LAYOUT_NODES]u32 = [_]u32{0xFFFFFFFF} ** MAX_LAYOUT_NODES;
     var level_counts: [64]u32 = [_]u32{0} ** 64;
     var level_indices: [64]u32 = [_]u32{0} ** 64;
     var max_level: u32 = 0;
     
-    // BFS for [CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]]innot[EN]
+    // BFS for andI innot
     var queue: [MAX_LAYOUT_NODES]u32 = undefined;
     var queue_start: u32 = 0;
     var queue_end: u32 = 0;
@@ -375,7 +375,7 @@ fn layout_hierarchical(root: u32) void {
         queue_start += 1;
         const current_level = levels[current];
         
-        // [CYR:[TRANSLATED]]and[EN] with[EN]with[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+        // and with  
         var i: u32 = 0;
         while (i < layout_edge_count) : (i += 1) {
             const edge = &layout_edges[i];
@@ -397,7 +397,7 @@ fn layout_hierarchical(root: u32) void {
         }
     }
     
-    // [CYR:[TRANSLATED]] [CYR:[TRANSLATED]y] [EN] [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] with φ-[CYR:pro[TRANSLATED]]andI[EN]and
+    //  [CYR:y]  in[CYR:I] with φ-[CYR:pro]andIand
     var i: u32 = 0;
     while (i < layout_node_count) : (i += 1) {
         const level = levels[i];
@@ -406,7 +406,7 @@ fn layout_hierarchical(root: u32) void {
         // y = height × (1 - φ^(-level))
         const y = layout_config.height * (1.0 - phi_core.phi_power(-@as(i32, @intCast(level + 1))));
         
-        // x = [EN]in[CYR:[TRANSLATED]] [EN] [EN]and[EN]andnot
+        // x = in  andnot
         const count: f64 = @floatFromInt(level_counts[level]);
         const idx: f64 = @floatFromInt(level_indices[level]);
         const spacing = layout_config.width / (count + 1.0);
@@ -422,7 +422,7 @@ fn layout_hierarchical(root: u32) void {
 // RADIAL LAYOUT
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:[TRANSLATED]]and[CYR:[EN]lno[EN]] [CYR:[TRANSLATED]]and[EN] with φ-with[EN]to[CYR:[TRANSLATED]]and
+/// and[CYR:lno] and with φ-withtoand
 fn layout_radial(center_node: u32) void {
     if (center_node >= layout_node_count) return;
     
@@ -430,18 +430,18 @@ fn layout_radial(center_node: u32) void {
     const cy = layout_config.height / 2.0;
     const base_radius = @min(layout_config.width, layout_config.height) * 0.15;
     
-    // [CYR:[TRANSLATED]al] [CYR:[TRANSLATED]]
+    // [CYR:al] 
     layout_nodes[center_node].x = cx;
     layout_nodes[center_node].y = cy;
     
-    // [CYR:[TRANSLATED]I[EN]] to[CYR:[EN]l[EN]] ([CYR:[TRANSLATED]]in[EN]and from center[EN])
+    // [CYR:I] forl] (inand from center)
     var rings: [MAX_LAYOUT_NODES]u32 = [_]u32{0xFFFFFFFF} ** MAX_LAYOUT_NODES;
     var ring_counts: [32]u32 = [_]u32{0} ** 32;
     var ring_indices: [32]u32 = [_]u32{0} ** 32;
     
     rings[center_node] = 0;
     
-    // BFS for [CYR:[TRANSLATED]]andI to[CYR:[TRANSLATED]]
+    // BFS for andI to
     var queue: [MAX_LAYOUT_NODES]u32 = undefined;
     var queue_start: u32 = 0;
     var queue_end: u32 = 0;
@@ -474,7 +474,7 @@ fn layout_radial(center_node: u32) void {
         }
     }
     
-    // [CYR:[TRANSLATED]] [EN] to[CYR:[EN]l[TRANSLATED]]
+    //   forl]
     var i: u32 = 0;
     while (i < layout_node_count) : (i += 1) {
         if (i == center_node) continue;
@@ -485,7 +485,7 @@ fn layout_radial(center_node: u32) void {
         // radius = base × φ^ring
         const radius = base_radius * phi_core.phi_power(@intCast(ring));
         
-        // [CYR:[EN]go[EN]] in to[CYR:[EN]l[EN]]
+        // [CYR:go] in forl]
         const count: f64 = @floatFromInt(ring_counts[ring]);
         const idx: f64 = @floatFromInt(ring_indices[ring]);
         const angle = TAU * idx / count;
@@ -497,10 +497,10 @@ fn layout_radial(center_node: u32) void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:Vy[EN]]andwith[CYR:[TRANSLATED]]and[EN] [EN]not[EN]andand withandwith[CYR:[TRANSLATED]y]
+/// [CYR:Vy]andwithand notand withandwithy]
 fn layout_energy() f64 {
     var energy: f64 = 0.0;
     
@@ -513,11 +513,11 @@ fn layout_energy() f64 {
     return energy;
 }
 
-/// [CYR:[TRANSLATED]]and[EN]in[EN]and[EN] layout
+/// andinand layout
 fn layout_center() void {
     if (layout_node_count == 0) return;
     
-    // [CYR:[TRANSLATED]]and[EN] center [EN]withwith
+    // and center with
     var sum_x: f64 = 0;
     var sum_y: f64 = 0;
     
@@ -531,7 +531,7 @@ fn layout_center() void {
     const cx = sum_x / n;
     const cy = sum_y / n;
     
-    // [CYR:[TRANSLATED]] to center[EN] canvas
+    //  to center canvas
     const offset_x = layout_config.width / 2.0 - cx;
     const offset_y = layout_config.height / 2.0 - cy;
     
@@ -556,7 +556,7 @@ test "layout_phi_spiral" {
     
     layout_phi_spiral();
     
-    // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] that [CYR:[TRANSLATED]y] [CYR:[TRANSLATED]y]
+    // in[CYR:I] that [CYR:y] [CYR:y]
     try std.testing.expect(layout_nodes[0].x > 0);
     try std.testing.expect(layout_nodes[0].y > 0);
 }
@@ -564,7 +564,7 @@ test "layout_phi_spiral" {
 test "layout_force_directed" {
     layout_init(1000.0, 618.0);
     
-    // [CYR:[TRANSLATED]] [CYR:pro]with[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] with on[CYR:[EN]l[EN]y[EN]]and [CYR:[TRANSLATED]]and[EN]andI[EN]and [EN] with[EN]and[CYR:[TRANSLATED]]and
+    //  [CYR:pro]with  with on[CYR:ly]and andIand  withand
     _ = layout_add_node(0, 500, 309);
     _ = layout_add_node(1, 600, 309);
     _ = layout_add_node(2, 550, 400);
@@ -572,10 +572,10 @@ test "layout_force_directed" {
     _ = layout_add_edge(1, 2);
     _ = layout_add_edge(2, 0);
     
-    // [CYR:[EN]l[EN]] and[CYR:[TRANSLATED]]and[EN] for with[CYR:[TRANSLATED]]and[EN]with[EN]and
+    // [CYR:l] and for withandwithand
     const energy = layout_force_directed(100);
     
-    // [EN]not[EN]andI [CYR:[TRANSLATED]]on [CYR:[EN]y[EN]] [CYR:[TRANSLATED]] (not [EN]withto[EN]not[CYR:[TRANSLATED]])
+    // notandI on [CYR:y]  (not withtonot)
     try std.testing.expect(energy < 10000.0);
     try std.testing.expect(!std.math.isNan(energy));
     try std.testing.expect(!std.math.isInf(energy));

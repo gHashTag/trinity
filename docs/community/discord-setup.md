@@ -44,7 +44,7 @@
 │   └── #multi-agent      — Swarm coordination
 │
 └── 🌍 INTERNATIONAL
-    ├── #ru               — Руwithwithtoandй
+    ├── #ru               — Руwithtoandй
     ├── #zh               — 中文
     └── #es               — Español
 ```

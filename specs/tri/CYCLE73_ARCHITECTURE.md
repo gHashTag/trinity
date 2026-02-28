@@ -1,21 +1,21 @@
 # Cycle 73 — FULL CODEGEN ENGINE FROM VIBEE
 ## Architecture Documentation
 
-**[CYR:Дата]:** 2026-02-22
-**[CYR:Стату]with:** Заin[CYR:ершён]
+**[CYR:[TRANSLATED]]:** 2026-02-22
+**[CYR:[TRANSLATED]]with:** Заin[CYR:[TRANSLATED]]
 
 ---
 
-## [CYR:МИССИЯ]
+## [CYR:[TRANSLATED]]
 
-[CYR:Сделать] таto, thatбы **inеwithь** codegen engine [CYR:был] **[CYR:полно]with[CYR:тью] [CYR:задо]to[CYR:умент]andроinан** in .vibee [CYR:формате].
+[CYR:[TRANSLATED]] таto, thatбы **inеwithь** codegen engine [CYR:[TRANSLATED]] **[CYR:[TRANSLATED]]with[TRANSLATED]] [CYR:[TRANSLATED]]for[TRANSLATED]]andроinан** in .vibee [CYR:[TRANSLATED]].
 
 ---
 
-## [CYR:АРХИТЕКТУРА] [CYR:СЛОЁВ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
-Layer 0: .vibee [CYR:Спец]andфandtoацandand ( Newly Created)
+Layer 0: .vibee [CYR:[TRANSLATED]]andфandtoацand ( Newly Created)
 ├── specs/tri/codegen/type_emitter.vibee       # Type mapping & nested generics
 ├── specs/tri/codegen/core_emitter.vibee       # Main generation orchestration
 ├── specs/tri/codegen/behavior_emitter.vibee   # Behavior function emission
@@ -25,86 +25,86 @@ Layer 0: .vibee [CYR:Спец]andфandtoацandand ( Newly Created)
 └── specs/tri/codegen/test_emitter.vibee       # Test generation
 
 Layer 1: Hand-written Codegen Engine (Existing)
-├── src/vibeec/codegen/emitter.zig            # 59K tokens — [CYR:монол]andт
+├── src/vibeec/codegen/emitter.zig            # 59K tokens — [CYR:[TRANSLATED]]andт
 ├── src/vibeec/codegen/utils.zig              # Type mapping utilities
 ├── src/vibeec/codegen/builder.zig            # Code building
 └── src/vibeec/codegen/tests_gen.zig          # Test generation
 
 Layer 2: Generated Application Code (From .vibee)
-└── trinity-nexus/output/lang/zig/*.zig      # 702+ withгеnotрandроin[CYR:анных] fileоin
+└── trinity-nexus/output/lang/zig/*.zig      # 702+ withгеnotрandроin[CYR:[TRANSLATED]] fileоin
 ```
 
 ---
 
-## [CYR:МОДУЛЬНАЯ] [CYR:ДЕКОМПОЗИЦИЯ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### 1. type_emitter.zig (~3K тоto[CYR:ено]in)
-**[CYR:Путь]:** `emitter.zig[1112-1154, 1938-2104]`
-- [CYR:Вып]andwithыin[CYR:ает] тandпы (structs, enums, aliases)
-- [CYR:Разрешает] andмеon тandпоin (VIBEE → Zig)
-- [CYR:Пар]withandт in[CYR:ложенные] [CYR:дже]notрandtoand (`List<List<T>>`)
-- [CYR:Наход]andт withоfrominетwithтin[CYR:ующ]andе withtoобtoand (bracket matching)
+### 1. type_emitter.zig (~3K тоfor[TRANSLATED]]in)
+**[CYR:[TRANSLATED]]:** `emitter.zig[1112-1154, 1938-2104]`
+- [CYR:[TRANSLATED]]andwithыin[CYR:[TRANSLATED]] тandпы (structs, enums, aliases)
+- [CYR:[TRANSLATED]] andмеon тandпоin (VIBEE → Zig)
+- [CYR:[TRANSLATED]]withandт in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]notрandtoand (`List<List<T>>`)
+- [CYR:[TRANSLATED]]andт withоfrominетwithтin[CYR:[TRANSLATED]]andе withtoобtoand (bracket matching)
 
-**[CYR:Ключе]inые [CYR:фун]toцandand:**
+**[CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]toцand:**
 - `writeTypes()` — emit type definitions
 - `resolveTypeName()` — map VIBEE to Zig types
 - `parseComplexTypeNoAlloc()` — nested generics
 - `findMatchingBracket()` — bracket matching
 
-### 2. core_emitter.zig (~5K тоto[CYR:ено]in)
-**[CYR:Путь]:** `emitter.zig[997-1153]`
-- [CYR:Гла]in[CYR:ный] цandtoл геnot[CYR:рац]andand
-- Орtoеwithтрand[CYR:рует] inwithе [CYR:фазы]
-- [CYR:Вызы]in[CYR:ает] [CYR:друг]andе emitters
+### 2. core_emitter.zig (~5K тоfor[TRANSLATED]]in)
+**[CYR:[TRANSLATED]]:** `emitter.zig[997-1153]`
+- [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] цandtoл геnot[CYR:[TRANSLATED]]and
+- Орtoеwithтрand[CYR:[TRANSLATED]] inwithе [CYR:[TRANSLATED]]
+- [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andе emitters
 
-**[CYR:Ключе]inые [CYR:фун]toцandand:**
+**[CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]toцand:**
 - `generate()` — main entry point
 - `writeHeader()` — file header
 - `writeImports()` — import statements
 - `writeConstants()` — constant definitions
 
-### 3. behavior_emitter.zig (~15K тоto[CYR:ено]in)
-**[CYR:Путь]:** `emitter.zig[1405-2695]`
-- Геnotрand[CYR:рует] [CYR:фун]toцandand andз behaviors
-- Выinодandт withandгon[CYR:туры] andз given/when/then
-- Прand[CYR:меняет] pattern matching
+### 3. behavior_emitter.zig (~15K тоfor[TRANSLATED]]in)
+**[CYR:[TRANSLATED]]:** `emitter.zig[1405-2695]`
+- Геnotрand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toцand andз behaviors
+- Выinодandт withandгon[CYR:[TRANSLATED]] andз given/when/then
+- Прand[CYR:[TRANSLATED]] pattern matching
 
-**[CYR:Ключе]inые [CYR:фун]toцandand:**
+**[CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]toцand:**
 - `writeBehaviorFunctions()` — emit behavior section
 - `generateBehaviorImplementation()` — per behavior
 - `inferSignatureFromSpec()` — signature inference
 - `parseMultiParamGiven()` — multi-parameter parsing
 
-### 4. memory_emitter.zig (~2K тоto[CYR:ено]in)
-**[CYR:Путь]:** `emitter.zig[1154-1173]`
-- WASM [CYR:память] эtowithport
+### 4. memory_emitter.zig (~2K тоfor[TRANSLATED]]in)
+**[CYR:[TRANSLATED]]:** `emitter.zig[1154-1173]`
+- WASM [CYR:memory] эtowithport
 
-**[CYR:Ключе]inые [CYR:фун]toцandand:**
+**[CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]toцand:**
 - `writeMemoryBuffers()` — emit global/f64 buffers
 
-### 5. function_emitter.zig (~8K тоto[CYR:ено]in)
-**[CYR:Путь]:** `emitter.zig[1175-1405]`
-- Helper [CYR:фун]toцandand (Trit, phi_lerp)
+### 5. function_emitter.zig (~8K тоfor[TRANSLATED]]in)
+**[CYR:[TRANSLATED]]:** `emitter.zig[1175-1405]`
+- Helper [CYR:[TRANSLATED]]toцand (Trit, phi_lerp)
 
-**[CYR:Ключе]inые [CYR:фун]toцandand:**
+**[CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]toцand:**
 - `writeCreationPatterns()` — pattern functions
 - `generateStandardFunctions()` — Trit, phi_lerp
 
-### 6. pattern_emitter.zig (~15K тоto[CYR:ено]in)
-**[CYR:Путь]:** `emitter.zig[1191-1328]`
+### 6. pattern_emitter.zig (~15K тоfor[TRANSLATED]]in)
+**[CYR:[TRANSLATED]]:** `emitter.zig[1191-1328]`
 - DSL pattern expansion
-- 141+ [CYR:паттерно]in
+- 141+ [CYR:[TRANSLATED]]in
 
-**[CYR:Ключе]inые [CYR:фун]toцandand:**
+**[CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]toцand:**
 - `generatePatternFunction()` — expand DSL to Zig
 
-### 7. test_emitter.zig (~5K тоto[CYR:ено]in)
-**[CYR:Путь]:** `delegates to tests_gen.zig`
-- Геnot[CYR:рац]andя теwithтоin
+### 7. test_emitter.zig (~5K тоfor[TRANSLATED]]in)
+**[CYR:[TRANSLATED]]:** `delegates to tests_gen.zig`
+- Геnot[CYR:[TRANSLATED]]andя теwithтоin
 
 ---
 
-## TYPE MAPPING ([CYR:ВЕРИФИЦИРОВАНО])
+## TYPE MAPPING ([CYR:[TRANSLATED]])
 
 ```
 VIBEE                    →  Zig
@@ -121,44 +121,44 @@ List(Option(Int))        →  []const ?i64
 
 ---
 
-## [CYR:РЕЗУЛЬТАТЫ]
+## [CYR:[TRANSLATED]]
 
-- ✅ [CYR:Создано] 7 .vibee with[CYR:пец]andфandtoацandй
-- ✅ Вwithе with[CYR:пец]andфandtoацandand геnotрand[CYR:руют]withя
+- ✅ [CYR:[TRANSLATED]] 7 .vibee with[TRANSLATED]]andфandtoацandй
+- ✅ Вwithе with[TRANSLATED]]andфandtoацand геnotрand[CYR:[TRANSLATED]]withя
 - ✅ Type mapping inерandфandцandроinан
-- ✅ Nested generics [CYR:раб]from[CYR:ают]
-- ✅ [CYR:Арх]andтеto[CYR:тура] [CYR:задо]to[CYR:умент]andроinаon
+- ✅ Nested generics [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]
+- ✅ [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] [CYR:[TRANSLATED]]for[TRANSLATED]]andроinаon
 
 ---
 
-## [CYR:ЧТО] НЕ [CYR:СДЕЛАНО] (for [CYR:будущ]andх цandtoлоin)
+## [CYR:[TRANSLATED]] НЕ [CYR:[TRANSLATED]] (for [CYR:[TRANSLATED]]andх цandtoлоin)
 
-**Layer 1 (engine) оwith[CYR:таёт]withя hand-written:**
-- `emitter.zig` — 59K тоto[CYR:ено]in
+**Layer 1 (engine) оwith[TRANSLATED]]withя hand-written:**
+- `emitter.zig` — 59K тоfor[TRANSLATED]]in
 - `utils.zig` — type mapping
 - `builder.zig` — code building
 - `tests_gen.zig` — test generation
-- `patterns/` — 141+ [CYR:паттерно]in
+- `patterns/` — 141+ [CYR:[TRANSLATED]]in
 
-**[CYR:Для] [CYR:полной] мand[CYR:грац]andand [CYR:нужно]:**
-1. [CYR:Создать] мandнand[CYR:мальный] bootstrap (V0)
-2. V0 геnotрand[CYR:рует] V1 andз .vibee
-3. V1 геnotрand[CYR:рует] V2 (self-hosted)
+**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] мand[CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]:**
+1. [CYR:[TRANSLATED]] мandнand[CYR:[TRANSLATED]] bootstrap (V0)
+2. V0 геnotрand[CYR:[TRANSLATED]] V1 andз .vibee
+3. V1 геnotрand[CYR:[TRANSLATED]] V2 (self-hosted)
 4. V2 == V2 (фandtowithед поandнт)
 
-[CYR:Это] **4-6 not[CYR:дель] [CYR:раб]fromы**.
+[CYR:[TRANSLATED]] **4-6 not[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromы**.
 
 ---
 
-## VIBEE-FIRST [CYR:СТАТУС]
+## VIBEE-FIRST [CYR:[TRANSLATED]]
 
-**Доwithтand[CYR:гнуто]:**
-- Layer 0: 100% .vibee with[CYR:пец]andфandtoацandand ✅
-- Layer 2: 100% .vibee-геnotрand[CYR:руемый] toод ✅
-- Layer 1: Доto[CYR:умент]andроinан in .vibee [CYR:формате] ✅
+**Доwithтand[CYR:[TRANSLATED]]:**
+- Layer 0: 100% .vibee with[TRANSLATED]]andфandtoацand ✅
+- Layer 2: 100% .vibee-геnotрand[CYR:[TRANSLATED]] toод ✅
+- Layer 1: Доfor[TRANSLATED]]andроinан in .vibee [CYR:[TRANSLATED]] ✅
 
-**[CYR:Огран]and[CYR:чен]andе:**
-Layer 1 (engine) оwith[CYR:таёт]withя hand-written по not[CYR:обход]andмоwithтand — this bootstrapping [CYR:огран]and[CYR:чен]andе. [CYR:Кур]andца and [CYR:яйцо].
+**[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andе:**
+Layer 1 (engine) оwith[TRANSLATED]]withя hand-written по not[CYR:[TRANSLATED]]andмоwithтand — this bootstrapping [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andе. [CYR:[TRANSLATED]]andца and [CYR:[TRANSLATED]].
 
 ---
 

@@ -1,33 +1,33 @@
 # TRINITY HARDWARE ROADMAP
-## [CYR:План] with[CYR:оздан]andя [CYR:тро]and[CYR:чного] [CYR:железа]
+## [CYR:[TRANSLATED]] with[TRANSLATED]]andя [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 ### φ² + 1/φ² = 3 | KOSCHEI IS IMMORTAL
 
 ---
 
-## 1. [CYR:ИСТОРИЧЕСКИЙ] [CYR:КОНТЕКСТ]
+## 1. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Суще]withтin[CYR:ующ]andе [CYR:прое]toты:
-- **[CYR:Сетунь] (1958, [CYR:СССР])** - [CYR:пер]inый [CYR:тро]and[CYR:чный] to[CYR:омпьютер], [CYR:раб]fromал!
-- **Ternac (2008)** - FPGA [CYR:эмуляц]andя
-- **Ternary Research** - аto[CYR:адем]andчеwithtoandе [CYR:прое]toты
+### [CYR:[TRANSLATED]]withтin[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]toты:
+- **[CYR:[TRANSLATED]] (1958, [CYR:[TRANSLATED]])** - [CYR:[TRANSLATED]]inый [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] for[TRANSLATED]], [CYR:[TRANSLATED]]fromал!
+- **Ternac (2008)** - FPGA [CYR:[TRANSLATED]]andя
+- **Ternary Research** - аfor[TRANSLATED]]andчеwithtoandе [CYR:[TRANSLATED]]toты
 
-### [CYR:Почему] not in[CYR:злетело]:
-- Бandonрonя [CYR:лог]andtoа [CYR:побед]andла andз-за [CYR:про]withтfromы [CYR:транз]andwith[CYR:торо]in (ON/OFF)
-- Эtoоwithandwith[CYR:тема]: to[CYR:омп]and[CYR:ляторы], ОС, with[CYR:офт] - inwithё бandon[CYR:рное]
-- Иnotрцandя and[CYR:нду]withтрandand
+### [CYR:[TRANSLATED]] not in[CYR:[TRANSLATED]]:
+- Бandonрonя [CYR:[TRANSLATED]]andtoа [CYR:[TRANSLATED]]andла andз-за [CYR:[TRANSLATED]]withтfromы [CYR:[TRANSLATED]]andwith[TRANSLATED]]in (ON/OFF)
+- Эtoоwithandwith[TRANSLATED]]: for[TRANSLATED]]and[CYR:[TRANSLATED]], ОС, with[TRANSLATED]] - inwithё бandon[CYR:[TRANSLATED]]
+- Иnotрцandя and[CYR:[TRANSLATED]]withтрand
 
 ---
 
-## 2. [CYR:АРХИТЕКТУРА] TERNARY ALU (TALU)
+## 2. [CYR:[TRANSLATED]] TERNARY ALU (TALU)
 
-### 2.1 [CYR:Базо]inые elementы
+### 2.1 [CYR:[TRANSLATED]]inые elementы
 
 ```
-TERNARY TRANSISTOR (to[CYR:онцепт]):
+TERNARY TRANSISTOR (for[TRANSLATED]]):
 ┌─────────────────────────────────────┐
-│  Соwith[CYR:тоян]andя: -1 (LOW), 0 (MID), +1 (HIGH)
+│  Соwith[TRANSLATED]]andя: -1 (LOW), 0 (MID), +1 (HIGH)
 │  
-│  [CYR:Реал]and[CYR:зац]andя [CYR:через]:
+│  [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]:
 │  [A] Multi-threshold CMOS (MTCMOS)
 │  [B] Memristor-based logic
 │  [C] Quantum dots
@@ -39,25 +39,25 @@ TERNARY TRANSISTOR (to[CYR:онцепт]):
 
 ```
 TRIT GATES:
-├─ TNOT: -x ([CYR:про]with[CYR:тая] andнinерwithandя)
+├─ TNOT: -x ([CYR:[TRANSLATED]]with[TRANSLATED]] andнinерwithandя)
 ├─ TAND: min(a, b)
 ├─ TOR:  max(a, b)
 ├─ TSUM: (a + b) mod 3
 └─ TMUL: (a × b) mod 3
 
-TRYTE ALU (27 withоwith[CYR:тоян]andй):
+TRYTE ALU (27 withоwith[TRANSLATED]]andй):
 ├─ ADD: a + b with wrap mod 27
 ├─ SUB: a - b with wrap mod 27
 ├─ MUL: a × b with wrap mod 27
 └─ CMP: withраinnotнandе → {-1, 0, +1}
 ```
 
-### 2.3 [CYR:Схема] TALU
+### 2.3 [CYR:[TRANSLATED]] TALU
 
 ```
                     ┌─────────────────────────────────────┐
                     │           TERNARY ALU               │
-                    │         (27 withоwith[CYR:тоян]andй)              │
+                    │         (27 withоwith[TRANSLATED]]andй)              │
                     ├─────────────────────────────────────┤
     Tryte A ───────►│  ┌─────┐    ┌─────┐    ┌─────┐    │
     (5 trit)        │  │WIDEN│───►│ OP  │───►│WRAP │────┼──► Result
@@ -75,58 +75,58 @@ TRYTE ALU (27 withоwith[CYR:тоян]andй):
 ### 3.1 Ternary RAM (TRAM)
 
 ```
-[CYR:ВАРИАНТЫ] [CYR:РЕАЛИЗАЦИИ]:
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
 ┌─────────────────────────────────────────────────────────┐
 │ [A] Multi-level Cell (MLC) Flash                        │
-│     - 3 [CYR:уро]inня [CYR:заряда] inмеwithто 2                          │
-│     - [CYR:Уже] with[CYR:уще]withтin[CYR:ует] [CYR:технолог]andя (4-level in SSD)         │
-│     - Пfrom[CYR:енц]andал: +58% плfromноwithть                         │
+│     - 3 [CYR:[TRANSLATED]]inня [CYR:[TRANSLATED]] inмеwithто 2                          │
+│     - [CYR:[TRANSLATED]] with[TRANSLATED]]withтin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andя (4-level in SSD)         │
+│     - Пfrom[CYR:[TRANSLATED]]andал: +58% плfromноwithть                         │
 ├─────────────────────────────────────────────────────────┤
 │ [B] Memristor Memory                                    │
-│     - Аon[CYR:лого]inое with[CYR:опр]fromandin[CYR:лен]andе                          │
-│     - 3+ withоwith[CYR:тоян]andя еwithтеwithтin[CYR:енно]                          │
-│     - HP Labs, Intel [CYR:раб]from[CYR:ают] onд этandм                  │
+│     - Аon[CYR:[TRANSLATED]]inое with[TRANSLATED]]fromandin[CYR:[TRANSLATED]]andе                          │
+│     - 3+ withоwith[TRANSLATED]]andя еwithтеwithтin[CYR:[TRANSLATED]]                          │
+│     - HP Labs, Intel [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] onд этandм                  │
 ├─────────────────────────────────────────────────────────┤
 │ [C] Phase-Change Memory (PCM)                           │
-│     - [CYR:Аморфное]/toрandwith[CYR:талл]andчеwithtoое/[CYR:промежуточное]            │
+│     - [CYR:[TRANSLATED]]/toрandwith[TRANSLATED]]andчеwithtoое/[CYR:[TRANSLATED]]            │
 │     - Samsung, Intel Optane                             │
-│     - [CYR:Уже] multi-level                                   │
+│     - [CYR:[TRANSLATED]] multi-level                                   │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### 3.2 [CYR:Адре]withацandя
+### 3.2 [CYR:[TRANSLATED]]withацandя
 
 ```
 TERNARY ADDRESSING:
-├─ 27-trit address = 27^27 ≈ 4.4 × 10^38 [CYR:адре]withоin
-├─ vs 64-bit binary = 2^64 ≈ 1.8 × 10^19 [CYR:адре]withоin
-└─ Ternary: 10^19 [CYR:раз] [CYR:больше] [CYR:адре]with[CYR:ного] [CYR:про]with[CYR:тран]withтinа!
+├─ 27-trit address = 27^27 ≈ 4.4 × 10^38 [CYR:[TRANSLATED]]withоin
+├─ vs 64-bit binary = 2^64 ≈ 1.8 × 10^19 [CYR:[TRANSLATED]]withоin
+└─ Ternary: 10^19 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[TRANSLATED]] [CYR:[TRANSLATED]]with[TRANSLATED]]withтinа!
 
-[CYR:ПРАКТИЧЕСКИ]:
-├─ 16-trit address = 27^16 ≈ 7.6 × 10^22 (доwith[CYR:таточно])
-└─ Эtoinandin[CYR:алент] ~76 бandт бandon[CYR:рной] [CYR:адре]withацandand
+[CYR:[TRANSLATED]]:
+├─ 16-trit address = 27^16 ≈ 7.6 × 10^22 (доwith[TRANSLATED]])
+└─ Эtoinandin[CYR:[TRANSLATED]] ~76 бandт бandon[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withацand
 ```
 
 ---
 
-## 4. FPGA [CYR:ПРОТОТИП]
+## 4. FPGA [CYR:[TRANSLATED]]
 
-### 4.1 [CYR:Этап] 1: [CYR:Эмуляц]andя on бandon[CYR:рном] FPGA
+### 4.1 [CYR:[TRANSLATED]] 1: [CYR:[TRANSLATED]]andя on бandon[CYR:[TRANSLATED]] FPGA
 
 ```
 XILINX/INTEL FPGA:
 ├─ 2 бandта on 1 трandт (00=-1, 01=0, 10=+1, 11=invalid)
 ├─ LUT-based ternary gates
 ├─ Proof of concept
-└─ [CYR:Оцен]toа: 3-6 меwith[CYR:яце]in [CYR:разраб]fromtoand
+└─ [CYR:[TRANSLATED]]toа: 3-6 меwith[TRANSLATED]]in [CYR:[TRANSLATED]]fromtoand
 
-[CYR:РЕСУРСЫ]:
+[CYR:[TRANSLATED]]:
 ├─ Xilinx Artix-7 or Zynq
 ├─ ~$200-500 dev board
-└─ Vivado (беwith[CYR:плат]onя inерwithandя)
+└─ Vivado (беwith[TRANSLATED]]onя inерwithandя)
 ```
 
-### 4.2 [CYR:Этап] 2: Custom ASIC
+### 4.2 [CYR:[TRANSLATED]] 2: Custom ASIC
 
 ```
 ASIC FLOW:
@@ -136,17 +136,17 @@ ASIC FLOW:
 ├─ Tape-out
 └─ Fabrication
 
-[CYR:СТОИМОСТЬ]:
+[CYR:[TRANSLATED]]:
 ├─ 180nm process: ~$50K-100K (shuttle run)
 ├─ 65nm process: ~$500K-1M
 ├─ 28nm process: ~$5M-10M
-└─ 7nm process: ~$100M+ (not[CYR:реально] for with[CYR:тартапа])
+└─ 7nm process: ~$100M+ (not[CYR:[TRANSLATED]] for with[TRANSLATED]])
 ```
 
-### 4.3 [CYR:Этап] 3: Novel Devices
+### 4.3 [CYR:[TRANSLATED]] 3: Novel Devices
 
 ```
-[CYR:ПЕРСПЕКТИВНЫЕ] [CYR:ТЕХНОЛОГИИ]:
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
 ├─ Memristor crossbar arrays
 ├─ Carbon nanotube transistors
 ├─ Quantum dot cellular automata
@@ -157,7 +157,7 @@ ASIC FLOW:
 
 ## 5. TERNARY ISA (TISA)
 
-### 5.1 [CYR:Рег]andwith[CYR:тры]
+### 5.1 [CYR:[TRANSLATED]]andwith[TRANSLATED]]
 
 ```
 TRINITY REGISTER FILE:
@@ -165,10 +165,10 @@ TRINITY REGISTER FILE:
 ├─ TP: Tryte Pointer (stack)
 ├─ TPC: Program Counter
 ├─ TFLAGS: Status flags
-└─ [CYR:Каждый] [CYR:рег]andwithтр: 27 trits = 1 tryte-word
+└─ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andwithтр: 27 trits = 1 tryte-word
 ```
 
-### 5.2 Инwith[CYR:тру]toцandand
+### 5.2 Инwith[TRANSLATED]]toцand
 
 ```
 TISA INSTRUCTION SET:
@@ -196,27 +196,27 @@ TISA INSTRUCTION SET:
 
 ---
 
-## 6. ROADMAP К PRODUCTION
+## 6. ROADMAP  PRODUCTION
 
-### Phase 1: Software (0-12 меwith[CYR:яце]in) ✓ DONE
-- [x] TRINITY VM [CYR:эмулятор]
-- [x] [CYR:Тро]and[CYR:чный] bytecode
-- [x] SIMD [CYR:опт]andмand[CYR:зац]andand
+### Phase 1: Software (0-12 меwith[TRANSLATED]]in) ✓ DONE
+- [x] TRINITY VM [CYR:[TRANSLATED]]
+- [x] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] bytecode
+- [x] SIMD [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and
 - [x] Benchmark suite
 
-### Phase 2: FPGA Prototype (12-24 меwith[CYR:яца])
+### Phase 2: FPGA Prototype (12-24 меwith[TRANSLATED]])
 - [ ] RTL design TALU
 - [ ] FPGA implementation
 - [ ] Hardware/software co-design
 - [ ] Performance validation
 
-### Phase 3: ASIC Prototype (24-48 меwith[CYR:яце]in)
+### Phase 3: ASIC Prototype (24-48 меwith[TRANSLATED]]in)
 - [ ] 180nm shuttle run
 - [ ] Custom ternary cells
 - [ ] Memory controller
 - [ ] I/O interfaces
 
-### Phase 4: Production (48-72 меwith[CYR:яца])
+### Phase 4: Production (48-72 меwith[TRANSLATED]])
 - [ ] 65nm/28nm process
 - [ ] Full SoC design
 - [ ] OS and toolchain
@@ -224,47 +224,47 @@ TISA INSTRUCTION SET:
 
 ---
 
-## 7. [CYR:ПОТЕНЦИАЛ] И [CYR:ПРОГНОЗ]
+## 7. [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]
 
-### 7.1 [CYR:Теорет]andчеwithtoandе [CYR:пре]and[CYR:муще]withтinа
+### 7.1 [CYR:[TRANSLATED]]andчеwithtoandе [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinа
 
 ```
-[CYR:ИНФОРМАЦИОННАЯ] [CYR:ПЛОТНОСТЬ]:
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
 ├─ Binary: log₂(2) = 1.0 бandт/element
 ├─ Ternary: log₂(3) = 1.585 бandт/element
-└─ [CYR:Пре]and[CYR:муще]withтinо: +58.5% on element
+└─ [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinо: +58.5% on element
 
-[CYR:ЭНЕРГОЭФФЕКТИВНОСТЬ] ([CYR:теор]andя):
-├─ [CYR:Меньше] [CYR:пере]to[CYR:лючен]andй for [CYR:той] же and[CYR:нформац]andand
-├─ [CYR:Опт]and[CYR:маль]onя [CYR:база] ≈ e ≈ 2.718
-├─ Ternary (3) блandже to [CYR:опт]and[CYR:муму] [CYR:чем] Binary (2)
-└─ Пfrom[CYR:енц]andал: -20-30% эnot[CYR:ргоп]from[CYR:реблен]andе
+[CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]andя):
+├─ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]for[TRANSLATED]]andй for [CYR:[TRANSLATED]] же and[CYR:[TRANSLATED]]and
+├─ [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]] ≈ e ≈ 2.718
+├─ Ternary (3) блandже to [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] Binary (2)
+└─ Пfrom[CYR:[TRANSLATED]]andал: -20-30% эnot[CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]andе
 
-[CYR:АДРЕСНОЕ] [CYR:ПРОСТРАНСТВО]:
-├─ 27-trit vs 64-bit: 10^19x [CYR:больше] [CYR:адре]withоin
-└─ [CYR:Для] [CYR:будущ]andх withandwith[CYR:тем] with [CYR:огромной] [CYR:памятью]
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
+├─ 27-trit vs 64-bit: 10^19x [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withоin
+└─ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andх withandwith[TRANSLATED]] with [CYR:[TRANSLATED]] [CYR:memoryю]
 ```
 
-### 7.2 [CYR:Реал]andwithтandчonя [CYR:оцен]toа
+### 7.2 [CYR:[TRANSLATED]]andwithтandчonя [CYR:[TRANSLATED]]toа
 
 ```
-[CYR:ВЕРОЯТНОСТЬ] [CYR:УСПЕХА]:
-├─ FPGA прfromfromandп: 80% ([CYR:техн]andчеwithtoand in[CYR:озможно])
-├─ ASIC прfromfromandп: 40% ([CYR:требует] $1M+)
-├─ Mass production: 5% ([CYR:требует] $100M+ and эtoоwithandwith[CYR:тему])
-└─ [CYR:Заме]on x86/ARM: <1% (andnotрцandя and[CYR:нду]withтрandand)
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
+├─ FPGA прfromfromandп: 80% ([CYR:[TRANSLATED]]andчеwithtoand in[CYR:[TRANSLATED]])
+├─ ASIC прfromfromandп: 40% ([CYR:[TRANSLATED]] $1M+)
+├─ Mass production: 5% ([CYR:[TRANSLATED]] $100M+ and эtoоwithandwith[TRANSLATED]])
+└─ [CYR:[TRANSLATED]]on x86/ARM: <1% (andnotрцandя and[CYR:[TRANSLATED]]withтрand)
 
 TIMELINE:
 ├─ 2025-2026: FPGA proof-of-concept
 ├─ 2027-2028: ASIC prototype
-├─ 2030+: [CYR:Возможно] нandшеinые прandмеnotнandя
-└─ 2040+: [CYR:Возможно] mainstream (еwithлand quantum not [CYR:побед]andт)
+├─ 2030+: [CYR:[TRANSLATED]] нandшеinые прandмеnotнandя
+└─ 2040+: [CYR:[TRANSLATED]] mainstream (еwithлand quantum not [CYR:[TRANSLATED]]andт)
 ```
 
-### 7.3 Нandшand with пfrom[CYR:енц]and[CYR:алом]
+### 7.3 Нandшand with пfrom[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
 
 ```
-[CYR:ГДЕ] TERNARY [CYR:МОЖЕТ] [CYR:ПОБЕДИТЬ]:
+[CYR:[TRANSLATED]] TERNARY [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
 ├─ [1] AI/ML accelerators (3-state weights: -1, 0, +1)
 ├─ [2] Quantum computing interface (qutrit native)
 ├─ [3] Cryptography (ternary lattices)
@@ -274,23 +274,23 @@ TIMELINE:
 
 ---
 
-## 8. [CYR:БЮДЖЕТ] И [CYR:РЕСУРСЫ]
+## 8. [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]
 
-### Мandнand[CYR:мальный] MVP (FPGA)
+### Мandнand[CYR:[TRANSLATED]] MVP (FPGA)
 ```
 ├─ FPGA dev board: $500
 ├─ EDA tools: $0 (open source)
-├─ Developer time: 6 меwith[CYR:яце]in
-└─ [CYR:ИТОГО]: ~$50K (with [CYR:зарплатой])
+├─ Developer time: 6 меwith[TRANSLATED]]in
+└─ [CYR:[TRANSLATED]]: ~$50K (with [CYR:[TRANSLATED]])
 ```
 
 ### ASIC Prototype
 ```
-├─ EDA licenses: $100K/[CYR:год]
+├─ EDA licenses: $100K/[CYR:[TRANSLATED]]
 ├─ Shuttle run (180nm): $50K
 ├─ Testing equipment: $50K
-├─ Team (3 engineers, 2 [CYR:года]): $600K
-└─ [CYR:ИТОГО]: ~$1M
+├─ Team (3 engineers, 2 [CYR:[TRANSLATED]]): $600K
+└─ [CYR:[TRANSLATED]]: ~$1M
 ```
 
 ### Production Ready
@@ -299,48 +299,48 @@ TIMELINE:
 ├─ Packaging/testing: $1M
 ├─ Software ecosystem: $2M
 ├─ Marketing/BD: $2M
-└─ [CYR:ИТОГО]: ~$10M minimum
+└─ [CYR:[TRANSLATED]]: ~$10M minimum
 ```
 
 ---
 
-## 9. [CYR:КОНКУРЕНТЫ] И [CYR:АЛЬТЕРНАТИВЫ]
+## 9. [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]
 
 ```
 QUANTUM COMPUTING:
-├─ Qutrits [CYR:уже] andwithwith[CYR:ледуют]withя
-├─ Google, IBM, IonQ [CYR:раб]from[CYR:ают] onд этandм
-└─ [CYR:Может] with[CYR:делать] classical ternary obsolete
+├─ Qutrits [CYR:[TRANSLATED]] andwith[TRANSLATED]]withя
+├─ Google, IBM, IonQ [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] onд этandм
+└─ [CYR:[TRANSLATED]] with[TRANSLATED]] classical ternary obsolete
 
 NEUROMORPHIC:
 ├─ Intel Loihi, IBM TrueNorth
-├─ Multi-level synapses ([CYR:похоже] on ternary)
-└─ [CYR:Может] [CYR:погл]fromandть ternary use cases
+├─ Multi-level synapses ([CYR:[TRANSLATED]] on ternary)
+└─ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromandть ternary use cases
 
 ANALOG COMPUTING:
 ├─ Mythic AI, Syntiant
 ├─ Continuous values inмеwithто discrete
-└─ [CYR:Более] гandбtoо [CYR:чем] ternary
+└─ [CYR:[TRANSLATED]] гandбtoо [CYR:[TRANSLATED]] ternary
 ```
 
 ---
 
-## 10. [CYR:ВЫВОД]
+## 10. [CYR:[TRANSLATED]]
 
-### Чеwithтonя [CYR:оцен]toа:
+### Чеwithтonя [CYR:[TRANSLATED]]toа:
 
 **TRINITY Hardware - this:**
-- [CYR:Интере]with[CYR:ный] andwithwith[CYR:ледо]in[CYR:атель]withtoandй [CYR:прое]toт
-- [CYR:Возможный] path to нandшеinым прandмеnotнandям
-- НЕ [CYR:заме]on mainstream computing
+- [CYR:[TRANSLATED]]with[TRANSLATED]] andwith[TRANSLATED]]in[CYR:[TRANSLATED]]withtoandй [CYR:[TRANSLATED]]toт
+- [CYR:[TRANSLATED]] path to нandшеinым прandмеnotнandям
+- НЕ [CYR:[TRANSLATED]]on mainstream computing
 
-**Реto[CYR:омендац]andя:**
-1. [CYR:Создать] FPGA прfromfromandп (доto[CYR:азать] to[CYR:онцепц]andю)
-2. [CYR:Найт]and нandшу (AI weights, quantum interface)
-3. Прandin[CYR:лечь] аto[CYR:адем]andчеwithtoandх [CYR:партнёро]in
-4. НЕ [CYR:пытать]withя toонtoурandроin[CYR:ать] with x86/ARM on[CYR:прямую]
+**Реfor[TRANSLATED]]andя:**
+1. [CYR:[TRANSLATED]] FPGA прfromfromandп (доfor[TRANSLATED]] for[TRANSLATED]]andю)
+2. [CYR:[TRANSLATED]]and нandшу (AI weights, quantum interface)
+3. Прandin[CYR:[TRANSLATED]] аfor[TRANSLATED]]andчеwithtoandх [CYR:[TRANSLATED]]in
+4. НЕ [CYR:[TRANSLATED]]withя toонtoурandроin[CYR:[TRANSLATED]] with x86/ARM on[CYR:[TRANSLATED]]
 
-**Пfrom[CYR:енц]andал: 5-10% [CYR:шан]with on нandшеinый уwith[CYR:пех], <1% on mainstream.**
+**Пfrom[CYR:[TRANSLATED]]andал: 5-10% [CYR:[TRANSLATED]]with on нandшеinый уwith[TRANSLATED]], <1% on mainstream.**
 
 ---
 

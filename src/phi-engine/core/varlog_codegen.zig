@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// VARLOG CODEGEN - [EN]not[CYR:[EN]] Verilog to[EN]yes and[EN] .vibee with[CYR:[EN]]and[EN]andto[EN]and[EN]
+// VARLOG CODEGEN - not Verilog toyes and .vibee withandtoand
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Generates Verilog HDL for FPGA withand[CYR:[EN]]
-// [EN]in[CYR:[EN]]: Dmitrii Vasilev
+// Generates Verilog HDL for FPGA withand
+// in: Dmitrii Vasilev
 // φ² + 1/φ² = 3
 //
 // ═══════════════════════════════════════════════════════════════════════════════

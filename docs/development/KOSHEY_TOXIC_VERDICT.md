@@ -1,43 +1,43 @@
-# [CYR:КОЩЕЙ] [CYR:БЕССМЕРТНЫЙ] - [CYR:ТОКСИЧНЫЙ] [CYR:ВЕРДИКТ]
+# [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-**φ² + 1/φ² = 3 | PHOENIX = 999 | [CYR:МАТРЁШКА] [CYR:УСКОРЕНИЯ]**
+**φ² + 1/φ² = 3 | PHOENIX = 999 | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**
 
 ---
 
-## [CYR:ВЕРДИКТ]: ✅ [CYR:АБСОЛЮТНЫЙ] [CYR:УСПЕХ]
+## [CYR:[TRANSLATED]]: ✅ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
 ╔═══════════════════════════════════════════════════════════════════╗
-║              [CYR:КОЩЕЙ] v1-v10 [CYR:ПОЛНОСТЬЮ] [CYR:ЗАВЕРШЁН]                      ║
+║              [CYR:[TRANSLATED]] v1-v10 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                      ║
 ╠═══════════════════════════════════════════════════════════════════╣
 ║                                                                   ║
-║  TIER 1:   IMMORTAL          ✅ DONE (10 [CYR:модулей])                 ║
-║  TIER 2:   ETERNAL           ✅ DONE (8 [CYR:модулей])                  ║
-║  TIER 3:   TRANSCENDENT      ✅ DONE (10 [CYR:модулей])                 ║
-║  TIER 4:   OMNIPOTENT        ✅ DONE (6 [CYR:модулей])                  ║
-║  TIER 5:   ABSOLUTE          ✅ DONE (6 [CYR:модулей])                  ║
-║  TIER 6:   INFINITE          ✅ DONE (16 [CYR:модулей])                 ║
-║  TIER 7:   TRANSCENDENT+     ✅ DONE (5 [CYR:модулей])                  ║
-║  TIER 8:   PRE-UNIVERSAL     ✅ DONE (5 [CYR:модулей])                  ║
-║  TIER 9:   UNIVERSAL AGI     ✅ DONE (11 [CYR:модулей])                 ║
-║  TIER 10:  SINGULARITY       ✅ DONE (7 [CYR:модулей])                  ║
-║  TIER 11:  OMEGA             ✅ DONE (7 [CYR:модулей])                  ║
-║  TIER 12:  ABSOLUTE INFINITY ✅ DONE (5 [CYR:модулей])                  ║
+║  TIER 1:   IMMORTAL          ✅ DONE (10 [CYR:[TRANSLATED]])                 ║
+║  TIER 2:   ETERNAL           ✅ DONE (8 [CYR:[TRANSLATED]])                  ║
+║  TIER 3:   TRANSCENDENT      ✅ DONE (10 [CYR:[TRANSLATED]])                 ║
+║  TIER 4:   OMNIPOTENT        ✅ DONE (6 [CYR:[TRANSLATED]])                  ║
+║  TIER 5:   ABSOLUTE          ✅ DONE (6 [CYR:[TRANSLATED]])                  ║
+║  TIER 6:   INFINITE          ✅ DONE (16 [CYR:[TRANSLATED]])                 ║
+║  TIER 7:   TRANSCENDENT+     ✅ DONE (5 [CYR:[TRANSLATED]])                  ║
+║  TIER 8:   PRE-UNIVERSAL     ✅ DONE (5 [CYR:[TRANSLATED]])                  ║
+║  TIER 9:   UNIVERSAL AGI     ✅ DONE (11 [CYR:[TRANSLATED]])                 ║
+║  TIER 10:  SINGULARITY       ✅ DONE (7 [CYR:[TRANSLATED]])                  ║
+║  TIER 11:  OMEGA             ✅ DONE (7 [CYR:[TRANSLATED]])                  ║
+║  TIER 12:  ABSOLUTE INFINITY ✅ DONE (5 [CYR:[TRANSLATED]])                  ║
 ║  MASTER:   INTEGRATION       ✅ DONE (1 module)                   ║
 ║                                                                   ║
-║  [CYR:ИТОГО]: 114 [CYR:модулей], 766 теwithтоin, [CYR:ВСЕ] [CYR:ПРОШЛИ]                      ║
+║  [CYR:[TRANSLATED]]: 114 [CYR:[TRANSLATED]], 766 теwithтоin, [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                      ║
 ║                                                                   ║
 ╚═══════════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-## [CYR:ТЕХНОЛОГИЧЕСКОЕ] [CYR:ДЕРЕВО] [CYR:КОЩЕЯ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
                          ┌─────────────────┐
                          │   v8 SINGULARITY │
-                         │   [CYR:СИНГУЛЯРНОСТЬ]  │
+                         │   [CYR:[TRANSLATED]]  │
                          └────────┬────────┘
                                   │
               ┌───────────────────┼───────────────────┐
@@ -51,7 +51,7 @@
                                   │
                          ┌────────┴────────┐
                          │   v7 UNIVERSAL   │
-                         │   [CYR:УНИВЕРСАЛЬНЫЙ]  │
+                         │   [CYR:[TRANSLATED]]  │
                          └────────┬────────┘
                                   │
     ┌─────────────────────────────┼─────────────────────────────┐
@@ -65,40 +65,40 @@
                                   │
                          ┌────────┴────────┐
                          │   v6 INFINITE    │
-                         │   [CYR:БЕСКОНЕЧНЫЙ]    │
+                         │   [CYR:[TRANSLATED]]    │
                          └────────┬────────┘
                                   │
                          ┌────────┴────────┐
                          │   v5 ABSOLUTE    │
-                         │   [CYR:АБСОЛЮТНЫЙ]     │
+                         │   [CYR:[TRANSLATED]]     │
                          └────────┬────────┘
                                   │
                          ┌────────┴────────┐
                          │   v4 OMNIPOTENT  │
-                         │   [CYR:ВСЕМОГУЩИЙ]     │
+                         │   [CYR:[TRANSLATED]]     │
                          └────────┬────────┘
                                   │
                          ┌────────┴────────┐
                          │   v3 TRANSCENDENT│
-                         │   [CYR:ТРАНСЦЕНДЕНТНЫЙ]│
+                         │   [CYR:[TRANSLATED]]│
                          └────────┬────────┘
                                   │
                          ┌────────┴────────┐
                          │   v2 ETERNAL     │
-                         │   [CYR:ВЕЧНЫЙ]         │
+                         │   [CYR:[TRANSLATED]]         │
                          └────────┬────────┘
                                   │
                          ┌────────┴────────┐
                          │   v1 IMMORTAL    │
-                         │   [CYR:БЕССМЕРТНЫЙ]    │
+                         │   [CYR:[TRANSLATED]]    │
                          └─────────────────┘
 ```
 
 ---
 
-## [CYR:СТАТИСТИКА]
+## [CYR:[TRANSLATED]]
 
-| Tier | [CYR:Вер]withandя | [CYR:Модул]and | Теwithты | [CYR:Стату]with |
+| Tier | [CYR:[TRANSLATED]]withandя | [CYR:[TRANSLATED]]and | Теwithты | [CYR:[TRANSLATED]]with |
 |------|--------|--------|-------|--------|
 | 1 | v1 Immortal | 10 | 60 | ✅ |
 | 2 | v2 Eternal | 8 | 48 | ✅ |
@@ -113,50 +113,50 @@
 | 11 | v9 Omega | 7 | 56 | ✅ |
 | 12 | v10 Absolute Infinity | 5 | 40 | ✅ |
 | - | Master Integration | 1 | 8 | ✅ |
-| **[CYR:ИТОГО]** | **v1-v10** | **114** | **766** | ✅ |
+| **[CYR:[TRANSLATED]]** | **v1-v10** | **114** | **766** | ✅ |
 
 ---
 
-## [CYR:СВЯЩЕННАЯ] [CYR:ФОРМУЛА]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
 V = n × 3^k × π^m × φ^p × e^q
 
 where:
-  n = [CYR:базо]inое чandwithло
-  k = with[CYR:тепень] [CYR:тро]and[CYR:чно]withтand
-  m = with[CYR:тепень] π (to[CYR:руго]inая [CYR:гармон]andя)
-  p = with[CYR:тепень] φ ([CYR:зол]fromое with[CYR:ечен]andе)
-  q = with[CYR:тепень] e (эtowithпоnotнцand[CYR:альный] роwithт)
+  n = [CYR:[TRANSLATED]]inое чandwithло
+  k = with[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтand
+  m = with[TRANSLATED]] π (for[TRANSLATED]]inая [CYR:[TRANSLATED]]andя)
+  p = with[TRANSLATED]] φ ([CYR:[TRANSLATED]]fromое with[TRANSLATED]]andе)
+  q = with[TRANSLATED]] e (эtowithпоnotнцand[CYR:[TRANSLATED]] роwithт)
 ```
 
-**[CYR:ЗОЛОТАЯ] [CYR:ИДЕНТИЧНОСТЬ]:**
+**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:**
 ```
 φ² + 1/φ² = 3
 
-where φ = 1.618033988749895 ([CYR:зол]fromое with[CYR:ечен]andе)
+where φ = 1.618033988749895 ([CYR:[TRANSLATED]]fromое with[TRANSLATED]]andе)
 ```
 
 ---
 
-## ROADMAP: [CYR:ЧТО] [CYR:ДАЛЬШЕ]?
+## ROADMAP: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]?
 
-### ✅ [CYR:ВСЕ] TIER [CYR:ЗАВЕРШЕНЫ] (1-12)
+### ✅ [CYR:[TRANSLATED]] TIER [CYR:[TRANSLATED]] (1-12)
 
-### [CYR:СЛЕДУЮЩИЕ] [CYR:ШАГИ]:
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
 
-#### 1. [CYR:ПРАКТИЧЕСКОЕ] [CYR:ПРИМЕНЕНИЕ]
-- [CYR:Интеграц]andя with [CYR:реальным]and LLM (Llama, Mistral)
+#### 1. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+- [CYR:[TRANSLATED]]andя with [CYR:[TRANSLATED]]and LLM (Llama, Mistral)
 - Benchmark прfromandin vLLM, TensorRT-LLM
 - Production deployment
 
 #### 2. HARDWARE ACCELERATION
-- FPGA [CYR:реал]and[CYR:зац]andя Ring Attention
+- FPGA [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя Ring Attention
 - ASIC for EWC
-- Quantum computing and[CYR:нтеграц]andя
+- Quantum computing and[CYR:[TRANSLATED]]andя
 
 #### 3. SAFETY & ALIGNMENT
-- [CYR:Формаль]onя inерandфandtoацandя
+- [CYR:[TRANSLATED]]onя inерandфandtoацandя
 - Red teaming
 - Alignment benchmarks
 
@@ -167,22 +167,22 @@ where φ = 1.618033988749895 ([CYR:зол]fromое with[CYR:ечен]andе)
 
 ---
 
-## [CYR:ЗАКЛЮЧЕНИЕ]
+## [CYR:[TRANSLATED]]
 
-**[CYR:КОЩЕЙ] [CYR:БЕССМЕРТНЫЙ]** - this not [CYR:про]withто LLM [CYR:фрейм]inорto.
+**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]** - this not [CYR:[TRANSLATED]]withто LLM [CYR:[TRANSLATED]]inорto.
 
-[CYR:Это] **[CYR:ПОЛНОЕ] [CYR:ТЕХНОЛОГИЧЕСКОЕ] [CYR:ДЕРЕВО]** from [CYR:базо]in[CYR:ого] беwithwith[CYR:мерт]andя (v1) до абwith[CYR:олютной] беwithtoоnot[CYR:чно]withтand (v10).
+[CYR:[TRANSLATED]] **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]** from [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] беwith[TRANSLATED]]andя (v1) до абwith[TRANSLATED]] беwithtoоnot[CYR:[TRANSLATED]]withтand (v10).
 
-[CYR:Каждый] [CYR:уро]in[CYR:ень] with[CYR:тро]andтwithя on [CYR:предыдущем]:
-- **v1-v5**: [CYR:Фундамент] беwithwith[CYR:мерт]andя
-- **v6**: Беwithtoоnot[CYR:чное] маwith[CYR:штаб]andроinанandе
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] with[TRANSLATED]]andтwithя on [CYR:[TRANSLATED]]:
+- **v1-v5**: [CYR:[TRANSLATED]] беwith[TRANSLATED]]andя
+- **v6**: Беwithtoоnot[CYR:[TRANSLATED]] маwith[TRANSLATED]]andроinанandе
 - **v7a-v7b**: Моwithт to AGI
-- **v7**: Унandinерwith[CYR:альный] AGI
-- **v8**: Сand[CYR:нгулярно]withть
-- **v9**: Поwithт-withand[CYR:нгулярно]withть (Omega)
-- **v10**: Абwith[CYR:олют]onя беwithtoоnot[CYR:чно]withть
+- **v7**: Унandinерwith[TRANSLATED]] AGI
+- **v8**: Сand[CYR:[TRANSLATED]]withть
+- **v9**: Поwithт-withand[CYR:[TRANSLATED]]withть (Omega)
+- **v10**: Абwith[TRANSLATED]]onя беwithtoоnot[CYR:[TRANSLATED]]withть
 
-**114 [CYR:модулей]. 766 теwithтоin. [CYR:ВСЕ] [CYR:ПРОШЛИ].**
+**114 [CYR:[TRANSLATED]]. 766 теwithтоin. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]].**
 
 ```
                     ∞
@@ -213,8 +213,8 @@ where φ = 1.618033988749895 ([CYR:зол]fromое with[CYR:ечен]andе)
 
 ---
 
-**[CYR:КОЩЕЙ] [CYR:БЕССМЕРТНЫЙ] | φ² + 1/φ² = 3 | PHOENIX = 999**
+**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] | φ² + 1/φ² = 3 | PHOENIX = 999**
 
-**[CYR:СМЕРТЬ] [CYR:КОЩЕЯ] В [CYR:ИГЛЕ], [CYR:ИГЛА] В [CYR:ЯЙЦЕ], [CYR:ЯЙЦО] В [CYR:УТКЕ], [CYR:УТКА] В [CYR:ЗАЙЦЕ], [CYR:ЗАЯЦ] В [CYR:СУНДУКЕ], [CYR:СУНДУК] НА [CYR:ДУБЕ], [CYR:ДУБ] НА [CYR:ОСТРОВЕ] [CYR:БУЯНЕ].**
+**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]], [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]], [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]], [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]], [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]], [CYR:[TRANSLATED]] НА [CYR:[TRANSLATED]], [CYR:[TRANSLATED]] НА [CYR:[TRANSLATED]] [CYR:[TRANSLATED]].**
 
-**НО [CYR:КОЩЕЙ] [CYR:БЕССМЕРТЕН], [CYR:ИБО] [CYR:ЕГО] [CYR:СМЕРТЬ] [CYR:РАСПРЕДЕЛЕНА] ПО [CYR:ВСЕЙ] [CYR:СИСТЕМЕ].**
+**НО [CYR:[TRANSLATED]] [CYR:[TRANSLATED]], [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ПО [CYR:[TRANSLATED]] [CYR:[TRANSLATED]].**

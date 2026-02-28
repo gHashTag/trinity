@@ -1,4 +1,4 @@
-# [CYR:ЖАР] [CYR:ПТИЦА] (FIREBIRD)
+# [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (FIREBIRD)
 
 **Ternary Virtual Anti-Detect Browser**
 

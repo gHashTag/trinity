@@ -104,7 +104,7 @@ pub const ChainNode = enum(u3) {
     Monitor, // 4 — Vishuddha — Blue
     Adapt, // 5 — Ajna — Indigo
     Synthesize, // 6 — Sahasrara — Violet
-    Deliver, // 7 — [EN]and[EN]with[EN]in[EN] — Gold
+    Deliver, // 7 — andwithin — Gold
 
     pub fn getHue(self: ChainNode) f32 {
         return switch (self) {

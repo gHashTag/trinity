@@ -1,15 +1,15 @@
-//! HDC Core - Basic operation [EN]and[CYR:[EN]] in[EN]andwith[CYR:[EN]]and[EN]
-//! with [CYR:[EN]]-[CYR:[EN]]and[EN] for with[CYR:[EN]]and[EN]with[EN] AI [CYR:[EN]].
+//! HDC Core - Basic operation and inandwithand
+//! with -and for withandwith AI .
 //!
-//! [CYR:[EN]]on[EN] [CYR:base]:
+//! on [CYR:base]:
 //! - Kanerva (2009): Hyperdimensional Computing
-//! - BitNet b1.58 (2024): [CYR:[EN]]and[CYR:[EN]] in[EN]with[EN] {-1, 0, +1}
+//! - BitNet b1.58 (2024): and inwith {-1, 0, +1}
 //!
 //! φ² + 1/φ² = 3 | TRINITY
 
 const std = @import("std");
 
-// [CYR:[EN]]with[CYR:[EN]]
+// with
 pub const DEFAULT_DIM: usize = 10240;
 pub const LEARNING_RATE: f64 = 0.01;
 pub const SIMILARITY_THRESHOLD: f64 = 0.7;
@@ -17,11 +17,11 @@ pub const SIMD_WIDTH: usize = 32;
 
 pub const PHI: f64 = 1.618033988749895;
 
-// [EN]and[EN]
+// and
 pub const Trit = i8; // {-1, 0, +1}
 pub const Vec32i8 = @Vector(32, i8);
 
-/// Ternary [EN]and[CYR:[EN]]in[EN]to[CYR:[EN]]
+/// Ternary andinto
 pub const HyperVector = struct {
     data: []Trit,
     dim: usize,
@@ -44,7 +44,7 @@ pub const HyperVector = struct {
     }
 };
 
-/// Float [EN]toto[CYR:[EN]] for [CYR:[EN]] [EN]with[CYR:[EN]]not[EN]and[EN]
+/// Float toto for  withnotand
 pub const FloatAccumulator = struct {
     data: []f64,
     dim: usize,
@@ -61,7 +61,7 @@ pub const FloatAccumulator = struct {
     }
 };
 
-/// [EN]fromfromand[EN] to[EN]withwith[EN]
+/// fromfromand towith
 pub const Prototype = struct {
     label: []const u8,
     accumulator: FloatAccumulator,
@@ -69,17 +69,17 @@ pub const Prototype = struct {
     count: u64,
 };
 
-/// Result with[CYR:[EN]]with[EN]in[EN]
+/// Result within
 pub const SimilarityResult = struct {
     label: []const u8,
     similarity: f64,
 };
 
 // ═══════════════════════════════════════════════════════════════
-// [CYR:[EN]] HDC [CYR:[EN]]
+//  HDC 
 // ═══════════════════════════════════════════════════════════════
 
-/// Bind: byelement[CYR:[EN]] [CYR:[EN]]and[EN] (creation [EN]withwith[EN]and[EN]andand)
+/// Bind: byelement and (creation withandand)
 pub fn bind(a: []const Trit, b: []const Trit, result: []Trit) void {
     const len = @min(a.len, @min(b.len, result.len));
     const chunks = len / SIMD_WIDTH;
@@ -96,12 +96,12 @@ pub fn bind(a: []const Trit, b: []const Trit, result: []Trit) void {
     }
 }
 
-/// Unbind: that [EN] what bind (with[CYR:[EN]]and[EN]with[EN])
+/// Unbind: that  what bind (withandwith)
 pub fn unbind(bound: []const Trit, key: []const Trit, result: []Trit) void {
     bind(bound, key, result);
 }
 
-/// Bundle: [CYR:[EN]]and[CYR:[EN]] [CYR:[EN]]with[EN]in[EN]and[EN] for 2 in[EN]to[CYR:[EN]]in
+/// Bundle: and withinand for 2 intoin
 pub fn bundle2(a: []const Trit, b: []const Trit, result: []Trit) void {
     const len = @min(a.len, @min(b.len, result.len));
 
@@ -117,7 +117,7 @@ pub fn bundle2(a: []const Trit, b: []const Trit, result: []Trit) void {
     }
 }
 
-/// Bundle: [CYR:[EN]]and[CYR:[EN]] [CYR:[EN]]with[EN]in[EN]and[EN] for N in[EN]to[CYR:[EN]]in
+/// Bundle: and withinand for N intoin
 pub fn bundleN(vectors: []const []const Trit, result: []Trit) void {
     if (vectors.len == 0) return;
 
@@ -137,7 +137,7 @@ pub fn bundleN(vectors: []const []const Trit, result: []Trit) void {
     }
 }
 
-/// Permute: [EN]andto[EN]and[EN]withtoand[EN] with[EN]inand[EN]
+/// Permute: andtoandwithtoand withinand
 pub fn permute(v: []const Trit, k: usize, result: []Trit) void {
     const len = v.len;
     if (len == 0) return;
@@ -150,7 +150,7 @@ pub fn permute(v: []const Trit, k: usize, result: []Trit) void {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// [CYR:[EN]]
+// 
 // ═══════════════════════════════════════════════════════════════
 
 /// Dot product with SIMD
@@ -175,7 +175,7 @@ pub fn dotProduct(a: []const Trit, b: []const Trit) i64 {
     return dot;
 }
 
-/// [EN]withand[EN]with[CYR:[EN]] with[CYR:[EN]]with[EN]in[EN]
+/// withandwith within
 pub fn similarity(a: []const Trit, b: []const Trit) f64 {
     const dot = dotProduct(a, b);
     var norm_a: i64 = 0;
@@ -191,7 +191,7 @@ pub fn similarity(a: []const Trit, b: []const Trit) f64 {
         (@sqrt(@as(f64, @floatFromInt(norm_a))) * @sqrt(@as(f64, @floatFromInt(norm_b))));
 }
 
-/// [EN]withwith[CYR:[EN]]and[EN] [CYR:[EN]]and[CYR:[EN]]
+/// withand and
 pub fn hammingDistance(a: []const Trit, b: []const Trit) usize {
     var dist: usize = 0;
     for (0..@min(a.len, b.len)) |i| {
@@ -201,10 +201,10 @@ pub fn hammingDistance(a: []const Trit, b: []const Trit) usize {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// [CYR:[EN]] [CYR:[EN]]
+//  
 // ═══════════════════════════════════════════════════════════════
 
-/// [CYR:[EN]] vector
+///  vector
 pub fn randomVector(allocator: std.mem.Allocator, dim: usize, seed: u64) !HyperVector {
     const vec = try HyperVector.init(allocator, dim);
     var rng = std.Random.DefaultPrng.init(seed);
@@ -216,12 +216,12 @@ pub fn randomVector(allocator: std.mem.Allocator, dim: usize, seed: u64) !HyperV
     return vec;
 }
 
-/// [CYR:[EN]]in[EN] vector
+/// in vector
 pub fn zeroVector(allocator: std.mem.Allocator, dim: usize) !HyperVector {
     return HyperVector.init(allocator, dim);
 }
 
-/// [EN]to[CYR:[EN]] and[EN] [EN]and[EN]and[EN]
+/// to and and
 pub fn onesVector(allocator: std.mem.Allocator, dim: usize) !HyperVector {
     const vec = try HyperVector.init(allocator, dim);
     @memset(vec.data, 1);
@@ -229,7 +229,7 @@ pub fn onesVector(allocator: std.mem.Allocator, dim: usize) !HyperVector {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// [CYR:[EN]]
+// 
 // ═══════════════════════════════════════════════════════════════
 
 /// Float -> Ternary
@@ -253,10 +253,10 @@ pub fn dequantizeToFloat(trit_data: []const Trit, result: []f64) void {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// [CYR:[EN]] [CYR:[EN]]
+//  
 // ═══════════════════════════════════════════════════════════════
 
-/// [CYR:[EN]] update [EN]fromfromand[EN]: P ← P + η(v - P)
+///  update fromfromand: P ← P + η(v - P)
 pub fn onlineUpdate(accumulator: []f64, input: []const Trit, lr: f64) void {
     for (0..@min(accumulator.len, input.len)) |i| {
         const v: f64 = @floatFromInt(input[i]);
@@ -264,7 +264,7 @@ pub fn onlineUpdate(accumulator: []f64, input: []const Trit, lr: f64) void {
     }
 }
 
-/// [CYR:[EN]]and onandmore by[CYR:[EN]]and[EN] [EN]fromfromand[EN]
+/// and onandmore byand fromfromand
 pub fn findBestMatch(input: []const Trit, prototypes: []const Prototype) ?SimilarityResult {
     var best_sim: f64 = -2.0;
     var best_label: []const u8 = "";
@@ -284,7 +284,7 @@ pub fn findBestMatch(input: []const Trit, prototypes: []const Prototype) ?Simila
 }
 
 // ═══════════════════════════════════════════════════════════════
-// [CYR:[EN]]
+// 
 // ═══════════════════════════════════════════════════════════════
 
 test "bind self-inverse" {
@@ -303,8 +303,8 @@ test "bind self-inverse" {
     unbind(bound.data, b.data, recovered.data);
 
     // a * b * b = a * (b * b)
-    // [CYR:[EN]] b != 0: b * b = 1, bythis[EN] recovered = a
-    // [CYR:[EN]] b == 0: a * 0 * 0 = 0, bythis[EN] recovered = 0
+    //  b != 0: b * b = 1, bythis recovered = a
+    //  b == 0: a * 0 * 0 = 0, bythis recovered = 0
     var matches: usize = 0;
     var nonzero_b: usize = 0;
     for (0..100) |i| {
@@ -313,7 +313,7 @@ test "bind self-inverse" {
             if (recovered.data[i] == a.data[i]) matches += 1;
         }
     }
-    // [CYR:[EN]] with[EN]in[EN]yes[EN] for inwith[EN] not[CYR:[EN]]in[EN] b
+    //  withinyes for inwith notin b
     try std.testing.expect(matches == nonzero_b);
 }
 

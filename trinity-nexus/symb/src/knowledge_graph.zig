@@ -1,9 +1,9 @@
 // Trinity VSA Knowledge Graph
-// [CYR:[TRANSLATED]] [EN]on[EN]and[EN] on [EN]with[EN]in[EN] Vector Symbolic Architecture
+//  onand on within Vector Symbolic Architecture
 //
-// [CYR:[TRANSLATED]]to[CYR:[TRANSLATED]]: Triple = (Subject, Predicate, Object)
-// [CYR:Code]and[EN]in[EN]and[EN]: bind(subject, bind(predicate, object))
-// [CYR:[TRANSLATED]]: bundle inwith[EN] [EN]and[CYR:[TRANSLATED]]in
+// to: Triple = (Subject, Predicate, Object)
+// [CYR:Code]andinand: bind(subject, bind(predicate, object))
+// : bundle inwith andin
 //
 // ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ: V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3
@@ -21,36 +21,36 @@ const PackedBigInt = packed_trit.PackedBigInt;
 // FILE FORMAT CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Magic bytes for and[CYR:[TRANSLATED]]and[EN]andto[EN]andand file[EN]
+/// Magic bytes for andandtoand file
 pub const FILE_MAGIC = [4]u8{ 'T', 'R', 'K', 'G' };
 
-/// [CYR:[TRANSLATED]]withandI [CYR:[TRANSLATED]] file[EN]
+/// withandI  file
 pub const FILE_VERSION: u32 = 1;
 
-/// [CYR:[TRANSLATED]] packed in[EN]to[CYR:[TRANSLATED]] in [CYR:[TRANSLATED]]
-pub const PACKED_VECTOR_BYTES = (VECTOR_DIM + 4) / 5; // 5 [EN]and[EN]in on [CYR:[TRANSLATED]]
+///  packed into in 
+pub const PACKED_VECTOR_BYTES = (VECTOR_DIM + 4) / 5; // 5 andin on 
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]A[TRANSLATED]]
+// [CYR:A]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:[TRANSLATED]]with[EN] VSA in[EN]to[CYR:[TRANSLATED]]in (to[EN]and[EN]with[EN]in[EN] [EN]and[EN]in)
+/// with VSA intoin (toandwithin andin)
 pub const VECTOR_DIM = 500;
 
-/// [EN]towithand[CYR:[EN]lno[EN]] to[EN]and[EN]with[EN]in[EN] with[CYR:[TRANSLATED]]with[CYR:[TRANSLATED]] in [CYR:[TRANSLATED]]
+/// towithand[CYR:lno] toandwithin with in 
 pub const MAX_ENTITIES = 100;
 
-/// [EN]towithand[CYR:[EN]lno[EN]] to[EN]and[EN]with[EN]in[EN] [EN]and[CYR:[TRANSLATED]]in
+/// towithand[CYR:lno] toandwithin andin
 pub const MAX_TRIPLES = 200;
 
-/// [CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]with[EN]in[EN] for [EN]andwithto[EN]
+///  within for andwithto
 pub const SIMILARITY_THRESHOLD = 0.3;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]A[TRANSLATED]] [CYR:[TRANSLATED]]
+// [CYR:A] 
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:[TRANSLATED]]with[EN] in [CYR:[TRANSLATED]] [EN]on[EN]and[EN] (andwith[CYR:[EN]l[TRANSLATED]] PackedBigInt for [EN]to[CYR:[TRANSLATED]]andand [CYR:[TRANSLATED]I[EN]]and)
+/// with in  onand (andwithl] PackedBigInt for toand [CYR:I]and)
 pub const Entity = struct {
     name: []const u8,
     vector: PackedBigInt,
@@ -58,9 +58,9 @@ pub const Entity = struct {
 
     const Self = @This();
 
-    /// [CYR:[TRANSLATED]ate] with[CYR:[TRANSLATED]]with[EN] and[EN] and[CYR:me]and
+    /// [CYR:ate] with and and[CYR:me]and
     pub fn init(name: []const u8, id: u32) Self {
-        // [EN]not[EN]and[CYR:[TRANSLATED]] in[EN]to[CYR:[TRANSLATED]] and[EN] [CYR:[TRANSLATED]] and[CYR:me]and
+        // notand into and  and[CYR:me]and
         const seed = hashString(name);
         const packed_vec = packed_vsa.randomPackedVector(VECTOR_DIM, seed);
         return Self{
@@ -70,7 +70,7 @@ pub const Entity = struct {
         };
     }
 
-    /// [CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]toand for seed
+    ///  withtoand for seed
     pub fn hashString(s: []const u8) u64 {
         var hash: u64 = 5381;
         for (s) |c| {
@@ -80,7 +80,7 @@ pub const Entity = struct {
     }
 };
 
-/// [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]with[CYR:[EN]I[EN]]and
+/// and  withI]and
 pub const Relation = struct {
     name: []const u8,
     vector: PackedBigInt,
@@ -89,7 +89,7 @@ pub const Relation = struct {
     const Self = @This();
 
     pub fn init(name: []const u8, id: u32) Self {
-        const seed = Entity.hashString(name) ^ 0xDEADBEEF; // [CYR:[TRANSLATED]go[EN]] seed for from[CYR:[TRANSLATED]]and[EN]
+        const seed = Entity.hashString(name) ^ 0xDEADBEEF; // [CYR:go] seed for fromand
         const packed_vec = packed_vsa.randomPackedVector(VECTOR_DIM, seed);
         return Self{
             .name = name,
@@ -99,7 +99,7 @@ pub const Relation = struct {
     }
 };
 
-/// [EN]and[CYR:[TRANSLATED]] (Subject, Predicate, Object)
+/// and (Subject, Predicate, Object)
 pub const Triple = struct {
     subject_id: u32,
     predicate_id: u32,
@@ -108,13 +108,13 @@ pub const Triple = struct {
 
     const Self = @This();
 
-    /// [CYR:[TRANSLATED]ate] [EN]and[CYR:[TRANSLATED]] and [EN]to[EN]and[EN]in[CYR:ate] in in[EN]to[CYR:[TRANSLATED]]
+    /// [CYR:ate] and and toandin[CYR:ate] in into
     pub fn init(
         subject: *const Entity,
         predicate: *const Relation,
         object: *const Entity,
     ) Self {
-        // [CYR:Code]and[EN]in[EN]and[EN]: bind(subject, bind(predicate, object))
+        // [CYR:Code]andinand: bind(subject, bind(predicate, object))
         const pred_obj = packed_vsa.packedBind(&predicate.vector, &object.vector);
         const triple_vec = packed_vsa.packedBind(&subject.vector, &pred_obj);
 
@@ -131,26 +131,26 @@ pub const Triple = struct {
 // KNOWLEDGE GRAPH
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:[TRANSLATED]] [EN]on[EN]and[EN] on [EN]with[EN]in[EN] VSA (andwith[CYR:[EN]l[TRANSLATED]] PackedBigInt)
+///  onand on within VSA (andwithl] PackedBigInt)
 pub const KnowledgeGraph = struct {
-    /// [EN]with[EN] with[CYR:[TRANSLATED]]with[EN]and
+    /// with withand
     entities: [MAX_ENTITIES]?Entity,
     entity_count: u32,
 
-    /// [EN]with[EN] from[CYR:[TRANSLATED]]andI
+    /// with fromandI
     relations: [MAX_ENTITIES]?Relation,
     relation_count: u32,
 
-    /// [EN]with[EN] [EN]and[CYR:[TRANSLATED]y]
+    /// with and[CYR:y]
     triples: [MAX_TRIPLES]?Triple,
     triple_count: u32,
 
-    /// [CYR:[TRANSLATED]]and[EN]andI inwith[EN] [EN]and[CYR:[TRANSLATED]]in ([CYR:[TRANSLATED]] to[EN]to [EN]and[EN] in[EN]to[CYR:[TRANSLATED]])
+    /// andI inwith andin ( toto and into)
     graph_vector: PackedBigInt,
 
     const Self = @This();
 
-    /// [CYR:[TRANSLATED]ate] [EN]with[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+    /// [CYR:ate] with 
     pub fn init() Self {
         return Self{
             .entities = [_]?Entity{null} ** MAX_ENTITIES,
@@ -163,9 +163,9 @@ pub const KnowledgeGraph = struct {
         };
     }
 
-    /// [CYR:[TRANSLATED]]inand[EN] or on[EN]and with[CYR:[TRANSLATED]]with[EN]
+    /// inand or onand with
     pub fn getOrCreateEntity(self: *Self, name: []const u8) *Entity {
-        // [EN]andwithto with[CYR:[TRANSLATED]]with[EN]in[CYR:[TRANSLATED]]
+        // andwithto within
         for (0..self.entity_count) |i| {
             if (self.entities[i]) |*e| {
                 if (std.mem.eql(u8, e.name, name)) {
@@ -174,14 +174,14 @@ pub const KnowledgeGraph = struct {
             }
         }
 
-        // [CYR:[TRANSLATED]ate] [EN]in[EN]
+        // [CYR:ate] in
         const id = self.entity_count;
         self.entities[id] = Entity.init(name, id);
         self.entity_count += 1;
         return &self.entities[id].?;
     }
 
-    /// [CYR:[TRANSLATED]]inand[EN] or on[EN]and from[CYR:[TRANSLATED]]and[EN]
+    /// inand or onand fromand
     pub fn getOrCreateRelation(self: *Self, name: []const u8) *Relation {
         for (0..self.relation_count) |i| {
             if (self.relations[i]) |*r| {
@@ -197,7 +197,7 @@ pub const KnowledgeGraph = struct {
         return &self.relations[id].?;
     }
 
-    /// [CYR:[TRANSLATED]]inand[EN] [EN]and[CYR:[TRANSLATED]] in [CYR:[TRANSLATED]]
+    /// inand and in 
     pub fn addTriple(self: *Self, subject: []const u8, predicate: []const u8, object: []const u8) void {
         const subj = self.getOrCreateEntity(subject);
         const pred = self.getOrCreateRelation(predicate);
@@ -205,11 +205,11 @@ pub const KnowledgeGraph = struct {
 
         const triple = Triple.init(subj, pred, obj);
 
-        // [CYR:[TRANSLATED]]inand[EN] in with[EN]andwith[EN]to [EN]and[CYR:[TRANSLATED]]in
+        // inand in withandwithto andin
         self.triples[self.triple_count] = triple;
         self.triple_count += 1;
 
-        // [CYR:[TRANSLATED]]inand[EN] [CYR:[TRANSLATED]]-in[EN]to[CYR:[TRANSLATED]] (bundle)
+        // inand -into (bundle)
         if (self.triple_count == 1) {
             self.graph_vector = triple.vector;
         } else {
@@ -217,46 +217,46 @@ pub const KnowledgeGraph = struct {
         }
     }
 
-    /// [CYR:[EN]pro]with: on[EN]and object [EN] subject and predicate
+    /// [CYR:pro]with: onand object  subject and predicate
     /// query(subject, predicate, ?) → object
-    /// [EN]with[CYR:[EN]l[TRANSLATED]] unbind: result = unbind(graph, bind(subject, predicate))
+    /// withl] unbind: result = unbind(graph, bind(subject, predicate))
     pub fn queryObject(self: *Self, subject: []const u8, predicate: []const u8) ?*Entity {
         const subj = self.findEntity(subject) orelse return null;
         const pred = self.findRelation(predicate) orelse return null;
 
-        // [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[EN]pro]with[EN]: bind(subject, predicate)
+        //   [CYR:pro]with: bind(subject, predicate)
         const query_pattern = packed_vsa.packedBind(&subj.vector, &pred.vector);
 
-        // Unbind from [CYR:[TRANSLATED]]: unbind(graph, query_pattern) ≈ object
+        // Unbind from : unbind(graph, query_pattern) ≈ object
         const result_vec = packed_vsa.packedUnbind(&self.graph_vector, &query_pattern);
 
-        // [CYR:[TRANSLATED]]and [EN]and[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]with[EN] to result[EN]
+        // and and with to result
         return self.findClosestEntityPacked(&result_vec);
     }
 
-    /// [CYR:[EN]pro]with: on[EN]and subject [EN] predicate and object
+    /// [CYR:pro]with: onand subject  predicate and object
     /// query(?, predicate, object) → subject
-    /// [EN]with[CYR:[EN]l[TRANSLATED]] unbind: result = unbind(graph, bind(predicate, object))
+    /// withl] unbind: result = unbind(graph, bind(predicate, object))
     pub fn querySubject(self: *Self, predicate: []const u8, object: []const u8) ?*Entity {
         const pred = self.findRelation(predicate) orelse return null;
         const obj = self.findEntity(object) orelse return null;
 
-        // [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[EN]pro]with[EN]: bind(predicate, object)
+        //   [CYR:pro]with: bind(predicate, object)
         const query_pattern = packed_vsa.packedBind(&pred.vector, &obj.vector);
 
-        // Unbind from [CYR:[TRANSLATED]]: unbind(graph, query_pattern) ≈ subject
+        // Unbind from : unbind(graph, query_pattern) ≈ subject
         const result_vec = packed_vsa.packedUnbind(&self.graph_vector, &query_pattern);
 
         return self.findClosestEntityPacked(&result_vec);
     }
 
-    /// [CYR:[TRANSLATED]]and N onand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN] with[CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]
+    /// and N onand and with
     pub fn findSimilar(self: *Self, entity_name: []const u8, n: usize) [10]?struct { entity: *Entity, similarity: f64 } {
         var results: [10]?struct { entity: *Entity, similarity: f64 } = [_]?struct { entity: *Entity, similarity: f64 }{null} ** 10;
 
         const target = self.findEntity(entity_name) orelse return results;
 
-        // [CYR:Vy[EN]]andwith[EN]and[EN] with[CYR:[TRANSLATED]]with[EN]in[EN] with[EN] inwith[EN]and with[CYR:[TRANSLATED]]with[CYR:[EN]I[EN]]and
+        // [CYR:Vy]andwithand within with inwithand withI]and
         var similarities: [MAX_ENTITIES]f64 = [_]f64{0} ** MAX_ENTITIES;
 
         for (0..self.entity_count) |i| {
@@ -267,7 +267,7 @@ pub const KnowledgeGraph = struct {
             }
         }
 
-        // [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]-N ([CYR:pro]with[CYR:[EN]I] with[CYR:[TRANSLATED]]and[EN]into[EN])
+        // and -N ([CYR:pro]withI] withandinto)
         const result_count = @min(n, 10);
         for (0..result_count) |r| {
             var best_idx: ?usize = null;
@@ -275,7 +275,7 @@ pub const KnowledgeGraph = struct {
 
             for (0..self.entity_count) |i| {
                 if (similarities[i] > best_sim) {
-                    // [CYR:[TRANSLATED]]in[EN]and[EN] that [CYR:[TRANSLATED]] not [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]
+                    // inand that  not in
                     var already_added = false;
                     for (0..r) |prev| {
                         if (results[prev]) |res| {
@@ -302,7 +302,7 @@ pub const KnowledgeGraph = struct {
         return results;
     }
 
-    /// [CYR:[TRANSLATED]]and with[CYR:[TRANSLATED]]with[EN] [EN] and[CYR:me]and
+    /// and with  and[CYR:me]and
     fn findEntity(self: *Self, name: []const u8) ?*Entity {
         for (0..self.entity_count) |i| {
             if (self.entities[i]) |*e| {
@@ -314,7 +314,7 @@ pub const KnowledgeGraph = struct {
         return null;
     }
 
-    /// [CYR:[TRANSLATED]]and from[CYR:[TRANSLATED]]and[EN] [EN] and[CYR:me]and
+    /// and fromand  and[CYR:me]and
     fn findRelation(self: *Self, name: []const u8) ?*Relation {
         for (0..self.relation_count) |i| {
             if (self.relations[i]) |*r| {
@@ -326,7 +326,7 @@ pub const KnowledgeGraph = struct {
         return null;
     }
 
-    /// [CYR:[TRANSLATED]]and [EN]and[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]with[EN] to packed in[EN]to[CYR:[TRANSLATED]]
+    /// and and with to packed into
     fn findClosestEntityPacked(self: *Self, query_vec: *const PackedBigInt) ?*Entity {
         var best_entity: ?*Entity = null;
         var best_similarity: f64 = SIMILARITY_THRESHOLD;
@@ -344,7 +344,7 @@ pub const KnowledgeGraph = struct {
         return best_entity;
     }
 
-    /// [CYR:[TRANSLATED]]andwith[EN]andto[EN] [CYR:[TRANSLATED]]
+    /// andwithandto 
     pub fn stats(self: *const Self) struct { entities: u32, relations: u32, triples: u32 } {
         return .{
             .entities = self.entity_count,
@@ -357,7 +357,7 @@ pub const KnowledgeGraph = struct {
     // PERSISTENCE - Save/Load
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] in file
+    /// and  in file
     pub fn save(self: *const Self, path: []const u8) !void {
         const file = try std.fs.cwd().createFile(path, .{});
         defer file.close();
@@ -422,7 +422,7 @@ pub const KnowledgeGraph = struct {
         try writer.writeAll(self.graph_vector.data[0..graph_packed_len]);
     }
 
-    /// [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] and[EN] file[EN]
+    /// and  and file
     pub fn load(path: []const u8, name_buffer: []u8) !Self {
         const file = try std.fs.cwd().openFile(path, .{});
         defer file.close();
@@ -445,14 +445,14 @@ pub const KnowledgeGraph = struct {
         const entity_count = try reader.readInt(u32, .little);
         const relation_count = try reader.readInt(u32, .little);
 
-        // [EN]with[CYR:[EN]l[TRANSLATED]] buffer for and[CYR:[TRANSLATED]]
+        // withl] buffer for and
         var name_offset: usize = 0;
 
         // Entities
         for (0..entity_count) |i| {
             const name_len = try reader.readInt(u16, .little);
 
-            // [EN]and[CYR:[TRANSLATED]] and[EN]I in buffer
+            // and andI in buffer
             const name_start = name_offset;
             _ = try reader.readAll(name_buffer[name_offset .. name_offset + name_len]);
             name_offset += name_len;
@@ -530,28 +530,28 @@ pub const KnowledgeGraph = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "Entity creation" {
     const paris = Entity.init("Paris", 0);
     const france = Entity.init("France", 1);
 
-    // [CYR:[TRANSLATED]y[EN]] with[CYR:[TRANSLATED]]with[EN]and [CYR:[TRANSLATED]y] and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]y[EN]] in[EN]to[CYR:[TRANSLATED]y]
+    // [CYR:y] withand [CYR:y] and [CYR:y] infory]
     const sim = packed_vsa.packedCosineSimilarity(&paris.vector, &france.vector);
-    try std.testing.expect(sim < 0.5); // [CYR:[TRANSLATED]]and [EN]thaton[CYR:l[EN]y]
+    try std.testing.expect(sim < 0.5); // and thaton[CYR:ly]
 }
 
 test "KnowledgeGraph basic operations" {
     var kg = KnowledgeGraph.init();
 
-    // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [EN]to[EN]y  with[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
+    // in[CYR:I] toy  withand
     kg.addTriple("Paris", "capital_of", "France");
     kg.addTriple("Berlin", "capital_of", "Germany");
     kg.addTriple("Rome", "capital_of", "Italy");
 
     const s = kg.stats();
-    try std.testing.expectEqual(@as(u32, 6), s.entities); // 3 [CYR:go[TRANSLATED]] + 3 with[CYR:[TRANSLATED]y]
+    try std.testing.expectEqual(@as(u32, 6), s.entities); // 3 [CYR:go] + 3 withy]
     try std.testing.expectEqual(@as(u32, 1), s.relations); // capital_of
     try std.testing.expectEqual(@as(u32, 3), s.triples);
 }
@@ -563,18 +563,18 @@ test "KnowledgeGraph query object with unbind" {
     kg.addTriple("Berlin", "capital_of", "Germany");
     kg.addTriple("Rome", "capital_of", "Italy");
 
-    // [CYR:[EN]pro]with: [CYR:[TRANSLATED]]and[EN] - with[CYR:[TRANSLATED]]and[EN] [CYR:[EN]go]?
+    // [CYR:pro]with: and - withand [CYR:go]?
     // unbind(graph, bind(Paris, capital_of)) → France
     const result = kg.queryObject("Paris", "capital_of");
 
     std.debug.print("\n\nQuery: Paris capital_of ?\n", .{});
     if (result) |entity| {
         std.debug.print("Result: {s}\n", .{entity.name});
-        // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] that result - France
+        // in[CYR:I] that result - France
         try std.testing.expectEqualStrings("France", entity.name);
     } else {
         std.debug.print("Result: null\n", .{});
-        // [EN]with[EN]and null, [EN]with[EN] [CYR:pro]in[CYR:[TRANSLATED]]
+        // withand null, with [CYR:pro]in
         try std.testing.expect(false);
     }
 }
@@ -585,7 +585,7 @@ test "KnowledgeGraph query subject with unbind" {
     kg.addTriple("Paris", "capital_of", "France");
     kg.addTriple("Berlin", "capital_of", "Germany");
 
-    // [CYR:[EN]pro]with: that Iin[CYR:[EN]I[EN]]withI with[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andand?
+    // [CYR:pro]with: that Iin[CYR:I]withI withand and?
     // unbind(graph, bind(capital_of, France)) → Paris
     const result = kg.querySubject("capital_of", "France");
 
@@ -600,7 +600,7 @@ test "KnowledgeGraph query subject with unbind" {
 }
 
 test "save and load roundtrip" {
-    // [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+    //  
     var kg = KnowledgeGraph.init();
     kg.addTriple("Paris", "capital_of", "France");
     kg.addTriple("Berlin", "capital_of", "Germany");
@@ -608,14 +608,14 @@ test "save and load roundtrip" {
 
     const original_stats = kg.stats();
 
-    // [CYR:[TRANSLATED]I[EN]]
+    // [CYR:I]
     try kg.save("/tmp/test_kg.trkg");
 
-    // [CYR:[TRANSLATED]]
+    // 
     var name_buffer: [4096]u8 = undefined;
     var loaded_kg = try KnowledgeGraph.load("/tmp/test_kg.trkg", &name_buffer);
 
-    // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] with[CYR:[TRANSLATED]]andwith[EN]andto[EN]
+    // in[CYR:I] withandwithandto
     const loaded_stats = loaded_kg.stats();
     try std.testing.expectEqual(original_stats.entities, loaded_stats.entities);
     try std.testing.expectEqual(original_stats.relations, loaded_stats.relations);
@@ -625,23 +625,23 @@ test "save and load roundtrip" {
     std.debug.print("Original: {d} entities, {d} relations, {d} triples\n", .{ original_stats.entities, original_stats.relations, original_stats.triples });
     std.debug.print("Loaded: {d} entities, {d} relations, {d} triples\n", .{ loaded_stats.entities, loaded_stats.relations, loaded_stats.triples });
 
-    // [CYR:[TRANSLATED]I[EN]] [EN]with[EN]iny[EN] file
+    // [CYR:I] withiny file
     std.fs.cwd().deleteFile("/tmp/test_kg.trkg") catch {};
 }
 
 test "queries work after load" {
-    // [CYR:[TRANSLATED]] and with[CYR:[TRANSLATED]I[EN]] [CYR:[TRANSLATED]]
+    //  and withI] 
     var kg = KnowledgeGraph.init();
     kg.addTriple("Paris", "capital_of", "France");
     kg.addTriple("Berlin", "capital_of", "Germany");
 
     try kg.save("/tmp/test_kg_query.trkg");
 
-    // [CYR:[TRANSLATED]]
+    // 
     var name_buffer: [4096]u8 = undefined;
     var loaded_kg = try KnowledgeGraph.load("/tmp/test_kg_query.trkg", &name_buffer);
 
-    // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [CYR:[EN]pro]withy
+    // in[CYR:I] [CYR:pro]withy
     const result = loaded_kg.queryObject("Paris", "capital_of");
 
     std.debug.print("\n\nQuery after load:\n", .{});
@@ -655,27 +655,27 @@ test "queries work after load" {
         try std.testing.expect(false);
     }
 
-    // [CYR:[TRANSLATED]I[EN]] [EN]with[EN]iny[EN] file
+    // [CYR:I] withiny file
     std.fs.cwd().deleteFile("/tmp/test_kg_query.trkg") catch {};
 }
 
 test "benchmark KnowledgeGraph" {
     var kg = KnowledgeGraph.init();
 
-    // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [CYR:[TRANSLATED]go] [EN]to[EN]in
+    // in[CYR:I] [CYR:go] toin
     const countries = [_][]const u8{ "France", "Germany", "Italy", "Spain", "UK", "Poland", "Sweden", "Norway", "Finland", "Denmark" };
     const capitals = [_][]const u8{ "Paris", "Berlin", "Rome", "Madrid", "London", "Warsaw", "Stockholm", "Oslo", "Helsinki", "Copenhagen" };
 
     var timer = std.time.Timer.start() catch unreachable;
 
-    // [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] [EN]and[CYR:[TRANSLATED]]in
+    // inand andin
     for (countries, capitals) |country, capital| {
         kg.addTriple(capital, "capital_of", country);
     }
 
     const add_ns = timer.read();
 
-    // [CYR:[EN]pro]withy
+    // [CYR:pro]withy
     timer.reset();
     const iterations = 100;
     for (0..iterations) |_| {

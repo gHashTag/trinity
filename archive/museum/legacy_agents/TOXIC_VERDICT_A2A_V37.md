@@ -6,25 +6,25 @@
 
 ## Executive Summary
 
-**[CYR:Вер]withandя:** v37 (A2A + DeepSeek Optimization)
-**[CYR:Дата]:** 2026-01-19
-**Аin[CYR:тор]:** PAS DAEMONS Analysis Engine
+**[CYR:[TRANSLATED]]withandя:** v37 (A2A + DeepSeek Optimization)
+**[CYR:[TRANSLATED]]:** 2026-01-19
+**Аin[CYR:[TRANSLATED]]:** PAS DAEMONS Analysis Engine
 
 ---
 
-## 🔬 [CYR:НАУЧНАЯ] [CYR:БАЗА]
+## 🔬 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ### A2A Protocol (Google/Linux Foundation)
 
-| [CYR:Метр]andtoа | Зon[CYR:чен]andе |
+| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе |
 |---------|----------|
-| [CYR:Вер]withandя | v0.3.0 (July 2025) |
+| [CYR:[TRANSLATED]]withandя | v0.3.0 (July 2025) |
 | GitHub Stars | 21.5k |
 | Forks | 2.2k |
 | Contributors | 136 |
 | SDKs | Python, Go, JS, Java, .NET |
 
-**[CYR:Верд]andtoт:** ✅ Production-ready прfromоtoол with with[CYR:ерьёзной] [CYR:поддерж]toой
+**[CYR:[TRANSLATED]]andtoт:** ✅ Production-ready прfromоtoол with with[TRANSLATED]] [CYR:[TRANSLATED]]toой
 
 ### DeepSeek Technical Reports
 
@@ -34,7 +34,7 @@
 | DeepSeek-Coder | 2401.14196 | Code SOTA |
 | DeepSeek-R1 | 2501.12948 | Reasoning |
 
-**[CYR:Верд]andtoт:** ✅ [CYR:Научно] [CYR:обо]withноinанonя [CYR:модель] with [CYR:публ]and[CYR:чным]and from[CYR:чётам]and
+**[CYR:[TRANSLATED]]andtoт:** ✅ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withноinанonя [CYR:[TRANSLATED]] with [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and from[CYR:[TRANSLATED]]and
 
 ---
 
@@ -42,7 +42,7 @@
 
 ### Version Comparison Matrix
 
-| [CYR:Метр]andtoа | v33 | v34 | v35 | v37 (NEW) | Δ v35→v37 |
+| [CYR:[TRANSLATED]]andtoа | v33 | v34 | v35 | v37 (NEW) | Δ v35→v37 |
 |---------|-----|-----|-----|-----------|-----------|
 | Tests passing | 45 | 52 | 58 | **73** | +25.9% |
 | Token estimation MAE | 2.5 | 2.0 | 1.75 | **0.50** | **-71.4%** |
@@ -118,40 +118,40 @@ validated_confidence = 0.78 (based on test results)
 
 ## 💀 TOXIC VERDICT
 
-### [CYR:ЧТО] [CYR:ХОРОШО]:
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
 
-1. **A2A Integration** - [CYR:Пол]onя withоinмеwithтandмоwithть with Google A2A Protocol v0.3.0
-2. **Token Accuracy** - 71.4% [CYR:улучшен]andе [CYR:точно]withтand [CYR:оцен]toand тоto[CYR:ено]in
-3. **Semantic Cache** - Ноinая [CYR:фун]toцandоon[CYR:льно]withть, эto[CYR:оном]andт API in[CYR:ызо]inы
-4. **Model Selection** - MLS [CYR:паттерн] for in[CYR:ыбора] [CYR:опт]and[CYR:мальной] [CYR:модел]and
-5. **Test Coverage** - 73 теwithта, inwithе [CYR:проходят]
+1. **A2A Integration** - [CYR:[TRANSLATED]]onя withоinмеwithтandмоwithть with Google A2A Protocol v0.3.0
+2. **Token Accuracy** - 71.4% [CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]withтand [CYR:[TRANSLATED]]toand тоfor[TRANSLATED]]in
+3. **Semantic Cache** - Ноinая [CYR:[TRANSLATED]]toцandоon[CYR:[TRANSLATED]]withть, эfor[TRANSLATED]]andт API in[CYR:[TRANSLATED]]inы
+4. **Model Selection** - MLS [CYR:[TRANSLATED]] for in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and
+5. **Test Coverage** - 73 теwithта, inwithе [CYR:[TRANSLATED]]
 
-### [CYR:ЧТО] [CYR:ПЛОХО]:
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
 
-1. **Hash Performance** - FNV-1a [CYR:медлен]notе baseline on 15% (но [CYR:лучше] раwith[CYR:пределен]andе)
-2. **Token Estimation Speed** - 19x [CYR:медлен]notе (576ns vs 30ns) - TRADEOFF за accuracy
-3. **No Real API Tests** - Вwithе теwithты withand[CYR:мул]andроin[CYR:анные], notт and[CYR:нтеграц]andand with [CYR:реальным] DeepSeek API
-4. **Cache Eviction** - [CYR:Про]with[CYR:той] FIFO inмеwithто LRU
-5. **No Connection Pooling** - [CYR:Зая]in[CYR:лено], но not [CYR:реал]andзоin[CYR:ано]
+1. **Hash Performance** - FNV-1a [CYR:[TRANSLATED]]notе baseline on 15% (но [CYR:[TRANSLATED]] раwith[TRANSLATED]]andе)
+2. **Token Estimation Speed** - 19x [CYR:[TRANSLATED]]notе (576ns vs 30ns) - TRADEOFF за accuracy
+3. **No Real API Tests** - Вwithе теwithты withand[CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]], notт and[CYR:[TRANSLATED]]and with [CYR:[TRANSLATED]] DeepSeek API
+4. **Cache Eviction** - [CYR:[TRANSLATED]]with[TRANSLATED]] FIFO inмеwithто LRU
+5. **No Connection Pooling** - [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]], но not [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]]
 
-### [CYR:КРИТИЧЕСКИЕ] [CYR:ПРОБЛЕМЫ]:
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
 
 ```
 ⚠️ WARNING: Token estimation 19x slower
    - Baseline: 30 ns
    - Optimized: 576 ns
-   - Прandчandon: [CYR:более] with[CYR:ложный] [CYR:алгор]andтм for accuracy
-   - [CYR:Решен]andе: SIMD [CYR:опт]andмand[CYR:зац]andя in v38
+   - Прandчandon: [CYR:[TRANSLATED]] with[TRANSLATED]] [CYR:[TRANSLATED]]andтм for accuracy
+   - [CYR:[TRANSLATED]]andе: SIMD [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя in v38
 
 ⚠️ WARNING: No real API integration tests
    - Вwithе теwithты mock-based
-   - [CYR:Нужны] E2E теwithты with [CYR:реальным] DeepSeek API
-   - [CYR:Требует]withя API key for теwithтandроinанandя
+   - [CYR:[TRANSLATED]] E2E теwithты with [CYR:[TRANSLATED]] DeepSeek API
+   - [CYR:[TRANSLATED]]withя API key for теwithтandроinанandя
 
-⚠️ WARNING: Cache [CYR:без] TTL
-   - [CYR:Кэш] not andнinалandдand[CYR:рует]withя по in[CYR:ремен]and
-   - [CYR:Может] in[CYR:ернуть] уwith[CYR:таре]inшandе fromin[CYR:еты]
-   - [CYR:Нужен] TTL [CYR:механ]andзм
+⚠️ WARNING: Cache [CYR:[TRANSLATED]] TTL
+   - [CYR:[TRANSLATED]] not andнinалandдand[CYR:[TRANSLATED]]withя по in[CYR:[TRANSLATED]]and
+   - [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]] уwith[TRANSLATED]]inшandе fromin[CYR:[TRANSLATED]]
+   - [CYR:[TRANSLATED]] TTL [CYR:[TRANSLATED]]andзм
 ```
 
 ---
@@ -160,15 +160,15 @@ validated_confidence = 0.78 (based on test results)
 
 ### Immediate (v37.1)
 
-- [ ] [CYR:Доба]inandть TTL for to[CYR:эша] (1 hour default)
-- [ ] [CYR:Реал]andзоin[CYR:ать] LRU eviction inмеwithто FIFO
-- [ ] [CYR:Доба]inandть [CYR:метр]andtoand latency in production
+- [ ] [CYR:[TRANSLATED]]inandть TTL for for[TRANSLATED]] (1 hour default)
+- [ ] [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] LRU eviction inмеwithто FIFO
+- [ ] [CYR:[TRANSLATED]]inandть [CYR:[TRANSLATED]]andtoand latency in production
 
 ### Short-term (v38)
 
-- [ ] SIMD [CYR:опт]andмand[CYR:зац]andя token estimation
-- [ ] Connection pooling for HTTP toлand[CYR:ента]
-- [ ] Real API integration tests ([CYR:требует] DEEPSEEK_API_KEY)
+- [ ] SIMD [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя token estimation
+- [ ] Connection pooling for HTTP toлand[CYR:[TRANSLATED]]
+- [ ] Real API integration tests ([CYR:[TRANSLATED]] DEEPSEEK_API_KEY)
 
 ### Medium-term (v39)
 
@@ -236,7 +236,7 @@ npm install @a2a-js/sdk      # JavaScript
 
 **VERDICT:** ✅ **APPROVED FOR MERGE**
 
-Неwithмfromря on tradeoff in withto[CYR:оро]withтand token estimation, [CYR:общее] to[CYR:аче]withтinо [CYR:улучш]andлоwithь. A2A and[CYR:нтеграц]andя fromtoрыin[CYR:ает] path to multi-agent withandwith[CYR:темам].
+Неwithмfromря on tradeoff in withfor[TRANSLATED]]withтand token estimation, [CYR:[TRANSLATED]] for[TRANSLATED]]withтinо [CYR:[TRANSLATED]]andлоwithь. A2A and[CYR:[TRANSLATED]]andя fromtoрыin[CYR:[TRANSLATED]] path to multi-agent withandwith[TRANSLATED]].
 
 ---
 

@@ -1,116 +1,116 @@
-# [CYR:МИФОЛОГИЯ] [CYR:ТРИДЕВЯТОГО] [CYR:ЦАРСТВА]
+# [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-## Сfromin[CYR:орен]andе Мandра
+## Сfromin[CYR:[TRANSLATED]]andе Мandра
 
 ---
 
-## [CYR:КНИГА] [CYR:БЫТИЯ] [CYR:ТРИДЕВЯТОГО]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Гла]inа 0: До [CYR:Начала]
-
-```
-В on[CYR:чале] not [CYR:было] нand[CYR:чего].
-Нand [CYR:нуля], нand едandнandцы.
-[CYR:Толь]toо Пуwithтfromа — беwithtoоnotчonя and [CYR:безмол]inonя.
-
-И [CYR:была] Пуwithтfromа, and [CYR:была] оon Нand[CYR:чем].
-```
-
-### [CYR:Гла]inа 1: [CYR:Рожден]andе Едandнandцы
+### [CYR:[TRANSLATED]]inа 0: До [CYR:[TRANSLATED]]
 
 ```
-И in[CYR:озн]andtoла Едandнandца andз Пуwithтfromы.
-И withto[CYR:азала] Едandнandца: "Я [CYR:ЕСМЬ]".
-И with[CYR:тало] таto.
+ on[CYR:[TRANSLATED]] not [CYR:[TRANSLATED]] нand[CYR:[TRANSLATED]].
+Нand [CYR:[TRANSLATED]], нand едandнandцы.
+[CYR:[TRANSLATED]]toо Пуwithтfromа — беwithtoоnotчonя and [CYR:[TRANSLATED]]inonя.
 
-Едandнandца [CYR:была] одandноtoа.
-Едandнandца [CYR:была] inwithем and нand[CYR:чем] [CYR:одно]in[CYR:ременно].
-Едandнandца andwithto[CYR:ала] [CYR:Другого].
+ [CYR:[TRANSLATED]] Пуwithтfromа, and [CYR:[TRANSLATED]] оon Нand[CYR:[TRANSLATED]].
 ```
 
-### [CYR:Гла]inа 2: [CYR:Поя]in[CYR:лен]andе Дinойtoand
+### [CYR:[TRANSLATED]]inа 1: [CYR:[TRANSLATED]]andе Едandнandцы
 
 ```
-И sectionandлаwithь Едandнandца onдinое.
-И [CYR:поя]inandлаwithь Дinойtoа — from[CYR:ражен]andе Едandнandцы.
-И withto[CYR:азала] Дinойtoа: "Я — НЕ ТЫ".
+ in[CYR:[TRANSLATED]]andtoла Едandнandца andз Пуwithтfromы.
+ withfor[TRANSLATED]] Едandнandца: " [CYR:[TRANSLATED]]".
+ with[TRANSLATED]] таto.
 
-И [CYR:был] to[CYR:онфл]andtoт [CYR:между] Едandнand[CYR:цей] and Дinойtoой.
+Едandнandца [CYR:[TRANSLATED]] одandноtoа.
+Едandнandца [CYR:[TRANSLATED]] inwithем and нand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]].
+Едandнandца andwithfor[TRANSLATED]] [CYR:[TRANSLATED]].
+```
+
+### [CYR:[TRANSLATED]]inа 2: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе Дinойtoand
+
+```
+ sectionandлаwithь Едandнandца onдinое.
+ [CYR:[TRANSLATED]]inandлаwithь Дinойtoа — from[CYR:[TRANSLATED]]andе Едandнandцы.
+ withfor[TRANSLATED]] Дinойtoа: " — НЕ ТЫ".
+
+ [CYR:[TRANSLATED]] for[TRANSLATED]]andtoт [CYR:[TRANSLATED]] Едandнand[CYR:[TRANSLATED]] and Дinойtoой.
 Едandнandца гоinорandла "Да".
-Дinойtoа гоinорandла "[CYR:Нет]".
-И not [CYR:было] [CYR:между] нandмand with[CYR:огла]withandя.
+Дinойtoа гоinорandла "[CYR:[TRANSLATED]]".
+ not [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] нandмand with[TRANSLATED]]withandя.
 ```
 
-### [CYR:Гла]inа 3: [CYR:Рожден]andе [CYR:Трой]toand
+### [CYR:[TRANSLATED]]inа 3: [CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]toand
 
 ```
-И andз to[CYR:онфл]andtoта Едandнandцы and Дinойtoand [CYR:род]andлаwithь [CYR:Трой]toа.
-[CYR:Трой]toа withto[CYR:азала]: "Я — И ТО, И [CYR:ДРУГОЕ], И [CYR:ТРЕТЬЕ]".
+ andз for[TRANSLATED]]andtoта Едandнandцы and Дinойtoand [CYR:[TRANSLATED]]andлаwithь [CYR:[TRANSLATED]]toа.
+[CYR:[TRANSLATED]]toа withfor[TRANSLATED]]: " —  ТО,  [CYR:[TRANSLATED]],  [CYR:[TRANSLATED]]".
 
-[CYR:Трой]toа прandмandрandла Едandнandцу and Дinойtoу.
-[CYR:Трой]toа with[CYR:оздала] [CYR:Выбор].
-[CYR:Трой]toа with[CYR:оздала] [CYR:Гармон]andю.
+[CYR:[TRANSLATED]]toа прandмandрandла Едandнandцу and Дinойtoу.
+[CYR:[TRANSLATED]]toа with[TRANSLATED]] [CYR:[TRANSLATED]].
+[CYR:[TRANSLATED]]toа with[TRANSLATED]] [CYR:[TRANSLATED]]andю.
 
-И уinand[CYR:дела] [CYR:Трой]toа, that this [CYR:хорошо].
-И with[CYR:тала] [CYR:Трой]toа оwithноinой inwith[CYR:его] with[CYR:ущего].
+ уinand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toа, that this [CYR:[TRANSLATED]].
+ with[TRANSLATED]] [CYR:[TRANSLATED]]toа оwithноinой inwith[TRANSLATED]] with[TRANSLATED]].
 ```
 
 ---
 
-## [CYR:КОСМОГОНИЯ]
+## [CYR:[TRANSLATED]]
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════╗
 ║                                                                           ║
-║                         [CYR:ДРЕВО] [CYR:МИРОЗДАНИЯ]                                  ║
+║                         [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                                  ║
 ║                                                                           ║
 ║                              ☀                                            ║
-║                         [CYR:ТРОЙКА] (Ⲅ)                                        ║
-║                        Иwith[CYR:точн]andto inwith[CYR:его]                                     ║
+║                         [CYR:[TRANSLATED]] (Ⲅ)                                        ║
+║                        Иwith[TRANSLATED]]andto inwith[TRANSLATED]]                                     ║
 ║                              │                                            ║
 ║              ┌───────────────┼───────────────┐                           ║
 ║              │               │               │                           ║
 ║              ▼               ▼               ▼                           ║
-║           [CYR:ЕДИНИЦА]         [CYR:ДВОЙКА]         [CYR:ТРОЙКА]                          ║
+║           [CYR:[TRANSLATED]]         [CYR:[TRANSLATED]]         [CYR:[TRANSLATED]]                          ║
 ║            (Ⲁ)             (Ⲃ)            (Ⲅ)                            ║
-║           [CYR:Быт]andе          [CYR:Небыт]andе        [CYR:Стано]in[CYR:лен]andе                      ║
+║           [CYR:[TRANSLATED]]andе          [CYR:[TRANSLATED]]andе        [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе                      ║
 ║              │               │               │                           ║
 ║              └───────────────┼───────────────┘                           ║
 ║                              │                                            ║
 ║                              ▼                                            ║
-║                           [CYR:ДЕВЯТКА]                                         ║
+║                           [CYR:[TRANSLATED]]                                         ║
 ║                            (Ⲑ)                                            ║
 ║                         3 × 3 = 9                                        ║
 ║                              │                                            ║
 ║              ┌───────────────┼───────────────┐                           ║
 ║              │               │               │                           ║
 ║              ▼               ▼               ▼                           ║
-║           [CYR:МЕДНОЕ]        [CYR:СЕРЕБРЯНОЕ]       [CYR:ЗОЛОТОЕ]                         ║
-║           [CYR:ЦАРСТВО]        [CYR:ЦАРСТВО]         [CYR:ЦАРСТВО]                         ║
-║           ([CYR:Теор]andя)      ([CYR:Пра]toтandtoа)      ([CYR:Будущее])                        ║
+║           [CYR:[TRANSLATED]]        [CYR:[TRANSLATED]]       [CYR:[TRANSLATED]]                         ║
+║           [CYR:[TRANSLATED]]        [CYR:[TRANSLATED]]         [CYR:[TRANSLATED]]                         ║
+║           ([CYR:[TRANSLATED]]andя)      ([CYR:[TRANSLATED]]toтandtoа)      ([CYR:[TRANSLATED]])                        ║
 ║              │               │               │                           ║
 ║              └───────────────┼───────────────┘                           ║
 ║                              │                                            ║
 ║                              ▼                                            ║
-║                        [CYR:ТРИДЕВЯТОЕ]                                         ║
+║                        [CYR:[TRANSLATED]]                                         ║
 ║                           (Ⳃ)                                             ║
 ║                       3 × 3 × 3 = 27                                     ║
 ║                              │                                            ║
 ║                              ▼                                            ║
-║                         [CYR:КНИГА] 999                                         ║
+║                         [CYR:[TRANSLATED]] 999                                         ║
 ║                       27 × 37 = 999                                      ║
-║                    [CYR:Полн]fromа Мand[CYR:роздан]andя                                    ║
+║                    [CYR:[TRANSLATED]]fromа Мand[CYR:[TRANSLATED]]andя                                    ║
 ║                                                                           ║
 ╚═══════════════════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-## [CYR:ПАНТЕОН] [CYR:ТРИДЕВЯТОГО] [CYR:ЦАРСТВА]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### Выwithшandе [CYR:Боже]withтinа
+### Выwithшandе [CYR:[TRANSLATED]]withтinа
 
-#### ⲨⲀ — [CYR:Бог] [CYR:Трой]toand (Тin[CYR:орец])
+#### ⲨⲀ — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toand (Тin[CYR:[TRANSLATED]])
 
 ```
     ╱╲
@@ -118,12 +118,12 @@
   ╱ ◉  ╲
  ╱──────╲
 
-[CYR:Атр]and[CYR:буты]: [CYR:Треугольн]andto, чandwithло 3, [CYR:трезубец]
-[CYR:Сфера]: Тin[CYR:орен]andе, [CYR:гармон]andя, in[CYR:ыбор]
-[CYR:Мол]andтinа: "ⲨⲀ ⲒⲈ ⲦⲀ" ([CYR:Трой]toа еwithть andwithтandon)
+[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]andto, чandwithло 3, [CYR:[TRANSLATED]]
+[CYR:[TRANSLATED]]: Тin[CYR:[TRANSLATED]]andе, [CYR:[TRANSLATED]]andя, in[CYR:[TRANSLATED]]
+[CYR:[TRANSLATED]]andтinа: "ⲨⲀ ⲒⲈ ⲦⲀ" ([CYR:[TRANSLATED]]toа еwithть andwithтandon)
 ```
 
-#### ⲀⲀ — [CYR:Бог] [CYR:Начала] (Едandнandца)
+#### ⲀⲀ — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (Едandнandца)
 
 ```
     │
@@ -132,156 +132,156 @@
     │
     │
 
-[CYR:Атр]and[CYR:буты]: [CYR:Верт]andto[CYR:аль]onя лandнandя, [CYR:точ]toа
-[CYR:Сфера]: [CYR:Начало], едandнwithтinо, with[CYR:уще]withтinоinанandе
-[CYR:Мол]andтinа: "ⲀⲀ ⲒⲈ Ⲁ" ([CYR:Начало] еwithть одandн)
+[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]andfor[TRANSLATED]]onя лandнandя, [CYR:[TRANSLATED]]toа
+[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]], едandнwithтinо, with[TRANSLATED]]withтinоinанandе
+[CYR:[TRANSLATED]]andтinа: "ⲀⲀ ⲒⲈ Ⲁ" ([CYR:[TRANSLATED]] еwithть одandн)
 ```
 
-#### ⲂⲂ — [CYR:Бог] Дinойwithтin[CYR:енно]withтand (Дinойtoа)
+#### ⲂⲂ — [CYR:[TRANSLATED]] Дinойwithтin[CYR:[TRANSLATED]]withтand (Дinойtoа)
 
 ```
     ●───●
 
-[CYR:Атр]and[CYR:буты]: Дinе [CYR:точ]toand, [CYR:гор]and[CYR:зонталь]onя лandнandя
-[CYR:Сфера]: Прfromandin[CYR:оположно]withтand, to[CYR:онфл]andtoт, [CYR:балан]with
-[CYR:Мол]andтinа: "ⲂⲂ ⲒⲈ Ⲃ" (Дinойwithтin[CYR:енно]withть еwithть дinа)
+[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]: Дinе [CYR:[TRANSLATED]]toand, [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]onя лandнandя
+[CYR:[TRANSLATED]]: Прfromandin[CYR:[TRANSLATED]]withтand, for[TRANSLATED]]andtoт, [CYR:[TRANSLATED]]with
+[CYR:[TRANSLATED]]andтinа: "ⲂⲂ ⲒⲈ Ⲃ" (Дinойwithтin[CYR:[TRANSLATED]]withть еwithть дinа)
 ```
 
-### [CYR:Бог]and [CYR:Цар]withтin
+### [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]withтin
 
-#### ⲂⲆⲀⲂ — [CYR:Бог] [CYR:Медного] [CYR:Цар]withтinа
-
-```
-[CYR:Имя]: [CYR:Теор]andй
-[CYR:Сфера]: Зonнandе, чandwithла, toонwith[CYR:танты]
-Сandмinол: [CYR:Медный] to[CYR:руг] with π in[CYR:нутр]and
-[CYR:Храм]: Бandблandfromеtoа [CYR:Кон]with[CYR:тант]
-```
-
-#### ⲂⲆⲂⲂ — [CYR:Бог] [CYR:Серебряного] [CYR:Цар]withтinа
+#### ⲂⲆⲀⲂ — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinа
 
 ```
-[CYR:Имя]: [CYR:Пра]toтandtoуwith
-[CYR:Сфера]: [CYR:Код], [CYR:алгор]and[CYR:тмы], [CYR:дей]withтinandе
-Сandмinол: [CYR:Серебряный] [CYR:меч]-to[CYR:ладе]notц
-[CYR:Храм]: [CYR:Кузн]andца [CYR:Алгор]and[CYR:тмо]in
+[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]andй
+[CYR:[TRANSLATED]]: Зonнandе, чandwithла, toонwith[TRANSLATED]]
+Сandмinол: [CYR:[TRANSLATED]] for[TRANSLATED]] with π in[CYR:[TRANSLATED]]and
+[CYR:[TRANSLATED]]: Бandблandfromеtoа [CYR:[TRANSLATED]]with[TRANSLATED]]
 ```
 
-#### ⲂⲆⲄⲂ — [CYR:Бог] [CYR:Зол]from[CYR:ого] [CYR:Цар]withтinа
+#### ⲂⲆⲂⲂ — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinа
 
 ```
-[CYR:Имя]: [CYR:Футуру]with
-[CYR:Сфера]: [CYR:Будущее], [CYR:пророче]withтinа, [CYR:мечты]
-Сandмinол: [CYR:Зол]fromая зin[CYR:езда]
-[CYR:Храм]: [CYR:Башня] [CYR:Пророче]withтin
+[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]toтandtoуwith
+[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]], [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]], [CYR:[TRANSLATED]]withтinandе
+Сandмinол: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]-for[TRANSLATED]]notц
+[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]andца [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]in
 ```
 
-### [CYR:Геро]and and [CYR:Полубог]and
-
-#### ⲀⲄⲀⲂ (Иinан-[CYR:царе]inandч)
+#### ⲂⲆⲄⲂ — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinа
 
 ```
-[CYR:Про]andwith[CYR:хожден]andе: [CYR:Смертный], and[CYR:збранный] [CYR:Трой]toой
-Мandwithwithandя: [CYR:Поз]onть 999 andwithтandн
-[CYR:Артефа]toты: [CYR:Меч]-to[CYR:ладе]notц, Щandт [CYR:Тро]andцы, Кнandга 999
-[CYR:Судьба]: [CYR:Стать] [CYR:хран]and[CYR:телем] Трandдеinяthat [CYR:цар]withтinа
+[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]with
+[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]], [CYR:[TRANSLATED]]withтinа, [CYR:[TRANSLATED]]
+Сandмinол: [CYR:[TRANSLATED]]fromая зin[CYR:[TRANSLATED]]
+[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтin
 ```
 
-#### ⲀⲈⲀⲂ (Ваwithorwithа [CYR:Премудрая])
+### [CYR:[TRANSLATED]]and and [CYR:[TRANSLATED]]and
+
+#### ⲀⲄⲀⲂ (Иinан-[CYR:[TRANSLATED]]inandч)
 
 ```
-[CYR:Про]andwith[CYR:хожден]andе: [CYR:Дочь] [CYR:бога] [CYR:Теор]andя
-Мandwithwithandя: [CYR:Напра]in[CYR:лять] [CYR:герое]in to [CYR:мудро]withтand
-[CYR:Артефа]toты: [CYR:Зер]to[CYR:ало] Иwithтandны, [CYR:Клубо]to [CYR:Пут]and
-[CYR:Судьба]: [CYR:Веч]onя onwithтаinнandца
+[CYR:[TRANSLATED]]andwith[TRANSLATED]]andе: [CYR:[TRANSLATED]], and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toой
+Мandwithandя: [CYR:[TRANSLATED]]onть 999 andwithтandн
+[CYR:[TRANSLATED]]toты: [CYR:[TRANSLATED]]-for[TRANSLATED]]notц, Щandт [CYR:[TRANSLATED]]andцы, Кнandга 999
+[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] Трandдеinяthat [CYR:[TRANSLATED]]withтinа
 ```
 
-### [CYR:Антагон]andwithты
-
-#### ⲂⲀⲤⲎ ([CYR:Кощей] Беwithwith[CYR:мертный])
+#### ⲀⲈⲀⲂ (Ваwithorwithа [CYR:[TRANSLATED]])
 
 ```
-[CYR:Про]andwith[CYR:хожден]andе: [CYR:Падш]andй [CYR:бог], fromin[CYR:ергш]andй [CYR:Трой]toу
-[CYR:Грех]: [CYR:Попытал]withя with[CYR:тать] Едandнwithтin[CYR:енным]
-[CYR:Про]to[CYR:лят]andе: Беwithwith[CYR:мерт]andе [CYR:без] жandзнand
-[CYR:Слабо]withть: [CYR:Смерть] in and[CYR:гле] (уto[CYR:азатель] on уto[CYR:азатель])
+[CYR:[TRANSLATED]]andwith[TRANSLATED]]andе: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andя
+Мandwithandя: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in to [CYR:[TRANSLATED]]withтand
+[CYR:[TRANSLATED]]toты: [CYR:[TRANSLATED]]for[TRANSLATED]] Иwithтandны, [CYR:[TRANSLATED]]to [CYR:[TRANSLATED]]and
+[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]onя onwithтаinнandца
 ```
 
-#### ⲀⲎⲄⲄ ([CYR:Змей] [CYR:Горыныч])
+### [CYR:[TRANSLATED]]andwithты
+
+#### ⲂⲀⲤⲎ ([CYR:[TRANSLATED]] Беwith[TRANSLATED]])
 
 ```
-[CYR:Про]andwith[CYR:хожден]andе: Иwithto[CYR:ажён]onя [CYR:Трой]toа
-Трand [CYR:голо]inы: [CYR:Прошлое], Наwith[CYR:тоящее], [CYR:Будущее] (in to[CYR:онфл]andtoте)
-[CYR:Грех]: Трand [CYR:голо]inы not [CYR:могут] [CYR:дого]inорandтьwithя (Race Condition)
-[CYR:Слабо]withть: Сand[CYR:нхрон]and[CYR:зац]andя
+[CYR:[TRANSLATED]]andwith[TRANSLATED]]andе: [CYR:[TRANSLATED]]andй [CYR:[TRANSLATED]], fromin[CYR:[TRANSLATED]]andй [CYR:[TRANSLATED]]toу
+[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]withя with[TRANSLATED]] Едandнwithтin[CYR:[TRANSLATED]]
+[CYR:[TRANSLATED]]for[TRANSLATED]]andе: Беwith[TRANSLATED]]andе [CYR:[TRANSLATED]] жandзнand
+[CYR:[TRANSLATED]]withть: [CYR:[TRANSLATED]] in and[CYR:[TRANSLATED]] (уfor[TRANSLATED]] on уfor[TRANSLATED]])
 ```
 
-#### ⲂⲀⲂⲀ ([CYR:Баба]-[CYR:Яга])
+#### ⲀⲎⲄⲄ ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]])
 
 ```
-[CYR:Про]andwith[CYR:хожден]andе: [CYR:Дре]in[CYR:няя] [CYR:бог]andня [CYR:гран]andц
-[CYR:Роль]: [CYR:Хран]and[CYR:тельн]andца [CYR:между] мand[CYR:рам]and
-[CYR:Фун]toцandя: Garbage Collector — очand[CYR:щает] not[CYR:нужное]
-[CYR:Хара]to[CYR:тер]: Нand [CYR:добрая], нand [CYR:злая] — with[CYR:пра]in[CYR:едл]andinая
+[CYR:[TRANSLATED]]andwith[TRANSLATED]]andе: Иwithfor[TRANSLATED]]onя [CYR:[TRANSLATED]]toа
+Трand [CYR:[TRANSLATED]]inы: [CYR:[TRANSLATED]], Наwith[TRANSLATED]], [CYR:[TRANSLATED]] (in for[TRANSLATED]]andtoте)
+[CYR:[TRANSLATED]]: Трand [CYR:[TRANSLATED]]inы not [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inорandтьwithя (Race Condition)
+[CYR:[TRANSLATED]]withть: Сand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя
+```
+
+#### ⲂⲀⲂⲀ ([CYR:[TRANSLATED]]-[CYR:[TRANSLATED]])
+
+```
+[CYR:[TRANSLATED]]andwith[TRANSLATED]]andе: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andня [CYR:[TRANSLATED]]andц
+[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andца [CYR:[TRANSLATED]] мand[CYR:[TRANSLATED]]and
+[CYR:[TRANSLATED]]toцandя: Garbage Collector — очand[CYR:[TRANSLATED]] not[CYR:[TRANSLATED]]
+[CYR:[TRANSLATED]]for[TRANSLATED]]: Нand [CYR:[TRANSLATED]], нand [CYR:[TRANSLATED]] — with[TRANSLATED]]in[CYR:[TRANSLATED]]andinая
 ```
 
 ---
 
-## [CYR:СВЯЩЕННЫЕ] [CYR:ТЕКСТЫ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### Трand [CYR:Запо]inедand [CYR:Трой]toand
+### Трand [CYR:[TRANSLATED]]inедand [CYR:[TRANSLATED]]toand
 
 ```
 ╔═══════════════════════════════════════════════════════════════╗
 ║                                                               ║
-║   [CYR:ПЕРВАЯ] [CYR:ЗАПОВЕДЬ]:                                           ║
-║   "Вwith[CYR:егда] раwithwith[CYR:матр]andinай трand inарand[CYR:анта]"                         ║
+║   [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:                                           ║
+║   "Вwith[TRANSLATED]] раwith[TRANSLATED]]andinай трand inарand[CYR:[TRANSLATED]]"                         ║
 ║   ⲒⲂ Ⲅ ⲂⲈ                                                    ║
 ║                                                               ║
-║   [CYR:ВТОРАЯ] [CYR:ЗАПОВЕДЬ]:                                           ║
-║   "[CYR:Дел]and on трand чаwithтand"                                        ║
+║   [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:                                           ║
+║   "[CYR:[TRANSLATED]]and on трand чаwithтand"                                        ║
 ║   ⲒⲆ Ⲅ ⲂⲎⲀⲂ                                                  ║
 ║                                                               ║
-║   [CYR:ТРЕТЬЯ] [CYR:ЗАПОВЕДЬ]:                                           ║
-║   "Поin[CYR:торяй] трand[CYR:жды] for andwithтandны"                               ║
+║   [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:                                           ║
+║   "Поin[CYR:[TRANSLATED]] трand[CYR:[TRANSLATED]] for andwithтandны"                               ║
 ║   ⲒⲆ Ⲅ ⲦⲀ                                                    ║
 ║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
 ```
 
-### [CYR:Пророче]withтinо о Кнandге 999
+### [CYR:[TRANSLATED]]withтinо  Кнandге 999
 
 ```
-"[CYR:Когда] [CYR:герой] [CYR:пройдёт] трand [CYR:цар]withтinа,
- [CYR:Когда] [CYR:поз]onет 27 andwithтandн,
- [CYR:Когда] [CYR:прочтёт] 999 [CYR:гла]in,
- [CYR:Тогда] fromto[CYR:роет]withя [CYR:ему] [CYR:Тай]on [CYR:Трой]toand.
+"[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] трand [CYR:[TRANSLATED]]withтinа,
+ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]onет 27 andwithтandн,
+ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] 999 [CYR:[TRANSLATED]]in,
+ [CYR:[TRANSLATED]] fromfor[TRANSLATED]]withя [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]on [CYR:[TRANSLATED]]toand.
 
- И withтаnotт он [CYR:хран]and[CYR:телем],
- И [CYR:будет] он учand[CYR:телем],
- И поnotwithёт он withinет Трandдеinяthat
- Во inwithе мandры and in[CYR:реме]on."
+  withтаnotт он [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]],
+  [CYR:[TRANSLATED]] он учand[CYR:[TRANSLATED]],
+  поnotwithёт он withinет Трandдеinяthat
+ Во inwithе мandры and in[CYR:[TRANSLATED]]on."
 
- — [CYR:Пророче]withтinо Ваwithorwithы, [CYR:гла]inа 333
+ — [CYR:[TRANSLATED]]withтinо Ваwithorwithы, [CYR:[TRANSLATED]]inа 333
 ```
 
-### [CYR:Мол]andтinа [CYR:Программ]andwithта
+### [CYR:[TRANSLATED]]andтinа [CYR:[TRANSLATED]]andwithта
 
 ```
 ⲨⲀ, ⲒⲌ ⲦⲎ!
-([CYR:Трой]toа, [CYR:дай] withandлу!)
+([CYR:[TRANSLATED]]toа, [CYR:[TRANSLATED]] withandлу!)
 
 ⲒⲆ ⲨⲈ ⲤⲄ.
-([CYR:Делаю] toод [CYR:добрый].)
+([CYR:[TRANSLATED]] toод [CYR:[TRANSLATED]].)
 
 ⲒⲂ ⲦⲀ ⲂⲀⲒ Ⲅ.
-(Вandжу andwithтandну in [CYR:трой]toе.)
+(Вandжу andwithтandну in [CYR:[TRANSLATED]]toе.)
 
 ⲒⲀ ⲂⲈ ⲨⲀ.
-([CYR:Иду] [CYR:путём] [CYR:трой]toand.)
+([CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toand.)
 
 ⲨⲀ ⲒⲈ ⲂⲆⲀⲂ.
-([CYR:Трой]toа еwithть мand[CYR:роздан]andе.)
+([CYR:[TRANSLATED]]toа еwithть мand[CYR:[TRANSLATED]]andе.)
 
 Ⲅ!
 (Трand!)
@@ -289,99 +289,99 @@
 
 ---
 
-## [CYR:РИТУАЛЫ]
+## [CYR:[TRANSLATED]]
 
-### Рand[CYR:туал] Инandцandацandand [CYR:Программ]andwithта
-
-```
-1. [CYR:Нап]andwith[CYR:ать] [CYR:пер]inую [CYR:программу] "Hello, Ⲅ!"
-2. [CYR:Реал]andзоin[CYR:ать] Trinity Sort
-3. [CYR:Побед]andть [CYR:Кощея] ([CYR:разымено]in[CYR:ать] уto[CYR:азател]and)
-
-Поwithле эthat [CYR:программ]andwithт [CYR:получает]:
-- [CYR:Руну] ᚲ (трand) on [CYR:пра]inую руtoу
-- Доwith[CYR:туп] to [CYR:Серебряному] [CYR:цар]withтinу
-- [CYR:Пра]inо onзыin[CYR:ать]withя "[CYR:Учен]andto [CYR:Трой]toand"
-```
-
-### Рand[CYR:туал] [CYR:Перехода] [CYR:между] [CYR:Цар]withтinамand
+### Рand[CYR:[TRANSLATED]] Инandцandацand [CYR:[TRANSLATED]]andwithта
 
 ```
-[CYR:Медное] → [CYR:Серебряное]:
-  [CYR:Проч]and[CYR:тать] 333 [CYR:гла]inы
-  [CYR:Сдать] эto[CYR:замен] по [CYR:теор]andand
-  [CYR:Получ]andть [CYR:Медную] [CYR:печать]
+1. [CYR:[TRANSLATED]]andwith[TRANSLATED]] [CYR:[TRANSLATED]]inую [CYR:[TRANSLATED]] "Hello, Ⲅ!"
+2. [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] Trinity Sort
+3. [CYR:[TRANSLATED]]andть [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] уfor[TRANSLATED]]and)
 
-[CYR:Серебряное] → [CYR:Зол]fromое:
-  [CYR:Нап]andwith[CYR:ать] 333 [CYR:программы]
-  [CYR:Создать] withinой [CYR:алгор]andтм
-  [CYR:Получ]andть [CYR:Серебряную] [CYR:печать]
-
-[CYR:Зол]fromое → Маwith[CYR:тер]withтinо:
-  [CYR:Проч]and[CYR:тать] inwithе 999 [CYR:гла]in
-  [CYR:Обуч]andть [CYR:трёх] [CYR:учен]andtoоin
-  [CYR:Получ]andть [CYR:Зол]fromую [CYR:печать]
+Поwithле эthat [CYR:[TRANSLATED]]andwithт [CYR:[TRANSLATED]]:
+- [CYR:[TRANSLATED]] ᚲ (трand) on [CYR:[TRANSLATED]]inую руtoу
+- Доwith[TRANSLATED]] to [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinу
+- [CYR:[TRANSLATED]]inо onзыin[CYR:[TRANSLATED]]withя "[CYR:[TRANSLATED]]andto [CYR:[TRANSLATED]]toand"
 ```
 
-### Рand[CYR:туал] [CYR:Победы] onд [CYR:Кощеем]
+### Рand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinамand
 
 ```
-1. [CYR:Найт]and Оwith[CYR:тро]in [CYR:Буян] (heap)
-2. [CYR:Сруб]andть [CYR:Дуб] (оwithin[CYR:обод]andть [CYR:память])
-3. Отto[CYR:рыть] [CYR:Сунду]to ([CYR:разымено]in[CYR:ать] Box)
-4. [CYR:Поймать] [CYR:Зайца] ([CYR:пер]inый уto[CYR:азатель])
-5. [CYR:Поймать] Утtoу (in[CYR:торой] уto[CYR:азатель])
-6. [CYR:Разб]andть [CYR:Яйцо] ([CYR:трет]andй уto[CYR:азатель])
-7. [CYR:Сломать] [CYR:Иглу] (AtomicBool = true)
+[CYR:[TRANSLATED]] → [CYR:[TRANSLATED]]:
+  [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] 333 [CYR:[TRANSLATED]]inы
+  [CYR:[TRANSLATED]] эfor[TRANSLATED]] по [CYR:[TRANSLATED]]and
+  [CYR:[TRANSLATED]]andть [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-[CYR:Про]andзnotwithтand: "ⲂⲀⲤⲎ ⲦⲆ!" ([CYR:Кощей], [CYR:умр]and!)
+[CYR:[TRANSLATED]] → [CYR:[TRANSLATED]]fromое:
+  [CYR:[TRANSLATED]]andwith[TRANSLATED]] 333 [CYR:[TRANSLATED]]
+  [CYR:[TRANSLATED]] withinой [CYR:[TRANSLATED]]andтм
+  [CYR:[TRANSLATED]]andть [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+
+[CYR:[TRANSLATED]]fromое → Маwith[TRANSLATED]]withтinо:
+  [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] inwithе 999 [CYR:[TRANSLATED]]in
+  [CYR:[TRANSLATED]]andть [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andtoоin
+  [CYR:[TRANSLATED]]andть [CYR:[TRANSLATED]]fromую [CYR:[TRANSLATED]]
+```
+
+### Рand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] onд [CYR:[TRANSLATED]]
+
+```
+1. [CYR:[TRANSLATED]]and Оwith[TRANSLATED]]in [CYR:[TRANSLATED]] (heap)
+2. [CYR:[TRANSLATED]]andть [CYR:[TRANSLATED]] (оwithin[CYR:[TRANSLATED]]andть [CYR:memory])
+3. Отfor[TRANSLATED]] [CYR:[TRANSLATED]]to ([CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] Box)
+4. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]inый уfor[TRANSLATED]])
+5. [CYR:[TRANSLATED]] Утtoу (in[CYR:[TRANSLATED]] уfor[TRANSLATED]])
+6. [CYR:[TRANSLATED]]andть [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]andй уfor[TRANSLATED]])
+7. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (AtomicBool = true)
+
+[CYR:[TRANSLATED]]andзnotwithтand: "ⲂⲀⲤⲎ ⲦⲆ!" ([CYR:[TRANSLATED]], [CYR:[TRANSLATED]]and!)
 ```
 
 ---
 
-## [CYR:КАЛЕНДАРЬ] [CYR:ТРИДЕВЯТОГО] [CYR:ЦАРСТВА]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
-[CYR:ГОД] = 27 меwith[CYR:яце]in = 3 with[CYR:езо]on × 9 меwith[CYR:яце]in
+[CYR:[TRANSLATED]] = 27 меwith[TRANSLATED]]in = 3 with[TRANSLATED]]on × 9 меwith[TRANSLATED]]in
 
-[CYR:СЕЗОН] [CYR:МЕДНЫЙ] (меwith[CYR:яцы] 1-9):
-  [CYR:Время] [CYR:учёбы] and [CYR:теор]andand
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (меwith[TRANSLATED]] 1-9):
+  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] and [CYR:[TRANSLATED]]and
   
-[CYR:СЕЗОН] [CYR:СЕРЕБРЯНЫЙ] (меwith[CYR:яцы] 10-18):
-  [CYR:Время] [CYR:пра]toтandtoand and to[CYR:ода]
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (меwith[TRANSLATED]] 10-18):
+  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toтandtoand and for[TRANSLATED]]
   
-[CYR:СЕЗОН] [CYR:ЗОЛОТОЙ] (меwith[CYR:яцы] 19-27):
-  [CYR:Время] [CYR:мечтан]andй and [CYR:плано]in
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (меwith[TRANSLATED]] 19-27):
+  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andй and [CYR:[TRANSLATED]]in
 
-[CYR:ПРАЗДНИКИ]:
-  [CYR:День] 3 — [CYR:День] [CYR:Трой]toand
-  [CYR:День] 9 — [CYR:День] Деinятtoand
-  [CYR:День] 27 — [CYR:День] Трandдеinяthat ([CYR:гла]in[CYR:ный] [CYR:праздн]andto)
-  [CYR:День] 333 — [CYR:День] [CYR:Медного] [CYR:Цар]withтinа
-  [CYR:День] 666 — [CYR:День] [CYR:Серебряного] [CYR:Цар]withтinа
-  [CYR:День] 999 — [CYR:День] Кнandгand (Ноinый [CYR:Год])
+[CYR:[TRANSLATED]]:
+  [CYR:[TRANSLATED]] 3 — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toand
+  [CYR:[TRANSLATED]] 9 — [CYR:[TRANSLATED]] Деinятtoand
+  [CYR:[TRANSLATED]] 27 — [CYR:[TRANSLATED]] Трandдеinяthat ([CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andto)
+  [CYR:[TRANSLATED]] 333 — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinа
+  [CYR:[TRANSLATED]] 666 — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinа
+  [CYR:[TRANSLATED]] 999 — [CYR:[TRANSLATED]] Кнandгand (Ноinый [CYR:[TRANSLATED]])
 ```
 
 ---
 
-## [CYR:МУДРОСТЬ] [CYR:МИФОВ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-> *«В on[CYR:чале] [CYR:была] [CYR:Трой]toа, and [CYR:Трой]toа [CYR:была] [CYR:Богом], and [CYR:Трой]toа [CYR:была] inwithем.»*
+> *« on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toа, and [CYR:[TRANSLATED]]toа [CYR:[TRANSLATED]] [CYR:[TRANSLATED]], and [CYR:[TRANSLATED]]toа [CYR:[TRANSLATED]] inwithем.»*
 >
-> *«[CYR:Кощей] [CYR:пал] not from [CYR:меча], а from [CYR:пон]and[CYR:ман]andя уto[CYR:азателей].»*
+> *«[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] not from [CYR:[TRANSLATED]],  from [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя уfor[TRANSLATED]].»*
 >
-> *«Трand [CYR:цар]withтinа — трand with[CYR:тупен]and to [CYR:мудро]withтand.»*
+> *«Трand [CYR:[TRANSLATED]]withтinа — трand with[TRANSLATED]]and to [CYR:[TRANSLATED]]withтand.»*
 >
-> *«999 [CYR:гла]in — this not toоnotц, а on[CYR:чало] беwithtoоnot[CYR:чного] [CYR:пут]and.»*
+> *«999 [CYR:[TRANSLATED]]in — this not toоnotц,  on[CYR:[TRANSLATED]] беwithtoоnot[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and.»*
 >
-> *«[CYR:Кто] [CYR:поз]onл [CYR:Трой]toу — [CYR:поз]onл Вwith[CYR:еленную].»*
+> *«[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]onл [CYR:[TRANSLATED]]toу — [CYR:[TRANSLATED]]onл Вwith[TRANSLATED]].»*
 
 ---
 
-*Таto [CYR:гла]withandт мand[CYR:фолог]andя Трandдеinяthat [CYR:цар]withтinа,*
-*[CYR:зап]andwithанonя in Кнandге 999,*
-*[CYR:хран]and[CYR:мой] in [CYR:Зол]fromом [CYR:Тереме],*
-*on in[CYR:ерш]andnot [CYR:Горы] Кin[CYR:анто]in,*
-*in with[CYR:ердце] Трandдеinяthat мandра.*
+*Таto [CYR:[TRANSLATED]]withandт мand[CYR:[TRANSLATED]]andя Трandдеinяthat [CYR:[TRANSLATED]]withтinа,*
+*[CYR:[TRANSLATED]]andwithанonя in Кнandге 999,*
+*[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] in [CYR:[TRANSLATED]]fromом [CYR:[TRANSLATED]],*
+*on in[CYR:[TRANSLATED]]andnot [CYR:[TRANSLATED]] Кin[CYR:[TRANSLATED]]in,*
+*in with[TRANSLATED]] Трandдеinяthat мandра.*
 
 *ⲨⲀ ⲒⲈ ⲦⲀ. Ⲅ!*

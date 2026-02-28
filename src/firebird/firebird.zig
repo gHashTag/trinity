@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]] [CYR:[EN]] (FIREBIRD) - Ternary Virtual Anti-Detect Browser
+//   (FIREBIRD) - Ternary Virtual Anti-Detect Browser
 // Integrated module with VSA operations for virtual space navigation
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL

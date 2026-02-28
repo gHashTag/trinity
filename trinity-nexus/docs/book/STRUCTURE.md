@@ -5,7 +5,7 @@
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                                                                             │
-│  [CYRILLIC] [CYRILLIC] В [CYRILLIC] [CYRILLIC]                                           │
+│  [CYRILLIC] [CYRILLIC]  [CYRILLIC] [CYRILLIC]                                           │
 │                                                                             │
 │  ┌─────────────┐                                                           │
 │  │   [CYRILLIC]    │  [CYRILLIC]tt k [CYRILLIC]ak[CYRILLIC]aю                                        │
@@ -48,8 +48,8 @@
 │  ╔═══════════════════════════════════════════════════════════════════╗     │
 │  ║  [CYRILLIC] IV: [CYRILLIC] VIBEE — [CYRILLIC]tt[CYRILLIC] мaр                              ║     │
 │  ║  ┌─────────────────────────────────────────────────────────────┐  ║     │
-│  ║  │ Chapter 11: [CYRILLIC]k Vtbee — Сk[CYRILLIC]aе о [CYRILLIC]a[CYRILLIC] [CYRILLIC]uтttе          │  ║     │
-│  ║  │ Chapter 12: [CYRILLIC]a[CYRILLIC] 999 — [CYRILLIC] о 999 оkonх                │  ║     │
+│  ║  │ Chapter 11: [CYRILLIC]k Vtbee — Сk[CYRILLIC]aе  [CYRILLIC]a[CYRILLIC] [CYRILLIC]uтttе          │  ║     │
+│  ║  │ Chapter 12: [CYRILLIC]a[CYRILLIC] 999 — [CYRILLIC]  999 оkonх                │  ║     │
 │  ║  │ Chapter 13: [CYRILLIC]a[CYRILLIC]k[CYRILLIC] — Three u[CYRILLIC]kа uоk[CYRILLIC]ttaщ                │  ║     │
 │  ║  └─────────────────────────────────────────────────────────────┘  ║     │
 │  ╚═══════════════════════════════════════════════════════════════════╝     │
@@ -67,7 +67,7 @@
 │         ▼                                                                   │
 │  ┌─────────────┐                                                           │
 │  │   [CYRILLIC]    │  [CYRILLIC]tt[CYRILLIC]aе u [CYRILLIC]u[CYRILLIC]                                  │
-│  │ "И я [CYRILLIC]    │  Сk[CYRILLIC]kа — [CYRILLIC], [CYRILLIC] tt [CYRILLIC] on[CYRILLIC]k                           │
+│  │ "  [CYRILLIC]    │  Сk[CYRILLIC]kа — [CYRILLIC], [CYRILLIC] tt [CYRILLIC] on[CYRILLIC]k                           │
 │  │   [CYRILLIC]..."   │                                                           │
 │  └─────────────┘                                                           │
 │                                                                             │
@@ -88,7 +88,7 @@
 
 3. [CYRILLIC] II: [CYRILLIC] — [CYRILLIC]k[CYRILLIC] [CYRILLIC]a[CYRILLIC]aе
    [CYRILLIC] [CYRILLIC]u[CYRILLIC] (u[CYRILLIC]a[CYRILLIC]ttkа) k u[CYRILLIC] ([CYRILLIC]u[CYRILLIC]a).
-   [CYRILLIC]aя о [CYRILLIC]u[CYRILLIC]ttе — [CYRILLIC]aоon[CYRILLIC]onя [CYRILLIC].
+   [CYRILLIC]aя  [CYRILLIC]u[CYRILLIC]ttе — [CYRILLIC]aоon[CYRILLIC]onя [CYRILLIC].
 
 4. [CYRILLIC] III: [CYRILLIC] — [CYRILLIC]k[CYRILLIC]
    [CYRILLIC]ka [CYRILLIC]tt[CYRILLIC] [CYRILLIC]aю.
@@ -211,7 +211,7 @@ book/charters/
 - [CYRILLIC]u[CYRILLIC] I: "3 — u[CYRILLIC]k[CYRILLIC] [CYRILLIC]uтa!"
 - [CYRILLIC]u[CYRILLIC] II: "[CYRILLIC]u[CYRILLIC]tt [CYRILLIC] [CYRILLIC]tt!"
 - [CYRILLIC]u[CYRILLIC] III: "291x [CYRILLIC]u[CYRILLIC]!"
-- [CYRILLIC]u[CYRILLIC] IV: "[CYRILLIC] о 999 оkonх"
+- [CYRILLIC]u[CYRILLIC] IV: "[CYRILLIC]  999 оkonх"
 - [CYRILLIC]u[CYRILLIC] V: "[CYRILLIC]a[CYRILLIC] — [CYRILLIC]!"
 ```
 

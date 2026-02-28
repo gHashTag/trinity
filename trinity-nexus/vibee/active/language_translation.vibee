@@ -9,14 +9,14 @@ behaviors:
   - name: translate_simple_greeting
     given: English greeting "Hello"
     when: translate function called with target "russian"
-    then: Russian greeting "[EN]andin[EN]" returned
+    then: Russian greeting "andin" returned
     test_cases:
       - name: hello_to_russian
         input: {text: "Hello", source: "english", target: "russian"}
-        expected: {translation: "[EN]andin[EN]", confidence: 1.0}
+        expected: {translation: "andin", confidence: 1.0}
       - name: good_morning_to_russian
         input: {text: "Good morning", source: "english", target: "russian"}
-        expected: {translation: "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]", confidence: 1.0}
+        expected: {translation: " ", confidence: 1.0}
 
   - name: translate_technical_term
     given: English technical term
@@ -25,10 +25,10 @@ behaviors:
     test_cases:
       - name: compiler_to_russian
         input: {text: "compiler", source: "english", target: "russian"}
-        expected: {translation: "[CYR:[TRANSLATED]]and[CYR:[EN]I[TRANSLATED]]", confidence: 1.0}
+        expected: {translation: "and[CYR:I]", confidence: 1.0}
       - name: algorithm_to_russian
         input: {text: "algorithm", source: "english", target: "russian"}
-        expected: {translation: "[CYR:algorithm]and[EN]", confidence: 1.0}
+        expected: {translation: "[CYR:algorithm]and", confidence: 1.0}
 
   - name: translate_sentence
     given: English sentence with subject-verb-object structure
@@ -37,10 +37,10 @@ behaviors:
     test_cases:
       - name: i_love_programming
         input: {text: "I love programming", source: "english", target: "russian"}
-        expected: {translation: " [CYR:[TRANSLATED]] [CYR:pro[TRANSLATED]]and[EN]in[EN]and[EN]", confidence: 0.95}
+        expected: {translation: "  [CYR:pro]andinand", confidence: 0.95}
       - name: we_build_compiler
         input: {text: "We are building a compiler", source: "english", target: "russian"}
-        expected: {translation: "[EN]y with[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[CYR:[EN]I[TRANSLATED]]", confidence: 0.95}
+        expected: {translation: "y withand and[CYR:I]", confidence: 0.95}
 
 types:
   Language:
@@ -159,18 +159,18 @@ grammar_rules:
 
 dictionary:
   english_to_russian:
-    hello: ["[EN]andin[EN]", "[CYR:[TRANSLATED]]inwith[EN]in[CYR:[TRANSLATED]]"]
-    good: ["[CYR:[TRANSLATED]]and[EN]", "[CYR:[TRANSLATED]y[EN]]"]
-    morning: ["[CYR:[TRANSLATED]]"]
-    compiler: ["[CYR:[TRANSLATED]]and[CYR:[EN]I[TRANSLATED]]"]
-    algorithm: ["[CYR:algorithm]and[EN]"]
+    hello: ["andin", "inwithin"]
+    good: ["and", "[CYR:y]"]
+    morning: [""]
+    compiler: ["and[CYR:I]"]
+    algorithm: ["[CYR:algorithm]and"]
     function: ["function"]
     I: [""]
-    love: ["[CYR:[TRANSLATED]]", "[CYR:[TRANSLATED]]and[EN]"]
-    programming: ["[CYR:pro[TRANSLATED]]and[EN]in[EN]and[EN]"]
-    we: ["[EN]y"]
+    love: ["", "and"]
+    programming: ["[CYR:pro]andinand"]
+    we: ["y"]
     are: [""]  # Auxiliary verb, often omitted
-    building: ["with[CYR:[TRANSLATED]]and[EN]", "with[CYR:[TRANSLATED]]and[EN]"]
+    building: ["withand", "withand"]
     a: [""]  # Article, not used in Russian
     the: [""]  # Article, not used in Russian
 

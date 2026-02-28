@@ -13,30 +13,30 @@ const std = @import("std");
 const sacred = @import("const");
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TEMPORAL ENGINE CORE — [CYR:[EN]] [CYR:[EN]] [CYR:[EN]] [CYR:[EN]]
+// TEMPORAL ENGINE CORE —    
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Temporal Engine State — with[CYR:[EN]] in[CYR:[EN]]and in TRINITY OS
+/// Temporal Engine State — with inand in TRINITY OS
 pub const TemporalEngine = struct {
-    /// [EN]to[EN]and[EN] [CYR:[EN]] in[CYR:[EN]]and in withandwith[CYR:[EN]] (not Unix timestamp!)
+    /// toand  inand in withandwith (not Unix timestamp!)
     current_moment: TemporalMoment,
 
-    /// [CYR:[EN]] in[CYR:[EN]]and (inwith[EN]yes [EN]to[CYR:[EN]]in[CYR:[EN]] in[CYR:[EN]])
+    ///  inand (inwithyes toin in)
     time_arrow: TimeArrow,
 
-    /// [EN]andto[EN] in[CYR:[EN]] in[EN]in[CYR:[EN]]and[EN]
+    /// andto in ininand
     eternal_cycle: EternalCycle,
 
-    /// [CYR:[EN]]to[EN]inwithtoand[EN] toin[CYR:[EN]] in[CYR:[EN]]and
+    /// toinwithtoand toin inand
     planck_quantum: PlanckQuantum,
 
-    /// [CYR:[EN]]andwith[EN]andto[EN] [EN]withand[CYR:[EN]]andand in[CYR:[EN]]and
+    /// andwithandto withandand inand
     asymmetry_stats: AsymmetryStats,
 
-    /// Allocator for [EN]andon[EN]and[EN]withto[EN] [CYR:[EN]]and
+    /// Allocator for andonandwithto and
     allocator: std.mem.Allocator,
 
-    /// [EN]and[EN]and[EN]and[EN]and[EN]in[CYR:[EN]] Temporal Engine
+    /// andandin Temporal Engine
     pub fn init(allocator: std.mem.Allocator) !TemporalEngine {
         var engine = TemporalEngine{
             .current_moment = TemporalMoment.init(),
@@ -47,22 +47,22 @@ pub const TemporalEngine = struct {
             .allocator = allocator,
         };
 
-        // [CYR:[EN]]with[EN]and[EN] in[CYR:[EN]] monitoring in [EN]and[CYR:[EN]] φ
+        // withand in monitoring in and φ
         try engine.startEternalMonitoring();
 
         return engine;
     }
 
-    /// [CYR:[EN]]with[EN]and[EN] in[CYR:[EN]] monitoring (φ-second intervals)
+    /// withand in monitoring (φ-second intervals)
     fn startEternalMonitoring(self: *TemporalEngine) !void {
         const PHI_MS = @as(u64, @intFromFloat(sacred.math.PHI * 1000)); // 1618ms
 
-        // [EN] demo-[CYR:[EN]]and[EN] [CYR:[EN]]with[EN] [EN]by[EN]andon[EN] and[CYR:[EN]]in[EN]
+        //  demo-and with byandon andin
         _ = PHI_MS;
         _ = self;
 
-        // [EN] production: [CYR:[EN]]with[EN]and[EN] [CYR:[EN]]in[EN] thread [CYR:[EN]]and[CYR:[EN]]and[CYR:[EN]]
-        // [CYR:[EN]] φ with[EN]to[CYR:[EN]] [CYR:[EN]]in[CYR:[EN]] [CYR:[EN]]with in[CYR:[EN]]and
+        //  production: withand in thread and
+        //  φ withto in with inand
         std.debug.print(
             \\╔════════════════════════════════════════════════════════════════╗
             \\║        TEMPORAL ENGINE v1.0 — ETERNAL MONITORING ACTIVE          ║
@@ -72,41 +72,41 @@ pub const TemporalEngine = struct {
         , .{@as(u64, @intFromFloat(sacred.math.PHI * 1000))});
     }
 
-    /// [CYR:[EN]]and[EN] [EN]to[EN]and[EN] [CYR:[EN]] in[CYR:[EN]]and (in [CYR:[EN]]and[CYR:[EN]] [CYR:[EN]])
+    /// and toand  inand (in and )
     pub fn getMoment(self: *const TemporalEngine) TemporalMoment {
         return self.current_moment;
     }
 
-    /// [CYR:[EN]]andwith[EN]and[EN] with[CYR:[EN]] in[CYR:[EN]]and (by[CYR:[EN]] in[CYR:[EN]] [CYR:[EN]] in[CYR:[EN]])
+    /// andwithand with inand (by in  in)
     pub fn computeTimeArrow(_: *const TemporalEngine) f64 {
         const phi_sq = sacred.math.PHI_SQ;
         const inv_phi_sq = sacred.math.PHI_INV_SQ;
-        // φ⁴ = 6.854... — creation withand[EN]not[EN] [CYR:[EN]]and[EN]
+        // φ⁴ = 6.854... — creation withandnot and
         return phi_sq * phi_sq / (inv_phi_sq * inv_phi_sq);
     }
 
-    /// [CYR:[EN]]in[EN]and[EN] [CYR:[EN]]with in[CYR:[EN]] (before[CYR:[EN]] [CYR:[EN]] = 3)
+    /// inand with in (before  = 3)
     pub fn verifyTemporalBalance(_: *const TemporalEngine) bool {
         const balance = sacred.math.PHI_SQ + sacred.math.PHI_INV_SQ;
         return @abs(balance - 3.0) < 1e-14;
     }
 
-    /// [CYR:[EN]] in[EN]in[CYR:[EN]]and[EN] (π × 3)
+    ///  ininand (π × 3)
     pub fn eternalReturn(_: *const TemporalEngine) f64 {
         return sacred.math.PI * 3.0;
     }
 
-    /// [EN]withto[CYR:[EN]]and[EN] in[CYR:[EN]]and (T(n+1) = T(n) / φ)
+    /// withtoand inand (T(n+1) = T(n) / φ)
     pub fn timeAcceleration(_: *TemporalEngine, t_n: f64) f64 {
         return t_n / sacred.math.PHI;
     }
 
-    /// [CYR:[EN]]withto[CYR:[EN]] Hubble constant and[EN] φ-[EN]withand[CYR:[EN]]andand
+    /// withto Hubble constant and φ-withandand
     pub fn predictHubble(_: *const TemporalEngine) f64 {
         return sacred.cosmology.HUBBLE_PREDICTED; // 70.74 km/s/Mpc
     }
 
-    /// [CYR:[EN]]and[EN] [CYR:[EN]]to[EN]inwithto[EN] in[CYR:[EN]] (toin[CYR:[EN]] in[CYR:[EN]]and)
+    /// and toinwithto in (toin inand)
     pub fn getPlanckTime(_: *const TemporalEngine) f64 {
         return sacred.physics.PLANCK_TIME;
     }
@@ -116,10 +116,10 @@ pub const TemporalEngine = struct {
         return .{ sacred.cosmology.OMEGA_MATTER, sacred.cosmology.OMEGA_LAMBDA };
     }
 
-    /// Shutdown temporal engine (onexample, [CYR:[EN]] poweroff)
+    /// Shutdown temporal engine (onexample,  poweroff)
     pub fn deinit(self: *TemporalEngine) void {
         _ = self;
-        // [EN] production: [EN]with[CYR:[EN]]inand[EN] monitoring, [EN]within[CYR:[EN]]and[EN] [EN]with[EN]with[EN]
+        //  production: withinand monitoring, withinand with
     }
 };
 
@@ -127,25 +127,25 @@ pub const TemporalEngine = struct {
 // TEMPORAL DATA STRUCTURES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [EN]to[EN]and[EN] [CYR:[EN]] in[CYR:[EN]]and (not Unix timestamp!)
+/// toand  inand (not Unix timestamp!)
 pub const TemporalMoment = struct {
-    /// [EN]with[EN]to[EN] [CYR:[EN]]: PAST (-1), PRESENT (0), FUTURE (+1)
+    /// withto : PAST (-1), PRESENT (0), FUTURE (+1)
     aspect: TemporalAspect,
 
-    /// [EN]with [EN]with[EN]to[EN] in φ-[EN]and[EN]and[CYR:[EN]]
+    /// with withto in φ-and
     phi_weight: f64,
 
-    /// [CYR:[EN]]and[CYR:[EN]] [CYR:[EN]]with[EN]in[CYR:[EN]]and[EN] [CYR:[EN]]
+    /// and withinand 
     trit: i2,
 
-    /// [CYR:[EN]]and[EN] with[CYR:[EN]]andto [EN]to[EN]in in[CYR:[EN]]and
+    /// and withandto toin inand
     cycle: u64,
 
     pub fn init() TemporalMoment {
         return .{
-            .aspect = .PRESENT, // [CYR:[EN]]with — inwith[EN]yes with[CYR:[EN]]with
-            .phi_weight = 0.0, // [EN]with[CYR:[EN]] not and[CYR:[EN]] in[EN]with[EN]
-            .trit = 0, // [CYR:[EN]]in[EN] [EN]and[EN]
+            .aspect = .PRESENT, // with — inwithyes with
+            .phi_weight = 0.0, // with not and inwith
+            .trit = 0, // in and
             .cycle = 0,
         };
     }
@@ -163,11 +163,11 @@ pub const TemporalMoment = struct {
     }
 };
 
-/// [EN]with[EN]to[EN] in[CYR:[EN]]and: [CYR:[EN]], [EN]with[CYR:[EN]], [CYR:[EN]]
+/// withto inand: , with, 
 pub const TemporalAspect = enum(i2) {
-    PAST = -1,     // 1/φ² = 0.382 → [EN]andwhat[CYR:[EN]]and[EN], [CYR:[EN]]and[EN]
-    PRESENT = 0,   // [CYR:[EN]] on[CYR:[EN]]and[EN], [CYR:[EN]]with
-    FUTURE = 1,    // φ² = 2.618 → with[EN]andyes[EN]and[EN], [EN]with[EN]
+    PAST = -1,     // 1/φ² = 0.382 → andwhatand, and
+    PRESENT = 0,   //  onand, with
+    FUTURE = 1,    // φ² = 2.618 → withandyesand, with
 
     pub fn phiWeight(self: TemporalAspect) f64 {
         return switch (self) {
@@ -179,9 +179,9 @@ pub const TemporalAspect = enum(i2) {
 
     pub fn description(self: TemporalAspect) []const u8 {
         return switch (self) {
-            .PAST => "[CYR:[EN]] | [CYR:[EN]]and[EN] | Memory",
-            .PRESENT => "[CYR:[EN]] | [CYR:[EN]]with | HERE and NOW",
-            .FUTURE => "[CYR:[EN]] | [EN]with[EN] | [EN]with[EN]and[CYR:[EN]]and[EN]",
+            .PAST => " | and | Memory",
+            .PRESENT => " | with | HERE and NOW",
+            .FUTURE => " | with | withand",
         };
     }
 
@@ -190,15 +190,15 @@ pub const TemporalAspect = enum(i2) {
     }
 };
 
-/// [CYR:[EN]] in[CYR:[EN]]and (by[CYR:[EN]] [CYR:[EN]] in[CYR:[EN]])
+///  inand (by  in)
 pub const TimeArrow = struct {
-    /// [CYR:[EN]]and[EN] with[EN]yes[EN]and[EN] to [EN]andwhat[CYR:[EN]]and[EN] = φ⁴
+    /// and withyesand to andwhatand = φ⁴
     ratio: f64,
 
-    /// [CYR:[EN]] [CYR:[EN]]andand (φ² - 1/φ²)
+    ///  and (φ² - 1/φ²)
     entropy_delta: f64,
 
-    /// [CYR:[EN]]in[CYR:[EN]]and[EN] (+1 = in[CYR:[EN]])
+    /// inand (+1 = in)
     direction: i2,
 
     pub fn init() TimeArrow {
@@ -208,24 +208,24 @@ pub const TimeArrow = struct {
         return .{
             .ratio = phi_sq * phi_sq / (inv_phi_sq * inv_phi_sq), // φ⁴ ≈ 6.854
             .entropy_delta = phi_sq - inv_phi_sq, // ≈ 2.236
-            .direction = 1, // [EN]with[EN]yes in[CYR:[EN]]
+            .direction = 1, // withyes in
         };
     }
 
     pub fn explain(_: TimeArrow) []const u8 {
-        return "[CYR:[EN]]yes[EN]and[EN] φ⁴≈6.854 [CYR:[EN]] withand[EN]not[EN] [EN]andwhat[CYR:[EN]]and[EN] → in[CYR:[EN]]on[EN] with[CYR:[EN]] → [CYR:[EN]]and[EN] [EN]with[CYR:[EN]] → [EN]with[CYR:[EN]]on[EN] [EN]with[EN]and[CYR:[EN]]with[EN]";
+        return "yesand φ⁴≈6.854  withandnot andwhatand → inon with → and with → withon withandwith";
     }
 };
 
-/// [CYR:[EN]] [EN]andto[EN] (π × 3)
+///  andto (π × 3)
 pub const EternalCycle = struct {
-    /// [EN]on[CYR:[EN]]and[EN] π × 3
+    /// onand π × 3
     value: f64,
 
-    /// [CYR:[EN]] [EN]andto[EN] (0-2π)
+    ///  andto (0-2π)
     phase: f64,
 
-    /// [CYR:[EN]] [EN]andto[EN]
+    ///  andto
     cycle_number: u64,
 
     pub fn init() EternalCycle {
@@ -242,16 +242,16 @@ pub const EternalCycle = struct {
     }
 
     pub fn isInfinite(_: EternalCycle) bool {
-        return true; // [CYR:[EN]]with[EN] = [EN]withto[EN]not[CYR:[EN]]with[EN]
+        return true; // with = withtonotwith
     }
 };
 
-/// [CYR:[EN]]to[EN]inwithtoand[EN] toin[CYR:[EN]] in[CYR:[EN]]and
+/// toinwithtoand toin inand
 pub const PlanckQuantum = struct {
-    /// t_P = 5.391247 × 10⁻⁴⁴ with[EN]to[CYR:[EN]]
+    /// t_P = 5.391247 × 10⁻⁴⁴ withto
     value: f64,
 
-    /// [EN]with[CYR:[EN]] (10^-44)
+    /// with (10^-44)
     scale: i8,
 
     pub fn init() PlanckQuantum {
@@ -262,7 +262,7 @@ pub const PlanckQuantum = struct {
     }
 
     pub fn isSmallest(_: PlanckQuantum) bool {
-        return true; // [EN]and[CYR:[EN]]and[EN] [EN]and[EN]and[EN]withtoand [EN]with[EN]with[CYR:[EN]] and[CYR:[EN]]in[EN]
+        return true; // and andwithtoand with andin
     }
 
     pub fn format(self: PlanckQuantum, allocator: std.mem.Allocator) ![]const u8 {
@@ -270,15 +270,15 @@ pub const PlanckQuantum = struct {
     }
 };
 
-/// [CYR:[EN]]andwith[EN]andto[EN] [EN]withand[CYR:[EN]]andand in[CYR:[EN]]and
+/// andwithandto withandand inand
 pub const AsymmetryStats = struct {
-    /// [EN]to[CYR:[EN]] with[CYR:[EN]]and[EN] to with[EN]yes[EN]and[EN]
+    /// to withand to withyesand
     creation_bias: f64,
 
-    /// [EN]to[CYR:[EN]] with[CYR:[EN]]and[EN] to [EN]andwhat[CYR:[EN]]and[EN]
+    /// to withand to andwhatand
     destruction_bias: f64,
 
-    /// [CYR:[EN]]with (before[CYR:[EN]] [CYR:[EN]] = 1)
+    /// with (before  = 1)
     balance_ratio: f64,
 
     pub fn init() AsymmetryStats {
@@ -307,36 +307,36 @@ pub const AsymmetryStats = struct {
     }
 
     pub fn isHealthy(self: AsymmetryStats) bool {
-        // [CYR:[EN]]andyes[EN]and[EN] before[CYR:[EN]] before[EN]and[EN]and[EN]in[CYR:[EN]] (φ⁴ > 1)
+        // andyesand before beforeandin (φ⁴ > 1)
         return self.balance_ratio > 0.5;
     }
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// BOOT INTEGRATION — Temporal Engine runswith[EN] [EN]and [CYR:[EN]]to[EN] withandwith[CYR:[EN]]
+// BOOT INTEGRATION — Temporal Engine runswith and to withandwith
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:[EN]]with[EN]and[EN] Temporal Engine [EN]and [CYR:[EN]]to[EN] withandwith[CYR:[EN]]
+/// withand Temporal Engine and to withandwith
 pub fn bootTemporalEngine(allocator: std.mem.Allocator) !void {
     const engine = try TemporalEngine.init(allocator);
 
-    // [CYR:[EN]]and[EN]and[EN]and[EN]in[CYR:[EN]] to[CYR:[EN]]
+    // andandin to
     const is_valid = engine.verifyTemporalBalance();
     if (!is_valid) {
         std.debug.print("CRITICAL: Temporal balance violated! φ² + 1/φ² ≠ 3\n", .{});
         return error.TemporalViolation;
     }
 
-    // [CYR:[EN]]in[EN]and[EN] with[CYR:[EN]] in[CYR:[EN]]and
+    // inand with inand
     const arrow = engine.computeTimeArrow();
     if (arrow < 6.0) {
         std.debug.print("WARNING: Time arrow weak: {d:.3} (expected φ⁴ ≈ 6.854)\n", .{arrow});
     }
 
-    // [CYR:[EN]] in[EN]in[CYR:[EN]]and[EN]
+    //  ininand
     const eternal = engine.eternalReturn();
 
-    // [CYR:[EN]]to[EN]inwithto[EN] in[CYR:[EN]] (for [CYR:[EN]])
+    // toinwithto in (for )
     const planck_time = engine.getPlanckTime();
 
     // TEMPORAL ENGINE ACTIVATED
@@ -354,7 +354,7 @@ pub fn bootTemporalEngine(allocator: std.mem.Allocator) !void {
         \\
     , .{arrow, eternal, planck_time * 1e44});
 
-    // Engine [CYR:[EN]]before[CYR:[EN]] [CYR:[EN]]from[EN] in [CYR:[EN]]in[EN] [CYR:[EN]]and[EN]
+    // Engine before from in in and
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -377,7 +377,7 @@ pub const temporal = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TESTS — [CYR:[EN]]on[EN] verification
+// TESTS — on verification
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "temporal engine: verify φ² + 1/φ² = 3" {

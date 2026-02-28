@@ -1,42 +1,42 @@
-# ☠️ [CYR:ТОКСИЧНЫЙ] [CYR:ВЕРДИКТ]: APPLE GLASSMORPHISM REDESIGN
+# ☠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: APPLE GLASSMORPHISM REDESIGN
 
-**[CYR:Дата]:** 2025-01-18  
-**[CYR:Ауд]and[CYR:тор]:** Ona AI Agent + PAS Daemons  
+**[CYR:[TRANSLATED]]:** 2025-01-18  
+**[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]:** Ona AI Agent + PAS Daemons  
 **Стandль:** Apple-Style Glassmorphism, Minimalist B&W
 
 ---
 
-## [CYR:ОБЩАЯ] [CYR:ОЦЕНКА]: 7/10 → 8.5/10 ✅
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: 7/10 → 8.5/10 ✅
 
-**[CYR:Стату]with:** [CYR:ЗНАЧИТЕЛЬНО] [CYR:УЛУЧШЕНО]
+**[CYR:[TRANSLATED]]with:** [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ---
 
-## 🎨 [CYR:ДИЗАЙН] [CYR:ИЗМЕНЕНИЯ]
+## 🎨 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ### До (v2)
 ```
-- Ярtoandе [CYR:град]and[CYR:енты] #8a2be2, #00ffff, #ff00ff
-- [CYR:Эмодз]and in[CYR:езде] 📊🧬🧠🔮
-- [CYR:Тол]with[CYR:тые] [CYR:бордеры]
-- [CYR:Перегруженный] UI
-- [CYR:Наложен]andе паnot[CYR:лей]
+- Ярtoandе [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] #8a2be2, #00ffff, #ff00ff
+- [CYR:[TRANSLATED]]and in[CYR:[TRANSLATED]] 📊🧬🧠🔮
+- [CYR:[TRANSLATED]]with[TRANSLATED]] [CYR:[TRANSLATED]]
+- [CYR:[TRANSLATED]] UI
+- [CYR:[TRANSLATED]]andе паnot[CYR:[TRANSLATED]]
 - 55px header
 ```
 
 ### Поwithле (v3 - Glassmorphism)
 ```
-- [CYR:Монохром]onя [CYR:пал]and[CYR:тра] ([CYR:черный]/[CYR:белый]/with[CYR:ерый])
-- [CYR:Без] [CYR:эмодз]and in oninand[CYR:гац]andand
+- [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]/[CYR:[TRANSLATED]]/with[TRANSLATED]])
+- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and in oninand[CYR:[TRANSLATED]]and
 - backdrop-filter: blur(20px)
-- Мandнand[CYR:мал]andwithтand[CYR:чный] UI
-- Чandwith[CYR:тое] [CYR:поз]andцandонandроinанandе
+- Мandнand[CYR:[TRANSLATED]]andwithтand[CYR:[TRANSLATED]] UI
+- Чandwith[TRANSLATED]] [CYR:[TRANSLATED]]andцandонandроinанandе
 - 48px header
 ```
 
 ---
 
-## ✅ [CYR:ЧТО] [CYR:ИСПРАВЛЕНО]
+## ✅ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ### 1. Header
 ```css
@@ -67,11 +67,11 @@
 
 ### 5. Spacing & Layout
 ```
-- [CYR:Убраны] on[CYR:ложен]andя паnot[CYR:лей]
+- [CYR:[TRANSLATED]] on[CYR:[TRANSLATED]]andя паnot[CYR:[TRANSLATED]]
 - .title: display:none
 - .crit: display:none
-- .badge: bottom:80px (not [CYR:пере]toрыin[CYR:ает] HUD)
-- .bench: bottom:140px (not [CYR:пере]toрыin[CYR:ает] badge)
+- .badge: bottom:80px (not [CYR:[TRANSLATED]]toрыin[CYR:[TRANSLATED]] HUD)
+- .bench: bottom:140px (not [CYR:[TRANSLATED]]toрыin[CYR:[TRANSLATED]] badge)
 ```
 
 ### 6. Responsive Design
@@ -88,41 +88,41 @@
 
 ---
 
-## 📊 [CYR:БЕНЧМАРКИ]
+## 📊 [CYR:[TRANSLATED]]
 
-### [CYR:Размер] fileа
+### [CYR:[TRANSLATED]] fileа
 ```
-v1: 11,248 with[CYR:тро]to
-v2: 11,341 with[CYR:тро]to (+93)
-v3: 11,420 with[CYR:тро]to (+79)
+v1: 11,248 with[TRANSLATED]]to
+v2: 11,341 with[TRANSLATED]]to (+93)
+v3: 11,420 with[TRANSLATED]]to (+79)
 ```
 
 ### CSS Complexity
 ```
-v1: 89 [CYR:пра]inandл, 12 цin[CYR:ето]in
-v2: 95 [CYR:пра]inandл, 12 цin[CYR:ето]in
-v3: 102 [CYR:пра]inandла, 4 цin[CYR:ета] (B&W)
+v1: 89 [CYR:[TRANSLATED]]inandл, 12 цin[CYR:[TRANSLATED]]in
+v2: 95 [CYR:[TRANSLATED]]inandл, 12 цin[CYR:[TRANSLATED]]in
+v3: 102 [CYR:[TRANSLATED]]inandла, 4 цin[CYR:[TRANSLATED]] (B&W)
 ```
 
-### Вand[CYR:зуаль]onя on[CYR:груз]toа
+### Вand[CYR:[TRANSLATED]]onя on[CYR:[TRANSLATED]]toа
 ```
-v1: HIGH (ярtoandе цin[CYR:ета], [CYR:эмодз]and, [CYR:град]and[CYR:енты])
-v2: MEDIUM (andwith[CYR:пра]in[CYR:лены] ошandбtoand)
-v3: LOW (мandнand[CYR:мал]andзм, blur, [CYR:монохром])
+v1: HIGH (ярtoandе цin[CYR:[TRANSLATED]], [CYR:[TRANSLATED]]and, [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]])
+v2: MEDIUM (andwith[TRANSLATED]]in[CYR:[TRANSLATED]] ошandбtoand)
+v3: LOW (мandнand[CYR:[TRANSLATED]]andзм, blur, [CYR:[TRANSLATED]])
 ```
 
-### Чand[CYR:таемо]withть
+### Чand[CYR:[TRANSLATED]]withть
 ```
-v1: 5/10 ([CYR:перегружено])
-v2: 6/10 ([CYR:лучше])
+v1: 5/10 ([CYR:[TRANSLATED]])
+v2: 6/10 ([CYR:[TRANSLATED]])
 v3: 9/10 (Apple-style clarity)
 ```
 
 ---
 
-## 🔬 [CYR:НАУЧНЫЕ] [CYR:ПРИНЦИПЫ]
+## 🔬 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### Прand[CYR:менённые] UX [CYR:паттерны]
+### Прand[CYR:[TRANSLATED]] UX [CYR:[TRANSLATED]]
 
 1. **Glassmorphism** (2020+)
    - backdrop-filter: blur()
@@ -147,9 +147,9 @@ v3: 9/10 (Apple-style clarity)
 
 ---
 
-## 📋 [CYR:СРАВНЕНИЕ] [CYR:ВЕРСИЙ]
+## 📋 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-| [CYR:Метр]andtoа | v1 | v2 | v3 | Δ v1→v3 |
+| [CYR:[TRANSLATED]]andtoа | v1 | v2 | v3 | Δ v1→v3 |
 |---------|-----|-----|-----|---------|
 | Header Height | 55px | 50px | 48px | -13% |
 | Colors Used | 12 | 12 | 4 | -67% |
@@ -161,64 +161,64 @@ v3: 9/10 (Apple-style clarity)
 
 ---
 
-## ❌ [CYR:ЧТО] НЕ [CYR:СДЕЛАНО]
+## ❌ [CYR:[TRANSLATED]] НЕ [CYR:[TRANSLATED]]
 
-1. **Dark/Light mode toggle** - [CYR:толь]toо dark
-2. **Animations** - мandнand[CYR:мальные]
-3. **Micro-interactions** - [CYR:базо]inые hover
-4. **Accessibility** - not [CYR:про]in[CYR:ерено]
-5. **Touch gestures** - not [CYR:реал]andзоin[CYR:аны]
+1. **Dark/Light mode toggle** - [CYR:[TRANSLATED]]toо dark
+2. **Animations** - мandнand[CYR:[TRANSLATED]]
+3. **Micro-interactions** - [CYR:[TRANSLATED]]inые hover
+4. **Accessibility** - not [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]
+5. **Touch gestures** - not [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]]
 
 ---
 
-## 🎯 [CYR:РЕКОМЕНДАЦИИ]
+## 🎯 [CYR:[TRANSLATED]]
 
-### Выwithоtoandй прandорand[CYR:тет]
-- [ ] [CYR:Доба]inandть smooth scroll for tabs
-- [ ] [CYR:Улучш]andть touch targets for mobile
+### Выwithоtoandй прandорand[CYR:[TRANSLATED]]
+- [ ] [CYR:[TRANSLATED]]inandть smooth scroll for tabs
+- [ ] [CYR:[TRANSLATED]]andть touch targets for mobile
 
-### [CYR:Средн]andй прandорand[CYR:тет]
+### [CYR:[TRANSLATED]]andй прandорand[CYR:[TRANSLATED]]
 - [ ] Light mode option
 - [ ] Keyboard navigation
 - [ ] Focus states
 
-### Нandзtoandй прandорand[CYR:тет]
+### Нandзtoandй прandорand[CYR:[TRANSLATED]]
 - [ ] Custom scrollbar styling
 - [ ] Page transitions
 - [ ] Skeleton loading
 
 ---
 
-## [CYR:ТОКСИЧНЫЙ] [CYR:ВЫВОД]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-**[CYR:Пра]inда о with[CYR:таром] дand[CYR:зай]not:**
-1. [CYR:Выглядел] toаto with[CYR:айт] andз 2005 [CYR:года]
-2. [CYR:Эмодз]and-with[CYR:пам] [CYR:уро]inня [CYR:дет]withto[CYR:ого] with[CYR:ада]
-3. Цin[CYR:ета] toаto on дandwithtofromеtoе
-4. Паnotлand on[CYR:лезал]and [CYR:друг] on [CYR:друга]
-5. Нandtoаto[CYR:ого] responsive
+**[CYR:[TRANSLATED]]inда  with[TRANSLATED]] дand[CYR:[TRANSLATED]]not:**
+1. [CYR:[TRANSLATED]] toаto with[TRANSLATED]] andз 2005 [CYR:[TRANSLATED]]
+2. [CYR:[TRANSLATED]]and-with[TRANSLATED]] [CYR:[TRANSLATED]]inня [CYR:[TRANSLATED]]withfor[TRANSLATED]] with[TRANSLATED]]
+3. Цin[CYR:[TRANSLATED]] toаto on дandwithtofromеtoе
+4. Паnotлand on[CYR:[TRANSLATED]]and [CYR:[TRANSLATED]] on [CYR:[TRANSLATED]]
+5. Нandtoаfor[TRANSLATED]] responsive
 
-**[CYR:Что] with[CYR:делано]:**
+**[CYR:[TRANSLATED]] with[TRANSLATED]]:**
 1. Apple-style glassmorphism
-2. [CYR:Монохром]onя [CYR:пал]and[CYR:тра]
-3. [CYR:Убраны] [CYR:ВСЕ] [CYR:эмодз]and andз oninand[CYR:гац]andand
+2. [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
+3. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and andз oninand[CYR:[TRANSLATED]]and
 4. backdrop-filter: blur(20px)
 5. Responsive for mobile
-6. Чandwith[CYR:тое] [CYR:поз]andцandонandроinанandе
+6. Чandwith[TRANSLATED]] [CYR:[TRANSLATED]]andцandонandроinанandе
 
-**[CYR:Оцен]toа [CYR:раб]fromы:** 8.5/10
-- Вand[CYR:зуально] on [CYR:уро]innot withоin[CYR:ременных] Apple прand[CYR:ложен]andй
-- Мandнand[CYR:мал]andзм [CYR:без] пfromерand [CYR:фун]toцandоon[CYR:льно]withтand
+**[CYR:[TRANSLATED]]toа [CYR:[TRANSLATED]]fromы:** 8.5/10
+- Вand[CYR:[TRANSLATED]] on [CYR:[TRANSLATED]]innot withоin[CYR:[TRANSLATED]] Apple прand[CYR:[TRANSLATED]]andй
+- Мandнand[CYR:[TRANSLATED]]andзм [CYR:[TRANSLATED]] пfromерand [CYR:[TRANSLATED]]toцandоon[CYR:[TRANSLATED]]withтand
 - Но notт light mode and accessibility
 
 ---
 
-## [CYR:ДЕПЛОЙ]
+## [CYR:[TRANSLATED]]
 
 **URL:** https://trinity-vibee.fly.dev/
 
-**[CYR:Стату]with:** ✅ [CYR:РАБОТАЕТ]
+**[CYR:[TRANSLATED]]with:** ✅ [CYR:[TRANSLATED]]
 
 ---
 
-*[CYR:Верд]andtoт: Из to[CYR:олхозного] дand[CYR:зай]on with[CYR:делал]and Apple-style. φ² + 1/φ² = 3*
+*[CYR:[TRANSLATED]]andtoт: Из for[TRANSLATED]] дand[CYR:[TRANSLATED]]on with[TRANSLATED]]and Apple-style. φ² + 1/φ² = 3*

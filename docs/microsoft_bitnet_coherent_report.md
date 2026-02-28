@@ -64,7 +64,7 @@ You don't have a GPU available to load the model, the inference will be slow bec
 
 | Prompt | Output |
 |--------|--------|
-| "What is the capital of France?" | "işi-heavy.track_extra breaker Countries... Vaugh gson_based 금 inclined795 [CYR:плод]..." |
+| "What is the capital of France?" | "işi-heavy.track_extra breaker Countries... Vaugh gson_based 금 inclined795 [CYR:[TRANSLATED]]..." |
 
 **Verdict: GARBAGE** (multilingual noise)
 

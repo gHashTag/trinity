@@ -406,7 +406,7 @@ pub const BytecodeCompiler = struct {
             return;
         }
         
-        // [CYR:[EN]] CONSTANTS: T, F, U
+        //  CONSTANTS: T, F, U
         if (std.mem.eql(u8, name, "T")) {
             try self.emitter.emit(.PUSH_TRIT);
             self.emitter.code.append(allocator, 1) catch return CompileError.OutOfMemory; // T = 1

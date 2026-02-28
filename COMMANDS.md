@@ -185,7 +185,7 @@ All TRI CLI calls are logged to `trinity-nexus/.ralph/sacred_tool_calls.log`:
 TRI CLI auto-detects and responds in multiple languages:
 
 ```bash
-tri code "onпandшand [CYR:фун]toцandю фandбоonччand"    # Russian
+tri code "onпandшand [CYR:[TRANSLATED]]toцandю фandбоonччand"    # Russian
 tri code "写一个斐波那契函数"           # Chinese
 tri code "write fibonacci function"   # English
 ```

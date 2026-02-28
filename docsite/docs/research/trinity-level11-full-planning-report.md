@@ -1,12 +1,12 @@
 # Level 11.18 — Full Planning SOTA
 
-**[CYR:Дата]:** 2026-02-16
-**[CYR:Уро]in[CYR:ень]:** 11.18 — [CYR:Полное] [CYR:план]andроinанandе + маwith[CYR:штаб]andроinанandе to[CYR:одбу]toоin
-**Теwithты:** 106-108 | **[CYR:Стату]with:** PASS (380 теwithтоin, 376 pass, 4 skip)
+**[CYR:[TRANSLATED]]:** 2026-02-16
+**[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]:** 11.18 — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andроinанandе + маwith[TRANSLATED]]andроinанandе for[TRANSLATED]]toоin
+**Теwithты:** 106-108 | **[CYR:[TRANSLATED]]with:** PASS (380 теwithтоin, 376 pass, 4 skip)
 
-## [CYR:Ключе]inые [CYR:метр]andtoand
+## [CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]andtoand
 
-| [CYR:Метр]andtoа | Зon[CYR:чен]andе | [CYR:Стату]with |
+| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе | [CYR:[TRANSLATED]]with |
 |---------|----------|--------|
 | bAbI Task 4 (2-step pathfinding) | 8/8 (100%) | PASS |
 | bAbI Task 5 (3-step pathfinding) | 6/6 (100%) | PASS |
@@ -20,27 +20,27 @@
 | Large codebook global (30) | 26/30 (87%) | PASS |
 | Large codebook scoped (120) | 120/120 (100%) | PASS |
 | Scoped vs global advantage | **13pp** | PASS |
-| bAbI coverage | 9/20 [CYR:задач] | +2 |
+| bAbI coverage | 9/20 [CYR:[TRANSLATED]] | +2 |
 
-## [CYR:Что] this зonчandт
+## [CYR:[TRANSLATED]] this зonчandт
 
-### [CYR:Для] [CYR:пользо]in[CYR:ателей]
-Trinity VSA [CYR:теперь] [CYR:решает] **[CYR:про]with[CYR:тран]withтin[CYR:енную] oninand[CYR:гац]andю** (pathfinding), **cross-relation kinship** (uncle, cousin, nephew) and **маwith[CYR:штаб]and[CYR:рует]withя до 120+ to[CYR:анд]and[CYR:дато]in** with scoped поandwithtoом. Вwithе трand ноinых теwithта — 100%.
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]
+Trinity VSA [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] **[CYR:[TRANSLATED]]with[TRANSLATED]]withтin[CYR:[TRANSLATED]] oninand[CYR:[TRANSLATED]]andю** (pathfinding), **cross-relation kinship** (uncle, cousin, nephew) and **маwith[TRANSLATED]]and[CYR:[TRANSLATED]]withя до 120+ for[TRANSLATED]]and[CYR:[TRANSLATED]]in** with scoped поandwithtoом. Вwithе трand ноinых теwithта — 100%.
 
-### [CYR:Для] [CYR:разраб]fromчandtoоin
-Трand to[CYR:люче]inых [CYR:арх]andтеto[CYR:турных] fromto[CYR:рыт]andя:
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromчandtoоin
+Трand for[TRANSLATED]]inых [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] fromfor[TRANSLATED]]andя:
 
-1. **Permutation-based directional encoding**: Bipolar bind to[CYR:оммутат]andinен (`bind(A,B) = bind(B,A)`), therefore on[CYR:пра]in[CYR:лен]andя not[CYR:льзя] заtoодandроin[CYR:ать] [CYR:про]with[CYR:тым] bind. [CYR:Решен]andе: `bind(from, permute(to, shift))` with унandto[CYR:альным] shift on on[CYR:пра]in[CYR:лен]andе (N=1, S=2, E=3, W=4). Permutation [CYR:ломает] to[CYR:оммутат]andinноwithть.
+1. **Permutation-based directional encoding**: Bipolar bind for[TRANSLATED]]andinен (`bind(A,B) = bind(B,A)`), therefore on[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andя not[CYR:[TRANSLATED]] заtoодandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[TRANSLATED]] bind. [CYR:[TRANSLATED]]andе: `bind(from, permute(to, shift))` with унandfor[TRANSLATED]] shift on on[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе (N=1, S=2, E=3, W=4). Permutation [CYR:[TRANSLATED]] for[TRANSLATED]]andinноwithть.
 
-2. **Per-LEVEL indexed memories**: [CYR:Для] branch kinship (uncle, cousin, nephew, grandparent) [CYR:память] [CYR:долж]on [CYR:быть] sectionеon по [CYR:УРОВНЯМ] поto[CYR:олен]andй. `parent_l0` ([CYR:дет]and→[CYR:род]and[CYR:тел]and, 3 [CYR:пары]), `parent_l1` ([CYR:род]and[CYR:тел]and→[CYR:дедуш]toа, 2 [CYR:пары]). Flat [CYR:память] in[CYR:ызы]in[CYR:ает] cross-generation interference.
+2. **Per-LEVEL indexed memories**: [CYR:[TRANSLATED]] branch kinship (uncle, cousin, nephew, grandparent) [CYR:memory] [CYR:[TRANSLATED]]on [CYR:[TRANSLATED]] sectionеon по [CYR:[TRANSLATED]] поfor[TRANSLATED]]andй. `parent_l0` ([CYR:[TRANSLATED]]and→[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and, 3 [CYR:[TRANSLATED]]), `parent_l1` ([CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and→[CYR:[TRANSLATED]]toа, 2 [CYR:[TRANSLATED]]). Flat [CYR:memory] in[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] cross-generation interference.
 
-3. **Scoped codebook scaling**: Global поandwithto with[CYR:ред]and 30+ to[CYR:анд]and[CYR:дато]in [CYR:деград]and[CYR:рует] (87%). Scoped поandwithto ([CYR:толь]toо with[CYR:ред]and to[CYR:анд]and[CYR:дато]in in [CYR:пределах] [CYR:памят]and, 3 [CYR:шту]toand) — 100% on [CYR:любом] маwith[CYR:штабе]. [CYR:Это] [CYR:фундаментальный] [CYR:механ]andзм маwith[CYR:штаб]andроinанandя: indexed memories + scoped codebooks = O(pairs) with[CYR:ложно]withть.
+3. **Scoped codebook scaling**: Global поandwithto with[TRANSLATED]]and 30+ for[TRANSLATED]]and[CYR:[TRANSLATED]]in [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] (87%). Scoped поandwithto ([CYR:[TRANSLATED]]toо with[TRANSLATED]]and for[TRANSLATED]]and[CYR:[TRANSLATED]]in in [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and, 3 [CYR:[TRANSLATED]]toand) — 100% on [CYR:[TRANSLATED]] маwith[TRANSLATED]]. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andзм маwith[TRANSLATED]]andроinанandя: indexed memories + scoped codebooks = O(pairs) with[TRANSLATED]]withть.
 
-## [CYR:Техн]andчеwithtoandе [CYR:детал]and
+## [CYR:[TRANSLATED]]andчеwithtoandе [CYR:[TRANSLATED]]and
 
 ### Test 106: bAbI Pathfinding (Tasks 4-5)
 
-8 toомonт in [CYR:про]with[CYR:тран]withтin[CYR:енной] withетtoе:
+8 toомonт in [CYR:[TRANSLATED]]with[TRANSLATED]]withтin[CYR:[TRANSLATED]] withетtoе:
 
 ```
 garden(3)   bathroom(5)
@@ -48,7 +48,7 @@ kitchen(0)  office(2)    garage(7)
 bedroom(1)  hallway(4)   living(6)
 ```
 
-18 on[CYR:пра]in[CYR:ленных] [CYR:рёбер] (4N + 4S + 5E + 5W), to[CYR:аждое] toаto andндandinand[CYR:дуальный] `bind(from, permute(to, shift))`.
+18 on[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (4N + 4S + 5E + 5W), for[TRANSLATED]] toаto andндandinand[CYR:[TRANSLATED]] `bind(from, permute(to, shift))`.
 
 | Task | Тandп | Hops | Result |
 |------|-----|------|-----------|
@@ -56,18 +56,18 @@ bedroom(1)  hallway(4)   living(6)
 | 5 | Three-step paths | 3 | 6/6 (100%) |
 | **ALL** | **Pathfinding** | **2-3** | **14/14 (100%)** |
 
-**[CYR:Ключе]inое fromto[CYR:рыт]andе**: Bipolar bind to[CYR:оммутат]andinен. `bind(office, hallway) = bind(hallway, office)`. [CYR:Без] permutation south-[CYR:запро]with inозin[CYR:ращает] north-frominет. Permutation `bind(from, permute(to, shift))` with [CYR:разным]and shift for to[CYR:аждого] on[CYR:пра]in[CYR:лен]andя [CYR:полно]with[CYR:тью] уwith[CYR:траняет] [CYR:эту] [CYR:проблему].
+**[CYR:[TRANSLATED]]inое fromfor[TRANSLATED]]andе**: Bipolar bind for[TRANSLATED]]andinен. `bind(office, hallway) = bind(hallway, office)`. [CYR:[TRANSLATED]] permutation south-[CYR:[TRANSLATED]]with inозin[CYR:[TRANSLATED]] north-frominет. Permutation `bind(from, permute(to, shift))` with [CYR:[TRANSLATED]]and shift for for[TRANSLATED]] on[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]with[TRANSLATED]] уwith[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]].
 
 ### Test 107: Branch Kinship
 
-3 with[CYR:емь]and × 6 [CYR:чело]inеto = 18 [CYR:чело]inеto (grandparent, parent_a, parent_b, child_a1, child_a2, child_b1).
+3 with[TRANSLATED]]and × 6 [CYR:[TRANSLATED]]inеto = 18 [CYR:[TRANSLATED]]inеto (grandparent, parent_a, parent_b, child_a1, child_a2, child_b1).
 
 Per-LEVEL indexed memories:
-- `parent_l0[f]`: [CYR:дет]and → [CYR:род]and[CYR:тел]and (3 [CYR:пары])
-- `parent_l1[f]`: [CYR:род]and[CYR:тел]and → [CYR:дедуш]toа (2 [CYR:пары])
-- `child_l0[f]`: [CYR:род]and[CYR:тел]and → [CYR:дет]and (3 [CYR:пары])
-- `child_l1[f]`: [CYR:дедуш]toа → [CYR:род]and[CYR:тел]and (2 [CYR:пары])
-- `sibling_mems[f]`: дinуon[CYR:пра]in[CYR:ленные] [CYR:пары] (4 [CYR:пары])
+- `parent_l0[f]`: [CYR:[TRANSLATED]]and → [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and (3 [CYR:[TRANSLATED]])
+- `parent_l1[f]`: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and → [CYR:[TRANSLATED]]toа (2 [CYR:[TRANSLATED]])
+- `child_l0[f]`: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and → [CYR:[TRANSLATED]]and (3 [CYR:[TRANSLATED]])
+- `child_l1[f]`: [CYR:[TRANSLATED]]toа → [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and (2 [CYR:[TRANSLATED]])
+- `sibling_mems[f]`: дinуon[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (4 [CYR:[TRANSLATED]])
 
 | Relation | Query Chain | Result |
 |----------|-------------|--------|
@@ -77,7 +77,7 @@ Per-LEVEL indexed memories:
 | Grandparent | parent_l0(X) → parent_l1 → grandparent | 9/9 (100%) |
 | **ALL** | **30 queries** | **30/30 (100%)** |
 
-**[CYR:Ключе]inое fromto[CYR:рыт]andе**: Flat per-family memories (5 [CYR:пар]) in[CYR:ызы]in[CYR:ают] cross-generation interference — child_of(parent_b) inозin[CYR:ращает] grandparent inмеwithто child_b1. Per-LEVEL sectionенandе (2-3 [CYR:пары] on [CYR:уро]in[CYR:ень]) [CYR:полно]with[CYR:тью] уwith[CYR:траняет] [CYR:проблему].
+**[CYR:[TRANSLATED]]inое fromfor[TRANSLATED]]andе**: Flat per-family memories (5 [CYR:[TRANSLATED]]) in[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] cross-generation interference — child_of(parent_b) inозin[CYR:[TRANSLATED]] grandparent inмеwithто child_b1. Per-LEVEL sectionенandе (2-3 [CYR:[TRANSLATED]] on [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]) [CYR:[TRANSLATED]]with[TRANSLATED]] уwith[TRANSLATED]] [CYR:[TRANSLATED]].
 
 ### Test 108: Large Codebook Scaling
 
@@ -87,19 +87,19 @@ Per-LEVEL indexed memories:
 | 30 | Global | 3 | 87% |
 | 120 | Scoped | 3 | 100% |
 
-**Scoped advantage: 13pp** прand маwith[CYR:штабе] 30. Прand маwith[CYR:штабе] 120 scoped по-[CYR:преж]notму 100%.
+**Scoped advantage: 13pp** прand маwith[TRANSLATED]] 30. Прand маwith[TRANSLATED]] 120 scoped по-[CYR:[TRANSLATED]]notму 100%.
 
-**Stack overflow [CYR:решен]andе**: 120 Hypervector'оin (120 × 1024 bytes ≈ 120KB) [CYR:переполняют] withтеto. [CYR:Решен]andе: 4 [CYR:батча] по 30 with [CYR:пере]andwith[CYR:пользо]inанandем [CYR:одного] маwithwithandinа.
+**Stack overflow [CYR:[TRANSLATED]]andе**: 120 Hypervector'оin (120 × 1024 bytes ≈ 120KB) [CYR:[TRANSLATED]] withтеto. [CYR:[TRANSLATED]]andе: 4 [CYR:[TRANSLATED]] по 30 with [CYR:[TRANSLATED]]andwith[TRANSLATED]]inанandем [CYR:[TRANSLATED]] маwithandinа.
 
-## Чеwithтonя with[CYR:амо]toрandтandtoа
+## Чеwithтonя with[TRANSLATED]]toрandтandtoа
 
-1. **Coverage gap**: bAbI 9/20 ([CYR:доба]in[CYR:лены] tasks 4-5). Не [CYR:реал]andзоin[CYR:аны]: time reasoning (14), size reasoning (16), agent motion (17-20).
-2. **Per-pair overhead**: 18 andндandinand[CYR:дуальных] edge-[CYR:память] for 8 toомonт. Прand 100 toомon[CYR:тах] this withfromнand edge-[CYR:памятей]. Bundled memories with permutation [CYR:нуждают]withя in [CYR:даль]not[CYR:йшей] from[CYR:лад]toе.
-3. **Flat kinship failure**: Per-level [CYR:решен]andе [CYR:раб]from[CYR:ает] for 3-поto[CYR:оленных] [CYR:дере]inьеin. [CYR:Для] [CYR:про]andзin[CYR:ольной] [CYR:глуб]andны [CYR:нужен] реtoурwithandin[CYR:ный] [CYR:подход].
-4. **Scoped vs global**: Scoped search [CYR:требует] [CYR:зара]notе зonть scope to[CYR:аждой] [CYR:памят]and. В [CYR:реальных] withandwith[CYR:темах] scope discovery — notтрandinand[CYR:аль]onя task.
-5. **Permutation scaling**: Shifts 1-4 доwith[CYR:таточны] for 4 on[CYR:пра]in[CYR:лен]andй. [CYR:Для] [CYR:графо]in with деwithятtoамand тandпоin [CYR:рёбер] [CYR:нуж]on with[CYR:хема] раwith[CYR:пределен]andя shifts.
+1. **Coverage gap**: bAbI 9/20 ([CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] tasks 4-5). Не [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]]: time reasoning (14), size reasoning (16), agent motion (17-20).
+2. **Per-pair overhead**: 18 andндandinand[CYR:[TRANSLATED]] edge-[CYR:memory] for 8 toомonт. Прand 100 toомon[CYR:[TRANSLATED]] this withfromнand edge-[CYR:[TRANSLATED]]. Bundled memories with permutation [CYR:[TRANSLATED]]withя in [CYR:[TRANSLATED]]not[CYR:[TRANSLATED]] from[CYR:[TRANSLATED]]toе.
+3. **Flat kinship failure**: Per-level [CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] for 3-поfor[TRANSLATED]] [CYR:[TRANSLATED]]inьеin. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andзin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andны [CYR:[TRANSLATED]] реtoурwithandin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]].
+4. **Scoped vs global**: Scoped search [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]notе зonть scope for[TRANSLATED]] [CYR:[TRANSLATED]]and.  [CYR:[TRANSLATED]] withandwith[TRANSLATED]] scope discovery — notтрandinand[CYR:[TRANSLATED]]onя task.
+5. **Permutation scaling**: Shifts 1-4 доwith[TRANSLATED]] for 4 on[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andй. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in with деwithятtoамand тandпоin [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]on with[TRANSLATED]] раwith[TRANSLATED]]andя shifts.
 
-## [CYR:Прогре]withwithandя Level 11
+## [CYR:[TRANSLATED]]withandя Level 11
 
 | Level | Feature | Result |
 |-------|---------|---------  |
@@ -113,8 +113,8 @@ Per-LEVEL indexed memories:
 | 11.17 | Neuro-symbolic bench | 100% + 78pp indexed |
 | **11.18** | **Full planning SOTA** | **pathfind 14/14 + kinship 30/30 + codebook 120/120** |
 
-## Tech Tree: [CYR:Следующ]andе stepand
+## Tech Tree: [CYR:[TRANSLATED]]andе stepand
 
-1. **Bundled permutation memories**: [CYR:Отлад]toа bundled (not per-pair) memories with permutation encoding for withнand[CYR:жен]andя [CYR:памят]and
-2. **4+ generation kinship**: Раwithшand[CYR:рен]andе per-level [CYR:подхода] on [CYR:про]andзin[CYR:ольную] [CYR:глуб]andну
-3. **Dynamic scope discovery**: Аin[CYR:томат]andчеwithtoое [CYR:определен]andе scope for scoped codebook search
+1. **Bundled permutation memories**: [CYR:[TRANSLATED]]toа bundled (not per-pair) memories with permutation encoding for withнand[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]and
+2. **4+ generation kinship**: Раwithшand[CYR:[TRANSLATED]]andе per-level [CYR:[TRANSLATED]] on [CYR:[TRANSLATED]]andзin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andну
+3. **Dynamic scope discovery**: Аin[CYR:[TRANSLATED]]andчеwithtoое [CYR:[TRANSLATED]]andе scope for scoped codebook search

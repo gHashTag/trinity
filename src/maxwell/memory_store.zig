@@ -1,5 +1,5 @@
 // Maxwell Daemon - Memory Store
-// [CYR:[EN]]with[CYR:[EN]]on[EN] memory agent[EN] for [CYR:[EN]]and[EN]
+// withon memory agent for and
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -9,7 +9,7 @@ const std = @import("std");
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Experience in[EN]by[EN]not[EN]and[EN] [EN]yes[EN]and
+/// Experience inbynotand yesand
 pub const Experience = struct {
     id: u64,
     task_type: []const u8,
@@ -52,12 +52,12 @@ pub const Experience = struct {
     }
 };
 
-/// [CYR:[EN]] pattern
+///  pattern
 pub const Pattern = struct {
     id: u64,
     name: []const u8,
-    trigger: []const u8, // [CYR:[EN]]yes [EN]and[CYR:[EN]]
-    solution: []const u8, // [CYR:[EN]] [CYR:[EN]]
+    trigger: []const u8, // yes and
+    solution: []const u8, //  
     confidence: f32, // 0.0 - 1.0
     usage_count: u32,
     success_count: u32,
@@ -69,7 +69,7 @@ pub const Pattern = struct {
     }
 };
 
-/// [CYR:[EN]]andwith[EN] [EN] [EN]and[EN]to[EN]
+/// andwith  andto
 pub const ErrorRecord = struct {
     id: u64,
     error_type: []const u8,
@@ -131,7 +131,7 @@ pub const MemoryStore = struct {
     // EXPERIENCE
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// [CYR:[EN]]andwith[CYR:[EN]] experience
+    /// andwith experience
     pub fn recordExperience(self: *MemoryStore, exp: Experience) !u64 {
         var new_exp = exp;
         new_exp.id = self.next_experience_id;
@@ -147,7 +147,7 @@ pub const MemoryStore = struct {
         return new_exp.id;
     }
 
-    /// [CYR:[EN]]and by[CYR:[EN]]and[EN] experience
+    /// and byand experience
     pub fn findSimilarExperience(self: *MemoryStore, task_type: []const u8, keywords: []const []const u8) ?*Experience {
         var best_match: ?*Experience = null;
         var best_score: u32 = 0;
@@ -171,7 +171,7 @@ pub const MemoryStore = struct {
         return best_match;
     }
 
-    /// [CYR:[EN]]and[EN] [EN]with[CYR:[EN]] experience[EN] by [EN]and[EN] [EN]yes[EN]and
+    /// and with experience by and yesand
     pub fn getSuccessfulExperiences(self: *MemoryStore, task_type: []const u8) !std.ArrayList(*Experience) {
         var result = std.ArrayList(*Experience).init(self.allocator);
 
@@ -188,7 +188,7 @@ pub const MemoryStore = struct {
     // PATTERNS
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// [CYR:[EN]]inand[EN] pattern
+    /// inand pattern
     pub fn addPattern(self: *MemoryStore, pattern: Pattern) !u64 {
         var new_pattern = pattern;
         new_pattern.id = self.next_pattern_id;
@@ -200,7 +200,7 @@ pub const MemoryStore = struct {
         return new_pattern.id;
     }
 
-    /// [CYR:[EN]]and pattern by [EN]and[CYR:[EN]]
+    /// and pattern by and
     pub fn findPattern(self: *MemoryStore, trigger: []const u8) ?*Pattern {
         // Exact match
         if (self.pattern_by_trigger.get(trigger)) |id| {
@@ -221,7 +221,7 @@ pub const MemoryStore = struct {
         return null;
     }
 
-    /// [CYR:[EN]]inand[EN] with[CYR:[EN]]andwith[EN]andto[EN] [CYR:[EN]]on
+    /// inand withandwithandto on
     pub fn updatePatternStats(self: *MemoryStore, pattern_id: u64, success: bool) void {
         for (self.patterns.items) |*p| {
             if (p.id == pattern_id) {
@@ -236,7 +236,7 @@ pub const MemoryStore = struct {
         }
     }
 
-    /// [CYR:[EN]]and[EN] [CYR:[EN]]and[EN] [CYR:[EN]]
+    /// and and 
     pub fn getTopPatterns(self: *MemoryStore, limit: usize) !std.ArrayList(*Pattern) {
         var result = std.ArrayList(*Pattern).init(self.allocator);
 
@@ -264,7 +264,7 @@ pub const MemoryStore = struct {
         return result;
     }
 
-    /// [EN]in[CYR:[EN]] pattern and[EN] experience[EN]
+    /// in pattern and experience
     fn extractPattern(self: *MemoryStore, exp: *Experience) !void {
         // Simple pattern extraction: task_type -> approach
         const existing = self.findPattern(exp.task_type);
@@ -288,7 +288,7 @@ pub const MemoryStore = struct {
     // ERRORS
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// [CYR:[EN]]andwith[CYR:[EN]] [EN]and[EN]to[EN]
+    /// andwith andto
     pub fn recordError(self: *MemoryStore, error_type: []const u8, message: []const u8, context: []const u8) !u64 {
         const record = ErrorRecord{
             .id = self.next_error_id,
@@ -306,7 +306,7 @@ pub const MemoryStore = struct {
         return record.id;
     }
 
-    /// [CYR:[EN]]and by[CYR:[EN]] [EN]and[EN]to[EN] (for byin[CYR:[EN]] andwithby[CYR:[EN]]in[EN]and[EN] [CYR:[EN]]and[EN])
+    /// and by andto (for byin andwithbyinand and)
     pub fn findSimilarError(self: *MemoryStore, error_type: []const u8, message: []const u8) ?*ErrorRecord {
         for (self.errors.items) |*err| {
             if (std.mem.eql(u8, err.error_type, error_type) and
@@ -319,7 +319,7 @@ pub const MemoryStore = struct {
         return null;
     }
 
-    /// [CYR:[EN]]and[EN] [EN]and[EN]to[EN] how [CYR:[EN]]
+    /// and andto how 
     pub fn resolveError(self: *MemoryStore, error_id: u64, solution: []const u8) void {
         for (self.errors.items) |*err| {
             if (err.id == error_id) {
@@ -334,7 +334,7 @@ pub const MemoryStore = struct {
     // PERSISTENCE
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// [CYR:[EN]]and[EN] memory in file
+    /// and memory in file
     pub fn save(self: *MemoryStore, path: []const u8) !void {
         const file = try std.fs.cwd().createFile(path, .{});
         defer file.close();
@@ -356,7 +356,7 @@ pub const MemoryStore = struct {
         // TODO: Serialize actual data
     }
 
-    /// [CYR:[EN]]and[EN] memory and[EN] file[EN]
+    /// and memory and file
     pub fn load(self: *MemoryStore, path: []const u8) !void {
         const file = std.fs.cwd().openFile(path, .{}) catch return;
         defer file.close();

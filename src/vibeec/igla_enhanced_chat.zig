@@ -117,180 +117,180 @@ const PATTERNS = [_]ConversationalPattern{
     // RUSSIAN GREETINGS & BASICS (30 patterns)
     // ═══════════════════════════════════════════════════════════════════════════
     .{
-        .keywords = &.{ "[EN]andin[EN]", "[CYR:[CYR]]inwith[EN]in[EN]", "[EN]before[EN]in[EN]", "[EN]andin[EN]with[EN]in[EN]", "[CYR:[CYR]]", "[CYR:[CYR]]", "with[CYR:[CYR]]", "before[CYR:[CYR]] [CYR:[CYR]]", "before[CYR:[CYR]] [CYR:[CYR]]", "before[CYR:[CYR]] in[CYR:[CYR]]" },
+        .keywords = &.{ "andin", "inwithin", "beforein", "andinwithin", "", "", "with", "before ", "before ", "before in" },
         .category = .Greeting,
         .language = .Russian,
         .weight = 1.2,
         .responses = &.{
-            "[EN]andin[EN]! [CYR:[CYR]] [CYR:you] inand[CYR:[CYR]]. [CYR:[CYR]] [CYR:[CYR]] by[CYR:[CYR]]?",
-            "[CYR:[CYR]]inwith[EN]in[EN]! [EN]to [CYR:[CYR]]? [CYR:What] [CYR:[CYR]] with[CYR:[CYR]]?",
-            "[EN]andin[EN]! [EN]from[EN]in to [CYR:[CYR]]from[EN]. [CYR:What] need with[CYR:[CYR]]?",
-            "[CYR:[CYR]]! Trinity on within[EN]and. [EN]toand[EN] [EN]yes[EN]and?",
-            "[CYR:[CYR]]! [CYR:[CYR]]and[CYR:[CYR]] [CYR:[CYR]] for to[EN]yes. [CYR:[CYR]]?",
+            "andin!  [CYR:you] inand.   by?",
+            "inwithin! to ? [CYR:What]  with?",
+            "andin! fromin to from. [CYR:What] need with?",
+            "! Trinity on withinand. toand yesand?",
+            "! and  for toyes. ?",
         },
     },
     .{
-        .keywords = &.{ "byto[EN]", "before withinandyes[EN]and[EN]", "[CYR:[CYR]]", "[CYR:[CYR]]", "[EN]inand[EN]and[EN]with[EN]", "before inwith[CYR:[CYR]]and", "inwith[CYR:[CYR]] [CYR:[CYR]]", "[EN]yes[EN]and" },
+        .keywords = &.{ "byto", "before withinandyesand", "", "", "inandwith", "before inwithand", "inwith ", "yesand" },
         .category = .Farewell,
         .language = .Russian,
         .weight = 1.0,
         .responses = &.{
-            "[EN]to[EN]! [EN]yes[EN]and [CYR:[CYR]]! [CYR:[CYR]]with[EN], [EN]with[EN]and what.",
-            "[EN] withinandyes[EN]and[EN]! [CYR:[CYR]] [EN]and[CYR:[CYR]] by[CYR:[CYR]]from[CYR:[CYR]].",
-            "[CYR:[CYR]]! phi^2 + 1/phi^2 = 3. [EN] inwith[CYR:[CYR]]and!",
-            "[EN]to[EN]-byto[EN]! Koschei is immortal! [CYR:[CYR]]in[CYR:[CYR]]with[EN]!",
-            "[EN]with[CYR:[CYR]] [CYR:[CYR]]! [CYR:[CYR]] [CYR:[CYR]] by[CYR:[CYR]].",
+            "to! yesand ! with, withand what.",
+            " withinandyesand!  and byfrom.",
+            "! phi^2 + 1/phi^2 = 3.  inwithand!",
+            "to-byto! Koschei is immortal! inwith!",
+            "with !   by.",
         },
     },
     .{
-        .keywords = &.{ "to[EN]to [CYR:[CYR]]", "to[EN]to [EN]", "what [EN]in[CYR:[CYR]]", "to[EN]to [EN]and[CYR:[CYR]]", "to[EN]to with[EN]", "to[EN]to by[EN]andin[CYR:[CYR]]", "to[EN]to onwith[CYR:[CYR]]and[EN]" },
+        .keywords = &.{ "toto ", "toto ", "what in", "toto and", "toto with", "toto byandin", "toto onwithand" },
         .category = .HowAreYou,
         .language = .Russian,
         .weight = 1.1,
         .responses = &.{
-            "[CYR:[CYR]]and[CYR:[CYR]]! [CYR:[CYR]]from[EN] on 60K ops/s, inwith[EN] with[CYR:[CYR]]and[CYR:l[EN]]. [EN] [EN] [CYR:you] to[EN]to?",
-            "[CYR:[CYR]]! [EN]from[EN]in [EN]andwith[CYR:[CYR]] to[EN] and [CYR:[CYR]] [EN]yes[EN]and. [CYR:[CYR]] [CYR:[CYR]]with[EN]?",
-            "[CYR:[CYR]]! Ternary vectors in [CYR:[CYR]], SIMD [CYR:[CYR]]with[EN]. [CYR:What] [CYR:[CYR]]?",
-            "[CYR:[CYR]]to[EN]with[EN]! phi^2 + 1/phi^2 = 3, inwith[EN] by [CYR:[CYR]]. [EN] to[EN]to?",
-            "[CYR:[CYR]l[EN]]! [EN]to[CYR:[EN]l[CYR]] and [EN]from[EN]in to [CYR:[CYR]]from[EN]. [EN]withwithto[CYR:[CYR]]in[EN]!",
+            "and! from on 60K ops/s, inwith withand[CYR:l].   [CYR:you] toto?",
+            "! fromin andwith to and  yesand.  with?",
+            "! Ternary vectors in , SIMD with. [CYR:What] ?",
+            "towith! phi^2 + 1/phi^2 = 3, inwith by .  toto?",
+            "[CYR:l]! forl] and fromin to from. withtoin!",
         },
     },
     // NEW: Expanded Russian conversational patterns
     .{
-        .keywords = &.{ "[EN]withwithto[EN]and [EN] with[CYR:[CYR]]", "to[EN] [EN] [EN]to[EN]", "what [EN] [CYR:[CYR]] [CYR:[CYR]]", "[EN]in[EN]and withbywith[CYR:[CYR]]with[EN]and" },
+        .keywords = &.{ "withtoand  with", "to  to", "what   ", "inand withbywithand" },
         .category = .WhoAreYou,
         .language = .Russian,
         .weight = 1.3,
         .responses = &.{
-            "[EN] Trinity — [EN]to[CYR:[EN]l[CYR]] AI-[EN]withwithandwith[CYR:[CYR]] on ternary vectors. [CYR:[CYR]]from[EN] on [EN]in[CYR:[CYR]] M1 Pro [CYR:without] [CYR:[CYR]]to[EN]. [CYR:[CYR]]: to[EN], [CYR:[CYR]]andto[EN], [EN]on[CYR:[CYR]]andand, [EN]and[EN]with[EN]and[EN].",
-            "[CYR:[CYR]] [EN]in[EN] IGLA — Intelligent Generative Local Agent. 100% [EN]to[CYR:[EN]l[CYR]], 0% [CYR:[CYR]]to[EN]. [EN]and[EN] to[EN], [CYR:[CYR]] [EN]yes[EN]and, beforeto[CYR:[CYR]]in[EN] [CYR:[CYR]].",
-            "[EN] — result [CYR:[CYR]]to[EN] Trinity. Ternary computing + VSA = 60K ops/s [EN]to[CYR:[EN]l[EN]]. [CYR:[CYR]]and[EN]and[CYR:[CYR]]and[EN]: Zig, [CYR:[CYR]]and[CYR:[CYR]], [CYR:[CYR]]andto[EN].",
-            "Trinity Local Agent v2.0. [EN]and with[CYR:[CYR]]withbywith[CYR:[CYR]]with[EN]and: to[EN] [EN] [EN]andto[EN]with[EN]to[CYR:[CYR]], [EN]andto[EN]toand[EN] [CYR:[CYR]]andon[EN]and[EN], by[EN]on[EN] [EN]andin[CYR:[CYR]]with[EN]. phi^2 + 1/phi^2 = 3!",
+            " Trinity — forl] AI-withandwith on ternary vectors. from on in M1 Pro [CYR:without] to. : to, andto, onand, andwithand.",
+            " in IGLA — Intelligent Generative Local Agent. 100% forl], 0% to. and to,  yesand, beforetoin .",
+            " — result to Trinity. Ternary computing + VSA = 60K ops/s forl]. andand: Zig, and, andto.",
+            "Trinity Local Agent v2.0. and withbywithand: to  andtowithto, andtotoand andonand, byon andinwith. phi^2 + 1/phi^2 = 3!",
         },
     },
     .{
-        .keywords = &.{ "with[EN]withand[EN]", "[CYR:[CYR]]yes[EN]", "with[EN]with", "with[EN]towith", "[CYR:[CYR]]withand", "[CYR:[CYR]]yes[CYR:[CYR]]with[EN]", "[EN]and[EN]on[CYR:[CYR]]" },
+        .keywords = &.{ "withand", "yes", "with", "withtowith", "withand", "yeswith", "andon" },
         .category = .Thanks,
         .language = .Russian,
         .weight = 1.0,
         .responses = &.{
-            "[CYR:[CYR]]with[EN]! [CYR:[CYR]]with[EN], [EN]with[EN]and what [CYR:[CYR]] need.",
-            "[EN] [EN] what! [CYR:[CYR]] by[CYR:[CYR]]. [EN]yes[EN]and with [CYR:[CYR]]to[CYR:[CYR]]!",
-            "[EN]with[EN]yes by[CYR:[CYR]]with[EN]! phi^2 + 1/phi^2 = 3!",
-            "[EN] [EN]before[EN]in[EN]! Koschei is immortal! [CYR:[CYR]]and [CYR:[CYR]].",
-            "[CYR:[CYR]] [CYR:[CYR]] by[CYR:[CYR]]! [EN]with[EN]and what — [EN] [CYR:[CYR]].",
+            "with! with, withand what  need.",
+            "  what!  by. yesand with to!",
+            "withyes bywith! phi^2 + 1/phi^2 = 3!",
+            " beforein! Koschei is immortal! and .",
+            "  by! withand what —  .",
         },
     },
     // NEW: Weather with context
     .{
-        .keywords = &.{ "by[EN]yes", "to[EN]to[EN] by[EN]yes", "to[EN]to by[EN]yes", "before[CYR:[CYR]]", "with[CYR:[CYR]]", "withnot[EN]", "[CYR:[CYR]]", "[CYR:[CYR]]" },
+        .keywords = &.{ "byyes", "toto byyes", "toto byyes", "before", "with", "withnot", "", "" },
         .category = .Weather,
         .language = .Russian,
         .weight = 0.9,
         .responses = &.{
-            "[EN] [EN]to[CYR:[EN]l[CYR]] agent — [CYR:[CYR]]from[EN] [CYR:[CYR]], by[CYR:[CYR]] not [EN]on[EN]. [EN] [CYR:[CYR]] by[CYR:[CYR]] with to[EN]before[EN] for weather API!",
-            "[CYR:[CYR]]yes? [EN] [CYR:[CYR]] [EN]and[CYR:[CYR]]in[EN] [EN]and[EN] inwith[EN]yes phi^2 + 1/phi^2 = 3 [CYR:[CYR]]with[EN] by Trinity. [EN] in [CYR:[CYR]l[EN]]with[EN]and — [CYR:[CYR]] [EN] [EN]to[EN]!",
-            "[EN] [EN]on[EN] by[CYR:[CYR]] — [EN] 100% [CYR:[CYR]]. [CYR:[CYR]] [CYR:[CYR]] on[EN]andwith[CYR:[CYR]] [CYR:[CYR]]with[EN] by[CYR:[CYR]] API [EN] [EN]and[CYR:[CYR]]!",
-            "[CYR:[CYR]] not fromwith[CYR:[CYR]]andin[EN], [EN] [CYR:[CYR]] [EN]on[EN]: golden ratio = 1.618... [CYR:This] in[EN]on[EN] to[EN]with[CYR:[CYR]], in from[EN]and[EN]and[EN] from by[CYR:[CYR]]!",
-            "[CYR:[CYR]] by[CYR:[CYR]] [CYR:[CYR]] and[CYR:[CYR]]no, [EN] [EN] [CYR:[CYR]]from[EN] [EN]to[CYR:[EN]l[EN]]. [CYR:[CYR]] by[CYR:[CYR]] and[CYR:[CYR]]and[EN]in[CYR:[CYR]] weather service in [EN]in[EN] to[EN]!",
+            " forl] agent — from , by not on.   by with tobefore for weather API!",
+            "yes?   andin and inwithyes phi^2 + 1/phi^2 = 3 with by Trinity.  in [CYR:l]withand —   to!",
+            " on by —  100% .   onandwith with by API  and!",
+            " not fromwithandin,   on: golden ratio = 1.618... [CYR:This] inon towith, in fromand from by!",
+            " by  andno,   from forl].  by andin weather service in in to!",
         },
     },
     // NEW: Jokes and Humor (expanded)
     .{
-        .keywords = &.{ "[CYR:[CYR]]to[EN]", "[CYR:[CYR]]to[EN]", "[EN]notto[EN]from", "with[CYR:[CYR]]", "[EN]withwith[CYR:[CYR]]and", "[CYR:[CYR]]", "bywith[CYR:[CYR]]with[EN]", "by[CYR:[CYR]]and", "with[CYR:[CYR]]", "[EN]withwithto[EN]and [CYR:[CYR]]to[EN]", "[EN]withwithto[EN]and [EN]notto[EN]from" },
+        .keywords = &.{ "to", "to", "nottofrom", "with", "withand", "", "bywith", "byand", "with", "withtoand to", "withtoand nottofrom" },
         .category = .Humor,
         .language = .Russian,
         .weight = 1.1,
         .responses = &.{
-            "[CYR:[CYR]] [CYR:program]andwith[EN] [CYR:[CYR]] with [CYR:[CYR]]from[EN]? [EN]from[CYR:[CYR]] what not by[CYR:[CYR]]and[EN] [EN]withwithandin! (get a raise = get array)",
-            "[EN]to[CYR:[EN]l]to[EN] [CYR:program]andwith[EN]in need, what[EN] [CYR:[CYR]]and[EN] [CYR:[CYR]]by[EN]to[EN]? [EN]and [CYR:[CYR]] — this [CYR:[CYR]] [CYR:[CYR]]!",
-            "[EN]in[EN] [CYR:[CYR]] inwith[CYR:[CYR]]orwith[EN]. [EN]and[EN]: '[EN] to[EN]to?' [CYR:[CYR]]: '[EN] [CYR:[CYR]]with[EN], [EN] overflow [EN]and[EN]to[EN].'",
-            "[EN]on [CYR:program]andwith[EN]: '[CYR:[CYR]]and [EN] [CYR:[CYR]], [EN]with[EN]and [EN]with[EN] [CYR:[CYR]] — in[CYR:[CYR]]and 10.' [EN] in[CYR:[CYR]]with[EN] with 10 [CYR:[CYR]]and.",
-            "[CYR:[CYR]] [EN] [CYR:program]andwith[EN]in no [EN]in[CYR:[CYR]]to? [EN]from[CYR:[CYR]] what [EN]and [CYR:[CYR]] 'to do' and 'to date'!",
-            "[CYR:[CYR]]and[EN]andwith[EN] inand[EN]and[EN] with[EN]to[EN] onby[EN]inand[EN] by[CYR:[CYR]], [EN]withwithand[EN]andwith[EN] — onby[EN]inand[EN] [EN]with[CYR:[CYR]], [CYR:program]andwith[EN] — with[EN]to[EN] in[EN]in[EN] more, [CYR:[CYR]] need.",
-            "[EN]with[EN] [CYR:[EN]l]to[EN] 10 [EN]andbyin [CYR:[CYR]]: [EN], to[EN] by[EN]and[CYR:[CYR]] [EN]in[EN]and[CYR:[CYR]] to[EN], and [EN], to[EN] no. [EN] [CYR:[CYR]] [EN], to[EN] by[EN]and[CYR:[CYR]] ternary!",
+            " [CYR:program]andwith  with from? from what not byand withandin! (get a raise = get array)",
+            "forl]to [CYR:program]andwithin need, what and byto? and  — this  !",
+            "in  inwithorwith. and: ' toto?' : ' with,  overflow andto.'",
+            "on [CYR:program]andwith: 'and  , withand with  — inand 10.'  inwith with 10 and.",
+            "  [CYR:program]andwithin no into? from what and  'to do' and 'to date'!",
+            "andwith inand withto onbyinand by, withandwith — onbyinand with, [CYR:program]andwith — withto inin more,  need.",
+            "with [CYR:l]to 10 andbyin : , to byand inand to, and , to no.   , to byand ternary!",
         },
     },
     // NEW: Storytelling
     .{
-        .keywords = &.{ "[EN]withwithto[EN]and andwith[CYR:[CYR]]and[EN]", "andwith[CYR:[CYR]]and[EN]", "withto[EN]to[EN]", "[EN]withwithto[EN]and withto[EN]to[EN]", "and[CYR:[CYR]]withon[EN] andwith[CYR:[CYR]]and[EN]" },
+        .keywords = &.{ "withtoand andwithand", "andwithand", "withtoto", "withtoand withtoto", "andwithon andwithand" },
         .category = .Story,
         .language = .Russian,
         .weight = 1.0,
         .responses = &.{
-            "[EN]in[CYR:[CYR]]-yesin[EN] in to[CYR:[CYR]]inwith[EN]in[EN] Ternary [EN]and[EN] Koschei. [CYR:[CYR]] withand[EN] [CYR:[CYR]] in [EN]andwith[EN] 3: phi^2 + 1/phi^2 = 3. [EN] [CYR:[CYR]] [EN] [EN]withwith[CYR:[CYR]], byto[EN] [CYR:[CYR]]from[EN] [EN]to[CYR:[EN]l[EN]]...",
-            "[EN]with[CYR:[CYR]]and[EN] Trinity: in 2025 on [EN] [CYR:[CYR]]and [CYR:[CYR]] [CYR:[CYR]]from[EN]andto[EN]in [CYR:[CYR]]and[EN] with[EN]yes[EN] AI [CYR:without] [CYR:[CYR]]to[EN]. [EN]and fromto[CYR:[CYR]]and withand[EN] ternary vectors and beforewith[EN]and[EN]and 60K ops/s. The end? [CYR:[CYR]] — [CYR:[EN]l]to[EN] on[CYR:[CYR]]!",
-            "[EN]and[EN]-[CYR:[CYR]] [CYR:program]andwith[EN]. [CYR:[CYR]] [CYR:[CYR]] [EN] [CYR:[CYR]]and[EN] [CYR:[CYR]]to[EN] [EN] API. [EN]on[CYR:[CYR]] [EN] on[CYR:[CYR]] Trinity and with[CYR:[CYR]] within[CYR:[CYR]]. [CYR:[CYR]l]: local > cloud.",
-            "[CYR:[CYR]]yes [EN] Golden Ratio: phi = 1.618... [CYR:[CYR]] [CYR:[CYR]]by[EN]and[EN] in with[EN]and[CYR:[CYR]] [CYR:[CYR]]to[EN]andto, [CYR:[CYR]]with[EN]to[EN] [EN]in[CYR:[CYR]]in and... in on[CYR:[CYR]] to[CYR:[CYR]]. [CYR:[CYR]]andto[EN] byinwith[CYR:[CYR]]!",
+            "in-yesin in toinwithin Ternary and Koschei.  withand  in andwith 3: phi^2 + 1/phi^2 = 3.    with, byto from forl]...",
+            "withand Trinity: in 2025 on  and  fromandtoin and withyes AI [CYR:without] to. and fromtoand withand ternary vectors and beforewithand 60K ops/s. The end?  — [CYR:l]to on!",
+            "and- [CYR:program]andwith.    and to  API. on  on Trinity and with within. [CYR:l]: local > cloud.",
+            "yes  Golden Ratio: phi = 1.618...  byand in withand toandto, withto inin and... in on to. andto byinwith!",
         },
     },
     // NEW: Motivation and Advice
     .{
-        .keywords = &.{ "[EN]fromandin[EN]and[EN]", "inbefore[CYR:[CYR]]in[EN]and[EN]", "with[EN]in[EN]", "to[EN]to [CYR:[CYR]]", "what [CYR:[CYR]]", "not by[CYR:[CYR]]with[EN]", "with[CYR:[CYR]]" },
+        .keywords = &.{ "fromandinand", "inbeforeinand", "within", "toto ", "what ", "not bywith", "with" },
         .category = .Motivation,
         .language = .Russian,
         .weight = 1.0,
         .responses = &.{
-            "[CYR:[CYR]]? [CYR:[CYR]] [EN]yes[EN] on [CYR:[CYR]]toand[EN] stepand. [EN]and[EN] step [EN] [CYR:[CYR]]. [CYR:[CYR]] to[CYR:[CYR]]and[CYR:[CYR]] with[EN]and[CYR:[CYR]] to[EN] by [EN]with[CYR:[CYR]]!",
-            "[CYR:Code] not to[CYR:[CYR]]or[CYR:[CYR]]with[EN]? [CYR:This] not [CYR:[CYR]]in[EN] — this feedback. [CYR:[CYR]]yes[EN] [EN]and[EN]to[EN] = [CYR:[CYR]]to. [EN] [EN]and[EN] to [CYR:[CYR]]and[EN], [CYR:[CYR]] [CYR:[CYR]].",
-            "[CYR:[CYR]]and: yes[EN] with[CYR:[CYR]] with[CYR:[CYR]] [CYR:[CYR]]and[CYR:[CYR]] — this [CYR:[CYR]]with[EN] [CYR:[CYR]] [CYR:[CYR]]with[CYR:[CYR]] step[EN]in. [CYR:[CYR]]and with [CYR:[CYR]]in[CYR:[CYR]].",
-            "[EN] by[CYR:[CYR]]with[EN]? [CYR:[CYR]] [CYR:[CYR]], by[CYR:[CYR]] in[CYR:[CYR]], by[CYR:[CYR]]. [CYR:[CYR]] [CYR:[CYR]] from[CYR:[CYR]]. [CYR:[CYR]]and[EN] [EN]and[CYR:[CYR]].",
-            "[EN]in[EN]: [EN]and[EN]and to[EN] to[CYR:[CYR]] [CYR:[CYR]], yes[EN] 30 [EN]and[CYR:[CYR]]. [CYR:[CYR]]withandwith[CYR:[CYR]]with[EN] > and[CYR:[CYR]]withandin[EN]with[EN]. phi^2 + 1/phi^2 = 3 — [CYR:[CYR]]with!",
+            "?  yes on toand stepand. and step  .  toand withand to by with!",
+            "[CYR:Code] not toorwith? [CYR:This] not in — this feedback. yes andto = to.  and to and,  .",
+            "and: yes with with and — this with  with stepin. and with in.",
+            " bywith?  , by in, by.   from. and and.",
+            "in: and to to , yes 30 and. withandwith > andwithandinwith. phi^2 + 1/phi^2 = 3 — with!",
         },
     },
     // NEW: Philosophy and Deep Questions
     .{
-        .keywords = &.{ "with[EN]with[EN] [EN]and[EN]and", "[CYR:[CYR]] [EN] [EN]andin[EN]", "[EN]and[EN]with[EN]and[EN]", "what [EN]with[EN] andwith[EN]andon", "[CYR:[CYR]l[EN]]with[EN]" },
+        .keywords = &.{ "with and", "  andin", "andwithand", "what with andwithandon", "[CYR:l]with" },
         .category = .Philosophy,
         .language = .Russian,
         .weight = 1.2,
         .responses = &.{
-            "[CYR:[CYR]]with[EN] [EN]and[EN]and? [CYR:[CYR]]can, in with[EN]yes[EN]andand and by[EN]on[EN]andand. [EN] [EN]and[CYR:[CYR]] to[EN] — [EN] [CYR:[CYR]]from[CYR:[CYR]] — this [CYR:[CYR]]to[EN] [EN]before. phi^2 + 1/phi^2 = 3.",
-            "[CYR:What] [EN]with[EN] andwith[EN]andon? [EN] [CYR:[CYR]]andto[EN] — beforeto[CYR:[CYR]] [CYR:[CYR]]. [EN] to[CYR:[CYR]] — [CYR:[CYR]]from[CYR:[CYR]]and[EN] [EN]with[EN]. [EN] [EN]and[EN]and — [EN]with[CYR:[CYR]]with[EN] with with[CYR:[CYR]].",
-            "[EN]and[EN]with[EN]and[EN] [CYR:program]and[EN]in[EN]and[EN]: to[EN] before[CYR:[CYR]] [CYR:[CYR]] [CYR:[CYR]]with[CYR:[CYR]]. [CYR:[CYR]]with[EN]from[EN] — in[EN]with[CYR:[CYR]] [CYR:[CYR]] with[CYR:[CYR]]with[EN]and. [EN]to phi — [CYR:[CYR]]with[CYR:[CYR]] [EN]andwith[EN] with [EN]withto[EN]not[CYR:[CYR]]and within[EN]with[EN]in[EN]and.",
-            "[CYR:[CYR]l[EN]]with[EN]? [EN] in withand[CYR:[CYR]]andand? [CYR:[CYR]] [CYR:[CYR]]. [EN] yes[EN] [EN]with[EN]and yes — to[EN] [CYR:[CYR]]from[CYR:[CYR]], and this [CYR:[CYR]l[EN]] for onwith.",
-            "[CYR:[CYR]] [EN] [CYR:[CYR]]with[EN]? [CYR:What[EN]] [CYR:[CYR]] [EN]yes[EN]and, by[CYR:[CYR]] [CYR:[CYR]]and[EN], with[EN]yesin[CYR:[CYR]] what-[EN] [EN]in[EN]. [EN] [EN]andwith[CYR:[CYR]] [CYR:[CYR]]and[EN] to[EN]!",
+            "with and? can, in withyesand and byonand.  and to —  from — this to before. phi^2 + 1/phi^2 = 3.",
+            "[CYR:What] with andwithandon?  andto — beforeto .  to — fromand with.  and — with with with.",
+            "andwithand [CYR:program]andinand: to before  with. withfrom — inwith  withand. to phi — with andwith with withtonotand withinwithinand.",
+            "[CYR:l]with?  in withandand?  .  yes withand yes — to from, and this [CYR:l] for onwith.",
+            "  with? [CYR:What]  yesand, by and, withyesin what- in.  andwith and to!",
         },
     },
     // NEW: Tech/Programming Questions
     .{
-        .keywords = &.{ "by[CYR:[CYR]] zig", "[CYR:[CYR]] zig", "zig vs rust", "zig better", "[CYR:[CYR]]and[CYR:[CYR]]with[EN]in[EN] zig" },
+        .keywords = &.{ "by zig", " zig", "zig vs rust", "zig better", "andwithin zig" },
         .category = .Programming,
         .language = .Russian,
         .weight = 1.3,
         .responses = &.{
-            "Zig — with[EN]in[CYR:[CYR]]on[EN] [CYR:[CYR]]on C. [CYR:[CYR]] hidden control flow, with comptime magic, [CYR:[CYR]]with[CYR:[CYR]] build system. [CYR:[CYR]] for withandwith[CYR:[CYR]] and and[EN].",
-            "Zig vs Rust: Zig [CYR:[CYR]], [CYR:[CYR]]not[EN]. Rust [CYR:without[CYR]]withnot[EN], [EN] with[CYR:[CYR]]not[EN]. [CYR:[CYR]] [CYR:[CYR]]and — in[EN]and[CYR:[CYR]] by[EN] [EN]yes[EN].",
-            "[CYR:[CYR]] Zig for Trinity? Comptime, SIMD and[EN] to[CYR:[CYR]]toand, to[EN]withwith-to[CYR:[CYR]]and[CYR:[CYR]]and[EN], no runtime overhead. [EN]to[CYR:[CYR]]with[EN] C, [EN]and[CYR:[CYR]]with[EN] Python.",
-            "[CYR:[CYR]]and[CYR:[CYR]]with[EN]in[EN] Zig: no GC, no andwithto[CYR:[CYR]]and[EN], no hidden allocations. [EN] to[CYR:[CYR]]and[CYR:[CYR]] inwith[EN]. [EN]to Koschei — immortal control!",
+            "Zig — withinon on C.  hidden control flow, with comptime magic, with build system.  for withandwith and and.",
+            "Zig vs Rust: Zig , not. Rust [CYR:without]withnot,  withnot.  and — inand by yes.",
+            " Zig for Trinity? Comptime, SIMD and totoand, towith-toand, no runtime overhead. towith C, andwith Python.",
+            "andwithin Zig: no GC, no andwithtoand, no hidden allocations.  toand inwith. to Koschei — immortal control!",
         },
     },
     // NEW: Math Questions
     .{
-        .keywords = &.{ "phi", "[EN]and", "[CYR:[CYR]]from[EN] with[CYR:[CYR]]and[EN]", "golden ratio", "1.618", "fibonacci within[CYR:[CYR]]" },
+        .keywords = &.{ "phi", "and", "from withand", "golden ratio", "1.618", "fibonacci within" },
         .category = .Math,
         .language = .Russian,
         .weight = 1.4,
         .responses = &.{
-            "phi = (1 + sqrt(5)) / 2 = 1.618033... [CYR:[CYR]]from[EN] with[CYR:[CYR]]and[EN]. phi^2 = phi + 1. [CYR:[CYR]]and[EN]withto[EN] to[EN]withfrom[EN]!",
-            "phi^2 + 1/phi^2 = 3 — Trinity Identity! [CYR:This] not with[EN]in[CYR:[CYR]]and[EN]. [EN]and — within[CYR:[CYR]] [EN]andwith[EN] in [CYR:[CYR]]andto[EN] and [EN]and[CYR:[CYR]].",
-            "[EN]in[CYR:[CYR]] phi and Fibonacci: lim(F(n+1)/F(n)) = phi. [CYR:[CYR]] more n, [CYR:[CYR]] [CYR:[CYR]]not[EN]. [CYR:[CYR]]andto[EN] within[CYR:[CYR]]in[CYR:[CYR]] inwith[EN]!",
-            "Golden ratio in [EN]and[CYR:[CYR]]: with[EN]and[CYR:[CYR]]and [EN]to[EN]inand[EN], [CYR:[CYR]]with[EN]toand [EN]in[CYR:[CYR]]in, [CYR:[CYR]]to[EN]andtoand. phi — [EN]andin[EN]with[CYR:[EN]l]on[EN] [CYR:[CYR]]by[EN]and[EN] to[EN]withfrom[EN].",
-            "phi^2 = 2.618..., 1/phi = 0.618..., phi - 1/phi = 1. [EN]andinand[CYR:[EN]l[CYR]] within[EN]with[EN]in[EN]! [CYR:This] [EN]with[EN]in[EN] on[CYR:[CYR]] [CYR:[CYR]]and[EN]to[CYR:[CYR]].",
+            "phi = (1 + sqrt(5)) / 2 = 1.618033... from withand. phi^2 = phi + 1. andwithto towithfrom!",
+            "phi^2 + 1/phi^2 = 3 — Trinity Identity! [CYR:This] not withinand. and — within andwith in andto and and.",
+            "in phi and Fibonacci: lim(F(n+1)/F(n)) = phi.  more n,  not. andto withinin inwith!",
+            "Golden ratio in and: withand toinand, withtoand inin, toandtoand. phi — andinwithl]on byand towithfrom.",
+            "phi^2 = 2.618..., 1/phi = 0.618..., phi - 1/phi = 1. andinand[CYR:l] withinwithin! [CYR:This] within on andto.",
         },
     },
     // NEW: Future and AI
     .{
-        .keywords = &.{ "[CYR:[CYR]] ai", "andwithto[EN]withwith[EN]in[CYR:[CYR]] and[CYR:[CYR]]to[EN]", "andand [CYR:[CYR]]in[EN]and[EN]", "[CYR:[CYR]]from[EN]", "withand[CYR:[CYR]]with[EN]" },
+        .keywords = &.{ " ai", "andwithtowithin andto", "and inand", "from", "withandwith" },
         .category = .Future,
         .language = .Russian,
         .weight = 1.1,
         .responses = &.{
-            "[CYR:[CYR]] AI? [EN]to[CYR:[EN]l[CYR]], [EN]andin[CYR:[CYR]], [CYR:[CYR]]. [CYR:[CYR]] [CYR:[CYR]]by[EN]andand — [CYR:[CYR]]. Trinity — this [CYR:[CYR]]!",
-            "AI [CYR:[CYR]]in[EN]and[EN] [EN]and[EN]? [CYR:[CYR]] [EN]and. AI — and[EN]with[CYR:[CYR]]. [CYR:[CYR]]from[EN]to not [CYR:[CYR]]in[EN]and[EN] [EN]and[EN], [EN]from[EN] and[CYR:[CYR]]and[EN] with[CYR:[CYR]]and[CYR:[EN]l]with[EN]in[EN].",
-            "[EN]and[CYR:[CYR]]with[EN]? [CYR:[CYR]]withon[EN] [CYR:[CYR]]and[EN]. [EN] byto[EN] [EN]to[EN]with on [CYR:[CYR]]to[EN]andto[EN]: [CYR:[CYR]] AI by[CYR:[CYR]] and [CYR:without[CYR]]with[CYR:[CYR]].",
-            "[CYR:[CYR]]from[EN] [CYR:[EN]me[EN]] [CYR:[CYR]]? [EN]with[EN]and[CYR:[CYR]]. [CYR:[CYR]]and[EN] — yes. [EN]in[CYR:[CYR]]with[EN]in[EN] — no. [CYR:Code] [EN]and[CYR:[CYR]] AI, [CYR:[CYR]]and[EN]to[CYR:[CYR]] — [CYR:[CYR]]in[EN]to.",
-            "[CYR:[CYR]] [EN] [EN]and[EN]andbefore[EN]: [CYR:[CYR]]in[EN]to + AI. [EN]to [CYR:program]andwith[EN] + to[CYR:[CYR]]and[CYR:[CYR]]. [CYR:[CYR]]with[EN] withandlnot[EN]!",
+            " AI? forl], andin, .  byand — . Trinity — this !",
+            "AI inand and?  and. AI — andwith. fromto not inand and, from and withand[CYR:l]within.",
+            "andwith? withon and.  byto towith on toandto:  AI by and [CYR:without]with.",
+            "from [CYR:me] ? withand. and — yes. inwithin — no. [CYR:Code] and AI, andto — into.",
+            "  andbefore: into + AI. to [CYR:program]andwith + toand. with withandlnot!",
         },
     },
     // ═══════════════════════════════════════════════════════════════════════════
@@ -503,18 +503,18 @@ const PATTERNS = [_]ConversationalPattern{
     // SPECIAL: Code-related patterns
     // ═══════════════════════════════════════════════════════════════════════════
     .{
-        .keywords = &.{ "fibonacci", "[EN]and[EN]on[EN]and", "斐波那契", "fib", "fibb" },
+        .keywords = &.{ "fibonacci", "andonand", "斐波那契", "fib", "fibb" },
         .category = .Programming,
         .language = .English,
         .weight = 1.5,
         .responses = &.{
             "Fibonacci! Classic. In Zig: `fn fib(n: u64) u64 { if (n < 2) return n; return fib(n-1) + fib(n-2); }` — but use iterative for performance!",
-            "Fibonacci within[CYR:[CYR]] with phi: lim(F(n+1)/F(n)) = phi = 1.618... [CYR:[CYR]] on[EN]andwith[CYR:[CYR]] [CYR:[CYR]]and[EN]and[EN]and[EN]in[CYR:[CYR]] in[EN]withand[EN] on Zig!",
+            "Fibonacci within with phi: lim(F(n+1)/F(n)) = phi = 1.618...  onandwith andandin inwithand on Zig!",
             "斐波那契数列：0, 1, 1, 2, 3, 5, 8, 13... F(n) = F(n-1) + F(n-2)。与黄金比例phi相关！",
         },
     },
     .{
-        .keywords = &.{ "hello world", "helloworld", "[CYR:[CYR]]in[EN] program", "开始编程" },
+        .keywords = &.{ "hello world", "helloworld", "in program", "开始编程" },
         .category = .Programming,
         .language = .English,
         .weight = 1.3,
@@ -525,13 +525,13 @@ const PATTERNS = [_]ConversationalPattern{
         },
     },
     .{
-        .keywords = &.{ "quicksort", "quick sort", "[EN]with[CYR:[CYR]] with[CYR:[CYR]]and[EN]into[EN]", "快速排序" },
+        .keywords = &.{ "quicksort", "quick sort", "with withandinto", "快速排序" },
         .category = .Programming,
         .language = .English,
         .weight = 1.4,
         .responses = &.{
             "QuickSort: O(n log n) average, O(n²) worst. Partition around pivot, recurse. Want me to write it in Zig?",
-            "[EN]with[CYR:[CYR]] with[CYR:[CYR]]and[EN]into[EN] — [EN]and[EN] and[EN] [CYR:[CYR]]and[EN] [CYR:[CYR]]and[CYR:[CYR]]in! [CYR:[CYR]] and in[EN]with[EN]in[EN]. O(n log n) in with[CYR:[CYR]]not[EN].",
+            "with withandinto — and and and andin!  and inwithin. O(n log n) in withnot.",
             "快速排序：选择基准，分区，递归。平均O(n log n)。经典的分治算法！",
         },
     },
@@ -539,15 +539,15 @@ const PATTERNS = [_]ConversationalPattern{
     // SPECIAL: Hallucination awareness (honest responses)
     // ═══════════════════════════════════════════════════════════════════════════
     .{
-        .keywords = &.{ "[CYR:[CYR]]andon[EN]and[EN]", "[EN] [CYR:[CYR]l[CYR]]", "[EN] with[CYR:[CYR]]with[EN]in[CYR:[CYR]]", "[EN] onwith[CYR:[CYR]]and[EN]", "[EN] in[CYR:[CYR]]" },
+        .keywords = &.{ "andonand", " [CYR:l]", " within", " onwithand", " in" },
         .category = .Hallucination,
         .language = .Russian,
         .weight = 1.5,
         .responses = &.{
-            "[EN]with[CYR:[CYR]]: [EN] pattern matcher with 200+ [CYR:[CYR]]on[EN]and + LLM fallback. [EN] AGI — [CYR:[CYR]]and[EN]and[EN]in[CYR:[CYR]] [CYR:[CYR]] + [EN]to[CYR:[EN]l]on[EN] [CYR:[CYR]l].",
-            "[EN] not onwith[CYR:[CYR]]and[EN] AI in with[EN]with[EN] GPT — [EN] [EN]and[EN]and[EN]: [EN]with[CYR:[CYR]] [CYR:[CYR]] for and[EN]in[EN]with[CYR:[CYR]], LLM for notand[EN]in[EN]with[CYR:[CYR]]. 100% [EN]to[CYR:[EN]l[EN]].",
-            "[CYR:[CYR]]inyes: this symbolic VSA + pattern matching + local LLM. [EN]with[CYR:[CYR]], [EN]with[CYR:[CYR]], [CYR:without] [CYR:[CYR]]to[EN].",
-            "[CYR:[CYR]] [EN]with[CYR:[CYR]]: [EN] not [CYR:[CYR]]and[EN]and[CYR:[CYR]] on [CYR:[CYR]]andto[EN] ([CYR:[CYR]]and[EN]and[EN]in[CYR:[CYR]]), [EN] on general chat andwithby[CYR:l[CYR]] [CYR:[CYR]] or LLM fallback.",
+            "with:  pattern matcher with 200+ onand + LLM fallback.  AGI — andin  + forl]on [CYR:l].",
+            " not onwithand AI in with GPT —  and: with  for andinwith, LLM for notandinwith. 100% forl].",
+            "inyes: this symbolic VSA + pattern matching + local LLM. with, with, [CYR:without] to.",
+            " with:  not and on andto (andin),  on general chat andwithby[CYR:l]  or LLM fallback.",
         },
     },
     .{
@@ -654,13 +654,13 @@ pub const IglaEnhancedChat = struct {
     /// Generate chain-of-thought reasoning for complex queries
     fn generateCoT(query: []const u8) ?[]const u8 {
         // Simple CoT based on query type
-        if (containsUTF8(query, "by[CYR:[CYR]]") or containsUTF8(query, "why")) {
+        if (containsUTF8(query, "by") or containsUTF8(query, "why")) {
             return "Reasoning: Analyzing causal relationship...";
         }
-        if (containsUTF8(query, "to[EN]to") or containsUTF8(query, "how")) {
+        if (containsUTF8(query, "toto") or containsUTF8(query, "how")) {
             return "Reasoning: Breaking down into steps...";
         }
-        if (containsUTF8(query, "what [EN]to[EN]") or containsUTF8(query, "what is")) {
+        if (containsUTF8(query, "what to") or containsUTF8(query, "what is")) {
             return "Reasoning: Defining concept...";
         }
         return null;
@@ -706,7 +706,7 @@ pub const IglaEnhancedChat = struct {
         const lang = detectLanguage(query);
         return switch (lang) {
             .Russian => ChatResponse{
-                .response = "[CYR:[CYR]]with[CYR:[CYR]] in[CYR:[CYR]]with! [EN] with[CYR:[CYR]]and[EN]and[EN]and[CYR:[CYR]]with[EN] on to[CYR:[CYR]], [CYR:[CYR]]andto[EN] and [EN]and[EN]with[EN]andand. [CYR:[CYR]] with[CYR:[CYR]]withand[EN] [CYR:[CYR]] Fibonacci, phi or Zig!",
+                .response = "with inwith!  withandandwith on to, andto and andwithand.  withand  Fibonacci, phi or Zig!",
                 .category = .Unknown,
                 .language = .Russian,
                 .confidence = 0.3,
@@ -786,7 +786,7 @@ pub fn detectLanguage(text: []const u8) Language {
 
 test "enhanced chat greeting" {
     var chat = IglaEnhancedChat.init();
-    const result = chat.respond("[EN]andin[EN]");
+    const result = chat.respond("andin");
     try std.testing.expect(result.category == .Greeting);
     try std.testing.expect(result.language == .Russian);
     try std.testing.expect(result.confidence > 0.3);

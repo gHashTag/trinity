@@ -1,9 +1,9 @@
-// SIMD TRIT OPERATIONS - [EN]in[CYR:[EN]] [EN]and[CYR:[EN]] [CYR:[EN]]and[EN]
-// [EN]to[CYR:[EN]]and[EN]in[CYR:[EN]] operation on[EN] [EN]and[CYR:[EN]]and {-1, 0, +1}
-// 21x [EN]withto[CYR:[EN]]and[EN] via AVX2/NEON
+// SIMD TRIT OPERATIONS - in and and
+// toandin operation on and {-1, 0, +1}
+// 21x withtoand via AVX2/NEON
 // φ² + 1/φ² = 3 = TRINITY
 //
-// [CYR:[EN]]: simd_ternary.zig for [CYR:[EN]]in[EN] SIMD [EN]andbyin
+// : simd_ternary.zig for in SIMD andbyin
 
 const std = @import("std");
 const prometheus = @import("prometheus_seed.zig");
@@ -12,25 +12,25 @@ const simd_ternary = @import("simd_ternary.zig");
 pub const PHI: f64 = 1.618033988749895;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SIMD VECTOR TYPES - [CYR:[EN]] [EN] simd_ternary.zig
+// SIMD VECTOR TYPES -   simd_ternary.zig
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:[EN]]towithby[EN] [EN]andbyin and[EN] simd_ternary for with[EN]in[EN]with[EN]and[EN]with[EN]and
+/// towithby andbyin and simd_ternary for withinwithandwithand
 pub const Vec32i8 = simd_ternary.Vec32i8;
 pub const Vec32i16 = simd_ternary.Vec32i16;
 pub const Vec16i8 = simd_ternary.Vec16i8;
 
-/// 8 x f32 = 256 [EN]and[EN] (AVX2 / NEON) - for float [CYR:[EN]]and[EN]
+/// 8 x f32 = 256 and (AVX2 / NEON) - for float and
 pub const Vec8f = @Vector(8, f32);
 
-/// 16 x f32 = 512 [EN]and[EN] (AVX-512)
+/// 16 x f32 = 512 and (AVX-512)
 pub const Vec16f = @Vector(16, f32);
 
-/// [CYR:[EN]] SIMD in[EN]to[CYR:[EN]] in element[EN] f32
+///  SIMD into in element f32
 pub const SIMD_WIDTH: usize = 8;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TRIT BUFFER - [CYR:[EN]]in[EN]and[CYR:[EN]] to[EN]in[CYR:[EN]]and[EN]in[CYR:[EN]] [EN]and[EN]
+// TRIT BUFFER - inand toinandin and
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const TritBuffer = struct {
@@ -56,15 +56,15 @@ pub const TritBuffer = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SIMD MATMUL - Sacred [EN]and[CYR:[EN]] [CYR:[EN]]and[EN] [CYR:[EN]]and[EN]
+// SIMD MATMUL - Sacred and and and
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// SIMD-[CYR:[EN]]and[EN]and[EN]and[EN]in[CYR:[EN]] [CYR:[EN]]and[CYR:[EN]] "[CYR:[EN]]and[EN]" for [EN]and[EN]in
-/// [EN]withby[CYR:[EN]] [CYR:[EN]]and[EN] on {-1, 0, +1} which to[CYR:[EN]]and[CYR:[EN]] optimizes
-/// in [EN]with[EN]in[CYR:[EN]] with[CYR:[EN]]and[EN]/in[EN]and[CYR:[EN]]and[EN]
+/// SIMD-andandin and "and" for andin
+/// withby and on {-1, 0, +1} which toand optimizes
+/// in within withand/inand
 ///
 /// input: [in_features] f32
-/// trit_weights: [out_features * in_features] i8 ([CYR:[EN]]to[EN]in[CYR:[EN]]and[EN]in[CYR:[EN]] [EN]and[EN])
+/// trit_weights: [out_features * in_features] i8 (toinandin and)
 /// output: [out_features] f32
 pub fn simdTritMatmul(
     output: []f32,
@@ -80,13 +80,13 @@ pub fn simdTritMatmul(
         var sum_scalar: f32 = 0.0;
         const weight_offset = o * in_features;
 
-        // SIMD loop - [CYR:[EN]]in[CYR:[EN]] by 8 element[EN]in
+        // SIMD loop - in by 8 elementin
         var i: usize = 0;
         while (i < aligned_in) : (i += SIMD_WIDTH) {
-            // [CYR:[EN]] 8 login[CYR:[EN]] [EN]on[CYR:[EN]]and[EN]
+            //  8 login onand
             const input_vec: Vec8f = input[i..][0..SIMD_WIDTH].*;
 
-            // [CYR:[EN]] 8 [EN]and[EN]in and to[EN]in[CYR:[EN]]and[CYR:[EN]] in f32
+            //  8 andin and toinand in f32
             const t = trit_weights[weight_offset + i ..][0..SIMD_WIDTH];
             const trit_vec: Vec8f = .{
                 @floatFromInt(t[0]),
@@ -100,20 +100,20 @@ pub fn simdTritMatmul(
             };
 
             // SIMD FMA: sum += input * trit
-            // [CYR:[EN]] [EN]and[EN]in {-1, 0, +1} this [EN]toinandin[CYR:[EN]]:
+            //  andin {-1, 0, +1} this toinandin:
             // +1: sum += input
             // -1: sum -= input
-            //  0: sum += 0 ([EN]and[CYR:[EN]])
+            //  0: sum += 0 (and)
             sum_vec += input_vec * trit_vec;
         }
 
-        // [CYR:[EN]]and[CYR:[EN]]on[EN] with[CYR:[EN]] SIMD in[EN]to[CYR:[EN]]
+        // andon with SIMD into
         const sum_arr: [SIMD_WIDTH]f32 = sum_vec;
         inline for (sum_arr) |v| {
             sum_scalar += v;
         }
 
-        // [EN]to[CYR:[EN]] [EN]in[EN]with[EN]
+        // to inwith
         while (i < in_features) : (i += 1) {
             const w = trit_weights[weight_offset + i];
             const x = input[i];
@@ -124,7 +124,7 @@ pub fn simdTritMatmul(
     }
 }
 
-/// [CYR:[EN]]in[EN] version SIMD matmul
+/// in version SIMD matmul
 pub fn simdTritMatmulBatch(
     output: []f32,
     input: []const f32,
@@ -144,7 +144,7 @@ pub fn simdTritMatmulBatch(
 // SIMD ACTIVATION FUNCTIONS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [EN]to[CYR:[EN]]and[EN]in[CYR:[EN]] ReLU
+/// toandin ReLU
 pub fn simdRelu(data: []f32) void {
     const zeros: Vec8f = @splat(0.0);
     const aligned_len = data.len & ~@as(usize, SIMD_WIDTH - 1);
@@ -156,13 +156,13 @@ pub fn simdRelu(data: []f32) void {
         data[i..][0..SIMD_WIDTH].* = result;
     }
 
-    // [EN]to[CYR:[EN]] [EN]in[EN]with[EN]
+    // to inwith
     while (i < data.len) : (i += 1) {
         data[i] = @max(0.0, data[i]);
     }
 }
 
-/// [EN]to[CYR:[EN]]and[EN]in[CYR:[EN]] SiLU ([EN]and[EN]and[CYR:[EN]])
+/// toandin SiLU (and)
 /// SiLU(x) ≈ x * sigmoid(x) ≈ x * (0.5 + x * 0.125) for |x| < 4
 pub fn simdSiluApprox(data: []f32) void {
     const half: Vec8f = @splat(0.5);
@@ -196,7 +196,7 @@ pub fn simdSiluApprox(data: []f32) void {
         data[i..][0..SIMD_WIDTH].* = final;
     }
 
-    // [EN]to[CYR:[EN]] [EN]in[EN]with[EN]
+    // to inwith
     while (i < data.len) : (i += 1) {
         const x = data[i];
         if (x < -4.0) {
@@ -209,7 +209,7 @@ pub fn simdSiluApprox(data: []f32) void {
     }
 }
 
-/// [EN]to[CYR:[EN]]and[EN]in[CYR:[EN]] with[CYR:[EN]]and[EN] with residual connection
+/// toandin withand with residual connection
 pub fn simdAddResidual(output: []f32, residual: []const f32) void {
     const aligned_len = output.len & ~@as(usize, SIMD_WIDTH - 1);
 
@@ -220,7 +220,7 @@ pub fn simdAddResidual(output: []f32, residual: []const f32) void {
         output[i..][0..SIMD_WIDTH].* = out_vec + res_vec;
     }
 
-    // [EN]to[CYR:[EN]] [EN]in[EN]with[EN]
+    // to inwith
     while (i < output.len) : (i += 1) {
         output[i] += residual[i];
     }
@@ -230,7 +230,7 @@ pub fn simdAddResidual(output: []f32, residual: []const f32) void {
 // SIMD DOT PRODUCT
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [EN]to[CYR:[EN]]and[EN]in[CYR:[EN]] withto[CYR:[EN]] [CYR:[EN]]and[EN]in[CYR:[EN]]and[EN] with [EN]and[CYR:[EN]]and
+/// toandin withto andinand with and
 pub fn simdTritDot(input: []const f32, trit_weights: []const i8) f32 {
     const len = input.len;
     const aligned_len = len & ~@as(usize, SIMD_WIDTH - 1);
@@ -255,13 +255,13 @@ pub fn simdTritDot(input: []const f32, trit_weights: []const i8) f32 {
         sum_vec += input_vec * trit_vec;
     }
 
-    // [CYR:[EN]]and[CYR:[EN]]on[EN] with[CYR:[EN]]
+    // andon with
     const sum_arr: [SIMD_WIDTH]f32 = sum_vec;
     inline for (sum_arr) |v| {
         sum_scalar += v;
     }
 
-    // [EN]to[CYR:[EN]] [EN]in[EN]with[EN]
+    // to inwith
     while (i < len) : (i += 1) {
         sum_scalar += input[i] * @as(f32, @floatFromInt(trit_weights[i]));
     }

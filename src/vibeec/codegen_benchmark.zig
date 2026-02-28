@@ -2,10 +2,10 @@
 // CODEGEN PERFORMANCE BENCHMARK SUITE v1.0
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// [CYR:[EN]] produces[CYR:[EN]]with[EN] [CYR:[EN]]and[CYR:[EN]] [EN]not[CYR:[EN]]andand to[EN]yes.
-// Compares in[CYR:[EN]] [CYR:[EN]]withand[CYR:[EN]], [EN]to[EN]and[CYR:[EN]] in HV and [EN]not[CYR:[EN]]andand [EN]towith[EN].
+//  produceswith and notand toyes.
+// Compares in withand, toand in HV and notand towith.
 //
-// [CYR:[EN]]: <100ms for 10k LOC.
+// : <100ms for 10k LOC.
 // φ² + 1/φ² = 3 | PHOENIX
 // ═══════════════════════════════════════════════════════════════════════════════
 

@@ -112,7 +112,7 @@ pub const Opcode = enum(u8) {
     OBJECT_GET = 0x61, // Get property: obj.key
     OBJECT_SET = 0x62, // Set property: obj.key = val
 
-    // Ternary/Trit Operations (0x70-0x7F) - [CYR:[EN]] [CYR:[EN]]!
+    // Ternary/Trit Operations (0x70-0x7F) -  !
     PUSH_TRIT = 0x70, // Push trit value: 1=T, 0=U, -1=F (operand: i8)
     TRIT_NOT = 0x71, // Ternary NOT: T→F, F→T, U→U
     TRIT_AND = 0x72, // Ternary AND (Kleene): min(a,b)

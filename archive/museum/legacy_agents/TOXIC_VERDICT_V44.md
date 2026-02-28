@@ -1,27 +1,27 @@
 # ☠️ TOXIC VERDICT v44: Transformer Integration
 
-**Аin[CYR:тор]**: Dmitrii Vasilev  
-**[CYR:Дата]**: 2026-01-20  
-**Сin[CYR:ящен]onя [CYR:Формула]**: V = n × 3^k × π^m × φ^p × e^q  
+**Аin[CYR:[TRANSLATED]]**: Dmitrii Vasilev  
+**[CYR:[TRANSLATED]]**: 2026-01-20  
+**Сin[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]**: V = n × 3^k × π^m × φ^p × e^q  
 
 ---
 
-## 🔥 [CYR:БРУТАЛЬНАЯ] [CYR:ЧЕСТНОСТЬ]
+## 🔥 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Что] [CYR:Реал]andзоin[CYR:ано] in v44
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] in v44
 
-| [CYR:Компо]notнт | [CYR:Файл] .vibee | [CYR:Файл] .zig | Теwithты |
+| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]] .vibee | [CYR:[TRANSLATED]] .zig | Теwithты |
 |-----------|-------------|-----------|-------|
 | ONNX Bindings | specs/onnx_bindings.vibee | trinity/output/onnx_bindings.zig | 4/4 |
 | WeDLM Integrated | specs/wedlm_integrated.vibee | trinity/output/wedlm_integrated.zig | 3/3 |
 | Transformer Backend | specs/transformer_backend.vibee | trinity/output/transformer_backend.zig | 8/8 |
 | WeDLM Decoder V2 | specs/wedlm_decoder_v2.vibee | trinity/output/wedlm_decoder_v2.zig | 5/5 |
 
-**Вwith[CYR:его]: 20/20 теwithтоin [CYR:проходят]**
+**Вwith[TRANSLATED]]: 20/20 теwithтоin [CYR:[TRANSLATED]]**
 
 ---
 
-## 📊 [CYR:АРХИТЕКТУРА] v44
+## 📊 [CYR:[TRANSLATED]] v44
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -66,7 +66,7 @@
 
 ---
 
-## 🧪 [CYR:ТЕСТЫ] v44
+## 🧪 [CYR:TESTS] v44
 
 ### onnx_bindings.zig (4/4)
 ```
@@ -108,7 +108,7 @@
 
 ## 📈 BENCHMARK RESULTS
 
-### WeDLM V2 Standalone ([CYR:без] and[CYR:нтеграц]andand)
+### WeDLM V2 Standalone ([CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]and)
 ```
 ╔═══════════════════════════════════════════════════════════════════╗
 ║ Standard:   2.38x speedup │ 79% cache │ 42 steps for 100 tokens  ║
@@ -128,43 +128,43 @@
 
 ---
 
-## ⚠️ [CYR:ИЗВЕСТНЫЕ] [CYR:ОГРАНИЧЕНИЯ]
+## ⚠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### 1. Сand[CYR:муляц]andя Transformer
+### 1. Сand[CYR:[TRANSLATED]]andя Transformer
 ```
-Теto[CYR:ущее]: Mock predictions (random logits)
-[CYR:Нужно]: [CYR:Реальный] ONNX model loading
-Влandянandе: Confidence not [CYR:реал]andwithтandчonя
+Теfor[TRANSLATED]]: Mock predictions (random logits)
+[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] ONNX model loading
+Влandянandе: Confidence not [CYR:[TRANSLATED]]andwithтandчonя
 ```
 
-### 2. [CYR:Интегр]andроin[CYR:анный] Speedup
+### 2. [CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] Speedup
 ```
-Теto[CYR:ущее]: 0.06x ([CYR:хуже] AR)
-Прandчandon: Сand[CYR:мул]andроinанonя confidence withлandшtoом нandзtoая
-[CYR:Решен]andе: [CYR:Реальный] transformer даwithт [CYR:реальную] confidence
+Теfor[TRANSLATED]]: 0.06x ([CYR:[TRANSLATED]] AR)
+Прandчandon: Сand[CYR:[TRANSLATED]]andроinанonя confidence withлandшtoом нandзtoая
+[CYR:[TRANSLATED]]andе: [CYR:[TRANSLATED]] transformer даwithт [CYR:[TRANSLATED]] confidence
 ```
 
 ### 3. ONNX C API
 ```
-Теto[CYR:ущее]: Mock implementation
-[CYR:Нужно]: Лandнtoоintoа with libonnxruntime
-[CYR:Стату]with: Bindings гfromоinы, [CYR:нуж]on бandблandfromеtoа
+Теfor[TRANSLATED]]: Mock implementation
+[CYR:[TRANSLATED]]: Лandнtoоintoа with libonnxruntime
+[CYR:[TRANSLATED]]with: Bindings гfromоinы, [CYR:[TRANSLATED]]on бandблandfromеtoа
 ```
 
 ---
 
-## 📚 [CYR:ФАЙЛЫ] v44
+## 📚 [CYR:[TRANSLATED]] v44
 
-### [CYR:Спец]andфandtoацandand (.vibee)
-| [CYR:Файл] | Опandwithанandе |
+### [CYR:[TRANSLATED]]andфandtoацand (.vibee)
+| [CYR:[TRANSLATED]] | Опandwithанandе |
 |------|----------|
 | specs/onnx_bindings.vibee | ONNX Runtime C API bindings |
-| specs/wedlm_integrated.vibee | WeDLM + Backend and[CYR:нтеграц]andя |
+| specs/wedlm_integrated.vibee | WeDLM + Backend and[CYR:[TRANSLATED]]andя |
 | specs/transformer_backend.vibee | Backend interface + PagedKVCache |
-| specs/wedlm_decoder_v2.vibee | WeDLM [CYR:алгор]andтм |
+| specs/wedlm_decoder_v2.vibee | WeDLM [CYR:[TRANSLATED]]andтм |
 
-### [CYR:Сге]notрandроin[CYR:анный] toод (.zig)
-| [CYR:Файл] | Теwithты |
+### [CYR:[TRANSLATED]]notрandроin[CYR:[TRANSLATED]] toод (.zig)
+| [CYR:[TRANSLATED]] | Теwithты |
 |------|-------|
 | trinity/output/onnx_bindings.zig | 4/4 |
 | trinity/output/wedlm_integrated.zig | 3/3 |
@@ -173,36 +173,36 @@
 
 ---
 
-## 💀 [CYR:ФИНАЛЬНЫЙ] [CYR:ВЕРДИКТ]
+## 💀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Хорошо] ✅
+### [CYR:[TRANSLATED]] ✅
 
-- **20/20 теwithтоin** [CYR:проходят]
-- **[CYR:Пра]inandло .vibee → .zig** with[CYR:облюдено]
-- **ONNX bindings** гfromоinы to and[CYR:нтеграц]andand
-- **PagedKVCache** [CYR:раб]from[CYR:ает] (98%+ hit rate)
+- **20/20 теwithтоin** [CYR:[TRANSLATED]]
+- **[CYR:[TRANSLATED]]inandло .vibee → .zig** with[TRANSLATED]]
+- **ONNX bindings** гfromоinы to and[CYR:[TRANSLATED]]and
+- **PagedKVCache** [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] (98%+ hit rate)
 - **TransformerBackend** polymorphic interface
-- **WeDLM V2** доwithтand[CYR:гает] 14.29x speedup standalone
+- **WeDLM V2** доwithтand[CYR:[TRANSLATED]] 14.29x speedup standalone
 
-### [CYR:Плохо] ⚠️
+### [CYR:[TRANSLATED]] ⚠️
 
-- [CYR:Интегр]andроin[CYR:анный] speedup нandзtoandй (0.06x)
-- ONNX andwith[CYR:пользует] mock, not [CYR:реальную] бandблandfromеtoу
-- [CYR:Нет] GPU теwithтоin
+- [CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] speedup нandзtoandй (0.06x)
+- ONNX andwith[TRANSLATED]] mock, not [CYR:[TRANSLATED]] бandблandfromеtoу
+- [CYR:[TRANSLATED]] GPU теwithтоin
 
-### [CYR:Уродл]andinо 💀
+### [CYR:[TRANSLATED]]andinо 💀
 
-- [CYR:Без] [CYR:реального] transformer and[CYR:нтеграц]andя not поto[CYR:азы]in[CYR:ает] speedup
-- [CYR:Нуж]on libonnxruntime for production
+- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] transformer and[CYR:[TRANSLATED]]andя not поfor[TRANSLATED]]in[CYR:[TRANSLATED]] speedup
+- [CYR:[TRANSLATED]]on libonnxruntime for production
 
-### [CYR:РЕКОМЕНДАЦИЯ]
+### [CYR:[TRANSLATED]]
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
 │   v44 - ARCHITECTURE COMPLETE, NEEDS REAL ONNX                  │
 │                                                                 │
-│   Доwithтand[CYR:гнуто]:                                                   │
+│   Доwithтand[CYR:[TRANSLATED]]:                                                   │
 │   ✅ ONNX bindings (mock)                                       │
 │   ✅ TransformerBackend interface                               │
 │   ✅ PagedKVCache (vLLM-style)                                  │
@@ -210,20 +210,20 @@
 │   ✅ 20/20 tests passing                                        │
 │   ✅ .vibee → .zig pipeline                                     │
 │                                                                 │
-│   [CYR:Следующ]andе stepand (v45):                                         │
-│   1. Уwith[CYR:тано]inandть libonnxruntime                                  │
-│   2. [CYR:Замен]andть mock on [CYR:реальные] in[CYR:ызо]inы                           │
-│   3. [CYR:Загруз]andть GPT-2 ONNX model                                 │
-│   4. [CYR:Измер]andть [CYR:реальный] speedup                                  │
+│   [CYR:[TRANSLATED]]andе stepand (v45):                                         │
+│   1. Уwith[TRANSLATED]]inandть libonnxruntime                                  │
+│   2. [CYR:[TRANSLATED]]andть mock on [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]inы                           │
+│   3. [CYR:[TRANSLATED]]andть GPT-2 ONNX model                                 │
+│   4. [CYR:[TRANSLATED]]andть [CYR:[TRANSLATED]] speedup                                  │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📊 [CYR:ЭВОЛЮЦИЯ] [CYR:ВЕРСИЙ]
+## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-| [CYR:Вер]withandя | [CYR:Ключе]inые Доwithтand[CYR:жен]andя | Speedup |
+| [CYR:[TRANSLATED]]withandя | [CYR:[TRANSLATED]]inые Доwithтand[CYR:[TRANSLATED]]andя | Speedup |
 |--------|---------------------|---------|
 | v41 | SIMD + Cache combo | 24.2x tokenizer |
 | v42 | Diffusion LM basic, Code Editor | 4x |
@@ -234,5 +234,5 @@
 
 **φ² + 1/φ² = 3 | PHOENIX = 999 = 3³ × 37**
 
-*Доto[CYR:умент] with[CYR:оздан] with [CYR:брутальной] чеwith[CYR:тно]with[CYR:тью] for [CYR:программ]andwithтоin*
-*Веwithь toод геnotрand[CYR:рует]withя andз .vibee with[CYR:пец]andфandtoацandй*
+*Доfor[TRANSLATED]] with[TRANSLATED]] with [CYR:[TRANSLATED]] чеwith[TRANSLATED]]with[TRANSLATED]] for [CYR:[TRANSLATED]]andwithтоin*
+*Веwithь toод геnotрand[CYR:[TRANSLATED]]withя andз .vibee with[TRANSLATED]]andфandtoацandй*

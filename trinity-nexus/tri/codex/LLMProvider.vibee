@@ -1,14 +1,14 @@
 # LLM PROVIDER SPECIFICATION
-# [CYR:[TRANSLATED]]with for [CYR:[TRANSLATED]]key[EN]andI [CYR:[TRANSLATED]]with[EN]in[CYR:[TRANSLATED]go] [CYR:[TRANSLATED]]
+# with for keyandI within[CYR:go] 
 
 ## 1. Provider Interface
 
 ```vibee
 interface LLMProvider {
-    // [EN]with[EN]in[CYR:[TRANSLATED]] method [EN]not[CYR:[TRANSLATED]]andand
+    // within method notand
     fn chat_completion(request: ChatRequest) -> Result<ChatResponse, ProviderError>;
     
-    // [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [EN]with[CYR:[TRANSLATED]]with[EN]and
+    // in withand
     fn ping() -> bool;
 }
 ```

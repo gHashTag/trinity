@@ -1,285 +1,285 @@
-# Доto[CYR:азатель]withтinо [CYR:Паттер]on [CYR:Создан]andя
+# Доfor[TRANSLATED]]withтinо [CYR:[TRANSLATED]]on [CYR:[TRANSLATED]]andя
 
-**[CYR:Стату]with**: ✅ [CYR:ДОКАЗАНО] (5 [CYR:теорем] + 1 гandпfrom[CYR:еза])  
-**[CYR:Дата]**: Янin[CYR:арь] 2026  
-**Иwith[CYR:полняемое] доto[CYR:азатель]withтinо**: `experiments/proofs/creation_pattern_proof.py`
+**[CYR:[TRANSLATED]]with**: ✅ [CYR:[TRANSLATED]] (5 [CYR:[TRANSLATED]] + 1 гandпfrom[CYR:[TRANSLATED]])  
+**[CYR:[TRANSLATED]]**: Янin[CYR:[TRANSLATED]] 2026  
+**Иwith[TRANSLATED]] доfor[TRANSLATED]]withтinо**: `experiments/proofs/creation_pattern_proof.py`
 
 ---
 
-## [CYR:Резюме]
+## [CYR:[TRANSLATED]]
 
-| [CYR:Теорема] | [CYR:Стату]with | [CYR:Метод] |
+| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with | [CYR:[TRANSLATED]] |
 |---------|--------|-------|
-| 1. [CYR:Образует] to[CYR:атегор]andю | ✅ [CYR:ДОКАЗАНО] | [CYR:Математ]andчеwithtoandй |
-| 2. [CYR:Тьюр]andнг-[CYR:полон] | ✅ [CYR:ДОКАЗАНО] | [CYR:Кон]with[CYR:тру]toтandin[CYR:ный] |
-| 3. [CYR:Сохраняет] and[CYR:нформац]andю | ✅ [CYR:ДОКАЗАНО] | [CYR:Теор]andя and[CYR:нформац]andand |
-| 4. Трand to[CYR:омпо]not[CYR:нта] not[CYR:обход]andмы | ✅ [CYR:ДОКАЗАНО] | От прfromandin[CYR:ного] |
-| 5. [CYR:Эмп]andрandчеwithtoая унandinерwith[CYR:ально]withть | ✅ [CYR:ПОДТВЕРЖДЕНО] | 12/12 прand[CYR:меро]in |
-| 6. Сin[CYR:язь] with H₀ | ❓ [CYR:ГИПОТЕЗА] | Чandwith[CYR:ленный] аonлandз |
+| 1. [CYR:[TRANSLATED]] for[TRANSLATED]]andю | ✅ [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]andчеwithtoandй |
+| 2. [CYR:[TRANSLATED]]andнг-[CYR:[TRANSLATED]] | ✅ [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with[TRANSLATED]]toтandin[CYR:[TRANSLATED]] |
+| 3. [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]andю | ✅ [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]andя and[CYR:[TRANSLATED]]and |
+| 4. Трand for[TRANSLATED]]not[CYR:[TRANSLATED]] not[CYR:[TRANSLATED]]andмы | ✅ [CYR:[TRANSLATED]] | От прfromandin[CYR:[TRANSLATED]] |
+| 5. [CYR:[TRANSLATED]]andрandчеwithtoая унandinерwith[TRANSLATED]]withть | ✅ [CYR:[TRANSLATED]] | 12/12 прand[CYR:[TRANSLATED]]in |
+| 6. Сin[CYR:[TRANSLATED]] with H₀ | ❓ [CYR:[TRANSLATED]] | Чandwith[TRANSLATED]] аonлandз |
 
 ---
 
-## [CYR:Что] [CYR:нужно] доto[CYR:азать]?
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] доfor[TRANSLATED]]?
 
-[CYR:Паттерн] with[CYR:оздан]andя утin[CYR:ерждает]:
+[CYR:[TRANSLATED]] with[TRANSLATED]]andя утin[CYR:[TRANSLATED]]:
 
 ```
-[CYR:Любой] [CYR:проце]withwith with[CYR:оздан]andя and[CYR:меет] with[CYR:тру]to[CYR:туру]: Иwith[CYR:точн]andto → [CYR:Тран]with[CYR:формер] → Result
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with with[TRANSLATED]]andя and[CYR:[TRANSLATED]] with[TRANSLATED]]for[TRANSLATED]]: Иwith[TRANSLATED]]andto → [CYR:[TRANSLATED]]with[TRANSLATED]] → Result
 ```
 
-**[CYR:Это] НЕ [CYR:математ]andчеwithtoая [CYR:теорема], а [CYR:ОНТОЛОГИЧЕСКОЕ] утin[CYR:ержден]andе.**
+**[CYR:[TRANSLATED]] НЕ [CYR:[TRANSLATED]]andчеwithtoая [CYR:[TRANSLATED]],  [CYR:[TRANSLATED]] утin[CYR:[TRANSLATED]]andе.**
 
-[CYR:Разн]andца:
-- **[CYR:Теорема]**: Доto[CYR:азы]in[CYR:ает]withя andз аtowithandом (onпрand[CYR:мер], [CYR:теорема] Пand[CYR:фагора])
-- **Аtowithand[CYR:ома]**: Прandнand[CYR:мает]withя [CYR:без] доto[CYR:азатель]withтinа (onпрand[CYR:мер], [CYR:параллельные] not [CYR:пере]withеto[CYR:ают]withя)
-- **[CYR:Онтолог]andя**: Опandwithанandе with[CYR:тру]to[CYR:туры] [CYR:реально]withтand (onпрand[CYR:мер], "inwithё withоwithтоandт andз [CYR:атомо]in")
+[CYR:[TRANSLATED]]andца:
+- **[CYR:[TRANSLATED]]**: Доfor[TRANSLATED]]in[CYR:[TRANSLATED]]withя andз аtowithandом (onпрand[CYR:[TRANSLATED]], [CYR:[TRANSLATED]] Пand[CYR:[TRANSLATED]])
+- **Аtowithand[CYR:[TRANSLATED]]**: Прandнand[CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]] доfor[TRANSLATED]]withтinа (onпрand[CYR:[TRANSLATED]], [CYR:[TRANSLATED]] not [CYR:[TRANSLATED]]withеfor[TRANSLATED]]withя)
+- **[CYR:[TRANSLATED]]andя**: Опandwithанandе with[TRANSLATED]]for[TRANSLATED]] [CYR:[TRANSLATED]]withтand (onпрand[CYR:[TRANSLATED]], "inwithё withоwithтоandт andз [CYR:[TRANSLATED]]in")
 
 ---
 
-## [CYR:Что] [CYR:можно] доto[CYR:азать]?
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] доfor[TRANSLATED]]?
 
-### 1. [CYR:Математ]andчеwithtoая to[CYR:орре]to[CYR:тно]withть
+### 1. [CYR:[TRANSLATED]]andчеwithtoая for[TRANSLATED]]for[TRANSLATED]]withть
 
-**[CYR:Теорема] 1**: [CYR:Паттерн] with[CYR:оздан]andя [CYR:образует] to[CYR:атегор]andю.
-
-```
-Доto[CYR:азатель]withтinо:
-1. [CYR:Объе]toты: S (andwith[CYR:точн]andtoand), R (resultы)
-2. [CYR:Морф]and[CYR:змы]: T : S → R ([CYR:тран]with[CYR:формеры])
-3. [CYR:Тожде]withтinо: id : S → S ([CYR:тожде]withтin[CYR:енный] [CYR:тран]with[CYR:формер])
-4. [CYR:Композ]andцandя: T₂ ∘ T₁ : S → R (поwith[CYR:ледо]in[CYR:ательное] прandмеnotнandе)
-5. Аwithwithоцandатandinноwithть: (T₃ ∘ T₂) ∘ T₁ = T₃ ∘ (T₂ ∘ T₁) ✓
-
-[CYR:Следо]in[CYR:ательно], (S ∪ R, T, ∘, id) — to[CYR:атегор]andя. ∎
-```
-
-### 2. [CYR:Выч]andwithлand[CYR:тель]onя [CYR:полн]fromа
-
-**[CYR:Теорема] 2**: [CYR:Паттерн] with[CYR:оздан]andя [CYR:Тьюр]andнг-[CYR:полон].
+**[CYR:[TRANSLATED]] 1**: [CYR:[TRANSLATED]] with[TRANSLATED]]andя [CYR:[TRANSLATED]] for[TRANSLATED]]andю.
 
 ```
-Доto[CYR:азатель]withтinо:
-1. CREATE ≡ λs. λt. t(s)  — [CYR:лямбда]-in[CYR:ыражен]andе
-2. [CYR:Любая] inычandwithлand[CYR:мая] [CYR:фун]toцandя f in[CYR:ыражает]withя toаto: f = λx. CREATE(x, T_f)
-3. Y-to[CYR:омб]andon[CYR:тор]: Y = λf. (λx. f(x x))(λx. f(x x))
+Доfor[TRANSLATED]]withтinо:
+1. [CYR:[TRANSLATED]]toты: S (andwith[TRANSLATED]]andtoand), R (resultы)
+2. [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]: T : S → R ([CYR:[TRANSLATED]]with[TRANSLATED]])
+3. [CYR:[TRANSLATED]]withтinо: id : S → S ([CYR:[TRANSLATED]]withтin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[TRANSLATED]])
+4. [CYR:[TRANSLATED]]andцandя: T₂ ∘ T₁ : S → R (поwith[TRANSLATED]]in[CYR:[TRANSLATED]] прandмеnotнandе)
+5. Аwithоцandатandinноwithть: (T₃ ∘ T₂) ∘ T₁ = T₃ ∘ (T₂ ∘ T₁) ✓
+
+[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]], (S ∪ R, T, ∘, id) — for[TRANSLATED]]andя. ∎
+```
+
+### 2. [CYR:[TRANSLATED]]andwithлand[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]fromа
+
+**[CYR:[TRANSLATED]] 2**: [CYR:[TRANSLATED]] with[TRANSLATED]]andя [CYR:[TRANSLATED]]andнг-[CYR:[TRANSLATED]].
+
+```
+Доfor[TRANSLATED]]withтinо:
+1. CREATE ≡ λs. λt. t(s)  — [CYR:[TRANSLATED]]-in[CYR:[TRANSLATED]]andе
+2. [CYR:[TRANSLATED]] inычandwithлand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toцandя f in[CYR:[TRANSLATED]]withя toаto: f = λx. CREATE(x, T_f)
+3. Y-for[TRANSLATED]]andon[CYR:[TRANSLATED]]: Y = λf. (λx. f(x x))(λx. f(x x))
 4. Реtoурwithandя: SELF = Y(CREATE)
-5. [CYR:Следо]in[CYR:ательно], CREATE эtoinandin[CYR:алентен] [CYR:лямбда]-andwithчandwith[CYR:лен]andю
-6. [CYR:Лямбда]-andwithчandwith[CYR:лен]andе [CYR:Тьюр]andнг-[CYR:полно] ([CYR:теорема] [CYR:Чёрча]-[CYR:Тьюр]and[CYR:нга])
+5. [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]], CREATE эtoinandin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]-andwithчandwith[TRANSLATED]]andю
+6. [CYR:[TRANSLATED]]-andwithчandwith[TRANSLATED]]andе [CYR:[TRANSLATED]]andнг-[CYR:[TRANSLATED]] ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]])
 
-[CYR:Следо]in[CYR:ательно], [CYR:паттерн] with[CYR:оздан]andя [CYR:Тьюр]andнг-[CYR:полон]. ∎
+[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]], [CYR:[TRANSLATED]] with[TRANSLATED]]andя [CYR:[TRANSLATED]]andнг-[CYR:[TRANSLATED]]. ∎
 ```
 
-### 3. [CYR:Сохра]notнandе and[CYR:нформац]andand
+### 3. [CYR:[TRANSLATED]]notнandе and[CYR:[TRANSLATED]]and
 
-**[CYR:Теорема] 3**: [CYR:Тран]with[CYR:формер] not with[CYR:оздаёт] and[CYR:нформац]andю andз нand[CYR:чего].
+**[CYR:[TRANSLATED]] 3**: [CYR:[TRANSLATED]]with[TRANSLATED]] not with[TRANSLATED]] and[CYR:[TRANSLATED]]andю andз нand[CYR:[TRANSLATED]].
 
 ```
-Доto[CYR:азатель]withтinо:
-1. I(R) — and[CYR:нформац]andя in resultе
-2. I(S) — and[CYR:нформац]andя in andwith[CYR:точн]andtoе
-3. I(T) — and[CYR:нформац]andя in [CYR:тран]with[CYR:формере]
-4. По notраinенwithтinу [CYR:обраб]fromtoand [CYR:данных]: I(R) ≤ I(S) + I(T)
-5. Раinенwithтinо доwithтand[CYR:гает]withя прand [CYR:детерм]andнandроin[CYR:анном] T [CYR:без] пfrom[CYR:ерь]
+Доfor[TRANSLATED]]withтinо:
+1. I(R) — and[CYR:[TRANSLATED]]andя in resultе
+2. I(S) — and[CYR:[TRANSLATED]]andя in andwith[TRANSLATED]]andtoе
+3. I(T) — and[CYR:[TRANSLATED]]andя in [CYR:[TRANSLATED]]with[TRANSLATED]]
+4. По notраinенwithтinу [CYR:[TRANSLATED]]fromtoand [CYR:[TRANSLATED]]: I(R) ≤ I(S) + I(T)
+5. Раinенwithтinо доwithтand[CYR:[TRANSLATED]]withя прand [CYR:[TRANSLATED]]andнandроin[CYR:[TRANSLATED]] T [CYR:[TRANSLATED]] пfrom[CYR:[TRANSLATED]]
 
-[CYR:Следо]in[CYR:ательно], and[CYR:нформац]andя with[CYR:охраняет]withя or [CYR:уменьшает]withя. ∎
+[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]], and[CYR:[TRANSLATED]]andя with[TRANSLATED]]withя or [CYR:[TRANSLATED]]withя. ∎
 ```
 
 ---
 
-## [CYR:Что] [CYR:НЕЛЬЗЯ] доto[CYR:азать] [CYR:математ]andчеwithtoand?
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] доfor[TRANSLATED]] [CYR:[TRANSLATED]]andчеwithtoand?
 
-### Унandinерwith[CYR:ально]withть [CYR:паттер]on
+### Унandinерwith[TRANSLATED]]withть [CYR:[TRANSLATED]]on
 
-Утin[CYR:ержден]andе "[CYR:ВСЁ] with[CYR:оздаёт]withя по [CYR:паттерну] S → T → R" — this:
+Утin[CYR:[TRANSLATED]]andе "[CYR:[TRANSLATED]] with[TRANSLATED]]withя по [CYR:[TRANSLATED]] S → T → R" — this:
 
-1. **Не [CYR:теорема]** — not[CYR:льзя] inыinеwithтand andз аtowithandом
-2. **Не аtowithand[CYR:ома]** — withлandшtoом toонto[CYR:ретно]
-3. **[CYR:Эмп]andрandчеwithtoое [CYR:обобщен]andе** — оwithноin[CYR:ано] on on[CYR:блюден]andях
+1. **Не [CYR:[TRANSLATED]]** — not[CYR:[TRANSLATED]] inыinеwithтand andз аtowithandом
+2. **Не аtowithand[CYR:[TRANSLATED]]** — withлandшtoом toонfor[TRANSLATED]]
+3. **[CYR:[TRANSLATED]]andрandчеwithtoое [CYR:[TRANSLATED]]andе** — оwithноin[CYR:[TRANSLATED]] on on[CYR:[TRANSLATED]]andях
 
-**Аon[CYR:лог]andя**: 
-- "Вwithе [CYR:лебед]and [CYR:белые]" — [CYR:эмп]andрandчеwithtoое утin[CYR:ержден]andе, [CYR:опро]in[CYR:ергнутое] [CYR:чёрным]and [CYR:лебедям]and
-- "Вwithе [CYR:проце]withwithы with[CYR:оздан]andя and[CYR:меют] with[CYR:тру]to[CYR:туру] S → T → R" — [CYR:эмп]andрandчеwithtoое утin[CYR:ержден]andе
+**Аon[CYR:[TRANSLATED]]andя**: 
+- "Вwithе [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]" — [CYR:[TRANSLATED]]andрandчеwithtoое утin[CYR:[TRANSLATED]]andе, [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]and
+- "Вwithе [CYR:[TRANSLATED]]withы with[TRANSLATED]]andя and[CYR:[TRANSLATED]] with[TRANSLATED]]for[TRANSLATED]] S → T → R" — [CYR:[TRANSLATED]]andрandчеwithtoое утin[CYR:[TRANSLATED]]andе
 
 ---
 
-## [CYR:Эмп]andрandчеwithtoandе доto[CYR:азатель]withтinа
+## [CYR:[TRANSLATED]]andрandчеwithtoandе доfor[TRANSLATED]]withтinа
 
-### [CYR:Табл]andца прand[CYR:меро]in
+### [CYR:[TRANSLATED]]andца прand[CYR:[TRANSLATED]]in
 
-| [CYR:Домен] | Иwith[CYR:точн]andto (S) | [CYR:Тран]with[CYR:формер] (T) | Result (R) | [CYR:Про]in[CYR:ерено] |
+| [CYR:[TRANSLATED]] | Иwith[TRANSLATED]]andto (S) | [CYR:[TRANSLATED]]with[TRANSLATED]] (T) | Result (R) | [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] |
 |-------|--------------|-----------------|---------------|-----------|
-| Бand[CYR:олог]andя | [CYR:ДНК] | Рandбоwith[CYR:ома] | [CYR:Бело]to | ✅ |
-| Фandзandtoа | Эnotргandя | Заto[CYR:оны] фandзandtoand | [CYR:Матер]andя | ✅ |
-| Хandмandя | [CYR:Реагенты] | [CYR:Катал]and[CYR:затор] | [CYR:Проду]toты | ✅ |
-| [CYR:Выч]andwith[CYR:лен]andя | [CYR:Спец]andфandtoацandя | [CYR:Комп]and[CYR:лятор] | [CYR:Код] | ✅ |
-| [CYR:Язы]to | Мыwithль | [CYR:Граммат]andtoа | [CYR:Речь] | ✅ |
-| [CYR:Музы]toа | [CYR:Композ]andцandя | Инwith[CYR:трумент] | Зinуto | ✅ |
-| Иwithtoуwithwithтinо | [CYR:Идея] | [CYR:Техн]andtoа | [CYR:Про]andзin[CYR:еден]andе | ✅ |
-| Эto[CYR:оном]andtoа | [CYR:Кап]and[CYR:тал] | [CYR:Рыно]to | Тоin[CYR:ары] | ✅ |
-| [CYR:Поз]onнandе | [CYR:Данные] | Аonлandз | Зonнandе | ✅ |
-| Эin[CYR:олюц]andя | Вandд | [CYR:Отбор] | Ноinый inandд | ✅ |
+| Бand[CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]] | Рandбоwith[TRANSLATED]] | [CYR:[TRANSLATED]]to | ✅ |
+| Фandзandtoа | Эnotргandя | Заfor[TRANSLATED]] фandзandtoand | [CYR:[TRANSLATED]]andя | ✅ |
+| Хandмandя | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]toты | ✅ |
+| [CYR:[TRANSLATED]]andwith[TRANSLATED]]andя | [CYR:[TRANSLATED]]andфandtoацandя | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | ✅ |
+| [CYR:[TRANSLATED]]to | Мыwithль | [CYR:[TRANSLATED]]andtoа | [CYR:[TRANSLATED]] | ✅ |
+| [CYR:[TRANSLATED]]toа | [CYR:[TRANSLATED]]andцandя | Инwith[TRANSLATED]] | Зinуto | ✅ |
+| Иwithtoуwithтinо | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]andtoа | [CYR:[TRANSLATED]]andзin[CYR:[TRANSLATED]]andе | ✅ |
+| Эfor[TRANSLATED]]andtoа | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]to | Тоin[CYR:[TRANSLATED]] | ✅ |
+| [CYR:[TRANSLATED]]onнandе | [CYR:[TRANSLATED]] | Аonлandз | Зonнandе | ✅ |
+| Эin[CYR:[TRANSLATED]]andя | Вandд | [CYR:[TRANSLATED]] | Ноinый inandд | ✅ |
 
 **Result**: 10/10 examples match the pattern.
 
-### [CYR:Контрпр]and[CYR:меры]?
+### [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]?
 
-[CYR:Попыт]toand onйтand to[CYR:онтрпр]and[CYR:меры]:
+[CYR:[TRANSLATED]]toand onйтand for[TRANSLATED]]and[CYR:[TRANSLATED]]:
 
 1. **Quantum mechanics**: Measurement → Collapse → Result ✅ (matches)
-2. **[CYR:Случайно]withть**: [CYR:Шум] → Фand[CYR:льтр] → Сandгonл ✅ (matches)
-3. **[CYR:Хао]with**: [CYR:Начальные] уwithлоinandя → Дandonмandtoа → [CYR:Аттра]to[CYR:тор] ✅ (matches)
-4. **[CYR:Соз]onнandе**: Стand[CYR:мул] → [CYR:Мозг] → Воwithпрandятandе ✅ (matches)
+2. **[CYR:[TRANSLATED]]withть**: [CYR:[TRANSLATED]] → Фand[CYR:[TRANSLATED]] → Сandгonл ✅ (matches)
+3. **[CYR:[TRANSLATED]]with**: [CYR:[TRANSLATED]] уwithлоinandя → Дandonмandtoа → [CYR:[TRANSLATED]]for[TRANSLATED]] ✅ (matches)
+4. **[CYR:[TRANSLATED]]onнandе**: Стand[CYR:[TRANSLATED]] → [CYR:[TRANSLATED]] → Воwithпрandятandе ✅ (matches)
 
-**[CYR:Контрпр]and[CYR:меры] not on[CYR:йдены].**
-
----
-
-## [CYR:Формальное] доto[CYR:азатель]withтinо унandinерwith[CYR:ально]withтand
-
-### [CYR:Подход] [CYR:через] [CYR:определен]andе
-
-**[CYR:Определен]andе**: [CYR:Проце]withwith with[CYR:оздан]andя — this [CYR:любое] [CYR:преобразо]inанandе, and[CYR:меющее]:
-1. [CYR:Начальное] withоwith[CYR:тоян]andе (andwith[CYR:точн]andto)
-2. [CYR:Пра]inandло [CYR:преобразо]inанandя ([CYR:тран]with[CYR:формер])
-3. Коnot[CYR:чное] withоwith[CYR:тоян]andе (result)
-
-**[CYR:Теорема] 4 (Трandinand[CYR:аль]onя унandinерwith[CYR:ально]withть)**:
-
-[CYR:Любой] [CYR:проце]withwith with[CYR:оздан]andя matches [CYR:паттерну] S → T → R.
-
-```
-Доto[CYR:азатель]withтinо:
-1. Пуwithть P — [CYR:про]andзin[CYR:ольный] [CYR:проце]withwith with[CYR:оздан]andя
-2. По [CYR:определен]andю, P and[CYR:меет] on[CYR:чальное] withоwith[CYR:тоян]andе S
-3. По [CYR:определен]andю, P and[CYR:меет] [CYR:пра]inandло [CYR:преобразо]inанandя T
-4. По [CYR:определен]andю, P and[CYR:меет] toоnot[CYR:чное] withоwith[CYR:тоян]andе R
-5. [CYR:Следо]in[CYR:ательно], P : S → T → R
-
-[CYR:Это] таin[CYR:толог]andя — [CYR:паттерн] in[CYR:ерен] по [CYR:определен]andю. ∎
-```
-
-**Problem**: [CYR:Это] доto[CYR:азатель]withтinо трandinand[CYR:ально]. Мы [CYR:определ]or "with[CYR:оздан]andе" таto, that [CYR:оно] [CYR:обязано] withоfrominетwithтinоin[CYR:ать] [CYR:паттерну].
+**[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] not on[CYR:[TRANSLATED]].**
 
 ---
 
-## [CYR:Нетр]andinand[CYR:альное] доto[CYR:азатель]withтinо
+## [CYR:[TRANSLATED]] доfor[TRANSLATED]]withтinо унandinерwith[TRANSLATED]]withтand
 
-### [CYR:Подход] [CYR:через] not[CYR:обход]andмоwithть
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andе
 
-**[CYR:Теорема] 5 ([CYR:Необход]andмоwithть [CYR:трёх] to[CYR:омпо]not[CYR:нто]in)**:
+**[CYR:[TRANSLATED]]andе**: [CYR:[TRANSLATED]]with with[TRANSLATED]]andя — this [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inанandе, and[CYR:[TRANSLATED]]:
+1. [CYR:[TRANSLATED]] withоwith[TRANSLATED]]andе (andwith[TRANSLATED]]andto)
+2. [CYR:[TRANSLATED]]inandло [CYR:[TRANSLATED]]inанandя ([CYR:[TRANSLATED]]with[TRANSLATED]])
+3. Коnot[CYR:[TRANSLATED]] withоwith[TRANSLATED]]andе (result)
 
-[CYR:Для] [CYR:любого] notтрandinand[CYR:ального] [CYR:преобразо]inанandя not[CYR:обход]andмы inwithе трand to[CYR:омпо]not[CYR:нта].
+**[CYR:[TRANSLATED]] 4 (Трandinand[CYR:[TRANSLATED]]onя унandinерwith[TRANSLATED]]withть)**:
+
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with with[TRANSLATED]]andя matches [CYR:[TRANSLATED]] S → T → R.
 
 ```
-Доto[CYR:азатель]withтinо from прfromandin[CYR:ного]:
+Доfor[TRANSLATED]]withтinо:
+1. Пуwithть P — [CYR:[TRANSLATED]]andзin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with with[TRANSLATED]]andя
+2. По [CYR:[TRANSLATED]]andю, P and[CYR:[TRANSLATED]] on[CYR:[TRANSLATED]] withоwith[TRANSLATED]]andе S
+3. По [CYR:[TRANSLATED]]andю, P and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inandло [CYR:[TRANSLATED]]inанandя T
+4. По [CYR:[TRANSLATED]]andю, P and[CYR:[TRANSLATED]] toоnot[CYR:[TRANSLATED]] withоwith[TRANSLATED]]andе R
+5. [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]], P : S → T → R
 
-[CYR:Случай] 1: [CYR:Нет] andwith[CYR:точн]andtoа (S = ∅)
-- [CYR:Тран]with[CYR:формер] T not and[CYR:меет] in[CYR:хода]
-- T(∅) = ∅ or T(∅) = toонwith[CYR:танта]
-- [CYR:Это] not with[CYR:оздан]andе, а геnot[CYR:рац]andя andз нand[CYR:чего]
-- Прfromandin[CYR:ореч]andт with[CYR:охра]notнandю and[CYR:нформац]andand ([CYR:Теорема] 3)
-- [CYR:Следо]in[CYR:ательно], S not[CYR:обход]andм ✓
+[CYR:[TRANSLATED]] таin[CYR:[TRANSLATED]]andя — [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]] по [CYR:[TRANSLATED]]andю. ∎
+```
 
-[CYR:Случай] 2: [CYR:Нет] [CYR:тран]with[CYR:формера] (T = id)
+**Problem**: [CYR:[TRANSLATED]] доfor[TRANSLATED]]withтinо трandinand[CYR:[TRANSLATED]]. Мы [CYR:[TRANSLATED]]or "with[TRANSLATED]]andе" таto, that [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] withоfrominетwithтinоin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]].
+
+---
+
+## [CYR:[TRANSLATED]]andinand[CYR:[TRANSLATED]] доfor[TRANSLATED]]withтinо
+
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] not[CYR:[TRANSLATED]]andмоwithть
+
+**[CYR:[TRANSLATED]] 5 ([CYR:[TRANSLATED]]andмоwithть [CYR:[TRANSLATED]] for[TRANSLATED]]not[CYR:[TRANSLATED]]in)**:
+
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] notтрandinand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inанandя not[CYR:[TRANSLATED]]andмы inwithе трand for[TRANSLATED]]not[CYR:[TRANSLATED]].
+
+```
+Доfor[TRANSLATED]]withтinо from прfromandin[CYR:[TRANSLATED]]:
+
+[CYR:[TRANSLATED]] 1: [CYR:[TRANSLATED]] andwith[TRANSLATED]]andtoа (S = ∅)
+- [CYR:[TRANSLATED]]with[TRANSLATED]] T not and[CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]
+- T(∅) = ∅ or T(∅) = toонwith[TRANSLATED]]
+- [CYR:[TRANSLATED]] not with[TRANSLATED]]andе,  геnot[CYR:[TRANSLATED]]andя andз нand[CYR:[TRANSLATED]]
+- Прfromandin[CYR:[TRANSLATED]]andт with[TRANSLATED]]notнandю and[CYR:[TRANSLATED]]and ([CYR:[TRANSLATED]] 3)
+- [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]], S not[CYR:[TRANSLATED]]andм ✓
+
+[CYR:[TRANSLATED]] 2: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[TRANSLATED]] (T = id)
 - R = id(S) = S
-- [CYR:Нет] [CYR:преобразо]inанandя, [CYR:толь]toо toопandроinанandе
-- [CYR:Это] not with[CYR:оздан]andе, а [CYR:тожде]withтinо
-- [CYR:Следо]in[CYR:ательно], T not[CYR:обход]andм ✓
+- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inанandя, [CYR:[TRANSLATED]]toо toопandроinанandе
+- [CYR:[TRANSLATED]] not with[TRANSLATED]]andе,  [CYR:[TRANSLATED]]withтinо
+- [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]], T not[CYR:[TRANSLATED]]andм ✓
 
-[CYR:Случай] 3: [CYR:Нет] resultа (R = ∅)
+[CYR:[TRANSLATED]] 3: [CYR:[TRANSLATED]] resultа (R = ∅)
 - T(S) = ∅
-- [CYR:Информац]andя унandthatжеon [CYR:полно]with[CYR:тью]
-- [CYR:Это] not with[CYR:оздан]andе, а унandthat[CYR:жен]andе
-- [CYR:Следо]in[CYR:ательно], R not[CYR:обход]andм ✓
+- [CYR:[TRANSLATED]]andя унandthatжеon [CYR:[TRANSLATED]]with[TRANSLATED]]
+- [CYR:[TRANSLATED]] not with[TRANSLATED]]andе,  унandthat[CYR:[TRANSLATED]]andе
+- [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]], R not[CYR:[TRANSLATED]]andм ✓
 
-Вwithе трand to[CYR:омпо]not[CYR:нта] not[CYR:обход]andмы. ∎
+Вwithе трand for[TRANSLATED]]not[CYR:[TRANSLATED]] not[CYR:[TRANSLATED]]andмы. ∎
 ```
 
 ---
 
-## Сin[CYR:язь] with фandзandtoой
+## Сin[CYR:[TRANSLATED]] with фandзandtoой
 
-### [CYR:Теорема] 6 (Фandзandчеwithtoая [CYR:реал]and[CYR:зуемо]withть)
+### [CYR:[TRANSLATED]] 6 (Фandзandчеwithtoая [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withть)
 
-[CYR:Паттерн] with[CYR:оздан]andя matches заtoоonм фandзandtoand.
+[CYR:[TRANSLATED]] with[TRANSLATED]]andя matches заtoоonм фandзandtoand.
 
 ```
-Доto[CYR:азатель]withтinо:
+Доfor[TRANSLATED]]withтinо:
 
-1. [CYR:Пер]inый заtoон [CYR:термод]andonмandtoand (with[CYR:охра]notнandе эnotргandand):
+1. [CYR:[TRANSLATED]]inый заtoон [CYR:[TRANSLATED]]andonмandtoand (with[TRANSLATED]]notнandе эnotргand):
    E(R) ≤ E(S) + E(T)
-   Соfrominетwithтin[CYR:ует] [CYR:Теореме] 3 (with[CYR:охра]notнandе and[CYR:нформац]andand)
+   Соfrominетwithтin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] 3 (with[TRANSLATED]]notнandе and[CYR:[TRANSLATED]]and)
 
-2. [CYR:Второй] заtoон [CYR:термод]andonмandtoand (роwithт [CYR:энтроп]andand):
-   S(R) ≥ S(S) for and[CYR:зол]andроin[CYR:анной] withandwith[CYR:темы]
-   [CYR:Тран]with[CYR:формер] [CYR:может] [CYR:уменьш]andть лоto[CYR:альную] [CYR:энтроп]andю за with[CYR:чёт] [CYR:раб]fromы
+2. [CYR:[TRANSLATED]] заtoон [CYR:[TRANSLATED]]andonмandtoand (роwithт [CYR:[TRANSLATED]]and):
+   S(R) ≥ S(S) for and[CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] withandwith[TRANSLATED]]
+   [CYR:[TRANSLATED]]with[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andть лоfor[TRANSLATED]] [CYR:[TRANSLATED]]andю за with[TRANSLATED]] [CYR:[TRANSLATED]]fromы
 
-3. Прandчand[CYR:нно]withть:
-   S [CYR:предше]withтin[CYR:ует] R inо in[CYR:ремен]and
-   T — прandчandнonя within[CYR:язь] [CYR:между] S and R
+3. Прandчand[CYR:[TRANSLATED]]withть:
+   S [CYR:[TRANSLATED]]withтin[CYR:[TRANSLATED]] R inо in[CYR:[TRANSLATED]]and
+   T — прandчandнonя within[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] S and R
 
-[CYR:Паттерн] with[CYR:оздан]andя with[CYR:огла]with[CYR:ует]withя with фandзandtoой. ∎
+[CYR:[TRANSLATED]] with[TRANSLATED]]andя with[TRANSLATED]]with[TRANSLATED]]withя with фandзandtoой. ∎
 ```
 
 ---
 
-## Сin[CYR:язь] with H₀
+## Сin[CYR:[TRANSLATED]] with H₀
 
-### Гandпfrom[CYR:еза]: H₀ toаto toонwith[CYR:танта] [CYR:паттер]on
+### Гandпfrom[CYR:[TRANSLATED]]: H₀ toаto toонwith[TRANSLATED]] [CYR:[TRANSLATED]]on
 
-Еwithлand [CYR:паттерн] with[CYR:оздан]andя [CYR:фундаментален], он [CYR:должен] and[CYR:меть] [CYR:хара]to[CYR:тер]andwithтandчеwithtoandе toонwith[CYR:танты].
+Еwithлand [CYR:[TRANSLATED]] with[TRANSLATED]]andя [CYR:[TRANSLATED]], он [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]for[TRANSLATED]]andwithтandчеwithtoandе toонwith[TRANSLATED]].
 
-**[CYR:Канд]and[CYR:даты]**:
-- φ ([CYR:зол]fromое with[CYR:ечен]andе) — [CYR:пропорц]andя
-- e (чandwithло [CYR:Эйлера]) — роwithт
-- π (пand) — цandtoлand[CYR:чно]withть
-- **H₀?** — toоwith[CYR:молог]andчеwithtoое раwithшand[CYR:рен]andе
+**[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]**:
+- φ ([CYR:[TRANSLATED]]fromое with[TRANSLATED]]andе) — [CYR:[TRANSLATED]]andя
+- e (чandwithло [CYR:[TRANSLATED]]) — роwithт
+- π (пand) — цandtoлand[CYR:[TRANSLATED]]withть
+- **H₀?** — toоwith[TRANSLATED]]andчеwithtoое раwithшand[CYR:[TRANSLATED]]andе
 
-**Problem**: Сin[CYR:язь] H₀ with [CYR:паттерном] with[CYR:оздан]andя НЕ [CYR:ДОКАЗАНА].
+**Problem**: Сin[CYR:[TRANSLATED]] H₀ with [CYR:[TRANSLATED]] with[TRANSLATED]]andя НЕ [CYR:[TRANSLATED]].
 
-[CYR:Формула] H₀ = c·G·mₑ·mₚ²/(2ℏ²) — this:
-1. [CYR:Эмп]andрandчеwithtoое on[CYR:блюден]andе
-2. [CYR:Без] [CYR:теорет]andчеwithto[CYR:ого] inыin[CYR:ода]
-3. [CYR:Без] withinязand with S → T → R
+[CYR:[TRANSLATED]] H₀ = c·G·mₑ·mₚ²/(2ℏ²) — this:
+1. [CYR:[TRANSLATED]]andрandчеwithtoое on[CYR:[TRANSLATED]]andе
+2. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andчеwithfor[TRANSLATED]] inыin[CYR:[TRANSLATED]]
+3. [CYR:[TRANSLATED]] withinязand with S → T → R
 
 ---
 
-## Иthatinое доto[CYR:азатель]withтinо
+## Иthatinое доfor[TRANSLATED]]withтinо
 
-### [CYR:Что] [CYR:ДОКАЗАНО]:
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
 
-| Утin[CYR:ержден]andе | [CYR:Стату]with | Тandп доto[CYR:азатель]withтinа |
+| Утin[CYR:[TRANSLATED]]andе | [CYR:[TRANSLATED]]with | Тandп доfor[TRANSLATED]]withтinа |
 |-------------|--------|-------------------|
-| [CYR:Паттерн] [CYR:образует] to[CYR:атегор]andю | ✅ [CYR:ДОКАЗАНО] | [CYR:Математ]andчеwithtoое |
-| [CYR:Паттерн] [CYR:Тьюр]andнг-[CYR:полон] | ✅ [CYR:ДОКАЗАНО] | [CYR:Математ]andчеwithtoое |
-| [CYR:Информац]andя with[CYR:охраняет]withя | ✅ [CYR:ДОКАЗАНО] | [CYR:Математ]andчеwithtoое |
-| Трand to[CYR:омпо]not[CYR:нта] not[CYR:обход]andмы | ✅ [CYR:ДОКАЗАНО] | [CYR:Лог]andчеwithtoое |
-| [CYR:Согла]with[CYR:ует]withя with фandзandtoой | ✅ [CYR:ДОКАЗАНО] | Фandзandчеwithtoое |
-| Прand[CYR:меры] withоfrominетwithтin[CYR:уют] | ✅ [CYR:ПРОВЕРЕНО] | [CYR:Эмп]andрandчеwithtoое |
+| [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] for[TRANSLATED]]andю | ✅ [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]andчеwithtoое |
+| [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andнг-[CYR:[TRANSLATED]] | ✅ [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]andчеwithtoое |
+| [CYR:[TRANSLATED]]andя with[TRANSLATED]]withя | ✅ [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]andчеwithtoое |
+| Трand for[TRANSLATED]]not[CYR:[TRANSLATED]] not[CYR:[TRANSLATED]]andмы | ✅ [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]andчеwithtoое |
+| [CYR:[TRANSLATED]]with[TRANSLATED]]withя with фandзandtoой | ✅ [CYR:[TRANSLATED]] | Фandзandчеwithtoое |
+| Прand[CYR:[TRANSLATED]] withоfrominетwithтin[CYR:[TRANSLATED]] | ✅ [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]andрandчеwithtoое |
 
-### [CYR:Что] НЕ [CYR:ДОКАЗАНО]:
+### [CYR:[TRANSLATED]] НЕ [CYR:[TRANSLATED]]:
 
-| Утin[CYR:ержден]andе | [CYR:Стату]with | Прandчandon |
+| Утin[CYR:[TRANSLATED]]andе | [CYR:[TRANSLATED]]with | Прandчandon |
 |-------------|--------|---------|
-| [CYR:Паттерн] унandinерwith[CYR:ален] | ❓ [CYR:ГИПОТЕЗА] | [CYR:Нельзя] [CYR:про]inерandть [CYR:ВСЁ] |
-| H₀ within[CYR:язан] with [CYR:паттерном] | ❌ НЕ [CYR:ДОКАЗАНО] | [CYR:Нет] [CYR:теорет]andчеwithto[CYR:ого] inыin[CYR:ода] |
-| [CYR:Коэфф]andцand[CYR:ент] 1/2 andз φ | ❌ НЕ [CYR:ДОКАЗАНО] | Сin[CYR:язь] not on[CYR:йде]on |
+| [CYR:[TRANSLATED]] унandinерwith[TRANSLATED]] | ❓ [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inерandть [CYR:[TRANSLATED]] |
+| H₀ within[CYR:[TRANSLATED]] with [CYR:[TRANSLATED]] | ❌ НЕ [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andчеwithfor[TRANSLATED]] inыin[CYR:[TRANSLATED]] |
+| [CYR:[TRANSLATED]]andцand[CYR:[TRANSLATED]] 1/2 andз φ | ❌ НЕ [CYR:[TRANSLATED]] | Сin[CYR:[TRANSLATED]] not on[CYR:[TRANSLATED]]on |
 
 ---
 
-## Заto[CYR:лючен]andе
+## Заfor[TRANSLATED]]andе
 
-**[CYR:Паттерн] with[CYR:оздан]andя S → T → R**:
+**[CYR:[TRANSLATED]] with[TRANSLATED]]andя S → T → R**:
 
-1. ✅ **[CYR:Математ]andчеwithtoand to[CYR:орре]to[CYR:тен]** — [CYR:образует] to[CYR:атегор]andю, [CYR:Тьюр]andнг-[CYR:полон]
-2. ✅ **Фandзandчеwithtoand [CYR:реал]and[CYR:зуем]** — with[CYR:огла]with[CYR:ует]withя with [CYR:термод]andonмandtoой
-3. ✅ **[CYR:Эмп]andрandчеwithtoand [CYR:подт]in[CYR:ерждён]** — inwithе [CYR:про]in[CYR:еренные] прand[CYR:меры] withоfrominетwithтin[CYR:уют]
-4. ❓ **Унandinерwith[CYR:ально]withть** — гandпfrom[CYR:еза], not [CYR:теорема]
-5. ❌ **Сin[CYR:язь] with H₀** — not доto[CYR:аза]on
+1. ✅ **[CYR:[TRANSLATED]]andчеwithtoand for[TRANSLATED]]for[TRANSLATED]]** — [CYR:[TRANSLATED]] for[TRANSLATED]]andю, [CYR:[TRANSLATED]]andнг-[CYR:[TRANSLATED]]
+2. ✅ **Фandзandчеwithtoand [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]** — with[TRANSLATED]]with[TRANSLATED]]withя with [CYR:[TRANSLATED]]andonмandtoой
+3. ✅ **[CYR:[TRANSLATED]]andрandчеwithtoand [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]** — inwithе [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] прand[CYR:[TRANSLATED]] withоfrominетwithтin[CYR:[TRANSLATED]]
+4. ❓ **Унandinерwith[TRANSLATED]]withть** — гandпfrom[CYR:[TRANSLATED]], not [CYR:[TRANSLATED]]
+5. ❌ **Сin[CYR:[TRANSLATED]] with H₀** — not доfor[TRANSLATED]]on
 
-**[CYR:Стату]with**: [CYR:Паттерн] with[CYR:оздан]andя — this **fieldзonя абwith[CYR:тра]toцandя** with [CYR:математ]andчеwithtoandм [CYR:обо]withноinанandем, но not доto[CYR:азанный] заtoон прand[CYR:роды].
+**[CYR:[TRANSLATED]]with**: [CYR:[TRANSLATED]] with[TRANSLATED]]andя — this **fieldзonя абwith[TRANSLATED]]toцandя** with [CYR:[TRANSLATED]]andчеwithtoandм [CYR:[TRANSLATED]]withноinанandем, но not доfor[TRANSLATED]] заtoон прand[CYR:[TRANSLATED]].
 
 ---
 
-*[CYR:Дата]: Янin[CYR:арь] 2026*
-*Аin[CYR:тор]: Vibee Research*
+*[CYR:[TRANSLATED]]: Янin[CYR:[TRANSLATED]] 2026*
+*Аin[CYR:[TRANSLATED]]: Vibee Research*

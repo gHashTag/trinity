@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// AUTO CODEGEN - [EN]in[CYR:[EN]]and[EN]withto[EN] [EN]not[CYR:[EN]]and[EN] Zig to[EN]yes and[EN] .vibee with[CYR:[EN]]and[EN]andto[EN]and[EN]
+// AUTO CODEGEN - inandwithto notand Zig toyes and .vibee withandtoand
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Generates complete Zig code WITHOUT manual ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ
-// [EN]in[CYR:[EN]]: Dmitrii Vasilev
+// in: Dmitrii Vasilev
 // φ² + 1/φ² = 3
 //
 // Creation Pattern:
@@ -27,7 +27,7 @@ const Constant = vibee_parser.Constant;
 const CreationPattern = vibee_parser.CreationPattern;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]] CONSTANTS
+//  CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PHI: f64 = 1.618033988749895;
@@ -212,7 +212,7 @@ pub const AutoCodeGenerator = struct {
     }
 
     fn generateFunction(self: *Self, b: *const Behavior) !void {
-        // [EN]to[CYR:[EN]]and[EN] and[EN] given/when/then
+        // toand and given/when/then
         try self.writeFmt("/// Given: {s}\n", .{b.given});
         try self.writeFmt("/// When: {s}\n", .{b.when});
         try self.writeFmt("/// Then: {s}\n", .{b.then});
@@ -329,7 +329,7 @@ pub const AutoCodeGenerator = struct {
 // TYPE MAPPING
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:[EN]]and[EN] VIBEE [EN]andbyin in Zig [EN]and[EN]
+/// and VIBEE andbyin in Zig and
 pub fn mapType(vibee_type: []const u8) []const u8 {
     if (std.mem.eql(u8, vibee_type, "String")) return "[]const u8";
     if (std.mem.eql(u8, vibee_type, "Int")) return "i64";
@@ -339,7 +339,7 @@ pub fn mapType(vibee_type: []const u8) []const u8 {
 
     // List<T> -> []T
     if (std.mem.startsWith(u8, vibee_type, "List<")) {
-        // [CYR:[EN]]on[EN] handling - return slice
+        // on handling - return slice
         return "[]const u8"; // TODO: proper generic handling
     }
 
@@ -348,11 +348,11 @@ pub fn mapType(vibee_type: []const u8) []const u8 {
         return "?[]const u8"; // TODO: proper generic handling
     }
 
-    // [EN]and[EN]in[EN]with[CYR:[EN]] type - return how [EN]with[EN]
+    // andinwith type - return how with
     return vibee_type;
 }
 
-/// [EN]to[CYR:[EN]]and[EN]in[EN]and[EN] [CYR:[EN]]inand[EN]in[CYR:[EN]] with[EN]in Zig
+/// toandinand inandin within Zig
 pub fn escapeReservedWord(name: []const u8) []const u8 {
     const reserved = [_][]const u8{
         "type",  "error", "align", "test",

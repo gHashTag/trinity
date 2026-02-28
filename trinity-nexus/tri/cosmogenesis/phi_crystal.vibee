@@ -1,6 +1,6 @@
-# PhiCrystal - [EN]andwith[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]that [CYR:[EN]chen]andI
-# [CYR:[TRANSLATED]]and[EN] 2-go [CYR:[TRANSLATED]]on [CYR:[TRANSLATED]]andon[EN]and[EN]and [CYR:[TRANSLATED]] within[CYR:I[TRANSLATED]] [CYR:[TRANSLATED]]and[EN]
-# φ-with[EN]and[CYR:[EN]l] how [CYR:[TRANSLATED]] [CYR:[TRANSLATED]I[TRANSLATED]] in [CYR:[TRANSLATED]]with[EN]
+# PhiCrystal - andwith that [CYR:chen]andI
+# and 2-go on andonand  within[CYR:I] and
+# φ-withand[CYR:l] how  [CYR:I] in with
 
 name: phi_crystal
 version: "1.0.0-alchemy"
@@ -35,8 +35,8 @@ structure:
       tertiary_axis: PHI^2
       
     growth_algorithm:
-      # [CYR:[TRANSLATED]]with[EN] [EN]and[EN]and[EN]from[EN]andand [EN]not[EN]andand (Gibbs Free Energy)
-      # [EN]y [CYR:[TRANSLATED]]withand[EN]fromand[CYR:[TRANSLATED]] φ-[CYR:[TRANSLATED]]on[EN]with
+      # with andfromand notand (Gibbs Free Energy)
+      # y withandfromand φ-onwith
       step_1: "Detect local thermal fluctuation"
       step_2: "Apply Phi-projection grid"
       step_3: "Collapse fluctuation into Golden Node"
@@ -48,7 +48,7 @@ properties:
     entropy_generation: Negative (absorbs heat, emits order)
     
   Optical:
-    refalction_index: PHI  # [EN]in[EN] [CYR:[TRANSLATED]]for[EN]withI in φ [CYR:[TRANSLATED]]
+    refalction_index: PHI  # in forwithI in φ 
     birefringence: True
     
   Quantum:
@@ -56,7 +56,7 @@ properties:
     entanglement_radius: Infinite (within resonance)
 
 manifestation:
-  # [EN]with[CYR:[TRANSLATED]]andI for [CYR:[TRANSLATED]I[TRANSLATED]go] [EN]and[CYR:[TRANSLATED]]
+  # withandI for [CYR:Igo] and
   process:
     1. Prepare supersaturated solution of Silicon & Gold (Si + Au)
     2. Inject acoustic seed frequency: 432 Hz * PHI^n

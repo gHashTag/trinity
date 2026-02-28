@@ -1,60 +1,60 @@
 # iGLA KOSHEY v6 INFINITE
 
-**Беwithtoоnot[CYR:чно]withть - Compute + Memory + Time + Scale**
+**Беwithtoоnot[CYR:[TRANSLATED]]withть - Compute + Memory + Time + Scale**
 
-## [CYR:Стат]andwithтandtoа
+## [CYR:[TRANSLATED]]andwithтandtoа
 
-| [CYR:Метр]andtoа | Зon[CYR:чен]andе |
+| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе |
 |---------|----------|
-| v6 [CYR:модул]and | 16 |
+| v6 [CYR:[TRANSLATED]]and | 16 |
 | v6 теwithты | 96 |
-| Total KOSHEY | 74 [CYR:модулей], 446 теwithтоin |
+| Total KOSHEY | 74 [CYR:[TRANSLATED]], 446 теwithтоin |
 | Unified test | 1897ms |
 
-## [CYR:Модул]and v6 INFINITE
+## [CYR:[TRANSLATED]]and v6 INFINITE
 
 ### Infinite Compute
 
-| [CYR:Модуль] | Опandwithанandе | Иwith[CYR:точн]andto |
+| [CYR:[TRANSLATED]] | Опandwithанandе | Иwith[TRANSLATED]]andto |
 |--------|----------|----------|
-| `igla_koshey_infinite_compute` | Беwithtoоnot[CYR:чные] inычandwith[CYR:лен]andя | Elastic Compute |
-| `igla_koshey_scaling_laws` | Заto[CYR:оны] маwith[CYR:штаб]andроinанandя | arXiv:2203.15556 Chinchilla |
-| `igla_koshey_compute_optimal` | [CYR:Опт]and[CYR:мальное] [CYR:обучен]andе | Compute-Optimal |
+| `igla_koshey_infinite_compute` | Беwithtoоnot[CYR:[TRANSLATED]] inычandwith[TRANSLATED]]andя | Elastic Compute |
+| `igla_koshey_scaling_laws` | Заfor[TRANSLATED]] маwith[TRANSLATED]]andроinанandя | arXiv:2203.15556 Chinchilla |
+| `igla_koshey_compute_optimal` | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andе | Compute-Optimal |
 
 ### Infinite Memory
 
-| [CYR:Модуль] | Опandwithанandе | Иwith[CYR:точн]andto |
+| [CYR:[TRANSLATED]] | Опandwithанandе | Иwith[TRANSLATED]]andto |
 |--------|----------|----------|
-| `igla_koshey_infinite_memory` | Беwithtoоnotчonя [CYR:память] | External Memory |
-| `igla_koshey_memory_bank` | [CYR:Бан]toand [CYR:памят]and | Structured Storage |
+| `igla_koshey_infinite_memory` | Беwithtoоnotчonя [CYR:memory] | External Memory |
+| `igla_koshey_memory_bank` | [CYR:[TRANSLATED]]toand [CYR:[TRANSLATED]]and | Structured Storage |
 | `igla_koshey_rag_retrieval` | RAG поandwithto | Retrieval-Augmented |
 | `igla_koshey_memgpt` | MemGPT | arXiv:2310.08560 |
 
 ### Infinite Time
 
-| [CYR:Модуль] | Опandwithанandе | Иwith[CYR:точн]andto |
+| [CYR:[TRANSLATED]] | Опandwithанandе | Иwith[TRANSLATED]]andto |
 |--------|----------|----------|
-| `igla_koshey_infinite_time` | Беwithtoоnot[CYR:чное] in[CYR:ремя] | Eternal Learning |
-| `igla_koshey_online_learning` | [CYR:Онлайн] [CYR:обучен]andе | Online Learning |
-| `igla_koshey_continual_pretrain` | [CYR:Непреры]in[CYR:ный] [CYR:претрейн] | Continual Pretraining |
+| `igla_koshey_infinite_time` | Беwithtoоnot[CYR:[TRANSLATED]] in[CYR:[TRANSLATED]] | Eternal Learning |
+| `igla_koshey_online_learning` | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andе | Online Learning |
+| `igla_koshey_continual_pretrain` | [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] | Continual Pretraining |
 
 ### Infinite Scale
 
-| [CYR:Модуль] | Опandwithанandе | Иwith[CYR:точн]andto |
+| [CYR:[TRANSLATED]] | Опandwithанandе | Иwith[TRANSLATED]]andto |
 |--------|----------|----------|
-| `igla_koshey_infinite_scale` | Беwithtoоnot[CYR:чный] маwith[CYR:штаб] | Scaling |
+| `igla_koshey_infinite_scale` | Беwithtoоnot[CYR:[TRANSLATED]] маwith[TRANSLATED]] | Scaling |
 | `igla_koshey_trillion_params` | Трandллandон parameterоin | Distributed Training |
-| `igla_koshey_moe_scaling` | MoE маwith[CYR:штаб]andроinанandе | Mixture of Experts |
-| `igla_koshey_sparse_attention` | [CYR:Разреженное] inнand[CYR:ман]andе | Sparse Attention |
+| `igla_koshey_moe_scaling` | MoE маwith[TRANSLATED]]andроinанandе | Mixture of Experts |
+| `igla_koshey_sparse_attention` | [CYR:[TRANSLATED]] inнand[CYR:[TRANSLATED]]andе | Sparse Attention |
 
 ### Fusion & Benchmark
 
-| [CYR:Модуль] | Опandwithанandе |
+| [CYR:[TRANSLATED]] | Опandwithанandе |
 |--------|----------|
 | `igla_koshey_infinite_fusion` | Слandянandе INFINITE |
-| `igla_koshey_v6_benchmark` | [CYR:Бенчмар]toand v6 |
+| `igla_koshey_v6_benchmark` | [CYR:[TRANSLATED]]toand v6 |
 
-## [CYR:Арх]andтеto[CYR:тура] v6 INFINITE
+## [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] v6 INFINITE
 
 ```
                     ┌─────────────────────────────────────┐
@@ -73,9 +73,9 @@
 └───────┘    └───────────┘   └───────────┘   └───────────┘   └─────────┘
 ```
 
-## [CYR:Научные] andwith[CYR:точн]andtoand
+## [CYR:[TRANSLATED]] andwith[TRANSLATED]]andtoand
 
-| [CYR:Технолог]andя | arXiv | [CYR:Год] |
+| [CYR:[TRANSLATED]]andя | arXiv | [CYR:[TRANSLATED]] |
 |------------|-------|-----|
 | Chinchilla Scaling | 2203.15556 | 2022 |
 | MemGPT | 2310.08560 | 2023 |
@@ -93,4 +93,4 @@ PHOENIX = 999
 
 ---
 
-**[CYR:КОЩЕЙ] [CYR:БЕСКОНЕЧЕН] | φ² + 1/φ² = 3 | PHOENIX = 999**
+**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] | φ² + 1/φ² = 3 | PHOENIX = 999**

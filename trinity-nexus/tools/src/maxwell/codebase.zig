@@ -1,5 +1,5 @@
 // Maxwell Daemon - Codebase Interface
-// [CYR:[TRANSLATED]]with for in[EN]and[CYR:[TRANSLATED]]with[EN]inandI [CYR:agent[EN]] with to[CYR:[TRANSLATED]]in[EN] [CYR:[TRANSLATED]]
+// with for inandwithinandI [CYR:agent] with toin 
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -9,14 +9,14 @@ const std = @import("std");
 // CODEBASE INTERFACE
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Result [CYR:[TRANSLATED]]andand with file[EN]
+/// Result and with file
 pub const FileResult = struct {
     success: bool,
     content: ?[]const u8,
     error_msg: ?[]const u8,
 };
 
-/// Result in[CYR:y[TRANSLATED]]not[EN]andI to[CYR:[TRANSLATED]y]
+/// Result in[CYR:y]notandI fory]
 pub const ExecResult = struct {
     exit_code: i32,
     stdout: []const u8,
@@ -24,7 +24,7 @@ pub const ExecResult = struct {
     duration_ms: u64,
 };
 
-/// [CYR:[TRANSLATED]]andI  file[EN]
+/// andI  file
 pub const FileInfo = struct {
     path: []const u8,
     size: u64,
@@ -32,7 +32,7 @@ pub const FileInfo = struct {
     modified_time: i128,
 };
 
-/// [EN]and[EN] and[CYR:[TRANSLATED]]not[EN]andI in diff
+/// and andnotandI in diff
 pub const DiffType = enum {
     Added,
     Removed,
@@ -40,22 +40,22 @@ pub const DiffType = enum {
     Unchanged,
 };
 
-/// [CYR:[TRANSLATED]]to[EN] diff
+/// to diff
 pub const DiffLine = struct {
     line_num: u32,
     diff_type: DiffType,
     content: []const u8,
 };
 
-/// [CYR:[TRANSLATED]]with for [CYR:work]fromy with to[CYR:[TRANSLATED]]in[EN] [CYR:[TRANSLATED]]
+/// with for [CYR:work]fromy with toin 
 pub const Codebase = struct {
     allocator: std.mem.Allocator,
     root_path: []const u8,
     
-    // [CYR:[TRANSLATED]] [CYR:pro[EN]]and[CYR:[TRANSLATED]y[EN]] file[EN]in
+    //  [CYR:pro]and[CYR:y] filein
     file_cache: std.StringHashMap([]const u8),
     
-    // [EN]with[CYR:[TRANSLATED]]andI and[CYR:[TRANSLATED]]not[EN]and[EN] for fromto[CYR:[TRANSLATED]]
+    // withandI andnotand for fromto
     change_history: std.ArrayList(Change),
     
     const Change = struct {
@@ -94,9 +94,9 @@ pub const Codebase = struct {
     // READ OPERATIONS
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// [CYR:[TRANSLATED]]and[CYR:[EN]ate] file
+    /// and[CYR:ate] file
     pub fn readFile(self: *Codebase, path: []const u8) FileResult {
-        // [CYR:[TRANSLATED]]in[EN]and[EN] to[EN]
+        // inand to
         if (self.file_cache.get(path)) |cached| {
             return FileResult{
                 .success = true,
@@ -105,7 +105,7 @@ pub const Codebase = struct {
             };
         }
 
-        // [EN]with[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]ny] path
+        // withand [CYR:ny] path
         const full_path = std.fs.path.join(self.allocator, &[_][]const u8{ self.root_path, path }) catch {
             return FileResult{
                 .success = false,
@@ -115,7 +115,7 @@ pub const Codebase = struct {
         };
         defer self.allocator.free(full_path);
 
-        // [CYR:[TRANSLATED]]and[CYR:[EN]ate] file
+        // and[CYR:ate] file
         const file = std.fs.cwd().openFile(full_path, .{}) catch {
             return FileResult{
                 .success = false,
@@ -150,7 +150,7 @@ pub const Codebase = struct {
             };
         };
 
-        // [CYR:[TRANSLATED]]and[EN]in[CYR:ate]
+        // andin[CYR:ate]
         const path_copy = self.allocator.dupe(u8, path) catch {
             self.allocator.free(content);
             return FileResult{
@@ -168,7 +168,7 @@ pub const Codebase = struct {
         };
     }
 
-    /// [CYR:[TRANSLATED]]and[EN] with[EN]andwith[EN]to file[EN]in in [EN]and[EN]to[CYR:[TRANSLATED]]andand
+    /// and withandwithto filein in andtoand
     pub fn listFiles(self: *Codebase, dir_path: []const u8, pattern: ?[]const u8) !std.ArrayList(FileInfo) {
         var result = std.ArrayList(FileInfo).init(self.allocator);
 
@@ -182,7 +182,7 @@ pub const Codebase = struct {
 
         var iter = dir.iterate();
         while (try iter.next()) |entry| {
-            // [EN]and[CYR:l[EN]] [EN] [CYR:[TRANSLATED]]
+            // and[CYR:l]  
             if (pattern) |p| {
                 if (!matchPattern(entry.name, p)) continue;
             }
@@ -199,7 +199,7 @@ pub const Codebase = struct {
         return result;
     }
 
-    /// [CYR:[TRANSLATED]]and filey [EN] [CYR:[TRANSLATED]] [EN]to[EN]withandin[EN]
+    /// and filey   towithandin
     pub fn findFiles(self: *Codebase, pattern: []const u8) !std.ArrayList([]const u8) {
         var result = std.ArrayList([]const u8).init(self.allocator);
         try self.findFilesRecursive("", pattern, &result);
@@ -245,15 +245,15 @@ pub const Codebase = struct {
     // WRITE OPERATIONS
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// [CYR:[TRANSLATED]]andwith[CYR:ate] file
+    /// andwithate] file
     pub fn writeFile(self: *Codebase, path: []const u8, content: []const u8) FileResult {
-        // [CYR:[TRANSLATED]]and[EN] with[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] for andwith[CYR:[TRANSLATED]]andand
+        // and with withand for andwithand
         const old_content = if (self.file_cache.get(path)) |cached|
             self.allocator.dupe(u8, cached) catch null
         else
             null;
 
-        // [EN]with[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]ny] path
+        // withand [CYR:ny] path
         const full_path = std.fs.path.join(self.allocator, &[_][]const u8{ self.root_path, path }) catch {
             return FileResult{
                 .success = false,
@@ -263,12 +263,12 @@ pub const Codebase = struct {
         };
         defer self.allocator.free(full_path);
 
-        // [CYR:[TRANSLATED]ate] [EN]and[EN]to[CYR:[TRANSLATED]]andand [EN]with[EN]and [CYR:[TRANSLATED]]
+        // [CYR:ate] andtoand withand 
         if (std.fs.path.dirname(full_path)) |dir| {
             std.fs.cwd().makePath(dir) catch {};
         }
 
-        // [CYR:[TRANSLATED]]andwith[CYR:ate] file
+        // andwithate] file
         const file = std.fs.cwd().createFile(full_path, .{}) catch {
             return FileResult{
                 .success = false,
@@ -286,7 +286,7 @@ pub const Codebase = struct {
             };
         };
 
-        // [CYR:[TRANSLATED]]inand[EN] to[EN]
+        // inand to
         const content_copy = self.allocator.dupe(u8, content) catch {
             return FileResult{
                 .success = false,
@@ -310,7 +310,7 @@ pub const Codebase = struct {
             self.file_cache.put(path_copy, content_copy) catch {};
         }
 
-        // [CYR:[TRANSLATED]]andwith[CYR:ate] in andwith[CYR:[TRANSLATED]]and[EN]
+        // andwithate] in andwithand
         self.change_history.append(Change{
             .path = self.allocator.dupe(u8, path) catch path,
             .old_content = old_content,
@@ -325,7 +325,7 @@ pub const Codebase = struct {
         };
     }
 
-    /// [CYR:[TRANSLATED]]and[EN] file
+    /// and file
     pub fn deleteFile(self: *Codebase, path: []const u8) FileResult {
         const full_path = std.fs.path.join(self.allocator, &[_][]const u8{ self.root_path, path }) catch {
             return FileResult{
@@ -344,7 +344,7 @@ pub const Codebase = struct {
             };
         };
 
-        // [CYR:[TRANSLATED]]and[EN] and[EN] to[CYR:[TRANSLATED]]
+        // and and to
         if (self.file_cache.fetchRemove(path)) |kv| {
             self.allocator.free(kv.value);
         }
@@ -356,7 +356,7 @@ pub const Codebase = struct {
         };
     }
 
-    /// [EN]to[EN]and[EN] [EN]with[CYR:[TRANSLATED]]not[EN] and[CYR:[TRANSLATED]]not[EN]and[EN]
+    /// toand withnot andnotand
     pub fn undo(self: *Codebase) FileResult {
         if (self.change_history.items.len == 0) {
             return FileResult{
@@ -379,7 +379,7 @@ pub const Codebase = struct {
     // EXECUTE OPERATIONS
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// [CYR:Vy[TRANSLATED]]and[EN] to[CYR:[TRANSLATED]]
+    /// [CYR:Vy]and to
     pub fn exec(self: *Codebase, command: []const u8, args: []const []const u8) ExecResult {
         const start_time = std.time.milliTimestamp();
 
@@ -438,17 +438,17 @@ pub const Codebase = struct {
         };
     }
 
-    /// [CYR:[TRANSLATED]]with[EN]and[EN] [EN]with[EN]y
+    /// withand withy
     pub fn runTests(self: *Codebase, test_path: []const u8) ExecResult {
         return self.exec("zig", &[_][]const u8{ "test", test_path });
     }
 
-    /// [CYR:[TRANSLATED]]with[EN]and[EN] vibee gen
+    /// withand vibee gen
     pub fn runVibeeGen(self: *Codebase, spec_path: []const u8) ExecResult {
         return self.exec("./bin/vibee", &[_][]const u8{ "gen", spec_path });
     }
 
-    /// [CYR:[TRANSLATED]]with[EN]and[EN] git to[CYR:[TRANSLATED]]
+    /// withand git to
     pub fn git(self: *Codebase, args: []const []const u8) ExecResult {
         return self.exec("git", args);
     }

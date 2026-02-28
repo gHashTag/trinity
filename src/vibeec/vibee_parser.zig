@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// VIBEE PARSER - [CYR:[EN]]with[EN] .tri with[CYR:[EN]]and[EN]andto[EN]and[EN]
+// VIBEE PARSER - with .tri withandtoand
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// [CYR:[EN]]withand[EN] YAML-bybefore[CYR:[EN]] format .tri file[EN]in (legacy .vibee supported)
-// [EN]in[CYR:[EN]]: Dmitrii Vasilev
+// withand YAML-bybefore format .tri filein (legacy .vibee supported)
+// in: Dmitrii Vasilev
 // φ² + 1/φ² = 3
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -15,7 +15,7 @@ pub const parser_utils = @import("parser_utils.zig");
 const parser_sections = @import("parser_sections.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TYPES [CYR:[EN]] (re-exported from parser_types.zig)
+// TYPES  (re-exported from parser_types.zig)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const parser_types = @import("parser_types.zig");
@@ -41,7 +41,7 @@ pub const MemoryExport = parser_types.MemoryExport;
 pub const PasPrediction = parser_types.PasPrediction;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const VibeeParser = struct {
@@ -76,7 +76,7 @@ pub const VibeeParser = struct {
                 continue;
             }
 
-            // [CYR:[EN]]withto[CYR:[EN]] [CYR:[EN]]to[EN] ":"
+            // withto to ":"
             if (self.pos < self.source.len and self.source[self.pos] == ':') {
                 self.pos += 1;
             }
@@ -281,7 +281,7 @@ pub const VibeeParser = struct {
             const name = self.readKey();
             if (name.len == 0) break;
 
-            // Check what this not with[CYR:[EN]] with[EN]to[EN]and[EN]
+            // Check what this not with withtoand
             if (std.mem.eql(u8, name, "creation_patterns") or
                 std.mem.eql(u8, name, "behaviors") or
                 std.mem.eql(u8, name, "algorithms") or
@@ -297,7 +297,7 @@ pub const VibeeParser = struct {
             var typedef = TypeDef.init(self.allocator);
             typedef.name = name;
 
-            // [EN]and[CYR:[EN]] in[CYR:[EN]] by[EN]
+            // and in by
             while (self.pos < self.source.len) {
                 self.skipEmptyLinesAndComments();
                 if (self.pos >= self.source.len) break;
@@ -508,7 +508,7 @@ pub const VibeeParser = struct {
             if (indent < 2) break;
             self.pos += indent;
 
-            // Behaviors on[EN]andon[EN]with[EN] with '-'
+            // Behaviors onandonwith with '-'
             if (self.pos >= self.source.len or self.source[self.pos] != '-') {
                 self.pos -= indent;
                 break;
@@ -518,7 +518,7 @@ pub const VibeeParser = struct {
 
             var behavior = Behavior.init(self.allocator);
 
-            // [CYR:[EN]]in[EN] by[EN] on [CYR:[EN]] [EN] with[CYR:[EN]]to[EN]: "- name: value"
+            // in by on   withto: "- name: value"
             const first_key = self.readKey();
             if (first_key.len > 0) {
                 self.skipColon();
@@ -528,7 +528,7 @@ pub const VibeeParser = struct {
             }
             self.skipToNextLine();
 
-            // [EN]and[CYR:[EN]] [EN]with[CYR:[EN]] by[EN] behavior
+            // and with by behavior
             while (self.pos < self.source.len) {
                 self.skipEmptyLinesAndComments();
                 if (self.pos >= self.source.len) break;
@@ -747,7 +747,7 @@ pub const VibeeParser = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "parse simple spec" {

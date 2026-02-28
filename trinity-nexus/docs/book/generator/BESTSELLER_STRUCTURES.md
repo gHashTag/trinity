@@ -1,340 +1,340 @@
-# [CYR:СТРУКТУРЫ] [CYR:НАУЧНО]-[CYR:ПОПУЛЯРНЫХ] [CYR:БЕСТСЕЛЛЕРОВ]
+# [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-## Аonлandз toнandг, and[CYR:змен]andinшandх мandр
+## Аonлandз toнandг, and[CYR:[TRANSLATED]]andinшandх мandр
 
 ---
 
-## 1. «SAPIENS» — Юin[CYR:аль] [CYR:Ной] [CYR:Харар]and
+## 1. «SAPIENS» — Юin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and
 
-**[CYR:Продано]:** 25+ мandллand[CYR:оно]in toопandй
+**[CYR:[TRANSLATED]]:** 25+ мandллand[CYR:[TRANSLATED]]in toопandй
 
-### [CYR:Стру]to[CYR:тура] уwith[CYR:пеха]
+### [CYR:[TRANSLATED]]for[TRANSLATED]] уwith[TRANSLATED]]
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  [CYR:ПАТТЕРН] [CYR:ХАРАРИ]: [CYR:БОЛЬШАЯ] [CYR:КАРТИНА] + [CYR:ПРОВОКАЦИЯ]                          │
+│  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] + [CYR:[TRANSLATED]]                          │
 │                                                                         │
-│  1. [CYR:Начн]and with [CYR:БОЛЬШОГО] in[CYR:опро]withа                                           │
-│     "Каto Homo sapiens [CYR:зах]inатandл мandр?"                                   │
+│  1. [CYR:[TRANSLATED]]and with [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]withа                                           │
+│     "Каto Homo sapiens [CYR:[TRANSLATED]]inатandл мandр?"                                   │
 │                                                                         │
-│  2. [CYR:Дай] [CYR:НЕОЖИДАННЫЙ] frominет                                              │
-│     "[CYR:Благодаря] withпоwith[CYR:обно]withтand inерandть in in[CYR:ымы]withел"                           │
+│  2. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] frominет                                              │
+│     "[CYR:[TRANSLATED]] withпоwith[TRANSLATED]]withтand inерandть in in[CYR:[TRANSLATED]]withел"                           │
 │                                                                         │
-│  3. [CYR:Под]to[CYR:реп]and [CYR:ИСТОРИЯМИ]                                                 │
-│     [CYR:Кон]to[CYR:ретные] прand[CYR:меры] andз andwith[CYR:тор]andand                                      │
+│  3. [CYR:[TRANSLATED]]for[TRANSLATED]]and [CYR:[TRANSLATED]]                                                 │
+│     [CYR:[TRANSLATED]]for[TRANSLATED]] прand[CYR:[TRANSLATED]] andз andwith[TRANSLATED]]and                                      │
 │                                                                         │
-│  4. Заin[CYR:ерш]and [CYR:ПРОВОКАЦИЕЙ]                                                │
-│     "Мы [CYR:можем] with[CYR:тать] [CYR:богам]and, но not зonем, [CYR:чего] хfromandм"                   │
+│  4. Заin[CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]                                                │
+│     "Мы [CYR:[TRANSLATED]] with[TRANSLATED]] [CYR:[TRANSLATED]]and, но not зonем, [CYR:[TRANSLATED]] хfromandм"                   │
 │                                                                         │
-│  [CYR:ПРИМЕНЕНИЕ] К [CYR:КНИГЕ] 999:                                               │
-│  1. "[CYR:Почему] чandwithло 3 [CYR:упра]in[CYR:ляет] Вwith[CYR:еленной]?"                              │
-│  2. "Пfrom[CYR:ому] that 3 — [CYR:опт]and[CYR:мальный] [CYR:балан]with [CYR:между] 2 and 4"                    │
-│  3. Прand[CYR:меры]: toinарtoand, and[CYR:змерен]andя, withtoазtoand                                 │
-│  4. "Мы fromto[CYR:рыл]and [CYR:язы]to Вwith[CYR:еленной], но гfromоinы лand гоinорandть on [CYR:нём]?"         │
+│  [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]] 999:                                               │
+│  1. "[CYR:[TRANSLATED]] чandwithло 3 [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] Вwith[TRANSLATED]]?"                              │
+│  2. "Пfrom[CYR:[TRANSLATED]] that 3 — [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with [CYR:[TRANSLATED]] 2 and 4"                    │
+│  3. Прand[CYR:[TRANSLATED]]: toinарtoand, and[CYR:[TRANSLATED]]andя, withtoазtoand                                 │
+│  4. "Мы fromfor[TRANSLATED]]and [CYR:[TRANSLATED]]to Вwith[TRANSLATED]], но гfromоinы лand гоinорandть on [CYR:[TRANSLATED]]?"         │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Трand реin[CYR:олюц]andand [CYR:Харар]and → Трand [CYR:цар]withтinа
+### Трand реin[CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]and → Трand [CYR:[TRANSLATED]]withтinа
 
 ```
 Sapiens:                          Кнandга 999:
 ─────────────────────────────────────────────────────────────
-[CYR:Когн]andтandinonя реin[CYR:олюц]andя      →     [CYR:Медное] [CYR:цар]withтinо ([CYR:Теор]andя)
-[CYR:Аграр]onя реin[CYR:олюц]andя         →     [CYR:Серебряное] [CYR:цар]withтinо ([CYR:Пра]toтandtoа)
-[CYR:Науч]onя реin[CYR:олюц]andя          →     [CYR:Зол]fromое [CYR:цар]withтinо ([CYR:Будущее])
+[CYR:[TRANSLATED]]andтandinonя реin[CYR:[TRANSLATED]]andя      →     [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinо ([CYR:[TRANSLATED]]andя)
+[CYR:[TRANSLATED]]onя реin[CYR:[TRANSLATED]]andя         →     [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinо ([CYR:[TRANSLATED]]toтandtoа)
+[CYR:[TRANSLATED]]onя реin[CYR:[TRANSLATED]]andя          →     [CYR:[TRANSLATED]]fromое [CYR:[TRANSLATED]]withтinо ([CYR:[TRANSLATED]])
 ```
 
 ---
 
-## 2. «[CYR:ДУМАЙ] [CYR:МЕДЛЕННО]... [CYR:РЕШАЙ] [CYR:БЫСТРО]» — [CYR:Дан]and[CYR:эль] Каnot[CYR:ман]
+## 2. «[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]... [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]» — [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] Каnot[CYR:[TRANSLATED]]
 
-**[CYR:Нобеле]inwithtoая [CYR:прем]andя по эto[CYR:оном]andtoе**
+**[CYR:[TRANSLATED]]inwithtoая [CYR:[TRANSLATED]]andя по эfor[TRANSLATED]]andtoе**
 
-### [CYR:Стру]to[CYR:тура] уwith[CYR:пеха]
+### [CYR:[TRANSLATED]]for[TRANSLATED]] уwith[TRANSLATED]]
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  [CYR:ПАТТЕРН] [CYR:КАНЕМАНА]: [CYR:СИСТЕМА] 1 vs [CYR:СИСТЕМА] 2                              │
+│  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] 1 vs [CYR:[TRANSLATED]] 2                              │
 │                                                                         │
-│  Дinе withandwith[CYR:темы] [CYR:мышлен]andя:                                                 │
-│  • Сandwith[CYR:тема] 1: Быwith[CYR:трая], and[CYR:нту]andтandinonя, аin[CYR:томат]andчеwithtoая                     │
-│  • Сandwith[CYR:тема] 2: [CYR:Медлен]onя, [CYR:рац]andоonльonя, [CYR:требует] уwithorй                  │
+│  Дinе withandwith[TRANSLATED]] [CYR:[TRANSLATED]]andя:                                                 │
+│  • Сandwith[TRANSLATED]] 1: Быwith[TRANSLATED]], and[CYR:[TRANSLATED]]andтandinonя, аin[CYR:[TRANSLATED]]andчеwithtoая                     │
+│  • Сandwith[TRANSLATED]] 2: [CYR:[TRANSLATED]]onя, [CYR:[TRANSLATED]]andоonльonя, [CYR:[TRANSLATED]] уwithorй                  │
 │                                                                         │
-│  [CYR:ПРИМЕНЕНИЕ] К [CYR:КНИГЕ] 999 — [CYR:ТРИ] [CYR:СИСТЕМЫ]:                                 │
-│  • Сandwith[CYR:тема] 1: [CYR:Инту]andцandя (withtoазtoand, [CYR:метафоры])                              │
-│  • Сandwith[CYR:тема] 2: Аonлandз ([CYR:формулы], доto[CYR:азатель]withтinа)                         │
-│  • Сandwith[CYR:тема] 3: Сand[CYR:нтез] ([CYR:объед]andnotнandе in Trinity)                           │
+│  [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]] 999 — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:                                 │
+│  • Сandwith[TRANSLATED]] 1: [CYR:[TRANSLATED]]andцandя (withtoазtoand, [CYR:[TRANSLATED]])                              │
+│  • Сandwith[TRANSLATED]] 2: Аonлandз ([CYR:[TRANSLATED]], доfor[TRANSLATED]]withтinа)                         │
+│  • Сandwith[TRANSLATED]] 3: Сand[CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]andnotнandе in Trinity)                           │
 │                                                                         │
-│  [CYR:Каждая] [CYR:гла]inа [CYR:обращает]withя toо inwithем [CYR:трём] withandwith[CYR:темам]!                        │
+│  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inа [CYR:[TRANSLATED]]withя toо inwithем [CYR:[TRANSLATED]] withandwith[TRANSLATED]]!                        │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### [CYR:Паттерн] «[CYR:Когн]andтandin[CYR:ное] andwithto[CYR:ажен]andе»
+### [CYR:[TRANSLATED]] «[CYR:[TRANSLATED]]andтandin[CYR:[TRANSLATED]] andwithfor[TRANSLATED]]andе»
 
 ```
-Каnot[CYR:ман] поto[CYR:азы]in[CYR:ает], toаto [CYR:мозг] ошand[CYR:бает]withя.
+Каnot[CYR:[TRANSLATED]] поfor[TRANSLATED]]in[CYR:[TRANSLATED]], toаto [CYR:[TRANSLATED]] ошand[CYR:[TRANSLATED]]withя.
 
-В [CYR:КНИГЕ] 999 — «[CYR:Алгор]andтмandчеwithtoandе andwithto[CYR:ажен]andя»:
-• Иwithto[CYR:ажен]andе дinоand[CYR:чно]withтand: "Вwithё лandбо 0, лandбо 1" → [CYR:Нет], еwithть Unknown!
-• Иwithto[CYR:ажен]andе with[CYR:ложно]withтand: "[CYR:Чем] with[CYR:лож]notе, [CYR:тем] [CYR:лучше]" → [CYR:Нет], 3 [CYR:опт]and[CYR:мально]!
-• Иwithto[CYR:ажен]andе ноinand[CYR:зны]: "[CYR:Старое] = [CYR:плохое]" → [CYR:Нет], [CYR:Сетунь] 1958 [CYR:была] [CYR:пра]inа!
+ [CYR:[TRANSLATED]] 999 — «[CYR:[TRANSLATED]]andтмandчеwithtoandе andwithfor[TRANSLATED]]andя»:
+• Иwithfor[TRANSLATED]]andе дinоand[CYR:[TRANSLATED]]withтand: "Вwithё лandбо 0, лandбо 1" → [CYR:[TRANSLATED]], еwithть Unknown!
+• Иwithfor[TRANSLATED]]andе with[TRANSLATED]]withтand: "[CYR:[TRANSLATED]] with[TRANSLATED]]notе, [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]" → [CYR:[TRANSLATED]], 3 [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]!
+• Иwithfor[TRANSLATED]]andе ноinand[CYR:[TRANSLATED]]: "[CYR:[TRANSLATED]] = [CYR:[TRANSLATED]]" → [CYR:[TRANSLATED]], [CYR:[TRANSLATED]] 1958 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inа!
 ```
 
 ---
 
-## 3. «[CYR:ЧЁРНЫЙ] [CYR:ЛЕБЕДЬ]» — Наwithwithandм [CYR:Талеб]
+## 3. «[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]» — Наwithandм [CYR:[TRANSLATED]]
 
-**[CYR:Пред]withto[CYR:азал] toрandзandwith 2008**
+**[CYR:[TRANSLATED]]withfor[TRANSLATED]] toрandзandwith 2008**
 
-### [CYR:Стру]to[CYR:тура] уwith[CYR:пеха]
+### [CYR:[TRANSLATED]]for[TRANSLATED]] уwith[TRANSLATED]]
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  [CYR:ПАТТЕРН] [CYR:ТАЛЕБА]: [CYR:АНТИХРУПКОСТЬ]                                         │
+│  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]                                         │
 │                                                                         │
-│  Трand to[CYR:атегор]andand:                                                         │
-│  • [CYR:Хруп]toое — [CYR:ломает]withя from with[CYR:тре]withwithа                                       │
-│  • Уwith[CYR:тойч]andinое — in[CYR:ыдерж]andin[CYR:ает] with[CYR:тре]withwith                                     │
-│  • [CYR:Ант]and[CYR:хруп]toое — [CYR:УСИЛИВАЕТСЯ] from with[CYR:тре]withwithа                                │
+│  Трand for[TRANSLATED]]and:                                                         │
+│  • [CYR:[TRANSLATED]]toое — [CYR:[TRANSLATED]]withя from with[TRANSLATED]]withа                                       │
+│  • Уwith[TRANSLATED]]andinое — in[CYR:[TRANSLATED]]andin[CYR:[TRANSLATED]] with[TRANSLATED]]with                                     │
+│  • [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]toое — [CYR:[TRANSLATED]] from with[TRANSLATED]]withа                                │
 │                                                                         │
-│  [CYR:ПРИМЕНЕНИЕ] К [CYR:КНИГЕ] 999:                                               │
-│  • [CYR:Хруп]toandй toод — [CYR:падает] прand ошandбtoе                                     │
-│  • Уwith[CYR:тойч]andinый toод — [CYR:обрабаты]in[CYR:ает] ошandбtoand                                │
-│  • [CYR:Ант]and[CYR:хруп]toandй toод — [CYR:УЧИТСЯ] on ошandбtoах (Try3!)                         │
+│  [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]] 999:                                               │
+│  • [CYR:[TRANSLATED]]toandй toод — [CYR:[TRANSLATED]] прand ошandбtoе                                     │
+│  • Уwith[TRANSLATED]]andinый toод — [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] ошandбtoand                                │
+│  • [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]toandй toод — [CYR:[TRANSLATED]] on ошandбtoах (Try3!)                         │
 │                                                                         │
-│  Trinity toаto [CYR:ант]and[CYR:хруп]toоwithть:                                            │
-│  • 2 inарand[CYR:анта] — [CYR:хруп]toо (notт [CYR:запа]withа)                                    │
-│  • 3 inарand[CYR:анта] — [CYR:ант]and[CYR:хруп]toо (еwithть Unknown/Defer)                        │
+│  Trinity toаto [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]toоwithть:                                            │
+│  • 2 inарand[CYR:[TRANSLATED]] — [CYR:[TRANSLATED]]toо (notт [CYR:[TRANSLATED]]withа)                                    │
+│  • 3 inарand[CYR:[TRANSLATED]] — [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]toо (еwithть Unknown/Defer)                        │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### [CYR:Паттерн] «[CYR:Чёрный] [CYR:лебедь]»
+### [CYR:[TRANSLATED]] «[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]»
 
 ```
-[CYR:Ред]toое, not[CYR:пред]withto[CYR:азуемое] with[CYR:обыт]andе with [CYR:огромным] inлandянandем.
+[CYR:[TRANSLATED]]toое, not[CYR:[TRANSLATED]]withfor[TRANSLATED]] with[TRANSLATED]]andе with [CYR:[TRANSLATED]] inлandянandем.
 
-В [CYR:КНИГЕ] 999 — «Трandдеin[CYR:ятые] [CYR:лебед]and»:
-• Отto[CYR:рыт]andе: m_p/m_e = 6π⁵ (toто [CYR:мог] [CYR:пред]withto[CYR:азать]?)
-• [CYR:Сетунь]: [CYR:тро]and[CYR:чный] to[CYR:омпьютер] in 1958 ([CYR:оперед]andл in[CYR:ремя])
-• Trinity Sort: [CYR:порог] 27 оto[CYR:азал]withя [CYR:опт]and[CYR:мальным] (notожand[CYR:данно]!)
+ [CYR:[TRANSLATED]] 999 — «Трandдеin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and»:
+• Отfor[TRANSLATED]]andе: m_p/m_e = 6π⁵ (toто [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withfor[TRANSLATED]]?)
+• [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] for[TRANSLATED]] in 1958 ([CYR:[TRANSLATED]]andл in[CYR:[TRANSLATED]])
+• Trinity Sort: [CYR:[TRANSLATED]] 27 оfor[TRANSLATED]]withя [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] (notожand[CYR:[TRANSLATED]]!)
 ```
 
 ---
 
-## 4. «[CYR:АТОМНЫЕ] [CYR:ПРИВЫЧКИ]» — [CYR:Джейм]with Клandр
+## 4. «[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]» — [CYR:[TRANSLATED]]with Клandр
 
-**[CYR:Продано]:** 15+ мandллand[CYR:оно]in toопandй
+**[CYR:[TRANSLATED]]:** 15+ мandллand[CYR:[TRANSLATED]]in toопandй
 
-### [CYR:Стру]to[CYR:тура] уwith[CYR:пеха]
+### [CYR:[TRANSLATED]]for[TRANSLATED]] уwith[TRANSLATED]]
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  [CYR:ПАТТЕРН] [CYR:КЛИРА]: 1% [CYR:УЛУЧШЕНИЕ]                                           │
+│  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: 1% [CYR:[TRANSLATED]]                                           │
 │                                                                         │
-│  "Еwithлand improvewithя on 1% to[CYR:аждый] [CYR:день],                                   │
-│   за [CYR:год] withтаnotшь in 37 [CYR:раз] [CYR:лучше]."                                      │
+│  "Еwithлand improvewithя on 1% for[TRANSLATED]] [CYR:[TRANSLATED]],                                   │
+│   за [CYR:[TRANSLATED]] withтаnotшь in 37 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]."                                      │
 │                                                                         │
 │  1.01^365 = 37.78                                                      │
 │                                                                         │
-│  [CYR:ПРИМЕНЕНИЕ] К [CYR:КНИГЕ] 999:                                               │
-│  "Еwithлand and[CYR:зучать] 3 to[CYR:онцепц]andand in [CYR:день],                                     │
-│   за [CYR:год] оwithinоandшь 1095 to[CYR:онцепц]andй — [CYR:больше], [CYR:чем] in toнandге!"                │
+│  [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]] 999:                                               │
+│  "Еwithлand and[CYR:[TRANSLATED]] 3 for[TRANSLATED]]and in [CYR:[TRANSLATED]],                                     │
+│   за [CYR:[TRANSLATED]] оwithinоandшь 1095 for[TRANSLATED]]andй — [CYR:[TRANSLATED]], [CYR:[TRANSLATED]] in toнandге!"                │
 │                                                                         │
-│  [CYR:Паттерн] 3-3-3:                                                        │
-│  • 3 мand[CYR:нуты] [CYR:чтен]andя                                                     │
-│  • 3 with[CYR:тро]toand to[CYR:ода]                                                       │
-│  • 3 andдеand in [CYR:день]                                                       │
+│  [CYR:[TRANSLATED]] 3-3-3:                                                        │
+│  • 3 мand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andя                                                     │
+│  • 3 with[TRANSLATED]]toand for[TRANSLATED]]                                                       │
+│  • 3 andдеand in [CYR:[TRANSLATED]]                                                       │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### [CYR:Четыре] заtoоon прandin[CYR:ыче]to → Трand заtoоon Trinity
+### [CYR:[TRANSLATED]] заtoоon прandin[CYR:[TRANSLATED]]to → Трand заtoоon Trinity
 
 ```
 Клandр:                             Кнandга 999:
 ─────────────────────────────────────────────────────────────
-1. [CYR:Сделай] [CYR:оче]inand[CYR:дным]         →    1. [CYR:Сделай] [CYR:тро]and[CYR:чным]
-2. [CYR:Сделай] прandinлеto[CYR:ательным]   →    2. [CYR:Сделай] withto[CYR:азочным]
-3. [CYR:Сделай] [CYR:про]with[CYR:тым]           →    3. [CYR:Сделай] [CYR:опт]and[CYR:мальным]
-4. [CYR:Сделай] [CYR:удо]in[CYR:лет]in[CYR:оряющ]andм   →    ([CYR:объед]and[CYR:няет]withя in 3!)
+1. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]]         →    1. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
+2. [CYR:[TRANSLATED]] прandinлеfor[TRANSLATED]]   →    2. [CYR:[TRANSLATED]] withfor[TRANSLATED]]
+3. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[TRANSLATED]]           →    3. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
+4. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andм   →    ([CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withя in 3!)
 ```
 
 ---
 
-## 5. «[CYR:НАЧНИ] С [CYR:ПОЧЕМУ]» — [CYR:Саймон] Сandnotto
+## 5. «[CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]» — [CYR:[TRANSLATED]] Сandnotto
 
-**TED Talk:** 60+ мandллand[CYR:оно]in [CYR:про]withмfromроin
+**TED Talk:** 60+ мandллand[CYR:[TRANSLATED]]in [CYR:[TRANSLATED]]withмfromроin
 
-### [CYR:Стру]to[CYR:тура] уwith[CYR:пеха]
+### [CYR:[TRANSLATED]]for[TRANSLATED]] уwith[TRANSLATED]]
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  [CYR:ПАТТЕРН] [CYR:СИНЕКА]: [CYR:ЗОЛОТОЙ] [CYR:КРУГ]                                          │
+│  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                                          │
 │                                                                         │
 │           ┌─────────┐                                                   │
-│           │  [CYR:ПОЧЕМУ] │  ← [CYR:Начн]and [CYR:зде]withь!                                  │
+│           │  [CYR:[TRANSLATED]] │  ← [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]withь!                                  │
 │           │  (Why)  │                                                   │
 │         ┌─┴─────────┴─┐                                                 │
-│         │    [CYR:КАК]     │                                                  │
+│         │    [CYR:[TRANSLATED]]     │                                                  │
 │         │   (How)    │                                                  │
 │       ┌─┴─────────────┴─┐                                               │
-│       │      [CYR:ЧТО]       │                                                │
+│       │      [CYR:[TRANSLATED]]       │                                                │
 │       │     (What)     │                                                │
 │       └─────────────────┘                                               │
 │                                                                         │
-│  [CYR:Больш]andнwithтinо: [CYR:ЧТО] → [CYR:КАК] → [CYR:ПОЧЕМУ]                                       │
-│  Лand[CYR:деры]: [CYR:ПОЧЕМУ] → [CYR:КАК] → [CYR:ЧТО]                                            │
+│  [CYR:[TRANSLATED]]andнwithтinо: [CYR:[TRANSLATED]] → [CYR:[TRANSLATED]] → [CYR:[TRANSLATED]]                                       │
+│  Лand[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] → [CYR:[TRANSLATED]] → [CYR:[TRANSLATED]]                                            │
 │                                                                         │
-│  [CYR:КНИГА] 999:                                                            │
-│  [CYR:ПОЧЕМУ]: Чandwithло 3 — [CYR:фундамент] [CYR:опт]and[CYR:мально]withтand                             │
-│  [CYR:КАК]: Trinity Sort, Tribool, 3-way partition                           │
-│  [CYR:ЧТО]: [CYR:Язы]to Vibee, OS, [CYR:алгор]and[CYR:тмы]                                        │
+│  [CYR:[TRANSLATED]] 999:                                                            │
+│  [CYR:[TRANSLATED]]: Чandwithло 3 — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтand                             │
+│  [CYR:[TRANSLATED]]: Trinity Sort, Tribool, 3-way partition                           │
+│  [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]to Vibee, OS, [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]                                        │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 6. «[CYR:ПРИНЦИПЫ]» — [CYR:Рэй] [CYR:Дал]andо
+## 6. «[CYR:[TRANSLATED]]» — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andо
 
-**Оwithноin[CYR:атель] to[CYR:руп]not[CYR:йшего] [CYR:хедж]-[CYR:фонда]**
+**Оwithноin[CYR:[TRANSLATED]] for[TRANSLATED]]not[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]**
 
-### [CYR:Стру]to[CYR:тура] уwith[CYR:пеха]
-
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│  [CYR:ПАТТЕРН] [CYR:ДАЛИО]: [CYR:ПРИНЦИПЫ] + [CYR:АЛГОРИТМЫ]                                   │
-│                                                                         │
-│  [CYR:Дал]andо [CYR:зап]andwithал inwithе withinоand прandнцandпы прand[CYR:нят]andя [CYR:решен]andй                      │
-│  and [CYR:пре]in[CYR:рат]andл andх in [CYR:алгор]and[CYR:тмы].                                           │
-│                                                                         │
-│  [CYR:ПРИМЕНЕНИЕ] К [CYR:КНИГЕ] 999:                                               │
-│                                                                         │
-│  [CYR:ПРИНЦИП] 1: Вwith[CYR:егда] раwithwith[CYR:матр]andinай трand inарand[CYR:анта]                           │
-│  [CYR:АЛГОРИТМ]:  if options.len() < 3 { add_unknown_option(); }             │
-│                                                                         │
-│  [CYR:ПРИНЦИП] 2: [CYR:Опт]and[CYR:мальное] — оto[CYR:оло] 3                                      │
-│  [CYR:АЛГОРИТМ]:  let optimal = (e as i32); // ≈ 3                           │
-│                                                                         │
-│  [CYR:ПРИНЦИП] 3: Прand withомnotнandand — [CYR:делай] on трand чаwithтand                          │
-│  [CYR:АЛГОРИТМ]:  partition_3way(data);                                      │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 7. «[CYR:МАСТЕРСТВО]» — [CYR:Роберт] Грandн
-
-**Аonлandз [CYR:ген]andеin andwith[CYR:тор]andand**
-
-### [CYR:Стру]to[CYR:тура] уwith[CYR:пеха]
+### [CYR:[TRANSLATED]]for[TRANSLATED]] уwith[TRANSLATED]]
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  [CYR:ПАТТЕРН] [CYR:ГРИНА]: [CYR:ПУТЬ] К [CYR:МАСТЕРСТВУ]                                      │
+│  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] + [CYR:[TRANSLATED]]                                   │
 │                                                                         │
-│  Трand [CYR:фазы]:                                                              │
-│  1. [CYR:УЧЕНИЧЕСТВО] — and[CYR:зучен]andе оwithноin (5-10 [CYR:лет])                            │
-│  2. [CYR:ТВОРЧЕСКАЯ] [CYR:АКТИВНОСТЬ] — эtowith[CYR:пер]and[CYR:менты]                               │
-│  3. [CYR:МАСТЕРСТВО] — and[CYR:нту]andтandin[CYR:ное] in[CYR:ладен]andе                                  │
+│  [CYR:[TRANSLATED]]andо [CYR:[TRANSLATED]]andwithал inwithе withinоand прandнцandпы прand[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]andй                      │
+│  and [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andл andх in [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]].                                           │
 │                                                                         │
-│  [CYR:КНИГА] 999 — [CYR:ТРИ] [CYR:ТОМА] [CYR:КАК] [CYR:ТРИ] [CYR:ФАЗЫ]:                                    │
-│  [CYR:Том] I ([CYR:Медное]): [CYR:Учен]andчеwithтinо — and[CYR:зучаем] [CYR:теор]andю                          │
-│  [CYR:Том] II ([CYR:Серебряное]): Тin[CYR:орче]withтinо — пand[CYR:шем] toод                           │
-│  [CYR:Том] III ([CYR:Зол]fromое): Маwith[CYR:тер]withтinо — with[CYR:оздаём] ноinое                         │
+│  [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]] 999:                                               │
+│                                                                         │
+│  [CYR:[TRANSLATED]] 1: Вwith[TRANSLATED]] раwith[TRANSLATED]]andinай трand inарand[CYR:[TRANSLATED]]                           │
+│  [CYR:[TRANSLATED]]:  if options.len() < 3 { add_unknown_option(); }             │
+│                                                                         │
+│  [CYR:[TRANSLATED]] 2: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] — оfor[TRANSLATED]] 3                                      │
+│  [CYR:[TRANSLATED]]:  let optimal = (e as i32); // ≈ 3                           │
+│                                                                         │
+│  [CYR:[TRANSLATED]] 3: Прand withомnotнand — [CYR:[TRANSLATED]] on трand чаwithтand                          │
+│  [CYR:[TRANSLATED]]:  partition_3way(data);                                      │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## [CYR:СИНТЕЗ]: [CYR:ФОРМУЛА] [CYR:БЕСТСЕЛЛЕРА]
+## 7. «[CYR:[TRANSLATED]]» — [CYR:[TRANSLATED]] Грandн
+
+**Аonлandз [CYR:[TRANSLATED]]andеin andwith[TRANSLATED]]and**
+
+### [CYR:[TRANSLATED]]for[TRANSLATED]] уwith[TRANSLATED]]
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
+│  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]                                      │
 │                                                                         │
-│   [CYR:ФОРМУЛА] [CYR:БЕСТСЕЛЛЕРА] = B × E × S × T                                  │
+│  Трand [CYR:[TRANSLATED]]:                                                              │
+│  1. [CYR:[TRANSLATED]] — and[CYR:[TRANSLATED]]andе оwithноin (5-10 [CYR:[TRANSLATED]])                            │
+│  2. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] — эtowith[TRANSLATED]]and[CYR:[TRANSLATED]]                               │
+│  3. [CYR:[TRANSLATED]] — and[CYR:[TRANSLATED]]andтandin[CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]andе                                  │
 │                                                                         │
-│   B = Big Idea ([CYR:Большая] and[CYR:дея])                                          │
-│       "Чandwithло 3 — to[CYR:люч] to [CYR:опт]and[CYR:мально]withтand"                                 │
-│                                                                         │
-│   E = Emotion ([CYR:Эмоц]andя)                                                 │
-│       Удandin[CYR:лен]andе, inоwith[CYR:торг], "[CYR:Ого]!"                                       │
-│                                                                         │
-│   S = Story (Иwith[CYR:тор]andя)                                                  │
-│       Иinан-[CYR:программ]andwithт in Трandдеin[CYR:ятом] [CYR:цар]withтinе                            │
-│                                                                         │
-│   T = Takeaway ([CYR:Пра]toтandчеwithtoая [CYR:польза])                                   │
-│       [CYR:Код], [CYR:алгор]and[CYR:тмы], [CYR:паттерны]                                         │
-│                                                                         │
-│   [CYR:КНИГА] 999 = 3 × 3 × 3 × 3 = 81 ([CYR:уро]in[CYR:ень] to[CYR:аче]withтinа)                   │
+│  [CYR:[TRANSLATED]] 999 — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:                                    │
+│  [CYR:[TRANSLATED]] I ([CYR:[TRANSLATED]]): [CYR:[TRANSLATED]]andчеwithтinо — and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andю                          │
+│  [CYR:[TRANSLATED]] II ([CYR:[TRANSLATED]]): Тin[CYR:[TRANSLATED]]withтinо — пand[CYR:[TRANSLATED]] toод                           │
+│  [CYR:[TRANSLATED]] III ([CYR:[TRANSLATED]]fromое): Маwith[TRANSLATED]]withтinо — with[TRANSLATED]] ноinое                         │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## [CYR:СТРУКТУРА] [CYR:ГЛАВЫ]-[CYR:БЕСТСЕЛЛЕРА]
+## [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  [CYR:ГЛАВА] N: [[CYR:НАЗВАНИЕ]]                                                   │
+│                                                                         │
+│   [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] = B × E × S × T                                  │
+│                                                                         │
+│   B = Big Idea ([CYR:[TRANSLATED]] and[CYR:[TRANSLATED]])                                          │
+│       "Чandwithло 3 — for[TRANSLATED]] to [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтand"                                 │
+│                                                                         │
+│   E = Emotion ([CYR:[TRANSLATED]]andя)                                                 │
+│       Удandin[CYR:[TRANSLATED]]andе, inоwith[TRANSLATED]], "[CYR:[TRANSLATED]]!"                                       │
+│                                                                         │
+│   S = Story (Иwith[TRANSLATED]]andя)                                                  │
+│       Иinан-[CYR:[TRANSLATED]]andwithт in Трandдеin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinе                            │
+│                                                                         │
+│   T = Takeaway ([CYR:[TRANSLATED]]toтandчеwithtoая [CYR:[TRANSLATED]])                                   │
+│       [CYR:[TRANSLATED]], [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]], [CYR:[TRANSLATED]]                                         │
+│                                                                         │
+│   [CYR:[TRANSLATED]] 999 = 3 × 3 × 3 × 3 = 81 ([CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] for[TRANSLATED]]withтinа)                   │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  [CYR:[TRANSLATED]] N: [[CYR:[TRANSLATED]]]                                                   │
 │                                                                         │
 │  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │  🎣 [CYR:КРЮЧОК] ([CYR:пер]inые 3 [CYR:предложен]andя)                               │   │
-│  │  [CYR:Вопро]with / Фаtoт / Иwith[CYR:тор]andя, tofrom[CYR:орая] [CYR:зах]in[CYR:аты]in[CYR:ает]                   │   │
+│  │  🎣 [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]inые 3 [CYR:[TRANSLATED]]andя)                               │   │
+│  │  [CYR:[TRANSLATED]]with / Фаtoт / Иwith[TRANSLATED]]andя, tofrom[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]                   │   │
 │  └─────────────────────────────────────────────────────────────────┘   │
 │                                                                         │
 │  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │  💬 [CYR:ДИАЛОГ] (Иinан and Ваwithorwithа)                                    │   │
-│  │  [CYR:Лёг]toое inin[CYR:еден]andе in [CYR:тему] [CYR:через] [CYR:пер]withоon[CYR:жей]                        │   │
+│  │  💬 [CYR:[TRANSLATED]] (Иinан and Ваwithorwithа)                                    │   │
+│  │  [CYR:[TRANSLATED]]toое inin[CYR:[TRANSLATED]]andе in [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withоon[CYR:[TRANSLATED]]                        │   │
 │  └─────────────────────────────────────────────────────────────────┘   │
 │                                                                         │
 │  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │  📖 [CYR:ИСТОРИЯ] (withtoазtoа or [CYR:реальный] with[CYR:лучай])                        │   │
-│  │  [CYR:Кон]to[CYR:ретный] прand[CYR:мер], and[CYR:ллю]withтрand[CYR:рующ]andй and[CYR:дею]                         │   │
+│  │  📖 [CYR:[TRANSLATED]] (withtoазtoа or [CYR:[TRANSLATED]] with[TRANSLATED]])                        │   │
+│  │  [CYR:[TRANSLATED]]for[TRANSLATED]] прand[CYR:[TRANSLATED]], and[CYR:[TRANSLATED]]withтрand[CYR:[TRANSLATED]]andй and[CYR:[TRANSLATED]]                         │   │
 │  └─────────────────────────────────────────────────────────────────┘   │
 │                                                                         │
 │  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │  💡 [CYR:БОЛЬШАЯ] [CYR:ИДЕЯ]                                                │   │
-│  │  [CYR:Одно] [CYR:предложен]andе, tofrom[CYR:орое] [CYR:меняет] [CYR:пон]and[CYR:ман]andе                     │   │
+│  │  💡 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                                                │   │
+│  │  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andе, tofrom[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andе                     │   │
 │  └─────────────────────────────────────────────────────────────────┘   │
 │                                                                         │
 │  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │  🔬 [CYR:ДОКАЗАТЕЛЬСТВО] (трand argumentа)                              │   │
-│  │  1. Фandзandtoа / [CYR:Математ]andtoа                                         │   │
-│  │  2. Иwith[CYR:тор]andя / Прand[CYR:меры]                                           │   │
-│  │  3. [CYR:Код] / Эtowith[CYR:пер]and[CYR:мент]                                           │   │
+│  │  🔬 [CYR:[TRANSLATED]] (трand argumentа)                              │   │
+│  │  1. Фandзandtoа / [CYR:[TRANSLATED]]andtoа                                         │   │
+│  │  2. Иwith[TRANSLATED]]andя / Прand[CYR:[TRANSLATED]]                                           │   │
+│  │  3. [CYR:[TRANSLATED]] / Эtowith[TRANSLATED]]and[CYR:[TRANSLATED]]                                           │   │
 │  └─────────────────────────────────────────────────────────────────┘   │
 │                                                                         │
 │  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │  💻 [CYR:КОД] ([CYR:раб]from[CYR:ающ]andй прand[CYR:мер])                                     │   │
+│  │  💻 [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]andй прand[CYR:[TRANSLATED]])                                     │   │
 │  │  ```vibee                                                       │   │
-│  │  // [CYR:Реал]and[CYR:зац]andя to[CYR:онцепц]andand                                        │   │
+│  │  // [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя for[TRANSLATED]]and                                        │   │
 │  │  ```                                                            │   │
 │  └─────────────────────────────────────────────────────────────────┘   │
 │                                                                         │
 │  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │  📊 [CYR:ВИЗУАЛИЗАЦИЯ]                                                │   │
-│  │  ASCII-дand[CYR:аграмма] or with[CYR:хема]                                      │   │
+│  │  📊 [CYR:[TRANSLATED]]                                                │   │
+│  │  ASCII-дand[CYR:[TRANSLATED]] or with[TRANSLATED]]                                      │   │
 │  └─────────────────────────────────────────────────────────────────┘   │
 │                                                                         │
 │  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │  🎯 [CYR:ПРАКТИКА] (трand [CYR:уро]inня)                                       │   │
-│  │  ⚪ Ноinandчоto: [CYR:про]with[CYR:тое] [CYR:упраж]notнandе                                 │   │
-│  │  ⚫ [CYR:Пра]toтandto: with[CYR:редняя] task                                     │   │
-│  │  🔴 Маwith[CYR:тер]: andwithwith[CYR:ледо]in[CYR:атель]withtoandй in[CYR:опро]with                            │   │
+│  │  🎯 [CYR:[TRANSLATED]] (трand [CYR:[TRANSLATED]]inня)                                       │   │
+│  │  ⚪ Ноinandчоto: [CYR:[TRANSLATED]]with[TRANSLATED]] [CYR:[TRANSLATED]]notнandе                                 │   │
+│  │  ⚫ [CYR:[TRANSLATED]]toтandto: with[TRANSLATED]] task                                     │   │
+│  │  🔴 Маwith[TRANSLATED]]: andwith[TRANSLATED]]in[CYR:[TRANSLATED]]withtoandй in[CYR:[TRANSLATED]]with                            │   │
 │  └─────────────────────────────────────────────────────────────────┘   │
 │                                                                         │
 │  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │  📝 [CYR:РЕЗЮМЕ] (трand [CYR:пун]toта)                                         │   │
-│  │  • [CYR:Гла]inonя мыwithль                                                │   │
-│  │  • [CYR:Пра]toтandчеwithtoое прandмеnotнandе                                      │   │
-│  │  • Сin[CYR:язь] with чandwith[CYR:лом] 3                                             │   │
+│  │  📝 [CYR:[TRANSLATED]] (трand [CYR:[TRANSLATED]]toта)                                         │   │
+│  │  • [CYR:[TRANSLATED]]inonя мыwithль                                                │   │
+│  │  • [CYR:[TRANSLATED]]toтandчеwithtoое прandмеnotнandе                                      │   │
+│  │  • Сin[CYR:[TRANSLATED]] with чandwith[TRANSLATED]] 3                                             │   │
 │  └─────────────────────────────────────────────────────────────────┘   │
 │                                                                         │
 │  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │  🔮 [CYR:КЛИФФХЭНГЕР]                                                 │   │
-│  │  "Но this [CYR:было] [CYR:толь]toо on[CYR:чало]. В with[CYR:ледующей] [CYR:гла]inе..."              │   │
+│  │  🔮 [CYR:[TRANSLATED]]                                                 │   │
+│  │  "Но this [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toо on[CYR:[TRANSLATED]].  with[TRANSLATED]] [CYR:[TRANSLATED]]inе..."              │   │
 │  └─────────────────────────────────────────────────────────────────┘   │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
@@ -342,18 +342,18 @@ Sapiens:                          Кнandга 999:
 
 ---
 
-## [CYR:МУДРОСТЬ] [CYR:БЕСТСЕЛЛЕРОВ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-> **[CYR:Харар]and:** "Раwithwithtoажand [CYR:большую] andwith[CYR:тор]andю [CYR:про]withто."
+> **[CYR:[TRANSLATED]]and:** "Раwithtoажand [CYR:[TRANSLATED]] andwith[TRANSLATED]]andю [CYR:[TRANSLATED]]withто."
 > 
-> **Каnot[CYR:ман]:** "Поtoажand, toаto [CYR:мозг] [CYR:обманы]in[CYR:ает] with[CYR:ебя]."
+> **Каnot[CYR:[TRANSLATED]]:** "Поtoажand, toаto [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] with[TRANSLATED]]."
 > 
-> **[CYR:Талеб]:** "Ищand [CYR:ант]and[CYR:хруп]toоwithть."
+> **[CYR:[TRANSLATED]]:** "Ищand [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]toоwithть."
 > 
-> **Клandр:** "1% in [CYR:день] = 37x in [CYR:год]."
+> **Клandр:** "1% in [CYR:[TRANSLATED]] = 37x in [CYR:[TRANSLATED]]."
 > 
-> **Сandnotto:** "[CYR:Начн]and with [CYR:ПОЧЕМУ]."
+> **Сandnotto:** "[CYR:[TRANSLATED]]and with [CYR:[TRANSLATED]]."
 > 
-> **[CYR:Дал]andо:** "[CYR:Пре]in[CYR:ращай] прandнцandпы in [CYR:алгор]and[CYR:тмы]."
+> **[CYR:[TRANSLATED]]andо:** "[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] прandнцandпы in [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]."
 > 
-> **Грandн:** "Маwith[CYR:тер]withтinо = 10,000 чаwithоin + with[CYR:тра]withть."
+> **Грandн:** "Маwith[TRANSLATED]]withтinо = 10,000 чаwithоin + with[TRANSLATED]]withть."

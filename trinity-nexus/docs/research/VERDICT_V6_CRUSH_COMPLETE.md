@@ -1,12 +1,12 @@
-# [CYR:ВЕРДИКТ] V6: CRUSH COMPLETE TRANSPILATION
+# [CYR:[TRANSLATED]] V6: CRUSH COMPLETE TRANSPILATION
 
-**[CYR:Дата]**: 2026-01-19
-**Аin[CYR:тор]**: IGLA System
-**[CYR:Стату]with**: ✅ PASSED
+**[CYR:[TRANSLATED]]**: 2026-01-19
+**Аin[CYR:[TRANSLATED]]**: IGLA System
+**[CYR:[TRANSLATED]]with**: ✅ PASSED
 
 ---
 
-## [CYR:СВЯЩЕННАЯ] [CYR:ФОРМУЛА]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
 V = n × 3^k × π^m × φ^p × e^q
@@ -16,18 +16,18 @@ PHOENIX = 999
 
 ---
 
-## [CYR:РЕЗУЛЬТАТЫ] [CYR:ТРАНСПИЛЯЦИИ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### Ноinые [CYR:модул]and V6
+### Ноinые [CYR:[TRANSLATED]]and V6
 
-| [CYR:Модуль] | .vibee | .tri | .zig | Теwithты | [CYR:Стату]with |
+| [CYR:[TRANSLATED]] | .vibee | .tri | .zig | Теwithты | [CYR:[TRANSLATED]]with |
 |--------|--------|------|------|-------|--------|
 | filepathext | ✅ | ✅ | ✅ | 12/12 | PASSED |
 | env | ✅ | ✅ | ✅ | 11/11 | PASSED |
 
-### [CYR:Пол]onя [CYR:табл]andца Crush [CYR:модулей] (V4 + V5 + V6)
+### [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]andца Crush [CYR:[TRANSLATED]] (V4 + V5 + V6)
 
-| [CYR:Модуль] | Теwithты | Опandwithанandе |
+| [CYR:[TRANSLATED]] | Теwithты | Опandwithанandе |
 |--------|-------|----------|
 | ansiext | 8 | Control character escaping |
 | format | 6 | Spinner animation |
@@ -36,7 +36,7 @@ PHOENIX = 999
 | stringext | 17 | String manipulation |
 | filepathext | 12 | Smart path operations |
 | env | 11 | Environment abstraction |
-| **[CYR:ВСЕГО]** | **73** | **7 [CYR:модулей]** |
+| **[CYR:[TRANSLATED]]** | **73** | **7 [CYR:[TRANSLATED]]** |
 
 ---
 
@@ -92,7 +92,7 @@ PHOENIX = 999
 
 ## PAS ANALYSIS
 
-| [CYR:Компо]notнт | Теtoущandй | [CYR:Пред]withto[CYR:азанный] | Уin[CYR:еренно]withть |
+| [CYR:[TRANSLATED]]notнт | Теtoущandй | [CYR:[TRANSLATED]]withfor[TRANSLATED]] | Уin[CYR:[TRANSLATED]]withть |
 |-----------|---------|---------------|-------------|
 | filepathext.smartJoin | O(n) | O(1) cached | 65% |
 | filepathext.smartIsAbs | O(1) | O(1) | 100% |
@@ -100,21 +100,21 @@ PHOENIX = 999
 
 ---
 
-## [CYR:МЕТРИКИ]
+## [CYR:[TRANSLATED]]
 
 ```
-[CYR:Спец]andфandtoацandand:     7 .vibee fileоin (crush/)
-TRI fileы:        7 withгеnotрandроin[CYR:ано]
-Zig [CYR:модул]and:       7 withгеnotрandроin[CYR:ано]
-[CYR:Стро]to to[CYR:ода]:       ~1200 with[CYR:тро]to Zig
+[CYR:[TRANSLATED]]andфandtoацand:     7 .vibee fileоin (crush/)
+TRI fileы:        7 withгеnotрandроin[CYR:[TRANSLATED]]
+Zig [CYR:[TRANSLATED]]and:       7 withгеnotрandроin[CYR:[TRANSLATED]]
+[CYR:[TRANSLATED]]to for[TRANSLATED]]:       ~1200 with[TRANSLATED]]to Zig
 Теwithтоin:           73 теwithта
-Поto[CYR:рыт]andе:         ~92% [CYR:фун]toцandй
+Поfor[TRANSLATED]]andе:         ~92% [CYR:[TRANSLATED]]toцandй
 Trinity Score:    1.0
 ```
 
 ---
 
-## [CYR:АРХИТЕКТУРА] CRUSH TRANSPILATION
+## [CYR:[TRANSLATED]] CRUSH TRANSPILATION
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -137,7 +137,7 @@ Trinity Score:    1.0
 
 ---
 
-## [CYR:ВЕРДИКТ]
+## [CYR:[TRANSLATED]]
 
 ```
 ╔═══════════════════════════════════════════════════════════════╗
@@ -159,14 +159,14 @@ Trinity Score:    1.0
 
 ---
 
-## [CYR:СЛЕДУЮЩИЕ] [CYR:ШАГИ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-1. [CYR:Тран]withпorроin[CYR:ать] оwithтаinшandеwithя [CYR:модул]and crush (diff, log, session)
-2. [CYR:Доба]inandть property-based теwithты
-3. [CYR:Реал]andзоin[CYR:ать] PAS [CYR:опт]andмand[CYR:зац]andand
-4. [CYR:Интегр]andроin[CYR:ать] in runtime.html
+1. [CYR:[TRANSLATED]]withпorроin[CYR:[TRANSLATED]] оwithтаinшandеwithя [CYR:[TRANSLATED]]and crush (diff, log, session)
+2. [CYR:[TRANSLATED]]inandть property-based теwithты
+3. [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] PAS [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and
+4. [CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] in runtime.html
 
 ---
 
-**[CYR:Подп]andwithь**: IGLA VERDICT V6 CRUSH COMPLETE
-**[CYR:Хеш]**: SHA256(7 modules × 73 tests) = TRINITY_VERIFIED
+**[CYR:[TRANSLATED]]andwithь**: IGLA VERDICT V6 CRUSH COMPLETE
+**[CYR:[TRANSLATED]]**: SHA256(7 modules × 73 tests) = TRINITY_VERIFIED

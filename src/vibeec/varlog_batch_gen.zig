@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// VARLOG BATCH GENERATOR - [EN]withwith[EN]in[EN] [EN]not[CYR:[EN]]and[EN] Verilog and[EN] .vibee specs
+// VARLOG BATCH GENERATOR - within notand Verilog and .vibee specs
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Generates Verilog for inwith[EN] .vibee with[CYR:[EN]]and[EN]andto[EN]and[EN] with language: varlog
-// [EN]in[CYR:[EN]]: Dmitrii Vasilev
+// Generates Verilog for inwith .vibee withandtoand with language: varlog
+// in: Dmitrii Vasilev
 // φ² + 1/φ² = 3
 //
 // ═══════════════════════════════════════════════════════════════════════════════

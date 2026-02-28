@@ -77,8 +77,8 @@ In February 2024, Microsoft published a revolutionary paper **BitNet b1.58** (ar
 GPU Architecture (NVIDIA H100):
 ├── CUDA Cores: work with 32-bit float or 16-bit float
 ├── Tensor Cores: work with FP16, BF16, INT8, INT4
-├── Memory: [CYR:адре]withацandя [CYR:побайто]inая (8 бandт мandнand[CYR:мум])
-└── Interconnect: бandon[CYR:рные] шandны [CYR:данных]
+├── Memory: [CYR:[TRANSLATED]]withацandя [CYR:[TRANSLATED]]inая (8 бandт мandнand[CYR:[TRANSLATED]])
+└── Interconnect: бandon[CYR:[TRANSLATED]] шandны [CYR:[TRANSLATED]]
 
 PROBLEM: No native 3-state support!
 ```
@@ -89,7 +89,7 @@ PROBLEM: No native 3-state support!
 // Pseudocode of what happens on GPU for BitNet
 
 // Step 1: Loading ternary weights (stored as INT8)
-int8_t weight = load_weight(addr);  // -1, 0, or +1, но [CYR:зан]and[CYR:мает] 8 бandт
+int8_t weight = load_weight(addr);  // -1, 0, or +1, но [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] 8 бandт
 
 // Step 2: Loading activations (also INT8 or FP16)
 int8_t activation = load_activation(addr);
@@ -98,33 +98,33 @@ int8_t activation = load_activation(addr);
 // GPU does full 8-bit × 8-bit multiplication
 int16_t result = (int16_t)weight * (int16_t)activation;
 
-// Но [CYR:реально] [CYR:нужно] [CYR:толь]toо:
-// -1 × x = -x  ([CYR:про]withто withмеon зontoа)
-//  0 × x = 0   ([CYR:про]withто [CYR:ноль])
-// +1 × x = x   ([CYR:про]withто toопandя)
+// Но [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toо:
+// -1 × x = -x  ([CYR:[TRANSLATED]]withто withмеon зontoа)
+//  0 × x = 0   ([CYR:[TRANSLATED]]withто [CYR:[TRANSLATED]])
+// +1 × x = x   ([CYR:[TRANSLATED]]withто toопandя)
 
-// Step 4: Наto[CYR:оплен]andе ([CYR:тоже] and[CYR:збыточное])
+// Step 4: Наfor[TRANSLATED]]andе ([CYR:[TRANSLATED]] and[CYR:[TRANSLATED]])
 int32_t accumulator += result;
 
-// [CYR:ИТОГО]: GPU [CYR:трат]andт [CYR:транз]andwith[CYR:торы] on [CYR:операц]andand, tofrom[CYR:орые] not [CYR:нужны]!
+// [CYR:[TRANSLATED]]: GPU [CYR:[TRANSLATED]]andт [CYR:[TRANSLATED]]andwith[TRANSLATED]] on [CYR:[TRANSLATED]]and, tofrom[CYR:[TRANSLATED]] not [CYR:[TRANSLATED]]!
 ```
 
-### 3. [CYR:Реальные] Цand[CYR:фры] Пfrom[CYR:ерь]
+### 3. [CYR:[TRANSLATED]] Цand[CYR:[TRANSLATED]] Пfrom[CYR:[TRANSLATED]]
 
-| [CYR:Операц]andя | [CYR:Нужно] for Ternary | GPU [CYR:делает] | [CYR:Избыточно]withть |
+| [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]] for Ternary | GPU [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]withть |
 |----------|-------------------|------------|--------------|
-| [CYR:Хра]notнandе 1 трandта | 1.585 бandт | 8 бandт (INT8) | 5.05x |
-| [CYR:Умножен]andе | 2 бandта (lookup) | 8×8=16 бandт | 8x |
-| [CYR:Сложен]andе | 2 бandта | 32 бandта | 16x |
-| [CYR:Память] bandwidth | 1.585 бandт/parameter | 8 бandт/parameter | 5.05x |
+| [CYR:[TRANSLATED]]notнandе 1 трandта | 1.585 бandт | 8 бandт (INT8) | 5.05x |
+| [CYR:[TRANSLATED]]andе | 2 бandта (lookup) | 8×8=16 бandт | 8x |
+| [CYR:[TRANSLATED]]andе | 2 бandта | 32 бandта | 16x |
+| [CYR:[TRANSLATED]] bandwidth | 1.585 бandт/parameter | 8 бandт/parameter | 5.05x |
 
 ---
 
-## [CYR:Решен]andе TRINITY: [CYR:Нат]andin[CYR:ное] [CYR:Тро]and[CYR:чное] [CYR:Железо]
+## [CYR:[TRANSLATED]]andе TRINITY: [CYR:[TRANSLATED]]andin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                         [CYR:КАК] [CYR:ЭТО] [CYR:РАБОТАЕТ] В TRINITY                          │
+│                         [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]  TRINITY                          │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │   TERNARY MODEL (BitNet b1.58)                                            │
@@ -132,43 +132,43 @@ int32_t accumulator += result;
 │                     │                                                       │
 │                     ▼                                                       │
 │   ┌─────────────────────────────────────────┐                               │
-│   │     [CYR:НАТИВНОЕ] [CYR:ТРОИЧНОЕ] [CYR:ХРАНЕНИЕ]          │                               │
+│   │     [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]          │                               │
 │   │                                         │                               │
 │   │  1 trit = 1 trit (not 8 бandт!)            │                               │
 │   │  27 trits = 1 tryte (Vec27)             │                               │
 │   │                                         │                               │
-│   │  [CYR:Память]: 1.585 бandт on parameter          │                               │
-│   │  Эto[CYR:оном]andя: 5x vs INT8                   │                               │
+│   │  [CYR:[TRANSLATED]]: 1.585 бandт on parameter          │                               │
+│   │  Эfor[TRANSLATED]]andя: 5x vs INT8                   │                               │
 │   └─────────────────────────────────────────┘                               │
 │                     │                                                       │
 │                     ▼                                                       │
 │   ┌─────────────────────────────────────────┐                               │
-│   │      [CYR:НАТИВНЫЕ] [CYR:ТРОИЧНЫЕ] [CYR:ВЫЧИСЛЕНИЯ]       │                               │
+│   │      [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]       │                               │
 │   │                                         │                               │
 │   │  Ternary ALU:                           │                               │
 │   │  • trit × trit = trit (3×3 = 9 cases)   │                               │
-│   │  • Lookup table, not [CYR:умножен]andе!          │                               │
-│   │  • [CYR:Параллельно] 27 trits (Vec27 SIMD)    │                               │
+│   │  • Lookup table, not [CYR:[TRANSLATED]]andе!          │                               │
+│   │  • [CYR:[TRANSLATED]] 27 trits (Vec27 SIMD)    │                               │
 │   │                                         │                               │
-│   │  Эnotргandя: ~0.1 pJ vs ~1 pJ (10x [CYR:меньше]) │                               │
+│   │  Эnotргandя: ~0.1 pJ vs ~1 pJ (10x [CYR:[TRANSLATED]]) │                               │
 │   └─────────────────────────────────────────┘                               │
 │                     │                                                       │
 │                     ▼                                                       │
 │                 RESULT                                                   │
 │                                                                             │
-│   [CYR:НАКЛАДНЫХ] [CYR:РАСХОДОВ]: 0%                                                    │
-│   • [CYR:Нет] toонin[CYR:ертац]andand                                                         │
-│   • [CYR:Нет] and[CYR:збыточных] inычandwith[CYR:лен]andй                                               │
-│   • [CYR:Нат]andinonя [CYR:поддерж]toа 3-х withоwith[CYR:тоян]andй                                        │
+│   [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: 0%                                                    │
+│   • [CYR:[TRANSLATED]] toонin[CYR:[TRANSLATED]]and                                                         │
+│   • [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]] inычandwith[TRANSLATED]]andй                                               │
+│   • [CYR:[TRANSLATED]]andinonя [CYR:[TRANSLATED]]toа 3- withоwith[TRANSLATED]]andй                                        │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## [CYR:Технолог]andand TRINITY ([CYR:Уже] [CYR:Реал]andзоin[CYR:аны])
+## [CYR:[TRANSLATED]]and TRINITY ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]])
 
-### 1. Trit Logic (trit_logic.zig) ✓ [CYR:РАБОТАЕТ]
+### 1. Trit Logic (trit_logic.zig) ✓ [CYR:[TRANSLATED]]
 
 ```zig
 /// Trit: Ternary digit with values -1, 0, +1
@@ -186,7 +186,7 @@ pub fn or(a: Trit, b: Trit) Trit { return fromInt(@max(a.toInt(), b.toInt())); }
 
 **Теwithты: 10/10 passing ✓**
 
-### 2. Vec27 SIMD (simd_ternary.zig) ✓ [CYR:РАБОТАЕТ]
+### 2. Vec27 SIMD (simd_ternary.zig) ✓ [CYR:[TRANSLATED]]
 
 ```zig
 /// 27 trits processed in parallel
@@ -198,9 +198,9 @@ pub fn vec27_add(a: Vec27, b: Vec27) Vec27 { ... }
 pub fn vec27_mul(a: Vec27, b: Vec27) Vec27 { ... }
 ```
 
-**[CYR:Опт]andмand[CYR:зац]andя: 103ns → 68ns = +34% faster ✓**
+**[CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя: 103ns → 68ns = +34% faster ✓**
 
-### 3. Sacred Constants (sacred_constants.zig) ✓ [CYR:РАБОТАЕТ]
+### 3. Sacred Constants (sacred_constants.zig) ✓ [CYR:[TRANSLATED]]
 
 ```zig
 /// GOLDEN IDENTITY: φ² + 1/φ² = 3 EXACTLY!
@@ -215,7 +215,7 @@ pub const TRIT_BITS: f64 = 1.5849625007211563;
 
 **Теwithты: 20/20 passing ✓**
 
-### 4. Bytecode VM (bytecode_compiler.zig) ✓ [CYR:РАБОТАЕТ]
+### 4. Bytecode VM (bytecode_compiler.zig) ✓ [CYR:[TRANSLATED]]
 
 ```zig
 // 80 Trinity opcodes
@@ -230,59 +230,59 @@ pub const Opcode = enum(u8) {
 };
 ```
 
-**[CYR:Про]andзinодand[CYR:тельно]withть: 5.6x faster than interpreter ✓**
+**[CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withть: 5.6x faster than interpreter ✓**
 
 ---
 
-## [CYR:Сра]innotнandе: Бandon[CYR:рный] Мandр vs TRINITY
+## [CYR:[TRANSLATED]]innotнandе: Бandon[CYR:[TRANSLATED]] Мandр vs TRINITY
 
-| Аwithпеtoт | Бandon[CYR:рное] [CYR:Железо] (GPU) | TRINITY |
+| Аwithпеtoт | Бandon[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (GPU) | TRINITY |
 |--------|----------------------|---------|
-| [CYR:Хра]notнandе 1B parameterоin | 1 GB (INT8) | 198 MB (trits) |
-| [CYR:Умножен]andе trit×trit | 8-bit multiply | Lookup table |
-| Эnotргandя on [CYR:операц]andю | ~1 pJ | ~0.1 pJ |
-| [CYR:Кон]in[CYR:ертац]andя | [CYR:Каждый] with[CYR:лой] | Не [CYR:нуж]on |
-| [CYR:Поддерж]toа Unknown | [CYR:Эмуляц]andя | [CYR:Нат]andinonя |
+| [CYR:[TRANSLATED]]notнandе 1B parameterоin | 1 GB (INT8) | 198 MB (trits) |
+| [CYR:[TRANSLATED]]andе trit×trit | 8-bit multiply | Lookup table |
+| Эnotргandя on [CYR:[TRANSLATED]]andю | ~1 pJ | ~0.1 pJ |
+| [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]] with[TRANSLATED]] | Не [CYR:[TRANSLATED]]on |
+| [CYR:[TRANSLATED]]toа Unknown | [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]andinonя |
 | SIMD шandрandon | 256 бandт | 27 трandт (Vec27) |
 
 ---
 
-## [CYR:Почему] [CYR:Это] [CYR:Важно] for Инinеwith[CYR:торо]in
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] for Инinеwith[TRANSLATED]]in
 
-### 1. Microsoft Сto[CYR:азал] "[CYR:Нужно] [CYR:Спец]and[CYR:альное] [CYR:Железо]"
+### 1. Microsoft Сfor[TRANSLATED]] "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]"
 
 > "Furthermore, it enables a new computation paradigm and **opens the door 
 > for designing specific hardware** optimized for 1-bit LLMs."
 > — BitNet b1.58 paper
 
-### 2. [CYR:Рыно]to [CYR:Огромный]
+### 2. [CYR:[TRANSLATED]]to [CYR:[TRANSLATED]]
 
 - AI Inference: $80B to 2028
-- 80% [CYR:затрат] AI = inference
-- [CYR:Тро]and[CYR:чные] [CYR:модел]and = [CYR:будущее] (доto[CYR:азано] Microsoft)
-- [CYR:Нет] toонto[CYR:уренто]in in ternary hardware
+- 80% [CYR:[TRANSLATED]] AI = inference
+- [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and = [CYR:[TRANSLATED]] (доfor[TRANSLATED]] Microsoft)
+- [CYR:[TRANSLATED]] toонfor[TRANSLATED]]in in ternary hardware
 
-### 3. TRINITY — [CYR:Пер]inый
+### 3. TRINITY — [CYR:[TRANSLATED]]inый
 
-- [CYR:Пер]inая onтandinonя [CYR:тро]andчonя [CYR:арх]andтеto[CYR:тура]
-- [CYR:Раб]from[CYR:ающ]andй прfromfromandп (not vaporware)
+- [CYR:[TRANSLATED]]inая onтandinonя [CYR:[TRANSLATED]]andчonя [CYR:[TRANSLATED]]andтеfor[TRANSLATED]]
+- [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]andй прfromfromandп (not vaporware)
 - 88 теwithтоin passing
-- 120+ Zig [CYR:модулей]
-- [CYR:Науч]onя [CYR:база] (φ² + 1/φ² = 3)
+- 120+ Zig [CYR:[TRANSLATED]]
+- [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]] (φ² + 1/φ² = 3)
 
 ---
 
-## [CYR:Формула] [CYR:Эффе]toтandinноwithтand
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toтandinноwithтand
 
 ```
-[CYR:Эффе]toтandinноwithть TRINITY vs GPU:
+[CYR:[TRANSLATED]]toтandinноwithть TRINITY vs GPU:
 
-[CYR:Память]:      8 бandт / 1.585 бandт = 5.05x эto[CYR:оном]andя
-[CYR:Выч]andwith[CYR:лен]andя:  (256×256) / (3×3) = 7281x [CYR:меньше] [CYR:операц]andй  
-Эnotргandя:     1 pJ / 0.1 pJ = 10x эto[CYR:оном]andя
-Bandwidth:   5.05x эto[CYR:оном]andя
+[CYR:[TRANSLATED]]:      8 бandт / 1.585 бandт = 5.05x эfor[TRANSLATED]]andя
+[CYR:[TRANSLATED]]andwith[TRANSLATED]]andя:  (256×256) / (3×3) = 7281x [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andй  
+Эnotргandя:     1 pJ / 0.1 pJ = 10x эfor[TRANSLATED]]andя
+Bandwidth:   5.05x эfor[TRANSLATED]]andя
 
-[CYR:ИТОГО]: 5-10x [CYR:эффе]toтandinnotе on [CYR:тро]and[CYR:чных] [CYR:моделях]
+[CYR:[TRANSLATED]]: 5-10x [CYR:[TRANSLATED]]toтandinnotе on [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 ```
 
 ---

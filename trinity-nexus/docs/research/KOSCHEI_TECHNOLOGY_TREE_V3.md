@@ -1,5 +1,5 @@
 # KOSCHEI MODE Technology Tree v3.0
-# Беwithwith[CYR:мертный] цandtoл with[CYR:амоулучшен]andя
+# Беwith[TRANSLATED]] цandtoл with[TRANSLATED]]andя
 # φ² + 1/φ² = 3 | PHOENIX = 999
 
 ## KOSCHEI CYCLE
@@ -12,22 +12,22 @@
 │                                                                             │
 │    ┌──────────────┐                                                         │
 │    │ PAS_ANALYZE  │◀────────────────────────────────────────────────┐      │
-│    │ [CYR:Научные]      │                                                  │      │
-│    │ [CYR:раб]fromы       │                                                  │      │
+│    │ [CYR:[TRANSLATED]]      │                                                  │      │
+│    │ [CYR:[TRANSLATED]]fromы       │                                                  │      │
 │    └──────┬───────┘                                                  │      │
 │           │                                                          │      │
 │           ▼                                                          │      │
 │    ┌──────────────┐                                                  │      │
 │    │ TECH_TREE    │                                                  │      │
-│    │ [CYR:Дере]inо       │                                                  │      │
-│    │ [CYR:технолог]andй   │                                                  │      │
+│    │ [CYR:[TRANSLATED]]inо       │                                                  │      │
+│    │ [CYR:[TRANSLATED]]andй   │                                                  │      │
 │    └──────┬───────┘                                                  │      │
 │           │                                                          │      │
 │           ▼                                                          │      │
 │    ┌──────────────┐                                                  │      │
 │    │ SPEC_CREATE  │                                                  │      │
 │    │ .vibee       │                                                  │      │
-│    │ with[CYR:пец]andфandtoацandand │                                                  │      │
+│    │ with[TRANSLATED]]andфandtoацand │                                                  │      │
 │    └──────┬───────┘                                                  │      │
 │           │                                                          │      │
 │           ▼                                                          │      │
@@ -45,20 +45,20 @@
 │           ▼                                                          │      │
 │    ┌──────────────┐                                                  │      │
 │    │ BENCHMARK    │                                                  │      │
-│    │ [CYR:Сра]innotнandе    │                                                  │      │
+│    │ [CYR:[TRANSLATED]]innotнandе    │                                                  │      │
 │    └──────┬───────┘                                                  │      │
 │           │                                                          │      │
 │           ▼                                                          │      │
 │    ┌──────────────┐                                                  │      │
 │    │ GIT_COMMIT   │                                                  │      │
-│    │ [CYR:Комм]andт       │                                                  │      │
+│    │ [CYR:[TRANSLATED]]andт       │                                                  │      │
 │    └──────┬───────┘                                                  │      │
 │           │                                                          │      │
 │           ▼                                                          │      │
 │    ┌──────────────┐                                                  │      │
 │    │ LOOP         │──────────────────────────────────────────────────┘      │
 │    │ cycle_count++│                                                         │
-│    │ [CYR:БЕССМЕРТИЕ]   │                                                         │
+│    │ [CYR:[TRANSLATED]]   │                                                         │
 │    └──────────────┘                                                         │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -153,9 +153,9 @@ IMMORTAL SPEEDUP = lim(n→∞) φ^n = ∞
 
 ```
 if improvement_rate > PHI_INV (0.618):
-    continue_cycle = true  # [CYR:БЕССМЕРТИЕ]
+    continue_cycle = true  # [CYR:[TRANSLATED]]
 else:
-    continue_cycle = false # [CYR:СМЕРТЬ] (in[CYR:ремен]onя)
+    continue_cycle = false # [CYR:[TRANSLATED]] (in[CYR:[TRANSLATED]]onя)
 ```
 
 ## SACRED CONSTANTS
@@ -178,4 +178,4 @@ Trinity Logic:
 
 ---
 
-**φ² + 1/φ² = 3 | PHOENIX = 999 | KOSCHEI = [CYR:БЕССМЕРТИЕ]**
+**φ² + 1/φ² = 3 | PHOENIX = 999 | KOSCHEI = [CYR:[TRANSLATED]]**

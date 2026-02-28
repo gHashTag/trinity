@@ -318,12 +318,12 @@ pub fn runBenchmark() !void {
     var engine = GPUFluentEngine.init(true);
 
     const test_queries = [_][]const u8{
-        "[EN]andin[EN]",
+        "andin",
         "hello",
         "what is phi",
-        "[EN]withwithto[EN]and [CYR:[EN]]to[EN]",
+        "withtoand to",
         "tell me a story",
-        "to[EN]to [CYR:[EN]]",
+        "toto ",
         "why zig",
         "fibonacci",
         "你好",
@@ -399,7 +399,7 @@ pub fn main() !void {
 
 test "gpu fluent respond" {
     var engine = GPUFluentEngine.init(true);
-    const response = engine.respond("[EN]andin[EN]");
+    const response = engine.respond("andin");
     try std.testing.expect(response.category == .Greeting);
 }
 
@@ -421,12 +421,12 @@ test "simd contains" {
     try std.testing.expect(containsSimd("hello world", "world"));
     try std.testing.expect(containsSimd("HELLO WORLD", "hello"));
     try std.testing.expect(!containsSimd("hello", "world"));
-    try std.testing.expect(containsSimd("[EN]andin[EN] [EN]and[EN]", "[EN]andin[EN]"));
+    try std.testing.expect(containsSimd("andin and", "andin"));
 }
 
 test "gpu fluent batch" {
     var engine = GPUFluentEngine.init(true);
-    const queries = [_][]const u8{ "hello", "[EN]andin[EN]", "你好" };
+    const queries = [_][]const u8{ "hello", "andin", "你好" };
     const responses = engine.respondBatch(&queries);
     try std.testing.expectEqual(@as(usize, 3), responses.len);
 }
