@@ -270,5 +270,33 @@ pub fn main() !void {
         .info => utils.printInfo(),
         .version => utils.printVersion(),
         .help => utils.printHelp(),
+        .orchestrate_v2 => {
+            const CYAN = "\x1b[36m";
+            const GREEN = "\x1b[32m";
+            const GOLDEN = "\x1b[33m";
+            const RESET = "\x1b[0m";
+            std.debug.print("\n{s}╔══════════════════════════════════════════════════════════════════╗{s}\n", .{ CYAN, RESET });
+            std.debug.print("{s}║  TRINITY ORCHESTRATOR v2.0 — Universal Intelligent Command System    ║{s}\n", .{ CYAN, RESET });
+            std.debug.print("{s}╚══════════════════════════════════════════════════════════════════╝{s}\n\n", .{ CYAN, RESET });
+            std.debug.print("{s}Features:{s}\n", .{ GREEN, RESET });
+            std.debug.print("  • Sequential/parallel/conditional execution strategies\n", .{});
+            std.debug.print("  • Sacred Intelligence integration (φ-weighted scoring)\n", .{});
+            std.debug.print("  • Rollback capabilities (git-based snapshots)\n", .{});
+            std.debug.print("  • Workflow YAML/JSON file support\n", .{});
+            std.debug.print("  • Universal command registry (147+ commands)\n\n", .{});
+            std.debug.print("{s}Usage:{s}\n", .{ GREEN, RESET });
+            std.debug.print("  tri flow <workflow-file>     Execute workflow from file\n", .{});
+            std.debug.print("  tri orchestrator <cmd>        Intelligent command routing\n", .{});
+            std.debug.print("  tri orchestrate-v2 <args>     Direct orchestration\n\n", .{});
+            std.debug.print("{s}Example workflow:{s}\n", .{ GREEN, RESET });
+            std.debug.print("  steps:\n", .{});
+            std.debug.print("    - command: spec_create\n", .{});
+            std.debug.print("      args: {{ name: my_feature }}\n", .{});
+            std.debug.print("    - command: gen\n", .{});
+            std.debug.print("      depends_on: [spec_create]\n", .{});
+            std.debug.print("    - command: verify\n", .{});
+            std.debug.print("      depends_on: [gen]\n\n", .{});
+            std.debug.print("{s}Status: {s}Core generated, ready for integration{s}\n\n", .{ GOLDEN, GREEN, RESET });
+        },
     }
 }

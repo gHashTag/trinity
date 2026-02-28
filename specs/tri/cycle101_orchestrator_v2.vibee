@@ -1,0 +1,649 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# cycle101_orchestrator_v2 - Universal Intelligent Command Orchestrator
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Sacred Formula: V = n × 3^k × π^m × φ^p × e^q
+# Golden Identity: φ² + 1/φ² = 3
+#
+# Universal orchestrator for 147+ TRI commands with:
+# - Intelligent command selection (semantic analysis, phi-weighted scoring)
+# - Sequential/parallel/conditional execution strategies
+# - Sacred Intelligence integration (φ-rule validation)
+# - Rollback capabilities (git-based snapshots)
+# - Workflow YAML/JSON file support
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: cycle101_orchestrator_v2
+version: "101.0.0"
+language: zig
+module: orchestrator_v2
+description: Universal intelligent command orchestrator for Trinity system
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONSTANTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  PHI: 1.618033988749895
+  PHI_INV: 0.618033988749895
+  PHI_SQ: 2.618033988749895
+  TRINITY: 3.0
+  SQRT5: 2.2360679774997896
+  MU: 0.0382
+  CHI: 0.0618
+  SACRED_THRESHOLD: 0.95
+  MAX_COMMANDS: 147
+  OVERHEAD_TARGET_MS: 100
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  # Command metadata for universal registry
+  CommandMetadata:
+    fields:
+      name: String
+      category: CommandCategory
+      dependencies: List<String>
+      estimated_cost_ms: Int
+      risk_level: RiskLevel
+      requires_git: Bool
+      requires_model: Bool
+      sacred_weight: Float
+      realm: Realm
+      description: String
+
+  CommandCategory:
+    enum:
+      - core
+      - swe_agent
+      - golden_chain
+      - sacred_math
+      - sacred_agent
+      - demo
+      - bench
+      - dev_util
+      - git
+      - info
+      - autonomous
+      - intelligence
+
+  RiskLevel:
+    enum:
+      - safe
+      - low
+      - medium
+      - high
+      - critical
+
+  Realm:
+    enum:
+      - razum
+      - materiya
+      - dukh
+      - universal
+
+  # Execution strategies
+  ExecutionStrategy:
+    enum:
+      - sequential
+      - parallel
+      - conditional
+      - adaptive
+      - rollback_safe
+
+  # Workflow definition
+  Workflow:
+    fields:
+      id: String
+      name: String
+      description: String
+      steps: List<WorkflowStep>
+      strategy: ExecutionStrategy
+      rollback_enabled: Bool
+      sacred_validation: Bool
+      timeout_ms: Int
+
+  WorkflowStep:
+    fields:
+      id: String
+      command: String
+      args: Map<String, String>
+      condition: Option<String>
+      depends_on: List<String>
+      timeout_ms: Int
+      continue_on_failure: Bool
+      realm: Realm
+
+  # Execution context
+  ExecutionContext:
+    fields:
+      allocator: Allocator
+      state: ExecutionState
+      workflow: Option<Workflow>
+      current_step: Int
+      results: Map<String, ExecutionResult>
+      snapshots: List<RollbackState>
+      sacred_score: Float
+      start_time: Int
+      variables: Map<String, String>
+
+  ExecutionState:
+    enum:
+      - idle
+      - running
+      - paused
+      - completed
+      - failed
+      - rolling_back
+      - cancelled
+
+  # Execution result
+  ExecutionResult:
+    fields:
+      command: String
+      step_id: Option<String>
+      success: Bool
+      output: String
+      error: Option<String>
+      duration_ms: Int
+      sacred_score: Float
+      timestamp: Int
+      metadata: Map<String, String>
+
+  # Rollback state
+  RollbackState:
+    fields:
+      step_id: String
+      git_commit: Option<String>
+      files_changed: List<String>
+      can_rollback: Bool
+      restore_point: Map<String, String>
+      timestamp: Int
+
+  # Command registry
+  CommandRegistry:
+    fields:
+      commands: Map<String, CommandMetadata>
+      categories: Map<CommandCategory, List<String>>
+      realm_index: Map<Realm, List<String>>
+      total_count: Int
+      last_updated: Int
+
+  # Intent analysis result
+  IntentAnalysis:
+    fields:
+      input: String
+      matched_commands: List<CommandMatch>
+      confidence: Float
+      sacred_score: Float
+      suggested_strategy: ExecutionStrategy
+      timestamp: Int
+
+  CommandMatch:
+    fields:
+      command: String
+      score: Float
+      reason: String
+      realm: Realm
+
+  # Dependency graph
+  DependencyGraph:
+    fields:
+      nodes: Map<String, CommandNode>
+      edges: List<DependencyEdge>
+      sorted: Bool
+
+  CommandNode:
+    fields:
+      command: String
+      metadata: CommandMetadata
+      dependencies: List<String>
+      dependents: List<String>
+      visited: Bool
+      temp_mark: Bool
+
+  DependencyEdge:
+    fields:
+      from: String
+      to: String
+      type: EdgeType
+
+  EdgeType:
+    enum:
+      - hard
+      - soft
+      - conflict
+
+  # Sacred intelligence
+  SacredValidation:
+    fields:
+      is_aligned: Bool
+      phi_score: Float
+      trinity_score: Float
+      violations: List<String>
+      recommendations: List<String>
+
+  # Orchestrator config
+  OrchestratorConfig:
+    fields:
+      max_parallel: Int
+      default_timeout_ms: Int
+      enable_rollback: Bool
+      enable_sacred_validation: Bool
+      log_level: LogLevel
+      workspace_path: String
+
+  LogLevel:
+    enum:
+      - silent
+      - error
+      - warn
+      - info
+      - debug
+      - trace
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  # === Registry Management ===
+  - name: init_registry
+    given: allocator and config
+    when: initializing orchestrator
+    then:
+      - Create empty command registry
+      - Initialize category and realm indices
+      - Set last_updated timestamp
+
+  - name: register_command
+    given: command metadata
+    when: registering new command
+    then:
+      - Add command to registry with sacred weight calculation
+      - Update category index
+      - Update realm index
+      - Increment total count
+
+  - name: discover_commands
+    given: allocator and source code paths
+    when: building registry from source
+    then:
+      - Scan src/tri/ for Command enum definitions
+      - Extract all command variants
+      - Build metadata for each command
+      - Register all discovered commands
+      - Return total count
+
+  - name: get_command_metadata
+    given: command name
+    when: querying registry
+    then:
+      - Look up command in registry
+      - Return metadata if found
+      - Return error if not found
+
+  - name: get_commands_by_category
+    given: command category
+    when: querying by category
+    then:
+      - Look up category in index
+      - Return list of command names
+      - Return empty list if category not found
+
+  - name: get_commands_by_realm
+    given: realm
+    when: querying by realm
+    then:
+      - Look up realm in index
+      - Return list of command names
+      - Return empty list if realm not found
+
+  # === Intelligent Selection ===
+  - name: analyze_intent
+    given: user input and context
+    when: selecting commands for execution
+    then:
+      - Tokenize and normalize input
+      - Match against command names and descriptions
+      - Calculate similarity scores for all commands
+      - Apply phi-weighted realm preferences
+      - Return ranked intent analysis
+
+  - name: select_commands
+    given: intent analysis and execution context
+    when: building optimal command sequence
+    then:
+      - Analyze intent for command matching
+      - Filter by sacred score threshold
+      - Apply context-aware ranking
+      - Return optimal command sequence
+
+  - name: apply_sacred_scoring
+    given: command candidates and realm preferences
+    when: ranking command options
+    then:
+      - Calculate base similarity score
+      - Apply phi-weighting (Razum × φ, Materiya × 1, Dukh × 1/φ)
+      - Normalize scores to 0-1 range
+      - Return ranked list with scores
+
+  - name: calculate_trinity_score
+    given: execution results or command matches
+    when: evaluating quality or alignment
+    then:
+      - Apply formula: (razum × φ + materiya × 1 + dukh × φ⁻¹) / 3
+      - Verify result equals TRINITY identity (φ² + 1/φ² = 3)
+      - Return score 0-1
+
+  # === Dependency Resolution ===
+  - name: build_dependency_graph
+    given: list of commands and registry
+    when: planning execution order
+    then:
+      - Create nodes for each command
+      - Add edges based on command dependencies
+      - Build dependency graph structure
+      - Return graph for topological sort
+
+  - name: resolve_dependencies
+    given: dependency graph
+    when: determining execution order
+    then:
+      - Perform topological sort on graph
+      - Detect circular dependencies
+      - Return sorted execution order
+      - Return error if cycles detected
+
+  - name: detect_cycles
+    given: dependency graph
+    when: validating workflow
+    then:
+      - Run DFS-based cycle detection
+      - Check for temporary marks during traversal
+      - Return list of cycles if found
+      - Return empty list if no cycles
+
+  - name: find_parallel_opportunities
+    given: dependency graph and sorted order
+    when: optimizing for parallel execution
+    then:
+      - Identify independent command groups
+      - Find commands with no dependencies between them
+      - Return list of parallelizable command sets
+
+  # === Execution Strategies ===
+  - name: execute_sequential
+    given: execution context and command list
+    when: running commands in order
+    then:
+      - Create snapshot if rollback enabled
+      - Execute each command in dependency order
+      - Stop on failure unless continue_on_failure set
+      - Collect all results
+      - Rollback on failure if enabled
+
+  - name: execute_parallel
+    given: execution context and command groups
+    when: running independent commands concurrently
+    then:
+      - Create snapshots for all commands
+      - Spawn tasks for each parallel group
+      - Wait for all tasks to complete
+      - Aggregate results from all tasks
+      - Rollback failed groups if needed
+
+  - name: execute_conditional
+    given: execution context with conditional workflow
+    when: evaluating branching logic
+    then:
+      - Evaluate conditions using sacred rules
+      - Select appropriate branch
+      - Execute branch commands
+      - Handle else clause if present
+      - Return branch execution result
+
+  - name: execute_adaptive
+    given: execution context and sacred intelligence
+    when: using sacred-guided execution
+    then:
+      - Analyze current system state
+      - Calculate optimal execution strategy
+      - Apply sacred scoring for decision making
+      - Execute using selected strategy
+      - Adapt strategy based on results
+
+  # === Sacred Intelligence ===
+  - name: validate_sacred_alignment
+    given: command, workflow, or execution plan
+    when: checking sacred compliance
+    then:
+      - Verify phi² + 1/phi² = 3 identity
+      - Check realm balance (razum/materiya/dukh)
+      - Validate sacred thresholds
+      - Return validation result with recommendations
+
+  - name: calculate_phi_weight
+    given: realm and base value
+    when: applying sacred weighting
+    then:
+      - Multiply Razum values by φ (1.618)
+      - Keep Materiya values as-is (× 1.0)
+      - Multiply Dukh values by 1/φ (0.618)
+      - Return weighted value
+
+  - name: verify_trinity_identity
+    given: none (pure sacred math verification)
+    when: validating sacred constants
+    then:
+      - Calculate phi² + 1/phi²
+      - Verify result equals 3.0 (TRINITY)
+      - Return true if identity holds, false otherwise
+
+  - name: apply_sacred_threshold
+    given: score and threshold type
+    when: filtering by sacred quality
+    then:
+      - Apply MU threshold (0.0382) for minimal
+      - Apply CHI threshold (0.0618) for basic
+      - Apply SACRED_THRESHOLD (0.95) for excellence
+      - Return pass/fail result
+
+  # === Rollback Management ===
+  - name: create_snapshot
+    given: execution context and current state
+    when: before executing command
+    then:
+      - Capture current git commit hash
+      - Track files modified during session
+      - Store memory state if needed
+      - Create rollback state record
+      - Return snapshot ID
+
+  - name: rollback_to_snapshot
+    given: snapshot ID and execution context
+    when: command fails and rollback needed
+    then:
+      - Retrieve snapshot by ID
+      - Restore git state using git reset
+      - Restore modified files from backup
+      - Clear results after snapshot point
+      - Return rollback success status
+
+  - name: restore_files
+    given: list of changed files and backup point
+    when: rolling back file changes
+    then:
+      - For each changed file, restore from backup
+      - Use git checkout for tracked files
+      - Delete new untracked files
+      - Restore file permissions
+      - Return restore result
+
+  - name: create_transaction_boundary
+    given: execution context
+    when: starting atomic operation
+    then:
+      - Create snapshot before operations
+      - Mark transaction as active
+      - Track all operations within boundary
+      - Return transaction ID
+
+  - name: commit_transaction
+    given: transaction ID
+    when: operations completed successfully
+    then:
+      - Mark transaction as committed
+      - Clear rollback state
+      - Update last successful state
+      - Return commit status
+
+  # === Workflow Management ===
+  - name: parse_workflow_yaml
+    given: YAML workflow file path and allocator
+    when: loading workflow definition
+    then:
+      - Read and parse YAML file
+      - Validate workflow structure
+      - Create Workflow struct from YAML
+      - Return parsed workflow or error
+
+  - name: parse_workflow_json
+    given: JSON workflow file path and allocator
+    when: loading workflow definition
+    then:
+      - Read and parse JSON file
+      - Validate workflow structure
+      - Create Workflow struct from JSON
+      - Return parsed workflow or error
+
+  - name: validate_workflow
+    given: workflow definition and command registry
+    when: checking workflow validity
+    then:
+      - Verify all commands exist in registry
+      - Check dependencies are resolvable
+      - Detect circular dependencies
+      - Validate sacred alignment if enabled
+      - Return validation result
+
+  - name: optimize_workflow
+    given: workflow definition
+    when: improving execution efficiency
+    then:
+      - Identify parallelizable steps
+      - Remove redundant dependencies
+      - Merge sequential steps where possible
+      - Apply sacred intelligence for optimization
+      - Return optimized workflow
+
+  - name: execute_workflow
+    given: workflow definition and orchestrator config
+    when: running complete workflow
+    then:
+      - Validate workflow structure
+      - Resolve dependencies
+      - Select execution strategy
+      - Create initial snapshot
+      - Execute using selected strategy
+      - Handle rollback on failure
+      - Return final execution result
+
+  # === CLI Integration ===
+  - name: run_orchestrate_command
+    given: allocator, command arguments, and config
+    when: user runs 'tri orchestrate'
+    then:
+      - Parse command arguments
+      - Load or create workflow
+      - Initialize execution context
+      - Execute workflow
+      - Output results
+      - Return exit code
+
+  - name: print_orchestrate_help
+    given: output stream
+    when: user requests help
+    then:
+      - Print usage examples
+      - Show workflow format
+      - Display available options
+      - List common patterns
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TEST CASES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+test_cases:
+  - name: trinity_identity_test
+    given: sacred constants
+    when: verifying phi identity
+    then: phi^2 + 1/phi^2 equals 3.0
+
+  - name: registry_init_test
+    given: empty registry
+    when: initializing
+    then: registry has zero commands
+
+  - name: register_command_test
+    given: registry and command metadata
+    when: registering command
+    then: command appears in registry and indices
+
+  - name: intent_analysis_test
+    given: user input "fix memory bug"
+    when: analyzing intent
+    then: returns fix command with high confidence
+
+  - name: dependency_resolution_test
+    given: commands with dependencies
+    when: resolving execution order
+    then: returns topologically sorted list
+
+  - name: cycle_detection_test
+    given: circular dependency graph
+    when: detecting cycles
+    then: returns cycle list
+
+  - name: sequential_execution_test
+    given: three commands in sequence
+    when: executing sequentially
+    then: all commands execute in order
+
+  - name: parallel_execution_test
+    given: three independent commands
+    when: executing in parallel
+    then: all commands execute concurrently
+
+  - name: sacred_validation_test
+    given: balanced workflow across realms
+    when: validating sacred alignment
+    then: passes with high trinity score
+
+  - name: snapshot_creation_test
+    given: execution context
+    when: creating snapshot
+    then: returns valid snapshot ID
+
+  - name: rollback_test
+    given: snapshot and failed command
+    when: rolling back
+    then: state restored to snapshot point
+
+  - name: workflow_parsing_test
+    given: valid YAML workflow file
+    when: parsing workflow
+    then: returns valid Workflow struct
+
+  - name: workflow_validation_test
+    given: workflow with invalid command
+    when: validating
+    then: returns validation error
+
+  - name: phi_weighting_test
+    given: realm scores
+    when: applying phi weights
+    then: razum weighted by 1.618, dukh by 0.618
