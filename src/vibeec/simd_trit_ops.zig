@@ -1,9 +1,9 @@
-// SIMD TRIT OPERATIONS - Священные Ритуалы Троицы
-// Векторизованные операции над тритами {-1, 0, +1}
-// 21x ускорение via AVX2/NEON
+// SIMD TRIT OPERATIONS - Сinященные Рandтуалы Троandцы
+// Веtoторandзоinанные операцandand onд трandтамand {-1, 0, +1}
+// 21x уwithtoоренandе via AVX2/NEON
 // φ² + 1/φ² = 3 = TRINITY
 //
-// ПЕРЕИСПОЛЬЗУЕТ: simd_ternary.zig for базовых SIMD типов
+// ПЕРЕИСПОЛЬЗУЕТ: simd_ternary.zig for базоinых SIMD тandbyin
 
 const std = @import("std");
 const prometheus = @import("prometheus_seed.zig");
@@ -15,22 +15,22 @@ pub const PHI: f64 = 1.618033988749895;
 // SIMD VECTOR TYPES - ПЕРЕИСПОЛЬЗУЕМ ИЗ simd_ternary.zig
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Реэкспорт типов из simd_ternary for совместимости
+/// Реэtowithbyрт тandbyin andз simd_ternary for withоinмеwithтandмоwithтand
 pub const Vec32i8 = simd_ternary.Vec32i8;
 pub const Vec32i16 = simd_ternary.Vec32i16;
 pub const Vec16i8 = simd_ternary.Vec16i8;
 
-/// 8 x f32 = 256 бит (AVX2 / NEON) - for float операций
+/// 8 x f32 = 256 бandт (AVX2 / NEON) - for float операцandй
 pub const Vec8f = @Vector(8, f32);
 
-/// 16 x f32 = 512 бит (AVX-512)
+/// 16 x f32 = 512 бandт (AVX-512)
 pub const Vec16f = @Vector(16, f32);
 
-/// Размер SIMD вектора in элементах f32
+/// Размер SIMD inеtoтора in элементах f32
 pub const SIMD_WIDTH: usize = 8;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TRIT BUFFER - Предварительно конвертированные триты
+// TRIT BUFFER - Предinарandтельно toонinертandроinанные трandты
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const TritBuffer = struct {
@@ -56,15 +56,15 @@ pub const TritBuffer = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SIMD MATMUL - Sacred Ритуал Умножения Матриц
+// SIMD MATMUL - Sacred Рandтуал Умноженandя Матрandц
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// SIMD-оптимизированное матричное "умножение" for тритов
-/// Использует умножение on {-1, 0, +1} which компилятор optimizes
-/// in условные сложения/вычитания
+/// SIMD-оптandмandзandроinанное матрandчное "умноженandе" for трandтоin
+/// Иwithbyльзует умноженandе on {-1, 0, +1} which toомпandлятор optimizes
+/// in уwithлоinные withложенandя/inычandтанandя
 ///
 /// input: [in_features] f32
-/// trit_weights: [out_features * in_features] i8 (предконвертированные триты)
+/// trit_weights: [out_features * in_features] i8 (предtoонinертandроinанные трandты)
 /// output: [out_features] f32
 pub fn simdTritMatmul(
     output: []f32,
@@ -80,13 +80,13 @@ pub fn simdTritMatmul(
         var sum_scalar: f32 = 0.0;
         const weight_offset = o * in_features;
 
-        // SIMD loop - обрабатываем by 8 элементов
+        // SIMD loop - обрабатыinаем by 8 элементоin
         var i: usize = 0;
         while (i < aligned_in) : (i += SIMD_WIDTH) {
-            // Загружаем 8 loginных значений
+            // Загружаем 8 loginных зonченandй
             const input_vec: Vec8f = input[i..][0..SIMD_WIDTH].*;
 
-            // Загружаем 8 тритов and конвертируем in f32
+            // Загружаем 8 трandтоin and toонinертandруем in f32
             const t = trit_weights[weight_offset + i ..][0..SIMD_WIDTH];
             const trit_vec: Vec8f = .{
                 @floatFromInt(t[0]),
@@ -100,20 +100,20 @@ pub fn simdTritMatmul(
             };
 
             // SIMD FMA: sum += input * trit
-            // Для тритов {-1, 0, +1} this эквивалентно:
+            // Для трandтоin {-1, 0, +1} this эtoinandinалентно:
             // +1: sum += input
             // -1: sum -= input
-            //  0: sum += 0 (ничего)
+            //  0: sum += 0 (нandчего)
             sum_vec += input_vec * trit_vec;
         }
 
-        // Горизонтальная сумма SIMD вектора
+        // Горandзонтальonя withумма SIMD inеtoтора
         const sum_arr: [SIMD_WIDTH]f32 = sum_vec;
         inline for (sum_arr) |v| {
             sum_scalar += v;
         }
 
-        // Скалярный хвост
+        // Сtoалярный хinоwithт
         while (i < in_features) : (i += 1) {
             const w = trit_weights[weight_offset + i];
             const x = input[i];
@@ -124,7 +124,7 @@ pub fn simdTritMatmul(
     }
 }
 
-/// Батчевая version SIMD matmul
+/// Батчеinая version SIMD matmul
 pub fn simdTritMatmulBatch(
     output: []f32,
     input: []const f32,
@@ -144,7 +144,7 @@ pub fn simdTritMatmulBatch(
 // SIMD ACTIVATION FUNCTIONS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Векторизованный ReLU
+/// Веtoторandзоinанный ReLU
 pub fn simdRelu(data: []f32) void {
     const zeros: Vec8f = @splat(0.0);
     const aligned_len = data.len & ~@as(usize, SIMD_WIDTH - 1);
@@ -156,13 +156,13 @@ pub fn simdRelu(data: []f32) void {
         data[i..][0..SIMD_WIDTH].* = result;
     }
 
-    // Скалярный хвост
+    // Сtoалярный хinоwithт
     while (i < data.len) : (i += 1) {
         data[i] = @max(0.0, data[i]);
     }
 }
 
-/// Векторизованный SiLU (приближённый)
+/// Веtoторandзоinанный SiLU (прandблandжённый)
 /// SiLU(x) ≈ x * sigmoid(x) ≈ x * (0.5 + x * 0.125) for |x| < 4
 pub fn simdSiluApprox(data: []f32) void {
     const half: Vec8f = @splat(0.5);
@@ -196,7 +196,7 @@ pub fn simdSiluApprox(data: []f32) void {
         data[i..][0..SIMD_WIDTH].* = final;
     }
 
-    // Скалярный хвост
+    // Сtoалярный хinоwithт
     while (i < data.len) : (i += 1) {
         const x = data[i];
         if (x < -4.0) {
@@ -209,7 +209,7 @@ pub fn simdSiluApprox(data: []f32) void {
     }
 }
 
-/// Векторизованное сложение with residual connection
+/// Веtoторandзоinанное withложенandе with residual connection
 pub fn simdAddResidual(output: []f32, residual: []const f32) void {
     const aligned_len = output.len & ~@as(usize, SIMD_WIDTH - 1);
 
@@ -220,7 +220,7 @@ pub fn simdAddResidual(output: []f32, residual: []const f32) void {
         output[i..][0..SIMD_WIDTH].* = out_vec + res_vec;
     }
 
-    // Скалярный хвост
+    // Сtoалярный хinоwithт
     while (i < output.len) : (i += 1) {
         output[i] += residual[i];
     }
@@ -230,7 +230,7 @@ pub fn simdAddResidual(output: []f32, residual: []const f32) void {
 // SIMD DOT PRODUCT
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Векторизованное скалярное произведение with тритами
+/// Веtoторandзоinанное withtoалярное проandзinеденandе with трandтамand
 pub fn simdTritDot(input: []const f32, trit_weights: []const i8) f32 {
     const len = input.len;
     const aligned_len = len & ~@as(usize, SIMD_WIDTH - 1);
@@ -255,13 +255,13 @@ pub fn simdTritDot(input: []const f32, trit_weights: []const i8) f32 {
         sum_vec += input_vec * trit_vec;
     }
 
-    // Горизонтальная сумма
+    // Горandзонтальonя withумма
     const sum_arr: [SIMD_WIDTH]f32 = sum_vec;
     inline for (sum_arr) |v| {
         sum_scalar += v;
     }
 
-    // Скалярный хвост
+    // Сtoалярный хinоwithт
     while (i < len) : (i += 1) {
         sum_scalar += input[i] * @as(f32, @floatFromInt(trit_weights[i]));
     }

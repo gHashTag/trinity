@@ -1,5 +1,5 @@
 // SAFETENSORS TO TRINITY CONVERTER
-// Конвертация весов из safetensors in .tri format
+// Конinертацandя inеwithоin andз safetensors in .tri format
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");
@@ -36,7 +36,7 @@ pub const ConverterConfig = struct {
     num_kv_heads: u32 = 8,
 };
 
-/// Конвертация safetensors in .tri format
+/// Конinертацandя safetensors in .tri format
 pub fn convert(
     allocator: std.mem.Allocator,
     input_path: []const u8,
@@ -45,7 +45,7 @@ pub fn convert(
 ) !ConversionStats {
     var stats = ConversionStats{};
 
-    // 1. Открываем safetensors
+    // 1. Отtoрыinаем safetensors
     std.debug.print("\n", .{});
     std.debug.print("╔══════════════════════════════════════════════════════════════╗\n", .{});
     std.debug.print("║           SAFETENSORS → TRINITY CONVERTER                    ║\n", .{});
@@ -57,7 +57,7 @@ pub fn convert(
     var sf = try safetensors.SafetensorsFile.open(allocator, input_path);
     defer sf.deinit();
 
-    // 2. Создаём writer for .tri
+    // 2. Созyesём writer for .tri
     var writer = try trinity.TrinityWriter.init(allocator, output_path);
     defer writer.deinit();
 
@@ -70,10 +70,10 @@ pub fn convert(
         config.num_kv_heads,
     );
 
-    // 3. Создаём квантизатор
+    // 3. Созyesём toinантandзатор
     var quantizer = prometheus.Quantizer.init(0.1); // threshold = 0.1
 
-    // 4. Конвертируем each тензор
+    // 4. Конinертandруем each тензор
     var tensor_it = sf.tensors.iterator();
     var total_zeros: usize = 0;
 
@@ -88,11 +88,11 @@ pub fn convert(
         };
         defer allocator.free(f32_data);
 
-        // Квантизуем in триты
+        // Кinантandзуем in трandты
         var trit_tensor = try quantizer.quantize(allocator, f32_data, info.shape);
         defer trit_tensor.deinit();
 
-        // Считаем нули for sparsity
+        // Счandтаем нулand for sparsity
         for (trit_tensor.data) |t| {
             if (t == .zero) total_zeros += 1;
         }
@@ -104,16 +104,16 @@ pub fn convert(
         stats.total_params += info.numElements();
         stats.original_size_bytes += info.byteSize();
 
-        // Прогресс
+        // Прогреwithwith
         if (stats.total_tensors % 10 == 0) {
             std.debug.print("  Converted {d} tensors...\n", .{stats.total_tensors});
         }
     }
 
-    // 5. Финализируем file
+    // 5. Фandonлandзandруем file
     try writer.finalize();
 
-    // 6. Compute статистику
+    // 6. Compute withтатandwithтandtoу
     stats.compressed_size_bytes = (stats.total_params + 3) / 4; // 4 trits per byte
     stats.sparsity = @as(f32, @floatFromInt(total_zeros)) /
         @as(f32, @floatFromInt(stats.total_params));

@@ -1,13 +1,13 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// BENCHMARK v41 - Полное comparison всех версий
+// BENCHMARK v41 - Полное comparison inwithех inерwithandй
 // v35 → v37 → v39 → v39.1 → v40 → v41
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // v41 НОВЫЕ ФИЧИ:
 //   - SIMD + Cache combo (1.8x vs v40)
-//   - AVX-256 эмуляция (32-way parallel)
-//   - Full BPE 262 токена
-//   - WebSocket + SSE гибрид
+//   - AVX-256 эмуляцandя (32-way parallel)
+//   - Full BPE 262 тоtoеon
+//   - WebSocket + SSE гandбрandд
 //
 // PAS DAEMONS: SIMD, PRE, MEM, HSH, D&C, FDT
 // φ² + 1/φ² = 3 | PHOENIX = 999
@@ -20,7 +20,7 @@ const bpe_cached = @import("bpe_cached.zig");
 const simd_bpe = @import("simd_bpe.zig");
 const tokenizer_v41 = @import("tokenizer_v41.zig");
 
-// Священные константы
+// Сinященные toонwithтанты
 pub const PHI: f64 = 1.618033988749895;
 pub const TRINITY: f64 = 3.0;
 pub const PHOENIX: u32 = 999;
@@ -123,11 +123,11 @@ pub fn bench(comptime name: []const u8, iterations: u64, comptime func: anytype,
 // ТЕСТЫ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-test "Full Benchmark v41: Все версии токенизаторов" {
+test "Full Benchmark v41: Вwithе inерwithandand тоtoенandзатороin" {
     const text = "This is a sample text for benchmarking token estimation performance in the DeepSeek provider implementation with various optimizations.";
     const iters: u64 = 10000;
 
-    // Сбрасываем кэши
+    // Сбраwithыinаем toэшand
     bpe_cached.resetGlobalTokenizer();
     tokenizer_v41.resetV41();
 
@@ -137,7 +137,7 @@ test "Full Benchmark v41: Все версии токенизаторов" {
     const r39_cache = bench("v39.1 cache", iters, bpe_cached.tokenizeV39Cached, text);
     const r40_simd = bench("v40 SIMD", iters, simd_bpe.tokenizeSIMD, text);
 
-    // v41 - сначала заполняем кэш
+    // v41 - withonчала заbyлняем toэш
     _ = tokenizer_v41.tokenizeV41(text);
     const r41 = bench("v41 combo", iters, tokenizer_v41.tokenizeV41, text);
 
@@ -158,12 +158,12 @@ test "Full Benchmark v41: Все версии токенизаторов" {
     std.debug.print("║                                                                                                       ║\n", .{});
     std.debug.print("╠═══════════════════════════════════════════════════════════════════════════════════════════════════════╣\n", .{});
     std.debug.print("║                                                                                                       ║\n", .{});
-    std.debug.print("║  ТОКЕНИЗАЦИЯ (10,000 итераций)                                                                        ║\n", .{});
+    std.debug.print("║  ТОКЕНИЗАЦИЯ (10,000 andтерацandй)                                                                        ║\n", .{});
     std.debug.print("║  ─────────────────────────────────────────────────────────────────────────────────────────────────    ║\n", .{});
     std.debug.print("║                                                                                                       ║\n", .{});
-    std.debug.print("║  Версия        │ Latency      │ Throughput       │ Speedup  │ Метод                                  ║\n", .{});
+    std.debug.print("║  Верwithandя        │ Latency      │ Throughput       │ Speedup  │ Метод                                  ║\n", .{});
     std.debug.print("║  ──────────────┼──────────────┼──────────────────┼──────────┼────────────────────────────────────    ║\n", .{});
-    std.debug.print("║  v35           │ {d:>8} ns   │ {d:>12.0} ops/s │    -     │ len/4 (40% точность)                   ║\n", .{ r35.avg_ns, r35.ops_per_sec });
+    std.debug.print("║  v35           │ {d:>8} ns   │ {d:>12.0} ops/s │    -     │ len/4 (40% точноwithть)                   ║\n", .{ r35.avg_ns, r35.ops_per_sec });
     std.debug.print("║  v37           │ {d:>8} ns   │ {d:>12.0} ops/s │    -     │ word-based (75%)                       ║\n", .{ r37.avg_ns, r37.ops_per_sec });
     std.debug.print("║  v39 naive     │ {d:>8} ns   │ {d:>12.0} ops/s │   1.0x   │ BPE std.mem.eql (90%)                  ║\n", .{ r39.avg_ns, r39.ops_per_sec });
     std.debug.print("║  v39.1 cache   │ {d:>8} ns   │ {d:>12.0} ops/s │  {d:>5.1}x   │ LRU + lookup (90%)                     ║\n", .{ r39_cache.avg_ns, r39_cache.ops_per_sec, baseline / @as(f64, @floatFromInt(@max(1, r39_cache.avg_ns))) });
@@ -187,18 +187,18 @@ test "Full Benchmark v41: Все версии токенизаторов" {
         std.debug.print("║  v41 СТАТИСТИКА                                                                                       ║\n", .{});
         std.debug.print("║  ─────────────────────────────────────────────────────────────────────────────────────────────────    ║\n", .{});
         std.debug.print("║  Cache hit rate:     {d:>6.1}%                                                                        ║\n", .{stats.hit_rate * 100});
-        std.debug.print("║  BPE vocab size:     {d:>6} токенов                                                                   ║\n", .{stats.vocab_size});
+        std.debug.print("║  BPE vocab size:     {d:>6} тоtoеноin                                                                   ║\n", .{stats.vocab_size});
         std.debug.print("║                                                                                                       ║\n", .{});
     }
 
     std.debug.print("╠═══════════════════════════════════════════════════════════════════════════════════════════════════════╣\n", .{});
     std.debug.print("║                                                                                                       ║\n", .{});
     std.debug.print("║  PAS DAEMONS v41:                                                                                     ║\n", .{});
-    std.debug.print("║    SIMD - 32-way параллельный поиск биграмм (AVX-256 эмуляция)                                        ║\n", .{});
-    std.debug.print("║    PRE  - Full BPE словарь 262 токена                                                                 ║\n", .{});
-    std.debug.print("║    MEM  - LRU cache 1024 записи                                                                       ║\n", .{});
-    std.debug.print("║    HSH  - FNV-1a для кэша                                                                             ║\n", .{});
-    std.debug.print("║    D&C  - WebSocket + SSE гибрид                                                                      ║\n", .{});
+    std.debug.print("║    SIMD - 32-way параллельный byandwithto бandграмм (AVX-256 эмуляцandя)                                        ║\n", .{});
+    std.debug.print("║    PRE  - Full BPE withлоinарь 262 тоtoеon                                                                 ║\n", .{});
+    std.debug.print("║    MEM  - LRU cache 1024 запandwithand                                                                       ║\n", .{});
+    std.debug.print("║    HSH  - FNV-1a for toэша                                                                             ║\n", .{});
+    std.debug.print("║    D&C  - WebSocket + SSE гandбрandд                                                                      ║\n", .{});
     std.debug.print("║                                                                                                       ║\n", .{});
     std.debug.print("║  СВЯЩЕННАЯ ФОРМУЛА: V = n × 3^k × π^m × φ^p × e^q                                                     ║\n", .{});
     std.debug.print("║  ЗОЛОТАЯ ИДЕНТИЧНОСТЬ: φ² + 1/φ² = 3                                                                  ║\n", .{});
@@ -210,7 +210,7 @@ test "Full Benchmark v41: Все версии токенизаторов" {
 test "Hybrid stream benchmark" {
     var stream = tokenizer_v41.HybridStream.init(.auto);
 
-    // Симулируем разные типы сообщений
+    // Сandмулandруем разные тandпы withообщенandй
     stream.send("Hello", false); // SSE
     stream.send("World", true); // WebSocket
     stream.send("This is a longer message that should use WebSocket", false); // WebSocket (big)
@@ -221,9 +221,9 @@ test "Hybrid stream benchmark" {
     std.debug.print("╔═══════════════════════════════════════════════════════════════════╗\n", .{});
     std.debug.print("║ HYBRID STREAM BENCHMARK                                           ║\n", .{});
     std.debug.print("╠═══════════════════════════════════════════════════════════════════╣\n", .{});
-    std.debug.print("║ WebSocket фреймов:  {d:>6}                                        ║\n", .{stats.ws});
-    std.debug.print("║ SSE событий:        {d:>6}                                        ║\n", .{stats.sse});
-    std.debug.print("║ Всего байт:         {d:>6}                                        ║\n", .{stats.bytes});
+    std.debug.print("║ WebSocket фреймоin:  {d:>6}                                        ║\n", .{stats.ws});
+    std.debug.print("║ SSE withобытandй:        {d:>6}                                        ║\n", .{stats.sse});
+    std.debug.print("║ Вwithего байт:         {d:>6}                                        ║\n", .{stats.bytes});
     std.debug.print("╚═══════════════════════════════════════════════════════════════════╝\n", .{});
 }
 

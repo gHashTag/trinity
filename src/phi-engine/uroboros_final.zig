@@ -83,7 +83,7 @@ pub const Uroboros = struct {
         defer profane.deinit();
 
         self.cycle_count += 1;
-        std.debug.print("  ✅ Цикл завершён: {d}\n", .{self.cycle_count});
+        std.debug.print("  ✅ Цandtoл заinершён: {d}\n", .{self.cycle_count});
     }
 };
 

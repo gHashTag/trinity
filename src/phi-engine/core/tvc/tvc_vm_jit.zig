@@ -5,13 +5,13 @@ const tvc_jit = @import("tvc_jit.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TVC VM WITH JIT SUPPORT
-// Автоматически компилирует горячие функции in машинный code
+// Аinтоматandчеwithtoand toомпorрует горячandе фунtoцandand in машandнный code
 // ═══════════════════════════════════════════════════════════════════════════
 
 pub const ExecutionMode = enum {
-    interpret, // Всегда интерпретировать
-    jit,       // Всегда JIT компилировать
-    adaptive,  // Адаптивно: интерпретировать, потом JIT for горячих
+    interpret, // Вwithегyes andнтерпретandроinать
+    jit,       // Вwithегyes JIT toомпorроinать
+    adaptive,  // Аyesптandinно: andнтерпретandроinать, пfromом JIT for горячandх
 };
 
 pub const TVCVMJit = struct {
@@ -29,7 +29,7 @@ pub const TVCVMJit = struct {
             .jit = tvc_jit.TVCJit.init(allocator),
             .mode = .adaptive,
             .call_counts = std.StringHashMap(u64).init(allocator),
-            .jit_threshold = 100, // Компилировать after 100 вызовов
+            .jit_threshold = 100, // Компorроinать after 100 inызоinоin
             .total_interpreted = 0,
             .total_jit = 0,
         };
@@ -49,9 +49,9 @@ pub const TVCVMJit = struct {
         try self.vm.loadModule(module);
     }
 
-    // Вызов функции with автоматическим выбором режима
+    // Вызоin фунtoцandand with аinтоматandчеwithtoandм inыбором режandма
     pub fn callFunction(self: *TVCVMJit, func_name: []const u8) !i64 {
-        // Увеличиваем счётчик вызовов
+        // Уinелandчandinаем withчётчandto inызоinоin
         const count = (self.call_counts.get(func_name) orelse 0) + 1;
         try self.call_counts.put(func_name, count);
 
@@ -63,27 +63,27 @@ pub const TVCVMJit = struct {
                 return self.executeJIT(func_name);
             },
             .adaptive => {
-                // Check, есть ли уже скомпилированная version
+                // Check, еwithть лand уже withtoомпorроinанonя version
                 if (self.jit.getCompiled(func_name)) |compiled| {
                     self.total_jit += 1;
                     return compiled.call();
                 }
 
-                // Check, достигнут ли порог for JIT
+                // Check, beforewithтandгнут лand byрог for JIT
                 if (count >= self.jit_threshold) {
-                    // Пытаемся скомпилировать
+                    // Пытаемwithя withtoомпorроinать
                     if (self.vm.getFunction(func_name)) |func| {
                         if (self.jit.compile(func)) |compiled| {
                             std.debug.print("[JIT] Compiled function: {s} (after {} calls)\n", .{ func_name, count });
                             self.total_jit += 1;
                             return compiled.call();
                         } else |_| {
-                            // Ошибка компиляции - продолжаем интерпретировать
+                            // Ошandбtoа toомпandляцandand - проbeforeлжаем andнтерпретandроinать
                         }
                     }
                 }
 
-                // Интерпретируем
+                // Интерпретandруем
                 return self.executeInterpreted(func_name);
             },
         }
@@ -92,18 +92,18 @@ pub const TVCVMJit = struct {
     fn executeInterpreted(self: *TVCVMJit, func_name: []const u8) !i64 {
         self.total_interpreted += 1;
         try self.vm.callFunction(func_name);
-        // Return value из регистра r0
+        // Return value andз регandwithтра r0
         return @as(i64, self.vm.registers.r0);
     }
 
     fn executeJIT(self: *TVCVMJit, func_name: []const u8) !i64 {
-        // Check кэш
+        // Check toэш
         if (self.jit.getCompiled(func_name)) |compiled| {
             self.total_jit += 1;
             return compiled.call();
         }
 
-        // Компилируем
+        // Компorруем
         if (self.vm.getFunction(func_name)) |func| {
             const compiled = try self.jit.compile(func);
             self.total_jit += 1;
@@ -113,7 +113,7 @@ pub const TVCVMJit = struct {
         return error.InvalidFunction;
     }
 
-    // Принудительная JIT compilation функции
+    // Прandнудandтельonя JIT compilation фунtoцandand
     pub fn forceCompile(self: *TVCVMJit, func_name: []const u8) !void {
         if (self.vm.getFunction(func_name)) |func| {
             _ = try self.jit.compile(func);
@@ -121,7 +121,7 @@ pub const TVCVMJit = struct {
         }
     }
 
-    // Статистика
+    // Статandwithтandtoа
     pub fn getStats(self: *const TVCVMJit) VMJitStats {
         const jit_stats = self.jit.getStats();
         return VMJitStats{
@@ -176,7 +176,7 @@ pub fn benchmarkVMvsJIT(
     func_name: []const u8,
     iterations: u64,
 ) !BenchmarkResult {
-    // Создаём две VM: одну для интерпретации, одну for JIT
+    // Созyesём дinе VM: одну for andнтерпретацandand, одну for JIT
     var vm_only = TVCVMJit.init(allocator, 64 * 1024, 4 * 1024);
     defer vm_only.deinit();
     vm_only.setMode(.interpret);
@@ -187,14 +187,14 @@ pub fn benchmarkVMvsJIT(
     vm_jit.setMode(.jit);
     try vm_jit.loadModule(module);
 
-    // Прогрев
+    // Прогреin
     var i: u64 = 0;
     while (i < 10) : (i += 1) {
         _ = vm_only.callFunction(func_name) catch 0;
         _ = vm_jit.callFunction(func_name) catch 0;
     }
 
-    // Замер интерпретатора
+    // Замер andнтерпретатора
     const vm_start = std.time.nanoTimestamp();
     i = 0;
     while (i < iterations) : (i += 1) {

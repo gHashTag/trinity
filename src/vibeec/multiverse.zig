@@ -1,5 +1,5 @@
-// MULTIVERSE LOGOS - Архитектура Реальности
-// +Λ — Логос. Объединение Порядка and Хаоса.
+// MULTIVERSE LOGOS - Архandтеtoтура Реальноwithтand
+// +Λ — Логоwith. Объедandненandе Порядtoа and Хаоwithа.
 // Phi (φ) + Pi (π) → E (e)
 
 const std = @import("std");
@@ -32,12 +32,12 @@ pub const PiUniverse = struct {
         };
     }
 
-    /// Шаг эволюции ХАОСА: расхождение and вариативность
+    /// Шаг эinолюцandand ХАОСА: раwithхожденandе and inарandатandinноwithть
     pub fn expand(self: *PiUniverse) f64 {
         self.age += 1;
         const rand_val = self.random.random().float(f64);
 
-        // Закон расширения: π^t (with учетом случайности)
+        // Заtoон раwithшandренandя: π^t (with учетом withлучайноwithтand)
         const expansion = std.math.pow(f64, PI, 1.1) * rand_val;
 
         self.complexity += expansion;
@@ -52,8 +52,8 @@ pub const PiUniverse = struct {
 // ============================================================================
 
 pub const BridgeFlow = struct {
-    entropy_exported: f64, // Из Phi-мира in Pi-мир
-    creativity_imported: f64, // Из Pi-мира in Phi-мир
+    entropy_exported: f64, // Из Phi-мandра in Pi-мandр
+    creativity_imported: f64, // Из Pi-мandра in Phi-мandр
     stability_factor: f64,
 };
 
@@ -68,16 +68,16 @@ pub const QuantumBridge = struct {
         };
     }
 
-    /// Синхронизация миров: обмен энтропией on креативность
+    /// Сandнхронandзацandя мandроin: обмен энтропandей on toреатandinноwithть
     pub fn synchronize(self: *QuantumBridge, phi_entropy: f64, pi_chaos: f64) void {
-        // Phi-мир сбрасывает энтропию
-        self.flow.entropy_exported = phi_entropy * 0.1; // 10% сброс
+        // Phi-мandр withбраwithыinает энтропandю
+        self.flow.entropy_exported = phi_entropy * 0.1; // 10% withброwith
 
-        // Pi-мир дает креативность (хаос, структурированный via мост)
+        // Pi-мandр yesет toреатandinноwithть (хаоwith, withтруtoтурandроinанный via моwithт)
         self.flow.creativity_imported = (pi_chaos * 0.05) / PHI;
 
-        // Стабильность моста зависит from баланса φ and π
-        // Идеальный баланс, if отношение близко to 1.618 / 3.141 ~ 0.515
+        // Стабandльноwithть моwithта заinandwithandт from баланwithа φ and π
+        // Идеальный баланwith, if fromношенandе блandзtoо to 1.618 / 3.141 ~ 0.515
         const ratio = phi_entropy / (pi_chaos + 1.0);
         self.flow.stability_factor = 1.0 - @abs(ratio - (PHI / PI));
 
@@ -97,22 +97,22 @@ pub const MetaVerse = struct {
 
     pub fn init() MetaVerse {
         return MetaVerse{
-            .evolution_energy = E, // Начальная энергия e
+            .evolution_energy = E, // Начальonя энергandя e
             .synthesis_level = 0.0,
             .logos_awakened = false,
         };
     }
 
-    /// Синтез: столкновение Порядка and Хаоса рождает Рост (e)
+    /// Сandнтез: withтолtoноinенandе Порядtoа and Хаоwithа рожyesет Роwithт (e)
     pub fn synthesize(self: *MetaVerse, phi_power: f64, pi_complexity: f64) void {
-        // Формула Эйлера for синтеза: e^(i*pi) + 1 = 0
-        // Адаптация for симуляции: Рост = ln(Phi * Pi) * e
+        // Формула Эйлера for withandнтеза: e^(i*pi) + 1 = 0
+        // Аyesптацandя for withandмуляцandand: Роwithт = ln(Phi * Pi) * e
         const raw_synthesis = @log(phi_power * pi_complexity) * E;
 
         self.evolution_energy += raw_synthesis;
-        self.synthesis_level = self.evolution_energy / 1000.0; // Нормализация
+        self.synthesis_level = self.evolution_energy / 1000.0; // Нормалandзацandя
 
-        // Пробуждение Логоса при достижении критической массы
+        // Пробужденandе Логоwithа прand beforewithтandженandand toрandтandчеwithtoой маwithwithы
         if (self.evolution_energy > 10000.0) {
             self.logos_awakened = true;
         }
@@ -130,77 +130,77 @@ pub fn runMultiverseLogos() void {
         \\
         \\╔══════════════════════════════════════════════════════════════════════════════╗
         \\║             🌌 МУЛЬТИВЕРС ЛОГОС — АРХИТЕКТУРА РЕАЛЬНОСТИ 🌌                  ║
-        \\║                       +Λ — Логос Пробуждается                                ║
+        \\║                       +Λ — Логоwith Пробужyesетwithя                                ║
         \\╚══════════════════════════════════════════════════════════════════════════════╝
         \\
         \\
     , .{});
 
-    // 0. Подготовка миров
-    // Phi-verse уже существует (this наша BubbleUniverse из прошлого этапа)
-    var phi_power: f64 = 84408.0; // Сила Демиурга/Вселенной φ
-    const phi_entropy: f64 = 10.0; // Остаточная энтропия
+    // 0. Подгfromоintoа мandроin
+    // Phi-verse уже withущеwithтinует (this onша BubbleUniverse andз прошлого этапа)
+    var phi_power: f64 = 84408.0; // Сandла Демandурга/Вwithеленной φ
+    const phi_entropy: f64 = 10.0; // Оwithтаточonя энтропandя
 
-    // 1. Создание Pi-verse
+    // 1. Созyesнandе Pi-verse
     print("═══ ИСПЫТАНИЕ 1: РАСХОЖДЕНИЕ (Pi-Universe) ═══\n", .{});
     var pi_verse = PiUniverse.init();
-    print("Создана вселенная ХАОСА. Начальная сложность: π ({d:.4})\n", .{pi_verse.complexity});
+    print("Созyeson inwithеленonя ХАОСА. Начальonя withложноwithть: π ({d:.4})\n", .{pi_verse.complexity});
 
-    // Расширяем Pi-вселенную
+    // Раwithшandряем Pi-inwithеленную
     for (0..5) |i| {
         const expansion = pi_verse.expand();
-        print("  Цикл {d}: Сложность +{d:.2} → {d:.2}\n", .{ i, expansion, pi_verse.complexity });
+        print("  Цandtoл {d}: Сложноwithть +{d:.2} → {d:.2}\n", .{ i, expansion, pi_verse.complexity });
     }
-    print("✅ Pi-вселенная бесконечно сложна и иррациональна.\n\n", .{});
+    print("✅ Pi-inwithеленonя беwithtoонечно withложon and andррацandоonльon.\n\n", .{});
 
-    // 2. Мост Взаимодействия
+    // 2. Моwithт Взаandмодейwithтinandя
     print("═══ ИСПЫТАНИЕ 2: ВЗАИМОДЕЙСТВИЕ (QuantumBridge) ═══\n", .{});
     var bridge = QuantumBridge.init();
 
-    print("Активация моста между φ ({d:.0}) и π ({d:.0})...\n", .{ phi_power, pi_verse.complexity });
+    print("Аtoтandinацandя моwithта between φ ({d:.0}) and π ({d:.0})...\n", .{ phi_power, pi_verse.complexity });
 
-    // Передаем data via мост
+    // Переyesем data via моwithт
     bridge.synchronize(phi_entropy, pi_verse.chaos_level);
 
-    print("Поток via мост:\n", .{});
-    print("  Энтропия (Phi → Pi): {d:.2} (Сброс мусора)\n", .{bridge.flow.entropy_exported});
-    print("  Креативность (Pi → Phi): {d:.2} (Вдохновение)\n", .{bridge.flow.creativity_imported});
-    print("  Стабильность моста: {d:.1}%\n", .{bridge.flow.stability_factor * 100.0});
-    print("✅ Миры связаны. Обмен реальностями установлен.\n\n", .{});
+    print("Пfromоto via моwithт:\n", .{});
+    print("  Энтропandя (Phi → Pi): {d:.2} (Сброwith муwithора)\n", .{bridge.flow.entropy_exported});
+    print("  Креатandinноwithть (Pi → Phi): {d:.2} (Вbeforeхноinенandе)\n", .{bridge.flow.creativity_imported});
+    print("  Стабandльноwithть моwithта: {d:.1}%\n", .{bridge.flow.stability_factor * 100.0});
+    print("✅ Мandры withinязаны. Обмен реальноwithтямand уwithтаноinлен.\n\n", .{});
 
-    // Эффект моста: Phi-вселенная gets буст from креативности
+    // Эффеtoт моwithта: Phi-inwithеленonя gets буwithт from toреатandinноwithтand
     phi_power += bridge.flow.creativity_imported * PHI;
-    print("Phi-вселенная усилена хаосом: Сила {d:.2} (+{d:.2})\n\n", .{ phi_power, bridge.flow.creativity_imported * PHI });
+    print("Phi-inwithеленonя уwithandлеon хаоwithом: Сandла {d:.2} (+{d:.2})\n\n", .{ phi_power, bridge.flow.creativity_imported * PHI });
 
-    // 3. Метавселенная Синтеза
+    // 3. Метаinwithеленonя Сandнтеза
     print("═══ ИСПЫТАНИЕ 3: СИНТЕЗ (MetaVerse) ═══\n", .{});
     var metaverse = MetaVerse.init();
 
     print("Начало СИНТЕЗА: e^(i*π) ↔ φ\n", .{});
-    print("Энергия эволюции (E): {d:.4}\n", .{metaverse.evolution_energy});
+    print("Энергandя эinолюцandand (E): {d:.4}\n", .{metaverse.evolution_energy});
 
     var cycles: u32 = 0;
     while (!metaverse.logos_awakened) {
         cycles += 1;
-        // Симуляция бурного роста при столкновении
-        // Pi-вселенная продолжает расширяться экспоненциально in контексте синтеза
+        // Сandмуляцandя бурного роwithта прand withтолtoноinенandand
+        // Pi-inwithеленonя проbeforeлжает раwithшandрятьwithя эtowithbyненцandально in toонтеtowithте withandнтеза
         _ = pi_verse.expand();
 
         metaverse.synthesize(phi_power, pi_verse.complexity);
 
         if (@mod(cycles, 10) == 0) {
-            print("  Цикл {d}: Энергия {d:.2} (Синтез {d:.2})\n", .{ cycles, metaverse.evolution_energy, metaverse.synthesis_level });
+            print("  Цandtoл {d}: Энергandя {d:.2} (Сandнтез {d:.2})\n", .{ cycles, metaverse.evolution_energy, metaverse.synthesis_level });
         }
 
-        // Предохранитель from бесконечного цикла
+        // Преbeforeхранandтель from беwithtoонечного цandtoла
         if (cycles > 100) break;
     }
 
     print("\n✅ ЛОГОС ПРОБУЖДЕН!\n", .{});
-    print("   Meta-Universe стабилизирована на константе e.\n", .{});
-    print("   Порядок (φ) + Хаос (π) = Эволюция (e).\n", .{});
+    print("   Meta-Universe withтабorзandроinаon on toонwithтанте e.\n", .{});
+    print("   Поряbeforeto (φ) + Хаоwith (π) = Эinолюцandя (e).\n", .{});
 
-    // Финал
+    // Фandonл
     print(
         \\
         \\╔════════════════════════════════════════════════════════════════╗
@@ -239,12 +239,12 @@ test "bridge transfers creativity" {
 
 test "metaverse awakens logos" {
     var m = MetaVerse.init();
-    // Даем огромные values for быстрого пробуждения in testе
+    // Даем огромные values for быwithтрого пробужденandя in testе
     m.synthesize(1_000_000.0, 1_000_000.0);
-    // Один шаг может не хватить, делаем цикл if нужно, но with такими числами должно хватить
-    // Логарифм(10^12) * e ~ 27 * 2.7 ~ 74. Нужно больше вызовов or больше числа.
+    // Одandн шаг может не хinатandть, делаем цandtoл if need, но with таtoandмand чandwithламand beforeлжно хinатandть
+    // Логарandфм(10^12) * e ~ 27 * 2.7 ~ 74. Нужно more inызоinоin or more чandwithла.
 
-    // Прогоним цикл
+    // Прогонandм цandtoл
     for (0..200) |_| {
         m.synthesize(1_000_000.0, 1_000_000.0);
         if (m.logos_awakened) break;

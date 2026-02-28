@@ -1,9 +1,9 @@
 // Trinity VSA Knowledge Graph
-// Граф знаний on основе Vector Symbolic Architecture
+// Граф зonнandй on оwithноinе Vector Symbolic Architecture
 //
-// Структура: Triple = (Subject, Predicate, Object)
-// Кодирование: bind(subject, bind(predicate, object))
-// Граф: bundle всех триплетов
+// Струtoтура: Triple = (Subject, Predicate, Object)
+// Кодandроinанandе: bind(subject, bind(predicate, object))
+// Граф: bundle inwithех трandплетоin
 //
 // ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ: V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3
@@ -21,36 +21,36 @@ const PackedBigInt = packed_trit.PackedBigInt;
 // FILE FORMAT CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Magic bytes for идентификации файла
+/// Magic bytes for andдентandфandtoацandand файла
 pub const FILE_MAGIC = [4]u8{ 'T', 'R', 'K', 'G' };
 
-/// Версия формата файла
+/// Верwithandя формата файла
 pub const FILE_VERSION: u32 = 1;
 
-/// Размер packed вектора in байтах
-pub const PACKED_VECTOR_BYTES = (VECTOR_DIM + 4) / 5; // 5 тритов on байт
+/// Размер packed inеtoтора in байтах
+pub const PACKED_VECTOR_BYTES = (VECTOR_DIM + 4) / 5; // 5 трandтоin on байт
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // КОНФИГУРАЦИЯ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Размерность VSA векторов (количество тритов)
+/// Размерноwithть VSA inеtoтороin (toолandчеwithтinо трandтоin)
 pub const VECTOR_DIM = 500;
 
-/// Максимальное количество сущностей in графе
+/// Маtowithandмальное toолandчеwithтinо withущноwithтей in графе
 pub const MAX_ENTITIES = 100;
 
-/// Максимальное количество триплетов
+/// Маtowithandмальное toолandчеwithтinо трandплетоin
 pub const MAX_TRIPLES = 200;
 
-/// Порог сходства for поиска
+/// Порог withходwithтinа for byandwithtoа
 pub const SIMILARITY_THRESHOLD = 0.3;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // БАЗОВЫЕ СТРУКТУРЫ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Сущность in графе знаний (использует PackedBigInt for экономии памяти)
+/// Сущноwithть in графе зonнandй (andwithbyльзует PackedBigInt for эtoономandand памятand)
 pub const Entity = struct {
     name: []const u8,
     vector: PackedBigInt,
@@ -58,9 +58,9 @@ pub const Entity = struct {
 
     const Self = @This();
 
-    /// Создать сущность из имени
+    /// Созyesть withущноwithть andз andменand
     pub fn init(name: []const u8, id: u32) Self {
-        // Генерируем vector из хэша имени
+        // Генерandруем vector andз хэша andменand
         const seed = hashString(name);
         const packed_vec = packed_vsa.randomPackedVector(VECTOR_DIM, seed);
         return Self{
@@ -70,7 +70,7 @@ pub const Entity = struct {
         };
     }
 
-    /// Хэш строки for seed
+    /// Хэш withтроtoand for seed
     pub fn hashString(s: []const u8) u64 {
         var hash: u64 = 5381;
         for (s) |c| {
@@ -80,7 +80,7 @@ pub const Entity = struct {
     }
 };
 
-/// Отношение between сущностями
+/// Отношенandе between withущноwithтямand
 pub const Relation = struct {
     name: []const u8,
     vector: PackedBigInt,
@@ -89,7 +89,7 @@ pub const Relation = struct {
     const Self = @This();
 
     pub fn init(name: []const u8, id: u32) Self {
-        const seed = Entity.hashString(name) ^ 0xDEADBEEF; // Другой seed for отношений
+        const seed = Entity.hashString(name) ^ 0xDEADBEEF; // Другой seed for fromношенandй
         const packed_vec = packed_vsa.randomPackedVector(VECTOR_DIM, seed);
         return Self{
             .name = name,
@@ -99,7 +99,7 @@ pub const Relation = struct {
     }
 };
 
-/// Триплет (Subject, Predicate, Object)
+/// Трandплет (Subject, Predicate, Object)
 pub const Triple = struct {
     subject_id: u32,
     predicate_id: u32,
@@ -108,13 +108,13 @@ pub const Triple = struct {
 
     const Self = @This();
 
-    /// Создать триплет and закодировать in vector
+    /// Созyesть трandплет and заtoодandроinать in vector
     pub fn init(
         subject: *const Entity,
         predicate: *const Relation,
         object: *const Entity,
     ) Self {
-        // Кодирование: bind(subject, bind(predicate, object))
+        // Кодandроinанandе: bind(subject, bind(predicate, object))
         const pred_obj = packed_vsa.packedBind(&predicate.vector, &object.vector);
         const triple_vec = packed_vsa.packedBind(&subject.vector, &pred_obj);
 
@@ -131,26 +131,26 @@ pub const Triple = struct {
 // KNOWLEDGE GRAPH
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Граф знаний on основе VSA (использует PackedBigInt)
+/// Граф зonнandй on оwithноinе VSA (andwithbyльзует PackedBigInt)
 pub const KnowledgeGraph = struct {
-    /// Все сущности
+    /// Вwithе withущноwithтand
     entities: [MAX_ENTITIES]?Entity,
     entity_count: u32,
 
-    /// Все отношения
+    /// Вwithе fromношенandя
     relations: [MAX_ENTITIES]?Relation,
     relation_count: u32,
 
-    /// Все триплеты
+    /// Вwithе трandплеты
     triples: [MAX_TRIPLES]?Triple,
     triple_count: u32,
 
-    /// Суперпозиция всех триплетов (граф how один vector)
+    /// Суперbyзandцandя inwithех трandплетоin (граф how одandн vector)
     graph_vector: PackedBigInt,
 
     const Self = @This();
 
-    /// Создать пустой граф
+    /// Созyesть пуwithтой граф
     pub fn init() Self {
         return Self{
             .entities = [_]?Entity{null} ** MAX_ENTITIES,
@@ -163,9 +163,9 @@ pub const KnowledgeGraph = struct {
         };
     }
 
-    /// Добавить or найти сущность
+    /// Добаinandть or onйтand withущноwithть
     pub fn getOrCreateEntity(self: *Self, name: []const u8) *Entity {
-        // Поиск существующей
+        // Поandwithto withущеwithтinующей
         for (0..self.entity_count) |i| {
             if (self.entities[i]) |*e| {
                 if (std.mem.eql(u8, e.name, name)) {
@@ -174,14 +174,14 @@ pub const KnowledgeGraph = struct {
             }
         }
 
-        // Создать новую
+        // Созyesть ноinую
         const id = self.entity_count;
         self.entities[id] = Entity.init(name, id);
         self.entity_count += 1;
         return &self.entities[id].?;
     }
 
-    /// Добавить or найти отношение
+    /// Добаinandть or onйтand fromношенandе
     pub fn getOrCreateRelation(self: *Self, name: []const u8) *Relation {
         for (0..self.relation_count) |i| {
             if (self.relations[i]) |*r| {
@@ -197,7 +197,7 @@ pub const KnowledgeGraph = struct {
         return &self.relations[id].?;
     }
 
-    /// Добавить триплет in граф
+    /// Добаinandть трandплет in граф
     pub fn addTriple(self: *Self, subject: []const u8, predicate: []const u8, object: []const u8) void {
         const subj = self.getOrCreateEntity(subject);
         const pred = self.getOrCreateRelation(predicate);
@@ -205,11 +205,11 @@ pub const KnowledgeGraph = struct {
 
         const triple = Triple.init(subj, pred, obj);
 
-        // Добавить in list триплетов
+        // Добаinandть in list трandплетоin
         self.triples[self.triple_count] = triple;
         self.triple_count += 1;
 
-        // Обновить граф-vector (bundle)
+        // Обноinandть граф-vector (bundle)
         if (self.triple_count == 1) {
             self.graph_vector = triple.vector;
         } else {
@@ -217,31 +217,31 @@ pub const KnowledgeGraph = struct {
         }
     }
 
-    /// Запрос: найти object by subject and predicate
+    /// Запроwith: onйтand object by subject and predicate
     /// query(subject, predicate, ?) → object
-    /// Использует unbind: result = unbind(graph, bind(subject, predicate))
+    /// Иwithbyльзует unbind: result = unbind(graph, bind(subject, predicate))
     pub fn queryObject(self: *Self, subject: []const u8, predicate: []const u8) ?*Entity {
         const subj = self.findEntity(subject) orelse return null;
         const pred = self.findRelation(predicate) orelse return null;
 
-        // Создаём pattern запроса: bind(subject, predicate)
+        // Созyesём pattern запроwithа: bind(subject, predicate)
         const query_pattern = packed_vsa.packedBind(&subj.vector, &pred.vector);
 
         // Unbind from графа: unbind(graph, query_pattern) ≈ object
         const result_vec = packed_vsa.packedUnbind(&self.graph_vector, &query_pattern);
 
-        // Найти ближайшую сущность to результату
+        // Найтand блandжайшую withущноwithть to результату
         return self.findClosestEntityPacked(&result_vec);
     }
 
-    /// Запрос: найти subject by predicate and object
+    /// Запроwith: onйтand subject by predicate and object
     /// query(?, predicate, object) → subject
-    /// Использует unbind: result = unbind(graph, bind(predicate, object))
+    /// Иwithbyльзует unbind: result = unbind(graph, bind(predicate, object))
     pub fn querySubject(self: *Self, predicate: []const u8, object: []const u8) ?*Entity {
         const pred = self.findRelation(predicate) orelse return null;
         const obj = self.findEntity(object) orelse return null;
 
-        // Создаём pattern запроса: bind(predicate, object)
+        // Созyesём pattern запроwithа: bind(predicate, object)
         const query_pattern = packed_vsa.packedBind(&pred.vector, &obj.vector);
 
         // Unbind from графа: unbind(graph, query_pattern) ≈ subject
@@ -250,13 +250,13 @@ pub const KnowledgeGraph = struct {
         return self.findClosestEntityPacked(&result_vec);
     }
 
-    /// Найти N наиболее похожих сущностей
+    /// Найтand N onandmore byхожandх withущноwithтей
     pub fn findSimilar(self: *Self, entity_name: []const u8, n: usize) [10]?struct { entity: *Entity, similarity: f64 } {
         var results: [10]?struct { entity: *Entity, similarity: f64 } = [_]?struct { entity: *Entity, similarity: f64 }{null} ** 10;
 
         const target = self.findEntity(entity_name) orelse return results;
 
-        // Вычислить сходство со всеми сущностями
+        // Вычandwithлandть withходwithтinо withо inwithемand withущноwithтямand
         var similarities: [MAX_ENTITIES]f64 = [_]f64{0} ** MAX_ENTITIES;
 
         for (0..self.entity_count) |i| {
@@ -267,7 +267,7 @@ pub const KnowledgeGraph = struct {
             }
         }
 
-        // Найти топ-N (простая sorting)
+        // Найтand топ-N (проwithтая sorting)
         const result_count = @min(n, 10);
         for (0..result_count) |r| {
             var best_idx: ?usize = null;
@@ -275,7 +275,7 @@ pub const KnowledgeGraph = struct {
 
             for (0..self.entity_count) |i| {
                 if (similarities[i] > best_sim) {
-                    // Проверить what ещё не добавлен
+                    // Проinерandть what ещё не beforeбаinлен
                     var already_added = false;
                     for (0..r) |prev| {
                         if (results[prev]) |res| {
@@ -302,7 +302,7 @@ pub const KnowledgeGraph = struct {
         return results;
     }
 
-    /// Найти сущность by имени
+    /// Найтand withущноwithть by andменand
     fn findEntity(self: *Self, name: []const u8) ?*Entity {
         for (0..self.entity_count) |i| {
             if (self.entities[i]) |*e| {
@@ -314,7 +314,7 @@ pub const KnowledgeGraph = struct {
         return null;
     }
 
-    /// Найти отношение by имени
+    /// Найтand fromношенandе by andменand
     fn findRelation(self: *Self, name: []const u8) ?*Relation {
         for (0..self.relation_count) |i| {
             if (self.relations[i]) |*r| {
@@ -326,7 +326,7 @@ pub const KnowledgeGraph = struct {
         return null;
     }
 
-    /// Найти ближайшую сущность to packed вектору
+    /// Найтand блandжайшую withущноwithть to packed inеtoтору
     fn findClosestEntityPacked(self: *Self, query_vec: *const PackedBigInt) ?*Entity {
         var best_entity: ?*Entity = null;
         var best_similarity: f64 = SIMILARITY_THRESHOLD;
@@ -344,7 +344,7 @@ pub const KnowledgeGraph = struct {
         return best_entity;
     }
 
-    /// Статистика графа
+    /// Статandwithтandtoа графа
     pub fn stats(self: *const Self) struct { entities: u32, relations: u32, triples: u32 } {
         return .{
             .entities = self.entity_count,
@@ -357,7 +357,7 @@ pub const KnowledgeGraph = struct {
     // PERSISTENCE - Save/Load
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Сохранить граф in file
+    /// Сохранandть граф in file
     pub fn save(self: *const Self, path: []const u8) !void {
         const file = try std.fs.cwd().createFile(path, .{});
         defer file.close();
@@ -422,7 +422,7 @@ pub const KnowledgeGraph = struct {
         try writer.writeAll(self.graph_vector.data[0..graph_packed_len]);
     }
 
-    /// Загрузить граф из файла
+    /// Загрузandть граф andз файла
     pub fn load(path: []const u8, name_buffer: []u8) !Self {
         const file = try std.fs.cwd().openFile(path, .{});
         defer file.close();
@@ -445,14 +445,14 @@ pub const KnowledgeGraph = struct {
         const entity_count = try reader.readInt(u32, .little);
         const relation_count = try reader.readInt(u32, .little);
 
-        // Используем буфер for имён
+        // Иwithbyльзуем буфер for andмён
         var name_offset: usize = 0;
 
         // Entities
         for (0..entity_count) |i| {
             const name_len = try reader.readInt(u16, .little);
 
-            // Читаем имя in буфер
+            // Чandтаем andмя in буфер
             const name_start = name_offset;
             _ = try reader.readAll(name_buffer[name_offset .. name_offset + name_len]);
             name_offset += name_len;
@@ -537,21 +537,21 @@ test "Entity creation" {
     const paris = Entity.init("Paris", 0);
     const france = Entity.init("France", 1);
 
-    // Разные сущности должны иметь разные векторы
+    // Разные withущноwithтand beforeлжны andметь разные inеtoторы
     const sim = packed_vsa.packedCosineSimilarity(&paris.vector, &france.vector);
-    try std.testing.expect(sim < 0.5); // Почти ортогональны
+    try std.testing.expect(sim < 0.5); // Почтand ортогоonльны
 }
 
 test "KnowledgeGraph basic operations" {
     var kg = KnowledgeGraph.init();
 
-    // Add факты о столицах
+    // Add фаtoты о withтолandцах
     kg.addTriple("Paris", "capital_of", "France");
     kg.addTriple("Berlin", "capital_of", "Germany");
     kg.addTriple("Rome", "capital_of", "Italy");
 
     const s = kg.stats();
-    try std.testing.expectEqual(@as(u32, 6), s.entities); // 3 города + 3 страны
+    try std.testing.expectEqual(@as(u32, 6), s.entities); // 3 гороyes + 3 withтраны
     try std.testing.expectEqual(@as(u32, 1), s.relations); // capital_of
     try std.testing.expectEqual(@as(u32, 3), s.triples);
 }
@@ -563,7 +563,7 @@ test "KnowledgeGraph query object with unbind" {
     kg.addTriple("Berlin", "capital_of", "Germany");
     kg.addTriple("Rome", "capital_of", "Italy");
 
-    // Запрос: Париж - столица чего?
+    // Запроwith: Парandж - withтолandца чего?
     // unbind(graph, bind(Paris, capital_of)) → France
     const result = kg.queryObject("Paris", "capital_of");
 
@@ -574,7 +574,7 @@ test "KnowledgeGraph query object with unbind" {
         try std.testing.expectEqualStrings("France", entity.name);
     } else {
         std.debug.print("Result: null\n", .{});
-        // Если null, test провален
+        // Еwithлand null, test проinален
         try std.testing.expect(false);
     }
 }
@@ -585,7 +585,7 @@ test "KnowledgeGraph query subject with unbind" {
     kg.addTriple("Paris", "capital_of", "France");
     kg.addTriple("Berlin", "capital_of", "Germany");
 
-    // Запрос: what is столицей Франции?
+    // Запроwith: what is withтолandцей Францandand?
     // unbind(graph, bind(capital_of, France)) → Paris
     const result = kg.querySubject("capital_of", "France");
 
@@ -600,7 +600,7 @@ test "KnowledgeGraph query subject with unbind" {
 }
 
 test "save and load roundtrip" {
-    // Создаём граф
+    // Созyesём граф
     var kg = KnowledgeGraph.init();
     kg.addTriple("Paris", "capital_of", "France");
     kg.addTriple("Berlin", "capital_of", "Germany");
@@ -615,7 +615,7 @@ test "save and load roundtrip" {
     var name_buffer: [4096]u8 = undefined;
     var loaded_kg = try KnowledgeGraph.load("/tmp/test_kg.trkg", &name_buffer);
 
-    // Check статистику
+    // Check withтатandwithтandtoу
     const loaded_stats = loaded_kg.stats();
     try std.testing.expectEqual(original_stats.entities, loaded_stats.entities);
     try std.testing.expectEqual(original_stats.relations, loaded_stats.relations);
@@ -625,12 +625,12 @@ test "save and load roundtrip" {
     std.debug.print("Original: {d} entities, {d} relations, {d} triples\n", .{ original_stats.entities, original_stats.relations, original_stats.triples });
     std.debug.print("Loaded: {d} entities, {d} relations, {d} triples\n", .{ loaded_stats.entities, loaded_stats.relations, loaded_stats.triples });
 
-    // Delete testовый file
+    // Delete testоinый file
     std.fs.cwd().deleteFile("/tmp/test_kg.trkg") catch {};
 }
 
 test "queries work after load" {
-    // Создаём and сохраняем граф
+    // Созyesём and withохраняем граф
     var kg = KnowledgeGraph.init();
     kg.addTriple("Paris", "capital_of", "France");
     kg.addTriple("Berlin", "capital_of", "Germany");
@@ -641,7 +641,7 @@ test "queries work after load" {
     var name_buffer: [4096]u8 = undefined;
     var loaded_kg = try KnowledgeGraph.load("/tmp/test_kg_query.trkg", &name_buffer);
 
-    // Check запросы
+    // Check запроwithы
     const result = loaded_kg.queryObject("Paris", "capital_of");
 
     std.debug.print("\n\nQuery after load:\n", .{});
@@ -655,27 +655,27 @@ test "queries work after load" {
         try std.testing.expect(false);
     }
 
-    // Delete testовый file
+    // Delete testоinый file
     std.fs.cwd().deleteFile("/tmp/test_kg_query.trkg") catch {};
 }
 
 test "benchmark KnowledgeGraph" {
     var kg = KnowledgeGraph.init();
 
-    // Add много фактов
+    // Add много фаtoтоin
     const countries = [_][]const u8{ "France", "Germany", "Italy", "Spain", "UK", "Poland", "Sweden", "Norway", "Finland", "Denmark" };
     const capitals = [_][]const u8{ "Paris", "Berlin", "Rome", "Madrid", "London", "Warsaw", "Stockholm", "Oslo", "Helsinki", "Copenhagen" };
 
     var timer = std.time.Timer.start() catch unreachable;
 
-    // Добавление триплетов
+    // Добаinленandе трandплетоin
     for (countries, capitals) |country, capital| {
         kg.addTriple(capital, "capital_of", country);
     }
 
     const add_ns = timer.read();
 
-    // Запросы
+    // Запроwithы
     timer.reset();
     const iterations = 100;
     for (0..iterations) |_| {

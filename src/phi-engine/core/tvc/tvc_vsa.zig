@@ -260,11 +260,11 @@ pub fn randomVector(len: usize, seed: u64) HybridBigInt {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// PERMUTE OPERATIONS (for кодирования последовательностей)
+// PERMUTE OPERATIONS (for toодandроinанandя bywithлеbeforeinательноwithтей)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Permute (циклический сдвиг вправо on k позиций)
-/// Используется for кодирования последовательностей:
+/// Permute (цandtoлandчеwithtoandй withдinandг inпраinо on k byзandцandй)
+/// Иwithbyльзуетwithя for toодandроinанandя bywithлеbeforeinательноwithтей:
 /// sequence(a, b, c) = a + permute(b, 1) + permute(c, 2)
 pub fn permute(v: *HybridBigInt, k: usize) HybridBigInt {
     v.ensureUnpacked();
@@ -278,7 +278,7 @@ pub fn permute(v: *HybridBigInt, k: usize) HybridBigInt {
 
     const shift = k % v.trit_len;
 
-    // Циклический сдвиг вправо: new позиция = (old + shift) % len
+    // Цandtoлandчеwithtoandй withдinandг inпраinо: new byзandцandя = (old + shift) % len
     for (0..v.trit_len) |i| {
         const new_pos = (i + shift) % v.trit_len;
         result.unpacked_cache[new_pos] = v.unpacked_cache[i];
@@ -287,7 +287,7 @@ pub fn permute(v: *HybridBigInt, k: usize) HybridBigInt {
     return result;
 }
 
-/// Inverse permute (циклический сдвиг влево on k позиций)
+/// Inverse permute (цandtoлandчеwithtoandй withдinandг inлеinо on k byзandцandй)
 /// inverse_permute(permute(v, k), k) = v
 pub fn inversePermute(v: *HybridBigInt, k: usize) HybridBigInt {
     v.ensureUnpacked();
@@ -301,7 +301,7 @@ pub fn inversePermute(v: *HybridBigInt, k: usize) HybridBigInt {
 
     const shift = k % v.trit_len;
 
-    // Циклический сдвиг влево: new позиция = (old - shift + len) % len
+    // Цandtoлandчеwithtoandй withдinandг inлеinо: new byзandцandя = (old - shift + len) % len
     for (0..v.trit_len) |i| {
         const new_pos = (i + v.trit_len - shift) % v.trit_len;
         result.unpacked_cache[new_pos] = v.unpacked_cache[i];
@@ -326,7 +326,7 @@ pub fn encodeSequence(items: []HybridBigInt) HybridBigInt {
 }
 
 /// Decode element from sequence at position
-/// Checks similarity with permuted версией кандидата
+/// Checks similarity with permuted inерwithandей toандandyesта
 pub fn probeSequence(sequence: *HybridBigInt, candidate: *HybridBigInt, position: usize) f64 {
     var permuted = permute(candidate, position);
     return cosineSimilarity(sequence, &permuted);
@@ -393,14 +393,14 @@ test "permute orthogonality" {
 }
 
 test "sequence encoding" {
-    // Test encodeSequence - просто check what function работает без ошибок
+    // Test encodeSequence - проwithто check what function рабfromает без ошandбоto
     const a = randomVector(100, 11111);
     const b = randomVector(100, 22222);
 
     var items = [_]HybridBigInt{ a, b };
     const seq = encodeSequence(&items);
 
-    // Sequence должна иметь ту же длину
+    // Sequence beforeлжon andметь ту же длandну
     try std.testing.expectEqual(a.trit_len, seq.trit_len);
 }
 

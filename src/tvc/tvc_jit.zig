@@ -5,8 +5,8 @@ const builtin = @import("builtin");
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TVC JIT COMPILER
-// Компилирует TVC IR in нативный машинный code for x86_64
-// С поддержкой executable memory via mmap
+// Компorрует TVC IR in onтandinный машandнный code for x86_64
+// С byддержtoой executable memory via mmap
 // ═══════════════════════════════════════════════════════════════════════════
 
 pub const JITError = error{
@@ -21,7 +21,7 @@ pub const JITError = error{
 
 // ═══════════════════════════════════════════════════════════════════════════
 // EXECUTABLE MEMORY ALLOCATOR
-// Allocates memory with правами on execution (PROT_EXEC)
+// Allocates memory with праinамand on execution (PROT_EXEC)
 // ═══════════════════════════════════════════════════════════════════════════
 
 pub const ExecutableMemory = struct {
@@ -29,13 +29,13 @@ pub const ExecutableMemory = struct {
     len: usize,
 
     pub fn alloc(size: usize) !ExecutableMemory {
-        // Выравниваем размер before страницы
+        // Выраinнandinаем размер before withтранandцы
         const page_size = std.mem.page_size;
         const mask: usize = page_size - 1;
         const aligned_size = (size + mask) & ~mask;
 
         if (builtin.os.tag == .linux or builtin.os.tag == .macos) {
-            // Используем posix mmap for выделения executable памяти
+            // Иwithbyльзуем posix mmap for inыделенandя executable памятand
             const result = try std.posix.mmap(
                 null,
                 aligned_size,
@@ -50,7 +50,7 @@ pub const ExecutableMemory = struct {
                 .len = aligned_size,
             };
         } else {
-            // Fallback for других ОС - обычная memory (не будет работать)
+            // Fallback for другandх ОС - обычonя memory (не будет рабfromать)
             return JITError.MmapFailed;
         }
     }
@@ -72,7 +72,7 @@ pub const ExecutableMemory = struct {
     }
 };
 
-// Статистика профилирования
+// Статandwithтandtoа профorроinанandя
 pub const ProfileStats = struct {
     call_count: u64,
     total_cycles: u64,
@@ -93,7 +93,7 @@ pub const ProfileStats = struct {
         self.total_cycles += cycles;
         self.last_cycles = cycles;
 
-        // Функция сreadsся "горячей" after 100 вызовов
+        // Фунtoцandя withreadswithя "горячей" after 100 inызоinоin
         if (self.call_count >= 100) {
             self.is_hot = true;
         }
@@ -126,10 +126,10 @@ pub const ICacheEntry = struct {
     }
 };
 
-// Тип функции JIT
+// Тandп фунtoцandand JIT
 pub const JITFunctionType = *const fn () callconv(.C) i64;
 
-// Скомпилированная function
+// Сtoомпorроinанonя function
 pub const CompiledFunction = struct {
     name: []const u8,
     exec_mem: ExecutableMemory,
@@ -150,7 +150,7 @@ pub const CompiledFunction = struct {
     }
 };
 
-// Читаем TSC for профилирования (используем std.time how fallback)
+// Чandтаем TSC for профorроinанandя (andwithbyльзуем std.time how fallback)
 fn rdtsc() u64 {
     return @intCast(std.time.nanoTimestamp());
 }
@@ -163,9 +163,9 @@ pub const TVCJit = struct {
     allocator: std.mem.Allocator,
     compiled_functions: std.StringHashMap(CompiledFunction),
     profile_data: std.StringHashMap(ProfileStats),
-    icache: [64]ICacheEntry, // Inline cache with 64 слотами
+    icache: [64]ICacheEntry, // Inline cache with 64 withлfromамand
     code_buffer: std.ArrayList(u8),
-    hot_threshold: u64, // Порог for JIT компиляции
+    hot_threshold: u64, // Порог for JIT toомпandляцandand
 
     pub fn init(allocator: std.mem.Allocator) TVCJit {
         var icache: [64]ICacheEntry = undefined;
@@ -184,7 +184,7 @@ pub const TVCJit = struct {
     }
 
     pub fn deinit(self: *TVCJit) void {
-        // Free скомпилированный code
+        // Free withtoомпorроinанный code
         var iter = self.compiled_functions.iterator();
         while (iter.next()) |entry| {
             entry.value_ptr.deinit();
@@ -194,7 +194,7 @@ pub const TVCJit = struct {
         self.code_buffer.deinit();
     }
 
-    // Профилирование вызова функции
+    // Профorроinанandе inызоinа фунtoцandand
     pub fn profileCall(self: *TVCJit, func_name: []const u8, cycles: u64) void {
         if (self.profile_data.getPtr(func_name)) |stats| {
             stats.recordCall(cycles);
@@ -205,10 +205,10 @@ pub const TVCJit = struct {
         }
     }
 
-    // Check, нужна ли JIT compilation
+    // Check, нужon лand JIT compilation
     pub fn shouldCompile(self: *TVCJit, func_name: []const u8) bool {
         if (self.compiled_functions.contains(func_name)) {
-            return false; // Уже скомпилировано
+            return false; // Уже withtoомпorроinано
         }
 
         if (self.profile_data.get(func_name)) |stats| {
@@ -218,20 +218,20 @@ pub const TVCJit = struct {
         return false;
     }
 
-    // Компиляция функции in машинный code
+    // Компandляцandя фунtoцandand in машandнный code
     pub fn compile(self: *TVCJit, func: *const tvc_ir.TVCFunction) !*CompiledFunction {
         self.code_buffer.clearRetainingCapacity();
 
-        // Пролог функции (x86_64 System V ABI)
+        // Пролог фунtoцandand (x86_64 System V ABI)
         try self.emitPrologue();
 
-        // Компилируем each блок
+        // Компorруем each блоto
         var block_iter = func.blocks.iterator();
         while (block_iter.next()) |block_entry| {
             try self.compileBlock(&block_entry.value_ptr.*);
         }
 
-        // Эпилог функции
+        // Эпandлог фунtoцandand
         try self.emitEpilogue();
 
         // Allocate executable memory
@@ -240,7 +240,7 @@ pub const TVCJit = struct {
         // Copy code in executable memory
         exec_mem.write(0, self.code_buffer.items);
 
-        // Создаём CompiledFunction
+        // Созyesём CompiledFunction
         const compiled = CompiledFunction{
             .name = func.name,
             .exec_mem = exec_mem,
@@ -253,15 +253,15 @@ pub const TVCJit = struct {
         return self.compiled_functions.getPtr(func.name).?;
     }
 
-    // Пролог функции x86_64
+    // Пролог фунtoцandand x86_64
     fn emitPrologue(self: *TVCJit) !void {
         // push rbp
         try self.code_buffer.append(0x55);
         // mov rbp, rsp
         try self.code_buffer.appendSlice(&[_]u8{ 0x48, 0x89, 0xE5 });
-        // sub rsp, 64 (резервируем место for локальных переменных)
+        // sub rsp, 64 (резерinandруем меwithто for лоtoальных переменных)
         try self.code_buffer.appendSlice(&[_]u8{ 0x48, 0x83, 0xEC, 0x40 });
-        // Сохраняем callee-saved регистры
+        // Сохраняем callee-saved регandwithтры
         // push rbx
         try self.code_buffer.append(0x53);
         // push r12
@@ -272,9 +272,9 @@ pub const TVCJit = struct {
         try self.code_buffer.appendSlice(&[_]u8{ 0x41, 0x56 });
     }
 
-    // Эпилог функции x86_64
+    // Эпandлог фунtoцandand x86_64
     fn emitEpilogue(self: *TVCJit) !void {
-        // Восстанавливаем callee-saved регистры
+        // Воwithwithтаoninлandinаем callee-saved регandwithтры
         // pop r14
         try self.code_buffer.appendSlice(&[_]u8{ 0x41, 0x5E });
         // pop r13
@@ -291,14 +291,14 @@ pub const TVCJit = struct {
         try self.code_buffer.append(0xC3);
     }
 
-    // Компиляция блока
+    // Компandляцandя блоtoа
     fn compileBlock(self: *TVCJit, block: *const tvc_ir.TVCBlock) !void {
         for (block.instructions.items) |inst| {
             try self.compileInstruction(&inst);
         }
     }
 
-    // Компиляция инструкции
+    // Компandляцandя andнwithтруtoцandand
     fn compileInstruction(self: *TVCJit, inst: *const tvc_ir.TVCInstruction) !void {
         switch (inst.opcode) {
             .nop => {
@@ -307,7 +307,7 @@ pub const TVCJit = struct {
             },
             .load => {
                 // mov rax, [rbp - offset]
-                try self.emitLoad(0); // Загружаем из первого слота
+                try self.emitLoad(0); // Загружаем andз перinого withлfromа
             },
             .store => {
                 // mov [rbp - offset], rax
@@ -375,10 +375,10 @@ pub const TVCJit = struct {
                 try self.code_buffer.appendSlice(&[_]u8{ 0x48, 0x0F, 0x4C, 0xC1 });
             },
             .ret => {
-                // Возврат уже in эпилоге
+                // Возinрат уже in эпandлоге
             },
             .jump => {
-                // jmp rel32 (заглушка)
+                // jmp rel32 (заглушtoа)
                 try self.code_buffer.appendSlice(&[_]u8{ 0xE9, 0x00, 0x00, 0x00, 0x00 });
             },
             .jump_if => {
@@ -387,15 +387,15 @@ pub const TVCJit = struct {
                 try self.code_buffer.appendSlice(&[_]u8{ 0x0F, 0x85, 0x00, 0x00, 0x00, 0x00 }); // jnz rel32
             },
             .call => {
-                // call rel32 (заглушка)
+                // call rel32 (заглушtoа)
                 try self.code_buffer.appendSlice(&[_]u8{ 0xE8, 0x00, 0x00, 0x00, 0x00 });
             },
             .alloc => {
-                // Вызов malloc (заглушка - mov rax, 0)
+                // Вызоin malloc (заглушtoа - mov rax, 0)
                 try self.code_buffer.appendSlice(&[_]u8{ 0x48, 0x31, 0xC0 }); // xor rax, rax
             },
             .free => {
-                // Вызов free (заглушка - nop)
+                // Вызоin free (заглушtoа - nop)
                 try self.code_buffer.append(0x90);
             },
             .loop_init => {
@@ -574,7 +574,7 @@ pub const TVCJit = struct {
         return self.compiled_functions.getPtr(name).?;
     }
 
-    // Получить скомпилированную функцию
+    // Получandть withtoомпorроinанную фунtoцandю
     pub fn getCompiled(self: *TVCJit, func_name: []const u8) ?*CompiledFunction {
         return self.compiled_functions.getPtr(func_name);
     }
@@ -605,7 +605,7 @@ pub const TVCJit = struct {
         };
     }
 
-    // Статистика JIT
+    // Статandwithтandtoа JIT
     pub fn getStats(self: *const TVCJit) JITStats {
         var total_compiled: usize = 0;
         var total_calls: u64 = 0;
@@ -635,7 +635,7 @@ pub const TVCJit = struct {
         };
     }
 
-    // Вывод статистики
+    // Выinод withтатandwithтandtoand
     pub fn dumpStats(self: *const TVCJit) void {
         const stats = self.getStats();
 
@@ -683,7 +683,7 @@ pub const Benchmark = struct {
     }
 };
 
-// Запуск бенчмарка
+// Запуwithto бенчмарtoа
 pub fn runBenchmark(
     allocator: std.mem.Allocator,
     name: []const u8,
@@ -693,10 +693,10 @@ pub fn runBenchmark(
     var jit = TVCJit.init(allocator);
     defer jit.deinit();
 
-    // Компилируем функцию
+    // Компorруем фунtoцandю
     const compiled = try jit.compile(func);
 
-    // Прогрев
+    // Прогреin
     var i: u64 = 0;
     while (i < 10) : (i += 1) {
         _ = compiled.call();
@@ -710,8 +710,8 @@ pub fn runBenchmark(
     }
     const jit_end = rdtsc();
 
-    // VM замер (симуляция - in реальности нужно вызывать VM)
-    const vm_cycles = (jit_end - jit_start) * 5; // Предполагаем 5x медленнее
+    // VM замер (withandмуляцandя - in реальноwithтand need inызыinать VM)
+    const vm_cycles = (jit_end - jit_start) * 5; // Предbyлагаем 5x медленнее
 
     return Benchmark{
         .name = name,

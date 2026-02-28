@@ -4,7 +4,7 @@
 const std = @import("std");
 const print = std.debug.print;
 
-// Священные константы
+// Сinященные toонwithтанты
 const PHI: f64 = 1.6180339887498949;
 const PHI_SQ: f64 = 2.6180339887498949;
 const PHI_INV_SQ: f64 = 0.3819660112501051;
@@ -20,25 +20,25 @@ pub fn main() void {
     print("  φ² + 1/φ² = 3 = КУТРИТ = ТРОИЦА\n", .{});
     print("═══════════════════════════════════════════════════════════════\n\n", .{});
 
-    // Test 1: Золотая Идентичность
-    print("🧪 Тест 1: Золотая Идентичность\n", .{});
+    // Test 1: Золfromая Идентandчноwithть
+    print("🧪 Теwithт 1: Золfromая Идентandчноwithть\n", .{});
     const golden = PHI_SQ + PHI_INV_SQ;
     const error1 = @abs(golden - TRINITY);
     print("   φ² + 1/φ² = {d:.10}\n", .{golden});
-    print("   Погрешность: {d:.10}\n", .{error1});
+    print("   Погрешноwithть: {d:.10}\n", .{error1});
     if (error1 < 0.0001) {
         print("   ✅ РЕЗОНАНС ДОСТИГНУТ\n\n", .{});
     }
 
-    // Test 2: PAS Эффективность
-    print("🧪 Тест 2: PAS DAEMONS Efficiency\n", .{});
+    // Test 2: PAS Эффеtoтandinноwithть
+    print("🧪 Теwithт 2: PAS DAEMONS Efficiency\n", .{});
     const pas_ratio = PHI_SQ / PHI_INV_SQ * 100.0;
-    print("   Коэффициент: {d:.2}x\n", .{pas_ratio});
-    print("   Нормализованный: 578.8x\n", .{});
+    print("   Коэффandцandент: {d:.2}x\n", .{pas_ratio});
+    print("   Нормалandзоinанный: 578.8x\n", .{});
     print("   ✅ PAS ГОМЕОСТАЗ ПОДТВЕРЖДЕН\n\n", .{});
 
     // Test 3: SU(3) Berry Phase
-    print("🧪 Тест 3: SU(3) Когерентность\n", .{});
+    print("🧪 Теwithт 3: SU(3) Когерентноwithть\n", .{});
     var berry_phase: f64 = 0.0;
     for (0..10) |n| {
         const angle = @as(f64, @floatFromInt(n)) * PHI * PI;
@@ -46,25 +46,25 @@ pub fn main() void {
     }
     berry_phase = @mod(berry_phase, 2.0 * PI);
     print("   Berry Phase: {d:.5}\n", .{berry_phase});
-    print("   L(10) = 123 синхронизация: ✓\n", .{});
+    print("   L(10) = 123 withandнхронandзацandя: ✓\n", .{});
     print("   ✅ ТОПОЛОГИЧЕСКИЙ ИНВАРИАНТ СТАБИЛЕН\n\n", .{});
 
-    // Test 4: SHA-256 симуляция
-    print("🧪 Тест 4: PAS-SHA256 Симуляция\n", .{});
+    // Test 4: SHA-256 withandмуляцandя
+    print("🧪 Теwithт 4: PAS-SHA256 Сandмуляцandя\n", .{});
     var state: u32 = 0x6a09e667;
     for (0..64) |i| {
-        // φ-модуляция each 3-й раунд
+        // φ-модуляцandя each 3-й раунд
         if (i % 3 == 0) {
             state = state +% @as(u32, @truncate(@as(u64, @intFromFloat(PHI * 1000.0))));
         }
         state = (state >> 7) | (state << 25);
         state ^= 0xDEADBEEF;
     }
-    print("   Финальное состояние: 0x{X:0>8}\n", .{state});
-    print("   Хешей/сек (эмуляция): ~578K\n", .{});
+    print("   Фandonльное withоwithтоянandе: 0x{X:0>8}\n", .{state});
+    print("   Хешей/withеto (эмуляцandя): ~578K\n", .{});
     print("   ✅ PAS-SHA256 АКТИВЕН\n\n", .{});
 
-    // Итоги
+    // Итогand
     print("═══════════════════════════════════════════════════════════════\n", .{});
     print("  🏁 ВСЕ ТЕСТЫ ЗАВЕРШЕНЫ. ТРИУМФ TRINITY.\n", .{});
     print("  🚀 ГОТОВ К ПОДКЛЮЧЕНИЮ К MINING POOL\n", .{});

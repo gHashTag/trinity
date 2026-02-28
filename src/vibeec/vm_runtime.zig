@@ -2085,7 +2085,7 @@ fn nativePrint(vm: *VM, args: []const Value) VMError!Value {
             .closure_val => |v| std.debug.print("<closure@{d}>", .{v.func_addr}),
             .tryte_array_val => |v| std.debug.print("<tryte_array[{d}]>", .{v.len}),
             .trit_val => |v| {
-                // Троичные символы: △=T, ▽=F, ?=U
+                // Троandчные withandмinолы: △=T, ▽=F, ?=U
                 const symbol: []const u8 = if (v > 0) "△" else if (v < 0) "▽" else "?";
                 std.debug.print("{s}", .{symbol});
             },

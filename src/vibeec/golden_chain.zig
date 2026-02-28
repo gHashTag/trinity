@@ -98,13 +98,13 @@ pub const AGENT_OS_VERSION_MINOR: u8 = 0;
 
 pub const ChainNode = enum(u3) {
     GoalParse, // 0 — Муладхара — Red
-    Decompose, // 1 — Свадхистана — Orange
-    Schedule, // 2 — Манипура — Yellow
-    Execute, // 3 — Анахата — Green
-    Monitor, // 4 — Вишуддха — Blue
-    Adapt, // 5 — Аджна — Indigo
-    Synthesize, // 6 — Сахасрара — Violet
-    Deliver, // 7 — Единство — Gold
+    Decompose, // 1 — Сinадхandwithтаon — Orange
+    Schedule, // 2 — Манandпура — Yellow
+    Execute, // 3 — Аonхата — Green
+    Monitor, // 4 — Вandшуддха — Blue
+    Adapt, // 5 — Аджon — Indigo
+    Synthesize, // 6 — Сахаwithрара — Violet
+    Deliver, // 7 — Едandнwithтinо — Gold
 
     pub fn getHue(self: ChainNode) f32 {
         return switch (self) {
@@ -4071,7 +4071,7 @@ pub const GoldenChainAgent = struct {
         var i: usize = 0;
         while (i + 3 < input.len) : (i += 1) {
             if (std.mem.eql(u8, input[i .. i + 3], "and") or
-                std.mem.eql(u8, input[i .. i + 3], " и "))
+                std.mem.eql(u8, input[i .. i + 3], " and "))
             {
                 self.subtask_count += 1;
             }

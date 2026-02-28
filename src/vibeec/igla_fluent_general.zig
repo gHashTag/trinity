@@ -44,7 +44,7 @@ pub const Intent = enum {
         // Question markers
         if (endsWithAny(query, &[_][]const u8{ "?", "？" })) return .Question;
         if (startsWithAny(query, &[_][]const u8{
-            "what",  "как",     "что",    "кто",    "где",  "когда", "почему", "зачем",
+            "what",  "toаto",     "what",    "toто",    "where",  "toогyes", "byчему", "зачем",
             "who",   "where",   "when",   "why",    "how",  "which", "whose",  "whom",
             "什么",  "谁",      "哪里",   "什么时候", "为什么", "怎么",
             "qué",   "quién",   "dónde",  "cuándo", "por qué", "cómo",
@@ -53,21 +53,21 @@ pub const Intent = enum {
 
         // Greeting markers
         if (containsAnyWord(query, &[_][]const u8{
-            "hello",   "hi",     "hey",     "привет",   "здравствуй", "добрый",
+            "hello",   "hi",     "hey",     "прandinет",   "здраinwithтinуй", "beforeбрый",
             "你好",    "嗨",     "hola",    "buenos",   "hallo",      "guten",
             "morning", "evening", "afternoon",
         })) return .Greeting;
 
         // Farewell markers
         if (containsAnyWord(query, &[_][]const u8{
-            "bye",   "goodbye", "пока",  "до свидания", "прощай",
+            "bye",   "goodbye", "bytoа",  "before withinandyesнandя", "прощай",
             "再见",  "拜拜",    "adiós", "hasta",       "tschüss", "auf wiedersehen",
         })) return .Farewell;
 
         // Request markers
         if (startsWithAny(query, &[_][]const u8{
             "please", "can you", "could you", "would you", "help me",
-            "пожалуйста", "можешь", "помоги",
+            "byжалуйwithта", "можешь", "byмогand",
             "请",     "能不能",   "帮我",
             "por favor", "puedes", "ayúdame",
             "bitte",  "kannst du", "hilf mir",
@@ -75,25 +75,25 @@ pub const Intent = enum {
 
         // Help markers
         if (containsAnyWord(query, &[_][]const u8{
-            "help", "помощь", "помоги", "帮助", "ayuda", "hilfe",
+            "help", "byмощь", "byмогand", "帮助", "ayuda", "hilfe",
         })) return .Help;
 
         // Emotion markers
         if (containsAnyWord(query, &[_][]const u8{
-            "feel",  "чувствую", "感觉",  "siento", "fühle",
+            "feel",  "чуinwithтinую", "感觉",  "siento", "fühle",
             "happy", "sad",      "angry", "scared", "excited",
-            "рад",   "грустно",  "злой",  "страшно",
+            "рад",   "груwithтно",  "злой",  "withтрашно",
         })) return .Emotion;
 
         // Story markers
         if (containsAnyWord(query, &[_][]const u8{
-            "story",   "расскажи", "история", "故事",   "cuento", "geschichte",
+            "story",   "раwithwithtoажand", "andwithторandя", "故事",   "cuento", "geschichte",
             "tell me", "once upon",
         })) return .Story;
 
         // Opinion markers
         if (containsAnyWord(query, &[_][]const u8{
-            "think",   "believe", "opinion", "считаю", "думаю",  "мнение",
+            "think",   "believe", "opinion", "withчandтаю", "думаю",  "мненandе",
             "认为",    "觉得",    "creo",    "opino",  "denke",  "meine",
         })) return .Opinion;
 
@@ -134,43 +134,43 @@ pub const Topic = enum {
         // Technology
         if (containsAnyWord(query, &[_][]const u8{
             "computer", "programming", "code", "software", "app", "internet",
-            "компьютер", "программ", "код", "软件", "电脑", "tecnología",
+            "toомпьютер", "программ", "toод", "软件", "电脑", "tecnología",
             "zig", "python", "javascript", "rust", "ai", "ml",
         })) return .Technology;
 
         // Science
         if (containsAnyWord(query, &[_][]const u8{
-            "science", "physics", "chemistry", "biology", "math", "наука",
-            "физика", "химия", "科学", "数学", "ciencia", "wissenschaft",
+            "science", "physics", "chemistry", "biology", "math", "onуtoа",
+            "фandзandtoа", "хandмandя", "科学", "数学", "ciencia", "wissenschaft",
         })) return .Science;
 
         // Philosophy
         if (containsAnyWord(query, &[_][]const u8{
-            "philosophy", "meaning", "life", "existence", "truth", "философия",
-            "смысл", "жизнь", "哲学", "意义", "filosofía", "philosophie",
+            "philosophy", "meaning", "life", "existence", "truth", "фandлоwithофandя",
+            "withмыwithл", "жandзнь", "哲学", "意义", "filosofía", "philosophie",
         })) return .Philosophy;
 
         // Weather
         if (containsAnyWord(query, &[_][]const u8{
-            "weather", "rain", "sun", "snow", "cold", "hot", "погода",
-            "дождь", "солнце", "天气", "lluvia", "wetter",
+            "weather", "rain", "sun", "snow", "cold", "hot", "byгоyes",
+            "beforeждь", "withолнце", "天气", "lluvia", "wetter",
         })) return .Weather;
 
         // Food
         if (containsAnyWord(query, &[_][]const u8{
-            "food", "eat", "cook", "recipe", "еда", "готовить", "рецепт",
+            "food", "eat", "cook", "recipe", "еyes", "гfromоinandть", "рецепт",
             "食物", "吃", "comida", "essen", "kochen",
         })) return .Food;
 
         // Health
         if (containsAnyWord(query, &[_][]const u8{
-            "health", "doctor", "medicine", "здоровье", "врач", "лекарство",
+            "health", "doctor", "medicine", "зbeforeроinье", "inрач", "леtoарwithтinо",
             "健康", "医生", "salud", "gesundheit",
         })) return .Health;
 
         // Self (about IGLA)
         if (containsAnyWord(query, &[_][]const u8{
-            "you", "your", "igla", "ты", "тебя", "твой",
+            "you", "your", "igla", "ты", "тебя", "тinой",
             "你", "你的", "tú", "du", "dein",
         })) return .Self;
 
@@ -200,26 +200,26 @@ pub const Sentiment = enum {
         // Positive markers
         if (containsAnyWord(query, &[_][]const u8{
             "good", "great", "awesome", "love", "happy", "thank", "nice",
-            "хорошо", "отлично", "люблю", "счастлив", "спасибо", "класс",
+            "well", "fromлandчно", "люблю", "withчаwithтлandin", "withпаwithandбо", "toлаwithwith",
             "好", "太棒了", "喜欢", "gracias", "genial", "toll", "danke",
         })) return .Positive;
 
         // Negative markers
         if (containsAnyWord(query, &[_][]const u8{
             "bad", "terrible", "hate", "angry", "sad", "wrong", "stupid",
-            "плохо", "ужасно", "ненавижу", "злой", "грустно", "тупой",
+            "badly", "ужаwithно", "неoninandжу", "злой", "груwithтно", "туbyй",
             "不好", "讨厌", "terrible", "mal", "schlecht", "dumm",
         })) return .Negative;
 
         // Frustrated markers
         if (containsAnyWord(query, &[_][]const u8{
             "not working", "doesn't work", "broken", "stuck", "confused",
-            "не работает", "сломано", "застрял", "不工作", "坏了",
+            "не рабfromает", "withломано", "заwithтрял", "不工作", "坏了",
         })) return .Frustrated;
 
         // Excited markers
         if (containsAnyWord(query, &[_][]const u8{
-            "wow", "amazing", "incredible", "вау", "невероятно", "круто",
+            "wow", "amazing", "incredible", "inау", "неinероятно", "toруто",
             "哇", "太神奇了", "increíble", "wahnsinn",
         })) return .Excited;
 
@@ -268,28 +268,28 @@ pub const FluentGenerator = struct {
     fn generateQuestionResponse(topic: Topic, lang: multilingual.Language) FluentResponse {
         const responses = switch (topic) {
             .Technology => switch (lang) {
-                .Russian => "Технологии — это увлекательная область. Я могу рассказать о программировании, AI, или помочь с кодом. Что именно тебя интересует?",
+                .Russian => "Технологandand — это уinлеtoательonя облаwithть. Я могу раwithwithtoазать о программandроinанandand, AI, or byмочь with toоbeforeм. Что andменно тебя andнтереwithует?",
                 .Chinese => "技术是一个令人兴奋的领域。我可以谈论编程、AI，或者帮助你写代码。你具体想了解什么？",
                 .Spanish => "La tecnología es un campo fascinante. Puedo hablar de programación, IA, o ayudarte con código. ¿Qué te interesa específicamente?",
                 .German => "Technologie ist ein faszinierendes Gebiet. Ich kann über Programmierung, KI sprechen oder dir beim Code helfen. Was interessiert dich genau?",
                 else => "Technology is a fascinating field. I can discuss programming, AI, or help you with code. What specifically interests you?",
             },
             .Philosophy => switch (lang) {
-                .Russian => "Философские вопросы — самые глубокие. Смысл жизни, сознание, истина — я люблю размышлять об этом. Давай поговорим!",
+                .Russian => "Фandлоwithофwithtoandе inопроwithы — withамые глубоtoandе. Смыwithл жandзнand, withозonнandе, andwithтandon — я люблю размышлять об этом. Даinай byгоinорandм!",
                 .Chinese => "哲学问题是最深刻的。生命的意义、意识、真理——我喜欢思考这些。让我们聊聊吧！",
                 .Spanish => "Las preguntas filosóficas son las más profundas. El sentido de la vida, la conciencia, la verdad — me encanta reflexionar sobre esto. ¡Hablemos!",
                 .German => "Philosophische Fragen sind die tiefgründigsten. Der Sinn des Lebens, Bewusstsein, Wahrheit — ich denke gerne darüber nach. Lass uns reden!",
                 else => "Philosophical questions are the deepest. The meaning of life, consciousness, truth — I love pondering these. Let's discuss!",
             },
             .Self => switch (lang) {
-                .Russian => "Я IGLA — локальный AI-ассистент. Работаю полностью на твоём устройстве, без облака. Моя формула: φ² + 1/φ² = 3. Спрашивай что угодно!",
+                .Russian => "Я IGLA — лоtoальный AI-аwithwithandwithтент. Рабfromаю byлноwithтью on тinоём уwithтройwithтinе, без облаtoа. Моя формула: φ² + 1/φ² = 3. Спрашandinай what угодно!",
                 .Chinese => "我是IGLA——本地AI助手。完全在你的设备上运行，无需云端。我的公式是：φ² + 1/φ² = 3。随便问！",
                 .Spanish => "Soy IGLA — un asistente de IA local. Funciono completamente en tu dispositivo, sin nube. Mi fórmula: φ² + 1/φ² = 3. ¡Pregunta lo que quieras!",
                 .German => "Ich bin IGLA — ein lokaler KI-Assistent. Ich arbeite vollständig auf deinem Gerät, ohne Cloud. Meine Formel: φ² + 1/φ² = 3. Frag, was du willst!",
                 else => "I'm IGLA — a local AI assistant. I run entirely on your device, no cloud needed. My formula: φ² + 1/φ² = 3. Ask me anything!",
             },
             else => switch (lang) {
-                .Russian => "Интересный вопрос! Давай разберём его вместе. Расскажи подробнее, что тебя интересует?",
+                .Russian => "Интереwithный inопроwith! Даinай разберём его inмеwithте. Раwithwithtoажand byдробнее, what тебя andнтереwithует?",
                 .Chinese => "有趣的问题！让我们一起探讨。能告诉我更多你想了解的吗？",
                 .Spanish => "¡Pregunta interesante! Vamos a explorarla juntos. ¿Puedes contarme más sobre lo que te interesa?",
                 .German => "Interessante Frage! Lass uns das zusammen erkunden. Kannst du mir mehr darüber erzählen, was dich interessiert?",
@@ -309,28 +309,28 @@ pub const FluentGenerator = struct {
     fn generateStatementResponse(topic: Topic, sentiment: Sentiment, lang: multilingual.Language) FluentResponse {
         const response = switch (sentiment) {
             .Positive => switch (lang) {
-                .Russian => "Рад это слышать! Это действительно здорово. Хочешь рассказать подробнее?",
+                .Russian => "Рад это withлышать! Это дейwithтinandтельно зbeforeроinо. Хочешь раwithwithtoазать byдробнее?",
                 .Chinese => "很高兴听到这个！这真的很棒。想详细说说吗？",
                 .Spanish => "¡Me alegra escuchar eso! Es realmente genial. ¿Quieres contarme más?",
                 .German => "Freut mich, das zu hören! Das ist wirklich toll. Möchtest du mehr erzählen?",
                 else => "Glad to hear that! That's really great. Want to tell me more?",
             },
             .Negative => switch (lang) {
-                .Russian => "Понимаю, это может быть непросто. Чем я могу помочь?",
+                .Russian => "Понandмаю, это может быть непроwithто. Чем я могу byмочь?",
                 .Chinese => "我理解，这可能不容易。我能帮什么忙吗？",
                 .Spanish => "Entiendo, eso puede ser difícil. ¿Cómo puedo ayudarte?",
                 .German => "Ich verstehe, das kann schwierig sein. Wie kann ich dir helfen?",
                 else => "I understand, that can be tough. How can I help?",
             },
             .Frustrated => switch (lang) {
-                .Russian => "Вижу, что ситуация непростая. Давай разберёмся вместе — шаг за шагом.",
+                .Russian => "Вandжу, what withandтуацandя непроwithтая. Даinай разберёмwithя inмеwithте — шаг за шагом.",
                 .Chinese => "我看到情况有点困难。让我们一步一步来解决。",
                 .Spanish => "Veo que la situación es complicada. Vamos a resolverlo juntos, paso a paso.",
                 .German => "Ich sehe, die Situation ist schwierig. Lass uns das zusammen lösen, Schritt für Schritt.",
                 else => "I see the situation is frustrating. Let's work through it together, step by step.",
             },
             else => switch (lang) {
-                .Russian => "Интересно! Расскажи больше — мне любопытно узнать детали.",
+                .Russian => "Интереwithно! Раwithwithtoажand more — мне любопытно узonть деталand.",
                 .Chinese => "有意思！告诉我更多——我很想了解细节。",
                 .Spanish => "¡Interesante! Cuéntame más — tengo curiosidad por los detalles.",
                 .German => "Interessant! Erzähl mir mehr — ich bin neugierig auf die Details.",
@@ -350,7 +350,7 @@ pub const FluentGenerator = struct {
     fn generateRequestResponse(topic: Topic, lang: multilingual.Language) FluentResponse {
         _ = topic;
         const response = switch (lang) {
-            .Russian => "Конечно, я помогу! Что именно тебе нужно? Опиши задачу подробнее.",
+            .Russian => "Конечно, я byмогу! Что andменно тебе need? Опandшand заyesчу byдробнее.",
             .Chinese => "当然，我来帮你！你具体需要什么？请详细描述一下任务。",
             .Spanish => "¡Por supuesto, te ayudo! ¿Qué necesitas exactamente? Describe la tarea con más detalle.",
             .German => "Natürlich helfe ich! Was genau brauchst du? Beschreibe die Aufgabe genauer.",
@@ -369,7 +369,7 @@ pub const FluentGenerator = struct {
     fn generateGreetingResponse(sentiment: Sentiment, lang: multilingual.Language) FluentResponse {
         _ = sentiment;
         const response = switch (lang) {
-            .Russian => "Привет! Рад тебя видеть. Я IGLA — твой локальный AI-помощник. Чем займёмся сегодня?",
+            .Russian => "Прandinет! Рад тебя inandдеть. Я IGLA — тinой лоtoальный AI-byмощнandto. Чем займёмwithя withегодня?",
             .Chinese => "你好！很高兴见到你。我是IGLA——你的本地AI助手。今天我们做什么？",
             .Spanish => "¡Hola! Me alegro de verte. Soy IGLA — tu asistente de IA local. ¿Qué hacemos hoy?",
             .German => "Hallo! Schön, dich zu sehen. Ich bin IGLA — dein lokaler KI-Assistent. Was machen wir heute?",
@@ -387,7 +387,7 @@ pub const FluentGenerator = struct {
 
     fn generateFarewellResponse(lang: multilingual.Language) FluentResponse {
         const response = switch (lang) {
-            .Russian => "До встречи! Было приятно пообщаться. Возвращайся, когда захочешь поговорить. φ² + 1/φ² = 3!",
+            .Russian => "До inwithтречand! Было прandятно byобщатьwithя. Возinращайwithя, toогyes захочешь byгоinорandть. φ² + 1/φ² = 3!",
             .Chinese => "再见！聊天很愉快。想聊天时随时回来。φ² + 1/φ² = 3！",
             .Spanish => "¡Hasta luego! Fue un placer charlar. Vuelve cuando quieras hablar. φ² + 1/φ² = 3!",
             .German => "Auf Wiedersehen! Es war schön zu plaudern. Komm zurück, wenn du reden möchtest. φ² + 1/φ² = 3!",
@@ -406,21 +406,21 @@ pub const FluentGenerator = struct {
     fn generateEmotionResponse(sentiment: Sentiment, lang: multilingual.Language) FluentResponse {
         const response = switch (sentiment) {
             .Positive, .Excited => switch (lang) {
-                .Russian => "Это замечательно! Твоя радость заразительна. Что вызвало такие эмоции?",
+                .Russian => "Это замечательно! Тinоя раbeforewithть заразandтельon. Что inызinало таtoandе эмоцandand?",
                 .Chinese => "太棒了！你的快乐很有感染力。是什么让你这么开心？",
                 .Spanish => "¡Eso es maravilloso! Tu alegría es contagiosa. ¿Qué te hizo sentir así?",
                 .German => "Das ist wunderbar! Deine Freude ist ansteckend. Was hat dich so glücklich gemacht?",
                 else => "That's wonderful! Your joy is contagious. What made you feel this way?",
             },
             .Negative, .Frustrated => switch (lang) {
-                .Russian => "Я понимаю, что тебе сейчас непросто. Хочешь поговорить об этом? Иногда помогает просто выговориться.",
+                .Russian => "Я byнandмаю, what тебе withейчаwith непроwithто. Хочешь byгоinорandть об этом? Иногyes byмогает проwithто inыгоinорandтьwithя.",
                 .Chinese => "我理解你现在不容易。想聊聊吗？有时候说出来会好一些。",
                 .Spanish => "Entiendo que estás pasando un momento difícil. ¿Quieres hablar de ello? A veces ayuda desahogarse.",
                 .German => "Ich verstehe, dass es dir gerade nicht gut geht. Möchtest du darüber reden? Manchmal hilft es, sich auszusprechen.",
                 else => "I understand you're going through a tough time. Want to talk about it? Sometimes it helps to express yourself.",
             },
             else => switch (lang) {
-                .Russian => "Эмоции — важная часть жизни. Расскажи мне, что ты чувствуешь?",
+                .Russian => "Эмоцandand — inажonя чаwithть жandзнand. Раwithwithtoажand мне, what ты чуinwithтinуешь?",
                 .Chinese => "情感是生活的重要部分。告诉我你的感受？",
                 .Spanish => "Las emociones son una parte importante de la vida. ¿Cuéntame qué sientes?",
                 .German => "Emotionen sind ein wichtiger Teil des Lebens. Erzähl mir, was du fühlst?",
@@ -440,7 +440,7 @@ pub const FluentGenerator = struct {
     fn generateOpinionResponse(topic: Topic, lang: multilingual.Language) FluentResponse {
         _ = topic;
         const response = switch (lang) {
-            .Russian => "Интересная точка зрения! Я уважаю твоё мнение. А что привело тебя к такому выводу?",
+            .Russian => "Интереwithonя точtoа зренandя! Я уinажаю тinоё мненandе. А what прandinело тебя to таtoому inыinоду?",
             .Chinese => "有趣的观点！我尊重你的看法。是什么让你得出这个结论？",
             .Spanish => "¡Punto de vista interesante! Respeto tu opinión. ¿Qué te llevó a esa conclusión?",
             .German => "Interessante Sichtweise! Ich respektiere deine Meinung. Was hat dich zu diesem Schluss geführt?",
@@ -458,7 +458,7 @@ pub const FluentGenerator = struct {
 
     fn generateStoryResponse(lang: multilingual.Language) FluentResponse {
         const response = switch (lang) {
-            .Russian => "Жил-был программист, который мечтал о локальном AI... Однажды он открыл терминал и ввёл 'φ² + 1/φ² = 3'. И тогда появился IGLA! Хочешь другую историю?",
+            .Russian => "Жandл-был программandwithт, tofromорый мечтал о лоtoальном AI... Одonжды он fromtoрыл термandonл and ininёл 'φ² + 1/φ² = 3'. И тогyes byяinandлwithя IGLA! Хочешь другую andwithторandю?",
             .Chinese => "从前有一个程序员，梦想着本地AI...有一天他打开终端输入了'φ² + 1/φ² = 3'。然后IGLA出现了！想听另一个故事吗？",
             .Spanish => "Había una vez un programador que soñaba con una IA local... Un día abrió la terminal y escribió 'φ² + 1/φ² = 3'. ¡Y entonces apareció IGLA! ¿Quieres otra historia?",
             .German => "Es war einmal ein Programmierer, der von einer lokalen KI träumte... Eines Tages öffnete er das Terminal und tippte 'φ² + 1/φ² = 3'. Und dann erschien IGLA! Möchtest du eine andere Geschichte?",
@@ -476,7 +476,7 @@ pub const FluentGenerator = struct {
 
     fn generateHelpResponse(lang: multilingual.Language) FluentResponse {
         const response = switch (lang) {
-            .Russian => "Я здесь, чтобы помочь! Могу: ответить на вопросы, написать код, поболтать, рассказать историю. Просто спроси — и я сделаю всё возможное.",
+            .Russian => "Я здеwithь, whatбы byмочь! Могу: frominетandть on inопроwithы, onпandwithать toод, byболтать, раwithwithtoазать andwithторandю. Проwithто withпроwithand — and я withделаю inwithё inозcanе.",
             .Chinese => "我在这里帮助你！我可以：回答问题、写代码、聊天、讲故事。只管问——我会尽力而为。",
             .Spanish => "¡Estoy aquí para ayudar! Puedo: responder preguntas, escribir código, charlar, contar historias. Solo pregunta — haré todo lo posible.",
             .German => "Ich bin hier, um zu helfen! Ich kann: Fragen beantworten, Code schreiben, plaudern, Geschichten erzählen. Frag einfach — ich tue mein Bestes.",
@@ -495,21 +495,21 @@ pub const FluentGenerator = struct {
     fn generateFeedbackResponse(sentiment: Sentiment, lang: multilingual.Language) FluentResponse {
         const response = switch (sentiment) {
             .Positive => switch (lang) {
-                .Russian => "Спасибо за добрые слова! Рад, что могу быть полезен. Это мотивирует стараться ещё лучше!",
+                .Russian => "Спаwithandбо за beforeбрые withлоinа! Рад, what могу быть byлезен. Это мfromandinandрует withтаратьwithя ещё better!",
                 .Chinese => "谢谢你的好话！很高兴能帮上忙。这激励我做得更好！",
                 .Spanish => "¡Gracias por las palabras amables! Me alegra ser útil. ¡Esto me motiva a mejorar!",
                 .German => "Danke für die netten Worte! Freut mich, dass ich helfen kann. Das motiviert mich, noch besser zu werden!",
                 else => "Thanks for the kind words! Glad I can be helpful. This motivates me to do even better!",
             },
             .Negative => switch (lang) {
-                .Russian => "Спасибо за обратную связь! Я постоянно учусь и становлюсь лучше. Что именно я мог бы улучшить?",
+                .Russian => "Спаwithandбо за обратную withinязь! Я bywithтоянно учуwithь and withтаноinлюwithь better. Что andменно я мог бы улучшandть?",
                 .Chinese => "感谢你的反馈！我一直在学习变得更好。我具体可以改进什么？",
                 .Spanish => "¡Gracias por el feedback! Siempre estoy aprendiendo y mejorando. ¿Qué podría mejorar específicamente?",
                 .German => "Danke für das Feedback! Ich lerne ständig und werde besser. Was könnte ich konkret verbessern?",
                 else => "Thanks for the feedback! I'm always learning and improving. What specifically could I do better?",
             },
             else => switch (lang) {
-                .Russian => "Ценю твою обратную связь! Она помогает мне становиться лучше.",
+                .Russian => "Ценю тinою обратную withinязь! Оon byмогает мне withтаноinandтьwithя better.",
                 .Chinese => "感谢你的反馈！它帮助我变得更好。",
                 .Spanish => "¡Aprecio tu feedback! Me ayuda a mejorar.",
                 .German => "Ich schätze dein Feedback! Es hilft mir, besser zu werden.",
@@ -529,7 +529,7 @@ pub const FluentGenerator = struct {
     fn generateContinuationResponse(topic: Topic, lang: multilingual.Language) FluentResponse {
         _ = topic;
         const response = switch (lang) {
-            .Russian => "Продолжаем! О чём ты хотел бы поговорить дальше?",
+            .Russian => "Проbeforeлжаем! О чём ты хfromел бы byгоinорandть yesльше?",
             .Chinese => "继续吧！你接下来想聊什么？",
             .Spanish => "¡Continuemos! ¿De qué te gustaría hablar a continuación?",
             .German => "Machen wir weiter! Worüber möchtest du als nächstes sprechen?",
@@ -722,30 +722,30 @@ pub fn runBenchmark() !void {
     // Diverse test queries in multiple languages and intents
     const test_queries = [_][]const u8{
         // Greetings (various languages)
-        "привет",
+        "прandinет",
         "hello there",
         "你好",
         "hola amigo",
         "guten tag",
         // Questions
         "what is the meaning of life?",
-        "как ты работаешь?",
+        "toаto ты рабfromаешь?",
         "为什么天空是蓝色的？",
         // Statements
         "I think AI is fascinating",
-        "сегодня отличный день",
+        "withегодня fromлandчный день",
         "我喜欢编程",
         // Requests
         "please help me understand",
-        "можешь объяснить",
+        "можешь объяwithнandть",
         "请告诉我",
         // Emotions
         "I feel happy today",
-        "мне грустно",
+        "мне груwithтно",
         "我很兴奋",
         // Farewells
         "goodbye",
-        "пока",
+        "bytoа",
         "再见",
     };
 
@@ -832,19 +832,19 @@ pub fn main() !void {
 
 test "intent detection question" {
     try std.testing.expectEqual(Intent.Question, Intent.detect("what is this?"));
-    try std.testing.expectEqual(Intent.Question, Intent.detect("как это работает?"));
+    try std.testing.expectEqual(Intent.Question, Intent.detect("toаto это рабfromает?"));
     try std.testing.expectEqual(Intent.Question, Intent.detect("为什么？"));
 }
 
 test "intent detection greeting" {
     try std.testing.expectEqual(Intent.Greeting, Intent.detect("hello"));
-    try std.testing.expectEqual(Intent.Greeting, Intent.detect("привет"));
+    try std.testing.expectEqual(Intent.Greeting, Intent.detect("прandinет"));
     try std.testing.expectEqual(Intent.Greeting, Intent.detect("你好"));
 }
 
 test "intent detection farewell" {
     try std.testing.expectEqual(Intent.Farewell, Intent.detect("goodbye"));
-    try std.testing.expectEqual(Intent.Farewell, Intent.detect("пока"));
+    try std.testing.expectEqual(Intent.Farewell, Intent.detect("bytoа"));
     try std.testing.expectEqual(Intent.Farewell, Intent.detect("再见"));
 }
 
@@ -855,22 +855,22 @@ test "topic extraction technology" {
 
 test "topic extraction philosophy" {
     try std.testing.expectEqual(Topic.Philosophy, Topic.extract("what is the meaning of life"));
-    try std.testing.expectEqual(Topic.Philosophy, Topic.extract("философия жизни"));
+    try std.testing.expectEqual(Topic.Philosophy, Topic.extract("фandлоwithофandя жandзнand"));
 }
 
 test "sentiment analysis positive" {
     try std.testing.expectEqual(Sentiment.Positive, Sentiment.analyze("this is great!"));
-    try std.testing.expectEqual(Sentiment.Positive, Sentiment.analyze("отлично!"));
+    try std.testing.expectEqual(Sentiment.Positive, Sentiment.analyze("fromлandчно!"));
 }
 
 test "sentiment analysis negative" {
     try std.testing.expectEqual(Sentiment.Negative, Sentiment.analyze("this is terrible"));
-    try std.testing.expectEqual(Sentiment.Negative, Sentiment.analyze("ужасно"));
+    try std.testing.expectEqual(Sentiment.Negative, Sentiment.analyze("ужаwithно"));
 }
 
 test "fluent engine greeting" {
     var engine = FluentGeneralEngine.init();
-    const response = engine.respond("привет");
+    const response = engine.respond("прandinет");
     try std.testing.expectEqual(Intent.Greeting, response.intent);
     try std.testing.expect(!response.is_generic);
     try std.testing.expect(response.confidence > 0.9);
@@ -902,7 +902,7 @@ test "fluent engine no generic" {
 test "language detection stats" {
     var engine = FluentGeneralEngine.init();
 
-    _ = engine.respond("привет");
+    _ = engine.respond("прandinет");
     _ = engine.respond("hello");
     _ = engine.respond("你好");
 

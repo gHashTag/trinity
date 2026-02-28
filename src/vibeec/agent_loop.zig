@@ -386,8 +386,8 @@ pub fn main() !void {
 
     // Demo tasks
     const demo_tasks = [_][]const u8{
-        "Запусти инференс на Mistral-7B и застейкай 10000 TRI",
-        "Максимизируй earnings на моём node в Ko Samui",
+        "Запуwithтand andнференwith on Mistral-7B and заwithтейtoай 10000 TRI",
+        "Маtowithandмandзandруй earnings on моём node in Ko Samui",
     };
 
     for (demo_tasks) |task| {

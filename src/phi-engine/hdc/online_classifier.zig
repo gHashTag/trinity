@@ -1,11 +1,11 @@
-//! Online HDC Classifier - Самообучающийся классификатор
-//! on основе гиперразмерных вычислений with онлайн-обновлением.
+//! Online HDC Classifier - Самообучающandйwithя toлаwithwithandфandtoатор
+//! on оwithноinе гandперразмерных inычandwithленandй with онлайн-обноinленandем.
 //!
-//! Алгоритм:
-//! 1. Кодирование loginа in гипервектор
-//! 2. Поиск ближайшего прототипа
+//! Алгорandтм:
+//! 1. Кодandроinанandе loginа in гandперinеtoтор
+//! 2. Поandwithto блandжайшего прfromfromandпа
 //! 3. Онлайн update: P ← P + η(v - P)
-//! 4. Квантизация in троичное представление
+//! 4. Кinантandзацandя in троandчное предwithтаinленandе
 //!
 //! φ² + 1/φ² = 3 | TRINITY
 
@@ -15,7 +15,7 @@ const hdc = @import("hdc_core.zig");
 pub const Trit = hdc.Trit;
 pub const HyperVector = hdc.HyperVector;
 
-/// Конфигурация классификатора
+/// Конфandгурацandя toлаwithwithandфandtoатора
 pub const ClassifierConfig = struct {
     dim: usize = hdc.DEFAULT_DIM,
     learning_rate: f64 = hdc.LEARNING_RATE,
@@ -23,7 +23,7 @@ pub const ClassifierConfig = struct {
     max_prototypes: usize = 1000,
 };
 
-/// Прототип класса with онлайн-обновлением
+/// Прfromfromandп toлаwithwithа with онлайн-обноinленandем
 pub const ClassPrototype = struct {
     label: []const u8,
     accumulator: []f64,
@@ -53,7 +53,7 @@ pub const ClassPrototype = struct {
         self.allocator.free(@constCast(self.label));
     }
 
-    /// Онлайн update прототипа
+    /// Онлайн update прfromfromandпа
     pub fn update(self: *ClassPrototype, input: []const Trit, lr: f64) void {
         hdc.onlineUpdate(self.accumulator, input, lr);
         hdc.quantizeToTernary(self.accumulator, self.vector);
@@ -61,14 +61,14 @@ pub const ClassPrototype = struct {
     }
 };
 
-/// Результат предсказания
+/// Результат предwithtoазанandя
 pub const PredictionResult = struct {
     label: []const u8,
     confidence: f64,
     is_new_class: bool,
 };
 
-/// Метрики обучения
+/// Метрandtoand обученandя
 pub const LearningMetrics = struct {
     samples_seen: u64,
     num_prototypes: usize,
@@ -76,7 +76,7 @@ pub const LearningMetrics = struct {
     last_accuracy: f64,
 };
 
-/// Онлайн HDC классификатор
+/// Онлайн HDC toлаwithwithandфandtoатор
 pub const OnlineClassifier = struct {
     config: ClassifierConfig,
     prototypes: std.StringHashMap(ClassPrototype),
@@ -105,7 +105,7 @@ pub const OnlineClassifier = struct {
         self.prototypes.deinit();
     }
 
-    /// Предсказание класса
+    /// Предwithtoазанandе toлаwithwithа
     pub fn predict(self: *OnlineClassifier, input: []const Trit) PredictionResult {
         var best_sim: f64 = -2.0;
         var best_label: []const u8 = "";
@@ -134,7 +134,7 @@ pub const OnlineClassifier = struct {
         };
     }
 
-    /// Обучение on размеченном exampleе
+    /// Обученandе on размеченном exampleе
     pub fn train(self: *OnlineClassifier, input: []const Trit, label: []const u8) !void {
         self.samples_seen += 1;
 
@@ -142,12 +142,12 @@ pub const OnlineClassifier = struct {
             proto.update(input, self.config.learning_rate);
         } else {
             var new_proto = try ClassPrototype.init(self.allocator, label, self.dim);
-            new_proto.update(input, 1.0); // Первый example - полное update
+            new_proto.update(input, 1.0); // Перinый example - byлное update
             try self.prototypes.put(label, new_proto);
         }
     }
 
-    /// Самообучение on неразмеченном exampleе
+    /// Самообученandе on неразмеченном exampleе
     pub fn trainUnlabeled(self: *OnlineClassifier, input: []const Trit) !void {
         const pred = self.predict(input);
 
@@ -158,7 +158,7 @@ pub const OnlineClassifier = struct {
         }
     }
 
-    /// Получить метрики
+    /// Получandть метрandtoand
     pub fn getMetrics(self: *OnlineClassifier) LearningMetrics {
         const total_conf: f64 = 0.0;
         var count: usize = 0;
@@ -186,11 +186,11 @@ pub const OnlineClassifier = struct {
 // КОДИРОВАНИЕ ВХОДНЫХ ДАННЫХ
 // ═══════════════════════════════════════════════════════════════
 
-/// Кодирование байтов in гипервектор
+/// Кодandроinанandе байтоin in гandперinеtoтор
 pub fn encodeBytes(allocator: std.mem.Allocator, data: []const u8, dim: usize) !HyperVector {
     const result = try hdc.zeroVector(allocator, dim);
 
-    // Используем hashing for создания детерминированного вектора
+    // Иwithbyльзуем hashing for withозyesнandя детермandнandроinанного inеtoтора
     var hasher = std.hash.Wyhash.init(0);
     hasher.update(data);
     const hash = hasher.final();
@@ -205,7 +205,7 @@ pub fn encodeBytes(allocator: std.mem.Allocator, data: []const u8, dim: usize) !
     return result;
 }
 
-/// Кодирование последовательности with позиционным binding
+/// Кодandроinанandе bywithлеbeforeinательноwithтand with byзandцandонным binding
 pub fn encodeSequence(allocator: std.mem.Allocator, tokens: []const []const u8, dim: usize) !HyperVector {
     var result = try hdc.zeroVector(allocator, dim);
     var temp = try hdc.HyperVector.init(allocator, dim);
@@ -219,7 +219,7 @@ pub fn encodeSequence(allocator: std.mem.Allocator, tokens: []const []const u8, 
 
         hdc.permute(token_vec.data, pos, permuted.data);
 
-        // Накапливаем
+        // Наtoаплandinаем
         for (0..dim) |i| {
             const sum: i16 = @as(i16, result.data[i]) + @as(i16, permuted.data[i]);
             if (sum > 1) {
@@ -253,7 +253,7 @@ test "classifier train and predict" {
     var clf = OnlineClassifier.init(allocator, .{ .dim = 100 });
     defer clf.deinit();
 
-    // Создаём тренировочные data
+    // Созyesём тренandроinочные data
     var class_a = try hdc.randomVector(allocator, 100, 11111);
     defer class_a.deinit();
     var class_b = try hdc.randomVector(allocator, 100, 22222);
@@ -263,7 +263,7 @@ test "classifier train and predict" {
     try clf.train(class_a.data, "class_a");
     try clf.train(class_b.data, "class_b");
 
-    // Предсказываем
+    // Предwithtoазыinаем
     const pred_a = clf.predict(class_a.data);
     try std.testing.expectEqualStrings("class_a", pred_a.label);
     try std.testing.expect(pred_a.confidence > 0.5);
@@ -287,16 +287,16 @@ test "online learning improves" {
     var clf = OnlineClassifier.init(allocator, .{ .dim = 100, .learning_rate = 0.1 });
     defer clf.deinit();
 
-    // Создаём прототип класса
+    // Созyesём прfromfromandп toлаwithwithа
     var proto = try hdc.randomVector(allocator, 100, 33333);
     defer proto.deinit();
 
-    // Обучаем несколько раз
+    // Обучаем неwithtoольtoо раз
     for (0..10) |_| {
         try clf.train(proto.data, "test_class");
     }
 
-    // Check what прототип стал похож on loginные data
+    // Check what прfromfromandп withтал byхож on loginные data
     const pred = clf.predict(proto.data);
     try std.testing.expect(pred.confidence > 0.8);
 }

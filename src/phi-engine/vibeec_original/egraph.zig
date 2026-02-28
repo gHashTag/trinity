@@ -1,7 +1,7 @@
 //! VIBEE E-Graph Pattern Matcher - PAS DAEMON V40
 //! Паттерны: ALG (algebraic rewrites), HSH (hash-consing), PRE (canonical forms)
 //! Sacred formula: V = n × 3^k × π^m × φ^p × e^q
-//! Золотая идентичность: φ² + 1/φ² = 3
+//! Золfromая andдентandчноwithть: φ² + 1/φ² = 3
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
@@ -11,7 +11,7 @@ pub const PI: f64 = 3.14159265358979323846;
 pub const E: f64 = 2.71828182845904523536;
 pub const GOLDEN_IDENTITY: f64 = 3.0;
 
-// Священные Parameters Эволюции (PAS DAEMON V40)
+// Сinященные Parameters Эinолюцandand (PAS DAEMON V40)
 pub const MUTATION_RATE: f64 = 0.0381966; // 1/φ²/10
 pub const CROSSOVER_RATE: f64 = 0.0618034; // 1/φ/10
 pub const SELECTION_SIGMA: f64 = 1.6180339; // φ
@@ -461,7 +461,7 @@ pub const EGraph = struct {
         if (pattern.const_match) |expected| {
             const class = self.classes.get(root) orelse return false;
             for (class.nodes.items) |node| {
-                // Прямое сопоставление священных констант by оператору
+                // Прямое withоbywithтаinленandе withinященных toонwithтант by оператору
                 if (expected == .float) {
                     if (node.op == .const_phi and @abs(PHI - expected.float) < 0.0001) return true;
                     if (node.op == .const_pi and @abs(PI - expected.float) < 0.0001) return true;
@@ -482,7 +482,7 @@ pub const EGraph = struct {
         if (pattern.op) |op| {
             const class = self.classes.get(root) orelse return false;
             for (class.nodes.items) |node| {
-                // Если operator узла совпадает with оператором паттерна (включая константы-операторы)
+                // Еwithлand operator узла withоinпаyesет with оператором паттерon (intoлючая toонwithтанты-операторы)
                 if (node.op == op) {
                     if (pattern.children[0] == null and node.child_count == 0) return true;
 
@@ -562,7 +562,7 @@ pub const EGraph = struct {
         return self.stats;
     }
 
-    /// Extracts лучший узел из e-класса on основе "священной" функции стоимости
+    /// Extracts лучшandй узел andз e-toлаwithwithа on оwithноinе "withinященной" фунtoцandand withтоandмоwithтand
     pub fn extractBest(self: *EGraph, class_id: EClassId) !ENode {
         const root = self.find(class_id);
         const class = self.classes.get(root) orelse return error.InvalidEClass;
@@ -573,11 +573,11 @@ pub const EGraph = struct {
         for (class.nodes.items) |node| {
             var cost = self.getNodeCost(node);
 
-            // Рекурсивно add стоимость детей
+            // Реtoурwithandinно add withтоandмоwithть детей
             for (node.children[0..node.child_count]) |maybe_child| {
                 if (maybe_child) |_| {
-                    // В полной реализации здесь нужно избегать циклов and использовать мемоизацию
-                    // Для MVP используем упрощенную оценку
+                    // В byлной реалandзацandand здеwithь need andзбегать цandtoлоin and andwithbyльзоinать мемоandзацandю
+                    // Для MVP andwithbyльзуем упрощенную оценtoу
                     cost += 1.0;
                 }
             }
@@ -594,11 +594,11 @@ pub const EGraph = struct {
     fn getNodeCost(self: *const EGraph, node: ENode) f64 {
         _ = self;
         return switch (node.op) {
-            .const_phi, .const_pi, .const_e => 0.1, // Священные константы почти бесплатны
-            .const_float, .const_int => 1.0, // Обычные константы дороже
+            .const_phi, .const_pi, .const_e => 0.1, // Сinященные toонwithтанты byчтand беwithплатны
+            .const_float, .const_int => 1.0, // Обычные toонwithтанты beforeроже
             .add, .sub => 2.0,
-            .mul, .div => 4.0, // Умножение дороже сложения
-            .pow, .exp, .ln => 10.0, // Сложные функции самые дорогие
+            .mul, .div => 4.0, // Умноженandе beforeроже withложенandя
+            .pow, .exp, .ln => 10.0, // Сложные фунtoцandand withамые beforeрогandе
             else => 1.0,
         };
     }

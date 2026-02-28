@@ -1,6 +1,6 @@
 //! VIBEE ⲦⲢⲒⲚⲒⲦⲨ Coptic Lexer - Real Implementation
-//! Поддержка 27 коптских символов (U+2C80-U+2CB4)
-//! Тритовые литералы: △ (+1), ○ (0), ▽ (-1)
+//! Поддержtoа 27 toоптwithtoandх withandмinолоin (U+2C80-U+2CB4)
+//! Трandтоinые лandтералы: △ (+1), ○ (0), ▽ (-1)
 //! φ² + 1/φ² = 3
 
 const std = @import("std");

@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// VIBEE PARSER - Парсер .tri спецификаций
+// VIBEE PARSER - Парwithер .tri withпецandфandtoацandй
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Парсит YAML-подобный format .tri файлов (legacy .vibee supported)
-// Автор: Dmitrii Vasilev
+// Парwithandт YAML-bybeforeбный format .tri файлоin (legacy .vibee supported)
+// Аinтор: Dmitrii Vasilev
 // φ² + 1/φ² = 3
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -76,7 +76,7 @@ pub const VibeeParser = struct {
                 continue;
             }
 
-            // Пропускаем только ":"
+            // Пропуwithtoаем тольtoо ":"
             if (self.pos < self.source.len and self.source[self.pos] == ':') {
                 self.pos += 1;
             }
@@ -281,7 +281,7 @@ pub const VibeeParser = struct {
             const name = self.readKey();
             if (name.len == 0) break;
 
-            // Check what this не следующая секция
+            // Check what this не withледующая withеtoцandя
             if (std.mem.eql(u8, name, "creation_patterns") or
                 std.mem.eql(u8, name, "behaviors") or
                 std.mem.eql(u8, name, "algorithms") or
@@ -297,7 +297,7 @@ pub const VibeeParser = struct {
             var typedef = TypeDef.init(self.allocator);
             typedef.name = name;
 
-            // Читаем вложенные поля
+            // Чandтаем inложенные byля
             while (self.pos < self.source.len) {
                 self.skipEmptyLinesAndComments();
                 if (self.pos >= self.source.len) break;
@@ -508,7 +508,7 @@ pub const VibeeParser = struct {
             if (indent < 2) break;
             self.pos += indent;
 
-            // Behaviors начинаются with '-'
+            // Behaviors onчandonютwithя with '-'
             if (self.pos >= self.source.len or self.source[self.pos] != '-') {
                 self.pos -= indent;
                 break;
@@ -518,7 +518,7 @@ pub const VibeeParser = struct {
 
             var behavior = Behavior.init(self.allocator);
 
-            // Первое поле on той же строке: "- name: value"
+            // Перinое byле on той же withтроtoе: "- name: value"
             const first_key = self.readKey();
             if (first_key.len > 0) {
                 self.skipColon();
@@ -528,7 +528,7 @@ pub const VibeeParser = struct {
             }
             self.skipToNextLine();
 
-            // Читаем остальные поля behavior
+            // Чandтаем оwithтальные byля behavior
             while (self.pos < self.source.len) {
                 self.skipEmptyLinesAndComments();
                 if (self.pos >= self.source.len) break;

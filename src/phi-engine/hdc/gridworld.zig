@@ -1,12 +1,12 @@
-//! GridWorld - Классическая среда for testирования RL агентов
+//! GridWorld - Клаwithwithandчеwithtoая withреyes for testandроinанandя RL агентоin
 //!
-//! Сетка NxN with:
-//! - Стартовая позиция (0,0)
-//! - Цель (N-1, N-1) with наградой +10
-//! - Стены (опционально)
-//! - Награда -0.1 за each шаг
+//! Сетtoа NxN with:
+//! - Стартоinая byзandцandя (0,0)
+//! - Цель (N-1, N-1) with onграbeforeй +10
+//! - Стены (опцandоonльно)
+//! - Награyes -0.1 за each шаг
 //!
-//! Действия: UP=0, RIGHT=1, DOWN=2, LEFT=3
+//! Дейwithтinandя: UP=0, RIGHT=1, DOWN=2, LEFT=3
 //!
 //! φ² + 1/φ² = 3 | TRINITY
 
@@ -38,7 +38,7 @@ pub const NUM_ACTIONS: usize = 4;
 // ТИПЫ
 // ═══════════════════════════════════════════════════════════════
 
-/// Позиция on сетке
+/// Позandцandя on withетtoе
 pub const Position = struct {
     x: usize,
     y: usize,
@@ -60,7 +60,7 @@ pub const StepResult = struct {
     info: []const u8,
 };
 
-/// Конфигурация GridWorld
+/// Конфandгурацandя GridWorld
 pub const GridWorldConfig = struct {
     width: usize = 4,
     height: usize = 4,
@@ -70,7 +70,7 @@ pub const GridWorldConfig = struct {
     max_steps: usize = 100,
 };
 
-/// Среда GridWorld
+/// Среyes GridWorld
 pub const GridWorld = struct {
     config: GridWorldConfig,
     width: usize,
@@ -104,7 +104,7 @@ pub const GridWorld = struct {
         self.allocator.free(self.walls);
     }
 
-    /// Сбросить среду
+    /// Сброwithandть withреду
     pub fn reset(self: *GridWorld) usize {
         self.agent_pos = .{ .x = 0, .y = 0 };
         self.steps = 0;
@@ -112,21 +112,21 @@ pub const GridWorld = struct {
         return self.getState();
     }
 
-    /// Получить текущее состояние (index)
+    /// Получandть теtoущее withоwithтоянandе (index)
     pub fn getState(self: *const GridWorld) usize {
         return self.agent_pos.toIndex(self.width);
     }
 
-    /// Количество состояний
+    /// Колandчеwithтinо withоwithтоянandй
     pub fn numStates(self: *const GridWorld) usize {
         return self.width * self.height;
     }
 
-    /// Выполнить действие
+    /// Выbyлнandть дейwithтinandе
     pub fn step(self: *GridWorld, action: usize) StepResult {
         self.steps += 1;
 
-        // Compute новую позицию
+        // Compute ноinую byзandцandю
         var new_pos = self.agent_pos;
         switch (@as(Action, @enumFromInt(action))) {
             .UP => {
@@ -143,13 +143,13 @@ pub const GridWorld = struct {
             },
         }
 
-        // Check стену
+        // Check withтену
         const new_idx = new_pos.toIndex(self.width);
         var reward = self.config.step_reward;
         var info: []const u8 = "step";
 
         if (self.walls[new_idx]) {
-            // Врезались in стену - остаёмся on месте
+            // Врезалandwithь in withтену - оwithтаёмwithя on меwithте
             reward = self.config.wall_reward;
             info = "wall";
         } else {
@@ -164,7 +164,7 @@ pub const GridWorld = struct {
             info = "goal";
         }
 
-        // Check лимит шагов
+        // Check лandмandт шагоin
         if (self.steps >= self.config.max_steps) {
             done = true;
             info = "timeout";
@@ -180,7 +180,7 @@ pub const GridWorld = struct {
         };
     }
 
-    /// Добавить стену
+    /// Добаinandть withтену
     pub fn addWall(self: *GridWorld, x: usize, y: usize) void {
         if (x < self.width and y < self.height) {
             const idx = y * self.width + x;
@@ -188,7 +188,7 @@ pub const GridWorld = struct {
         }
     }
 
-    /// Визуализация in ASCII
+    /// Вandзуалandзацandя in ASCII
     pub fn render(self: *const GridWorld) void {
         std.debug.print("\n", .{});
         for (0..self.height) |y| {
@@ -211,7 +211,7 @@ pub const GridWorld = struct {
         std.debug.print("Steps: {d}, Reward: {d:.2}\n", .{ self.steps, self.total_reward });
     }
 
-    /// Получить оптимальное расстояние before цели (Manhattan)
+    /// Получandть оптandмальное раwithwithтоянandе before целand (Manhattan)
     pub fn distanceToGoal(self: *const GridWorld) usize {
         const dx = if (self.agent_pos.x > self.goal_pos.x)
             self.agent_pos.x - self.goal_pos.x
@@ -274,10 +274,10 @@ test "gridworld wall collision" {
     env.addWall(1, 0);
     _ = env.reset();
 
-    // Пытаемся пойти in стену
+    // Пытаемwithя byйтand in withтену
     const result = env.step(@intFromEnum(Action.RIGHT));
 
-    try std.testing.expectEqual(@as(usize, 0), result.next_state); // Остались on месте
+    try std.testing.expectEqual(@as(usize, 0), result.next_state); // Оwithталandwithь on меwithте
     try std.testing.expectEqual(@as(f64, -1.0), result.reward);
 }
 
@@ -287,8 +287,8 @@ test "gridworld boundary" {
     defer env.deinit();
 
     _ = env.reset();
-    // Пытаемся выйти за границу
+    // Пытаемwithя inыйтand за гранandцу
     const result = env.step(@intFromEnum(Action.UP));
 
-    try std.testing.expectEqual(@as(usize, 0), result.next_state); // Остались on месте
+    try std.testing.expectEqual(@as(usize, 0), result.next_state); // Оwithталandwithь on меwithте
 }

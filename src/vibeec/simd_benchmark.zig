@@ -1,5 +1,5 @@
-// SIMD BENCHMARK - Измерение скорости троичных операций
-// Сравнение скалярной and SIMD реализаций
+// SIMD BENCHMARK - Измеренandе withtoороwithтand троandчных операцandй
+// Сраinненandе withtoалярной and SIMD реалandзацandй
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");
@@ -15,7 +15,7 @@ pub const PHI: f64 = 1.618033988749895;
 const WARMUP_ITERATIONS = 10;
 const BENCHMARK_ITERATIONS = 100;
 
-// Размеры для бенчмарка (типичные for LLM)
+// Размеры for бенчмарtoа (тandпandчные for LLM)
 const BATCH_SIZE = 1;
 const IN_FEATURES = 4096; // hidden_size
 const OUT_FEATURES = 4096; // hidden_size
@@ -24,7 +24,7 @@ const OUT_FEATURES = 4096; // hidden_size
 // SCALAR IMPLEMENTATION (BASELINE)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Скалярная реализация - базовая линия for сравнения
+/// Сtoалярonя реалandзацandя - базоinая лandнandя for withраinненandя
 pub fn scalarMatmul(
     output: []f32,
     input: []const f32,
@@ -57,21 +57,21 @@ pub fn scalarMatmul(
 // SIMD IMPLEMENTATION - AVX2 (256-bit vectors)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// SIMD vector 8 x f32 = 256 бит (AVX2)
+/// SIMD vector 8 x f32 = 256 бandт (AVX2)
 const Vec8f = @Vector(8, f32);
 
-/// SIMD vector 32 x i8 = 256 бит (for тритов)
+/// SIMD vector 32 x i8 = 256 бandт (for трandтоin)
 const Vec32i8 = @Vector(32, i8);
 
-/// Конвертация тритов in i8 array for SIMD
+/// Конinертацandя трandтоin in i8 array for SIMD
 fn tritsToI8(trits: []const prometheus.TritWeight, out: []i8) void {
     for (trits, 0..) |t, i| {
         out[i] = t.toInt();
     }
 }
 
-/// SIMD-оптимизированное матричное умножение
-/// Processes 8 loginных значений за раз
+/// SIMD-оптandмandзandроinанное матрandчное умноженandе
+/// Processes 8 loginных зonченandй за раз
 pub fn simdMatmul(
     output: []f32,
     input: []const f32,
@@ -82,7 +82,7 @@ pub fn simdMatmul(
 ) void {
     @memset(output, 0.0);
 
-    // Конвертируем триты in i8 один раз
+    // Конinертandруем трandты in i8 одandн раз
     for (weights, 0..) |w, i| {
         trit_buffer[i] = w.toInt();
     }
@@ -92,13 +92,13 @@ pub fn simdMatmul(
         var sum_scalar: f32 = 0.0;
         const weight_offset = o * in_features;
 
-        // Обрабатываем by 8 элементов за раз
+        // Обрабатыinаем by 8 элементоin за раз
         var i: usize = 0;
         while (i + 8 <= in_features) : (i += 8) {
-            // Загружаем 8 loginных значений
+            // Загружаем 8 loginных зonченandй
             const input_vec: Vec8f = input[i..][0..8].*;
 
-            // Загружаем 8 тритов and конвертируем in f32
+            // Загружаем 8 трandтоin and toонinертandруем in f32
             const t0: f32 = @floatFromInt(trit_buffer[weight_offset + i + 0]);
             const t1: f32 = @floatFromInt(trit_buffer[weight_offset + i + 1]);
             const t2: f32 = @floatFromInt(trit_buffer[weight_offset + i + 2]);
@@ -110,21 +110,21 @@ pub fn simdMatmul(
 
             const trit_vec: Vec8f = .{ t0, t1, t2, t3, t4, t5, t6, t7 };
 
-            // SIMD умножение and накопление
-            // Для тритов {-1, 0, +1} this эквивалентно:
-            // +1: добавить x
-            // -1: вычесть x
-            //  0: ничего
+            // SIMD умноженandе and ontoопленandе
+            // Для трandтоin {-1, 0, +1} this эtoinandinалентно:
+            // +1: beforeбаinandть x
+            // -1: inычеwithть x
+            //  0: нandчего
             sum_vec += input_vec * trit_vec;
         }
 
-        // Горизонтальная сумма SIMD вектора
+        // Горandзонтальonя withумма SIMD inеtoтора
         const sum_arr: [8]f32 = sum_vec;
         for (sum_arr) |v| {
             sum_scalar += v;
         }
 
-        // Остаток (скалярно)
+        // Оwithтатоto (withtoалярно)
         while (i < in_features) : (i += 1) {
             const w = trit_buffer[weight_offset + i];
             const x = input[i];
@@ -135,7 +135,7 @@ pub fn simdMatmul(
     }
 }
 
-/// SIMD без умножения - только сложение/вычитание via маски
+/// SIMD без умноженandя - тольtoо withложенandе/inычandтанandе via маwithtoand
 pub fn simdMatmulNoMul(
     output: []f32,
     input: []const f32,
@@ -146,7 +146,7 @@ pub fn simdMatmulNoMul(
 ) void {
     @memset(output, 0.0);
 
-    // Конвертируем триты in i8
+    // Конinертandруем трandты in i8
     for (weights, 0..) |w, i| {
         trit_buffer[i] = w.toInt();
     }
@@ -162,34 +162,34 @@ pub fn simdMatmulNoMul(
         while (i + 8 <= in_features) : (i += 8) {
             const input_vec: Vec8f = input[i..][0..8].*;
 
-            // Создаём маски for положительных and отрицательных тритов
+            // Созyesём маwithtoand for byложandтельных and fromрandцательных трandтоin
             const t = trit_buffer[weight_offset + i ..][0..8];
 
-            // Маска положительных (t == 1)
+            // Маwithtoа byложandтельных (t == 1)
             const pos_mask: @Vector(8, bool) = .{
                 t[0] == 1, t[1] == 1, t[2] == 1, t[3] == 1,
                 t[4] == 1, t[5] == 1, t[6] == 1, t[7] == 1,
             };
 
-            // Маска отрицательных (t == -1)
+            // Маwithtoа fromрandцательных (t == -1)
             const neg_mask: @Vector(8, bool) = .{
                 t[0] == -1, t[1] == -1, t[2] == -1, t[3] == -1,
                 t[4] == -1, t[5] == -1, t[6] == -1, t[7] == -1,
             };
 
-            // Применяем маски
+            // Прandменяем маwithtoand
             const zeros: Vec8f = @splat(0.0);
             pos_sum += @select(f32, pos_mask, input_vec, zeros);
             neg_sum += @select(f32, neg_mask, input_vec, zeros);
         }
 
-        // Горизонтальные суммы
+        // Горandзонтальные withуммы
         const pos_arr: [8]f32 = pos_sum;
         const neg_arr: [8]f32 = neg_sum;
         for (pos_arr) |v| pos_scalar += v;
         for (neg_arr) |v| neg_scalar += v;
 
-        // Остаток
+        // Оwithтатоto
         while (i < in_features) : (i += 1) {
             const w = trit_buffer[weight_offset + i];
             const x = input[i];

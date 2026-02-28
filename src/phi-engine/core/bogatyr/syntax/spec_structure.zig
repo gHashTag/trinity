@@ -1,5 +1,5 @@
 // VIBEE BOGATYR - Spec Structure Validator
-// Checks структуру .vibee спецификации
+// Checks withтруtoтуру .vibee withпецandфandtoацandand
 // φ² + 1/φ² = 3 | PHOENIX = 999
 
 const std = @import("std");
@@ -40,19 +40,19 @@ fn validateSpecStructure(ctx: *const common.ValidationContext) !common.BogatyrRe
         if (std.mem.indexOfScalar(u8, trimmed, ':')) |colon_idx| {
             const key = std.mem.trim(u8, trimmed[0..colon_idx], " ");
 
-            // Check what keys присутствуют
+            // Check what keys прandwithутwithтinуют
             if (std.mem.eql(u8, key, "name") or
                 std.mem.eql(u8, key, "version") or
                 std.mem.eql(u8, key, "language") or
                 std.mem.eql(u8, key, "module") or
                 std.mem.eql(u8, key, "output"))
             {
-                // Ключ найден
+                // Ключ onйден
             }
         }
     }
 
-    // Check наличие обязательных полей
+    // Check onлandчandе обязательных byлей
     var has_name = false;
     var has_version = false;
     var has_language = false;
@@ -77,7 +77,7 @@ fn validateSpecStructure(ctx: *const common.ValidationContext) !common.BogatyrRe
         }
     }
 
-    // Отчет об ошибках
+    // Отчет об ошandбtoах
     if (!has_name) {
         try errors.append(try common.createError(allocator, "missing_name", "Missing required 'name' field", 1, 0));
     }
