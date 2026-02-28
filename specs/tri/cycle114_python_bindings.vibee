@@ -1,0 +1,552 @@
+# ============================================================================
+# cycle114_python_bindings - Python FFI Bindings for Trinity VSA
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# ============================================================================
+
+name: cycle114_python_bindings
+version: "1.0.0"
+language: zig
+module: python_bindings
+
+description: |
+  Python Bindings MVP for Trinity VSA Engine.
+  Provides CPython FFI bridge with <5% performance overhead vs native Zig.
+
+  Package: python-trinity (PyPI)
+  Core Features:
+  - Hypervector class with random(), bind(), unbind(), bundle()
+  - Cosine similarity, Hamming distance
+  - JIT compilation context for hot paths
+  - Memory-safe Zig<->Python object management
+  - Sacred mathematics constants (φ, π, e, μ, χ, σ, ε)
+
+  Architecture:
+  1. Zig → C ABI via export convention
+  2. Python ctypes/cffi wrapper layer
+  3. Memory pool for hypervector reuse
+  4. JIT compiler for operation fusion
+
+constants:
+  # Package metadata
+  PACKAGE_NAME: "python-trinity"
+  PACKAGE_VERSION: "1.0.0"
+  PYPI_MIN_PYTHON: "3.10"
+
+  # VSA defaults
+  DEFAULT_DIMENSION: 10000
+  MAX_DIMENSION: 100000
+  SIMD_WIDTH: 32
+
+  # Memory management
+  MEMORY_POOL_SIZE: 1024
+  MAX_HYPERVECTORS: 10000
+  GC_THRESHOLD: 1000
+
+  # JIT compilation
+  JIT_HOT_THRESHOLD: 100
+  JIT_CACHE_SIZE: 256
+  JIT_COMPILE_TIMEOUT_MS: 1000
+
+  # Performance targets
+  TARGET_OVERHEAD_PERCENT: 5.0
+  TARGET_SIMILARITY_PER_SEC: 1000000
+
+  # Sacred constants (exposed to Python)
+  PHI: 1.6180339887498948482
+  PHI_SQ: 2.6180339887498948482
+  PHI_INV: 0.6180339887498948482
+  PI: 3.14159265358979323846
+  E: 2.71828182845904523536
+  MU: 0.0382
+  CHI: 0.0618
+  SIGMA: 1.618
+  EPSILON: 0.333
+
+types:
+  PyHypervector:
+    description: "Python wrapper for HybridBigInt hypervector"
+    fields:
+      ptr: UInt64              # Zig object pointer (opaque)
+      dimension: UInt32         # Vector dimension
+      refcount: Int32           # Python reference count
+      label: String             # Optional label
+      owned: Bool               # Python owns memory (true) or borrowed (false)
+
+  PyVSAOps:
+    description: "VSA operation context (caches, allocator)"
+    fields:
+      allocator_ptr: UInt64     # Zig allocator
+      memory_pool: UInt64       # Reusable hypervector pool
+      pool_size: UInt32         # Pool capacity
+      stats: PyVSAStats         # Performance statistics
+
+  PyVSAStats:
+    description: "Operation performance counters"
+    fields:
+      bind_count: UInt64
+      unbind_count: UInt64
+      bundle_count: UInt64
+      similarity_count: UInt64
+      cache_hits: UInt64
+      cache_misses: UInt64
+      total_ops: UInt64
+
+  PyJITContext:
+    description: "JIT compilation context for hot paths"
+    fields:
+      compiler_ptr: UInt64      # Zig JIT compiler
+      hot_paths: UInt64         # Hash map of operation sequences
+      cache_ptr: UInt64         # Compiled machine code cache
+      enabled: Bool
+      compilation_count: UInt32
+      cache_hits: UInt64
+
+  FFIBridge:
+    description: "Zig-Python FFI bridge state"
+    fields:
+      initialized: Bool
+      vsa_ops: PyVSAOps
+      jit: PyJITContext
+      python_version: String
+      zig_version: String
+
+  PyCodebook:
+    description: "Symbol→Hypervector mapping table"
+    fields:
+      ptr: UInt64              # Zig Codebook pointer
+      allocator_ptr: UInt64
+      size: UInt32             # Number of symbols
+
+  PyMemoryConfig:
+    description: "Memory management configuration"
+    fields:
+      pool_size: UInt32
+      max_vectors: UInt32
+      gc_threshold: UInt32
+      enable_stats: Bool
+
+  PySimilarityResult:
+    description: "Similarity search result"
+    fields:
+      symbol: String
+      similarity: Float64
+      rank: UInt32
+
+behaviors:
+  # ============================================================
+  # INITIALIZATION (3 behaviors)
+  # ============================================================
+
+  - name: ffi_init
+    given: Python runtime imports trinity module
+    when: Module initialization
+    then: Create FFIBridge with allocator and memory pool
+    implementation: |
+        // Export: trinity_ffi_init(config: *PyMemoryConfig) *FFIBridge
+        // Creates global FFI state, allocates memory pool
+        // Returns opaque pointer to FFIBridge
+
+  - name: ffi_cleanup
+    given: FFIBridge instance
+    when: Python interpreter shutdown or explicit cleanup
+    then: Deallocate all hypervectors, memory pool, allocator
+    implementation: |
+        // Export: trinity_ffi_cleanup(bridge: *FFIBridge) void
+        // Frees all owned memory, invalidates pointer
+
+  - name: get_version
+    given: Module loaded
+    when: Python calls trinity.version()
+    then: Return package version as "1.0.0"
+    implementation: |
+        // Export: trinity_get_version() [*]const u8
+        // Returns static string pointer
+
+  # ============================================================
+  # HYPERVECTOR CORE (5 behaviors)
+  # ============================================================
+
+  - name: hypervector_create
+    given: Dimension (e.g., 10000) and optional seed
+    when: Python calls Hypervector(dim, seed)
+    then: Allocate random hypervector via HybridBigInt
+    implementation: |
+        // Export: trinity_hypervector_create(bridge: *FFIBridge, dim: u32, seed: u64) *PyHypervector
+        // Calls vsa.randomVector(dim, seed)
+        // Wraps in PyHypervector with owned=true
+
+  - name: hypervector_clone
+    given: Existing hypervector
+    when: Python calls hv.clone()
+    then: Deep copy with independent memory
+    implementation: |
+        // Export: trinity_hypervector_clone(bridge: *FFIBridge, src: *PyHypervector) *PyHypervector
+        // Calls SDK Hypervector.clone()
+        // Returns new owned PyHypervector
+
+  - name: hypervector_zero
+    given: Dimension
+    when: Python calls Hypervector.zero(dim)
+    then: Create zero-initialized hypervector
+    implementation: |
+        // Export: trinity_hypervector_zero(bridge: *FFIBridge, dim: u32) *PyHypervector
+        // Allocates HybridBigInt.zero() with dim
+
+  - name: hypervector_get
+    given: Hypervector and index
+    when: Python calls hv[i]
+    then: Return trit value (-1, 0, +1)
+    implementation: |
+        // Export: trinity_hypervector_get(hv: *PyHypervector, index: usize) i8
+        // Calls HybridBigInt.get() after ensureUnpacked()
+
+  - name: hypervector_set
+    given: Hypervector, index, trit value
+    when: Python calls hv[i] = value
+    then: Set trit, mark dirty
+    implementation: |
+        // Export: trinity_hypervector_set(hv: *PyHypervector, index: usize, value: i8) void
+        // Calls HybridBigInt.set(), sets dirty=true
+
+  # ============================================================
+  # VSA OPERATIONS (4 behaviors)
+  # ============================================================
+
+  - name: py_bind
+    given: Two hypervectors A and B
+    when: Python calls A.bind(B)
+    then: Return C = bind(A, B) via VSA core
+    implementation: |
+        // Export: trinity_bind(bridge: *FFIBridge, a: *PyHypervector, b: *PyHypervector) *PyHypervector
+        // Calls vsa.bind(a.data, b.data)
+        // Updates stats.bind_count++
+
+  - name: py_unbind
+    given: Bound vector and key
+    when: Python calls bound.unbind(key)
+    then: Return recovered vector via bind(key, bound)
+    implementation: |
+        // Export: trinity_unbind(bridge: *FFIBridge, bound: *PyHypervector, key: *PyHypervector) *PyHypervector
+        // Calls vsa.unbind(bound.data, key.data)
+        // Updates stats.unbind_count++
+
+  - name: py_bundle
+    given: Two hypervectors
+    when: Python calls A.bundle(B)
+    then: Return majority-vote superposition
+    implementation: |
+        // Export: trinity_bundle(bridge: *FFIBridge, a: *PyHypervector, b: *PyHypervector) *PyHypervector
+        // Calls vsa.bundle2(a.data, b.data)
+        // Updates stats.bundle_count++
+
+  - name: py_bundle_n
+    given: List of hypervectors
+    when: Python calls bundle_n([hv1, hv2, hv3, ...])
+    then: Return n-way majority vote
+    implementation: |
+        // Export: trinity_bundle_n(bridge: *FFIBridge, hvs: [*]*PyHypervector, count: usize) *PyHypervector
+        // Calls vsa.bundleN() on array
+        // Updates stats.bundle_count += count
+
+  # ============================================================
+  # SIMILARITY (3 behaviors)
+  # ============================================================
+
+  - name: py_cosine_similarity
+    given: Two hypervectors
+    when: Python calls A.similarity(B)
+    then: Return cosine similarity in [-1, 1]
+    implementation: |
+        // Export: trinity_cosine_similarity(a: *PyHypervector, b: *PyHypervector) f64
+        // Calls vsa.cosineSimilarity(a.data, b.data)
+        // Updates stats.similarity_count++
+        // Target: >1M ops/sec
+
+  - name: py_hamming_distance
+    given: Two hypervectors
+    when: Python calls A.hamming_distance(B)
+    then: Return count of differing trits
+    implementation: |
+        // Export: trinity_hamming_distance(a: *PyHypervector, b: *PyHypervector) usize
+        // Calls vsa.hammingDistance(a.data, b.data)
+
+  - name: py_hamming_similarity
+    given: Two hypervectors
+    when: Python calls A.hamming_similarity(B)
+    then: Return normalized similarity [0, 1]
+    implementation: |
+        // Export: trinity_hamming_similarity(a: *PyHypervector, b: *PyHypervector) f64
+        // Calls vsa.hammingSimilarity(a.data, b.data)
+
+  # ============================================================
+  # PERMUTATION (2 behaviors)
+  # ============================================================
+
+  - name: py_permute
+    given: Hypervector and shift count k
+    when: Python calls hv.permute(k)
+    then: Return cyclically shifted vector
+    implementation: |
+        // Export: trinity_permute(bridge: *FFIBridge, hv: *PyHypervector, k: usize) *PyHypervector
+        // Calls vsa.permute(hv.data, k)
+
+  - name: py_inverse_permute
+    given: Hypervector and shift count k
+    when: Python calls hv.inverse_permute(k)
+    then: Reverse cyclic shift
+    implementation: |
+        // Export: trinity_inverse_permute(bridge: *FFIBridge, hv: *PyHypervector, k: usize) *PyHypervector
+        // Calls vsa.inversePermute(hv.data, k)
+
+  # ============================================================
+  # CODEBOOK (3 behaviors)
+  # ============================================================
+
+  - name: codebook_create
+    given: Dimension
+    when: Python calls Codebook(dim)
+    then: Create symbol→vector mapping
+    implementation: |
+        // Export: trinity_codebook_create(bridge: *FFIBridge, dim: u32) *PyCodebook
+        // Initializes SDK Codebook with allocator
+
+  - name: codebook_encode
+    given: Codebook and symbol string
+    when: Python calls codebook.encode("cat")
+    then: Return random hypervector for symbol (cached)
+    implementation: |
+        // Export: trinity_codebook_encode(codebook: *PyCodebook, symbol: [*]const u8, len: usize) *PyHypervector
+        // Calls Codebook.encode(symbol)
+
+  - name: codebook_decode
+    given: Codebook and query hypervector
+    when: Python calls codebook.decode(query)
+    then: Return closest symbol or None
+    implementation: |
+        // Export: trinity_codebook_decode(codebook: *PyCodebook, query: *PyHypervector, threshold: f64) [*]const u8
+        // Calls Codebook.decodeWithThreshold(query, threshold)
+        // Returns null if below threshold
+
+  # ============================================================
+  # JIT COMPILATION (3 behaviors)
+  # ============================================================
+
+  - name: py_enable_jit
+    given: FFIBridge instance
+    when: Python calls trinity.enable_jit()
+    then: Initialize JIT compiler, enable hot path detection
+    implementation: |
+        // Export: trinity_enable_jit(bridge: *FFIBridge) void
+        // Creates JIT compiler, sets enabled=true
+
+  - name: py_disable_jit
+    given: Active JIT context
+    when: Python calls trinity.disable_jit()
+    then: Stop compilation, preserve cache
+    implementation: |
+        // Export: trinity_disable_jit(bridge: *FFIBridge) void
+        // Sets enabled=false, keeps cache
+
+  - name: py_jit_stats
+    given: JIT context
+    when: Python calls trinity.jit_stats()
+    then: Return compilation metrics
+    implementation: |
+        // Export: trinity_jit_stats(bridge: *FFIBridge) JITStats
+        // Returns struct with compilation_count, cache_hits
+
+  # ============================================================
+  # ASSOCIATIVE MEMORY (3 behaviors)
+  # ============================================================
+
+  - name: associative_memory_create
+    given: Dimension
+    when: Python calls AssociativeMemory(dim)
+    then: Create HDC memory store
+    implementation: |
+        // Export: trinity_assoc_mem_create(bridge: *FFIBridge, dim: u32) *AssociativeMemory
+        // Wraps SDK AssociativeMemory.init(dim)
+
+  - name: associative_memory_store
+    given: Memory, key hypervector, value hypervector
+    when: Python calls memory.store(key, value)
+    then: Bundle bound association into memory
+    implementation: |
+        // Export: trinity_assoc_mem_store(mem: *AssociativeMemory, key: *PyHypervector, value: *PyHypervector) void
+        // Calls AssociativeMemory.store(key, value)
+
+  - name: associative_memory_retrieve
+    given: Memory and key hypervector
+    when: Python calls memory.retrieve(key)
+    then: Return closest value vector
+    implementation: |
+        // Export: trinity_assoc_mem_retrieve(mem: *AssociativeMemory, key: *PyHypervector) *PyHypervector
+        // Calls AssociativeMemory.retrieve(key)
+
+  # ============================================================
+  # SEQUENCE ENCODER (2 behaviors)
+  # ============================================================
+
+  - name: sequence_encode
+    given: List of hypervectors [A, B, C]
+    when: Python calls encode_sequence([A, B, C])
+    then: Return permuted bundle (A + perm(B,1) + perm(C,2))
+    implementation: |
+        // Export: trinity_sequence_encode(bridge: *FFIBridge, items: [*]*PyHypervector, count: usize) *PyHypervector
+        // Calls SequenceEncoder.encode()
+
+  - name: sequence_probe
+    given: Sequence vector, candidate, position
+    when: Python calls sequence.probe(seq, candidate, pos)
+    then: Return similarity at position
+    implementation: |
+        // Export: trinity_sequence_probe(seq: *PyHypervector, candidate: *PyHypervector, pos: usize) f64
+        // Calls SequenceEncoder.probe()
+
+  # ============================================================
+  # UTILITY (3 behaviors)
+  # ============================================================
+
+  - name: py_density
+    given: Hypervector
+    when: Python calls hv.density()
+    then: Return ratio of non-zero trits [0, 1]
+    implementation: |
+        // Export: trinity_hypervector_density(hv: *PyHypervector) f64
+        // Calls Hypervector.density()
+
+  - name: py_count_nonzero
+    given: Hypervector
+    when: Python calls hv.count_nonzero()
+    then: Return number of non-zero trits
+    implementation: |
+        // Export: trinity_hypervector_count_nonzero(hv: *PyHypervector) usize
+        // Calls vsa.countNonZero(hv.data)
+
+  - name: py_negate
+    given: Hypervector
+    when: Python calls hv.negate()
+    then: Return negated vector (all trits flipped)
+    implementation: |
+        // Export: trinity_hypervector_negate(bridge: *FFIBridge, hv: *PyHypervector) *PyHypervector
+        // Calls Hypervector.negate()
+
+  # ============================================================
+  # CONSTANTS EXPOSURE (1 behavior)
+  # ============================================================
+
+  - name: get_sacred_constants
+    given: None
+    when: Python calls trinity.sacred_constants()
+    then: Return dict with φ, π, e, μ, χ, σ, ε
+    implementation: |
+        // Export: trinity_get_sacred_constants() SacredConstants
+        // Returns struct with all sacred math constants
+        // Python converts to dict
+
+cli:
+  flags:
+    - name: python-version
+      short: p
+      type: String
+      default: "3.11"
+      description: "Target Python version (3.10, 3.11, 3.12)"
+
+    - name: enable-jit
+      short: j
+      type: Bool
+      default: false
+      description: "Enable JIT compilation support"
+
+    - name: dimension
+      short: d
+      type: Int
+      default: 10000
+      description: "Default hypervector dimension"
+
+    - name: test-bindings
+      short: t
+      type: Bool
+      default: false
+      description: "Run Python bindings tests"
+
+test_cases:
+  # Initialization tests
+  - name: init_ffi_bridge
+    given: Default memory config
+    expected: "FFIBridge with pool_size=1024"
+
+  - name: get_package_version
+    given: Module loaded
+    expected: "python-trinity 1.0.0"
+
+  # Hypervector creation
+  - name: create_random_hypervector
+    given: "dim=10000, seed=42"
+    expected: "PyHypervector with 10000 trits"
+
+  - name: create_zero_hypervector
+    given: "dim=10000"
+    expected: "All trits = 0"
+
+  # VSA operations
+  - name: bind_unbind_roundtrip
+    given: "A=Hypervector.random(10000, 1), B=Hypervector.random(10000, 2)"
+    expected: "similarity(A, unbind(bind(A,B), B)) > 0.5"
+
+  - name: bundle_similarity
+    given: "A, B random vectors"
+    expected: "similarity(bundle(A,B), A) > 0.3 and similarity(bundle(A,B), B) > 0.3"
+
+  # Similarity
+  - name: cosine_self_similarity
+    given: "Hypervector.random(10000, 42)"
+    expected: "similarity(hv, hv) > 0.99"
+
+  - name: cosine_orthogonality
+    given: "Two random vectors with different seeds"
+    expected: "|similarity(A, B)| < 0.3"
+
+  # Codebook
+  - name: codebook_encode_decode
+    given: "Codebook(10000), symbol='cat'"
+    expected: "decode(encode('cat')) == 'cat'"
+
+  # Performance
+  - name: similarity_benchmark
+    given: "10000-dimensional vectors"
+    expected: ">1M cosine similarities/sec"
+
+  - name: overhead_check
+    given: "Native Zig vs Python FFI"
+    expected: "<5% overhead"
+
+  # JIT
+  - name: jit_enable_disable
+    given: "FFIBridge instance"
+    expected: "enable_jit() works, disable_jit() preserves cache"
+
+  # Memory management
+  - name: hypervector_clone_independent
+    given: "Original hypervector"
+    expected: "Clone has independent memory (modification doesn't affect original)"
+
+  # Sacred constants
+  - name: golden_ratio_constant
+    given: "trinity.sacred_constants()"
+    expected: "PHI = 1.6180339887498948482"
+
+  - name: trinity_identity
+    given: "PHI_SQ and PHI_INV_SQ"
+    expected: "PHI_SQ + PHI_INV_SQ = 3.0"
+
+  # Sequence encoding
+  - name: sequence_order_preservation
+    given: "[A, B, C] sequence"
+    expected: "probe(sequence, A, 0) > probe(sequence, A, 1)"
+
+  # Associative memory
+  - name: assoc_memory_store_retrieve
+    given: "key='apple', value='fruit'"
+    expected: "similarity(retrieve(key), value) > 0.2"

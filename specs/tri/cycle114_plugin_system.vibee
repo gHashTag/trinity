@@ -1,0 +1,422 @@
+name: trinity_plugin_system
+version: "1.0.0"
+language: zig
+module: plugin_system
+
+description: |
+  Cycle 114 Plugin System — Dynamic extension loading with hot-reload, sandboxed execution,
+  and sacred mathematics integration. Supports native plugins (.so/.dll/.dylib) and WASM
+  backends for secure execution.
+
+constants:
+  PHI: 1.618033988749895
+  PHI_SQUARED: 2.618033988749895
+  TRINITY: 3
+  MU: 0.0382
+  CHI: 0.0618
+  SIGMA: 1.618033988749895
+  EPSILON: 0.333333333333333
+
+  MAX_PLUGINS: 128
+  MAX_PLUGIN_NAME: 256
+  MAX_HOOK_DEPTH: 16
+  PLUGIN_TIMEOUT_MS: 5000
+  HOT_RELOAD_INTERVAL_MS: 1000
+  SANDBOX_MEMORY_LIMIT: 67108864  # 64 MB
+  SANDBOX_FUEL_LIMIT: 1000000
+
+types:
+  PluginState:
+    enum:
+      - UNLOADED
+      - LOADING
+      - LOADED
+      - ACTIVE
+      - UNLOADING
+      - ERROR
+
+  PluginType:
+    enum:
+      - NATIVE
+      - WASM
+      - HYBRID
+
+  PluginError:
+    enum:
+      - NONE
+      - NOT_FOUND
+      - ALREADY_LOADED
+      - LOAD_FAILED
+      - UNLOAD_FAILED
+      - VERSION_MISMATCH
+      - SANDBOX_VIOLATION
+      - TIMEOUT
+      - HOOK_ERROR
+      - INVALID_MANIFEST
+      - DEPENDENCY_MISSING
+      - HOT_RELOAD_FAILED
+
+  HookPhase:
+    enum:
+      - PRE_BIND
+      - POST_BIND
+      - PRE_UNBIND
+      - POST_UNBIND
+      - PRE_BUNDLE
+      - POST_BUNDLE
+      - PRE_PERMUTE
+      - POST_PERMUTE
+      - PRE_SIMILARITY
+      - POST_SIMILARITY
+      - CUSTOM
+
+  HookPriority:
+    enum:
+      - CRITICAL
+      - HIGH
+      - NORMAL
+      - LOW
+
+  SacredMathContext:
+    fields:
+      phi: Float
+      phi_squared: Float
+      trinity: Int
+      mu: Float
+      chi: Float
+      sigma: Float
+      epsilon: Float
+      lucas_sequence: List<Int>
+      fibonacci_sequence: List<Float>
+
+  PluginManifest:
+    fields:
+      name: String
+      version: String
+      description: String
+      author: String
+      plugin_type: PluginType
+      min_trinity_version: String
+      api_version: String
+      dependencies: List<String>
+      entry_point: String
+      wasm_path: Option<String>
+      native_path: Option<String>
+      permissions: List<String>
+      hooks: List<HookPhase>
+      config: Map<String, String>
+
+  PluginHook:
+    fields:
+      phase: HookPhase
+      priority: HookPriority
+      handler: Function<(PluginContext, Any) -> Result<Any, PluginError>>
+      enabled: Bool
+      call_count: Int
+      avg_duration_ns: Int
+      last_error: Option<String>
+
+  PluginContext:
+    fields:
+      plugin_id: String
+      manifest: PluginManifest
+      state: PluginState
+      handle: OpaquePointer  # dlopen handle or WASM instance
+      hooks: Map<String, PluginHook>
+      data: Map<String, Any>
+      sacred_math: SacredMathContext
+      last_activity: Int64
+      load_time: Int64
+      error_count: Int
+      sandbox: Option<WASMSandbox>
+
+  PluginLoadResult:
+    fields:
+      success: Bool
+      plugin_id: String
+      error: PluginError
+      message: String
+      load_time_ms: Int
+
+  PluginDiscoveryResult:
+    fields:
+      found: List<PluginManifest>
+      failed: List<String>
+      skipped: List<String>
+      total_count: Int
+      loadable_count: Int
+
+  HotReloadEvent:
+    fields:
+      plugin_id: String
+      timestamp: Int64
+      previous_version: Option<String>
+      new_version: String
+      reload_success: Bool
+      error: Option<String>
+
+  SandboxLimits:
+    fields:
+      memory_bytes: Int
+      fuel: Int
+      timeout_ms: Int
+      max_execution_steps: Int
+      allowed_host_functions: List<String>
+
+  SandboxViolation:
+    fields:
+      violation_type: String
+      severity: String
+      details: String
+      timestamp: Int64
+
+  WASMSandbox:
+    fields:
+      instance: OpaquePointer
+      memory: OpaquePointer
+      limits: SandboxLimits
+      active: Bool
+      violations: List<SandboxViolation>
+      execution_time_ns: Int
+      fuel_consumed: Int
+
+  PluginLoader:
+    fields:
+      loaded_plugins: Map<String, PluginContext>
+      plugin_order: List<String>
+      hooks_by_phase: Map<HookPhase, List<PluginHook>>
+      discovery_paths: List<String>
+      hot_reload_enabled: Bool
+      sandbox_enabled: Bool
+      sacred_math: SacredMathContext
+
+  PluginExecutionContext:
+    fields:
+      context: PluginContext
+      phase: HookPhase
+      input_data: Any
+      output_data: Option<Any>
+      execution_time_ns: Int
+      fuel_remaining: Int
+      error: Option<String>
+
+  PluginStatistics:
+    fields:
+      total_plugins: Int
+      active_plugins: Int
+      total_hook_calls: Int
+      total_execution_time_ns: Int64
+      error_count: Int
+      hot_reload_count: Int
+      sandbox_violations: Int
+
+behaviors:
+  - name: initialize_plugin_system
+    given: PluginLoader reference and configuration flags
+    when: System starts or loader is created
+    then: Initializes sacred math context, sets up discovery paths, enables hot-reload if requested, and returns ready loader state
+
+  - name: shutdown_plugin_system
+    given: Active PluginLoader with loaded plugins
+    when: System shutdown or cleanup requested
+    then: Unloads all plugins in reverse order, releases resources, closes all dynamic library handles, and cleans up WASM sandboxes
+
+  - name: discover_plugins
+    given: List of discovery paths (default: ~/.trinity/plugins/)
+    when: Plugin scan requested or system initializes
+    then: Scans directories for manifest files, validates metadata, checks dependencies, and returns discovery results with found/failed/skipped counts
+
+  - name: load_plugin
+    given: PluginManifest and load configuration
+    when: Plugin load requested with valid manifest
+    then: Validates dependencies, loads dynamic library (.so/.dll/.dylib) or WASM module, initializes plugin context, registers hooks, and returns load result with timing
+
+  - name: unload_plugin
+    given: Plugin ID or context reference
+    when: Plugin unload requested or system shutdown
+    then: Calls plugin cleanup handler, unregisters all hooks, closes dynamic library handle, destroys WASM sandbox, marks context as unloaded, and updates plugin order
+
+  - name: reload_plugin
+    given: Plugin ID and optional new manifest path
+    when: Hot-reload triggered or plugin update detected
+    then: Unloads existing plugin instance, loads new version, preserves plugin data if compatible, re-registers hooks, emits hot-reload event, and returns reload result
+
+  - name: enable_hot_reload
+    given: PluginLoader and reload interval in milliseconds
+    when: Hot-reload mode activated (development)
+    then: Starts file watcher thread on plugin directories, monitors manifest and binary changes, triggers automatic reload on modification, and logs all reload events
+
+  - name: disable_hot_reload
+    given: Active hot-reload watcher
+    when: Production mode or explicit disable
+    then: Stops file watcher thread, flushes pending reload events, and returns to static plugin loading mode
+
+  - name: register_hook
+    given: Plugin context, hook phase, handler function, and priority
+    when: Plugin initialization or hook registration requested
+    then: Adds hook to plugin context, indexes by phase in loader, validates handler signature, and enables hook for execution
+
+  - name: unregister_hook
+    given: Plugin context and hook phase or handler reference
+    when: Plugin unload or hook deregistration requested
+    then: Removes hook from plugin context, removes from phase index, clears handler reference, and decrements hook call statistics
+
+  - name: execute_hooks
+    given: Hook phase, input data, and execution context
+    when: VSA operation triggers hook phase (e.g., pre_bind)
+    then: Executes all registered hooks for phase in priority order (CRITICAL→LOW), passes sacred math context, measures execution time, collects results, handles errors, and returns combined output
+
+  - name: create_wasm_sandbox
+    given: Sandbox limits and WASM module path
+    when: Plugin requires sandboxed execution
+    then: Initializes WASM runtime, allocates limited memory, sets fuel limit, creates isolated instance, configures allowed host functions, and returns active sandbox
+
+  - name: destroy_wasm_sandbox
+    given: Active WASMSandbox reference
+    when: Plugin unload or sandbox cleanup
+    then: Deallocates WASM memory, releases instance, clears violation logs, and marks sandbox as inactive
+
+  - name: sandbox_execute
+    given: WASMSandbox, function name, and input parameters
+    when: Sandboxed plugin function called
+    then: Validates fuel limit, measures execution time, enforces timeout, tracks memory usage, detects violations, captures errors, consumes fuel, and returns execution result or violation
+
+  - name: check_sandbox_violation
+    given: WASMSandbox after execution
+    when: Sandbox execution completes
+    then: Checks memory limits, fuel exhaustion, timeout, illegal host calls, and returns violation details or success status
+
+  - name: validate_plugin_manifest
+    given: PluginManifest object
+    when: Plugin load or manifest validation requested
+    then: Checks required fields (name, version, api_version), validates semantic versioning, checks Trinity version compatibility, verifies entry point exists, validates permissions, and returns validation result
+
+  - name: check_plugin_dependencies
+    given: PluginManifest and loaded plugin registry
+    when: Plugin load or dependency validation
+    then: Resolves dependency graph, checks version constraints, verifies circular dependencies, ensures all dependencies are loaded, and returns dependency status
+
+  - name: get_plugin_statistics
+    given: PluginLoader reference
+    when: Statistics or monitoring requested
+    then: Aggregates metrics from all plugins (hook counts, execution times, errors, reloads, violations), calculates sacred math correlations, and returns statistics summary
+
+  - name: get_plugin_info
+    given: Plugin ID
+    when: Plugin information queried
+    then: Returns manifest, current state, load time, hook registrations, error history, and sacred math context for specified plugin
+
+  - name: list_loaded_plugins
+    given: PluginLoader reference
+    when: Plugin listing requested
+    then: Returns list of all loaded plugins with IDs, names, versions, states, and load times in load order
+
+  - name: get_plugin_hooks
+    given: Plugin ID or hook phase filter
+    when: Hook enumeration requested
+    then: Returns all registered hooks for plugin or phase with priorities, enabled status, call counts, and average durations
+
+  - name: enable_hook
+    given: Plugin context and hook phase
+    when: Hook activation requested
+    then: Sets hook enabled flag, registers in phase index, and marks hook for execution in next hook cycle
+
+  - name: disable_hook
+    given: Plugin context and hook phase
+    when: Hook deactivation requested
+    then: Clears hook enabled flag, removes from phase index, and prevents execution in hook cycles
+
+  - name: set_hook_priority
+    given: Plugin hook reference and new priority
+    when: Hook priority adjustment requested
+    then: Updates hook priority, re-sorts hooks in phase index, and reflects new execution order
+
+  - name: measure_hook_performance
+    given: Plugin hook reference and execution time
+    when: Hook execution completes
+    then: Updates call count, recalculates average duration (exponential moving average), tracks outliers, and logs performance metrics
+
+  - name: trigger_hot_reload
+    given: Plugin ID and optional force flag
+    when: Manual reload triggered or file change detected
+    then: Checks if reload safe (no active executions), validates new manifest, reloads plugin, preserves state if compatible, and returns hot-reload event
+
+  - name: add_discovery_path
+    given: PluginLoader and directory path
+    when: New plugin directory added
+    then: Validates directory exists and readable, adds to discovery path list, triggers immediate scan if hot-reload enabled, and returns updated paths
+
+  - name: remove_discovery_path
+    given: PluginLoader and directory path
+    when: Plugin directory removed
+    then: Removes path from discovery list, unloads any plugins from that path, and returns remaining paths
+
+  - name: compute_sacred_math_context
+    given: Optional seed value for sequences
+    when: Plugin context created or sacred math requested
+    then: Computes phi, phi_squared, trinity constant, generates Lucas sequence (L(2)=3), generates Fibonacci sequence scaled by phi, and returns sacred math context
+
+  - name: validate_plugin_api_version
+    given: Plugin API version string and current Trinity version
+    when: Plugin load validation
+    then: Parses semantic versions, checks major version compatibility, validates minor version within range, and returns compatibility result
+
+  - name: allocate_plugin_id
+    given: Plugin manifest name and version
+    when: Plugin loaded and ID assigned
+    then: Generates unique ID from name-version-timestamp hash, checks for collisions, registers in plugin map, and returns assigned ID
+
+  - name: update_plugin_state
+    given: Plugin context and new state
+    when: Plugin state transition occurs
+    then: Validates state transition (e.g., LOADED→ACTIVE), updates state field, records timestamp, triggers state change hooks if registered, and logs transition
+
+  - name: execute_hook_with_timeout
+    given: Hook handler, input data, and timeout in milliseconds
+    when: Hook execution with safety limit
+    then: Starts timeout timer, executes handler, monitors completion, cancels and returns timeout error if limit exceeded, and returns result or error
+
+  - name: aggregate_hook_results
+    given: List of hook execution results
+    when: Multiple hooks executed for phase
+    then: Combines results by priority order, applies sacred math weighting (φ for high priority), resolves conflicts, filters errors, and returns aggregated output
+
+  - name: log_plugin_error
+    given: Plugin context, error type, and message
+    when: Plugin error occurs
+    then: Increments error count, records error with timestamp, triggers error hooks if registered, checks error threshold for auto-disable, and persists error log
+
+  - name: export_plugin_state
+    given: Plugin context
+    when: Hot-reload or serialization requested
+    then: Serializes plugin data, hook states, error history, and sacred math context to portable format, returns exported state blob
+
+  - name: import_plugin_state
+    given: Plugin context and exported state blob
+    when: Hot-reload state restoration or load from snapshot
+    then: Deserializes state blob, validates compatibility with current plugin version, restores plugin data and hook states, and returns import result
+
+  - name: validate_plugin_permissions
+    given: Plugin manifest permissions list
+    when: Plugin load or permission check
+    then: Checks each permission against system policy, validates permission combinations, logs denied permissions, and returns permission validation result
+
+  - name: get_plugin_load_order
+    given: PluginLoader
+    when: Load order query or dependency resolution
+    then: Returns plugin IDs in dependency-satisfied load order, ensures dependents loaded after dependencies, and reflects actual load sequence
+
+  - name: reset_plugin_statistics
+    given: Plugin ID or loader reference
+    when: Statistics reset requested
+    then: Clears hook call counts, resets execution timers, clears error counts, resets reload counters, and initializes fresh metrics
+
+  - name: clone_plugin_context
+    given: Source plugin context
+    when: Context cloning needed for isolation
+    then: Creates deep copy of manifest, duplicates hook registry, copies sacred math context, clones data map, and returns independent context copy
+
+  - name: merge_plugin_data
+    given: Target plugin context and source data map
+    when: Hot-reload state merge or data import
+    then: Merges source data into target, handles conflicts via merge strategy, preserves sacred math fields, validates merged data, and returns merge result

@@ -1,0 +1,858 @@
+name: pg_trinity
+version: "1.0.0"
+language: c
+module: pg_trinity
+
+description: |
+  PostgreSQL extension for Vector Symbolic Architecture (VSA) operations.
+  Provides trinity_vector data type, GIN/GiST indexing, and VSA operators
+  for similarity search, binding/unbinding, and bundling directly in SQL.
+
+types:
+  TrinityVector:
+    description: VSA hypervector stored as packed ternary data
+    fields:
+      dimension: Int32              # Vector dimension (power of 2)
+      packed_data: ByteA           # Packed trits (1.58 bits/trit)
+      checksum: UInt32              # CRC32 for validation
+      metadata: JSONB               # Optional: namespace, tags, version
+
+  VSAIndex:
+    description: Index options for VSA operations
+    fields:
+      index_type: VSAIndexType      # GIN or GiST
+      threshold: Float4             # Similarity threshold [0, 1]
+      use_hnsw: Bool                # Enable HNSW acceleration
+      m_parameter: Int16            # HNSW max connections (default: 16)
+      ef_construction: Int16        # HNSW build accuracy (default: 200)
+
+  VSAIndexType:
+    description: Index method type
+    enum:
+      - GIN                          # Generalized Inverted Index (bundle queries)
+      - GiST                         # Generalized Search Tree (range queries)
+
+  BindOperator:
+    description: Configuration for vector binding operations
+    fields:
+      method: BindMethod             # Binding algorithm
+      permutation_count: Int16       # Permutation rounds (default: 1)
+      validate_binding: Bool         # Check unbind reversibility
+
+  BindMethod:
+    description: Binding algorithm variant
+    enum:
+      - CIRCULAR                     # Cyclic permutation binding
+      - CONVOLUTION                  # Convolution-based binding
+      - XOR                          # XOR binding (binary-compatible)
+
+  SimilarityOperator:
+    description: Configuration for similarity queries
+    fields:
+      metric: SimilarityMetric       # Distance/similarity measure
+      normalize: Bool                # L2-normalize vectors first
+      threshold: Float4              # Minimum similarity [0, 1]
+
+  SimilarityMetric:
+    description: Similarity metric type
+    enum:
+      - COSINE                       # Cosine similarity [-1, 1]
+      - HAMMING                      # Hamming distance
+      - EUCLIDEAN                    # Euclidean distance
+      - JACCARD                      # Jaccard index
+
+  BundleConfig:
+    description: Configuration for bundling operations
+    fields:
+      method: BundleMethod           # Bundling algorithm
+      threshold: Int8                # Majority vote threshold
+      normalize: Bool                # Normalize result
+
+  BundleMethod:
+    description: Bundling algorithm variant
+    enum:
+      - MAJORITY                     # Majority vote (element-wise)
+      - WEIGHTED                     # Weighted average
+      - THRESHOLD                    # Threshold-based
+
+  VSAMemory:
+    description: Memory statistics for VSA operations
+    fields:
+      total_vectors: Int64           # Total vectors stored
+      index_size_bytes: Int64        # Index size on disk
+      cache_hit_ratio: Float4        # Cache efficiency
+      avg_dimension: Float4          # Average vector dimension
+
+behaviors:
+  # ===== EXTENSION LIFECYCLE =====
+
+  - name: pg_trinity_init
+    given: PostgreSQL instance without pg_trinity extension
+    when: CREATE EXTENSION pg_trinity is executed
+    then:
+      - Registers trinity_vector data type with PostgreSQL type system
+      - Loads shared library libtrinity_core.so for VSA operations
+      - Creates pg_trinity catalog tables (vsavectors, vsaindexes, vsastats)
+      - Sets up GIN and GiST operator classes and families
+      - Initializes hooks for query planning and optimization
+      - Returns extension version 1.0.0
+
+  - name: pg_trinity_schema_create
+    given: Fresh PostgreSQL database
+    when: Extension is installed
+    then:
+      - Creates schema vsa with all VSA-specific objects
+      - Sets up pg_trinity configuration table
+      - Creates view vsa.vector_stats for monitoring
+      - Installs SQL functions and operators
+      - Grants USAGE on schema to PUBLIC
+
+  # ===== DATA TYPE INPUT/OUTPUT =====
+
+  - name: vector_input
+    given: String representation of trinity_vector
+    when: Data is inserted into trinity_vector column
+    then:
+      - Parses input format "{dimension: 1024, data: 'base64...'}"
+      - Validates dimension is power of 2 and >= 512
+      - Decodes base64 packed trits to byte array
+      - Computes and verifies CRC32 checksum
+      - Stores packed data in PostgreSQL varlena structure
+      - Returns TrinityVector with metadata populated
+
+  - name: vector_output
+    given: TrinityVector stored in database
+    when: Vector is queried and serialized
+    then:
+      - Extracts dimension and packed_data from varlena
+      - Encodes packed data as base64
+      - Formats as JSON: "{dimension: 1024, data: 'base64...', checksum: 12345}"
+      - Returns text representation for client applications
+
+  - name: vector_recv
+    given: Binary representation from client
+    when: Vector is sent in binary protocol
+    then:
+      - Receives binary data in PostgreSQL binary format
+      - Deserializes dimension, data, checksum
+      - Validates checksum matches data
+      - Constructs internal TrinityVector structure
+      - Returns memory-aligned vector for storage
+
+  - name: vector_send
+    given: TrinityVector in memory
+    when: Vector is sent to client in binary protocol
+    then:
+      - Serializes dimension to Int32 (4 bytes)
+      - Serializes packed_data length to Int32 (4 bytes)
+      - Serializes packed_data bytes
+      - Serializes checksum to UInt32 (4 bytes)
+      - Returns binary blob for network transmission
+
+  # ===== BASIC OPERATORS =====
+
+  - name: equality_operator
+    given: Two TrinityVector values
+    when: Comparing with = operator
+    then:
+      - Compares dimensions for equality
+      - Compares checksums for equality
+      - Byte-wise comparison of packed_data
+      - Returns TRUE if vectors are identical, FALSE otherwise
+
+  - name: inequality_operator
+    given: Two TrinityVector values
+    when: Comparing with <> or != operator
+    then:
+      - Performs equality check
+      - Returns logical negation
+      - Returns TRUE if vectors differ, FALSE if identical
+
+  - name: less_than_operator
+    given: Two TrinityVector values
+    when: Comparing with < operator (for ORDER BY)
+    then:
+      - Compares dimensions first (lower dimension sorts first)
+      - If dimensions equal, compares checksums
+      - Returns TRUE if left vector is "less than" right
+
+  - name: comparison_operators
+    given: Two TrinityVector values
+    when: Comparing with <=, >, >= operators
+    then:
+      - Implements comparison operators for ORDER BY and DISTINCT
+      - Uses dimension + checksum as sort key
+      - Returns consistent ordering results
+
+  # ===== VSA OPERATORS =====
+
+  - name: distance_operator
+    given: Two TrinityVector values
+    when: Using <-> operator (distance)
+    then:
+      - Validates both vectors have same dimension
+      - Unpacks trits from packed representation
+      - Computes Hamming distance (count of differing trits)
+      - Normalizes by dimension to get [0, 1] range
+      - Returns Float4 representing distance
+
+  - name: similarity_operator
+    given: Two TrinityVector values
+    when: Using <=> operator (cosine similarity)
+    then:
+      - Validates dimensions match
+      - Unpacks trits to {-1, 0, +1} arrays
+      - Converts to floating point for computation
+      - Computes cosine similarity: (a . b) / (||a|| * ||b||)
+      - Returns Float4 in range [-1, 1] where 1.0 = identical
+
+  - name: bind_operator
+    given: Two TrinityVector values
+    when: Using && operator (binding)
+    then:
+      - Validates dimensions match
+      - Unpacks both vectors to trit arrays
+      - Calls trinity_bind() from libtrinity_core.so
+      - Performs circular permutation binding
+      - Packs result into new TrinityVector
+      - Returns bound vector preserving dimension
+
+  - name: unbind_operator
+    given: Bound TrinityVector and key TrinityVector
+    when: Using UNBIND() function
+    then:
+      - Validates dimensions match
+      - Unpacks vectors to trit arrays
+      - Calls trinity_unbind() from libtrinity_core.so
+      - Performs inverse permutation (count - permutation_count)
+      - Packs result into new TrinityVector
+      - Returns approximate original vector
+
+  - name: bundle_operator
+    given: Two or more TrinityVector values
+    when: Using ||| operator or trinity_bundle() function
+    then:
+      - Validates all vectors have same dimension
+      - Unpacks all vectors to trit arrays
+      - Calls trinity_bundle() from libtrinity_core.so
+      - Performs element-wise majority vote
+      - Packs result into new TrinityVector
+      - Returns bundled vector
+
+  # ===== AGGREGATE FUNCTIONS =====
+
+  - name: trinity_bundle_agg
+    given: Set of TrinityVector values in GROUP BY query
+    when: trinity_bundle() aggregate is called
+    then:
+      - Accumulates vectors from GROUP BY rows
+      - Validates all have same dimension
+      - Computes element-wise majority vote across all vectors
+      - For each position: selects trit with highest count
+      - Returns single TrinityVector representing the bundle
+
+  - name: trinity_center_agg
+    given: Set of TrinityVector values
+    when: trinity_center() aggregate is called
+    then:
+      - Accumulates vectors and computes centroid
+      - Converts trits to weighted average
+      - Returns trit closest to centroid for each position
+      - Returns single TrinityVector as approximate center
+
+  - name: trinity_distance_avg
+    given: Set of TrinityVector values
+    when: trinity_avg_distance() is called with reference vector
+    then:
+      - Computes Hamming distance from each vector to reference
+      - Accumulates distances
+      - Returns Float4 average distance
+
+  # ===== INDEXING =====
+
+  - name: create_gin_index
+    given: Table with trinity_vector column
+    when: CREATE INDEX using GIN is executed
+    then:
+      - Creates GIN index structure for fast similarity queries
+      - Builds inverted index over vector trit positions
+      - Stores posting lists for efficient bundle queries
+      - Optimizes for trinity_bundle() and similarity operators
+      - Returns index creation success message
+
+  - name: create_gist_index
+    given: Table with trinity_vector column
+    when: CREATE INDEX using GiST is executed
+    then:
+      - Creates GiST index for nearest-neighbor queries
+      - Builds R-tree over vector space
+      - Supports <-> (distance) and <=> (similarity) operators
+      - Optimizes for ORDER BY <-> LIMIT queries
+      - Returns index creation success message
+
+  - name: gin_consistent
+    given: GIN index and query predicate
+    when: Query planner checks if index matches
+    then:
+      - Compares query vector against index entry
+      - Returns TRUE if page might contain matches (recheck flag)
+      - Returns FALSE if page definitely doesn't contain matches
+      - Used for index-only scans with recheck
+
+  - name: gin_consistent_bundle
+    given: GIN index and trinity_bundle() query
+    when: Query involves bundling multiple indexed vectors
+    then:
+      - Extracts posting lists from all query vectors
+      - Merges posting lists by intersection
+      - Returns candidate pages that might contain bundle results
+      - Enables efficient aggregate queries over indexed data
+
+  - name: gist_consistent
+    given: GiST index and distance/similarity predicate
+    when: Query planner evaluates index condition
+    then:
+      - Computes minimum/maximum bounds for index entry
+      - Checks if predicate could match any vector in entry
+      - Returns TRUE if entry might contain matches
+      - Returns FALSE if entry definitely doesn't match
+      - Used for ORDER BY <-> LIMIT K queries
+
+  - name: gist_distance
+    given: GiST index entry and query vector
+    when: Computing distance for ORDER BY
+    then:
+      - Computes approximate distance from query to index entry bounds
+      - Returns Float4 lower bound on actual distance
+      - Used by query planner for nearest-neighbor sorting
+      - Optimizes KNN queries without full table scan
+
+  - name: index_build
+    given: Table with existing trinity_vector data
+    when: CREATE INDEX is executed
+    then:
+      - Scans all rows in table
+      - Extracts trinity_vector values
+      - Builds GIN posting lists or GiST R-tree
+      - Optimizes index structure for query patterns
+      - Updates statistics in pg_statistic
+      - Returns index build completion message
+
+  - name: index_insert
+    given: Existing index and new row
+    when: INSERT or UPDATE adds trinity_vector
+    then:
+      - Extracts vector from new row
+      - Computes position in GIN/GiST structure
+      - Inserts into appropriate posting list or R-tree node
+      - Updates index metadata
+      - Returns insertion success
+
+  - name: index_delete
+    given: Existing index and deleted row
+    when: DELETE or UPDATE removes trinity_vector
+    then:
+      - Locates vector in GIN/GiST structure
+      - Removes from posting list or R-tree node
+      - Rebalances index if necessary
+      - Updates metadata
+      - Returns deletion success
+
+  - name: index_vacuum
+    given: Index with dead entries
+    when: VACUUM runs on table
+    then:
+      - Scans index for dead tuples
+      - Removes orphaned posting list entries
+      - Compacts GIN/GiST structure
+      - Updates free space map
+      - Returns cleanup statistics
+
+  # ===== SQL FUNCTIONS =====
+
+  - name: trinity_vector_create
+    given: Dimension and optional data
+    when: trinity_vector(dimension, data) function is called
+    then:
+      - Validates dimension is power of 2 and >= 512
+      - If data is NULL, generates random hypervector
+      - If data provided, validates base64 encoding
+      - Computes checksum
+      - Returns populated TrinityVector
+
+  - name: trinity_dimension
+    given: TrinityVector value
+    when: trinity_dimension(vector) function is called
+    then:
+      - Extracts dimension field
+      - Returns Int32 dimension value
+
+  - name: trinity_similarity
+    given: Two TrinityVector values and metric name
+    when: trinity_similarity(a, b, 'cosine') is called
+    then:
+      - Validates dimensions match
+      - Dispatches to appropriate similarity function
+      - Supports: 'cosine', 'hamming', 'euclidean', 'jaccard'
+      - Returns Float4 similarity/distance value
+
+  - name: trinity_bind_fn
+    given: Two TrinityVector values and optional method
+    when: trinity_bind(a, b, 'circular') is called
+    then:
+      - Validates dimensions match
+      - Dispatches to bind method: circular, convolution, xor
+      - Calls libtrinity_core.so for computation
+      - Returns bound TrinityVector
+
+  - name: trinity_unbind_fn
+    given: Bound vector and key vector
+    when: trinity_unbind(bound, key) is called
+    then:
+      - Validates dimensions match
+      - Performs inverse bind operation
+      - Returns recovered TrinityVector
+
+  - name: trinity_permute
+    given: TrinityVector and permutation count
+    when: trinity_permute(vector, 1) is called
+    then:
+      - Validates count is >= 0 and < dimension
+      - Performs cyclic shift by count positions
+      - Returns permuted TrinityVector
+
+  - name: trinity_normalize
+    given: TrinityVector
+    when: trinity_normalize(vector) is called
+    then:
+      - Unpacks trits
+      - Computes L2 norm
+      - Normalizes each trit by norm (converts to float, normalizes, quantizes back)
+      - Returns normalized TrinityVector
+
+  - name: trinity_from_array
+    given: Integer array representing trits
+    when: trinity_from_array(ARRAY[-1, 0, 1, ...]) is called
+    then:
+      - Validates array contains only -1, 0, +1
+      - Validates length is power of 2 and >= 512
+      - Packs trits into byte array
+      - Computes checksum
+      - Returns TrinityVector
+
+  - name: trinity_to_array
+    given: TrinityVector
+    when: trinity_to_array(vector) is called
+    then:
+      - Unpacks trits from packed representation
+      - Returns INTEGER[] array with trit values
+
+  - name: trinion_random
+    given: Dimension
+    when: trinion_random(1024) is called
+    then:
+      - Validates dimension is power of 2 and >= 512
+      - Generates random hypervector using trinity RNG
+      - Packs trits into byte array
+      - Returns random TrinityVector
+
+  - name: trinity_stats
+    given: Table name with trinity_vector column
+    when: trinity_stats('table_name') is called
+    then:
+      - Queries pg_statistic for column statistics
+      - Computes average dimension, storage size
+      - Returns JSONB with statistics: count, avg_dimension, total_bytes
+
+  - name: trinity_info
+    given: TrinityVector
+    when: trinity_info(vector) is called
+    then:
+      - Extracts metadata
+      - Returns JSONB: {dimension, packed_size, checksum, bits_per_trit}
+
+  # ===== INTEGRATION WITH ZIG CORE =====
+
+  - name: load_shared_library
+    given: PostgreSQL extension initialization
+    when: _PG_init() is called during extension loading
+    then:
+      - Loads libtrinity_core.so from PostgreSQL library path
+      - Resolves symbols: trinity_bind, trinity_unbind, trinity_bundle, trinity_similarity
+      - Verifies library version matches extension version
+      - Sets up function pointers for FFI calls
+      - Returns success or error on version mismatch
+
+  - name: trinity_bind_ffi
+    given: Two unpacked trit arrays
+    when: bind operation is required
+    then:
+      - Marshals trit arrays to C-compatible format
+      - Calls trinity_bind(trit_t* a, trit_t* b, trit_t* result, size_t dim)
+      - Passes dimension and array pointers to Zig core
+      - Receives result array in memory
+      - Returns packed TrinityVector
+
+  - name: trinity_unbind_ffi
+    given: Bound trit array and key trit array
+    when: unbind operation is required
+    then:
+      - Marshals arrays to C format
+      - Calls trinity_unbind(trit_t* bound, trit_t* key, trit_t* result, size_t dim)
+      - Receives recovered array
+      - Returns packed TrinityVector
+
+  - name: trinity_bundle_ffi
+    given: Array of trit arrays to bundle
+    when: bundle operation is required
+    then:
+      - Marshals all arrays to C format
+      - Calls trinity_bundle(trit_t** vectors, size_t count, size_t dim, trit_t* result)
+      - Receives bundled result array
+      - Returns packed TrinityVector
+
+  - name: trinity_similarity_ffi
+    given: Two trit arrays and metric type
+    when: similarity calculation is required
+    then:
+      - Marshals arrays to C format
+      - Calls trinity_cosine_sim(trit_t* a, trit_t* b, size_t dim) -> float
+      - Receives Float4 similarity value
+      - Returns similarity in range [-1, 1]
+
+  # ===== QUERY OPTIMIZATION =====
+
+  - name: support_function
+    given: Query planner with VSA operator
+    when: Planner checks index support
+    then:
+      - Returns TRUE for operators supported by index: <->, <=>, &&
+      - Returns FALSE for unsupported operators
+      - Provides cost estimates for index scans
+      - Enables planner to choose index over sequential scan
+
+  - name: cost_estimate
+    given: Query planner with trinity_vector query
+    when: Estimating execution cost
+    then:
+      - Computes selectivity for similarity threshold
+      - Estimates index scan cost vs sequential scan
+      - Returns cost in page units
+      - Guides planner to optimal access method
+
+  - name: selectivity_estimate
+    given: Query predicate with similarity threshold
+    when: Estimating row count
+    then:
+      - Uses histogram statistics from pg_statistic
+      - Estimates fraction of rows matching threshold
+      - Returns double selectivity [0, 1]
+      - Enables accurate row count predictions
+
+  # ===== STATISTICS AND ANALYZE =====
+
+  - name: analyze_statistics
+    given: Table with trinity_vector column
+    when: ANALYZE is executed
+    then:
+      - Scans sample of vectors (default 30000 rows)
+      - Computes most common values (MCV) histogram
+      - Computes average dimension and storage size
+      - Stores statistics in pg_statistic
+      - Updates planner estimates for future queries
+
+  - name: statistics_store
+    given: Computed statistics from ANALYZE
+    when: Writing to pg_statistic
+    then:
+      - Stores stanullfrac (fraction of nulls)
+      - Stores stawidth (average width in bytes)
+      - Stores stadistinct (distinct count estimate)
+      - Stores MCV list for common vectors
+      - Stores histogram for value distribution
+
+  # ===== UTILITY FUNCTIONS =====
+
+  - name: trinity_hash
+    given: TrinityVector
+    when: Hash function is needed for hash joins/aggregates
+    then:
+      - Extracts checksum field (pre-computed CRC32)
+      - Returns UInt32 hash value
+      - Enables use in HASH indexes and hash joins
+
+  - name: trinity_cmp
+    given: Two TrinityVector values
+    when: B-tree index requires comparison
+    then:
+      - Compares dimensions
+      - Compares checksums
+      - Returns -1, 0, +1 for less, equal, greater
+      - Enables B-tree indexing for sorting
+
+  - name: trinity_copy
+    given: TrinityVector
+    when: Vector needs to be duplicated
+    then:
+      - Allocates new varlena structure
+      - Copies dimension, data, checksum
+      - Returns deep-copied vector
+
+  - name: trinity_validate
+    given: TrinityVector
+    when: Data integrity check is needed
+    then:
+      - Recomputes CRC32 checksum
+      - Compares with stored checksum
+      - Returns TRUE if checksums match
+      - Returns FALSE if corruption detected
+
+  # ===== EXTENSION MANAGEMENT =====
+
+  - name: pg_trinity_upgrade
+    given: Database with pg_trinity version N
+    when: ALTER EXTENSION pg_trinity UPDATE is executed
+    then:
+      - Checks for migration scripts for version N+1
+      - Executes schema changes if any
+      - Updates data structures if format changed
+      - Runs data migration if needed
+      - Updates version in pg_extension control
+      - Returns upgrade success message
+
+  - name: pg_trinity_uninstall
+    given: Database with pg_trinity installed
+    when: DROP EXTENSION pg_trinity CASCADE is executed
+    then:
+      - Drops all dependent objects (functions, operators, indexes)
+      - Removes vsa schema and all objects within
+      - Unloads libtrinity_core.so
+      - Removes catalog entries
+      - Returns extension removal confirmation
+
+  # ===== ERROR HANDLING =====
+
+  - name: dimension_mismatch_error
+    given: Two TrinityVector values with different dimensions
+    when: Operation requires matching dimensions
+    then:
+      - Detects dimension inequality
+      - Throws ERROR: trinity_vector dimension mismatch (left: 1024, right: 2048)
+      - Aborts transaction
+      - Returns error to client
+
+  - name: invalid_trit_error
+    given: Array with values outside {-1, 0, +1}
+    when: trinity_from_array() is called
+    then:
+      - Detects invalid trit value (e.g., 2, -2)
+      - Throws ERROR: invalid trit value 2, must be -1, 0, or +1
+      - Aborts transaction
+      - Returns error to client
+
+  - name: checksum_validation_error
+    given: TrinityVector with corrupted checksum
+    when: Vector is accessed
+    then:
+      - Detects CRC32 mismatch during validation
+      - Throws ERROR: trinity_vector checksum validation failed
+      - Aborts transaction
+      - Logs corruption incident to PostgreSQL log
+
+  - name: dimension_power_of_two_error
+    given: Dimension not power of 2
+    when: trinity_vector_create() is called
+    then:
+      - Validates dimension is power of 2
+      - Throws ERROR: trinity_vector dimension 1000 must be power of 2
+      - Suggests nearest valid dimensions: 512, 1024, 2048
+      - Aborts transaction
+
+  # ===== PERFORMANCE OPTIMIZATIONS =====
+
+  - name: lazy_unpacking
+    given: TrinityVector in memory
+    when: Only metadata (dimension, checksum) is accessed
+    then:
+      - Skips unpacking trit array
+      - Returns metadata directly from header
+      - Avoids unnecessary CPU cycles
+      - Returns metadata values
+
+  - name: packed_storage
+    given: Trit array during storage
+    when: Vector is packed into TrinityVector
+    then:
+      - Packs 3 trits into 1 byte (2.67 bits per trit)
+      - Or uses 1.58 bits per trit optimal packing
+      - Achieves 20x compression vs float32 array
+      - Returns packed byte array
+
+  - name: index_only_scan
+    given: Query with indexed trinity_vector
+    when: All columns are in index
+    then:
+      - Skips heap access
+      - Returns vector directly from index
+      - Reduces I/O by 50-90%
+      - Enables fast count(*) queries
+
+  - name: parallel_index_build
+    given: Large table with millions of vectors
+    when: CREATE INDEX is executed
+    then:
+      - Spawns background worker processes
+      - Divides table into parallel chunks
+      - Builds index partitions in parallel
+      - Merges partitions into final index
+      - Returns completion with parallelization stats
+
+  # ===== TESTING AND VALIDATION =====
+
+  - name: test_vector_roundtrip
+    given: TrinityVector
+    when: Testing input/output serialization
+    then:
+      - Creates vector with known data
+      - Serializes to output format
+      - Parses output format back to vector
+      - Compares checksums
+      - Returns TRUE if roundtrip succeeds
+
+  - name: test_bind_unbind_reversibility
+    given: Original TrinityVector
+    when: Testing bind -> unbind roundtrip
+    then:
+      - Binds vector with random key
+      - Unbinds with same key
+      - Compares recovered vector with original
+      - Returns similarity score (should be 1.0 for exact recovery)
+
+  - name: test_bundle_consistency
+    given: Set of TrinityVector values
+    when: Testing bundling commutativity
+    then:
+      - Bundles vectors in order A, B, C
+      - Bundles vectors in order C, A, B
+      - Compares results
+      - Returns TRUE if bundle results are identical
+
+  - name: test_index_correctness
+    given: Table with indexed trinity_vector column
+    when: Querying with similarity operator
+    then:
+      - Executes query with index scan
+      - Executes query with sequential scan
+      - Compares result sets
+      - Returns TRUE if results match exactly
+
+sql_installation: |
+  -- Install pg_trinity extension
+  CREATE EXTENSION IF NOT EXISTS pg_trinity;
+
+  -- Create table with trinity_vector column
+  CREATE TABLE documents (
+    id SERIAL PRIMARY KEY,
+    content TEXT,
+    embedding trinity_vector(1024)  -- 1024-dimensional VSA vector
+  );
+
+  -- Insert vectors
+  INSERT INTO documents (content, embedding)
+  VALUES ('hello world', trinity_vector(1024));
+
+  -- Create GiST index for nearest-neighbor search
+  CREATE INDEX documents_embedding_gist ON documents USING gist (embedding);
+
+  -- Create GIN index for bundle queries
+  CREATE INDEX documents_embedding_gin ON documents USING gin (embedding);
+
+  -- Query by similarity (nearest neighbor)
+  SELECT id, content, embedding <-> trinity_vector(1024) AS distance
+  FROM documents
+  ORDER BY embedding <-> trinity_vector(1024)
+  LIMIT 10;
+
+  -- Query by cosine similarity
+  SELECT id, content, embedding <=> trinity_vector(1024) AS similarity
+  FROM documents
+  WHERE (embedding <=> trinity_vector(1024)) > 0.8
+  ORDER BY similarity DESC;
+
+  -- Bind vectors
+  SELECT trinity_bind(embedding, trinity_vector(1024))
+  FROM documents
+  WHERE id = 1;
+
+  -- Bundle vectors (aggregate)
+  SELECT trinity_bundle(embedding)
+  FROM documents
+  GROUP BY category;
+
+  -- Get vector information
+  SELECT
+    id,
+    trinity_dimension(embedding) as dim,
+    trinity_info(embedding) as info
+  FROM documents
+  LIMIT 1;
+
+  -- Analyze table for statistics
+  ANALYZE documents;
+
+  -- View index usage statistics
+  SELECT
+    schemaname,
+    tablename,
+    indexname,
+    idx_scan,
+    idx_tup_read,
+    idx_tup_fetch
+  FROM pg_stat_user_indexes
+  WHERE tablename = 'documents';
+
+extension_control_file: |
+  # pg_trinity extension control file (pg_trinity.control)
+  comment = 'Vector Symbolic Architecture (VSA) support for PostgreSQL'
+  default_version = '1.0.0'
+  module_pathname = '$libdir/pg_trinity'
+  relocatable = false
+  requires = ''
+
+makefile: |
+  # pg_trinity Makefile for PostgreSQL extension
+  MODULE_big = pg_trinity
+  OBJS = pg_trinity.o vsa_datatype.o vsa_operators.o vsa_gin.o vsa_gist.o vsa_functions.o
+  EXTENSION = pg_trinity
+  DATA = pg_trinity--1.0.0.sql
+
+  # Link against Trinity core library (built from Zig)
+  LIBTRINITY = ../trinity-core/libtrinity_core.so
+  SHLIB_LINK = -L../trinity-core -ltrinity_core
+
+  PG_CONFIG = pg_config
+  PGXS := $(shell $(PG_CONFIG) --pgxs)
+
+  # Build libtrinity_core.so first (Zig compilation)
+  $(LIBTRINETY):
+      cd ../trinity-core && zig build-lib -dynamic -femit-bin=libtrinity_core.so
+
+  # Include PostgreSQL extension build system
+  include $(PGXS)
+
+test_suite:
+  - Test basic CREATE EXTENSION and DROP EXTENSION
+  - Test trinity_vector input/output with valid and invalid data
+  - Test all comparison operators: =, <>, <, <=, >, >=
+  - Test VSA operators: <->, <=>, && with various inputs
+  - Test aggregate functions: trinity_bundle(), trinity_center()
+  - Test GIN index creation, queries, and deletion
+  - Test GiST index creation, KNN queries, and deletion
+  - Test FFI calls to libtrinity_core.so
+  - Test error handling for dimension mismatches
+  - Test ANALYZE statistics collection
+  - Test parallel index build on large tables
+  - Test index-only scans with covering indexes
+  - Test extension upgrade from version 1.0.0 to 1.1.0
+  - Performance benchmark: 1M vectors, similarity query latency < 10ms
+  - Performance benchmark: Index build time < 5 minutes for 1M vectors
