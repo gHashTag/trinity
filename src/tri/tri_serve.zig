@@ -90,17 +90,21 @@ pub const UnifiedApiServer = struct {
     config: ServeConfig,
     status: ServerStatus,
     registry: api.CommandRegistry,
+    server_socket: ?std.posix.socket_t,
 
     pub fn init(allocator: std.mem.Allocator, config: ServeConfig) !UnifiedApiServer {
-        return UnifiedApiServer{
+        const server = UnifiedApiServer{
             .allocator = allocator,
             .config = config,
             .status = ServerStatus.init(allocator),
             .registry = api.CommandRegistry.init(allocator),
+            .server_socket = null,
         };
+        return server;
     }
 
     pub fn deinit(self: *UnifiedApiServer) void {
+        self.stop();
         self.status.deinit();
         self.registry.deinit();
     }
@@ -112,11 +116,146 @@ pub const UnifiedApiServer = struct {
         // Show banner
         try self.printBanner();
 
-        // Start enabled protocols
+        // Start actual HTTP server
+        try self.startHttpServer();
+
+        // Start enabled protocols (for display)
         try self.startProtocols();
 
         // Show status
         try self.printStatus();
+
+        // Run event loop
+        if (!self.config.daemon) {
+            std.debug.print("\n{s}Press Ctrl+C to stop{s}\n", .{YELLOW, RESET});
+            try self.runEventLoop();
+        }
+    }
+
+    fn startHttpServer(self: *UnifiedApiServer) !void {
+        const server_socket = try std.posix.socket(
+            std.posix.AF.INET,
+            std.posix.SOCK.STREAM,
+            std.posix.IPPROTO.TCP
+        );
+
+        // Set SO_REUSEADDR
+        const reuse_value: u32 = 1;
+        _ = std.posix.setsockopt(
+            server_socket,
+            std.posix.SOL.SOCKET,
+            std.posix.SO.REUSEADDR,
+            &std.mem.toBytes(@as(c_int, @intCast(reuse_value)))
+        ) catch |err| {
+            std.posix.close(server_socket);
+            return err;
+        };
+
+        const addr = std.net.Address.initIp4(.{ 127, 0, 0, 1 }, self.config.port);
+        try std.posix.bind(server_socket, &addr.any, addr.getOsSockLen());
+        try std.posix.listen(server_socket, 128);
+
+        self.server_socket = server_socket;
+        std.debug.print("  {s}✓{s} HTTP server listening on port {d}\n", .{GREEN, RESET, self.config.port});
+    }
+
+    fn runEventLoop(self: *UnifiedApiServer) !void {
+        const socket = self.server_socket orelse return error.ServerNotStarted;
+
+        while (self.status.running) {
+            // Accept connection
+            var client_addr: std.net.Address = undefined;
+            var client_addr_len: std.posix.socklen_t = @sizeOf(std.net.Address);
+            const client_socket = std.posix.accept(socket, &client_addr.any, &client_addr_len, 0) catch |err| {
+                if (err == error.WouldBlock) continue;
+                return err;
+            };
+            defer std.posix.close(client_socket);
+
+            // Read request
+            var buffer: [2048]u8 = undefined;
+            const bytes_read = std.posix.read(client_socket, &buffer) catch |err| {
+                if (err == error.WouldBlock) continue;
+                continue;
+            };
+
+            if (bytes_read > 0) {
+                const request = buffer[0..bytes_read];
+
+                // Parse HTTP request
+                if (std.mem.indexOf(u8, request, "GET /api/health") != null) {
+                    // Health check response
+                    const response = try self.healthCheckResponse();
+                    defer self.allocator.free(response);
+                    _ = std.posix.write(client_socket, response) catch {};
+                } else if (std.mem.indexOf(u8, request, "GET /api/openapi.json") != null) {
+                    // OpenAPI spec response
+                    const response = try self.openApiResponse();
+                    defer self.allocator.free(response);
+                    _ = std.posix.write(client_socket, response) catch {};
+                } else if (std.mem.indexOf(u8, request, "GET /graphql") != null) {
+                    // GraphQL playground
+                    const response = try self.graphqlPlaygroundResponse();
+                    defer self.allocator.free(response);
+                    _ = std.posix.write(client_socket, response) catch {};
+                } else {
+                    // 404 response
+                    const response = try self.notFoundResponse();
+                    defer self.allocator.free(response);
+                    _ = std.posix.write(client_socket, response) catch {};
+                }
+            }
+        }
+    }
+
+    fn healthCheckResponse(self: *const UnifiedApiServer) ![]const u8 {
+        const uptime = std.time.milliTimestamp() - self.status.start_time;
+        return std.fmt.allocPrint(self.allocator,
+            \\HTTP/1.1 200 OK
+            \\Content-Type: application/json
+            \\Access-Control-Allow-Origin: *
+            \\
+            \\{{"healthy":true,"uptime":{d},"connections":{d},"commands":{d}}}
+        , .{uptime, self.status.connections, self.registry.count()});
+    }
+
+    fn openApiResponse(self: *const UnifiedApiServer) ![]const u8 {
+        return std.fmt.allocPrint(self.allocator,
+            \\HTTP/1.1 200 OK
+            \\Content-Type: application/json
+            \\Access-Control-Allow-Origin: *
+            \\
+            \\{{"openapi":"3.0.0","info":{{"title":"TRINITY Unified API","version":"1.0.0"}},"paths":{{}}}}
+        , .{});
+    }
+
+    fn graphqlPlaygroundResponse(self: *const UnifiedApiServer) ![]const u8 {
+        return std.fmt.allocPrint(self.allocator,
+            \\HTTP/1.1 200 OK
+            \\Content-Type: text/html
+            \\Access-Control-Allow-Origin: *
+            \\
+            \\<html><body><h1>GraphQL Playground</h1><p>130 commands available</p></body></html>
+        , .{});
+    }
+
+    fn notFoundResponse(self: *const UnifiedApiServer) ![]const u8 {
+        return std.fmt.allocPrint(self.allocator,
+            \\HTTP/1.1 404 Not Found
+            \\Content-Type: application/json
+            \\
+            \\{{"error":"Not Found"}}
+        , .{});
+    }
+
+    pub fn stop(self: *UnifiedApiServer) void {
+        self.status.running = false;
+        if (self.server_socket) |sock| {
+            std.posix.close(sock);
+            self.server_socket = null;
+        }
+        const uptime = std.time.milliTimestamp() - self.status.start_time;
+        std.debug.print("\n{s}►{s} Server stopped. Uptime: {d:.1}s{s}\n", .{CYAN, RESET, @as(f64, @floatFromInt(uptime)) / 1000.0, RESET});
     }
 
     fn printBanner(self: *const UnifiedApiServer) !void {
@@ -170,12 +309,6 @@ pub const UnifiedApiServer = struct {
         std.debug.print("  {s}►{s} GraphQL:  http://localhost:{d}/graphql\n", .{CYAN, RESET, self.config.port});
         std.debug.print("\n", .{});
         std.debug.print("{s}φ² + 1/φ² = 3 = TRINITY | Press Ctrl+C to stop{s}\n\n", .{YELLOW, RESET});
-    }
-
-    pub fn stop(self: *UnifiedApiServer) void {
-        self.status.running = false;
-        const uptime = std.time.milliTimestamp() - self.status.start_time;
-        std.debug.print("\n{s}►{s} Server stopped. Uptime: {d:.1}s{s}\n", .{CYAN, RESET, @as(f64, @floatFromInt(uptime)) / 1000.0, RESET});
     }
 };
 
