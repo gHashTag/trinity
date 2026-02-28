@@ -25,6 +25,47 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install Zig
+        run: |
+          curl -fL "https://ziglang.org/download/0.15.2/zig-linux-x86_64-0.15.2.tar.xz" -o zig.tar.xz
+          tar -xf zig.tar.xz
+          sudo mv zig-linux-x86_64-0.15.2 /opt/zig
+          sudo ln -s /opt/zig/zig /usr/local/bin/zig
+          zig version
+
+      - name: Build TRI CLI
+        run: |
+          # Build only the tri step (which runs the binary) and find where it is
+          zig build -Doptimize=ReleaseFast tri || true
+          # Find the built binary in zig cache
+          TRI_BINARY=$(find .zig-cache -name "tri" -type f -executable 2>/dev/null | head -1)
+          if [ -z "$TRI_BINARY" ]; then
+            echo "ERROR: Could not find tri binary in cache"
+            exit 1
+          fi
+          echo "Found tri binary at: $TRI_BINARY"
+          mkdir -p docker-artifacts
+          cp "$TRI_BINARY" docker-artifacts/tri
+          chmod +x docker-artifacts/tri
+          ./docker-artifacts/tri --version || echo "Version check may fail in CI"
+
+      - name: Create static Dockerfile
+        run: |
+          cat > Dockerfile.ci << 'EOF'
+          FROM alpine:3.19
+          RUN apk add --no-cache ca-certificates curl
+          COPY docker-artifacts/tri /usr/local/bin/tri
+          RUN tri --version && file /usr/local/bin/tri
+          LABEL org.opencontainers.image.title="Trinity CLI"
+          LABEL org.opencontainers.image.description="Sacred Intelligence CLI — Trinity v1.0.1 PURITY"
+          LABEL org.opencontainers.image.version="1.0.1"
+          LABEL org.opencontainers.image.source="https://github.com/gHashTag/trinity"
+          LABEL org.opencontainers.image.licenses="MIT"
+          WORKDIR /workspace
+          ENTRYPOINT ["tri"]
+          CMD ["--version"]
+          EOF
+
       - uses: docker/setup-buildx-action@v3
 
       - uses: docker/login-action@v3
@@ -36,7 +77,7 @@ jobs:
       - uses: docker/build-push-action@v6
         with:
           context: .
-          file: deploy/Dockerfile.tri
+          file: Dockerfile.ci
           platforms: linux/amd64
           push: true
           tags: |
