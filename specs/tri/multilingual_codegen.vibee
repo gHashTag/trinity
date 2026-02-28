@@ -150,7 +150,7 @@ cli:
 test_cases:
   # Input Tests
   - name: detect_russian
-    given: "напиши функцию"
+    given: "onпandшand функцandю"
     expected: "InputLanguage.russian"
 
   # Output Tests: Python
