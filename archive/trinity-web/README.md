@@ -46,12 +46,12 @@ Data structures optimized by Golden Ratio. Scientific visualization with Apple-s
 | Agents | AI agent arena |
 | Multi | Multiverse visualization |
 | Beings | Quantum beings |
-| Яблочко | Russian folklore module |
+| Яблочtoо | Russian folklore module |
 | Cinema | 4D cinema visualization |
 | LLM | LLM architecture |
-| Матрёшка | Nested architecture |
-| Богатыри | 33 heroes module |
-| Жар-птица | Phoenix evolution |
+| Матрёшtoа | Nested architecture |
+| Богатырand | 33 heroes module |
+| Жар-птandца | Phoenix evolution |
 | Languages | 10 language support |
 
 ## Tech Stack

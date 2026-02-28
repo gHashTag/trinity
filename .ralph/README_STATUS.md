@@ -1,30 +1,30 @@
 # Ralph Status Reporter
 
-Отправка статусов Ralph в Telegram группу **TRINITY DEV** (-5160767429).
+Отпраintoа withтатуwithоin Ralph in Telegram группу **TRINITY DEV** (-5160767429).
 
-## 🚀 Быстрый старт
+## 🚀 Быwithтрый withтарт
 
-### Ручной запуск
+### Ручной запуwithto
 ```bash
 bash .ralph/scripts/send_ralph_status.sh
 ```
 
-### Управление cron
+### Упраinленandе cron
 ```bash
-# Посмотреть список
+# Поwithмfromреть withпandwithоto
 openclaw cron list
 
-# Отключить
+# Отtoлючandть
 openclaw cron update --id eeca8582-e5a0-46c2-8eda-90b231fb7671 --patch '{"enabled": false}'
 
-# Включить
+# Вtoлючandть
 openclaw cron update --id eeca8582-e5a0-46c2-8eda-90b231fb7671 --patch '{"enabled": true}'
 
-# Запустить сейчас
+# Запуwithтandть withейчаwith
 openclaw cron run --id eeca8582-e5a0-46c2-8eda-90b231fb7671
 ```
 
-## 📊 Что отправляется
+## 📊 Что fromпраinляетwithя
 
 1. Circuit Breaker state (CLOSED/OPEN/HALF_OPEN)
 2. Session info (last used, reset, calls)
@@ -37,12 +37,12 @@ openclaw cron run --id eeca8582-e5a0-46c2-8eda-90b231fb7671
 - `.ralph/status_message.txt` — Telegram format
 - `.ralph/status_report.json` — JSON format
 
-## 📖 Полная документация
+## 📖 Полonя доtoументацandя
 
 См. `.ralph/STATUS_INTEGRATION.md`
 
 ---
 
-**Интервал:** 30 минут
+**Интерinал:** 30 мandнут
 **Job ID:** `eeca8582-e5a0-46c2-8eda-90b231fb7671`
 **Создано:** 2026-02-17

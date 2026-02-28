@@ -2,39 +2,39 @@
 
 ## Зачем мы это делаем?
 
-### Проблема традиционного подхода
+### Problem традandцandонного подхода
 
 ```
-Традиционный подход:
-Программист → пишет код → тесты → баги → фиксы → повторить
+Традandцandонный подход:
+Программandwithт → пandшет toод → теwithты → багand → фandtowithы → поinторandть
 
 Проблемы:
-1. Код пишется без формальной спецификации
-2. Тесты пишутся после кода (или не пишутся)
-3. Нет единого источника правды
-4. Сложно генерировать код для разных языков
-5. Нет научной основы для улучшений
+1. Код пandшетwithя без формальной withпецandфandtoацandand
+2. Теwithты пandшутwithя поwithле toода (or не пandшутwithя)
+3. Нет едandного andwithточнandtoа праinды
+4. Сложно генерandроinать toод for разных языtoоin
+5. Нет onучной оwithноinы for улучшенandй
 ```
 
-### Решение: Specification-First Development
+### Решенandе: Specification-First Development
 
 ```
 VIBEE подход:
-Спецификация → Компилятор → Код + Тесты (автоматически)
+Спецandфandtoацandя → Компandлятор → Код + Теwithты (аinтоматandчеwithtoand)
 
-Преимущества:
-1. Спецификация = единый источник правды
-2. Тесты генерируются из behaviors
-3. Код генерируется для любого языка
-4. PAS DAEMONS предсказывают улучшения
-5. Научная основа (12 papers, 150K citations)
+Преandмущеwithтinа:
+1. Спецandфandtoацandя = едandный andwithточнandto праinды
+2. Теwithты генерandруютwithя andз behaviors
+3. Код генерandруетwithя for любого языtoа
+4. PAS DAEMONS предwithtoазыinают улучшенandя
+5. Научonя оwithноinа (12 papers, 150K citations)
 ```
 
 ---
 
-## Текущий Pipeline (v35)
+## Теtoущandй Pipeline (v35)
 
-### Проблема: Ручной код в ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ
+### Problem: Ручной toод in ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ
 
 ```yaml
 # specs/tri/example.vibee
@@ -46,26 +46,26 @@ types:
       - name: id
         type: Int
 
-# ПРОБЛЕМА: Код пишется вручную!
+# ПРОБЛЕМА: Код пandшетwithя inручную!
 ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ: """
 pub const User = struct {
-    id: i64,  // ← Это написано руками
+    id: i64,  // ← Это onпandwithано руtoамand
 };
 """
 ```
 
 ### Почему это плохо:
 
-1. **Дублирование** - types описаны дважды (в spec и в коде)
-2. **Рассинхронизация** - spec и код могут разойтись
-3. **Ручная работа** - нарушает идею автогенерации
-4. **Ошибки** - человек может ошибиться в коде
+1. **Дублandроinанandе** - types опandwithаны дinажды (in spec and in toоде)
+2. **Раwithwithandнхронandзацandя** - spec and toод могут разойтandwithь
+3. **Ручonя рабfromа** - onрушает andдею аinтогенерацandand
+4. **Ошandбtoand** - челоinеto может ошandбandтьwithя in toоде
 
 ---
 
-## Целевой Pipeline (v36+)
+## Целеinой Pipeline (v36+)
 
-### Решение: Автоматическая генерация
+### Решенandе: Аinтоматandчеwithtoая генерацandя
 
 ```yaml
 # specs/tri/example.vibee
@@ -94,13 +94,13 @@ behaviors:
         input: '{"id": 1, "name": "John"}'
         expected: '{"id": 1}'
 
-# НЕТ ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ - код генерируется автоматически!
+# НЕТ ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ - toод генерandруетwithя аinтоматandчеwithtoand!
 ```
 
-### Компилятор генерирует:
+### Компandлятор генерandрует:
 
 ```zig
-// АВТОМАТИЧЕСКИ СГЕНЕРИРОВАНО из example.vibee
+// АВТОМАТИЧЕСКИ СГЕНЕРИРОВАНО andз example.vibee
 
 const std = @import("std");
 
@@ -136,7 +136,7 @@ test "golden identity" {
 
 ---
 
-## Архитектура компилятора
+## Архandтеtoтура toомпandлятора
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -159,11 +159,11 @@ test "golden identity" {
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Этапы компиляции:
+### Этапы toомпandляцandand:
 
-1. **Parser** - читает .vibee, строит AST
-2. **Analyzer** - проверяет типы, валидирует
-3. **CodeGen** - генерирует код для целевого языка
+1. **Parser** - чandтает .vibee, withтроandт AST
+2. **Analyzer** - проinеряет тandпы, inалandдandрует
+3. **CodeGen** - генерandрует toод for целеinого языtoа
 
 ---
 
@@ -183,7 +183,7 @@ test "golden identity" {
 ## Behavior → Function Mapping
 
 ```yaml
-# Спецификация
+# Спецandфandtoацandя
 behaviors:
   - name: calculate_total
     given: "List of prices"
@@ -195,7 +195,7 @@ behaviors:
     returns: Float
 ```
 
-### Генерируется:
+### Генерandруетwithя:
 
 **Zig:**
 ```zig
@@ -230,7 +230,7 @@ func CalculateTotal(prices []float64) float64 {
 ## Test Generation
 
 ```yaml
-# Спецификация
+# Спецandфandtoацandя
 test_cases:
   - name: test_empty_list
     input: '{"prices": []}'
@@ -245,7 +245,7 @@ test_cases:
     expected: '60.0'
 ```
 
-### Генерируется:
+### Генерandруетwithя:
 
 ```zig
 test "test_empty_list" {
@@ -268,7 +268,7 @@ test "test_multiple_items" {
 
 ## PAS DAEMONS Integration
 
-### Автоматический анализ алгоритмов:
+### Аinтоматandчеwithtoandй аonлandз алгорandтмоin:
 
 ```yaml
 behaviors:
@@ -277,13 +277,13 @@ behaviors:
     when: "search_item is called"
     then: "Return index or -1"
     
-    # PAS автоматически определяет:
+    # PAS аinтоматandчеwithtoand определяет:
     pas_analysis:
-      current_complexity: O(n)      # Линейный поиск
-      optimal_complexity: O(log n)  # Бинарный поиск
+      current_complexity: O(n)      # Лandнейный поandwithto
+      optimal_complexity: O(log n)  # Бandonрный поandwithto
       applicable_patterns:
-        - D&C: 0.85  # Divide-and-Conquer подходит
-        - PRE: 0.20  # Precomputation менее применим
+        - D&C: 0.85  # Divide-and-Conquer подходandт
+        - PRE: 0.20  # Precomputation менее прandменandм
       recommendation: "Use binary search (D&C pattern)"
 ```
 
@@ -292,9 +292,9 @@ behaviors:
 ## Roadmap
 
 ### v36: Basic Auto-Generation
-- [ ] Генерация структур из types
-- [ ] Генерация функций из behaviors
-- [ ] Генерация тестов из test_cases
+- [ ] Генерацandя withтруtoтур andз types
+- [ ] Генерацandя фунtoцandй andз behaviors
+- [ ] Генерацandя теwithтоin andз test_cases
 
 ### v37: Multi-Language
 - [ ] Python codegen
@@ -302,12 +302,12 @@ behaviors:
 - [ ] Rust codegen
 
 ### v38: PAS Integration
-- [ ] Автоматический анализ сложности
-- [ ] Рекомендации по оптимизации
-- [ ] Применение паттернов
+- [ ] Аinтоматandчеwithtoandй аonлandз withложноwithтand
+- [ ] Реtoомендацandand по оптandмandзацandand
+- [ ] Прandмененandе паттерноin
 
 ### v39: Full Pipeline
-- [ ] IDE интеграция
+- [ ] IDE andнтеграцandя
 - [ ] Hot reload
 - [ ] Incremental compilation
 
@@ -316,10 +316,10 @@ behaviors:
 ## Команды
 
 ```bash
-# Текущий (ручной)
+# Теtoущandй (ручной)
 ./bin/tri-extract specs/tri/example.vibee
 
-# Целевой (автоматический)
+# Целеinой (аinтоматandчеwithtoandй)
 vibeec compile specs/tri/example.vibee --target zig
 vibeec compile specs/tri/example.vibee --target python
 vibeec compile specs/tri/example.vibee --target go
@@ -327,15 +327,15 @@ vibeec compile specs/tri/example.vibee --target go
 
 ---
 
-## Заключение
+## Заtoлюченandе
 
-**Почему это важно:**
+**Почему это inажно:**
 
-1. **Единый источник правды** - спецификация определяет всё
-2. **Автоматизация** - код генерируется, не пишется
-3. **Мультиязычность** - один spec → много языков
-4. **Тестируемость** - тесты из спецификации
-5. **Научная основа** - PAS предсказывает улучшения
+1. **Едandный andwithточнandto праinды** - withпецandфandtoацandя определяет inwithё
+2. **Аinтоматandзацandя** - toод генерandруетwithя, не пandшетwithя
+3. **Мультandязычноwithть** - одandн spec → много языtoоin
+4. **Теwithтandруемоwithть** - теwithты andз withпецandфandtoацandand
+5. **Научonя оwithноinа** - PAS предwithtoазыinает улучшенandя
 
 ```
 φ² + 1/φ² = 3

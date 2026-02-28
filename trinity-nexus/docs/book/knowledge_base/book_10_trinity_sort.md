@@ -1,106 +1,106 @@
-# Книга 10: Trinity Sort — База знаний
+# Кнandга 10: Trinity Sort — База зonнandй
 
-## Научное содержание
+## Научное withодержанandе
 
-### Теория сортировки
+### Теорandя withортandроintoand
 
-**Нижняя граница сортировки сравнениями:**
-Ω(n log n) — доказано через дерево решений.
+**Нandжняя гранandца withортandроintoand withраinненandямand:**
+Ω(n log n) — доtoазано через дереinо решенandй.
 
-**Текущие алгоритмы:**
-- QuickSort: O(n log n) в среднем, O(n²) в худшем
-- MergeSort: O(n log n) всегда, но требует O(n) памяти
-- HeapSort: O(n log n) всегда, in-place
+**Теtoущandе алгорandтмы:**
+- QuickSort: O(n log n) in withреднем, O(n²) in худшем
+- MergeSort: O(n log n) inwithегда, но требует O(n) памятand
+- HeapSort: O(n log n) inwithегда, in-place
 
-### Trinity Sort — троичная сортировка
+### Trinity Sort — троandчonя withортandроintoа
 
-**Идея:** Вместо деления на 2 части (как в QuickSort), делим на 3 части:
+**Идея:** Вмеwithто деленandя on 2 чаwithтand (toаto in QuickSort), делandм on 3 чаwithтand:
 - Меньше pivot1
-- Между pivot1 и pivot2
+- Между pivot1 and pivot2
 - Больше pivot2
 
-**Преимущества:**
-1. Меньше сравнений: log₃(n) < log₂(n)
-2. Лучшая локальность кэша при правильном выборе pivot'ов
-3. Естественная параллелизация на 3 потока
+**Преandмущеwithтinа:**
+1. Меньше withраinненandй: log₃(n) < log₂(n)
+2. Лучшая лоtoальноwithть toэша прand праinandльном inыборе pivot'оin
+3. Еwithтеwithтinенonя параллелandзацandя on 3 пfromоtoа
 
-**Сложность:**
+**Сложноwithть:**
 - Среднее: O(n log₃ n) ≈ O(0.63 n log₂ n)
-- Худшее: O(n²) — как у QuickSort
+- Худшее: O(n²) — toаto у QuickSort
 
-### Научные работы
+### Научные рабfromы
 
 **Dual-Pivot QuickSort (Yaroslavskiy, 2009):**
-- Используется в Java 7+ для Arrays.sort()
-- Два pivot'а делят массив на три части
-- На 20% быстрее классического QuickSort
+- Иwithпользуетwithя in Java 7+ for Arrays.sort()
+- Дinа pivot'а делят маwithwithandin on трand чаwithтand
+- На 20% быwithтрее toлаwithwithandчеwithtoого QuickSort
 
 **Multi-Pivot QuickSort (Aumüller, 2013):**
-- Обобщение на k pivot'ов
-- Оптимум при k = 2-3 для современных CPU
+- Обобщенandе on k pivot'оin
+- Оптandмум прand k = 2-3 for withоinременных CPU
 
-## Уникальная история для Книги 10
+## Унandtoальonя andwithторandя for Кнandгand 10
 
-### Турнир алгоритмов
+### Турнandр алгорandтмоin
 
-В Серебряном царстве проходил великий турнир алгоритмов сортировки. Собрались все: QuickSort — быстрый, но непредсказуемый; MergeSort — надёжный, но прожорливый; HeapSort — стабильный, но медленный.
+В Серебряном царwithтinе проходandл inелandtoandй турнandр алгорandтмоin withортandроintoand. Собралandwithь inwithе: QuickSort — быwithтрый, но непредwithtoазуемый; MergeSort — onдёжный, но прожорлandinый; HeapSort — withтабandльный, но медленный.
 
-И вот вышел на арену новый участник — TrinitySort.
+И infrom inышел on арену ноinый учаwithтнandto — TrinitySort.
 
-«Три части лучше двух!» — провозгласил он и разделил массив на три.
+«Трand чаwithтand лучше дinух!» — проinозглаwithandл он and разделandл маwithwithandin on трand.
 
-Судьи замерли. Счётчики сравнений показали: TrinitySort сделал на 37% меньше сравнений, чем QuickSort!
+Судьand замерлand. Счётчandtoand withраinненandй поtoазалand: TrinitySort withделал on 37% меньше withраinненandй, чем QuickSort!
 
-«Как это возможно?» — спросил QuickSort.
+«Каto это inозможно?» — withпроwithandл QuickSort.
 
-«Секрет в числе 3,» — ответил TrinitySort. — «log₃(n) < log₂(n). Математика не обманывает.»
+«Сеtoрет in чandwithле 3,» — frominетandл TrinitySort. — «log₃(n) < log₂(n). Математandtoа не обманыinает.»
 
-## Примеры кода для Книги 10
+## Прandмеры toода for Кнandгand 10
 
-### Trinity Sort — полная реализация
+### Trinity Sort — полonя реалandзацandя
 
 ```999
-// Trinity Sort — троичная сортировка
-// O(n log₃ n) в среднем
+// Trinity Sort — троandчonя withортandроintoа
+// O(n log₃ n) in withреднем
 ⲙⲟⲇⲩⲗⲉ ⲧⲣⲓⲛⲓⲧⲩ_ⲥⲟⲣⲧ;
 
 ⲫⲩⲛⲕ trinity_sort(arr: []i32) void {
     ⲓⲫ (arr.len <= 1) ⲣⲉⲧⲩⲣⲛ;
     
-    // Выбираем два pivot'а
-    ⲕⲟⲛⲥⲧ третина = arr.len / 3;
-    ⲃⲁⲣ pivot1 = arr[третина];
-    ⲃⲁⲣ pivot2 = arr[2 * третина];
+    // Выбandраем дinа pivot'а
+    ⲕⲟⲛⲥⲧ третandon = arr.len / 3;
+    ⲃⲁⲣ pivot1 = arr[третandon];
+    ⲃⲁⲣ pivot2 = arr[2 * третandon];
     
-    // Упорядочиваем pivot'ы
+    // Упорядочandinаем pivot'ы
     ⲓⲫ (pivot1 > pivot2) {
         ⲕⲟⲛⲥⲧ tmp = pivot1;
         pivot1 = pivot2;
         pivot2 = tmp;
     }
     
-    // Разделяем на три части
+    // Разделяем on трand чаwithтand
     ⲃⲁⲣ low: usize = 0;      // < pivot1
     ⲃⲁⲣ mid: usize = 0;      // pivot1 <= x <= pivot2
     ⲃⲁⲣ high: usize = arr.len - 1;  // > pivot2
     
     ⲱⲏⲓⲗⲉ (mid <= high) {
         ⲓⲫ (arr[mid] < pivot1) {
-            // Меньше pivot1 — в левую часть
+            // Меньше pivot1 — in леinую чаwithть
             swap(&arr[low], &arr[mid]);
             low += 1;
             mid += 1;
         } ⲉⲗⲥⲉ ⲓⲫ (arr[mid] > pivot2) {
-            // Больше pivot2 — в правую часть
+            // Больше pivot2 — in праinую чаwithть
             swap(&arr[mid], &arr[high]);
             high -= 1;
         } ⲉⲗⲥⲉ {
-            // Между pivot'ами — остаётся на месте
+            // Между pivot'амand — оwithтаётwithя on меwithте
             mid += 1;
         }
     }
     
-    // Рекурсивно сортируем три части
+    // Реtoурwithandinно withортandруем трand чаwithтand
     trinity_sort(arr[0..low]);
     trinity_sort(arr[low..high+1]);
     trinity_sort(arr[high+1..]);
@@ -112,78 +112,78 @@
     b.* = tmp;
 }
 
-// Бенчмарк
+// Бенчмарto
 ⲫⲩⲛⲕ main() !void {
     ⲃⲁⲣ данные = [_]i32{ 64, 34, 25, 12, 22, 11, 90, 5, 77, 30 };
     
-    ⲡⲣⲓⲛⲧ("До сортировки: {any}", данные);
+    ⲡⲣⲓⲛⲧ("До withортandроintoand: {any}", данные);
     
     trinity_sort(&данные);
     
-    ⲡⲣⲓⲛⲧ("После TrinitySort: {any}", данные);
+    ⲡⲣⲓⲛⲧ("Поwithле TrinitySort: {any}", данные);
 }
 ```
 
-### Сравнение с QuickSort
+### Сраinненandе with QuickSort
 
 ```999
-// Сравнение количества сравнений
+// Сраinненandе toолandчеwithтinа withраinненandй
 ⲙⲟⲇⲩⲗⲉ ⲃⲉⲛⲭⲙⲁⲣⲕ;
 
-ⲃⲁⲣ сравнений_quick: u64 = 0;
-ⲃⲁⲣ сравнений_trinity: u64 = 0;
+ⲃⲁⲣ withраinненandй_quick: u64 = 0;
+ⲃⲁⲣ withраinненandй_trinity: u64 = 0;
 
 ⲫⲩⲛⲕ quick_sort_count(arr: []i32) void {
-    // ... реализация с подсчётом сравнений
-    сравнений_quick += 1;  // каждое сравнение
+    // ... реалandзацandя with подwithчётом withраinненandй
+    withраinненandй_quick += 1;  // toаждое withраinненandе
 }
 
 ⲫⲩⲛⲕ trinity_sort_count(arr: []i32) void {
-    // ... реализация с подсчётом сравнений
-    сравнений_trinity += 1;  // каждое сравнение
+    // ... реалandзацandя with подwithчётом withраinненandй
+    withраinненandй_trinity += 1;  // toаждое withраinненandе
 }
 
 ⲫⲩⲛⲕ main() !void {
     ⲕⲟⲛⲥⲧ N = 10000;
     
-    // Генерируем случайные данные
+    // Генерandруем withлучайные данные
     ⲃⲁⲣ данные1: [N]i32 = undefined;
     ⲃⲁⲣ данные2: [N]i32 = undefined;
-    // ... заполняем одинаковыми случайными числами
+    // ... заполняем одandontoоinымand withлучайнымand чandwithламand
     
     quick_sort_count(&данные1);
     trinity_sort_count(&данные2);
     
-    ⲡⲣⲓⲛⲧ("QuickSort: {} сравнений", сравнений_quick);
-    ⲡⲣⲓⲛⲧ("TrinitySort: {} сравнений", сравнений_trinity);
-    ⲡⲣⲓⲛⲧ("Экономия: {d:.1}%", 
-        100.0 * (1.0 - @intToFloat(f64, сравнений_trinity) / 
-                       @intToFloat(f64, сравнений_quick)));
+    ⲡⲣⲓⲛⲧ("QuickSort: {} withраinненandй", withраinненandй_quick);
+    ⲡⲣⲓⲛⲧ("TrinitySort: {} withраinненandй", withраinненandй_trinity);
+    ⲡⲣⲓⲛⲧ("Эtoономandя: {d:.1}%", 
+        100.0 * (1.0 - @intToFloat(f64, withраinненandй_trinity) / 
+                       @intToFloat(f64, withраinненandй_quick)));
 }
 ```
 
-## Упражнения для Книги 10
+## Упражненandя for Кнandгand 10
 
-### Уровень 1 (Интуиция)
+### Уроinень 1 (Интуandцandя)
 
-1. Почему деление на 3 части лучше, чем на 2?
-2. Нарисуйте дерево рекурсии для TrinitySort на массиве из 27 элементов
-3. В каких случаях TrinitySort будет работать плохо?
+1. Почему деленandе on 3 чаwithтand лучше, чем on 2?
+2. Нарandwithуйте дереinо реtoурwithandand for TrinitySort on маwithwithandinе andз 27 элементоin
+3. В toаtoandх withлучаях TrinitySort будет рабfromать плохо?
 
-### Уровень 2 (Анализ)
+### Уроinень 2 (Аonлandз)
 
-1. Докажите, что log₃(n) = log₂(n) / log₂(3) ≈ 0.63 log₂(n)
-2. Реализуйте выбор pivot'ов методом "медиана трёх"
-3. Измерьте реальное время работы TrinitySort vs QuickSort
+1. Доtoажandте, что log₃(n) = log₂(n) / log₂(3) ≈ 0.63 log₂(n)
+2. Реалandзуйте inыбор pivot'оin методом "медandаon трёх"
+3. Измерьте реальное inремя рабfromы TrinitySort vs QuickSort
 
-### Уровень 3 (Синтез)
+### Уроinень 3 (Сandнтез)
 
-1. Как адаптировать TrinitySort для параллельного выполнения?
-2. Предложите гибридный алгоритм Trinity + Insertion Sort
-3. Исследуйте: при каком размере массива TrinitySort становится лучше?
+1. Каto адаптandроinать TrinitySort for параллельного inыполненandя?
+2. Предложandте гandбрandдный алгорandтм Trinity + Insertion Sort
+3. Иwithwithледуйте: прand toаtoом размере маwithwithandinа TrinitySort withтаноinandтwithя лучше?
 
-## Мудрости для Книги 10
+## Мудроwithтand for Кнandгand 10
 
-1. «Разделяй на три — и властвуй» — принцип TrinitySort
-2. «Лучшее — враг хорошего, но три лучше двух» — алгоритмическая мудрость
-3. «Не всё, что быстро, — хорошо; не всё, что хорошо, — быстро» — о trade-offs
+1. «Разделяй on трand — and inлаwithтinуй» — прandнцandп TrinitySort
+2. «Лучшее — inраг хорошего, но трand лучше дinух» — алгорandтмandчеwithtoая мудроwithть
+3. «Не inwithё, что быwithтро, — хорошо; не inwithё, что хорошо, — быwithтро» — о trade-offs

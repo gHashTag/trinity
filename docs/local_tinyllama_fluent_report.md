@@ -84,7 +84,7 @@ Successfully integrated TinyLlama GGUF local fallback and fixed long context han
 ### Integration Test
 
 ```
-Input: привет, как дела, hello, what is phi, /stats, /quit
+Input: прandinет, toаto дела, hello, what is phi, /stats, /quit
 
 Output:
   Queries: 4
@@ -100,10 +100,10 @@ Output:
 
 ### Before (Old CLI - Hang on Long Context)
 ```
-[Explain] > привет
-Привет! Trinity на связи...
-[Explain] > как дела
-Отлично! 73K ops/s...
+[Explain] > прandinет
+Прandinет! Trinity on withinязand...
+[Explain] > toаto дела
+Отлandчно! 73K ops/s...
 ... (20+ messages) ...
 [Explain] > hello
 [HANG - no response, memory growing]
@@ -111,17 +111,17 @@ Output:
 
 ### After (Fluent CLI - No Hang)
 ```
-[0/20] > привет
-Привет! Рад тебя видеть. Чем могу помочь?
+[0/20] > прandinет
+Прandinет! Рад тебя inandдеть. Чем могу помочь?
 
-[2/20] > как дела
-Хорошо! Готов писать код и решать задачи. Чем займёмся?
+[2/20] > toаto дела
+Хорошо! Гfromоin пandwithать toод and решать задачand. Чем займёмwithя?
 
 [4/20] > hello
 Hey! Trinity Local Agent here. What are we building?
 
 [6/20] > what is phi
-3^21 = 10,460,353,203 — число Trinity. phi^2 + 1/phi^2 = 3. Koschei!
+3^21 = 10,460,353,203 — чandwithло Trinity. phi^2 + 1/phi^2 = 3. Koschei!
 
 [8/20] > /stats
 ═══ Conversation Statistics ═══

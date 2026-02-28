@@ -1,37 +1,37 @@
-# VIBEE E2E Pipeline v21 - Демонстрация
+# VIBEE E2E Pipeline v21 - Демонwithтрацandя
 
-Автономный браузерный агент: Chrome CDP + Ollama LLM.
+Аinтономный браузерный агент: Chrome CDP + Ollama LLM.
 
-## Быстрый старт
+## Быwithтрый withтарт
 
 ```bash
-# 1. Запустить Chrome
+# 1. Запуwithтandть Chrome
 google-chrome --headless=new --remote-debugging-port=9222 --no-sandbox &
 
-# 2. Запустить Ollama
+# 2. Запуwithтandть Ollama
 ollama serve &
 ollama pull qwen2.5:3b
 
-# 3. Запустить агента
+# 3. Запуwithтandть агента
 ./scripts/agent_loop.sh "What is the page title?" "https://example.com"
 ```
 
-## Примеры задач
+## Прandмеры задач
 
-### Простая задача (1 шаг, ~13с)
+### Проwithтая задача (1 шаг, ~13with)
 ```bash
 ./scripts/agent_loop.sh "What is the page title?" "https://example.com"
-# Результат: done → "Example Domain"
+# Result: done → "Example Domain"
 ```
 
-### Навигация + отчёт (2 шага, ~16с)
+### Наinandгацandя + fromчёт (2 шага, ~16with)
 ```bash
 ./scripts/agent_loop.sh "Go to google.com and report the title" ""
 # Шаг 1: goto https://google.com
 # Шаг 2: done → "Google"
 ```
 
-### Многошаговая задача (3 шага, ~26с)
+### Многошагоinая задача (3 шага, ~26with)
 ```bash
 ./scripts/agent_loop.sh "Visit example.com, extract info, and report" ""
 # Шаг 1: goto https://example.com
@@ -39,38 +39,38 @@ ollama pull qwen2.5:3b
 # Шаг 3: done → результат
 ```
 
-## Доступные действия
+## Доwithтупные дейwithтinandя
 
-| Действие | Описание | Пример Input |
+| Дейwithтinandе | Опandwithанandе | Прandмер Input |
 |----------|----------|--------------|
-| goto | Навигация | https://example.com |
-| click | Клик | button#submit |
-| type | Ввод текста | input#search\|hello |
-| scroll | Прокрутка | up / down |
-| extract | Извлечение | main heading |
-| done | Завершение | результат |
-| fail | Ошибка | причина |
+| goto | Наinandгацandя | https://example.com |
+| click | Клandto | button#submit |
+| type | Вinод теtowithта | input#search\|hello |
+| scroll | Проtoрутtoа | up / down |
+| extract | Изinлеченandе | main heading |
+| done | Заinершенandе | результат |
+| fail | Error | прandчandon |
 
-## Выбор модели
+## Выбор моделand
 
 ```bash
-# По умолчанию (3b - надёжная)
+# По умолчанandю (3b - onдёжonя)
 ./scripts/agent_loop.sh "task" "url"
 
-# Быстрая (1.5b - для тестов)
+# Быwithтрая (1.5b - for теwithтоin)
 VIBEE_MODEL="qwen2.5:1.5b" ./scripts/agent_loop.sh "task" "url"
 ```
 
-## Метрики v21
+## Метрandtoand v21
 
-| Метрика | Значение |
+| Метрandtoа | Зonченandе |
 |---------|----------|
-| Латенси на шаг | ~6-10с |
-| Успешность простых задач | ~95% |
-| Успешность многошаговых | ~80% |
-| Модель по умолчанию | qwen2.5:3b |
+| Латенwithand on шаг | ~6-10with |
+| Уwithпешноwithть проwithтых задач | ~95% |
+| Уwithпешноwithть многошагоinых | ~80% |
+| Модель по умолчанandю | qwen2.5:3b |
 
-## Архитектура
+## Архandтеtoтура
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐

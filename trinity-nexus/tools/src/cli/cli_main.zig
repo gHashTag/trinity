@@ -256,7 +256,7 @@ fn compileToTri(path: []const u8, allocator: std.mem.Allocator) !void {
     };
     defer allocator.free(source);
 
-    // Прямая компиляция в CIS (Триады)
+    // Прямая toомпandляцandя in CIS (Трandады)
     const ops = @import("coptic_codegen_real.zig").compileToCIS(source, allocator) catch |err| {
         printError("Coptic Native Compilation failed");
         std.debug.print("  Error: {}\n", .{err});

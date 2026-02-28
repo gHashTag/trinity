@@ -4,17 +4,17 @@ const tvc_vm = @import("tvc_vm.zig");
 const tvc_ir = @import("tvc_ir.zig");
 const tvc_parser = @import("tvc_parser.zig");
 
-// TVC Runtime Demo - Демонстрация полного цикла выполнения
+// TVC Runtime Demo - Демонwithтрацandя полного цandtoла inыполненandя
 
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
 
     std.debug.print("╔════════════════════════════════════════════════╗\n", .{});
     std.debug.print("║         TVC RUNTIME DEMONSTRATION               ║\n", .{});
-    std.debug.print("║  Полный цикл: .vibee → IR → VM → Execution      ║\n", .{});
+    std.debug.print("║  Полный цandtoл: .vibee → IR → VM → Execution      ║\n", .{});
     std.debug.print("╚════════════════════════════════════════════════╝\n\n", .{});
 
-    // 1. Инициализация Runtime
+    // 1. Initialization Runtime
     std.debug.print("═══ [1] ИНИЦИАЛИЗАЦИЯ RUNTIME ═══\n", .{});
     var runtime = try tvc_runtime.TVCRuntime.init(allocator, 1024 * 1024, 512 * 1024);
     defer runtime.deinit();
@@ -22,30 +22,30 @@ pub fn main() !void {
     try runtime.createVM(64 * 1024, 4 * 1024);
     runtime.start();
 
-    // 2. Тест Memory Manager
+    // 2. Теwithт Memory Manager
     std.debug.print("\n═══ [2] ТЕСТ MEMORY MANAGER ═══\n", .{});
     testMemoryManager(&runtime);
 
-    // 3. Тест Math Library
+    // 3. Теwithт Math Library
     std.debug.print("\n═══ [3] ТЕСТ MATH LIBRARY ═══\n", .{});
     testMathLibrary();
 
-    // 4. Тест Balanced Ternary
+    // 4. Теwithт Balanced Ternary
     std.debug.print("\n═══ [4] ТЕСТ BALANCED TERNARY ═══\n", .{});
     try testBalancedTernary(allocator);
 
-    // 5. Создание и выполнение модуля
+    // 5. Creation and inыполненandе модуля
     std.debug.print("\n═══ [5] ВЫПОЛНЕНИЕ TVC МОДУЛЯ ═══\n", .{});
     try testModuleExecution(&runtime, allocator);
 
-    // 6. Статистика
+    // 6. Статandwithтandtoа
     std.debug.print("\n═══ [6] СТАТИСТИКА RUNTIME ═══\n", .{});
     runtime.dumpState();
 
-    // 7. Сборка мусора
+    // 7. Сборtoа муwithора
     std.debug.print("\n═══ [7] СБОРКА МУСОРА ═══\n", .{});
     runtime.gc();
-    std.debug.print("✓ GC выполнен\n", .{});
+    std.debug.print("✓ GC inыполнен\n", .{});
 
     runtime.stop();
 
@@ -55,23 +55,23 @@ pub fn main() !void {
 }
 
 fn testMemoryManager(runtime: *tvc_runtime.TVCRuntime) void {
-    // Тест Arena Allocator
+    // Теwithт Arena Allocator
     const arena_data = runtime.memory.allocFast(256) catch {
         std.debug.print("✗ Arena alloc failed\n", .{});
         return;
     };
-    std.debug.print("✓ Arena: выделено 256 байт\n", .{});
+    std.debug.print("✓ Arena: inыделено 256 байт\n", .{});
     _ = arena_data;
 
-    // Тест GC Allocator
+    // Теwithт GC Allocator
     const gc_data = runtime.memory.allocManaged(128) catch {
         std.debug.print("✗ GC alloc failed\n", .{});
         return;
     };
-    std.debug.print("✓ GC: выделено 128 байт\n", .{});
+    std.debug.print("✓ GC: inыделено 128 байт\n", .{});
     _ = gc_data;
 
-    // Статистика памяти
+    // Статandwithтandtoа памятand
     const stats = runtime.memory.getStats();
     std.debug.print("  Arena used: {} bytes\n", .{stats.arena_used});
     std.debug.print("  GC objects: {}\n", .{stats.gc_objects});
@@ -84,21 +84,21 @@ fn testMathLibrary() void {
     const ZERO = tvc_vm.ZERO;
     const POS1 = tvc_vm.POS1;
 
-    // Тест базовых операций
-    std.debug.print("Trinary арифметика:\n", .{});
+    // Теwithт базоinых операцandй
+    std.debug.print("Trinary арandфметandtoа:\n", .{});
     std.debug.print("  add(+1, -1) = {}\n", .{Math.add(POS1, NEG1)});
     std.debug.print("  sub(+1, -1) = {}\n", .{Math.sub(POS1, NEG1)});
     std.debug.print("  mul(+1, -1) = {}\n", .{Math.mul(POS1, NEG1)});
 
-    // Тест логических операций
-    std.debug.print("Trinary логика:\n", .{});
+    // Теwithт логandчеwithtoandх операцandй
+    std.debug.print("Trinary логandtoа:\n", .{});
     std.debug.print("  AND(+1, 0) = {}\n", .{Math.tritAnd(POS1, ZERO)});
     std.debug.print("  OR(+1, 0) = {}\n", .{Math.tritOr(POS1, ZERO)});
     std.debug.print("  XOR(+1, -1) = {}\n", .{Math.tritXor(POS1, NEG1)});
     std.debug.print("  NOT(+1) = {}\n", .{Math.tritNot(POS1)});
     std.debug.print("  IMPLIES(+1, -1) = {}\n", .{Math.tritImplies(POS1, NEG1)});
 
-    // Тест Golden Identity
+    // Теwithт Golden Identity
     std.debug.print("Golden Identity:\n", .{});
     std.debug.print("  φ = {}\n", .{Math.PHI});
     std.debug.print("  φ² + 1/φ² = {} (должно быть 3)\n", .{Math.goldenIdentity()});
@@ -107,10 +107,10 @@ fn testMathLibrary() void {
 fn testBalancedTernary(allocator: std.mem.Allocator) !void {
     const Math = tvc_runtime.TVCMath;
 
-    // Базовые тесты конверсии
+    // Базоinые теwithты toонinерwithandand
     const test_numbers = [_]i64{ 0, 1, -1, 5, -5, 13, -13, 42, -42, 100, -100 };
 
-    std.debug.print("Balanced Ternary конверсия:\n", .{});
+    std.debug.print("Balanced Ternary toонinерwithandя:\n", .{});
     var passed: usize = 0;
     var failed: usize = 0;
 
@@ -130,10 +130,10 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
         if (ok) passed += 1 else failed += 1;
     }
 
-    // Тесты арифметики
-    std.debug.print("\nАрифметика тритовых массивов:\n", .{});
+    // Теwithты арandфметandtoand
+    std.debug.print("\nАрandфметandtoа трandтоinых маwithwithandinоin:\n", .{});
 
-    // Тест сложения
+    // Теwithт withложенandя
     std.debug.print("  СЛОЖЕНИЕ:\n", .{});
     const add_tests = [_]struct { a: i64, b: i64 }{
         .{ .a = 5, .b = 3 },     // 5 + 3 = 8
@@ -160,7 +160,7 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
         if (ok) passed += 1 else failed += 1;
     }
 
-    // Тест вычитания
+    // Теwithт inычandтанandя
     std.debug.print("  ВЫЧИТАНИЕ:\n", .{});
     const sub_tests = [_]struct { a: i64, b: i64 }{
         .{ .a = 10, .b = 3 },    // 10 - 3 = 7
@@ -186,7 +186,7 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
         if (ok) passed += 1 else failed += 1;
     }
 
-    // Тест умножения
+    // Теwithт умноженandя
     std.debug.print("  УМНОЖЕНИЕ:\n", .{});
     const mul_tests = [_]struct { a: i64, b: i64 }{
         .{ .a = 3, .b = 4 },     // 3 * 4 = 12
@@ -214,11 +214,11 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
         if (ok) passed += 1 else failed += 1;
     }
 
-    // Тест деления
+    // Теwithт деленandя
     std.debug.print("  ДЕЛЕНИЕ:\n", .{});
     const div_tests = [_]struct { a: i64, b: i64 }{
         .{ .a = 12, .b = 4 },    // 12 / 4 = 3
-        .{ .a = 13, .b = 4 },    // 13 / 4 = 3 (целочисленное)
+        .{ .a = 13, .b = 4 },    // 13 / 4 = 3 (целочandwithленное)
         .{ .a = -12, .b = 4 },   // -12 / 4 = -3
         .{ .a = 81, .b = 9 },    // 81 / 9 = 9
         .{ .a = 100, .b = 10 },  // 100 / 10 = 10
@@ -241,7 +241,7 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
         if (ok) passed += 1 else failed += 1;
     }
 
-    // Тест сравнения
+    // Теwithт withраinненandя
     std.debug.print("  СРАВНЕНИЕ:\n", .{});
     const cmp_tests = [_]struct { a: i64, b: i64, expected: i8 }{
         .{ .a = 5, .b = 3, .expected = 1 },      // 5 > 3
@@ -265,7 +265,7 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
         if (ok) passed += 1 else failed += 1;
     }
 
-    // Тест возведения в степень
+    // Теwithт inозinеденandя in withтепень
     std.debug.print("  СТЕПЕНЬ:\n", .{});
     const pow_tests = [_]struct { base: i64, exp: u32, expected: i64 }{
         .{ .base = 2, .exp = 0, .expected = 1 },   // 2^0 = 1
@@ -289,21 +289,21 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
         if (ok) passed += 1 else failed += 1;
     }
 
-    // Итоги
-    std.debug.print("\nРезультаты: {} passed, {} failed\n", .{ passed, failed });
+    // Итогand
+    std.debug.print("\nResultы: {} passed, {} failed\n", .{ passed, failed });
 }
 
 fn testModuleExecution(runtime: *tvc_runtime.TVCRuntime, allocator: std.mem.Allocator) !void {
-    // Создаём тестовый модуль
+    // Создаём теwithтоinый модуль
     var module = tvc_ir.TVCModule.init(allocator, "test_runtime_module");
 
-    // Добавляем функцию trinary_logic
+    // Добаinляем фунtoцandю trinary_logic
     const func = try module.addFunction("trinary_logic");
 
     var block = tvc_ir.TVCBlock.init(allocator, "entry");
     block.entry_point = 0;
 
-    // Инструкции: NOT, AND, OR, XOR, IMPLIES, RET
+    // Инwithтруtoцandand: NOT, AND, OR, XOR, IMPLIES, RET
     try block.instructions.append(tvc_ir.TVCInstruction{
         .opcode = .t_not,
         .operands = &[_]u64{},
@@ -344,10 +344,10 @@ fn testModuleExecution(runtime: *tvc_runtime.TVCRuntime, allocator: std.mem.Allo
     try func.blocks.put("entry", block);
     func.returns = .i64_trit;
 
-    // Загружаем и выполняем
+    // Загружаем and inыполняем
     try runtime.loadModule(&module);
     std.debug.print("✓ Модуль загружен: {s}\n", .{module.name});
 
     try runtime.callFunction("trinary_logic");
-    std.debug.print("✓ Функция trinary_logic выполнена\n", .{});
+    std.debug.print("✓ Фунtoцandя trinary_logic inыполнеon\n", .{});
 }

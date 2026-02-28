@@ -1,4 +1,4 @@
-# BitNet FPGA - Ключевые Числа для Pitch
+# BitNet FPGA - Ключеinые Чandwithла for Pitch
 
 ## ОДНА СТРАНИЦА - ВСЕ ДОКАЗАТЕЛЬСТВА
 
@@ -6,34 +6,34 @@
 
 ## 🎯 ГЛАВНЫЕ МЕТРИКИ
 
-| Метрика | GPU (H100) | FPGA (BitNet) | Преимущество |
+| Метрandtoа | GPU (H100) | FPGA (BitNet) | Преandмущеwithтinо |
 |---------|------------|---------------|--------------|
-| **Энергия/токен** | 3 mJ | 0.15 mJ | **20x** |
+| **Энергandя/тоtoен** | 3 mJ | 0.15 mJ | **20x** |
 | **Память/модель** | 14 GB (7B) | 1.4 GB (7B) | **10x** |
 | **TCO (3 года)** | $42,176 | $9,537 | **4.4x** |
 | **tok/s/Watt** | 0.6 | 15.8 | **26x** |
-| **Цена железа** | $30,000 | $5,000 | **6x** |
+| **Цеon железа** | $30,000 | $5,000 | **6x** |
 
 ---
 
 ## 💰 ЭКОНОМИКА
 
-### Инвестиция:
+### Инinеwithтandцandя:
 ```
 Alveo U55C + Server = $8,000
 ```
 
-### Доход (при $0.001/1K токенов):
+### Доход (прand $0.001/1K тоtoеноin):
 ```
-700 tok/s × 86,400 сек × 0.9 uptime = 54M токенов/день
-54M / 1000 × $0.001 = $54/день = $1,633/месяц = $19,596/год
+700 tok/s × 86,400 withеto × 0.9 uptime = 54M тоtoеноin/день
+54M / 1000 × $0.001 = $54/день = $1,633/меwithяц = $19,596/год
 ```
 
 ### ROI:
 ```
 Год 1: ($19,596 - $8,000) / $8,000 = 145%
 Год 3: ($58,788 - $8,000) / $8,000 = 635%
-Окупаемость: 4.9 месяца
+Оtoупаемоwithть: 4.9 меwithяца
 ```
 
 ---
@@ -41,20 +41,20 @@ Alveo U55C + Server = $8,000
 ## 📊 ИСТОЧНИКИ ДАННЫХ
 
 ### Microsoft BitNet (arXiv:2402.17764):
-- Ternary weights {-1, 0, +1} = 1.58 бит
-- Качество = FP16 (perplexity разница <1.5%)
-- Энергия умножения: 0.9 pJ → 0.03 pJ (30x)
+- Ternary weights {-1, 0, +1} = 1.58 бandт
+- Качеwithтinо = FP16 (perplexity разнandца <1.5%)
+- Энергandя умноженandя: 0.9 pJ → 0.03 pJ (30x)
 
 ### TerEffic FPGA (arXiv:2502.16473):
 - 370M модель: 16,300 tok/s @ 36W = **453 tok/s/W**
 - 2.7B модель: 727 tok/s @ 46W = **15.8 tok/s/W**
-- vs A100: **3x быстрее, 8x эффективнее**
-- vs Jetson: **192x быстрее, 79x эффективнее**
+- vs A100: **3x быwithтрее, 8x эффеtoтandinнее**
+- vs Jetson: **192x быwithтрее, 79x эффеtoтandinнее**
 
-### Наш прототип:
-- BitNet MAC: **7/7 тестов PASS**
-- Ресурсы: ~50 LUTs (0 DSP!)
-- Симуляция: Icarus Verilog ✅
+### Наш прfromfromandп:
+- BitNet MAC: **7/7 теwithтоin PASS**
+- Реwithурwithы: ~50 LUTs (0 DSP!)
+- Сandмуляцandя: Icarus Verilog ✅
 
 ---
 
@@ -63,14 +63,14 @@ Alveo U55C + Server = $8,000
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                                                             │
-│   GPU не оптимизированы для BitNet:                         │
-│   • Tensor Cores делают FP16×FP16 даже для {-1,0,+1}        │
-│   • 99% вычислительной мощности тратится впустую            │
+│   GPU не оптandмandзandроinаны for BitNet:                         │
+│   • Tensor Cores делают FP16×FP16 даже for {-1,0,+1}        │
+│   • 99% inычandwithлandтельной мощноwithтand тратandтwithя inпуwithтую            │
 │                                                             │
-│   FPGA идеально подходит:                                   │
-│   • Ternary MAC = MUX + ADD (без умножителя)                │
-│   • 100% эффективность для BitNet                           │
-│   • Кастомная архитектура под задачу                        │
+│   FPGA andдеально подходandт:                                   │
+│   • Ternary MAC = MUX + ADD (без умножandтеля)                │
+│   • 100% эффеtoтandinноwithть for BitNet                           │
+│   • Каwithтомonя архandтеtoтура под задачу                        │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -86,7 +86,7 @@ LLM Inference Market:
 ├── 2026: $18B
 └── 2027: $30B (CAGR 57%)
 
-Edge/Efficient Segment: ~$5B (наш TAM)
+Edge/Efficient Segment: ~$5B (onш TAM)
 ```
 
 ---
@@ -95,13 +95,13 @@ Edge/Efficient Segment: ~$5B (наш TAM)
 
 ```
 BitNet + FPGA = 
-    10x меньше памяти (дешевле железо)
-  + 20x меньше энергии (дешевле операции)  
-  + 4.4x меньше TCO (дешевле владение)
-  + Детерминированная latency (лучше UX)
-  + Edge deployment (новые use cases)
+    10x меньше памятand (дешеinле железо)
+  + 20x меньше энергandand (дешеinле операцandand)  
+  + 4.4x меньше TCO (дешеinле inладенandе)
+  + Детермandнandроinанonя latency (лучше UX)
+  + Edge deployment (ноinые use cases)
   ─────────────────────────────────────
-  = DISRUPTION в LLM inference
+  = DISRUPTION in LLM inference
 ```
 
 ---
@@ -110,18 +110,18 @@ BitNet + FPGA =
 
 **Seed Round: $500K**
 
-| Статья | Сумма | Назначение |
+| Статья | Сумма | Назonченandе |
 |--------|-------|------------|
-| Hardware | $50K | 10x Alveo U55C для фермы |
-| Engineering | $300K | 2 FTE × 12 месяцев |
-| Cloud/Infra | $50K | AWS F2 для разработки |
+| Hardware | $50K | 10x Alveo U55C for фермы |
+| Engineering | $300K | 2 FTE × 12 меwithяцеin |
+| Cloud/Infra | $50K | AWS F2 for разрабfromtoand |
 | Legal/IP | $50K | Патенты, incorporation |
 | Marketing | $50K | Community, conferences |
 
 **Milestones:**
-- M3: Работающий BitNet 3B на FPGA
-- M6: Beta API для early adopters
-- M9: 10 платящих клиентов
+- M3: Рабfromающandй BitNet 3B on FPGA
+- M6: Beta API for early adopters
+- M9: 10 платящandх toлandентоin
 - M12: Series A ready
 
 ---

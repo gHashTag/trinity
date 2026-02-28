@@ -17,7 +17,7 @@
 | Performance | 23-491x faster |
 | Binary Size | 68x smaller |
 
-**Verdict**: ✅ TRI превосходит Claude Code
+**Verdict**: ✅ TRI преinоwithходandт Claude Code
 
 ---
 

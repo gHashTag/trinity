@@ -19,11 +19,11 @@ Created `igla_hybrid_chat.zig` - a hybrid chat system that combines:
 
 | Query | Source | Confidence | Latency | Response |
 |-------|--------|------------|---------|----------|
-| "привет" | SYM | 80% | 30μs | "Привет! Рад тебя видеть. Чем могу..." |
-| "как дела?" | SYM | 80% | 10μs | "Супер! Ternary vectors в норме..." |
+| "прandinет" | SYM | 80% | 30μs | "Прandinет! Рад тебя inandдеть. Чем могу..." |
+| "toаto дела?" | SYM | 80% | 10μs | "Супер! Ternary vectors in норме..." |
 | "who are you?" | SYM | 80% | 6μs | "I'm Koschei — the immortal local agent..." |
 | "tell me a joke" | SYM | 80% | 7μs | "How many programmers to change a lightbulb?..." |
-| "расскажи шутку" | SYM | 80% | 20μs | "Почему программист ушёл с работы..." |
+| "раwithwithtoажand шутtoу" | SYM | 80% | 20μs | "Почему программandwithт ушёл with рабfromы..." |
 
 ### LLM (BitNet-2B) = GARBAGE OUTPUT
 
@@ -109,7 +109,7 @@ var chat = try hybrid.IglaHybridChat.init(allocator, "models/tinyllama.gguf");
 defer chat.deinit();
 
 // Symbolic hit (fast)
-const r1 = try chat.respond("привет");
+const r1 = try chat.respond("прandinет");
 // r1.source == .Symbolic, latency < 1ms
 
 // LLM fallback (fluent)
@@ -255,15 +255,15 @@ Files fixed:
    var chat = try IglaHybridChat.init(allocator, "tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf");
 
    // Symbolic (fast)
-   _ = try chat.respond("привет");
+   _ = try chat.respond("прandinет");
 
    // LLM fallback (fluent)
    _ = try chat.respond("explain quantum computing");
    ```
 
 3. **Demo prompts:**
-   - "привет" → Symbolic hit
-   - "как погода?" → Symbolic hit
+   - "прandinет" → Symbolic hit
+   - "toаto погода?" → Symbolic hit
    - "hello world Zig" → LLM fallback (code gen)
    - "prove phi" → LLM fallback (math reasoning)
 
@@ -284,9 +284,9 @@ Files fixed:
 ## Conclusion
 
 **Symbolic chat is EXCELLENT** for:
-- Greetings: "привет", "hello", "你好"
+- Greetings: "прandinет", "hello", "你好"
 - FAQ: "who are you?", "what can you do?"
-- Jokes: "tell me a joke", "расскажи шутку"
+- Jokes: "tell me a joke", "раwithwithtoажand шутtoу"
 - Philosophy: "phi", "golden ratio"
 
 **LLM fallback is BROKEN** for:
@@ -301,15 +301,15 @@ Files fixed:
 ## Before/After Comparison
 
 ### BEFORE (Pattern Matcher Only - igla_local_chat.zig)
-- "привет" → "Привет! Рад тебя видеть..." ✓
-- "explain quantum computing" → "Unknown query - попробуй спросить иначе" ✗ (generic)
+- "прandinет" → "Прandinет! Рад тебя inandдеть..." ✓
+- "explain quantum computing" → "Unknown query - попробуй withпроwithandть andonче" ✗ (generic)
 
 ### NOW (Hybrid with BitNet-2B)
-- "привет" → "Привет! Рад тебя видеть..." ✓ (30μs)
+- "прandinет" → "Прandinет! Рад тебя inandдеть..." ✓ (30μs)
 - "explain quantum computing" → "ĩ_RECORDogogiv:UIControlState..." ✗ (GARBAGE!)
 
 ### TARGET (Hybrid with TinyLlama)
-- "привет" → "Привет! Рад тебя видеть..." ✓ (30μs, symbolic)
+- "прandinет" → "Прandinет! Рад тебя inandдеть..." ✓ (30μs, symbolic)
 - "explain quantum computing" → "Quantum computing uses qubits..." ✓ (~2s, LLM)
 
 ---

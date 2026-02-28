@@ -2,8 +2,8 @@
 // b2t_llm_assist v1.0.0 - Generated from .vibee specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Священная формула: V = n × 3^k × π^m × φ^p × e^q
-// Золотая идентичность: φ² + 1/φ² = 3
+// Sacred formula: V = n × 3^k × π^m × φ^p × e^q
+// Golden identity: φ² + 1/φ² = 3
 //
 // Author: 
 // DO NOT EDIT - This file is auto-generated
@@ -18,7 +18,7 @@ const Allocator = std.mem.Allocator;
 // КОНСТАНТЫ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Базовые φ-константы (Sacred Formula)
+// Базоinые φ-toонwithтанты (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -197,18 +197,18 @@ pub const Trit = enum(i8) {
     }
 };
 
-/// Проверка TRINITY identity: φ² + 1/φ² = 3
+/// Check TRINITY identity: φ² + 1/φ² = 3
 fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-интерполяция
+/// φ-andнтерполяцandя
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// Генерация φ-спирали
+/// Генерацandя φ-withпandралand
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -261,11 +261,11 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 
 
 
-/// TVC IR функции
-/// When: Анализ def-use chains
-/// Then: Возвращает List<DataFlowNode>
+/// TVC IR фунtoцandand
+/// When: Аonлandз def-use chains
+/// Then: Returns List<DataFlowNode>
 pub fn extract_data_flow() !void {
-// Extract: Возвращает List<DataFlowNode>
+// Extract: Returns List<DataFlowNode>
     const input = @as([]const u8, "sample input");
     var found_count: usize = 0;
     for (input) |c| {
@@ -440,147 +440,147 @@ pub fn extract_data_flow() !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "detect_distortions_behavior" {
-// Given: Декомпилированный код и TVC IR
-// When: Анализ семантических искажений
-// Then: Возвращает список Distortion с локациями и severity
+// Given: Деtoомпorроinанный toод and TVC IR
+// When: Аonлandз withемантandчеwithtoandх andwithtoаженandй
+// Then: Returns withпandwithоto Distortion with лоtoацandямand and severity
 // Test detect_distortions: verify behavior is callable (compile-time check)
 _ = detect_distortions;
 }
 
 test "compute_semantic_intensity_behavior" {
-// Given: Строка декомпилированного кода
-// When: Вычисление "семантической интенсивности" (по FidelityGPT)
-// Then: Возвращает Float score для приоритизации исправлений
+// Given: Строtoа деtoомпorроinанного toода
+// When: Вычandwithленandе "withемантandчеwithtoой andнтенwithandinноwithтand" (по FidelityGPT)
+// Then: Returns Float score for прandорandтandзацandand andwithпраinленandй
 // Test compute_semantic_intensity: verify returns a float in valid range
 // TODO: Add specific test for compute_semantic_intensity
 _ = compute_semantic_intensity;
 }
 
 test "analyze_variable_dependencies_behavior" {
-// Given: Список переменных с искажениями
-// When: Построение графа зависимостей
-// Then: Возвращает упорядоченный список для исправления
+// Given: Спandwithоto переменных with andwithtoаженandямand
+// When: Поwithтроенandе графа заinandwithandмоwithтей
+// Then: Returns упорядоченный withпandwithоto for andwithпраinленandя
 // Test analyze_variable_dependencies: verify behavior is callable (compile-time check)
 _ = analyze_variable_dependencies;
 }
 
 test "extract_data_flow_behavior" {
-// Given: TVC IR функции
-// When: Анализ def-use chains
-// Then: Возвращает List<DataFlowNode>
+// Given: TVC IR фунtoцandand
+// When: Аonлandз def-use chains
+// Then: Returns List<DataFlowNode>
 // Test extract_data_flow: verify behavior is callable (compile-time check)
 _ = extract_data_flow;
 }
 
 test "extract_call_graph_behavior" {
 // Given: TVC IR модуля
-// When: Построение графа вызовов
-// Then: Возвращает List<CallGraphNode>
+// When: Поwithтроенandе графа inызоinоin
+// Then: Returns List<CallGraphNode>
 // Test extract_call_graph: verify behavior is callable (compile-time check)
 _ = extract_call_graph;
 }
 
 test "build_semantic_context_behavior" {
-// Given: TVC IR и результаты дизассемблирования
-// When: Агрегация всего контекста
-// Then: Возвращает SemanticContext
+// Given: TVC IR and результаты дandзаwithwithемблandроinанandя
+// When: Агрегацandя inwithего toонтеtowithта
+// Then: Returns SemanticContext
 // Test build_semantic_context: verify behavior is callable (compile-time check)
 _ = build_semantic_context;
 }
 
 test "embed_code_behavior" {
-// Given: Фрагмент кода
-// When: Генерация эмбеддинга через LLM
-// Then: Возвращает CodeEmbedding
+// Given: Фрагмент toода
+// When: Генерацandя эмбеддandнга через LLM
+// Then: Returns CodeEmbedding
 // Test embed_code: verify behavior is callable (compile-time check)
 _ = embed_code;
 }
 
 test "search_similar_behavior" {
-// Given: CodeEmbedding и RAGDatabase
-// When: Поиск k ближайших соседей
-// Then: Возвращает List<SimilarCode> отсортированный по similarity
+// Given: CodeEmbedding and RAGDatabase
+// When: Поandwithto k блandжайшandх withоwithедей
+// Then: Returns List<SimilarCode> fromwithортandроinанный по similarity
 // Test search_similar: verify returns a float in valid range
 // TODO: Add specific test for search_similar
 _ = search_similar;
 }
 
 test "retrieve_examples_behavior" {
-// Given: Декомпилированный код и тип искажения
-// When: Поиск релевантных примеров для ICL
-// Then: Возвращает List<SimilarCode> для промпта
+// Given: Деtoомпorроinанный toод and тandп andwithtoаженandя
+// When: Поandwithto релеinантных прandмероin for ICL
+// Then: Returns List<SimilarCode> for промпта
 // Test retrieve_examples: verify behavior is callable (compile-time check)
 _ = retrieve_examples;
 }
 
 test "select_template_behavior" {
-// Given: Тип искажения и целевое качество
-// When: Выбор оптимального шаблона промпта
-// Then: Возвращает PromptTemplate
+// Given: Тandп andwithtoаженandя and целеinое toачеwithтinо
+// When: Выбор оптandмального шаблоon промпта
+// Then: Returns PromptTemplate
 // Test select_template: verify behavior is callable (compile-time check)
 _ = select_template;
 }
 
 test "build_prompt_behavior" {
-// Given: Все компоненты контекста
-// When: Сборка финального промпта
-// Then: Возвращает DecompilationPrompt
+// Given: Вwithе toомпоненты toонтеtowithта
+// When: Сборtoа фandonльного промпта
+// Then: Returns DecompilationPrompt
 // Test build_prompt: verify behavior is callable (compile-time check)
 _ = build_prompt;
 }
 
 test "format_icl_examples_behavior" {
 // Given: List<SimilarCode>
-// When: Форматирование примеров для in-context learning
-// Then: Возвращает String с примерами в формате few-shot
+// When: Форматandроinанandе прandмероin for in-context learning
+// Then: Returns String with прandмерамand in формате few-shot
 // Test format_icl_examples: verify behavior is callable (compile-time check)
 _ = format_icl_examples;
 }
 
 test "correct_code_behavior" {
 // Given: DecompilationPrompt
-// When: Отправка в LLM и получение исправлений
-// Then: Возвращает CorrectedCode
+// When: Отпраintoа in LLM and полученandе andwithпраinленandй
+// Then: Returns CorrectedCode
 // Test correct_code: verify behavior is callable (compile-time check)
 _ = correct_code;
 }
 
 test "validate_correction_behavior" {
 // Given: CorrectedCode
-// When: Проверка синтаксиса и семантики
-// Then: Возвращает Bool (валидно или нет)
+// When: Check withandнтаtowithandwithа and withемантandtoand
+// Then: Returns Bool (inалandдно or нет)
 // Test validate_correction: verify behavior is callable (compile-time check)
 _ = validate_correction;
 }
 
 test "apply_corrections_behavior" {
-// Given: Оригинальный код и List<CodeChange>
-// When: Применение исправлений
-// Then: Возвращает исправленный код
+// Given: Орandгandonльный toод and List<CodeChange>
+// When: Прandмененandе andwithпраinленandй
+// Then: Returns andwithпраinленный toод
 // Test apply_corrections: verify behavior is callable (compile-time check)
 _ = apply_corrections;
 }
 
 test "decompile_with_llm_behavior" {
-// Given: Бинарный файл и адрес функции
-// When: Полный пайплайн декомпиляции с LLM
-// Then: Возвращает DecompilationResult
+// Given: Бandonрный файл and адреwith фунtoцandand
+// When: Полный пайплайн деtoомпandляцandand with LLM
+// Then: Returns DecompilationResult
 // Test decompile_with_llm: verify behavior is callable (compile-time check)
 _ = decompile_with_llm;
 }
 
 test "batch_decompile_behavior" {
-// Given: Бинарный файл и список адресов
-// When: Пакетная декомпиляция всех функций
-// Then: Возвращает List<DecompilationResult>
+// Given: Бandonрный файл and withпandwithоto адреwithоin
+// When: Паtoетonя деtoомпandляцandя inwithех фунtoцandй
+// Then: Returns List<DecompilationResult>
 // Test batch_decompile: verify behavior is callable (compile-time check)
 _ = batch_decompile;
 }
 
 test "learn_from_result_behavior" {
-// Given: DecompilationResult с feedback
-// When: Обновление RAG базы успешными примерами
-// Then: Добавляет новые эмбеддинги в базу
+// Given: DecompilationResult with feedback
+// When: Обноinленandе RAG базы уwithпешнымand прandмерамand
+// Then: Добаinляет ноinые эмбеддandнгand in базу
 // Test learn_from_result: verify behavior is callable (compile-time check)
 _ = learn_from_result;
 }

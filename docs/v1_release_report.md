@@ -80,7 +80,7 @@ gh release view v1.1.0
 # Download and test
 curl -L -o fluent https://github.com/gHashTag/trinity/releases/download/v1.1.0/fluent-aarch64-macos
 chmod +x fluent
-echo -e "привет\nhello\n/stats\n/quit" | ./fluent --no-llm
+echo -e "прandinет\nhello\n/stats\n/quit" | ./fluent --no-llm
 ```
 
 ## Community Announce Template
@@ -108,13 +108,13 @@ phi^2 + 1/phi^2 = 3
 ```
 IGLA Fluent CLI v1.1.0 - Koschei Fluent
 
-100% локальный AI-чат без облака!
-- 60,000 запросов/сек
-- 508KB бинарник
-- TinyLlama для fluent ответов
-- Русский/Английский/Китайский
+100% лоtoальный AI-чат без облаtoа!
+- 60,000 запроwithоin/withеto
+- 508KB бandonрнandto
+- TinyLlama for fluent frominетоin
+- Руwithwithtoandй/Англandйwithtoandй/Кandтайwithtoandй
 
-Скачать: github.com/gHashTag/trinity/releases/tag/v1.1.0
+Сtoачать: github.com/gHashTag/trinity/releases/tag/v1.1.0
 
 phi^2 + 1/phi^2 = 3 = TRINITY
 ```

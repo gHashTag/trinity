@@ -150,9 +150,9 @@ behaviors:
 
 keyword_mappings:
   russian:
-    - original: "функция"
+    - original: "фунtoцandя"
       english: "function"
-    - original: "фибоначчи"
+    - original: "фandбоonччand"
       english: "fibonacci"
     # ... 38 more
   chinese:
@@ -194,8 +194,8 @@ pub fn detectLanguage(text: []const u8) LanguageDetectionResult {
 }
 
 pub const russian_keywords = [_]KeywordMapping{
-    .{ .original = "функция", .english = "function" },
-    .{ .original = "фибоначчи", .english = "fibonacci" },
+    .{ .original = "фунtoцandя", .english = "function" },
+    .{ .original = "фandбоonччand", .english = "fibonacci" },
     // ... 38 more
 };
 
@@ -254,9 +254,9 @@ All 7 tests passed.
 
 ### Russian Prompt
 ```bash
-$ ./zig-out/bin/tri code "напиши функцию фибоначчи"
+$ ./zig-out/bin/tri code "onпandшand фунtoцandю фandбоonччand"
 Detected language: [RU] Russian (confidence: 100%)
-Generating code for: напиши функцию фибоначчи
+Generating code for: onпandшand фунtoцandю фandбоonччand
 
 pub fn fibonacci(n: u32) u64 {
     if (n <= 1) return n;

@@ -101,14 +101,14 @@ $ fluent --no-llm
 ║     φ² + 1/φ² = 3 = TRINITY                                   ║
 ╚══════════════════════════════════════════════════════════════╝
 
-[0/20] > привет
-Привет! Рад тебя видеть. Чем могу помочь?
+[0/20] > прandinет
+Прandinет! Рад тебя inandдеть. Чем могу помочь?
 
 [2/20] > hello
 Hello! Great to see you. How can I help?
 
 [4/20] > what is phi?
-phi = 1.618... Золотое сечение. phi^2 + 1/phi^2 = 3 — Trinity Identity!
+phi = 1.618... Golden ratio. phi^2 + 1/phi^2 = 3 — Trinity Identity!
 
 [6/20] > /stats
 ═══ Conversation Statistics ═══

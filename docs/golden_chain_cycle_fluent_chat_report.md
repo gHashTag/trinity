@@ -48,9 +48,9 @@
 
 ### Russian Greeting
 ```
-"Привет! Рад тебя видеть!"
-"Здравствуй! Как твои дела?"
-"Приветствую! Чем могу помочь?"
+"Прandinет! Рад тебя inandдеть!"
+"Здраinwithтinуй! Каto тinоand дела?"
+"Прandinетwithтinую! Чем могу помочь?"
 ```
 
 ### English Honest AI Response

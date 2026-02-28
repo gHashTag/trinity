@@ -1,50 +1,50 @@
-# HDC - Hyperdimensional Computing для Trinity
+# HDC - Hyperdimensional Computing for Trinity
 
 ## Обзор
 
-Модуль HDC реализует гиперразмерные вычисления с онлайн-обучением для самообучающихся AI моделей на основе троичных векторов {-1, 0, +1}.
+Модуль HDC реалandзует гandперразмерные inычandwithленandя with онлайн-обученandем for withамообучающandхwithя AI моделей on оwithноinе троandчных inеtoтороin {-1, 0, +1}.
 
-**Статистика модуля:**
-- Код: 2031 строка Zig
-- Тесты: 29 (все проходят)
-- Файлов: 6
+**Статandwithтandtoа модуля:**
+- Код: 2031 withтроtoа Zig
+- Теwithты: 29 (inwithе проходят)
+- Файлоin: 6
 
-## Научная база
+## Научonя база
 
-| Источник | Применение |
+| Иwithточнandto | Прandмененandе |
 |----------|------------|
 | **Kanerva (2009)** | Hyperdimensional Computing |
-| **BitNet b1.58 (2024)** | Троичные веса для LLM |
-| **Setun (1958)** | Сбалансированная троичная система |
+| **BitNet b1.58 (2024)** | Троandчные inеwithа for LLM |
+| **Setun (1958)** | Сбаланwithandроinанonя троandчonя withandwithтема |
 | **Plate (1995)** | Holographic Reduced Representations |
-| **Sutton & Barto** | TD-Learning для RL |
+| **Sutton & Barto** | TD-Learning for RL |
 
-## Структура модуля
+## Струtoтура модуля
 
 ```
 src/phi-engine/hdc/
-├── hdc_core.zig          # Базовые HDC операции (377 строк)
-├── online_classifier.zig # Онлайн классификатор (302 строки)
-├── rl_agent.zig          # RL агент с Q-learning (395 строк)
-├── gridworld.zig         # Среда GridWorld (294 строки)
-├── demo_gridworld.zig    # Демо обучения (225 строк)
-├── streaming_memory.zig  # Потоковая память (438 строк)
-└── README.md             # Документация
+├── hdc_core.zig          # Базоinые HDC операцandand (377 withтроto)
+├── online_classifier.zig # Онлайн toлаwithwithandфandtoатор (302 withтроtoand)
+├── rl_agent.zig          # RL агент with Q-learning (395 withтроto)
+├── gridworld.zig         # Среда GridWorld (294 withтроtoand)
+├── demo_gridworld.zig    # Демо обученandя (225 withтроto)
+├── streaming_memory.zig  # Пfromоtoоinая память (438 withтроto)
+└── README.md             # Доtoументацandя
 ```
 
-## Математика
+## Математandtoа
 
-### Базовые операции
+### Базоinые операцandand
 
-| Операция | Формула | Описание |
+| Операцandя | Формула | Опandwithанandе |
 |----------|---------|----------|
-| **Bind** | `c[i] = a[i] × b[i]` | Создание ассоциации |
-| **Unbind** | `c = bind(M, k)` | Извлечение (самообратимость) |
-| **Bundle** | `c[i] = majority(a[i], b[i], ...)` | Суперпозиция |
-| **Permute** | `c[(i+k) mod n] = a[i]` | Кодирование позиции |
-| **Similarity** | `cos(a,b) = (a·b)/(‖a‖×‖b‖)` | Сходство |
+| **Bind** | `c[i] = a[i] × b[i]` | Creation аwithwithоцandацandand |
+| **Unbind** | `c = bind(M, k)` | Изinлеченandе (withамообратandмоwithть) |
+| **Bundle** | `c[i] = majority(a[i], b[i], ...)` | Суперпозandцandя |
+| **Permute** | `c[(i+k) mod n] = a[i]` | Кодandроinанandе позandцandand |
+| **Similarity** | `cos(a,b) = (a·b)/(‖a‖×‖b‖)` | Сходwithтinо |
 
-### Онлайн обучение
+### Онлайн обученandе
 
 ```
 P(t+1) = P(t) + η × (v - P(t))
@@ -61,25 +61,25 @@ Forget:   M ← (1-λ)M
 
 ## Компоненты
 
-### 1. hdc_core.zig - Базовые операции
+### 1. hdc_core.zig - Базоinые операцandand
 
 ```zig
 const hdc = @import("hdc_core.zig");
 
-// Создание векторов
+// Creation inеtoтороin
 var v1 = try hdc.randomVector(allocator, 1000, seed);
 var v2 = try hdc.zeroVector(allocator, 1000);
 
-// Операции
+// Операцandand
 hdc.bind(a.data, b.data, result.data);
 hdc.bundle2(a.data, b.data, result.data);
 const sim = hdc.similarity(a.data, b.data);
 
-// Квантизация
+// Кinантandзацandя
 hdc.quantizeToTernary(float_data, trit_data);
 ```
 
-### 2. online_classifier.zig - Классификатор
+### 2. online_classifier.zig - Клаwithwithandфandtoатор
 
 ```zig
 const clf = @import("online_classifier.zig");
@@ -111,7 +111,7 @@ const action = agent.selectAction(state_id);
 _ = agent.tdUpdate(state, action, reward, next_state, done);
 ```
 
-### 4. streaming_memory.zig - Потоковая память
+### 4. streaming_memory.zig - Пfromоtoоinая память
 
 ```zig
 const sm = @import("streaming_memory.zig");
@@ -124,7 +124,7 @@ const result = mem.retrieve(key.data, result_buf);
 mem.applyForgetting(0.1);
 ```
 
-### 5. gridworld.zig - Среда для тестирования
+### 5. gridworld.zig - Среда for теwithтandроinанandя
 
 ```zig
 const gw = @import("gridworld.zig");
@@ -136,10 +136,10 @@ var state = env.reset();
 const result = env.step(action);
 ```
 
-## Запуск
+## Запуwithto
 
 ```bash
-# Все тесты
+# Вwithе теwithты
 zig test src/phi-engine/hdc/demo_gridworld.zig
 
 # Демо GridWorld
@@ -147,21 +147,21 @@ zig build-exe src/phi-engine/hdc/demo_gridworld.zig -O ReleaseFast
 ./demo_gridworld
 ```
 
-## Результаты демо
+## Resultы демо
 
 ```
-Эпизодов:           500
+Эпandзодоin:           500
 Побед:              478 (95.6%)
 Avg reward (100):   9.45
-✅ ЦЕЛЬ ДОСТИГНУТА за 6 шагов!
+✅ ЦЕЛЬ ДОСТИГНУТА за 6 шагоin!
 ```
 
-## Производительность
+## Проandзinодandтельноwithть
 
-| Метрика | Значение |
+| Метрandtoа | Зonченandе |
 |---------|----------|
-| SIMD | 32 трита параллельно |
-| Обучение | 1 ms / 500 эпизодов |
+| SIMD | 32 трandта параллельно |
+| Обученandе | 1 ms / 500 эпandзодоin |
 | Win rate | 95.6% |
 
 ---

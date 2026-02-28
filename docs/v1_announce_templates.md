@@ -80,27 +80,27 @@ Star if useful!
 ### Russian Version
 
 ```
-🚀 Trinity IGLA v1.0 — Локальный когерентный AI в 264KB!
+🚀 Trinity IGLA v1.0 — Лоtoальный toогерентный AI in 264KB!
 
 Что умеет:
-• 4,854 запросов/сек на M1 Pro
-• 50,000 слов словаря
-• Работает полностью локально
-• Нет облака, нет API ключей
+• 4,854 запроwithоin/withеto on M1 Pro
+• 50,000 withлоin withлоinаря
+• Рабfromает полноwithтью лоtoально
+• Нет облаtoа, нет API toлючей
 
 Почему CPU лучше GPU:
-CPU SIMD (8 потоков) быстрее Metal GPU в 7.2 раза!
-Причина: overhead Metal command buffer (~1-2мс) убивает маленькие задачи.
+CPU SIMD (8 пfromоtoоin) быwithтрее Metal GPU in 7.2 раза!
+Прandчandon: overhead Metal command buffer (~1-2мwith) убandinает маленьtoandе задачand.
 
-Бинарники:
+Бandonрнandtoand:
 • macOS ARM64: 264 KB
 • macOS x64: 271 KB
 • Linux x64: 2.3 MB
 • Windows x64: 543 KB
 
-Скачать: github.com/gHashTag/trinity/releases/tag/v1.0.0-igla
+Сtoачать: github.com/gHashTag/trinity/releases/tag/v1.0.0-igla
 
-Построено на Zig. MIT лицензия.
+Поwithтроено on Zig. MIT лandцензandя.
 
 φ² + 1/φ² = 3 = TRINITY
 

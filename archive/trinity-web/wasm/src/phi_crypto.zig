@@ -2,8 +2,8 @@
 // phi_crypto v24.φ - Generated from specs/phi_crypto.vibee
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Криптографические примитивы для верификации
-// Золотая идентичность: φ² + 1/φ² = 3
+// Крandптографandчеwithtoandе прandмandтandinы for inерandфandtoацandand
+// Golden identity: φ² + 1/φ² = 3
 //
 // DO NOT EDIT - This file is auto-generated from .vibee specification
 //
@@ -24,7 +24,7 @@ pub const Hash512 = [64]u8;
 
 pub const MerkleNode = extern struct {
     hash: Hash256,
-    left: u32,  // индекс или NONE
+    left: u32,  // andндеtowith or NONE
     right: u32,
     phi_level: u32,
     _pad: u32,
@@ -128,21 +128,21 @@ fn gamma1(x: u32) u32 {
     return rotr(x, 17) ^ rotr(x, 19) ^ (x >> 10);
 }
 
-/// SHA-256 хеширование
+/// SHA-256 хешandроinанandе
 fn sha256(data_len: u32) void {
     var h = H_INIT;
     
-    // Подготовка сообщения
+    // Подгfromоintoа withообщенandя
     const bit_len: u64 = @as(u64, data_len) * 8;
     
-    // Добавляем padding
+    // Добаinляем padding
     var padded_len = data_len + 1;
     while ((padded_len + 8) % 64 != 0) {
         padded_len += 1;
     }
     padded_len += 8;
     
-    // Копируем данные и добавляем padding
+    // Копandруем данные and добаinляем padding
     var padded: [65536 + 128]u8 = undefined;
     @memcpy(padded[0..data_len], hash_input_buffer[0..data_len]);
     padded[data_len] = 0x80;
@@ -152,7 +152,7 @@ fn sha256(data_len: u32) void {
         padded[i] = 0;
     }
     
-    // Добавляем длину в битах (big-endian)
+    // Добаinляем длandну in бandтах (big-endian)
     padded[padded_len - 8] = @truncate(bit_len >> 56);
     padded[padded_len - 7] = @truncate(bit_len >> 48);
     padded[padded_len - 6] = @truncate(bit_len >> 40);
@@ -162,12 +162,12 @@ fn sha256(data_len: u32) void {
     padded[padded_len - 2] = @truncate(bit_len >> 8);
     padded[padded_len - 1] = @truncate(bit_len);
     
-    // Обрабатываем блоки по 64 байта
+    // Обрабатыinаем блоtoand по 64 байта
     var block: usize = 0;
     while (block < padded_len) : (block += 64) {
         var w: [64]u32 = undefined;
         
-        // Первые 16 слов из блока
+        // Перinые 16 withлоin andз блоtoа
         var j: usize = 0;
         while (j < 16) : (j += 1) {
             const idx = block + j * 4;
@@ -177,12 +177,12 @@ fn sha256(data_len: u32) void {
                    @as(u32, padded[idx + 3]);
         }
         
-        // Расширяем до 64 слов
+        // Раwithшandряем до 64 withлоin
         while (j < 64) : (j += 1) {
             w[j] = gamma1(w[j - 2]) +% w[j - 7] +% gamma0(w[j - 15]) +% w[j - 16];
         }
         
-        // Инициализируем рабочие переменные
+        // Инandцandалandзandруем рабочandе переменные
         var a = h[0];
         var b = h[1];
         var c = h[2];
@@ -207,7 +207,7 @@ fn sha256(data_len: u32) void {
             a = t1 +% t2;
         }
         
-        // Добавляем к хешу
+        // Добаinляем to хешу
         h[0] +%= a;
         h[1] +%= b;
         h[2] +%= c;
@@ -218,7 +218,7 @@ fn sha256(data_len: u32) void {
         h[7] +%= hh;
     }
     
-    // Записываем результат
+    // Запandwithыinаем результат
     var k: usize = 0;
     while (k < 8) : (k += 1) {
         hash_output[k * 4] = @truncate(h[k] >> 24);
@@ -228,25 +228,25 @@ fn sha256(data_len: u32) void {
     }
 }
 
-/// Временный буфер для phi_hash
+/// Временный буфер for phi_hash
 var phi_hash_temp: [128]u8 = undefined;
 
-/// φ-усиленное хеширование (TRINITY rounds)
+/// φ-уwithandленное хешandроinанandе (TRINITY rounds)
 fn phi_hash(data_len: u32, rounds: u32) void {
-    // Первый раунд - хешируем оригинальные данные
+    // Перinый раунд - хешandруем орandгandonльные данные
     sha256(data_len);
     
-    // Дополнительные раунды с φ-факторами
+    // Дополнandтельные раунды with φ-фаtoторамand
     var r: u32 = 1;
     while (r < rounds) : (r += 1) {
-        // Копируем предыдущий хеш во временный буфер
+        // Копandруем предыдущandй хеш inо inременный буфер
         @memcpy(phi_hash_temp[0..32], &hash_output);
         
-        // Добавляем φ^r как строку
+        // Добаinляем φ^r toаto withтроtoу
         const phi_r = phi_core.phi_power(@intCast(r));
         const phi_str = std.fmt.bufPrint(phi_hash_temp[32..64], "{d:.15}", .{phi_r}) catch unreachable;
         
-        // Копируем во входной буфер и хешируем
+        // Копandруем inо inходной буфер and хешandруем
         const total_len = 32 + phi_str.len;
         @memcpy(hash_input_buffer[0..total_len], phi_hash_temp[0..total_len]);
         sha256(@intCast(total_len));
@@ -257,13 +257,13 @@ fn phi_hash(data_len: u32, rounds: u32) void {
 // MERKLE TREE
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Инициализация Merkle tree
+/// Initialization Merkle tree
 fn merkle_init() void {
     merkle_node_count = 0;
     merkle_root_idx = MerkleNode.NONE;
 }
 
-/// Добавление листа в Merkle tree
+/// Добаinленandе лandwithта in Merkle tree
 fn merkle_add_leaf(hash_ptr: [*]const u8) u32 {
     if (merkle_node_count >= MAX_MERKLE_NODES) return MerkleNode.NONE;
     
@@ -277,7 +277,7 @@ fn merkle_add_leaf(hash_ptr: [*]const u8) u32 {
     return idx;
 }
 
-/// Построение Merkle tree из листьев
+/// Поwithтроенandе Merkle tree andз лandwithтьеin
 fn merkle_build(leaf_count: u32) u32 {
     if (leaf_count == 0) return MerkleNode.NONE;
     if (leaf_count == 1) {
@@ -298,14 +298,14 @@ fn merkle_build(leaf_count: u32) u32 {
             const right_idx = if (i + 1 < current_level_count) 
                 current_level_start + i + 1 
             else 
-                left_idx; // Дублируем если нечётное
+                left_idx; // Дублandруем еwithлand нечётное
             
-            // Хешируем пару
+            // Хешandруем пару
             @memcpy(hash_input_buffer[0..32], &merkle_nodes[left_idx].hash);
             @memcpy(hash_input_buffer[32..64], &merkle_nodes[right_idx].hash);
             sha256(64);
             
-            // Создаём родительский узел
+            // Создаём родandтельwithtoandй узел
             if (merkle_node_count >= MAX_MERKLE_NODES) return MerkleNode.NONE;
             
             const parent_idx = merkle_node_count;
@@ -325,23 +325,23 @@ fn merkle_build(leaf_count: u32) u32 {
     return merkle_root_idx;
 }
 
-/// Получение корня Merkle tree
+/// Полученandе toорня Merkle tree
 fn merkle_get_root(out_ptr: [*]u8) bool {
     if (merkle_root_idx == MerkleNode.NONE) return false;
     @memcpy(out_ptr[0..32], &merkle_nodes[merkle_root_idx].hash);
     return true;
 }
 
-/// Генерация Merkle proof для листа
+/// Генерацandя Merkle proof for лandwithта
 fn merkle_proof_generate(leaf_idx: u32, proof_ptr: [*]u8) u32 {
     if (leaf_idx >= merkle_node_count) return 0;
     
     var proof_len: u32 = 0;
     var current_idx = leaf_idx;
     
-    // Находим путь к корню
+    // Находandм путь to toорню
     while (current_idx != merkle_root_idx) {
-        // Ищем родителя
+        // Ищем родandтеля
         var parent_idx: u32 = MerkleNode.NONE;
         var sibling_idx: u32 = MerkleNode.NONE;
         var is_left: bool = false;
@@ -363,7 +363,7 @@ fn merkle_proof_generate(leaf_idx: u32, proof_ptr: [*]u8) u32 {
         
         if (parent_idx == MerkleNode.NONE) break;
         
-        // Добавляем в proof: [position (1 byte), hash (32 bytes)]
+        // Добаinляем in proof: [position (1 byte), hash (32 bytes)]
         proof_ptr[proof_len * 33] = if (is_left) 1 else 0;
         @memcpy(proof_ptr[proof_len * 33 + 1 ..][0..32], &merkle_nodes[sibling_idx].hash);
         proof_len += 1;
@@ -374,7 +374,7 @@ fn merkle_proof_generate(leaf_idx: u32, proof_ptr: [*]u8) u32 {
     return proof_len;
 }
 
-/// Проверка Merkle proof
+/// Check Merkle proof
 fn merkle_proof_verify(leaf_hash_ptr: [*]const u8, proof_ptr: [*]const u8, proof_len: u32, root_ptr: [*]const u8) bool {
     @memcpy(hash_input_buffer[0..32], leaf_hash_ptr[0..32]);
     var current_hash: Hash256 = undefined;
@@ -397,7 +397,7 @@ fn merkle_proof_verify(leaf_hash_ptr: [*]const u8, proof_ptr: [*]const u8, proof
         @memcpy(&current_hash, &hash_output);
     }
     
-    // Сравниваем с корнем
+    // Сраinнandinаем with toорнем
     return std.mem.eql(u8, &current_hash, root_ptr[0..32]);
 }
 
@@ -405,14 +405,14 @@ fn merkle_proof_verify(leaf_hash_ptr: [*]const u8, proof_ptr: [*]const u8, proof
 // VERIFICATION RECORDS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Создание записи верификации
+/// Creation запandwithand inерandфandtoацandand
 fn create_verification_record(content_len: u32) u32 {
     if (record_count >= 256) return 0xFFFFFFFF;
     
     const idx = record_count;
     var record = &verification_records[idx];
     
-    // Генерируем ID (простой счётчик + timestamp)
+    // Генерandруем ID (проwithтой withчётчandto + timestamp)
     const timestamp = @as(u64, @intCast(idx)) * 1000000 + 1705000000000;
     @memset(&record.id, 0);
     record.id[0] = @truncate(idx);
@@ -420,11 +420,11 @@ fn create_verification_record(content_len: u32) u32 {
     
     record.timestamp = timestamp;
     
-    // Вычисляем content_hash
+    // Вычandwithляем content_hash
     sha256(content_len);
     @memcpy(&record.content_hash, &hash_output);
     
-    // Вычисляем phi_hash (TRINITY rounds)
+    // Вычandwithляем phi_hash (TRINITY rounds)
     phi_hash(content_len, 3);
     @memcpy(&record.phi_hash, &hash_output);
     
@@ -434,24 +434,24 @@ fn create_verification_record(content_len: u32) u32 {
     return idx;
 }
 
-/// Проверка контента против записи
+/// Check toонтента прfromandin запandwithand
 fn verify_content(record_idx: u32, content_len: u32) bool {
     if (record_idx >= record_count) return false;
     
     const record = &verification_records[record_idx];
     
-    // Проверяем content_hash
+    // Проinеряем content_hash
     sha256(content_len);
     if (!std.mem.eql(u8, &hash_output, &record.content_hash)) return false;
     
-    // Проверяем phi_hash
+    // Проinеряем phi_hash
     phi_hash(content_len, 3);
     if (!std.mem.eql(u8, &hash_output, &record.phi_hash)) return false;
     
     return true;
 }
 
-/// Получение количества записей
+/// Полученandе toолandчеwithтinа запandwithей
 fn get_record_count() u32 {
     return record_count;
 }
@@ -483,7 +483,7 @@ test "sha256_abc" {
 test "merkle_tree" {
     merkle_init();
     
-    // Добавляем 4 листа
+    // Добаinляем 4 лandwithта
     hash_input_buffer[0] = 'a';
     sha256(1);
     _ = merkle_add_leaf(&hash_output);
@@ -500,11 +500,11 @@ test "merkle_tree" {
     sha256(1);
     _ = merkle_add_leaf(&hash_output);
     
-    // Строим дерево
+    // Строandм дереinо
     const root_idx = merkle_build(4);
     try std.testing.expect(root_idx != MerkleNode.NONE);
     
-    // Проверяем что корень существует
+    // Проinеряем что toорень withущеwithтinует
     var root: Hash256 = undefined;
     try std.testing.expect(merkle_get_root(&root));
 }
@@ -512,7 +512,7 @@ test "merkle_tree" {
 test "verification_record" {
     record_count = 0;
     
-    // Создаём запись
+    // Создаём запandwithь
     hash_input_buffer[0] = 'T';
     hash_input_buffer[1] = 'R';
     hash_input_buffer[2] = 'I';
@@ -525,7 +525,7 @@ test "verification_record" {
     try std.testing.expect(idx != 0xFFFFFFFF);
     try std.testing.expectEqual(record_count, 1);
     
-    // Восстанавливаем данные и проверяем
+    // Воwithwithтаoninлandinаем данные and проinеряем
     hash_input_buffer[0] = 'T';
     hash_input_buffer[1] = 'R';
     hash_input_buffer[2] = 'I';
@@ -537,7 +537,7 @@ test "verification_record" {
     const verified = verify_content(idx, 7);
     try std.testing.expect(verified);
     
-    // Изменённый контент не должен пройти
+    // Изменённый toонтент не должен пройтand
     hash_input_buffer[0] = 'X';
     hash_input_buffer[1] = 'R';
     hash_input_buffer[2] = 'I';

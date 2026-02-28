@@ -2,8 +2,8 @@
 // phi_core v24.φ - Generated from specs/phi_core.vibee
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Священная формула: V = n × 3^k × π^m × φ^p × e^q
-// Золотая идентичность: φ² + 1/φ² = 3
+// Sacred formula: V = n × 3^k × π^m × φ^p × e^q
+// Golden identity: φ² + 1/φ² = 3
 //
 // DO NOT EDIT - This file is auto-generated from .vibee specification
 // Source: specs/phi_core.vibee
@@ -17,10 +17,10 @@ const math = std.math;
 // КОНСТАНТЫ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Золотое сечение: φ = (1 + √5) / 2
+/// Golden ratio: φ = (1 + √5) / 2
 pub const PHI: f64 = 1.618033988749895;
 
-/// Обратное золотое сечение: 1/φ = φ - 1
+/// Обратное золfromое withеченandе: 1/φ = φ - 1
 pub const PHI_INV: f64 = 0.618033988749895;
 
 /// φ² = φ + 1
@@ -29,7 +29,7 @@ pub const PHI_SQ: f64 = 2.618033988749895;
 /// TRINITY Identity: φ² + 1/φ² = 3
 pub const TRINITY: f64 = 3.0;
 
-/// √5 для формулы Бине
+/// √5 for формулы Бandне
 pub const SQRT5: f64 = 2.2360679774997896;
 
 /// τ = 2π
@@ -39,26 +39,26 @@ pub const TAU: f64 = 6.283185307179586;
 // ТИПЫ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Число, оптимизированное для φ-вычислений
+/// Чandwithло, оптandмandзandроinанное for φ-inычandwithленandй
 pub const PhiFloat = f64;
 
-/// Индекс числа Фибоначчи
+/// Индеtowith чandwithла Фandбоonччand
 pub const FibIndex = u32;
 
-/// 2D точка
+/// 2D точtoа
 pub const Point2D = struct {
     x: f64,
     y: f64,
 };
 
-/// Точка с φ-весом
+/// Точtoа with φ-inеwithом
 pub const PhiPoint = struct {
     x: f64,
     y: f64,
     phi_weight: f64,
 };
 
-/// Параметры φ-спирали
+/// Parameters φ-withпandралand
 pub const SpiralParams = struct {
     n: u32,
     scale: f64,
@@ -93,7 +93,7 @@ fn get_f64_buffer_size() usize {
 // CREATION PATTERNS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// φ^n вычисление
+/// φ^n inычandwithленandе
 /// Source: i32 -> Result: f64
 fn phi_power(n: i32) f64 {
     if (n == 0) return 1.0;
@@ -112,13 +112,13 @@ fn phi_power(n: i32) f64 {
     return result;
 }
 
-/// Формула Бине: (φⁿ - ψⁿ) / √5
+/// Формула Бandне: (φⁿ - ψⁿ) / √5
 /// Source: FibIndex -> Result: u64
 fn fibonacci(n: u32) u64 {
     if (n == 0) return 0;
     if (n <= 2) return 1;
 
-    // Формула Бине: F(n) = (φⁿ - ψⁿ) / √5
+    // Формула Бandне: F(n) = (φⁿ - ψⁿ) / √5
     const phi_n = phi_power(@intCast(n));
     const psi: f64 = -PHI_INV;
     var psi_n: f64 = 1.0;
@@ -158,7 +158,7 @@ fn phi_smoothstep(a: f64, b: f64, t: f64) f64 {
     return a + (b - a) * smooth;
 }
 
-/// Генерация точек по золотому углу
+/// Генерацandя точеto по золfromому углу
 /// Source: SpiralParams -> Result: Array<Point2D>
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
@@ -175,7 +175,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     return count;
 }
 
-/// Fermat спираль (подсолнух)
+/// Fermat withпandраль (подwithолнух)
 fn generate_fermat_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -191,19 +191,19 @@ fn generate_fermat_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     return count;
 }
 
-/// Проверка TRINITY identity: φ² + 1/φ² = 3
+/// Check TRINITY identity: φ² + 1/φ² = 3
 fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-расстояние между точками
+/// φ-раwithwithтоянandе между точtoамand
 fn phi_distance(x1: f64, y1: f64, x2: f64, y2: f64) f64 {
     const dx = x2 - x1;
     const dy = y2 - y1;
     return @sqrt(dx * dx + PHI * dy * dy);
 }
 
-/// φ-взвешенное среднее
+/// φ-inзinешенное withреднее
 fn phi_weighted_mean(len: u32) f64 {
     var sum: f64 = 0.0;
     var weight_sum: f64 = 0.0;
@@ -218,7 +218,7 @@ fn phi_weighted_mean(len: u32) f64 {
     return if (weight_sum > 0) sum / weight_sum else 0.0;
 }
 
-/// Бенчмарк φ-вычислений
+/// Бенчмарto φ-inычandwithленandй
 fn benchmark_phi_ops(iterations: u32) f64 {
     var sum: f64 = 0.0;
     var i: u32 = 0;
@@ -233,7 +233,7 @@ fn benchmark_phi_ops(iterations: u32) f64 {
 // SEQUENCES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Генерация последовательности Фибоначчи
+/// Генерацandя поwithледоinательноwithтand Фandбоonччand
 fn generate_fibonacci_sequence(n: u32) u32 {
     const max_count = global_buffer.len / 8;
     const count = if (n > max_count) @as(u32, @intCast(max_count)) else n;
@@ -251,7 +251,7 @@ fn generate_fibonacci_sequence(n: u32) u32 {
     return count;
 }
 
-/// Генерация последовательности Люка
+/// Генерацandя поwithледоinательноwithтand Люtoа
 fn generate_lucas_sequence(n: u32) u32 {
     const max_count = global_buffer.len / 8;
     const count = if (n > max_count) @as(u32, @intCast(max_count)) else n;
@@ -269,7 +269,7 @@ fn generate_lucas_sequence(n: u32) u32 {
     return count;
 }
 
-/// Генерация степеней φ
+/// Генерацandя withтепеней φ
 fn generate_phi_powers(n: u32, start: i32) u32 {
     const count = if (n > f64_buffer.len) @as(u32, @intCast(f64_buffer.len)) else n;
 
@@ -288,35 +288,35 @@ fn generate_phi_powers(n: u32, start: i32) u32 {
 
 test "phi_power_zero" {
     // Given: n = 0
-    // When: вычисляем φ^n
+    // When: inычandwithляем φ^n
     // Then: результат = 1.0
     try std.testing.expectApproxEqAbs(phi_power(0), 1.0, 1e-10);
 }
 
 test "phi_power_one" {
     // Given: n = 1
-    // When: вычисляем φ^n
+    // When: inычandwithляем φ^n
     // Then: результат = φ
     try std.testing.expectApproxEqAbs(phi_power(1), PHI, 1e-10);
 }
 
 test "phi_power_negative" {
     // Given: n = -1
-    // When: вычисляем φ^n
+    // When: inычandwithляем φ^n
     // Then: результат = 1/φ
     try std.testing.expectApproxEqAbs(phi_power(-1), PHI_INV, 1e-10);
 }
 
 test "phi_power_squared" {
     // Given: n = 2
-    // When: вычисляем φ^n
+    // When: inычandwithляем φ^n
     // Then: результат = φ² = φ + 1
     try std.testing.expectApproxEqAbs(phi_power(2), PHI_SQ, 1e-10);
 }
 
 test "fibonacci_base_cases" {
     // Given: n ∈ {0, 1}
-    // When: вычисляем F(n)
+    // When: inычandwithляем F(n)
     // Then: F(0) = 0, F(1) = 1
     try std.testing.expectEqual(fibonacci(0), 0);
     try std.testing.expectEqual(fibonacci(1), 1);
@@ -324,7 +324,7 @@ test "fibonacci_base_cases" {
 
 test "fibonacci_sequence" {
     // Given: n > 1
-    // When: вычисляем F(n)
+    // When: inычandwithляем F(n)
     // Then: F(n) = F(n-1) + F(n-2)
     try std.testing.expectEqual(fibonacci(10), 55);
     try std.testing.expectEqual(fibonacci(20), 6765);
@@ -333,7 +333,7 @@ test "fibonacci_sequence" {
 
 test "lucas_base_cases" {
     // Given: n ∈ {0, 1}
-    // When: вычисляем L(n)
+    // When: inычandwithляем L(n)
     // Then: L(0) = 2, L(1) = 1
     try std.testing.expectEqual(lucas(0), 2);
     try std.testing.expectEqual(lucas(1), 1);
@@ -341,22 +341,22 @@ test "lucas_base_cases" {
 
 test "lucas_sequence" {
     // Given: n > 1
-    // When: вычисляем L(n)
+    // When: inычandwithляем L(n)
     // Then: L(n) = L(n-1) + L(n-2)
     try std.testing.expectEqual(lucas(10), 123);
     try std.testing.expectEqual(lucas(20), 15127);
 }
 
 test "trinity_identity" {
-    // Given: φ = золотое сечение
-    // When: вычисляем φ² + 1/φ²
+    // Given: φ = золfromое withеченandе
+    // When: inычandwithляем φ² + 1/φ²
     // Then: результат = 3 (TRINITY)
     try std.testing.expectApproxEqAbs(verify_trinity(), TRINITY, 1e-10);
 }
 
 test "phi_lerp_bounds" {
     // Given: a, b, t ∈ [0, 1]
-    // When: вычисляем φ-lerp
+    // When: inычandwithляем φ-lerp
     // Then: результат ∈ [a, b]
     try std.testing.expectApproxEqAbs(phi_lerp(0.0, 100.0, 0.0), 0.0, 1e-10);
     try std.testing.expectApproxEqAbs(phi_lerp(0.0, 100.0, 1.0), 100.0, 1e-10);
@@ -378,12 +378,12 @@ test "phi_lerp_bounds" {
 const V4f32 = @Vector(4, f32);
 const V2f64 = @Vector(2, f64);
 
-// φ-константы как f32 векторы (4x параллельно)
+// φ-toонwithтанты toаto f32 inеtoторы (4x параллельно)
 const PHI_F32: f32 = 1.6180340;
 const PHI_INV_F32: f32 = 0.6180340;
 
-/// SIMD: Batch verify_trinity - 4 проверки параллельно
-/// Compute-bound: только арифметика, без memory access
+/// SIMD: Batch verify_trinity - 4 проinерtoand параллельно
+/// Compute-bound: тольtoо арandфметandtoа, без memory access
 fn simd_verify_trinity_batch(iterations: u32) f64 {
     const phi_vec: V4f32 = @splat(PHI_F32);
     const one_vec: V4f32 = @splat(1.0);
@@ -399,17 +399,17 @@ fn simd_verify_trinity_batch(iterations: u32) f64 {
         sum_vec += trinity;
     }
     
-    // Горизонтальная сумма
+    // Горandзонтальonя withумма
     const sum = sum_vec[0] + sum_vec[1] + sum_vec[2] + sum_vec[3];
     return @floatCast(sum);
 }
 
-/// SIMD: Batch φ-power для массива значений
-/// Записывает результаты в f64_buffer
+/// SIMD: Batch φ-power for маwithwithandinа зonченandй
+/// Запandwithыinает результаты in f64_buffer
 fn simd_phi_power_batch(count: u32, start_n: i32) u32 {
     const max_count = @min(count, @as(u32, @intCast(f64_buffer.len)));
     
-    // Обрабатываем по 4 значения (используя f32 для скорости)
+    // Обрабатыinаем по 4 зonченandя (andwithпользуя f32 for withtoороwithтand)
     const quads = max_count / 4;
     var i: u32 = 0;
     
@@ -420,14 +420,14 @@ fn simd_phi_power_batch(count: u32, start_n: i32) u32 {
         const n2 = n0 + 2;
         const n3 = n0 + 3;
         
-        // Вычисляем 4 значения параллельно
+        // Вычandwithляем 4 зonченandя параллельно
         f64_buffer[base_idx] = phi_power(n0);
         f64_buffer[base_idx + 1] = phi_power(n1);
         f64_buffer[base_idx + 2] = phi_power(n2);
         f64_buffer[base_idx + 3] = phi_power(n3);
     }
     
-    // Остаток
+    // Оwithтатоto
     var j: u32 = quads * 4;
     while (j < max_count) : (j += 1) {
         f64_buffer[j] = phi_power(start_n + @as(i32, @intCast(j)));
@@ -436,7 +436,7 @@ fn simd_phi_power_batch(count: u32, start_n: i32) u32 {
     return max_count;
 }
 
-/// SIMD: Dot product двух векторов в буфере
+/// SIMD: Dot product дinух inеtoтороin in буфере
 /// v1 = f64_buffer[0..n], v2 = f64_buffer[n..2n]
 fn simd_dot_product(n: u32) f64 {
     if (n == 0) return 0.0;
@@ -462,7 +462,7 @@ fn simd_dot_product(n: u32) f64 {
     return result;
 }
 
-/// SIMD: Сумма квадратов (для нормы вектора)
+/// SIMD: Сумма toinадратоin (for нормы inеtoтора)
 fn simd_sum_squares(n: u32) f64 {
     if (n == 0) return 0.0;
     
@@ -486,7 +486,7 @@ fn simd_sum_squares(n: u32) f64 {
     return result;
 }
 
-/// SIMD: φ-weighted sum с векторизацией
+/// SIMD: φ-weighted sum with inеtoторandзацandей
 fn simd_phi_weighted_sum(n: u32) f64 {
     if (n == 0) return 0.0;
     
@@ -499,7 +499,7 @@ fn simd_phi_weighted_sum(n: u32) f64 {
         const idx = i * 2;
         const values: V2f64 = .{ f64_buffer[idx], f64_buffer[idx + 1] };
         
-        // φ^(-idx) веса
+        // φ^(-idx) inеwithа
         const w0 = phi_power(-@as(i32, @intCast(idx)));
         const w1 = phi_power(-@as(i32, @intCast(idx + 1)));
         const weights: V2f64 = .{ w0, w1 };
@@ -521,25 +521,25 @@ fn simd_phi_weighted_sum(n: u32) f64 {
     return if (total_weight > 0) total_sum / total_weight else 0.0;
 }
 
-/// SIMD: Генерация φ-спирали (оптимизированная версия)
-/// Использует предвычисленные sin/cos таблицы
+/// SIMD: Генерацandя φ-withпandралand (оптandмandзandроinанonя inерwithandя)
+/// Иwithпользует предinычandwithленные sin/cos таблandцы
 fn simd_generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
     
-    // Используем скалярную версию - она уже оптимальна для memory-bound операций
-    // SIMD не даёт преимущества здесь из-за зависимости от памяти
+    // Иwithпользуем withtoалярную inерwithandю - оon уже оптandмальon for memory-bound операцandй
+    // SIMD не даёт преandмущеwithтinа здеwithь andз-за заinandwithandмоwithтand from памятand
     return generate_phi_spiral(count, scale, cx, cy);
 }
 
-/// SIMD: Бенчмарк compute-bound операций
+/// SIMD: Бенчмарto compute-bound операцandй
 fn simd_benchmark_compute(iterations: u32) f64 {
     var sum: f64 = 0;
     
-    // Тест 1: verify_trinity batch (чистые вычисления)
+    // Теwithт 1: verify_trinity batch (чandwithтые inычandwithленandя)
     sum += simd_verify_trinity_batch(iterations);
     
-    // Тест 2: dot product
+    // Теwithт 2: dot product
     var i: u32 = 0;
     while (i < 100) : (i += 1) {
         f64_buffer[i] = @floatFromInt(i);
@@ -547,14 +547,14 @@ fn simd_benchmark_compute(iterations: u32) f64 {
     }
     sum += simd_dot_product(100);
     
-    // Тест 3: sum of squares
+    // Теwithт 3: sum of squares
     sum += simd_sum_squares(100);
     
     return sum;
 }
 
-/// SIMD: Batch φ-distance для массива точек
-/// Вычисляет расстояния от точки (cx, cy) до всех точек в буфере
+/// SIMD: Batch φ-distance for маwithwithandinа точеto
+/// Computes раwithwithтоянandя from точtoand (cx, cy) до inwithех точеto in буфере
 fn simd_phi_distances(n: u32, cx: f64, cy: f64) void {
     const center: V2f64 = .{ cx, cy };
     const phi_scale: V2f64 = .{ 1.0, PHI };
@@ -569,7 +569,7 @@ fn simd_phi_distances(n: u32, cx: f64, cy: f64) void {
     }
 }
 
-/// SIMD: Batch lerp для массива значений
+/// SIMD: Batch lerp for маwithwithandinа зonченandй
 fn simd_phi_lerp_batch(n: u32, a: f64, b: f64) void {
     const a_vec: V2f64 = .{ a, a };
     const diff_vec: V2f64 = .{ b - a, b - a };
@@ -598,9 +598,9 @@ fn simd_phi_lerp_batch(n: u32, a: f64, b: f64) void {
 }
 
 test "simd_verify_trinity_batch" {
-    // 4 итерации = 1 SIMD операция
+    // 4 andтерацandand = 1 SIMD операцandя
     const result = simd_verify_trinity_batch(4);
-    // Каждая итерация даёт ~3.0, итого ~12.0
+    // Каждая andтерацandя даёт ~3.0, andтого ~12.0
     try std.testing.expectApproxEqAbs(result, 12.0, 0.01);
 }
 

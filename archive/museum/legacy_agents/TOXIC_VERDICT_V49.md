@@ -11,7 +11,7 @@
 
 ### Проблемы v48:
 
-| Проблема | Severity | Impact |
+| Problem | Severity | Impact |
 |----------|----------|--------|
 | Full redraw every frame | 🔴 CRITICAL | 342 µs/frame, 2920 FPS max |
 | No dirty checking | 🔴 CRITICAL | Wasted CPU cycles |

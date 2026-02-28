@@ -113,9 +113,9 @@ Key components:
 | State | English | Russian | Chinese |
 |-------|---------|---------|---------|
 | Happy | Happy to help! | Рад помочь! | 很高兴帮助！|
-| Interested | Interesting! | Интересно! | 有意思！|
-| Empathetic | I understand. | Понимаю. | 理解。|
-| Enthusiastic | Great! | Отлично! | 太棒了！|
+| Interested | Interesting! | Интереwithно! | 有意思！|
+| Empathetic | I understand. | Понandмаю. | 理解。|
+| Enthusiastic | Great! | Отлandчно! | 太棒了！|
 | Calm | (neutral) | (neutral) | (neutral) |
 
 ### Formality Levels

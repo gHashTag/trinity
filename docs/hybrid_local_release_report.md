@@ -32,9 +32,9 @@ $ ./trinity-hybrid "hello"
 [Symbolic, 40%, 34μs]
 Hello! Great to see you. How can I help?
 
-$ ./trinity-hybrid "привет"
+$ ./trinity-hybrid "прandinет"
 [Symbolic, 80%, 45μs]
-Привет! Рад тебя видеть. Чем могу помочь?
+Прandinет! Рад тебя inandдеть. Чем могу помочь?
 
 $ ./trinity-hybrid "tell me a joke"
 [Symbolic, 80%, 7μs]

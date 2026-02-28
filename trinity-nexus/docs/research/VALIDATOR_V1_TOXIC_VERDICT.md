@@ -120,8 +120,8 @@
 │  WHY:                                                           │
 │  1. This is BLOCKING all other tasks (validator only works      │
 │     as standalone, not in main CLI)                             │
-│  2. User requirement: "только спецификации .vibee в .zig"       │
-│     and "запусти режим через большее количество todo" - need     │
+│  2. User requirement: "тольtoо withпецandфandtoацandand .vibee in .zig"       │
+│     and "запуwithтand режandм через большее toолandчеwithтinо todo" - need     │
 │     full pipeline working                                        │
 │  3. Without compiler integration, we can't run "vibee validate" │
 │     command from main CLI, defeating purpose of integration     │
