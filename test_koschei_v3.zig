@@ -57,14 +57,14 @@ pub fn main() !void {
     // Element 119 (Ununennium)
     try vm.sacredChemPredict(119, 0); // half-life
     std.debug.print("  {s}Element 119 (Uue):{s}\n", .{ CYAN, RESET });
-    std.debug.print("    Half-life: {s}{d:.1e} sec{s} (confidence: {d:.0}%)\n", .{ GREEN, vm.registers.f0, RESET, vm.registers.f1 * 100 });
+    std.debug.print("    Half-life: {s}{d:.6} sec{s} (confidence: {d:.0}%)\n", .{ GREEN, vm.registers.f0, RESET, vm.registers.f1 * 100 });
     std.debug.print("    Formula: V = 1x3^-4xphi^-6\n", .{});
     std.debug.print("    Status: {s}BLIND{s} — not yet synthesized\n\n", .{ RED, RED });
 
     // Element 120 (Unbinilium)
     try vm.sacredChemPredict(120, 0); // half-life
     std.debug.print("  {s}Element 120 (Ubn):{s}\n", .{ CYAN, RESET });
-    std.debug.print("    Half-life: {s}{d:.1e} sec{s} (confidence: {d:.0}%)\n", .{ GREEN, vm.registers.f0, RESET, vm.registers.f1 * 100 });
+    std.debug.print("    Half-life: {s}{d:.6} sec{s} (confidence: {d:.0}%)\n", .{ GREEN, vm.registers.f0, RESET, vm.registers.f1 * 100 });
     std.debug.print("    Formula: V = 2x3^-4xphi^-6 (shell closure)\n", .{});
     std.debug.print("    Status: {s}BLIND{s} — v3.0 NEW DISCOVERY!\n\n", .{ RED, RED });
 
@@ -96,7 +96,12 @@ pub fn main() !void {
 
     for (predictions, 0..) |pred, i| {
         std.debug.print("  {s}[{d}]{s} {s}{s}{s}\n", .{ CYAN, i + 1, RESET, BOLD, pred.name, RESET });
-        std.debug.print("     Value: {s}{d:.1}{s} | Confidence: {s}{d:.1}%{s}\n", .{ GREEN, pred.value, RESET, GREEN, pred.conf, RESET });
+        // Format value based on magnitude - use scientific notation for very large/small
+        if (pred.value >= 1e10 or pred.value < 1e-2) {
+            std.debug.print("     Value: {s}{e:.1}{s} | Confidence: {s}{d:.1}%{s}\n", .{ GREEN, pred.value, RESET, GREEN, pred.conf, RESET });
+        } else {
+            std.debug.print("     Value: {s}{d:.4}{s} | Confidence: {s}{d:.1}%{s}\n", .{ GREEN, pred.value, RESET, GREEN, pred.conf, RESET });
+        }
         std.debug.print("     Status: {s}\n", .{pred.status});
         std.debug.print("\n", .{});
     }
