@@ -14,6 +14,7 @@ Complete API documentation for Trinity modules.
 | [VSA](/api/vsa) | Vector Symbolic Architecture (Zig) |
 | [VM](/api/vm) | Ternary Virtual Machine |
 | [Hybrid](/api/hybrid) | HybridBigInt storage |
+| [SDK](/api/sdk) | High-level developer API |
 | [Firebird](/api/firebird) | LLM inference engine |
 | [VIBEE](/api/vibee) | Specification compiler |
 | [Plugin](/api/plugin) | Extension system |
@@ -27,7 +28,27 @@ Complete API documentation for Trinity modules.
 
 ## Quick Reference
 
-### VSA Operations
+### SDK (High-Level API)
+
+```zig
+// Hypervector operations
+var hv = Hypervector.random(1000, 42);
+var bound = key.bind(&value);
+var combined = a.bundle(&b);
+const sim = a.similarity(&b);  // [-1, 1]
+
+// Codebook for symbols
+var codebook = Codebook.init(allocator, 1000);
+const cat = try codebook.encode("cat");
+const symbol = codebook.decode(&query);
+
+// Associative memory
+var memory = AssociativeMemory.init(1000);
+memory.store(&key, &value);
+var retrieved = memory.retrieve(&key);
+```
+
+### VSA (Low-Level API)
 
 ```zig
 vsa.bind(a, b)              // Create association
