@@ -57,6 +57,8 @@ pub const Command = enum {
     plan,
     verify,
     verdict,
+    // Test REPL (Cycle 101)
+    test_repl,
     // Spec & Loop (v8.27)
     spec_create,
     loop_decide,
@@ -593,6 +595,11 @@ pub fn printHelp() void {
     std.debug.print("  {s}help{s}                        This help message\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
+    std.debug.print("{s}TESTING (Cycle 100):{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}test --repl{s}                  Run REPL test suite\n", .{ GREEN, RESET });
+    std.debug.print("  {s}test -r{s}                      Short form\n", .{ GREEN, RESET });
+    std.debug.print("\n", .{});
+
     std.debug.print("{s}REPL COMMANDS:{s} (in interactive mode)\n", .{ CYAN, RESET });
     std.debug.print("  /chat /code /fix /explain /test /doc /reason\n", .{});
     std.debug.print("  /zig /python /rust /js    Set language\n", .{});
@@ -651,6 +658,8 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "plan")) return .plan;
     if (std.mem.eql(u8, arg, "verify")) return .verify;
     if (std.mem.eql(u8, arg, "verdict")) return .verdict;
+    // Test REPL (Cycle 101)
+    if (std.mem.eql(u8, arg, "test-repl") or std.mem.eql(u8, arg, "test_repl")) return .test_repl;
     // Spec & Loop (v8.27)
     if (std.mem.eql(u8, arg, "spec-create") or std.mem.eql(u8, arg, "spec_create")) return .spec_create;
     if (std.mem.eql(u8, arg, "loop-decide") or std.mem.eql(u8, arg, "loop_decide")) return .loop_decide;
