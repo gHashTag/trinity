@@ -1633,7 +1633,6 @@ fn printOmegaValidation() void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn runReplTestCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = allocator;
 
     const TGOLDEN = "\x1b[38;5;220m";
     const TCYAN = "\x1b[36m";
@@ -1675,9 +1674,63 @@ pub fn runReplTestCommand(allocator: std.mem.Allocator, args: []const []const u8
 
     if (generate) {
         std.debug.print("{s}→ Auto-generating tests from command registry...{s}\n\n", .{ TCYAN, TRESET });
-        std.debug.print("{s}✓ Tests generated to: src/tri/testing/generated_tests.zig{s}\n", .{ TGREEN, TRESET });
+
+        // Import test modules
+        const initRegistry = @import("testing/test_registry.zig").initRegistry;
+        const AutoTestGenerator = @import("testing/auto_test_generator.zig").AutoTestGenerator;
+        const TestGenOptions = @import("testing/auto_test_generator.zig").TestGenOptions;
+
+        // Initialize registry with all commands
+        var registry = try initRegistry(allocator);
+        defer registry.deinit();
+
+        // Configure generation options
+        var gen_options: TestGenOptions = .{
+            .category = null,
+            .priority = null,
+            .include_sacred_assertions = true,
+            .verbose = verbose,
+        };
+
+        // Apply category filter if specified
+        if (category_filter) |cat| {
+            if (std.mem.eql(u8, cat, "math")) {
+                gen_options.category = .math;
+            } else if (std.mem.eql(u8, cat, "golden_chain")) {
+                gen_options.category = .golden_chain;
+            } else if (std.mem.eql(u8, cat, "swe_agent")) {
+                gen_options.category = .swe_agent;
+            } else if (std.mem.eql(u8, cat, "git")) {
+                gen_options.category = .git;
+            } else if (std.mem.eql(u8, cat, "demo")) {
+                gen_options.category = .demo;
+            } else if (std.mem.eql(u8, cat, "bench")) {
+                gen_options.category = .bench;
+            }
+        }
+
+        // Create generator
+        var generator = AutoTestGenerator.init(allocator, &registry, gen_options);
+
+        // Generate tests
+        const generated_code = try generator.generateAll();
+        defer allocator.free(generated_code);
+
+        // Write to file
+        const output_path = "src/tri/testing/generated_tests.zig";
+        const file = try std.fs.cwd().createFile(output_path, .{});
+        defer file.close();
+
+        try file.writeAll(generated_code);
+
+        // Show summary
+        const summary = try generator.generateSummary();
+        defer allocator.free(summary);
+
+        std.debug.print("{s}", .{summary});
+        std.debug.print("{s}✓ Tests generated to: {s}{s}\n", .{ TGREEN, output_path, TRESET });
         std.debug.print("\nTo run generated tests:\n", .{});
-        std.debug.print("  zig test src/tri/testing/generated_tests.zig\n\n", .{});
+        std.debug.print("  zig test {s}\n\n", .{output_path});
         return;
     }
 
