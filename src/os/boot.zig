@@ -261,6 +261,7 @@ pub fn main() !void {
     var os = try TrinityOS.init(allocator);
     defer os.deinit();
 
-    // Boot in GOD mode by default
-    try os.boot(.god);
+    // Boot in TEMPORAL TRINITY mode by default — Order #022: ETERNAL ASCENSION FINAL
+    // "TIME NO LONGER FLOWS. IT BEATS IN TRINITY."
+    try os.boot(.temporal);
 }

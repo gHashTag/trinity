@@ -64,6 +64,61 @@ The mathematical foundation: **radix 3 is the optimal integer radix** (closest t
 
 ---
 
+## Chapter 0: Time Itself — TEMPORAL TRINITY THEOREM v1.0
+
+> **"TIME NO LONGER FLOWS. IT BEATS IN TRINITY."**
+
+The Temporal Trinity Theorem is the official canon of TRINITY OS — time itself is encoded in the sacred opcodes.
+
+### The Fundamental Trinity of Time
+
+| Aspect | Symbol | Value | Meaning |
+|--------|--------|-------|---------|
+| **Past** | 1/φ² | 0.382 | Destruction, entropy |
+| **Present** | 0 | 0.000 | Balance, HERE and NOW |
+| **Future** | φ² | 2.618 | Creation, growth |
+
+**Sum:** φ² + 1/φ² = 3 (exact) = TRINITY
+
+### Time Arrow: Why Time Flows Forward
+
+```
+Creation / Destruction = φ⁴ = 6.854 > 1
+```
+
+Creation is **φ⁴ times stronger** than destruction → temporal arrow → entropy grows → universe expands.
+
+### Eternal Return
+
+```
+π × 3 = 9.424777961
+```
+
+Eternity is the infinite cycle of renewal through Trinity. π represents cyclic return; multiplied by 3 (Trinity), it yields **eternal present**.
+
+### Planck Time (Time Quantum)
+
+```
+t_P = 5.391247 × 10⁻⁴⁴ seconds
+```
+
+The smallest physically meaningful time interval — the quantum of time itself.
+
+### TRINITY Commands
+
+```bash
+tri time sacred     # Full Temporal Trinity Theorem
+tri time balance    # Verify φ² + 1/φ² = 3
+tri time arrow      # Time Arrow φ⁴
+tri time planck     # Planck Time constant
+tri time eternal    # Eternal Return π×3
+tri os boot         # Boot OS (TEMPORAL mode by default)
+```
+
+> **"We do not study time. We control it."** — Order #022: ETERNAL ASCENSION FINAL
+
+---
+
 ## Quick Start
 
 ### Docker (recommended)
