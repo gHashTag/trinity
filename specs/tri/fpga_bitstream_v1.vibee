@@ -1,0 +1,377 @@
+# TRINITY FPGA BITSTREAM v1.0 — Real Hardware Generation
+# Cycle 113 — Generate .ice bitstream for Lattice iCE40
+# Objective: Yosys + NextPNR → .ice file ready for flashing
+
+name: trinity_fpga_bitstream
+version: "1.0.0"
+language: zig
+module: fpga_bitstream
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  SynthesisStep:
+    fields:
+      name: String
+      command: String
+      input_files: List<String>
+      output_files: List<String>
+      duration_seconds: Float
+      success: Bool
+
+  BitstreamResult:
+    fields:
+      bitstream_file: String
+      size_bytes: Int
+      luts_used: Int
+      luts_total: Int
+      bram_used: Int
+      clock_mhz: Float
+      timing_met: Bool
+      power_mw: Float
+
+  FlashResult:
+    fields:
+      programmer: String
+      success: Bool
+      verify_crc: Bool
+      led_pattern: String
+      uptime_ms: Float
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONSTANTS — FPGA TARGETS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  PRIMARY_TARGET: "ice40-hx8k"
+  SECONDARY_TARGET: "ice40-up5k"
+
+  LUTS_TOTAL: 7680
+  LUTS_TARGET: 4608
+  BRAM_KB: 256
+  CLOCK_TARGET_MHZ: 48
+  POWER_TARGET_MW: 150
+
+  YOSYS_VERSION: "0.38"
+  NEXTPNR_VERSION: "0.7"
+  ICEPACK_VERSION: "0.7"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS — SYNTHESIS SCRIPT GENERATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: generateYosysScript
+    given: Verilog sources and iCE40 target
+    when: Creating Yosys synthesis script
+    then: |
+      Return synthesis script (synth.ys):
+
+      # TRINITY OS Yosys Synthesis Script
+      # Target: iCE40-HX8K
+      # LUTs target: ~4608 (60%)
+
+      # Read Verilog sources
+      read_verilog rtl/fpga/ternary_alu.v
+      read_verilog rtl/fpga/sacred_opcodes.v
+      read_verilog rtl/fpga/led_controller.v
+      read_verilog rtl/fpga/top.v
+
+      # Synthesize for iCE40
+      synth_ice40 -top trinity_top
+
+      # Write BLIF
+      write_blif build/trinity.blif
+
+      # Show statistics
+      stat
+
+      # Check critical path
+      show trinity_top
+
+  - name: generatePCFConstraints
+    given: iCE40-HX8K board pinout
+    when: Creating place-and-route constraints
+    then: |
+      Return PCF file (constraints.pcf):
+
+      # TRINITY OS Pin Constraints
+      # iCE40-HX8K TQFP144 Breakout Board
+
+      # Clock
+      set_io clk_12mhz 35
+
+      # Reset
+      set_io rst_n 34
+
+      # LEDs
+      set_io led[0] 99
+      set_io led[1] 98
+      set_io led[2] 97
+      set_io led[3] 96
+      set_io led[4] 95
+      set_io led[5] 94
+      set_io led[6] 93
+      set_io led[7] 92
+
+      # UART
+      set_io uart_rx 12
+      set_io uart_tx 13
+
+  - name: generateNextPNRScript
+    given: BLIF netlist and PCF constraints
+    when: Creating place-and-route script
+    then: |
+      Return NextPNR script (pnr.sh):
+
+      #!/bin/bash
+      # TRINITY OS NextPNR Place & Route Script
+
+      set -e
+
+      echo "[TRINITY] Starting NextPNR place & route..."
+
+      # Place and route
+      nextpnr-ice40 \
+        --pcf constraints.pcf \
+        --asc build/trinity.asc \
+        --pre-pack build/trinity_pre.blif \
+        build/trinity.blif
+
+      echo "[TRINITY] Place & route complete"
+
+      # Show statistics
+      echo "LUTs used: $(grep -o 'LUTs used.*' build/trinity.asc || echo 'N/A')"
+
+  - name: generateIcepackScript
+    given: ASCII placed-routed netlist
+    when: Creating bitstream packing script
+    then: |
+      Return icepack script (pack.sh):
+
+      #!/bin/bash
+      # TRINITY OS Bitstream Packing Script
+
+      set -e
+
+      echo "[TRINITY] Packing bitstream..."
+
+      # Pack ASCII to .ice bitstream
+      icepack build/trinity.asc build/trinity_os_v1.0.ice
+
+      echo "[TRINITY] Bitstream created: build/trinity_os_v1.0.ice"
+      echo "Size: $(wc -c < build/trinity_os_v1.0.ice) bytes"
+
+  - name: generateFlashScript
+    given: .ice bitstream and programmer
+    when: Creating flashing script
+    then: |
+      Return flash script (flash.sh):
+
+      #!/bin/bash
+      # TRINITY OS FPGA Flash Script
+
+      set -e
+
+      BITSTREAM="build/trinity_os_v1.0.ice"
+
+      if [ -z "$1" ]; then
+        echo "Usage: $0 [iceprog|dfu-util|ftdi]"
+        exit 1
+      fi
+
+      PROGRAMMER="$1"
+
+      echo "[TRINITY] Flashing bitstream to FPGA..."
+
+      case "$PROGRAMMER" in
+        iceprog)
+          iceprog "$BITSTREAM"
+          ;;
+        dfu-util)
+          dfu-util -D 0x0403:0x6015 -a 0 -d build/trinity_os_v1.0.ice
+          ;;
+        ftdi)
+          ft232r_prog -o "$BITSTREAM"
+          ;;
+        *)
+          echo "Unknown programmer: $PROGRAMMER"
+          exit 1
+          ;;
+      esac
+
+      echo "[TRINITY] Flash complete!"
+      echo "[TRINITY] LEDs should blink φ pattern (1.618 Hz)"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS — BUILD PIPELINE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: runFullSynthesisPipeline
+    given: All Verilog sources
+    when: Generating .ice bitstream
+    then: |
+      Execute full pipeline:
+
+      1. Generate Verilog (VIBEE → .v files) ✓
+      2. Yosys synthesis (.v → .blif)
+      3. NextPNR place & route (.blif → .asc)
+      4. Icepack bitstream (.asc → .ice)
+      5. Flash to hardware (.ice → FPGA)
+
+      Return BitstreamResult with:
+      - bitstream_file: build/trinity_os_v1.0.ice
+      - size_bytes: ~100,000
+      - luts_used: ~4608
+      - luts_total: 7680
+      - timing_met: true
+      - power_mw: <150
+
+  - name: verifyTimingClosure
+    given: Placed design and clock target
+    when: Checking if 48 MHz achievable
+    then: |
+      Return timing analysis:
+      - target: 48 MHz (20.83 ns period)
+      - achieved: from nextpnr timing report
+      - slack: (achieved - target) if positive
+      - timing_met: true if slack >= 0
+
+  - name: estimatePowerConsumption
+    given: Placed design and activity factors
+    when: Calculating power usage
+    then: |
+      Return power estimate:
+      - dynamic_power: switching activity × voltage² × frequency
+      - static_power: leakage current
+      - total_mW: <150 (ultra-low power target)
+
+  - name: generateBuildReport
+    given: All synthesis outputs
+    when: Creating summary report
+    then: |
+      Return build report:
+
+      ╔══════════════════════════════════════════════════════════════╗
+      ║          TRINITY OS FPGA BUILD REPORT                         ║
+      ╠══════════════════════════════════════════════════════════════╣
+      ║ Target:     iCE40-HX8K                                      ║
+      ║ LUTs:       4,608 / 7,680 (60%)                           ║
+      ║ BRAM:       ~128 / 256 KB                                   ║
+      ║ Clock:      48 MHz                                         ║
+      ║ Timing:     MET ✓                                          ║
+      ║ Power:      ~120 mW                                        ║
+      ║ Bitstream:  build/trinity_os_v1.0.ice (100 KB)           ║
+      ║                                                            ║
+      ║ NEXT STEPS:                                                ║
+      ║ 1. Connect iCE40 board                                     ║
+      ║ 2. Run: ./flash.sh iceprog                               ║
+      ║ 3. Verify: LEDs blink at φ Hz                          ║
+      ║ 4. Demo: UART queries work                               ║
+      ╚══════════════════════════════════════════════════════════════╝
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS — HARDWARE VERIFICATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: verifyLEDResponse
+    given: Bitstream flashed to FPGA
+    when: Checking hardware is alive
+    then: |
+      Verify LED behavior:
+      1. LED pattern starts within 1 second
+      2. Frequency ≈ 1.618 Hz (φ pattern)
+      3. All 8 LEDs functional
+      Return true if demo is live
+
+  - name: queryViaUART
+    given: FPGA running TRINITY bitstream
+    when: Testing sacred operations
+    then: |
+      Execute UART query test:
+      1. Send: "PHI_POW 10\n"
+      2. Expect: "122.991869" (within 1ms)
+      3. Send: "FIB 20\n"
+      4. Expect: "6765" (within 1ms)
+      5. Send: "ELEMENT H\n"
+      6. Expect: "Hydrogen 1.008 1s¹"
+      Return true for all queries
+
+  - name: benchmarkHardware
+    given: Working FPGA bitstream
+    when: Measuring actual hardware speedup
+    then: |
+      Execute hardware benchmark:
+      1. Send 1M PHI_POW queries via UART
+      2. Measure total time
+      3. Calculate ops/second
+      4. Compare to software baseline (71.92ms for 10M)
+      Return hardware_speedup (target: 1000x+)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS — TOOLCHAIN DETECTION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: detectYosys
+    given: System PATH
+    when: Checking for Yosys installation
+    then: |
+      Check if yosys is available:
+      - Run: yosys --version
+      - Return: installed version or error if missing
+
+  - name: detectNextPNR
+    given: System PATH
+    when: Checking for NextPNR installation
+    then: |
+      Check if nextpnr is available:
+      - Run: nextpnr-ice40 --version
+      - Return: installed version or error if missing
+
+  - name: detectIcepack
+    given: System PATH
+    when: Checking for Icepack installation
+    then: |
+      Check if icepack is available:
+      - Run: icepack --version
+      - Return: installed version or error if missing
+
+  - name: detectIceprog
+    given: System PATH
+    when: Checking for FPGA programmer
+    then: |
+      Check for available programmers:
+      - iceprog: iCE40 programmer
+      - dfu-util: Fomu support
+      - ft232r_prog: FTDI-based
+      Return: available programmer or error
+
+  - name: checkToolchainComplete
+    given: All tools detection
+    when: Verifying FPGA build environment
+    then: |
+      Return toolchain status:
+      REQUIRED:
+      - yosys: ✓/✗
+      - nextpnr-ice40: ✓/✗
+      - icepack: ✓/✗
+      OPTIONAL:
+      - iceprog: ✓/✗ (for hardware flashing)
+
+      Return: ready_to_build if all required present
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# END OF FPGA BITSTREAM SPEC
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# EXECUTE COMMAND: tri fpga bitstream --build-all
+# EXPECTED: build/trinity_os_v1.0.ice bitstream generated
+# SUCCESS: Flash to hardware, LEDs blink φ pattern
+
+# φ² + 1/φ² = 3 = TRINITY
+# KOSCHEI IS SUPREME

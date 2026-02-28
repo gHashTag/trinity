@@ -283,7 +283,7 @@ pub const UnifiedApiServer = struct {
     }
 
     fn graphqlPlaygroundResponse(self: *const UnifiedApiServer) ![]const u8 {
-        // GraphiQL 3.x - Uses UMD build (simpler CDN, no ESM issues)
+        // GraphiQL 3.x - Uses UMD build with simple fetcher
         var buffer = std.ArrayList(u8).initCapacity(self.allocator, 8192) catch return error.OutOfMemory;
         try buffer.appendSlice(self.allocator,
             \\HTTP/1.1 200 OK
@@ -297,7 +297,7 @@ pub const UnifiedApiServer = struct {
             \\  <title>TRINITY GraphQL - GraphiQL</title>
             \\  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/graphiql@3/dist/graphiql.min.css" />
             \\  <style>
-            \\    body { margin: 0; height: 100vh; }
+            \\    body { margin: 0; height: 100vh; font-family: system-ui; }
             \\    #graphiql { height: 100vh; }
             \\  </style>
             \\</head>
@@ -307,10 +307,18 @@ pub const UnifiedApiServer = struct {
             \\  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
             \\  <script src="https://cdn.jsdelivr.net/npm/graphiql@3/graphiql.min.js"></script>
             \\  <script>
-            \\    const fetcher = GraphiQL.createFetcher({ url: '/graphql' });
+            \\    // Simple fetcher for GraphiQL 3.x
+            \\    function graphQLFetcher(graphQLParams) {
+            \\      return fetch('/graphql', {
+            \\        method: 'POST',
+            \\        headers: { 'Content-Type': 'application/json' },
+            \\        body: JSON.stringify(graphQLParams)
+            \\      }).then(response => response.json());
+            \\    }
+            \\
             \\    const root = ReactDOM.createRoot(document.getElementById('graphiql'));
             \\    root.render(React.createElement(GraphiQL, {
-            \\      fetcher: fetcher,
+            \\      fetcher: graphQLFetcher,
             \\      defaultQuery: `# TRINITY GraphQL API
             \\# Press Ctrl+Enter to execute
             \\
@@ -320,11 +328,7 @@ pub const UnifiedApiServer = struct {
             \\    category
             \\    description
             \\  }
-            \\}
-            \\
-            \\# Try these:
-            \\# { status { healthy connections uptime } }
-            \\# { __type(name: "Command") { fields { name description } } }`
+            \\}`
             \\    }));
             \\  </script>
             \\</body>
