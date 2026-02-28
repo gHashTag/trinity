@@ -264,32 +264,23 @@ pub const UnifiedApiServer = struct {
     fn healthCheckResponse(self: *const UnifiedApiServer) ![]const u8 {
         const uptime = std.time.milliTimestamp() - self.status.start_time;
         return std.fmt.allocPrint(self.allocator,
-            \\HTTP/1.1 200 OK
-            \\Content-Type: application/json
-            \\Access-Control-Allow-Origin: *
-            \\
-            \\{{"healthy":true,"uptime":{d},"connections":{d},"commands":{d}}}
-        , .{uptime, self.status.connections, self.registry.count()});
+            "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\n\r\n{{\"healthy\":true,\"uptime\":{d},\"connections\":{d},\"commands\":{d}}}",
+            .{ uptime, uptime, self.status.connections, self.registry.count() }
+        );
     }
 
     fn openApiResponse(self: *const UnifiedApiServer) ![]const u8 {
+        const body = "{{\"openapi\":\"3.0.0\",\"info\":{{\"title\":\"TRINITY Unified API\",\"version\":\"1.0.0\"}},\"paths\":{{}}}}";
         return std.fmt.allocPrint(self.allocator,
-            \\HTTP/1.1 200 OK
-            \\Content-Type: application/json
-            \\Access-Control-Allow-Origin: *
-            \\
-            \\{{"openapi":"3.0.0","info":{{"title":"TRINITY Unified API","version":"1.0.0"}},"paths":{{}}}}
-        , .{});
+            "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\n\r\n{s}",
+            .{body.len, body}
+        );
     }
 
     fn graphqlPlaygroundResponse(self: *const UnifiedApiServer) ![]const u8 {
         // GraphiQL 3.x - Uses UMD build with simple fetcher
-        var buffer = std.ArrayList(u8).initCapacity(self.allocator, 8192) catch return error.OutOfMemory;
-        try buffer.appendSlice(self.allocator,
-            \\HTTP/1.1 200 OK
-            \\Content-Type: text/html
-            \\Access-Control-Allow-Origin: *
-            \\
+        // HTML content (can use \n), but HTTP headers must use \r\n
+        const html_content =
             \\<!DOCTYPE html>
             \\<html>
             \\<head>
@@ -333,23 +324,25 @@ pub const UnifiedApiServer = struct {
             \\  </script>
             \\</body>
             \\</html>
+        ;
+
+        return std.fmt.allocPrint(self.allocator,
+            "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\n\r\n{s}",
+            .{html_content.len, html_content}
         );
-        return buffer.toOwnedSlice(self.allocator);
     }
 
     fn notFoundResponse(self: *const UnifiedApiServer) ![]const u8 {
+        const body = "{{\"error\":\"Not Found\"}}";
         return std.fmt.allocPrint(self.allocator,
-            \\HTTP/1.1 404 Not Found
-            \\Content-Type: application/json
-            \\
-            \\{{"error":"Not Found"}}
-        , .{});
+            "HTTP/1.1 404 Not Found\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: {d}\r\n\r\n{s}",
+            .{body.len, body}
+        );
     }
 
     fn corsOptionsResponse(self: *const UnifiedApiServer) ![]const u8 {
-        var buffer = std.ArrayList(u8).initCapacity(self.allocator, 256) catch return error.OutOfMemory;
-        try buffer.appendSlice(self.allocator, "HTTP/1.1 200 OK\nAccess-Control-Allow-Origin: *\nAccess-Control-Allow-Methods: GET, POST, OPTIONS\nAccess-Control-Allow-Headers: Content-Type, Authorization\nAccess-Control-Max-Age: 86400\nContent-Length: 0\n\n");
-        return buffer.toOwnedSlice(self.allocator);
+        const response = "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, Authorization\r\nAccess-Control-Max-Age: 86400\r\nContent-Length: 0\r\n\r\n";
+        return self.allocator.dupe(u8, response);
     }
 
     // Parse GraphQL request JSON using std.json
@@ -400,7 +393,7 @@ pub const UnifiedApiServer = struct {
             // Return error response - build manually
             std.debug.print("DEBUG: Failed to parse query: {s}\n", .{@errorName(err)});
             var buffer = std.ArrayList(u8).initCapacity(self.allocator, 256) catch return error.OutOfMemory;
-            try buffer.appendSlice(self.allocator, "HTTP/1.1 400 Bad Request\nContent-Type: application/json\nAccess-Control-Allow-Origin: *\n\n");
+            try buffer.appendSlice(self.allocator, "HTTP/1.1 400 Bad Request\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
             try buffer.appendSlice(self.allocator, "{\"errors\":[{\"message\":\"Failed to parse query: ");
             try buffer.appendSlice(self.allocator, @errorName(err));
             try buffer.appendSlice(self.allocator, "\"}]}");
@@ -429,7 +422,7 @@ pub const UnifiedApiServer = struct {
             std.mem.indexOf(u8, normalized_query, "IntrospectionQuery") != null) {
             std.debug.print("DEBUG: Introspection query - returning complete schema\n", .{});
             var buffer = std.ArrayList(u8).initCapacity(self.allocator, 16384) catch return error.OutOfMemory;
-            try buffer.appendSlice(self.allocator, "HTTP/1.1 200 OK\nContent-Type: application/json\nAccess-Control-Allow-Origin: *\n\n");
+            try buffer.appendSlice(self.allocator, "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
 
             // Build full GraphQL-compliant introspection schema
             try buffer.appendSlice(self.allocator, "{\"data\":{\"__schema\":{");
@@ -481,11 +474,7 @@ pub const UnifiedApiServer = struct {
             errdefer response_buffer.deinit(self.allocator);
 
             try response_buffer.appendSlice(self.allocator,
-                \\HTTP/1.1 200 OK
-                \\Content-Type: application/json
-                \\Access-Control-Allow-Origin: *
-                \\
-                \\"data":{"commands":[
+                "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\n\r\n{\"data\":{\"commands\":["
             );
 
             var iter = self.registry.commands.iterator();
@@ -518,7 +507,7 @@ pub const UnifiedApiServer = struct {
             std.mem.indexOf(u8, normalized_query, "status") != null) {
             const uptime = std.time.milliTimestamp() - self.status.start_time;
             var buffer = std.ArrayList(u8).initCapacity(self.allocator, 256) catch return error.OutOfMemory;
-            try buffer.appendSlice(self.allocator, "HTTP/1.1 200 OK\nContent-Type: application/json\nAccess-Control-Allow-Origin: *\n\n");
+            try buffer.appendSlice(self.allocator, "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
             try buffer.appendSlice(self.allocator, "{\"data\":{\"status\":{\"healthy\":true,\"connections\":");
             const conn_str = try std.fmt.allocPrint(self.allocator, "{d}", .{self.status.connections});
             defer self.allocator.free(conn_str);
@@ -533,7 +522,7 @@ pub const UnifiedApiServer = struct {
 
         // Unknown query - return error
         var buffer = std.ArrayList(u8).initCapacity(self.allocator, 256) catch return error.OutOfMemory;
-        try buffer.appendSlice(self.allocator, "HTTP/1.1 200 OK\nContent-Type: application/json\nAccess-Control-Allow-Origin: *\n\n");
+        try buffer.appendSlice(self.allocator, "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\n\r\n");
         try buffer.appendSlice(self.allocator, "{\"data\":null,\"errors\":[{\"message\":\"Cannot query field: unknown\"}]}");
         return buffer.toOwnedSlice(self.allocator);
     }

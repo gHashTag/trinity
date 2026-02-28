@@ -34,6 +34,7 @@ const chemistry_commands = @import("tri_chemistry.zig");
 const tri_context = @import("tri_context.zig");
 const orchestrator = @import("orchestrator_v2_full.zig");
 const koschei_query = @import("koschei_query.zig"); // EMERGENCY FIX #015
+const demo_commands = @import("demo_commands.zig"); // Order #017: Public Demo
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN
@@ -309,6 +310,34 @@ pub fn main() !void {
         },
         // KOSCHEI Query Engine (EMERGENCY FIX #015)
         .query => try koschei_query.runQueryCommand(allocator, cmd_args),
+        // TRINITY OS v1.0 Public Demo (Order #017)
+        .os => {
+            if (cmd_args.len == 0) {
+                std.debug.print("Usage: tri os <command> [args...]\n", .{});
+                std.debug.print("Commands:\n", .{});
+                std.debug.print("  demo --full      Full demo with all predictions\n", .{});
+                std.debug.print("  demo --fpga      FPGA hardware demo\n", .{});
+                std.debug.print("  demo --quantum   Quantum predictions only\n", .{});
+                std.debug.print("  demo --record    Record demo assets\n", .{});
+            } else if (std.mem.eql(u8, cmd_args[0], "demo")) {
+                const demo_args = if (cmd_args.len > 1) cmd_args[1..] else &[_][]const u8{};
+                if (demo_args.len > 0) {
+                    if (std.mem.eql(u8, demo_args[0], "--full") or std.mem.eql(u8, demo_args[0], "--fpga")) {
+                        try demo_commands.runFullDemo(allocator, demo_args);
+                    } else if (std.mem.eql(u8, demo_args[0], "--quantum")) {
+                        try demo_commands.runQuantumDemo(allocator, demo_args);
+                    } else if (std.mem.eql(u8, demo_args[0], "--record")) {
+                        try demo_commands.runRecordDemo(allocator, demo_args);
+                    } else {
+                        try demo_commands.runFullDemo(allocator, demo_args);
+                    }
+                } else {
+                    try demo_commands.runFullDemo(allocator, demo_args);
+                }
+            } else {
+                std.debug.print("Unknown os command: {s}\n", .{cmd_args[0]});
+            }
+        },
         .orchestrate_v2 => {
             // TRI Orchestrator v2.0 - Universal command orchestration
             if (cmd_args.len == 0) {

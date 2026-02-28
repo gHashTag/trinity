@@ -224,6 +224,8 @@ pub const Command = enum {
     monitor,
     // KOSCHEI Query Engine (EMERGENCY FIX #015)
     query,
+    // TRINITY OS v1.0 Public Demo (Order #017)
+    os,
 };
 
 pub const CLIState = struct {
@@ -828,6 +830,8 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "monitor")) return .monitor;
     // KOSCHEI Query Engine (EMERGENCY FIX #015)
     if (std.mem.eql(u8, arg, "query")) return .query;
+    // TRINITY OS v1.0 Public Demo (Order #017)
+    if (std.mem.eql(u8, arg, "os")) return .os;
     return .none;
 }
 
