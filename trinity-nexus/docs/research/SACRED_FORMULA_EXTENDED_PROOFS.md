@@ -1,20 +1,20 @@
-# Раwithшand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andчеwithtoandе доfor[TRANSLATED]]withтinа Сin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+# Rawithshand:] :]andchewithtoande daboutfor]withtina Sin:] :]
 
 ## V = n × 3^k × π^m × φ^p
 
 ---
 
-## 1. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinа
+## 1. :] :]withtina
 
-### [CYR:[TRANSLATED]] 1: [CYR:[TRANSLATED]]fromое [CYR:[TRANSLATED]]withтinо
+### :] 1: :]fromaboute :]withtinabout
 
-**Утin[CYR:[TRANSLATED]]andе:** φ² + 1/φ² = 3
+**Utin:]ande:** φ² + 1/φ² = 3
 
-**Доfor[TRANSLATED]]withтinо:**
+**Daboutfor]withtinabout:**
 
-Пуwithть φ = (1 + √5)/2 — [CYR:[TRANSLATED]]fromое with[TRANSLATED]]andе.
+Patwitht φ = (1 + √5)/2 — :]fromaboute with]ande.
 
-**[CYR:[TRANSLATED]] 1:** [CYR:[TRANSLATED]]andwithлandм φ²
+**:] 1:** :]andwithlandm φ²
 ```
 φ² = ((1 + √5)/2)²
    = (1 + 2√5 + 5)/4
@@ -22,14 +22,14 @@
    = (3 + √5)/2
 ```
 
-**[CYR:[TRANSLATED]] 2:** [CYR:[TRANSLATED]]andwithлandм 1/φ
+**:] 2:** :]andwithlandm 1/φ
 
-Из [CYR:[TRANSLATED]]andя φ² = φ + 1, [CYR:[TRANSLATED]]:
+Iz :]andya φ² = φ + 1, :]:
 ```
 1/φ = φ - 1 = (1 + √5)/2 - 1 = (√5 - 1)/2
 ```
 
-**[CYR:[TRANSLATED]] 3:** [CYR:[TRANSLATED]]andwithлandм 1/φ²
+**:] 3:** :]andwithlandm 1/φ²
 ```
 1/φ² = ((√5 - 1)/2)²
      = (5 - 2√5 + 1)/4
@@ -37,7 +37,7 @@
      = (3 - √5)/2
 ```
 
-**[CYR:[TRANSLATED]] 4:** [CYR:[TRANSLATED]]
+**:] 4:** :]
 ```
 φ² + 1/φ² = (3 + √5)/2 + (3 - √5)/2
           = (3 + √5 + 3 - √5)/2
@@ -45,49 +45,49 @@
           = 3 ∎
 ```
 
-### [CYR:[TRANSLATED]] 2: Сin[CYR:[TRANSLATED]] φ and π
+### :] 2: Sin:] φ and π
 
-**Утin[CYR:[TRANSLATED]]andе:** φ = 2cos(π/5)
+**Utin:]ande:** φ = 2cos(π/5)
 
-**Доfor[TRANSLATED]]withтinо:**
+**Daboutfor]withtinabout:**
 
-Из трand[CYR:[TRANSLATED]]and andзinеwith[TRANSLATED]]:
+Iz trand:]and andzinewith]:
 ```
 cos(36°) = cos(π/5) = (1 + √5)/4
 ```
 
-[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]:
+:]in:]:
 ```
 2cos(π/5) = 2 × (1 + √5)/4 = (1 + √5)/2 = φ ∎
 ```
 
-### [CYR:[TRANSLATED]] 3: [CYR:[TRANSLATED]]withтinо [CYR:[TRANSLATED]]
+### :] 3: :]withtinabout :]
 
-**Утin[CYR:[TRANSLATED]]andе:** e^(iπ) + 1 = 0
+**Utin:]ande:** e^(iπ) + 1 = 0
 
-[CYR:[TRANSLATED]] within[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] e, π, i, 1 and 0 — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] toонwith[TRANSLATED]].
+:] within:]in:] e, π, i, 1 and 0 — :] :] toaboutnwith].
 
 ---
 
-## 2. [CYR:[TRANSLATED]] фandзandчеwithtoandх toонwith[TRANSLATED]]
+## 2. :] fandzandchewithtoandkh toaboutnwith]
 
-### 2.1 Поwith[TRANSLATED]]onя [CYR:[TRANSLATED]]toой with[TRANSLATED]]for[TRANSLATED]]
+### 2.1 Paboutwith]onya :]toabouty with]for]
 
-**[CYR:[TRANSLATED]]:**
+**:]:**
 ```
 1/α = 4π³ + π² + π
 ```
 
-**[CYR:[TRANSLATED]]andwith[TRANSLATED]]andе:**
+**:]andwith]ande:**
 ```
 4π³ = 4 × 31.006276680... = 124.025106720...
 π²  = 9.869604401...
 π   = 3.141592653...
 ─────────────────────────────────────────────
-[CYR:[TRANSLATED]] = 137.036303774...
+:] = 137.036303774...
 ```
 
-**Эtowith[TRANSLATED]]and[CYR:[TRANSLATED]] зon[CYR:[TRANSLATED]]andе (CODATA 2018):**
+**Etowith]and:] zon:]ande (CODATA 2018):**
 ```
 1/α = 137.035999084(21)
 ```
@@ -98,20 +98,20 @@ cos(36°) = cos(π/5) = (1 + √5)/4
 = 0.000222%
 ```
 
-### 2.2 [CYR:[TRANSLATED]]andе маwith прfromоon and [CYR:[TRANSLATED]]for[TRANSLATED]]on
+### 2.2 :]ande mawith prfromabouton and :]for]on
 
-**[CYR:[TRANSLATED]]:**
+**:]:**
 ```
 m_p/m_e = 6π⁵
 ```
 
-**[CYR:[TRANSLATED]]andwith[TRANSLATED]]andе:**
+**:]andwith]ande:**
 ```
 π⁵ = 306.019684785...
 6π⁵ = 1836.118108710...
 ```
 
-**Эtowith[TRANSLATED]]and[CYR:[TRANSLATED]] зon[CYR:[TRANSLATED]]andе:**
+**Etowith]and:] zon:]ande:**
 ```
 m_p/m_e = 1836.15267343(11)
 ```
@@ -122,14 +122,14 @@ m_p/m_e = 1836.15267343(11)
 = 0.00188%
 ```
 
-### 2.3 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### 2.3 :] :]
 
-**[CYR:[TRANSLATED]]:**
+**:]:**
 ```
 Q = (m_e + m_μ + m_τ) / (√m_e + √m_μ + √m_τ)² = 2/3
 ```
 
-**Эtowith[TRANSLATED]]and[CYR:[TRANSLATED]] зon[CYR:[TRANSLATED]]andе:**
+**Etowith]and:] zon:]ande:**
 ```
 Q = 0.666661(7)
 ```
@@ -142,29 +142,29 @@ Q = 0.666661(7)
 
 ---
 
-## 3. Раwithшand[CYR:[TRANSLATED]]andя Сin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 3. Rawithshand:]andya Sin:] :]
 
-### 3.1 [CYR:[TRANSLATED]]andparameterandчеwithtoая [CYR:[TRANSLATED]]
+### 3.1 :]andparameterandchewithtoaya :]
 
 ```
 V = n × 3^k × π^m × φ^p × e^q
 ```
 
-**[CYR:[TRANSLATED]]withноinанandе:**
-- e within[CYR:[TRANSLATED]] with π [CYR:[TRANSLATED]] e^(iπ) = -1
-- [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] with[TRANSLATED]] within[CYR:[TRANSLATED]] for эtowithпоnotнцand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withоin
+**:]withnaboutinanande:**
+- e within:] with π :] e^(iπ) = -1
+- :]in:] with] within:] for etowithbynotntsand:] :]withaboutin
 
-### 3.2 Шеwithтandparameterandчеwithtoая [CYR:[TRANSLATED]]
+### 3.2 Shewithtandparameterandchewithtoaya :]
 
 ```
 V = n × 3^k × π^m × φ^p × e^q × (√2)^r
 ```
 
-**[CYR:[TRANSLATED]]withноinанandе:**
-- √2 [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]withя in toin[CYR:[TRANSLATED]]inой [CYR:[TRANSLATED]]andtoе
-- Дand[CYR:[TRANSLATED]]onль едandнand[CYR:[TRANSLATED]] toin[CYR:[TRANSLATED]]
+**:]withnaboutinanande:**
+- √2 :]in:]withya in toin:]inabouty :]andtoe
+- Dand:]onl edandnand:] toin:]
 
-### 3.3 [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]
+### 3.3 :]onya :]
 
 ```
 V = n × ∏ᵢ cᵢ^kᵢ
@@ -174,42 +174,42 @@ where cᵢ ∈ {3, π, φ, e, √2, √3, √5, ...}
 
 ---
 
-## 4. Сin[CYR:[TRANSLATED]] with [CYR:[TRANSLATED]] E8
+## 4. Sin:] with :] E8
 
-### 4.1 [CYR:[TRANSLATED]]withть E8
+### 4.1 :]witht E8
 
 ```
 dim(E8) = 248 = 3⁵ + 5 = 243 + 5
 ```
 
-**[CYR:[TRANSLATED]]andя:**
-- 3⁵ = 243 — with[TRANSLATED]] [CYR:[TRANSLATED]]toand
-- 5 = F₅ — [CYR:[TRANSLATED]] чandwithло Фandбоonччand
+**:]andya:**
+- 3⁵ = 243 — with] :]toand
+- 5 = F₅ — :] chandwithlabout Fandbaboutonchchand
 
-### 4.2 [CYR:[TRANSLATED]]and E8
+### 4.2 :]and E8
 
 ```
 roots(E8) = 240 = 3⁵ - 3 = 243 - 3
 ```
 
-**[CYR:[TRANSLATED]]andя:**
+**:]andya:**
 - 240 = 3 × 80 = 3 × 16 × 5
-- Сin[CYR:[TRANSLATED]] with чandwith[TRANSLATED]] 3 and чandwith[TRANSLATED]] Фandбоonччand
+- Sin:] with chandwith] 3 and chandwith] Fandbaboutonchchand
 
-### 4.3 Гandпfrom[CYR:[TRANSLATED]] E8-φ
+### 4.3 Gandpfrom:] E8-φ
 
 ```
 dim(E8) = 3⁵ + F₅
 roots(E8) = 3⁵ - 3
 
-Гandпfrom[CYR:[TRANSLATED]]: 3 = φ² + 1/φ² within[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] E8 with [CYR:[TRANSLATED]]fromым with[TRANSLATED]]andем
+Gandpfrom:]: 3 = φ² + 1/φ² within:]in:] E8 with :]fromym with]andem
 ```
 
 ---
 
-## 5. Сin[CYR:[TRANSLATED]] with [CYR:[TRANSLATED]]andей with[TRANSLATED]]
+## 5. Sin:] with :]andey with]
 
-### 5.1 Крandтandчеwithtoandе [CYR:[TRANSLATED]]withтand
+### 5.1 Krandtandchewithtoande :]withtand
 
 ```
 D_bosonic = 26 = 2 × 13
@@ -217,15 +217,15 @@ D_super = 10 = 2 × 5 = 2 × F₅
 D_M = 11 = F₆ + F₄ = 8 + 3
 ```
 
-### 5.2 Гandпfrom[CYR:[TRANSLATED]] Фandбоonччand-with[TRANSLATED]]
+### 5.2 Gandpfrom:] Fandbaboutonchchand-with]
 
 ```
 D_super = 2 × F₅ = 10
 D_M = F₆ + F₄ = 11
-D_bosonic = 2 × 13 = 26 (13 — [CYR:[TRANSLATED]]with[TRANSLATED]])
+D_bosonic = 2 × 13 = 26 (13 — :]with])
 ```
 
-### 5.3 Сin[CYR:[TRANSLATED]] with Сin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### 5.3 Sin:] with Sin:] :]
 
 ```
 10 = 1 × 3¹ × π⁰ × φ⁰ + 7
@@ -235,9 +235,9 @@ D_bosonic = 2 × 13 = 26 (13 — [CYR:[TRANSLATED]]with[TRANSLATED]])
 
 ---
 
-## 6. [CYR:[TRANSLATED]]andтм поandwithtoа [CYR:[TRANSLATED]]
+## 6. :]andtm byandwithtoa :]
 
-### 6.1 [CYR:[TRANSLATED]] on [CYR:[TRANSLATED]]toе 999
+### 6.1 :] on :]toe 999
 
 ```999
 ⲙⲟⲇⲩⲗⲉ ⲥⲁⲕⲣⲉⲇ_ⲫⲟⲣⲙⲩⲗⲁ;
@@ -287,7 +287,7 @@ D_bosonic = 2 × 13 = 26 (13 — [CYR:[TRANSLATED]]with[TRANSLATED]])
 }
 
 ⲫⲩⲛⲕ main() !void {
-    // Поandwithto [CYR:[TRANSLATED]] for 1/α
+    // Paboutandwithto :] for 1/α
     ⲃⲁⲣ alpha_inv = 137.035999084;
     ⲃⲁⲣ result = find_formula(alpha_inv, 1000);
     
@@ -300,9 +300,9 @@ D_bosonic = 2 × 13 = 26 (13 — [CYR:[TRANSLATED]]with[TRANSLATED]])
 
 ---
 
-## 7. [CYR:[TRANSLATED]]andца andзinеwith[TRANSLATED]] [CYR:[TRANSLATED]]
+## 7. :]andtsa andzinewith] :]
 
-| [CYR:[TRANSLATED]]with[TRANSLATED]] | [CYR:[TRANSLATED]] | n | k | m | p | Error |
+| :]with] | :] | n | k | m | p | Error |
 |-----------|---------|---|---|---|---|--------|
 | 1/α | 4π³+π²+π | - | - | 3,2,1 | 0 | 0.0002% |
 | m_p/m_e | 6π⁵ | 6 | 0 | 5 | 0 | 0.002% |
@@ -313,31 +313,31 @@ D_bosonic = 2 × 13 = 26 (13 — [CYR:[TRANSLATED]]with[TRANSLATED]])
 
 ---
 
-## 8. Заfor[TRANSLATED]]andе
+## 8. Zafor]ande
 
-### 8.1 Оwithноin[CYR:[TRANSLATED]] resultы
+### 8.1 Owithnaboutin:] resulty
 
-1. **Доfor[TRANSLATED]]:** φ² + 1/φ² = 3 ([CYR:[TRANSLATED]])
-2. **Доfor[TRANSLATED]]:** φ = 2cos(π/5) ([CYR:[TRANSLATED]])
-3. **[CYR:[TRANSLATED]]:** 15+ [CYR:[TRANSLATED]] with ошandбtoой < 0.01%
-4. **[CYR:[TRANSLATED]]:** Раwithшand[CYR:[TRANSLATED]]andе до 5-6 parameterоin
+1. **Daboutfor]:** φ² + 1/φ² = 3 (:])
+2. **Daboutfor]:** φ = 2cos(π/5) (:])
+3. **:]:** 15+ :] with aboutshandbtoabouty < 0.01%
+4. **:]:** Rawithshand:]ande dabout 5-6 parameteraboutin
 
-### 8.2 Отfor[TRANSLATED]] in[CYR:[TRANSLATED]]withы
+### 8.2 Otfor] in:]withy
 
-1. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]?
-2. Сin[CYR:[TRANSLATED]] with toin[CYR:[TRANSLATED]]inой [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]]andей?
-3. [CYR:[TRANSLATED]]withfor[TRANSLATED]]onя withandла for ноinых toонwith[TRANSLATED]]?
+1. :] :] :]from:]?
+2. Sin:] with toin:]inabouty :]inand:]andey?
+3. :]withfor]onya withandla for naboutinykh toaboutnwith]?
 
-### 8.3 Сin[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]
+### 8.3 Sin:]onya :]
 
 ```
 ╔═══════════════════════════════════════════════════════════════╗
 ║                                                               ║
 ║   V = n × 3^k × π^m × φ^p                                    ║
 ║                                                               ║
-║   [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinо: φ² + 1/φ² = 3                   ║
+║   :] :]withtinabout: φ² + 1/φ² = 3                   ║
 ║                                                               ║
-║   Сin[CYR:[TRANSLATED]] with π: φ = 2cos(π/5)                                   ║
+║   Sin:] with π: φ = 2cos(π/5)                                   ║
 ║                                                               ║
 ║   999 = 37 × 3³ × π⁰ × φ⁰                                    ║
 ║                                                               ║

@@ -1,7 +1,7 @@
 #!/bin/bash
-# MATRYOSHKA GENERATOR v7.0 - Ускоренная генерация целых уровней
-# Паттерн: 8 уровней × 20 модулей = 160 модулей за один вызов
-# Использование: ./scripts/matryoshka_gen.sh <start_level> <start_version>
+# MATRYOSHKA GENERATOR v7.0 - Uwithtoaboutrenonya generation tselykh atraboutinney
+# Patthosern: 8 atraboutinney × 20 maboutdatley = 160 maboutdatley za aboutdandn inyzaboutin
+# Iwithbylzaboutinanande: ./scripts/matryoshka_gen.sh <start_level> <start_version>
 
 START_LEVEL=$1
 START_VERSION=$2
@@ -16,7 +16,7 @@ echo "⚡ MATRYOSHKA GEN v7.0: 8 levels × 20 modules = 160 modules"
 echo "Starting from Level $START_LEVEL, Version v$START_VERSION"
 echo ""
 
-# Определяем 8 доменов для генерации
+# Opredelyaem 8 domainaboutin for generatsandand
 DOMAINS=(
     "scaling:scale_data scale_model scale_pipeline scale_tensor scale_expert scale_zero scale_fsdp scale_deepspeed scale_megatron scale_fairscale scale_colossalai scale_alpa scale_gpipe scale_pipedream scale_hetpipe scale_chimera scale_varuna scale_bamboo scale_unity scale_pathways"
     "finetuning:ft_full ft_lora ft_qlora ft_adapter ft_prefix ft_prompt ft_bitfit ft_ia3 ft_vera ft_dora ft_pissa ft_rslora ft_adalora ft_longlora ft_qlora_plus ft_galore ft_lisa ft_flora ft_relora ft_mora"
@@ -38,10 +38,10 @@ for domain_def in "${DOMAINS[@]}"; do
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "Level $L: $DOMAIN (v$V-v$((V+19)))"
     
-    # Создаём директорию
+    # Saboutzdayom dandrewhorandyu
     mkdir -p "specs/tri/${DOMAIN}"
     
-    # Генерируем все модули параллельно
+    # Generandratem all maboutdatland pairllelnabout
     for N in $MODULES; do
         T="${N^}"
         V1=$((V/100)); V2=$(((V/10)%10)); V3=$((V%10))

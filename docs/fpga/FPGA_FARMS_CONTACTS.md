@@ -1,198 +1,198 @@
-# FPGA [CYR:[TRANSLATED]] and [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] - [CYR:[TRANSLATED]]toты for [CYR:[TRANSLATED]]withтinа
+# FPGA :] and :]in:] - :]toty for :]withtina
 
-## Resultы andwith[TRANSLATED]]inанandя
+## Resulty andwith]inanandya
 
-FPGA [CYR:[TRANSLATED]] with[TRANSLATED]]withтin[CYR:[TRANSLATED]], но онand **not [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]** - in оwithноin[CYR:[TRANSLATED]] прandon[CYR:[TRANSLATED]]:
-1. HFT for[TRANSLATED]]andям (High-Frequency Trading)
-2. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]
-3. Telecom for[TRANSLATED]]andям
-4. Иwith[TRANSLATED]]in[CYR:[TRANSLATED]]withtoandм andнwithтand[CYR:[TRANSLATED]]
+FPGA :] with]withtin:], nabout aboutnand **not :]and:]** - in aboutwithnaboutin:] prandon:]:
+1. HFT for]andyam (High-Frequency Trading)
+2. :] :] :]in:]
+3. Telecom for]andyam
+4. Iwith]in:]withtoandm andnwithtand:]
 
 ---
 
-## 1. [CYR:[TRANSLATED]] FPGA [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]])
+## 1. :] FPGA :] (:])
 
-### AWS EC2 F2 ✅ [CYR:[TRANSLATED]]
+### AWS EC2 F2 ✅ :]
 ```
-Тandп: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toо
+Tandp: :]and:] :]toabout
 FPGA: AMD Virtex UltraScale+ HBM
-Цеon: ~$3.50/чаwith
-[CYR:[TRANSLATED]]: 16 GB HBM
-[CYR:[TRANSLATED]]toт: aws.amazon.com/ec2/instance-types/f1/
-[CYR:[TRANSLATED]]with: Доwith[TRANSLATED]] with[TRANSLATED]]with
+Tseon: ~$3.50/chawith
+:]: 16 GB HBM
+:]tot: aws.amazon.com/ec2/instance-types/f1/
+:]with: Daboutwith] with]with
 ```
 
 ### Alibaba Cloud FPGA
 ```
-Тandп: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toо
+Tandp: :]and:] :]toabout
 FPGA: Xilinx VU9P
-Цеon: ~$2/чаwith
-[CYR:[TRANSLATED]]andон: Кand[CYR:[TRANSLATED]], Азandя
-[CYR:[TRANSLATED]]toт: alibabacloud.com
+Tseon: ~$2/chawith
+:]andaboutn: Kand:], Azandya
+:]tot: alibabacloud.com
 ```
 
 ### Nimbix Cloud
 ```
-Тandп: HPC [CYR:[TRANSLATED]]toо
+Tandp: HPC :]toabout
 FPGA: Xilinx Alveo
-Цеon: ~$3/чаwith
-[CYR:[TRANSLATED]]toт: nimbix.net
+Tseon: ~$3/chawith
+:]tot: nimbix.net
 ```
 
 ---
 
-## 2. HFT [CYR:[TRANSLATED]]  FPGA [CYR:[TRANSLATED]]
+## 2. HFT :]  FPGA :]
 
-### Exegy (быinшandй Enyx) ⭐
+### Exegy (byinshandy Enyx) ⭐
 ```
-Тandп: HFT [CYR:[TRANSLATED]]andя
-[CYR:[TRANSLATED]]toт: nxAccess, nxFeed, nxFramework
+Tandp: HFT :]andya
+:]tot: nxAccess, nxFeed, nxFramework
 FPGA: Xilinx
-Лоtoацand: New York, London, Paris, Montreal
-[CYR:[TRANSLATED]]toт: enyx.com/contact
+Labouttoatsand: New York, London, Paris, Montreal
+:]tot: enyx.com/contact
 Email: info@enyx.com
-[CYR:[TRANSLATED]]: +1 347 201 4827 (NY)
-Пfrom[CYR:[TRANSLATED]]andал: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] заand[CYR:[TRANSLATED]]withоin[CYR:[TRANSLATED]] in BitNet for AI trading
+:]: +1 347 201 4827 (NY)
+Pfrom:]andal: :] :] zaand:]withaboutin:] in BitNet for AI trading
 ```
 
 ### Algo-Logic Systems ⭐⭐ FPGA-as-a-Service!
 ```
-Тandп: FPGA as a Service (FaaS)
-[CYR:[TRANSLATED]]toт: Tick-to-Trade, Pre-Trade Risk
+Tandp: FPGA as a Service (FaaS)
+:]tot: Tick-to-Trade, Pre-Trade Risk
 FPGA: Xilinx Alveo U50/U200/U250, Cisco SmartNIC
-Лоtoацandя: Santa Clara, CA
-[CYR:[TRANSLATED]]toт: algo-logic.com/sales-contact
+Labouttoatsandya: Santa Clara, CA
+:]tot: algo-logic.com/sales-contact
 Email: solutions@algo-logic.com
-[CYR:[TRANSLATED]]: (408) 707-3740
-[CYR:[TRANSLATED]]with: 1995 El Camino Real, Suite 300, Santa Clara, CA 95050
-Пfrom[CYR:[TRANSLATED]]andал: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] FaaS - and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]!
+:]: (408) 707-3740
+:]with: 1995 El Camino Real, Suite 300, Santa Clara, CA 95050
+Pfrom:]andal: :] :] FaaS - and:] :]!
 ```
 
 ### Achronix ⭐⭐ AI on FPGA!
 ```
-Тandп: FPGA [CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]] + AI [CYR:[TRANSLATED]]andя
-[CYR:[TRANSLATED]]toт: VectorPath AI Accelerator, Speedster7t FPGA
-Фоtoуwith: AI Inference, LLM, Speech-to-Text
-[CYR:[TRANSLATED]]toт: achronix.com/contact_us
-Пfrom[CYR:[TRANSLATED]]andал: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] AI on FPGA - [CYR:[TRANSLATED]] toонfor[TRANSLATED]] or [CYR:[TRANSLATED]]
+Tandp: FPGA :]andzinaboutdand:] + AI :]andya
+:]tot: VectorPath AI Accelerator, Speedster7t FPGA
+Fabouttoatwith: AI Inference, LLM, Speech-to-Text
+:]tot: achronix.com/contact_us
+Pfrom:]andal: :] :] AI on FPGA - :] toaboutnfor] or :]
 ```
 
 ---
 
-## 3. FPGA [CYR:[TRANSLATED]]
+## 3. FPGA :]
 
 ### AMD/Xilinx
 ```
-[CYR:[TRANSLATED]]toт: Alveo U50, U55C, U200, U250, U280
-[CYR:[TRANSLATED]]: AMD Startup Program (до $25K for[TRANSLATED]]andтоin)
-[CYR:[TRANSLATED]]toт: amd.com/en/partner
+:]tot: Alveo U50, U55C, U200, U250, U280
+:]: AMD Startup Program (dabout $25K for]andthatin)
+:]tot: amd.com/en/partner
 University Program: xilinx.com/support/university.html
 ```
 
 ### Intel/Altera
 ```
-[CYR:[TRANSLATED]]toт: Stratix, Agilex
-[CYR:[TRANSLATED]]: Intel DevCloud (беwith[TRANSLATED]])
-[CYR:[TRANSLATED]]toт: intel.com/fpga
+:]tot: Stratix, Agilex
+:]: Intel DevCloud (bewith])
+:]tot: intel.com/fpga
 University Program: intel.com/fpga/university
 ```
 
 ### Lattice Semiconductor
 ```
-[CYR:[TRANSLATED]]toт: Low-power FPGAs
-Фоtoуwith: Edge AI
-[CYR:[TRANSLATED]]toт: latticesemi.com
+:]tot: Low-power FPGAs
+Fabouttoatwith: Edge AI
+:]tot: latticesemi.com
 ```
 
 ---
 
-## 4. FPGA [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]
+## 4. FPGA :]  :]
 
-### Terasic ([CYR:[TRANSLATED]]in[CYR:[TRANSLATED]])
+### Terasic (:]in:])
 ```
-[CYR:[TRANSLATED]]toт: DE10-Nano, Cyclone V [CYR:[TRANSLATED]]
-[CYR:[TRANSLATED]]: $150-$2,500
-[CYR:[TRANSLATED]]toт: terasic.com
+:]tot: DE10-Nano, Cyclone V :]
+:]: $150-$2,500
+:]tot: terasic.com
 Email: sales@terasic.com
-[CYR:[TRANSLATED]]: +886-3-5750880
+:]: +886-3-5750880
 ```
 
 ### Digilent
 ```
-[CYR:[TRANSLATED]]toт: Arty A7, Nexys, Genesys
-[CYR:[TRANSLATED]]: $150-$1,000
-[CYR:[TRANSLATED]]toт: digilent.com
+:]tot: Arty A7, Nexys, Genesys
+:]: $150-$1,000
+:]tot: digilent.com
 ```
 
 ### Avnet/Silica
 ```
-Тandп: Дandwithтрand[CYR:[TRANSLATED]]
-[CYR:[TRANSLATED]]toт: Вwithе Xilinx/Intel [CYR:[TRANSLATED]]
-[CYR:[TRANSLATED]]toт: avnet.com
+Tandp: Dandwithtrand:]
+:]tot: Vwithe Xilinx/Intel :]
+:]tot: avnet.com
 ```
 
 ---
 
-## 5. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 5. :] :]
 
 ### FPGAworld Conference
 ```
-Тandп: [CYR:[TRANSLATED]]andя
-Лоtoацandя: Stockholm, Sweden
-[CYR:[TRANSLATED]]: 8 September 2026
-[CYR:[TRANSLATED]]toт: fpgaworld.com
-[CYR:[TRANSLATED]]withтнandtoand: AMD, Intel, Lattice, унandinерwithand[CYR:[TRANSLATED]]
-Пfrom[CYR:[TRANSLATED]]andал: Networking, поandwithto [CYR:[TRANSLATED]]in
+Tandp: :]andya
+Labouttoatsandya: Stockholm, Sweden
+:]: 8 September 2026
+:]tot: fpgaworld.com
+:]withtnandtoand: AMD, Intel, Lattice, atnandinerwithand:]
+Pfrom:]andal: Networking, byandwithto :]in
 ```
 
-### Унandinерwithand[CYR:[TRANSLATED]]withtoandе [CYR:[TRANSLATED]]
+### Unandinerwithand:]withtoande :]
 ```
 - MIT CSAIL (fpga.csail.mit.edu)
 - Stanford (fpga.stanford.edu)
 - ETH Zurich
 - TU Munich
-- National University of Singapore (аin[CYR:[TRANSLATED]] TerEffic!)
+- National University of Singapore (ain:] TerEffic!)
 ```
 
 ---
 
-## 6. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 6. :] :]
 
-### Прandорand[CYR:[TRANSLATED]] 1: Algo-Logic (FaaS)
+### Prandaboutrand:] 1: Algo-Logic (FaaS)
 ```
-[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] FPGA-as-a-Service
-[CYR:[TRANSLATED]]andе: [CYR:[TRANSLATED]]andя BitNet in andх [CYR:[TRANSLATED]]
-[CYR:[TRANSLATED]] for нandх: Ноinый AI use case for andх toлand[CYR:[TRANSLATED]]in
-[CYR:[TRANSLATED]]withтinandе: [CYR:[TRANSLATED]]andwith[TRANSLATED]] on solutions@algo-logic.com
-```
-
-### Прandорand[CYR:[TRANSLATED]] 2: Achronix (AI FPGA)
-```
-[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] AI inference on FPGA
-[CYR:[TRANSLATED]]andе: BitNet [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя for andх VectorPath
-[CYR:[TRANSLATED]] for нandх: [CYR:[TRANSLATED]] эnot[CYR:[TRANSLATED]]toтandinноwithть
-[CYR:[TRANSLATED]]withтinandе: Сin[CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]] achronix.com/contact_us
+:]: :] :] FPGA-as-a-Service
+:]ande: :]andya BitNet in andkh :]
+:] for nandkh: Naboutinyy AI use case for andkh toland:]in
+:]withtinande: :]andwith] on solutions@algo-logic.com
 ```
 
-### Прandорand[CYR:[TRANSLATED]] 3: AWS F2
+### Prandaboutrand:] 2: Achronix (AI FPGA)
 ```
-[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] доwith[TRANSLATED]] inарand[CYR:[TRANSLATED]]
-[CYR:[TRANSLATED]]andе: [CYR:[TRANSLATED]] BitNet AMI for AWS Marketplace
-[CYR:[TRANSLATED]] for нandх: Ноinые toлand[CYR:[TRANSLATED]] for F2
-[CYR:[TRANSLATED]]withтinandе: [CYR:[TRANSLATED]]andwithтрandроin[CYR:[TRANSLATED]]withя and on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromtoу
+:]: :] :] AI inference on FPGA
+:]ande: BitNet :]andmand:]andya for andkh VectorPath
+:] for nandkh: :] enot:]totandinnaboutwitht
+:]withtinande: Sin:]withya :] achronix.com/contact_us
 ```
 
-### Прandорand[CYR:[TRANSLATED]] 4: AMD Startup Program
+### Prandaboutrand:] 3: AWS F2
 ```
-[CYR:[TRANSLATED]]: До $25K for[TRANSLATED]]andтоin on [CYR:[TRANSLATED]]
-[CYR:[TRANSLATED]]andе: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]intoу toаto AI with[TRANSLATED]]
-[CYR:[TRANSLATED]] for нandх: Showcase for Alveo
-[CYR:[TRANSLATED]]withтinandе: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]intoу on amd.com/en/partner
+:]: :] daboutwith] inarand:]
+:]ande: :] BitNet AMI for AWS Marketplace
+:] for nandkh: Naboutinye toland:] for F2
+:]withtinande: :]andwithtrandraboutin:]withya and on:] :]fromtoat
+```
+
+### Prandaboutrand:] 4: AMD Startup Program
+```
+:]: Dabout $25K for]andthatin on :]
+:]ande: :] :]intoat toato AI with]
+:] for nandkh: Showcase for Alveo
+:]withtinande: :] :]intoat on amd.com/en/partner
 ```
 
 ---
 
-## 7. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 7. :] :] :] :]
 
 ```
 Subject: BitNet FPGA Accelerator - Partnership Opportunity
@@ -227,49 +227,49 @@ GitHub: github.com/gHashTag/vibee-lang
 
 ---
 
-## 8. [CYR:[TRANSLATED]] FPGA [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 8. :] FPGA :] :]
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════╗
-║                    [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] FPGA [CYR:[TRANSLATED]]                     ║
+║                    :] :] :] FPGA :]                     ║
 ╠═══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                               ║
-║  1. [CYR:[TRANSLATED]]                                                               ║
-║     HFT фand[CYR:[TRANSLATED]]: FPGA = toонfor[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinо, not [CYR:[TRANSLATED]]withя                   ║
-║     Defense: Сеfor[TRANSLATED]] [CYR:[TRANSLATED]]toты                                                ║
-║     Telecom: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andя                                            ║
+║  1. :]                                                               ║
+║     HFT fand:]: FPGA = toaboutnfor] :]and:]withtinabout, not :]withya                   ║
+║     Defense: Sefor] :]toty                                                ║
+║     Telecom: :]and:] :]andya                                            ║
 ║                                                                               ║
-║  2. [CYR:[TRANSLATED]]                                                             ║
-║     [CYR:[TRANSLATED]] FPGA дand[CYR:[TRANSLATED]] = toаwith[TRANSLATED]]                                            ║
-║     [CYR:[TRANSLATED]] "унandinерwith[TRANSLATED]] FPGA прand[CYR:[TRANSLATED]]andя"                                      ║
-║     Bitstream for [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and ≠ bitstream for [CYR:[TRANSLATED]]                         ║
+║  2. :]                                                             ║
+║     :] FPGA dand:] = toawith]                                            ║
+║     :] "atnandinerwith] FPGA prand:]andya"                                      ║
+║     Bitstream for :] :]and ≠ bitstream for :]                         ║
 ║                                                                               ║
-║  3. [CYR:[TRANSLATED]]                                                                 ║
-║     GPU: Унandinерwith[TRANSLATED]], [CYR:[TRANSLATED]]toо withдаin[CYR:[TRANSLATED]] in [CYR:[TRANSLATED]]                                ║
-║     FPGA: [CYR:[TRANSLATED]] гfromоinый bitstream, andonче беwithfield[CYR:[TRANSLATED]]                           ║
+║  3. :]                                                                 ║
+║     GPU: Unandinerwith], :]toabout withdain:] in :]                                ║
+║     FPGA: :] gfromaboutinyy bitstream, andonche bewithfield:]                           ║
 ║                                                                               ║
-║  4. [CYR:[TRANSLATED]]                                                                    ║
-║     GPU: Мandллand[CYR:[TRANSLATED]] ML-and[CYR:[TRANSLATED]]notроin зonют PyTorch                                  ║
-║     FPGA: Тыwithячand and[CYR:[TRANSLATED]]notроin зonют Verilog                                      ║
+║  4. :]                                                                    ║
+║     GPU: Mandlland:] ML-and:]notraboutin zonyut PyTorch                                  ║
+║     FPGA: Tywithyachand and:]notraboutin zonyut Verilog                                      ║
 ║                                                                               ║
-║  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]!                                                             ║
-║  Еwithлand мы with[TRANSLATED]]andм гfromоinое BitNet [CYR:[TRANSLATED]]andе:                                     ║
-║  - [CYR:[TRANSLATED]] withдаin[CYR:[TRANSLATED]] in [CYR:[TRANSLATED]] toаto withерinandwith                                          ║
-║  - Клand[CYR:[TRANSLATED]] not [CYR:[TRANSLATED]] зonть Verilog                                            ║
-║  - Blue ocean - toонfor[TRANSLATED]]in [CYR:[TRANSLATED]]and notт                                         ║
+║  :] :]!                                                             ║
+║  Ewithland my with]andm gfromaboutinaboute BitNet :]ande:                                     ║
+║  - :] withdain:] in :] toato witherinandwith                                          ║
+║  - Kland:] not :] zont Verilog                                            ║
+║  - Blue ocean - toaboutnfor]in :]and nott                                         ║
 ║                                                                               ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-## 9. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 9. :] :]
 
-1. **[CYR:[TRANSLATED]]**: [CYR:[TRANSLATED]]andwith[TRANSLATED]] Algo-Logic (solutions@algo-logic.com)
-2. **[CYR:[TRANSLATED]] not[CYR:[TRANSLATED]]**: [CYR:[TRANSLATED]]andwithтрandроin[CYR:[TRANSLATED]]withя on AWS F2
-3. **Этfrom меwithяц**: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]intoу in AMD Startup Program
-4. **Q2 2026**: Поwithетandть FPGAworld Conference in Stockholm
+1. **:]**: :]andwith] Algo-Logic (solutions@algo-logic.com)
+2. **:] not:]**: :]andwithtrandraboutin:]withya on AWS F2
+3. **Etfrom mewithyats**: :] :]intoat in AMD Startup Program
+4. **Q2 2026**: Paboutwithetandt FPGAworld Conference in Stockholm
 
 ---
 
-**Выinод:** FPGA [CYR:[TRANSLATED]] with[TRANSLATED]]withтin[CYR:[TRANSLATED]], но онand прandin[CYR:[TRANSLATED]]. [CYR:[TRANSLATED]] with[TRANSLATED]]andя - [CYR:[TRANSLATED]]withтinо with Algo-Logic (FaaS) or with[TRANSLATED]]andе withобwithтin[CYR:[TRANSLATED]] withерinandwithа on AWS F2.
+**Vyinaboutd:** FPGA :] with]withtin:], nabout aboutnand prandin:]. :] with]andya - :]withtinabout with Algo-Logic (FaaS) or with]ande withaboutwithtin:] witherinandwitha on AWS F2.

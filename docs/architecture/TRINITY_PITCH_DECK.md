@@ -317,31 +317,31 @@
 ║                                                                  ║
 ║  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  ║
 ║                                                                  ║
-║  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:                                ║
+║  :] :] :]:                                ║
 ║  ┌────────────────────────────────────────────────────────────┐   ║
-║  │ [CYR:[TRANSLATED]]:  1/φ² = 0.382 (унandthat[CYR:[TRANSLATED]]andе, [CYR:[TRANSLATED]]andя)            │   ║
-║  │ Наwith[TRANSLATED]]: 0     = 0.000 ([CYR:[TRANSLATED]]with, HERE and NOW)             │   ║
-║  │ [CYR:[TRANSLATED]]:   φ²  = 2.618 (withозand[CYR:[TRANSLATED]]andе, роwithт)                   │   ║
+║  │ :]:  1/φ² = 0.382 (atnandthat:]ande, :]andya)            │   ║
+║  │ Nawith]: 0     = 0.000 (:]with, HERE and NOW)             │   ║
+║  │ :]:   φ²  = 2.618 (withaboutzand:]ande, raboutwitht)                   │   ║
 ║  │ ─────────────────────────────────────────────────────────   │   ║
-║  │ [CYR:[TRANSLATED]]: φ² + 1/φ² = 3 = TRINITY                             │   ║
+║  │ :]: φ² + 1/φ² = 3 = TRINITY                             │   ║
 ║  └────────────────────────────────────────────────────────────┘   ║
 ║                                                                  ║
-║  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]):                          ║
-║  Creation / Унandthat[CYR:[TRANSLATED]]andе = φ⁴ = 6.854 > 1                        ║
-║  → in[CYR:[TRANSLATED]]onя with[TRANSLATED]] → [CYR:[TRANSLATED]]andя раwith[TRANSLATED]] → Вwith[TRANSLATED]]onя раwithшand[CYR:[TRANSLATED]]withя   ║
+║  :] :] (:] :] in:]):                          ║
+║  Creation / Unandthat:]ande = φ⁴ = 6.854 > 1                        ║
+║  → in:]onya with] → :]andya rawith] → Vwith]onya rawithshand:]withya   ║
 ║                                                                  ║
-║  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:                                           ║
-║  π × 3 = 9.424777961 (цandtoлand[CYR:[TRANSLATED]]withть [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andцу)                  ║
+║  :] :]:                                           ║
+║  π × 3 = 9.424777961 (tsandtoland:]witht :] :]andtsat)                  ║
 ║                                                                  ║
-║  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:                                             ║
-║  t_P = 5.391247 × 10⁻⁴⁴ withеfor[TRANSLATED]] (toin[CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]and)               ║
+║  :] :]:                                             ║
+║  t_P = 5.391247 × 10⁻⁴⁴ withefor] (toin:] in:]and)               ║
 ║                                                                  ║
-║  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:                                       ║
-║  • φ-and[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] for withandwith[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] (1618ms)              ║
-║  • [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withfor[TRANSLATED]]andя [CYR:[TRANSLATED]] Sacred Formula                  ║
-║  • [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] toодandроinанandе in[CYR:[TRANSLATED]]and (40 трandтоin vs 64 бandта)          ║
+║  :] :]:                                       ║
+║  • φ-and:]in:] for withandwith] :]and:]and:] (1618ms)              ║
+║  • :] :]withfor]andya :] Sacred Formula                  ║
+║  • :]and:] toaboutdandraboutinanande in:]and (40 trandthatin vs 64 bandthat)          ║
 ║                                                                  ║
-║  "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] НЕ [CYR:[TRANSLATED]]. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]."                  ║
+║  ":] :] NE :]. :] :]  :]."                  ║
 ║                                                                  ║
 ╚══════════════════════════════════════════════════════════════════╝
 ```

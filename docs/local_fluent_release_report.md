@@ -83,9 +83,9 @@ ollama pull qwen2.5-coder:7b
 
 | Query | Latency | Response |
 |-------|---------|----------|
-| "прandinет" | 126μs | "Прandinет! [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]]..." |
-| "toаto [CYR:[TRANSLATED]]" | 16μs | " лоfor[TRANSLATED]] [CYR:[TRANSLATED]]..." |
-| "раwithtoажand [CYR:[TRANSLATED]]toу" | 22μs | "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andwithт..." |
+| "prandinet" | 126μs | "Prandinet! :] :] inand:]..." |
+| "toato :]" | 16μs | " laboutfor] :]..." |
+| "rawithtoazhand :]toat" | 22μs | ":] :]andwitht..." |
 | "hello" | 6μs | "Hello! Great to see you..." |
 | "你好" | 6μs | "你好！很高兴见到你..." |
 
@@ -93,7 +93,7 @@ ollama pull qwen2.5-coder:7b
 
 | Query | Latency | Quality |
 |-------|---------|---------|
-| "onпandшand fibonacci" | 21.6s | Real Python code |
+| "onpandshand fibonacci" | 21.6s | Real Python code |
 | "write quicksort" | 18.3s | Real Python code |
 | "explain recursion" | 4.8s | Fluent explanation |
 
@@ -134,8 +134,8 @@ ollama pull qwen2.5-coder:7b
 
 ### Fixes
 - Improved IGLA pattern coverage (~95%)
-- Added "раwithtoажand" keyword for jokes
-- Added "[CYR:[TRANSLATED]] with[TRANSLATED]]" keyword for creator questions
+- Added "rawithtoazhand" keyword for jokes
+- Added ":] with]" keyword for creator questions
 
 ### Features
 - Cross-platform pre-built binaries

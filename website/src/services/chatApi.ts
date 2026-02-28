@@ -469,7 +469,7 @@ export async function fetchModelStatus(): Promise<ModelStatusResponse> {
   }
 }
 
-// ─── Mirror of Three Worlds (Зеркало Трёх Миров) v2.3 ─────────────────────
+// ─── Mirror of Three Worlds (Zertoalabout Tryokh Mandraboutin) v2.3 ─────────────────────
 
 export interface MirrorRazum {
   symbolic_hits: number;

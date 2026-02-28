@@ -1,32 +1,32 @@
-# 🔥 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] v3559
+# 🔥 [CYR:] [CYR:] v3559
 
-## [CYR:[TRANSLATED]]: HYPER MEGA GEN [CYR:[TRANSLATED]]
+## [CYR:]: HYPER MEGA GEN [CYR:]
 
-### 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### 📊 [CYR:] [CYR:]
 
-| [CYR:[TRANSLATED]]andtoа | v3079 | v3559 | [CYR:[TRANSLATED]]notнandе |
+| [CYR:]Version | v3079 | v3559 | [CYR:]notнandе |
 |---------|-------|-------|-----------|
 | Specs | 4917 | 5416 | +499 (+10.1%) |
 | Zig | 4954 | 5453 | +499 (+10.1%) |
 | Domains | 354 | 376 | +22 (+6.2%) |
 
-### ⚡ [CYR:[TRANSLATED]]
+### ⚡ [CYR:]
 
-| [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]] | Уwithfor[TRANSLATED]]andе |
+| [CYR:]andя | [CYR:] | Уwithfor]andе |
 |----------|-------|-----------|
-| Геnot[CYR:[TRANSLATED]]andя 1 [CYR:[TRANSLATED]] | 1ms | - |
-| Геnot[CYR:[TRANSLATED]]andя 480 [CYR:[TRANSLATED]] | ~500ms | - |
-| vs [CYR:[TRANSLATED]] toодandроinанandе | 30 мandн/module | **1,800,000x** |
+| Геnot[CYR:]andя 1 [CYR:] | 1ms | - |
+| Геnot[CYR:]andя 480 [CYR:] | ~500ms | - |
+| vs [CYR:] toодandроinанandе | 30 мandн/module | **1,800,000x** |
 
-### ✅ E2E [CYR:[TRANSLATED]]
+### ✅ E2E [CYR:]
 
 ```
-Прfromеwithтandроin[CYR:[TRANSLATED]]: 23 [CYR:[TRANSLATED]]on (in[CYR:[TRANSLATED]]toа по 1 [CYR:[TRANSLATED]])
+Прfromеwithтandроin[CYR:]: 23 [CYR:]on (in[CYR:]toа по 1 [CYR:])
 Result: 23/23 PASS (100%)
-[CYR:[TRANSLATED]]: <2 мand[CYR:[TRANSLATED]]
+[CYR:]: <2 мand[CYR:]
 ```
 
-**Прand[CYR:[TRANSLATED]] теwithтоin:**
+**Прand[CYR:] теwithтоin:**
 - qec_stabilizer_v3080.zig ✅ (Quantum Error Correction)
 - topo_anyon_v3100.zig ✅ (Topological Quantum)
 - neural_eeg_v3160.zig ✅ (Neural Interfaces)
@@ -82,9 +82,9 @@ TIER 12: COMPUTATIONAL BIOLOGY
 └── Genomics AI (20) - GWAS, Variant
 ```
 
-### 📚 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### 📚 [CYR:] [CYR:]
 
-**Поfor[TRANSLATED]] 200+ ноinых [CYR:[TRANSLATED]]andtoацandй:**
+**Поfor] 200+ ноinых [CYR:]Versionцandй:**
 
 **Quantum Error Correction:**
 - Surface Codes (Fowler, 2012)
@@ -113,9 +113,9 @@ TIER 12: COMPUTATIONAL BIOLOGY
 
 ### 🎯 PAS DAEMON ANALYSIS
 
-**[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andя:**
+**[CYR:]in[CYR:] [CYR:] [CYR:]andя:**
 
-| [CYR:[TRANSLATED]] | Прand[CYR:[TRANSLATED]]andмоwithть | Confidence |
+| [CYR:] | Прand[CYR:]andмоwithть | Confidence |
 |---------|--------------|------------|
 | D&C (Divide & Conquer) | QEC, Protein | 80% |
 | PRE (Precomputation) | Genomics, Drug | 85% |
@@ -124,7 +124,7 @@ TIER 12: COMPUTATIONAL BIOLOGY
 | ALG (Algebraic) | Game Theory | 78% |
 | PRB (Probabilistic) | Value Learning | 82% |
 
-### 🚀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (v3560-v4039)
+### 🚀 [CYR:] [CYR:] (v3560-v4039)
 
 **Tier 13: Nanotechnology**
 1. Molecular Machines (v3560-v3579)
@@ -150,28 +150,28 @@ TIER 12: COMPUTATIONAL BIOLOGY
 15. Polymer Design (v3840-v3859)
 16. Metamaterials (v3860-v3879)
 
-### 💀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### 💀 [CYR:] [CYR:]
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
 ║   VIBEE v3559: HYPER MEGA GEN COMPLETE                      ║
 ║                                                              ║
-║   480 ноinых SUPERINTELLIGENCE [CYR:[TRANSLATED]]                       ║
-║   24 ноinых [CYR:[TRANSLATED]]on                                           ║
-║   200+ on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from поfor[TRANSLATED]]                                ║
-║   100% теwithтоin [CYR:[TRANSLATED]]                                      ║
+║   480 ноinых SUPERINTELLIGENCE [CYR:]                       ║
+║   24 ноinых [CYR:]on                                           ║
+║   200+ on[CYR:] [CYR:]from поfor]                                ║
+║   100% теwithтоin [CYR:]                                      ║
 ║                                                              ║
-║   [CYR:[TRANSLATED]]: 1,800,000x                                     ║
+║   [CYR:]: 1,800,000x                                     ║
 ║                                                              ║
-║   [CYR:[TRANSLATED]]: SUPERINTELLIGENCE SAFETY [CYR:[TRANSLATED]]               ║
+║   [CYR:]: SUPERINTELLIGENCE SAFETY [CYR:]               ║
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
-### 📈 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### 📈 [CYR:] [CYR:]
 
-| [CYR:[TRANSLATED]]withandя | Specs | Zig | Domains | Фоtoуwith |
+| [CYR:]Author | Specs | Zig | Domains | Фоtoуwith |
 |--------|-------|-----|---------|-------|
 | v1639 | 1639 | 1639 | ~200 | Core |
 | v2119 | 3749 | 3785 | 307 | Deep Learning |
@@ -179,7 +179,7 @@ TIER 12: COMPUTATIONAL BIOLOGY
 | v3079 | 4917 | 4954 | 354 | AGI |
 | **v3559** | **5416** | **5453** | **376** | **Superintelligence** |
 
-### 🔬 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### 🔬 [CYR:] [CYR:]
 
 **Quantum Error Correction (v3080-v3099):**
 - Stabilizer codes, Surface codes

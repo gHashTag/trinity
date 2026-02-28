@@ -1,14 +1,14 @@
 # 📊 BENCHMARK COMPARISON V25 - MULTI-LANGUAGE AUTO-OPTIMIZATION
 
-**[CYR:[TRANSLATED]]:** 2026-01-18
-**[CYR:[TRANSLATED]]withandя:** v25.0.0
-**Теwithты [CYR:[TRANSLATED]]:** 50/50 (100%)
+**:]:** 2026-01-18
+**:]Author:** v25.0.0
+**Tewithty :]:** 50/50 (100%)
 
 ---
 
-## 🧪 [CYR:TESTS] TRINITY VM v25
+## 🧪 :TESTS] TRINITY VM v25
 
-| [CYR:[TRANSLATED]] | Теwithты | [CYR:[TRANSLATED]]with |
+| :] | Tewithty | :]with |
 |--------|-------|--------|
 | `multi_lang_bench_v25.zig` | 8/8 | ✅ PASS |
 | `zhar_ptitsa_v24.zig` | 8/8 | ✅ PASS |
@@ -20,7 +20,7 @@
 
 ---
 
-## 🌍 10 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🌍 10 :] :]
 
 | # | Language | Tier | Expected | Features |
 |---|----------|------|----------|----------|
@@ -37,20 +37,20 @@
 
 ---
 
-## 📈 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] TRINITY VM
+## 📈 :] :] TRINITY VM
 
-| [CYR:[TRANSLATED]]andtoа | v22 | v23 | v24 | v25 | Прandроwithт v22→v25 |
+| :]Version | v22 | v23 | v24 | v25 | Prandraboutwitht v22→v25 |
 |---------|-----|-----|-----|-----|-----------------|
-| **Теwithтоin** | 15 | 23 | 42 | 50 | **+233%** |
-| **[CYR:[TRANSLATED]]to for[TRANSLATED]]** | 526 | 1496 | 2000 | 2500+ | **+375%** |
-| **[CYR:[TRANSLATED]]** | 1 | 3 | 4 | 5 | **+400%** |
-| **[CYR:[TRANSLATED]]toоin** | 1 | 1 | 1 | 10 | **+900%** |
+| **Tewiththatin** | 15 | 23 | 42 | 50 | **+233%** |
+| **:]to for]** | 526 | 1496 | 2000 | 2500+ | **+375%** |
+| **:]** | 1 | 3 | 4 | 5 | **+400%** |
+| **:]toaboutin** | 1 | 1 | 1 | 10 | **+900%** |
 | **Self-Evolution** | ❌ | ❌ | ✅ | ✅ | NEW |
 | **Auto-Optimization** | ❌ | ❌ | ❌ | ✅ | NEW |
 
 ---
 
-## 🏆 BENCHMARK SUITE (7 теwithтоin × 10 [CYR:[TRANSLATED]]toоin)
+## 🏆 BENCHMARK SUITE (7 thosewiththatin × 10 :]toaboutin)
 
 | Benchmark | Baseline | S-Tier | A-Tier | B-Tier | C-Tier |
 |-----------|----------|--------|--------|--------|--------|
@@ -64,11 +64,11 @@
 
 ---
 
-## ⚡ [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]
+## ⚡ :]  :]
 
 ### JIT Compiler Performance
 
-| VM/Runtime | Тandры | Max Speedup | Auto-Opt | Languages |
+| VM/Runtime | Tandry | Max Speedup | Auto-Opt | Languages |
 |------------|------|-------------|----------|-----------|
 | **TRINITY VM v25** | **4** | **35x** | **✅** | **10** |
 | V8 (Chrome) | 3 | 50x | ❌ | 1 |
@@ -80,13 +80,13 @@
 
 | Feature | TRINITY v25 | V8 | LuaJIT | GraalVM |
 |---------|-------------|-----|--------|---------|
-| φ-parameterы | ✅ | ❌ | ❌ | ❌ |
+| φ-parametery | ✅ | ❌ | ❌ | ❌ |
 | Self-Evolution | ✅ | ❌ | ❌ | ❌ |
 | Auto-Optimization | ✅ | ❌ | ❌ | ❌ |
 | 10 Languages | ✅ | ❌ | ❌ | ✅ |
 | Sacred Math | ✅ | ❌ | ❌ | ❌ |
-| 33 [CYR:[TRANSLATED]] | ✅ | ❌ | ❌ | ❌ |
-| [CYR:[TRANSLATED]]-птandца | ✅ | ❌ | ❌ | ❌ |
+| 33 :] | ✅ | ❌ | ❌ | ❌ |
+| :]-ptandtsa | ✅ | ❌ | ❌ | ❌ |
 
 ---
 
@@ -100,13 +100,13 @@
 | Diffusion Steps | **1,000x** | LCM |
 | 3DGS Compression | **75x** | Compact3D |
 
-**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: 76,541x**
+**:] :]: 76,541x**
 
 ---
 
-## 📁 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] v25
+## 📁 :] :] v25
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]to | Теwithты | [CYR:[TRANSLATED]] |
+| :] | :]to | Tewithty | :] |
 |------|-------|-------|--------|
 | `multi_lang_bench_v25.zig` | 300 | 8 | Zig |
 | `multi_lang_bench_v25.999` | 150 | - | .999 |
@@ -118,7 +118,7 @@
 
 ---
 
-## 🧮 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🧮 :] :]
 
 ```
 φ = 1.618033988749895
@@ -132,28 +132,28 @@
 
 ---
 
-## 💀 [CYR:[TRANSLATED]]
+## 💀 :]
 
-**TRINITY VM v25** - [CYR:[TRANSLATED]]inая VM with:
+**TRINITY VM v25** - :]inaya VM with:
 
-1. ✅ **10 [CYR:[TRANSLATED]]inых [CYR:[TRANSLATED]]toоin** with аinтоin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
-2. ✅ **Auto-Optimization** on onтandin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]innot
-3. ✅ **Self-Evolution** ([CYR:[TRANSLATED]]-птandца)
-4. ✅ **33 [CYR:[TRANSLATED]]** [CYR:[TRANSLATED]]andтнandtoоin
-5. ✅ **PAS DAEMON** [CYR:[TRANSLATED]]withfor[TRANSLATED]]andя
-6. ✅ **Sacred Math** and[CYR:[TRANSLATED]]andя
+1. ✅ **10 :]inykh :]toaboutin** with ainthatin:] :]
+2. ✅ **Auto-Optimization** on ontandin:] :]innot
+3. ✅ **Self-Evolution** (:]-ptandtsa)
+4. ✅ **33 :]** :]andtnandtoaboutin
+5. ✅ **PAS DAEMON** :]withfor]andya
+6. ✅ **Sacred Math** and:]andya
 
-| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе |
+| :]Version | Zon:]ande |
 |---------|----------|
-| Теwithтоin [CYR:[TRANSLATED]] | 50/50 (100%) |
-| Прandроwithт теwithтоin v22→v25 | +233% |
-| Прandроwithт [CYR:[TRANSLATED]]toоin v22→v25 | +900% |
-| Пfrom[CYR:[TRANSLATED]]andал уwithfor[TRANSLATED]]andя | 76,541x |
+| Tewiththatin :] | 50/50 (100%) |
+| Prandraboutwitht thosewiththatin v22→v25 | +233% |
+| Prandraboutwitht :]toaboutin v22→v25 | +900% |
+| Pfrom:]andal atwithfor]andya | 76,541x |
 
 ---
 
 ```
-[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: V = n × 3^k × π^m × φ^p × e^q
-[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: φ² + 1/φ² = 3
-"[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]toand, withоin[CYR:[TRANSLATED]]withтinуя withinой!"
+:] :]: V = n × 3^k × π^m × φ^p × e^q
+:] :]: φ² + 1/φ² = 3
+":] :]ande :]toand, withaboutin:]withtinatya withinabouty!"
 ```

@@ -294,7 +294,7 @@ Photon Terminal v1.0 proves that **TUI can be a living wave field**:
 - **SIMD propagation** at 30 FPS
 - **True color** 24-bit rendering
 
-Users will say: "[CYR:[TRANSLATED]] not [CYR:[TRANSLATED]]andonл — this жandinое with[TRANSLATED]]withтinо!"
+Users will say: ":] not :]andonl — this zhandinaboute with]withtinabout!"
 
 ---
 

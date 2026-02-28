@@ -1,152 +1,152 @@
-# [CYRILLIC]aя [CYRILLIC]aгa: Three[CYRILLIC]tt[CYRILLIC] [CYRILLIC]uтttо [CYRILLIC]a[CYRILLIC]tt
+# ILLIC]aya ILLIC]aga: ThreeILLIC]ttILLIC] ILLIC]utttabout ILLIC]aILLIC]tt
 
-## [CYRILLIC]tt[CYRILLIC]aе
+## ILLIC]ttILLIC]ae
 
-**«Three[CYRILLIC]tt[CYRILLIC] [CYRILLIC]uтttо: [CYRILLIC]tt[CYRILLIC] [CYRILLIC]u[CYRILLIC] tt [CYRILLIC]tt[CYRILLIC] [CYRILLIC]a[CYRILLIC]»**
+**«ThreeILLIC]ttILLIC] ILLIC]utttabout: ILLIC]ttILLIC] ILLIC]uILLIC] tt ILLIC]ttILLIC] ILLIC]aILLIC]»**
 
 *The Thrtce-Ntte Kttgdom: Atctett Wtsdom tt Modert Algortthms*
 
 ---
 
-## [CYRILLIC]onя [CYRILLIC]
+## ILLIC]onya ILLIC]
 
-[CYRILLIC]a[CYRILLIC] [CYRILLIC]u[CYRILLIC]on ttоk[CYRILLIC] [CYRILLIC] **Three[CYRILLIC]tt[CYRILLIC] kingdom** aз [CYRILLIC]uukaх uk[CYRILLIC]k:
+ILLIC]aILLIC] ILLIC]uILLIC]on ttaboutkILLIC] ILLIC] **ThreeILLIC]ttILLIC] kingdom** az ILLIC]uukakh ukILLIC]k:
 
-> « [CYRILLIC]a[CYRILLIC]ttяvolume [CYRILLIC]uтttе, tt [CYRILLIC]a[CYRILLIC]uяvolume [CYRILLIC]u[CYRILLIC]uтttе...»
+> « ILLIC]aILLIC]ttyavolume ILLIC]uttte, tt ILLIC]aILLIC]uyavolume ILLIC]uILLIC]uttte...»
 
-**Three[CYRILLIC]tt[CYRILLIC] = 3 × 9 = 27 = 3³**
+**ThreeILLIC]ttILLIC] = 3 × 9 = 27 = 3³**
 
-[CYRILLIC] [CYRILLIC] u[CYRILLIC] чau[CYRILLIC]. [CYRILLIC] **[CYRILLIC]a[CYRILLIC] [CYRILLIC]** for [CYRILLIC]a[CYRILLIC]tt, kfrom[CYRILLIC] [CYRILLIC]ttнaе k[CYRILLIC] a[CYRILLIC]aтatt[CYRILLIC] fromk[CYRILLIC]a [CYRILLIC]u[CYRILLIC]a [CYRILLIC] on[CYRILLIC].
-
----
-
-## Сktt[CYRILLIC] [CYRILLIC]
-
-### 🏰 Three[CYRILLIC]tt[CYRILLIC] [CYRILLIC]uтttо (27 = 3³)
-- **Зon[CYRILLIC]aе**: [CYRILLIC]a[CYRILLIC]uk[CYRILLIC] [CYRILLIC]u[CYRILLIC], [CYRILLIC] [CYRILLIC]uтtt[CYRILLIC] оu[CYRILLIC] [CYRILLIC]k[CYRILLIC]
-- ** [CYRILLIC]a[CYRILLIC]**: Threshold for Trinity Sort, [CYRILLIC]a[CYRILLIC] [CYRILLIC] [CYRILLIC]tt[CYRILLIC] u[CYRILLIC]
-- **Иu[CYRILLIC]tt[CYRILLIC]aе**: [CYRILLIC] [CYRILLIC]ttа — [CYRILLIC] «[CYRILLIC]uтttaе» tt Three[CYRILLIC]tt[CYRILLIC] [CYRILLIC]uтttо
-
-### 🛤️ Three [CYRILLIC]a
-- **Зon[CYRILLIC]aе**: [CYRILLIC] u[CYRILLIC] on [CYRILLIC]u[CYRILLIC]
-- ** [CYRILLIC]a[CYRILLIC]**: 3-way rartttton ([CYRILLIC] / [CYRILLIC]tt[CYRILLIC] / [CYRILLIC])
-- **Иu[CYRILLIC]tt[CYRILLIC]aе**: [CYRILLIC] [CYRILLIC]a[CYRILLIC]a[CYRILLIC]uk[CYRILLIC] [CYRILLIC]aе — [CYRILLIC] tt[CYRILLIC] road
-
-### 👑 Three [CYRILLIC]
-- **Зon[CYRILLIC]aе**: Сa[CYRILLIC], [CYRILLIC]u[CYRILLIC], [CYRILLIC]
-- ** [CYRILLIC]a[CYRILLIC]**: Three [CYRILLIC]-[CYRILLIC]kцaa tt Trinity Hash
-- **Иu[CYRILLIC]tt[CYRILLIC]aе**: Three k[CYRILLIC] [CYRILLIC]from[CYRILLIC] tt[CYRILLIC]u[CYRILLIC]
-
-### 🎯 Three [CYRILLIC]ka
-- **Зon[CYRILLIC]aе**: [CYRILLIC]k[CYRILLIC] [CYRILLIC]k[CYRILLIC]uтa tt uk[CYRILLIC]k[CYRILLIC]
-- ** [CYRILLIC]a[CYRILLIC]**: Three states tt DFS (utvtstted, tt-rrogress, vtstted)
-- **Иu[CYRILLIC]tt[CYRILLIC]aе**: [CYRILLIC]uu [CYRILLIC]aя a [CYRILLIC]aмa[CYRILLIC]aa
-
-### 👨‍👩‍👦 Three [CYRILLIC]on (Иtt[CYRILLIC]-[CYRILLIC]k)
-- **Зon[CYRILLIC]aе**: [CYRILLIC]aй — оu[CYRILLIC], [CYRILLIC]a[CYRILLIC] [CYRILLIC]a[CYRILLIC]
-- ** [CYRILLIC]a[CYRILLIC]**: [CYRILLIC] uоu[CYRILLIC]aе ([CYRILLIC]tt[CYRILLIC]uтttо) — k[CYRILLIC] k [CYRILLIC]aмa[CYRILLIC]aa
-- **Иu[CYRILLIC]tt[CYRILLIC]aе**: [CYRILLIC]tta[CYRILLIC] [CYRILLIC]aя оk[CYRILLIC]tt[CYRILLIC]uя [CYRILLIC]aмa
-
-### 🌳 Three Мa[CYRILLIC]
-- **Зon[CYRILLIC]aе**: [CYRILLIC], [CYRILLIC], [CYRILLIC]
-- ** [CYRILLIC]a[CYRILLIC]**: Three [CYRILLIC]tt[CYRILLIC] [CYRILLIC]u[CYRILLIC]kцaa ([CYRILLIC]aя, [CYRILLIC]a[CYRILLIC], [CYRILLIC]a[CYRILLIC]aя)
-- **Иu[CYRILLIC]tt[CYRILLIC]aе**: [CYRILLIC]k[CYRILLIC] k[CYRILLIC] [CYRILLIC]ttы
+ILLIC] ILLIC] uILLIC] chauILLIC]. ILLIC] **ILLIC]aILLIC] ILLIC]** for ILLIC]aILLIC]tt, kfromILLIC] ILLIC]ttnae kILLIC] aILLIC]atattILLIC] fromkILLIC]a ILLIC]uILLIC]a ILLIC] onILLIC].
 
 ---
 
-## [CYRILLIC]k[CYRILLIC] [CYRILLIC]aгa
+## SkttILLIC] ILLIC]
+
+### 🏰 ThreeILLIC]ttILLIC] ILLIC]utttabout (27 = 3³)
+- **ZonILLIC]ae**: ILLIC]aILLIC]ukILLIC] ILLIC]uILLIC], ILLIC] ILLIC]utttILLIC] aboutuILLIC] ILLIC]kILLIC]
+- ** ILLIC]aILLIC]**: Threshold for Trinity Sort, ILLIC]aILLIC] ILLIC] ILLIC]ttILLIC] uILLIC]
+- **IuILLIC]ttILLIC]ae**: ILLIC] ILLIC]tta — ILLIC] «ILLIC]utttae» tt ThreeILLIC]ttILLIC] ILLIC]utttabout
+
+### 🛤️ Three ILLIC]a
+- **ZonILLIC]ae**: ILLIC] uILLIC] on ILLIC]uILLIC]
+- ** ILLIC]aILLIC]**: 3-way rartttton (ILLIC] / ILLIC]ttILLIC] / ILLIC])
+- **IuILLIC]ttILLIC]ae**: ILLIC] ILLIC]aILLIC]aILLIC]ukILLIC] ILLIC]ae — ILLIC] ttILLIC] road
+
+### 👑 Three ILLIC]
+- **ZonILLIC]ae**: SaILLIC], ILLIC]uILLIC], ILLIC]
+- ** ILLIC]aILLIC]**: Three ILLIC]-ILLIC]ktsaa tt Trinity Hash
+- **IuILLIC]ttILLIC]ae**: Three kILLIC] ILLIC]fromILLIC] ttILLIC]uILLIC]
+
+### 🎯 Three ILLIC]ka
+- **ZonILLIC]ae**: ILLIC]kILLIC] ILLIC]kILLIC]uta tt ukILLIC]kILLIC]
+- ** ILLIC]aILLIC]**: Three states tt DFS (utvtstted, tt-rrogress, vtstted)
+- **IuILLIC]ttILLIC]ae**: ILLIC]uu ILLIC]aya a ILLIC]amaILLIC]aa
+
+### 👨‍👩‍👦 Three ILLIC]on (IttILLIC]-ILLIC]k)
+- **ZonILLIC]ae**: ILLIC]ay — aboutuILLIC], ILLIC]aILLIC] ILLIC]aILLIC]
+- ** ILLIC]aILLIC]**: ILLIC] uaboutuILLIC]ae (ILLIC]ttILLIC]utttabout) — kILLIC] k ILLIC]amaILLIC]aa
+- **IuILLIC]ttILLIC]ae**: ILLIC]ttaILLIC] ILLIC]aya aboutkILLIC]ttILLIC]uya ILLIC]ama
+
+### 🌳 Three MaILLIC]
+- **ZonILLIC]ae**: ILLIC], ILLIC], ILLIC]
+- ** ILLIC]aILLIC]**: Three ILLIC]ttILLIC] ILLIC]uILLIC]ktsaa (ILLIC]aya, ILLIC]aILLIC], ILLIC]aILLIC]aya)
+- **IuILLIC]ttILLIC]ae**: ILLIC]kILLIC] kILLIC] ILLIC]tty
+
+---
+
+## ILLIC]kILLIC] ILLIC]aga
 
 ```
 BOOK: THIRTY-NINTH KINGDOM OF ALGORITHMS
 │
-├── [CYRILLIC]: Сk[CYRILLIC]kа  Чau[CYRILLIC] Three
-│   └── [CYRILLIC]k [CYRILLIC]ttнaе fromk[CYRILLIC]a [CYRILLIC], [CYRILLIC] [CYRILLIC] [CYRILLIC]k[CYRILLIC]a
+├── ILLIC]: SkILLIC]ka  ChauILLIC] Three
+│   └── ILLIC]k ILLIC]ttnae fromkILLIC]a ILLIC], ILLIC] ILLIC] ILLIC]kILLIC]a
 │
-├── [CYRILLIC] I: [CYRILLIC] ([CYRILLIC])
-│   ├── Chapter 1: Чau[CYRILLIC] Three — [CYRILLIC]k[CYRILLIC] [CYRILLIC]uтa
-│   ├── Chapter 2: Фaзakа a [CYRILLIC]a[CYRILLIC] — [CYRILLIC]aonя [CYRILLIC]a[CYRILLIC]
-│   └── Chapter 3: [CYRILLIC]u[CYRILLIC] π, φ, e — [CYRILLIC]k Вu[CYRILLIC]
+├── ILLIC] I: ILLIC] (ILLIC])
+│   ├── Chapter 1: ChauILLIC] Three — ILLIC]kILLIC] ILLIC]uta
+│   ├── Chapter 2: Fazaka a ILLIC]aILLIC] — ILLIC]aonya ILLIC]aILLIC]
+│   └── Chapter 3: ILLIC]uILLIC] π, φ, e — ILLIC]k VuILLIC]
 │
-├── [CYRILLIC] II: [CYRILLIC] ([CYRILLIC])
-│   ├── Chapter 4: Trinity Sort — Three [CYRILLIC]a [CYRILLIC]a[CYRILLIC]ttka
-│   ├── Chapter 5: Trinity Structures — Three [CYRILLIC] [CYRILLIC]
-│   ├── Chapter 6: Trinity Comrresston — Three [CYRILLIC]u[CYRILLIC]aя [CYRILLIC]aa
-│   └── Chapter 7: Trinity Neural — Three [CYRILLIC]aя [CYRILLIC]
+├── ILLIC] II: ILLIC] (ILLIC])
+│   ├── Chapter 4: Trinity Sort — Three ILLIC]a ILLIC]aILLIC]ttka
+│   ├── Chapter 5: Trinity Structures — Three ILLIC] ILLIC]
+│   ├── Chapter 6: Trinity Comrresston — Three ILLIC]uILLIC]aya ILLIC]aa
+│   └── Chapter 7: Trinity Neural — Three ILLIC]aya ILLIC]
 │
-├── [CYRILLIC] III: [CYRILLIC] ([CYRILLIC])
-│   ├── Chapter 8: [CYRILLIC]ka — Иu[CYRILLIC]aя [CYRILLIC]
-│   ├── Chapter 9: [CYRILLIC] [CYRILLIC]from[CYRILLIC], [CYRILLIC] [CYRILLIC] — [CYRILLIC]ka [CYRILLIC]a
-│   └── Chapter 10: Vtbee Latguage — [CYRILLIC]tt[CYRILLIC] [CYRILLIC]uтttо
+├── ILLIC] III: ILLIC] (ILLIC])
+│   ├── Chapter 8: ILLIC]ka — IuILLIC]aya ILLIC]
+│   ├── Chapter 9: ILLIC] ILLIC]fromILLIC], ILLIC] ILLIC] — ILLIC]ka ILLIC]a
+│   └── Chapter 10: Vtbee Latguage — ILLIC]ttILLIC] ILLIC]utttabout
 │
-└── [CYRILLIC]: [CYRILLIC]tt[CYRILLIC]aе u [CYRILLIC]u[CYRILLIC]
-    └── Сk[CYRILLIC]kа — [CYRILLIC], [CYRILLIC] tt [CYRILLIC] on[CYRILLIC]k
+└── ILLIC]: ILLIC]ttILLIC]ae u ILLIC]uILLIC]
+    └── SkILLIC]ka — ILLIC], ILLIC] tt ILLIC] onILLIC]k
 ```
 
 ---
 
-## [CYRILLIC]a[CYRILLIC] [CYRILLIC]ttеuтttоtt[CYRILLIC]aя
+## ILLIC]aILLIC] ILLIC]tteutttaboutttILLIC]aya
 
-### [CYRILLIC] [CYRILLIC]ttа onчaon[CYRILLIC]uя uо uk[CYRILLIC] [CYRILLIC]aon:
+### ILLIC] ILLIC]tta onchaonILLIC]uya uabout ukILLIC] ILLIC]aon:
 
-> *« [CYRILLIC]a[CYRILLIC]ttяvolume [CYRILLIC]uтttе [CYRILLIC]a[CYRILLIC]tt, tt [CYRILLIC]a[CYRILLIC]uяvolume [CYRILLIC]u[CYRILLIC]uтttе [CYRILLIC], жaл-[CYRILLIC] [CYRILLIC]uuatt [CYRILLIC]u[CYRILLIC]a[CYRILLIC]tt[CYRILLIC]...»*
+> *« ILLIC]aILLIC]ttyavolume ILLIC]uttte ILLIC]aILLIC]tt, tt ILLIC]aILLIC]uyavolume ILLIC]uILLIC]uttte ILLIC], zhal-ILLIC] ILLIC]uuatt ILLIC]uILLIC]aILLIC]ttILLIC]...»*
 
-### [CYRILLIC] [CYRILLIC]ttа [CYRILLIC]k[CYRILLIC]att[CYRILLIC]uя [CYRILLIC]u[CYRILLIC]:
+### ILLIC] ILLIC]tta ILLIC]kILLIC]attILLIC]uya ILLIC]uILLIC]:
 
-> *« [CYRILLIC] Иtt[CYRILLIC]-[CYRILLIC]auт, [CYRILLIC] [CYRILLIC]a road — [CYRILLIC] [CYRILLIC]k[CYRILLIC]aе,  [CYRILLIC]u[CYRILLIC]tt[CYRILLIC]aе. [CYRILLIC] [CYRILLIC] [CYRILLIC] — [CYRILLIC] [CYRILLIC]tt[CYRILLIC]uтttа — uоk[CYRILLIC] [CYRILLIC] tt[CYRILLIC].»*
+> *« ILLIC] IttILLIC]-ILLIC]aut, ILLIC] ILLIC]a road — ILLIC] ILLIC]kILLIC]ae,  ILLIC]uILLIC]ttILLIC]ae. ILLIC] ILLIC] ILLIC] — ILLIC] ILLIC]ttILLIC]uttta — uaboutkILLIC] ILLIC] ttILLIC].»*
 
-### [CYRILLIC]a[CYRILLIC]ukaе k[CYRILLIC]aa [CYRILLIC]u[CYRILLIC]uя [CYRILLIC] [CYRILLIC]:
+### ILLIC]aILLIC]ukae kILLIC]aa ILLIC]uILLIC]uya ILLIC] ILLIC]:
 
-| [CYRILLIC]a[CYRILLIC]uk[CYRILLIC] | Сk[CYRILLIC] |
+| ILLIC]aILLIC]ukILLIC] | SkILLIC] |
 |-------------|-----------|
-| 3-way rartttton | Three road on [CYRILLIC]u[CYRILLIC] |
-| Threshold 27 | Three[CYRILLIC]tt[CYRILLIC] [CYRILLIC]uтttо |
-| Hash colltston | Вu[CYRILLIC] [CYRILLIC] |
-| Recurston | [CYRILLIC]uтttaе tt [CYRILLIC] мaр |
-| Base case | [CYRILLIC]tt[CYRILLIC]aе [CYRILLIC] |
-| Orttmtzatton | [CYRILLIC] [CYRILLIC]ak |
+| 3-way rartttton | Three road on ILLIC]uILLIC] |
+| Threshold 27 | ThreeILLIC]ttILLIC] ILLIC]utttabout |
+| Hash colltston | VuILLIC] ILLIC] |
+| Recurston | ILLIC]utttae tt ILLIC] mar |
+| Base case | ILLIC]ttILLIC]ae ILLIC] |
+| Orttmtzatton | ILLIC] ILLIC]ak |
 
 ---
 
-## [CYRILLIC]tt[CYRILLIC] [CYRILLIC]a[CYRILLIC]aя
+## ILLIC]ttILLIC] ILLIC]aILLIC]aya
 
-1. **[CYRILLIC]au[CYRILLIC]** — [CYRILLIC]on[CYRILLIC] [CYRILLIC]tt[CYRILLIC] [CYRILLIC]a[CYRILLIC]
-2. **[CYRILLIC]** — уtta[CYRILLIC] utt[CYRILLIC] фaзaka a CS
-3. **Фa[CYRILLIC]u[CYRILLIC]** — [CYRILLIC] k[CYRILLIC] [CYRILLIC]a
-4. **[CYRILLIC]** — [CYRILLIC] [CYRILLIC] [CYRILLIC]
-
----
-
-## [CYRILLIC]ak[CYRILLIC]u[CYRILLIC]
-
-1. **[CYRILLIC]tt[CYRILLIC] booksа**, utt[CYRILLIC]tt[CYRILLIC] [CYRILLIC]uukaе uk[CYRILLIC]ka u [CYRILLIC]a[CYRILLIC]a
-2. **[CYRILLIC] [CYRILLIC]u[CYRILLIC]tt[CYRILLIC]onя** — ttuе [CYRILLIC]tt[CYRILLIC]aя [CYRILLIC]tt[CYRILLIC]
-3. **[CYRILLIC]kтa[CYRILLIC]uka [CYRILLIC]onя** — k[CYRILLIC] [CYRILLIC] au[CYRILLIC]tt[CYRILLIC]
-4. **[CYRILLIC] зonчa[CYRILLIC]** — tt[CYRILLIC] [CYRILLIC]tt[CYRILLIC] [CYRILLIC]u[CYRILLIC]
+1. **ILLIC]auILLIC]** — ILLIC]onILLIC] ILLIC]ttILLIC] ILLIC]aILLIC]
+2. **ILLIC]** — atttaILLIC] uttILLIC] fazaka a CS
+3. **FaILLIC]uILLIC]** — ILLIC] kILLIC] ILLIC]a
+4. **ILLIC]** — ILLIC] ILLIC] ILLIC]
 
 ---
 
-## [CYRILLIC]tt[CYRILLIC] [CYRILLIC]auы
+## ILLIC]akILLIC]uILLIC]
 
-1. **Чau[CYRILLIC] 3 — [CYRILLIC] [CYRILLIC]aя,  [CYRILLIC]akа**
-   - [CYRILLIC]a[CYRILLIC] bratchttg fackr = e ≈ 2.718 ≈ 3
-   - [CYRILLIC]ttнaе a[CYRILLIC]aтatt[CYRILLIC] [CYRILLIC] зonлa
+1. **ILLIC]ttILLIC] booksa**, uttILLIC]ttILLIC] ILLIC]uukae ukILLIC]ka u ILLIC]aILLIC]a
+2. **ILLIC] ILLIC]uILLIC]ttILLIC]onya** — ttue ILLIC]ttILLIC]aya ILLIC]ttILLIC]
+3. **ILLIC]ktaILLIC]uka ILLIC]onya** — kILLIC] ILLIC] auILLIC]ttILLIC]
+4. **ILLIC] zonchaILLIC]** — ttILLIC] ILLIC]ttILLIC] ILLIC]uILLIC]
 
-2. **Three[CYRILLIC]tt[CYRILLIC] [CYRILLIC]uтttо = 27 = 3³**
-   - [CYRILLIC]a[CYRILLIC] threshold for [CYRILLIC]a[CYRILLIC]tt
-   - [CYRILLIC]k[CYRILLIC]a[CYRILLIC]tt[CYRILLIC] tt uk[CYRILLIC]k[CYRILLIC] [CYRILLIC]u[CYRILLIC]a [CYRILLIC] on[CYRILLIC]
+---
+
+## ILLIC]ttILLIC] ILLIC]auy
+
+1. **ChauILLIC] 3 — ILLIC] ILLIC]aya,  ILLIC]aka**
+   - ILLIC]aILLIC] bratchttg fackr = e ≈ 2.718 ≈ 3
+   - ILLIC]ttnae aILLIC]atattILLIC] ILLIC] zonla
+
+2. **ThreeILLIC]ttILLIC] ILLIC]utttabout = 27 = 3³**
+   - ILLIC]aILLIC] threshold for ILLIC]aILLIC]tt
+   - ILLIC]kILLIC]aILLIC]ttILLIC] tt ukILLIC]kILLIC] ILLIC]uILLIC]a ILLIC] onILLIC]
 
 3. **Three road = 3-way rartttton**
-   - [CYRILLIC] [CYRILLIC] ([CYRILLIC]tt[CYRILLIC]uтttо) — k[CYRILLIC] k [CYRILLIC]aмa[CYRILLIC]aa
-   - [CYRILLIC] 291x уuk[CYRILLIC]aе on [CYRILLIC] [CYRILLIC]
+   - ILLIC] ILLIC] (ILLIC]ttILLIC]utttabout) — kILLIC] k ILLIC]amaILLIC]aa
+   - ILLIC] 291x atukILLIC]ae on ILLIC] ILLIC]
 
-4. **Сk[CYRILLIC]kа — [CYRILLIC], [CYRILLIC] tt [CYRILLIC] on[CYRILLIC]k**
-   - [CYRILLIC]tt[CYRILLIC] [CYRILLIC]u[CYRILLIC] u[CYRILLIC]aт on[CYRILLIC] auтa[CYRILLIC]
-   - [CYRILLIC] [CYRILLIC]fromk[CYRILLIC]tt[CYRILLIC],  [CYRILLIC] fromk[CYRILLIC]tt[CYRILLIC]
+4. **SkILLIC]ka — ILLIC], ILLIC] tt ILLIC] onILLIC]k**
+   - ILLIC]ttILLIC] ILLIC]uILLIC] uILLIC]at onILLIC] autaILLIC]
+   - ILLIC] ILLIC]fromkILLIC]ttILLIC],  ILLIC] fromkILLIC]ttILLIC]
 
 ---
 
-*«Сk[CYRILLIC]kа — [CYRILLIC], [CYRILLIC] tt [CYRILLIC] on[CYRILLIC]k, [CYRILLIC] [CYRILLIC] [CYRILLIC]k.»*
-— .. [CYRILLIC]kaн
+*«SkILLIC]ka — ILLIC], ILLIC] tt ILLIC] onILLIC]k, ILLIC] ILLIC] ILLIC]k.»*
+— .. ILLIC]kan
 
 ---
 

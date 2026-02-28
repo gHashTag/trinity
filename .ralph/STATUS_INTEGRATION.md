@@ -1,126 +1,126 @@
 # Ralph Status Integration — Trinity Dev Telegram
 
-Аin[CYR:[TRANSLATED]]andчеwithtoая from[CYR:[TRANSLATED]]intoа with[TRANSLATED]]withоin andз `.ralph/` in Telegram [CYR:[TRANSLATED]] **TRINITY DEV** (-5160767429).
+Author:]andchewithtoaya from:]intoa with]withaboutin andz `.ralph/` in Telegram :] **TRINITY DEV** (-5160767429).
 
 ---
 
-## 📊 [CYR:[TRANSLATED]] from[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]withя
+## 📊 :] from:]in:]withya
 
 1. **Circuit Breaker State**
-   - Соwith[TRANSLATED]]andе: CLOSED / HALF_OPEN / OPEN
-   - Теtoущandй loop
-   - [CYR:[TRANSLATED]]-inо цandtoлоin [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withа
-   - Прandчandon fromfor[TRANSLATED]]andя (еwithлand OPEN)
+   - Saboutwith]ande: CLOSED / HALF_OPEN / OPEN
+   - Tetoatschandy loop
+   - :]-inabout tsandtolaboutin :] :]witha
+   - Prandchandon fromfor]andya (ewithland OPEN)
 
 2. **Session Info**
-   - Поwith[TRANSLATED]] аtoтandinноwithть
-   - Поwith[TRANSLATED]]andй with[TRANSLATED]]with
-   - Прandчandon with[TRANSLATED]]withа
-   - [CYR:[TRANSLATED]] toолandчеwithтinо in[CYR:[TRANSLATED]]inоin
+   - Paboutwith] atotandinnaboutwitht
+   - Paboutwith]andy with]with
+   - Prandchandon with]witha
+   - :] toaboutlandchewithtinabout in:]inaboutin
 
 3. **Progress**
-   - [CYR:[TRANSLATED]]with [CYR:[TRANSLATED]]withа
-   - [CYR:[TRANSLATED]] поwith[TRANSLATED]]notго [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andя
+   - :]with :]witha
+   - :] bywith]notgabout :]in:]andya
 
 4. **Active P1 Task**
-   - Теfor[TRANSLATED]] прandорand[CYR:[TRANSLATED]]onя task andз `fix_plan.md`
+   - Tefor] prandaboutrand:]onya task andz `fix_plan.md`
 
 5. **Recent Commits**
-   - Поwith[TRANSLATED]]andе 3 for[TRANSLATED]]andта andз git
+   - Paboutwith]ande 3 for]andthat andz git
 
 ---
 
-## 🚀 Каto [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]
+## 🚀 Kato :]from:]
 
-### 1. [CYR:[TRANSLATED]]with-реportер
+### 1. :]with-reporter
 ```bash
 /Users/playra/trinity/.ralph/scripts/send_ralph_status.sh
 ```
 
-Геnotрand[CYR:[TRANSLATED]] дinа fileа:
-- `status_message.txt` — [CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] with[TRANSLATED]]andе for Telegram
-- `status_report.json` — JSON for [CYR:[TRANSLATED]] доwith[TRANSLATED]]
+Genotrand:] dina filea:
+- `status_message.txt` — :]andraboutin:] with]ande for Telegram
+- `status_report.json` — JSON for :] daboutwith]
 
-[CYR:[TRANSLATED]]withto in[CYR:[TRANSLATED]]:
+:]withto in:]:
 ```bash
 bash /Users/playra/trinity/.ralph/scripts/send_ralph_status.sh
 ```
 
 ### 2. Cron Job
-Аin[CYR:[TRANSLATED]]andчеwithtoandй [CYR:[TRANSLATED]]withto for[TRANSLATED]] **30 мand[CYR:[TRANSLATED]]** [CYR:[TRANSLATED]] OpenClaw cron.
+Author:]andchewithtoandy :]withto for] **30 mand:]** :] OpenClaw cron.
 
 **Job ID:** `eeca8582-e5a0-46c2-8eda-90b231fb7671`
-**[CYR:[TRANSLATED]]inанandе:** Ralph Status to Trinity Dev
-**[CYR:[TRANSLATED]]inал:** 30 мand[CYR:[TRANSLATED]] (1,800,000 ms)
+**:]inanande:** Ralph Status to Trinity Dev
+**:]inal:** 30 mand:] (1,800,000 ms)
 
-Реportер чand[CYR:[TRANSLATED]]:
+Reporter chand:]:
 - `.ralph/internal/.circuit_breaker_state`
 - `.ralph/internal/.ralph_session`
 - `.ralph/internal/.call_count`
 - `.ralph/internal/progress.json`
 - `.ralph/internal/fix_plan.md`
-- Git log поwith[TRANSLATED]]andх 3 for[TRANSLATED]]andтоin
+- Git log bywith]andkh 3 for]andthatin
 
 ---
 
-## 🛠 [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе
+## 🛠 :]in:]ande
 
-### Поwithмfrom[CYR:[TRANSLATED]] withпandwithоto cron jobs
+### Paboutwithmfrom:] withpandwithaboutto cron jobs
 ```bash
 openclaw cron list
 ```
 
-### Отfor[TRANSLATED]]andть with[TRANSLATED]]with-реportер
+### Otfor]andt with]with-reporter
 ```bash
 openclaw cron update --id eeca8582-e5a0-46c2-8eda-90b231fb7671 --patch '{"enabled": false}'
 ```
 
-### Вfor[TRANSLATED]]andть with[TRANSLATED]]with-реportер
+### Vfor]andt with]with-reporter
 ```bash
 openclaw cron update --id eeca8582-e5a0-46c2-8eda-90b231fb7671 --patch '{"enabled": true}'
 ```
 
-### [CYR:[TRANSLATED]]andть with[TRANSLATED]]with-реportер
+### :]andt with]with-reporter
 ```bash
 openclaw cron remove --id eeca8582-e5a0-46c2-8eda-90b231fb7671
 ```
 
-### [CYR:[TRANSLATED]]withтandть not[CYR:[TRANSLATED]]
+### :]withtandt not:]
 ```bash
 openclaw cron run --id eeca8582-e5a0-46c2-8eda-90b231fb7671
 ```
 
 ---
 
-## 📁 [CYR:[TRANSLATED]]
+## 📁 :]
 
-| [CYR:[TRANSLATED]] | Опandwithанandе |
+| :] | Opandwithanande |
 |------|----------|
-| `.ralph/scripts/send_ralph_status.sh` | Сtoрandпт геnot[CYR:[TRANSLATED]]and with[TRANSLATED]]withа |
-| `.ralph/status_message.txt` | [CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] with[TRANSLATED]]andе (Telegram) |
-| `.ralph/status_report.json` | JSON with[TRANSLATED]]withа (for [CYR:[TRANSLATED]] доwith[TRANSLATED]]) |
-| `.ralph/internal/.circuit_breaker_state` | Соwith[TRANSLATED]]andе circuit breaker |
-| `.ralph/internal/.ralph_session` | [CYR:[TRANSLATED]]andя  withеwithand |
-| `.ralph/internal/.call_count` | [CYR:[TRANSLATED]]andto in[CYR:[TRANSLATED]]inоin |
-| `.ralph/internal/progress.json` | [CYR:[TRANSLATED]]with [CYR:[TRANSLATED]]withа |
-| `.ralph/internal/fix_plan.md` | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from (fromfor[TRANSLATED]] [CYR:[TRANSLATED]]withя P1 task) |
+| `.ralph/scripts/send_ralph_status.sh` | Storandpt genot:]and with]witha |
+| `.ralph/status_message.txt` | :]andraboutin:] with]ande (Telegram) |
+| `.ralph/status_report.json` | JSON with]witha (for :] daboutwith]) |
+| `.ralph/internal/.circuit_breaker_state` | Saboutwith]ande circuit breaker |
+| `.ralph/internal/.ralph_session` | :]andya  withewithand |
+| `.ralph/internal/.call_count` | :]andto in:]inaboutin |
+| `.ralph/internal/progress.json` | :]with :]witha |
+| `.ralph/internal/fix_plan.md` | :] :]from (fromfor] :]withya P1 task) |
 
 ---
 
-## 🔧 [CYR:[TRANSLATED]]inанandя
+## 🔧 :]inanandya
 
-- `jq` — for [CYR:[TRANSLATED]]withand[CYR:[TRANSLATED]] JSON
-- `git` — for [CYR:[TRANSLATED]]andя for[TRANSLATED]]andтоin
-- OpenClaw cron — for аin[CYR:[TRANSLATED]]andчеwithtoandх [CYR:[TRANSLATED]]withtoоin
+- `jq` — for :]withand:] JSON
+- `git` — for :]andya for]andthatin
+- OpenClaw cron — for ain:]andchewithtoandkh :]withtoaboutin
 
-Уwith[TRANSLATED]]intoа jq:
+Uwith]intoa jq:
 ```bash
 brew install jq
 ```
 
 ---
 
-## 📊 Прand[CYR:[TRANSLATED]] with[TRANSLATED]]andя
+## 📊 Prand:] with]andya
 
 ```
 🤖 **Ralph Status Report**
@@ -150,9 +150,9 @@ brew install jq
 
 ---
 
-## 🔄 [CYR:[TRANSLATED]]notнandе and[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]
+## 🔄 :]notnande and:]in:]
 
-[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]andть and[CYR:[TRANSLATED]]inал (onпрand[CYR:[TRANSLATED]], on 15 мand[CYR:[TRANSLATED]]):
+:] and:]andt and:]inal (onprand:], on 15 mand:]):
 
 ```bash
 openclaw cron update \
@@ -160,20 +160,20 @@ openclaw cron update \
   --patch '{"schedule": {"kind": "every", "everyMs": 900000}}'
 ```
 
-[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]:
-- 5 мand[CYR:[TRANSLATED]] = 300,000 ms
-- 15 мand[CYR:[TRANSLATED]] = 900,000 ms
-- 30 мand[CYR:[TRANSLATED]] = 1,800,000 ms (теtoущandй)
-- 1 чаwith = 3,600,000 ms
-- 2 чаwithа = 7,200,000 ms
+:]in:]:
+- 5 mand:] = 300,000 ms
+- 15 mand:] = 900,000 ms
+- 30 mand:] = 1,800,000 ms (thosetoatschandy)
+- 1 chawith = 3,600,000 ms
+- 2 chawitha = 7,200,000 ms
 
 ---
 
-## 📝 [CYR:[TRANSLATED]]
+## 📝 :]
 
-- **[CYR:[TRANSLATED]]:** 2026-02-17
-- **Аin[CYR:[TRANSLATED]]:** VIBEE (clawd)
-- **[CYR:[TRANSLATED]]:** [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andнг with[TRANSLATED]]withа Ralph аin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromtoand in Telegram [CYR:[TRANSLATED]]
+- **:]:** 2026-02-17
+- **Author:]:** VIBEE (clawd)
+- **:]:** :]and:]andng with]witha Ralph ain:] :]fromtoand in Telegram :]
 
 ---
 

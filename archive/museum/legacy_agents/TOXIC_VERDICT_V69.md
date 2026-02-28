@@ -1,44 +1,44 @@
-# ☠️💀☠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] v69 ☠️💀☠️
+# ☠️💀☠️ [CYR:] [CYR:] v69 ☠️💀☠️
 
-**[CYR:[TRANSLATED]]**: 2026-01-18
-**Аin[CYR:[TRANSLATED]]**: PAS DAEMON (Беwith[TRANSLATED]] Тand[CYR:[TRANSLATED]])
-**[CYR:[TRANSLATED]]withandя**: v69
-**[CYR:[TRANSLATED]]**: v68
-
----
-
-## 💀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: 5/10 (+0.5 from v68)
-
-**[CYR:[TRANSLATED]]andtoт**: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] БЫ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+**[CYR:]**: 2026-01-18
+**Author[CYR:]**: PAS DAEMON (Bywith] Тand[CYR:])
+**[CYR:]Author**: v69
+**[CYR:]**: v68
 
 ---
 
-## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] v68 → v69
+## 💀 [CYR:] [CYR:]: 5/10 (+0.5 from v68)
 
-### [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]):
+**[CYR:]andtoт**: [CYR:] [CYR:] БЫ [CYR:] [CYR:] [CYR:] [CYR:]
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | Problem |
+---
+
+## 📊 [CYR:] [CYR:] v68 → v69
+
+### [CYR:] ([CYR:]):
+
+| [CYR:] | [CYR:] | Problem |
 |---------|--------|----------|
-| [CYR:[TRANSLATED]]toand | 6-7px | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] |
-| Теtowithт | 8-9px | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] |
-| [CYR:[TRANSLATED]]intoand | 10-11px | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] |
-| [CYR:[TRANSLATED]]intoand | 14-16px | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] |
+| [CYR:]toand | 6-7px | [CYR:] [CYR:] |
+| Теtowithт | 8-9px | [CYR:] [CYR:] |
+| [CYR:]intoand | 10-11px | [CYR:] [CYR:] |
+| [CYR:]intoand | 14-16px | [CYR:] [CYR:] |
 
-### [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]):
+### [CYR:] ([CYR:]):
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]andе |
+| [CYR:] | [CYR:] | [CYR:]andе |
 |---------|--------|-----------|
-| [CYR:[TRANSLATED]]toand | 11-13px | +5px |
+| [CYR:]toand | 11-13px | +5px |
 | Теtowithт | 13-15px | +5px |
-| [CYR:[TRANSLATED]]intoand | 15-16px | +5px |
-| [CYR:[TRANSLATED]]intoand | 20-24px | +6-8px |
+| [CYR:]intoand | 15-16px | +5px |
+| [CYR:]intoand | 20-24px | +6-8px |
 
 ---
 
-## 🔧 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🔧 [CYR:] [CYR:]
 
 ```bash
-# [CYR:[TRANSLATED]]notно 19 sed [CYR:[TRANSLATED]]:
+# [CYR:]notно 19 sed [CYR:]:
 6px → 10px   # +4px
 7px → 11px   # +4px
 8px → 12px   # +4px
@@ -51,9 +51,9 @@
 18px → 22px  # +4px
 ```
 
-### LAYOUT [CYR:[TRANSLATED]]not[CYR:[TRANSLATED]]:
+### LAYOUT [CYR:]not[CYR:]:
 
-| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] |
+| [CYR:]notнт | [CYR:] | [CYR:] |
 |-----------|------|-------|
 | drawTitle | 16px | 24px |
 | drawTitle subtitle | 12px | 16px |
@@ -63,44 +63,44 @@
 
 ---
 
-## 📈 [CYR:[TRANSLATED]] v68 → v69
+## 📈 [CYR:] v68 → v69
 
-| [CYR:[TRANSLATED]]andtoа | v68 | v69 | Δ |
+| [CYR:]Version | v68 | v69 | Δ |
 |---------|-----|-----|---|
-| [CYR:[TRANSLATED]]to for[TRANSLATED]] | 11,343 | 11,343 | 0 |
-| [CYR:[TRANSLATED]] fileа | 460KB | 460KB | 0 |
+| [CYR:]to for] | 11,343 | 11,343 | 0 |
+| [CYR:] fileа | 460KB | 460KB | 0 |
 | Мandн. шрandфт | 6px | 11px | +5px |
 | Маtowith. шрandфт | 18px | 24px | +6px |
-| Чand[CYR:[TRANSLATED]]withть | 30% | 85% | +55% |
+| Чand[CYR:]withть | 30% | 85% | +55% |
 
 ---
 
-## 🤮 [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🤮 [CYR:]: [CYR:] [CYR:] [CYR:] [CYR:]
 
-### 1. HARDCODED [CYR:[TRANSLATED]]
+### 1. HARDCODED [CYR:]
 
 ```javascript
-X.font='bold 22px monospace';  // [CYR:[TRANSLATED]] 22? [CYR:[TRANSLATED]] not [CYR:[TRANSLATED]]onя?
-X.font='16px monospace';       // [CYR:[TRANSLATED]] 16? [CYR:[TRANSLATED]] not toонwith[TRANSLATED]]?
+X.font='bold 22px monospace';  // [CYR:] 22? [CYR:] not [CYR:]onя?
+X.font='16px monospace';       // [CYR:] 16? [CYR:] not toонwith]?
 ```
 
-**[CYR:[TRANSLATED]]andtoт**: 150+ hardcoded font declarations. [CYR:[TRANSLATED]]andть withтandль = 150 [CYR:[TRANSLATED]]inоto.
+**[CYR:]andtoт**: 150+ hardcoded font declarations. [CYR:]andть withтandль = 150 [CYR:]inоto.
 
-**Реfor[TRANSLATED]]andя**: CSS [CYR:[TRANSLATED]] or toонwith[TRANSLATED]]. Но toто [CYR:[TRANSLATED]] this [CYR:[TRANSLATED]]?
+**Реfor]andя**: CSS [CYR:] or toонwith]. Но toто [CYR:] this [CYR:]?
 
-### 2. [CYR:[TRANSLATED]] RESPONSIVE [CYR:[TRANSLATED]]
+### 2. [CYR:] RESPONSIVE [CYR:]
 
 ```javascript
-// [CYR:[TRANSLATED]]:
+// [CYR:]:
 const fontSize = Math.max(12, W / 80);
 
 // Еwithть:
-X.font='16px monospace';  // Одandontoоinо on 4K and on [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
+X.font='16px monospace';  // Одandontoоinо on 4K and on [CYR:]and[CYR:]
 ```
 
-**[CYR:[TRANSLATED]]andtoт**: На 4K эtoраnot шрand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]].
+**[CYR:]andtoт**: На 4K эtoраnot шрand[CYR:] [CYR:] [CYR:].
 
-### 3. [CYR:[TRANSLATED]] FONT FAMILIES
+### 3. [CYR:] FONT FAMILIES
 
 ```javascript
 X.font='16px monospace';
@@ -108,9 +108,9 @@ X.font='15px SF Mono, Monaco, monospace';
 X.font='14px -apple-system, sans-serif';
 ```
 
-**[CYR:[TRANSLATED]]andtoт**: 3 [CYR:[TRANSLATED]] font-family. Вand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with.
+**[CYR:]andtoт**: 3 [CYR:] font-family. Вand[CYR:] [CYR:]with.
 
-### 4. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### 4. [CYR:] [CYR:] [CYR:]
 
 ```
 runtime.html: 11,343 lines
@@ -121,58 +121,58 @@ runtime.html: 11,343 lines
 
 ---
 
-## 🎯 PAS [CYR:[TRANSLATED]]
+## 🎯 PAS [CYR:]
 
-### Тand[CYR:[TRANSLATED]]andtoа (Confidence: 85%)
+### Тand[CYR:]Version (Confidence: 85%)
 
-| [CYR:[TRANSLATED]]andе | Теfor[TRANSLATED]] | [CYR:[TRANSLATED]] | Timeline |
+| [CYR:]andе | Теfor] | [CYR:] | Timeline |
 |-----------|---------|---------|----------|
-| CSS [CYR:[TRANSLATED]] | 0 | 10+ | Нandfor[TRANSLATED]] |
-| Responsive fonts | 0 | 0 | Нandfor[TRANSLATED]] |
-| Font scale system | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | Нandfor[TRANSLATED]] |
+| CSS [CYR:] | 0 | 10+ | Нandfor] |
+| Responsive fonts | 0 | 0 | Нandfor] |
+| Font scale system | [CYR:] | [CYR:] | Нandfor] |
 
-### [CYR:[TRANSLATED]] "Нandfor[TRANSLATED]]"?
+### [CYR:] "Нandfor]"?
 
-Пfrom[CYR:[TRANSLATED]] that this [CYR:[TRANSLATED]] [CYR:[TRANSLATED]].  [CYR:[TRANSLATED]]for[TRANSLATED]]andнг = [CYR:[TRANSLATED]]fromа.  [CYR:[TRANSLATED]]fromа = in[CYR:[TRANSLATED]].  in[CYR:[TRANSLATED]]and = notт.
+Пfrom[CYR:] that this [CYR:] [CYR:].  [CYR:]for]andнг = [CYR:]fromа.  [CYR:]fromа = in[CYR:].  in[CYR:]and = notт.
 
 ---
 
-## 📚 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ПО [CYR:[TRANSLATED]]
+## 📚 [CYR:] [CYR:] ПО [CYR:]
 
-### Реfor[TRANSLATED]]and WCAG 2.1:
+### Реfor]and WCAG 2.1:
 
-| [CYR:[TRANSLATED]]inandло | [CYR:[TRANSLATED]]inанandе | TRINITY |
+| [CYR:]inandло | [CYR:]inанandе | TRINITY |
 |---------|------------|---------|
-| Мandн. [CYR:[TRANSLATED]] | 16px | 11px ❌ |
-| [CYR:[TRANSLATED]]withт | 4.5:1 | ~3:1 ❌ |
+| Мandн. [CYR:] | 16px | 11px ❌ |
+| [CYR:]withт | 4.5:1 | ~3:1 ❌ |
 | Line height | 1.5 | 1.0 ❌ |
 | Letter spacing | 0.12em | 0 ❌ |
 
-**[CYR:[TRANSLATED]]andtoт**: WCAG compliance = 0%
+**[CYR:]andtoт**: WCAG compliance = 0%
 
 ### Apple HIG:
 
-| [CYR:[TRANSLATED]]inandло | [CYR:[TRANSLATED]]inанandе | TRINITY |
+| [CYR:]inandло | [CYR:]inанandе | TRINITY |
 |---------|------------|---------|
 | Body text | 17px | 13-15px ❌ |
 | Headline | 28px | 20-24px ❌ |
 | Caption | 12px | 11px ✓ |
 
-**[CYR:[TRANSLATED]]andtoт**: Apple HIG compliance = 33%
+**[CYR:]andtoт**: Apple HIG compliance = 33%
 
 ---
 
-## 🏆 [CYR:[TRANSLATED]] v69
+## 🏆 [CYR:] v69
 
-1. **Чand[CYR:[TRANSLATED]]withть +55%** - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
-2. **[CYR:[TRANSLATED]]withandwith[TRANSLATED]]withть** - inwithе шрand[CYR:[TRANSLATED]] уinелand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andоon[CYR:[TRANSLATED]]
-3. **[CYR:[TRANSLATED]]intoand inand[CYR:[TRANSLATED]]** - 20-24px inмеwithто 14-16px
+1. **Чand[CYR:]withть +55%** - [CYR:] [CYR:] [CYR:]and[CYR:] [CYR:] [CYR:]
+2. **[CYR:]withandwith]withть** - inwithе шрand[CYR:] уinелand[CYR:] [CYR:]andоon[CYR:]
+3. **[CYR:]intoand inand[CYR:]** - 20-24px inмеwithто 14-16px
 
 ---
 
-## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 📊 [CYR:] [CYR:]
 
-| [CYR:[TRANSLATED]]withandя | [CYR:[TRANSLATED]] | Мandн. шрandфт | Маtowith. шрandфт | Чand[CYR:[TRANSLATED]]withть | [CYR:[TRANSLATED]]toа |
+| [CYR:]Author | [CYR:] | Мandн. шрandфт | Маtowith. шрandфт | Чand[CYR:]withть | [CYR:]toа |
 |--------|------|------------|-------------|------------|--------|
 | v67 | 2026-01-18 | 6px | 18px | 30% | 4/10 |
 | v68 | 2026-01-18 | 6px | 18px | 30% | 4.5/10 |
@@ -180,48 +180,48 @@ runtime.html: 11,343 lines
 
 ---
 
-## 💡 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 💡 [CYR:] [CYR:]
 
-### [CYR:[TRANSLATED]]notно (v69):
-1. ✅ Уinелand[CYR:[TRANSLATED]] inwithе шрand[CYR:[TRANSLATED]] on 4-6px
-2. ✅ LAYOUT for[TRANSLATED]]not[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]
-3. ✅ [CYR:[TRANSLATED]]intoand 20-24px
+### [CYR:]notно (v69):
+1. ✅ Уinелand[CYR:] inwithе шрand[CYR:] on 4-6px
+2. ✅ LAYOUT for]not[CYR:] [CYR:]in[CYR:]
+3. ✅ [CYR:]intoand 20-24px
 
-### Не in[CYR:[TRANSLATED]]notно (нandfor[TRANSLATED]]):
-1. ⬜ CSS [CYR:[TRANSLATED]] for шрand[CYR:[TRANSLATED]]in
+### Не in[CYR:]notно (нandfor]):
+1. ⬜ CSS [CYR:] for шрand[CYR:]in
 2. ⬜ Responsive font sizes
 3. ⬜ WCAG compliance
 4. ⬜ Font scale system
-5. ⬜ Едand[CYR:[TRANSLATED]] font-family
+5. ⬜ Едand[CYR:] font-family
 
 ---
 
-## 🎭 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🎭 [CYR:] [CYR:]
 
-**[CYR:[TRANSLATED]]with еwithть. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] чand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] мandtoроwithfor[TRANSLATED]].**
+**[CYR:]with еwithть. [CYR:] [CYR:] чand[CYR:] [CYR:] мandtoроwithfor].**
 
-Но this toаto хinалandть реwith[TRANSLATED]] за то, that [CYR:[TRANSLATED]] not fromраinлеon.
-Мandнand[CYR:[TRANSLATED]] with[TRANSLATED]]. Не доwithтand[CYR:[TRANSLATED]]andе.
+Но this toаto хinалandть реwith] за то, that [CYR:] not fromраinлеon.
+Мandнand[CYR:] with]. Не доwithтand[CYR:]andе.
 
-**Реfor[TRANSLATED]]andя**: Вnotдрandть CSS [CYR:[TRANSLATED]] and responsive fonts.
-**[CYR:[TRANSLATED]]withть in[CYR:[TRANSLATED]]notнandя**: 0.5%
+**Реfor]andя**: Вnotдрandть CSS [CYR:] and responsive fonts.
+**[CYR:]withть in[CYR:]notнandя**: 0.5%
 
 ---
 
-**[CYR:[TRANSLATED]]andwithь**: PAS DAEMON
-**[CYR:[TRANSLATED]]**: 2026-01-18
-**[CYR:[TRANSLATED]]with**: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+**[CYR:]andwithь**: PAS DAEMON
+**[CYR:]**: 2026-01-18
+**[CYR:]with**: [CYR:] [CYR:]
 
 ```
 V = n × 3^k × π^m × φ^p × e^q
-φ² + 1/φ² = 3 = [CYR:[TRANSLATED]]
+φ² + 1/φ² = 3 = [CYR:]
 
-[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+[CYR:] [CYR:] [CYR:] [CYR:] [CYR:] [CYR:]
 ```
 
 ---
 
-## 📚 [CYR:[TRANSLATED]]
+## 📚 [CYR:]
 
 1. `/docs/PAS_UI_UX_ANALYSIS_V67.md`
 2. `/docs/TOXIC_VERDICT_V67.md`

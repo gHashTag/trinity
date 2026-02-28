@@ -1,5 +1,5 @@
 # TRINITY ANSI PRESENTATION
-## [CYR:[TRANSLATED]]withtoая [CYR:[TRANSLATED]]andя for andнinеwith[TRANSLATED]]in
+## :]withtoaya :]andya for andninewith]in
 
 ```
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓

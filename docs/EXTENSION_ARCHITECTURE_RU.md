@@ -1,8 +1,8 @@
-# [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] Browser Extension [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+# :]andthosefor] Browser Extension :] :]
 
-## [CYR:[TRANSLATED]]
+## :]
 
-Browser extension for [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]on[CYR:[TRANSLATED]] B2T pipeline with [CYR:[TRANSLATED]] browserом, [CYR:[TRANSLATED]]with[TRANSLATED]]andinая fingerprint evasion and DePIN rewards.
+Browser extension for :] :] and:]and:] :]on:] B2T pipeline with :] browseraboutm, :]with]andinaya fingerprint evasion and DePIN rewards.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -31,15 +31,15 @@ Browser extension for [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-## [CYR:[TRANSLATED]]not[CYR:[TRANSLATED]]
+## :]not:]
 
 ### 1. Popup UI (`popup.html` + `popup.js`)
 
-[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]withtoandй and[CYR:[TRANSLATED]]with for [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andя extension:
+:]in:]withtoandy and:]with for :]in:]andya extension:
 
 ```
 ┌────────────────────────────────────┐
-│  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] 🔥           v1.0.0    │
+│  :] :] 🔥           v1.0.0    │
 │  ● Online                          │
 ├────────────────────────────────────┤
 │  Evasion: [ON]                     │
@@ -69,13 +69,13 @@ Browser extension for [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]
 ### 2. Background Script (`background.js`)
 
 Service worker for:
-- Initialization WASM [CYR:[TRANSLATED]]
-- [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and
-- Сand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя with DePIN
-- [CYR:[TRANSLATED]]fromtoа with[TRANSLATED]]andй
+- Initialization WASM :]
+- :]in:]ande :]and:]and
+- Sand:]and:]andya with DePIN
+- :]fromtoa with]andy
 
 ```javascript
-// Пwithеinдоtoод (геnotрand[CYR:[TRANSLATED]]withя andз .vibee)
+// Pwitheindabouttoaboutd (genotrand:]withya andz .vibee)
 chrome.runtime.onInstalled.addListener(() => {
   initWasmModule();
   loadConfig();
@@ -93,10 +93,10 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
 
 ### 3. Content Script (`content.js`)
 
-[CYR:[TRANSLATED]]toцandя fingerprint overrides:
+:]totsandya fingerprint overrides:
 
 ```javascript
-// Пwithеinдоtoод (геnotрand[CYR:[TRANSLATED]]withя andз .vibee)
+// Pwitheindabouttoaboutd (genotrand:]withya andz .vibee)
 (function() {
   const profile = getProfileFromStorage();
   
@@ -124,7 +124,7 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
 
 ### 4. WASM Module (`firebird.wasm`)
 
-Сfor[TRANSLATED]]orроin[CYR:[TRANSLATED]] andз Zig module:
+Sfor]orraboutin:] andz Zig module:
 
 ```zig
 // src/firebird/extension_wasm.zig
@@ -135,9 +135,9 @@ export fn wasm_get_pending_tri() f64;
 export fn wasm_claim_rewards() f64;
 ```
 
-## Пfromоtoand [CYR:[TRANSLATED]]
+## Pfromabouttoand :]
 
-### Creation [CYR:[TRANSLATED]]andля
+### Creation :]andlya
 
 ```
 User clicks "Generate"
@@ -172,7 +172,7 @@ User clicks "Generate"
         ▼ Update UI
 ```
 
-### Прandмеnotнandе Evasion
+### Prandmenotnande Evasion
 
 ```
 Page loads
@@ -201,7 +201,7 @@ Background.js
 $TRI reward added
 ```
 
-## [CYR:[TRANSLATED]]inая [CYR:[TRANSLATED]]for[TRANSLATED]]
+## :]inaya :]for]
 
 ```
 extension/
@@ -227,27 +227,27 @@ extension/
     └── options.js          # Settings logic
 ```
 
-## [CYR:[TRANSLATED]]toа
+## :]toa
 
-### [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя WASM
+### :]and:]andya WASM
 
 ```bash
-# Из for[TRANSLATED]] [CYR:[TRANSLATED]]toта
+# Iz for] :]tothat
 zig build-lib src/firebird/extension_wasm.zig \
   -target wasm32-freestanding \
   -O ReleaseFast \
   -femit-bin=extension/wasm/firebird.wasm
 ```
 
-### [CYR:[TRANSLATED]]toоintoа Extension
+### :]toaboutintoa Extension
 
 ```bash
-# [CYR:[TRANSLATED]] ZIP for Chrome Web Store
+# :] ZIP for Chrome Web Store
 cd extension
 zip -r ../firebird-extension.zip .
 ```
 
-## [CYR:[TRANSLATED]]withноwithть
+## :]withnaboutwitht
 
 ### Content Security Policy
 
@@ -261,14 +261,14 @@ zip -r ../firebird-extension.zip .
 
 ### Stealth Techniques
 
-1. **[CYR:[TRANSLATED]]andе with[TRANSLATED]]in and[CYR:[TRANSLATED]]toцand** - Очandwithтtoа DOM поwithле and[CYR:[TRANSLATED]]toцand
-2. **Proxy-based interception** - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inат [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andфandtoацand прfromfromandпоin
-3. **Consistent behavior** - Одandontoоinые resultы прand поin[CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]inах
-4. **Timing randomization** - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toand for and[CYR:[TRANSLATED]]andя timing attacks
+1. **:]ande with]in and:]totsand** - Ochandwithttoa DOM bywithle and:]totsand
+2. **Proxy-based interception** - :] :]inat :] :]andfVersiontsand prfromfromandbyin
+3. **Consistent behavior** - Odandontoaboutinye resulty prand byin:] in:]inakh
+4. **Timing randomization** - :] :]toand for and:]andya timing attacks
 
-## [CYR:[TRANSLATED]]andtoand [CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withтand
+## :]andtoand :]andzinaboutdand:]withtand
 
-| [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] |
+| :]andya | :] | :] |
 |----------|-------|--------|
 | WASM init | 50ms | 2MB |
 | Profile create | 10ms | 100KB |
@@ -276,7 +276,7 @@ zip -r ../firebird-extension.zip .
 | Canvas override | <1ms | - |
 | WebGL override | <1ms | - |
 
-## Теwithтandроinанandе
+## Tewithtandraboutinanande
 
 ### Unit Tests (Zig)
 
@@ -287,29 +287,29 @@ zig test src/firebird/extension_wasm.zig
 
 ### Integration Tests
 
-1. [CYR:[TRANSLATED]]andть extension in Chrome
-2. Отfor[TRANSLATED]] https://browserleaks.com/canvas
-3. [CYR:[TRANSLATED]]inерandть, that canvas hash fromлand[CYR:[TRANSLATED]]withя from орandгandonла
-4. [CYR:[TRANSLATED]]inерandть toонwithandwith[TRANSLATED]]withть прand [CYR:[TRANSLATED]]toе
+1. :]andt extension in Chrome
+2. Otfor] https://browserleaks.com/canvas
+3. :]inerandt, that canvas hash fromland:]withya from aboutrandgandonla
+4. :]inerandt toaboutnwithandwith]witht prand :]toe
 
 ### E2E Tests
 
 ```bash
-#  andwith[TRANSLATED]]inанandем Puppeteer
+#  andwith]inanandem Puppeteer
 npm run test:extension
 ```
 
 ## Roadmap
 
-### v1.0.0 (Теfor[TRANSLATED]])
+### v1.0.0 (Tefor])
 - [x] WASM module with VSA
-- [x] [CYR:[TRANSLATED]]inые overrides (canvas, webgl, navigator)
+- [x] :]inye overrides (canvas, webgl, navigator)
 - [x] DePIN mock rewards
-- [x] Popup UI with[TRANSLATED]]andфandtoацandя
+- [x] Popup UI with]andfVersiontsandya
 
 ### v1.1.0
-- [ ] [CYR:[TRANSLATED]] $TRI staking
-- [ ] [CYR:[TRANSLATED]] fingerprint overrides
+- [ ] :] $TRI staking
+- [ ] :] fingerprint overrides
 - [ ] Firefox support
 
 ### v2.0.0

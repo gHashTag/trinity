@@ -112,10 +112,10 @@ Key components:
 
 | State | English | Russian | Chinese |
 |-------|---------|---------|---------|
-| Happy | Happy to help! | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]! | 很高兴帮助！|
-| Interested | Interesting! | [CYR:[TRANSLATED]]withно! | 有意思！|
-| Empathetic | I understand. | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]. | 理解。|
-| Enthusiastic | Great! | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]! | 太棒了！|
+| Happy | Happy to help! | :] :]! | 很高兴帮助！|
+| Interested | Interesting! | :]withnabout! | 有意思！|
+| Empathetic | I understand. | :]and:]. | 理解。|
+| Enthusiastic | Great! | :]and:]! | 太棒了！|
 | Calm | (neutral) | (neutral) | (neutral) |
 
 ### Formality Levels

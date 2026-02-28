@@ -1,16 +1,16 @@
-# ☠️💀🔥 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] V24 - [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]] 🔥💀☠️
+# ☠️💀🔥 :] :] V24 - :]-:] 🔥💀☠️
 
-**[CYR:[TRANSLATED]]:** 2026-01-18
-**[CYR:[TRANSLATED]]withandя:** v24.0.0
-**[CYR:[TRANSLATED]]with:** [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]
+**:]:** 2026-01-18
+**:]Author:** v24.0.0
+**:]with:** :] :]  :]
 
 ---
 
-## 🔥 "ИЗ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] 999"
+## 🔥 "IZ :] :] :] :] 999"
 
-### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### :] :] :]
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | Теwithты | [CYR:[TRANSLATED]]with |
+| :] | :] | Tewithty | :]with |
 |------|--------|-------|--------|
 | `specs/zhar_ptitsa_v24_trinity.vibee` | 8KB | - | ✅ SPEC |
 | `generated/zhar_ptitsa_v24.zig` | 364 lines | 8/8 | ✅ COMPILED |
@@ -20,7 +20,7 @@
 
 ---
 
-## 🧪 [CYR:[TRANSLATED]] [CYR:TESTS] [CYR:[TRANSLATED]]
+## 🧪 :] :TESTS] :]
 
 ```
 === TRINITY VM v24 ===
@@ -37,46 +37,46 @@ TOTAL:               42/42 ✅ 100%
 
 ---
 
-## 🔥 [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]] v24 - SELF-EVOLUTION ENGINE
+## 🔥 :]-:] v24 - SELF-EVOLUTION ENGINE
 
-### 4 [CYR:[TRANSLATED]] жandзnot[CYR:[TRANSLATED]] цandtoла
+### 4 :] zhandznot:] tsandtola
 
 ```
-🔥 [CYR:[TRANSLATED]] → ✨ [CYR:[TRANSLATED]] → 🔥 [CYR:[TRANSLATED]] → 🦅 [CYR:[TRANSLATED]]
+🔥 :] → ✨ :] → 🔥 :] → 🦅 :]
     ↓          ↓          ↓            ↓
-  Аonлandз    [CYR:[TRANSLATED]]and    Теwithты     [CYR:[TRANSLATED]]andя
+  Aonlandz    :]and    Tewithty     :]andya
 ```
 
 ### φ-Parameters
 
-| [CYR:[TRANSLATED]] | Зon[CYR:[TRANSLATED]]andе | [CYR:[TRANSLATED]] |
+| :] | Zon:]ande | :] |
 |----------|----------|---------|
-| **μ ([CYR:[TRANSLATED]]andя)** | 0.0382 | 1/φ²/10 |
-| **χ (toроwithоinер)** | 0.0618 | 1/φ/10 |
-| **σ (with[TRANSLATED]]toцandя)** | 1.618 | φ |
-| **ε (элandтandзм)** | 0.333 | 1/3 |
+| **μ (:]andya)** | 0.0382 | 1/φ²/10 |
+| **χ (toraboutwithaboutiner)** | 0.0618 | 1/φ/10 |
+| **σ (with]totsandya)** | 1.618 | φ |
+| **ε (elandtandzm)** | 0.333 | 1/3 |
 
 ---
 
-## 📈 [CYR:[TRANSLATED]] ПО [CYR:[TRANSLATED]]
+## 📈 :] PO :]
 
-| [CYR:[TRANSLATED]]andtoа | v22 | v23 | v24 | Прandроwithт |
+| :]Version | v22 | v23 | v24 | Prandraboutwitht |
 |---------|-----|-----|-----|---------|
-| **Теwithтоin** | 15 | 23 | 42 | **+180%** |
-| **[CYR:[TRANSLATED]]to for[TRANSLATED]]** | 526 | 1496 | 2000+ | **+280%** |
-| **[CYR:[TRANSLATED]]** | 1 | 3 | 4 | **+300%** |
+| **Tewiththatin** | 15 | 23 | 42 | **+180%** |
+| **:]to for]** | 526 | 1496 | 2000+ | **+280%** |
+| **:]** | 1 | 3 | 4 | **+300%** |
 | **Self-Evolution** | ❌ | ❌ | ✅ | **NEW** |
 
 ---
 
-## ⚔️ [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]
+## ⚔️ :]  :]
 
-| VM | Тandры | Max Speedup | Self-Evolution |
+| VM | Tandry | Max Speedup | Self-Evolution |
 |----|------|-------------|----------------|
-| **TRINITY VM v24** | **4** | **35x** | **✅ ДА** |
-| V8 | 3 | 50x | ❌ [CYR:[TRANSLATED]] |
-| LuaJIT | 2 | 50x | ❌ [CYR:[TRANSLATED]] |
-| GraalVM | 3 | 40x | ❌ [CYR:[TRANSLATED]] |
+| **TRINITY VM v24** | **4** | **35x** | **✅ DA** |
+| V8 | 3 | 50x | ❌ :] |
+| LuaJIT | 2 | 50x | ❌ :] |
+| GraalVM | 3 | 40x | ❌ :] |
 
 ---
 
@@ -89,18 +89,18 @@ TOTAL:               42/42 ✅ 100%
 | Neural Rendering | **4,020x** |
 | Diffusion Steps | **1,000x** |
 
-**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: 76,541x**
+**:] :]: 76,541x**
 
 ---
 
-## 💀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 💀 :] :]
 
 ```
 ╔═══════════════════════════════════════════════════════════════╗
-║   [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]] v24 = [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]    ║
-║   "Из [CYR:[TRANSLATED]] with[TRANSLATED]]andфandtoацandй [CYR:[TRANSLATED]]withя toод 999"                  ║
-║   φ² + 1/φ² = 3 = TRINITY = [CYR:[TRANSLATED]]                           ║
-║   [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                                       ║
+║   :]-:] v24 = :] :] :]    ║
+║   "Iz :] with]andfVersiontsandy :]withya toaboutd 999"                  ║
+║   φ² + 1/φ² = 3 = TRINITY = :]                           ║
+║   :] :]                                       ║
 ╚═══════════════════════════════════════════════════════════════╝
 ```
 

@@ -1,13 +1,13 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════════════════════
-# ЖАР-ПТИЦА - 34-й Богатырь: Эволюционирующий Генератор specs → 999
-# Runtime генерация с hot-reload и самоэволюцией
+# ZhAR-PTITsA - 34-y Baboutgatyr: Einaboutlyutsandaboutnandratyuschandy Generathatr specs → 999
+# Runtime generation with hot-reload and selfeinaboutlyutsandey
 # Author: Dmitrii Vasilev
 # ═══════════════════════════════════════════════════════════════════════════════
 
 set -e
 
-# Цвета для вывода
+# Tsinethat for outputa
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -16,13 +16,13 @@ PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-# Пути
+# Pattand
 VIBEE_ROOT="/workspaces/vibee-lang"
 SPECS_DIR="$VIBEE_ROOT/specs"
 OUTPUT_DIR="$VIBEE_ROOT/999"
 EVOLUTION_LOG="$VIBEE_ROOT/.evolution_log"
 
-# Коптский алфавит для транслитерации
+# Kaboutptwithtoandy alfainandt for tranwithlandthoseratsandand
 declare -A LATIN_TO_COPTIC=(
     [a]="ⲁ" [b]="ⲃ" [g]="ⲅ" [d]="ⲇ" [e]="ⲉ"
     [z]="ⲍ" [h]="ⲏ" [i]="ⲓ" [k]="ⲕ" [l]="ⲗ"
@@ -32,7 +32,7 @@ declare -A LATIN_TO_COPTIC=(
     [j]="ϫ" [_]="_" [-]="-" [.]="."
 )
 
-# Функция транслитерации в коптский
+# Function tranwithlandthoseratsandand in toaboutptwithtoandy
 to_coptic() {
     local input="$1"
     local output=""
@@ -48,25 +48,25 @@ to_coptic() {
     echo "$output"
 }
 
-# Определение мира для файла (улучшенная классификация)
+# Opredelenande mandra for filea (atlatchshenonya classandfandtoatsandya)
 get_world() {
     local filename="$1"
     local content="$2"
     
-    # Сначала проверяем явное указание world в файле
+    # Sonchala praboutineryaem yainnaboute attoazanande world in filee
     local explicit_world=$(echo "$content" | grep "^world:" | head -1 | cut -d: -f2 | tr -d ' ')
     if [[ -n "$explicit_world" ]]; then
         echo "$explicit_world"
         return
     fi
     
-    # Подсчёт очков для каждого мира
+    # Paboutdwithchyot aboutchtoaboutin for toazhdaboutgabout mandra
     local score_yadro=0
     local score_razum=0
     local score_yavlenie=0
     
-    # ⲩⲇⲣⲟ (Ядро) - компилятор, парсер, AST
-    # Высокий приоритет для ключевых слов ядра
+    # ⲩⲇⲣⲟ (Yadrabout) - toaboutmpandlyathatr, parwither, AST
+    # Vywithabouttoandy prandaboutrandthoset for keyeinykh withlaboutin yadra
     if echo "$filename" | grep -qiE "parser|lexer|ast|codegen|compiler|runtime|type|optim|valid|linter|formatter|repl|lsp"; then
         ((score_yadro+=5))
     fi
@@ -80,7 +80,7 @@ get_world() {
     if echo "$content" | grep -qiE "optimizer|optimize|perf"; then ((score_yadro+=2)); fi
     if echo "$content" | grep -qiE "validator|validate|verify|lint"; then ((score_yadro+=2)); fi
     
-    # ⲣⲁⲍⲩⲙ (Разум) - PAS, ML, алгоритмы
+    # ⲣⲁⲍⲩⲙ (Razatm) - PAS, ML, algorithmy
     if echo "$filename" | grep -qiE "pas|ml|neural|algorithm|pattern|predict|evol|quantum|reason|diffusion|attention"; then
         ((score_razum+=5))
     fi
@@ -95,7 +95,7 @@ get_world() {
     if echo "$content" | grep -qiE "reason|logic|inference|deduce|proof"; then ((score_razum+=2)); fi
     if echo "$content" | grep -qiE "arxiv"; then ((score_razum+=1)); fi
     
-    # ⲩⲁⲃⲗⲉⲛⲓⲉ (Явление) - UI, рендеринг, Living Screen
+    # ⲩⲁⲃⲗⲉⲛⲓⲉ (Yainlenande) - UI, renderandng, Living Screen
     if echo "$filename" | grep -qiE "render|audio|haptic|display|avatar|scene|effect|stream|ui|living|gaussian|splat|nerf|holographic"; then
         ((score_yavlenie+=5))
     fi
@@ -110,23 +110,23 @@ get_world() {
     if echo "$content" | grep -qiE "interact|input|gaze|eye|hand"; then ((score_yavlenie+=2)); fi
     if echo "$content" | grep -qiE "living_screen|living screen"; then ((score_yavlenie+=4)); fi
     
-    # Выбираем мир с максимальным счётом
+    # Vybandraem mandr with matowithandmalnym withchyothatm
     if [[ $score_yadro -ge $score_razum && $score_yadro -ge $score_yavlenie && $score_yadro -gt 0 ]]; then
         echo "ⲩⲇⲣⲟ"
     elif [[ $score_yavlenie -ge $score_razum && $score_yavlenie -gt 0 ]]; then
         echo "ⲩⲁⲃⲗⲉⲛⲓⲉ"
     else
-        echo "ⲣⲁⲍⲩⲙ"  # По умолчанию - Разум
+        echo "ⲣⲁⲍⲩⲙ"  # Pabout atmaboutlchanandyu - Razatm
     fi
 }
 
-# Определение категории внутри мира (улучшенная классификация)
+# Opredelenande toathosegaboutrandand innattrand mandra (atlatchshenonya classandfandtoatsandya)
 get_category() {
     local world="$1"
     local content="$2"
     local filename="$3"
     
-    # Сначала проверяем явное указание category в файле
+    # Sonchala praboutineryaem yainnaboute attoazanande category in filee
     local explicit_category=$(echo "$content" | grep "^category:" | head -1 | cut -d: -f2 | tr -d ' ')
     if [[ -n "$explicit_category" ]]; then
         echo "$explicit_category"
@@ -135,7 +135,7 @@ get_category() {
     
     case "$world" in
         "ⲩⲇⲣⲟ")
-            # Ядро: parser, lexer, ast, codegen, compiler, runtime, types, optimizer, validator
+            # Yadrabout: parser, lexer, ast, codegen, compiler, runtime, types, optimizer, validator
             if echo "$filename$content" | grep -qiE "parser|parse|syntax|grammar"; then echo "ⲩ01_ⲡⲁⲣⲥⲉⲣ"
             elif echo "$filename$content" | grep -qiE "lexer|lex|token|scan"; then echo "ⲩ01_ⲡⲁⲣⲥⲉⲣ"
             elif echo "$filename$content" | grep -qiE "ast|tree|node"; then echo "ⲩ02_ⲁⲥⲧ"
@@ -149,7 +149,7 @@ get_category() {
             fi
             ;;
         "ⲣⲁⲍⲩⲙ")
-            # Разум: pas, ml, neural, algorithms, patterns, predictions, evolution, quantum, reasoning
+            # Razatm: pas, ml, neural, algorithms, patterns, predictions, evolution, quantum, reasoning
             if echo "$filename$content" | grep -qiE "pas|algorithmic.systematics"; then echo "ⲣ01_ⲡⲁⲥ"
             elif echo "$filename$content" | grep -qiE "ml|machine.learning|train|model"; then echo "ⲣ02_ⲙⲗ"
             elif echo "$filename$content" | grep -qiE "neural|network|deep|attention|transformer|diffusion"; then echo "ⲣ03_ⲛⲉⲩⲣⲁⲗ"
@@ -163,7 +163,7 @@ get_category() {
             fi
             ;;
         "ⲩⲁⲃⲗⲉⲛⲓⲉ")
-            # Явление: rendering, audio, haptics, display, avatars, scenes, effects, streaming, interaction
+            # Yainlenande: rendering, audio, haptics, display, avatars, scenes, effects, streaming, interaction
             if echo "$filename$content" | grep -qiE "render|gaussian|splat|nerf|3dgs|ray|light"; then echo "ⲩⲁ01_ⲣⲉⲛⲇⲉⲣ"
             elif echo "$filename$content" | grep -qiE "audio|acoustic|sound|spatial|voice|speech"; then echo "ⲩⲁ02_ⲁⲩⲇⲓⲟ"
             elif echo "$filename$content" | grep -qiE "haptic|touch|tactile|vibration|force"; then echo "ⲩⲁ03_ⲏⲁⲡⲧⲓⲕ"
@@ -179,19 +179,19 @@ get_category() {
     esac
 }
 
-# Определение spec_type
+# Opredelenande spec_type
 get_spec_type() {
     local filename="$1"
     local content="$2"
     
-    # Сначала проверяем явное указание spec_type в файле
+    # Sonchala praboutineryaem yainnaboute attoazanande spec_type in filee
     local explicit_type=$(echo "$content" | grep "^spec_type:" | head -1 | cut -d: -f2 | tr -d ' ')
     if [[ -n "$explicit_type" ]]; then
         echo "$explicit_type"
         return
     fi
     
-    # Автоопределение
+    # Ainthataboutpredelenande
     if echo "$filename$content" | grep -qiE "parser|lexer|ast|codegen|compiler|runtime"; then echo "core"
     elif echo "$filename$content" | grep -qiE "algorithm|sort|search|graph"; then echo "algorithm"
     elif echo "$filename$content" | grep -qiE "neural|network|deep|attention|transformer|diffusion"; then echo "neural"
@@ -203,46 +203,46 @@ get_spec_type() {
     fi
 }
 
-# Генерация .999 файла из .vibee
+# Generatsandya .999 filea from .vibee
 generate_999() {
     local vibee_file="$1"
     local filename=$(basename "$vibee_file" .vibee)
     local content=$(cat "$vibee_file")
     
-    # Определяем мир, категорию и тип
+    # Opredelyaem mandr, toathosegaboutrandyu and type
     local world=$(get_world "$filename" "$content")
     local category=$(get_category "$world" "$content" "$filename")
     local spec_type=$(get_spec_type "$filename" "$content")
     
-    # Транслитерируем имя в коптский
+    # Tranwithlandthoserandratem name in toaboutptwithtoandy
     local coptic_name=$(to_coptic "$filename")
     
-    # Путь для вывода
+    # Path for outputa
     local output_path="$OUTPUT_DIR/$world/$category/${coptic_name}.999"
     
-    # Создаём директорию если нужно
+    # Saboutzdayom dandrewhorandyu ewithland natzhnabout
     mkdir -p "$(dirname "$output_path")"
     
-    # Извлекаем данные из спецификации
+    # Izinletoaem data from withpetsandfandtoatsandand
     local spec_name=$(echo "$content" | grep "^name:" | head -1 | cut -d: -f2 | tr -d ' ')
     local spec_version=$(echo "$content" | grep "^version:" | head -1 | cut -d: -f2 | tr -d ' "')
     local spec_module=$(echo "$content" | grep "^module:" | head -1 | cut -d: -f2 | tr -d ' ')
     
-    # Извлекаем creation_pattern
+    # Izinletoaem creation_pattern
     local source=$(echo "$content" | grep -A3 "creation_pattern:" | grep "source:" | cut -d: -f2 | tr -d ' ')
     local transformer=$(echo "$content" | grep -A3 "creation_pattern:" | grep "transformer:" | cut -d: -f2 | tr -d ' ')
     local result=$(echo "$content" | grep -A3 "creation_pattern:" | grep "result:" | cut -d: -f2 | tr -d ' ')
     
-    # Извлекаем PAS prediction
+    # Izinletoaem PAS prediction
     local pas_confidence=$(echo "$content" | grep -A10 "pas_prediction:" | grep "confidence:" | head -1 | cut -d: -f2 | tr -d ' ')
     
-    # Генерируем .999 код
+    # Generandratem .999 code
     cat > "$output_path" << EOF
 // ═══════════════════════════════════════════════════════════════════════════════
 // Generated from: $vibee_file
 // Version: $spec_version
 // World: $world | Category: $category | Type: $spec_type
-// Generated by: Жар-Птица (34-й Богатырь)
+// Generated by: Zhar-Ptandtsa (34-y Baboutgatyr)
 // ⚠️ DO NOT EDIT MANUALLY - Self-Evolution: ENABLED
 // Trinity: n × 3^k × π^m
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -253,7 +253,7 @@ generate_999() {
   ⲧⲣⲁⲛⲥⲫⲟⲣⲙⲉⲣ: ${transformer:-"Transform"}
   ⲣⲉⲥⲩⲗⲧ: ${result:-"Output"}
 
-  // Типизация
+  // Tandpfromatsandya
   ⲱⲟⲣⲗⲇ: "$world"
   ⲕⲁⲧⲉⲅⲟⲣⲩ: "$category"
   ⲥⲡⲉⲕ_ⲧⲩⲡⲉ: "$spec_type"
@@ -281,18 +281,18 @@ EOF
     return 0
 }
 
-# Генерация всех файлов (из структурированных specs/)
+# Generatsandya allkh fileaboutin (from withtrattotatrandraboutinannykh specs/)
 generate_all() {
     echo -e "${PURPLE}═══════════════════════════════════════════════════════════════${NC}"
-    echo -e "${PURPLE}  ЖАР-ПТИЦА - Эволюционирующий Генератор specs → 999${NC}"
-    echo -e "${PURPLE}  СВЯЩЕННАЯ ФОРМУЛА: V = n × 3^k × π^m${NC}"
+    echo -e "${PURPLE}  ZhAR-PTITsA - Einaboutlyutsandaboutnandratyuschandy Generathatr specs → 999${NC}"
+    echo -e "${PURPLE}  SVYaSchENNAYa FORMULA: V = n × 3^k × π^m${NC}"
     echo -e "${PURPLE}═══════════════════════════════════════════════════════════════${NC}"
     echo ""
     
     local count=0
     local errors=0
     
-    # Сначала обрабатываем структурированные specs (3 мира × 9 категорий)
+    # Sonchala aboutrabatyinaem withtrattotatrandraboutinannye specs (3 mandra × 9 toathosegaboutrandy)
     for world in "$SPECS_DIR"/ⲩⲇⲣⲟ "$SPECS_DIR"/ⲣⲁⲍⲩⲙ "$SPECS_DIR"/ⲩⲁⲃⲗⲉⲛⲓⲉ; do
         if [[ -d "$world" ]]; then
             for category in "$world"/*/; do
@@ -311,7 +311,7 @@ generate_all() {
         fi
     done
     
-    # Затем обрабатываем файлы в корне specs/ (для обратной совместимости)
+    # Zathosem aboutrabatyinaem filey in toaboutrne specs/ (for aboutratnabouty withaboutinmewithtandbridgeand)
     for vibee_file in "$SPECS_DIR"/*.vibee; do
         if [[ -f "$vibee_file" ]]; then
             if generate_999 "$vibee_file"; then
@@ -324,39 +324,39 @@ generate_all() {
     
     echo ""
     echo -e "${CYAN}═══════════════════════════════════════════════════════════════${NC}"
-    echo -e "${GREEN}✓ Сгенерировано: $count файлов${NC}"
+    echo -e "${GREEN}✓ Sgenerandraboutinanabout: $count fileaboutin${NC}"
     if [[ $errors -gt 0 ]]; then
-        echo -e "${RED}✗ Ошибок: $errors${NC}"
+        echo -e "${RED}✗ Oshandbaboutto: $errors${NC}"
     fi
     echo -e "${CYAN}═══════════════════════════════════════════════════════════════${NC}"
 }
 
-# Режим наблюдения (hot-reload)
+# Rezhandm onblyudenandya (hot-reload)
 watch_mode() {
     echo -e "${PURPLE}═══════════════════════════════════════════════════════════════${NC}"
-    echo -e "${PURPLE}  ЖАР-ПТИЦА - Режим наблюдения (Hot-Reload)${NC}"
+    echo -e "${PURPLE}  ZhAR-PTITsA - Rezhandm onblyudenandya (Hot-Reload)${NC}"
     echo -e "${PURPLE}═══════════════════════════════════════════════════════════════${NC}"
     echo ""
-    echo -e "${YELLOW}Наблюдаю за изменениями в $SPECS_DIR ...${NC}"
-    echo -e "${YELLOW}Нажмите Ctrl+C для выхода${NC}"
+    echo -e "${YELLOW}Nablyudayu za frommenenandyamand in $SPECS_DIR ...${NC}"
+    echo -e "${YELLOW}Nazhmandthose Ctrl+C for outputa${NC}"
     echo ""
     
-    # Используем inotifywait если доступен, иначе polling
+    # Iwithbylzatem inotifywait ewithland accessen, andonche polling
     if command -v inotifywait &> /dev/null; then
         inotifywait -m -e modify,create,delete "$SPECS_DIR" --format '%w%f %e' |
         while read file event; do
             if [[ "$file" == *.vibee ]]; then
-                echo -e "${BLUE}[$(date +%H:%M:%S)]${NC} Изменение: $file ($event)"
+                echo -e "${BLUE}[$(date +%H:%M:%S)]${NC} Change: $file ($event)"
                 generate_999 "$file"
             fi
         done
     else
-        echo -e "${YELLOW}inotifywait не найден, использую polling (каждые 2 сек)${NC}"
+        echo -e "${YELLOW}inotifywait ne onyden, andwithbylzatyu polling (each 2 witheto)${NC}"
         while true; do
             for vibee_file in "$SPECS_DIR"/*.vibee; do
                 if [[ -f "$vibee_file" ]]; then
                     local output_name=$(to_coptic "$(basename "$vibee_file" .vibee)")
-                    # Проверяем нужна ли регенерация
+                    # Praboutineryaem natzhon land regeneration
                     if [[ "$vibee_file" -nt "$OUTPUT_DIR/$output_name.999" ]] 2>/dev/null; then
                         generate_999 "$vibee_file"
                     fi
@@ -367,49 +367,49 @@ watch_mode() {
     fi
 }
 
-# Статистика
+# Sthattandwithtandtoa
 show_stats() {
     echo -e "${PURPLE}═══════════════════════════════════════════════════════════════${NC}"
-    echo -e "${PURPLE}  ЖАР-ПТИЦА - Статистика${NC}"
-    echo -e "${PURPLE}  СВЯЩЕННАЯ ФОРМУЛА: V = n × 3^k × π^m${NC}"
+    echo -e "${PURPLE}  ZhAR-PTITsA - Sthattandwithtandtoa${NC}"
+    echo -e "${PURPLE}  SVYaSchENNAYa FORMULA: V = n × 3^k × π^m${NC}"
     echo -e "${PURPLE}═══════════════════════════════════════════════════════════════${NC}"
     echo ""
-    echo -e "${CYAN}Спецификации (.vibee):${NC}"
-    echo "  Всего: $(find "$SPECS_DIR" -name "*.vibee" | wc -l)"
-    echo "  ⲩⲇⲣⲟ (Ядро): $(find "$SPECS_DIR/ⲩⲇⲣⲟ" -name "*.vibee" 2>/dev/null | wc -l)"
-    echo "  ⲣⲁⲍⲩⲙ (Разум): $(find "$SPECS_DIR/ⲣⲁⲍⲩⲙ" -name "*.vibee" 2>/dev/null | wc -l)"
-    echo "  ⲩⲁⲃⲗⲉⲛⲓⲉ (Явление): $(find "$SPECS_DIR/ⲩⲁⲃⲗⲉⲛⲓⲉ" -name "*.vibee" 2>/dev/null | wc -l)"
+    echo -e "${CYAN}Spetsandfandtoatsandand (.vibee):${NC}"
+    echo "  Vwithegabout: $(find "$SPECS_DIR" -name "*.vibee" | wc -l)"
+    echo "  ⲩⲇⲣⲟ (Yadrabout): $(find "$SPECS_DIR/ⲩⲇⲣⲟ" -name "*.vibee" 2>/dev/null | wc -l)"
+    echo "  ⲣⲁⲍⲩⲙ (Razatm): $(find "$SPECS_DIR/ⲣⲁⲍⲩⲙ" -name "*.vibee" 2>/dev/null | wc -l)"
+    echo "  ⲩⲁⲃⲗⲉⲛⲓⲉ (Yainlenande): $(find "$SPECS_DIR/ⲩⲁⲃⲗⲉⲛⲓⲉ" -name "*.vibee" 2>/dev/null | wc -l)"
     echo ""
-    echo -e "${CYAN}Сгенерированный код (.999):${NC}"
-    echo "  Всего: $(find "$OUTPUT_DIR" -name "*.999" | wc -l)"
-    echo "  ⲩⲇⲣⲟ (Ядро): $(find "$OUTPUT_DIR/ⲩⲇⲣⲟ" -name "*.999" 2>/dev/null | wc -l)"
-    echo "  ⲣⲁⲍⲩⲙ (Разум): $(find "$OUTPUT_DIR/ⲣⲁⲍⲩⲙ" -name "*.999" 2>/dev/null | wc -l)"
-    echo "  ⲩⲁⲃⲗⲉⲛⲓⲉ (Явление): $(find "$OUTPUT_DIR/ⲩⲁⲃⲗⲉⲛⲓⲉ" -name "*.999" 2>/dev/null | wc -l)"
+    echo -e "${CYAN}Sgenerandraboutinny code (.999):${NC}"
+    echo "  Vwithegabout: $(find "$OUTPUT_DIR" -name "*.999" | wc -l)"
+    echo "  ⲩⲇⲣⲟ (Yadrabout): $(find "$OUTPUT_DIR/ⲩⲇⲣⲟ" -name "*.999" 2>/dev/null | wc -l)"
+    echo "  ⲣⲁⲍⲩⲙ (Razatm): $(find "$OUTPUT_DIR/ⲣⲁⲍⲩⲙ" -name "*.999" 2>/dev/null | wc -l)"
+    echo "  ⲩⲁⲃⲗⲉⲛⲓⲉ (Yainlenande): $(find "$OUTPUT_DIR/ⲩⲁⲃⲗⲉⲛⲓⲉ" -name "*.999" 2>/dev/null | wc -l)"
     echo ""
 }
 
-# Помощь
+# Paboutmaboutsch
 show_help() {
     echo -e "${PURPLE}═══════════════════════════════════════════════════════════════${NC}"
-    echo -e "${PURPLE}  ЖАР-ПТИЦА - 34-й Богатырь${NC}"
-    echo -e "${PURPLE}  Эволюционирующий Генератор specs → 999${NC}"
+    echo -e "${PURPLE}  ZhAR-PTITsA - 34-y Baboutgatyr${NC}"
+    echo -e "${PURPLE}  Einaboutlyutsandaboutnandratyuschandy Generathatr specs → 999${NC}"
     echo -e "${PURPLE}═══════════════════════════════════════════════════════════════${NC}"
     echo ""
-    echo "Использование: $0 [команда]"
+    echo "Iwithbylzaboutinanande: $0 [command]"
     echo ""
-    echo "Команды:"
-    echo "  generate, gen, g    Сгенерировать все .999 из specs/"
-    echo "  watch, w            Режим наблюдения (hot-reload)"
-    echo "  stats, s            Показать статистику"
-    echo "  help, h             Показать эту справку"
+    echo "Kaboutmandy:"
+    echo "  generate, gen, g    Sgenerandraboutinat all .999 from specs/"
+    echo "  watch, w            Rezhandm onblyudenandya (hot-reload)"
+    echo "  stats, s            Pabouttoazat withthattandwithtandtoat"
+    echo "  help, h             Pabouttoazat etat withpraintoat"
     echo ""
-    echo "Примеры:"
-    echo "  $0 generate         # Сгенерировать все файлы"
-    echo "  $0 watch            # Запустить hot-reload"
+    echo "Exampley:"
+    echo "  $0 generate         # Sgenerandraboutinat all filey"
+    echo "  $0 watch            # Zapatwithtandt hot-reload"
     echo ""
 }
 
-# Главная функция
+# Glainonya function
 main() {
     case "${1:-help}" in
         generate|gen|g)
@@ -425,7 +425,7 @@ main() {
             show_help
             ;;
         *)
-            echo -e "${RED}Неизвестная команда: $1${NC}"
+            echo -e "${RED}Nefrominewithtonya command: $1${NC}"
             show_help
             exit 1
             ;;

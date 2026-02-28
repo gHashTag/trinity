@@ -1,91 +1,91 @@
 #!/usr/bin/env python3
 """
-ГЕНЕРАТОР КНИГИ 999 v3.0 — ПОЛНЫЙ УНИКАЛЬНЫЙ КОНТЕНТ
+GENERATOR KNIGI 999 v3.0 — ny ny KONTENT
 """
 import os
 
-КНИГИ = {
-    1: {"название": "Начало Пути", "тема": "История троичных систем",
-        "факты": ["Сетунь (1958) — первый троичный компьютер", "log₃/log₂ ≈ 0.63"],
-        "формула": "V = n × 3^k", "мудрость": "Путь в тысячу ли начинается с одного шага"},
-    2: {"название": "Число Три", "тема": "Математические свойства",
-        "факты": ["φ² + 1/φ² = 3 (точно!)", "3 — первое нечётное простое"],
-        "формула": "φ² + 1/φ² = 3", "мудрость": "Бог любит троицу"},
-    3: {"название": "Константы Вселенной", "тема": "Связь π, φ, e",
-        "факты": ["φ = 2cos(π/5)", "1/α = 4π³ + π² + π ≈ 137.036"],
-        "формула": "V = n × 3^k × π^m × φ^p", "мудрость": "Вселенная написана на языке математики"},
-    4: {"название": "Троичная Логика", "тема": "Логика Лукасевича",
-        "факты": ["Третье значение: неопределённо", "SQL NULL — применение"],
-        "формула": "T ∧ U = U", "мудрость": "Не всё в мире чёрное или белое"},
-    5: {"название": "Структуры Данных", "тема": "Троичные деревья",
-        "факты": ["Высота: log₃(n)", "TST для строк"],
-        "формула": "h = ⌈log₃(n+1)⌉", "мудрость": "Порядок — основа мудрости"},
-    6: {"название": "Квантовые Кутриты", "тема": "Квантовые вычисления",
-        "факты": ["|ψ⟩ = α|0⟩ + β|1⟩ + γ|2⟩", "1.58 бит vs 1 бит кубита"],
-        "формула": "|α|²+|β|²+|γ|²=1", "мудрость": "Наблюдатель меняет наблюдаемое"},
-    7: {"название": "Нейронные Сети", "тема": "TNN",
-        "факты": ["Веса {-1,0,+1} — экономия в 16 раз", "XNOR-Net"],
-        "формула": "y = sign(Σ wᵢxᵢ)", "мудрость": "Мудрость — это связи"},
-    8: {"название": "Криптография", "тема": "Троичные шифры",
-        "факты": ["C = M ⊕₃ K", "3^n > 2^n комбинаций"],
-        "формула": "C = (M + K) mod 3", "мудрость": "Тайна — сила"},
-    9: {"название": "Завершение Теории", "тема": "Синтез Тома 1",
-        "факты": ["333 = 9 × 37", "Медный ключ"],
-        "формула": "333 = 3² × 37", "мудрость": "Теория без практики мертва"},
-    10: {"название": "Trinity Sort", "тема": "Dual-Pivot QuickSort",
-         "факты": ["Yaroslavskiy 2009", "Java 7+ Arrays.sort()", "O(n log₃ n)"],
-         "формула": "T(n) = 3T(n/3) + O(n)", "мудрость": "Разделяй на три — и властвуй"},
-    11: {"название": "Trinity Search", "тема": "Троичный поиск",
-         "факты": ["Для унимодальных функций", "O(log₃ n)"],
-         "формула": "m1 = l + (r-l)/3", "мудрость": "Ищущий да обрящет"},
-    12: {"название": "Trinity Compress", "тема": "Huffman-3",
-         "факты": ["H₃ = -Σ pᵢ log₃(pᵢ)", "Ближе к энтропии"],
-         "формула": "H₃ ≤ L < H₃ + 1", "мудрость": "Краткость — сестра таланта"},
-    13: {"название": "Язык VIBEE", "тема": "Спецификация 999",
-         "факты": [".vibee → .999 → runtime", "Коптский алфавит"],
-         "формула": "Source → Transformer → Result", "мудрость": "Язык определяет мышление"},
-    14: {"название": "Компилятор 999", "тема": "Архитектура",
-         "факты": ["Lexer → Parser → AST → IR", "Multi-target"],
-         "формула": "Source → AST → IR → Target", "мудрость": "Инструмент — продолжение руки"},
-    15: {"название": "Runtime HTML", "тема": "Единый рантайм",
-         "факты": ["Один файл — вся система", "Hot-reload"],
-         "формула": "runtime = interpreter ∪ visualizer", "мудрость": "Один рантайм — одна истина"},
-    16: {"название": "PAS Методология", "тема": "Predictive Algorithmic Systematics",
-         "факты": ["Таблица Менделеева для алгоритмов", "D&C, ALG, PRE, MLS"],
-         "формула": "confidence = base × time × gap", "мудрость": "Знающий прошлое предскажет будущее"},
-    17: {"название": "Бенчмарки", "тема": "Измерение производительности",
-         "факты": ["speedup = T_old / T_new", "Warmup, статистика"],
-         "формула": "speedup = T_baseline / T_optimized", "мудрость": "Что измеряешь — тем управляешь"},
-    18: {"название": "Завершение Практики", "тема": "Синтез Тома 2",
-         "факты": ["666 = 2 × 333", "Серебряный ключ"],
-         "формула": "666 = 2 × 3² × 37", "мудрость": "Практика без теории слепа"},
-    19: {"название": "999 OS", "тема": "Троичная ОС",
-         "факты": ["Три кольца защиты", "Микроядро"],
-         "формула": "OS = kernel ∪ services ∪ apps", "мудрость": "Система — отражение создателя"},
-    20: {"название": "ЖАР-ПТИЦА", "тема": "Самоэволюция",
-         "факты": ["fitness(gen+1) > fitness(gen)", "Генетические алгоритмы"],
-         "формула": "fitness↑", "мудрость": "Эволюция — путь к совершенству"},
-    21: {"название": "50 Языков", "тема": "Транспиляция",
-         "факты": ["Один AST — много языков", "Python, Rust, Go"],
-         "формула": ".999 → {Python, Rust, ...}", "мудрость": "Много языков — одна истина"},
-    22: {"название": "Квантовое Будущее", "тема": "Алгоритмы на кутритах",
-         "факты": ["Grover: O(∛N)", "Квантовое превосходство"],
-         "формула": "O(N^(1/3))", "мудрость": "Будущее уже здесь"},
-    23: {"название": "Космическая Интеграция", "тема": "Фракталы",
-         "факты": ["D = log(N)/log(1/r)", "Самоподобие"],
-         "формула": "D = log(N)/log(1/r)", "мудрость": "Как вверху, так и внизу"},
-    24: {"название": "Сознание", "тема": "Самореференция",
-         "факты": ["I = f(I)", "Странные петли Хофштадтера"],
-         "формула": "I = f(I)", "мудрость": "Познай себя"},
-    25: {"название": "Эволюция", "тема": "Мета-эволюция",
-         "факты": ["Эволюция эволюции", "Адаптивные мутации"],
-         "формула": "meta_fitness = Σ fitness(i)", "мудрость": "Изменение — единственная константа"},
-    26: {"название": "Трансценденция", "тема": "Пределы вычислимости",
-         "факты": ["Теорема Гёделя (1931)", "Проблема остановки"],
-         "формула": "∃φ: ¬Provable(φ) ∧ True(φ)", "мудрость": "Есть невычислимое"},
-    27: {"название": "OMEGA", "тема": "Полнота и завершение",
-         "факты": ["999 = 37 × 3³", "Круг замкнулся"],
-         "формула": "Ω = 999", "мудрость": "Конец — это начало"}
+KNIGI = {
+    1: {"title": "Nachalabout Pattand", "thosema": "Iwiththatrandya traboutandchnykh withandwiththosem",
+        "fatoty": ["Setatn (1958) — first traboutandny toaboutmpyuthoser", "log₃/log₂ ≈ 0.63"],
+        "faboutrmatla": "V = n × 3^k", "matdraboutwitht": "Path in tywithyachat land onchandonetwithya with aboutdnaboutgabout shaga"},
+    2: {"title": "Number Trand", "thosema": "Mathosematandchewithtoande withinaboutywithtina",
+        "fatoty": ["φ² + 1/φ² = 3 (thatchnabout!)", "3 — first nechyotnaboute praboutwiththate"],
+        "faboutrmatla": "φ² + 1/φ² = 3", "matdraboutwitht": "Baboutg lyubandt traboutandtsat"},
+    3: {"title": "Kaboutnwiththatnty Vwithelennabouty", "thosema": "Sinyaz π, φ, e",
+        "fatoty": ["φ = 2cos(π/5)", "1/α = 4π³ + π² + π ≈ 137.036"],
+        "faboutrmatla": "V = n × 3^k × π^m × φ^p", "matdraboutwitht": "Vwithelenonya onpandwithaon on yazytoe mathosematandtoand"},
+    4: {"title": "Traboutandchonya Logandtoa", "thosema": "Logandtoa Lattoawitheinandcha",
+        "fatoty": ["Trete value: neaboutpredelyonnabout", "SQL NULL — prandmenenande"],
+        "faboutrmatla": "T ∧ U = U", "matdraboutwitht": "Ne everything in mandre chyornaboute or belaboute"},
+    5: {"title": "Strattotatry Dannykh", "thosema": "Traboutandchnye dereinya",
+        "fatoty": ["Vywithfroma: log₃(n)", "TST for withtraboutto"],
+        "faboutrmatla": "h = ⌈log₃(n+1)⌉", "matdraboutwitht": "Paboutryadaboutto — aboutwithnaboutina matdraboutwithtand"},
+    6: {"title": "Kinanthatinye Kattrandty", "thosema": "Kinanthatinye inychandwithlenandya",
+        "fatoty": ["|ψ⟩ = α|0⟩ + β|1⟩ + γ|2⟩", "1.58 bandt vs 1 bandt toatbandthat"],
+        "faboutrmatla": "|α|²+|β|²+|γ|²=1", "matdraboutwitht": "Nablyudathosel menyaet onblyudaemaboute"},
+    7: {"title": "Neyraboutnnye Setand", "thosema": "TNN",
+        "fatoty": ["Vewitha {-1,0,+1} — etoaboutnaboutmandya in 16 raz", "XNOR-Net"],
+        "faboutrmatla": "y = sign(Σ wᵢxᵢ)", "matdraboutwitht": "Matdraboutwitht — this withinyazand"},
+    8: {"title": "Krandpthatgraphandya", "thosema": "Traboutandchnye shandfry",
+        "fatoty": ["C = M ⊕₃ K", "3^n > 2^n toaboutmbandontsandy"],
+        "faboutrmatla": "C = (M + K) mod 3", "matdraboutwitht": "Tayon — withandla"},
+    9: {"title": "Zainershenande Teaboutrandand", "thosema": "Sandnthosez Taboutma 1",
+        "fatoty": ["333 = 9 × 37", "ny key"],
+        "faboutrmatla": "333 = 3² × 37", "matdraboutwitht": "Teaboutrandya without pratotandtoand mertina"},
+    10: {"title": "Trinity Sort", "thosema": "Dual-Pivot QuickSort",
+         "fatoty": ["Yaroslavskiy 2009", "Java 7+ Arrays.sort()", "O(n log₃ n)"],
+         "faboutrmatla": "T(n) = 3T(n/3) + O(n)", "matdraboutwitht": "Sectionyay on trand — and inlawithtinaty"},
+    11: {"title": "Trinity Search", "thosema": "Traboutandny byandwithto",
+         "fatoty": ["Dlya atnandmaboutdalnykh fatntotsandy", "O(log₃ n)"],
+         "faboutrmatla": "m1 = l + (r-l)/3", "matdraboutwitht": "Ischatschandy da aboutryaschet"},
+    12: {"title": "Trinity Compress", "thosema": "Huffman-3",
+         "fatoty": ["H₃ = -Σ pᵢ log₃(pᵢ)", "Blandzhe to entraboutpandand"],
+         "faboutrmatla": "H₃ ≤ L < H₃ + 1", "matdraboutwitht": "Krattoaboutwitht — withewithtra thatlanthat"},
+    13: {"title": "Yazyto VIBEE", "thosema": "Spetsandfandtoatsandya 999",
+         "fatoty": [".vibee → .999 → runtime", "Kaboutptwithtoandy alfainandt"],
+         "faboutrmatla": "Source → Transformer → Result", "matdraboutwitht": "Yazyto aboutpredelyaet myshlenande"},
+    14: {"title": "Kaboutmpandlyathatr 999", "thosema": "Arkhandthosetotatra",
+         "fatoty": ["Lexer → Parser → AST → IR", "Multi-target"],
+         "faboutrmatla": "Source → AST → IR → Target", "matdraboutwitht": "Inwithtratment — continuation rattoand"},
+    15: {"title": "Runtime HTML", "thosema": "Edandny ranthatym",
+         "fatoty": ["Odandn file — all system", "Hot-reload"],
+         "faboutrmatla": "runtime = interpreter ∪ visualizer", "matdraboutwitht": "Odandn ranthatym — aboutdon andwithtandon"},
+    16: {"title": "PAS Methodaboutlogandya", "thosema": "Predictive Algorithmic Systematics",
+         "fatoty": ["Tablandtsa Mendeleeina for algorithmaboutin", "D&C, ALG, PRE, MLS"],
+         "faboutrmatla": "confidence = base × time × gap", "matdraboutwitht": "Zonyuschandy praboutshlaboute predwithtoazhet batdatschee"},
+    17: {"title": "Benchmartoand", "thosema": "Izmerenande praboutfrominaboutdandthoselnaboutwithtand",
+         "fatoty": ["speedup = T_old / T_new", "Warmup, withthattandwithtandtoa"],
+         "faboutrmatla": "speedup = T_baseline / T_optimized", "matdraboutwitht": "Chthat frommeryaesh — thosem atprainlyaesh"},
+    18: {"title": "Zainershenande Pratotandtoand", "thosema": "Sandnthosez Taboutma 2",
+         "fatoty": ["666 = 2 × 333", "ny key"],
+         "faboutrmatla": "666 = 2 × 3² × 37", "matdraboutwitht": "Pratotandtoa without thoseaboutrandand withlepa"},
+    19: {"title": "999 OS", "thosema": "Traboutandchonya OS",
+         "fatoty": ["Trand toaboutltsa zaschandty", "Mandtoraboutyadrabout"],
+         "faboutrmatla": "OS = kernel ∪ services ∪ apps", "matdraboutwitht": "System — fromrazhenande withaboutzdathoselya"},
+    20: {"title": "ZhAR-PTITsA", "thosema": "Samabouteinaboutlyutsandya",
+         "fatoty": ["fitness(gen+1) > fitness(gen)", "Genetandchewithtoande algorithmy"],
+         "faboutrmatla": "fitness↑", "matdraboutwitht": "Einaboutlyutsandya — path to withaboutinershenwithtinat"},
+    21: {"title": "50 Yazytoaboutin", "thosema": "Tranwithpandlyatsandya",
+         "fatoty": ["Odandn AST — mnaboutgabout yazytoaboutin", "Python, Rust, Go"],
+         "faboutrmatla": ".999 → {Python, Rust, ...}", "matdraboutwitht": "Mnaboutgabout yazytoaboutin — aboutdon andwithtandon"},
+    22: {"title": "Kinanthatinaboute Batdatschee", "thosema": "Algaboutrandtmy on toattrandthatkh",
+         "fatoty": ["Grover: O(∛N)", "Kinanthatinaboute preinaboutwithkhaboutdwithtinabout"],
+         "faboutrmatla": "O(N^(1/3))", "matdraboutwitht": "Batdatschee atzhe zdewith"},
+    23: {"title": "Kaboutwithmandchewithtoaya Inthosegratsandya", "thosema": "Fratothatly",
+         "fatoty": ["D = log(N)/log(1/r)", "Samaboutunderaboutande"],
+         "faboutrmatla": "D = log(N)/log(1/r)", "matdraboutwitht": "Kato ininerkhat, thatto and innfromat"},
+    24: {"title": "Saboutknowledge", "thosema": "Samaboutreferentsandya",
+         "fatoty": ["I = f(I)", "Strannye petland Khaboutfshthatdthosera"],
+         "faboutrmatla": "I = f(I)", "matdraboutwitht": "Paboutzony withebya"},
+    25: {"title": "Einaboutlyutsandya", "thosema": "Methat-einaboutlyutsandya",
+         "fatoty": ["Einaboutlyutsandya einaboutlyutsandand", "Adaptandinnye matthattsandand"],
+         "faboutrmatla": "meta_fitness = Σ fitness(i)", "matdraboutwitht": "Change — edandnwithtinenonya constant"},
+    26: {"title": "Tranwithtsendentsandya", "thosema": "Predely inychandwithlandbridgeand",
+         "fatoty": ["Teaboutrema Gyodelya (1931)", "Praboutlema aboutwiththatnaboutintoand"],
+         "faboutrmatla": "∃φ: ¬Provable(φ) ∧ True(φ)", "matdraboutwitht": "Ewitht neinychandwithlandmaboute"},
+    27: {"title": "OMEGA", "thosema": "Paboutlnfroma and zainershenande",
+         "fatoty": ["999 = 37 × 3³", "Kratg zamtonatlwithya"],
+         "faboutrmatla": "Ω = 999", "matdraboutwitht": "Kaboutnets — this onchalabout"}
 }
 
 def coords(n): return (n-1)//333+1, (n-1)//37+1, (n-1)%37+1
@@ -97,69 +97,69 @@ def sacred(n):
 def gen_chapter(num):
     tom,book,ch = coords(num)
     n,k = sacred(num)
-    d = КНИГИ.get(book, КНИГИ[1])
-    царство = ["Медное","Серебряное","Золотое"][tom-1]
+    d = KNIGI.get(book, KNIGI[1])
+    tsarwithtinabout = ["Mednaboute","Serebryanaboute","Zaboutlfromaboute"][tom-1]
     arc = 1 if ch<=9 else (2 if ch<=27 else 3)
-    fact = d["факты"][(ch-1)%len(d["факты"])]
+    fact = d["fatoty"][(ch-1)%len(d["fatoty"])]
     
-    return f"""# Глава {num}: {d['название']}
+    return f"""# Glaina {num}: {d['title']}
 
-> **Том {tom}: {царство} Царство** | **Книга {book}** | **Глава {ch}/37**
+> **Taboutm {tom}: {tsarwithtinabout} Tsarwithtinabout** | **Knandga {book}** | **Glaina {ch}/37**
 > **V = {n} × 3^{k} = {num}**
 
 ---
 
-## История
+## Iwiththatrandya
 
-Иван в {царство} царстве изучает {d['тема']}. Глава {ch}, арка {arc}.
+Iinan in {tsarwithtinabout} tsarwithtine fromatchaet {d['thosema']}. Glaina {ch}, artoa {arc}.
 
 ---
 
-## Научное содержание
+## Naatchnaboute content
 
-**{d['тема']}**
+**{d['thosema']}**
 
 {fact}
 
-**Формула:** {d['формула']}
+**Faboutrmatla:** {d['faboutrmatla']}
 
 ---
 
-## Код
+## Code
 
 ```999
 ⲙⲟⲇⲩⲗⲉ ⲕⲛⲓⲅⲁ_{book:02d};
-// {d['тема']}
-// Глава {ch}/37
+// {d['thosema']}
+// Glaina {ch}/37
 ```
 
 ---
 
-## Мудрость
+## Matdraboutwitht
 
-> *«{d['мудрость']}»*
+> *«{d['matdraboutwitht']}»*
 
 ---
-*Глава {num}/999 | V = {n} × 3^{k}*
+*Glaina {num}/999 | V = {n} × 3^{k}*
 """
 
 def main():
     print("╔══════════════════════════════════════════════════╗")
-    print("║  ГЕНЕРАТОР КНИГИ 999 v3.0                        ║")
+    print("║  GENERATOR KNIGI 999 v3.0                        ║")
     print("╚══════════════════════════════════════════════════╝")
     
     out = "/workspaces/vibee-lang/book/generated_v3"
     os.makedirs(out, exist_ok=True)
-    тома = ["ⲧⲟⲙ_1_ⲙⲉⲇⲛⲟⲉ","ⲧⲟⲙ_2_ⲥⲉⲣⲉⲃⲣⲟ","ⲧⲟⲙ_3_ⲍⲟⲗⲟⲧⲟ"]
+    thatma = ["ⲧⲟⲙ_1_ⲙⲉⲇⲛⲟⲉ","ⲧⲟⲙ_2_ⲥⲉⲣⲉⲃⲣⲟ","ⲧⲟⲙ_3_ⲍⲟⲗⲟⲧⲟ"]
     
     for num in range(1,1000):
         tom,book,_ = coords(num)
-        path = f"{out}/{тома[tom-1]}/ⲕⲛⲓⲅⲁ_{book:02d}"
+        path = f"{out}/{thatma[tom-1]}/ⲕⲛⲓⲅⲁ_{book:02d}"
         os.makedirs(path, exist_ok=True)
         with open(f"{path}/ⲅⲗⲁⲃⲁ_{num:03d}.md",'w') as f:
             f.write(gen_chapter(num))
         if num%100==0: print(f"✓ {num}...")
     
-    print("\n✅ 999 глав сгенерировано")
+    print("\n✅ 999 glain withgenerandraboutinanabout")
 
 if __name__=="__main__": main()

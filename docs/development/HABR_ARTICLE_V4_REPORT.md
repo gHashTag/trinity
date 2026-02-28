@@ -1,158 +1,158 @@
-# [CYR:[TRANSLATED]]: Creation HABR_ARTICLE_GOLDEN_KEY_V4.md
+# :]: Creation HABR_ARTICLE_GOLDEN_KEY_V4.md
 
-**[CYR:[TRANSLATED]]**: January 2026  
-**[CYR:[TRANSLATED]]with**: ✅ [CYR:[TRANSLATED]]
+**:]**: January 2026  
+**:]with**: ✅ :]
 
 ---
 
-## [CYR:[TRANSLATED]]innotнandе inерwithandй
+## :]innotnande inerwithandy
 
-| [CYR:[TRANSLATED]]andtoа | V3 (with[TRANSLATED]]) | V4 (ноinая) | [CYR:[TRANSLATED]]notнandе |
+| :]Version | V3 (with]) | V4 (naboutinaya) | :]notnande |
 |---------|-------------|------------|-----------|
-| **[CYR:[TRANSLATED]]** | 6217 with[TRANSLATED]]to | 816 with[TRANSLATED]]to | **-87%** ✅ |
-| **Поin[CYR:[TRANSLATED]] "φ² + 1/φ²"** | 29 | 17 | -41% |
-| **Поin[CYR:[TRANSLATED]] "[CYR:[TRANSLATED]]fromой [CYR:[TRANSLATED]]"** | 28 | 6 | **-79%** ✅ |
-| **Поin[CYR:[TRANSLATED]] "[CYR:[TRANSLATED]]"** | 23 | 0 | **-100%** ✅ |
-| **[CYR:[TRANSLATED]]for[TRANSLATED]]** | [CYR:[TRANSLATED]]with | [CYR:[TRANSLATED]]andчonя | ✅ |
-| **Крandтandtoа** | Поwithле Заfor[TRANSLATED]]andя | [CYR:[TRANSLATED]] Заfor[TRANSLATED]]andем | ✅ |
-| **[CYR:[TRANSLATED]]toand in Вin[CYR:[TRANSLATED]]and** | Да | [CYR:[TRANSLATED]] | ✅ |
+| **:]** | 6217 with]to | 816 with]to | **-87%** ✅ |
+| **Paboutin:] "φ² + 1/φ²"** | 29 | 17 | -41% |
+| **Paboutin:] ":]fromabouty :]"** | 28 | 6 | **-79%** ✅ |
+| **Paboutin:] ":]"** | 23 | 0 | **-100%** ✅ |
+| **:]for]** | :]with | :]andchonya | ✅ |
+| **KrandtVersion** | Paboutwithle Zafor]andya | :] Zafor]andem | ✅ |
+| **:]toand in Vin:]and** | Da | :] | ✅ |
 
 ---
 
-## [CYR:[TRANSLATED]]for[TRANSLATED]] ноinой inерwithand
+## :]for] naboutinabouty inerwithand
 
 ```
-1. TL;DR (15 with[TRANSLATED]]to)
-2. [CYR:[TRANSLATED]]andе (15 with[TRANSLATED]]to)
-3. [CYR:[TRANSLATED]] for[TRANSLATED]] [CYR:[TRANSLATED]] with[TRANSLATED]] (10 with[TRANSLATED]]to)
-4. [CYR:[TRANSLATED]]: Трand fromfor[TRANSLATED]]andя (50 with[TRANSLATED]]to)
-   - [CYR:[TRANSLATED]]andя
+1. TL;DR (15 with]to)
+2. :]ande (15 with]to)
+3. :] for] :] with] (10 with]to)
+4. :]: Trand fromfor]andya (50 with]to)
+   - :]andya
    - Coldea 2010
    - Brock 2025
-   - [CYR:[TRANSLATED]]fromой [CYR:[TRANSLATED]]
-5. Чаwithть I: [CYR:[TRANSLATED]]fromой [CYR:[TRANSLATED]] (140 with[TRANSLATED]]to)
-   - [CYR:[TRANSLATED]]toодandнг
-   - [CYR:[TRANSLATED]]andчеwithtoое доfor[TRANSLATED]]withтinо
-   - Чandwithла Луtoаwithа
-   - Сin[CYR:[TRANSLATED]] with π
+   - :]fromabouty :]
+5. Chawitht I: :]fromabouty :] (140 with]to)
+   - :]toaboutdandng
+   - :]andchewithtoaboute daboutfor]withtinabout
+   - Chandwithla Lattoawitha
+   - Sin:] with π
    - Radix Economy
-   - [CYR:[TRANSLATED]]with[TRANSLATED]]in and [CYR:[TRANSLATED]]
-   - [CYR:[TRANSLATED]]andчonя [CYR:[TRANSLATED]]andtoа
-6. Чаwithть II: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andя (70 with[TRANSLATED]]to)
+   - :]with]in and :]
+   - :]andchonya :]Version
+6. Chawitht II: :] :]in:]andya (70 with]to)
    - E8 and φ
-   - [CYR:[TRANSLATED]] Коandде
-   - [CYR:[TRANSLATED]]andты
-   - Фandбоonччand-анand[CYR:[TRANSLATED]]
-   - Сinодonя [CYR:[TRANSLATED]]andца
-7. Чаwithть III: Сin[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]] (70 with[TRANSLATED]]to)
-   - Гandпfrom[CYR:[TRANSLATED]]
-   - Прand[CYR:[TRANSLATED]]
+   - :] Kaboutandde
+   - :]andty
+   - Fandbaboutonchchand-anand:]
+   - Sinaboutdonya :]andtsa
+7. Chawitht III: Sin:]onya :] (70 with]to)
+   - Gandpfrom:]
+   - Prand:]
    - 1/α
-   - Коwith[TRANSLATED]]andя
-   - [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]andца
-8. Чаwithть IV: Крandтandtoа and [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя (80 with[TRANSLATED]]to) ← [CYR:[TRANSLATED]] Заfor[TRANSLATED]]andем!
+   - Kaboutwith]andya
+   - :]onya :]andtsa
+8. Chawitht IV: KrandtVersion and :]and:]andya (80 with]to) ← :] Zafor]andem!
    - Selection bias
-   - [CYR:[TRANSLATED]] НЕ [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]
-   - Golden Ratio Mixing andwithfor[TRANSLATED]]
-   - Чеwithтonя with[TRANSLATED]]toа
-   - Каto [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]
-   - Отinет on toрandтandtoу
-9. Чаwithть V: [CYR:[TRANSLATED]]toтandчеwithtoandе прandмеnotнandя (100 with[TRANSLATED]]to)
+   - :] NE :]from:]
+   - Golden Ratio Mixing andwithfor]
+   - Chewithtonya with]toa
+   - Kato :]in:]
+   - Otinet on torandtandtoat
+9. Chawitht V: :]totandchewithtoande prandmenotnandya (100 with]to)
    - Trinity Sort
-   - [CYR:[TRANSLATED]]andчonя [CYR:[TRANSLATED]]andtoа
+   - :]andchonya :]Version
    - VIBEE
    - Trinity B-Tree
    - Cuckoo Hash
    - 999 OS
-   - [CYR:[TRANSLATED]] inычandwith[TRANSLATED]]andя
-10. Заfor[TRANSLATED]]andе (40 with[TRANSLATED]]to)
-11. Сwithылtoand (60 with[TRANSLATED]]to)
-12. Прand[CYR:[TRANSLATED]]andя A-H (150 with[TRANSLATED]]to)
-13. Иwith[TRANSLATED]]andя inерwithandй (30 with[TRANSLATED]]to)
-14. [CYR:[TRANSLATED]]withтand (15 with[TRANSLATED]]to)
+   - :] inychandwith]andya
+10. Zafor]ande (40 with]to)
+11. Swithyltoand (60 with]to)
+12. Prand:]andya A-H (150 with]to)
+13. Iwith]andya inerwithandy (30 with]to)
+14. :]withtand (15 with]to)
 ```
 
 ---
 
-## [CYR:[TRANSLATED]]not[CYR:[TRANSLATED]] PAS-реfor[TRANSLATED]]and
+## :]not:] PAS-refor]and
 
-| # | Реfor[TRANSLATED]]andя | [CYR:[TRANSLATED]]with |
+| # | Refor]andya | :]with |
 |---|--------------|--------|
-| 1 | Соfor[TRANSLATED]]andть [CYR:[TRANSLATED]] on 67% | ✅ Соfor[TRANSLATED]] on 87% |
-| 2 | [CYR:[TRANSLATED]]andть [CYR:[TRANSLATED]]toand andз Вin[CYR:[TRANSLATED]]andя | ✅ [CYR:[TRANSLATED]] |
-| 3 | [CYR:[TRANSLATED]]withтandть Крandтandtoу [CYR:[TRANSLATED]] Заfor[TRANSLATED]]andем | ✅ [CYR:[TRANSLATED]]on |
-| 4 | [CYR:[TRANSLATED]]andть поin[CYR:[TRANSLATED]] | ✅ Соfor[TRANSLATED]] on 41-100% |
-| 5 | [CYR:[TRANSLATED]]andнandть Заfor[TRANSLATED]]andе and [CYR:[TRANSLATED]] | ✅ [CYR:[TRANSLATED]]andnotны |
-| 6 | [CYR:[TRANSLATED]]inandть Quick Reference (TL;DR) | ✅ [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] |
+| 1 | Saboutfor]andt :] on 67% | ✅ Saboutfor] on 87% |
+| 2 | :]andt :]toand andz Vin:]andya | ✅ :] |
+| 3 | :]withtandt Krandtandtoat :] Zafor]andem | ✅ :]on |
+| 4 | :]andt byin:] | ✅ Saboutfor] on 41-100% |
+| 5 | :]andnandt Zafor]ande and :] | ✅ :]andnotny |
+| 6 | :]inandt Quick Reference (TL;DR) | ✅ :]in:] |
 
-**[CYR:[TRANSLATED]]notно: 6/6 (100%)**
-
----
-
-## [CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]andя
-
-### 1. [CYR:[TRANSLATED]]for[TRANSLATED]]
-
-**[CYR:[TRANSLATED]]:**
-```
-Вin[CYR:[TRANSLATED]]andе → [CYR:[TRANSLATED]]toand → Чаwithтand I-VIII → Заfor[TRANSLATED]]andе → Крandтandtoа → Сwithылtoand
-```
-
-**[CYR:[TRANSLATED]]:**
-```
-TL;DR → [CYR:[TRANSLATED]] → Чаwithтand I-V → Крandтandtoа → Заfor[TRANSLATED]]andе → Сwithылtoand → Прand[CYR:[TRANSLATED]]andя
-```
-
-### 2. Лand[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]
-
-- ✅ [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] hook (Coldea 2010, Nature 2025)
-- ✅ [CYR:[TRANSLATED]]inлеon [CYR:[TRANSLATED]]andя
-- ✅ [CYR:[TRANSLATED]]inлеon [CYR:[TRANSLATED]]andца [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and
-- ✅ [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] цand[CYR:[TRANSLATED]] эtowith[TRANSLATED]]in
-- ✅ [CYR:[TRANSLATED]] overclaiming ("Сin[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]" → "Гandпfrom[CYR:[TRANSLATED]]")
-
-### 3. [CYR:[TRANSLATED]]onя with[TRANSLATED]]withть
-
-- ✅ [CYR:[TRANSLATED]]notны inwithе 250+ with[TRANSLATED]]to on arXiv
-- ✅ [CYR:[TRANSLATED]]inлеon withinодonя [CYR:[TRANSLATED]]andца эtowith[TRANSLATED]]and[CYR:[TRANSLATED]]in
-- ✅ [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] section "Каto [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]"
-- ✅ Чеwithтonя with[TRANSLATED]]toа (that [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]], that notт)
+**:]notnabout: 6/6 (100%)**
 
 ---
 
-## [CYR:[TRANSLATED]]
+## :]inye :]andya
 
-| [CYR:[TRANSLATED]] | Опandwithанandе |
+### 1. :]for]
+
+**:]:**
+```
+Vin:]ande → :]toand → Chawithtand I-VIII → Zafor]ande → KrandtVersion → Swithyltoand
+```
+
+**:]:**
+```
+TL;DR → :] → Chawithtand I-V → KrandtVersion → Zafor]ande → Swithyltoand → Prand:]andya
+```
+
+### 2. Land:]onya :]
+
+- ✅ :]in:] hook (Coldea 2010, Nature 2025)
+- ✅ :]inleon :]andya
+- ✅ :]inleon :]andtsa :]and:]and
+- ✅ :]in:] tsand:] etowith]in
+- ✅ :] overclaiming ("Sin:]onya :]" → "Gandpfrom:]")
+
+### 3. :]onya with]witht
+
+- ✅ :]notny inwithe 250+ with]to on arXiv
+- ✅ :]inleon withinaboutdonya :]andtsa etowith]and:]in
+- ✅ :]in:] section "Kato :]in:]"
+- ✅ Chewithtonya with]toa (that :]from:], that nott)
+
+---
+
+## :]
+
+| :] | Opandwithanande |
 |------|----------|
-| `docs/habr/HABR_ARTICLE_GOLDEN_KEY_V4.md` | Ноinая inерwithandя with[TRANSLATED]]and |
-| `docs/habr/HABR_ARTICLE_GOLDEN_KEY.md` | [CYR:[TRANSLATED]] inерwithandя (with[TRANSLATED]]noton) |
-| `docs/reports/HABR_ARTICLE_V4_REPORT.md` | Этfrom from[CYR:[TRANSLATED]] |
+| `docs/habr/HABR_ARTICLE_GOLDEN_KEY_V4.md` | Naboutinaya inerAuthor with]and |
+| `docs/habr/HABR_ARTICLE_GOLDEN_KEY.md` | :] inerAuthor (with]noton) |
+| `docs/reports/HABR_ARTICLE_V4_REPORT.md` | Etfrom from:] |
 
 ---
 
-## [CYR:[TRANSLATED]]andtoand for[TRANSLATED]]withтinа
+## :]andtoand for]withtina
 
-| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе |
+| :]Version | Zon:]ande |
 |---------|----------|
-| [CYR:[TRANSLATED]] | 816 with[TRANSLATED]]to |
-| [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andя | ~15 мand[CYR:[TRANSLATED]] |
-| [CYR:[TRANSLATED]] withылtoand | 250+ |
-| Эtowith[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andя | 5 |
-| [CYR:[TRANSLATED]]in | 14 |
-| Прand[CYR:[TRANSLATED]]andй | 8 |
+| :] | 816 with]to |
+| :] :]andya | ~15 mand:] |
+| :] withyltoand | 250+ |
+| Etowith]and:] :]in:]andya | 5 |
+| :]in | 14 |
+| Prand:]andy | 8 |
 
 ---
 
-## Реfor[TRANSLATED]]and for with[TRANSLATED]] inерwithand
+## Refor]and for with] inerwithand
 
-1. **[CYR:[TRANSLATED]]inandть and[CYR:[TRANSLATED]]toтandin[CYR:[TRANSLATED]] for[TRANSLATED]]for[TRANSLATED]]** — withылtoа on Colab/Replit
-2. **[CYR:[TRANSLATED]]inandть inand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and** — дand[CYR:[TRANSLATED]], [CYR:[TRANSLATED]]andtoand
-3. **[CYR:[TRANSLATED]]inеwithтand on [CYR:[TRANSLATED]]andйwithtoandй** — for [CYR:[TRANSLATED]]on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and
-4. **[CYR:[TRANSLATED]]inandть inand[CYR:[TRANSLATED]]** — [CYR:[TRANSLATED]]withnotнandе [CYR:[TRANSLATED]]
+1. **:]inandt and:]totandin:] for]for]** — withyltoa on Colab/Replit
+2. **:]inandt inand:]and:]and** — dand:], :]andtoand
+3. **:]inewithtand on :]andywithtoandy** — for :]on:] :]and:]and
+4. **:]inandt inand:]** — :]withnotnande :]
 
 ---
 
-**[CYR:[TRANSLATED]]with**: ✅ [CYR:[TRANSLATED]]withandя 4.0 гfromоinа to [CYR:[TRANSLATED]]andtoацand
+**:]with**: ✅ :]Author 4.0 gfromaboutina to :]Versiontsand
 
-**Аin[CYR:[TRANSLATED]] from[CYR:[TRANSLATED]]**: PAS DAEMON  
-**[CYR:[TRANSLATED]]**: January 2026
+**Author:] from:]**: PAS DAEMON  
+**:]**: January 2026

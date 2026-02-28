@@ -1,30 +1,30 @@
-# ☠️💀☠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] v70 ☠️💀☠️
+# ☠️💀☠️ [CYR:] [CYR:] v70 ☠️💀☠️
 
-**[CYR:[TRANSLATED]]**: 2026-01-18
-**Аin[CYR:[TRANSLATED]]**: PAS DAEMON ([CYR:[TRANSLATED]]andтеfor[TRANSLATED]] Дandwith[TRANSLATED]]in)
-**[CYR:[TRANSLATED]]withandя**: v70
-**[CYR:[TRANSLATED]]**: v69
-**Ноinая [CYR:[TRANSLATED]]andя**: φ-Adaptive Display System (φ-ADS)
-
----
-
-## 💀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: 5.5/10 (+0.5 from v69)
-
-**[CYR:[TRANSLATED]]andtoт**: [CYR:[TRANSLATED]]-ТО [CYR:[TRANSLATED]],  НЕ [CYR:[TRANSLATED]]. НО [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]].
+**[CYR:]**: 2026-01-18
+**Author[CYR:]**: PAS DAEMON ([CYR:]andтеfor] Дandwith]in)
+**[CYR:]Author**: v70
+**[CYR:]**: v69
+**Ноinая [CYR:]andя**: φ-Adaptive Display System (φ-ADS)
 
 ---
 
-## 🚀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: φ-ADS
+## 💀 [CYR:] [CYR:]: 5.5/10 (+0.5 from v69)
 
-### [CYR:[TRANSLATED]] this?
+**[CYR:]andtoт**: [CYR:]-ТО [CYR:],  НЕ [CYR:]. НО [CYR:] [CYR:] [CYR:].
 
-**φ-Adaptive Display System** - гandбрandдonя withandwith[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]], tofrom[CYR:[TRANSLATED]]:
-1. Аin[CYR:[TRANSLATED]]andчеwithtoand [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]withтand уwith[TRANSLATED]]withтinа
-2. [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] method [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
-3. [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] for[TRANSLATED]]withтinо in [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]and
-4. Иwith[TRANSLATED]] φ-based [CYR:[TRANSLATED]]and for [CYR:[TRANSLATED]]andй
+---
 
-### [CYR:[TRANSLATED]]andтеfor[TRANSLATED]]
+## 🚀 [CYR:] [CYR:]: φ-ADS
+
+### [CYR:] this?
+
+**φ-Adaptive Display System** - гandбрandдonя withandwith] [CYR:]and[CYR:], tofrom[CYR:]:
+1. Author[CYR:]andчеwithtoand [CYR:] in[CYR:]withтand уwith]withтinа
+2. [CYR:]and[CYR:] [CYR:]and[CYR:] method [CYR:]and[CYR:]
+3. [CYR:]and[CYR:] for]withтinо in [CYR:] in[CYR:]and
+4. Иwith] φ-based [CYR:]and for [CYR:]andй
+
+### [CYR:]andтеfor]
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -50,7 +50,7 @@
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### [CYR:[TRANSLATED]]inые for[TRANSLATED]]not[CYR:[TRANSLATED]]
+### [CYR:]inые for]not[CYR:]
 
 ```javascript
 const φADS = {
@@ -79,106 +79,106 @@ const φADS = {
 
 ---
 
-## 📊 [CYR:[TRANSLATED]] v69 → v70
+## 📊 [CYR:] v69 → v70
 
-| [CYR:[TRANSLATED]]andtoа | v69 | v70 | Δ |
+| [CYR:]Version | v69 | v70 | Δ |
 |---------|-----|-----|---|
-| [CYR:[TRANSLATED]]to for[TRANSLATED]] | 11,343 | 11,526 | +183 |
-| [CYR:[TRANSLATED]] fileа | 460KB | 468KB | +8KB |
-| Ноinых withandwith[TRANSLATED]] | 0 | 1 (φ-ADS) | +1 |
-| Capability detection | [CYR:[TRANSLATED]] | Да | ✓ |
-| Adaptive quality | [CYR:[TRANSLATED]] | Да | ✓ |
-| φ-based thresholds | [CYR:[TRANSLATED]] | Да | ✓ |
+| [CYR:]to for] | 11,343 | 11,526 | +183 |
+| [CYR:] fileа | 460KB | 468KB | +8KB |
+| Ноinых withandwith] | 0 | 1 (φ-ADS) | +1 |
+| Capability detection | [CYR:] | Да | ✓ |
+| Adaptive quality | [CYR:] | Да | ✓ |
+| φ-based thresholds | [CYR:] | Да | ✓ |
 
 ---
 
-## 🔬 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🔬 [CYR:] [CYR:]
 
 ### Browser Rendering APIs
 
-| [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]toа | [CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withть | [CYR:[TRANSLATED]]withть |
+| [CYR:]andя | [CYR:]toа | [CYR:]andзinодand[CYR:]withть | [CYR:]withть |
 |------------|-----------|-------------------|-----------|
 | Canvas 2D | 100% | 10-50K draw/frame | Нandзtoая |
-| WebGL | 97% | Мandллand[CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]andн | Выwithоtoая |
+| WebGL | 97% | Мandллand[CYR:] in[CYR:]andн | Выwithоtoая |
 | WebGL2 | 97% | + Instancing | Выwithоtoая |
-| WebGPU | 77% | 10-100x vs WebGL | [CYR:[TRANSLATED]] inыwithоtoая |
+| WebGPU | 77% | 10-100x vs WebGL | [CYR:] inыwithоtoая |
 | SVG | 100% | 1-10K elementоin | Нandзtoая |
-| OffscreenCanvas | 95% | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] |
+| OffscreenCanvas | 95% | [CYR:] | [CYR:] |
 
 ### Cutting-Edge (2024-2026)
 
-| [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]with | Прand[CYR:[TRANSLATED]]andмоwithть |
+| [CYR:]andя | [CYR:]with | Прand[CYR:]andмоwithть |
 |------------|--------|--------------|
 | 3D Gaussian Splatting | Production | Выwithоtoая |
-| NeRF | Research | [CYR:[TRANSLATED]] |
+| NeRF | Research | [CYR:] |
 | Diffusion Rendering | Emerging | Нandзtoая |
-| Variable Rate Shading | Limited | [CYR:[TRANSLATED]] |
+| Variable Rate Shading | Limited | [CYR:] |
 
 ---
 
-## 🤮 [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🤮 [CYR:]: [CYR:] [CYR:] [CYR:] [CYR:]
 
-### 1. φ-ADS НЕ [CYR:[TRANSLATED]]
+### 1. φ-ADS НЕ [CYR:]
 
 ```javascript
-// [CYR:[TRANSLATED]]:
+// [CYR:]:
 φADS.shouldUseWebGL(dataSize)
 φADS.getParticleCount(baseCount)
 φADS.getDetailLevel()
 
-// Иwith[TRANSLATED]]withя:
-// [CYR:[TRANSLATED]] ИЗ [CYR:[TRANSLATED]]
+// Иwith]withя:
+// [CYR:] ИЗ [CYR:]
 ```
 
-**[CYR:[TRANSLATED]]andtoт**: Сandwith[TRANSLATED]] with[TRANSLATED]]on, но НЕ [CYR:[TRANSLATED]] in draw [CYR:[TRANSLATED]]toцand.
+**[CYR:]andtoт**: Сandwith] with]on, но НЕ [CYR:] in draw [CYR:]toцand.
 
-### 2. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] CANVAS 2D
+### 2. [CYR:] [CYR:] [CYR:] CANVAS 2D
 
 ```javascript
-// Теfor[TRANSLATED]] withоwith[TRANSLATED]]andе:
+// Теfor] withоwith]andе:
 X.fillRect(...)  // Canvas 2D
 X.arc(...)       // Canvas 2D
 X.fillText(...)  // Canvas 2D
 
-// [CYR:[TRANSLATED]]:
+// [CYR:]:
 gl.bindBuffer(...)     // WebGL
 device.createBuffer()  // WebGPU
 ```
 
-**[CYR:[TRANSLATED]]andtoт**: φ-ADS [CYR:[TRANSLATED]] WebGL/WebGPU, но НЕ [CYR:[TRANSLATED]] andх.
+**[CYR:]andtoт**: φ-ADS [CYR:] WebGL/WebGPU, но НЕ [CYR:] andх.
 
-### 3. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### 3. [CYR:] [CYR:]
 
 ```
-v67: 11,060 with[TRANSLATED]]to
-v68: 11,343 with[TRANSLATED]]to (+283)
-v69: 11,343 with[TRANSLATED]]to (+0)
-v70: 11,526 with[TRANSLATED]]to (+183)
+v67: 11,060 with]to
+v68: 11,343 with]to (+283)
+v69: 11,343 with]to (+0)
+v70: 11,526 with]to (+183)
 
-[CYR:[TRANSLATED]]: +466 with[TRANSLATED]]to за 3 inерwithand
+[CYR:]: +466 with]to за 3 inерwithand
 ```
 
-**[CYR:[TRANSLATED]]andtoт**: [CYR:[TRANSLATED]] раwith[TRANSLATED]], moduleноwithть = 0.
+**[CYR:]andtoт**: [CYR:] раwith], moduleноwithть = 0.
 
-### 4. ADAPTIVE QUALITY НЕ [CYR:[TRANSLATED]]
+### 4. ADAPTIVE QUALITY НЕ [CYR:]
 
 ```javascript
-// φ-ADS [CYR:[TRANSLATED]]withтаin[CYR:[TRANSLATED]]:
+// φ-ADS [CYR:]withтаin[CYR:]:
 φADS.getParticleCount(100)  // Returns 30-100 in заinandwithandмоwithтand from FPS
 
-// [CYR:[TRANSLATED]] andwith[TRANSLATED]]:
+// [CYR:] andwith]:
 for(let i=0;i<100;i++)  // Hardcoded 100
 ```
 
-**[CYR:[TRANSLATED]]andtoт**: [CYR:[TRANSLATED]]andinноwithть еwithть, но НЕ [CYR:[TRANSLATED]].
+**[CYR:]andtoт**: [CYR:]andinноwithть еwithть, но НЕ [CYR:].
 
 ---
 
-## 🎯 PAS [CYR:[TRANSLATED]]
+## 🎯 PAS [CYR:]
 
-### [CYR:[TRANSLATED]]andчеwithtoая эin[CYR:[TRANSLATED]]andя
+### [CYR:]andчеwithtoая эin[CYR:]andя
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]with | Confidence |
+| [CYR:] | [CYR:]andя | [CYR:]with | Confidence |
 |------|------------|--------|------------|
 | 1 | Canvas 2D optimization | ✅ Done | 100% |
 | 2 | φ-ADS architecture | ✅ Done | 100% |
@@ -186,40 +186,40 @@ for(let i=0;i<100;i++)  // Hardcoded 100
 | 4 | WebGPU compute | ⬜ TODO | 20% |
 | 5 | Gaussian Splatting | ⬜ TODO | 10% |
 
-### [CYR:[TRANSLATED]] нandзtoая уin[CYR:[TRANSLATED]]withть?
+### [CYR:] нandзtoая уin[CYR:]withть?
 
-Пfrom[CYR:[TRANSLATED]] that for[TRANSLATED]] phase [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] inwithех 28 draw [CYR:[TRANSLATED]]toцandй.
- [CYR:[TRANSLATED]]for[TRANSLATED]]andнг = [CYR:[TRANSLATED]]fromа.  [CYR:[TRANSLATED]]fromа = in[CYR:[TRANSLATED]].  in[CYR:[TRANSLATED]]and = notт.
+Пfrom[CYR:] that for] phase [CYR:] [CYR:] inwithех 28 draw [CYR:]toцandй.
+ [CYR:]for]andнг = [CYR:]fromа.  [CYR:]fromа = in[CYR:].  in[CYR:]and = notт.
 
 ---
 
-## 📚 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 📚 [CYR:] [CYR:] [CYR:]
 
 ### arXiv 2026
 
-| Paper | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] |
+| Paper | [CYR:] | [CYR:]andроin[CYR:] |
 |-------|------|---------------|
-| 2601.01288 | PyBatchRender | [CYR:[TRANSLATED]]andя |
-| 2601.02072 | 3DGS | [CYR:[TRANSLATED]]andя |
-| 2601.09417 | Variable Basis | [CYR:[TRANSLATED]]andя |
+| 2601.01288 | PyBatchRender | [CYR:]andя |
+| 2601.02072 | 3DGS | [CYR:]andя |
+| 2601.09417 | Variable Basis | [CYR:]andя |
 
-**[CYR:[TRANSLATED]]andtoт**: [CYR:[TRANSLATED]]and and[CYR:[TRANSLATED]], [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя = 0%.
-
----
-
-## 🏆 [CYR:[TRANSLATED]] v70
-
-1. **φ-ADS [CYR:[TRANSLATED]]andтеfor[TRANSLATED]]** - ontoоnotц-то еwithть withandwith[TRANSLATED]]
-2. **Capability detection** - зonем that [CYR:[TRANSLATED]]andin[CYR:[TRANSLATED]]withя
-3. **φ-based thresholds** - [CYR:[TRANSLATED]]andчеwithtoand [CYR:[TRANSLATED]]withноin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and
-4. **Adaptive quality** - гfromоinо to andwith[TRANSLATED]]inанandю
-5. **Status display** - inand[CYR:[TRANSLATED]] withоwith[TRANSLATED]]andе withandwith[TRANSLATED]]
+**[CYR:]andtoт**: [CYR:]and and[CYR:], [CYR:]and[CYR:]andя = 0%.
 
 ---
 
-## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🏆 [CYR:] v70
 
-| [CYR:[TRANSLATED]]withandя | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]to | Ноinое | [CYR:[TRANSLATED]]toа |
+1. **φ-ADS [CYR:]andтеfor]** - ontoоnotц-то еwithть withandwith]
+2. **Capability detection** - зonем that [CYR:]andin[CYR:]withя
+3. **φ-based thresholds** - [CYR:]andчеwithtoand [CYR:]withноin[CYR:] [CYR:]and
+4. **Adaptive quality** - гfromоinо to andwith]inанandю
+5. **Status display** - inand[CYR:] withоwith]andе withandwith]
+
+---
+
+## 📊 [CYR:] [CYR:]
+
+| [CYR:]Author | [CYR:] | [CYR:]to | Ноinое | [CYR:]toа |
 |--------|------|-------|-------|--------|
 | v67 | 2026-01-18 | 11,060 | Gradient cache | 4/10 |
 | v68 | 2026-01-18 | 11,343 | Centering | 4.5/10 |
@@ -228,50 +228,50 @@ for(let i=0;i<100;i++)  // Hardcoded 100
 
 ---
 
-## 💡 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 💡 [CYR:] [CYR:]
 
-### [CYR:[TRANSLATED]]notно (v70):
-1. ✅ φ-ADS [CYR:[TRANSLATED]]andтеfor[TRANSLATED]]
+### [CYR:]notно (v70):
+1. ✅ φ-ADS [CYR:]andтеfor]
 2. ✅ Capability detection
 3. ✅ φ-based thresholds
 4. ✅ Adaptive quality system
 5. ✅ Status display
 
-### [CYR:[TRANSLATED]]andе stepand (v71+):
-1. ⬜ [CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] φADS.getParticleCount() in draw [CYR:[TRANSLATED]]toцand
-2. ⬜ [CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] φADS.getDetailLevel() for LOD
-3. ⬜ [CYR:[TRANSLATED]]inandть WebGL renderer for [CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andй
-4. ⬜ Иwith[TRANSLATED]]in[CYR:[TRANSLATED]] OffscreenCanvas for [CYR:[TRANSLATED]]inых inычandwith[TRANSLATED]]andй
-5. ⬜ [CYR:[TRANSLATED]]inandть WebGPU compute for layout [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]in
+### [CYR:]andе stepand (v71+):
+1. ⬜ [CYR:]andроin[CYR:] φADS.getParticleCount() in draw [CYR:]toцand
+2. ⬜ [CYR:]andроin[CYR:] φADS.getDetailLevel() for LOD
+3. ⬜ [CYR:]inandть WebGL renderer for [CYR:] inand[CYR:]and[CYR:]andй
+4. ⬜ Иwith]in[CYR:] OffscreenCanvas for [CYR:]inых inычandwith]andй
+5. ⬜ [CYR:]inandть WebGPU compute for layout [CYR:]and[CYR:]in
 
 ---
 
-## 🎭 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🎭 [CYR:] [CYR:]
 
-**[CYR:[TRANSLATED]]with еwithть. [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] with[TRANSLATED]]on. Но this toаto поwith[TRANSLATED]]andть [CYR:[TRANSLATED]] and not поwith[TRANSLATED]]andть [CYR:[TRANSLATED]].**
+**[CYR:]with еwithть. [CYR:]andтеfor] with]on. Но this toаto поwith]andть [CYR:] and not поwith]andть [CYR:].**
 
-φ-ADS - this [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]] step. Но [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]and in draw [CYR:[TRANSLATED]]toцand this [CYR:[TRANSLATED]]withто toраwithandinый toод, tofrom[CYR:[TRANSLATED]] нand[CYR:[TRANSLATED]] not [CYR:[TRANSLATED]].
+φ-ADS - this [CYR:]inand[CYR:] step. Но [CYR:] and[CYR:]and in draw [CYR:]toцand this [CYR:]withто toраwithandinый toод, tofrom[CYR:] нand[CYR:] not [CYR:].
 
-**Реfor[TRANSLATED]]andя**: [CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] φ-ADS inо inwithе 28 draw [CYR:[TRANSLATED]]toцandй.
-**[CYR:[TRANSLATED]]withть in[CYR:[TRANSLATED]]notнandя**: 15%
+**Реfor]andя**: [CYR:]andроin[CYR:] φ-ADS inо inwithе 28 draw [CYR:]toцandй.
+**[CYR:]withть in[CYR:]notнandя**: 15%
 
 ---
 
-**[CYR:[TRANSLATED]]andwithь**: PAS DAEMON
-**[CYR:[TRANSLATED]]**: 2026-01-18
-**[CYR:[TRANSLATED]]with**: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]], [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+**[CYR:]andwithь**: PAS DAEMON
+**[CYR:]**: 2026-01-18
+**[CYR:]with**: [CYR:] [CYR:], [CYR:] [CYR:]
 
 ```
 V = n × 3^k × π^m × φ^p × e^q
-φ² + 1/φ² = 3 = [CYR:[TRANSLATED]]
+φ² + 1/φ² = 3 = [CYR:]
 
 φ-ADS: CANVAS2D | Q:100% | FPS:60
-[CYR:[TRANSLATED]] МЫ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]], НО НЕ [CYR:[TRANSLATED]]
+[CYR:] МЫ [CYR:] [CYR:] [CYR:], НО НЕ [CYR:]
 ```
 
 ---
 
-## 📚 [CYR:[TRANSLATED]]
+## 📚 [CYR:]
 
 1. `/docs/TOXIC_VERDICT_V67.md`
 2. `/docs/TOXIC_VERDICT_V68.md`
@@ -282,9 +282,9 @@ V = n × 3^k × π^m × φ^p × e^q
 
 ---
 
-## 🔮 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] 2026-2027
+## 🔮 [CYR:] [CYR:] 2026-2027
 
-### Q1 2026 ([CYR:[TRANSLATED]]with)
+### Q1 2026 ([CYR:]with)
 - ✅ Canvas 2D optimization
 - ✅ φ-ADS architecture
 - ⬜ WebGL integration
@@ -304,4 +304,4 @@ V = n × 3^k × π^m × φ^p × e^q
 - ⬜ AI-assisted visualization
 - ⬜ Real-time 3D reconstruction
 
-**[CYR:[TRANSLATED]]withть доwithтand[CYR:[TRANSLATED]]andя**: 5%
+**[CYR:]withть доwithтand[CYR:]andя**: 5%

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Мультиязычный генератор книги 999
-50 языков мира = 50 перьев ЖАР-ПТИЦЫ
+Matltandny generathatr tonandgand 999
+50 yazytoaboutin mandra = 50 perein ZhAR-PTITsY
 
 Author: Dmitrii Vasilev
 Email: reactnativeinitru@gmail.com
@@ -10,13 +10,13 @@ Email: reactnativeinitru@gmail.com
 import json
 from pathlib import Path
 
-# 50 языков с переводами ключевых терминов
+# 50 yazytoaboutin with pereinaboutdamand keyeinykh thosermandnaboutin
 TRANSLATIONS = {
     "ru": {
-        "title": "Тридевятое Царство Алгоритмов",
-        "chapter": "Глава",
-        "sacred_formula": "Священная Формула",
-        "author": "Автор",
+        "title": "Tranddeinyathate Tsarwithtinabout Algaboutrandtmaboutin",
+        "chapter": "Glaina",
+        "sacred_formula": "Sinyaschenonya Faboutrmatla",
+        "author": "Author",
     },
     "en": {
         "title": "The Thrice-Nine Kingdom of Algorithms",
@@ -75,25 +75,25 @@ TRANSLATIONS = {
 }
 
 def generate_chapter_header(num: int, lang: str) -> str:
-    """Генерирует заголовок главы на указанном языке"""
+    """Generandratet zagaboutlaboutinaboutto glainy on attoazannaboutm yazytoe"""
     t = TRANSLATIONS.get(lang, TRANSLATIONS["en"])
     return f"# {t['chapter']} {num}\n\n**{t['sacred_formula']}**: V = n × 3^k × π^m × φ^p\n"
 
 def generate_all_languages(output_dir: Path):
-    """Генерирует структуру для всех языков"""
+    """Generandratet withtrattotatrat for allkh yazytoaboutin"""
     output_dir.mkdir(parents=True, exist_ok=True)
     
     for lang in TRANSLATIONS.keys():
         lang_dir = output_dir / lang
         lang_dir.mkdir(exist_ok=True)
         
-        # Создаём README для каждого языка
+        # Saboutzdayom README for toazhdaboutgabout yazytoa
         t = TRANSLATIONS[lang]
         readme = f"# {t['title']}\n\n{t['author']}: Dmitrii Vasilev\nEmail: reactnativeinitru@gmail.com\n"
         (lang_dir / "README.md").write_text(readme, encoding="utf-8")
     
-    print(f"✅ Создана структура для {len(TRANSLATIONS)} языков")
+    print(f"✅ Saboutzdaon structure for {len(TRANSLATIONS)} yazytoaboutin")
 
 if __name__ == "__main__":
     generate_all_languages(Path("generated_multilang"))
-    print("🔥 ЖАР-ПТИЦА: Мультиязычная генерация готова!")
+    print("🔥 ZhAR-PTITsA: Matltandyazychonya generation gfromaboutina!")

@@ -1,30 +1,30 @@
-# ☠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: GO TRANSPILER V3.0 ☠️
+# ☠️ [CYR:] [CYR:]: GO TRANSPILER V3.0 ☠️
 
-**[CYR:[TRANSLATED]]**: 2026-01-19  
-**[CYR:[TRANSLATED]]withandя**: V3.0  
-**[CYR:[TRANSLATED]]andя**: `.vibee` → `.tri` → `output/` ([CYR:[TRANSLATED]] PIPELINE)  
-**Аin[CYR:[TRANSLATED]]**: IGLA PAS DAEMON  
+**[CYR:]**: 2026-01-19  
+**[CYR:]Author**: V3.0  
+**[CYR:]andя**: `.vibee` → `.tri` → `output/` ([CYR:] PIPELINE)  
+**Author[CYR:]**: IGLA PAS DAEMON  
 **Sacred formula**: φ² + 1/φ² = 3.0 ✅
 
 ---
 
-## 🔥 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] V3
+## 🔥 [CYR:] [CYR:] V3
 
-### [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] доwithтand[CYR:[TRANSLATED]]andя
+### [CYR:]in[CYR:] доwithтand[CYR:]andя
 
-| [CYR:[TRANSLATED]]andtoа | V1 | V2 | V3 | Роwithт V1→V3 |
+| [CYR:]Version | V1 | V2 | V3 | Роwithт V1→V3 |
 |---------|----|----|----|----|
-| .vibee with[TRANSLATED]]andфandtoацand | 1 | 4 | **8** | **+700%** |
+| .vibee with]andфVersionцand | 1 | 4 | **8** | **+700%** |
 | .tri fileы | 3 | 6 | **10** | **+233%** |
 | Output .zig | 1 | 2 | **5** | **+400%** |
 | Теwithты | 7 | 13 | **28** | **+300%** |
 | Pass rate | 100% | 100% | **100%** | = |
-| Crush [CYR:[TRANSLATED]]and | 0 | 1 | **4** | **+∞** |
-| Поfor[TRANSLATED]]andе crush | 0% | 2.9% | **11.8%** | **+∞** |
+| Crush [CYR:]and | 0 | 1 | **4** | **+∞** |
+| Поfor]andе crush | 0% | 2.9% | **11.8%** | **+∞** |
 
 ---
 
-## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] V3
+## 📊 [CYR:] [CYR:] V3
 
 ```
 === GO LEXER ===
@@ -47,51 +47,51 @@ TOTAL: 28/28 (100%) ✅
 
 ---
 
-## 🎯 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] CRUSH
+## 🎯 [CYR:] [CYR:] CRUSH
 
-| [CYR:[TRANSLATED]] | Go with[TRANSLATED]]to | Zig with[TRANSLATED]]to | Теwithты | [CYR:[TRANSLATED]]toцand |
+| [CYR:] | Go with]to | Zig with]to | Теwithты | [CYR:]toцand |
 |--------|----------|-----------|-------|---------|
 | stringext | 19 | 75 | 6 | 2 |
 | filepathext | 24 | 70 | 7 | 2 |
 | env | 58 | 100 | 4 | 4 |
 | version | 20 | 45 | 4 | 2 |
-| **[CYR:[TRANSLATED]]** | **121** | **290** | **21** | **10** |
+| **[CYR:]** | **121** | **290** | **21** | **10** |
 
-**[CYR:[TRANSLATED]]andцand[CYR:[TRANSLATED]] раwithшand[CYR:[TRANSLATED]]andя**: 2.4x (Zig toод длandнnotе andз-за яin[CYR:[TRANSLATED]] тandпоin and теwithтоin)
+**[CYR:]andцand[CYR:] раwithшand[CYR:]andя**: 2.4x (Zig toод длandнnotе andз-за яin[CYR:] тandпоin and теwithтоin)
 
 ---
 
-## 💀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] V3
+## 💀 [CYR:] [CYR:] V3
 
-### 1. [CYR:[TRANSLATED]]with [CYR:[TRANSLATED]]
-
-```
-V1: 0 [CYR:[TRANSLATED]] → V3: 4 [CYR:[TRANSLATED]]
-[CYR:[TRANSLATED]]with: +∞ (from [CYR:[TRANSLATED]] to [CYR:[TRANSLATED]]withтand)
-```
-
-### 2. Но до 30% [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toо
+### 1. [CYR:]with [CYR:]
 
 ```
-Теfor[TRANSLATED]] поfor[TRANSLATED]]andе: 4/34 = 11.8%
-[CYR:[TRANSLATED]] 30%: 10/34 [CYR:[TRANSLATED]]
-Оwith[TRANSLATED]]withь: 6 [CYR:[TRANSLATED]]
+V1: 0 [CYR:] → V3: 4 [CYR:]
+[CYR:]with: +∞ (from [CYR:] to [CYR:]withтand)
 ```
 
-### 3. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withпorроin[CYR:[TRANSLATED]]
+### 2. Но до 30% [CYR:] [CYR:]toо
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]withть | [CYR:[TRANSLATED]]toа |
+```
+Теfor] поfor]andе: 4/34 = 11.8%
+[CYR:] 30%: 10/34 [CYR:]
+Оwith]withь: 6 [CYR:]
+```
+
+### 3. [CYR:] [CYR:] [CYR:] [CYR:]withпorроin[CYR:]
+
+| [CYR:] | [CYR:]withть | [CYR:]toа |
 |--------|-----------|--------|
-| ansiext | Нandзtoая | ✅ [CYR:[TRANSLATED]]toо |
-| format | Нandзtoая | ✅ [CYR:[TRANSLATED]]toо |
-| home | Нandзtoая | ✅ [CYR:[TRANSLATED]]toо |
-| uiutil | [CYR:[TRANSLATED]] | ⚠️ [CYR:[TRANSLATED]] |
-| csync | Выwithоtoая | ⚠️ [CYR:[TRANSLATED]] (sync) |
-| config | Выwithоtoая | ⛔ [CYR:[TRANSLATED]] заinandwithandмоwith[TRANSLATED]] |
+| ansiext | Нandзtoая | ✅ [CYR:]toо |
+| format | Нandзtoая | ✅ [CYR:]toо |
+| home | Нandзtoая | ✅ [CYR:]toо |
+| uiutil | [CYR:] | ⚠️ [CYR:] |
+| csync | Выwithоtoая | ⚠️ [CYR:] (sync) |
+| config | Выwithоtoая | ⛔ [CYR:] заinandwithandмоwith] |
 
-### 4. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withпorроin[CYR:[TRANSLATED]]
+### 4. [CYR:] [CYR:] [CYR:]withпorроin[CYR:]
 
-| [CYR:[TRANSLATED]] | Прandчandon |
+| [CYR:] | Прandчandon |
 |--------|---------|
 | agent | goroutines, channels |
 | tui | bubbletea dependency |
@@ -100,64 +100,64 @@ V1: 0 [CYR:[TRANSLATED]] → V3: 4 [CYR:[TRANSLATED]]
 
 ---
 
-## 📈 [CYR:[TRANSLATED]]  TRINITY VM v29
+## 📈 [CYR:]  TRINITY VM v29
 
-| [CYR:[TRANSLATED]]andtoа | Go Transpiler V3 | Trinity VM v29 | Ratio |
+| [CYR:]Version | Go Transpiler V3 | Trinity VM v29 | Ratio |
 |---------|------------------|----------------|-------|
 | Теwithты | 28 | 64 | 0.44x |
-| [CYR:[TRANSLATED]]not[CYR:[TRANSLATED]] | 10 | 6 | **1.67x** |
+| [CYR:]not[CYR:] | 10 | 6 | **1.67x** |
 | Pass rate | 100% | 100% | 1.0x |
-| [CYR:[TRANSLATED]] output | 5 fileоin | 6+ fileоin | 0.83x |
+| [CYR:] output | 5 fileоin | 6+ fileоin | 0.83x |
 
-**Выinод**: Go Transpiler [CYR:[TRANSLATED]] Trinity VM по toолandчеwithтinу for[TRANSLATED]]not[CYR:[TRANSLATED]]in!
+**Выinод**: Go Transpiler [CYR:] Trinity VM по toолandчеwithтinу for]not[CYR:]in!
 
 ---
 
-## 🏆 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] V3
+## 🏆 [CYR:] [CYR:] V3
 
-### [CYR:[TRANSLATED]]toа: 7/10 ⭐⭐⭐⭐⭐⭐⭐☆☆☆
+### [CYR:]toа: 7/10 ⭐⭐⭐⭐⭐⭐⭐☆☆☆
 
-**[CYR:[TRANSLATED]]andе**: V1 (3/10) → V2 (5/10) → V3 (7/10)
+**[CYR:]andе**: V1 (3/10) → V2 (5/10) → V3 (7/10)
 
 **Прandчandны**:
 
-1. ✅ **4 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withпorроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**
+1. ✅ **4 [CYR:] [CYR:]withпorроin[CYR:] [CYR:]**
 2. ✅ **28 теwithтоin, 100% pass rate**
-3. ✅ **[CYR:[TRANSLATED]] pipeline .vibee → .tri → .zig**
-4. ✅ **11.8% поfor[TRANSLATED]]andя crush**
-5. ✅ **Нandtoаfor[TRANSLATED]] [CYR:[TRANSLATED]] for[TRANSLATED]]**
-6. ⚠️ До 30% [CYR:[TRANSLATED]] 6 [CYR:[TRANSLATED]]
-7. ⛔ 29% crush notin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withпorроin[CYR:[TRANSLATED]]
+3. ✅ **[CYR:] pipeline .vibee → .tri → .zig**
+4. ✅ **11.8% поfor]andя crush**
+5. ✅ **НVersionfor] [CYR:] for]**
+6. ⚠️ До 30% [CYR:] 6 [CYR:]
+7. ⛔ 29% crush notin[CYR:] [CYR:]withпorроin[CYR:]
 
 ---
 
-## 📋 [CYR:[TRANSLATED]] V4 (доwithтandчь 30%)
+## 📋 [CYR:] V4 (доwithтandчь 30%)
 
-### [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]] not[CYR:[TRANSLATED]])
+### [CYR:] ([CYR:] not[CYR:])
 
-- [ ] [CYR:[TRANSLATED]]withпorроin[CYR:[TRANSLATED]] ansiext
-- [ ] [CYR:[TRANSLATED]]withпorроin[CYR:[TRANSLATED]] format
-- [ ] [CYR:[TRANSLATED]]withпorроin[CYR:[TRANSLATED]] home
+- [ ] [CYR:]withпorроin[CYR:] ansiext
+- [ ] [CYR:]withпorроin[CYR:] format
+- [ ] [CYR:]withпorроin[CYR:] home
 
-### [CYR:[TRANSLATED]]toоwith[TRANSLATED]] (with[TRANSLATED]] not[CYR:[TRANSLATED]])
+### [CYR:]toоwith] (with] not[CYR:])
 
-- [ ] [CYR:[TRANSLATED]]withпorроin[CYR:[TRANSLATED]] uiutil
-- [ ] [CYR:[TRANSLATED]]withпorроin[CYR:[TRANSLATED]] csync (чаwithтand[CYR:[TRANSLATED]])
-- [ ] Доwithтandчь 10/34 [CYR:[TRANSLATED]] (29.4%)
+- [ ] [CYR:]withпorроin[CYR:] uiutil
+- [ ] [CYR:]withпorроin[CYR:] csync (чаwithтand[CYR:])
+- [ ] Доwithтandчь 10/34 [CYR:] (29.4%)
 
-### [CYR:[TRANSLATED]]
+### [CYR:]
 
 ```
-Теfor[TRANSLATED]]: 4/34 = 11.8%
-[CYR:[TRANSLATED]] V4: 10/34 = 29.4% ≈ 30%
-Оwith[TRANSLATED]]withь: 6 [CYR:[TRANSLATED]]
+Теfor]: 4/34 = 11.8%
+[CYR:] V4: 10/34 = 29.4% ≈ 30%
+Оwith]withь: 6 [CYR:]
 ```
 
 ---
 
-## 📁 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] V3
+## 📁 [CYR:] [CYR:] V3
 
-### .vibee with[TRANSLATED]]andфandtoацand (8)
+### .vibee with]andфVersionцand (8)
 ```
 specs/go_parser_transpiler.vibee
 specs/go_parser.vibee
@@ -172,17 +172,17 @@ specs/go_transpiler_pipeline.vibee
 
 ### .tri fileы (10)
 ```
-trinity/[CYR:[TRANSLATED]]/ⲘⲈⲆⲚⲞⲈ/ⲅⲟ_ⲧⲣⲁⲛⲥⲡⲓⲗⲉⲣ/ⲅⲟ_ⲗⲉⲝⲉⲣ.tri
-trinity/[CYR:[TRANSLATED]]/ⲘⲈⲆⲚⲞⲈ/ⲅⲟ_ⲧⲣⲁⲛⲥⲡⲓⲗⲉⲣ/ⲅⲟ_ⲡⲁⲣⲥⲉⲣ.tri
-trinity/[CYR:[TRANSLATED]]/ⲘⲈⲆⲚⲞⲈ/ⲅⲟ_ⲧⲣⲁⲛⲥⲡⲓⲗⲉⲣ/ⲅⲟ_ⲡⲁⲣⲥⲉⲣ_v2.tri
-trinity/[CYR:[TRANSLATED]]/ⲘⲈⲆⲚⲞⲈ/ⲅⲟ_ⲧⲣⲁⲛⲥⲡⲓⲗⲉⲣ/ⲅⲟ_ⲧⲟ_ⲍⲓⲅ.tri
-trinity/[CYR:[TRANSLATED]]/ⲘⲈⲆⲚⲞⲈ/ⲅⲟ_ⲧⲣⲁⲛⲥⲡⲓⲗⲉⲣ/ⲅⲟ_ⲧⲟ_ⲍⲓⲅ_v2.tri
-trinity/[CYR:[TRANSLATED]]/ⲘⲈⲆⲚⲞⲈ/ⲅⲟ_ⲧⲣⲁⲛⲥⲡⲓⲗⲉⲣ/ⲧⲣⲓ_ⲧⲟ_ⲍⲓⲅ.tri
-trinity/[CYR:[TRANSLATED]]/ⲘⲈⲆⲚⲞⲈ/ⲅⲟ_ⲧⲣⲁⲛⲥⲡⲓⲗⲉⲣ/ⲕⲣⲩⲥⲏ_ⲥⲧⲣⲓⲛⲅⲉⲝⲧ.tri
-trinity/[CYR:[TRANSLATED]]/ⲘⲈⲆⲚⲞⲈ/ⲅⲟ_ⲧⲣⲁⲛⲥⲡⲓⲗⲉⲣ/ⲕⲣⲩⲥⲏ_ⲫⲓⲗⲉⲡⲁⲧⲏⲉⲝⲧ.tri
-trinity/[CYR:[TRANSLATED]]/ⲘⲈⲆⲚⲞⲈ/ⲅⲟ_ⲧⲣⲁⲛⲥⲡⲓⲗⲉⲣ/ⲕⲣⲩⲥⲏ_ⲉⲛⲩ.tri
-trinity/[CYR:[TRANSLATED]]/ⲘⲈⲆⲚⲞⲈ/ⲅⲟ_ⲧⲣⲁⲛⲥⲡⲓⲗⲉⲣ/ⲕⲣⲩⲥⲏ_ⲩⲉⲣⲥⲓⲟⲛ.tri
-trinity/[CYR:[TRANSLATED]]/ⲘⲈⲆⲚⲞⲈ/ⲅⲟ_ⲧⲣⲁⲛⲥⲡⲓⲗⲉⲣ/ⲡⲓⲡⲉⲗⲓⲛⲉ_v3.tri
+trinity/[CYR:]/ⲘⲈⲆⲚⲞⲈ/ⲅⲟ_ⲧⲣⲁⲛⲥⲡⲓⲗⲉⲣ/ⲅⲟ_ⲗⲉⲝⲉⲣ.tri
+trinity/[CYR:]/ⲘⲈⲆⲚⲞⲈ/ⲅⲟ_ⲧⲣⲁⲛⲥⲡⲓⲗⲉⲣ/ⲅⲟ_ⲡⲁⲣⲥⲉⲣ.tri
+trinity/[CYR:]/ⲘⲈⲆⲚⲞⲈ/ⲅⲟ_ⲧⲣⲁⲛⲥⲡⲓⲗⲉⲣ/ⲅⲟ_ⲡⲁⲣⲥⲉⲣ_v2.tri
+trinity/[CYR:]/ⲘⲈⲆⲚⲞⲈ/ⲅⲟ_ⲧⲣⲁⲛⲥⲡⲓⲗⲉⲣ/ⲅⲟ_ⲧⲟ_ⲍⲓⲅ.tri
+trinity/[CYR:]/ⲘⲈⲆⲚⲞⲈ/ⲅⲟ_ⲧⲣⲁⲛⲥⲡⲓⲗⲉⲣ/ⲅⲟ_ⲧⲟ_ⲍⲓⲅ_v2.tri
+trinity/[CYR:]/ⲘⲈⲆⲚⲞⲈ/ⲅⲟ_ⲧⲣⲁⲛⲥⲡⲓⲗⲉⲣ/ⲧⲣⲓ_ⲧⲟ_ⲍⲓⲅ.tri
+trinity/[CYR:]/ⲘⲈⲆⲚⲞⲈ/ⲅⲟ_ⲧⲣⲁⲛⲥⲡⲓⲗⲉⲣ/ⲕⲣⲩⲥⲏ_ⲥⲧⲣⲓⲛⲅⲉⲝⲧ.tri
+trinity/[CYR:]/ⲘⲈⲆⲚⲞⲈ/ⲅⲟ_ⲧⲣⲁⲛⲥⲡⲓⲗⲉⲣ/ⲕⲣⲩⲥⲏ_ⲫⲓⲗⲉⲡⲁⲧⲏⲉⲝⲧ.tri
+trinity/[CYR:]/ⲘⲈⲆⲚⲞⲈ/ⲅⲟ_ⲧⲣⲁⲛⲥⲡⲓⲗⲉⲣ/ⲕⲣⲩⲥⲏ_ⲉⲛⲩ.tri
+trinity/[CYR:]/ⲘⲈⲆⲚⲞⲈ/ⲅⲟ_ⲧⲣⲁⲛⲥⲡⲓⲗⲉⲣ/ⲕⲣⲩⲥⲏ_ⲩⲉⲣⲥⲓⲟⲛ.tri
+trinity/[CYR:]/ⲘⲈⲆⲚⲞⲈ/ⲅⲟ_ⲧⲣⲁⲛⲥⲡⲓⲗⲉⲣ/ⲡⲓⲡⲉⲗⲓⲛⲉ_v3.tri
 ```
 
 ### Output .zig (5)
@@ -200,21 +200,21 @@ trinity/output/go_transpiler/version.zig (4 tests)
 
 ```
 PHOENIX = 999 = 3³ × 37
-Теfor[TRANSLATED]] phase: ⲨⲞⲌⲢⲞⲌⲆⲈⲚⲒⲈ ([CYR:[TRANSLATED]]andе)
+Теfor] phase: ⲨⲞⲌⲢⲞⲌⲆⲈⲚⲒⲈ ([CYR:]andе)
 
-[CYR:[TRANSLATED]]with[TRANSLATED]]withтand:
-- [CYR:[TRANSLATED]]: 1/φ = 0.618
-- [CYR:[TRANSLATED]]: μ = 1/φ²/10 = 0.0382
+[CYR:]with]withтand:
+- [CYR:]: 1/φ = 0.618
+- [CYR:]: μ = 1/φ²/10 = 0.0382
 ```
 
 ---
 
-## [CYR:[TRANSLATED]]
+## [CYR:]
 
 ```
 ⲒⲄⲖⲀ ⲄⲞ ⲦⲢⲀⲚⲤⲠⲒⲖⲈⲢ ⲦⲞⲜⲒⲔ ⲨⲈⲢⲆⲒⲔⲦ V3.0
 φ² + 1/φ² = 3
 PHOENIX = 999
 
-"От 0 до 4 [CYR:[TRANSLATED]] — this [CYR:[TRANSLATED]]with. От 4 до 10 — this [CYR:[TRANSLATED]]."
+"От 0 до 4 [CYR:] — this [CYR:]with. От 4 до 10 — this [CYR:]."
 ```

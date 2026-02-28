@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Временный кодогенератор .vibee → .zig
-Используется пока vibeec компилятор не обновлён под Zig 0.15
+ny codeaboutgenerathatr .vibee → .zig
+Iwithbylzatetwithya bytoa vibeec toaboutmpandlyathatr ne aboutnaboutinlyon under Zig 0.15
 """
 
 import yaml
@@ -14,11 +14,11 @@ class VibeeToZig:
         self.indent = "    "
         
     def parse_vibee(self, content: str) -> Dict:
-        """Парсит YAML-like .vibee спецификацию"""
+        """Parwithandt YAML-like .vibee withpetsandfandtoatsandyu"""
         return yaml.safe_load(content)
     
     def generate_zig(self, spec: Dict) -> str:
-        """Генерирует Zig код из спецификации"""
+        """Generandratet Zig code from withpetsandfandtoatsandand"""
         lines = []
         
         # Header
@@ -138,7 +138,7 @@ class VibeeToZig:
         return lines
     
     def _map_type(self, vibee_type: str) -> str:
-        """Маппинг VIBEE типов в Zig типы"""
+        """Mappandng VIBEE typeaboutin in Zig typey"""
         mapping = {
             'String': '[]const u8',
             'Int': 'i64',

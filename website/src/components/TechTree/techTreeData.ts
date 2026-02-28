@@ -584,7 +584,7 @@ export const techBranches: TechBranch[] = [
       {
         id: 'sacred-001',
         name: 'Trinity Identity',
-        description: 'φ² + 1/φ² = 3 — математическое основание троичных вычислений',
+        description: 'φ² + 1/φ² = 3 — mathosematandchewithtoaboute aboutwithnaboutinanande traboutandchnykh inychandwithlenandy',
         status: 'done',
         branch: 'sacred',
         prerequisites: [],
@@ -596,7 +596,7 @@ export const techBranches: TechBranch[] = [
       {
         id: 'sacred-002',
         name: 'Sacred Formula',
-        description: 'V = n × 3^k × π^m × φ^p × e^q — 42 константы с <5% ошибкой',
+        description: 'V = n × 3^k × π^m × φ^p × e^q — 42 toaboutnwiththatnty with <5% aboutshandbtoabouty',
         status: 'done',
         branch: 'sacred',
         prerequisites: ['sacred-001'],
@@ -608,7 +608,7 @@ export const techBranches: TechBranch[] = [
       {
         id: 'sacred-003',
         name: 'Coptic Gematria',
-        description: '27 glyphs с изопсефическими значениями (1-900)',
+        description: '27 glyphs with fromaboutpwithefandchewithtoandmand zonchenandyamand (1-900)',
         status: 'done',
         branch: 'sacred',
         prerequisites: ['sacred-002'],
@@ -620,7 +620,7 @@ export const techBranches: TechBranch[] = [
       {
         id: 'sacred-004',
         name: '15 Predictions',
-        description: 'Научные прогнозы для экстраполяции физических констант',
+        description: 'Naatchnye praboutgnaboutzy for etowithtrabylyatsandand ffromandchewithtoandkh toaboutnwiththatnt',
         status: 'done',
         branch: 'sacred',
         prerequisites: ['sacred-002', 'dist-003'],
@@ -632,7 +632,7 @@ export const techBranches: TechBranch[] = [
       {
         id: 'sacred-005',
         name: 'Isopsephy Engine',
-        description: 'Text-to-number conversion с математической значимостью',
+        description: 'Text-to-number conversion with mathosematandchewithtoabouty zonchandbridgeyu',
         status: 'in_progress',
         progress: 85,
         branch: 'sacred',

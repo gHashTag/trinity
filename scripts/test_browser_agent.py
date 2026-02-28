@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Тест Browser Agent на разных задачах
+Test Browser Agent on raznykh taskkh
 """
 
 import asyncio
@@ -44,7 +44,7 @@ async def main():
     try:
         await agent.start()
         
-        for i, task in enumerate(TASKS[:1]):  # Тестируем первую задачу
+        for i, task in enumerate(TASKS[:1]):  # Testandratem perinatyu zadachat
             print(f"\n{'#'*60}")
             print(f"# Task {i+1}: {task['goal'][:50]}...")
             print(f"{'#'*60}")

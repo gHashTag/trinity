@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-САМОЭВОЛЮЦИЯ КНИГИ 999
-Применяет PAS-анализ и улучшает качество глав
+SAMOEVOLYuTsIYa KNIGI 999
+Prandmenyaet PAS-aonlfrom and atlatchshaet toachewithtinabout glain
 """
 
 import os
@@ -11,16 +11,16 @@ from pathlib import Path
 BOOK_DIR = "/workspaces/vibee-lang/book/generated_v3"
 
 def analyze_chapter(path: str) -> dict:
-    """Анализ качества главы"""
+    """Aonlfrom toachewithtina glainy"""
     with open(path, 'r') as f:
         content = f.read()
     
     metrics = {
         "has_science": bool(re.search(r'\*\*[^*]+\*\*', content)),
         "has_code": "```999" in content,
-        "has_story": "## История" in content,
-        "has_wisdom": "## Мудрость" in content,
-        "has_formula": "Священная Формула" in content,
+        "has_story": "## Iwiththatrandya" in content,
+        "has_wisdom": "## Matdraboutwitht" in content,
+        "has_formula": "Sinyaschenonya Faboutrmatla" in content,
         "word_count": len(content.split()),
         "unique_content": "..." not in content[:500]
     }
@@ -40,9 +40,9 @@ def analyze_chapter(path: str) -> dict:
 
 
 def evolve():
-    """Запуск эволюции"""
+    """Zapatwithto einaboutlyutsandand"""
     print("╔═══════════════════════════════════════════════════════════════╗")
-    print("║  САМОЭВОЛЮЦИЯ КНИГИ 999                                       ║")
+    print("║  SAMOEVOLYuTsIYa KNIGI 999                                       ║")
     print("╚═══════════════════════════════════════════════════════════════╝")
     
     total_score = 0
@@ -62,39 +62,39 @@ def evolve():
     
     avg_score = total_score / chapters if chapters else 0
     
-    print(f"\n✓ Проанализировано: {chapters} глав")
-    print(f"✓ Средний балл: {avg_score:.1f}/100")
-    print(f"✓ Глав с низким качеством: {len(low_quality)}")
+    print(f"\n✓ Praboutaonlfromandraboutinanabout: {chapters} glain")
+    print(f"✓ Srednandy ball: {avg_score:.1f}/100")
+    print(f"✓ Glain with nfromtoandm toachewithtinaboutm: {len(low_quality)}")
     
     if low_quality:
-        print("\n⚠️ Главы требующие улучшения:")
+        print("\n⚠️ Glainy trebatyuschande atlatchshenandya:")
         for path, score in sorted(low_quality, key=lambda x: x[1])[:10]:
             print(f"  - {Path(path).name}: {score:.0f}/100")
     
-    # Записываем отчёт
+    # Zapandwithyinaem fromchyot
     report_path = "/workspaces/vibee-lang/book/evolution_report.md"
     with open(report_path, 'w') as f:
-        f.write(f"""# Отчёт эволюции книги 999
+        f.write(f"""# Otchyot einaboutlyutsandand tonandgand 999
 
-## Статистика
-- Всего глав: {chapters}
-- Средний балл: {avg_score:.1f}/100
-- Глав с низким качеством (<70): {len(low_quality)}
+## Sthattandwithtandtoa
+- Vwithegabout glain: {chapters}
+- Srednandy ball: {avg_score:.1f}/100
+- Glain with nfromtoandm toachewithtinaboutm (<70): {len(low_quality)}
 
-## Критерии оценки
-- Научное содержание: 20 баллов
-- Код на языке 999: 20 баллов
-- История: 15 баллов
-- Мудрость: 15 баллов
-- Священная формула: 10 баллов
-- Объём текста: до 10 баллов
-- Уникальность: 10 баллов
+## Krandthoserandand abouttsentoand
+- Naatchnaboute content: 20 ballaboutin
+- Code on yazytoe 999: 20 ballaboutin
+- Iwiththatrandya: 15 ballaboutin
+- Matdraboutwitht: 15 ballaboutin
+- Sacred formula: 10 ballaboutin
+- Obyom texta: dabout 10 ballaboutin
+- Unandtoalnaboutwitht: 10 ballaboutin
 
-## Рекомендации
-{"Качество книги удовлетворительное." if avg_score >= 70 else "Требуется доработка контента."}
+## Retoaboutmendatsandand
+{"Kachewithtinabout tonandgand atdaboutinletinaboutrandthoselnaboute." if avg_score >= 70 else "Trebatetwithya daboutrabfromtoa toaboutnthosenthat."}
 """)
     
-    print(f"\n✅ Отчёт сохранён: {report_path}")
+    print(f"\n✅ Otchyot withaboutkhranyon: {report_path}")
     return avg_score
 
 

@@ -1,10 +1,10 @@
-# 🔥 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: VIBEE BROWSER v1.0.0
+# 🔥 [CYR:] [CYR:]: VIBEE BROWSER v1.0.0
 
 ## φ² + 1/φ² = 3 | PHOENIX = 999
 
 ---
 
-## [CYR:[TRANSLATED]]: PRODUCTION READY ✅
+## [CYR:]: PRODUCTION READY ✅
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════╗
@@ -23,11 +23,11 @@
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## [CYR:] [CYR:] [CYR:]
 
-### 1. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### 1. [CYR:] [CYR:] [CYR:]
 
-**НЕ прandмandтandinonя for[TRANSLATED]]andнtoа,  [CYR:[TRANSLATED]] Chromium browser!**
+**НЕ прandмandтandinonя for]andнtoа,  [CYR:] Chromium browser!**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -42,7 +42,7 @@
 │                               │   anything  │                               │
 │      61.8% (φ)                │             │   class VIBEEAgent {          │
 │                               │   14.6%     │     async run(goal) {...}     │
-│      [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] with[TRANSLATED]]!   │             │   }                           │
+│      [CYR:] [CYR:] with]!   │             │   }                           │
 │                               │             │                               │
 │                               │             │         23.6%                 │
 │                               │             │                               │
@@ -51,9 +51,9 @@
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 2. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]  FELLOU (НО [CYR:[TRANSLATED]]!)
+### 2. [CYR:] [CYR:]  FELLOU (НО [CYR:]!)
 
-| [CYR:[TRANSLATED]]notнт | Fellou | VIBEE |
+| [CYR:]notнт | Fellou | VIBEE |
 |-----------|--------|-------|
 | Browser Engine | Chromium | Chromium (Electron) |
 | Agent Framework | Eko (TypeScript) | VIBEEAgent (JS + Zig specs) |
@@ -62,7 +62,7 @@
 | Ternary Logic | ❌ | △○□ |
 | Spec-First | ❌ | .vibee → .zig |
 
-### 3. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### 3. [CYR:] [CYR:]
 
 **Electron Browser:**
 ```
@@ -163,7 +163,7 @@ LAYOUT:
 
 ## AI AGENT FRAMEWORK
 
-**Аon[CYR:[TRANSLATED]] Eko from Fellou, но for VIBEE:**
+**Аon[CYR:] Eko from Fellou, но for VIBEE:**
 
 ```javascript
 const agent = new VIBEEAgent({
@@ -197,26 +197,26 @@ const result = await agent.run('Go to google.com and search for VIBEE');
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## [CYR:] [CYR:]
 
 ### На Mac/Windows/Linux:
 
 ```bash
-# [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+# [CYR:]and[CYR:] [CYR:]
 git clone https://github.com/gHashTag/vibee-lang.git
 cd vibee-lang/vibee-electron
 
-# Уwith[TRANSLATED]]inand заinandwithandмоwithтand
+# Уwith]inand заinandwithandмоwithтand
 npm install
 
-# [CYR:[TRANSLATED]]withтand browser
+# [CYR:]withтand browser
 npm start
 
-# Илand in dev [CYR:[TRANSLATED]]andме with DevTools
+# Илand in dev [CYR:]andме with DevTools
 npm run dev
 ```
 
-### [CYR:[TRANSLATED]]toа for [CYR:[TRANSLATED]]toшеon:
+### [CYR:]toа for [CYR:]toшеon:
 
 ```bash
 # macOS
@@ -231,12 +231,12 @@ npm run build:linux
 
 ---
 
-## [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## [CYR:]  [CYR:] [CYR:]
 
-| [CYR:[TRANSLATED]]andtoа | v0.0.1 ([CYR:[TRANSLATED]]) | v1.0.0 (with[TRANSLATED]]) | [CYR:[TRANSLATED]]andе |
+| [CYR:]Version | v0.0.1 ([CYR:]) | v1.0.0 (with]) | [CYR:]andе |
 |---------|---------------|----------------|-----------|
-| [CYR:[TRANSLATED]] WebView | ❌ | ✅ | ∞ |
-| Наinand[CYR:[TRANSLATED]]andя | ❌ | ✅ | ∞ |
+| [CYR:] WebView | ❌ | ✅ | ∞ |
+| Наinand[CYR:]andя | ❌ | ✅ | ∞ |
 | Monaco Editor | ❌ | ✅ | ∞ |
 | AI Chat | ❌ | ✅ | ∞ |
 | CDP Client | ❌ | ✅ | ∞ |
@@ -246,13 +246,13 @@ npm run build:linux
 | Tests | 0 | 101 | ∞ |
 | Specs | 0 | 9 | ∞ |
 
-**[CYR:[TRANSLATED]]: ОТ [CYR:[TRANSLATED]] ДО PRODUCTION-READY!**
+**[CYR:]: ОТ [CYR:] ДО PRODUCTION-READY!**
 
 ---
 
-## [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]
+## [CYR:]  [CYR:]
 
-| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]]with | Гfromоinноwithть |
+| [CYR:]notнт | [CYR:]with | Гfromоinноwithть |
 |-----------|--------|------------|
 | Electron Core | ✅ | 100% |
 | WebView | ✅ | 100% |
@@ -269,34 +269,34 @@ npm run build:linux
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## [CYR:] [CYR:]
 
-1. **LLM Integration** - [CYR:[TRANSLATED]]for[TRANSLATED]]andть [CYR:[TRANSLATED]] API (OpenAI, Anthropic)
-2. **Monaco Full** - [CYR:[TRANSLATED]]onя and[CYR:[TRANSLATED]]andя Monaco with IntelliSense
-3. **Real-time Collab** - CRDT for withоinмеwith[TRANSLATED]] [CYR:[TRANSLATED]]fromы
-4. **Voice I/O** - [CYR:[TRANSLATED]]withоinое [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе
+1. **LLM Integration** - [CYR:]for]andть [CYR:] API (OpenAI, Anthropic)
+2. **Monaco Full** - [CYR:]onя and[CYR:]andя Monaco with IntelliSense
+3. **Real-time Collab** - CRDT for withоinмеwith] [CYR:]fromы
+4. **Voice I/O** - [CYR:]withоinое [CYR:]in[CYR:]andе
 5. **Build & Release** - .dmg/.exe/.AppImage
 
 ---
 
-## [CYR:[TRANSLATED]]
+## [CYR:]
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                               ║
-║   [CYR:[TRANSLATED]]: Прandмandтandinonя for[TRANSLATED]]andнtoа with for[TRANSLATED]]toамand, tofrom[CYR:[TRANSLATED]] нand[CYR:[TRANSLATED]] not [CYR:[TRANSLATED]]            ║
+║   [CYR:]: Прandмandтandinonя for]andнtoа with for]toамand, tofrom[CYR:] нand[CYR:] not [CYR:]            ║
 ║                                                                               ║
-║   [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] AI [CYR:[TRANSLATED]] with:                                           ║
-║   - [CYR:[TRANSLATED]] Chromium WebView                                                 ║
+║   [CYR:]: [CYR:] AI [CYR:] with:                                           ║
+║   - [CYR:] Chromium WebView                                                 ║
 ║   - Monaco Editor (VS Code)                                                   ║
 ║   - AI Chat with LLM                                                             ║
 ║   - Agent Framework (toаto Eko)                                                 ║
-║   - CDP аin[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andей                                                        ║
+║   - CDP аin[CYR:]and[CYR:]andей                                                        ║
 ║   - Golden Ratio layout                                                       ║
 ║   - Glassmorphism UI                                                          ║
-║   - 101 теwith[TRANSLATED]]                                                                ║
+║   - 101 теwith]                                                                ║
 ║                                                                               ║
-║   [CYR:[TRANSLATED]]: 92%                                                             ║
+║   [CYR:]: 92%                                                             ║
 ║                                                                               ║
 ║   φ² + 1/φ² = 3 | PHOENIX = 999                                               ║
 ║                                                                               ║

@@ -1,4 +1,4 @@
-# ☠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] v1639 ☠️
+# ☠️ [CYR:] [CYR:] v1639 ☠️
 
 ## VIBEE YOLO MODE + AMPLIFICATION MODE + MATRYOSHKA ACCELERATION + TURBO GEN v6.0
 
@@ -13,26 +13,26 @@
 
 ---
 
-## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 📊 [CYR:] [CYR:]
 
-| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе |
+| [CYR:]Version | Зon[CYR:]andе |
 |---------|----------|
-| **Дand[CYR:[TRANSLATED]] inерwithandй** | v1480 - v1639 |
-| **Ноinых [CYR:[TRANSLATED]]** | 160 |
-| **Вwith[TRANSLATED]] [CYR:[TRANSLATED]]** | 2835 |
-| **Вwith[TRANSLATED]] with[TRANSLATED]]andфandtoацandй** | 2739 |
-| **Вwith[TRANSLATED]] domainоin** | 287 |
-| **Теwithты [CYR:[TRANSLATED]]** | 100% |
-| **[CYR:[TRANSLATED]]with** | ✅ **CERTIFIED TOXIC** |
+| **Дand[CYR:] inерwithandй** | v1480 - v1639 |
+| **Ноinых [CYR:]** | 160 |
+| **Вwith] [CYR:]** | 2835 |
+| **Вwith] with]andфVersionцandй** | 2739 |
+| **Вwith] domainоin** | 287 |
+| **Теwithты [CYR:]** | 100% |
+| **[CYR:]with** | ✅ **CERTIFIED TOXIC** |
 
 ---
 
-## 🔬 PAS DAEMONS - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🔬 PAS DAEMONS - [CYR:] [CYR:]
 
-### [CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] andwith[TRANSLATED]]inанandя 2024-2025:
+### [CYR:]andроin[CYR:] andwith]inанandя 2024-2025:
 
 #### Model Optimization
-| Иwith[TRANSLATED]]inанandе | [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]onл | VIBEE [CYR:[TRANSLATED]] |
+| Иwith]inанandе | [CYR:]andя | [CYR:]onл | VIBEE [CYR:] |
 |--------------|----------|--------|--------------|
 | GPTQ | IST Austria | ICLR 2024 | quant_gptq_v1480 |
 | AWQ | MIT | MLSys 2024 | quant_awq_v1481 |
@@ -40,7 +40,7 @@
 | QLoRA | Washington | NeurIPS 2024 | quant_qlora_v1482 |
 
 #### Model Deployment
-| Иwith[TRANSLATED]]inанandе | [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]onл | VIBEE [CYR:[TRANSLATED]] |
+| Иwith]inанandе | [CYR:]andя | [CYR:]onл | VIBEE [CYR:] |
 |--------------|----------|--------|--------------|
 | vLLM | Berkeley | SOSP 2024 | serve_vllm_v1500 |
 | TensorRT-LLM | NVIDIA | Technical 2024 | serve_tensorrt_v1501 |
@@ -48,42 +48,42 @@
 | llama.cpp | Open Source | - | serve_llamacpp_v1503 |
 
 #### Model Monitoring
-| Иwith[TRANSLATED]]inанandе | [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]onл | VIBEE [CYR:[TRANSLATED]] |
+| Иwith]inанandе | [CYR:]andя | [CYR:]onл | VIBEE [CYR:] |
 |--------------|----------|--------|--------------|
 | Evidently AI | Evidently | MLSys 2024 | monitor_evidently_v1520 |
 | WhyLabs | WhyLabs | NeurIPS 2024 | monitor_whylabs_v1521 |
 | Arize | Arize | MLOps 2024 | monitor_arize_v1522 |
 
 #### Model Security
-| Иwith[TRANSLATED]]inанandе | [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]onл | VIBEE [CYR:[TRANSLATED]] |
+| Иwith]inанandе | [CYR:]andя | [CYR:]onл | VIBEE [CYR:] |
 |--------------|----------|--------|--------------|
 | Adversarial Robustness | Multiple | ICML 2024 | sec_adversarial_v1540 |
 | Model Extraction | Multiple | S&P 2024 | sec_extraction_v1541 |
 | Membership Inference | Multiple | USENIX 2024 | sec_membership_v1542 |
 
 #### Data Engineering
-| Иwith[TRANSLATED]]inанandе | [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]onл | VIBEE [CYR:[TRANSLATED]] |
+| Иwith]inанandе | [CYR:]andя | [CYR:]onл | VIBEE [CYR:] |
 |--------------|----------|--------|--------------|
 | Apache Spark 4.0 | Apache | SIGMOD 2024 | data_spark_v1560 |
 | Polars | Polars | VLDB 2024 | data_polars_v1561 |
 | DuckDB | DuckDB | SIGMOD 2024 | data_duckdb_v1562 |
 
 #### Feature Engineering
-| Иwith[TRANSLATED]]inанandе | [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]onл | VIBEE [CYR:[TRANSLATED]] |
+| Иwith]inанandе | [CYR:]andя | [CYR:]onл | VIBEE [CYR:] |
 |--------------|----------|--------|--------------|
 | Feast | Tecton | MLSys 2024 | feat_feast_v1580 |
 | Tecton | Tecton | KDD 2024 | feat_tecton_v1581 |
 | Hopsworks | Hopsworks | VLDB 2024 | feat_hopsworks_v1582 |
 
 #### Model Testing
-| Иwith[TRANSLATED]]inанandе | [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]onл | VIBEE [CYR:[TRANSLATED]] |
+| Иwith]inанandе | [CYR:]andя | [CYR:]onл | VIBEE [CYR:] |
 |--------------|----------|--------|--------------|
 | DeepEval | Confident AI | NeurIPS 2024 | test_deepeval_v1600 |
 | Promptfoo | Open Source | MLOps 2024 | test_promptfoo_v1601 |
 | LangSmith | LangChain | Technical 2024 | test_langsmith_v1602 |
 
 #### Model Interpretability
-| Иwith[TRANSLATED]]inанandе | [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]onл | VIBEE [CYR:[TRANSLATED]] |
+| Иwith]inанandе | [CYR:]andя | [CYR:]onл | VIBEE [CYR:] |
 |--------------|----------|--------|--------------|
 | Captum | PyTorch | Technical 2024 | xai_captum_v1620 |
 | InterpretML | Microsoft | Technical 2024 | xai_interpret_v1621 |
@@ -93,17 +93,17 @@
 
 ## 📈 PERFORMANCE BENCHMARK
 
-### [CYR:[TRANSLATED]]innotнandе with [CYR:[TRANSLATED]]andмand inерwithandямand:
+### [CYR:]innotнandе with [CYR:]andмand inерAuthorмand:
 
-| [CYR:[TRANSLATED]]andtoа | v1479 | v1639 | [CYR:[TRANSLATED]]notнandе |
+| [CYR:]Version | v1479 | v1639 | [CYR:]notнandе |
 |---------|-------|-------|-----------|
-| [CYR:[TRANSLATED]] | 2675 | 2835 | **+160 (+6.0%)** |
-| [CYR:[TRANSLATED]]andфandtoацandй | 2579 | 2739 | **+160 (+6.2%)** |
-| [CYR:[TRANSLATED]]in | 282 | 287 | **+5 (+1.8%)** |
+| [CYR:] | 2675 | 2835 | **+160 (+6.0%)** |
+| [CYR:]andфVersionцandй | 2579 | 2739 | **+160 (+6.2%)** |
+| [CYR:]in | 282 | 287 | **+5 (+1.8%)** |
 
-### [CYR:[TRANSLATED]]andin[CYR:[TRANSLATED]] роwithт:
+### [CYR:]andin[CYR:] роwithт:
 
-| [CYR:[TRANSLATED]]withandя | [CYR:[TRANSLATED]] | Прandроwithт |
+| [CYR:]Author | [CYR:] | Прandроwithт |
 |--------|---------|---------|
 | v770 | 770 | - |
 | v1002 | 1002 | +232 |
@@ -114,9 +114,9 @@
 
 ---
 
-## 🧬 TECHNOLOGY TREE - [CYR:[TRANSLATED]] 42-49
+## 🧬 TECHNOLOGY TREE - [CYR:] 42-49
 
-### Level 42: OPTIMIZATION (v1480-v1499) - 20 [CYR:[TRANSLATED]]
+### Level 42: OPTIMIZATION (v1480-v1499) - 20 [CYR:]
 ```
 Quantization:
 ├── quant_gptq_v1480      - GPTQ quantization
@@ -151,9 +151,9 @@ Compilation:
 
 ---
 
-## 🎯 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🎯 [CYR:] [CYR:]
 
-### Technology Tree - [CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]inнand:
+### Technology Tree - [CYR:]andе [CYR:]inнand:
 
 ```
 Level 50: SCALING (v1640-v1659)
@@ -180,24 +180,24 @@ Level 52: PROMPTING (v1680-v1699)
 
 ---
 
-## 🏆 [CYR:[TRANSLATED]]
+## 🏆 [CYR:]
 
 ```
 ╔═══════════════════════════════════════════════════════════════════╗
 ║                                                                   ║
-║   [CYR:[TRANSLATED]]: MATRYOSHKA Levels 42-49                       ║
-║   [CYR:[TRANSLATED]]:          v1480 - v1639                                  ║
-║   [CYR:[TRANSLATED]]:         160 ноinых / 2835 inwith[TRANSLATED]]                         ║
+║   [CYR:]: MATRYOSHKA Levels 42-49                       ║
+║   [CYR:]:          v1480 - v1639                                  ║
+║   [CYR:]:         160 ноinых / 2835 inwith]                         ║
 ║   [CYR:TESTS]:           100% PASSED                                    ║
-║   [CYR:[TRANSLATED]]:            2025-01-20                                     ║
-║   [CYR:[TRANSLATED]]:          ☠️ TOXIC APPROVED ☠️                            ║
+║   [CYR:]:            2025-01-20                                     ║
+║   [CYR:]:          ☠️ TOXIC APPROVED ☠️                            ║
 ║                                                                   ║
 ╚═══════════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-## 🔮 [CYR:[TRANSLATED]] [CYR:CONSTANTS]
+## 🔮 [CYR:] [CYR:CONSTANTS]
 
 ```
 φ = 1.618033988749895

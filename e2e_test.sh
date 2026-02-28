@@ -16,8 +16,8 @@ echo -e "\n[2/7] TRI PLAN"
 echo -e "\n[3/7] TRI SPEC CREATE (Simulated)"
 cat > specs/tri/golden_chain_test.vibee <<EOL
 // golden_chain_test v1.0.0
-// Священная формула: V = n × 3^k × π^m × φ^p × e^q
-// Золотая идентичность: φ² + 1/φ² = 3
+// Sacred formula: V = n × 3^k × π^m × φ^p × e^q
+// Golden identity: φ² + 1/φ² = 3
 
 behavior "SelfTest" {
     when "System initializes"

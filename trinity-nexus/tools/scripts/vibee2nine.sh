@@ -48,8 +48,8 @@ generate_999() {
     # Generate .999 code
     cat > "$output_file" << NINE_EOF
 // ═══════════════════════════════════════════════════════════════
-// Сгенерировано из: ${vibee_file#/workspaces/vibee-lang/}
-// ЗАПРЕЩЕНО: Ручное редактирование
+// Sgenerandraboutinanabout from: ${vibee_file#/workspaces/vibee-lang/}
+// ZAPRESchENO: Ratchnaboute editing
 // ═══════════════════════════════════════════════════════════════
 
 // ╔══════════════════════════════════════════════════════════════════╗
@@ -162,7 +162,7 @@ generate_999() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// SELF-EVOLUTION (ОБЯЗАТЕЛЬНО)
+// SELF-EVOLUTION (OBYaZATELNO)
 // ═══════════════════════════════════════════════════════════════
 Ⲏ SelfEvolution {
     Ⲃ version: Ⲧⲉⲝⲧ = "3.0"

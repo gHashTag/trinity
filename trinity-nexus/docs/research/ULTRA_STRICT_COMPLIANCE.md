@@ -28,8 +28,8 @@ All 101 `.999` files in the 999 OS codebase are now fully compliant with ULTRA-S
 
 ### Generation Marker
 ```
-// [CYR:[TRANSLATED]]notрandроin[CYR:[TRANSLATED]] andз: specs/standard.vibee
-// [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toтandроinанandе
+// :]notrandraboutin:] andz: specs/standard.vibee
+// :]: :] :]totandraboutinanande
 ```
 
 ### SelfEvolution Class

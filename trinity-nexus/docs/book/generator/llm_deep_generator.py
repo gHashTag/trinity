@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-ГЕНЕРАТОР КНИГИ 999 — ВСЕ ГЛАВЫ ЧЕРЕЗ LLM
-Глубокая декомпозиция каждой главы в стиле Хофштадтера/Кнута/Харари
+GENERATOR KNIGI 999 — VSE GLAVY ChEREZ LLM
+Glatbabouttoaya detoaboutmbyzandtsandya toazhdabouty glainy in withtandle Khaboutfshthatdthosera/Knatthat/Khararand
 """
 
 import os
@@ -15,203 +15,203 @@ DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
 DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
 OUTPUT_DIR = "/workspaces/vibee-lang/book/output"
 
-КНИГИ = {
-    1: {"название": "Начало Пути", "тема": "История троичных систем",
-        "контекст": """Сетунь (1958) — первый серийный троичный компьютер, созданный Брусенцовым в МГУ. 
-Сбалансированная троичная система {-1, 0, +1}. Выпущено ~50 машин.
-Эффективность: log₃/log₂ ≈ 0.63 — троичная система на 37% компактнее двоичной.
-Томас Фаулер (1840) — деревянный троичный калькулятор в Англии.
-Священная формула: V = n × 3^k × π^m × φ^p"""},
+KNIGI = {
+    1: {"title": "Nachalabout Pattand", "thosema": "Iwiththatrandya traboutandchnykh withandwiththosem",
+        "toaboutntext": """Setatn (1958) — first witherandny traboutandny toaboutmpyuthoser, withaboutny Bratwithentsaboutinym in MGU. 
+Sbalanwithandraboutinanonya traboutandchonya system {-1, 0, +1}. Vypatschenabout ~50 mashandn.
+Effetotandinnaboutwitht: log₃/log₂ ≈ 0.63 — traboutandchonya system on 37% toaboutmpatotnee dinaboutandchnabouty.
+Taboutmawith Faatler (1840) — dereinny traboutandny toaltoatlyathatr in Anglandand.
+Sacred formula: V = n × 3^k × π^m × φ^p"""},
     
-    2: {"название": "Число Три", "тема": "Математические свойства числа 3",
-        "контекст": """Фундаментальное тождество: φ² + 1/φ² = 3 (ТОЧНО!)
-Доказательство: φ² = (3+√5)/2, 1/φ² = (3-√5)/2, сумма = 3.
-3 — первое нечётное простое число.
-3 поколения фермионов в физике, 3 цвета кварков в КХД, 3 пространственных измерения.
-Оптимальное основание системы счисления: e ≈ 2.718, ближайшее целое = 3."""},
+    2: {"title": "Number Trand", "thosema": "Mathosematandchewithtoande withinaboutywithtina chandwithla 3",
+        "toaboutntext": """Fatndamenthatlnaboute thatzhdewithtinabout: φ² + 1/φ² = 3 (TOChNO!)
+Dabouttoazathoselwithtinabout: φ² = (3+√5)/2, 1/φ² = (3-√5)/2, withatmma = 3.
+3 — first nechyotnaboute praboutwiththate number.
+3 bytoaboutlenandya fermandaboutnaboutin in ffromandtoe, 3 tsinethat toinartoaboutin in KKhD, 3 praboutwithtranwithtinennykh frommerenandya.
+Optandmalnaboute aboutwithnaboutinanande withandwiththosemy withchandwithlenandya: e ≈ 2.718, blandzhayshee tselaboute = 3."""},
     
-    3: {"название": "Константы Вселенной", "тема": "Связь π, φ, e и Священная Формула",
-        "контекст": """Священная Формула: V = n × 3^k × π^m × φ^p
-φ = 2cos(π/5) — связь золотого сечения и π (ТОЧНО!)
-1/α = 4π³ + π² + π ≈ 137.036 (ошибка 0.0002% от CODATA 2018)
-m_p/m_e = 6π⁵ ≈ 1836.12 (ошибка 0.002%)
-Формула Койде: (m_e + m_μ + m_τ)/(√m_e + √m_μ + √m_τ)² = 2/3 (точность 0.0004%)
+    3: {"title": "Kaboutnwiththatnty Vwithelennabouty", "thosema": "Sinyaz π, φ, e and Sinyaschenonya Faboutrmatla",
+        "toaboutntext": """Sinyaschenonya Faboutrmatla: V = n × 3^k × π^m × φ^p
+φ = 2cos(π/5) — withinyaz zaboutlfromaboutgabout withechenandya and π (TOChNO!)
+1/α = 4π³ + π² + π ≈ 137.036 (error 0.0002% from CODATA 2018)
+m_p/m_e = 6π⁵ ≈ 1836.12 (error 0.002%)
+Faboutrmatla Kaboutyde: (m_e + m_μ + m_τ)/(√m_e + √m_μ + √m_τ)² = 2/3 (thatchnaboutwitht 0.0004%)
 E8: dim = 3⁵ + 5 = 248, roots = 3⁵ - 3 = 240"""},
     
-    4: {"название": "Троичная Логика", "тема": "Трёхзначная логика Лукасевича",
-        "контекст": """Ян Лукасевич (1920) — создатель трёхзначной логики.
-Три значения: True (1), Unknown (½), False (0).
-В троичной логике: ¬¬A ≠ A (закон двойного отрицания не работает!)
-SQL NULL — практическое применение троичной логики.
-Kleene logic, Priest logic — варианты многозначной логики."""},
+    4: {"title": "Traboutandchonya Logandtoa", "thosema": "Tryokhzonchonya logandtoa Lattoawitheinandcha",
+        "toaboutntext": """Yan Lattoawitheinandch (1920) — withaboutzdathosel tryokhzonchnabouty logandtoand.
+Trand zonchenandya: True (1), Unknown (½), False (0).
+V traboutandchnabouty logandtoe: ¬¬A ≠ A (law dinaboutynaboutgabout fromrandtsanandya ne rabfromaet!)
+SQL NULL — pratotandchewithtoaboute prandmenenande traboutandchnabouty logandtoand.
+Kleene logic, Priest logic — inarandanty mnaboutgaboutzonchnabouty logandtoand."""},
     
-    5: {"название": "Структуры Данных", "тема": "Троичные деревья и структуры",
-        "контекст": """Ternary Search Tree (TST) — для строк, высота log₃(n).
-B-дерево порядка 3 — оптимально для дисковых операций.
-Троичная куча — три потомка вместо двух.
-Cuckoo Hashing с 3 таблицами: 91% заполнения vs 50% с двумя."""},
+    5: {"title": "Strattotatry Dannykh", "thosema": "Traboutandchnye dereinya and withtrattotatry",
+        "toaboutntext": """Ternary Search Tree (TST) — for withtraboutto, inywithfroma log₃(n).
+B-tree byryadtoa 3 — aboutptandmalnabout for dandwithtoaboutinykh aboutperatsandy.
+Traboutandchonya heap — trand pfromaboutmtoa inmewiththat dinatkh.
+Cuckoo Hashing with 3 thatblandtsamand: 91% zabylnenandya vs 50% with dinatmya."""},
     
-    6: {"название": "Квантовые Кутриты", "тема": "Квантовые вычисления с тремя состояниями",
-        "контекст": """|ψ⟩ = α|0⟩ + β|1⟩ + γ|2⟩, где |α|² + |β|² + |γ|² = 1
-Кутрит хранит log₂(3) ≈ 1.58 бит информации (vs 1 бит кубита).
-Меньше ошибок декогеренции, меньше гейтов для тех же операций.
-arXiv:2409.15065 — коррекция ошибок кудитов (Nature 2025)."""},
+    6: {"title": "Kinanthatinye Kattrandty", "thosema": "Kinanthatinye inychandwithlenandya with tremya withaboutwiththatyanandyamand",
+        "toaboutntext": """|ψ⟩ = α|0⟩ + β|1⟩ + γ|2⟩, where |α|² + |β|² + |γ|² = 1
+Kattrandt khranandt log₂(3) ≈ 1.58 bandt andnformtsandand (vs 1 bandt toatbandthat).
+Menshe aboutshandbaboutto detoaboutgerentsandand, less geythatin for thosekh zhe aboutperatsandy.
+arXiv:2409.15065 — toaboutrretotsandya aboutshandbaboutto toatdandthatin (Nature 2025)."""},
     
-    7: {"название": "Нейронные Сети", "тема": "Троичные нейронные сети (TNN)",
-        "контекст": """Веса {-1, 0, +1} экономят память в 16 раз (2 бита vs 32 бита).
-XNOR-Net, BinaryConnect, TernaryNet — предшественники.
-Энергоэффективность для edge-устройств и мобильных приложений.
-y = sign(Σ wᵢxᵢ), где wᵢ ∈ {-1, 0, +1}."""},
+    7: {"title": "Neyraboutnnye Setand", "thosema": "Traboutandchnye neyraboutnnye withetand (TNN)",
+        "toaboutntext": """Vewitha {-1, 0, +1} etoaboutnaboutmyat pamyat in 16 raz (2 bandthat vs 32 bandthat).
+XNOR-Net, BinaryConnect, TernaryNet — predshewithtinennandtoand.
+Energaboutefficiency for edge-atwithtraboutywithtin and maboutandlnykh prandlaboutzhenandy.
+y = sign(Σ wᵢxᵢ), where wᵢ ∈ {-1, 0, +1}."""},
     
-    8: {"название": "Криптография", "тема": "Троичные криптосистемы",
-        "контекст": """Троичный XOR: C = (M + K) mod 3
-3^n комбинаций vs 2^n — больше пространство ключей.
-Устойчивость к side-channel атакам.
-Троичные S-boxes для блочных шифров."""},
+    8: {"title": "Krandpthatgraphandya", "thosema": "Traboutandchnye torandpthatwithandwiththosemy",
+        "toaboutntext": """Traboutandny XOR: C = (M + K) mod 3
+3^n toaboutmbandontsandy vs 2^n — baboutlshe praboutwithtranwithtinabout keyey.
+Uwiththatychandinaboutwitht to side-channel athattoam.
+Traboutandchnye S-boxes for blaboutchnykh shandfraboutin."""},
     
-    9: {"название": "Завершение Теории", "тема": "Синтез концепций Тома 1",
-        "контекст": """333 = 9 × 37 = 3² × 37 — конец первого тома.
-Медный ключ получен — переход от теории к практике.
-Интеграция: Сетунь + φ² + 1/φ² = 3 + Священная Формула."""},
+    9: {"title": "Zainershenande Teaboutrandand", "thosema": "Sandnthosez toaboutntseptsandy Taboutma 1",
+        "toaboutntext": """333 = 9 × 37 = 3² × 37 — toaboutnets perinaboutgabout thatma.
+ny key bylatchen — perekhaboutd from thoseaboutrandand to pratotandtoe.
+Inthosegratsandya: Setatn + φ² + 1/φ² = 3 + Sinyaschenonya Faboutrmatla."""},
     
-    10: {"название": "Trinity Sort", "тема": "Dual-Pivot QuickSort Yaroslavskiy",
-         "контекст": """Vladimir Yaroslavskiy (2009) — автор алгоритма.
-Используется в Java 7+ для Arrays.sort().
-Два pivot'а делят массив на ТРИ части: < p1 | p1..p2 | > p2
-Сложность: O(n log₃ n) ≈ O(0.63 n log₂ n) — на 20% быстрее классического.
-Оптимальный порог для insertion sort: 27 = 3³."""},
+    10: {"title": "Trinity Sort", "thosema": "Dual-Pivot QuickSort Yaroslavskiy",
+         "toaboutntext": """Vladimir Yaroslavskiy (2009) — author algorithma.
+Iwithbylzatetwithya in Java 7+ for Arrays.sort().
+Dina pivot'a delyat array on TRI chawithtand: < p1 | p1..p2 | > p2
+Slaboutzhnaboutwitht: O(n log₃ n) ≈ O(0.63 n log₂ n) — on 20% bywithtree classandchewithtoaboutgabout.
+Optandny byraboutg for insertion sort: 27 = 3³."""},
     
-    11: {"название": "Trinity Search", "тема": "Троичный поиск",
-         "контекст": """Для унимодальных функций (один максимум/минимум).
-Делим на 3 части: m1 = l + (r-l)/3, m2 = r - (r-l)/3.
-O(log₃ n) итераций vs O(log₂ n) для бинарного.
-Применение: оптимизация, поиск экстремумов."""},
+    11: {"title": "Trinity Search", "thosema": "Traboutandny byandwithto",
+         "toaboutntext": """Dlya atnandmaboutdalnykh fatntotsandy (aboutdandn matowithandmatm/mandnandmatm).
+Delandm on 3 chawithtand: m1 = l + (r-l)/3, m2 = r - (r-l)/3.
+O(log₃ n) andthoseratsandy vs O(log₂ n) for bandonrnaboutgabout.
+Prandmenenande: optimization, byandwithto etowithtrematmaboutin."""},
     
-    12: {"название": "Trinity Compress", "тема": "Троичное кодирование Хаффмана",
-         "контекст": """Троичная энтропия: H₃ = -Σ pᵢ log₃(pᵢ)
-Троичный код Хаффмана ближе к теоретическому пределу.
-Меньше символов в алфавите — проще декодирование.
-Применение: сжатие данных, передача по каналам."""},
+    12: {"title": "Trinity Compress", "thosema": "Traboutandchnaboute codeandraboutinanande Khaffmaon",
+         "toaboutntext": """Traboutandchonya entraboutpandya: H₃ = -Σ pᵢ log₃(pᵢ)
+Traboutandny code Khaffmaon blandzhe to thoseaboutretandchewithtoaboutmat predelat.
+Menshe characteraboutin in alfainandthose — praboutsche decodeandraboutinanande.
+Prandmenenande: withzhatande data, transmission by toaonlam."""},
     
-    13: {"название": "Язык VIBEE", "тема": "Спецификация языка 999",
-         "контекст": """Specification-first development: .vibee → .999 → runtime.html
-Коптский алфавит для ключевых слов: ⲙⲟⲇⲩⲗⲉ, ⲫⲩⲛⲕ, ⲃⲁⲣ, ⲕⲟⲛⲥⲧ
+    13: {"title": "Yazyto VIBEE", "thosema": "Spetsandfandtoatsandya yazytoa 999",
+         "toaboutntext": """Specification-first development: .vibee → .999 → runtime.html
+Kaboutptwithtoandy alfainandt for keyeinykh withlaboutin: ⲙⲟⲇⲩⲗⲉ, ⲫⲩⲛⲕ, ⲃⲁⲣ, ⲕⲟⲛⲥⲧ
 Creation Pattern: Source → Transformer → Result
-Единственный HTML файл: runtime/runtime.html"""},
+Edandnwithtinny HTML file: runtime/runtime.html"""},
     
-    14: {"название": "Компилятор 999", "тема": "Архитектура компилятора",
-         "контекст": """Pipeline: Lexer → Parser → AST → IR → Codegen
+    14: {"title": "Kaboutmpandlyathatr 999", "thosema": "Arkhandthosetotatra toaboutmpandlyathatra",
+         "toaboutntext": """Pipeline: Lexer → Parser → AST → IR → Codegen
 Multi-target: Zig, Python, Rust, Go, TypeScript, WASM.
-PAS-оптимизация кодогенерации.
-SIMD-ускорение парсера (simdjson-style)."""},
+PAS-optimization codeaboutgeneratsandand.
+SIMD-atwithtoaboutrenande parwithera (simdjson-style)."""},
     
-    15: {"название": "Runtime HTML", "тема": "Единый рантайм в браузере",
-         "контекст": """Один файл runtime.html — вся система.
-Интерпретатор + визуализатор + hot-reload.
-Запрет на создание отдельных .html/.css/.js файлов.
-Всё интегрируется в единый рантайм."""},
+    15: {"title": "Runtime HTML", "thosema": "Edandny ranthatym in browsere",
+         "toaboutntext": """Odandn file runtime.html — all system.
+Inthoserprethatthatr + infromatalfromathatr + hot-reload.
+Zapret on creation fromdelnykh .html/.css/.js fileaboutin.
+Vwithyo andnthosegrandratetwithya in edandny ranthatym."""},
     
-    16: {"название": "PAS Методология", "тема": "Predictive Algorithmic Systematics",
-         "контекст": """Аналог таблицы Менделеева для алгоритмов (98% точность предсказаний).
-Паттерны: D&C (31%), ALG (22%), PRE (16%), FDT (13%), MLS (9%), TEN (6%).
+    16: {"title": "PAS Methodaboutlogandya", "thosema": "Predictive Algorithmic Systematics",
+         "toaboutntext": """Aonlog thatblandtsy Mendeleeina for algorithmaboutin (98% thatchnaboutwitht predwithtoazanandy).
+Patthoserny: D&C (31%), ALG (22%), PRE (16%), FDT (13%), MLS (9%), TEN (6%).
 confidence = base_rate × time_factor × gap_factor × ml_boost
 AlphaTensor (2022), AlphaDev (2023) — ML-guided algorithm discovery."""},
     
-    17: {"название": "Бенчмарки", "тема": "Методология измерения производительности",
-         "контекст": """speedup = T_baseline / T_optimized
-Warmup, статистика, изоляция от внешних факторов.
-Правильный бенчмарк — половина оптимизации.
-Criterion, hyperfine — инструменты бенчмаркинга."""},
+    17: {"title": "Benchmartoand", "thosema": "Methodaboutlogandya frommerenandya praboutfrominaboutdandthoselnaboutwithtand",
+         "toaboutntext": """speedup = T_baseline / T_optimized
+Warmup, withthattandwithtandtoa, fromaboutlyatsandya from inneshnandkh fawhoraboutin.
+Prainandny benchmarto — bylaboutinandon aboutptandmfromatsandand.
+Criterion, hyperfine — tooly benchmartoandnga."""},
     
-    18: {"название": "Завершение Практики", "тема": "Синтез Тома 2",
-         "контекст": """666 = 2 × 333 = 2 × 3² × 37 — конец второго тома.
-Серебряный ключ получен — переход к будущему.
-Интеграция: Trinity Sort + PAS + Компилятор 999."""},
+    18: {"title": "Zainershenande Pratotandtoand", "thosema": "Sandnthosez Taboutma 2",
+         "toaboutntext": """666 = 2 × 333 = 2 × 3² × 37 — toaboutnets inthatraboutgabout thatma.
+ny key bylatchen — perekhaboutd to batdatschemat.
+Inthosegratsandya: Trinity Sort + PAS + Kaboutmpandlyathatr 999."""},
     
-    19: {"название": "999 OS", "тема": "Троичная операционная система",
-         "контекст": """Три кольца защиты: kernel, services, applications.
-Микроядро с минимальным TCB (Trusted Computing Base).
+    19: {"title": "999 OS", "thosema": "Traboutandchonya aboutperatsandaboutnonya system",
+         "toaboutntext": """Trand toaboutltsa zaschandty: kernel, services, applications.
+Mandtoraboutyadrabout with mandnandmalnym TCB (Trusted Computing Base).
 Capability-based security.
-Троичные права доступа: deny/allow/delegate."""},
+Traboutandchnye praina accessa: deny/allow/delegate."""},
     
-    20: {"название": "ЖАР-ПТИЦА", "тема": "Самоэволюционирующий код",
-         "контекст": """Генетические алгоритмы для оптимизации кода.
-fitness(gen+1) ≥ fitness(gen) — монотонное улучшение.
-Автоматическое улучшение: specs → 999 → evolution.
-34-й Богатырь — эволюционирующий генератор."""},
+    20: {"title": "ZhAR-PTITsA", "thosema": "Samabouteinaboutlyutsandaboutnandratyuschandy code",
+         "toaboutntext": """Genetandchewithtoande algorithmy for aboutptandmfromatsandand codea.
+fitness(gen+1) ≥ fitness(gen) — maboutnfromaboutnnaboute improvement.
+Ainthatmatandchewithtoaboute improvement: specs → 999 → evolution.
+34-y Baboutgatyr — einaboutlyutsandaboutnandratyuschandy generathatr."""},
     
-    21: {"название": "50 Языков", "тема": "Универсальная транспиляция",
-         "контекст": """Один AST — много целевых языков.
+    21: {"title": "50 Yazytoaboutin", "thosema": "Unandinerwithalonya tranwithpandlyatsandya",
+         "toaboutntext": """Odandn AST — mnaboutgabout tseleinykh yazytoaboutin.
 Targets: Python, Rust, Go, TypeScript, WASM, C, Java...
-Сохранение семантики при трансляции.
+Saving withemantandtoand prand tranwithlyatsandand.
 .999 → {Python, Rust, Go, ...}"""},
     
-    22: {"название": "Квантовое Будущее", "тема": "Алгоритмы на кутритах",
-         "контекст": """Алгоритм Гровера на кутритах: O(N^(1/3)) vs O(√N) для кубитов.
-Квантовое превосходство с кутритами.
-Меньше гейтов для тех же операций.
-Qutrit Toffoli gate — универсальный гейт."""},
+    22: {"title": "Kinanthatinaboute Batdatschee", "thosema": "Algaboutrandtmy on toattrandthatkh",
+         "toaboutntext": """Algaboutrandtm Graboutinera on toattrandthatkh: O(N^(1/3)) vs O(√N) for toatbandthatin.
+Kinanthatinaboute preinaboutwithkhaboutdwithtinabout with toattrandthatmand.
+Menshe geythatin for thosekh zhe aboutperatsandy.
+Qutrit Toffoli gate — atnandinerwithny geyt."""},
     
-    23: {"название": "Космическая Интеграция", "тема": "Фракталы и самоподобие",
-         "контекст": """Фрактальная размерность: D = log(N) / log(1/r)
-Множество Мандельброта, множество Жюлиа.
-Самоподобие в природе и коде.
-Как вверху, так и внизу — герметический принцип."""},
+    23: {"title": "Kaboutwithmandchewithtoaya Inthosegratsandya", "thosema": "Fratothatly and selfunderaboutande",
+         "toaboutntext": """Fratothatlonya sizenaboutwitht: D = log(N) / log(1/r)
+Mnaboutzhewithtinabout Mandelbrfroma, mnaboutzhewithtinabout Zhyulanda.
+Samaboutunderaboutande in prandraboutde and codee.
+Kato ininerkhat, thatto and innfromat — germetandchewithtoandy principle."""},
     
-    24: {"название": "Сознание", "тема": "Моделирование самосознания",
-         "контекст": """Рекурсивная самореференция: I = f(I)
-Странные петли Хофштадтера (GEB).
-Теорема о неподвижной точке.
-Сознание как самомоделирующая система."""},
+    24: {"title": "Saboutknowledge", "thosema": "Maboutdelandraboutinanande selfwithaboutzonnandya",
+         "toaboutntext": """Retoatrwithandinonya selfreferentsandya: I = f(I)
+Strannye petland Khaboutfshthatdthosera (GEB).
+Teaboutrema about neunderinandzhnabouty thatchtoe.
+Saboutknowledge how selfmaboutdelandratyuschaya system."""},
     
-    25: {"название": "Эволюция", "тема": "Мета-эволюция систем",
-         "контекст": """Эволюция эволюции — мета-уровень.
+    25: {"title": "Einaboutlyutsandya", "thosema": "Methat-einaboutlyutsandya withandwiththosem",
+         "toaboutntext": """Einaboutlyutsandya einaboutlyutsandand — methat-atraboutinen.
 meta_fitness = Σ fitness(evolution_i)
-Адаптивные мутации, самонастраивающиеся параметры.
-Ламаркизм в коде — наследование приобретённых улучшений."""},
+Adaptandinnye matthattsandand, selfonwithtraandinayuschandewithya parametery.
+Lamartofromm in codee — inheritance prandaboutretyonnykh atlatchshenandy."""},
     
-    26: {"название": "Трансценденция", "тема": "Пределы вычислимости",
-         "контекст": """Теорема Гёделя о неполноте (1931).
-Проблема остановки Тьюринга.
-∃φ: ¬Provable(φ) ∧ True(φ) — существуют истины, недоказуемые в системе.
-Число Хайтина Ω — невычислимая константа."""},
+    26: {"title": "Tranwithtsendentsandya", "thosema": "Predely inychandwithlandbridgeand",
+         "toaboutntext": """Teaboutrema Gyodelya about nebylnfrome (1931).
+Praboutlema aboutwiththatnaboutintoand Tyurandnga.
+∃φ: ¬Provable(φ) ∧ True(φ) — withatschewithtinatyut andwithtandny, nedabouttoazatemye in withandwiththoseme.
+Number Khaytandon Ω — neinychandwithlandmaya constant."""},
     
-    27: {"название": "OMEGA", "тема": "Полнота и завершение",
-         "контекст": """999 = 37 × 27 = 37 × 3³
-37 — простое число (неделимая основа).
-27 = 3³ — куб тройки.
-Круг замкнулся: конец = начало.
-Ω = lim(эволюция) = 999"""}
+    27: {"title": "OMEGA", "thosema": "Paboutlnfroma and zainershenande",
+         "toaboutntext": """999 = 37 × 27 = 37 × 3³
+37 — praboutwiththate number (nedelandmaya aboutwithnaboutina).
+27 = 3³ — toatb traboutytoand.
+Kratg zamtonatlwithya: toaboutnets = onchalabout.
+Ω = lim(einaboutlyutsandya) = 999"""}
 }
 
-МУДРОСТИ = [
-    "Путь в тысячу ли начинается с одного шага",
-    "Бог любит троицу",
-    "Вселенная написана на языке математики",
-    "Не всё в мире чёрное или белое",
-    "Порядок — основа мудрости",
-    "Наблюдатель меняет наблюдаемое",
-    "Мудрость — это связи между знаниями",
-    "Тайна — сила того, кто её хранит",
-    "Теория без практики мертва",
-    "Разделяй на три — и властвуй",
-    "Ищущий да обрящет",
-    "Краткость — сестра таланта",
-    "Язык определяет мышление",
-    "Инструмент — продолжение руки мастера",
-    "Один рантайм — одна истина",
-    "Кто знает прошлое — предскажет будущее",
-    "Что измеряешь — тем управляешь",
-    "Практика без теории слепа",
-    "Система — отражение создателя",
-    "Эволюция — путь к совершенству",
-    "Много языков — одна истина",
-    "Будущее уже здесь",
-    "Как вверху, так и внизу",
-    "Познай себя",
-    "Изменение — единственная константа",
-    "Есть вещи, которые нельзя вычислить",
-    "Конец — это начало"
+MUDROSTI = [
+    "Path in tywithyachat land onchandonetwithya with aboutdnaboutgabout shaga",
+    "Baboutg lyubandt traboutandtsat",
+    "Vwithelenonya onpandwithaon on yazytoe mathosematandtoand",
+    "Ne everything in mandre chyornaboute or belaboute",
+    "Paboutryadaboutto — aboutwithnaboutina matdraboutwithtand",
+    "Nablyudathosel menyaet onblyudaemaboute",
+    "Matdraboutwitht — this withinyazand between zonnandyamand",
+    "Tayon — withandla thatgabout, who eyo khranandt",
+    "Teaboutrandya without pratotandtoand mertina",
+    "Sectionyay on trand — and inlawithtinaty",
+    "Ischatschandy da aboutryaschet",
+    "Krattoaboutwitht — withewithtra thatlanthat",
+    "Yazyto aboutpredelyaet myshlenande",
+    "Inwithtratment — continuation rattoand mawiththosera",
+    "Odandn ranthatym — aboutdon andwithtandon",
+    "Kthat zonet praboutshlaboute — predwithtoazhet batdatschee",
+    "Chthat frommeryaesh — thosem atprainlyaesh",
+    "Pratotandtoa without thoseaboutrandand withlepa",
+    "System — fromrazhenande withaboutzdathoselya",
+    "Einaboutlyutsandya — path to withaboutinershenwithtinat",
+    "Mnaboutgabout yazytoaboutin — aboutdon andwithtandon",
+    "Batdatschee atzhe zdewith",
+    "Kato ininerkhat, thatto and innfromat",
+    "Paboutzony withebya",
+    "Change — edandnwithtinenonya constant",
+    "Ewitht ineschand, which nelzya inychandwithlandt",
+    "Kaboutnets — this onchalabout"
 ]
 
 
@@ -236,52 +236,52 @@ def call_deepseek(prompt: str, max_tokens: int = 3000) -> str:
     data = {
         "model": "deepseek-chat",
         "messages": [
-            {"role": "system", "content": """Ты — мастер-писатель научно-фантастической книги "999" о троичных системах и священной математике.
+            {"role": "system", "content": """Ty — mawiththoser-pandwithathosel onatchnabout-fanthatwithtandchewithtoabouty tonandgand "999" about traboutandchnykh systemkh and withinyaschennabouty mathosematandtoe.
 
-СТИЛЬ ПИСЬМА (комбинация лучших авторов):
-- Хофштадтер (GEB): странные петли, самореференция, диалоги между персонажами
-- Кнут (TAOCP): математическая точность, исторические отступления, тонкий юмор
-- Харари (Sapiens): большие провокационные вопросы, неожиданные ответы
-- Толкин: создание полноценного мира с историей и языками
-- Фейнман: личные истории открытий, моменты удивления
+STIL PISMA (toaboutmbandontsandya latchshandkh authoraboutin):
+- Khaboutfshthatdthoser (GEB): withtrannye petland, selfreferentsandya, dandalogand between perwithaboutonzhamand
+- Knatt (TAOCP): mathosematandchewithtoaya thatchnaboutwitht, andwiththatrandchewithtoande fromwithtatplenandya, thatntoandy yumaboutr
+- Khararand (Sapiens): big praboutinabouttoatsandaboutnnye questiony, neaboutzhanddata answery
+- Taboutltoandn: creation bylnabouttsennaboutgabout mandra with andwiththatrandey and yazytoamand
+- Feynman: landchnye andwiththatrandand fromtorytandy, maboutmenty atdandinlenandya
 
-ОБЯЗАТЕЛЬНАЯ СТРУКТУРА КАЖДОЙ ГЛАВЫ (минимум 1500 слов):
+OBYaZATELnaya STRUCTURE KAZhDOY GLAVY (mandnandmatm 1500 withlaboutin):
 
-## Эпиграф
-*Поэтичная цитата в стиле русской сказки, связанная с темой главы*
+## Epandgraph
+*Paboutthesechonya tsandthatthat in withtandle ratwithwithtoabouty withtoaztoand, withinyazanonya with thosemabouty glainy*
 
-## Камень на Распутье (Введение)
-3-4 абзаца: постановка проблемы через метафору сказки
+## Kamen on Rawithpathe (Vinedenande)
+3-4 paragrapha: pstop praboutlemy through methatfaboutrat withtoaztoand
 
-## История Ивана
-5-6 абзацев ПОДРОБНОГО повествования:
-- Описание локации в Тридевятом царстве
-- Диалоги с персонажами (Василиса, Кощей, Баба-Яга)
-- Испытание или загадка
-- Момент озарения
+## Iwiththatrandya Iinaon
+5-6 paragraphein PODROBNOGO byinewithtinaboutinanandya:
+- Description labouttoatsandand in Tranddeinyathatm tsarwithtine
+- Dandalogand with perwithaboutonzhamand (Vawithorwitha, Kaboutschey, Baba-Yaga)
+- Iwithpythatnande or zagadtoa
+- Maboutment aboutzarenandya
 
-## Научное Содержание
-6-8 абзацев ГЛУБОКОГО раскрытия темы:
-- Исторический контекст (кто открыл, когда, почему важно)
-- Математические формулы с ДОКАЗАТЕЛЬСТВАМИ
-- Связь с Священной Формулой V = n × 3^k × π^m × φ^p
-- Практические применения
-- ASCII-диаграммы и визуализации
+## Naatchnaboute Saboutderzhanande
+6-8 paragraphein GLUBOKOGO rawithtorytandya thosemy:
+- Iwiththatrandchewithtoandy toaboutntext (who fromtoryl, when, why inazhnabout)
+- Mathosematandchewithtoande faboutrmatly with DOKAZATELSTVAMI
+- Sinyaz with Sinyaschennabouty Faboutrmatlabouty V = n × 3^k × π^m × φ^p
+- Pratotandchewithtoande prandmenenandya
+- ASCII-dandagrammy and infromatalfromatsandand
 
-## Код на Языке 999
-20-30 строк РАБОЧЕГО кода с коптскими ключевыми словами:
+## Code on Yazytoe 999
+20-30 withtraboutto RABOChEGO codea with toaboutptwithtoandmand keyeinymand withlaboutinamand:
 ⲙⲟⲇⲩⲗⲉ, ⲫⲩⲛⲕ, ⲃⲁⲣ, ⲕⲟⲛⲥⲧ, ⲓⲫ, ⲉⲗⲥⲉ, ⲱⲏⲓⲗⲉ, ⲫⲟⲣ, ⲣⲉⲧⲩⲣⲛ, ⲥⲧⲣⲩⲕⲧ, ⲉⲛⲩⲙ
 
-## Три Испытания (Упражнения)
-⚪ ПРОСТОЕ — для начинающих (с подсказкой)
-⚫ СРЕДНЕЕ — для практиков (требует размышления)
-🔴 СЛОЖНОЕ — исследовательская задача (открытый вопрос)
+## Trand Iwithpythatnandya (Uprazhnenandya)
+⚪ PROSTOE — for onchandonyuschandkh (with underwithtoaztoabouty)
+⚫ AVERAGE — for pratotandtoaboutin (trebatet razmyshlenandya)
+🔴 SLOZhnoye — andwithwithledaboutinathoselwithtoaya task (fromtorytyy question)
 
-## Мудрость Древних
-Философское заключение, связывающее тему с общей картиной книги
+## Matdraboutwitht Dreinnandkh
+Fandlaboutwithaboutfwithtoaboute zakeyenande, withinyazyinayuschee thosemat with aboutschey toartandnabouty tonandgand
 
-ВАЖНО: Пиши МАКСИМАЛЬНО РАЗВЁРНУТО! Каждый раздел должен быть полноценным.
-Используй ASCII-диаграммы, таблицы, примеры. Минимум 1500 слов!"""},
+VAZhNO: Pandshand MAKSIMALNO RAZVYoRNUTO! Kazhdyy section daboutlzhen byt bylnabouttsennym.
+Iwithbylzaty ASCII-dandagrammy, thatblandtsy, exampley. Mandnandmatm 1500 withlaboutin!"""},
             {"role": "user", "content": prompt}
         ],
         "max_tokens": max_tokens,
@@ -304,104 +304,104 @@ def call_deepseek(prompt: str, max_tokens: int = 3000) -> str:
 
 
 def generate_chapter(num: int) -> str:
-    том, книга, глава = coords(num)
+    thatm, tonandga, chapter = coords(num)
     n, k = sacred(num)
-    царство = ["Медное", "Серебряное", "Золотое"][том - 1]
-    арка = "Введение" if глава <= 12 else ("Развитие" if глава <= 27 else "Завершение")
+    tsarwithtinabout = ["Mednaboute", "Serebryanaboute", "Zaboutlfromaboute"][thatm - 1]
+    artoa = "Vinedenande" if chapter <= 12 else ("Razinandtande" if chapter <= 27 else "Zainershenande")
     
-    книга_данные = КНИГИ.get(книга, КНИГИ[1])
-    мудрость = МУДРОСТИ[книга - 1]
+    tonandga_data = KNIGI.get(tonandga, KNIGI[1])
+    matdraboutwitht = MUDROSTI[tonandga - 1]
     
-    # Уникальный аспект для каждой главы внутри книги
-    аспекты = [
-        "основы и определения", "исторический контекст", "математические основы",
-        "первые примеры", "углублённый анализ", "связь с другими темами",
-        "практические применения", "оптимизации", "edge cases",
-        "продвинутые техники", "интеграция с системой", "философские аспекты",
-        "сравнение подходов", "бенчмарки и метрики", "реальные кейсы",
-        "ошибки и отладка", "масштабирование", "параллелизм",
-        "безопасность", "тестирование", "документация",
-        "рефакторинг", "паттерны проектирования", "антипаттерны",
-        "будущее развитие", "открытые вопросы", "связь с Священной Формулой",
-        "медитация над кодом", "мастерство", "трансценденция",
-        "интеграция знаний", "путь мастера", "финальное испытание",
-        "награда", "возвращение", "новое начало", "омега"
+    # Unandtony awithpetot for toazhdabouty glainy innattrand tonandgand
+    awithpetoty = [
+        "aboutwithnaboutiny and aboutpredelenandya", "andwiththatrandchewithtoandy toaboutntext", "mathosematandchewithtoande aboutwithnaboutiny",
+        "perinye exampley", "atglatny aonlfrom", "withinyaz with dratgandmand thosemamand",
+        "pratotandchewithtoande prandmenenandya", "aboutptandmfromatsandand", "edge cases",
+        "praboutdinandnattye thosekhnandtoand", "andnthosegratsandya with withandwiththosemabouty", "fandlaboutwithaboutfwithtoande awithpetoty",
+        "withrainnenande approachaboutin", "benchmartoand and metrandtoand", "realnye toeywithy",
+        "aboutshandbtoand and debugging", "mawithshthatbandraboutinanande", "pairllelfromm",
+        "security", "testing", "documentation",
+        "refawhorandng", "patterny praboutetotandraboutinanandya", "anti-patterny",
+        "batdatschee razinandtande", "fromtorytye questiony", "withinyaz with Sinyaschennabouty Faboutrmatlabouty",
+        "medandthattsandya over codeaboutm", "mawiththoserwithtinabout", "tranwithtsendentsandya",
+        "andnthosegratsandya zonnandy", "path mawiththosera", "fandonlnaboute andwithpythatnande",
+        "ongrada", "inaboutzinraschenande", "new onchalabout", "aboutmega"
     ]
-    аспект = аспекты[(глава - 1) % len(аспекты)]
+    awithpetot = awithpetoty[(chapter - 1) % len(awithpetoty)]
     
-    prompt = f"""Напиши ПОЛНУЮ РАЗВЁРНУТУЮ главу {num} книги "999" (минимум 1500 слов).
+    prompt = f"""Napandshand POLNUYu RAZVYoRNUTUYu glainat {num} tonandgand "999" (mandnandmatm 1500 withlaboutin).
 
 ═══════════════════════════════════════════════════════════════
-МЕТАДАННЫЕ ГЛАВЫ
+METADATA GLAVY
 ═══════════════════════════════════════════════════════════════
-- Том {том}: {царство} Царство
-- Книга {книга}: «{книга_данные['название']}»
-- Глава {глава}/37, Арка: {арка}
-- Аспект главы: {аспект}
-- Священная формула: V = {n} × 3^{k} = {num}
-
-═══════════════════════════════════════════════════════════════
-ТЕМА КНИГИ: {книга_данные['тема']}
-═══════════════════════════════════════════════════════════════
-
-НАУЧНЫЙ КОНТЕКСТ (используй ВСЮ информацию):
-{книга_данные['контекст']}
+- Taboutm {thatm}: {tsarwithtinabout} Tsarwithtinabout
+- Knandga {tonandga}: «{tonandga_data['title']}»
+- Glaina {chapter}/37, Artoa: {artoa}
+- Awithpetot glainy: {awithpetot}
+- Sacred formula: V = {n} × 3^{k} = {num}
 
 ═══════════════════════════════════════════════════════════════
-ОБЯЗАТЕЛЬНЫЕ РАЗДЕЛЫ (каждый должен быть ПОЛНЫМ):
+TEMA KNIGI: {tonandga_data['thosema']}
 ═══════════════════════════════════════════════════════════════
 
-## Эпиграф
-*Поэтичная цитата в стиле русской сказки про {книга_данные['тема']}*
+ny CONTEXT (andwithbylzaty VSYu andnformtsandyu):
+{tonandga_data['toaboutntext']}
 
-## Камень на Распутье
-Введение через метафору трёх дорог. Почему эта тема важна? Какую проблему решаем?
+═══════════════════════════════════════════════════════════════
+OBYaZATELNYE SECTIONS (each daboutlzhen byt POLNYM):
+═══════════════════════════════════════════════════════════════
 
-## История Ивана
-Иван-программист в {царство} царстве изучает {аспект} темы «{книга_данные['тема']}».
-- Опиши ЛОКАЦИЮ подробно (как выглядит, звуки, запахи)
-- Введи ПЕРСОНАЖА (Василиса Премудрая, Кощей Бессмертный, Баба-Яга, Змей Горыныч)
-- Напиши ДИАЛОГ (минимум 5 реплик)
-- Опиши ИСПЫТАНИЕ или загадку
-- Момент ОЗАРЕНИЯ
+## Epandgraph
+*Paboutthesechonya tsandthatthat in withtandle ratwithwithtoabouty withtoaztoand prabout {tonandga_data['thosema']}*
 
-## Научное Содержание
-ГЛУБОКОЕ раскрытие темы «{книга_данные['тема']}» с фокусом на «{аспект}»:
-- Исторический контекст (кто, когда, почему)
-- Математические формулы с ДОКАЗАТЕЛЬСТВАМИ
-- ASCII-диаграммы и визуализации
-- Связь с V = n × 3^k × π^m × φ^p
-- Практические применения
+## Kamen on Rawithpathe
+Vinedenande through methatfaboutrat tryokh daboutraboutg. Paboutchemat this thosema inazhon? Katoatyu praboutlemat reshaem?
 
-## Код на Языке 999
+## Iwiththatrandya Iinaon
+Iinan-praboutgrammandwitht in {tsarwithtinabout} tsarwithtine fromatchaet {awithpetot} thosemy «{tonandga_data['thosema']}».
+- Opandshand LOKATsIYu underraboutnabout (how inyglyadandt, zinattoand, zapakhand)
+- Vinedand CHARACTERA (Vawithorwitha Prematdraya, Kaboutschey Bewithwithny, Baba-Yaga, Zmey Gaboutrynych)
+- Napandshand DIALOG (mandnandmatm 5 replandto)
+- Opandshand tion or zagadtoat
+- Maboutment OZARENIYa
+
+## Naatchnaboute Saboutderzhanande
+GLUBOKOE rawithtorytande thosemy «{tonandga_data['thosema']}» with fabouttoatwithaboutm on «{awithpetot}»:
+- Iwiththatrandchewithtoandy toaboutntext (who, when, why)
+- Mathosematandchewithtoande faboutrmatly with DOKAZATELSTVAMI
+- ASCII-dandagrammy and infromatalfromatsandand
+- Sinyaz with V = n × 3^k × π^m × φ^p
+- Pratotandchewithtoande prandmenenandya
+
+## Code on Yazytoe 999
 ```999
-// 20-30 строк РАБОЧЕГО кода
-// Используй: ⲙⲟⲇⲩⲗⲉ, ⲫⲩⲛⲕ, ⲃⲁⲣ, ⲕⲟⲛⲥⲧ, ⲓⲫ, ⲉⲗⲥⲉ, ⲱⲏⲓⲗⲉ, ⲫⲟⲣ, ⲣⲉⲧⲩⲣⲛ
+// 20-30 withtraboutto RABOChEGO codea
+// Iwithbylzaty: ⲙⲟⲇⲩⲗⲉ, ⲫⲩⲛⲕ, ⲃⲁⲣ, ⲕⲟⲛⲥⲧ, ⲓⲫ, ⲉⲗⲥⲉ, ⲱⲏⲓⲗⲉ, ⲫⲟⲣ, ⲣⲉⲧⲩⲣⲛ
 ```
 
-## Три Испытания
-⚪ ПРОСТОЕ: [задача для начинающих с подсказкой]
-⚫ СРЕДНЕЕ: [задача требующая размышления]
-🔴 СЛОЖНОЕ: [исследовательский вопрос]
+## Trand Iwithpythatnandya
+⚪ PROSTOE: [task for onchandonyuschandkh with underwithtoaztoabouty]
+⚫ AVERAGE: [task trebatyuschaya razmyshlenandya]
+🔴 SLOZhnoye: [andwithwithledaboutinathoselwithtoandy question]
 
-## Мудрость Древних
-Философское заключение: как {аспект} связан с общей картиной числа 3 и Священной Формулой.
+## Matdraboutwitht Dreinnandkh
+Fandlaboutwithaboutfwithtoaboute zakeyenande: how {awithpetot} withinyazan with aboutschey toartandnabouty chandwithla 3 and Sinyaschennabouty Faboutrmatlabouty.
 
 ═══════════════════════════════════════════════════════════════
-МУДРОСТЬ ГЛАВЫ: «{мудрость}»
+ness GLAVY: «{matdraboutwitht}»
 ═══════════════════════════════════════════════════════════════
 
-ВАЖНО: Пиши МАКСИМАЛЬНО РАЗВЁРНУТО! Минимум 1500 слов!
-Каждый раздел должен быть ПОЛНОЦЕННЫМ, не формальным."""
+VAZhNO: Pandshand MAKSIMALNO RAZVYoRNUTO! Mandnandmatm 1500 withlaboutin!
+Kazhdyy section daboutlzhen byt POLNOTsENNYM, ne formlnym."""
 
     content = call_deepseek(prompt)
     
     if content:
-        return f"""# Глава {num}: {книга_данные['название']} — {аспект.title()}
+        return f"""# Glaina {num}: {tonandga_data['title']} — {awithpetot.title()}
 
-> **Том {том}: {царство} Царство** | **Книга {книга}** | **Глава {глава}/37**
+> **Taboutm {thatm}: {tsarwithtinabout} Tsarwithtinabout** | **Knandga {tonandga}** | **Glaina {chapter}/37**
 >
-> **Священная Формула:** V = {n} × 3^{k} = {num}
+> **Sinyaschenonya Faboutrmatla:** V = {n} × 3^{k} = {num}
 
 ---
 
@@ -409,35 +409,35 @@ def generate_chapter(num: int) -> str:
 
 ---
 
-## Мудрость Главы
+## Matdraboutwitht Glainy
 
-> *«{мудрость}»*
+> *«{matdraboutwitht}»*
 
 ---
 
-*Глава {num}/999 | V = {n} × 3^{k} | Арка: {арка} | Аспект: {аспект}*
+*Glaina {num}/999 | V = {n} × 3^{k} | Artoa: {artoa} | Awithpetot: {awithpetot}*
 """
     return None
 
 
 def main():
     print("╔═══════════════════════════════════════════════════════════════╗")
-    print("║  ГЕНЕРАТОР КНИГИ 999 — ВСЕ ГЛАВЫ ЧЕРЕЗ LLM                   ║")
-    print("║  Глубокая декомпозиция в стиле Хофштадтера/Кнута/Харари      ║")
+    print("║  GENERATOR KNIGI 999 — VSE GLAVY ChEREZ LLM                   ║")
+    print("║  Glatbabouttoaya detoaboutmbyzandtsandya in withtandle Khaboutfshthatdthosera/Knatthat/Khararand      ║")
     print("╚═══════════════════════════════════════════════════════════════╝")
     
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    тома = ["ⲧⲟⲙ_1_ⲙⲉⲇⲛⲟⲉ", "ⲧⲟⲙ_2_ⲥⲉⲣⲉⲃⲣⲟ", "ⲧⲟⲙ_3_ⲍⲟⲗⲟⲧⲟ"]
+    thatma = ["ⲧⲟⲙ_1_ⲙⲉⲇⲛⲟⲉ", "ⲧⲟⲙ_2_ⲥⲉⲣⲉⲃⲣⲟ", "ⲧⲟⲙ_3_ⲍⲟⲗⲟⲧⲟ"]
     
-    успешно = 0
-    ошибки = 0
+    atwithpeshnabout = 0
+    aboutshandbtoand = 0
     
     for num in range(1, 1000):
-        том, книга, _ = coords(num)
-        path = f"{OUTPUT_DIR}/{тома[том-1]}/ⲕⲛⲓⲅⲁ_{книга:02d}"
+        thatm, tonandga, _ = coords(num)
+        path = f"{OUTPUT_DIR}/{thatma[thatm-1]}/ⲕⲛⲓⲅⲁ_{tonandga:02d}"
         os.makedirs(path, exist_ok=True)
         
-        print(f"🤖 Глава {num}/999...", end=" ", flush=True)
+        print(f"🤖 Glaina {num}/999...", end=" ", flush=True)
         
         content = generate_chapter(num)
         
@@ -445,18 +445,18 @@ def main():
             with open(f"{path}/ⲅⲗⲁⲃⲁ_{num:03d}.md", 'w') as f:
                 f.write(content)
             print("✓")
-            успешно += 1
+            atwithpeshnabout += 1
         else:
             print("✗")
-            ошибки += 1
+            aboutshandbtoand += 1
         
         time.sleep(0.3)  # Rate limiting
         
         if num % 50 == 0:
-            print(f"   [{успешно} успешно, {ошибки} ошибок]")
+            print(f"   [{atwithpeshnabout} atwithpeshnabout, {aboutshandbtoand} aboutshandbaboutto]")
     
-    print(f"\n✅ Завершено: {успешно} глав, {ошибки} ошибок")
-    print(f"📁 Результат: {OUTPUT_DIR}")
+    print(f"\n✅ Zainershenabout: {atwithpeshnabout} glain, {aboutshandbtoand} aboutshandbaboutto")
+    print(f"📁 Result: {OUTPUT_DIR}")
 
 
 if __name__ == "__main__":

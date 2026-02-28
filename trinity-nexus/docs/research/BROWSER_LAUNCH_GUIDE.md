@@ -1,55 +1,55 @@
-# VIBEE Browser AI - Инwith[TRANSLATED]]toцandя по [CYR:[TRANSLATED]]withtoу
+# VIBEE Browser AI - Inwith]totsandya by :]withtoat
 
-**[CYR:[TRANSLATED]]withandя**: V2482 Production Phoenix Release
-**[CYR:[TRANSLATED]]**: 2025-01-21
+**:]Author**: V2482 Production Phoenix Release
+**:]**: 2025-01-21
 
 ---
 
-## Быwith[TRANSLATED]] [CYR:[TRANSLATED]]
+## Bywith] :]
 
-### 1. [CYR:[TRANSLATED]]toа [CYR:[TRANSLATED]]
+### 1. :]toa :]
 
 ```bash
 cd /workspaces/vibee-lang
 
-# [CYR:[TRANSLATED]]toа inwithех Zig [CYR:[TRANSLATED]]
+# :]toa inwithekh Zig :]
 cd trinity/output
 for f in *.zig; do
   zig build-lib "$f" -O ReleaseFast 2>/dev/null
 done
 
-# Илand with[TRANSLATED]]toа toонfor[TRANSLATED]] [CYR:[TRANSLATED]]
+# Iland with]toa toaboutnfor] :]
 zig build-exe browser_webgpu_compute_v2439.zig -O ReleaseFast
 ```
 
-### 2. [CYR:[TRANSLATED]]withto Runtime
+### 2. :]withto Runtime
 
 ```bash
 cd /workspaces/vibee-lang
 
-# [CYR:[TRANSLATED]]withto unified runtime
+# :]withto unified runtime
 open runtime/runtime.html
 # or
 python3 -m http.server 8080
-# [CYR:[TRANSLATED]] fromfor[TRANSLATED]] http://localhost:8080/runtime/runtime.html
+# :] fromfor] http://localhost:8080/runtime/runtime.html
 ```
 
-### 3. [CYR:[TRANSLATED]]withto [CYR:[TRANSLATED]] VIBEE CLI
+### 3. :]withto :] VIBEE CLI
 
 ```bash
-# Поfor[TRANSLATED]] inwithе for[TRANSLATED]]
+# Paboutfor] inwithe for]
 bin/vibee help
 
-# [CYR:[TRANSLATED]]withto browserа
+# :]withto browsera
 bin/vibee browser
 
-# [CYR:[TRANSLATED]]withto with toонfor[TRANSLATED]] for[TRANSLATED]]and[CYR:[TRANSLATED]]andей
+# :]withto with toaboutnfor] for]and:]andey
 bin/vibee browser --webgpu --offline --p2p
 ```
 
 ---
 
-## [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] [CYR:[TRANSLATED]]
+## :]andthosefor] :]
 
 ```
 VIBEE Browser AI Architecture
@@ -79,21 +79,21 @@ VIBEE Browser AI Architecture
 
 ---
 
-## [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя
+## :]and:]andya
 
-### Мandнand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inанandя
+### Mandnand:] :]inanandya
 
-| [CYR:[TRANSLATED]]notнт | Мandнand[CYR:[TRANSLATED]] | Реfor[TRANSLATED]]withя |
+| :]notnt | Mandnand:] | Refor]withya |
 |-----------|---------|---------------|
 | Browser | Chrome 113+ | Chrome 120+ |
 | GPU | WebGPU Tier 1 | WebGPU Tier 2 |
 | RAM | 4GB | 8GB+ |
 | Storage | 500MB | 2GB+ |
 
-### Check Соinмеwithтandмоwithтand
+### Check Saboutinmewithtandmaboutwithtand
 
 ```javascript
-//  toонwithолand browserа
+//  toaboutnwithaboutland browsera
 async function checkCompatibility() {
   const checks = {
     webgpu: !!navigator.gpu,
@@ -113,15 +113,15 @@ checkCompatibility();
 
 ---
 
-## [CYR:[TRANSLATED]]andмы [CYR:[TRANSLATED]]fromы
+## :]andmy :]fromy
 
-### 1. Online Mode (По [CYR:[TRANSLATED]]andю)
+### 1. Online Mode (Pabout :]andyu)
 
 ```bash
 bin/vibee browser --mode=online
 ```
-- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toцandоonл
-- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and
+- :] :]totsandaboutonl
+- :] :]and
 - Real-time collaboration
 
 ### 2. Offline Mode
@@ -129,9 +129,9 @@ bin/vibee browser --mode=online
 ```bash
 bin/vibee browser --mode=offline
 ```
-- Лоfor[TRANSLATED]] [CYR:[TRANSLATED]]and andз IndexedDB
-- [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]notта
-- Sync прand inоwith[TRANSLATED]]in[CYR:[TRANSLATED]]and withinязand
+- Laboutfor] :]and andz IndexedDB
+- :]from:] :] and:]notthat
+- Sync prand inaboutwith]in:]and withinyazand
 
 ### 3. P2P Mode
 
@@ -147,13 +147,13 @@ bin/vibee browser --mode=p2p
 ```bash
 bin/vibee browser --mode=hybrid
 ```
-- Аin[CYR:[TRANSLATED]]andчеwithtoandй in[CYR:[TRANSLATED]]
-- Fallback [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and
-- [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withть
+- Author:]andchewithtoandy in:]
+- Fallback :] :]and:]and
+- :]and:]onya :]andzinaboutdand:]witht
 
 ---
 
-## API Иwith[TRANSLATED]]inанandя
+## API Iwith]inanandya
 
 ### JavaScript API
 
@@ -170,7 +170,7 @@ const browser = new VIBEEBrowser({
 
 // AI Inference
 const response = await browser.inference({
-  prompt: "[CYR:[TRANSLATED]]andшand [CYR:[TRANSLATED]]toцandю with[TRANSLATED]]andроintoand",
+  prompt: ":]andshand :]totsandyu with]andraboutintoand",
   maxTokens: 500,
   temperature: 0.7
 });
@@ -209,17 +209,17 @@ pub fn main() !void {
 
 ---
 
-## Теwithтandроinанandе
+## Tewithtandraboutinanande
 
 ### Unit Tests
 
 ```bash
 cd /workspaces/vibee-lang/trinity/output
 
-# Теwithт toонfor[TRANSLATED]] [CYR:[TRANSLATED]]
+# Tewitht toaboutnfor] :]
 zig test browser_webgpu_compute_v2439.zig
 
-# Теwithт inwithех [CYR:[TRANSLATED]]
+# Tewitht inwithekh :]
 for f in *.zig; do
   echo "Testing $f..."
   zig test "$f" 2>&1 | tail -1
@@ -229,10 +229,10 @@ done
 ### E2E Tests
 
 ```bash
-# [CYR:[TRANSLATED]]withto E2E теwithтоin
+# :]withto E2E thosewiththatin
 bin/vibee test --e2e
 
-# [CYR:[TRANSLATED]]for[TRANSLATED]] теwithт
+# :]for] thosewitht
 bin/vibee test --e2e browser
 bin/vibee test --e2e vibecode
 bin/vibee test --e2e collab
@@ -241,10 +241,10 @@ bin/vibee test --e2e collab
 ### Benchmarks
 
 ```bash
-# [CYR:[TRANSLATED]]withto [CYR:[TRANSLATED]]toоin
+# :]withto :]toaboutin
 bin/vibee bench
 
-# [CYR:[TRANSLATED]]for[TRANSLATED]] [CYR:[TRANSLATED]]to
+# :]for] :]to
 bin/vibee bench --webgpu
 bin/vibee bench --wasm
 bin/vibee bench --network
@@ -254,7 +254,7 @@ bin/vibee bench --network
 
 ## Troubleshooting
 
-### WebGPU not [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]
+### WebGPU not :]from:]
 
 ```javascript
 // Check WebGPU
@@ -263,22 +263,22 @@ if (!navigator.gpu) {
   // Fallback on WASM SIMD
 }
 
-// [CYR:[TRANSLATED]]with [CYR:[TRANSLATED]]
+// :]with :]
 const adapter = await navigator.gpu.requestAdapter();
 if (!adapter) {
   console.error("No GPU adapter found");
 }
 ```
 
-### Service Worker not [CYR:[TRANSLATED]]andwithтрand[CYR:[TRANSLATED]]withя
+### Service Worker not :]andwithtrand:]withya
 
 ```javascript
-// Check HTTPS ([CYR:[TRANSLATED]] for SW)
+// Check HTTPS (:] for SW)
 if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
   console.error("Service Worker requires HTTPS");
 }
 
-// [CYR:[TRANSLATED]]andwith[TRANSLATED]]andя
+// :]andwith]andya
 navigator.serviceWorker.register('/sw.js')
   .then(reg => console.log("SW registered:", reg))
   .catch(err => console.error("SW failed:", err));
@@ -287,12 +287,12 @@ navigator.serviceWorker.register('/sw.js')
 ### IndexedDB quota exceeded
 
 ```javascript
-// Check toinfromы
+// Check toinfromy
 const estimate = await navigator.storage.estimate();
 console.log(`Used: ${estimate.usage / 1e6}MB`);
 console.log(`Quota: ${estimate.quota / 1e6}MB`);
 
-// Очandwithтtoа for[TRANSLATED]]
+// Ochandwithttoa for]
 const db = await openDB('vibee-models');
 await db.clear('weights');
 ```
@@ -304,17 +304,17 @@ await db.clear('weights');
 ### 1. CDN Setup
 
 ```bash
-# [CYR:[TRANSLATED]] on CDN
+# :] on CDN
 bin/vibee deploy --cdn cloudflare
 
-# Илand in[CYR:[TRANSLATED]]
+# Iland in:]
 aws s3 sync ./dist s3://vibee-browser --cache-control "max-age=31536000"
 ```
 
 ### 2. Edge Functions
 
 ```bash
-# [CYR:[TRANSLATED]] edge functions
+# :] edge functions
 bin/vibee deploy --edge
 
 # Cloudflare Workers
@@ -324,62 +324,62 @@ wrangler publish
 ### 3. Monitoring
 
 ```bash
-# Вfor[TRANSLATED]]andть [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andнг
+# Vfor]andt :]and:]andng
 bin/vibee monitor --enable
 
-# [CYR:[TRANSLATED]]withмfromр [CYR:[TRANSLATED]]andto
+# :]withmfromr :]andto
 bin/vibee monitor --dashboard
 ```
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
 ```bash
-# [CYR:[TRANSLATED]]with browserа
+# :]with browsera
 bin/vibee status
 
-# [CYR:[TRANSLATED]]withandя
+# :]Author
 bin/vibee version
 
-# [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе
+# :]in:]ande
 bin/vibee update
 
-# Очandwithтtoа for[TRANSLATED]]
+# Ochandwithttoa for]
 bin/vibee cache clear
 
-# Геnot[CYR:[TRANSLATED]]andя andз spec
+# Genot:]andya andz spec
 bin/vibee gen specs/tri/feature.vibee
 
-# [CYR:[TRANSLATED]]withto теwithтоin
+# :]withto thosewiththatin
 bin/vibee test
 
-# [CYR:[TRANSLATED]]toand
+# :]toand
 bin/vibee bench
 
-# [CYR:[TRANSLATED]]
+# :]
 bin/vibee deploy
 ```
 
 ---
 
-## Сwithылtoand
+## Swithyltoand
 
-- **Доfor[TRANSLATED]]andя**: `/docs/`
-- **[CYR:[TRANSLATED]]andфandtoацand**: `/specs/tri/`
-- **[CYR:[TRANSLATED]]notрandроin[CYR:[TRANSLATED]] toод**: `/trinity/output/`
+- **Daboutfor]andya**: `/docs/`
+- **:]andfVersiontsand**: `/specs/tri/`
+- **:]notrandraboutin:] toaboutd**: `/trinity/output/`
 - **Runtime**: `/runtime/runtime.html`
 
 ---
 
-## [CYR:[TRANSLATED]]toа
+## :]toa
 
-Прand in[CYR:[TRANSLATED]]andtoноinенand [CYR:[TRANSLATED]]:
+Prand in:]andtonaboutinenand :]:
 
-1. [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] withоinмеwithтandмоwithть browserа
-2. [CYR:[TRANSLATED]]withтandте `bin/vibee doctor`
-3. [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and in DevTools
-4. [CYR:[TRANSLATED]] issue on GitHub
+1. :]in:] withaboutinmewithtandmaboutwitht browsera
+2. :]withtandthose `bin/vibee doctor`
+3. :]in:] :]and in DevTools
+4. :] issue on GitHub
 
 ---
 

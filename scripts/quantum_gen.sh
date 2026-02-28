@@ -1,11 +1,11 @@
 #!/bin/bash
-# QUANTUM GENERATOR v4.0 - Максимальная скорость генерации
-# Оптимизации:
-# 1. Генерация всех файлов в памяти через heredoc
-# 2. Один вызов write для всех файлов
-# 3. Параллельное тестирование через xargs
-# 4. Без промежуточных переменных
-# Использование: ./scripts/quantum_gen.sh <domain> <start_version> <module1> <module2> ...
+# QUANTUM GENERATOR v4.0 - Matowithandmalonya withtoaboutraboutwitht generatsandand
+# Optandmfromatsandand:
+# 1. Generatsandya allkh fileaboutin in pamyatand through heredoc
+# 2. Odandn inyzaboutin write for allkh fileaboutin
+# 3. Parallelnaboute testing through xargs
+# 4. Bez praboutmezhatthatchnykh peremennykh
+# Iwithbylzaboutinanande: ./scripts/quantum_gen.sh <domain> <start_version> <module1> <module2> ...
 
 DOMAIN=$1
 START=$2
@@ -24,14 +24,14 @@ mkdir -p "$SPEC_DIR"
 
 echo "⚡ QUANTUM GEN v4.0: ${#MODULES[@]} modules → $DOMAIN (v$START+) [$CORES cores]"
 
-# PHASE 1: Генерация всех файлов параллельно через subshells
+# PHASE 1: Generatsandya allkh fileaboutin pairllelnabout through subshells
 V=$START
 for NAME in "${MODULES[@]}"; do
     (
         T="$(tr '[:lower:]' '[:upper:]' <<< ${NAME:0:1})${NAME:1}"
         V1=$((V/100)); V2=$(((V/10)%10)); V3=$((V%10))
         
-        # .vibee - минимальный формат
+        # .vibee - mandnandny formt
         echo "name: ${NAME}_v${V}
 version: \"${V1}.${V2}.${V3}\"
 language: zig
@@ -50,7 +50,7 @@ behaviors:
     when: Process
     then: Result" > "${SPEC_DIR}/${NAME}_v${V}.vibee"
         
-        # .zig - компактный формат
+        # .zig - toaboutmpatony formt
         echo "//! ${NAME}_v${V} - QUANTUM GENERATED
 const std = @import(\"std\");
 pub const ${T}Config = struct { id: []const u8, enabled: bool, params: []const u8 };
@@ -68,7 +68,7 @@ wait
 END=$((V-1))
 echo "✅ Generated: ${#MODULES[@]} files in parallel"
 
-# PHASE 2: Параллельное тестирование
+# PHASE 2: Parallelnaboute testing
 echo "🧪 Parallel testing [$CORES cores]..."
 V=$START
 PASS=0; FAIL=0

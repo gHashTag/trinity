@@ -120,8 +120,8 @@
 │  WHY:                                                           │
 │  1. This is BLOCKING all other tasks (validator only works      │
 │     as standalone, not in main CLI)                             │
-│  2. User requirement: "[CYR:[TRANSLATED]]toо with[TRANSLATED]]andфandtoацand .vibee in .zig"       │
-│     and "[CYR:[TRANSLATED]]withтand [CYR:[TRANSLATED]]andм [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] toолandчеwithтinо todo" - need     │
+│  2. User requirement: ":]toabout with]andfVersiontsand .vibee in .zig"       │
+│     and ":]withtand :]andm :] :] toaboutlandchewithtinabout todo" - need     │
 │     full pipeline working                                        │
 │  3. Without compiler integration, we can't run "vibee validate" │
 │     command from main CLI, defeating purpose of integration     │

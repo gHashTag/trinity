@@ -45,9 +45,9 @@ PRODUCTION_PROMPTS = [
     ("解释量子计算的基本概念", "chinese"),
 
     # === RUSSIAN (3) ===
-    ("Объясни что такое искусственный интеллект", "russian"),
-    ("Какая столица России?", "russian"),
-    ("Напиши функцию на Python для сортировки списка", "russian"),
+    ("Obyawithnand what such andwithtoatwithwithtinny andnthoselletot", "russian"),
+    ("Katoaya withthatlandtsa Raboutwithwithandand?", "russian"),
+    ("Napandshand fatntotsandyu on Python for withaboutrtandraboutintoand withpandwithtoa", "russian"),
 
     # === JAPANESE (2) ===
     ("人工知能とは何ですか？", "japanese"),

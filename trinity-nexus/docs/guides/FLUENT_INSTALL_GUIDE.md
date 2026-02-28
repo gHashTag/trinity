@@ -101,8 +101,8 @@ $ fluent --no-llm
 ║     φ² + 1/φ² = 3 = TRINITY                                   ║
 ╚══════════════════════════════════════════════════════════════╝
 
-[0/20] > прandinет
-Прandinет! [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]]. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]?
+[0/20] > prandinet
+Prandinet! :] :] inand:]. :] :] :]?
 
 [2/20] > hello
 Hello! Great to see you. How can I help?

@@ -1,6 +1,6 @@
 #!/bin/bash
 # E2E Test: Ralph Monitor Buttons START/STOP/RESTART
-# Тестируем что кнопки реально управляют процессами
+# Testandratem what tonaboutptoand realnabout atprainlyayut processamand
 
 set -e
 

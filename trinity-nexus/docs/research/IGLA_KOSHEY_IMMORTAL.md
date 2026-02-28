@@ -1,134 +1,134 @@
-# iGLA KOSHEY - Беwith[TRANSLATED]] LLM
+# iGLA KOSHEY - Bywith] LLM
 
-**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]** - [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] беwith[TRANSLATED]] [CYR:[TRANSLATED]]toоinой [CYR:[TRANSLATED]]and
+**:] :]** - :]andthosefor] bewith] :]toaboutinabouty :]and
 
-## [CYR:[TRANSLATED]]andwithтandtoа
+## :]andwithtVersion
 
-| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе |
+| :]Version | Zon:]ande |
 |---------|----------|
-| [CYR:[TRANSLATED]]and KOSHEY | 18 |
-| Теwithты KOSHEY | 110 |
+| :]and KOSHEY | 18 |
+| Tewithty KOSHEY | 110 |
 | Unified test | 1823ms |
-| Вwith[TRANSLATED]] IGLA [CYR:[TRANSLATED]] | 98 |
+| Vwith] IGLA :] | 98 |
 
-## [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] [CYR:[TRANSLATED]]
+## :]andthosefor] :]
 
 ```
                     ┌─────────────────┐
-                    │  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]    │  ← Cloud Infrastructure
+                    │  :] :]    │  ← Cloud Infrastructure
                     │  (Island)       │
                     └────────┬────────┘
                              │
                     ┌────────▼────────┐
-                    │   [CYR:[TRANSLATED]] + [CYR:[TRANSLATED]]  │  ← Persistent Backup
+                    │   :] + :]  │  ← Persistent Backup
                     │   (Oak Chest)   │
                     └────────┬────────┘
                              │
                     ┌────────▼────────┐
-                    │     [CYR:[TRANSLATED]]        │  ← Speed & Evasion
+                    │     :]        │  ← Speed & Evasion
                     │    (Hare)       │
                     └────────┬────────┘
                              │
                     ┌────────▼────────┐
-                    │     [CYR:[TRANSLATED]]        │  ← Guardian & Defense
+                    │     :]        │  ← Guardian & Defense
                     │    (Duck)       │
                     └────────┬────────┘
                              │
                     ┌────────▼────────┐
-                    │     [CYR:[TRANSLATED]]        │  ← Checkpoint Container
+                    │     :]        │  ← Checkpoint Container
                     │     (Egg)       │
                     └────────┬────────┘
                              │
                     ┌────────▼────────┐
-                    │     [CYR:[TRANSLATED]]        │  ← Critical Weights
-                    │   (Needle)      │  ← [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+                    │     :]        │  ← Critical Weights
+                    │   (Needle)      │  ← :] :]
                     └─────────────────┘
 ```
 
-## [CYR:[TRANSLATED]]and KOSHEY
+## :]and KOSHEY
 
-### [CYR:[TRANSLATED]] беwith[TRANSLATED]]andя
+### :] bewith]andya
 
-| [CYR:[TRANSLATED]] | Опandwithанandе | Иwith[TRANSLATED]]andto |
+| :] | Opandwithanande | Iwith]andto |
 |--------|----------|----------|
-| `igla_koshey_core` | Immortal Core | [CYR:[TRANSLATED]]inая [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] |
-| `igla_koshey_fusion` | Full Immortality | [CYR:[TRANSLATED]]andnotнandе inwithех for[TRANSLATED]]not[CYR:[TRANSLATED]]in |
+| `igla_koshey_core` | Immortal Core | :]inaya :]andthosefor] |
+| `igla_koshey_fusion` | Full Immortality | :]andnotnande inwithekh for]not:]in |
 
-### [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]and
+### :]and :]and
 
-| [CYR:[TRANSLATED]] | Опandwithанandе | Иwith[TRANSLATED]]andto |
+| :] | Opandwithanande | Iwith]andto |
 |--------|----------|----------|
 | `igla_koshey_ring_attention` | Infinite Context | arXiv:2310.01889 |
 | `igla_koshey_memory` | Eternal Memory | Hippocampal AI |
 | `igla_koshey_temporal` | Time Persistence | Causal Memory |
 | `igla_koshey_ewc` | Anti-Forgetting | arXiv:1612.00796 (EWC) |
 
-### [CYR:[TRANSLATED]]not[CYR:[TRANSLATED]]andя
+### :]not:]andya
 
-| [CYR:[TRANSLATED]] | Опandwithанandе | Иwith[TRANSLATED]]andto |
+| :] | Opandwithanande | Iwith]andto |
 |--------|----------|----------|
 | `igla_koshey_self_healing` | Auto-Repair | AutoML 2024 |
 | `igla_koshey_regenerative` | Weight Rebirth | Neuroplasticity |
 | `igla_koshey_neverending` | Eternal Learning | Never-Ending Learning |
 
-### Раwith[TRANSLATED]]withть
+### Rawith]witht
 
-| [CYR:[TRANSLATED]] | Опandwithанandе | Иwith[TRANSLATED]]andto |
+| :] | Opandwithanande | Iwith]andto |
 |--------|----------|----------|
 | `igla_koshey_distributed` | Soul Sharding | Federated Learning |
 | `igla_koshey_quantum` | Quantum Coherence | Q-Transformer |
 
-### Мand[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]
+### Mand:]andya :]
 
-| [CYR:[TRANSLATED]] | Опandwithанandе | [CYR:[TRANSLATED]]toцandя |
+| :] | Opandwithanande | :]totsandya |
 |--------|----------|---------|
-| `igla_koshey_needle` | [CYR:[TRANSLATED]] | Крandтandчеwithtoandе inеwithа ([CYR:[TRANSLATED]]toа [CYR:[TRANSLATED]]inandмоwithтand) |
-| `igla_koshey_egg` | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]notр чеtoпоand[CYR:[TRANSLATED]]in |
-| `igla_koshey_duck` | Утtoа | [CYR:[TRANSLATED]] and [CYR:[TRANSLATED]]andта |
-| `igla_koshey_hare` | [CYR:[TRANSLATED]] | Сfor[TRANSLATED]]withть and уtoлоnotнandе |
-| `igla_koshey_chest` | [CYR:[TRANSLATED]]to | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]orще |
-| `igla_koshey_island` | Оwith[TRANSLATED]]in [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]onя and[CYR:[TRANSLATED]]with[TRANSLATED]]for[TRANSLATED]] |
+| `igla_koshey_needle` | :] | Krandtandchewithtoande inewitha (:]toa :]inandmaboutwithtand) |
+| `igla_koshey_egg` | :] | :]notr chetobyand:]in |
+| `igla_koshey_duck` | Uttoa | :] and :]andthat |
+| `igla_koshey_hare` | :] | Sfor]witht and attolaboutnotnande |
+| `igla_koshey_chest` | :]to | :] :]orsche |
+| `igla_koshey_island` | Owith]in :] | :]onya and:]with]for] |
 
-### [CYR:[TRANSLATED]]toand
+### :]toand
 
-| [CYR:[TRANSLATED]] | Опandwithанandе |
+| :] | Opandwithanande |
 |--------|----------|
-| `igla_koshey_benchmark` | Теwithты беwith[TRANSLATED]]andя |
+| `igla_koshey_benchmark` | Tewithty bewith]andya |
 
-## [CYR:[TRANSLATED]] andwith[TRANSLATED]]andtoand
+## :] andwith]andtoand
 
 ### Ring Attention (arXiv:2310.01889)
-- **Аin[CYR:[TRANSLATED]]:** Hao Liu, Matei Zaharia, Pieter Abbeel
-- **[CYR:[TRANSLATED]]:** Blockwise attention for беwithtoоnot[CYR:[TRANSLATED]] for[TRANSLATED]]towithта
-- **Прandмеnotнandе:** `igla_koshey_ring_attention`
+- **Author:]:** Hao Liu, Matei Zaharia, Pieter Abbeel
+- **:]:** Blockwise attention for bewithtoaboutnot:] for]towiththat
+- **Prandmenotnande:** `igla_koshey_ring_attention`
 
 ### Mamba (arXiv:2312.00752)
-- **Аin[CYR:[TRANSLATED]]:** Albert Gu, Tri Dao
-- **[CYR:[TRANSLATED]]:** Linear-time sequence modeling with Selective SSM
-- **Прandмеnotнandе:** Оwithноinа for `igla_koshey_temporal`
+- **Author:]:** Albert Gu, Tri Dao
+- **:]:** Linear-time sequence modeling with Selective SSM
+- **Prandmenotnande:** Owithnaboutina for `igla_koshey_temporal`
 
 ### EWC (arXiv:1612.00796)
-- **Аin[CYR:[TRANSLATED]]:** Kirkpatrick et al. (DeepMind)
-- **[CYR:[TRANSLATED]]:** Elastic Weight Consolidation прfromandin catastrophic forgetting
-- **Прandмеnotнandе:** `igla_koshey_ewc`
+- **Author:]:** Kirkpatrick et al. (DeepMind)
+- **:]:** Elastic Weight Consolidation prfromandin catastrophic forgetting
+- **Prandmenotnande:** `igla_koshey_ewc`
 
 ### GQA (arXiv:2305.13245)
-- **Аin[CYR:[TRANSLATED]]:** Ainslie et al. (Google)
-- **[CYR:[TRANSLATED]]:** Grouped-Query Attention for [CYR:[TRANSLATED]]toтandin[CYR:[TRANSLATED]] inference
-- **Прandмеnotнandе:** [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя attention in `igla_koshey_hare`
+- **Author:]:** Ainslie et al. (Google)
+- **:]:** Grouped-Query Attention for :]totandin:] inference
+- **Prandmenotnande:** :]andmand:]andya attention in `igla_koshey_hare`
 
-## Эin[CYR:[TRANSLATED]]andя IGLA
+## Ein:]andya IGLA
 
 ```
-v3 ADVANCED      →  6 [CYR:[TRANSLATED]]
-v4 SUPREME       → 18 [CYR:[TRANSLATED]]
-v5 ULTIMATE      → 14 [CYR:[TRANSLATED]]
-v6 ABSOLUTE      → 15 [CYR:[TRANSLATED]]
-v7 TRANSCENDENT  → 13 [CYR:[TRANSLATED]]
-v8 OMNISCIENT    → 14 [CYR:[TRANSLATED]]
-KOSHEY IMMORTAL  → 18 [CYR:[TRANSLATED]]
+v3 ADVANCED      →  6 :]
+v4 SUPREME       → 18 :]
+v5 ULTIMATE      → 14 :]
+v6 ABSOLUTE      → 15 :]
+v7 TRANSCENDENT  → 13 :]
+v8 OMNISCIENT    → 14 :]
+KOSHEY IMMORTAL  → 18 :]
 ─────────────────────────────
-[CYR:[TRANSLATED]]            → 98 [CYR:[TRANSLATED]]
+:]            → 98 :]
 ```
 
 ## Sacred formula
@@ -141,16 +141,16 @@ V = n × 3^k × π^m × φ^p × e^q
 PHOENIX = 999
 ```
 
-## Иwith[TRANSLATED]]inанandе
+## Iwith]inanande
 
 ```bash
-# Геnot[CYR:[TRANSLATED]]andя inwithех Koshey [CYR:[TRANSLATED]]
+# Genot:]andya inwithekh Koshey :]
 for f in specs/tri/igla_koshey_*.vibee; do vibee gen "$f"; done
 
 # Unified test
 quantum_chain.sh unified koshey
 
-# [CYR:[TRANSLATED]] pipeline
+# :] pipeline
 quantum_chain.sh v8  # or quantum_chain.sh full
 ```
 
@@ -176,4 +176,4 @@ Attention            Network   Weights    Coherence  Soul
 
 ---
 
-**φ² + 1/φ² = 3 | PHOENIX = 999 | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**
+**φ² + 1/φ² = 3 | PHOENIX = 999 | :] :]**

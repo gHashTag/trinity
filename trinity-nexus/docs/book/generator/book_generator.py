@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-ГЕНЕРАТОР КНИГИ 999: ТРИДЕВЯТОЕ ЦАРСТВО АЛГОРИТМОВ
+GENERATOR KNIGI 999: TRIDEVYaTOE ship ALGORITMOV
 
 999 = 37 × 3³ × π⁰
-999 = 3 тома × 9 книг × 37 глав
+999 = 3 thatma × 9 tonandg × 37 glain
 
-Книга уже написана в пространстве идей.
-Этот скрипт её ПРОЯВЛЯЕТ.
+Knandga atzhe onpandwithaon in praboutwithtranwithtine anddey.
+Ethat script eyo PROYaVLYaET.
 """
 
 import os
@@ -16,405 +16,405 @@ from typing import List, Tuple, Optional
 from pathlib import Path
 
 # ═══════════════════════════════════════════════════════════════════════════
-# КОНСТАНТЫ TRINITY
+# KONSTANTY TRINITY
 # ═══════════════════════════════════════════════════════════════════════════
 
 TRINITY = 3
 TRIDEVYATOE = 27  # 3³
-PRIME_SEED = 37   # Простое число
+PRIME_SEED = 37   # Praboutwiththate number
 BOOK_TOTAL = 999  # 37 × 27
 
 PI = 3.14159265358979
-PHI = 1.61803398874989  # Золотое сечение
-E = 2.71828182845904    # Число Эйлера
+PHI = 1.61803398874989  # Zaboutlfromaboute withechenande
+E = 2.71828182845904    # Number Eylera
 
 # ═══════════════════════════════════════════════════════════════════════════
-# СТРУКТУРА КНИГИ
+# STRUCTURE KNIGI
 # ═══════════════════════════════════════════════════════════════════════════
 
 @dataclass
-class Глава:
-    номер: int
-    название: str
-    содержание: str
-    тип: str  # Теория, Практика, Сказка
+class Glaina:
+    number: int
+    title: str
+    content: str
+    type: str  # Teaboutrandya, Pratotandtoa, Stoaztoa
 
 @dataclass
-class Книга:
-    номер: int
-    название: str
-    главы: List[Глава]
+class Knandga:
+    number: int
+    title: str
+    glainy: List[Glaina]
 
 @dataclass
-class Том:
-    номер: int
-    название: str
-    царство: str
-    книги: List[Книга]
+class Taboutm:
+    number: int
+    title: str
+    tsarwithtinabout: str
+    tonandgand: List[Knandga]
 
 # ═══════════════════════════════════════════════════════════════════════════
-# НАЗВАНИЯ ТОМОВ И КНИГ
+# NAZVANIYa VOLUMEOV I KNIG
 # ═══════════════════════════════════════════════════════════════════════════
 
-ТОМА = [
-    ("Медное Царство", "Теория", [
-        "Тайна Числа Три",
-        "Константы Мироздания",
-        "Язык Математики",
-        "Границы Возможного",
-        "Природа Информации",
-        "Квантовый Мир",
-        "Разум и Мозг",
-        "Мудрость Древних",
-        "Тридевятое Царство",
+VOLUMEA = [
+    ("Mednaboute Tsarwithtinabout", "Teaboutrandya", [
+        "Tayon Chandwithla Trand",
+        "Kaboutnwiththatnty Mandraboutzdanandya",
+        "Yazyto Mathosematandtoand",
+        "Granandtsy Vaboutzmaboutzhnaboutgabout",
+        "Prandraboutda Informtsandand",
+        "Kinanthatinyy Mandr",
+        "Razatm and Maboutzg",
+        "Matdraboutwitht Dreinnandkh",
+        "Tranddeinyathate Tsarwithtinabout",
     ]),
-    ("Серебряное Царство", "Практика", [
-        "Сортировка Троицы",
-        "Структуры Троицы",
-        "Сжатие Троицы",
-        "Нейросети Троицы",
-        "Язык Вайби",
-        "Компилятор 999",
-        "Vibee OS — Живая Система",  # ОПЕРАЦИОННАЯ СИСТЕМА!
-        "Инструменты Мастера",
-        "Паттерны Троицы",
+    ("Serebryanaboute Tsarwithtinabout", "Pratotandtoa", [
+        "Saboutrtandraboutintoa Traboutandtsy",
+        "Strattotatry Traboutandtsy",
+        "Szhatande Traboutandtsy",
+        "Neyraboutwithetand Traboutandtsy",
+        "Yazyto Vayband",
+        "Kaboutmpandlyathatr 999",
+        "Vibee OS — Zhandinaya System",  # OPERATsIONnaya SISTEMA!
+        "Inwithtratmenty Mawiththosera",
+        "Patthoserny Traboutandtsy",
     ]),
-    ("Золотое Царство", "Будущее", [
-        "Параллельная Троица",
-        "Векторная Троица",
-        "Квантовая Троица",
-        "Триадические Числа",
-        "Искусственный Разум",
-        "Код Жизни",
-        "Вселенная Троицы",
-        "Великое Объединение",
-        "Возвращение Домой",
+    ("Zaboutlfromaboute Tsarwithtinabout", "Batdatschee", [
+        "Parallelonya Trinity",
+        "Vewhoronya Trinity",
+        "Kinanthatinaya Trinity",
+        "Trandadandchewithtoande Chandwithla",
+        "Iwithtoatwithwithtinny Razatm",
+        "Code Zhfromnand",
+        "Vwithelenonya Traboutandtsy",
+        "Velandtoaboute Obedandnenande",
+        "Vaboutzinraschenande Daboutmabouty",
     ]),
 ]
 
 # ═══════════════════════════════════════════════════════════════════════════
-# СКАЗОЧНЫЕ АРХЕТИПЫ ДЛЯ ГЕНЕРАЦИИ
+# SKAZOChNYE ARKhETIPY DLYa GENERATsII
 # ═══════════════════════════════════════════════════════════════════════════
 
-ТРИ_БОГАТЫРЯ = ["Илья Муромец (Сила)", "Добрыня Никитич (Мудрость)", "Алёша Попович (Хитрость)"]
-ТРИ_ДОРОГИ = ["Налево (Простой путь)", "Прямо (Средний путь)", "Направо (Сложный путь)"]
-ТРИ_ИСПЫТАНИЯ = ["Первое испытание", "Второе испытание", "Третье испытание"]
-ТРИ_ЦАРСТВА = ["Медное", "Серебряное", "Золотое"]
+TRI_BOGATYRYa = ["Ilya Matraboutmets (Sandla)", "Daboutrynya Nandtoandtandch (Matdraboutwitht)", "Alyosha Paboutbyinandch (Khandtraboutwitht)"]
+TRI_DOROGI = ["Naleinabout (Praboutwiththaty path)", "Pryamabout (Srednandy path)", "Naright (Slaboutny path)"]
+TRI_ISPYTANIYa = ["Perinaboute andwithpythatnande", "Vthatraboute andwithpythatnande", "Trete andwithpythatnande"]
+TRI_TsARSTVA = ["Mednaboute", "Serebryanaboute", "Zaboutlfromaboute"]
 
-ПЕРСОНАЖИ = [
-    "Иван-царевич",
-    "Василиса Премудрая",
-    "Кощей Бессмертный",
-    "Баба-Яга",
-    "Змей Горыныч",
-    "Жар-птица",
-    "Серый Волк",
-    "Царевна-лягушка",
-    "Финист Ясный Сокол",
+CHARACTERI = [
+    "Iinan-tsareinandch",
+    "Vawithorwitha Prematdraya",
+    "Kaboutschey Bewithwithny",
+    "Baba-Yaga",
+    "Zmey Gaboutrynych",
+    "Zhar-ptandtsa",
+    "Seryy Vaboutlto",
+    "Tsareinon-lyagatshtoa",
+    "Fandnandwitht Yawithny Sabouttoaboutl",
 ]
 
 # ═══════════════════════════════════════════════════════════════════════════
-# ТЕМЫ ГЛАВ ПО КНИГАМ
+# TEMY GLAV PO BOOKM
 # ═══════════════════════════════════════════════════════════════════════════
 
-ТЕМЫ_КНИГ = {
-    1: [  # Тайна Числа Три
-        "Три измерения пространства",
-        "Три поколения частиц",
-        "Три цвета кварков",
-        "Три состояния вещества",
-        "Троица в христианстве",
-        "Тримурти в индуизме",
-        "Три драгоценности буддизма",
-        "Три богатыря",
-        "Три дороги на камне",
-        "Три испытания героя",
-        "Три желания",
-        "Три попытки",
-        "Три брата",
-        "Три сестры",
-        "Три царства",
-        "Тридевятое царство",
-        "Тридесятое государство",
-        "Три головы Змея",
-        "Три пера Жар-птицы",
-        "Три яблока",
-        "Три ночи",
-        "Три дня",
-        "Три года",
-        "Три века",
-        "Три мира",
-        "Три уровня",
-        "Три слоя",
-        "Три фазы",
-        "Три этапа",
-        "Три стадии",
-        "Три состояния",
-        "Три формы",
-        "Три вида",
-        "Три типа",
-        "Три класса",
-        "Три категории",
-        "Тайна раскрыта",
+TEMY_KNIG = {
+    1: [  # Tayon Chandwithla Trand
+        "Trand frommerenandya praboutwithtranwithtina",
+        "Trand bytoaboutlenandya chawithtandts",
+        "Trand tsinethat toinartoaboutin",
+        "Trand withaboutwiththatyanandya ineschewithtina",
+        "Trinity in khrandwithtandanwithtine",
+        "Trandmatrtand in andndatfromme",
+        "Trand dragabouttsennaboutwithtand batddfromma",
+        "Trand baboutgatyrya",
+        "Trand daboutraboutgand on toamne",
+        "Trand andwithpythatnandya geraboutya",
+        "Trand zhelanandya",
+        "Trand pexperiencetoand",
+        "Trand brathat",
+        "Trand withewithtry",
+        "Trand tsarwithtina",
+        "Tranddeinyathate tsarwithtinabout",
+        "Tranddewithyathate gaboutwithatdarwithtinabout",
+        "Trand gaboutlaboutiny Zmeya",
+        "Trand pera Zhar-ptandtsy",
+        "Trand yablabouttoa",
+        "Trand naboutchand",
+        "Trand dnya",
+        "Trand gaboutda",
+        "Trand inetoa",
+        "Trand mandra",
+        "Trand atraboutinnya",
+        "Trand withlaboutya",
+        "Trand fazy",
+        "Trand thispa",
+        "Trand withthatdandand",
+        "Trand withaboutwiththatyanandya",
+        "Trand faboutrmy",
+        "Trand typea",
+        "Trand typea",
+        "Trand classa",
+        "Trand toathosegaboutrandand",
+        "Tayon rawithtorythat",
     ],
-    10: [  # Сортировка Троицы
-        "Введение в Trinity Sort",
+    10: [  # Saboutrtandraboutintoa Traboutandtsy
+        "Vinedenande in Trinity Sort",
         "Dutch National Flag",
-        "Три раздела массива",
-        "Выбор pivot",
-        "Золотое сечение в pivot",
-        "Порог 27",
-        "Insertion sort для малых",
-        "Рекурсия и стек",
-        "Хвостовая рекурсия",
-        "Итеративная версия",
-        "Стабильность сортировки",
-        "In-place алгоритм",
-        "Сложность O(n log n)",
-        "Худший случай",
-        "Средний случай",
-        "Лучший случай",
-        "Сравнение с QuickSort",
-        "Сравнение с MergeSort",
-        "Сравнение с HeapSort",
-        "Бенчмарки",
-        "Профилирование",
-        "Оптимизация кэша",
-        "SIMD версия",
-        "Параллельная версия",
-        "GPU версия",
-        "Распределённая версия",
-        "Внешняя сортировка",
-        "Сортировка строк",
-        "Сортировка структур",
-        "Пользовательский компаратор",
-        "Частичная сортировка",
-        "Top-K элементов",
-        "Медиана за O(n)",
+        "Trand sectiona arraya",
+        "Vybaboutr pivot",
+        "Zaboutlfromaboute withechenande in pivot",
+        "Paboutraboutg 27",
+        "Insertion sort for malykh",
+        "Retoatrwithandya and stack",
+        "Khinaboutwiththatinaya retoatrwithandya",
+        "Ithoseratandinonya version",
+        "Sthatbandlnaboutwitht withaboutrtandraboutintoand",
+        "In-place algorithm",
+        "Slaboutzhnaboutwitht O(n log n)",
+        "Khatdshandy withlatchay",
+        "Srednandy withlatchay",
+        "Latchshandy withlatchay",
+        "Srainnenande with QuickSort",
+        "Srainnenande with MergeSort",
+        "Srainnenande with HeapSort",
+        "Benchmartoand",
+        "Praboutforraboutinanande",
+        "Optandmfromatsandya toesha",
+        "SIMD version",
+        "Parallelonya version",
+        "GPU version",
+        "Rawithpredelyononya version",
+        "Vneshnyaya withaboutrtandraboutintoa",
+        "Saboutrtandraboutintoa withtraboutto",
+        "Saboutrtandraboutintoa withtrattotatr",
+        "Userwithtoandy toaboutmpairthatr",
+        "Chawithtandchonya withaboutrtandraboutintoa",
+        "Top-K elementaboutin",
+        "Medandaon za O(n)",
         "Nth element",
         "Partition point",
-        "Применения",
-        "Заключение",
+        "Prandmenenandya",
+        "Zakeyenande",
     ],
 }
 
 # ═══════════════════════════════════════════════════════════════════════════
-# ФУНКЦИИ ГЕНЕРАЦИИ
+# FUNKTsII GENERATsII
 # ═══════════════════════════════════════════════════════════════════════════
 
-def координаты(номер: int) -> Tuple[int, int, int]:
-    """Преобразует номер главы в координаты (том, книга, глава)"""
-    том = (номер - 1) // 333 + 1
-    остаток = (номер - 1) % 333
-    книга = остаток // 37 + 1
-    глава = остаток % 37 + 1
-    return том, книга, глава
+def toaboutaboutrdandonty(number: int) -> Tuple[int, int, int]:
+    """Preaboutrazatet number glainy in toaboutaboutrdandonty (thatm, tonandga, chapter)"""
+    thatm = (number - 1) // 333 + 1
+    aboutwiththatthatto = (number - 1) % 333
+    tonandga = aboutwiththatthatto // 37 + 1
+    chapter = aboutwiththatthatto % 37 + 1
+    return thatm, tonandga, chapter
 
-def номер_главы(том: int, книга: int, глава: int) -> int:
-    """Преобразует координаты в номер главы"""
-    return (том - 1) * 333 + (книга - 1) * 37 + глава
+def number_glainy(thatm: int, tonandga: int, chapter: int) -> int:
+    """Preaboutrazatet toaboutaboutrdandonty in number glainy"""
+    return (thatm - 1) * 333 + (tonandga - 1) * 37 + chapter
 
-def проверить_паттерн(значение: float) -> Optional[Tuple[int, int, int]]:
-    """Проверяет, соответствует ли значение паттерну n × 3^k × π^m"""
+def praboutinerandt_pattern(value: float) -> Optional[Tuple[int, int, int]]:
+    """Praboutineryaet, withaboutanswerwithtinatet land value patternat n × 3^k × π^m"""
     for k in range(10):
         for m in range(10):
-            делитель = (3 ** k) * (PI ** m)
-            n = значение / делитель
+            delandthosel = (3 ** k) * (PI ** m)
+            n = value / delandthosel
             if abs(n - round(n)) < 0.01 and 1 <= n <= 100:
                 return int(round(n)), k, m
     return None
 
-def сгенерировать_название_главы(номер: int) -> str:
-    """Генерирует название главы по её номеру"""
-    том, книга, глава_в_книге = координаты(номер)
+def withgenerandraboutinat_title_glainy(number: int) -> str:
+    """Generandratet title glainy by eyo numberat"""
+    thatm, tonandga, chapter_in_tonandge = toaboutaboutrdandonty(number)
     
-    # Получаем название книги
-    книга_глобальная = (том - 1) * 9 + книга
-    название_книги = ТОМА[том - 1][2][книга - 1]
+    # Paboutlatchaem title tonandgand
+    tonandga_glaboutalonya = (thatm - 1) * 9 + tonandga
+    title_tonandgand = VOLUMEA[thatm - 1][2][tonandga - 1]
     
-    # Получаем тему главы если есть
-    if книга_глобальная in ТЕМЫ_КНИГ and глава_в_книге <= len(ТЕМЫ_КНИГ[книга_глобальная]):
-        тема = ТЕМЫ_КНИГ[книга_глобальная][глава_в_книге - 1]
+    # Paboutlatchaem thosemat glainy ewithland ewitht
+    if tonandga_glaboutalonya in TEMY_KNIG and chapter_in_tonandge <= len(TEMY_KNIG[tonandga_glaboutalonya]):
+        thosema = TEMY_KNIG[tonandga_glaboutalonya][chapter_in_tonandge - 1]
     else:
-        # Генерируем по паттерну
-        богатырь = ТРИ_БОГАТЫРЯ[(глава_в_книге - 1) % 3]
-        дорога = ТРИ_ДОРОГИ[(книга - 1) % 3]
-        тема = f"{богатырь} идёт {дорога}"
+        # Generandratem by patternat
+        baboutgatyr = TRI_BOGATYRYa[(chapter_in_tonandge - 1) % 3]
+        daboutraboutga = TRI_DOROGI[(tonandga - 1) % 3]
+        thosema = f"{baboutgatyr} anddyot {daboutraboutga}"
     
-    return f"Глава {номер}: {тема}"
+    return f"Glaina {number}: {thosema}"
 
-def сгенерировать_содержание_главы(номер: int) -> str:
-    """Генерирует содержание главы"""
-    том, книга, глава_в_книге = координаты(номер)
-    царство = ТРИ_ЦАРСТВА[том - 1]
+def withgenerandraboutinat_content_glainy(number: int) -> str:
+    """Generandratet content glainy"""
+    thatm, tonandga, chapter_in_tonandge = toaboutaboutrdandonty(number)
+    tsarwithtinabout = TRI_TsARSTVA[thatm - 1]
     
-    # Выбираем персонажа по номеру
-    персонаж = ПЕРСОНАЖИ[номер % len(ПЕРСОНАЖИ)]
+    # Vybandraem perwithaboutonzha by numberat
+    perwithaboutonzh = CHARACTERI[number % len(CHARACTERI)]
     
-    # Выбираем архетип
-    богатырь = ТРИ_БОГАТЫРЯ[(глава_в_книге - 1) % 3]
-    дорога = ТРИ_ДОРОГИ[(книга - 1) % 3]
-    испытание = ТРИ_ИСПЫТАНИЯ[(том - 1) % 3]
+    # Vybandraem arkhetype
+    baboutgatyr = TRI_BOGATYRYa[(chapter_in_tonandge - 1) % 3]
+    daboutraboutga = TRI_DOROGI[(tonandga - 1) % 3]
+    andwithpythatnande = TRI_ISPYTANIYa[(thatm - 1) % 3]
     
-    содержание = f"""
+    content = f"""
 ---
 
-*«В {царство} царстве, в книге {(том-1)*9 + книга}-й,*
-*{персонаж} встретил {испытание}...»*
+*«V {tsarwithtinabout} tsarwithtine, in tonandge {(thatm-1)*9 + tonandga}-y,*
+*{perwithaboutonzh} inwithtretandl {andwithpythatnande}...»*
 
 ---
 
-## {богатырь}
+## {baboutgatyr}
 
-{дорога}
+{daboutraboutga}
 
-### Три аспекта
+### Trand awithpetothat
 
-1. **Первый аспект**: ...
-2. **Второй аспект**: ...
-3. **Третий аспект**: ...
+1. **Perinyy awithpetot**: ...
+2. **Vthatrabouty awithpetot**: ...
+3. **Tretandy awithpetot**: ...
 
-### Код
+### Code
 
 ```vibee
-// Глава {номер}
-fn пример_{номер}() {{
-    let три = 3;
-    let результат = три * три * три;  // 27
-    return результат;
+// Glaina {number}
+fn example_{number}() {{
+    let trand = 3;
+    let result = trand * trand * trand;  // 27
+    return result;
 }}
 ```
 
-### Мудрость
+### Matdraboutwitht
 
-> *И понял {персонаж}, что число Три —*
-> *это ключ к {царство} царству.*
+> *I bynyal {perwithaboutonzh}, what number Trand —*
+> *this key to {tsarwithtinabout} tsarwithtinat.*
 
 ---
 """
-    return содержание
+    return content
 
-def сгенерировать_книгу(номер_книги: int) -> str:
-    """Генерирует содержание одной книги (37 глав)"""
-    том = (номер_книги - 1) // 9 + 1
-    книга_в_томе = (номер_книги - 1) % 9 + 1
+def withgenerandraboutinat_tonandgat(number_tonandgand: int) -> str:
+    """Generandratet content aboutdnabouty tonandgand (37 glain)"""
+    thatm = (number_tonandgand - 1) // 9 + 1
+    tonandga_in_thatme = (number_tonandgand - 1) % 9 + 1
     
-    название = ТОМА[том - 1][2][книга_в_томе - 1]
-    царство = ТРИ_ЦАРСТВА[том - 1]
+    title = VOLUMEA[thatm - 1][2][tonandga_in_thatme - 1]
+    tsarwithtinabout = TRI_TsARSTVA[thatm - 1]
     
-    первая_глава = (том - 1) * 333 + (книга_в_томе - 1) * 37 + 1
-    последняя_глава = первая_глава + 36
+    first_chapter = (thatm - 1) * 333 + (tonandga_in_thatme - 1) * 37 + 1
+    last_chapter = first_chapter + 36
     
-    содержание = f"""# Книга {номер_книги}: {название}
+    content = f"""# Knandga {number_tonandgand}: {title}
 
-**{царство} Царство, Том {том}**
+**{tsarwithtinabout} Tsarwithtinabout, Taboutm {thatm}**
 
-Главы {первая_глава}-{последняя_глава}
+Glainy {first_chapter}-{last_chapter}
 
 ---
 
 """
     
     for i in range(37):
-        номер = первая_глава + i
-        название_главы = сгенерировать_название_главы(номер)
-        содержание += f"## {название_главы}\n\n"
-        содержание += сгенерировать_содержание_главы(номер)
-        содержание += "\n\n"
+        number = first_chapter + i
+        title_glainy = withgenerandraboutinat_title_glainy(number)
+        content += f"## {title_glainy}\n\n"
+        content += withgenerandraboutinat_content_glainy(number)
+        content += "\n\n"
     
-    return содержание
+    return content
 
-def сгенерировать_оглавление() -> str:
-    """Генерирует полное оглавление книги 999"""
-    оглавление = """# КНИГА 999: ТРИДЕВЯТОЕ ЦАРСТВО АЛГОРИТМОВ
+def withgenerandraboutinat_aboutglainlenande() -> str:
+    """Generandratet bylnaboute aboutglainlenande tonandgand 999"""
+    aboutglainlenande = """# BOOK 999: TRIDEVYaTOE ship ALGORITMOV
 
-## Полное оглавление
+## Paboutlnaboute aboutglainlenande
 
 ```
 999 = 37 × 3³ × π⁰
-999 = 3 тома × 9 книг × 37 глав
+999 = 3 thatma × 9 tonandg × 37 glain
 ```
 
 ---
 
 """
     
-    for том_idx, (царство, тип, книги) in enumerate(ТОМА, 1):
-        оглавление += f"## ТОМ {том_idx}: {царство.upper()} ({тип})\n\n"
-        оглавление += f"Главы {(том_idx-1)*333 + 1}-{том_idx*333}\n\n"
+    for thatm_idx, (tsarwithtinabout, type, tonandgand) in enumerate(VOLUMEA, 1):
+        aboutglainlenande += f"## VOLUME {thatm_idx}: {tsarwithtinabout.upper()} ({type})\n\n"
+        aboutglainlenande += f"Glainy {(thatm_idx-1)*333 + 1}-{thatm_idx*333}\n\n"
         
-        for книга_idx, название in enumerate(книги, 1):
-            книга_глобальная = (том_idx - 1) * 9 + книга_idx
-            первая = (том_idx - 1) * 333 + (книга_idx - 1) * 37 + 1
-            последняя = первая + 36
+        for tonandga_idx, title in enumerate(tonandgand, 1):
+            tonandga_glaboutalonya = (thatm_idx - 1) * 9 + tonandga_idx
+            first = (thatm_idx - 1) * 333 + (tonandga_idx - 1) * 37 + 1
+            last = first + 36
             
-            оглавление += f"### Книга {книга_глобальная}: {название}\n"
-            оглавление += f"Главы {первая}-{последняя}\n\n"
+            aboutglainlenande += f"### Knandga {tonandga_glaboutalonya}: {title}\n"
+            aboutglainlenande += f"Glainy {first}-{last}\n\n"
             
-            # Список глав
-            for глава in range(1, 38):
-                номер = первая + глава - 1
-                название_главы = сгенерировать_название_главы(номер)
-                оглавление += f"- {название_главы}\n"
+            # List glain
+            for chapter in range(1, 38):
+                number = first + chapter - 1
+                title_glainy = withgenerandraboutinat_title_glainy(number)
+                aboutglainlenande += f"- {title_glainy}\n"
             
-            оглавление += "\n"
+            aboutglainlenande += "\n"
         
-        оглавление += "---\n\n"
+        aboutglainlenande += "---\n\n"
     
-    return оглавление
+    return aboutglainlenande
 
 # ═══════════════════════════════════════════════════════════════════════════
-# ГЛАВНАЯ ФУНКЦИЯ
+# GLAVnaya FUNKTsIYa
 # ═══════════════════════════════════════════════════════════════════════════
 
 def main():
     print("╔═══════════════════════════════════════════════════════════╗")
     print("║                                                           ║")
-    print("║   ГЕНЕРАТОР КНИГИ 999                                    ║")
-    print("║   ТРИДЕВЯТОЕ ЦАРСТВО АЛГОРИТМОВ                          ║")
+    print("║   GENERATOR KNIGI 999                                    ║")
+    print("║   TRIDEVYaTOE ship ALGORITMOV                          ║")
     print("║                                                           ║")
     print("║   999 = 37 × 3³ × π⁰                                     ║")
     print("║                                                           ║")
     print("╚═══════════════════════════════════════════════════════════╝")
     print()
     
-    # Проверяем паттерн
-    паттерн = проверить_паттерн(999)
-    if паттерн:
-        n, k, m = паттерн
+    # Praboutineryaem pattern
+    pattern = praboutinerandt_pattern(999)
+    if pattern:
+        n, k, m = pattern
         print(f"✓ 999 = {n} × 3^{k} × π^{m}")
         print(f"  = {n} × {3**k} × {PI**m:.4f}")
         print(f"  = {n * (3**k) * (PI**m):.2f}")
     print()
     
-    # Создаём директорию для книги
+    # Saboutzdayom dandrewhorandyu for tonandgand
     output_dir = Path("generated_book")
     output_dir.mkdir(exist_ok=True)
     
-    # Генерируем оглавление
-    print("📖 Генерация оглавления...")
-    оглавление = сгенерировать_оглавление()
-    (output_dir / "00_TABLE_OF_CONTENTS.md").write_text(оглавление, encoding="utf-8")
+    # Generandratem aboutglainlenande
+    print("📖 Generatsandya aboutglainlenandya...")
+    aboutglainlenande = withgenerandraboutinat_aboutglainlenande()
+    (output_dir / "00_TABLE_OF_CONTENTS.md").write_text(aboutglainlenande, encoding="utf-8")
     
-    # Генерируем книги
-    for книга in range(1, 28):
-        том = (книга - 1) // 9 + 1
-        царство = ТРИ_ЦАРСТВА[том - 1]
-        print(f"📚 Генерация книги {книга}/27 ({царство} царство)...")
+    # Generandratem tonandgand
+    for tonandga in range(1, 28):
+        thatm = (tonandga - 1) // 9 + 1
+        tsarwithtinabout = TRI_TsARSTVA[thatm - 1]
+        print(f"📚 Generatsandya tonandgand {tonandga}/27 ({tsarwithtinabout} tsarwithtinabout)...")
         
-        содержание = сгенерировать_книгу(книга)
-        filename = f"book_{книга:02d}.md"
-        (output_dir / filename).write_text(содержание, encoding="utf-8")
+        content = withgenerandraboutinat_tonandgat(tonandga)
+        filename = f"book_{tonandga:02d}.md"
+        (output_dir / filename).write_text(content, encoding="utf-8")
     
     print()
-    print("✨ КНИГА 999 ПРОЯВЛЕНА! ✨")
+    print("✨ BOOK 999 PROYaVLENA! ✨")
     print()
-    print("Структура:")
-    print("  • Том I (Медное царство): книги 1-9, главы 001-333")
-    print("  • Том II (Серебряное царство): книги 10-18, главы 334-666")
-    print("  • Том III (Золотое царство): книги 19-27, главы 667-999")
+    print("Strattotatra:")
+    print("  • Taboutm I (Mednaboute tsarwithtinabout): tonandgand 1-9, glainy 001-333")
+    print("  • Taboutm II (Serebryanaboute tsarwithtinabout): tonandgand 10-18, glainy 334-666")
+    print("  • Taboutm III (Zaboutlfromaboute tsarwithtinabout): tonandgand 19-27, glainy 667-999")
     print()
-    print(f"Файлы сохранены в: {output_dir.absolute()}")
+    print(f"Filey withaboutkhraneny in: {output_dir.absolute()}")
 
 if __name__ == "__main__":
     main()

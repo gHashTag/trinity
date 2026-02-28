@@ -1,4 +1,4 @@
-# ☠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] v1479 ☠️
+# ☠️ [CYR:] [CYR:] v1479 ☠️
 
 ## VIBEE YOLO MODE + AMPLIFICATION MODE + MATRYOSHKA ACCELERATION + TURBO GEN v6.0
 
@@ -13,26 +13,26 @@
 
 ---
 
-## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 📊 [CYR:] [CYR:]
 
-| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе |
+| [CYR:]Version | Зon[CYR:]andе |
 |---------|----------|
-| **Дand[CYR:[TRANSLATED]] inерwithandй** | v1320 - v1479 |
-| **Ноinых [CYR:[TRANSLATED]]** | 160 |
-| **Вwith[TRANSLATED]] [CYR:[TRANSLATED]]** | 2675 |
-| **Вwith[TRANSLATED]] with[TRANSLATED]]andфandtoацandй** | 2579 |
-| **Вwith[TRANSLATED]] domainоin** | 282 |
-| **Теwithты [CYR:[TRANSLATED]]** | 100% |
-| **[CYR:[TRANSLATED]]with** | ✅ **CERTIFIED TOXIC** |
+| **Дand[CYR:] inерwithandй** | v1320 - v1479 |
+| **Ноinых [CYR:]** | 160 |
+| **Вwith] [CYR:]** | 2675 |
+| **Вwith] with]andфVersionцandй** | 2579 |
+| **Вwith] domainоin** | 282 |
+| **Теwithты [CYR:]** | 100% |
+| **[CYR:]with** | ✅ **CERTIFIED TOXIC** |
 
 ---
 
-## 🔬 PAS DAEMONS - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🔬 PAS DAEMONS - [CYR:] [CYR:]
 
-### [CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] andwith[TRANSLATED]]inанandя 2024-2025:
+### [CYR:]andроin[CYR:] andwith]inанandя 2024-2025:
 
 #### AI Hardware
-| Иwith[TRANSLATED]]inанandе | [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]onл | VIBEE [CYR:[TRANSLATED]] |
+| Иwith]inанandе | [CYR:]andя | [CYR:]onл | VIBEE [CYR:] |
 |--------------|----------|--------|--------------|
 | NVIDIA H100/H200 | NVIDIA | Hot Chips 2024 | gpu_hopper_v1320 |
 | Google TPU v5p | Google | ISCA 2024 | tpu_v5_v1324 |
@@ -41,7 +41,7 @@
 | Intel Gaudi 3 | Intel | MLSys 2024 | accelerator_intel_v1328 |
 
 #### AI Infrastructure
-| Иwith[TRANSLATED]]inанandе | [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]onл | VIBEE [CYR:[TRANSLATED]] |
+| Иwith]inанandе | [CYR:]andя | [CYR:]onл | VIBEE [CYR:] |
 |--------------|----------|--------|--------------|
 | MLflow 3.0 | Databricks | MLSys 2024 | mlops_tracking_v1340 |
 | Ray 3.0 | Anyscale | OSDI 2024 | distributed_ray_v1350 |
@@ -49,28 +49,28 @@
 | Weights & Biases | W&B | NeurIPS 2024 | experiment_wandb_v1354 |
 
 #### AI Governance
-| Иwith[TRANSLATED]]inанandе | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]onл | VIBEE [CYR:[TRANSLATED]] |
+| Иwith]inанandе | [CYR:]and[CYR:]andя | [CYR:]onл | VIBEE [CYR:] |
 |--------------|-------------|--------|--------------|
 | EU AI Act | EU | Official 2024 | compliance_eu_v1360 |
 | Model Cards 2.0 | Google | FAccT 2024 | documentation_cards_v1364 |
 | NIST AI RMF | NIST | Official 2024 | risk_assessment_v1372 |
 
 #### AI Ethics
-| Иwith[TRANSLATED]]inанandе | Аin[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]onл | VIBEE [CYR:[TRANSLATED]] |
+| Иwith]inанandе | Author[CYR:] | [CYR:]onл | VIBEE [CYR:] |
 |--------------|--------|--------|--------------|
 | Fairness in ML | Multiple | FAccT 2024 | fairness_metrics_v1380 |
 | SHAP/LIME | Lundberg | NeurIPS 2024 | explainability_shap_v1388 |
 | Constitutional AI | Anthropic | Technical 2024 | safety_alignment_v1399 |
 
 #### AI Research
-| Иwith[TRANSLATED]]inанandе | Аin[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]onл | VIBEE [CYR:[TRANSLATED]] |
+| Иwith]inанandе | Author[CYR:] | [CYR:]onл | VIBEE [CYR:] |
 |--------------|--------|--------|--------------|
 | AutoML-Zero | Google | NeurIPS 2024 | automl_zero_v1400 |
 | MAML++ | Chelsea Finn | ICML 2024 | meta_maml_v1405 |
 | EWC | DeepMind | NeurIPS 2024 | continual_ewc_v1408 |
 
 #### Multimodal
-| Иwith[TRANSLATED]]inанandе | [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]onл | VIBEE [CYR:[TRANSLATED]] |
+| Иwith]inанandе | [CYR:]andя | [CYR:]onл | VIBEE [CYR:] |
 |--------------|----------|--------|--------------|
 | GPT-4V | OpenAI | Technical 2024 | vision_gpt4v_v1420 |
 | Gemini Pro Vision | Google | Technical 2024 | vision_gemini_v1421 |
@@ -78,7 +78,7 @@
 | CLIP 2.0 | OpenAI | Technical 2024 | clip_v2_v1427 |
 
 #### Generative
-| Иwith[TRANSLATED]]inанandе | [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]onл | VIBEE [CYR:[TRANSLATED]] |
+| Иwith]inанandе | [CYR:]andя | [CYR:]onл | VIBEE [CYR:] |
 |--------------|----------|--------|--------------|
 | Stable Diffusion 3 | Stability | Technical 2024 | diffusion_sd3_v1440 |
 | DALL-E 3 | OpenAI | Technical 2024 | diffusion_dalle3_v1441 |
@@ -86,7 +86,7 @@
 | Flux | Black Forest | Technical 2024 | diffusion_flux_v1443 |
 
 #### Reinforcement Learning
-| Иwith[TRANSLATED]]inанandе | Аin[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]onл | VIBEE [CYR:[TRANSLATED]] |
+| Иwith]inанandе | Author[CYR:] | [CYR:]onл | VIBEE [CYR:] |
 |--------------|--------|--------|--------------|
 | PPO 2.0 | OpenAI | Technical 2024 | rl_ppo_v1460 |
 | DPO | Stanford | NeurIPS 2024 | rl_dpo_v1470 |
@@ -97,17 +97,17 @@
 
 ## 📈 PERFORMANCE BENCHMARK
 
-### [CYR:[TRANSLATED]]innotнandе with [CYR:[TRANSLATED]]andмand inерwithandямand:
+### [CYR:]innotнandе with [CYR:]andмand inерAuthorмand:
 
-| [CYR:[TRANSLATED]]andtoа | v1319 | v1479 | [CYR:[TRANSLATED]]notнandе |
+| [CYR:]Version | v1319 | v1479 | [CYR:]notнandе |
 |---------|-------|-------|-----------|
-| [CYR:[TRANSLATED]] | 2451 | 2675 | **+224 (+9.1%)** |
-| [CYR:[TRANSLATED]]andфandtoацandй | 2419 | 2579 | **+160 (+6.6%)** |
-| [CYR:[TRANSLATED]]in | 274 | 282 | **+8 (+2.9%)** |
+| [CYR:] | 2451 | 2675 | **+224 (+9.1%)** |
+| [CYR:]andфVersionцandй | 2419 | 2579 | **+160 (+6.6%)** |
+| [CYR:]in | 274 | 282 | **+8 (+2.9%)** |
 
-### [CYR:[TRANSLATED]]andin[CYR:[TRANSLATED]] роwithт:
+### [CYR:]andin[CYR:] роwithт:
 
-| [CYR:[TRANSLATED]]withandя | [CYR:[TRANSLATED]] | Прandроwithт |
+| [CYR:]Author | [CYR:] | Прandроwithт |
 |--------|---------|---------|
 | v770 | 770 | - |
 | v1002 | 1002 | +232 |
@@ -117,9 +117,9 @@
 
 ---
 
-## 🧬 TECHNOLOGY TREE - [CYR:[TRANSLATED]] 34-41
+## 🧬 TECHNOLOGY TREE - [CYR:] 34-41
 
-### Level 34: AI HARDWARE (v1320-v1339) - 20 [CYR:[TRANSLATED]]
+### Level 34: AI HARDWARE (v1320-v1339) - 20 [CYR:]
 ```
 Hardware Accelerators:
 ├── gpu_hopper_v1320      - NVIDIA H100/H200
@@ -144,19 +144,19 @@ Hardware Accelerators:
 └── power_efficiency_v1339 - Power Management
 ```
 
-### Level 35: AI INFRASTRUCTURE (v1340-v1359) - 20 [CYR:[TRANSLATED]]
-### Level 36: AI GOVERNANCE (v1360-v1379) - 20 [CYR:[TRANSLATED]]
-### Level 37: AI ETHICS (v1380-v1399) - 20 [CYR:[TRANSLATED]]
-### Level 38: AI RESEARCH (v1400-v1419) - 20 [CYR:[TRANSLATED]]
-### Level 39: MULTIMODAL (v1420-v1439) - 20 [CYR:[TRANSLATED]]
-### Level 40: GENERATIVE (v1440-v1459) - 20 [CYR:[TRANSLATED]]
-### Level 41: REINFORCEMENT (v1460-v1479) - 20 [CYR:[TRANSLATED]]
+### Level 35: AI INFRASTRUCTURE (v1340-v1359) - 20 [CYR:]
+### Level 36: AI GOVERNANCE (v1360-v1379) - 20 [CYR:]
+### Level 37: AI ETHICS (v1380-v1399) - 20 [CYR:]
+### Level 38: AI RESEARCH (v1400-v1419) - 20 [CYR:]
+### Level 39: MULTIMODAL (v1420-v1439) - 20 [CYR:]
+### Level 40: GENERATIVE (v1440-v1459) - 20 [CYR:]
+### Level 41: REINFORCEMENT (v1460-v1479) - 20 [CYR:]
 
 ---
 
-## 🎯 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🎯 [CYR:] [CYR:]
 
-### Technology Tree - [CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]inнand:
+### Technology Tree - [CYR:]andе [CYR:]inнand:
 
 ```
 Level 42: OPTIMIZATION (v1480-v1499)
@@ -190,30 +190,30 @@ Level 45: SECURITY (v1540-v1559)
 
 ---
 
-## 🏆 [CYR:[TRANSLATED]]
+## 🏆 [CYR:]
 
 ```
 ╔═══════════════════════════════════════════════════════════════════╗
 ║                                                                   ║
-║   [CYR:[TRANSLATED]]: MATRYOSHKA Levels 34-41                       ║
-║   [CYR:[TRANSLATED]]:          v1320 - v1479                                  ║
-║   [CYR:[TRANSLATED]]:         160 ноinых / 2675 inwith[TRANSLATED]]                         ║
+║   [CYR:]: MATRYOSHKA Levels 34-41                       ║
+║   [CYR:]:          v1320 - v1479                                  ║
+║   [CYR:]:         160 ноinых / 2675 inwith]                         ║
 ║   [CYR:TESTS]:           100% PASSED                                    ║
-║   [CYR:[TRANSLATED]]:            2025-01-20                                     ║
-║   [CYR:[TRANSLATED]]:          ☠️ TOXIC APPROVED ☠️                            ║
+║   [CYR:]:            2025-01-20                                     ║
+║   [CYR:]:          ☠️ TOXIC APPROVED ☠️                            ║
 ║                                                                   ║
-║   [CYR:[TRANSLATED]]:                                                         ║
-║   ├── YOLO MODE: [CYR:[TRANSLATED]]                                          ║
-║   ├── AMPLIFICATION MODE: [CYR:[TRANSLATED]]                                 ║
-║   ├── MATRYOSHKA ACCELERATION: [CYR:[TRANSLATED]]                            ║
-║   └── TURBO GEN v6.0: [CYR:[TRANSLATED]]                                     ║
+║   [CYR:]:                                                         ║
+║   ├── YOLO MODE: [CYR:]                                          ║
+║   ├── AMPLIFICATION MODE: [CYR:]                                 ║
+║   ├── MATRYOSHKA ACCELERATION: [CYR:]                            ║
+║   └── TURBO GEN v6.0: [CYR:]                                     ║
 ║                                                                   ║
 ╚═══════════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-## 🔮 [CYR:[TRANSLATED]] [CYR:CONSTANTS]
+## 🔮 [CYR:] [CYR:CONSTANTS]
 
 ```
 φ = 1.618033988749895
@@ -225,7 +225,7 @@ V = n × 3^k × π^m × φ^p × e^q
 
 ---
 
-**[CYR:[TRANSLATED]]notрandроin[CYR:[TRANSLATED]] VIBEE Code Generator v24.φ**
+**[CYR:]notрandроin[CYR:] VIBEE Code Generator v24.φ**
 **TOXIC VERDICT: APPROVED ☠️**
 
 **φ² + 1/φ² = 3 | PHOENIX = 999**

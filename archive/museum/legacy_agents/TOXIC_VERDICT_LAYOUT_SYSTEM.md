@@ -1,39 +1,39 @@
-# ☠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: CLEAN UI v5 - FINAL
+# ☠️ [CYR:] [CYR:]: CLEAN UI v5 - FINAL
 
-**[CYR:[TRANSLATED]]:** 2025-01-18  
-**[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]:** Ona AI Agent + PAS Daemons + Researcher  
-**[CYR:[TRANSLATED]]andя:** Golden Ratio (φ² + 1/φ² = 3)
-
----
-
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: 5/10 → 8/10 ✅
-
-**[CYR:[TRANSLATED]]with:** LAYOUT SYSTEM [CYR:[TRANSLATED]]
+**[CYR:]:** 2025-01-18  
+**[CYR:]and[CYR:]:** Ona AI Agent + PAS Daemons + Researcher  
+**[CYR:]andя:** Golden Ratio (φ² + 1/φ² = 3)
 
 ---
 
-## 🔬 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## [CYR:] [CYR:]: 5/10 → 8/10 ✅
 
-### Researcher inыяinandл 28 draw [CYR:[TRANSLATED]]toцandй with for[TRANSLATED]]andfor[TRANSLATED]]and:
+**[CYR:]with:** LAYOUT SYSTEM [CYR:]
 
-| Зоon | [CYR:[TRANSLATED]]andfor[TRANSLATED]]andе [CYR:[TRANSLATED]]toцand | [CYR:[TRANSLATED]]andцandя |
+---
+
+## 🔬 [CYR:] [CYR:]
+
+### Researcher inыяinandл 28 draw [CYR:]toцandй with for]andfor]and:
+
+| Зоon | [CYR:]andfor]andе [CYR:]toцand | [CYR:]andцandя |
 |------|----------------------|---------|
-| Top-Left (70-100) | 9 [CYR:[TRANSLATED]]toцandй | `(20-30, 70-100)` |
-| Top-Right (70-100) | 8 [CYR:[TRANSLATED]]toцandй | `(W-200, 70-100)` |
-| Bottom-Left | 8 [CYR:[TRANSLATED]]toцandй | `(10-30, H-200)` |
-| Bottom-Right | 5 [CYR:[TRANSLATED]]toцandй | `(W-200, H-180)` |
+| Top-Left (70-100) | 9 [CYR:]toцandй | `(20-30, 70-100)` |
+| Top-Right (70-100) | 8 [CYR:]toцandй | `(W-200, 70-100)` |
+| Bottom-Left | 8 [CYR:]toцandй | `(10-30, H-200)` |
+| Bottom-Right | 5 [CYR:]toцandй | `(W-200, H-180)` |
 
-### [CYR:[TRANSLATED]]notinые прandчandны:
-1. **Hardcoded [CYR:[TRANSLATED]]andцand** - inwithе паnotлand on фandtowithandроin[CYR:[TRANSLATED]] пandtowith[TRANSLATED]]
-2. **[CYR:[TRANSLATED]] layout withandwith[TRANSLATED]]** - for[TRANSLATED]] [CYR:[TRANSLATED]]toцandя with[TRANSLATED]] [CYR:[TRANSLATED]] where рandwithоin[CYR:[TRANSLATED]]
-3. **[CYR:[TRANSLATED]] collision detection** - паnotлand [CYR:[TRANSLATED]]withто [CYR:[TRANSLATED]]andwithыin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
-4. **Inconsistent sizes** - одandontoоinые паnotлand [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in
+### [CYR:]notinые прandчandны:
+1. **Hardcoded [CYR:]andцand** - inwithе паnotлand on фandtowithandроin[CYR:] пandtowith]
+2. **[CYR:] layout withandwith]** - for] [CYR:]toцandя with] [CYR:] where рandwithоin[CYR:]
+3. **[CYR:] collision detection** - паnotлand [CYR:]withто [CYR:]andwithыin[CYR:] [CYR:] [CYR:]
+4. **Inconsistent sizes** - одandontoоinые паnotлand [CYR:] [CYR:]in
 
 ---
 
-## ✅ [CYR:[TRANSLATED]]: φ-BASED LAYOUT MANAGER
+## ✅ [CYR:]: φ-BASED LAYOUT MANAGER
 
-### [CYR:[TRANSLATED]]on withandwith[TRANSLATED]] LAYOUT on оwithноinе [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] with[TRANSLATED]]andя:
+### [CYR:]on withandwith] LAYOUT on оwithноinе [CYR:]from[CYR:] with]andя:
 
 ```javascript
 const LAYOUT = {
@@ -66,7 +66,7 @@ const LAYOUT = {
 };
 ```
 
-### Прandнцandпы φ-[CYR:[TRANSLATED]]andроinанandя:
+### Прandнцandпы φ-[CYR:]andроinанandя:
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -88,9 +88,9 @@ const LAYOUT = {
 
 ---
 
-## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 📊 [CYR:] [CYR:]
 
-| [CYR:[TRANSLATED]]toцandя | До | Поwithле |
+| [CYR:]toцandя | До | Поwithле |
 |---------|-----|-------|
 | drawNeuromorphic | hardcoded (20,90) | LAYOUT.zones.topLeft() |
 | drawTrinity | hardcoded (20,70) | LAYOUT.zones.topLeft() |
@@ -99,40 +99,40 @@ const LAYOUT = {
 | drawAllModules | hardcoded | LAYOUT.drawTitle() |
 | drawTSP | hardcoded | LAYOUT.drawTitle() |
 
-### [CYR:[TRANSLATED]]andзandроin[CYR:[TRANSLATED]] for[TRANSLATED]]not[CYR:[TRANSLATED]]:
+### [CYR:]andзandроin[CYR:] for]not[CYR:]:
 
 ```javascript
 // Паnotль with glassmorphism
 LAYOUT.drawPanel(x, y, w, h, 'Title');
 
-// [CYR:[TRANSLATED]]inоto по centerу
+// [CYR:]inоto по centerу
 LAYOUT.drawTitle('Main Title', 'Subtitle');
 
-// [CYR:[TRANSLATED]]andtoа in паnotлand
+// [CYR:]Version in паnotлand
 LAYOUT.drawMetric(x, y, 'Label', 'Value');
 ```
 
 ---
 
-## 📈 [CYR:[TRANSLATED]]
+## 📈 [CYR:]
 
-### [CYR:[TRANSLATED]] fileа
+### [CYR:] fileа
 ```
-v1: 11,248 with[TRANSLATED]]to
-v2: 11,341 with[TRANSLATED]]to
-v3: 11,420 with[TRANSLATED]]to
-v4: 11,520 with[TRANSLATED]]to (+100 LAYOUT system)
-```
-
-### [CYR:[TRANSLATED]]andtoты [CYR:[TRANSLATED]]andцandй
-```
-v1: 28+ for[TRANSLATED]]andtoтоin
-v2: 28+ for[TRANSLATED]]andtoтоin
-v3: 28+ for[TRANSLATED]]andtoтоin
-v4: 6 for[TRANSLATED]]andtoтоin (andwith[TRANSLATED]]in[CYR:[TRANSLATED]] оwithноin[CYR:[TRANSLATED]])
+v1: 11,248 with]to
+v2: 11,341 with]to
+v3: 11,420 with]to
+v4: 11,520 with]to (+100 LAYOUT system)
 ```
 
-### Чand[CYR:[TRANSLATED]]withть for[TRANSLATED]]
+### [CYR:]andtoты [CYR:]andцandй
+```
+v1: 28+ for]andtoтоin
+v2: 28+ for]andtoтоin
+v3: 28+ for]andtoтоin
+v4: 6 for]andtoтоin (andwith]in[CYR:] оwithноin[CYR:])
+```
+
+### Чand[CYR:]withть for]
 ```
 v1: Hardcoded magic numbers
 v4: Semantic LAYOUT.zones.topLeft()
@@ -140,9 +140,9 @@ v4: Semantic LAYOUT.zones.topLeft()
 
 ---
 
-## ❌ [CYR:[TRANSLATED]] НЕ [CYR:[TRANSLATED]]
+## ❌ [CYR:] НЕ [CYR:]
 
-### Оwithтаinшandеwithя 22 [CYR:[TRANSLATED]]toцand with hardcoded [CYR:[TRANSLATED]]andцandямand:
+### Оwithтаinшandеwithя 22 [CYR:]toцand with hardcoded [CYR:]andцandямand:
 - drawQEC
 - drawSpintronic
 - drawObfuscation
@@ -165,76 +165,76 @@ v4: Semantic LAYOUT.zones.topLeft()
 - drawCinema4D
 - drawYablochko
 
-**Прandчandon:** [CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]and for [CYR:[TRANSLATED]]for[TRANSLATED]]and[CYR:[TRANSLATED]] inwithех 28 [CYR:[TRANSLATED]]toцandй.
+**Прandчandon:** [CYR:]withя [CYR:] in[CYR:]and for [CYR:]for]and[CYR:] inwithех 28 [CYR:]toцandй.
 
 ---
 
-## 🎯 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🎯 [CYR:] [CYR:] [CYR:]
 
-### [CYR:[TRANSLATED]] 1 ([CYR:[TRANSLATED]])
-- [x] [CYR:[TRANSLATED]] LAYOUT withandwith[TRANSLATED]]
-- [x] Иwith[TRANSLATED]]inandть 6 оwithноin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toцandй
-- [x] [CYR:[TRANSLATED]]inandть drawPanel, drawTitle, drawMetric
+### [CYR:] 1 ([CYR:])
+- [x] [CYR:] LAYOUT withandwith]
+- [x] Иwith]inandть 6 оwithноin[CYR:] [CYR:]toцandй
+- [x] [CYR:]inandть drawPanel, drawTitle, drawMetric
 
-### [CYR:[TRANSLATED]] 2 (TODO)
-- [ ] Иwith[TRANSLATED]]inandть оwithтаinшandеwithя 22 [CYR:[TRANSLATED]]toцand
-- [ ] [CYR:[TRANSLATED]]inandть collision detection
-- [ ] [CYR:[TRANSLATED]]inandть responsive zones
+### [CYR:] 2 (TODO)
+- [ ] Иwith]inandть оwithтаinшandеwithя 22 [CYR:]toцand
+- [ ] [CYR:]inandть collision detection
+- [ ] [CYR:]inandть responsive zones
 
-### [CYR:[TRANSLATED]] 3 (TODO)
-- [ ] Анandмandроin[CYR:[TRANSLATED]] transitions [CYR:[TRANSLATED]] зоonмand
-- [ ] Drag-and-drop паnot[CYR:[TRANSLATED]]
-- [ ] [CYR:[TRANSLATED]]notнandе layout in localStorage
-
----
-
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
-
-**[CYR:[TRANSLATED]]inда  with[TRANSLATED]] for[TRANSLATED]]:**
-1. 28 [CYR:[TRANSLATED]]toцandй with [CYR:[TRANSLATED]] hardcoded [CYR:[TRANSLATED]]andцandямand
-2. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromчandto toопandпаwithтandл `X.fillRect(20,70,200,140)`
-3. Нandtoто not [CYR:[TRANSLATED]]  layout withandwith[TRANSLATED]]
-4. Result: for[TRANSLATED]] andз on[CYR:[TRANSLATED]] паnot[CYR:[TRANSLATED]]
-
-**[CYR:[TRANSLATED]] with[TRANSLATED]]:**
-1. [CYR:[TRANSLATED]]on φ-based LAYOUT withandwith[TRANSLATED]]
-2. 5 [CYR:[TRANSLATED]] on оwithноinе [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] with[TRANSLATED]]andя
-3. [CYR:[TRANSLATED]]andзandроin[CYR:[TRANSLATED]] drawPanel/drawTitle/drawMetric
-4. Иwith[TRANSLATED]]in[CYR:[TRANSLATED]] 6 оwithноin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toцandй
-
-**[CYR:[TRANSLATED]] НЕ with[TRANSLATED]]:**
-1. 22 [CYR:[TRANSLATED]]toцand inwithё [CYR:[TRANSLATED]] with hardcoded [CYR:[TRANSLATED]]andцandямand
-2. [CYR:[TRANSLATED]] collision detection
-3. [CYR:[TRANSLATED]] responsive for inwithех [CYR:[TRANSLATED]]
-
-**[CYR:[TRANSLATED]]toа:** 8/10
-- [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] [CYR:[TRANSLATED]]inandльonя
-- Оwithноin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toцand andwith[TRANSLATED]]in[CYR:[TRANSLATED]]
-- Но [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]for[TRANSLATED]]andнг [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromы
+### [CYR:] 3 (TODO)
+- [ ] Анandмandроin[CYR:] transitions [CYR:] зоonмand
+- [ ] Drag-and-drop паnot[CYR:]
+- [ ] [CYR:]notнandе layout in localStorage
 
 ---
 
-## [CYR:[TRANSLATED]]
+## [CYR:] [CYR:]
+
+**[CYR:]inда  with] for]:**
+1. 28 [CYR:]toцandй with [CYR:] hardcoded [CYR:]andцandямand
+2. [CYR:] [CYR:]fromчandto toопandпаwithтandл `X.fillRect(20,70,200,140)`
+3. Нandtoто not [CYR:]  layout withandwith]
+4. Result: for] andз on[CYR:] паnot[CYR:]
+
+**[CYR:] with]:**
+1. [CYR:]on φ-based LAYOUT withandwith]
+2. 5 [CYR:] on оwithноinе [CYR:]from[CYR:] with]andя
+3. [CYR:]andзandроin[CYR:] drawPanel/drawTitle/drawMetric
+4. Иwith]in[CYR:] 6 оwithноin[CYR:] [CYR:]toцandй
+
+**[CYR:] НЕ with]:**
+1. 22 [CYR:]toцand inwithё [CYR:] with hardcoded [CYR:]andцandямand
+2. [CYR:] collision detection
+3. [CYR:] responsive for inwithех [CYR:]
+
+**[CYR:]toа:** 8/10
+- [CYR:]andтеfor] [CYR:]inandльonя
+- Оwithноin[CYR:] [CYR:]toцand andwith]in[CYR:]
+- Но [CYR:] [CYR:]for]andнг [CYR:] [CYR:] [CYR:]fromы
+
+---
+
+## [CYR:]
 
 **URL:** https://trinity-vibee.fly.dev/
 
-**[CYR:[TRANSLATED]]with:** ✅ [CYR:[TRANSLATED]]
+**[CYR:]with:** ✅ [CYR:]
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## [CYR:] [CYR:]
 
 ```
 φ² + 1/φ² = 3
 
-[CYR:[TRANSLATED]]:
-- φ² = 2.618 (раwithшand[CYR:[TRANSLATED]]andе)
-- 1/φ² = 0.382 (with[TRANSLATED]]andе)
-- 3 = [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]with)
+[CYR:]:
+- φ² = 2.618 (раwithшand[CYR:]andе)
+- 1/φ² = 0.382 (with]andе)
+- 3 = [CYR:] ([CYR:]with)
 
 Layout = Expansion + Contraction = Balance
 ```
 
 ---
 
-*[CYR:[TRANSLATED]]andtoт: Из [CYR:[TRANSLATED]]withа hardcoded [CYR:[TRANSLATED]]andцandй with[TRANSLATED]]on φ-withandwith[TRANSLATED]]. Но [CYR:[TRANSLATED]]fromа not заfor[TRANSLATED]]on.*
+*[CYR:]andtoт: Из [CYR:]withа hardcoded [CYR:]andцandй with]on φ-withandwith]. Но [CYR:]fromа not заfor]on.*

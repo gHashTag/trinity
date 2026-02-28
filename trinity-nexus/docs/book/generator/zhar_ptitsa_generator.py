@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-ЖАР-ПТИЦА — Самоэволюционирующий Генератор Книги 999
+ZhAR-PTITsA — Samabouteinaboutlyutsandaboutnandratyuschandy Generathatr Knandgand 999
 
-Интегрирует:
-- Священную Формулу V = n × 3^k × π^m × φ^p
-- 18 паттернов PAS для оптимизации
-- Автогенерацию на 50 языков мира
-- Научные работы arXiv
+Inthosegrandratet:
+- Sinyaschennatyu Faboutrmatlat V = n × 3^k × π^m × φ^p
+- 18 patternaboutin PAS for aboutptandmfromatsandand
+- Ainthatgeneratsandyu on 50 yazytoaboutin mandra
+- Naatchnye rabfromy arXiv
 
 Author: Dmitrii Vasilev
 Email: reactnativeinitru@gmail.com
@@ -21,29 +21,29 @@ from typing import List, Dict, Optional, Tuple
 from enum import Enum
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# СВЯЩЕННЫЕ КОНСТАНТЫ
+# SVYaSchENNYE KONSTANTY
 # ═══════════════════════════════════════════════════════════════════════════════
 
 π = math.pi
 φ = (1 + math.sqrt(5)) / 2  # Golden ratio ≈ 1.618
 e = math.e
 
-# Священная формула: V = n × 3^k × π^m × φ^p
+# Sacred formula: V = n × 3^k × π^m × φ^p
 def sacred_formula(n: int, k: int, m: int, p: int) -> float:
-    """Вычисляет значение Священной Формулы"""
+    """Vychandwithlyaet value Sinyaschennabouty Faboutrmatly"""
     return n * (3 ** k) * (π ** m) * (φ ** p)
 
-# Фундаментальные тождества
-GOLDEN_THREE_IDENTITY = φ**2 + 1/φ**2  # = 3 (точно!)
-GOLDEN_PI_CONNECTION = 2 * math.cos(π / 5)  # = φ (точно!)
+# Fatndamenthatlnye thatzhdewithtina
+GOLDEN_THREE_IDENTITY = φ**2 + 1/φ**2  # = 3 (thatchnabout!)
+GOLDEN_PI_CONNECTION = 2 * math.cos(π / 5)  # = φ (thatchnabout!)
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 18 ПАТТЕРНОВ PAS
+# 18 PATTERNOV PAS
 # ═══════════════════════════════════════════════════════════════════════════════
 
 class PASPattern(Enum):
-    """18 паттернов Predictive Algorithmic Systematics"""
-    # Классические (10)
+    """18 patternaboutin Predictive Algorithmic Systematics"""
+    # Classandchewithtoande (10)
     D_AND_C = ("D&C", "Divide-and-Conquer", 0.31)
     ALG = ("ALG", "Algebraic Reorganization", 0.22)
     PRE = ("PRE", "Precomputation", 0.16)
@@ -54,7 +54,7 @@ class PASPattern(Enum):
     GRD = ("GRD", "Greedy Local", 0.06)
     AMR = ("AMR", "Amortization", 0.05)
     PRB = ("PRB", "Probabilistic", 0.03)
-    # Новые (8)
+    # Naboutinye (8)
     IOT = ("IOT", "IO-Aware Tiling", 0.15)
     INC = ("INC", "Incremental Computation", 0.14)
     SSM = ("SSM", "State Space Model", 0.12)
@@ -70,75 +70,75 @@ class PASPattern(Enum):
         self.success_rate = rate
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 50 ЯЗЫКОВ МИРА (50 ПЕРЬЕВ ЖАР-ПТИЦЫ)
+# 50 YaZYKOV WORLDA (50 PEREV ZhAR-PTITsY)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 WORLD_LANGUAGES = {
-    # Славянские (9)
-    "ru": {"name": "Русский", "native": "Русский", "царство": "Тридевятое царство"},
-    "uk": {"name": "Ukrainian", "native": "Українська", "царство": "Тридев'яте царство"},
-    "pl": {"name": "Polish", "native": "Polski", "царство": "Królestwo Trzydziewięć"},
-    "cs": {"name": "Czech", "native": "Čeština", "царство": "Třikrát deváté království"},
-    "sk": {"name": "Slovak", "native": "Slovenčina", "царство": "Trikrát deviate kráľovstvo"},
-    "bg": {"name": "Bulgarian", "native": "Български", "царство": "Тридевето царство"},
-    "sr": {"name": "Serbian", "native": "Српски", "царство": "Тридевето царство"},
-    "hr": {"name": "Croatian", "native": "Hrvatski", "царство": "Trideveto kraljevstvo"},
-    "sl": {"name": "Slovenian", "native": "Slovenščina", "царство": "Trideveto kraljestvo"},
+    # Slainyanwithtoande (9)
+    "ru": {"name": "Ratwithwithtoandy", "native": "Ratwithwithtoandy", "tsarwithtinabout": "Tranddeinyathate tsarwithtinabout"},
+    "uk": {"name": "Ukrainian", "native": "Utoraїnwithtoa", "tsarwithtinabout": "Tranddein'yathose tsarwithtinabout"},
+    "pl": {"name": "Polish", "native": "Polski", "tsarwithtinabout": "Królestwo Trzydziewięć"},
+    "cs": {"name": "Czech", "native": "Čeština", "tsarwithtinabout": "Třikrát deváté království"},
+    "sk": {"name": "Slovak", "native": "Slovenčina", "tsarwithtinabout": "Trikrát deviate kráľovstvo"},
+    "bg": {"name": "Bulgarian", "native": "Blgarwithtoand", "tsarwithtinabout": "Tranddeinethat tsarwithtinabout"},
+    "sr": {"name": "Serbian", "native": "Srpwithtoand", "tsarwithtinabout": "Tranddeinethat tsarwithtinabout"},
+    "hr": {"name": "Croatian", "native": "Hrvatski", "tsarwithtinabout": "Trideveto kraljevstvo"},
+    "sl": {"name": "Slovenian", "native": "Slovenščina", "tsarwithtinabout": "Trideveto kraljestvo"},
     
-    # Западноевропейские (9)
-    "en": {"name": "English", "native": "English", "царство": "Thrice-Nine Kingdom"},
-    "de": {"name": "German", "native": "Deutsch", "царство": "Das Dreimalneun-Reich"},
-    "fr": {"name": "French", "native": "Français", "царство": "Le Royaume des Trois-Neuf"},
-    "es": {"name": "Spanish", "native": "Español", "царство": "El Reino de los Tres Nueves"},
-    "it": {"name": "Italian", "native": "Italiano", "царство": "Il Regno dei Tre Nove"},
-    "pt": {"name": "Portuguese", "native": "Português", "царство": "O Reino dos Três Noves"},
-    "nl": {"name": "Dutch", "native": "Nederlands", "царство": "Het Driemaal-Negen Rijk"},
-    "sv": {"name": "Swedish", "native": "Svenska", "царство": "Det Tre-Nio Riket"},
-    "no": {"name": "Norwegian", "native": "Norsk", "царство": "Det Tre-Ni Riket"},
+    # Zapadnabouteinraboutpeywithtoande (9)
+    "en": {"name": "English", "native": "English", "tsarwithtinabout": "Thrice-Nine Kingdom"},
+    "de": {"name": "German", "native": "Deutsch", "tsarwithtinabout": "Das Dreimalneun-Reich"},
+    "fr": {"name": "French", "native": "Français", "tsarwithtinabout": "Le Royaume des Trois-Neuf"},
+    "es": {"name": "Spanish", "native": "Español", "tsarwithtinabout": "El Reino de los Tres Nueves"},
+    "it": {"name": "Italian", "native": "Italiano", "tsarwithtinabout": "Il Regno dei Tre Nove"},
+    "pt": {"name": "Portuguese", "native": "Português", "tsarwithtinabout": "O Reino dos Três Noves"},
+    "nl": {"name": "Dutch", "native": "Nederlands", "tsarwithtinabout": "Het Driemaal-Negen Rijk"},
+    "sv": {"name": "Swedish", "native": "Svenska", "tsarwithtinabout": "Det Tre-Nio Riket"},
+    "no": {"name": "Norwegian", "native": "Norsk", "tsarwithtinabout": "Det Tre-Ni Riket"},
     
-    # Азиатские (9)
-    "zh": {"name": "Chinese", "native": "中文", "царство": "三九王国"},
-    "ja": {"name": "Japanese", "native": "日本語", "царство": "三九王国"},
-    "ko": {"name": "Korean", "native": "한국어", "царство": "삼구왕국"},
-    "vi": {"name": "Vietnamese", "native": "Tiếng Việt", "царство": "Vương quốc Ba Chín"},
-    "th": {"name": "Thai", "native": "ไทย", "царство": "อาณาจักรสามเก้า"},
-    "id": {"name": "Indonesian", "native": "Bahasa Indonesia", "царство": "Kerajaan Tiga Sembilan"},
-    "ms": {"name": "Malay", "native": "Bahasa Melayu", "царство": "Kerajaan Tiga Sembilan"},
-    "hi": {"name": "Hindi", "native": "हिन्दी", "царство": "तीन-नौ राज्य"},
-    "bn": {"name": "Bengali", "native": "বাংলা", "царство": "তিন-নয় রাজ্য"},
+    # Azandatwithtoande (9)
+    "zh": {"name": "Chinese", "native": "中文", "tsarwithtinabout": "三九王国"},
+    "ja": {"name": "Japanese", "native": "日本語", "tsarwithtinabout": "三九王国"},
+    "ko": {"name": "Korean", "native": "한국어", "tsarwithtinabout": "삼구왕국"},
+    "vi": {"name": "Vietnamese", "native": "Tiếng Việt", "tsarwithtinabout": "Vương quốc Ba Chín"},
+    "th": {"name": "Thai", "native": "ไทย", "tsarwithtinabout": "อาณาจักรสามเก้า"},
+    "id": {"name": "Indonesian", "native": "Bahasa Indonesia", "tsarwithtinabout": "Kerajaan Tiga Sembilan"},
+    "ms": {"name": "Malay", "native": "Bahasa Melayu", "tsarwithtinabout": "Kerajaan Tiga Sembilan"},
+    "hi": {"name": "Hindi", "native": "हिन्दी", "tsarwithtinabout": "तीन-नौ राज्य"},
+    "bn": {"name": "Bengali", "native": "বাংলা", "tsarwithtinabout": "তিন-নয় রাজ্য"},
     
-    # Ближневосточные (9)
-    "ar": {"name": "Arabic", "native": "العربية", "царство": "مملكة الثلاثة والتسعة"},
-    "he": {"name": "Hebrew", "native": "עברית", "царство": "ממלכת שלוש-תשע"},
-    "fa": {"name": "Persian", "native": "فارسی", "царство": "پادشاهی سه-نه"},
-    "tr": {"name": "Turkish", "native": "Türkçe", "царство": "Üç-Dokuz Krallığı"},
-    "az": {"name": "Azerbaijani", "native": "Azərbaycan", "царство": "Üç-Doqquz Krallığı"},
-    "ka": {"name": "Georgian", "native": "ქართული", "царство": "სამ-ცხრა სამეფო"},
-    "hy": {"name": "Armenian", "native": "Հայերdelays", "царство": "Երdelays-Իdelays Թdelays"},
-    "ur": {"name": "Urdu", "native": "اردو", "царство": "تین نو بادشاہی"},
-    "ps": {"name": "Pashto", "native": "پښتو", "царство": "درې نهه پاچاهي"},
+    # Blandzhneinaboutwiththatchnye (9)
+    "ar": {"name": "Arabic", "native": "العربية", "tsarwithtinabout": "مملكة الثلاثة والتسعة"},
+    "he": {"name": "Hebrew", "native": "עברית", "tsarwithtinabout": "ממלכת שלוש-תשע"},
+    "fa": {"name": "Persian", "native": "فارسی", "tsarwithtinabout": "پادشاهی سه-نه"},
+    "tr": {"name": "Turkish", "native": "Türkçe", "tsarwithtinabout": "Üç-Dokuz Krallığı"},
+    "az": {"name": "Azerbaijani", "native": "Azərbaycan", "tsarwithtinabout": "Üç-Doqquz Krallığı"},
+    "ka": {"name": "Georgian", "native": "ქართული", "tsarwithtinabout": "სამ-ცხრა სამეფო"},
+    "hy": {"name": "Armenian", "native": "Հայերdelays", "tsarwithtinabout": "Երdelays-Իdelays Թdelays"},
+    "ur": {"name": "Urdu", "native": "اردو", "tsarwithtinabout": "تین نو بادشاہی"},
+    "ps": {"name": "Pashto", "native": "پښتو", "tsarwithtinabout": "درې نهه پاچاهي"},
     
-    # Африканские (5)
-    "sw": {"name": "Swahili", "native": "Kiswahili", "царство": "Ufalme wa Tatu-Tisa"},
-    "am": {"name": "Amharic", "native": "አማርኛ", "царство": "ሦስት-ዘጠኝ መንግሥት"},
-    "ha": {"name": "Hausa", "native": "Hausa", "царство": "Masarautar Uku-Tara"},
-    "yo": {"name": "Yoruba", "native": "Yorùbá", "царство": "Ìjọba Mẹ́ta-Mẹ́sàn"},
-    "zu": {"name": "Zulu", "native": "isiZulu", "царство": "Umbuso Wethathu-Yisishiyagalolunye"},
+    # Afrandtoanwithtoande (5)
+    "sw": {"name": "Swahili", "native": "Kiswahili", "tsarwithtinabout": "Ufalme wa Tatu-Tisa"},
+    "am": {"name": "Amharic", "native": "አማርኛ", "tsarwithtinabout": "ሦስት-ዘጠኝ መንግሥት"},
+    "ha": {"name": "Hausa", "native": "Hausa", "tsarwithtinabout": "Masarautar Uku-Tara"},
+    "yo": {"name": "Yoruba", "native": "Yorùbá", "tsarwithtinabout": "Ìjọba Mẹ́ta-Mẹ́sàn"},
+    "zu": {"name": "Zulu", "native": "isiZulu", "tsarwithtinabout": "Umbuso Wethathu-Yisishiyagalolunye"},
     
-    # Другие (9)
-    "el": {"name": "Greek", "native": "Ελληνικά", "царство": "Το Βασίλειο των Τρεις-Εννέα"},
-    "fi": {"name": "Finnish", "native": "Suomi", "царство": "Kolme-Yhdeksän Valtakunta"},
-    "hu": {"name": "Hungarian", "native": "Magyar", "царство": "A Három-Kilenc Királyság"},
-    "ro": {"name": "Romanian", "native": "Română", "царство": "Regatul Trei-Nouă"},
-    "da": {"name": "Danish", "native": "Dansk", "царство": "Det Tre-Ni Rige"},
-    "lt": {"name": "Lithuanian", "native": "Lietuvių", "царство": "Trijų-Devynių Karalystė"},
-    "lv": {"name": "Latvian", "native": "Latviešu", "царство": "Trīs-Deviņu Valstība"},
-    "et": {"name": "Estonian", "native": "Eesti", "царство": "Kolme-Üheksa Kuningriik"},
-    "mn": {"name": "Mongolian", "native": "Монгол", "царство": "Гурван-Есөн Хаант Улс"},
+    # Dratgande (9)
+    "el": {"name": "Greek", "native": "Ελληνικά", "tsarwithtinabout": "Το Βασίλειο των Τρεις-Εννέα"},
+    "fi": {"name": "Finnish", "native": "Suomi", "tsarwithtinabout": "Kolme-Yhdeksän Valtakunta"},
+    "hu": {"name": "Hungarian", "native": "Magyar", "tsarwithtinabout": "A Három-Kilenc Királyság"},
+    "ro": {"name": "Romanian", "native": "Română", "tsarwithtinabout": "Regatul Trei-Nouă"},
+    "da": {"name": "Danish", "native": "Dansk", "tsarwithtinabout": "Det Tre-Ni Rige"},
+    "lt": {"name": "Lithuanian", "native": "Lietuvių", "tsarwithtinabout": "Trijų-Devynių Karalystė"},
+    "lv": {"name": "Latvian", "native": "Latviešu", "tsarwithtinabout": "Trīs-Deviņu Valstība"},
+    "et": {"name": "Estonian", "native": "Eesti", "tsarwithtinabout": "Kolme-Üheksa Kuningriik"},
+    "mn": {"name": "Mongolian", "native": "Maboutngaboutl", "tsarwithtinabout": "Gatrinan-Ewithөn Khaant Ulwith"},
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# НАУЧНЫЕ РАБОТЫ arXiv
+# NAUChNYE RABOTY arXiv
 # ═══════════════════════════════════════════════════════════════════════════════
 
 ARXIV_PAPERS = {
@@ -165,12 +165,12 @@ ARXIV_PAPERS = {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# СТРУКТУРА КНИГИ 999
+# STRUCTURE KNIGI 999
 # ═══════════════════════════════════════════════════════════════════════════════
 
 @dataclass
 class Chapter:
-    """Глава книги"""
+    """Glaina tonandgand"""
     number: int
     title_ru: str
     title_en: str
@@ -183,7 +183,7 @@ class Chapter:
 
 @dataclass
 class Book:
-    """Книга (одна из 27)"""
+    """Knandga (aboutdon from 27)"""
     number: int
     title_ru: str
     title_en: str
@@ -193,37 +193,37 @@ class Book:
 
 @dataclass
 class Volume:
-    """Том (один из 3)"""
+    """Taboutm (aboutdandn from 3)"""
     number: int
     name_ru: str
     name_en: str
-    color: str  # Медное, Серебряное, Золотое
+    color: str  # Mednaboute, Serebryanaboute, Zaboutlfromaboute
     books: List[Book]
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ГЕНЕРАТОР ЖАР-ПТИЦА
+# GENERATOR ZhAR-PTITsA
 # ═══════════════════════════════════════════════════════════════════════════════
 
 class ZharPtitsaGenerator:
     """
-    ЖАР-ПТИЦА — Самоэволюционирующий генератор книги
+    ZhAR-PTITsA — Samabouteinaboutlyutsandaboutnandratyuschandy generathatr tonandgand
     
-    50 перьев = 50 языков
-    6 крыльев = 6 форматов (.md, .tex, .pdf, .html, .999, .vibee)
-    3 головы = 3 тома
-    999 глав = полнота
+    50 perein = 50 yazytoaboutin
+    6 torylein = 6 formthatin (.md, .tex, .pdf, .html, .999, .vibee)
+    3 gaboutlaboutiny = 3 thatma
+    999 glain = bylnfroma
     """
     
     def __init__(self):
         self.volumes = []
-        self.evolution_level = 1  # 1-5: Яйцо → Птенец → Молодая → Взрослая → ЖАР-ПТИЦА
-        self.feathers = len(WORLD_LANGUAGES)  # 50 перьев
-        self.wings = 6  # форматов
+        self.evolution_level = 1  # 1-5: Yaytsabout → Pthosenets → Maboutlaboutdaya → Vzraboutwithlaya → ZhAR-PTITsA
+        self.feathers = len(WORLD_LANGUAGES)  # 50 perein
+        self.wings = 6  # formthatin
         
     def calculate_sacred_value(self, chapter_num: int) -> Tuple[float, int, int, int, int]:
-        """Вычисляет священное значение для главы"""
-        # Находим оптимальные n, k, m, p для номера главы
-        # Используем разложение: chapter_num ≈ n × 3^k × π^m × φ^p
+        """Vychandwithlyaet withinyaschennaboute value for glainy"""
+        # Nakhaboutdandm aboutptandmalnye n, k, m, p for numbera glainy
+        # Iwithbylzatem razlaboutzhenande: chapter_num ≈ n × 3^k × π^m × φ^p
         
         best_error = float('inf')
         best_params = (1, 0, 0, 0)
@@ -242,27 +242,27 @@ class ZharPtitsaGenerator:
         return sacred_formula(n, k, m, p), n, k, m, p
     
     def get_pas_patterns_for_chapter(self, chapter_num: int) -> List[PASPattern]:
-        """Определяет применимые PAS паттерны для главы"""
+        """Opredelyaet prandmenandmye PAS patterny for glainy"""
         patterns = []
         
-        # Алгоритмические главы (334-666)
+        # Algaboutrandtmandchewithtoande glainy (334-666)
         if 334 <= chapter_num <= 666:
             patterns.append(PASPattern.D_AND_C)
             patterns.append(PASPattern.ALG)
             if chapter_num % 3 == 0:
                 patterns.append(PASPattern.PRE)
         
-        # Квантовые главы (186-222, 926-962)
+        # Kinanthatinye glainy (186-222, 926-962)
         if 186 <= chapter_num <= 222 or 926 <= chapter_num <= 962:
             patterns.append(PASPattern.TEN)
             patterns.append(PASPattern.PRB)
         
-        # ML главы (630-666)
+        # ML glainy (630-666)
         if 630 <= chapter_num <= 666:
             patterns.append(PASPattern.MLS)
             patterns.append(PASPattern.NRO)
         
-        # Vibee главы (667-851)
+        # Vibee glainy (667-851)
         if 667 <= chapter_num <= 851:
             patterns.append(PASPattern.INC)
             patterns.append(PASPattern.EQS)
@@ -270,30 +270,30 @@ class ZharPtitsaGenerator:
         return patterns if patterns else [PASPattern.ALG]
     
     def get_arxiv_refs_for_chapter(self, chapter_num: int) -> List[str]:
-        """Получает релевантные arXiv ссылки для главы"""
+        """Paboutlatchaet releinantnye arXiv withwithyltoand for glainy"""
         refs = []
         
-        # Константы (38-74)
+        # Kaboutnwiththatnty (38-74)
         if 38 <= chapter_num <= 74:
             refs.extend([p["id"] for p in ARXIV_PAPERS["fundamental_constants"]])
             refs.extend([p["id"] for p in ARXIV_PAPERS["koide_formula"]])
         
-        # Квантовые (186-222)
+        # Kinanthatinye (186-222)
         if 186 <= chapter_num <= 222:
             refs.extend([p["id"] for p in ARXIV_PAPERS["qutrit_quantum"]])
         
-        # Золотое сечение
-        if chapter_num % 37 == 0 or "золот" in str(chapter_num):
+        # Zaboutlfromaboute withechenande
+        if chapter_num % 37 == 0 or "zaboutlfrom" in str(chapter_num):
             refs.extend([p["id"] for p in ARXIV_PAPERS["golden_ratio"]])
         
-        return refs[:5]  # Максимум 5 ссылок
+        return refs[:5]  # Matowithandmatm 5 withwithylaboutto
     
     def generate_vibee_code(self, chapter_num: int, theme: str) -> str:
-        """Генерирует код Vibee для главы"""
+        """Generandratet code Vibee for glainy"""
         sacred_val, n, k, m, p = self.calculate_sacred_value(chapter_num)
         
-        code = f'''// Глава {chapter_num}: {theme}
-// Священная Формула: V = {n} × 3^{k} × π^{m} × φ^{p} ≈ {sacred_val:.6f}
+        code = f'''// Glaina {chapter_num}: {theme}
+// Sinyaschenonya Faboutrmatla: V = {n} × 3^{k} × π^{m} × φ^{p} ≈ {sacred_val:.6f}
 
 const CHAPTER = {chapter_num};
 const SACRED_N = {n};
@@ -310,27 +310,27 @@ fn sacred_formula(n: u64, k: i32, m: i32, p: i32) -> f64 {{
 
 fn main() {{
     let value = sacred_formula(SACRED_N, SACRED_K, SACRED_M, SACRED_P);
-    println!("Глава {chapter_num}: V = {{:.6}}", value);
+    println!("Glaina {chapter_num}: V = {{:.6}}", value);
 }}
 '''
         return code
     
     def generate_chapter(self, num: int) -> Chapter:
-        """Генерирует одну главу"""
+        """Generandratet aboutdnat glainat"""
         book_num = ((num - 1) // 37) + 1
         volume_num = ((book_num - 1) // 9) + 1
         
-        # Определяем тему
+        # Opredelyaem thosemat
         themes_ru = {
-            1: "Начало пути",
-            27: "Тридевятое число",
-            37: "Простое число мудрости",
-            333: "Медное царство завершено",
-            666: "Серебряное царство завершено",
-            999: "ПОЛНОТА — Круг замкнулся",
+            1: "Nachalabout pattand",
+            27: "Tranddeinyathate number",
+            37: "Praboutwiththate number matdraboutwithtand",
+            333: "Mednaboute tsarwithtinabout zainershenabout",
+            666: "Serebryanaboute tsarwithtinabout zainershenabout",
+            999: "POLNOTA — Kratg zamtonatlwithya",
         }
         
-        title_ru = themes_ru.get(num, f"Глава {num}")
+        title_ru = themes_ru.get(num, f"Glaina {num}")
         title_en = f"Chapter {num}"
         
         sacred_val, n, k, m, p = self.calculate_sacred_value(num)
@@ -348,64 +348,64 @@ fn main() {{
         )
     
     def generate_markdown(self, chapter: Chapter, lang: str = "ru") -> str:
-        """Генерирует Markdown для главы с литературными улучшениями"""
+        """Generandratet Markdown for glainy with landthoseratatrnymand atlatchshenandyamand"""
         lang_data = WORLD_LANGUAGES.get(lang, WORLD_LANGUAGES["ru"])
         
-        # Сказочные зачины (Система 1: Интуиция)
+        # Stoazaboutchnye zachandny (System 1: Intatandtsandya)
         fairy_openings = [
-            "В тридевятом царстве алгоритмов, в тридесятом государстве данных...",
-            "Жил-был программист по имени Иван, и было у него три задачи...",
-            "Давным-давно, когда компьютеры ещё говорили на языке единиц и нулей...",
-            "Отправился Иван-программист в путь-дорогу искать оптимальный алгоритм...",
-            "Пришла к Ивану задача непростая, да делать нечего — надо решать...",
+            "V tranddeinyathatm tsarwithtine algorithmaboutin, in tranddewithyathatm gaboutwithatdarwithtine data...",
+            "Zhandl-byl praboutgrammandwitht by andmenand Iinan, and bylabout at negabout trand zadachand...",
+            "Dainnym-dainnabout, when toaboutmpyuthosery eschyo gaboutinaboutror on yazytoe edandnandts and natley...",
+            "Otprainandlwithya Iinan-praboutgrammandwitht in path-daboutraboutgat andwithtoat optimal algorithm...",
+            "Prandshla to Iinanat task nepraboutwiththatya, da delat nechegabout — overabout reshat...",
         ]
         fairy_opening = fairy_openings[chapter.number % len(fairy_openings)]
         
-        # Мудрости (Система 3: Синтез)
-        ordinals = ["первую", "вторую", "третью", "четвёртую", "пятую", 
-                   "шестую", "седьмую", "восьмую", "девятую"]
+        # Matdraboutwithtand (System 3: Sandnthosez)
+        ordinals = ["perinatyu", "inthatratyu", "tretyu", "chetinyortatyu", "pyatatyu", 
+                   "shewithtatyu", "withedmatyu", "inaboutwithmatyu", "deinyatatyu"]
         ordinal = ordinals[(chapter.number - 1) % 9]
         
-        md = f"""# Глава {chapter.number}: {chapter.title_ru if lang == "ru" else chapter.title_en}
+        md = f"""# Glaina {chapter.number}: {chapter.title_ru if lang == "ru" else chapter.title_en}
 
 *{chapter.title_en if lang == "ru" else chapter.title_ru}*
 
 ---
 
-## Сказочный Зачин
+## Stoazaboutny Zachandn
 
 *{fairy_opening}*
 
 ---
 
-## Две Священные Формулы
+## Dine Sinyaschennye Faboutrmatly
 
-### Простая формула
+### Praboutwiththatya faboutrmatla
 
 $$V = n \\times 3^k \\times \\pi^m$$
 
-### Полная формула
+### Paboutlonya faboutrmatla
 
 $$V = n \\times 3^k \\times \\pi^m \\times \\varphi^p \\approx {chapter.sacred_value:.6f}$$
 
-**Тождества:**
-- φ² + 1/φ² = 3 (точно!)
-- φ = 2cos(π/5) (точно!)
+**Taboutzhdewithtina:**
+- φ² + 1/φ² = 3 (thatchnabout!)
+- φ = 2cos(π/5) (thatchnabout!)
 
 ---
 
-## Техническое Содержание (Система 2: Анализ)
+## Tekhnandchewithtoaboute Saboutderzhanande (System 2: Aonlfrom)
 
-### PAS Паттерны
+### PAS Patthoserny
 
-| Паттерн | Название | Успешность |
+| Patthosern | Nazinanande | Uwithpeshnaboutwitht |
 |---------|----------|------------|
 """
         for pattern in chapter.pas_patterns:
             md += f"| {pattern.symbol} | {pattern.full_name} | {pattern.success_rate*100:.0f}% |\n"
         
         md += f"""
-### Код Vibee
+### Code Vibee
 
 ```vibee
 {chapter.vibee_code}
@@ -413,20 +413,20 @@ $$V = n \\times 3^k \\times \\pi^m \\times \\varphi^p \\approx {chapter.sacred_v
 
 ---
 
-## Упражнения
+## Uprazhnenandya
 
-### ⚪ Простое
-Вычислите значение Священной Формулы для n={chapter.number}, k=0, m=0, p=0.
+### ⚪ Praboutwiththate
+Vychandwithlandthose value Sinyaschennabouty Faboutrmatly for n={chapter.number}, k=0, m=0, p=0.
 
-### ⚫ Среднее
-Найдите альтернативное представление числа {chapter.number} через Священную Формулу.
+### ⚫ Average
+Naydandthose althoserontandinnaboute predwiththatinlenande chandwithla {chapter.number} through Sinyaschennatyu Faboutrmatlat.
 
-### 🔴 Сложное (исследовательское)
-Исследуйте, какие физические константы можно выразить с точностью < 0.01% используя номер этой главы.
+### 🔴 Slaboutzhnaboute (andwithwithledaboutinathoselwithtoaboute)
+Iwithwithledatythose, howande ffromandchewithtoande toaboutnwiththatnty maboutzhnabout inyrazandt with thatchnaboutwithtyu < 0.01% andwithbylzatya number thisy glainy.
 
 ---
 
-## Научные работы arXiv
+## Naatchnye rabfromy arXiv
 
 """
         for ref in chapter.arxiv_refs:
@@ -435,40 +435,40 @@ $$V = n \\times 3^k \\times \\pi^m \\times \\varphi^p \\approx {chapter.sacred_v
         md += f"""
 ---
 
-## Мудрость Главы (Система 3: Синтез)
+## Matdraboutwitht Glainy (System 3: Sandnthosez)
 
-> *И понял Иван-программист {ordinal} истину:*
+> *I bynyal Iinan-praboutgrammandwitht {ordinal} andwithtandnat:*
 >
-> *Число {chapter.number} — не случайность,*
-> *оно связано с Тройкой и Пи.*
+> *Number {chapter.number} — ne withlatchaynaboutwitht,*
+> *aboutnabout withinyazanabout with Traboutytoabouty and Pand.*
 >
-> *Священная Формула V = n × 3^k × π^m × φ^p*
-> *содержит в себе все тайны мироздания.*
+> *Sinyaschenonya Faboutrmatla V = n × 3^k × π^m × φ^p*
+> *withaboutderzhandt in withebe all thatyny mandraboutzdanandya.*
 >
-> *Древние знали это интуитивно.*
-> *Мы доказали это математически.*
+> *Dreinnande zonland this andntatandtandinnabout.*
+> *My dabouttoazaland this mathosematandchewithtoand.*
 
 ---
 
-*{lang_data['царство']}*
+*{lang_data['tsarwithtinabout']}*
 
 **Author**: Dmitrii Vasilev  
 **Email**: reactnativeinitru@gmail.com
 
 ---
 
-[← Глава {chapter.number-1}](chapter_{chapter.number-1:03d}.md) | [Глава {chapter.number+1} →](chapter_{chapter.number+1:03d}.md)
+[← Glaina {chapter.number-1}](chapter_{chapter.number-1:03d}.md) | [Glaina {chapter.number+1} →](chapter_{chapter.number+1:03d}.md)
 """
         return md
     
     def generate_all_chapters(self, output_dir: Path):
-        """Генерирует все 999 глав"""
+        """Generandratet all 999 glain"""
         output_dir.mkdir(parents=True, exist_ok=True)
         
         for num in range(1, 1000):
             chapter = self.generate_chapter(num)
             
-            # Генерируем на всех языках
+            # Generandratem on allkh yazytoakh
             for lang in WORLD_LANGUAGES.keys():
                 lang_dir = output_dir / lang
                 lang_dir.mkdir(exist_ok=True)
@@ -479,21 +479,21 @@ $$V = n \\times 3^k \\times \\pi^m \\times \\varphi^p \\approx {chapter.sacred_v
                 (lang_dir / filename).write_text(md_content, encoding="utf-8")
             
             if num % 100 == 0:
-                print(f"✅ Сгенерировано {num} глав на {len(WORLD_LANGUAGES)} языках")
+                print(f"✅ Sgenerandraboutinanabout {num} glain on {len(WORLD_LANGUAGES)} yazytoakh")
         
-        print(f"🔥 ЖАР-ПТИЦА: Все 999 глав сгенерированы на 50 языках!")
+        print(f"🔥 ZhAR-PTITsA: Vwithe 999 glain withgenerandraboutinany on 50 yazytoakh!")
     
     def evolve(self):
-        """Эволюция ЖАР-ПТИЦЫ"""
+        """Einaboutlyutsandya ZhAR-PTITsY"""
         self.evolution_level = min(5, self.evolution_level + 1)
         levels = {
-            1: "Яйцо",
-            2: "Птенец",
-            3: "Молодая птица",
-            4: "Взрослая птица",
-            5: "ЖАР-ПТИЦА"
+            1: "Yaytsabout",
+            2: "Pthosenets",
+            3: "Maboutlaboutdaya ptandtsa",
+            4: "Vzraboutwithlaya ptandtsa",
+            5: "ZhAR-PTITsA"
         }
-        print(f"🔥 Эволюция: {levels[self.evolution_level]}")
+        print(f"🔥 Einaboutlyutsandya: {levels[self.evolution_level]}")
         return self.evolution_level
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -502,26 +502,26 @@ $$V = n \\times 3^k \\times \\pi^m \\times \\varphi^p \\approx {chapter.sacred_v
 
 def main():
     print("=" * 70)
-    print("🔥 ЖАР-ПТИЦА — Генератор Книги 999")
+    print("🔥 ZhAR-PTITsA — Generathatr Knandgand 999")
     print("=" * 70)
-    print(f"Священная Формула: V = n × 3^k × π^m × φ^p")
-    print(f"Тождество: φ² + 1/φ² = {GOLDEN_THREE_IDENTITY:.10f} (должно быть 3)")
-    print(f"Связь: 2cos(π/5) = {GOLDEN_PI_CONNECTION:.10f} (должно быть φ = {φ:.10f})")
+    print(f"Sinyaschenonya Faboutrmatla: V = n × 3^k × π^m × φ^p")
+    print(f"Taboutzhdewithtinabout: φ² + 1/φ² = {GOLDEN_THREE_IDENTITY:.10f} (daboutlzhnabout byt 3)")
+    print(f"Sinyaz: 2cos(π/5) = {GOLDEN_PI_CONNECTION:.10f} (daboutlzhnabout byt φ = {φ:.10f})")
     print("=" * 70)
     
     generator = ZharPtitsaGenerator()
     
-    # Демонстрация
-    print("\n📖 Пример генерации главы 999:")
+    # Demaboutnwithtratsandya
+    print("\n📖 Example generatsandand glainy 999:")
     chapter_999 = generator.generate_chapter(999)
     print(generator.generate_markdown(chapter_999))
     
-    # Эволюция
+    # Einaboutlyutsandya
     for _ in range(5):
         generator.evolve()
     
-    print("\n✅ ЖАР-ПТИЦА готова к генерации 999 глав на 50 языках!")
-    print("Запустите: generator.generate_all_chapters(Path('generated_book_v4'))")
+    print("\n✅ ZhAR-PTITsA gfromaboutina to generatsandand 999 glain on 50 yazytoakh!")
+    print("Zapatwithtandthose: generator.generate_all_chapters(Path('generated_book_v4'))")
 
 if __name__ == "__main__":
     main()

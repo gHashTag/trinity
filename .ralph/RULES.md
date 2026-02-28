@@ -1,18 +1,18 @@
 # VIBEE Debug Footer Rule
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] in for[TRANSLATED]] [CYR:[TRANSLATED]] with[TRANSLATED]]andя:
+## :] :]in:] in for] :] with]andya:
 
 ```
 ---
 🔧 **Debug Info:**
-- Model: [onзinанandе [CYR:[TRANSLATED]]and]
-- Session: [тandп withеwithand]
-- Tools: [andwith[TRANSLATED]] tools]
-- Duration: [in[CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]notнandя]
-- Tokens: [andwith[TRANSLATED]]in[CYR:[TRANSLATED]] тоfor[TRANSLATED]]in]
+- Model: [onzinanande :]and]
+- Session: [tandp withewithand]
+- Tools: [andwith] tools]
+- Duration: [in:] in:]notnandya]
+- Tokens: [andwith]in:] thatfor]in]
 ```
 
-## Прand[CYR:[TRANSLATED]]:
+## Prand:]:
 
 ```
 ---
@@ -24,20 +24,20 @@
 - Tokens: 12,450 / 200,000
 ```
 
-## [CYR:[TRANSLATED]]:
+## :]:
 
-1. **Дand[CYR:[TRANSLATED]]withтandtoа** — inand[CYR:[TRANSLATED]] toаtoая [CYR:[TRANSLATED]] fromin[CYR:[TRANSLATED]]
-2. **[CYR:[TRANSLATED]]toа** — [CYR:[TRANSLATED]] toаtoandе tools andwith[TRANSLATED]]inалandwithь
-3. **[CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withть** — inand[CYR:[TRANSLATED]] in[CYR:[TRANSLATED]] and тоfor[TRANSLATED]]
-4. **[CYR:[TRANSLATED]]withть** — [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] зonет that [CYR:[TRANSLATED]]andwith[TRANSLATED]]andт
+1. **Dand:]withtVersion** — inand:] toatoaya :] fromin:]
+2. **:]toa** — :] toatoande tools andwith]inalandwith
+3. **:]andzinaboutdand:]witht** — inand:] in:] and thatfor]
+4. **:]witht** — :]in:] zonet that :]andwith]andt
 
-## [CYR:[TRANSLATED]] for [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
+## :] for :] :]:
 
 - Claude Code: `claude-code (claude-3-5-sonnet-20241022)`
 - DeepSeek: `deepseek (deepseek-chat)`
 - Z.ai: `zai (zai-1.0)`
 - OpenClaw: `openclaw (default)`
 
-## Вwith[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] in for[TRANSLATED]]!
+## Vwith] :]in:] in for]!
 
-[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inandло for [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in and [CYR:[TRANSLATED]] with[TRANSLATED]]andй.
+:] :]inandlabout for :] :]in and :] with]andy.

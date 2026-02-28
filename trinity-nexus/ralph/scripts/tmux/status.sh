@@ -714,15 +714,15 @@ panel_welcome() {
 
   echo -e "${BOLD}🎨 COLOR LEGEND${RESET}"
   echo -e "${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
-  echo -e " ${GOLD}🟡 GOLD${RESET}   = RAZUM (Mind)   — интеллект, routing, решения"
-  echo -e " ${CYAN}🔵 CYAN${RESET}   = MATERIYA (Matter) — инфраструктура, данные, файлы"
-  echo -e " ${PURPLE}🟣 PURPLE${RESET} = DUKH (Spirit)  — действия, инструменты, доказательства"
+  echo -e " ${GOLD}🟡 GOLD${RESET}   = RAZUM (Mind)   — andnthoselletot, routing, reshenandya"
+  echo -e " ${CYAN}🔵 CYAN${RESET}   = MATERIYA (Matter) — andnfrastructure, data, filey"
+  echo -e " ${PURPLE}🟣 PURPLE${RESET} = DUKH (Spirit)  — deywithtinandya, tooly, dabouttoazathoselwithtina"
   echo ""
 
   echo -e "${BOLD}⌨️  KEYBINDINGS${RESET}"
   echo -e "${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
-  echo -e " ${BOLD}Ctrl+b${RESET} ${CYAN}0-9${RESET}   → Переключение окон"
-  echo -e " ${BOLD}Ctrl+b${RESET} ${CYAN}d${RESET}     → Отсоединиться от сессии"
+  echo -e " ${BOLD}Ctrl+b${RESET} ${CYAN}0-9${RESET}   → Perekeyenande abouttoaboutn"
+  echo -e " ${BOLD}Ctrl+b${RESET} ${CYAN}d${RESET}     → Otwithaboutedandnandtwithya from withewithwithandand"
   echo -e " ${GREEN}Attach: tmux attach -t trinity${RESET}"
 }
 

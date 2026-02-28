@@ -1,27 +1,27 @@
-# [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+# :] :] :] :]
 
 ## V = n × 3^k × π^m × φ^p
 
-**Аin[CYR:[TRANSLATED]]**: Dmitrii Vasilev
-**[CYR:[TRANSLATED]]toт**: 999 OS / VIBEE
-**[CYR:[TRANSLATED]]**: January 2026
-**[CYR:[TRANSLATED]]withandя**: COMPLETE
+**Author:]**: Dmitrii Vasilev
+**:]tot**: 999 OS / VIBEE
+**:]**: January 2026
+**:]Author**: COMPLETE
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
-### 1. Вwithе toонwith[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and in[CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]] within[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### 1. Vwithe toaboutnwith] :] :]and in:]withya :] within:] :]
 
 $$\boxed{V = n \times 3^k \times \pi^m \times \varphi^p}$$
 
-### 2. [CYR:[TRANSLATED]]onя within[CYR:[TRANSLATED]]
+### 2. :]onya within:]
 
 $$\boxed{\varphi^2 + \frac{1}{\varphi^2} = 3}$$
 
-### 3. Ноinые [CYR:[TRANSLATED]] for toонwith[TRANSLATED]] withinязand
+### 3. Naboutinye :] for toaboutnwith] withinyazand
 
-| [CYR:[TRANSLATED]]with[TRANSLATED]] | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]withть |
+| :]with] | :] | :]witht |
 |-----------|---------|----------|
 | **1/α** | 4π³ + π² + π | **0.0002%** |
 | **α_s** | 4 × 3⁻² × π⁻² × φ² | **0.005%** |
@@ -29,181 +29,181 @@ $$\boxed{\varphi^2 + \frac{1}{\varphi^2} = 3}$$
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :] :]
 
-### [CYR:[TRANSLATED]] 0 (π⁰) — [CYR:[TRANSLATED]] toонwith[TRANSLATED]]
+### :] 0 (π⁰) — :] toaboutnwith]
 
-| [CYR:[TRANSLATED]]with[TRANSLATED]] | Зon[CYR:[TRANSLATED]]andе | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]withть |
+| :]with] | Zon:]ande | :] | :]witht |
 |-----------|----------|---------|----------|
-| Коandде Q | 2/3 | 2 × 3⁻¹ | 0.001% |
+| Kaboutandde Q | 2/3 | 2 × 3⁻¹ | 0.001% |
 | m_t/m_e | 338082 | F₁₈ × 3⁴ | 0.17% |
 
-### [CYR:[TRANSLATED]] 1 (π¹) — Лandnotйonя [CYR:[TRANSLATED]]andя
+### :] 1 (π¹) — Landnotyonya :]andya
 
-| [CYR:[TRANSLATED]]with[TRANSLATED]] | Зon[CYR:[TRANSLATED]]andе | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]withть |
+| :]with] | Zon:]ande | :] | :]witht |
 |-----------|----------|---------|----------|
 | m_τ/m_e | 3477.22 | 76 × 3² × π × φ | 0.009% |
 
-### [CYR:[TRANSLATED]] 2 (π²) — [CYR:[TRANSLATED]]
+### :] 2 (π²) — :]
 
-| [CYR:[TRANSLATED]]with[TRANSLATED]] | Зon[CYR:[TRANSLATED]]andе | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]withть |
+| :]with] | Zon:]ande | :] | :]witht |
 |-----------|----------|---------|----------|
 | m_μ/m_e | 206.77 | (17/9) × π² × φ⁵ | 0.010% |
 | m_c/m_e | 2485.32 | F₁₉ × 3⁻³ × π² | 0.50% |
 | α_s | 0.1179 | 4 × 3⁻² × π⁻² × φ² | 0.005% |
 | sin²θ_W | 0.23122 | 29 × 3⁻¹ × π⁻² × φ⁻³ | 0.003% |
 
-### [CYR:[TRANSLATED]] 3 (π³) — [CYR:[TRANSLATED]]
+### :] 3 (π³) — :]
 
-| [CYR:[TRANSLATED]]with[TRANSLATED]] | Зon[CYR:[TRANSLATED]]andе | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]withть |
+| :]with] | Zon:]ande | :] | :]witht |
 |-----------|----------|---------|----------|
 | 1/α | 137.036 | 4π³ + π² + π | 0.0002% |
 | m_W/m_e | 157297 | F₇ × 3⁵ × π³ | 0.59% |
 
-### [CYR:[TRANSLATED]] 4 (π⁴) — 4D [CYR:[TRANSLATED]]with[TRANSLATED]]withтinо-in[CYR:[TRANSLATED]]
+### :] 4 (π⁴) — 4D :]with]withtinabout-in:]
 
-| [CYR:[TRANSLATED]]with[TRANSLATED]] | Зon[CYR:[TRANSLATED]]andе | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]withть |
+| :]with] | Zon:]ande | :] | :]witht |
 |-----------|----------|---------|----------|
 | m_Z/m_e | 178450 | F₁₄ × 3 × π⁴ | 0.11% |
 | m_b/m_e | 8180.04 | F₁₉ × 3⁻⁴ × π⁴ | 0.54% |
 
-### [CYR:[TRANSLATED]] 5 (π⁵) — 5 for[TRANSLATED]]for[TRANSLATED]] and[CYR:[TRANSLATED]]andй
+### :] 5 (π⁵) — 5 for]for] and:]andy
 
-| [CYR:[TRANSLATED]]with[TRANSLATED]] | Зon[CYR:[TRANSLATED]]andе | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]withть |
+| :]with] | Zon:]ande | :] | :]witht |
 |-----------|----------|---------|----------|
 | m_p/m_e | 1836.15 | 2 × 3 × π⁵ | 0.002% |
 | m_W/m_e | 157297 | 25 × 3 × π⁵ × φ⁴ | 0.009% |
 | m_H/m_e | 245108 | F₁₁ × 3² × π⁵ | 0.006% |
 
-### [CYR:[TRANSLATED]] 6 (π⁶) — 6 for[TRANSLATED]]for[TRANSLATED]] and[CYR:[TRANSLATED]]andй
+### :] 6 (π⁶) — 6 for]for] and:]andy
 
-| [CYR:[TRANSLATED]]with[TRANSLATED]] | Зon[CYR:[TRANSLATED]]andе | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]withть |
+| :]with] | Zon:]ande | :] | :]witht |
 |-----------|----------|---------|----------|
 | m_H/m_e | 245108 | 40 × 3³ × π⁶ × φ⁻³ | 0.0006% |
 
-### [CYR:[TRANSLATED]] 7 (π⁷) — [CYR:[TRANSLATED]]onя for[TRANSLATED]]toтandфandtoацandя
+### :] 7 (π⁷) — :]onya for]totandfVersiontsandya
 
-| [CYR:[TRANSLATED]]with[TRANSLATED]] | Зon[CYR:[TRANSLATED]]andе | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]withть |
+| :]with] | Zon:]ande | :] | :]witht |
 |-----------|----------|---------|----------|
 | m_Z/m_e | 178450 | 5 × 3⁴ × π⁷ × φ⁻⁴ | 0.009% |
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
-| [CYR:[TRANSLATED]] | Зon[CYR:[TRANSLATED]]andе | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]withть |
+| :] | Zon:]ande | :] | :]witht |
 |----------|----------|---------|----------|
 | Ω_m | 0.315 | 1/π | 1.05% |
 | Ω_Λ | 0.685 | (π-1)/π | 0.48% |
-| H₀ | 70.74 toм/with/Мпto | 18·c·G·m_e³·π¹⁰/ℏ² | ~1% |
+| H₀ | 70.74 tom/with/Mpto | 18·c·G·m_e³·π¹⁰/ℏ² | ~1% |
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
-| [CYR:[TRANSLATED]] | Зon[CYR:[TRANSLATED]]andе | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]withть |
+| :] | Zon:]ande | :] | :]witht |
 |----------|----------|---------|----------|
 | m_P/m_e | 2.39×10²² | 3⁴⁸/π² | 1.48% |
 | α_G | 1.75×10⁻⁴⁵ | π⁴/3⁹⁶ | ~1.5% |
 
 ---
 
-## [CYR:[TRANSLATED]]  E8  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :]  E8  :] :]
 
-### [CYR:[TRANSLATED]] E8
+### :] E8
 
-- 248 геnot[CYR:[TRANSLATED]]in
-- [CYR:[TRANSLATED]]andт SU(3) × SU(2) × U(1) × SO(3,1)
+- 248 genot:]in
+- :]andt SU(3) × SU(2) × U(1) × SO(3,1)
 - 248 = 240 + 8 = 16 × 15 + 8
 
-### [CYR:[TRANSLATED]]andя with[TRANSLATED]]
+### :]andya with]
 
-- 26 and[CYR:[TRANSLATED]]andй ([CYR:[TRANSLATED]]onя) = 2 × F₇
-- 10 and[CYR:[TRANSLATED]]andй (with[TRANSLATED]]with[TRANSLATED]]on) = 2 × F₅
-- 11 and[CYR:[TRANSLATED]]andй (M-[CYR:[TRANSLATED]]andя) = F₆ + F₅
+- 26 and:]andy (:]onya) = 2 × F₇
+- 10 and:]andy (with]with]on) = 2 × F₅
+- 11 and:]andy (M-:]andya) = F₆ + F₅
 
-### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### :] :]
 
-- j-andнinарand[CYR:[TRANSLATED]]: j(τ) = 1/q + 744 + 196884q + ...
+- j-andninarand:]: j(τ) = 1/q + 744 + 196884q + ...
 - 744 = 8 × 3 × 31
 - 196884 = 4 × 3 × 16407
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
-### [CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### :]andya :] :]
 
 $$S = \frac{A}{4l_P^2} = n \times 3^k \times \pi^m \times \varphi^p \times \left(\frac{M}{m_P}\right)^2$$
 
-### [CYR:[TRANSLATED]]andя Вwith[TRANSLATED]]
+### :]andya Vwith]
 
-$$I_{universe} \approx 10^{122} \text{ бandт}$$
+$$I_{universe} \approx 10^{122} \text{ bandt}$$
 
 $$\log_{10}(10^{122}) = 122 \approx 40\pi$$
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]
+## :] :]  :]
 
-| n | F_n | Чаwithтandца |
+| n | F_n | Chawithtandtsa |
 |---|-----|---------|
-| 2 | 1 | Прfromон |
-| 6 | 8 | [CYR:[TRANSLATED]] |
-| 7 | 13 | [CYR:[TRANSLATED]] |
-| 7 | 21 | W [CYR:[TRANSLATED]] |
-| 11 | 89 | Хandггwith |
-| 14 | 610 | Z [CYR:[TRANSLATED]] |
-| 18 | 4181 | t-toinарto |
-| 19 | 6765 | c, b toinарtoand |
+| 2 | 1 | Prfromaboutn |
+| 6 | 8 | :] |
+| 7 | 13 | :] |
+| 7 | 21 | W :] |
+| 11 | 89 | Khandggwith |
+| 14 | 610 | Z :] |
+| 18 | 4181 | t-toinarto |
+| 19 | 6765 | c, b toinartoand |
 
 ---
 
-## PAS-[CYR:[TRANSLATED]]
+## PAS-:]
 
-### Выwithоtoая уin[CYR:[TRANSLATED]]withть (>60%)
+### Vywithabouttoaya atin:]witht (>60%)
 
-| [CYR:[TRANSLATED]]withfor[TRANSLATED]]andе | Уin[CYR:[TRANSLATED]]withть |
+| :]withfor]ande | Uin:]witht |
 |--------------|-------------|
-| [CYR:[TRANSLATED]] for inwithех 6 toinарtoоin | 70% |
-| [CYR:[TRANSLATED]]notнandе [CYR:[TRANSLATED]] 1/α | 80% |
-| [CYR:[TRANSLATED]] for v (Хandггwith VEV) | 65% |
+| :] for inwithekh 6 toinartoaboutin | 70% |
+| :]notnande :] 1/α | 80% |
+| :] for v (Khandggwith VEV) | 65% |
 
-### [CYR:[TRANSLATED]] уin[CYR:[TRANSLATED]]withть (30-60%)
+### :] atin:]witht (30-60%)
 
-| [CYR:[TRANSLATED]]withfor[TRANSLATED]]andе | Уin[CYR:[TRANSLATED]]withть |
+| :]withfor]ande | Uin:]witht |
 |--------------|-------------|
-| Маwithы not[CYR:[TRANSLATED]]andно | 50% |
-| [CYR:[TRANSLATED]] CKM [CYR:[TRANSLATED]]andцы | 45% |
+| Mawithy not:]andnabout | 50% |
+| :] CKM :]andtsy | 45% |
 | θ_QCD | 40% |
 
-### Нandзtoая уin[CYR:[TRANSLATED]]withть (<30%)
+### Nandztoaya atin:]witht (<30%)
 
-| [CYR:[TRANSLATED]]withfor[TRANSLATED]]andе | Уin[CYR:[TRANSLATED]]withть |
+| :]withfor]ande | Uin:]witht |
 |--------------|-------------|
-| Маwithа аtowithandоon | 25% |
-| Маwithа [CYR:[TRANSLATED]]inandтandно | 20% |
-| [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]andя | 15% |
+| Mawitha atowithandabouton | 25% |
+| Mawitha :]inandtandnabout | 20% |
+| :]onya :]andya | 15% |
 
 ---
 
-## [CYR:[TRANSLATED]]
+## :]
 
-### [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] resultы
+### :]in:] resulty
 
-1. **Вwithе 26 parameterоin [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and** пfrom[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]] V = n × 3^k × π^m × φ^p
-2. **Ноinые [CYR:[TRANSLATED]]**: α_s = 4 × 3⁻² × π⁻² × φ² (0.005%), sin²θ_W = 29 × 3⁻¹ × π⁻² × φ⁻³ (0.003%)
-3. **Сin[CYR:[TRANSLATED]] with E8**: Чandwithло 3 прandwithутwithтin[CYR:[TRANSLATED]] in with[TRANSLATED]]for[TRANSLATED]] [CYR:[TRANSLATED]]
-4. **[CYR:[TRANSLATED]]andчеwithtoandй прandнцandп**: π within[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] and and[CYR:[TRANSLATED]]andю
-5. **Чandwithла Фandбоonччand**: Сin[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] with [CYR:[TRANSLATED]]fromым with[TRANSLATED]]andем
+1. **Vwithe 26 parameteraboutin :] :]and** pfrom:]and:] in:]withya :] V = n × 3^k × π^m × φ^p
+2. **Naboutinye :]**: α_s = 4 × 3⁻² × π⁻² × φ² (0.005%), sin²θ_W = 29 × 3⁻¹ × π⁻² × φ⁻³ (0.003%)
+3. **Sin:] with E8**: Chandwithlabout 3 prandwithattwithtin:] in with]for] :]
+4. **:]andchewithtoandy prandntsandp**: π within:]in:] :] and and:]andyu
+5. **Chandwithla Fandbaboutonchchand**: Sin:]in:] :] with :]fromym with]andem
 
-### Фandлоwithофwithtoое зon[CYR:[TRANSLATED]]andе
+### Fandlaboutwithaboutfwithtoaboute zon:]ande
 
-> "Вwith[TRANSLATED]]onя — this [CYR:[TRANSLATED]]andчеwithtoая with[TRANSLATED]]for[TRANSLATED]], поwith[TRANSLATED]]onя andз [CYR:[TRANSLATED]] чandwithел: 3, π and φ."
+> "Vwith]onya — this :]andchewithtoaya with]for], bywith]onya andz :] chandwithel: 3, π and φ."
 
 ---
 
-## [CYR:[TRANSLATED]]
+## :]
 
 $$\boxed{V = n \times 3^k \times \pi^m \times \varphi^p}$$
 
@@ -217,7 +217,7 @@ $$\boxed{\sin^2\theta_W = 29 \times 3^{-1} \times \pi^{-2} \times \varphi^{-3}}$
 
 ---
 
-*"Из 3, π and φ emerges inwithя фandзandtoа Вwith[TRANSLATED]]."*
+*"Iz 3, π and φ emerges inwithya fandzVersion Vwith]."*
 
 **V = n × 3^k × π^m × φ^p**
 

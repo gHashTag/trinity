@@ -1,7 +1,7 @@
 #!/bin/bash
-# INSTANT GENERATOR v5.0 - Мгновенная генерация без тестов
-# Для максимальной скорости - тесты запускаются отдельно
-# Использование: ./scripts/instant_gen.sh <domain> <start_version> <module1> <module2> ...
+# INSTANT GENERATOR v5.0 - Mgnaboutinenonya generation without testaboutin
+# Dlya matowithandmalnabouty withtoaboutraboutwithtand - testy launchayutwithya fromdelnabout
+# Iwithbylzaboutinanande: ./scripts/instant_gen.sh <domain> <start_version> <module1> <module2> ...
 
 DOMAIN=$1
 START=$2
@@ -24,7 +24,7 @@ for N in "${MODULES[@]}"; do
     T="${N^}"  # Capitalize first letter
     V1=$((V/100)); V2=$(((V/10)%10)); V3=$((V%10))
     
-    # Генерируем оба файла одновременно в фоне
+    # Generandratem abouta filea aboutdnaboutinremennabout in faboutne
     {
         echo "name: ${N}_v${V}
 version: \"${V1}.${V2}.${V3}\"

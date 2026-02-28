@@ -1,7 +1,7 @@
 # Trinity Local Chat Fix Report
 
 **Date:** 2026-02-06
-**Issue:** "прandinет" returned Zig code instead of conversational response
+**Issue:** "prandinet" returned Zig code instead of conversational response
 **Fix:** Created `igla_local_chat.zig` - separate chat module
 
 ---
@@ -22,7 +22,7 @@ For real LLM capabilities, use `gguf_chat.zig` with an actual GGUF model.
 
 | Input | Before (Bug) | After (Fixed) |
 |-------|--------------|---------------|
-| `прandinет` | `const std = @import("std")...` (Zig garbage) | `Прandinет! [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]]. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]?` |
+| `prandinet` | `const std = @import("std")...` (Zig garbage) | `Prandinet! :] :] inand:]. :] :] :]?` |
 | `hello` | Generic code template | `Hey! Trinity Local Agent here. What are we building?` |
 | `你好` | No match / fallback code | `你好！很高兴见到你。有什么可以帮助的？` |
 
@@ -48,7 +48,7 @@ For real LLM capabilities, use `gguf_chat.zig` with an actual GGUF model.
            └─────────────┘  └─────────────────┘
                 │                    │
                 ▼                    ▼
-         "Прandinет! [CYR:[TRANSLATED]]..."      "pub fn fibonacci..."
+         "Prandinet! :]..."      "pub fn fibonacci..."
 ```
 
 ---
@@ -57,12 +57,12 @@ For real LLM capabilities, use `gguf_chat.zig` with an actual GGUF model.
 
 | # | Lang | Input | Response | Time |
 |---|------|-------|----------|------|
-| 1 | RU | "прandinет" | "Прandinет! [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]]. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]?" | 13us |
-| 2 | RU | "toаto [CYR:[TRANSLATED]]?" | "[CYR:[TRANSLATED]]! Гfromоin пandwith[TRANSLATED]] toод and [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and." | 2us |
-| 3 | RU | "ты toто?" | "Trinity AI — аin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] on ternary vectors." | 2us |
-| 4 | RU | "that [CYR:[TRANSLATED]]?" | "[CYR:[TRANSLATED]] with: Fibonacci, QuickSort, HashMap..." | 4us |
-| 5 | RU | "withпаwithandбо" | "[CYR:[TRANSLATED]]withта! [CYR:[TRANSLATED]]withя, еwithлand that [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]." | 2us |
-| 6 | RU | "поtoа" | "До withinand[CYR:[TRANSLATED]]andя! [CYR:[TRANSLATED]] прand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]." | 1us |
+| 1 | RU | "prandinet" | "Prandinet! :] :] inand:]. :] :] :]?" | 13us |
+| 2 | RU | "toato :]?" | ":]! Gfromaboutin pandwith] toaboutd and :] :]and." | 2us |
+| 3 | RU | "ty tothat?" | "Trinity AI — ain:] :] on ternary vectors." | 2us |
+| 4 | RU | "that :]?" | ":] with: Fibonacci, QuickSort, HashMap..." | 4us |
+| 5 | RU | "withpawithandbabout" | ":]withthat! :]withya, ewithland that :] :]." | 2us |
+| 6 | RU | "bytoa" | "Dabout withinand:]andya! :] prand:] :]from:]." | 1us |
 | 7 | EN | "hello" | "Hey! Trinity Local Agent here. What are we building?" | 0us |
 | 8 | EN | "how are you?" | "phi^2 + 1/phi^2 = 3, so everything is in perfect balance!" | 1us |
 | 9 | EN | "who are you?" | "I'm Trinity Local Agent — a 100% local AI assistant." | 1us |
@@ -74,7 +74,7 @@ For real LLM capabilities, use `gguf_chat.zig` with an actual GGUF model.
 | 15 | CN | "谢谢" | "我的荣幸！phi^2 + 1/phi^2 = 3！" | 1us |
 | 16 | CN | "再见" | "走了！合作愉快！" | 0us |
 | 17 | RU | "phi golden ratio" | "phi = 1.618... Golden ratio. Trinity Identity!" | 2us |
-| 18 | RU | "[CYR:[TRANSLATED]]and мnot" | "Гfromоin [CYR:[TRANSLATED]]! [CYR:[TRANSLATED]]andшand [CYR:[TRANSLATED]] — with[TRANSLATED]]." | 3us |
+| 18 | RU | ":]and mnot" | "Gfromaboutin :]! :]andshand :] — with]." | 3us |
 | 19 | EN | "help me" | "I help with: Fibonacci, QuickSort, HashMap..." | 1us |
 
 ---
@@ -138,10 +138,10 @@ const IglaLocalChat = @import("igla_local_chat.zig").IglaLocalChat;
 var chat = IglaLocalChat.init();
 
 // Check if conversational
-if (IglaLocalChat.isConversational("прandinет")) {
-    const result = chat.respond("прandinет");
+if (IglaLocalChat.isConversational("prandinet")) {
+    const result = chat.respond("prandinet");
     std.debug.print("{s}\n", .{result.response});
-    // → "Прandinет! [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]]. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]?"
+    // → "Prandinet! :] :] inand:]. :] :] :]?"
 }
 
 // Check if code-related
@@ -171,7 +171,7 @@ if (IglaLocalChat.isConversational(query)) {
 
 ## Conclusion
 
-**FIXED**: "прandinет" now returns coherent Russian greeting instead of Zig code.
+**FIXED**: "prandinet" now returns coherent Russian greeting instead of Zig code.
 
 | Metric | Before | After |
 |--------|--------|-------|

@@ -1,6 +1,6 @@
-# LITERARY 999 — Фandon[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+# LITERARY 999 — Fandon:] :]
 
-## [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]: 999 (OMEGA) ✅
+## :]in:]: 999 (OMEGA) ✅
 
 **Author**: Dmitrii Vasilev  
 **Email**: reactnativeinitru@gmail.com  
@@ -8,45 +8,45 @@
 
 ---
 
-## [CYR:[TRANSLATED]]andwithтandtoа
+## :]andwithtVersion
 
-| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе |
+| :]Version | Zon:]ande |
 |---------|----------|
-| [CYR:[TRANSLATED]]andфandtoацand (.vibee) | 440 |
-| [CYR:[TRANSLATED]]notрandроin[CYR:[TRANSLATED]] toод (.999) | 320 |
-| Лand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and | 3 |
-| PAS [CYR:[TRANSLATED]]and | 13 |
-| Вwith[TRANSLATED]] fileоin | 760+ |
+| :]andfVersiontsand (.vibee) | 440 |
+| :]notrandraboutin:] toaboutd (.999) | 320 |
+| Land:] :]and | 3 |
+| PAS :]and | 13 |
+| Vwith] fileaboutin | 760+ |
 
 ---
 
-## [CYR:[TRANSLATED]] Лand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andфandtoацand
+## :] Land:] :]andfVersiontsand
 
 ### 1. `specs/pas_extended_27.vibee`
-- **27 PAS [CYR:[TRANSLATED]]in** (3³)
-- 18 toлаwithandчеwithtoandх + 9 лand[CYR:[TRANSLATED]]
-- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromы arXiv 2025-2026
+- **27 PAS :]in** (3³)
+- 18 tolawithandchewithtoandkh + 9 land:]
+- :] :]fromy arXiv 2025-2026
 
 ### 2. `specs/literary_chapter_generator.vibee`
-- **Геnot[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in** toнandгand 999
-- 3 withandwith[TRANSLATED]] inоwithпрandятandя
-- 27 withfor[TRANSLATED]] [CYR:[TRANSLATED]]andноin
-- 9 [CYR:[TRANSLATED]]in [CYR:[TRANSLATED]]with[TRANSLATED]]
+- **Genot:] :]in** tonandgand 999
+- 3 withandwith] inaboutwithprandyatandya
+- 27 withfor] :]andnaboutin
+- 9 :]in :]with]
 
 ### 3. `specs/book_999_structure.vibee`
-- **[CYR:[TRANSLATED]]for[TRANSLATED]] toнandгand**: 3 × 9 × 37 = 999
-- 3 [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]], [CYR:[TRANSLATED]], [CYR:[TRANSLATED]]fromое)
-- 27 toнandг
-- 999 [CYR:[TRANSLATED]]in
+- **:]for] tonandgand**: 3 × 9 × 37 = 999
+- 3 :] (:], :], :]fromaboute)
+- 27 tonandg
+- 999 :]in
 
 ### 4. `specs/zhar_ptitsa_50_languages.vibee`
-- **50 [CYR:[TRANSLATED]]toоin мandра** (50 [CYR:[TRANSLATED]]in)
-- 6 [CYR:[TRANSLATED]]in (6 for[TRANSLATED]]in)
-- 5 [CYR:[TRANSLATED]]innotй эin[CYR:[TRANSLATED]]and
+- **50 :]toaboutin mandra** (50 :]in)
+- 6 :]in (6 for]in)
+- 5 :]innoty ein:]and
 
 ---
 
-## [CYR:[TRANSLATED]]notрandроin[CYR:[TRANSLATED]] .999 [CYR:[TRANSLATED]]
+## :]notrandraboutin:] .999 :]
 
 ```
 999/ⲣⲁⲍⲩⲙ/ⲗⲓⲧⲉⲣⲁⲧⲩⲣⲁ/
@@ -60,67 +60,67 @@
 
 ---
 
-## Сin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## Sin:] :]
 
-### [CYR:[TRANSLATED]]with[TRANSLATED]]
+### :]with]
 $$V = n \times 3^k \times \pi^m$$
 
-### [CYR:[TRANSLATED]]onя
+### :]onya
 $$V = n \times 3^k \times \pi^m \times \varphi^p$$
 
-### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinа
-- φ² + 1/φ² = 3 ([CYR:[TRANSLATED]]!)
-- φ = 2cos(π/5) ([CYR:[TRANSLATED]]!)
+### :] :]withtina
+- φ² + 1/φ² = 3 (:]!)
+- φ = 2cos(π/5) (:]!)
 
-### Чandwithло 999
+### Chandwithlabout 999
 $$999 = 37 \times 3^3 = 37 \times 27$$
 
 ---
 
-## 27 PAS [CYR:[TRANSLATED]]in (3³)
+## 27 PAS :]in (3³)
 
-### [CYR:[TRANSLATED]]withandчеwithtoandе (18)
+### :]withandchewithtoande (18)
 
-| # | Сandмinол | [CYR:[TRANSLATED]]inанandе | [CYR:[TRANSLATED]]toтandinноwithть | Лand[CYR:[TRANSLATED]] прandмеnotнandе |
+| # | Sandminaboutl | :]inanande | :]totandinnaboutwitht | Land:] prandmenotnande |
 |---|--------|----------|---------------|------------------------|
-| 1 | D&C | Divide-and-Conquer | 31% | [CYR:[TRANSLATED]]andенandе on [CYR:[TRANSLATED]]inы |
-| 2 | ALG | Algebraic | 22% | [CYR:[TRANSLATED]]inая for[TRANSLATED]]andцandя |
+| 1 | D&C | Divide-and-Conquer | 31% | :]andenande on :]iny |
+| 2 | ALG | Algebraic | 22% | :]inaya for]andtsandya |
 | 3 | PRE | Precomputation | 16% | Foreshadowing |
-| 4 | FDT | Frequency Domain | 13% | Рandтм [CYR:[TRANSLATED]] |
-| 5 | MLS | ML-Guided | 9% | A/B теwithтandроinанandе |
-| 6 | TEN | Tensor Decomp | 6% | [CYR:[TRANSLATED]]with[TRANSLATED]]withть |
-| 7 | HSH | Hashing | 6% | [CYR:[TRANSLATED]]fromandinы |
-| 8 | GRD | Greedy | 6% | Лоfor[TRANSLATED]]onя [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя |
-| 9 | AMR | Amortization | 5% | Раwith[TRANSLATED]]andе with[TRANSLATED]]withтand |
-| 10 | PRB | Probabilistic | 3% | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] поinорfromы |
-| 11 | EQS | Equality Saturation | 8% | Сand[CYR:[TRANSLATED]]andмы |
-| 12 | CSD | Consistency Distill | 7% | [CYR:[TRANSLATED]] |
+| 4 | FDT | Frequency Domain | 13% | Randtm :] |
+| 5 | MLS | ML-Guided | 9% | A/B thosewithtandraboutinanande |
+| 6 | TEN | Tensor Decomp | 6% | :]with]witht |
+| 7 | HSH | Hashing | 6% | :]fromandiny |
+| 8 | GRD | Greedy | 6% | Laboutfor]onya :]andmand:]andya |
+| 9 | AMR | Amortization | 5% | Rawith]ande with]withtand |
+| 10 | PRB | Probabilistic | 3% | :]and:] byinaboutrfromy |
+| 11 | EQS | Equality Saturation | 8% | Sand:]andmy |
+| 12 | CSD | Consistency Distill | 7% | :] |
 | 13 | IOT | IO-Aware | 15% | Chunk-based reading |
-| 14 | INC | Incremental | 14% | Поwith[TRANSLATED]] раwithfor[TRANSLATED]]andе |
-| 15 | SSM | State Space | 12% | Арtoа [CYR:[TRANSLATED]] |
-| 16 | ZCP | Zero Copy | 12% | [CYR:[TRANSLATED]]towithт |
-| 17 | GSP | Gaussian Splatting | 10% | Вand[CYR:[TRANSLATED]] опandwithанandя |
-| 18 | NRO | Neuromorphic | 5% | [CYR:[TRANSLATED]]andоon[CYR:[TRANSLATED]] трand[CYR:[TRANSLATED]] |
+| 14 | INC | Incremental | 14% | Paboutwith] rawithfor]ande |
+| 15 | SSM | State Space | 12% | Artoa :] |
+| 16 | ZCP | Zero Copy | 12% | :]towitht |
+| 17 | GSP | Gaussian Splatting | 10% | Vand:] aboutpandwithanandya |
+| 18 | NRO | Neuromorphic | 5% | :]andabouton:] trand:] |
 
-### Лand[CYR:[TRANSLATED]] (9)
+### Land:] (9)
 
-| # | Сandмinол | [CYR:[TRANSLATED]]inанandе | [CYR:[TRANSLATED]]toтandinноwithть | Прandмеnotнandе |
+| # | Sandminaboutl | :]inanande | :]totandinnaboutwitht | Prandmenotnande |
 |---|--------|----------|---------------|------------|
-| 19 | HRJ | Hero's Journey | 20% | [CYR:[TRANSLATED]]for[TRANSLATED]] [CYR:[TRANSLATED]] |
-| 20 | 3AC | Three-Act | 18% | [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]andon-Коnotц |
-| 21 | SLP | Strange Loop | 15% | [CYR:[TRANSLATED]]andя |
-| 22 | FSH | Foreshadowing | 12% | [CYR:[TRANSLATED]]on[CYR:[TRANSLATED]]inанandе |
-| 23 | CTH | Catharsis | 10% | [CYR:[TRANSLATED]]andоon[CYR:[TRANSLATED]] очand[CYR:[TRANSLATED]]andе |
-| 24 | ANG | Anagnorisis | 8% | [CYR:[TRANSLATED]] andwithтandны |
-| 25 | PRP | Peripeteia | 7% | Поinорfrom with[TRANSLATED]] |
-| 26 | IMR | In Medias Res | 5% | [CYR:[TRANSLATED]] with with[TRANSLATED]]andны |
-| 27 | FRM | Frame Narrative | 5% | Иwith[TRANSLATED]]andя in andwith[TRANSLATED]]and |
+| 19 | HRJ | Hero's Journey | 20% | :]for] :] |
+| 20 | 3AC | Three-Act | 18% | :]-:]andon-Kaboutnotts |
+| 21 | SLP | Strange Loop | 15% | :]andya |
+| 22 | FSH | Foreshadowing | 12% | :]on:]inanande |
+| 23 | CTH | Catharsis | 10% | :]andabouton:] aboutchand:]ande |
+| 24 | ANG | Anagnorisis | 8% | :] andwithtandny |
+| 25 | PRP | Peripeteia | 7% | Paboutinaboutrfrom with] |
+| 26 | IMR | In Medias Res | 5% | :] with with]andny |
+| 27 | FRM | Frame Narrative | 5% | Iwith]andya in andwith]and |
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromы arXiv 2025-2026
+## :] :]fromy arXiv 2025-2026
 
-| arXiv ID | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]inанandе | [CYR:[TRANSLATED]] |
+| arXiv ID | :] | :]inanande | :] |
 |----------|-----|----------|----------|
 | 2512.18362 | 2025 | SRS-Stories: Multilingual story generation | MLS, INC |
 | 2512.16954 | 2025 | Character-Stable AI Video Stories | CSD, SSM |
@@ -131,43 +131,43 @@ $$999 = 37 \times 3^3 = 37 \times 27$$
 
 ---
 
-## Трand Сandwith[TRANSLATED]] Воwithпрandятandя
+## Trand Sandwith] Vaboutwithprandyatandya
 
-| Сandwith[TRANSLATED]] | [CYR:[TRANSLATED]]inанandе | Веwith | [CYR:[TRANSLATED]] |
+| Sandwith] | :]inanande | Vewith | :] |
 |---------|----------|-----|---------|
-| 1 | [CYR:[TRANSLATED]]andцandя | 20% | Сtoазtoand, [CYR:[TRANSLATED]] |
-| 2 | Аonлandз | 60% | [CYR:[TRANSLATED]], toод |
-| 3 | Сand[CYR:[TRANSLATED]] | 20% | [CYR:[TRANSLATED]]withтand, andнwith[TRANSLATED]] |
+| 1 | :]andtsandya | 20% | Stoaztoand, :] |
+| 2 | Aonlandz | 60% | :], toaboutd |
+| 3 | Sand:] | 20% | :]withtand, andnwith] |
 
 ---
 
-## [CYR:[TRANSLATED]]for[TRANSLATED]] Кнandгand 999
+## :]for] Knandgand 999
 
 ```
-[CYR:[TRANSLATED]] 999
-├── [CYR:[TRANSLATED]] I: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]andя)
-│   ├── Кнandгand 1-9
-│   └── [CYR:[TRANSLATED]]inы 1-333
-├── [CYR:[TRANSLATED]] II: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]toтandtoа)
-│   ├── Кнandгand 10-18
-│   └── [CYR:[TRANSLATED]]inы 334-666
-└── [CYR:[TRANSLATED]] III: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]])
-    ├── Кнandгand 19-27
-    └── [CYR:[TRANSLATED]]inы 667-999
+:] 999
+├── :] I: :] :] (:]andya)
+│   ├── Knandgand 1-9
+│   └── :]iny 1-333
+├── :] II: :] :] (:]totVersion)
+│   ├── Knandgand 10-18
+│   └── :]iny 334-666
+└── :] III: :] :] (:])
+    ├── Knandgand 19-27
+    └── :]iny 667-999
 
-[CYR:[TRANSLATED]]: 3 × 9 × 37 = 999
+:]: 3 × 9 × 37 = 999
 ```
 
 ---
 
-## 50 [CYR:[TRANSLATED]]toоin Мandра (50 [CYR:[TRANSLATED]]in)
+## 50 :]toaboutin Mandra (50 :]in)
 
-- **[CYR:[TRANSLATED]]inянwithtoandе (9)**: ru, uk, pl, cs, sk, bg, sr, hr, sl
-- **[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]withtoandе (9)**: en, de, fr, es, it, pt, nl, sv, no
-- **Азandатwithtoandе (9)**: zh, ja, ko, vi, th, id, ms, hi, bn
-- **Блandжnotinоwith[TRANSLATED]] (9)**: ar, he, fa, tr, az, ka, hy, ur, ps
-- **[CYR:[TRANSLATED]]andtoанwithtoandе (5)**: sw, am, ha, yo, zu
-- **[CYR:[TRANSLATED]]andе (9)**: el, fi, hu, ro, da, lt, lv, et, mn
+- **:]inyanwithtoande (9)**: ru, uk, pl, cs, sk, bg, sr, hr, sl
+- **:]in:]withtoande (9)**: en, de, fr, es, it, pt, nl, sv, no
+- **Azandatwithtoande (9)**: zh, ja, ko, vi, th, id, ms, hi, bn
+- **Blandzhnotinaboutwith] (9)**: ar, he, fa, tr, az, ka, hy, ur, ps
+- **:]Versionnwithtoande (5)**: sw, am, ha, yo, zu
+- **:]ande (9)**: el, fi, hu, ro, da, lt, lv, et, mn
 
 ---
 
@@ -177,35 +177,35 @@ $$999 = 37 \times 3^3 = 37 \times 27$$
 specs/*.vibee  →  vibeec gen  →  999/*.999
 ```
 
-1. [CYR:[TRANSLATED]] `.vibee` with[TRANSLATED]]andфandtoацandю in `specs/`
-2. [CYR:[TRANSLATED]]withfor[TRANSLATED]] `vibeec gen specs/file.vibee`
-3. [CYR:[TRANSLATED]] `.999` геnotрand[CYR:[TRANSLATED]]withя аin[CYR:[TRANSLATED]]andчеwithtoand
+1. :] `.vibee` with]andfVersiontsandyu in `specs/`
+2. :]withfor] `vibeec gen specs/file.vibee`
+3. :] `.999` genotrand:]withya ain:]andchewithtoand
 
 ---
 
-## [CYR:[TRANSLATED]]andфandtoацandя
+## :]andfVersiontsandya
 
-✅ Сin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]  
-✅ 27 PAS [CYR:[TRANSLATED]]in and[CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]]  
-✅ 3 withandwith[TRANSLATED]] inоwithпрandятandя with[TRANSLATED]]withandроin[CYR:[TRANSLATED]]  
-✅ 50 [CYR:[TRANSLATED]]toоin [CYR:[TRANSLATED]]  
-✅ [CYR:[TRANSLATED]]for[TRANSLATED]] 999 = 3 × 9 × 37 inерon  
-✅ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromы arXiv 2025-2026 and[CYR:[TRANSLATED]]  
+✅ Sin:] :] :]in:]  
+✅ 27 PAS :]in and:]andraboutin:]  
+✅ 3 withandwith] inaboutwithprandyatandya with]withandraboutin:]  
+✅ 50 :]toaboutin :]  
+✅ :]for] 999 = 3 × 9 × 37 ineron  
+✅ :] :]fromy arXiv 2025-2026 and:]  
 
 ---
 
-## Заfor[TRANSLATED]]andе
+## Zafor]ande
 
-**[CYR:[TRANSLATED]] 999 (OMEGA) [CYR:[TRANSLATED]]!**
+**:] 999 (OMEGA) :]!**
 
 ```
 ╔═══════════════════════════════════════════════════════════════╗
 ║                                                               ║
 ║   999 = 37 × 3³ = 37 × 27                                    ║
 ║                                                               ║
-║   [CYR:[TRANSLATED]] цandфр: 9 + 9 + 9 = 27 = 3³ = [CYR:[TRANSLATED]]!             ║
+║   :] tsandfr: 9 + 9 + 9 = 27 = 3³ = :]!             ║
 ║                                                               ║
-║   [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                                         ║
+║   :] :]                                         ║
 ║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
 ```

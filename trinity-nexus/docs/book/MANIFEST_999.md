@@ -1,21 +1,21 @@
-# [CYRILLIC] [CYRILLIC] 999
+# ILLIC] ILLIC] 999
 
-## Three[CYRILLIC]tt[CYRILLIC] [CYRILLIC]uтttо [CYRILLIC]a[CYRILLIC]tt
+## ThreeILLIC]ttILLIC] ILLIC]utttabout ILLIC]aILLIC]tt
 
-### [CYRILLIC]onя Вu[CYRILLIC]onя
+### ILLIC]onya VuILLIC]onya
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                                                                         │
-│   [CYRILLIC] [CYRILLIC] — [CYRILLIC] [CYRILLIC] [CYRILLIC]                            │
+│   ILLIC] ILLIC] — ILLIC] ILLIC] ILLIC]                            │
 │                                                                         │
-│   📚 BOOK 999         — 3 volumeа × 9 books × 37 [CYRILLIC]tt                     │
-│   🔤 [CYRILLIC]       — 27 [CYRILLIC]ktt utt[CYRILLIC] [CYRILLIC]tta[CYRILLIC]                   │
-│   💻 [CYRILLIC] [CYRILLIC]        — [CYRILLIC]k [CYRILLIC]a[CYRILLIC]tt[CYRILLIC]aя                         │
-│   🖥️ VIBEE OS          — жatt[CYRILLIC] [CYRILLIC]a[CYRILLIC]onя uau[CYRILLIC]                    │
-│   🌍 27 [CYRILLIC]      — on ttuе [CYRILLIC]ka мa[CYRILLIC]                             │
+│   📚 BOOK 999         — 3 volumea × 9 books × 37 ILLIC]tt                     │
+│   🔤 ILLIC]       — 27 ILLIC]ktt uttILLIC] ILLIC]ttaILLIC]                   │
+│   💻 ILLIC] ILLIC]        — ILLIC]k ILLIC]aILLIC]ttILLIC]aya                         │
+│   🖥️ VIBEE OS          — zhattILLIC] ILLIC]aILLIC]onya uauILLIC]                    │
+│   🌍 27 ILLIC]      — on ttue ILLIC]ka maILLIC]                             │
 │                                                                         │
-│   Вuё [CYRILLIC]u[CYRILLIC] on чau[CYRILLIC] 3 a [CYRILLIC] u[CYRILLIC]!                             │
+│   Vuyo ILLIC]uILLIC] on chauILLIC] 3 a ILLIC] uILLIC]!                             │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
@@ -25,123 +25,123 @@
 ║                                                               ║
 ║   999 = 37 × 3³ × π⁰                                         ║
 ║   999 = 37 × 27                                              ║
-║   999 = 3 volumeа × 9 books × 37 [CYRILLIC]tt                            ║
+║   999 = 3 volumea × 9 books × 37 ILLIC]tt                            ║
 ║                                                               ║
-║   [CYRILLIC] цa[CYRILLIC]: 9 + 9 + 9 = 27 = 3³ = [CYRILLIC]!             ║
+║   ILLIC] tsaILLIC]: 9 + 9 + 9 = 27 = 3³ = ILLIC]!             ║
 ║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-## [CYRILLIC]
+## ILLIC]
 
-### [CYRILLIC] I: [CYRILLIC] [CYRILLIC] ([CYRILLIC]aя)
-**Chapterы 001-333**
+### ILLIC] I: ILLIC] ILLIC] (ILLIC]aya)
+**Chaptery 001-333**
 
-| [CYRILLIC]a[CYRILLIC] | [CYRILLIC]tt[CYRILLIC]aе | Chapterы |
+| ILLIC]aILLIC] | ILLIC]ttILLIC]ae | Chaptery |
 |-------|----------|-------|
-| 1 | [CYRILLIC]on Чau[CYRILLIC] Three | 001-037 |
-| 2 | [CYRILLIC]u[CYRILLIC] Мa[CYRILLIC]aя | 038-074 |
-| 3 | [CYRILLIC]k [CYRILLIC]aka | 075-111 |
-| 4 | [CYRILLIC]a[CYRILLIC] [CYRILLIC] (NP) | 112-148 |
-| 5 | [CYRILLIC]a[CYRILLIC] [CYRILLIC]aa | 149-185 |
-| 6 | Кtt[CYRILLIC]tt[CYRILLIC] Мaр | 186-222 |
-| 7 | [CYRILLIC] a [CYRILLIC] | 223-259 |
-| 8 | [CYRILLIC]u[CYRILLIC] [CYRILLIC]ttнaх | 260-296 |
-| 9 | Three[CYRILLIC]tt[CYRILLIC] [CYRILLIC]uтttо | 297-333 |
+| 1 | ILLIC]on ChauILLIC] Three | 001-037 |
+| 2 | ILLIC]uILLIC] MaILLIC]aya | 038-074 |
+| 3 | ILLIC]k ILLIC]aka | 075-111 |
+| 4 | ILLIC]aILLIC] ILLIC] (NP) | 112-148 |
+| 5 | ILLIC]aILLIC] ILLIC]aa | 149-185 |
+| 6 | KttILLIC]ttILLIC] Mar | 186-222 |
+| 7 | ILLIC] a ILLIC] | 223-259 |
+| 8 | ILLIC]uILLIC] ILLIC]ttnakh | 260-296 |
+| 9 | ThreeILLIC]ttILLIC] ILLIC]utttabout | 297-333 |
 
-### [CYRILLIC] II: [CYRILLIC] [CYRILLIC] ([CYRILLIC]kтakа)
-**Chapterы 334-666**
+### ILLIC] II: ILLIC] ILLIC] (ILLIC]ktaka)
+**Chaptery 334-666**
 
-| [CYRILLIC]a[CYRILLIC] | [CYRILLIC]tt[CYRILLIC]aе | Chapterы |
+| ILLIC]aILLIC] | ILLIC]ttILLIC]ae | Chaptery |
 |-------|----------|-------|
-| 10 | [CYRILLIC]a[CYRILLIC]ttkа [CYRILLIC]a[CYRILLIC] | 334-370 |
-| 11 | [CYRILLIC]k[CYRILLIC] [CYRILLIC]a[CYRILLIC] | 371-407 |
-| 12 | [CYRILLIC]aе [CYRILLIC]a[CYRILLIC] | 408-444 |
-| 13 | [CYRILLIC]u[CYRILLIC]a [CYRILLIC]a[CYRILLIC] | 445-481 |
-| 14 | [CYRILLIC]k [CYRILLIC]a | 482-518 |
-| 15 | [CYRILLIC]a[CYRILLIC] 999 | 519-555 |
-| 16 | Vtbee OS — Жatt[CYRILLIC] Сau[CYRILLIC] | 556-592 |
-| 17 | [CYRILLIC]u[CYRILLIC] [CYRILLIC]u[CYRILLIC] | 593-629 |
-| 18 | [CYRILLIC] [CYRILLIC]a[CYRILLIC] | 630-666 |
+| 10 | ILLIC]aILLIC]ttka ILLIC]aILLIC] | 334-370 |
+| 11 | ILLIC]kILLIC] ILLIC]aILLIC] | 371-407 |
+| 12 | ILLIC]ae ILLIC]aILLIC] | 408-444 |
+| 13 | ILLIC]uILLIC]a ILLIC]aILLIC] | 445-481 |
+| 14 | ILLIC]k ILLIC]a | 482-518 |
+| 15 | ILLIC]aILLIC] 999 | 519-555 |
+| 16 | Vtbee OS — ZhattILLIC] SauILLIC] | 556-592 |
+| 17 | ILLIC]uILLIC] ILLIC]uILLIC] | 593-629 |
+| 18 | ILLIC] ILLIC]aILLIC] | 630-666 |
 
-### [CYRILLIC] III: [CYRILLIC] [CYRILLIC] ([CYRILLIC])
-**Chapterы 667-999**
+### ILLIC] III: ILLIC] ILLIC] (ILLIC])
+**Chaptery 667-999**
 
-| [CYRILLIC]a[CYRILLIC] | [CYRILLIC]tt[CYRILLIC]aе | Chapterы |
+| ILLIC]aILLIC] | ILLIC]ttILLIC]ae | Chaptery |
 |-------|----------|-------|
-| 19 | [CYRILLIC]onя Trinity | 667-703 |
-| 20 | [CYRILLIC]k[CYRILLIC]onя Trinity (SIMD) | 704-740 |
-| 21 | Кtt[CYRILLIC]tt[CYRILLIC] Trinity | 741-777 |
-| 22 | Three[CYRILLIC]a[CYRILLIC]ukaе Чau[CYRILLIC] | 778-814 |
-| 23 | Иukуuuтtt[CYRILLIC] [CYRILLIC] | 815-851 |
-| 24 | [CYRILLIC] Жa[CYRILLIC]a | 852-888 |
-| 25 | Вu[CYRILLIC]onя [CYRILLIC]a[CYRILLIC] | 889-925 |
-| 26 | [CYRILLIC]ak[CYRILLIC] [CYRILLIC]a[CYRILLIC]aе | 926-962 |
-| 27 | [CYRILLIC]tt[CYRILLIC]aе [CYRILLIC] | 963-999 |
+| 19 | ILLIC]onya Trinity | 667-703 |
+| 20 | ILLIC]kILLIC]onya Trinity (SIMD) | 704-740 |
+| 21 | KttILLIC]ttILLIC] Trinity | 741-777 |
+| 22 | ThreeILLIC]aILLIC]ukae ChauILLIC] | 778-814 |
+| 23 | IukatuutttILLIC] ILLIC] | 815-851 |
+| 24 | ILLIC] ZhaILLIC]a | 852-888 |
+| 25 | VuILLIC]onya ILLIC]aILLIC] | 889-925 |
+| 26 | ILLIC]akILLIC] ILLIC]aILLIC]ae | 926-962 |
+| 27 | ILLIC]ttILLIC]ae ILLIC] | 963-999 |
 
 ---
 
-## [CYRILLIC] [CYRILLIC]
+## ILLIC] ILLIC]
 
 ```
-Chapter(t) = [CYRILLIC](⌈t/333⌉) × [CYRILLIC]a[CYRILLIC](⌈(t mod 333)/37⌉) × [CYRILLIC](t mod 37)
+Chapter(t) = ILLIC](⌈t/333⌉) × ILLIC]aILLIC](⌈(t mod 333)/37⌉) × ILLIC](t mod 37)
 
-[CYRILLIC]:
+ILLIC]:
   t ∈ [1, 999]
-  [CYRILLIC] ∈ {[CYRILLIC], [CYRILLIC], [CYRILLIC]from[CYRILLIC]}
-  [CYRILLIC]a[CYRILLIC] ∈ [1, 27]
-  [CYRILLIC] ∈ [1, 37]
+  ILLIC] ∈ {ILLIC], ILLIC], ILLIC]fromILLIC]}
+  ILLIC]aILLIC] ∈ [1, 27]
+  ILLIC] ∈ [1, 37]
 ```
 
 ---
 
-## [CYRILLIC] 3×3×3 = 27
+## ILLIC] 3×3×3 = 27
 
 ```
-         [CYRILLIC]    [CYRILLIC]u[CYRILLIC]    [CYRILLIC]
+         ILLIC]    ILLIC]uILLIC]    ILLIC]
         ┌─────────┬───────────┬─────────┐
-Фaзakа  │ [CYRILLIC]a[CYRILLIC] 1 │  [CYRILLIC]a[CYRILLIC] 2  │ [CYRILLIC]a[CYRILLIC] 3 │
+Fazaka  │ ILLIC]aILLIC] 1 │  ILLIC]aILLIC] 2  │ ILLIC]aILLIC] 3 │
         ├─────────┼───────────┼─────────┤
-[CYRILLIC]a[CYRILLIC]│ [CYRILLIC]a[CYRILLIC] 4 │  [CYRILLIC]a[CYRILLIC] 5  │ [CYRILLIC]a[CYRILLIC] 6 │
+ILLIC]aILLIC]│ ILLIC]aILLIC] 4 │  ILLIC]aILLIC] 5  │ ILLIC]aILLIC] 6 │
         ├─────────┼───────────┼─────────┤
-Сk[CYRILLIC]kа  │ [CYRILLIC]a[CYRILLIC] 7 │  [CYRILLIC]a[CYRILLIC] 8  │ [CYRILLIC]a[CYRILLIC] 9 │
+SkILLIC]ka  │ ILLIC]aILLIC] 7 │  ILLIC]aILLIC] 8  │ ILLIC]aILLIC] 9 │
         └─────────┴───────────┴─────────┘
-              × 3 volumeа = 27 books
-              × 37 [CYRILLIC]tt = 999 [CYRILLIC]u[CYRILLIC]
+              × 3 volumea = 27 books
+              × 37 ILLIC]tt = 999 ILLIC]uILLIC]
 ```
 
 ---
 
 ---
 
-## [CYRILLIC] — [CYRILLIC] [CYRILLIC]
+## ILLIC] — ILLIC] ILLIC]
 
 ```
-[CYRILLIC] (1-9):     Ⲁ Ⲃ Ⲅ Ⲇ Ⲉ Ⲋ Ⲍ Ⲏ Ⲑ
-[CYRILLIC] (10-18): Ⲓ Ⲕ Ⲗ Ⲙ Ⲛ Ⲝ Ⲟ Ⲡ Ⲣ
-[CYRILLIC] (19-27):   Ⲥ Ⲧ Ⲩ Ⲫ Ⲭ Ⲯ Ⲱ Ⳁ Ⳃ
+ILLIC] (1-9):     Ⲁ Ⲃ Ⲅ Ⲇ Ⲉ Ⲋ Ⲍ Ⲏ Ⲑ
+ILLIC] (10-18): Ⲓ Ⲕ Ⲗ Ⲙ Ⲛ Ⲝ Ⲟ Ⲡ Ⲣ
+ILLIC] (19-27):   Ⲥ Ⲧ Ⲩ Ⲫ Ⲭ Ⲯ Ⲱ Ⳁ Ⳃ
 
-27 [CYRILLIC]ktt = 3³ = Three[CYRILLIC]tt[CYRILLIC]!
+27 ILLIC]ktt = 3³ = ThreeILLIC]ttILLIC]!
 ```
 
 ---
 
-## [CYRILLIC] [CYRILLIC] 27 [CYRILLIC]
+## ILLIC] ILLIC] 27 ILLIC]
 
-| [CYRILLIC] | [CYRILLIC]ka |
+| ILLIC] | ILLIC]ka |
 |--------|-------|
-| [CYRILLIC]u[CYRILLIC]k | 🇷🇺 🇨🇳 🇯🇵 🇰🇷 🇮🇳 🇻🇳 🇹🇭 🇮🇩 🇲🇳 |
-| [CYRILLIC] | 🇬🇧 🇩🇪 🇫🇷 🇪🇸 🇮🇹 🇵🇹 🇳🇱 🇵🇱 🇺🇦 |
-| [CYRILLIC] | 🇸🇦 🇮🇱 🇹🇷 🇮🇷 🇰🇪 🇪🇹 🇵🇰 🇧🇩 🇱🇰 |
+| ILLIC]uILLIC]k | 🇷🇺 🇨🇳 🇯🇵 🇰🇷 🇮🇳 🇻🇳 🇹🇭 🇮🇩 🇲🇳 |
+| ILLIC] | 🇬🇧 🇩🇪 🇫🇷 🇪🇸 🇮🇹 🇵🇹 🇳🇱 🇵🇱 🇺🇦 |
+| ILLIC] | 🇸🇦 🇮🇱 🇹🇷 🇮🇷 🇰🇪 🇪🇹 🇵🇰 🇧🇩 🇱🇰 |
 
 ---
 
-## [CYRILLIC]
+## ILLIC]
 
-> * Three[CYRILLIC]ttяvolume [CYRILLIC]uтttе жa[CYRILLIC] [CYRILLIC]a[CYRILLIC]  чau[CYRILLIC] Three.*
-> * [CYRILLIC] tt [CYRILLIC] 999 [CYRILLIC]tt, a[CYRILLIC] 999 = 37 × 3³.*
-> * [CYRILLIC]  [CYRILLIC] utt[CYRILLIC] [CYRILLIC]ttaт aз 27 [CYRILLIC]ktt.*
-> * [CYRILLIC]tt[CYRILLIC]a[CYRILLIC] оon on 27 [CYRILLIC]k[CYRILLIC] мa[CYRILLIC].*
-> *[CYRILLIC] [CYRILLIC] ttuе — [CYRILLIC]on[CYRILLIC] [CYRILLIC] [CYRILLIC]a[CYRILLIC].*
+> * ThreeILLIC]ttyavolume ILLIC]uttte zhaILLIC] ILLIC]aILLIC]  chauILLIC] Three.*
+> * ILLIC] tt ILLIC] 999 ILLIC]tt, aILLIC] 999 = 37 × 3³.*
+> * ILLIC]  ILLIC] uttILLIC] ILLIC]ttat az 27 ILLIC]ktt.*
+> * ILLIC]ttILLIC]aILLIC] abouton on 27 ILLIC]kILLIC] maILLIC].*
+> *ILLIC] ILLIC] ttue — ILLIC]onILLIC] ILLIC] ILLIC]aILLIC].*

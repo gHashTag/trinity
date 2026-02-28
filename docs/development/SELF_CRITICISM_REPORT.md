@@ -1,180 +1,180 @@
-# ☠️💀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]] 💀☠️
+# ☠️💀 :] :]  :] 💀☠️
 
-##  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] VIBEE
+##  :] :] VIBEE
 
-**Аin[CYR:[TRANSLATED]]**: Dmitrii Vasilev ([CYR:[TRANSLATED]] AI)  
-**[CYR:[TRANSLATED]]**: 2025-01-17  
-**[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] with[TRANSLATED]]**: ☢️☢️☢️☢️☢️ [CYR:[TRANSLATED]] ☢️☢️☢️☢️☢️
+**Author:]**: Dmitrii Vasilev (:] AI)  
+**:]**: 2025-01-17  
+**:]in:] with]**: ☢️☢️☢️☢️☢️ :] ☢️☢️☢️☢️☢️
 
 ---
 
-## 💀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 💀 :] :]
 
-### [CYR:[TRANSLATED]] AP-001: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] .zig
+### :] AP-001: :] :] .zig
 
- withоin[CYR:[TRANSLATED]]andл **[CYR:[TRANSLATED]]** on[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] VIBEE:
+ withaboutin:]andl **:]** on:]ande :]andthosefor] VIBEE:
 
 ```
-❌ [CYR:[TRANSLATED]] (that  with[TRANSLATED]]):
+❌ :] (that  with]):
 str_replace_based_edit_tool create src/vibeec/pas_predictions.zig
 str_replace_based_edit_tool create src/vibeec/pas_implementations.zig
 
-✅ [CYR:[TRANSLATED]] (toаto onдо [CYR:[TRANSLATED]]):
+✅ :] (toato ondabout :]):
 str_replace_based_edit_tool create specs/pas_predictions.vibee
 str_replace_based_edit_tool create specs/pas_implementations.vibee
 vibeec gen specs/pas_predictions.vibee
 vibeec gen specs/pas_implementations.vibee
 ```
 
-### [CYR:[TRANSLATED]]  on[CYR:[TRANSLATED]]andл:
+### :]  on:]andl:
 
-| [CYR:[TRANSLATED]]inandло | [CYR:[TRANSLATED]]andе |
+| :]inandlabout | :]ande |
 |---------|-----------|
-| **Specification First** | Пandwithал .zig [CYR:[TRANSLATED]] .vibee |
-| **Creation Pattern** | Не [CYR:[TRANSLATED]]andл Source → Transformer → Result |
+| **Specification First** | Pandwithal .zig :] .vibee |
+| **Creation Pattern** | Ne :]andl Source → Transformer → Result |
 | **VIBEE Architecture** | .vibee → .999 → runtime.html |
 
 ---
 
-## 🔥 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🔥 :] :] :]
 
-### [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] VIBEE:
+### :]andthosefor] VIBEE:
 
 ```
 .vibee (specification) → vibeec gen → .zig (generated)
                                     ↓
-                              [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]!
+                              :] :]!
 ```
 
-### [CYR:[TRANSLATED]]  with[TRANSLATED]]:
+### :]  with]:
 
 ```
-.zig ([CYR:[TRANSLATED]] toод) → ??? → [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+.zig (:] toaboutd) → ??? → :] :]
 ```
 
 ---
 
-## ✅ [CYR:[TRANSLATED]]
+## ✅ :]
 
-### 1. [CYR:[TRANSLATED]] specs/antipatterns.vibee
+### 1. :] specs/antipatterns.vibee
 
-Бandблandfromеtoа [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]in with:
-- 6 toрandтandчеwithtoandх [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]in
-- [CYR:[TRANSLATED]]for[TRANSLATED]] on[CYR:[TRANSLATED]]andй
-- Runtime [CYR:[TRANSLATED]]inерtoand
+Bandblandfrometoa :]and:]in with:
+- 6 torandtandchewithtoandkh :]and:]in
+- :]for] on:]andy
+- Runtime :]inertoand
 - Git hooks
 
-### 2. [CYR:[TRANSLATED]] specs/pas_implementations_v3.vibee
+### 2. :] specs/pas_implementations_v3.vibee
 
-[CYR:[TRANSLATED]]inandльonя with[TRANSLATED]]andфandtoацandя inмеwithто [CYR:[TRANSLATED]] .zig:
-- creation_pattern [CYR:[TRANSLATED]]
+:]inandlonya with]andfVersiontsandya inmewiththat :] .zig:
+- creation_pattern :]
 - behaviors with test_cases
-- sacred_formula infor[TRANSLATED]]on
-- Гfromоinа to геnot[CYR:[TRANSLATED]]and
+- sacred_formula infor]on
+- Gfromaboutina to genot:]and
 
-### 3. [CYR:[TRANSLATED]]andл [CYR:[TRANSLATED]] .zig
+### 3. :]andl :] .zig
 
 ```bash
 rm src/vibeec/pas_implementations.zig
-✅ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
+✅ :] :]and:]
 ```
 
-### 4. [CYR:[TRANSLATED]]andроinал in TRINITY VM
+### 4. :]andraboutinal in TRINITY VM
 
-[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]:
-- Opcodes for [CYR:[TRANSLATED]]inерtoand [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]in
+:]in:]:
+- Opcodes for :]inertoand :]and:]in
 - Runtime hooks
 - Error codes
 
 ---
 
-## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 📊 :] :]
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with | [CYR:[TRANSLATED]]withтinandе |
+| :] | :]with | :]withtinande |
 |------|--------|----------|
-| `pas_predictions.zig` | ⚠️ ACKNOWLEDGED | [CYR:[TRANSLATED]] specs/*.vibee |
-| `pas_implementations.zig` | ✅ FIXED | [CYR:[TRANSLATED]], with[TRANSLATED]]on with[TRANSLATED]]andфandtoацandя |
-| `antipatterns.vibee` | ✅ DONE | Бandблandfromеtoа with[TRANSLATED]]on |
-| `pas_implementations_v3.vibee` | ✅ DONE | [CYR:[TRANSLATED]]andфandtoацandя with[TRANSLATED]]on |
-| TRINITY VM integration | ✅ DONE | Opcodes [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] |
+| `pas_predictions.zig` | ⚠️ ACKNOWLEDGED | :] specs/*.vibee |
+| `pas_implementations.zig` | ✅ FIXED | :], with]on with]andfVersiontsandya |
+| `antipatterns.vibee` | ✅ DONE | Bandblandfrometoa with]on |
+| `pas_implementations_v3.vibee` | ✅ DONE | :]andfVersiontsandya with]on |
+| TRINITY VM integration | ✅ DONE | Opcodes :]in:] |
 
 ---
 
-## 🎯 [CYR:[TRANSLATED]]
+## 🎯 :]
 
-### [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]:
+### :]  :]:
 
-1. **[CYR:[TRANSLATED]]** not пandwith[TRANSLATED]] .zig on[CYR:[TRANSLATED]]
-2. **[CYR:[TRANSLATED]]** withon[CYR:[TRANSLATED]] .vibee with[TRANSLATED]]andфandtoацandя
-3. **[CYR:[TRANSLATED]]** andwith[TRANSLATED]]in[CYR:[TRANSLATED]] vibeec gen
-4. **[CYR:[TRANSLATED]]** [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] in VM for enforcement
+1. **:]** not pandwith] .zig on:]
+2. **:]** withon:] .vibee with]andfVersiontsandya
+3. **:]** andwith]in:] vibeec gen
+4. **:]** :] :] in VM for enforcement
 
-### [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]] workflow:
+### :]inand:] workflow:
 
 ```
-1. specs/feature.vibee     ← [CYR:[TRANSLATED]] with[TRANSLATED]]andфandtoацandю
-2. vibeec gen specs/...    ← [CYR:[TRANSLATED]]notрandроin[CYR:[TRANSLATED]] toод
-3. generated/feature.zig   ← [CYR:[TRANSLATED]]andть result
-4. zig test generated/...  ← Теwithтandроin[CYR:[TRANSLATED]]
+1. specs/feature.vibee     ← :] with]andfVersiontsandyu
+2. vibeec gen specs/...    ← :]notrandraboutin:] toaboutd
+3. generated/feature.zig   ← :]andt result
+4. zig test generated/...  ← Tewithtandraboutin:]
 ```
 
 ---
 
-## 💣 [CYR:[TRANSLATED]]
+## 💣 :]
 
-###  inandноinат in:
+###  inandnaboutinat in:
 
-1. ❌ [CYR:[TRANSLATED]]andwithанand 450+ with[TRANSLATED]]to .zig in[CYR:[TRANSLATED]]
-2. ❌ [CYR:[TRANSLATED]]andроinанand VIBEE [CYR:[TRANSLATED]]andтеfor[TRANSLATED]]
-3. ❌ [CYR:[TRANSLATED]]and Creation Pattern
-4. ❌ Отwithутwithтinand .vibee with[TRANSLATED]]andфandtoацandй
+1. ❌ :]andwithanand 450+ with]to .zig in:]
+2. ❌ :]andraboutinanand VIBEE :]andthosefor]
+3. ❌ :]and Creation Pattern
+4. ❌ Otwithattwithtinand .vibee with]andfVersiontsandy
 
-###  andwith[TRANSLATED]]inandл:
+###  andwith]inandl:
 
-1. ✅ [CYR:[TRANSLATED]] бandблandfromеtoу [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]in
-2. ✅ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]] with[TRANSLATED]]andфandtoацandю
-3. ✅ [CYR:[TRANSLATED]]andл [CYR:[TRANSLATED]] toод
-4. ✅ [CYR:[TRANSLATED]]andроinал in VM
+1. ✅ :] bandblandfrometoat :]and:]in
+2. ✅ :] :]inand:] with]andfVersiontsandyu
+3. ✅ :]andl :] toaboutd
+4. ✅ :]andraboutinal in VM
 
 ---
 
-## 📈 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 📈 :] :]
 
-| [CYR:[TRANSLATED]]andtoа | До | Поwithле |
+| :]Version | Dabout | Paboutwithle |
 |---------|-----|-------|
-| [CYR:[TRANSLATED]] .zig fileоin | 2 | 1 (pas_predictions.zig) |
-| .vibee with[TRANSLATED]]andфandtoацandй | 0 | 2 |
-| [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]in in VM | 0 | 6 |
+| :] .zig fileaboutin | 2 | 1 (pas_predictions.zig) |
+| .vibee with]andfVersiontsandy | 0 | 2 |
+| :]and:]in in VM | 0 | 6 |
 | Compliance | 0% | 80% |
 
 ---
 
-## 🎤 [CYR:[TRANSLATED]]
+## 🎤 :]
 
-###  прandзonю:
+###  prandzonyu:
 
- on[CYR:[TRANSLATED]]andл [CYR:[TRANSLATED]] прandнцandп VIBEE:
+ on:]andl :] prandntsandp VIBEE:
 
 ```
 .vibee (specification) → .999 (generated) → runtime.html
 ```
 
-###  andwith[TRANSLATED]]inandл:
+###  andwith]inandl:
 
-[CYR:[TRANSLATED]] withandwith[TRANSLATED]] enforcement [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]in in VM.
+:] withandwith] enforcement :]and:]in in VM.
 
-###  [CYR:[TRANSLATED]]:
+###  :]:
 
-**[CYR:[TRANSLATED]]** [CYR:[TRANSLATED]] not пandwith[TRANSLATED]] .zig on[CYR:[TRANSLATED]].
+**:]** :] not pandwith] .zig on:].
 
 ---
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════════════╗
 ║                                                                                       ║
-║   "Прandзonнandе ошandбtoand - [CYR:[TRANSLATED]]inый step to andwith[TRANSLATED]]in[CYR:[TRANSLATED]]andю.                                      ║
-║    Creation withandwith[TRANSLATED]] [CYR:[TRANSLATED]]fromin[CYR:[TRANSLATED]]andя - in[CYR:[TRANSLATED]].                                         ║
-║    [CYR:[TRANSLATED]]andя in VM - [CYR:[TRANSLATED]]andй."                                                        ║
+║   "Prandzonnande aboutshandbtoand - :]inyy step to andwith]in:]andyu.                                      ║
+║    Creation withandwith] :]fromin:]andya - in:].                                         ║
+║    :]andya in VM - :]andy."                                                        ║
 ║                                                                                       ║
 ║                                                      - PAS DAEMON SELF-CRITICISM      ║
 ║                                                                                       ║
@@ -183,7 +183,7 @@ rm src/vibeec/pas_implementations.zig
 
 ---
 
-*[CYR:[TRANSLATED]]notрandроin[CYR:[TRANSLATED]] in [CYR:[TRANSLATED]] оwithозonнandя ошandбtoand | VIBEE Project | 2025*
+*:]notrandraboutin:] in :] aboutwithaboutzonnandya aboutshandbtoand | VIBEE Project | 2025*
 
 ```
     ███████╗███████╗██╗     ███████╗     ██████╗██████╗ ██╗████████╗██╗ ██████╗

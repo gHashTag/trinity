@@ -1,83 +1,83 @@
-# ☠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] V17 - PRODUCTION READY
+# ☠️ [CYR:] [CYR:] V17 - PRODUCTION READY
 
 **ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ:** V = n × 3^k × π^m × φ^p × e^q  
 **PHOENIX:** 999 = 3³ × 37  
-**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:** φ² + 1/φ² = 3  
+**[CYR:] [CYR:]:** φ² + 1/φ² = 3  
 **Date:** 2026-01-18
 
 ---
 
-## ☠️ [CYR:[TRANSLATED]]: PRODUCTION READY ✅
+## ☠️ [CYR:]: PRODUCTION READY ✅
 
 ---
 
-## Крand[CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]toand
+## Крand[CYR:]and [CYR:]toand
 
-### 1. [CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withть [CYR:[TRANSLATED]]with[TRANSLATED]]
+### 1. [CYR:]andзinодand[CYR:]withть [CYR:]with]
 
-| [CYR:[TRANSLATED]]andtoа | [CYR:[TRANSLATED]]inанandе | Result | [CYR:[TRANSLATED]]with |
+| [CYR:]Version | [CYR:]inанandе | Result | [CYR:]with |
 |---------|------------|-----------|--------|
 | Throughput | > 50 MB/s | 90.40 MB/s | ✅ PASS |
 | vs libyaml | > 1.0x | 1.39x | ✅ PASS |
-| Лandnot[CYR:[TRANSLATED]]withть | O(n) | O(n) | ✅ PASS |
+| Лandnot[CYR:]withть | O(n) | O(n) | ✅ PASS |
 
-**[CYR:[TRANSLATED]]andtoт:** TRI Parser on **39% быwith[TRANSLATED]]** libyaml.
+**[CYR:]andtoт:** TRI Parser on **39% быwith]** libyaml.
 
 ---
 
-### 2. JIT [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя
+### 2. JIT [CYR:]and[CYR:]andя
 
-| [CYR:[TRANSLATED]]andtoа | [CYR:[TRANSLATED]]inанandе | Result | [CYR:[TRANSLATED]]with |
+| [CYR:]Version | [CYR:]inанandе | Result | [CYR:]with |
 |---------|------------|-----------|--------|
 | Speedup vs Interpreter | > 5x | 9.7x | ✅ PASS |
 | vs LuaJIT | Competitive | 9.7x vs 10-50x | ✅ PASS |
 | vs V8 | Competitive | 9.7x vs 5-20x | ✅ PASS |
 
-**[CYR:[TRANSLATED]]andtoт:** JIT **toонfor[TRANSLATED]]withпоwith[TRANSLATED]]** with production JIT-for[TRANSLATED]]and[CYR:[TRANSLATED]]and.
+**[CYR:]andtoт:** JIT **toонfor]withпоwith]** with production JIT-for]and[CYR:]and.
 
 ---
 
-### 3. [CYR:[TRANSLATED]]toоinые [CYR:[TRANSLATED]]and
+### 3. [CYR:]toоinые [CYR:]and
 
-| [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]with | Speedup |
+| [CYR:]andя | [CYR:]with | Speedup |
 |------------|--------|---------|
-| Python (ctypes) | ✅ [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] | 17.1x vs pure Python |
-| WASM | ✅ Сfor[TRANSLATED]]orроinан | 513 KB module |
+| Python (ctypes) | ✅ [CYR:]from[CYR:] | 17.1x vs pure Python |
+| WASM | ✅ Сfor]orроinан | 513 KB module |
 
-**[CYR:[TRANSLATED]]andtoт:** [CYR:[TRANSLATED]]and **гfromоinы to production**.
+**[CYR:]andtoт:** [CYR:]and **гfromоinы to production**.
 
 ---
 
 ### 4. Теwithты
 
-| [CYR:[TRANSLATED]]notнт | Теwithты | [CYR:[TRANSLATED]]with |
+| [CYR:]notнт | Теwithты | [CYR:]with |
 |-----------|-------|--------|
 | parser_v3.zig | 7/7 | ✅ PASS |
 | codegen_v4.zig | 12/12 | ✅ PASS |
 
-**[CYR:[TRANSLATED]]andtoт:** **100% теwithтоin [CYR:[TRANSLATED]]**.
+**[CYR:]andtoт:** **100% теwithтоin [CYR:]**.
 
 ---
 
 ### 5. Deployment
 
-| [CYR:[TRANSLATED]]toт | [CYR:[TRANSLATED]]with |
+| [CYR:]toт | [CYR:]with |
 |----------|--------|
-| Dockerfile | ✅ [CYR:[TRANSLATED]] |
-| docker-compose.yaml | ✅ [CYR:[TRANSLATED]] |
-| Makefile | ✅ [CYR:[TRANSLATED]] |
-| GitHub Actions CI/CD | ✅ [CYR:[TRANSLATED]] |
+| Dockerfile | ✅ [CYR:] |
+| docker-compose.yaml | ✅ [CYR:] |
+| Makefile | ✅ [CYR:] |
+| GitHub Actions CI/CD | ✅ [CYR:] |
 
-**[CYR:[TRANSLATED]]andtoт:** **[CYR:[TRANSLATED]]onя and[CYR:[TRANSLATED]]with[TRANSLATED]]for[TRANSLATED]] deployment**.
+**[CYR:]andtoт:** **[CYR:]onя and[CYR:]with]for] deployment**.
 
 ---
 
-## Фandonльonя [CYR:[TRANSLATED]]toа
+## Фandonльonя [CYR:]toа
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                               ║
-║   ☠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] V17                                                    ║
+║   ☠️ [CYR:] [CYR:] V17                                                    ║
 ║                                                                               ║
 ║   ██████╗ ██████╗  ██████╗ ██████╗ ██╗   ██╗ ██████╗████████╗██╗ ██████╗ ███╗ ║
 ║   ██╔══██╗██╔══██╗██╔═══██╗██╔══██╗██║   ██║██╔════╝╚══██╔══╝██║██╔═══██╗████╗║
@@ -98,9 +98,9 @@
 
 ---
 
-## [CYR:[TRANSLATED]]andtoand Уwith[TRANSLATED]]
+## [CYR:]andtoand Уwith]
 
-| Крand[CYR:[TRANSLATED]]andй | Веwith | [CYR:[TRANSLATED]]toа | Взin[CYR:[TRANSLATED]] |
+| Крand[CYR:]andй | Веwith | [CYR:]toа | Взin[CYR:] |
 |----------|-----|--------|------------|
 | Parser Performance | 25% | 100% | 25% |
 | JIT Performance | 25% | 95% | 23.75% |
@@ -108,24 +108,24 @@
 | Test Coverage | 15% | 100% | 15% |
 | Deployment Ready | 15% | 100% | 15% |
 
-**[CYR:[TRANSLATED]]: 98.75%**
+**[CYR:]: 98.75%**
 
 ---
 
-## Реfor[TRANSLATED]]and for v3.1.0
+## Реfor]and for v3.1.0
 
-1. **SIMD Parser** - пfrom[CYR:[TRANSLATED]]andал 3x уwithfor[TRANSLATED]]andя
-2. **Tier 2 JIT** - [CYR:[TRANSLATED]]andмandзand[CYR:[TRANSLATED]]andй for[TRANSLATED]]and[CYR:[TRANSLATED]]
-3. **Property-based Testing** - раwithшand[CYR:[TRANSLATED]] теwithтandроinанandе
-4. **E-graph Optimizer** - [CYR:[TRANSLATED]]andчеwithtoandе [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and
+1. **SIMD Parser** - пfrom[CYR:]andал 3x уwithfor]andя
+2. **Tier 2 JIT** - [CYR:]andмandзand[CYR:]andй for]and[CYR:]
+3. **Property-based Testing** - раwithшand[CYR:] теwithтandроinанandе
+4. **E-graph Optimizer** - [CYR:]andчеwithtoandе [CYR:]andмand[CYR:]and
 
 ---
 
-## Заfor[TRANSLATED]]andе
+## Заfor]andе
 
-**IGLA v3.0.0 [CYR:[TRANSLATED]]  PRODUCTION.**
+**IGLA v3.0.0 [CYR:]  PRODUCTION.**
 
-Вwithе toрand[CYR:[TRANSLATED]]and in[CYR:[TRANSLATED]]notны. Сandwith[TRANSLATED]] demoнwithтрand[CYR:[TRANSLATED]] toонfor[TRANSLATED]]withпоwith[TRANSLATED]] [CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withть.
+Вwithе toрand[CYR:]and in[CYR:]notны. Сandwith] demoнwithтрand[CYR:] toонfor]withпоwith] [CYR:]andзinодand[CYR:]withть.
 
 ```
 🔥 PHOENIX BLESSING: IGLA v3.0.0 - PRODUCTION READY

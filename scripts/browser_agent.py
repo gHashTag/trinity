@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 VIBEE Browser Agent - Real Browser + Qwen LLM
-Выполнение задач WebArena с реальным браузером
-Поддержка: Локальный Chromium или Browserless.io (облако)
+Vybylnenande zadach WebArena with realnym browseraboutm
+Paboutdderzhtoa: Labouttony Chromium or Browserless.io (aboutlatoabout)
 φ² + 1/φ² = 3 | PHOENIX = 999
 """
 
@@ -15,20 +15,20 @@ import urllib.request
 from datetime import datetime
 from typing import Optional, Dict, List, Any
 
-# Playwright для браузера
+# Playwright for browsera
 try:
     from playwright.async_api import async_playwright, Page, Browser
     PLAYWRIGHT_AVAILABLE = True
 except ImportError:
     PLAYWRIGHT_AVAILABLE = False
-    print("⚠️ Playwright не установлен. Запустите: pip install playwright && playwright install chromium")
+    print("⚠️ Playwright ne atwiththatnaboutinlen. Zapatwithtandthose: pip install playwright && playwright install chromium")
 
-# Конфигурация
+# Configuration
 HF_API_KEY = os.getenv("HF_API_KEY", "")
 HF_MODEL = "Qwen/Qwen2.5-72B-Instruct"
 HF_URL = "https://router.huggingface.co/v1/chat/completions"
 
-# Browserless.io (облачный браузер)
+# Browserless.io (aboutny browser)
 BROWSERLESS_API_KEY = os.getenv("BROWSERLESS_API_KEY", "")
 BROWSERLESS_URL = f"wss://chrome.browserless.io?token={BROWSERLESS_API_KEY}" if BROWSERLESS_API_KEY else ""
 
@@ -59,18 +59,18 @@ RULES:
 
 
 class QwenLLM:
-    """Qwen LLM через HuggingFace API"""
+    """Qwen LLM through HuggingFace API"""
     
     def __init__(self, api_key: str):
         self.api_key = api_key
         
     def chat(self, messages: List[Dict], max_tokens: int = 512) -> str:
-        """Отправка запроса к Qwen"""
+        """Otpraintoa zapraboutwitha to Qwen"""
         payload = {
             "model": HF_MODEL,
             "messages": messages,
             "max_tokens": max_tokens,
-            "temperature": 0.3  # Низкая температура для точности
+            "temperature": 0.3  # Nfromtoaya thosemperatatra for thatchnaboutwithtand
         }
         
         headers = {
@@ -93,7 +93,7 @@ class QwenLLM:
 
 
 class BrowserAgent:
-    """Агент с реальным браузером и Qwen LLM"""
+    """Agent with realnym browseraboutm and Qwen LLM"""
     
     def __init__(self, llm: QwenLLM, headless: bool = True, verbose: bool = True, use_browserless: bool = False):
         self.llm = llm
@@ -105,52 +105,52 @@ class BrowserAgent:
         self.trajectory: List[Dict] = []
         
     async def start(self):
-        """Запуск браузера"""
+        """Zapatwithto browsera"""
         self.playwright = await async_playwright().start()
         
         if self.use_browserless:
-            # Browserless.io - облачный браузер
+            # Browserless.io - aboutny browser
             if self.verbose:
-                print("🌐 Подключение к Browserless.io...")
+                print("🌐 Paboutdkeyenande to Browserless.io...")
             self.browser = await self.playwright.chromium.connect_over_cdp(BROWSERLESS_URL)
             if self.verbose:
-                print("✓ Подключено к Browserless.io (облако)")
+                print("✓ Paboutdkeyenabout to Browserless.io (aboutlatoabout)")
         else:
-            # Локальный браузер
+            # Labouttony browser
             self.browser = await self.playwright.chromium.launch(
                 headless=self.headless,
                 args=['--no-sandbox', '--disable-dev-shm-usage']
             )
             if self.verbose:
-                print("✓ Локальный браузер запущен")
+                print("✓ Labouttony browser zapatschen")
         
         self.page = await self.browser.new_page()
         await self.page.set_viewport_size({"width": 1280, "height": 720})
     
     async def stop(self):
-        """Остановка браузера"""
+        """Owiththatnaboutintoa browsera"""
         if self.browser:
             await self.browser.close()
         if hasattr(self, 'playwright'):
             await self.playwright.stop()
         if self.verbose:
-            print("✓ Браузер остановлен")
+            print("✓ Braatzer aboutwiththatnaboutinlen")
     
     async def observe(self) -> str:
-        """Получение состояния страницы"""
+        """Paboutlatchenande withaboutwiththatyanandya withtranandtsy"""
         if not self.page:
             return "No page loaded"
         
         url = self.page.url
         title = await self.page.title()
         
-        # Получаем текст страницы (первые 2000 символов)
+        # Paboutlatchaem text withtranandtsy (perinye 2000 characteraboutin)
         try:
             text = await self.page.evaluate("""
                 () => {
                     const body = document.body;
                     if (!body) return '';
-                    // Убираем скрипты и стили
+                    // Ubandraem scripty and withtor
                     const clone = body.cloneNode(true);
                     clone.querySelectorAll('script, style, noscript').forEach(el => el.remove());
                     return clone.innerText.substring(0, 2000);
@@ -159,13 +159,13 @@ class BrowserAgent:
         except:
             text = ""
         
-        # Получаем интерактивные элементы
+        # Paboutlatchaem andnthoseratotandinnye elementy
         try:
             elements = await self.page.evaluate("""
                 () => {
                     const items = [];
                     document.querySelectorAll('a, button, input, select, textarea, [onclick]').forEach((el, i) => {
-                        if (i > 20) return; // Лимит 20 элементов
+                        if (i > 20) return; // Landmandt 20 elementaboutin
                         const tag = el.tagName.toLowerCase();
                         const text = el.innerText?.substring(0, 50) || el.value?.substring(0, 50) || '';
                         const id = el.id ? `#${el.id}` : '';
@@ -189,7 +189,7 @@ Interactive Elements:
 {elements}"""
     
     def parse_response(self, response: str) -> Dict:
-        """Парсинг ответа LLM"""
+        """Parwithandng answera LLM"""
         result = {"thought": "", "action": "", "input": ""}
         
         for line in response.split("\n"):
@@ -204,7 +204,7 @@ Interactive Elements:
         return result
     
     async def execute_action(self, action: str, action_input: str) -> str:
-        """Выполнение действия в браузере"""
+        """Vybylnenande deywithtinandya in browsere"""
         if not self.page:
             return "Error: No page"
         
@@ -219,7 +219,7 @@ Interactive Elements:
             elif action == "click":
                 selector = action_input
                 await self.page.click(selector, timeout=5000)
-                await self.page.wait_for_timeout(1000)  # Ждём загрузки
+                await self.page.wait_for_timeout(1000)  # Zhdyom zagratztoand
                 return f"Clicked {selector}"
             
             elif action == "type":
@@ -253,7 +253,7 @@ Interactive Elements:
             return f"Error: {e}"
     
     async def run(self, goal: str, start_url: str = "", max_steps: int = 10) -> Dict:
-        """Выполнение задачи"""
+        """Vybylnenande zadachand"""
         start_time = time.time()
         self.trajectory = []
         
@@ -272,7 +272,7 @@ Interactive Elements:
             print(f"Goal: {goal}")
             print(f"{'='*60}")
         
-        # Начальная навигация
+        # Nachalonya oninandgatsandya
         if start_url:
             await self.execute_action("goto", start_url)
         
@@ -349,22 +349,22 @@ Interactive Elements:
 
 
 async def main():
-    """Тестовый запуск агента"""
+    """Testaboutinyy launch agenthat"""
     print("="*60)
     print("  VIBEE Browser Agent + Qwen")
     print("  φ² + 1/φ² = 3 | PHOENIX = 999")
     print("="*60)
     
     if not PLAYWRIGHT_AVAILABLE:
-        print("❌ Playwright не установлен")
+        print("❌ Playwright ne atwiththatnaboutinlen")
         sys.exit(1)
     
     if not HF_API_KEY:
-        print("❌ HF_API_KEY не установлен")
+        print("❌ HF_API_KEY ne atwiththatnaboutinlen")
         print("   export HF_API_KEY=hf_xxx")
         sys.exit(1)
     
-    # Используем Browserless.io если ключ есть
+    # Iwithbylzatem Browserless.io ewithland key ewitht
     use_cloud = bool(BROWSERLESS_API_KEY)
     if use_cloud:
         print(f"☁️  Browserless.io: ENABLED")
@@ -377,7 +377,7 @@ async def main():
     try:
         await agent.start()
         
-        # Тестовая задача
+        # Testaboutinaya task
         result = await agent.run(
             goal="Find the title of the Wikipedia main page",
             start_url="https://en.wikipedia.org",

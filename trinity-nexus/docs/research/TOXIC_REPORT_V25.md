@@ -1,16 +1,16 @@
-# ☠️💀🌍 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] V25 - MULTI-LANGUAGE DOMINATION 🌍💀☠️
+# ☠️💀🌍 :] :] V25 - MULTI-LANGUAGE DOMINATION 🌍💀☠️
 
-**[CYR:[TRANSLATED]]:** 2026-01-18
-**[CYR:[TRANSLATED]]withandя:** v25.0.0
-**[CYR:[TRANSLATED]]with:** [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]
+**:]:** 2026-01-18
+**:]Author:** v25.0.0
+**:]with:** :] :]  :]
 
 ---
 
-## 🌍 "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]], [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]!"
+## 🌍 ":] :] :], :] :]!"
 
-### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### :] :] :]
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | Теwithты | [CYR:[TRANSLATED]]with |
+| :] | :] | Tewithty | :]with |
 |------|--------|-------|--------|
 | `specs/multi_language_benchmark_v25.vibee` | 6KB | - | ✅ SPEC |
 | `generated/multi_lang_bench_v25.zig` | 300 lines | 8/8 | ✅ COMPILED |
@@ -20,7 +20,7 @@
 
 ---
 
-## 🧪 [CYR:[TRANSLATED]] [CYR:TESTS] [CYR:[TRANSLATED]]
+## 🧪 :] :TESTS] :]
 
 ```
 === TRINITY VM v25 ===
@@ -38,7 +38,7 @@ TOTAL:                    50/50 ✅ 100%
 
 ---
 
-## 🌍 10 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🌍 10 :] :]
 
 ### S-Tier (Native Performance)
 
@@ -72,18 +72,18 @@ TOTAL:                    50/50 ✅ 100%
 
 ---
 
-## 📈 [CYR:[TRANSLATED]] ПО [CYR:[TRANSLATED]]
+## 📈 :] PO :]
 
-| [CYR:[TRANSLATED]]andtoа | v22 | v23 | v24 | v25 | Прandроwithт |
+| :]Version | v22 | v23 | v24 | v25 | Prandraboutwitht |
 |---------|-----|-----|-----|-----|---------|
-| **Теwithтоin** | 15 | 23 | 42 | 50 | **+233%** |
-| **[CYR:[TRANSLATED]]** | 1 | 3 | 4 | 5 | **+400%** |
-| **[CYR:[TRANSLATED]]toоin** | 1 | 1 | 1 | 10 | **+900%** |
+| **Tewiththatin** | 15 | 23 | 42 | 50 | **+233%** |
+| **:]** | 1 | 3 | 4 | 5 | **+400%** |
+| **:]toaboutin** | 1 | 1 | 1 | 10 | **+900%** |
 | **Auto-Opt** | ❌ | ❌ | ❌ | ✅ | **NEW** |
 
 ---
 
-## ⚔️ [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]
+## ⚔️ :]  :]
 
 | VM | Languages | Auto-Opt | Self-Evolution |
 |----|-----------|----------|----------------|
@@ -103,68 +103,68 @@ TOTAL:                    50/50 ✅ 100%
 | Neural Rendering | **4,020x** |
 | Diffusion Steps | **1,000x** |
 
-**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: 76,541x**
+**:] :]: 76,541x**
 
 ---
 
-## 💀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 💀 :] :]
 
-### ✅ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
+### ✅ :] :]:
 
-1. ✅ [CYR:[TRANSLATED]]on .vibee with[TRANSLATED]]andфandtoацandя [CYR:[TRANSLATED]] .zig
-2. ✅ Эtowithportandроin[CYR:[TRANSLATED]] in .zig  .999
-3. ✅ Вwithе 50 теwithтоin [CYR:[TRANSLATED]] (100%)
-4. ✅ [CYR:[TRANSLATED]]inлеon infor[TRANSLATED]]toа "10 Languages" in runtime.html
-5. ✅ Auto-Optimization with in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toа
-6. ✅ [CYR:[TRANSLATED]]inнand[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]andца with [CYR:[TRANSLATED]]and inерwithandямand
-7. ✅ PAS DAEMON аonлandз [CYR:[TRANSLATED]] researcher
+1. ✅ :]on .vibee with]andfVersiontsandya :] .zig
+2. ✅ Etowithportandraboutin:] in .zig  .999
+3. ✅ Vwithe 50 thosewiththatin :] (100%)
+4. ✅ :]inleon infor]toa "10 Languages" in runtime.html
+5. ✅ Auto-Optimization with in:] :] :]toa
+6. ✅ :]innand:]onya :]andtsa with :]and inerAuthormand
+7. ✅ PAS DAEMON aonlandz :] researcher
 
-### 🌍 [CYR:[TRANSLATED]]:
+### 🌍 :]:
 
-- **[CYR:[TRANSLATED]] VM** with 10 [CYR:[TRANSLATED]]inымand [CYR:[TRANSLATED]]toамand
-- **[CYR:[TRANSLATED]] VM** with Auto-Optimization
-- **[CYR:[TRANSLATED]] VM** with Self-Evolution + Multi-Language
-- **[CYR:[TRANSLATED]] VM** with Sacred Math inо inwithех [CYR:[TRANSLATED]]toах
+- **:] VM** with 10 :]inymand :]toamand
+- **:] VM** with Auto-Optimization
+- **:] VM** with Self-Evolution + Multi-Language
+- **:] VM** with Sacred Math inabout inwithekh :]toakh
 
-### 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
+### 📊 :] :]:
 
 ```
-[CYR:[TRANSLATED]]in with[TRANSLATED]]: 5
-[CYR:[TRANSLATED]]to for[TRANSLATED]]: 2500+
-Теwithтоin: 50/50 (100%)
-Прandроwithт vs v22: +233%
-[CYR:[TRANSLATED]]toоin: 10 (S:3, A:3, B:2, C:2)
+:]in with]: 5
+:]to for]: 2500+
+Tewiththatin: 50/50 (100%)
+Prandraboutwitht vs v22: +233%
+:]toaboutin: 10 (S:3, A:3, B:2, C:2)
 ```
 
 ---
 
-## 🔥 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🔥 :] :]
 
 ```
 ╔═══════════════════════════════════════════════════════════════╗
 ║                                                               ║
 ║   TRINITY VM v25 = MULTI-LANGUAGE AUTO-OPTIMIZATION          ║
 ║                                                               ║
-║   "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]toand, withоin[CYR:[TRANSLATED]]withтinуя withinой!"                 ║
+║   ":] :]ande :]toand, withaboutin:]withtinatya withinabouty!"                 ║
 ║                                                               ║
 ║   10 Languages: Zig, .999, C, Rust, Julia, WASM,             ║
 ║                 Go, Gleam, TypeScript, Python                 ║
 ║                                                               ║
-║   φ² + 1/φ² = 3 = TRINITY = [CYR:[TRANSLATED]]                           ║
+║   φ² + 1/φ² = 3 = TRINITY = :]                           ║
 ║                                                               ║
-║   AUTO-OPTIMIZATION [CYR:[TRANSLATED]]                                  ║
+║   AUTO-OPTIMIZATION :]                                  ║
 ║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: 27 = 3³**
-**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: 30 = 3 × 10**
-**33 [CYR:[TRANSLATED]]: 33 = 3 × 11**
-**10 [CYR:[TRANSLATED]]: 10 = 3 + 3 + 2 + 2 (S + A + B + C)**
+**:] :]: 27 = 3³**
+**:] :]: 30 = 3 × 10**
+**33 :]: 33 = 3 × 11**
+**10 :]: 10 = 3 + 3 + 2 + 2 (S + A + B + C)**
 
 ---
 
-*[CYR:[TRANSLATED]] withгеnotрandроinан PAS DAEMON v25 + Multi-Language Benchmark*
+*:] withgenotrandraboutinan PAS DAEMON v25 + Multi-Language Benchmark*
 *Co-authored-by: Ona <no-reply@ona.com>*

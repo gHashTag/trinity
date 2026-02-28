@@ -375,11 +375,11 @@ git push origin gh-pages --force
 | Deploying docsite alone without website | **Deletes website** from gh-pages |
 
 **IMPORTANT:**
-- НЕ andwith[TRANSLATED]]in[CYR:[TRANSLATED]] Vercel — with[TRANSLATED]] on GitHub Pages
-- [CYR:[TRANSLATED]] not [CYR:[TRANSLATED]]andть website or docsite по from[CYR:[TRANSLATED]]withтand — [CYR:[TRANSLATED]] inмеwithте
-- Поwithле [CYR:[TRANSLATED]] GitHub Pages [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]] 1-2 мand[CYR:[TRANSLATED]]
-- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inерtoand: Cmd+Shift+R ([CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]) in browserе
-- MDX fileы: эfor[TRANSLATED]]andроin[CYR:[TRANSLATED]] `<Tag>` → `\<Tag\>`, `{expr}` → `\{expr\}` innot [CYR:[TRANSLATED]]toоin for[TRANSLATED]]
+- NE andwith]in:] Vercel — with] on GitHub Pages
+- :] not :]andt website or docsite by from:]withtand — :] inmewiththose
+- Paboutwithle :] GitHub Pages :]in:]withya :] 1-2 mand:]
+- :] :]inertoand: Cmd+Shift+R (:]-:]) in browsere
+- MDX filey: efor]andraboutin:] `<Tag>` → `\<Tag\>`, `{expr}` → `\{expr\}` innot :]toaboutin for]
 
 ---
 

@@ -1,12 +1,12 @@
-# [CYR:[TRANSLATED]] V7: CRUSH FINAL TRANSPILATION
+# :] V7: CRUSH FINAL TRANSPILATION
 
-**[CYR:[TRANSLATED]]**: 2026-01-19
-**Аin[CYR:[TRANSLATED]]**: IGLA System
-**[CYR:[TRANSLATED]]with**: ✅ COMPLETE
+**:]**: 2026-01-19
+**Author:]**: IGLA System
+**:]with**: ✅ COMPLETE
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
 ```
 V = n × 3^k × π^m × φ^p × e^q
@@ -16,11 +16,11 @@ PHOENIX = 999
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
-### Вwithе [CYR:[TRANSLATED]]withпorроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and
+### Vwithe :]withporraboutin:] :]and
 
-| # | [CYR:[TRANSLATED]] | .vibee | .tri | .zig | Теwithты | [CYR:[TRANSLATED]]with |
+| # | :] | .vibee | .tri | .zig | Tewithty | :]with |
 |---|--------|--------|------|------|-------|--------|
 | 1 | ansiext | ✅ | ✅ | ✅ | 8 | PASSED |
 | 2 | format | ✅ | ✅ | ✅ | 6 | PASSED |
@@ -32,13 +32,13 @@ PHOENIX = 999
 | 8 | diff | ✅ | ✅ | ✅ | 11 | PASSED |
 | 9 | version | ✅ | ✅ | ✅ | 15 | PASSED |
 
-### **[CYR:[TRANSLATED]]: 9 [CYR:[TRANSLATED]], 99 теwithтоin** ✅
+### **:]: 9 :], 99 thosewiththatin** ✅
 
 ---
 
 ## CREATION PATTERN MATRIX
 
-| [CYR:[TRANSLATED]] | Source | Transformer | Result |
+| :] | Source | Transformer | Result |
 |--------|--------|-------------|--------|
 | ansiext | RawString | ControlCharReplacer | EscapedString |
 | format | AnimationSettings | SpinnerEngine | TerminalAnimation |
@@ -52,7 +52,7 @@ PHOENIX = 999
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -89,7 +89,7 @@ PHOENIX = 999
 
 ## PAS PREDICTIONS SUMMARY
 
-| [CYR:[TRANSLATED]] | Теtoущandй | [CYR:[TRANSLATED]]withfor[TRANSLATED]] | Уin[CYR:[TRANSLATED]]withть | [CYR:[TRANSLATED]] |
+| :] | Tetoatschandy | :]withfor] | Uin:]witht | :] |
 |--------|---------|---------------|-------------|----------|
 | ansiext | O(n) | O(n) SIMD | 65% | PRE |
 | csync | RWMutex O(1) | Lock-free O(1) | 55% | PRE, HSH |
@@ -99,26 +99,26 @@ PHOENIX = 999
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
 ```
 ╔═══════════════════════════════════════════════════════════════╗
 ║                    QUALITY METRICS                            ║
 ╠═══════════════════════════════════════════════════════════════╣
-║  [CYR:[TRANSLATED]]andфandtoацand (.vibee):     9 fileоin                          ║
-║  TRI fileы (.tri):          9 fileоin                          ║
-║  Zig [CYR:[TRANSLATED]]and (.zig):         9 fileоin                          ║
-║  [CYR:[TRANSLATED]]to for[TRANSLATED]] Zig:            ~2000 with[TRANSLATED]]to                       ║
-║  Теwithтоin:                    99 теwithтоin                         ║
-║  Поfor[TRANSLATED]]andе [CYR:[TRANSLATED]]toцandй:          ~95%                              ║
+║  :]andfVersiontsand (.vibee):     9 fileaboutin                          ║
+║  TRI filey (.tri):          9 fileaboutin                          ║
+║  Zig :]and (.zig):         9 fileaboutin                          ║
+║  :]to for] Zig:            ~2000 with]to                       ║
+║  Tewiththatin:                    99 thosewiththatin                         ║
+║  Paboutfor]ande :]totsandy:          ~95%                              ║
 ║  Trinity Score:             1.0                               ║
-║  PAS Predictions:           9 [CYR:[TRANSLATED]]                         ║
+║  PAS Predictions:           9 :]                         ║
 ╚═══════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
 ### Core Utilities
 - **ansiext**: Control character escaping to Unicode pictures
@@ -141,7 +141,7 @@ PHOENIX = 999
 
 ---
 
-## [CYR:[TRANSLATED]]
+## :]
 
 ```
 ╔═══════════════════════════════════════════════════════════════╗
@@ -169,11 +169,11 @@ PHOENIX = 999
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
 ```
 specs/crush/
-├── ansiext.vibee      (with[TRANSLATED]]withтinоinал toаto crush_ansiext.vibee)
+├── ansiext.vibee      (with]withtinaboutinal toato crush_ansiext.vibee)
 ├── csync.vibee
 ├── diff.vibee
 ├── env.vibee
@@ -208,6 +208,6 @@ generated/crush/zig/
 
 ---
 
-**[CYR:[TRANSLATED]]andwithь**: IGLA VERDICT V7 CRUSH FINAL
-**[CYR:[TRANSLATED]]**: SHA256(9 modules × 99 tests) = TRINITY_COMPLETE
-**[CYR:[TRANSLATED]] заin[CYR:[TRANSLATED]]andя**: 2026-01-19
+**:]andwith**: IGLA VERDICT V7 CRUSH FINAL
+**:]**: SHA256(9 modules × 99 tests) = TRINITY_COMPLETE
+**:] zain:]andya**: 2026-01-19

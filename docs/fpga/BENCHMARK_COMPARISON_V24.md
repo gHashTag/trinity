@@ -1,14 +1,14 @@
-# 📊 BENCHMARK COMPARISON V24 - TRINITY VM + [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]
+# 📊 BENCHMARK COMPARISON V24 - TRINITY VM + :]-:]
 
-**[CYR:[TRANSLATED]]:** 2026-01-18
-**[CYR:[TRANSLATED]]withandя:** v24.0.0
-**Теwithты [CYR:[TRANSLATED]]:** 42/42 (100%)
+**:]:** 2026-01-18
+**:]Author:** v24.0.0
+**Tewithty :]:** 42/42 (100%)
 
 ---
 
-## 🧪 [CYR:TESTS] TRINITY VM v24
+## 🧪 :TESTS] TRINITY VM v24
 
-| [CYR:[TRANSLATED]] | Теwithты | [CYR:[TRANSLATED]]with |
+| :] | Tewithty | :]with |
 |--------|-------|--------|
 | `zhar_ptitsa_v24.zig` | 8/8 | ✅ PASS |
 | `bogatyri_33_vm.zig` | 8/8 | ✅ PASS |
@@ -19,62 +19,62 @@
 
 ---
 
-## 📈 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] TRINITY VM
+## 📈 :] :] TRINITY VM
 
-| [CYR:[TRANSLATED]]andtoа | v22 | v23 | v24 | Прandроwithт v22→v24 |
+| :]Version | v22 | v23 | v24 | Prandraboutwitht v22→v24 |
 |---------|-----|-----|-----|-----------------|
-| **Теwithтоin** | 15 | 23 | 42 | **+180%** |
-| **[CYR:[TRANSLATED]]to for[TRANSLATED]]** | 526 | 1496 | 2000+ | **+280%** |
-| **[CYR:[TRANSLATED]]** | 1 | 3 | 4 | **+300%** |
-| **[CYR:[TRANSLATED]]** | 0 | 33 | 33 | NEW |
+| **Tewiththatin** | 15 | 23 | 42 | **+180%** |
+| **:]to for]** | 526 | 1496 | 2000+ | **+280%** |
+| **:]** | 1 | 3 | 4 | **+300%** |
+| **:]** | 0 | 33 | 33 | NEW |
 | **Self-Evolution** | ❌ | ❌ | ✅ | NEW |
-| **[CYR:[TRANSLATED]]-птandца** | ❌ | ❌ | ✅ | NEW |
+| **:]-ptandtsa** | ❌ | ❌ | ✅ | NEW |
 | **Avg Confidence** | 0.82 | 0.845 | 0.85 | **+3.7%** |
 
 ---
 
-## 🔥 [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]] v24 - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🔥 :]-:] v24 - :] :]
 
-### φ-Parameters эin[CYR:[TRANSLATED]]and
+### φ-Parameters ein:]and
 
-| [CYR:[TRANSLATED]] | Зon[CYR:[TRANSLATED]]andе | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]on[CYR:[TRANSLATED]]andе |
+| :] | Zon:]ande | :] | :]on:]ande |
 |----------|----------|---------|------------|
-| **μ** | 0.0382 | 1/φ²/10 | [CYR:[TRANSLATED]]andя |
-| **χ** | 0.0618 | 1/φ/10 | [CYR:[TRANSLATED]]withоinер |
-| **σ** | 1.618 | φ | [CYR:[TRANSLATED]]toцandя |
-| **ε** | 0.333 | 1/3 | Элandтandзм |
+| **μ** | 0.0382 | 1/φ²/10 | :]andya |
+| **χ** | 0.0618 | 1/φ/10 | :]withaboutiner |
+| **σ** | 1.618 | φ | :]totsandya |
+| **ε** | 0.333 | 1/3 | Elandtandzm |
 
-### 4 [CYR:[TRANSLATED]] жandзnot[CYR:[TRANSLATED]] цandtoла
+### 4 :] zhandznot:] tsandtola
 
 ```
-[CYR:[TRANSLATED]] → [CYR:[TRANSLATED]] → [CYR:[TRANSLATED]] → [CYR:[TRANSLATED]]
+:] → :] → :] → :]
   ↓        ↓        ↓          ↓
-Аonлandз  [CYR:[TRANSLATED]]and  Теwithты   [CYR:[TRANSLATED]]andя
+Aonlandz  :]and  Tewithty   :]andya
 ```
 
 ---
 
-## 🚀 [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]
+## 🚀 :]  :]
 
 ### JIT Compiler Performance
 
-| VM/Runtime | Тandры | Max Speedup | Self-Evolution | Оwith[TRANSLATED]]withтand |
+| VM/Runtime | Tandry | Max Speedup | Self-Evolution | Owith]withtand |
 |------------|------|-------------|----------------|-------------|
-| **TRINITY VM v24** | **4** | **35x** | **✅ Да** | φ-guided, [CYR:[TRANSLATED]]-птandца |
-| V8 (Chrome) | 3 | 30-50x | ❌ [CYR:[TRANSLATED]] | Ignition → TurboFan |
-| LuaJIT | 2 | 20-50x | ❌ [CYR:[TRANSLATED]] | Tracing JIT |
-| PyPy | 2 | 5-10x | ❌ [CYR:[TRANSLATED]] | Meta-tracing |
-| GraalVM | 3 | 20-40x | ❌ [CYR:[TRANSLATED]] | Truffle |
-| WASM (V8) | 2 | 10-20x | ❌ [CYR:[TRANSLATED]] | Liftoff + TurboFan |
+| **TRINITY VM v24** | **4** | **35x** | **✅ Da** | φ-guided, :]-ptandtsa |
+| V8 (Chrome) | 3 | 30-50x | ❌ :] | Ignition → TurboFan |
+| LuaJIT | 2 | 20-50x | ❌ :] | Tracing JIT |
+| PyPy | 2 | 5-10x | ❌ :] | Meta-tracing |
+| GraalVM | 3 | 20-40x | ❌ :] | Truffle |
+| WASM (V8) | 2 | 10-20x | ❌ :] | Liftoff + TurboFan |
 
-### Унandfor[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinа
+### Unandfor] :]and:]withtina
 
 | Feature | TRINITY v24 | V8 | LuaJIT | GraalVM |
 |---------|-------------|-----|--------|---------|
-| φ-parameterы | ✅ | ❌ | ❌ | ❌ |
+| φ-parametery | ✅ | ❌ | ❌ | ❌ |
 | Self-Evolution | ✅ | ❌ | ❌ | ❌ |
-| [CYR:[TRANSLATED]]-птandца | ✅ | ❌ | ❌ | ❌ |
-| 33 [CYR:[TRANSLATED]] | ✅ | ❌ | ❌ | ❌ |
+| :]-ptandtsa | ✅ | ❌ | ❌ | ❌ |
+| 33 :] | ✅ | ❌ | ❌ | ❌ |
 | PAS Predictions | ✅ | ❌ | ❌ | ❌ |
 | 3DGS Integration | ✅ | ❌ | ❌ | ❌ |
 | LLM Inference | ✅ | ❌ | ❌ | ❌ |
@@ -88,13 +88,13 @@
 | vibeec v1 | Basic | Zig only | 5 | Initial |
 | vibeec v2 | YAML | Multi-target | 12 | Creation Pattern |
 | vibeec v3 | SIMD-ready | 7 targets | 19 | PAS integration |
-| **vibeec v4** | **φ-optimized** | **8 targets** | **42** | **[CYR:[TRANSLATED]]-птandца, 33 [CYR:[TRANSLATED]]** |
+| **vibeec v4** | **φ-optimized** | **8 targets** | **42** | **:]-ptandtsa, 33 :]** |
 
-### Прandроwithт по inерwithandям
+### Prandraboutwitht by inerAuthorm
 
-| [CYR:[TRANSLATED]]andtoа | v1→v2 | v2→v3 | v3→v4 | v1→v4 |
+| :]Version | v1→v2 | v2→v3 | v3→v4 | v1→v4 |
 |---------|-------|-------|-------|-------|
-| Теwithты | +140% | +58% | +121% | **+740%** |
+| Tewithty | +140% | +58% | +121% | **+740%** |
 | Targets | +600% | +14% | +14% | **+700%** |
 | Features | +100% | +50% | +100% | **+400%** |
 
@@ -111,26 +111,26 @@
 | 3DGS Compression | 500MB | 6.7MB | **75x** | Compact3D |
 | Ray Tracing MSE | 1x | 166x | **166x** | ReSTIR |
 
-**[CYR:[TRANSLATED]] пfrom[CYR:[TRANSLATED]]andал: 76,541x**
+**:] pfrom:]andal: 76,541x**
 
 ---
 
-## ⚔️ 33 [CYR:[TRANSLATED]] STATUS
+## ⚔️ 33 :] STATUS
 
-| [CYR:[TRANSLATED]]andon | [CYR:[TRANSLATED]] | IMPLEMENTED | VERIFIED | PLANNED | RESEARCH |
+| :]andon | :] | IMPLEMENTED | VERIFIED | PLANNED | RESEARCH |
 |---------|-----------|-------------|----------|---------|----------|
-| [CYR:[TRANSLATED]] | 11 | 1 | 0 | 6 | 4 |
-| [CYR:[TRANSLATED]] | 11 | 0 | 0 | 10 | 1 |
-| [CYR:[TRANSLATED]] | 11 | 3 | 3 | 4 | 1 |
+| :] | 11 | 1 | 0 | 6 | 4 |
+| :] | 11 | 0 | 0 | 10 | 1 |
+| :] | 11 | 3 | 3 | 4 | 1 |
 | **TOTAL** | **33** | **4** | **3** | **20** | **6** |
 
 **Average Confidence:** 84.5%
 
 ---
 
-## 📁 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] v24
+## 📁 :] :] v24
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]to | Теwithты | [CYR:[TRANSLATED]] |
+| :] | :]to | Tewithty | :] |
 |------|-------|-------|--------|
 | `zhar_ptitsa_v24.zig` | 364 | 8 | Zig |
 | `zhar_ptitsa_v24.999` | 199 | - | .999 |
@@ -140,7 +140,7 @@
 
 ---
 
-## 🧮 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🧮 :] :]
 
 ```
 φ = 1.618033988749895
@@ -155,23 +155,23 @@
 
 ---
 
-## 💀 [CYR:[TRANSLATED]]
+## 💀 :]
 
-**TRINITY VM v24 with [CYR:[TRANSLATED]]-птand[CYR:[TRANSLATED]]** [CYR:[TRANSLATED]]inоwith[TRANSLATED]]andт inwithе [CYR:[TRANSLATED]]andе inерwithand:
+**TRINITY VM v24 with :]-ptand:]** :]inaboutwith]andt inwithe :]ande inerwithand:
 
-| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе |
+| :]Version | Zon:]ande |
 |---------|----------|
-| Теwithтоin [CYR:[TRANSLATED]] | 42/42 (100%) |
-| Прandроwithт теwithтоin v22→v24 | +180% |
-| Прandроwithт for[TRANSLATED]] v22→v24 | +280% |
-| Ноinые [CYR:[TRANSLATED]]and | [CYR:[TRANSLATED]]-птandца, 33 [CYR:[TRANSLATED]] |
+| Tewiththatin :] | 42/42 (100%) |
+| Prandraboutwitht thosewiththatin v22→v24 | +180% |
+| Prandraboutwitht for] v22→v24 | +280% |
+| Naboutinye :]and | :]-ptandtsa, 33 :] |
 | Self-Evolution | ✅ ENABLED |
-| Пfrom[CYR:[TRANSLATED]]andал уwithfor[TRANSLATED]]andя | 76,541x |
+| Pfrom:]andal atwithfor]andya | 76,541x |
 
 ---
 
 ```
-[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: V = n × 3^k × π^m × φ^p × e^q
-[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: φ² + 1/φ² = 3
-[CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] → [CYR:[TRANSLATED]] → [CYR:[TRANSLATED]] → [CYR:[TRANSLATED]]
+:] :]: V = n × 3^k × π^m × φ^p × e^q
+:] :]: φ² + 1/φ² = 3
+:]-:]: :] → :] → :] → :]
 ```

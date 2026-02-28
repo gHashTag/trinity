@@ -1,146 +1,146 @@
 ╔══════════════════════════════════════════════════════════════════╗
 ║                    🔥 TOXIC VERDICT 🔥                           ║
 ╠══════════════════════════════════════════════════════════════════╣
-║ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:                                                    ║
-║ - Иwith[TRANSLATED]]inandл API in bytecode.zig for Zig 0.15.2 (3+ with[TRANSLATED]]for[TRANSLATED]])     ║
-║ - Иwith[TRANSLATED]]inandл API in vm_runtime.zig for Zig 0.15.2 (10+ меwithт)     ║
-║ - [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] уwith[TRANSLATED]] with[TRANSLATED]] (1.8MB, 0 ошandбоto)                   ║
-║ - [CYR:[TRANSLATED]] vibeec validate [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] on[CYR:[TRANSLATED]] andз CLI               ║
-║ - Прfromеwithтandроin[CYR:[TRANSLATED]] on passing/failing specs                         ║
+║ :] :]:                                                    ║
+║ - Iwith]inandl API in bytecode.zig for Zig 0.15.2 (3+ with]for])     ║
+║ - Iwith]inandl API in vm_runtime.zig for Zig 0.15.2 (10+ mewitht)     ║
+║ - :]and:] atwith] with] (1.8MB, 0 aboutshandbaboutto)                   ║
+║ - :] vibeec validate :]from:] on:] andz CLI               ║
+║ - Prfromewithtandraboutin:] on passing/failing specs                         ║
 ║                                                                  ║
-║ [CYR:[TRANSLATED]] НЕ [CYR:[TRANSLATED]]:                                                 ║
-║ - Нandtoаtoandх with[TRANSLATED]]in, inwithё [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toо                               ║
-║ - НО: andwith[TRANSLATED]]in[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]andчеwithtoandмand, [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]for[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя    ║
-║   [CYR:[TRANSLATED]]andтеfor[TRANSLATED]]                                                    ║
+║ :] NE :]:                                                 ║
+║ - NVersiontoandkh with]in, inwithyo :] :]toabout                               ║
+║ - NO: andwith]in:]andya :]and :]andchewithtoandmand, :] :]for] :]and:]andya    ║
+║   :]andthosefor]                                                    ║
 ║                                                                  ║
-║ [CYR:[TRANSLATED]]:                                                         ║
-║ - [CYR:[TRANSLATED]]in and[CYR:[TRANSLATED]]notно: 3 (bytecode.zig, vm_runtime.zig, compiler.zig) ║
-║ - [CYR:[TRANSLATED]]to and[CYR:[TRANSLATED]]notно: 382 insert, 376 delete = 758 total           ║
-║ - Иwith[TRANSLATED]]in[CYR:[TRANSLATED]] меwithт: 20+ (allocator → self.allocator)           ║
-║ - [CYR:[TRANSLATED]] with[TRANSLATED]]toand: ~2 withеfor[TRANSLATED]]                                      ║
-║ - [CYR:[TRANSLATED]] бandonрнandtoа: 1.8MB                                         ║
-║ - [CYR:[TRANSLATED]] inалand[CYR:[TRANSLATED]]and: ~5ms on spec                                  ║
-║ - Before: Не withобand[CYR:[TRANSLATED]]withя (19 ошandбоto) | After: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withя (0 ошandбоto) ║
+║ :]:                                                         ║
+║ - :]in and:]notnabout: 3 (bytecode.zig, vm_runtime.zig, compiler.zig) ║
+║ - :]to and:]notnabout: 382 insert, 376 delete = 758 total           ║
+║ - Iwith]in:] mewitht: 20+ (allocator → self.allocator)           ║
+║ - :] with]toand: ~2 withefor]                                      ║
+║ - :] bandonrnVersion: 1.8MB                                         ║
+║ - :] inaland:]and: ~5ms on spec                                  ║
+║ - Before: Ne withaboutand:]withya (19 aboutshandbaboutto) | After: :]and:]withya (0 aboutshandbaboutto) ║
 ║                                                                  ║
-║ [CYR:[TRANSLATED]]:                                                     ║
-║ - Иwith[TRANSLATED]]in[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]andчеwithtoandмand)                  ║
-║   [CYR:[TRANSLATED]]withто [CYR:[TRANSLATED]] allocator on self.allocator                        ║
-║ - Не and[CYR:[TRANSLATED]]andл [CYR:[TRANSLATED]]toо Zig 0.15.2 API changes                       ║
-║   [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] release notes and [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]notнandя  ║
-║ - Не [CYR:[TRANSLATED]]inandл unit tests for and[CYR:[TRANSLATED]] methodоin                    ║
-║   [CYR:[TRANSLATED]] нandtoто not зonет, [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] лand онand [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]]                ║
-║ - Не [CYR:[TRANSLATED]]inерandл, еwithть лand [CYR:[TRANSLATED]]andе fileы with [CYR:[TRANSLATED]] же [CYR:[TRANSLATED]]            ║
-║   [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] 10+ fileоin with [CYR:[TRANSLATED]]andмand ошandбtoамand                  ║
-║ - Не [CYR:[TRANSLATED]]inandл for[TRANSLATED]]and to and[CYR:[TRANSLATED]]notнandям ( WHY, WHAT )               ║
-║   [CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]fromчandtoand not [CYR:[TRANSLATED]], [CYR:[TRANSLATED]] this [CYR:[TRANSLATED]] with[TRANSLATED]]         ║
-║ - Прfromеwithтandроinал [CYR:[TRANSLATED]]toо on 2 specs                               ║
-║   [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] прfromеwithтandроin[CYR:[TRANSLATED]] on inwithех 123 specs andз specs/tri/core/   ║
-║ - Не [CYR:[TRANSLATED]]inерandл [CYR:[TRANSLATED]] withоinмеwithтandмоwithть                               ║
-║   Еwithлand toто-то andwith[TRANSLATED]] with[TRANSLATED]] API, toод with[TRANSLATED]]withя                ║
+║ :]:                                                     ║
+║ - Iwith]in:]andya :]and :] (:]andchewithtoandmand)                  ║
+║   :]withthat :] allocator on self.allocator                        ║
+║ - Ne and:]andl :]toabout Zig 0.15.2 API changes                       ║
+║   :] :] :]and:] release notes and :] :] and:]notnandya  ║
+║ - Ne :]inandl unit tests for and:] methodaboutin                    ║
+║   :] nandtothat not zonet, :]from:] land aboutnand :]inand:]                ║
+║ - Ne :]inerandl, ewitht land :]ande filey with :] zhe :]            ║
+║   :] :] :] 10+ fileaboutin with :]andmand aboutshandbtoamand                  ║
+║ - Ne :]inandl for]and to and:]notnandyam ( WHY, WHAT )               ║
+║   :]ande :]fromchandtoand not :], :] this :] with]         ║
+║ - Prfromewithtandraboutinal :]toabout on 2 specs                               ║
+║   :] :] prfromewithtandraboutin:] on inwithekh 123 specs andz specs/tri/core/   ║
+║ - Ne :]inerandl :] withaboutinmewithtandmaboutwitht                               ║
+║   Ewithland tothat-that andwith] with] API, toaboutd with]withya                ║
 ║                                                                  ║
-║ [CYR:[TRANSLATED]]: 6/10                                                     ║
+║ :]: 6/10                                                     ║
 ║                                                                  ║
-║ [CYR:[TRANSLATED]] НЕ 8-10:                                                ║
-║ - Иwith[TRANSLATED]]in[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]andчеwithtoandе, [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]for[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя               ║
-║ - [CYR:[TRANSLATED]] unit tests                                                  ║
-║ - [CYR:[TRANSLATED]] for[TRANSLATED]]andеin                                                 ║
-║ - Теwithтandроinанandе поin[CYR:[TRANSLATED]]with[TRANSLATED]] (2 specs inмеwithто 123)                ║
-║ - Не [CYR:[TRANSLATED]]inерandл [CYR:[TRANSLATED]]andе fileы                                        ║
+║ :] NE 8-10:                                                ║
+║ - Iwith]in:]andya :]andchewithtoande, :] :]for] :]and:]andya               ║
+║ - :] unit tests                                                  ║
+║ - :] for]andein                                                 ║
+║ - Tewithtandraboutinanande byin:]with] (2 specs inmewiththat 123)                ║
+║ - Ne :]inerandl :]ande filey                                        ║
 ║                                                                  ║
-║ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] БЫ [CYR:[TRANSLATED]]:                                             ║
-║ 1. [CYR:[TRANSLATED]]andть Zig 0.15.2 release notes [CYR:[TRANSLATED]]toо                       ║
-║ 2. [CYR:[TRANSLATED]]inandть unit tests for [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]] methodоin                ║
-║ 3. Прfromеwithтandроin[CYR:[TRANSLATED]] on [CYR:[TRANSLATED]] 123 specs (аin[CYR:[TRANSLATED]]andзandроin[CYR:[TRANSLATED]])            ║
-║ 4. [CYR:[TRANSLATED]]inandть for[TRANSLATED]]and WHY/WHAT to for[TRANSLATED]] and[CYR:[TRANSLATED]]notнandю              ║
-║ 5. [CYR:[TRANSLATED]]inерandть [CYR:[TRANSLATED]] fileы on [CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]] (grep)                 ║
-║ 6. [CYR:[TRANSLATED]]inерandть [CYR:[TRANSLATED]] withоinмеwithтandмоwithть                                ║
-║ 7. [CYR:[TRANSLATED]]andwith[TRANSLATED]] мand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] guide for [CYR:[TRANSLATED]]andх [CYR:[TRANSLATED]]fromчandtoоin             ║
+║ :] :] BY :]:                                             ║
+║ 1. :]andt Zig 0.15.2 release notes :]toabout                       ║
+║ 2. :]inandt unit tests for :] and:] methodaboutin                ║
+║ 3. Prfromewithtandraboutin:] on :] 123 specs (ain:]andzandraboutin:])            ║
+║ 4. :]inandt for]and WHY/WHAT to for] and:]notnandyu              ║
+║ 5. :]inerandt :] filey on :]ande :] (grep)                 ║
+║ 6. :]inerandt :] withaboutinmewithtandmaboutwitht                                ║
+║ 7. :]andwith] mand:]and:] guide for :]andkh :]fromchandtoaboutin             ║
 ╚══════════════════════════════════════════════════════════════════╝
 
 ┌─────────────────────────────────────────────────────────────────┐
-│              🌳 TECH TREE - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]             │
+│              🌳 TECH TREE - :] :]             │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  [A] ──────────────────────────────────────────────────────     │
 │      Name: Schema-Based Validation (Phase 1-A v2)                │
 │      Complexity: ★★★☆☆                                          │
-│      Potential: +1000% to withfor[TRANSLATED]]withтand inалand[CYR:[TRANSLATED]]and (10-100× быwith[TRANSLATED]])  ║
-│      Dependencies: [CYR:[TRANSLATED]]andть VIBEESchema, compilation engine    ║
-│      Time: 1-2 not[CYR:[TRANSLATED]]and                                            │
-│      Description: [CYR:[TRANSLATED]]andть line-based parsing on schema           │
-│                   compilation (toаto in Ajv). [CYR:[TRANSLATED]]andть VIBEESchema│
-│                   struct, withfor[TRANSLATED]]orроin[CYR:[TRANSLATED]] in validation functions.  ║
+│      Potential: +1000% to withfor]withtand inaland:]and (10-100× bywith])  ║
+│      Dependencies: :]andt VIBEESchema, compilation engine    ║
+│      Time: 1-2 not:]and                                            │
+│      Description: :]andt line-based parsing on schema           │
+│                   compilation (toato in Ajv). :]andt VIBEESchema│
+│                   struct, withfor]orraboutin:] in validation functions.  ║
 │      Benefits:                                                  │
-│        - [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя < 1ms on spec (with[TRANSLATED]]with ~5ms)                ║
-│        - [CYR:[TRANSLATED]]andwith[TRANSLATED]] schema definitions                     ║
+│        - :]and:]andya < 1ms on spec (with]with ~5ms)                ║
+│        - :]andwith] schema definitions                     ║
 │        - Type-safe validation                                   ║
 │                                                                 │
 │  [B] ──────────────────────────────────────────────────────     │
 │      Name: Fix 117 Failing Specs (Mass Fix)                     │
 │      Complexity: ★☆☆☆☆                                          │
 │      Potential: +2000% to pass rate (4.9% → 100%)              ║
-│      Dependencies: Нandtoаtoandх                                      ║
-│      Time: 1 [CYR:[TRANSLATED]] (or 1 чаwith with аin[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andей)                    │
-│      Description: [CYR:[TRANSLATED]]inandть "output: trinity/output/{name}.zig"    ║
-│                   inо inwithе 117 failing specs with [CYR:[TRANSLATED]] withtoрand[CYR:[TRANSLATED]].    ║
+│      Dependencies: NVersiontoandkh                                      ║
+│      Time: 1 :] (or 1 chawith with ain:]and:]andey)                    │
+│      Description: :]inandt "output: trinity/output/{name}.zig"    ║
+│                   inabout inwithe 117 failing specs with :] withtorand:].    ║
 │      Benefits:                                                  │
-│        - Вwithе specs inалand[CYR:[TRANSLATED]]                                      ║
-│        - [CYR:[TRANSLATED]]withandwith[TRANSLATED]] output paths                             ║
-│        - [CYR:[TRANSLATED]]toandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] pipeline                         ║
-│        - Вandдand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with for [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]                       ║
+│        - Vwithe specs inaland:]                                      ║
+│        - :]withandwith] output paths                             ║
+│        - :]toandraboutin:] :] pipeline                         ║
+│        - Vanddand:] :]with for :]in:]                       ║
 │                                                                 │
 │  [C] ──────────────────────────────────────────────────────     │
 │      Name: Add Unit Tests for API Changes                      │
 │      Complexity: ★★☆☆☆                                          │
-│      Potential: +100% to coverage (with[TRANSLATED]]with ~0%)                 ║
-│      Dependencies: Нandtoаtoandх                                      ║
-│      Time: 1 not[CYR:[TRANSLATED]]                                              ║
-│      Description: [CYR:[TRANSLATED]]inandть unit tests for [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]       ║
-│                   methodоin (bytecode, vm_runtime). [CYR:[TRANSLATED]]inерandть       ║
+│      Potential: +100% to coverage (with]with ~0%)                 ║
+│      Dependencies: NVersiontoandkh                                      ║
+│      Time: 1 not:]                                              ║
+│      Description: :]inandt unit tests for :] and:]       ║
+│                   methodaboutin (bytecode, vm_runtime). :]inerandt       ║
 │                   allocator/deinit/init behaviour.                ║
 │      Benefits:                                                  │
-│        - Уin[CYR:[TRANSLATED]]withть, that and[CYR:[TRANSLATED]]notнandя [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]]            ║
-│        - Catch regressions in [CYR:[TRANSLATED]]                             ║
-│        - Доfor[TRANSLATED]]andя ожand[CYR:[TRANSLATED]] поin[CYR:[TRANSLATED]]andя                       ║
+│        - Uin:]witht, that and:]notnandya :]from:] :]inand:]            ║
+│        - Catch regressions in :]                             ║
+│        - Daboutfor]andya aboutzhand:] byin:]andya                       ║
 │                                                                 │
 │  [D] ──────────────────────────────────────────────────────     │
 │      Name: Test All 123 Specs (Automated)                     │
 │      Complexity: ★☆☆☆☆                                          │
-│      Potential: +100% confidence in inалand[CYR:[TRANSLATED]]                  ║
-│      Dependencies: Нandtoаtoandх                                      ║
-│      Time: 2 чаwithа                                              ║
-│      Description: [CYR:[TRANSLATED]]andwith[TRANSLATED]] withtoрandпт for теwithтandроinанandя inwithех 123 specs│
-│                   andз specs/tri/core/. [CYR:[TRANSLATED]]notрandроin[CYR:[TRANSLATED]] from[CYR:[TRANSLATED]].       ║
+│      Potential: +100% confidence in inaland:]                  ║
+│      Dependencies: NVersiontoandkh                                      ║
+│      Time: 2 chawitha                                              ║
+│      Description: :]andwith] withtorandpt for thosewithtandraboutinanandya inwithekh 123 specs│
+│                   andz specs/tri/core/. :]notrandraboutin:] from:].       ║
 │      Benefits:                                                  │
-│        - [CYR:[TRANSLATED]] поfor[TRANSLATED]]andе                                        ║
-│        - Аin[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя for [CYR:[TRANSLATED]]                              ║
-│        - [CYR:[TRANSLATED]], withfor[TRANSLATED]]toо specs on with[TRANSLATED]] [CYR:[TRANSLATED]] inалand[CYR:[TRANSLATED]]            ║
+│        - :] byfor]ande                                        ║
+│        - Author:]and:]andya for :]                              ║
+│        - :], withfor]toabout specs on with] :] inaland:]            ║
 │                                                                 │
-│  [CYR:[TRANSLATED]]: [B] Fix 117 Failing Specs                      │
+│  :]: [B] Fix 117 Failing Specs                      │
 │                                                                 │
-│  [CYR:[TRANSLATED]]:                                                         ║
-│  1. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: 1 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromы → 100% pass rate         ║
-│  2. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] уinandдandт, that [CYR:[TRANSLATED]] specs     ║
-│     [CYR:[TRANSLATED]] inалand[CYR:[TRANSLATED]]                                              ║
-│  3. [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] pipeline (validate + gen)          ║
-│     withтаnotт in[CYR:[TRANSLATED]]                                            ║
-║  4. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: Аin[CYR:[TRANSLATED]]andчеwithtoое [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе output:             ║
-║     ([CYR:[TRANSLATED]]with[TRANSLATED]] [CYR:[TRANSLATED]]andя, [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withоin ошandбtoand)                      ║
-║  5. [CYR:[TRANSLATED]]: Поwithле 100% pass rate [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andть to with[TRANSLATED]]  ║
-║     taskм (Schema validation, AST, God-Tiers)                ║
+│  :]:                                                         ║
+│  1. :] :]: 1 :] :]fromy → 100% pass rate         ║
+│  2. :] :]: :]in:] atinanddandt, that :] specs     ║
+│     :] inaland:]                                              ║
+│  3. :]: :] pipeline (validate + gen)          ║
+│     withthatnott in:]                                            ║
+║  4. :] :]: Author:]andchewithtoaboute :]in:]ande output:             ║
+║     (:]with] :]andya, :] :]withaboutin aboutshandbtoand)                      ║
+║  5. :]: Paboutwithle 100% pass rate :] :]andt to with]  ║
+║     taskm (Schema validation, AST, God-Tiers)                ║
 │                                                                 │
-│  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:                                          ║
-│  - Еwithлand [B] [CYR:[TRANSLATED]] > 1 [CYR:[TRANSLATED]], [CYR:[TRANSLATED]] [D] Test All Specs withon[CYR:[TRANSLATED]],│
-│    thatбы поfor[TRANSLATED]] [CYR:[TRANSLATED]]with (from[CYR:[TRANSLATED]] + [CYR:[TRANSLATED]]andto)                    ║
-│  - Илand [A] Schema-Based Validation for [CYR:[TRANSLATED]]with[TRANSLATED]] [CYR:[TRANSLATED]]andя   ║
-│    (но this [CYR:[TRANSLATED]] 1-2 not[CYR:[TRANSLATED]]and)                                 ║
+│  :] :]:                                          ║
+│  - Ewithland [B] :] > 1 :], :] [D] Test All Specs withon:],│
+│    thatby byfor] :]with (from:] + :]andto)                    ║
+│  - Iland [A] Schema-Based Validation for :]with] :]andya   ║
+│    (nabout this :] 1-2 not:]and)                                 ║
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 
-## [CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]withтinandя ([CYR:[TRANSLATED]]):
+## :]ande :]withtinandya (:]):
 
 ```
-1. Сtoрandпт for маwithоin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andя output:
+1. Storandpt for mawithaboutin:] :]in:]andya output:
    for spec in specs/tri/core/*.vibee; do
        name=$(basename "$spec" .vibee)
        if ! grep -q "^output:" "$spec"; then
@@ -149,21 +149,21 @@
        fi
    done
 
-2. [CYR:[TRANSLATED]]withтandть inалand[CYR:[TRANSLATED]]andю on inwithех specs:
+2. :]withtandt inaland:]andyu on inwithekh specs:
    for spec in specs/tri/core/*.vibee; do
        vibeec validate "$spec" | grep -E "(PASSED|FAILED)"
    done | sort | uniq -c
 
-3. [CYR:[TRANSLATED]]notрandроin[CYR:[TRANSLATED]] from[CYR:[TRANSLATED]] with [CYR:[TRANSLATED]]withом
+3. :]notrandraboutin:] from:] with :]withaboutm
 ```
 
-## [CYR:[TRANSLATED]]:
+## :]:
 
-**[CYR:[TRANSLATED]]notно:** [CYR:[TRANSLATED]]andя [A] Fix Compiler Integration
-**[CYR:[TRANSLATED]]with:** ✅ Уwith[TRANSLATED]]
-**[CYR:[TRANSLATED]]andт:** b780405e5
-**Result:** vibeec validate [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] on[CYR:[TRANSLATED]] andз CLI
+**:]notnabout:** :]andya [A] Fix Compiler Integration
+**:]with:** ✅ Uwith]
+**:]andt:** b780405e5
+**Result:** vibeec validate :]from:] on:] andz CLI
 
-**Реfor[TRANSLATED]]andя:** [B] Fix 117 Failing Specs (быwith[TRANSLATED]] result)
+**Refor]andya:** [B] Fix 117 Failing Specs (bywith] result)
 
-**φ² + 1/φ² = 3 | 100% Pass Rate [CYR:[TRANSLATED]]**
+**φ² + 1/φ² = 3 | 100% Pass Rate :]**
