@@ -1239,6 +1239,12 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    // Unified API Layer (Golden Chain #102)
+    const api_mod = b.createModule(.{
+        .root_source_file = b.path("src/api/unified_server.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
     // TRI - Unified Trinity CLI
     const tri = b.addExecutable(.{
         .name = "tri",
@@ -1256,6 +1262,8 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "tvc_distributed", .module = tvc_distributed_mod },
                 .{ .name = "igla_tvc_chat", .module = igla_tvc_chat_mod },
                 .{ .name = "pas_orchestrator", .module = pas_orchestrator_mod },
+                // Unified API Layer (Golden Chain #102)
+                .{ .name = "api", .module = api_mod },
             },
         }),
     });
