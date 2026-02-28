@@ -264,7 +264,7 @@ pub fn parseFormula(allocator: std.mem.Allocator, formula: []const u8) !std.Stri
 
         // Store or add count
         const entry = try result.getOrPut(symbol);
-        if (!entry.found) {
+        if (!entry.found_existing) {
             entry.value_ptr.* = count;
         } else {
             entry.value_ptr.* += count;

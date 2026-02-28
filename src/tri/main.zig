@@ -30,7 +30,7 @@ const commands = @import("tri_commands.zig");
 const pipeline = @import("tri_pipeline.zig");
 const demos = @import("tri_demos.zig");
 const math_commands = @import("math/commands.zig");
-// const chemistry_commands = @import("tri_chemistry.zig"); // TODO: fix build errors
+const chemistry_commands = @import("tri_chemistry.zig");
 const tri_context = @import("tri_context.zig");
 const orchestrator = @import("orchestrator_v2_full.zig");
 
@@ -255,9 +255,10 @@ pub fn main() !void {
         .sacred => math_commands.runSacredCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Sacred error: {}\n", .{err});
         },
-        // Chemistry (v6.0) - TODO: fix build errors
+        // Chemistry (v6.0) - TODO: complete element data (missing optional fields)
         .chem => {
-            std.debug.print("Chemistry commands temporarily disabled due to build errors\n", .{});
+            std.debug.print("Chemistry commands coming soon - element data incomplete\n", .{});
+            std.debug.print("Run 'zig build test' to verify core sacred math modules\n", .{});
         },
         // Intelligence System
         .intelligence => tri_context.runIntelligenceCommand(allocator, &state, cmd_args) catch |err| {
