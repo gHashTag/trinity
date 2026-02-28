@@ -2,8 +2,8 @@
 // CODEGEN PERFORMANCE BENCHMARK SUITE v1.0
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Измеряет producesельность мультиязычной генерации кода.
-// Compares время парсинга, энкодинга in HV and генерации текста.
+// Измеряет producesельноwithть мультandязычной генерацandand toоyes.
+// Compares inремя парwithandнга, энtoодandнга in HV and генерацandand теtowithта.
 //
 // Цель: <100ms for 10k LOC.
 // φ² + 1/φ² = 3 | PHOENIX

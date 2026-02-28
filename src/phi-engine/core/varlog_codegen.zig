@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// VARLOG CODEGEN - Генератор Verilog кода из .vibee спецификаций
+// VARLOG CODEGEN - Генератор Verilog toоyes andз .vibee withпецandфandtoацandй
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Generates Verilog HDL for FPGA синтеза
-// Автор: Dmitrii Vasilev
+// Generates Verilog HDL for FPGA withandнтеза
+// Аinтор: Dmitrii Vasilev
 // φ² + 1/φ² = 3
 //
 // ═══════════════════════════════════════════════════════════════════════════════

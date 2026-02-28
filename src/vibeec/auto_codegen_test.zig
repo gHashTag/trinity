@@ -2,7 +2,7 @@
 // AUTO CODEGEN INTEGRATION TEST
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Tests полный pipeline: VibeeSpec -> AutoCodeGenerator -> Zig code
+// Tests byлный pipeline: VibeeSpec -> AutoCodeGenerator -> Zig code
 // φ² + 1/φ² = 3
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -38,7 +38,7 @@ test "generate code from minimal spec" {
 
     const output = try gen.generate(&spec);
 
-    // Check наличие ключевых элементов
+    // Check onлandчandе toлючеinых элементоin
     try testing.expect(std.mem.indexOf(u8, output, "test_spec v1.0.0") != null);
     try testing.expect(std.mem.indexOf(u8, output, "AUTO-GENERATED") != null);
     try testing.expect(std.mem.indexOf(u8, output, "PHI: f64 = 1.618033988749895") != null);
@@ -71,7 +71,7 @@ test "generate struct from TypeDef" {
 
     const output = try gen.generate(&spec);
 
-    // Check генерацию структуры
+    // Check генерацandю withтруtoтуры
     try testing.expect(std.mem.indexOf(u8, output, "pub const User = struct {") != null);
     try testing.expect(std.mem.indexOf(u8, output, "id: i64,") != null);
     try testing.expect(std.mem.indexOf(u8, output, "name: []const u8,") != null);
@@ -101,7 +101,7 @@ test "generate function from Behavior" {
 
     const output = try gen.generate(&spec);
 
-    // Check генерацию функции
+    // Check генерацandю фунtoцandand
     try testing.expect(std.mem.indexOf(u8, output, "pub fn create_user()") != null);
     try testing.expect(std.mem.indexOf(u8, output, "Given: Valid user data") != null);
     try testing.expect(std.mem.indexOf(u8, output, "When: create_user is called") != null);
@@ -139,7 +139,7 @@ test "generate test from TestCase" {
 
     const output = try gen.generate(&spec);
 
-    // Check генерацию testа
+    // Check генерацandю testа
     try testing.expect(std.mem.indexOf(u8, output, "test \"test_basic_calc\"") != null);
 }
 
@@ -156,7 +156,7 @@ test "mapType handles all basic types" {
 }
 
 test "mapType handles unknown types" {
-    // Неизвестные типы возвращаются how есть
+    // Неandзinеwithтные тandпы inозinращаютwithя how еwithть
     try testing.expectEqualStrings("CustomType", auto_codegen.mapType("CustomType"));
 }
 

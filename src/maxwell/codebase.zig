@@ -1,5 +1,5 @@
 // Maxwell Daemon - Codebase Interface
-// Интерфейс for взаимодействия агента with кодовой базой
+// Интерфейwith for inзаandмодейwithтinandя агента with toоbeforeinой базой
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -9,14 +9,14 @@ const std = @import("std");
 // CODEBASE INTERFACE
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Результат операции with файлом
+/// Результат операцandand with файлом
 pub const FileResult = struct {
     success: bool,
     content: ?[]const u8,
     error_msg: ?[]const u8,
 };
 
-/// Результат выполнения команды
+/// Результат inыbyлненandя toоманды
 pub const ExecResult = struct {
     exit_code: i32,
     stdout: []const u8,
@@ -24,7 +24,7 @@ pub const ExecResult = struct {
     duration_ms: u64,
 };
 
-/// Информация о файле
+/// Информацandя о файле
 pub const FileInfo = struct {
     path: []const u8,
     size: u64,
@@ -32,7 +32,7 @@ pub const FileInfo = struct {
     modified_time: i128,
 };
 
-/// Тип изменения in diff
+/// Тandп andзмененandя in diff
 pub const DiffType = enum {
     Added,
     Removed,
@@ -40,22 +40,22 @@ pub const DiffType = enum {
     Unchanged,
 };
 
-/// Строка diff
+/// Строtoа diff
 pub const DiffLine = struct {
     line_num: u32,
     diff_type: DiffType,
     content: []const u8,
 };
 
-/// Интерфейс for работы with кодовой базой
+/// Интерфейwith for рабfromы with toоbeforeinой базой
 pub const Codebase = struct {
     allocator: std.mem.Allocator,
     root_path: []const u8,
     
-    // Кэш прочитанных файлов
+    // Кэш прочandтанных файлоin
     file_cache: std.StringHashMap([]const u8),
     
-    // История изменений for отката
+    // Иwithторandя andзмененandй for fromtoата
     change_history: std.ArrayList(Change),
     
     const Change = struct {
@@ -94,9 +94,9 @@ pub const Codebase = struct {
     // READ OPERATIONS
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Прочитать file
+    /// Прочandтать file
     pub fn readFile(self: *Codebase, path: []const u8) FileResult {
-        // Проверить кэш
+        // Проinерandть toэш
         if (self.file_cache.get(path)) |cached| {
             return FileResult{
                 .success = true,
@@ -105,7 +105,7 @@ pub const Codebase = struct {
             };
         }
 
-        // Поbuildsь полный path
+        // Поbuildsь byлный path
         const full_path = std.fs.path.join(self.allocator, &[_][]const u8{ self.root_path, path }) catch {
             return FileResult{
                 .success = false,
@@ -115,7 +115,7 @@ pub const Codebase = struct {
         };
         defer self.allocator.free(full_path);
 
-        // Прочитать file
+        // Прочandтать file
         const file = std.fs.cwd().openFile(full_path, .{}) catch {
             return FileResult{
                 .success = false,
@@ -150,7 +150,7 @@ pub const Codebase = struct {
             };
         };
 
-        // Кэшировать
+        // Кэшandроinать
         const path_copy = self.allocator.dupe(u8, path) catch {
             self.allocator.free(content);
             return FileResult{
@@ -168,7 +168,7 @@ pub const Codebase = struct {
         };
     }
 
-    /// Получить list файлов in директории
+    /// Получandть list файлоin in дandреtoторandand
     pub fn listFiles(self: *Codebase, dir_path: []const u8, pattern: ?[]const u8) !std.ArrayList(FileInfo) {
         var result = std.ArrayList(FileInfo).init(self.allocator);
 
@@ -182,7 +182,7 @@ pub const Codebase = struct {
 
         var iter = dir.iterate();
         while (try iter.next()) |entry| {
-            // Фильтр by паттерну
+            // Фandльтр by паттерну
             if (pattern) |p| {
                 if (!matchPattern(entry.name, p)) continue;
             }
@@ -199,7 +199,7 @@ pub const Codebase = struct {
         return result;
     }
 
-    /// Найти файлы by паттерну рекурсивно
+    /// Найтand файлы by паттерну реtoурwithandinно
     pub fn findFiles(self: *Codebase, pattern: []const u8) !std.ArrayList([]const u8) {
         var result = std.ArrayList([]const u8).init(self.allocator);
         try self.findFilesRecursive("", pattern, &result);
@@ -245,15 +245,15 @@ pub const Codebase = struct {
     // WRITE OPERATIONS
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Записать file
+    /// Запandwithать file
     pub fn writeFile(self: *Codebase, path: []const u8, content: []const u8) FileResult {
-        // Сохранить old содержимое for истории
+        // Сохранandть old withодержandмое for andwithторandand
         const old_content = if (self.file_cache.get(path)) |cached|
             self.allocator.dupe(u8, cached) catch null
         else
             null;
 
-        // Поbuildsь полный path
+        // Поbuildsь byлный path
         const full_path = std.fs.path.join(self.allocator, &[_][]const u8{ self.root_path, path }) catch {
             return FileResult{
                 .success = false,
@@ -263,12 +263,12 @@ pub const Codebase = struct {
         };
         defer self.allocator.free(full_path);
 
-        // Создать директории if нужно
+        // Созyesть дandреtoторandand if need
         if (std.fs.path.dirname(full_path)) |dir| {
             std.fs.cwd().makePath(dir) catch {};
         }
 
-        // Записать file
+        // Запandwithать file
         const file = std.fs.cwd().createFile(full_path, .{}) catch {
             return FileResult{
                 .success = false,
@@ -286,7 +286,7 @@ pub const Codebase = struct {
             };
         };
 
-        // Обновить кэш
+        // Обноinandть toэш
         const content_copy = self.allocator.dupe(u8, content) catch {
             return FileResult{
                 .success = false,
@@ -310,7 +310,7 @@ pub const Codebase = struct {
             self.file_cache.put(path_copy, content_copy) catch {};
         }
 
-        // Записать in историю
+        // Запandwithать in andwithторandю
         self.change_history.append(Change{
             .path = self.allocator.dupe(u8, path) catch path,
             .old_content = old_content,
@@ -325,7 +325,7 @@ pub const Codebase = struct {
         };
     }
 
-    /// Удалить file
+    /// Уyesлandть file
     pub fn deleteFile(self: *Codebase, path: []const u8) FileResult {
         const full_path = std.fs.path.join(self.allocator, &[_][]const u8{ self.root_path, path }) catch {
             return FileResult{
@@ -344,7 +344,7 @@ pub const Codebase = struct {
             };
         };
 
-        // Удалить из кэша
+        // Уyesлandть andз toэша
         if (self.file_cache.fetchRemove(path)) |kv| {
             self.allocator.free(kv.value);
         }
@@ -356,7 +356,7 @@ pub const Codebase = struct {
         };
     }
 
-    /// Откатить последнее change
+    /// Отtoатandть bywithледнее change
     pub fn undo(self: *Codebase) FileResult {
         if (self.change_history.items.len == 0) {
             return FileResult{
@@ -379,7 +379,7 @@ pub const Codebase = struct {
     // EXECUTE OPERATIONS
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Выполнить команду
+    /// Выbyлнandть toоманду
     pub fn exec(self: *Codebase, command: []const u8, args: []const []const u8) ExecResult {
         const start_time = std.time.milliTimestamp();
 
@@ -438,17 +438,17 @@ pub const Codebase = struct {
         };
     }
 
-    /// Запустить testы
+    /// Запуwithтandть testы
     pub fn runTests(self: *Codebase, test_path: []const u8) ExecResult {
         return self.exec("zig", &[_][]const u8{ "test", test_path });
     }
 
-    /// Запустить vibee gen
+    /// Запуwithтandть vibee gen
     pub fn runVibeeGen(self: *Codebase, spec_path: []const u8) ExecResult {
         return self.exec("./bin/vibee", &[_][]const u8{ "gen", spec_path });
     }
 
-    /// Запустить git команду
+    /// Запуwithтandть git toоманду
     pub fn git(self: *Codebase, args: []const []const u8) ExecResult {
         return self.exec("git", args);
     }

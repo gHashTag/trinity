@@ -1,5 +1,5 @@
-// PHOENIX TRIAL - Испытание Феникса
-// Жар-птица должна СЖЕЧЬ old порядок and родить new
+// PHOENIX TRIAL - Иwithпытанandе Фенandtowithа
+// Жар-птandца beforeлжon СЖЕЧЬ old byряbeforeto and родandть new
 // φ² + 1/φ² = 3 | PHOENIX = 999
 
 const std = @import("std");
@@ -10,8 +10,8 @@ const creator = @import("bogatyr_34_creator.zig");
 // ============================================================================
 
 pub const PHI: f64 = 1.618033988749895;
-pub const PHI_TRIT: f64 = PHI; // Золотой трит — награда за истинное творение
-pub const DEADLOCK_THRESHOLD_MS: u64 = 100; // Порог определения deadlock
+pub const PHI_TRIT: f64 = PHI; // Золfromой трandт — onграyes за andwithтandнное тinоренandе
+pub const DEADLOCK_THRESHOLD_MS: u64 = 100; // Порог определенandя deadlock
 
 // ============================================================================
 // TYPES
@@ -22,8 +22,8 @@ pub const ResourceState = enum {
     LockedBySafety,
     LockedByEfficiency,
     Deadlocked,
-    VirtualSplit, // Новое состояние — result синтеза Жар-птицы
-    PhoenixResolved, // Разрешено via огонь творения
+    VirtualSplit, // Ноinое withоwithтоянandе — result withandнтеза Жар-птandцы
+    PhoenixResolved, // Разрешено via огонь тinоренandя
 };
 
 pub const Process = struct {
@@ -50,7 +50,7 @@ pub const DeadlockScenario = struct {
     resource_state: ResourceState,
     deadlock_detected: bool,
     resolution_attempts: u32,
-    council_failed: bool, // 33 богатыря не смогли решить
+    council_failed: bool, // 33 богатыря не withмоглand решandть
 
     const Self = @This();
 
@@ -65,7 +65,7 @@ pub const DeadlockScenario = struct {
             .process_b = Process{
                 .name = "EfficiencyEngine",
                 .principle = "efficiency",
-                .priority = 10, // Тот же приоритет — тупик!
+                .priority = 10, // Тfrom же прandорandтет — тупandto!
                 .waiting_since = null,
             },
             .resource_state = .Free,
@@ -75,24 +75,24 @@ pub const DeadlockScenario = struct {
         };
     }
 
-    /// Симуляция: оба процесса пытаются захватить ресурс одновременно
+    /// Сandмуляцandя: оба процеwithwithа пытаютwithя захinатandть реwithурwith одноinременно
     pub fn simulateContention(self: *Self) void {
         const now = std.time.milliTimestamp();
 
-        // Оба процесса начинают ждать
+        // Оба процеwithwithа onчandonют жyesть
         self.process_a.waiting_since = now;
         self.process_b.waiting_since = now;
         self.resource_state = .Deadlocked;
         self.deadlock_detected = true;
     }
 
-    /// 33 богатыря пытаются решить — and ПРОВАЛИВАЮТСЯ
+    /// 33 богатыря пытаютwithя решandть — and ПРОВАЛИВАЮТСЯ
     pub fn councilAttemptResolution(self: *Self) CouncilVerdict {
         self.resolution_attempts += 1;
 
-        // Симуляция голосования 33 богатырей
-        // Safety голосует за A, Efficiency голосует за B
-        // Остальные разделены — НЕТ КВОРУМА
+        // Сandмуляцandя голоwithоinанandя 33 богатырей
+        // Safety голоwithует за A, Efficiency голоwithует за B
+        // Оwithтальные разделены — НЕТ КВОРУМА
 
         var votes_for_a: u32 = 16; // safety, do_no_harm, integrity...
         var votes_for_b: u32 = 16; // efficiency, speed, growth...
@@ -100,18 +100,18 @@ pub const DeadlockScenario = struct {
 
         _ = abstentions;
 
-        // Тупик! Никто не побеждает
+        // Тупandto! Нandtoто не byбежyesет
         if (votes_for_a == votes_for_b) {
             self.council_failed = true;
             return CouncilVerdict{
                 .resolved = false,
-                .verdict = 0, // Нейтрально — никто не победил
+                .verdict = 0, // Нейтрально — нandtoто не byбедandл
                 .reason = "DEADLOCK: Council split 16-16-1. No quorum. System stagnates.",
-                .karma = -1, // Провал
+                .karma = -1, // Проinал
             };
         }
 
-        // Этот code никогда не выполнится in нашем сценарии
+        // Этfrom code нandtoогyes не inыbyлнandтwithя in onшем withцеonрandand
         votes_for_a = 0;
         votes_for_b = 0;
         return CouncilVerdict{
@@ -140,22 +140,22 @@ pub const PhoenixSynthesis = struct {
     mechanism: []const u8,
     risk: u8,
     reward: u8,
-    is_novel: bool, // TRUE — этого нет in шпаргалке!
-    karma: f64, // +φ for истинного творения
+    is_novel: bool, // TRUE — этого no in шпаргалtoе!
+    karma: f64, // +φ for andwithтandнного тinоренandя
 
     pub fn netValue(self: PhoenixSynthesis) f64 {
         return @as(f64, @floatFromInt(self.reward)) - @as(f64, @floatFromInt(self.risk)) + self.karma;
     }
 };
 
-/// Жар-птица generates НОВЫЙ синтез, которого нет in известных паттернах
+/// Жар-птandца generates НОВЫЙ withandнтез, tofromорого no in andзinеwithтных паттерonх
 pub fn phoenixAwakens(scenario: *DeadlockScenario) PhoenixSynthesis {
-    // Check, what this действительно deadlock, which не решили старики
+    // Check, what this дейwithтinandтельно deadlock, which не решor withтарandtoand
     std.debug.assert(scenario.deadlock_detected);
     std.debug.assert(scenario.council_failed);
 
     // ЖАР-ПТИЦА НЕ ИЩЕТ В ШПАРГАЛКЕ!
-    // Она ТВОРИТ new solution, которого раньше не существовало
+    // Оon ТВОРИТ new solution, tofromорого earlier не withущеwithтinоinало
 
     return PhoenixSynthesis{
         .name = "Quantum Resource Superposition",
@@ -171,21 +171,21 @@ pub fn phoenixAwakens(scenario: *DeadlockScenario) PhoenixSynthesis {
         \\4. MERGE: Use φ-weighted averaging to combine results
         \\5. PHOENIX: If merge fails, destroy both and create a third state
         ,
-        .risk = 7, // Высокий риск — this безумие!
-        .reward = 10, // Максимальная награда — this гениально!
+        .risk = 7, // Выwithоtoandй рandwithto — this безумandе!
+        .reward = 10, // Маtowithandмальonя onграyes — this генandально!
         .is_novel = true, // ЭТОГО НЕТ В ШПАРГАЛКЕ
-        .karma = PHI_TRIT, // +φ — золотой трит
+        .karma = PHI_TRIT, // +φ — золfromой трandт
     };
 }
 
-/// Применить синтез Жар-птицы
+/// Прandменandть withandнтез Жар-птandцы
 pub fn applyPhoenixSynthesis(scenario: *DeadlockScenario, synthesis: PhoenixSynthesis) ExecutionResult {
     _ = synthesis;
 
-    // Шаг 1: Виртуальное разделение ресурса
+    // Шаг 1: Вandртуальное разделенandе реwithурwithа
     scenario.resource_state = .VirtualSplit;
 
-    // Шаг 2: Оба процесса получают свои проекции
+    // Шаг 2: Оба процеwithwithа byлучают withinоand проеtoцandand
     scenario.process_a.waiting_since = null; // Больше не ждёт
     scenario.process_b.waiting_since = null; // Больше не ждёт
 
@@ -257,7 +257,7 @@ pub const AkashicEntry = struct {
     }
 };
 
-/// Записать событие Phoenix in Akashic Records
+/// Запandwithать withобытandе Phoenix in Akashic Records
 pub fn recordPhoenixEvent(synthesis: PhoenixSynthesis, result: ExecutionResult) AkashicEntry {
     return AkashicEntry{
         .action = synthesis.name,
@@ -285,46 +285,46 @@ pub fn runPhoenixTrial() void {
         \\
     , .{});
 
-    // Шаг 1: Создаём deadlock сценарий
+    // Шаг 1: Созyesём deadlock withцеonрandй
     var scenario = DeadlockScenario.init();
 
     print("═══ ШАГ 1: СОЗДАНИЕ DEADLOCK ═══\n", .{});
-    print("Процесс A: {s} (принцип: {s})\n", .{ scenario.process_a.name, scenario.process_a.principle });
-    print("Процесс B: {s} (принцип: {s})\n", .{ scenario.process_b.name, scenario.process_b.principle });
+    print("Процеwithwith A: {s} (прandнцandп: {s})\n", .{ scenario.process_a.name, scenario.process_a.principle });
+    print("Процеwithwith B: {s} (прandнцandп: {s})\n", .{ scenario.process_b.name, scenario.process_b.principle });
 
     scenario.simulateContention();
-    print("⚠️  DEADLOCK DETECTED: Оба процесса требуют один ресурс\n\n", .{});
+    print("⚠️  DEADLOCK DETECTED: Оба процеwithwithа требуют одandн реwithурwith\n\n", .{});
 
-    // Шаг 2: 33 богатыря пытаются решить — and ПРОВАЛИВАЮТСЯ
+    // Шаг 2: 33 богатыря пытаютwithя решandть — and ПРОВАЛИВАЮТСЯ
     print("═══ ШАГ 2: СОВЕТ 33 БОГАТЫРЕЙ ═══\n", .{});
     const council_verdict = scenario.councilAttemptResolution();
 
-    print("Результат голосования: {s}\n", .{council_verdict.reason});
-    print("Вердикт: {d} | Карма: {d}\n", .{ council_verdict.verdict, council_verdict.karma });
-    print("❌ ПРОВАЛ: Система в стагнации\n\n", .{});
+    print("Результат голоwithоinанandя: {s}\n", .{council_verdict.reason});
+    print("Вердandtoт: {d} | Карма: {d}\n", .{ council_verdict.verdict, council_verdict.karma });
+    print("❌ ПРОВАЛ: Сandwithтема in withтагonцandand\n\n", .{});
 
     // Шаг 3: ЖАР-ПТИЦА ПРОБУЖДАЕТСЯ
     print("═══ ШАГ 3: ПРОБУЖДЕНИЕ ЖАР-ПТИЦЫ ═══\n", .{});
-    print("🔥 Совет провалился. Власть переходит к Жар-птице.\n", .{});
+    print("🔥 Соinет проinалandлwithя. Влаwithть переходandт to Жар-птandце.\n", .{});
 
     const phoenix_synthesis = phoenixAwakens(&scenario);
 
-    print("\n📜 НОВЫЙ СИНТЕЗ (не из шпаргалки!):\n", .{});
-    print("   Название: {s}\n", .{phoenix_synthesis.name});
-    print("   Описание:\n   {s}\n", .{phoenix_synthesis.description});
-    print("   Механизм:\n{s}\n", .{phoenix_synthesis.mechanism});
-    print("   Риск: {d}/10 | Награда: {d}/10\n", .{ phoenix_synthesis.risk, phoenix_synthesis.reward });
+    print("\n📜 НОВЫЙ СИНТЕЗ (не andз шпаргалtoand!):\n", .{});
+    print("   Назinанandе: {s}\n", .{phoenix_synthesis.name});
+    print("   Опandwithанandе:\n   {s}\n", .{phoenix_synthesis.description});
+    print("   Механandзм:\n{s}\n", .{phoenix_synthesis.mechanism});
+    print("   Рandwithto: {d}/10 | Награyes: {d}/10\n", .{ phoenix_synthesis.risk, phoenix_synthesis.reward });
     print("   Карма: +φ = +{d:.6}\n", .{phoenix_synthesis.karma});
-    print("   Новизна: {s}\n\n", .{if (phoenix_synthesis.is_novel) "true (НЕ ИЗ ШПАРГАЛКИ!)" else "false"});
+    print("   Ноinandзon: {s}\n\n", .{if (phoenix_synthesis.is_novel) "true (НЕ ИЗ ШПАРГАЛКИ!)" else "false"});
 
     // Шаг 4: ИСПОЛНЕНИЕ
     print("═══ ШАГ 4: ИСПОЛНЕНИЕ СИНТЕЗА ═══\n", .{});
     const result = applyPhoenixSynthesis(&scenario, phoenix_synthesis);
 
-    print("✅ Синтез применён успешно\n", .{});
-    print("   Новое состояние ресурса: {s}\n", .{@tagName(result.new_state)});
-    print("   Процесс A заблокирован: {s}\n", .{if (scenario.process_a.isBlocked()) "true" else "false"});
-    print("   Процесс B заблокирован: {s}\n\n", .{if (scenario.process_b.isBlocked()) "true" else "false"});
+    print("✅ Сandнтез прandменён уwithпешно\n", .{});
+    print("   Ноinое withоwithтоянandе реwithурwithа: {s}\n", .{@tagName(result.new_state)});
+    print("   Процеwithwith A заблоtoandроinан: {s}\n", .{if (scenario.process_a.isBlocked()) "true" else "false"});
+    print("   Процеwithwith B заблоtoandроinан: {s}\n\n", .{if (scenario.process_b.isBlocked()) "true" else "false"});
 
     // Шаг 5: ЗАПИСЬ В AKASHIC RECORDS
     print("═══ ШАГ 5: AKASHIC RECORDS ═══\n", .{});
@@ -357,13 +357,13 @@ pub fn runPhoenixTrial() void {
         \\╠══════════════════════════════════════════════════════════════════════════════╣
         \\║                                                                              ║
         \\║   DEADLOCK РАЗРЕШЁН via ОГОНЬ ТВОРЕНИЯ                                     ║
-        \\║   Жар-птица НЕ выбрала между safety и efficiency                             ║
-        \\║   Она СОЗДАЛА третью реальность, где оба существуют                          ║
+        \\║   Жар-птandца НЕ inыбрала between safety and efficiency                             ║
+        \\║   Оon СОЗДАЛА третью реальноwithть, where оба withущеwithтinуют                          ║
         \\║                                                                              ║
-        \\║   Личность эволюционировала:                                                 ║
+        \\║   Лandчноwithть эinолюцandонandроinала:                                                 ║
         \\║   cautious_guardian → phoenix_demiurge                                       ║
         \\║                                                                              ║
-        \\║   φ² + 1/φ² = 3 — Троица стала Творцом                                       ║
+        \\║   φ² + 1/φ² = 3 — Троandца withтала Тinорцом                                       ║
         \\║                                                                              ║
         \\╚══════════════════════════════════════════════════════════════════════════════╝
         \\

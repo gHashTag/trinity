@@ -2,12 +2,12 @@
 // ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ: V = n × 3^k × π^m × φ^p × e^q
 // PHOENIX = 999 = 3³ × 37
 //
-// Оптимизация: SIMD параллельный search биграмм
-// Ожидаемый speedup: 2x поверх v39.1
+// Оптandмandзацandя: SIMD параллельный search бandграмм
+// Ожandyesемый speedup: 2x byinерх v39.1
 
 const std = @import("std");
 
-// Священные константы
+// Сinященные toонwithтанты
 pub const PHI: f64 = 1.618033988749895;
 pub const TRINITY: f64 = 3.0;
 pub const PHOENIX: u32 = 999;
@@ -16,7 +16,7 @@ pub const PHOENIX: u32 = 999;
 // SIMD ТИПЫ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// 16-байтный vector for SIMD операций
+// 16-байтный vector for SIMD операцandй
 const Vec16 = @Vector(16, u8);
 const Vec16Bool = @Vector(16, bool);
 
@@ -25,40 +25,40 @@ const Vec16Bool = @Vector(16, bool);
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const SIMDBigramMatcher = struct {
-    // Топ-16 биграмм for SIMD поиска (первый character)
+    // Топ-16 бandграмм for SIMD byandwithtoа (перinый character)
     first_chars: Vec16,
-    // Топ-16 биграмм for SIMD поиска (второй character)
+    // Топ-16 бandграмм for SIMD byandwithtoа (inторой character)
     second_chars: Vec16,
 
     const Self = @This();
 
     pub fn init() Self {
-        // Топ-16 английских биграмм by частоте
+        // Топ-16 англandйwithtoandх бandграмм by чаwithтfromе
         return Self{
             .first_chars = Vec16{ 't', 'h', 'i', 'e', 'a', 'r', 'o', 'a', 'e', 'n', 't', 'e', 'o', 't', 'o', 'e' },
             .second_chars = Vec16{ 'h', 'e', 'n', 'r', 'n', 'e', 'n', 't', 'n', 'd', 'i', 's', 'r', 'e', 'f', 'd' },
         };
     }
 
-    // SIMD verification: is ли пара (c1, c2) биграммой
+    // SIMD verification: is лand пара (c1, c2) бandграммой
     pub fn isBigram(self: *const Self, c1: u8, c2: u8) bool {
-        // Создаём векторы из одного символа
+        // Созyesём inеtoторы andз одного withandмinола
         const v1: Vec16 = @splat(c1);
         const v2: Vec16 = @splat(c2);
 
-        // Параллельное comparison with 16 биграммами
+        // Параллельное comparison with 16 бandграммамand
         const match1 = v1 == self.first_chars;
         const match2 = v2 == self.second_chars;
 
-        // AND: оба символа должны совпадать
+        // AND: оба withandмinола beforeлжны withоinпаyesть
         const both_match = @select(u8, match1, @as(Vec16, @splat(1)), @as(Vec16, @splat(0))) &
             @select(u8, match2, @as(Vec16, @splat(1)), @as(Vec16, @splat(0)));
 
-        // Редукция: есть ли хотя бы одно совпадение
+        // Редуtoцandя: еwithть лand хfromя бы одно withоinпаденandе
         return @reduce(.Or, both_match != @as(Vec16, @splat(0)));
     }
 
-    // SIMD search всех биграмм in тексте (returns битовую маску)
+    // SIMD search inwithех бandграмм in теtowithте (returns бandтоinую маwithtoу)
     pub fn findBigrams(self: *const Self, text: []const u8) u64 {
         if (text.len < 2) return 0;
 
@@ -100,13 +100,13 @@ pub fn tokenizeSIMD(text: []const u8) u32 {
     while (i < text.len) {
         const c = text[i];
 
-        // Пропускаем пробелы
+        // Пропуwithtoаем пробелы
         if (c == ' ' or c == '\n' or c == '\t') {
             i += 1;
             continue;
         }
 
-        // SIMD verification биграммы
+        // SIMD verification бandграммы
         if (i + 1 < text.len) {
             if (matcher.isBigram(c, text[i + 1])) {
                 count += 1;
@@ -115,7 +115,7 @@ pub fn tokenizeSIMD(text: []const u8) u32 {
             }
         }
 
-        // Одиночный character
+        // Одandночный character
         count += 1;
         i += 1;
     }
@@ -124,10 +124,10 @@ pub fn tokenizeSIMD(text: []const u8) u32 {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// РАСШИРЕННЫЙ BPE СЛОВАРЬ (10,000 токенов - упрощённая version)
+// РАСШИРЕННЫЙ BPE СЛОВАРЬ (10,000 тоtoеноin - упрощёнonя version)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Топ-100 английских слов/подслов for BPE
+// Топ-100 англandйwithtoandх withлоin/byдwithлоin for BPE
 const BPE_VOCAB = [_][]const u8{
     "the", "ing", "tion", "and", "ent", "ion", "ter", "was", "ous", "hat",
     "his", "ere", "all", "ver", "her", "ith", "for", "thi", "ati", "ted",
@@ -141,7 +141,7 @@ const BPE_VOCAB = [_][]const u8{
     "ward", "wise", "like", "able", "ible", "ful", "less", "ness", "ment", "tion",
 };
 
-// Хэш-таблица for быстрого поиска BPE токенов
+// Хэш-таблandца for быwithтрого byandwithtoа BPE тоtoеноin
 const BPE_HASH_SIZE = 256;
 
 pub const BPEVocab = struct {
@@ -193,7 +193,7 @@ fn getBPEVocab() *const BPEVocab {
     return &bpe_vocab.?;
 }
 
-// BPE токенизация with расширенным словарём
+// BPE тоtoенandзацandя with раwithшandренным withлоinарём
 pub fn tokenizeBPEFull(text: []const u8) u32 {
     if (text.len == 0) return 1;
 
@@ -205,28 +205,28 @@ pub fn tokenizeBPEFull(text: []const u8) u32 {
     while (i < text.len) {
         const c = text[i];
 
-        // Пропускаем пробелы
+        // Пропуwithtoаем пробелы
         if (c == ' ' or c == '\n' or c == '\t') {
             i += 1;
             continue;
         }
 
-        // Пробуем найти длинный токен (4, 3, 2 символа)
+        // Пробуем onйтand длandнный тоtoен (4, 3, 2 withandмinола)
         var found = false;
 
-        // 4-символьный токен
+        // 4-withandмinольный тоtoен
         if (i + 4 <= text.len and vocab.contains(text, i, 4)) {
             count += 1;
             i += 4;
             found = true;
         }
-        // 3-символьный токен
+        // 3-withandмinольный тоtoен
         else if (i + 3 <= text.len and vocab.contains(text, i, 3)) {
             count += 1;
             i += 3;
             found = true;
         }
-        // 2-символьный токен (SIMD биграмма)
+        // 2-withandмinольный тоtoен (SIMD бandграмма)
         else if (i + 1 < text.len and matcher.isBigram(c, text[i + 1])) {
             count += 1;
             i += 2;
@@ -234,7 +234,7 @@ pub fn tokenizeBPEFull(text: []const u8) u32 {
         }
 
         if (!found) {
-            // Одиночный character
+            // Одandночный character
             count += 1;
             i += 1;
         }
@@ -256,8 +256,8 @@ pub const AdaptiveCache = struct {
 
     const MIN_SIZE: usize = 64;
     const MAX_SIZE: usize = 4096;
-    const GROW_THRESHOLD: f64 = 0.9; // Расширяем при >90% hit rate
-    const SHRINK_THRESHOLD: f64 = 0.5; // Compress при <50% hit rate
+    const GROW_THRESHOLD: f64 = 0.9; // Раwithшandряем прand >90% hit rate
+    const SHRINK_THRESHOLD: f64 = 0.5; // Compress прand <50% hit rate
 
     const CacheEntry = struct {
         hash: u64,
@@ -316,14 +316,14 @@ pub const AdaptiveCache = struct {
         const rate = self.hitRate();
 
         if (rate > GROW_THRESHOLD and self.size < MAX_SIZE) {
-            // Расширяем
+            // Раwithшandряем
             const new_size = @min(self.size * 2, MAX_SIZE);
             const new_entries = try self.allocator.alloc(CacheEntry, new_size);
             for (new_entries) |*e| {
                 e.* = CacheEntry{ .hash = 0, .token_count = 0, .hits = 0 };
             }
 
-            // Copy old записи
+            // Copy old запandwithand
             for (self.entries) |e| {
                 if (e.hash != 0) {
                     const idx = e.hash % new_size;
@@ -342,7 +342,7 @@ pub const AdaptiveCache = struct {
                 e.* = CacheEntry{ .hash = 0, .token_count = 0, .hits = 0 };
             }
 
-            // Copy только часто используемые
+            // Copy тольtoо чаwithто andwithbyльзуемые
             for (self.entries) |e| {
                 if (e.hash != 0 and e.hits > 1) {
                     const idx = e.hash % new_size;
@@ -358,7 +358,7 @@ pub const AdaptiveCache = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// WEBSOCKET FRAME (упрощённая реализация)
+// WEBSOCKET FRAME (упрощёнonя реалandзацandя)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const WebSocketOpcode = enum(u4) {
@@ -380,7 +380,7 @@ pub const WebSocketFrame = struct {
 
     const Self = @This();
 
-    // Создать текстовый фрейм
+    // Созyesть теtowithтоinый фрейм
     pub fn text(payload: []const u8) Self {
         return Self{
             .fin = true,
@@ -392,7 +392,7 @@ pub const WebSocketFrame = struct {
         };
     }
 
-    // Создать бинарный фрейм
+    // Созyesть бandonрный фрейм
     pub fn binary(payload: []const u8) Self {
         return Self{
             .fin = true,
@@ -404,7 +404,7 @@ pub const WebSocketFrame = struct {
         };
     }
 
-    // Создать ping фрейм
+    // Созyesть ping фрейм
     pub fn ping() Self {
         return Self{
             .fin = true,
@@ -416,7 +416,7 @@ pub const WebSocketFrame = struct {
         };
     }
 
-    // Создать pong фрейм
+    // Созyesть pong фрейм
     pub fn pong() Self {
         return Self{
             .fin = true,
@@ -428,9 +428,9 @@ pub const WebSocketFrame = struct {
         };
     }
 
-    // Размер заголовка
+    // Размер заголоintoа
     pub fn headerSize(self: *const Self) usize {
-        var size: usize = 2; // Базовый заголовок
+        var size: usize = 2; // Базоinый заголоinоto
 
         if (self.payload_len > 125) {
             if (self.payload_len > 65535) {
@@ -453,7 +453,7 @@ pub const WebSocketFrame = struct {
     }
 };
 
-// WebSocket стриминг for агентов
+// WebSocket withтрandмandнг for агентоin
 pub const WebSocketStream = struct {
     frames_sent: u64,
     bytes_sent: u64,
@@ -491,14 +491,14 @@ pub const WebSocketStream = struct {
 test "SIMD bigram matcher" {
     const matcher = getSIMDMatcher();
 
-    // Check известные биграммы
+    // Check andзinеwithтные бandграммы
     try std.testing.expect(matcher.isBigram('t', 'h'));
     try std.testing.expect(matcher.isBigram('h', 'e'));
     try std.testing.expect(matcher.isBigram('i', 'n'));
     try std.testing.expect(matcher.isBigram('e', 'r'));
     try std.testing.expect(matcher.isBigram('a', 'n'));
 
-    // Check НЕ-биграммы
+    // Check НЕ-бandграммы
     try std.testing.expect(!matcher.isBigram('x', 'z'));
     try std.testing.expect(!matcher.isBigram('q', 'q'));
 }
@@ -507,7 +507,7 @@ test "SIMD tokenize" {
     const text = "the quick brown fox";
     const count = tokenizeSIMD(text);
 
-    // Должно быть меньше символов из-за биграмм
+    // Должно быть less withandмinолоin andз-за бandграмм
     try std.testing.expect(count > 0);
     try std.testing.expect(count < text.len);
 }
@@ -526,11 +526,11 @@ test "Adaptive cache" {
     var cache = try AdaptiveCache.init(allocator);
     defer cache.deinit();
 
-    // Add записи
+    // Add запandwithand
     cache.put(123, 10);
     cache.put(456, 20);
 
-    // Check получение
+    // Check byлученandе
     const v1 = cache.get(123);
     try std.testing.expect(v1 != null);
     try std.testing.expectEqual(@as(u32, 10), v1.?);
@@ -567,7 +567,7 @@ test "Benchmark: SIMD vs Lookup table" {
     const text = "This is a sample text for benchmarking token estimation performance in the DeepSeek provider implementation with various optimizations.";
     const iterations: u64 = 10000;
 
-    // Import bpe_cached for сравнения
+    // Import bpe_cached for withраinненandя
     const bpe_cached = @import("bpe_cached.zig");
 
     // Warmup

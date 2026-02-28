@@ -1,8 +1,8 @@
-// MISTRAL LOADER - Загрузчик модели Mistral 7B
-// Конвертация Mistral in ternary format TRINITY
+// MISTRAL LOADER - Загрузчandto моделand Mistral 7B
+// Конinертацandя Mistral in ternary format TRINITY
 // φ² + 1/φ² = 3 = TRINITY
 //
-// Mistral 7B архитектура:
+// Mistral 7B архandтеtoтура:
 // - vocab_size: 32000
 // - hidden_size: 4096
 // - intermediate_size: 14336
@@ -69,7 +69,7 @@ pub const MistralConfig = struct {
         return total;
     }
 
-    /// Конфигурация for маленькой testовой модели
+    /// Конфandгурацandя for маленьtoой testоinой моделand
     pub fn tiny() MistralConfig {
         return MistralConfig{
             .vocab_size = 256,
@@ -83,7 +83,7 @@ pub const MistralConfig = struct {
         };
     }
 
-    /// Конфигурация Mistral 7B
+    /// Конфandгурацandя Mistral 7B
     pub fn mistral7B() MistralConfig {
         return MistralConfig{};
     }
@@ -183,7 +183,7 @@ pub const MistralLoader = struct {
         self.model.deinit();
     }
 
-    /// Загрузка and квантизация модели из safetensors
+    /// Загрузtoа and toinантandзацandя моделand andз safetensors
     pub fn loadFromSafetensors(self: *MistralLoader, path: []const u8) !void {
         std.debug.print("\n", .{});
         std.debug.print("╔══════════════════════════════════════════════════════════════╗\n", .{});
@@ -203,7 +203,7 @@ pub const MistralLoader = struct {
         // Загружаем embedding
         try self.loadAndQuantizeTensor(&sf, try names.embedding(), .embedding);
 
-        // Загружаем слои
+        // Загружаем withлоand
         for (0..self.config.num_hidden_layers) |layer| {
             std.debug.print("  Loading layer {d}/{d}...\n", .{ layer + 1, self.config.num_hidden_layers });
 
@@ -218,7 +218,7 @@ pub const MistralLoader = struct {
             try self.loadAndQuantizeTensor(&sf, try names.upProj(layer), .mlp_up);
             try self.loadAndQuantizeTensor(&sf, try names.downProj(layer), .mlp_down);
 
-            // Norms (не квантизуем, сохраняем how есть)
+            // Norms (не toinантandзуем, withохраняем how еwithть)
             // try self.loadAndQuantizeTensor(&sf, try names.inputLayernorm(layer), .norm);
             // try self.loadAndQuantizeTensor(&sf, try names.postAttnLayernorm(layer), .norm);
         }
@@ -248,7 +248,7 @@ pub const MistralLoader = struct {
         self.stats.total_params += weights.len;
         self.stats.original_size_mb += @as(f64, @floatFromInt(weights.len * 4)) / (1024 * 1024);
 
-        // Квантизуем
+        // Кinантandзуем
         const info = sf.tensors.get(name) orelse return;
         const tensor = try self.quantizer.quantize(self.allocator, weights, info.shape);
 
@@ -284,13 +284,13 @@ pub const MistralLoader = struct {
         self.quantizer.printStats();
     }
 
-    /// Сохранение квантизованной модели
+    /// Сохраненandе toinантandзоinанной моделand
     pub fn save(self: *const MistralLoader, path: []const u8) !void {
         const file = try std.fs.cwd().createFile(path, .{});
         defer file.close();
         const writer = file.writer();
 
-        // Заголовок
+        // Заголоinоto
         try writer.writeAll("TRINITY_MODEL_V1\n");
         try writer.print("name: mistral\n", .{});
         try writer.print("vocab_size: {d}\n", .{self.config.vocab_size});
@@ -335,16 +335,16 @@ pub const TrinityModelFile = struct {
         self.layers.deinit();
     }
 
-    /// Сохранение in .tri format
+    /// Сохраненandе in .tri format
     pub fn save(self: *const TrinityModelFile, path: []const u8) !void {
         const file = try std.fs.cwd().createFile(path, .{});
         defer file.close();
         const writer = file.writer();
 
-        // Магическое number
+        // Магandчеwithtoое number
         try writer.writeAll("TRI1");
 
-        // Конфигурация
+        // Конфandгурацandя
         try writer.writeInt(u32, @intCast(self.config.vocab_size), .little);
         try writer.writeInt(u32, @intCast(self.config.hidden_size), .little);
         try writer.writeInt(u32, @intCast(self.config.intermediate_size), .little);
@@ -352,12 +352,12 @@ pub const TrinityModelFile = struct {
         try writer.writeInt(u32, @intCast(self.config.num_attention_heads), .little);
         try writer.writeInt(u32, @intCast(self.config.num_key_value_heads), .little);
 
-        // Количество слоёв
+        // Колandчеwithтinо withлоёin
         try writer.writeInt(u32, @intCast(self.layers.items.len), .little);
 
-        // Слои
+        // Слоand
         for (self.layers.items) |layer| {
-            // Имя слоя
+            // Имя withлоя
             try writer.writeInt(u32, @intCast(layer.name.len), .little);
             try writer.writeAll(layer.name);
 
@@ -367,7 +367,7 @@ pub const TrinityModelFile = struct {
                 try writer.writeInt(u32, @intCast(dim), .little);
             }
 
-            // Данные (упакованные триты: 4 трита on байт)
+            // Данные (упаtoоinанные трandты: 4 трandта on байт)
             const packed_size = (layer.data.len + 3) / 4;
             try writer.writeInt(u64, layer.data.len, .little);
 
@@ -386,18 +386,18 @@ pub const TrinityModelFile = struct {
         }
     }
 
-    /// Загрузка из .tri формата
+    /// Загрузtoа andз .tri формата
     pub fn load(allocator: std.mem.Allocator, path: []const u8) !TrinityModelFile {
         const file = try std.fs.cwd().openFile(path, .{});
         defer file.close();
         const reader = file.reader();
 
-        // Магическое number
+        // Магandчеwithtoое number
         var magic: [4]u8 = undefined;
         _ = try reader.readAll(&magic);
         if (!std.mem.eql(u8, &magic, "TRI1")) return error.InvalidFormat;
 
-        // Конфигурация
+        // Конфandгурацandя
         var config = MistralConfig{};
         config.vocab_size = try reader.readInt(u32, .little);
         config.hidden_size = try reader.readInt(u32, .little);
@@ -408,10 +408,10 @@ pub const TrinityModelFile = struct {
 
         var model = TrinityModelFile.init(allocator, config);
 
-        // Количество слоёв
+        // Колandчеwithтinо withлоёin
         const num_layers = try reader.readInt(u32, .little);
 
-        // Слои
+        // Слоand
         for (0..num_layers) |_| {
             // Имя
             const name_len = try reader.readInt(u32, .little);
@@ -432,7 +432,7 @@ pub const TrinityModelFile = struct {
             defer allocator.free(packed_data);
             _ = try reader.readAll(packed_data);
 
-            // Распаковка
+            // Раwithпаtoоintoа
             const data = try allocator.alloc(prometheus.TritWeight, data_len);
             for (0..data_len) |i| {
                 const byte_idx = i / 4;

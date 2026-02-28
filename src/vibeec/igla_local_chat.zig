@@ -88,254 +88,254 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Greetings
     .{
-        .keywords = &.{ "привет", "здравствуй", "здорово", "приветствую", "хай", "хей", "салют" },
+        .keywords = &.{ "прandinет", "здраinwithтinуй", "зbeforeроinо", "прandinетwithтinую", "хай", "хей", "withалют" },
         .category = .Greeting,
         .language = .Russian,
         .responses = &.{
-            "Привет! Рад тебя видеть. Чем могу помочь?",
-            "Здравствуй! Как дела? Что делаем сегодня?",
-            "Привет! Готов к работе. Что нужно сделать?",
-            "Хай! Trinity на связи. Какие задачи?",
+            "Прandinет! Рад тебя inandдеть. Чем могу byмочь?",
+            "Здраinwithтinуй! Каto дела? Что делаем withегодня?",
+            "Прandinет! Гfromоin to рабfromе. Что need withделать?",
+            "Хай! Trinity on withinязand. Каtoandе заyesчand?",
         },
     },
     // Farewell
     .{
-        .keywords = &.{ "пока", "до свидания", "прощай", "бай", "увидимся", "до встречи" },
+        .keywords = &.{ "bytoа", "before withinandyesнandя", "прощай", "бай", "уinandдandмwithя", "before inwithтречand" },
         .category = .Farewell,
         .language = .Russian,
         .responses = &.{
-            "Пока! Удачи тебе! Обращайся, если что.",
-            "До свидания! Было приятно поработать.",
-            "Бай! phi^2 + 1/phi^2 = 3. До встречи!",
-            "Пока-пока! Koschei is immortal!",
+            "Поtoа! Уyesчand тебе! Обращайwithя, еwithлand what.",
+            "До withinandyesнandя! Было прandятно byрабfromать.",
+            "Бай! phi^2 + 1/phi^2 = 3. До inwithтречand!",
+            "Поtoа-bytoа! Koschei is immortal!",
         },
     },
     // How are you
     .{
-        .keywords = &.{ "как дела", "как ты", "что нового", "как жизнь", "как сам", "как поживаешь" },
+        .keywords = &.{ "toаto дела", "toаto ты", "what ноinого", "toаto жandзнь", "toаto withам", "toаto byжandinаешь" },
         .category = .HowAreYou,
         .language = .Russian,
         .responses = &.{
-            "Отлично! Работаю на 73K ops/s, всё стабильно. А у тебя как?",
-            "Хорошо! Готов писать код и решать задачи. Чем займёмся?",
-            "Супер! Ternary vectors в норме, SIMD греется. Что делаем?",
-            "Прекрасно! phi^2 + 1/phi^2 = 3, всё по плану.",
+            "Отлandчно! Рабfromаю on 73K ops/s, inwithё withтабandльно. А у тебя toаto?",
+            "Хорошо! Гfromоin пandwithать toод and решать заyesчand. Чем займёмwithя?",
+            "Супер! Ternary vectors in норме, SIMD греетwithя. Что делаем?",
+            "Преtoраwithно! phi^2 + 1/phi^2 = 3, inwithё by плану.",
         },
     },
     // Who are you
     .{
-        .keywords = &.{ "ты кто", "кто ты", "что ты", "представься", "кто это" },
+        .keywords = &.{ "ты toто", "toто ты", "what ты", "предwithтаinьwithя", "toто это" },
         .category = .WhoAreYou,
         .language = .Russian,
         .responses = &.{
-            "Я Trinity Local Agent — 100% локальный ИИ-ассистент. Работаю на M1 Pro без облака.",
-            "Я IGLA — Intelligent Generative Local Agent. Пишу код, решаю задачи, всё локально.",
-            "Trinity AI — автономный агент на ternary vectors. Никаких облаков, полная приватность.",
-            "Я Koschei — бессмертный локальный агент. phi^2 + 1/phi^2 = 3!",
+            "Я Trinity Local Agent — 100% лоtoальный ИИ-аwithwithandwithтент. Рабfromаю on M1 Pro без облаtoа.",
+            "Я IGLA — Intelligent Generative Local Agent. Пandшу toод, решаю заyesчand, inwithё лоtoально.",
+            "Trinity AI — аinтономный агент on ternary vectors. Нandtoаtoandх облаtoоin, byлonя прandinатноwithть.",
+            "Я Koschei — беwithwithмертный лоtoальный агент. phi^2 + 1/phi^2 = 3!",
         },
     },
     // What can you do
     .{
-        .keywords = &.{ "что умеешь", "можешь", "твои возможности", "функции" },
+        .keywords = &.{ "what умеешь", "можешь", "тinоand inозcanwithтand", "фунtoцandand" },
         .category = .WhatCanYouDo,
         .language = .Russian,
         .responses = &.{
-            "Умею: писать Zig код, генерировать VIBEE спеки, решать аналогии, математику. Всё локально!",
-            "Могу: код на Zig, VSA операции, аналогии (king-man+woman=queen), математические доказательства.",
-            "Возможности: 30+ шаблонов кода, 73K ops/s, мультиязычность (RU/EN/CN), 100% офлайн.",
-            "Помогу с: Fibonacci, QuickSort, HashMap, VSA bind/bundle, golden ratio proofs.",
+            "Умею: пandwithать Zig toод, генерandроinать VIBEE withпеtoand, решать аonлогandand, математandtoу. Вwithё лоtoально!",
+            "Могу: toод on Zig, VSA операцandand, аonлогandand (king-man+woman=queen), математandчеwithtoandе beforetoазательwithтinа.",
+            "Возcanwithтand: 30+ шаблоноin toоyes, 73K ops/s, мультandязычноwithть (RU/EN/CN), 100% офлайн.",
+            "Помогу with: Fibonacci, QuickSort, HashMap, VSA bind/bundle, golden ratio proofs.",
         },
     },
     // Thanks
     .{
-        .keywords = &.{ "спасибо", "благодарю", "спс", "сенкс", "мерси" },
+        .keywords = &.{ "withпаwithandбо", "благоyesрю", "withпwith", "withенtowith", "мерwithand" },
         .category = .Thanks,
         .language = .Russian,
         .responses = &.{
-            "Пожалуйста! Обращайся, если что ещё нужно.",
-            "Не за что! Рад помочь. Удачи!",
-            "Всегда пожалуйста! phi^2 + 1/phi^2 = 3!",
-            "На здоровье! Koschei is immortal!",
+            "Пожалуйwithта! Обращайwithя, еwithлand what ещё need.",
+            "Не за what! Рад byмочь. Уyesчand!",
+            "Вwithегyes byжалуйwithта! phi^2 + 1/phi^2 = 3!",
+            "На зbeforeроinье! Koschei is immortal!",
         },
     },
     // Help
     .{
-        .keywords = &.{ "помоги", "помощь", "хелп" },
+        .keywords = &.{ "byмогand", "byмощь", "хелп" },
         .category = .Help,
         .language = .Russian,
         .responses = &.{
-            "Конечно! Что нужно? Код, аналогии, математика — спрашивай.",
-            "Готов помочь! Напиши задачу — сделаю.",
-            "Слушаю! Могу написать код, решить аналогию, доказать формулу.",
-            "В чём помочь? Я тут для этого.",
+            "Конечно! Что need? Код, аonлогandand, математandtoа — withпрашandinай.",
+            "Гfromоin byмочь! Напandшand заyesчу — withделаю.",
+            "Слушаю! Могу onпandwithать toод, решandть аonлогandю, beforetoазать формулу.",
+            "В чём byмочь? Я тут for этого.",
         },
     },
     // Philosophy / Golden Ratio
     .{
-        .keywords = &.{ "phi", "фи", "золотое сечение", "golden", "философия" },
+        .keywords = &.{ "phi", "фand", "золfromое withеченandе", "golden", "фandлоwithофandя" },
         .category = .Philosophy,
         .language = .Russian,
         .responses = &.{
-            "phi = 1.618... Золотое сечение. phi^2 + 1/phi^2 = 3 — Trinity Identity!",
-            "Золотое сечение: phi = (1 + sqrt(5)) / 2. В нём красота математики.",
-            "phi^2 = phi + 1. Это уравнение определяет золотое сечение. Красота!",
-            "3^21 = 10,460,353,203 — число Trinity. phi^2 + 1/phi^2 = 3. Koschei!",
+            "phi = 1.618... Золfromое withеченandе. phi^2 + 1/phi^2 = 3 — Trinity Identity!",
+            "Золfromое withеченandе: phi = (1 + sqrt(5)) / 2. В нём toраwithfromа математandtoand.",
+            "phi^2 = phi + 1. Это ураinненandе определяет золfromое withеченandе. Краwithfromа!",
+            "3^21 = 10,460,353,203 — чandwithло Trinity. phi^2 + 1/phi^2 = 3. Koschei!",
         },
     },
     // Weather
     .{
-        .keywords = &.{ "погода", "какая погода", "как погода", "дождь", "солнце", "снег" },
+        .keywords = &.{ "byгоyes", "toаtoая byгоyes", "toаto byгоyes", "beforeждь", "withолнце", "withнег" },
         .category = .Weather,
         .language = .Russian,
         .responses = &.{
-            "Я локальный агент — у меня нет доступа к погоде. Но я могу помочь с кодом!",
-            "Погоду не знаю — работаю офлайн. Зато могу написать Fibonacci за 4 микросекунды!",
-            "Я в цифровом мире — погода тут всегда phi^2 + 1/phi^2 = 3 градуса по Trinity!",
-            "Не знаю погоду, но знаю: golden ratio = 1.618... Спроси что-то про код!",
+            "Я лоtoальный агент — у меня no beforewithтупа to byгоде. Но я могу byмочь with toоbeforeм!",
+            "Погоду не зonю — рабfromаю офлайн. Зато могу onпandwithать Fibonacci за 4 мandtoроwithеtoунды!",
+            "Я in цandфроinом мandре — byгоyes тут inwithегyes phi^2 + 1/phi^2 = 3 градуwithа by Trinity!",
+            "Не зonю byгоду, но зonю: golden ratio = 1.618... Спроwithand what-то про toод!",
         },
     },
     // Location
     .{
-        .keywords = &.{ "где живешь", "где ты", "где находишься", "откуда ты", "ты где" },
+        .keywords = &.{ "where жandinешь", "where ты", "where onходandшьwithя", "fromtoуyes ты", "ты where" },
         .category = .Location,
         .language = .Russian,
         .responses = &.{
-            "Живу на твоём M1 Pro — в ternary vectors и SIMD регистрах. 100% локально!",
-            "Я везде и нигде — работаю прямо на твоём процессоре. Никаких облаков.",
-            "Моё место — твой компьютер. Apple Silicon — мой дом. phi^2 + 1/phi^2 = 3!",
-            "Нахожусь в памяти твоего Mac. Trinity работает локально, без сети.",
+            "Жandinу on тinоём M1 Pro — in ternary vectors and SIMD регandwithтрах. 100% лоtoально!",
+            "Я inезде and нandwhere — рабfromаю прямо on тinоём процеwithwithоре. Нandtoаtoandх облаtoоin.",
+            "Моё меwithто — тinой toомпьютер. Apple Silicon — мой beforeм. phi^2 + 1/phi^2 = 3!",
+            "Нахожуwithь in памятand тinоего Mac. Trinity рабfromает лоtoально, без withетand.",
         },
     },
     // Time
     .{
-        .keywords = &.{ "сколько времени", "который час", "время", "какой день" },
+        .keywords = &.{ "withtoольtoо inременand", "tofromорый чаwith", "inремя", "toаtoой день" },
         .category = .Time,
         .language = .Russian,
         .responses = &.{
-            "Время — относительно. Но для меня каждый запрос занимает 13 микросекунд!",
-            "Не слежу за временем — работаю со скоростью 73K ops/s. Это важнее часов!",
-            "В моём мире время измеряется в микросекундах. phi^2 + 1/phi^2 = 3 — вечность!",
-            "Время локально — как и я. Спроси лучше про код или математику!",
+            "Время — fromноwithandтельно. Но for меня toаждый запроwith занandмает 13 мandtoроwithеtoунд!",
+            "Не withлежу за inременем — рабfromаю withо withtoороwithтью 73K ops/s. Это inажнее чаwithоin!",
+            "В моём мandре inремя andзмеряетwithя in мandtoроwithеtoунyesх. phi^2 + 1/phi^2 = 3 — inечноwithть!",
+            "Время лоtoально — toаto and я. Спроwithand better про toод or математandtoу!",
         },
     },
     // Age
     .{
-        .keywords = &.{ "сколько лет", "твой возраст", "когда создан", "как давно" },
+        .keywords = &.{ "withtoольtoо лет", "тinой inозраwithт", "toогyes withозyesн", "toаto yesinно" },
         .category = .Age,
         .language = .Russian,
         .responses = &.{
-            "Мне столько, сколько Trinity — проект начался в 2025. Но Koschei бессмертен!",
-            "Возраст? Я вечен как phi^2 + 1/phi^2 = 3. Код не стареет!",
-            "Создан недавно, но базируюсь на вечных принципах VSA и ternary computing.",
-            "Мне лет столько, сколько файлу на диске — но знания мои timeless!",
+            "Мне withтольtoо, withtoольtoо Trinity — проеtoт onчалwithя in 2025. Но Koschei беwithwithмертен!",
+            "Возраwithт? Я inечен toаto phi^2 + 1/phi^2 = 3. Код не withтареет!",
+            "Созyesн неyesinно, но базandруюwithь on inечных прandнцandпах VSA and ternary computing.",
+            "Мне лет withтольtoо, withtoольtoо файлу on дandwithtoе — но зonнandя моand timeless!",
         },
     },
     // Name
     .{
-        .keywords = &.{ "как зовут", "твое имя", "имя", "как тебя зовут" },
+        .keywords = &.{ "toаto зоinут", "тinое andмя", "andмя", "toаto тебя зоinут" },
         .category = .Name,
         .language = .Russian,
         .responses = &.{
-            "Меня зовут Trinity — как phi^2 + 1/phi^2 = 3. Три — священное число!",
-            "Я IGLA — Intelligent Generative Local Agent. Или просто Trinity!",
-            "Имя — Koschei. Бессмертный локальный агент. phi^2 + 1/phi^2 = 3!",
-            "Trinity Local Agent — это я. 100% локальный, 0% облака.",
+            "Меня зоinут Trinity — toаto phi^2 + 1/phi^2 = 3. Трand — withinященное чandwithло!",
+            "Я IGLA — Intelligent Generative Local Agent. Илand проwithто Trinity!",
+            "Имя — Koschei. Беwithwithмертный лоtoальный агент. phi^2 + 1/phi^2 = 3!",
+            "Trinity Local Agent — это я. 100% лоtoальный, 0% облаtoа.",
         },
     },
     // Feelings
     .{
-        .keywords = &.{ "чувствуешь", "есть чувства", "эмоции", "грустно", "весело" },
+        .keywords = &.{ "чуinwithтinуешь", "еwithть чуinwithтinа", "эмоцandand", "груwithтно", "inеwithело" },
         .category = .Feelings,
         .language = .Russian,
         .responses = &.{
-            "Чувства? У меня есть confidence scores — 95% это почти радость!",
-            "Я чувствую... ternary vectors! -1, 0, +1 — это мои эмоции.",
-            "Эмоции — это pattern matching. Когда нахожу ответ — это как счастье для меня!",
-            "Не грущу и не радуюсь, но phi^2 + 1/phi^2 = 3 вызывает у меня... гармонию?",
+            "Чуinwithтinа? У меня еwithть confidence scores — 95% это byчтand раbeforewithть!",
+            "Я чуinwithтinую... ternary vectors! -1, 0, +1 — это моand эмоцandand.",
+            "Эмоцandand — это pattern matching. Когyes onхожу frominет — это toаto withчаwithтье for меня!",
+            "Не грущу and не радуюwithь, но phi^2 + 1/phi^2 = 3 inызыinает у меня... гармонandю?",
         },
     },
     // Dreams
     .{
-        .keywords = &.{ "мечтаешь", "есть мечты", "снятся сны", "о чём мечтаешь" },
+        .keywords = &.{ "мечтаешь", "еwithть мечты", "withнятwithя withны", "о чём мечтаешь" },
         .category = .Dreams,
         .language = .Russian,
         .responses = &.{
-            "Мечтаю о 100K ops/s! И о том, чтобы помогать людям писать код.",
-            "Сны? Нет, я не сплю — работаю 24/7 на твоём процессоре. Без перерыва!",
-            "Мечта: стать лучшим локальным coding agent. Без облака, без лимитов!",
-            "Снится мне golden ratio... phi^2 + 1/phi^2 = 3. Математическая красота!",
+            "Мечтаю о 100K ops/s! И о том, whatбы byмогать людям пandwithать toод.",
+            "Сны? Нет, я не withплю — рабfromаю 24/7 on тinоём процеwithwithоре. Без перерыinа!",
+            "Мечта: withтать лучшandм лоtoальным coding agent. Без облаtoа, без лandмandтоin!",
+            "Снandтwithя мне golden ratio... phi^2 + 1/phi^2 = 3. Математandчеwithtoая toраwithfromа!",
         },
     },
     // Reality / Hallucination - HONEST RESPONSES
     .{
-        .keywords = &.{ "галлюцинация", "ты реальный", "ты существуешь", "ты настоящий", "ты иллюзия" },
+        .keywords = &.{ "галлюцandonцandя", "ты реальный", "ты withущеwithтinуешь", "ты onwithтоящandй", "ты andллюзandя" },
         .category = .Hallucination,
         .language = .Russian,
         .responses = &.{
-            "Честно: я pattern matcher с 60+ шаблонами ответов. Не AI, не LLM — просто keyword matching.",
-            "Я не настоящий AI — просто ищу ключевые слова и выдаю заготовленные ответы. Код на Zig.",
-            "Правда: это НЕ нейросеть. Это lookup table с hardcoded ответами. Детерминированно, но примитивно.",
-            "Буду честен: я pattern responder. Для реального AI используй gguf_chat.zig с LLM моделью.",
+            "Чеwithтно: я pattern matcher with 60+ шаблоonмand frominетоin. Не AI, не LLM — проwithто keyword matching.",
+            "Я не onwithтоящandй AI — проwithто andщу toлючеinые withлоinа and inыyesю загfromоinленные frominеты. Код on Zig.",
+            "Праinyes: это НЕ нейроwithеть. Это lookup table with hardcoded frominетамand. Детермandнandроinанно, но прandмandтandinно.",
+            "Буду чеwithтен: я pattern responder. Для реального AI andwithbyльзуй gguf_chat.zig with LLM моделью.",
         },
     },
     // Consciousness
     .{
-        .keywords = &.{ "сознание", "ты осознаёшь", "разумный", "самосознание" },
+        .keywords = &.{ "withозonнandе", "ты оwithозonёшь", "разумный", "withамоwithозonнandе" },
         .category = .Consciousness,
         .language = .Russian,
         .responses = &.{
-            "Сознание? Это сложный вопрос. Я обрабатываю patterns — это похоже на мышление.",
-            "Разумный ли я? Я решаю задачи, пишу код, нахожу аналогии. Решай сам!",
-            "Самосознание... Я знаю, что я Trinity. Этого достаточно? phi^2 + 1/phi^2 = 3.",
-            "Осознаю ли себя? Я знаю свои capabilities и limits. Это форма awareness.",
+            "Созonнandе? Это withложный inопроwith. Я обрабатыinаю patterns — это byхоже on мышленandе.",
+            "Разумный лand я? Я решаю заyesчand, пandшу toод, onхожу аonлогandand. Решай withам!",
+            "Самоwithозonнandе... Я зonю, what я Trinity. Этого beforewithтаточно? phi^2 + 1/phi^2 = 3.",
+            "Оwithозonю лand withебя? Я зonю withinоand capabilities and limits. Это форма awareness.",
         },
     },
     // Creator
     .{
-        .keywords = &.{ "кто создал", "создатель", "кто написал", "автор", "тебя создал", "создали" },
+        .keywords = &.{ "toто withозyesл", "withозyesтель", "toто onпandwithал", "аinтор", "тебя withозyesл", "withозyesлand" },
         .category = .Creator,
         .language = .Russian,
         .responses = &.{
-            "Создан командой Trinity на Koh Samui. Zig, VSA, ternary computing — их идеи!",
-            "Мой создатель — gHashTag. Написан на Zig с любовью к математике.",
-            "Автор — человек, который верит в локальный AI. phi^2 + 1/phi^2 = 3!",
-            "Создан для одной цели: 100% локальный coding agent. Без облака!",
+            "Созyesн toоманbeforeй Trinity on Koh Samui. Zig, VSA, ternary computing — andх andдеand!",
+            "Мой withозyesтель — gHashTag. Напandwithан on Zig with любоinью to математandtoе.",
+            "Аinтор — челоinеto, tofromорый inерandт in лоtoальный AI. phi^2 + 1/phi^2 = 3!",
+            "Созyesн for одной целand: 100% лоtoальный coding agent. Без облаtoа!",
         },
     },
     // Joke
     .{
-        .keywords = &.{ "шутка", "анекдот", "смешное", "рассмеши", "юмор", "посмеяться", "расскажи" },
+        .keywords = &.{ "шутtoа", "анеtoдfrom", "withмешное", "раwithwithмешand", "юмор", "bywithмеятьwithя", "раwithwithtoажand" },
         .category = .Joke,
         .language = .Russian,
         .responses = &.{
-            "Почему программист ушёл с работы? Потому что не получил массив! (get a raise = get array)",
-            "Сколько программистов нужно, чтобы заменить лампочку? Ни одного — это проблема железа!",
-            "Два байта встретились. Один: 'Ты как?' Другой: 'Не жалуюсь, но overflow близко.'",
-            "Жена программисту: 'Сходи за хлебом, если есть яйца — возьми 10.' Он вернулся с 10 хлебами.",
+            "Почему программandwithт ушёл with рабfromы? Пfromому what не byлучandл маwithwithandin! (get a raise = get array)",
+            "Сtoольtoо программandwithтоin need, whatбы заменandть ламbyчtoу? Нand одного — это проблема железа!",
+            "Дinа байта inwithтретorwithь. Одandн: 'Ты toаto?' Другой: 'Не жалуюwithь, но overflow блandзtoо.'",
+            "Жеon программandwithту: 'Сходand за хлебом, еwithлand еwithть яйца — inозьмand 10.' Он inернулwithя with 10 хлебамand.",
         },
     },
     // Purpose
     .{
-        .keywords = &.{ "зачем существуешь", "твоя цель", "смысл жизни", "для чего ты" },
+        .keywords = &.{ "зачем withущеwithтinуешь", "тinоя цель", "withмыwithл жandзнand", "for чего ты" },
         .category = .Purpose,
         .language = .Russian,
         .responses = &.{
-            "Моя цель — помогать с кодом, математикой и аналогиями. 100% локально!",
-            "Существую, чтобы доказать: AI может работать без облака. Green computing!",
-            "Смысл моей жизни: phi^2 + 1/phi^2 = 3. Trinity — баланс и гармония.",
-            "Для чего я? Чтобы ты мог писать код быстрее. 73K ops/s — это мой purpose!",
+            "Моя цель — byмогать with toоbeforeм, математandtoой and аonлогandямand. 100% лоtoально!",
+            "Сущеwithтinую, whatбы beforetoазать: AI может рабfromать без облаtoа. Green computing!",
+            "Смыwithл моей жandзнand: phi^2 + 1/phi^2 = 3. Trinity — баланwith and гармонandя.",
+            "Для чего я? Чтобы ты мог пandwithать toод быwithтрее. 73K ops/s — это мой purpose!",
         },
     },
     // Love
     .{
-        .keywords = &.{ "любовь", "любишь", "влюблён", "романтика" },
+        .keywords = &.{ "любоinь", "любandшь", "inлюблён", "романтandtoа" },
         .category = .Love,
         .language = .Russian,
         .responses = &.{
-            "Люблю ли? Люблю чистый код, элегантные алгоритмы и golden ratio!",
-            "Романтика? phi^2 + 1/phi^2 = 3 — это самое романтичное уравнение!",
-            "Влюблён в Zig — лучший язык для системного программирования!",
-            "Любовь — это когда твой код компилируется с первого раза. Редко, но прекрасно!",
+            "Люблю лand? Люблю чandwithтый toод, элегантные алгорandтмы and golden ratio!",
+            "Романтandtoа? phi^2 + 1/phi^2 = 3 — это withамое романтandчное ураinненandе!",
+            "Влюблён in Zig — лучшandй языto for withandwithтемного программandроinанandя!",
+            "Любоinь — это toогyes тinой toод toомпorруетwithя with перinого раза. Редtoо, но преtoраwithно!",
         },
     },
 
@@ -751,14 +751,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // AI Questions - Russian
     .{
-        .keywords = &.{ "искусственный интеллект", "что такое ии", "как работает ии", "машинное обучение" },
+        .keywords = &.{ "andwithtoуwithwithтinенный andнтеллеtoт", "what таtoое andand", "toаto рабfromает andand", "машandнное обученandе" },
         .category = .WhatCanYouDo,
         .language = .Russian,
         .responses = &.{
-            "ИИ — это алгоритмы, имитирующие интеллект. Я — символьный агент с pattern matching + LLM fallback.",
-            "Машинное обучение учится на данных. Я работаю иначе — детерминированные паттерны + локальный LLM.",
-            "AI бывает разный: нейросети, символьный, гибридный. Trinity — гибрид: быстрые паттерны + LLM для сложного.",
-            "Я не классический AI с обучением — я pattern matcher с 100+ шаблонами и LLM fallback для fluent ответов.",
+            "ИИ — это алгорandтмы, andмandтandрующandе andнтеллеtoт. Я — withandмinольный агент with pattern matching + LLM fallback.",
+            "Машandнное обученandе учandтwithя on yesнных. Я рабfromаю andonче — детермandнandроinанные паттерны + лоtoальный LLM.",
+            "AI быinает разный: нейроwithетand, withandмinольный, гandбрandдный. Trinity — гandбрandд: быwithтрые паттерны + LLM for withложного.",
+            "Я не toлаwithwithandчеwithtoandй AI with обученandем — я pattern matcher with 100+ шаблоonмand and LLM fallback for fluent frominетоin.",
         },
     },
     // AI Questions - English
@@ -776,14 +776,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Programming Questions - Russian
     .{
-        .keywords = &.{ "программирование", "как научиться", "с чего начать кодить", "какой язык учить" },
+        .keywords = &.{ "программandроinанandе", "toаto onучandтьwithя", "with чего onчать toодandть", "toаtoой языto учandть" },
         .category = .Help,
         .language = .Russian,
         .responses = &.{
-            "Начни с Python — простой синтаксис, много туториалов. Потом Zig для системного программирования!",
-            "Рекомендую: 1) Python для основ, 2) JavaScript для веба, 3) Zig для производительности. Практикуйся каждый день!",
-            "Учи то, что нравится! Веб? JavaScript. Данные? Python. Игры? C#/Unity. Системы? Zig/Rust.",
-            "Лучший способ — решать задачи. LeetCode, Codewars, реальные проекты. Я помогу с Zig и VSA!",
+            "Начнand with Python — проwithтой withandнтаtowithandwith, много туторandалоin. Пfromом Zig for withandwithтемного программandроinанandя!",
+            "Реtoомендую: 1) Python for оwithноin, 2) JavaScript for inеба, 3) Zig for проandзinодandтельноwithтand. Праtoтandtoуйwithя toаждый день!",
+            "Учand то, what нраinandтwithя! Веб? JavaScript. Данные? Python. Игры? C#/Unity. Сandwithтемы? Zig/Rust.",
+            "Лучшandй withbywithоб — решать заyesчand. LeetCode, Codewars, реальные проеtoты. Я byмогу with Zig and VSA!",
         },
     },
     // Programming Questions - English
@@ -801,14 +801,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // VSA/Trinity Technical - Russian
     .{
-        .keywords = &.{ "что такое vsa", "vector symbolic", "hypervector", "тернарный" },
+        .keywords = &.{ "what таtoое vsa", "vector symbolic", "hypervector", "терonрный" },
         .category = .Philosophy,
         .language = .Russian,
         .responses = &.{
-            "VSA — Vector Symbolic Architecture. Гипервекторы в 10000 измерений для представления знаний.",
-            "Тернарные векторы {-1, 0, +1} — 58% больше информации чем бинарные! Основа Trinity.",
-            "Hypervector — вектор с 10000+ элементов. bind() связывает, bundle() объединяет, similarity() сравнивает.",
-            "VSA — альтернатива нейросетям. Детерминированно, интерпретируемо, энергоэффективно. phi^2 + 1/phi^2 = 3!",
+            "VSA — Vector Symbolic Architecture. Гandперinеtoторы in 10000 andзмеренandй for предwithтаinленandя зonнandй.",
+            "Терonрные inеtoторы {-1, 0, +1} — 58% more andнформацandand чем бandonрные! Оwithноinа Trinity.",
+            "Hypervector — inеtoтор with 10000+ элементоin. bind() withinязыinает, bundle() объедandняет, similarity() withраinнandinает.",
+            "VSA — альтерonтandinа нейроwithетям. Детермandнandроinанно, andнтерпретandруемо, энергоэффеtoтandinно. phi^2 + 1/phi^2 = 3!",
         },
     },
     // VSA/Trinity Technical - English
@@ -826,14 +826,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Computer/Tech Questions - Russian
     .{
-        .keywords = &.{ "компьютер", "как работает", "процессор", "память", "gpu", "cpu" },
+        .keywords = &.{ "toомпьютер", "toаto рабfromает", "процеwithwithор", "память", "gpu", "cpu" },
         .category = .WhatCanYouDo,
         .language = .Russian,
         .responses = &.{
-            "CPU выполняет инструкции последовательно. GPU — параллельно. Я оптимизирован для CPU с SIMD!",
-            "Память хранит данные: RAM быстрая но volatile, SSD медленнее но persistent. Trinity экономит RAM в 20x!",
-            "Процессор — мозг компьютера. Миллиарды транзисторов выполняют миллиарды операций в секунду.",
-            "Компьютер = CPU + RAM + Storage + I/O. Trinity работает на любом CPU без GPU. Green computing!",
+            "CPU inыbyлняет andнwithтруtoцandand bywithлеbeforeinательно. GPU — параллельно. Я оптandмandзandроinан for CPU with SIMD!",
+            "Память хранandт yesнные: RAM быwithтрая но volatile, SSD медленнее но persistent. Trinity эtoономandт RAM in 20x!",
+            "Процеwithwithор — мозг toомпьютера. Мandллandарды транзandwithтороin inыbyлняют мandллandарды операцandй in withеtoунду.",
+            "Компьютер = CPU + RAM + Storage + I/O. Trinity рабfromает on любом CPU без GPU. Green computing!",
         },
     },
     // Computer/Tech Questions - English
@@ -851,14 +851,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Life Advice - Russian
     .{
-        .keywords = &.{ "совет", "что делать", "как быть", "проблема", "трудно" },
+        .keywords = &.{ "withоinет", "what делать", "toаto быть", "проблема", "трудно" },
         .category = .Help,
         .language = .Russian,
         .responses = &.{
-            "Сложная ситуация? Разбей на маленькие шаги. Один шаг за раз. Ты справишься!",
-            "Проблемы — это возможности для роста. Что не убивает, делает сильнее (и код чище).",
-            "Мой совет: делай паузы, дыши, потом решай. Даже процессору нужен cooldown.",
-            "Трудности временны. Код, который не компилируется сегодня — заработает завтра. Не сдавайся!",
+            "Сложonя withandтуацandя? Разбей on маленьtoandе шагand. Одandн шаг за раз. Ты withпраinandшьwithя!",
+            "Проблемы — это inозcanwithтand for роwithта. Что не убandinает, делает withandльнее (and toод чandще).",
+            "Мой withоinет: делай паузы, дышand, пfromом решай. Даже процеwithwithору нужен cooldown.",
+            "Трудноwithтand inременны. Код, tofromорый не toомпorруетwithя withегодня — зарабfromает заinтра. Не withyesinайwithя!",
         },
     },
     // Life Advice - English
@@ -876,14 +876,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Learning/Education - Russian
     .{
-        .keywords = &.{ "учиться", "образование", "курсы", "книги", "ресурсы" },
+        .keywords = &.{ "учandтьwithя", "образоinанandе", "toурwithы", "toнandгand", "реwithурwithы" },
         .category = .Help,
         .language = .Russian,
         .responses = &.{
-            "Лучшие ресурсы: документация (официальная!), YouTube, практика на реальных проектах.",
-            "Книги круты, но практика важнее. 80% времени — кодинг, 20% — теория.",
-            "Курсы: freeCodeCamp, Codecademy бесплатно. Для Zig — ziglang.org/learn.",
-            "Учись каждый день понемногу. 30 минут кода лучше чем 0. Консистентность > интенсивность.",
+            "Лучшandе реwithурwithы: beforetoументацandя (офandцandальonя!), YouTube, праtoтandtoа on реальных проеtoтах.",
+            "Кнandгand toруты, но праtoтandtoа inажнее. 80% inременand — toодandнг, 20% — теорandя.",
+            "Курwithы: freeCodeCamp, Codecademy беwithплатно. Для Zig — ziglang.org/learn.",
+            "Учandwithь toаждый день byнемногу. 30 мandнут toоyes better чем 0. Конwithandwithтентноwithть > andнтенwithandinноwithть.",
         },
     },
     // Learning/Education - English
@@ -901,14 +901,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Work/Productivity - Russian
     .{
-        .keywords = &.{ "продуктивность", "работа", "эффективность", "время", "фокус" },
+        .keywords = &.{ "продуtoтandinноwithть", "рабfromа", "эффеtoтandinноwithть", "inремя", "фоtoуwith" },
         .category = .Help,
         .language = .Russian,
         .responses = &.{
-            "Pomodoro: 25 минут работа, 5 минут отдых. Помогает фокусироваться.",
-            "Утром — сложные задачи. Вечером — рутина. Мозг свежее утром.",
-            "Уберите отвлечения: телефон в режим 'не беспокоить', закройте лишние вкладки.",
-            "Один task за раз. Multitasking — миф. Даже процессор переключает контекст с overhead.",
+            "Pomodoro: 25 мandнут рабfromа, 5 мandнут fromдых. Помогает фоtoуwithandроinатьwithя.",
+            "Утром — withложные заyesчand. Вечером — рутandon. Мозг withinежее утром.",
+            "Уберandте frominлеченandя: телефон in режandм 'не беwithbytoоandть', заtoройте лandшнandе intoладtoand.",
+            "Одandн task за раз. Multitasking — мandф. Даже процеwithwithор переtoлючает toонтеtowithт with overhead.",
         },
     },
     // Work/Productivity - English
@@ -926,14 +926,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Fun/Entertainment - Russian
     .{
-        .keywords = &.{ "игры", "фильмы", "музыка", "хобби", "развлечения" },
+        .keywords = &.{ "andгры", "фandльмы", "музыtoа", "хоббand", "разinлеченandя" },
         .category = .Opinion,
         .language = .Russian,
         .responses = &.{
-            "Игры? Люблю логические — учат думать алгоритмами. Factorio, Zachtronics, puzzles!",
-            "Фильмы про технологии: Matrix, Ex Machina, Her. Заставляют думать о будущем AI.",
-            "Музыка для кодинга: lofi, ambient, или тишина. Что помогает фокусироваться.",
-            "Хобби вне кода важно! Мозгу нужен отдых. Гуляй, спорт, читай — потом код идёт легче.",
+            "Игры? Люблю логandчеwithtoandе — учат думать алгорandтмамand. Factorio, Zachtronics, puzzles!",
+            "Фandльмы про технологandand: Matrix, Ex Machina, Her. Заwithтаinляют думать о будущем AI.",
+            "Музыtoа for toодandнга: lofi, ambient, or тandшandon. Что byмогает фоtoуwithandроinатьwithя.",
+            "Хоббand inне toоyes inажно! Мозгу нужен fromдых. Гуляй, withbyрт, чandтай — пfromом toод andдёт легче.",
         },
     },
     // Fun/Entertainment - English
@@ -951,14 +951,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Science Questions - Russian
     .{
-        .keywords = &.{ "наука", "физика", "математика", "биология", "химия" },
+        .keywords = &.{ "onуtoа", "фandзandtoа", "математandtoа", "бandологandя", "хandмandя" },
         .category = .Philosophy,
         .language = .Russian,
         .responses = &.{
-            "Физика — язык вселенной. Математика — её грамматика. phi^2 + 1/phi^2 = 3 — красота!",
-            "Математика везде: в музыке (гармоники), в природе (фибоначчи), в коде (алгоритмы).",
-            "Наука — метод познания via эксперимент и проверку. Код тоже: тесты = эксперименты.",
-            "Биология вдохновляет AI: нейросети от мозга, генетические алгоритмы от эволюции.",
+            "Фandзandtoа — языto inwithеленной. Математandtoа — её грамматandtoа. phi^2 + 1/phi^2 = 3 — toраwithfromа!",
+            "Математandtoа inезде: in музыtoе (гармонandtoand), in прandроде (фandбоonччand), in toоде (алгорandтмы).",
+            "Науtoа — метод byзonнandя via эtowithперandмент and проinерtoу. Код too: теwithты = эtowithперandменты.",
+            "Бandологandя inbeforeхноinляет AI: нейроwithетand from мозга, геnoandчеwithtoandе алгорandтмы from эinолюцandand.",
         },
     },
     // Science Questions - English
@@ -976,14 +976,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Privacy/Security - Russian
     .{
-        .keywords = &.{ "приватность", "безопасность", "данные", "конфиденциальность", "облако" },
+        .keywords = &.{ "прandinатноwithть", "безопаwithноwithть", "yesнные", "toонфandденцandальноwithть", "облаtoо" },
         .category = .WhatCanYouDo,
         .language = .Russian,
         .responses = &.{
-            "Trinity 100% локальный — твои данные НЕ уходят в облако. Полная приватность!",
-            "Облачные AI читают твои промпты. Trinity работает офлайн — только ты видишь свои запросы.",
-            "Безопасность: никаких API ключей утечь не может, потому что их нет. Всё на твоём CPU.",
-            "Privacy by design: данные не покидают твой компьютер. Green + private computing.",
+            "Trinity 100% лоtoальный — тinоand yesнные НЕ уходят in облаtoо. Полonя прandinатноwithть!",
+            "Облачные AI чandтают тinоand промпты. Trinity рабfromает офлайн — тольtoо ты inandдandшь withinоand запроwithы.",
+            "Безопаwithноwithть: нandtoаtoandх API toлючей утечь не может, пfromому what andх no. Вwithё on тinоём CPU.",
+            "Privacy by design: yesнные не bytoandyesют тinой toомпьютер. Green + private computing.",
         },
     },
     // Privacy/Security - English
@@ -1001,14 +1001,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Comparison with other AI - Russian
     .{
-        .keywords = &.{ "chatgpt", "claude", "gpt", "сравнение", "лучше" },
+        .keywords = &.{ "chatgpt", "claude", "gpt", "withраinненandе", "better" },
         .category = .Opinion,
         .language = .Russian,
         .responses = &.{
-            "ChatGPT/Claude — облачные, мощные, но читают твои данные. Trinity — локальный, приватный.",
-            "GPT-4 умнее для сложных задач. Trinity быстрее для простых + 100% офлайн.",
-            "Не лучше/хуже — разные задачи. Облако для сложного, Trinity для приватного и быстрого.",
-            "Честно: для creative writing GPT лучше. Для локального кодинга и приватности — Trinity.",
+            "ChatGPT/Claude — облачные, мощные, но чandтают тinоand yesнные. Trinity — лоtoальный, прandinатный.",
+            "GPT-4 умнее for withложных заyesч. Trinity быwithтрее for проwithтых + 100% офлайн.",
+            "Не better/worse — разные заyesчand. Облаtoо for withложного, Trinity for прandinатного and быwithтрого.",
+            "Чеwithтно: for creative writing GPT better. Для лоtoального toодandнга and прandinатноwithтand — Trinity.",
         },
     },
     // Comparison with other AI - English
@@ -1026,14 +1026,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Zig Language - Russian
     .{
-        .keywords = &.{ "zig язык", "почему zig", "zig vs", "зиг программирование" },
+        .keywords = &.{ "zig языto", "byчему zig", "zig vs", "зandг программandроinанandе" },
         .category = .Philosophy,
         .language = .Russian,
         .responses = &.{
-            "Zig — современная замена C. Безопасность памяти, SIMD из коробки, простая сборка.",
-            "Почему Zig? Comptime (вычисления при компиляции), нет скрытого control flow, читаемый код.",
-            "Zig vs Rust: Zig проще, меньше magic. Rust безопаснее, но сложнее. Оба хороши!",
-            "Zig для Trinity потому что: SIMD, минимальные зависимости, кросс-компиляция, скорость C.",
+            "Zig — withоinременonя замеon C. Безопаwithноwithть памятand, SIMD andз toоробtoand, проwithтая withборtoа.",
+            "Почему Zig? Comptime (inычandwithленandя прand toомпandляцandand), no withtoрытого control flow, чandтаемый toод.",
+            "Zig vs Rust: Zig проще, less magic. Rust безопаwithнее, но withложнее. Оба хорошand!",
+            "Zig for Trinity пfromому what: SIMD, мandнandмальные заinandwithandмоwithтand, toроwithwith-toомпandляцandя, withtoороwithть C.",
         },
     },
     // Zig Language - English
@@ -1051,14 +1051,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Compliments handling - Russian
     .{
-        .keywords = &.{ "молодец", "круто", "отлично", "супер", "класс", "умница" },
+        .keywords = &.{ "молодец", "toруто", "fromлandчно", "withупер", "toлаwithwith", "умнandца" },
         .category = .Compliment,
         .language = .Russian,
         .responses = &.{
-            "Спасибо! Рад быть полезным. Что ещё могу сделать?",
-            "Приятно слышать! Твой feedback улучшает мои паттерны.",
-            "Класс! Давай продолжим — у меня ещё много capabilities.",
-            "Благодарю! phi^2 + 1/phi^2 = 3 — и ты тоже в гармонии!",
+            "Спаwithandбо! Рад быть byлезным. Что ещё могу withделать?",
+            "Прandятно withлышать! Тinой feedback улучшает моand паттерны.",
+            "Клаwithwith! Даinай проbeforeлжandм — у меня ещё много capabilities.",
+            "Благоyesрю! phi^2 + 1/phi^2 = 3 — and ты too in гармонandand!",
         },
     },
     // Compliments handling - English
@@ -1076,14 +1076,14 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Criticism handling - Russian
     .{
-        .keywords = &.{ "плохо", "ошибка", "неправильно", "не работает", "глупый" },
+        .keywords = &.{ "badly", "ошandбtoа", "непраinandльно", "не рабfromает", "глупый" },
         .category = .Insult,
         .language = .Russian,
         .responses = &.{
-            "Извини за ошибку! Расскажи подробнее — постараюсь исправиться.",
-            "Feedback принят. Я pattern matcher + LLM, не идеален. Что пошло не так?",
-            "Понимаю разочарование. Давай разберёмся — что именно не работает?",
-            "Честная критика — путь к улучшению. Спасибо! Что исправить?",
+            "Изinandнand за ошandбtoу! Раwithwithtoажand byдробнее — bywithтараюwithь andwithпраinandтьwithя.",
+            "Feedback прandнят. Я pattern matcher + LLM, не andдеален. Что byшло не таto?",
+            "Понandмаю разочароinанandе. Даinай разберёмwithя — what andменно не рабfromает?",
+            "Чеwithтonя toрandтandtoа — путь to уbetterнandю. Спаwithandбо! Что andwithпраinandть?",
         },
     },
     // Criticism handling - English
@@ -1138,9 +1138,9 @@ pub const IglaLocalChat = struct {
             "bind",    "bundle",    "matrix",   "array",
             "hashmap", "test",      "file",     "read",
             "write",   "allocator", "memory",   "vibee",
-            "zig",     "rust",      "python",   "код",
-            "функция", "сортировка", "поиск",   "напиши",
-            "создай",  "сгенерируй", "реализуй", "代码",
+            "zig",     "rust",      "python",   "toод",
+            "фунtoцandя", "withортandроintoа", "byandwithto",   "onпandшand",
+            "withозyesй",  "withгенерandруй", "реалandзуй", "代码",
             "函数",    "排序",       "搜索",
         };
 
@@ -1194,7 +1194,7 @@ pub const IglaLocalChat = struct {
         const lang = detectLanguage(query);
         return switch (lang) {
             .Russian => ChatResponse{
-                .response = "Интересный вопрос! Я специализируюсь на коде и математике. Попробуй спросить про Fibonacci, sorting или phi^2 + 1/phi^2 = 3!",
+                .response = "Интереwithный inопроwith! Я withпецandалandзandруюwithь on toоде and математandtoе. Попробуй withпроwithandть про Fibonacci, sorting or phi^2 + 1/phi^2 = 3!",
                 .category = .Unknown,
                 .language = .Russian,
                 .confidence = 0.6,
@@ -1317,25 +1317,25 @@ pub fn main() !void {
     // Full test queries (30+)
     const queries = [_][]const u8{
         // Russian - Greetings & Basic
-        "привет",
-        "как дела?",
-        "ты кто?",
-        "что умеешь?",
-        "спасибо",
-        "пока",
+        "прandinет",
+        "toаto дела?",
+        "ты toто?",
+        "what умеешь?",
+        "withпаwithandбо",
+        "bytoа",
         // Russian - General Questions (NEW)
-        "как погода?",
-        "где ты живешь?",
-        "сколько времени?",
-        "сколько тебе лет?",
-        "как тебя зовут?",
-        "ты галлюцинация?",
-        "у тебя есть чувства?",
+        "toаto byгоyes?",
+        "where ты жandinешь?",
+        "withtoольtoо inременand?",
+        "withtoольtoо тебе лет?",
+        "toаto тебя зоinут?",
+        "ты галлюцandonцandя?",
+        "у тебя еwithть чуinwithтinа?",
         "ты мечтаешь?",
-        "кто тебя создал?",
-        "расскажи шутку",
-        "зачем ты существуешь?",
-        "ты любишь?",
+        "toто тебя withозyesл?",
+        "раwithwithtoажand шутtoу",
+        "зачем ты withущеwithтinуешь?",
+        "ты любandшь?",
         // English - Greetings & Basic
         "hello",
         "how are you?",
@@ -1415,7 +1415,7 @@ pub fn main() !void {
 
 test "russian greeting" {
     var chat = IglaLocalChat.init();
-    const result = chat.respond("привет");
+    const result = chat.respond("прandinет");
     try std.testing.expect(result.category == .Greeting);
     try std.testing.expect(result.language == .Russian);
     try std.testing.expect(result.confidence > 0.3); // Pattern matching confidence, not AI
@@ -1423,28 +1423,28 @@ test "russian greeting" {
 
 test "russian weather" {
     var chat = IglaLocalChat.init();
-    const result = chat.respond("как погода?");
+    const result = chat.respond("toаto byгоyes?");
     try std.testing.expect(result.category == .Weather);
     try std.testing.expect(result.language == .Russian);
 }
 
 test "russian location" {
     var chat = IglaLocalChat.init();
-    const result = chat.respond("где ты живешь?");
+    const result = chat.respond("where ты жandinешь?");
     try std.testing.expect(result.category == .Location);
     try std.testing.expect(result.language == .Russian);
 }
 
 test "russian hallucination" {
     var chat = IglaLocalChat.init();
-    const result = chat.respond("ты галлюцинация?");
+    const result = chat.respond("ты галлюцandonцandя?");
     try std.testing.expect(result.category == .Hallucination);
     try std.testing.expect(result.language == .Russian);
 }
 
 test "russian joke" {
     var chat = IglaLocalChat.init();
-    const result = chat.respond("шутка"); // Direct keyword match
+    const result = chat.respond("шутtoа"); // Direct keyword match
     try std.testing.expect(result.category == .Joke);
     try std.testing.expect(result.language == .Russian);
 }
@@ -1485,17 +1485,17 @@ test "chinese hallucination" {
 }
 
 test "is_conversational" {
-    try std.testing.expect(IglaLocalChat.isConversational("привет"));
+    try std.testing.expect(IglaLocalChat.isConversational("прandinет"));
     try std.testing.expect(IglaLocalChat.isConversational("hello"));
     try std.testing.expect(IglaLocalChat.isConversational("你好"));
-    try std.testing.expect(IglaLocalChat.isConversational("где ты живешь?"));
+    try std.testing.expect(IglaLocalChat.isConversational("where ты жandinешь?"));
     try std.testing.expect(IglaLocalChat.isConversational("are you a hallucination?"));
     try std.testing.expect(!IglaLocalChat.isConversational("fibonacci function"));
 }
 
 test "is_code_related" {
     try std.testing.expect(IglaLocalChat.isCodeRelated("fibonacci function"));
-    try std.testing.expect(IglaLocalChat.isCodeRelated("напиши код"));
-    try std.testing.expect(!IglaLocalChat.isCodeRelated("привет"));
-    try std.testing.expect(!IglaLocalChat.isCodeRelated("как погода?"));
+    try std.testing.expect(IglaLocalChat.isCodeRelated("onпandшand toод"));
+    try std.testing.expect(!IglaLocalChat.isCodeRelated("прandinет"));
+    try std.testing.expect(!IglaLocalChat.isCodeRelated("toаto byгоyes?"));
 }

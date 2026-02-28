@@ -74,7 +74,7 @@ pub const EcosystemCodex = struct {
             try h(&ctx, args[1..]);
         } else {
             switch (self.lang) {
-                .RU => std.debug.print("🩹 [Самоисцеление] Неизвестный рефлекс: {s}. Обучение...\n", .{args[0]}),
+                .RU => std.debug.print("🩹 [Самоandwithцеленandе] Неandзinеwithтный рефлеtowith: {s}. Обученandе...\n", .{args[0]}),
                 .TH => std.debug.print("🩹 [การเยียวยาตนเอง] ไม่รู้จักคำสั่ง: {s}. กำลังเรียนรู้...\n", .{args[0]}),
                 else => std.debug.print("🩹 [Self-Healing] Unknown reflex: {s}. Learning...\n", .{args[0]}),
             }
@@ -162,7 +162,7 @@ pub fn main() !void {
     // 2. Localization Test (Russian)
     std.debug.print("\n🇷🇺 Switching to Russian Mode...\n", .{});
     app.lang = .RU;
-    const chat_args = [_][]const u8{ "chat", "Привет, мир!" };
+    const chat_args = [_][]const u8{ "chat", "Прandinет, мandр!" };
     try app.fire(&chat_args);
 
     // 3. P2P & Community Test

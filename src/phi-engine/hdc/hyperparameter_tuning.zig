@@ -1,4 +1,4 @@
-//! Hyperparameter Tuning - Поиск оптимальных параметров for 100% win rate
+//! Hyperparameter Tuning - Поandwithto оптandмальных параметроin for 100% win rate
 //!
 //! Перебор:
 //! - learning_rate: [0.05, 0.1, 0.2, 0.3, 0.5]
@@ -13,7 +13,7 @@ const rl = @import("rl_agent.zig");
 
 const print = std.debug.print;
 
-/// Результат эксперимента
+/// Результат эtowithперandмента
 const ExperimentResult = struct {
     lr: f64,
     gamma: f64,
@@ -25,7 +25,7 @@ const ExperimentResult = struct {
     episodes: usize,
 };
 
-/// Запустить один эксперимент
+/// Запуwithтandть одandн эtowithперandмент
 fn runExperiment(
     allocator: std.mem.Allocator,
     lr: f64,
@@ -34,7 +34,7 @@ fn runExperiment(
     num_episodes: usize,
     seed: u64,
 ) !ExperimentResult {
-    // Создаём среду
+    // Созyesём withреду
     var env = try gw.GridWorld.init(allocator, .{
         .width = 4,
         .height = 4,
@@ -44,7 +44,7 @@ fn runExperiment(
     });
     defer env.deinit();
 
-    // Создаём агента
+    // Созyesём агента
     var agent = try rl.RLAgent.init(allocator, .{
         .state_dim = 256,
         .num_actions = 4,
@@ -56,7 +56,7 @@ fn runExperiment(
     });
     defer agent.deinit();
 
-    // Фиксируем seed
+    // Фandtowithandруем seed
     agent.rng = std.Random.DefaultPrng.init(seed);
 
     try agent.initQTable(env.numStates());
@@ -109,7 +109,7 @@ fn runExperiment(
     };
 }
 
-/// Запустить grid search
+/// Запуwithтandть grid search
 pub fn runGridSearch(allocator: std.mem.Allocator) !void {
     print("\n", .{});
     print("╔══════════════════════════════════════════════════════════════╗\n", .{});
@@ -123,9 +123,9 @@ pub fn runGridSearch(allocator: std.mem.Allocator) !void {
     const epsilon_decays = [_]f64{ 0.99, 0.995, 0.999 };
 
     const num_episodes: usize = 2000;
-    const num_runs: usize = 3; // Среднее by 3 запускам
+    const num_runs: usize = 3; // Среднее by 3 запуwithtoам
 
-    print("Параметры поиска:\n", .{});
+    print("Параметры byandwithtoа:\n", .{});
     print("  learning_rate: {any}\n", .{learning_rates});
     print("  gamma: {any}\n", .{gammas});
     print("  epsilon_decay: {any}\n", .{epsilon_decays});
@@ -220,7 +220,7 @@ pub fn runGridSearch(allocator: std.mem.Allocator) !void {
     print("║ Max Consecutive:{d:4}                                         ║\n", .{best_result.max_consecutive});
     print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 
-    // Топ-5 результатов
+    // Топ-5 результатоin
     print("\n", .{});
     print("ТОП-5 КОНФИГУРАЦИЙ:\n", .{});
     print("─────────────────────────────────────────────────────────────\n", .{});
@@ -246,12 +246,12 @@ pub fn runGridSearch(allocator: std.mem.Allocator) !void {
     }
 
     print("\n", .{});
-    print("Всего экспериментов: {d}\n", .{total_experiments});
+    print("Вwithего эtowithперandментоin: {d}\n", .{total_experiments});
     print("\n", .{});
     print("φ² + 1/φ² = 3 | TRINITY | TUNING COMPLETE\n", .{});
 }
 
-/// Точка loginа
+/// Точtoа loginа
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();

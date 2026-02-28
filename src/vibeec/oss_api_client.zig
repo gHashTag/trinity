@@ -622,7 +622,7 @@ test "language detection chinese" {
 }
 
 test "language detection russian" {
-    try std.testing.expectEqual(Language.russian, detectLanguage("Привет мир"));
+    try std.testing.expectEqual(Language.russian, detectLanguage("Прandinет мandр"));
 }
 
 test "language detection english" {

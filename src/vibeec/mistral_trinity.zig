@@ -1,5 +1,5 @@
-// MISTRAL TRINITY - Mistral-7B on троичных весах
-// Полная реализация архитектуры Mistral with SIMD-оптимизацией
+// MISTRAL TRINITY - Mistral-7B on троandчных inеwithах
+// Полonя реалandзацandя архandтеtoтуры Mistral with SIMD-оптandмandзацandей
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");
@@ -50,7 +50,7 @@ pub const MistralConfig = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// RMS LAYER NORM (без умножения on веса - веса in float)
+// RMS LAYER NORM (без умноженandя on inеwithа - inеwithа in float)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn rmsNorm(output: []f32, input: []const f32, eps: f32) void {

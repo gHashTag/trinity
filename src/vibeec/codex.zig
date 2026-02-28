@@ -1,7 +1,7 @@
-// VIBEEC CODEX — Первосвященный Скриб
-// CLI инструмент for автономной генерации and исправления кода WITH REAL SOUL
-// Фаза 1: Писец (The Scribe)
-// Фаза 2: Архитектор (The Architect)
+// VIBEEC CODEX — Перinоwithinященный Сtoрandб
+// CLI andнwithтрумент for аinтономной генерацandand and andwithпраinленandя toоyes WITH REAL SOUL
+// Фаза 1: Пandwithец (The Scribe)
+// Фаза 2: Архandтеtoтор (The Architect)
 // Фаза 3: Buildsель (The Builder)
 // Фаза 4: Душа (The Soul - LLM Integration)
 

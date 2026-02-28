@@ -6,7 +6,7 @@ pub const PHI = level0.PHI;
 pub const TRINITY = level0.TRINITY;
 
 // ═══════════════════════════════════════════════════════════
-// LEVEL 2: YUROBOROS ENGINE (Уровень Балансировки)
+// LEVEL 2: YUROBOROS ENGINE (Уроinень Баланwithandроintoand)
 // Dynamic Difficulty & Network Balancing for VIBEE
 // ═══════════════════════════════════════════════════════════
 
@@ -23,19 +23,19 @@ pub const DifficultyRating = enum(u16) {
 };
 
 pub const YuroborosDifficulty = struct {
-    // Base Difficulty (базовая сложность)
+    // Base Difficulty (базоinая withложноwithть)
     base: f64 = 1.0,
 
-    // Scaling Factor (coefficient масштабирования)
+    // Scaling Factor (coefficient маwithштабandроinанandя)
     scaling: f64 = 1.0,
 
-    // Adaptive Difficulty (адаптивная сложность)
+    // Adaptive Difficulty (аyesптandinonя withложноwithть)
     adaptive: f64 = 0.0,
 
-    // Target Difficulty (целевая сложность)
+    // Target Difficulty (целеinая withложноwithть)
     target: f64 = 100.0,
 
-    // Difficulty Rating (оценка сложности 1-999)
+    // Difficulty Rating (оценtoа withложноwithтand 1-999)
     pub fn getRating(self: *const YuroborosDifficulty) DifficultyRating {
         const D = self.adaptive;
         if (D < 1.0) return .EASY else if (D < 10.0) return .NORMAL else if (D < 50.0) return .HARD else if (D < 100.0) return .EXPERT else if (D < 500.0) return .GODLIKE else return .GODLIKE;
@@ -57,16 +57,16 @@ pub const YuroborosDifficulty = struct {
 // ═══════════════════════════════════════════════════════════
 
 pub const YuroborosNetworkState = struct {
-    // Total Tasks (общее количество задач)
+    // Total Tasks (общее toолandчеwithтinо заyesч)
     total_tasks: u64 = 0,
 
-    // Pending Tasks (ожидающие выполнения)
+    // Pending Tasks (ожandyesющandе inыbyлненandя)
     pending_tasks: u64 = 0,
 
-    // Completed Tasks (выполненные задачи)
+    // Completed Tasks (inыbyлненные заyesчand)
     completed_tasks: u64 = 0,
 
-    // Network Utility (полезность сети 0.0 to 1.0)
+    // Network Utility (byлезноwithть withетand 0.0 to 1.0)
     utility: f64 = 1.0,
 
     // Calculate network utility based on task completion
@@ -103,7 +103,7 @@ pub const YuroborosTask = struct {
 };
 
 // ═══════════════════════════════════════════════════════════
-// YUROBOROS ENGINE (Основной компонент)
+// YUROBOROS ENGINE (Оwithноinной toомbyнент)
 // ═══════════════════════════════════════════════════════════
 
 pub const YuroborosEngine = struct {

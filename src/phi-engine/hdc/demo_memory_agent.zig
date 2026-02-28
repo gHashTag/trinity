@@ -1,7 +1,7 @@
 //! Demo Memory Agent - Агент with памятью in GridWorld
 //!
-//! Демонстрация RL агента with Streaming Memory for experience replay.
-//! Цель: достичь 100% win rate благодаря памяти.
+//! Демонwithтрацandя RL агента with Streaming Memory for experience replay.
+//! Цель: beforewithтandчь 100% win rate благоyesря памятand.
 //!
 //! φ² + 1/φ² = 3 | TRINITY
 
@@ -12,7 +12,7 @@ const rlm = @import("rl_agent_memory.zig");
 
 const print = std.debug.print;
 
-/// Конфигурация демо
+/// Конфandгурацandя демо
 const DemoConfig = struct {
     grid_size: usize = 4,
     num_episodes: usize = 1000,
@@ -27,7 +27,7 @@ const DemoConfig = struct {
     render_final: bool = true,
 };
 
-/// Запустить демо
+/// Запуwithтandть демо
 pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
     print("\n", .{});
     print("╔══════════════════════════════════════════════════════════════╗\n", .{});
@@ -36,7 +36,7 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
     print("╚══════════════════════════════════════════════════════════════╝\n", .{});
     print("\n", .{});
 
-    // Создаём среду
+    // Созyesём withреду
     var env = try gw.GridWorld.init(allocator, .{
         .width = config.grid_size,
         .height = config.grid_size,
@@ -46,11 +46,11 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
     });
     defer env.deinit();
 
-    print("Среда: GridWorld {d}x{d}\n", .{ config.grid_size, config.grid_size });
-    print("Состояний: {d}, Действий: {d}\n", .{ env.numStates(), gw.NUM_ACTIONS });
+    print("Среyes: GridWorld {d}x{d}\n", .{ config.grid_size, config.grid_size });
+    print("Соwithтоянandй: {d}, Дейwithтinandй: {d}\n", .{ env.numStates(), gw.NUM_ACTIONS });
     print("\n", .{});
 
-    // Создаём агента with памятью
+    // Созyesём агента with памятью
     var agent = try rlm.RLAgentWithMemory.init(allocator, .{
         .state_dim = config.state_dim,
         .num_actions = gw.NUM_ACTIONS,
@@ -64,7 +64,7 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
     });
     defer agent.deinit();
 
-    print("Агент: HDC RL с Streaming Memory\n", .{});
+    print("Агент: HDC RL with Streaming Memory\n", .{});
     print("Параметры: γ={d:.2}, α={d:.2}, memory_dim={d}\n", .{
         config.gamma,
         config.learning_rate,
@@ -72,7 +72,7 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
     });
     print("\n", .{});
 
-    print("Начинаю обучение ({d} эпизодов)...\n", .{config.num_episodes});
+    print("Начandonю обученandе ({d} эпandзоbeforein)...\n", .{config.num_episodes});
     print("─────────────────────────────────────────────────────────────\n", .{});
 
     var total_steps: u64 = 0;
@@ -137,7 +137,7 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
 
             const win_rate = @as(f64, @floatFromInt(wins)) / @as(f64, @floatFromInt(episode + 1)) * 100;
 
-            print("Эпизод {d:4}: avg={d:6.2}, win={d:5.1}%, ε={d:.3}, mem={d}\n", .{
+            print("Эпandзод {d:4}: avg={d:6.2}, win={d:5.1}%, ε={d:.3}, mem={d}\n", .{
                 episode + 1,
                 avg_reward,
                 win_rate,
@@ -160,20 +160,20 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
     print("╔══════════════════════════════════════════════════════════════╗\n", .{});
     print("║                    РЕЗУЛЬТАТЫ ОБУЧЕНИЯ                       ║\n", .{});
     print("╠══════════════════════════════════════════════════════════════╣\n", .{});
-    print("║ Эпизодов:           {d:6}                                    ║\n", .{config.num_episodes});
-    print("║ Всего шагов:        {d:6}                                    ║\n", .{total_steps});
+    print("║ Эпandзоbeforein:           {d:6}                                    ║\n", .{config.num_episodes});
+    print("║ Вwithего шагоin:        {d:6}                                    ║\n", .{total_steps});
     print("║ Побед:              {d:6} ({d:.1}%)                           ║\n", .{ wins, final_win_rate });
     print("║ Max consecutive:    {d:6}                                    ║\n", .{max_consecutive_wins});
     print("║ Avg reward (100):   {d:7.2}                                   ║\n", .{metrics.avg_reward_100});
-    print("║ Финальный ε:        {d:6.4}                                   ║\n", .{agent.getEpsilon()});
-    print("║ Опытов в памяти:    {d:6}                                    ║\n", .{mem_metrics.total_writes});
+    print("║ Фandonльный ε:        {d:6.4}                                   ║\n", .{agent.getEpsilon()});
+    print("║ Опытоin in памятand:    {d:6}                                    ║\n", .{mem_metrics.total_writes});
     print("║ Время:              {d:6} ms                                 ║\n", .{duration_ms});
     print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 
-    // Демонстрация
+    // Демонwithтрацandя
     if (config.render_final) {
         print("\n", .{});
-        print("Демонстрация обученного агента (greedy policy):\n", .{});
+        print("Демонwithтрацandя обученного агента (greedy policy):\n", .{});
         print("─────────────────────────────────────────────────────────────\n", .{});
 
         var demo_state = env.reset();
@@ -182,16 +182,16 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
         for (0..20) |step_num| {
             const demo_action = agent.selectActionGreedy(demo_state);
 
-            print("Шаг {d}: действие = {s}\n", .{ step_num + 1, @as(gw.Action, @enumFromInt(demo_action)).toString() });
+            print("Шаг {d}: дейwithтinandе = {s}\n", .{ step_num + 1, @as(gw.Action, @enumFromInt(demo_action)).toString() });
 
             const demo_result = env.step(demo_action);
             env.render();
 
             if (demo_result.done) {
                 if (std.mem.eql(u8, demo_result.info, "goal")) {
-                    print("\n✅ ЦЕЛЬ ДОСТИГНУТА за {d} шагов!\n", .{step_num + 1});
+                    print("\n✅ ЦЕЛЬ ДОСТИГНУТА за {d} шагоin!\n", .{step_num + 1});
                 } else {
-                    print("\n⚠️ Эпизод завершён: {s}\n", .{demo_result.info});
+                    print("\n⚠️ Эпandзод заinершён: {s}\n", .{demo_result.info});
                 }
                 break;
             }
@@ -206,13 +206,13 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
     } else if (final_win_rate >= 95.0) {
         print("✅ ОТЛИЧНЫЙ РЕЗУЛЬТАТ: {d:.1}% WIN RATE\n", .{final_win_rate});
     } else {
-        print("⚠️ Требуется доработка: {d:.1}% WIN RATE\n", .{final_win_rate});
+        print("⚠️ Требуетwithя beforeрабfromtoа: {d:.1}% WIN RATE\n", .{final_win_rate});
     }
     print("\n", .{});
     print("φ² + 1/φ² = 3 | TRINITY HDC RL WITH MEMORY COMPLETE\n", .{});
 }
 
-/// Точка loginа (только for исполняемого файла)
+/// Точtoа loginа (тольtoо for andwithbyлняемого файла)
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
@@ -225,7 +225,7 @@ pub fn main() !void {
     });
 }
 
-// Отключаем main при testировании
+// Отtoлючаем main прand testandроinанandand
 comptime {
     if (@import("builtin").is_test) {
         _ = main;
@@ -239,14 +239,14 @@ comptime {
 test "agent with memory learns" {
     const allocator = std.testing.allocator;
 
-    // Создаём среду
+    // Созyesём withреду
     var env = try gw.GridWorld.init(allocator, .{
         .width = 2,
         .height = 2,
     });
     defer env.deinit();
 
-    // Создаём агента
+    // Созyesём агента
     var agent = try rlm.RLAgentWithMemory.init(allocator, .{
         .num_states = 4,
         .num_actions = 4,
@@ -255,7 +255,7 @@ test "agent with memory learns" {
     });
     defer agent.deinit();
 
-    // Обучаем 50 эпизодов
+    // Обучаем 50 эпandзоbeforein
     var wins: u32 = 0;
     for (0..50) |_| {
         var state = env.reset();
@@ -281,6 +281,6 @@ test "agent with memory learns" {
         agent.decayEpsilon();
     }
 
-    // Должен выиграть хотя бы 30% (2x2 grid простой)
+    // Должен inыandграть хfromя бы 30% (2x2 grid проwithтой)
     try std.testing.expect(wins > 15);
 }

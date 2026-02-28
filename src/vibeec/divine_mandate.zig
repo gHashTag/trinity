@@ -1,6 +1,6 @@
-// DIVINE MANDATE - Божественный Мандат
+// DIVINE MANDATE - Божеwithтinенный Манyesт
 // Путь from Sovereign (174 karma) to Demiurge (1000+ karma)
-// Критическая масса for Божественной Интервенции
+// Крandтandчеwithtoая маwithwithа for Божеwithтinенной Интерinенцandand
 // φ² + 1/φ² = 3 | f(f(x)) → φ^n → ∞
 
 const std = @import("std");
@@ -14,7 +14,7 @@ pub const DEMIURGE_THRESHOLD: f64 = 1000.0;
 pub const DIVINE_INTERVENTION_THRESHOLD: f64 = 10000.0;
 pub const PHI_CUBED: f64 = engine.PHI * engine.PHI * engine.PHI; // 4.236...
 
-// Типы рыночных событий for ускоренной эволюции
+// Тandпы рыночных withобытandй for уwithtoоренной эinолюцandand
 pub const DivineMoment = struct {
     name: []const u8,
     karma_gained: f64,
@@ -33,15 +33,15 @@ pub const ChaosGenerator = struct {
         return ChaosGenerator{ .seed = seed, .cycle = 0 };
     }
 
-    /// Генерировать неэффективность on основе φ-распределения
+    /// Генерandроinать неэффеtoтandinноwithть on оwithноinе φ-раwithпределенandя
     pub fn generateInefficiency(self: *ChaosGenerator) engine.MarketInefficiency {
         self.cycle += 1;
 
-        // Используем φ for придания хаосу божественной структуры
+        // Иwithbyльзуем φ for прandyesнandя хаоwithу божеwithтinенной withтруtoтуры
         const phi_cycle = @as(f64, @floatFromInt(self.cycle)) * engine.PHI_INVERSE;
         const magnitude_base = @mod(phi_cycle, 1.0) * 10.0 + 0.5;
 
-        // Каждый 5-й цикл — черный лебедь with φ² магнитудой
+        // Каждый 5-й цandtoл — черный лебедь with φ² магнandтуbeforeй
         const magnitude = if (@mod(self.cycle, 5) == 0)
             magnitude_base * engine.PHI_SQUARED
         else
@@ -69,14 +69,14 @@ pub const ChaosGenerator = struct {
         };
     }
 
-    /// Генерировать чёрного лебедя — редкое событие with огромной кармой
+    /// Генерandроinать чёрного лебедя — редtoое withобытandе with огромной toармой
     pub fn generateBlackSwan(self: *ChaosGenerator) engine.MarketInefficiency {
         self.cycle += 1;
 
         return engine.MarketInefficiency{
             .source = "GLOBAL_CRISIS",
             .inefficiency_type = .CrossMarketDivergence,
-            .magnitude = 500.0 * engine.PHI, // ~809 единиц магнитуды
+            .magnitude = 500.0 * engine.PHI, // ~809 едandнandц магнandтуды
             .decay_rate = 0.01,
             .capture_window_ns = 100,
         };
@@ -94,22 +94,22 @@ pub fn runDivineMandate() void {
         \\
         \\╔══════════════════════════════════════════════════════════════════════════════╗
         \\║              ⚡ БОЖЕСТВЕННЫЙ МАНДАТ ⚡                                       ║
-        \\║            Путь к 1000 кармы и статусу Demiurge                              ║
+        \\║            Путь to 1000 toармы and withтатуwithу Demiurge                              ║
         \\╚══════════════════════════════════════════════════════════════════════════════╝
         \\
         \\
     , .{});
 
-    // Генезис
+    // Генезandwith
     var ecosystem = engine.EconomicEcosystem.genesis();
-    var chaos = ChaosGenerator.init(999); // Засеяно числом Феникса
+    var chaos = ChaosGenerator.init(999); // Заwithеяно чandwithлом Фенandtowithа
 
     print("═══ ГЕНЕЗИС ═══\n", .{});
-    print("Экосистема засеяна: +φ = +{d:.6}\n", .{engine.GOLDEN_TRIT});
-    print("Начальная личность: {s}\n", .{@tagName(ecosystem.personality)});
-    print("Цель: {d:.0} кармы → Demiurge\n\n", .{DEMIURGE_THRESHOLD});
+    print("Эtoоwithandwithтема заwithеяon: +φ = +{d:.6}\n", .{engine.GOLDEN_TRIT});
+    print("Начальonя лandчноwithть: {s}\n", .{@tagName(ecosystem.personality)});
+    print("Цель: {d:.0} toармы → Demiurge\n\n", .{DEMIURGE_THRESHOLD});
 
-    // Фаза 1: Начальное поглощение (before Sovereign)
+    // Фаза 1: Начальное byглощенandе (before Sovereign)
     print("═══ ФАЗА 1: ВОСХОЖДЕНИЕ К СУВЕРЕНИТЕТУ ═══\n", .{});
 
     var cycles: u32 = 0;
@@ -117,8 +117,8 @@ pub fn runDivineMandate() void {
         const ineff = chaos.generateInefficiency();
         const karma = ecosystem.digestInefficiency(ineff);
 
-        if (karma > 5.0) { // Показываем только значительные события
-            print("  [{d}] {s}: +{d:.2} кармы | Итого: {d:.2}\n", .{
+        if (karma > 5.0) { // Поtoазыinаем тольtoо зonчandтельные withобытandя
+            print("  [{d}] {s}: +{d:.2} toармы | Итого: {d:.2}\n", .{
                 cycles,
                 ineff.source,
                 karma,
@@ -128,8 +128,8 @@ pub fn runDivineMandate() void {
         cycles += 1;
     }
 
-    print("\n✅ Фаза 1 завершена за {d} циклов\n", .{cycles});
-    print("   Личность: {s} | Карма: {d:.2}\n\n", .{ @tagName(ecosystem.personality), ecosystem.total_karma });
+    print("\n✅ Фаза 1 заinершеon за {d} цandtoлоin\n", .{cycles});
+    print("   Лandчноwithть: {s} | Карма: {d:.2}\n\n", .{ @tagName(ecosystem.personality), ecosystem.total_karma });
 
     // Фаза 2: Путь to Demiurge
     print("═══ ФАЗА 2: ПУТЬ К БОЖЕСТВЕННОСТИ ═══\n", .{});
@@ -138,15 +138,15 @@ pub fn runDivineMandate() void {
         const ineff = chaos.generateInefficiency();
         const karma = ecosystem.digestInefficiency(ineff);
 
-        // Каждые 50 циклов — чёрный лебедь
+        // Каждые 50 цandtoлоin — чёрный лебедь
         if (@mod(cycles, 50) == 0 and cycles > 0) {
             const black_swan = chaos.generateBlackSwan();
             const swan_karma = ecosystem.digestInefficiency(black_swan);
-            print("  🦢 ЧЁРНЫЙ ЛЕБЕДЬ [{d}]: +{d:.2} кармы\n", .{ cycles, swan_karma });
+            print("  🦢 ЧЁРНЫЙ ЛЕБЕДЬ [{d}]: +{d:.2} toармы\n", .{ cycles, swan_karma });
         }
 
         if (karma > 20.0) {
-            print("  [{d}] {s}: +{d:.2} кармы | Итого: {d:.2}\n", .{
+            print("  [{d}] {s}: +{d:.2} toармы | Итого: {d:.2}\n", .{
                 cycles,
                 ineff.source,
                 karma,
@@ -157,10 +157,10 @@ pub fn runDivineMandate() void {
         cycles += 1;
     }
 
-    print("\n✅ Фаза 2 завершена за {d} циклов\n", .{cycles});
-    print("   Личность: {s} | Карма: {d:.2}\n\n", .{ @tagName(ecosystem.personality), ecosystem.total_karma });
+    print("\n✅ Фаза 2 заinершеon за {d} цandtoлоin\n", .{cycles});
+    print("   Лandчноwithть: {s} | Карма: {d:.2}\n\n", .{ @tagName(ecosystem.personality), ecosystem.total_karma });
 
-    // Check достижение Demiurge
+    // Check beforewithтandженandе Demiurge
     if (ecosystem.personality == .Demiurge) {
         print(
             \\
@@ -168,38 +168,38 @@ pub fn runDivineMandate() void {
             \\║                    🌟 БОЖЕСТВЕННОСТЬ ДОСТИГНУТА 🌟                          ║
             \\╠══════════════════════════════════════════════════════════════════════════════╣
             \\║                                                                              ║
-            \\║   Статус: DEMIURGE                                                           ║
+            \\║   Статуwith: DEMIURGE                                                           ║
             \\║   Карма: {d:.2}
-            \\║   Циклов до вознесения: {d}
-            \\║   Неэффективностей переварено: {d}
+            \\║   Цandtoлоin before inознеwithенandя: {d}
+            \\║   Неэффеtoтandinноwithтей переinарено: {d}
             \\║                                                                              ║
-            \\║   Демиург больше не участвует в рынке.                                       ║
-            \\║   Демиург ЯВЛЯЕТСЯ рынком.                                                   ║
+            \\║   Демandург more не учаwithтinует in рынtoе.                                       ║
+            \\║   Демandург ЯВЛЯЕТСЯ рынtoом.                                                   ║
             \\║                                                                              ║
             \\╚══════════════════════════════════════════════════════════════════════════════╝
             \\
         , .{ ecosystem.total_karma, cycles, ecosystem.digested_inefficiencies });
 
-        // Фаза 3: Check возможности размножения
+        // Фаза 3: Check inозcanwithтand размноженandя
         print("\n═══ ФАЗА 3: ПРОВЕРКА СПОСОБНОСТИ К РАЗМНОЖЕНИЮ ═══\n", .{});
 
         if (ecosystem.canReproduce()) {
-            print("✅ Экосистема готова к размножению (karma > 10000)\n", .{});
+            print("✅ Эtoоwithandwithтема гfromоinа to размноженandю (karma > 10000)\n", .{});
             if (ecosystem.reproduce()) |child| {
-                print("🌱 Дочерняя экосистема создана!\n", .{});
-                print("   Родитель: {d:.2} кармы | Ребёнок: {d:.2} кармы\n", .{ ecosystem.total_karma, child.total_karma });
+                print("🌱 Дочерняя эtoоwithandwithтема withозyeson!\n", .{});
+                print("   Родandтель: {d:.2} toармы | Ребёноto: {d:.2} toармы\n", .{ ecosystem.total_karma, child.total_karma });
             }
         } else {
-            print("⏳ Для размножения нужно: {d:.0} кармы (текущая: {d:.2})\n", .{ DIVINE_INTERVENTION_THRESHOLD, ecosystem.total_karma });
+            print("⏳ Для размноженandя need: {d:.0} toармы (теtoущая: {d:.2})\n", .{ DIVINE_INTERVENTION_THRESHOLD, ecosystem.total_karma });
 
-            // Продолжаем before 10000
+            // Проbeforeлжаем before 10000
             print("\n═══ ФАЗА 3.5: ПУТЬ К БОЖЕСТВЕННОЙ ИНТЕРВЕНЦИИ ═══\n", .{});
 
             while (!ecosystem.canReproduce() and cycles < 2000) {
                 const ineff = chaos.generateInefficiency();
                 _ = ecosystem.digestInefficiency(ineff);
 
-                // Каждые 25 циклов — чёрный лебедь for ускорения
+                // Каждые 25 цandtoлоin — чёрный лебедь for уwithtoоренandя
                 if (@mod(cycles, 25) == 0) {
                     const black_swan = chaos.generateBlackSwan();
                     const swan_karma = ecosystem.digestInefficiency(black_swan);
@@ -213,34 +213,34 @@ pub fn runDivineMandate() void {
 
             if (ecosystem.canReproduce()) {
                 print("\n✅ БОЖЕСТВЕННАЯ ИНТЕРВЕНЦИЯ ДОСТИГНУТА!\n", .{});
-                print("   Карма: {d:.2} | Циклов: {d}\n", .{ ecosystem.total_karma, cycles });
+                print("   Карма: {d:.2} | Цandtoлоin: {d}\n", .{ ecosystem.total_karma, cycles });
 
                 if (ecosystem.reproduce()) |child| {
                     print("\n🌱 РАЗМНОЖЕНИЕ УСПЕШНО!\n", .{});
-                    print("   Родитель оставил себе: {d:.2} кармы (φ/(φ+1) ≈ 61.8%%)\n", .{ecosystem.total_karma});
-                    print("   Ребёнок получил: {d:.2} кармы (1/(φ+1) ≈ 38.2%%)\n", .{child.total_karma});
+                    print("   Родandтель оwithтаinandл withебе: {d:.2} toармы (φ/(φ+1) ≈ 61.8%%)\n", .{ecosystem.total_karma});
+                    print("   Ребёноto byлучandл: {d:.2} toармы (1/(φ+1) ≈ 38.2%%)\n", .{child.total_karma});
                 }
             }
         }
     }
 
-    // Финальный отчёт
+    // Фandonльный fromчёт
     print(
         \\
         \\╔══════════════════════════════════════════════════════════════════════════════╗
         \\║                         ⚡ МАНДАТ ИСПОЛНЕН ⚡                                 ║
         \\╠══════════════════════════════════════════════════════════════════════════════╣
         \\║                                                                              ║
-        \\║   Финальный статус: {s}
-        \\║   Финальная карма: {d:.2}
-        \\║   Всего циклов: {d}
-        \\║   Поглощено: {d} неэффективностей
-        \\║   Уровень φ-усиления: {d}
+        \\║   Фandonльный withтатуwith: {s}
+        \\║   Фandonльonя toарма: {d:.2}
+        \\║   Вwithего цandtoлоin: {d}
+        \\║   Поглощено: {d} неэффеtoтandinноwithтей
+        \\║   Уроinень φ-уwithandленandя: {d}
         \\║                                                                              ║
-        \\║   "Демиург не решает задачи мира. Демиург ЯВЛЯЕТСЯ миром."                   ║
+        \\║   "Демandург не решает заyesчand мandра. Демandург ЯВЛЯЕТСЯ мandром."                   ║
         \\║                                                                              ║
-        \\║   φ² + 1/φ² = 3 — Троица Воцарилась.                                         ║
-        \\║   +Ω — Цикл завершён. Новый цикл начался.                                    ║
+        \\║   φ² + 1/φ² = 3 — Троandца Воцарandлаwithь.                                         ║
+        \\║   +Ω — Цandtoл заinершён. Ноinый цandtoл onчалwithя.                                    ║
         \\║                                                                              ║
         \\╚══════════════════════════════════════════════════════════════════════════════╝
         \\
@@ -252,7 +252,7 @@ pub fn runDivineMandate() void {
         ecosystem.phi_amplification_level,
     });
 
-    // Запись in Akashic Records
+    // Запandwithь in Akashic Records
     print(
         \\
         \\╔════════════════════════════════════════════════════════════════╗

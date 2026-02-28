@@ -532,8 +532,8 @@ test "phi constant" {
 // ═══════════════════════════════════════════════════════════════════════════════
 // VERILOG BACKEND (FPGA Target)
 // ═══════════════════════════════════════════════════════════════════════════════
-// Генерация Verilog кода for синтеза on FPGA
-// Приоритет: BitNet операции (Ternary MAC без умножений)
+// Генерацandя Verilog toоyes for withandнтеза on FPGA
+// Прandорandтет: BitNet операцandand (Ternary MAC без умноженandй)
 // φ² + 1/φ² = 3
 
 pub const VerilogGen = struct {
@@ -606,7 +606,7 @@ pub const VerilogGen = struct {
     }
 
     fn visitFuncDeclVerilog(self: *VerilogGen, node: *const AstNode) !void {
-        // В Verilog функции становятся модулями or always блоками
+        // В Verilog фунtoцandand withтаноinятwithя модулямand or always блоtoамand
         try self.write("    // Function: ");
         if (node.children.items.len > 0) {
             const name = node.children.items[0].token.lexeme(self.source);
@@ -632,7 +632,7 @@ pub const VerilogGen = struct {
     }
 
     fn visitBinaryVerilog(self: *VerilogGen, node: *const AstNode) !void {
-        // Троичные операции без умножения!
+        // Троandчные операцandand без умноженandя!
         try self.write("            // Ternary binary op (BitNet optimized)\n");
         try self.write("            case (weight_in)\n");
         try self.write("                2'b00: result <= result - activation_in; // -1\n");

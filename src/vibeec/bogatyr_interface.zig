@@ -4,19 +4,19 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-/// Контекст валидации - общие data for всех богатырей
+/// Контеtowithт inалandyesцandand - общandе data for inwithех богатырей
 pub const ValidationContext = struct {
     allocator: Allocator,
     spec_path: []const u8,
     source: []const u8,
     config: ValidatorConfig,
 
-    // AST (if уже спарсен)
+    // AST (if уже withпарwithен)
     ast: ?*const struct {
         nodes: []const AstNode,
     },
 
-    // Таблица символов (if уже построена)
+    // Таблandца withandмinолоin (if уже bywithтроеon)
     symbol_table: ?*const struct {
         symbols: std.StringHashMap(Symbol),
     },
@@ -30,15 +30,15 @@ pub const ValidatorConfig = struct {
     timeout_ms: u32 = 30000,
 };
 
-/// Результат проверки богатыря
+/// Результат проinерtoand богатыря
 pub const BogatyrVerdict = enum {
     Pass, // ✅ Check прошла
     Fail, // ❌ Check не прошла
-    Warning, // ⚠️ Предупреждение
+    Warning, // ⚠️ Предуbeforeнandе
     Skip, // ⊘ Богатырь пропущен
 };
 
-/// Ошибка валидации
+/// Ошandбtoа inалandyesцandand
 pub const ValidationError = struct {
     code: []const u8,
     message: []const u8,
@@ -47,31 +47,31 @@ pub const ValidationError = struct {
     column: usize,
 };
 
-/// Метрики выполнения богатыря
+/// Метрandtoand inыbyлненandя богатыря
 pub const BogatyrMetrics = struct {
     duration_ns: i64,
     checks_performed: usize,
 };
 
-/// Интерфейс Богатыря - each богатырь реализует this трейт
+/// Интерфейwith Богатыря - each богатырь реалandзует this трейт
 pub const BogatyrPlugin = struct {
     name: []const u8,
     version: []const u8,
     category: []const u8,
     priority: u32,
 
-    /// Функция валидации - реализуется каждым богатырем
+    /// Фунtoцandя inалandyesцandand - реалandзуетwithя toаждым богатырем
     validate: *const fn (*const ValidationContext) anyerror!BogatyrResult,
 };
 
-/// Результат работы богатыря
+/// Результат рабfromы богатыря
 pub const BogatyrResult = struct {
     verdict: BogatyrVerdict,
     errors: []const ValidationError,
     metrics: BogatyrMetrics,
 };
 
-/// Вспомогательные типы
+/// Вwithbyмогательные тandпы
 pub const AstNode = struct {
     kind: []const u8,
     value: ?[]const u8,
@@ -84,7 +84,7 @@ pub const Symbol = struct {
     line: usize,
 };
 
-/// Creates ошибку валидации
+/// Creates ошandбtoу inалandyesцandand
 pub fn createError(allocator: Allocator, code: []const u8, message: []const u8, line: usize, column: usize) !ValidationError {
     return ValidationError{
         .code = try allocator.dupe(u8, code),

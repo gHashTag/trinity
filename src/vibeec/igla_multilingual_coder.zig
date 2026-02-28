@@ -342,7 +342,7 @@ pub const MultilingualResponse = struct {
 };
 
 pub const multilingual_greetings = MultilingualResponse{
-    .russian = "Привет! Я IGLA — локальный AI-ассистент. Чем могу помочь?",
+    .russian = "Прandinет! Я IGLA — лоtoальный AI-аwithwithandwithтент. Чем могу byмочь?",
     .english = "Hello! I'm IGLA — a local AI assistant. How can I help you?",
     .chinese = "你好！我是IGLA——本地AI助手。有什么可以帮助你的？",
     .spanish = "¡Hola! Soy IGLA — un asistente de IA local. ¿En qué puedo ayudarte?",
@@ -350,7 +350,7 @@ pub const multilingual_greetings = MultilingualResponse{
 };
 
 pub const multilingual_code_intro = MultilingualResponse{
-    .russian = "Вот код для твоей задачи:",
+    .russian = "Вfrom toод for тinоей заyesчand:",
     .english = "Here's the code for your task:",
     .chinese = "这是你任务的代码：",
     .spanish = "Aquí está el código para tu tarea:",
@@ -358,7 +358,7 @@ pub const multilingual_code_intro = MultilingualResponse{
 };
 
 pub const multilingual_explanation = MultilingualResponse{
-    .russian = "Объяснение:",
+    .russian = "Объяwithненandе:",
     .english = "Explanation:",
     .chinese = "解释：",
     .spanish = "Explicación:",
@@ -366,7 +366,7 @@ pub const multilingual_explanation = MultilingualResponse{
 };
 
 pub const multilingual_unknown = MultilingualResponse{
-    .russian = "Не совсем понял запрос. Можешь уточнить?",
+    .russian = "Не withоinwithем byнял запроwith. Можешь уточнandть?",
     .english = "I didn't quite understand. Can you clarify?",
     .chinese = "我不太明白。你能说明一下吗？",
     .spanish = "No entendí bien. ¿Puedes aclarar?",
@@ -502,28 +502,28 @@ pub const MultilingualCoder = struct {
         _ = self;
         const code_keywords = [_][]const u8{
             "code",
-            "код",
+            "toод",
             "代码",
             "función",
             "funktion",
             "function",
             "write",
-            "напиши",
+            "onпandшand",
             "写",
             "escribe",
             "schreib",
             "example",
-            "пример",
+            "прandмер",
             "例子",
             "ejemplo",
             "beispiel",
             "how to",
-            "как",
+            "toаto",
             "怎么",
             "cómo",
             "wie",
             "implement",
-            "реализ",
+            "реалandз",
             "实现",
         };
 
@@ -696,9 +696,9 @@ pub fn runBenchmark() !void {
     // Test queries in multiple languages
     const test_queries = [_][]const u8{
         // Russian
-        "привет",
-        "напиши код fibonacci на python",
-        "как отсортировать массив в zig",
+        "прandinет",
+        "onпandшand toод fibonacci on python",
+        "toаto fromwithортandроinать маwithwithandin in zig",
         // English
         "hello",
         "write a hello world in javascript",
@@ -793,7 +793,7 @@ pub fn main() !void {
 }
 
 test "language detection russian" {
-    const lang = Language.detect("привет мир");
+    const lang = Language.detect("прandinет мandр");
     try std.testing.expectEqual(Language.Russian, lang);
 }
 
@@ -816,7 +816,7 @@ test "code language detection" {
 
 test "multilingual coder greeting" {
     var engine = MultilingualCoder.init();
-    const response = engine.respond("привет");
+    const response = engine.respond("прandinет");
     try std.testing.expectEqual(Language.Russian, response.language);
     try std.testing.expectEqual(ResponseCategory.Greeting, response.category);
 }

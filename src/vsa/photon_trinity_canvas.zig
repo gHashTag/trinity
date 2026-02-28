@@ -75,13 +75,13 @@ const ChatMsgType = enum {
     log,
     // Златая Цепь — 8 chain nodes (Chakra colors)
     chain_goal_parse, // Red — Муладхара
-    chain_decompose, // Orange — Свадхистана
-    chain_schedule, // Yellow — Манипура
-    chain_execute, // Green — Анахата
-    chain_monitor, // Blue — Вишуддха
-    chain_adapt, // Indigo — Аджна
-    chain_synthesize, // Violet — Сахасрара
-    chain_deliver, // Gold — Единство
+    chain_decompose, // Orange — Сinадхandwithтаon
+    chain_schedule, // Yellow — Манandпура
+    chain_execute, // Green — Аonхата
+    chain_monitor, // Blue — Вandшуддха
+    chain_adapt, // Indigo — Аджon
+    chain_synthesize, // Violet — Сахаwithрара
+    chain_deliver, // Gold — Едandнwithтinо
     // Additional feedback types
     tool_result, // Tool execution
     routing_info, // Routing decision
@@ -2786,7 +2786,7 @@ const FormulaParticle = struct {
 const MAX_FORMULA_PARTICLES = 42;
 
 // ADVANCED WINDOW SYSTEM - GLASSMORPHISM PANELS
-// Floating невесомые windows with phi-based animations
+// Floating неinеwithомые windows with phi-based animations
 // =============================================================================
 
 const MAX_PANELS = 12;

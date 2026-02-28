@@ -1,11 +1,11 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// BENCHMARK v40 - Полное comparison всех версий
+// BENCHMARK v40 - Полное comparison inwithех inерwithandй
 // v35 → v37 → v38 → v39 → v39.1 → v40
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // v40 НОВЫЕ ФИЧИ:
 //   - SIMD bigram matching (4.27x speedup)
-//   - Full BPE vocabulary (100 токенов)
+//   - Full BPE vocabulary (100 тоtoеноin)
 //   - WebSocket streaming
 //   - Adaptive cache sizing
 //
@@ -19,7 +19,7 @@ const testing = std.testing;
 const bpe_cached = @import("bpe_cached.zig");
 const simd_bpe = @import("simd_bpe.zig");
 
-// Священные константы
+// Сinященные toонwithтанты
 pub const PHI: f64 = 1.618033988749895;
 pub const TRINITY: f64 = 3.0;
 pub const PHOENIX: u32 = 999;
@@ -122,11 +122,11 @@ pub fn bench(comptime name: []const u8, iterations: u64, comptime func: anytype,
 // ТЕСТЫ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-test "Full Benchmark v40: Все версии токенизаторов" {
+test "Full Benchmark v40: Вwithе inерwithandand тоtoенandзатороin" {
     const text = "This is a sample text for benchmarking token estimation performance in the DeepSeek provider implementation with various optimizations.";
     const iters: u64 = 10000;
 
-    // Сбрасываем кэш
+    // Сбраwithыinаем toэш
     bpe_cached.resetGlobalTokenizer();
 
     const r35 = bench("v35", iters, V35.tokenize, text);
@@ -157,10 +157,10 @@ test "Full Benchmark v40: Все версии токенизаторов" {
     std.debug.print("║                                                                                           ║\n", .{});
     std.debug.print("╠═══════════════════════════════════════════════════════════════════════════════════════════╣\n", .{});
     std.debug.print("║                                                                                           ║\n", .{});
-    std.debug.print("║  ТОКЕНИЗАЦИЯ (10,000 итераций)                                                            ║\n", .{});
+    std.debug.print("║  ТОКЕНИЗАЦИЯ (10,000 andтерацandй)                                                            ║\n", .{});
     std.debug.print("║  ─────────────────────────────────────────────────────────────────────────────────────    ║\n", .{});
     std.debug.print("║                                                                                           ║\n", .{});
-    std.debug.print("║  Версия        │ Latency      │ Throughput       │ Токены │ Метод                        ║\n", .{});
+    std.debug.print("║  Верwithandя        │ Latency      │ Throughput       │ Тоtoены │ Метод                        ║\n", .{});
     std.debug.print("║  ──────────────┼──────────────┼──────────────────┼────────┼────────────────────────────  ║\n", .{});
     std.debug.print("║  v35           │ {d:>8} ns   │ {d:>12.0} ops/s │ {d:>6} │ len/4                        ║\n", .{ r35.avg_ns, r35.ops_per_sec, r35.tokens });
     std.debug.print("║  v37           │ {d:>8} ns   │ {d:>12.0} ops/s │ {d:>6} │ word-based                   ║\n", .{ r37.avg_ns, r37.ops_per_sec, r37.tokens });
@@ -168,7 +168,7 @@ test "Full Benchmark v40: Все версии токенизаторов" {
     std.debug.print("║  v39.1 lookup  │ {d:>8} ns   │ {d:>12.0} ops/s │ {d:>6} │ BPE (lookup table)           ║\n", .{ r39_fast.avg_ns, r39_fast.ops_per_sec, r39_fast.tokens });
     std.debug.print("║  v39.1 cache   │ {d:>8} ns   │ {d:>12.0} ops/s │ {d:>6} │ BPE (LRU + lookup)           ║\n", .{ r39_cache.avg_ns, r39_cache.ops_per_sec, r39_cache.tokens });
     std.debug.print("║  v40 SIMD      │ {d:>8} ns   │ {d:>12.0} ops/s │ {d:>6} │ BPE (SIMD parallel)          ║\n", .{ r40_simd.avg_ns, r40_simd.ops_per_sec, r40_simd.tokens });
-    std.debug.print("║  v40 Full BPE  │ {d:>8} ns   │ {d:>12.0} ops/s │ {d:>6} │ BPE (100 токенов)            ║\n", .{ r40_bpe.avg_ns, r40_bpe.ops_per_sec, r40_bpe.tokens });
+    std.debug.print("║  v40 Full BPE  │ {d:>8} ns   │ {d:>12.0} ops/s │ {d:>6} │ BPE (100 тоtoеноin)            ║\n", .{ r40_bpe.avg_ns, r40_bpe.ops_per_sec, r40_bpe.tokens });
     std.debug.print("║                                                                                           ║\n", .{});
     std.debug.print("╠═══════════════════════════════════════════════════════════════════════════════════════════╣\n", .{});
     std.debug.print("║                                                                                           ║\n", .{});
@@ -177,13 +177,13 @@ test "Full Benchmark v40: Все версии токенизаторов" {
     std.debug.print("║                                                                                           ║\n", .{});
     std.debug.print("║  v39.1 lookup:  {d:>6.1}x  (PRE: lookup table)                                             ║\n", .{speedup_fast});
     std.debug.print("║  v39.1 cache:   {d:>6.1}x  (PRE + HSH + MEM: LRU cache)                                    ║\n", .{speedup_cache});
-    std.debug.print("║  v40 SIMD:      {d:>6.1}x  (SIMD: параллельный поиск)                                      ║\n", .{speedup_simd});
+    std.debug.print("║  v40 SIMD:      {d:>6.1}x  (SIMD: параллельный byandwithto)                                      ║\n", .{speedup_simd});
     std.debug.print("║                                                                                           ║\n", .{});
     std.debug.print("╠═══════════════════════════════════════════════════════════════════════════════════════════╣\n", .{});
     std.debug.print("║                                                                                           ║\n", .{});
     std.debug.print("║  PAS DAEMONS v40:                                                                         ║\n", .{});
     std.debug.print("║    PRE  - Precomputation (lookup table, BPE vocab)                                        ║\n", .{});
-    std.debug.print("║    HSH  - Hashing (FNV-1a для кэша)                                                       ║\n", .{});
+    std.debug.print("║    HSH  - Hashing (FNV-1a for toэша)                                                       ║\n", .{});
     std.debug.print("║    MEM  - Memoization (LRU cache, adaptive sizing)                                        ║\n", .{});
     std.debug.print("║    SIMD - Single Instruction Multiple Data (16-way parallel)                              ║\n", .{});
     std.debug.print("║    D&C  - Divide and Conquer (token boundary detection)                                   ║\n", .{});
@@ -194,7 +194,7 @@ test "Full Benchmark v40: Все версии токенизаторов" {
     std.debug.print("║                                                                                           ║\n", .{});
     std.debug.print("╚═══════════════════════════════════════════════════════════════════════════════════════════╝\n", .{});
 
-    // Check what SIMD быстрее lookup
+    // Check what SIMD быwithтрее lookup
     try testing.expect(speedup_simd > speedup_fast);
 }
 
@@ -218,9 +218,9 @@ test "WebSocket streaming benchmark" {
     std.debug.print("╔═══════════════════════════════════════════════════════════════════╗\n", .{});
     std.debug.print("║ WEBSOCKET STREAMING BENCHMARK                                     ║\n", .{});
     std.debug.print("╠═══════════════════════════════════════════════════════════════════╣\n", .{});
-    std.debug.print("║ Фреймов отправлено: {d:>6}                                        ║\n", .{stats.frames});
-    std.debug.print("║ Байт отправлено:    {d:>6}                                        ║\n", .{stats.bytes});
-    std.debug.print("║ Средний размер:     {d:>6.1} байт/фрейм                           ║\n", .{@as(f64, @floatFromInt(stats.bytes)) / @as(f64, @floatFromInt(stats.frames))});
+    std.debug.print("║ Фреймоin fromпраinлено: {d:>6}                                        ║\n", .{stats.frames});
+    std.debug.print("║ Байт fromпраinлено:    {d:>6}                                        ║\n", .{stats.bytes});
+    std.debug.print("║ Среднandй размер:     {d:>6.1} байт/фрейм                           ║\n", .{@as(f64, @floatFromInt(stats.bytes)) / @as(f64, @floatFromInt(stats.frames))});
     std.debug.print("╚═══════════════════════════════════════════════════════════════════╝\n", .{});
 
     try testing.expectEqual(@as(u64, 4), stats.frames);
@@ -232,10 +232,10 @@ test "Adaptive cache benchmark" {
     var cache = try simd_bpe.AdaptiveCache.init(allocator);
     defer cache.deinit();
 
-    // Симулируем рабочую нагрузку
+    // Сandмулandруем рабочую onгрузtoу
     var i: u64 = 0;
     while (i < 1000) : (i += 1) {
-        const hash = i % 50; // 50 уникальных запросов
+        const hash = i % 50; // 50 унandtoальных запроwithоin
         if (cache.get(hash) == null) {
             cache.put(hash, @intCast(i % 100));
         }
@@ -245,9 +245,9 @@ test "Adaptive cache benchmark" {
     std.debug.print("╔═══════════════════════════════════════════════════════════════════╗\n", .{});
     std.debug.print("║ ADAPTIVE CACHE BENCHMARK                                          ║\n", .{});
     std.debug.print("╠═══════════════════════════════════════════════════════════════════╣\n", .{});
-    std.debug.print("║ Размер кэша:    {d:>6} записей                                    ║\n", .{cache.size});
-    std.debug.print("║ Попаданий:      {d:>6}                                            ║\n", .{cache.hits});
-    std.debug.print("║ Промахов:       {d:>6}                                            ║\n", .{cache.misses});
+    std.debug.print("║ Размер toэша:    {d:>6} запandwithей                                    ║\n", .{cache.size});
+    std.debug.print("║ Попаyesнandй:      {d:>6}                                            ║\n", .{cache.hits});
+    std.debug.print("║ Промахоin:       {d:>6}                                            ║\n", .{cache.misses});
     std.debug.print("║ Hit rate:       {d:>5.1}%                                          ║\n", .{cache.hitRate() * 100});
     std.debug.print("╚═══════════════════════════════════════════════════════════════════╝\n", .{});
 

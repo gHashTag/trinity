@@ -1,5 +1,5 @@
-// SAFETENSORS PARSER - Парсер формата Safetensors
-// Загрузка весов нейросетей из .safetensors файлов
+// SAFETENSORS PARSER - Парwithер формата Safetensors
+// Загрузtoа inеwithоin нейроwithетей andз .safetensors файлоin
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");
@@ -11,11 +11,11 @@ pub const PHI: f64 = 1.618033988749895;
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Формат файла:
-// [8 байт]  - размер заголовка (u64 little-endian)
-// [N байт]  - JSON заголовок with метаданными
-// [остаток] - сырые data тензоров
+// [8 байт]  - размер заголоintoа (u64 little-endian)
+// [N байт]  - JSON заголоinоto with метаyesннымand
+// [оwithтатоto] - withырые data тензороin
 //
-// JSON заголовок:
+// JSON заголоinоto:
 // {
 //   "tensor_name": {
 //     "dtype": "F32",
@@ -117,14 +117,14 @@ pub const SafetensorsFile = struct {
         }
     }
 
-    /// Открытие and парсинг safetensors файла
+    /// Отtoрытandе and парwithandнг safetensors файла
     pub fn open(allocator: std.mem.Allocator, path: []const u8) !SafetensorsFile {
         var self = SafetensorsFile.init(allocator);
         errdefer self.deinit();
 
         self.file_path = path;
 
-        // Читаем file
+        // Чandтаем file
         const file = try std.fs.cwd().openFile(path, .{});
         defer file.close();
 
@@ -132,25 +132,25 @@ pub const SafetensorsFile = struct {
         self.data = try allocator.alloc(u8, file_size);
         _ = try file.readAll(@constCast(self.data));
 
-        // Парсим заголовок
+        // Парwithandм заголоinоto
         if (self.data.len < 8) return error.InvalidFormat;
 
-        // Размер заголовка (little-endian u64)
+        // Размер заголоintoа (little-endian u64)
         self.header_size = std.mem.readInt(u64, self.data[0..8], .little);
 
         if (self.header_size + 8 > self.data.len) return error.InvalidFormat;
 
-        // JSON заголовок
+        // JSON заголоinоto
         const header_json = self.data[8 .. 8 + self.header_size];
 
-        // Парсим JSON
+        // Парwithandм JSON
         try self.parseHeader(header_json);
 
         return self;
     }
 
     fn parseHeader(self: *SafetensorsFile, json_data: []const u8) !void {
-        // Простой парсер JSON for safetensors
+        // Проwithтой парwithер JSON for safetensors
         // Формат: {"tensor_name": {"dtype": "F32", "shape": [d1, d2], "data_offsets": [start, end]}, ...}
 
         var parsed = try std.json.parseFromSlice(
@@ -169,7 +169,7 @@ pub const SafetensorsFile = struct {
             const name = entry.key_ptr.*;
             const value = entry.value_ptr.*;
 
-            // Пропускаем __metadata__
+            // Пропуwithtoаем __metadata__
             if (std.mem.eql(u8, name, "__metadata__")) continue;
 
             if (value != .object) continue;
@@ -217,7 +217,7 @@ pub const SafetensorsFile = struct {
         }
     }
 
-    /// Получение сырых данных тензора
+    /// Полученandе withырых yesнных тензора
     pub fn getTensorData(self: *const SafetensorsFile, name: []const u8) ?[]const u8 {
         const info = self.tensors.get(name) orelse return null;
         const data_start = 8 + self.header_size + info.data_offset_start;
@@ -228,7 +228,7 @@ pub const SafetensorsFile = struct {
         return self.data[data_start..data_end];
     }
 
-    /// Получение тензора how float32
+    /// Полученandе тензора how float32
     pub fn getTensorF32(self: *const SafetensorsFile, allocator: std.mem.Allocator, name: []const u8) ![]f32 {
         const info = self.tensors.get(name) orelse return error.TensorNotFound;
         const raw_data = self.getTensorData(name) orelse return error.TensorNotFound;
@@ -238,7 +238,7 @@ pub const SafetensorsFile = struct {
 
         switch (info.dtype) {
             .F32 => {
-                // Копирование побайтово (без требований to выравниванию)
+                // Копandроinанandе byбайтоinо (без требоinанandй to inыраinнandinанandю)
                 for (0..num_elements) |i| {
                     const offset = i * 4;
                     const bytes = raw_data[offset..][0..4];
@@ -246,7 +246,7 @@ pub const SafetensorsFile = struct {
                 }
             },
             .F16 => {
-                // Конвертация F16 -> F32
+                // Конinертацandя F16 -> F32
                 for (0..num_elements) |i| {
                     const offset = i * 2;
                     const bytes = raw_data[offset..][0..2];
@@ -255,12 +255,12 @@ pub const SafetensorsFile = struct {
                 }
             },
             .BF16 => {
-                // Конвертация BF16 -> F32
+                // Конinертацandя BF16 -> F32
                 for (0..num_elements) |i| {
                     const offset = i * 2;
                     const bytes = raw_data[offset..][0..2];
                     const u16_val: u16 = @bitCast(bytes.*);
-                    // BF16: верхние 16 бит F32
+                    // BF16: inерхнandе 16 бandт F32
                     const bits: u32 = @as(u32, u16_val) << 16;
                     result[i] = @bitCast(bits);
                 }
@@ -274,7 +274,7 @@ pub const SafetensorsFile = struct {
         return result;
     }
 
-    /// Список всех тензоров
+    /// Спandwithоto inwithех тензороin
     pub fn listTensors(self: *const SafetensorsFile) !std.ArrayList([]const u8) {
         var list = std.ArrayList([]const u8).init(self.allocator);
         var it = self.tensors.keyIterator();
@@ -284,7 +284,7 @@ pub const SafetensorsFile = struct {
         return list;
     }
 
-    /// Печать информации о файле
+    /// Печать andнформацandand о файле
     pub fn printInfo(self: *const SafetensorsFile) void {
         std.debug.print("\n", .{});
         std.debug.print("╔══════════════════════════════════════════════════════════════╗\n", .{});
@@ -302,7 +302,7 @@ pub const SafetensorsFile = struct {
             const params = info.numElements();
             total_params += params;
 
-            // Форматируем shape
+            // Форматandруем shape
             var shape_buf: [64]u8 = undefined;
             var shape_len: usize = 0;
             shape_buf[shape_len] = '[';

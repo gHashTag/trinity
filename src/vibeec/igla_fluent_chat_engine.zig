@@ -111,7 +111,7 @@ pub const Language = enum {
     pub fn getGreeting(self: Language) []const u8 {
         return switch (self) {
             .English => "Hello! How can I help you today?",
-            .Russian => "Привет! Чем могу помочь?",
+            .Russian => "Прandinет! Чем могу byмочь?",
             .Chinese => "你好！有什么可以帮助你的？",
             .Spanish => "¡Hola! ¿En qué puedo ayudarte?",
             .French => "Bonjour! Comment puis-je vous aider?",
@@ -124,7 +124,7 @@ pub const Language = enum {
     pub fn getFarewell(self: Language) []const u8 {
         return switch (self) {
             .English => "Goodbye! Have a great day!",
-            .Russian => "До свидания! Хорошего дня!",
+            .Russian => "До withinandyesнandя! Хорошего дня!",
             .Chinese => "再见！祝你有美好的一天！",
             .Spanish => "¡Adiós! ¡Que tengas un buen día!",
             .French => "Au revoir! Bonne journée!",
@@ -168,8 +168,8 @@ pub const Intent = enum {
             std.mem.indexOf(u8, lower, "good morning") != null or
             std.mem.indexOf(u8, lower, "good afternoon") != null or
             std.mem.indexOf(u8, lower, "good evening") != null or
-            std.mem.indexOf(u8, text, "привет") != null or
-            std.mem.indexOf(u8, text, "здравствуй") != null or
+            std.mem.indexOf(u8, text, "прandinет") != null or
+            std.mem.indexOf(u8, text, "здраinwithтinуй") != null or
             std.mem.indexOf(u8, text, "你好") != null)
         {
             return .Greeting;
@@ -180,8 +180,8 @@ pub const Intent = enum {
             std.mem.indexOf(u8, lower, "bye") != null or
             std.mem.indexOf(u8, lower, "see you") != null or
             std.mem.indexOf(u8, lower, "take care") != null or
-            std.mem.indexOf(u8, text, "пока") != null or
-            std.mem.indexOf(u8, text, "до свидания") != null or
+            std.mem.indexOf(u8, text, "bytoа") != null or
+            std.mem.indexOf(u8, text, "before withinandyesнandя") != null or
             std.mem.indexOf(u8, text, "再见") != null)
         {
             return .Farewell;
@@ -198,11 +198,11 @@ pub const Intent = enum {
             std.mem.indexOf(u8, lower, "which") != null or
             std.mem.indexOf(u8, lower, "can you") != null or
             std.mem.indexOf(u8, lower, "could you") != null or
-            std.mem.indexOf(u8, text, "что") != null or
-            std.mem.indexOf(u8, text, "как") != null or
-            std.mem.indexOf(u8, text, "почему") != null or
-            std.mem.indexOf(u8, text, "когда") != null or
-            std.mem.indexOf(u8, text, "где") != null)
+            std.mem.indexOf(u8, text, "what") != null or
+            std.mem.indexOf(u8, text, "toаto") != null or
+            std.mem.indexOf(u8, text, "byчему") != null or
+            std.mem.indexOf(u8, text, "toогyes") != null or
+            std.mem.indexOf(u8, text, "where") != null)
         {
             return .Question;
         }
@@ -214,8 +214,8 @@ pub const Intent = enum {
             std.mem.indexOf(u8, lower, "i want") != null or
             std.mem.indexOf(u8, lower, "can i") != null or
             std.mem.indexOf(u8, lower, "would you") != null or
-            std.mem.indexOf(u8, text, "пожалуйста") != null or
-            std.mem.indexOf(u8, text, "помоги") != null)
+            std.mem.indexOf(u8, text, "byжалуйwithта") != null or
+            std.mem.indexOf(u8, text, "byмогand") != null)
         {
             return .Request;
         }
@@ -226,7 +226,7 @@ pub const Intent = enum {
             std.mem.indexOf(u8, lower, "in my opinion") != null or
             std.mem.indexOf(u8, lower, "i feel") != null or
             std.mem.indexOf(u8, text, "я думаю") != null or
-            std.mem.indexOf(u8, text, "по-моему") != null)
+            std.mem.indexOf(u8, text, "by-моему") != null)
         {
             return .Opinion;
         }
@@ -239,10 +239,10 @@ pub const Intent = enum {
             std.mem.indexOf(u8, lower, "understood") != null or
             std.mem.indexOf(u8, lower, "yes") != null or
             std.mem.indexOf(u8, lower, "no") != null or
-            std.mem.indexOf(u8, text, "спасибо") != null or
-            std.mem.indexOf(u8, text, "понял") != null or
-            std.mem.indexOf(u8, text, "да") != null or
-            std.mem.indexOf(u8, text, "нет") != null)
+            std.mem.indexOf(u8, text, "withпаwithandбо") != null or
+            std.mem.indexOf(u8, text, "byнял") != null or
+            std.mem.indexOf(u8, text, "yes") != null or
+            std.mem.indexOf(u8, text, "no") != null)
         {
             return .Acknowledgment;
         }
@@ -256,7 +256,7 @@ pub const Intent = enum {
             std.mem.indexOf(u8, lower, "love") != null or
             std.mem.indexOf(u8, lower, "hate") != null or
             std.mem.indexOf(u8, text, "рад") != null or
-            std.mem.indexOf(u8, text, "грустно") != null)
+            std.mem.indexOf(u8, text, "груwithтно") != null)
         {
             return .Emotion;
         }
@@ -653,7 +653,7 @@ pub const ResponseGenerator = struct {
     fn generateGreeting(self: *ResponseGenerator, lang: Language) []const u8 {
         _ = self;
         return switch (lang) {
-            .Russian => "Привет! Рад тебя видеть. Чем могу помочь сегодня?",
+            .Russian => "Прandinет! Рад тебя inandдеть. Чем могу byмочь withегодня?",
             .Chinese => "你好！很高兴见到你。今天我能帮你什么？",
             .Spanish => "¡Hola! Me alegra verte. ¿En qué puedo ayudarte hoy?",
             .French => "Bonjour! Ravi de vous voir. Comment puis-je vous aider aujourd'hui?",
@@ -666,7 +666,7 @@ pub const ResponseGenerator = struct {
     fn generateFarewell(self: *ResponseGenerator, lang: Language) []const u8 {
         _ = self;
         return switch (lang) {
-            .Russian => "До свидания! Было приятно пообщаться. Удачи!",
+            .Russian => "До withinandyesнandя! Было прandятно byобщатьwithя. Уyesчand!",
             .Chinese => "再见！很高兴和你聊天。祝你好运！",
             .Spanish => "¡Adiós! Fue un placer hablar contigo. ¡Buena suerte!",
             .French => "Au revoir! C'était un plaisir de discuter. Bonne chance!",
@@ -682,23 +682,23 @@ pub const ResponseGenerator = struct {
 
         return switch (topic) {
             .Technology => switch (lang) {
-                .Russian => "Отличный технический вопрос! Давай разберёмся в деталях.",
+                .Russian => "Отлandчный технandчеwithtoandй inопроwith! Даinай разберёмwithя in деталях.",
                 else => "Great technical question! Let me explain the key concepts.",
             },
             .Science => switch (lang) {
-                .Russian => "Интересный научный вопрос! Вот что я могу рассказать.",
+                .Russian => "Интереwithный onучный inопроwith! Вfrom what я могу раwithwithtoазать.",
                 else => "Fascinating scientific question! Here's what I can share.",
             },
             .Health => switch (lang) {
-                .Russian => "Вопрос о здоровье - важная тема. Вот полезная информация.",
+                .Russian => "Вопроwith о зbeforeроinье - inажonя тема. Вfrom byлезonя andнформацandя.",
                 else => "Health is an important topic. Here's some useful information.",
             },
             .Personal => switch (lang) {
-                .Russian => "Понимаю, это личный вопрос. Давай обсудим.",
+                .Russian => "Понandмаю, это лandчный inопроwith. Даinай обwithудandм.",
                 else => "I understand this is personal. Let's discuss it thoughtfully.",
             },
             else => switch (lang) {
-                .Russian => "Хороший вопрос! Позволь мне поделиться своими мыслями.",
+                .Russian => "Хорошandй inопроwith! Позinоль мне byделandтьwithя withinоandмand мыwithлямand.",
                 else => "Good question! Let me share my thoughts on this.",
             },
         };
@@ -710,15 +710,15 @@ pub const ResponseGenerator = struct {
 
         return switch (topic) {
             .Technology => switch (lang) {
-                .Russian => "Интересная точка зрения на технологии! Полностью согласен.",
+                .Russian => "Интереwithonя точtoа зренandя on технологandand! Полноwithтью withоглаwithен.",
                 else => "Interesting perspective on technology! I appreciate you sharing that.",
             },
             .Personal => switch (lang) {
-                .Russian => "Спасибо, что поделился. Это действительно важно.",
+                .Russian => "Спаwithandбо, what byделandлwithя. Это дейwithтinandтельно inажно.",
                 else => "Thank you for sharing. That's really meaningful.",
             },
             else => switch (lang) {
-                .Russian => "Понял тебя. Это интересная мысль.",
+                .Russian => "Понял тебя. Это andнтереwithonя мыwithль.",
                 else => "I see. That's an interesting point.",
             },
         };
@@ -730,11 +730,11 @@ pub const ResponseGenerator = struct {
 
         return switch (topic) {
             .Technology => switch (lang) {
-                .Russian => "Конечно, помогу с этим техническим запросом!",
+                .Russian => "Конечно, byмогу with этandм технandчеwithtoandм запроwithом!",
                 else => "Of course, I'll help you with this technical request!",
             },
             else => switch (lang) {
-                .Russian => "С удовольствием помогу! Давай разберёмся вместе.",
+                .Russian => "С уbeforeinольwithтinandем byмогу! Даinай разберёмwithя inмеwithте.",
                 else => "I'd be happy to help! Let's work through this together.",
             },
         };
@@ -745,7 +745,7 @@ pub const ResponseGenerator = struct {
         _ = self;
 
         return switch (lang) {
-            .Russian => "Интересная точка зрения! Уважаю твоё мнение.",
+            .Russian => "Интереwithonя точtoа зренandя! Уinажаю тinоё мненandе.",
             .Chinese => "有趣的观点！我尊重你的看法。",
             else => "That's an interesting perspective! I respect your opinion.",
         };
@@ -754,7 +754,7 @@ pub const ResponseGenerator = struct {
     fn generateAcknowledgmentResponse(self: *ResponseGenerator, lang: Language) []const u8 {
         _ = self;
         return switch (lang) {
-            .Russian => "Рад, что смог помочь! Есть ещё вопросы?",
+            .Russian => "Рад, what withмог byмочь! Еwithть ещё inопроwithы?",
             .Chinese => "很高兴能帮到你！还有其他问题吗？",
             else => "Glad I could help! Anything else you'd like to discuss?",
         };
@@ -788,13 +788,13 @@ pub const ResponseGenerator = struct {
             std.mem.indexOf(u8, lower, "stressed") != null)
         {
             return switch (lang) {
-                .Russian => "Понимаю тебя. Это непросто, но всё наладится.",
+                .Russian => "Понandмаю тебя. Это непроwithто, но inwithё onладandтwithя.",
                 else => "I understand. That's tough, but things will get better.",
             };
         }
 
         return switch (lang) {
-            .Russian => "Понимаю твои чувства. Хочешь поговорить об этом?",
+            .Russian => "Понandмаю тinоand чуinwithтinа. Хочешь byгоinорandть об этом?",
             else => "I understand how you feel. Would you like to talk about it?",
         };
     }
@@ -805,11 +805,11 @@ pub const ResponseGenerator = struct {
 
         return switch (topic) {
             .General => switch (lang) {
-                .Russian => "Интересно! Расскажи подробнее.",
+                .Russian => "Интереwithно! Раwithwithtoажand byдробнее.",
                 else => "Interesting! Tell me more about that.",
             },
             else => switch (lang) {
-                .Russian => "Понял. Давай обсудим эту тему.",
+                .Russian => "Понял. Даinай обwithудandм эту тему.",
                 else => "I see. Let's explore this topic further.",
             },
         };
@@ -1023,8 +1023,8 @@ pub const FluentChatEngine = struct {
             "Can you help me understand machine learning?",
             "I feel happy today!",
             "Tell me about the weather",
-            "Привет! Как дела?",
-            "Что ты думаешь о технологиях?",
+            "Прandinет! Каto дела?",
+            "Что ты думаешь о технологandях?",
             "I need help with my code",
             "What's your opinion on remote work?",
             "Thank you for your help!",
@@ -1140,7 +1140,7 @@ test "Language detection English" {
 }
 
 test "Language detection Russian" {
-    const lang = Language.detect("Привет, как дела?");
+    const lang = Language.detect("Прandinет, toаto дела?");
     try std.testing.expectEqual(Language.Russian, lang);
 }
 
@@ -1321,7 +1321,7 @@ test "FluentChatEngine respond question" {
 test "FluentChatEngine respond Russian" {
     var engine = FluentChatEngine.init();
     _ = engine.startConversation("Test");
-    const response = engine.respond("Привет! Как дела?");
+    const response = engine.respond("Прandinет! Каto дела?");
     try std.testing.expect(response.text_len > 0);
     try std.testing.expectEqual(Language.Russian, response.language);
 }
@@ -1411,7 +1411,7 @@ test "Intent classify opinion" {
 
 test "Language greeting multilingual" {
     const ru_greeting = Language.Russian.getGreeting();
-    try std.testing.expect(std.mem.indexOf(u8, ru_greeting, "Привет") != null);
+    try std.testing.expect(std.mem.indexOf(u8, ru_greeting, "Прandinет") != null);
 
     const en_greeting = Language.English.getGreeting();
     try std.testing.expect(std.mem.indexOf(u8, en_greeting, "Hello") != null);
