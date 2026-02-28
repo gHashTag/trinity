@@ -1562,7 +1562,14 @@ pub fn build(b: *std.Build) void {
     const photon_terminal_step = b.step("photon-terminal", "Run Photon Terminal (Emergent TUI v1.0)");
     photon_terminal_step.dependOn(&run_photon_terminal.step);
 
-    // VSA module (re-exports HybridBigInt from hybrid.zig) — REMOVED (unused after generated.old/ cleanup)
+    // VSA module (re-exports HybridBigInt from hybrid.zig)
+    const vsa_mod = b.createModule(.{
+        .root_source_file = b.path("src/vsa.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // VSA Imported System tests — REMOVED (generated.old/ deleted)
 
     // Quark Tests, VSA Math Proofs, Bundle Opt, Large Analogies — REMOVED (generated.old/ deleted)
 
@@ -1650,72 +1657,338 @@ pub fn build(b: *std.Build) void {
 
     // VSA Math Benchmark executable (MATH-003) — REMOVED (generated.old/ deleted)
 
-    // Storage Init tests — REMOVED (generated.old/ deleted)
+    // Storage Init — Basic Disk Shards + VSA Fingerprints (Cycle 59)
+    const storage_init_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated.old/init.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_storage_init = b.addRunArtifact(storage_init_tests);
+    const storage_init_step = b.step("test-storage-init", "Test Storage Init (disk shards + VSA fingerprints)");
+    storage_init_step.dependOn(&run_storage_init.step);
+    test_step.dependOn(&run_storage_init.step);
 
+    // Generated Shard Manager — Cohesive Storage API + Manifest + Splitting (Cycle 61)
+    const gen_shard_mgr_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated.old/manager.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_gen_shard_mgr = b.addRunArtifact(gen_shard_mgr_tests);
+    const gen_shard_mgr_step = b.step("test-shard-manager-gen", "Test Generated Shard Manager (manifest + splitting + search)");
+    gen_shard_mgr_step.dependOn(&run_gen_shard_mgr.step);
+    test_step.dependOn(&run_gen_shard_mgr.step);
 
-    // Generated Shard Manager tests — REMOVED (generated.old/ deleted)
+    // ShardManager API — Reusable Struct with Real Methods (Cycle 62)
+    const shard_mgr_api_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated.old/shard_manager.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_shard_mgr_api = b.addRunArtifact(shard_mgr_api_tests);
+    const shard_mgr_api_step = b.step("test-shard-mgr-api", "Test ShardManager API (real struct methods)");
+    shard_mgr_api_step.dependOn(&run_shard_mgr_api.step);
+    test_step.dependOn(&run_shard_mgr_api.step);
 
+    // Generated network transfer tests (from specs/storage/network.vibee)
+    const network_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated.old/network.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_network_tests = b.addRunArtifact(network_tests);
+    const network_step = b.step("test-network-transfer", "Test TCP shard transfer between nodes");
+    network_step.dependOn(&run_network_tests.step);
+    test_step.dependOn(&run_network_tests.step);
 
-    // ShardManager API tests — REMOVED (generated.old/ deleted)
+    // Generated erasure coding tests (from specs/storage/erasure.vibee)
+    const erasure_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated.old/erasure.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_erasure_tests = b.addRunArtifact(erasure_tests);
+    const erasure_step = b.step("test-erasure", "Test Reed-Solomon erasure coding");
+    erasure_step.dependOn(&run_erasure_tests.step);
+    test_step.dependOn(&run_erasure_tests.step);
 
+    // Generated pipeline tests (from specs/storage/pipeline.vibee)
+    const pipeline_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated.old/pipeline.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_pipeline_tests = b.addRunArtifact(pipeline_tests);
+    const pipeline_step = b.step("test-pipeline", "Test RS integration pipeline (end-to-end)");
+    pipeline_step.dependOn(&run_pipeline_tests.step);
+    test_step.dependOn(&run_pipeline_tests.step);
 
-    // Network transfer tests — REMOVED (generated.old/ deleted)
+    // Generated network pipeline tests (from specs/storage/netpipeline.vibee)
+    const netpipeline_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated.old/netpipeline.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_netpipeline_tests = b.addRunArtifact(netpipeline_tests);
+    const netpipeline_step = b.step("test-network-pipeline", "Test TCP fault-tolerant pipeline (RS + network)");
+    netpipeline_step.dependOn(&run_netpipeline_tests.step);
+    test_step.dependOn(&run_netpipeline_tests.step);
 
+    // Generated discovery tests (from specs/storage/discovery.vibee)
+    const discovery_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated.old/discovery.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_discovery_tests = b.addRunArtifact(discovery_tests);
+    const discovery_step = b.step("test-discovery", "Test peer discovery and self-healing recovery");
+    discovery_step.dependOn(&run_discovery_tests.step);
+    test_step.dependOn(&run_discovery_tests.step);
 
-    // Erasure coding tests — REMOVED (generated.old/ deleted)
+    // Generated Proof-of-Storage tests (PoS challenge-response verification)
+    const gen_pos_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated.old/pos.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_gen_pos_tests = b.addRunArtifact(gen_pos_tests);
+    const gen_pos_step = b.step("test-pos", "Test Proof-of-Storage challenge-response verification");
+    gen_pos_step.dependOn(&run_gen_pos_tests.step);
+    test_step.dependOn(&run_gen_pos_tests.step);
 
+    // Generated Kademlia DHT tests (XOR distance routing + store/find)
+    const gen_dht_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated.old/dht.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_gen_dht_tests = b.addRunArtifact(gen_dht_tests);
+    const gen_dht_step = b.step("test-dht", "Test Kademlia DHT XOR routing and store/find");
+    gen_dht_step.dependOn(&run_gen_dht_tests.step);
+    test_step.dependOn(&run_gen_dht_tests.step);
 
-    // Pipeline tests — REMOVED (generated.old/ deleted)
+    // Generated Live Swarm tests (bootstrap + node lifecycle + ping/pong)
+    const gen_swarm_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated.old/swarm.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_gen_swarm_tests = b.addRunArtifact(gen_swarm_tests);
+    const gen_swarm_step = b.step("test-swarm", "Test Live Swarm bootstrap and node lifecycle");
+    gen_swarm_step.dependOn(&run_gen_swarm_tests.step);
+    test_step.dependOn(&run_gen_swarm_tests.step);
 
+    // Generated Live Rewards tests ($TRI mint/slash on PoS results)
+    const gen_rewards_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated.old/rewards.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_mod },
+            },
+        }),
+    });
+    const run_gen_rewards_tests = b.addRunArtifact(gen_rewards_tests);
+    const gen_rewards_step = b.step("test-rewards", "Test $TRI live rewards mint/slash economics");
+    gen_rewards_step.dependOn(&run_gen_rewards_tests.step);
+    test_step.dependOn(&run_gen_rewards_tests.step);
 
-    // Network pipeline tests — REMOVED (generated.old/ deleted)
+    // Generated Swarm Watch tests (DEV-003: DHT + TRI economy monitor)
+    const gen_swarm_watch_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated.old/swarm_watch.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_swarm_watch_tests = b.addRunArtifact(gen_swarm_watch_tests);
+    const gen_swarm_watch_step = b.step("test-swarm-watch", "Test DEV-003 Swarm Watch DHT & TRI monitor");
+    gen_swarm_watch_step.dependOn(&run_gen_swarm_watch_tests.step);
+    test_step.dependOn(&run_gen_swarm_watch_tests.step);
 
+    // Generated Ternary KV Cache tests (OPT-T03: 16x KV cache compression)
+    const gen_ternary_kv_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated.old/ternary_kv_cache.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_ternary_kv_tests = b.addRunArtifact(gen_ternary_kv_tests);
+    const gen_ternary_kv_step = b.step("test-ternary-kv", "Test OPT-T03 Ternary KV Cache 16x compression");
+    gen_ternary_kv_step.dependOn(&run_gen_ternary_kv_tests.step);
+    test_step.dependOn(&run_gen_ternary_kv_tests.step);
 
-    // Discovery tests — REMOVED (generated.old/ deleted)
+    // Generated Ternary MatMul tests (OPT-T02: 10x matmul speedup)
+    const gen_ternary_matmul_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated.old/ternary_matmul.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_ternary_matmul_tests = b.addRunArtifact(gen_ternary_matmul_tests);
+    const gen_ternary_matmul_step = b.step("test-ternary-matmul", "Test OPT-T02 Ternary Matrix Multiplication 10x speedup");
+    gen_ternary_matmul_step.dependOn(&run_gen_ternary_matmul_tests.step);
+    test_step.dependOn(&run_gen_ternary_matmul_tests.step);
 
+    // Generated Paged Attention tests (OPT-PA01: 4-10x memory efficiency)
+    const gen_paged_attn_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated.old/paged_attention.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_paged_attn_tests = b.addRunArtifact(gen_paged_attn_tests);
+    const gen_paged_attn_step = b.step("test-paged-attention", "Test OPT-PA01 PagedAttention 4-10x memory efficiency");
+    gen_paged_attn_step.dependOn(&run_gen_paged_attn_tests.step);
+    test_step.dependOn(&run_gen_paged_attn_tests.step);
 
-    // Proof-of-Storage tests — REMOVED (generated.old/ deleted)
+    // Generated Continuous Batching tests (OPT-B01: 2-3x throughput)
+    const gen_cont_batch_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated.old/continuous_batching.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_cont_batch_tests = b.addRunArtifact(gen_cont_batch_tests);
+    const gen_cont_batch_step = b.step("test-continuous-batching", "Test OPT-B01 Continuous Batching 2-3x throughput");
+    gen_cont_batch_step.dependOn(&run_gen_cont_batch_tests.step);
+    test_step.dependOn(&run_gen_cont_batch_tests.step);
 
+    // Generated Speculative Decoding tests (OPT-S01: 2-3x generation speed)
+    const gen_spec_dec_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated.old/speculative_decoding.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_spec_dec_tests = b.addRunArtifact(gen_spec_dec_tests);
+    const gen_spec_dec_step = b.step("test-speculative-decoding", "Test OPT-S01 Speculative Decoding 2-3x generation speed");
+    gen_spec_dec_step.dependOn(&run_gen_spec_dec_tests.step);
+    test_step.dependOn(&run_gen_spec_dec_tests.step);
 
-    // Kademlia DHT tests — REMOVED (generated.old/ deleted)
+    // Generated GGUF Parser tests (INF-001: Load any GGUF model)
+    const gen_gguf_parser_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated.old/gguf_parser.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_gguf_parser_tests = b.addRunArtifact(gen_gguf_parser_tests);
+    const gen_gguf_parser_step = b.step("test-gguf-parser", "Test INF-001 GGUF Parser — load any GGUF model");
+    gen_gguf_parser_step.dependOn(&run_gen_gguf_parser_tests.step);
+    test_step.dependOn(&run_gen_gguf_parser_tests.step);
 
+    // Generated Transformer Forward Pass tests (INF-002: Native LLM inference)
+    const gen_tfm_fwd_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated.old/transformer_forward.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_tfm_fwd_tests = b.addRunArtifact(gen_tfm_fwd_tests);
+    const gen_tfm_fwd_step = b.step("test-transformer-forward", "Test INF-002 Transformer Forward Pass — native LLM inference");
+    gen_tfm_fwd_step.dependOn(&run_gen_tfm_fwd_tests.step);
+    test_step.dependOn(&run_gen_tfm_fwd_tests.step);
 
-    // Live Swarm tests — REMOVED (generated.old/ deleted)
+    // Generated Hardware Abstraction tests (HW-001: Unified ternary backend interface)
+    const gen_hw_abs_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated.old/hardware_abstraction.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_hw_abs_tests = b.addRunArtifact(gen_hw_abs_tests);
+    const gen_hw_abs_step = b.step("test-hardware-abstraction", "Test HW-001 Hardware Abstraction Layer — unified ternary backend");
+    gen_hw_abs_step.dependOn(&run_gen_hw_abs_tests.step);
+    test_step.dependOn(&run_gen_hw_abs_tests.step);
 
+    // Generated JIT Compilation tests (CORE-004: Multi-tier JIT pipeline)
+    const gen_jit_comp_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated.old/jit_compilation.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_jit_comp_tests = b.addRunArtifact(gen_jit_comp_tests);
+    const gen_jit_comp_step = b.step("test-jit-compilation", "Test CORE-004 JIT Compilation — multi-tier pipeline");
+    gen_jit_comp_step.dependOn(&run_gen_jit_comp_tests.step);
+    test_step.dependOn(&run_gen_jit_comp_tests.step);
 
-    // Live Rewards tests — REMOVED (generated.old/ deleted)
-
-
-    // Swarm Watch tests — REMOVED (generated.old/ deleted)
-
-
-    // Ternary KV Cache tests — REMOVED (generated.old/ deleted)
-
-
-    // Ternary MatMul tests — REMOVED (generated.old/ deleted)
-
-
-    // Paged Attention tests — REMOVED (generated.old/ deleted)
-
-
-    // Continuous Batching tests — REMOVED (generated.old/ deleted)
-
-
-    // Speculative Decoding tests — REMOVED (generated.old/ deleted)
-
-
-    // GGUF Parser tests — REMOVED (generated.old/ deleted)
-
-
-    // Transformer Forward Pass tests — REMOVED (generated.old/ deleted)
-
-
-    // Hardware Abstraction tests — REMOVED (generated.old/ deleted)
-
-
-    // JIT Compilation tests — REMOVED (generated.old/ deleted)
-
-
-    // FPGA Acceleration tests — REMOVED (generated.old/ deleted)
-
+    // Generated FPGA Acceleration tests (HW-003: Ternary hardware backend)
+    const gen_fpga_acc_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("generated.old/fpga_acceleration.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gen_fpga_acc_tests = b.addRunArtifact(gen_fpga_acc_tests);
+    const gen_fpga_acc_step = b.step("test-fpga-acceleration", "Test HW-003 FPGA Acceleration — ternary hardware backend");
+    gen_fpga_acc_step.dependOn(&run_gen_fpga_acc_tests.step);
+    test_step.dependOn(&run_gen_fpga_acc_tests.step);
 }
