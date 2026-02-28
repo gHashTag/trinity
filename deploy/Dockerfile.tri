@@ -1,0 +1,64 @@
+# Trinity CLI - Docker Image for v1.0.1 PURITY
+# phi^2 + 1/phi^2 = 3 | Trinity Identity
+
+ARG ZIG_VERSION=0.15.2
+ARG TARGETARCH=amd64
+
+# Stage 1: Build
+FROM alpine:3.19 AS builder
+
+ARG ZIG_VERSION
+ARG TARGETARCH
+
+# Install build dependencies
+RUN apk add --no-cache curl xz tar
+
+# Download Zig for the target architecture
+RUN case "${TARGETARCH}" in \
+    amd64) ZIG_ARCH="x86_64" ;; \
+    arm64) ZIG_ARCH="aarch64" ;; \
+    *) echo "Unsupported architecture: ${TARGETARCH}" && exit 1 ;; \
+    esac && \
+    curl -fL "https://ziglang.org/download/${ZIG_VERSION}/zig-${ZIG_ARCH}-linux-${ZIG_VERSION}.tar.xz" -o zig.tar.xz && \
+    tar -xf zig.tar.xz -C /opt && \
+    rm zig.tar.xz && \
+    ln -s /opt/zig-${ZIG_ARCH}-linux-${ZIG_VERSION}/zig /usr/local/bin/zig
+
+WORKDIR /build
+
+# Copy minimal source for TRI CLI
+COPY build.zig build.zig.zon ./
+COPY src/ ./src/
+
+# Build TRI CLI
+RUN zig build -Doptimize=ReleaseFast tri && \
+    test -f zig-out/bin/tri && \
+    echo "TRI CLI built successfully"
+
+# Stage 2: Runtime
+FROM alpine:3.19
+
+RUN apk add --no-cache \
+    ca-certificates \
+    curl
+
+# Copy built binary
+COPY --from=builder /build/zig-out/bin/tri /usr/local/bin/tri
+
+# Create completion directories
+RUN mkdir -p /usr/share/bash-completion/completions \
+    /usr/share/zsh/site-functions \
+    /usr/share/fish/vendor_completions.d
+
+LABEL org.opencontainers.image.title="Trinity CLI"
+LABEL org.opencontainers.image.description="Sacred Intelligence CLI — Trinity v1.0.1 PURITY"
+LABEL org.opencontainers.image.version="1.0.1"
+LABEL org.opencontainers.image.source="https://github.com/gHashTag/trinity"
+LABEL org.opencontainers.image.licenses="MIT"
+
+# Set working directory
+WORKDIR /workspace
+
+# Default command shows version
+ENTRYPOINT ["tri"]
+CMD ["--version"]
