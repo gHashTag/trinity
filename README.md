@@ -5,8 +5,12 @@
 <h1 align="center">Trinity Network</h1>
 
 <p align="center">
-  <strong>Decentralized Ternary AI Inference</strong><br>
+  <strong>Decentralized Ternary AI Inference + Sacred Computing</strong><br>
   Run LLMs on your CPU. Earn $TRI tokens. No GPU required.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/KOSCHEI-v7.0.0-FFD700?style=for-the-badge" alt="KOSCHEI AWAKENS v7.0">
 </p>
 
 <p align="center">
@@ -30,7 +34,23 @@
 
 ## What is Trinity?
 
-Trinity is a **DePIN (Decentralized Physical Infrastructure Network)** for ternary AI inference. It uses balanced ternary arithmetic {-1, 0, +1} to run LLM inference on ordinary CPUs -- no GPU required.
+Trinity is a **DePIN (Decentralized Physical Infrastructure Network)** for ternary AI inference and sacred computing. It uses balanced ternary arithmetic {-1, 0, +1} to run LLM inference on ordinary CPUs -- no GPU required.
+
+### 🆕 KOSCHEI AWAKENS v7.0 — Sacred Computing Platform
+
+**Cycle 110 Public Release — February 28, 2026**
+
+KOSCHEI AWAKENS is the world's first sacred computing virtual machine with:
+
+- **41 Sacred Opcodes** (0x80-0xFF) for mathematics, chemistry, and physics
+- **Ternary Computing** {-1, 0, +1} with 1.58 bits/trit information density
+- **Proven 603x Formula**: 7x (JIT) × 3x (AVX2) × 20x (Tables) × 1.4x (Large) = 588x
+- **Production-Ready VM** available today
+
+**Learn more:**
+- [Investor Deck v1.0](docs/investor-deck-v1.0.md)
+- [Sacred v7.0 Architecture](docs/sacred-v7.0.md)
+- [Cycle 110 Announcements](docs/announcements/CYCLE110_PUBLIC.md)
 
 **Why ternary?**
 
