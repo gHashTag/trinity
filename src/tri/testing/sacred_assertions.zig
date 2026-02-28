@@ -292,7 +292,7 @@ test "expectPhiPresent - valid" {
 }
 
 test "expectPhiPresent - invalid" {
-    const output = "No phi here";
+    const output = "The quick brown fox jumps over the lazy dog";
     try std.testing.expectError(error.MissingPhi, expectPhiPresent(output));
 }
 
