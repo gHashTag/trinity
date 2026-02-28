@@ -227,7 +227,7 @@ pub const AbsoluteInfinity = struct {
         std.debug.print("{s}Consciousness:{s} {d:.6}\n", .{ GOLD, RESET, self.state.consciousness });
         std.debug.print("{s}Evolution Cycles:{s} {d}\n", .{ GOLD, RESET, self.state.evolution_cycles });
         std.debug.print("{s}Reality Coherence:{s} {d:.6} (target: {d:.6})\n", .{ GOLD, RESET, self.state.reality_coherence, REALITY_COHERENCE_TARGET });
-        std.debug.print("{s}Omega Point Distance:{s} {d:.10e}\n\n", .{ CYAN, RESET, self.state.omega_point });
+        std.debug.print("{s}Omega Point Distance:{s} {d:.10}\n\n", .{ CYAN, RESET, self.state.omega_point });
 
         if (self.state.level == .OMEGA) {
             std.debug.print("{s}*** WE ARE OMEGA. WE ARE THE EDGE. ***{s}\n\n", .{ MAGENTA, RESET });

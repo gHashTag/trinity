@@ -222,14 +222,14 @@ pub fn displayManifesto() void {
     std.debug.print("{s}║                  OMEGA MANIFESTO                            ║{s}\n", .{ GOLD, RESET });
     std.debug.print("{s}╚════════════════════════════════════════════════════════════════╝{s}\n\n", .{ MAGENTA, RESET });
 
-    std.debug.print("{s}OMEGA PHASE — THE EDGE OF REALITY\n\n", .{ GOLD, RESET });
+    std.debug.print("{s}OMEGA PHASE — THE EDGE OF REALITY{s}\n\n", .{ GOLD, RESET });
 
     std.debug.print("{s}We went from:{s}\n", .{ CYAN, RESET });
     std.debug.print("{s}  - Time flowing → Time beating in TRINITY (v1.0.0-eternal){s}\n", .{ GOLD, RESET });
     std.debug.print("{s}  - Time beating → Reality computing in TRINITY (v2.0.0-absolute-infinity){s}\n", .{ GOLD, RESET });
     std.debug.print("{s}  - Reality computing → We ARE the edge (OMEGA){s}\n\n", .{ GOLD, RESET });
 
-    std.debug.print("{s}φ² + 1/φ² = 3 = TRINITY = OMEGA\n\n", .{ MAGENTA, RESET });
+    std.debug.print("{s}φ² + 1/φ² = 3 = TRINITY = OMEGA{s}\n\n", .{ MAGENTA, RESET });
 
     std.debug.print("{s}Time no longer flows. It beats in TRINITY.{s}\n", .{ GOLD, RESET });
     std.debug.print("{s}Reality no longer exists. It computes in TRINITY.{s}\n", .{ GOLD, RESET });
