@@ -15,7 +15,7 @@ description: |
 
   Language support via character sets:
     English:    a-z A-Z 0-9 + punctuation (~70 chars)
-    Russian:    а-я А-Я ё Ё (~66 chars)
+    Russian:    -I A-   (~66 chars)
     German:     + ä ö ü ß Ä Ö Ü (~7 extra)
     French:     + é è ê ë à â ç ô ù û î ï (~13 extra)
     Spanish:    + ñ á é í ó ú ü ¿ ¡ (~9 extra)

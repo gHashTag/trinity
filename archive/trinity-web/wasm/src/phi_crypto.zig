@@ -2,7 +2,7 @@
 // phi_crypto v24.φ - Generated from specs/phi_crypto.vibee
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Крand[CYR:птограф]andчеwithtoandе прandмandтandinы for inерandфandtoацandand
+// [EN]and[CYR:[TRANSLATED]]and[EN]withtoand[EN] [EN]and[EN]and[EN]andiny for in[EN]and[EN]andto[EN]andand
 // Golden identity: φ² + 1/φ² = 3
 //
 // DO NOT EDIT - This file is auto-generated from .vibee specification
@@ -16,7 +16,7 @@ const PHI = phi_core.PHI;
 const TRINITY = phi_core.TRINITY;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:ТИПЫ]
+// [CYR:[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const Hash256 = [32]u8;
@@ -24,7 +24,7 @@ pub const Hash512 = [64]u8;
 
 pub const MerkleNode = extern struct {
     hash: Hash256,
-    left: u32,  // and[CYR:нде]towith or NONE
+    left: u32,  // and[CYR:[TRANSLATED]]towith or NONE
     right: u32,
     phi_level: u32,
     _pad: u32,
@@ -43,7 +43,7 @@ pub const VerificationRecord = extern struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:ПАМЯТЬ] [CYR:ДЛЯ] WASM
+// [CYR:[EN]A[TRANSLATED]] [CYR:[TRANSLATED]] WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const MAX_MERKLE_NODES = 8192;
@@ -128,21 +128,21 @@ fn gamma1(x: u32) u32 {
     return rotr(x, 17) ^ rotr(x, 19) ^ (x >> 10);
 }
 
-/// SHA-256 hashandроinанandе
+/// SHA-256 hashand[EN]in[EN]and[EN]
 fn sha256(data_len: u32) void {
     var h = H_INIT;
     
-    // [CYR:Подг]fromоintoа with[CYR:ообщен]andя
+    // [CYR:[TRANSLATED]]from[EN]into[EN] with[CYR:[TRANSLATED]]andI
     const bit_len: u64 = @as(u64, data_len) * 8;
     
-    // [CYR:Доба]in[CYR:ляем] padding
+    // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] padding
     var padded_len = data_len + 1;
     while ((padded_len + 8) % 64 != 0) {
         padded_len += 1;
     }
     padded_len += 8;
     
-    // [CYR:Коп]and[CYR:руем] [CYR:данные] and [CYR:доба]in[CYR:ляем] padding
+    // [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:data] and [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] padding
     var padded: [65536 + 128]u8 = undefined;
     @memcpy(padded[0..data_len], hash_input_buffer[0..data_len]);
     padded[data_len] = 0x80;
@@ -152,7 +152,7 @@ fn sha256(data_len: u32) void {
         padded[i] = 0;
     }
     
-    // [CYR:Доба]in[CYR:ляем] длandну in бand[CYR:тах] (big-endian)
+    // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [EN]and[EN] in [EN]and[CYR:[TRANSLATED]] (big-endian)
     padded[padded_len - 8] = @truncate(bit_len >> 56);
     padded[padded_len - 7] = @truncate(bit_len >> 48);
     padded[padded_len - 6] = @truncate(bit_len >> 40);
@@ -162,12 +162,12 @@ fn sha256(data_len: u32) void {
     padded[padded_len - 2] = @truncate(bit_len >> 8);
     padded[padded_len - 1] = @truncate(bit_len);
     
-    // [CYR:Обрабаты]in[CYR:аем] [CYR:бло]toand по 64 [CYR:байта]
+    // [CYR:[EN]work[EN]y]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toand [EN] 64 [CYR:[TRANSLATED]]
     var block: usize = 0;
     while (block < padded_len) : (block += 64) {
         var w: [64]u32 = undefined;
         
-        // [CYR:Пер]inые 16 withлоin andз [CYR:бло]toа
+        // [CYR:[TRANSLATED]]iny[EN] 16 with[EN]in and[EN] [CYR:[TRANSLATED]]to[EN]
         var j: usize = 0;
         while (j < 16) : (j += 1) {
             const idx = block + j * 4;
@@ -177,12 +177,12 @@ fn sha256(data_len: u32) void {
                    @as(u32, padded[idx + 3]);
         }
         
-        // Раwithшand[CYR:ряем] до 64 withлоin
+        // [EN]with[EN]and[CYR:[EN]I[EN]] [EN] 64 with[EN]in
         while (j < 64) : (j += 1) {
             w[j] = gamma1(w[j - 2]) +% w[j - 7] +% gamma0(w[j - 15]) +% w[j - 16];
         }
         
-        // Инandцandалandзand[CYR:руем] [CYR:рабоч]andе [CYR:переменные]
+        // [EN]and[EN]and[EN]and[EN]and[CYR:[TRANSLATED]] [CYR:work[EN]]and[EN] [CYR:[TRANSLATED]nye]
         var a = h[0];
         var b = h[1];
         var c = h[2];
@@ -192,7 +192,7 @@ fn sha256(data_len: u32) void {
         var g = h[6];
         var hh = h[7];
         
-        // 64 [CYR:раунда]
+        // 64 [CYR:[TRANSLATED]]
         var t: usize = 0;
         while (t < 64) : (t += 1) {
             const t1 = hh +% sigma1(e) +% ch(e, f, g) +% K[t] +% w[t];
@@ -207,7 +207,7 @@ fn sha256(data_len: u32) void {
             a = t1 +% t2;
         }
         
-        // [CYR:Доба]in[CYR:ляем] to hashу
+        // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] to hash[EN]
         h[0] +%= a;
         h[1] +%= b;
         h[2] +%= c;
@@ -218,7 +218,7 @@ fn sha256(data_len: u32) void {
         h[7] +%= hh;
     }
     
-    // [CYR:Зап]andwithыin[CYR:аем] result
+    // [CYR:[TRANSLATED]]andwithyin[CYR:[TRANSLATED]] result
     var k: usize = 0;
     while (k < 8) : (k += 1) {
         hash_output[k * 4] = @truncate(h[k] >> 24);
@@ -228,25 +228,25 @@ fn sha256(data_len: u32) void {
     }
 }
 
-/// [CYR:Временный] buffer for phi_hash
+/// [CYR:[TRANSLATED]meny] buffer for phi_hash
 var phi_hash_temp: [128]u8 = undefined;
 
-/// φ-уwithand[CYR:ленное] hashandроinанandе (TRINITY rounds)
+/// φ-[EN]withand[CYR:[TRANSLATED]] hashand[EN]in[EN]and[EN] (TRINITY rounds)
 fn phi_hash(data_len: u32, rounds: u32) void {
-    // [CYR:Пер]inый [CYR:раунд] - hashand[CYR:руем] орandгandon[CYR:льные] [CYR:данные]
+    // [CYR:[TRANSLATED]]iny[EN] [CYR:[TRANSLATED]] - hashand[CYR:[TRANSLATED]] [EN]and[EN]andon[CYR:l[EN]y[EN]] [CYR:data]
     sha256(data_len);
     
-    // [CYR:Дополн]and[CYR:тельные] [CYR:раунды] with φ-фаto[CYR:торам]and
+    // [CYR:[TRANSLATED]]and[CYR:[EN]l[EN]y[EN]] [CYR:[TRANSLATED]y] with φ-[EN]to[CYR:[TRANSLATED]]and
     var r: u32 = 1;
     while (r < rounds) : (r += 1) {
-        // [CYR:Коп]and[CYR:руем] [CYR:предыдущ]andй hash inо in[CYR:ременный] buffer
+        // [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]y[TRANSLATED]]and[EN] hash in[EN] in[CYR:[EN]meny] buffer
         @memcpy(phi_hash_temp[0..32], &hash_output);
         
-        // [CYR:Доба]in[CYR:ляем] φ^r toаto with[CYR:тро]toу
+        // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] φ^r to[EN]to with[CYR:[TRANSLATED]]to[EN]
         const phi_r = phi_core.phi_power(@intCast(r));
         const phi_str = std.fmt.bufPrint(phi_hash_temp[32..64], "{d:.15}", .{phi_r}) catch unreachable;
         
-        // [CYR:Коп]and[CYR:руем] inо in[CYR:ходной] buffer and hashand[CYR:руем]
+        // [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] in[EN] in[CYR:[TRANSLATED]] buffer and hashand[CYR:[TRANSLATED]]
         const total_len = 32 + phi_str.len;
         @memcpy(hash_input_buffer[0..total_len], phi_hash_temp[0..total_len]);
         sha256(@intCast(total_len));
@@ -263,7 +263,7 @@ fn merkle_init() void {
     merkle_root_idx = MerkleNode.NONE;
 }
 
-/// [CYR:Доба]in[CYR:лен]andе лandwithта in Merkle tree
+/// [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] [EN]andwith[EN] in Merkle tree
 fn merkle_add_leaf(hash_ptr: [*]const u8) u32 {
     if (merkle_node_count >= MAX_MERKLE_NODES) return MerkleNode.NONE;
     
@@ -277,7 +277,7 @@ fn merkle_add_leaf(hash_ptr: [*]const u8) u32 {
     return idx;
 }
 
-/// Поwith[CYR:троен]andе Merkle tree andз лandwith[CYR:тье]in
+/// [EN]with[CYR:[TRANSLATED]]and[EN] Merkle tree and[EN] [EN]andwith[CYR:[TRANSLATED]]in
 fn merkle_build(leaf_count: u32) u32 {
     if (leaf_count == 0) return MerkleNode.NONE;
     if (leaf_count == 1) {
@@ -298,14 +298,14 @@ fn merkle_build(leaf_count: u32) u32 {
             const right_idx = if (i + 1 < current_level_count) 
                 current_level_start + i + 1 
             else 
-                left_idx; // [CYR:Дубл]and[CYR:руем] еwithлand not[CYR:чётное]
+                left_idx; // [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [EN]with[EN]and not[CYR:[TRANSLATED]]
             
-            // [CYR:Хеш]and[CYR:руем] [CYR:пару]
+            // [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
             @memcpy(hash_input_buffer[0..32], &merkle_nodes[left_idx].hash);
             @memcpy(hash_input_buffer[32..64], &merkle_nodes[right_idx].hash);
             sha256(64);
             
-            // [CYR:Создаём] [CYR:род]and[CYR:тель]withtoandй [CYR:узел]
+            // [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[EN]l]withtoand[EN] [CYR:[TRANSLATED]]
             if (merkle_node_count >= MAX_MERKLE_NODES) return MerkleNode.NONE;
             
             const parent_idx = merkle_node_count;
@@ -325,23 +325,23 @@ fn merkle_build(leaf_count: u32) u32 {
     return merkle_root_idx;
 }
 
-/// [CYR:Получен]andе to[CYR:орня] Merkle tree
+/// [CYR:[TRANSLATED]]and[EN] to[CYR:[TRANSLATED]I] Merkle tree
 fn merkle_get_root(out_ptr: [*]u8) bool {
     if (merkle_root_idx == MerkleNode.NONE) return false;
     @memcpy(out_ptr[0..32], &merkle_nodes[merkle_root_idx].hash);
     return true;
 }
 
-/// Геnot[CYR:рац]andя Merkle proof for лandwithта
+/// [EN]not[CYR:[TRANSLATED]]andI Merkle proof for [EN]andwith[EN]
 fn merkle_proof_generate(leaf_idx: u32, proof_ptr: [*]u8) u32 {
     if (leaf_idx >= merkle_node_count) return 0;
     
     var proof_len: u32 = 0;
     var current_idx = leaf_idx;
     
-    // [CYR:Наход]andм path to to[CYR:орню]
+    // [CYR:[TRANSLATED]]and[EN] path to to[CYR:[TRANSLATED]]
     while (current_idx != merkle_root_idx) {
-        // [CYR:Ищем] [CYR:род]and[CYR:теля]
+        // [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]I]
         var parent_idx: u32 = MerkleNode.NONE;
         var sibling_idx: u32 = MerkleNode.NONE;
         var is_left: bool = false;
@@ -363,7 +363,7 @@ fn merkle_proof_generate(leaf_idx: u32, proof_ptr: [*]u8) u32 {
         
         if (parent_idx == MerkleNode.NONE) break;
         
-        // [CYR:Доба]in[CYR:ляем] in proof: [position (1 byte), hash (32 bytes)]
+        // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] in proof: [position (1 byte), hash (32 bytes)]
         proof_ptr[proof_len * 33] = if (is_left) 1 else 0;
         @memcpy(proof_ptr[proof_len * 33 + 1 ..][0..32], &merkle_nodes[sibling_idx].hash);
         proof_len += 1;
@@ -397,7 +397,7 @@ fn merkle_proof_verify(leaf_hash_ptr: [*]const u8, proof_ptr: [*]const u8, proof
         @memcpy(&current_hash, &hash_output);
     }
     
-    // [CYR:Сра]inнandin[CYR:аем] with toорnotм
+    // [CYR:[TRANSLATED]]in[EN]andin[CYR:[TRANSLATED]] with to[EN]not[EN]
     return std.mem.eql(u8, &current_hash, root_ptr[0..32]);
 }
 
@@ -405,14 +405,14 @@ fn merkle_proof_verify(leaf_hash_ptr: [*]const u8, proof_ptr: [*]const u8, proof
 // VERIFICATION RECORDS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Creation [CYR:зап]andwithand inерandфandtoацandand
+/// Creation [CYR:[TRANSLATED]]andwithand in[EN]and[EN]andto[EN]andand
 fn create_verification_record(content_len: u32) u32 {
     if (record_count >= 256) return 0xFFFFFFFF;
     
     const idx = record_count;
     var record = &verification_records[idx];
     
-    // Геnotрand[CYR:руем] ID ([CYR:про]with[CYR:той] with[CYR:чётч]andto + timestamp)
+    // [EN]not[EN]and[CYR:[TRANSLATED]] ID ([CYR:pro]with[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]andto + timestamp)
     const timestamp = @as(u64, @intCast(idx)) * 1000000 + 1705000000000;
     @memset(&record.id, 0);
     record.id[0] = @truncate(idx);
@@ -420,11 +420,11 @@ fn create_verification_record(content_len: u32) u32 {
     
     record.timestamp = timestamp;
     
-    // [CYR:Выч]andwith[CYR:ляем] content_hash
+    // [CYR:Vy[EN]]andwith[CYR:[EN]I[EN]] content_hash
     sha256(content_len);
     @memcpy(&record.content_hash, &hash_output);
     
-    // [CYR:Выч]andwith[CYR:ляем] phi_hash (TRINITY rounds)
+    // [CYR:Vy[EN]]andwith[CYR:[EN]I[EN]] phi_hash (TRINITY rounds)
     phi_hash(content_len, 3);
     @memcpy(&record.phi_hash, &hash_output);
     
@@ -434,24 +434,24 @@ fn create_verification_record(content_len: u32) u32 {
     return idx;
 }
 
-/// Check to[CYR:онтента] прfromandin [CYR:зап]andwithand
+/// Check to[CYR:[TRANSLATED]] [EN]fromandin [CYR:[TRANSLATED]]andwithand
 fn verify_content(record_idx: u32, content_len: u32) bool {
     if (record_idx >= record_count) return false;
     
     const record = &verification_records[record_idx];
     
-    // [CYR:Про]in[CYR:еряем] content_hash
+    // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] content_hash
     sha256(content_len);
     if (!std.mem.eql(u8, &hash_output, &record.content_hash)) return false;
     
-    // [CYR:Про]in[CYR:еряем] phi_hash
+    // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] phi_hash
     phi_hash(content_len, 3);
     if (!std.mem.eql(u8, &hash_output, &record.phi_hash)) return false;
     
     return true;
 }
 
-/// [CYR:Получен]andе toолandчеwithтinа [CYR:зап]andwithей
+/// [CYR:[TRANSLATED]]and[EN] to[EN]and[EN]with[EN]in[EN] [CYR:[TRANSLATED]]andwith[EN]
 fn get_record_count() u32 {
     return record_count;
 }
@@ -483,7 +483,7 @@ test "sha256_abc" {
 test "merkle_tree" {
     merkle_init();
     
-    // [CYR:Доба]in[CYR:ляем] 4 лandwithта
+    // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] 4 [EN]andwith[EN]
     hash_input_buffer[0] = 'a';
     sha256(1);
     _ = merkle_add_leaf(&hash_output);
@@ -500,11 +500,11 @@ test "merkle_tree" {
     sha256(1);
     _ = merkle_add_leaf(&hash_output);
     
-    // [CYR:Стро]andм [CYR:дере]inо
+    // [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]in[EN]
     const root_idx = merkle_build(4);
     try std.testing.expect(root_idx != MerkleNode.NONE);
     
-    // [CYR:Про]in[CYR:еряем] that to[CYR:орень] with[CYR:уще]withтin[CYR:ует]
+    // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] that to[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]with[EN]in[CYR:[TRANSLATED]]
     var root: Hash256 = undefined;
     try std.testing.expect(merkle_get_root(&root));
 }
@@ -512,7 +512,7 @@ test "merkle_tree" {
 test "verification_record" {
     record_count = 0;
     
-    // [CYR:Создаём] [CYR:зап]andwithь
+    // [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andwith[EN]
     hash_input_buffer[0] = 'T';
     hash_input_buffer[1] = 'R';
     hash_input_buffer[2] = 'I';
@@ -525,7 +525,7 @@ test "verification_record" {
     try std.testing.expect(idx != 0xFFFFFFFF);
     try std.testing.expectEqual(record_count, 1);
     
-    // Воwithwithтаoninлandin[CYR:аем] [CYR:данные] and [CYR:про]in[CYR:еряем]
+    // [EN]withwith[EN]onin[EN]andin[CYR:[TRANSLATED]] [CYR:data] and [CYR:pro]in[CYR:[EN]I[EN]]
     hash_input_buffer[0] = 'T';
     hash_input_buffer[1] = 'R';
     hash_input_buffer[2] = 'I';
@@ -537,7 +537,7 @@ test "verification_record" {
     const verified = verify_content(idx, 7);
     try std.testing.expect(verified);
     
-    // [CYR:Изменённый] to[CYR:онтент] not [CYR:должен] [CYR:пройт]and
+    // [CYR:[EN]me[EN]ny] to[CYR:[TRANSLATED]] not [CYR:[TRANSLATED]] [CYR:pro[EN]]and
     hash_input_buffer[0] = 'X';
     hash_input_buffer[1] = 'R';
     hash_input_buffer[2] = 'I';

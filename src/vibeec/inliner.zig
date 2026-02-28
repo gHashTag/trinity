@@ -1,5 +1,5 @@
 //! VIBEE Function Inliner - PAS DAEMON V40
-//! [CYR:Паттерны]: MLS (cost model), PRE (cached bodies), D&C (recursive inlining)
+//! [CYR:[EN]]: MLS (cost model), PRE (cached bodies), D&C (recursive inlining)
 //! Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 //! Golden identity: φ² + 1/φ² = 3
 

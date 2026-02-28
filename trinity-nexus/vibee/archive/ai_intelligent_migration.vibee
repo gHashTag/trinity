@@ -1,6 +1,6 @@
 name: ai_intelligent_migration
 version: 1.0.0
-description: Умonя мand[CYR:грац]andя codeа V1→V2 with [CYR:помощью] AI - [CYR:пон]and[CYR:мает] [CYR:контек]withт and with[CYR:емант]andку
+description: [EN]onI [EN]and[CYR:[TRANSLATED]]andI code[EN] V1→V2 with [CYR:[TRANSLATED]] AI - [CYR:[TRANSLATED]]and[CYR:[EN]acts] [CYR:[TRANSLATED]]with[EN] and with[CYR:[TRANSLATED]]and[EN]
 
 metadata:
   author: VIBEE Team
@@ -63,123 +63,123 @@ types:
 constants:
   MIGRATION_STRATEGIES:
     conservative:
-      description: "Мandнand[CYR:мальные] fromмеnotнandя, [CYR:мак]withand[CYR:маль]onя security"
+      description: "[EN]and[EN]and[CYR:[EN]l[EN]y[EN]] from[EN]not[EN]andI, [CYR:[TRANSLATED]]withand[CYR:[EN]l]onI security"
       confidence_threshold: 0.95
       risk_level: "low"
       auto_apply: true
       
     balanced:
-      description: "[CYR:Балан]with [CYR:между] [CYR:улучшен]andямand and securityю"
+      description: "[CYR:[TRANSLATED]]with [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andI[EN]and and security[EN]"
       confidence_threshold: 0.85
       risk_level: "medium"
       auto_apply: false
       
     aggressive:
-      description: "[CYR:Мак]withand[CYR:мальные] [CYR:улучшен]andя, [CYR:требует] review"
+      description: "[CYR:[TRANSLATED]]withand[CYR:[EN]l[EN]y[EN]] [CYR:[TRANSLATED]]andI, [CYR:[TRANSLATED]] review"
       confidence_threshold: 0.75
       risk_level: "high"
       auto_apply: false
 
   AI_PROMPTS:
     analyze_code: |
-      Ты - экwith[CYR:перт] по мand[CYR:грац]andand VIBEE codeа with V1 on V2.
+      [EN]y - [EN]with[CYR:[TRANSLATED]] [EN] [EN]and[CYR:[TRANSLATED]]andand VIBEE code[EN] with V1 on V2.
       
-      [CYR:Код] V1:
+      [CYR:Code] V1:
       ```vibee
       {v1_code}
       ```
       
-      [CYR:Контек]withт:
-      - [CYR:Файл]: {file_path}
-      - Заinandwithandмоwithтand: {dependencies}
-      - Бfromnotwith-[CYR:лог]andка: {business_logic}
+      [CYR:[TRANSLATED]]with[EN]:
+      - [CYR:[TRANSLATED]]: {file_path}
+      - [EN]inandwithand[EN]with[EN]and: {dependencies}
+      - [EN]fromnotwith-[CYR:[TRANSLATED]]and[EN]: {business_logic}
       
-      [CYR:Задача]: [CYR:Про]analysisand[CYR:руй] code and [CYR:предлож]and with[CYR:тратег]andю мand[CYR:грац]andand.
+      [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]analysisand[CYR:[TRANSLATED]] code and [CYR:[TRANSLATED]]and with[CYR:[TRANSLATED]]and[EN] [EN]and[CYR:[TRANSLATED]]andand.
       
-      Учandтыinай:
-      1. [CYR:Семант]andку codeа (that он [CYR:делает])
-      2. [CYR:Паттерны] andwith[CYR:пользо]inанandя
-      3. Заinandwithandмоwithтand [CYR:между] [CYR:модулям]and
-      4. Бfromnotwith-[CYR:лог]andку
-      5. Рandwithкand fromмеnotнandй
+      [EN]and[EN]yin[EN]:
+      1. [CYR:[TRANSLATED]]and[EN] code[EN] (that [EN] [CYR:[TRANSLATED]acts])
+      2. [CYR:[TRANSLATED]y] andwith[CYR:[EN]l[EN]]in[EN]andI
+      3. [EN]inandwithand[EN]with[EN]and [CYR:[TRANSLATED]] [CYR:[TRANSLATED]I[EN]]and
+      4. [EN]fromnotwith-[CYR:[TRANSLATED]]and[EN]
+      5. [EN]andwith[EN]and from[EN]not[EN]and[EN]
       
-      [CYR:Формат] responseа:
-      [CYR:Стратег]andя: <conservative/balanced/aggressive>
-      Уin[CYR:еренно]withть: <0-1>
-      [CYR:Шаг]and:
-      1. <опandwithанandе stepа>
-         До: <code>
-         Поwithле: <code>
-         [CYR:Объя]withnotнandе: <[CYR:почему]>
+      [CYR:[TRANSLATED]] response[EN]:
+      [CYR:[TRANSLATED]]andI: <conservative/balanced/aggressive>
+      [EN]in[CYR:[TRANSLATED]]with[EN]: <0-1>
+      [CYR:[TRANSLATED]]and:
+      1. <[EN]andwith[EN]and[EN] step[EN]>
+         [EN]: <code>
+         [EN]with[EN]: <code>
+         [CYR:[TRANSLATED]I]withnot[EN]and[EN]: <[CYR:[TRANSLATED]]>
       
-      Рandwithкand: <list рandwithкоin>
-      [CYR:Метр]andкand: <ожand[CYR:даемые] [CYR:улучшен]andя>
+      [EN]andwith[EN]and: <list [EN]andwith[EN]in>
+      [CYR:[TRANSLATED]]and[EN]and: <[EN]and[CYR:[TRANSLATED]y[EN]] [CYR:[TRANSLATED]]andI>
       
     semantic_migration: |
-      Ты - экwith[CYR:перт] по with[CYR:емант]andчеwith[CYR:кому] analysisу codeа.
+      [EN]y - [EN]with[CYR:[TRANSLATED]] [EN] with[CYR:[TRANSLATED]]and[EN]with[CYR:[TRANSLATED]] analysis[EN] code[EN].
       
-      [CYR:Задача]: Мandгрandроin[CYR:ать] code, with[CYR:охраняя] with[CYR:емант]andку.
+      [CYR:[TRANSLATED]]: [EN]and[EN]and[EN]in[CYR:ate] code, with[CYR:[TRANSLATED]II] with[CYR:[TRANSLATED]]and[EN].
       
-      [CYR:Код] V1:
+      [CYR:Code] V1:
       ```vibee
       {v1_code}
       ```
       
-      [CYR:Требо]inанandя:
-      - [CYR:Сохран]andть [CYR:точную] with[CYR:емант]andку
-      - Иwith[CYR:пользо]in[CYR:ать] V2 withand[CYR:нтак]withandwith
-      - [CYR:Улучш]andть чand[CYR:таемо]withть
-      - [CYR:Опт]andмfromandроin[CYR:ать] performance
+      [CYR:[TRANSLATED]]in[EN]andI:
+      - [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]and[EN]
+      - [EN]with[CYR:[EN]l[EN]]in[CYR:ate] V2 withand[CYR:[TRANSLATED]]withandwith
+      - [CYR:[TRANSLATED]]and[EN] [EN]and[CYR:[TRANSLATED]]with[EN]
+      - [CYR:[TRANSLATED]]and[EN]fromand[EN]in[CYR:ate] performance
       
-      [CYR:Про]in[CYR:ерь]:
-      - Вwithе edge cases [CYR:обработаны]
-      - Тandпы [CYR:корректны]
-      - Ошandбкand [CYR:обрабаты]in[CYR:ают]withя
-      - Теwithты [CYR:пройдут]
+      [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]:
+      - [EN]with[EN] edge cases [CYR:[EN]work[EN]y]
+      - [EN]and[EN]y [CYR:[TRANSLATED]y]
+      - [EN]and[EN]and [CYR:[EN]work[EN]y]in[CYR:[TRANSLATED]]withI
+      - [EN]with[EN]y [CYR:pro[TRANSLATED]]
       
-      [CYR:Формат] responseа:
+      [CYR:[TRANSLATED]] response[EN]:
       ```vibee
-      <мandгрandроin[CYR:анный] code V2>
+      <[EN]and[EN]and[EN]in[CYR:[EN]ny] code V2>
       ```
       
-      [CYR:Изме]notнandя:
-      - <list fromмеnotнandй>
+      [CYR:[TRANSLATED]]not[EN]andI:
+      - <list from[EN]not[EN]and[EN]>
       
-      [CYR:Гарант]andand:
-      - [CYR:Семант]andка: <with[CYR:охра]noton/fromмеnoton>
-      - Теwithты: <[CYR:пройдут]/[CYR:требуют] [CYR:обно]in[CYR:лен]andя>
-      - [CYR:Про]frominодand[CYR:тельно]withть: <[CYR:улучше]on/[CYR:без] fromмеnotнandй>
+      [CYR:[TRANSLATED]]andand:
+      - [CYR:[TRANSLATED]]and[EN]: <with[CYR:[TRANSLATED]]noton/from[EN]noton>
+      - [EN]with[EN]y: <[CYR:pro[TRANSLATED]]/[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andI>
+      - [CYR:[TRANSLATED]]fromin[EN]and[CYR:[EN]lno]with[EN]: <[CYR:[TRANSLATED]]on/[CYR:without] from[EN]not[EN]and[EN]>
       
     context_aware_migration: |
-      Ты - экwith[CYR:перт] по [CYR:контек]with[CYR:тно]-заinandwithand[CYR:мой] мand[CYR:грац]andand.
+      [EN]y - [EN]with[CYR:[TRANSLATED]] [EN] [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]-[EN]inandwithand[CYR:[TRANSLATED]] [EN]and[CYR:[TRANSLATED]]andand.
       
-      [CYR:Целе]inой code:
+      [CYR:[TRANSLATED]]in[EN] code:
       ```vibee
       {target_code}
       ```
       
-      [CYR:Контек]withт andwith[CYR:пользо]inанandя:
+      [CYR:[TRANSLATED]]with[EN] andwith[CYR:[EN]l[EN]]in[EN]andI:
       {usage_context}
       
-      Заinandwithand[CYR:мые] [CYR:модул]and:
+      [EN]inandwithand[CYR:[EN]y[EN]] [CYR:[TRANSLATED]]and:
       {dependent_modules}
       
-      [CYR:Задача]: Мandгрandроin[CYR:ать] with [CYR:учетом] inwith[CYR:его] [CYR:контек]withта.
+      [CYR:[TRANSLATED]]: [EN]and[EN]and[EN]in[CYR:ate] with [CYR:[TRANSLATED]] inwith[CYR:[EN]go] [CYR:[TRANSLATED]]with[EN].
       
-      Учandтыinай:
-      - [CYR:Как] code andwith[CYR:пользует]withя in [CYR:друг]andх меwith[CYR:тах]
-      - [CYR:Как]andе [CYR:модул]and заinandwithят от notго
-      - [CYR:Как]andе fromмеnotнandя [CYR:потребуют]withя in заinandwithand[CYR:мых] [CYR:модулях]
-      - [CYR:Порядок] мand[CYR:грац]andand [CYR:модулей]
+      [EN]and[EN]yin[EN]:
+      - [CYR:[TRANSLATED]] code andwith[CYR:[EN]l[TRANSLATED]]withI in [CYR:[TRANSLATED]]and[EN] [EN]with[CYR:[TRANSLATED]]
+      - [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and [EN]inandwithI[EN] [EN] notgo
+      - [CYR:[TRANSLATED]]and[EN] from[EN]not[EN]andI [CYR:[TRANSLATED]]withI in [EN]inandwithand[CYR:[EN]y[EN]] [CYR:[TRANSLATED]I[EN]]
+      - [CYR:[TRANSLATED]I[TRANSLATED]] [EN]and[CYR:[TRANSLATED]]andand [CYR:[TRANSLATED]]
       
-      [CYR:Формат] responseа:
-      [CYR:План] мand[CYR:грац]andand:
-      1. [CYR:Модуль]: <andмя>
-         [CYR:Изме]notнandя: <опandwithанandе>
-         Заinandwithandмоwithтand: <list>
+      [CYR:[TRANSLATED]] response[EN]:
+      [CYR:[TRANSLATED]] [EN]and[CYR:[TRANSLATED]]andand:
+      1. [CYR:[TRANSLATED]l]: <and[EN]I>
+         [CYR:[TRANSLATED]]not[EN]andI: <[EN]andwith[EN]and[EN]>
+         [EN]inandwithand[EN]with[EN]and: <list>
       
-      [CYR:Порядок] in[CYR:ыпол]notнandя: <поwith[CYR:ледо]in[CYR:ательно]withть>
-      Рandwithкand: <analysis рandwithкоin>
+      [CYR:[TRANSLATED]I[TRANSLATED]] in[CYR:y[TRANSLATED]]not[EN]andI: <[EN]with[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]lno]with[EN]>
+      [EN]andwith[EN]and: <analysis [EN]andwith[EN]in>
 
 behaviors:
   analyze_migration:
@@ -188,29 +188,29 @@ behaviors:
       strategy_preference: string
     output:
       strategy: MigrationStrategy
-    description: Аonлfrom codeа and in[CYR:ыбор] with[CYR:тратег]andand мand[CYR:грац]andand
+    description: Aon[EN]from code[EN] and in[CYR:y[TRANSLATED]] with[CYR:[TRANSLATED]]andand [EN]and[CYR:[TRANSLATED]]andand
     steps:
-      - [CYR:Про]analyze code with [CYR:помощью] AI
-      - [CYR:Определ]andть [CYR:паттерны] andwith[CYR:пользо]inанandя
-      - [CYR:Оцен]andть рandwithкand
-      - [CYR:Выбрать] with[CYR:тратег]andю
-      - [CYR:Сге]notрandроin[CYR:ать] [CYR:план] мand[CYR:грац]andand
-      - [CYR:Вернуть] with[CYR:тратег]andю
+      - [CYR:[TRANSLATED]]analyze code with [CYR:[TRANSLATED]] AI
+      - [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]y] andwith[CYR:[EN]l[EN]]in[EN]andI
+      - [CYR:[TRANSLATED]]and[EN] [EN]andwith[EN]and
+      - [CYR:Vy[EN]ate] with[CYR:[TRANSLATED]]and[EN]
+      - [CYR:[TRANSLATED]]not[EN]and[EN]in[CYR:ate] [CYR:plan] [EN]and[CYR:[TRANSLATED]]andand
+      - [CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]and[EN]
       
   migrate_with_ai:
     input:
       context: MigrationContext
       strategy: MigrationStrategy
     output: MigrationResult
-    description: Умonя мand[CYR:грац]andя with AI
+    description: [EN]onI [EN]and[CYR:[TRANSLATED]]andI with AI
     steps:
-      - [CYR:Отпра]inandть code on analysis AI
-      - [CYR:Получ]andть мandгрandроin[CYR:анный] code
-      - [CYR:Вал]andдandроin[CYR:ать] with[CYR:емант]andку
-      - [CYR:Про]inерandть withand[CYR:нтак]withandwith
-      - [CYR:Запу]withтandть testы
-      - [CYR:Собрать] [CYR:метр]andкand
-      - [CYR:Вернуть] result
+      - [CYR:[EN]law]inand[EN] code on analysis AI
+      - [CYR:[TRANSLATED]]and[EN] [EN]and[EN]and[EN]in[CYR:[EN]ny] code
+      - [CYR:[TRANSLATED]]and[EN]and[EN]in[CYR:ate] with[CYR:[TRANSLATED]]and[EN]
+      - [CYR:[TRANSLATED]]in[EN]and[EN] withand[CYR:[TRANSLATED]]withandwith
+      - [CYR:[TRANSLATED]]with[EN]and[EN] testy
+      - [CYR:[TRANSLATED]ate] [CYR:[TRANSLATED]]and[EN]and
+      - [CYR:[TRANSLATED]] result
       
   validate_semantics:
     input:
@@ -220,13 +220,13 @@ behaviors:
     output:
       equivalent: boolean
       differences: list<string>
-    description: [CYR:Про]in[CYR:ерка] with[CYR:емант]andчеwith[CYR:кой] экinandin[CYR:алентно]withтand
+    description: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]and[EN]with[CYR:[TRANSLATED]] [EN]inandin[CYR:[TRANSLATED]]with[EN]and
     steps:
-      - Сcompile [CYR:обе] inерwithandand
-      - [CYR:Запу]withтandть testы on [CYR:обе]andх
-      - [CYR:Сра]inнandть resultы
-      - [CYR:Про]inерandть edge cases
-      - [CYR:Вернуть] result
+      - [EN]compile [CYR:[TRANSLATED]] in[EN]withandand
+      - [CYR:[TRANSLATED]]with[EN]and[EN] testy on [CYR:[TRANSLATED]]and[EN]
+      - [CYR:[TRANSLATED]]in[EN]and[EN] resulty
+      - [CYR:[TRANSLATED]]in[EN]and[EN] edge cases
+      - [CYR:[TRANSLATED]] result
       
   migrate_module:
     input:
@@ -234,55 +234,55 @@ behaviors:
       dependencies: list<string>
     output:
       migrated_modules: list<MigrationResult>
-    description: Мand[CYR:грац]andя [CYR:модуля] with заinandwithandмоwith[CYR:тям]and
+    description: [EN]and[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]I] with [EN]inandwithand[EN]with[CYR:[EN]I[EN]]and
     steps:
-      - Поwith[CYR:тро]andть [CYR:граф] заinandwithandмоwith[CYR:тей]
-      - [CYR:Определ]andть [CYR:порядок] мand[CYR:грац]andand
-      - Мandгрandроin[CYR:ать] [CYR:каждый] module
-      - [CYR:Обно]inandть заinandwithandмоwithтand
-      - [CYR:Вал]andдandроin[CYR:ать] and[CYR:нтеграц]andю
-      - [CYR:Вернуть] resultы
+      - [EN]with[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] [EN]inandwithand[EN]with[CYR:[TRANSLATED]]
+      - [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]I[TRANSLATED]] [EN]and[CYR:[TRANSLATED]]andand
+      - [EN]and[EN]and[EN]in[CYR:ate] [CYR:[TRANSLATED]y[EN]] module
+      - [CYR:[TRANSLATED]]inand[EN] [EN]inandwithand[EN]with[EN]and
+      - [CYR:[TRANSLATED]]and[EN]and[EN]in[CYR:ate] and[CYR:[TRANSLATED]]and[EN]
+      - [CYR:[TRANSLATED]] resulty
       
   suggest_improvements:
     input:
       migrated_code: string
     output:
       improvements: list<Suggestion>
-    description: [CYR:Предложен]andя по [CYR:улучшен]andю поwithле мand[CYR:грац]andand
+    description: [CYR:[TRANSLATED]]andI [EN] [CYR:[TRANSLATED]]and[EN] [EN]with[EN] [EN]and[CYR:[TRANSLATED]]andand
     steps:
-      - [CYR:Про]analyze мandгрandроin[CYR:анный] code
-      - [CYR:Найт]and in[CYR:озможно]withтand for [CYR:улучшен]andя
-      - [CYR:Сге]notрandроin[CYR:ать] suggestions
-      - [CYR:Оцен]andть impact
-      - [CYR:Вернуть] improvements
+      - [CYR:[TRANSLATED]]analyze [EN]and[EN]and[EN]in[CYR:[EN]ny] code
+      - [CYR:[TRANSLATED]]and in[CYR:[EN]can[EN]]with[EN]and for [CYR:[TRANSLATED]]andI
+      - [CYR:[TRANSLATED]]not[EN]and[EN]in[CYR:ate] suggestions
+      - [CYR:[TRANSLATED]]and[EN] impact
+      - [CYR:[TRANSLATED]] improvements
 
 functions:
   - name: build_dependency_graph
     params:
       module_path: string
     returns: DependencyGraph
-    description: Поwith[CYR:троен]andе [CYR:графа] заinandwithandмоwith[CYR:тей]
+    description: [EN]with[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] [EN]inandwithand[EN]with[CYR:[TRANSLATED]]
     
   - name: analyze_usage_patterns
     params:
       code: string
       codebase: string
     returns: list<UsagePattern>
-    description: Аonлfrom [CYR:паттерно]in andwith[CYR:пользо]inанandя
+    description: Aon[EN]from [CYR:[TRANSLATED]]in andwith[CYR:[EN]l[EN]]in[EN]andI
     
   - name: estimate_migration_time
     params:
       strategy: MigrationStrategy
       code_size: number
     returns: number
-    description: [CYR:Оценка] in[CYR:ремен]and мand[CYR:грац]andand
+    description: [CYR:[TRANSLATED]] in[CYR:[EN]me]and [EN]and[CYR:[TRANSLATED]]andand
     
   - name: calculate_risk_score
     params:
       changes: list<Change>
       dependencies: list<string>
     returns: number
-    description: Раwith[CYR:чет] рandwithка fromмеnotнandй
+    description: [EN]with[CYR:[TRANSLATED]] [EN]andwith[EN] from[EN]not[EN]and[EN]
 
 tests:
   - name: analyze_simple_function
@@ -339,8 +339,8 @@ tests:
       migrated_modules: all_match(success == true)
 
 examples:
-  - name: "Умonя мand[CYR:грац]andя [CYR:функц]andand"
-    description: "AI [CYR:пон]and[CYR:мает] бfromnotwith-[CYR:лог]andку and мandгрand[CYR:рует] withоresponsewithтin[CYR:енно]"
+  - name: "[EN]onI [EN]and[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]]andand"
+    description: "AI [CYR:[TRANSLATED]]and[CYR:[EN]acts] [EN]fromnotwith-[CYR:[TRANSLATED]]and[EN] and [EN]and[EN]and[CYR:[TRANSLATED]] with[EN]responsewith[EN]in[CYR:[TRANSLATED]]"
     input:
       v1_code: |
         pub fn calculate_discount(price: Float, user_type: String) -> Float {
@@ -360,45 +360,45 @@ examples:
             _ => price
           }
         }
-      explanation: "[CYR:Сохра]noton бfromnotwith-[CYR:лог]andка, [CYR:улучшен] withand[CYR:нтак]withandwith"
+      explanation: "[CYR:[TRANSLATED]]noton [EN]fromnotwith-[CYR:[TRANSLATED]]and[EN], [CYR:[TRANSLATED]] withand[CYR:[TRANSLATED]]withandwith"
       
-  - name: "[CYR:Контек]withтonя мand[CYR:грац]andя"
-    description: "AI учandтыin[CYR:ает] how function andwith[CYR:пользует]withя"
+  - name: "[CYR:[TRANSLATED]]with[EN]onI [EN]and[CYR:[TRANSLATED]]andI"
+    description: "AI [EN]and[EN]yin[CYR:acts] how function andwith[CYR:[EN]l[TRANSLATED]]withI"
     input:
       code: "pub fn get_user(id: Int) -> Result(User, String)"
-      usage_context: "[CYR:Вызы]in[CYR:ает]withя from 15 меwithт, inwith[CYR:егда] with error handling"
+      usage_context: "[CYR:Vy[EN]y]in[CYR:acts]withI from 15 [EN]with[EN], inwith[CYR:[TRANSLATED]] with error handling"
     output:
       strategy: "conservative"
-      explanation: "[CYR:Много] меwithт andwith[CYR:пользо]inанandя - [CYR:безопа]withonя мand[CYR:грац]andя"
+      explanation: "[CYR:[TRANSLATED]go] [EN]with[EN] andwith[CYR:[EN]l[EN]]in[EN]andI - [CYR:without[TRANSLATED]]withonI [EN]and[CYR:[TRANSLATED]]andI"
       v2_code: "pub get_user(id): Result<User, String> = !impl"
       
-  - name: "Мand[CYR:грац]andя with заinandwithandмоwith[CYR:тям]and"
-    description: "AI [CYR:определяет] [CYR:порядок] мand[CYR:грац]andand [CYR:модулей]"
+  - name: "[EN]and[CYR:[TRANSLATED]]andI with [EN]inandwithand[EN]with[CYR:[EN]I[EN]]and"
+    description: "AI [CYR:[TRANSLATED]I[EN]] [CYR:[TRANSLATED]I[TRANSLATED]] [EN]and[CYR:[TRANSLATED]]andand [CYR:[TRANSLATED]]"
     input:
       module: "user_service"
       dependencies: ["database", "validation", "auth"]
     output:
       migration_order: ["database", "validation", "auth", "user_service"]
-      explanation: "Сon[CYR:чала] заinandwithandмоwithтand, [CYR:потом] оwithноin[CYR:ной] module"
+      explanation: "[EN]on[CYR:[TRANSLATED]] [EN]inandwithand[EN]with[EN]and, [CYR:[TRANSLATED]] [EN]with[EN]in[CYR:[TRANSLATED]] module"
 
 ai_capabilities:
   semantic_understanding:
-    - "[CYR:Пон]and[CYR:ман]andе бfromnotwith-[CYR:лог]andкand"
-    - "Аonлfrom [CYR:паттерно]in andwith[CYR:пользо]inанandя"
-    - "[CYR:Определен]andе крandтand[CYR:чных] [CYR:уча]with[CYR:тко]in"
-    - "[CYR:Оценка] рandwithкоin fromмеnotнandй"
+    - "[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and[EN] [EN]fromnotwith-[CYR:[TRANSLATED]]and[EN]and"
+    - "Aon[EN]from [CYR:[TRANSLATED]]in andwith[CYR:[EN]l[EN]]in[EN]andI"
+    - "[CYR:[TRANSLATED]]and[EN] [EN]and[EN]and[CYR:[EN]y[EN]] [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]in"
+    - "[CYR:[TRANSLATED]] [EN]andwith[EN]in from[EN]not[EN]and[EN]"
     
   context_awareness:
-    - "Аonлfrom заinandwithandмоwith[CYR:тей]"
-    - "[CYR:Пон]and[CYR:ман]andе [CYR:арх]and[CYR:тектуры]"
-    - "[CYR:Учет] [CYR:паттерно]in [CYR:проекта]"
-    - "[CYR:Соблюден]andе withтandля codeа"
+    - "Aon[EN]from [EN]inandwithand[EN]with[CYR:[TRANSLATED]]"
+    - "[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]y]"
+    - "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in [CYR:project[EN]]"
+    - "[CYR:[TRANSLATED]]and[EN] with[EN]and[EN]I code[EN]"
     
   intelligent_decisions:
-    - "[CYR:Выбор] [CYR:опт]and[CYR:мальной] with[CYR:тратег]andand"
-    - "[CYR:Определен]andе [CYR:порядка] мand[CYR:грац]andand"
-    - "[CYR:Балан]withandроinка рandwithк/improvement"
-    - "[CYR:Адаптац]andя [CYR:под] [CYR:проект]"
+    - "[CYR:Vy[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[EN]lno[EN]] with[CYR:[TRANSLATED]]andand"
+    - "[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]I[TRANSLATED]] [EN]and[CYR:[TRANSLATED]]andand"
+    - "[CYR:[TRANSLATED]]withand[EN]in[EN] [EN]andwith[EN]/improvement"
+    - "[CYR:A[TRANSLATED]]andI [CYR:[TRANSLATED]] [CYR:project]"
 
 metrics:
   migration_accuracy: "> 95%"

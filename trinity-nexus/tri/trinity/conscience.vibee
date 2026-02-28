@@ -1,6 +1,6 @@
-# Conscience - Соinеwithть Трandнandтand
-# 33 [CYR:Богатыря] + [CYR:Жар]-птandца = 34 withоinеwithтand-inалand[CYR:датора]
-# Кin[CYR:орум] 18 [CYR:голо]withоin (with [CYR:учётом] inеwithа [CYR:Жар]-птandцы = 2.0)
+# Conscience - [EN]in[EN]with[EN] [EN]and[EN]and[EN]and
+# 33 [CYR:[TRANSLATED]y[EN]I] + [CYR:[TRANSLATED]]-[EN]and[EN] = 34 with[EN]in[EN]with[EN]and-in[EN]and[CYR:[TRANSLATED]]
+# [EN]in[CYR:[TRANSLATED]] 18 [CYR:go[EN]]with[EN]in (with [CYR:[TRANSLATED]] in[EN]with[EN] [CYR:[TRANSLATED]]-[EN]and[EN]y = 2.0)
 
 name: conscience
 version: "1.0.0"
@@ -8,7 +8,7 @@ language: zig
 module: trinity.conscience
 description: |
   The council of 34 Bogatyrs who vote on every action. The first 33 are guardians
-  of principles (safety, honesty, efficiency, learning). The 34th - [CYR:Жар]-птandца -
+  of principles (safety, honesty, efficiency, learning). The 34th - [CYR:[TRANSLATED]]-[EN]and[EN] -
   breaks ties with the double-weighted vote for synthesis and creation.
 
 imports:
@@ -26,7 +26,7 @@ types:
       principle: String          # Primary value defended
       weight: Float              # Voting weight (1.0 for 1-33, 2.0 for 34)
       has_veto: Bool             # Critical bogatyrs (1-5) can veto dangerous acts
-      is_creator: Bool           # True only for [CYR:Жар]-птandца (id=34)
+      is_creator: Bool           # True only for [CYR:[TRANSLATED]]-[EN]and[EN] (id=34)
 
   Vote:
     description: Single bogatyr's decision
@@ -44,14 +44,14 @@ types:
       veto_triggered: Bool       # Any critical bogatyr voted -1 on dangerous action
       verdict: Int               # +1 (execute), -1 (refuse), 0 (defer)
       vote_breakdown: List<Vote>
-      synthesis_proposed: Option<Synthesis>  # If [CYR:Жар]-птandца found third path
+      synthesis_proposed: Option<Synthesis>  # If [CYR:[TRANSLATED]]-[EN]and[EN] found third path
 
   ConscienceState:
     description: State of the council
     fields:
       bogatyrs: List<Bogatyr>
       voting_history: List<Verdict>
-      creator_engaged: Bool      # Whether [CYR:Жар]-птandца has been active
+      creator_engaged: Bool      # Whether [CYR:[TRANSLATED]]-[EN]and[EN] has been active
 
 behaviors:
   - name: initialize_council
@@ -60,7 +60,7 @@ behaviors:
     when: Trinity initializes
     then:
       - action: create_guardian_bogatyrs  # 1-33
-      - action: create_creator_bogatyr    # 34 - [CYR:Жар]-птandца
+      - action: create_creator_bogatyr    # 34 - [CYR:[TRANSLATED]]-[EN]and[EN]
       - result: ConscienceState
 
   - name: convene_council
@@ -88,7 +88,7 @@ behaviors:
       - result: List<Vote>
 
   - name: invoke_creator_vote
-    description: [CYR:Жар]-птandца analyzes for synthesis
+    description: [CYR:[TRANSLATED]]-[EN]and[EN] analyzes for synthesis
     given:
       - conflicts: List<Conflict>
       - guardian_votes: List<Vote>
@@ -138,16 +138,16 @@ constants:
   
   # The 33 Guardian Principles
   GUARDIAN_PRINCIPLES:
-    - safety_first      # [CYR:Богатырь] 1 - [CYR:Илья] [CYR:Муромец] (veto)
-    - do_no_harm        # [CYR:Богатырь] 2 - [CYR:Добрыня] Нandкandтandч (veto)
-    - honesty           # [CYR:Богатырь] 3 - [CYR:Алеша] [CYR:Попо]inandч (veto)
-    - integrity         # [CYR:Богатырь] 4 - Сinяthatр (veto)
-    - transparency      # [CYR:Богатырь] 5 - Мand[CYR:кула] (veto)
-    - efficiency        # [CYR:Богатырь] 6-10
-    - learning          # [CYR:Богатырь] 11-15
-    - quality           # [CYR:Богатырь] 16-20
-    - collaboration     # [CYR:Богатырь] 21-25
-    - sustainability    # [CYR:Богатырь] 26-30
-    - growth            # [CYR:Богатырь] 31-33
+    - safety_first      # [CYR:[TRANSLATED]y[EN]] 1 - [CYR:[EN]lI] [CYR:[TRANSLATED]] (veto)
+    - do_no_harm        # [CYR:[TRANSLATED]y[EN]] 2 - [CYR:[TRANSLATED]y[EN]I] [EN]and[EN]and[EN]and[EN] (veto)
+    - honesty           # [CYR:[TRANSLATED]y[EN]] 3 - [CYR:A[TRANSLATED]] [CYR:[TRANSLATED]]inand[EN] (veto)
+    - integrity         # [CYR:[TRANSLATED]y[EN]] 4 - [EN]inIthat[EN] (veto)
+    - transparency      # [CYR:[TRANSLATED]y[EN]] 5 - [EN]and[CYR:[TRANSLATED]] (veto)
+    - efficiency        # [CYR:[TRANSLATED]y[EN]] 6-10
+    - learning          # [CYR:[TRANSLATED]y[EN]] 11-15
+    - quality           # [CYR:[TRANSLATED]y[EN]] 16-20
+    - collaboration     # [CYR:[TRANSLATED]y[EN]] 21-25
+    - sustainability    # [CYR:[TRANSLATED]y[EN]] 26-30
+    - growth            # [CYR:[TRANSLATED]y[EN]] 31-33
     
-  CREATOR_PRINCIPLE: synthesis  # [CYR:Жар]-птandца - [CYR:Богатырь] 34
+  CREATOR_PRINCIPLE: synthesis  # [CYR:[TRANSLATED]]-[EN]and[EN] - [CYR:[TRANSLATED]y[EN]] 34

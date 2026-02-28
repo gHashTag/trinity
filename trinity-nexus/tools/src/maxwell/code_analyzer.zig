@@ -1,5 +1,5 @@
 // Maxwell Daemon - Code Analyzer
-// Аonлandз to[CYR:одо]inой [CYR:базы] for [CYR:пон]and[CYR:ман]andя with[CYR:тру]to[CYR:туры] and [CYR:паттерно]in
+// Aon[EN]and[EN] to[CYR:[TRANSLATED]]in[EN] [CYR:[TRANSLATED]y] for [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI with[CYR:[TRANSLATED]]to[CYR:[TRANSLATED]y] and [CYR:[TRANSLATED]]in
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -10,7 +10,7 @@ const codebase = @import("codebase.zig");
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:Информац]andя о [CYR:фун]toцandand
+/// [CYR:[TRANSLATED]]andI  [CYR:[TRANSLATED]]to[EN]andand
 pub const FunctionInfo = struct {
     name: []const u8,
     file_path: []const u8,
@@ -44,7 +44,7 @@ pub const FunctionInfo = struct {
     }
 };
 
-/// [CYR:Информац]andя о with[CYR:тру]to[CYR:туре]/тandпе
+/// [CYR:[TRANSLATED]]andI  with[CYR:[TRANSLATED]]to[CYR:[TRANSLATED]]/[EN]and[EN]
 pub const TypeInfo = struct {
     name: []const u8,
     file_path: []const u8,
@@ -84,7 +84,7 @@ pub const TypeInfo = struct {
     }
 };
 
-/// [CYR:Информац]andя о [CYR:модуле]/fileе
+/// [CYR:[TRANSLATED]]andI  [CYR:[TRANSLATED]]/file[EN]
 pub const ModuleInfo = struct {
     path: []const u8,
     imports: std.ArrayList([]const u8),
@@ -119,7 +119,7 @@ pub const ModuleInfo = struct {
     }
 };
 
-/// [CYR:Метр]andtoand to[CYR:одо]inой [CYR:базы]
+/// [CYR:[TRANSLATED]]andtoand to[CYR:[TRANSLATED]]in[EN] [CYR:[TRANSLATED]y]
 pub const CodebaseMetrics = struct {
     total_files: u32,
     total_lines: u32,
@@ -131,7 +131,7 @@ pub const CodebaseMetrics = struct {
     test_coverage_estimate: f32,
 };
 
-/// [CYR:Паттерн] in to[CYR:оде]
+/// [CYR:[TRANSLATED]] in to[CYR:[TRANSLATED]]
 pub const CodePattern = struct {
     name: []const u8,
     description: []const u8,
@@ -195,7 +195,7 @@ pub const CodeAnalyzer = struct {
     // ANALYSIS
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Аonлandзandроin[CYR:ать] file
+    /// Aon[EN]and[EN]and[EN]in[CYR:ate] file
     pub fn analyzeFile(self: *CodeAnalyzer, path: []const u8) !ModuleInfo {
         const result = self.codebase_interface.readFile(path);
         if (!result.success) {
@@ -215,7 +215,7 @@ pub const CodeAnalyzer = struct {
         return module;
     }
 
-    /// Аonлandзandроin[CYR:ать] inwithю to[CYR:одо]inую [CYR:базу]
+    /// Aon[EN]and[EN]and[EN]in[CYR:ate] inwith[EN] to[CYR:[TRANSLATED]]in[EN] [CYR:[TRANSLATED]]
     pub fn analyzeCodebase(self: *CodeAnalyzer, patterns_to_find: []const []const u8) !CodebaseMetrics {
         // Find all Zig files
         const files = try self.codebase_interface.findFiles("*.zig");
@@ -278,7 +278,7 @@ pub const CodeAnalyzer = struct {
         return self.metrics.?;
     }
 
-    /// [CYR:Найт]and [CYR:фун]toцandand по and[CYR:мен]and/[CYR:паттерну]
+    /// [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]to[EN]andand [EN] and[CYR:me]and/[CYR:[TRANSLATED]]
     pub fn findFunctions(self: *CodeAnalyzer, pattern: []const u8) !std.ArrayList(FunctionInfo) {
         var result = std.ArrayList(FunctionInfo).init(self.allocator);
 
@@ -294,7 +294,7 @@ pub const CodeAnalyzer = struct {
         return result;
     }
 
-    /// [CYR:Найт]and тandпы по and[CYR:мен]and/[CYR:паттерну]
+    /// [CYR:[TRANSLATED]]and [EN]and[EN]y [EN] and[CYR:me]and/[CYR:[TRANSLATED]]
     pub fn findTypes(self: *CodeAnalyzer, pattern: []const u8) !std.ArrayList(TypeInfo) {
         var result = std.ArrayList(TypeInfo).init(self.allocator);
 
@@ -310,7 +310,7 @@ pub const CodeAnalyzer = struct {
         return result;
     }
 
-    /// [CYR:Получ]andть заinandwithandмоwithтand [CYR:модуля]
+    /// [CYR:[TRANSLATED]]and[EN] [EN]inandwithand[EN]with[EN]and [CYR:[TRANSLATED]I]
     pub fn getDependencies(self: *CodeAnalyzer, path: []const u8) !std.ArrayList([]const u8) {
         var result = std.ArrayList([]const u8).init(self.allocator);
 
@@ -544,7 +544,7 @@ pub const CodeAnalyzer = struct {
     // REPORTING
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// [CYR:Сге]notрandроin[CYR:ать] from[CYR:чёт] об аonлandзе
+    /// [CYR:[TRANSLATED]]not[EN]and[EN]in[CYR:ate] from[CYR:[TRANSLATED]] [EN] [EN]on[EN]and[EN]
     pub fn generateReport(self: *CodeAnalyzer) ![]const u8 {
         var report = std.ArrayList(u8).init(self.allocator);
         const writer = report.writer();

@@ -394,7 +394,7 @@ pub fn runBenchmark() !void {
         .{ .query = "hello", .feedback = .ThumbsUp },
         .{ .query = "write python hello world", .feedback = .Acceptance },
         .{ .query = "what is the meaning of life", .feedback = .FollowUp },
-        .{ .query = "раwithwithtoажand andwith[CYR:тор]andю", .feedback = .ThumbsUp },
+        .{ .query = "[EN]withwithto[EN]and andwith[CYR:[EN]]and[EN]", .feedback = .ThumbsUp },
         .{ .query = "你好", .feedback = .Acceptance },
 
         // Negative interactions (learning from mistakes)
@@ -413,7 +413,7 @@ pub fn runBenchmark() !void {
         // Additional learning
         .{ .query = "help me understand", .feedback = .FollowUp },
         .{ .query = "thanks", .feedback = .Acceptance },
-        .{ .query = "прandinет", .feedback = .ThumbsUp },
+        .{ .query = "[EN]andin[EN]", .feedback = .ThumbsUp },
 
         // Stress test
         .{ .query = "complex question about programming", .feedback = .Clarification },

@@ -25,10 +25,10 @@ behaviors:
     test_cases:
       - name: break_a_leg_to_russian
         input: {idiom: "break_a_leg", target: "russian"}
-        expected: {translation: "Нand [CYR:пуха] нand [CYR:пера]", confidence: 0.95}
+        expected: {translation: "[EN]and [CYR:[TRANSLATED]] [EN]and [CYR:[TRANSLATED]]", confidence: 0.95}
       - name: raining_cats_and_dogs
         input: {idiom: "raining_cats_and_dogs", target: "russian"}
-        expected: {translation: "[CYR:Льёт] how from in[CYR:едра]", confidence: 0.90}
+        expected: {translation: "[CYR:[TRANSLATED]] how from in[CYR:[TRANSLATED]]", confidence: 0.90}
 
   - name: translate_with_context
     given: Text with idioms and context
@@ -37,7 +37,7 @@ behaviors:
     test_cases:
       - name: theater_context
         input: {text: "Break a leg!", context: "Theater"}
-        expected: {translation: "Нand [CYR:пуха] нand [CYR:пера]!", confidence: 0.95}
+        expected: {translation: "[EN]and [CYR:[TRANSLATED]] [EN]and [CYR:[TRANSLATED]]!", confidence: 0.95}
 
 types:
   IdiomDetection:
@@ -74,27 +74,27 @@ idiom_database:
   break_a_leg:
     meaning: "Good luck"
     domain: "Theater"
-    russian: "Нand [CYR:пуха] нand [CYR:пера]"
+    russian: "[EN]and [CYR:[TRANSLATED]] [EN]and [CYR:[TRANSLATED]]"
     
   raining_cats_and_dogs:
     meaning: "Heavy rain"
     domain: "Weather"
-    russian: "[CYR:Льёт] how from in[CYR:едра]"
+    russian: "[CYR:[TRANSLATED]] how from in[CYR:[TRANSLATED]]"
     
   piece_of_cake:
     meaning: "Very easy"
     domain: "General"
-    russian: "[CYR:Проще] [CYR:про]withthat"
+    russian: "[CYR:[TRANSLATED]] [CYR:pro]withthat"
     
   hit_the_nail_on_the_head:
     meaning: "Exactly right"
     domain: "General"
-    russian: "[CYR:Попа]withть in [CYR:точку]"
+    russian: "[CYR:[TRANSLATED]]with[EN] in [CYR:[TRANSLATED]]"
     
   spill_the_beans:
     meaning: "Reveal a secret"
     domain: "General"
-    russian: "Раwith[CYR:крыть] with[CYR:екрет]"
+    russian: "[EN]with[CYR:[EN]y[EN]] with[CYR:[TRANSLATED]]"
 
 imports:
   - std

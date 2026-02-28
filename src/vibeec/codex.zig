@@ -1,9 +1,9 @@
-// VIBEEC CODEX — [CYR:Пер]inоwithin[CYR:ященный] Сtoрandб
-// CLI andнwith[CYR:трумент] for аin[CYR:тономной] геnot[CYR:рац]andand and andwith[CYR:пра]in[CYR:лен]andя toоyes WITH REAL SOUL
-// [CYR:Фаза] 1: Пandwithец (The Scribe)
-// [CYR:Фаза] 2: [CYR:Арх]andтеto[CYR:тор] (The Architect)
-// [CYR:Фаза] 3: Builds[CYR:ель] (The Builder)
-// [CYR:Фаза] 4: [CYR:Душа] (The Soul - LLM Integration)
+// VIBEEC CODEX — [CYR:[EN]]in[EN]within[CYR:[EN]] [EN]to[EN]and[EN]
+// CLI and[EN]with[CYR:[EN]] for [EN]in[CYR:[EN]] [EN]not[CYR:[EN]]andand and andwith[CYR:[EN]]in[CYR:[EN]]and[EN] to[EN]yes WITH REAL SOUL
+// [CYR:[EN]] 1: [EN]andwith[EN] (The Scribe)
+// [CYR:[EN]] 2: [CYR:[EN]]and[EN]to[CYR:[EN]] (The Architect)
+// [CYR:[EN]] 3: Builds[CYR:[EN]] (The Builder)
+// [CYR:[EN]] 4: [CYR:[EN]] (The Soul - LLM Integration)
 
 const std = @import("std");
 const llm = @import("llm_provider.zig");

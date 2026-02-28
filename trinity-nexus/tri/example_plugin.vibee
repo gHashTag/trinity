@@ -4,29 +4,29 @@ language: zig
 module: unknown
 
 types:
-    description: [CYR:Воз]in[CYR:ращает] [CYR:ман]andфеwithт [CYR:плаг]andon
-    description: [CYR:Создает] Canvas inand[CYR:джет] for [CYR:плаг]andon
-    description: [CYR:Рендер]andт inand[CYR:джет] on Canvas
-    description: [CYR:Обрабаты]in[CYR:ает] UI with[CYR:обыт]andя
-    description: [CYR:Воз]in[CYR:ращает] [CYR:текущее] withоwith[CYR:тоян]andе inand[CYR:джета]
-    description: [CYR:Обно]in[CYR:ляет] withоwith[CYR:тоян]andе inand[CYR:джета]
-    description: Анandмand[CYR:рует] inand[CYR:джет]
-    description: [CYR:Вызы]in[CYR:ает]withя прand [CYR:загрузке] [CYR:плаг]andon
-    description: [CYR:Вызы]in[CYR:ает]withя прand in[CYR:ыгрузке] [CYR:плаг]andon
-    description: [CYR:Вызы]in[CYR:ает]withя прand fromмеnotнandand [CYR:размера]
-    description: [CYR:Вызы]in[CYR:ает]withя прand [CYR:получен]andand [CYR:фоку]withа
-    description: [CYR:Вызы]in[CYR:ает]withя прand [CYR:потере] [CYR:фоку]withа
-    description: [CYR:Получает] [CYR:текущее] withоwith[CYR:тоян]andе from process dictionary
-    description: [CYR:Сохраняет] withоwith[CYR:тоян]andе in process dictionary
-    description: [CYR:Кон]in[CYR:ерт]and[CYR:рует] ExampleState in WidgetState
+    description: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] [CYR:[TRANSLATED]]and[EN]with[EN] [CYR:[TRANSLATED]]andon
+    description: [CYR:[TRANSLATED]acts] Canvas inand[CYR:[TRANSLATED]] for [CYR:[TRANSLATED]]andon
+    description: [CYR:[TRANSLATED]]and[EN] inand[CYR:[TRANSLATED]] on Canvas
+    description: [CYR:[EN]work[EN]y]in[CYR:acts] UI with[CYR:[EN]y[EN]]andI
+    description: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] [CYR:[TRANSLATED]] with[EN]with[CYR:[EN]I[EN]]and[EN] inand[CYR:[TRANSLATED]]
+    description: [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] with[EN]with[CYR:[EN]I[EN]]and[EN] inand[CYR:[TRANSLATED]]
+    description: A[EN]and[EN]and[CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]]
+    description: [CYR:Vy[EN]y]in[CYR:acts]withI [EN]and [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andon
+    description: [CYR:Vy[EN]y]in[CYR:acts]withI [EN]and in[CYR:y[TRANSLATED]] [CYR:[TRANSLATED]]andon
+    description: [CYR:Vy[EN]y]in[CYR:acts]withI [EN]and from[EN]not[EN]andand [CYR:[TRANSLATED]]
+    description: [CYR:Vy[EN]y]in[CYR:acts]withI [EN]and [CYR:[TRANSLATED]]andand [CYR:[TRANSLATED]]with[EN]
+    description: [CYR:Vy[EN]y]in[CYR:acts]withI [EN]and [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[EN]
+    description: [CYR:[TRANSLATED]acts] [CYR:[TRANSLATED]] with[EN]with[CYR:[EN]I[EN]]and[EN] from process dictionary
+    description: [CYR:[TRANSLATED]I[EN]] with[EN]with[CYR:[EN]I[EN]]and[EN] in process dictionary
+    description: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] ExampleState in WidgetState
   create_manifest:
-    description: [CYR:Создан]andе [CYR:ман]andфеwithта
+    description: [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[EN]with[EN]
 
   render_widget_test:
-    description: [CYR:Рендер]andнг inand[CYR:джета]
+    description: [CYR:[TRANSLATED]]and[EN] inand[CYR:[TRANSLATED]]
 
   handle_click_test:
-    description: [CYR:Обработка] клandка
+    description: [CYR:[EN]work[TRANSLATED]] [EN]and[EN]
 
   lifecycle_test:
     description: Lifecycle hooks

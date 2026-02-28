@@ -1,12 +1,12 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// JIT VM INTEGRATION - [CYR:Интеграц]andя JIT to[CYR:омп]and[CYR:лятора] with VIBEE VM
+// JIT VM INTEGRATION - [CYR:[EN]]and[EN] JIT to[CYR:[EN]]and[CYR:[EN]] with VIBEE VM
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 // PHOENIX = 999
 //
-// ExecutableJIT integration with VM for уwithto[CYR:орен]andя [CYR:горяч]andх [CYR:путей]
+// ExecutableJIT integration with VM for [EN]withto[CYR:[EN]]and[EN] [CYR:[EN]]and[EN] [CYR:[EN]]
 //
 // Author: VIBEE Team
 // Co-authored-by: Ona <no-reply@ona.com>
@@ -34,17 +34,17 @@ pub const CODE_CACHE_SIZE: usize = 1024 * 1024; // 1MB
 // BASIC BLOCK
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:Базо]inый [CYR:бло]to - bywithлеbeforein[CYR:ательно]withть andнwith[CYR:тру]toцandй [CYR:без] [CYR:перехо]beforein
+/// [CYR:[EN]]in[EN] [CYR:[EN]]to - bywith[EN]beforein[CYR:[EN]]with[EN] and[EN]with[CYR:[EN]]to[EN]and[EN] [CYR:[EN]] [CYR:[EN]]beforein
 pub const BasicBlock = struct {
-    /// [CYR:Начальный] [CYR:адре]with in [CYR:байт]to[CYR:оде]
+    /// [CYR:[EN]] [CYR:[EN]]with in [CYR:[EN]]to[CYR:[EN]]
     start_addr: u32,
-    /// Коnot[CYR:чный] [CYR:адре]with (not inkeys[CYR:тельно])
+    /// [EN]not[CYR:[EN]] [CYR:[EN]]with (not inkeys[CYR:[EN]])
     end_addr: u32,
-    /// [CYR:Счётч]andto inыbyлnotнandй
+    /// [CYR:[EN]]andto in[EN]by[EN]not[EN]and[EN]
     execution_count: u32,
-    /// Сto[CYR:омп]orроin[CYR:анный] onтandin[CYR:ный] code (if еwithть)
+    /// [EN]to[CYR:[EN]]or[EN]in[CYR:[EN]] on[EN]andin[CYR:[EN]] code (if [EN]with[EN])
     native_code: ?*const fn (i64, i64) callconv(.C) i64,
-    /// [CYR:Флаг]: [CYR:бло]to withto[CYR:омп]orроinан
+    /// [CYR:[EN]]: [CYR:[EN]]to withto[CYR:[EN]]or[EN]in[EN]
     is_compiled: bool,
 
     pub fn init(start: u32, end: u32) BasicBlock {
@@ -70,16 +70,16 @@ pub const BasicBlock = struct {
 pub const JITRuntime = struct {
     allocator: Allocator,
 
-    /// [CYR:Кэш] [CYR:базо]inых [CYR:бло]toоin ([CYR:адре]with -> [CYR:бло]to)
+    /// [CYR:[EN]] [CYR:[EN]]in[EN] [CYR:[EN]]to[EN]in ([CYR:[EN]]with -> [CYR:[EN]]to)
     blocks: std.AutoHashMap(u32, BasicBlock),
 
     /// Executable buffer for JIT code
     code_buffer: jit.ExecutableBuffer,
 
-    /// Теto[CYR:ущая] byзandцandя in bufferе
+    /// [EN]to[CYR:[EN]] by[EN]and[EN]and[EN] in buffer[EN]
     code_pos: usize,
 
-    /// [CYR:Стат]andwithтandtoа
+    /// [CYR:[EN]]andwith[EN]andto[EN]
     stats: JITStats,
 
     const Self = @This();
@@ -99,7 +99,7 @@ pub const JITRuntime = struct {
         self.code_buffer.deinit();
     }
 
-    /// [CYR:Зап]andwith[CYR:ать] execution [CYR:бло]toа, in[CYR:ернуть] true if [CYR:нуж]on compilation
+    /// [CYR:[EN]]andwith[CYR:[EN]] execution [CYR:[EN]]to[EN], in[CYR:[EN]] true if [CYR:[EN]]on compilation
     pub fn recordBlockExecution(self: *Self, addr: u32, end_addr: u32) !bool {
         const entry = try self.blocks.getOrPut(addr);
         if (!entry.found_existing) {
@@ -108,7 +108,7 @@ pub const JITRuntime = struct {
         return entry.value_ptr.recordExecution();
     }
 
-    /// Get compiled code for [CYR:бло]toа
+    /// Get compiled code for [CYR:[EN]]to[EN]
     pub fn getCompiledCode(self: *const Self, addr: u32) ?*const fn (i64, i64) callconv(.C) i64 {
         if (self.blocks.get(addr)) |block| {
             return block.native_code;
@@ -116,7 +116,7 @@ pub const JITRuntime = struct {
         return null;
     }
 
-    /// [CYR:Про]inерandть, withto[CYR:омп]orроinан лand [CYR:бло]to
+    /// [CYR:[EN]]in[EN]and[EN], withto[CYR:[EN]]or[EN]in[EN] [EN]and [CYR:[EN]]to
     pub fn isCompiled(self: *const Self, addr: u32) bool {
         if (self.blocks.get(addr)) |block| {
             return block.is_compiled;
@@ -124,26 +124,26 @@ pub const JITRuntime = struct {
         return false;
     }
 
-    /// [CYR:Комп]orроin[CYR:ать] [CYR:базо]inый [CYR:бло]to
+    /// [CYR:[EN]]or[EN]in[CYR:[EN]] [CYR:[EN]]in[EN] [CYR:[EN]]to
     pub fn compileBlock(self: *Self, addr: u32, bytecode: []const u8) !void {
         const entry = self.blocks.getPtr(addr) orelse return;
 
-        // Еwithлand buffer [CYR:уже] andwithby[CYR:лняемый], [CYR:делаем] [CYR:его] [CYR:зап]andwithыin[CYR:аемым]
+        // [EN]with[EN]and buffer [CYR:[EN]] andwithby[CYR:[EN]], [CYR:[EN]] [CYR:[EN]] [CYR:[EN]]andwith[EN]in[CYR:[EN]]
         if (self.code_buffer.is_executable) {
             try self.code_buffer.makeWritable();
         }
 
-        // Аonлandз [CYR:байт]toоyes and геnot[CYR:рац]andя onтandin[CYR:ного] toоyes
+        // [EN]on[EN]and[EN] [CYR:[EN]]to[EN]yes and [EN]not[CYR:[EN]]and[EN] on[EN]andin[CYR:[EN]] to[EN]yes
         const start_pos = self.code_buffer.pos;
 
-        // Generate simple function for арand[CYR:фмет]andчеwithtoandх [CYR:операц]andй
-        // Поtoа support [CYR:толь]toо ADD, SUB, MUL
+        // Generate simple function for [EN]and[CYR:[EN]]and[EN]withtoand[EN] [CYR:[EN]]and[EN]
+        // [EN]to[EN] support [CYR:[EN]]to[EN] ADD, SUB, MUL
         self.emitBlockCode(bytecode[entry.start_addr..entry.end_addr]);
 
-        // [CYR:Делаем] code andwithby[CYR:лняемым]
+        // [CYR:[EN]] code andwithby[CYR:[EN]]
         try self.code_buffer.makeExecutable();
 
-        // [CYR:Сохраняем] уto[CYR:азатель] on [CYR:фун]toцandю
+        // [CYR:[EN]] [EN]to[CYR:[EN]] on [CYR:[EN]]to[EN]and[EN]
         entry.native_code = self.code_buffer.getFunctionAt(
             *const fn (i64, i64) callconv(.C) i64,
             start_pos,
@@ -154,17 +154,17 @@ pub const JITRuntime = struct {
         self.stats.bytes_generated += self.code_buffer.pos - start_pos;
     }
 
-    /// Native code generation for [CYR:бло]toа
+    /// Native code generation for [CYR:[EN]]to[EN]
     fn emitBlockCode(self: *Self, bytecode_slice: []const u8) void {
-        // [CYR:Пролог]: with[CYR:охраняем] arguments
+        // [CYR:[EN]]: with[CYR:[EN]] arguments
         // rdi = arg1, rsi = arg2 (System V AMD64 ABI)
 
-        // mov rax, rdi ([CYR:пер]inый argument in rax)
+        // mov rax, rdi ([CYR:[EN]]in[EN] argument in rax)
         self.code_buffer.emit(0x48);
         self.code_buffer.emit(0x89);
         self.code_buffer.emit(0xF8);
 
-        // [CYR:Обрабаты]in[CYR:аем] [CYR:байт]toод
+        // [CYR:[EN]]in[CYR:[EN]] [CYR:[EN]]to[EN]
         var i: usize = 0;
         while (i < bytecode_slice.len) {
             const opcode = bytecode_slice[i];
@@ -194,7 +194,7 @@ pub const JITRuntime = struct {
                     break;
                 },
                 else => {
-                    // [CYR:Пропу]withto[CYR:аем] notsupportые опto[CYR:оды]
+                    // [CYR:[EN]]withto[CYR:[EN]] notsupport[EN] [EN]to[CYR:[EN]]
                 },
             }
         }
@@ -203,7 +203,7 @@ pub const JITRuntime = struct {
         self.code_buffer.emit(0xC3);
     }
 
-    /// Выbyлнandть withto[CYR:омп]orроin[CYR:анный] [CYR:бло]to
+    /// [EN]by[EN]and[EN] withto[CYR:[EN]]or[EN]in[CYR:[EN]] [CYR:[EN]]to
     pub fn executeBlock(self: *Self, addr: u32, arg1: i64, arg2: i64) ?i64 {
         if (self.blocks.get(addr)) |block| {
             if (block.native_code) |func| {
@@ -238,7 +238,7 @@ pub const JITStats = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// HYBRID VM - VM with and[CYR:нтегр]andроin[CYR:анным] JIT
+// HYBRID VM - VM with and[CYR:[EN]]and[EN]in[CYR:[EN]] JIT
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const HybridVM = struct {
@@ -247,17 +247,17 @@ pub const HybridVM = struct {
     /// JIT runtime
     jit_runtime: JITRuntime,
 
-    /// [CYR:Байт]toод [CYR:программы]
+    /// [CYR:[EN]]to[EN] [CYR:[EN]]
     bytecode: []const u8,
 
-    /// [CYR:Сте]to зon[CYR:чен]andй
+    /// [CYR:[EN]]to [EN]on[CYR:[EN]]and[EN]
     stack: [65536]i64,
     sp: u32,
 
     /// Instruction pointer
     ip: u32,
 
-    /// Соwith[CYR:тоян]andе
+    /// [EN]with[CYR:[EN]]and[EN]
     running: bool,
 
     const Self = @This();
@@ -278,7 +278,7 @@ pub const HybridVM = struct {
         self.jit_runtime.deinit();
     }
 
-    /// [CYR:Запу]withтandть execution
+    /// [CYR:[EN]]with[EN]and[EN] execution
     pub fn run(self: *Self) !i64 {
         self.running = true;
         self.ip = 0;
@@ -287,14 +287,14 @@ pub const HybridVM = struct {
         while (self.running and self.ip < self.bytecode.len) {
             const block_start = self.ip;
 
-            // Check, еwithть лand withto[CYR:омп]orроin[CYR:анный] code
+            // Check, [EN]with[EN] [EN]and withto[CYR:[EN]]or[EN]in[CYR:[EN]] code
             if (self.jit_runtime.isCompiled(block_start)) {
-                // Выby[CYR:лняем] JIT code
+                // [EN]by[CYR:[EN]] JIT code
                 const arg1 = if (self.sp > 0) self.stack[self.sp - 1] else 0;
                 const arg2 = if (self.sp > 1) self.stack[self.sp - 2] else 0;
 
                 if (self.jit_runtime.executeBlock(block_start, arg1, arg2)) |result| {
-                    // [CYR:Заменяем] in[CYR:ерхн]andе дinа elementа withтеtoа resultом
+                    // [CYR:[EN]] in[CYR:[EN]]and[EN] [EN]in[EN] element[EN] with[EN]to[EN] result[EN]
                     if (self.sp >= 2) {
                         self.sp -= 1;
                         self.stack[self.sp - 1] = result;
@@ -302,7 +302,7 @@ pub const HybridVM = struct {
                         self.stack[self.sp] = result;
                         self.sp += 1;
                     }
-                    // [CYR:Пропу]withto[CYR:аем] [CYR:бло]to
+                    // [CYR:[EN]]withto[CYR:[EN]] [CYR:[EN]]to
                     if (self.jit_runtime.blocks.get(block_start)) |block| {
                         self.ip = block.end_addr;
                     }
@@ -310,7 +310,7 @@ pub const HybridVM = struct {
                 }
             }
 
-            // [CYR:Интерпрет]and[CYR:руем] andнwith[CYR:тру]toцandю
+            // [CYR:[EN]]and[CYR:[EN]] and[EN]with[CYR:[EN]]to[EN]and[EN]
             const opcode = self.bytecode[self.ip];
             self.ip += 1;
 
@@ -322,7 +322,7 @@ pub const HybridVM = struct {
                 try self.jit_runtime.compileBlock(block_start, self.bytecode);
             }
 
-            // Выby[CYR:лняем] опtoод
+            // [EN]by[CYR:[EN]] [EN]to[EN]
             try self.executeOpcode(opcode);
         }
 
@@ -335,12 +335,12 @@ pub const HybridVM = struct {
             const op = self.bytecode[pos];
             pos += 1;
 
-            // Коnotц [CYR:бло]toа on [CYR:перехо]yesх or HALT
+            // [EN]not[EN] [CYR:[EN]]to[EN] on [CYR:[EN]]yes[EN] or HALT
             if (op == 0x40 or op == 0x41 or op == 0x42 or op == 0x43 or op == 0x44 or op == 0x45) {
                 return pos;
             }
 
-            // [CYR:Пропу]withto[CYR:аем] [CYR:операнды]
+            // [CYR:[EN]]withto[CYR:[EN]] [CYR:[EN]]
             if (op == 0x01) { // PUSH_CONST
                 pos += 2; // 16-bit operand
             }
@@ -409,7 +409,7 @@ pub const HybridVM = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:ТЕСТЫ]
+// [CYR:[EN]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "jit runtime init" {
@@ -425,14 +425,14 @@ test "jit runtime record execution" {
     var runtime = try JITRuntime.init(allocator);
     defer runtime.deinit();
 
-    // [CYR:Зап]andwithыin[CYR:аем] inыbyлnotнandя before by[CYR:рога]
+    // [CYR:[EN]]andwith[EN]in[CYR:[EN]] in[EN]by[EN]not[EN]and[EN] before by[CYR:[EN]]
     var i: u32 = 0;
     while (i < JIT_THRESHOLD - 1) : (i += 1) {
         const should_compile = try runtime.recordBlockExecution(0x100, 0x110);
         try std.testing.expect(!should_compile);
     }
 
-    // На by[CYR:роге] beforeлжon [CYR:быть] compilation
+    // [EN] by[CYR:[EN]] before[EN]on [CYR:[EN]] compilation
     const should_compile = try runtime.recordBlockExecution(0x100, 0x110);
     try std.testing.expect(should_compile);
 }
@@ -440,7 +440,7 @@ test "jit runtime record execution" {
 test "hybrid vm simple add" {
     const allocator = std.testing.allocator;
 
-    // [CYR:Программа]: PUSH 10, PUSH 20, ADD, HALT
+    // [CYR:[EN]]: PUSH 10, PUSH 20, ADD, HALT
     const bytecode = [_]u8{
         0x01, 0x0A, 0x00, // PUSH_CONST 10
         0x01, 0x14, 0x00, // PUSH_CONST 20
@@ -458,7 +458,7 @@ test "hybrid vm simple add" {
 test "hybrid vm mul" {
     const allocator = std.testing.allocator;
 
-    // [CYR:Программа]: PUSH 6, PUSH 7, MUL, HALT
+    // [CYR:[EN]]: PUSH 6, PUSH 7, MUL, HALT
     const bytecode = [_]u8{
         0x01, 0x06, 0x00, // PUSH_CONST 6
         0x01, 0x07, 0x00, // PUSH_CONST 7
@@ -476,7 +476,7 @@ test "hybrid vm mul" {
 test "hybrid vm phoenix" {
     const allocator = std.testing.allocator;
 
-    // [CYR:Программа]: PUSH 999, HALT (PHOENIX!)
+    // [CYR:[EN]]: PUSH 999, HALT (PHOENIX!)
     const bytecode = [_]u8{
         0x01, 0xE7, 0x03, // PUSH_CONST 999 (0x03E7)
         0x45, // HALT
@@ -492,7 +492,7 @@ test "hybrid vm phoenix" {
 test "hybrid vm complex expression" {
     const allocator = std.testing.allocator;
 
-    // [CYR:Программа]: (10 + 20) * 3 = 90
+    // [CYR:[EN]]: (10 + 20) * 3 = 90
     // PUSH 10, PUSH 20, ADD, PUSH 3, MUL, HALT
     const bytecode = [_]u8{
         0x01, 0x0A, 0x00, // PUSH_CONST 10
@@ -514,7 +514,7 @@ test "hybrid vm golden identity" {
     const allocator = std.testing.allocator;
 
     // φ² + 1/φ² = 3
-    // [CYR:Про]inерandм: 3 * 3 - 6 = 3
+    // [CYR:[EN]]in[EN]and[EN]: 3 * 3 - 6 = 3
     // PUSH 3, PUSH 3, MUL, PUSH 6, SUB, HALT
     const bytecode = [_]u8{
         0x01, 0x03, 0x00, // PUSH_CONST 3
@@ -551,7 +551,7 @@ test "hybrid vm dup operation" {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:БЕНЧМАРК]: VM [CYR:ИНТЕРПРЕТАТОР] vs JIT
+// [CYR:[EN]]: VM [CYR:[EN]] vs JIT
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const VMBenchmarkResult = struct {
@@ -562,9 +562,9 @@ pub const VMBenchmarkResult = struct {
     jit_compilations: u64,
 };
 
-/// [CYR:Бенчмар]to: [CYR:много]to[CYR:ратное] execution [CYR:программы]
+/// [CYR:[EN]]to: [CYR:[EN]]to[CYR:[EN]] execution [CYR:[EN]]
 pub fn benchmarkVM(allocator: Allocator, bytecode: []const u8, iterations: u64) !VMBenchmarkResult {
-    // [CYR:Бенчмар]to and[CYR:нтерпретатора] ([CYR:без] JIT)
+    // [CYR:[EN]]to and[CYR:[EN]] ([CYR:[EN]] JIT)
     var timer = std.time.Timer.start() catch unreachable;
     var sum_interp: i64 = 0;
 
@@ -577,12 +577,12 @@ pub fn benchmarkVM(allocator: Allocator, bytecode: []const u8, iterations: u64) 
     }
     const interp_ns = timer.read();
 
-    // [CYR:Бенчмар]to with JIT
+    // [CYR:[EN]]to with JIT
     timer.reset();
     var sum_jit: i64 = 0;
     var jit_compilations: u64 = 0;
 
-    // Create one VM and execute many times (for [CYR:прогре]inа JIT)
+    // Create one VM and execute many times (for [CYR:[EN]]in[EN] JIT)
     var vm_jit = try HybridVM.init(allocator, bytecode);
     defer vm_jit.deinit();
 

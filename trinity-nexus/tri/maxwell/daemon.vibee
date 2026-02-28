@@ -4,24 +4,24 @@ language: zig
 module: maxwell_daemon
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# MAXWELL DAEMON - Аin[CYR:тономный] [CYR:Агент]-[CYR:Программ]andwithт
-# "[CYR:Демон], which with[CYR:орт]and[CYR:рует] code по [CYR:энтроп]andand"
+# MAXWELL DAEMON - Ain[CYR:[TRANSLATED]ny] [CYR:A[TRANSLATED]]-[CYR:[TRANSLATED]]andwith[EN]
+# "[CYR:[TRANSLATED]], which with[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] code [EN] [CYR:[TRANSLATED]]andand"
 # ═══════════════════════════════════════════════════════════════════════════════
 #
-# [CYR:Демон] [CYR:Мак]within[CYR:елла] in [CYR:термод]andonмandке - гand[CYR:потет]andчеwith[CYR:кое] with[CYR:уще]withтinо, withпоwith[CYR:обное]
-# with[CYR:орт]andроin[CYR:ать] [CYR:молекулы] по with[CYR:коро]withтand, [CYR:уменьшая] [CYR:энтроп]andю withandwith[CYR:темы].
+# [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]within[CYR:[TRANSLATED]] in [CYR:[TRANSLATED]]andon[EN]and[EN] - [EN]and[CYR:[TRANSLATED]]and[EN]with[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]with[EN]in[EN], with[EN]with[CYR:[TRANSLATED]]
+# with[CYR:[TRANSLATED]]and[EN]in[CYR:ate] [CYR:[TRANSLATED]y] [EN] with[CYR:[TRANSLATED]]with[EN]and, [CYR:[EN]me[TRANSLATED]I] [CYR:[TRANSLATED]]and[EN] withandwith[CYR:[TRANSLATED]y].
 #
-# Maxwell Daemon in [CYR:программ]andроinанandand - аin[CYR:тономный] [CYR:агент], withпоwith[CYR:обный]:
-# - Аonлfromandроin[CYR:ать] code and on[CYR:ход]andть [CYR:проблемы] (inыwith[CYR:окая] [CYR:энтроп]andя)
-# - Геnotрandроin[CYR:ать] [CYR:решен]andя [CYR:через] .vibee with[CYR:пец]andфand[CYR:кац]andand
-# - Теwithтandроin[CYR:ать] and improve code ([CYR:уменьшен]andе [CYR:энтроп]andand)
-# - Учandтьwithя on withinоandх errorх
+# Maxwell Daemon in [CYR:pro[TRANSLATED]]and[EN]in[EN]andand - [EN]in[CYR:[TRANSLATED]ny] [CYR:agent], with[EN]with[CYR:[EN]ny]:
+# - Aon[EN]fromand[EN]in[CYR:ate] code and on[CYR:[TRANSLATED]]and[EN] [CYR:pro[TRANSLATED]y] (inywith[CYR:[TRANSLATED]I] [CYR:[TRANSLATED]]andI)
+# - [EN]not[EN]and[EN]in[CYR:ate] [CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]] .vibee with[CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]]andand
+# - [EN]with[EN]and[EN]in[CYR:ate] and improve code ([CYR:[EN]me[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]andand)
+# - [EN]and[EN]withI on within[EN]and[EN] error[EN]
 #
 # φ² + 1/φ² = 3 = TRINITY
 # ═══════════════════════════════════════════════════════════════════════════════
 
 types:
-  # Соwith[CYR:тоян]andе demoon
+  # [EN]with[CYR:[EN]I[EN]]and[EN] demoon
   DaemonState:
     fields:
       status: String          # "idle", "working", "error", "stopped"
@@ -31,12 +31,12 @@ types:
       uptime_seconds: Int
       memory_usage_mb: Float
 
-  # [CYR:Задача] for [CYR:агента]
+  # [CYR:[TRANSLATED]] for [CYR:agent[EN]]
   Task:
     fields:
       id: String
       description: String
-      priority: Int           # 1-10, where 10 - [CYR:мак]withand[CYR:мальный]
+      priority: Int           # 1-10, where 10 - [CYR:[TRANSLATED]]withand[CYR:[EN]al]
       task_type: String       # "feature", "bugfix", "refactor", "test", "optimize"
       target_files: List<String>
       constraints: List<String>
@@ -44,7 +44,7 @@ types:
       status: String          # "pending", "in_progress", "completed", "failed"
       result: Option<TaskResult>
 
-  # [CYR:Результат] in[CYR:ыпол]notнandя [CYR:задач]and
+  # [CYR:[TRANSLATED]l[TRANSLATED]] in[CYR:y[TRANSLATED]]not[EN]andI [CYR:[TRANSLATED]]and
   TaskResult:
     fields:
       success: Bool
@@ -56,22 +56,22 @@ types:
       duration_ms: Int
       metrics: Metrics
 
-  # [CYR:Метр]andкand [CYR:про]frominодand[CYR:тельно]withтand
+  # [CYR:[TRANSLATED]]and[EN]and [CYR:pro]fromin[EN]and[CYR:[EN]lno]with[EN]and
   Metrics:
     fields:
       lines_of_code: Int
       cyclomatic_complexity: Float
       test_coverage: Float
-      performance_delta: Float  # % change [CYR:про]frominодand[CYR:тельно]withтand
+      performance_delta: Float  # % change [CYR:pro]fromin[EN]and[CYR:[EN]lno]with[EN]and
 
-  # [CYR:Память] [CYR:агента]
+  # [CYR:[TRANSLATED]I[EN]] [CYR:agent[EN]]
   Memory:
     fields:
       experiences: List<Experience>
       learned_patterns: List<Pattern>
       error_history: List<ErrorRecord>
 
-  # [CYR:Опыт] (for [CYR:обучен]andя)
+  # [CYR:[EN]y[EN]] (for [CYR:[TRANSLATED]]andI)
   Experience:
     fields:
       task_type: String
@@ -80,16 +80,16 @@ types:
       lessons: List<String>
       timestamp: Int
 
-  # [CYR:Паттерн] (in[CYR:ыученный])
+  # [CYR:[TRANSLATED]] (in[CYR:y[TRANSLATED]ny])
   Pattern:
     fields:
       name: String
-      trigger: String         # [CYR:Когда] прand[CYR:менять]
-      solution: String        # [CYR:Что] [CYR:делать]
+      trigger: String         # [CYR:[TRANSLATED]] [EN]and[CYR:meI[EN]]
+      solution: String        # [CYR:[TRANSLATED]] [CYR:[TRANSLATED]ate]
       confidence: Float       # 0.0 - 1.0
       usage_count: Int
 
-  # [CYR:Зап]andwithь об ошand[CYR:бке]
+  # [CYR:[TRANSLATED]]andwith[EN] [EN] [EN]and[CYR:[TRANSLATED]]
   ErrorRecord:
     fields:
       error_type: String
@@ -98,7 +98,7 @@ types:
       resolved: Bool
       timestamp: Int
 
-  # [CYR:Конф]and[CYR:гурац]andя demoon
+  # [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI demoon
   DaemonConfig:
     fields:
       llm_api_key: String
@@ -109,13 +109,13 @@ types:
       working_directory: String
       log_level: String       # "debug", "info", "warn", "error"
 
-  # [CYR:Сообщен]andе for LLM
+  # [CYR:[TRANSLATED]]and[EN] for LLM
   LLMMessage:
     fields:
       role: String            # "system", "user", "assistant"
       content: String
 
-  # Отinет от LLM
+  # [EN]in[EN] [EN] LLM
   LLMResponse:
     fields:
       content: String

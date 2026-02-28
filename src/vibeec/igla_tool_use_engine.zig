@@ -214,8 +214,8 @@ pub const ToolDetector = struct {
             "cat ",
             "open file",
             "display file",
-            "bytoажand file",
-            "[CYR:проч]and[CYR:тай] file",
+            "byto[EN]and file",
+            "[CYR:[EN]]and[CYR:[EN]] file",
             "读取文件",
             "显示文件",
         };
@@ -240,8 +240,8 @@ pub const ToolDetector = struct {
             "save to file",
             "create file",
             "write file",
-            "[CYR:зап]andшand in file",
-            "with[CYR:охран]and in file",
+            "[CYR:[EN]]and[EN]and in file",
+            "with[CYR:[EN]]and in file",
             "写入文件",
             "保存文件",
         };
@@ -262,8 +262,8 @@ pub const ToolDetector = struct {
             "execute code",
             "run this",
             "execute this",
-            "inыbyлнand toод",
-            "[CYR:запу]withтand toод",
+            "in[EN]by[EN]and to[EN]",
+            "[CYR:[EN]]with[EN]and to[EN]",
             "执行代码",
             "运行代码",
         };
@@ -284,7 +284,7 @@ pub const ToolDetector = struct {
             "find file",
             "look for",
             "grep ",
-            "onйдand ",
+            "on[EN]and ",
             "byandwithto ",
             "搜索",
             "查找",
@@ -306,8 +306,8 @@ pub const ToolDetector = struct {
             "compute",
             "what is ",
             "how much is",
-            "inычandwithлand",
-            "bywithчand[CYR:тай]",
+            "in[EN]andwith[EN]and",
+            "bywith[EN]and[CYR:[EN]]",
             "计算",
         };
 
@@ -334,7 +334,7 @@ pub const ToolDetector = struct {
             "execute command",
             "shell ",
             "terminal ",
-            "inыbyлнand to[CYR:оманду]",
+            "in[EN]by[EN]and to[CYR:[EN]]",
             "执行命令",
         };
 
@@ -656,8 +656,8 @@ pub fn runBenchmark() !void {
         .{ .query = "find file main.zig", .feedback = .FollowUp },
 
         // Multilingual tool calls
-        .{ .query = "bytoажand file \"readme.md\"", .feedback = .ThumbsUp },
-        .{ .query = "onйдand ошandбtoand in to[CYR:оде]", .feedback = .Acceptance },
+        .{ .query = "byto[EN]and file \"readme.md\"", .feedback = .ThumbsUp },
+        .{ .query = "on[EN]and [EN]and[EN]toand in to[CYR:[EN]]", .feedback = .Acceptance },
         .{ .query = "读取文件 config.json", .feedback = .ThumbsUp },
 
         // Mixed queries
@@ -667,7 +667,7 @@ pub fn runBenchmark() !void {
 
         // Regular chat
         .{ .query = "thank you for help!", .feedback = .ThumbsUp },
-        .{ .query = "inыbyлнand toод with[CYR:орт]andроintoand", .feedback = .Acceptance },
+        .{ .query = "in[EN]by[EN]and to[EN] with[CYR:[EN]]and[EN]intoand", .feedback = .Acceptance },
         .{ .query = "execute code fibonacci", .feedback = .ThumbsUp },
         .{ .query = "goodbye", .feedback = .Acceptance },
         .{ .query = "bye!", .feedback = .ThumbsUp },
@@ -815,7 +815,7 @@ test "tool detector no tools" {
 
 test "tool detector multilingual" {
     var detector = ToolDetector.init();
-    detector.detect("bytoажand file readme.md");
+    detector.detect("byto[EN]and file readme.md");
     try std.testing.expect(detector.hasToolCalls());
 }
 

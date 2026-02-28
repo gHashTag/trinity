@@ -73,7 +73,7 @@ pub const Uroboros = struct {
 
     pub fn consume(self: *Uroboros, path: []const u8) !void {
         std.debug.print("\n🐍═════════════════════════════════════════════════════🐍\n", .{});
-        std.debug.print("║        [CYR:УРОБОРОС] vFINAL: [CYR:ЦИКЛ] {d} [CYR:НАЧИНАЕТСЯ]            ║\n", .{self.cycle_count});
+        std.debug.print("║        [CYR:[TRANSLATED]] vFINAL: [CYR:[TRANSLATED]] {d} [CYR:[EN]A[TRANSLATED]A[TRANSLATED]]            ║\n", .{self.cycle_count});
         std.debug.print("🐍═════════════════════════════════════════════════════🐍\n\n", .{});
 
         const content = try std.fs.cwd().readFileAlloc(self.allocator, path, 10 * 1024 * 1024);
@@ -83,7 +83,7 @@ pub const Uroboros = struct {
         defer profane.deinit();
 
         self.cycle_count += 1;
-        std.debug.print("  ✅ Цandtoл заin[CYR:ершён]: {d}\n", .{self.cycle_count});
+        std.debug.print("  ✅ [EN]andto[EN] [EN]in[CYR:[TRANSLATED]]: {d}\n", .{self.cycle_count});
     }
 };
 
@@ -91,9 +91,9 @@ pub fn main() !void {
     const allocator = std.heap.page_allocator;
     var uroboros = Uroboros.init(allocator);
 
-    std.debug.print("\n🔥 [CYR:УРОБОРОС] vFINAL: [CYR:ВЕЧНЫЙ] [CYR:ДВИГАТЕЛЬ] 🔥\n", .{});
+    std.debug.print("\n🔥 [CYR:[TRANSLATED]] vFINAL: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]A[TRANSLATED]] 🔥\n", .{});
     try uroboros.consume("src/vibeec/tvc/tvc_ir.zig");
-    std.debug.print("\n🎉 [CYR:УРОБОРОС] vFINAL [CYR:ДОСТИГ] [CYR:БЕССМЕРТИЯ] 🎉\n", .{});
+    std.debug.print("\n🎉 [CYR:[TRANSLATED]] vFINAL [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] 🎉\n", .{});
 }
 
 test "ouroboros final - sacred constants" {

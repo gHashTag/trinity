@@ -1,6 +1,6 @@
 name: ai_performance_optimizer
 version: 1.0.0
-description: AI-powered optimization [CYR:про]frominодand[CYR:тельно]withтand - on[CYR:ход]andт [CYR:узк]andе меwithта and [CYR:предлагает] [CYR:улучшен]andя
+description: AI-powered optimization [CYR:pro]fromin[EN]and[CYR:[EN]lno]with[EN]and - on[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[EN] [EN]with[EN] and [CYR:[TRANSLATED]acts] [CYR:[TRANSLATED]]andI
 
 metadata:
   author: VIBEE Team
@@ -82,110 +82,110 @@ constants:
 
   AI_PROMPTS:
     analyze_performance: |
-      Ты - экwith[CYR:перт] по [CYR:опт]andмfromацandand [CYR:про]frominодand[CYR:тельно]withтand VIBEE codeа.
+      [EN]y - [EN]with[CYR:[TRANSLATED]] [EN] [CYR:[TRANSLATED]]and[EN]from[EN]andand [CYR:pro]fromin[EN]and[CYR:[EN]lno]with[EN]and VIBEE code[EN].
       
-      [CYR:Код] for analysisа:
+      [CYR:Code] for analysis[EN]:
       ```vibee
       {code}
       ```
       
-      [CYR:Проф]andль [CYR:про]frominодand[CYR:тельно]withтand:
-      - [CYR:Время] in[CYR:ыпол]notнandя: {execution_time}ms
-      - [CYR:Память]: {memory_usage}MB
+      [CYR:[TRANSLATED]]andl [CYR:pro]fromin[EN]and[CYR:[EN]lno]with[EN]and:
+      - [CYR:[TRANSLATED]I] in[CYR:y[TRANSLATED]]not[EN]andI: {execution_time}ms
+      - [CYR:[TRANSLATED]I[EN]]: {memory_usage}MB
       - CPU: {cpu_usage}%
-      - [CYR:Кол]andчеwithтinо in[CYR:ызо]inоin: {call_count}
+      - [CYR:[TRANSLATED]]and[EN]with[EN]in[EN] in[CYR:y[EN]]in[EN]in: {call_count}
       
-      [CYR:Задача]: [CYR:Найд]and [CYR:узк]andе меwithта and [CYR:предлож]and [CYR:опт]andмfromацandand.
+      [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]and[EN] [EN]with[EN] and [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]and[EN]from[EN]andand.
       
-      [CYR:Про]in[CYR:ерь]:
-      1. [CYR:Алгор]andтмandчеwith[CYR:кую] with[CYR:ложно]withть (O-notation)
-      2. Иwith[CYR:пользо]inанandе [CYR:памят]and
-      3. [CYR:Ненужные] [CYR:аллокац]andand
-      4. Поin[CYR:торяющ]andеwithя inычandwith[CYR:лен]andя
-      5. [CYR:Неэффект]andin[CYR:ные] with[CYR:труктуры] [CYR:данных]
-      6. I/O [CYR:операц]andand
+      [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]:
+      1. [CYR:A[EN]go[EN]]and[EN]and[EN]with[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]with[EN] (O-notation)
+      2. [EN]with[CYR:[EN]l[EN]]in[EN]and[EN] [CYR:[TRANSLATED]I[EN]]and
+      3. [CYR:[TRANSLATED]y[EN]] [CYR:[TRANSLATED]]andand
+      4. [EN]in[CYR:[TRANSLATED]I[EN]]and[EN]withI iny[EN]andwith[CYR:[TRANSLATED]]andI
+      5. [CYR:[EN]effect]andin[CYR:[EN]y[EN]] with[CYR:[TRANSLATED]y] [CYR:data]
+      6. I/O [CYR:[TRANSLATED]]andand
       
-      [CYR:Формат] responseа:
-      [CYR:Узк]andе меwithта:
-      1. Меwithто: <location>
-         [CYR:Проблема]: <опandwithанandе>
-         [CYR:Текущая] with[CYR:ложно]withть: <O-notation>
-         Impact: <[CYR:процент] от [CYR:общего] in[CYR:ремен]and>
+      [CYR:[TRANSLATED]] response[EN]:
+      [CYR:[TRANSLATED]]and[EN] [EN]with[EN]:
+      1. [EN]with[EN]: <location>
+         [CYR:[TRANSLATED]]: <[EN]andwith[EN]and[EN]>
+         [CYR:[TRANSLATED]I] with[CYR:[TRANSLATED]]with[EN]: <O-notation>
+         Impact: <[CYR:pro[TRANSLATED]] [EN] [CYR:[TRANSLATED]go] in[CYR:[EN]me]and>
       
-      [CYR:Опт]andмfromацandand:
-      1. [CYR:Наз]inанandе: <[CYR:краткое] onзinанandе>
-         До:
+      [CYR:[TRANSLATED]]and[EN]from[EN]andand:
+      1. [CYR:[TRANSLATED]]in[EN]and[EN]: <[CYR:[TRANSLATED]] on[EN]in[EN]and[EN]>
+         [EN]:
          ```vibee
-         <[CYR:текущ]andй code>
+         <[CYR:[TRANSLATED]]and[EN] code>
          ```
-         Поwithле:
+         [EN]with[EN]:
          ```vibee
-         <[CYR:опт]andмfromandроin[CYR:анный] code>
+         <[CYR:[TRANSLATED]]and[EN]fromand[EN]in[CYR:[EN]ny] code>
          ```
-         [CYR:Улучшен]andе: <[CYR:метр]andкand>
-         [CYR:Сложно]withть: <easy/medium/hard>
-         Прandорand[CYR:тет]: <1-10>
+         [CYR:[TRANSLATED]]and[EN]: <[CYR:[TRANSLATED]]and[EN]and>
+         [CYR:[TRANSLATED]]with[EN]: <easy/medium/hard>
+         [EN]and[EN]and[CYR:[TRANSLATED]]: <1-10>
       
     suggest_algorithm: |
-      Ты - экwith[CYR:перт] по [CYR:алгор]and[CYR:тмам] and with[CYR:труктурам] [CYR:данных].
+      [EN]y - [EN]with[CYR:[TRANSLATED]] [EN] [CYR:algorithm]and[CYR:[TRANSLATED]] and with[CYR:[TRANSLATED]] [CYR:data].
       
-      [CYR:Текущ]andй code:
+      [CYR:[TRANSLATED]]and[EN] code:
       ```vibee
       {code}
       ```
       
-      [CYR:Текущая] with[CYR:ложно]withть: {current_complexity}
-      [CYR:Проблема]: {problem_description}
+      [CYR:[TRANSLATED]I] with[CYR:[TRANSLATED]]with[EN]: {current_complexity}
+      [CYR:[TRANSLATED]]: {problem_description}
       
-      [CYR:Задача]: [CYR:Предлож]and [CYR:более] [CYR:эффект]andin[CYR:ный] [CYR:алгор]andтм.
+      [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]] [CYR:effect]andin[CYR:ny] [CYR:algorithm]and[EN].
       
-      Раwithwith[CYR:мотр]and:
-      - [CYR:Хеш]-tables for O(1) lookup
-      - [CYR:Сорт]andроinка for бandon[CYR:рного] поandwithка
-      - Дandonмandчеwith[CYR:кое] [CYR:программ]andроinанandе
-      - [CYR:Жадные] [CYR:алгор]and[CYR:тмы]
+      [EN]withwith[CYR:[TRANSLATED]]and:
+      - [CYR:[TRANSLATED]]-tables for O(1) lookup
+      - [CYR:[TRANSLATED]]and[EN]in[EN] for [EN]andon[CYR:[TRANSLATED]go] [EN]andwith[EN]
+      - [EN]andon[EN]and[EN]with[CYR:[TRANSLATED]] [CYR:pro[TRANSLATED]]and[EN]in[EN]and[EN]
+      - [CYR:[TRANSLATED]y[EN]] [CYR:algorithm]and[CYR:tmy]
       - Divide and conquer
       
-      [CYR:Формат] responseа:
-      [CYR:Рекомендуемый] [CYR:алгор]andтм: <onзinанandе>
-      [CYR:Сложно]withть: <O-notation>
-      [CYR:Код]:
+      [CYR:[TRANSLATED]] response[EN]:
+      [CYR:[TRANSLATED]me[TRANSLATED]y[EN]] [CYR:algorithm]and[EN]: <on[EN]in[EN]and[EN]>
+      [CYR:[TRANSLATED]]with[EN]: <O-notation>
+      [CYR:Code]:
       ```vibee
-      <[CYR:опт]andмfromandроin[CYR:анный] code>
+      <[CYR:[TRANSLATED]]and[EN]fromand[EN]in[CYR:[EN]ny] code>
       ```
-      [CYR:Объя]withnotнandе: <[CYR:почему] this [CYR:лучше]>
-      Trade-offs: <[CYR:ком]promisewithы>
+      [CYR:[TRANSLATED]I]withnot[EN]and[EN]: <[CYR:[TRANSLATED]] this [CYR:[TRANSLATED]]>
+      Trade-offs: <[CYR:[TRANSLATED]]promisewithy>
       
     memory_optimization: |
-      Ты - экwith[CYR:перт] по [CYR:опт]andмfromацandand [CYR:памят]and.
+      [EN]y - [EN]with[CYR:[TRANSLATED]] [EN] [CYR:[TRANSLATED]]and[EN]from[EN]andand [CYR:[TRANSLATED]I[EN]]and.
       
-      [CYR:Код]:
+      [CYR:Code]:
       ```vibee
       {code}
       ```
       
-      Иwith[CYR:пользо]inанandе [CYR:памят]and: {memory_usage}MB
-      [CYR:Проблема]: {memory_issue}
+      [EN]with[CYR:[EN]l[EN]]in[EN]and[EN] [CYR:[TRANSLATED]I[EN]]and: {memory_usage}MB
+      [CYR:[TRANSLATED]]: {memory_issue}
       
-      [CYR:Задача]: [CYR:Опт]andмfromand[CYR:руй] andwith[CYR:пользо]inанandе [CYR:памят]and.
+      [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]and[EN]fromand[CYR:[TRANSLATED]] andwith[CYR:[EN]l[EN]]in[EN]and[EN] [CYR:[TRANSLATED]I[EN]]and.
       
-      [CYR:Про]in[CYR:ерь]:
-      - [CYR:Утечк]and [CYR:памят]and
-      - [CYR:Ненужные] [CYR:коп]andроinанandя
-      - [CYR:Больш]andе in[CYR:ременные] objectы
-      - [CYR:Неэффект]andin[CYR:ные] with[CYR:труктуры] [CYR:данных]
-      - [CYR:Возможно]withть streaming
+      [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]:
+      - [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]I[EN]]and
+      - [CYR:[TRANSLATED]y[EN]] [CYR:[TRANSLATED]]and[EN]in[EN]andI
+      - [CYR:[EN]l[EN]]and[EN] in[CYR:[TRANSLATED]nye] objecty
+      - [CYR:[EN]effect]andin[CYR:[EN]y[EN]] with[CYR:[TRANSLATED]y] [CYR:data]
+      - [CYR:[TRANSLATED]can[EN]]with[EN] streaming
       
-      [CYR:Формат] responseа:
-      [CYR:Проблемы]:
-      - <list [CYR:проблем]>
+      [CYR:[TRANSLATED]] response[EN]:
+      [CYR:[TRANSLATED]y]:
+      - <list [CYR:pro[TRANSLATED]]>
       
-      [CYR:Решен]andя:
+      [CYR:[TRANSLATED]]andI:
       ```vibee
-      <[CYR:опт]andмfromandроin[CYR:анный] code>
+      <[CYR:[TRANSLATED]]and[EN]fromand[EN]in[CYR:[EN]ny] code>
       ```
       
-      [CYR:Эконом]andя [CYR:памят]and: <[CYR:процент]>
+      [CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]I[EN]]and: <[CYR:pro[TRANSLATED]]>
 
 behaviors:
   analyze_performance:
@@ -195,14 +195,14 @@ behaviors:
     output:
       hotspots: list<Hotspot>
       hints: list<OptimizationHint>
-    description: Аonлfrom [CYR:про]frominодand[CYR:тельно]withтand with AI
+    description: Aon[EN]from [CYR:pro]fromin[EN]and[CYR:[EN]lno]with[EN]and with AI
     steps:
-      - [CYR:Проф]orроin[CYR:ать] code
-      - [CYR:Отпра]inandть on analysis AI
-      - [CYR:Получ]andть list [CYR:узк]andх меwithт
-      - [CYR:Сге]notрandроin[CYR:ать] hints
-      - Прandорandтfromandроin[CYR:ать] hints
-      - [CYR:Вернуть] resultы
+      - [CYR:[TRANSLATED]]or[EN]in[CYR:ate] code
+      - [CYR:[EN]law]inand[EN] on analysis AI
+      - [CYR:[TRANSLATED]]and[EN] list [CYR:[TRANSLATED]]and[EN] [EN]with[EN]
+      - [CYR:[TRANSLATED]]not[EN]and[EN]in[CYR:ate] hints
+      - [EN]and[EN]and[EN]fromand[EN]in[CYR:ate] hints
+      - [CYR:[TRANSLATED]] resulty
       
   suggest_optimizations:
     input:
@@ -210,14 +210,14 @@ behaviors:
       code: string
     output:
       hints: list<OptimizationHint>
-    description: [CYR:Предложен]andя по [CYR:опт]andмfromацandand
+    description: [CYR:[TRANSLATED]]andI [EN] [CYR:[TRANSLATED]]and[EN]from[EN]andand
     steps:
-      - [CYR:Про]analyze [CYR:узкое] меwithто
-      - [CYR:Определ]andть type [CYR:проблемы]
-      - [CYR:Сге]notрandроin[CYR:ать] inарand[CYR:анты] [CYR:опт]andмfromацandand
-      - [CYR:Оцен]andть [CYR:улучшен]andя
-      - [CYR:Ранж]andроin[CYR:ать] по прandорand[CYR:тету]
-      - [CYR:Вернуть] hints
+      - [CYR:[TRANSLATED]]analyze [CYR:[TRANSLATED]] [EN]with[EN]
+      - [CYR:[TRANSLATED]]and[EN] type [CYR:pro[TRANSLATED]y]
+      - [CYR:[TRANSLATED]]not[EN]and[EN]in[CYR:ate] in[EN]and[CYR:[TRANSLATED]y] [CYR:[TRANSLATED]]and[EN]from[EN]andand
+      - [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]andI
+      - [CYR:[TRANSLATED]]and[EN]in[CYR:ate] [EN] [EN]and[EN]and[CYR:[TRANSLATED]]
+      - [CYR:[TRANSLATED]] hints
       
   apply_optimization:
     input:
@@ -226,14 +226,14 @@ behaviors:
     output:
       optimized_code: string
       result: OptimizationResult
-    description: Прandмеnotнandе [CYR:опт]andмfromацandand
+    description: [EN]and[EN]not[EN]and[EN] [CYR:[TRANSLATED]]and[EN]from[EN]andand
     steps:
-      - Прand[CYR:мен]andть fromмеnotнandя
-      - [CYR:Запу]withтandть testы
-      - [CYR:Измер]andть performance
-      - [CYR:Сра]inнandть with baseline
-      - [CYR:Вал]andдandроin[CYR:ать] improvement
-      - [CYR:Вернуть] result
+      - [EN]and[CYR:me]and[EN] from[EN]not[EN]andI
+      - [CYR:[TRANSLATED]]with[EN]and[EN] testy
+      - [CYR:[TRANSLATED]]and[EN] performance
+      - [CYR:[TRANSLATED]]in[EN]and[EN] with baseline
+      - [CYR:[TRANSLATED]]and[EN]and[EN]in[CYR:ate] improvement
+      - [CYR:[TRANSLATED]] result
       
   benchmark_code:
     input:
@@ -241,14 +241,14 @@ behaviors:
       iterations: number
     output:
       metrics: PerformanceMetrics
-    description: [CYR:Бенчмарк] codeа
+    description: [CYR:[TRANSLATED]] code[EN]
     steps:
-      - Сcompile code
-      - [CYR:Прогреть] JIT
-      - [CYR:Запу]withтandть iterations [CYR:раз]
-      - [CYR:Измер]andть [CYR:метр]andкand
-      - Уwith[CYR:редн]andть resultы
-      - [CYR:Вернуть] metrics
+      - [EN]compile code
+      - [CYR:[TRANSLATED]] JIT
+      - [CYR:[TRANSLATED]]with[EN]and[EN] iterations [CYR:[TRANSLATED]]
+      - [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[EN]and
+      - [EN]with[CYR:[TRANSLATED]]and[EN] resulty
+      - [CYR:[TRANSLATED]] metrics
       
   compare_algorithms:
     input:
@@ -257,13 +257,13 @@ behaviors:
       test_data: list<any>
     output:
       comparison: AlgorithmComparison
-    description: [CYR:Сра]innotнandе [CYR:алгор]and[CYR:тмо]in
+    description: [CYR:[TRANSLATED]]innot[EN]and[EN] [CYR:algorithm]and[CYR:[TRANSLATED]]in
     steps:
-      - [CYR:Бенчмарк] algorithm_a
-      - [CYR:Бенчмарк] algorithm_b
-      - [CYR:Сра]inнandть [CYR:метр]andкand
-      - [CYR:Определ]andть winner
-      - [CYR:Вернуть] comparison
+      - [CYR:[TRANSLATED]] algorithm_a
+      - [CYR:[TRANSLATED]] algorithm_b
+      - [CYR:[TRANSLATED]]in[EN]and[EN] [CYR:[TRANSLATED]]and[EN]and
+      - [CYR:[TRANSLATED]]and[EN] winner
+      - [CYR:[TRANSLATED]] comparison
 
 functions:
   - name: profile_code
@@ -271,21 +271,21 @@ functions:
       code: string
       input_data: any
     returns: PerformanceProfile
-    description: [CYR:Проф]orроinанandе codeа
+    description: [CYR:[TRANSLATED]]or[EN]in[EN]and[EN] code[EN]
     
   - name: detect_hotspots
     params:
       profile: PerformanceProfile
       threshold_percent: number
     returns: list<Hotspot>
-    description: [CYR:Определен]andе [CYR:узк]andх меwithт
+    description: [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[EN] [EN]with[EN]
     
   - name: estimate_improvement
     params:
       current_code: string
       optimized_code: string
     returns: ImprovementMetrics
-    description: [CYR:Оценка] [CYR:улучшен]andя
+    description: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andI
     
   - name: validate_optimization
     params:
@@ -293,7 +293,7 @@ functions:
       optimized: string
       test_cases: list<TestCase>
     returns: boolean
-    description: [CYR:Вал]and[CYR:дац]andя [CYR:опт]andмfromацandand
+    description: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]]and[EN]from[EN]andand
 
 tests:
   - name: detect_list_operation_hotspot
@@ -339,8 +339,8 @@ tests:
       result.actual_improvement.speed_improvement_percent: > 30
 
 examples:
-  - name: "[CYR:Опт]andмfromацandя withпandwithкоin"
-    description: "AI on[CYR:ход]andт not[CYR:эффект]andin[CYR:ные] [CYR:операц]andand withо withпandwith[CYR:кам]and"
+  - name: "[CYR:[TRANSLATED]]and[EN]from[EN]andI with[EN]andwith[EN]in"
+    description: "AI on[CYR:[TRANSLATED]]and[EN] not[CYR:effect]andin[CYR:[EN]y[EN]] [CYR:[TRANSLATED]]andand with[EN] with[EN]andwith[CYR:[TRANSLATED]]and"
     input:
       code: |
         pub process_items(items) = {
@@ -354,15 +354,15 @@ examples:
         memory_usage_mb: 80
     output:
       hint:
-        title: "[CYR:Объед]andнandть filter [CYR:операц]andand"
+        title: "[CYR:[TRANSLATED]]and[EN]and[EN] filter [CYR:[TRANSLATED]]andand"
         code_after: |
           pub process_items(items) = {
             [i.price for i in items if i.active && i.price > 100]
           }
         improvement: "50% faster, 40% less memory"
         
-  - name: "[CYR:Опт]andмfromацandя [CYR:алгор]and[CYR:тма]"
-    description: "AI [CYR:предлагает] [CYR:более] [CYR:эффект]andin[CYR:ный] [CYR:алгор]andтм"
+  - name: "[CYR:[TRANSLATED]]and[EN]from[EN]andI [CYR:algorithm]and[CYR:[TRANSLATED]]"
+    description: "AI [CYR:[TRANSLATED]acts] [CYR:[TRANSLATED]] [CYR:effect]andin[CYR:ny] [CYR:algorithm]and[EN]"
     input:
       code: |
         pub find_duplicates(list) = {
@@ -376,7 +376,7 @@ examples:
       complexity: "O(n²)"
     output:
       hint:
-        title: "Иwith[CYR:пользо]in[CYR:ать] Set for O(n)"
+        title: "[EN]with[CYR:[EN]l[EN]]in[CYR:ate] Set for O(n)"
         code_after: |
           pub find_duplicates(list) = {
             let seen = set.new()
@@ -386,14 +386,14 @@ examples:
             }
             false
           }
-        improvement: "O(n²) → O(n), 100x faster on [CYR:больш]andх [CYR:данных]"
+        improvement: "O(n²) → O(n), 100x faster on [CYR:[EN]l[EN]]and[EN] [CYR:data]"
         
-  - name: "[CYR:Опт]andмfromацandя [CYR:памят]and"
-    description: "AI on[CYR:ход]andт [CYR:утечк]and and лandшнandе [CYR:аллокац]andand"
+  - name: "[CYR:[TRANSLATED]]and[EN]from[EN]andI [CYR:[TRANSLATED]I[EN]]and"
+    description: "AI on[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and and [EN]and[EN]and[EN] [CYR:[TRANSLATED]]andand"
     input:
       code: |
         pub process_large_file(path) = {
-          let content = file.read_all(path)  // [CYR:Загружает] inеwithь file
+          let content = file.read_all(path)  // [CYR:[TRANSLATED]acts] in[EN]with[EN] file
           content
             |> string.split("\n")
             |> list.map(process_line)
@@ -401,7 +401,7 @@ examples:
       memory_usage_mb: 500
     output:
       hint:
-        title: "Иwith[CYR:пользо]in[CYR:ать] streaming"
+        title: "[EN]with[CYR:[EN]l[EN]]in[CYR:ate] streaming"
         code_after: |
           pub process_large_file(path) = {
             file.stream_lines(path)
@@ -412,27 +412,27 @@ examples:
 
 optimization_categories:
   algorithmic:
-    - "[CYR:Улучшен]andе with[CYR:ложно]withтand (O-notation)"
-    - "[CYR:Выбор] with[CYR:труктур] [CYR:данных]"
-    - "[CYR:Кеш]andроinанandе resultоin"
-    - "[CYR:Мемо]fromацandя"
+    - "[CYR:[TRANSLATED]]and[EN] with[CYR:[TRANSLATED]]with[EN]and (O-notation)"
+    - "[CYR:Vy[TRANSLATED]] with[CYR:[TRANSLATED]] [CYR:data]"
+    - "[CYR:[TRANSLATED]]and[EN]in[EN]and[EN] result[EN]in"
+    - "[CYR:[TRANSLATED]]from[EN]andI"
     
   memory:
-    - "[CYR:Уменьшен]andе [CYR:аллокац]andй"
-    - "[CYR:Пере]andwith[CYR:пользо]inанandе objectоin"
-    - "Streaming inмеwithто [CYR:загрузк]and"
-    - "[CYR:Лен]andinые inычandwith[CYR:лен]andя"
+    - "[CYR:[EN]me[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[EN]"
+    - "[CYR:[TRANSLATED]]andwith[CYR:[EN]l[EN]]in[EN]and[EN] object[EN]in"
+    - "Streaming in[EN]with[EN] [CYR:[TRANSLATED]]and"
+    - "[CYR:[TRANSLATED]]andiny[EN] iny[EN]andwith[CYR:[TRANSLATED]]andI"
     
   io:
-    - "[CYR:Батч]andнг [CYR:операц]andй"
-    - "Аsynchronous I/O"
-    - "[CYR:Буфер]fromацandя"
-    - "[CYR:Параллель]onя handling"
+    - "[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[EN]"
+    - "Asynchronous I/O"
+    - "[CYR:[TRANSLATED]]from[EN]andI"
+    - "[CYR:[TRANSLATED]l]onI handling"
     
   code_structure:
-    - "[CYR:Инлайн]andнг [CYR:функц]andй"
-    - "[CYR:Удален]andе [CYR:мерт]in[CYR:ого] codeа"
-    - "[CYR:Опт]andмfromацandя loopоin"
+    - "[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[EN]"
+    - "[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]in[CYR:[EN]go] code[EN]"
+    - "[CYR:[TRANSLATED]]and[EN]from[EN]andI loop[EN]in"
     - "Tail call optimization"
 
 metrics:

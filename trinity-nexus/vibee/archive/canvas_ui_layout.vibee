@@ -1,6 +1,6 @@
 name: canvas_ui_layout
-# Canvas UI Layout - Едandonя system [CYR:упра]in[CYR:лен]andя [CYR:плаг]andonмand [CYR:через] Canvas
-# [CYR:Каждый] пandкwith[CYR:ель] = [CYR:атомарный] process, YogaLayout for [CYR:коорд]andonт
+# Canvas UI Layout - [EN]andonI system [CYR:[EN]law]in[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]]andon[EN]and [CYR:[TRANSLATED]] Canvas
+# [CYR:[TRANSLATED]y[EN]] [EN]and[EN]with[CYR:[EN]l] = [CYR:[TRANSLATED]ny] process, YogaLayout for [CYR:[TRANSLATED]]andon[EN]
 
 plugin:
   name: canvas_ui_layout

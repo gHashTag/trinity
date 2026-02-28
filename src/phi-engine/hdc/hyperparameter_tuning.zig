@@ -1,11 +1,11 @@
-//! Hyperparameter Tuning - Поandwithto [CYR:опт]and[CYR:мальных] parameterоin for 100% win rate
+//! Hyperparameter Tuning - [EN]andwithto [CYR:[EN]]and[CYR:[EN]] parameter[EN]in for 100% win rate
 //!
-//! [CYR:Перебор]:
+//! [CYR:[EN]]:
 //! - learning_rate: [0.05, 0.1, 0.2, 0.3, 0.5]
 //! - gamma: [0.9, 0.95, 0.99]
 //! - epsilon_decay: [0.99, 0.995, 0.999]
 //!
-//! φ² + 1/φ² = 3 | TRINITY | [CYR:ОПЕРАЦИЯ] "PERFECT AGENT"
+//! φ² + 1/φ² = 3 | TRINITY | [CYR:[EN]] "PERFECT AGENT"
 
 const std = @import("std");
 const gw = @import("gridworld.zig");
@@ -13,7 +13,7 @@ const rl = @import("rl_agent.zig");
 
 const print = std.debug.print;
 
-/// Result эtowith[CYR:пер]and[CYR:мента]
+/// Result [EN]towith[CYR:[EN]]and[CYR:[EN]]
 const ExperimentResult = struct {
     lr: f64,
     gamma: f64,
@@ -25,7 +25,7 @@ const ExperimentResult = struct {
     episodes: usize,
 };
 
-/// [CYR:Запу]withтandть одandн эtowith[CYR:пер]and[CYR:мент]
+/// [CYR:[EN]]with[EN]and[EN] [EN]and[EN] [EN]towith[CYR:[EN]]and[CYR:[EN]]
 fn runExperiment(
     allocator: std.mem.Allocator,
     lr: f64,
@@ -34,7 +34,7 @@ fn runExperiment(
     num_episodes: usize,
     seed: u64,
 ) !ExperimentResult {
-    // [CYR:Соз]yesём with[CYR:реду]
+    // [CYR:[EN]]yes[EN] with[CYR:[EN]]
     var env = try gw.GridWorld.init(allocator, .{
         .width = 4,
         .height = 4,
@@ -44,7 +44,7 @@ fn runExperiment(
     });
     defer env.deinit();
 
-    // [CYR:Соз]yesём agentа
+    // [CYR:[EN]]yes[EN] agent[EN]
     var agent = try rl.RLAgent.init(allocator, .{
         .state_dim = 256,
         .num_actions = 4,
@@ -56,7 +56,7 @@ fn runExperiment(
     });
     defer agent.deinit();
 
-    // Фandtowithand[CYR:руем] seed
+    // [EN]andtowithand[CYR:[EN]] seed
     agent.rng = std.Random.DefaultPrng.init(seed);
 
     try agent.initQTable(env.numStates());
@@ -109,11 +109,11 @@ fn runExperiment(
     };
 }
 
-/// [CYR:Запу]withтandть grid search
+/// [CYR:[EN]]with[EN]and[EN] grid search
 pub fn runGridSearch(allocator: std.mem.Allocator) !void {
     print("\n", .{});
     print("╔══════════════════════════════════════════════════════════════╗\n", .{});
-    print("║     HYPERPARAMETER TUNING - [CYR:ОПЕРАЦИЯ] PERFECT AGENT          ║\n", .{});
+    print("║     HYPERPARAMETER TUNING - [CYR:[EN]] PERFECT AGENT          ║\n", .{});
     print("║     φ² + 1/φ² = 3 | TRINITY                                  ║\n", .{});
     print("╚══════════════════════════════════════════════════════════════╝\n", .{});
     print("\n", .{});
@@ -123,7 +123,7 @@ pub fn runGridSearch(allocator: std.mem.Allocator) !void {
     const epsilon_decays = [_]f64{ 0.99, 0.995, 0.999 };
 
     const num_episodes: usize = 2000;
-    const num_runs: usize = 3; // [CYR:Сред]notе by 3 [CYR:запу]withtoам
+    const num_runs: usize = 3; // [CYR:[EN]]not[EN] by 3 [CYR:[EN]]withto[EN]
 
     print("Parameters tuning:\n", .{});
     print("  learning_rate: {any}\n", .{learning_rates});
@@ -210,7 +210,7 @@ pub fn runGridSearch(allocator: std.mem.Allocator) !void {
     print("\n", .{});
 
     print("╔══════════════════════════════════════════════════════════════╗\n", .{});
-    print("║                    [CYR:ЛУЧШИЕ] [CYR:ПАРАМЕТРЫ]                          ║\n", .{});
+    print("║                    [CYR:[EN]] [CYR:[EN]]                          ║\n", .{});
     print("╠══════════════════════════════════════════════════════════════╣\n", .{});
     print("║ learning_rate:  {d:.3}                                        ║\n", .{best_result.lr});
     print("║ gamma:          {d:.3}                                        ║\n", .{best_result.gamma});
@@ -220,9 +220,9 @@ pub fn runGridSearch(allocator: std.mem.Allocator) !void {
     print("║ Max Consecutive:{d:4}                                         ║\n", .{best_result.max_consecutive});
     print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 
-    // [CYR:Топ]-5 resultоin
+    // [CYR:[EN]]-5 result[EN]in
     print("\n", .{});
-    print("[CYR:ТОП]-5 [CYR:КОНФИГУРАЦИЙ]:\n", .{});
+    print("[CYR:[EN]]-5 [CYR:[EN]]:\n", .{});
     print("─────────────────────────────────────────────────────────────\n", .{});
 
     // Sort by win_rate
@@ -246,12 +246,12 @@ pub fn runGridSearch(allocator: std.mem.Allocator) !void {
     }
 
     print("\n", .{});
-    print("Вwith[CYR:его] эtowith[CYR:пер]and[CYR:менто]in: {d}\n", .{total_experiments});
+    print("[EN]with[CYR:[EN]] [EN]towith[CYR:[EN]]and[CYR:[EN]]in: {d}\n", .{total_experiments});
     print("\n", .{});
     print("φ² + 1/φ² = 3 | TRINITY | TUNING COMPLETE\n", .{});
 }
 
-/// [CYR:Точ]toа loginа
+/// [CYR:[EN]]to[EN] login[EN]
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
@@ -261,7 +261,7 @@ pub fn main() !void {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// [CYR:ТЕСТЫ]
+// [CYR:[EN]]
 // ═══════════════════════════════════════════════════════════════
 
 test "single experiment" {

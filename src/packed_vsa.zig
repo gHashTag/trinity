@@ -1,6 +1,6 @@
 // Trinity Packed VSA Operations
-// VSA operation on [CYR:упа]toоin[CYR:анных] трand[CYR:тах] (5 трandтоin/[CYR:байт])
-// Иwithby[CYR:льзует] lookup tables for быwith[CYR:трых] [CYR:операц]andй [CYR:без] раwithпаtoоintoand
+// VSA operation on [CYR:[EN]]to[EN]in[CYR:[EN]] [EN]and[CYR:[EN]] (5 [EN]and[EN]in/[CYR:[EN]])
+// [EN]withby[CYR:[EN]] lookup tables for [EN]with[CYR:[EN]] [CYR:[EN]]and[EN] [CYR:[EN]] [EN]with[EN]to[EN]intoand
 //
 // ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ: V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3
@@ -17,11 +17,11 @@ const TRITS_PER_BYTE = packed_trit.TRITS_PER_BYTE;
 const MAX_PACKED_BYTES = packed_trit.MAX_PACKED_BYTES;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// LOOKUP TABLES for [CYR:операц]andй on [CYR:упа]toоin[CYR:анных] [CYR:байтах]
+// LOOKUP TABLES for [CYR:[EN]]and[EN] on [CYR:[EN]]to[EN]in[CYR:[EN]] [CYR:[EN]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Lookup table for bind: BIND_LUT[a][b] = packed(bind(unpack(a), unpack(b)))
-/// [CYR:Размер]: 243 * 243 = 59049 [CYR:байт] (~58KB)
+/// [CYR:[EN]]: 243 * 243 = 59049 [CYR:[EN]] (~58KB)
 const BIND_LUT: [243][243]u8 = blk: {
     @setEvalBranchQuota(1000000);
     var lut: [243][243]u8 = undefined;
@@ -69,7 +69,7 @@ const BUNDLE_LUT: [243][243]u8 = blk: {
 };
 
 /// Lookup table for dot product: DOT_LUT[a][b] = sum of element-wise products
-/// Дand[CYR:апазон]: -5 before +5, [CYR:хран]andм how u8 withо with[CYR:мещен]andем +5
+/// [EN]and[CYR:[EN]]: -5 before +5, [CYR:[EN]]and[EN] how u8 with[EN] with[CYR:[EN]]and[EN] +5
 const DOT_LUT: [243][243]u8 = blk: {
     @setEvalBranchQuota(1000000);
     var lut: [243][243]u8 = undefined;
@@ -81,7 +81,7 @@ const DOT_LUT: [243][243]u8 = blk: {
             for (0..5) |i| {
                 sum += @as(i16, trits_a[i]) * @as(i16, trits_b[i]);
             }
-            // [CYR:Смещен]andе +5 whatбы [CYR:хран]andть in u8 (дand[CYR:апазон] 0-10)
+            // [CYR:[EN]]and[EN] +5 what[EN] [CYR:[EN]]and[EN] in u8 ([EN]and[CYR:[EN]] 0-10)
             lut[a][b] = @intCast(@as(i16, sum) + 5);
         }
     }
@@ -92,7 +92,7 @@ const DOT_LUT: [243][243]u8 = blk: {
 // PACKED VSA OPERATIONS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Packed bind - andwithby[CYR:льзует] lookup table, [CYR:без] раwithпаtoоintoand
+/// Packed bind - andwithby[CYR:[EN]] lookup table, [CYR:[EN]] [EN]with[EN]to[EN]intoand
 pub fn packedBind(a: *const PackedBigInt, b: *const PackedBigInt) PackedBigInt {
     var result = PackedBigInt.zero();
     const len = @max(a.trit_len, b.trit_len);
@@ -104,14 +104,14 @@ pub fn packedBind(a: *const PackedBigInt, b: *const PackedBigInt) PackedBigInt {
         const a_byte = if (i < a.packedLen()) a.data[i] else packed_trit.encodePack(.{ 0, 0, 0, 0, 0 });
         const b_byte = if (i < b.packedLen()) b.data[i] else packed_trit.encodePack(.{ 0, 0, 0, 0, 0 });
 
-        // Lookup inмеwithто раwithпаtoоintoand!
+        // Lookup in[EN]with[EN] [EN]with[EN]to[EN]intoand!
         result.data[i] = BIND_LUT[a_byte][b_byte];
     }
 
     return result;
 }
 
-/// Packed bundle - andwithby[CYR:льзует] lookup table
+/// Packed bundle - andwithby[CYR:[EN]] lookup table
 pub fn packedBundle(a: *const PackedBigInt, b: *const PackedBigInt) PackedBigInt {
     var result = PackedBigInt.zero();
     const len = @max(a.trit_len, b.trit_len);
@@ -129,7 +129,7 @@ pub fn packedBundle(a: *const PackedBigInt, b: *const PackedBigInt) PackedBigInt
     return result;
 }
 
-/// Packed dot product - andwithby[CYR:льзует] lookup table
+/// Packed dot product - andwithby[CYR:[EN]] lookup table
 pub fn packedDot(a: *const PackedBigInt, b: *const PackedBigInt) i64 {
     const len = @min(a.trit_len, b.trit_len);
     const packed_len = (len + TRITS_PER_BYTE - 1) / TRITS_PER_BYTE;
@@ -140,7 +140,7 @@ pub fn packedDot(a: *const PackedBigInt, b: *const PackedBigInt) i64 {
         const a_byte = a.data[i];
         const b_byte = b.data[i];
 
-        // Lookup returns value withо with[CYR:мещен]andем +5
+        // Lookup returns value with[EN] with[CYR:[EN]]and[EN] +5
         const dot_shifted = DOT_LUT[a_byte][b_byte];
         total += @as(i64, dot_shifted) - 5;
     }
@@ -148,10 +148,10 @@ pub fn packedDot(a: *const PackedBigInt, b: *const PackedBigInt) i64 {
     return total;
 }
 
-/// Packed unbind - for трandтоin unbind = bind (with[CYR:амообрат]onя operation)
+/// Packed unbind - for [EN]and[EN]in unbind = bind (with[CYR:[EN]]on[EN] operation)
 /// unbind(bind(a, b), b) = a
 pub fn packedUnbind(a: *const PackedBigInt, b: *const PackedBigInt) PackedBigInt {
-    // [CYR:Для] трandтоin: unbind = bind, пfrom[CYR:ому] what:
+    // [CYR:[EN]] [EN]and[EN]in: unbind = bind, [EN]from[CYR:[EN]] what:
     // bind(a, b) = a * b
     // unbind(a*b, b) = (a*b) * b = a * (b*b) = a * 1 = a
     // (for b ∈ {-1, 1}, b*b = 1)
@@ -176,7 +176,7 @@ pub fn packedCosineSimilarity(a: *const PackedBigInt, b: *const PackedBigInt) f6
 // CONVERSION UTILITIES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:Кон]in[CYR:ертац]andя HybridBigInt → PackedBigInt
+/// [CYR:[EN]]in[CYR:[EN]]and[EN] HybridBigInt → PackedBigInt
 pub fn fromHybrid(h: *HybridBigInt) PackedBigInt {
     h.ensureUnpacked();
 
@@ -201,7 +201,7 @@ pub fn fromHybrid(h: *HybridBigInt) PackedBigInt {
     return result;
 }
 
-/// [CYR:Кон]in[CYR:ертац]andя PackedBigInt → HybridBigInt
+/// [CYR:[EN]]in[CYR:[EN]]and[EN] PackedBigInt → HybridBigInt
 pub fn toHybrid(p: *const PackedBigInt) HybridBigInt {
     var result = HybridBigInt.zero();
     result.mode = .unpacked_mode;
@@ -215,7 +215,7 @@ pub fn toHybrid(p: *const PackedBigInt) HybridBigInt {
     return result;
 }
 
-/// [CYR:Соз]yesть with[CYR:лучайный] [CYR:упа]toоin[CYR:анный] vector
+/// [CYR:[EN]]yes[EN] with[CYR:[EN]] [CYR:[EN]]to[EN]in[CYR:[EN]] vector
 pub fn randomPackedVector(size: usize, seed: u64) PackedBigInt {
     var result = PackedBigInt.zero();
     result.trit_len = size;
@@ -226,7 +226,7 @@ pub fn randomPackedVector(size: usize, seed: u64) PackedBigInt {
     const packed_len = (size + TRITS_PER_BYTE - 1) / TRITS_PER_BYTE;
 
     for (0..packed_len) |i| {
-        // Геnotрand[CYR:руем] with[CYR:лучайный] [CYR:упа]toоin[CYR:анный] [CYR:байт] (0-242)
+        // [EN]not[EN]and[CYR:[EN]] with[CYR:[EN]] [CYR:[EN]]to[EN]in[CYR:[EN]] [CYR:[EN]] (0-242)
         result.data[i] = @intCast(random.intRangeAtMost(u8, 0, 242));
     }
 
@@ -238,11 +238,11 @@ pub fn randomPackedVector(size: usize, seed: u64) PackedBigInt {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "packed bind correctness" {
-    // [CYR:Соз]yesём testоinые inеto[CYR:торы] via HybridBigInt
+    // [CYR:[EN]]yes[EN] test[EN]in[EN] in[EN]to[CYR:[EN]] via HybridBigInt
     var h_a = vsa.randomVector(100, 12345);
     var h_b = vsa.randomVector(100, 67890);
 
-    // [CYR:Референ]with[CYR:ный] result (unpacked)
+    // [CYR:[EN]]with[CYR:[EN]] result (unpacked)
     const ref_result = vsa.bind(&h_a, &h_b);
 
     // Packed version
@@ -277,7 +277,7 @@ test "packed dot correctness" {
     var h_a = vsa.randomVector(100, 33333);
     var h_b = vsa.randomVector(100, 44444);
 
-    // [CYR:Референ]with[CYR:ный] dot product
+    // [CYR:[EN]]with[CYR:[EN]] dot product
     var ref_dot: i64 = 0;
     for (0..100) |i| {
         ref_dot += @as(i64, h_a.unpacked_cache[i]) * @as(i64, h_b.unpacked_cache[i]);
@@ -292,7 +292,7 @@ test "packed dot correctness" {
 
 test "packed cosine similarity" {
     var h_a = vsa.randomVector(100, 55555);
-    var h_b = vsa.randomVector(100, 55555); // Тfrom же seed = and[CYR:дент]and[CYR:чные]
+    var h_b = vsa.randomVector(100, 55555); // [EN]from [EN] seed = and[CYR:[EN]]and[CYR:[EN]]
 
     const p_a = fromHybrid(&h_a);
     const p_b = fromHybrid(&h_b);
@@ -302,51 +302,51 @@ test "packed cosine similarity" {
 }
 
 test "packed unbind correctness" {
-    // [CYR:Соз]yesём дinа with[CYR:лучайных] inеto[CYR:тора]
+    // [CYR:[EN]]yes[EN] [EN]in[EN] with[CYR:[EN]] in[EN]to[CYR:[EN]]
     const p_a = randomPackedVector(100, 12345);
     const p_b = randomPackedVector(100, 67890);
 
     // bind(a, b)
     const bound = packedBind(&p_a, &p_b);
 
-    // unbind(bind(a, b), b) before[CYR:лжен] yesть vector by[CYR:хож]andй on a
+    // unbind(bind(a, b), b) before[CYR:[EN]] yes[EN] vector by[CYR:[EN]]and[EN] on a
     const unbound = packedUnbind(&bound, &p_b);
 
-    // Check with[CYR:ход]withтinо with орandгandon[CYR:лом]
+    // Check with[CYR:[EN]]with[EN]in[EN] with [EN]and[EN]andon[CYR:[EN]]
     const sim = packedCosineSimilarity(&unbound, &p_a);
 
-    // [CYR:Для] трandтоin [CYR:без] [CYR:нулей] with[CYR:ход]withтinо before[CYR:лжно] [CYR:быть] inыwithоtoandм
-    // Но andз-за [CYR:нулей] in inеto[CYR:торах] [CYR:может] [CYR:быть] пfrom[CYR:еря] and[CYR:нформац]andand
+    // [CYR:[EN]] [EN]and[EN]in [CYR:[EN]] [CYR:[EN]] with[CYR:[EN]]with[EN]in[EN] before[CYR:[EN]] [CYR:[EN]] in[EN]with[EN]toand[EN]
+    // [EN] and[EN]-[EN] [CYR:[EN]] in in[EN]to[CYR:[EN]] [CYR:[EN]] [CYR:[EN]] [EN]from[CYR:[EN]] and[CYR:[EN]]andand
     std.debug.print("\nUnbind similarity: {d:.3}\n", .{sim});
-    try std.testing.expect(sim > 0.5); // [CYR:Должно] [CYR:быть] зonчand[CYR:тельное] with[CYR:ход]withтinо
+    try std.testing.expect(sim > 0.5); // [CYR:[EN]] [CYR:[EN]] [EN]on[EN]and[CYR:[EN]] with[CYR:[EN]]with[EN]in[EN]
 }
 
 test "packed unbind retrieval" {
-    // Сand[CYR:муляц]andя [CYR:запро]withа to [CYR:графу] зonнandй
-    // Фаtoт: bind(Paris, bind(capital_of, France))
-    // [CYR:Запро]with: unbind(fact, bind(Paris, capital_of)) → France
+    // [EN]and[CYR:[EN]]and[EN] [CYR:[EN]]with[EN] to [CYR:[EN]] [EN]on[EN]and[EN]
+    // [EN]to[EN]: bind(Paris, bind(capital_of, France))
+    // [CYR:[EN]]with: unbind(fact, bind(Paris, capital_of)) → France
 
     const paris = randomPackedVector(100, Entity.hashString("Paris"));
     const capital_of = randomPackedVector(100, Entity.hashString("capital_of") ^ 0xDEADBEEF);
     const france = randomPackedVector(100, Entity.hashString("France"));
 
-    // Encode фаtoт: Paris is capital_of France
+    // Encode [EN]to[EN]: Paris is capital_of France
     const pred_obj = packedBind(&capital_of, &france);
     const fact = packedBind(&paris, &pred_obj);
 
-    // [CYR:Запро]with: what is with[CYR:тол]and[CYR:цей] [CYR:Франц]andand?
+    // [CYR:[EN]]with: what is with[CYR:[EN]]and[CYR:[EN]] [CYR:[EN]]andand?
     // unbind(fact, bind(capital_of, France)) → Paris
     const query_pattern = packedBind(&capital_of, &france);
     const result = packedUnbind(&fact, &query_pattern);
 
-    // Result before[CYR:лжен] [CYR:быть] by[CYR:хож] on Paris
+    // Result before[CYR:[EN]] [CYR:[EN]] by[CYR:[EN]] on Paris
     const sim_paris = packedCosineSimilarity(&result, &paris);
     const sim_france = packedCosineSimilarity(&result, &france);
 
     std.debug.print("\nQuery result similarity to Paris: {d:.3}\n", .{sim_paris});
     std.debug.print("Query result similarity to France: {d:.3}\n", .{sim_france});
 
-    // Paris before[CYR:лжен] [CYR:быть] more by[CYR:хож]
+    // Paris before[CYR:[EN]] [CYR:[EN]] more by[CYR:[EN]]
     try std.testing.expect(sim_paris > sim_france);
 }
 
@@ -362,7 +362,7 @@ test "large vector bind correctness (1000 trits)" {
     const p_b = fromHybrid(&h_b);
     const packed_result = packedBind(&p_a, &p_b);
 
-    // Check each 100-й трandт for withto[CYR:оро]withтand
+    // Check each 100-[EN] [EN]and[EN] for withto[CYR:[EN]]with[EN]and
     var i: usize = 0;
     while (i < 1000) : (i += 100) {
         try std.testing.expectEqual(ref_result.unpacked_cache[i], packed_result.getTrit(i));
@@ -379,7 +379,7 @@ test "large vector bind correctness (5000 trits)" {
     const p_b = fromHybrid(&h_b);
     const packed_result = packedBind(&p_a, &p_b);
 
-    // Check each 500-й трandт
+    // Check each 500-[EN] [EN]and[EN]
     var i: usize = 0;
     while (i < 5000) : (i += 500) {
         try std.testing.expectEqual(ref_result.unpacked_cache[i], packed_result.getTrit(i));
@@ -396,7 +396,7 @@ test "large vector bind correctness (10000 trits)" {
     const p_b = fromHybrid(&h_b);
     const packed_result = packedBind(&p_a, &p_b);
 
-    // Check each 1000-й трandт
+    // Check each 1000-[EN] [EN]and[EN]
     var i: usize = 0;
     while (i < 10000) : (i += 1000) {
         try std.testing.expectEqual(ref_result.unpacked_cache[i], packed_result.getTrit(i));
@@ -407,7 +407,7 @@ test "large vector dot correctness (10000 trits)" {
     var h_a = vsa.randomVector(10000, 55555);
     var h_b = vsa.randomVector(10000, 66666);
 
-    // [CYR:Референ]with[CYR:ный] dot product
+    // [CYR:[EN]]with[CYR:[EN]] dot product
     var ref_dot: i64 = 0;
     for (0..10000) |i| {
         ref_dot += @as(i64, h_a.unpacked_cache[i]) * @as(i64, h_b.unpacked_cache[i]);
@@ -421,7 +421,7 @@ test "large vector dot correctness (10000 trits)" {
 }
 
 test "benchmark Packed vs Unpacked" {
-    // PackedBigInt [CYR:теперь] supports before 12000 трandтоin
+    // PackedBigInt [CYR:[EN]] supports before 12000 [EN]and[EN]in
     const sizes = [_]usize{ 100, 500, 1000, 2000, 5000, 10000 };
     const iterations = 1000;
 
@@ -468,6 +468,6 @@ test "benchmark Packed vs Unpacked" {
 
     std.debug.print("╚═══════════════════════════════════════════════════════════════════════════════════╝\n", .{});
     std.debug.print("\n", .{});
-    std.debug.print("Speedup > 1.0 озon[CYR:чает] Packed быwith[CYR:трее]\n", .{});
-    std.debug.print("Mem Saving byto[CYR:азы]in[CYR:ает] эto[CYR:оном]andю [CYR:памят]and (5x [CYR:теорет]andчеwithtoandй маtowithand[CYR:мум])\n", .{});
+    std.debug.print("Speedup > 1.0 [EN]on[CYR:[EN]] Packed [EN]with[CYR:[EN]]\n", .{});
+    std.debug.print("Mem Saving byto[CYR:[EN]]in[CYR:[EN]] [EN]to[CYR:[EN]]and[EN] [CYR:[EN]]and (5x [CYR:[EN]]and[EN]withtoand[EN] [EN]towithand[CYR:[EN]])\n", .{});
 }

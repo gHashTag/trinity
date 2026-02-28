@@ -1,5 +1,5 @@
 # Browser Extension Popup UI Specification
-# Generates popup interface for [CYR:ЖАР] [CYR:ПТИЦА]
+# Generates popup interface for [CYR:[EN]A[EN]] [CYR:[TRANSLATED]A]
 # φ² + 1/φ² = 3 = TRINITY
 
 name: firebird_popup
@@ -9,22 +9,22 @@ module: popup_ui
 
 description: |
   Popup UI for browser extension.
-  [CYR:Отображает] evasion [CYR:метр]andкand, control [CYR:проф]and[CYR:лям]and, $TRI rewards.
+  [CYR:[TRANSLATED]acts] evasion [CYR:[TRANSLATED]]and[EN]and, control [CYR:pro[EN]]and[CYR:[EN]I[EN]]and, $TRI rewards.
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# UI [CYR:КОМПОНЕНТЫ]
+# UI [CYR:[TRANSLATED]]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 components:
   Header:
-    description: "[CYR:Заголо]inок with [CYR:лого]typeом and with[CYR:тату]withом"
+    description: "[CYR:[EN]go[EN]]in[EN] with [CYR:[EN]go]type[EN] and with[CYR:[TRANSLATED]]with[EN]"
     elements:
-      - logo: "[CYR:ЖАР] [CYR:ПТИЦА] 🔥"
+      - logo: "[CYR:[EN]A[EN]] [CYR:[TRANSLATED]A] 🔥"
       - status_indicator: NodeStatus
       - version: "v1.0.0"
 
   EvasionPanel:
-    description: "Паnotль [CYR:упра]in[CYR:лен]andя evasion"
+    description: "[EN]notl [CYR:[EN]law]in[CYR:[TRANSLATED]]andI evasion"
     elements:
       - toggle_enabled: Bool
       - similarity_display: Float
@@ -33,7 +33,7 @@ components:
       - detection_risk: String
 
   ProfileSelector:
-    description: "[CYR:Выбор] and control [CYR:проф]and[CYR:лям]and"
+    description: "[CYR:Vy[TRANSLATED]] and control [CYR:pro[EN]]and[CYR:[EN]I[EN]]and"
     elements:
       - current_profile: String
       - profile_list: List<ProfileItem>
@@ -41,7 +41,7 @@ components:
       - delete_button: Button
 
   NavigationPanel:
-    description: "Вand[CYR:ртуаль]onя oninand[CYR:гац]andя"
+    description: "[EN]and[CYR:[TRANSLATED]l]onI oninand[CYR:[TRANSLATED]]andI"
     elements:
       - steps_completed: Int
       - current_similarity: Float
@@ -58,7 +58,7 @@ components:
       - stake_button: Button
 
   FingerprintDetails:
-    description: "[CYR:Детал]and [CYR:текущего] fingerprint"
+    description: "[CYR:[TRANSLATED]]and [CYR:[TRANSLATED]go] fingerprint"
     elements:
       - canvas_hash: String
       - webgl_hash: String
@@ -83,17 +83,17 @@ layout:
     - FingerprintDetails (collapsible)
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# [CYR:СТИЛИ] (for геnot[CYR:рац]andand CSS)
+# [CYR:[TRANSLATED]] (for [EN]not[CYR:[TRANSLATED]]andand CSS)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 styles:
   colors:
-    primary: "#FF6B35"      # Огnot[CYR:нный] [CYR:оранже]inый ([CYR:Жар]-Птandца)
-    secondary: "#1A1A2E"    # [CYR:Тёмный] [CYR:фон]
-    accent: "#FFD700"       # [CYR:Золотой] ($TRI)
-    success: "#00FF88"      # [CYR:Зелёный] (evasion OK)
-    warning: "#FFB800"      # [CYR:Жёлтый] (risk)
-    danger: "#FF4444"       # [CYR:Кра]with[CYR:ный] (detected)
+    primary: "#FF6B35"      # [EN]not[CYR:[EN]ny] [CYR:[TRANSLATED]]iny[EN] ([CYR:[TRANSLATED]]-[EN]and[EN])
+    secondary: "#1A1A2E"    # [CYR:[TRANSLATED]ny] [CYR:foundation]
+    accent: "#FFD700"       # [CYR:[TRANSLATED]] ($TRI)
+    success: "#00FF88"      # [CYR:[TRANSLATED]ny] (evasion OK)
+    warning: "#FFB800"      # [CYR:[TRANSLATED]y[EN]] (risk)
+    danger: "#FF4444"       # [CYR:[TRANSLATED]]with[CYR:ny] (detected)
     text: "#FFFFFF"
     text_muted: "#888888"
 
@@ -109,7 +109,7 @@ styles:
     xl: 32
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# [CYR:СОБЫТИЯ]
+# [CYR:[TRANSLATED]]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 events:
@@ -140,12 +140,12 @@ events:
     - show_notification
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# [CYR:ЛОКАЛИЗАЦИЯ]
+# [CYR:[TRANSLATED]A[TRANSLATED]A[TRANSLATED]]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 i18n:
   en:
-    title: "[CYR:ЖАР] [CYR:ПТИЦА] - Ternary Anti-Detect"
+    title: "[CYR:[EN]A[EN]] [CYR:[TRANSLATED]A] - Ternary Anti-Detect"
     evasion_enabled: "Evasion Enabled"
     similarity: "Similarity"
     detection_risk: "Detection Risk"
@@ -156,12 +156,12 @@ i18n:
     earned: "Total Earned"
     
   ru:
-    title: "[CYR:ЖАР] [CYR:ПТИЦА] - [CYR:Тер]on[CYR:рный] Anti-Detect"
-    evasion_enabled: "Evasion Вkeyён"
-    similarity: "[CYR:Схоже]withть"
-    detection_risk: "Рandwithк [CYR:Детекц]andand"
-    generate_profile: "[CYR:Создать] Ноinый [CYR:Проф]andль"
-    navigate: "Наinand[CYR:гац]andя"
-    claim_rewards: "[CYR:Забрать] $TRI"
-    pending: "Ожand[CYR:дает]"
-    earned: "Вwith[CYR:его] [CYR:Заработано]"
+    title: "[CYR:[EN]A[EN]] [CYR:[TRANSLATED]A] - [CYR:[TRANSLATED]]on[CYR:[EN]ny] Anti-Detect"
+    evasion_enabled: "Evasion [EN]key[EN]"
+    similarity: "[CYR:[TRANSLATED]]with[EN]"
+    detection_risk: "[EN]andwith[EN] [CYR:[TRANSLATED]]andand"
+    generate_profile: "[CYR:[TRANSLATED]ate] [EN]iny[EN] [CYR:[TRANSLATED]]andl"
+    navigate: "[EN]inand[CYR:[TRANSLATED]]andI"
+    claim_rewards: "[CYR:[TRANSLATED]ate] $TRI"
+    pending: "[EN]and[CYR:[EN]acts]"
+    earned: "[EN]with[CYR:[EN]go] [CYR:[EN]work[EN]]"

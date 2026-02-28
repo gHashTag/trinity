@@ -1,6 +1,6 @@
 //! VIBEE Profiler - PAS DAEMON V38
 //! 
-//! [CYR:Паттерны]: HSH (O(1) lookup), PRE (precomputed stats), D&C (hierarchical aggregation)
+//! [CYR:[TRANSLATED]y]: HSH (O(1) lookup), PRE (precomputed stats), D&C (hierarchical aggregation)
 //! Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 //! Golden identity: φ² + 1/φ² = 3
 
@@ -11,7 +11,7 @@ const StringHashMap = std.StringHashMap;
 const ArrayList = std.ArrayList;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:СВЯЩЕННЫЕ] [CYR:КОНСТАНТЫ]
+// [CYR:[TRANSLATED]] [CYR:[TRANSLATED]A[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PHI: f64 = 1.6180339887498948482;

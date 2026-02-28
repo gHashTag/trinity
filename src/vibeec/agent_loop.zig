@@ -386,8 +386,8 @@ pub fn main() !void {
 
     // Demo tasks
     const demo_tasks = [_][]const u8{
-        "[CYR:Запу]withтand and[CYR:нферен]with on Mistral-7B and заwith[CYR:тей]toай 10000 TRI",
-        "Маtowithandмandзand[CYR:руй] earnings on [CYR:моём] node in Ko Samui",
+        "[CYR:[EN]]with[EN]and and[CYR:[EN]]with on Mistral-7B and [EN]with[CYR:[EN]]to[EN] 10000 TRI",
+        "[EN]towithand[EN]and[EN]and[CYR:[EN]] earnings on [CYR:[EN]] node in Ko Samui",
     };
 
     for (demo_tasks) |task| {

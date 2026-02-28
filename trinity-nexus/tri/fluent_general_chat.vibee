@@ -11,7 +11,7 @@ module: fluent_general_chat
 
 description: |
   Full fluent general chat system with real conversations.
-  No generic "[CYR:Понял]! Я Trinity..." responses.
+  No generic "[CYR:[TRANSLATED]yael]!  Trinity..." responses.
   Honest uncertainty when doesn't know.
   200+ conversation patterns for natural dialogue.
   Supports Russian, Chinese, English fluently.
@@ -191,7 +191,7 @@ behaviors:
 
 test_cases:
   - name: russian_greeting
-    given: "Прandinет!"
+    given: "[EN]andin[EN]!"
     expected: "Warm Russian greeting, confidence > 0.8"
 
   - name: chinese_how_are_you
@@ -203,7 +203,7 @@ test_cases:
     expected: "Honest 'I cannot check weather' response"
 
   - name: multilingual_philosophy
-    given: "[CYR:Что] [CYR:такое] withозonнandе?"
+    given: "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] with[EN]on[EN]and[EN]?"
     expected: "Thoughtful philosophical response"
 
   - name: unknown_honest
@@ -211,11 +211,11 @@ test_cases:
     expected: "Honest uncertainty, confidence < 0.4"
 
   - name: humor_request
-    given: "Раwithwith[CYR:каж]and [CYR:шутку]"
+    given: "[EN]withwith[CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]"
     expected: "Appropriate joke in Russian"
 
   - name: coding_request_ru
-    given: "[CYR:Нап]andшand code with[CYR:орт]andроinкand [CYR:пузырьком]"
+    given: "[CYR:[TRANSLATED]]and[EN]and code with[CYR:[TRANSLATED]]and[EN]in[EN]and [CYR:[TRANSLATED]y[TRANSLATED]]"
     expected: "BubbleSort implementation with Russian intro"
 
   - name: coding_request_en

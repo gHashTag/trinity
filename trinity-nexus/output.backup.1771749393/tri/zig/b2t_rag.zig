@@ -15,10 +15,10 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:КОНСТАНТЫ]
+// [CYR:[TRANSLATED]A[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// [CYR:Базо]inые φ-toонwith[CYR:танты] (Sacred Formula)
+// [CYR:[TRANSLATED]]iny[EN] φ-to[EN]with[CYR:[TRANSLATED]y] (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -30,7 +30,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:ТИПЫ]
+// [CYR:[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// 
@@ -132,7 +132,7 @@ pub const RetrievalResult = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:ПАМЯТЬ] [CYR:ДЛЯ] WASM
+// [CYR:[EN]A[TRANSLATED]] [CYR:[TRANSLATED]] WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -182,13 +182,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-and[CYR:нтер]fieldsцandя
+/// φ-and[CYR:[TRANSLATED]]fields[EN]andI
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// Геnot[CYR:рац]andя φ-withпand[CYR:рал]and
+/// [EN]not[CYR:[TRANSLATED]]andI φ-with[EN]and[CYR:[TRANSLATED]]and
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -530,16 +530,16 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "embed_code_ternary_behavior" {
-// Given: [CYR:Фрагмент] to[CYR:ода]
-// When: Геnot[CYR:рац]andя [CYR:тро]and[CYR:чного] [CYR:эмбедд]and[CYR:нга] [CYR:через] VSA
-// Then: Returns TernaryEmbedding [CYR:размерно]withтand 10000
+// Given: [CYR:[TRANSLATED]me[EN]] to[CYR:[TRANSLATED]]
+// When: [EN]not[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]go] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] VSA
+// Then: Returns TernaryEmbedding [CYR:[TRANSLATED]]with[EN]and 10000
 // Test embed_code_ternary: verify behavior is callable (compile-time check)
 _ = embed_code_ternary;
 }
 
 test "embed_tokens_behavior" {
-// Given: Спandwithоto тоto[CYR:ено]in to[CYR:ода]
-// When: Тоtoенand[CYR:зац]andя and [CYR:эмбедд]andнг to[CYR:аждого] тоtoеon
+// Given: [EN]andwith[EN]to [EN]to[CYR:[TRANSLATED]]in to[CYR:[TRANSLATED]]
+// When: [EN]to[EN]and[CYR:[TRANSLATED]]andI and [CYR:[TRANSLATED]]and[EN] to[CYR:[TRANSLATED]go] [EN]to[EN]on
 // Then: Returns List<TernaryEmbedding>
 // Test embed_tokens: verify behavior is callable (compile-time check)
 _ = embed_tokens;
@@ -547,31 +547,31 @@ _ = embed_tokens;
 
 test "combine_embeddings_behavior" {
 // Given: List<TernaryEmbedding>
-// When: [CYR:Комб]andнandроinанandе [CYR:через] bundling ([CYR:мажор]and[CYR:тарное] [CYR:голо]withоinанandе)
-// Then: Returns едand[CYR:ный] TernaryEmbedding
+// When: [CYR:[TRANSLATED]]and[EN]and[EN]in[EN]and[EN] [CYR:[TRANSLATED]] bundling ([CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:go[EN]]with[EN]in[EN]and[EN])
+// Then: Returns [EN]and[CYR:ny] TernaryEmbedding
 // Test combine_embeddings: verify behavior is callable (compile-time check)
 _ = combine_embeddings;
 }
 
 test "bind_embeddings_behavior" {
-// Given: Дinа TernaryEmbedding
-// When: Сin[CYR:язы]inанandе [CYR:через] XOR ([CYR:тро]and[CYR:чный])
-// Then: Returns within[CYR:язанный] TernaryEmbedding
+// Given: [EN]in[EN] TernaryEmbedding
+// When: [EN]in[CYR:I[EN]y]in[EN]and[EN] [CYR:[TRANSLATED]] XOR ([CYR:[TRANSLATED]]and[CYR:[EN]ny])
+// Then: Returns within[CYR:I[TRANSLATED]ny] TernaryEmbedding
 // Test bind_embeddings: verify behavior is callable (compile-time check)
 _ = bind_embeddings;
 }
 
 test "chunk_code_behavior" {
-// Given: [CYR:Полный] andwith[CYR:ходный] toод
-// When: [CYR:Разб]andенandе on with[CYR:емант]andчеwithtoandе [CYR:чан]toand
+// Given: [CYR:[TRANSLATED]ny] andwith[CYR:[TRANSLATED]ny] to[EN]
+// When: [CYR:[TRANSLATED]]and[EN]and[EN] on with[CYR:[TRANSLATED]]and[EN]withtoand[EN] [CYR:[TRANSLATED]]toand
 // Then: Returns List<CodeChunk>
 // Test chunk_code: verify behavior is callable (compile-time check)
 _ = chunk_code;
 }
 
 test "detect_chunk_type_behavior" {
-// Given: [CYR:Фрагмент] to[CYR:ода]
-// When: [CYR:Кла]withwithandфandtoацandя тandпа [CYR:чан]toа
+// Given: [CYR:[TRANSLATED]me[EN]] to[CYR:[TRANSLATED]]
+// When: [CYR:[TRANSLATED]]withwithand[EN]andto[EN]andI [EN]and[EN] [CYR:[TRANSLATED]]to[EN]
 // Then: Returns ChunkType
 // Test detect_chunk_type: verify behavior is callable (compile-time check)
 _ = detect_chunk_type;
@@ -579,15 +579,15 @@ _ = detect_chunk_type;
 
 test "extract_chunk_metadata_behavior" {
 // Given: CodeChunk
-// When: Изin[CYR:лечен]andе [CYR:метаданных] (andмеon, тandпы, in[CYR:ызо]inы)
+// When: [EN]in[CYR:[EN]chen]and[EN] [CYR:[TRANSLATED]data] (and[EN]on, [EN]and[EN]y, in[CYR:y[EN]]iny)
 // Then: Returns Map<String, String>
 // Test extract_chunk_metadata: verify behavior is callable (compile-time check)
 _ = extract_chunk_metadata;
 }
 
 test "create_index_behavior" {
-// Given: IndexType and parameterы
-// When: Creation пуwiththat and[CYR:нде]towithа
+// Given: IndexType and parametery
+// When: Creation [EN]withthat and[CYR:[TRANSLATED]]towith[EN]
 // Then: Returns TernaryIndex
 // Test create_index: verify behavior is callable (compile-time check)
 _ = create_index;
@@ -595,15 +595,15 @@ _ = create_index;
 
 test "add_to_index_behavior" {
 // Given: TernaryIndex and CodeChunk
-// When: [CYR:Доба]in[CYR:лен]andе [CYR:чан]toа in and[CYR:нде]towith
-// Then: [CYR:Обно]in[CYR:ляет] and[CYR:нде]towith
+// When: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]to[EN] in and[CYR:[TRANSLATED]]towith
+// Then: [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] and[CYR:[TRANSLATED]]towith
 // Test add_to_index: verify behavior is callable (compile-time check)
 _ = add_to_index;
 }
 
 test "build_lsh_tables_behavior" {
 // Given: List<TernaryEmbedding>
-// When: Поwith[CYR:троен]andе LSH [CYR:табл]andц for быwith[CYR:трого] поandwithtoа
+// When: [EN]with[CYR:[TRANSLATED]]and[EN] LSH [CYR:[TRANSLATED]]and[EN] for [EN]ywith[CYR:[TRANSLATED]go] [EN]andwithto[EN]
 // Then: Returns hash tables
 // Test build_lsh_tables: verify behavior is callable (compile-time check)
 _ = build_lsh_tables;
@@ -611,23 +611,23 @@ _ = build_lsh_tables;
 
 test "build_ternary_tree_behavior" {
 // Given: List<TernaryEmbedding>
-// When: Поwith[CYR:троен]andе [CYR:тро]and[CYR:чного] [CYR:дере]inа поandwithtoа
-// Then: Returns to[CYR:орень] [CYR:дере]inа
+// When: [EN]with[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]go] [CYR:[TRANSLATED]]in[EN] [EN]andwithto[EN]
+// Then: Returns to[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[EN]
 // Test build_ternary_tree: verify behavior is callable (compile-time check)
 _ = build_ternary_tree;
 }
 
 test "search_similar_behavior" {
 // Given: RetrievalQuery and TernaryIndex
-// When: Поandwithto [CYR:похож]andх [CYR:чан]toоin
+// When: [EN]andwithto [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]to[EN]in
 // Then: Returns RetrievalResult
 // Test search_similar: verify behavior is callable (compile-time check)
 _ = search_similar;
 }
 
 test "compute_similarity_behavior" {
-// Given: Дinа TernaryEmbedding and SimilarityMetric
-// When: [CYR:Выч]andwith[CYR:лен]andе with[CYR:ход]withтinа
+// Given: [EN]in[EN] TernaryEmbedding and SimilarityMetric
+// When: [CYR:Vy[EN]]andwith[CYR:[TRANSLATED]]and[EN] with[CYR:[TRANSLATED]]with[EN]in[EN]
 // Then: Returns Float 0.0-1.0
 // Test compute_similarity: verify behavior is callable (compile-time check)
 _ = compute_similarity;
@@ -635,23 +635,23 @@ _ = compute_similarity;
 
 test "rank_results_behavior" {
 // Given: List<SimilarityResult>
-// When: [CYR:Ранж]andроinанandе по [CYR:реле]in[CYR:антно]withтand
-// Then: Returns fromwith[CYR:орт]andроin[CYR:анный] withпandwithоto
+// When: [CYR:[TRANSLATED]]and[EN]in[EN]and[EN] [EN] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]with[EN]and
+// Then: Returns fromwith[CYR:[TRANSLATED]]and[EN]in[CYR:[EN]ny] with[EN]andwith[EN]to
 // Test rank_results: verify behavior is callable (compile-time check)
 _ = rank_results;
 }
 
 test "filter_by_quality_behavior" {
 // Given: List<SimilarityResult> and min_quality
-// When: Фand[CYR:льтрац]andя нandзtoоto[CYR:аче]withтin[CYR:енных] resultоin
-// Then: Returns fromфand[CYR:льтро]in[CYR:анный] withпandwithоto
+// When: [EN]and[CYR:l[TRANSLATED]]andI [EN]and[EN]to[EN]to[CYR:[TRANSLATED]]with[EN]in[CYR:[TRANSLATED]y[EN]] result[EN]in
+// Then: Returns from[EN]and[CYR:l[TRANSLATED]]in[CYR:[EN]ny] with[EN]andwith[EN]to
 // Test filter_by_quality: verify behavior is callable (compile-time check)
 _ = filter_by_quality;
 }
 
 test "create_knowledge_base_behavior" {
-// Given: [CYR:Имя] and on[CYR:чальные] [CYR:данные]
-// When: Creation ноinой [CYR:базы] зonнandй
+// Given: [CYR:[EN]I] and on[CYR:[EN]l[EN]y[EN]] [CYR:data]
+// When: Creation [EN]in[EN] [CYR:[TRANSLATED]y] [EN]on[EN]and[EN]
 // Then: Returns KnowledgeBase
 // Test create_knowledge_base: verify behavior is callable (compile-time check)
 _ = create_knowledge_base;
@@ -659,16 +659,16 @@ _ = create_knowledge_base;
 
 test "add_knowledge_behavior" {
 // Given: KnowledgeBase and KnowledgeEntry
-// When: [CYR:Доба]in[CYR:лен]andе ноinой [CYR:зап]andwithand
-// Then: [CYR:Обно]in[CYR:ляет] [CYR:базу] and and[CYR:нде]towith
+// When: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] [EN]in[EN] [CYR:[TRANSLATED]]andwithand
+// Then: [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [CYR:[TRANSLATED]] and and[CYR:[TRANSLATED]]towith
 // Test add_knowledge: verify behavior is callable (compile-time check)
 _ = add_knowledge;
 }
 
 test "update_quality_score_behavior" {
 // Given: KnowledgeEntry and feedback
-// When: [CYR:Обно]in[CYR:лен]andе [CYR:оцен]toand to[CYR:аче]withтinа on оwithноinе andwith[CYR:пользо]inанandя
-// Then: [CYR:Пере]withчandтыin[CYR:ает] quality_score
+// When: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]toand to[CYR:[TRANSLATED]]with[EN]in[EN] on [EN]with[EN]in[EN] andwith[CYR:[EN]l[EN]]in[EN]andI
+// Then: [CYR:[TRANSLATED]]with[EN]and[EN]yin[CYR:acts] quality_score
 // Test update_quality_score: verify returns a float in valid range
 // TODO: Add specific test for update_quality_score
 _ = update_quality_score;
@@ -676,31 +676,31 @@ _ = update_quality_score;
 
 test "prune_low_quality_behavior" {
 // Given: KnowledgeBase and threshold
-// When: [CYR:Удален]andе нandзtoоto[CYR:аче]withтin[CYR:енных] [CYR:зап]andwithей
-// Then: Очand[CYR:щает] [CYR:базу]
+// When: [CYR:[TRANSLATED]]and[EN] [EN]and[EN]to[EN]to[CYR:[TRANSLATED]]with[EN]in[CYR:[TRANSLATED]y[EN]] [CYR:[TRANSLATED]]andwith[EN]
+// Then: [EN]and[CYR:[EN]acts] [CYR:[TRANSLATED]]
 // Test prune_low_quality: verify behavior is callable (compile-time check)
 _ = prune_low_quality;
 }
 
 test "save_knowledge_base_behavior" {
 // Given: KnowledgeBase and path
-// When: [CYR:Сохра]notнandе on дandwithto
-// Then: [CYR:Зап]andwithыin[CYR:ает] in file
+// When: [CYR:[TRANSLATED]]not[EN]and[EN] on [EN]andwithto
+// Then: [CYR:[TRANSLATED]]andwithyin[CYR:acts] in file
 // Test save_knowledge_base: verify behavior is callable (compile-time check)
 _ = save_knowledge_base;
 }
 
 test "load_knowledge_base_behavior" {
-// Given: [CYR:Путь] to fileу
-// When: [CYR:Загруз]toа with дandwithtoа
+// Given: [CYR:[TRANSLATED]] to file[EN]
+// When: [CYR:[TRANSLATED]]to[EN] with [EN]andwithto[EN]
 // Then: Returns KnowledgeBase
 // Test load_knowledge_base: verify behavior is callable (compile-time check)
 _ = load_knowledge_base;
 }
 
 test "compute_semantic_intensity_behavior" {
-// Given: [CYR:Стро]toа to[CYR:ода]
-// When: [CYR:Выч]andwith[CYR:лен]andе "with[CYR:емант]andчеwithtoой and[CYR:нтен]withandinноwithтand"
+// Given: [CYR:[TRANSLATED]]to[EN] to[CYR:[TRANSLATED]]
+// When: [CYR:Vy[EN]]andwith[CYR:[TRANSLATED]]and[EN] "with[CYR:[TRANSLATED]]and[EN]withto[EN] and[CYR:[TRANSLATED]]withandin[EN]with[EN]and"
 // Then: Returns Float score
 // Test compute_semantic_intensity: verify returns a float in valid range
 // TODO: Add specific test for compute_semantic_intensity
@@ -708,17 +708,17 @@ _ = compute_semantic_intensity;
 }
 
 test "identify_distorted_lines_behavior" {
-// Given: Деto[CYR:омп]orроin[CYR:анный] toод and [CYR:порого]inое зon[CYR:чен]andе
-// When: Поandwithto with[CYR:тро]to with inыwithоtoой in[CYR:ероятно]with[CYR:тью] andwithto[CYR:ажен]andя
-// Then: Returns List<Int> [CYR:номеро]in with[CYR:тро]to
+// Given: [EN]to[CYR:[TRANSLATED]]or[EN]in[CYR:[EN]ny] to[EN] and [CYR:[TRANSLATED]go]in[EN] [EN]on[CYR:[TRANSLATED]]and[EN]
+// When: [EN]andwithto with[CYR:[TRANSLATED]]to with inywith[EN]to[EN] in[CYR:[TRANSLATED]I[TRANSLATED]]with[CYR:[TRANSLATED]] andwithto[CYR:[TRANSLATED]]andI
+// Then: Returns List<Int> [CYR:[TRANSLATED]]in with[CYR:[TRANSLATED]]to
 // Test identify_distorted_lines: verify behavior is callable (compile-time check)
 _ = identify_distorted_lines;
 }
 
 test "prioritize_retrieval_behavior" {
-// Given: List<Int> andwithto[CYR:ажённых] with[CYR:тро]to
-// When: Прandорandтand[CYR:зац]andя for RAG [CYR:запро]withоin
-// Then: Returns [CYR:упорядоченный] withпandwithоto
+// Given: List<Int> andwithto[CYR:[TRANSLATED]y[EN]] with[CYR:[TRANSLATED]]to
+// When: [EN]and[EN]and[EN]and[CYR:[TRANSLATED]]andI for RAG [CYR:[EN]pro]with[EN]in
+// Then: Returns [CYR:[TRANSLATED]I[TRANSLATED]ny] with[EN]andwith[EN]to
 // Test prioritize_retrieval: verify behavior is callable (compile-time check)
 _ = prioritize_retrieval;
 }

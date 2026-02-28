@@ -72,10 +72,10 @@ pub const EmotionalState = enum {
     pub fn getMarker(self: EmotionalState, lang: multilingual.Language) []const u8 {
         return switch (lang) {
             .Russian => switch (self) {
-                .Happy => "[CYR:Рад] by[CYR:мочь]! ",
-                .Interested => "[CYR:Интере]withно! ",
-                .Empathetic => "[CYR:Пон]and[CYR:маю]. ",
-                .Enthusiastic => "[CYR:Отл]and[CYR:чно]! ",
+                .Happy => "[CYR:[EN]] by[CYR:[EN]]! ",
+                .Interested => "[CYR:[EN]]with[EN]! ",
+                .Empathetic => "[CYR:[EN]]and[CYR:[EN]]. ",
+                .Enthusiastic => "[CYR:[EN]]and[CYR:[EN]]! ",
                 .Calm => "",
             },
             .Chinese => switch (self) {
@@ -135,9 +135,9 @@ pub const Formality = enum {
     pub fn getGreeting(self: Formality, lang: multilingual.Language) []const u8 {
         return switch (lang) {
             .Russian => switch (self) {
-                .Casual => "Прandinет! ",
-                .Neutral => "[CYR:Здра]inwithтin[CYR:уйте]! ",
-                .Formal => "[CYR:Добрый] [CYR:день]! ",
+                .Casual => "[EN]andin[EN]! ",
+                .Neutral => "[CYR:[EN]]inwith[EN]in[CYR:[EN]]! ",
+                .Formal => "[CYR:[EN]] [CYR:[EN]]! ",
             },
             .Chinese => switch (self) {
                 .Casual => "嗨！",
@@ -165,9 +165,9 @@ pub const Formality = enum {
     pub fn getFarewell(self: Formality, lang: multilingual.Language) []const u8 {
         return switch (lang) {
             .Russian => switch (self) {
-                .Casual => "Поtoа! ",
-                .Neutral => "До withinandyesнandя! ",
-                .Formal => "Вwith[CYR:его] before[CYR:брого]! ",
+                .Casual => "[EN]to[EN]! ",
+                .Neutral => "[EN] withinandyes[EN]and[EN]! ",
+                .Formal => "[EN]with[CYR:[EN]] before[CYR:[EN]]! ",
             },
             .Chinese => switch (self) {
                 .Casual => "拜拜！",
@@ -450,7 +450,7 @@ pub const PersonalityEngine = struct {
         const greetings = [_][]const u8{
             "hello",     "hi",     "hey",
             "good morning", "good evening", "good day",
-            "greetings", "прandinет", "[CYR:здра]inwithтinуй",
+            "greetings", "[EN]andin[EN]", "[CYR:[EN]]inwith[EN]in[EN]",
             "你好",       "hola",   "guten tag",
         };
 
@@ -474,7 +474,7 @@ pub const PersonalityEngine = struct {
         const farewells = [_][]const u8{
             "goodbye", "bye",     "farewell",
             "see you", "later",   "take care",
-            "bytoа",    "before withinandyesнandя", "[CYR:прощай]",
+            "byto[EN]",    "before withinandyes[EN]and[EN]", "[CYR:[EN]]",
             "再见",     "adiós",   "auf wiedersehen",
         };
 
@@ -565,7 +565,7 @@ pub fn runBenchmark() !void {
         .{ .query = "oh I see now, thanks!", .feedback = .ThumbsUp },
 
         // Multilingual
-        .{ .query = "прandinет, toаto [CYR:дела]?", .feedback = .Acceptance },
+        .{ .query = "[EN]andin[EN], to[EN]to [CYR:[EN]]?", .feedback = .Acceptance },
         .{ .query = "你好，帮个忙", .feedback = .ThumbsUp },
         .{ .query = "hola amigo", .feedback = .Acceptance },
 
@@ -682,7 +682,7 @@ test "emotional state marker" {
     try std.testing.expect(std.mem.eql(u8, marker_en, "Happy to help! "));
 
     const marker_ru = EmotionalState.Happy.getMarker(.Russian);
-    try std.testing.expect(std.mem.eql(u8, marker_ru, "[CYR:Рад] by[CYR:мочь]! "));
+    try std.testing.expect(std.mem.eql(u8, marker_ru, "[CYR:[EN]] by[CYR:[EN]]! "));
 }
 
 test "emotional state transition" {
@@ -785,7 +785,7 @@ test "greeting detection" {
     var response = engine.respond("hello there!");
     try std.testing.expect(response.is_greeting);
 
-    response = engine.respond("прandinет [CYR:друг]");
+    response = engine.respond("[EN]andin[EN] [CYR:[EN]]");
     try std.testing.expect(response.is_greeting);
 
     response = engine.respond("write code for me");
@@ -798,7 +798,7 @@ test "farewell detection" {
     var response = engine.respond("goodbye friend");
     try std.testing.expect(response.is_farewell);
 
-    response = engine.respond("bytoа, before inwith[CYR:треч]and");
+    response = engine.respond("byto[EN], before inwith[CYR:[EN]]and");
     try std.testing.expect(response.is_farewell);
 
     response = engine.respond("tell me more");

@@ -418,7 +418,7 @@ test_cases:
     expected: "Real fibonacci in Java"
 
   - name: csharp_dijkstra
-    given: "[CYR:Нап]andшand Dijkstra on C#"
+    given: "[CYR:[TRANSLATED]]and[EN]and Dijkstra on C#"
     expected: "Real Dijkstra in C#"
 
   - name: swift_stack

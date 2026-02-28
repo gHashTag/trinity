@@ -15,7 +15,7 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:КОНСТАНТЫ]
+// [CYR:[TRANSLATED]A[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PHI: f64 = 0;
@@ -38,7 +38,7 @@ pub const DEPLOY_TIMEOUT_MS: f64 = 0;
 
 pub const HEALING_TIMEOUT_MS: f64 = 0;
 
-// [CYR:Базо]inые φ-toонwith[CYR:танты] (Sacred Formula)
+// [CYR:[TRANSLATED]]iny[EN] φ-to[EN]with[CYR:[TRANSLATED]y] (Sacred Formula)
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const SQRT5: f64 = 2.2360679774997896;
 pub const TAU: f64 = 6.283185307179586;
@@ -47,14 +47,14 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:ТИПЫ]
+// [CYR:[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Соwith[CYR:тоян]andе autonomous lifecycle
+/// [EN]with[CYR:[EN]I[EN]]and[EN] autonomous lifecycle
 pub const LifecycleState = struct {
 };
 
-/// [CYR:Событ]andе [CYR:перехода] lifecycle
+/// [CYR:[TRANSLATED]y[EN]]and[EN] [CYR:[TRANSLATED]] lifecycle
 pub const LifecycleEvent = struct {
     event_id: []const u8,
     from_state: LifecycleState,
@@ -64,7 +64,7 @@ pub const LifecycleEvent = struct {
     trigger: []const u8,
 };
 
-/// Аin[CYR:тономный] [CYR:агент] lifecycle
+/// Ain[CYR:[TRANSLATED]ny] [CYR:agent] lifecycle
 pub const AutonomousAgent = struct {
     agent_id: []const u8,
     state: LifecycleState,
@@ -74,7 +74,7 @@ pub const AutonomousAgent = struct {
     sacred_rating: f64,
 };
 
-/// [CYR:Задача] in lifecycle
+/// [CYR:[TRANSLATED]] in lifecycle
 pub const Task = struct {
     task_id: []const u8,
     task_type: TaskType,
@@ -93,7 +93,7 @@ pub const TaskType = struct {
 pub const TaskStatus = struct {
 };
 
-/// [CYR:Метр]andtoand [CYR:про]andзinодand[CYR:тельно]withтand [CYR:агента]
+/// [CYR:[TRANSLATED]]andtoand [CYR:pro]and[EN]in[EN]and[CYR:[EN]lno]with[EN]and [CYR:agent[EN]]
 pub const PerformanceMetrics = struct {
     tasks_completed: i64,
     tasks_failed: i64,
@@ -103,7 +103,7 @@ pub const PerformanceMetrics = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:ПАМЯТЬ] [CYR:ДЛЯ] WASM
+// [CYR:[EN]A[TRANSLATED]] [CYR:[TRANSLATED]] WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -153,13 +153,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-and[CYR:нтер]fieldsцandя
+/// φ-and[CYR:[TRANSLATED]]fields[EN]andI
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// Геnot[CYR:рац]andя φ-withпand[CYR:рал]and
+/// [EN]not[CYR:[TRANSLATED]]andI φ-with[EN]and[CYR:[TRANSLATED]]and
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -183,23 +183,23 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
           to_state: LifecycleState,
           event: LifecycleEvent
       ) !void {
-          // [CYR:Выч]andwith[CYR:ляем] sacred score for [CYR:перехода]
+          // [CYR:Vy[EN]]andwith[CYR:[EN]I[EN]] sacred score for [CYR:[TRANSLATED]]
           const base_score = computeTransitionScore(agent.state, to_state, agent.performance_metrics);
 
-          // Прand[CYR:меняем] φ-weighting
+          // [EN]and[CYR:meI[EN]] φ-weighting
           const sacred_score = base_score * PHI_SQ + event.pas_score * PHI_INV_SQ;
 
-          // [CYR:Про]in[CYR:еряем] [CYR:порог] [CYR:перехода]
+          // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
           if (sacred_score < MIN_PAS_SCORE_FOR_DEPLOY and to_state == .deployment) {
               std.log.warn("PAS score {d:.3} below threshold for deployment", .{sacred_score});
               return;
           }
 
-          // [CYR:Выполняем] [CYR:переход]
+          // [CYR:Vy[TRANSLATED]I[EN]] [CYR:[TRANSLATED]]
           agent.state = to_state;
           try recordLifecycleEvent(agent, event);
 
-          // Trigger with[CYR:ледующую] [CYR:задачу]
+          // Trigger with[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
           try scheduleNextTask(agent, to_state);
       }
 
@@ -210,7 +210,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
           to: LifecycleState,
           metrics: PerformanceMetrics
       ) f32 {
-          // [CYR:Вперед] [CYR:толь]toо [CYR:допу]withтand[CYR:мые] [CYR:переходы]
+          // [CYR:[TRANSLATED]] [CYR:[EN]l]to[EN] [CYR:[TRANSLATED]]with[EN]and[CYR:[EN]y[EN]] [CYR:[TRANSLATED]y]
           const valid_transitions = &.{
               .{ .from = .ideation, .to = .specification, .weight = 1.0 },
               .{ .from = .specification, .to = .generation, .weight = 1.0 },
@@ -225,7 +225,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
           var score: f32 = 0.0;
           for (valid_transitions) |transition| {
               if (transition.from == from and transition.to == to) {
-                  // Учandтыin[CYR:аем] performance metrics
+                  // [EN]and[EN]yin[CYR:[TRANSLATED]] performance metrics
                   const performance_factor = @as(f32, @floatFromInt(metrics.tasks_completed)) /
                                               @as(f32, @floatFromInt(metrics.tasks_completed + metrics.tasks_failed));
                   score = transition.weight * performance_factor;
@@ -241,10 +241,10 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
       pub fn autoHeal(agent: *AutonomousAgent, failure_event: FailureEvent) !void {
           std.log.err("Healing agent {s} from failure: {s}", .{ agent.agent_id, failure_event.description });
 
-          // Аon[CYR:ход]andм root cause
+          // Aon[CYR:[TRANSLATED]]and[EN] root cause
           const root_cause = try diagnoseRootCause(failure_event);
 
-          // Прand[CYR:меняем] sacred healing
+          // [EN]and[CYR:meI[EN]] sacred healing
           const healing_power = computeHealingPower(root_cause.severity, agent.sacred_rating);
           if (healing_power < PHI_INV_SQ) {
               std.log.err("Healing power too low: {d:.3} < {d:.3}", .{ healing_power, PHI_INV_SQ });
@@ -252,7 +252,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
               return;
           }
 
-          // Прand[CYR:меняем] andwith[CYR:пра]in[CYR:лен]andе
+          // [EN]and[CYR:meI[EN]] andwith[CYR:law]in[CYR:[TRANSLATED]]and[EN]
           const attempts = 0;
           while (attempts < MAX_RETRY_ATTEMPTS) : (attempts += 1) {
               const fixed = try applyHealingStrategy(root_cause, attempts);
@@ -264,14 +264,14 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
               }
           }
 
-          // Еwithлand not [CYR:получ]andлоwithь — эwithtoалand[CYR:руем]
+          // [EN]with[EN]and not [CYR:[TRANSLATED]]and[EN]with[EN] — [EN]withto[EN]and[CYR:[TRANSLATED]]
           try escalateToHuman(agent, failure_event);
       }
 
 
 
       pub fn computeHealingPower(severity: f32, sacred_rating: f32) f32 {
-          // Sacred rating уwithorin[CYR:ает] healing withпоwith[CYR:обно]withть
+          // Sacred rating [EN]withorin[CYR:acts] healing with[EN]with[CYR:[TRANSLATED]]with[EN]
           const base_power = 1.0 - severity;
           return base_power * sacred_rating * PHI;
       }
@@ -282,7 +282,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
           std.log.err("CRITICAL: Agent {s} requires human intervention", .{ agent.agent_id });
           std.log.err("Failure: {s}", .{ event.description });
 
-          // [CYR:Отпра]in[CYR:ляем] уin[CYR:едомлен]andе
+          // [CYR:[EN]law]in[CYR:[EN]I[EN]] [EN]in[CYR:[TRANSLATED]]and[EN]
           try sendAlert(alert{
               .level = .critical,
               .agent_id = agent.agent_id,
@@ -299,14 +299,14 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 
       pub fn monitorAndAdapt(agent: *AutonomousAgent) !void {
           while (agent.state == .monitoring) {
-              // [CYR:Соб]and[CYR:раем] [CYR:метр]andtoand
+              // [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andtoand
               const metrics = try collectMetrics(agent);
 
-              // [CYR:Выч]andwith[CYR:ляем] sacred health score
+              // [CYR:Vy[EN]]andwith[CYR:[EN]I[EN]] sacred health score
               const health_score = try computeHealthScore(metrics);
 
               if (health_score < PHI_INV_SQ) {
-                  // Health toрandтandчеwithtoand нandзtoandй — [CYR:запу]withto[CYR:аем] healing
+                  // Health to[EN]and[EN]and[EN]withtoand [EN]and[EN]toand[EN] — [CYR:[TRANSLATED]]withto[CYR:[TRANSLATED]] healing
                   const failure_event = FailureEvent{
                       .description = "Low health score",
                       .severity = 1.0 - health_score,
@@ -314,16 +314,16 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
                   };
                   try autoHeal(agent, failure_event);
               } else if (health_score > TRINITY * 0.99) {
-                  // [CYR:Переход]andм in stable state
+                  // [CYR:[TRANSLATED]]and[EN] in stable state
                   agent.state = .stable;
                   std.log.info("Agent {s} achieved stable state", .{ agent.agent_id });
                   break;
               }
 
-              // [CYR:Адапт]and[CYR:руем] parameterы on оwithноinе [CYR:метр]andto
+              // [CYR:A[TRANSLATED]]and[CYR:[TRANSLATED]] parametery on [EN]with[EN]in[EN] [CYR:[TRANSLATED]]andto
               try adaptParameters(agent, metrics);
 
-              // Sleep [CYR:между] цandto[CYR:лам]and [CYR:мон]and[CYR:тор]and[CYR:нга]
+              // Sleep [CYR:[TRANSLATED]] [EN]andto[CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
               std.time.sleep(1_000_000_000); // 1 second
           }
       }
@@ -331,14 +331,14 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 
 
       pub fn computeHealthScore(metrics: SystemMetrics) !f32 {
-          // Uptime — with[CYR:амый] in[CYR:ажный] фаto[CYR:тор]
+          // Uptime — with[CYR:[EN]y[EN]] in[CYR:[EN]ny] [EN]to[CYR:[TRANSLATED]]
           const uptime_factor = metrics.uptime_percentage * 0.5;
 
-          // Success rate — in[CYR:торой] по in[CYR:ажно]withтand
+          // Success rate — in[CYR:[TRANSLATED]] [EN] in[CYR:[TRANSLATED]]with[EN]and
           const success_factor = @as(f32, @floatFromInt(metrics.tasks_completed)) /
                                @as(f32, @floatFromInt(metrics.tasks_completed + metrics.tasks_failed)) * 0.3;
 
-          // Response time — [CYR:трет]andй фаto[CYR:тор]
+          // Response time — [CYR:[TRANSLATED]]and[EN] [EN]to[CYR:[TRANSLATED]]
           const latency_factor = if (metrics.avg_response_ms < 1000)
               1.0
           else if (metrics.avg_response_ms < 5000)
@@ -346,7 +346,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
           else
               0.3;
 
-          // Прand[CYR:меняем] φ-weighting
+          // [EN]and[CYR:meI[EN]] φ-weighting
           return (uptime_factor + success_factor + latency_factor) * PHI_INV_SQ;
       }
 
@@ -359,7 +359,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
       ) !void {
           std.log.info("Deploying agent {s} to K8s", .{ agent.agent_id });
 
-          // [CYR:Про]in[CYR:еряем] PAS gate [CYR:перед] [CYR:деплоем]
+          // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] PAS gate [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
           const pas_score = try computePASGateScore(build_path);
           if (pas_score < MIN_PAS_SCORE_FOR_DEPLOY) {
               const error = try std.fmt.allocPrint(
@@ -375,13 +375,13 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
               return;
           }
 
-          // [CYR:Создаём] Kubernetes deployment
+          // [CYR:[TRANSLATED]] Kubernetes deployment
           const deployment = try createK8sDeployment(agent, config);
 
-          // Прand[CYR:меняем] deployment
+          // [EN]and[CYR:meI[EN]] deployment
           try applyK8sDeployment(deployment);
 
-          // [CYR:Ждём] гfromоinноwithтand
+          // [CYR:[TRANSLATED]] [EN]from[EN]in[EN]with[EN]and
           const ready = try waitForDeploymentReady(agent.agent_id, DEPLOY_TIMEOUT_MS);
           if (!ready) {
               std.log.err("Deployment timeout for agent {s}", .{ agent.agent_id });
@@ -389,7 +389,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
               return;
           }
 
-          // [CYR:Деплой] уwith[CYR:пешен]
+          // [CYR:[TRANSLATED]] [EN]with[CYR:[TRANSLATED]]
           agent.state = .monitoring;
           std.log.info("Agent {s} deployed successfully", .{ agent.agent_id });
       }
@@ -397,7 +397,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 
 
       pub fn computePASGateScore(build_path: []const u8) !f32 {
-          // [CYR:Про]in[CYR:еряем] inwithе [CYR:артефа]toты
+          // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] inwith[EN] [CYR:[TRANSLATED]]to[EN]y
           const tests_passed = try checkTests(build_path);
           const coverage = try checkCoverage(build_path);
           const sacred_rating = try checkSacredRating(build_path);
@@ -418,7 +418,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
       };
 
       pub fn federateCluster(agent_a: *AutonomousAgent, agent_b: *AutonomousAgent) !FederationPair {
-          // [CYR:Выч]andwith[CYR:ляем] sacred bond (withоinмеwithтandмоwithть [CYR:агенто]in)
+          // [CYR:Vy[EN]]andwith[CYR:[EN]I[EN]] sacred bond (with[EN]in[EN]with[EN]and[EN]with[EN] [CYR:agent[EN]]in)
           const bond = computeSacredBond(agent_a, agent_b);
 
           if (bond < PHI_INV_SQ) {
@@ -426,7 +426,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
               return error.IncompatibleAgents;
           }
 
-          // [CYR:Создаём] federation
+          // [CYR:[TRANSLATED]] federation
           const pair = FederationPair{
               .agent_a = agent_a,
               .agent_b = agent_b,
@@ -434,7 +434,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
               .sacred_bond = bond,
           };
 
-          // Уwithтаoninлandin[CYR:аем] communication channel
+          // [EN]with[EN]onin[EN]andin[CYR:[TRANSLATED]] communication channel
           try establishCommunicationChannel(pair);
 
           std.log.info("Federated {s} <-> {s} (bond: {d:.3})",
@@ -446,10 +446,10 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 
 
       pub fn computeSacredBond(a: *AutonomousAgent, b: *AutonomousAgent) f32 {
-          // Соin[CYR:паден]andе тandпоin [CYR:задач]
+          // [EN]in[CYR:[TRANSLATED]]and[EN] [EN]and[EN]in [CYR:[TRANSLATED]]
           const task_affinity = computeTaskAffinity(a, b);
 
-          // [CYR:Географ]andчеwithtoая блandзоwithть
+          // [CYR:[TRANSLATED]]and[EN]withto[EN]I [EN]and[EN]with[EN]
           const geo_affinity = computeGeoAffinity(a, b);
 
           // Sacred rating compatibility
@@ -468,88 +468,88 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "transition_state_behavior" {
-// Given: Теto[CYR:ущее] withоwith[CYR:тоян]andе, [CYR:целе]inое withоwith[CYR:тоян]andе, with[CYR:обыт]andе
-// When: transition_state in[CYR:ызы]in[CYR:ает]withя
+// Given: [EN]to[CYR:[TRANSLATED]] with[EN]with[CYR:[EN]I[EN]]and[EN], [CYR:[TRANSLATED]]in[EN] with[EN]with[CYR:[EN]I[EN]]and[EN], with[CYR:[EN]y[EN]]and[EN]
+// When: transition_state in[CYR:y[EN]y]in[CYR:acts]withI
 // Then: 
 // Test transition_state: verify behavior is callable (compile-time check)
 _ = transition_state;
 }
 
 test "compute_transition_score_behavior" {
-// Given: Иwith[CYR:ходное] and [CYR:целе]inое withоwith[CYR:тоян]andе
-// When: compute_transition_score in[CYR:ызы]in[CYR:ает]withя
+// Given: [EN]with[CYR:[TRANSLATED]] and [CYR:[TRANSLATED]]in[EN] with[EN]with[CYR:[EN]I[EN]]and[EN]
+// When: compute_transition_score in[CYR:y[EN]y]in[CYR:acts]withI
 // Then: 
 // Test compute_transition_score: verify behavior is callable (compile-time check)
 _ = compute_transition_score;
 }
 
 test "auto_heal_behavior" {
-// Given: Аin[CYR:тономный] [CYR:агент] in withоwith[CYR:тоян]andand healing
-// When: auto_heal in[CYR:ызы]in[CYR:ает]withя
+// Given: Ain[CYR:[TRANSLATED]ny] [CYR:agent] in with[EN]with[CYR:[EN]I[EN]]andand healing
+// When: auto_heal in[CYR:y[EN]y]in[CYR:acts]withI
 // Then: 
 // Test auto_heal: verify behavior is callable (compile-time check)
 _ = auto_heal;
 }
 
 test "compute_healing_power_behavior" {
-// Given: [CYR:Тяже]withть with[CYR:боя] and sacred rating [CYR:агента]
-// When: compute_healing_power in[CYR:ызы]in[CYR:ает]withя
+// Given: [CYR:[EN]I[EN]]with[EN] with[CYR:[EN]I] and sacred rating [CYR:agent[EN]]
+// When: compute_healing_power in[CYR:y[EN]y]in[CYR:acts]withI
 // Then: 
 // Test compute_healing_power: verify behavior is callable (compile-time check)
 _ = compute_healing_power;
 }
 
 test "escalate_to_human_behavior" {
-// Given: Крandтandчеwithtoandй with[CYR:бой]
-// When: escalate_to_human in[CYR:ызы]in[CYR:ает]withя
+// Given: [EN]and[EN]and[EN]withtoand[EN] with[CYR:[TRANSLATED]]
+// When: escalate_to_human in[CYR:y[EN]y]in[CYR:acts]withI
 // Then: 
 // Test escalate_to_human: verify behavior is callable (compile-time check)
 _ = escalate_to_human;
 }
 
 test "monitor_and_adapt_behavior" {
-// Given: [CYR:Агент] in withоwith[CYR:тоян]andand monitoring
-// When: monitor_and_adapt in[CYR:ызы]in[CYR:ает]withя
+// Given: [CYR:A[TRANSLATED]] in with[EN]with[CYR:[EN]I[EN]]andand monitoring
+// When: monitor_and_adapt in[CYR:y[EN]y]in[CYR:acts]withI
 // Then: 
 // Test monitor_and_adapt: verify behavior is callable (compile-time check)
 _ = monitor_and_adapt;
 }
 
 test "compute_health_score_behavior" {
-// Given: [CYR:Собранные] [CYR:метр]andtoand
-// When: compute_health_score in[CYR:ызы]in[CYR:ает]withя
+// Given: [CYR:[TRANSLATED]nye] [CYR:[TRANSLATED]]andtoand
+// When: compute_health_score in[CYR:y[EN]y]in[CYR:acts]withI
 // Then: 
 // Test compute_health_score: verify behavior is callable (compile-time check)
 _ = compute_health_score;
 }
 
 test "deploy_to_k8s_behavior" {
-// Given: [CYR:Про]in[CYR:еренный] toод and to[CYR:онф]and[CYR:гурац]andя
-// When: deploy_to_k8s in[CYR:ызы]in[CYR:ает]withя
+// Given: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]ny] to[EN] and to[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI
+// When: deploy_to_k8s in[CYR:y[EN]y]in[CYR:acts]withI
 // Then: 
 // Test deploy_to_k8s: verify behavior is callable (compile-time check)
 _ = deploy_to_k8s;
 }
 
 test "compute_pas_gate_score_behavior" {
-// Given: Build path with [CYR:артефа]to[CYR:там]and
-// When: compute_pas_gate_score in[CYR:ызы]in[CYR:ает]withя
+// Given: Build path with [CYR:[TRANSLATED]]to[CYR:[TRANSLATED]]and
+// When: compute_pas_gate_score in[CYR:y[EN]y]in[CYR:acts]withI
 // Then: 
 // Test compute_pas_gate_score: verify behavior is callable (compile-time check)
 _ = compute_pas_gate_score;
 }
 
 test "federate_cluster_behavior" {
-// Given: Дinа аin[CYR:тономных] [CYR:агента]
-// When: federate_cluster in[CYR:ызы]in[CYR:ает]withя
+// Given: [EN]in[EN] [EN]in[CYR:[TRANSLATED]y[EN]] [CYR:agent[EN]]
+// When: federate_cluster in[CYR:y[EN]y]in[CYR:acts]withI
 // Then: 
 // Test federate_cluster: verify behavior is callable (compile-time check)
 _ = federate_cluster;
 }
 
 test "compute_sacred_bond_behavior" {
-// Given: Дinа [CYR:агента]
-// When: compute_sacred_bond in[CYR:ызы]in[CYR:ает]withя
+// Given: [EN]in[EN] [CYR:agent[EN]]
+// When: compute_sacred_bond in[CYR:y[EN]y]in[CYR:acts]withI
 // Then: 
 // Test compute_sacred_bond: verify behavior is callable (compile-time check)
 _ = compute_sacred_bond;

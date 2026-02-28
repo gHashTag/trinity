@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// MULTI-LANGUAGE CODEGEN - Геnot[CYR:ратор] toоyes for inwithех [CYR:язы]toоin
+// MULTI-LANGUAGE CODEGEN - [EN]not[CYR:[EN]] to[EN]yes for inwith[EN] [CYR:[EN]]to[EN]in
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Generates code for 39 [CYR:язы]toоin andз .vibee with[CYR:пец]andфandtoацandй
-// Аin[CYR:тор]: Dmitrii Vasilev
+// Generates code for 39 [CYR:[EN]]to[EN]in and[EN] .vibee with[CYR:[EN]]and[EN]andto[EN]and[EN]
+// [EN]in[CYR:[EN]]: Dmitrii Vasilev
 // φ² + 1/φ² = 3 | PHOENIX = 999
 //
 // ═══════════════════════════════════════════════════════════════════════════════

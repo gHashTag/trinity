@@ -260,11 +260,11 @@ pub fn randomVector(len: usize, seed: u64) HybridBigInt {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// PERMUTE OPERATIONS (for toодandроinанandя bywithлеbeforein[CYR:ательно]with[CYR:тей])
+// PERMUTE OPERATIONS (for to[EN]and[EN]in[EN]and[EN] bywith[EN]beforein[CYR:[EN]]with[CYR:[EN]])
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Permute (цandtoлandчеwithtoandй withдinandг in[CYR:пра]inо on k byзandцandй)
-/// Иwithby[CYR:льзует]withя for toодandроinанandя bywithлеbeforein[CYR:ательно]with[CYR:тей]:
+/// Permute ([EN]andto[EN]and[EN]withtoand[EN] with[EN]inand[EN] in[CYR:[EN]]in[EN] on k by[EN]and[EN]and[EN])
+/// [EN]withby[CYR:[EN]]with[EN] for to[EN]and[EN]in[EN]and[EN] bywith[EN]beforein[CYR:[EN]]with[CYR:[EN]]:
 /// sequence(a, b, c) = a + permute(b, 1) + permute(c, 2)
 pub fn permute(v: *HybridBigInt, k: usize) HybridBigInt {
     v.ensureUnpacked();
@@ -278,7 +278,7 @@ pub fn permute(v: *HybridBigInt, k: usize) HybridBigInt {
 
     const shift = k % v.trit_len;
 
-    // Цandtoлandчеwithtoandй withдinandг in[CYR:пра]inо: new byзandцandя = (old + shift) % len
+    // [EN]andto[EN]and[EN]withtoand[EN] with[EN]inand[EN] in[CYR:[EN]]in[EN]: new by[EN]and[EN]and[EN] = (old + shift) % len
     for (0..v.trit_len) |i| {
         const new_pos = (i + shift) % v.trit_len;
         result.unpacked_cache[new_pos] = v.unpacked_cache[i];
@@ -287,7 +287,7 @@ pub fn permute(v: *HybridBigInt, k: usize) HybridBigInt {
     return result;
 }
 
-/// Inverse permute (цandtoлandчеwithtoandй withдinandг inлеinо on k byзandцandй)
+/// Inverse permute ([EN]andto[EN]and[EN]withtoand[EN] with[EN]inand[EN] in[EN]in[EN] on k by[EN]and[EN]and[EN])
 /// inverse_permute(permute(v, k), k) = v
 pub fn inversePermute(v: *HybridBigInt, k: usize) HybridBigInt {
     v.ensureUnpacked();
@@ -301,7 +301,7 @@ pub fn inversePermute(v: *HybridBigInt, k: usize) HybridBigInt {
 
     const shift = k % v.trit_len;
 
-    // Цandtoлandчеwithtoandй withдinandг inлеinо: new byзandцandя = (old - shift + len) % len
+    // [EN]andto[EN]and[EN]withtoand[EN] with[EN]inand[EN] in[EN]in[EN]: new by[EN]and[EN]and[EN] = (old - shift + len) % len
     for (0..v.trit_len) |i| {
         const new_pos = (i + v.trit_len - shift) % v.trit_len;
         result.unpacked_cache[new_pos] = v.unpacked_cache[i];
@@ -326,7 +326,7 @@ pub fn encodeSequence(items: []HybridBigInt) HybridBigInt {
 }
 
 /// Decode element from sequence at position
-/// Checks similarity with permuted inерwithandей to[CYR:анд]andyesта
+/// Checks similarity with permuted in[EN]withand[EN] to[CYR:[EN]]andyes[EN]
 pub fn probeSequence(sequence: *HybridBigInt, candidate: *HybridBigInt, position: usize) f64 {
     var permuted = permute(candidate, position);
     return cosineSimilarity(sequence, &permuted);
@@ -393,14 +393,14 @@ test "permute orthogonality" {
 }
 
 test "sequence encoding" {
-    // Test encodeSequence - [CYR:про]withто check what function [CYR:раб]from[CYR:ает] [CYR:без] ошandбоto
+    // Test encodeSequence - [CYR:[EN]]with[EN] check what function [CYR:[EN]]from[CYR:[EN]] [CYR:[EN]] [EN]and[EN]to
     const a = randomVector(100, 11111);
     const b = randomVector(100, 22222);
 
     var items = [_]HybridBigInt{ a, b };
     const seq = encodeSequence(&items);
 
-    // Sequence beforeлжon and[CYR:меть] ту же длandну
+    // Sequence before[EN]on and[CYR:[EN]] [EN] [EN] [EN]and[EN]
     try std.testing.expectEqual(a.trit_len, seq.trit_len);
 }
 

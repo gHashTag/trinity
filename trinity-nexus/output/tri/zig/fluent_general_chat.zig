@@ -15,7 +15,7 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:КОНСТАНТЫ]
+// [CYR:[TRANSLATED]A[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PATTERN_COUNT: f64 = 200;
@@ -28,7 +28,7 @@ pub const LOW_CONFIDENCE: f64 = 0.4;
 
 pub const UNKNOWN_CONFIDENCE: f64 = 0.3;
 
-// [CYR:Базо]inые φ-toонwith[CYR:танты] (Sacred Formula)
+// [CYR:[TRANSLATED]]iny[EN] φ-to[EN]with[CYR:[TRANSLATED]y] (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -40,7 +40,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:ТИПЫ]
+// [CYR:[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Conversation topic categories
@@ -108,7 +108,7 @@ pub const FluentChatResponse = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:ПАМЯТЬ] [CYR:ДЛЯ] WASM
+// [CYR:[EN]A[TRANSLATED]] [CYR:[TRANSLATED]] WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -158,13 +158,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-and[CYR:нтер]fieldsцandя
+/// φ-and[CYR:[TRANSLATED]]fields[EN]andI
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// Геnot[CYR:рац]andя φ-withпand[CYR:рал]and
+/// [EN]not[CYR:[TRANSLATED]]andI φ-with[EN]and[CYR:[TRANSLATED]]and
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -628,7 +628,7 @@ test "phi_constants" {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "russian_greeting" {
-// Given: "Прandinет!"
+// Given: "[EN]andin[EN]!"
 // Expected: "Warm Russian greeting, confidence > 0.8"
 // Test: russian_greeting
     // (Test setup and assertions to be implemented)
@@ -652,7 +652,7 @@ test "english_weather" {
 }
 
 test "multilingual_philosophy" {
-// Given: "[CYR:Что] таtoое withозonнandе?"
+// Given: "[CYR:[TRANSLATED]] [EN]to[EN] with[EN]on[EN]and[EN]?"
 // Expected: "Thoughtful philosophical response"
 // Test: multilingual_philosophy
     // (Test setup and assertions to be implemented)
@@ -668,7 +668,7 @@ test "unknown_honest" {
 }
 
 test "humor_request" {
-// Given: "Раwithwithtoажand [CYR:шут]toу"
+// Given: "[EN]withwithto[EN]and [CYR:[TRANSLATED]]to[EN]"
 // Expected: "Appropriate joke in Russian"
 // Test: humor_request
     // (Test setup and assertions to be implemented)
@@ -676,7 +676,7 @@ test "humor_request" {
 }
 
 test "coding_request_ru" {
-// Given: "[CYR:Нап]andшand toод with[CYR:орт]andроintoand [CYR:пузырь]toом"
+// Given: "[CYR:[TRANSLATED]]and[EN]and to[EN] with[CYR:[TRANSLATED]]and[EN]intoand [CYR:[TRANSLATED]y[EN]]to[EN]"
 // Expected: "BubbleSort implementation with Russian intro"
 // Test: coding_request_ru
     // (Test setup and assertions to be implemented)

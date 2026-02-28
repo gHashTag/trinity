@@ -2,7 +2,7 @@ const std = @import("std");
 const tvc_bigint = @import("bigint.zig");
 
 pub const TRITS_PER_BYTE: usize = 5;
-/// Маtowithand[CYR:мум] 12000 трandтоin (2400 [CYR:байт]) - beforewith[CYR:таточно] for тandпand[CYR:чных] VSA (1000-10000 and[CYR:змерен]andй)
+/// [EN]towithand[CYR:[EN]] 12000 [EN]and[EN]in (2400 [CYR:[EN]]) - beforewith[CYR:[EN]] for [EN]and[EN]and[CYR:[EN]] VSA (1000-10000 and[CYR:[EN]]and[EN])
 pub const MAX_PACKED_BYTES: usize = 2400;
 pub const MAX_TRITS: usize = MAX_PACKED_BYTES * TRITS_PER_BYTE; // = 12000
 pub const Trit = i8;

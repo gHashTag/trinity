@@ -1,15 +1,15 @@
-//! HDC Core - Basic operation гand[CYR:перразмерных] inычandwith[CYR:лен]andй
-//! with [CYR:онлайн]-[CYR:обучен]andем for with[CYR:амообучающ]andхwithя AI [CYR:моделей].
+//! HDC Core - Basic operation [EN]and[CYR:[EN]] in[EN]andwith[CYR:[EN]]and[EN]
+//! with [CYR:[EN]]-[CYR:[EN]]and[EN] for with[CYR:[EN]]and[EN]with[EN] AI [CYR:[EN]].
 //!
-//! [CYR:Науч]onя [CYR:база]:
+//! [CYR:[EN]]on[EN] [CYR:base]:
 //! - Kanerva (2009): Hyperdimensional Computing
-//! - BitNet b1.58 (2024): [CYR:Тро]and[CYR:чные] inеwithа {-1, 0, +1}
+//! - BitNet b1.58 (2024): [CYR:[EN]]and[CYR:[EN]] in[EN]with[EN] {-1, 0, +1}
 //!
 //! φ² + 1/φ² = 3 | TRINITY
 
 const std = @import("std");
 
-// [CYR:Кон]with[CYR:танты]
+// [CYR:[EN]]with[CYR:[EN]]
 pub const DEFAULT_DIM: usize = 10240;
 pub const LEARNING_RATE: f64 = 0.01;
 pub const SIMILARITY_THRESHOLD: f64 = 0.7;
@@ -17,11 +17,11 @@ pub const SIMD_WIDTH: usize = 32;
 
 pub const PHI: f64 = 1.618033988749895;
 
-// Тandпы
+// [EN]and[EN]
 pub const Trit = i8; // {-1, 0, +1}
 pub const Vec32i8 = @Vector(32, i8);
 
-/// Ternary гand[CYR:пер]inеto[CYR:тор]
+/// Ternary [EN]and[CYR:[EN]]in[EN]to[CYR:[EN]]
 pub const HyperVector = struct {
     data: []Trit,
     dim: usize,
@@ -44,7 +44,7 @@ pub const HyperVector = struct {
     }
 };
 
-/// Float аtoto[CYR:умулятор] for [CYR:онлайн] уwith[CYR:ред]notнandя
+/// Float [EN]toto[CYR:[EN]] for [CYR:[EN]] [EN]with[CYR:[EN]]not[EN]and[EN]
 pub const FloatAccumulator = struct {
     data: []f64,
     dim: usize,
@@ -61,7 +61,7 @@ pub const FloatAccumulator = struct {
     }
 };
 
-/// Прfromfromandп toлаwithwithа
+/// [EN]fromfromand[EN] to[EN]withwith[EN]
 pub const Prototype = struct {
     label: []const u8,
     accumulator: FloatAccumulator,
@@ -69,17 +69,17 @@ pub const Prototype = struct {
     count: u64,
 };
 
-/// Result with[CYR:ход]withтinа
+/// Result with[CYR:[EN]]with[EN]in[EN]
 pub const SimilarityResult = struct {
     label: []const u8,
     similarity: f64,
 };
 
 // ═══════════════════════════════════════════════════════════════
-// [CYR:БАЗОВЫЕ] HDC [CYR:ОПЕРАЦИИ]
+// [CYR:[EN]] HDC [CYR:[EN]]
 // ═══════════════════════════════════════════════════════════════
 
-/// Bind: byelement[CYR:ное] [CYR:умножен]andе (creation аwithwithоцandацandand)
+/// Bind: byelement[CYR:[EN]] [CYR:[EN]]and[EN] (creation [EN]withwith[EN]and[EN]andand)
 pub fn bind(a: []const Trit, b: []const Trit, result: []Trit) void {
     const len = @min(a.len, @min(b.len, result.len));
     const chunks = len / SIMD_WIDTH;
@@ -96,12 +96,12 @@ pub fn bind(a: []const Trit, b: []const Trit, result: []Trit) void {
     }
 }
 
-/// Unbind: that же what bind (with[CYR:амообрат]andмоwithть)
+/// Unbind: that [EN] what bind (with[CYR:[EN]]and[EN]with[EN])
 pub fn unbind(bound: []const Trit, key: []const Trit, result: []Trit) void {
     bind(bound, key, result);
 }
 
-/// Bundle: [CYR:мажор]and[CYR:тарное] [CYR:голо]withоinанandе for 2 inеto[CYR:торо]in
+/// Bundle: [CYR:[EN]]and[CYR:[EN]] [CYR:[EN]]with[EN]in[EN]and[EN] for 2 in[EN]to[CYR:[EN]]in
 pub fn bundle2(a: []const Trit, b: []const Trit, result: []Trit) void {
     const len = @min(a.len, @min(b.len, result.len));
 
@@ -117,7 +117,7 @@ pub fn bundle2(a: []const Trit, b: []const Trit, result: []Trit) void {
     }
 }
 
-/// Bundle: [CYR:мажор]and[CYR:тарное] [CYR:голо]withоinанandе for N inеto[CYR:торо]in
+/// Bundle: [CYR:[EN]]and[CYR:[EN]] [CYR:[EN]]with[EN]in[EN]and[EN] for N in[EN]to[CYR:[EN]]in
 pub fn bundleN(vectors: []const []const Trit, result: []Trit) void {
     if (vectors.len == 0) return;
 
@@ -137,7 +137,7 @@ pub fn bundleN(vectors: []const []const Trit, result: []Trit) void {
     }
 }
 
-/// Permute: цandtoлandчеwithtoandй withдinandг
+/// Permute: [EN]andto[EN]and[EN]withtoand[EN] with[EN]inand[EN]
 pub fn permute(v: []const Trit, k: usize, result: []Trit) void {
     const len = v.len;
     if (len == 0) return;
@@ -150,7 +150,7 @@ pub fn permute(v: []const Trit, k: usize, result: []Trit) void {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// [CYR:СХОДСТВО]
+// [CYR:[EN]]
 // ═══════════════════════════════════════════════════════════════
 
 /// Dot product with SIMD
@@ -175,7 +175,7 @@ pub fn dotProduct(a: []const Trit, b: []const Trit) i64 {
     return dot;
 }
 
-/// Коwithandнуwith[CYR:ное] with[CYR:ход]withтinо
+/// [EN]withand[EN]with[CYR:[EN]] with[CYR:[EN]]with[EN]in[EN]
 pub fn similarity(a: []const Trit, b: []const Trit) f64 {
     const dot = dotProduct(a, b);
     var norm_a: i64 = 0;
@@ -191,7 +191,7 @@ pub fn similarity(a: []const Trit, b: []const Trit) f64 {
         (@sqrt(@as(f64, @floatFromInt(norm_a))) * @sqrt(@as(f64, @floatFromInt(norm_b))));
 }
 
-/// Раwithwith[CYR:тоян]andе [CYR:Хэмм]and[CYR:нга]
+/// [EN]withwith[CYR:[EN]]and[EN] [CYR:[EN]]and[CYR:[EN]]
 pub fn hammingDistance(a: []const Trit, b: []const Trit) usize {
     var dist: usize = 0;
     for (0..@min(a.len, b.len)) |i| {
@@ -201,10 +201,10 @@ pub fn hammingDistance(a: []const Trit, b: []const Trit) usize {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// [CYR:СОЗДАНИЕ] [CYR:ВЕКТОРОВ]
+// [CYR:[EN]] [CYR:[EN]]
 // ═══════════════════════════════════════════════════════════════
 
-/// [CYR:Случайный] vector
+/// [CYR:[EN]] vector
 pub fn randomVector(allocator: std.mem.Allocator, dim: usize, seed: u64) !HyperVector {
     const vec = try HyperVector.init(allocator, dim);
     var rng = std.Random.DefaultPrng.init(seed);
@@ -216,12 +216,12 @@ pub fn randomVector(allocator: std.mem.Allocator, dim: usize, seed: u64) !HyperV
     return vec;
 }
 
-/// [CYR:Нуле]inой vector
+/// [CYR:[EN]]in[EN] vector
 pub fn zeroVector(allocator: std.mem.Allocator, dim: usize) !HyperVector {
     return HyperVector.init(allocator, dim);
 }
 
-/// Веto[CYR:тор] andз едandнandц
+/// [EN]to[CYR:[EN]] and[EN] [EN]and[EN]and[EN]
 pub fn onesVector(allocator: std.mem.Allocator, dim: usize) !HyperVector {
     const vec = try HyperVector.init(allocator, dim);
     @memset(vec.data, 1);
@@ -229,7 +229,7 @@ pub fn onesVector(allocator: std.mem.Allocator, dim: usize) !HyperVector {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// [CYR:КВАНТИЗАЦИЯ]
+// [CYR:[EN]]
 // ═══════════════════════════════════════════════════════════════
 
 /// Float -> Ternary
@@ -253,10 +253,10 @@ pub fn dequantizeToFloat(trit_data: []const Trit, result: []f64) void {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// [CYR:ОНЛАЙН] [CYR:ОБУЧЕНИЕ]
+// [CYR:[EN]] [CYR:[EN]]
 // ═══════════════════════════════════════════════════════════════
 
-/// [CYR:Онлайн] update прfromfromandпа: P ← P + η(v - P)
+/// [CYR:[EN]] update [EN]fromfromand[EN]: P ← P + η(v - P)
 pub fn onlineUpdate(accumulator: []f64, input: []const Trit, lr: f64) void {
     for (0..@min(accumulator.len, input.len)) |i| {
         const v: f64 = @floatFromInt(input[i]);
@@ -264,7 +264,7 @@ pub fn onlineUpdate(accumulator: []f64, input: []const Trit, lr: f64) void {
     }
 }
 
-/// [CYR:Найт]and onandmore by[CYR:хож]andй прfromfromandп
+/// [CYR:[EN]]and onandmore by[CYR:[EN]]and[EN] [EN]fromfromand[EN]
 pub fn findBestMatch(input: []const Trit, prototypes: []const Prototype) ?SimilarityResult {
     var best_sim: f64 = -2.0;
     var best_label: []const u8 = "";
@@ -284,7 +284,7 @@ pub fn findBestMatch(input: []const Trit, prototypes: []const Prototype) ?Simila
 }
 
 // ═══════════════════════════════════════════════════════════════
-// [CYR:ТЕСТЫ]
+// [CYR:[EN]]
 // ═══════════════════════════════════════════════════════════════
 
 test "bind self-inverse" {
@@ -303,8 +303,8 @@ test "bind self-inverse" {
     unbind(bound.data, b.data, recovered.data);
 
     // a * b * b = a * (b * b)
-    // [CYR:Для] b != 0: b * b = 1, bythisму recovered = a
-    // [CYR:Для] b == 0: a * 0 * 0 = 0, bythisму recovered = 0
+    // [CYR:[EN]] b != 0: b * b = 1, bythis[EN] recovered = a
+    // [CYR:[EN]] b == 0: a * 0 * 0 = 0, bythis[EN] recovered = 0
     var matches: usize = 0;
     var nonzero_b: usize = 0;
     for (0..100) |i| {
@@ -313,7 +313,7 @@ test "bind self-inverse" {
             if (recovered.data[i] == a.data[i]) matches += 1;
         }
     }
-    // [CYR:Должно] withоinпаyesть for inwithех not[CYR:нуле]inых b
+    // [CYR:[EN]] with[EN]in[EN]yes[EN] for inwith[EN] not[CYR:[EN]]in[EN] b
     try std.testing.expect(matches == nonzero_b);
 }
 

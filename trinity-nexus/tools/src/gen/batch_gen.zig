@@ -1,7 +1,7 @@
 const std = @import("std");
 
-/// BATCH GENERATOR - Маwithwithоinая геnot[CYR:рац]andя VIBEE [CYR:модулей]
-/// Уwithto[CYR:орен]andе: 10-50x по withраinnotнandю with поwith[CYR:ледо]in[CYR:ательной] геnot[CYR:рац]andей
+/// BATCH GENERATOR - [EN]withwith[EN]in[EN]I [EN]not[CYR:[TRANSLATED]]andI VIBEE [CYR:[TRANSLATED]]
+/// [EN]withto[CYR:[TRANSLATED]]and[EN]: 10-50x [EN] with[EN]innot[EN]and[EN] with [EN]with[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]lno[EN]] [EN]not[CYR:[TRANSLATED]]and[EN]
 
 pub const ModuleDef = struct {
     name: []const u8,
@@ -14,7 +14,7 @@ pub const DomainConfig = struct {
     modules: []const ModuleDef,
 };
 
-/// Геnotрand[CYR:рует] .vibee with[CYR:пец]andфandtoацandю
+/// [EN]not[EN]and[CYR:[TRANSLATED]] .vibee with[CYR:[TRANSLATED]]and[EN]andto[EN]and[EN]
 pub fn generateSpec(allocator: std.mem.Allocator, domain: []const u8, module: ModuleDef, version: u32) ![]const u8 {
     _ = domain;
     const v1 = version / 100;
@@ -61,7 +61,7 @@ pub fn generateSpec(allocator: std.mem.Allocator, domain: []const u8, module: Mo
     , .{ module.name, version, v1, v2, v3, module.name, module.desc, module.name, module.name, module.name, module.name, module.name, module.name });
 }
 
-/// Геnotрand[CYR:рует] .zig toод on[CYR:прямую] ([CYR:без] [CYR:промежуточного] .vibee)
+/// [EN]not[EN]and[CYR:[TRANSLATED]] .zig to[EN] on[CYR:[EN]I[TRANSLATED]] ([CYR:without] [CYR:pro[TRANSLATED]go] .vibee)
 pub fn generateZig(allocator: std.mem.Allocator, module: ModuleDef, version: u32) ![]const u8 {
     const v1 = version / 100;
     const v2 = (version / 10) % 10;
@@ -140,18 +140,18 @@ pub fn generateZig(allocator: std.mem.Allocator, module: ModuleDef, version: u32
     });
 }
 
-/// Batch геnot[CYR:рац]andя inwith[CYR:его] [CYR:доме]on
+/// Batch [EN]not[CYR:[TRANSLATED]]andI inwith[CYR:[EN]go] [CYR:[TRANSLATED]]on
 pub fn generateDomain(allocator: std.mem.Allocator, config: DomainConfig) !void {
     const spec_dir = try std.fmt.allocPrint(allocator, "specs/tri/{s}", .{config.name});
     const output_dir = "trinity/output";
 
-    // [CYR:Создаем] дandреto[CYR:тор]andand
+    // [CYR:[TRANSLATED]] [EN]and[EN]to[CYR:[TRANSLATED]]andand
     std.fs.cwd().makePath(spec_dir) catch {};
     std.fs.cwd().makePath(output_dir) catch {};
 
     var version = config.version_start;
     for (config.modules) |module| {
-        // Геnotрand[CYR:руем] .vibee
+        // [EN]not[EN]and[CYR:[TRANSLATED]] .vibee
         const spec_content = try generateSpec(allocator, config.name, module, version);
         const spec_path = try std.fmt.allocPrint(allocator, "{s}/{s}_v{d}.vibee", .{ spec_dir, module.name, version });
         
@@ -159,7 +159,7 @@ pub fn generateDomain(allocator: std.mem.Allocator, config: DomainConfig) !void 
         defer spec_file.close();
         try spec_file.writeAll(spec_content);
 
-        // Геnotрand[CYR:руем] .zig on[CYR:прямую]
+        // [EN]not[EN]and[CYR:[TRANSLATED]] .zig on[CYR:[EN]I[TRANSLATED]]
         const zig_content = try generateZig(allocator, module, version);
         const zig_path = try std.fmt.allocPrint(allocator, "{s}/{s}_v{d}.zig", .{ output_dir, module.name, version });
         

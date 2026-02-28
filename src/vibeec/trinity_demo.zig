@@ -1,5 +1,5 @@
 // TRINITY DEMO - End-to-End Code Generation
-// [CYR:Полный] [CYR:пайплайн]: prompt → tokens → generate → text
+// [CYR:[EN]] [CYR:[EN]]: prompt → tokens → generate → text
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");

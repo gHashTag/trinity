@@ -9,14 +9,14 @@ behaviors:
   - name: translate_simple_greeting
     given: English greeting "Hello"
     when: translate function called with target "russian"
-    then: Russian greeting "Прandinет" returned
+    then: Russian greeting "[EN]andin[EN]" returned
     test_cases:
       - name: hello_to_russian
         input: {text: "Hello", source: "english", target: "russian"}
-        expected: {translation: "Прandinет", confidence: 1.0}
+        expected: {translation: "[EN]andin[EN]", confidence: 1.0}
       - name: good_morning_to_russian
         input: {text: "Good morning", source: "english", target: "russian"}
-        expected: {translation: "[CYR:Доброе] [CYR:утро]", confidence: 1.0}
+        expected: {translation: "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]", confidence: 1.0}
 
   - name: translate_technical_term
     given: English technical term
@@ -25,10 +25,10 @@ behaviors:
     test_cases:
       - name: compiler_to_russian
         input: {text: "compiler", source: "english", target: "russian"}
-        expected: {translation: "[CYR:комп]and[CYR:лятор]", confidence: 1.0}
+        expected: {translation: "[CYR:[TRANSLATED]]and[CYR:[EN]I[TRANSLATED]]", confidence: 1.0}
       - name: algorithm_to_russian
         input: {text: "algorithm", source: "english", target: "russian"}
-        expected: {translation: "[CYR:алгор]andтм", confidence: 1.0}
+        expected: {translation: "[CYR:algorithm]and[EN]", confidence: 1.0}
 
   - name: translate_sentence
     given: English sentence with subject-verb-object structure
@@ -37,10 +37,10 @@ behaviors:
     test_cases:
       - name: i_love_programming
         input: {text: "I love programming", source: "english", target: "russian"}
-        expected: {translation: "Я [CYR:люблю] [CYR:программ]andроinанandе", confidence: 0.95}
+        expected: {translation: " [CYR:[TRANSLATED]] [CYR:pro[TRANSLATED]]and[EN]in[EN]and[EN]", confidence: 0.95}
       - name: we_build_compiler
         input: {text: "We are building a compiler", source: "english", target: "russian"}
-        expected: {translation: "Мы with[CYR:тро]andм [CYR:комп]and[CYR:лятор]", confidence: 0.95}
+        expected: {translation: "[EN]y with[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[CYR:[EN]I[TRANSLATED]]", confidence: 0.95}
 
 types:
   Language:
@@ -147,7 +147,7 @@ grammar_rules:
       
     - name: verb_conjugation
       pattern: "I {verb}"
-      transformation: "Я {verb_1st_person_singular}"
+      transformation: " {verb_1st_person_singular}"
       
     - name: noun_gender
       pattern: "{noun}"
@@ -159,18 +159,18 @@ grammar_rules:
 
 dictionary:
   english_to_russian:
-    hello: ["Прandinет", "[CYR:Здра]inwithтin[CYR:уйте]"]
-    good: ["[CYR:хорош]andй", "[CYR:добрый]"]
-    morning: ["[CYR:утро]"]
-    compiler: ["[CYR:комп]and[CYR:лятор]"]
-    algorithm: ["[CYR:алгор]andтм"]
+    hello: ["[EN]andin[EN]", "[CYR:[TRANSLATED]]inwith[EN]in[CYR:[TRANSLATED]]"]
+    good: ["[CYR:[TRANSLATED]]and[EN]", "[CYR:[TRANSLATED]y[EN]]"]
+    morning: ["[CYR:[TRANSLATED]]"]
+    compiler: ["[CYR:[TRANSLATED]]and[CYR:[EN]I[TRANSLATED]]"]
+    algorithm: ["[CYR:algorithm]and[EN]"]
     function: ["function"]
-    I: ["Я"]
-    love: ["[CYR:люблю]", "[CYR:люб]andть"]
-    programming: ["[CYR:программ]andроinанandе"]
-    we: ["мы"]
+    I: [""]
+    love: ["[CYR:[TRANSLATED]]", "[CYR:[TRANSLATED]]and[EN]"]
+    programming: ["[CYR:pro[TRANSLATED]]and[EN]in[EN]and[EN]"]
+    we: ["[EN]y"]
     are: [""]  # Auxiliary verb, often omitted
-    building: ["with[CYR:тро]andм", "with[CYR:тро]andть"]
+    building: ["with[CYR:[TRANSLATED]]and[EN]", "with[CYR:[TRANSLATED]]and[EN]"]
     a: [""]  # Article, not used in Russian
     the: [""]  # Article, not used in Russian
 

@@ -1,5 +1,5 @@
 // Maxwell Daemon - LLM Client
-// [CYR:Интеграц]andя with LLM API for reasoning
+// [CYR:[EN]]and[EN] with LLM API for reasoning
 //
 // IMPLEMENTATION STATUS:
 // - GLM (z.ai): IMPLEMENTED (working)
@@ -182,7 +182,7 @@ pub const LLMClient = struct {
         self.conversation.deinit();
     }
 
-    /// [CYR:Отпра]inandть with[CYR:ообщен]andе and by[CYR:луч]andть answer
+    /// [CYR:[EN]]inand[EN] with[CYR:[EN]]and[EN] and by[CYR:[EN]]and[EN] answer
     pub fn chat(self: *LLMClient, user_message: []const u8) !LLMResponse {
         // Add user message to conversation
         try self.conversation.append(Message{
@@ -202,7 +202,7 @@ pub const LLMClient = struct {
         return response;
     }
 
-    /// [CYR:Сге]notрandроin[CYR:ать] .vibee with[CYR:пец]andфandtoацandю
+    /// [CYR:[EN]]not[EN]and[EN]in[CYR:[EN]] .vibee with[CYR:[EN]]and[EN]andto[EN]and[EN]
     pub fn generateSpec(self: *LLMClient, task_description: []const u8, context: []const u8) ![]const u8 {
         var prompt = std.ArrayList(u8).init(self.allocator);
         defer prompt.deinit();
@@ -219,7 +219,7 @@ pub const LLMClient = struct {
         return response.content;
     }
 
-    /// [CYR:Проа]onлandзandроin[CYR:ать] ошandбtoу and [CYR:предлож]andть andwith[CYR:пра]in[CYR:лен]andе
+    /// [CYR:[EN]]on[EN]and[EN]and[EN]in[CYR:[EN]] [EN]and[EN]to[EN] and [CYR:[EN]]and[EN] andwith[CYR:[EN]]in[CYR:[EN]]and[EN]
     pub fn analyzeError(self: *LLMClient, error_message: []const u8, code_context: []const u8) ![]const u8 {
         var prompt = std.ArrayList(u8).init(self.allocator);
         defer prompt.deinit();
@@ -236,7 +236,7 @@ pub const LLMClient = struct {
         return response.content;
     }
 
-    /// Деtoомbyзandроin[CYR:ать] заyesчу on by[CYR:дза]yesчand
+    /// [EN]to[EN]by[EN]and[EN]in[CYR:[EN]] [EN]yes[EN] on by[CYR:[EN]]yes[EN]and
     pub fn decomposeTask(self: *LLMClient, task_description: []const u8) ![]const u8 {
         var prompt = std.ArrayList(u8).init(self.allocator);
         defer prompt.deinit();
@@ -252,7 +252,7 @@ pub const LLMClient = struct {
         return response.content;
     }
 
-    /// Очandwithтandть andwith[CYR:тор]andю [CYR:разго]in[CYR:ора]
+    /// [EN]andwith[EN]and[EN] andwith[CYR:[EN]]and[EN] [CYR:[EN]]in[CYR:[EN]]
     pub fn clearHistory(self: *LLMClient) void {
         self.conversation.clearRetainingCapacity();
         self.conversation.append(Message{

@@ -578,7 +578,7 @@ pub fn runVoiceBenchLegacy() void {
 
     const stt_tests = [_]STTTest{
         .{ .audio_description = "clear_speech_en.wav", .expected_text = "Hello world", .language = "EN" },
-        .{ .audio_description = "russian_greeting.wav", .expected_text = "Прandinет мandр", .language = "RU" },
+        .{ .audio_description = "russian_greeting.wav", .expected_text = "[EN]andin[EN] [EN]and[EN]", .language = "RU" },
         .{ .audio_description = "chinese_phrase.wav", .expected_text = "你好世界", .language = "ZH" },
         .{ .audio_description = "technical_en.wav", .expected_text = "Vector symbolic architecture", .language = "EN" },
         .{ .audio_description = "numbers_mixed.wav", .expected_text = "One two three", .language = "EN" },
@@ -1286,8 +1286,8 @@ pub fn runFineTuneBench() void {
         .{ .input = "How does it work?", .output = "It works by processing patterns and learning from examples.", .category = "question" },
         .{ .input = "Thank you", .output = "You're welcome!", .category = "gratitude" },
         .{ .input = "Thanks a lot", .output = "My pleasure! Happy to help!", .category = "gratitude" },
-        .{ .input = "Прandinет", .output = "Hello! How are you?", .category = "greeting_ru" },
-        .{ .input = "Поtoа", .output = "До withinandyesнandя!", .category = "farewell_ru" },
+        .{ .input = "[EN]andin[EN]", .output = "Hello! How are you?", .category = "greeting_ru" },
+        .{ .input = "[EN]to[EN]", .output = "[EN] withinandyes[EN]and[EN]!", .category = "farewell_ru" },
         .{ .input = "你好", .output = "你好！有什么可以帮助你的？", .category = "greeting_zh" },
         .{ .input = "再见", .output = "再见！保重！", .category = "farewell_zh" },
     };

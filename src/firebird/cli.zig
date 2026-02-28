@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// FIREBIRD CLI - Command Line Interface for [CYR:ЖАР] [CYR:ПТИЦА]
+// FIREBIRD CLI - Command Line Interface for [CYR:[EN]] [CYR:[EN]]
 // Ternary Virtual Anti-Detect Browser
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
@@ -24,7 +24,7 @@ const VERSION = "1.0.0";
 const BANNER =
     \\
     \\  ╔═══════════════════════════════════════════════════════════════╗
-    \\  ║     [CYR:ЖАР] [CYR:ПТИЦА] (FIREBIRD) v1.0.0                               ║
+    \\  ║     [CYR:[EN]] [CYR:[EN]] (FIREBIRD) v1.0.0                               ║
     \\  ║     Ternary Virtual Anti-Detect Browser                       ║
     \\  ║     φ² + 1/φ² = 3 = TRINITY                                   ║
     \\  ╚═══════════════════════════════════════════════════════════════╝

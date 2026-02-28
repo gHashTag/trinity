@@ -1,23 +1,23 @@
 # ============================================================================
 # VIBEEC v1.0 - Complete Feature Showcase
-# [CYR:Демон]with[CYR:трац]andя inwithех 50+ фandч [CYR:комп]and[CYR:лятора] VIBEE
+# [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]andI inwith[EN] 50+ [EN]and[EN] [CYR:[TRANSLATED]]and[CYR:[EN]I[TRANSLATED]] VIBEE
 # ============================================================================
 
 # ============================================================================
-# Phase 1: [CYR:Базо]inый withand[CYR:нтак]withandwith
+# Phase 1: [CYR:[TRANSLATED]]iny[EN] withand[CYR:[TRANSLATED]]withandwith
 # ============================================================================
 
-# 1. [CYR:Функц]andand
+# 1. [CYR:[TRANSLATED]]andand
 pub fn greet(name) {
   print("Hello, {name}!")
 }
 
-# 2. Прandin[CYR:атные] [CYR:функц]andand
+# 2. [EN]andin[CYR:[TRANSLATED]y[EN]] [CYR:[TRANSLATED]]andand
 fn internal_helper(x) {
   x * 2
 }
 
-# 3. [CYR:Параметры] and inозin[CYR:рат] зon[CYR:чен]andй
+# 3. [CYR:[TRANSLATED]y] and in[EN]in[CYR:[TRANSLATED]] [EN]on[CYR:[TRANSLATED]]and[EN]
 pub fn add(x, y) {
   x + y
 }

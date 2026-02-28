@@ -15,7 +15,7 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:КОНСТАНТЫ]
+// [CYR:[TRANSLATED]A[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const INT4_MIN: f64 = -8;
@@ -30,7 +30,7 @@ pub const BLOCK_SIZE: f64 = 32;
 
 pub const PHI: f64 = 1.618033988749895;
 
-// [CYR:Базо]inые φ-toонwith[CYR:танты] (Sacred Formula)
+// [CYR:[TRANSLATED]]iny[EN] φ-to[EN]with[CYR:[TRANSLATED]y] (Sacred Formula)
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
 pub const TRINITY: f64 = 3.0;
@@ -41,7 +41,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:ТИПЫ]
+// [CYR:[TRANSLATED]]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// 
@@ -85,7 +85,7 @@ pub const Int4Header = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:ПАМЯТЬ] [CYR:ДЛЯ] WASM
+// [CYR:[EN]A[TRANSLATED]] [CYR:[TRANSLATED]] WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -135,13 +135,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-and[CYR:нтер]fieldsцandя
+/// φ-and[CYR:[TRANSLATED]]fields[EN]andI
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// Геnot[CYR:рац]andя φ-withпand[CYR:рал]and
+/// [EN]not[CYR:[TRANSLATED]]andI φ-with[EN]and[CYR:[TRANSLATED]]and
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -160,8 +160,8 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 // BEHAVIOR FUNCTIONS - Generated from behaviors
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:Бло]to f32 зon[CYR:чен]andй [CYR:размера] BLOCK_SIZE
-/// When: [CYR:Нужно] onйтand to[CYR:оэфф]andцand[CYR:ент] маwith[CYR:штаб]andроinанandя
+/// [CYR:[TRANSLATED]]to f32 [EN]on[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] BLOCK_SIZE
+/// When: [CYR:[TRANSLATED]] on[EN]and to[CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]] [EN]with[CYR:[TRANSLATED]]and[EN]in[EN]andI
 /// Then: scale = max(abs(block)) / 7.0
 pub fn compute_scale(values: []const f32) []f32 {
 // Compute: scale = max(abs(block)) / 7.0
@@ -171,8 +171,8 @@ pub fn compute_scale(values: []const f32) []f32 {
 }
 
 
-/// f32 зon[CYR:чен]andе and scale factor
-/// When: [CYR:Нужно] with[CYR:жать] до INT4
+/// f32 [EN]on[CYR:[TRANSLATED]]and[EN] and scale factor
+/// When: [CYR:[TRANSLATED]] with[CYR:[EN]ate] [EN] INT4
 /// Then: int4 = clamp(round(f32 / scale), -8, 7)
 pub fn quantize_value(values: []const f32) []f32 {
 // TODO: implement — int4 = clamp(round(f32 / scale), -8, 7)
@@ -181,8 +181,8 @@ _ = values;
 }
 
 
-/// INT4 зon[CYR:чен]andе and scale factor
-/// When: [CYR:Нужно] inоwithwith[CYR:тано]inandть f32 for inычandwith[CYR:лен]andй
+/// INT4 [EN]on[CYR:[TRANSLATED]]and[EN] and scale factor
+/// When: [CYR:[TRANSLATED]] in[EN]withwith[CYR:[TRANSLATED]]inand[EN] f32 for iny[EN]andwith[CYR:[TRANSLATED]]and[EN]
 /// Then: f32 = int4_as_f32 * scale
 pub fn dequantize_value() []f32 {
 // TODO: implement — f32 = int4_as_f32 * scale
@@ -190,8 +190,8 @@ pub fn dequantize_value() []f32 {
 }
 
 
-/// Дinа INT4 зon[CYR:чен]andя (high, low)
-/// When: [CYR:Нужно] [CYR:упа]toоin[CYR:ать] for [CYR:хра]notнandя
+/// [EN]in[EN] INT4 [EN]on[CYR:[TRANSLATED]]andI (high, low)
+/// When: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]to[EN]in[CYR:ate] for [CYR:[TRANSLATED]]not[EN]andI
 /// Then: byte = (high << 4) | (low & 0x0F)
 pub fn pack_int4() !void {
 // TODO: implement — byte = (high << 4) | (low & 0x0F)
@@ -199,8 +199,8 @@ pub fn pack_int4() !void {
 }
 
 
-/// [CYR:Упа]toоin[CYR:анный] [CYR:байт]
-/// When: [CYR:Нужно] andзin[CYR:лечь] дinа INT4 зon[CYR:чен]andя
+/// [CYR:[TRANSLATED]]to[EN]in[CYR:[EN]ny] [CYR:[TRANSLATED]]
+/// When: [CYR:[TRANSLATED]] and[EN]in[CYR:[TRANSLATED]] [EN]in[EN] INT4 [EN]on[CYR:[TRANSLATED]]andI
 /// Then: high = byte >> 4, low = byte & 0x0F (with sign extension)
 pub fn unpack_int4() !void {
 // TODO: implement — high = byte >> 4, low = byte & 0x0F (with sign extension)
@@ -208,30 +208,30 @@ pub fn unpack_int4() !void {
 }
 
 
-/// f32 [CYR:тензор] [CYR:про]andзin[CYR:ольной] [CYR:формы]
-/// When: [CYR:Нужно] withtoонin[CYR:ерт]andроin[CYR:ать] inеwithь [CYR:тензор] in INT4
-/// Then: [CYR:Разб]andть on [CYR:бло]toand, inычandwithлandть scale for to[CYR:аждого], toin[CYR:ант]andзоin[CYR:ать]
+/// f32 [CYR:[TRANSLATED]] [CYR:pro]and[EN]in[CYR:[EN]lno[EN]] [CYR:[TRANSLATED]y]
+/// When: [CYR:[TRANSLATED]] withto[EN]in[CYR:[TRANSLATED]]and[EN]in[CYR:ate] in[EN]with[EN] [CYR:[TRANSLATED]] in INT4
+/// Then: [CYR:[TRANSLATED]]and[EN] on [CYR:[TRANSLATED]]toand, iny[EN]andwith[EN]and[EN] scale for to[CYR:[TRANSLATED]go], toin[CYR:[TRANSLATED]]and[EN]in[CYR:ate]
 pub fn quantize_tensor(values: []const f32) []f32 {
-// TODO: implement — [CYR:Разб]andть on [CYR:бло]toand, inычandwithлandть scale for to[CYR:аждого], toin[CYR:ант]andзоin[CYR:ать]
+// TODO: implement — [CYR:[TRANSLATED]]and[EN] on [CYR:[TRANSLATED]]toand, iny[EN]andwith[EN]and[EN] scale for to[CYR:[TRANSLATED]go], toin[CYR:[TRANSLATED]]and[EN]in[CYR:ate]
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
 
 
-/// PackedInt4 [CYR:тензор]
-/// When: [CYR:Нужно] inоwithwith[CYR:тано]inandть f32 for inference
-/// Then: Раwithпаtoоin[CYR:ать], деtoin[CYR:ант]andзоin[CYR:ать] with withоfrominетwithтin[CYR:ующ]andмand scales
+/// PackedInt4 [CYR:[TRANSLATED]]
+/// When: [CYR:[TRANSLATED]] in[EN]withwith[CYR:[TRANSLATED]]inand[EN] f32 for inference
+/// Then: [EN]with[EN]to[EN]in[CYR:ate], [EN]toin[CYR:[TRANSLATED]]and[EN]in[CYR:ate] with with[EN]fromin[EN]with[EN]in[CYR:[TRANSLATED]]and[EN]and scales
 pub fn dequantize_tensor() []f32 {
-// TODO: implement — Раwithпаtoоin[CYR:ать], деtoin[CYR:ант]andзоin[CYR:ать] with withоfrominетwithтin[CYR:ующ]andмand scales
+// TODO: implement — [EN]with[EN]to[EN]in[CYR:ate], [EN]toin[CYR:[TRANSLATED]]and[EN]in[CYR:ate] with with[EN]fromin[EN]with[EN]in[CYR:[TRANSLATED]]and[EN]and scales
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// [CYR:Путь] to .tri fileу with BF16/F32 inеwithамand
-/// When: [CYR:Нужно] with[CYR:оздать] toin[CYR:ант]andзоin[CYR:анную] inерwithandю
-/// Then: [CYR:Создать] .tri.int4 file with INT4 inеwithамand and scales
+/// [CYR:[TRANSLATED]] to .tri file[EN] with BF16/F32 in[EN]with[EN]and
+/// When: [CYR:[TRANSLATED]] with[CYR:[TRANSLATED]ate] toin[CYR:[TRANSLATED]]and[EN]in[CYR:[TRANSLATED]] in[EN]withand[EN]
+/// Then: [CYR:[TRANSLATED]ate] .tri.int4 file with INT4 in[EN]with[EN]and and scales
 pub fn convert_tri_to_int4(values: []const f32) []f32 {
-// TODO: implement — [CYR:Создать] .tri.int4 file with INT4 inеwithамand and scales
+// TODO: implement — [CYR:[TRANSLATED]ate] .tri.int4 file with INT4 in[EN]with[EN]and and scales
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = values;
 }
@@ -242,65 +242,65 @@ _ = values;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "compute_scale_behavior" {
-// Given: [CYR:Бло]to f32 зon[CYR:чен]andй [CYR:размера] BLOCK_SIZE
-// When: [CYR:Нужно] onйтand to[CYR:оэфф]andцand[CYR:ент] маwith[CYR:штаб]andроinанandя
+// Given: [CYR:[TRANSLATED]]to f32 [EN]on[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] BLOCK_SIZE
+// When: [CYR:[TRANSLATED]] on[EN]and to[CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]] [EN]with[CYR:[TRANSLATED]]and[EN]in[EN]andI
 // Then: scale = max(abs(block)) / 7.0
 // Test compute_scale: verify behavior is callable (compile-time check)
 _ = compute_scale;
 }
 
 test "quantize_value_behavior" {
-// Given: f32 зon[CYR:чен]andе and scale factor
-// When: [CYR:Нужно] with[CYR:жать] до INT4
+// Given: f32 [EN]on[CYR:[TRANSLATED]]and[EN] and scale factor
+// When: [CYR:[TRANSLATED]] with[CYR:[EN]ate] [EN] INT4
 // Then: int4 = clamp(round(f32 / scale), -8, 7)
 // Test quantize_value: verify convergence
     try std.testing.expect(consensus_rounds > 0);
 }
 
 test "dequantize_value_behavior" {
-// Given: INT4 зon[CYR:чен]andе and scale factor
-// When: [CYR:Нужно] inоwithwith[CYR:тано]inandть f32 for inычandwith[CYR:лен]andй
+// Given: INT4 [EN]on[CYR:[TRANSLATED]]and[EN] and scale factor
+// When: [CYR:[TRANSLATED]] in[EN]withwith[CYR:[TRANSLATED]]inand[EN] f32 for iny[EN]andwith[CYR:[TRANSLATED]]and[EN]
 // Then: f32 = int4_as_f32 * scale
 // Test dequantize_value: verify behavior is callable (compile-time check)
 _ = dequantize_value;
 }
 
 test "pack_int4_behavior" {
-// Given: Дinа INT4 зon[CYR:чен]andя (high, low)
-// When: [CYR:Нужно] [CYR:упа]toоin[CYR:ать] for [CYR:хра]notнandя
+// Given: [EN]in[EN] INT4 [EN]on[CYR:[TRANSLATED]]andI (high, low)
+// When: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]to[EN]in[CYR:ate] for [CYR:[TRANSLATED]]not[EN]andI
 // Then: byte = (high << 4) | (low & 0x0F)
 // Test pack_int4: verify behavior is callable (compile-time check)
 _ = pack_int4;
 }
 
 test "unpack_int4_behavior" {
-// Given: [CYR:Упа]toоin[CYR:анный] [CYR:байт]
-// When: [CYR:Нужно] andзin[CYR:лечь] дinа INT4 зon[CYR:чен]andя
+// Given: [CYR:[TRANSLATED]]to[EN]in[CYR:[EN]ny] [CYR:[TRANSLATED]]
+// When: [CYR:[TRANSLATED]] and[EN]in[CYR:[TRANSLATED]] [EN]in[EN] INT4 [EN]on[CYR:[TRANSLATED]]andI
 // Then: high = byte >> 4, low = byte & 0x0F (with sign extension)
 // Test unpack_int4: verify behavior is callable (compile-time check)
 _ = unpack_int4;
 }
 
 test "quantize_tensor_behavior" {
-// Given: f32 [CYR:тензор] [CYR:про]andзin[CYR:ольной] [CYR:формы]
-// When: [CYR:Нужно] withtoонin[CYR:ерт]andроin[CYR:ать] inеwithь [CYR:тензор] in INT4
-// Then: [CYR:Разб]andть on [CYR:бло]toand, inычandwithлandть scale for to[CYR:аждого], toin[CYR:ант]andзоin[CYR:ать]
+// Given: f32 [CYR:[TRANSLATED]] [CYR:pro]and[EN]in[CYR:[EN]lno[EN]] [CYR:[TRANSLATED]y]
+// When: [CYR:[TRANSLATED]] withto[EN]in[CYR:[TRANSLATED]]and[EN]in[CYR:ate] in[EN]with[EN] [CYR:[TRANSLATED]] in INT4
+// Then: [CYR:[TRANSLATED]]and[EN] on [CYR:[TRANSLATED]]toand, iny[EN]andwith[EN]and[EN] scale for to[CYR:[TRANSLATED]go], toin[CYR:[TRANSLATED]]and[EN]in[CYR:ate]
 // Test quantize_tensor: verify behavior is callable (compile-time check)
 _ = quantize_tensor;
 }
 
 test "dequantize_tensor_behavior" {
-// Given: PackedInt4 [CYR:тензор]
-// When: [CYR:Нужно] inоwithwith[CYR:тано]inandть f32 for inference
-// Then: Раwithпаtoоin[CYR:ать], деtoin[CYR:ант]andзоin[CYR:ать] with withоfrominетwithтin[CYR:ующ]andмand scales
+// Given: PackedInt4 [CYR:[TRANSLATED]]
+// When: [CYR:[TRANSLATED]] in[EN]withwith[CYR:[TRANSLATED]]inand[EN] f32 for inference
+// Then: [EN]with[EN]to[EN]in[CYR:ate], [EN]toin[CYR:[TRANSLATED]]and[EN]in[CYR:ate] with with[EN]fromin[EN]with[EN]in[CYR:[TRANSLATED]]and[EN]and scales
 // Test dequantize_tensor: verify behavior is callable (compile-time check)
 _ = dequantize_tensor;
 }
 
 test "convert_tri_to_int4_behavior" {
-// Given: [CYR:Путь] to .tri fileу with BF16/F32 inеwithамand
-// When: [CYR:Нужно] with[CYR:оздать] toin[CYR:ант]andзоin[CYR:анную] inерwithandю
-// Then: [CYR:Создать] .tri.int4 file with INT4 inеwithамand and scales
+// Given: [CYR:[TRANSLATED]] to .tri file[EN] with BF16/F32 in[EN]with[EN]and
+// When: [CYR:[TRANSLATED]] with[CYR:[TRANSLATED]ate] toin[CYR:[TRANSLATED]]and[EN]in[CYR:[TRANSLATED]] in[EN]withand[EN]
+// Then: [CYR:[TRANSLATED]ate] .tri.int4 file with INT4 in[EN]with[EN]and and scales
 // Test convert_tri_to_int4: verify behavior is callable (compile-time check)
 _ = convert_tri_to_int4;
 }
