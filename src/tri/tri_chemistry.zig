@@ -6,14 +6,8 @@ const math = std.math;
 const chem = @import("sacred"); // Import via build.zig module
 
 /// Main chemistry command dispatcher
-pub fn runChemCommand(allocator: std.mem.Allocator, args: []const u8) !void {
+pub fn runChemCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
     _ = allocator;
-    if (args.len == 0) {
-        try showHelp();
-        return;
-    }
-
-    const command = args[0];
     if (args.len == 0) {
         try showHelp();
         return;

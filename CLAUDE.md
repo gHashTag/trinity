@@ -340,6 +340,21 @@ Each cycle has `-demo` and `-bench` variants:
 | `tri lucas <n>` | Lucas L(n) — L(2)=3=TRINITY |
 | `tri spiral <n>` | φ-spiral coordinates |
 
+### Chemistry (v6.0)
+
+| Command | Description |
+|---------|-------------|
+| `tri chem periodic` | Display ASCII periodic table (118 elements) |
+| `tri chem element <sym\|num>` | Show element information card |
+| `tri chem mass <formula>` | Calculate molar mass (H2O = 18.015 g/mol) |
+| `tri chem formula <formula>` | Analyze formula composition |
+| `tri chem balance <eq>` | Balance chemical equation |
+| `tri chem moles <mass> <form>` | Calculate moles, molecules, atoms |
+| `tri chem atoms <moles> <form>` | Calculate atom counts |
+| `tri chem ideal-gas <P>=<V>=<n>=<T>` | Solve PV=nRT |
+| `tri chem ph <conc\|acid> <M>` | Calculate pH |
+| `tri chem redox <reaction>` | Balance redox equation |
+
 ### Info Commands
 
 | Command | Description |
