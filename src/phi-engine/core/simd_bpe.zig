@@ -13,7 +13,7 @@ pub const TRINITY: f64 = 3.0;
 pub const PHOENIX: u32 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SIMD ТИПЫ
+// SIMD TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // 16-byte vector for SIMD операцandй
@@ -25,9 +25,9 @@ const Vec16Bool = @Vector(16, bool);
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const SIMDBigramMatcher = struct {
-    // Top-16 bigrams for SIMD byandwithtoа (перinый character)
+    // Top-16 bigrams for SIMD tuning (перinый character)
     first_chars: Vec16,
-    // Top-16 bigrams for SIMD byandwithtoа (inторой character)
+    // Top-16 bigrams for SIMD tuning (inторой character)
     second_chars: Vec16,
 
     const Self = @This();
@@ -453,7 +453,7 @@ pub const WebSocketFrame = struct {
     }
 };
 
-// WebSocket streaming for агентоin
+// WebSocket streaming for agentоin
 pub const WebSocketStream = struct {
     frames_sent: u64,
     bytes_sent: u64,

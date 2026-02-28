@@ -3,7 +3,7 @@
 // ═════════════════════════════════════════════════════════════════════════════
 //
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
-// Золfromая andдентandчноwithть: φ² + 1/φ² = 3
+// Golden identity: φ² + 1/φ² = 3
 //
 // Author:
 // DO NOT EDIT - This file is auto-generated
@@ -14,7 +14,7 @@ const std = @import("std");
 const math = std.math;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// КОНСТАНТЫ
+// CONSTANTS
 // ═════════════════════════════════════════════════════════════════════════════
 
 // Adam Optimizer Constants
@@ -46,7 +46,7 @@ pub const SYMBOLIC_COMPLEXITY_WEIGHT: f64 = 1.0;
 pub const NUMERIC_APPROXIMATION_WEIGHT: f64 = 0.5;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ТИПЫ
+// TYPES
 // ═════════════════════════════════════════════════════════════════════════════
 
 /// Abstract Syntax Tree node for formula representation
@@ -104,7 +104,7 @@ pub const SelfImprovingMetrics = struct {
 pub const ApproxResult = struct { value: f64, error_bound: f64 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ПАМЯТЬ ДЛЯ WASM
+// MEMORY FOR WASM
 // ═════════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;

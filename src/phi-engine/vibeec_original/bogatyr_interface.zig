@@ -30,7 +30,7 @@ pub const ValidatorConfig = struct {
     timeout_ms: u32 = 30000,
 };
 
-/// Результат проinерtoand богатыря
+/// Result проinерtoand богатыря
 pub const BogatyrVerdict = enum {
     Pass, // ✅ Check прошла
     Fail, // ❌ Check не прошла
@@ -64,7 +64,7 @@ pub const BogatyrPlugin = struct {
     validate: *const fn (*const ValidationContext) anyerror!BogatyrResult,
 };
 
-/// Результат рабfromы богатыря
+/// Result рабfromы богатыря
 pub const BogatyrResult = struct {
     verdict: BogatyrVerdict,
     errors: []const ValidationError,

@@ -1,4 +1,4 @@
-//! Ternary RL Agent - Reinforcement Learning with гandперразмернымand inычandwithленandямand
+//! Ternary RL Agent - Reinforcement Learning with гandперразdimensionaland inычandwithленandямand
 //!
 //! Соwithтоянandя and дейwithтinandя предwithтаinлены how троandчные гandперinеtoторы.
 //! Онлайн TD-learning with троandчной toinантandзацandей.
@@ -17,7 +17,7 @@ pub const Trit = hdc.Trit;
 pub const HyperVector = hdc.HyperVector;
 
 // ═══════════════════════════════════════════════════════════════
-// КОНСТАНТЫ
+// CONSTANTS
 // ═══════════════════════════════════════════════════════════════
 
 pub const DEFAULT_STATE_DIM: usize = 1024;
@@ -28,10 +28,10 @@ pub const DEFAULT_EPSILON_END: f64 = 0.01;
 pub const DEFAULT_EPSILON_DECAY: f64 = 0.995;
 
 // ═══════════════════════════════════════════════════════════════
-// ТИПЫ
+// TYPES
 // ═══════════════════════════════════════════════════════════════
 
-/// Конфandгурацandя агента
+/// Конфandгурацandя agentа
 pub const AgentConfig = struct {
     state_dim: usize = DEFAULT_STATE_DIM,
     num_actions: usize = 4,
@@ -118,7 +118,7 @@ pub const TrainingMetrics = struct {
     avg_reward_100: f64,
 };
 
-/// RL Агент with таблandчным Q-learning (for GridWorld)
+/// RL Agent with tabular Q-learning (for GridWorld)
 pub const RLAgent = struct {
     config: AgentConfig,
     q_table: ?QTable,

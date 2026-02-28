@@ -102,11 +102,11 @@ pub const HybridCodeGen = struct {
         analysis.language_detected = trinity_swe.TrinitySWEAgent.detectInputLanguage(prompt);
 
         // Detect task type
-        if (trinity_swe.TrinitySWEAgent.containsAny(prompt, &.{ "hello world", "helloworld", "привет мир" })) {
+        if (trinity_swe.TrinitySWEAgent.containsAny(prompt, &.{ "hello world", "helloworld", "прandinет мandр" })) {
             analysis.task_type = .HelloWorld;
             analysis.addConcept("print");
             analysis.addConcept("main");
-        } else if (trinity_swe.TrinitySWEAgent.containsAny(prompt, &.{ "fibonacci", "фибоначчи" })) {
+        } else if (trinity_swe.TrinitySWEAgent.containsAny(prompt, &.{ "fibonacci", "фandбоonччand" })) {
             analysis.task_type = .Algorithm;
             analysis.addConcept("recursion");
             analysis.addConcept("loop");
@@ -127,7 +127,7 @@ pub const HybridCodeGen = struct {
             analysis.task_type = .DataStructure;
             analysis.addConcept("fields");
             analysis.addConcept("methods");
-        } else if (trinity_swe.TrinitySWEAgent.containsAny(prompt, &.{ "function", "fn", "func", "функци" })) {
+        } else if (trinity_swe.TrinitySWEAgent.containsAny(prompt, &.{ "function", "fn", "func", "фунtoцand" })) {
             analysis.task_type = .Function;
             analysis.addConcept("params");
             analysis.addConcept("return");

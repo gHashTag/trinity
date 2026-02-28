@@ -21,7 +21,7 @@ pub const TRINITY: f64 = 3.0;
 pub const PHOENIX: u32 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SIMD ТИПЫ (эмуляцandя AVX-512 via 2x Vec16)
+// SIMD TYPES (эмуляцandя AVX-512 via 2x Vec16)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const Vec16 = @Vector(16, u8);
@@ -188,7 +188,7 @@ pub const SIMDCacheTokenizer = struct {
         const both_hi = @select(u8, match1_hi, @as(Vec16, @splat(1)), @as(Vec16, @splat(0))) &
             @select(u8, match2_hi, @as(Vec16, @splat(1)), @as(Vec16, @splat(0)));
 
-        // Объедandняем результаты
+        // Объедandняем resultы
         return @reduce(.Or, both_lo != @as(Vec16, @splat(0))) or
             @reduce(.Or, both_hi != @as(Vec16, @splat(0)));
     }

@@ -621,8 +621,8 @@ pub const CodeSandboxEngine = struct {
         const execute_keywords = [_][]const u8{
             "run",
             "execute",
-            "выполни",
-            "запусти",
+            "inыbyлнand",
+            "запуwithтand",
             "执行",
             "test this",
             "try this",
@@ -737,8 +737,8 @@ pub fn runBenchmark() void {
         .{ .query = "explain this code", .language = .Zig, .feedback = .Acceptance },
 
         // Multilingual
-        .{ .query = "выполни zig код: const y = 2;", .language = .Zig, .feedback = .ThumbsUp },
-        .{ .query = "запусти python: print('привет')", .language = .Python, .feedback = .Acceptance },
+        .{ .query = "inыbyлнand zig toод: const y = 2;", .language = .Zig, .feedback = .ThumbsUp },
+        .{ .query = "запуwithтand python: print('прandinет')", .language = .Python, .feedback = .Acceptance },
         .{ .query = "执行 javascript: let x = 1;", .language = .JavaScript, .feedback = .ThumbsUp },
 
         // More executions

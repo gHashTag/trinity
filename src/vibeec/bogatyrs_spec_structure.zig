@@ -1,5 +1,5 @@
 // VIBEE BOGATYR - Spec Structure Validator
-// Checks структуру .vibee спецификации
+// Checks withтруtoтуру .vibee withпецandфandtoацandand
 // φ² + 1/φ² = 3 | PHOENIX = 999
 
 const std = @import("std");

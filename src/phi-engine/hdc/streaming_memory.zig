@@ -1,6 +1,6 @@
 //! Streaming Memory - Пfromоtoоinая аwithwithоцandатandinonя memory on HDC
 //!
-//! Непрерыinное обученandе with bind/unbind for key-value храненandя.
+//! Непрерыinное обученandе with bind/unbind for key-value storing.
 //! Поддержtoа forgetting factor for аyesптацandand to concept drift.
 //!
 //! Научonя база:
@@ -22,7 +22,7 @@ pub const Trit = hdc.Trit;
 pub const HyperVector = hdc.HyperVector;
 
 // ═══════════════════════════════════════════════════════════════
-// КОНСТАНТЫ
+// CONSTANTS
 // ═══════════════════════════════════════════════════════════════
 
 pub const DEFAULT_DIM: usize = 1024;
@@ -31,7 +31,7 @@ pub const DEFAULT_RETRIEVAL_THRESHOLD: f64 = 0.5;
 pub const DEFAULT_MAX_ITEMS: usize = 10000;
 
 // ═══════════════════════════════════════════════════════════════
-// ТИПЫ
+// TYPES
 // ═══════════════════════════════════════════════════════════════
 
 /// Конфandгурацandя памятand
@@ -42,7 +42,7 @@ pub const MemoryConfig = struct {
     max_items: usize = DEFAULT_MAX_ITEMS,
 };
 
-/// Результат andзinлеченandя
+/// Result extraction
 pub const RetrievalResult = struct {
     value: []Trit,
     confidence: f64,
@@ -157,7 +157,7 @@ pub const StreamingMemory = struct {
         // unbind(M, key) = bind(M, key) for троandчных inеtoтороin
         hdc.unbind(self.memory, key, result);
 
-        // Compute уinеренноwithть via норму результата
+        // Compute уinеренноwithть via норму resultа
         var norm: f64 = 0;
         for (0..dim) |i| {
             norm += @as(f64, @floatFromInt(result[i])) * @as(f64, @floatFromInt(result[i]));

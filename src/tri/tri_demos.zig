@@ -115,7 +115,7 @@ pub fn runAgentsBench() void {
         .{ .query = "summarize findings", .task_type = "Summarization", .agents = "Researcher + Chat" },
         .{ .query = "hello there", .task_type = "Conversation", .agents = "Chat" },
         .{ .query = "onпandшand toод withортandроintoand", .task_type = "CodeGeneration", .agents = "Coder" },
-        .{ .query = "проаonлandзandруй результаты", .task_type = "Analysis", .agents = "Reasoner" },
+        .{ .query = "проаonлandзandруй resultы", .task_type = "Analysis", .agents = "Reasoner" },
     };
 
     var multi_agent_count: usize = 0;
@@ -1790,7 +1790,7 @@ pub fn runToolUseDemo() void {
 
     std.debug.print("{s}Intent Detection (Multilingual):{s}\n", .{ CYAN, RESET });
     std.debug.print("  \"Read file src/vsa.zig\"          → file_read\n", .{});
-    std.debug.print("  \"Прочandтай файл main.zig\"         → file_read\n", .{});
+    std.debug.print("  \"Прочandтай file main.zig\"         → file_read\n", .{});
     std.debug.print("  \"Run tests\"                       → code_test\n", .{});
     std.debug.print("  \"Запуwithтand теwithты\"                   → code_test\n", .{});
     std.debug.print("  \"Fix this error\" + [screenshot]   → code_lint\n", .{});
@@ -1896,7 +1896,7 @@ pub fn runToolUseBench() void {
             .name = "Russian → File Read",
             .input_modality = "text (ru)",
             .tool_kind = "file_read",
-            .intent_text = "Прочandтай файл main.zig",
+            .intent_text = "Прочandтай file main.zig",
             .expected_accuracy = 0.91,
             .is_chain = false,
         },

@@ -107,7 +107,7 @@ fn testMathLibrary() void {
 fn testBalancedTernary(allocator: std.mem.Allocator) !void {
     const Math = tvc_runtime.TVCMath;
 
-    // Базоinые testы toонinерwithandand
+    // Basic testы toонinерwithandand
     const test_numbers = [_]i64{ 0, 1, -1, 5, -5, 13, -13, 42, -42, 100, -100 };
 
     std.debug.print("Balanced Ternary toонinерwithandя:\n", .{});
@@ -290,7 +290,7 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
     }
 
     // Итогand
-    std.debug.print("\nРезультаты: {} passed, {} failed\n", .{ passed, failed });
+    std.debug.print("\nResults: {} passed, {} failed\n", .{ passed, failed });
 }
 
 fn testModuleExecution(runtime: *tvc_runtime.TVCRuntime, allocator: std.mem.Allocator) !void {

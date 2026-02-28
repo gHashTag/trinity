@@ -1,7 +1,7 @@
 //! VIBEE Dead Code Eliminator - PAS DAEMON V40
 //! Паттерны: D&C (reverse post-order traversal), HSH (live set), PRE (cached liveness)
 //! Sacred formula: V = n × 3^k × π^m × φ^p × e^q
-//! Золfromая andдентandчноwithть: φ² + 1/φ² = 3
+//! Golden identity: φ² + 1/φ² = 3
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;

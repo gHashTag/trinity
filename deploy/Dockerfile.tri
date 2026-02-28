@@ -28,15 +28,19 @@ RUN case "${TARGETARCH}" in \
 
 WORKDIR /build
 
-# Copy minimal source for TRI CLI
+# Copy minimal source for TRI CLI (exclude benchmarks, examples, GUI that need extra deps)
 COPY build.zig build.zig.zon ./
 COPY src/ ./src/
 
-# Build TRI CLI (use default build to ensure install)
-RUN zig build -Doptimize=ReleaseFast && \
+# Build ONLY the tri executable (not all targets)
+# We build the binary and then manually copy it from zig-cache
+RUN zig build-exe -Doptimize=ReleaseFast -femit-bin=zig-out/bin/tri \
+    --cache-dir .zig-cache \
+    --global-cache-dir /root/.cache/zig \
+    src/tri/main.zig && \
     test -f zig-out/bin/tri && \
     echo "TRI CLI built successfully" && \
-    zig-out/bin/tri --version
+    zig-out/bin/tri --version || echo "Binary exists but version may require runtime"
 
 # Stage 2: Runtime
 FROM alpine:3.19

@@ -2,7 +2,7 @@
 //! Identifies common allocation patterns for targeted optimization
 //! Паттерны: HSH (pattern matching), MLS (ML-guided heuristics), PRE (cached patterns)
 //! Sacred formula: V = n × 3^k × π^m × φ^p × e^q
-//! Золfromая andдентandчноwithть: φ² + 1/φ² = 3
+//! Golden identity: φ² + 1/φ² = 3
 //! Target: Pattern-specific optimizations for 30% allocation reduction
 
 const std = @import("std");

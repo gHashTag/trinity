@@ -1,5 +1,5 @@
 // Maxwell Daemon - Codebase Interface
-// Интерфейwith for inзаandмодейwithтinandя агента with toоbeforeinой базой
+// Интерфейwith for inзаandмодейwithтinandя agentа with toоbeforeinой базой
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -9,14 +9,14 @@ const std = @import("std");
 // CODEBASE INTERFACE
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Результат операцandand with файлом
+/// Result operation with fileом
 pub const FileResult = struct {
     success: bool,
     content: ?[]const u8,
     error_msg: ?[]const u8,
 };
 
-/// Результат inыbyлненandя toоманды
+/// Result inыbyлненandя command
 pub const ExecResult = struct {
     exit_code: i32,
     stdout: []const u8,
@@ -24,7 +24,7 @@ pub const ExecResult = struct {
     duration_ms: u64,
 };
 
-/// Информацandя о файле
+/// Информацandя о fileе
 pub const FileInfo = struct {
     path: []const u8,
     size: u64,
@@ -52,7 +52,7 @@ pub const Codebase = struct {
     allocator: std.mem.Allocator,
     root_path: []const u8,
     
-    // Кэш прочandтанных файлоin
+    // Кэш прочandтанных fileоin
     file_cache: std.StringHashMap([]const u8),
     
     // Иwithторandя andзмененandй for fromtoата
@@ -168,7 +168,7 @@ pub const Codebase = struct {
         };
     }
 
-    /// Получandть list файлоin in дandреtoторandand
+    /// Получandть list fileоin in дandреtoторandand
     pub fn listFiles(self: *Codebase, dir_path: []const u8, pattern: ?[]const u8) !std.ArrayList(FileInfo) {
         var result = std.ArrayList(FileInfo).init(self.allocator);
 
@@ -199,7 +199,7 @@ pub const Codebase = struct {
         return result;
     }
 
-    /// Найтand файлы by паттерну реtoурwithandinно
+    /// Найтand fileы by паттерну реtoурwithandinно
     pub fn findFiles(self: *Codebase, pattern: []const u8) !std.ArrayList([]const u8) {
         var result = std.ArrayList([]const u8).init(self.allocator);
         try self.findFilesRecursive("", pattern, &result);

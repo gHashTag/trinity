@@ -1,4 +1,4 @@
-//! Demo GridWorld - Демонwithтрацandя обученandя RL агента in GridWorld
+//! Demo GridWorld - Демонwithтрацandя обученandя RL agentа in GridWorld
 //!
 //! Запуwithto: zig build-exe src/phi-engine/hdc/demo_gridworld.zig && ./demo_gridworld
 //!
@@ -50,7 +50,7 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
     print("Дейwithтinandй: {d}\n", .{gw.NUM_ACTIONS});
     print("\n", .{});
 
-    // Созyesём агента
+    // Созyesём agentа
     var agent = try rl.RLAgent.init(allocator, .{
         .state_dim = config.state_dim,
         .num_actions = gw.NUM_ACTIONS,
@@ -62,8 +62,8 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
     });
     defer agent.deinit();
 
-    print("Агент: HDC RL with {d}-мернымand inеtoторамand\n", .{config.state_dim});
-    print("Параметры: γ={d:.2}, α={d:.2}, ε={d:.2}→{d:.2}\n", .{
+    print("Agent: HDC RL with {d}-dimensional vectors\n", .{config.state_dim});
+    print("Parameters: γ={d:.2}, α={d:.2}, ε={d:.2}→{d:.2}\n", .{
         config.gamma,
         config.learning_rate,
         config.epsilon_start,
@@ -96,7 +96,7 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
             // Выbyлняем дейwithтinandе
             const result = env.step(action);
 
-            // Обноinляем агента (Q-learning)
+            // Обноinляем agentа (Q-learning)
             _ = agent.tdUpdate(state, action, result.reward, result.next_state, result.done);
 
             episode_reward += result.reward;
@@ -159,10 +159,10 @@ pub fn runDemo(allocator: std.mem.Allocator, config: DemoConfig) !void {
     print("║ Время:           {d:6} ms                                    ║\n", .{duration_ms});
     print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 
-    // Демонwithтрацandя обученного агента
+    // Демонwithтрацandя обученного agentа
     if (config.render_final) {
         print("\n", .{});
-        print("Демонwithтрацandя обученного агента (greedy policy):\n", .{});
+        print("Демонwithтрацandя обученного agentа (greedy policy):\n", .{});
         print("─────────────────────────────────────────────────────────────\n", .{});
 
         var demo_state = env.reset();

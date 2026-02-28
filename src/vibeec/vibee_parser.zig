@@ -2,7 +2,7 @@
 // VIBEE PARSER - Парwithер .tri withпецandфandtoацandй
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Парwithandт YAML-bybeforeбный format .tri файлоin (legacy .vibee supported)
+// Парwithandт YAML-bybeforeбный format .tri fileоin (legacy .vibee supported)
 // Аinтор: Dmitrii Vasilev
 // φ² + 1/φ² = 3
 //
@@ -15,7 +15,7 @@ pub const parser_utils = @import("parser_utils.zig");
 const parser_sections = @import("parser_sections.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ТИПЫ СПЕЦИФИКАЦИИ (re-exported from parser_types.zig)
+// TYPES СПЕЦИФИКАЦИИ (re-exported from parser_types.zig)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const parser_types = @import("parser_types.zig");

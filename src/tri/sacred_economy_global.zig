@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
-// Золfromая andдентandчноwithть: φ² + 1/φ² = 3
+// Golden identity: φ² + 1/φ² = 3
 //
 // Author: 
 // DO NOT EDIT - This file is auto-generated
@@ -14,7 +14,7 @@ const std = @import("std");
 const math = std.math;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// КОНСТАНТЫ
+// CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PHI: f64 = 1.618033988749895;
@@ -69,7 +69,7 @@ pub const BRIDGE_CONFIRMATIONS: f64 = 12;
 
 pub const CROSS_CHAIN_RELAY_FEE: f64 = 0.001;
 
-// Базоinые φ-toонwithтанты (Sacred Formula)
+// Basic φ-constants (Sacred Formula)
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
 pub const TRINITY: f64 = 3.0;
@@ -80,7 +80,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ТИПЫ
+// TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// 
@@ -143,7 +143,7 @@ pub const CrossChainBridge = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ПАМЯТЬ ДЛЯ WASM
+// MEMORY FOR WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -193,13 +193,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-andнтерbyляцandя
+/// φ-interpolation
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// Генерацandя φ-withпandралand
+/// φ-spiral generation
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;

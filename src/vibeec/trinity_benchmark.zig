@@ -1,5 +1,5 @@
 // TRINITY BENCHMARK - Code Generation Benchmark Suite
-// Testирование Trinity LLM on taskх кодинга
+// Testandроinанandе Trinity LLM on taskх toодandнга
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");

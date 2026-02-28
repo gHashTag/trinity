@@ -617,7 +617,7 @@ pub fn printHelp() void {
     std.debug.print("{s}MULTILINGUAL:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  Auto-detects: Russian, Chinese, English\n", .{});
     std.debug.print("  Examples:\n", .{});
-    std.debug.print("    tri code \"напиши функцию фибоначчи\"    [RU]\n", .{});
+    std.debug.print("    tri code \"optimize fibonacci function\"    [RU]\n", .{});
     std.debug.print("    tri code \"写一个斐波那契函数\"           [ZH]\n", .{});
     std.debug.print("    tri code \"write fibonacci function\"   [EN]\n", .{});
     std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
@@ -1034,9 +1034,9 @@ pub fn detectMode(input: []const u8) ?trinity_swe.SWETaskType {
     };
 
     // Code generation patterns
-    if (std.mem.indexOf(u8, lower, "напиши") != null or
-        std.mem.indexOf(u8, lower, "создай") != null or
-        std.mem.indexOf(u8, lower, "сгенерируй") != null or
+    if (std.mem.indexOf(u8, lower, "onпandшand") != null or
+        std.mem.indexOf(u8, lower, "create") != null or
+        std.mem.indexOf(u8, lower, "generate") != null or
         std.mem.indexOf(u8, lower, "write") != null or
         std.mem.indexOf(u8, lower, "create") != null or
         std.mem.indexOf(u8, lower, "generate") != null or
@@ -1051,14 +1051,14 @@ pub fn detectMode(input: []const u8) ?trinity_swe.SWETaskType {
     }
 
     // Chat patterns
-    if (std.mem.indexOf(u8, lower, "привет") != null or
+    if (std.mem.indexOf(u8, lower, "hello") != null or
         std.mem.indexOf(u8, lower, "hello") != null or
         std.mem.indexOf(u8, lower, "hi") != null or
-        std.mem.indexOf(u8, lower, "как дела") != null or
+        std.mem.indexOf(u8, lower, "how are you") != null or
         std.mem.indexOf(u8, lower, "how are") != null or
-        std.mem.indexOf(u8, lower, "кто ты") != null or
+        std.mem.indexOf(u8, lower, "who are you") != null or
         std.mem.indexOf(u8, lower, "who are") != null or
-        std.mem.indexOf(u8, lower, "спасибо") != null or
+        std.mem.indexOf(u8, lower, "goodbye") != null or
         std.mem.indexOf(u8, lower, "thank") != null or
         std.mem.indexOf(u8, lower, "你好") != null)
     {
@@ -1066,10 +1066,10 @@ pub fn detectMode(input: []const u8) ?trinity_swe.SWETaskType {
     }
 
     // Explain patterns
-    if (std.mem.indexOf(u8, lower, "объясни") != null or
+    if (std.mem.indexOf(u8, lower, "explain") != null or
         std.mem.indexOf(u8, lower, "explain") != null or
         std.mem.indexOf(u8, lower, "what is") != null or
-        std.mem.indexOf(u8, lower, "что такое") != null)
+        std.mem.indexOf(u8, lower, "what is") != null)
     {
         return .Explain;
     }

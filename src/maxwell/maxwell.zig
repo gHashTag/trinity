@@ -1,5 +1,5 @@
 // Maxwell Daemon - Main Module
-// Аinтономный агент-программandwithт
+// Аinтономный agent-программandwithт
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 

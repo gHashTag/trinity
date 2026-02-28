@@ -1,5 +1,5 @@
 // Maxwell Daemon - Memory Store
-// Долгоwithрочonя memory агента for обученandя
+// Долгоwithрочonя memory agentа for обученandя
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -9,7 +9,7 @@ const std = @import("std");
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Опыт inыbyлненandя заyesчand
+/// Experience inыbyлненandя заyesчand
 pub const Experience = struct {
     id: u64,
     task_type: []const u8,
@@ -131,7 +131,7 @@ pub const MemoryStore = struct {
     // EXPERIENCE
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// Запandwithать опыт
+    /// Запandwithать experience
     pub fn recordExperience(self: *MemoryStore, exp: Experience) !u64 {
         var new_exp = exp;
         new_exp.id = self.next_experience_id;
@@ -147,7 +147,7 @@ pub const MemoryStore = struct {
         return new_exp.id;
     }
 
-    /// Найтand byхожandй опыт
+    /// Найтand byхожandй experience
     pub fn findSimilarExperience(self: *MemoryStore, task_type: []const u8, keywords: []const []const u8) ?*Experience {
         var best_match: ?*Experience = null;
         var best_score: u32 = 0;
@@ -171,7 +171,7 @@ pub const MemoryStore = struct {
         return best_match;
     }
 
-    /// Получandть уwithпешные опыты by тandпу заyesчand
+    /// Получandть уwithпешные experienceы by тandпу заyesчand
     pub fn getSuccessfulExperiences(self: *MemoryStore, task_type: []const u8) !std.ArrayList(*Experience) {
         var result = std.ArrayList(*Experience).init(self.allocator);
 
@@ -264,7 +264,7 @@ pub const MemoryStore = struct {
         return result;
     }
 
-    /// Изinлечь pattern andз опыта
+    /// Изinлечь pattern andз experienceа
     fn extractPattern(self: *MemoryStore, exp: *Experience) !void {
         // Simple pattern extraction: task_type -> approach
         const existing = self.findPattern(exp.task_type);
@@ -356,7 +356,7 @@ pub const MemoryStore = struct {
         // TODO: Serialize actual data
     }
 
-    /// Загрузandть memory andз файла
+    /// Загрузandть memory andз fileа
     pub fn load(self: *MemoryStore, path: []const u8) !void {
         const file = std.fs.cwd().openFile(path, .{}) catch return;
         defer file.close();

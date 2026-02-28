@@ -164,7 +164,7 @@ const PATTERNS = [_]ConversationalPattern{
         .responses = &.{
             "Я Trinity — лоtoальный AI-аwithwithandwithтент on ternary vectors. Рабfromаю on тinоём M1 Pro без облаtoа. Умею: toод, математandtoа, аonлогandand, фandлоwithофandя.",
             "Меня зоinут IGLA — Intelligent Generative Local Agent. 100% лоtoальный, 0% облаtoа. Пandшу toод, решаю заyesчand, beforetoазыinаю теоремы.",
-            "Я — результат проеtoта Trinity. Ternary computing + VSA = 60K ops/s лоtoально. Спецandалandзацandя: Zig, алгорandтмы, математandtoа.",
+            "Я — result проеtoта Trinity. Ternary computing + VSA = 60K ops/s лоtoально. Спецandалandзацandя: Zig, алгорandтмы, математandtoа.",
             "Trinity Local Agent v2.0. Моand withуперwithbywithобноwithтand: toод за мandtoроwithеtoунды, нandtoаtoandх галлюцandonцandй, byлonя прandinатноwithть. phi^2 + 1/phi^2 = 3!",
         },
     },
@@ -188,7 +188,7 @@ const PATTERNS = [_]ConversationalPattern{
         .language = .Russian,
         .weight = 0.9,
         .responses = &.{
-            "Я лоtoальный агент — рабfromаю офлайн, byгоду не зonю. Но могу byмочь with toоbeforeм for weather API!",
+            "Я лоtoальный agent — рабfromаю офлайн, byгоду не зonю. Но могу byмочь with toоbeforeм for weather API!",
             "Погоyes? В моём цandфроinом мandре inwithегyes phi^2 + 1/phi^2 = 3 градуwithа by Trinity. А in реальноwithтand — глянь за оtoно!",
             "Не зonю byгоду — я 100% офлайн. Зато могу onпandwithать парwithер byгодного API за мandнуту!",
             "Погоду не fromwithлежandinаю, но точно зonю: golden ratio = 1.618... Это inечonя toонwithтанта, in fromлandчandе from byгоды!",
