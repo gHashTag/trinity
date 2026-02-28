@@ -283,7 +283,7 @@ pub const UnifiedApiServer = struct {
     }
 
     fn graphqlPlaygroundResponse(self: *const UnifiedApiServer) ![]const u8 {
-        // GraphQL Playground - simple version without subscriptions
+        // GraphiQL 5.x - Official GraphQL Foundation playground
         var buffer = std.ArrayList(u8).initCapacity(self.allocator, 8192) catch return error.OutOfMemory;
         try buffer.appendSlice(self.allocator,
             \\HTTP/1.1 200 OK
@@ -294,96 +294,44 @@ pub const UnifiedApiServer = struct {
             \\<html>
             \\<head>
             \\  <meta charset="utf-8"/>
-            \\  <title>GraphQL Playground - TRINITY</title>
+            \\  <title>TRINITY GraphQL - GraphiQL</title>
+            \\  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/graphiql@5.0.0/style.css" />
             \\  <style>
-            \\    * { box-sizing: border-box; }
-            \\    body { height: 100vh; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #1e1e1e; color: #fff; }
-            \\    .container { display: flex; height: 100vh; }
-            \\    .left, .right { flex: 1; display: flex; flex-direction: column; }
-            \\    .left { border-right: 1px solid #333; }
-            \\    .header { padding: 10px; background: #252526; border-bottom: 1px solid #333; }
-            \\    .header h1 { margin: 0; font-size: 16px; color: #ffd700; }
-            \\    .editor { flex: 1; display: flex; flex-direction: column; }
-            \\    textarea { flex: 1; background: #1e1e1e; color: #d4d4d4; border: none; padding: 15px; font-family: 'Monaco', 'Menlo', monospace; font-size: 13px; resize: none; }
-            \\    textarea:focus { outline: none; }
-            \\    .button-bar { padding: 10px; background: #252526; border-top: 1px solid #333; }
-            \\    button { background: #0e639c; color: white; border: none; padding: 8px 16px; cursor: pointer; border-radius: 3px; font-size: 13px; }
-            \\    button:hover { background: #1177bb; }
-            \\    .result { flex: 1; padding: 15px; overflow: auto; font-family: 'Monaco', 'Menlo', monospace; font-size: 12px; white-space: pre-wrap; }
-            \\    .result.error { color: #f48771; }
-            \\    .result.success { color: #89d185; }
+            \\    body { margin: 0; height: 100vh; overflow: hidden; }
+            \\    #graphiql { height: 100vh; }
+            \\    .graphiql-container { --color-primary: #ffd700; }
             \\  </style>
             \\</head>
             \\<body>
-            \\  <div class="container">
-            \\    <div class="left">
-            \\      <div class="header"><h1>🔥 TRINITY GraphQL</h1></div>
-            \\      <div class="editor">
-            \\        <textarea id="query" placeholder="Enter GraphQL query...">
-            \\# Example queries:
-            \\{ commands { name category description } }
+            \\  <div id="graphiql">Loading...</div>
+            \\  <script type="module">
+            \\    import { GraphiQL } from 'https://cdn.jsdelivr.net/npm/graphiql@5.0.0/dist/esm/index.js';
+            \\    import { createGraphiQLFetcher } from 'https://cdn.jsdelivr.net/npm/@graphiql/toolkit@0.8.3/esm/createFetcher.js';
             \\
-            \\{ status { healthy connections uptime } }
+            \\    const fetcher = createGraphiQLFetcher({ url: '/graphql' });
             \\
-            \\{ __schema { queryType { name } types { name } } }
-            \\        </textarea>
-            \\      </div>
-            \\      <div class="button-bar">
-            \\        <button onclick="executeQuery()">▶ Run Query</button>
-            \\        <button onclick="clearResult()">Clear</button>
-            \\      </div>
-            \\    </div>
-            \\    <div class="right">
-            \\      <div class="header"><h1>Result</h1></div>
-            \\      <div id="result" class="result"></div>
-            \\    </div>
-            \\  </div>
-            \\  <script>
-            \\    async function executeQuery() {
-            \\      const query = document.getElementById('query').value.trim();
-            \\      const resultEl = document.getElementById('result');
+            \\    const root = document.getElementById('graphiql');
+            \\    root.innerHTML = '';
             \\
-            \\      if (!query) {
-            \\        resultEl.className = 'result error';
-            \\        resultEl.textContent = 'Error: Please enter a query';
-            \\        return;
-            \\      }
+            \\    const graphiql = new GraphiQL({
+            \\      fetcher,
+            \\      root,
+            \\      defaultQuery: `# TRINITY GraphQL API
+            \\# Press Ctrl+Enter to execute
             \\
-            \\      resultEl.className = 'result';
-            \\      resultEl.textContent = 'Loading...';
+            \\{
+            \\  commands {
+            \\    name
+            \\    category
+            \\    description
+            \\  }
+            \\}
             \\
-            \\      try {
-            \\        const response = await fetch('/graphql', {
-            \\          method: 'POST',
-            \\          headers: { 'Content-Type': 'application/json' },
-            \\          body: JSON.stringify({ query })
-            \\        });
-            \\
-            \\        const text = await response.text();
-            \\        const jsonMatch = text.match(/\{.*\}/s);
-            \\
-            \\        if (jsonMatch) {
-            \\          const data = JSON.parse(jsonMatch[0]);
-            \\          resultEl.className = 'result success';
-            \\          resultEl.textContent = JSON.stringify(data, null, 2);
-            \\        } else {
-            \\          resultEl.className = 'result error';
-            \\          resultEl.textContent = 'Invalid response: ' + text.substring(0, 500);
-            \\        }
-            \\      } catch (err) {
-            \\        resultEl.className = 'result error';
-            \\        resultEl.textContent = 'Error: ' + err.message;
-            \\      }
-            \\    }
-            \\
-            \\    function clearResult() {
-            \\      document.getElementById('result').textContent = '';
-            \\      document.getElementById('result').className = 'result';
-            \\    }
-            \\
-            \\    // Allow Ctrl+Enter to execute
-            \\    document.getElementById('query').addEventListener('keydown', (e) => {
-            \\      if (e.ctrlKey && e.key === 'Enter') executeQuery();
+            \\# Try these:
+            \\# { status { healthy connections uptime } }
+            \\# { __type(name: "Command") { fields { name description } } }`,
+            \\      isHeadersEditorEnabled: false,
+            \\      shouldPersistHeaders: false
             \\    });
             \\  </script>
             \\</body>
