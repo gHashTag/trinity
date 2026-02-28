@@ -1,0 +1,550 @@
+name: tvc_cluster
+version: "1.0.0"
+language: zig
+module: tvc_cluster
+
+description: |
+  Distributed TVC (Ternary Vector Computing) 3-Node Cluster Deployment.
+  Implements fault-tolerant distributed learning with consistent hashing,
+  automatic failover, and data replication verification.
+
+types:
+  ClusterConfig:
+    fields:
+      clusterId: String
+      coordinatorPort: Int
+      workerPorts: List<Int>
+      replicationFactor: Int
+      heartbeatIntervalMs: Int
+      electionTimeoutMs: Int
+      shardCount: Int
+      consensusAlgorithm: String
+
+  NodeDefinition:
+    fields:
+      nodeId: String
+      nodeType: String  # coordinator | worker
+      host: String
+      port: Int
+      apiPort: Int
+      dataDir: String
+      logLevel: String
+      shardIds: List<Int>
+
+  DockerCompose:
+    fields:
+      version: String
+      services: List<DockerService>
+      networks: List<DockerNetwork>
+      volumes: List<DockerVolume>
+
+  DockerService:
+    fields:
+      name: String
+      image: String
+      ports: List<String>
+      environment: List<String>
+      volumes: List<String>
+      dependsOn: List<String>
+      networks: List<String>
+      restart: String
+      healthCheck: Option<HealthCheckConfig>
+
+  DockerNetwork:
+    fields:
+      name: String
+      driver: String
+      subnet: Option<String>
+
+  DockerVolume:
+    fields:
+      name: String
+      driver: String
+      driverOpts: Option<String>
+
+  HealthCheckConfig:
+    fields:
+      test: List<String>
+      interval: String
+      timeout: String
+      retries: Int
+      startPeriod: String
+
+  HealthCheck:
+    fields:
+      nodeId: String
+      endpoint: String
+      status: String  # healthy | degraded | down
+      latencyMs: Int
+      lastCheck: String
+      uptime: Float
+      shardCount: Int
+      memoryUsageMb: Int
+      cpuUsagePercent: Float
+
+  FaultInjector:
+    fields:
+      nodeId: String
+      faultType: String  # kill_network | kill_process | high_latency | disk_full
+      durationSec: Int
+      severity: Float  # 0.0 - 1.0
+      enabled: Bool
+
+  ShardDistribution:
+    fields:
+      shardId: Int
+      primaryNode: String
+      replicaNodes: List<String>
+      keyRange: String
+      documentCount: Int
+      sizeMb: Int
+
+  ClusterMetrics:
+    fields:
+      totalDocuments: Int
+      totalShards: Int
+      replicationLagMs: Int
+      throughputQueriesPerSec: Float
+      avgLatencyMs: Float
+      errorRate: Float
+      healthyNodes: Int
+      quorumAchieved: Bool
+
+  FailoverResult:
+    fields:
+      failedNodeId: String
+      detectedAt: String
+      recoveredAt: String
+      downtimeMs: Int
+      shardsReassigned: Int
+      leaderElected: Bool
+      dataLossDetected: Bool
+
+  ReplicationTestResult:
+    fields:
+      documentId: String
+      writtenTo: List<String>
+      replicatedTo: List<String>
+      replicationLagMs: Int
+      consistent: Bool
+      verificationMethod: String
+
+  ClusterBenchmark:
+    fields:
+      testName: String
+      nodeCount: Int
+      documentCount: Int
+      shardCount: Int
+      durationSec: Int
+      readThroughput: Float
+      writeThroughput: Float
+      avgLatencyMs: Float
+      p95LatencyMs: Float
+      p99LatencyMs: Float
+      errorRate: Float
+
+  ConsistentHashRing:
+    fields:
+      ringSize: Int
+      virtualNodes: Int
+      nodePositions: List<NodePosition>
+      distribution: Map<String, List<Int>>
+
+  NodePosition:
+    fields:
+      nodeId: String
+      position: Int
+      shardIds: List<Int>
+
+  ElectionState:
+    fields:
+      term: Int
+      leaderId: Option<String>
+      votedFor: Option<String>
+      votesReceived: List<String>
+      state: String  # leader | candidate | follower
+
+  ReplicationLog:
+    fields:
+      entryId: String
+      term: Int
+      documentId: String
+      operation: String  # write | delete
+      timestamp: String
+      nodesAcked: List<String>
+      committed: Bool
+
+constants:
+  # Sacred Constants
+  PHI: "1.618033988749895"
+  PHI_SQUARED: "2.618033988749895"
+  MU: "0.0382"
+  CHI: "0.0618"
+  SIGMA: "1.618033988749895"
+  EPSILON: "0.333333333333333"
+
+  # Cluster Configuration
+  DEFAULT_CLUSTER_ID: "tvc-cluster-phi"
+  DEFAULT_COORDINATOR_PORT: 8080
+  DEFAULT_WORKER_PORT_START: 8081
+  DEFAULT_REPLICATION_FACTOR: 3
+  DEFAULT_SHARD_COUNT: 27  # Lucas L(9)=27
+  CONSENSUS_ALGORITHM: "raft"
+
+  # φ-based Timeouts (milliseconds)
+  HEARTBEAT_INTERVAL_MS: 618  # φ * 1000 / 2.618
+  ELECTION_TIMEOUT_MS: 1618  # φ² * 1000 / 1.618
+  LEASE_TIMEOUT_MS: 382  # μ * 10000
+  RPC_TIMEOUT_MS: 2000
+
+  # Fault Injection
+  DEFAULT_FAULT_DURATION_SEC: 30
+  MAX_FAULT_DURATION_SEC: 300
+  NETWORK_LATENCY_MS: 100
+  DISK_LATENCY_MS: 50
+
+  # Docker Configuration
+  DOCKER_IMAGE: "trinity-tvc:latest"
+  DOCKER_NETWORK: "tvc-network"
+  DOCKER_VOLUME: "tvc-data"
+  CONTAINER_MEMORY: "512m"
+  CONTAINER_CPU: "0.5"
+
+  # Health Check Intervals
+  HEALTH_CHECK_INTERVAL_MS: 1000
+  HEALTH_CHECK_TIMEOUT_MS: 500
+  HEALTH_CHECK_RETRIES: 3
+  HEALTH_CHECK_START_PERIOD_SEC: 10
+
+  # Testing Configuration
+  TEST_DOCUMENT_COUNT: 1000
+  TEST_SHARD_COUNT: 9
+  BENCHMARK_DURATION_SEC: 60
+  WARMUP_DURATION_SEC: 10
+
+  # Performance Thresholds
+  MAX_LATENCY_MS: 1000
+  MAX_ERROR_RATE: 0.01  # 1%
+  MIN_THROUGHPUT_QPS: 100.0
+  MAX_REPLICATION_LAG_MS: 500
+
+behaviors:
+  - name: create_cluster_config
+    given: Cluster parameters (ports, replication factor, shard count)
+    when: Generating cluster configuration
+    then: Return ClusterConfig with φ-based timeouts and sacred constants
+
+  - name: define_coordinator_node
+    given: Coordinator port and cluster ID
+    when: Defining coordinator node specification
+    then: Return NodeDefinition with coordinator role and API endpoints
+
+  - name: define_worker_node
+    given: Worker ID, port offset, and shard assignment
+    when: Defining worker node specification
+    then: Return NodeDefinition with worker role and assigned shards
+
+  - name: generate_consistent_hash_ring
+    given: Node count and virtual nodes per physical node
+    when: Generating consistent hash ring
+    then: Return ConsistentHashRing with even distribution and φ-balanced positions
+
+  - name: assign_shards_to_nodes
+    given: Shard count, node count, and consistent hash ring
+    when: Assigning shards to nodes using consistent hashing
+    then: Return list of ShardDistribution with primary and replica assignments
+
+  - name: create_docker_compose_config
+    given: List of NodeDefinition objects and network config
+    when: Generating Docker Compose configuration
+    then: Return DockerCompose with services, networks, volumes, and health checks
+
+  - name: create_coordinator_service
+    given: Coordinator NodeDefinition
+    when: Creating Docker service for coordinator
+    then: Return DockerService with API ports and health checks
+
+  - name: create_worker_service
+    given: Worker NodeDefinition
+    when: Creating Docker service for worker
+    then: Return DockerService with shard assignments and coordinator dependency
+
+  - name: add_health_check_to_service
+    given: DockerService and health check parameters
+    when: Adding health check configuration to service
+    then: Return DockerService with health check endpoint and retries
+
+  - name: add_environment_variables
+    given: DockerService and ClusterConfig
+    when: Adding environment variables for cluster coordination
+    then: Return DockerService with cluster ID, peer addresses, and timeouts
+
+  - name: write_docker_compose_file
+    given: DockerCompose and output path
+    when: Writing docker-compose.yml file
+    then: Create valid Docker Compose file with proper YAML formatting
+
+  - name: create_startup_script
+    given: Cluster configuration and node definitions
+    when: Creating startup script for cluster initialization
+    then: Generate bash script that orchestrates container startup order
+
+  - name: start_cluster
+    given: Docker Compose configuration path
+    when: Starting all containers via docker-compose
+    then: Launch coordinator and workers in correct order with dependency checks
+
+  - name: verify_container_health
+    given: List of node IDs and container names
+    when: Checking container status via docker ps
+    then: Return list of HealthCheck with container status and uptime
+
+  - name: check_api_endpoint
+    given: Node ID and health check endpoint URL
+    when: Querying /health endpoint
+    then: Return HealthCheck with status, latency, and shard information
+
+  - name: wait_for_cluster_ready
+    given: Cluster configuration and timeout
+    when: Waiting for all nodes to report healthy
+    then: Return when all nodes pass health checks or timeout after φ³ seconds
+
+  - name: verify_leader_election
+    given: Cluster configuration
+    when: Checking leader election result
+    then: Return ElectionState with leader ID and quorum achievement
+
+  - name: verify_shard_distribution
+    given: Cluster configuration and expected distribution
+    when: Querying nodes for shard assignment
+    then: Return list of ShardDistribution verifying primary/replica placement
+
+  - name: test_write_document
+    given: Document data and target shard
+    when: Writing document through coordinator API
+    then: Return success status and document ID with write timestamp
+
+  - name: verify_replication
+    given: Document ID and expected replica nodes
+    when: Querying all nodes for document presence
+    then: Return ReplicationTestResult with verification status and lag
+
+  - name: test_read_document
+    given: Document ID and source node
+    when: Reading document through API
+    then: Return document data and read latency
+
+  - name: inject_network_fault
+    given: FaultInjector configuration
+    when: Simulating network partition or latency
+    then: Apply network fault using tc (traffic control) or Docker network pause
+
+  - name: inject_process_kill
+    given: Target node ID
+    when: Killing node process to simulate crash
+    then: Stop container and verify node is marked down
+
+  - name: test_failover_detection
+    given: Failed node ID and cluster configuration
+    when: Monitoring cluster response to failure
+    then: Return FailoverResult with detection time and recovery actions
+
+  - name: verify_leader_reassignment
+    given: Previous leader failure and remaining nodes
+    when: Checking new leader election
+    then: Return ElectionState with new leader and term increment
+
+  - name: verify_shard_reassignment
+    given: Failed node and its shards
+    when: Checking shard replica promotion
+    then: Return list of ShardDistribution showing new primaries
+
+  - name: verify_data_integrity_after_failover
+    given: Document IDs before failure
+    when: Querying remaining nodes for data
+    then: Return boolean indicating no data loss occurred
+
+  - name: restore_failed_node
+    given: Node ID and original configuration
+    when: Restarting failed node container
+    then: Return health check showing node rejoined cluster
+
+  - name: verify_data_reconciliation
+    given: Rejoined node and cluster state
+    when: Checking data synchronization after rejoin
+    then: Return boolean indicating node caught up with missed writes
+
+  - name: measure_cluster_throughput
+    given: Cluster configuration and test duration
+    when: Running read/write workload
+    then: Return queries per second and operation latency distribution
+
+  - name: measure_replication_lag
+    given: Write operation and replica nodes
+    when: Tracking write propagation time
+    then: Return average lag in milliseconds across replicas
+
+  - name: benchmark_single_node
+    given: Node configuration and document count
+    when: Running benchmark on single node
+    then: Return ClusterBenchmark with baseline performance
+
+  - name: benchmark_three_node_cluster
+    given: 3-node cluster and document count
+    when: Running distributed benchmark
+    then: Return ClusterBenchmark with distributed performance metrics
+
+  - name: compare_single_vs_cluster
+    given: Single-node and cluster benchmark results
+    when: Comparing throughput and latency
+    then: Return performance ratio showing cluster overhead/benefits
+
+  - name: test_write_heavy_workload
+    given: 90% write / 10% read ratio
+    when: Running workload for benchmark duration
+    then: Return ClusterBenchmark with write throughput and replication lag
+
+  - name: test_read_heavy_workload
+    given: 10% write / 90% read ratio
+    when: Running workload for benchmark duration
+    then: Return ClusterBenchmark with read throughput and cache hit rate
+
+  - name: test_balanced_workload
+    given: 50% write / 50% read ratio
+    when: Running workload for benchmark duration
+    then: Return ClusterBenchmark showing balanced performance
+
+  - name: verify_quorum_writes
+    given: Write operation and replication factor
+    when: Checking write acknowledgment
+    then: Return boolean indicating majority of nodes acknowledged write
+
+  - name: verify_consistent_reads
+    given: Read operation and quorum requirement
+    when: Querying multiple nodes for same document
+    then: Return boolean indicating all nodes return consistent data
+
+  - name: test_concurrent_writes
+    given: Multiple clients writing to same shard
+    when: Simulating concurrent write operations
+    then: Return conflict resolution result and final document state
+
+  - name: test_shard_rebalancing
+    given: Cluster with added node
+    when: Triggering shard rebalancing
+    then: Return new ShardDistribution showing moved shards
+
+  - name: generate_cluster_metrics_report
+    given: Cluster metrics and test results
+    when: Generating comprehensive metrics report
+    then: Return formatted report with all key performance indicators
+
+  - name: export_docker_logs
+    given: Container names and output directory
+    when: Extracting container logs
+    then: Write log files for each node to output directory
+
+  - name: cleanup_cluster
+    given: Docker Compose configuration
+    when: Shutting down cluster and removing containers
+    then: Stop all containers, remove volumes, and clean up network
+
+  - name: verify_cleanup
+    given: Previous cluster configuration
+    when: Checking for remaining artifacts
+    then: Return boolean indicating all containers and volumes removed
+
+  - name: create_deployment_documentation
+    given: Cluster configuration and test results
+    when: Generating deployment documentation
+    then: Create markdown file with setup instructions and test results
+
+  - name: validate_production_readiness
+    given: All test results and metrics
+    when: Checking production readiness criteria
+    then: Return boolean with checklist of passed/failed requirements
+
+examples:
+  - name: deploy_3_node_cluster
+    description: Deploy and verify 3-node TVC cluster with Docker Compose
+    given: |
+      cluster_config = ClusterConfig {
+        clusterId = "tvc-test-phi",
+        coordinatorPort = 8080,
+        workerPorts = [8081, 8082],
+        replicationFactor = 3,
+        heartbeatIntervalMs = 618,
+        electionTimeoutMs = 1618,
+        shardCount = 27,
+        consensusAlgorithm = "raft"
+      }
+    when: |
+      1. Generate Docker Compose configuration
+      2. Start cluster: docker-compose up -d
+      3. Wait for health checks: wait_for_cluster_ready()
+      4. Verify leader election
+      5. Check shard distribution
+    then: |
+      Returns:
+      - All 3 containers running (status: healthy)
+      - Leader elected with quorum
+      - 27 shards distributed across nodes
+      - API endpoints responding
+
+  - name: test_failover_recovery
+    description: Kill coordinator and verify automatic failover
+    given: |
+      Running 3-node cluster with healthy status
+    when: |
+      1. Kill coordinator container: docker kill tvc-coordinator
+      2. Monitor cluster for detection (should be < electionTimeoutMs)
+      3. Verify new leader elected from remaining workers
+      4. Check shards reassigned (9 shards from coordinator)
+      5. Verify no data loss by querying all documents
+    then: |
+      Returns FailoverResult:
+      - detectedAt: "2026-02-28T10:30:15Z"
+      - downtimeMs: < 2000
+      - shardsReassigned: 9
+      - leaderElected: true
+      - dataLossDetected: false
+
+  - name: verify_data_replication
+    description: Write document and verify replication across all nodes
+    given: |
+      Healthy 3-node cluster
+      document = { id: "doc-phi-27", shard: 9, data: "..." }
+    when: |
+      1. Write document through coordinator API
+      2. Query coordinator for document (should exist)
+      3. Query worker-1 for document (should exist as replica)
+      4. Query worker-2 for document (should exist as replica)
+      5. Measure replication lag between nodes
+    then: |
+      Returns ReplicationTestResult:
+      - documentId: "doc-phi-27"
+      - writtenTo: ["coordinator"]
+      - replicatedTo: ["worker-1", "worker-2"]
+      - replicationLagMs: < 100
+      - consistent: true
+
+  - name: benchmark_cluster_performance
+    description: Run comprehensive cluster benchmark
+    given: |
+      3-node cluster with 27 shards
+      Test data: 10,000 documents
+    when: |
+      1. Warm up cluster with 1000 writes
+      2. Run balanced workload (50% read, 50% write) for 60 seconds
+      3. Measure throughput, latency, error rate
+      4. Compare against single-node baseline
+    then: |
+      Returns ClusterBenchmark:
+      - testName: "3-node-balanced-workload"
+      - nodeCount: 3
+      - documentCount: 10000
+      - readThroughput: > 200 QPS
+      - writeThroughput: > 100 QPS
+      - avgLatencyMs: < 50
+      - p99LatencyMs: < 200
+      - errorRate: < 0.01

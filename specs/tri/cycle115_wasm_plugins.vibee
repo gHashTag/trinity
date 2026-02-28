@@ -1,0 +1,1104 @@
+name: wasm_plugins
+version: "1.0.0"
+language: zig
+module: wasm_plugins
+
+description: |
+  WebAssembly Plugin Sandbox for Trinity VSA System.
+  Provides secure, isolated plugin execution with fuel metering,
+  memory limits, and hot-reload capability.
+
+types:
+  # Core WASM Runtime Configuration
+  WASMRuntimeConfig:
+    fields:
+      engine: EngineType
+      memory_limits: MemoryLimits
+      fuel_config: FuelConfig
+      compilation_mode: CompilationMode
+      max_instances: Int
+      instance_timeout_ms: Int
+
+  EngineType:
+    enum:
+      - wasmtime
+      - wasmer
+
+  CompilationMode:
+    enum:
+      - eager
+      - lazy
+      - auto
+
+  # Memory and Resource Management
+  MemoryLimits:
+    fields:
+      initial_pages: Int           # 64KB per page
+      maximum_pages: Int
+      table_elements: Int
+      memory_growth_allowed: Bool
+      stack_size_bytes: Int
+      heap_size_bytes: Int
+
+  FuelConfig:
+    fields:
+      initial_fuel: Int64           # Starting fuel units
+      fuel_per_instruction: Int64   # Fuel cost per instruction
+      max_fuel: Int64               # Absolute cap
+      refill_enabled: Bool
+      refill_rate: Int64            # Fuel per second
+      fuel_overflow_behavior: FuelOverflow
+
+  FuelOverflow:
+    enum:
+      - saturate
+      - overflow
+      - reset
+
+  FuelMeter:
+    fields:
+      current: Int64
+      consumed: Int64
+      refilled: Int64
+      overflow_count: Int
+      last_update_timestamp: Int64
+
+  # Plugin Identity and Metadata
+  PluginID:
+    fields:
+      namespace: String
+      name: String
+      version: String
+
+  PluginManifest:
+    fields:
+      id: PluginID
+      author: String
+      description: String
+      license: String
+      wasm_path: String
+      schema_version: String
+      api_version: String
+      required_capabilities: List<String>
+      provided_capabilities: List<String>
+      dependencies: List<PluginDependency>
+      entry_points: EntryPointMap
+      resource_requirements: ResourceRequirements
+      permissions: PermissionSet
+      metadata: Map<String, String>
+
+  PluginDependency:
+    fields:
+      plugin_id: String
+      version_constraint: String
+      optional: Bool
+
+  EntryPointMap:
+    fields:
+      init: Option<String>
+      execute: String
+      cleanup: Option<String>
+      query: Option<String>
+      on_hot_reload: Option<String>
+
+  ResourceRequirements:
+    fields:
+      min_memory_pages: Int
+      max_memory_pages: Int
+      required_fuel: Int64
+      timeout_ms: Int
+      required_host_functions: List<String>
+
+  PermissionSet:
+    fields:
+      allow_network: Bool
+      allow_filesystem: Bool
+      allow_host_logging: Bool
+      allow_state_persistence: Bool
+      allowed_host_functions: List<String>
+
+  # Plugin Instance Management
+  PluginInstance:
+    fields:
+      manifest: PluginManifest
+      instance_id: String
+      state: InstanceState
+      fuel_meter: FuelMeter
+      memory_usage: MemoryUsage
+      last_execution_time: Int64
+      execution_count: Int
+      error_count: Int
+      created_at: Int64
+      updated_at: Int64
+
+  InstanceState:
+    enum:
+      - uninitialized
+      - ready
+      - running
+      - suspended
+      - error
+      - terminated
+
+  MemoryUsage:
+    fields:
+      used_pages: Int
+      peak_pages: Int
+      allocation_count: Int
+      deallocation_count: Int
+      fragmentation_ratio: Float
+
+  # Host API for Plugins
+  HostAPI:
+    fields:
+      log_function: String
+      get_vsa_vector: String
+      set_vsa_vector: String
+      allocate_memory: String
+      deallocate_memory: String
+      get_timestamp: String
+      random_bytes: String
+
+  HostFunction:
+    fields:
+      name: String
+      signature: String
+      permissions: List<String>
+      implementation: String
+
+  # Plugin Execution Context
+  ExecutionContext:
+    fields:
+      plugin_id: String
+      instance_id: String
+      input_data: VectorData
+      execution_options: ExecutionOptions
+      callbacks: CallbackRegistry
+
+  VectorData:
+    fields:
+      dimensions: Int
+      data: List<Int8>
+      metadata: Map<String, String>
+
+  ExecutionOptions:
+    fields:
+      timeout_ms: Int
+      fuel_limit: Int64
+      allow_growth: Bool
+      capture_output: Bool
+
+  CallbackRegistry:
+    fields:
+      on_progress: Option<String>
+      on_complete: Option<String>
+      on_error: Option<String>
+      on_fuel_exhausted: Option<String>
+
+  # Hot Reload System
+  HotReloadConfig:
+    fields:
+      enabled: Bool
+      watch_paths: List<String>
+      reload_strategy: ReloadStrategy
+      backup_instances: Bool
+      zero_downtime: Bool
+      validation_timeout_ms: Int
+
+  ReloadStrategy:
+    enum:
+      - immediate
+      - graceful
+      - rolling
+      - manual
+
+  HotReloadEvent:
+    fields:
+      plugin_id: String
+      old_version: String
+      new_version: String
+      timestamp: Int64
+      validation_result: ValidationOutcome
+      migration_state: MigrationState
+
+  ValidationOutcome:
+    enum:
+      - passed
+      - failed
+      - warnings
+
+  MigrationState:
+    enum:
+      - pending
+      - in_progress
+      - completed
+      - rolled_back
+
+  # Plugin Registry
+  PluginRegistry:
+    fields:
+      plugins: Map<String, PluginManifest>
+      instances: Map<String, PluginInstance>
+      active_plugins: List<String>
+      loaded_plugins: List<String>
+      failed_plugins: List<String>
+
+  # Security and Validation
+  SecurityPolicy:
+    fields:
+      max_fuel_per_execution: Int64
+      max_execution_time_ms: Int
+      max_memory_pages: Int
+      allowed_host_functions: Set<String>
+      blocked_plugins: Set<String>
+      require_signature: Bool
+      signature_public_keys: List<String>
+
+  ValidationReport:
+    fields:
+      plugin_id: String
+      is_valid: Bool
+      errors: List<String>
+      warnings: List<String>
+      security_score: Float
+      performance_score: Float
+
+  # Plugin Statistics
+  PluginStatistics:
+    fields:
+      total_executions: Int
+      successful_executions: Int
+      failed_executions: Int
+      total_fuel_consumed: Int64
+      average_execution_time_ms: Float
+      peak_memory_usage: Int
+
+behaviors:
+  # ===== Runtime Initialization =====
+
+  - name: init_wasm_runtime
+    given: WASMRuntimeConfig
+    when: Runtime initialization is requested
+    then: |
+      Creates WASM engine with specified configuration:
+      - Initializes Wasmtime or Wasmer engine
+      - Sets up compilation mode (eager/lazy/auto)
+      - Configures memory limits and fuel metering
+      - Registers host API functions
+      - Returns initialized runtime handle
+
+  - name: shutdown_wasm_runtime
+    given: Runtime handle
+    when: Shutdown is requested
+    then: |
+      Gracefully shuts down WASM runtime:
+      - Terminates all active plugin instances
+      - Frees allocated memory
+      - Unloads all plugins
+      - Releases engine resources
+      - Returns cleanup status
+
+  # ===== Plugin Loading and Validation =====
+
+  - name: load_plugin
+    given: PluginManifest and WASM binary path
+    when: Plugin needs to be loaded into runtime
+    then: |
+      Loads and validates plugin:
+      - Reads and parses WASM binary
+      - Validates manifest schema
+      - Checks API version compatibility
+      - Validates resource requirements
+      - Checks dependencies are satisfied
+      - Creates plugin instance with unique ID
+      - Registers in plugin registry
+      - Returns instance handle or error
+
+  - name: unload_plugin
+    given: Plugin instance ID
+    when: Plugin needs to be removed
+    then: |
+      Unloads plugin and cleans up:
+      - Calls plugin cleanup function if exists
+      - Removes instance from registry
+      - Frees plugin memory
+      - Revokes permissions
+      - Returns unload status
+
+  - name: validate_plugin
+    given: PluginManifest and WASM binary
+    when: Plugin validation is required
+    then: |
+      Performs comprehensive validation:
+      - Validates WASM binary structure
+      - Checks manifest completeness
+      - Verifies required capabilities
+      - Checks resource limits
+      - Validates host function usage
+      - Tests entry points exist
+      - Generates ValidationReport
+      - Returns validation result with score
+
+  - name: verify_plugin_signature
+    given: Plugin binary and public key
+    when: Security policy requires signatures
+    then: |
+      Verifies plugin cryptographic signature:
+      - Extracts signature from binary
+      - Verifies against public key
+      - Checks certificate chain
+      - Returns verification result
+
+  # ===== Plugin Execution =====
+
+  - name: execute_plugin
+    given: ExecutionContext and PluginInstance
+    when: Plugin execution is requested
+    then: |
+      Executes plugin with metering:
+      - Initializes execution context
+      - Sets fuel limit for execution
+      - Calls plugin entry point
+      - Monitors fuel consumption
+      - Enforces memory limits
+      - Captures execution output
+      - Records execution statistics
+      - Returns result or error with fuel consumed
+
+  - name: call_plugin_function
+    given: Plugin instance, function name, and arguments
+    when: Specific plugin function needs to be called
+    then: |
+      Calls exported plugin function:
+      - Validates function exists in export table
+      - Marshals arguments to WASM memory
+      - Executes function with fuel metering
+      - Marshals return values from WASM
+      - Returns result or error
+
+  - name: suspend_plugin
+    given: Plugin instance ID
+    when: Plugin needs to be paused
+    then: |
+      Suspends plugin execution:
+      - Pauses fuel metering
+      - Saves execution state
+      - Updates instance state to suspended
+      - Returns suspension status
+
+  - name: resume_plugin
+    given: Plugin instance ID
+    when: Suspended plugin needs to resume
+    then: |
+      Resumes plugin execution:
+      - Restores execution state
+      - Resumes fuel metering
+      - Updates instance state to running
+      - Returns resume status
+
+  # ===== Fuel Metering =====
+
+  - name: meter_fuel
+    given: FuelMeter and instruction count
+    when: Instructions are executed
+    then: |
+      Measures and deducts fuel:
+      - Calculates fuel cost: instruction_count * fuel_per_instruction
+      - Deducts from current fuel
+      - Adds to consumed total
+      - Updates timestamp
+      - Checks for fuel exhaustion
+      - Triggers callback if exhausted
+      - Returns remaining fuel
+
+  - name: refuel_plugin
+    given: Plugin instance and fuel amount
+    when: Plugin needs more fuel
+    then: |
+      Refuels plugin instance:
+      - Checks if refill is enabled
+      - Adds fuel to current amount
+      - Respects max_fuel cap
+      - Handles overflow behavior
+      - Updates refilled total
+      - Returns new fuel amount
+
+  - name: check_fuel_exhausted
+    given: FuelMeter
+    when: Fuel level needs checking
+    then: |
+      Checks if fuel is exhausted:
+      - Compares current fuel to zero
+      - Returns true if exhausted
+      - Returns remaining fuel if not
+
+  - name: reset_fuel_meter
+    given: FuelMeter
+    when: Fuel meter needs reset
+    then: |
+      Resets fuel meter:
+      - Sets current to initial_fuel
+      - Resets consumed to zero
+      - Resets refilled to zero
+      - Keeps overflow_count
+      - Updates timestamp
+      - Returns reset meter
+
+  # ===== Memory Management =====
+
+  - name: enforce_memory_limit
+    given: MemoryLimits and current usage
+    when: Memory allocation is attempted
+    then: |
+      Enforces memory limits:
+      - Calculates new usage after allocation
+      - Compares to maximum_pages
+      - Allows if within limit and growth_allowed
+      - Denies if would exceed limit
+      - Returns allocation decision
+
+  - name: get_memory_usage
+    given: Plugin instance
+    when: Memory usage needs inspection
+    then: |
+      Gets current memory usage:
+      - Queries WASM memory size
+      - Calculates used pages
+      - Updates peak usage if new high
+      - Returns MemoryUsage struct
+
+  - name: grow_plugin_memory
+    given: Plugin instance and page count
+    when: Plugin requests more memory
+    then: |
+      Grows plugin memory:
+      - Checks if growth is allowed
+      - Verifies new size within limits
+      - Calls WASM memory.grow
+      - Updates memory usage statistics
+      - Returns new page count or error
+
+  # ===== Host API Functions =====
+
+  - name: host_log
+    given: Plugin instance, log level, and message
+    when: Plugin calls host log function
+    then: |
+      Logs message from plugin:
+      - Checks allow_host_logging permission
+      - Formats message with plugin context
+      - Writes to host logging system
+      - Returns success status
+
+  - name: host_get_vsa_vector
+    given: Plugin instance and vector ID
+    when: Plugin requests VSA vector
+    then: |
+      Provides VSA vector to plugin:
+      - Validates vector access permission
+      - Retrieves vector from VSA system
+      - Marshals vector data to WASM memory
+      - Returns pointer and size
+
+  - name: host_set_vsa_vector
+    given: Plugin instance, vector ID, and data
+    when: Plugin modifies VSA vector
+    then: |
+      Updates VSA vector from plugin:
+      - Validates vector write permission
+      - Reads data from WASM memory
+      - Updates VSA system vector
+      - Returns success status
+
+  - name: host_allocate_memory
+    given: Plugin instance and size
+    when: Plugin requests host-side memory
+    then: |
+      Allocates memory for plugin:
+      - Validates size within limits
+      - Allocates host memory buffer
+      - Returns pointer to buffer
+      - Tracks allocation for cleanup
+
+  - name: host_deallocate_memory
+    given: Plugin instance and pointer
+    when: Plugin releases host-side memory
+    then: |
+      Deallocates plugin memory:
+      - Validates pointer ownership
+      - Frees host memory buffer
+      - Removes from allocation tracking
+      - Returns success status
+
+  - name: host_get_timestamp
+    given: Plugin instance
+    when: Plugin needs current time
+    then: |
+      Returns current timestamp:
+      - Gets system time in milliseconds
+      - Returns timestamp as Int64
+
+  - name: host_random_bytes
+    given: Plugin instance and buffer size
+    when: Plugin needs random data
+    then: |
+      Generates random bytes:
+      - Validates buffer size
+      - Fills buffer with cryptographically secure random bytes
+      - Returns success status
+
+  # ===== Hot Reload =====
+
+  - name: enable_hot_reload
+    given: HotReloadConfig
+    when: Hot reload needs to be enabled
+    then: |
+      Enables hot reload system:
+      - Initializes file watcher for watch_paths
+      - Sets reload strategy
+      - Validates zero_downtime requirements
+      - Returns hot reload handle
+
+  - name: reload_plugin
+    given: Plugin ID and HotReloadEvent
+    when: Plugin binary or manifest changes
+    then: |
+      Performs hot reload of plugin:
+      - Validates new plugin version
+      - Creates backup of current instance
+      - Loads new plugin version
+      - Migrates state if migration handler exists
+      - Swaps instances based on strategy
+      - Cleans up old instance if successful
+      - Rolls back if validation fails
+      - Returns reload result
+
+  - name: validate_plugin_migration
+    given: Old manifest and new manifest
+    when: Checking if plugin can be migrated
+    then: |
+      Validates migration compatibility:
+      - Checks API version compatibility
+      - Validates state structure compatibility
+      - Checks dependencies still satisfied
+      - Tests migration handler if exists
+      - Returns validation outcome
+
+  - name: rollback_plugin_reload
+    given: Plugin ID and backup instance
+    when: Hot reload validation fails
+    then: |
+      Rolls back failed reload:
+      - Restores backup instance
+      - Updates registry to old version
+      - Logs rollback reason
+      - Returns rollback status
+
+  # ===== Registry Management =====
+
+  - name: register_plugin
+    given: PluginManifest and instance
+    when: Plugin needs to be registered
+    then: |
+      Registers plugin in registry:
+      - Adds manifest to plugins map
+      - Adds instance to instances map
+      - Adds to active_plugins list
+      - Returns registration status
+
+  - name: unregister_plugin
+    given: Plugin ID
+    when: Plugin needs to be unregistered
+    then: |
+      Unregisters plugin:
+      - Removes from plugins map
+      - Removes from instances map
+      - Removes from active_plugins
+      - Adds to loaded_plugins history
+      - Returns unregistration status
+
+  - name: get_plugin
+    given: Plugin ID
+    when: Plugin information is needed
+    then: |
+      Retrieves plugin from registry:
+      - Looks up plugin by ID
+      - Returns PluginManifest
+      - Returns error if not found
+
+  - name: list_plugins
+    given: Optional state filter
+    when: Plugin listing is requested
+    then: |
+      Lists plugins matching criteria:
+      - Filters by instance state if provided
+      - Returns list of PluginManifest
+      - Includes active and loaded counts
+
+  # ===== Statistics and Monitoring =====
+
+  - name: get_plugin_statistics
+    given: Plugin instance
+    when: Statistics are requested
+    then: |
+      Collects plugin statistics:
+      - Gathers execution counts
+      - Calculates success/failure rates
+      - Computes fuel consumption metrics
+      - Measures average execution time
+      - Returns PluginStatistics
+
+  - name: reset_plugin_statistics
+    given: Plugin instance
+    when: Statistics need reset
+    then: |
+      Resets plugin statistics:
+      - Zeroes execution counters
+      - Resets fuel consumption
+      - Clears timing data
+      - Returns reset status
+
+  # ===== Security =====
+
+  - name: check_plugin_permissions
+    given: PluginManifest and requested operation
+    when: Plugin attempts operation
+    then: |
+      Checks if operation is permitted:
+      - Validates against PermissionSet
+      - Checks operation-specific flags
+      - Returns allow/deny decision
+
+  - name: apply_security_policy
+    given: SecurityPolicy and plugin
+    when: Plugin needs security constraints
+    then: |
+      Applies security policy to plugin:
+      - Sets fuel limits
+      - Sets execution time limits
+      - Sets memory limits
+      - Filters allowed host functions
+      - Checks blocked plugins list
+      - Enforces signature requirement
+      - Returns policy application result
+
+  # ===== Example Plugin 1: Custom Similarity Metric =====
+
+  - name: similarity_metric_plugin_init
+    given: Plugin configuration
+    when: Similarity metric plugin initializes
+    then: |
+      Initializes custom similarity metric:
+      - Loads metric parameters (weighting, normalization)
+      - Allocates working memory
+      - Registers similarity calculation function
+      - Returns initialization status
+
+  - name: similarity_metric_calculate
+    given: Two VSA vectors and metric type
+    when: Custom similarity calculation is requested
+    then: |
+      Calculates custom similarity:
+      - Accepts vectors via host API
+      - Applies custom metric algorithm:
+        * Weighted cosine similarity
+        * Normalized Euclidean distance
+        * Ternary-aware Hamming similarity
+      - Returns similarity score in [-1, 1] or [0, 1]
+
+  - name: similarity_metric_batch
+    given: Vector pairs and metric types
+    when: Batch similarity calculation is needed
+    then: |
+      Calculates multiple similarities:
+      - Processes vector pairs in batch
+      - Uses SIMD optimization if available
+      - Returns list of similarity scores
+
+  # ===== Example Plugin 2: Logging Observer =====
+
+  - name: logging_observer_init
+    given: Log configuration (level, format, output)
+    when: Logging observer initializes
+    then: |
+      Initializes logging observer:
+      - Sets log level filter
+      - Configures output format (JSON, text)
+      - Opens output sink (file, stdout, network)
+      - Registers callback hooks
+      - Returns observer handle
+
+  - name: logging_observer_on_execute
+    given: Execution event (plugin, input, output)
+    when: Plugin execution completes
+    then: |
+      Logs execution event:
+      - Captures plugin ID and timestamp
+      - Logs input parameters (sanitized)
+      - Logs output results (sanitized)
+      - Records execution time and fuel used
+      - Formats log entry
+      - Writes to output sink
+
+  - name: logging_observer_on_error
+    given: Error event (plugin, error, context)
+    when: Plugin execution fails
+    then: |
+      Logs error event:
+      - Captures error type and message
+      - Records plugin stack trace
+      - Logs execution context
+      - Formats error entry
+      - Writes to output sink
+
+  - name: logging_observer_rotate
+    given: Rotation policy (size, time)
+    when: Log rotation is triggered
+    then: |
+      Rotates log file:
+      - Closes current log file
+      - Renames with timestamp
+      - Opens new log file
+      - Compresses old file if configured
+      - Returns rotation status
+
+  # ===== Example Plugin 3: Vector Transformer =====
+
+  - name: vector_transformer_init
+    given: Transform configuration
+    when: Vector transformer initializes
+    then: |
+      Initializes vector transformer:
+      - Loads transform parameters
+      - Sets up transformation matrix
+      - Allocates buffer memory
+      - Registers transform functions
+      - Returns initialization status
+
+  - name: vector_transformer_permute
+    given: Input vector and permutation count
+    when: Vector permutation is requested
+    then: |
+      Applies cyclic permutation:
+      - Reads input vector via host API
+      - Rotates elements by count positions
+      - Writes transformed vector via host API
+      - Returns transformation result
+
+  - name: vector_transformer_bind
+    given: Two vectors
+    when: Vector binding is requested
+    then: |
+      Performs vector binding:
+      - Reads both vectors via host API
+      - Applies binding operation (XOR or custom)
+      - Writes bound vector via host API
+      - Returns bound vector
+
+  - name: vector_transformer_bundle
+    given: List of vectors
+    when: Vector bundling is requested
+    then: |
+      Bundles multiple vectors:
+      - Reads all input vectors via host API
+      - Applies majority vote operation
+      - Writes bundled vector via host API
+      - Returns bundled vector
+
+  - name: vector_transformer_threshold
+    given: Input vector and threshold value
+    when: Thresholding is requested
+    then: |
+      Applies threshold to vector:
+      - Reads input vector via host API
+      - Truncates values to {-1, 0, +1}
+      - Writes thresholded vector via host API
+      - Returns thresholded vector
+
+  # ===== Error Handling =====
+
+  - name: handle_plugin_error
+    given: Error event and plugin context
+    when: Plugin encounters error
+    then: |
+      Handles plugin error:
+      - Captures error details
+      - Updates error_count in instance
+      - Calls on_error callback if registered
+      - Logs error with context
+      - Updates instance state to error if severe
+      - Returns error handling result
+
+  - name: recover_from_error
+    given: Plugin instance in error state
+    when: Error recovery is attempted
+    then: |
+      Attempts error recovery:
+      - Analyzes error type
+      - Attempts recovery strategies:
+        * Refuel and retry if fuel exhaustion
+        * Retry with increased memory if OOM
+        * Restart instance if state corrupted
+      - Returns recovery status
+
+examples:
+  # Example 1: Custom Similarity Metric Plugin
+  - name: weighted_cosine_similarity
+    description: |
+      Plugin implementing weighted cosine similarity for VSA vectors.
+      Allows custom weighting of different vector dimensions.
+
+    manifest:
+      id:
+        namespace: trinity.plugins
+        name: weighted_cosine_similarity
+        version: "1.0.0"
+      author: Trinity Team
+      description: Weighted cosine similarity metric for VSA vectors
+      license: MIT
+      wasm_path: plugins/weighted_cosine_similarity.wasm
+      api_version: "1.0.0"
+      required_capabilities: []
+      provided_capabilities: ["similarity_metric"]
+      dependencies: []
+      entry_points:
+        init: "init"
+        execute: "calculate_similarity"
+        cleanup: "cleanup"
+      resource_requirements:
+        min_memory_pages: 1
+        max_memory_pages: 16
+        required_fuel: 10000
+        timeout_ms: 100
+        required_host_functions: ["get_vsa_vector", "allocate_memory"]
+      permissions:
+        allow_network: false
+        allow_filesystem: false
+        allow_host_logging: true
+        allow_state_persistence: false
+        allowed_host_functions: ["get_vsa_vector", "log", "allocate_memory"]
+      metadata:
+        metric_type: "weighted_cosine"
+        supports_batch: "true"
+
+    usage:
+      description: Calculate weighted similarity between two VSA vectors
+      input:
+        vector_a_id: "vec_001"
+        vector_b_id: "vec_002"
+        weights: [1.0, 1.5, 0.8, 1.2, 1.0]
+      output:
+        similarity: 0.85
+        fuel_consumed: 5234
+
+  # Example 2: Logging Observer Plugin
+  - name: execution_logger
+    description: |
+      Plugin that observes all plugin executions and logs them
+      with configurable formatting and output destinations.
+
+    manifest:
+      id:
+        namespace: trinity.plugins
+        name: execution_logger
+        version: "1.0.0"
+      author: Trinity Team
+      description: Logs all plugin executions with structured output
+      license: MIT
+      wasm_path: plugins/execution_logger.wasm
+      api_version: "1.0.0"
+      required_capabilities: []
+      provided_capabilities: ["observer", "logging"]
+      dependencies: []
+      entry_points:
+        init: "init_logger"
+        execute: "log_execution"
+        cleanup: "cleanup_logger"
+      resource_requirements:
+        min_memory_pages: 2
+        max_memory_pages: 32
+        required_fuel: 5000
+        timeout_ms: 50
+        required_host_functions: ["log"]
+      permissions:
+        allow_network: false
+        allow_filesystem: true
+        allow_host_logging: true
+        allow_state_persistence: false
+        allowed_host_functions: ["log", "allocate_memory", "deallocate_memory"]
+      metadata:
+        log_level: "info"
+        log_format: "json"
+        log_output: "stdout"
+
+    usage:
+      description: Log plugin execution events
+      configuration:
+        log_level: "debug"
+        log_format: "json"
+        log_output: "/var/log/trinity/plugins.log"
+        rotate_on_size: 10485760  # 10MB
+        compress_old_logs: true
+
+  # Example 3: Vector Transformer Plugin
+  - name: ternary_transformer
+    description: |
+      Plugin implementing various VSA vector transformations:
+      permutation, binding, bundling, and thresholding.
+
+    manifest:
+      id:
+        namespace: trinity.plugins
+        name: ternary_transformer
+        version: "1.0.0"
+      author: Trinity Team
+      description: Vector transformation operations for VSA
+      license: MIT
+      wasm_path: plugins/ternary_transformer.wasm
+      api_version: "1.0.0"
+      required_capabilities: ["vsa_operations"]
+      provided_capabilities: ["vector_transform"]
+      dependencies: []
+      entry_points:
+        init: "init_transformer"
+        execute: "transform"
+        query: "get_transform_info"
+        cleanup: "cleanup_transformer"
+      resource_requirements:
+        min_memory_pages: 4
+        max_memory_pages: 64
+        required_fuel: 25000
+        timeout_ms: 200
+        required_host_functions: ["get_vsa_vector", "set_vsa_vector", "allocate_memory"]
+      permissions:
+        allow_network: false
+        allow_filesystem: false
+        allow_host_logging: true
+        allow_state_persistence: true
+        allowed_host_functions: ["get_vsa_vector", "set_vsa_vector", "log", "allocate_memory", "deallocate_memory"]
+      metadata:
+        supported_operations: "permute,bind,bundle,threshold"
+        max_vector_size: "10000"
+
+    usage:
+      description: Transform VSA vectors with various operations
+      operations:
+        - type: permute
+          vector_id: "vec_001"
+          count: 3
+        - type: bind
+          vector_a_id: "vec_001"
+          vector_b_id: "vec_002"
+        - type: bundle
+          vector_ids: ["vec_001", "vec_002", "vec_003"]
+        - type: threshold
+          vector_id: "vec_001"
+          threshold: 0.0
+      output:
+        transformed_vector_id: "vec_transformed_001"
+        operation: "permute"
+        fuel_consumed: 8756
+
+tests:
+  - name: test_runtime_initialization
+    given: Valid WASMRuntimeConfig
+    when: Runtime is initialized
+    then:
+      - Runtime handle is created successfully
+      - Memory limits are configured
+      - Fuel metering is initialized
+      - Host functions are registered
+
+  - name: test_plugin_loading
+    given: Valid PluginManifest and WASM binary
+    when: Plugin is loaded
+    then:
+      - Plugin instance is created
+      - Manifest is validated
+      - Instance is registered
+      - Entry points are accessible
+
+  - name: test_fuel_metering
+    given: Plugin instance with fuel limit
+    when: Plugin consumes fuel
+    then:
+      - Fuel is deducted correctly
+      - Fuel exhaustion is detected
+      - Plugin is suspended when out of fuel
+      - Fuel can be refilled
+
+  - name: test_memory_limits
+    given: Plugin instance with memory limit
+    when: Plugin allocates memory
+    then:
+      - Allocations within limit succeed
+      - Allocations exceeding limit fail
+      - Memory growth is enforced
+      - Peak usage is tracked
+
+  - name: test_hot_reload
+    given: Plugin with hot reload enabled
+    when: Plugin binary changes
+    then:
+      - New version is validated
+      - State is migrated
+      - Instance is swapped
+      - Rollback works on validation failure
+
+  - name: test_similarity_metric_plugin
+    given: Two VSA vectors
+    when: Similarity calculation is executed
+    then:
+      - Similarity score is in valid range
+      - Custom weights are applied
+      - Fuel consumption is metered
+      - Result matches expected value
+
+  - name: test_logging_observer_plugin
+    given: Execution event
+    when: Logging observer processes event
+    then:
+      - Event is logged with correct format
+      - Log rotation works when size exceeded
+      - Multiple log levels are supported
+      - Permissions are enforced
+
+  - name: test_vector_transformer_plugin
+    given: VSA vector and transformation type
+    when: Transformation is executed
+    then:
+      - Permutation rotates elements correctly
+      - Binding produces correct result
+      - Bundling applies majority vote
+      - Thresholding truncates to trits
+
+  - name: test_security_policy_enforcement
+    given: Security policy and plugin
+    when: Plugin attempts restricted operations
+    then:
+      - Unauthorized operations are blocked
+      - Fuel limits are enforced
+      - Memory limits are enforced
+      - Signature validation works
+
+  - name: test_error_recovery
+    given: Plugin in error state
+    when: Recovery is attempted
+    then:
+      - Error type is identified
+      - Appropriate recovery strategy is applied
+      - Instance can be recovered or restarted
+      - Error statistics are updated
+
+metadata:
+  category: plugin_system
+  tags: [wasm, plugins, sandbox, security, hot_reload]
+  complexity: high
+  stability: experimental
+  dependencies:
+    - wasmtime: ">=15.0"
+    - zig: "0.15.x"
+  related_components:
+    - vsa
+    - vm
+    - firebird

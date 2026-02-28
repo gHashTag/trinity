@@ -1,0 +1,423 @@
+name: pg_trinity_build
+version: "1.0.0"
+language: zig
+module: pg_trinity_build
+
+description: |
+  PostgreSQL extension build system for pg_trinity — enables Trinity VSA operations
+  directly within PostgreSQL using PGXS (PostgreSQL Extension Building Infrastructure).
+  Compiles C extensions that link against libtrinity_core.so and installs them as
+  CREATE EXTENSION pg_trinity.
+
+types:
+  PGXSConfig:
+    fields:
+      pg_config_path: String              # Path to pg_config binary
+      pg_version: String                   # PostgreSQL version (e.g., "16")
+      pg_include_dir: String               # PostgreSQL include directory
+      pg_pkglib_dir: String                # Extension library directory
+      pg_share_dir: String                 # SQL scripts directory
+      cc: String                           # C compiler (gcc/clang)
+      cflags: String                       # C compiler flags
+      extension_name: String               # Extension name (pg_trinity)
+      module_version: String               # Extension version
+
+  MakefileBuilder:
+    fields:
+      pgxs_config: PGXSConfig              # PGXS configuration
+      trinity_include: String              # Path to libtrinity_core headers
+      trinity_lib_path: String             # Path to libtrinity_core.so
+      obfuscated_symbols: Bool             # Use symbol obfuscation (security)
+      optimization_level: String           # -O2, -O3, -Os
+      debug_build: Bool                    # Include debug symbols (-g)
+      coverage_build: Bool                 # Enable code coverage
+      sanitizers: List<String>             # address, undefined, memory, thread
+      extra_libraries: List<String>        # Additional libraries to link
+      build_targets: List<String>          # Targets to build (all, clean, install)
+
+  ExtensionControl:
+    fields:
+      name: String                         # pg_trinity
+      version: String                      # Semantic version
+      description: String                  # Short description
+      module_pathname: String              # .so file path (usually $libdir/pg_trinity)
+      requires: List<String>               # Required extensions (e.g., ["plpgsql"])
+      superuser: Bool                      # Require superuser to install
+      trusted: Bool                        # Trusted extension (can be installed by non-superuser)
+      relocatable: Bool                    # Relatable installation
+      schema: Option<String>               # Target schema (None = user's schema)
+      comment: String                      # Extension comment
+
+  SQLInstaller:
+    fields:
+      schema_version: String               # Schema version tracking
+      types_sql: String                    # CREATE TYPE statements
+      functions_sql: String                # CREATE FUNCTION statements
+      operators_sql: String                # CREATE OPERATOR statements
+      aggregates_sql: String               # CREATE AGGREGATE statements
+      casts_sql: String                    # CREATE CAST statements
+      indexes_sql: String                  # CREATE INDEX for GIN/GIST
+      grants_sql: String                   # GRANT statements
+      comments_sql: String                 # COMMENT ON statements
+      upgrade_paths: List<String>          # pg_trinity--1.0--1.1.sql format
+
+  TestRunner:
+    fields:
+      pg_host: String                      # Test database host
+      pg_port: Int                         # Test database port
+      pg_user: String                      # Test database user
+      pg_database: String                  # Test database name
+      test_schema: String                  # Schema for test objects
+      keep_db: Bool                        # Keep test database after run
+      verbose: Bool                        # Verbose test output
+      stop_on_error: Bool                  # Stop on first failure
+      regression_tests: List<String>       # Test script paths
+      isolation_tests: List<String>        # Isolation test specs
+      performance_tests: List<String>      # Performance benchmark scripts
+
+  ExtensionArtifact:
+    fields:
+      control_file: String                 # Path to pg_trinity.control
+      so_file: String                      # Path to compiled .so
+      sql_files: List<String>              # SQL installation scripts
+      header_files: List<String>           # Installed header files
+      test_results: String                 # Test output path
+      install_timestamp: String            # ISO 8601 timestamp
+      checksum: String                     # SHA256 of .so file
+
+constants:
+  # PostgreSQL Configuration
+  PG_CONFIG_DEFAULT: "/usr/local/pgsql/bin/pg_config"
+  PG_VERSION_DEFAULT: "16"
+  PG_INCLUDE_DEFAULT: "/usr/local/pgsql/include"
+  PGLIBDIR_DEFAULT: "/usr/local/pgsql/lib"
+  PGSHAREDIR_DEFAULT: "/usr/local/pgsql/share"
+
+  # PGXS Variables
+  PGXS: "$(shell $(PG_CONFIG) --pgxs)"
+  EXTENSION: "pg_trinity"
+  MODULE_big: "$(EXTENSION)"
+  OBJS: "pg_trinity.o vsa_bindings.o ternary_ops.o hypervector.o"
+
+  # Compiler Flags
+  PG_CPPFLAGS: "-I/usr/local/include -I$(libtrinity_include)"
+  SHLIB_LINK: "-L/usr/local/lib -ltrinity_core -lm"
+  CFLAGS_OPT: "-O3 -march=native -fomit-frame-pointer"
+  CFLAGS_DEBUG: "-g -O0 -fno-omit-frame-pointer"
+  CFLAGS_COVERAGE: "-coverage -fprofile-arcs -ftest-coverage"
+
+  # Installation Paths
+  DATA_built: "pg_trinity--1.0.sql"
+  DATA: "pg_trinity--1.0--1.1.sql"
+  DOCS: "README.pg_trinity.md"
+  REGRESS: "pg_trinity_test"
+
+  # SQL Schema
+  TRIT_TYPE_NAME: "trit"
+  HYPEVECTOR_TYPE_NAME: "hypevector"
+  DEFAULT_DIMENSION: 10000
+  DEFAULT_TRITS_PER_VALUE: 16
+
+behaviors:
+  - name: detect_pg_config
+    given: System with PostgreSQL installation
+    when: Searching for pg_config binary
+    then: |
+      Returns absolute path to pg_config from:
+      1. PG_CONFIG environment variable
+      2. Common locations (/usr/local/pgsql/bin, /usr/bin, /opt/homebrew/bin)
+      3. PATH search
+      Throws error if not found
+
+  - name: validate_pg_version
+    given: pg_config path and minimum version requirement
+    when: Checking PostgreSQL version compatibility
+    then: |
+      Parses pg_config --version and validates:
+      1. Version >= 11 (required for extensions)
+      2. Version >= 14 (recommended for custom types)
+      3. Returns version string and compatibility status
+
+  - name: initialize_pgxs_config
+    given: Valid pg_config path
+    when: Initializing PGXS configuration struct
+    then: |
+      Populates PGXSConfig with:
+      1. pg_config path from detection
+      2. pg_version from pg_config --version
+      3. pg_include_dir from pg_config --includedir
+      4. pg_pkglib_dir from pg_config --pkglibdir
+      5. pg_share_dir from pg_config --sharedir
+      6. Compiler from CC env var or gcc/clang
+
+  - name: generate_makefile
+    given: PGXSConfig and MakefileBuilder settings
+    when: Creating PGXS Makefile for extension
+    then: |
+      Generates Makefile with:
+      1. PGXS include: USE_PGXS=1, PG_CONFIG=path
+      2. MODULE_big, EXTENSION, DATA variables
+      3. OBJS list with object files
+      4. PG_CPPFLAGS for include paths
+      5. SHLIB_LINK for library linking (-ltrinity_core)
+      6. REGRESS for test suite
+      7. Custom targets: clean, installcheck, coverage
+      8. Obfuscation rules if enabled
+      9. Sanitizer flags if specified
+
+  - name: create_control_file
+    given: ExtensionControl configuration
+    when: Generating pg_trinity.control file
+    then: |
+      Creates .control file with:
+      1. comment: One-line description
+      2. default_version: Semantic version
+      3. module_pathname: $libdir/pg_trinity
+      4. relocatable: true/false
+      5. superuser: true (requires superuser)
+      6. trusted: true (can be installed by non-superuser)
+      7. requires: List of dependencies
+
+  - name: generate_sql_schema
+    given: SQLInstaller configuration
+    when: Creating pg_trinity--1.0.sql installation script
+    then: |
+      Generates SQL with:
+      1. CREATE TYPE trit (enum: '-1', '0', '+1')
+      2. CREATE TYPE hypevector (internal, storage=external)
+      3. CREATE FUNCTION trit_in(cstring) RETURNS trit
+      4. CREATE FUNCTION trit_out(trit) RETURNS cstring
+      5. CREATE FUNCTION hypevector_in(cstring) RETURNS hypevector
+      6. CREATE FUNCTION hypevector_out(hypevector) RETURNS cstring
+      7. CREATE FUNCTION bind(hypevector, hypevector) RETURNS hypevector
+      8. CREATE FUNCTION unbind(hypevector, hypevector) RETURNS hypevector
+      9. CREATE FUNCTION bundle(hypevector[]) RETURNS hypevector
+      10. CREATE FUNCTION similarity(hypevector, hypevector) RETURNS float8
+      11. CREATE OPERATOR %% (procedure=bind, leftarg=hypevector, rightarg=hypevector)
+      12. CREATE OPERATOR #@ (procedure=similarity, leftarg=hypevector, rightarg=hypevector)
+      13. CREATE CAST (text AS hypevector WITH FUNCTION hypevector_in)
+      14. COMMENT ON FUNCTION/MODULE documentation
+
+  - name: generate_upgrade_script
+    given: Current and next version numbers
+    when: Creating pg_trinity--1.0--1.1.sql upgrade script
+    then: |
+      Generates ALTER EXTENSION update SQL:
+      1. CREATE FUNCTION new_func() if adding functions
+      2. DROP FUNCTION old_func() if removing
+      3. ALTER TYPE ... ADD ATTRIBUTE if extending types
+      4. CREATE OPERATOR for new operators
+      5. COMMENT ON changes
+      6. Idempotent (IF NOT EXISTS, DROP ... IF EXISTS)
+
+  - name: compile_extension
+    given: Generated Makefile and libtrinity_core.so
+    when: Running make to build extension
+    then: |
+      Executes build process:
+      1. make clean (clean previous builds)
+      2. make (compile .c files to .o)
+      3. Link object files to pg_trinity.so
+      4. Check for undefined symbols
+      5. Verify libtrinity_core.so linkage
+      6. Return build status and output path
+      Throws error if compilation fails
+
+  - name: compile_with_coverage
+    given: MakefileBuilder with coverage_build=true
+    when: Running make with coverage instrumentation
+    then: |
+      Compiles with:
+      1. CFLAGS += -coverage -fprofile-arcs -ftest-coverage
+      2. LDFLAGS += -coverage
+      3. Generates .gcno and .gcda files
+      4. Returns coverage data file paths
+
+  - name: compile_with_sanitizers
+    given: MakefileBuilder with sanitizers list
+    when: Running make with UBSAN/ASAN/MSAN
+    then: |
+      Compiles with:
+      1. address: -fsanitize=address -fno-omit-frame-pointer
+      2. undefined: -fsanitize=undefined
+      3. memory: -fsanitize=memory (requires MSAN runtime)
+      4. thread: -fsanitize=thread
+      Returns sanitizer-enabled build path
+
+  - name: install_extension
+    given: Compiled pg_trinity.so and control file
+    when: Running make install
+    then: |
+      Installs extension to PostgreSQL:
+      1. cp pg_trinity.so $(pkglibdir)/
+      2. cp pg_trinity.control $(sharedir)/extension/
+      3. cp pg_trinity--*.sql $(sharedir)/extension/
+      4. Set permissions (0644 for .so/.sql, 0755 for dirs)
+      5. Returns installation paths
+
+  - name: create_test_database
+    given: TestRunner configuration
+    when: Setting up test environment
+    then: |
+      Creates isolated test database:
+      1. DROP DATABASE IF EXISTS test_pg_trinity
+      2. CREATE DATABASE test_pg_trinity
+      3. CREATE EXTENSION pg_trinity
+      4. CREATE SCHEMA IF NOT EXISTS test_schema
+      5. Returns connection string
+
+  - name: run_regression_tests
+    given: Installed extension and test database
+    when: Executing make installcheck
+    then: |
+      Runs PGXS regression tests:
+      1. psql -f sql/pg_trinity_test.sql
+      2. Compare output to expected/results/
+      3. Returns test pass/fail count
+      4. Generates diff file on failure
+
+  - name: run_isolation_tests
+    given: Extension and isolation test specs
+    when: Testing concurrent behavior
+    then: |
+      Runs pg_isolation tests:
+      1. Setup concurrent sessions
+      2. Execute parallel operations
+      3. Verify serializability
+      4. Detect deadlocks/race conditions
+
+  - name: test_basic_functionality
+    given: Test database with pg_trinity installed
+    when: Running basic VSA operation tests
+    then: |
+      Tests:
+      1. SELECT trit_in('-1')::trit = '-1'::trit
+      2. SELECT hypevector('{0,1,-1,0,1}')::hypevector
+      3. SELECT bind(a, b) %% unbind(a, b) ≈ b
+      4. SELECT similarity(v1, v2) BETWEEN -1 AND 1
+      5. SELECT bundle('{v1, v2, v3}') returns majority vote
+      Returns test results with assertion details
+
+  - name: test_error_handling
+    given: Extension with invalid inputs
+    when: Testing error conditions
+    then: |
+      Tests error handling:
+      1. Invalid trit values raise error
+      2. NULL handling (IS NULL, COALESCE)
+      3. Empty hypevector rejection
+      4. Dimension mismatch errors
+      5. Memory allocation failures
+      Returns error codes and messages
+
+  - name: benchmark_performance
+    given: Test database and benchmark scripts
+    when: Measuring extension performance
+    then: |
+      Benchmarks:
+      1. Single bind/unbind operation latency
+      2. Bundle of 10, 100, 1000 vectors
+      3. Similarity search through 10k vectors
+      4. Memory usage per hypervector
+      5. Comparison to pure SQL implementation
+      Returns metrics (ops/sec, memory, latency percentiles)
+
+  - name: test_integration_with_trinity_core
+    given: Extension linked to libtrinity_core.so
+    when: Verifying FFI boundary correctness
+    then: |
+      Tests:
+      1. Type marshaling (Zig trit <-> PostgreSQL trit)
+      2. Memory ownership (who frees what)
+      3. Error propagation from C to SQL
+      4. Large hypervector (1M+ trits) handling
+      5. Concurrent access to libtrinity_core
+      Returns integration test results
+
+  - name: package_extension
+    given: Built extension artifacts
+    when: Creating distributable package
+    then: |
+      Creates package with:
+      1. pg_trinity.so (compiled binary)
+      2. pg_trinity.control (control file)
+      3. pg_trinity--*.sql (installation scripts)
+      4. README.pg_trinity.md (documentation)
+      5. LICENSE file
+      6. Makefile (for rebuild)
+      Returns path to .tar.gz archive
+
+  - name: clean_build_artifacts
+    given: Build directory with compiled objects
+    when: Running make clean
+    then: |
+      Removes:
+      1. All .o files
+      2. pg_trinity.so
+      3. .gcda/.gcno coverage files
+      4. Regression output diffs
+      Returns directory status
+
+  - name: uninstall_extension
+    given: Installed extension in PostgreSQL
+    when: Removing extension files
+    then: |
+      Removes:
+      1. $(pkglibdir)/pg_trinity.so
+      2. $(sharedir)/extension/pg_trinity.control
+      3. $(sharedir)/extension/pg_trinity--*.sql
+      4. Returns uninstall status
+
+  - name: validate_installation
+    given: PostgreSQL instance with extension
+    when: Verifying extension is functional
+    then: |
+      Checks:
+      1. SELECT * FROM pg_extension WHERE extname='pg_trinity'
+      2. SELECT pg_trinity_version()
+      3. Test basic operation returns expected result
+      4. Check dependency versions
+      Returns validation status and version info
+
+  - name: generate_documentation
+    given: Extension with SQL functions and types
+    when: Creating user documentation
+    then: |
+      Generates README with:
+      1. Installation instructions (pg_config, make install)
+      2. CREATE EXTENSION example
+      3. Function reference (parameters, return types)
+      4. Type documentation (trit, hypevector)
+      5. Operator reference (%%, #@)
+      6. Usage examples
+      7. Performance tips
+      Returns path to generated documentation
+
+  - name: cross_compile_build
+    given: Target platform architecture
+    when: Building for different PostgreSQL distribution
+    then: |
+      Cross-compiles extension:
+      1. Set PG_CONFIG to target's pg_config
+      2. Adjust CC and CFLAGS for target
+      3. Link against target's libtrinity_core
+      4. Returns platform-specific binary path
+
+metadata:
+  author: "Trinity Core Team"
+  license: "MIT"
+  postgresql_versions: ["14", "15", "16", "17"]
+  minimum_pg_version: "11"
+  dependencies:
+    - name: "libtrinity_core"
+      version: ">=1.0.0"
+    - name: "postgresql"
+      version: ">=11"
+  build_system: "PGXS"
+  c_standard: "C11"
+  security_features:
+    - symbol_obfuscation
+    - sanitizer_support
+    - superuser_required
+  test_framework: "PGXS Regression Tests"
+  documentation_format: "Markdown"

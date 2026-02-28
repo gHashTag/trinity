@@ -1,0 +1,992 @@
+# ============================================================================
+# cycle115_python_package - Python Package Production Build for PyPI
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# ============================================================================
+
+name: cycle115_python_package
+version: "1.0.0"
+language: zig
+module: python_package
+
+description: |
+  Production-ready Python package build system for publishing Trinity VSA to PyPI.
+  Complete packaging infrastructure with wheel/sdist generation, FFI compilation,
+  automated testing, and PyPI deployment via twine.
+
+  Package: trinity-core (PyPI)
+  Alternative name: python-trinity
+
+  Core Features:
+  - Automated setup.py and pyproject.toml generation
+  - Wheel (.whl) and source distribution (.tar.gz) builds
+  - Cross-platform binary wheels (manylinux, macos, win64)
+  - FFI compilation from Zig shared library (.so/.dylib/.dll)
+  - Test suite with pytest
+  - Documentation generation (sphinx)
+  - PyPI upload with twine (production + testpypi)
+  - Version management and Git tagging
+  - CI/CD integration (GitHub Actions)
+
+  Architecture:
+  1. Zig → C shared library (libtrinity.so/.dylib/.dll)
+  2. Python package structure (trinity/)
+  3. Build system (setuptools + pyproject.toml)
+  4. FFI wrapper (ctypes/cffi)
+  5. Tests (pytest)
+  6. Docs (sphinx)
+  7. Deploy (twine to PyPI)
+
+constants:
+  # Package metadata
+  PACKAGE_NAME: "trinity-core"
+  PACKAGE_ALT_NAME: "python-trinity"
+  PACKAGE_VERSION: "1.0.0"
+  PYPI_MIN_PYTHON: "3.10"
+  PYPI_MAX_PYTHON: "3.13"
+
+  # PyPI URLs
+  PYPI_PRODUCTION_URL: "https://pypi.org/project/trinity-core/"
+  PYPI_TEST_URL: "https://test.pypi.org/project/trinity-core/"
+  PYPI_UPLOAD_URL: "https://upload.pypi.org/legacy/"
+  PYPI_TEST_UPLOAD_URL: "https://test.pypi.org/legacy/"
+
+  # Build artifacts
+  BUILD_DIR: "python/build"
+  DIST_DIR: "python/dist"
+  WHEEL_OUTPUT: "python/dist/*.whl"
+  SDIST_OUTPUT: "python/dist/*.tar.gz"
+
+  # Zig compilation
+  ZIG_SHARED_LIB: "libtrinity"
+  ZIG_LIB_EXT_SO: ".so"
+  ZIG_LIB_EXT_DYLIB: ".dylib"
+  ZIG_LIB_EXT_DLL: ".dll"
+  ZIG_TARGET_LINUX: "x86_64-linux-gnu"
+  ZIG_TARGET_MACOS: "x86_64-macos-gnu"
+  ZIG_TARGET_MACOS_ARM: "aarch64-macos-gnu"
+  ZIG_TARGET_WINDOWS: "x86_64-windows-msvc"
+
+  # Dependencies
+  DEP_SETUPTOOLS: ">=70.0.0"
+  DEP_WHEEL: ">=0.43.0"
+  DEP_PYPROJECT_TOML: ">=1.0.0"
+  DEP_TWINE: ">=5.0.0"
+  DEP_PYTEST: ">=8.0.0"
+  DEP_SPHINX: ">=7.0.0"
+  DEP_CFFI: ">=1.16.0"
+  DEP_CTYPES: "builtin"
+
+  # Versioning
+  VERSION_MAJOR: 1
+  VERSION_MINOR: 0
+  VERSION_PATCH: 0
+  VERSION_PRERELEASE: ""
+  VERSION_DEV: ""
+
+  # Documentation
+  DOCS_SOURCE_DIR: "python/docs/source"
+  DOCS_BUILD_DIR: "python/docs/build"
+  DOCS_OUTPUT_HTML: "python/docs/build/html"
+
+  # Testing
+  TEST_DIR: "python/tests"
+  TEST_COVERAGE_MIN: 80
+  TEST_TIMEOUT_SEC: 300
+
+types:
+  PyPIConfig:
+    description: "PyPI package configuration"
+    fields:
+      package_name: String
+      version: String
+      author: String
+      author_email: String
+      description: String
+      long_description: String
+      long_description_content_type: String
+      url: String
+      project_urls: Map<String, String>
+      license: String
+      classifiers: List<String>
+      keywords: List<String>
+      python_requires: String
+      install_requires: List<String>
+      extras_require: Map<String, List<String>>
+      entry_points: Map<String, String>
+
+  WheelBuilder:
+    description: "Wheel distribution builder"
+    fields:
+      config: PyPIConfig
+      build_dir: String
+      dist_dir: String
+      platform_tags: List<String>
+      python_tags: List<String>
+      abi_tags: List<String>
+      shared_lib_path: String
+      include_tests: Bool
+      include_docs: Bool
+      strip_debug: Bool
+      optimize_level: UInt8
+
+  SDistBuilder:
+    description: "Source distribution builder"
+    fields:
+      config: PyPIConfig
+      build_dir: String
+      dist_dir: String
+      source_files: List<String>
+      exclude_patterns: List<String>
+      include_tests: Bool
+      include_docs: Bool
+
+  FFICompiler:
+    description: "Zig to shared library compiler"
+    fields:
+      zig_executable: String
+      source_files: List<String>
+      output_name: String
+      target_triple: String
+      optimization: String
+      dynamic: Bool
+      enable_pic: Bool
+      strip_symbols: Bool
+      output_path: String
+
+  PythonModule:
+    description: "Python module structure"
+    fields:
+      module_name: String
+      package_dir: String
+      init_py: String
+      core_modules: List<String>
+      ffi_bridge: String
+      tests_dir: String
+      docs_dir: String
+      examples_dir: String
+
+  SetupPyGenerator:
+    description: "setup.py script generator"
+    fields:
+      config: PyPIConfig
+      output_path: String
+      use_setuptools: Bool
+      custom_build_ext: Bool
+      zig_build_integration: Bool
+
+  PyProjectTomlGenerator:
+    description: "pyproject.toml generator (PEP 517/518)"
+    fields:
+      config: PyPIConfig
+      output_path: String
+      build_system: String
+      backend: String
+      includes_project: Bool
+
+  TwineConfig:
+    description: "Twine upload configuration"
+    fields:
+      repository_url: String
+      username: String
+      password: String
+      skip_existing: Bool
+      verbose: Bool
+      signature: Bool
+      identity: String
+      sign_with: String
+      dist_dir: String
+
+  TestSuite:
+    description: "Pytest test suite configuration"
+    fields:
+      test_dir: String
+      python_paths: List<String>
+      coverage_config: String
+      timeout: UInt32
+      min_coverage: UInt8
+      markers: Map<String, String>
+      fixtures: List<String>
+
+  SphinxConfig:
+    description: "Sphinx documentation generator"
+    fields:
+      source_dir: String
+      build_dir: String
+      project: String
+      copyright: String
+      author: String
+      version: String
+      extensions: List<String>
+      html_theme: String
+      html_output: String
+
+  VersionManager:
+    description: "Semantic version management"
+    fields:
+      major: UInt32
+      minor: UInt32
+      patch: UInt32
+      prerelease: String
+      dev: String
+      git_tag_prefix: String
+      commit_on_bump: Bool
+      push_on_bump: Bool
+
+  BuildArtifact:
+    description: "Build output artifact"
+    fields:
+      artifact_type: String        # "wheel" or "sdist"
+      filename: String
+      filepath: String
+      size_bytes: UInt64
+      sha256: String
+      platform: String
+      python_version: String
+      created_at: String
+
+  UploadResult:
+    description: "PyPI upload result"
+    fields:
+      success: Bool
+      url: String
+      artifacts: List<String>
+      duration_sec: UInt32
+      error_message: String
+
+  CIBuilder:
+    description: "CI/CD pipeline configuration"
+    fields:
+      platform: String
+      github_actions: Bool
+      gitlab_ci: Bool
+      build_matrix: List<String>
+      test_steps: List<String>
+      deploy_step: Bool
+
+behaviors:
+  # ============================================================
+  # PACKAGE STRUCTURE (5 behaviors)
+  # ============================================================
+
+  - name: create_package_structure
+    given: Package name and output directory
+    when: Initializing new Python package
+    then: Create standard package layout with trinity/, tests/, docs/
+    implementation: |
+        // Create directory structure:
+        // python/
+        //   ├── trinity/
+        //   │   ├── __init__.py
+        //   │   ├── core.py
+        //   │   ├── vsa.py
+        //   │   └── _libtrinity.so  (FFI library)
+        //   ├── tests/
+        //   │   ├── test_core.py
+        //   │   └── test_vsa.py
+        //   ├── docs/
+        //   │   └── source/
+        //   ├── examples/
+        //   ├── setup.py
+        //   ├── pyproject.toml
+        //   ├── README.md
+        //   ├── LICENSE
+        //   ├── MANIFEST.in
+        //   └── requirements.txt
+
+  - name: generate_init_py
+    given: Package metadata and exports
+    when: Creating trinity/__init__.py
+    then: Generate module with version, exports, and FFI loader
+    implementation: |
+        // Generate __init__.py with:
+        // - __version__ = "1.0.0"
+        // - from trinity.core import Hypervector, bind, unbind, bundle
+        // - from trinity.vsa import cosine_similarity, hamming_distance
+        // - _load_shared_library() function using ctypes.util.find_library
+
+  - name: create_manifest
+    given: Package files and patterns
+    when: Building source distribution
+    then: Create MANIFEST.in with include/exclude patterns
+    implementation: |
+        // Generate MANIFEST.in:
+        // include README.md
+        // include LICENSE
+        // include requirements.txt
+        // recursive-include trinity *.py
+        // recursive-include tests *.py
+        // recursive-include docs *.rst *.md
+        // global-exclude __pycache__
+        // global-exclude *.pyc
+        // exclude trinity/_libtrinity.so
+
+  - name: create_readme
+    given: Package description and examples
+    when: Generating package documentation
+    then: Create README.md with installation, usage, examples
+    implementation: |
+        // Generate README.md:
+        // # Trinity Core - Hyperdimensional Computing in Python
+        //
+        // ## Installation
+        // pip install trinity-core
+        //
+        // ## Quick Start
+        // ```python
+        // from trinity import Hypervector, bind, cosine_similarity
+        //
+        // hv = Hypervector.random(10000)
+        // result = bind(hv, hv)
+        // sim = cosine_similarity(hv, hv)
+        // ```
+        //
+        // ## Features
+        // - Hypervectors with 10K+ dimensions
+        // - VSA operations: bind, unbind, bundle
+        // - Similarity metrics
+        // - Sacred mathematics (φ, π, e)
+
+  - name: create_license
+    given: License type (MIT, Apache-2.0)
+    when: Packaging for PyPI
+    then: Generate LICENSE file with copyright
+    implementation: |
+        // Generate LICENSE file:
+        // MIT License
+        //
+        // Copyright (c) 2026 Trinity Contributors
+        //
+        // Permission is hereby granted, free of charge, to any person...
+
+  # ============================================================
+  # BUILD CONFIGURATION (4 behaviors)
+  # ============================================================
+
+  - name: generate_setup_py
+    given: PyPIConfig with all metadata
+    when: Creating setup.py for setuptools
+    then: Generate complete setup.py with custom build_ext for Zig
+    implementation: |
+        // Generate setup.py:
+        // from setuptools import setup, Extension
+        // from setuptools.command.build_ext import build_ext
+        // import subprocess
+        //
+        // class BuildZigExtension(build_ext):
+        //     def build_extension(self, ext):
+        //         # Compile Zig to shared library
+        //         subprocess.run(['zig', 'build-lib',
+        //                         '-dynamic', '-OReleaseFast',
+        //                         '-femit-bin=' + output_path,
+        //                         'src/trinity.zig'])
+        //
+        // setup(
+        //     name="trinity-core",
+        //     version="1.0.0",
+        //     packages=['trinity'],
+        //     cmdclass={'build_ext': BuildZigExtension},
+        //     install_requires=[],
+        //     python_requires='>=3.10',
+        // )
+
+  - name: generate_pyproject_toml
+    given: PyPIConfig and build system choice
+    when: Creating pyproject.toml (PEP 517)
+    then: Generate TOML with build-system, project, tool configs
+    implementation: |
+        // Generate pyproject.toml:
+        // [build-system]
+        // requires = ["setuptools>=70", "wheel"]
+        // build-backend = "setuptools.build_meta"
+        //
+        // [project]
+        // name = "trinity-core"
+        // version = "1.0.0"
+        // description = "Hyperdimensional Computing with VSA"
+        // readme = "README.md"
+        // requires-python = ">=3.10"
+        // license = {text = "MIT"}
+        //
+        // [project.urls]
+        // Homepage = "https://github.com/gHashTag/trinity"
+        // Documentation = "https://trinity.readthedocs.io"
+        //
+        // [tool.pytest.ini_options]
+        // testpaths = ["tests"]
+        //
+        // [tool.coverage.run]
+        // source = ["trinity"]
+
+  - name: generate_requirements
+    given: Production and development dependencies
+    when: Creating requirements.txt
+    then: List runtime and optional dependencies
+    implementation: |
+        // Generate requirements.txt:
+        // # Runtime dependencies (none for pure FFI)
+        // cffi>=1.16.0  # optional, for advanced FFI
+        //
+        // # Development dependencies
+        // pytest>=8.0.0
+        // pytest-cov>=5.0.0
+        // sphinx>=7.0.0
+        // twine>=5.0.0
+        // build>=0.10.0
+
+  - name: create_makefile
+    given: Build commands and targets
+    when: Setting up build automation
+    then: Generate Makefile with build/test/upload targets
+    implementation: |
+        // Generate Makefile:
+        // .PHONY: build test upload clean
+        //
+        // build:
+        // 	python -m build
+        //
+        // test:
+        // 	pytest tests/
+        //
+        // upload:
+        // 	twine upload dist/*
+        //
+        // upload-test:
+        // 	twine upload --repository testpypi dist/*
+        //
+        // clean:
+        // 	rm -rf build/ dist/ *.egg-info
+
+  # ============================================================
+  # ZIG COMPILATION (3 behaviors)
+  # ============================================================
+
+  - name: compile_zig_shared_lib
+    given: Zig source files and target platform
+    when: Building FFI shared library
+    then: Compile libtrinity.so/.dylib/.dll with C ABI exports
+    implementation: |
+        // Export command:
+        // zig build-lib \
+        //   -dynamic \
+        //   -OReleaseFast \
+        //   -fPIC \
+        //   -femit-bin=python/trinity/_libtrinity.so \
+        //   -target x86_64-linux-gnu \
+        //   src/trinity.zig
+        //
+        // Must export functions with C ABI:
+        // export fn trinity_hypervector_create(...) *Hypervector
+
+  - name: compile_cross_platform_wheels
+    given: List of target platforms
+    when: Building for PyPI (manylinux, macos, win64)
+    then: Compile shared libraries for each platform
+    implementation: |
+        // Build matrix:
+        // - manylinux_x86_64: zig build-lib -target x86_64-linux-gnu
+        // - manylinux_aarch64: zig build-lib -target aarch64-linux-gnu
+        // - macos_x86_64: zig build-lib -target x86_64-macos-gnu
+        // - macos_arm64: zig build-lib -target aarch64-macos-gnu
+        // - win_x86_64: zig build-lib -target x86_64-windows-msvc
+
+  - name: optimize_zig_library
+    given: Shared library build
+    when: Preparing for production
+    then: Strip symbols, optimize size
+    implementation: |
+        // Optimize with:
+        // zig build-lib \
+        //   -OReleaseSmall \
+        //   -fstrip \
+        //   -femit-bin=python/trinity/_libtrinity.so \
+        //   src/trinity.zig
+        //
+        // Post-process with strip(1):
+        // strip --strip-unneeded python/trinity/_libtrinity.so
+
+  # ============================================================
+  # WHEEL BUILDING (4 behaviors)
+  # ============================================================
+
+  - name: build_wheel
+    given: PyPIConfig and shared library
+    when: Running python -m build
+    then: Generate .whl file with platform tags
+    implementation: |
+        // Build wheel:
+        // python -m build --wheel
+        //
+        // Output:
+        // dist/trinity_core-1.0.0-cp311-cp311-linux_x86_64.whl
+        //
+        // Wheel contains:
+        // trinity/__init__.py
+        // trinity/core.py
+        // trinity/_libtrinux.so  (platform-specific)
+
+  - name: build_sdist
+    given: Package source files
+    when: Building source distribution
+    then: Generate .tar.gz with setup.py and sources
+    implementation: |
+        // Build sdist:
+        // python -m build --sdist
+        //
+        // Output:
+        // dist/trinity_core-1.0.0.tar.gz
+        //
+        // Contains source only (user compiles Zig library)
+
+  - name: build_pure_python_wheel
+    given: Package without precompiled binaries
+    when: Building universal wheel
+    then: Generate py3-none-any.whl
+    implementation: |
+        // Build pure Python wheel:
+        // python setup.py bdist_wheel --universal
+        //
+        // Output:
+        // dist/trinity_core-1.0.0-py3-none-any.whl
+        //
+        // Requires user to have Zig installed
+
+  - name: verify_wheel_structure
+    given: Built .whl file
+    when: Quality check before upload
+    then: Extract and validate contents, metadata
+    implementation: |
+        // Verify with:
+        // unzip -l dist/trinity_core-1.0.0-*.whl
+        //
+        // Check for:
+        // - trinity/__init__.py
+        // - trinity-1.0.0.dist-info/METADATA
+        // - trinity-1.0.0.dist-info/WHEEL
+        // - trinity-1.0.0.dist-info/RECORD
+
+  # ============================================================
+  # TESTS (3 behaviors)
+  # ============================================================
+
+  - name: generate_test_suite
+    given: Package modules
+    when: Creating test structure
+    then: Generate pytest tests with fixtures
+    implementation: |
+        // Generate tests/test_core.py:
+        // import pytest
+        // from trinity import Hypervector, bind, cosine_similarity
+        //
+        // def test_hypervector_creation():
+        //     hv = Hypervector.random(10000)
+        //     assert hv.dimension == 10000
+        //
+        // def test_bind_unbind():
+        //     a = Hypervector.random(10000, seed=1)
+        //     b = Hypervector.random(10000, seed=2)
+        //     bound = bind(a, b)
+        //     recovered = unbind(bound, b)
+        //     assert cosine_similarity(a, recovered) > 0.5
+
+  - name: run_tests
+    given: Test suite and package
+    when: Running pytest
+    then: Execute tests with coverage report
+    implementation: |
+        // Run tests:
+        // pytest tests/ --cov=trinity --cov-report=html
+        //
+        // Check coverage >= 80%
+        // --cov-fail-under=80
+
+  - name: test_installed_package
+    given: Wheel installed in virtualenv
+    when: Testing package installation
+    then: Verify import and basic operations
+    implementation: |
+        // Test installation:
+        // pip install dist/trinity_core-1.0.0-*.whl
+        // python -c "from trinity import Hypervector; print(Hypervector.random(1000))"
+
+  # ============================================================
+  # DOCUMENTATION (3 behaviors)
+  # ============================================================
+
+  - name: generate_sphinx_config
+    given: Project metadata
+    when: Setting up Sphinx docs
+    then: Create conf.py with extensions and theme
+    implementation: |
+        // Generate docs/source/conf.py:
+        // project = 'Trinity Core'
+        // copyright = '2026, Trinity Contributors'
+        // author = 'Trinity Team'
+        // extensions = ['sphinx.ext.autodoc', 'sphinx.ext.napoleon']
+        // html_theme = 'furo'
+        // html_static_path = ['_static']
+
+  - name: generate_api_docs
+    given: Python module source
+    when: Building Sphinx docs
+    then: Generate RST files from docstrings
+    implementation: |
+        // Generate docs/source/api.rst:
+        // API Reference
+        // =============
+        //
+        // .. automodule:: trinity
+        //    :members:
+        //
+        // .. automodule:: trinity.core
+        //    :members:
+
+  - name: build_docs
+    given: Sphinx configuration
+    when: Running sphinx-build
+    then: Generate HTML documentation
+    implementation: |
+        // Build docs:
+        // sphinx-build -b html docs/source/ docs/build/html/
+        //
+        // Output: docs/build/html/index.html
+
+  # ============================================================
+  # PYPI UPLOAD (4 behaviors)
+  # ============================================================
+
+  - name: configure_twine
+    given: PyPI credentials
+    when: Setting up upload
+    then: Create ~/.pypirc with repository URLs
+    implementation: |
+        // Generate ~/.pypirc:
+        // [distutils]
+        // index-servers =
+        //     pypi
+        //     testpypi
+        //
+        // [pypi]
+        // username = __token__
+        // password = pypi-...
+        //
+        // [testpypi]
+        // username = __token__
+        // password = pypi-...
+        // repository = https://test.pypi.org/legacy/
+
+  - name: upload_to_pypi
+    given: Built wheels and sdists
+    when: Running twine upload
+    then: Upload all artifacts to production PyPI
+    implementation: |
+        // Upload to production:
+        // twine upload dist/* \
+        //   --repository pypi \
+        //   --verbose \
+        //   --skip-existing
+        //
+        // Result:
+        // https://pypi.org/project/trinity-core/1.0.0/
+
+  - name: upload_to_testpypi
+    given: Built wheels and sdists
+    when: Testing deployment
+    then: Upload to test.pypi.org
+    implementation: |
+        // Upload to test:
+        // twine upload dist/* \
+        //   --repository testpypi \
+        //   --verbose
+        //
+        // Test install:
+        // pip install --index-url https://test.pypi.org/simple/ trinity-core
+
+  - name: verify_upload
+    given: Uploaded package
+    when: Post-deployment verification
+    then: Install and test from PyPI
+    implementation: |
+        // Verify install:
+        // pip install trinity-core==1.0.0
+        // python -c "import trinity; print(trinity.__version__)"
+        //
+        // Check PyPI page:
+        // curl https://pypi.org/pypi/trinity-core/json
+
+  # ============================================================
+  # VERSION MANAGEMENT (3 behaviors)
+  - name: bump_version
+    given: Current version and bump type (major/minor/patch)
+    when: Preparing release
+    then: Update version in all files
+    implementation: |
+        // Update versions in:
+        // - trinity/__init__.py (__version__)
+        // - pyproject.toml (project.version)
+        // - setup.py (version=)
+        // - docs/source/conf.py (version)
+
+  - name: create_git_tag
+    given: Version number
+    when: Tagging release
+    then: Create and push annotated tag
+    implementation: |
+        // Create tag:
+        // git tag -a v1.0.0 -m "Release v1.0.0"
+        // git push origin v1.0.0
+
+  - name: generate_changelog
+    given: Git commits since last tag
+    when: Preparing release
+    then: Generate CHANGELOG.md
+    implementation: |
+        // Generate:
+        // git log v0.9.0..v1.0.0 --oneline --format="- %s"
+        //
+        // Output CHANGELOG.md:
+        // # Changelog
+        //
+        // ## [1.0.0] - 2026-02-28
+        //
+        // ### Added
+        // - Python FFI bindings
+        // - PyPI package
+        // - Wheel builds for Linux, macOS, Windows
+
+  # ============================================================
+  # CI/CD (2 behaviors)
+  # ============================================================
+
+  - name: generate_github_actions
+    given: Build matrix and test steps
+    when: Setting up CI/CD
+    then: Create .github/workflows/build.yml
+    implementation: |
+        // Generate .github/workflows/build.yml:
+        // name: Build and Publish
+        // on:
+        //   push:
+        //     tags:
+        //       - 'v*'
+        // jobs:
+        //   build:
+        //     runs-on: ${{ matrix.os }}
+        //     strategy:
+        //       matrix:
+        //         os: [ubuntu-latest, macos-latest, windows-latest]
+        //         python: ['3.10', '3.11', '3.12']
+        //     steps:
+        //       - uses: actions/checkout@v4
+        //       - uses: actions/setup-python@v5
+        //         with:
+        //           python-version: ${{ matrix.python }}
+        //       - run: pip install build twine
+        //       - run: python -m build
+        //       - run: twine upload dist/*
+
+  - name: generate_test_workflow
+    given: Test configuration
+    when: Creating test CI
+    then: Create .github/workflows/test.yml
+    implementation: |
+        // Generate .github/workflows/test.yml:
+        // name: Tests
+        // on: [push, pull_request]
+        // jobs:
+        //   test:
+        //     runs-on: ubuntu-latest
+        //     steps:
+        //       - uses: actions/checkout@v4
+        //       - uses: actions/setup-python@v5
+        //       - run: pip install pytest pytest-cov
+        //       - run: pytest tests/ --cov=trinity
+
+  # ============================================================
+  # QUALITY CHECKS (2 behaviors)
+  - name: check_wheel_compatibility
+    given: Built wheel
+    when: Pre-upload validation
+    then: Verify wheel compatibility with target Python
+    implementation: |
+        // Check with:
+        // pip install check-wheel-contents
+        // check-wheel-contents dist/trinity_core-1.0.0-*.whl
+        //
+        // Validates:
+        // - WHEEL format version
+        // - Python version tags
+        // - ABI tags
+        // - Platform tags
+
+  - name: lint_python_code
+    given: Python source files
+    when: Quality check
+    then: Run ruff, mypy, black
+    implementation: |
+        // Lint:
+        // ruff check trinity/
+        // mypy trinity/
+        // black --check trinity/
+        //
+        // Auto-fix:
+        // ruff check --fix trinity/
+        // black trinity/
+
+cli:
+  flags:
+    - name: package-name
+      short: n
+      type: String
+      default: "trinity-core"
+      description: "Package name for PyPI"
+
+    - name: version
+      short: v
+      type: String
+      default: "1.0.0"
+      description: "Package version"
+
+    - name: build-wheel
+      short: w
+      type: Bool
+      default: true
+      description: "Build wheel distribution"
+
+    - name: build-sdist
+      short: s
+      type: Bool
+      default: true
+      description: "Build source distribution"
+
+    - name: platform
+      short: p
+      type: String
+      default: "auto"
+      description: "Target platform (linux/macos/windows/auto)"
+
+    - name: python-version
+      short: P
+      type: String
+      default: "3.11"
+      description: "Target Python version"
+
+    - name: upload
+      short: u
+      type: Bool
+      default: false
+      description: "Upload to PyPI after build"
+
+    - name: test-pypi
+      short: t
+      type: Bool
+      default: false
+      description: "Upload to TestPyPI instead of production"
+
+    - name: run-tests
+      short: T
+      type: Bool
+      default: true
+      description: "Run test suite before upload"
+
+    - name: build-docs
+      short: d
+      type: Bool
+      default: false
+      description: "Build Sphinx documentation"
+
+    - name: optimize
+      short: O
+      type: String
+      default: "ReleaseFast"
+      description: "Zig optimization mode (Debug/ReleaseFast/ReleaseSmall/ReleaseSafe)"
+
+test_cases:
+  # Package structure
+  - name: create_package_layout
+    given: "package_name='trinity-core'"
+    expected: "python/trinity/, python/tests/, python/docs/ directories created"
+
+  - name: generate_init_py
+    given: "version='1.0.0', exports=['Hypervector', 'bind']"
+    expected: "trinity/__init__.py with __version__ and imports"
+
+  # Build configuration
+  - name: generate_setup_py_valid
+    given: "PyPIConfig with all required fields"
+    expected: "setup.py passes setuptools validation"
+
+  - name: generate_pyproject_toml_pep517
+    given: "PyPIConfig"
+    expected: "pyproject.toml with [build-system] section"
+
+  # Zig compilation
+  - name: compile_linux_shared_lib
+    given: "target='x86_64-linux-gnu'"
+    expected: "python/trinity/_libtrinux.so"
+
+  - name: compile_macos_shared_lib
+    given: "target='x86_64-macos-gnu'"
+    expected: "python/trinity/_libtrinity.dylib"
+
+  - name: compile_windows_shared_lib
+    given: "target='x86_64-windows-msvc'"
+    expected: "python/trinity/_libtrinity.dll"
+
+  # Wheel building
+  - name: build_pure_wheel
+    given: "package with setup.py"
+    expected: "dist/trinity_core-1.0.0-py3-none-any.whl"
+
+  - name: build_platform_wheel
+    given: "precompiled shared library"
+    expected: "dist/trinity_core-1.0.0-cp311-cp311-linux_x86_64.whl"
+
+  - name: build_sdist_tarball
+    given: "source files"
+    expected: "dist/trinity_core-1.0.0.tar.gz"
+
+  # Tests
+  - name: generate_pytest_suite
+    given: "package modules"
+    expected: "tests/test_core.py with pytest fixtures"
+
+  - name: run_tests_passing
+    given: "built package"
+    expected: "pytest exit code 0, coverage >= 80%"
+
+  # Documentation
+  - name: generate_sphinx_conf
+    given: "project metadata"
+    expected: "docs/source/conf.py with extensions"
+
+  - name: build_html_docs
+    given: "sphinx config and api docs"
+    expected: "docs/build/html/index.html"
+
+  # PyPI upload
+  - name: twine_upload_testpypi
+    given: "wheel and testpypi credentials"
+    expected: "package at https://test.pypi.org/project/trinity-core/"
+
+  - name: verify_pypi_install
+    given: "uploaded package"
+    expected: "pip install trinity-core succeeds"
+
+  # Version management
+  - name: bump_patch_version
+    given: "version='1.0.0', bump_type='patch'"
+    expected: "version='1.0.1' in all files"
+
+  - name: create_git_tag_v100
+    given: "version='1.0.0'"
+    expected: "annotated git tag v1.0.0"
+
+  # Quality checks
+  - name: wheel_compatibility_check
+    given: "built wheel"
+    expected: "check-wheel-contents passes"
+
+  - name: lint_python_pass
+    given: "trinity/ source"
+    expected: "ruff and mypy pass"

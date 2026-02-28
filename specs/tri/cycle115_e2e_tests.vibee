@@ -1,0 +1,1071 @@
+# ============================================================================
+# Cycle 115: E2E Testing of Entire Trinity Ecosystem
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# Testing Python FFI, PostgreSQL pg_trinity, Distributed TVC, WASM Plugins
+# Performance Benchmarks: v1.0.1 vs v1.1.0 comparison
+# ============================================================================
+
+name: cycle115_e2e_tests
+version: "115.0.0"
+language: zig
+module: e2e_test_suite
+
+description: |
+  Comprehensive End-to-End Testing Suite for Trinity Ecosystem v1.1.0.
+  Tests integration across all major components with performance regression
+  detection from v1.0.1 baseline. 25+ test scenarios covering Python bindings,
+  PostgreSQL extension, distributed TVC cluster, WASM plugin system, and
+  cross-component integration.
+
+constants:
+  # Test configuration
+  TEST_TIMEOUT_MS: 300000           # 5 minutes per test suite
+  BENCHMARK_ITERATIONS: 1000
+  WARMUP_ITERATIONS: 100
+  PARALLEL_TEST_WORKERS: 4
+
+  # Performance baselines (v1.0.1)
+  V101_PYTHON_OVERHEAD_PCT: 5.0
+  V101_SIMILARITY_OPS_PER_SEC: 1000000
+  V101_PG_SIMILARITY_MS: 10.0
+  V101_TVC_CLUSTER Latency_P95_MS: 50.0
+  V101_WASM_OVERHEAD_PCT: 8.0
+
+  # Performance targets (v1.1.0)
+  V110_TARGET_IMPROVEMENT_PCT: 15.0
+  V110_MAX_REGRESSION_PCT: 5.0
+
+  # Cluster configuration
+  TVC_CLUSTER_SIZE: 5
+  TVC_REPLICATION_FACTOR: 2
+  TVC_SHARDS_PER_NODE: 3
+  TVC_TEST_VECTOR_COUNT: 10000
+
+  # PostgreSQL configuration
+  PG_TEST_DATABASE: "trinity_test"
+  PG_TEST_TABLE: "vectors_test"
+  PG_TEST_VECTOR_DIM: 1024
+  PG_TEST_ROWS: 100000
+
+  # Python test configuration
+  PYTHON_TEST_DIMENSIONS: [512, 1024, 2048, 10000]
+  PYTHON_TEST_BATCH_SIZE: 1000
+
+  # WASM plugin test configuration
+  WASM_TEST_PLUGIN_COUNT: 10
+  WASM_SANDBOX_MEMORY_LIMIT: 67108864  # 64 MB
+  WASM_FUEL_LIMIT: 1000000
+
+types:
+  TestSuite:
+    description: "Container for related test cases"
+    fields:
+      suite_name: String
+      suite_type: TestSuiteType
+      test_cases: List<TestCase>
+      setup_procs: List<String>
+      teardown_procs: List<String>
+      timeout_ms: Int
+      parallelizable: Bool
+      dependencies: List<String>
+      environment: TestEnvironment
+
+  TestSuiteType:
+    description: "Type of test suite"
+    enum:
+      - UNIT
+      - INTEGRATION
+      - E2E
+      - PERFORMANCE
+      - STRESS
+      - REGRESSION
+
+  TestCase:
+    description: "Individual test case definition"
+    fields:
+      test_id: String
+      name: String
+      given: String
+      when: String
+      then: String
+      test_type: TestCaseType
+      timeout_ms: Int
+      retry_count: Int
+      skip: Bool
+      skip_reason: Option<String>
+      tags: List<String>
+      expected_result: ExpectedResult
+      assertions: List<Assertion>
+
+  TestCaseType:
+    description: "Test case execution type"
+    enum:
+      - POSITIVE
+      - NEGATIVE
+      - EDGE_CASE
+      - BOUNDARY
+      - PERFORMANCE
+      - SECURITY
+
+  ExpectedResult:
+    description: "Expected test outcome"
+    fields:
+      status: TestStatus
+      return_value: Option<String>
+      return_type: Option<String>
+      error_message: Option<String>
+      metrics: TestMetrics
+      constraints: Map<String, String>
+
+  TestStatus:
+    description: "Test execution status"
+    enum:
+      - PASS
+      - FAIL
+      - SKIP
+      - TIMEOUT
+      - ERROR
+
+  Assertion:
+    description: "Test assertion definition"
+    fields:
+      assertion_type: AssertionType
+      left_operand: String
+      operator: String
+      right_operand: String
+      tolerance: Option<Float>
+      message: String
+
+  AssertionType:
+    description: "Assertion validation type"
+    enum:
+      - EQUALS
+      - NOT_EQUALS
+      - GREATER_THAN
+      - LESS_THAN
+      - GREATER_OR_EQUAL
+      - LESS_OR_EQUAL
+      - CONTAINS
+      - APPROX_EQUALS
+      - THROWS
+      - MATCHES_REGEX
+
+  TestEnvironment:
+    description: "Test execution environment"
+    fields:
+      os: String
+      arch: String
+      python_version: String
+      postgres_version: String
+      zig_version: String
+      compiler: String
+      cpu_count: Int
+      memory_mb: Int
+      env_vars: Map<String, String>
+
+  TestResult:
+    description: "Test execution result"
+    fields:
+      test_id: String
+      suite_name: String
+      status: TestStatus
+      duration_ms: Int
+      start_time: Int
+      end_time: Int
+      output: String
+      error_message: Option<String>
+      stack_trace: Option<String>
+      metrics: TestMetrics
+      artifacts: List<String>
+      retries: Int
+      logs: List<String>
+
+  TestMetrics:
+    description: "Performance metrics collected during test"
+    fields:
+      cpu_time_ms: Float
+      wall_time_ms: Float
+      memory_mb: Float
+      ops_per_sec: Float
+      latency_p50_ms: Float
+      latency_p95_ms: Float
+      latency_p99_ms: Float
+      throughput_mb_per_sec: Float
+      cache_hit_ratio: Float
+      error_count: Int
+      custom_metrics: Map<String, Float>
+
+  BenchmarkComparison:
+    description: "Performance comparison between versions"
+    fields:
+      benchmark_name: String
+      metric_name: String
+      baseline_v101: Float
+      current_v110: Float
+      improvement_pct: Float
+      status: BenchmarkStatus
+      significance: String
+      confidence_interval: Option<Float>
+      sample_size: Int
+      notes: List<String>
+
+  BenchmarkStatus:
+    description: "Benchmark comparison result"
+    enum:
+      - IMPROVED
+      - REGRESSED
+      - STABLE
+      - WITHIN_TOLERANCE
+      - SIGNIFICANT_REGRESSION
+      - SIGNIFICANT_IMPROVEMENT
+
+  E2EScenario:
+    description: "End-to-end test scenario spanning multiple components"
+    fields:
+      scenario_id: String
+      name: String
+      description: String
+      components: List<String>
+      steps: List<TestStep>
+      preconditions: List<String>
+      postconditions: List<String>
+      expected_duration_ms: Int
+      cleanup_required: Bool
+      teardown_steps: List<TestStep>
+
+  TestStep:
+    description: "Individual step within E2E scenario"
+    fields:
+      step_order: Int
+      component: String
+      action: String
+      input: Map<String, String>
+      expected_output: Map<String, String>
+      timeout_ms: Int
+      continue_on_failure: Bool
+
+  PythonTestContext:
+    description: "Python FFI test context"
+    fields:
+      python_path: String
+      module_path: String
+      test_vectors: List<List<Int>>
+      dimensions: List<Int>
+      operations: List<String>
+      iteration_counts: List<Int>
+      memory_limit_mb: Int
+      timeout_sec: Int
+
+  PostgreSQLTestContext:
+    description: "PostgreSQL pg_trinity test context"
+    fields:
+      connection_string: String
+      database_name: String
+      table_name: String
+      vector_dimension: Int
+      row_count: Int
+      index_types: List<String>
+      test_queries: List<String>
+      expected_latencies: Map<String, Float>
+
+  TVCClusterTestContext:
+    description: "Distributed TVC cluster test context"
+    fields:
+      cluster_id: String
+      node_count: Int
+      replication_factor: Int
+      shard_count: Int
+      vector_count: Int
+      node_addresses: List<String>
+      fault_injection: List<String>
+      expected_throughput: Float
+      sync_timeout_ms: Int
+
+  WASMPluginTestContext:
+    description: "WASM plugin system test context"
+    fields:
+      plugin_paths: List<String>
+      sandbox_enabled: Bool
+      memory_limit: Int
+      fuel_limit: Int
+      test_operations: List<String>
+      expected_violations: List<String>
+      hot_reload_enabled: Bool
+
+  TestReport:
+    description: "Aggregated test execution report"
+    fields:
+      report_id: String
+      start_time: Int
+      end_time: Int
+      total_suites: Int
+      total_tests: Int
+      passed: Int
+      failed: Int
+      skipped: Int
+      errors: Int
+      pass_rate: Float
+      duration_sec: Float
+      suites: List<SuiteReport>
+      benchmarks: List<BenchmarkComparison>
+      failures: List<FailureDetail>
+      warnings: List<String>
+      artifacts: List<String>
+
+  SuiteReport:
+    description: "Per-suite test report"
+    fields:
+      suite_name: String
+      status: TestStatus
+      duration_ms: Int
+      test_count: Int
+      passed: Int
+      failed: Int
+      skipped: Int
+      test_results: List<TestResult>
+      metrics_summary: TestMetrics
+
+  FailureDetail:
+    description: "Detailed failure information"
+    fields:
+      test_id: String
+      suite_name: String
+      error_type: String
+      error_message: String
+      stack_trace: String
+      logs: List<String>
+      artifacts: List<String>
+      retry_attempts: Int
+      last_success: Option<Int>
+
+  PerformanceRegression:
+    description: "Detected performance regression"
+    fields:
+      component: String
+      metric_name: String
+      baseline_v101: Float
+      current_v110: Float
+      regression_pct: Float
+      threshold_pct: Float
+      severity: RegressionSeverity
+      recommendation: String
+
+  RegressionSeverity:
+    description: "Regression impact severity"
+    enum:
+      - CRITICAL
+      - HIGH
+      - MEDIUM
+      - LOW
+      - NEGLIGIBLE
+
+behaviors:
+  # ============================================================
+  # TEST SUITE MANAGEMENT (5 behaviors)
+  # ============================================================
+
+  - name: create_test_suite
+    given: Suite name, type, and test cases
+    when: Test suite is initialized
+    then: Creates TestSuite with metadata, validates test case dependencies, sets up environment variables, returns configured suite ready for execution
+
+  - name: validate_test_dependencies
+    given: Test suite with component dependencies
+    when: Suite initialization or validation requested
+    then: Checks all required services are available (Python, PostgreSQL, TVC nodes), validates network connectivity, verifies version compatibility, returns dependency status
+
+  - name: setup_test_environment
+    given: TestEnvironment configuration
+    when: Test suite starts execution
+    then: Creates test database, initializes TVC cluster nodes, loads WASM plugins, installs Python packages, creates temporary test directories, sets environment variables
+
+  - name: teardown_test_environment
+    given: Completed test execution with artifacts
+    when: Test suite finishes or fails
+    then: Drops test database, stops TVC cluster nodes, unloads WASM plugins, removes temporary directories, saves logs and artifacts to output directory, cleans up resources
+
+  - name: generate_test_report
+    given: List of TestResult and BenchmarkComparison
+    when: All tests completed or report requested
+    then: Aggregates results, calculates pass rate, generates summary statistics, formats report (JSON/HTML/Markdown), saves to output directory, returns report ID
+
+  # ============================================================
+  # PYTHON FFI BRIDGE TESTS (4 behaviors)
+  # ============================================================
+
+  - name: run_python_tests
+    given: PythonTestContext with test vectors and operations
+    when: Python test suite execution triggered
+    then:
+      - Imports python-trinity module
+      - Creates hypervectors with various dimensions (512, 1024, 2048, 10000)
+      - Tests VSA operations: bind, unbind, bundle, similarity, permute
+      - Validates FFI bridge overhead < 5%
+      - Tests memory management (allocation, deallocation, GC)
+      - Tests codebook encode/decode
+      - Tests associative memory operations
+      - Validates sacred constants exposure (φ, π, e, μ, χ, σ, ε)
+      - Runs performance benchmarks (similarity ops/sec target: >1M)
+      - Returns TestResult with metrics and assertions
+
+  - name: test_python_bind_unbind_roundtrip
+    given: Two random hypervectors A and B (dim=10000)
+    when: A.bind(B).unbind(B) is executed
+    then: Returns similarity(recovered, A) > 0.95 with overhead < 5%
+
+  - name: test_python_memory_safety
+    given: Repeated hypervector creation and deletion
+    when: 10000 iterations executed
+    then: No memory leaks detected (heap stable, GC working, all objects freed)
+
+  - name: test_python_performance_benchmark
+    given: Hypervectors with dimension=10000
+    when: Similarity operations executed in loop
+    then: Returns ops_per_sec > 1,000,000 with 95th percentile latency < 1μs
+
+  # ============================================================
+  # POSTGRESQL PG_TRINITY TESTS (4 behaviors)
+  # ============================================================
+
+  - name: run_postgres_tests
+    given: PostgreSQLTestContext with connection and schema
+    when: PostgreSQL test suite execution triggered
+    then:
+      - Creates test table with trinity_vector column
+      - Tests vector input/output (text and binary formats)
+      - Tests all operators: <->, <=>, &&, |||
+      - Tests aggregate functions: trinity_bundle(), trinity_center()
+      - Creates GIN and GiST indexes
+      - Tests similarity queries with indexes
+      - Tests KNN search with ORDER BY ... LIMIT
+      - Tests bind/unbind operations
+      - Validates index usage with EXPLAIN ANALYZE
+      - Tests error handling (dimension mismatch, invalid trits)
+      - Returns TestResult with query latencies and index stats
+
+  - name: test_postgres_vector_storage
+    given: Table with trinity_vector(1024) column
+    when: 100,000 vectors inserted
+    then: All vectors stored successfully, checksums valid, storage size < 20x float32 equivalent
+
+  - name: test_postgres_index_performance
+    given: Table with 100,000 vectors and GiST index
+    when: KNN query executed (ORDER BY <-> LIMIT 10)
+    then: Query latency < 10ms, index scan used, results match sequential scan
+
+  - name: test_postgres_similarity_search
+    given: Table with indexed vectors
+    when: Cosine similarity query with threshold 0.8
+    then: Returns correct results, index used, latency < 5ms for 100K vectors
+
+  # ============================================================
+  # DISTRIBUTED TVC CLUSTER TESTS (5 behaviors)
+  # ============================================================
+
+  - name: run_cluster_tests
+    given: TVCClusterTestContext with 5 nodes
+    when: Cluster test suite execution triggered
+    then:
+      - Initializes cluster with coordinator
+      - Tests node join/leave via gossip
+      - Tests consistent hash ring distribution
+      - Tests vector storage and replication (φ=1.618)
+      - Tests shard assignment and rebalancing
+      - Tests Merkle tree anti-entropy sync
+      - Tests fault tolerance (node failure simulation)
+      - Tests leader election (Raft)
+      - Tests network partition handling
+      - Measures cluster throughput and latency
+      - Validates data consistency across replicas
+      - Returns TestResult with cluster metrics
+
+  - name: test_cluster_shard_distribution
+    given: 5-node cluster with 10,000 vectors
+    when: Vectors distributed via consistent hashing
+    then: Shard distribution balanced (deviation < φ%), each node has ~2,000 vectors, φ replicas per shard
+
+  - name: test_cluster_replication
+    given: Cluster with replication factor φ=1.618
+    when: Vector stored on primary node
+    then: Replicated to 2 nodes, quorum acknowledgments received, replicas consistent (Merkle roots match)
+
+  - name: test_cluster_fault_tolerance
+    given: 5-node cluster with active workload
+    when: 1 node fails (heartbeat timeout)
+    then: Failure detected within φ*heartbeat_interval, replicas promoted, cluster remains available, no data loss
+
+  - name: test_cluster_anti_entropy
+    given: 2 nodes with divergent vector sets
+    when: Anti-entropy sync triggered
+    then: Merkle proof exchanged, missing vectors identified and synced, both nodes consistent, sync time < 100ms for 1K vectors
+
+  # ============================================================
+  # WASM PLUGIN SYSTEM TESTS (4 behaviors)
+  # ============================================================
+
+  - name: run_plugin_tests
+    given: WASMPluginTestContext with 10 test plugins
+    when: Plugin test suite execution triggered
+    then:
+      - Loads all plugins from directory
+      - Validates plugin manifests
+      - Tests plugin lifecycle (load, execute, unload)
+      - Tests sandbox execution with limits
+      - Tests hook registration and execution
+      - Tests hot-reload functionality
+      - Tests memory limit enforcement
+      - Tests fuel limit and timeout
+      - Measures plugin execution overhead
+      - Tests plugin error handling
+      - Returns TestResult with plugin metrics
+
+  - name: test_plugin_load_execution
+    given: Plugin with valid manifest
+    when: Plugin loaded and function executed
+    then: Plugin loads successfully, function executes correctly, hooks called in priority order, overhead < 8%
+
+  - name: test_plugin_sandbox_violations
+    given: WASM plugin with sandbox limits (64MB, 1M fuel)
+    when: Plugin attempts to exceed limits
+    then: Violation detected, plugin terminated, violation logged, system stable, no memory corruption
+
+  - name: test_plugin_hot_reload
+    given: Active plugin with registered hooks
+    when: Plugin binary updated on disk
+    then: Hot-reload triggered within 1s, new version loaded, hooks re-registered, state preserved if compatible, reload event logged
+
+  # ============================================================
+  # PERFORMANCE BENCHMARK COMPARISON (3 behaviors)
+  # ============================================================
+
+  - name: run_performance_benchmarks
+    given: Component list and benchmark definitions
+    when: Performance suite execution triggered
+    then:
+      - Runs benchmarks for all components
+      - Collects metrics (latency, throughput, ops/sec, memory)
+      - Compares to v1.0.1 baseline
+      - Calculates improvement/regression percentages
+      - Validates against thresholds (max 5% regression)
+      - Generates comparison tables
+      - Returns BenchmarkComparison list
+
+  - name: compare_benchmarks
+    given: Baseline metrics (v1.0.1) and current metrics (v1.1.0)
+    when: Benchmark comparison requested
+    then: Calculates delta for each metric, determines status (IMPROVED/REGRESSED/STABLE), flags significant regressions (>5%), generates comparison report
+
+  - name: validate_performance_targets
+    given: BenchmarkComparison results
+    when: Performance validation requested
+    then: Checks all regressions < 5%, checks improvements > 15% for optimizations, flags violations, returns validation status with recommendations
+
+  # ============================================================
+  # CROSS-COMPONENT INTEGRATION TESTS (4 behaviors)
+  # ============================================================
+
+  - name: test_python_to_postgres_integration
+    given: Python FFI creating vectors, PostgreSQL storing them
+    when: End-to-end workflow executed
+    then: Python creates hypervector, serializes to base64, inserts into PostgreSQL, pg_trinity stores with index, query via similarity search, results returned to Python, roundtrip successful
+
+  - name: test_tvc_to_postgres_integration
+    given: TVC cluster storing vectors, PostgreSQL persisting metadata
+    when: Cross-system query executed
+    then: TVC stores vectors in cluster, PostgreSQL stores shard locations, query joins TVC data with PostgreSQL metadata, results consistent, latency < 50ms
+
+  - name: test_plugin_to_core_integration
+    given: WASM plugin hooking into VSA operations
+    when: Plugin registered and operation executed
+    then: Pre-hook called before VSA operation, operation executes, post-hook called with results, hooks can modify results, performance overhead < 8%
+
+  - name: test_full_stack_e2e
+    given: All components running (Python, PostgreSQL, TVC, WASM)
+    when: Complete user workflow executed
+    then:
+      - Python client creates hypervectors via FFI
+      - TVC cluster stores vectors with replication
+      - PostgreSQL stores metadata and enables SQL queries
+      - WASM plugins process vectors (transformations, filtering)
+      - Results returned via similarity search
+      - All operations successful, latency < 100ms end-to-end
+      - No data loss or corruption
+
+  # ============================================================
+  # STRESS AND LOAD TESTS (3 behaviors)
+  # ============================================================
+
+  - name: run_stress_tests
+    given: Component and load parameters
+    when: Stress test suite execution triggered
+    then:
+      - Gradually increases load until failure point
+      - Measures maximum throughput
+      - Identifies bottlenecks
+      - Tests resource exhaustion handling
+      - Validates graceful degradation
+      - Returns stress test report with limits
+
+  - name: test_cluster_scalability
+    given: TVC cluster scaling from 1 to 10 nodes
+    when: Cluster size increased incrementally
+    then: Linear scaling observed (throughput ∝ nodes), latency stable, no hotspots, rebalancing completes without data loss
+
+  - name: test_concurrent_operations
+    given: Multiple clients accessing all components
+    when: 100 parallel operations executed
+    then: All operations complete successfully, no deadlocks, data consistent, errors < 1%, latency P95 < 2x baseline
+
+  # ============================================================
+  # REGRESSION DETECTION (2 behaviors)
+  # ============================================================
+
+  - name: detect_regressions
+    given: BenchmarkComparison results and thresholds
+    when: Regression analysis requested
+    then: Identifies metrics exceeding regression threshold (>5%), categorizes by severity, generates PerformanceRegression list, flags critical regressions
+
+  - name: generate_regression_report
+    given: PerformanceRegression list
+    when: Regression report requested
+    then: Formats regression details, includes before/after values, impact analysis, remediation recommendations, saves to file with timestamp
+
+  # ============================================================
+  # TEST ORCHESTRATION (3 behaviors)
+  # ============================================================
+
+  - name: execute_test_suite
+    given: TestSuite and execution configuration
+    when: Test execution requested
+    then: Validates environment, runs setup procedures, executes test cases in dependency order, collects metrics, runs teardown procedures, returns TestResult list
+
+  - name: retry_failed_tests
+    given: Failed TestResult list and retry configuration
+    when: Retry requested
+    then: Identifies retryable failures, re-executes with fresh environment, tracks retry counts, updates results, returns final TestResult list
+
+  - name: parallel_test_execution
+    given: TestSuite with parallelizable tests
+    when: Parallel execution enabled
+    then: Spawns worker processes (configurable count), distributes tests across workers, collects results, aggregates metrics, handles worker failures, returns combined TestResult list
+
+  # ============================================================
+  # ARTIFACT MANAGEMENT (2 behaviors)
+  # ============================================================
+
+  - name: collect_test_artifacts
+    given: Completed test execution
+    when: Artifact collection requested
+    then: Gathers logs, screenshots, profiles, heap dumps, coverage reports, saves to artifacts directory with timestamp, creates index file
+
+  - name: generate_coverage_report
+    given: Test execution with coverage instrumentation
+    when: Coverage report requested
+    then: Analyzes code coverage by component, identifies uncovered lines, generates HTML and JSON reports, flags low-coverage areas (<80%)
+
+  # ============================================================
+  # CI/CD INTEGRATION (2 behaviors)
+  - name: generate_ci_config
+    given: Test suite definitions
+    when: CI pipeline configuration requested
+    then: Generates GitHub Actions workflow, includes test execution steps, adds artifact upload, configures notification on failure, returns workflow YAML
+
+  - name: validate_ci_environment
+    given: CI environment variables and resources
+    when: CI pipeline starts
+    then: Validates required tools installed (Zig, Python, PostgreSQL), checks resource limits, configures test environment, returns validation status
+
+cli:
+  flags:
+    - name: test-suite
+      short: s
+      type: String
+      default: "all"
+      description: "Test suite to run (all, python, postgres, cluster, plugin, integration)"
+
+    - name: test-filter
+      short: f
+      type: String
+      default: ""
+      description: "Filter tests by name or tag pattern"
+
+    - name: benchmark-baseline
+      short: b
+      type: String
+      default: "v1.0.1"
+      description: "Baseline version for comparison"
+
+    - name: output-format
+      short: o
+      type: String
+      default: "json"
+      description: "Report output format (json, html, markdown)"
+
+    - name: parallel-workers
+      short: w
+      type: Int
+      default: 4
+      description: "Number of parallel test workers"
+
+    - name: verbose
+      short: v
+      type: Bool
+      default: false
+      description: "Enable verbose test output"
+
+    - name: continue-on-failure
+      short: c
+      type: Bool
+      default: false
+      description: "Continue test execution on failure"
+
+    - name: generate-report
+      short: r
+      type: Bool
+      default: true
+      description: "Generate test report after execution"
+
+    - name: collect-coverage
+      short: g
+      type: Bool
+      default: false
+      description: "Collect code coverage during tests"
+
+    - name: stress-test
+      short: x
+      type: Bool
+      default: false
+      description: "Run stress and load tests"
+
+    - name: regression-threshold
+      short: t
+      type: Float
+      default: 5.0
+      description: "Regression detection threshold (%)"
+
+test_cases:
+  # ============================================================
+  # PYTHON FFI BRIDGE TEST CASES
+  # ============================================================
+
+  - name: python_module_import
+    given: "python-trinity package installed"
+    when: "import trinity executed in Python"
+    expected: "Module loads successfully, trinity.__version__ returns '1.0.0'"
+
+  - name: python_hypervector_creation
+    given: "dimension=10000, seed=42"
+    when: "Hypervector(10000, 42) called"
+    expected: "PyHypervector created with 10000 trits, random distribution (~33% each trit)"
+
+  - name: python_bind_operation
+    given: "Two hypervectors A and B (dim=10000)"
+    when: "A.bind(B) executed"
+    expected: "Returns bound hypervector C, overhead < 5% vs native Zig"
+
+  - name: python_unbind_operation
+    given: "Bound vector C and key B"
+    when: "C.unbind(B) executed"
+    expected: "Returns recovered vector A', similarity(A', A) > 0.95"
+
+  - name: python_bundle_operation
+    given: "Three hypervectors A, B, C"
+    when: "bundle_n([A, B, C]) executed"
+    expected: "Returns bundled vector, similarity to each input > 0.3"
+
+  - name: python_cosine_similarity
+    given: "Two identical hypervectors"
+    when: "A.similarity(A) called"
+    expected: "Returns 1.0 (perfect similarity)"
+
+  - name: python_performance_target
+    given: "10,000-dimensional hypervectors"
+    when: "1,000,000 similarity operations executed"
+    expected: "Operations complete in < 1 second (>1M ops/sec), P95 latency < 1μs"
+
+  - name: python_memory_leak_test
+    given: "Memory snapshot before test"
+    when: "10,000 hypervectors created and destroyed"
+    expected: "Heap returns to baseline, no leaks detected"
+
+  - name: python_codebook_roundtrip
+    given: "Codebook(10000) and symbol 'test_symbol'"
+    when: "encode then decode executed"
+    expected: "decode(encode('test_symbol')) == 'test_symbol'"
+
+  - name: python_sacred_constants
+    given: "Module loaded"
+    when: "trinity.sacred_constants() called"
+    expected: "Returns dict with PHI=1.618..., PI=3.141..., E=2.718..., MU=0.0382, CHI=0.0618"
+
+  # ============================================================
+  # POSTGRESQL PG_TRINITY TEST CASES
+  # ============================================================
+
+  - name: postgres_extension_install
+    given: "PostgreSQL instance without pg_trinity"
+    when: "CREATE EXTENSION pg_trinity executed"
+    expected: "Extension installed, trinity_vector type available"
+
+  - name: postgres_vector_insert
+    given: "Table with trinity_vector column"
+    when: "INSERT with trinity_vector(1024) executed"
+    expected: "Vector stored successfully, checksum valid"
+
+  - name: postgres_gin_index_create
+    given: "Table with 100,000 vectors"
+    when: "CREATE INDEX USING GIN executed"
+    expected: "Index builds in < 5 minutes, size < 50% of table"
+
+  - name: postgres_gist_index_query
+    given: "Table with GiST index"
+    when: "SELECT ORDER BY <-> LIMIT 10 executed"
+    expected: "Index scan used, latency < 10ms, results correct"
+
+  - name: postgres_similarity_search
+    given: "Indexed vectors, query vector"
+    when: "SELECT WHERE <=> > 0.8 executed"
+    expected: "Returns matches, index used, latency < 5ms"
+
+  - name: postgres_bind_operator
+    given: "Two vectors in table"
+    when: "SELECT col1 && col2 executed"
+    expected: "Returns bound vector, result validated"
+
+  - name: postgres_bundle_aggregate
+    given: "GROUP BY with vectors"
+    when: "SELECT trinity_bundle(vector) executed"
+    expected: "Returns bundled vector per group, majority vote correct"
+
+  - name: postgres_error_handling
+    given: "Vectors with different dimensions"
+    when: "Similarity operation attempted"
+    expected: "ERROR: dimension mismatch, transaction aborted"
+
+  - name: postgres_binary_protocol
+    given: "Client using binary protocol"
+    when: "Vector sent in binary format"
+    expected: "Deserialization successful, vector stored"
+
+  - name: postgres_parallel_index_build
+    given: "Table with 1M vectors"
+    when: "CREATE INDEX with parallel workers"
+    expected: "Build completes in < 10 minutes, 4x speedup vs serial"
+
+  # ============================================================
+  # DISTRIBUTED TVC CLUSTER TEST CASES
+  # ============================================================
+
+  - name: cluster_initialization
+    given: "5 empty nodes"
+    when: "Cluster coordinator starts"
+    expected: "Consistent hash ring created, leader elected, shards assigned"
+
+  - name: cluster_vector_storage
+    given: "5-node cluster"
+    when: "10,000 vectors stored"
+    expected: "Vectors distributed evenly (~2K per node), φ replicas created"
+
+  - name: cluster_node_join
+    given: "5-node cluster"
+    when: "6th node joins"
+    expected: "Shards reassigned, data migrated, cluster remains available"
+
+  - name: cluster_node_failure
+    given: "5-node cluster under load"
+    when: "1 node killed"
+    expected: "Failure detected in < 5s, replicas promoted, no data loss"
+
+  - name: cluster_anti_entropy
+    given: "2 nodes with missing vectors"
+    when: "Anti-entropy sync triggered"
+    expected: "Merkle proof exchanged, missing vectors synced, consistency restored"
+
+  - name: cluster_gossip_membership
+    given: "Cluster with state changes"
+    when: "Gossip messages exchanged"
+    expected: "All nodes converge to consistent membership view"
+
+  - name: cluster_leader_election
+    given: "Cluster with leader failure"
+    when: "Leader crashes"
+    expected: "New leader elected via Raft, term incremented, service continues"
+
+  - name: cluster_network_partition
+    given: "5-node cluster"
+    when: "Network partitioned (2 vs 3 nodes)"
+    expected: "Majority partition (3 nodes) continues, minority paused"
+
+  - name: cluster_partition_heal
+    given: "Partitioned cluster"
+    when: "Network heals"
+    expected: "Anti-entropy sync runs, state merged, cluster unified"
+
+  - name: cluster_rebalancing
+    given: "Cluster with hotspots"
+    when: "Rebalance triggered"
+    expected: "Shards migrated, load balanced, no downtime"
+
+  # ============================================================
+  # WASM PLUGIN SYSTEM TEST CASES
+  # ============================================================
+
+  - name: plugin_discovery
+    given: "Directory with 10 plugin manifests"
+    when: "Plugin scan executed"
+    expected: "All 10 plugins discovered, manifests validated"
+
+  - name: plugin_load
+    given: "Valid plugin with manifest"
+    when: "Plugin load requested"
+    expected: "Plugin loaded, hooks registered, state=ACTIVE"
+
+  - name: plugin_execution
+    given: "Loaded plugin"
+    when: "Plugin function called"
+    expected: "Function executes successfully, returns result"
+
+  - name: plugin_sandbox_enforcement
+    given: "Plugin with memory limit 64MB"
+    when: "Plugin allocates 100MB"
+    expected: "Sandbox violation detected, plugin terminated, error logged"
+
+  - name: plugin_hook_execution
+    given: "Plugin with pre_bind hook"
+    when: "Bind operation executed"
+    expected: "pre_bind hook called, can modify input, operation proceeds"
+
+  - name: plugin_hot_reload
+    given: "Active plugin"
+    when: "Plugin binary updated"
+    expected: "Hot-reload triggered, new version loaded, hooks preserved"
+
+  - name: plugin_unload
+    given: "Active plugin"
+    when: "Unload requested"
+    expected: "Cleanup called, hooks unregistered, memory freed, state=UNLOADED"
+
+  - name: plugin_error_handling
+    given: "Plugin with invalid manifest"
+    when: "Load attempted"
+    expected: "Load fails, error returned, system stable"
+
+  - name: plugin_priority
+    given: "3 plugins with same hook"
+    when: "Hook phase triggered"
+    expected: "Hooks execute in priority order (CRITICAL > HIGH > NORMAL > LOW)"
+
+  # ============================================================
+  # INTEGRATION TEST CASES
+  # ============================================================
+
+  - name: integration_python_postgres
+    given: "Python FFI + PostgreSQL"
+    when: "Vector created in Python, stored in PostgreSQL"
+    expected: "Roundtrip successful, similarity query works from Python"
+
+  - name: integration_tvc_postgres
+    given: "TVC cluster + PostgreSQL metadata"
+    when: "Cross-system query executed"
+    expected: "Results consistent, latency < 50ms"
+
+  - name: integration_plugin_core
+    given: "WASM plugin + VSA core"
+    when: "Plugin hooks into bind operation"
+    expected: "Hooks called, overhead < 8%, results correct"
+
+  - name: integration_full_stack
+    given: "All components running"
+    when: "Complete workflow executed"
+    expected: "Python → TVC → PostgreSQL → Plugin → Results, latency < 100ms"
+
+  # ============================================================
+  # PERFORMANCE BENCHMARK TEST CASES
+  # ============================================================
+
+  - name: benchmark_python_overhead
+    given: "Python FFI vs native Zig"
+    when: "1M similarity operations benchmarked"
+    expected: "Overhead < 5%, ops/sec > 1M"
+
+  - name: benchmark_postgres_query
+    given: "PostgreSQL with 1M vectors"
+    when: "KNN query executed"
+    expected: "Latency < 10ms, index scan used"
+
+  - name: benchmark_cluster_throughput
+    given: "5-node TVC cluster"
+    when: "Max throughput measured"
+    expected: "Linear scaling, P95 latency < 50ms"
+
+  - name: benchmark_plugin_overhead
+    given: "WASM plugin with hooks"
+    when: "Operation with plugin executed"
+    expected: "Overhead < 8% vs native"
+
+  - name: benchmark_v110_vs_v101
+    given: "All components"
+    when: "Benchmarks compared to v1.0.1 baseline"
+    expected: "Improvements > 15%, regressions < 5%"
+
+# ============================================================
+# BENCHMARK COMPARISON TABLES (v1.0.1 vs v1.1.0)
+# ============================================================
+
+benchmark_baseline_v101:
+  python_ffi:
+    similarity_ops_per_sec: 1000000
+    bind_overhead_pct: 4.8
+    memory_overhead_pct: 3.2
+    init_time_ms: 50
+
+  postgres_pg_trinity:
+    knn_query_latency_ms: 12.0
+    similarity_search_latency_ms: 6.0
+    index_build_time_min_1m_rows: 5.5
+    storage_compression_ratio: 20.0
+
+  tvc_cluster:
+    throughput_ops_per_sec: 50000
+    latency_p95_ms: 55.0
+    replication_lag_ms: 15.0
+    anti_entropy_sync_ms: 120.0
+
+  wasm_plugins:
+    load_time_ms: 100
+    execution_overhead_pct: 7.5
+    hot_reload_ms: 1000
+    sandbox_overhead_pct: 3.0
+
+benchmark_targets_v110:
+  python_ffi:
+    similarity_ops_per_sec: 1150000  # +15% improvement
+    bind_overhead_pct: 4.5           # -6% improvement
+    memory_overhead_pct: 3.0         # -6% improvement
+    init_time_ms: 40                 # -20% improvement
+
+  postgres_pg_trinity:
+    knn_query_latency_ms: 9.0        # -25% improvement
+    similarity_search_latency_ms: 4.5 # -25% improvement
+    index_build_time_min_1m_rows: 4.0  # -27% improvement
+    storage_compression_ratio: 22.0   # +10% improvement
+
+  tvc_cluster:
+    throughput_ops_per_sec: 65000    # +30% improvement
+    latency_p95_ms: 35.0             # -36% improvement
+    replication_lag_ms: 10.0         # -33% improvement
+    anti_entropy_sync_ms: 80.0       # -33% improvement
+
+  wasm_plugins:
+    load_time_ms: 70                 # -30% improvement
+    execution_overhead_pct: 5.0      # -33% improvement
+    hot_reload_ms: 500               # -50% improvement
+    sandbox_overhead_pct: 2.0        # -33% improvement
+
+# Performance Regression Thresholds
+regression_thresholds:
+  critical: 10.0      # >10% regression = critical
+  high: 7.0          # >7% regression = high
+  medium: 5.0        # >5% regression = medium
+  low: 3.0           # >3% regression = low
+  negligible: 0.0    # <=3% = acceptable
