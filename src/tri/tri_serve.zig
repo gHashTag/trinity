@@ -125,11 +125,11 @@ pub const UnifiedApiServer = struct {
         // Show status
         try self.printStatus();
 
-        // Run event loop
+        // Run event loop (always, even in daemon mode)
         if (!self.config.daemon) {
             std.debug.print("\n{s}Press Ctrl+C to stop{s}\n", .{YELLOW, RESET});
-            try self.runEventLoop();
         }
+        try self.runEventLoop();
     }
 
     fn startHttpServer(self: *UnifiedApiServer) !void {
