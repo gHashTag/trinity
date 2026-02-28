@@ -1,4 +1,4 @@
-// 🤖 TRINITY v0.11.0: Suborbital Order
+// 🤖 TRINITY v1.0.0 "ASCENSION": Official Production Release
 // Trinity - Ternary Vector Symbolic Architecture
 // High-performance hyperdimensional computing library
 //
@@ -83,7 +83,7 @@ pub const PHI_SQUARED = science.PHI_SQUARED;
 pub const GOLDEN_IDENTITY = science.GOLDEN_IDENTITY;
 
 // Version
-pub const version = "0.11.0";
+pub const version = "1.0.0";
 
 test {
     // Run all tests from submodules
