@@ -24,6 +24,15 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'Technical Guides',
+      items: [
+        'guides/performance-tuning',
+        'guides/security',
+        'guides/testing',
+      ],
+    },
+    {
+      type: 'category',
       label: 'TRI CLI Reference',
       items: [
         'cli/index',
@@ -108,6 +117,13 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'Development',
+      items: [
+        'development/ralph',
+      ],
+    },
+    {
+      type: 'category',
       label: 'Deployment',
       items: [
         'deployment/index',
@@ -121,8 +137,10 @@ const sidebars: SidebarsConfig = {
       items: [
         'api/index',
         'api/vsa',
+        'api/bigint',
         'api/vm',
         'api/hybrid',
+        'api/sdk',
         'api/firebird',
         'api/vibee',
         'api/plugin',
