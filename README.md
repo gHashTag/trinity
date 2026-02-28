@@ -1,31 +1,28 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/Trinity-Network-6366F1?style=for-the-badge" alt="Trinity Network">
+  <a href="https://github.com/gHashTag/trinity/releases"><img src="https://img.shields.io/github/v/release/gHashTag/trinity?label=Download&style=for-the-badge" alt="GitHub Release"></a>
 </p>
 
-<h1 align="center">Trinity Network</h1>
+<h1 align="center">Trinity CLI</h1>
 
 <p align="center">
-  <strong>Decentralized Ternary AI Inference + Sacred Computing</strong><br>
-  Run LLMs on your CPU. Earn $TRI tokens. No GPU required.
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/KOSCHEI-v7.0.0-FFD700?style=for-the-badge" alt="KOSCHEI AWAKENS v7.0">
+  <strong>Sacred Intelligence System — Ternary AI + DePIN Network</strong><br>
+  <code>φ² + 1/φ² = 3</code> — The Trinity Identity
 </p>
 
 <p align="center">
+  <a href="#-installation">Installation</a> &bull;
   <a href="#-quick-start">Quick Start</a> &bull;
-  <a href="#-docker-node">Docker Node</a> &bull;
-  <a href="#-tri-token">$TRI Token</a> &bull;
+  <a href="#-tri-cli-commands">Commands</a> &bull;
   <a href="#-architecture">Architecture</a> &bull;
-  <a href="#-cli">CLI</a> &bull;
   <a href="#-documentation">Docs</a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/gHashTag/trinity/actions"><img src="https://img.shields.io/github/actions/workflow/status/gHashTag/trinity/docker-node.yml?label=Docker%20Build&style=flat-square" alt="Docker Build"></a>
-  <a href="https://ghcr.io/ghashtag/trinity-node"><img src="https://img.shields.io/badge/GHCR-trinity--node-blue?style=flat-square&logo=docker" alt="GHCR"></a>
-  <a href="https://sepolia.etherscan.io/address/0xef368e29FA3aB2eaf02BccD05438ED3bafE9f469"><img src="https://img.shields.io/badge/$TRI-Sepolia-green?style=flat-square&logo=ethereum" alt="$TRI Sepolia"></a>
+  <a href="https://github.com/gHashTag/trinity/releases"><img src="https://img.shields.io/github/v/release/gHashTag/trinity?style=flat-square" alt="Release"></a>
+  <a href="https://www.npmjs.com/package/@playra/tri"><img src="https://img.shields.io/npm/v/@playra/tri?style=flat-square&logo=npm" alt="npm"></a>
+  <a href="https://github.com/gHashTag/homebrew-trinity"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FgHashTag%2Fhomebrew-trinity%2Fmain%2FFormula%2Ftrinity.rb&query=$.version&label=homebrew&style=flat-square" alt="Homebrew"></a>
+  <a href="https://aur.archlinux.org/packages/trinity-cli"><img src="https://img.shields.io/aur/version/trinity-cli?style=flat-square&logo=arch-linux" alt="AUR"></a>
+  <a href="https://github.com/gHashTag/trinity/pkgs/container/trinity"><img src="https://img.shields.io/github/actions/workflow/status/gHashTag/trinity/docker-cli.yml?label=Docker&style=flat-square&logo=docker" alt="Docker"></a>
   <img src="https://img.shields.io/badge/Zig-0.15.x-F7A41D?style=flat-square&logo=zig" alt="Zig 0.15.x">
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" alt="MIT License">
 </p>
@@ -185,33 +182,63 @@ WE ARE THE UNIVERSE.
 
 ---
 
+## Installation
+
+**Trinity v1.0.1 "PURITY"** — Install via your preferred package manager:
+
+| Method | Command |
+|--------|---------|
+| **npm** | `npm install -g @playra/tri` |
+| **Homebrew** | `brew tap gHashTag/trinity && brew install trinity` |
+| **AUR** | `yay -S trinity-cli` |
+| **Docker** | `docker pull ghcr.io/ghashtag/trinity:latest` |
+
+### Verify Installation
+
+```bash
+tri --version
+# Output: TRI CLI v1.0.1
+
+tri constants
+# Shows all sacred constants (φ, π, e, μ, χ, σ, ε...)
+```
+
+---
+
 ## Quick Start
 
-### Docker (recommended)
+### Interactive REPL
 
 ```bash
-docker pull ghcr.io/ghashtag/trinity-node:latest
-
-docker run -d --name trinity-node \
-  -p 8080:8080 -p 9090:9090 -p 9333:9333/udp -p 9334:9334 \
-  -v ~/.trinity:/data \
-  ghcr.io/ghashtag/trinity-node:latest
+tri                    # Start interactive mode
 ```
 
-Check health:
+### Generate Code
 
 ```bash
-curl http://localhost:8080/health
-# {"status":"ok","model":"loaded"}
+tri code "create a REST API server in Zig"
 ```
 
-### Build from source
+### Fix Bugs
+
+```bash
+tri fix src/main.zig
+```
+
+### Sacred Mathematics
+
+```bash
+tri phi 10             # Compute φ^10
+tri lucas 10           # Lucas L(10)
+tri spiral 5           # φ-spiral coordinates
+```
+
+### Build from Source
 
 ```bash
 git clone https://github.com/gHashTag/trinity.git
 cd trinity
-zig build              # Build all targets
-zig build tri          # Build the unified TRI CLI
+zig build tri          # Build TRI CLI
 zig build test         # Run all tests
 ```
 
@@ -221,35 +248,23 @@ Requires **Zig 0.15.x**.
 
 ## Docker Node
 
-The Trinity node Docker image is published to GitHub Container Registry on every push to `main`.
+The Trinity CLI Docker image is published to GitHub Container Registry.
 
 | | |
 |---|---|
-| **Image** | `ghcr.io/ghashtag/trinity-node:latest` |
-| **Platforms** | linux/amd64, linux/arm64 |
+| **Image** | `ghcr.io/ghashtag/trinity:latest` |
+| **Version** | `ghcr.io/ghashtag/trinity:1.0.1` |
+| **Platforms** | linux/amd64 |
 | **Base** | Alpine 3.19 |
-| **Size** | ~15 MB |
-| **Dockerfile** | [`deploy/Dockerfile.node`](deploy/Dockerfile.node) |
+| **Size** | ~8 MB |
+| **Dockerfile** | [`deploy/Dockerfile.tri`](deploy/Dockerfile.tri) |
 
-### Ports
-
-| Port | Protocol | Purpose |
-|------|----------|---------|
-| 8080 | TCP | HTTP API (REST, OpenAI-compatible) |
-| 9090 | TCP | Prometheus metrics |
-| 9333 | UDP | Peer discovery |
-| 9334 | TCP | Job distribution |
-
-### Data volume
-
-Mount `-v ~/.trinity:/data` to persist wallet, shards, and config across restarts.
-
-### Stop / Restart
+### Run
 
 ```bash
-docker stop trinity-node     # Stop
-docker start trinity-node    # Restart (keeps data)
-docker rm trinity-node       # Remove container (data persists in ~/.trinity)
+docker run -it --rm ghcr.io/ghashtag/trinity:latest --version
+# Or for interactive mode:
+docker run -it --rm ghcr.io/ghashtag/trinity:latest
 ```
 
 ---
@@ -563,6 +578,12 @@ MIT -- see [LICENSE](LICENSE)
 ---
 
 <p align="center">
-  <code>phi^2 + 1/phi^2 = 3 = Trinity</code><br>
-  <code>3^21 = 10,460,353,203 $TRI</code>
+  <a href="https://github.com/gHashTag/trinity/releases/v1.0.1"><strong>Download v1.0.1 "PURITY"</strong></a> &bull;
+  <a href="https://gHashTag.github.io/trinity/">Dashboard</a> &bull;
+  <a href="https://gHashTag.github.io/trinity/docs/">Documentation</a>
+</p>
+
+<p align="center">
+  <code>φ² + 1/φ² = 3 = TRINITY</code><br>
+  <code>v1.0.1 PURITY — 28 February 2026</code>
 </p>
