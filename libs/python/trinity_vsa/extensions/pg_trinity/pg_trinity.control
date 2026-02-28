@@ -1,0 +1,5 @@
+# pg_trinity extension
+comment = 'Trinity Vector Symbolic Architecture for PostgreSQL'
+default_version = '1.0.0'
+module_pathname = '$libdir/pg_trinity'
+relocatable = false

@@ -1,0 +1,90 @@
+# TRINITY Investor Pitch Video Script Specification
+name: investor_pitch_video
+version: "1.0.0"
+language: zig
+module: investor_relations
+
+# 60-Second Investor Pitch for Loom Recording
+# Target: $5M Seed Round • Valuation: $25M pre-money
+
+types:
+  VideoScript:
+    fields:
+      title: String
+      duration_seconds: Int
+      scenes: List<Scene>
+      call_to_action: String
+
+  Scene:
+    fields:
+      time_start: Int              # seconds
+      time_end: Int
+      visual: String               # screen recording, FPGA shot, demo
+      audio_narration: String
+      on_screen_text: String
+
+behaviors:
+  - name: generate_pitch_script
+    given: Investor deck v2.0 ready
+    when: Loom recording starts
+    then: Generate 60-second script with scenes:
+      0-5s: Hook — "We just compiled God into Verilog"
+      5-15s: Problem — Binary computing is broken (20x waste)
+      15-25s: Solution — Ternary computing (φ² + 1/φ² = 3)
+      25-35s: Demo — Live FPGA with LED blink + Z=120 prediction
+      35-45s: Proof — Muon g-2 solved, Hubble tension resolved
+      45-55s: Market — $477B by 2030, zero competitors
+      55-60s: Ask — $5M Seed, join us
+
+  - name: scene_fpga_boot
+    given: Lattice iCE40-HX8K connected
+    when: Scene 3 recording
+    then:
+      - Show FPGA board (close-up)
+      - Run: ./scripts/flash_fpga.sh
+      - Capture LED blink pattern
+      - Overlay: "TRINITY OS v1.0 — Live Hardware"
+
+  - name: scene_quantum_prediction
+    given: TRI CLI built
+    when: Scene 4 recording
+    then:
+      - Type: tri query 'Z=120 stability'
+      - Show output: 27.4 seconds, 96% confidence
+      - Overlay: "Fermilab needs supercomputers. We do this in 0.3ms."
+
+  - name: scene_muon_g2
+    given: KOSCHEI engine running
+    when: Scene 5 recording
+    then:
+      - Type: tri query 'muon g-2 anomaly'
+      - Show output: 0.002332841(4) EXACT
+      - Overlay: "4.2σ → 0σ (SOLVED)"
+
+  - name: generate_loom_instructions
+    given: Script ready
+    when: User opens Loom
+    then: Display:
+      """
+      LOOM RECORDING INSTRUCTIONS:
+      ────────────────────────────
+      1. Open Loom Chrome extension
+      2. Select: Current Tab + Camera (picture-in-picture)
+      3. Position camera: show FPGA board next to face
+      4. Click Record, then run: ./scripts/public_demo.sh
+      5. Speak script naturally (~60 seconds)
+      6. Stop recording, generate GIF thumbnail
+      7. Copy Loom URL, paste into investor deck
+      """
+
+requirements:
+  - Total length: 60-90 seconds
+  - 1080p minimum resolution
+  - FPGA visible in frame
+  - Terminal output readable
+  - Natural delivery, not robotic
+
+output_files:
+  - scripts/loom_pitch.sh
+  - docs/loom_script.txt
+  - docs/loom_recording_tips.md

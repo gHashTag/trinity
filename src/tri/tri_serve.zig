@@ -352,85 +352,23 @@ pub const UnifiedApiServer = struct {
         return buffer.toOwnedSlice(self.allocator);
     }
 
-    // Parse simple JSON: {"query":"{ commands { name } }"}
-    // Extract the query string between "query":" and the closing }
+    // Parse GraphQL request JSON using std.json
+    // Handles {"query":"...","variables":{...},"operationName":null}
     fn extractGraphQLQuery(allocator: std.mem.Allocator, body: []const u8) ![]const u8 {
-        // Find "query":" pattern
-        const query_key = "\"query\":\"";
-        const query_start_idx = std.mem.indexOf(u8, body, query_key) orelse return error.MalformedJSON;
-        const query_start = query_start_idx + query_key.len;
+        const GraphQLRequest = struct {
+            query: []const u8,
+            variables: ?std.json.Value = null,
+            operationName: ?[]const u8 = null,
+        };
 
-        // Find the end of the query value by looking for the closing quote and brace
-        // The query ends with ",  or }  or }\n or }\r
-        var i = query_start;
-        var end_pos: usize = 0;
-        var in_string = true;
-        var escape_next = false;
+        const parsed = std.json.parseFromSlice(GraphQLRequest, allocator, body, .{ .ignore_unknown_fields = true }) catch |err| {
+            std.debug.print("DEBUG: JSON parse error: {}\n", .{err});
+            return error.MalformedJSON;
+        };
+        defer parsed.deinit();
 
-        while (i < body.len) : (i += 1) {
-            const c = body[i];
-
-            if (escape_next) {
-                escape_next = false;
-                continue;
-            }
-
-            if (c == '\\' and in_string) {
-                escape_next = true;
-                continue;
-            }
-
-            if (c == '"' and !escape_next) {
-                // End of query string
-                in_string = false;
-
-                // Skip whitespace and look for } or ,
-                var j = i + 1;
-                while (j < body.len and std.ascii.isWhitespace(body[j])) : (j += 1) {}
-
-                if (j < body.len and (body[j] == '}' or body[j] == ',')) {
-                    end_pos = i;
-                    break;
-                }
-            }
-        }
-
-        if (end_pos == 0) return error.MalformedJSON;
-
-        // Extract the query and process escape sequences
-        const raw_query = body[query_start..end_pos];
-        var query_list = std.ArrayList(u8).initCapacity(allocator, raw_query.len) catch return error.OutOfMemory;
-        errdefer query_list.deinit(allocator);
-
-        var k: usize = 0;
-        while (k < raw_query.len) : (k += 1) {
-            const c = raw_query[k];
-            if (c == '\\' and k + 1 < raw_query.len) {
-                const next = raw_query[k + 1];
-                if (next == 'n') {
-                    try query_list.append(allocator, '\n');
-                    k += 1;
-                } else if (next == 'r') {
-                    try query_list.append(allocator, '\r');
-                    k += 1;
-                } else if (next == 't') {
-                    try query_list.append(allocator, '\t');
-                    k += 1;
-                } else if (next == '"') {
-                    try query_list.append(allocator, '"');
-                    k += 1;
-                } else if (next == '\\') {
-                    try query_list.append(allocator, '\\');
-                    k += 1;
-                } else {
-                    try query_list.append(allocator, c);
-                }
-            } else {
-                try query_list.append(allocator, c);
-            }
-        }
-
-        return query_list.toOwnedSlice(allocator);
+        // Return a copy of the query
+        return allocator.dupe(u8, parsed.value.query);
     }
 
     // Convert CommandCategory enum to string

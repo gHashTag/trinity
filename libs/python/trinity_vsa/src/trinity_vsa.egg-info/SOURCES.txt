@@ -1,0 +1,11 @@
+README.md
+pyproject.toml
+src/trinity_vsa/__init__.py
+src/trinity_vsa/core.py
+src/trinity_vsa/native.py
+src/trinity_vsa/ops.py
+src/trinity_vsa.egg-info/PKG-INFO
+src/trinity_vsa.egg-info/SOURCES.txt
+src/trinity_vsa.egg-info/dependency_links.txt
+src/trinity_vsa.egg-info/requires.txt
+src/trinity_vsa.egg-info/top_level.txt
