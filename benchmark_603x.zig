@@ -69,6 +69,7 @@ pub fn main() !void {
     const v7_phi_start = std.time.nanoTimestamp();
     i = 0;
     while (i < iterations) : (i += 1) {
+        v7_vm.registers.s0 = n_phi; // Reset each iteration
         try v7_vm.phiPow();
     }
     const v7_phi_end = std.time.nanoTimestamp();
@@ -103,6 +104,7 @@ pub fn main() !void {
     const v7_fib_start = std.time.nanoTimestamp();
     i = 0;
     while (i < iterations) : (i += 1) {
+        v7_vm.registers.s0 = n_fib; // Reset each iteration
         try v7_vm.fib();
     }
     const v7_fib_end = std.time.nanoTimestamp();
