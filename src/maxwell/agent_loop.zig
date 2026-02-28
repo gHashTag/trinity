@@ -1,5 +1,5 @@
 // Maxwell Daemon - Agent Loop
-// Оwithноinной цandtoл аinтономного агента
+// Оwithноinной цandtoл аinтономного agentа
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 

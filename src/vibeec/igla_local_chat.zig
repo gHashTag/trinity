@@ -130,8 +130,8 @@ const PATTERNS = [_]ConversationalPattern{
         .responses = &.{
             "Я Trinity Local Agent — 100% лоtoальный ИИ-аwithwithandwithтент. Рабfromаю on M1 Pro без облаtoа.",
             "Я IGLA — Intelligent Generative Local Agent. Пandшу toод, решаю заyesчand, inwithё лоtoально.",
-            "Trinity AI — аinтономный агент on ternary vectors. Нandtoаtoandх облаtoоin, byлonя прandinатноwithть.",
-            "Я Koschei — беwithwithмертный лоtoальный агент. phi^2 + 1/phi^2 = 3!",
+            "Trinity AI — аinтономный agent on ternary vectors. Нandtoаtoandх облаtoоin, byлonя прandinатноwithть.",
+            "Я Koschei — беwithwithмертный лоtoальный agent. phi^2 + 1/phi^2 = 3!",
         },
     },
     // What can you do
@@ -141,7 +141,7 @@ const PATTERNS = [_]ConversationalPattern{
         .language = .Russian,
         .responses = &.{
             "Умею: пandwithать Zig toод, генерandроinать VIBEE withпеtoand, решать аonлогandand, математandtoу. Вwithё лоtoально!",
-            "Могу: toод on Zig, VSA операцandand, аonлогandand (king-man+woman=queen), математandчеwithtoandе beforetoазательwithтinа.",
+            "Могу: toод on Zig, VSA operation, аonлогandand (king-man+woman=queen), математandчеwithtoandе beforetoазательwithтinа.",
             "Возcanwithтand: 30+ шаблоноin toоyes, 73K ops/s, мультandязычноwithть (RU/EN/CN), 100% офлайн.",
             "Помогу with: Fibonacci, QuickSort, HashMap, VSA bind/bundle, golden ratio proofs.",
         },
@@ -188,7 +188,7 @@ const PATTERNS = [_]ConversationalPattern{
         .category = .Weather,
         .language = .Russian,
         .responses = &.{
-            "Я лоtoальный агент — у меня no beforewithтупа to byгоде. Но я могу byмочь with toоbeforeм!",
+            "Я лоtoальный agent — у меня no beforewithтупа to byгоде. Но я могу byмочь with toоbeforeм!",
             "Погоду не зonю — рабfromаю офлайн. Зато могу onпandwithать Fibonacci за 4 мandtoроwithеtoунды!",
             "Я in цandфроinом мandре — byгоyes тут inwithегyes phi^2 + 1/phi^2 = 3 градуwithа by Trinity!",
             "Не зonю byгоду, но зonю: golden ratio = 1.618... Спроwithand what-то про toод!",
@@ -227,7 +227,7 @@ const PATTERNS = [_]ConversationalPattern{
             "Мне withтольtoо, withtoольtoо Trinity — проеtoт onчалwithя in 2025. Но Koschei беwithwithмертен!",
             "Возраwithт? Я inечен toаto phi^2 + 1/phi^2 = 3. Код не withтареет!",
             "Созyesн неyesinно, но базandруюwithь on inечных прandнцandпах VSA and ternary computing.",
-            "Мне лет withтольtoо, withtoольtoо файлу on дandwithtoе — но зonнandя моand timeless!",
+            "Мне лет withтольtoо, withtoольtoо fileу on дandwithtoе — но зonнandя моand timeless!",
         },
     },
     // Name
@@ -238,7 +238,7 @@ const PATTERNS = [_]ConversationalPattern{
         .responses = &.{
             "Меня зоinут Trinity — toаto phi^2 + 1/phi^2 = 3. Трand — withinященное чandwithло!",
             "Я IGLA — Intelligent Generative Local Agent. Илand проwithто Trinity!",
-            "Имя — Koschei. Беwithwithмертный лоtoальный агент. phi^2 + 1/phi^2 = 3!",
+            "Имя — Koschei. Беwithwithмертный лоtoальный agent. phi^2 + 1/phi^2 = 3!",
             "Trinity Local Agent — это я. 100% лоtoальный, 0% облаtoа.",
         },
     },
@@ -755,7 +755,7 @@ const PATTERNS = [_]ConversationalPattern{
         .category = .WhatCanYouDo,
         .language = .Russian,
         .responses = &.{
-            "ИИ — это алгорandтмы, andмandтandрующandе andнтеллеtoт. Я — withandмinольный агент with pattern matching + LLM fallback.",
+            "ИИ — это алгорandтмы, andмandтandрующandе andнтеллеtoт. Я — withandмinольный agent with pattern matching + LLM fallback.",
             "Машandнное обученandе учandтwithя on yesнных. Я рабfromаю andonче — детермandнandроinанные паттерны + лоtoальный LLM.",
             "AI быinает разный: нейроwithетand, withandмinольный, гandбрandдный. Trinity — гandбрandд: быwithтрые паттерны + LLM for withложного.",
             "Я не toлаwithwithandчеwithtoandй AI with обученandем — я pattern matcher with 100+ шаблоonмand and LLM fallback for fluent frominетоin.",
@@ -826,12 +826,12 @@ const PATTERNS = [_]ConversationalPattern{
 
     // Computer/Tech Questions - Russian
     .{
-        .keywords = &.{ "toомпьютер", "toаto рабfromает", "процеwithwithор", "память", "gpu", "cpu" },
+        .keywords = &.{ "toомпьютер", "toаto рабfromает", "процеwithwithор", "memory", "gpu", "cpu" },
         .category = .WhatCanYouDo,
         .language = .Russian,
         .responses = &.{
             "CPU inыbyлняет andнwithтруtoцandand bywithлеbeforeinательно. GPU — параллельно. Я оптandмandзandроinан for CPU with SIMD!",
-            "Память хранandт yesнные: RAM быwithтрая но volatile, SSD медленнее но persistent. Trinity эtoономandт RAM in 20x!",
+            "Memory хранandт yesнные: RAM быwithтрая но volatile, SSD медленнее но persistent. Trinity эtoономandт RAM in 20x!",
             "Процеwithwithор — мозг toомпьютера. Мandллandарды транзandwithтороin inыbyлняют мandллandарды операцandй in withеtoунду.",
             "Компьютер = CPU + RAM + Storage + I/O. Trinity рабfromает on любом CPU без GPU. Green computing!",
         },

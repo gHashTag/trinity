@@ -2,7 +2,7 @@
 // VIBEEC CODEGEN WASM - ZIG/WASM CODE GENERATOR FROM .VIBEE SPECS
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Generates Zig code для компиляции в WASM из .vibee спецификаций
+// Generates Zig code for toомпandляцandand in WASM andз .vibee withпецandфandtoацandй
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 // Golden identity: φ² + 1/φ² = 3
 //
@@ -14,7 +14,7 @@ const ArrayList = std.ArrayList;
 const parser = @import("parser_v3.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// СВЯЩЕННЫЕ КОНСТАНТЫ
+// СВЯЩЕННЫЕ CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PHI: f64 = 1.618033988749895;
@@ -24,7 +24,7 @@ pub const TRINITY: f64 = 3.0;
 pub const VERSION = "24.φ";
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ТИПЫ СПЕЦИФИКАЦИИ
+// TYPES СПЕЦИФИКАЦИИ
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const VibeeSpec = struct {
@@ -212,7 +212,7 @@ pub const WasmCodeGen = struct {
 
     fn writeConstants(self: *Self, constants: []const Constant) !void {
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
-        try self.builder.writeLine("// КОНСТАНТЫ");
+        try self.builder.writeLine("// CONSTANTS");
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.newline();
 
@@ -225,7 +225,7 @@ pub const WasmCodeGen = struct {
 
     fn writeTypes(self: *Self, types: []const TypeDef) !void {
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
-        try self.builder.writeLine("// ТИПЫ");
+        try self.builder.writeLine("// TYPES");
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.newline();
 
@@ -254,7 +254,7 @@ pub const WasmCodeGen = struct {
 
     fn writeMemoryBuffers(self: *Self, memory: []const MemoryExport) !void {
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
-        try self.builder.writeLine("// ПАМЯТЬ ДЛЯ WASM");
+        try self.builder.writeLine("// MEMORY FOR WASM");
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.newline();
 

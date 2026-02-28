@@ -263,7 +263,7 @@ pub const TrinityWriter = struct {
         self.header.num_tensors += 1;
     }
 
-    /// Фandonлandзацandя and запandwithь файла
+    /// Фandonлandзацandя and запandwithь fileа
     pub fn finalize(self: *TrinityWriter) !void {
         const writer = self.file.writer();
 

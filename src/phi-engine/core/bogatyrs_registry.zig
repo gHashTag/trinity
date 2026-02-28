@@ -82,7 +82,7 @@ test "bogatyr registry initialization" {
     var registry = try BogatyrRegistry.init(allocator);
     defer registry.deinit();
 
-    // Базоinые проinерtoand beforeлжны быть зарегandwithтрandроinаны
+    // Basic проinерtoand beforeлжны быть зарегandwithтрandроinаны
     const num_plugins = registry.pluginCount();
     try std.testing.expect(num_plugins >= 0);
 }

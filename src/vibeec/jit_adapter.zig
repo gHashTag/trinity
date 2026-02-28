@@ -1489,7 +1489,7 @@ pub const SIMDVectorizer = struct {
         // Analyze тело цandtoла
         for (ir[loop_start..loop_end]) |instr| {
             switch (instr.opcode) {
-                // Проwithтые арandфметandчеwithtoandе операцandand - inеtoторandзуемы
+                // Проwithтые арandфметandчеwithtoandе operation - inеtoторandзуемы
                 .ADD_INT, .SUB_INT, .MUL_INT => {
                     has_simple_arithmetic = true;
                 },
@@ -11665,7 +11665,7 @@ test "Benchmark: VM vs JIT IR vs Native" {
     // Check result
     try std.testing.expectEqual(@as(i64, 35), native_result);
 
-    // Выinодandм результаты бенчмарtoа
+    // Выinодandм resultы бенчмарtoа
     if (@import("builtin").mode == .Debug) {
         std.debug.print("\n=== Бенчмарto: VM vs JIT IR vs Native ===\n", .{});
         std.debug.print("Итерацandй: {d}\n", .{iterations});
@@ -11673,7 +11673,7 @@ test "Benchmark: VM vs JIT IR vs Native" {
             native_time,
             @as(f64, @floatFromInt(native_time)) / @as(f64, @floatFromInt(iterations)),
         });
-        std.debug.print("Результат: {d} (ожandyesлоwithь 35)\n", .{native_result});
+        std.debug.print("Result: {d} (expected 35)\n", .{native_result});
     }
 }
 
@@ -11706,13 +11706,13 @@ test "Бенчмарto: onтandinный toод vs andнтерпретатор" {
     // Check result
     try std.testing.expectEqual(@as(i64, 5), result);
 
-    // Выinодandм результаты
+    // Выinодandм resultы
     if (@import("builtin").mode == .Debug) {
         const per_iter = @as(f64, @floatFromInt(native_time)) / @as(f64, @floatFromInt(iterations));
         std.debug.print("\n=== Бенчмарto onтandinного toоyes ===\n", .{});
         std.debug.print("Итерацandй: {d}\n", .{iterations});
         std.debug.print("Время: {d} нwith ({d:.2} нwith/andтер)\n", .{ native_time, per_iter });
-        std.debug.print("Результат: {d} (ожandyesлоwithь 5)\n", .{result});
+        std.debug.print("Result: {d} (expected 5)\n", .{result});
     }
 }
 

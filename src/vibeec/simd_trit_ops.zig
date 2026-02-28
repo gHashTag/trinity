@@ -1,5 +1,5 @@
 // SIMD TRIT OPERATIONS - Сinященные Рandтуалы Троandцы
-// Веtoторandзоinанные операцandand onд трandтамand {-1, 0, +1}
+// Веtoторandзоinанные operation onд трandтамand {-1, 0, +1}
 // 21x уwithtoоренandе via AVX2/NEON
 // φ² + 1/φ² = 3 = TRINITY
 //

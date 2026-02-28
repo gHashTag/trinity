@@ -13,7 +13,7 @@ const rl = @import("rl_agent.zig");
 
 const print = std.debug.print;
 
-/// Результат эtowithперandмента
+/// Result эtowithперandмента
 const ExperimentResult = struct {
     lr: f64,
     gamma: f64,
@@ -44,7 +44,7 @@ fn runExperiment(
     });
     defer env.deinit();
 
-    // Созyesём агента
+    // Созyesём agentа
     var agent = try rl.RLAgent.init(allocator, .{
         .state_dim = 256,
         .num_actions = 4,
@@ -125,7 +125,7 @@ pub fn runGridSearch(allocator: std.mem.Allocator) !void {
     const num_episodes: usize = 2000;
     const num_runs: usize = 3; // Среднее by 3 запуwithtoам
 
-    print("Параметры byandwithtoа:\n", .{});
+    print("Parameters tuning:\n", .{});
     print("  learning_rate: {any}\n", .{learning_rates});
     print("  gamma: {any}\n", .{gammas});
     print("  epsilon_decay: {any}\n", .{epsilon_decays});
@@ -220,7 +220,7 @@ pub fn runGridSearch(allocator: std.mem.Allocator) !void {
     print("║ Max Consecutive:{d:4}                                         ║\n", .{best_result.max_consecutive});
     print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 
-    // Топ-5 результатоin
+    // Топ-5 resultоin
     print("\n", .{});
     print("ТОП-5 КОНФИГУРАЦИЙ:\n", .{});
     print("─────────────────────────────────────────────────────────────\n", .{});

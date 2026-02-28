@@ -1,4 +1,4 @@
-//! HDC Core - Базоinые операцandand гandперразмерных inычandwithленandй
+//! HDC Core - Basic operation гandперразмерных inычandwithленandй
 //! with онлайн-обученandем for withамообучающandхwithя AI моделей.
 //!
 //! Научonя база:
@@ -69,7 +69,7 @@ pub const Prototype = struct {
     count: u64,
 };
 
-/// Результат withходwithтinа
+/// Result withходwithтinа
 pub const SimilarityResult = struct {
     label: []const u8,
     similarity: f64,

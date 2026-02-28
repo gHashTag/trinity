@@ -53,46 +53,46 @@ pub const KeywordMapping = struct {
 // ============================================================================
 
 pub const russian_keywords = [_]KeywordMapping{
-    .{ .original = "функция", .english = "function" },
-    .{ .original = "функцию", .english = "function" },
-    .{ .original = "переменная", .english = "variable" },
-    .{ .original = "цикл", .english = "loop" },
-    .{ .original = "если", .english = "if" },
-    .{ .original = "иначе", .english = "else" },
-    .{ .original = "возврат", .english = "return" },
-    .{ .original = "структура", .english = "struct" },
-    .{ .original = "массив", .english = "array" },
-    .{ .original = "строка", .english = "string" },
-    .{ .original = "число", .english = "number" },
+    .{ .original = "фунtoцandя", .english = "function" },
+    .{ .original = "фунtoцandю", .english = "function" },
+    .{ .original = "переменonя", .english = "variable" },
+    .{ .original = "цandtoл", .english = "loop" },
+    .{ .original = "еwithлand", .english = "if" },
+    .{ .original = "andonче", .english = "else" },
+    .{ .original = "inозinрат", .english = "return" },
+    .{ .original = "withтруtoтура", .english = "struct" },
+    .{ .original = "маwithwithandin", .english = "array" },
+    .{ .original = "withтроtoа", .english = "string" },
+    .{ .original = "чandwithло", .english = "number" },
     .{ .original = "печать", .english = "print" },
-    .{ .original = "сортировка", .english = "sort" },
-    .{ .original = "сортировку", .english = "sort" },
-    .{ .original = "поиск", .english = "search" },
-    .{ .original = "фибоначчи", .english = "fibonacci" },
-    .{ .original = "факториал", .english = "factorial" },
-    .{ .original = "напиши", .english = "write" },
-    .{ .original = "создай", .english = "create" },
-    .{ .original = "сделай", .english = "make" },
-    .{ .original = "привет", .english = "hello" },
-    .{ .original = "мир", .english = "world" },
-    .{ .original = "для", .english = "for" },
-    .{ .original = "пока", .english = "while" },
-    .{ .original = "список", .english = "list" },
-    .{ .original = "словарь", .english = "dictionary" },
-    .{ .original = "класс", .english = "class" },
+    .{ .original = "withортandроintoа", .english = "sort" },
+    .{ .original = "withортandроintoу", .english = "sort" },
+    .{ .original = "byandwithto", .english = "search" },
+    .{ .original = "фandбоonччand", .english = "fibonacci" },
+    .{ .original = "фаtoторandал", .english = "factorial" },
+    .{ .original = "onпandшand", .english = "write" },
+    .{ .original = "withоздай", .english = "create" },
+    .{ .original = "withделай", .english = "make" },
+    .{ .original = "прandinет", .english = "hello" },
+    .{ .original = "мandр", .english = "world" },
+    .{ .original = "for", .english = "for" },
+    .{ .original = "bytoа", .english = "while" },
+    .{ .original = "withпandwithоto", .english = "list" },
+    .{ .original = "withлоinарь", .english = "dictionary" },
+    .{ .original = "toлаwithwith", .english = "class" },
     .{ .original = "метод", .english = "method" },
-    .{ .original = "объект", .english = "object" },
-    .{ .original = "файл", .english = "file" },
-    .{ .original = "читать", .english = "read" },
-    .{ .original = "писать", .english = "write" },
-    .{ .original = "сумма", .english = "sum" },
-    .{ .original = "максимум", .english = "max" },
-    .{ .original = "минимум", .english = "min" },
-    .{ .original = "проверка", .english = "check" },
-    .{ .original = "тест", .english = "test" },
-    .{ .original = "код", .english = "code" },
+    .{ .original = "объеtoт", .english = "object" },
+    .{ .original = "file", .english = "file" },
+    .{ .original = "чandтать", .english = "read" },
+    .{ .original = "пandwithать", .english = "write" },
+    .{ .original = "withумма", .english = "sum" },
+    .{ .original = "маtowithandмум", .english = "max" },
+    .{ .original = "мandнandмум", .english = "min" },
+    .{ .original = "проinерtoа", .english = "check" },
+    .{ .original = "теwithт", .english = "test" },
+    .{ .original = "toод", .english = "code" },
     .{ .original = "программа", .english = "program" },
-    .{ .original = "алгоритм", .english = "algorithm" },
+    .{ .original = "алгорandтм", .english = "algorithm" },
 };
 
 // ============================================================================
@@ -389,7 +389,7 @@ pub fn formatDetection(detection: LanguageDetectionResult) [256]u8 {
 // ============================================================================
 
 test "detect Russian" {
-    const result = detectLanguage("напиши функцию фибоначчи");
+    const result = detectLanguage("onпandшand фунtoцandю фandбоonччand");
     try std.testing.expectEqual(Language.russian, result.language);
     try std.testing.expect(result.cyrillic_count > 0);
 }
@@ -420,7 +420,7 @@ test "isCJK" {
 
 test "extractKeywords Russian" {
     const allocator = std.testing.allocator;
-    const keywords = try extractKeywords(allocator, "напиши функцию фибоначчи", .russian);
+    const keywords = try extractKeywords(allocator, "onпandшand фунtoцandю фandбоonччand", .russian);
     defer allocator.free(keywords);
 
     try std.testing.expect(keywords.len >= 2);
@@ -428,6 +428,6 @@ test "extractKeywords Russian" {
 
 test "containsSubstring" {
     try std.testing.expect(containsSubstring("hello world", "world"));
-    try std.testing.expect(containsSubstring("функция", "функция"));
+    try std.testing.expect(containsSubstring("фунtoцandя", "фунtoцandя"));
     try std.testing.expect(!containsSubstring("hello", "world"));
 }

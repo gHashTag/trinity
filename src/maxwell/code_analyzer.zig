@@ -84,7 +84,7 @@ pub const TypeInfo = struct {
     }
 };
 
-/// Информацandя о модуле/файле
+/// Информацandя о модуле/fileе
 pub const ModuleInfo = struct {
     path: []const u8,
     imports: std.ArrayList([]const u8),

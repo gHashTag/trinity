@@ -54,7 +54,7 @@ pub fn main() !void {
     std.debug.print("  v2 = bind(v0, v1)\n", .{});
     std.debug.print("  v3 = unbind(v2, v1)\n", .{});
     std.debug.print("  f0 = cosine(v0, v3)\n\n", .{});
-    std.debug.print("Результат: f0 = {d:.4}\n", .{vm.registers.f0});
+    std.debug.print("Result: f0 = {d:.4}\n", .{vm.registers.f0});
     std.debug.print("(Ожandyesетwithя ~1.0, т.to. unbind(bind(a,b), b) = a)\n\n", .{});
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -86,7 +86,7 @@ pub fn main() !void {
     std.debug.print("  v1 = B (random)\n", .{});
     std.debug.print("  v2 = bundle(A, B)\n", .{});
     std.debug.print("  f0 = cosine(A, bundle)\n\n", .{});
-    std.debug.print("Результат: f0 = {d:.4}\n", .{vm.registers.f0});
+    std.debug.print("Result: f0 = {d:.4}\n", .{vm.registers.f0});
     std.debug.print("(Bundle byхож on оба inхоyes)\n\n", .{});
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -120,7 +120,7 @@ pub fn main() !void {
     std.debug.print("  v1 = permute(v0, 5)\n", .{});
     std.debug.print("  v2 = inverse_permute(v1, 5)\n", .{});
     std.debug.print("  f0 = cosine(v0, v2)\n\n", .{});
-    std.debug.print("Результат: f0 = {d:.4}\n", .{vm.registers.f0});
+    std.debug.print("Result: f0 = {d:.4}\n", .{vm.registers.f0});
     std.debug.print("(Ожandyesетwithя 1.0, т.to. inverse fromменяет permute)\n\n", .{});
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -154,9 +154,9 @@ pub fn main() !void {
     std.debug.print("Программа:\n", .{});
     std.debug.print("  v0, v1, v2, v3 = random vectors\n", .{});
     std.debug.print("  pack all vectors\n\n", .{});
-    std.debug.print("Результат:\n", .{});
-    std.debug.print("  Память (packed): {} байт\n", .{vm.registers.total_packed_bytes});
-    std.debug.print("  Память (unpacked): {} байт\n", .{4 * 256});
+    std.debug.print("Result:\n", .{});
+    std.debug.print("  Memory (packed): {} байт\n", .{vm.registers.total_packed_bytes});
+    std.debug.print("  Memory (unpacked): {} байт\n", .{4 * 256});
     std.debug.print("  Эtoономandя: {d:.0}x\n\n", .{@as(f64, @floatFromInt(4 * 256)) / @as(f64, @floatFromInt(vm.registers.total_packed_bytes))});
 
     // ═══════════════════════════════════════════════════════════════════════════

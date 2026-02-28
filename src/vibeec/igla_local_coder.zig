@@ -61,7 +61,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     // ───────────────────────────────────────────────────────────────────────────
     .{
         .name = "hello_world_simple",
-        .keywords = &.{ "hello", "world", "print", "привет", "мир", "你好", "世界" },
+        .keywords = &.{ "hello", "world", "print", "прandinет", "мandр", "你好", "世界" },
         .category = .HelloWorld,
         .code =
         \\const std = @import("std");
@@ -112,7 +112,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     // ───────────────────────────────────────────────────────────────────────────
     .{
         .name = "fibonacci_iterative",
-        .keywords = &.{ "fibonacci", "fib", "фибоначчи", "sequence", "numbers" },
+        .keywords = &.{ "fibonacci", "fib", "фandбоonччand", "sequence", "numbers" },
         .category = .Algorithm,
         .code =
         \\const std = @import("std");
@@ -153,7 +153,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "factorial",
-        .keywords = &.{ "factorial", "факториал", "n!", "multiply" },
+        .keywords = &.{ "factorial", "фаtoторandал", "n!", "multiply" },
         .category = .Algorithm,
         .code =
         \\const std = @import("std");
@@ -189,7 +189,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "is_prime",
-        .keywords = &.{ "prime", "простое", "число", "divisible" },
+        .keywords = &.{ "prime", "проwithтое", "чandwithло", "divisible" },
         .category = .Algorithm,
         .code =
         \\const std = @import("std");
@@ -273,7 +273,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "binary_search",
-        .keywords = &.{ "binary", "search", "find", "бинарный", "поиск" },
+        .keywords = &.{ "binary", "search", "find", "бandonрный", "byandwithto" },
         .category = .Algorithm,
         .code =
         \\const std = @import("std");
@@ -320,7 +320,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "quick_sort",
-        .keywords = &.{ "quick", "sort", "быстрая", "сортировка", "partition" },
+        .keywords = &.{ "quick", "sort", "быwithтрая", "withортandроintoа", "partition" },
         .category = .Algorithm,
         .code =
         \\const std = @import("std");
@@ -373,7 +373,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "bubble_sort",
-        .keywords = &.{ "bubble", "sort", "пузырьковая", "сортировка", "simple" },
+        .keywords = &.{ "bubble", "sort", "пузырьtoоinая", "withортandроintoа", "simple" },
         .category = .Algorithm,
         .code =
         \\const std = @import("std");
@@ -414,7 +414,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "merge_sort",
-        .keywords = &.{ "merge", "sort", "сортировка", "слиянием", "divide" },
+        .keywords = &.{ "merge", "sort", "withортandроintoа", "withлandянandем", "divide" },
         .category = .Algorithm,
         .code =
         \\const std = @import("std");
@@ -483,7 +483,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     // ───────────────────────────────────────────────────────────────────────────
     .{
         .name = "vsa_bind",
-        .keywords = &.{ "bind", "связать", "multiply", "vsa", "hdc" },
+        .keywords = &.{ "bind", "withinязать", "multiply", "vsa", "hdc" },
         .category = .VSA,
         .code =
         \\const std = @import("std");
@@ -623,7 +623,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "vsa_similarity",
-        .keywords = &.{ "similarity", "cosine", "dot", "сходство", "compare" },
+        .keywords = &.{ "similarity", "cosine", "dot", "withходwithтinо", "compare" },
         .category = .VSA,
         .code =
         \\const std = @import("std");
@@ -856,7 +856,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     // ───────────────────────────────────────────────────────────────────────────
     .{
         .name = "struct_basic",
-        .keywords = &.{ "struct", "структура", "record", "type", "fields" },
+        .keywords = &.{ "struct", "withтруtoтура", "record", "type", "fields" },
         .category = .DataStructure,
         .code =
         \\const std = @import("std");
@@ -915,7 +915,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "enum_with_methods",
-        .keywords = &.{ "enum", "перечисление", "variant", "state", "switch" },
+        .keywords = &.{ "enum", "перечandwithленandе", "variant", "state", "switch" },
         .category = .DataStructure,
         .code =
         \\const std = @import("std");
@@ -1086,7 +1086,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     // ───────────────────────────────────────────────────────────────────────────
     .{
         .name = "error_handling_basic",
-        .keywords = &.{ "error", "ошибка", "try", "catch", "handling" },
+        .keywords = &.{ "error", "ошandбtoа", "try", "catch", "handling" },
         .category = .ErrorHandling,
         .code =
         \\const std = @import("std");
@@ -1209,7 +1209,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     // ───────────────────────────────────────────────────────────────────────────
     .{
         .name = "file_read_write",
-        .keywords = &.{ "file", "read", "write", "файл", "io", "save", "load" },
+        .keywords = &.{ "file", "read", "write", "file", "io", "save", "load" },
         .category = .FileIO,
         .code =
         \\const std = @import("std");
@@ -1268,7 +1268,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     // ───────────────────────────────────────────────────────────────────────────
     .{
         .name = "memory_allocator",
-        .keywords = &.{ "allocator", "memory", "alloc", "free", "heap", "память" },
+        .keywords = &.{ "allocator", "memory", "alloc", "free", "heap", "memory" },
         .category = .Memory,
         .code =
         \\const std = @import("std");
@@ -1319,7 +1319,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     // ───────────────────────────────────────────────────────────────────────────
     .{
         .name = "test_patterns",
-        .keywords = &.{ "test", "тест", "testing", "assert", "expect" },
+        .keywords = &.{ "test", "теwithт", "testing", "assert", "expect" },
         .category = .Testing,
         .code =
         \\const std = @import("std");
@@ -1395,7 +1395,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     // ───────────────────────────────────────────────────────────────────────────
     .{
         .name = "math_golden_ratio",
-        .keywords = &.{ "phi", "golden", "ratio", "fibonacci", "золотое", "сечение" },
+        .keywords = &.{ "phi", "golden", "ratio", "fibonacci", "золfromое", "withеченandе" },
         .category = .Math,
         .code =
         \\const std = @import("std");
@@ -1455,7 +1455,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "matrix_multiply",
-        .keywords = &.{ "matrix", "matmul", "multiply", "матрица", "умножение" },
+        .keywords = &.{ "matrix", "matmul", "multiply", "матрandца", "умноженandе" },
         .category = .Math,
         .code =
         \\const std = @import("std");
@@ -1537,7 +1537,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     // ───────────────────────────────────────────────────────────────────────────
     .{
         .name = "vibee_basic",
-        .keywords = &.{ "vibee", "spec", "specification", "yaml", "спецификация" },
+        .keywords = &.{ "vibee", "spec", "specification", "yaml", "withпецandфandtoацandя" },
         .category = .VIBEE,
         .code =
         \\// VIBEE Specification Example
@@ -1722,7 +1722,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     // ───────────────────────────────────────────────────────────────────────────
     .{
         .name = "string_operations",
-        .keywords = &.{ "string", "строка", "concat", "split", "trim", "text" },
+        .keywords = &.{ "string", "withтроtoа", "concat", "split", "trim", "text" },
         .category = .String,
         .code =
         \\const std = @import("std");
@@ -1944,8 +1944,8 @@ pub fn main() !void {
         "cosine similarity",
         "permute rotate",
         "quantize ternary",
-        "привет мир",  // Russian: hello world
-        "фибоначчи",   // Russian: fibonacci
+        "прandinет мandр",  // Russian: hello world
+        "фandбоonччand",   // Russian: fibonacci
     };
 
     var total_time_us: u64 = 0;
@@ -2017,7 +2017,7 @@ test "multilingual matching" {
     var coder = IglaLocalCoder.init(std.testing.allocator);
 
     // Russian
-    const result_ru = coder.generateCode("привет");
+    const result_ru = coder.generateCode("прandinет");
     try std.testing.expect(result_ru.is_match);
 
     // English

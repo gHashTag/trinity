@@ -179,7 +179,7 @@ pub const TemporalAspect = enum(i2) {
 
     pub fn description(self: TemporalAspect) []const u8 {
         return switch (self) {
-            .PAST => "УНИЧТОЖЕНИЕ | Энтропandя | Память",
+            .PAST => "УНИЧТОЖЕНИЕ | Энтропandя | Memory",
             .PRESENT => "НАБЛЮДЕНИЕ | Баланwith | HERE and NOW",
             .FUTURE => "СОЗИДАНИЕ | Роwithт | Раwithшandренandе",
         };

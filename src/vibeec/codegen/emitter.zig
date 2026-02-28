@@ -139,7 +139,7 @@ pub const ZigCodeGen = struct {
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.writeLine("//");
         try self.builder.writeLine("// Sacred formula: V = n × 3^k × π^m × φ^p × e^q");
-        try self.builder.writeLine("// Золfromая andдентandчноwithть: φ² + 1/φ² = 3");
+        try self.builder.writeLine("// Golden identity: φ² + 1/φ² = 3");
         try self.builder.writeLine("//");
         try self.builder.writeFmt("// Author: {s}\n", .{spec.author});
         try self.builder.writeLine("// DO NOT EDIT - This file is auto-generated");
@@ -177,7 +177,7 @@ pub const ZigCodeGen = struct {
 
     fn writeConstants(self: *Self, constants: []const Constant) !void {
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
-        try self.builder.writeLine("// КОНСТАНТЫ");
+        try self.builder.writeLine("// CONSTANTS");
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.newline();
 
@@ -212,7 +212,7 @@ pub const ZigCodeGen = struct {
             if (std.mem.eql(u8, c.name, "PHOENIX")) has_phoenix = true;
         }
 
-        try self.builder.writeLine("// Базоinые φ-toонwithтанты (Sacred Formula)");
+        try self.builder.writeLine("// Basic φ-constants (Sacred Formula)");
         if (!has_phi) try self.builder.writeLine("pub const PHI: f64 = 1.618033988749895;");
         if (!has_phi_inv) try self.builder.writeLine("pub const PHI_INV: f64 = 0.618033988749895;");
         if (!has_phi_sq) try self.builder.writeLine("pub const PHI_SQ: f64 = 2.618033988749895;");
@@ -229,7 +229,7 @@ pub const ZigCodeGen = struct {
         if (type_defs.len == 0) return;
 
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
-        try self.builder.writeLine("// ТИПЫ");
+        try self.builder.writeLine("// TYPES");
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.newline();
 
@@ -300,7 +300,7 @@ pub const ZigCodeGen = struct {
 
     fn writeMemoryBuffers(self: *Self) !void {
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
-        try self.builder.writeLine("// ПАМЯТЬ ДЛЯ WASM");
+        try self.builder.writeLine("// MEMORY FOR WASM");
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.newline();
 
@@ -520,7 +520,7 @@ pub const ZigCodeGen = struct {
         try self.builder.newline();
 
         // phi_lerp
-        try self.builder.writeLine("/// φ-andнтерbyляцandя");
+        try self.builder.writeLine("/// φ-interpolation");
         try self.builder.writeLine("fn phi_lerp(a: f64, b: f64, t: f64) f64 {");
         try self.builder.writeLine("    const phi_t = math.pow(f64, t, PHI_INV);");
         try self.builder.writeLine("    return a + (b - a) * phi_t;");
@@ -530,7 +530,7 @@ pub const ZigCodeGen = struct {
         // generate_phi_spiral (only when WASM buffers are available — not in idiomatic mode)
         const skip_spiral = if (self.idioms) |_| true else false; // Cycle 76: idiomatic always skips
         if (!skip_spiral) {
-            try self.builder.writeLine("/// Генерацandя φ-withпandралand");
+            try self.builder.writeLine("/// φ-spiral generation");
             try self.builder.writeLine("fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {");
             self.builder.incIndent();
             try self.builder.writeLine("const max_points = f64_buffer.len / 2;");

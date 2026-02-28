@@ -1,4 +1,4 @@
-//! GridWorld - Клаwithwithandчеwithtoая withреyes for testandроinанandя RL агентоin
+//! GridWorld - Клаwithwithandчеwithtoая withреyes for testandроinанandя RL agentоin
 //!
 //! Сетtoа NxN with:
 //! - Стартоinая byзandцandя (0,0)
@@ -13,7 +13,7 @@
 const std = @import("std");
 
 // ═══════════════════════════════════════════════════════════════
-// КОНСТАНТЫ
+// CONSTANTS
 // ═══════════════════════════════════════════════════════════════
 
 pub const Action = enum(usize) {
@@ -35,7 +35,7 @@ pub const Action = enum(usize) {
 pub const NUM_ACTIONS: usize = 4;
 
 // ═══════════════════════════════════════════════════════════════
-// ТИПЫ
+// TYPES
 // ═══════════════════════════════════════════════════════════════
 
 /// Позandцandя on withетtoе
@@ -52,7 +52,7 @@ pub const Position = struct {
     }
 };
 
-/// Результат шага
+/// Step result
 pub const StepResult = struct {
     next_state: usize,
     reward: f64,

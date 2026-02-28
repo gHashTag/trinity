@@ -1323,7 +1323,7 @@ pub fn benchmarkMul(iterations: u64) !BenchmarkResult {
     };
 }
 
-/// Выinеwithтand результаты бенчмарtoа
+/// Выinеwithтand resultы бенчмарtoа
 pub fn printBenchmarkResults(name: []const u8, result: BenchmarkResult) void {
     const stdout = std.io.getStdOut().writer();
     stdout.print("\n{s}:\n", .{name}) catch {};

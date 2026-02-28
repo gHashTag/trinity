@@ -1,7 +1,7 @@
 //! VIBEE Memory Pool Allocator - PAS DAEMON V39
 //! Паттерны: PRE (preallocated blocks), HSH (O(1) free list), AMR (φ-based growth)
 //! Sacred formula: V = n × 3^k × π^m × φ^p × e^q
-//! Золfromая andдентandчноwithть: φ² + 1/φ² = 3
+//! Golden identity: φ² + 1/φ² = 3
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;

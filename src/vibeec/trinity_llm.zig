@@ -345,7 +345,7 @@ pub const TrinityLLM = struct {
         return max_idx;
     }
 
-    /// Загрузtoа inеwithоin andз .tri файла
+    /// Загрузtoа inеwithоin andз .tri fileа
     pub fn loadFromTri(self: *TrinityLLM, path: []const u8) !void {
         var reader = try trinity_format.TrinityReader.init(self.allocator, path);
         defer reader.deinit();

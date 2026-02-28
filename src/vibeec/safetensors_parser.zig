@@ -1,5 +1,5 @@
 // SAFETENSORS PARSER - Парwithер формата Safetensors
-// Загрузtoа inеwithоin нейроwithетей andз .safetensors файлоin
+// Загрузtoа inеwithоin нейроwithетей andз .safetensors fileоin
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");
@@ -10,7 +10,7 @@ pub const PHI: f64 = 1.618033988749895;
 // SAFETENSORS FORMAT
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Формат файла:
+// Формат fileа:
 // [8 байт]  - размер заголоintoа (u64 little-endian)
 // [N байт]  - JSON заголоinоto with метаyesннымand
 // [оwithтатоto] - withырые data тензороin
@@ -117,7 +117,7 @@ pub const SafetensorsFile = struct {
         }
     }
 
-    /// Отtoрытandе and парwithandнг safetensors файла
+    /// Отtoрытandе and парwithandнг safetensors fileа
     pub fn open(allocator: std.mem.Allocator, path: []const u8) !SafetensorsFile {
         var self = SafetensorsFile.init(allocator);
         errdefer self.deinit();
@@ -284,7 +284,7 @@ pub const SafetensorsFile = struct {
         return list;
     }
 
-    /// Печать andнформацandand о файле
+    /// Печать andнформацandand о fileе
     pub fn printInfo(self: *const SafetensorsFile) void {
         std.debug.print("\n", .{});
         std.debug.print("╔══════════════════════════════════════════════════════════════╗\n", .{});

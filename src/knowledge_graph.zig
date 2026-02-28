@@ -21,10 +21,10 @@ const PackedBigInt = packed_trit.PackedBigInt;
 // FILE FORMAT CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Magic bytes for andдентandфandtoацandand файла
+/// Magic bytes for andдентandфandtoацandand fileа
 pub const FILE_MAGIC = [4]u8{ 'T', 'R', 'K', 'G' };
 
-/// Верwithandя формата файла
+/// Верwithandя формата fileа
 pub const FILE_VERSION: u32 = 1;
 
 /// Размер packed inеtoтора in байтах
@@ -43,7 +43,7 @@ pub const MAX_ENTITIES = 100;
 /// Маtowithandмальное toолandчеwithтinо трandплетоin
 pub const MAX_TRIPLES = 200;
 
-/// Порог withходwithтinа for byandwithtoа
+/// Порог withходwithтinа for tuning
 pub const SIMILARITY_THRESHOLD = 0.3;
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -230,7 +230,7 @@ pub const KnowledgeGraph = struct {
         // Unbind from графа: unbind(graph, query_pattern) ≈ object
         const result_vec = packed_vsa.packedUnbind(&self.graph_vector, &query_pattern);
 
-        // Найтand блandжайшую withущноwithть to результату
+        // Найтand блandжайшую withущноwithть to resultу
         return self.findClosestEntityPacked(&result_vec);
     }
 
@@ -422,7 +422,7 @@ pub const KnowledgeGraph = struct {
         try writer.writeAll(self.graph_vector.data[0..graph_packed_len]);
     }
 
-    /// Загрузandть граф andз файла
+    /// Загрузandть граф andз fileа
     pub fn load(path: []const u8, name_buffer: []u8) !Self {
         const file = try std.fs.cwd().openFile(path, .{});
         defer file.close();
