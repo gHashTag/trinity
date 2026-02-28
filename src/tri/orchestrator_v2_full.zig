@@ -256,8 +256,8 @@ pub fn registerAllCommands(allocator: Allocator) !CommandRegistry {
         });
     }
 
-    // Sacred Agents (7)
-    const agent_names = [_][]const u8{ "identity", "swarm", "govern", "dashboard", "omega", "math_agent", "intelligence" };
+    // Sacred Agents (8)
+    const agent_names = [_][]const u8{ "identity", "swarm", "govern", "dashboard", "omega", "math_agent", "intelligence", "chem" };
     for (agent_names) |name| {
         try registry.registerCommand(.{
             .name = name,
@@ -329,8 +329,8 @@ pub fn registerAllCommands(allocator: Allocator) !CommandRegistry {
     try registry.registerCommand(.{ .name = "tvc_demo", .category = .tvc, .realm = .materiya, .sacred_weight = 1.0, .risk_level = .safe, .min_args = 0, .max_args = 1, .description = "TVC Demo", .executor = noopExecutor });
     try registry.registerCommand(.{ .name = "tvc_stats", .category = .tvc, .realm = .materiya, .sacred_weight = 1.0, .risk_level = .safe, .min_args = 0, .max_args = 1, .description = "TVC Stats", .executor = noopExecutor });
 
-    // Dev Util (6)
-    const util_names = [_][]const u8{ "doctor", "clean", "fmt_cmd", "stats_cmd", "igla", "test_repl" };
+    // Dev Util (7)
+    const util_names = [_][]const u8{ "doctor", "clean", "fmt_cmd", "stats_cmd", "igla", "test_repl", "monitor" };
     for (util_names) |name| {
         try registry.registerCommand(.{ .name = name, .category = .dev_util, .realm = .materiya, .sacred_weight = 1.0, .risk_level = .safe, .min_args = 0, .max_args = 5, .description = "Dev Util", .executor = noopExecutor });
     }
