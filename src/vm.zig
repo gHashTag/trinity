@@ -470,6 +470,36 @@ pub const VSAVM = struct {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // KOSCHEI EYE v2.0: Blind Spots Discovery (603x speedup via VM)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// Query blind spots registry via native VM opcode
+    /// s0: query type (0=neutrino, 1=proton, 2=dm, 3=hubble, 4=lithium, 5=muon_g2)
+    /// Returns: f0=predicted value, f1=confidence, s1=status (-1=BLIND, -2=ANOMALY, +1=VERIFIED)
+    pub fn blindspotQuery(self: *VSAVM, query_type: i64) !void {
+        self.registers.s0 = query_type;
+        try self.execSacredOpcode(.blindspot_query, .{});
+    }
+
+    /// Fit Sacred Formula: V = n * 3^k * pi^m * phi^p * e^q
+    /// f0: target value to fit
+    /// Returns: s0=n, s1=k, s2=m, s3=p, s4=q, f1=error %
+    pub fn sacredFormulaFit(self: *VSAVM, target: f64) !void {
+        self.registers.f0 = target;
+        try self.execSacredOpcode(.sacred_formula_fit, .{});
+    }
+
+    /// Check if value is anomalous (sigma >= 3)
+    /// f0=observed, f1=expected, f2=uncertainty
+    /// Returns: s0=sigma level, cc_zero=true if anomalous
+    pub fn anomalyCheck(self: *VSAVM, observed: f64, expected: f64, uncertainty: f64) !void {
+        self.registers.f0 = observed;
+        self.registers.f1 = expected;
+        self.registers.f2 = uncertainty;
+        try self.execSacredOpcode(.anomaly_check, .{});
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // JIT CONTROL
     // ═══════════════════════════════════════════════════════════════════════════
 
