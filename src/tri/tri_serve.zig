@@ -349,36 +349,75 @@ pub const UnifiedApiServer = struct {
     }
 
     // Parse simple JSON: {"query":"{ commands { name } }"}
-    // Extract the query string between "query":" and "}
+    // Extract the query string between "query":" and the closing }
     fn extractGraphQLQuery(allocator: std.mem.Allocator, body: []const u8) ![]const u8 {
         // Find "query":" pattern
         const query_key = "\"query\":\"";
         const query_start_idx = std.mem.indexOf(u8, body, query_key) orelse return error.MalformedJSON;
         const query_start = query_start_idx + query_key.len;
 
-        // Find closing "}
-        const query_end = std.mem.indexOf(u8, body[query_start..], "\"}") orelse {
-            // Try just " as end
-            const end_brace = std.mem.indexOf(u8, body[query_start..], "\"") orelse return error.MalformedJSON;
-            return allocator.dupe(u8, body[query_start..][0..end_brace]);
-        };
+        // Find the end of the query value by looking for the closing quote and brace
+        // The query ends with ",  or }  or }\n or }\r
+        var i = query_start;
+        var end_pos: usize = 0;
+        var in_string = true;
+        var escape_next = false;
 
-        // Handle escaped quotes in query
-        var query_list = std.ArrayList(u8).initCapacity(allocator, 256) catch return error.OutOfMemory;
+        while (i < body.len) : (i += 1) {
+            const c = body[i];
+
+            if (escape_next) {
+                escape_next = false;
+                continue;
+            }
+
+            if (c == '\\' and in_string) {
+                escape_next = true;
+                continue;
+            }
+
+            if (c == '"' and !escape_next) {
+                // End of query string
+                in_string = false;
+
+                // Skip whitespace and look for } or ,
+                var j = i + 1;
+                while (j < body.len and std.ascii.isWhitespace(body[j])) : (j += 1) {}
+
+                if (j < body.len and (body[j] == '}' or body[j] == ',')) {
+                    end_pos = i;
+                    break;
+                }
+            }
+        }
+
+        if (end_pos == 0) return error.MalformedJSON;
+
+        // Extract the query and process escape sequences
+        const raw_query = body[query_start..end_pos];
+        var query_list = std.ArrayList(u8).initCapacity(allocator, raw_query.len) catch return error.OutOfMemory;
         errdefer query_list.deinit(allocator);
 
-        var i: usize = 0;
-        while (i < query_end) : (i += 1) {
-            const c = body[query_start + i];
-            // Handle escaped characters like \n
-            if (c == '\\' and i + 1 < query_end) {
-                const next = body[query_start + i + 1];
+        var k: usize = 0;
+        while (k < raw_query.len) : (k += 1) {
+            const c = raw_query[k];
+            if (c == '\\' and k + 1 < raw_query.len) {
+                const next = raw_query[k + 1];
                 if (next == 'n') {
                     try query_list.append(allocator, '\n');
-                    i += 1;
+                    k += 1;
+                } else if (next == 'r') {
+                    try query_list.append(allocator, '\r');
+                    k += 1;
+                } else if (next == 't') {
+                    try query_list.append(allocator, '\t');
+                    k += 1;
                 } else if (next == '"') {
                     try query_list.append(allocator, '"');
-                    i += 1;
+                    k += 1;
+                } else if (next == '\\') {
+                    try query_list.append(allocator, '\\');
+                    k += 1;
                 } else {
                     try query_list.append(allocator, c);
                 }

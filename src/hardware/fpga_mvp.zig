@@ -118,13 +118,8 @@ pub const VerilogGenerator = struct {
     }
 
     pub fn generateTopModule(self: VerilogGenerator) ![]const u8 {
-        const part_name = self.config.target.part_name();
-        const header = std.fmt.allocPrint(self.allocator,
-            \\// TRINITY OS v1.0 Top Module — {s}
-        , .{part_name});
-        defer self.allocator.free(header);
-
         const top_verilog =
+            \\// TRINITY OS v1.0 Top Module — iCE40-HX8K-TQFP144
             \\module trinity_top (
             \\    input wire clk_12mhz, rst_n,
             \\    output wire [7:0] led
@@ -144,9 +139,7 @@ pub const VerilogGenerator = struct {
             \\);
             \\endmodule
         ;
-        
-        const combined = try std.fmt.allocPrint(self.allocator, "{s}\n{s}", .{header, top_verilog});
-        return combined;
+        return self.allocator.dupe(u8, top_verilog);
     }
 
     pub fn generateAll(self: VerilogGenerator) !void {

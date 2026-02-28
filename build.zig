@@ -1480,6 +1480,23 @@ pub fn build(b: *std.Build) void {
     const photon_immersive_step = b.step("photon-immersive", "Run Immersive Cosmic Canvas (v0.3)");
     photon_immersive_step.dependOn(&run_photon_immersive.step);
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // FPGA-MVP v1.0 — Lattice iCE40 Hardware Deployment (Order #014)
+    // ═══════════════════════════════════════════════════════════════════════════
+    const fpga_demo = b.addExecutable(.{
+        .name = "fpga-demo",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/hardware/fpga_mvp.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(fpga_demo);
+
+    const run_fpga_demo = b.addRunArtifact(fpga_demo);
+    const fpga_demo_step = b.step("fpga-demo", "Run FPGA-MVP Demo (Order #014: Hardware + $5M Seed)");
+    fpga_demo_step.dependOn(&run_fpga_demo.step);
+
     // Emergent Photon AI v0.4 - TRINITY COSMIC CANVAS
     // Full Trinity functionality emerges from wave interference
     // Chat/Code/Vision/Voice/Tools/Autonomous all in cosmic canvas

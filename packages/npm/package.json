@@ -1,7 +1,7 @@
 {
-  "name": "@trinity-cli/tri",
-  "version": "1.0.0",
-  "description": "Unified Trinity CLI — Chat, Code, Vision, Voice, Tools, Autonomous Agents",
+  "name": "@playra/tri",
+  "version": "1.0.1",
+  "description": "Trinity v1.0.1 PURITY — Sacred Intelligence CLI",
   "author": "Trinity Network",
   "license": "MIT",
   "homepage": "https://github.com/gHashTag/trinity#readme",
@@ -36,7 +36,8 @@
     "bin/",
     "scripts/",
     "completions/",
-    "LICENSE"
+    "LICENSE",
+    "README.md"
   ],
   "engines": {
     "node": ">=14.0.0"
