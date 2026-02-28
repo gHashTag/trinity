@@ -1,0 +1,149 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# VIBEE Specification — Cycle 104 Snapshot Testing
+# ═══════════════════════════════════════════════════════════════════════════════
+# φ² + 1/φ² = 3 = TRINITY
+# Cycle 104: SNAPSHOT TESTING — Non-deterministic AI command validation
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: snapshot_testing
+version: "1.0.0"
+language: zig
+module: snapshot_testing
+
+description: |
+  Snapshot testing framework for AI commands with non-deterministic output.
+  Validates structure and patterns rather than exact content matching.
+
+types:
+  SnapshotValidator:
+    fields:
+      field_name: String
+      validation_type: String           # contains, regex, json_path, min_length, exists
+      expected_value: String
+      options: Option<String>
+      is_required: Bool
+      ignore_pattern: Option<String>    # For timestamps, IDs, etc.
+
+  SnapshotTest:
+    fields:
+      command: String                   # fix, explain, decompose, plan, reason, chat, code
+      input_file: String
+      snapshot_path: String
+      validators: List<SnapshotValidator>
+      description: String
+      category: String
+      expected_duration_ms: Option<i64>
+      max_output_length: Option<i64>
+
+  ValidationResult:
+    fields:
+      is_valid: Bool
+      error_message: Option<String>
+      field_name: String
+      expected_value: String
+      actual_value: String
+      validation_type: String
+
+  SnapshotReport:
+    fields:
+      test_name: String
+      command: String
+      status: String                    # passed, failed, skipped
+      validations: List<ValidationResult>
+      capture_time_ms: i64
+      validation_time_ms: i64
+      snapshot_path: String
+      timestamp: String
+      metadata: Option<Map<String, String>>
+
+  TestSuite:
+    fields:
+      name: String
+      description: String
+      tests: List<SnapshotTest>
+      global_validators: List<SnapshotValidator>
+      timeout_ms: i64
+      output_dir: String
+
+  SnapshotConfig:
+    fields:
+      commands_to_test: List<String>
+      default_output_dir: String
+      ignore_patterns: List<String>
+      performance_threshold_ms: i64
+      max_snapshots_per_test: i32
+      validation_modes: List<String>    # strict, lenient, performance
+
+behaviors:
+  - name: capture_snapshot
+    given: Command to execute, input file, snapshot path
+    when: Command executed and output captured
+    then: Return CaptureResult with snapshot stored
+
+  - name: validate_snapshot
+    given: Test name, captured snapshot, validators
+    when: Snapshot parsed and validators applied
+    then: Return ValidationResult for each field
+
+  - name: update_snapshot
+    given: Existing snapshot path, new output
+    when: Snapshot compared and updated
+    then: Return UpdateResult with backup
+
+  - name: run_test_suite
+    given: TestSuite configuration
+    when: All tests executed with validation
+    then: Return TestSuiteResult with report
+
+  - name: generate_test_report
+    given: Validation results and performance data
+    when: Report aggregated and formatted
+    then: Return comprehensive test report
+
+# Command-specific validators
+command_validators:
+  fix:
+    - field_name: "fixes"
+      validation_type: "exists"
+      is_required: true
+    - field_name: "fixes.*.file_path"
+      validation_type: "exists"
+      is_required: true
+    - field_name: "fixes.*.severity"
+      validation_type: "exact_match"
+      expected_value: "low,medium,high,critical"
+      is_required: true
+
+  explain:
+    - field_name: "explanation"
+      validation_type: "exists"
+      is_required: true
+    - field_name: "explanation.summary"
+      validation_type: "min_length"
+      expected_value: "50"
+      is_required: true
+
+  decompose:
+    - field_name: "subtasks"
+      validation_type: "exists"
+      is_required: true
+    - field_name: "subtasks.*.description"
+      validation_type: "exists"
+      is_required: true
+
+  plan:
+    - field_name: "plan"
+      validation_type: "exists"
+      is_required: true
+    - field_name: "plan.steps"
+      validation_type: "exists"
+      is_required: true
+
+# Ignore patterns for dynamic values
+ignore_patterns:
+  - "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z"     # Timestamps
+  - "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"  # UUIDs
+  - "/tmp/[^\\s]+"                                            # Temp paths
+  - "localhost:\\d+"                                          # Random ports
+
+# End of specification
