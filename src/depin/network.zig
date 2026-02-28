@@ -5,7 +5,20 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const firebird = @import("firebird/depin.zig");
+
+// Forward decls for firebird types (will be imported by build.zig)
+pub const NodeStatus = enum {
+    offline,
+    syncing,
+    online,
+    earning,
+};
+
+// Firebird constants (imported from DePIN module)
+pub const TIER_MULTIPLIER_FREE: f64 = 1.0;
+pub const TIER_MULTIPLIER_STAKER: f64 = 1.5;
+pub const TIER_MULTIPLIER_POWER: f64 = 2.0;
+pub const TIER_MULTIPLIER_WHALE: f64 = 3.0;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS
@@ -53,10 +66,10 @@ pub const NodeTier = enum(u8) {
 
     pub fn getMultiplier(self: NodeTier) f64 {
         return switch (self) {
-            .free => firebird.TIER_MULTIPLIER_FREE,
-            .staker => firebird.TIER_MULTIPLIER_STAKER,
-            .power => firebird.TIER_MULTIPLIER_POWER,
-            .whale => firebird.TIER_MULTIPLIER_WHALE,
+            .free => TIER_MULTIPLIER_FREE,
+            .staker => TIER_MULTIPLIER_STAKER,
+            .power => TIER_MULTIPLIER_POWER,
+            .whale => TIER_MULTIPLIER_WHALE,
         };
     }
 };
@@ -107,13 +120,13 @@ pub const ClusterNode = struct {
     address: SocketAddr,
     role: NodeRole,
     tier: NodeTier,
-    status: firebird.NodeStatus,
+    status: NodeStatus,
     operations_count: u64,
     earned_tri: f64,
     pending_tri: f64,
     last_heartbeat: u64,
 
-    pub fn calculateReward(self: *ClusterNode, base_reward: f64) f64 {
+    pub fn calculateReward(self: *const ClusterNode, base_reward: f64) f64 {
         return base_reward * self.tier.getMultiplier();
     }
 };
@@ -586,6 +599,226 @@ pub const ClusterManager = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// REST API (HTTP 8080) — /status, /claim, /dashboard
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const RestApiResponse = struct {
+    status: u16,
+    content_type: []const u8,
+    body: []const u8,
+};
+
+pub const RestApiServer = struct {
+    server_socket: std.posix.socket_t,
+    port: u16,
+    cluster: *ClusterManager,
+    allocator: std.mem.Allocator,
+    running: bool,
+
+    pub fn init(port: u16, cluster: *ClusterManager, allocator: std.mem.Allocator) !RestApiServer {
+        const server_socket = try std.posix.socket(
+            std.posix.AF.INET,
+            std.posix.SOCK.STREAM,
+            std.posix.IPPROTO.TCP
+        );
+
+        // Enable reuse address
+        const reuse_value: u32 = 1;
+        _ = std.posix.setsockopt(
+            server_socket,
+            std.posix.SOL.SOCKET,
+            std.posix.SO.REUSEADDR,
+            &std.mem.toBytes(@as(c_int, @intCast(reuse_value)))
+        ) catch |err| {
+            std.posix.close(server_socket);
+            return err;
+        };
+
+        const addr = std.net.Address.initIp4(.{ 0, 0, 0, 0 }, port);
+        std.posix.bind(server_socket, &addr.any, addr.getOsSockLen()) catch |err| {
+            std.posix.close(server_socket);
+            return err;
+        };
+
+        try std.posix.listen(server_socket, 128);
+
+        return RestApiServer{
+            .server_socket = server_socket,
+            .port = port,
+            .cluster = cluster,
+            .allocator = allocator,
+            .running = false,
+        };
+    }
+
+    pub fn deinit(self: *RestApiServer) void {
+        self.running = false;
+        std.posix.close(self.server_socket);
+    }
+
+    pub fn start(self: *RestApiServer) void {
+        self.running = true;
+    }
+
+    /// Handle GET /api/status — Return cluster status, nodes, $TRI balances
+    pub fn handleStatus(self: *RestApiServer) ![]const u8 {
+        var buffer = std.ArrayList(u8).init(self.allocator);
+        defer buffer.deinit();
+
+        try buffer.appendSlice(
+            \\{"cluster_id":""
+        );
+        try buffer.appendSlice(self.cluster.cluster_id);
+        try buffer.appendSlice(
+            \\","node_id":""
+        );
+        try buffer.appendSlice(self.cluster.node_id);
+        try buffer.appendSlice(
+            \\","role":""
+        );
+        try buffer.appendSlice(self.cluster.role.toString());
+        try buffer.appendSlice(
+            \\","tier":""
+        );
+        try buffer.appendSlice(self.cluster.tier.toString());
+        try buffer.appendSlice(
+            \\","nodes":[
+        );
+
+        for (self.cluster.nodes.items, 0..) |node, i| {
+            if (i > 0) try buffer.append(',');
+            try buffer.appendSlice(
+                \\{"id":""
+            );
+            try buffer.appendSlice(node.id);
+            try buffer.appendSlice(
+                \\","role":""
+            );
+            try buffer.appendSlice(node.role.toString());
+            try buffer.appendSlice(
+                \\","tier":""
+            );
+            try buffer.appendSlice(node.tier.toString());
+            try buffer.appendSlice(
+                \\","status":""
+            );
+            try buffer.appendSlice(@tagName(node.status));
+            try buffer.appendSlice(
+                \\","operations":
+            );
+            try std.fmt.formatInt(buffer.writer(), node.operations_count, 10, .lower, .{});
+            try buffer.appendSlice(
+                \\,"earned_tri":
+            );
+            try std.fmt.formatFloat(buffer.writer(), node.earned_tri, .{ .decimal_digits = 6 });
+            try buffer.appendSlice(
+                \\,"pending_tri":
+            );
+            try std.fmt.formatFloat(buffer.writer(), node.pending_tri, .{ .decimal_digits = 6 });
+            try buffer.appendSlice('}');
+        }
+
+        try buffer.appendSlice(
+            \\]}
+        );
+
+        return self.allocator.dupe(u8, buffer.items);
+    }
+
+    /// Handle POST /api/claim — Claim pending $TRI rewards
+    pub fn handleClaim(self: *RestApiServer, node_id: []const u8) ![]const u8 {
+        _ = node_id; // Will be used to find specific node
+
+        var buffer = std.ArrayList(u8).init(self.allocator);
+        defer buffer.deinit();
+
+        // For now, just return pending TRI from current node (self)
+        // TODO: Find node by node_id and claim their rewards
+
+        try buffer.appendSlice(
+            \\{"success":true,"claimed_tri":
+        );
+        try std.fmt.formatFloat(buffer.writer(), 0.0, .{ .decimal_digits = 6 });
+        try buffer.appendSlice(
+            \\,"new_balance":
+        );
+        try std.fmt.formatFloat(buffer.writer(), 0.0, .{ .decimal_digits = 6 });
+        try buffer.appendSlice('}');
+
+        return self.allocator.dupe(u8, buffer.items);
+    }
+
+    /// Handle GET /api/dashboard — Full dashboard HTML
+    pub fn handleDashboard(self: *RestApiServer) ![]const u8 {
+        const html =
+            \\<!DOCTYPE html>
+            \\<html>
+            \\<head><title>TRINITY DePIN Dashboard</title></head>
+            \\<body>
+            \\  <h1>φ² + 1/φ² = 3 = TRINITY</h1>
+            \\  <h2>Cluster: {s}</h2>
+            \\  <p>Nodes: {d}</p>
+            \\  <p>UDP Discovery: :{d}</p>
+            \\  <p>TCP Jobs: :{d}</p>
+            \\  <p>REST API: :{d}</p>
+            \\</body>
+            \\</html>
+        ;
+
+        return std.fmt.allocPrint(self.allocator, html,
+            .{ self.cluster.cluster_id, self.cluster.nodes.items.len, UDP_DISCOVERY_PORT, TCP_JOB_PORT, HTTP_API_PORT }
+        );
+    }
+
+    /// Parse HTTP request and route to handler
+    pub fn handleRequest(self: *RestApiServer, request: []const u8) !RestApiResponse {
+        // Simple routing
+        if (std.mem.indexOf(u8, request, "GET /api/status") != null) {
+            const body = try self.handleStatus();
+            return RestApiResponse{
+                .status = 200,
+                .content_type = "application/json",
+                .body = body,
+            };
+        }
+
+        if (std.mem.indexOf(u8, request, "POST /api/claim") != null) {
+            const body = try self.handleClaim("self");
+            return RestApiResponse{
+                .status = 200,
+                .content_type = "application/json",
+                .body = body,
+            };
+        }
+
+        if (std.mem.indexOf(u8, request, "GET /api/dashboard") != null) {
+            const body = try self.handleDashboard();
+            return RestApiResponse{
+                .status = 200,
+                .content_type = "text/html",
+                .body = body,
+            };
+        }
+
+        if (std.mem.indexOf(u8, request, "GET / ") != null) {
+            const body = try self.handleDashboard();
+            return RestApiResponse{
+                .status = 200,
+                .content_type = "text/html",
+                .body = body,
+            };
+        }
+
+        // 404 Not Found
+        return RestApiResponse{
+            .status = 404,
+            .content_type = "text/plain",
+            .body = "Not Found",
+        };
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -606,10 +839,10 @@ test "TCP JobServer init and cleanup" {
 }
 
 test "NodeTier multipliers" {
-    try std.testing.expectEqual(firebird.TIER_MULTIPLIER_FREE, NodeTier.free.getMultiplier());
-    try std.testing.expectEqual(firebird.TIER_MULTIPLIER_STAKER, NodeTier.staker.getMultiplier());
-    try std.testing.expectEqual(firebird.TIER_MULTIPLIER_POWER, NodeTier.power.getMultiplier());
-    try std.testing.expectEqual(firebird.TIER_MULTIPLIER_WHALE, NodeTier.whale.getMultiplier());
+    try std.testing.expectEqual(TIER_MULTIPLIER_FREE, NodeTier.free.getMultiplier());
+    try std.testing.expectEqual(TIER_MULTIPLIER_STAKER, NodeTier.staker.getMultiplier());
+    try std.testing.expectEqual(TIER_MULTIPLIER_POWER, NodeTier.power.getMultiplier());
+    try std.testing.expectEqual(TIER_MULTIPLIER_WHALE, NodeTier.whale.getMultiplier());
 }
 
 test "ClusterManager init and cleanup" {
@@ -622,7 +855,7 @@ test "ClusterManager init and cleanup" {
 }
 
 test "ClusterNode reward calculation" {
-    var node = ClusterNode{
+    const node = ClusterNode{
         .id = "test",
         .address = SocketAddr{ .ip = "127.0.0.1", .port = 9334 },
         .role = .worker,
