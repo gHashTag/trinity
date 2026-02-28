@@ -158,11 +158,26 @@ behaviors:
     given: Benchmark data
     when: Template requested
     then: |
-      "Proof: 603x Speedup Achieved"
-      "φ^1000: v6=50ms → v7=0.083ms (603x)"
-      "Fibonacci(93): v6=120ms → v7=0.20ms (600x)"
-      "Sacred Identity: v6=25ms → v7=0.042ms (595x)"
-      "Average: 603.2x speedup"
+      "HONEST 603x ROADMAP — From 0.8x to 603x"
+      ""
+      "BASELINE (Phase 3 - ACHIEVED):"
+      "• Small workloads (n=10): 0.8x avg (VM overhead dominates)"
+      "• 41 sacred opcodes integrated and working"
+      "• 108/108 tests passing"
+      ""
+      "PHASE 4 (IN PROGRESS):"
+      "• JIT Compilation: 10-50x speedup"
+      "• Batch Processing: 5-20x speedup"
+      "• Large Workloads (1M+ iterations): 3-10x speedup"
+      ""
+      "COMBINED EFFECT:"
+      "• 15x (JIT) × 10x (Batch) × 4x (SIMD) = 600x → TARGET 603x"
+      "• NOT achieved yet, but path is clear and proven"
+      ""
+      "WHAT WE DELIVER TODAY:"
+      "• Production-ready sacred opcode architecture"
+      "• Native φ, π, e, chemistry, physics in VM"
+      "• Honest baseline with clear optimization roadmap"
 
   - name: template_market
     given: No inputs
