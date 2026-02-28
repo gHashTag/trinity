@@ -222,6 +222,8 @@ pub const Command = enum {
     orchestrate_v2,
     // Eternal Monitor
     monitor,
+    // KOSCHEI Query Engine (EMERGENCY FIX #015)
+    query,
 };
 
 pub const CLIState = struct {
@@ -824,6 +826,8 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "orchestrate-v2") or std.mem.eql(u8, arg, "orchestrator") or std.mem.eql(u8, arg, "flow")) return .orchestrate_v2;
     // Eternal Monitor
     if (std.mem.eql(u8, arg, "monitor")) return .monitor;
+    // KOSCHEI Query Engine (EMERGENCY FIX #015)
+    if (std.mem.eql(u8, arg, "query")) return .query;
     return .none;
 }
 

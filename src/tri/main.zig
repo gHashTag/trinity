@@ -33,6 +33,7 @@ const math_commands = @import("math/commands.zig");
 const chemistry_commands = @import("tri_chemistry.zig");
 const tri_context = @import("tri_context.zig");
 const orchestrator = @import("orchestrator_v2_full.zig");
+const koschei_query = @import("koschei_query.zig"); // EMERGENCY FIX #015
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN
@@ -306,6 +307,8 @@ pub fn main() !void {
             const exit_code = try eternal_monitor.execute(allocator, cmd_args);
             std.process.exit(exit_code);
         },
+        // KOSCHEI Query Engine (EMERGENCY FIX #015)
+        .query => try koschei_query.runQueryCommand(allocator, cmd_args),
         .orchestrate_v2 => {
             // TRI Orchestrator v2.0 - Universal command orchestration
             if (cmd_args.len == 0) {

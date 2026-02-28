@@ -1075,7 +1075,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    // TVC Corpus module for TRI (moved up: needed by fluent CLI and hybrid chat)
+    // TVC Corpus module for TRI (moved up: needed by fluent CLI and hybrid CLI)
     const tvc_corpus_mod = b.createModule(.{
         .root_source_file = b.path("src/tvc/tvc_corpus.zig"),
         .target = target,

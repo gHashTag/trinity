@@ -645,8 +645,8 @@ pub fn execute(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
     var command: Command = .health;
     var verbose = false;
 
-    // Parse arguments
-    var i: usize = 1; // Skip program name
+    // Parse arguments (args already has "monitor" stripped by main.zig)
+    var i: usize = 0;
     while (i < args.len) : (i += 1) {
         const arg = args[i];
 
@@ -671,6 +671,15 @@ pub fn execute(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
     }
 
     config.verbose = verbose;
+
+    // Debug: Show what command was detected
+    if (verbose) {
+        std.debug.print("DEBUG: command = {}\n", .{command});
+        std.debug.print("DEBUG: args.len = {}\n", .{args.len});
+        for (args, 0..) |arg, j| {
+            std.debug.print("DEBUG: args[{}] = {s}\n", .{j, arg});
+        }
+    }
 
     // Create monitor
     const monitor = try createDefaultMonitor(allocator, config);
