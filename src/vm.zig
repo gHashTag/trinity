@@ -500,6 +500,35 @@ pub const VSAVM = struct {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // KOSCHEI EYE v3.0: Autonomous Self-Evolving Discovery (10000+ predictions/sec)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// Run autonomous discovery loop (10000+ iterations/sec)
+    /// s0: loop count (0 = default 10000)
+    /// Returns: s0=discoveries, s1=anomalies, f0=avg_confidence
+    pub fn recursiveDiscovery(self: *VSAVM, loop_count: i64) !void {
+        self.registers.s0 = loop_count;
+        try self.execSacredOpcode(.recursive_discovery, .{});
+    }
+
+    /// Predict element properties using Sacred Formula
+    /// s0: element Z (1-118+), s1: property (0=half_life, 1=mass, 2=stability)
+    /// Returns: f0=predicted_value, f1=confidence, s1=status
+    pub fn sacredChemPredict(self: *VSAVM, element_Z: i64, property: i64) !void {
+        self.registers.s0 = element_Z;
+        self.registers.s1 = property;
+        try self.execSacredOpcode(.sacred_chem_predict, .{});
+    }
+
+    /// Live anomaly hunt: scan registry for sigma > 3
+    /// f0: sigma threshold (default 3.0)
+    /// Returns: s0=anomaly_count, f0=max_sigma, f1=avg_sigma
+    pub fn liveAnomalyHunt(self: *VSAVM, sigma_threshold: f64) !void {
+        self.registers.f0 = sigma_threshold;
+        try self.execSacredOpcode(.live_anomaly_hunt, .{});
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // JIT CONTROL
     // ═══════════════════════════════════════════════════════════════════════════
 
