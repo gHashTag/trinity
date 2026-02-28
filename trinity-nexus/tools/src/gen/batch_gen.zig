@@ -1,7 +1,7 @@
 const std = @import("std");
 
-/// BATCH GENERATOR - [EN]withwith[EN]in[EN]I [EN]not[CYR:[TRANSLATED]]andI VIBEE [CYR:[TRANSLATED]]
-/// [EN]withto[CYR:[TRANSLATED]]and[EN]: 10-50x [EN] with[EN]innot[EN]and[EN] with [EN]with[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]lno[EN]] [EN]not[CYR:[TRANSLATED]]and[EN]
+/// BATCH GENERATOR - withinI notandI VIBEE 
+/// withtoand: 10-50x  withinnotand with within[CYR:lno] notand
 
 pub const ModuleDef = struct {
     name: []const u8,
@@ -14,7 +14,7 @@ pub const DomainConfig = struct {
     modules: []const ModuleDef,
 };
 
-/// [EN]not[EN]and[CYR:[TRANSLATED]] .vibee with[CYR:[TRANSLATED]]and[EN]andto[EN]and[EN]
+/// notand .vibee withandtoand
 pub fn generateSpec(allocator: std.mem.Allocator, domain: []const u8, module: ModuleDef, version: u32) ![]const u8 {
     _ = domain;
     const v1 = version / 100;
@@ -61,7 +61,7 @@ pub fn generateSpec(allocator: std.mem.Allocator, domain: []const u8, module: Mo
     , .{ module.name, version, v1, v2, v3, module.name, module.desc, module.name, module.name, module.name, module.name, module.name, module.name });
 }
 
-/// [EN]not[EN]and[CYR:[TRANSLATED]] .zig to[EN] on[CYR:[EN]I[TRANSLATED]] ([CYR:without] [CYR:pro[TRANSLATED]go] .vibee)
+/// notand .zig to on[CYR:I] ([CYR:without] [CYR:progo] .vibee)
 pub fn generateZig(allocator: std.mem.Allocator, module: ModuleDef, version: u32) ![]const u8 {
     const v1 = version / 100;
     const v2 = (version / 10) % 10;
@@ -140,18 +140,18 @@ pub fn generateZig(allocator: std.mem.Allocator, module: ModuleDef, version: u32
     });
 }
 
-/// Batch [EN]not[CYR:[TRANSLATED]]andI inwith[CYR:[EN]go] [CYR:[TRANSLATED]]on
+/// Batch notandI inwithgo] on
 pub fn generateDomain(allocator: std.mem.Allocator, config: DomainConfig) !void {
     const spec_dir = try std.fmt.allocPrint(allocator, "specs/tri/{s}", .{config.name});
     const output_dir = "trinity/output";
 
-    // [CYR:[TRANSLATED]] [EN]and[EN]to[CYR:[TRANSLATED]]andand
+    //  andtoand
     std.fs.cwd().makePath(spec_dir) catch {};
     std.fs.cwd().makePath(output_dir) catch {};
 
     var version = config.version_start;
     for (config.modules) |module| {
-        // [EN]not[EN]and[CYR:[TRANSLATED]] .vibee
+        // notand .vibee
         const spec_content = try generateSpec(allocator, config.name, module, version);
         const spec_path = try std.fmt.allocPrint(allocator, "{s}/{s}_v{d}.vibee", .{ spec_dir, module.name, version });
         
@@ -159,7 +159,7 @@ pub fn generateDomain(allocator: std.mem.Allocator, config: DomainConfig) !void 
         defer spec_file.close();
         try spec_file.writeAll(spec_content);
 
-        // [EN]not[EN]and[CYR:[TRANSLATED]] .zig on[CYR:[EN]I[TRANSLATED]]
+        // notand .zig on[CYR:I]
         const zig_content = try generateZig(allocator, module, version);
         const zig_path = try std.fmt.allocPrint(allocator, "{s}/{s}_v{d}.zig", .{ output_dir, module.name, version });
         

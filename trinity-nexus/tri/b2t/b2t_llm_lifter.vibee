@@ -146,8 +146,8 @@ types:
 behaviors:
   - name: lift_with_llm
     given: b2t_disasm.DisassemblyResult and LLMLiftingConfig
-    when: [CYR:[TRANSLATED]ny] [CYR:[TRANSLATED]] lifting with LLM
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] List<EnhancedTVCFunction>
+    when: [CYR:ny]  lifting with LLM
+    then: in[CYR:acts] List<EnhancedTVCFunction>
     implementation: |
                     pub fn lift_with_llm(dasm_result: DisassemblyResult, config: LLMLiftingConfig) []const EnhancedTVCFunction {
                         _ = dasm_result;
@@ -161,8 +161,8 @@ behaviors:
 
   - name: lift_function_with_llm
     given: b2t_disasm.BasicBlock[] and LLMLiftingConfig
-    when: Lifting [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andand with LLM-[CYR:[TRANSLATED]]andI[EN]and
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] EnhancedTVCFunction
+    when: Lifting  and with LLM-andIand
+    then: in[CYR:acts] EnhancedTVCFunction
     implementation: |
                     pub fn lift_function_with_llm(blocks: []const BasicBlock, config: LLMLiftingConfig) EnhancedTVCFunction {
                         _ = blocks;
@@ -175,9 +175,9 @@ behaviors:
       
 
   - name: get_lifting_progress
-    given: [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]with[EN] lifting
-    when: [CYR:[EN]pro]with [CYR:pro[TRANSLATED]]withwith[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] LiftingProgress
+    given: and with lifting
+    when: [CYR:pro]with [CYR:pro]with
+    then: in[CYR:acts] LiftingProgress
     implementation: |
                     pub fn get_lifting_progress(context: anytype) LiftingProgress {
                         _ = context;
@@ -190,8 +190,8 @@ behaviors:
 
   - name: recover_function_name
     given: LiftedFunction and SemanticContext
-    when: [EN]withwith[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] and[CYR:me]and [CYR:[TRANSLATED]]andand [CYR:[TRANSLATED]] LLM
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] String and[EN]I and Float confidence
+    when: withinand and[CYR:me]and and  LLM
+    then: in[CYR:acts] String andI and Float confidence
     implementation: |
                     pub fn recover_function_name(lifted: LiftedFunction, context: SemanticContext) struct { name: []const u8, confidence: f32 } {
                         _ = lifted;
@@ -205,8 +205,8 @@ behaviors:
 
   - name: recover_variable_names
     given: LiftedFunction and SemanticContext
-    when: [EN]withwith[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]me[EN]y[EN]] [CYR:[TRANSLATED]] LLM
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] Map<Int, String>
+    when: withinand and [CYR:mey]  LLM
+    then: in[CYR:acts] Map<Int, String>
     implementation: |
                     pub fn recover_variable_names(lifted: LiftedFunction, context: SemanticContext) std.AutoHashMap(usize, []const u8) {
                         _ = lifted;
@@ -221,8 +221,8 @@ behaviors:
 
   - name: recover_parameter_names
     given: LiftedFunction and call graph context
-    when: [EN]withwith[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] and[CYR:[TRANSLATED]] parameter[EN]in
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] List<String>
+    when: withinand and parameterin
+    then: in[CYR:acts] List<String>
     implementation: |
                     pub fn recover_parameter_names(lifted: LiftedFunction, call_graph: CallGraph) []const []const u8 {
                         _ = lifted;
@@ -236,8 +236,8 @@ behaviors:
 
   - name: infer_types_with_llm
     given: LiftedFunction and data flow
-    when: [CYR:[TRANSLATED]ny] inyin[EN] type[EN]in [CYR:[TRANSLATED]] LLM
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] Map<Int, String> type[EN]in
+    when: [CYR:ny] inyin typein  LLM
+    then: in[CYR:acts] Map<Int, String> typein
     implementation: |
                     pub fn infer_types_with_llm(lifted: LiftedFunction, data_flow: DataFlow) std.AutoHashMap(usize, []const u8) {
                         _ = lifted;
@@ -252,8 +252,8 @@ behaviors:
 
   - name: infer_return_type
     given: LiftedFunction and call sites
-    when: Vyin[EN] type[EN] in[EN]in[CYR:[TRANSLATED]]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] String type
+    when: Vyin type inin
+    then: in[CYR:acts] String type
     implementation: |
                     pub fn infer_return_type(lifted: LiftedFunction, call_sites: []const CallSite) []const u8 {
                         _ = lifted;
@@ -267,8 +267,8 @@ behaviors:
 
   - name: infer_parameter_types
     given: LiftedFunction and calling convention
-    when: Vyin[EN] type[EN]in parameter[EN]in
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] List<String> type[EN]in
+    when: Vyin typein parameterin
+    then: in[CYR:acts] List<String> typein
     implementation: |
                     pub fn infer_parameter_types(lifted: LiftedFunction, calling_conv: CallingConvention) []const []const u8 {
                         _ = lifted;
@@ -282,8 +282,8 @@ behaviors:
 
   - name: detect_struct_access
     given: TVC IR with memory operations
-    when: [EN]andwith[EN] [CYR:[TRANSLATED]]in [EN]with[CYR:[TRANSLATED]]  with[CYR:[TRANSLATED]]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] List<StructAccessPattern>
+    when: andwith in with  with
+    then: in[CYR:acts] List<StructAccessPattern>
     implementation: |
                     pub fn detect_struct_access(ir: []const IRInstruction) []const StructAccessPattern {
                         _ = ir;
@@ -296,8 +296,8 @@ behaviors:
 
   - name: recover_struct_definition
     given: List<StructAccessPattern>
-    when: [EN]withwith[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]andI with[CYR:[TRANSLATED]y] [CYR:[TRANSLATED]] LLM
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] StructDef
+    when: withinand andI withy]  LLM
+    then: in[CYR:acts] StructDef
     implementation: |
                     pub fn recover_struct_definition(patterns: []StructAccessPattern) StructDef {
                         _ = patterns;
@@ -310,8 +310,8 @@ behaviors:
 
   - name: apply_struct_types
     given: LiftedFunction and List<StructDef>
-    when: [EN]and[EN]not[EN]and[EN] with[CYR:[TRANSLATED]y[EN]] type[EN]in  IR
-    then: [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] type annotations
+    when: andnotand withy] typein  IR
+    then: in[CYR:I] type annotations
     implementation: |
                     pub fn apply_struct_types(lifted: *LiftedFunction, structs: []const StructDef) void {
                         _ = lifted;
@@ -324,8 +324,8 @@ behaviors:
 
   - name: recognize_idioms
     given: TVC IR block
-    when: [EN]with[CYR:[TRANSLATED]]onin[EN]and[EN] and[EN]and[EN] (malloc/free, strlen, memcpy)
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] List<RecognizedIdiom>
+    when: withoninand and (malloc/free, strlen, memcpy)
+    then: in[CYR:acts] List<RecognizedIdiom>
     implementation: |
                     pub fn recognize_idioms(ir_block: []const IRInstruction) []const RecognizedIdiom {
                         _ = ir_block;
@@ -338,8 +338,8 @@ behaviors:
 
   - name: recognize_algorithms
     given: LiftedFunction
-    when: [EN]with[CYR:[TRANSLATED]]onin[EN]and[EN] [CYR:algorithm]and[CYR:[TRANSLATED]]in (sort, search, hash)
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] Option<AlgorithmMatch>
+    when: withoninand [CYR:algorithm]andin (sort, search, hash)
+    then: in[CYR:acts] Option<AlgorithmMatch>
     implementation: |
                     pub fn recognize_algorithms(lifted: LiftedFunction) ?AlgorithmMatch {
                         _ = lifted;
@@ -352,8 +352,8 @@ behaviors:
 
   - name: apply_pattern_knowledge
     given: LiftedFunction and recognized patterns
-    when: [EN]and[EN]not[EN]and[EN] [EN]on[EN]and[EN]  [CYR:[TRANSLATED]]on[EN]
-    then: [CYR:[TRANSLATED]acts] and[EN]on and [CYR:[TRANSLATED]me[TRANSLATED]]andand
+    when: andnotand onand  on
+    then: [CYR:acts] andon and [CYR:me]and
     implementation: |
                     pub fn apply_pattern_knowledge(lifted: *EnhancedTVCFunction, patterns: []const RecognizedPattern) void {
                         _ = lifted;
@@ -366,8 +366,8 @@ behaviors:
 
   - name: generate_function_comment
     given: EnhancedTVCFunction
-    when: [EN]not[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]me[EN]]and[CYR:[TRANSLATED]go] [CYR:[TRANSLATED]me[TRANSLATED]]andI
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] CodeComment
+    when: notandI [CYR:me]and[CYR:go] [CYR:me]andI
+    then: in[CYR:acts] CodeComment
     implementation: |
                     pub fn generate_function_comment(func: EnhancedTVCFunction) CodeComment {
                         _ = func;
@@ -380,8 +380,8 @@ behaviors:
 
   - name: generate_inline_comments
     given: EnhancedTVCFunction
-    when: [EN]not[CYR:[TRANSLATED]]andI inline [CYR:[TRANSLATED]me[TRANSLATED]]and[EN]in for with[CYR:[TRANSLATED]y[EN]] [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]in
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] List<CodeComment>
+    when: notandI inline [CYR:me]andin for withy] within
+    then: in[CYR:acts] List<CodeComment>
     implementation: |
                     pub fn generate_inline_comments(func: EnhancedTVCFunction) []CodeComment {
                         _ = func;
@@ -394,8 +394,8 @@ behaviors:
 
   - name: generate_warning_comments
     given: EnhancedTVCFunction and detected issues
-    when: [EN]not[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]]and[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] List<CodeComment>
+    when: notandI and
+    then: in[CYR:acts] List<CodeComment>
     implementation: |
                     pub fn generate_warning_comments(func: EnhancedTVCFunction, issues: []const Issue) []const CodeComment {
                         _ = func;
@@ -409,8 +409,8 @@ behaviors:
 
   - name: validate_enhanced_ir
     given: EnhancedTVCFunction
-    when: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[EN]and [CYR:[TRANSLATED]]and[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] Bool and List<ValidationIssue>
+    when: in withand and
+    then: in[CYR:acts] Bool and List<ValidationIssue>
     implementation: |
                     pub fn validate_enhanced_ir(func: EnhancedTVCFunction) struct { valid: bool, issues: []ValidationIssue } {
                         _ = func;
@@ -422,9 +422,9 @@ behaviors:
       
 
   - name: compare_with_baseline
-    given: EnhancedTVCFunction and [CYR:[TRANSLATED]]iny[EN] LiftedFunction
-    when: [CYR:[TRANSLATED]]innot[EN]and[EN] with baseline
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] ImprovementMetrics
+    given: EnhancedTVCFunction and iny LiftedFunction
+    when: innotand with baseline
+    then: in[CYR:acts] ImprovementMetrics
     implementation: |
                     pub fn compare_with_baseline(enhanced: EnhancedTVCFunction, baseline: LiftedFunction) ImprovementMetrics {
                         _ = enhanced;
@@ -437,9 +437,9 @@ behaviors:
       
 
   - name: rollback_to_baseline
-    given: EnhancedTVCFunction with error[EN]and
-    when: [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] IR
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] LiftedFunction
+    given: EnhancedTVCFunction with errorand
+    when:   in IR
+    then: in[CYR:acts] LiftedFunction
     implementation: |
                     pub fn rollback_to_baseline(enhanced: EnhancedTVCFunction) LiftedFunction {
                         _ = enhanced;

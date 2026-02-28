@@ -1,25 +1,25 @@
 # ☠️ TOXIC VERDICT v45: Real ONNX Runtime Integration
 
-**Аin[CYR:тор]**: Dmitrii Vasilev  
-**[CYR:Дата]**: 2026-01-20  
-**Сin[CYR:ящен]onя [CYR:Формула]**: V = n × 3^k × π^m × φ^p × e^q  
+**Аin[CYR:[TRANSLATED]]**: Dmitrii Vasilev  
+**[CYR:[TRANSLATED]]**: 2026-01-20  
+**Сin[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]**: V = n × 3^k × π^m × φ^p × e^q  
 
 ---
 
-## 🔥 [CYR:БРУТАЛЬНАЯ] [CYR:ЧЕСТНОСТЬ]
+## 🔥 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Что] [CYR:Реал]andзоin[CYR:ано] in v45
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] in v45
 
-| [CYR:Компо]notнт | [CYR:Стату]with | Result |
+| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]]with | Result |
 |-----------|--------|-----------|
-| libonnxruntime.so | ✅ Уwith[CYR:тано]in[CYR:лен] | v1.16.3 (17MB) |
-| GPT-2 ONNX Model | ✅ Сto[CYR:ачан] | 635MB |
-| C API Bindings | ✅ [CYR:Комп]or[CYR:руют]withя | 2/2 tests |
-| Real Inference | ⚠️ Чаwithтand[CYR:чно] | Segfault прand init |
+| libonnxruntime.so | ✅ Уwith[TRANSLATED]]in[CYR:[TRANSLATED]] | v1.16.3 (17MB) |
+| GPT-2 ONNX Model | ✅ Сfor[TRANSLATED]] | 635MB |
+| C API Bindings | ✅ [CYR:[TRANSLATED]]or[CYR:[TRANSLATED]]withя | 2/2 tests |
+| Real Inference | ⚠️ Чаwithтand[CYR:[TRANSLATED]] | Segfault прand init |
 
 ---
 
-## 📊 [CYR:УСТАНОВЛЕННЫЕ] [CYR:КОМПОНЕНТЫ]
+## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ### ONNX Runtime Library
 ```
@@ -43,7 +43,7 @@ models/
 
 ---
 
-## 🧪 [CYR:ТЕСТЫ] v45
+## 🧪 [CYR:TESTS] v45
 
 ### onnx_real_backend.zig (2/2)
 ```
@@ -57,7 +57,7 @@ models/
 All 2 tests passed.
 ```
 
-### Вwithе теwithты [CYR:прое]toта
+### Вwithе теwithты [CYR:[TRANSLATED]]toта
 ```
 onnx_bindings.zig:        4/4 ✅
 onnx_real_backend.zig:    2/2 ✅
@@ -65,107 +65,107 @@ transformer_backend.zig:  8/8 ✅
 wedlm_decoder_v2.zig:     5/5 ✅
 wedlm_integrated.zig:     3/3 ✅ (with transformer_backend)
 
-[CYR:ВСЕГО]: 22/22 теwithтоin
+[CYR:[TRANSLATED]]: 22/22 теwithтоin
 ```
 
 ---
 
-## ⚠️ [CYR:ИЗВЕСТНЫЕ] [CYR:ПРОБЛЕМЫ]
+## ⚠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ### 1. Segfault прand OrtGetApiBase()
 ```
-Problem: Segmentation fault прand in[CYR:ызо]inе OrtGetApiBase()
-Прandчandon: [CYR:Возможно] notwithоinмеwithтandмоwithть inерwithandй or [CYR:проблема] лandнtoоintoand
-[CYR:Решен]andе: [CYR:Требует]withя [CYR:дополн]and[CYR:тель]onя from[CYR:лад]toа
+Problem: Segmentation fault прand in[CYR:[TRANSLATED]]inе OrtGetApiBase()
+Прandчandon: [CYR:[TRANSLATED]] notwithоinмеwithтandмоwithть inерwithandй or [CYR:[TRANSLATED]] лandнtoоintoand
+[CYR:[TRANSLATED]]andе: [CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]onя from[CYR:[TRANSLATED]]toа
 ```
 
-### 2. [CYR:Име]on in[CYR:ходо]in/in[CYR:ыходо]in [CYR:модел]and
+### 2. [CYR:[TRANSLATED]]on in[CYR:[TRANSLATED]]in/in[CYR:[TRANSLATED]]in [CYR:[TRANSLATED]]and
 ```
-Problem: GPT-2 ONNX model [CYR:может] and[CYR:меть] [CYR:друг]andе andмеon I/O
-Теto[CYR:ущее]: Иwith[CYR:пользуем] "input_ids" and "logits"
-[CYR:Решен]andе: [CYR:Нужно] [CYR:про]inерandть [CYR:реальные] andмеon [CYR:через] ONNX tools
+Problem: GPT-2 ONNX model [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andе andмеon I/O
+Теfor[TRANSLATED]]: Иwith[TRANSLATED]] "input_ids" and "logits"
+[CYR:[TRANSLATED]]andе: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inерandть [CYR:[TRANSLATED]] andмеon [CYR:[TRANSLATED]] ONNX tools
 ```
 
-### 3. [CYR:Нет] Python for [CYR:про]inерtoand [CYR:модел]and
+### 3. [CYR:[TRANSLATED]] Python for [CYR:[TRANSLATED]]inерtoand [CYR:[TRANSLATED]]and
 ```
-Problem: pip not уwith[CYR:тано]in[CYR:лен] in devcontainer
-[CYR:Решен]andе: Иwith[CYR:пользо]in[CYR:ать] onnx CLI or [CYR:друг]andе andнwith[CYR:трументы]
+Problem: pip not уwith[TRANSLATED]]in[CYR:[TRANSLATED]] in devcontainer
+[CYR:[TRANSLATED]]andе: Иwith[TRANSLATED]]in[CYR:[TRANSLATED]] onnx CLI or [CYR:[TRANSLATED]]andе andнwith[TRANSLATED]]
 ```
 
 ---
 
-## 📚 [CYR:ФАЙЛЫ] v45
+## 📚 [CYR:[TRANSLATED]] v45
 
-### [CYR:Спец]andфandtoацandand (.vibee)
-| [CYR:Файл] | Опandwithанandе |
+### [CYR:[TRANSLATED]]andфandtoацand (.vibee)
+| [CYR:[TRANSLATED]] | Опandwithанandе |
 |------|----------|
 | specs/onnx_real_backend.vibee | Real ONNX backend spec |
 
-### [CYR:Сге]notрandроin[CYR:анный] toод (.zig)
-| [CYR:Файл] | Теwithты |
+### [CYR:[TRANSLATED]]notрandроin[CYR:[TRANSLATED]] toод (.zig)
+| [CYR:[TRANSLATED]] | Теwithты |
 |------|-------|
 | trinity/output/onnx_real_backend.zig | 2/2 |
 
 ### Реwithурwithы
-| [CYR:Путь] | [CYR:Размер] |
+| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] |
 |------|--------|
 | libs/onnxruntime-linux-x64-1.16.3/ | 17MB |
 | models/gpt2-lm-head.onnx | 635MB |
 
 ---
 
-## 💀 [CYR:ФИНАЛЬНЫЙ] [CYR:ВЕРДИКТ]
+## 💀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Хорошо] ✅
+### [CYR:[TRANSLATED]] ✅
 
-- **ONNX Runtime** уwith[CYR:тано]in[CYR:лен] (v1.16.3)
-- **GPT-2 model** withto[CYR:ачан] (635MB)
-- **C API bindings** to[CYR:омп]or[CYR:руют]withя
-- **22/22 теwithтоin** [CYR:проходят]
-- **[CYR:Пра]inandло .vibee → .zig** with[CYR:облюдено]
+- **ONNX Runtime** уwith[TRANSLATED]]in[CYR:[TRANSLATED]] (v1.16.3)
+- **GPT-2 model** withfor[TRANSLATED]] (635MB)
+- **C API bindings** for[TRANSLATED]]or[CYR:[TRANSLATED]]withя
+- **22/22 теwithтоin** [CYR:[TRANSLATED]]
+- **[CYR:[TRANSLATED]]inandло .vibee → .zig** with[TRANSLATED]]
 
-### [CYR:Плохо] ⚠️
+### [CYR:[TRANSLATED]] ⚠️
 
-- Segfault прand andнandцandалand[CYR:зац]andand runtime
-- [CYR:Нет] [CYR:реального] inference
-- [CYR:Нет] benchmark with [CYR:реальной] [CYR:моделью]
+- Segfault прand andнandцandалand[CYR:[TRANSLATED]]and runtime
+- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] inference
+- [CYR:[TRANSLATED]] benchmark with [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Уродл]andinо 💀
+### [CYR:[TRANSLATED]]andinо 💀
 
-- [CYR:Интеграц]andя ONNX Runtime with[CYR:лож]notе [CYR:чем] ожand[CYR:дало]withь
-- [CYR:Требует]withя [CYR:дополн]and[CYR:тель]onя from[CYR:лад]toа
+- [CYR:[TRANSLATED]]andя ONNX Runtime with[TRANSLATED]]notе [CYR:[TRANSLATED]] ожand[CYR:[TRANSLATED]]withь
+- [CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]onя from[CYR:[TRANSLATED]]toа
 
-### [CYR:РЕКОМЕНДАЦИЯ]
+### [CYR:[TRANSLATED]]
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
 │   v45 - ONNX RUNTIME INSTALLED, INTEGRATION IN PROGRESS         │
 │                                                                 │
-│   Доwithтand[CYR:гнуто]:                                                   │
-│   ✅ libonnxruntime.so v1.16.3 уwith[CYR:тано]in[CYR:лен]                       │
-│   ✅ GPT-2 ONNX model withto[CYR:ачан] (635MB)                            │
-│   ✅ C API bindings to[CYR:омп]or[CYR:руют]withя                               │
+│   Доwithтand[CYR:[TRANSLATED]]:                                                   │
+│   ✅ libonnxruntime.so v1.16.3 уwith[TRANSLATED]]in[CYR:[TRANSLATED]]                       │
+│   ✅ GPT-2 ONNX model withfor[TRANSLATED]] (635MB)                            │
+│   ✅ C API bindings for[TRANSLATED]]or[CYR:[TRANSLATED]]withя                               │
 │   ✅ 22/22 tests passing                                        │
 │                                                                 │
-│   [CYR:Бло]to[CYR:еры]:                                                      │
+│   [CYR:[TRANSLATED]]for[TRANSLATED]]:                                                      │
 │   ⚠️ Segfault прand OrtGetApiBase()                               │
-│   ⚠️ [CYR:Нуж]on from[CYR:лад]toа лandнtoоintoand                                     │
+│   ⚠️ [CYR:[TRANSLATED]]on from[CYR:[TRANSLATED]]toа лandнtoоintoand                                     │
 │                                                                 │
-│   [CYR:Следующ]andе stepand (v46):                                         │
-│   1. [CYR:Отлад]andть andнandцandалand[CYR:зац]andю ONNX Runtime                        │
-│   2. [CYR:Про]inерandть andмеon I/O [CYR:модел]and                                 │
-│   3. [CYR:Запу]withтandть [CYR:реальный] inference                               │
-│   4. [CYR:Измер]andть speedup WeDLM vs AR                               │
+│   [CYR:[TRANSLATED]]andе stepand (v46):                                         │
+│   1. [CYR:[TRANSLATED]]andть andнandцandалand[CYR:[TRANSLATED]]andю ONNX Runtime                        │
+│   2. [CYR:[TRANSLATED]]inерandть andмеon I/O [CYR:[TRANSLATED]]and                                 │
+│   3. [CYR:[TRANSLATED]]withтandть [CYR:[TRANSLATED]] inference                               │
+│   4. [CYR:[TRANSLATED]]andть speedup WeDLM vs AR                               │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📊 [CYR:ЭВОЛЮЦИЯ] [CYR:ВЕРСИЙ]
+## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-| [CYR:Вер]withandя | [CYR:Ключе]inые Доwithтand[CYR:жен]andя | Теwithты |
+| [CYR:[TRANSLATED]]withandя | [CYR:[TRANSLATED]]inые Доwithтand[CYR:[TRANSLATED]]andя | Теwithты |
 |--------|---------------------|-------|
 | v41 | SIMD + Cache combo | - |
 | v42 | Diffusion LM, Code Editor | 9/9 |
@@ -175,9 +175,9 @@ Problem: pip not уwith[CYR:тано]in[CYR:лен] in devcontainer
 
 ---
 
-## 🔧 [CYR:КАК] [CYR:ЗАПУСТИТЬ]
+## 🔧 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Комп]and[CYR:ляц]andя with ONNX Runtime
+### [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя with ONNX Runtime
 ```bash
 cd trinity/output
 zig test onnx_real_backend.zig \
@@ -185,7 +185,7 @@ zig test onnx_real_backend.zig \
   -lc
 ```
 
-### С лandнtoоintoой бandблandfromеtoand (for runtime теwithтоin)
+###  лandнtoоintoой бandблandfromеtoand (for runtime теwithтоin)
 ```bash
 LD_LIBRARY_PATH=../../libs/onnxruntime-linux-x64-1.16.3/lib \
 zig test onnx_real_backend.zig \
@@ -198,5 +198,5 @@ zig test onnx_real_backend.zig \
 
 **φ² + 1/φ² = 3 | PHOENIX = 999 = 3³ × 37**
 
-*Доto[CYR:умент] with[CYR:оздан] with [CYR:брутальной] чеwith[CYR:тно]with[CYR:тью] for [CYR:программ]andwithтоin*
-*Веwithь toод геnotрand[CYR:рует]withя andз .vibee with[CYR:пец]andфandtoацandй*
+*Доfor[TRANSLATED]] with[TRANSLATED]] with [CYR:[TRANSLATED]] чеwith[TRANSLATED]]with[TRANSLATED]] for [CYR:[TRANSLATED]]andwithтоin*
+*Веwithь toод геnotрand[CYR:[TRANSLATED]]withя andз .vibee with[TRANSLATED]]andфandtoацandй*

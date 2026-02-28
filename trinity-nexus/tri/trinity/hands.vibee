@@ -1,5 +1,5 @@
-# Hands - [CYR:[TRANSLATED]]and [EN]and[EN]and[EN]and
-# [EN]with[CYR:[TRANSLATED]I[EN]] [CYR:[EN]l[EN]] [EN]and +1 in[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]], with[CYR:[TRANSLATED]] [CYR:[TRANSLATED]y], [CYR:[TRANSLATED]]andwithyin[CYR:[TRANSLATED]] in AkashicRecords
+# Hands - and andand
+# withI] [CYR:l] and +1 inand, with [CYR:y], andwithyin in AkashicRecords
 
 name: hands
 version: "1.0.0"
@@ -8,7 +8,7 @@ module: trinity.hands
 description: |
   The Hands execute actions. They NEVER act without a +1 verdict from Conscience.
   Before destructive actions, they create backups. After execution, they record
-  results to AkashicRecords. When synthesis is proposed by [CYR:[TRANSLATED]]-[EN]and[EN], they apply
+  results to AkashicRecords. When synthesis is proposed by -and, they apply
   the third path.
 
 imports:
@@ -68,7 +68,7 @@ behaviors:
       - result: Bool (can proceed)
 
   - name: apply_synthesis
-    description: When [CYR:[TRANSLATED]]-[EN]and[EN] found third path, execute it
+    description: When -and found third path, execute it
     given:
       - synthesis: Synthesis
       - original_intent: Intent
@@ -145,4 +145,4 @@ constants:
     success_without_growth: 0
     failure_with_lesson: 0
     failure_without_lesson: -1
-    synthesis_achieved: +2  # Bonus for [CYR:[TRANSLATED]]-[EN]and[EN] solutions
+    synthesis_achieved: +2  # Bonus for -and solutions

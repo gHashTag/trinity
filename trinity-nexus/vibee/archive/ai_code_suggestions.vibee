@@ -1,6 +1,6 @@
 name: ai_code_suggestions
 version: 1.0.0
-description: AI-powered code suggestions for VIBEE - [CYR:[TRANSLATED]y[EN]] [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]and in [CYR:[TRANSLATED]lno[EN]] in[CYR:[EN]me]and
+description: AI-powered code suggestions for VIBEE - [CYR:y] withand in [CYR:lno] in[CYR:me]and
 
 metadata:
   author: VIBEE Team
@@ -71,84 +71,84 @@ constants:
 
   SUGGESTION_TYPES:
     completion:
-      description: "Ain[CYR:[TRANSLATED]]not[EN]and[EN] code[EN]"
+      description: "Ainnotand code"
       confidence_threshold: 0.7
       auto_apply: true
       
     refactoring:
-      description: "[CYR:[TRANSLATED]]andI [EN] [CYR:[EN]factor]and[CYR:[TRANSLATED]]"
+      description: "andI  [CYR:factor]and"
       confidence_threshold: 0.8
       auto_apply: false
       
     fix:
-      description: "[EN]with[CYR:law]in[CYR:[TRANSLATED]]and[EN] [EN]and[CYR:[TRANSLATED]]"
+      description: "withlaw]inand and"
       confidence_threshold: 0.9
       auto_apply: false
       
     optimization:
-      description: "[CYR:[TRANSLATED]]and[EN]from[EN]andI [CYR:pro]fromin[EN]and[CYR:[EN]lno]with[EN]and"
+      description: "andfromandI [CYR:pro]frominand[CYR:lno]withand"
       confidence_threshold: 0.85
       auto_apply: false
       
     security:
-      description: "[EN]with[CYR:law]in[CYR:[TRANSLATED]]and[EN] [CYR:[EN]I[EN]]inand[EN]with[CYR:[TRANSLATED]]"
+      description: "withlaw]inand [CYR:I]inandwith"
       confidence_threshold: 0.95
       auto_apply: false
 
   PROMPTS:
     code_completion: |
-      [EN]y - [EN]with[CYR:[TRANSLATED]] [EN] [CYR:language[EN]] [CYR:pro[TRANSLATED]]and[EN]in[EN]andI VIBEE.
+      y - with  [CYR:language] [CYR:pro]andinandI VIBEE.
       
-      [CYR:[TRANSLATED]]with[EN]:
-      - [CYR:[TRANSLATED]]: {file_path}
-      - [CYR:[TRANSLATED]I] string: {current_line}
-      - [CYR:[TRANSLATED]y[TRANSLATED]]and[EN] strings:
+      with:
+      - : {file_path}
+      - [CYR:I] string: {current_line}
+      - [CYR:y]and strings:
       {previous_lines}
       
-      [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]and [EN]in[CYR:[TRANSLATED]]not[EN]and[EN] for [CYR:[TRANSLATED]] strings.
+      : and innotand for  strings.
       
-      [CYR:[TRANSLATED]]in[EN]andI:
-      - [EN]with[CYR:[EN]l[TRANSLATED]] VIBEE V2 withand[CYR:[TRANSLATED]]withandwith (concise, modern)
-      - [CYR:[TRANSLATED]] best practices
-      - [EN]and[EN]yin[EN] [CYR:[TRANSLATED]]with[EN] code[EN]
-      - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN] and [CYR:[TRANSLATED]y[EN]]
+      inandI:
+      - withl] VIBEE V2 withandwithandwith (concise, modern)
+      -  best practices
+      - andyin with code
+      -  and and [CYR:y]
       
-      [CYR:[TRANSLATED]] response[EN]:
+       response:
       ```vibee
-      <[EN]in[EN] [CYR:[TRANSLATED]]and[EN]>
+      <in and>
       ```
       
-      [CYR:[TRANSLATED]I]withnot[EN]and[EN]: <[CYR:[TRANSLATED]] [CYR:[TRANSLATED]I]withnot[EN]and[EN]>
+      [CYR:I]withnotand: < [CYR:I]withnotand>
       
     refactoring: |
-      [EN]y - [EN]with[CYR:[TRANSLATED]] [EN] [CYR:[EN]factor]and[CYR:[TRANSLATED]] VIBEE code[EN].
+      y - with  [CYR:factor]and VIBEE code.
       
-      [CYR:Code] for analysis[EN]:
+      [CYR:Code] for analysis:
       ```vibee
       {code_snippet}
       ```
       
-      [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]andI code[EN].
+      : and andI code.
       
-      [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] on:
-      - Anti-patterns (10 fromin[EN]with[CYR:[EN]y[EN]] [CYR:[TRANSLATED]]in)
+      in on:
+      - Anti-patterns (10 frominwithy] in)
       - Code smells
       - Performance issues
       - Readability
       - VIBEE V2 best practices
       
-      [CYR:[TRANSLATED]] response[EN]:
-      [CYR:[TRANSLATED]]: <[EN]andwith[EN]and[EN]>
-      [CYR:[TRANSLATED]]and[EN]:
+       response:
+      : <andwithand>
+      and:
       ```vibee
-      <[CYR:[TRANSLATED]ny] code>
+      <[CYR:ny] code>
       ```
-      [CYR:[TRANSLATED]]and[EN]: <[CYR:[TRANSLATED]]and[EN]and>
+      and: <and>
       
     quick_fix: |
-      [EN]y - [EN]with[CYR:[TRANSLATED]] [EN] andwith[CYR:law]in[CYR:[TRANSLATED]]and[EN] [EN]and[CYR:[TRANSLATED]] in VIBEE.
+      y - with  andwithlaw]inand and in VIBEE.
       
-      [EN]and[CYR:[TRANSLATED]]:
+      and:
       {error_message}
       
       [CYR:Code]:
@@ -156,13 +156,13 @@ constants:
       {code_snippet}
       ```
       
-      [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]and [EN]ywith[CYR:[TRANSLATED]] fix.
+      : and ywith fix.
       
-      [CYR:[TRANSLATED]] response[EN]:
-      [EN]and[EN]andon: <[CYR:[TRANSLATED]I]withnot[EN]and[EN] [EN]and[EN]and>
-      [EN]with[CYR:law]in[CYR:[TRANSLATED]]and[EN]:
+       response:
+      andon: <[CYR:I]withnotand and>
+      withlaw]inand:
       ```vibee
-      <andwith[CYR:law]in[CYR:[TRANSLATED]ny] code>
+      <andwithlaw]in[CYR:ny] code>
       ```
 
 behaviors:
@@ -171,16 +171,16 @@ behaviors:
       request: SuggestionRequest
     output:
       suggestions: list<Suggestion>
-    description: [CYR:[TRANSLATED]]and[EN] AI-[CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]and for code[EN]
+    description: and AI-withand for code
     steps:
-      - [CYR:[TRANSLATED]]analyze [CYR:[TRANSLATED]]with[EN] code[EN]
-      - [CYR:[TRANSLATED]]and[EN] type [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]and
-      - [CYR:Vy[EN]ate] [CYR:[TRANSLATED]I[TRANSLATED]] AI [CYR:[TRANSLATED]l]
-      - [CYR:[TRANSLATED]]and[EN]in[CYR:ate] [CYR:pro[TRANSLATED]]
-      - [CYR:[EN]law]inand[EN] query  AI
-      - [CYR:[TRANSLATED]]withand[EN] response
-      - [CYR:[TRANSLATED]]and[EN] confidence
-      - [CYR:[TRANSLATED]] suggestions
+      - analyze with code
+      - and type withand
+      - [CYR:Vyate] [CYR:I] AI [CYR:l]
+      - andin[CYR:ate] [CYR:pro]
+      - [CYR:law]inand query  AI
+      - withand response
+      - and confidence
+      -  suggestions
       
   apply_suggestion:
     input:
@@ -189,13 +189,13 @@ behaviors:
     output:
       new_code: string
       success: boolean
-    description: [EN]and[CYR:me]and[EN] AI-[CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]  code[EN]
+    description: and[CYR:me]and AI-with  code
     steps:
-      - [CYR:[TRANSLATED]]and[EN]and[EN]in[CYR:ate] suggestion
-      - [EN]and[CYR:me]and[EN] from[EN]not[EN]andI
-      - [CYR:[TRANSLATED]]in[EN]and[EN] withand[CYR:[TRANSLATED]]withandwith
-      - [CYR:[TRANSLATED]]with[EN]and[EN] testy
-      - [CYR:[TRANSLATED]] result
+      - andin[CYR:ate] suggestion
+      - and[CYR:me]and fromnotandI
+      - inand withandwithandwith
+      - withand testy
+      -  result
       
   analyze_code:
     input:
@@ -204,13 +204,13 @@ behaviors:
     output:
       issues: list<Issue>
       suggestions: list<Suggestion>
-    description: Aon[EN]from code[EN] with [CYR:[TRANSLATED]] AI
+    description: Aonfrom code with  AI
     steps:
-      - [CYR:[TRANSLATED]]withand[EN] code in AST
-      - [CYR:[EN]law]inand[EN] on analysis AI
-      - [CYR:[TRANSLATED]]and[EN] list [CYR:pro[TRANSLATED]]
-      - [CYR:[TRANSLATED]]not[EN]and[EN]in[CYR:ate] suggestions
-      - [CYR:[TRANSLATED]] resulty
+      - withand code in AST
+      - [CYR:law]inand on analysis AI
+      - and list [CYR:pro]
+      - notandin[CYR:ate] suggestions
+      -  resulty
       
   optimize_code:
     input:
@@ -219,13 +219,13 @@ behaviors:
     output:
       optimized_code: string
       improvement_metrics: map<string, number>
-    description: [CYR:[TRANSLATED]]and[EN]from[EN]andI code[EN] with [CYR:[TRANSLATED]] AI
+    description: andfromandI code with  AI
     steps:
-      - [CYR:[TRANSLATED]]analyze [CYR:[TRANSLATED]]and[EN] code
-      - [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[EN] [EN]with[EN]
-      - [CYR:[TRANSLATED]]not[EN]and[EN]in[CYR:ate] [CYR:[TRANSLATED]]and[EN]from[EN]andand
-      - [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]andI
-      - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN]fromand[EN]in[CYR:[EN]ny] code
+      - analyze and code
+      - and and with
+      - notandin[CYR:ate] andfromand
+      - and andI
+      -  andfromandin[CYR:ny] code
       
   explain_code:
     input:
@@ -234,12 +234,12 @@ behaviors:
     output:
       explanation: string
       complexity: number
-    description: [CYR:[TRANSLATED]I]withnot[EN]and[EN] code[EN] with [CYR:[TRANSLATED]] AI
+    description: [CYR:I]withnotand code with  AI
     steps:
-      - [CYR:[TRANSLATED]]analyze code
-      - [CYR:[TRANSLATED]]not[EN]and[EN]in[CYR:ate] [CYR:[TRANSLATED]I]withnot[EN]and[EN]
-      - [CYR:[TRANSLATED]]and[EN] with[CYR:[TRANSLATED]]with[EN]
-      - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]I]withnot[EN]and[EN]
+      - analyze code
+      - notandin[CYR:ate] [CYR:I]withnotand
+      - and with
+      -  [CYR:I]withnotand
 
 functions:
   - name: call_ai_model
@@ -248,28 +248,28 @@ functions:
       prompt: string
       context: map<string, any>
     returns: string
-    description: [CYR:Vy[EN]]in AI [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]] OpenRouter
+    description: [CYR:Vy]in AI and  OpenRouter
     
   - name: parse_ai_response
     params:
       response: string
       expected_format: string
     returns: Suggestion
-    description: [CYR:[TRANSLATED]]withand[EN] response[EN] [EN] AI
+    description: withand response  AI
     
   - name: calculate_confidence
     params:
       suggestion: Suggestion
       context: CodeContext
     returns: number
-    description: [EN]with[CYR:[TRANSLATED]] [EN]in[CYR:[TRANSLATED]]with[EN]and in suggestion
+    description: with inwithand in suggestion
     
   - name: validate_suggestion
     params:
       suggestion: Suggestion
       code: string
     returns: boolean
-    description: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI suggestion [CYR:[TRANSLATED]] [EN]and[EN]not[EN]and[EN]
+    description: andI suggestion  andnotand
 
 tests:
   - name: suggest_function_completion
@@ -332,18 +332,18 @@ tests:
       complexity: < 5
 
 examples:
-  - name: "Ain[CYR:[TRANSLATED]]not[EN]and[EN] [CYR:[TRANSLATED]]andand"
-    description: "AI [CYR:[TRANSLATED]acts] [EN]in[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]andand"
+  - name: "Ainnotand and"
+    description: "AI [CYR:acts] inand and"
     input:
       current_line: "pub calculate_total(items) = "
       context: "// Shopping cart module"
     output:
       suggestion: "items |> list.map(fn(i) { i.price }) |> list.fold(0, fn(a, b) { a + b })"
       confidence: 0.85
-      explanation: "[CYR:[TRANSLATED]]and[EN]in[EN]and[EN] [CYR:[TRANSLATED]] inwith[EN] items in [CYR:[TRANSLATED]]andnot"
+      explanation: "andinand  inwith items in andnot"
       
-  - name: "[CYR:[EN]factor]and[EN] in V2 withand[CYR:[TRANSLATED]]withandwith"
-    description: "AI [CYR:[TRANSLATED]acts] [EN]and[CYR:[TRANSLATED]]and[EN] on V2"
+  - name: "[CYR:factor]and in V2 withandwithandwith"
+    description: "AI [CYR:acts] and on V2"
     input:
       code: |
         pub fn process(data: String) -> Result(String, String) {
@@ -357,17 +357,17 @@ examples:
         pub process(data): Result<String, String> = {
           validate(data)? |> transform
         }
-      improvement: "75% [CYR:me[TRANSLATED]] code[EN], [EN]and[CYR:[TRANSLATED]]with[EN] +40%"
+      improvement: "75% [CYR:me] code, andwith +40%"
       
-  - name: "[EN]with[CYR:law]in[CYR:[TRANSLATED]]and[EN] [EN]and[EN]and"
-    description: "AI on[CYR:[TRANSLATED]]and[EN] and andwith[CYR:law]in[CYR:[EN]I[EN]] [EN]and[CYR:[TRANSLATED]]"
+  - name: "withlaw]inand and"
+    description: "AI onand and andwithlaw]in[CYR:I] and"
     input:
       code: "let result = divide(10, 0)"
       error: "Division by zero"
     output:
       suggestion: |
         let result = divide(10, 0) ?? Error("Cannot divide by zero")
-      explanation: "[CYR:[TRANSLATED]]in[EN]on handling [CYR:[TRANSLATED]]andI on [CYR:[EN]l]"
+      explanation: "inon handling andI on [CYR:l]"
 
 integration:
   openrouter:

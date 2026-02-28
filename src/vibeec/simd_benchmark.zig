@@ -1,5 +1,5 @@
-// SIMD BENCHMARK - [CYR:[EN]]and[EN] withto[CYR:[EN]]with[EN]and [CYR:[EN]]and[CYR:[EN]] [CYR:[EN]]and[EN]
-// [CYR:[EN]]innot[EN]and[EN] withto[CYR:[EN]] and SIMD [CYR:[EN]]and[CYR:[EN]]and[EN]
+// SIMD BENCHMARK - and withtowithand and and
+// innotand withto and SIMD and
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");
@@ -15,7 +15,7 @@ pub const PHI: f64 = 1.618033988749895;
 const WARMUP_ITERATIONS = 10;
 const BENCHMARK_ITERATIONS = 100;
 
-// [CYR:[EN]] for [CYR:[EN]]to[EN] ([EN]and[EN]and[CYR:[EN]] for LLM)
+//  for to (and for LLM)
 const BATCH_SIZE = 1;
 const IN_FEATURES = 4096; // hidden_size
 const OUT_FEATURES = 4096; // hidden_size
@@ -24,7 +24,7 @@ const OUT_FEATURES = 4096; // hidden_size
 // SCALAR IMPLEMENTATION (BASELINE)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [EN]to[CYR:[EN]]on[EN] [CYR:[EN]]and[CYR:[EN]]and[EN] - [CYR:[EN]]in[EN] [EN]and[EN]and[EN] for with[EN]innot[EN]and[EN]
+/// toon and - in and for withinnotand
 pub fn scalarMatmul(
     output: []f32,
     input: []const f32,
@@ -57,21 +57,21 @@ pub fn scalarMatmul(
 // SIMD IMPLEMENTATION - AVX2 (256-bit vectors)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// SIMD vector 8 x f32 = 256 [EN]and[EN] (AVX2)
+/// SIMD vector 8 x f32 = 256 and (AVX2)
 const Vec8f = @Vector(8, f32);
 
-/// SIMD vector 32 x i8 = 256 [EN]and[EN] (for [EN]and[EN]in)
+/// SIMD vector 32 x i8 = 256 and (for andin)
 const Vec32i8 = @Vector(32, i8);
 
-/// [CYR:[EN]]in[CYR:[EN]]and[EN] [EN]and[EN]in in i8 array for SIMD
+/// inand andin in i8 array for SIMD
 fn tritsToI8(trits: []const prometheus.TritWeight, out: []i8) void {
     for (trits, 0..) |t, i| {
         out[i] = t.toInt();
     }
 }
 
-/// SIMD-[CYR:[EN]]and[EN]and[EN]and[EN]in[CYR:[EN]] [CYR:[EN]]and[CYR:[EN]] [CYR:[EN]]and[EN]
-/// Processes 8 login[CYR:[EN]] [EN]on[CYR:[EN]]and[EN] [EN] [CYR:[EN]]
+/// SIMD-andandin and and
+/// Processes 8 login onand  
 pub fn simdMatmul(
     output: []f32,
     input: []const f32,
@@ -82,7 +82,7 @@ pub fn simdMatmul(
 ) void {
     @memset(output, 0.0);
 
-    // [CYR:[EN]]in[CYR:[EN]]and[CYR:[EN]] [EN]and[EN] in i8 [EN]and[EN] [CYR:[EN]]
+    // inand and in i8 and 
     for (weights, 0..) |w, i| {
         trit_buffer[i] = w.toInt();
     }
@@ -92,13 +92,13 @@ pub fn simdMatmul(
         var sum_scalar: f32 = 0.0;
         const weight_offset = o * in_features;
 
-        // [CYR:[EN]]in[CYR:[EN]] by 8 element[EN]in [EN] [CYR:[EN]]
+        // in by 8 elementin  
         var i: usize = 0;
         while (i + 8 <= in_features) : (i += 8) {
-            // [CYR:[EN]] 8 login[CYR:[EN]] [EN]on[CYR:[EN]]and[EN]
+            //  8 login onand
             const input_vec: Vec8f = input[i..][0..8].*;
 
-            // [CYR:[EN]] 8 [EN]and[EN]in and to[EN]in[CYR:[EN]]and[CYR:[EN]] in f32
+            //  8 andin and toinand in f32
             const t0: f32 = @floatFromInt(trit_buffer[weight_offset + i + 0]);
             const t1: f32 = @floatFromInt(trit_buffer[weight_offset + i + 1]);
             const t2: f32 = @floatFromInt(trit_buffer[weight_offset + i + 2]);
@@ -110,21 +110,21 @@ pub fn simdMatmul(
 
             const trit_vec: Vec8f = .{ t0, t1, t2, t3, t4, t5, t6, t7 };
 
-            // SIMD [CYR:[EN]]and[EN] and onto[CYR:[EN]]and[EN]
-            // [CYR:[EN]] [EN]and[EN]in {-1, 0, +1} this [EN]toinandin[CYR:[EN]]:
-            // +1: before[EN]inand[EN] x
-            // -1: in[CYR:[EN]]with[EN] x
-            //  0: [EN]and[CYR:[EN]]
+            // SIMD and and ontoand
+            //  andin {-1, 0, +1} this toinandin:
+            // +1: beforeinand x
+            // -1: inwith x
+            //  0: and
             sum_vec += input_vec * trit_vec;
         }
 
-        // [CYR:[EN]]and[CYR:[EN]]on[EN] with[CYR:[EN]] SIMD in[EN]to[CYR:[EN]]
+        // andon with SIMD into
         const sum_arr: [8]f32 = sum_vec;
         for (sum_arr) |v| {
             sum_scalar += v;
         }
 
-        // [EN]with[CYR:[EN]]to (withto[CYR:[EN]])
+        // withto (withto)
         while (i < in_features) : (i += 1) {
             const w = trit_buffer[weight_offset + i];
             const x = input[i];
@@ -135,7 +135,7 @@ pub fn simdMatmul(
     }
 }
 
-/// SIMD [CYR:[EN]] [CYR:[EN]]and[EN] - [CYR:[EN]]to[EN] with[CYR:[EN]]and[EN]/in[EN]and[CYR:[EN]]and[EN] via [EN]withtoand
+/// SIMD  and - to withand/inand via withtoand
 pub fn simdMatmulNoMul(
     output: []f32,
     input: []const f32,
@@ -146,7 +146,7 @@ pub fn simdMatmulNoMul(
 ) void {
     @memset(output, 0.0);
 
-    // [CYR:[EN]]in[CYR:[EN]]and[CYR:[EN]] [EN]and[EN] in i8
+    // inand and in i8
     for (weights, 0..) |w, i| {
         trit_buffer[i] = w.toInt();
     }
@@ -162,34 +162,34 @@ pub fn simdMatmulNoMul(
         while (i + 8 <= in_features) : (i += 8) {
             const input_vec: Vec8f = input[i..][0..8].*;
 
-            // [CYR:[EN]]yes[EN] [EN]withtoand for by[CYR:[EN]]and[CYR:[EN]] and from[EN]and[CYR:[EN]] [EN]and[EN]in
+            // yes withtoand for byand and fromand andin
             const t = trit_buffer[weight_offset + i ..][0..8];
 
-            // [EN]withto[EN] by[CYR:[EN]]and[CYR:[EN]] (t == 1)
+            // withto byand (t == 1)
             const pos_mask: @Vector(8, bool) = .{
                 t[0] == 1, t[1] == 1, t[2] == 1, t[3] == 1,
                 t[4] == 1, t[5] == 1, t[6] == 1, t[7] == 1,
             };
 
-            // [EN]withto[EN] from[EN]and[CYR:[EN]] (t == -1)
+            // withto fromand (t == -1)
             const neg_mask: @Vector(8, bool) = .{
                 t[0] == -1, t[1] == -1, t[2] == -1, t[3] == -1,
                 t[4] == -1, t[5] == -1, t[6] == -1, t[7] == -1,
             };
 
-            // [EN]and[CYR:[EN]] [EN]withtoand
+            // and withtoand
             const zeros: Vec8f = @splat(0.0);
             pos_sum += @select(f32, pos_mask, input_vec, zeros);
             neg_sum += @select(f32, neg_mask, input_vec, zeros);
         }
 
-        // [CYR:[EN]]and[CYR:[EN]] with[CYR:[EN]]
+        // and with
         const pos_arr: [8]f32 = pos_sum;
         const neg_arr: [8]f32 = neg_sum;
         for (pos_arr) |v| pos_scalar += v;
         for (neg_arr) |v| neg_scalar += v;
 
-        // [EN]with[CYR:[EN]]to
+        // withto
         while (i < in_features) : (i += 1) {
             const w = trit_buffer[weight_offset + i];
             const x = input[i];

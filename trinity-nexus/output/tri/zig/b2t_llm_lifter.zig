@@ -15,10 +15,10 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]A[TRANSLATED]]
+// [CYR:A]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// [CYR:[TRANSLATED]]iny[EN] φ-to[EN]with[CYR:[TRANSLATED]y] (Sacred Formula)
+// iny φ-towithy] (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -30,7 +30,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// 
@@ -234,7 +234,7 @@ pub const ImprovementMetrics = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]A[TRANSLATED]] [CYR:[TRANSLATED]] WASM
+// [CYR:A]  WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -284,13 +284,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-and[CYR:[TRANSLATED]]fields[EN]andI
+/// φ-andfieldsandI
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// [EN]not[CYR:[TRANSLATED]]andI φ-with[EN]and[CYR:[TRANSLATED]]and
+/// notandI φ-withand
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -558,7 +558,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 
 test "lift_with_llm_behavior" {
 // Given: b2t_disasm.DisassemblyResult and LLMLiftingConfig
-// When: [CYR:[TRANSLATED]ny] [CYR:[TRANSLATED]] lifting with LLM
+// When: [CYR:ny]  lifting with LLM
 // Then: Returns List<EnhancedTVCFunction>
 // Test lift_with_llm: verify behavior is callable (compile-time check)
 _ = lift_with_llm;
@@ -566,15 +566,15 @@ _ = lift_with_llm;
 
 test "lift_function_with_llm_behavior" {
 // Given: b2t_disasm.BasicBlock[] and LLMLiftingConfig
-// When: Lifting [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]to[EN]andand with LLM-[CYR:[TRANSLATED]]andI[EN]and
+// When: Lifting  toand with LLM-andIand
 // Then: Returns EnhancedTVCFunction
 // Test lift_function_with_llm: verify behavior is callable (compile-time check)
 _ = lift_function_with_llm;
 }
 
 test "get_lifting_progress_behavior" {
-// Given: [EN]to[EN]and[EN] to[CYR:[TRANSLATED]]towith[EN] lifting
-// When: [CYR:[EN]pro]with [CYR:pro[TRANSLATED]]withwith[EN]
+// Given: toand totowith lifting
+// When: [CYR:pro]with [CYR:pro]with
 // Then: Returns LiftingProgress
 // Test get_lifting_progress: verify behavior is callable (compile-time check)
 _ = get_lifting_progress;
@@ -582,8 +582,8 @@ _ = get_lifting_progress;
 
 test "recover_function_name_behavior" {
 // Given: LiftedFunction and SemanticContext
-// When: [EN]withwith[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] and[CYR:me]and [CYR:[TRANSLATED]]to[EN]andand [CYR:[TRANSLATED]] LLM
-// Then: Returns String and[EN]I and Float confidence
+// When: withinand and[CYR:me]and toand  LLM
+// Then: Returns String andI and Float confidence
 // Test recover_function_name: verify returns a float in valid range
 // TODO: Add specific test for recover_function_name
 _ = recover_function_name;
@@ -591,7 +591,7 @@ _ = recover_function_name;
 
 test "recover_variable_names_behavior" {
 // Given: LiftedFunction and SemanticContext
-// When: [EN]withwith[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]me[EN]y[EN]] [CYR:[TRANSLATED]] LLM
+// When: withinand and [CYR:mey]  LLM
 // Then: Returns Map<Int, String>
 // Test recover_variable_names: verify behavior is callable (compile-time check)
 _ = recover_variable_names;
@@ -599,7 +599,7 @@ _ = recover_variable_names;
 
 test "recover_parameter_names_behavior" {
 // Given: LiftedFunction and call graph context
-// When: [EN]withwith[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] and[CYR:[TRANSLATED]] parameter[EN]in
+// When: withinand and parameterin
 // Then: Returns List<String>
 // Test recover_parameter_names: verify behavior is callable (compile-time check)
 _ = recover_parameter_names;
@@ -607,31 +607,31 @@ _ = recover_parameter_names;
 
 test "infer_types_with_llm_behavior" {
 // Given: LiftedFunction and data flow
-// When: [CYR:[TRANSLATED]ny] inyin[EN] [EN]and[EN]in [CYR:[TRANSLATED]] LLM
-// Then: Returns Map<Int, String> [EN]and[EN]in
+// When: [CYR:ny] inyin andin  LLM
+// Then: Returns Map<Int, String> andin
 // Test infer_types_with_llm: verify behavior is callable (compile-time check)
 _ = infer_types_with_llm;
 }
 
 test "infer_return_type_behavior" {
 // Given: LiftedFunction and call sites
-// When: Vyin[EN] [EN]and[EN] in[EN]in[CYR:[TRANSLATED]]
-// Then: Returns String [EN]and[EN]
+// When: Vyin and inin
+// Then: Returns String and
 // Test infer_return_type: verify behavior is callable (compile-time check)
 _ = infer_return_type;
 }
 
 test "infer_parameter_types_behavior" {
 // Given: LiftedFunction and calling convention
-// When: Vyin[EN] [EN]and[EN]in parameter[EN]in
-// Then: Returns List<String> [EN]and[EN]in
+// When: Vyin andin parameterin
+// Then: Returns List<String> andin
 // Test infer_parameter_types: verify behavior is callable (compile-time check)
 _ = infer_parameter_types;
 }
 
 test "detect_struct_access_behavior" {
 // Given: TVC IR with memory operations
-// When: [EN]andwithto [CYR:[TRANSLATED]]in [EN]with[CYR:[TRANSLATED]] to with[CYR:[TRANSLATED]]to[CYR:[TRANSLATED]]
+// When: andwithto in with to withto
 // Then: Returns List<StructAccessPattern>
 // Test detect_struct_access: verify behavior is callable (compile-time check)
 _ = detect_struct_access;
@@ -639,7 +639,7 @@ _ = detect_struct_access;
 
 test "recover_struct_definition_behavior" {
 // Given: List<StructAccessPattern>
-// When: [EN]withwith[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]andI with[CYR:[TRANSLATED]]to[CYR:[TRANSLATED]y] [CYR:[TRANSLATED]] LLM
+// When: withinand andI withfory]  LLM
 // Then: Returns StructDef
 // Test recover_struct_definition: verify behavior is callable (compile-time check)
 _ = recover_struct_definition;
@@ -647,15 +647,15 @@ _ = recover_struct_definition;
 
 test "apply_struct_types_behavior" {
 // Given: LiftedFunction and List<StructDef>
-// When: [EN]and[EN]not[EN]and[EN] with[CYR:[TRANSLATED]]to[CYR:[TRANSLATED]y[EN]] [EN]and[EN]in to IR
-// Then: [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] type annotations
+// When: andnotand withfory] andin to IR
+// Then: in[CYR:I] type annotations
 // Test apply_struct_types: verify behavior is callable (compile-time check)
 _ = apply_struct_types;
 }
 
 test "recognize_idioms_behavior" {
-// Given: TVC IR [CYR:[TRANSLATED]]to
-// When: [EN]with[CYR:[TRANSLATED]]onin[EN]and[EN] and[EN]and[EN] (malloc/free, strlen, memcpy)
+// Given: TVC IR to
+// When: withoninand and (malloc/free, strlen, memcpy)
 // Then: Returns List<RecognizedIdiom>
 // Test recognize_idioms: verify behavior is callable (compile-time check)
 _ = recognize_idioms;
@@ -663,7 +663,7 @@ _ = recognize_idioms;
 
 test "recognize_algorithms_behavior" {
 // Given: LiftedFunction
-// When: [EN]with[CYR:[TRANSLATED]]onin[EN]and[EN] [CYR:algorithm]and[CYR:[TRANSLATED]]in (sort, search, hash)
+// When: withoninand [CYR:algorithm]andin (sort, search, hash)
 // Then: Returns Option<AlgorithmMatch>
 // Test recognize_algorithms: verify behavior is callable (compile-time check)
 _ = recognize_algorithms;
@@ -671,15 +671,15 @@ _ = recognize_algorithms;
 
 test "apply_pattern_knowledge_behavior" {
 // Given: LiftedFunction and recognized patterns
-// When: [EN]and[EN]not[EN]and[EN] [EN]on[EN]and[EN]  [CYR:[TRANSLATED]]on[EN]
-// Then: [CYR:[TRANSLATED]acts] and[EN]on and to[CYR:[EN]me[TRANSLATED]]andand
+// When: andnotand onand  on
+// Then: [CYR:acts] andon and forme]and
 // Test apply_pattern_knowledge: verify behavior is callable (compile-time check)
 _ = apply_pattern_knowledge;
 }
 
 test "generate_function_comment_behavior" {
 // Given: EnhancedTVCFunction
-// When: [EN]not[CYR:[TRANSLATED]]andI [EN]to[CYR:[EN]me[EN]]and[CYR:[TRANSLATED]go] to[CYR:[EN]me[TRANSLATED]]andI
+// When: notandI forme]and[CYR:go] forme]andI
 // Then: Returns CodeComment
 // Test generate_function_comment: verify behavior is callable (compile-time check)
 _ = generate_function_comment;
@@ -687,7 +687,7 @@ _ = generate_function_comment;
 
 test "generate_inline_comments_behavior" {
 // Given: EnhancedTVCFunction
-// When: [EN]not[CYR:[TRANSLATED]]andI inline to[CYR:[EN]me[TRANSLATED]]and[EN]in for with[CYR:[TRANSLATED]y[EN]] [CYR:[TRANSLATED]]with[EN]to[EN]in
+// When: notandI inline forme]andin for withy] withtoin
 // Then: Returns List<CodeComment>
 // Test generate_inline_comments: verify behavior is callable (compile-time check)
 _ = generate_inline_comments;
@@ -695,7 +695,7 @@ _ = generate_inline_comments;
 
 test "generate_warning_comments_behavior" {
 // Given: EnhancedTVCFunction and detected issues
-// When: [EN]not[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]]and[EN]
+// When: notandI and
 // Then: Returns List<CodeComment>
 // Test generate_warning_comments: verify behavior is callable (compile-time check)
 _ = generate_warning_comments;
@@ -703,23 +703,23 @@ _ = generate_warning_comments;
 
 test "validate_enhanced_ir_behavior" {
 // Given: EnhancedTVCFunction
-// When: Check to[CYR:[TRANSLATED]]to[CYR:[TRANSLATED]]with[EN]and [CYR:[TRANSLATED]]and[EN]
+// When: Check totowithand and
 // Then: Returns Bool and List<ValidationIssue>
 // Test validate_enhanced_ir: verify behavior is callable (compile-time check)
 _ = validate_enhanced_ir;
 }
 
 test "compare_with_baseline_behavior" {
-// Given: EnhancedTVCFunction and [CYR:[TRANSLATED]]iny[EN] LiftedFunction
-// When: [CYR:[TRANSLATED]]innot[EN]and[EN] with baseline
+// Given: EnhancedTVCFunction and iny LiftedFunction
+// When: innotand with baseline
 // Then: Returns ImprovementMetrics
 // Test compare_with_baseline: verify behavior is callable (compile-time check)
 _ = compare_with_baseline;
 }
 
 test "rollback_to_baseline_behavior" {
-// Given: EnhancedTVCFunction with [EN]and[EN]to[EN]and
-// When: [EN]to[EN] to [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] IR
+// Given: EnhancedTVCFunction with andtoand
+// When: to to in IR
 // Then: Returns LiftedFunction
 // Test rollback_to_baseline: verify behavior is callable (compile-time check)
 _ = rollback_to_baseline;

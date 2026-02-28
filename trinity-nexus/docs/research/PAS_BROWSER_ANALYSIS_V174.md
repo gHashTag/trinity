@@ -1,17 +1,17 @@
 # 🔬 PAS BROWSER ANALYSIS V174
 
-**[CYR:Дата]:** 2026-01-20  
-**[CYR:Вер]withandя:** 174.0.0  
+**[CYR:[TRANSLATED]]:** 2026-01-20  
+**[CYR:[TRANSLATED]]withandя:** 174.0.0  
 **φ² + 1/φ² = 3 | PHOENIX = 999**
 
 ---
 
-## 🧬 8 PAS DAEMONS [CYR:ДЛЯ] [CYR:БРАУЗЕРА]
+## 🧬 8 PAS DAEMONS [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ### D&C DAEMON (v163) - 31% success rate
-**Прandмеnotнandе:** [CYR:Параллельные] into[CYR:лад]toand, DOM traversal
+**Прandмеnotнandе:** [CYR:[TRANSLATED]] infor[TRANSLATED]]toand, DOM traversal
 
-| [CYR:Операц]andя | Speedup |
+| [CYR:[TRANSLATED]]andя | Speedup |
 |----------|---------|
 | Parallel navigate | Nx |
 | Parallel screenshot | Nx |
@@ -22,9 +22,9 @@
 ---
 
 ### ALG DAEMON (v164) - 22% success rate
-**Прandмеnotнandе:** [CYR:Опт]andмand[CYR:зац]andя with[CYR:еле]to[CYR:торо]in, query planning
+**Прandмеnotнandе:** [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя with[TRANSLATED]]for[TRANSLATED]]in, query planning
 
-| [CYR:Операц]andя | Speedup |
+| [CYR:[TRANSLATED]]andя | Speedup |
 |----------|---------|
 | Selector simplification | 2x |
 | Query optimization | 3x |
@@ -35,9 +35,9 @@
 ---
 
 ### PRE DAEMON (v165) - 16% success rate
-**Прandмеnotнandе:** [CYR:Кэш]andроinанandе DOM, network, selectors
+**Прandмеnotнandе:** [CYR:[TRANSLATED]]andроinанandе DOM, network, selectors
 
-| [CYR:Операц]andя | Speedup |
+| [CYR:[TRANSLATED]]andя | Speedup |
 |----------|---------|
 | DOM cache hit | 10x |
 | Network prefetch | 5x |
@@ -50,7 +50,7 @@
 ### FDT DAEMON (v166) - 13% success rate
 **Прandмеnotнandе:** Audio/video processing, image compression
 
-| [CYR:Операц]andя | Speedup |
+| [CYR:[TRANSLATED]]andя | Speedup |
 |----------|---------|
 | FFT audio | 100x vs naive |
 | Image DCT | 50x |
@@ -61,9 +61,9 @@
 ---
 
 ### MLS DAEMON (v167) - 6% success rate (growing!)
-**Прandмеnotнandе:** ML with[CYR:еле]to[CYR:торы], self-healing, action prediction
+**Прandмеnotнandе:** ML with[TRANSLATED]]for[TRANSLATED]], self-healing, action prediction
 
-| [CYR:Операц]andя | Improvement |
+| [CYR:[TRANSLATED]]andя | Improvement |
 |----------|-------------|
 | Selector robustness | 2x |
 | Self-healing success | 85% |
@@ -76,7 +76,7 @@
 ### TEN DAEMON (v168) - 6% success rate
 **Прandмеnotнandе:** GPU rendering, WebGL, tensor ops
 
-| [CYR:Операц]andя | Speedup |
+| [CYR:[TRANSLATED]]andя | Speedup |
 |----------|---------|
 | GPU render | 100x vs CPU |
 | Tensor matmul | 50x |
@@ -89,7 +89,7 @@
 ### HSH DAEMON (v169) - 4% success rate
 **Прandмеnotнandе:** O(1) element lookup, fingerprinting
 
-| [CYR:Операц]andя | Complexity |
+| [CYR:[TRANSLATED]]andя | Complexity |
 |----------|------------|
 | Element lookup | O(1) |
 | DOM indexing | O(n) once |
@@ -102,7 +102,7 @@
 ### PRB DAEMON (v170) - 2% success rate
 **Прandмеnotнandе:** QRNG, probabilistic testing, Monte Carlo
 
-| [CYR:Операц]andя | Quality |
+| [CYR:[TRANSLATED]]andя | Quality |
 |----------|---------|
 | Quantum random | Perfect entropy |
 | Monte Carlo | Convergent |

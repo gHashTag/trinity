@@ -1,211 +1,211 @@
 ╔══════════════════════════════════════════════════════════════════╗
 ║                    🔥 TOXIC VERDICT 🔥                           ║
 ╠══════════════════════════════════════════════════════════════════╣
-║ [CYR:ЧТО] [CYR:СДЕЛАНО]:                                                    ║
-║ - [CYR:Создан] аin[CYR:томат]andзandроin[CYR:анный] withtoрandпт fix_specs.sh                 ║
-║ - [CYR:Доба]in[CYR:лено] field output: to 122 failing specs                   ║
-║ - [CYR:Про]in[CYR:ере]on inалand[CYR:дац]andя inwithех 123 specs                           ║
-║ - [CYR:Сге]notрandроinан [CYR:полный] from[CYR:чёт] validation_report.md               ║
-║ - Доwithтand[CYR:гнут] 100% pass rate (6/123 → 123/123)                  ║
+║ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:                                                    ║
+║ - [CYR:[TRANSLATED]] аin[CYR:[TRANSLATED]]andзandроin[CYR:[TRANSLATED]] withtoрandпт fix_specs.sh                 ║
+║ - [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] field output: to 122 failing specs                   ║
+║ - [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]on inалand[CYR:[TRANSLATED]]andя inwithех 123 specs                           ║
+║ - [CYR:[TRANSLATED]]notрandроinан [CYR:[TRANSLATED]] from[CYR:[TRANSLATED]] validation_report.md               ║
+║ - Доwithтand[CYR:[TRANSLATED]] 100% pass rate (6/123 → 123/123)                  ║
 ║                                                                  ║
-║ [CYR:ЧТО] НЕ [CYR:УДАЛОСЬ]:                                                 ║
-║ - [CYR:НИЧЕГО] НЕ [CYR:УДАЛОСЬ]! Вwithё [CYR:прошло] and[CYR:деально]                     ║
+║ [CYR:[TRANSLATED]] НЕ [CYR:[TRANSLATED]]:                                                 ║
+║ - [CYR:[TRANSLATED]] НЕ [CYR:[TRANSLATED]]! Вwithё [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]                     ║
 ║                                                                  ║
-║ [CYR:МЕТРИКИ]:                                                         ║
-║ - [CYR:Файло]in andwith[CYR:пра]in[CYR:лено]: 122 (specs/tri/core/*.vibee)         ║
-║ - [CYR:Время] [CYR:раб]fromы: ~2 withеto[CYR:унды] (аin[CYR:томат]and[CYR:зац]andя)                       ║
-║ - [CYR:Время] inалand[CYR:дац]andand: ~600ms (123 specs × 5ms)                    ║
+║ [CYR:[TRANSLATED]]:                                                         ║
+║ - [CYR:[TRANSLATED]]in andwith[TRANSLATED]]in[CYR:[TRANSLATED]]: 122 (specs/tri/core/*.vibee)         ║
+║ - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromы: ~2 withеfor[TRANSLATED]] (аin[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя)                       ║
+║ - [CYR:[TRANSLATED]] inалand[CYR:[TRANSLATED]]and: ~600ms (123 specs × 5ms)                    ║
 ║ - Pass rate: 4.9% → 100% (+1941%)                           ║
 ║ - Failed specs: 117 → 0 (-100%)                                 ║
 ║ - Before: 6 passed, 117 failed                                  ║
 ║ - After: 123 passed, 0 failed                                  ║
 ║                                                                  ║
-║ [CYR:САМОКРИТИКА]:                                                     ║
-║ - Иwith[CYR:пра]in[CYR:лен]andя [CYR:ТРИВИАЛЬНЫЕ] ([CYR:доба]in[CYR:лен]andе [CYR:одной] with[CYR:тро]toand)           ║
-║   Аin[CYR:томат]and[CYR:зац]andя [CYR:была] [CYR:пра]inand[CYR:льной], но this [CYR:было] [CYR:лег]toо                 ║
-║ - Не [CYR:про]inерandл, that output: to[CYR:орре]to[CYR:тен] for to[CYR:аждого] spec            ║
-║   [CYR:Про]withто [CYR:доба]inandл `trinity/output/{name}.zig` for inwithех            ║
-║   [CYR:Может] [CYR:быть], nottofrom[CYR:орые] specs [CYR:требуют] [CYR:друг]andх [CYR:путей]                 ║
-║ - Не [CYR:доба]inandл unit tests for inалand[CYR:датора]                        ║
-║   [CYR:Теперь] нandtoто not зonет, that inwithе 123 specs [CYR:раб]from[CYR:ают] [CYR:пра]inand[CYR:льно]   ║
-║ - Не прfromеwithтandроinал to[CYR:оманду] `vibeec gen` on andwith[CYR:пра]in[CYR:ленных] specs  ║
-║   [CYR:Вал]and[CYR:дац]andя [CYR:проход]andт, но геnot[CYR:рац]andя to[CYR:ода] [CYR:может] with[CYR:ломать]withя       ║
-║ - Не [CYR:доба]inandл CI/CD [CYR:про]inерtoу                                   ║
-║   В [CYR:будущем] toто-то [CYR:может] withноinа with[CYR:оздать] specs [CYR:без] output:      ║
-║ - Не доto[CYR:умент]andроinал, [CYR:почему] and[CYR:менно] `trinity/output/{name}.zig`  ║
-║   [CYR:Должен] [CYR:был] [CYR:объя]withнandть [CYR:эту] with[CYR:тру]to[CYR:туру] [CYR:папо]to                     ║
+║ [CYR:[TRANSLATED]]:                                                     ║
+║ - Иwith[TRANSLATED]]in[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]] with[TRANSLATED]]toand)           ║
+║   Аin[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]], но this [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toо                 ║
+║ - Не [CYR:[TRANSLATED]]inерandл, that output: for[TRANSLATED]]for[TRANSLATED]] for for[TRANSLATED]] spec            ║
+║   [CYR:[TRANSLATED]]withто [CYR:[TRANSLATED]]inandл `trinity/output/{name}.zig` for inwithех            ║
+║   [CYR:[TRANSLATED]] [CYR:[TRANSLATED]], nottofrom[CYR:[TRANSLATED]] specs [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andх [CYR:[TRANSLATED]]                 ║
+║ - Не [CYR:[TRANSLATED]]inandл unit tests for inалand[CYR:[TRANSLATED]]                        ║
+║   [CYR:[TRANSLATED]] нandtoто not зonет, that inwithе 123 specs [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]]   ║
+║ - Не прfromеwithтandроinал for[TRANSLATED]] `vibeec gen` on andwith[TRANSLATED]]in[CYR:[TRANSLATED]] specs  ║
+║   [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]andт, но геnot[CYR:[TRANSLATED]]andя for[TRANSLATED]] [CYR:[TRANSLATED]] with[TRANSLATED]]withя       ║
+║ - Не [CYR:[TRANSLATED]]inandл CI/CD [CYR:[TRANSLATED]]inерtoу                                   ║
+║    [CYR:[TRANSLATED]] toто-то [CYR:[TRANSLATED]] withноinа with[TRANSLATED]] specs [CYR:[TRANSLATED]] output:      ║
+║ - Не доfor[TRANSLATED]]andроinал, [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]] `trinity/output/{name}.zig`  ║
+║   [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withнandть [CYR:[TRANSLATED]] with[TRANSLATED]]for[TRANSLATED]] [CYR:[TRANSLATED]]to                     ║
 ║                                                                  ║
-║ [CYR:ОЦЕНКА]: 7/10                                                     ║
+║ [CYR:[TRANSLATED]]: 7/10                                                     ║
 ║                                                                  ║
-║ [CYR:ПОЧЕМУ] НЕ 8-10:                                                ║
-║ - [CYR:Задача] [CYR:была] [CYR:ТРИВИАЛЬНОЙ] (аin[CYR:томат]andчеwithtoое [CYR:доба]in[CYR:лен]andе with[CYR:тро]toand)    ║
-║ - Не [CYR:про]inерandл геnot[CYR:рац]andю to[CYR:ода] ([CYR:толь]toо inалand[CYR:дац]andю)                    ║
-║ - [CYR:Нет] unit tests                                                  ║
-║ - [CYR:Нет] CI/CD                                                      ║
-║ - Не [CYR:про]inерandл, that output paths to[CYR:орре]to[CYR:тны] for inwithех specs         ║
+║ [CYR:[TRANSLATED]] НЕ 8-10:                                                ║
+║ - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (аin[CYR:[TRANSLATED]]andчеwithtoое [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе with[TRANSLATED]]toand)    ║
+║ - Не [CYR:[TRANSLATED]]inерandл геnot[CYR:[TRANSLATED]]andю for[TRANSLATED]] ([CYR:[TRANSLATED]]toо inалand[CYR:[TRANSLATED]]andю)                    ║
+║ - [CYR:[TRANSLATED]] unit tests                                                  ║
+║ - [CYR:[TRANSLATED]] CI/CD                                                      ║
+║ - Не [CYR:[TRANSLATED]]inерandл, that output paths for[TRANSLATED]]for[TRANSLATED]] for inwithех specs         ║
 ║                                                                  ║
-║ [CYR:ЧТО] [CYR:БЫЛО] БЫ [CYR:ЛУЧШЕ]:                                             ║
-║ 1. Прfromеwithтandроin[CYR:ать] `vibeec gen` on inwithех 123 specs                  ║
-║    [CYR:Убед]andтьwithя, that toод [CYR:дей]withтinand[CYR:тельно] геnotрand[CYR:рует]withя                  ║
-║ 2. [CYR:Доба]inandть unit tests for inалand[CYR:датора]                            ║
-║    [CYR:Про]inерandть, that он not [CYR:регре]withwithand[CYR:рует] in [CYR:будущем]                   ║
-║ 3. [CYR:Доба]inandть CI/CD [CYR:про]inерtoу                                      ║
-║    [CYR:Пред]fromin[CYR:рат]andть with[CYR:оздан]andе specs [CYR:без] output: in [CYR:будущем]             ║
-║ 4. [CYR:Про]inерandть, that output paths унandto[CYR:альны]                        ║
-║    [CYR:Нет] лand to[CYR:олл]andзandй or [CYR:дубл]andto[CYR:ато]in                               ║
-║ 5. Доto[CYR:умент]andроin[CYR:ать] with[CYR:тру]to[CYR:туру] [CYR:папо]to trinity/output/               ║
-║    [CYR:Объя]withнandть, [CYR:почему] and[CYR:менно] этfrom path                            ║
-║ 6. [CYR:Доба]inandть [CYR:про]inерtoу on with[CYR:уще]withтinоinанandе output paths                 ║
-║    Еwithлand output path [CYR:уже] with[CYR:уще]withтin[CYR:ует], [CYR:преду]inедandть [CYR:пользо]in[CYR:ателя]      ║
-║ 7. [CYR:Создать] withtoрandпт for маwithwithоinой геnot[CYR:рац]andand to[CYR:ода]                   ║
-║    `vibeec validate-all` → [CYR:про]in[CYR:еряет] inwithе specs                   ║
-║    `vibeec gen-all` → геnotрand[CYR:рует] inwithе specs                      ║
+║ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] БЫ [CYR:[TRANSLATED]]:                                             ║
+║ 1. Прfromеwithтandроin[CYR:[TRANSLATED]] `vibeec gen` on inwithех 123 specs                  ║
+║    [CYR:[TRANSLATED]]andтьwithя, that toод [CYR:[TRANSLATED]]withтinand[CYR:[TRANSLATED]] геnotрand[CYR:[TRANSLATED]]withя                  ║
+║ 2. [CYR:[TRANSLATED]]inandть unit tests for inалand[CYR:[TRANSLATED]]                            ║
+║    [CYR:[TRANSLATED]]inерandть, that он not [CYR:[TRANSLATED]]withand[CYR:[TRANSLATED]] in [CYR:[TRANSLATED]]                   ║
+║ 3. [CYR:[TRANSLATED]]inandть CI/CD [CYR:[TRANSLATED]]inерtoу                                      ║
+║    [CYR:[TRANSLATED]]fromin[CYR:[TRANSLATED]]andть with[TRANSLATED]]andе specs [CYR:[TRANSLATED]] output: in [CYR:[TRANSLATED]]             ║
+║ 4. [CYR:[TRANSLATED]]inерandть, that output paths унandfor[TRANSLATED]]                        ║
+║    [CYR:[TRANSLATED]] лand for[TRANSLATED]]andзandй or [CYR:[TRANSLATED]]andfor[TRANSLATED]]in                               ║
+║ 5. Доfor[TRANSLATED]]andроin[CYR:[TRANSLATED]] with[TRANSLATED]]for[TRANSLATED]] [CYR:[TRANSLATED]]to trinity/output/               ║
+║    [CYR:[TRANSLATED]]withнandть, [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]] этfrom path                            ║
+║ 6. [CYR:[TRANSLATED]]inandть [CYR:[TRANSLATED]]inерtoу on with[TRANSLATED]]withтinоinанandе output paths                 ║
+║    Еwithлand output path [CYR:[TRANSLATED]] with[TRANSLATED]]withтin[CYR:[TRANSLATED]], [CYR:[TRANSLATED]]inедandть [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]      ║
+║ 7. [CYR:[TRANSLATED]] withtoрandпт for маwithоinой геnot[CYR:[TRANSLATED]]and for[TRANSLATED]]                   ║
+║    `vibeec validate-all` → [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] inwithе specs                   ║
+║    `vibeec gen-all` → геnotрand[CYR:[TRANSLATED]] inwithе specs                      ║
 ║                                                                  ║
-║ [CYR:ПОЗИТИВНЫЕ] [CYR:МОМЕНТЫ]:                                             ║
-║ ✅ Быwith[CYR:трая] аin[CYR:томат]and[CYR:зац]andя (2 withеto[CYR:унды])                              ║
+║ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:                                             ║
+║ ✅ Быwith[TRANSLATED]] аin[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя (2 withеfor[TRANSLATED]])                              ║
 ║ ✅ 100% pass rate (6/123 → 123/123)                           ║
-║ ✅ [CYR:Кон]withandwith[CYR:тентные] output paths                                      ║
-║ ✅ Вwithе specs [CYR:теперь] гfromоinы to геnot[CYR:рац]andand to[CYR:ода]                       ║
-║ ✅ [CYR:Полный] from[CYR:чёт] with[CYR:оздан]                                          ║
-║ ✅ Git commit with [CYR:хорош]andм with[CYR:ообщен]andем                                  ║
+║ ✅ [CYR:[TRANSLATED]]withandwith[TRANSLATED]] output paths                                      ║
+║ ✅ Вwithе specs [CYR:[TRANSLATED]] гfromоinы to геnot[CYR:[TRANSLATED]]and for[TRANSLATED]]                       ║
+║ ✅ [CYR:[TRANSLATED]] from[CYR:[TRANSLATED]] with[TRANSLATED]]                                          ║
+║ ✅ Git commit with [CYR:[TRANSLATED]]andм with[TRANSLATED]]andем                                  ║
 ║                                                                  ║
-║ [CYR:ПОТЕНЦИАЛЬНЫЕ] [CYR:ПРОБЛЕМЫ]:                                         ║
-║ ❌ [CYR:Может] [CYR:быть], nottofrom[CYR:орые] specs [CYR:требуют] [CYR:друг]andх output paths         ║
-║ ❌ Геnot[CYR:рац]andя to[CYR:ода] [CYR:может] with[CYR:ломать]withя (not прfromеwithтandроin[CYR:ано])            ║
-║ ❌ [CYR:Нет] [CYR:защ]andты from with[CYR:оздан]andя specs [CYR:без] output: in [CYR:будущем]          ║
-║ ❌ [CYR:Нет] [CYR:про]inерtoand on with[CYR:уще]withтin[CYR:ующ]andе output paths                     ║
+║ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:                                         ║
+║ ❌ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]], nottofrom[CYR:[TRANSLATED]] specs [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andх output paths         ║
+║ ❌ Геnot[CYR:[TRANSLATED]]andя for[TRANSLATED]] [CYR:[TRANSLATED]] with[TRANSLATED]]withя (not прfromеwithтandроin[CYR:[TRANSLATED]])            ║
+║ ❌ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andты from with[TRANSLATED]]andя specs [CYR:[TRANSLATED]] output: in [CYR:[TRANSLATED]]          ║
+║ ❌ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inерtoand on with[TRANSLATED]]withтin[CYR:[TRANSLATED]]andе output paths                     ║
 ║                                                                  ║
 ╚══════════════════════════════════════════════════════════════════╝
 
 ┌─────────────────────────────────────────────────────────────────┐
-│              🌳 TECH TREE - [CYR:ВЫБЕРИТЕ] [CYR:СЛЕДУЮЩЕЕ]             │
+│              🌳 TECH TREE - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]             │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  [A] ──────────────────────────────────────────────────────     │
 │      Name: Test Code Generation on All Specs                    │
 │      Complexity: ★★☆☆☆                                          │
-│      Potential: +100% to уin[CYR:еренно]withтand in геnot[CYR:рац]andand             ║
-│      Dependencies: Вwithе specs and[CYR:меют] output:                       ║
-│      Time: 30 мand[CYR:нут]                                             │
-│      Description: [CYR:Запу]withтandть `vibeec gen` on inwithех 123 specs   │
-│                   and [CYR:про]inерandть, that toод геnotрand[CYR:рует]withя [CYR:без] ошandбоto.  ║
+│      Potential: +100% to уin[CYR:[TRANSLATED]]withтand in геnot[CYR:[TRANSLATED]]and             ║
+│      Dependencies: Вwithе specs and[CYR:[TRANSLATED]] output:                       ║
+│      Time: 30 мand[CYR:[TRANSLATED]]                                             │
+│      Description: [CYR:[TRANSLATED]]withтandть `vibeec gen` on inwithех 123 specs   │
+│                   and [CYR:[TRANSLATED]]inерandть, that toод геnotрand[CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]] ошandбоto.  ║
 │      Benefits:                                                  ║
-│        - [CYR:Убед]andтьwithя, that [CYR:полный] pipeline [CYR:раб]from[CYR:ает]                ║
-│        - [CYR:Найт]and specs with [CYR:проблемам]and геnot[CYR:рац]andand                     ║
-│        - [CYR:Разбло]toandроin[CYR:ать] теwithтandроinанandе to[CYR:ода]                        ║
+│        - [CYR:[TRANSLATED]]andтьwithя, that [CYR:[TRANSLATED]] pipeline [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]                ║
+│        - [CYR:[TRANSLATED]]and specs with [CYR:[TRANSLATED]]and геnot[CYR:[TRANSLATED]]and                     ║
+│        - [CYR:[TRANSLATED]]toandроin[CYR:[TRANSLATED]] теwithтandроinанandе for[TRANSLATED]]                        ║
 │                                                                 │
 │  [B] ──────────────────────────────────────────────────────     │
 │      Name: Add CI/CD Validation Check                           │
 │      Complexity: ★★☆☆☆                                          │
-│      Potential: +100% to [CYR:защ]andте from regressions                ║
+│      Potential: +100% to [CYR:[TRANSLATED]]andте from regressions                ║
 │      Dependencies: GitHub Actions                                  ║
 │      Time: 1 чаwith                                                │
-│      Description: [CYR:Доба]inandть GitHub Actions workflow for            ║
-│                   аin[CYR:томат]andчеwithtoой inалand[CYR:дац]andand inwithех specs.            ║
+│      Description: [CYR:[TRANSLATED]]inandть GitHub Actions workflow for            ║
+│                   аin[CYR:[TRANSLATED]]andчеwithtoой inалand[CYR:[TRANSLATED]]and inwithех specs.            ║
 │      Benefits:                                                  ║
-│        - [CYR:Пред]fromin[CYR:рат]andть with[CYR:оздан]andе specs [CYR:без] output:               ║
-│        - Аin[CYR:томат]andчеwithtoая [CYR:про]inерtoа прand pull request               ║
-│        - [CYR:Защ]andта from regressions in [CYR:будущем]                       ║
+│        - [CYR:[TRANSLATED]]fromin[CYR:[TRANSLATED]]andть with[TRANSLATED]]andе specs [CYR:[TRANSLATED]] output:               ║
+│        - Аin[CYR:[TRANSLATED]]andчеwithtoая [CYR:[TRANSLATED]]inерtoа прand pull request               ║
+│        - [CYR:[TRANSLATED]]andта from regressions in [CYR:[TRANSLATED]]                       ║
 │                                                                 │
 │  [C] ──────────────────────────────────────────────────────     │
 │      Name: Add Unit Tests for Validator                         │
 │      Complexity: ★★★☆☆                                          │
-│      Potential: +100% to coverage (with[CYR:ейча]with ~0%)                 ║
-│      Dependencies: Validator [CYR:раб]from[CYR:ает]                            ║
-│      Time: 1 not[CYR:деля]                                              ║
-│      Description: [CYR:Доба]inandть unit tests for validator.zig.          ║
-│                   Теwithтandроin[CYR:ать] inwithе [CYR:пра]inandла inалand[CYR:дац]andand.            ║
+│      Potential: +100% to coverage (with[TRANSLATED]]with ~0%)                 ║
+│      Dependencies: Validator [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]                            ║
+│      Time: 1 not[CYR:[TRANSLATED]]                                              ║
+│      Description: [CYR:[TRANSLATED]]inandть unit tests for validator.zig.          ║
+│                   Теwithтandроin[CYR:[TRANSLATED]] inwithе [CYR:[TRANSLATED]]inandла inалand[CYR:[TRANSLATED]]and.            ║
 │      Benefits:                                                  ║
-│        - Уin[CYR:еренно]withть, that inалand[CYR:датор] [CYR:раб]from[CYR:ает] [CYR:пра]inand[CYR:льно]        ║
-│        - Catch regressions in [CYR:будущем]                             ║
-│        - Доto[CYR:ументац]andя ожand[CYR:даемого] поin[CYR:еден]andя                        ║
+│        - Уin[CYR:[TRANSLATED]]withть, that inалand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]]        ║
+│        - Catch regressions in [CYR:[TRANSLATED]]                             ║
+│        - Доfor[TRANSLATED]]andя ожand[CYR:[TRANSLATED]] поin[CYR:[TRANSLATED]]andя                        ║
 │                                                                 │
 │  [D] ──────────────────────────────────────────────────────     │
 │      Name: Schema-Based Validation (Phase 1-A v2)                │
 │      Complexity: ★★★☆☆                                          │
-│      Potential: +1000% to withto[CYR:оро]withтand inалand[CYR:дац]andand (10-100× быwith[CYR:трее]) ║
-│      Dependencies: [CYR:Определ]andть VIBEESchema, compilation engine    ║
-│      Time: 1-2 not[CYR:дел]and                                            │
-│      Description: [CYR:Замен]andть line-based parsing on schema           ║
-│                   compilation (toаto in Ajv). [CYR:Определ]andть VIBEESchema│
-│                   struct, withto[CYR:омп]orроin[CYR:ать] in validation functions.  ║
+│      Potential: +1000% to withfor[TRANSLATED]]withтand inалand[CYR:[TRANSLATED]]and (10-100× быwith[TRANSLATED]]) ║
+│      Dependencies: [CYR:[TRANSLATED]]andть VIBEESchema, compilation engine    ║
+│      Time: 1-2 not[CYR:[TRANSLATED]]and                                            │
+│      Description: [CYR:[TRANSLATED]]andть line-based parsing on schema           ║
+│                   compilation (toаto in Ajv). [CYR:[TRANSLATED]]andть VIBEESchema│
+│                   struct, withfor[TRANSLATED]]orроin[CYR:[TRANSLATED]] in validation functions.  ║
 │      Benefits:                                                  ║
-│        - [CYR:Вал]and[CYR:дац]andя < 1ms on spec (with[CYR:ейча]with ~5ms)                ║
-│        - [CYR:Пере]andwith[CYR:пользуемые] schema definitions                     ║
+│        - [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя < 1ms on spec (with[TRANSLATED]]with ~5ms)                ║
+│        - [CYR:[TRANSLATED]]andwith[TRANSLATED]] schema definitions                     ║
 │        - Type-safe validation                                   ║
 │                                                                 │
-│  [CYR:РЕКОМЕНДАЦИЯ]: [A] Test Code Generation on All Specs           │
+│  [CYR:[TRANSLATED]]: [A] Test Code Generation on All Specs           │
 │                                                                 │
-│  [CYR:ПОЧЕМУ]:                                                         ║
-│  1. [CYR:БЫСТРЫЙ] [CYR:РЕЗУЛЬТАТ]: 30 мand[CYR:нут] → [CYR:полный] pipeline           ║
-║  2. [CYR:КРИТИЧЕСКИ] [CYR:ВАЖНО]: Мы not зonем, [CYR:раб]from[CYR:ает] лand геnot[CYR:рац]andя   ║
-║     ([CYR:толь]toо inалand[CYR:дац]andя прfromеwithтandроinаon)                              ║
-║  3. [CYR:НАЙТИ] [CYR:ПРОБЛЕМЫ]: [CYR:Возможно], nottofrom[CYR:орые] specs not [CYR:будут]       ║
-║     геnotрandроin[CYR:ать]withя andз-за [CYR:друг]andх ошandбоto                             ║
-║  4. [CYR:РАЗБЛОКИРОВАТЬ]: Поwithле геnot[CYR:рац]andand [CYR:можно] теwithтandроin[CYR:ать] toод     ║
-║     and improve [CYR:его]                                                  ║
-║  5. [CYR:НИЗКИЙ] [CYR:РИСК]: Еwithлand toаtoая-то spec with[CYR:ломает]withя,              ║
-║     мы with[CYR:разу] узonем and andwith[CYR:пра]inandм                                      ║
+│  [CYR:[TRANSLATED]]:                                                         ║
+│  1. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: 30 мand[CYR:[TRANSLATED]] → [CYR:[TRANSLATED]] pipeline           ║
+║  2. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: Мы not зonем, [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] лand геnot[CYR:[TRANSLATED]]andя   ║
+║     ([CYR:[TRANSLATED]]toо inалand[CYR:[TRANSLATED]]andя прfromеwithтandроinаon)                              ║
+║  3. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]], nottofrom[CYR:[TRANSLATED]] specs not [CYR:[TRANSLATED]]       ║
+║     геnotрandроin[CYR:[TRANSLATED]]withя andз-за [CYR:[TRANSLATED]]andх ошandбоto                             ║
+║  4. [CYR:[TRANSLATED]]: Поwithле геnot[CYR:[TRANSLATED]]and [CYR:[TRANSLATED]] теwithтandроin[CYR:[TRANSLATED]] toод     ║
+║     and improve [CYR:[TRANSLATED]]                                                  ║
+║  5. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: Еwithлand toаtoая-то spec with[TRANSLATED]]withя,              ║
+║     мы with[TRANSLATED]] узonем and andwith[TRANSLATED]]inandм                                      ║
 │                                                                 │
-│  [CYR:АЛЬТЕРНАТИВНЫЙ] [CYR:ПУТЬ]:                                          ║
-│  - Еwithлand [A] поto[CYR:ажет]withя withto[CYR:учным], [CYR:делать] [B] Add CI/CD         │
-│    (this [CYR:защ]andтandт from regressions in [CYR:будущем])                       ║
-│  - Илand [D] Schema-Based Validation for [CYR:долго]with[CYR:рочного] [CYR:улучшен]andя   ║
-│    (но this [CYR:займёт] 1-2 not[CYR:дел]and)                                 ║
+│  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:                                          ║
+│  - Еwithлand [A] поfor[TRANSLATED]]withя withfor[TRANSLATED]], [CYR:[TRANSLATED]] [B] Add CI/CD         │
+│    (this [CYR:[TRANSLATED]]andтandт from regressions in [CYR:[TRANSLATED]])                       ║
+│  - Илand [D] Schema-Based Validation for [CYR:[TRANSLATED]]with[TRANSLATED]] [CYR:[TRANSLATED]]andя   ║
+│    (но this [CYR:[TRANSLATED]] 1-2 not[CYR:[TRANSLATED]]and)                                 ║
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 
-## [CYR:Следующ]andе [CYR:Дей]withтinandя ([CYR:СЕЙЧАС]):
+## [CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]withтinandя ([CYR:[TRANSLATED]]):
 
 ```
-1. Прfromеwithтandроin[CYR:ать] геnot[CYR:рац]andю on notwithto[CYR:оль]toandх specs:
+1. Прfromеwithтandроin[CYR:[TRANSLATED]] геnot[CYR:[TRANSLATED]]andю on notwithfor[TRANSLATED]]toandх specs:
    vibeec gen specs/tri/core/absolute_security_v126.vibee
    vibeec gen specs/tri/core/fuzzing_infrastructure.vibee
 
-2. Еwithлand [CYR:раб]from[CYR:ает], [CYR:запу]withтandть on inwithех specs:
+2. Еwithлand [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]], [CYR:[TRANSLATED]]withтandть on inwithех specs:
    for spec in specs/tri/core/*.vibee; do
        vibeec gen "$spec" || echo "FAILED: $spec"
    done
 
-3. [CYR:Про]inерandть resultы:
+3. [CYR:[TRANSLATED]]inерandть resultы:
    ls -la trinity/output/*.zig | wc -l
-   # Ожand[CYR:дает]withя: 123 .zig fileоin
+   # Ожand[CYR:[TRANSLATED]]withя: 123 .zig fileоin
 ```
 
-## [CYR:Итог]:
+## [CYR:[TRANSLATED]]:
 
-**[CYR:Выпол]notно:** [CYR:Опц]andя [B] Fix 117 Failing Specs
-**[CYR:Стату]with:** ✅ Уwith[CYR:пешно]
-**[CYR:Комм]andт:** f6ac672f2
+**[CYR:[TRANSLATED]]notно:** [CYR:[TRANSLATED]]andя [B] Fix 117 Failing Specs
+**[CYR:[TRANSLATED]]with:** ✅ Уwith[TRANSLATED]]
+**[CYR:[TRANSLATED]]andт:** f6ac672f2
 **Result:** 100% pass rate (6/123 → 123/123)
 
-**Реto[CYR:омендац]andя:** [A] Test Code Generation on All Specs
+**Реfor[TRANSLATED]]andя:** [A] Test Code Generation on All Specs
 
-**[CYR:Почему] toрandтand[CYR:чно]:** Мы not прfromеwithтandроinалand геnot[CYR:рац]andю to[CYR:ода]! [CYR:Толь]toо inалand[CYR:дац]andю. [CYR:Нужно] [CYR:убед]andтьwithя, that [CYR:полный] pipeline (validate + gen) [CYR:раб]from[CYR:ает].
+**[CYR:[TRANSLATED]] toрandтand[CYR:[TRANSLATED]]:** Мы not прfromеwithтandроinалand геnot[CYR:[TRANSLATED]]andю for[TRANSLATED]]! [CYR:[TRANSLATED]]toо inалand[CYR:[TRANSLATED]]andю. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andтьwithя, that [CYR:[TRANSLATED]] pipeline (validate + gen) [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]].
 
 **φ² + 1/φ² = 3 | COMMIT: f6ac672f2**
 
 ---
 
-## [CYR:Дополн]and[CYR:тельные] [CYR:Замет]toand:
+## [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toand:
 
-### [CYR:Что] [CYR:Было] [CYR:Сделано] [CYR:Пра]inand[CYR:льно]:
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]]:
 
-1. ✅ **Аin[CYR:томат]and[CYR:зац]andя** - [CYR:Вме]withто [CYR:ручного] [CYR:реда]toтandроinанandя 122 fileоin andwith[CYR:пользо]inалwithя bash withtoрandпт
-2. ✅ **Быwith[CYR:трая] [CYR:реал]and[CYR:зац]andя** - 30 мand[CYR:нут] on [CYR:полную] [CYR:задачу]
-3. ✅ **[CYR:Кон]withandwith[CYR:тентные] output paths** - `trinity/output/{name}.zig` for inwithех specs
-4. ✅ **Check resultоin** - [CYR:Вал]and[CYR:дац]andя inwithех 123 specs поwithле andwith[CYR:пра]in[CYR:лен]andй
-5. ✅ **[CYR:Полный] from[CYR:чёт]** - [CYR:Создан] validation_report.md with [CYR:деталям]and
+1. ✅ **Аin[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя** - [CYR:[TRANSLATED]]withто [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toтandроinанandя 122 fileоin andwith[TRANSLATED]]inалwithя bash withtoрandпт
+2. ✅ **Быwith[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя** - 30 мand[CYR:[TRANSLATED]] on [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+3. ✅ **[CYR:[TRANSLATED]]withandwith[TRANSLATED]] output paths** - `trinity/output/{name}.zig` for inwithех specs
+4. ✅ **Check resultоin** - [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя inwithех 123 specs поwithле andwith[TRANSLATED]]in[CYR:[TRANSLATED]]andй
+5. ✅ **[CYR:[TRANSLATED]] from[CYR:[TRANSLATED]]** - [CYR:[TRANSLATED]] validation_report.md with [CYR:[TRANSLATED]]and
 
-### [CYR:Что] [CYR:Можно] [CYR:Улучш]andть:
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andть:
 
-1. ❌ **[CYR:Нет] геnot[CYR:рац]andand to[CYR:ода]** - [CYR:Нужно] прfromеwithтandроin[CYR:ать] `vibeec gen` on inwithех specs
-2. ❌ **[CYR:Нет] unit tests** - [CYR:Вал]and[CYR:датор] not and[CYR:меет] теwithтоin
-3. ❌ **[CYR:Нет] CI/CD** - [CYR:Нет] [CYR:защ]andты from regressions in [CYR:будущем]
-4. ❌ **Не [CYR:про]in[CYR:ерены] output paths** - [CYR:Может] [CYR:быть], nottofrom[CYR:орые] specs [CYR:требуют] [CYR:друг]andх [CYR:путей]
-5. ❌ **[CYR:Нет] [CYR:про]inерtoand on to[CYR:олл]andзandand** - Еwithлand дinа specs геnotрand[CYR:руют] одandontoоinый output path, [CYR:будет] [CYR:проблема]
+1. ❌ **[CYR:[TRANSLATED]] геnot[CYR:[TRANSLATED]]and for[TRANSLATED]]** - [CYR:[TRANSLATED]] прfromеwithтandроin[CYR:[TRANSLATED]] `vibeec gen` on inwithех specs
+2. ❌ **[CYR:[TRANSLATED]] unit tests** - [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] not and[CYR:[TRANSLATED]] теwithтоin
+3. ❌ **[CYR:[TRANSLATED]] CI/CD** - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andты from regressions in [CYR:[TRANSLATED]]
+4. ❌ **Не [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] output paths** - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]], nottofrom[CYR:[TRANSLATED]] specs [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andх [CYR:[TRANSLATED]]
+5. ❌ **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inерtoand on for[TRANSLATED]]andзand** - Еwithлand дinа specs геnotрand[CYR:[TRANSLATED]] одandontoоinый output path, [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Техн]andчеwithtoandе [CYR:Детал]and:
+### [CYR:[TRANSLATED]]andчеwithtoandе [CYR:[TRANSLATED]]and:
 
 **Сtoрandпт fix_specs.sh:**
 ```bash
@@ -226,9 +226,9 @@ done
 
 **Result:** 123 ✅, 0 ❌
 
-### [CYR:Формат] Output:
+### [CYR:[TRANSLATED]] Output:
 
-Вwithе specs [CYR:теперь] and[CYR:меют]:
+Вwithе specs [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]:
 ```yaml
 name: {name}
 version: "1.0.0"
@@ -237,7 +237,7 @@ module: {name}
 output: trinity/output/{name}.zig  # ← Ноinое field
 ```
 
-### Ожand[CYR:даемая] [CYR:Стру]to[CYR:тура] [CYR:Папо]to:
+### Ожand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]for[TRANSLATED]] [CYR:[TRANSLATED]]to:
 
 ```
 trinity/output/
@@ -248,4 +248,4 @@ trinity/output/
 └── zero_point_energy_v95.zig
 ```
 
-**Вwith[CYR:его]:** 123 .zig fileоin
+**Вwith[TRANSLATED]]:** 123 .zig fileоin

@@ -111,7 +111,7 @@ pub const Language = enum {
     pub fn getGreeting(self: Language) []const u8 {
         return switch (self) {
             .English => "Hello! How can I help you today?",
-            .Russian => "[EN]andin[EN]! [CYR:[EN]] [CYR:[EN]] by[CYR:[EN]]?",
+            .Russian => "andin!   by?",
             .Chinese => "你好！有什么可以帮助你的？",
             .Spanish => "¡Hola! ¿En qué puedo ayudarte?",
             .French => "Bonjour! Comment puis-je vous aider?",
@@ -124,7 +124,7 @@ pub const Language = enum {
     pub fn getFarewell(self: Language) []const u8 {
         return switch (self) {
             .English => "Goodbye! Have a great day!",
-            .Russian => "[EN] withinandyes[EN]and[EN]! [CYR:[EN]] [CYR:[EN]]!",
+            .Russian => " withinandyesand!  !",
             .Chinese => "再见！祝你有美好的一天！",
             .Spanish => "¡Adiós! ¡Que tengas un buen día!",
             .French => "Au revoir! Bonne journée!",
@@ -168,8 +168,8 @@ pub const Intent = enum {
             std.mem.indexOf(u8, lower, "good morning") != null or
             std.mem.indexOf(u8, lower, "good afternoon") != null or
             std.mem.indexOf(u8, lower, "good evening") != null or
-            std.mem.indexOf(u8, text, "[EN]andin[EN]") != null or
-            std.mem.indexOf(u8, text, "[CYR:[EN]]inwith[EN]in[EN]") != null or
+            std.mem.indexOf(u8, text, "andin") != null or
+            std.mem.indexOf(u8, text, "inwithin") != null or
             std.mem.indexOf(u8, text, "你好") != null)
         {
             return .Greeting;
@@ -180,8 +180,8 @@ pub const Intent = enum {
             std.mem.indexOf(u8, lower, "bye") != null or
             std.mem.indexOf(u8, lower, "see you") != null or
             std.mem.indexOf(u8, lower, "take care") != null or
-            std.mem.indexOf(u8, text, "byto[EN]") != null or
-            std.mem.indexOf(u8, text, "before withinandyes[EN]and[EN]") != null or
+            std.mem.indexOf(u8, text, "byto") != null or
+            std.mem.indexOf(u8, text, "before withinandyesand") != null or
             std.mem.indexOf(u8, text, "再见") != null)
         {
             return .Farewell;
@@ -199,9 +199,9 @@ pub const Intent = enum {
             std.mem.indexOf(u8, lower, "can you") != null or
             std.mem.indexOf(u8, lower, "could you") != null or
             std.mem.indexOf(u8, text, "what") != null or
-            std.mem.indexOf(u8, text, "to[EN]to") != null or
-            std.mem.indexOf(u8, text, "by[CYR:[EN]]") != null or
-            std.mem.indexOf(u8, text, "to[EN]yes") != null or
+            std.mem.indexOf(u8, text, "toto") != null or
+            std.mem.indexOf(u8, text, "by") != null or
+            std.mem.indexOf(u8, text, "toyes") != null or
             std.mem.indexOf(u8, text, "where") != null)
         {
             return .Question;
@@ -214,8 +214,8 @@ pub const Intent = enum {
             std.mem.indexOf(u8, lower, "i want") != null or
             std.mem.indexOf(u8, lower, "can i") != null or
             std.mem.indexOf(u8, lower, "would you") != null or
-            std.mem.indexOf(u8, text, "by[CYR:[EN]]with[EN]") != null or
-            std.mem.indexOf(u8, text, "by[CYR:[EN]]and") != null)
+            std.mem.indexOf(u8, text, "bywith") != null or
+            std.mem.indexOf(u8, text, "byand") != null)
         {
             return .Request;
         }
@@ -225,8 +225,8 @@ pub const Intent = enum {
             std.mem.indexOf(u8, lower, "i believe") != null or
             std.mem.indexOf(u8, lower, "in my opinion") != null or
             std.mem.indexOf(u8, lower, "i feel") != null or
-            std.mem.indexOf(u8, text, "[EN] [CYR:[EN]]") != null or
-            std.mem.indexOf(u8, text, "by-[CYR:[EN]]") != null)
+            std.mem.indexOf(u8, text, " ") != null or
+            std.mem.indexOf(u8, text, "by-") != null)
         {
             return .Opinion;
         }
@@ -239,8 +239,8 @@ pub const Intent = enum {
             std.mem.indexOf(u8, lower, "understood") != null or
             std.mem.indexOf(u8, lower, "yes") != null or
             std.mem.indexOf(u8, lower, "no") != null or
-            std.mem.indexOf(u8, text, "with[EN]withand[EN]") != null or
-            std.mem.indexOf(u8, text, "by[CYR:[EN]]") != null or
+            std.mem.indexOf(u8, text, "withand") != null or
+            std.mem.indexOf(u8, text, "by") != null or
             std.mem.indexOf(u8, text, "yes") != null or
             std.mem.indexOf(u8, text, "no") != null)
         {
@@ -255,8 +255,8 @@ pub const Intent = enum {
             std.mem.indexOf(u8, lower, "worried") != null or
             std.mem.indexOf(u8, lower, "love") != null or
             std.mem.indexOf(u8, lower, "hate") != null or
-            std.mem.indexOf(u8, text, "[CYR:[EN]]") != null or
-            std.mem.indexOf(u8, text, "[CYR:[EN]]with[CYR:[EN]]") != null)
+            std.mem.indexOf(u8, text, "") != null or
+            std.mem.indexOf(u8, text, "with") != null)
         {
             return .Emotion;
         }
@@ -653,7 +653,7 @@ pub const ResponseGenerator = struct {
     fn generateGreeting(self: *ResponseGenerator, lang: Language) []const u8 {
         _ = self;
         return switch (lang) {
-            .Russian => "[EN]andin[EN]! [CYR:[EN]] [CYR:[EN]] inand[CYR:[EN]]. [CYR:[EN]] [CYR:[EN]] by[CYR:[EN]] with[CYR:[EN]]?",
+            .Russian => "andin!   inand.   by with?",
             .Chinese => "你好！很高兴见到你。今天我能帮你什么？",
             .Spanish => "¡Hola! Me alegra verte. ¿En qué puedo ayudarte hoy?",
             .French => "Bonjour! Ravi de vous voir. Comment puis-je vous aider aujourd'hui?",
@@ -666,7 +666,7 @@ pub const ResponseGenerator = struct {
     fn generateFarewell(self: *ResponseGenerator, lang: Language) []const u8 {
         _ = self;
         return switch (lang) {
-            .Russian => "[EN] withinandyes[EN]and[EN]! [CYR:[EN]] [EN]and[CYR:[EN]] by[CYR:[EN]]with[EN]. [EN]yes[EN]and!",
+            .Russian => " withinandyesand!  and bywith. yesand!",
             .Chinese => "再见！很高兴和你聊天。祝你好运！",
             .Spanish => "¡Adiós! Fue un placer hablar contigo. ¡Buena suerte!",
             .French => "Au revoir! C'était un plaisir de discuter. Bonne chance!",
@@ -682,23 +682,23 @@ pub const ResponseGenerator = struct {
 
         return switch (topic) {
             .Technology => switch (lang) {
-                .Russian => "[CYR:[EN]]and[CYR:[EN]] [CYR:[EN]]and[EN]withtoand[EN] in[CYR:[EN]]with! [EN]in[EN] [CYR:[EN]]with[EN] in [CYR:[EN]].",
+                .Russian => "and andwithtoand inwith! in with in .",
                 else => "Great technical question! Let me explain the key concepts.",
             },
             .Science => switch (lang) {
-                .Russian => "[CYR:[EN]]with[CYR:[EN]] on[CYR:[EN]] in[CYR:[EN]]with! [EN]from what [EN] [CYR:[EN]] [EN]withwithto[CYR:[EN]].",
+                .Russian => "with on inwith! from what   withto.",
                 else => "Fascinating scientific question! Here's what I can share.",
             },
             .Health => switch (lang) {
-                .Russian => "[CYR:[EN]]with [EN] [EN]before[EN]in[EN] - in[EN]on[EN] [CYR:[EN]]. [EN]from by[CYR:[EN]]on[EN] and[CYR:[EN]]and[EN].",
+                .Russian => "with  beforein - inon . from byon and.",
                 else => "Health is an important topic. Here's some useful information.",
             },
             .Personal => switch (lang) {
-                .Russian => "[CYR:[EN]]and[CYR:[EN]], this [EN]and[CYR:[EN]] in[CYR:[EN]]with. [EN]in[EN] [EN]with[EN]and[EN].",
+                .Russian => "and, this and inwith. in withand.",
                 else => "I understand this is personal. Let's discuss it thoughtfully.",
             },
             else => switch (lang) {
-                .Russian => "[CYR:[EN]]and[EN] in[CYR:[EN]]with! [CYR:[EN]]in[CYR:[EN]] [EN]not by[CYR:[EN]]and[EN]with[EN] within[EN]and[EN]and [EN]with[CYR:[EN]]and.",
+                .Russian => "and inwith! in not byandwith withinand withand.",
                 else => "Good question! Let me share my thoughts on this.",
             },
         };
@@ -710,15 +710,15 @@ pub const ResponseGenerator = struct {
 
         return switch (topic) {
             .Technology => switch (lang) {
-                .Russian => "[CYR:[EN]]withon[EN] [CYR:[EN]]to[EN] [CYR:[EN]]and[EN] on [CYR:[EN]]andand! [CYR:[EN]]with[CYR:[EN]] with[CYR:[EN]]with[EN].",
+                .Russian => "withon to and on and! with with.",
                 else => "Interesting perspective on technology! I appreciate you sharing that.",
             },
             .Personal => switch (lang) {
-                .Russian => "[CYR:[EN]]withand[EN], what by[CYR:[EN]]and[EN]with[EN]. [CYR:[EN]] [CYR:[EN]]with[EN]inand[CYR:[EN]] in[CYR:[EN]].",
+                .Russian => "withand, what byandwith.  withinand in.",
                 else => "Thank you for sharing. That's really meaningful.",
             },
             else => switch (lang) {
-                .Russian => "[CYR:[EN]] [CYR:[EN]]. [CYR:[EN]] and[CYR:[EN]]withon[EN] [EN]with[EN].",
+                .Russian => " .  andwithon with.",
                 else => "I see. That's an interesting point.",
             },
         };
@@ -730,11 +730,11 @@ pub const ResponseGenerator = struct {
 
         return switch (topic) {
             .Technology => switch (lang) {
-                .Russian => "[EN]not[CYR:[EN]], by[CYR:[EN]] with [EN]and[EN] [CYR:[EN]]and[EN]withtoand[EN] [CYR:[EN]]with[EN]!",
+                .Russian => "not, by with and andwithtoand with!",
                 else => "Of course, I'll help you with this technical request!",
             },
             else => switch (lang) {
-                .Russian => "[EN] [EN]beforein[CYR:[EN]]with[EN]inand[EN] by[CYR:[EN]]! [EN]in[EN] [CYR:[EN]]with[EN] in[EN]with[EN].",
+                .Russian => " beforeinwithinand by! in with inwith.",
                 else => "I'd be happy to help! Let's work through this together.",
             },
         };
@@ -745,7 +745,7 @@ pub const ResponseGenerator = struct {
         _ = self;
 
         return switch (lang) {
-            .Russian => "[CYR:[EN]]withon[EN] [CYR:[EN]]to[EN] [CYR:[EN]]and[EN]! [EN]in[CYR:[EN]] [EN]in[EN] [EN]not[EN]and[EN].",
+            .Russian => "withon to and! in in notand.",
             .Chinese => "有趣的观点！我尊重你的看法。",
             else => "That's an interesting perspective! I respect your opinion.",
         };
@@ -754,7 +754,7 @@ pub const ResponseGenerator = struct {
     fn generateAcknowledgmentResponse(self: *ResponseGenerator, lang: Language) []const u8 {
         _ = self;
         return switch (lang) {
-            .Russian => "[CYR:[EN]], what with[CYR:[EN]] by[CYR:[EN]]! [EN]with[EN] [CYR:[EN]] in[CYR:[EN]]with[EN]?",
+            .Russian => ", what with by! with  inwith?",
             .Chinese => "很高兴能帮到你！还有其他问题吗？",
             else => "Glad I could help! Anything else you'd like to discuss?",
         };
@@ -777,7 +777,7 @@ pub const ResponseGenerator = struct {
             std.mem.indexOf(u8, lower, "love") != null)
         {
             return switch (lang) {
-                .Russian => "[CYR:[EN]] [CYR:[EN]]! [CYR:[EN]] [EN] [CYR:[EN]]!",
+                .Russian => " !   !",
                 else => "That's wonderful! I'm happy for you!",
             };
         }
@@ -788,13 +788,13 @@ pub const ResponseGenerator = struct {
             std.mem.indexOf(u8, lower, "stressed") != null)
         {
             return switch (lang) {
-                .Russian => "[CYR:[EN]]and[CYR:[EN]] [CYR:[EN]]. [CYR:[EN]] not[CYR:[EN]]with[EN], [EN] inwith[EN] on[CYR:[EN]]and[EN]with[EN].",
+                .Russian => "and .  notwith,  inwith onandwith.",
                 else => "I understand. That's tough, but things will get better.",
             };
         }
 
         return switch (lang) {
-            .Russian => "[CYR:[EN]]and[CYR:[EN]] [EN]in[EN]and [EN]inwith[EN]in[EN]. [CYR:[EN]] by[EN]in[EN]and[EN] [EN] this[EN]?",
+            .Russian => "and inand inwithin.  byinand  this?",
             else => "I understand how you feel. Would you like to talk about it?",
         };
     }
@@ -805,11 +805,11 @@ pub const ResponseGenerator = struct {
 
         return switch (topic) {
             .General => switch (lang) {
-                .Russian => "[CYR:[EN]]with[EN]! [EN]withwithto[EN]and by[CYR:[EN]]not[EN].",
+                .Russian => "with! withtoand bynot.",
                 else => "Interesting! Tell me more about that.",
             },
             else => switch (lang) {
-                .Russian => "[CYR:[EN]]. [EN]in[EN] [EN]with[EN]and[EN] [CYR:[EN]] [CYR:[EN]].",
+                .Russian => ". in withand  .",
                 else => "I see. Let's explore this topic further.",
             },
         };
@@ -1023,8 +1023,8 @@ pub const FluentChatEngine = struct {
             "Can you help me understand machine learning?",
             "I feel happy today!",
             "Tell me about the weather",
-            "[EN]andin[EN]! [EN]to [CYR:[EN]]?",
-            "[CYR:[EN]] [EN] [CYR:[EN]] [EN] [CYR:[EN]]and[EN]?",
+            "andin! to ?",
+            "    and?",
             "I need help with my code",
             "What's your opinion on remote work?",
             "Thank you for your help!",
@@ -1140,7 +1140,7 @@ test "Language detection English" {
 }
 
 test "Language detection Russian" {
-    const lang = Language.detect("[EN]andin[EN], to[EN]to [CYR:[EN]]?");
+    const lang = Language.detect("andin, toto ?");
     try std.testing.expectEqual(Language.Russian, lang);
 }
 
@@ -1321,7 +1321,7 @@ test "FluentChatEngine respond question" {
 test "FluentChatEngine respond Russian" {
     var engine = FluentChatEngine.init();
     _ = engine.startConversation("Test");
-    const response = engine.respond("[EN]andin[EN]! [EN]to [CYR:[EN]]?");
+    const response = engine.respond("andin! to ?");
     try std.testing.expect(response.text_len > 0);
     try std.testing.expectEqual(Language.Russian, response.language);
 }
@@ -1411,7 +1411,7 @@ test "Intent classify opinion" {
 
 test "Language greeting multilingual" {
     const ru_greeting = Language.Russian.getGreeting();
-    try std.testing.expect(std.mem.indexOf(u8, ru_greeting, "[EN]andin[EN]") != null);
+    try std.testing.expect(std.mem.indexOf(u8, ru_greeting, "andin") != null);
 
     const en_greeting = Language.English.getGreeting();
     try std.testing.expect(std.mem.indexOf(u8, en_greeting, "Hello") != null);

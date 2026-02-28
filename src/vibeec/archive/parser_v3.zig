@@ -43,7 +43,7 @@ pub const Keyword = enum(u8) {
     given = 10,
     when = 11,
     then = 12,
-    code = 25, // ✅ [CYR:[EN]]
+    code = 25, // ✅ 
     test_cases = 13,
     // Types
     types = 14,
@@ -184,23 +184,23 @@ pub const Behavior = struct {
     given: []const u8 = "",
     when: []const u8 = "",
     then: []const u8 = "",
-    description: []const u8 = "", // ✅ [CYR:[EN]]
-    implementation: []const u8 = "", // ✅ [CYR:[EN]]
+    description: []const u8 = "", // ✅ 
+    implementation: []const u8 = "", // ✅ 
     test_cases: ArrayList(TestCase),
 
     pub fn init(allocator: Allocator) Behavior {
         _ = allocator;
         return .{
             .test_cases = .{},
-            .description = "", // ✅ [CYR:[EN]]
-            .implementation = "", // ✅ [CYR:[EN]]
+            .description = "", // ✅ 
+            .implementation = "", // ✅ 
         };
     }
 
     pub fn deinit(self: *Behavior, allocator: Allocator) void {
         self.test_cases.deinit(allocator);
-        if (self.description.len > 0) allocator.free(self.description); // ✅ [CYR:[EN]]
-        if (self.implementation.len > 0) allocator.free(self.implementation); // ✅ [CYR:[EN]]
+        if (self.description.len > 0) allocator.free(self.description); // ✅ 
+        if (self.implementation.len > 0) allocator.free(self.implementation); // ✅ 
     }
 };
 

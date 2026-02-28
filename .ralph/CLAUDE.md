@@ -375,11 +375,11 @@ git push origin gh-pages --force
 | Deploying docsite alone without website | **Deletes website** from gh-pages |
 
 **IMPORTANT:**
-- НЕ andwith[CYR:пользо]in[CYR:ать] Vercel — with[CYR:айт] on GitHub Pages
-- [CYR:НИКОГДА] not [CYR:депло]andть website or docsite по from[CYR:дельно]withтand — [CYR:ТОЛЬКО] inмеwithте
-- Поwithле [CYR:деплоя] GitHub Pages [CYR:обно]in[CYR:ляет]withя [CYR:через] 1-2 мand[CYR:нуты]
-- [CYR:Для] [CYR:про]inерtoand: Cmd+Shift+R ([CYR:хард]-[CYR:рефреш]) in browserе
-- MDX fileы: эto[CYR:ран]andроin[CYR:ать] `<Tag>` → `\<Tag\>`, `{expr}` → `\{expr\}` innot [CYR:бло]toоin to[CYR:ода]
+- НЕ andwith[TRANSLATED]]in[CYR:[TRANSLATED]] Vercel — with[TRANSLATED]] on GitHub Pages
+- [CYR:[TRANSLATED]] not [CYR:[TRANSLATED]]andть website or docsite по from[CYR:[TRANSLATED]]withтand — [CYR:[TRANSLATED]] inмеwithте
+- Поwithле [CYR:[TRANSLATED]] GitHub Pages [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]] 1-2 мand[CYR:[TRANSLATED]]
+- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inерtoand: Cmd+Shift+R ([CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]) in browserе
+- MDX fileы: эfor[TRANSLATED]]andроin[CYR:[TRANSLATED]] `<Tag>` → `\<Tag\>`, `{expr}` → `\{expr\}` innot [CYR:[TRANSLATED]]toоin for[TRANSLATED]]
 
 ---
 

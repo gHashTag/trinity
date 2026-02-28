@@ -284,7 +284,7 @@ pub const AgentTools = struct {
         // Staking keywords
         if (std.mem.indexOf(u8, input, "stake") != null or
             std.mem.indexOf(u8, input, "Stake") != null or
-            std.mem.indexOf(u8, input, "[EN]with[CYR:[EN]]to") != null)
+            std.mem.indexOf(u8, input, "withto") != null)
         {
             steps[step_count] = .{
                 .tool = .Stake,
@@ -300,7 +300,7 @@ pub const AgentTools = struct {
         if (std.mem.indexOf(u8, input, "code") != null or
             std.mem.indexOf(u8, input, "generate") != null or
             std.mem.indexOf(u8, input, "optimize") != null or
-            std.mem.indexOf(u8, input, "[CYR:[EN]]and[EN]and[EN]and[CYR:[EN]]") != null)
+            std.mem.indexOf(u8, input, "andand") != null)
         {
             steps[step_count] = .{
                 .tool = .GenerateCode,
@@ -315,8 +315,8 @@ pub const AgentTools = struct {
         // Jobs/earnings keywords
         if (std.mem.indexOf(u8, input, "job") != null or
             std.mem.indexOf(u8, input, "earning") != null or
-            std.mem.indexOf(u8, input, "[EN]towithand[EN]and[EN]and[CYR:[EN]]") != null or
-            std.mem.indexOf(u8, input, "[EN]towithand[EN]and[EN]and[CYR:[EN]]") != null)
+            std.mem.indexOf(u8, input, "towithandand") != null or
+            std.mem.indexOf(u8, input, "towithandand") != null)
         {
             steps[step_count] = .{
                 .tool = .Jobs,
@@ -370,9 +370,9 @@ pub fn main() !void {
 
     // Natural language parsing demo
     const nl_tasks = [_][]const u8{
-        "[CYR:[EN]]with[EN]and and[CYR:[EN]]with on Mistral-7B and [EN]with[CYR:[EN]]to[EN] earnings",
-        "[CYR:[EN]]and[EN]and[EN]and[CYR:[EN]] inference for Qwen2.5-Coder-7B by[EN] 8-core CPU",
-        "[EN]towithand[EN]and[EN]and[CYR:[EN]] earnings on [CYR:[EN]] node in Ko Samui",
+        "withand andwith on Mistral-7B and withto earnings",
+        "andand inference for Qwen2.5-Coder-7B by 8-core CPU",
+        "towithandand earnings on  node in Ko Samui",
     };
 
     for (nl_tasks) |task| {

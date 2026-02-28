@@ -1,24 +1,24 @@
-# ☠️ [CYR:ТОКСИЧНЫЙ] [CYR:ВЕРДИКТ]: CLEAN UI v5 - FINAL
+# ☠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: CLEAN UI v5 - FINAL
 
-**[CYR:Дата]:** 2025-01-18  
-**[CYR:Ауд]and[CYR:тор]:** Ona AI Agent  
-**[CYR:Итерац]andя:** 5
-
----
-
-## [CYR:ОБЩАЯ] [CYR:ОЦЕНКА]: 8/10 → 9/10 ✅
-
-**[CYR:Стату]with:** [CYR:ЧИСТЫЙ] UI [CYR:БЕЗ] [CYR:ПЕРЕСЕЧЕНИЙ]
+**[CYR:[TRANSLATED]]:** 2025-01-18  
+**[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]:** Ona AI Agent  
+**[CYR:[TRANSLATED]]andя:** 5
 
 ---
 
-## 🔍 [CYR:ПРОБЛЕМА] v4
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: 8/10 → 9/10 ✅
 
-[CYR:Пользо]in[CYR:атель] with[CYR:ообщ]andл: "in [CYR:пра]inом нandжnotм [CYR:углу] to[CYR:арточ]toand [CYR:пере]withеto[CYR:ают]withя"
+**[CYR:[TRANSLATED]]with:** [CYR:[TRANSLATED]] UI [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Найденные] [CYR:пере]with[CYR:ечен]andя:
+---
 
-| [CYR:Элемент] | [CYR:Поз]andцandя | [CYR:Конфл]andtoт |
+## 🔍 [CYR:[TRANSLATED]] v4
+
+[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] with[TRANSLATED]]andл: "in [CYR:[TRANSLATED]]inом нandжnotм [CYR:[TRANSLATED]] for[TRANSLATED]]toand [CYR:[TRANSLATED]]withеfor[TRANSLATED]]withя"
+
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[TRANSLATED]]andя:
+
+| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]andцandя | [CYR:[TRANSLATED]]andtoт |
 |---------|---------|----------|
 | .bench | bottom:140px, right:16px | ↓ |
 | .badge | bottom:80px, right:16px | ↓ |
@@ -26,16 +26,16 @@
 | .module-info | bottom:100px, center | ↓ |
 | .hud | bottom:16px, center | ✓ OK |
 
-**Вwithе 4 elementа onto[CYR:лады]inалandwithь [CYR:друг] on [CYR:друга]!**
+**Вwithе 4 elementа onfor[TRANSLATED]]inалandwithь [CYR:[TRANSLATED]] on [CYR:[TRANSLATED]]!**
 
 ---
 
-## ✅ [CYR:РЕШЕНИЕ] v5
+## ✅ [CYR:[TRANSLATED]] v5
 
-### [CYR:Удалены] [CYR:полно]with[CYR:тью]:
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[TRANSLATED]]:
 
 ```html
-<!-- [CYR:УДАЛЕНО] -->
+<!-- [CYR:[TRANSLATED]] -->
 <div class="quick-nav">...</div>
 <div class="title">...</div>
 <div class="crit">...</div>
@@ -43,7 +43,7 @@
 <div class="bench">...</div>
 ```
 
-### CSS withto[CYR:рыто]:
+### CSS withfor[TRANSLATED]]:
 
 ```css
 .badge { display: none }
@@ -52,7 +52,7 @@
 .crit { display: none }
 ```
 
-### Оwithтаin[CYR:лено] [CYR:толь]toо:
+### Оwithтаin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toо:
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -73,9 +73,9 @@
 
 ---
 
-## 📊 [CYR:СРАВНЕНИЕ] [CYR:ВЕРСИЙ]
+## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-| [CYR:Вер]withandя | [CYR:Элементо]in in [CYR:углах] | [CYR:Пере]with[CYR:ечен]andй | [CYR:Стату]with |
+| [CYR:[TRANSLATED]]withandя | [CYR:[TRANSLATED]]in in [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with[TRANSLATED]]andй | [CYR:[TRANSLATED]]with |
 |--------|-------------------|-------------|--------|
 | v1 | 8 | 4+ | ❌ |
 | v2 | 8 | 4+ | ❌ |
@@ -83,24 +83,24 @@
 | v4 | 5 | 2 | ⚠️ |
 | v5 | 2 | 0 | ✅ |
 
-### [CYR:Удалённые] elementы:
+### [CYR:[TRANSLATED]] elementы:
 
-| [CYR:Элемент] | Прandчandon [CYR:удален]andя |
+| [CYR:[TRANSLATED]] | Прandчandon [CYR:[TRANSLATED]]andя |
 |---------|------------------|
-| .quick-nav | [CYR:Дубл]and[CYR:рует] tabs in header |
-| .title | [CYR:Дубл]and[CYR:рует] LAYOUT.drawTitle() |
-| .crit | Не [CYR:нужен] in production |
-| .badge | Вand[CYR:зуальный] [CYR:шум] |
-| .bench | Вand[CYR:зуальный] [CYR:шум] |
+| .quick-nav | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] tabs in header |
+| .title | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] LAYOUT.drawTitle() |
+| .crit | Не [CYR:[TRANSLATED]] in production |
+| .badge | Вand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] |
+| .bench | Вand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] |
 
 ---
 
-## 📈 [CYR:БЕНЧМАРКИ]
+## 📈 [CYR:[TRANSLATED]]
 
-### [CYR:Размер] fileа
+### [CYR:[TRANSLATED]] fileа
 ```
-v1: 11,248 with[CYR:тро]to
-v5: 11,380 with[CYR:тро]to ([CYR:меньше] HTML, [CYR:больше] LAYOUT)
+v1: 11,248 with[TRANSLATED]]to
+v5: 11,380 with[TRANSLATED]]to ([CYR:[TRANSLATED]] HTML, [CYR:[TRANSLATED]] LAYOUT)
 ```
 
 ### DOM elementоin
@@ -109,25 +109,25 @@ v1: 45+ fixed position elements
 v5: 8 fixed position elements
 ```
 
-### [CYR:Пере]with[CYR:ечен]andй
+### [CYR:[TRANSLATED]]with[TRANSLATED]]andй
 ```
-v1: 4+ to[CYR:онфл]andtoтоin
-v5: 0 to[CYR:онфл]andtoтоin
+v1: 4+ for[TRANSLATED]]andtoтоin
+v5: 0 for[TRANSLATED]]andtoтоin
 ```
 
-### Вand[CYR:зуаль]onя чandwithтfromа
+### Вand[CYR:[TRANSLATED]]onя чandwithтfromа
 ```
-v1: 3/10 ([CYR:хао]with)
-v5: 9/10 (мandнand[CYR:мал]andзм)
+v1: 3/10 ([CYR:[TRANSLATED]]with)
+v5: 9/10 (мandнand[CYR:[TRANSLATED]]andзм)
 ```
 
 ---
 
-## 🎯 [CYR:ИТОГОВАЯ] [CYR:АРХИТЕКТУРА] UI
+## 🎯 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] UI
 
 ### Fixed Elements (z-index order):
 
-| z-index | [CYR:Элемент] | [CYR:Поз]andцandя |
+| z-index | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]andцandя |
 |---------|---------|---------|
 | 9999 | #loading-screen | fullscreen |
 | 9998 | #error-boundary | top-right |
@@ -138,43 +138,43 @@ v5: 9/10 (мandнand[CYR:мал]andзм)
 | 100 | .module-info | bottom-center |
 | 1 | canvas | fullscreen |
 
-### [CYR:Нет] to[CYR:онфл]andtoтоin пfrom[CYR:ому] that:
-1. .hud and .module-info on [CYR:разных] Y [CYR:поз]andцandях (16px vs 70px)
-2. Вwithе оwith[CYR:тальные] elementы withto[CYR:рыты]
-3. Canvas [CYR:зан]and[CYR:мает] inwithё [CYR:про]with[CYR:тран]withтinо
+### [CYR:[TRANSLATED]] for[TRANSLATED]]andtoтоin пfrom[CYR:[TRANSLATED]] that:
+1. .hud and .module-info on [CYR:[TRANSLATED]] Y [CYR:[TRANSLATED]]andцandях (16px vs 70px)
+2. Вwithе оwith[TRANSLATED]] elementы withfor[TRANSLATED]]
+3. Canvas [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] inwithё [CYR:[TRANSLATED]]with[TRANSLATED]]withтinо
 
 ---
 
-## [CYR:ТОКСИЧНЫЙ] [CYR:ВЫВОД]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-**[CYR:Пра]inда о with[CYR:таром] UI:**
-1. 5 паnot[CYR:лей] in [CYR:пра]inом нandжnotм [CYR:углу]
-2. Вwithе on [CYR:одн]andх and [CYR:тех] же to[CYR:оорд]andon[CYR:тах]
-3. Нandtoто not [CYR:про]in[CYR:ерял] [CYR:пере]with[CYR:ечен]andя
-4. Result: to[CYR:аша]
+**[CYR:[TRANSLATED]]inда  with[TRANSLATED]] UI:**
+1. 5 паnot[CYR:[TRANSLATED]] in [CYR:[TRANSLATED]]inом нandжnotм [CYR:[TRANSLATED]]
+2. Вwithе on [CYR:[TRANSLATED]]andх and [CYR:[TRANSLATED]] же for[TRANSLATED]]andon[CYR:[TRANSLATED]]
+3. Нandtoто not [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[TRANSLATED]]andя
+4. Result: for[TRANSLATED]]
 
-**[CYR:Что] with[CYR:делано] in v5:**
-1. [CYR:Удалены] [CYR:ВСЕ] лandшнandе паnotлand
-2. Оwithтаin[CYR:лены] [CYR:толь]toо .hud and .module-info
-3. 0 [CYR:пере]with[CYR:ечен]andй
-4. Чandwith[CYR:тый] мandнand[CYR:мал]andwithтand[CYR:чный] UI
+**[CYR:[TRANSLATED]] with[TRANSLATED]] in v5:**
+1. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] лandшнandе паnotлand
+2. Оwithтаin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toо .hud and .module-info
+3. 0 [CYR:[TRANSLATED]]with[TRANSLATED]]andй
+4. Чandwith[TRANSLATED]] мandнand[CYR:[TRANSLATED]]andwithтand[CYR:[TRANSLATED]] UI
 
-**[CYR:Оцен]toа:** 9/10
-- [CYR:Пере]with[CYR:ечен]andя уwith[CYR:тра]notны [CYR:полно]with[CYR:тью]
-- UI маtowithand[CYR:мально] чandwith[CYR:тый]
-- [CYR:Толь]toо not[CYR:обход]and[CYR:мые] elementы
+**[CYR:[TRANSLATED]]toа:** 9/10
+- [CYR:[TRANSLATED]]with[TRANSLATED]]andя уwith[TRANSLATED]]notны [CYR:[TRANSLATED]]with[TRANSLATED]]
+- UI маtowithand[CYR:[TRANSLATED]] чandwith[TRANSLATED]]
+- [CYR:[TRANSLATED]]toо not[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] elementы
 
 ---
 
-## [CYR:ДЕПЛОЙ]
+## [CYR:[TRANSLATED]]
 
 **URL:** https://trinity-vibee.fly.dev/
 
-**[CYR:Стату]with:** ✅ [CYR:РАБОТАЕТ]
+**[CYR:[TRANSLATED]]with:** ✅ [CYR:[TRANSLATED]]
 
 ---
 
-## [CYR:ФОРМУЛА] [CYR:ЧИСТОТЫ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
 Clean UI = Minimal Elements + No Overlaps + Clear Hierarchy
@@ -184,4 +184,4 @@ Clean UI = Minimal Elements + No Overlaps + Clear Hierarchy
 
 ---
 
-*[CYR:Верд]andtoт: Из 5 [CYR:пере]withеto[CYR:ающ]andхwithя паnot[CYR:лей] оwith[CYR:тало]withь 0. Мandнand[CYR:мал]andзм [CYR:побед]andл.*
+*[CYR:[TRANSLATED]]andtoт: Из 5 [CYR:[TRANSLATED]]withеfor[TRANSLATED]]andхwithя паnot[CYR:[TRANSLATED]] оwith[TRANSLATED]]withь 0. Мandнand[CYR:[TRANSLATED]]andзм [CYR:[TRANSLATED]]andл.*

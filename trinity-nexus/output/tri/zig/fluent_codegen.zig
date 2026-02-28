@@ -15,7 +15,7 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]A[TRANSLATED]]
+// [CYR:A]
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const MAX_CODE_LENGTH: f64 = 4096;
@@ -24,7 +24,7 @@ pub const MIN_CONFIDENCE: f64 = 0.7;
 
 pub const TEMPLATE_COUNT: f64 = 50;
 
-// [CYR:[TRANSLATED]]iny[EN] φ-to[EN]with[CYR:[TRANSLATED]y] (Sacred Formula)
+// iny φ-towithy] (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -36,7 +36,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Input prompt language
@@ -98,7 +98,7 @@ pub const CodeTemplate = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]A[TRANSLATED]] [CYR:[TRANSLATED]] WASM
+// [CYR:A]  WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -148,13 +148,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-and[CYR:[TRANSLATED]]fields[EN]andI
+/// φ-andfieldsandI
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// [EN]not[CYR:[TRANSLATED]]andI φ-with[EN]and[CYR:[TRANSLATED]]and
+/// notandI φ-withand
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -449,7 +449,7 @@ test "phi_constants" {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "russian_sort_zig" {
-// Given: "[CYR:[TRANSLATED]]and[EN]and with[CYR:[TRANSLATED]]and[EN]into[EN] [EN]withwithandin[EN] on Zig"
+// Given: "and withandinto withandin on Zig"
 // Expected: "Real bubble/quick sort in Zig"
 // Test: russian_sort_zig
     // (Test setup and assertions to be implemented)
@@ -473,7 +473,7 @@ test "english_binary_search" {
 }
 
 test "russian_stack_python" {
-// Given: "[CYR:[TRANSLATED]] to[EN]withwith with[EN]to[EN] on Python"
+// Given: " towith withto on Python"
 // Expected: "Real Stack class in Python"
 // Test: russian_stack_python
     // (Test setup and assertions to be implemented)

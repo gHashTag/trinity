@@ -97,9 +97,9 @@ types:
 
 behaviors:
   - name: detect_distortions
-    given: [CYR:[TRANSLATED]]or[EN]in[CYR:[EN]ny] code and TVC IR
-    when: Aon[EN]from with[CYR:[TRANSLATED]]and[EN]with[EN]and[EN] andwith[CYR:[TRANSLATED]]and[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] list Distortion with [CYR:[TRANSLATED]]andI[EN]and and severity
+    given: orin[CYR:ny] code and TVC IR
+    when: Aonfrom withandwithand andwithand
+    then: in[CYR:acts] list Distortion with andIand and severity
     implementation: |
                     pub fn detect_distortions(code: []const u8, ir: anytype) []const Distortion {
                         _ = code;
@@ -112,9 +112,9 @@ behaviors:
       
 
   - name: compute_semantic_intensity
-    given: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]or[EN]in[CYR:[TRANSLATED]go] code[EN]
-    when: [CYR:Vy[EN]]andwith[CYR:[TRANSLATED]]and[EN] "with[CYR:[TRANSLATED]]and[EN]with[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]withandin[EN]with[EN]and" ([EN] FidelityGPT)
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] Float score for [EN]and[EN]and[EN]from[EN]andand andwith[CYR:law]in[CYR:[TRANSLATED]]and[EN]
+    given:  orin[CYR:go] code
+    when: [CYR:Vy]andwithand "withandwith andwithandinwithand" ( FidelityGPT)
+    then: in[CYR:acts] Float score for andfromand andwithlaw]inand
     implementation: |
                     pub fn compute_semantic_intensity(code: []const u8) f32 {
                         _ = code;
@@ -126,9 +126,9 @@ behaviors:
       
 
   - name: analyze_variable_dependencies
-    given: [EN]andwith[EN] [CYR:[TRANSLATED]me[EN]y[EN]] with andwith[CYR:[TRANSLATED]]andI[EN]and
-    when: [EN]with[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] [EN]inandwithand[EN]with[CYR:[TRANSLATED]]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] [CYR:[TRANSLATED]I[TRANSLATED]ny] list for andwith[CYR:law]in[CYR:[TRANSLATED]]andI
+    given: andwith [CYR:mey] with andwithandIand
+    when: withand  inandwithandwith
+    then: in[CYR:acts] [CYR:Iny] list for andwithlaw]inandI
     implementation: |
                     pub fn analyze_variable_dependencies(variables: []const []const u8) []const []const u8 {
                         _ = variables;
@@ -140,14 +140,14 @@ behaviors:
       
 
   - name: extract_data_flow
-    given: TVC IR [CYR:[TRANSLATED]]andand
-    when: Aon[EN]from def-use chains
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] List<DataFlowNode>
+    given: TVC IR and
+    when: Aonfrom def-use chains
+    then: in[CYR:acts] List<DataFlowNode>
 
   - name: extract_call_graph
-    given: TVC IR [CYR:[TRANSLATED]I]
-    when: [EN]with[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] in[CYR:y[EN]]in[EN]in
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] List<CallGraphNode>
+    given: TVC IR [CYR:I]
+    when: withand  in[CYR:y]inin
+    then: in[CYR:acts] List<CallGraphNode>
     implementation: |
                     pub fn extract_call_graph(ir: anytype) []const CallGraphNode {
                         _ = ir;
@@ -159,9 +159,9 @@ behaviors:
       
 
   - name: build_semantic_context
-    given: TVC IR and resulty [EN]from[EN]withwith[CYR:[TRANSLATED]]and[EN]in[EN]andI
-    when: [CYR:A[TRANSLATED]]andI inwith[CYR:[EN]go] [CYR:[TRANSLATED]]with[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] SemanticContext
+    given: TVC IR and resulty fromwithandinandI
+    when: [CYR:A]andI inwithgo] with
+    then: in[CYR:acts] SemanticContext
     implementation: |
                     pub fn build_semantic_context(ir: anytype, disasm: anytype) SemanticContext {
                         _ = ir;
@@ -174,9 +174,9 @@ behaviors:
       
 
   - name: embed_code
-    given: [CYR:[TRANSLATED]me[EN]] code[EN]
-    when: [EN]not[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] LLM
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] CodeEmbedding
+    given: [CYR:me] code
+    when: notandI and  LLM
+    then: in[CYR:acts] CodeEmbedding
     implementation: |
                     pub fn embed_code(code: []const u8) CodeEmbedding {
                         _ = code;
@@ -189,8 +189,8 @@ behaviors:
 
   - name: search_similar
     given: CodeEmbedding and RAGDatabase
-    when: [EN]andwith[EN] k [EN]and[CYR:[TRANSLATED]]and[EN] with[EN]with[CYR:[TRANSLATED]]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] List<SimilarCode> [EN]with[CYR:[TRANSLATED]]and[EN]in[CYR:[EN]ny] [EN] similarity
+    when: andwith k and with
+    then: in[CYR:acts] List<SimilarCode> withandin[CYR:ny]  similarity
     implementation: |
                     pub fn search_similar(embedding: CodeEmbedding, db: anytype) []const SimilarCode {
                         _ = embedding;
@@ -203,9 +203,9 @@ behaviors:
       
 
   - name: retrieve_examples
-    given: [CYR:[TRANSLATED]]or[EN]in[CYR:[EN]ny] code and type andwith[CYR:[TRANSLATED]]andI
-    when: [EN]andwith[EN] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]y[EN]] example[EN]in for ICL
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] List<SimilarCode> for [CYR:pro[TRANSLATED]]
+    given: orin[CYR:ny] code and type andwithandI
+    when: andwith in[CYR:y] examplein for ICL
+    then: in[CYR:acts] List<SimilarCode> for [CYR:pro]
     implementation: |
                     pub fn retrieve_examples(code: []const u8, dist_type: DistortionType) []const SimilarCode {
                         _ = code;
@@ -218,9 +218,9 @@ behaviors:
       
 
   - name: select_template
-    given: [EN]and[EN] andwith[CYR:[TRANSLATED]]andI and [CYR:[TRANSLATED]]in[EN] [CYR:[TRANSLATED]]with[EN]in[EN]
-    when: [CYR:Vy[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[EN]lnogo] [CYR:[TRANSLATED]]on [CYR:pro[TRANSLATED]]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] PromptTemplate
+    given: and andwithandI and in within
+    when: [CYR:Vy] and[CYR:lnogo] on [CYR:pro]
+    then: in[CYR:acts] PromptTemplate
     implementation: |
                     pub fn select_template(dist_type: DistortionType, quality: []const u8) PromptTemplate {
                         _ = dist_type;
@@ -233,9 +233,9 @@ behaviors:
       
 
   - name: build_prompt
-    given: [EN]with[EN] componenty [CYR:[TRANSLATED]]with[EN]
-    when: [CYR:[TRANSLATED]] [EN]andon[CYR:lnogo] [CYR:pro[TRANSLATED]]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] DecompilationPrompt
+    given: with componenty with
+    when:  andon[CYR:lnogo] [CYR:pro]
+    then: in[CYR:acts] DecompilationPrompt
     implementation: |
                     pub fn build_prompt(context: anytype) DecompilationPrompt {
                         _ = context;
@@ -248,8 +248,8 @@ behaviors:
 
   - name: format_icl_examples
     given: List<SimilarCode>
-    when: [CYR:[TRANSLATED]]and[EN]in[EN]and[EN] example[EN]in for in-context learning
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] String with example[EN]and in [CYR:[TRANSLATED]] few-shot
+    when: andinand examplein for in-context learning
+    then: in[CYR:acts] String with exampleand in  few-shot
     implementation: |
                     pub fn format_icl_examples(examples: []const SimilarCode) []const u8 {
                         _ = examples;
@@ -262,8 +262,8 @@ behaviors:
 
   - name: correct_code
     given: DecompilationPrompt
-    when: [CYR:[EN]law]in[EN] in LLM and [CYR:[TRANSLATED]]and[EN] andwith[CYR:law]in[CYR:[TRANSLATED]]and[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] CorrectedCode
+    when: [CYR:law]in in LLM and and andwithlaw]inand
+    then: in[CYR:acts] CorrectedCode
     implementation: |
                     pub fn correct_code(prompt: DecompilationPrompt) CorrectedCode {
                         _ = prompt;
@@ -276,8 +276,8 @@ behaviors:
 
   - name: validate_correction
     given: CorrectedCode
-    when: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] withand[CYR:[TRANSLATED]]withandwith[EN] and with[CYR:[TRANSLATED]]and[EN]and
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] Bool (in[EN]and[CYR:[TRANSLATED]] or not[EN])
+    when: in withandwithandwith and withand
+    then: in[CYR:acts] Bool (inand or not)
     implementation: |
                     pub fn validate_correction(correction: CorrectedCode) bool {
                         _ = correction;
@@ -289,9 +289,9 @@ behaviors:
       
 
   - name: apply_corrections
-    given: [EN]and[EN]andon[CYR:lny] code and List<CodeChange>
-    when: [EN]and[EN]not[EN]and[EN] andwith[CYR:law]in[CYR:[TRANSLATED]]and[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] andwith[CYR:law]in[CYR:[TRANSLATED]ny] code
+    given: andon[CYR:lny] code and List<CodeChange>
+    when: andnotand andwithlaw]inand
+    then: in[CYR:acts] andwithlaw]in[CYR:ny] code
     implementation: |
                     pub fn apply_corrections(original: []const u8, changes: []const CodeChange) []const u8 {
                         _ = original;
@@ -304,9 +304,9 @@ behaviors:
       
 
   - name: decompile_with_llm
-    given: [EN]andon[CYR:[EN]ny] file and [CYR:[TRANSLATED]]with [CYR:[TRANSLATED]]andand
-    when: [CYR:[TRANSLATED]ny] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[EN]I[EN]]andand with LLM
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] DecompilationResult
+    given: andon[CYR:ny] file and with and
+    when: [CYR:ny]  and[CYR:I]and with LLM
+    then: in[CYR:acts] DecompilationResult
     implementation: |
                     pub fn decompile_with_llm(binary: []const u8, address: usize) DecompilationResult {
                         _ = binary;
@@ -319,9 +319,9 @@ behaviors:
       
 
   - name: batch_decompile
-    given: [EN]andon[CYR:[EN]ny] file and list [CYR:[TRANSLATED]]with[EN]in
-    when: [CYR:[TRANSLATED]]onI [EN]compilation inwith[EN] [CYR:[TRANSLATED]]and[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] List<DecompilationResult>
+    given: andon[CYR:ny] file and list within
+    when: onI compilation inwith and
+    then: in[CYR:acts] List<DecompilationResult>
     implementation: |
                     pub fn batch_decompile(binary: []const u8, addresses: []const usize) []const DecompilationResult {
                         _ = binary;
@@ -335,8 +335,8 @@ behaviors:
 
   - name: learn_from_result
     given: DecompilationResult with feedback
-    when: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] RAG [CYR:[TRANSLATED]y] [EN]with[CYR:[TRANSLATED]y[EN]]and example[EN]and
-    then: [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [EN]iny[EN] [CYR:[TRANSLATED]]and[EN]and in [CYR:[TRANSLATED]]
+    when: inand RAG [CYR:y] withy]and exampleand
+    then: in[CYR:I] iny and in 
     implementation: |
                     pub fn learn_from_result(result: DecompilationResult) void {
                         _ = result;

@@ -61,7 +61,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     // ───────────────────────────────────────────────────────────────────────────
     .{
         .name = "hello_world_simple",
-        .keywords = &.{ "hello", "world", "print", "[EN]andin[EN]", "[EN]and[EN]", "你好", "世界" },
+        .keywords = &.{ "hello", "world", "print", "andin", "and", "你好", "世界" },
         .category = .HelloWorld,
         .code =
         \\const std = @import("std");
@@ -112,7 +112,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     // ───────────────────────────────────────────────────────────────────────────
     .{
         .name = "fibonacci_iterative",
-        .keywords = &.{ "fibonacci", "fib", "[EN]and[EN]on[EN]and", "sequence", "numbers" },
+        .keywords = &.{ "fibonacci", "fib", "andonand", "sequence", "numbers" },
         .category = .Algorithm,
         .code =
         \\const std = @import("std");
@@ -153,7 +153,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "factorial",
-        .keywords = &.{ "factorial", "[EN]to[CYR:[EN]]and[EN]", "n!", "multiply" },
+        .keywords = &.{ "factorial", "toand", "n!", "multiply" },
         .category = .Algorithm,
         .code =
         \\const std = @import("std");
@@ -189,7 +189,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "is_prime",
-        .keywords = &.{ "prime", "[CYR:[EN]]with[CYR:[EN]]", "[EN]andwith[EN]", "divisible" },
+        .keywords = &.{ "prime", "with", "andwith", "divisible" },
         .category = .Algorithm,
         .code =
         \\const std = @import("std");
@@ -232,7 +232,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "gcd_euclidean",
-        .keywords = &.{ "gcd", "greatest", "common", "divisor", "euclidean", "[CYR:[EN]]" },
+        .keywords = &.{ "gcd", "greatest", "common", "divisor", "euclidean", "" },
         .category = .Algorithm,
         .code =
         \\const std = @import("std");
@@ -273,7 +273,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "binary_search",
-        .keywords = &.{ "binary", "search", "find", "[EN]andon[CYR:[EN]]", "byandwithto" },
+        .keywords = &.{ "binary", "search", "find", "andon", "byandwithto" },
         .category = .Algorithm,
         .code =
         \\const std = @import("std");
@@ -320,7 +320,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "quick_sort",
-        .keywords = &.{ "quick", "sort", "[EN]with[CYR:[EN]]", "with[CYR:[EN]]and[EN]into[EN]", "partition" },
+        .keywords = &.{ "quick", "sort", "with", "withandinto", "partition" },
         .category = .Algorithm,
         .code =
         \\const std = @import("std");
@@ -373,7 +373,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "bubble_sort",
-        .keywords = &.{ "bubble", "sort", "[CYR:[EN]]to[EN]in[EN]", "with[CYR:[EN]]and[EN]into[EN]", "simple" },
+        .keywords = &.{ "bubble", "sort", "toin", "withandinto", "simple" },
         .category = .Algorithm,
         .code =
         \\const std = @import("std");
@@ -414,7 +414,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "merge_sort",
-        .keywords = &.{ "merge", "sort", "with[CYR:[EN]]and[EN]into[EN]", "with[EN]and[EN]and[EN]", "divide" },
+        .keywords = &.{ "merge", "sort", "withandinto", "withand", "divide" },
         .category = .Algorithm,
         .code =
         \\const std = @import("std");
@@ -483,7 +483,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     // ───────────────────────────────────────────────────────────────────────────
     .{
         .name = "vsa_bind",
-        .keywords = &.{ "bind", "within[CYR:[EN]]", "multiply", "vsa", "hdc" },
+        .keywords = &.{ "bind", "within", "multiply", "vsa", "hdc" },
         .category = .VSA,
         .code =
         \\const std = @import("std");
@@ -623,7 +623,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "vsa_similarity",
-        .keywords = &.{ "similarity", "cosine", "dot", "with[CYR:[EN]]with[EN]in[EN]", "compare" },
+        .keywords = &.{ "similarity", "cosine", "dot", "within", "compare" },
         .category = .VSA,
         .code =
         \\const std = @import("std");
@@ -856,7 +856,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     // ───────────────────────────────────────────────────────────────────────────
     .{
         .name = "struct_basic",
-        .keywords = &.{ "struct", "with[CYR:[EN]]to[CYR:[EN]]", "record", "type", "fields" },
+        .keywords = &.{ "struct", "withto", "record", "type", "fields" },
         .category = .DataStructure,
         .code =
         \\const std = @import("std");
@@ -915,7 +915,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "enum_with_methods",
-        .keywords = &.{ "enum", "[CYR:[EN]]andwith[CYR:[EN]]and[EN]", "variant", "state", "switch" },
+        .keywords = &.{ "enum", "andwithand", "variant", "state", "switch" },
         .category = .DataStructure,
         .code =
         \\const std = @import("std");
@@ -1086,7 +1086,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     // ───────────────────────────────────────────────────────────────────────────
     .{
         .name = "error_handling_basic",
-        .keywords = &.{ "error", "[EN]and[EN]to[EN]", "try", "catch", "handling" },
+        .keywords = &.{ "error", "andto", "try", "catch", "handling" },
         .category = .ErrorHandling,
         .code =
         \\const std = @import("std");
@@ -1319,7 +1319,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     // ───────────────────────────────────────────────────────────────────────────
     .{
         .name = "test_patterns",
-        .keywords = &.{ "test", "[EN]with[EN]", "testing", "assert", "expect" },
+        .keywords = &.{ "test", "with", "testing", "assert", "expect" },
         .category = .Testing,
         .code =
         \\const std = @import("std");
@@ -1395,7 +1395,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     // ───────────────────────────────────────────────────────────────────────────
     .{
         .name = "math_golden_ratio",
-        .keywords = &.{ "phi", "golden", "ratio", "fibonacci", "[CYR:[EN]]from[EN]", "with[CYR:[EN]]and[EN]" },
+        .keywords = &.{ "phi", "golden", "ratio", "fibonacci", "from", "withand" },
         .category = .Math,
         .code =
         \\const std = @import("std");
@@ -1455,7 +1455,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     },
     .{
         .name = "matrix_multiply",
-        .keywords = &.{ "matrix", "matmul", "multiply", "[CYR:[EN]]and[EN]", "[CYR:[EN]]and[EN]" },
+        .keywords = &.{ "matrix", "matmul", "multiply", "and", "and" },
         .category = .Math,
         .code =
         \\const std = @import("std");
@@ -1537,7 +1537,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     // ───────────────────────────────────────────────────────────────────────────
     .{
         .name = "vibee_basic",
-        .keywords = &.{ "vibee", "spec", "specification", "yaml", "with[CYR:[EN]]and[EN]andto[EN]and[EN]" },
+        .keywords = &.{ "vibee", "spec", "specification", "yaml", "withandtoand" },
         .category = .VIBEE,
         .code =
         \\// VIBEE Specification Example
@@ -1722,7 +1722,7 @@ pub const TEMPLATES = [_]CodeTemplate{
     // ───────────────────────────────────────────────────────────────────────────
     .{
         .name = "string_operations",
-        .keywords = &.{ "string", "with[CYR:[EN]]to[EN]", "concat", "split", "trim", "text" },
+        .keywords = &.{ "string", "withto", "concat", "split", "trim", "text" },
         .category = .String,
         .code =
         \\const std = @import("std");
@@ -1944,8 +1944,8 @@ pub fn main() !void {
         "cosine similarity",
         "permute rotate",
         "quantize ternary",
-        "[EN]andin[EN] [EN]and[EN]",  // Russian: hello world
-        "[EN]and[EN]on[EN]and",   // Russian: fibonacci
+        "andin and",  // Russian: hello world
+        "andonand",   // Russian: fibonacci
     };
 
     var total_time_us: u64 = 0;
@@ -2017,7 +2017,7 @@ test "multilingual matching" {
     var coder = IglaLocalCoder.init(std.testing.allocator);
 
     // Russian
-    const result_ru = coder.generateCode("[EN]andin[EN]");
+    const result_ru = coder.generateCode("andin");
     try std.testing.expect(result_ru.is_match);
 
     // English

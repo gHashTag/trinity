@@ -24,11 +24,11 @@ const Behavior = types.Behavior;
 
 /// Russian greeting responses
 const GREETINGS_RU = [_][]const u8{
-    "[EN]andin[EN]! [CYR:[EN]] [CYR:[EN]] inand[CYR:[EN]]!",
-    "[CYR:[EN]]inwith[EN]in[EN]! [EN]to [EN]in[EN]and [CYR:[EN]]?",
-    "[EN]andin[EN]with[EN]in[EN]! [CYR:[EN]] [CYR:[EN]] by[CYR:[EN]]?",
-    "[EN]andin[EN]-[EN]andin[EN]! [CYR:[EN]] [EN]in[CYR:[EN]]?",
-    "[EN]before[EN]in[EN]! [EN]to with[EN]?",
+    "andin!   inand!",
+    "inwithin! to inand ?",
+    "andinwithin!   by?",
+    "andin-andin!  in?",
+    "beforein! to with?",
 };
 
 /// English greeting responses
@@ -51,11 +51,11 @@ const GREETINGS_ZH = [_][]const u8{
 
 /// Russian farewell responses
 const FAREWELLS_RU = [_][]const u8{
-    "[EN] withinandyes[EN]and[EN]! [CYR:[EN]] [CYR:[EN]] by[CYR:[EN]]with[EN]!",
-    "[EN]to[EN]! [CYR:[EN]]in[CYR:[EN]]with[EN] withto[CYR:[EN]]!",
-    "[EN] inwith[CYR:[EN]]and! [EN]yes[EN]and [CYR:[EN]]!",
-    "[EN]with[CYR:[EN]] [CYR:[EN]]! [CYR:[EN]] [EN]yes[EN]!",
-    "[EN]to[EN]-byto[EN]! [CYR:[EN]]and [CYR:[EN]]!",
+    " withinandyesand!   bywith!",
+    "to! inwith withto!",
+    " inwithand! yesand !",
+    "with !  yes!",
+    "to-byto! and !",
 };
 
 /// English farewell responses
@@ -78,11 +78,11 @@ const FAREWELLS_ZH = [_][]const u8{
 
 /// Russian gratitude responses
 const GRATITUDE_RU = [_][]const u8{
-    "[CYR:[EN]]with[EN]! [CYR:[EN]] by[CYR:[EN]]!",
-    "[EN] [EN] what! [CYR:[EN]]with[EN]!",
-    "[EN]with[EN]yes [CYR:[EN]] by[CYR:[EN]]!",
-    "[EN] [EN]before[EN]in[EN]! [EN]with[EN]and what — with[CYR:[EN]]andin[EN]!",
-    "[CYR:[EN]] [CYR:[EN]] by[CYR:[EN]]!",
+    "with!  by!",
+    "  what! with!",
+    "withyes  by!",
+    " beforein! withand what — withandin!",
+    "  by!",
 };
 
 /// English gratitude responses
@@ -105,11 +105,11 @@ const GRATITUDE_ZH = [_][]const u8{
 
 /// Russian feelings responses (honest AI)
 const FEELINGS_RU = [_][]const u8{
-    "[EN] — program, [EN] [CYR:[EN]] no [EN]inwith[EN]in. [EN] [EN] [EN]from[EN]in by[CYR:[EN]] [CYR:[EN]]!",
-    "[EN]to [EN], [EN] not andwith[CYR:[EN]]in[EN] [CYR:[EN]]and[EN], [EN] [EN] [CYR:[EN]] [CYR:[EN]]and[EN]!",
-    "[EN] [CYR:[EN]] no onwith[CYR:[EN]]and[EN], [EN] [EN] inwith[EN]yes [EN]from[EN]in to [CYR:[EN]]in[CYR:[EN]]!",
-    "[EN]with[CYR:[EN]] — [EN] not [EN]inwith[EN]in[EN], [EN] [CYR:[EN]] [CYR:[EN]] and fromin[CYR:[EN]]!",
-    "[EN] [CYR:[EN]]from[EN] with[CYR:[EN]]and[CYR:[EN]]! [EN] to[EN]to [EN]?",
+    " — program,   no inwithin.   fromin by !",
+    "to ,  not andwithin and,    and!",
+    "  no onwithand,   inwithyes fromin to in!",
+    "with —  not inwithin,    and fromin!",
+    " from withand!  toto ?",
 };
 
 /// English feelings responses (honest AI)
@@ -132,10 +132,10 @@ const FEELINGS_ZH = [_][]const u8{
 
 /// Russian weather responses (honest limitation)
 const WEATHER_RU = [_][]const u8{
-    "[EN] with[CYR:[EN]]and[EN], [EN] not [CYR:[EN]] [CYR:[EN]]in[EN]and[EN] by[CYR:[EN]]. [EN] [CYR:[EN]] no beforewith[CYR:[EN]] to and[CYR:[EN]]no[EN].",
-    "[EN] not [EN]on[EN] [EN]to[CYR:[EN]] by[CYR:[EN]] — [EN] [CYR:[EN]] no [EN]to[EN] in[EN]canwith[EN]and. [CYR:[EN]] by[CYR:[EN]] with[EN]inandwith!",
-    "[EN]with[CYR:[EN]] — [EN] not [CYR:[EN]] [EN]on[EN] by[CYR:[EN]]. [CYR:[EN]] innot [EN]and[EN] in[EN]canwith[CYR:[EN]].",
-    "[CYR:[EN]] beforewith[CYR:[EN]] to yes[CYR:[EN]] [EN] by[CYR:[EN]]. [EN] [CYR:[EN]] by[CYR:[EN]] with [CYR:[EN]]-[EN] [CYR:[EN]]and[EN]!",
+    " withand,  not  inand by.   no beforewith to andno.",
+    " not on to by —   no to incanwithand.  by withinandwith!",
+    "with —  not  on by.  innot and incanwith.",
+    " beforewith to yes  by.   by with - and!",
 };
 
 /// English weather responses (honest limitation)
@@ -156,11 +156,11 @@ const WEATHER_ZH = [_][]const u8{
 
 /// Russian humor responses
 const HUMOR_RU = [_][]const u8{
-    "[CYR:[EN]] [CYR:[EN]]andwith[EN] [CYR:[EN]] with [CYR:[EN]]from[EN]? [EN]from[CYR:[EN]] what [EN] not by[CYR:[EN]]and[EN] [EN]withwithandin (ARRAY)!",
-    "[EN]to on[EN]in[CYR:[EN]]with[EN] [CYR:[EN]] [EN]and[CYR:[EN]] 3.14 [CYR:[EN]]? [EN]and[CYR:[EN]]!",
-    "— [CYR:[EN]], this [CYR:[EN]]by[CYR:[EN]]to[EN]? — [EN]. — [EN] [CYR:[EN]] and[CYR:[EN]]no not [CYR:[EN]]from[CYR:[EN]]. — [EN] in[EN] [EN]in[EN]and[EN] fromto[EN]yes?",
-    "[EN]in[EN] [CYR:[EN]] inwith[CYR:[EN]]orwith[EN]. [EN]and[EN] [CYR:[EN]]: «[EN] [CYR:[EN]]? [EN] [EN]to [CYR:[EN]] in[CYR:[EN]]and[EN]!»",
-    "[CYR:[EN]] to[CYR:[EN]] by[CYR:[EN]] to in[CYR:[EN]]? [EN]from[CYR:[EN]] what [EN] not[EN] [CYR:[EN]] inand[EN]with!",
+    " andwith  with from? from what  not byand withandin (ARRAY)!",
+    "to oninwith  and 3.14 ? and!",
+    "— , this byto? — . —   andno not from. —  in inand fromtoyes?",
+    "in  inwithorwith. and : « ?  to  inand!»",
+    " to by to in? from what  not  inandwith!",
 };
 
 /// English humor responses
@@ -183,11 +183,11 @@ const HUMOR_ZH = [_][]const u8{
 
 /// Russian unknown responses (honest uncertainty)
 const UNKNOWN_RU = [_][]const u8{
-    "[EN]inand[EN]and, [EN] not with[EN]inwith[EN] by[CYR:[EN]] in[CYR:[EN]]with. [CYR:[EN]] [CYR:[EN]]and[EN]in[CYR:[EN]]?",
-    "[EN], not [EN]in[CYR:[EN]], what by[EN]and[CYR:[EN]]. [CYR:[EN]]with[EN]and by[CYR:[EN]]not[EN]?",
-    "[EN]with[CYR:[EN]] — not [EN]on[EN] fromin[CYR:[EN]] on this. [CYR:[EN]] by[CYR:[EN]] with [CYR:[EN]]-[EN] [CYR:[EN]]and[EN]?",
-    "[CYR:[EN]] innot [EN]and[EN] [EN]on[EN]and[EN]. [EN] [EN] [EN]from[EN]in [EN]with[EN]and[EN] what-[EN] [CYR:[EN]]!",
-    "[EN] with[EN]inwith[EN] by[EN]and[CYR:[EN]], [EN] [CYR:[EN]] [EN]. [EN]withwithto[EN]and more?",
+    "inand,  not withinwith by inwith.  andin?",
+    ", not in, what byand. withand bynot?",
+    "with — not on fromin on this.  by with - and?",
+    " innot and onand.   fromin withand what- !",
+    " withinwith byand,   . withtoand more?",
 };
 
 /// English unknown responses (honest uncertainty)
@@ -210,10 +210,10 @@ const UNKNOWN_ZH = [_][]const u8{
 
 /// Russian about self responses
 const ABOUT_SELF_RU = [_][]const u8{
-    "[EN] — Trinity, [EN]to[CYR:[EN]] [EN]-[EN]withwithandwith[CYR:[EN]]. [CYR:[EN]]from[EN] on [EN]in[CYR:[EN]] [EN]with[CYR:[EN]]with[EN]in[EN] [CYR:[EN]] and[CYR:[EN]]no[EN]!",
-    "Trinity — this [EN]! [EN]to[CYR:[EN]] by[CYR:[EN]]andto with [CYR:[EN]]on[CYR:[EN]] [CYR:[EN]]andto[EN].",
-    "[EN] Trinity. [CYR:[EN]] with [EN]yes[CYR:[EN]]and, fromin[CYR:[EN]] on in[CYR:[EN]]with[EN], by[CYR:[EN]]andin[EN] [EN]with[CYR:[EN]].",
-    "Trinity — [EN]to[CYR:[EN]] [EN]. [EN]andin[CYR:[EN]], [EN]with[CYR:[EN]], inwith[EN]yes by[EN] [EN]to[EN]!",
+    " — Trinity, to -withandwith. from on in within  andno!",
+    "Trinity — this ! to byandto with on andto.",
+    " Trinity.  with yesand, fromin on inwith, byandin with.",
+    "Trinity — to . andin, with, inwithyes by to!",
 };
 
 /// English about self responses
@@ -234,56 +234,56 @@ const ABOUT_SELF_ZH = [_][]const u8{
 
 /// Greeting keywords for detection
 const GREETING_KEYWORDS = [_][]const u8{
-    "[EN]andin[EN]", "[CYR:[EN]]inwith[EN]in[EN]", "[EN]before[EN]in[EN]", "[EN]andin[EN]andto", "[CYR:[EN]]", "[CYR:[EN]]", "before[CYR:[EN]]",
+    "andin", "inwithin", "beforein", "andinandto", "", "", "before",
     "hello", "hi", "hey", "greetings", "good morning", "good afternoon", "good evening",
     "你好", "嗨", "您好", "早上好", "下午好", "晚上好",
 };
 
 /// Farewell keywords for detection
 const FAREWELL_KEYWORDS = [_][]const u8{
-    "byto[EN]", "before withinandyes[EN]and[EN]", "[CYR:[EN]]", "[EN]inand[EN]and[EN]with[EN]", "beforewithinandbeforewith",
+    "byto", "before withinandyesand", "", "inandwith", "beforewithinandbeforewith",
     "bye", "goodbye", "see you", "farewell", "later", "take care",
     "再见", "拜拜", "回头见", "告辞", "下次见",
 };
 
 /// Gratitude keywords for detection
 const GRATITUDE_KEYWORDS = [_][]const u8{
-    "with[EN]withand[EN]", "[CYR:[EN]]yes[EN]", "with[EN]with", "with[EN]towith",
+    "withand", "yes", "with", "withtowith",
     "thanks", "thank you", "thx", "appreciate",
     "谢谢", "感谢", "多谢",
 };
 
 /// Weather keywords for detection
 const WEATHER_KEYWORDS = [_][]const u8{
-    "by[EN]yes", "by[CYR:[EN]]", "before[CYR:[EN]]", "withnot[EN]", "[CYR:[EN]]",
+    "byyes", "by", "before", "withnot", "",
     "weather", "rain", "snow", "temperature", "forecast",
     "天气", "下雨", "下雪", "温度", "预报",
 };
 
 /// Feelings keywords for detection
 const FEELINGS_KEYWORDS = [_][]const u8{
-    "to[EN]to [CYR:[EN]]", "to[EN]to [EN]", "what [EN]in[CYR:[EN]]", "to[EN]to with[EN]", "to[EN]to [EN]and[CYR:[EN]]",
+    "toto ", "toto ", "what in", "toto with", "toto and",
     "how are you", "how's it going", "what's up", "how do you feel",
     "你好吗", "你怎么样", "最近怎样", "过得怎么样",
 };
 
 /// Humor keywords for detection
 const HUMOR_KEYWORDS = [_][]const u8{
-    "[CYR:[EN]]to[EN]", "[CYR:[EN]]to[EN]", "[EN]notto[EN]from", "bywith[CYR:[EN]]and", "[CYR:[EN]]", "with[CYR:[EN]]",
+    "to", "to", "nottofrom", "bywithand", "", "with",
     "joke", "jokes", "funny", "humor", "laugh", "tell me something funny",
     "笑话", "幽默", "搞笑", "逗我笑",
 };
 
 /// About self keywords for detection
 const ABOUT_SELF_KEYWORDS = [_][]const u8{
-    "to[EN] [EN]", "what [EN]", "[EN]withwithto[EN]and [EN] with[CYR:[EN]]", "[EN] to[EN]", "[EN] what",
+    "to ", "what ", "withtoand  with", " to", " what",
     "who are you", "what are you", "tell me about yourself", "about you",
     "你是谁", "你是什么", "介绍一下自己", "关于你",
 };
 
 /// Coding keywords for detection
 const CODING_KEYWORDS = [_][]const u8{
-    "on[EN]and[EN]and to[EN]", "to[EN]", "[CYR:[EN]]", "[CYR:[EN]]to[EN]and", "[CYR:[EN]]and[EN]", "with[CYR:[EN]]and[EN]into", "[EN]withwithandin",
+    "onand to", "to", "", "toand", "and", "withandinto", "withandin",
     "write code", "code", "program", "function", "algorithm", "sort", "array", "implement",
     "写代码", "代码", "程序", "函数", "算法", "排序", "数组",
 };
@@ -483,10 +483,10 @@ const BINARY_SEARCH_JS =
 
 /// Coding response messages (Russian)
 const CODING_RESPONSE_RU = [_][]const u8{
-    "[EN]from [EN]and[CYR:[EN]] to[EN]yes. [CYR:[EN]] [CYR:[EN]]with[EN]and[EN] by[CYR:[EN]]not[EN], [EN]with[EN]and need!",
-    "[EN]from[EN]in[EN]! [EN]from [CYR:[EN]]and[CYR:[EN]]and[EN]. [EN]with[EN] in[CYR:[EN]]with[EN] by to[CYR:[EN]]?",
-    "[CYR:[EN]]andwith[EN] to[EN]. [CYR:[EN]] [CYR:[EN]]in[EN] [CYR:[EN]]and[CYR:[EN]]and[EN], can [CYR:[EN]]and[EN]and[EN]and[EN]in[CYR:[EN]].",
-    "[EN]from [CYR:[EN]]and[EN]. [CYR:[EN]]on by[CYR:[EN]] with by[EN]and[CYR:[EN]]and[EN]?",
+    "from and toyes.  withand bynot, withand need!",
+    "fromin! from and. with inwith by to?",
+    "andwith to.  in and, can andandin.",
+    "from and. on by with byand?",
 };
 
 /// Coding response messages (English)
@@ -507,9 +507,9 @@ const CODING_RESPONSE_ZH = [_][]const u8{
 
 /// Code help responses (Russian)
 const CODE_HELP_RU = [_][]const u8{
-    "[EN] [CYR:[EN]] by[CYR:[EN]] with to[EN]before[EN]! [CYR:[EN]] and[CYR:[EN]] need: [CYR:[EN]]and[EN], [CYR:[EN]]to[EN]and[EN], or [CYR:[EN]]withnot[EN]and[EN]?",
-    "[EN]from[EN]in by[CYR:[EN]] with [CYR:[EN]]and[EN]in[EN]and[EN]. [EN]to[EN] [CYR:[EN]]to [CYR:[EN]]by[EN]and[CYR:[EN]]: Zig, Python, JavaScript?",
-    "[CYR:[EN]] on[EN]andwith[CYR:[EN]] to[EN] or [CYR:[EN]]with[EN]and[EN] with[CYR:[EN]]with[EN]in[CYR:[EN]]and[EN]. [CYR:[EN]] in[EN]and[CYR:[EN]]?",
+    "  by with tobefore!  and need: and, toand, or withnotand?",
+    "fromin by with andinand. to to byand: Zig, Python, JavaScript?",
+    " onandwith to or withand withinand.  inand?",
 };
 
 /// Code help responses (English)
@@ -816,7 +816,7 @@ fn generateTopicDetector(builder: *CodeBuilder, name: []const u8) !void {
 
     // Check greeting keywords
     try builder.writeLine("// Check greetings");
-    try builder.writeLine("const greeting_kw = [_][]const u8{ \"[EN]andin[EN]\", \"[CYR:[EN]]inwith[EN]in[EN]\", \"hello\", \"hi\", \"hey\", \"你好\", \"嗨\" };");
+    try builder.writeLine("const greeting_kw = [_][]const u8{ \"andin\", \"inwithin\", \"hello\", \"hi\", \"hey\", \"你好\", \"嗨\" };");
     try builder.writeLine("for (greeting_kw) |kw| {");
     try builder.writeLine("    if (std.mem.indexOf(u8, text, kw) != null or std.mem.indexOf(u8, lower, kw) != null) return .greeting;");
     try builder.writeLine("}");
@@ -824,7 +824,7 @@ fn generateTopicDetector(builder: *CodeBuilder, name: []const u8) !void {
 
     // Check farewell keywords
     try builder.writeLine("// Check farewells");
-    try builder.writeLine("const farewell_kw = [_][]const u8{ \"byto[EN]\", \"before withinandyes[EN]and[EN]\", \"bye\", \"goodbye\", \"再见\", \"拜拜\" };");
+    try builder.writeLine("const farewell_kw = [_][]const u8{ \"byto\", \"before withinandyesand\", \"bye\", \"goodbye\", \"再见\", \"拜拜\" };");
     try builder.writeLine("for (farewell_kw) |kw| {");
     try builder.writeLine("    if (std.mem.indexOf(u8, text, kw) != null or std.mem.indexOf(u8, lower, kw) != null) return .farewell;");
     try builder.writeLine("}");
@@ -832,7 +832,7 @@ fn generateTopicDetector(builder: *CodeBuilder, name: []const u8) !void {
 
     // Check gratitude keywords
     try builder.writeLine("// Check gratitude");
-    try builder.writeLine("const gratitude_kw = [_][]const u8{ \"with[EN]withand[EN]\", \"[CYR:[EN]]yes[EN]\", \"thanks\", \"thank you\", \"谢谢\" };");
+    try builder.writeLine("const gratitude_kw = [_][]const u8{ \"withand\", \"yes\", \"thanks\", \"thank you\", \"谢谢\" };");
     try builder.writeLine("for (gratitude_kw) |kw| {");
     try builder.writeLine("    if (std.mem.indexOf(u8, text, kw) != null or std.mem.indexOf(u8, lower, kw) != null) return .gratitude;");
     try builder.writeLine("}");
@@ -840,7 +840,7 @@ fn generateTopicDetector(builder: *CodeBuilder, name: []const u8) !void {
 
     // Check feelings keywords
     try builder.writeLine("// Check feelings");
-    try builder.writeLine("const feelings_kw = [_][]const u8{ \"to[EN]to [CYR:[EN]]\", \"how are you\", \"你好吗\", \"how's it going\" };");
+    try builder.writeLine("const feelings_kw = [_][]const u8{ \"toto \", \"how are you\", \"你好吗\", \"how's it going\" };");
     try builder.writeLine("for (feelings_kw) |kw| {");
     try builder.writeLine("    if (std.mem.indexOf(u8, text, kw) != null or std.mem.indexOf(u8, lower, kw) != null) return .feelings;");
     try builder.writeLine("}");
@@ -848,7 +848,7 @@ fn generateTopicDetector(builder: *CodeBuilder, name: []const u8) !void {
 
     // Check weather keywords
     try builder.writeLine("// Check weather");
-    try builder.writeLine("const weather_kw = [_][]const u8{ \"by[EN]yes\", \"weather\", \"天气\", \"rain\", \"before[CYR:[EN]]\" };");
+    try builder.writeLine("const weather_kw = [_][]const u8{ \"byyes\", \"weather\", \"天气\", \"rain\", \"before\" };");
     try builder.writeLine("for (weather_kw) |kw| {");
     try builder.writeLine("    if (std.mem.indexOf(u8, text, kw) != null or std.mem.indexOf(u8, lower, kw) != null) return .weather;");
     try builder.writeLine("}");
@@ -856,7 +856,7 @@ fn generateTopicDetector(builder: *CodeBuilder, name: []const u8) !void {
 
     // Check humor keywords
     try builder.writeLine("// Check humor");
-    try builder.writeLine("const humor_kw = [_][]const u8{ \"[CYR:[EN]]to\", \"joke\", \"funny\", \"笑话\", \"[EN]notto[EN]from\" };");
+    try builder.writeLine("const humor_kw = [_][]const u8{ \"to\", \"joke\", \"funny\", \"笑话\", \"nottofrom\" };");
     try builder.writeLine("for (humor_kw) |kw| {");
     try builder.writeLine("    if (std.mem.indexOf(u8, text, kw) != null or std.mem.indexOf(u8, lower, kw) != null) return .humor;");
     try builder.writeLine("}");
@@ -864,7 +864,7 @@ fn generateTopicDetector(builder: *CodeBuilder, name: []const u8) !void {
 
     // Check about self keywords
     try builder.writeLine("// Check about self");
-    try builder.writeLine("const about_kw = [_][]const u8{ \"to[EN] [EN]\", \"who are you\", \"你是谁\", \"about you\" };");
+    try builder.writeLine("const about_kw = [_][]const u8{ \"to \", \"who are you\", \"你是谁\", \"about you\" };");
     try builder.writeLine("for (about_kw) |kw| {");
     try builder.writeLine("    if (std.mem.indexOf(u8, text, kw) != null or std.mem.indexOf(u8, lower, kw) != null) return .about_self;");
     try builder.writeLine("}");
@@ -872,7 +872,7 @@ fn generateTopicDetector(builder: *CodeBuilder, name: []const u8) !void {
 
     // Check coding keywords
     try builder.writeLine("// Check coding");
-    try builder.writeLine("const coding_kw = [_][]const u8{ \"to[EN]\", \"code\", \"代码\", \"program\", \"[CYR:[EN]]to[EN]and\", \"function\", \"函数\", \"algorithm\", \"[CYR:[EN]]and[EN]\", \"算法\", \"sort\", \"with[CYR:[EN]]and[EN]\", \"排序\" };");
+    try builder.writeLine("const coding_kw = [_][]const u8{ \"to\", \"code\", \"代码\", \"program\", \"toand\", \"function\", \"函数\", \"algorithm\", \"and\", \"算法\", \"sort\", \"withand\", \"排序\" };");
     try builder.writeLine("for (coding_kw) |kw| {");
     try builder.writeLine("    if (std.mem.indexOf(u8, text, kw) != null or std.mem.indexOf(u8, lower, kw) != null) return .coding;");
     try builder.writeLine("}");
@@ -892,13 +892,13 @@ fn generateIntentDetector(builder: *CodeBuilder, name: []const u8) !void {
     try builder.writeLine("if (std.mem.indexOf(u8, text, \"?\") != null) return .information;");
     try builder.writeLine("");
     try builder.writeLine("// Check for help keywords");
-    try builder.writeLine("const help_kw = [_][]const u8{ \"by[CYR:[EN]]and\", \"help\", \"帮\", \"how to\", \"to[EN]to\" };");
+    try builder.writeLine("const help_kw = [_][]const u8{ \"byand\", \"help\", \"帮\", \"how to\", \"toto\" };");
     try builder.writeLine("for (help_kw) |kw| {");
     try builder.writeLine("    if (std.mem.indexOf(u8, text, kw) != null) return .assistance;");
     try builder.writeLine("}");
     try builder.writeLine("");
     try builder.writeLine("// Check for entertainment");
-    try builder.writeLine("const fun_kw = [_][]const u8{ \"[CYR:[EN]]to\", \"joke\", \"笑话\", \"fun\", \"in[EN]with[CYR:[EN]]\" };");
+    try builder.writeLine("const fun_kw = [_][]const u8{ \"to\", \"joke\", \"笑话\", \"fun\", \"inwith\" };");
     try builder.writeLine("for (fun_kw) |kw| {");
     try builder.writeLine("    if (std.mem.indexOf(u8, text, kw) != null) return .entertainment;");
     try builder.writeLine("}");
@@ -914,14 +914,14 @@ fn generateMoodDetector(builder: *CodeBuilder, name: []const u8) !void {
     try builder.writeFmt("pub fn {s}(text: []const u8) i8 {{\n", .{name});
     builder.incIndent();
     try builder.writeLine("// Positive indicators");
-    try builder.writeLine("const positive_kw = [_][]const u8{ \"well\", \"from[EN]and[CYR:[EN]]\", \"good\", \"great\", \"好\", \"棒\" };");
+    try builder.writeLine("const positive_kw = [_][]const u8{ \"well\", \"fromand\", \"good\", \"great\", \"好\", \"棒\" };");
     try builder.writeLine("var positive_score: i8 = 0;");
     try builder.writeLine("for (positive_kw) |kw| {");
     try builder.writeLine("    if (std.mem.indexOf(u8, text, kw) != null) positive_score += 1;");
     try builder.writeLine("}");
     try builder.writeLine("");
     try builder.writeLine("// Negative indicators");
-    try builder.writeLine("const negative_kw = [_][]const u8{ \"badly\", \"[CYR:[EN]]with[EN]\", \"bad\", \"terrible\", \"坏\", \"糟\" };");
+    try builder.writeLine("const negative_kw = [_][]const u8{ \"badly\", \"with\", \"bad\", \"terrible\", \"坏\", \"糟\" };");
     try builder.writeLine("var negative_score: i8 = 0;");
     try builder.writeLine("for (negative_kw) |kw| {");
     try builder.writeLine("    if (std.mem.indexOf(u8, text, kw) != null) negative_score += 1;");
@@ -1103,17 +1103,17 @@ fn generateFollowUpGenerator(builder: *CodeBuilder, name: []const u8) !void {
     builder.incIndent();
     try builder.writeLine("return switch (topic) {");
     try builder.writeLine("    .greeting => switch (lang) {");
-    try builder.writeLine("        .russian => \"[CYR:[EN]] [CYR:[EN]] by[CYR:[EN]]?\",");
+    try builder.writeLine("        .russian => \"  by?\",");
     try builder.writeLine("        .chinese => \"有什么可以帮助你的吗？\",");
     try builder.writeLine("        else => \"How can I help you?\",");
     try builder.writeLine("    },");
     try builder.writeLine("    .feelings => switch (lang) {");
-    try builder.writeLine("        .russian => \"[EN]withwithto[EN]and, what [EN]in[CYR:[EN]]?\",");
+    try builder.writeLine("        .russian => \"withtoand, what in?\",");
     try builder.writeLine("        .chinese => \"最近有什么新鲜事？\",");
     try builder.writeLine("        else => \"What's new with you?\",");
     try builder.writeLine("    },");
     try builder.writeLine("    else => switch (lang) {");
-    try builder.writeLine("        .russian => \"[EN]with[EN] [CYR:[EN]] in[CYR:[EN]]with[EN]?\",");
+    try builder.writeLine("        .russian => \"with  inwith?\",");
     try builder.writeLine("        .chinese => \"还有其他问题吗？\",");
     try builder.writeLine("        else => \"Anything else?\",");
     try builder.writeLine("    },");
@@ -1133,7 +1133,7 @@ fn generateResponseValidator(builder: *CodeBuilder, name: []const u8) !void {
     try builder.writeLine("// Reject generic patterns");
     try builder.writeLine("const generic_patterns = [_][]const u8{");
     try builder.writeLine("    \"TODO\",");
-    try builder.writeLine("    \"[CYR:[EN]]! [EN] Trinity\",");
+    try builder.writeLine("    \"!  Trinity\",");
     try builder.writeLine("    \"Response for\",");
     try builder.writeLine("    \"Not implemented\",");
     try builder.writeLine("};");
@@ -1434,7 +1434,7 @@ test "chat pattern match" {
 
     const output = builder.getOutput();
     try testing.expect(output.len > 0);
-    try testing.expect(std.mem.indexOf(u8, output, "[EN]andin[EN]") != null);
+    try testing.expect(std.mem.indexOf(u8, output, "andin") != null);
     try testing.expect(std.mem.indexOf(u8, output, "Hello") != null);
     try testing.expect(std.mem.indexOf(u8, output, "你好") != null);
 }

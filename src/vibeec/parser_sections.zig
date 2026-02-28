@@ -9,7 +9,7 @@
 // Each function takes (source, pos, line, allocator, list) → ScanState.
 // Uses parser_utils for all scanning operations.
 //
-// IGLA ([CYR:[EN]]) — [EN]to[EN], [EN]andin[CYR:[EN]]and[EN] [CYR:[EN]] code
+// IGLA () — to, andinand  code
 //
 // φ² + 1/φ² = 3
 //

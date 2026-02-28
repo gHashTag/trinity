@@ -1,6 +1,6 @@
 // golden_chain_test v1.0.0
-// [EN]in[CYR:I[TRANSLATED]]onI [CYR:[TRANSLATED]]: V = n × 3^k × π^m × φ^p × e^q
-// [CYR:[TRANSLATED]I] and[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]with[EN]: φ² + 1/φ² = 3
+// in[CYR:I]onI : V = n × 3^k × π^m × φ^p × e^q
+// [CYR:I] andwith: φ² + 1/φ² = 3
 
 behavior "SelfTest" {
     when "System initializes"

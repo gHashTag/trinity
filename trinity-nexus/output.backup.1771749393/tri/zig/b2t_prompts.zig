@@ -15,10 +15,10 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]A[TRANSLATED]]
+// [CYR:A]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// [CYR:[TRANSLATED]]iny[EN] φ-to[EN]with[CYR:[TRANSLATED]y] (Sacred Formula)
+// iny φ-towithy] (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -30,7 +30,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// 
@@ -94,7 +94,7 @@ pub const CoTParseResult = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]A[TRANSLATED]] [CYR:[TRANSLATED]] WASM
+// [CYR:A]  WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -144,13 +144,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-and[CYR:[TRANSLATED]]fields[EN]andI
+/// φ-andfieldsandI
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// [EN]not[CYR:[TRANSLATED]]andI φ-with[EN]and[CYR:[TRANSLATED]]and
+/// notandI φ-withand
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -305,16 +305,16 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "build_system_prompt_behavior" {
-// Given: [CYR:[EN]l] [CYR:agent[EN]] and [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI
-// When: Creation withandwith[CYR:[TRANSLATED]go] [CYR:pro[TRANSLATED]]
+// Given: [CYR:l] [CYR:agent] and andI
+// When: Creation withandwithgo] [CYR:pro]
 // Then: Returns PromptSection with role=system
 // Test build_system_prompt: verify behavior is callable (compile-time check)
 _ = build_system_prompt;
 }
 
 test "build_context_section_behavior" {
-// Given: SemanticContext and[EN] b2t_llm_assist
-// When: [CYR:[TRANSLATED]]and[EN]in[EN]and[EN] to[CYR:[TRANSLATED]]towith[EN]
+// Given: SemanticContext and b2t_llm_assist
+// When: andinand totowith
 // Then: Returns PromptSection with role=context
 // Test build_context_section: verify behavior is callable (compile-time check)
 _ = build_context_section;
@@ -322,15 +322,15 @@ _ = build_context_section;
 
 test "build_icl_examples_behavior" {
 // Given: List<SimilarCode> and max_examples
-// When: [CYR:[TRANSLATED]]and[EN]in[EN]and[EN] [EN]and[CYR:[TRANSLATED]]in for ICL
+// When: andinand andin for ICL
 // Then: Returns PromptSection with role=example
 // Test build_icl_examples: verify behavior is callable (compile-time check)
 _ = build_icl_examples;
 }
 
 test "build_query_behavior" {
-// Given: [EN]to[CYR:[TRANSLATED]]or[EN]in[CYR:[EN]ny] to[EN] and task
-// When: [CYR:[TRANSLATED]]and[EN]in[EN]and[EN] [CYR:[EN]pro]with[EN]
+// Given: toorin[CYR:ny] to and task
+// When: andinand [CYR:pro]with
 // Then: Returns PromptSection with role=query
 // Test build_query: verify behavior is callable (compile-time check)
 _ = build_query;
@@ -338,15 +338,15 @@ _ = build_query;
 
 test "assemble_prompt_behavior" {
 // Given: List<PromptSection> and PromptConfig
-// When: [CYR:[TRANSLATED]]to[EN] [EN]andon[CYR:lnogo] [CYR:pro[TRANSLATED]] with [CYR:[TRANSLATED]] [EN]and[EN]and[EN]in
-// Then: Returns String [CYR:pro[TRANSLATED]]
+// When: to andon[CYR:lnogo] [CYR:pro] with  andin
+// Then: Returns String [CYR:pro]
 // Test assemble_prompt: verify behavior is callable (compile-time check)
 _ = assemble_prompt;
 }
 
 test "get_distortion_template_behavior" {
 // Given: DistortionType
-// When: [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]on for to[EN]to[CYR:[TRANSLATED]go] andwithto[CYR:[TRANSLATED]]andI
+// When: and on for toforgo] andwithtoandI
 // Then: Returns DistortionTemplate
 // Test get_distortion_template: verify behavior is callable (compile-time check)
 _ = get_distortion_template;
@@ -354,40 +354,40 @@ _ = get_distortion_template;
 
 test "format_detection_prompt_behavior" {
 // Given: [CYR:Code] and DistortionTemplate
-// When: Creation [CYR:pro[TRANSLATED]] for [CYR:[TRANSLATED]]to[EN]andand andwithto[CYR:[TRANSLATED]]and[EN]
-// Then: Returns String [CYR:pro[TRANSLATED]]
+// When: Creation [CYR:pro] for toand andwithtoand
+// Then: Returns String [CYR:pro]
 // Test format_detection_prompt: verify behavior is callable (compile-time check)
 _ = format_detection_prompt;
 }
 
 test "format_correction_prompt_behavior" {
-// Given: [CYR:Code], andwithto[CYR:[TRANSLATED]]andI and DistortionTemplate
-// When: Creation [CYR:pro[TRANSLATED]] for andwith[CYR:law]in[CYR:[TRANSLATED]]andI
-// Then: Returns String [CYR:pro[TRANSLATED]]
+// Given: [CYR:Code], andwithtoandI and DistortionTemplate
+// When: Creation [CYR:pro] for andwithlaw]inandI
+// Then: Returns String [CYR:pro]
 // Test format_correction_prompt: verify behavior is callable (compile-time check)
 _ = format_correction_prompt;
 }
 
 test "format_validation_prompt_behavior" {
-// Given: [EN]and[EN]andon[EN], andwith[CYR:law]in[CYR:[TRANSLATED]]and[EN] and DistortionTemplate
-// When: Creation [CYR:pro[TRANSLATED]] for in[EN]and[CYR:[TRANSLATED]]andand
-// Then: Returns String [CYR:pro[TRANSLATED]]
+// Given: andon, andwithlaw]inand and DistortionTemplate
+// When: Creation [CYR:pro] for inandand
+// Then: Returns String [CYR:pro]
 // Test format_validation_prompt: verify behavior is callable (compile-time check)
 _ = format_validation_prompt;
 }
 
 test "create_cot_prompt_behavior" {
-// Given: [CYR:[TRANSLATED]] and ChainOfThought
-// When: Creation [CYR:pro[TRANSLATED]] with [EN]step[EN]iny[EN] [EN]withwith[CYR:[TRANSLATED]]and[EN]
-// Then: Returns String [CYR:pro[TRANSLATED]]
+// Given:  and ChainOfThought
+// When: Creation [CYR:pro] with stepiny withand
+// Then: Returns String [CYR:pro]
 // Test create_cot_prompt: verify behavior is callable (compile-time check)
 _ = create_cot_prompt;
 }
 
 test "parse_cot_response_behavior" {
-// Given: [EN]in[EN] LLM with [EN]withwith[CYR:[TRANSLATED]]andI[EN]and
-// When: [EN]in[CYR:[EN]chen]and[EN] step[EN]in and [EN]andon[CYR:lnogo] fromin[CYR:[TRANSLATED]]
-// Then: Returns with[CYR:[TRANSLATED]]to[CYR:[TRANSLATED]]and[EN]in[CYR:[EN]ny] result
+// Given: in LLM with withandIand
+// When: in[CYR:chen]and stepin and andon[CYR:lnogo] fromin
+// Then: Returns withtoandin[CYR:ny] result
 // Test parse_cot_response: verify behavior is callable (compile-time check)
 _ = parse_cot_response;
 }

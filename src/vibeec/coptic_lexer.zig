@@ -1,6 +1,6 @@
 //! VIBEE ⲦⲢⲒⲚⲒⲦⲨ Coptic Lexer - Real Implementation
-//! [CYR:[EN]]to[EN] 27 to[CYR:[EN]]withtoand[EN] withand[EN]in[CYR:[EN]]in (U+2C80-U+2CB4)
-//! [EN]and[EN]in[EN] [EN]and[CYR:[EN]]: △ (+1), ○ (0), ▽ (-1)
+//! to 27 towithtoand withandinin (U+2C80-U+2CB4)
+//! andin and: △ (+1), ○ (0), ▽ (-1)
 //! φ² + 1/φ² = 3
 
 const std = @import("std");

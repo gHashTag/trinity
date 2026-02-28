@@ -1,8 +1,8 @@
-# Прand[CYR:меры] andwith[CYR:пользо]inанandя HDC [CYR:модуля]
+# Прand[CYR:[TRANSLATED]] andwith[TRANSLATED]]inанandя HDC [CYR:[TRANSLATED]]
 
-## Быwith[CYR:трый] with[CYR:тарт]
+## Быwith[TRANSLATED]] with[TRANSLATED]]
 
-### 1. [CYR:Базо]inые HDC [CYR:операц]andand
+### 1. [CYR:[TRANSLATED]]inые HDC [CYR:[TRANSLATED]]and
 
 ```zig
 const std = @import("std");
@@ -13,29 +13,29 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    // [CYR:Создаём] дinа with[CYR:лучайных] inеto[CYR:тора]
+    // [CYR:[TRANSLATED]] дinа with[TRANSLATED]] inеfor[TRANSLATED]]
     var a = try hdc.randomVector(allocator, 1000, 12345);
     defer a.deinit();
     var b = try hdc.randomVector(allocator, 1000, 67890);
     defer b.deinit();
 
-    // Bind - with[CYR:оздан]andе аwithwithоцandацandand
+    // Bind - with[TRANSLATED]]andе аwithоцandацand
     var bound = try hdc.HyperVector.init(allocator, 1000);
     defer bound.deinit();
     hdc.bind(a.data, b.data, bound.data);
 
-    // Unbind - andзin[CYR:лечен]andе (with[CYR:амообрат]andмоwithть)
+    // Unbind - andзin[CYR:[TRANSLATED]]andе (with[TRANSLATED]]andмоwithть)
     var recovered = try hdc.HyperVector.init(allocator, 1000);
     defer recovered.deinit();
     hdc.unbind(bound.data, b.data, recovered.data);
 
-    // [CYR:Про]in[CYR:еряем] with[CYR:ход]withтinо
+    // [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] with[TRANSLATED]]withтinо
     const sim = hdc.similarity(a.data, recovered.data);
-    std.debug.print("[CYR:Сход]withтinо поwithле unbind: {d:.3}\n", .{sim});
+    std.debug.print("[CYR:[TRANSLATED]]withтinо поwithле unbind: {d:.3}\n", .{sim});
 }
 ```
 
-### 2. [CYR:Онлайн] toлаwithwithandфandto[CYR:атор]
+### 2. [CYR:[TRANSLATED]] toлаwithandфandfor[TRANSLATED]]
 
 ```zig
 const clf = @import("../../src/phi-engine/hdc/online_classifier.zig");
@@ -46,33 +46,33 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    // [CYR:Создаём] toлаwithwithandфandto[CYR:атор]
+    // [CYR:[TRANSLATED]] toлаwithandфandfor[TRANSLATED]]
     var classifier = clf.OnlineClassifier.init(allocator, .{
         .dim = 1000,
         .learning_rate = 0.1,
     });
     defer classifier.deinit();
 
-    // [CYR:Создаём] прand[CYR:меры] for дinух toлаwithwithоin
+    // [CYR:[TRANSLATED]] прand[CYR:[TRANSLATED]] for дinух toлаwithоin
     var class_a = try hdc.randomVector(allocator, 1000, 11111);
     defer class_a.deinit();
     var class_b = try hdc.randomVector(allocator, 1000, 22222);
     defer class_b.deinit();
 
-    // [CYR:Обучаем]
+    // [CYR:[TRANSLATED]]
     try classifier.train(class_a.data, "toошtoа");
-    try classifier.train(class_b.data, "with[CYR:оба]toа");
+    try classifier.train(class_b.data, "with[TRANSLATED]]toа");
 
-    // [CYR:Пред]withto[CYR:азы]in[CYR:аем]
+    // [CYR:[TRANSLATED]]withfor[TRANSLATED]]in[CYR:[TRANSLATED]]
     const result = classifier.predict(class_a.data);
-    std.debug.print("[CYR:Кла]withwith: {s}, Уin[CYR:еренно]withть: {d:.2}\n", .{
+    std.debug.print("[CYR:[TRANSLATED]]with: {s}, Уin[CYR:[TRANSLATED]]withть: {d:.2}\n", .{
         result.label,
         result.confidence,
     });
 }
 ```
 
-### 3. RL [CYR:агент] in GridWorld
+### 3. RL [CYR:[TRANSLATED]] in GridWorld
 
 ```zig
 const rl = @import("../../src/phi-engine/hdc/rl_agent.zig");
@@ -83,14 +83,14 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    // [CYR:Создаём] with[CYR:реду] 4x4
+    // [CYR:[TRANSLATED]] with[TRANSLATED]] 4x4
     var env = try gw.GridWorld.init(allocator, .{
         .width = 4,
         .height = 4,
     });
     defer env.deinit();
 
-    // [CYR:Создаём] [CYR:агента]
+    // [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
     var agent = try rl.RLAgent.init(allocator, .{
         .num_actions = 4,
         .gamma = 0.95,
@@ -100,7 +100,7 @@ pub fn main() !void {
 
     try agent.initQTable(env.numStates());
 
-    // [CYR:Обучаем] 100 эпand[CYR:зодо]in
+    // [CYR:[TRANSLATED]] 100 эпand[CYR:[TRANSLATED]]in
     for (0..100) |_| {
         var state = env.reset();
         while (true) {
@@ -113,11 +113,11 @@ pub fn main() !void {
         agent.decayEpsilon();
     }
 
-    std.debug.print("[CYR:Обучен]andе заin[CYR:ершено]!\n", .{});
+    std.debug.print("[CYR:[TRANSLATED]]andе заin[CYR:[TRANSLATED]]!\n", .{});
 }
 ```
 
-### 4. Пfromоtoоinая [CYR:память]
+### 4. Пfromоtoоinая [CYR:memory]
 
 ```zig
 const sm = @import("../../src/phi-engine/hdc/streaming_memory.zig");
@@ -128,42 +128,42 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    // [CYR:Создаём] [CYR:память]
+    // [CYR:[TRANSLATED]] [CYR:memory]
     var mem = try sm.StreamingMemory.init(allocator, .{
         .dim = 2000,
         .forgetting_factor = 0.01,
     });
     defer mem.deinit();
 
-    // [CYR:Создаём] to[CYR:люч] and зon[CYR:чен]andе
+    // [CYR:[TRANSLATED]] for[TRANSLATED]] and зon[CYR:[TRANSLATED]]andе
     var key = try hdc.randomVector(allocator, 2000, 11111);
     defer key.deinit();
     var value = try hdc.randomVector(allocator, 2000, 22222);
     defer value.deinit();
 
-    // [CYR:Сохраняем]
+    // [CYR:[TRANSLATED]]
     try mem.store(key.data, value.data);
 
-    // Изinлеto[CYR:аем]
+    // Изinлеfor[TRANSLATED]]
     const result_buf = try allocator.alloc(hdc.Trit, 2000);
     defer allocator.free(result_buf);
 
     const result = mem.retrieve(key.data, result_buf);
-    std.debug.print("[CYR:Найдено]: {}, Уin[CYR:еренно]withть: {d:.3}\n", .{
+    std.debug.print("[CYR:[TRANSLATED]]: {}, Уin[CYR:[TRANSLATED]]withть: {d:.3}\n", .{
         result.found,
         result.confidence,
     });
 
-    // Прand[CYR:меняем] [CYR:забы]inанandе
+    // Прand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inанandе
     mem.applyForgetting(0.5);
-    std.debug.print("[CYR:Память] поwithле [CYR:забы]inанandя\n", .{});
+    std.debug.print("[CYR:[TRANSLATED]] поwithле [CYR:[TRANSLATED]]inанandя\n", .{});
 }
 ```
 
-## [CYR:Запу]withto прand[CYR:меро]in
+## [CYR:[TRANSLATED]]withto прand[CYR:[TRANSLATED]]in
 
 ```bash
-# [CYR:Комп]and[CYR:ляц]andя and [CYR:запу]withto
+# [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя and [CYR:[TRANSLATED]]withto
 cd examples/hdc
 zig run example_basic.zig
 zig run example_classifier.zig
@@ -171,10 +171,10 @@ zig run example_rl.zig
 zig run example_memory.zig
 ```
 
-## [CYR:Полное] demo
+## [CYR:[TRANSLATED]] demo
 
 ```bash
-# [CYR:Запу]withto demo GridWorld with inand[CYR:зуал]and[CYR:зац]andей
+# [CYR:[TRANSLATED]]withto demo GridWorld with inand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andей
 cd /workspaces/trinity
 zig build-exe src/phi-engine/hdc/demo_gridworld.zig -O ReleaseFast
 ./demo_gridworld

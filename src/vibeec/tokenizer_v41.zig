@@ -2,11 +2,11 @@
 // TOKENIZER v41 - Ultimate Performance Edition
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// [CYR:[EN]]andon[EN]and[EN] [CYR:[EN]]and[EN] [CYR:[EN]]and[EN]and[CYR:[EN]]and[EN]:
-//   - SIMD + Cache combo (2x beforeby[EN]and[CYR:[EN]] speedup)
-//   - AVX-512 [CYR:[EN]]and[EN] (32-way parallel)
-//   - Full BPE 50K [EN]to[CYR:[EN]]in (98% [CYR:[EN]]with[EN])
-//   - WebSocket + SSE [EN]and[EN]and[EN]
+// andonand and andand:
+//   - SIMD + Cache combo (2x beforebyand speedup)
+//   - AVX-512 and (32-way parallel)
+//   - Full BPE 50K toin (98% with)
+//   - WebSocket + SSE and
 //
 // PAS DAEMONS: SIMD, PRE, MEM, HSH, D&C, FDT
 // φ² + 1/φ² = 3 | PHOENIX = 999
@@ -15,58 +15,58 @@
 
 const std = @import("std");
 
-// [EN]in[CYR:[EN]] to[EN]with[CYR:[EN]]
+// in towith
 pub const PHI: f64 = 1.618033988749895;
 pub const TRINITY: f64 = 3.0;
 pub const PHOENIX: u32 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SIMD TYPES ([CYR:[EN]]and[EN] AVX-512 via 2x Vec16)
+// SIMD TYPES (and AVX-512 via 2x Vec16)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const Vec16 = @Vector(16, u8);
-const Vec32 = @Vector(32, u8); // AVX-256 [CYR:[EN]]and[EN]
+const Vec32 = @Vector(32, u8); // AVX-256 and
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// FULL BPE VOCABULARY (50K [EN]to[CYR:[EN]]in - with[CYR:[EN]] version [CYR:[EN]]-1000)
+// FULL BPE VOCABULARY (50K toin - with version -1000)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// [CYR:[EN]]-1000 [CYR:[EN]]and[EN]withtoand[EN] by[EN]with[EN]in (with[EN]to[CYR:[EN]] for demo)
+// -1000 andwithtoand bywithin (withto for demo)
 const BPE_TOKENS_1K = [_][]const u8{
-    // [CYR:[EN]]withand[EN]in[CYR:[EN]]
+    // withandin
     "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
     "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
     "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
     "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
     "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-    // [EN]in[EN]withand[EN]in[CYR:[EN]] ([CYR:[EN]]-100 [EN]and[CYR:[EN]])
+    // inwithandin (-100 and)
     "th", "he", "in", "er", "an", "re", "on", "at", "en", "nd",
     "ti", "es", "or", "te", "of", "ed", "is", "it", "al", "ar",
     "st", "to", "nt", "ng", "se", "ha", "as", "ou", "io", "le",
     "ve", "co", "me", "de", "hi", "ri", "ro", "ic", "ne", "ea",
     "ra", "ce", "li", "ch", "ll", "be", "ma", "si", "om", "ur",
-    // [CYR:[EN]]withand[EN]in[CYR:[EN]] ([CYR:[EN]]-100)
+    // withandin (-100)
     "the", "ing", "and", "ion", "tio", "ent", "ati", "for", "her", "ter",
     "hat", "tha", "ere", "ate", "his", "con", "res", "ver", "all", "ons",
     "nce", "men", "ith", "ted", "ers", "pro", "thi", "wit", "are", "ess",
     "not", "ive", "was", "ect", "rea", "com", "eve", "per", "int", "est",
     "sta", "cti", "ica", "ist", "ear", "ain", "one", "our", "iti", "rat",
-    // [CYR:[EN]]withand[EN]in[CYR:[EN]] ([CYR:[EN]]-50)
+    // withandin (-50)
     "tion", "atio", "that", "ther", "with", "ment", "ions", "this", "here", "from",
     "ould", "have", "ence", "ness", "ight", "ance", "were", "tive", "over", "such",
     "ting", "ical", "ally", "ture", "ious", "eous", "able", "ible", "ment", "less",
     "ship", "ward", "wise", "like", "self", "ever", "some", "ther", "ough", "ween",
     "fore", "ther", "ound", "ange", "ress", "ious", "ness", "ment", "tion", "sion",
-    // [CYR:[EN]]andwithand[EN]in[CYR:[EN]] ([CYR:[EN]]-30)
+    // andwithandin (-30)
     "ation", "ition", "ement", "iness", "ously", "ively", "ering", "ional", "ering", "wards",
     "ments", "tions", "ities", "eness", "ances", "ences", "ering", "ating", "ction", "sting",
     "thing", "which", "there", "their", "about", "would", "these", "other", "words", "could",
-    // [EN]with[EN]andwithand[EN]in[CYR:[EN]] ([CYR:[EN]]-20)
+    // withandwithandin (-20)
     "ations", "itions", "ements", "nesses", "iously", "ically", "erings", "ionals", "nesses", "nesses",
     "ington", "ington", "ington", "ington", "ington", "ington", "ington", "ington", "ington", "ington",
 };
 
-// [CYR:[EN]]-[CYR:[EN]]and[EN] for BPE (4096 [CYR:[EN]]andwith[EN] for better[EN] [EN]with[CYR:[EN]]and[EN])
+// -and for BPE (4096 andwith for better withand)
 const BPE_HASH_SIZE = 4096;
 
 pub const FullBPEVocab = struct {
@@ -102,7 +102,7 @@ pub const FullBPEVocab = struct {
     }
 
     pub fn findToken(self: *const Self, text: []const u8, start: usize, max_len: usize) ?struct { len: usize, idx: u16 } {
-        // [CYR:[EN]] from [EN]and[CYR:[EN]] to to[EN]fromtoand[EN] (greedy)
+        //  from and to tofromtoand (greedy)
         var len: usize = @min(max_len, text.len - start);
         while (len > 0) : (len -= 1) {
             const slice = text[start .. start + len];
@@ -124,7 +124,7 @@ pub const FullBPEVocab = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const SIMDCacheTokenizer = struct {
-    // SIMD [EN]and[CYR:[EN]] (32 [CYR:[EN]]on)
+    // SIMD and (32 on)
     first_chars_lo: Vec16,
     first_chars_hi: Vec16,
     second_chars_lo: Vec16,
@@ -138,7 +138,7 @@ pub const SIMDCacheTokenizer = struct {
     // BPE Vocab
     vocab: FullBPEVocab,
 
-    const CACHE_SIZE = 1024; // [EN]in[EN]and[CYR:[EN]] to[EN]
+    const CACHE_SIZE = 1024; // inand to
     const MAX_TOKEN_LEN = 6;
 
     const CacheEntry = struct {
@@ -151,7 +151,7 @@ pub const SIMDCacheTokenizer = struct {
 
     pub fn init() Self {
         var tokenizer = Self{
-            // [CYR:[EN]]-32 [EN]and[CYR:[EN]] (AVX-256 [CYR:[EN]]and[EN])
+            // -32 and (AVX-256 and)
             .first_chars_lo = Vec16{ 't', 'h', 'i', 'e', 'a', 'r', 'o', 'a', 'e', 'n', 't', 'e', 'o', 't', 'o', 'e' },
             .first_chars_hi = Vec16{ 's', 'h', 'a', 'o', 'i', 'l', 'v', 'c', 'm', 'd', 'h', 'r', 'r', 'i', 'n', 'e' },
             .second_chars_lo = Vec16{ 'h', 'e', 'n', 'r', 'n', 'e', 'n', 't', 'n', 'd', 'i', 's', 'r', 'e', 'f', 'd' },
@@ -169,26 +169,26 @@ pub const SIMDCacheTokenizer = struct {
         return tokenizer;
     }
 
-    // AVX-256 [CYR:[EN]]and[EN]: verification 32 [EN]and[CYR:[EN]] [CYR:[EN]]
+    // AVX-256 and: verification 32 and 
     pub fn isBigram32(self: *const Self, c1: u8, c2: u8) bool {
         const v1_lo: Vec16 = @splat(c1);
         const v1_hi: Vec16 = @splat(c1);
         const v2_lo: Vec16 = @splat(c2);
         const v2_hi: Vec16 = @splat(c2);
 
-        // Check [CYR:[EN]]in[EN] 16 [EN]and[CYR:[EN]]
+        // Check in 16 and
         const match1_lo = v1_lo == self.first_chars_lo;
         const match2_lo = v2_lo == self.second_chars_lo;
         const both_lo = @select(u8, match1_lo, @as(Vec16, @splat(1)), @as(Vec16, @splat(0))) &
             @select(u8, match2_lo, @as(Vec16, @splat(1)), @as(Vec16, @splat(0)));
 
-        // Check in[CYR:[EN]] 16 [EN]and[CYR:[EN]]
+        // Check in 16 and
         const match1_hi = v1_hi == self.first_chars_hi;
         const match2_hi = v2_hi == self.second_chars_hi;
         const both_hi = @select(u8, match1_hi, @as(Vec16, @splat(1)), @as(Vec16, @splat(0))) &
             @select(u8, match2_hi, @as(Vec16, @splat(1)), @as(Vec16, @splat(0)));
 
-        // [CYR:[EN]]and[CYR:[EN]] result[EN]
+        // and result
         return @reduce(.Or, both_lo != @as(Vec16, @splat(0))) or
             @reduce(.Or, both_hi != @as(Vec16, @splat(0)));
     }
@@ -202,11 +202,11 @@ pub const SIMDCacheTokenizer = struct {
         return h;
     }
 
-    // [EN]with[EN]in[CYR:[EN]] method [EN]to[EN]and[CYR:[EN]]andand with to[CYR:[EN]]
+    // within method toandand with to
     pub fn tokenize(self: *Self, text: []const u8) u32 {
         if (text.len == 0) return 1;
 
-        // Check to[EN]
+        // Check to
         const hash = hashText(text);
         const cache_idx = hash % CACHE_SIZE;
 
@@ -217,10 +217,10 @@ pub const SIMDCacheTokenizer = struct {
 
         self.cache_misses += 1;
 
-        // [EN]to[EN]and[CYR:[EN]]and[EN] with SIMD + BPE
+        // toand with SIMD + BPE
         const count = self.tokenizeInternal(text);
 
-        // [CYR:[EN]] in to[EN]
+        //  in to
         self.cache[cache_idx] = CacheEntry{
             .hash = hash,
             .token_count = count,
@@ -237,27 +237,27 @@ pub const SIMDCacheTokenizer = struct {
         while (i < text.len) {
             const c = text[i];
 
-            // [CYR:[EN]]withto[CYR:[EN]] [CYR:[EN]]
+            // withto 
             if (c == ' ' or c == '\n' or c == '\t') {
                 i += 1;
                 continue;
             }
 
-            // [CYR:[EN]] on[EN]and [EN]and[CYR:[EN]] BPE [EN]to[EN] (6-3 withand[EN]in[CYR:[EN]])
+            //  onand and BPE to (6-3 withandin)
             if (self.vocab.findToken(text, i, MAX_TOKEN_LEN)) |token| {
                 count += 1;
                 i += token.len;
                 continue;
             }
 
-            // SIMD verification [EN]and[CYR:[EN]] (32-way)
+            // SIMD verification and (32-way)
             if (i + 1 < text.len and self.isBigram32(c, text[i + 1])) {
                 count += 1;
                 i += 2;
                 continue;
             }
 
-            // [EN]and[CYR:[EN]] character
+            // and character
             count += 1;
             i += 1;
         }
@@ -288,7 +288,7 @@ pub const TokenizerStats = struct {
     vocab_size: usize,
 };
 
-// [CYR:[EN]] [EN]to[EN]and[CYR:[EN]]
+//  toand
 var global_tokenizer: ?SIMDCacheTokenizer = null;
 
 pub fn tokenizeV41(text: []const u8) u32 {
@@ -310,13 +310,13 @@ pub fn resetV41() void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// WEBSOCKET + SSE [CYR:[EN]]
+// WEBSOCKET + SSE 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const StreamProtocol = enum {
     websocket,
     sse,
-    auto, // [EN]in[EN]in[CYR:[EN]]
+    auto, // inin
 };
 
 pub const HybridStream = struct {
@@ -336,15 +336,15 @@ pub const HybridStream = struct {
         };
     }
 
-    // [EN]in[EN]in[CYR:[EN]] [EN]from[EN]to[CYR:[EN]]
+    // inin fromto
     pub fn autoSelect(payload_size: usize, bidirectional: bool) StreamProtocol {
         if (bidirectional) {
-            return .websocket; // WebSocket for [EN]in[EN]on[CYR:[EN]]in[CYR:[EN]] within[EN]and
+            return .websocket; // WebSocket for inonin withinand
         }
         if (payload_size < 1024) {
-            return .sse; // SSE for [CYR:[EN]]toand[EN] with[CYR:[EN]]and[EN]
+            return .sse; // SSE for toand withand
         }
-        return .websocket; // WebSocket for [CYR:[EN]]and[EN] yes[CYR:[EN]]
+        return .websocket; // WebSocket for and yes
     }
 
     pub fn send(self: *Self, payload: []const u8, bidirectional: bool) void {
@@ -356,7 +356,7 @@ pub const HybridStream = struct {
         switch (protocol) {
             .websocket => {
                 self.ws_frames += 1;
-                self.bytes_sent += payload.len + 2; // +2 for [CYR:[EN]]into[EN]
+                self.bytes_sent += payload.len + 2; // +2 for into
             },
             .sse => {
                 self.sse_events += 1;
@@ -376,7 +376,7 @@ pub const HybridStream = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "SIMDCacheTokenizer basic" {
@@ -394,13 +394,13 @@ test "SIMDCacheTokenizer basic" {
 test "AVX-256 emulation (32-way bigram)" {
     const tokenizer = SIMDCacheTokenizer.init();
 
-    // Check [EN]and[CYR:[EN]] and[EN] [CYR:[EN]]and[EN] on[CYR:[EN]]in
+    // Check and and and onin
     try std.testing.expect(tokenizer.isBigram32('t', 'h')); // Lo set
     try std.testing.expect(tokenizer.isBigram32('h', 'e')); // Lo set
     try std.testing.expect(tokenizer.isBigram32('s', 't')); // Hi set
     try std.testing.expect(tokenizer.isBigram32('h', 'a')); // Hi set
 
-    // [EN]-[EN]and[CYR:[EN]]
+    // -and
     try std.testing.expect(!tokenizer.isBigram32('x', 'z'));
     try std.testing.expect(!tokenizer.isBigram32('q', 'q'));
 }
@@ -408,31 +408,31 @@ test "AVX-256 emulation (32-way bigram)" {
 test "Full BPE vocab" {
     const vocab = FullBPEVocab.init();
 
-    // Check search [EN]to[CYR:[EN]]in
+    // Check search toin
     const text = "the quick";
 
-    // "the" before[CYR:[EN]] on[EN]andwith[EN]
+    // "the" before onandwith
     const token = vocab.findToken(text, 0, 6);
     try std.testing.expect(token != null);
     try std.testing.expectEqual(@as(usize, 3), token.?.len);
 }
 
 test "Hybrid stream auto-select" {
-    // [CYR:[EN]]to[EN] with[CYR:[EN]]and[EN], [CYR:[EN]]on[CYR:[EN]]in[CYR:[EN]] → SSE
+    // to withand, onin → SSE
     try std.testing.expectEqual(StreamProtocol.sse, HybridStream.autoSelect(100, false));
 
-    // [EN]in[EN]on[CYR:[EN]]in[CYR:[EN]] → WebSocket
+    // inonin → WebSocket
     try std.testing.expectEqual(StreamProtocol.websocket, HybridStream.autoSelect(100, true));
 
-    // [CYR:[EN]] with[CYR:[EN]]and[EN] → WebSocket
+    //  withand → WebSocket
     try std.testing.expectEqual(StreamProtocol.websocket, HybridStream.autoSelect(2000, false));
 }
 
 test "Hybrid stream stats" {
     var stream = HybridStream.init(.auto);
 
-    stream.send("Hello", false); // SSE (small, [CYR:[EN]]on[CYR:[EN]]in[CYR:[EN]])
-    stream.send("World", true); // WebSocket ([EN]in[EN]on[CYR:[EN]]in[CYR:[EN]])
+    stream.send("Hello", false); // SSE (small, onin)
+    stream.send("World", true); // WebSocket (inonin)
 
     const s = stream.stats();
     try std.testing.expectEqual(@as(u64, 1), s.ws);
@@ -466,10 +466,10 @@ test "Benchmark: v40 vs v41" {
         total_v40 += @intCast(end - start);
     }
 
-    // Reset cache for [EN]with[CYR:[EN]] with[EN]innot[EN]and[EN] [CYR:[EN]]in[CYR:[EN]] in[CYR:[EN]]in[EN]
+    // Reset cache for with withinnotand in inin
     resetV41();
 
-    // Benchmark v41 ([CYR:[EN]]in[EN] in[CYR:[EN]]in - cache miss)
+    // Benchmark v41 (in inin - cache miss)
     var total_v41_first: u64 = 0;
     i = 0;
     while (i < 100) : (i += 1) {
@@ -480,9 +480,9 @@ test "Benchmark: v40 vs v41" {
         total_v41_first += @intCast(end - start);
     }
 
-    // Benchmark v41 (byin[CYR:[EN]] in[CYR:[EN]]in[EN] - cache hit)
+    // Benchmark v41 (byin inin - cache hit)
     resetV41();
-    _ = tokenizeV41(text); // [CYR:[EN]]in[EN] in[CYR:[EN]]in for [EN]by[EN]not[EN]and[EN] to[CYR:[EN]]
+    _ = tokenizeV41(text); // in inin for bynotand to
 
     var total_v41_cached: u64 = 0;
     i = 0;

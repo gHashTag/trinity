@@ -2,7 +2,7 @@
 // TRINITY v24.φ - Benchmark Suite
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// [CYR:[TRANSLATED]l[EN]y[EN]] [CYR:[TRANSLATED]]toand for PAS [EN]on[EN]and[EN]
+// [CYR:ly] toand for PAS onand
 // φ² + 1/φ² = 3
 //
 // ═══════════════════════════════════════════════════════════════════════════════

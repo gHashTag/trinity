@@ -1,5 +1,5 @@
 // Maxwell Daemon - Agent Loop
-// [EN]with[EN]in[CYR:[TRANSLATED]] [EN]andto[EN] [EN]in[CYR:[TRANSLATED]go] [CYR:agent[EN]]
+// within andto in[CYR:go] [CYR:agent]
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -115,9 +115,9 @@ pub const DaemonConfig = struct {
     poll_interval_ms: u64,
 
     pub const SafetyMode = enum {
-        Strict, // [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andI for to[CYR:[TRANSLATED]go] [CYR:[TRANSLATED]]with[EN]inandI
-        Normal, // Ain[CYR:[TRANSLATED]]and[EN]withtoand, [EN] with [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI[EN]and
-        Permissive, // [EN]and[EN]and[CYR:[EN]l[EN]y[EN]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI
+        Strict, //  inandI for forgo] withinandI
+        Normal, // Ainandwithtoand,  with andIand
+        Permissive, // and[CYR:ly] andI
     };
 
     pub const LogLevel = enum {
@@ -210,7 +210,7 @@ pub const AgentLoop = struct {
     // LIFECYCLE
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// [CYR:[TRANSLATED]]with[EN]and[EN] demoon in [CYR:foundation[EN]]in[EN] [CYR:[TRANSLATED]]and[EN]
+    /// withand demoon in [CYR:foundation]in and
     pub fn start(self: *AgentLoop) !void {
         if (self.running.load(.seq_cst)) return;
         
@@ -223,7 +223,7 @@ pub const AgentLoop = struct {
         self.thread = try std.Thread.spawn(.{}, runLoop, .{self});
     }
 
-    /// [EN]with[CYR:[TRANSLATED]]inand[EN] demoon
+    /// withinand demoon
     pub fn stop(self: *AgentLoop) void {
         if (!self.running.load(.seq_cst)) return;
         
@@ -238,12 +238,12 @@ pub const AgentLoop = struct {
         self.state.status = .Stopped;
     }
 
-    /// [CYR:[TRANSLATED]]with[EN]and[EN] [EN]and[EN] [EN]andto[EN] (for [EN]with[EN]and[EN]in[EN]andI)
+    /// withand and andto (for withandinandI)
     pub fn step(self: *AgentLoop) !void {
         try self.processNextTask();
     }
 
-    /// [EN]with[EN]in[CYR:[TRANSLATED]] [EN]andto[EN] demoon
+    /// within andto demoon
     fn runLoop(self: *AgentLoop) void {
         while (self.running.load(.seq_cst)) {
             self.processNextTask() catch |err| {
@@ -262,7 +262,7 @@ pub const AgentLoop = struct {
     // TASK MANAGEMENT
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// [CYR:[TRANSLATED]]inand[EN] [CYR:[TRANSLATED]] in [CYR:[TRANSLATED]]
+    /// inand  in 
     pub fn submitTask(self: *AgentLoop, description: []const u8, task_type: TaskType) !u64 {
         const task = try self.allocator.create(Task);
         const id = @as(u64, @intCast(std.time.timestamp())) ^ @as(u64, @intFromPtr(task));
@@ -274,7 +274,7 @@ pub const AgentLoop = struct {
         return id;
     }
 
-    /// [CYR:[TRANSLATED]]inand[EN] [CYR:[TRANSLATED]] with [EN]and[EN]and[CYR:[TRANSLATED]]
+    /// inand  with and
     pub fn submitTaskWithPriority(self: *AgentLoop, description: []const u8, task_type: TaskType, priority: u8) !u64 {
         const task = try self.allocator.create(Task);
         const id = @as(u64, @intCast(std.time.timestamp())) ^ @as(u64, @intFromPtr(task));
@@ -286,7 +286,7 @@ pub const AgentLoop = struct {
         return id;
     }
 
-    /// [CYR:[EN]work]from[CYR:ate] with[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+    /// [CYR:work]from[CYR:ate] with 
     fn processNextTask(self: *AgentLoop) !void {
         if (self.state.current_task != null) return; // Already working
         
@@ -337,7 +337,7 @@ pub const AgentLoop = struct {
         self.state.status = .Idle;
     }
 
-    /// [CYR:Vy[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]
+    /// [CYR:Vy]and 
     fn executeTask(self: *AgentLoop, task: *Task, result: *TaskResult) !void {
         self.log(.Info, "Executing task");
         

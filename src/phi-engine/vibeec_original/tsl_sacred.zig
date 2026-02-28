@@ -1,13 +1,13 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // TSL SACRED v3 - Generated from specs/tsl_kernel_v3.vibee
-// [CYR:[EN]] [CYR:[EN]] [CYR:[EN]]
+//   
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
 const math = std.math;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 1. [CYR:[EN]] CONSTANTS
+// 1.  CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Golden ratio φ = (1 + √5) / 2
@@ -28,62 +28,62 @@ pub const PI: f64 = 3.1415926535897932385;
 /// e
 pub const E: f64 = 2.7182818284590452354;
 
-/// [CYR:[EN]] [CYR:[EN]]: φ² + 1/φ² = 3 [CYR:[EN]]!
+///  : φ² + 1/φ² = 3 !
 pub const GOLDEN_IDENTITY: f64 = 3.0;
 
-/// [CYR:[EN]] = [CYR:[EN]] = TRINITY
+///  =  = TRINITY
 pub const KUTRIT: u32 = 3;
 
-/// [EN]and[EN]in[EN]and[EN]: 27 = 3³
+/// andinand: 27 = 3³
 pub const TRIDEVYATITSA: u32 = 27;
 
-/// [CYR:[EN]]and[EN] 37
+/// and 37
 pub const SACRED_MULTIPLIER: u32 = 37;
 
-/// [EN]in[CYR:[EN]] number: 999 = 37 × 27
+/// in number: 999 = 37 × 27
 pub const SACRED: u32 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]] CONSTANTS (and[EN] φ)
+//  CONSTANTS (and φ)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// μ = 1/φ²/10 = [CYR:[EN]]and[EN]
+/// μ = 1/φ²/10 = and
 pub const MU_MUTATION: f64 = 0.0382;
 
-/// χ = 1/φ/10 = to[EN]withwith[EN]in[EN]
+/// χ = 1/φ/10 = towithin
 pub const CHI_CROSSOVER: f64 = 0.0618;
 
-/// σ = φ = with[CYR:[EN]]to[EN]and[EN]
+/// σ = φ = withtoand
 pub const SIGMA_SELECTION: f64 = PHI;
 
-/// ε = 1/3 = [EN]and[EN]and[EN]
+/// ε = 1/3 = and
 pub const EPSILON_ELITISM: f64 = 0.333;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]] CONSTANTS
+//  CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:[EN]]withwithand[EN]withtoand[EN] [CYR:[EN]] CHSH
+/// withandwithtoand  CHSH
 pub const CHSH_CLASSICAL: f64 = 2.0;
 
-/// [EN]in[CYR:[EN]]in[EN] [CYR:[EN]] CHSH = 2√2
+/// inin  CHSH = 2√2
 pub const CHSH_QUANTUM: f64 = 2.8284271247461903;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]] CONSTANTS
+//  CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// τ = φ in[CYR:[EN]]on[EN] constant LIF not[CYR:[EN]]on
+/// τ = φ inon constant LIF noton
 pub const TAU_LIF: f64 = PHI;
 
-/// 3 [CYR:[EN]]in[EN] with[CYR:[EN]]to[EN]in = φ² + 1/φ²
+/// 3 in withtoin = φ² + 1/φ²
 pub const SPIKE_LEVELS: u32 = 3;
 
-/// 603x [EN]not[CYR:[EN]]to[EN]andin[EN]with[EN] = 67 × 3²
+/// 603x nottoandinwith = 67 × 3²
 pub const ENERGY_EFFICIENCY: u32 = 603;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// π × φ × e ≈ 13.82
@@ -96,7 +96,7 @@ pub const LUCAS_10: u32 = 123;
 // 2. SACRED FORMULA: V = n × 3^k × π^m × φ^p × e^q
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:[EN]]andwith[EN]and[EN] within[CYR:[EN]] [CYR:[EN]]
+/// andwithand within 
 pub fn sacredFormula(n: u32, k: i32, m: i32, p: i32, q: i32) f64 {
     const n_f: f64 = @floatFromInt(n);
     const three_k = math.pow(f64, 3.0, @as(f64, @floatFromInt(k)));
@@ -107,7 +107,7 @@ pub fn sacredFormula(n: u32, k: i32, m: i32, p: i32, q: i32) f64 {
     return n_f * three_k * pi_m * phi_p * e_q;
 }
 
-/// [CYR:[EN]]andwith[EN]and[EN] via [CYR:[EN]]from[EN] and[CYR:[EN]]and[CYR:[EN]]with[EN]: 3 = φ² + 1/φ²
+/// andwithand via from andwith: 3 = φ² + 1/φ²
 pub fn sacredFormulaViaGoldenKey(n: u32, k: i32, m: i32, p: i32, q: i32) f64 {
     const n_f: f64 = @floatFromInt(n);
     const golden_key = PHI_SQ + PHI_INV_SQ; // = 3.0
@@ -120,33 +120,33 @@ pub fn sacredFormulaViaGoldenKey(n: u32, k: i32, m: i32, p: i32, q: i32) f64 {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 3. [CYR:[EN]] [CYR:[EN]]
+// 3.  
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:[EN]]in[EN]and[EN] φ² + 1/φ² = 3
+/// inand φ² + 1/φ² = 3
 pub fn verifyGoldenIdentity() bool {
     const result = PHI_SQ + PHI_INV_SQ;
     return @abs(result - 3.0) < 1e-14;
 }
 
-/// [CYR:[EN]]andwith[EN]and[EN] 3^k via [CYR:[EN]]from[EN] and[CYR:[EN]]and[CYR:[EN]]with[EN]
+/// andwithand 3^k via from andwith
 pub fn threeViaPhi(k: i32) f64 {
     const golden_key = PHI_SQ + PHI_INV_SQ;
     return math.pow(f64, golden_key, @as(f64, @floatFromInt(k)));
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 4. [CYR:[EN]] [CYR:[EN]]: L(n) = φⁿ + 1/φⁿ
+// 4.  : L(n) = φⁿ + 1/φⁿ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:[EN]]andwith[EN]and[EN] number [EN]to[EN]with[EN] L(n)
+/// andwithand number towith L(n)
 pub fn lucas(n: u32) f64 {
     const n_f: f64 = @floatFromInt(n);
     const phi_n = math.pow(f64, PHI, n_f);
     const inv_phi_n = math.pow(f64, PHI_INV, n_f);
 
-    // [CYR:[EN]] [CYR:[EN]] n: L(n) = φⁿ + 1/φⁿ
-    // [CYR:[EN]] not[CYR:[EN]] n: L(n) = φⁿ - 1/φⁿ (with [CYR:[EN]] [EN]onto[EN])
+    //   n: L(n) = φⁿ + 1/φⁿ
+    //  not n: L(n) = φⁿ - 1/φⁿ (with  onto)
     if (n % 2 == 0) {
         return phi_n + inv_phi_n;
     } else {
@@ -154,11 +154,11 @@ pub fn lucas(n: u32) f64 {
     }
 }
 
-/// [CYR:[EN]]in[EN] [EN]andwith[EN] [EN]to[EN]with[EN]
+/// in andwith towith
 pub const LUCAS_SEQUENCE = [_]u32{ 2, 1, 3, 4, 7, 11, 18, 29, 47, 76, 123 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 5. LIF [CYR:[EN]]
+// 5. LIF 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const LIFNeuron = struct {
@@ -178,12 +178,12 @@ pub const LIFNeuron = struct {
         };
     }
 
-    /// [CYR:[EN]]inand[EN] [EN]from[CYR:[EN]]and[EN]: τ × dV/dt = -(V - V_rest) + R × I
+    /// inand fromand: τ × dV/dt = -(V - V_rest) + R × I
     pub fn update(self: *LIFNeuron, input_current: f64, dt: f64) bool {
         const dv = (-(self.membrane_potential - self.v_rest) + input_current) / self.tau;
         self.membrane_potential += dv * dt;
 
-        // Check by[CYR:[EN]]in (3 [CYR:[EN]]in[EN] = φ² + 1/φ²)
+        // Check byin (3 in = φ² + 1/φ²)
         if (self.membrane_potential >= self.v_threshold + PHI) {
             self.spike_level = 3;
             self.membrane_potential = self.v_rest;
@@ -203,7 +203,7 @@ pub const LIFNeuron = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 6. [CYR:[EN]] [EN] φ-[CYR:[EN]]
+// 6.   φ-
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const QubitSpiral = struct {
@@ -220,7 +220,7 @@ pub const QubitSpiral = struct {
         };
     }
 
-    /// [CYR:[EN]]andon[EN] on with[EN]and[CYR:[EN]]and
+    /// andon on withand
     pub fn position(self: QubitSpiral) struct { x: f64, y: f64 } {
         return .{
             .x = self.radius * @cos(self.angle),
@@ -229,22 +229,22 @@ pub const QubitSpiral = struct {
     }
 };
 
-/// [CYR:[EN]]in[EN]and[EN] toin[CYR:[EN]]in[EN] [CYR:[EN]]and[CYR:[EN]]with[EN]in[EN]: CHSH > 2
+/// inand toinin andwithin: CHSH > 2
 pub fn hasQuantumAdvantage(chsh_value: f64) bool {
     return chsh_value > CHSH_CLASSICAL;
 }
 
-/// [EN]towithand[CYR:[EN]] on[CYR:[EN]]and[EN] CHSH = 2√2
+/// towithand onand CHSH = 2√2
 pub fn maxCHSHViolation() f64 {
     return CHSH_QUANTUM;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 7. [CYR:[EN]] [CYR:[EN]]
+// 7.  
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const EvolutionOperators = struct {
-    /// [CYR:[EN]]and[EN] with rate = μ = 1/φ²/10
+    /// and with rate = μ = 1/φ²/10
     pub fn mutate(genome: []f64, rng: *std.Random) void {
         for (genome) |*gene| {
             if (rng.float(f64) < MU_MUTATION) {
@@ -253,7 +253,7 @@ pub const EvolutionOperators = struct {
         }
     }
 
-    /// [CYR:[EN]]withwith[EN]in[EN] with rate = χ = 1/φ/10
+    /// within with rate = χ = 1/φ/10
     pub fn crossover(parent_a: []const f64, parent_b: []const f64, child: []f64, rng: *std.Random) void {
         for (parent_a, parent_b, child) |a, b, *c| {
             if (rng.float(f64) < CHI_CROSSOVER) {
@@ -264,23 +264,23 @@ pub const EvolutionOperators = struct {
         }
     }
 
-    /// [CYR:[EN]]to[EN]and[EN] with pressure = σ = φ
+    /// toand with pressure = σ = φ
     pub fn selectionWeight(rank: u32) f64 {
         const rank_f: f64 = @floatFromInt(rank);
         return math.pow(f64, SIGMA_SELECTION, -rank_f);
     }
 
-    /// [EN]and[EN]and[EN] with ratio = ε = 1/3
+    /// and with ratio = ε = 1/3
     pub fn eliteCount(population_size: usize) usize {
         return @intFromFloat(@as(f64, @floatFromInt(population_size)) * EPSILON_ELITISM);
     }
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 8. TSL TYPES (3 [EN]and[EN] = TRINITY)
+// 8. TSL TYPES (3 and = TRINITY)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [EN]and[EN] 1: [EN]in[CYR:[EN]] Computation
+/// and 1: in Computation
 pub const SacredComputation = struct {
     n: u32,
     k: i32,
@@ -297,7 +297,7 @@ pub const SacredComputation = struct {
     }
 };
 
-/// [EN]and[EN] 2: [EN]in[CYR:[EN]]and[CYR:[EN]] [EN]with[CYR:[EN]]and[EN]
+/// and 2: inand withand
 pub const EvolutionState = struct {
     generation: u32,
     fitness: f64,
@@ -323,16 +323,16 @@ pub const EvolutionState = struct {
     }
 };
 
-/// [EN]and[EN] 3: [EN]in[CYR:[EN]]in[EN]-[CYR:[EN]] [EN]with[CYR:[EN]]and[EN]
+/// and 3: inin- withand
 pub const QuantumNeuroState = struct {
-    // [CYR:[EN]]and[EN]
+    // and
     chsh_value: f64,
 
-    // LIF not[CYR:[EN]]
+    // LIF not
     tau: f64, // = φ
     spike_level: u8, // 1, 2, or 3
 
-    // [EN]not[EN]and[EN]
+    // notand
     energy_efficiency: f64, // goal: 603x
 
     pub fn initDefault() QuantumNeuroState {
@@ -356,7 +356,7 @@ pub const QuantumNeuroState = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 9. [CYR:[EN]]
+// 9. 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "golden identity: φ² + 1/φ² = 3" {
@@ -431,7 +431,7 @@ test "qubit spiral placement" {
 }
 
 test "3 types = trinity" {
-    // Check what [EN] onwith [EN]in[EN] 3 [EN]and[EN]
+    // Check what  onwith in 3 and
     const type1 = SacredComputation{ .n = 1, .k = 0, .m = 0, .p = 0, .q = 0 };
     const type2 = EvolutionState.initDefault();
     const type3 = QuantumNeuroState.initDefault();

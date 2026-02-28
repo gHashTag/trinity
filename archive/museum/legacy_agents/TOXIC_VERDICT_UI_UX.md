@@ -1,169 +1,169 @@
-# ☠️ [CYR:ТОКСИЧНЫЙ] [CYR:ВЕРДИКТ]: UI/UX TRINITY v3
+# ☠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: UI/UX TRINITY v3
 
-**[CYR:Дата]:** 2025-01-18  
-**[CYR:Ауд]and[CYR:тор]:** Ona AI Agent + PAS Daemons  
-**[CYR:Методолог]andя:** Predictive Algorithmic Systematics (PAS)
-
----
-
-## [CYR:ОБЩАЯ] [CYR:ОЦЕНКА]: 5/10 ⚠️ → 7/10 ✅
-
-**[CYR:Стату]with:** [CYR:ЧАСТИЧНО] [CYR:ИСПРАВЛЕНО], [CYR:ТРЕБУЕТ] [CYR:ДАЛЬНЕЙШЕЙ] [CYR:РАБОТЫ]
+**[CYR:[TRANSLATED]]:** 2025-01-18  
+**[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]:** Ona AI Agent + PAS Daemons  
+**[CYR:[TRANSLATED]]andя:** Predictive Algorithmic Systematics (PAS)
 
 ---
 
-## 📊 PAS [CYR:АНАЛИЗ] [CYR:ПРОИЗВОДИТЕЛЬНОСТИ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: 5/10 ⚠️ → 7/10 ✅
 
-### [CYR:Выя]in[CYR:ленные] O(n²) Bottlenecks
+**[CYR:[TRANSLATED]]with:** [CYR:[TRANSLATED]] [CYR:[TRANSLATED]], [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-| [CYR:Компо]notнт | [CYR:Сложно]withть | [CYR:Операц]andй/to[CYR:адр] | [CYR:Стату]with |
+---
+
+## 📊 PAS [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+
+### [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] O(n²) Bottlenecks
+
+| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]]withть | [CYR:[TRANSLATED]]andй/for[TRANSLATED]] | [CYR:[TRANSLATED]]with |
 |-----------|-----------|---------------|--------|
-| Agent Physics | O(27²) | 729 | ⚠️ Не andwith[CYR:пра]in[CYR:лено] |
-| TSP Edges | O(27²) | 351 | ⚠️ Не andwith[CYR:пра]in[CYR:лено] |
-| Module Layout | O(65²) | 4,225 | ⚠️ Не andwith[CYR:пра]in[CYR:лено] |
+| Agent Physics | O(27²) | 729 | ⚠️ Не andwith[TRANSLATED]]in[CYR:[TRANSLATED]] |
+| TSP Edges | O(27²) | 351 | ⚠️ Не andwith[TRANSLATED]]in[CYR:[TRANSLATED]] |
+| Module Layout | O(65²) | 4,225 | ⚠️ Не andwith[TRANSLATED]]in[CYR:[TRANSLATED]] |
 | Full Redraw | O(n) | 691 draw calls | ✅ Throttled to 30fps |
 
-### Прand[CYR:менённые] PAS [CYR:Паттерны]
+### Прand[CYR:[TRANSLATED]] PAS [CYR:[TRANSLATED]]
 
-| [CYR:Паттерн] | [CYR:Код] | Confidence | [CYR:Реал]andзоin[CYR:ано] |
+| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | Confidence | [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] |
 |---------|-----|------------|-------------|
 | INC (Incremental) | Tab visibility | 95% | ✅ ДА |
 | IOT (IO-Aware) | Frame limiting | 85% | ✅ ДА |
-| PRE (Precomputation) | Layout cache | 90% | ❌ [CYR:НЕТ] |
-| HSH (Hashing) | Spatial hash | 92% | ❌ [CYR:НЕТ] |
-| D&C (Divide-Conquer) | Quadtree | 85% | ❌ [CYR:НЕТ] |
+| PRE (Precomputation) | Layout cache | 90% | ❌ [CYR:[TRANSLATED]] |
+| HSH (Hashing) | Spatial hash | 92% | ❌ [CYR:[TRANSLATED]] |
+| D&C (Divide-Conquer) | Quadtree | 85% | ❌ [CYR:[TRANSLATED]] |
 
 ---
 
-## ✅ [CYR:ЧТО] [CYR:ИСПРАВЛЕНО]
+## ✅ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ### 1. JavaScript Ошandбtoand
 ```
 ✅ hoveredModule redeclaration → var inмеwithто let
 ✅ const start/end → let (TSP 2-opt)
 ✅ quota.toFixed(3) → quota_max fallback
-✅ hex color + alpha → hexToRgba() [CYR:фун]toцandя
+✅ hex color + alpha → hexToRgba() [CYR:[TRANSLATED]]toцandя
 ```
 
-### 2. UI/UX [CYR:Улучшен]andя
+### 2. UI/UX [CYR:[TRANSLATED]]andя
 ```
-✅ Loading Screen with анand[CYR:мац]andей
+✅ Loading Screen with анand[CYR:[TRANSLATED]]andей
 ✅ Error Boundary with auto-dismiss
-✅ FPS Counter for [CYR:мон]and[CYR:тор]and[CYR:нга]
+✅ FPS Counter for [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
 ✅ Frame rate limiting (60fps → 30fps)
 ✅ Document.hidden check (pause when tab hidden)
 ✅ Favicon (🔺 SVG inline)
 ```
 
-### 3. [CYR:Про]andзinодand[CYR:тельно]withть
+### 3. [CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withть
 ```
-До:  60 FPS target, inwithе [CYR:табы] [CYR:рендерят]withя
-Поwithле: 30 FPS target, [CYR:толь]toо аtoтandin[CYR:ный] [CYR:таб]
+До:  60 FPS target, inwithе [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withя
+Поwithле: 30 FPS target, [CYR:[TRANSLATED]]toо аtoтandin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-Эto[CYR:оном]andя CPU: ~50% прand [CYR:пере]to[CYR:лючен]andand [CYR:табо]in
-Эto[CYR:оном]andя прand withto[CYR:рыт]andand: ~95%
+Эfor[TRANSLATED]]andя CPU: ~50% прand [CYR:[TRANSLATED]]for[TRANSLATED]]and [CYR:[TRANSLATED]]in
+Эfor[TRANSLATED]]andя прand withfor[TRANSLATED]]and: ~95%
 ```
 
 ---
 
-## ❌ [CYR:ЧТО] НЕ [CYR:ИСПРАВЛЕНО] ([CYR:Требует] [CYR:раб]fromы)
+## ❌ [CYR:[TRANSLATED]] НЕ [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromы)
 
-### 1. O(n²) [CYR:Алгор]and[CYR:тмы]
+### 1. O(n²) [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
 ```
-❌ Agent swarm physics - inwithё [CYR:ещё] O(27²)
-❌ TSP all-pairs edges - inwithё [CYR:ещё] O(27²)  
-❌ Module force layout - inwithё [CYR:ещё] O(65²)
+❌ Agent swarm physics - inwithё [CYR:[TRANSLATED]] O(27²)
+❌ TSP all-pairs edges - inwithё [CYR:[TRANSLATED]] O(27²)  
+❌ Module force layout - inwithё [CYR:[TRANSLATED]] O(65²)
 ```
 
-**Реto[CYR:омендац]andя:** Spatial hashing grid for O(n) collision detection
+**Реfor[TRANSLATED]]andя:** Spatial hashing grid for O(n) collision detection
 
-### 2. Canvas [CYR:Опт]andмand[CYR:зац]andand
+### 2. Canvas [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and
 ```
-❌ [CYR:Нет] Path2D caching
-❌ [CYR:Нет] dirty rectangle rendering
-❌ [CYR:Нет] offscreen canvas for with[CYR:тат]andtoand
-❌ [CYR:Нет] WebGL fallback
+❌ [CYR:[TRANSLATED]] Path2D caching
+❌ [CYR:[TRANSLATED]] dirty rectangle rendering
+❌ [CYR:[TRANSLATED]] offscreen canvas for with[TRANSLATED]]andtoand
+❌ [CYR:[TRANSLATED]] WebGL fallback
 ```
 
 ### 3. Memory Leaks
 ```
-❌ Не [CYR:про]in[CYR:ерены] [CYR:утеч]toand in animation loops
-❌ [CYR:Нет] cleanup прand withмеnot [CYR:табо]in
-❌ Event listeners not [CYR:удаляют]withя
+❌ Не [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toand in animation loops
+❌ [CYR:[TRANSLATED]] cleanup прand withмеnot [CYR:[TRANSLATED]]in
+❌ Event listeners not [CYR:[TRANSLATED]]withя
 ```
 
 ---
 
-## 📈 [CYR:БЕНЧМАРКИ]
+## 📈 [CYR:[TRANSLATED]]
 
-### До [CYR:опт]andмand[CYR:зац]andand
+### До [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and
 ```
-[CYR:Файл]: 11,248 with[CYR:тро]to
+[CYR:[TRANSLATED]]: 11,248 with[TRANSLATED]]to
 Canvas calls: 2,176/frame
 Math operations: 449/frame
 DOM updates: 89/frame
 Target FPS: 60
-Actual FPS: 15-30 (заinandwith[CYR:ает])
+Actual FPS: 15-30 (заinandwith[TRANSLATED]])
 ```
 
-### Поwithле [CYR:опт]andмand[CYR:зац]andand
+### Поwithле [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and
 ```
-[CYR:Файл]: 11,341 with[CYR:тро]to (+93 with[CYR:тро]toand)
-Canvas calls: 2,176/frame ([CYR:без] and[CYR:зме]notнandй)
-Math operations: 449/frame ([CYR:без] and[CYR:зме]notнandй)
-DOM updates: 89/frame ([CYR:без] and[CYR:зме]notнandй)
+[CYR:[TRANSLATED]]: 11,341 with[TRANSLATED]]to (+93 with[TRANSLATED]]toand)
+Canvas calls: 2,176/frame ([CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]notнandй)
+Math operations: 449/frame ([CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]notнandй)
+DOM updates: 89/frame ([CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]notнandй)
 Target FPS: 30
-Actual FPS: 25-30 (with[CYR:таб]andльnotе)
-Hidden tab: 0 FPS (эto[CYR:оном]andя 100%)
+Actual FPS: 25-30 (with[TRANSLATED]]andльnotе)
+Hidden tab: 0 FPS (эfor[TRANSLATED]]andя 100%)
 ```
 
-### [CYR:Улучшен]andе
+### [CYR:[TRANSLATED]]andе
 ```
-CPU прand аtoтandin[CYR:ном] [CYR:табе]: -50% (30fps vs 60fps)
-CPU прand withto[CYR:рытом] [CYR:табе]: -95%
-[CYR:Стаб]and[CYR:льно]withть: +40% ([CYR:меньше] фрandзоin)
-Error handling: +100% ([CYR:было] 0)
+CPU прand аtoтandin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: -50% (30fps vs 60fps)
+CPU прand withfor[TRANSLATED]] [CYR:[TRANSLATED]]: -95%
+[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withть: +40% ([CYR:[TRANSLATED]] фрandзоin)
+Error handling: +100% ([CYR:[TRANSLATED]] 0)
 ```
 
 ---
 
-## 🔬 [CYR:НАУЧНЫЕ] [CYR:ИСТОЧНИКИ]
+## 🔬 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### arXiv Research ([CYR:про]in[CYR:ерено])
+### arXiv Research ([CYR:[TRANSLATED]]in[CYR:[TRANSLATED]])
 - CGSim (2510.00822): Real-time visualization dashboards
 - InspectionV3 (2505.16485): Analytics dashboards optimization
 
-### Прand[CYR:менённые] прandнцandпы
-1. **Frame Rate Limiting** - with[CYR:тандарт]onя [CYR:пра]toтandtoа for canvas
-2. **Visibility API** - W3C with[CYR:тандарт] for эto[CYR:оном]andand реwithурwithоin
-3. **Error Boundaries** - React pattern, [CYR:адапт]andроinан for vanilla JS
+### Прand[CYR:[TRANSLATED]] прandнцandпы
+1. **Frame Rate Limiting** - with[TRANSLATED]]onя [CYR:[TRANSLATED]]toтandtoа for canvas
+2. **Visibility API** - W3C with[TRANSLATED]] for эfor[TRANSLATED]]and реwithурwithоin
+3. **Error Boundaries** - React pattern, [CYR:[TRANSLATED]]andроinан for vanilla JS
 4. **Loading States** - UX best practice
 
 ---
 
-## 📋 [CYR:ПЛАН] [CYR:ДЕЙСТВИЙ]
+## 📋 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Фаза] 1: Крandтandчеwithtoandе andwith[CYR:пра]in[CYR:лен]andя ([CYR:ВЫПОЛНЕНО])
-- [x] Иwith[CYR:пра]inandть JS ошandбtoand
-- [x] [CYR:Доба]inandть frame limiting
-- [x] [CYR:Доба]inandть visibility check
-- [x] [CYR:Доба]inandть error handling
+### [CYR:[TRANSLATED]] 1: Крandтandчеwithtoandе andwith[TRANSLATED]]in[CYR:[TRANSLATED]]andя ([CYR:[TRANSLATED]])
+- [x] Иwith[TRANSLATED]]inandть JS ошandбtoand
+- [x] [CYR:[TRANSLATED]]inandть frame limiting
+- [x] [CYR:[TRANSLATED]]inandть visibility check
+- [x] [CYR:[TRANSLATED]]inandть error handling
 
-### [CYR:Фаза] 2: [CYR:Средн]andй прandорand[CYR:тет] (TODO)
+### [CYR:[TRANSLATED]] 2: [CYR:[TRANSLATED]]andй прandорand[CYR:[TRANSLATED]] (TODO)
 - [ ] Spatial hashing for agent physics
 - [ ] Path2D caching for TSP
 - [ ] Layout convergence detection
 
-### [CYR:Фаза] 3: Нandзtoandй прandорand[CYR:тет] (TODO)
+### [CYR:[TRANSLATED]] 3: Нandзtoandй прandорand[CYR:[TRANSLATED]] (TODO)
 - [ ] WebGL renderer
 - [ ] Web Workers for physics
 - [ ] Service Worker for caching
 
 ---
 
-## 🎯 [CYR:СРАВНЕНИЕ] [CYR:ВЕРСИЙ]
+## 🎯 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-| [CYR:Метр]andtoа | v1 (до) | v2 (поwithле) | Δ |
+| [CYR:[TRANSLATED]]andtoа | v1 (до) | v2 (поwithле) | Δ |
 |---------|---------|------------|---|
 | JS Errors | 4 | 0 | ✅ -100% |
 | Target FPS | 60 | 30 | ✅ -50% CPU |
@@ -175,40 +175,40 @@ Error handling: +100% ([CYR:было] 0)
 
 ---
 
-## [CYR:ТОКСИЧНЫЙ] [CYR:ВЫВОД]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-**[CYR:Пра]inда:**
-1. UI/UX [CYR:был] [CYR:СЛОМАН] - 4 toрandтandчеwithtoandх JS ошandбtoand
-2. [CYR:Про]andзinодand[CYR:тельно]withть [CYR:была] [CYR:УЖАСНОЙ] - O(n²) in[CYR:езде]
-3. Нandtoаto[CYR:ого] error handling - [CYR:про]withто crash
-4. Нandtoаto[CYR:ого] loading state - [CYR:белый] эto[CYR:ран]
+**[CYR:[TRANSLATED]]inда:**
+1. UI/UX [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] - 4 toрandтandчеwithtoandх JS ошandбtoand
+2. [CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withть [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] - O(n²) in[CYR:[TRANSLATED]]
+3. Нandtoаfor[TRANSLATED]] error handling - [CYR:[TRANSLATED]]withто crash
+4. Нandtoаfor[TRANSLATED]] loading state - [CYR:[TRANSLATED]] эfor[TRANSLATED]]
 
-**[CYR:Что] with[CYR:делано]:**
-1. Иwith[CYR:пра]in[CYR:лены] [CYR:ВСЕ] JS ошandбtoand
-2. [CYR:Доба]in[CYR:лен] frame limiting (-50% CPU)
-3. [CYR:Доба]in[CYR:лен] visibility check (-95% CPU hidden)
-4. [CYR:Доба]in[CYR:лен] error boundary
-5. [CYR:Доба]in[CYR:лен] loading screen
-6. [CYR:Доба]in[CYR:лен] FPS counter
+**[CYR:[TRANSLATED]] with[TRANSLATED]]:**
+1. Иwith[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] JS ошandбtoand
+2. [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] frame limiting (-50% CPU)
+3. [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] visibility check (-95% CPU hidden)
+4. [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] error boundary
+5. [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] loading screen
+6. [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] FPS counter
 
-**[CYR:Что] НЕ with[CYR:делано]:**
-1. O(n²) [CYR:алгор]and[CYR:тмы] inwithё [CYR:ещё] O(n²)
-2. Canvas not [CYR:опт]andмandзandроinан
-3. Memory leaks not [CYR:про]in[CYR:ерены]
+**[CYR:[TRANSLATED]] НЕ with[TRANSLATED]]:**
+1. O(n²) [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] inwithё [CYR:[TRANSLATED]] O(n²)
+2. Canvas not [CYR:[TRANSLATED]]andмandзandроinан
+3. Memory leaks not [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]
 
-**[CYR:Оцен]toа [CYR:раб]fromы:** 7/10
-- Крandтandчеwithtoandе [CYR:баг]and andwith[CYR:пра]in[CYR:лены]
-- UX зonчand[CYR:тельно] [CYR:улучшен]
-- Но [CYR:глубо]toая [CYR:опт]andмand[CYR:зац]andя not in[CYR:ыпол]noton
+**[CYR:[TRANSLATED]]toа [CYR:[TRANSLATED]]fromы:** 7/10
+- Крandтandчеwithtoandе [CYR:[TRANSLATED]]and andwith[TRANSLATED]]in[CYR:[TRANSLATED]]
+- UX зonчand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+- Но [CYR:[TRANSLATED]]toая [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя not in[CYR:[TRANSLATED]]noton
 
 ---
 
-## [CYR:ДЕПЛОЙ]
+## [CYR:[TRANSLATED]]
 
 **URL:** https://trinity-vibee.fly.dev/
 
-**[CYR:Стату]with:** ✅ [CYR:РАБОТАЕТ]
+**[CYR:[TRANSLATED]]with:** ✅ [CYR:[TRANSLATED]]
 
 ---
 
-*[CYR:Верд]andtoт [CYR:подг]fromоin[CYR:лен] [CYR:через] PAS Daemons аonлandз. φ² + 1/φ² = 3*
+*[CYR:[TRANSLATED]]andtoт [CYR:[TRANSLATED]]fromоin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] PAS Daemons аonлandз. φ² + 1/φ² = 3*

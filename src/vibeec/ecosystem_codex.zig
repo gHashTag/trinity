@@ -74,7 +74,7 @@ pub const EcosystemCodex = struct {
             try h(&ctx, args[1..]);
         } else {
             switch (self.lang) {
-                .RU => std.debug.print("🩹 [[CYR:[EN]]andwith[CYR:[EN]]and[EN]] [EN]and[EN]in[EN]with[CYR:[EN]] [CYR:[EN]]towith: {s}. [CYR:[EN]]and[EN]...\n", .{args[0]}),
+                .RU => std.debug.print("🩹 [andwithand] andinwith towith: {s}. and...\n", .{args[0]}),
                 .TH => std.debug.print("🩹 [การเยียวยาตนเอง] ไม่รู้จักคำสั่ง: {s}. กำลังเรียนรู้...\n", .{args[0]}),
                 else => std.debug.print("🩹 [Self-Healing] Unknown reflex: {s}. Learning...\n", .{args[0]}),
             }
@@ -96,7 +96,7 @@ pub const Context = struct {
 fn chatReflex(ctx: *Context, args: []const []const u8) !void {
     const input = if (args.len > 0) args[0] else "Empty prompt";
     const mode_name = switch (ctx.app.lang) {
-        .RU => if (ctx.app.mode == .TURBO) "[CYR:[EN]]" else "[CYR:[EN]]",
+        .RU => if (ctx.app.mode == .TURBO) "" else "",
         .TH => if (ctx.app.mode == .TURBO) "เทอร์โบ" else "มาตรฐาน",
         else => @tagName(ctx.app.mode),
     };
@@ -162,7 +162,7 @@ pub fn main() !void {
     // 2. Localization Test (Russian)
     std.debug.print("\n🇷🇺 Switching to Russian Mode...\n", .{});
     app.lang = .RU;
-    const chat_args = [_][]const u8{ "chat", "[EN]andin[EN], [EN]and[EN]!" };
+    const chat_args = [_][]const u8{ "chat", "andin, and!" };
     try app.fire(&chat_args);
 
     // 3. P2P & Community Test

@@ -73,9 +73,9 @@ types:
 
 behaviors:
   - name: embed_code_ternary
-    given: [CYR:[TRANSLATED]me[EN]] code[EN]
-    when: [EN]not[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]go] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] VSA
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] TernaryEmbedding [CYR:[TRANSLATED]]with[EN]and 10000
+    given: [CYR:me] code
+    when: notandI and[CYR:go] and  VSA
+    then: in[CYR:acts] TernaryEmbedding withand 10000
     implementation: |
                     pub fn embed_code_ternary(code: []const u8) TernaryEmbedding {
                         // Generate ternary embedding via VSA
@@ -93,9 +93,9 @@ behaviors:
       
 
   - name: embed_tokens
-    given: [EN]andwith[EN] token[EN]in code[EN]
-    when: [CYR:[TRANSLATED]]from[EN]andI and [CYR:[TRANSLATED]]and[EN] each token[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] List<TernaryEmbedding>
+    given: andwith tokenin code
+    when: fromandI and and each token
+    then: in[CYR:acts] List<TernaryEmbedding>
     implementation: |
                     pub fn embed_tokens(tokens: []const []const u8) []TernaryEmbedding {
                         // Embed each token individually
@@ -109,8 +109,8 @@ behaviors:
 
   - name: combine_embeddings
     given: List<TernaryEmbedding>
-    when: [CYR:[TRANSLATED]]and[EN]and[EN]in[EN]and[EN] [CYR:[TRANSLATED]] bundling ([CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:go[EN]]with[EN]in[EN]and[EN])
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] [EN]and[CYR:ny] TernaryEmbedding
+    when: andinand  bundling (and [CYR:go]withinand)
+    then: in[CYR:acts] and[CYR:ny] TernaryEmbedding
     implementation: |
                     pub fn combine_embeddings(embeddings: []const TernaryEmbedding) TernaryEmbedding {
                         // Combine via bundling (majority vote)
@@ -128,9 +128,9 @@ behaviors:
       
 
   - name: bind_embeddings
-    given: [EN]in[EN] TernaryEmbedding
-    when: [EN]in[CYR:I[EN]y]in[EN]and[EN] [CYR:[TRANSLATED]] XOR ([CYR:[TRANSLATED]]and[CYR:[EN]ny])
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] within[CYR:I[TRANSLATED]ny] TernaryEmbedding
+    given: in TernaryEmbedding
+    when: in[CYR:Iy]inand  XOR (and[CYR:ny])
+    then: in[CYR:acts] within[CYR:Iny] TernaryEmbedding
     implementation: |
                     pub fn bind_embeddings(a: TernaryEmbedding, b: TernaryEmbedding) TernaryEmbedding {
                         // Bind via XOR (ternary)
@@ -149,9 +149,9 @@ behaviors:
       
 
   - name: chunk_code
-    given: [CYR:[TRANSLATED]ny] andwith[CYR:[TRANSLATED]ny] code
-    when: [CYR:[TRANSLATED]]and[EN]and[EN] on with[CYR:[TRANSLATED]]and[EN]with[EN]and[EN] [CYR:[TRANSLATED]]and
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] List<CodeChunk>
+    given: [CYR:ny] andwithny] code
+    when: and on withandwithand and
+    then: in[CYR:acts] List<CodeChunk>
     implementation: |
                     pub fn chunk_code(code: []const u8) []CodeChunk {
                         // Split code into semantic chunks
@@ -164,9 +164,9 @@ behaviors:
       
 
   - name: detect_chunk_type
-    given: [CYR:[TRANSLATED]me[EN]] code[EN]
-    when: [CYR:[TRANSLATED]]withwithand[EN]and[CYR:[TRANSLATED]]andI type[EN] [CYR:[TRANSLATED]]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] ChunkType
+    given: [CYR:me] code
+    when: withandandI type 
+    then: in[CYR:acts] ChunkType
     implementation: |
                     pub fn detect_chunk_type(chunk: CodeChunk) ChunkType {
                         // Classify chunk type
@@ -180,8 +180,8 @@ behaviors:
 
   - name: extract_chunk_metadata
     given: CodeChunk
-    when: [EN]in[CYR:[EN]chen]and[EN] [CYR:[TRANSLATED]data] (and[EN]on, typey, in[CYR:y[EN]]iny)
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] Map<String, String>
+    when: in[CYR:chen]and [CYR:data] (andon, typey, in[CYR:y]iny)
+    then: in[CYR:acts] Map<String, String>
     implementation: |
                     pub fn extract_chunk_metadata(chunk: CodeChunk) std.StringHashMap([]const u8) {
                         // Extract metadata (names, types, calls)
@@ -196,8 +196,8 @@ behaviors:
 
   - name: create_index
     given: IndexType and parametery
-    when: [CYR:[TRANSLATED]]and[EN] [EN]withthat index[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] TernaryIndex
+    when: and withthat index
+    then: in[CYR:acts] TernaryIndex
     implementation: |
                     pub fn create_index(index_type: IndexType, dimension: usize) TernaryIndex {
                         // Create empty index
@@ -221,8 +221,8 @@ behaviors:
 
   - name: add_to_index
     given: TernaryIndex and CodeChunk
-    when: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] in index
-    then: [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] index
+    when: inand  in index
+    then: in[CYR:I] index
     implementation: |
                     pub fn add_to_index(index: *TernaryIndex, chunk: CodeChunk) void {
                         // Add chunk to index
@@ -236,8 +236,8 @@ behaviors:
 
   - name: build_lsh_tables
     given: List<TernaryEmbedding>
-    when: [EN]with[CYR:[TRANSLATED]]and[EN] LSH [CYR:[TRANSLATED]]and[EN] for [EN]ywith[CYR:[TRANSLATED]go] [EN]andwith[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] hash tables
+    when: withand LSH and for ywithgo] andwith
+    then: in[CYR:acts] hash tables
     implementation: |
                     pub fn build_lsh_tables(embeddings: []const TernaryEmbedding) void {
                         // Build LSH hash tables
@@ -250,8 +250,8 @@ behaviors:
 
   - name: build_ternary_tree
     given: List<TernaryEmbedding>
-    when: [EN]with[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]go] [CYR:[TRANSLATED]]in[EN] [EN]andwith[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[EN]
+    when: withand and[CYR:go] in andwith
+    then: in[CYR:acts]  in
     implementation: |
                     pub fn build_ternary_tree(embeddings: []const TernaryEmbedding) void {
                         // Build ternary search tree
@@ -264,8 +264,8 @@ behaviors:
 
   - name: search_similar
     given: RetrievalQuery and TernaryIndex
-    when: [EN]andwith[EN] [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]in
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] RetrievalResult
+    when: andwith and in
+    then: in[CYR:acts] RetrievalResult
     implementation: |
                     pub fn search_similar(query: RetrievalQuery, index: TernaryIndex) RetrievalResult {
                         // Search for similar chunks
@@ -279,9 +279,9 @@ behaviors:
       
 
   - name: compute_similarity
-    given: [EN]in[EN] TernaryEmbedding and SimilarityMetric
-    when: [CYR:Vy[EN]]andwith[CYR:[TRANSLATED]]and[EN] with[CYR:[TRANSLATED]]with[EN]in[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] Float 0.0-1.0
+    given: in TernaryEmbedding and SimilarityMetric
+    when: [CYR:Vy]andwithand within
+    then: in[CYR:acts] Float 0.0-1.0
     implementation: |
                     pub fn compute_similarity(a: TernaryEmbedding, b: TernaryEmbedding, metric: SimilarityMetric) f32 {
                         // Compute similarity between embeddings
@@ -297,8 +297,8 @@ behaviors:
 
   - name: rank_results
     given: List<SimilarityResult>
-    when: [CYR:[TRANSLATED]]and[EN]in[EN]and[EN] [EN] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]with[EN]and
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] [EN]with[CYR:[TRANSLATED]]and[EN]in[CYR:[EN]ny] list
+    when: andinand  inwithand
+    then: in[CYR:acts] withandin[CYR:ny] list
     implementation: |
                     pub fn rank_results(results: []const SimilarityResult) []SimilarityResult {
                         // Rank by relevance
@@ -312,8 +312,8 @@ behaviors:
 
   - name: filter_by_quality
     given: List<SimilarityResult> and min_quality
-    when: [EN]and[CYR:l[TRANSLATED]]andI [EN]from[CYR:[TRANSLATED]]with[EN]in[CYR:[TRANSLATED]y[EN]] result[EN]in
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] [CYR:[TRANSLATED]]and[CYR:l[TRANSLATED]]in[CYR:[EN]ny] list
+    when: and[CYR:l]andI fromwithin[CYR:y] resultin
+    then: in[CYR:acts] and[CYR:l]in[CYR:ny] list
     implementation: |
                     pub fn filter_by_quality(results: []const SimilarityResult, min_quality: f32) []SimilarityResult {
                         // Filter by quality score
@@ -327,9 +327,9 @@ behaviors:
       
 
   - name: create_knowledge_base
-    given: [CYR:[EN]I] and on[CYR:[EN]l[EN]y[EN]] [CYR:data]
-    when: [CYR:[TRANSLATED]]and[EN] [EN]in[EN] [CYR:[TRANSLATED]y] [EN]on[EN]and[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] KnowledgeBase
+    given: [CYR:I] and on[CYR:ly] [CYR:data]
+    when: and in [CYR:y] onand
+    then: in[CYR:acts] KnowledgeBase
     implementation: |
                     pub fn create_knowledge_base(name: []const u8) KnowledgeBase {
                         // Create new knowledge base
@@ -343,8 +343,8 @@ behaviors:
 
   - name: add_knowledge
     given: KnowledgeBase and KnowledgeEntry
-    when: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] [EN]in[EN] records
-    then: [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [CYR:[TRANSLATED]] and index
+    when: inand in records
+    then: in[CYR:I]  and index
     implementation: |
                     pub fn add_knowledge(kb: *KnowledgeBase, entry: KnowledgeEntry) void {
                         // Add new entry to KB
@@ -358,8 +358,8 @@ behaviors:
 
   - name: update_quality_score
     given: KnowledgeEntry and feedback
-    when: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]with[EN]in[EN] on [EN]with[EN]in[EN] andwith[CYR:[EN]l[EN]]in[EN]andI
-    then: [CYR:[TRANSLATED]]with[EN]and[EN]yin[CYR:acts] quality_score
+    when: inand and within on within andwithl]inandI
+    then: withandyin[CYR:acts] quality_score
     implementation: |
                     pub fn update_quality_score(entry: *KnowledgeEntry, feedback: f32) void {
                         // Update quality score based on feedback
@@ -373,8 +373,8 @@ behaviors:
 
   - name: prune_low_quality
     given: KnowledgeBase and threshold
-    when: [CYR:[TRANSLATED]]and[EN] [EN]from[CYR:[TRANSLATED]]with[EN]in[CYR:[TRANSLATED]y[EN]] [CYR:[TRANSLATED]]andwith[EN]
-    then: [EN]and[CYR:[EN]acts] [CYR:[TRANSLATED]]
+    when: and fromwithin[CYR:y] andwith
+    then: and[CYR:acts] 
     implementation: |
                     pub fn prune_low_quality(kb: *KnowledgeBase, threshold: f32) void {
                         // Remove low-quality entries
@@ -388,8 +388,8 @@ behaviors:
 
   - name: save_knowledge_base
     given: KnowledgeBase and path
-    when: [CYR:[TRANSLATED]]not[EN]and[EN] on [EN]andwith[EN]
-    then: [CYR:[TRANSLATED]]andwithyin[CYR:acts] in file
+    when: notand on andwith
+    then: andwithyin[CYR:acts] in file
     implementation: |
                     pub fn save_knowledge_base(kb: KnowledgeBase, path: []const u8) !void {
                         // Save KB to disk
@@ -402,9 +402,9 @@ behaviors:
       
 
   - name: load_knowledge_base
-    given: [CYR:[TRANSLATED]]  file[EN]
-    when: [CYR:[TRANSLATED]] with [EN]andwith[EN]
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] KnowledgeBase
+    given:   file
+    when:  with andwith
+    then: in[CYR:acts] KnowledgeBase
     implementation: |
                     pub fn load_knowledge_base(path: []const u8) !KnowledgeBase {
                         // Load KB from disk
@@ -417,9 +417,9 @@ behaviors:
       
 
   - name: compute_semantic_intensity
-    given: [CYR:[TRANSLATED]] code[EN]
-    when: [CYR:Vy[EN]]andwith[CYR:[TRANSLATED]]and[EN] "with[CYR:[TRANSLATED]]and[EN]with[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]withandin[EN]with[EN]and"
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] Float score
+    given:  code
+    when: [CYR:Vy]andwithand "withandwith andwithandinwithand"
+    then: in[CYR:acts] Float score
     implementation: |
                     pub fn compute_semantic_intensity(code: []const u8) f32 {
                         // Compute semantic intensity score
@@ -432,9 +432,9 @@ behaviors:
       
 
   - name: identify_distorted_lines
-    given: [CYR:[TRANSLATED]]or[EN]in[CYR:[EN]ny] code and [CYR:[TRANSLATED]go]in[EN] value
-    when: [EN]andwith[EN] with[CYR:[TRANSLATED]] with inywith[CYR:[TRANSLATED]] in[CYR:[TRANSLATED]I[TRANSLATED]]with[CYR:[TRANSLATED]] andwith[CYR:[TRANSLATED]]andI
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] List<Int> [CYR:[TRANSLATED]]in with[CYR:[TRANSLATED]]
+    given: orin[CYR:ny] code and [CYR:go]in value
+    when: andwith with with inywith in[CYR:I]with andwithandI
+    then: in[CYR:acts] List<Int> in with
     implementation: |
                     pub fn identify_distorted_lines(code: []const u8, threshold: f32) []usize {
                         // Identify likely distorted lines
@@ -448,9 +448,9 @@ behaviors:
       
 
   - name: prioritize_retrieval
-    given: List<Int> andwith[CYR:[TRANSLATED]y[EN]] with[CYR:[TRANSLATED]]
-    when: [EN]and[EN]and[EN]from[EN]andI for RAG query[EN]in
-    then: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]acts] [CYR:[TRANSLATED]I[TRANSLATED]ny] list
+    given: List<Int> andwithy] with
+    when: andfromandI for RAG queryin
+    then: in[CYR:acts] [CYR:Iny] list
     implementation: |
                     pub fn prioritize_retrieval(distorted_lines: []const usize) []usize {
                         // Prioritize for RAG queries

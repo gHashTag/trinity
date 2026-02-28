@@ -1,12 +1,12 @@
-# 🚀 IMPROVEMENTS ROADMAP - [CYR:Что] [CYR:ещё] [CYR:улучш]andть
+# 🚀 IMPROVEMENTS ROADMAP - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andть
 
-## [CYR:Дата] / Date: 2026-01-14
+## [CYR:[TRANSLATED]] / Date: 2026-01-14
 
 ---
 
-## ✅ [CYR:ДОСТИГНУТО] / ACHIEVED
+## ✅ [CYR:[TRANSLATED]] / ACHIEVED
 
-| [CYR:Метр]andtoа | До | Поwithле | [CYR:Улучшен]andе |
+| [CYR:[TRANSLATED]]andtoа | До | Поwithле | [CYR:[TRANSLATED]]andе |
 |---------|-----|-------|-----------|
 | Generation Marker | 9% | **100%** | +91% |
 | SelfEvolution | 3% | **100%** | +97% |
@@ -16,45 +16,45 @@
 
 ---
 
-## 🔴 [CYR:КРИТИЧЕСКИЕ] [CYR:УЛУЧШЕНИЯ] / CRITICAL IMPROVEMENTS
+## 🔴 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] / CRITICAL IMPROVEMENTS
 
-### 1. Отwithутwithтin[CYR:ующ]andе .vibee with[CYR:пец]andфandtoацandand
+### 1. Отwithутwithтin[CYR:[TRANSLATED]]andе .vibee with[TRANSLATED]]andфandtoацand
 
-**Problem:** 97 fileоin .999 not and[CYR:меют] withоfrominетwithтin[CYR:ующ]andх .vibee with[CYR:пец]andфandtoацandй!
+**Problem:** 97 fileоin .999 not and[CYR:[TRANSLATED]] withоfrominетwithтin[CYR:[TRANSLATED]]andх .vibee with[TRANSLATED]]andфandtoацandй!
 
-**[CYR:Стату]with:** 5 specs / 102 files = **5% поto[CYR:рыт]andе**
+**[CYR:[TRANSLATED]]with:** 5 specs / 102 files = **5% поfor[TRANSLATED]]andе**
 
-**[CYR:Решен]andе:** [CYR:Создать] .vibee for to[CYR:аждого] .999 fileа
+**[CYR:[TRANSLATED]]andе:** [CYR:[TRANSLATED]] .vibee for for[TRANSLATED]] .999 fileа
 
 ```
-❌ Missing specs (прand[CYR:меры]):
+❌ Missing specs (прand[CYR:[TRANSLATED]]):
   - specs/analyzer.vibee
   - specs/allocator.vibee
   - specs/compiler_v3.vibee
   - specs/console.vibee
   - specs/debugger.vibee
-  ... and [CYR:ещё] ~92 fileа
+  ... and [CYR:[TRANSLATED]] ~92 fileа
 ```
 
-**Прandорand[CYR:тет]:** 🔴 [CYR:КРИТИЧЕСКИЙ]
+**Прandорand[CYR:[TRANSLATED]]:** 🔴 [CYR:[TRANSLATED]]
 
 ---
 
 ### 2. Performance Patterns
 
-| [CYR:Паттерн] | Теto[CYR:ущее] | [CYR:Цель] | Прandорand[CYR:тет] |
+| [CYR:[TRANSLATED]] | Теfor[TRANSLATED]] | [CYR:[TRANSLATED]] | Прandорand[CYR:[TRANSLATED]] |
 |---------|---------|------|-----------|
 | HSH (O(1) lookup) | 101 fileоin | 102 | 🟢 |
 | PRE (Caching) | 9 fileоin | 102 | 🔴 |
 | D&C (Parallel) | 4 fileа | 50+ | 🟠 |
 | SIMD | 0 fileоin | 20+ | 🟡 |
 
-**[CYR:Решен]andе:**
+**[CYR:[TRANSLATED]]andе:**
 ```
-# [CYR:Доба]inandть in to[CYR:аждый] file:
+# [CYR:[TRANSLATED]]inandть in for[TRANSLATED]] file:
 Ⲕ CACHE: Ⲙⲁⲡ = {}  # PRE pattern
 
-# [CYR:Для] [CYR:параллельных] [CYR:операц]andй:
+# [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andй:
 Ⲝ item ∈ list ⊛ { ... }  # ⊛ = parallel
 ```
 
@@ -62,26 +62,26 @@
 
 ### 3. Trinity Logic Coverage
 
-| Сandмinол | Теto[CYR:ущее] | [CYR:Цель] |
+| Сandмinол | Теfor[TRANSLATED]] | [CYR:[TRANSLATED]] |
 |--------|---------|------|
 | △ (true) | 102 | 102 ✅ |
 | ▽ (false) | 78 | 102 |
 | ○ (null) | 74 | 102 |
 
-**[CYR:Решен]andе:** [CYR:Замен]andть inwithе `true/false/null` on `△/▽/○`
+**[CYR:[TRANSLATED]]andе:** [CYR:[TRANSLATED]]andть inwithе `true/false/null` on `△/▽/○`
 
 ---
 
-## 🟠 [CYR:ВАЖНЫЕ] [CYR:УЛУЧШЕНИЯ] / IMPORTANT IMPROVEMENTS
+## 🟠 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] / IMPORTANT IMPROVEMENTS
 
-### 4. TrinityMetrics with [CYR:реальным]and зon[CYR:чен]andямand
+### 4. TrinityMetrics with [CYR:[TRANSLATED]]and зon[CYR:[TRANSLATED]]andямand
 
-**Теto[CYR:ущее]:** Вwithе fileы and[CYR:меют] `TRINITY_SCORE: 1.0`
+**Теfor[TRANSLATED]]:** Вwithе fileы and[CYR:[TRANSLATED]] `TRINITY_SCORE: 1.0`
 
-**[CYR:Цель]:** [CYR:Выч]andwith[CYR:лять] [CYR:реальный] Trinity Score: `n × 3^(k/10) × π^(m/20)`
+**[CYR:[TRANSLATED]]:** [CYR:[TRANSLATED]]andwith[TRANSLATED]] [CYR:[TRANSLATED]] Trinity Score: `n × 3^(k/10) × π^(m/20)`
 
 ```
-# [CYR:Замен]andть:
+# [CYR:[TRANSLATED]]andть:
 Ⲕ TRINITY_SCORE: Ⲫⲗⲟⲁⲧ = 1.0
 
 # На:
@@ -95,11 +95,11 @@
 
 ---
 
-### 5. Теwithты for to[CYR:аждого] fileа
+### 5. Теwithты for for[TRANSLATED]] fileа
 
-**Теto[CYR:ущее]:** [CYR:Мало] fileоin and[CYR:меют] test_cases
+**Теfor[TRANSLATED]]:** [CYR:[TRANSLATED]] fileоin and[CYR:[TRANSLATED]] test_cases
 
-**[CYR:Цель]:** [CYR:Каждый] behavior [CYR:должен] and[CYR:меть] test_cases
+**[CYR:[TRANSLATED]]:** [CYR:[TRANSLATED]] behavior [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]] test_cases
 
 ```
 behaviors:
@@ -107,7 +107,7 @@ behaviors:
     given: "..."
     when: "..."
     then: "..."
-    test_cases:  # [CYR:ОБЯЗАТЕЛЬНО]!
+    test_cases:  # [CYR:[TRANSLATED]]!
       - name: test_1
         input: {...}
         expected: {...}
@@ -115,24 +115,24 @@ behaviors:
 
 ---
 
-### 6. Доto[CYR:ументац]andя ru/en
+### 6. Доfor[TRANSLATED]]andя ru/en
 
-**Теto[CYR:ущее]:** Не inwithе fileы and[CYR:меют] дin[CYR:уязычные] to[CYR:омментар]andand
+**Теfor[TRANSLATED]]:** Не inwithе fileы and[CYR:[TRANSLATED]] дin[CYR:[TRANSLATED]] for[TRANSLATED]]and
 
-**[CYR:Цель]:** [CYR:Каждый] to[CYR:омментар]andй on руwithwithtoом И [CYR:англ]andйwithtoом
+**[CYR:[TRANSLATED]]:** [CYR:[TRANSLATED]] for[TRANSLATED]]andй on руwithtoом  [CYR:[TRANSLATED]]andйwithtoом
 
 ```
-# [CYR:Фун]toцandя аonлandза / Analysis function
+# [CYR:[TRANSLATED]]toцandя аonлandза / Analysis function
 Ⲫ analyze(Ⲥ) → Ⲣⲉⲥⲩⲗⲧ { ... }
 ```
 
 ---
 
-## 🟡 [CYR:ЖЕЛАТЕЛЬНЫЕ] [CYR:УЛУЧШЕНИЯ] / NICE TO HAVE
+## 🟡 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] / NICE TO HAVE
 
-### 7. Аin[CYR:томат]andчеwithtoая геnot[CYR:рац]andя .vibee andз .999
+### 7. Аin[CYR:[TRANSLATED]]andчеwithtoая геnot[CYR:[TRANSLATED]]andя .vibee andз .999
 
-[CYR:Создать] reverse-compiler: `.999 → .vibee`
+[CYR:[TRANSLATED]] reverse-compiler: `.999 → .vibee`
 
 ### 8. CI/CD Pipeline
 
@@ -142,41 +142,41 @@ behaviors:
   run: ./999/ⲉⲣⲅⲁⲗⲉⲓⲁ/ultra_strict.999 999/ --strict
 ```
 
-### 9. LSP for [CYR:язы]toа 999
+### 9. LSP for [CYR:[TRANSLATED]]toа 999
 
-Аin[CYR:тодопол]notнandе, [CYR:под]withinетtoа withand[CYR:нта]towithandwithа, [CYR:про]inерtoа ошandбоto
+Аin[CYR:[TRANSLATED]]notнandе, [CYR:[TRANSLATED]]withinетtoа withand[CYR:[TRANSLATED]]towithandwithа, [CYR:[TRANSLATED]]inерtoа ошandбоto
 
 ### 10. Benchmarks
 
-Measurement [CYR:про]andзinодand[CYR:тельно]withтand to[CYR:аждого] fileа
+Measurement [CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withтand for[TRANSLATED]] fileа
 
 ---
 
-## 📊 [CYR:ПЛАН] [CYR:ДЕЙСТВИЙ] / ACTION PLAN
+## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] / ACTION PLAN
 
-### [CYR:Фаза] 1: Specs ([CYR:Неделя] 1)
-- [ ] [CYR:Создать] .vibee for 20 оwithноin[CYR:ных] fileоin
-- [ ] Аin[CYR:томат]andзandроin[CYR:ать] геnot[CYR:рац]andю specs
+### [CYR:[TRANSLATED]] 1: Specs ([CYR:[TRANSLATED]] 1)
+- [ ] [CYR:[TRANSLATED]] .vibee for 20 оwithноin[CYR:[TRANSLATED]] fileоin
+- [ ] Аin[CYR:[TRANSLATED]]andзandроin[CYR:[TRANSLATED]] геnot[CYR:[TRANSLATED]]andю specs
 
-### [CYR:Фаза] 2: Performance ([CYR:Неделя] 2)
-- [ ] [CYR:Доба]inandть PRE (caching) inо inwithе fileы
-- [ ] [CYR:Доба]inandть D&C (parallel) where in[CYR:озможно]
+### [CYR:[TRANSLATED]] 2: Performance ([CYR:[TRANSLATED]] 2)
+- [ ] [CYR:[TRANSLATED]]inandть PRE (caching) inо inwithе fileы
+- [ ] [CYR:[TRANSLATED]]inandть D&C (parallel) where in[CYR:[TRANSLATED]]
 
-### [CYR:Фаза] 3: Quality ([CYR:Неделя] 3)
-- [ ] [CYR:Реальные] TrinityMetrics
+### [CYR:[TRANSLATED]] 3: Quality ([CYR:[TRANSLATED]] 3)
+- [ ] [CYR:[TRANSLATED]] TrinityMetrics
 - [ ] Теwithты for inwithех behaviors
-- [ ] Дin[CYR:уязыч]onя доto[CYR:ументац]andя
+- [ ] Дin[CYR:[TRANSLATED]]onя доfor[TRANSLATED]]andя
 
-### [CYR:Фаза] 4: Tooling ([CYR:Неделя] 4)
+### [CYR:[TRANSLATED]] 4: Tooling ([CYR:[TRANSLATED]] 4)
 - [ ] CI/CD pipeline
 - [ ] LSP
 - [ ] Benchmarks
 
 ---
 
-## 🎯 [CYR:ЦЕЛЕВЫЕ] [CYR:МЕТРИКИ] / TARGET METRICS
+## 🎯 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] / TARGET METRICS
 
-| [CYR:Метр]andtoа | Теto[CYR:ущее] | [CYR:Цель] Q1 | [CYR:Цель] Q2 |
+| [CYR:[TRANSLATED]]andtoа | Теfor[TRANSLATED]] | [CYR:[TRANSLATED]] Q1 | [CYR:[TRANSLATED]] Q2 |
 |---------|---------|---------|---------|
 | .vibee coverage | 5% | 50% | 100% |
 | PRE pattern | 9% | 50% | 100% |
@@ -187,22 +187,22 @@ Measurement [CYR:про]andзinодand[CYR:тельно]withтand to[CYR:ажд�
 
 ---
 
-## ✅ [CYR:ВЫВОДЫ] / CONCLUSIONS
+## ✅ [CYR:[TRANSLATED]] / CONCLUSIONS
 
-1. **ULTRA-STRICT [CYR:базо]inое withоfrominетwithтinandе доwithтand[CYR:гнуто]: 100%**
-2. **[CYR:Гла]inonя [CYR:проблема]:** fromwithутwithтinandе .vibee with[CYR:пец]andфandtoацandй
-3. **Performance:** [CYR:нужно] [CYR:больше] PRE and D&C [CYR:паттерно]in
-4. **Quality:** [CYR:нужны] [CYR:реальные] [CYR:метр]andtoand and теwithты
+1. **ULTRA-STRICT [CYR:[TRANSLATED]]inое withоfrominетwithтinandе доwithтand[CYR:[TRANSLATED]]: 100%**
+2. **[CYR:[TRANSLATED]]inonя [CYR:[TRANSLATED]]:** fromwithутwithтinandе .vibee with[TRANSLATED]]andфandtoацandй
+3. **Performance:** [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] PRE and D&C [CYR:[TRANSLATED]]in
+4. **Quality:** [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andtoand and теwithты
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
 ║  Self-Evolution: ENABLED ✅                                  ║
-║  .vibee → .999: [CYR:ЕДИНСТВЕННЫЙ] [CYR:ПУТЬ]! ✅                       ║
-║  [CYR:Следующ]andй step: [CYR:Создать] .vibee for inwithех fileоin             ║
+║  .vibee → .999: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]! ✅                       ║
+║  [CYR:[TRANSLATED]]andй step: [CYR:[TRANSLATED]] .vibee for inwithех fileоin             ║
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-*[CYR:Сге]notрandроin[CYR:ано] аin[CYR:томат]andчеwithtoand / Generated automatically*
+*[CYR:[TRANSLATED]]notрandроin[CYR:[TRANSLATED]] аin[CYR:[TRANSLATED]]andчеwithtoand / Generated automatically*
 *Self-Evolution: ENABLED*

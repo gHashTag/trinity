@@ -29,7 +29,7 @@ pub const Language = enum {
         return switch (self) {
             .russian => "[RU]",
             .chinese => "[ZH]",
-            .english => "[EN]",
+            .english => "",
             .unknown => "[??]",
         };
     }
@@ -53,46 +53,46 @@ pub const KeywordMapping = struct {
 // ============================================================================
 
 pub const russian_keywords = [_]KeywordMapping{
-    .{ .original = "[CYR:[EN]]to[EN]and[EN]", .english = "function" },
-    .{ .original = "[CYR:[EN]]to[EN]and[EN]", .english = "function" },
-    .{ .original = "[CYR:[EN]]on[EN]", .english = "variable" },
-    .{ .original = "[EN]andto[EN]", .english = "loop" },
-    .{ .original = "[EN]with[EN]and", .english = "if" },
-    .{ .original = "andon[EN]", .english = "else" },
-    .{ .original = "in[EN]in[CYR:[EN]]", .english = "return" },
-    .{ .original = "with[CYR:[EN]]to[CYR:[EN]]", .english = "struct" },
-    .{ .original = "[EN]withwithandin", .english = "array" },
-    .{ .original = "with[CYR:[EN]]to[EN]", .english = "string" },
-    .{ .original = "[EN]andwith[EN]", .english = "number" },
-    .{ .original = "[CYR:[EN]]", .english = "print" },
-    .{ .original = "with[CYR:[EN]]and[EN]into[EN]", .english = "sort" },
-    .{ .original = "with[CYR:[EN]]and[EN]into[EN]", .english = "sort" },
+    .{ .original = "toand", .english = "function" },
+    .{ .original = "toand", .english = "function" },
+    .{ .original = "on", .english = "variable" },
+    .{ .original = "andto", .english = "loop" },
+    .{ .original = "withand", .english = "if" },
+    .{ .original = "andon", .english = "else" },
+    .{ .original = "inin", .english = "return" },
+    .{ .original = "withto", .english = "struct" },
+    .{ .original = "withandin", .english = "array" },
+    .{ .original = "withto", .english = "string" },
+    .{ .original = "andwith", .english = "number" },
+    .{ .original = "", .english = "print" },
+    .{ .original = "withandinto", .english = "sort" },
+    .{ .original = "withandinto", .english = "sort" },
     .{ .original = "byandwithto", .english = "search" },
-    .{ .original = "[EN]and[EN]on[EN]and", .english = "fibonacci" },
-    .{ .original = "[EN]to[CYR:[EN]]and[EN]", .english = "factorial" },
-    .{ .original = "on[EN]and[EN]and", .english = "write" },
-    .{ .original = "with[CYR:[EN]]", .english = "create" },
-    .{ .original = "with[CYR:[EN]]", .english = "make" },
-    .{ .original = "[EN]andin[EN]", .english = "hello" },
-    .{ .original = "[EN]and[EN]", .english = "world" },
+    .{ .original = "andonand", .english = "fibonacci" },
+    .{ .original = "toand", .english = "factorial" },
+    .{ .original = "onand", .english = "write" },
+    .{ .original = "with", .english = "create" },
+    .{ .original = "with", .english = "make" },
+    .{ .original = "andin", .english = "hello" },
+    .{ .original = "and", .english = "world" },
     .{ .original = "for", .english = "for" },
-    .{ .original = "byto[EN]", .english = "while" },
-    .{ .original = "with[EN]andwith[EN]to", .english = "list" },
-    .{ .original = "with[EN]in[CYR:[EN]]", .english = "dictionary" },
-    .{ .original = "to[EN]withwith", .english = "class" },
+    .{ .original = "byto", .english = "while" },
+    .{ .original = "withandwithto", .english = "list" },
+    .{ .original = "within", .english = "dictionary" },
+    .{ .original = "towith", .english = "class" },
     .{ .original = "method", .english = "method" },
-    .{ .original = "[CYR:[EN]]to[EN]", .english = "object" },
+    .{ .original = "to", .english = "object" },
     .{ .original = "file", .english = "file" },
-    .{ .original = "[EN]and[CYR:[EN]]", .english = "read" },
-    .{ .original = "[EN]andwith[CYR:[EN]]", .english = "write" },
-    .{ .original = "with[CYR:[EN]]", .english = "sum" },
-    .{ .original = "[EN]towithand[CYR:[EN]]", .english = "max" },
-    .{ .original = "[EN]and[EN]and[CYR:[EN]]", .english = "min" },
-    .{ .original = "[CYR:[EN]]in[EN]to[EN]", .english = "check" },
-    .{ .original = "[EN]with[EN]", .english = "test" },
-    .{ .original = "to[EN]", .english = "code" },
+    .{ .original = "and", .english = "read" },
+    .{ .original = "andwith", .english = "write" },
+    .{ .original = "with", .english = "sum" },
+    .{ .original = "towithand", .english = "max" },
+    .{ .original = "and", .english = "min" },
+    .{ .original = "into", .english = "check" },
+    .{ .original = "with", .english = "test" },
+    .{ .original = "to", .english = "code" },
     .{ .original = "program", .english = "program" },
-    .{ .original = "[CYR:[EN]]and[EN]", .english = "algorithm" },
+    .{ .original = "and", .english = "algorithm" },
 };
 
 // ============================================================================
@@ -389,7 +389,7 @@ pub fn formatDetection(detection: LanguageDetectionResult) [256]u8 {
 // ============================================================================
 
 test "detect Russian" {
-    const result = detectLanguage("on[EN]and[EN]and [CYR:[EN]]to[EN]and[EN] [EN]and[EN]on[EN]and");
+    const result = detectLanguage("onand toand andonand");
     try std.testing.expectEqual(Language.russian, result.language);
     try std.testing.expect(result.cyrillic_count > 0);
 }
@@ -407,8 +407,8 @@ test "detect English" {
 }
 
 test "isCyrillic" {
-    try std.testing.expect(isCyrillic(0x0410)); // [EN]
-    try std.testing.expect(isCyrillic(0x0430)); // [EN]
+    try std.testing.expect(isCyrillic(0x0410)); // 
+    try std.testing.expect(isCyrillic(0x0430)); // 
     try std.testing.expect(!isCyrillic(0x0041)); // A (Latin)
 }
 
@@ -420,7 +420,7 @@ test "isCJK" {
 
 test "extractKeywords Russian" {
     const allocator = std.testing.allocator;
-    const keywords = try extractKeywords(allocator, "on[EN]and[EN]and [CYR:[EN]]to[EN]and[EN] [EN]and[EN]on[EN]and", .russian);
+    const keywords = try extractKeywords(allocator, "onand toand andonand", .russian);
     defer allocator.free(keywords);
 
     try std.testing.expect(keywords.len >= 2);
@@ -428,6 +428,6 @@ test "extractKeywords Russian" {
 
 test "containsSubstring" {
     try std.testing.expect(containsSubstring("hello world", "world"));
-    try std.testing.expect(containsSubstring("[CYR:[EN]]to[EN]and[EN]", "[CYR:[EN]]to[EN]and[EN]"));
+    try std.testing.expect(containsSubstring("toand", "toand"));
     try std.testing.expect(!containsSubstring("hello", "world"));
 }

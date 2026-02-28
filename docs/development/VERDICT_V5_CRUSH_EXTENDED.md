@@ -1,12 +1,12 @@
-# [CYR:ВЕРДИКТ] V5: CRUSH EXTENDED MODULES
+# [CYR:[TRANSLATED]] V5: CRUSH EXTENDED MODULES
 
-**[CYR:Дата]**: 2026-01-19
-**Аin[CYR:тор]**: IGLA System
-**[CYR:Стату]with**: ✅ PASSED
+**[CYR:[TRANSLATED]]**: 2026-01-19
+**Аin[CYR:[TRANSLATED]]**: IGLA System
+**[CYR:[TRANSLATED]]with**: ✅ PASSED
 
 ---
 
-## [CYR:СВЯЩЕННАЯ] [CYR:ФОРМУЛА]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
 V = n × 3^k × π^m × φ^p × e^q
@@ -16,18 +16,18 @@ PHOENIX = 999
 
 ---
 
-## [CYR:РЕЗУЛЬТАТЫ] [CYR:ТРАНСПИЛЯЦИИ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### Ноinые [CYR:модул]and V5
+### Ноinые [CYR:[TRANSLATED]]and V5
 
-| [CYR:Модуль] | .vibee | .tri | .zig | Теwithты | [CYR:Стату]with |
+| [CYR:[TRANSLATED]] | .vibee | .tri | .zig | Теwithты | [CYR:[TRANSLATED]]with |
 |--------|--------|------|------|-------|--------|
 | csync | ✅ | ✅ | ✅ | 11/11 | PASSED |
 | stringext | ✅ | ✅ | ✅ | 17/17 | PASSED |
 
-### Вwithе [CYR:модул]and Crush (V4 + V5)
+### Вwithе [CYR:[TRANSLATED]]and Crush (V4 + V5)
 
-| [CYR:Модуль] | Теwithты | Опandwithанandе |
+| [CYR:[TRANSLATED]] | Теwithты | Опandwithанandе |
 |--------|-------|----------|
 | ansiext | 8 | Control character escaping |
 | format | 6 | Spinner animation |
@@ -35,7 +35,7 @@ PHOENIX = 999
 | csync | 11 | Concurrent collections |
 | stringext | 17 | String manipulation |
 
-**Вwith[CYR:его] теwithтоin**: 50/50 ✅
+**Вwith[TRANSLATED]] теwithтоin**: 50/50 ✅
 
 ---
 
@@ -90,7 +90,7 @@ PHOENIX = 999
 
 ## PAS ANALYSIS
 
-| [CYR:Компо]notнт | Теtoущandй | [CYR:Пред]withto[CYR:азанный] | Уin[CYR:еренно]withть |
+| [CYR:[TRANSLATED]]notнт | Теtoущandй | [CYR:[TRANSLATED]]withfor[TRANSLATED]] | Уin[CYR:[TRANSLATED]]withть |
 |-----------|---------|---------------|-------------|
 | csync.Map | RWMutex O(1) | Lock-free O(1) | 55% |
 | stringext.containsAny | O(n*m) | O(n+m) Aho-Corasick | 75% |
@@ -98,46 +98,46 @@ PHOENIX = 999
 
 ---
 
-## [CYR:МЕТРИКИ]
+## [CYR:[TRANSLATED]]
 
 ```
-[CYR:Спец]andфandtoацandand:     5 .vibee fileоin (crush/)
-TRI fileы:        5 withгеnotрandроin[CYR:ано]
-Zig [CYR:модул]and:       5 withгеnotрandроin[CYR:ано]
-[CYR:Стро]to to[CYR:ода]:       ~900 with[CYR:тро]to Zig
+[CYR:[TRANSLATED]]andфandtoацand:     5 .vibee fileоin (crush/)
+TRI fileы:        5 withгеnotрandроin[CYR:[TRANSLATED]]
+Zig [CYR:[TRANSLATED]]and:       5 withгеnotрandроin[CYR:[TRANSLATED]]
+[CYR:[TRANSLATED]]to for[TRANSLATED]]:       ~900 with[TRANSLATED]]to Zig
 Теwithтоin:           50 теwithтоin
-Поto[CYR:рыт]andе:         ~90% [CYR:фун]toцandй
+Поfor[TRANSLATED]]andе:         ~90% [CYR:[TRANSLATED]]toцandй
 Trinity Score:    1.0
 ```
 
 ---
 
-## [CYR:ТОКСИЧНАЯ] [CYR:ОЦЕНКА]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:ЧТО] [CYR:СДЕЛАНО]:
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
 
-1. **csync** - [CYR:пол]onя [CYR:тран]withпand[CYR:ляц]andя concurrent primitives:
-   - Map with RwLock [CYR:защ]and[CYR:той]
-   - Slice with thread-safe [CYR:операц]andямand
+1. **csync** - [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]withпand[CYR:[TRANSLATED]]andя concurrent primitives:
+   - Map with RwLock [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
+   - Slice with thread-safe [CYR:[TRANSLATED]]andямand
    - Value wrapper for прandмandтandinоin
-   - 11 теwithтоin поtoрыin[CYR:ают] inwithе [CYR:операц]andand
+   - 11 теwithтоin поtoрыin[CYR:[TRANSLATED]] inwithе [CYR:[TRANSLATED]]and
 
 2. **stringext** - string utilities:
    - capitalize with title case
    - containsAny for multi-pattern search
-   - [CYR:Дополн]and[CYR:тельные] утorты (trim, toLower, toUpper)
+   - [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] утorты (trim, toLower, toUpper)
    - 17 теwithтоin with edge cases
 
-### [CYR:УЛУЧШЕНИЯ] [CYR:ДЛЯ] [CYR:СЛЕДУЮЩЕЙ] [CYR:ИТЕРАЦИИ]:
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
 
-1. [CYR:Доба]inandть LazySlice with async loading
-2. [CYR:Реал]andзоin[CYR:ать] Aho-Corasick for containsAny
-3. [CYR:Доба]inandть JSON serialization for csync.Map
+1. [CYR:[TRANSLATED]]inandть LazySlice with async loading
+2. [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] Aho-Corasick for containsAny
+3. [CYR:[TRANSLATED]]inandть JSON serialization for csync.Map
 4. Property-based теwithты for concurrent access
 
 ---
 
-## [CYR:ВЕРДИКТ]
+## [CYR:[TRANSLATED]]
 
 ```
 ╔═══════════════════════════════════════════════════════════════╗
@@ -157,5 +157,5 @@ Trinity Score:    1.0
 
 ---
 
-**[CYR:Подп]andwithь**: IGLA VERDICT V5 CRUSH EXTENDED
-**[CYR:Хеш]**: SHA256(csync + stringext) = TRINITY_VERIFIED
+**[CYR:[TRANSLATED]]andwithь**: IGLA VERDICT V5 CRUSH EXTENDED
+**[CYR:[TRANSLATED]]**: SHA256(csync + stringext) = TRINITY_VERIFIED

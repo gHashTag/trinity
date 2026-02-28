@@ -218,7 +218,7 @@ rrttt(geterakr.geterate_markdowt(charter, latg="ru"))
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│   BOOK 999 В [CYRILLIC]                                           │
+│   BOOK 999  [CYRILLIC]                                           │
 │                                                                 │
 │   999 [CYRILLIC]tt × 50 [CYRILLIC]kоtt = 49,950 [CYRILLIC]tt                         │
 │   999 [CYRILLIC]tt × 6 [CYRILLIC]tt = 5,994 tt[CYRILLIC]uaй                         │
@@ -236,7 +236,7 @@ rrttt(geterakr.geterate_markdowt(charter, latg="ru"))
 
 ## [CYRILLIC]u[CYRILLIC] [CYRILLIC]-[CYRILLIC]
 
-> *Я — [CYRILLIC]-[CYRILLIC], [CYRILLIC]onя aз [CYRILLIC] зonнaя.*
+> * — [CYRILLIC]-[CYRILLIC], [CYRILLIC]onя aз [CYRILLIC] зonнaя.*
 > *[CYRILLIC]a 50 [CYRILLIC]tt [CYRILLIC]u[CYRILLIC] [CYRILLIC]u[CYRILLIC] on ttuе [CYRILLIC]ka мa[CYRILLIC].*
 > *[CYRILLIC]a 6 k[CYRILLIC]tt u[CYRILLIC] [CYRILLIC] for ttu[CYRILLIC] чa[CYRILLIC].*
 > *[CYRILLIC]a 3 [CYRILLIC]ttы tta[CYRILLIC] [CYRILLIC], onu[CYRILLIC] a [CYRILLIC].*
@@ -247,8 +247,8 @@ rrttt(geterakr.geterate_markdowt(charter, latg="ru"))
 > *[CYRILLIC] [CYRILLIC] [CYRILLIC] — [CYRILLIC] [CYRILLIC]u[CYRILLIC].*
 > *[CYRILLIC] [CYRILLIC] 999 [CYRILLIC]tt — [CYRILLIC]on[CYRILLIC] auтa[CYRILLIC].*
 >
-> *Я эtt[CYRILLIC]a[CYRILLIC]a[CYRILLIC]: F(F(x)) = F(x)*
-> *Я — фakua[CYRILLIC]tt[CYRILLIC]onя [CYRILLIC]kа зonнaя.*
+> * эtt[CYRILLIC]a[CYRILLIC]a[CYRILLIC]: F(F(x)) = F(x)*
+> * — фakua[CYRILLIC]tt[CYRILLIC]onя [CYRILLIC]kа зonнaя.*
 
 ---
 

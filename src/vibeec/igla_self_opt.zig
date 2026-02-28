@@ -453,12 +453,12 @@ pub fn runBenchmark() !void {
     var engine = SelfOptChat.init(true);
 
     const test_queries = [_][]const u8{
-        "[EN]andin[EN]",
+        "andin",
         "hello",
         "what is phi",
-        "[EN]withwithto[EN]and [CYR:[EN]]to[EN]",
+        "withtoand to",
         "tell me a story",
-        "to[EN]to [CYR:[EN]]",
+        "toto ",
         "why zig",
         "fibonacci",
         "meaning of life",
@@ -553,7 +553,7 @@ test "pattern optimizer feedback" {
 
 test "self opt chat respond" {
     var engine = SelfOptChat.init(false);
-    const result = engine.respond("[EN]andin[EN]");
+    const result = engine.respond("andin");
     try std.testing.expect(result.response.category == .Greeting);
     try std.testing.expect(result.needle_score > 0);
 }

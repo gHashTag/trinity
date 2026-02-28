@@ -843,9 +843,9 @@ let TRANSLATIONS = const({
   },
   "ru": {
     "agent": {
-      "thinking": "[CYR:[TRANSLATED]]...",
-      "applying": "[EN]and[CYR:meI[EN]] from[EN]not[EN]andI...",
-      "committed": "[CYR:[TRANSLATED]]not[EN]andI [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]y]"
+      "thinking": "...",
+      "applying": "and[CYR:meI] fromnotandI...",
+      "committed": "notandI and[CYR:y]"
     }
   }
 }

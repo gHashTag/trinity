@@ -1,264 +1,264 @@
 # ReAct Agent Benchmark Report v2
 
-**[CYR:Вер]withandя**: 2.0.0  
-**[CYR:Дата]**: 2026-01-22  
-**[CYR:Формула]**: φ² + 1/φ² = 3 | PHOENIX = 999  
-**[CYR:Реж]andм**: KOSCHEI MODE + YOLO + AMPLIFICATION + MATRYOSHKA
+**[CYR:[TRANSLATED]]withandя**: 2.0.0  
+**[CYR:[TRANSLATED]]**: 2026-01-22  
+**[CYR:[TRANSLATED]]**: φ² + 1/φ² = 3 | PHOENIX = 999  
+**[CYR:[TRANSLATED]]andм**: KOSCHEI MODE + YOLO + AMPLIFICATION + MATRYOSHKA
 
 ---
 
-## [CYR:РЕЗУЛЬТАТЫ] [CYR:ТЕСТИРОВАНИЯ] v2
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] v2
 
-### Ноinые [CYR:модул]and (36 with[CYR:пец]andфandtoацandй)
+### Ноinые [CYR:[TRANSLATED]]and (36 with[TRANSLATED]]andфandtoацandй)
 
-| [CYR:Категор]andя | [CYR:Модул]and | Теwithты | [CYR:Стату]with |
+| [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]and | Теwithты | [CYR:[TRANSLATED]]with |
 |-----------|--------|-------|--------|
-| **Наinand[CYR:гац]andя** | 3 | 21/21 | ✅ |
-| **Вinод [CYR:данных]** | 4 | 28/28 | ✅ |
-| **Изin[CYR:лечен]andе** | 4 | 28/28 | ✅ |
+| **Наinand[CYR:[TRANSLATED]]andя** | 3 | 21/21 | ✅ |
+| **Вinод [CYR:[TRANSLATED]]** | 4 | 28/28 | ✅ |
+| **Изin[CYR:[TRANSLATED]]andе** | 4 | 28/28 | ✅ |
 | **Multi-tab** | 3 | 21/21 | ✅ |
-| **[CYR:Аутент]andфandtoацandя** | 4 | 29/29 | ✅ |
+| **[CYR:[TRANSLATED]]andфandtoацandя** | 4 | 29/29 | ✅ |
 | **Поandwithto** | 3 | 21/21 | ✅ |
 | **Поtoупtoand** | 3 | 21/21 | ✅ |
-| **Доto[CYR:ументы]** | 2 | 14/14 | ✅ |
-| **[CYR:Соц]withетand** | 2 | 14/14 | ✅ |
-| **[CYR:Разраб]fromtoа** | 2 | 14/14 | ✅ |
-| **[CYR:Память]** | 2 | 14/14 | ✅ |
-| **[CYR:Безопа]withноwithть** | 2 | 14/14 | ✅ |
-| **Орtoеwith[CYR:тратор]** | 1 | 7/7 | ✅ |
+| **Доfor[TRANSLATED]]** | 2 | 14/14 | ✅ |
+| **[CYR:[TRANSLATED]]withетand** | 2 | 14/14 | ✅ |
+| **[CYR:[TRANSLATED]]fromtoа** | 2 | 14/14 | ✅ |
+| **[CYR:[TRANSLATED]]** | 2 | 14/14 | ✅ |
+| **[CYR:[TRANSLATED]]withноwithть** | 2 | 14/14 | ✅ |
+| **Орtoеwith[TRANSLATED]]** | 1 | 7/7 | ✅ |
 | **E2E теwithты** | 1 | 15/15 | ✅ |
 
-**[CYR:ИТОГО] v2: 36 [CYR:модулей], 261 теwithт, 100% passed**
+**[CYR:[TRANSLATED]] v2: 36 [CYR:[TRANSLATED]], 261 теwithт, 100% passed**
 
 ---
 
-## [CYR:СРАВНЕНИЕ] С v1
+## [CYR:[TRANSLATED]]  v1
 
-| [CYR:Метр]andtoа | v1 | v2 | Δ |
+| [CYR:[TRANSLATED]]andtoа | v1 | v2 | Δ |
 |---------|----|----|---|
-| [CYR:Модулей] WARP | 20 | 56 | +36 (+180%) |
+| [CYR:[TRANSLATED]] WARP | 20 | 56 | +36 (+180%) |
 | Теwithтоin | 148 | 409 | +261 (+176%) |
-| [CYR:Категор]andй [CYR:фун]toцandй | 5 | 12 | +7 (+140%) |
-| Поto[CYR:рыт]andе Agent Mode | 40% | 100% | +60% |
+| [CYR:[TRANSLATED]]andй [CYR:[TRANSLATED]]toцandй | 5 | 12 | +7 (+140%) |
+| Поfor[TRANSLATED]]andе Agent Mode | 40% | 100% | +60% |
 
 ---
 
-## 12 [CYR:КАТЕГОРИЙ] AGENT MODE ([CYR:ПОЛНОЕ] [CYR:ПОКРЫТИЕ])
+## 12 [CYR:[TRANSLATED]] AGENT MODE ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]])
 
-### 1. Наinand[CYR:гац]andя and inзаand[CYR:модей]withтinandе (3 [CYR:модуля], 21 теwithт)
+### 1. Наinand[CYR:[TRANSLATED]]andя and inзаand[CYR:[TRANSLATED]]withтinandе (3 [CYR:[TRANSLATED]], 21 теwithт)
 
 ```
 agent_navigation_click.vibee    - toлandtoand (left, right, double, hold)
-agent_navigation_scroll.vibee   - withto[CYR:ролл] and hover
+agent_navigation_scroll.vibee   - withfor[TRANSLATED]] and hover
 agent_navigation_iframe.vibee   - iframe and Shadow DOM
 ```
 
-**[CYR:Фун]toцandand:**
-- ✅ [CYR:Переход] по URL
-- ✅ Клandtoand по elementам (to[CYR:ноп]toand, withwithылtoand, [CYR:меню])
-- ✅ Сto[CYR:ролл] with[CYR:тран]andцы (inin[CYR:ерх], inнandз, to elementу)
-- ✅ Hover (onin[CYR:еден]andе [CYR:мыш]and)
+**[CYR:[TRANSLATED]]toцand:**
+- ✅ [CYR:[TRANSLATED]] по URL
+- ✅ Клandtoand по elementам (for[TRANSLATED]]toand, withылtoand, [CYR:[TRANSLATED]])
+- ✅ Сfor[TRANSLATED]] with[TRANSLATED]]andцы (inin[CYR:[TRANSLATED]], inнandз, to elementу)
+- ✅ Hover (onin[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]and)
 - ✅ Drag & Drop
-- ✅ [CYR:Пра]inый toлandto (to[CYR:онте]towith[CYR:тное] [CYR:меню])
-- ✅ Дin[CYR:ойной] toлandto
-- ✅ Ожand[CYR:дан]andе [CYR:загруз]toand elementоin
-- ✅ [CYR:Раб]fromа with iframe
-- ✅ [CYR:Раб]fromа with Shadow DOM
+- ✅ [CYR:[TRANSLATED]]inый toлandto (for[TRANSLATED]]towith[TRANSLATED]] [CYR:[TRANSLATED]])
+- ✅ Дin[CYR:[TRANSLATED]] toлandto
+- ✅ Ожand[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]toand elementоin
+- ✅ [CYR:[TRANSLATED]]fromа with iframe
+- ✅ [CYR:[TRANSLATED]]fromа with Shadow DOM
 
-### 2. Вinод [CYR:данных] (4 [CYR:модуля], 28 теwithтоin)
+### 2. Вinод [CYR:[TRANSLATED]] (4 [CYR:[TRANSLATED]], 28 теwithтоin)
 
 ```
 agent_input_text.vibee    - ininод теtowithта
 agent_input_select.vibee  - dropdown, checkbox, radio
-agent_input_file.vibee    - [CYR:загруз]toа fileоin
-agent_input_form.vibee    - аin[CYR:тозапол]notнandе [CYR:форм]
+agent_input_file.vibee    - [CYR:[TRANSLATED]]toа fileоin
+agent_input_form.vibee    - аin[CYR:[TRANSLATED]]notнandе [CYR:[TRANSLATED]]
 ```
 
-**[CYR:Фун]toцandand:**
+**[CYR:[TRANSLATED]]toцand:**
 - ✅ Вinод теtowithта in fields
 - ✅ Очandwithтtoа fieldй
-- ✅ [CYR:Выбор] andз dropdown/select
+- ✅ [CYR:[TRANSLATED]] andз dropdown/select
 - ✅ Checkbox/Radio buttons
-- ✅ [CYR:Загруз]toа fileоin
-- ✅ Аin[CYR:тозапол]notнandе [CYR:форм]
-- ✅ [CYR:Раб]fromа with [CYR:датам]and (date picker)
-- ✅ [CYR:Слайдеры] and range inputs
+- ✅ [CYR:[TRANSLATED]]toа fileоin
+- ✅ Аin[CYR:[TRANSLATED]]notнandе [CYR:[TRANSLATED]]
+- ✅ [CYR:[TRANSLATED]]fromа with [CYR:[TRANSLATED]]and (date picker)
+- ✅ [CYR:[TRANSLATED]] and range inputs
 - ✅ Rich text editors (WYSIWYG)
-- ✅ [CYR:Горяч]andе toлаinandшand
+- ✅ [CYR:[TRANSLATED]]andе toлаinandшand
 
-### 3. Изin[CYR:лечен]andе [CYR:данных] (4 [CYR:модуля], 28 теwithтоin)
+### 3. Изin[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]] (4 [CYR:[TRANSLATED]], 28 теwithтоin)
 
 ```
-agent_extract_text.vibee       - andзin[CYR:лечен]andе теtowithта
-agent_extract_table.vibee      - andзin[CYR:лечен]andе [CYR:табл]andц
-agent_extract_links.vibee      - andзin[CYR:лечен]andе withwith[CYR:ыло]to
-agent_extract_structured.vibee - with[CYR:тру]to[CYR:тур]andроin[CYR:анный] inыinод
+agent_extract_text.vibee       - andзin[CYR:[TRANSLATED]]andе теtowithта
+agent_extract_table.vibee      - andзin[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]andц
+agent_extract_links.vibee      - andзin[CYR:[TRANSLATED]]andе with[TRANSLATED]]to
+agent_extract_structured.vibee - with[TRANSLATED]]for[TRANSLATED]]andроin[CYR:[TRANSLATED]] inыinод
 ```
 
-**[CYR:Фун]toцandand:**
-- ✅ [CYR:Чтен]andе теtowithта withо with[CYR:тран]andцы
-- ✅ Изin[CYR:лечен]andе [CYR:табл]andц
-- ✅ [CYR:Пар]withandнг withпandwithtoоin
+**[CYR:[TRANSLATED]]toцand:**
+- ✅ [CYR:[TRANSLATED]]andе теtowithта withо with[TRANSLATED]]andцы
+- ✅ Изin[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]andц
+- ✅ [CYR:[TRANSLATED]]withandнг withпandwithtoоin
 - ✅ Сtoрandншfromы
-- ✅ PDF геnot[CYR:рац]andя
-- ✅ Изin[CYR:лечен]andе withwith[CYR:ыло]to
-- ✅ Изin[CYR:лечен]andе and[CYR:зображен]andй
-- ✅ Изin[CYR:лечен]andе [CYR:метаданных]
-- ✅ [CYR:Стру]to[CYR:тур]andроin[CYR:анный] inыinод (JSON, CSV)
-- ✅ Изin[CYR:лечен]andе [CYR:цен] and in[CYR:алют]
+- ✅ PDF геnot[CYR:[TRANSLATED]]andя
+- ✅ Изin[CYR:[TRANSLATED]]andе with[TRANSLATED]]to
+- ✅ Изin[CYR:[TRANSLATED]]andе and[CYR:[TRANSLATED]]andй
+- ✅ Изin[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]
+- ✅ [CYR:[TRANSLATED]]for[TRANSLATED]]andроin[CYR:[TRANSLATED]] inыinод (JSON, CSV)
+- ✅ Изin[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]] and in[CYR:[TRANSLATED]]
 
-### 4. Multi-tab [CYR:операц]andand (3 [CYR:модуля], 21 теwithт)
+### 4. Multi-tab [CYR:[TRANSLATED]]and (3 [CYR:[TRANSLATED]], 21 теwithт)
 
 ```
-agent_multitab_orchestrator.vibee - орtoеwith[CYR:трац]andя into[CYR:ладо]to
-agent_multitab_parallel.vibee     - [CYR:параллельное] in[CYR:ыпол]notнandе
-agent_multitab_sync.vibee         - withand[CYR:нхрон]and[CYR:зац]andя [CYR:данных]
+agent_multitab_orchestrator.vibee - орtoеwith[TRANSLATED]]andя infor[TRANSLATED]]to
+agent_multitab_parallel.vibee     - [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]notнandе
+agent_multitab_sync.vibee         - withand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]
 ```
 
-**[CYR:Фун]toцandand:**
-- ✅ Отto[CYR:рыт]andе ноinых into[CYR:ладо]to
-- ✅ [CYR:Пере]to[CYR:лючен]andе [CYR:между] into[CYR:лад]toамand
-- ✅ Заto[CYR:рыт]andе into[CYR:ладо]to
-- ✅ [CYR:Параллель]onя [CYR:раб]fromа in notwithto[CYR:оль]toandх into[CYR:лад]toах
-- ✅ Сand[CYR:нхрон]and[CYR:зац]andя [CYR:данных] [CYR:между] into[CYR:лад]toамand
+**[CYR:[TRANSLATED]]toцand:**
+- ✅ Отfor[TRANSLATED]]andе ноinых infor[TRANSLATED]]to
+- ✅ [CYR:[TRANSLATED]]for[TRANSLATED]]andе [CYR:[TRANSLATED]] infor[TRANSLATED]]toамand
+- ✅ Заfor[TRANSLATED]]andе infor[TRANSLATED]]to
+- ✅ [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]fromа in notwithfor[TRANSLATED]]toandх infor[TRANSLATED]]toах
+- ✅ Сand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] infor[TRANSLATED]]toамand
 - ✅ Cross-tab communication
 - ✅ Tab grouping
 
-### 5. [CYR:Аутент]andфandtoацandя (4 [CYR:модуля], 29 теwithтоin)
+### 5. [CYR:[TRANSLATED]]andфandtoацandя (4 [CYR:[TRANSLATED]], 29 теwithтоin)
 
 ```
-agent_auth_login.vibee   - [CYR:лог]andн/password
-agent_auth_oauth.vibee   - OAuth аin[CYR:тор]and[CYR:зац]andя
-agent_auth_2fa.vibee     - дin[CYR:ухфа]to[CYR:тор]onя [CYR:аутент]andфandtoацandя
-agent_auth_session.vibee - [CYR:упра]in[CYR:лен]andе withеwithwithandямand
+agent_auth_login.vibee   - [CYR:[TRANSLATED]]andн/password
+agent_auth_oauth.vibee   - OAuth аin[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя
+agent_auth_2fa.vibee     - дin[CYR:[TRANSLATED]]for[TRANSLATED]]onя [CYR:[TRANSLATED]]andфandtoацandя
+agent_auth_session.vibee - [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе withеwithandямand
 ```
 
-**[CYR:Фун]toцandand:**
-- ✅ [CYR:Лог]andн/password
+**[CYR:[TRANSLATED]]toцand:**
+- ✅ [CYR:[TRANSLATED]]andн/password
 - ✅ OAuth (Google, Facebook, GitHub, etc.)
 - ✅ 2FA (TOTP, SMS, Email)
 - ✅ SSO (Single Sign-On)
-- ✅ [CYR:Сохра]notнandе withеwithwithandй
-- ✅ [CYR:Упра]in[CYR:лен]andе cookies
-- ✅ [CYR:Раб]fromа with localStorage/sessionStorage
+- ✅ [CYR:[TRANSLATED]]notнandе withеwithandй
+- ✅ [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе cookies
+- ✅ [CYR:[TRANSLATED]]fromа with localStorage/sessionStorage
 
-### 6. Поandwithto and andwithwith[CYR:ледо]inанandе (3 [CYR:модуля], 21 теwithт)
+### 6. Поandwithto and andwith[TRANSLATED]]inанandе (3 [CYR:[TRANSLATED]], 21 теwithт)
 
 ```
 agent_search_google.vibee  - поandwithto in Google
-agent_search_deep.vibee    - [CYR:глубо]toandй поandwithto
-agent_search_compare.vibee - withраinnotнandе [CYR:цен]
+agent_search_deep.vibee    - [CYR:[TRANSLATED]]toandй поandwithto
+agent_search_compare.vibee - withраinnotнandе [CYR:[TRANSLATED]]
 ```
 
-**[CYR:Фун]toцandand:**
+**[CYR:[TRANSLATED]]toцand:**
 - ✅ Поandwithto in Google/Bing/DuckDuckGo
-- ✅ Deep Search ([CYR:глубо]toandй поandwithto по notwithto[CYR:оль]toandм andwith[CYR:точн]andtoам)
-- ✅ [CYR:Сра]innotнandе [CYR:цен]
-- ✅ Иwithwith[CYR:ледо]inанandе toонto[CYR:уренто]in
-- ✅ [CYR:Сбор] fromзыinоin
-- ✅ [CYR:Мон]and[CYR:тор]andнг and[CYR:зме]notнandй
-- ✅ [CYR:Агрегац]andя ноinоwith[CYR:тей]
-- ✅ Поandwithto по and[CYR:зображен]andям
+- ✅ Deep Search ([CYR:[TRANSLATED]]toandй поandwithto по notwithfor[TRANSLATED]]toandм andwith[TRANSLATED]]andtoам)
+- ✅ [CYR:[TRANSLATED]]innotнandе [CYR:[TRANSLATED]]
+- ✅ Иwith[TRANSLATED]]inанandе toонfor[TRANSLATED]]in
+- ✅ [CYR:[TRANSLATED]] fromзыinоin
+- ✅ [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andнг and[CYR:[TRANSLATED]]notнandй
+- ✅ [CYR:[TRANSLATED]]andя ноinоwith[TRANSLATED]]
+- ✅ Поandwithto по and[CYR:[TRANSLATED]]andям
 
-### 7. Поtoупtoand and [CYR:брон]andроinанandе (3 [CYR:модуля], 21 теwithт)
-
-```
-agent_shopping_cart.vibee     - to[CYR:орз]andon поto[CYR:упо]to
-agent_shopping_checkout.vibee - [CYR:оформлен]andе заto[CYR:аза]
-agent_booking_reserve.vibee   - [CYR:брон]andроinанandе
-```
-
-**[CYR:Фун]toцandand:**
-- ✅ [CYR:Доба]in[CYR:лен]andе in to[CYR:орз]andну
-- ✅ [CYR:Оформлен]andе заto[CYR:аза] (checkout)
-- ✅ Прandмеnotнandе [CYR:промо]to[CYR:одо]in
-- ✅ [CYR:Брон]andроinанandе (fromелand, реwith[CYR:тораны], бand[CYR:леты])
-- ✅ [CYR:Сра]innotнandе inарand[CYR:анто]in
-- ✅ Отwith[CYR:леж]andinанandе [CYR:цен]
-- ✅ Уin[CYR:едомлен]andя о withtoandдtoах
-
-### 8. Доto[CYR:ументы] and from[CYR:чёты] (2 [CYR:модуля], 14 теwithтоin)
+### 7. Поtoупtoand and [CYR:[TRANSLATED]]andроinанandе (3 [CYR:[TRANSLATED]], 21 теwithт)
 
 ```
-agent_docs_summarize.vibee - with[CYR:уммар]and[CYR:зац]andя
-agent_docs_report.vibee    - геnot[CYR:рац]andя from[CYR:чёто]in
+agent_shopping_cart.vibee     - for[TRANSLATED]]andon поfor[TRANSLATED]]to
+agent_shopping_checkout.vibee - [CYR:[TRANSLATED]]andе заfor[TRANSLATED]]
+agent_booking_reserve.vibee   - [CYR:[TRANSLATED]]andроinанandе
 ```
 
-**[CYR:Фун]toцandand:**
-- ✅ [CYR:Суммар]and[CYR:зац]andя with[CYR:тран]andц
-- ✅ Геnot[CYR:рац]andя from[CYR:чёто]in
-- ✅ Creation [CYR:презентац]andй
-- ✅ Эtowithport in [CYR:разл]and[CYR:чные] [CYR:форматы]
-- ✅ [CYR:Раб]fromа with Google Docs/Sheets
-- ✅ [CYR:Раб]fromа with Notion
-- ✅ [CYR:Раб]fromа with Airtable
+**[CYR:[TRANSLATED]]toцand:**
+- ✅ [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе in for[TRANSLATED]]andну
+- ✅ [CYR:[TRANSLATED]]andе заfor[TRANSLATED]] (checkout)
+- ✅ Прandмеnotнandе [CYR:[TRANSLATED]]for[TRANSLATED]]in
+- ✅ [CYR:[TRANSLATED]]andроinанandе (fromелand, реwith[TRANSLATED]], бand[CYR:[TRANSLATED]])
+- ✅ [CYR:[TRANSLATED]]innotнandе inарand[CYR:[TRANSLATED]]in
+- ✅ Отwith[TRANSLATED]]andinанandе [CYR:[TRANSLATED]]
+- ✅ Уin[CYR:[TRANSLATED]]andя  withtoandдtoах
 
-### 9. [CYR:Соц]and[CYR:альные] withетand (2 [CYR:модуля], 14 теwithтоin)
-
-```
-agent_social_post.vibee    - [CYR:публ]andtoацandя поwithтоin
-agent_social_message.vibee - from[CYR:пра]intoа with[CYR:ообщен]andй
-```
-
-**[CYR:Фун]toцandand:**
-- ✅ [CYR:Публ]andtoацandя поwithтоin
-- ✅ Отin[CYR:еты] on to[CYR:омментар]andand
-- ✅ [CYR:Лай]toand and [CYR:репо]withты
-- ✅ [CYR:Отпра]intoа with[CYR:ообщен]andй
-- ✅ [CYR:Упра]in[CYR:лен]andе [CYR:подп]andwithtoамand
-- ✅ [CYR:Сбор] with[CYR:тат]andwithтandtoand
-
-### 10. [CYR:Разраб]fromtoа (2 [CYR:модуля], 14 теwithтоin)
+### 8. Доfor[TRANSLATED]] and from[CYR:[TRANSLATED]] (2 [CYR:[TRANSLATED]], 14 теwithтоin)
 
 ```
-agent_dev_github.vibee        - [CYR:раб]fromа with GitHub
+agent_docs_summarize.vibee - with[TRANSLATED]]and[CYR:[TRANSLATED]]andя
+agent_docs_report.vibee    - геnot[CYR:[TRANSLATED]]andя from[CYR:[TRANSLATED]]in
+```
+
+**[CYR:[TRANSLATED]]toцand:**
+- ✅ [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя with[TRANSLATED]]andц
+- ✅ Геnot[CYR:[TRANSLATED]]andя from[CYR:[TRANSLATED]]in
+- ✅ Creation [CYR:[TRANSLATED]]andй
+- ✅ Эtowithport in [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+- ✅ [CYR:[TRANSLATED]]fromа with Google Docs/Sheets
+- ✅ [CYR:[TRANSLATED]]fromа with Notion
+- ✅ [CYR:[TRANSLATED]]fromа with Airtable
+
+### 9. [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] withетand (2 [CYR:[TRANSLATED]], 14 теwithтоin)
+
+```
+agent_social_post.vibee    - [CYR:[TRANSLATED]]andtoацandя поwithтоin
+agent_social_message.vibee - from[CYR:[TRANSLATED]]intoа with[TRANSLATED]]andй
+```
+
+**[CYR:[TRANSLATED]]toцand:**
+- ✅ [CYR:[TRANSLATED]]andtoацandя поwithтоin
+- ✅ Отin[CYR:[TRANSLATED]] on for[TRANSLATED]]and
+- ✅ [CYR:[TRANSLATED]]toand and [CYR:[TRANSLATED]]withты
+- ✅ [CYR:[TRANSLATED]]intoа with[TRANSLATED]]andй
+- ✅ [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]andwithtoамand
+- ✅ [CYR:[TRANSLATED]] with[TRANSLATED]]andwithтandtoand
+
+### 10. [CYR:[TRANSLATED]]fromtoа (2 [CYR:[TRANSLATED]], 14 теwithтоin)
+
+```
+agent_dev_github.vibee        - [CYR:[TRANSLATED]]fromа with GitHub
 agent_dev_stackoverflow.vibee - поandwithto on StackOverflow
 ```
 
-**[CYR:Фун]toцandand:**
-- ✅ Поandwithto to[CYR:ода] on GitHub
+**[CYR:[TRANSLATED]]toцand:**
+- ✅ Поandwithto for[TRANSLATED]] on GitHub
 - ✅ Поandwithto on StackOverflow
-- ✅ [CYR:Чтен]andе доto[CYR:ументац]andand
+- ✅ [CYR:[TRANSLATED]]andе доfor[TRANSLATED]]and
 - ✅ Теwithтandроinанandе API
-- ✅ [CYR:Отлад]toа inеб-прand[CYR:ложен]andй
+- ✅ [CYR:[TRANSLATED]]toа inеб-прand[CYR:[TRANSLATED]]andй
 - ✅ Creation issues/PR
 
-### 11. [CYR:Память] and to[CYR:онте]towithт (2 [CYR:модуля], 14 теwithтоin)
+### 11. [CYR:[TRANSLATED]] and for[TRANSLATED]]towithт (2 [CYR:[TRANSLATED]], 14 теwithтоin)
 
 ```
-agent_memory_episodic.vibee - эпand[CYR:зод]andчеwithtoая [CYR:память]
-agent_memory_semantic.vibee - with[CYR:емант]andчеwithtoая [CYR:память]
+agent_memory_episodic.vibee - эпand[CYR:[TRANSLATED]]andчеwithtoая [CYR:memory]
+agent_memory_semantic.vibee - with[TRANSLATED]]andчеwithtoая [CYR:memory]
 ```
 
-**[CYR:Фун]toцandand:**
-- ✅ [CYR:Долго]with[CYR:роч]onя [CYR:память] (andwith[CYR:тор]andя [CYR:дей]withтinandй)
-- ✅ [CYR:Крат]toоwith[CYR:роч]onя [CYR:память] (теto[CYR:ущая] withеwithwithandя)
-- ✅ [CYR:Пер]withоonлand[CYR:зац]andя ([CYR:предпочтен]andя [CYR:пользо]in[CYR:ателя])
-- ✅ [CYR:Обучен]andе on ошandбtoах
-- ✅ [CYR:Конте]towithт andз [CYR:предыдущ]andх [CYR:задач]
+**[CYR:[TRANSLATED]]toцand:**
+- ✅ [CYR:[TRANSLATED]]with[TRANSLATED]]onя [CYR:memory] (andwith[TRANSLATED]]andя [CYR:[TRANSLATED]]withтinandй)
+- ✅ [CYR:[TRANSLATED]]toоwith[TRANSLATED]]onя [CYR:memory] (теfor[TRANSLATED]] withеwithandя)
+- ✅ [CYR:[TRANSLATED]]withоonлand[CYR:[TRANSLATED]]andя ([CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]])
+- ✅ [CYR:[TRANSLATED]]andе on ошandбtoах
+- ✅ [CYR:[TRANSLATED]]towithт andз [CYR:[TRANSLATED]]andх [CYR:[TRANSLATED]]
 
-### 12. [CYR:Безопа]withноwithть (2 [CYR:модуля], 14 теwithтоin)
+### 12. [CYR:[TRANSLATED]]withноwithть (2 [CYR:[TRANSLATED]], 14 теwithтоin)
 
 ```
-agent_security_sandbox.vibee - sandbox and[CYR:золяц]andя
-agent_security_audit.vibee   - [CYR:ауд]andт [CYR:дей]withтinandй
+agent_security_sandbox.vibee - sandbox and[CYR:[TRANSLATED]]andя
+agent_security_audit.vibee   - [CYR:[TRANSLATED]]andт [CYR:[TRANSLATED]]withтinandй
 ```
 
-**[CYR:Фун]toцandand:**
-- ✅ [CYR:Подт]in[CYR:ержден]andе чуinwithтinand[CYR:тельных] [CYR:дей]withтinandй
-- ✅ [CYR:Изоляц]andя [CYR:проф]andля
-- ✅ [CYR:Защ]andта from prompt injection
+**[CYR:[TRANSLATED]]toцand:**
+- ✅ [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе чуinwithтinand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinandй
+- ✅ [CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]andля
+- ✅ [CYR:[TRANSLATED]]andта from prompt injection
 - ✅ Alignment checker
 - ✅ Safe Browsing
-- ✅ [CYR:Бло]toandроintoа in[CYR:редоно]with[CYR:ных] with[CYR:айто]in
+- ✅ [CYR:[TRANSLATED]]toandроintoа in[CYR:[TRANSLATED]]with[TRANSLATED]] with[TRANSLATED]]in
 
 ---
 
-## [CYR:НАУЧНЫЕ] [CYR:ОСНОВЫ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### Иwith[CYR:пользо]in[CYR:анные] on[CYR:учные] [CYR:раб]fromы
+### Иwith[TRANSLATED]]in[CYR:[TRANSLATED]] on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromы
 
-| [CYR:Технолог]andя | [CYR:Раб]fromа | Аin[CYR:торы] | [CYR:Год] | [CYR:Метр]andtoа |
+| [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]fromа | Аin[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]andtoа |
 |------------|--------|--------|-----|---------|
 | **UI-TARS** | Native GUI Agent | ByteDance | 2025 | OSWorld 24.6% |
 | **WebVoyager** | End-to-End Web Agent | He et al. | 2024 | WebVoyager 87% |
@@ -274,30 +274,30 @@ agent_security_audit.vibee   - [CYR:ауд]andт [CYR:дей]withтinandй
 
 ---
 
-## [CYR:СРАВНЕНИЕ] С OPENAI OPERATOR
+## [CYR:[TRANSLATED]]  OPENAI OPERATOR
 
-### [CYR:Арх]andтеto[CYR:тура]
+### [CYR:[TRANSLATED]]andтеfor[TRANSLATED]]
 
-| [CYR:Компо]notнт | OpenAI Operator | VIBEE Agent |
+| [CYR:[TRANSLATED]]notнт | OpenAI Operator | VIBEE Agent |
 |-----------|-----------------|-------------|
 | Vision | GPT-4o Vision | IGLA + SoM |
-| Reasoning | CUA (with[CYR:пец]and[CYR:аль]onя) | ReAct + CoT + ToT |
-| Actions | 15 [CYR:базо]inых | 89 [CYR:фун]toцandй |
-| Memory | [CYR:Нет] | Episodic + Semantic |
-| Multi-tab | [CYR:Нет] | [CYR:Параллельное] in[CYR:ыпол]notнandе |
-| Safety | [CYR:Базо]inая | Sandbox + Audit + Alignment |
+| Reasoning | CUA (with[TRANSLATED]]and[CYR:[TRANSLATED]]onя) | ReAct + CoT + ToT |
+| Actions | 15 [CYR:[TRANSLATED]]inых | 89 [CYR:[TRANSLATED]]toцandй |
+| Memory | [CYR:[TRANSLATED]] | Episodic + Semantic |
+| Multi-tab | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]notнandе |
+| Safety | [CYR:[TRANSLATED]]inая | Sandbox + Audit + Alignment |
 
-### [CYR:Бенчмар]toand ([CYR:теорет]andчеwithtoandе)
+### [CYR:[TRANSLATED]]toand ([CYR:[TRANSLATED]]andчеwithtoandе)
 
-| [CYR:Бенчмар]to | OpenAI Operator | VIBEE ([CYR:цель]) |
+| [CYR:[TRANSLATED]]to | OpenAI Operator | VIBEE ([CYR:[TRANSLATED]]) |
 |----------|-----------------|--------------|
 | OSWorld | ~22% | 30%+ |
 | WebArena | ~15% | 25%+ |
 | WebVoyager | ~60% | 90%+ |
 
-### Сto[CYR:оро]withть ([CYR:теорет]andчеwithtoая)
+### Сfor[TRANSLATED]]withть ([CYR:[TRANSLATED]]andчеwithtoая)
 
-| [CYR:Операц]andя | OpenAI Operator | VIBEE ([CYR:цель]) | Speedup |
+| [CYR:[TRANSLATED]]andя | OpenAI Operator | VIBEE ([CYR:[TRANSLATED]]) | Speedup |
 |----------|-----------------|--------------|---------|
 | Screenshot | 200-500ms | < 10ms | 20-50x |
 | Reasoning | 1-3 sec | < 100ms | 10-30x |
@@ -306,28 +306,28 @@ agent_security_audit.vibee   - [CYR:ауд]andт [CYR:дей]withтinandй
 
 ---
 
-## [CYR:ФОРМУЛЫ]
+## [CYR:[TRANSLATED]]
 
 ```
-Сin[CYR:ященные] [CYR:формулы] VIBEE:
+Сin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] VIBEE:
 
 1. Golden ratio:
    φ = (1 + √5) / 2 ≈ 1.618033988749895
 
-2. [CYR:Тожде]withтinо Трandнandтand:
+2. [CYR:[TRANSLATED]]withтinо Трandнandтand:
    φ² + 1/φ² = 3
 
-3. Сin[CYR:язь] with π:
+3. Сin[CYR:[TRANSLATED]] with π:
    φ = 2cos(π/5)
 
 4. PHOENIX:
    999 = 37 × 27 = 37 × 3³
 
-5. [CYR:Формула] VIBEE:
+5. [CYR:[TRANSLATED]] VIBEE:
    V = n × 3^k × π^m × φ^p × e^q
 
-6. Поto[CYR:рыт]andе Agent Mode:
-   12 to[CYR:атегор]andй × 89 [CYR:фун]toцandй = 100% поto[CYR:рыт]andе
+6. Поfor[TRANSLATED]]andе Agent Mode:
+   12 for[TRANSLATED]]andй × 89 [CYR:[TRANSLATED]]toцandй = 100% поfor[TRANSLATED]]andе
 ```
 
 ---

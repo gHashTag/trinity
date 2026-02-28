@@ -6,8 +6,8 @@
 // φ² + 1/φ² = 3 = TRINITY
 // PHOENIX = 999
 //
-// [EN]not[CYR:[EN]] on[EN]andin[CYR:[EN]] x86-64 to[EN]yes for JIT to[CYR:[EN]]and[CYR:[EN]]
-// [CYR:[EN]]: 10x [EN]withto[CYR:[EN]]and[EN] vs and[CYR:[EN]]
+// not onandin x86-64 toyes for JIT toand
+// : 10x withtoand vs and
 //
 // Author: VIBEE Team
 // Co-authored-by: Ona <no-reply@ona.com>
@@ -20,7 +20,7 @@ const posix = std.posix;
 const mem = std.mem;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// BYTECODE TYPES (local definitions for not[EN]inandwithand[EN]with[EN]and)
+// BYTECODE TYPES (local definitions for notinandwithandwithand)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const Opcode = enum(u8) {
@@ -96,7 +96,7 @@ pub const Reg = enum(u4) {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// CODE BUFFER ([CYR:[EN]], [CYR:[EN]] andwithby[EN]not[EN]and[EN])
+// CODE BUFFER (,  andwithbynotand)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const CodeBuffer = struct {
@@ -170,28 +170,28 @@ pub const CodeBuffer = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// EXECUTABLE BUFFER (with by[CYR:[EN]]to[EN] mmap/mprotect)
+// EXECUTABLE BUFFER (with byto mmap/mprotect)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const ExecutableBuffer = struct {
-    /// [EN]to[CYR:[EN]] on andwithby[CYR:[EN]] memory
+    /// to on andwithby memory
     memory: []align(mem.page_size) u8,
-    /// [EN]to[CYR:[EN]] by[EN]and[EN]and[EN] [CYR:[EN]]andwithand
+    /// to byand andwithand
     pos: usize,
-    /// [CYR:[EN]] buffer[EN]
+    ///  buffer
     size: usize,
-    /// [CYR:[EN]]: memory with[CYR:[EN]]on andwithby[CYR:[EN]]
+    /// : memory withon andwithby
     is_executable: bool,
 
     const Self = @This();
 
-    /// [CYR:[EN]]yes[EN] buffer andwithby[CYR:[EN]] [CYR:[EN]]and
+    /// yes buffer andwithby and
     pub fn init(size: usize) !Self {
-        // [CYR:[EN]]in[CYR:[EN]] [CYR:[EN]] by with[CYR:[EN]]and[EN]
+        // in  by withand
         const page_size = mem.page_size;
         const aligned_size = ((size + page_size - 1) / page_size) * page_size;
 
-        // [CYR:[EN]]and[EN] memory via mmap with [CYR:[EN]]in[EN]and RW
+        // and memory via mmap with inand RW
         const memory = try posix.mmap(
             null,
             aligned_size,
@@ -209,12 +209,12 @@ pub const ExecutableBuffer = struct {
         };
     }
 
-    /// [EN]within[CYR:[EN]]and[EN] memory
+    /// withinand memory
     pub fn deinit(self: *Self) void {
         posix.munmap(self.memory);
     }
 
-    /// [CYR:[EN]]andwith[CYR:[EN]] [CYR:[EN]]
+    /// andwith 
     pub fn emit(self: *Self, byte: u8) void {
         if (self.pos < self.size) {
             self.memory[self.pos] = byte;
@@ -222,51 +222,51 @@ pub const ExecutableBuffer = struct {
         }
     }
 
-    /// [CYR:[EN]]andwith[CYR:[EN]] notwithto[CYR:[EN]]to[EN] [CYR:[EN]]
+    /// andwith notwithtoto 
     pub fn emitBytes(self: *Self, bytes: []const u8) void {
         for (bytes) |b| self.emit(b);
     }
 
-    /// [CYR:[EN]]andwith[CYR:[EN]] 32-[EN]and[CYR:[EN]] value (little-endian)
+    /// andwith 32-and value (little-endian)
     pub fn emitI32(self: *Self, value: i32) void {
         const bytes: [4]u8 = @bitCast(value);
         self.emitBytes(&bytes);
     }
 
-    /// [CYR:[EN]]andwith[CYR:[EN]] 64-[EN]and[CYR:[EN]] value (little-endian)
+    /// andwith 64-and value (little-endian)
     pub fn emitI64(self: *Self, value: i64) void {
         const bytes: [8]u8 = @bitCast(value);
         self.emitBytes(&bytes);
     }
 
-    /// [CYR:[EN]] memory andwithby[CYR:[EN]] (and [CYR:[EN]] [CYR:[EN]]in[EN] [CYR:[EN]]andwithand)
+    ///  memory andwithby (and  in andwithand)
     pub fn makeExecutable(self: *Self) !void {
         try posix.mprotect(self.memory, posix.PROT.READ | posix.PROT.EXEC);
         self.is_executable = true;
     }
 
-    /// [CYR:[EN]] memory [CYR:[EN]]andwith[EN]in[CYR:[EN]] (and [CYR:[EN]] [CYR:[EN]]in[EN] andwithby[EN]not[EN]and[EN])
+    ///  memory andwithin (and  in andwithbynotand)
     pub fn makeWritable(self: *Self) !void {
         try posix.mprotect(self.memory, posix.PROT.READ | posix.PROT.WRITE);
         self.is_executable = false;
     }
 
-    /// [CYR:[EN]]and[EN] [EN]to[CYR:[EN]] on [CYR:[EN]]to[EN]and[EN]
+    /// and to on toand
     pub fn getFunction(self: *const Self, comptime T: type) T {
         return @ptrCast(self.memory.ptr);
     }
 
-    /// [CYR:[EN]]and[EN] [EN]to[CYR:[EN]] on [CYR:[EN]]to[EN]and[EN] by with[CYR:[EN]]and[EN]
+    /// and to on toand by withand
     pub fn getFunctionAt(self: *const Self, comptime T: type, offset: usize) T {
         return @ptrCast(self.memory.ptr + offset);
     }
 
-    /// [EN]to[EN]and[EN] [CYR:[EN]] to[EN]yes
+    /// toand  toyes
     pub fn codeSize(self: *const Self) usize {
         return self.pos;
     }
 
-    /// Reset position (for byin[CYR:[EN]] andwithby[CYR:[EN]]in[EN]and[EN])
+    /// Reset position (for byin andwithbyinand)
     pub fn reset(self: *Self) void {
         self.pos = 0;
     }
@@ -276,13 +276,13 @@ pub const ExecutableBuffer = struct {
 // JIT FUNCTION TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:[EN]]to[EN]and[EN] [CYR:[EN]] argument[EN]in, in[EN]in[CYR:[EN]] i64
+/// toand  argumentin, inin i64
 pub const JitFn0 = *const fn () callconv(.C) i64;
 
-/// [CYR:[EN]]to[EN]and[EN] with [CYR:[EN]]and[EN] argument[EN] i64, in[EN]in[CYR:[EN]] i64
+/// toand with and argument i64, inin i64
 pub const JitFn1 = *const fn (i64) callconv(.C) i64;
 
-/// [CYR:[EN]]to[EN]and[EN] with [EN]in[CYR:[EN]] argument[EN]and i64, in[EN]in[CYR:[EN]] i64
+/// toand with in argumentand i64, inin i64
 pub const JitFn2 = *const fn (i64, i64) callconv(.C) i64;
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -304,7 +304,7 @@ pub const ExecutableJIT = struct {
         self.buf.deinit();
     }
 
-    /// [CYR:[EN]]not[EN]and[EN]in[CYR:[EN]] [CYR:[EN]]to[EN]and[EN], in[EN]in[CYR:[EN]] to[EN]with[CYR:[EN]]
+    /// notandin toand, inin towith
     pub fn emitReturnConstant(self: *Self, value: i64) !JitFn0 {
         // mov rax, imm64
         self.buf.emit(0x48); // REX.W
@@ -317,7 +317,7 @@ pub const ExecutableJIT = struct {
         return self.buf.getFunction(JitFn0);
     }
 
-    /// [CYR:[EN]]not[EN]and[EN]in[CYR:[EN]] [CYR:[EN]]to[EN]and[EN] with[CYR:[EN]]and[EN] [EN]in[EN] argument[EN]in
+    /// notandin toand withand in argumentin
     /// rdi = arg1, rsi = arg2 (System V AMD64 ABI)
     pub fn emitAdd(self: *Self) !JitFn2 {
         // mov rax, rdi
@@ -337,7 +337,7 @@ pub const ExecutableJIT = struct {
         return self.buf.getFunction(JitFn2);
     }
 
-    /// [CYR:[EN]]not[EN]and[EN]in[CYR:[EN]] [CYR:[EN]]to[EN]and[EN] in[EN]and[CYR:[EN]]and[EN]
+    /// notandin toand inand
     pub fn emitSub(self: *Self) !JitFn2 {
         // mov rax, rdi
         self.buf.emit(0x48);
@@ -356,7 +356,7 @@ pub const ExecutableJIT = struct {
         return self.buf.getFunction(JitFn2);
     }
 
-    /// [CYR:[EN]]not[EN]and[EN]in[CYR:[EN]] [CYR:[EN]]to[EN]and[EN] [CYR:[EN]]and[EN]
+    /// notandin toand and
     pub fn emitMul(self: *Self) !JitFn2 {
         // mov rax, rdi
         self.buf.emit(0x48);
@@ -376,14 +376,14 @@ pub const ExecutableJIT = struct {
         return self.buf.getFunction(JitFn2);
     }
 
-    /// [CYR:[EN]]not[EN]and[EN]in[CYR:[EN]] [CYR:[EN]]to[EN]and[EN] [EN]in[CYR:[EN]]and[EN] argument[EN]
+    /// notandin toand inand argument
     pub fn emitDouble(self: *Self) !JitFn1 {
         // mov rax, rdi
         self.buf.emit(0x48);
         self.buf.emit(0x89);
         self.buf.emit(0xF8);
 
-        // add rax, rax ([EN]in[CYR:[EN]]and[EN])
+        // add rax, rax (inand)
         self.buf.emit(0x48);
         self.buf.emit(0x01);
         self.buf.emit(0xC0);
@@ -395,7 +395,7 @@ pub const ExecutableJIT = struct {
         return self.buf.getFunction(JitFn1);
     }
 
-    /// [CYR:[EN]]not[EN]and[EN]in[CYR:[EN]] [CYR:[EN]]to[EN]and[EN] toin[CYR:[EN]]
+    /// notandin toand toin
     pub fn emitSquare(self: *Self) !JitFn1 {
         // mov rax, rdi
         self.buf.emit(0x48);
@@ -415,7 +415,7 @@ pub const ExecutableJIT = struct {
         return self.buf.getFunction(JitFn1);
     }
 
-    /// Reset buffer for [EN]in[EN] [CYR:[EN]]to[EN]andand
+    /// Reset buffer for in toand
     pub fn reset(self: *Self) !void {
         try self.buf.makeWritable();
         self.buf.reset();
@@ -850,7 +850,7 @@ pub const HotPathDetector = struct {
         self.compiled_addresses.deinit();
     }
 
-    /// [CYR:[EN]]andwith[CYR:[EN]] execution by [CYR:[EN]]with[EN], in[CYR:[EN]] true if with[CYR:[EN]] [CYR:[EN]]and[EN]
+    /// andwith execution by with, in true if with and
     pub fn recordExecution(self: *Self, address: u32) bool {
         const entry = self.execution_counts.getOrPut(address) catch return false;
         if (!entry.found_existing) {
@@ -860,7 +860,7 @@ pub const HotPathDetector = struct {
         return entry.value_ptr.* >= self.hot_threshold;
     }
 
-    /// [CYR:[EN]]in[EN]and[EN], is [EN]and [CYR:[EN]]with [CYR:[EN]]and[EN]
+    /// inand, is and with and
     pub fn isHot(self: *const Self, address: u32) bool {
         if (self.execution_counts.get(address)) |count| {
             return count >= self.hot_threshold;
@@ -868,12 +868,12 @@ pub const HotPathDetector = struct {
         return false;
     }
 
-    /// [CYR:[EN]]and[EN] with[CYR:[EN]]andto in[EN]by[EN]not[EN]and[EN]
+    /// and withandto inbynotand
     pub fn getCount(self: *const Self, address: u32) u32 {
         return self.execution_counts.get(address) orelse 0;
     }
 
-    /// [CYR:[EN]]and[EN] withto[CYR:[EN]]or[EN]in[CYR:[EN]] code
+    /// and withtoorin code
     pub fn cacheCompiledCode(self: *Self, address: u32, code: []const u8) !void {
         try self.compiled_addresses.put(address, code);
     }
@@ -883,12 +883,12 @@ pub const HotPathDetector = struct {
         return self.compiled_addresses.get(address);
     }
 
-    /// [CYR:[EN]]in[EN]and[EN], [EN]with[EN] [EN]and withto[CYR:[EN]]or[EN]in[CYR:[EN]] code
+    /// inand, with and withtoorin code
     pub fn hasCompiledCode(self: *const Self, address: u32) bool {
         return self.compiled_addresses.contains(address);
     }
 
-    /// [CYR:[EN]]and[EN] with[CYR:[EN]]andwith[EN]andto[EN]
+    /// and withandwithandto
     pub fn getStats(self: *const Self) struct { total_addresses: usize, hot_addresses: usize, compiled: usize } {
         var hot_count: usize = 0;
         var iter = self.execution_counts.iterator();
@@ -914,7 +914,7 @@ pub const AdaptiveJIT = struct {
     compiler: JITCompiler,
     detector: HotPathDetector,
 
-    // [CYR:[EN]]andwith[EN]andto[EN]
+    // andwithandto
     interpreted_count: u64,
     jit_count: u64,
 
@@ -935,26 +935,26 @@ pub const AdaptiveJIT = struct {
         self.detector.deinit();
     }
 
-    /// [EN]by[EN]and[EN] [CYR:[EN]]to to[EN]yes - and[CYR:[EN]]and[EN]in[CYR:[EN]] or JIT
+    /// byand to toyes - andin or JIT
     pub fn execute(self: *Self, address: u32, instructions: []const Instruction, constants: []const i64) !?[]const u8 {
-        // [CYR:[EN]]in[EN]and[EN], [EN]with[EN] [EN]and [CYR:[EN]] withto[CYR:[EN]]or[EN]in[CYR:[EN]] code
+        // inand, with and  withtoorin code
         if (self.detector.getCompiledCode(address)) |code| {
             self.jit_count += 1;
             return code;
         }
 
-        // [CYR:[EN]]andwith[CYR:[EN]] execution
+        // andwith execution
         const became_hot = self.detector.recordExecution(address);
 
         if (became_hot and !self.detector.hasCompiledCode(address)) {
-            // [CYR:[EN]]or[EN]in[CYR:[EN]] [CYR:[EN]]and[EN] path
+            // orin and path
             const code = try self.compiler.compile(instructions, constants);
             try self.detector.cacheCompiledCode(address, code);
             self.jit_count += 1;
             return code;
         }
 
-        // [CYR:[EN]]and[EN]in[CYR:[EN]]
+        // andin
         self.interpreted_count += 1;
         return null;
     }
@@ -1073,14 +1073,14 @@ test "hot path detector" {
     var detector = HotPathDetector.init(allocator, 10);
     defer detector.deinit();
 
-    // [CYR:[EN]]andwith[CYR:[EN]] 9 in[EN]by[EN]not[EN]and[EN] - [CYR:[EN]] not [CYR:[EN]]and[EN]
+    // andwith 9 inbynotand -  not and
     var i: u32 = 0;
     while (i < 9) : (i += 1) {
         const hot = detector.recordExecution(0x1000);
         try std.testing.expect(!hot);
     }
 
-    // 10-[EN] execution - with[CYR:[EN]]inand[EN]with[EN] [CYR:[EN]]and[EN]
+    // 10- execution - withinandwith and
     const hot = detector.recordExecution(0x1000);
     try std.testing.expect(hot);
 
@@ -1099,14 +1099,14 @@ test "adaptive jit" {
     };
     const constants = [_]i64{42};
 
-    // [CYR:[EN]]in[EN] 99 in[EN]by[EN]not[EN]and[EN] - interpretation
+    // in 99 inbynotand - interpretation
     var i: u32 = 0;
     while (i < 99) : (i += 1) {
         const result = try ajit.execute(0x2000, &instructions, &constants);
         try std.testing.expect(result == null);
     }
 
-    // 100-[EN] execution - JIT compilation
+    // 100- execution - JIT compilation
     const result = try ajit.execute(0x2000, &instructions, &constants);
     try std.testing.expect(result != null);
 
@@ -1116,7 +1116,7 @@ test "adaptive jit" {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]] [CYR:[EN]] JIT
+//   JIT
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "executable buffer init/deinit" {
@@ -1204,7 +1204,7 @@ test "executable jit golden identity" {
     defer jit.deinit();
 
     // φ² + 1/φ² = 3
-    // [CYR:[EN]]in[EN]and[EN]: 3 * 3 = 9
+    // inand: 3 * 3 = 9
     const mul_fn = try jit.emitMul();
     const result = mul_fn(3, 3);
 
@@ -1212,7 +1212,7 @@ test "executable jit golden identity" {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]]: [CYR:[EN]] vs JIT
+// :  vs JIT
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const BenchmarkResult = struct {
@@ -1222,7 +1222,7 @@ pub const BenchmarkResult = struct {
     iterations: u64,
 };
 
-/// Simple interpreter for with[EN]innot[EN]and[EN]
+/// Simple interpreter for withinnotand
 fn interpretAdd(a: i64, b: i64) i64 {
     return a + b;
 }
@@ -1244,14 +1244,14 @@ fn interpretFibonacci(n: i64) i64 {
     return b;
 }
 
-/// [CYR:[EN]]with[EN]and[EN] [CYR:[EN]]to with[CYR:[EN]]and[EN]
+/// withand to withand
 pub fn benchmarkAdd(iterations: u64) !BenchmarkResult {
     var jit = try ExecutableJIT.init(4096);
     defer jit.deinit();
 
     const add_fn = try jit.emitAdd();
 
-    // [CYR:[EN]]to and[CYR:[EN]]
+    // to and
     var timer = std.time.Timer.start() catch unreachable;
     var sum_interp: i64 = 0;
     var i: u64 = 0;
@@ -1260,7 +1260,7 @@ pub fn benchmarkAdd(iterations: u64) !BenchmarkResult {
     }
     const interp_ns = timer.read();
 
-    // [CYR:[EN]]to JIT
+    // to JIT
     timer.reset();
     var sum_jit: i64 = 0;
     i = 0;
@@ -1269,7 +1269,7 @@ pub fn benchmarkAdd(iterations: u64) !BenchmarkResult {
     }
     const jit_ns = timer.read();
 
-    // Check to[CYR:[EN]]to[CYR:[EN]]with[EN]and
+    // Check totowithand
     if (sum_interp != sum_jit) {
         return error.ResultMismatch;
     }
@@ -1284,14 +1284,14 @@ pub fn benchmarkAdd(iterations: u64) !BenchmarkResult {
     };
 }
 
-/// [CYR:[EN]]with[EN]and[EN] [CYR:[EN]]to [CYR:[EN]]and[EN]
+/// withand to and
 pub fn benchmarkMul(iterations: u64) !BenchmarkResult {
     var jit = try ExecutableJIT.init(4096);
     defer jit.deinit();
 
     const mul_fn = try jit.emitMul();
 
-    // [CYR:[EN]]to and[CYR:[EN]]
+    // to and
     var timer = std.time.Timer.start() catch unreachable;
     var sum_interp: i64 = 0;
     var i: u64 = 0;
@@ -1300,7 +1300,7 @@ pub fn benchmarkMul(iterations: u64) !BenchmarkResult {
     }
     const interp_ns = timer.read();
 
-    // [CYR:[EN]]to JIT
+    // to JIT
     timer.reset();
     var sum_jit: i64 = 0;
     i = 0;
@@ -1323,19 +1323,19 @@ pub fn benchmarkMul(iterations: u64) !BenchmarkResult {
     };
 }
 
-/// [EN]in[EN]with[EN]and result[EN] [CYR:[EN]]to[EN]
+/// inwithand result to
 pub fn printBenchmarkResults(name: []const u8, result: BenchmarkResult) void {
     const stdout = std.io.getStdOut().writer();
     stdout.print("\n{s}:\n", .{name}) catch {};
-    stdout.print("  [CYR:[EN]]: {d} ns ({d:.2} ms)\n", .{ result.interpreter_ns, @as(f64, @floatFromInt(result.interpreter_ns)) / 1_000_000.0 }) catch {};
+    stdout.print("  : {d} ns ({d:.2} ms)\n", .{ result.interpreter_ns, @as(f64, @floatFromInt(result.interpreter_ns)) / 1_000_000.0 }) catch {};
     stdout.print("  JIT:           {d} ns ({d:.2} ms)\n", .{ result.jit_ns, @as(f64, @floatFromInt(result.jit_ns)) / 1_000_000.0 }) catch {};
-    stdout.print("  [EN]withto[CYR:[EN]]and[EN]:     {d:.2}x\n", .{result.speedup}) catch {};
-    stdout.print("  [CYR:[EN]]and[EN]:      {d}\n", .{result.iterations}) catch {};
+    stdout.print("  withtoand:     {d:.2}x\n", .{result.speedup}) catch {};
+    stdout.print("  and:      {d}\n", .{result.iterations}) catch {};
 }
 
 test "benchmark add" {
     const result = try benchmarkAdd(100_000);
-    // JIT before[CYR:[EN]] [CYR:[EN]] [EN]with[CYR:[EN]] (or example[EN] [EN]in[EN] and[EN]-[EN] [CYR:[EN]]and[EN]and[CYR:[EN]]and[EN] to[CYR:[EN]]and[CYR:[EN]])
+    // JIT before  with (or example in and- andand toand)
     try std.testing.expect(result.speedup > 0.5);
 }
 

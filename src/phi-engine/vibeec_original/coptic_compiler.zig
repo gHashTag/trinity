@@ -53,7 +53,7 @@ pub const CompilerOptions = struct {
     optimize: bool = false,
     debug_info: bool = true,
     emit_comments: bool = true,
-    evolve: bool = true, // [EN] [CYR:[EN]]and[EN] with[CYR:[EN]]in[CYR:[EN]]and[EN] into[CYR:[EN]]on
+    evolve: bool = true, //  and withinand intoon
     target: Target = .zig,
 
     pub const Target = enum { zig, wasm, llvm, verilog };
@@ -202,7 +202,7 @@ pub const Compiler = struct {
                 }) catch {};
             };
 
-            // [CYR:[EN]]withto[CYR:[EN]] with[CYR:[EN]]and[EN] (Sacred Loop)
+            // withto withand (Sacred Loop)
             egraph.saturate(&graph, &sacred_rules.SACRED_RULES) catch |err| {
                 const msg = std.fmt.allocPrint(self.allocator, "Saturation failed: {s}", .{@errorName(err)}) catch "Saturation failed";
                 result.warnings.append(self.allocator, .{
@@ -213,7 +213,7 @@ pub const Compiler = struct {
                 }) catch {};
             };
 
-            // [EN] [CYR:[EN]] [CYR:[EN]]with[EN] [CYR:[EN]] bridge.extractBest(class_id) for [CYR:[EN]]in[CYR:[EN]]and[EN] AST
+            //   with  bridge.extractBest(class_id) for inand AST
         }
 
         // Phase 4: Code Generation

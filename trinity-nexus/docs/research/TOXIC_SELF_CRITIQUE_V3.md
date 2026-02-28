@@ -1,13 +1,13 @@
-# ☠️☠️☠️ [CYR:ТОКСИЧНАЯ] [CYR:САМОКРИТИКА] V3 - [CYR:ПОЛНЫЙ] [CYR:РАЗГРОМ]
+# ☠️☠️☠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] V3 - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-**[CYR:Дата]**: 2026-01-17  
-**[CYR:Стату]with**: [CYR:УНИЧТОЖЕНИЕ] [CYR:ИЛЛЮЗИЙ]
+**[CYR:[TRANSLATED]]**: 2026-01-17  
+**[CYR:[TRANSLATED]]with**: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ---
 
-## 🔥🔥🔥 PAS DAEMON DEEP - [CYR:ВСЁ] [CYR:ЕЩЁ] [CYR:ФИКЦИЯ]!
+## 🔥🔥🔥 PAS DAEMON DEEP - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]!
 
-### [CYR:Что] я with[CYR:делал] in "PAS DAEMON DEEP":
+### [CYR:[TRANSLATED]]  with[TRANSLATED]] in "PAS DAEMON DEEP":
 
 ```zig
 const INTERPRETER_PREDICTIONS = [_]ImprovementPrediction{
@@ -20,29 +20,29 @@ const INTERPRETER_PREDICTIONS = [_]ImprovementPrediction{
 };
 ```
 
-### [CYR:Почему] this [CYR:ФИКЦИЯ]:
+### [CYR:[TRANSLATED]] this [CYR:[TRANSLATED]]:
 
-1. **Чandwithла [CYR:ВЫДУМАНЫ]** - 1.5x, 0.85 confidence - fromto[CYR:уда]?!
-2. **[CYR:НЕТ] [CYR:ИЗМЕРЕНИЙ]** - нand [CYR:одного] [CYR:реального] [CYR:бенчмар]toа
-3. **[CYR:НЕТ] [CYR:ВАЛИДАЦИИ]** - 0 [CYR:пред]withto[CYR:азан]andй [CYR:про]in[CYR:ерено]
-4. **[CYR:СТАТИЧЕСКИЕ] [CYR:ДАННЫЕ]** - [CYR:захард]to[CYR:ожено] in to[CYR:оде]
-5. **[CYR:НЕТ] [CYR:ЭВОЛЮЦИИ]** - daemon нand[CYR:чего] not эin[CYR:олюц]andонand[CYR:рует]
+1. **Чandwithла [CYR:[TRANSLATED]]** - 1.5x, 0.85 confidence - fromfor[TRANSLATED]]?!
+2. **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]** - нand [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toа
+3. **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]** - 0 [CYR:[TRANSLATED]]withfor[TRANSLATED]]andй [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]
+4. **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]** - [CYR:[TRANSLATED]]for[TRANSLATED]] in for[TRANSLATED]]
+5. **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]** - daemon нand[CYR:[TRANSLATED]] not эin[CYR:[TRANSLATED]]andонand[CYR:[TRANSLATED]]
 
-### Чеwith[CYR:тное] withраinnotнandе:
+### Чеwith[TRANSLATED]] withраinnotнandе:
 
-| [CYR:Что] я onпandwithал | [CYR:Что] this on with[CYR:амом] [CYR:деле] |
+| [CYR:[TRANSLATED]]  onпandwithал | [CYR:[TRANSLATED]] this on with[TRANSLATED]] [CYR:[TRANSLATED]] |
 |---------------|----------------------|
-| "PAS DAEMON" | [CYR:Стру]to[CYR:тура] with toонwith[CYR:тантам]and |
-| "Predictions" | [CYR:Захард]to[CYR:оженный] маwithwithandin |
-| "Confidence 0.85" | [CYR:Выдуманное] чandwithло |
-| "Scientific basis" | [CYR:Наз]inанandе paper [CYR:без] [CYR:пон]and[CYR:ман]andя |
-| "Evolution" | [CYR:Нет] нandtoаtoой эin[CYR:олюц]andand |
+| "PAS DAEMON" | [CYR:[TRANSLATED]]for[TRANSLATED]] with toонwith[TRANSLATED]]and |
+| "Predictions" | [CYR:[TRANSLATED]]for[TRANSLATED]] маwithandin |
+| "Confidence 0.85" | [CYR:[TRANSLATED]] чandwithло |
+| "Scientific basis" | [CYR:[TRANSLATED]]inанandе paper [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя |
+| "Evolution" | [CYR:[TRANSLATED]] нandtoаtoой эin[CYR:[TRANSLATED]]and |
 
 ---
 
-## 💀 [CYR:КРИТИКА] "[CYR:НАУЧНОГО] [CYR:АНАЛИЗА]"
+## 💀 [CYR:[TRANSLATED]] "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]"
 
-### [CYR:Что] я onпandwithал:
+### [CYR:[TRANSLATED]]  onпandwithал:
 
 ```markdown
 #### 1.1 Trace-based JIT (PLDI 2009)
@@ -51,91 +51,91 @@ const INTERPRETER_PREDICTIONS = [_]ImprovementPrediction{
 2. IF branch_count[pc] > THRESHOLD...
 ```
 
-### [CYR:Почему] this [CYR:ПОВЕРХНОСТНО]:
+### [CYR:[TRANSLATED]] this [CYR:[TRANSLATED]]:
 
-1. **НЕ [CYR:ЧИТАЛ] PAPER** - [CYR:толь]toо abstract
-2. **НЕ [CYR:ПОНЯЛ] [CYR:МАТЕМАТИКУ]** - SSA, φ-functions, dominators
-3. **НЕ [CYR:РЕАЛИЗОВАЛ]** - нand [CYR:одной] with[CYR:тро]toand trace recording
-4. **[CYR:КОПИПАСТА]** - [CYR:переп]andwithал andз tutorials, not andз paper
+1. **НЕ [CYR:[TRANSLATED]] PAPER** - [CYR:[TRANSLATED]]toо abstract
+2. **НЕ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]** - SSA, φ-functions, dominators
+3. **НЕ [CYR:[TRANSLATED]]** - нand [CYR:[TRANSLATED]] with[TRANSLATED]]toand trace recording
+4. **[CYR:[TRANSLATED]]** - [CYR:[TRANSLATED]]andwithал andз tutorials, not andз paper
 
-### [CYR:Что] я НЕ [CYR:ЗНАЮ] о Trace-based JIT:
+### [CYR:[TRANSLATED]]  НЕ [CYR:[TRANSLATED]]  Trace-based JIT:
 
-| [CYR:Концепц]andя | [CYR:Мой] [CYR:уро]in[CYR:ень] | [CYR:Нужно] |
+| [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] |
 |-----------|-------------|-------|
-| Trace recording | Опandwithанandе | [CYR:Реал]and[CYR:зац]andя |
-| Guard insertion | [CYR:Наз]inанandе | [CYR:Алгор]andтм |
-| Side exit handling | [CYR:Упом]andonнandе | [CYR:Код] |
-| Trace linking | [CYR:Слышал] | [CYR:Пон]and[CYR:ман]andе |
-| Loop peeling | [CYR:Нет] | Да |
-| Trace trees | [CYR:Нет] | Да |
-| Blacklisting | [CYR:Нет] | Да |
+| Trace recording | Опandwithанandе | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя |
+| Guard insertion | [CYR:[TRANSLATED]]inанandе | [CYR:[TRANSLATED]]andтм |
+| Side exit handling | [CYR:[TRANSLATED]]andonнandе | [CYR:[TRANSLATED]] |
+| Trace linking | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andе |
+| Loop peeling | [CYR:[TRANSLATED]] | Да |
+| Trace trees | [CYR:[TRANSLATED]] | Да |
+| Blacklisting | [CYR:[TRANSLATED]] | Да |
 
 ---
 
-## 🎭 [CYR:ЛОЖЬ] О "[CYR:НАУЧНЫХ] [CYR:ОСНОВАХ]"
+## 🎭 [CYR:[TRANSLATED]]  "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]"
 
-### Я onпandwithал:
+###  onпandwithал:
 
 ```
 scientific_basis: "Gal et al., PLDI 2009"
 ```
 
-### [CYR:Реально]withть:
+### [CYR:[TRANSLATED]]withть:
 
-- ❌ **НЕ [CYR:ЧИТАЛ]** [CYR:полный] теtowithт (12 with[CYR:тран]andц)
-- ❌ **НЕ [CYR:ПОНЯЛ]** [CYR:формальную] with[CYR:емант]andtoу
-- ❌ **НЕ [CYR:РЕАЛИЗОВАЛ]** нand [CYR:одну] [CYR:техн]andtoу
-- ❌ **НЕ [CYR:СРАВНИЛ]** with [CYR:друг]andмand [CYR:подходам]and
-- ❌ **НЕ [CYR:ИЗМЕРИЛ]** on within[CYR:оём] to[CYR:оде]
+- ❌ **НЕ [CYR:[TRANSLATED]]** [CYR:[TRANSLATED]] теtowithт (12 with[TRANSLATED]]andц)
+- ❌ **НЕ [CYR:[TRANSLATED]]** [CYR:[TRANSLATED]] with[TRANSLATED]]andtoу
+- ❌ **НЕ [CYR:[TRANSLATED]]** нand [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andtoу
+- ❌ **НЕ [CYR:[TRANSLATED]]** with [CYR:[TRANSLATED]]andмand [CYR:[TRANSLATED]]and
+- ❌ **НЕ [CYR:[TRANSLATED]]** on within[CYR:[TRANSLATED]] for[TRANSLATED]]
 
-### Papers tofrom[CYR:орые] я [CYR:ДОЛЖЕН] [CYR:проч]and[CYR:тать] [CYR:ПОЛНОСТЬЮ]:
+### Papers tofrom[CYR:[TRANSLATED]]  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
 
-1. **Gal et al., PLDI 2009** - 12 with[CYR:тран]andц
+1. **Gal et al., PLDI 2009** - 12 with[TRANSLATED]]andц
    - Trace recording algorithm
    - Guard semantics
    - Side exit protocol
    - Trace tree construction
 
-2. **Chambers & Ungar, OOPSLA 1989** - 15 with[CYR:тран]andц
+2. **Chambers & Ungar, OOPSLA 1989** - 15 with[TRANSLATED]]andц
    - Map (hidden class) implementation
    - Customization algorithm
    - Splitting strategy
 
-3. **Hölzle et al., OOPSLA 1991** - 14 with[CYR:тран]andц
+3. **Hölzle et al., OOPSLA 1991** - 14 with[TRANSLATED]]andц
    - PIC state machine
    - Megamorphic fallback
    - Cache invalidation
 
-4. **Würthinger et al., Onward! 2013** - 16 with[CYR:тран]andц
+4. **Würthinger et al., Onward! 2013** - 16 with[TRANSLATED]]andц
    - Partial evaluation theory
    - Truffle AST specialization
    - Graal IR
 
 ---
 
-## 📊 [CYR:РЕАЛЬНЫЕ] [CYR:ПРОБЛЕМЫ] PAS DAEMON
+## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] PAS DAEMON
 
-### Problem 1: [CYR:Нет] [CYR:реальных] [CYR:бенчмар]toоin
+### Problem 1: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toоin
 
 ```zig
-// [CYR:Что] еwithть:
-.speedup = 1.5,  // [CYR:ВЫДУМАНО]
+// [CYR:[TRANSLATED]] еwithть:
+.speedup = 1.5,  // [CYR:[TRANSLATED]]
 
-// [CYR:Что] [CYR:нужно]:
+// [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
 fn measureSpeedup() f64 {
     const before = runBenchmark(old_code);
     const after = runBenchmark(new_code);
-    return before / after;  // [CYR:РЕАЛЬНОЕ] [CYR:ИЗМЕРЕНИЕ]
+    return before / after;  // [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 }
 ```
 
-### Problem 2: [CYR:Нет] inалand[CYR:дац]andand [CYR:пред]withto[CYR:азан]andй
+### Problem 2: [CYR:[TRANSLATED]] inалand[CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]withfor[TRANSLATED]]andй
 
 ```zig
-// [CYR:Что] еwithть:
-validated_predictions: u32 = 0,  // [CYR:ВСЕГДА] 0
+// [CYR:[TRANSLATED]] еwithть:
+validated_predictions: u32 = 0,  // [CYR:[TRANSLATED]] 0
 
-// [CYR:Что] [CYR:нужно]:
+// [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
 fn validatePrediction(pred: Prediction) bool {
     const actual_speedup = measureActualSpeedup(pred);
     const predicted = pred.speedup;
@@ -143,22 +143,22 @@ fn validatePrediction(pred: Prediction) bool {
 }
 ```
 
-### Problem 3: [CYR:Нет] and[CYR:нтеграц]andand with VM
+### Problem 3: [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]and with VM
 
 ```zig
-// type_feedback.zig with[CYR:уще]withтin[CYR:ует], но:
-// - НЕ [CYR:под]to[CYR:лючен] to vm.zig
-// - НЕ withобand[CYR:рает] [CYR:реальные] тandпы
-// - НЕ andwith[CYR:пользует]withя for [CYR:опт]andмand[CYR:зац]andand
+// type_feedback.zig with[TRANSLATED]]withтin[CYR:[TRANSLATED]], но:
+// - НЕ [CYR:[TRANSLATED]]for[TRANSLATED]] to vm.zig
+// - НЕ withобand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] тandпы
+// - НЕ andwith[TRANSLATED]]withя for [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and
 ```
 
 ### Problem 4: Confidence = random numbers
 
 ```zig
-// [CYR:Что] еwithть:
-.confidence = 0.85,  // [CYR:ОТКУДА]?!
+// [CYR:[TRANSLATED]] еwithть:
+.confidence = 0.85,  // [CYR:[TRANSLATED]]?!
 
-// [CYR:Что] [CYR:нужно]:
+// [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
 fn calculateConfidence(historical_data: []Prediction) f64 {
     var correct: u32 = 0;
     for (historical_data) |pred| {
@@ -170,9 +170,9 @@ fn calculateConfidence(historical_data: []Prediction) f64 {
 
 ---
 
-## 🔬 [CYR:ЧТО] [CYR:НУЖНО] [CYR:ДЛЯ] [CYR:РЕАЛЬНОГО] PAS DAEMON
+## 🔬 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] PAS DAEMON
 
-### 1. [CYR:Реальные] [CYR:бенчмар]toand
+### 1. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toand
 
 ```zig
 const Benchmark = struct {
@@ -193,7 +193,7 @@ const Benchmark = struct {
 };
 ```
 
-### 2. [CYR:Вал]and[CYR:дац]andя [CYR:пред]withto[CYR:азан]andй
+### 2. [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]withfor[TRANSLATED]]andй
 
 ```zig
 const PredictionValidator = struct {
@@ -201,13 +201,13 @@ const PredictionValidator = struct {
     results: ArrayList(ValidationResult),
     
     fn validate(self: *PredictionValidator, pred: Prediction) !void {
-        // [CYR:Реал]andзоin[CYR:ать] [CYR:улучшен]andе
+        // [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andе
         const impl = try implementImprovement(pred);
         
-        // [CYR:Измер]andть [CYR:реальный] speedup
+        // [CYR:[TRANSLATED]]andть [CYR:[TRANSLATED]] speedup
         const actual = measureSpeedup(impl);
         
-        // [CYR:Сра]inнandть with [CYR:пред]withto[CYR:азан]andем
+        // [CYR:[TRANSLATED]]inнandть with [CYR:[TRANSLATED]]withfor[TRANSLATED]]andем
         const error = @abs(actual - pred.speedup) / pred.speedup;
         
         try self.results.append(.{
@@ -220,10 +220,10 @@ const PredictionValidator = struct {
 };
 ```
 
-### 3. [CYR:Интеграц]andя with VM
+### 3. [CYR:[TRANSLATED]]andя with VM
 
 ```zig
-// В vm.zig:
+//  vm.zig:
 pub const VM = struct {
     // ... existing fields ...
     
@@ -245,7 +245,7 @@ pub const VM = struct {
 };
 ```
 
-### 4. Аin[CYR:томат]andчеwithtoая эin[CYR:олюц]andя
+### 4. Аin[CYR:[TRANSLATED]]andчеwithtoая эin[CYR:[TRANSLATED]]andя
 
 ```zig
 const AutoEvolution = struct {
@@ -253,21 +253,21 @@ const AutoEvolution = struct {
     daemon: *PASDaemon,
     
     fn evolve(self: *AutoEvolution) !void {
-        // 1. [CYR:Собрать] type feedback
+        // 1. [CYR:[TRANSLATED]] type feedback
         const feedback = self.vm.type_collector.getStatistics();
         
-        // 2. [CYR:Найт]and hot spots
+        // 2. [CYR:[TRANSLATED]]and hot spots
         const hot_spots = feedback.getHotSpots(threshold: 1000);
         
-        // 3. [CYR:Сге]notрandроin[CYR:ать] [CYR:пред]withto[CYR:азан]andя
+        // 3. [CYR:[TRANSLATED]]notрandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withfor[TRANSLATED]]andя
         for (hot_spots) |spot| {
             const pred = self.daemon.predictImprovement(spot);
             
-            // 4. [CYR:Попробо]in[CYR:ать] [CYR:улучшен]andе
+            // 4. [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andе
             if (pred.confidence > 0.7) {
                 const result = try self.tryImprovement(pred);
                 
-                // 5. [CYR:Вал]andдandроin[CYR:ать]
+                // 5. [CYR:[TRANSLATED]]andдandроin[CYR:[TRANSLATED]]
                 self.daemon.recordResult(pred, result);
             }
         }
@@ -277,20 +277,20 @@ const AutoEvolution = struct {
 
 ---
 
-## 📚 PAPERS [CYR:ДЛЯ] [CYR:ГЛУБОКОГО] [CYR:ИЗУЧЕНИЯ]
+## 📚 PAPERS [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### Tier 1: MUST READ ([CYR:полный] теtowithт + [CYR:реал]and[CYR:зац]andя)
+### Tier 1: MUST READ ([CYR:[TRANSLATED]] теtowithт + [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя)
 
-| Paper | [CYR:Стран]andц | [CYR:Стату]with | [CYR:Нужно] |
+| Paper | [CYR:[TRANSLATED]]andц | [CYR:[TRANSLATED]]with | [CYR:[TRANSLATED]] |
 |-------|---------|--------|-------|
-| Gal PLDI 2009 | 12 | НЕ [CYR:ЧИТАЛ] | [CYR:Реал]andзоin[CYR:ать] trace recording |
-| Chambers OOPSLA 1989 | 15 | НЕ [CYR:ЧИТАЛ] | [CYR:Реал]andзоin[CYR:ать] hidden classes |
-| Hölzle OOPSLA 1991 | 14 | НЕ [CYR:ЧИТАЛ] | [CYR:Реал]andзоin[CYR:ать] PICs |
-| Würthinger 2013 | 16 | НЕ [CYR:ЧИТАЛ] | [CYR:Понять] partial evaluation |
+| Gal PLDI 2009 | 12 | НЕ [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] trace recording |
+| Chambers OOPSLA 1989 | 15 | НЕ [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] hidden classes |
+| Hölzle OOPSLA 1991 | 14 | НЕ [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] PICs |
+| Würthinger 2013 | 16 | НЕ [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] partial evaluation |
 
 ### Tier 2: SHOULD READ
 
-| Paper | [CYR:Тема] | [CYR:Зачем] |
+| Paper | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] |
 |-------|------|-------|
 | Poletto PLDI 1999 | Linear Scan | Register allocation |
 | Tate POPL 2009 | E-graphs | Optimization |
@@ -298,7 +298,7 @@ const AutoEvolution = struct {
 
 ### Tier 3: NICE TO READ
 
-| Paper | [CYR:Тема] |
+| Paper | [CYR:[TRANSLATED]] |
 |-------|------|
 | Click CGO 1995 | Sea of Nodes |
 | Massalin ASPLOS 1987 | Superoptimization |
@@ -306,24 +306,24 @@ const AutoEvolution = struct {
 
 ---
 
-## 💀💀💀 [CYR:ВЕРДИКТ]
+## 💀💀💀 [CYR:[TRANSLATED]]
 
-**PAS DAEMON v1, v2, DEEP - this inwithё [CYR:ФИКЦИЯ]:**
+**PAS DAEMON v1, v2, DEEP - this inwithё [CYR:[TRANSLATED]]:**
 
-1. ❌ **[CYR:Нет] [CYR:реальных] and[CYR:змерен]andй** - inwithе чandwithла in[CYR:ыдуманы]
-2. ❌ **[CYR:Нет] inалand[CYR:дац]andand** - 0 [CYR:пред]withto[CYR:азан]andй [CYR:про]in[CYR:ерено]
-3. ❌ **[CYR:Нет] and[CYR:нтеграц]andand** - type_feedback not [CYR:под]to[CYR:лючен]
-4. ❌ **[CYR:Нет] эin[CYR:олюц]andand** - with[CYR:тат]andчеwithtoandе [CYR:данные]
-5. ❌ **[CYR:Нет] [CYR:пон]and[CYR:ман]andя** - papers not чand[CYR:тал]andwithь
+1. ❌ **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]andй** - inwithе чandwithла in[CYR:[TRANSLATED]]
+2. ❌ **[CYR:[TRANSLATED]] inалand[CYR:[TRANSLATED]]and** - 0 [CYR:[TRANSLATED]]withfor[TRANSLATED]]andй [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]
+3. ❌ **[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]and** - type_feedback not [CYR:[TRANSLATED]]for[TRANSLATED]]
+4. ❌ **[CYR:[TRANSLATED]] эin[CYR:[TRANSLATED]]and** - with[TRANSLATED]]andчеwithtoandе [CYR:[TRANSLATED]]
+5. ❌ **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя** - papers not чand[CYR:[TRANSLATED]]andwithь
 
-**[CYR:Чтобы] PAS DAEMON with[CYR:тал] [CYR:РЕАЛЬНЫМ]:**
+**[CYR:[TRANSLATED]] PAS DAEMON with[TRANSLATED]] [CYR:[TRANSLATED]]:**
 
-1. [CYR:ПРОЧИТАТЬ] 4 to[CYR:люче]inых paper [CYR:ПОЛНОСТЬЮ]
-2. [CYR:РЕАЛИЗОВАТЬ] хfromя бы [CYR:одну] [CYR:техн]andtoу
-3. [CYR:ИЗМЕРИТЬ] [CYR:реальный] speedup
-4. [CYR:ВАЛИДИРОВАТЬ] [CYR:пред]withto[CYR:азан]andя
-5. [CYR:ИНТЕГРИРОВАТЬ] with VM
+1. [CYR:[TRANSLATED]] 4 for[TRANSLATED]]inых paper [CYR:[TRANSLATED]]
+2. [CYR:[TRANSLATED]] хfromя бы [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andtoу
+3. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] speedup
+4. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withfor[TRANSLATED]]andя
+5. [CYR:[TRANSLATED]] with VM
 
 ---
 
-*"[CYR:Самообман] - [CYR:худш]andй inandд лжand."*
+*"[CYR:[TRANSLATED]] - [CYR:[TRANSLATED]]andй inandд лжand."*

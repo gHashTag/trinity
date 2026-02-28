@@ -64,7 +64,7 @@ fn extract_features(text: String) -> List(Float) {
   }
   
   # Has greeting
-  let greetings = ["hello", "hi", "hey", "[EN]andin[EN]"]
+  let greetings = ["hello", "hi", "hey", "andin"]
   let has_greeting = case list.any(greetings, fn(g) { 
     string.contains(string.lowercase(text), g) 
   }) {
@@ -98,12 +98,12 @@ fn calculate_sentiment(
 
 fn classify_intent(features: List(Float), text: String) -> String {
   let lower = string.lowercase(text)
-  let greetings = ["hello", "hi", "hey", "[EN]andin[EN]"]
+  let greetings = ["hello", "hi", "hey", "andin"]
   
   case {
     list.any(greetings, fn(g) { string.contains(lower, g) }) -> "Greeting"
     string.contains(text, "?") -> "Question"
-    list.any(["thanks", "with[EN]withand[EN]"], fn(w) { string.contains(lower, w) }) -> "Feedback"
+    list.any(["thanks", "withand"], fn(w) { string.contains(lower, w) }) -> "Feedback"
     features[1]? ?? 0.5 >. 0.7 -> "Casual"
     _ -> "Unknown"
   }
@@ -111,12 +111,12 @@ fn classify_intent(features: List(Float), text: String) -> String {
 
 fn generate_response(intent: String, confidence: Float) -> String {
   case intent {
-    "Greeting" -> "[EN]andin[EN]! [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]?"
-    "Question" -> "[CYR:[TRANSLATED]]with[CYR:ny] in[CYR:[EN]pro]with! [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]..."
-    "Feedback" -> "[CYR:[TRANSLATED]]withand[EN] [EN] [CYR:[TRANSLATED]] within[CYR:I[EN]]!  [CYR:[TRANSLATED]]with[EN]."
-    "Command" -> "[CYR:[EN]pro[TRANSLATED]] [CYR:[TRANSLATED]]!"
-    "Casual" -> "[CYR:[TRANSLATED]yael]! [EN]withwith[CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]not[EN]."
-    _ -> "[EN] with[EN]inwith[EN] [CYR:[TRANSLATED]yael]. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN]in[CYR:ate]?"
+    "Greeting" -> "andin!   ?"
+    "Question" -> "withny] in[CYR:pro]with!  ..."
+    "Feedback" -> "withand   within[CYR:I]!  with."
+    "Command" -> "[CYR:pro] !"
+    "Casual" -> "[CYR:yael]! withand not."
+    _ -> " withinwith [CYR:yael].  andin[CYR:ate]?"
   }
 }
 

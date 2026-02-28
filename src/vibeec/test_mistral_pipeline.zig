@@ -1,5 +1,5 @@
 // MISTRAL PIPELINE TEST
-// [CYR:[EN]] [EN]andto[EN]: safetensors → .tri → inference
+//  andto: safetensors → .tri → inference
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");

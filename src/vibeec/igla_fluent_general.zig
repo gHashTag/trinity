@@ -44,7 +44,7 @@ pub const Intent = enum {
         // Question markers
         if (endsWithAny(query, &[_][]const u8{ "?", "？" })) return .Question;
         if (startsWithAny(query, &[_][]const u8{
-            "what",  "to[EN]to",     "what",    "to[EN]",    "where",  "to[EN]yes", "by[CYR:[EN]]", "[CYR:[EN]]",
+            "what",  "toto",     "what",    "to",    "where",  "toyes", "by", "",
             "who",   "where",   "when",   "why",    "how",  "which", "whose",  "whom",
             "什么",  "谁",      "哪里",   "什么时候", "为什么", "怎么",
             "qué",   "quién",   "dónde",  "cuándo", "por qué", "cómo",
@@ -53,21 +53,21 @@ pub const Intent = enum {
 
         // Greeting markers
         if (containsAnyWord(query, &[_][]const u8{
-            "hello",   "hi",     "hey",     "[EN]andin[EN]",   "[CYR:[EN]]inwith[EN]in[EN]", "before[CYR:[EN]]",
+            "hello",   "hi",     "hey",     "andin",   "inwithin", "before",
             "你好",    "嗨",     "hola",    "buenos",   "hallo",      "guten",
             "morning", "evening", "afternoon",
         })) return .Greeting;
 
         // Farewell markers
         if (containsAnyWord(query, &[_][]const u8{
-            "bye",   "goodbye", "byto[EN]",  "before withinandyes[EN]and[EN]", "[CYR:[EN]]",
+            "bye",   "goodbye", "byto",  "before withinandyesand", "",
             "再见",  "拜拜",    "adiós", "hasta",       "tschüss", "auf wiedersehen",
         })) return .Farewell;
 
         // Request markers
         if (startsWithAny(query, &[_][]const u8{
             "please", "can you", "could you", "would you", "help me",
-            "by[CYR:[EN]]with[EN]", "[CYR:[EN]]", "by[CYR:[EN]]and",
+            "bywith", "", "byand",
             "请",     "能不能",   "帮我",
             "por favor", "puedes", "ayúdame",
             "bitte",  "kannst du", "hilf mir",
@@ -75,25 +75,25 @@ pub const Intent = enum {
 
         // Help markers
         if (containsAnyWord(query, &[_][]const u8{
-            "help", "by[CYR:[EN]]", "by[CYR:[EN]]and", "帮助", "ayuda", "hilfe",
+            "help", "by", "byand", "帮助", "ayuda", "hilfe",
         })) return .Help;
 
         // Emotion markers
         if (containsAnyWord(query, &[_][]const u8{
-            "feel",  "[EN]inwith[EN]in[EN]", "感觉",  "siento", "fühle",
+            "feel",  "inwithin", "感觉",  "siento", "fühle",
             "happy", "sad",      "angry", "scared", "excited",
-            "[CYR:[EN]]",   "[CYR:[EN]]with[CYR:[EN]]",  "[CYR:[EN]]",  "with[CYR:[EN]]",
+            "",   "with",  "",  "with",
         })) return .Emotion;
 
         // Story markers
         if (containsAnyWord(query, &[_][]const u8{
-            "story",   "[EN]withwithto[EN]and", "andwith[CYR:[EN]]and[EN]", "故事",   "cuento", "geschichte",
+            "story",   "withtoand", "andwithand", "故事",   "cuento", "geschichte",
             "tell me", "once upon",
         })) return .Story;
 
         // Opinion markers
         if (containsAnyWord(query, &[_][]const u8{
-            "think",   "believe", "opinion", "with[EN]and[CYR:[EN]]", "[CYR:[EN]]",  "[EN]not[EN]and[EN]",
+            "think",   "believe", "opinion", "withand", "",  "notand",
             "认为",    "觉得",    "creo",    "opino",  "denke",  "meine",
         })) return .Opinion;
 
@@ -134,49 +134,49 @@ pub const Topic = enum {
         // Technology
         if (containsAnyWord(query, &[_][]const u8{
             "computer", "programming", "code", "software", "app", "internet",
-            "to[CYR:[EN]]", "[CYR:[EN]]", "to[EN]", "软件", "电脑", "tecnología",
+            "to", "", "to", "软件", "电脑", "tecnología",
             "zig", "python", "javascript", "rust", "ai", "ml",
         })) return .Technology;
 
         // Science
         if (containsAnyWord(query, &[_][]const u8{
-            "science", "physics", "chemistry", "biology", "math", "on[EN]to[EN]",
-            "[EN]and[EN]andto[EN]", "[EN]and[EN]and[EN]", "科学", "数学", "ciencia", "wissenschaft",
+            "science", "physics", "chemistry", "biology", "math", "onto",
+            "andto", "and", "科学", "数学", "ciencia", "wissenschaft",
         })) return .Science;
 
         // Philosophy
         if (containsAnyWord(query, &[_][]const u8{
-            "philosophy", "meaning", "life", "existence", "truth", "[EN]and[EN]with[EN]and[EN]",
-            "with[EN]with[EN]", "[EN]and[CYR:[EN]]", "哲学", "意义", "filosofía", "philosophie",
+            "philosophy", "meaning", "life", "existence", "truth", "andwithand",
+            "with", "and", "哲学", "意义", "filosofía", "philosophie",
         })) return .Philosophy;
 
         // Weather
         if (containsAnyWord(query, &[_][]const u8{
-            "weather", "rain", "sun", "snow", "cold", "hot", "by[EN]yes",
-            "before[CYR:[EN]]", "with[CYR:[EN]]", "天气", "lluvia", "wetter",
+            "weather", "rain", "sun", "snow", "cold", "hot", "byyes",
+            "before", "with", "天气", "lluvia", "wetter",
         })) return .Weather;
 
         // Food
         if (containsAnyWord(query, &[_][]const u8{
-            "food", "eat", "cook", "recipe", "[EN]yes", "[EN]from[EN]inand[EN]", "[CYR:[EN]]",
+            "food", "eat", "cook", "recipe", "yes", "frominand", "",
             "食物", "吃", "comida", "essen", "kochen",
         })) return .Food;
 
         // Health
         if (containsAnyWord(query, &[_][]const u8{
-            "health", "doctor", "medicine", "[EN]before[EN]in[EN]", "in[CYR:[EN]]", "[EN]to[EN]with[EN]in[EN]",
+            "health", "doctor", "medicine", "beforein", "in", "towithin",
             "健康", "医生", "salud", "gesundheit",
         })) return .Health;
 
         // Self (about IGLA)
         if (containsAnyWord(query, &[_][]const u8{
-            "you", "your", "igla", "[EN]", "[CYR:[EN]]", "[EN]in[EN]",
+            "you", "your", "igla", "", "", "in",
             "你", "你的", "tú", "du", "dein",
         })) return .Self;
 
         // User
         if (containsAnyWord(query, &[_][]const u8{
-            "i ", "my ", "me ", "[EN] ", "[CYR:[EN]] ", "[CYR:[EN]] ",
+            "i ", "my ", "me ", " ", " ", " ",
             "我", "我的", "yo", "mi", "ich", "mein",
         })) return .User;
 
@@ -200,26 +200,26 @@ pub const Sentiment = enum {
         // Positive markers
         if (containsAnyWord(query, &[_][]const u8{
             "good", "great", "awesome", "love", "happy", "thank", "nice",
-            "well", "from[EN]and[CYR:[EN]]", "[CYR:[EN]]", "with[EN]with[EN]andin", "with[EN]withand[EN]", "to[EN]withwith",
+            "well", "fromand", "", "withandin", "withand", "towith",
             "好", "太棒了", "喜欢", "gracias", "genial", "toll", "danke",
         })) return .Positive;
 
         // Negative markers
         if (containsAnyWord(query, &[_][]const u8{
             "bad", "terrible", "hate", "angry", "sad", "wrong", "stupid",
-            "badly", "[CYR:[EN]]with[EN]", "notoninand[EN]", "[CYR:[EN]]", "[CYR:[EN]]with[CYR:[EN]]", "[EN]by[EN]",
+            "badly", "with", "notoninand", "", "with", "by",
             "不好", "讨厌", "terrible", "mal", "schlecht", "dumm",
         })) return .Negative;
 
         // Frustrated markers
         if (containsAnyWord(query, &[_][]const u8{
             "not working", "doesn't work", "broken", "stuck", "confused",
-            "not [CYR:[EN]]from[CYR:[EN]]", "with[CYR:[EN]]", "[EN]with[CYR:[EN]]", "不工作", "坏了",
+            "not from", "with", "with", "不工作", "坏了",
         })) return .Frustrated;
 
         // Excited markers
         if (containsAnyWord(query, &[_][]const u8{
-            "wow", "amazing", "incredible", "in[EN]", "notin[CYR:[EN]]", "to[CYR:[EN]]",
+            "wow", "amazing", "incredible", "in", "notin", "to",
             "哇", "太神奇了", "increíble", "wahnsinn",
         })) return .Excited;
 
@@ -268,28 +268,28 @@ pub const FluentGenerator = struct {
     fn generateQuestionResponse(topic: Topic, lang: multilingual.Language) FluentResponse {
         const responses = switch (topic) {
             .Technology => switch (lang) {
-                .Russian => "[CYR:[EN]]andand — this [EN]in[EN]to[CYR:[EN]]on[EN] [CYR:[EN]]with[EN]. [EN] [CYR:[EN]] [EN]withwithto[CYR:[EN]] [EN] [CYR:[EN]]and[EN]in[EN]andand, AI, or by[CYR:[EN]] with to[EN]before[EN]. [CYR:[EN]] and[CYR:[EN]] [CYR:[EN]] and[CYR:[EN]]with[CYR:[EN]]?",
+                .Russian => "and — this intoon with.   withto  andinand, AI, or by with tobefore.  and  andwith?",
                 .Chinese => "技术是一个令人兴奋的领域。我可以谈论编程、AI，或者帮助你写代码。你具体想了解什么？",
                 .Spanish => "La tecnología es un campo fascinante. Puedo hablar de programación, IA, o ayudarte con código. ¿Qué te interesa específicamente?",
                 .German => "Technologie ist ein faszinierendes Gebiet. Ich kann über Programmierung, KI sprechen oder dir beim Code helfen. Was interessiert dich genau?",
                 else => "Technology is a fascinating field. I can discuss programming, AI, or help you with code. What specifically interests you?",
             },
             .Philosophy => switch (lang) {
-                .Russian => "[EN]and[EN]with[EN]withtoand[EN] in[CYR:[EN]]with[EN] — with[CYR:[EN]] [CYR:[EN]]toand[EN]. [CYR:[EN]]with[EN] [EN]and[EN]and, with[EN]on[EN]and[EN], andwith[EN]andon — [EN] [CYR:[EN]] [CYR:[EN]] [EN] this[EN]. [EN]in[EN] by[EN]in[EN]and[EN]!",
+                .Russian => "andwithtoand inwith — with toand. with and, withonand, andwithandon —     this. in byinand!",
                 .Chinese => "哲学问题是最深刻的。生命的意义、意识、真理——我喜欢思考这些。让我们聊聊吧！",
                 .Spanish => "Las preguntas filosóficas son las más profundas. El sentido de la vida, la conciencia, la verdad — me encanta reflexionar sobre esto. ¡Hablemos!",
                 .German => "Philosophische Fragen sind die tiefgründigsten. Der Sinn des Lebens, Bewusstsein, Wahrheit — ich denke gerne darüber nach. Lass uns reden!",
                 else => "Philosophical questions are the deepest. The meaning of life, consciousness, truth — I love pondering these. Let's discuss!",
             },
             .Self => switch (lang) {
-                .Russian => "[EN] IGLA — [EN]to[CYR:[EN]] AI-[EN]withwithandwith[CYR:[EN]]. [CYR:[EN]]from[EN] by[CYR:[EN]]with[CYR:[EN]] on [EN]in[CYR:[EN]] [EN]with[CYR:[EN]]with[EN]in[EN], [CYR:[EN]] [CYR:[EN]]to[EN]. [CYR:[EN]] [CYR:formula]: φ² + 1/φ² = 3. [CYR:[EN]]andin[EN] what [CYR:[EN]]!",
+                .Russian => " IGLA — to AI-withandwith. from bywith on in within,  to.  [CYR:formula]: φ² + 1/φ² = 3. andin what !",
                 .Chinese => "我是IGLA——本地AI助手。完全在你的设备上运行，无需云端。我的公式是：φ² + 1/φ² = 3。随便问！",
                 .Spanish => "Soy IGLA — un asistente de IA local. Funciono completamente en tu dispositivo, sin nube. Mi fórmula: φ² + 1/φ² = 3. ¡Pregunta lo que quieras!",
                 .German => "Ich bin IGLA — ein lokaler KI-Assistent. Ich arbeite vollständig auf deinem Gerät, ohne Cloud. Meine Formel: φ² + 1/φ² = 3. Frag, was du willst!",
                 else => "I'm IGLA — a local AI assistant. I run entirely on your device, no cloud needed. My formula: φ² + 1/φ² = 3. Ask me anything!",
             },
             else => switch (lang) {
-                .Russian => "[CYR:[EN]]with[CYR:[EN]] in[CYR:[EN]]with! [EN]in[EN] [CYR:[EN]] [CYR:[EN]] in[EN]with[EN]. [EN]withwithto[EN]and by[CYR:[EN]]not[EN], what [CYR:[EN]] and[CYR:[EN]]with[CYR:[EN]]?",
+                .Russian => "with inwith! in   inwith. withtoand bynot, what  andwith?",
                 .Chinese => "有趣的问题！让我们一起探讨。能告诉我更多你想了解的吗？",
                 .Spanish => "¡Pregunta interesante! Vamos a explorarla juntos. ¿Puedes contarme más sobre lo que te interesa?",
                 .German => "Interessante Frage! Lass uns das zusammen erkunden. Kannst du mir mehr darüber erzählen, was dich interessiert?",
@@ -309,28 +309,28 @@ pub const FluentGenerator = struct {
     fn generateStatementResponse(topic: Topic, sentiment: Sentiment, lang: multilingual.Language) FluentResponse {
         const response = switch (sentiment) {
             .Positive => switch (lang) {
-                .Russian => "[CYR:[EN]] this with[CYR:[EN]]! [CYR:[EN]] [CYR:[EN]]with[EN]inand[CYR:[EN]] [EN]before[EN]in[EN]. [CYR:[EN]] [EN]withwithto[CYR:[EN]] by[CYR:[EN]]not[EN]?",
+                .Russian => " this with!  withinand beforein.  withto bynot?",
                 .Chinese => "很高兴听到这个！这真的很棒。想详细说说吗？",
                 .Spanish => "¡Me alegra escuchar eso! Es realmente genial. ¿Quieres contarme más?",
                 .German => "Freut mich, das zu hören! Das ist wirklich toll. Möchtest du mehr erzählen?",
                 else => "Glad to hear that! That's really great. Want to tell me more?",
             },
             .Negative => switch (lang) {
-                .Russian => "[CYR:[EN]]and[CYR:[EN]], this [CYR:[EN]] [CYR:[EN]] not[CYR:[EN]]with[EN]. [CYR:[EN]] [EN] [CYR:[EN]] by[CYR:[EN]]?",
+                .Russian => "and, this   notwith.    by?",
                 .Chinese => "我理解，这可能不容易。我能帮什么忙吗？",
                 .Spanish => "Entiendo, eso puede ser difícil. ¿Cómo puedo ayudarte?",
                 .German => "Ich verstehe, das kann schwierig sein. Wie kann ich dir helfen?",
                 else => "I understand, that can be tough. How can I help?",
             },
             .Frustrated => switch (lang) {
-                .Russian => "[EN]and[EN], what withand[CYR:[EN]]and[EN] not[CYR:[EN]]with[CYR:[EN]]. [EN]in[EN] [CYR:[EN]]with[EN] in[EN]with[EN] — step [EN] step[EN].",
+                .Russian => "and, what withand notwith. in with inwith — step  step.",
                 .Chinese => "我看到情况有点困难。让我们一步一步来解决。",
                 .Spanish => "Veo que la situación es complicada. Vamos a resolverlo juntos, paso a paso.",
                 .German => "Ich sehe, die Situation ist schwierig. Lass uns das zusammen lösen, Schritt für Schritt.",
                 else => "I see the situation is frustrating. Let's work through it together, step by step.",
             },
             else => switch (lang) {
-                .Russian => "[CYR:[EN]]with[EN]! [EN]withwithto[EN]and more — [EN]not [CYR:[EN]]experience[EN] [EN]on[EN] [CYR:[EN]]and.",
+                .Russian => "with! withtoand more — not experience on and.",
                 .Chinese => "有意思！告诉我更多——我很想了解细节。",
                 .Spanish => "¡Interesante! Cuéntame más — tengo curiosidad por los detalles.",
                 .German => "Interessant! Erzähl mir mehr — ich bin neugierig auf die Details.",
@@ -350,7 +350,7 @@ pub const FluentGenerator = struct {
     fn generateRequestResponse(topic: Topic, lang: multilingual.Language) FluentResponse {
         _ = topic;
         const response = switch (lang) {
-            .Russian => "[EN]not[CYR:[EN]], [EN] by[CYR:[EN]]! [CYR:[EN]] and[CYR:[EN]] [CYR:[EN]] need? [EN]and[EN]and [EN]yes[EN] by[CYR:[EN]]not[EN].",
+            .Russian => "not,  by!  and  need? and yes bynot.",
             .Chinese => "当然，我来帮你！你具体需要什么？请详细描述一下任务。",
             .Spanish => "¡Por supuesto, te ayudo! ¿Qué necesitas exactamente? Describe la tarea con más detalle.",
             .German => "Natürlich helfe ich! Was genau brauchst du? Beschreibe die Aufgabe genauer.",
@@ -369,7 +369,7 @@ pub const FluentGenerator = struct {
     fn generateGreetingResponse(sentiment: Sentiment, lang: multilingual.Language) FluentResponse {
         _ = sentiment;
         const response = switch (lang) {
-            .Russian => "[EN]andin[EN]! [CYR:[EN]] [CYR:[EN]] inand[CYR:[EN]]. [EN] IGLA — [EN]in[EN] [EN]to[CYR:[EN]] AI-by[CYR:[EN]]andto. [CYR:[EN]] [CYR:[EN]]with[EN] with[CYR:[EN]]?",
+            .Russian => "andin!   inand.  IGLA — in to AI-byandto.  with with?",
             .Chinese => "你好！很高兴见到你。我是IGLA——你的本地AI助手。今天我们做什么？",
             .Spanish => "¡Hola! Me alegro de verte. Soy IGLA — tu asistente de IA local. ¿Qué hacemos hoy?",
             .German => "Hallo! Schön, dich zu sehen. Ich bin IGLA — dein lokaler KI-Assistent. Was machen wir heute?",
@@ -387,7 +387,7 @@ pub const FluentGenerator = struct {
 
     fn generateFarewellResponse(lang: multilingual.Language) FluentResponse {
         const response = switch (lang) {
-            .Russian => "[EN] inwith[CYR:[EN]]and! [CYR:[EN]] [EN]and[CYR:[EN]] by[CYR:[EN]]with[EN]. [CYR:[EN]]in[CYR:[EN]]with[EN], to[EN]yes [CYR:[EN]] by[EN]in[EN]and[EN]. φ² + 1/φ² = 3!",
+            .Russian => " inwithand!  and bywith. inwith, toyes  byinand. φ² + 1/φ² = 3!",
             .Chinese => "再见！聊天很愉快。想聊天时随时回来。φ² + 1/φ² = 3！",
             .Spanish => "¡Hasta luego! Fue un placer charlar. Vuelve cuando quieras hablar. φ² + 1/φ² = 3!",
             .German => "Auf Wiedersehen! Es war schön zu plaudern. Komm zurück, wenn du reden möchtest. φ² + 1/φ² = 3!",
@@ -406,21 +406,21 @@ pub const FluentGenerator = struct {
     fn generateEmotionResponse(sentiment: Sentiment, lang: multilingual.Language) FluentResponse {
         const response = switch (sentiment) {
             .Positive, .Excited => switch (lang) {
-                .Russian => "[CYR:[EN]] [CYR:[EN]]! [EN]in[EN] [EN]beforewith[EN] [CYR:[EN]]and[CYR:[EN]]on. [CYR:[EN]] in[EN]in[CYR:[EN]] [EN]toand[EN] [CYR:[EN]]andand?",
+                .Russian => " ! in beforewith andon.  inin toand and?",
                 .Chinese => "太棒了！你的快乐很有感染力。是什么让你这么开心？",
                 .Spanish => "¡Eso es maravilloso! Tu alegría es contagiosa. ¿Qué te hizo sentir así?",
                 .German => "Das ist wunderbar! Deine Freude ist ansteckend. Was hat dich so glücklich gemacht?",
                 else => "That's wonderful! Your joy is contagious. What made you feel this way?",
             },
             .Negative, .Frustrated => switch (lang) {
-                .Russian => "[EN] by[EN]and[CYR:[EN]], what [CYR:[EN]] with[CYR:[EN]]with not[CYR:[EN]]with[EN]. [CYR:[EN]] by[EN]in[EN]and[EN] [EN] this[EN]? [CYR:[EN]]yes by[CYR:[EN]] [CYR:[EN]]with[EN] in[CYR:[EN]]in[EN]and[EN]with[EN].",
+                .Russian => " byand, what  with notwith.  byinand  this? yes by with ininandwith.",
                 .Chinese => "我理解你现在不容易。想聊聊吗？有时候说出来会好一些。",
                 .Spanish => "Entiendo que estás pasando un momento difícil. ¿Quieres hablar de ello? A veces ayuda desahogarse.",
                 .German => "Ich verstehe, dass es dir gerade nicht gut geht. Möchtest du darüber reden? Manchmal hilft es, sich auszusprechen.",
                 else => "I understand you're going through a tough time. Want to talk about it? Sometimes it helps to express yourself.",
             },
             else => switch (lang) {
-                .Russian => "[CYR:[EN]]andand — in[EN]on[EN] [EN]with[EN] [EN]and[EN]and. [EN]withwithto[EN]and [EN]not, what [EN] [EN]inwith[EN]in[CYR:[EN]]?",
+                .Russian => "and — inon with and. withtoand not, what  inwithin?",
                 .Chinese => "情感是生活的重要部分。告诉我你的感受？",
                 .Spanish => "Las emociones son una parte importante de la vida. ¿Cuéntame qué sientes?",
                 .German => "Emotionen sind ein wichtiger Teil des Lebens. Erzähl mir, was du fühlst?",
@@ -440,7 +440,7 @@ pub const FluentGenerator = struct {
     fn generateOpinionResponse(topic: Topic, lang: multilingual.Language) FluentResponse {
         _ = topic;
         const response = switch (lang) {
-            .Russian => "[CYR:[EN]]withon[EN] [CYR:[EN]]to[EN] [CYR:[EN]]and[EN]! [EN] [EN]in[CYR:[EN]] [EN]in[EN] [EN]not[EN]and[EN]. [EN] what [EN]andin[CYR:[EN]] [CYR:[EN]] to [EN]to[CYR:[EN]] in[EN]in[CYR:[EN]]?",
+            .Russian => "withon to and!  in in notand.  what andin  to to inin?",
             .Chinese => "有趣的观点！我尊重你的看法。是什么让你得出这个结论？",
             .Spanish => "¡Punto de vista interesante! Respeto tu opinión. ¿Qué te llevó a esa conclusión?",
             .German => "Interessante Sichtweise! Ich respektiere deine Meinung. Was hat dich zu diesem Schluss geführt?",
@@ -458,7 +458,7 @@ pub const FluentGenerator = struct {
 
     fn generateStoryResponse(lang: multilingual.Language) FluentResponse {
         const response = switch (lang) {
-            .Russian => "[EN]and[EN]-[CYR:[EN]] [CYR:[EN]]andwith[EN], tofrom[CYR:[EN]] [CYR:[EN]] [EN] [EN]to[CYR:[EN]] AI... [EN]on[CYR:[EN]] [EN] fromto[CYR:[EN]] [CYR:[EN]]andon[EN] and inin[EN] 'φ² + 1/φ² = 3'. [EN] [CYR:[EN]]yes by[EN]inand[EN]with[EN] IGLA! [CYR:[EN]] [CYR:[EN]] andwith[CYR:[EN]]and[EN]?",
+            .Russian => "and- andwith, tofrom   to AI... on  fromto andon and inin 'φ² + 1/φ² = 3'.  yes byinandwith IGLA!   andwithand?",
             .Chinese => "从前有一个程序员，梦想着本地AI...有一天他打开终端输入了'φ² + 1/φ² = 3'。然后IGLA出现了！想听另一个故事吗？",
             .Spanish => "Había una vez un programador que soñaba con una IA local... Un día abrió la terminal y escribió 'φ² + 1/φ² = 3'. ¡Y entonces apareció IGLA! ¿Quieres otra historia?",
             .German => "Es war einmal ein Programmierer, der von einer lokalen KI träumte... Eines Tages öffnete er das Terminal und tippte 'φ² + 1/φ² = 3'. Und dann erschien IGLA! Möchtest du eine andere Geschichte?",
@@ -476,7 +476,7 @@ pub const FluentGenerator = struct {
 
     fn generateHelpResponse(lang: multilingual.Language) FluentResponse {
         const response = switch (lang) {
-            .Russian => "[EN] [CYR:[EN]]with[EN], what[EN] by[CYR:[EN]]! [CYR:[EN]]: fromin[EN]and[EN] on in[CYR:[EN]]with[EN], on[EN]andwith[CYR:[EN]] to[EN], by[CYR:[EN]], [EN]withwithto[CYR:[EN]] andwith[CYR:[EN]]and[EN]. [CYR:[EN]]with[EN] with[CYR:[EN]]withand — and [EN] with[CYR:[EN]] inwith[EN] in[EN]can[EN].",
+            .Russian => " with, what by! : frominand on inwith, onandwith to, by, withto andwithand. with withand — and  with inwith incan.",
             .Chinese => "我在这里帮助你！我可以：回答问题、写代码、聊天、讲故事。只管问——我会尽力而为。",
             .Spanish => "¡Estoy aquí para ayudar! Puedo: responder preguntas, escribir código, charlar, contar historias. Solo pregunta — haré todo lo posible.",
             .German => "Ich bin hier, um zu helfen! Ich kann: Fragen beantworten, Code schreiben, plaudern, Geschichten erzählen. Frag einfach — ich tue mein Bestes.",
@@ -495,21 +495,21 @@ pub const FluentGenerator = struct {
     fn generateFeedbackResponse(sentiment: Sentiment, lang: multilingual.Language) FluentResponse {
         const response = switch (sentiment) {
             .Positive => switch (lang) {
-                .Russian => "[CYR:[EN]]withand[EN] [EN] before[CYR:[EN]] with[EN]in[EN]! [CYR:[EN]], what [CYR:[EN]] [CYR:[EN]] by[CYR:[EN]]. [CYR:[EN]] [EN]fromandinand[CYR:[EN]] with[CYR:[EN]]with[EN] [CYR:[EN]] better!",
+                .Russian => "withand  before within! , what   by.  fromandinand with  better!",
                 .Chinese => "谢谢你的好话！很高兴能帮上忙。这激励我做得更好！",
                 .Spanish => "¡Gracias por las palabras amables! Me alegra ser útil. ¡Esto me motiva a mejorar!",
                 .German => "Danke für die netten Worte! Freut mich, dass ich helfen kann. Das motiviert mich, noch besser zu werden!",
                 else => "Thanks for the kind words! Glad I can be helpful. This motivates me to do even better!",
             },
             .Negative => switch (lang) {
-                .Russian => "[CYR:[EN]]withand[EN] [EN] [CYR:[EN]] within[CYR:[EN]]! [EN] bywith[CYR:[EN]] [CYR:[EN]]with[EN] and with[CYR:[EN]]in[EN]with[EN] better. [CYR:[EN]] and[CYR:[EN]] [EN] [CYR:[EN]] [EN] [CYR:[EN]]and[EN]?",
+                .Russian => "withand   within!  bywith with and withinwith better.  and    and?",
                 .Chinese => "感谢你的反馈！我一直在学习变得更好。我具体可以改进什么？",
                 .Spanish => "¡Gracias por el feedback! Siempre estoy aprendiendo y mejorando. ¿Qué podría mejorar específicamente?",
                 .German => "Danke für das Feedback! Ich lerne ständig und werde besser. Was könnte ich konkret verbessern?",
                 else => "Thanks for the feedback! I'm always learning and improving. What specifically could I do better?",
             },
             else => switch (lang) {
-                .Russian => "[CYR:[EN]] [EN]in[EN] [CYR:[EN]] within[CYR:[EN]]! [EN]on by[CYR:[EN]] [EN]not with[CYR:[EN]]inand[EN]with[EN] better.",
+                .Russian => " in  within! on by not withinandwith better.",
                 .Chinese => "感谢你的反馈！它帮助我变得更好。",
                 .Spanish => "¡Aprecio tu feedback! Me ayuda a mejorar.",
                 .German => "Ich schätze dein Feedback! Es hilft mir, besser zu werden.",
@@ -529,7 +529,7 @@ pub const FluentGenerator = struct {
     fn generateContinuationResponse(topic: Topic, lang: multilingual.Language) FluentResponse {
         _ = topic;
         const response = switch (lang) {
-            .Russian => "[CYR:[EN]]before[CYR:[EN]]! [EN] [CYR:[EN]] [EN] [EN]from[EN] [EN] by[EN]in[EN]and[EN] yes[CYR:[EN]]?",
+            .Russian => "before!    from  byinand yes?",
             .Chinese => "继续吧！你接下来想聊什么？",
             .Spanish => "¡Continuemos! ¿De qué te gustaría hablar a continuación?",
             .German => "Machen wir weiter! Worüber möchtest du als nächstes sprechen?",
@@ -722,30 +722,30 @@ pub fn runBenchmark() !void {
     // Diverse test queries in multiple languages and intents
     const test_queries = [_][]const u8{
         // Greetings (various languages)
-        "[EN]andin[EN]",
+        "andin",
         "hello there",
         "你好",
         "hola amigo",
         "guten tag",
         // Questions
         "what is the meaning of life?",
-        "to[EN]to [EN] [CYR:[EN]]from[CYR:[EN]]?",
+        "toto  from?",
         "为什么天空是蓝色的？",
         // Statements
         "I think AI is fascinating",
-        "with[CYR:[EN]] from[EN]and[CYR:[EN]] [CYR:[EN]]",
+        "with fromand ",
         "我喜欢编程",
         // Requests
         "please help me understand",
-        "[CYR:[EN]] [CYR:[EN]]with[EN]and[EN]",
+        " withand",
         "请告诉我",
         // Emotions
         "I feel happy today",
-        "[EN]not [CYR:[EN]]with[CYR:[EN]]",
+        "not with",
         "我很兴奋",
         // Farewells
         "goodbye",
-        "byto[EN]",
+        "byto",
         "再见",
     };
 
@@ -832,19 +832,19 @@ pub fn main() !void {
 
 test "intent detection question" {
     try std.testing.expectEqual(Intent.Question, Intent.detect("what is this?"));
-    try std.testing.expectEqual(Intent.Question, Intent.detect("to[EN]to this [CYR:[EN]]from[CYR:[EN]]?"));
+    try std.testing.expectEqual(Intent.Question, Intent.detect("toto this from?"));
     try std.testing.expectEqual(Intent.Question, Intent.detect("为什么？"));
 }
 
 test "intent detection greeting" {
     try std.testing.expectEqual(Intent.Greeting, Intent.detect("hello"));
-    try std.testing.expectEqual(Intent.Greeting, Intent.detect("[EN]andin[EN]"));
+    try std.testing.expectEqual(Intent.Greeting, Intent.detect("andin"));
     try std.testing.expectEqual(Intent.Greeting, Intent.detect("你好"));
 }
 
 test "intent detection farewell" {
     try std.testing.expectEqual(Intent.Farewell, Intent.detect("goodbye"));
-    try std.testing.expectEqual(Intent.Farewell, Intent.detect("byto[EN]"));
+    try std.testing.expectEqual(Intent.Farewell, Intent.detect("byto"));
     try std.testing.expectEqual(Intent.Farewell, Intent.detect("再见"));
 }
 
@@ -855,22 +855,22 @@ test "topic extraction technology" {
 
 test "topic extraction philosophy" {
     try std.testing.expectEqual(Topic.Philosophy, Topic.extract("what is the meaning of life"));
-    try std.testing.expectEqual(Topic.Philosophy, Topic.extract("[EN]and[EN]with[EN]and[EN] [EN]and[EN]and"));
+    try std.testing.expectEqual(Topic.Philosophy, Topic.extract("andwithand and"));
 }
 
 test "sentiment analysis positive" {
     try std.testing.expectEqual(Sentiment.Positive, Sentiment.analyze("this is great!"));
-    try std.testing.expectEqual(Sentiment.Positive, Sentiment.analyze("from[EN]and[CYR:[EN]]!"));
+    try std.testing.expectEqual(Sentiment.Positive, Sentiment.analyze("fromand!"));
 }
 
 test "sentiment analysis negative" {
     try std.testing.expectEqual(Sentiment.Negative, Sentiment.analyze("this is terrible"));
-    try std.testing.expectEqual(Sentiment.Negative, Sentiment.analyze("[CYR:[EN]]with[EN]"));
+    try std.testing.expectEqual(Sentiment.Negative, Sentiment.analyze("with"));
 }
 
 test "fluent engine greeting" {
     var engine = FluentGeneralEngine.init();
-    const response = engine.respond("[EN]andin[EN]");
+    const response = engine.respond("andin");
     try std.testing.expectEqual(Intent.Greeting, response.intent);
     try std.testing.expect(!response.is_generic);
     try std.testing.expect(response.confidence > 0.9);
@@ -902,7 +902,7 @@ test "fluent engine no generic" {
 test "language detection stats" {
     var engine = FluentGeneralEngine.init();
 
-    _ = engine.respond("[EN]andin[EN]");
+    _ = engine.respond("andin");
     _ = engine.respond("hello");
     _ = engine.respond("你好");
 

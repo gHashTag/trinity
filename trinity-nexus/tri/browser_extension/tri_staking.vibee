@@ -8,11 +8,11 @@ language: zig
 module: tri_staking
 
 description: |
-  [CYR:[TRANSLATED]l]onI and[CYR:[TRANSLATED]]andI $TRI token[EN] for DePIN rewards.
-  [EN]key[CYR:acts] staking, claiming, and wallet connection.
+  [CYR:l]onI andI $TRI token for DePIN rewards.
+  key[CYR:acts] staking, claiming, and wallet connection.
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# [CYR:[TRANSLATED]A]
+# [CYR:A]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 tokenomics:
@@ -95,7 +95,7 @@ wallets:
     abi: "ERC20 + Staking"
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# [CYR:[TRANSLATED]] [CYR:[EN]A[TRANSLATED]]
+#  [CYR:A]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 types:
@@ -125,61 +125,61 @@ types:
       tx_hash: Option<String>
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# [CYR:[TRANSLATED]]
+# 
 # ═══════════════════════════════════════════════════════════════════════════════
 
 behaviors:
   - name: connect_wallet
-    description: "[CYR:[TRANSLATED]]key[EN]and[EN] [CYR:[TRANSLATED]l[EN]]"
-    given: [CYR:[EN]l[EN]]in[CYR:[TRANSLATED]l] on[CYR:[TRANSLATED]] Connect
-    when: Wallet provider [EN]with[CYR:[TRANSLATED]]
+    description: "keyand [CYR:l]"
+    given: [CYR:l]in[CYR:l] on Connect
+    when: Wallet provider with
     then: |
-      1. [CYR:[EN]pro]withand[EN] accounts [CYR:[TRANSLATED]] EIP-1193
-      2. [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]with and [CYR:[TRANSLATED]]with
-      3. [CYR:[TRANSLATED]]and[EN] staking positions
-      4. [CYR:[TRANSLATED]]inand[EN] UI
+      1. [CYR:pro]withand accounts  EIP-1193
+      2. and with and with
+      3. and staking positions
+      4. inand UI
 
   - name: stake_tokens
-    description: "[CYR:[TRANSLATED]]and[EN] token[EN]in"
-    given: Wallet [CYR:[TRANSLATED]]key[EN], [CYR:[TRANSLATED]]with > 0
-    when: [CYR:[EN]l[EN]]in[CYR:[TRANSLATED]l] in[CYR:y[TRANSLATED]] amount and period
+    description: "and tokenin"
+    given: Wallet key, with > 0
+    when: [CYR:l]in[CYR:l] in[CYR:y] amount and period
     then: |
-      1. [CYR:[TRANSLATED]]in[EN]and[EN] allowance
-      2. [EN]with[EN]and [CYR:[TRANSLATED]] - approve
-      3. [CYR:Vy[EN]]in[CYR:ate] stake() on [CYR:[TRANSLATED]]
-      4. [EN]waitwithI confirmation
-      5. [CYR:[TRANSLATED]]inand[EN] positions
+      1. inand allowance
+      2. withand  - approve
+      3. [CYR:Vy]in[CYR:ate] stake() on 
+      4. waitwithI confirmation
+      5. inand positions
 
   - name: claim_rewards
-    description: "[CYR:[TRANSLATED]]and[EN] on[CYR:[TRANSLATED]]"
+    description: "and on"
     given: pending_rewards > 0
-    when: [CYR:[EN]l[EN]]in[CYR:[TRANSLATED]l] on[CYR:[TRANSLATED]] Claim
+    when: [CYR:l]in[CYR:l] on Claim
     then: |
-      1. [CYR:Vy[EN]]in[CYR:ate] claimRewards() on [CYR:[TRANSLATED]]
-      2. [EN]waitwithI confirmation
-      3. [CYR:[TRANSLATED]]inand[EN] [CYR:[TRANSLATED]]with
-      4. [CYR:[TRANSLATED]ate] notification
+      1. [CYR:Vy]in[CYR:ate] claimRewards() on 
+      2. waitwithI confirmation
+      3. inand with
+      4. [CYR:ate] notification
 
   - name: unstake_tokens
-    description: "Vyin[EN] from with[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]"
-    given: [EN]with[EN] [CYR:[TRANSLATED]]andinonI position
-    when: [CYR:[EN]l[EN]]in[CYR:[TRANSLATED]l] on[CYR:[TRANSLATED]] Unstake
+    description: "Vyin from withand"
+    given: with andinonI position
+    when: [CYR:l]in[CYR:l] on Unstake
     then: |
-      1. [CYR:[TRANSLATED]]in[EN]and[EN] lock period
-      2. [EN]with[EN]and early - while[CYR:[EN]ate] penalty warning
-      3. [CYR:Vy[EN]]in[CYR:ate] unstake() on [CYR:[TRANSLATED]]
-      4. [CYR:[TRANSLATED]]inand[EN] positions
+      1. inand lock period
+      2. withand early - while[CYR:ate] penalty warning
+      3. [CYR:Vy]in[CYR:ate] unstake() on 
+      4. inand positions
 
   - name: calculate_rewards
-    description: "[EN]with[CYR:[TRANSLATED]] on[CYR:[TRANSLATED]]"
-    given: [CYR:[EN]l[EN]]in[CYR:[TRANSLATED]l] in[CYR:y[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[EN]
-    when: [CYR:[TRANSLATED]]andI [EN]in[CYR:[TRANSLATED]]on
+    description: "with on"
+    given: [CYR:l]in[CYR:l] in[CYR:y]and and
+    when: andI inon
     then: |
-      1. [CYR:[TRANSLATED]]and[EN] base reward
-      2. [EN]and[CYR:me]and[EN] staking multiplier
-      3. [EN]and[CYR:me]and[EN] streak multiplier
-      4. [CYR:[TRANSLATED]]in[EN]and[EN] daily cap
-      5. [CYR:[TRANSLATED]]inand[EN]  pending
+      1. and base reward
+      2. and[CYR:me]and staking multiplier
+      3. and[CYR:me]and streak multiplier
+      4. inand daily cap
+      5. inand  pending
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SMART CONTRACT INTERFACE
@@ -222,7 +222,7 @@ contract_interface:
       params: [user: address, amount: uint256]
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# UI [CYR:[TRANSLATED]]
+# UI 
 # ═══════════════════════════════════════════════════════════════════════════════
 
 ui_components:
@@ -254,24 +254,24 @@ ui_components:
       - unstake_button: "Unstake"
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# [CYR:[TRANSLATED]]
+# 
 # ═══════════════════════════════════════════════════════════════════════════════
 
 tests:
   - name: test_reward_calculation
-    description: "[EN]with[CYR:[TRANSLATED]] on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]"
+    description: "with on "
     assert: reward == base * staking_mult * streak_mult
 
   - name: test_daily_cap
-    description: "Daily cap [CYR:work[EN]]"
+    description: "Daily cap [CYR:work]"
     assert: daily_rewards <= 10
 
   - name: test_early_unstake_penalty
-    description: "Penalty [EN]and[CYR:meI[EN]]withI"
+    description: "Penalty and[CYR:meI]withI"
     assert: returned == staked * 0.9
 
   - name: test_multiplier_tiers
-    description: "Multiplier tiers [CYR:[TRANSLATED]y]"
+    description: "Multiplier tiers [CYR:y]"
     assert: |
       stake(1000) => mult == 1.1
       stake(10000) => mult == 1.25

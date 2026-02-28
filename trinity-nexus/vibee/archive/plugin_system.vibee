@@ -1,12 +1,12 @@
 name: plugin_system
-# Plugin Registry - [CYR:[TRANSLATED]]with[EN] [CYR:[TRANSLATED]]and[EN]in with [CYR:[EN]I[TRANSLATED]l[EN]y[EN]]and UI and [CYR:[TRANSLATED]me[TRANSLATED]]and[EN]
+# Plugin Registry - with andin with [CYR:Ily]and UI and [CYR:me]and
 
 module: honeycomb/ui/plugin_system/registry
 version: 1.0.0
-description: [CYR:[TRANSLATED]al] [CYR:[TRANSLATED]]with[EN] [CYR:[TRANSLATED]]and[EN]in with in[EN]and[CYR:[TRANSLATED]]and[EN] and lifecycle control[EN]
+description: [CYR:al] with andin with inand and lifecycle control
 
 types:
-  # [CYR:[TRANSLATED]]and[EN]with[EN] [CYR:[TRANSLATED]]andon
+  # andwith andon
   PluginManifest:
     id: String
     name: String
@@ -17,7 +17,7 @@ types:
     homepage: Option(String)
     repository: Option(String)
     
-    # UI ([CYR:[TRANSLATED]A[TRANSLATED]])
+    # UI ([CYR:A])
     canvas_widget: CanvasWidget
     documentation_page: String
     icon: Option(String)
@@ -31,12 +31,12 @@ types:
     resizable: Bool
     aspect_ratio: Option(Float)
     
-    # [EN]inandwithand[EN]with[EN]and
+    # inandwithandwithand
     dependencies: List(PluginDependency)
     peer_dependencies: List(String)
     conflicts: List(String)
     
-    # [CYR:[TRANSLATED]]in[EN]
+    # in
     permissions: List(Permission)
     
     # Lifecycle hooks
@@ -46,7 +46,7 @@ types:
     on_focus: fn() -> Result(Nil, String)
     on_blur: fn() -> Result(Nil, String)
     
-    # [CYR:[TRANSLATED]data]
+    # [CYR:data]
     tags: List(String)
     category: PluginCategory
     maturity: PluginMaturity
@@ -159,7 +159,7 @@ types:
     enabled: Bool
     data: String
   
-  # [CYR:[TRANSLATED]]andwith[EN]and[EN]in[CYR:[EN]ny] [CYR:[TRANSLATED]]and[EN]
+  # andwithandin[CYR:ny] and
   RegisteredPlugin:
     manifest: PluginManifest
     instance: Option(PluginInstance)
@@ -184,7 +184,7 @@ types:
     state_actor: Subject(StateMessage)
     yoga_node: YogaNode
   
-  # [CYR:[TRANSLATED]]andI Registry
+  # andI Registry
   RegistryMessage:
     variants:
       - Register(manifest: PluginManifest, reply: Subject(Result(Nil, String)))
@@ -200,7 +200,7 @@ types:
     status: Option(PluginStatus)
     tags: List(String)
   
-  # [EN]with[CYR:[EN]I[EN]]and[EN] Registry
+  # withI]and Registry
   RegistryState:
     plugins: Dict(String, RegisteredPlugin)
     categories: Dict(PluginCategory, List(String))
@@ -219,11 +219,11 @@ types:
     opaque: True
 
 functions:
-  # [CYR:[TRANSLATED]]with[EN] Registry
+  # with Registry
   start:
     params: []
     returns: Result(Subject(RegistryMessage), String)
-    description: [CYR:[TRANSLATED]]with[CYR:[EN]acts] Plugin Registry
+    description: withacts] Plugin Registry
     implementation: |
       let initial_state = RegistryState(
         plugins: dict.new(),
@@ -233,17 +233,17 @@ functions:
       
       actor.start(initial_state, handle_message)
   
-  # [CYR:[EN]work[TRANSLATED]] with[CYR:[TRANSLATED]]and[EN]
+  # [CYR:work] withand
   handle_message:
     params:
       - msg: RegistryMessage
       - state: RegistryState
     returns: actor.Next(RegistryState)
-    description: [CYR:[EN]work[EN]y]in[CYR:acts] with[CYR:[TRANSLATED]]andI Registry
+    description: [CYR:worky]in[CYR:acts] withandI Registry
     implementation: |
       case msg {
         Register(manifest, reply) -> {
-          # [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]]andon
+          # andI andon
           case validate_plugin(manifest) {
             Ok(_) -> {
               let plugin = RegisteredPlugin(
@@ -256,7 +256,7 @@ functions:
               
               let new_plugins = dict.insert(state.plugins, manifest.id, plugin)
               
-              # [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] indexes
+              # in[CYR:I] indexes
               let new_categories = update_category_index(state.categories, manifest)
               let new_tags = update_tag_index(state.tags, manifest)
               
@@ -281,7 +281,7 @@ functions:
         Unregister(id, reply) -> {
           case dict.get(state.plugins, id) {
             Ok(plugin) -> {
-              # [CYR:Vy[TRANSLATED]] if [CYR:[TRANSLATED]]
+              # [CYR:Vy] if 
               case plugin.status {
                 Loaded | Running -> {
                   let _ = unload_plugin_internal(plugin)
@@ -309,7 +309,7 @@ functions:
             Ok(plugin) -> {
               case plugin.status {
                 NotLoaded -> {
-                  # [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN]
+                  #  and
                   case load_plugin_internal(plugin) {
                     Ok(instance) -> {
                       let updated_plugin = RegisteredPlugin(
@@ -424,46 +424,46 @@ functions:
         }
       }
   
-  # [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]]andon
+  # andI andon
   validate_plugin:
     params:
       - manifest: PluginManifest
     returns: Result(Nil, List(String))
-    description: [CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[EN]with[EN] [CYR:[TRANSLATED]]andon
+    description: and andwith andon
     implementation: |
       let errors = []
       
-      # 1. [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] ID (reverse domain)
+      # 1. in ID (reverse domain)
       let errors = case string.starts_with(manifest.id, "com.") {
         True -> errors
         False -> list.append(errors, ["ID must start with reverse domain (com.*)"])
       }
       
-      # 2. [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] in[EN]withandand (semver)
+      # 2. in inwithand (semver)
       let errors = case is_valid_semver(manifest.version) {
         True -> errors
         False -> list.append(errors, ["Invalid semantic version"])
       }
       
-      # 3. [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] Canvas widget ([CYR:[TRANSLATED]A[TRANSLATED]])
+      # 3. in Canvas widget ([CYR:A])
       let errors = case manifest.canvas_widget {
         CanvasWidget(render: _, handle_event: _, get_state: _, ..) -> errors
         _ -> list.append(errors, ["Canvas widget is required"])
       }
       
-      # 4. [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]me[TRANSLATED]]andand ([CYR:[TRANSLATED]A[TRANSLATED]])
+      # 4. in [CYR:me]and ([CYR:A])
       let errors = case file_exists(manifest.documentation_page) {
         True -> errors
         False -> list.append(errors, ["Documentation not found: " <> manifest.documentation_page])
       }
       
-      # 5. [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in
+      # 5. in in
       let errors = case manifest.min_width >. 0.0 && manifest.min_height >. 0.0 {
         True -> errors
         False -> list.append(errors, ["Invalid min dimensions"])
       }
       
-      # 6. [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [EN]inandwithand[EN]with[CYR:[TRANSLATED]]
+      # 6. in inandwithandwith
       let errors = list.fold(manifest.dependencies, errors, fn(errs, dep) {
         case plugin_exists(dep.id) {
           True -> errs
@@ -476,20 +476,20 @@ functions:
         False -> Error(errors)
       }
   
-  # [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andon
+  #  andon
   load_plugin_internal:
     params:
       - plugin: RegisteredPlugin
     returns: Result(PluginInstance, String)
-    description: [CYR:[TRANSLATED]acts] [CYR:[TRANSLATED]]and[EN] and with[CYR:[TRANSLATED]acts] instance
+    description: [CYR:acts] and and withacts] instance
     implementation: |
-      # [CYR:Vy[EN]y]in[CYR:[TRANSLATED]] on_load hook
+      # [CYR:Vyy]in on_load hook
       case plugin.manifest.on_load() {
         Ok(_) -> {
-          # [CYR:[TRANSLATED]] Yoga node
+          #  Yoga node
           let yoga_node = create_yoga_node(plugin.manifest)
           
-          # [CYR:[TRANSLATED]] actors
+          #  actors
           let supervisor = plugin_supervisor.start(plugin.manifest.id)
           let widget_actor = widget_actor.start(plugin.manifest.canvas_widget)
           let state_actor = state_actor.start(WidgetState(
@@ -510,37 +510,37 @@ functions:
         Error(err) -> Error("on_load failed: " <> err)
       }
   
-  # [CYR:Vy[TRANSLATED]] [CYR:[TRANSLATED]]andon
+  # [CYR:Vy] andon
   unload_plugin_internal:
     params:
       - plugin: RegisteredPlugin
     returns: Result(Nil, String)
-    description: [CYR:Vy[TRANSLATED]acts] [CYR:[TRANSLATED]]and[EN]
+    description: [CYR:Vyacts] and
     implementation: |
       case plugin.instance {
         Some(instance) -> {
-          # [EN]with[EN]onin[EN]andin[CYR:[TRANSLATED]] actors
+          # withoninandin actors
           process.send(instance.supervisor, Stop)
           process.send(instance.widget_actor, Stop)
           process.send(instance.state_actor, Stop)
           
-          # [EN]within[CYR:[TRANSLATED]] Yoga node
+          # within Yoga node
           yoga.free_node(instance.yoga_node)
           
-          # [CYR:Vy[EN]y]in[CYR:[TRANSLATED]] on_unload hook
+          # [CYR:Vyy]in on_unload hook
           plugin.manifest.on_unload()
         }
         
         None -> Ok(Nil)
       }
   
-  # [EN]and[CYR:l[TRANSLATED]]andI [CYR:[TRANSLATED]]and[EN]in
+  # and[CYR:l]andI andin
   filter_plugins:
     params:
       - plugins: List(RegisteredPlugin)
       - filter: PluginFilter
     returns: List(RegisteredPlugin)
-    description: [EN]and[CYR:l[TRANSLATED]] [CYR:[TRANSLATED]]and[EN]y [EN] [EN]and[CYR:[TRANSLATED]]andI[EN]
+    description: and[CYR:l] andy  andI
     implementation: |
       plugins
       |> list.filter(fn(p) {
@@ -566,13 +566,13 @@ functions:
         category_match && status_match && tags_match
       })
   
-  # [EN]andwith[EN] [CYR:[TRANSLATED]]and[EN]in
+  # andwith andin
   search_plugins:
     params:
       - plugins: List(RegisteredPlugin)
       - query: String
     returns: List(RegisteredPlugin)
-    description: [EN]andwith[EN] [CYR:[TRANSLATED]]and[EN]in [EN] query[EN]
+    description: andwith andin  query
     implementation: |
       let query_lower = string.lowercase(query)
       
@@ -587,7 +587,7 @@ functions:
         name_match || desc_match || tag_match
       })
   
-  # [EN]with[CYR:[TRANSLATED]l[EN]y[EN]] [CYR:[TRANSLATED]]andand
+  # withly] and
   update_category_index:
     params:
       - categories: Dict(PluginCategory, List(String))
@@ -633,13 +633,13 @@ functions:
 
 tests:
   - name: start_registry
-    description: [CYR:[TRANSLATED]]with[EN] Registry
+    description: with Registry
     test: |
       let result = start()
       result |> should.be_ok
   
   - name: register_plugin
-    description: [CYR:[TRANSLATED]]andwith[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]]andon
+    description: andwithandI andon
     test: |
       let registry = start() |> should.be_ok
       
@@ -652,7 +652,7 @@ tests:
       result |> should.be_ok
   
   - name: validate_plugin_test
-    description: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]]andon
+    description: andI andon
     test: |
       let manifest = create_test_manifest()
       let result = validate_plugin(manifest)

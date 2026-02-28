@@ -317,31 +317,31 @@
 ║                                                                  ║
 ║  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  ║
 ║                                                                  ║
-║  [CYR:ФУНДАМЕНТАЛЬНАЯ] [CYR:ТРОИЦА] [CYR:ВРЕМЕНИ]:                                ║
+║  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:                                ║
 ║  ┌────────────────────────────────────────────────────────────┐   ║
-║  │ [CYR:Прошлое]:  1/φ² = 0.382 (унandthat[CYR:жен]andе, [CYR:энтроп]andя)            │   ║
-║  │ Наwith[CYR:тоящее]: 0     = 0.000 ([CYR:балан]with, HERE and NOW)             │   ║
-║  │ [CYR:Будущее]:   φ²  = 2.618 (withозand[CYR:дан]andе, роwithт)                   │   ║
+║  │ [CYR:[TRANSLATED]]:  1/φ² = 0.382 (унandthat[CYR:[TRANSLATED]]andе, [CYR:[TRANSLATED]]andя)            │   ║
+║  │ Наwith[TRANSLATED]]: 0     = 0.000 ([CYR:[TRANSLATED]]with, HERE and NOW)             │   ║
+║  │ [CYR:[TRANSLATED]]:   φ²  = 2.618 (withозand[CYR:[TRANSLATED]]andе, роwithт)                   │   ║
 ║  │ ─────────────────────────────────────────────────────────   │   ║
-║  │ [CYR:Сумма]: φ² + 1/φ² = 3 = TRINITY                             │   ║
+║  │ [CYR:[TRANSLATED]]: φ² + 1/φ² = 3 = TRINITY                             │   ║
 ║  └────────────────────────────────────────────────────────────┘   ║
 ║                                                                  ║
-║  [CYR:СТРЕЛА] [CYR:ВРЕМЕНИ] ([CYR:почему] [CYR:течёт] in[CYR:перёд]):                          ║
-║  Creation / Унandthat[CYR:жен]andе = φ⁴ = 6.854 > 1                        ║
-║  → in[CYR:ремен]onя with[CYR:трелла] → [CYR:энтроп]andя раwith[CYR:тёт] → Вwith[CYR:елен]onя раwithшand[CYR:ряет]withя   ║
+║  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]):                          ║
+║  Creation / Унandthat[CYR:[TRANSLATED]]andе = φ⁴ = 6.854 > 1                        ║
+║  → in[CYR:[TRANSLATED]]onя with[TRANSLATED]] → [CYR:[TRANSLATED]]andя раwith[TRANSLATED]] → Вwith[TRANSLATED]]onя раwithшand[CYR:[TRANSLATED]]withя   ║
 ║                                                                  ║
-║  [CYR:ВЕЧНОЕ] [CYR:ВОЗВРАЩЕНИЕ]:                                           ║
-║  π × 3 = 9.424777961 (цandtoлand[CYR:чно]withть [CYR:через] [CYR:Тро]andцу)                  ║
+║  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:                                           ║
+║  π × 3 = 9.424777961 (цandtoлand[CYR:[TRANSLATED]]withть [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andцу)                  ║
 ║                                                                  ║
-║  [CYR:ПЛАНКОВСКОЕ] [CYR:ВРЕМЯ]:                                             ║
-║  t_P = 5.391247 × 10⁻⁴⁴ withеto[CYR:унды] (toin[CYR:ант] in[CYR:ремен]and)               ║
+║  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:                                             ║
+║  t_P = 5.391247 × 10⁻⁴⁴ withеfor[TRANSLATED]] (toin[CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]and)               ║
 ║                                                                  ║
-║  [CYR:ПРАКТИЧЕСКИЕ] [CYR:ПРИМЕНЕНИЯ]:                                       ║
-║  • φ-and[CYR:нтер]in[CYR:алы] for withandwith[CYR:темного] [CYR:мон]and[CYR:тор]and[CYR:нга] (1618ms)              ║
-║  • [CYR:Временные] [CYR:пред]withto[CYR:азан]andя [CYR:через] Sacred Formula                  ║
-║  • [CYR:Тро]and[CYR:чное] toодandроinанandе in[CYR:ремен]and (40 трandтоin vs 64 бandта)          ║
+║  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:                                       ║
+║  • φ-and[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] for withandwith[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] (1618ms)              ║
+║  • [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withfor[TRANSLATED]]andя [CYR:[TRANSLATED]] Sacred Formula                  ║
+║  • [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] toодandроinанandе in[CYR:[TRANSLATED]]and (40 трandтоin vs 64 бandта)          ║
 ║                                                                  ║
-║  "[CYR:ВРЕМЯ] [CYR:БОЛЬШЕ] НЕ [CYR:ТЕЧЁТ]. [CYR:ОНО] [CYR:БЬЁТСЯ] В [CYR:ТРОИЦЕ]."                  ║
+║  "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] НЕ [CYR:[TRANSLATED]]. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]."                  ║
 ║                                                                  ║
 ╚══════════════════════════════════════════════════════════════════╝
 ```

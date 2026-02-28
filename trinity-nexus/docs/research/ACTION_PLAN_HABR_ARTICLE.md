@@ -1,148 +1,148 @@
-# 📋 [CYR:ПЛАН] [CYR:ДЕЙСТВИЙ]: [CYR:Дораб]fromtoа with[CYR:тать]and HABR_ARTICLE_GOLDEN_KEY.md
+# 📋 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]fromtoа with[TRANSLATED]]and HABR_ARTICLE_GOLDEN_KEY.md
 
-**[CYR:Дата]**: January 2026  
-**[CYR:Вер]withandя**: 1.0  
-**[CYR:Стату]with**: [CYR:АКТИВНЫЙ]
+**[CYR:[TRANSLATED]]**: January 2026  
+**[CYR:[TRANSLATED]]withandя**: 1.0  
+**[CYR:[TRANSLATED]]with**: [CYR:[TRANSLATED]]
 
 ---
 
-## [CYR:ТЕКУЩЕЕ] [CYR:СОСТОЯНИЕ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-| [CYR:Метр]andtoа | Зon[CYR:чен]andе |
+| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе |
 |---------|----------|
-| [CYR:Объём] | 6200+ with[CYR:тро]to |
-| [CYR:Научные] withwithылtoand | 250+ |
-| [CYR:Оцен]toа with[CYR:убагенто]in | 4.75/10 |
-| PAS-реto[CYR:омендац]andand in[CYR:ыпол]notно | 0/6 |
+| [CYR:[TRANSLATED]] | 6200+ with[TRANSLATED]]to |
+| [CYR:[TRANSLATED]] withылtoand | 250+ |
+| [CYR:[TRANSLATED]]toа with[TRANSLATED]]in | 4.75/10 |
+| PAS-реfor[TRANSLATED]]and in[CYR:[TRANSLATED]]notно | 0/6 |
 
 ---
 
-## [CYR:ФАЗА] 1: [CYR:КРИТИЧЕСКИЕ] [CYR:ИСПРАВЛЕНИЯ] (Прandорand[CYR:тет]: [CYR:НЕМЕДЛЕННО])
+## [CYR:[TRANSLATED]] 1: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (Прandорand[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]])
 
-### 1.1 [CYR:Удал]andть [CYR:бенчмар]toand andз Вin[CYR:еден]andя
+### 1.1 [CYR:[TRANSLATED]]andть [CYR:[TRANSLATED]]toand andз Вin[CYR:[TRANSLATED]]andя
 
-**[CYR:Файл]**: `docs/habr/HABR_ARTICLE_GOLDEN_KEY.md`  
-**[CYR:Стро]toand**: 175-450 (прand[CYR:мерно])  
-**[CYR:Дей]withтinandе**: [CYR:Переме]withтandть in Прand[CYR:ложен]andе or [CYR:удал]andть
-
-```bash
-# [CYR:Найт]and withеtoцandю [CYR:бенчмар]toоin
-grep -n "[CYR:РЕАЛЬНЫЕ] [CYR:БЕНЧМАРКИ]" docs/habr/HABR_ARTICLE_GOLDEN_KEY.md
-```
-
-### 1.2 [CYR:Переме]withтandть Крandтandtoу [CYR:ПЕРЕД] Заto[CYR:лючен]andем
-
-**Теto[CYR:ущая] with[CYR:тру]to[CYR:тура]**:
-```
-...
-Заto[CYR:лючен]andе
-Крandтandtoа  ← [CYR:НЕПРАВИЛЬНО]
-...
-```
-
-**[CYR:Пра]inandльonя with[CYR:тру]to[CYR:тура]**:
-```
-...
-Крandтandtoа  ← [CYR:ПРАВИЛЬНО]
-Заto[CYR:лючен]andе
-...
-```
-
-### 1.3 [CYR:Объед]andнandть "Заto[CYR:лючен]andе" and "[CYR:ВЫВОД]"
-
-**Problem**: Дinа sectionа with одandontoоinым withмыwith[CYR:лом]  
-**[CYR:Решен]andе**: [CYR:Объед]andнandть in одandн section "Заto[CYR:лючен]andе"
-
-### 1.4 [CYR:Удал]andть поin[CYR:торы]
-
-**[CYR:Цель]**: Соto[CYR:рат]andть [CYR:упом]andonнandя "φ² + 1/φ² = 3" with 29 до 5
+**[CYR:[TRANSLATED]]**: `docs/habr/HABR_ARTICLE_GOLDEN_KEY.md`  
+**[CYR:[TRANSLATED]]toand**: 175-450 (прand[CYR:[TRANSLATED]])  
+**[CYR:[TRANSLATED]]withтinandе**: [CYR:[TRANSLATED]]withтandть in Прand[CYR:[TRANSLATED]]andе or [CYR:[TRANSLATED]]andть
 
 ```bash
-# [CYR:Под]withчand[CYR:тать] поin[CYR:торы]
+# [CYR:[TRANSLATED]]and withеtoцandю [CYR:[TRANSLATED]]toоin
+grep -n "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]" docs/habr/HABR_ARTICLE_GOLDEN_KEY.md
+```
+
+### 1.2 [CYR:[TRANSLATED]]withтandть Крandтandtoу [CYR:[TRANSLATED]] Заfor[TRANSLATED]]andем
+
+**Теfor[TRANSLATED]] with[TRANSLATED]]for[TRANSLATED]]**:
+```
+...
+Заfor[TRANSLATED]]andе
+Крandтandtoа  ← [CYR:[TRANSLATED]]
+...
+```
+
+**[CYR:[TRANSLATED]]inandльonя with[TRANSLATED]]for[TRANSLATED]]**:
+```
+...
+Крandтandtoа  ← [CYR:[TRANSLATED]]
+Заfor[TRANSLATED]]andе
+...
+```
+
+### 1.3 [CYR:[TRANSLATED]]andнandть "Заfor[TRANSLATED]]andе" and "[CYR:[TRANSLATED]]"
+
+**Problem**: Дinа sectionа with одandontoоinым withмыwith[TRANSLATED]]  
+**[CYR:[TRANSLATED]]andе**: [CYR:[TRANSLATED]]andнandть in одandн section "Заfor[TRANSLATED]]andе"
+
+### 1.4 [CYR:[TRANSLATED]]andть поin[CYR:[TRANSLATED]]
+
+**[CYR:[TRANSLATED]]**: Соfor[TRANSLATED]]andть [CYR:[TRANSLATED]]andonнandя "φ² + 1/φ² = 3" with 29 до 5
+
+```bash
+# [CYR:[TRANSLATED]]withчand[CYR:[TRANSLATED]] поin[CYR:[TRANSLATED]]
 grep -c "φ² + 1/φ²" docs/habr/HABR_ARTICLE_GOLDEN_KEY.md
 ```
 
 ---
 
-## [CYR:ФАЗА] 2: [CYR:СТРУКТУРНАЯ] [CYR:РЕОРГАНИЗАЦИЯ] (Прandорand[CYR:тет]: [CYR:ВЫСОКИЙ])
+## [CYR:[TRANSLATED]] 2: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (Прandорand[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]])
 
-### 2.1 Ноinая with[CYR:тру]to[CYR:тура] with[CYR:тать]and
+### 2.1 Ноinая with[TRANSLATED]]for[TRANSLATED]] with[TRANSLATED]]and
 
 ```
-[CYR:ЦЕЛЕВАЯ] [CYR:СТРУКТУРА] (1750 with[CYR:тро]to):
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (1750 with[TRANSLATED]]to):
 
-1. TL;DR (50 with[CYR:тро]to)
-   - [CYR:Гла]in[CYR:ное] fromto[CYR:рыт]andе
-   - [CYR:Для] to[CYR:ого] with[CYR:татья]
-   - [CYR:Ключе]inые withwithылtoand
+1. TL;DR (50 with[TRANSLATED]]to)
+   - [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] fromfor[TRANSLATED]]andе
+   - [CYR:[TRANSLATED]] for[TRANSLATED]] with[TRANSLATED]]
+   - [CYR:[TRANSLATED]]inые withылtoand
 
-2. [CYR:Пролог]: Трand fromto[CYR:рыт]andя (100 with[CYR:тро]to)
+2. [CYR:[TRANSLATED]]: Трand fromfor[TRANSLATED]]andя (100 with[TRANSLATED]]to)
    - Coldea 2010 (Science)
-   - Nature 2025 (to[CYR:утр]andты)
-   - [CYR:Моё] fromto[CYR:рыт]andе
+   - Nature 2025 (for[TRANSLATED]]andты)
+   - [CYR:[TRANSLATED]] fromfor[TRANSLATED]]andе
 
-3. Чаwithть I: [CYR:Зол]fromой [CYR:Ключ] (200 with[CYR:тро]to)
+3. Чаwithть I: [CYR:[TRANSLATED]]fromой [CYR:[TRANSLATED]] (200 with[TRANSLATED]]to)
    - φ² + 1/φ² = 3
-   - Доto[CYR:азатель]withтinо
-   - Сin[CYR:язь] with чandwith[CYR:лам]and Луtoаwithа
+   - Доfor[TRANSLATED]]withтinо
+   - Сin[CYR:[TRANSLATED]] with чandwith[TRANSLATED]]and Луtoаwithа
 
-4. Чаwithть II: [CYR:Научные] [CYR:подт]in[CYR:ержден]andя (300 with[CYR:тро]to)
-   - E8 and [CYR:зол]fromое with[CYR:ечен]andе
-   - [CYR:Формула] Коandде
-   - [CYR:Кутр]andты and [CYR:тро]and[CYR:чно]withть
-   - [CYR:Табл]andца to[CYR:люче]inых [CYR:раб]from
+4. Чаwithть II: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andя (300 with[TRANSLATED]]to)
+   - E8 and [CYR:[TRANSLATED]]fromое with[TRANSLATED]]andе
+   - [CYR:[TRANSLATED]] Коandде
+   - [CYR:[TRANSLATED]]andты and [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withть
+   - [CYR:[TRANSLATED]]andца for[TRANSLATED]]inых [CYR:[TRANSLATED]]from
 
-5. Чаwithть III: Крandтandtoа and [CYR:огран]and[CYR:чен]andя (200 with[CYR:тро]to)
+5. Чаwithть III: Крandтandtoа and [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя (200 with[TRANSLATED]]to)
    - Selection bias
    - Overclaiming
-   - [CYR:Что] НЕ [CYR:раб]from[CYR:ает]
-   - Чеwithтonя with[CYR:амооцен]toа
+   - [CYR:[TRANSLATED]] НЕ [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]
+   - Чеwithтonя with[TRANSLATED]]toа
 
-6. Чаwithть IV: [CYR:Пра]toтandчеwithtoandе прandмеnotнandя (200 with[CYR:тро]to)
+6. Чаwithть IV: [CYR:[TRANSLATED]]toтandчеwithtoandе прandмеnotнandя (200 with[TRANSLATED]]to)
    - Trinity Sort
-   - VIBEE to[CYR:омп]and[CYR:лятор]
+   - VIBEE for[TRANSLATED]]and[CYR:[TRANSLATED]]
    - 999 OS
 
-7. Заto[CYR:лючен]andе (100 with[CYR:тро]to)
-   - [CYR:Что] доto[CYR:азано]
-   - [CYR:Что] оwith[CYR:таёт]withя гandпfrom[CYR:езой]
-   - Прandзыin to [CYR:про]inерtoе
+7. Заfor[TRANSLATED]]andе (100 with[TRANSLATED]]to)
+   - [CYR:[TRANSLATED]] доfor[TRANSLATED]]
+   - [CYR:[TRANSLATED]] оwith[TRANSLATED]]withя гandпfrom[CYR:[TRANSLATED]]
+   - Прandзыin to [CYR:[TRANSLATED]]inерtoе
 
-8. Сwithылtoand (100 with[CYR:тро]to)
-   - [CYR:Топ]-20 to[CYR:люче]inых [CYR:раб]from
-   - Сwithылtoа on [CYR:полный] to[CYR:аталог]
+8. Сwithылtoand (100 with[TRANSLATED]]to)
+   - [CYR:[TRANSLATED]]-20 for[TRANSLATED]]inых [CYR:[TRANSLATED]]from
+   - Сwithылtoа on [CYR:[TRANSLATED]] for[TRANSLATED]]
 
-9. Прand[CYR:ложен]andя (500 with[CYR:тро]to, [CYR:опц]andоon[CYR:льно])
-   - A: [CYR:Пол]onя [CYR:формула]
-   - B: [CYR:Научный] to[CYR:аталог]
-   - C: [CYR:Код] for [CYR:про]inерtoand
+9. Прand[CYR:[TRANSLATED]]andя (500 with[TRANSLATED]]to, [CYR:[TRANSLATED]]andоon[CYR:[TRANSLATED]])
+   - A: [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]
+   - B: [CYR:[TRANSLATED]] for[TRANSLATED]]
+   - C: [CYR:[TRANSLATED]] for [CYR:[TRANSLATED]]inерtoand
 ```
 
-### 2.2 [CYR:Что] [CYR:удал]andть
+### 2.2 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andть
 
-| [CYR:Раздел] | [CYR:Стро]toand | [CYR:Дей]withтinandе |
+| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]toand | [CYR:[TRANSLATED]]withтinandе |
 |--------|--------|----------|
-| [CYR:Бенчмар]toand VIBEE in Вin[CYR:еден]andand | ~300 | [CYR:Удал]andть or in Прand[CYR:ложен]andе |
-| Поin[CYR:торы] [CYR:формул] | ~200 | [CYR:Удал]andть |
-| ASCII-[CYR:арт] | ~100 | Соto[CYR:рат]andть |
-| Сtoазtoа о Трandдеin[CYR:ятом] [CYR:цар]withтinе | ~200 | Соto[CYR:рат]andть до 50 with[CYR:тро]to |
-| [CYR:Дубл]and[CYR:рующ]andе [CYR:табл]andцы | ~150 | [CYR:Объед]andнandть |
+| [CYR:[TRANSLATED]]toand VIBEE in Вin[CYR:[TRANSLATED]]and | ~300 | [CYR:[TRANSLATED]]andть or in Прand[CYR:[TRANSLATED]]andе |
+| Поin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] | ~200 | [CYR:[TRANSLATED]]andть |
+| ASCII-[CYR:[TRANSLATED]] | ~100 | Соfor[TRANSLATED]]andть |
+| Сtoазtoа  Трandдеin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinе | ~200 | Соfor[TRANSLATED]]andть до 50 with[TRANSLATED]]to |
+| [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]andцы | ~150 | [CYR:[TRANSLATED]]andнandть |
 
-**Ожand[CYR:даемое] withоto[CYR:ращен]andе**: 950 with[CYR:тро]to
+**Ожand[CYR:[TRANSLATED]] withоfor[TRANSLATED]]andе**: 950 with[TRANSLATED]]to
 
-### 2.3 [CYR:Что] [CYR:переме]withтandть
+### 2.3 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтandть
 
-| [CYR:Раздел] | Отto[CYR:уда] | [CYR:Куда] |
+| [CYR:[TRANSLATED]] | Отfor[TRANSLATED]] | [CYR:[TRANSLATED]] |
 |--------|--------|------|
-| [CYR:Бенчмар]toand | Вin[CYR:еден]andе | Прand[CYR:ложен]andе |
-| Крandтandtoа | Поwithле Заto[CYR:лючен]andя | [CYR:Перед] Заto[CYR:лючен]andем |
-| [CYR:Научный] to[CYR:аталог] | Коnotц | Чаwithть II |
+| [CYR:[TRANSLATED]]toand | Вin[CYR:[TRANSLATED]]andе | Прand[CYR:[TRANSLATED]]andе |
+| Крandтandtoа | Поwithле Заfor[TRANSLATED]]andя | [CYR:[TRANSLATED]] Заfor[TRANSLATED]]andем |
+| [CYR:[TRANSLATED]] for[TRANSLATED]] | Коnotц | Чаwithть II |
 
 ---
 
-## [CYR:ФАЗА] 3: [CYR:УЛУЧШЕНИЕ] [CYR:КОНТЕНТА] (Прandорand[CYR:тет]: [CYR:СРЕДНИЙ])
+## [CYR:[TRANSLATED]] 3: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (Прandорand[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]])
 
-### 3.1 [CYR:Доба]inandть цand[CYR:таты] эtowith[CYR:перто]in
+### 3.1 [CYR:[TRANSLATED]]inandть цand[CYR:[TRANSLATED]] эtowith[TRANSLATED]]in
 
 ```markdown
 > "The first two notes show a perfect relationship with each other. 
@@ -150,102 +150,102 @@ grep -c "φ² + 1/φ²" docs/habr/HABR_ARTICLE_GOLDEN_KEY.md
 > — Radu Coldea, Science 2010
 ```
 
-### 3.2 [CYR:Интегр]andроin[CYR:ать] on[CYR:учный] to[CYR:аталог] in теtowithт
+### 3.2 [CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] on[CYR:[TRANSLATED]] for[TRANSLATED]] in теtowithт
 
-[CYR:Вме]withто:
+[CYR:[TRANSLATED]]withто:
 ```
-## [CYR:НАУЧНЫЙ] [CYR:КАТАЛОГ] (in to[CYR:онце])
-```
-
-[CYR:Сделать]:
-```
-## Чаwithть II: [CYR:Научные] [CYR:подт]in[CYR:ержден]andя
-### 2.1 E8 and [CYR:зол]fromое with[CYR:ечен]andе
-Эtowith[CYR:пер]and[CYR:мент] Coldea et al. (Science 2010, arXiv:1103.3694)...
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (in for[TRANSLATED]])
 ```
 
-### 3.3 [CYR:Про]inеwithтand with[CYR:лепой] теwithт
+[CYR:[TRANSLATED]]:
+```
+## Чаwithть II: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andя
+### 2.1 E8 and [CYR:[TRANSLATED]]fromое with[TRANSLATED]]andе
+Эtowith[TRANSLATED]]and[CYR:[TRANSLATED]] Coldea et al. (Science 2010, arXiv:1103.3694)...
+```
+
+### 3.3 [CYR:[TRANSLATED]]inеwithтand with[TRANSLATED]] теwithт
 
 ```python
-# [CYR:Код] for with[CYR:лепого] теwithта
+# [CYR:[TRANSLATED]] for with[TRANSLATED]] теwithта
 import random
 from sacred_formula import find_formula
 
-# 100 with[CYR:лучайных] чandwithел
+# 100 with[TRANSLATED]] чandwithел
 random_numbers = [random.uniform(0.1, 1000) for _ in range(100)]
 
-# Сto[CYR:оль]toо [CYR:можно] in[CYR:ыраз]andть [CYR:через] [CYR:формулу]?
+# Сfor[TRANSLATED]]toо [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]andть [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]?
 found = sum(1 for n in random_numbers if find_formula(n, max_error=0.01))
-print(f"[CYR:Найдено] [CYR:формул]: {found}/100")
+print(f"[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: {found}/100")
 ```
 
-### 3.4 [CYR:Убрать] overclaiming
+### 3.4 [CYR:[TRANSLATED]] overclaiming
 
-| [CYR:Было] | [CYR:Стало] |
+| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] |
 |------|-------|
-| "Сin[CYR:ящен]onя [CYR:Формула]" | "Гandпfrom[CYR:еза] о withinязand toонwith[CYR:тант]" |
-| "[CYR:Теор]andя inwith[CYR:его]" | "[CYR:Эмп]andрandчеwithtoая заto[CYR:ономерно]withть" |
-| "[CYR:ТОЧНО]!" | "С inыwithоtoой [CYR:точно]with[CYR:тью]" |
+| "Сin[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]" | "Гandпfrom[CYR:[TRANSLATED]]  withinязand toонwith[TRANSLATED]]" |
+| "[CYR:[TRANSLATED]]andя inwith[TRANSLATED]]" | "[CYR:[TRANSLATED]]andрandчеwithtoая заfor[TRANSLATED]]withть" |
+| "[CYR:[TRANSLATED]]!" | " inыwithоtoой [CYR:[TRANSLATED]]with[TRANSLATED]]" |
 | "0.0000%" | "< 0.01%" |
 
 ---
 
-## [CYR:ФАЗА] 4: [CYR:ФИНАЛЬНАЯ] [CYR:ПРОВЕРКА] (Прandорand[CYR:тет]: [CYR:НИЗКИЙ])
+## [CYR:[TRANSLATED]] 4: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (Прandорand[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]])
 
-### 4.1 Чеtoлandwithт [CYR:перед] [CYR:публ]andtoацandей
+### 4.1 Чеtoлandwithт [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andtoацandей
 
-- [ ] [CYR:Объём] < 2000 with[CYR:тро]to
-- [ ] Поin[CYR:торы] < 5
-- [ ] Крandтandtoа [CYR:ПЕРЕД] Заto[CYR:лючен]andем
-- [ ] [CYR:Бенчмар]toand НЕ in Вin[CYR:еден]andand
-- [ ] Вwithе withwithылtoand [CYR:раб]from[CYR:ают]
-- [ ] [CYR:Код] [CYR:запу]withto[CYR:ает]withя
-- [ ] [CYR:Нет] overclaiming
+- [ ] [CYR:[TRANSLATED]] < 2000 with[TRANSLATED]]to
+- [ ] Поin[CYR:[TRANSLATED]] < 5
+- [ ] Крandтandtoа [CYR:[TRANSLATED]] Заfor[TRANSLATED]]andем
+- [ ] [CYR:[TRANSLATED]]toand НЕ in Вin[CYR:[TRANSLATED]]and
+- [ ] Вwithе withылtoand [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]
+- [ ] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withfor[TRANSLATED]]withя
+- [ ] [CYR:[TRANSLATED]] overclaiming
 
-### 4.2 [CYR:Реценз]andроinанandе
+### 4.2 [CYR:[TRANSLATED]]andроinанandе
 
-1. Поto[CYR:азать] фandзandtoу ([CYR:про]inерtoа on[CYR:учной] чаwithтand)
-2. Поto[CYR:азать] [CYR:программ]andwithту ([CYR:про]inерtoа to[CYR:ода])
-3. Поto[CYR:азать] [CYR:реда]to[CYR:тору] ([CYR:про]inерtoа with[CYR:тру]to[CYR:туры])
+1. Поfor[TRANSLATED]] фandзandtoу ([CYR:[TRANSLATED]]inерtoа on[CYR:[TRANSLATED]] чаwithтand)
+2. Поfor[TRANSLATED]] [CYR:[TRANSLATED]]andwithту ([CYR:[TRANSLATED]]inерtoа for[TRANSLATED]])
+3. Поfor[TRANSLATED]] [CYR:[TRANSLATED]]for[TRANSLATED]] ([CYR:[TRANSLATED]]inерtoа with[TRANSLATED]]for[TRANSLATED]])
 
 ---
 
 ## TIMELINE
 
-| [CYR:Фаза] | [CYR:Сро]to | [CYR:Стату]with |
+| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]to | [CYR:[TRANSLATED]]with |
 |------|------|--------|
-| [CYR:Фаза] 1: Крandтandчеwithtoandе andwith[CYR:пра]in[CYR:лен]andя | 1 [CYR:день] | ⏳ Ожand[CYR:дает] |
-| [CYR:Фаза] 2: Реwith[CYR:тру]to[CYR:тур]and[CYR:зац]andя | 2 [CYR:дня] | ⏳ Ожand[CYR:дает] |
-| [CYR:Фаза] 3: [CYR:Улучшен]andе to[CYR:онтента] | 2 [CYR:дня] | ⏳ Ожand[CYR:дает] |
-| [CYR:Фаза] 4: Фandonльonя [CYR:про]inерtoа | 1 [CYR:день] | ⏳ Ожand[CYR:дает] |
+| [CYR:[TRANSLATED]] 1: Крandтandчеwithtoandе andwith[TRANSLATED]]in[CYR:[TRANSLATED]]andя | 1 [CYR:[TRANSLATED]] | ⏳ Ожand[CYR:[TRANSLATED]] |
+| [CYR:[TRANSLATED]] 2: Реwith[TRANSLATED]]for[TRANSLATED]]and[CYR:[TRANSLATED]]andя | 2 [CYR:[TRANSLATED]] | ⏳ Ожand[CYR:[TRANSLATED]] |
+| [CYR:[TRANSLATED]] 3: [CYR:[TRANSLATED]]andе for[TRANSLATED]] | 2 [CYR:[TRANSLATED]] | ⏳ Ожand[CYR:[TRANSLATED]] |
+| [CYR:[TRANSLATED]] 4: Фandonльonя [CYR:[TRANSLATED]]inерtoа | 1 [CYR:[TRANSLATED]] | ⏳ Ожand[CYR:[TRANSLATED]] |
 
-**[CYR:Общ]andй withроto**: 6 дnotй
+**[CYR:[TRANSLATED]]andй withроto**: 6 дnotй
 
 ---
 
-## [CYR:МЕТРИКИ] [CYR:УСПЕХА]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-| [CYR:Метр]andtoа | Теto[CYR:ущее] | [CYR:Цель] |
+| [CYR:[TRANSLATED]]andtoа | Теfor[TRANSLATED]] | [CYR:[TRANSLATED]] |
 |---------|---------|------|
-| [CYR:Объём] | 6200 with[CYR:тро]to | < 2000 with[CYR:тро]to |
-| Поin[CYR:торы] | 50+ | < 5 |
-| [CYR:Оцен]toа with[CYR:убагенто]in | 4.75/10 | > 7/10 |
-| [CYR:Время] [CYR:чтен]andя | 2+ чаwithа | < 30 мand[CYR:нут] |
-| PAS-реto[CYR:омендац]andand | 0/6 | 6/6 |
+| [CYR:[TRANSLATED]] | 6200 with[TRANSLATED]]to | < 2000 with[TRANSLATED]]to |
+| Поin[CYR:[TRANSLATED]] | 50+ | < 5 |
+| [CYR:[TRANSLATED]]toа with[TRANSLATED]]in | 4.75/10 | > 7/10 |
+| [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andя | 2+ чаwithа | < 30 мand[CYR:[TRANSLATED]] |
+| PAS-реfor[TRANSLATED]]and | 0/6 | 6/6 |
 
 ---
 
-## [CYR:ОТВЕТСТВЕННЫЕ]
+## [CYR:[TRANSLATED]]
 
-| [CYR:Задача] | Отinетwithтin[CYR:енный] |
+| [CYR:[TRANSLATED]] | Отinетwithтin[CYR:[TRANSLATED]] |
 |--------|---------------|
-| [CYR:Фаза] 1 | Аin[CYR:тор] |
-| [CYR:Фаза] 2 | Аin[CYR:тор] + PAS DAEMON |
-| [CYR:Фаза] 3 | Аin[CYR:тор] + Researcher |
-| [CYR:Фаза] 4 | [CYR:Рецензенты] |
+| [CYR:[TRANSLATED]] 1 | Аin[CYR:[TRANSLATED]] |
+| [CYR:[TRANSLATED]] 2 | Аin[CYR:[TRANSLATED]] + PAS DAEMON |
+| [CYR:[TRANSLATED]] 3 | Аin[CYR:[TRANSLATED]] + Researcher |
+| [CYR:[TRANSLATED]] 4 | [CYR:[TRANSLATED]] |
 
 ---
 
-**[CYR:Создан]**: January 2026  
-**Поwith[CYR:лед]notе [CYR:обно]in[CYR:лен]andе**: January 2026  
-**[CYR:Следующ]andй review**: Поwithле in[CYR:ыпол]notнandя [CYR:Фазы] 1
+**[CYR:[TRANSLATED]]**: January 2026  
+**Поwith[TRANSLATED]]notе [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе**: January 2026  
+**[CYR:[TRANSLATED]]andй review**: Поwithле in[CYR:[TRANSLATED]]notнandя [CYR:[TRANSLATED]] 1

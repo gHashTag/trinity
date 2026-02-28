@@ -1,8 +1,8 @@
-// PROMETHEUS CLI - [CYR:[EN]]in[CYR:[EN]] [CYR:[EN]] in ternary format
-// [CYR:[EN]]in[CYR:[EN]] [CYR:[EN]] float32 in[EN]with[EN] in within[CYR:[EN]] [EN]and[EN]
+// PROMETHEUS CLI - in  in ternary format
+// in  float32 inwith in within and
 // φ² + 1/φ² = 3 = TRINITY
 //
-// [EN]withby[CYR:[EN]]in[EN]and[EN]:
+// withbyinand:
 //   prometheus convert <input.safetensors> <output.tri> [--threshold 0.1]
 //   prometheus info <model.tri>
 //   prometheus test <model.tri>
@@ -86,7 +86,7 @@ fn cmdConvert(allocator: std.mem.Allocator, args: []const []const u8) !void {
     const input_path = args[2];
     const output_path = args[3];
 
-    // [CYR:[EN]]withand[EN] options
+    // withand options
     var threshold: f32 = 0.1;
     var config = mistral.MistralConfig.mistral7B();
 
@@ -112,7 +112,7 @@ fn cmdConvert(allocator: std.mem.Allocator, args: []const []const u8) !void {
     std.debug.print("║ Threshold: {d:<49.2} ║\n", .{threshold});
     std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 
-    // [CYR:[EN]] and to[EN]in[CYR:[EN]]and[CYR:[EN]]
+    //  and toinand
     var loader = mistral.MistralLoader.init(allocator, config, threshold);
     defer loader.deinit();
 
@@ -121,7 +121,7 @@ fn cmdConvert(allocator: std.mem.Allocator, args: []const []const u8) !void {
         return;
     };
 
-    // [CYR:[EN]]
+    // 
     loader.save(output_path) catch |err| {
         std.debug.print("Error saving model: {}\n", .{err});
         return;
@@ -187,14 +187,14 @@ fn cmdTest(allocator: std.mem.Allocator, args: []const []const u8) !void {
     std.debug.print("║ Loading: {s:<51} ║\n", .{path});
     std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
 
-    // [CYR:[EN]] [CYR:[EN]]
+    //  
     var model = mistral.TrinityModelFile.load(allocator, path) catch |err| {
         std.debug.print("Error loading model: {}\n", .{err});
         return;
     };
     defer model.deinit();
 
-    // [CYR:[EN]]yes[EN] LLM
+    // yes LLM
     var llm = try trinity_llm.TrinityLLM.init(
         allocator,
         model.config.vocab_size,
@@ -207,7 +207,7 @@ fn cmdTest(allocator: std.mem.Allocator, args: []const []const u8) !void {
 
     llm.printStats();
 
-    // Test[EN]in[EN] [EN]not[CYR:[EN]]and[EN]
+    // Testin notand
     std.debug.print("\nTest generation:\n", .{});
     std.debug.print("Prompt: \"Hello\"\n", .{});
 
@@ -226,6 +226,6 @@ fn cmdTest(allocator: std.mem.Allocator, args: []const []const u8) !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "cli help" {
-    // [CYR:[EN]]with[EN] check, what printUsage not [EN]yes[EN]
+    // with check, what printUsage not yes
     printUsage();
 }

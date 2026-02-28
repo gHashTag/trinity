@@ -15,7 +15,7 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const TOTAL_TESTS: f64 = 60;
@@ -30,7 +30,7 @@ pub const MAX_LATENCY_MULTI_MS: f64 = 2000;
 
 pub const PHI: f64 = 1.618033988749895;
 
-// [CYR:[EN]]in[EN] φ-to[EN]with[CYR:[EN]] (Sacred Formula)
+// in φ-towith (Sacred Formula)
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
 pub const TRINITY: f64 = 3.0;
@@ -41,7 +41,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Category of E2E test
@@ -107,7 +107,7 @@ pub const SuiteResult = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]] [CYR:[EN]] WASM
+//   WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -157,13 +157,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-and[CYR:[EN]]fields[EN]and[EN]
+/// φ-andfieldsand
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// [EN]not[CYR:[EN]]and[EN] φ-with[EN]and[CYR:[EN]]and
+/// notand φ-withand
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -909,7 +909,7 @@ test "ec06_binary_input" {
 }
 
 test "ml01_russian_code" {
-// Given: "[CYR:[EN]]and[EN]and [CYR:[EN]]to[EN]and[EN] with[CYR:[EN]]and[EN]intoand on Python"
+// Given: "and toand withandintoand on Python"
 // Expected: "Detects Russian, routes to coder"
 // Test: ml01_russian_code
     // (Test setup and assertions to be implemented)
@@ -925,7 +925,7 @@ test "ml02_chinese_code" {
 }
 
 test "ml03_russian_chat" {
-// Given: "[EN]andin[EN]! [EN]to [CYR:[EN]]?"
+// Given: "andin! to ?"
 // Expected: "Detects Russian, routes to chat"
 // Test: ml03_russian_chat
     // (Test setup and assertions to be implemented)
@@ -941,7 +941,7 @@ test "ml04_chinese_chat" {
 }
 
 test "ml05_mixed_language" {
-// Given: "[EN]andin[EN]! Write quicksort on JavaScript"
+// Given: "andin! Write quicksort on JavaScript"
 // Expected: "Handles mixed language"
 // Test: ml05_mixed_language
     // (Test setup and assertions to be implemented)

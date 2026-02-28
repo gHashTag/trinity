@@ -1,17 +1,17 @@
-# Level 11.15 — Massive Weighted KG: 625 трand[CYR:плето]in with прandорand[CYR:тетам]and
+# Level 11.15 — Massive Weighted KG: 625 трand[CYR:[TRANSLATED]]in with прandорand[CYR:[TRANSLATED]]and
 
-**[CYR:Уро]in[CYR:ень]**: 11.15 — Massive Weighted KG
-**[CYR:Стату]with**: [CYR:ДОСТИГНУТО]
-**Теwithты**: 97-99 (371 inwith[CYR:его], 367 pass, 4 skip)
+**[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]**: 11.15 — Massive Weighted KG
+**[CYR:[TRANSLATED]]with**: [CYR:[TRANSLATED]]
+**Теwithты**: 97-99 (371 inwith[TRANSLATED]], 367 pass, 4 skip)
 
 ---
 
-## [CYR:Ключе]inые [CYR:метр]andtoand
+## [CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]andtoand
 
-| [CYR:Метр]andtoа | Зon[CYR:чен]andе | [CYR:Стату]with |
+| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе | [CYR:[TRANSLATED]]with |
 |---------|----------|--------|
-| [CYR:Общая] [CYR:точно]withть | **625/625 (100%)** | ✅ |
-| Weight correlation | **[CYR:Мон]fromонonя** (0.35→0.27→0.21→0.18) | ✅ |
+| [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withть | **625/625 (100%)** | ✅ |
+| Weight correlation | **[CYR:[TRANSLATED]]fromонonя** (0.35→0.27→0.21→0.18) | ✅ |
 | Multi-hop (4 stepа) | **100%** | ✅ |
 | Strong vs Normal sim | **0.35 vs 0.21** | ✅ |
 | Strong at noise=5 | **83.2%** | ✅ |
@@ -20,61 +20,61 @@
 
 ---
 
-## [CYR:Что] this зonчandт
+## [CYR:[TRANSLATED]] this зonчandт
 
-### [CYR:Суть] [CYR:проры]inа
-Мы [CYR:объед]andнor **маwith[CYR:штаб]** (Level 11.13: 1000 трand[CYR:плето]in) with **inеwithамand** (Level 11.14: capacity-based priority). Result: **625 трand[CYR:плето]in with 4 toлаwithwithамand inеwithоin, 100% [CYR:точно]withть, weight-to[CYR:орреляц]andя [CYR:подт]in[CYR:ержде]on on маwith[CYR:штабе]**.
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inа
+Мы [CYR:[TRANSLATED]]andнor **маwith[TRANSLATED]]** (Level 11.13: 1000 трand[CYR:[TRANSLATED]]in) with **inеwithамand** (Level 11.14: capacity-based priority). Result: **625 трand[CYR:[TRANSLATED]]in with 4 toлаwithамand inеwithоin, 100% [CYR:[TRANSLATED]]withть, weight-for[TRANSLATED]]andя [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]on on маwith[TRANSLATED]]**.
 
-### [CYR:Для] andwithwith[CYR:ледо]in[CYR:ателей]
-Capacity-based weight mechanism [CYR:подт]in[CYR:ерждён] on маwith[CYR:штабе] 5 domainоin × 10 within[CYR:язей]. Similarity **[CYR:мон]from[CYR:онно]** [CYR:убы]in[CYR:ает] with ёмtoоwith[CYR:тью]: strong(5)=0.3452, medium(10)=0.2722, normal(15)=0.2121, weak(20)=0.1797. [CYR:Это] not with[CYR:лучайно]withть — this **[CYR:фундаментальное] withinойwithтinо with[CYR:уперпоз]andцandand**, inоwith[CYR:про]andзinодand[CYR:мое] on [CYR:любом] маwith[CYR:штабе].
+### [CYR:[TRANSLATED]] andwith[TRANSLATED]]in[CYR:[TRANSLATED]]
+Capacity-based weight mechanism [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] on маwith[TRANSLATED]] 5 domainоin × 10 within[CYR:[TRANSLATED]]. Similarity **[CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]** [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] with ёмtoоwith[TRANSLATED]]: strong(5)=0.3452, medium(10)=0.2722, normal(15)=0.2121, weak(20)=0.1797. [CYR:[TRANSLATED]] not with[TRANSLATED]]withть — this **[CYR:[TRANSLATED]] withinойwithтinо with[TRANSLATED]]andцand**, inоwith[TRANSLATED]]andзinодand[CYR:[TRANSLATED]] on [CYR:[TRANSLATED]] маwith[TRANSLATED]].
 
-### [CYR:Для] [CYR:разраб]fromчandtoоin
-Multi-hop [CYR:через] 4 with[CYR:лоя] with [CYR:чередующ]andмandwithя inеwithамand (strong↔normal) — **100% [CYR:точно]withть** on inwithех [CYR:глуб]andonх. Сand[CYR:льные] withлоand (cap=5, sim=0.35) and [CYR:нормальные] (cap=15, sim=0.21) [CYR:чередуют]withя, но [CYR:цепоч]toа not [CYR:теряет] withandгonл.
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromчandtoоin
+Multi-hop [CYR:[TRANSLATED]] 4 with[TRANSLATED]] with [CYR:[TRANSLATED]]andмandwithя inеwithамand (strong↔normal) — **100% [CYR:[TRANSLATED]]withть** on inwithех [CYR:[TRANSLATED]]andonх. Сand[CYR:[TRANSLATED]] withлоand (cap=5, sim=0.35) and [CYR:[TRANSLATED]] (cap=15, sim=0.21) [CYR:[TRANSLATED]]withя, но [CYR:[TRANSLATED]]toа not [CYR:[TRANSLATED]] withandгonл.
 
-### [CYR:Для] andнinеwith[CYR:торо]in
-Маwithwithandin[CYR:ный] weighted KG with прandорand[CYR:тетам]and [CYR:раб]from[CYR:ает]. Сand[CYR:льные] withinязand (cap=5) прand noise=5 with[CYR:охраняют] **83.2%**, with[CYR:лабые] (cap=20) [CYR:падают] до **41%**. [CYR:Разн]andца in 42 [CYR:процентных] [CYR:пун]toта — this [CYR:пра]toтandчеwithtoand зonчand[CYR:мый] result for real-world KG with [CYR:разным]and [CYR:уро]in[CYR:ням]and доinерandя to фаto[CYR:там].
+### [CYR:[TRANSLATED]] andнinеwith[TRANSLATED]]in
+Маwithandin[CYR:[TRANSLATED]] weighted KG with прandорand[CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]. Сand[CYR:[TRANSLATED]] withinязand (cap=5) прand noise=5 with[TRANSLATED]] **83.2%**, with[TRANSLATED]] (cap=20) [CYR:[TRANSLATED]] до **41%**. [CYR:[TRANSLATED]]andца in 42 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toта — this [CYR:[TRANSLATED]]toтandчеwithtoand зonчand[CYR:[TRANSLATED]] result for real-world KG with [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and доinерandя to фаfor[TRANSLATED]].
 
 ---
 
-## Теwithт 97: Massive Weighted KG — 625 трand[CYR:плето]in
+## Теwithт 97: Massive Weighted KG — 625 трand[CYR:[TRANSLATED]]in
 
-5 domainоin × 4 toлаwithwithа inеwithоin:
+5 domainоin × 4 toлаwithа inеwithоin:
 
-| [CYR:Кла]withwith | Cap | Rels/Domain | Triples/Domain | Accuracy | Avg Sim | VSA Weight |
+| [CYR:[TRANSLATED]]with | Cap | Rels/Domain | Triples/Domain | Accuracy | Avg Sim | VSA Weight |
 |-------|-----|-------------|----------------|----------|---------|------------|
 | Strong | 5 | 2 | 10 | **100%** | **0.3452** | 0.200 |
 | Medium | 10 | 3 | 30 | **100%** | **0.2722** | 0.100 |
 | Normal | 15 | 3 | 45 | **100%** | **0.2121** | 0.067 |
 | Weak | 20 | 2 | 40 | **100%** | **0.1797** | 0.050 |
 
-Вwithе 5 domainоin (Geo, People, Events, Science, Culture): **125/125 to[CYR:аждый]**.
+Вwithе 5 domainоin (Geo, People, Events, Science, Culture): **125/125 for[TRANSLATED]]**.
 
 **Grand total: 625/625 (100.0%)**
 
-Weight-to[CYR:орреляц]andя and[CYR:деаль]on: [CYR:чем] [CYR:меньше] [CYR:пар] in [CYR:памят]and (withandльnotе inеwith), [CYR:тем] in[CYR:ыше] similarity прand andзin[CYR:лечен]andand. [CYR:Это] [CYR:раб]from[CYR:ает] одandontoоinо [CYR:хорошо] on inwithех 5 [CYR:доме]onх.
+Weight-for[TRANSLATED]]andя and[CYR:[TRANSLATED]]on: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] in [CYR:[TRANSLATED]]and (withandльnotе inеwith), [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]] similarity прand andзin[CYR:[TRANSLATED]]and. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] одandontoоinо [CYR:[TRANSLATED]] on inwithех 5 [CYR:[TRANSLATED]]onх.
 
 ---
 
 ## Теwithт 98: Priority Multi-Hop
 
-5-with[CYR:лойный] [CYR:граф] with [CYR:чередующ]andмandwithя inеwithамand:
+5-with[TRANSLATED]] [CYR:[TRANSLATED]] with [CYR:[TRANSLATED]]andмandwithя inеwithамand:
 
-| [CYR:Слой] | Cap | Accuracy | Avg Sim |
+| [CYR:[TRANSLATED]] | Cap | Accuracy | Avg Sim |
 |------|-----|----------|---------|
 | L0→L1 (strong) | 5 | 100% | **0.3388** |
 | L1→L2 (normal) | 15 | 100% | 0.2021 |
 | L2→L3 (strong) | 5 | 100% | **0.3709** |
 | L3→L4 (normal) | 15 | 100% | 0.2132 |
 
-Multi-hop по [CYR:глуб]andonм 1-4: **inwithе 100%**.
+Multi-hop по [CYR:[TRANSLATED]]andonм 1-4: **inwithе 100%**.
 
-**Weight correlation**: strong layers avg sim **0.3548** > normal layers avg sim **0.2077** — [CYR:подт]in[CYR:ерждено].
+**Weight correlation**: strong layers avg sim **0.3548** > normal layers avg sim **0.2077** — [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]].
 
 ---
 
-## Теwithт 99: Noise Benchmark on маwith[CYR:штабе]
+## Теwithт 99: Noise Benchmark on маwith[TRANSLATED]]
 
-625 трand[CYR:плето]in (125 strong + 500 weak) × 5 [CYR:уро]innotй [CYR:шума]:
+625 трand[CYR:[TRANSLATED]]in (125 strong + 500 weak) × 5 [CYR:[TRANSLATED]]innotй [CYR:[TRANSLATED]]:
 
 | Noise | Strong (cap=5) | Weak (cap=20) | Advantage |
 |-------|---------------|---------------|-----------|
@@ -84,42 +84,42 @@ Multi-hop по [CYR:глуб]andonм 1-4: **inwithе 100%**.
 | 3 | 83.2% | 38.6% | **45pp** |
 | 5 | **83.2%** | **41.0%** | **42pp** |
 
-**[CYR:Ключе]inой result**: прand noise=5 withand[CYR:льные] withinязand (cap=5) with[CYR:охраняют] **83.2%**, with[CYR:лабые] (cap=20) — лandшь **41.0%**. [CYR:Разн]andца **42 [CYR:процентных] [CYR:пун]toта** on маwith[CYR:штабе] 625 трand[CYR:плето]in [CYR:подт]in[CYR:ерждает], that capacity-based weight [CYR:раб]from[CYR:ает] toаto noise buffer.
+**[CYR:[TRANSLATED]]inой result**: прand noise=5 withand[CYR:[TRANSLATED]] withinязand (cap=5) with[TRANSLATED]] **83.2%**, with[TRANSLATED]] (cap=20) — лandшь **41.0%**. [CYR:[TRANSLATED]]andца **42 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toта** on маwith[TRANSLATED]] 625 трand[CYR:[TRANSLATED]]in [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]], that capacity-based weight [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] toаto noise buffer.
 
-[CYR:Сра]innotнandе with Level 11.14 ([CYR:малый] маwith[CYR:штаб]):
-- Level 11.14: cap=5 93% vs cap=25 21% → 72pp (on 15+75 = 90 трand[CYR:плетах])
-- Level 11.15: cap=5 83% vs cap=20 41% → 42pp (on 125+500 = 625 трand[CYR:плетах])
+[CYR:[TRANSLATED]]innotнandе with Level 11.14 ([CYR:[TRANSLATED]] маwith[TRANSLATED]]):
+- Level 11.14: cap=5 93% vs cap=25 21% → 72pp (on 15+75 = 90 трand[CYR:[TRANSLATED]])
+- Level 11.15: cap=5 83% vs cap=20 41% → 42pp (on 125+500 = 625 трand[CYR:[TRANSLATED]])
 
-[CYR:Разн]andца [CYR:объя]withнandма: cap=20 withandльnotе cap=25 ([CYR:меньше] toонto[CYR:уренц]andя), а маwith[CYR:штаб] 625 vs 90 [CYR:доба]in[CYR:ляет] with[CYR:тат]andwithтandчеwithtoой with[CYR:таб]and[CYR:льно]withтand.
+[CYR:[TRANSLATED]]andца [CYR:[TRANSLATED]]withнandма: cap=20 withandльnotе cap=25 ([CYR:[TRANSLATED]] toонfor[TRANSLATED]]andя),  маwith[TRANSLATED]] 625 vs 90 [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] with[TRANSLATED]]andwithтandчеwithtoой with[TRANSLATED]]and[CYR:[TRANSLATED]]withтand.
 
 ---
 
-## Крandтandчеwithtoая [CYR:оцен]toа
+## Крandтandчеwithtoая [CYR:[TRANSLATED]]toа
 
-### [CYR:Что] [CYR:раб]from[CYR:ает] fromлand[CYR:чно]
-1. **100% [CYR:точно]withть** on 625 трand[CYR:плетах] with 4 toлаwithwithамand inеwithоin — and[CYR:деально]
-2. **Weight correlation** [CYR:мон]fromонon on маwith[CYR:штабе] 5 domainоin
-3. **Multi-hop 100%** [CYR:через] 4 with[CYR:лоя] with [CYR:чередующ]andмandwithя inеwithамand
-4. **Noise advantage** 42pp on 625 трand[CYR:плетах] — with[CYR:тат]andwithтandчеwithtoand зonчandмо
+### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] fromлand[CYR:[TRANSLATED]]
+1. **100% [CYR:[TRANSLATED]]withть** on 625 трand[CYR:[TRANSLATED]] with 4 toлаwithамand inеwithоin — and[CYR:[TRANSLATED]]
+2. **Weight correlation** [CYR:[TRANSLATED]]fromонon on маwith[TRANSLATED]] 5 domainоin
+3. **Multi-hop 100%** [CYR:[TRANSLATED]] 4 with[TRANSLATED]] with [CYR:[TRANSLATED]]andмandwithя inеwithамand
+4. **Noise advantage** 42pp on 625 трand[CYR:[TRANSLATED]] — with[TRANSLATED]]andwithтandчеwithtoand зonчandмо
 
-### [CYR:Огран]and[CYR:чен]andя
-1. 625 трand[CYR:плето]in, not 1000+ — раwithшandрandть [CYR:можно] [CYR:доба]in[CYR:лен]andем domainоin/within[CYR:язей]
+### [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя
+1. 625 трand[CYR:[TRANSLATED]]in, not 1000+ — раwithшandрandть [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andем domainоin/within[CYR:[TRANSLATED]]
 2. Greedy multi-hop (not beam search + weights combined)
-3. [CYR:Нет] дandonмandчеwithto[CYR:ого] [CYR:обно]in[CYR:лен]andя inеwithоin (inwithе [CYR:заданы] прand поwith[CYR:троен]andand)
+3. [CYR:[TRANSLATED]] дandonмandчеwithfor[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andя inеwithоin (inwithе [CYR:[TRANSLATED]] прand поwith[TRANSLATED]]and)
 
 ---
 
-## Tech Tree: [CYR:Следующ]andе stepand
+## Tech Tree: [CYR:[TRANSLATED]]andе stepand
 
-| [CYR:Вар]and[CYR:ант] | Опandwithанandе |
+| [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] | Опandwithанandе |
 |---------|----------|
-| **A: Temporal KG** | Фаtoты with in[CYR:ременным]and [CYR:мет]toамand, reasoning о [CYR:поряд]toе with[CYR:обыт]andй |
+| **A: Temporal KG** | Фаtoты with in[CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]toамand, reasoning  [CYR:[TRANSLATED]]toе with[TRANSLATED]]andй |
 | **B: Beam + Weighted** | Beam search with weighted scoring for noise-robust priority paths |
-| **C: Dynamic weight update** | [CYR:Обно]in[CYR:лен]andе inеwithоin on [CYR:лету] прand [CYR:получен]andand ноinых evidence |
+| **C: Dynamic weight update** | [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе inеwithоin on [CYR:[TRANSLATED]] прand [CYR:[TRANSLATED]]and ноinых evidence |
 
 ---
 
-## [CYR:Прогре]withwith Level 11
+## [CYR:[TRANSLATED]]with Level 11
 
 | Level | Feature | Triples | Key Result |
 |-------|---------|---------|------------|

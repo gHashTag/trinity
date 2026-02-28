@@ -1,5 +1,5 @@
 // Maxwell Daemon - LLM Client
-// [CYR:[EN]]and[EN] with LLM API for reasoning
+// and with LLM API for reasoning
 //
 // IMPLEMENTATION STATUS:
 // - GLM (z.ai): IMPLEMENTED (working)
@@ -182,7 +182,7 @@ pub const LLMClient = struct {
         self.conversation.deinit();
     }
 
-    /// [CYR:[EN]]inand[EN] with[CYR:[EN]]and[EN] and by[CYR:[EN]]and[EN] answer
+    /// inand withand and byand answer
     pub fn chat(self: *LLMClient, user_message: []const u8) !LLMResponse {
         // Add user message to conversation
         try self.conversation.append(Message{
@@ -202,7 +202,7 @@ pub const LLMClient = struct {
         return response;
     }
 
-    /// [CYR:[EN]]not[EN]and[EN]in[CYR:[EN]] .vibee with[CYR:[EN]]and[EN]andto[EN]and[EN]
+    /// notandin .vibee withandtoand
     pub fn generateSpec(self: *LLMClient, task_description: []const u8, context: []const u8) ![]const u8 {
         var prompt = std.ArrayList(u8).init(self.allocator);
         defer prompt.deinit();
@@ -219,7 +219,7 @@ pub const LLMClient = struct {
         return response.content;
     }
 
-    /// [CYR:[EN]]on[EN]and[EN]and[EN]in[CYR:[EN]] [EN]and[EN]to[EN] and [CYR:[EN]]and[EN] andwith[CYR:[EN]]in[CYR:[EN]]and[EN]
+    /// onandin andto and and andwithinand
     pub fn analyzeError(self: *LLMClient, error_message: []const u8, code_context: []const u8) ![]const u8 {
         var prompt = std.ArrayList(u8).init(self.allocator);
         defer prompt.deinit();
@@ -236,7 +236,7 @@ pub const LLMClient = struct {
         return response.content;
     }
 
-    /// [EN]to[EN]by[EN]and[EN]in[CYR:[EN]] [EN]yes[EN] on by[CYR:[EN]]yes[EN]and
+    /// tobyandin yes on byyesand
     pub fn decomposeTask(self: *LLMClient, task_description: []const u8) ![]const u8 {
         var prompt = std.ArrayList(u8).init(self.allocator);
         defer prompt.deinit();
@@ -252,7 +252,7 @@ pub const LLMClient = struct {
         return response.content;
     }
 
-    /// [EN]andwith[EN]and[EN] andwith[CYR:[EN]]and[EN] [CYR:[EN]]in[CYR:[EN]]
+    /// andwithand andwithand in
     pub fn clearHistory(self: *LLMClient) void {
         self.conversation.clearRetainingCapacity();
         self.conversation.append(Message{

@@ -195,7 +195,7 @@ test_cases:
     expected: "Routes to chat, English response"
 
   - name: tc02_russian_greeting
-    given: "[EN]andin[EN]! [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]?"
+    given: "andin!  ?"
     expected: "Routes to chat, Russian response"
 
   - name: tc03_chinese_greeting
@@ -277,7 +277,7 @@ test_cases:
     expected: "Greeting + quicksort code"
 
   - name: tc22_russian_code
-    given: "[EN]andin[EN]! [CYR:[TRANSLATED]]and[EN]and fibonacci on Python"
+    given: "andin! and fibonacci on Python"
     expected: "Russian greeting + Python fibonacci"
 
   - name: tc23_chinese_code
@@ -289,7 +289,7 @@ test_cases:
     expected: "Explanation + Zig code"
 
   - name: tc25_mixed_lang_code
-    given: "[EN]andin[EN]! Write binary search on JavaScript"
+    given: "andin! Write binary search on JavaScript"
     expected: "Mixed language handling + JS code"
 
   - name: tc26_chat_then_code

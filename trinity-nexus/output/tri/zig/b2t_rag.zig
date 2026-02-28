@@ -15,10 +15,10 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]A[TRANSLATED]]
+// [CYR:A]
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// [CYR:[TRANSLATED]]iny[EN] φ-to[EN]with[CYR:[TRANSLATED]y] (Sacred Formula)
+// iny φ-towithy] (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -30,7 +30,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// 
@@ -132,7 +132,7 @@ pub const RetrievalResult = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]A[TRANSLATED]] [CYR:[TRANSLATED]] WASM
+// [CYR:A]  WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 var global_buffer: [65536]u8 align(16) = undefined;
@@ -182,13 +182,13 @@ fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-and[CYR:[TRANSLATED]]fields[EN]andI
+/// φ-andfieldsandI
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 
-/// [EN]not[CYR:[TRANSLATED]]andI φ-with[EN]and[CYR:[TRANSLATED]]and
+/// notandI φ-withand
 fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
     const max_points = f64_buffer.len / 2;
     const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
@@ -530,16 +530,16 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "embed_code_ternary_behavior" {
-// Given: [CYR:[TRANSLATED]me[EN]] to[CYR:[TRANSLATED]]
-// When: [EN]not[CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]go] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] VSA
-// Then: Returns TernaryEmbedding [CYR:[TRANSLATED]]with[EN]and 10000
+// Given: [CYR:me] to
+// When: notandI and[CYR:go] and  VSA
+// Then: Returns TernaryEmbedding withand 10000
 // Test embed_code_ternary: verify behavior is callable (compile-time check)
 _ = embed_code_ternary;
 }
 
 test "embed_tokens_behavior" {
-// Given: [EN]andwith[EN]to [EN]to[CYR:[TRANSLATED]]in to[CYR:[TRANSLATED]]
-// When: [EN]to[EN]and[CYR:[TRANSLATED]]andI and [CYR:[TRANSLATED]]and[EN] to[CYR:[TRANSLATED]go] [EN]to[EN]on
+// Given: andwithto toin to
+// When: toandI and and forgo] toon
 // Then: Returns List<TernaryEmbedding>
 // Test embed_tokens: verify behavior is callable (compile-time check)
 _ = embed_tokens;
@@ -547,31 +547,31 @@ _ = embed_tokens;
 
 test "combine_embeddings_behavior" {
 // Given: List<TernaryEmbedding>
-// When: [CYR:[TRANSLATED]]and[EN]and[EN]in[EN]and[EN] [CYR:[TRANSLATED]] bundling ([CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:go[EN]]with[EN]in[EN]and[EN])
-// Then: Returns [EN]and[CYR:ny] TernaryEmbedding
+// When: andinand  bundling (and [CYR:go]withinand)
+// Then: Returns and[CYR:ny] TernaryEmbedding
 // Test combine_embeddings: verify behavior is callable (compile-time check)
 _ = combine_embeddings;
 }
 
 test "bind_embeddings_behavior" {
-// Given: [EN]in[EN] TernaryEmbedding
-// When: [EN]in[CYR:I[EN]y]in[EN]and[EN] [CYR:[TRANSLATED]] XOR ([CYR:[TRANSLATED]]and[CYR:[EN]ny])
-// Then: Returns within[CYR:I[TRANSLATED]ny] TernaryEmbedding
+// Given: in TernaryEmbedding
+// When: in[CYR:Iy]inand  XOR (and[CYR:ny])
+// Then: Returns within[CYR:Iny] TernaryEmbedding
 // Test bind_embeddings: verify behavior is callable (compile-time check)
 _ = bind_embeddings;
 }
 
 test "chunk_code_behavior" {
-// Given: [CYR:[TRANSLATED]ny] andwith[CYR:[TRANSLATED]ny] to[EN]
-// When: [CYR:[TRANSLATED]]and[EN]and[EN] on with[CYR:[TRANSLATED]]and[EN]withtoand[EN] [CYR:[TRANSLATED]]toand
+// Given: [CYR:ny] andwithny] to
+// When: and on withandwithtoand toand
 // Then: Returns List<CodeChunk>
 // Test chunk_code: verify behavior is callable (compile-time check)
 _ = chunk_code;
 }
 
 test "detect_chunk_type_behavior" {
-// Given: [CYR:[TRANSLATED]me[EN]] to[CYR:[TRANSLATED]]
-// When: [CYR:[TRANSLATED]]withwithand[EN]andto[EN]andI [EN]and[EN] [CYR:[TRANSLATED]]to[EN]
+// Given: [CYR:me] to
+// When: withandtoandI and to
 // Then: Returns ChunkType
 // Test detect_chunk_type: verify behavior is callable (compile-time check)
 _ = detect_chunk_type;
@@ -579,7 +579,7 @@ _ = detect_chunk_type;
 
 test "extract_chunk_metadata_behavior" {
 // Given: CodeChunk
-// When: [EN]in[CYR:[EN]chen]and[EN] [CYR:[TRANSLATED]data] (and[EN]on, [EN]and[EN]y, in[CYR:y[EN]]iny)
+// When: in[CYR:chen]and [CYR:data] (andon, andy, in[CYR:y]iny)
 // Then: Returns Map<String, String>
 // Test extract_chunk_metadata: verify behavior is callable (compile-time check)
 _ = extract_chunk_metadata;
@@ -587,7 +587,7 @@ _ = extract_chunk_metadata;
 
 test "create_index_behavior" {
 // Given: IndexType and parametery
-// When: Creation [EN]withthat and[CYR:[TRANSLATED]]towith[EN]
+// When: Creation withthat andtowith
 // Then: Returns TernaryIndex
 // Test create_index: verify behavior is callable (compile-time check)
 _ = create_index;
@@ -595,15 +595,15 @@ _ = create_index;
 
 test "add_to_index_behavior" {
 // Given: TernaryIndex and CodeChunk
-// When: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]to[EN] in and[CYR:[TRANSLATED]]towith
-// Then: [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] and[CYR:[TRANSLATED]]towith
+// When: inand to in andtowith
+// Then: in[CYR:I] andtowith
 // Test add_to_index: verify behavior is callable (compile-time check)
 _ = add_to_index;
 }
 
 test "build_lsh_tables_behavior" {
 // Given: List<TernaryEmbedding>
-// When: [EN]with[CYR:[TRANSLATED]]and[EN] LSH [CYR:[TRANSLATED]]and[EN] for [EN]ywith[CYR:[TRANSLATED]go] [EN]andwithto[EN]
+// When: withand LSH and for ywithgo] andwithto
 // Then: Returns hash tables
 // Test build_lsh_tables: verify behavior is callable (compile-time check)
 _ = build_lsh_tables;
@@ -611,23 +611,23 @@ _ = build_lsh_tables;
 
 test "build_ternary_tree_behavior" {
 // Given: List<TernaryEmbedding>
-// When: [EN]with[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]go] [CYR:[TRANSLATED]]in[EN] [EN]andwithto[EN]
-// Then: Returns to[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[EN]
+// When: withand and[CYR:go] in andwithto
+// Then: Returns to in
 // Test build_ternary_tree: verify behavior is callable (compile-time check)
 _ = build_ternary_tree;
 }
 
 test "search_similar_behavior" {
 // Given: RetrievalQuery and TernaryIndex
-// When: [EN]andwithto [CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]to[EN]in
+// When: andwithto and toin
 // Then: Returns RetrievalResult
 // Test search_similar: verify behavior is callable (compile-time check)
 _ = search_similar;
 }
 
 test "compute_similarity_behavior" {
-// Given: [EN]in[EN] TernaryEmbedding and SimilarityMetric
-// When: [CYR:Vy[EN]]andwith[CYR:[TRANSLATED]]and[EN] with[CYR:[TRANSLATED]]with[EN]in[EN]
+// Given: in TernaryEmbedding and SimilarityMetric
+// When: [CYR:Vy]andwithand within
 // Then: Returns Float 0.0-1.0
 // Test compute_similarity: verify behavior is callable (compile-time check)
 _ = compute_similarity;
@@ -635,23 +635,23 @@ _ = compute_similarity;
 
 test "rank_results_behavior" {
 // Given: List<SimilarityResult>
-// When: [CYR:[TRANSLATED]]and[EN]in[EN]and[EN] [EN] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]with[EN]and
-// Then: Returns fromwith[CYR:[TRANSLATED]]and[EN]in[CYR:[EN]ny] with[EN]andwith[EN]to
+// When: andinand  inwithand
+// Then: Returns fromwithandin[CYR:ny] withandwithto
 // Test rank_results: verify behavior is callable (compile-time check)
 _ = rank_results;
 }
 
 test "filter_by_quality_behavior" {
 // Given: List<SimilarityResult> and min_quality
-// When: [EN]and[CYR:l[TRANSLATED]]andI [EN]and[EN]to[EN]to[CYR:[TRANSLATED]]with[EN]in[CYR:[TRANSLATED]y[EN]] result[EN]in
-// Then: Returns from[EN]and[CYR:l[TRANSLATED]]in[CYR:[EN]ny] with[EN]andwith[EN]to
+// When: and[CYR:l]andI andtotowithin[CYR:y] resultin
+// Then: Returns fromand[CYR:l]in[CYR:ny] withandwithto
 // Test filter_by_quality: verify behavior is callable (compile-time check)
 _ = filter_by_quality;
 }
 
 test "create_knowledge_base_behavior" {
-// Given: [CYR:[EN]I] and on[CYR:[EN]l[EN]y[EN]] [CYR:data]
-// When: Creation [EN]in[EN] [CYR:[TRANSLATED]y] [EN]on[EN]and[EN]
+// Given: [CYR:I] and on[CYR:ly] [CYR:data]
+// When: Creation in [CYR:y] onand
 // Then: Returns KnowledgeBase
 // Test create_knowledge_base: verify behavior is callable (compile-time check)
 _ = create_knowledge_base;
@@ -659,16 +659,16 @@ _ = create_knowledge_base;
 
 test "add_knowledge_behavior" {
 // Given: KnowledgeBase and KnowledgeEntry
-// When: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] [EN]in[EN] [CYR:[TRANSLATED]]andwithand
-// Then: [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [CYR:[TRANSLATED]] and and[CYR:[TRANSLATED]]towith
+// When: inand in andwithand
+// Then: in[CYR:I]  and andtowith
 // Test add_knowledge: verify behavior is callable (compile-time check)
 _ = add_knowledge;
 }
 
 test "update_quality_score_behavior" {
 // Given: KnowledgeEntry and feedback
-// When: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]toand to[CYR:[TRANSLATED]]with[EN]in[EN] on [EN]with[EN]in[EN] andwith[CYR:[EN]l[EN]]in[EN]andI
-// Then: [CYR:[TRANSLATED]]with[EN]and[EN]yin[CYR:acts] quality_score
+// When: inand toand towithin on within andwithl]inandI
+// Then: withandyin[CYR:acts] quality_score
 // Test update_quality_score: verify returns a float in valid range
 // TODO: Add specific test for update_quality_score
 _ = update_quality_score;
@@ -676,31 +676,31 @@ _ = update_quality_score;
 
 test "prune_low_quality_behavior" {
 // Given: KnowledgeBase and threshold
-// When: [CYR:[TRANSLATED]]and[EN] [EN]and[EN]to[EN]to[CYR:[TRANSLATED]]with[EN]in[CYR:[TRANSLATED]y[EN]] [CYR:[TRANSLATED]]andwith[EN]
-// Then: [EN]and[CYR:[EN]acts] [CYR:[TRANSLATED]]
+// When: and andtotowithin[CYR:y] andwith
+// Then: and[CYR:acts] 
 // Test prune_low_quality: verify behavior is callable (compile-time check)
 _ = prune_low_quality;
 }
 
 test "save_knowledge_base_behavior" {
 // Given: KnowledgeBase and path
-// When: [CYR:[TRANSLATED]]not[EN]and[EN] on [EN]andwithto
-// Then: [CYR:[TRANSLATED]]andwithyin[CYR:acts] in file
+// When: notand on andwithto
+// Then: andwithyin[CYR:acts] in file
 // Test save_knowledge_base: verify behavior is callable (compile-time check)
 _ = save_knowledge_base;
 }
 
 test "load_knowledge_base_behavior" {
-// Given: [CYR:[TRANSLATED]] to file[EN]
-// When: [CYR:[TRANSLATED]]to[EN] with [EN]andwithto[EN]
+// Given:  to file
+// When: to with andwithto
 // Then: Returns KnowledgeBase
 // Test load_knowledge_base: verify behavior is callable (compile-time check)
 _ = load_knowledge_base;
 }
 
 test "compute_semantic_intensity_behavior" {
-// Given: [CYR:[TRANSLATED]]to[EN] to[CYR:[TRANSLATED]]
-// When: [CYR:Vy[EN]]andwith[CYR:[TRANSLATED]]and[EN] "with[CYR:[TRANSLATED]]and[EN]withto[EN] and[CYR:[TRANSLATED]]withandin[EN]with[EN]and"
+// Given: to to
+// When: [CYR:Vy]andwithand "withandwithto andwithandinwithand"
 // Then: Returns Float score
 // Test compute_semantic_intensity: verify returns a float in valid range
 // TODO: Add specific test for compute_semantic_intensity
@@ -708,17 +708,17 @@ _ = compute_semantic_intensity;
 }
 
 test "identify_distorted_lines_behavior" {
-// Given: [EN]to[CYR:[TRANSLATED]]or[EN]in[CYR:[EN]ny] to[EN] and [CYR:[TRANSLATED]go]in[EN] [EN]on[CYR:[TRANSLATED]]and[EN]
-// When: [EN]andwithto with[CYR:[TRANSLATED]]to with inywith[EN]to[EN] in[CYR:[TRANSLATED]I[TRANSLATED]]with[CYR:[TRANSLATED]] andwithto[CYR:[TRANSLATED]]andI
-// Then: Returns List<Int> [CYR:[TRANSLATED]]in with[CYR:[TRANSLATED]]to
+// Given: toorin[CYR:ny] to and [CYR:go]in onand
+// When: andwithto withto with inywithto in[CYR:I]with andwithtoandI
+// Then: Returns List<Int> in withto
 // Test identify_distorted_lines: verify behavior is callable (compile-time check)
 _ = identify_distorted_lines;
 }
 
 test "prioritize_retrieval_behavior" {
-// Given: List<Int> andwithto[CYR:[TRANSLATED]y[EN]] with[CYR:[TRANSLATED]]to
-// When: [EN]and[EN]and[EN]and[CYR:[TRANSLATED]]andI for RAG [CYR:[EN]pro]with[EN]in
-// Then: Returns [CYR:[TRANSLATED]I[TRANSLATED]ny] with[EN]andwith[EN]to
+// Given: List<Int> andwithfory] withto
+// When: andandI for RAG [CYR:pro]within
+// Then: Returns [CYR:Iny] withandwithto
 // Test prioritize_retrieval: verify behavior is callable (compile-time check)
 _ = prioritize_retrieval;
 }

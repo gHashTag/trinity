@@ -77,7 +77,7 @@ description: |
   === MULTILINGUAL LONG GENERATION ===
   Test seeds:
     EN: "To be or not to be, that is the question."
-    RU: " on[CYR:[TRANSLATED]] [CYR:[EN]y[EN]] [CYR:[TRANSLATED]]in[EN], and [CYR:[TRANSLATED]]in[EN] [CYR:[EN]y[EN]]  [CYR:[TRANSLATED]]."
+    RU: " on [CYR:y] in, and in [CYR:y]  ."
     DE: "Am Anfang war das Wort, und das Wort war bei Gott."
     FR: "Au commencement était la Parole, et la Parole était avec Dieu."
     ES: "En el principio era el Verbo, y el Verbo era con Dios."

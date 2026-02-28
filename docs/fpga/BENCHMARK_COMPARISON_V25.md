@@ -1,14 +1,14 @@
 # 📊 BENCHMARK COMPARISON V25 - MULTI-LANGUAGE AUTO-OPTIMIZATION
 
-**[CYR:Дата]:** 2026-01-18
-**[CYR:Вер]withandя:** v25.0.0
-**Теwithты [CYR:пройдено]:** 50/50 (100%)
+**[CYR:[TRANSLATED]]:** 2026-01-18
+**[CYR:[TRANSLATED]]withandя:** v25.0.0
+**Теwithты [CYR:[TRANSLATED]]:** 50/50 (100%)
 
 ---
 
-## 🧪 [CYR:ТЕСТЫ] TRINITY VM v25
+## 🧪 [CYR:TESTS] TRINITY VM v25
 
-| [CYR:Модуль] | Теwithты | [CYR:Стату]with |
+| [CYR:[TRANSLATED]] | Теwithты | [CYR:[TRANSLATED]]with |
 |--------|-------|--------|
 | `multi_lang_bench_v25.zig` | 8/8 | ✅ PASS |
 | `zhar_ptitsa_v24.zig` | 8/8 | ✅ PASS |
@@ -20,7 +20,7 @@
 
 ---
 
-## 🌍 10 [CYR:ЦЕЛЕВЫХ] [CYR:ЯЗЫКОВ]
+## 🌍 10 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 | # | Language | Tier | Expected | Features |
 |---|----------|------|----------|----------|
@@ -37,20 +37,20 @@
 
 ---
 
-## 📈 [CYR:СРАВНЕНИЕ] [CYR:ВЕРСИЙ] TRINITY VM
+## 📈 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] TRINITY VM
 
-| [CYR:Метр]andtoа | v22 | v23 | v24 | v25 | Прandроwithт v22→v25 |
+| [CYR:[TRANSLATED]]andtoа | v22 | v23 | v24 | v25 | Прandроwithт v22→v25 |
 |---------|-----|-----|-----|-----|-----------------|
 | **Теwithтоin** | 15 | 23 | 42 | 50 | **+233%** |
-| **[CYR:Стро]to to[CYR:ода]** | 526 | 1496 | 2000 | 2500+ | **+375%** |
-| **[CYR:Модулей]** | 1 | 3 | 4 | 5 | **+400%** |
-| **[CYR:Язы]toоin** | 1 | 1 | 1 | 10 | **+900%** |
+| **[CYR:[TRANSLATED]]to for[TRANSLATED]]** | 526 | 1496 | 2000 | 2500+ | **+375%** |
+| **[CYR:[TRANSLATED]]** | 1 | 3 | 4 | 5 | **+400%** |
+| **[CYR:[TRANSLATED]]toоin** | 1 | 1 | 1 | 10 | **+900%** |
 | **Self-Evolution** | ❌ | ❌ | ✅ | ✅ | NEW |
 | **Auto-Optimization** | ❌ | ❌ | ❌ | ✅ | NEW |
 
 ---
 
-## 🏆 BENCHMARK SUITE (7 теwithтоin × 10 [CYR:язы]toоin)
+## 🏆 BENCHMARK SUITE (7 теwithтоin × 10 [CYR:[TRANSLATED]]toоin)
 
 | Benchmark | Baseline | S-Tier | A-Tier | B-Tier | C-Tier |
 |-----------|----------|--------|--------|--------|--------|
@@ -64,7 +64,7 @@
 
 ---
 
-## ⚡ [CYR:СРАВНЕНИЕ] С [CYR:КОНКУРЕНТАМИ]
+## ⚡ [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]
 
 ### JIT Compiler Performance
 
@@ -85,8 +85,8 @@
 | Auto-Optimization | ✅ | ❌ | ❌ | ❌ |
 | 10 Languages | ✅ | ❌ | ❌ | ✅ |
 | Sacred Math | ✅ | ❌ | ❌ | ❌ |
-| 33 [CYR:Богатыря] | ✅ | ❌ | ❌ | ❌ |
-| [CYR:Жар]-птandца | ✅ | ❌ | ❌ | ❌ |
+| 33 [CYR:[TRANSLATED]] | ✅ | ❌ | ❌ | ❌ |
+| [CYR:[TRANSLATED]]-птandца | ✅ | ❌ | ❌ | ❌ |
 
 ---
 
@@ -100,13 +100,13 @@
 | Diffusion Steps | **1,000x** | LCM |
 | 3DGS Compression | **75x** | Compact3D |
 
-**[CYR:СУММАРНЫЙ] [CYR:ПОТЕНЦИАЛ]: 76,541x**
+**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: 76,541x**
 
 ---
 
-## 📁 [CYR:СГЕНЕРИРОВАННЫЕ] [CYR:ФАЙЛЫ] v25
+## 📁 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] v25
 
-| [CYR:Файл] | [CYR:Стро]to | Теwithты | [CYR:Формат] |
+| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]to | Теwithты | [CYR:[TRANSLATED]] |
 |------|-------|-------|--------|
 | `multi_lang_bench_v25.zig` | 300 | 8 | Zig |
 | `multi_lang_bench_v25.999` | 150 | - | .999 |
@@ -118,7 +118,7 @@
 
 ---
 
-## 🧮 [CYR:СВЯЩЕННАЯ] [CYR:МАТЕМАТИКА]
+## 🧮 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
 φ = 1.618033988749895
@@ -132,28 +132,28 @@
 
 ---
 
-## 💀 [CYR:ИТОГ]
+## 💀 [CYR:[TRANSLATED]]
 
-**TRINITY VM v25** - [CYR:пер]inая VM with:
+**TRINITY VM v25** - [CYR:[TRANSLATED]]inая VM with:
 
-1. ✅ **10 [CYR:целе]inых [CYR:язы]toоin** with аinтоin[CYR:ыбором] [CYR:лучшего]
-2. ✅ **Auto-Optimization** on onтandin[CYR:ном] [CYR:уро]innot
-3. ✅ **Self-Evolution** ([CYR:Жар]-птandца)
-4. ✅ **33 [CYR:Богатыря]** [CYR:защ]andтнandtoоin
-5. ✅ **PAS DAEMON** [CYR:пред]withto[CYR:азан]andя
-6. ✅ **Sacred Math** and[CYR:нтеграц]andя
+1. ✅ **10 [CYR:[TRANSLATED]]inых [CYR:[TRANSLATED]]toоin** with аinтоin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+2. ✅ **Auto-Optimization** on onтandin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]innot
+3. ✅ **Self-Evolution** ([CYR:[TRANSLATED]]-птandца)
+4. ✅ **33 [CYR:[TRANSLATED]]** [CYR:[TRANSLATED]]andтнandtoоin
+5. ✅ **PAS DAEMON** [CYR:[TRANSLATED]]withfor[TRANSLATED]]andя
+6. ✅ **Sacred Math** and[CYR:[TRANSLATED]]andя
 
-| [CYR:Метр]andtoа | Зon[CYR:чен]andе |
+| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе |
 |---------|----------|
-| Теwithтоin [CYR:пройдено] | 50/50 (100%) |
+| Теwithтоin [CYR:[TRANSLATED]] | 50/50 (100%) |
 | Прandроwithт теwithтоin v22→v25 | +233% |
-| Прandроwithт [CYR:язы]toоin v22→v25 | +900% |
-| Пfrom[CYR:енц]andал уwithto[CYR:орен]andя | 76,541x |
+| Прandроwithт [CYR:[TRANSLATED]]toоin v22→v25 | +900% |
+| Пfrom[CYR:[TRANSLATED]]andал уwithfor[TRANSLATED]]andя | 76,541x |
 
 ---
 
 ```
-[CYR:СВЯЩЕННАЯ] [CYR:ФОРМУЛА]: V = n × 3^k × π^m × φ^p × e^q
-[CYR:ЗОЛОТАЯ] [CYR:ИДЕНТИЧНОСТЬ]: φ² + 1/φ² = 3
-"[CYR:Гоняем] [CYR:друг]andе [CYR:язы]toand, withоin[CYR:ершен]withтinуя withinой!"
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: V = n × 3^k × π^m × φ^p × e^q
+[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: φ² + 1/φ² = 3
+"[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]toand, withоin[CYR:[TRANSLATED]]withтinуя withinой!"
 ```

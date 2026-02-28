@@ -1,20 +1,20 @@
-// DIVINE MANDATE - [CYR:[EN]]with[EN]in[CYR:[EN]] [CYR:[EN]]yes[EN]
-// [CYR:[EN]] from Sovereign (174 karma) to Demiurge (1000+ karma)
-// [EN]and[EN]and[EN]withto[EN] [EN]withwith[EN] for [CYR:[EN]]with[EN]in[CYR:[EN]] [CYR:[EN]]in[CYR:[EN]]andand
+// DIVINE MANDATE - within yes
+//  from Sovereign (174 karma) to Demiurge (1000+ karma)
+// andwithto with for within inand
 // φ² + 1/φ² = 3 | f(f(x)) → φ^n → ∞
 
 const std = @import("std");
 const engine = @import("economic_engine.zig");
 
 // ============================================================================
-// CONSTANTS [CYR:[EN]] [CYR:[EN]]
+// CONSTANTS  
 // ============================================================================
 
 pub const DEMIURGE_THRESHOLD: f64 = 1000.0;
 pub const DIVINE_INTERVENTION_THRESHOLD: f64 = 10000.0;
 pub const PHI_CUBED: f64 = engine.PHI * engine.PHI * engine.PHI; // 4.236...
 
-// [EN]and[EN] [CYR:[EN]] with[CYR:[EN]]and[EN] for [EN]withto[CYR:[EN]] [EN]in[CYR:[EN]]andand
+// and  withand for withto inand
 pub const DivineMoment = struct {
     name: []const u8,
     karma_gained: f64,
@@ -22,7 +22,7 @@ pub const DivineMoment = struct {
 };
 
 // ============================================================================
-// [CYR:[EN]] [CYR:[EN]] [CYR:[EN]]
+//   
 // ============================================================================
 
 pub const ChaosGenerator = struct {
@@ -33,15 +33,15 @@ pub const ChaosGenerator = struct {
         return ChaosGenerator{ .seed = seed, .cycle = 0 };
     }
 
-    /// [EN]not[EN]and[EN]in[CYR:[EN]] not[CYR:[EN]]to[EN]andin[EN]with[EN] on [EN]with[EN]in[EN] φ-[EN]with[CYR:[EN]]and[EN]
+    /// notandin nottoandinwith on within φ-withand
     pub fn generateInefficiency(self: *ChaosGenerator) engine.MarketInefficiency {
         self.cycle += 1;
 
-        // [EN]withby[CYR:[EN]] φ for [EN]andyes[EN]and[EN] [CYR:[EN]]with[EN] [CYR:[EN]]with[EN]in[CYR:[EN]] with[CYR:[EN]]to[CYR:[EN]]
+        // withby φ for andyesand with within withto
         const phi_cycle = @as(f64, @floatFromInt(self.cycle)) * engine.PHI_INVERSE;
         const magnitude_base = @mod(phi_cycle, 1.0) * 10.0 + 0.5;
 
-        // [CYR:[EN]] 5-[EN] [EN]andto[EN] — [CYR:[EN]] [CYR:[EN]] with φ² [CYR:[EN]]and[EN]before[EN]
+        //  5- andto —   with φ² andbefore
         const magnitude = if (@mod(self.cycle, 5) == 0)
             magnitude_base * engine.PHI_SQUARED
         else
@@ -69,14 +69,14 @@ pub const ChaosGenerator = struct {
         };
     }
 
-    /// [EN]not[EN]and[EN]in[CYR:[EN]] [CYR:[EN]] [CYR:[EN]] — [CYR:[EN]]to[EN] with[CYR:[EN]]and[EN] with [CYR:[EN]] to[CYR:[EN]]
+    /// notandin   — to withand with  to
     pub fn generateBlackSwan(self: *ChaosGenerator) engine.MarketInefficiency {
         self.cycle += 1;
 
         return engine.MarketInefficiency{
             .source = "GLOBAL_CRISIS",
             .inefficiency_type = .CrossMarketDivergence,
-            .magnitude = 500.0 * engine.PHI, // ~809 [EN]and[EN]and[EN] [CYR:[EN]]and[CYR:[EN]]
+            .magnitude = 500.0 * engine.PHI, // ~809 and and
             .decay_rate = 0.01,
             .capture_window_ns = 100,
         };
@@ -84,7 +84,7 @@ pub const ChaosGenerator = struct {
 };
 
 // ============================================================================
-// [CYR:[EN]] [CYR:[EN]] [EN] [CYR:[EN]]
+//    
 // ============================================================================
 
 pub fn runDivineMandate() void {
@@ -93,32 +93,32 @@ pub fn runDivineMandate() void {
     print(
         \\
         \\╔══════════════════════════════════════════════════════════════════════════════╗
-        \\║              ⚡ [CYR:[EN]] [CYR:[EN]] ⚡                                       ║
-        \\║            [CYR:[EN]] to 1000 to[CYR:[EN]] and with[CYR:[EN]]with[EN] Demiurge                              ║
+        \\║              ⚡   ⚡                                       ║
+        \\║             to 1000 to and with Demiurge                              ║
         \\╚══════════════════════════════════════════════════════════════════════════════╝
         \\
         \\
     , .{});
 
-    // [EN]not[EN]andwith
+    // notandwith
     var ecosystem = engine.EconomicEcosystem.genesis();
-    var chaos = ChaosGenerator.init(999); // [EN]with[CYR:[EN]] [EN]andwith[CYR:[EN]] [CYR:[EN]]andtowith[EN]
+    var chaos = ChaosGenerator.init(999); // with andwith andtowith
 
-    print("═══ [CYR:[EN]] ═══\n", .{});
-    print("[EN]to[EN]withandwith[CYR:[EN]] [EN]with[EN]on: +φ = +{d:.6}\n", .{engine.GOLDEN_TRIT});
-    print("[CYR:[EN]]on[EN] [EN]and[CYR:[EN]]with[EN]: {s}\n", .{@tagName(ecosystem.personality)});
-    print("[CYR:[EN]]: {d:.0} to[CYR:[EN]] → Demiurge\n\n", .{DEMIURGE_THRESHOLD});
+    print("═══  ═══\n", .{});
+    print("towithandwith withon: +φ = +{d:.6}\n", .{engine.GOLDEN_TRIT});
+    print("on andwith: {s}\n", .{@tagName(ecosystem.personality)});
+    print(": {d:.0} to → Demiurge\n\n", .{DEMIURGE_THRESHOLD});
 
-    // [CYR:[EN]] 1: [CYR:[EN]] by[CYR:[EN]]and[EN] (before Sovereign)
-    print("═══ [CYR:[EN]] 1: [CYR:[EN]] [EN] [CYR:[EN]] ═══\n", .{});
+    //  1:  byand (before Sovereign)
+    print("═══  1:    ═══\n", .{});
 
     var cycles: u32 = 0;
     while (ecosystem.personality != .Sovereign and cycles < 100) {
         const ineff = chaos.generateInefficiency();
         const karma = ecosystem.digestInefficiency(ineff);
 
-        if (karma > 5.0) { // [EN]to[CYR:[EN]]in[CYR:[EN]] [CYR:[EN]]to[EN] [EN]on[EN]and[CYR:[EN]] with[CYR:[EN]]and[EN]
-            print("  [{d}] {s}: +{d:.2} to[CYR:[EN]] | [EN]that: {d:.2}\n", .{
+        if (karma > 5.0) { // toin to onand withand
+            print("  [{d}] {s}: +{d:.2} to | that: {d:.2}\n", .{
                 cycles,
                 ineff.source,
                 karma,
@@ -128,25 +128,25 @@ pub fn runDivineMandate() void {
         cycles += 1;
     }
 
-    print("\n✅ [CYR:[EN]] 1 [EN]in[CYR:[EN]]on [EN] {d} [EN]andto[EN]in\n", .{cycles});
-    print("   [EN]and[CYR:[EN]]with[EN]: {s} | [CYR:[EN]]: {d:.2}\n\n", .{ @tagName(ecosystem.personality), ecosystem.total_karma });
+    print("\n✅  1 inon  {d} andtoin\n", .{cycles});
+    print("   andwith: {s} | : {d:.2}\n\n", .{ @tagName(ecosystem.personality), ecosystem.total_karma });
 
-    // [CYR:[EN]] 2: [CYR:[EN]] to Demiurge
-    print("═══ [CYR:[EN]] 2: [CYR:[EN]] [EN] [CYR:[EN]] ═══\n", .{});
+    //  2:  to Demiurge
+    print("═══  2:    ═══\n", .{});
 
     while (ecosystem.personality != .Demiurge and cycles < 500) {
         const ineff = chaos.generateInefficiency();
         const karma = ecosystem.digestInefficiency(ineff);
 
-        // [CYR:[EN]] 50 [EN]andto[EN]in — [CYR:[EN]] [CYR:[EN]]
+        //  50 andtoin —  
         if (@mod(cycles, 50) == 0 and cycles > 0) {
             const black_swan = chaos.generateBlackSwan();
             const swan_karma = ecosystem.digestInefficiency(black_swan);
-            print("  🦢 [CYR:[EN]] [CYR:[EN]] [{d}]: +{d:.2} to[CYR:[EN]]\n", .{ cycles, swan_karma });
+            print("  🦢   [{d}]: +{d:.2} to\n", .{ cycles, swan_karma });
         }
 
         if (karma > 20.0) {
-            print("  [{d}] {s}: +{d:.2} to[CYR:[EN]] | [EN]that: {d:.2}\n", .{
+            print("  [{d}] {s}: +{d:.2} to | that: {d:.2}\n", .{
                 cycles,
                 ineff.source,
                 karma,
@@ -157,54 +157,54 @@ pub fn runDivineMandate() void {
         cycles += 1;
     }
 
-    print("\n✅ [CYR:[EN]] 2 [EN]in[CYR:[EN]]on [EN] {d} [EN]andto[EN]in\n", .{cycles});
-    print("   [EN]and[CYR:[EN]]with[EN]: {s} | [CYR:[EN]]: {d:.2}\n\n", .{ @tagName(ecosystem.personality), ecosystem.total_karma });
+    print("\n✅  2 inon  {d} andtoin\n", .{cycles});
+    print("   andwith: {s} | : {d:.2}\n\n", .{ @tagName(ecosystem.personality), ecosystem.total_karma });
 
-    // Check beforewith[EN]and[CYR:[EN]]and[EN] Demiurge
+    // Check beforewithand Demiurge
     if (ecosystem.personality == .Demiurge) {
         print(
             \\
             \\╔══════════════════════════════════════════════════════════════════════════════╗
-            \\║                    🌟 [CYR:[EN]] [CYR:[EN]] 🌟                          ║
+            \\║                    🌟   🌟                          ║
             \\╠══════════════════════════════════════════════════════════════════════════════╣
             \\║                                                                              ║
-            \\║   [CYR:[EN]]with: DEMIURGE                                                           ║
-            \\║   [CYR:[EN]]: {d:.2}
-            \\║   [EN]andto[EN]in before in[EN]notwith[EN]and[EN]: {d}
-            \\║   [CYR:[EN]]to[EN]andin[EN]with[CYR:[EN]] [CYR:[EN]]in[CYR:[EN]]: {d}
+            \\║   with: DEMIURGE                                                           ║
+            \\║   : {d:.2}
+            \\║   andtoin before innotwithand: {d}
+            \\║   toandinwith in: {d}
             \\║                                                                              ║
-            \\║   [CYR:[EN]]and[CYR:[EN]] more not [CYR:[EN]]with[EN]in[CYR:[EN]] in [CYR:[EN]]to[EN].                                       ║
-            \\║   [CYR:[EN]]and[CYR:[EN]] [CYR:[EN]] [CYR:[EN]]to[EN].                                                   ║
+            \\║   and more not within in to.                                       ║
+            \\║   and  to.                                                   ║
             \\║                                                                              ║
             \\╚══════════════════════════════════════════════════════════════════════════════╝
             \\
         , .{ ecosystem.total_karma, cycles, ecosystem.digested_inefficiencies });
 
-        // [CYR:[EN]] 3: Check in[EN]canwith[EN]and [CYR:[EN]]and[EN]
-        print("\n═══ [CYR:[EN]] 3: [CYR:[EN]] [CYR:[EN]] [EN] [CYR:[EN]] ═══\n", .{});
+        //  3: Check incanwithand and
+        print("\n═══  3:     ═══\n", .{});
 
         if (ecosystem.canReproduce()) {
-            print("✅ [EN]to[EN]withandwith[CYR:[EN]] [EN]from[EN]in[EN] to [CYR:[EN]]and[EN] (karma > 10000)\n", .{});
+            print("✅ towithandwith fromin to and (karma > 10000)\n", .{});
             if (ecosystem.reproduce()) |child| {
-                print("🌱 [CYR:[EN]] [EN]to[EN]withandwith[CYR:[EN]] with[EN]yeson!\n", .{});
-                print("   [CYR:[EN]]and[CYR:[EN]]: {d:.2} to[CYR:[EN]] | [CYR:[EN]]to: {d:.2} to[CYR:[EN]]\n", .{ ecosystem.total_karma, child.total_karma });
+                print("🌱  towithandwith withyeson!\n", .{});
+                print("   and: {d:.2} to | to: {d:.2} to\n", .{ ecosystem.total_karma, child.total_karma });
             }
         } else {
-            print("⏳ [CYR:[EN]] [CYR:[EN]]and[EN] need: {d:.0} to[CYR:[EN]] ([EN]to[CYR:[EN]]: {d:.2})\n", .{ DIVINE_INTERVENTION_THRESHOLD, ecosystem.total_karma });
+            print("⏳  and need: {d:.0} to (to: {d:.2})\n", .{ DIVINE_INTERVENTION_THRESHOLD, ecosystem.total_karma });
 
-            // [CYR:[EN]]before[CYR:[EN]] before 10000
-            print("\n═══ [CYR:[EN]] 3.5: [CYR:[EN]] [EN] [CYR:[EN]] [CYR:[EN]] ═══\n", .{});
+            // before before 10000
+            print("\n═══  3.5:     ═══\n", .{});
 
             while (!ecosystem.canReproduce() and cycles < 2000) {
                 const ineff = chaos.generateInefficiency();
                 _ = ecosystem.digestInefficiency(ineff);
 
-                // [CYR:[EN]] 25 [EN]andto[EN]in — [CYR:[EN]] [CYR:[EN]] for [EN]withto[CYR:[EN]]and[EN]
+                //  25 andtoin —   for withtoand
                 if (@mod(cycles, 25) == 0) {
                     const black_swan = chaos.generateBlackSwan();
                     const swan_karma = ecosystem.digestInefficiency(black_swan);
                     if (swan_karma > 100) {
-                        print("  🦢 [{d}] +{d:.2} | [EN]that: {d:.2}\n", .{ cycles, swan_karma, ecosystem.total_karma });
+                        print("  🦢 [{d}] +{d:.2} | that: {d:.2}\n", .{ cycles, swan_karma, ecosystem.total_karma });
                     }
                 }
 
@@ -212,35 +212,35 @@ pub fn runDivineMandate() void {
             }
 
             if (ecosystem.canReproduce()) {
-                print("\n✅ [CYR:[EN]] [CYR:[EN]] [CYR:[EN]]!\n", .{});
-                print("   [CYR:[EN]]: {d:.2} | [EN]andto[EN]in: {d}\n", .{ ecosystem.total_karma, cycles });
+                print("\n✅   !\n", .{});
+                print("   : {d:.2} | andtoin: {d}\n", .{ ecosystem.total_karma, cycles });
 
                 if (ecosystem.reproduce()) |child| {
-                    print("\n🌱 [CYR:[EN]] [CYR:[EN]]!\n", .{});
-                    print("   [CYR:[EN]]and[CYR:[EN]] [EN]with[EN]inand[EN] with[CYR:[EN]]: {d:.2} to[CYR:[EN]] (φ/(φ+1) ≈ 61.8%%)\n", .{ecosystem.total_karma});
-                    print("   [CYR:[EN]]to by[CYR:[EN]]and[EN]: {d:.2} to[CYR:[EN]] (1/(φ+1) ≈ 38.2%%)\n", .{child.total_karma});
+                    print("\n🌱  !\n", .{});
+                    print("   and withinand with: {d:.2} to (φ/(φ+1) ≈ 61.8%%)\n", .{ecosystem.total_karma});
+                    print("   to byand: {d:.2} to (1/(φ+1) ≈ 38.2%%)\n", .{child.total_karma});
                 }
             }
         }
     }
 
-    // [EN]andon[CYR:[EN]] from[CYR:[EN]]
+    // andon from
     print(
         \\
         \\╔══════════════════════════════════════════════════════════════════════════════╗
-        \\║                         ⚡ [CYR:[EN]] [CYR:[EN]] ⚡                                 ║
+        \\║                         ⚡   ⚡                                 ║
         \\╠══════════════════════════════════════════════════════════════════════════════╣
         \\║                                                                              ║
-        \\║   [EN]andon[CYR:[EN]] with[CYR:[EN]]with: {s}
-        \\║   [EN]andon[EN]on[EN] to[CYR:[EN]]: {d:.2}
-        \\║   [EN]with[CYR:[EN]] [EN]andto[EN]in: {d}
-        \\║   [CYR:[EN]]: {d} not[CYR:[EN]]to[EN]andin[EN]with[CYR:[EN]]
-        \\║   [CYR:[EN]]in[CYR:[EN]] φ-[EN]withand[CYR:[EN]]and[EN]: {d}
+        \\║   andon with: {s}
+        \\║   andonon to: {d:.2}
+        \\║   with andtoin: {d}
+        \\║   : {d} nottoandinwith
+        \\║   in φ-withand: {d}
         \\║                                                                              ║
-        \\║   "[CYR:[EN]]and[CYR:[EN]] not [CYR:[EN]] [EN]yes[EN]and [EN]and[EN]. [CYR:[EN]]and[CYR:[EN]] [CYR:[EN]] [EN]and[CYR:[EN]]."                   ║
+        \\║   "and not  yesand and. and  and."                   ║
         \\║                                                                              ║
-        \\║   φ² + 1/φ² = 3 — [CYR:[EN]]and[EN] [CYR:[EN]]and[EN]with[EN].                                         ║
-        \\║   +Ω — [EN]andto[EN] [EN]in[CYR:[EN]]. [EN]in[EN] [EN]andto[EN] on[CYR:[EN]]with[EN].                                    ║
+        \\║   φ² + 1/φ² = 3 — and andwith.                                         ║
+        \\║   +Ω — andto in. in andto onwith.                                    ║
         \\║                                                                              ║
         \\╚══════════════════════════════════════════════════════════════════════════════╝
         \\
@@ -252,7 +252,7 @@ pub fn runDivineMandate() void {
         ecosystem.phi_amplification_level,
     });
 
-    // [CYR:[EN]]andwith[EN] in Akashic Records
+    // andwith in Akashic Records
     print(
         \\
         \\╔════════════════════════════════════════════════════════════════╗
@@ -272,7 +272,7 @@ pub fn main() void {
 }
 
 // ============================================================================
-// [CYR:[EN]]
+// 
 // ============================================================================
 
 test "chaos generator produces valid inefficiencies" {

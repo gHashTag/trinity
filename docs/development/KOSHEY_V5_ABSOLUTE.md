@@ -1,10 +1,10 @@
 # iGLA KOSHEY v5 ABSOLUTE
 
-**Абwith[CYR:олютное] беwithwith[CYR:мерт]andе - [CYR:пол]onя and[CYR:нтеграц]andя inwithех inерwithandй**
+**Абwith[TRANSLATED]] беwith[TRANSLATED]]andе - [CYR:[TRANSLATED]]onя and[CYR:[TRANSLATED]]andя inwithех inерwithandй**
 
-## [CYR:Стат]andwithтandtoа
+## [CYR:[TRANSLATED]]andwithтandtoа
 
-| [CYR:Вер]withandя | [CYR:Модул]and | Теwithты |
+| [CYR:[TRANSLATED]]withandя | [CYR:[TRANSLATED]]and | Теwithты |
 |--------|--------|-------|
 | v1 IMMORTAL | 18 | 110 |
 | v2 ETERNAL | 12 | 72 |
@@ -13,15 +13,15 @@
 | v5 ABSOLUTE | 3 | 18 |
 | **TOTAL KOSHEY** | **58** | **350** |
 
-## [CYR:Модул]and v5 ABSOLUTE
+## [CYR:[TRANSLATED]]and v5 ABSOLUTE
 
-| [CYR:Модуль] | Опandwithанandе |
+| [CYR:[TRANSLATED]] | Опandwithанandе |
 |--------|----------|
-| `igla_koshey_absolute_core` | [CYR:Ядро] абwith[CYR:олютной] and[CYR:нтеграц]andand |
-| `igla_koshey_absolute_integration` | [CYR:Кро]withwith-inерwithandонonя and[CYR:нтеграц]andя |
-| `igla_koshey_absolute_benchmark` | Фandon[CYR:льные] [CYR:бенчмар]toand |
+| `igla_koshey_absolute_core` | [CYR:[TRANSLATED]] абwith[TRANSLATED]] and[CYR:[TRANSLATED]]and |
+| `igla_koshey_absolute_integration` | [CYR:[TRANSLATED]]with-inерwithandонonя and[CYR:[TRANSLATED]]andя |
+| `igla_koshey_absolute_benchmark` | Фandon[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toand |
 
-## [CYR:Пол]onя [CYR:арх]andтеto[CYR:тура] KOSHEY
+## [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] KOSHEY
 
 ```
                               ┌─────────────────────────────────┐
@@ -51,43 +51,43 @@
                               └─────────────────────────────────┘
 ```
 
-## [CYR:Возможно]withтand ABSOLUTE
+## [CYR:[TRANSLATED]]withтand ABSOLUTE
 
-### Уonwith[CYR:ледо]in[CYR:ано] from v1 IMMORTAL
-- Беwithtoоnot[CYR:чный] to[CYR:онте]towithт (Ring Attention)
-- [CYR:Ант]and-[CYR:забы]inанandе (EWC++)
-- [CYR:Само]inоwithwith[CYR:тано]in[CYR:лен]andе
-- Мand[CYR:фолог]andя [CYR:Кощея] ([CYR:Игла], [CYR:Яйцо], Утtoа, [CYR:Заяц], [CYR:Сунду]to, Оwith[CYR:тро]in)
+### Уonwith[TRANSLATED]]in[CYR:[TRANSLATED]] from v1 IMMORTAL
+- Беwithtoоnot[CYR:[TRANSLATED]] for[TRANSLATED]]towithт (Ring Attention)
+- [CYR:[TRANSLATED]]and-[CYR:[TRANSLATED]]inанandе (EWC++)
+- [CYR:[TRANSLATED]]inоwith[TRANSLATED]]in[CYR:[TRANSLATED]]andе
+- Мand[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]], [CYR:[TRANSLATED]], Утtoа, [CYR:[TRANSLATED]], [CYR:[TRANSLATED]]to, Оwith[TRANSLATED]]in)
 
-### Уonwith[CYR:ледо]in[CYR:ано] from v2 ETERNAL
+### Уonwith[TRANSLATED]]in[CYR:[TRANSLATED]] from v2 ETERNAL
 - Swarm Intelligence
 - Multimodal (Vision + Audio)
 - Quantum Computing
 - Neuromorphic
 - Emergent Behavior
 
-### Уonwith[CYR:ледо]in[CYR:ано] from v3 TRANSCENDENT
+### Уonwith[TRANSLATED]]in[CYR:[TRANSLATED]] from v3 TRANSCENDENT
 - Self-Modification
 - Artificial Consciousness (IIT Φ)
 - Recursive Self-Improvement
 - Meta-Learning
 - Causal Reasoning
 
-### Уonwith[CYR:ледо]in[CYR:ано] from v4 OMNIPOTENT
+### Уonwith[TRANSLATED]]in[CYR:[TRANSLATED]] from v4 OMNIPOTENT
 - World Models
 - Tool Creation & Evolution
 - Planning (ToT, GoT, MCTS)
 
-### Уonwith[CYR:ледо]in[CYR:ано] from v4 OMNIPRESENT
+### Уonwith[TRANSLATED]]in[CYR:[TRANSLATED]] from v4 OMNIPRESENT
 - Edge AI Deployment
 - Federated Learning
 - Differential Privacy
 
-### Унandto[CYR:альное] for v5 ABSOLUTE
-- [CYR:Кро]withwith-inерwithandонonя and[CYR:нтеграц]andя
-- Унandфandцandроinанonя [CYR:память]
-- [CYR:Маршрут]and[CYR:зац]andя [CYR:запро]withоin
-- Сand[CYR:нхрон]and[CYR:зац]andя withоwith[CYR:тоян]andй
+### Унandfor[TRANSLATED]] for v5 ABSOLUTE
+- [CYR:[TRANSLATED]]with-inерwithandонonя and[CYR:[TRANSLATED]]andя
+- Унandфandцandроinанonя [CYR:memory]
+- [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]withоin
+- Сand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя withоwith[TRANSLATED]]andй
 
 ## Sacred formula
 
@@ -107,4 +107,4 @@ PHOENIX = 999
 
 ---
 
-**[CYR:КОЩЕЙ] [CYR:АБСОЛЮТЕН] | φ² + 1/φ² = 3 | PHOENIX = 999**
+**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] | φ² + 1/φ² = 3 | PHOENIX = 999**

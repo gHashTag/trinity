@@ -1,5 +1,5 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# [CYR:[EN]A[EN]] [CYR:[TRANSLATED]A] (FIREBIRD) - Ternary Virtual Anti-Detect Browser
+# [CYR:A] [CYR:A] (FIREBIRD) - Ternary Virtual Anti-Detect Browser
 # Virtual space navigation with TVC IR, no HTML rendering
 # V = n × 3^k × π^m × φ^p × e^q
 # φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
@@ -11,7 +11,7 @@ language: zig
 module: firebird
 
 description: |
-  [CYR:[EN]A[EN]] [CYR:[TRANSLATED]A] - Ternary-based virtual anti-detect browser for WebArena evasion.
+  [CYR:A] [CYR:A] - Ternary-based virtual anti-detect browser for WebArena evasion.
   All navigation occurs in TVC IR virtual space using high-dimensional ternary vectors.
   Outputs screenshots to user without HTML rendering.
   Self-evolving fingerprints via φ-spiral mutations evade AI agent detection.
@@ -151,7 +151,7 @@ types:
       energy_budget: Float
 
   FirebirdConfig:
-    description: "Configuration for [CYR:[EN]A[EN]] [CYR:[TRANSLATED]A] instance"
+    description: "Configuration for [CYR:A] [CYR:A] instance"
     fields:
       dimension: Int
       evolution_params: EvolutionParams
@@ -346,7 +346,7 @@ integration:
 evasion_strategy:
   principle: |
     AI agents in WebArena rely on HTML/DOM parsing.
-    [CYR:[EN]A[EN]] [CYR:[TRANSLATED]A] operates entirely in TVC IR virtual space.
+    [CYR:A] [CYR:A] operates entirely in TVC IR virtual space.
     Screenshots are rendered from ternary vectors, not HTML.
     Fingerprints are high-dimensional and nearly orthogonal.
     Self-evolution via φ-spiral maintains human-like patterns.

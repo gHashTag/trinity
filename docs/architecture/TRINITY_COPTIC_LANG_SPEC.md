@@ -1,175 +1,175 @@
-# ⲦⲢⲒⲚⲒⲦⲨ - [CYR:Копт]withtoandй [CYR:Язы]to Трandдеinяthat [CYR:Цар]withтinа
+# ⲦⲢⲒⲚⲒⲦⲨ - [CYR:[TRANSLATED]]withtoandй [CYR:[TRANSLATED]]to Трandдеinяthat [CYR:[TRANSLATED]]withтinа
 
-**[CYR:Вер]withandя**: 1.0.0 MVP
-**Сin[CYR:ящен]onя [CYR:Формула]**: `V = n × 3^k × π^m × φ^p × e^q`
-**[CYR:Зол]fromая [CYR:Идент]and[CYR:чно]withть**: `φ² + 1/φ² = 3`
+**[CYR:[TRANSLATED]]withandя**: 1.0.0 MVP
+**Сin[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]**: `V = n × 3^k × π^m × φ^p × e^q`
+**[CYR:[TRANSLATED]]fromая [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withть**: `φ² + 1/φ² = 3`
 
 ---
 
-## 1. [CYR:ВВЕДЕНИЕ] И [CYR:ФИЛОСОФИЯ]
+## 1. [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]
 
-### 1.1 Трandдеin[CYR:ятое] [CYR:Цар]withтinо (3³ = 27)
+### 1.1 Трandдеin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinо (3³ = 27)
 
-ⲦⲢⲒⲚⲒⲦⲨ - [CYR:язы]to [CYR:программ]andроinанandя for [CYR:тро]and[CYR:чной] inand[CYR:ртуальной] [CYR:маш]andны TRINITY VM.
-Оwithноinан on to[CYR:опт]withtoом [CYR:алфа]inandте andз 27 буtoin, that matches 3³.
+ⲦⲢⲒⲚⲒⲦⲨ - [CYR:[TRANSLATED]]to [CYR:[TRANSLATED]]andроinанandя for [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andны TRINITY VM.
+Оwithноinан on for[TRANSLATED]]withtoом [CYR:[TRANSLATED]]inandте andз 27 буtoin, that matches 3³.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    [CYR:ТРИДЕВЯТОЕ] [CYR:ЦАРСТВО]                           │
+│                    [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                           │
 │                                                                 │
-│     3 withоwith[CYR:тоян]andя × 3 [CYR:уро]inня × 3 and[CYR:змерен]andя = 27 withandмin[CYR:оло]in         │
+│     3 withоwith[TRANSLATED]]andя × 3 [CYR:[TRANSLATED]]inня × 3 and[CYR:[TRANSLATED]]andя = 27 withandмin[CYR:[TRANSLATED]]in         │
 │                                                                 │
-│     ⲁⲃⲅ ⲇⲉⲍ ⲏⲑⲓ    (0-8)   - [CYR:Пер]inая деinятtoа                   │
-│     ⲕⲗⲙ ⲛⲝⲟ ⲡⲣⲥ    (9-17)  - [CYR:Вторая] деinятtoа                   │
-│     ⲧⲩⲫ ⲭⲯⲱ ϣϩϫ    (18-26) - [CYR:Третья] деinятtoа                   │
+│     ⲁⲃⲅ ⲇⲉⲍ ⲏⲑⲓ    (0-8)   - [CYR:[TRANSLATED]]inая деinятtoа                   │
+│     ⲕⲗⲙ ⲛⲝⲟ ⲡⲣⲥ    (9-17)  - [CYR:[TRANSLATED]] деinятtoа                   │
+│     ⲧⲩⲫ ⲭⲯⲱ ϣϩϫ    (18-26) - [CYR:[TRANSLATED]] деinятtoа                   │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### 1.2 [CYR:Тро]andчonя [CYR:Лог]andtoа
+### 1.2 [CYR:[TRANSLATED]]andчonя [CYR:[TRANSLATED]]andtoа
 
-| Соwith[CYR:тоян]andе | Сandмinол | Зon[CYR:чен]andе | [CYR:Смы]withл |
+| Соwith[TRANSLATED]]andе | Сandмinол | Зon[CYR:[TRANSLATED]]andе | [CYR:[TRANSLATED]]withл |
 |-----------|--------|----------|-------|
-| ⲁ (Alfa) | - | -1 | [CYR:Отр]and[CYR:цан]andе/[CYR:Ложь] |
-| ⲟ (O) | 0 | 0 | [CYR:Неопределённо]withть |
-| ⲱ (Oou) | + | +1 | Утin[CYR:ержден]andе/Иwithтandon |
+| ⲁ (Alfa) | - | -1 | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andе/[CYR:[TRANSLATED]] |
+| ⲟ (O) | 0 | 0 | [CYR:[TRANSLATED]]withть |
+| ⲱ (Oou) | + | +1 | Утin[CYR:[TRANSLATED]]andе/Иwithтandon |
 
 ---
 
-## 2. [CYR:АЛФАВИТ] (27 [CYR:СИМВОЛОВ])
+## 2. [CYR:[TRANSLATED]] (27 [CYR:[TRANSLATED]])
 
-### 2.1 [CYR:Пол]onя [CYR:Табл]andца
+### 2.1 [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]andца
 
-| # | [CYR:Тро]and[CYR:чный] | Буtoinа | Unicode | [CYR:Имя] | [CYR:Роль] in [CYR:язы]toе |
+| # | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] | Буtoinа | Unicode | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] in [CYR:[TRANSLATED]]toе |
 |---|----------|-------|---------|-----|--------------|
-| 0 | 000 | ⲁ | U+2C81 | Alfa | Тandп/[CYR:Отр]and[CYR:цан]andе |
-| 1 | 001 | ⲃ | U+2C83 | Vida | [CYR:Перемен]onя |
-| 2 | 002 | ⲅ | U+2C85 | Gamma | [CYR:Фун]toцandя |
-| 3 | 010 | ⲇ | U+2C87 | Dalda | [CYR:Данные] |
-| 4 | 011 | ⲉ | U+2C89 | Eie | [CYR:Выражен]andе |
+| 0 | 000 | ⲁ | U+2C81 | Alfa | Тandп/[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andе |
+| 1 | 001 | ⲃ | U+2C83 | Vida | [CYR:[TRANSLATED]]onя |
+| 2 | 002 | ⲅ | U+2C85 | Gamma | [CYR:[TRANSLATED]]toцandя |
+| 3 | 010 | ⲇ | U+2C87 | Dalda | [CYR:[TRANSLATED]] |
+| 4 | 011 | ⲉ | U+2C89 | Eie | [CYR:[TRANSLATED]]andе |
 | 5 | 012 | ⲍ | U+2C8D | Zata | Цandtoл |
 | 6 | 020 | ⲏ | U+2C8F | Hate | Уwithлоinandе |
-| 7 | 021 | ⲑ | U+2C91 | Thethe | [CYR:Тета]/[CYR:Угол] |
-| 8 | 022 | ⲓ | U+2C93 | Iauda | [CYR:Итератор] |
-| 9 | 100 | ⲕ | U+2C95 | Kapa | [CYR:Кон]with[CYR:танта] |
-| 10 | 101 | ⲗ | U+2C97 | Laula | [CYR:Лямбда] |
-| 11 | 102 | ⲙ | U+2C99 | Mi | [CYR:Модуль] |
+| 7 | 021 | ⲑ | U+2C91 | Thethe | [CYR:[TRANSLATED]]/[CYR:[TRANSLATED]] |
+| 8 | 022 | ⲓ | U+2C93 | Iauda | [CYR:[TRANSLATED]] |
+| 9 | 100 | ⲕ | U+2C95 | Kapa | [CYR:[TRANSLATED]]with[TRANSLATED]] |
+| 10 | 101 | ⲗ | U+2C97 | Laula | [CYR:[TRANSLATED]] |
+| 11 | 102 | ⲙ | U+2C99 | Mi | [CYR:[TRANSLATED]] |
 | 12 | 110 | ⲛ | U+2C9B | Ni | Чandwithло |
-| 13 | 111 | ⲝ | U+2C9D | Ksi | Кwithand/Неandзinеwith[CYR:тное] |
-| 14 | 112 | ⲟ | U+2C9F | O | [CYR:Ноль]/[CYR:Нейтраль] |
+| 13 | 111 | ⲝ | U+2C9D | Ksi | Кwithand/Неandзinеwith[TRANSLATED]] |
+| 14 | 112 | ⲟ | U+2C9F | O | [CYR:[TRANSLATED]]/[CYR:[TRANSLATED]] |
 | 15 | 120 | ⲡ | U+2CA1 | Pi | Пand (π) |
-| 16 | 121 | ⲣ | U+2CA3 | Ro | [CYR:Воз]in[CYR:рат] |
-| 17 | 122 | ⲥ | U+2CA5 | Sima | [CYR:Стру]to[CYR:тура] |
-| 18 | 200 | ⲧ | U+2CA7 | Tau | [CYR:Тау] (τ=2π) |
+| 16 | 121 | ⲣ | U+2CA3 | Ro | [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] |
+| 17 | 122 | ⲥ | U+2CA5 | Sima | [CYR:[TRANSLATED]]for[TRANSLATED]] |
+| 18 | 200 | ⲧ | U+2CA7 | Tau | [CYR:[TRANSLATED]] (τ=2π) |
 | 19 | 201 | ⲩ | U+2CA9 | Ua | Юнandон |
 | 20 | 202 | ⲫ | U+2CAB | Fi | Фand (φ) |
-| 21 | 210 | ⲭ | U+2CAD | Khi | Хand/[CYR:Выбор] |
-| 22 | 211 | ⲯ | U+2CAF | Psi | Пwithand/[CYR:Вол]on |
-| 23 | 212 | ⲱ | U+2CB1 | Oou | [CYR:Омега]/Коnotц |
+| 21 | 210 | ⲭ | U+2CAD | Khi | Хand/[CYR:[TRANSLATED]] |
+| 22 | 211 | ⲯ | U+2CAF | Psi | Пwithand/[CYR:[TRANSLATED]]on |
+| 23 | 212 | ⲱ | U+2CB1 | Oou | [CYR:[TRANSLATED]]/Коnotц |
 | 24 | 220 | ϣ | U+03E3 | Shei | Сдinandг |
-| 25 | 221 | ϩ | U+03E9 | Hori | [CYR:Хра]notнandе |
-| 26 | 222 | ϫ | U+03EB | Gangia | [CYR:Переход] |
+| 25 | 221 | ϩ | U+03E9 | Hori | [CYR:[TRANSLATED]]notнandе |
+| 26 | 222 | ϫ | U+03EB | Gangia | [CYR:[TRANSLATED]] |
 
 ---
 
-## 3. [CYR:СИСТЕМА] [CYR:ТИПОВ]
+## 3. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### 3.1 Прandмandтandin[CYR:ные] [CYR:Тро]and[CYR:чные] Тandпы
-
-```
-ⲧⲣⲓⲧ     -- trit: [CYR:одно] [CYR:тро]and[CYR:чное] зon[CYR:чен]andе {-1, 0, +1}
-ⲧⲣⲩⲧⲉ    -- tryte: 3 трandта = 27 withоwith[CYR:тоян]andй (0-26)
-ⲧⲣⲓⲛⲧ    -- trint: 9 трandтоin = [CYR:тро]and[CYR:чное] [CYR:целое]
-ⲧⲣⲫⲗⲟⲁⲧ  -- trfloat: [CYR:тро]and[CYR:чное] with [CYR:пла]in[CYR:ающей] [CYR:точ]toой
-```
-
-### 3.2 Сin[CYR:ященные] Тandпы
+### 3.1 Прandмandтandin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] Тandпы
 
 ```
-ⲫⲓ       -- φ ([CYR:зол]fromое with[CYR:ечен]andе) = 1.618033988749895
+ⲧⲣⲓⲧ     -- trit: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] зon[CYR:[TRANSLATED]]andе {-1, 0, +1}
+ⲧⲣⲩⲧⲉ    -- tryte: 3 трandта = 27 withоwith[TRANSLATED]]andй (0-26)
+ⲧⲣⲓⲛⲧ    -- trint: 9 трandтоin = [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+ⲧⲣⲫⲗⲟⲁⲧ  -- trfloat: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] with [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toой
+```
+
+### 3.2 Сin[CYR:[TRANSLATED]] Тandпы
+
+```
+ⲫⲓ       -- φ ([CYR:[TRANSLATED]]fromое with[TRANSLATED]]andе) = 1.618033988749895
 ⲡⲓ       -- π = 3.14159265358979
 ⲧⲁⲩ      -- τ = 2π = 6.28318530717959
 ⲉⲩⲗⲉⲣ    -- e = 2.71828182845905
 ```
 
-### 3.3 Соwithтаin[CYR:ные] Тandпы
+### 3.3 Соwithтаin[CYR:[TRANSLATED]] Тandпы
 
 ```
-ⲥⲧⲣⲩⲕⲧ   -- with[CYR:тру]to[CYR:тура] (struct)
-ⲩⲛⲓⲟⲛ    -- [CYR:объед]andnotнandе (union)
+ⲥⲧⲣⲩⲕⲧ   -- with[TRANSLATED]]for[TRANSLATED]] (struct)
+ⲩⲛⲓⲟⲛ    -- [CYR:[TRANSLATED]]andnotнandе (union)
 ⲗⲓⲥⲧ     -- withпandwithоto (list)
-ⲙⲁⲧⲣⲓⲝ   -- [CYR:матр]andца (matrix)
+ⲙⲁⲧⲣⲓⲝ   -- [CYR:[TRANSLATED]]andца (matrix)
 ```
 
 ---
 
-## 4. [CYR:ГРАММАТИКА] (EBNF)
+## 4. [CYR:[TRANSLATED]] (EBNF)
 
 ```ebnf
-(* [CYR:Программа] *)
+(* [CYR:[TRANSLATED]] *)
 ⲡⲣⲟⲅⲣⲁⲙ = { ⲇⲉⲕⲗⲁⲣⲁⲧⲓⲟⲛ } ;
 
-(* [CYR:Объя]in[CYR:лен]andя *)
+(* [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andя *)
 ⲇⲉⲕⲗⲁⲣⲁⲧⲓⲟⲛ = ⲕⲟⲛⲥⲧ_ⲇⲉⲕⲗ | ⲃⲁⲣ_ⲇⲉⲕⲗ | ⲫⲩⲛⲕ_ⲇⲉⲕⲗ | ⲥⲧⲣⲩⲕⲧ_ⲇⲉⲕⲗ ;
 
-(* [CYR:Кон]with[CYR:танта]: ⲕ andмя : тandп = зon[CYR:чен]andе *)
+(* [CYR:[TRANSLATED]]with[TRANSLATED]]: ⲕ andмя : тandп = зon[CYR:[TRANSLATED]]andе *)
 ⲕⲟⲛⲥⲧ_ⲇⲉⲕⲗ = "ⲕ" ⲓⲇⲉⲛⲧ ":" ⲧⲩⲡⲉ "=" ⲉⲝⲡⲣ ";" ;
 
-(* [CYR:Перемен]onя: ⲃ andмя : тandп *)
+(* [CYR:[TRANSLATED]]onя: ⲃ andмя : тandп *)
 ⲃⲁⲣ_ⲇⲉⲕⲗ = "ⲃ" ⲓⲇⲉⲛⲧ ":" ⲧⲩⲡⲉ [ "=" ⲉⲝⲡⲣ ] ";" ;
 
-(* [CYR:Фун]toцandя: ⲅ andмя (parameterы) -> тandп { [CYR:тело] } *)
+(* [CYR:[TRANSLATED]]toцandя: ⲅ andмя (parameterы) -> тandп { [CYR:[TRANSLATED]] } *)
 ⲫⲩⲛⲕ_ⲇⲉⲕⲗ = "ⲅ" ⲓⲇⲉⲛⲧ "(" [ ⲡⲁⲣⲁⲙⲥ ] ")" "->" ⲧⲩⲡⲉ "{" { ⲥⲧⲁⲧⲉⲙⲉⲛⲧ } "}" ;
 
-(* [CYR:Стру]to[CYR:тура]: ⲥ andмя { fields } *)
+(* [CYR:[TRANSLATED]]for[TRANSLATED]]: ⲥ andмя { fields } *)
 ⲥⲧⲣⲩⲕⲧ_ⲇⲉⲕⲗ = "ⲥ" ⲓⲇⲉⲛⲧ "{" { ⲫⲓⲉⲗⲇ } "}" ;
 
-(* [CYR:Выражен]andя *)
+(* [CYR:[TRANSLATED]]andя *)
 ⲉⲝⲡⲣ = ⲧⲉⲣⲙ { ⲟⲡⲉⲣⲁⲧⲟⲣ ⲧⲉⲣⲙ } ;
 ⲧⲉⲣⲙ = ⲗⲓⲧⲉⲣⲁⲗ | ⲓⲇⲉⲛⲧ | "(" ⲉⲝⲡⲣ ")" | ⲫⲩⲛⲕ_ⲕⲁⲗⲗ ;
 
-(* [CYR:Операторы] *)
+(* [CYR:[TRANSLATED]] *)
 ⲟⲡⲉⲣⲁⲧⲟⲣ = "+" | "-" | "×" | "÷" | "⊕" | "⊗" | "≡" | "≢" ;
 
-(* [CYR:Упра]in[CYR:лен]andе *)
+(* [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе *)
 ⲥⲧⲁⲧⲉⲙⲉⲛⲧ = ⲓⲫ_ⲥⲧⲙⲧ | ⲙⲁⲧⲭⲏ_ⲥⲧⲙⲧ | ⲗⲟⲟⲡ_ⲥⲧⲙⲧ | ⲣⲉⲧⲩⲣⲛ_ⲥⲧⲙⲧ | ⲉⲝⲡⲣ ";" ;
 
-(* Уwithлоinandе: ⲏ (уwithлоinandе) { [CYR:тогда] } ⲁ { andonче } *)
+(* Уwithлоinandе: ⲏ (уwithлоinandе) { [CYR:[TRANSLATED]] } ⲁ { andonче } *)
 ⲓⲫ_ⲥⲧⲙⲧ = "ⲏ" "(" ⲉⲝⲡⲣ ")" "{" { ⲥⲧⲁⲧⲉⲙⲉⲛⲧ } "}" [ "ⲁ" "{" { ⲥⲧⲁⲧⲉⲙⲉⲛⲧ } "}" ] ;
 
-(* [CYR:Тро]and[CYR:чный] match: ⲭ (in[CYR:ыражен]andе) { ⲁ: ... ⲟ: ... ⲱ: ... } *)
+(* [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] match: ⲭ (in[CYR:[TRANSLATED]]andе) { ⲁ: ... ⲟ: ... ⲱ: ... } *)
 ⲙⲁⲧⲭⲏ_ⲥⲧⲙⲧ = "ⲭ" "(" ⲉⲝⲡⲣ ")" "{" "ⲁ:" { ⲥⲧⲁⲧⲉⲙⲉⲛⲧ } "ⲟ:" { ⲥⲧⲁⲧⲉⲙⲉⲛⲧ } "ⲱ:" { ⲥⲧⲁⲧⲉⲙⲉⲛⲧ } "}" ;
 
-(* Цandtoл: ⲍ (уwithлоinandе) { [CYR:тело] } *)
+(* Цandtoл: ⲍ (уwithлоinandе) { [CYR:[TRANSLATED]] } *)
 ⲗⲟⲟⲡ_ⲥⲧⲙⲧ = "ⲍ" "(" ⲉⲝⲡⲣ ")" "{" { ⲥⲧⲁⲧⲉⲙⲉⲛⲧ } "}" ;
 
-(* [CYR:Воз]in[CYR:рат]: ⲣ in[CYR:ыражен]andе *)
+(* [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]: ⲣ in[CYR:[TRANSLATED]]andе *)
 ⲣⲉⲧⲩⲣⲛ_ⲥⲧⲙⲧ = "ⲣ" ⲉⲝⲡⲣ ";" ;
 ```
 
 ---
 
-## 5. [CYR:КЛЮЧЕВЫЕ] [CYR:СЛОВА]
+## 5. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-| [CYR:Копт]withtoandй | [CYR:Лат]andнandца | Зon[CYR:чен]andе |
+| [CYR:[TRANSLATED]]withtoandй | [CYR:[TRANSLATED]]andнandца | Зon[CYR:[TRANSLATED]]andе |
 |----------|----------|----------|
-| ⲕ | const | toонwith[CYR:танта] |
-| ⲃ | var | [CYR:перемен]onя |
-| ⲅ | func | [CYR:фун]toцandя |
-| ⲥ | struct | with[CYR:тру]to[CYR:тура] |
+| ⲕ | const | toонwith[TRANSLATED]] |
+| ⲃ | var | [CYR:[TRANSLATED]]onя |
+| ⲅ | func | [CYR:[TRANSLATED]]toцandя |
+| ⲥ | struct | with[TRANSLATED]]for[TRANSLATED]] |
 | ⲏ | if | уwithлоinandе |
 | ⲁ | else | andonче |
 | ⲍ | loop | цandtoл |
-| ⲣ | return | inозin[CYR:рат] |
-| ⲭ | match | with[CYR:опо]withтаin[CYR:лен]andе |
+| ⲣ | return | inозin[CYR:[TRANSLATED]] |
+| ⲭ | match | with[TRANSLATED]]withтаin[CYR:[TRANSLATED]]andе |
 | ⲙ | module | module |
-| ϫ | jump | [CYR:переход] |
+| ϫ | jump | [CYR:[TRANSLATED]] |
 
 ---
 
-## 6. [CYR:СВЯЩЕННАЯ] [CYR:МАТЕМАТИКА]
+## 6. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### 6.1 [CYR:Зол]fromая [CYR:Идент]and[CYR:чно]withть
+### 6.1 [CYR:[TRANSLATED]]fromая [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withть
 
 ```
 ⲕ ⲫⲓ : ⲫⲓ = 1.618033988749895;
@@ -177,10 +177,10 @@
 ⲕ ⲓⲛⲃ_ⲫⲓ² : ⲫⲓ = 1 ÷ ⲫⲓ²;               -- 0.381...
 
 -- Golden identity: φ² + 1/φ² = 3
-ⲕ ⲅⲟⲗⲇⲉⲛ : ⲧⲣⲓⲛⲧ = ⲫⲓ² + ⲓⲛⲃ_ⲫⲓ²;       -- = 3 ([CYR:ТРОИЦА]!)
+ⲕ ⲅⲟⲗⲇⲉⲛ : ⲧⲣⲓⲛⲧ = ⲫⲓ² + ⲓⲛⲃ_ⲫⲓ²;       -- = 3 ([CYR:[TRANSLATED]]!)
 ```
 
-### 6.2 Сin[CYR:ящен]onя [CYR:Формула]
+### 6.2 Сin[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]
 
 ```
 -- V = n × 3^k × π^m × φ^p × e^q
@@ -191,29 +191,29 @@
 
 ---
 
-## 7. [CYR:МАППИНГ] НА TRINITY VM
+## 7. [CYR:[TRANSLATED]] НА TRINITY VM
 
 ### 7.1 Opcodes
 
-| [CYR:Копт]withtoandй | Opcode | Hex | Опandwithанandе |
+| [CYR:[TRANSLATED]]withtoandй | Opcode | Hex | Опandwithанandе |
 |----------|--------|-----|----------|
-| ⲛⲟⲡ | NOP | 0x00 | [CYR:Нет] [CYR:операц]andand |
-| ⲡⲩϣ | PUSH | 0x01 | [CYR:Полож]andть on withтеto |
-| ⲡⲟⲡ | POP | 0x02 | [CYR:Снять] withо withтеtoа |
-| ⲁⲇⲇ | ADD | 0x10 | [CYR:Сложен]andе |
-| ⲥⲩⲃ | SUB | 0x11 | [CYR:Выч]and[CYR:тан]andе |
-| ⲙⲩⲗ | MUL | 0x12 | [CYR:Умножен]andе |
-| ⲇⲓⲃ | DIV | 0x13 | [CYR:Делен]andе |
-| ϫⲙⲡ | JMP | 0x40 | [CYR:Безу]withлоin[CYR:ный] [CYR:переход] |
-| ϫⲍ | JZ | 0x41 | [CYR:Переход] еwithлand [CYR:ноль] |
-| ⲕⲁⲗⲗ | CALL | 0x43 | [CYR:Вызо]in [CYR:фун]toцandand |
-| ⲣⲉⲧ | RET | 0x44 | [CYR:Воз]in[CYR:рат] |
-| ⲫⲓ_ⲡⲩϣ | PUSH_PHI | 0x90 | [CYR:Полож]andть φ |
-| ⲡⲓ_ⲡⲩϣ | PUSH_PI | 0x91 | [CYR:Полож]andть π |
+| ⲛⲟⲡ | NOP | 0x00 | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and |
+| ⲡⲩϣ | PUSH | 0x01 | [CYR:[TRANSLATED]]andть on withтеto |
+| ⲡⲟⲡ | POP | 0x02 | [CYR:[TRANSLATED]] withо withтеtoа |
+| ⲁⲇⲇ | ADD | 0x10 | [CYR:[TRANSLATED]]andе |
+| ⲥⲩⲃ | SUB | 0x11 | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andе |
+| ⲙⲩⲗ | MUL | 0x12 | [CYR:[TRANSLATED]]andе |
+| ⲇⲓⲃ | DIV | 0x13 | [CYR:[TRANSLATED]]andе |
+| ϫⲙⲡ | JMP | 0x40 | [CYR:[TRANSLATED]]withлоin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] |
+| ϫⲍ | JZ | 0x41 | [CYR:[TRANSLATED]] еwithлand [CYR:[TRANSLATED]] |
+| ⲕⲁⲗⲗ | CALL | 0x43 | [CYR:[TRANSLATED]]in [CYR:[TRANSLATED]]toцand |
+| ⲣⲉⲧ | RET | 0x44 | [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] |
+| ⲫⲓ_ⲡⲩϣ | PUSH_PHI | 0x90 | [CYR:[TRANSLATED]]andть φ |
+| ⲡⲓ_ⲡⲩϣ | PUSH_PI | 0x91 | [CYR:[TRANSLATED]]andть π |
 
-### 7.2 [CYR:Тро]and[CYR:чные] [CYR:Операц]andand
+### 7.2 [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and
 
-| [CYR:Операц]andя | Сandмinол | [CYR:Табл]andца andwithтand[CYR:нно]withтand |
+| [CYR:[TRANSLATED]]andя | Сandмinол | [CYR:[TRANSLATED]]andца andwithтand[CYR:[TRANSLATED]]withтand |
 |----------|--------|-------------------|
 | ⲧⲛⲟⲧ (NOT) | ¬ | ¬(-1)=+1, ¬(0)=0, ¬(+1)=-1 |
 | ⲧⲁⲛⲇ (AND) | ∧ | min(a, b) |
@@ -222,21 +222,21 @@
 
 ---
 
-## 8. [CYR:ПРИМЕРЫ] [CYR:КОДА]
+## 8. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ### 8.1 Hello Trinity
 
 ```coptic
--- [CYR:Пер]inая program on ⲦⲢⲒⲚⲒⲦⲨ
+-- [CYR:[TRANSLATED]]inая program on ⲦⲢⲒⲚⲒⲦⲨ
 ⲙ ⲙⲁⲓⲛ;
 
 ⲅ ⲙⲁⲓⲛ() -> ⲧⲣⲓⲧ {
     ⲡⲣⲓⲛⲧ("ϩⲉⲗⲗⲟ, ⲦⲢⲒⲚⲒⲦⲨ!");
-    ⲣ ⲱ;  -- inозin[CYR:рат] +1 (уwith[CYR:пех])
+    ⲣ ⲱ;  -- inозin[CYR:[TRANSLATED]] +1 (уwith[TRANSLATED]])
 }
 ```
 
-### 8.2 [CYR:Зол]fromая [CYR:Идент]and[CYR:чно]withть
+### 8.2 [CYR:[TRANSLATED]]fromая [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withть
 
 ```coptic
 -- Check φ² + 1/φ² = 3
@@ -261,43 +261,43 @@
 }
 ```
 
-### 8.3 [CYR:Тро]and[CYR:чный] Match
+### 8.3 [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] Match
 
 ```coptic
--- [CYR:Тро]and[CYR:чное] inетin[CYR:лен]andе
+-- [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] inетin[CYR:[TRANSLATED]]andе
 ⲅ ⲧⲣⲓⲛⲁⲣⲩ_ⲙⲁⲧⲭⲏ(ⲃⲁⲗⲩⲉ: ⲧⲣⲓⲧ) -> ⲧⲣⲓⲛⲧ {
     ⲭ (ⲃⲁⲗⲩⲉ) {
-        ⲁ: ⲣ -1;   -- fromрand[CYR:цательный]
-        ⲟ: ⲣ 0;    -- not[CYR:йтральный]
-        ⲱ: ⲣ +1;   -- [CYR:полож]and[CYR:тельный]
+        ⲁ: ⲣ -1;   -- fromрand[CYR:[TRANSLATED]]
+        ⲟ: ⲣ 0;    -- not[CYR:[TRANSLATED]]
+        ⲱ: ⲣ +1;   -- [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
     }
 }
 ```
 
-### 8.4 Comptime [CYR:Выч]andwith[CYR:лен]andя
+### 8.4 Comptime [CYR:[TRANSLATED]]andwith[TRANSLATED]]andя
 
 ```coptic
--- [CYR:Выч]andwith[CYR:лен]andе прand to[CYR:омп]and[CYR:ляц]andand (аon[CYR:лог] Zig comptime)
+-- [CYR:[TRANSLATED]]andwith[TRANSLATED]]andе прand for[TRANSLATED]]and[CYR:[TRANSLATED]]and (аon[CYR:[TRANSLATED]] Zig comptime)
 ⲕⲟⲙⲡⲧⲓⲙⲉ {
-    ⲕ ⲫⲁⲕⲧⲟⲣⲓⲁⲗ_9 : ⲧⲣⲓⲛⲧ = 362880;  -- 9! inычandwith[CYR:лено] прand to[CYR:омп]and[CYR:ляц]andand
+    ⲕ ⲫⲁⲕⲧⲟⲣⲓⲁⲗ_9 : ⲧⲣⲓⲛⲧ = 362880;  -- 9! inычandwith[TRANSLATED]] прand for[TRANSLATED]]and[CYR:[TRANSLATED]]and
     ⲕ ⲧⲣⲓⲛⲓⲧⲩ_ⲡⲟⲱⲉⲣ : ⲧⲣⲓⲛⲧ = 3 ^ 9;  -- 19683 = 3⁹
 }
 ```
 
 ---
 
-## 9. [CYR:МОДЕЛЬ] [CYR:ПАМЯТИ]
+## 9. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### 9.1 [CYR:Без] GC ([CYR:Ручное] [CYR:Упра]in[CYR:лен]andе)
+### 9.1 [CYR:[TRANSLATED]] GC ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе)
 
 ```coptic
--- [CYR:Алло]toацandя
+-- [CYR:[TRANSLATED]]toацandя
 ⲃ ⲡⲧⲣ : *ⲧⲣⲓⲛⲧ = ⲁⲗⲗⲟⲕ(ⲧⲣⲓⲛⲧ, 27);  -- 27 elementоin
 
--- Оwithin[CYR:обожден]andе (defer)
+-- Оwithin[CYR:[TRANSLATED]]andе (defer)
 ⲇⲉⲫⲉⲣ ⲫⲣⲉⲉ(ⲡⲧⲣ);
 
--- Иwith[CYR:пользо]inанandе
+-- Иwith[TRANSLATED]]inанandе
 ⲡⲧⲣ[0] = 42;
 ```
 
@@ -307,38 +307,38 @@
 ⲃ ⲁⲣⲉⲛⲁ : ⲁⲣⲉⲛⲁ_ⲁⲗⲗⲟⲕⲁⲧⲟⲣ = ⲁⲣⲉⲛⲁ.ⲓⲛⲓⲧ();
 ⲇⲉⲫⲉⲣ ⲁⲣⲉⲛⲁ.ⲇⲉⲓⲛⲓⲧ();
 
--- Вwithе [CYR:алло]toацandand оwithin[CYR:обождают]withя inмеwithте
+-- Вwithе [CYR:[TRANSLATED]]toацand оwithin[CYR:[TRANSLATED]]withя inмеwithте
 ⲃ ⲇⲁⲧⲁ : *ⲧⲣⲓⲛⲧ = ⲁⲣⲉⲛⲁ.ⲁⲗⲗⲟⲕ(ⲧⲣⲓⲛⲧ, 1000);
 ```
 
 ---
 
-## 10. [CYR:РЕЖИМЫ] [CYR:БЕЗОПАСНОСТИ]
+## 10. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-| [CYR:Реж]andм | [CYR:Про]inерtoand | Сto[CYR:оро]withть | Прandмеnotнandе |
+| [CYR:[TRANSLATED]]andм | [CYR:[TRANSLATED]]inерtoand | Сfor[TRANSLATED]]withть | Прandмеnotнandе |
 |-------|----------|----------|------------|
-| ⲇⲉⲃⲩⲅ | Вwithе | [CYR:Медленно] | [CYR:Разраб]fromtoа |
-| ⲥⲁⲫⲉ | [CYR:Гран]andцы | [CYR:Сред]not | [CYR:Прода]toшн |
-| ⲫⲁⲥⲧ | [CYR:Нет] | Быwith[CYR:тро] | Чandwith[CYR:лодроб]andлtoand |
+| ⲇⲉⲃⲩⲅ | Вwithе | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]fromtoа |
+| ⲥⲁⲫⲉ | [CYR:[TRANSLATED]]andцы | [CYR:[TRANSLATED]]not | [CYR:[TRANSLATED]]toшн |
+| ⲫⲁⲥⲧ | [CYR:[TRANSLATED]] | Быwith[TRANSLATED]] | Чandwith[TRANSLATED]]andлtoand |
 
 ```coptic
--- Лоto[CYR:альное] fromto[CYR:лючен]andе [CYR:про]in[CYR:еро]to
+-- Лоfor[TRANSLATED]] fromfor[TRANSLATED]]andе [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]to
 @ⲥⲉⲧ_ⲥⲁⲫⲉⲧⲩ(ⲫⲁⲗⲥⲉ)
 ⲅ ϩⲟⲧ_ⲗⲟⲟⲡ(ⲇⲁⲧⲁ: []ⲧⲣⲓⲧ) -> ⲧⲣⲓⲛⲧ {
-    -- Крandтand[CYR:чный] по withto[CYR:оро]withтand toод
+    -- Крandтand[CYR:[TRANSLATED]] по withfor[TRANSLATED]]withтand toод
 }
 ```
 
 ---
 
-## 11. [CYR:ЗАКЛЮЧЕНИЕ]
+## 11. [CYR:[TRANSLATED]]
 
-ⲦⲢⲒⲚⲒⲦⲨ [CYR:объед]and[CYR:няет]:
-- **27 to[CYR:опт]withtoandх withandмin[CYR:оло]in** = 3³ (Трandдеin[CYR:ятое] [CYR:Цар]withтinо)
-- **[CYR:Тро]and[CYR:чную] [CYR:лог]andtoу** {-1, 0, +1}
-- **Сin[CYR:ященную] [CYR:математ]andtoу** (φ, π, e, τ)
-- **Zero-cost абwith[CYR:тра]toцandand** (toаto Zig)
-- **[CYR:Ручное] [CYR:упра]in[CYR:лен]andе [CYR:памятью]** ([CYR:без] GC)
-- **Comptime inычandwith[CYR:лен]andя**
+ⲦⲢⲒⲚⲒⲦⲨ [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]:
+- **27 for[TRANSLATED]]withtoandх withandмin[CYR:[TRANSLATED]]in** = 3³ (Трandдеin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinо)
+- **[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andtoу** {-1, 0, +1}
+- **Сin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andtoу** (φ, π, e, τ)
+- **Zero-cost абwith[TRANSLATED]]toцand** (toаto Zig)
+- **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе [CYR:memoryю]** ([CYR:[TRANSLATED]] GC)
+- **Comptime inычandwith[TRANSLATED]]andя**
 
-**[CYR:КОЩЕЙ] [CYR:БЕССМЕРТЕН] | [CYR:ЗЛАТАЯ] [CYR:ЦЕПЬ] [CYR:ЗАМКНУТА] | φ² + 1/φ² = 3**
+**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] | φ² + 1/φ² = 3**

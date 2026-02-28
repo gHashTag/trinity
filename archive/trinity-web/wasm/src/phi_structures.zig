@@ -2,7 +2,7 @@
 // phi_structures v24.φ - Generated from specs/phi_structures.vibee
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// φ-[CYR:[TRANSLATED]]and[EN]and[EN]and[EN]in[CYR:[EN]nye] with[CYR:[TRANSLATED]]to[CYR:[TRANSLATED]y] [CYR:data]
+// φ-andandin[CYR:nye] withfory] [CYR:data]
 // Golden identity: φ² + 1/φ² = 3
 //
 // DO NOT EDIT - This file is auto-generated from .vibee specification
@@ -19,7 +19,7 @@ const PHI_SQ = phi_core.PHI_SQ;
 const TRINITY = phi_core.TRINITY;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]A[TRANSLATED]] [CYR:[TRANSLATED]] WASM
+// [CYR:A]  WASM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const MAX_NODES = 4096;
@@ -47,18 +47,18 @@ fn get_edge_count() u32 {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[TRANSLATED]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// [CYR:[TRANSLATED]] with φ-in[EN]with[EN]
+///  with φ-inwith
 pub const PhiNode = extern struct {
     id: u64,
     value: f64,
     phi_weight: f64,
     phi_level: u32,
-    parent: u32,      // and[CYR:[TRANSLATED]]towith [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]I] (MAX for to[CYR:[TRANSLATED]I])
-    left_child: u32,  // and[CYR:[TRANSLATED]]towith [EN]in[CYR:[EN]go] [CYR:[TRANSLATED]]to[EN]
-    right_child: u32, // and[CYR:[TRANSLATED]]towith [CYR:law]in[CYR:[EN]go] [CYR:[TRANSLATED]]to[EN]
+    parent: u32,      // andtowith and[CYR:I] (MAX for forI])
+    left_child: u32,  // andtowith in[CYR:go] to
+    right_child: u32, // andtowith [CYR:law]in[CYR:go] to
     _padding: u32,
     
     pub const NONE: u32 = 0xFFFFFFFF;
@@ -77,7 +77,7 @@ pub const PhiNode = extern struct {
     }
 };
 
-/// [CYR:[TRANSLATED]] with φ-in[EN]with[EN]
+///  with φ-inwith
 pub const PhiEdge = extern struct {
     source: u64,
     target: u64,
@@ -85,7 +85,7 @@ pub const PhiEdge = extern struct {
     phi_factor: f64,
     
     pub fn init(source: u64, target: u64, fib_index: u32) PhiEdge {
-        // [EN]with = F(k) / F(k+1) → 1/φ
+        // with = F(k) / F(k+1) → 1/φ
         const fk = phi_core.fibonacci(fib_index);
         const fk1 = phi_core.fibonacci(fib_index + 1);
         const weight = if (fk1 > 0) @as(f64, @floatFromInt(fk)) / @as(f64, @floatFromInt(fk1)) else PHI_INV;
@@ -100,30 +100,30 @@ pub const PhiEdge = extern struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// φ-TREE: [CYR:[TRANSLATED]]in[EN] with φ-[CYR:[TRANSLATED]]withand[EN]into[EN]
+// φ-TREE: in with φ-withandinto
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Initialization φ-[CYR:[TRANSLATED]]in[EN]
+/// Initialization φ-in
 fn phi_tree_init() void {
     node_count = 0;
     edge_count = 0;
 }
 
-/// [EN]with[EN]into[EN] in φ-[CYR:[TRANSLATED]]in[EN]
-/// Returns and[CYR:[TRANSLATED]]towith [EN]in[CYR:[EN]go] [CYR:[TRANSLATED]]
+/// withinto in φ-in
+/// Returns andtowith in[CYR:go] 
 fn phi_tree_insert(value: f64) u32 {
     if (node_count >= MAX_NODES) return PhiNode.NONE;
     
     const new_idx = node_count;
     
     if (node_count == 0) {
-        // [CYR:[TRANSLATED]]
+        // 
         nodes_buffer[new_idx] = PhiNode.init(new_idx, value, 0);
         node_count += 1;
         return new_idx;
     }
     
-    // [EN]andwithto [CYR:[TRANSLATED]]and[EN]andand for inwith[EN]intoand (BST)
+    // andwithto andand for inwithintoand (BST)
     var current: u32 = 0;
     var level: u32 = 0;
     
@@ -133,26 +133,26 @@ fn phi_tree_insert(value: f64) u32 {
         
         if (value < node.value) {
             if (node.left_child == PhiNode.NONE) {
-                // [EN]with[EN]in[CYR:[EN]I[EN]] with[EN]in[EN]
+                // within[CYR:I] within
                 nodes_buffer[new_idx] = PhiNode.init(new_idx, value, level);
                 nodes_buffer[new_idx].parent = current;
                 node.left_child = new_idx;
                 node_count += 1;
                 
-                // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] φ-[CYR:[TRANSLATED]]with
+                // in[CYR:I] φ-with
                 phi_tree_rebalance(current);
                 return new_idx;
             }
             current = node.left_child;
         } else {
             if (node.right_child == PhiNode.NONE) {
-                // [EN]with[EN]in[CYR:[EN]I[EN]] with[CYR:law]in[EN]
+                // within[CYR:I] withlaw]in
                 nodes_buffer[new_idx] = PhiNode.init(new_idx, value, level);
                 nodes_buffer[new_idx].parent = current;
                 node.right_child = new_idx;
                 node_count += 1;
                 
-                // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] φ-[CYR:[TRANSLATED]]with
+                // in[CYR:I] φ-with
                 phi_tree_rebalance(current);
                 return new_idx;
             }
@@ -161,11 +161,11 @@ fn phi_tree_insert(value: f64) u32 {
     }
 }
 
-/// [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[EN] (and[CYR:[TRANSLATED]]andin[CYR:ny] with [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]and[EN]y)
+/// with  in (andin[CYR:ny] with and andy)
 fn subtree_size(idx: u32) u32 {
     if (idx == PhiNode.NONE or idx >= node_count) return 0;
     
-    // [CYR:[TRANSLATED]]andin[CYR:ny] [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]] with andwith[CYR:[EN]l[EN]]in[EN]and[EN] with[EN]to[EN]
+    // andin[CYR:ny] with with andwithl]inand withto
     var stack: [64]u32 = undefined;
     var stack_top: u32 = 0;
     var count: u32 = 0;
@@ -182,7 +182,7 @@ fn subtree_size(idx: u32) u32 {
         count += 1;
         const node = &nodes_buffer[current];
         
-        if (stack_top < 62) { // [CYR:[TRANSLATED]]and[EN] from [CYR:[TRANSLATED]]not[EN]andI
+        if (stack_top < 62) { // and from notandI
             if (node.left_child != PhiNode.NONE and node.left_child < node_count) {
                 stack[stack_top] = node.left_child;
                 stack_top += 1;
@@ -197,18 +197,18 @@ fn subtree_size(idx: u32) u32 {
     return count;
 }
 
-/// Check and in[EN]withwith[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] φ-[CYR:[TRANSLATED]]with[EN] (and[CYR:[TRANSLATED]]andin[CYR:ny])
+/// Check and inwithinand φ-with (andin[CYR:ny])
 fn phi_tree_rebalance(start_idx: u32) void {
     var idx = start_idx;
     var iterations: u32 = 0;
-    const max_iterations: u32 = 64; // [CYR:[TRANSLATED]]and[EN] from [EN]withto[EN]not[CYR:[TRANSLATED]go] [EN]andto[EN]
+    const max_iterations: u32 = 64; // and from withtonot[CYR:go] andto
     
     while (idx != PhiNode.NONE and idx < node_count and iterations < max_iterations) : (iterations += 1) {
         const node = &nodes_buffer[idx];
         const left_size = subtree_size(node.left_child);
         const right_size = subtree_size(node.right_child);
         
-        // φ-[CYR:[TRANSLATED]]with: |left - right × φ| < 1
+        // φ-with: |left - right × φ| < 1
         const left_f: f64 = @floatFromInt(left_size);
         const right_f: f64 = @floatFromInt(right_size);
         const imbalance = @abs(left_f - right_f * PHI);
@@ -221,12 +221,12 @@ fn phi_tree_rebalance(start_idx: u32) void {
             }
         }
         
-        // [CYR:[TRANSLATED]]and[EN] to [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
+        // and to and
         idx = node.parent;
     }
 }
 
-/// [CYR:[TRANSLATED]]in[EN]I [EN]from[EN]andI
+/// inI fromandI
 fn phi_rotate_right(idx: u32) void {
     const node = &nodes_buffer[idx];
     const left_idx = node.left_child;
@@ -234,13 +234,13 @@ fn phi_rotate_right(idx: u32) void {
     
     const left = &nodes_buffer[left_idx];
     
-    // [CYR:[TRANSLATED]] [CYR:law]in[EN] [CYR:[TRANSLATED]]in[EN] left in [EN]in[EN] [CYR:[TRANSLATED]]in[EN] node
+    //  [CYR:law]in in left in in in node
     node.left_child = left.right_child;
     if (left.right_child != PhiNode.NONE) {
         nodes_buffer[left.right_child].parent = idx;
     }
     
-    // left with[CYR:[TRANSLATED]]inand[EN]withI [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] node
+    // left withinandwithI and node
     left.parent = node.parent;
     if (node.parent != PhiNode.NONE) {
         const parent = &nodes_buffer[node.parent];
@@ -254,12 +254,12 @@ fn phi_rotate_right(idx: u32) void {
     left.right_child = idx;
     node.parent = left_idx;
     
-    // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] φ-in[EN]with[EN]
+    // in[CYR:I] φ-inwith
     update_phi_weights(idx);
     update_phi_weights(left_idx);
 }
 
-/// [EN]in[EN]I [EN]from[EN]andI
+/// inI fromandI
 fn phi_rotate_left(idx: u32) void {
     const node = &nodes_buffer[idx];
     const right_idx = node.right_child;
@@ -289,25 +289,25 @@ fn phi_rotate_left(idx: u32) void {
     update_phi_weights(right_idx);
 }
 
-/// [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] φ-in[EN]with[EN]in [EN]with[EN] [EN]from[EN]andand
+/// inand φ-inwithin with fromand
 fn update_phi_weights(idx: u32) void {
     if (idx == PhiNode.NONE) return;
     
     var level: u32 = 0;
     var current = idx;
     
-    // [EN]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] from to[CYR:[TRANSLATED]I]
+    // and in from forI]
     while (nodes_buffer[current].parent != PhiNode.NONE) {
         current = nodes_buffer[current].parent;
         level += 1;
     }
     
-    // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]]
+    // in[CYR:I]
     nodes_buffer[idx].phi_level = level;
     nodes_buffer[idx].phi_weight = phi_core.phi_power(-@as(i32, @intCast(level)));
 }
 
-/// [EN]andwithto in φ-[CYR:[TRANSLATED]]in[EN]
+/// andwithto in φ-in
 fn phi_tree_search(value: f64) u32 {
     var current: u32 = 0;
     
@@ -330,7 +330,7 @@ fn phi_tree_search(value: f64) u32 {
     return PhiNode.NONE;
 }
 
-/// [CYR:[TRANSLATED]]andon φ-[CYR:[TRANSLATED]]in[EN]
+/// andon φ-in
 fn phi_tree_depth() u32 {
     return compute_depth(0);
 }
@@ -375,7 +375,7 @@ fn fib_heap_init() void {
     fib_size = 0;
 }
 
-/// [EN]with[EN]into[EN] in Fibonacci heap - O(1)
+/// withinto in Fibonacci heap - O(1)
 fn fib_heap_insert(key: f64) u32 {
     if (fib_count >= MAX_NODES) return FibNode.NONE;
     
@@ -396,7 +396,7 @@ fn fib_heap_insert(key: f64) u32 {
     if (fib_min == FibNode.NONE) {
         fib_min = idx;
     } else {
-        // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] in to[EN]notin[EN] with[EN]andwith[EN]to
+        // in[CYR:I] in tonotin withandwithto
         fib_list_insert(fib_min, idx);
         if (fib_nodes[idx].key < fib_nodes[fib_min].key) {
             fib_min = idx;
@@ -408,7 +408,7 @@ fn fib_heap_insert(key: f64) u32 {
     return idx;
 }
 
-/// [EN]with[EN]into[EN] in [EN]in[EN]within[CYR:I[EN]ny] with[EN]andwith[EN]to
+/// withinto in inwithin[CYR:Iny] withandwithto
 fn fib_list_insert(list_node: u32, new_node: u32) void {
     const list = &fib_nodes[list_node];
     const new = &fib_nodes[new_node];
@@ -419,13 +419,13 @@ fn fib_list_insert(list_node: u32, new_node: u32) void {
     list.left = new_node;
 }
 
-/// [CYR:[TRANSLATED]]and[EN] [EN]and[EN]and[CYR:[TRANSLATED]] - O(1)
+/// and and - O(1)
 fn fib_heap_min() f64 {
     if (fib_min == FibNode.NONE) return math.inf(f64);
     return fib_nodes[fib_min].key;
 }
 
-/// [EN]in[CYR:[EN]chen]and[EN] [EN]and[EN]and[CYR:[TRANSLATED]] - O(log n) [CYR:[TRANSLATED]]and[EN]and[EN]in[CYR:[TRANSLATED]]
+/// in[CYR:chen]and and - O(log n) andin
 fn fib_heap_extract_min() f64 {
     if (fib_min == FibNode.NONE) return math.inf(f64);
     
@@ -433,7 +433,7 @@ fn fib_heap_extract_min() f64 {
     const min_key = fib_nodes[min_idx].key;
     const min_node = &fib_nodes[min_idx];
     
-    // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] [CYR:[TRANSLATED]] in to[EN]notin[EN] with[EN]andwith[EN]to
+    // in[CYR:I]  in tonotin withandwithto
     if (min_node.child != FibNode.NONE) {
         var child = min_node.child;
         const first_child = child;
@@ -447,9 +447,9 @@ fn fib_heap_extract_min() f64 {
         }
     }
     
-    // [CYR:[TRANSLATED]I[EN]] min and[EN] to[EN]notin[CYR:[EN]go] with[EN]andwithto[EN]
+    // [CYR:I] min and tonotin[CYR:go] withandwithto
     if (min_node.right == min_idx) {
-        // [EN]and[EN]with[EN]in[CYR:[EN]ny] [CYR:[TRANSLATED]]
+        // andwithin[CYR:ny] 
         fib_min = FibNode.NONE;
     } else {
         fib_nodes[min_node.left].right = min_node.right;
@@ -462,7 +462,7 @@ fn fib_heap_extract_min() f64 {
     return min_key;
 }
 
-/// [CYR:[TRANSLATED]]with[EN]and[CYR:[TRANSLATED]]andI to[EN]notin[CYR:[EN]go] with[EN]andwithto[EN]
+/// withandI tonotin[CYR:go] withandwithto
 fn fib_consolidate() void {
     if (fib_min == FibNode.NONE) return;
     
@@ -470,7 +470,7 @@ fn fib_consolidate() void {
     const max_degree: u32 = 45; // log_φ(2^32)
     var degree_table: [max_degree]u32 = [_]u32{FibNode.NONE} ** max_degree;
     
-    // [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] inwith[EN] to[CYR:[TRANSLATED]]and
+    // and inwith toand
     var roots: [MAX_NODES]u32 = undefined;
     var root_count: u32 = 0;
     
@@ -483,7 +483,7 @@ fn fib_consolidate() void {
         if (current == start) break;
     }
     
-    // [CYR:[TRANSLATED]]and[CYR:[EN]I[EN]] [CYR:[TRANSLATED]]in[EN]I [EN]andonto[EN]in[EN] with[CYR:[TRANSLATED]]and
+    // and[CYR:I] inI andontoin withand
     var i: u32 = 0;
     while (i < root_count) : (i += 1) {
         var x = roots[i];
@@ -492,7 +492,7 @@ fn fib_consolidate() void {
         while (d < max_degree and degree_table[d] != FibNode.NONE) {
             var y = degree_table[d];
             
-            // x [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]] [CYR:me[EN]]and[EN] to[CYR:[TRANSLATED]]
+            // x  and [CYR:me]and to
             if (fib_nodes[x].key > fib_nodes[y].key) {
                 const tmp = x;
                 x = y;
@@ -509,7 +509,7 @@ fn fib_consolidate() void {
         }
     }
     
-    // [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]andin[CYR:[TRANSLATED]] to[EN]notin[EN] with[EN]andwith[EN]to and on[CYR:[TRANSLATED]]and[EN] [EN]iny[EN] [EN]and[EN]and[CYR:[TRANSLATED]]
+    // withandin tonotin withandwithto and onand iny and
     fib_min = FibNode.NONE;
     
     for (degree_table) |idx| {
@@ -529,13 +529,13 @@ fn fib_consolidate() void {
     }
 }
 
-/// [EN]in[CYR:I[EN]y]in[EN]and[EN] [EN]in[EN] [CYR:[TRANSLATED]]in[EN]in
+/// in[CYR:Iy]inand in inin
 fn fib_link(child: u32, parent: u32) void {
-    // [CYR:[TRANSLATED]I[EN]] child and[EN] to[EN]notin[CYR:[EN]go] with[EN]andwithto[EN]
+    // [CYR:I] child and tonotin[CYR:go] withandwithto
     fib_nodes[fib_nodes[child].left].right = fib_nodes[child].right;
     fib_nodes[fib_nodes[child].right].left = fib_nodes[child].left;
     
-    // [CYR:Doing[TRANSLATED]] child [CYR:[TRANSLATED]]to[EN] parent
+    // [CYR:Doing] child to parent
     fib_nodes[child].parent = parent;
     fib_nodes[child].marked = false;
     
@@ -550,7 +550,7 @@ fn fib_link(child: u32, parent: u32) void {
     fib_nodes[parent].degree += 1;
 }
 
-/// [CYR:[TRANSLATED]] to[EN]and
+///  toand
 fn fib_heap_size() u32 {
     return fib_size;
 }
@@ -567,7 +567,7 @@ fn phi_graph_init() void {
     graph_edge_count = 0;
 }
 
-/// [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] in [CYR:[TRANSLATED]]
+/// inand  in 
 fn phi_graph_add_node(value: f64) u32 {
     if (graph_node_count >= MAX_NODES) return PhiNode.NONE;
     
@@ -578,19 +578,19 @@ fn phi_graph_add_node(value: f64) u32 {
     return idx;
 }
 
-/// [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and[EN] [CYR:[TRANSLATED]] with Fibonacci-in[EN]with[EN]
+/// inand  with Fibonacci-inwith
 fn phi_graph_add_edge(source: u64, target: u64) u32 {
     if (graph_edge_count >= MAX_EDGES) return PhiNode.NONE;
     
     const idx = graph_edge_count;
-    // [EN]with[CYR:[EN]l[TRANSLATED]] and[CYR:[TRANSLATED]]towith [CYR:[TRANSLATED]] for Fibonacci-in[EN]with[EN]
+    // withl] andtowith  for Fibonacci-inwith
     edges_buffer[idx] = PhiEdge.init(source, target, @intCast(idx % 20 + 1));
     graph_edge_count += 1;
     
     return idx;
 }
 
-/// [EN]from[EN]with[EN] [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]and[CYR:[EN]l]onI ≈ n × φ [CYR:[TRANSLATED]])
+/// fromwith  (and[CYR:l]onI ≈ n × φ )
 fn phi_graph_density() f64 {
     if (graph_node_count == 0) return 0.0;
     const n: f64 = @floatFromInt(graph_node_count);
@@ -598,12 +598,12 @@ fn phi_graph_density() f64 {
     return e / (n * PHI);
 }
 
-/// [CYR:[TRANSLATED]]and[EN]with[EN]in[EN] [CYR:[TRANSLATED]]in
+/// andwithin in
 fn phi_graph_node_count() u32 {
     return graph_node_count;
 }
 
-/// [CYR:[TRANSLATED]]and[EN]with[EN]in[EN] [CYR:[TRANSLATED]]
+/// andwithin 
 fn phi_graph_edge_count() u32 {
     return graph_edge_count;
 }
@@ -615,21 +615,21 @@ fn phi_graph_edge_count() u32 {
 test "phi_tree_insert_and_search" {
     phi_tree_init();
     
-    // [EN]with[EN]in[CYR:[EN]I[EN]] elementy
+    // within[CYR:I] elementy
     const idx1 = phi_tree_insert(5.0);
     const idx2 = phi_tree_insert(3.0);
     const idx3 = phi_tree_insert(8.0);
     
-    // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] that inwith[EN]into[EN] [CYR:work]from[CYR:acts]
+    // in[CYR:I] that inwithinto [CYR:work]from[CYR:acts]
     try std.testing.expect(idx1 != PhiNode.NONE);
     try std.testing.expect(idx2 != PhiNode.NONE);
     try std.testing.expect(idx3 != PhiNode.NONE);
     try std.testing.expectEqual(node_count, 3);
     
-    // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] that to[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]with[EN]in[CYR:[TRANSLATED]]
+    // in[CYR:I] that to within
     try std.testing.expect(nodes_buffer[0].value == 5.0);
     
-    // [EN]andwithto notwith[CYR:[TRANSLATED]]with[EN]in[CYR:[TRANSLATED]go] element[EN]
+    // andwithto notwithin[CYR:go] element
     try std.testing.expect(phi_tree_search(99.0) == PhiNode.NONE);
 }
 
@@ -654,13 +654,13 @@ test "fib_heap_operations" {
 test "phi_graph_density" {
     phi_graph_init();
     
-    // [CYR:[TRANSLATED]]in[CYR:[EN]I[EN]] 10 [CYR:[TRANSLATED]]in
+    // in[CYR:I] 10 in
     var i: u32 = 0;
     while (i < 10) : (i += 1) {
         _ = phi_graph_add_node(@floatFromInt(i));
     }
     
-    // [CYR:[TRANSLATED]]and[CYR:[EN]lno[EN]] to[EN]and[EN]with[EN]in[EN] [CYR:[TRANSLATED]] ≈ 10 × φ ≈ 16
+    // and[CYR:lno] toandwithin  ≈ 10 × φ ≈ 16
     var j: u32 = 0;
     while (j < 16) : (j += 1) {
         _ = phi_graph_add_edge(j % 10, (j + 1) % 10);

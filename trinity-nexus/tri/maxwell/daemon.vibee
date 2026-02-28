@@ -4,24 +4,24 @@ language: zig
 module: maxwell_daemon
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# MAXWELL DAEMON - Ain[CYR:[TRANSLATED]ny] [CYR:A[TRANSLATED]]-[CYR:[TRANSLATED]]andwith[EN]
-# "[CYR:[TRANSLATED]], which with[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] code [EN] [CYR:[TRANSLATED]]andand"
+# MAXWELL DAEMON - Ain[CYR:ny] [CYR:A]-andwith
+# ", which withand code  and"
 # ═══════════════════════════════════════════════════════════════════════════════
 #
-# [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]within[CYR:[TRANSLATED]] in [CYR:[TRANSLATED]]andon[EN]and[EN] - [EN]and[CYR:[TRANSLATED]]and[EN]with[CYR:[TRANSLATED]] with[CYR:[TRANSLATED]]with[EN]in[EN], with[EN]with[CYR:[TRANSLATED]]
-# with[CYR:[TRANSLATED]]and[EN]in[CYR:ate] [CYR:[TRANSLATED]y] [EN] with[CYR:[TRANSLATED]]with[EN]and, [CYR:[EN]me[TRANSLATED]I] [CYR:[TRANSLATED]]and[EN] withandwith[CYR:[TRANSLATED]y].
+#  within in andonand - andwith within, with
+# withandin[CYR:ate] [CYR:y]  withand, [CYR:meI] and withandwithy].
 #
-# Maxwell Daemon in [CYR:pro[TRANSLATED]]and[EN]in[EN]andand - [EN]in[CYR:[TRANSLATED]ny] [CYR:agent], with[EN]with[CYR:[EN]ny]:
-# - Aon[EN]fromand[EN]in[CYR:ate] code and on[CYR:[TRANSLATED]]and[EN] [CYR:pro[TRANSLATED]y] (inywith[CYR:[TRANSLATED]I] [CYR:[TRANSLATED]]andI)
-# - [EN]not[EN]and[EN]in[CYR:ate] [CYR:[TRANSLATED]]andI [CYR:[TRANSLATED]] .vibee with[CYR:[TRANSLATED]]and[EN]and[CYR:[TRANSLATED]]andand
-# - [EN]with[EN]and[EN]in[CYR:ate] and improve code ([CYR:[EN]me[TRANSLATED]]and[EN] [CYR:[TRANSLATED]]andand)
-# - [EN]and[EN]withI on within[EN]and[EN] error[EN]
+# Maxwell Daemon in [CYR:pro]andinand - in[CYR:ny] [CYR:agent], withny]:
+# - Aonfromandin[CYR:ate] code and onand [CYR:proy] (inywithI] andI)
+# - notandin[CYR:ate] andI  .vibee withandand
+# - withandin[CYR:ate] and improve code ([CYR:me]and and)
+# - andwithI on withinand error
 #
 # φ² + 1/φ² = 3 = TRINITY
 # ═══════════════════════════════════════════════════════════════════════════════
 
 types:
-  # [EN]with[CYR:[EN]I[EN]]and[EN] demoon
+  # withI]and demoon
   DaemonState:
     fields:
       status: String          # "idle", "working", "error", "stopped"
@@ -31,12 +31,12 @@ types:
       uptime_seconds: Int
       memory_usage_mb: Float
 
-  # [CYR:[TRANSLATED]] for [CYR:agent[EN]]
+  #  for [CYR:agent]
   Task:
     fields:
       id: String
       description: String
-      priority: Int           # 1-10, where 10 - [CYR:[TRANSLATED]]withand[CYR:[EN]al]
+      priority: Int           # 1-10, where 10 - withand[CYR:al]
       task_type: String       # "feature", "bugfix", "refactor", "test", "optimize"
       target_files: List<String>
       constraints: List<String>
@@ -44,7 +44,7 @@ types:
       status: String          # "pending", "in_progress", "completed", "failed"
       result: Option<TaskResult>
 
-  # [CYR:[TRANSLATED]l[TRANSLATED]] in[CYR:y[TRANSLATED]]not[EN]andI [CYR:[TRANSLATED]]and
+  # [CYR:l] in[CYR:y]notandI and
   TaskResult:
     fields:
       success: Bool
@@ -56,22 +56,22 @@ types:
       duration_ms: Int
       metrics: Metrics
 
-  # [CYR:[TRANSLATED]]and[EN]and [CYR:pro]fromin[EN]and[CYR:[EN]lno]with[EN]and
+  # and [CYR:pro]frominand[CYR:lno]withand
   Metrics:
     fields:
       lines_of_code: Int
       cyclomatic_complexity: Float
       test_coverage: Float
-      performance_delta: Float  # % change [CYR:pro]fromin[EN]and[CYR:[EN]lno]with[EN]and
+      performance_delta: Float  # % change [CYR:pro]frominand[CYR:lno]withand
 
-  # [CYR:[TRANSLATED]I[EN]] [CYR:agent[EN]]
+  # [CYR:I] [CYR:agent]
   Memory:
     fields:
       experiences: List<Experience>
       learned_patterns: List<Pattern>
       error_history: List<ErrorRecord>
 
-  # [CYR:[EN]y[EN]] (for [CYR:[TRANSLATED]]andI)
+  # [CYR:y] (for andI)
   Experience:
     fields:
       task_type: String
@@ -80,16 +80,16 @@ types:
       lessons: List<String>
       timestamp: Int
 
-  # [CYR:[TRANSLATED]] (in[CYR:y[TRANSLATED]ny])
+  #  (in[CYR:yny])
   Pattern:
     fields:
       name: String
-      trigger: String         # [CYR:[TRANSLATED]] [EN]and[CYR:meI[EN]]
-      solution: String        # [CYR:[TRANSLATED]] [CYR:[TRANSLATED]ate]
+      trigger: String         #  and[CYR:meI]
+      solution: String        #  [CYR:ate]
       confidence: Float       # 0.0 - 1.0
       usage_count: Int
 
-  # [CYR:[TRANSLATED]]andwith[EN] [EN] [EN]and[CYR:[TRANSLATED]]
+  # andwith  and
   ErrorRecord:
     fields:
       error_type: String
@@ -98,7 +98,7 @@ types:
       resolved: Bool
       timestamp: Int
 
-  # [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andI demoon
+  # andI demoon
   DaemonConfig:
     fields:
       llm_api_key: String
@@ -109,13 +109,13 @@ types:
       working_directory: String
       log_level: String       # "debug", "info", "warn", "error"
 
-  # [CYR:[TRANSLATED]]and[EN] for LLM
+  # and for LLM
   LLMMessage:
     fields:
       role: String            # "system", "user", "assistant"
       content: String
 
-  # [EN]in[EN] [EN] LLM
+  # in  LLM
   LLMResponse:
     fields:
       content: String

@@ -1,13 +1,13 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// BENCHMARK v41 - [CYR:[EN]] comparison inwith[EN] in[EN]withand[EN]
+// BENCHMARK v41 -  comparison inwith inwithand
 // v35 → v37 → v39 → v39.1 → v40 → v41
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// v41 [CYR:[EN]] [CYR:[EN]]:
+// v41  :
 //   - SIMD + Cache combo (1.8x vs v40)
-//   - AVX-256 [CYR:[EN]]and[EN] (32-way parallel)
-//   - Full BPE 262 [EN]to[EN]on
-//   - WebSocket + SSE [EN]and[EN]and[EN]
+//   - AVX-256 and (32-way parallel)
+//   - Full BPE 262 toon
+//   - WebSocket + SSE and
 //
 // PAS DAEMONS: SIMD, PRE, MEM, HSH, D&C, FDT
 // φ² + 1/φ² = 3 | PHOENIX = 999
@@ -20,13 +20,13 @@ const bpe_cached = @import("bpe_cached.zig");
 const simd_bpe = @import("simd_bpe.zig");
 const tokenizer_v41 = @import("tokenizer_v41.zig");
 
-// [EN]in[CYR:[EN]] to[EN]with[CYR:[EN]]
+// in towith
 pub const PHI: f64 = 1.618033988749895;
 pub const TRINITY: f64 = 3.0;
 pub const PHOENIX: u32 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]] [CYR:[EN]]
+//  
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const V35 = struct {
@@ -82,7 +82,7 @@ pub const V39 = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const BenchResult = struct {
@@ -120,14 +120,14 @@ pub fn bench(comptime name: []const u8, iterations: u64, comptime func: anytype,
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// [CYR:[EN]]
+// 
 // ═══════════════════════════════════════════════════════════════════════════════
 
-test "Full Benchmark v41: [EN]with[EN] in[EN]withandand [EN]to[EN]and[CYR:[EN]]in" {
+test "Full Benchmark v41: with inwithand toandin" {
     const text = "This is a sample text for benchmarking token estimation performance in the DeepSeek provider implementation with various optimizations.";
     const iters: u64 = 10000;
 
-    // [CYR:[EN]]with[EN]in[CYR:[EN]] to[EN]and
+    // within toand
     bpe_cached.resetGlobalTokenizer();
     tokenizer_v41.resetV41();
 
@@ -137,7 +137,7 @@ test "Full Benchmark v41: [EN]with[EN] in[EN]withandand [EN]to[EN]and[CYR:[EN]]i
     const r39_cache = bench("v39.1 cache", iters, bpe_cached.tokenizeV39Cached, text);
     const r40_simd = bench("v40 SIMD", iters, simd_bpe.tokenizeSIMD, text);
 
-    // v41 - withon[CYR:[EN]] [EN]by[CYR:[EN]] to[EN]
+    // v41 - withon by to
     _ = tokenizer_v41.tokenizeV41(text);
     const r41 = bench("v41 combo", iters, tokenizer_v41.tokenizeV41, text);
 
@@ -154,16 +154,16 @@ test "Full Benchmark v41: [EN]with[EN] in[EN]withandand [EN]to[EN]and[CYR:[EN]]i
     std.debug.print("║    ╚████╔╝ ██║██████╔╝███████╗███████╗     ╚████╔╝      ██║ ██║                                        ║\n", .{});
     std.debug.print("║     ╚═══╝  ╚═╝╚═════╝ ╚══════╝╚══════╝      ╚═══╝       ╚═╝ ╚═╝                                        ║\n", .{});
     std.debug.print("║                                                                                                       ║\n", .{});
-    std.debug.print("║                              [CYR:[EN]] [CYR:[EN]] [CYR:[EN]] [CYR:[EN]]                                              ║\n", .{});
+    std.debug.print("║                                                                               ║\n", .{});
     std.debug.print("║                                                                                                       ║\n", .{});
     std.debug.print("╠═══════════════════════════════════════════════════════════════════════════════════════════════════════╣\n", .{});
     std.debug.print("║                                                                                                       ║\n", .{});
-    std.debug.print("║  [CYR:[EN]] (10,000 and[CYR:[EN]]and[EN])                                                                        ║\n", .{});
+    std.debug.print("║   (10,000 and)                                                                        ║\n", .{});
     std.debug.print("║  ─────────────────────────────────────────────────────────────────────────────────────────────────    ║\n", .{});
     std.debug.print("║                                                                                                       ║\n", .{});
-    std.debug.print("║  [CYR:[EN]]withand[EN]        │ Latency      │ Throughput       │ Speedup  │ [CYR:[EN]]                                  ║\n", .{});
+    std.debug.print("║  withand        │ Latency      │ Throughput       │ Speedup  │                                   ║\n", .{});
     std.debug.print("║  ──────────────┼──────────────┼──────────────────┼──────────┼────────────────────────────────────    ║\n", .{});
-    std.debug.print("║  v35           │ {d:>8} ns   │ {d:>12.0} ops/s │    -     │ len/4 (40% [CYR:[EN]]with[EN])                   ║\n", .{ r35.avg_ns, r35.ops_per_sec });
+    std.debug.print("║  v35           │ {d:>8} ns   │ {d:>12.0} ops/s │    -     │ len/4 (40% with)                   ║\n", .{ r35.avg_ns, r35.ops_per_sec });
     std.debug.print("║  v37           │ {d:>8} ns   │ {d:>12.0} ops/s │    -     │ word-based (75%)                       ║\n", .{ r37.avg_ns, r37.ops_per_sec });
     std.debug.print("║  v39 naive     │ {d:>8} ns   │ {d:>12.0} ops/s │   1.0x   │ BPE std.mem.eql (90%)                  ║\n", .{ r39.avg_ns, r39.ops_per_sec });
     std.debug.print("║  v39.1 cache   │ {d:>8} ns   │ {d:>12.0} ops/s │  {d:>5.1}x   │ LRU + lookup (90%)                     ║\n", .{ r39_cache.avg_ns, r39_cache.ops_per_sec, baseline / @as(f64, @floatFromInt(@max(1, r39_cache.avg_ns))) });
@@ -172,7 +172,7 @@ test "Full Benchmark v41: [EN]with[EN] in[EN]withandand [EN]to[EN]and[CYR:[EN]]i
     std.debug.print("║                                                                                                       ║\n", .{});
     std.debug.print("╠═══════════════════════════════════════════════════════════════════════════════════════════════════════╣\n", .{});
     std.debug.print("║                                                                                                       ║\n", .{});
-    std.debug.print("║  [CYR:[EN]] [CYR:[EN]]                                                                          ║\n", .{});
+    std.debug.print("║                                                                             ║\n", .{});
     std.debug.print("║  ─────────────────────────────────────────────────────────────────────────────────────────────────    ║\n", .{});
     std.debug.print("║                                                                                                       ║\n", .{});
     std.debug.print("║  v39 → v39.1:  {d:>5.1}x  (PRE: lookup table + MEM: LRU cache)                                         ║\n", .{baseline / @as(f64, @floatFromInt(@max(1, r39_cache.avg_ns)))});
@@ -184,24 +184,24 @@ test "Full Benchmark v41: [EN]with[EN] in[EN]withandand [EN]to[EN]and[CYR:[EN]]i
     if (tokenizer_v41.getV41Stats()) |stats| {
         std.debug.print("╠═══════════════════════════════════════════════════════════════════════════════════════════════════════╣\n", .{});
         std.debug.print("║                                                                                                       ║\n", .{});
-        std.debug.print("║  v41 [CYR:[EN]]                                                                                       ║\n", .{});
+        std.debug.print("║  v41                                                                                        ║\n", .{});
         std.debug.print("║  ─────────────────────────────────────────────────────────────────────────────────────────────────    ║\n", .{});
         std.debug.print("║  Cache hit rate:     {d:>6.1}%                                                                        ║\n", .{stats.hit_rate * 100});
-        std.debug.print("║  BPE vocab size:     {d:>6} [EN]to[CYR:[EN]]in                                                                   ║\n", .{stats.vocab_size});
+        std.debug.print("║  BPE vocab size:     {d:>6} toin                                                                   ║\n", .{stats.vocab_size});
         std.debug.print("║                                                                                                       ║\n", .{});
     }
 
     std.debug.print("╠═══════════════════════════════════════════════════════════════════════════════════════════════════════╣\n", .{});
     std.debug.print("║                                                                                                       ║\n", .{});
     std.debug.print("║  PAS DAEMONS v41:                                                                                     ║\n", .{});
-    std.debug.print("║    SIMD - 32-way [CYR:[EN]] byandwithto [EN]and[CYR:[EN]] (AVX-256 [CYR:[EN]]and[EN])                                        ║\n", .{});
-    std.debug.print("║    PRE  - Full BPE with[EN]in[CYR:[EN]] 262 [EN]to[EN]on                                                                 ║\n", .{});
-    std.debug.print("║    MEM  - LRU cache 1024 [CYR:[EN]]andwithand                                                                       ║\n", .{});
-    std.debug.print("║    HSH  - FNV-1a for to[CYR:[EN]]                                                                             ║\n", .{});
-    std.debug.print("║    D&C  - WebSocket + SSE [EN]and[EN]and[EN]                                                                      ║\n", .{});
+    std.debug.print("║    SIMD - 32-way  byandwithto and (AVX-256 and)                                        ║\n", .{});
+    std.debug.print("║    PRE  - Full BPE within 262 toon                                                                 ║\n", .{});
+    std.debug.print("║    MEM  - LRU cache 1024 andwithand                                                                       ║\n", .{});
+    std.debug.print("║    HSH  - FNV-1a for to                                                                             ║\n", .{});
+    std.debug.print("║    D&C  - WebSocket + SSE and                                                                      ║\n", .{});
     std.debug.print("║                                                                                                       ║\n", .{});
-    std.debug.print("║  [CYR:[EN]] [CYR:[EN]]: V = n × 3^k × π^m × φ^p × e^q                                                     ║\n", .{});
-    std.debug.print("║  [CYR:[EN]] [CYR:[EN]]: φ² + 1/φ² = 3                                                                  ║\n", .{});
+    std.debug.print("║   : V = n × 3^k × π^m × φ^p × e^q                                                     ║\n", .{});
+    std.debug.print("║   : φ² + 1/φ² = 3                                                                  ║\n", .{});
     std.debug.print("║  PHOENIX: 999 = 3³ × 37                                                                               ║\n", .{});
     std.debug.print("║                                                                                                       ║\n", .{});
     std.debug.print("╚═══════════════════════════════════════════════════════════════════════════════════════════════════════╝\n", .{});
@@ -210,7 +210,7 @@ test "Full Benchmark v41: [EN]with[EN] in[EN]withandand [EN]to[EN]and[CYR:[EN]]i
 test "Hybrid stream benchmark" {
     var stream = tokenizer_v41.HybridStream.init(.auto);
 
-    // [EN]and[CYR:[EN]]and[CYR:[EN]] [CYR:[EN]] [EN]and[EN] with[CYR:[EN]]and[EN]
+    // and  and withand
     stream.send("Hello", false); // SSE
     stream.send("World", true); // WebSocket
     stream.send("This is a longer message that should use WebSocket", false); // WebSocket (big)
@@ -221,9 +221,9 @@ test "Hybrid stream benchmark" {
     std.debug.print("╔═══════════════════════════════════════════════════════════════════╗\n", .{});
     std.debug.print("║ HYBRID STREAM BENCHMARK                                           ║\n", .{});
     std.debug.print("╠═══════════════════════════════════════════════════════════════════╣\n", .{});
-    std.debug.print("║ WebSocket [CYR:[EN]]in:  {d:>6}                                        ║\n", .{stats.ws});
-    std.debug.print("║ SSE with[CYR:[EN]]and[EN]:        {d:>6}                                        ║\n", .{stats.sse});
-    std.debug.print("║ [EN]with[CYR:[EN]] [CYR:[EN]]:         {d:>6}                                        ║\n", .{stats.bytes});
+    std.debug.print("║ WebSocket in:  {d:>6}                                        ║\n", .{stats.ws});
+    std.debug.print("║ SSE withand:        {d:>6}                                        ║\n", .{stats.sse});
+    std.debug.print("║ with :         {d:>6}                                        ║\n", .{stats.bytes});
     std.debug.print("╚═══════════════════════════════════════════════════════════════════╝\n", .{});
 }
 

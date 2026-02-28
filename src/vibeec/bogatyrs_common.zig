@@ -28,8 +28,8 @@ pub const BogatyrPlugin = struct {
     version: []const u8,
     category: []const u8,
     priority: u32,
-    weight: f32 = 1.0, // [CYR:[EN]]-[EN]and[EN] (34) and[CYR:[EN]] in[EN]with 2.0
-    is_creator: bool = false, // [CYR:[EN]]to[EN] for [CYR:[EN]]-[EN]in[CYR:[EN]]
+    weight: f32 = 1.0, // -and (34) and inwith 2.0
+    is_creator: bool = false, // to for -in
     validate: *const fn (*const ValidationContext) anyerror!BogatyrResult,
 };
 

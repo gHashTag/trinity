@@ -64,7 +64,7 @@ Conversion Time: 3.0 seconds
 GENERATED TEXT:
 <s>Hello,  Trinity!  What  is  the  meaning  of cent Context Za Hunter 
 involvesistory話ноinоTri `< U Er locńskiego footballer inі Urbannamed:} 
-commence horse rain knockungsseiteową [CYR:держа]in faithful ChicagoOWtwobjects weiter
+commence horse rain knockungsseiteową [CYR:[TRANSLATED]]in faithful ChicagoOWtwobjects weiter
 
 STATISTICS:
   Prompt tokens:     18
@@ -79,7 +79,7 @@ STATISTICS:
 ```
 GENERATED TEXT:
 <s>The  future  of AI  is hence Breférés that放 Encyclopisticytu 
-translationvancedliest?"disk[CYR:шее] Associationumerate[CYR:зан]READbrázky 
+translationvancedliest?"disk[CYR:[TRANSLATED]] Associationumerate[CYR:[TRANSLATED]]READbrázky 
 appliedaciones driverlocated En Franklin carsativasnáometbereich detpolit
 
 STATISTICS:
@@ -95,8 +95,8 @@ STATISTICS:
 ```
 GENERATED TEXT:
 <s>What  is  machine  learning?ians magnific tierzeta YouTubelagen 
-crisisцо folgenden resort Gastldern blesshd Maisüller and[CYR:нтер]ówn 
-Chileség estad Instit Уandрandandstell\<amentos describing appel Once Lord
+crisisцо folgenden resort Gastldern blesshd Maisüller and[CYR:[TRANSLATED]]ówn 
+Chileség estad Instit Уandрandstell\<amentos describing appel Once Lord
 
 STATISTICS:
   Prompt tokens:     9
@@ -112,7 +112,7 @@ STATISTICS:
 GENERATED TEXT:
 <s>Explain  quantum  computing Status pacwithtoаяynapathлandя Zw tématu 
 José cette reversefunctions initialization hang quelque untilwh 
-Cha pelos[CYR:раз] casostudlotű cold щ ogsårid ORDER Sub prisonersAudio
+Cha pelos[CYR:[TRANSLATED]] casostudlotű cold  ogsårid ORDER Sub prisonersAudio
 
 STATISTICS:
   Prompt tokens:     7
@@ -127,8 +127,8 @@ STATISTICS:
 ```
 GENERATED TEXT:
 <s>Write  a  poem  aboutlahomaorious instal continеin relief Pamlait 
-Südenwithтinandand bâtuniversité activation feed<>();onymAR ba мandраJan." 
-widely effectsagram concedistica⍵ [CYR:теа]lage vesc [CYR:долж]HA
+Südenwithтinand bâtuniversité activation feed<>();onymAR ba мandраJan." 
+widely effectsagram concedistica⍵ [CYR:[TRANSLATED]]lage vesc [CYR:[TRANSLATED]]HA
 
 STATISTICS:
   Prompt tokens:     8

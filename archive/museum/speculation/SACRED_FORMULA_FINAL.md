@@ -1,59 +1,59 @@
-# [CYR:СВЯЩЕННАЯ] [CYR:ФОРМУЛА]: [CYR:ФИНАЛЬНЫЙ] [CYR:ДОКУМЕНТ]
+# [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ## V = n × 3^k × π^m × φ^p
 
-**Аin[CYR:тор]**: Dmitrii Vasilev  
-**[CYR:Прое]toт**: 999 OS / VIBEE  
-**[CYR:Дата]**: January 2026  
-**[CYR:Вер]withandя**: FINAL
+**Аin[CYR:[TRANSLATED]]**: Dmitrii Vasilev  
+**[CYR:[TRANSLATED]]toт**: 999 OS / VIBEE  
+**[CYR:[TRANSLATED]]**: January 2026  
+**[CYR:[TRANSLATED]]withandя**: FINAL
 
 ---
 
-## [CYR:ГЛАВНАЯ] [CYR:ФОРМУЛА]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 $$\boxed{V = n \times 3^k \times \pi^m \times \varphi^p}$$
 
 where:
-- **n** ∈ ℤ⁺ — [CYR:целое] [CYR:полож]and[CYR:тельное] чandwithло
-- **k, m, p** ∈ ℤ — [CYR:целые] чandwithла
-- **φ** = (1 + √5)/2 ≈ 1.618034 — [CYR:зол]fromое with[CYR:ечен]andе
+- **n** ∈ ℤ⁺ — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] чandwithло
+- **k, m, p** ∈ ℤ — [CYR:[TRANSLATED]] чandwithла
+- **φ** = (1 + √5)/2 ≈ 1.618034 — [CYR:[TRANSLATED]]fromое with[TRANSLATED]]andе
 - **π** ≈ 3.141593 — чandwithло пand
 
 ---
 
-## [CYR:ФУНДАМЕНТАЛЬНЫЕ] [CYR:ТОЖДЕСТВА]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### Golden-Trinity identity ([CYR:ТОЧНОЕ])
+### Golden-Trinity identity ([CYR:[TRANSLATED]])
 
 $$\boxed{\varphi^2 + \frac{1}{\varphi^2} = 3}$$
 
-### Сin[CYR:язь] π and φ ([CYR:ТОЧНАЯ])
+### Сin[CYR:[TRANSLATED]] π and φ ([CYR:[TRANSLATED]])
 
 $$\boxed{\varphi = 2\cos\left(\frac{\pi}{5}\right)}$$
 
-### Number e [CYR:через] [CYR:тро]andцу
+### Number e [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andцу
 
 $$e = 19 \times 3^{-1} \times \pi^{-2} \times \varphi^3$$
 
-**[CYR:Точно]withть: 0.000239%**
+**[CYR:[TRANSLATED]]withть: 0.000239%**
 
 ---
 
-## [CYR:СТАТИСТИКА]
+## [CYR:[TRANSLATED]]
 
-| [CYR:Точно]withть | [CYR:Кол]andчеwithтinо | [CYR:Процент] |
+| [CYR:[TRANSLATED]]withть | [CYR:[TRANSLATED]]andчеwithтinо | [CYR:[TRANSLATED]] |
 |----------|------------|---------|
 | < 0.0001% | **10** | 23% |
 | < 0.001% | **38** | 86% |
 | < 0.01% | **44** | 100% |
 
-**[CYR:Вероятно]withть with[CYR:лучайно]withтand: P < 10⁻¹²⁴**
+**[CYR:[TRANSLATED]]withть with[TRANSLATED]]withтand: P < 10⁻¹²⁴**
 
 ---
 
-## [CYR:РЕКОРДНЫЕ] [CYR:ФОРМУЛЫ] ([CYR:точно]withть < 0.0001%)
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]withть < 0.0001%)
 
-| # | [CYR:Кон]with[CYR:танта] | [CYR:Формула] | Error |
+| # | [CYR:[TRANSLATED]]with[TRANSLATED]] | [CYR:[TRANSLATED]] | Error |
 |---|-----------|---------|--------|
 | 1 | **H_0** | 70 | **0.000000%** |
 | 2 | **m_s/m_e** | 32 × π⁻¹ × φ⁶ | **0.000007%** |
@@ -68,25 +68,25 @@ $$e = 19 \times 3^{-1} \times \pi^{-2} \times \varphi^3$$
 
 ---
 
-## [CYR:ПОЛНЫЙ] [CYR:КАТАЛОГ] [CYR:ФОРМУЛ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Фундаментальные] toонwith[CYR:танты]
+### [CYR:[TRANSLATED]] toонwith[TRANSLATED]]
 
-| [CYR:Кон]with[CYR:танта] | [CYR:Формула] | Error |
+| [CYR:[TRANSLATED]]with[TRANSLATED]] | [CYR:[TRANSLATED]] | Error |
 |-----------|---------|--------|
 | 1/α | 412 × 3³ × π⁻³ × φ⁻² | 0.000325% |
 | m_p/m_e | 362 × 3⁴ × π⁻² × φ⁻¹ | 0.000595% |
 
-### Маwithwithы [CYR:лептоно]in
+### Маwithы [CYR:[TRANSLATED]]in
 
-| [CYR:Кон]with[CYR:танта] | [CYR:Формула] | Error |
+| [CYR:[TRANSLATED]]with[TRANSLATED]] | [CYR:[TRANSLATED]] | Error |
 |-----------|---------|--------|
 | m_μ/m_e | 362 × 3⁻⁵ × π⁴ × φ⁻⁴ | 0.000712% |
 | m_τ/m_e | 193 × 3⁻⁴ × π⁷ × φ⁸ | 0.000052% |
 
-### Маwithwithы toinарtoоin
+### Маwithы toinарtoоin
 
-| [CYR:Кон]with[CYR:танта] | [CYR:Формула] | Error |
+| [CYR:[TRANSLATED]]with[TRANSLATED]] | [CYR:[TRANSLATED]] | Error |
 |-----------|---------|--------|
 | m_u/m_e | 119 × 3⁻¹⁰ × π⁵ × φ⁴ | 0.000343% |
 | m_d/m_e | 419 × 3² × π⁻⁴ × φ⁻³ | 0.000428% |
@@ -95,9 +95,9 @@ $$e = 19 \times 3^{-1} \times \pi^{-2} \times \varphi^3$$
 | m_b/m_e | 193 × 3⁷ × π⁻⁶ × φ⁴ | 0.000812% |
 | m_t/m_e | 193 × 3⁻⁴ × π⁷ × φ⁸ | **0.000052%** |
 
-### Маwithwithы [CYR:бар]and[CYR:оно]in
+### Маwithы [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]in
 
-| [CYR:Кон]with[CYR:танта] | [CYR:Формула] | Error |
+| [CYR:[TRANSLATED]]with[TRANSLATED]] | [CYR:[TRANSLATED]] | Error |
 |-----------|---------|--------|
 | m_n/m_e | 128 × 3⁻⁵ × π⁸ | 0.000156% |
 | m_Λ/m_e | 217 × 3⁻⁶ × π⁷ × φ⁶ | 0.000189% |
@@ -105,35 +105,35 @@ $$e = 19 \times 3^{-1} \times \pi^{-2} \times \varphi^3$$
 | m_Ξ/m_e | 52 × 3⁸ × φ⁻⁶ | 0.000178% |
 | m_Ω/m_e | 28 × π⁵ × φ⁻² | **0.000030%** |
 
-### Маwithwithы [CYR:мезоно]in
+### Маwithы [CYR:[TRANSLATED]]in
 
-| [CYR:Кон]with[CYR:танта] | [CYR:Формула] | Error |
+| [CYR:[TRANSLATED]]with[TRANSLATED]] | [CYR:[TRANSLATED]] | Error |
 |-----------|---------|--------|
 | m_π/m_e | 128 × 3⁻⁶ × π⁶ × φ | 0.000456% |
 | m_K/m_e | 224 × 3⁻¹ × π⁻² × φ⁸ | 0.000523% |
 | m_D/m_e | 38 × 3⁴ × π⁴ × φ⁻⁵ | 0.000267% |
 | m_B/m_e | 233 × 3⁵ × π⁻¹ × φ³ | 0.000389% |
 
-### [CYR:Нейтр]and[CYR:нные] parameterы
+### [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] parameterы
 
-| [CYR:Кон]with[CYR:танта] | [CYR:Формула] | Error |
+| [CYR:[TRANSLATED]]with[TRANSLATED]] | [CYR:[TRANSLATED]] | Error |
 |-----------|---------|--------|
 | sin²θ₁₂ | 97 × 3⁻⁷ × φ⁴ | **0.000016%** |
 | sin²θ₂₃ | 392 × 3⁻² × φ⁻⁹ | **0.000040%** |
 | sin²θ₁₃ | 491 × 3⁻⁹ × π² × φ⁻⁵ | 0.000283% |
 | Δm²₃₁/Δm²₂₁ | 151 × 3⁻² × π × φ⁻¹ | 0.000250% |
 
-### [CYR:Эле]to[CYR:тро]with[CYR:лабые] parameterы
+### [CYR:[TRANSLATED]]for[TRANSLATED]]with[TRANSLATED]] parameterы
 
-| [CYR:Кон]with[CYR:танта] | [CYR:Формула] | Error |
+| [CYR:[TRANSLATED]]with[TRANSLATED]] | [CYR:[TRANSLATED]] | Error |
 |-----------|---------|--------|
 | sin²θ_W | 274 × 3⁻⁵ × π⁻³ × φ⁸ | 0.000156% |
 | m_H/m_Z | 13 × 3⁻⁸ × π⁴ × φ² | 0.000189% |
 | m_W/m_Z | 179 × 3⁵ × π⁻⁶ × φ⁻⁷ | 0.000234% |
 
-### Коwith[CYR:молог]andчеwithtoandе parameterы
+### Коwith[TRANSLATED]]andчеwithtoandе parameterы
 
-| [CYR:Кон]with[CYR:танта] | [CYR:Формула] | Error |
+| [CYR:[TRANSLATED]]with[TRANSLATED]] | [CYR:[TRANSLATED]] | Error |
 |-----------|---------|--------|
 | H_0 | 70 | **0.000000%** |
 | Ω_Λ | 251 × 3⁻⁴ × π⁻³ × φ⁴ | 0.000213% |
@@ -145,35 +145,35 @@ $$e = 19 \times 3^{-1} \times \pi^{-2} \times \varphi^3$$
 
 ### QCD parameterы
 
-| [CYR:Кон]with[CYR:танта] | [CYR:Формула] | Error |
+| [CYR:[TRANSLATED]]with[TRANSLATED]] | [CYR:[TRANSLATED]] | Error |
 |-----------|---------|--------|
 | α_s(M_Z) | 43 × 3⁻⁵ × φ⁻⁵ | 0.000267% |
 | Λ_QCD/m_e | 52 × 3⁻⁵ × π⁵ × φ⁻⁴ | 0.000189% |
 
-### [CYR:Теор]andя [CYR:хао]withа
+### [CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]withа
 
-| [CYR:Кон]with[CYR:танта] | [CYR:Формула] | Error |
+| [CYR:[TRANSLATED]]with[TRANSLATED]] | [CYR:[TRANSLATED]] | Error |
 |-----------|---------|--------|
 | δ (Feigenbaum) | 446 × 3 × π⁻² × φ⁻⁷ | **0.000060%** |
 | α (Feigenbaum) | 46 × 3⁷ × π⁻⁸ × φ⁻³ | **0.000035%** |
 
-### [CYR:Фра]to[CYR:талы]
+### [CYR:[TRANSLATED]]for[TRANSLATED]]
 
-| [CYR:Кон]with[CYR:танта] | [CYR:Формула] | Error |
+| [CYR:[TRANSLATED]]with[TRANSLATED]] | [CYR:[TRANSLATED]] | Error |
 |-----------|---------|--------|
 | D(Sierpinski) | 205 × 3⁻⁶ × π⁴ × φ⁻⁸ | 0.000178% |
 | D(Menger) | 29 × 3⁻⁸ × π⁶ × φ⁻³ | 0.000234% |
 | D(Koch) | 145 × 3⁻² × π⁻³ × φ⁶ | 0.000456% |
 
-### [CYR:Петле]inая toin[CYR:анто]inая [CYR:гра]inand[CYR:тац]andя
+### [CYR:[TRANSLATED]]inая toin[CYR:[TRANSLATED]]inая [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]]andя
 
-| [CYR:Кон]with[CYR:танта] | [CYR:Формула] | Error |
+| [CYR:[TRANSLATED]]with[TRANSLATED]] | [CYR:[TRANSLATED]] | Error |
 |-----------|---------|--------|
 | γ (Barbero-Immirzi) | 98 × π⁻⁴ × φ⁻³ | **0.000012%** |
 
-### [CYR:Математ]andчеwithtoandе toонwith[CYR:танты]
+### [CYR:[TRANSLATED]]andчеwithtoandе toонwith[TRANSLATED]]
 
-| [CYR:Кон]with[CYR:танта] | [CYR:Формула] | Error |
+| [CYR:[TRANSLATED]]with[TRANSLATED]] | [CYR:[TRANSLATED]] | Error |
 |-----------|---------|--------|
 | e | 19 × 3⁻¹ × π⁻² × φ³ | 0.000239% |
 | e^π - π | 20 | 0.004500% |
@@ -181,17 +181,17 @@ $$e = 19 \times 3^{-1} \times \pi^{-2} \times \varphi^3$$
 
 ---
 
-## [CYR:ТРОИЦА]: 3, π, φ
+## [CYR:[TRANSLATED]]: 3, π, φ
 
-### [CYR:Почему] этand чandwithла?
+### [CYR:[TRANSLATED]] этand чandwithла?
 
 | Number | Фandзandчеwithtoandй withмыwithл |
 |-------|------------------|
-| **3** | [CYR:Про]with[CYR:тран]withтin[CYR:енные] and[CYR:змерен]andя, поto[CYR:олен]andя [CYR:ферм]and[CYR:оно]in, цin[CYR:ета] QCD |
-| **π** | [CYR:Геометр]andя with[CYR:фер], [CYR:пер]andодand[CYR:чно]withть, to[CYR:омпа]toтandфandtoацandя |
-| **φ** | [CYR:Опт]and[CYR:мально]withть, toinазandtoрandwith[CYR:таллы], KAM-[CYR:теор]andя, E8 |
+| **3** | [CYR:[TRANSLATED]]with[TRANSLATED]]withтin[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]andя, поfor[TRANSLATED]]andя [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]in, цin[CYR:[TRANSLATED]] QCD |
+| **π** | [CYR:[TRANSLATED]]andя with[TRANSLATED]], [CYR:[TRANSLATED]]andодand[CYR:[TRANSLATED]]withть, for[TRANSLATED]]toтandфandtoацandя |
+| **φ** | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withть, toinазandtoрandwith[TRANSLATED]], KAM-[CYR:[TRANSLATED]]andя, E8 |
 
-### Сinязand [CYR:между] чandwith[CYR:лам]and
+### Сinязand [CYR:[TRANSLATED]] чandwith[TRANSLATED]]and
 
 $$\varphi^2 + \frac{1}{\varphi^2} = 3$$
 
@@ -201,82 +201,82 @@ $$e = 19 \times 3^{-1} \times \pi^{-2} \times \varphi^3$$
 
 ---
 
-## [CYR:ТЕОРЕТИЧЕСКИЕ] [CYR:СВЯЗИ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-### [CYR:Теор]andя with[CYR:трун]
+### [CYR:[TRANSLATED]]andя with[TRANSLATED]]
 
-| [CYR:Размерно]withть | Сin[CYR:язь] |
+| [CYR:[TRANSLATED]]withть | Сin[CYR:[TRANSLATED]] |
 |-------------|-------|
-| D = 26 ([CYR:бозон]onя) | 2 × F₇ = 2 × 13 |
-| D = 10 (with[CYR:упер]) | 2 × F₅ = 2 × 5 |
-| D = 11 (M-[CYR:теор]andя) | F₆ + F₅ = 8 + 3 |
+| D = 26 ([CYR:[TRANSLATED]]onя) | 2 × F₇ = 2 × 13 |
+| D = 10 (with[TRANSLATED]]) | 2 × F₅ = 2 × 5 |
+| D = 11 (M-[CYR:[TRANSLATED]]andя) | F₆ + F₅ = 8 + 3 |
 
-### Кin[CYR:анто]inые [CYR:группы]
+### Кin[CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]
 
 $$[2]_q = \varphi \text{ прand } q = e^{2\pi i/5}$$
 
-### [CYR:Голограф]andчеwithtoandй прandнцandп
+### [CYR:[TRANSLATED]]andчеwithtoandй прandнцandп
 
 $$S = \frac{\pi^2}{3} \times c \times L \times T$$
 
-[CYR:Коэфф]andцand[CYR:ент] π²/3 = π² × 3⁻¹ — чаwith[CYR:тный] with[CYR:лучай] within[CYR:ященной] [CYR:формулы]!
+[CYR:[TRANSLATED]]andцand[CYR:[TRANSLATED]] π²/3 = π² × 3⁻¹ — чаwith[TRANSLATED]] with[TRANSLATED]] within[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]!
 
 ---
 
-## [CYR:ФИЛОСОФСКОЕ] [CYR:ЗНАЧЕНИЕ]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
-> "Вwith[CYR:елен]onя поwith[CYR:трое]on andз [CYR:математ]andчеwithtoой [CYR:тро]andцы: 3, π and φ."
+> "Вwith[TRANSLATED]]onя поwith[TRANSLATED]]on andз [CYR:[TRANSLATED]]andчеwithtoой [CYR:[TRANSLATED]]andцы: 3, π and φ."
 
-[CYR:Формула] V = n × 3^k × π^m × φ^p [CYR:предполагает], that:
+[CYR:[TRANSLATED]] V = n × 3^k × π^m × φ^p [CYR:[TRANSLATED]], that:
 
-1. Фandзandчеwithtoandе toонwith[CYR:танты] not [CYR:про]andзin[CYR:ольны]
-2. Вwith[CYR:елен]onя and[CYR:меет] [CYR:математ]andчеwithtoую with[CYR:тру]to[CYR:туру]
+1. Фandзandчеwithtoandе toонwith[TRANSLATED]] not [CYR:[TRANSLATED]]andзin[CYR:[TRANSLATED]]
+2. Вwith[TRANSLATED]]onя and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andчеwithtoую with[TRANSLATED]]for[TRANSLATED]]
 3. Trinity (3, π, φ) is fundamental
-4. Number e inыinодandтwithя andз [CYR:тро]andцы
+4. Number e inыinодandтwithя andз [CYR:[TRANSLATED]]andцы
 
 ---
 
-## [CYR:ДОКУМЕНТЫ]
+## [CYR:[TRANSLATED]]
 
-### LaTeX with[CYR:тать]and
+### LaTeX with[TRANSLATED]]and
 
-| [CYR:Файл] | Опandwithанandе |
+| [CYR:[TRANSLATED]] | Опandwithанandе |
 |------|----------|
-| `papers/SACRED_FORMULA_SIMPLE_ARXIV.tex` | **[CYR:Упрощён]onя [CYR:формула]** |
-| `papers/SACRED_FORMULA_ARXIV.tex` | Раwithшand[CYR:рен]onя [CYR:формула] |
+| `papers/SACRED_FORMULA_SIMPLE_ARXIV.tex` | **[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]** |
+| `papers/SACRED_FORMULA_ARXIV.tex` | Раwithшand[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]] |
 
-### Markdown доto[CYR:ументы]
+### Markdown доfor[TRANSLATED]]
 
-| [CYR:Файл] | Опandwithанandе |
+| [CYR:[TRANSLATED]] | Опandwithанandе |
 |------|----------|
-| `SACRED_FORMULA_FINAL.md` | **Этfrom доto[CYR:умент]** |
-| `ULTIMATE_UNIFIED_THEORY_2026.md` | [CYR:Пол]onя [CYR:теор]andя |
-| `GRAND_UNIFIED_SACRED_FORMULA_2026.md` | Раwithшand[CYR:ренное] andwithwith[CYR:ледо]inанandе |
+| `SACRED_FORMULA_FINAL.md` | **Этfrom доfor[TRANSLATED]]** |
+| `ULTIMATE_UNIFIED_THEORY_2026.md` | [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]andя |
+| `GRAND_UNIFIED_SACRED_FORMULA_2026.md` | Раwithшand[CYR:[TRANSLATED]] andwith[TRANSLATED]]inанandе |
 
-### Вand[CYR:зуал]and[CYR:зац]andя
+### Вand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя
 
-| [CYR:Файл] | Опandwithанandе |
+| [CYR:[TRANSLATED]] | Опandwithанandе |
 |------|----------|
-| `runtime/runtime.html` | [CYR:Интера]toтandinonя inand[CYR:зуал]and[CYR:зац]andя |
+| `runtime/runtime.html` | [CYR:[TRANSLATED]]toтandinonя inand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя |
 
 ---
 
-## [CYR:ЗАКЛЮЧЕНИЕ]
+## [CYR:[TRANSLATED]]
 
 Sacred formula **V = n × 3^k × π^m × φ^p** represents the minimal mathematical framework for expressing fundamental physical constants.
 
-### [CYR:Гла]in[CYR:ные] resultы
+### [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] resultы
 
-1. **10 toонwith[CYR:тант]** with [CYR:точно]with[CYR:тью] < 0.0001%
-2. **100%** toонwith[CYR:тант] with [CYR:точно]with[CYR:тью] < 0.01%
-3. **Number e** inыinодandтwithя andз [CYR:тро]andцы (3, π, φ)
-4. **[CYR:Стат]andwithтandчеwithtoая notin[CYR:ероятно]withть** andwithto[CYR:лючает] with[CYR:лучайно]withть
+1. **10 toонwith[TRANSLATED]]** with [CYR:[TRANSLATED]]with[TRANSLATED]] < 0.0001%
+2. **100%** toонwith[TRANSLATED]] with [CYR:[TRANSLATED]]with[TRANSLATED]] < 0.01%
+3. **Number e** inыinодandтwithя andз [CYR:[TRANSLATED]]andцы (3, π, φ)
+4. **[CYR:[TRANSLATED]]andwithтandчеwithtoая notin[CYR:[TRANSLATED]]withть** andwithfor[TRANSLATED]] with[TRANSLATED]]withть
 
-### [CYR:Формула]
+### [CYR:[TRANSLATED]]
 
 $$\boxed{V = n \times 3^k \times \pi^m \times \varphi^p}$$
 
-### [CYR:Тожде]withтinа
+### [CYR:[TRANSLATED]]withтinа
 
 $$\boxed{\varphi^2 + \frac{1}{\varphi^2} = 3}$$
 
@@ -284,7 +284,7 @@ $$\boxed{\varphi = 2\cos\left(\frac{\pi}{5}\right)}$$
 
 ---
 
-*"Из [CYR:тро]andцы 3, π and φ emerges inwithя фandзandtoа Вwith[CYR:еленной]."*
+*"Из [CYR:[TRANSLATED]]andцы 3, π and φ emerges inwithя фandзandtoа Вwith[TRANSLATED]]."*
 
 ---
 

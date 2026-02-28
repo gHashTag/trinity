@@ -1,23 +1,23 @@
 # ============================================================================
 # VIBEEC v1.0 - Complete Feature Showcase
-# [CYR:[TRANSLATED]]with[CYR:[TRANSLATED]]andI inwith[EN] 50+ [EN]and[EN] [CYR:[TRANSLATED]]and[CYR:[EN]I[TRANSLATED]] VIBEE
+# withandI inwith 50+ and and[CYR:I] VIBEE
 # ============================================================================
 
 # ============================================================================
-# Phase 1: [CYR:[TRANSLATED]]iny[EN] withand[CYR:[TRANSLATED]]withandwith
+# Phase 1: iny withandwithandwith
 # ============================================================================
 
-# 1. [CYR:[TRANSLATED]]andand
+# 1. and
 pub fn greet(name) {
   print("Hello, {name}!")
 }
 
-# 2. [EN]andin[CYR:[TRANSLATED]y[EN]] [CYR:[TRANSLATED]]andand
+# 2. andin[CYR:y] and
 fn internal_helper(x) {
   x * 2
 }
 
-# 3. [CYR:[TRANSLATED]y] and in[EN]in[CYR:[TRANSLATED]] [EN]on[CYR:[TRANSLATED]]and[EN]
+# 3. [CYR:y] and inin onand
 pub fn add(x, y) {
   x + y
 }

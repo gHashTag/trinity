@@ -1,5 +1,5 @@
 // FULL PIPELINE TEST: safetensors → .tri → inference
-// Testand[EN]in[EN]and[EN] by[CYR:[EN]] [EN]andto[EN] to[EN]in[CYR:[EN]]andand and and[CYR:[EN]]with[EN]
+// Testandinand by andto toinand and andwith
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");

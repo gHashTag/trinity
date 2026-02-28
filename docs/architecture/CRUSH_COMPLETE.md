@@ -7,7 +7,7 @@
 
 ---
 
-## [CYR:СВЯЩЕННАЯ] [CYR:ФОРМУЛА]
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 
 ```
 V = n × 3^k × π^m × φ^p × e^q

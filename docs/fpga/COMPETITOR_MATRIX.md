@@ -4,7 +4,7 @@
 
 ---
 
-## [CYR:СВОДНАЯ] [CYR:ТАБЛИЦА] [CYR:ФУНКЦИЙ] (50+ features)
+## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (50+ features)
 
 | Feature | Fellou | Dia | Arc Max | Brave Leo | Opera Aria | Edge Copilot | Chrome AI | Firefox | VIBEE |
 |---------|--------|-----|---------|-----------|------------|--------------|-----------|---------|-------|
