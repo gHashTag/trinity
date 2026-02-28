@@ -528,10 +528,10 @@ pub const PipelineExecutor = struct {
         std.debug.print("Progress: {d:.1}%\n\n", .{self.state.getProgressPercent()});
 
         for (self.state.results, 0..) |result, i| {
-            const link: ChainLink = @enumFromInt(i + 1);
+            const link: ChainLink = @enumFromInt(i);
             const symbol = result.status.getSymbol();
             const critical = if (link.isCritical()) "*" else " ";
-            std.debug.print("{s}{s} Link {d:2}: {s}\n", .{ symbol, critical, i + 1, link.getName() });
+            std.debug.print("{s}{s} Link {d:2}: {s}\n", .{ symbol, critical, i, link.getName() });
         }
 
         std.debug.print("\nLegend: * = critical, {s}[OK]{s}, {s}[FAIL]{s}, {s}[SKIP]{s}\n", .{ GREEN, RESET, RED, RESET, GRAY, RESET });
