@@ -36,6 +36,11 @@ behaviors:
   # SLIDE GENERATION
   # ═══════════════════════════════════════════════════════════════════════════════
 
+  - name: generate_slide_progress_metrics
+    given: Phase 3, 4, 5 benchmark data
+    when: Progress slide requested
+    then: Return slide showing 0.8x → 1.1x → 603x roadmap with honest current state
+
   - name: generate_slide_title
     given: Title, subtitle
     when: Slide requested
