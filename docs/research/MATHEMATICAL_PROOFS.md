@@ -1,18 +1,18 @@
-# [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+# :] :]
 
 ## V = n × 3^k × π^m × φ^p
 
 ---
 
-## 1. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 1. :] :]
 
-### [CYR:[TRANSLATED]] 1: φ² + 1/φ² = 3
+### :] 1: φ² + 1/φ² = 3
 
-**Доfor[TRANSLATED]]withтinо:**
+**Daboutfor]withtinabout:**
 
-Пуwithть φ = (1 + √5)/2 — [CYR:[TRANSLATED]]fromое with[TRANSLATED]]andе.
+Patwitht φ = (1 + √5)/2 — :]fromaboute with]ande.
 
-**[CYR:[TRANSLATED]] 1:** [CYR:[TRANSLATED]]andwithлandм φ²
+**:] 1:** :]andwithlandm φ²
 ```
 φ² = ((1 + √5)/2)²
    = (1 + 2√5 + 5)/4
@@ -20,9 +20,9 @@
    = (3 + √5)/2
 ```
 
-**[CYR:[TRANSLATED]] 2:** [CYR:[TRANSLATED]]andwithлandм 1/φ²
+**:] 2:** :]andwithlandm 1/φ²
 
-Поwithfor[TRANSLATED]]toу 1/φ = φ - 1 = (√5 - 1)/2:
+Paboutwithfor]toat 1/φ = φ - 1 = (√5 - 1)/2:
 ```
 1/φ² = ((√5 - 1)/2)²
      = (5 - 2√5 + 1)/4
@@ -30,7 +30,7 @@
      = (3 - √5)/2
 ```
 
-**[CYR:[TRANSLATED]] 3:** [CYR:[TRANSLATED]]andм
+**:] 3:** :]andm
 ```
 φ² + 1/φ² = (3 + √5)/2 + (3 - √5)/2
           = (3 + √5 + 3 - √5)/2
@@ -38,7 +38,7 @@
           = 3 ∎
 ```
 
-**Чandwith[TRANSLATED]]onя [CYR:[TRANSLATED]]inерtoа:**
+**Chandwith]onya :]inertoa:**
 ```
 φ = 1.6180339887498948482045868343656...
 φ² = 2.6180339887498948482045868343656...
@@ -46,28 +46,28 @@
 φ² + 1/φ² = 3.0000000000000000000000000000000...
 ```
 
-[CYR:[TRANSLATED]] **[CYR:[TRANSLATED]]** раinенwithтinо!
+:] **:]** rainenwithtinabout!
 
 ---
 
-### [CYR:[TRANSLATED]] 2: φ = 2cos(π/5)
+### :] 2: φ = 2cos(π/5)
 
-**Доfor[TRANSLATED]]withтinо:**
+**Daboutfor]withtinabout:**
 
-Изinеwith[TRANSLATED]], that cos(36°) = cos(π/5) = (1 + √5)/4
+Izinewith], that cos(36°) = cos(π/5) = (1 + √5)/4
 
-[CYR:[TRANSLATED]]:
+:]:
 ```
 2cos(π/5) = 2 × (1 + √5)/4 = (1 + √5)/2 = φ ∎
 ```
 
 ---
 
-### [CYR:[TRANSLATED]] 3: φ⁵ = 5φ + 3
+### :] 3: φ⁵ = 5φ + 3
 
-**Доfor[TRANSLATED]]withтinо:**
+**Daboutfor]withtinabout:**
 
-Иwith[TRANSLATED]] φ² = φ + 1:
+Iwith] φ² = φ + 1:
 ```
 φ³ = φ × φ² = φ(φ + 1) = φ² + φ = (φ + 1) + φ = 2φ + 1
 φ⁴ = φ × φ³ = φ(2φ + 1) = 2φ² + φ = 2(φ + 1) + φ = 3φ + 2
@@ -76,11 +76,11 @@
 
 ---
 
-## 2. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 2. :] :] :]
 
-### [CYR:[TRANSLATED]] 4: 1/α = 4π³ + π² + π
+### :] 4: 1/α = 4π³ + π² + π
 
-**[CYR:[TRANSLATED]]andwith[TRANSLATED]]andе:**
+**:]andwith]ande:**
 ```
 4π³ = 4 × 31.006276680299820175476315067101...
     = 124.02510672119928070190526026840...
@@ -89,10 +89,10 @@
 
 π = 3.1415926535897932384626433832795...
 
-[CYR:[TRANSLATED]] = 137.03630377488846172821299365006...
+:] = 137.03630377488846172821299365006...
 ```
 
-**Эtowith[TRANSLATED]]and[CYR:[TRANSLATED]] зon[CYR:[TRANSLATED]]andе (CODATA 2018):**
+**Etowith]and:] zon:]ande (CODATA 2018):**
 ```
 1/α = 137.035999084(21)
 ```
@@ -106,27 +106,27 @@
 
 ---
 
-### [CYR:[TRANSLATED]]onтandinonя [CYR:[TRANSLATED]]
+### :]ontandinonya :]
 
 ```
 1/α = π(4π² + π + 1)
 ```
 
-[CYR:[TRANSLATED]] 4π² + π + 1 ≈ 43.62...
+:] 4π² + π + 1 ≈ 43.62...
 
 ---
 
-## 3. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]/[CYR:[TRANSLATED]]
+## 3. :] :] :]/:]
 
-### [CYR:[TRANSLATED]] 5: m_p/m_e = 6π⁵
+### :] 5: m_p/m_e = 6π⁵
 
-**[CYR:[TRANSLATED]]andwith[TRANSLATED]]andе:**
+**:]andwith]ande:**
 ```
 π⁵ = 306.01968478528145326274131004396...
 6π⁵ = 1836.1181087116887195764478602638...
 ```
 
-**Эtowith[TRANSLATED]]and[CYR:[TRANSLATED]] зon[CYR:[TRANSLATED]]andе:**
+**Etowith]and:] zon:]ande:**
 ```
 m_p/m_e = 1836.15267343(11)
 ```
@@ -140,16 +140,16 @@ m_p/m_e = 1836.15267343(11)
 
 ---
 
-## 4. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 4. :] :]
 
-### [CYR:[TRANSLATED]] 6: Q = 2/3
+### :] 6: Q = 2/3
 
-[CYR:[TRANSLATED]] маwith [CYR:[TRANSLATED]]in:
+:] mawith :]in:
 ```
 Q = (m_e + m_μ + m_τ) / (√m_e + √m_μ + √m_τ)²
 ```
 
-**[CYR:[TRANSLATED]]andwith[TRANSLATED]]andе with эtowith[TRANSLATED]]and[CYR:[TRANSLATED]]and маwithамand (MeV):**
+**:]andwith]ande with etowith]and:]and mawithamand (MeV):**
 ```
 m_e = 0.51099895
 m_μ = 105.6583755
@@ -159,23 +159,23 @@ m_τ = 1776.86
 √m_μ = 10.2787...
 √m_τ = 42.1528...
 
-Чandwithлand[CYR:[TRANSLATED]] = 0.511 + 105.658 + 1776.86 = 1883.029
-Зonмеon[CYR:[TRANSLATED]] = (0.715 + 10.279 + 42.153)² = 53.147² = 2824.60
+Chandwithland:] = 0.511 + 105.658 + 1776.86 = 1883.029
+Zonmeon:] = (0.715 + 10.279 + 42.153)² = 53.147² = 2824.60
 
 Q = 1883.029 / 2824.60 = 0.666661...
 ```
 
-**[CYR:[TRANSLATED]]andчеwithtoое зon[CYR:[TRANSLATED]]andе:** 2/3 = 0.666666...
+**:]andchewithtoaboute zon:]ande:** 2/3 = 0.666666...
 
 **Error:** 0.00076%
 
 ---
 
-## 5. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 5. :] :]
 
-### [CYR:[TRANSLATED]] 7: Ω_m + Ω_Λ = 1
+### :] 7: Ω_m + Ω_Λ = 1
 
-Еwithлand Ω_m = 1/π and Ω_Λ = (π-1)/π, то:
+Ewithland Ω_m = 1/π and Ω_Λ = (π-1)/π, that:
 ```
 Ω_m + Ω_Λ = 1/π + (π-1)/π
           = (1 + π - 1)/π
@@ -185,16 +185,16 @@ Q = 1883.029 / 2824.60 = 0.666661...
 
 ---
 
-## 6. E8  [CYR:[TRANSLATED]] 3
+## 6. E8  :] 3
 
-### [CYR:[TRANSLATED]] 8: dim(E8) = 3⁵ + 5
+### :] 8: dim(E8) = 3⁵ + 5
 
 ```
 3⁵ = 243
 3⁵ + 5 = 248 = dim(E8) ∎
 ```
 
-### [CYR:[TRANSLATED]] 9: roots(E8) = 3⁵ - 3
+### :] 9: roots(E8) = 3⁵ - 3
 
 ```
 3⁵ - 3 = 243 - 3 = 240 = roots(E8) ∎
@@ -202,9 +202,9 @@ Q = 1883.029 / 2824.60 = 0.666661...
 
 ---
 
-## 7. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 7. :] :]
 
-### Сin[CYR:[TRANSLATED]] with φ
+### Sin:] with φ
 
 ```
 F_n = (φⁿ - ψⁿ) / √5
@@ -212,9 +212,9 @@ F_n = (φⁿ - ψⁿ) / √5
 
 where ψ = (1 - √5)/2 = -1/φ
 
-### Фandбоonччand in фandзandtoе
+### Fandbaboutonchchand in fandzandtoe
 
-| n | F_n | Чаwithтandца |
+| n | F_n | Chawithtandtsa |
 |---|-----|---------|
 | 11 | 89 | Higgs |
 | 14 | 377 | Z boson |
@@ -222,38 +222,38 @@ where ψ = (1 - √5)/2 = -1/φ
 
 ---
 
-## 8. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 8. :] :]
 
-### [CYR:[TRANSLATED]]withть with[TRANSLATED]] withоin[CYR:[TRANSLATED]]andя
+### :]witht with] withaboutin:]andya
 
-[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] with [CYR:[TRANSLATED]]with[TRANSLATED]] < 0.01%:
+:] :] :] with :]with] < 0.01%:
 ```
 P₁ ≈ 10⁻⁴
 ```
 
-[CYR:[TRANSLATED]] 15 notзаinandwithand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
+:] 15 notzainandwithand:] :]:
 ```
 P₁₅ = (10⁻⁴)¹⁵ = 10⁻⁶⁰
 ```
 
- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[TRANSLATED]]withтinа поandwithtoа:
+ :] :]with]withtina byandwithtoa:
 ```
 P < 10⁻³⁰
 ```
 
-**Выinод:** [CYR:[TRANSLATED]]withть with[TRANSLATED]] withоin[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]not[CYR:[TRANSLATED]]andмо [CYR:[TRANSLATED]].
+**Vyinaboutd:** :]witht with] withaboutin:]andya :]not:]andmabout :].
 
 ---
 
-## 9. [CYR:[TRANSLATED]]
+## 9. :]
 
-[CYR:[TRANSLATED]]andчеwithtoandе доfor[TRANSLATED]]withтinа [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]:
+:]andchewithtoande daboutfor]withtina :]in:]:
 
-1. **φ² + 1/φ² = 3** — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinо
-2. **1/α = 4π³ + π² + π** — 0.0002% [CYR:[TRANSLATED]]withть
-3. **m_p/m_e = 6π⁵** — 0.002% [CYR:[TRANSLATED]]withть
-4. **Q = 2/3** — 0.0008% [CYR:[TRANSLATED]]withть
-5. **E8: 248 = 3⁵ + 5** — [CYR:[TRANSLATED]]
+1. **φ² + 1/φ² = 3** — :] :]withtinabout
+2. **1/α = 4π³ + π² + π** — 0.0002% :]witht
+3. **m_p/m_e = 6π⁵** — 0.002% :]witht
+4. **Q = 2/3** — 0.0008% :]witht
+5. **E8: 248 = 3⁵ + 5** — :]
 
 Sacred formula **V = n × 3^k × π^m × φ^p** has deep mathematical justification.
 

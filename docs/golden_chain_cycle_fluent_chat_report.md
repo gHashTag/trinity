@@ -48,9 +48,9 @@
 
 ### Russian Greeting
 ```
-"Прandinет! [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]]!"
-"[CYR:[TRANSLATED]]inwithтinуй! Каto тinоand [CYR:[TRANSLATED]]?"
-"Прandinетwithтinую! [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]?"
+"Prandinet! :] :] inand:]!"
+":]inwithtinaty! Kato tinaboutand :]?"
+"Prandinetwithtinatyu! :] :] :]?"
 ```
 
 ### English Honest AI Response
@@ -119,7 +119,7 @@ Result:            PASS ✓
 2. Full fluent conversation implemented
 3. 3 languages supported
 4. Honest uncertainty responses in place
-5. No generic "[CYR:[TRANSLATED]]!  Trinity..." responses
+5. No generic ":]!  Trinity..." responses
 
 ## Next Potential Improvements
 

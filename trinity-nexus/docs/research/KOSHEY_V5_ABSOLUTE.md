@@ -1,10 +1,10 @@
 # iGLA KOSHEY v5 ABSOLUTE
 
-**Абwith[TRANSLATED]] беwith[TRANSLATED]]andе - [CYR:[TRANSLATED]]onя and[CYR:[TRANSLATED]]andя inwithех inерwithandй**
+**Abwith] bewith]ande - :]onya and:]andya inwithekh inerwithandy**
 
-## [CYR:[TRANSLATED]]andwithтandtoа
+## :]andwithtVersion
 
-| [CYR:[TRANSLATED]]withandя | [CYR:[TRANSLATED]]and | Теwithты |
+| :]Author | :]and | Tewithty |
 |--------|--------|-------|
 | v1 IMMORTAL | 18 | 110 |
 | v2 ETERNAL | 12 | 72 |
@@ -13,15 +13,15 @@
 | v5 ABSOLUTE | 3 | 18 |
 | **TOTAL KOSHEY** | **58** | **350** |
 
-## [CYR:[TRANSLATED]]and v5 ABSOLUTE
+## :]and v5 ABSOLUTE
 
-| [CYR:[TRANSLATED]] | Опandwithанandе |
+| :] | Opandwithanande |
 |--------|----------|
-| `igla_koshey_absolute_core` | [CYR:[TRANSLATED]] абwith[TRANSLATED]] and[CYR:[TRANSLATED]]and |
-| `igla_koshey_absolute_integration` | [CYR:[TRANSLATED]]with-inерwithandонonя and[CYR:[TRANSLATED]]andя |
-| `igla_koshey_absolute_benchmark` | Фandon[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toand |
+| `igla_koshey_absolute_core` | :] abwith] and:]and |
+| `igla_koshey_absolute_integration` | :]with-inerwithandaboutnonya and:]andya |
+| `igla_koshey_absolute_benchmark` | Fandon:] :]toand |
 
-## [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] KOSHEY
+## :]onya :]andthosefor] KOSHEY
 
 ```
                               ┌─────────────────────────────────┐
@@ -51,43 +51,43 @@
                               └─────────────────────────────────┘
 ```
 
-## [CYR:[TRANSLATED]]withтand ABSOLUTE
+## :]withtand ABSOLUTE
 
-### Уonwith[TRANSLATED]]in[CYR:[TRANSLATED]] from v1 IMMORTAL
-- Беwithtoоnot[CYR:[TRANSLATED]] for[TRANSLATED]]towithт (Ring Attention)
-- [CYR:[TRANSLATED]]and-[CYR:[TRANSLATED]]inанandе (EWC++)
-- [CYR:[TRANSLATED]]inоwith[TRANSLATED]]in[CYR:[TRANSLATED]]andе
-- Мand[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]], [CYR:[TRANSLATED]], Утtoа, [CYR:[TRANSLATED]], [CYR:[TRANSLATED]]to, Оwith[TRANSLATED]]in)
+### Uonwith]in:] from v1 IMMORTAL
+- Bywithtoaboutnot:] for]towitht (Ring Attention)
+- :]and-:]inanande (EWC++)
+- :]inaboutwith]in:]ande
+- Mand:]andya :] (:], :], Uttoa, :], :]to, Owith]in)
 
-### Уonwith[TRANSLATED]]in[CYR:[TRANSLATED]] from v2 ETERNAL
+### Uonwith]in:] from v2 ETERNAL
 - Swarm Intelligence
 - Multimodal (Vision + Audio)
 - Quantum Computing
 - Neuromorphic
 - Emergent Behavior
 
-### Уonwith[TRANSLATED]]in[CYR:[TRANSLATED]] from v3 TRANSCENDENT
+### Uonwith]in:] from v3 TRANSCENDENT
 - Self-Modification
 - Artificial Consciousness (IIT Φ)
 - Recursive Self-Improvement
 - Meta-Learning
 - Causal Reasoning
 
-### Уonwith[TRANSLATED]]in[CYR:[TRANSLATED]] from v4 OMNIPOTENT
+### Uonwith]in:] from v4 OMNIPOTENT
 - World Models
 - Tool Creation & Evolution
 - Planning (ToT, GoT, MCTS)
 
-### Уonwith[TRANSLATED]]in[CYR:[TRANSLATED]] from v4 OMNIPRESENT
+### Uonwith]in:] from v4 OMNIPRESENT
 - Edge AI Deployment
 - Federated Learning
 - Differential Privacy
 
-### Унandfor[TRANSLATED]] for v5 ABSOLUTE
-- [CYR:[TRANSLATED]]with-inерwithandонonя and[CYR:[TRANSLATED]]andя
-- Унandфandцandроinанonя [CYR:memory]
-- [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]withоin
-- Сand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя withоwith[TRANSLATED]]andй
+### Unandfor] for v5 ABSOLUTE
+- :]with-inerwithandaboutnonya and:]andya
+- Unandfandtsandraboutinanonya :memory]
+- :]and:]andya :]withaboutin
+- Sand:]and:]andya withaboutwith]andy
 
 ## Sacred formula
 
@@ -107,4 +107,4 @@ PHOENIX = 999
 
 ---
 
-**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] | φ² + 1/φ² = 3 | PHOENIX = 999**
+**:] :] | φ² + 1/φ² = 3 | PHOENIX = 999**

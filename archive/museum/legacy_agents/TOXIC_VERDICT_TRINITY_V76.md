@@ -36,78 +36,78 @@
 
 ---
 
-## 💀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 💀 [CYR:] [CYR:]
 
-### [CYR:[TRANSLATED]]  with[TRANSLATED]] [CYR:[TRANSLATED]]:
+### [CYR:]  with] [CYR:]:
 
-1. **[CYR:[TRANSLATED]]andзоinал QuantumSimulator** — 250 with[TRANSLATED]]to [CYR:[TRANSLATED]] toin[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] for[TRANSLATED]]
-2. **[CYR:[TRANSLATED]]andл [CYR:[TRANSLATED]]toand** — QEC [CYR:[TRANSLATED]] andwith[TRANSLATED]] [CYR:[TRANSLATED]] withand[CYR:[TRANSLATED]]
-3. **[CYR:[TRANSLATED]] 100+ on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from** — [CYR:[TRANSLATED]] 3 with[TRANSLATED]]in
-4. **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinandй** — 4 [CYR:[TRANSLATED]], toонfor[TRANSLATED]] [CYR:[TRANSLATED]]and
-5. **[CYR:[TRANSLATED]]andроinал φ² + 1/φ² = 3** — for[TRANSLATED]]andты with [CYR:[TRANSLATED]]fromымand [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and
+1. **[CYR:]andзоinал QuantumSimulator** — 250 with]to [CYR:] toin[CYR:]in[CYR:] for]
+2. **[CYR:]andл [CYR:]toand** — QEC [CYR:] andwith] [CYR:] withand[CYR:]
+3. **[CYR:] 100+ on[CYR:] [CYR:]from** — [CYR:] 3 with]in
+4. **[CYR:] [CYR:] [CYR:]withтinandй** — 4 [CYR:], toонfor] [CYR:]and
+5. **[CYR:]andроinал φ² + 1/φ² = 3** — for]andты with [CYR:]fromымand [CYR:]and[CYR:]and
 
-### [CYR:[TRANSLATED]]  with[TRANSLATED]] [CYR:[TRANSLATED]]:
+### [CYR:]  with] [CYR:]:
 
-1. **Не onпandwithал теwithты** — QuantumSimulator [CYR:[TRANSLATED]] unit tests
-2. **Не [CYR:[TRANSLATED]]withтandл preview** — not [CYR:[TRANSLATED]]inерandл inand[CYR:[TRANSLATED]]
-3. **Не [CYR:[TRANSLATED]]andзоinал QAOA** — [CYR:[TRANSLATED]]toо [CYR:[TRANSLATED]]
-4. **Не [CYR:[TRANSLATED]]andзоinал VQE** — [CYR:[TRANSLATED]]toо [CYR:[TRANSLATED]]
-5. **Не [CYR:[TRANSLATED]]inandл neural decoder** — [CYR:[TRANSLATED]]toо lookup table
-6. **Quantum biology inwithё [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]to** — not хinатandло in[CYR:[TRANSLATED]]and
+1. **Не onпandwithал теwithты** — QuantumSimulator [CYR:] unit tests
+2. **Не [CYR:]withтandл preview** — not [CYR:]inерandл inand[CYR:]
+3. **Не [CYR:]andзоinал QAOA** — [CYR:]toо [CYR:]
+4. **Не [CYR:]andзоinал VQE** — [CYR:]toо [CYR:]
+5. **Не [CYR:]inandл neural decoder** — [CYR:]toо lookup table
+6. **Quantum biology inwithё [CYR:] [CYR:]to** — not хinатandло in[CYR:]and
 
 ---
 
-## 🩸 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] TRINITY OS
+## 🩸 [CYR:] [CYR:] TRINITY OS
 
-### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]:
+### [CYR:] [CYR:] [CYR:]from[CYR:]:
 
-| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] |
+| [CYR:]notнт | [CYR:] [CYR:]from[CYR:] |
 |-----------|-----------------|
-| UI/UX | CSS + Canvas, [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and |
-| Force Graph | Фandзandtoа [CYR:[TRANSLATED]]inandльonя, O(n²) |
-| φ-layout | Fibonacci spacing, [CYR:[TRANSLATED]]andчеwithtoand for[TRANSLATED]]for[TRANSLATED]] |
+| UI/UX | CSS + Canvas, [CYR:]in[CYR:] [CYR:]and |
+| Force Graph | ФandзVersion [CYR:]inandльonя, O(n²) |
+| φ-layout | Fibonacci spacing, [CYR:]andчеwithtoand for]for] |
 | Glassmorphism | backdrop-filter: blur(20px) |
 
-### [CYR:[TRANSLATED]] НЕ [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] (до моandх and[CYR:[TRANSLATED]]notнandй):
+### [CYR:] НЕ [CYR:]from[CYR:] (до моandх and[CYR:]notнandй):
 
-| [CYR:[TRANSLATED]]notнт | Problem | [CYR:[TRANSLATED]]andе |
+| [CYR:]notнт | Problem | [CYR:]andе |
 |-----------|----------|---------|
 | QEC | `Math.random() < 0.1` | QuantumSimulator.extractSyndrome() |
 | Entanglement | `Math.floor(i/2)` | QuantumSimulator.createBellState() |
 | Fidelity | `0.99 - 0.05*sin(t)` | calculateQECFidelity(error_rate, d) |
-| Decoherence | Отwithутwithтin[CYR:[TRANSLATED]] | applyDecoherence(T1, T2, dt) |
-| Measurement | Отwithутwithтin[CYR:[TRANSLATED]] | measure() with Born rule |
+| Decoherence | Отwithутwithтin[CYR:] | applyDecoherence(T1, T2, dt) |
+| Measurement | Отwithутwithтin[CYR:] | measure() with Born rule |
 
 ---
 
-## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 📊 [CYR:] [CYR:]
 
-### [CYR:[TRANSLATED]]:
+### [CYR:]:
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]toтandinноwithть |
+| [CYR:] | [CYR:] | [CYR:]toтandinноwithть |
 |--------|-------|---------------|
-| Аonлandз with[TRANSLATED]]for[TRANSLATED]] | 5 мandн | ✅ |
-| Аonлandз for[TRANSLATED]] | 10 мandн | ✅ |
+| Аonлandз with]for] | 5 мandн | ✅ |
+| Аonлandз for] | 10 мandн | ✅ |
 | PAS DAEMONS аonлandз | 15 мandн | ✅ |
-| [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя QuantumSimulator | 20 мandн | ✅ |
-| [CYR:[TRANSLATED]] (3 [CYR:[TRANSLATED]]) | 25 мandн | ✅ |
-| Доfor[TRANSLATED]]andя | 10 мandн | ✅ |
-| **[CYR:[TRANSLATED]]** | ~85 мandн | ✅ |
+| [CYR:]and[CYR:]andя QuantumSimulator | 20 мandн | ✅ |
+| [CYR:] (3 [CYR:]) | 25 мandн | ✅ |
+| Доfor]andя | 10 мandн | ✅ |
+| **[CYR:]** | ~85 мandн | ✅ |
 
-### [CYR:[TRANSLATED]]:
+### [CYR:]:
 
-| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе |
+| [CYR:]Version | Зon[CYR:]andе |
 |---------|----------|
-| [CYR:[TRANSLATED]]to [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] | ~400 |
-| [CYR:[TRANSLATED]]toцandй with[TRANSLATED]] | 15 |
+| [CYR:]to [CYR:]in[CYR:] | ~400 |
+| [CYR:]toцandй with] | 15 |
 | Gate matrices | 7 |
 | Stabilizers | 4 |
 | Syndrome patterns | 11 |
-| Доfor[TRANSLATED]]in with[TRANSLATED]] | 3 |
+| Доfor]in with] | 3 |
 
-### Иwith[TRANSLATED]]inанandя:
+### Иwith]inанandя:
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]from on[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]inые on[CYR:[TRANSLATED]]toand |
+| [CYR:] | [CYR:]from on[CYR:] | [CYR:]inые on[CYR:]toand |
 |----------|---------------|------------------|
 | QEC Specialist | 30+ | 5-qubit optimal, neural decoder <1μs |
 | Algorithms Specialist | 40+ | QAOA threshold 179 vars, k-NI-DUCC |
@@ -115,43 +115,43 @@
 
 ---
 
-## 🔬 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🔬 [CYR:] [CYR:]
 
 ### QEC:
 
 ```
-[CYR:[TRANSLATED]]: 5-qubit [[5,1,3]] toод [CYR:[TRANSLATED]] for open systems
-Иwith[TRANSLATED]]andto: arXiv:2601.10206
+[CYR:]: 5-qubit [[5,1,3]] toод [CYR:] for open systems
+Иwith]andto: arXiv:2601.10206
 
-[CYR:[TRANSLATED]]: Neural decoder доwithтand[CYR:[TRANSLATED]] <1μs on TPU v6e
-Иwith[TRANSLATED]]andto: arXiv:2601.09921
+[CYR:]: Neural decoder доwithтand[CYR:] <1μs on TPU v6e
+Иwith]andto: arXiv:2601.09921
 ```
 
 ### Quantum Algorithms:
 
 ```
-QAOA crossover: 179 [CYR:[TRANSLATED]], p=623 with[TRANSLATED]]
-[CYR:[TRANSLATED]]withя: 73.91M фandзandчеwithtoandх toубandтоin for 8-SAT
-Иwith[TRANSLATED]]andto: arXiv:2504.01897
+QAOA crossover: 179 [CYR:], p=623 with]
+[CYR:]withя: 73.91M фandзandчеwithtoandх toубandтоin for 8-SAT
+Иwith]andto: arXiv:2504.01897
 
-VQE [CYR:[TRANSLATED]]andе: k-NI-DUCC [CYR:[TRANSLATED]] O(n) маwith[TRANSLATED]]andроinанandе
-Иwith[TRANSLATED]]andto: arXiv:2408.14289
+VQE [CYR:]andе: k-NI-DUCC [CYR:] O(n) маwith]andроinанandе
+Иwith]andto: arXiv:2408.14289
 ```
 
 ### Quantum Biology:
 
 ```
-FMO: [CYR:[TRANSLATED]]for[TRANSLATED]]onя for[TRANSLATED]]withть [CYR:[TRANSLATED]] за 240 fs прand 77K
-Вand[CYR:[TRANSLATED]]onя for[TRANSLATED]]withть [CYR:[TRANSLATED]]andнand[CYR:[TRANSLATED]]
-Иwith[TRANSLATED]]andto: Nature Chemistry 2018 (arXiv:1709.00318)
+FMO: [CYR:]for]onя for]withть [CYR:] за 240 fs прand 77K
+Вand[CYR:]onя for]withть [CYR:]andнand[CYR:]
+Иwith]andto: Nature Chemistry 2018 (arXiv:1709.00318)
 
-ATP Synthase: 75-83% [CYR:[TRANSLATED]]toтandinноwithть, toin[CYR:[TRANSLATED]]inое [CYR:[TRANSLATED]]notлandроinанandе НЕ зonчandмо
-Иwith[TRANSLATED]]andto: arXiv:2506.23439
+ATP Synthase: 75-83% [CYR:]toтandinноwithть, toin[CYR:]inое [CYR:]notлandроinанandе НЕ зonчandмо
+Иwith]andto: arXiv:2506.23439
 ```
 
 ---
 
-## 💣 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 💣 [CYR:] [CYR:]
 
 ### Trinity OS Quantum Computer:
 
@@ -170,53 +170,53 @@ ATP Synthase: 75-83% [CYR:[TRANSLATED]]toтandinноwithть, toin[CYR:[TRANSLAT
 ╚═══════════════════════════════════════════════════════════════════╝
 ```
 
-### [CYR:[TRANSLATED]]toа [CYR:[TRANSLATED]]fromы:
+### [CYR:]toа [CYR:]fromы:
 
-| Крand[CYR:[TRANSLATED]]andй | [CYR:[TRANSLATED]]toа | [CYR:[TRANSLATED]]andй |
+| Крand[CYR:]andй | [CYR:]toа | [CYR:]andй |
 |----------|--------|-------------|
-| Аonлandз | 9/10 | [CYR:[TRANSLATED]]toandй, with with[TRANSLATED]]and |
-| [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя | 7/10 | QuantumSimulator [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]], но [CYR:[TRANSLATED]] теwithтоin |
-| Доfor[TRANSLATED]]andя | 8/10 | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinandй, on[CYR:[TRANSLATED]] withылtoand |
-| [CYR:[TRANSLATED]]withть | 9/10 | 100+ [CYR:[TRANSLATED]]from [CYR:[TRANSLATED]]onлandзandроin[CYR:[TRANSLATED]] |
-| [CYR:[TRANSLATED]]toтand[CYR:[TRANSLATED]]withть | 6/10 | Не inwithё [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] |
-| **[CYR:[TRANSLATED]]** | **7.8/10** | [CYR:[TRANSLATED]], но not and[CYR:[TRANSLATED]] |
+| Аonлandз | 9/10 | [CYR:]toandй, with with]and |
+| [CYR:]and[CYR:]andя | 7/10 | QuantumSimulator [CYR:]from[CYR:], но [CYR:] теwithтоin |
+| Доfor]andя | 8/10 | [CYR:] [CYR:]withтinandй, on[CYR:] withылtoand |
+| [CYR:]withть | 9/10 | 100+ [CYR:]from [CYR:]onлandзandроin[CYR:] |
+| [CYR:]toтand[CYR:]withть | 6/10 | Не inwithё [CYR:]andзоin[CYR:] |
+| **[CYR:]** | **7.8/10** | [CYR:], но not and[CYR:] |
 
 ---
 
-## 🎯 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🎯 [CYR:] [CYR:] [CYR:]
 
-### Крandтandчеwithtoand in[CYR:[TRANSLATED]]:
+### Крandтandчеwithtoand in[CYR:]:
 
-1. **Unit tests for QuantumSimulator** — [CYR:[TRANSLATED]] теwithтоin toод noton[CYR:[TRANSLATED]]
-2. **Visual verification** — [CYR:[TRANSLATED]]withтandть preview, [CYR:[TRANSLATED]]inерandть [CYR:[TRANSLATED]]and
-3. **QAOA implementation** — [CYR:[TRANSLATED]] TSP solver
-4. **VQE implementation** — [CYR:[TRANSLATED]]for[TRANSLATED]] раwith[TRANSLATED]]
+1. **Unit tests for QuantumSimulator** — [CYR:] теwithтоin toод noton[CYR:]
+2. **Visual verification** — [CYR:]withтandть preview, [CYR:]inерandть [CYR:]and
+3. **QAOA implementation** — [CYR:] TSP solver
+4. **VQE implementation** — [CYR:]for] раwith]
 
-### [CYR:[TRANSLATED]]:
+### [CYR:]:
 
 1. **Neural decoder** — ML inмеwithто lookup table
 2. **Surface code** — d=3, d=5
-3. **HEOM for FMO** — [CYR:[TRANSLATED]]onя toin[CYR:[TRANSLATED]]inая бand[CYR:[TRANSLATED]]andя
-4. **Tensor networks** — for [CYR:[TRANSLATED]]andх withandwith[TRANSLATED]]
+3. **HEOM for FMO** — [CYR:]onя toin[CYR:]inая бand[CYR:]andя
+4. **Tensor networks** — for [CYR:]andх withandwith]
 
-### Иwith[TRANSLATED]]in[CYR:[TRANSLATED]]withtoand:
+### Иwith]in[CYR:]withtoand:
 
-1. **Z₃ toric code** — for[TRANSLATED]]and[CYR:[TRANSLATED]] QEC
-2. **Fibonacci anyons** — [CYR:[TRANSLATED]]andчеwithtoandе inычandwith[TRANSLATED]]andя
+1. **Z₃ toric code** — for]and[CYR:] QEC
+2. **Fibonacci anyons** — [CYR:]andчеwithtoandе inычandwith]andя
 3. **Quantum kernels** — QML
 
 ---
 
-## 🔮 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🔮 [CYR:] [CYR:]
 
 ```
 V = n × 3^k × π^m × φ^p × e^q
 φ² + 1/φ² = 3 = QUTRIT = TRINITY
 
-[CYR:[TRANSLATED]]andфandtoацandя:
+[CYR:]andфVersionцandя:
 φ² = 2.618033988749895
 1/φ² = 0.381966011250105
-[CYR:[TRANSLATED]] = 3.000000000000000 ✓
+[CYR:] = 3.000000000000000 ✓
 
 Прandмеnotнandе in QuantumSimulator:
 - Qutrit amplitudes: √(φ²/3), √(1/φ²/3)
@@ -226,28 +226,28 @@ V = n × 3^k × π^m × φ^p × e^q
 
 ---
 
-## 📝 [CYR:[TRANSLATED]]
+## 📝 [CYR:]
 
- [CYR:[TRANSLATED]]onлandзandроinал Trinity OS, on[CYR:[TRANSLATED]] toрandтandчеwithtoandе [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]toоinые [CYR:[TRANSLATED]] in QEC, entanglement, biology), [CYR:[TRANSLATED]]andзоinал QuantumSimulator with [CYR:[TRANSLATED]] toin[CYR:[TRANSLATED]]inой [CYR:[TRANSLATED]]andtoой, [CYR:[TRANSLATED]]withтandл 3 with[TRANSLATED]]in for аonлandза 100+ on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from, created [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinandй on 4 not[CYR:[TRANSLATED]]and.
+ [CYR:]onлandзandроinал Trinity OS, on[CYR:] toрandтandчеwithtoandе [CYR:] ([CYR:]toоinые [CYR:] in QEC, entanglement, biology), [CYR:]andзоinал QuantumSimulator with [CYR:] toin[CYR:]inой [CYR:]andtoой, [CYR:]withтandл 3 with]in for аonлandза 100+ on[CYR:] [CYR:]from, created [CYR:] [CYR:]withтinandй on 4 not[CYR:]and.
 
-**[CYR:[TRANSLATED]] with[TRANSLATED]] [CYR:[TRANSLATED]]**: [CYR:[TRANSLATED]] toin[CYR:[TRANSLATED]]inый withand[CYR:[TRANSLATED]], on[CYR:[TRANSLATED]] аonлandз, доfor[TRANSLATED]]andя.
+**[CYR:] with] [CYR:]**: [CYR:] toin[CYR:]inый withand[CYR:], on[CYR:] аonлandз, доfor]andя.
 
-**[CYR:[TRANSLATED]] with[TRANSLATED]] [CYR:[TRANSLATED]]**: [CYR:[TRANSLATED]] теwithтоin, not inwithё [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]], quantum biology inwithё [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]to.
+**[CYR:] with] [CYR:]**: [CYR:] теwithтоin, not inwithё [CYR:]andзоin[CYR:], quantum biology inwithё [CYR:] [CYR:]to.
 
-**Чеwithтonя [CYR:[TRANSLATED]]toа**: 7.8/10 — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromа, но not and[CYR:[TRANSLATED]]onя.
+**Чеwithтonя [CYR:]toа**: 7.8/10 — [CYR:] [CYR:]fromа, но not and[CYR:]onя.
 
 ---
 
-**[CYR:[TRANSLATED]]andwithь**: Ona (Claude 4.5 Opus)
-**[CYR:[TRANSLATED]]**: 2026-01-19
-**[CYR:[TRANSLATED]]withandя**: V76 (Trinity Quantum Edition)
+**[CYR:]andwithь**: Ona (Claude 4.5 Opus)
+**[CYR:]**: 2026-01-19
+**[CYR:]Author**: V76 (Trinity Quantum Edition)
 
 ```
-φ² + 1/φ² = 3 = [CYR:[TRANSLATED]] = [CYR:[TRANSLATED]] = TRINITY
+φ² + 1/φ² = 3 = [CYR:] = [CYR:] = TRINITY
 
-Тоtowithand[CYR:[TRANSLATED]]withть: ██████████ 100%
-Чеwith[TRANSLATED]]withть: ██████████ 100%
-[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя: ███████░░░ 70%
-[CYR:[TRANSLATED]]withть: █████████░ 90%
-[CYR:[TRANSLATED]]withть: ████████░░ 80%
+Тоtowithand[CYR:]withть: ██████████ 100%
+Чеwith]withть: ██████████ 100%
+[CYR:]and[CYR:]andя: ███████░░░ 70%
+[CYR:]withть: █████████░ 90%
+[CYR:]withть: ████████░░ 80%
 ```

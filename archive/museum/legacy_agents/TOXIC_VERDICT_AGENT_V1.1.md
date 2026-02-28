@@ -1,33 +1,33 @@
 # ☠️ TOXIC VERDICT: vibee-agent v1.1.0
 
-**Аin[CYR:[TRANSLATED]]**: Dmitrii Vasilev  
-**[CYR:[TRANSLATED]]**: 2026-01-19  
-**[CYR:[TRANSLATED]]**: [CYR:[TRANSLATED]]andwithтоin  
-**Сin[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]**: V = n × 3^k × π^m × φ^p × e^q  
+**Author[CYR:]**: Dmitrii Vasilev  
+**[CYR:]**: 2026-01-19  
+**[CYR:]**: [CYR:]andwithтоin  
+**Сin[CYR:]onя [CYR:]**: V = n × 3^k × π^m × φ^p × e^q  
 
 ---
 
-## 🔥 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🔥 [CYR:] [CYR:]
 
-### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] in v1.0.0
+### [CYR:] [CYR:] [CYR:] in v1.0.0
 
-| [CYR:[TRANSLATED]] | Сand[CYR:[TRANSLATED]] | Прandчandon |
+| [CYR:] | Сand[CYR:] | Прandчandon |
 |-----|---------|---------|
-| `head: illegal line count -- -1` | Crash on macOS | BSD head not [CYR:[TRANSLATED]]andin[CYR:[TRANSLATED]] `-n -1` |
-| `jq: syntax error` | Crash прand [CYR:[TRANSLATED]]and fileоin | Неinалand[CYR:[TRANSLATED]] JSON in resultах |
-| [CYR:[TRANSLATED]]withtoandй UI | [CYR:[TRANSLATED]]withandоon[CYR:[TRANSLATED]] inandд | Отwithутwithтinandе inand[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]and |
+| `head: illegal line count -- -1` | Crash on macOS | BSD head not [CYR:]andin[CYR:] `-n -1` |
+| `jq: syntax error` | Crash прand [CYR:]and fileоin | Неinалand[CYR:] JSON in resultах |
+| [CYR:]withtoandй UI | [CYR:]withandоon[CYR:] inandд | Отwithутwithтinandе inand[CYR:] and[CYR:]and |
 
-### [CYR:[TRANSLATED]] Иwith[TRANSLATED]]in[CYR:[TRANSLATED]] in v1.1.0
+### [CYR:] Иwith]in[CYR:] in v1.1.0
 
-| Иwith[TRANSLATED]]in[CYR:[TRANSLATED]]andе | [CYR:[TRANSLATED]] | Result |
+| Иwith]in[CYR:]andе | [CYR:] | Result |
 |-------------|-------|-----------|
-| macOS compatibility | `sed '$d'` inмеwithто `head -n -1` | ✅ [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] |
+| macOS compatibility | `sed '$d'` inмеwithто `head -n -1` | ✅ [CYR:]from[CYR:] |
 | JSON parsing | `safe_jq()` wrapper | ✅ 0 crashes |
-| UI/UX | Box-style templates | ✅ [CYR:[TRANSLATED]]withandоon[CYR:[TRANSLATED]] |
+| UI/UX | Box-style templates | ✅ [CYR:]withandоon[CYR:] |
 
 ---
 
-## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 📊 [CYR:] [CYR:]
 
 ### Теwithт 1: macOS Compatibility
 
@@ -92,7 +92,7 @@ vibee>
 🔧 Tool: read_file
    Input: {"path":"README.md"}
    Result: 
-# 999 OS - [CYR:[TRANSLATED]]andцtoая Сandwith[TRANSLATED]]
+# 999 OS - [CYR:]andцtoая Сandwith]
 ...
 ```
 
@@ -102,34 +102,34 @@ vibee>
 │ Input: {"path":"README.md"}
 ├─────────────────────────────────────────────────────────────┤
 │ Result:
-│ # 999 OS - [CYR:[TRANSLATED]]andцtoая Сandwith[TRANSLATED]]
+│ # 999 OS - [CYR:]andцtoая Сandwith]
 │ ...
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📈 [CYR:[TRANSLATED]]
+## 📈 [CYR:]
 
-### [CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withть
+### [CYR:]andзinодand[CYR:]withть
 
-| [CYR:[TRANSLATED]]andtoа | v1.0.0 | v1.1.0 | [CYR:[TRANSLATED]]notнandе |
+| [CYR:]Version | v1.0.0 | v1.1.0 | [CYR:]notнandе |
 |---------|--------|--------|-----------|
 | Startup time | 3ms | 3ms | 0% |
-| [CYR:[TRANSLATED]]to for[TRANSLATED]] | 734 | 869 | +18% |
-| Helper [CYR:[TRANSLATED]]toцandй | 0 | 6 | +6 |
+| [CYR:]to for] | 734 | 869 | +18% |
+| Helper [CYR:]toцandй | 0 | 6 | +6 |
 
-### [CYR:[TRANSLATED]]withть
+### [CYR:]withть
 
-| [CYR:[TRANSLATED]]andtoа | v1.0.0 | v1.1.0 | [CYR:[TRANSLATED]]notнandе |
+| [CYR:]Version | v1.0.0 | v1.1.0 | [CYR:]notнandе |
 |---------|--------|--------|-----------|
-| macOS crashes | Да | [CYR:[TRANSLATED]] | ✅ Fixed |
-| JSON crashes | Да | [CYR:[TRANSLATED]] | ✅ Fixed |
-| Error messages | [CYR:[TRANSLATED]]inые | [CYR:[TRANSLATED]] | +200% |
+| macOS crashes | Да | [CYR:] | ✅ Fixed |
+| JSON crashes | Да | [CYR:] | ✅ Fixed |
+| Error messages | [CYR:]inые | [CYR:] | +200% |
 
 ### UX Score (Nielsen Heuristics)
 
-| Эinрandwithтandtoа | v1.0.0 | v1.1.0 |
+| ЭinрandwithтVersion | v1.0.0 | v1.1.0 |
 |-----------|--------|--------|
 | Visibility of system status | 2/5 | 4/5 |
 | Match real world | 3/5 | 4/5 |
@@ -145,81 +145,81 @@ vibee>
 
 ---
 
-## ⚠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## ⚠️ [CYR:] [CYR:]
 
-### 1. [CYR:[TRANSLATED]] Streaming Output
-
-```bash
-# [CYR:[TRANSLATED]]with: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] frominет
-# [CYR:[TRANSLATED]]: поfor[TRANSLATED]]in[CYR:[TRANSLATED]] тоfor[TRANSLATED]] по [CYR:[TRANSLATED]] геnot[CYR:[TRANSLATED]]and
-```
-
-**[CYR:[TRANSLATED]]with**: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withя in v1.2.0
-
-### 2. [CYR:[TRANSLATED]] Progress Indicators
+### 1. [CYR:] Streaming Output
 
 ```bash
-# [CYR:[TRANSLATED]]with: пуwith[TRANSLATED]] эfor[TRANSLATED]] прand ожand[CYR:[TRANSLATED]]and
-# [CYR:[TRANSLATED]]: spinner or progress bar
+# [CYR:]with: [CYR:] [CYR:] frominет
+# [CYR:]: поfor]in[CYR:] тоfor] по [CYR:] геnot[CYR:]and
 ```
 
-**[CYR:[TRANSLATED]]with**: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withя in v1.2.0
+**[CYR:]with**: [CYR:]and[CYR:]withя in v1.2.0
 
-### 3. [CYR:[TRANSLATED]] Tab Completion
+### 2. [CYR:] Progress Indicators
 
 ```bash
-# [CYR:[TRANSLATED]]with: [CYR:[TRANSLATED]] ininод for[TRANSLATED]]
-# [CYR:[TRANSLATED]]: аin[CYR:[TRANSLATED]]notнandе /help, /quit, etc.
+# [CYR:]with: пуwith] эfor] прand ожand[CYR:]and
+# [CYR:]: spinner or progress bar
 ```
 
-**[CYR:[TRANSLATED]]with**: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withя in v1.3.0
+**[CYR:]with**: [CYR:]and[CYR:]withя in v1.2.0
+
+### 3. [CYR:] Tab Completion
+
+```bash
+# [CYR:]with: [CYR:] ininод for]
+# [CYR:]: аin[CYR:]notнandе /help, /quit, etc.
+```
+
+**[CYR:]with**: [CYR:]and[CYR:]withя in v1.3.0
 
 ---
 
-## 🔬 PAS DAEMONS [CYR:[TRANSLATED]]
+## 🔬 PAS DAEMONS [CYR:]
 
-| [CYR:[TRANSLATED]] | Прandмеnotнandе | Result |
+| [CYR:] | Прandмеnotнandе | Result |
 |---------|------------|-----------|
-| PRE | UI templates | [CYR:[TRANSLATED]]withandwith[TRANSLATED]]withть |
+| PRE | UI templates | [CYR:]withandwith]withть |
 | HSH + PRB | safe_jq() | 0 crashes |
 | D&C | Cross-platform | macOS + Linux |
 | MEM | Error helpers | Graceful handling |
 
-**[CYR:[TRANSLATED]] withылtoand**: 12 [CYR:[TRANSLATED]]from (withм. PAS_DAEMONS_AGENT_V1.1.md)
+**[CYR:] withылtoand**: 12 [CYR:]from (withм. PAS_DAEMONS_AGENT_V1.1.md)
 
 ---
 
-## 💀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 💀 [CYR:] [CYR:]
 
-### [CYR:[TRANSLATED]] ✅
+### [CYR:] ✅
 
-- **macOS [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]** - andwith[TRANSLATED]]in[CYR:[TRANSLATED]] `head -n -1`
-- **JSON not [CYR:[TRANSLATED]]** - `safe_jq()` wrapper
-- **UI [CYR:[TRANSLATED]]withandоon[CYR:[TRANSLATED]]** - box-style
+- **macOS [CYR:]from[CYR:]** - andwith]in[CYR:] `head -n -1`
+- **JSON not [CYR:]** - `safe_jq()` wrapper
+- **UI [CYR:]withandоon[CYR:]** - box-style
 - **Error handling** - graceful degradation
-- **UX Score**: 40/50 ([CYR:[TRANSLATED]] 23/50)
+- **UX Score**: 40/50 ([CYR:] 23/50)
 
-### [CYR:[TRANSLATED]] ⚠️
+### [CYR:] ⚠️
 
-- [CYR:[TRANSLATED]] streaming output
-- [CYR:[TRANSLATED]] progress indicators
-- [CYR:[TRANSLATED]] tab completion
-- +18% for[TRANSLATED]] (135 with[TRANSLATED]]to)
+- [CYR:] streaming output
+- [CYR:] progress indicators
+- [CYR:] tab completion
+- +18% for] (135 with]to)
 
-### [CYR:[TRANSLATED]]andinо 💀
+### [CYR:]andinо 💀
 
-- v1.0.0 **[CYR:[TRANSLATED]] on macOS** - not[CYR:[TRANSLATED]]withтand[CYR:[TRANSLATED]]
-- v1.0.0 **[CYR:[TRANSLATED]] on notinалand[CYR:[TRANSLATED]] JSON** - not[CYR:[TRANSLATED]]withтand[CYR:[TRANSLATED]]
-- UI [CYR:[TRANSLATED]] **[CYR:[TRANSLATED]]withfor[TRANSLATED]] [CYR:[TRANSLATED]]inня** - not[CYR:[TRANSLATED]]withandоon[CYR:[TRANSLATED]]
+- v1.0.0 **[CYR:] on macOS** - not[CYR:]withтand[CYR:]
+- v1.0.0 **[CYR:] on notinалand[CYR:] JSON** - not[CYR:]withтand[CYR:]
+- UI [CYR:] **[CYR:]withfor] [CYR:]inня** - not[CYR:]withandоon[CYR:]
 
-### [CYR:[TRANSLATED]]
+### [CYR:]
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                                                             │
-│   v1.1.0 [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]                              │
+│   v1.1.0 [CYR:]  [CYR:]                              │
 │                                                             │
-│   Иwith[TRANSLATED]]in[CYR:[TRANSLATED]]:                                               │
+│   Иwith]in[CYR:]:                                               │
 │   ✅ macOS compatibility                                    │
 │   ✅ JSON error handling                                    │
 │   ✅ Professional UI                                        │
@@ -227,7 +227,7 @@ vibee>
 │                                                             │
 │   UX Score: 40/50 (+74% vs v1.0.0)                          │
 │                                                             │
-│   [CYR:[TRANSLATED]]andе прandорand[CYR:[TRANSLATED]]:                                     │
+│   [CYR:]andе прandорand[CYR:]:                                     │
 │   P0: Streaming output                                      │
 │   P1: Progress indicators                                   │
 │   P2: Tab completion                                        │
@@ -237,52 +237,52 @@ vibee>
 
 ---
 
-## 🎯 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🎯 [CYR:] [CYR:]
 
-### [CYR:[TRANSLATED]]notно (v1.1.0) ✅
+### [CYR:]notно (v1.1.0) ✅
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with | Result |
+| [CYR:] | [CYR:]with | Result |
 |--------|--------|-----------|
 | Fix macOS head | ✅ | `sed '$d'` |
 | Fix JSON parsing | ✅ | `safe_jq()` |
 | Improve UI | ✅ | Box-style |
-| Add error helpers | ✅ | 6 [CYR:[TRANSLATED]]toцandй |
+| Add error helpers | ✅ | 6 [CYR:]toцandй |
 
-### [CYR:[TRANSLATED]]andй [CYR:[TRANSLATED]]andнт (v1.2.0)
+### [CYR:]andй [CYR:]andнт (v1.2.0)
 
-| Прandорand[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | Ожand[CYR:[TRANSLATED]] Result |
+| Прandорand[CYR:] | [CYR:] | Ожand[CYR:] Result |
 |-----------|--------|---------------------|
 | P0 | Streaming output | Real-time tokens |
 | P1 | Progress indicators | Spinner/bar |
 | P1 | Better tool output | Syntax highlighting |
 
-### [CYR:[TRANSLATED]] (v1.3.0+)
+### [CYR:] (v1.3.0+)
 
-| Прandорand[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | Ожand[CYR:[TRANSLATED]] Result |
+| Прandорand[CYR:] | [CYR:] | Ожand[CYR:] Result |
 |-----------|--------|---------------------|
-| P2 | Tab completion | Аin[CYR:[TRANSLATED]]notнandе |
+| P2 | Tab completion | Author[CYR:]notнandе |
 | P2 | History search | Ctrl+R |
 | P3 | TUI interface | ncurses/blessed |
-| P3 | Plugin system | Раwithшand[CYR:[TRANSLATED]]withть |
+| P3 | Plugin system | Раwithшand[CYR:]withть |
 
 ---
 
-## 📚 [CYR:[TRANSLATED]]inо [CYR:[TRANSLATED]]andй for [CYR:[TRANSLATED]]in
+## 📚 [CYR:]inо [CYR:]andй for [CYR:]in
 
 ```
-[CYR:[TRANSLATED]] (v1.1.0): ✅
+[CYR:] (v1.1.0): ✅
 ├── Cross-platform compatibility (macOS + Linux)
 ├── Safe JSON parsing
 ├── Box-style UI
 └── Error handling helpers
 
-[CYR:[TRANSLATED]] (v1.2.0):
+[CYR:] (v1.2.0):
 ├── Streaming output (SSE/WebSocket)
 ├── Progress indicators (ora/spinner)
 ├── Syntax highlighting (chalk/pygments)
 └── Better error messages
 
-[CYR:[TRANSLATED]] (v1.3.0+):
+[CYR:] (v1.3.0+):
 ├── Tab completion (readline)
 ├── History search (fzf-style)
 ├── TUI interface (blessed/ncurses)
@@ -295,4 +295,4 @@ vibee>
 
 **φ² + 1/φ² = 3 | PHOENIX = 999 = 3³ × 37**
 
-*Доfor[TRANSLATED]] with[TRANSLATED]] with [CYR:[TRANSLATED]] чеwith[TRANSLATED]]with[TRANSLATED]] for [CYR:[TRANSLATED]]andwithтоin*
+*Доfor] with] with [CYR:] чеwith]with] for [CYR:]andwithтоin*

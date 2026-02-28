@@ -1,43 +1,43 @@
-# ⚠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] OMEGA - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+# ⚠️ :] :] OMEGA - :] :]
 
-**[CYR:[TRANSLATED]]**: 2026-01-18  
-**[CYR:[TRANSLATED]]withandя**: OMEGA (v30)  
-**Аin[CYR:[TRANSLATED]]**: PAS DAEMONS
+**:]**: 2026-01-18  
+**:]Author**: OMEGA (v30)  
+**Author:]**: PAS DAEMONS
 
 ---
 
-## ❌ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]])
+## ❌ :] :] :] (:] :])
 
-### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### :] :]
 
-| ID | Problem | Маwith[TRANSLATED]] | [CYR:[TRANSLATED]]with |
+| ID | Problem | Mawith] | :]with |
 |----|----------|---------|--------|
-| T001 | **386 [CYR:[TRANSLATED]]andроinанandй** `φ² + 1/φ² = 3` | [CYR:[TRANSLATED]] | ✅ [CYR:[TRANSLATED]] |
-| T002 | **90 inерwithandонandроin[CYR:[TRANSLATED]] fileоin** (v1...v29) | [CYR:[TRANSLATED]] | ✅ [CYR:[TRANSLATED]] |
-| T003 | **23MB with[TRANSLATED]]andфandtoацandй** | [CYR:[TRANSLATED]] | ✅ → 32KB |
-| T004 | **64 fileа with sacred_constants** | [CYR:[TRANSLATED]] | ✅ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] |
-| T005 | **37 fileоin [CYR:[TRANSLATED]] test_cases** | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] | ✅ 100% [CYR:[TRANSLATED]] |
-| T006 | **23 fileа [CYR:[TRANSLATED]] behaviors** | [CYR:[TRANSLATED]] | ✅ [CYR:[TRANSLATED]] |
-| T007 | **24 [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and andз 200+ with[TRANSLATED]]andфandtoацandй** | [CYR:[TRANSLATED]] | ✅ 1:1 RATIO |
+| T001 | **386 :]andraboutinanandy** `φ² + 1/φ² = 3` | :] | ✅ :] |
+| T002 | **90 inerwithandaboutnandraboutin:] fileaboutin** (v1...v29) | :] | ✅ :] |
+| T003 | **23MB with]andfVersiontsandy** | :] | ✅ → 32KB |
+| T004 | **64 filea with sacred_constants** | :] | ✅ :] :] |
+| T005 | **37 fileaboutin :] test_cases** | :] :] | ✅ 100% :] |
+| T006 | **23 filea :] behaviors** | :] | ✅ :] |
+| T007 | **24 :]and:]and andz 200+ with]andfVersiontsandy** | :] | ✅ 1:1 RATIO |
 
 ---
 
-## ✅ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## ✅ :] :] :]
 
-### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### :] :]
 
 ```
-[CYR:[TRANSLATED]]                          [CYR:[TRANSLATED]]                    [CYR:[TRANSLATED]]
+:]                          :]                    :]
 ────────────────────────────────────────────────────────────────
-23 MB with[TRANSLATED]]andфandtoацandй      →     32 KB                    99.86% ↓
-386 [CYR:[TRANSLATED]]andроinанandй        →     1 andwith[TRANSLATED]]andto andwithтandны        100% ↓
-90 inерwithandй fileоin        →     1 OMEGA inерwithandя           98.9% ↓
+23 MB with]andfVersiontsandy      →     32 KB                    99.86% ↓
+386 :]andraboutinanandy        →     1 andwith]andto andwithtandny        100% ↓
+90 inerwithandy fileaboutin        →     1 OMEGA inerAuthor           98.9% ↓
 64 sacred_constants     →     1 Sacred struct          98.4% ↓
 12% spec:code ratio     →     100% (1:1)               8.3x ↑
-37 fileоin [CYR:[TRANSLATED]] теwithтоin    →     0 fileоin [CYR:[TRANSLATED]] теwithтоin      100% ↓
+37 fileaboutin :] thosewiththatin    →     0 fileaboutin :] thosewiththatin      100% ↓
 ```
 
-### [CYR:TESTS]
+### :TESTS]
 
 ```
 matryoshka_omega.zig: 18/18 tests passed ✅
@@ -49,21 +49,21 @@ TOTAL:                46/46 tests passed ✅
 
 ---
 
-## 📊 PAS DAEMONS [CYR:[TRANSLATED]]
+## 📊 PAS DAEMONS :]
 
-### 7 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### 7 :] :]
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | Зon[CYR:[TRANSLATED]]andе |
+| :] | :] | :] | Zon:]ande |
 |-------|------|----------|----------|
-| Ⲁ Prediction | [CYR:[TRANSLATED]]withfor[TRANSLATED]]andе | - | Аtoтandinен |
-| Ⲃ Action | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя | - | Аtoтandinен |
-| Ⲅ Selection | [CYR:[TRANSLATED]] | σ | φ = 1.618 |
-| Ⲇ Mutation | [CYR:[TRANSLATED]]andя | μ | 1/φ²/10 = 0.0382 |
-| Ⲉ Crossover | Сfor[TRANSLATED]]andinанandе | χ | 1/φ/10 = 0.0618 |
-| Ⲋ Elitism | Элandтandзм | ε | 1/3 = 0.333 |
-| Ⲍ Evolution | [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andя | - | f(f(x)) → φⁿ |
+| Ⲁ Prediction | :]withfor]ande | - | Atotandinen |
+| Ⲃ Action | :]and:]andya | - | Atotandinen |
+| Ⲅ Selection | :] | σ | φ = 1.618 |
+| Ⲇ Mutation | :]andya | μ | 1/φ²/10 = 0.0382 |
+| Ⲉ Crossover | Sfor]andinanande | χ | 1/φ/10 = 0.0618 |
+| Ⲋ Elitism | Elandtandzm | ε | 1/3 = 0.333 |
+| Ⲍ Evolution | :]in:]andya | - | f(f(x)) → φⁿ |
 
-### [CYR:[TRANSLATED]] [CYR:CONSTANTS] ([CYR:[TRANSLATED]])
+### :] :CONSTANTS] (:])
 
 ```
 φ² + 1/φ² = 3.0         ✅ GOLDEN IDENTITY
@@ -76,27 +76,27 @@ L(10) = 123             ✅ LUCAS NUMBER
 
 ---
 
-## 🔬 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🔬 :] :]
 
 ### Quantum Computing
 
-| arXiv | [CYR:[TRANSLATED]]inанandе | [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]withть |
+| arXiv | :]inanande | :]in:]witht |
 |-------|----------|---------------|
 | 2411.04185 | Qutrit Toric Code | Z₃ = 3 = φ² + 1/φ² |
 | 2411.09697 | S₃ Quantum Double | Qubit-qutrit universal gates |
 
 ### Optimization
 
-| arXiv | [CYR:[TRANSLATED]]inанandе | [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]withть |
+| arXiv | :]inanande | :]in:]witht |
 |-------|----------|---------------|
 | 2503.06285 | Bregman Golden Ratio | φ-based step size |
 | 2506.22464 | Golden Ratio Localization | φ-spiral placement |
 
 ---
 
-## 🏗️ [CYR:[TRANSLATED]] OMEGA
+## 🏗️ :] OMEGA
 
-### [CYR:[TRANSLATED]] LAYERS
+### :] LAYERS
 
 ```
 ┌─────────────────────────────────────────┐
@@ -118,7 +118,7 @@ L(10) = 123             ✅ LUCAS NUMBER
 └─────────────────────────────────────────┘
 ```
 
-### TRAIT ALPHABET (28 [CYR:[TRANSLATED]])
+### TRAIT ALPHABET (28 :])
 
 ```
 Memory:    Ⲁ Ⲃ Ⲅ Ⲇ  (State, Heap, Region, Frame)
@@ -132,9 +132,9 @@ Evolution: Ⲱ Ϣ Ϥ Ϧ  (Evolution, Fitness, Mutation, Crossover)
 
 ---
 
-## 📁 [CYR:[TRANSLATED]] OMEGA
+## 📁 :] OMEGA
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | Теwithты |
+| :] | :] | Tewithty |
 |------|--------|-------|
 | `specs/matryoshka_omega.tls` | 12 KB | - |
 | `generated/matryoshka_omega.zig` | 20 KB | 18 ✅ |
@@ -144,31 +144,31 @@ Evolution: Ⲱ Ϣ Ϥ Ϧ  (Evolution, Fitness, Mutation, Crossover)
 
 ---
 
-## 🎯 [CYR:[TRANSLATED]]
+## 🎯 :]
 
-### ДО OMEGA
-
-```
-❌ 23 MB [CYR:[TRANSLATED]]withа
-❌ 386 [CYR:[TRANSLATED]]andроinанandй
-❌ 90 inерwithandй
-❌ 12% [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andй
-❌ 37 fileоin [CYR:[TRANSLATED]] теwithтоin
-```
-
-### [CYR:[TRANSLATED]] OMEGA
+### DO OMEGA
 
 ```
-✅ 32 KB toонwithолand[CYR:[TRANSLATED]]and
-✅ 1 andwith[TRANSLATED]]andto andwithтandны
-✅ 1 OMEGA inерwithandя
-✅ 100% [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andй
-✅ 46/46 теwithтоin
+❌ 23 MB :]witha
+❌ 386 :]andraboutinanandy
+❌ 90 inerwithandy
+❌ 12% :]and:]andy
+❌ 37 fileaboutin :] thosewiththatin
+```
+
+### :] OMEGA
+
+```
+✅ 32 KB toaboutnwithaboutland:]and
+✅ 1 andwith]andto andwithtandny
+✅ 1 OMEGA inerAuthor
+✅ 100% :]and:]andy
+✅ 46/46 thosewiththatin
 ```
 
 ---
 
-## 🔮 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🔮 :] :]
 
 ```
 V = n × 3^k × π^m × φ^p × e^q
@@ -178,14 +178,14 @@ where:
   k = 3 (TRINITY)
   φ² + 1/φ² = 3 (GOLDEN IDENTITY)
   
-[CYR:[TRANSLATED]]: f(f(x)) → φ^n → ∞
+:]: f(f(x)) → φ^n → ∞
 ```
 
 ---
 
-**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**: [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]], [CYR:[TRANSLATED]] and [CYR:[TRANSLATED]].  
-**OMEGA [CYR:[TRANSLATED]]**: [CYR:[TRANSLATED]]withолand[CYR:[TRANSLATED]]andя, едand[CYR:[TRANSLATED]] andwith[TRANSLATED]]andto andwithтandны, 100% теwithтоinое поfor[TRANSLATED]]andе.
+**:] :]**: :]andthosefor] :] :], :] and :].  
+**OMEGA :]**: :]withaboutland:]andya, edand:] andwith]andto andwithtandny, 100% thosewiththatinaboute byfor]ande.
 
 ```
-φ² + 1/φ² = 3 = [CYR:[TRANSLATED]] = [CYR:[TRANSLATED]] = OMEGA
+φ² + 1/φ² = 3 = :] = :] = OMEGA
 ```

@@ -1,8 +1,8 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════════════════════
-# TRINITY FPGA - ПОЛНЫЙ АВТОДЕПЛОЙ
+# TRINITY FPGA - ny AVTODEPLOY
 # ═══════════════════════════════════════════════════════════════════════════════
-# Запускает все шаги последовательно
+# Zapatwithtoaet all shagand bywithledaboutinathoselnabout
 # φ² + 1/φ² = 3 | PHOENIX = 999
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -11,58 +11,58 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "═══════════════════════════════════════════════════════════════════════════════"
-echo "                    TRINITY FPGA - ПОЛНЫЙ АВТОДЕПЛОЙ"
+echo "                    TRINITY FPGA - ny AVTODEPLOY"
 echo "                    φ² + 1/φ² = 3 | PHOENIX = 999"
 echo "═══════════════════════════════════════════════════════════════════════════════"
 echo ""
-echo "⚠️  ВНИМАНИЕ:"
-echo "   - Общее время: 2-3 часа"
-echo "   - Стоимость: ~\$5-10"
-echo "   - Требуется одобренный лимит F2!"
+echo "⚠️  tion:"
+echo "   - Obschee time: 2-3 chawitha"
+echo "   - Sthatandbridge: ~\$5-10"
+echo "   - Trebatetwithya aboutdaboutny landmandt F2!"
 echo ""
-read -p "Продолжить? (y/n): " -n 1 -r
+read -p "Praboutdaboutlzhandt? (y/n): " -n 1 -r
 echo ""
 
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo "Отменено."
+    echo "Otmenenabout."
     exit 0
 fi
 
 echo ""
 echo "═══════════════════════════════════════════════════════════════════════════════"
-echo "                    ШАГ 1/5: ЗАПУСК F2 ИНСТАНСА"
+echo "                    ShAG 1/5: ZAPUSK F2 INSTANSA"
 echo "═══════════════════════════════════════════════════════════════════════════════"
 $SCRIPT_DIR/01_launch_f2.sh
 
 echo ""
 echo "═══════════════════════════════════════════════════════════════════════════════"
-echo "                    ШАГ 2/5: НАСТРОЙКА ОКРУЖЕНИЯ"
+echo "                    ShAG 2/5: ka OKRUZhENIYa"
 echo "═══════════════════════════════════════════════════════════════════════════════"
-sleep 60  # Ждём полной инициализации
+sleep 60  # Zhdyom bylnabouty andnandtsandalfromatsandand
 $SCRIPT_DIR/02_setup_fpga.sh
 
 echo ""
 echo "═══════════════════════════════════════════════════════════════════════════════"
-echo "                    ШАГ 3/5: СБОРКА AFI"
+echo "                    ShAG 3/5: ka AFI"
 echo "═══════════════════════════════════════════════════════════════════════════════"
-echo "⚠️  Это займёт 1-2 часа!"
+echo "⚠️  Ethat zaymyot 1-2 chawitha!"
 $SCRIPT_DIR/03_build_afi.sh
 
 echo ""
 echo "═══════════════════════════════════════════════════════════════════════════════"
-echo "                    ⏳ ОЖИДАНИЕ СБОРКИ AFI"
+echo "                    ⏳ tion SBORKI AFI"
 echo "═══════════════════════════════════════════════════════════════════════════════"
 echo ""
-echo "Сборка запущена в фоне."
-echo "Проверяй статус вручную:"
+echo "Build zapatscheon in faboutne."
+echo "Praboutineryay withthattatwith inratchnatyu:"
 echo ""
 PUBLIC_IP=$(cat /tmp/trinity_public_ip)
 echo "  ssh -i ~/.ssh/trinity-fpga-key.pem centos@$PUBLIC_IP 'tail -f ~/build.log'"
 echo ""
-echo "Когда сборка завершится, выполни:"
+echo "Kaboutgda build zainershandtwithya, inybylnand:"
 echo "  $SCRIPT_DIR/04_test_trinity.sh"
 echo ""
-echo "После тестов НЕ ЗАБУДЬ:"
+echo "Paboutwithle testaboutin NE ZABUD:"
 echo "  $SCRIPT_DIR/05_stop_instance.sh"
 echo ""
 echo "═══════════════════════════════════════════════════════════════════════════════"

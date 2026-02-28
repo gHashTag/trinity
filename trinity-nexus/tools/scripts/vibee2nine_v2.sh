@@ -83,8 +83,8 @@ generate_999() {
     # Start generating
     cat > "$output_file" << HEADER
 // ═══════════════════════════════════════════════════════════════
-// Сгенерировано из: ${vibee_file#/workspaces/vibee-lang/}
-// ЗАПРЕЩЕНО: Ручное редактирование
+// Sgenerandraboutinanabout from: ${vibee_file#/workspaces/vibee-lang/}
+// ZAPRESchENO: Ratchnaboute editing
 // ═══════════════════════════════════════════════════════════════
 
 // ╔══════════════════════════════════════════════════════════════════╗
@@ -223,7 +223,7 @@ METRICS
     # Add SelfEvolution
     cat >> "$output_file" << 'EVOLUTION'
 // ═══════════════════════════════════════════════════════════════
-// SELF-EVOLUTION (ОБЯЗАТЕЛЬНО)
+// SELF-EVOLUTION (OBYaZATELNO)
 // ═══════════════════════════════════════════════════════════════
 Ⲏ SelfEvolution {
     Ⲃ version: Ⲧⲉⲝⲧ = "3.0"

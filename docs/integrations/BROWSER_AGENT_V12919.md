@@ -4,7 +4,7 @@
 
 ## Overview
 
-VIBEE Browser Agent - [CYR:[TRANSLATED]] AI browser on [CYR:[TRANSLATED]] Chromium (CDP toлand[CYR:[TRANSLATED]]) with [CYR:[TRANSLATED]]toой and[CYR:[TRANSLATED]]andей VS Code for Vibecoding.
+VIBEE Browser Agent - :] AI browser on :] Chromium (CDP toland:]) with :]toabouty and:]andey VS Code for Vibecoding.
 
 ## Architecture
 

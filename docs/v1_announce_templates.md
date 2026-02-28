@@ -80,27 +80,27 @@ Star if useful!
 ### Russian Version
 
 ```
-🚀 Trinity IGLA v1.0 — Лоfor[TRANSLATED]] for[TRANSLATED]] AI in 264KB!
+🚀 Trinity IGLA v1.0 — Laboutfor] for] AI in 264KB!
 
-[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
-• 4,854 [CYR:[TRANSLATED]]withоin/withеto on M1 Pro
-• 50,000 withлоin withлоin[CYR:[TRANSLATED]]
-• [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[TRANSLATED]] лоfor[TRANSLATED]]
-• [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toа, notт API for[TRANSLATED]]
+:] :]:
+• 4,854 :]withaboutin/witheto on M1 Pro
+• 50,000 withlaboutin withlaboutin:]
+• :]from:] :]with] laboutfor]
+• :] :]toa, nott API for]
 
-[CYR:[TRANSLATED]] CPU [CYR:[TRANSLATED]] GPU:
-CPU SIMD (8 пfromоtoоin) быwith[TRANSLATED]] Metal GPU in 7.2 [CYR:[TRANSLATED]]!
-Прandчandon: overhead Metal command buffer (~1-2мwith) убandin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toandе [CYR:[TRANSLATED]]and.
+:] CPU :] GPU:
+CPU SIMD (8 pfromabouttoaboutin) bywith] Metal GPU in 7.2 :]!
+Prandchandon: overhead Metal command buffer (~1-2mwith) atbandin:] :]toande :]and.
 
-Бandonрнandtoand:
+Bandonrnandtoand:
 • macOS ARM64: 264 KB
 • macOS x64: 271 KB
 • Linux x64: 2.3 MB
 • Windows x64: 543 KB
 
-Сfor[TRANSLATED]]: github.com/gHashTag/trinity/releases/tag/v1.0.0-igla
+Sfor]: github.com/gHashTag/trinity/releases/tag/v1.0.0-igla
 
-Поwith[TRANSLATED]] on Zig. MIT лand[CYR:[TRANSLATED]]andя.
+Paboutwith] on Zig. MIT land:]andya.
 
 φ² + 1/φ² = 3 = TRINITY
 

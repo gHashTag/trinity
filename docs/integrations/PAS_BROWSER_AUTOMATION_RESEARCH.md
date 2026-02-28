@@ -4,31 +4,31 @@
 
 ---
 
-## 1. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromы по Browser Automation
+## 1. :] :]fromy by Browser Automation
 
 ### 1.1 Selenium WebDriver (2004-2024)
-- **Иwith[TRANSLATED]]andto**: IEEE Software, ACM SIGSOFT
-- **[CYR:[TRANSLATED]]**: Page Object Model (POM)
-- **[CYR:[TRANSLATED]]withть**: O(n) for поandwithtoа elementоin
-- **[CYR:[TRANSLATED]]andе PAS**: SIMD-уwithfor[TRANSLATED]]andе with[TRANSLATED]]for[TRANSLATED]]in → O(n/8)
+- **Iwith]andto**: IEEE Software, ACM SIGSOFT
+- **:]**: Page Object Model (POM)
+- **:]witht**: O(n) for byandwithtoa elementaboutin
+- **:]ande PAS**: SIMD-atwithfor]ande with]for]in → O(n/8)
 
 ### 1.2 Playwright Architecture (Microsoft, 2020)
-- **Иwith[TRANSLATED]]andto**: Microsoft Research
-- **[CYR:[TRANSLATED]]**: Auto-waiting, Network interception
-- **[CYR:[TRANSLATED]]withть**: O(log n) for [CYR:[TRANSLATED]] ожand[CYR:[TRANSLATED]]andя
-- **[CYR:[TRANSLATED]]andе PAS**: [CYR:[TRANSLATED]]andtoтandin[CYR:[TRANSLATED]] ожand[CYR:[TRANSLATED]]andе → O(1) amortized
+- **Iwith]andto**: Microsoft Research
+- **:]**: Auto-waiting, Network interception
+- **:]witht**: O(log n) for :] aboutzhand:]andya
+- **:]ande PAS**: :]andtotandin:] aboutzhand:]ande → O(1) amortized
 
 ### 1.3 Puppeteer CDP (Google, 2017)
-- **Иwith[TRANSLATED]]andto**: Chrome DevTools Protocol Spec
-- **[CYR:[TRANSLATED]]**: Direct browser control
-- **[CYR:[TRANSLATED]]withть**: O(1) for CDP for[TRANSLATED]]
-- **[CYR:[TRANSLATED]]andе PAS**: Batch commands → 3x throughput
+- **Iwith]andto**: Chrome DevTools Protocol Spec
+- **:]**: Direct browser control
+- **:]witht**: O(1) for CDP for]
+- **:]ande PAS**: Batch commands → 3x throughput
 
 ### 1.4 Cypress Architecture (2017)
-- **Иwith[TRANSLATED]]andto**: Cypress.io Technical Papers
-- **[CYR:[TRANSLATED]]**: In-browser execution
-- **[CYR:[TRANSLATED]]withть**: O(1) for DOM доwith[TRANSLATED]]
-- **[CYR:[TRANSLATED]]andе PAS**: WASM execution → 2x speed
+- **Iwith]andto**: Cypress.io Technical Papers
+- **:]**: In-browser execution
+- **:]witht**: O(1) for DOM daboutwith]
+- **:]ande PAS**: WASM execution → 2x speed
 
 ---
 

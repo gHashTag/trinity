@@ -1,116 +1,116 @@
 # CYCLE-91: TRI MATH v3.6 — FIX VIBEE COMPILER + COMPLETE REAL IMPLEMENTATION
 
-**Прandорand[CYR:[TRANSLATED]]:** [CYR:[TRANSLATED]] — FIX BUGS FIRST
-**[CYR:[TRANSLATED]]toа:** `ralph/cycle-91-fix-vibee-full-implementation`
-**[CYR:[TRANSLATED]]with:** IN_PLANNING
-**[CYR:[TRANSLATED]]:** 2026-02-25
+**Prandaboutrand:]:** :] — FIX BUGS FIRST
+**:]toa:** `ralph/cycle-91-fix-vibee-full-implementation`
+**:]with:** IN_PLANNING
+**:]:** 2026-02-25
 
-## Цandtoл
+## Tsandtol
 
-Cycle 91 andwith[TRANSLATED]]in[CYR:[TRANSLATED]] toрandтandчеwithtoandе [CYR:[TRANSLATED]] VIBEE for[TRANSLATED]]and[CYR:[TRANSLATED]] and доinодandт Cycle 90 до 100% compliance with [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andямand ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]]to).
+Cycle 91 andwith]in:] torandtandchewithtoande :] VIBEE for]and:] and daboutinaboutdandt Cycle 90 dabout 100% compliance with :]and :]and:]andyamand (:] :]to).
 
-**[CYR:[TRANSLATED]]:**
-- VIBEE for[TRANSLATED]]and[CYR:[TRANSLATED]] геnotрand[CYR:[TRANSLATED]] with[TRANSLATED]] toод (for[TRANSLATED]]andроin[CYR:[TRANSLATED]] andмеon [CYR:[TRANSLATED]]toцandй)
-- Engine fileы with[TRANSLATED]] [CYR:[TRANSLATED]]toо [CYR:[TRANSLATED]]toand `// TODO: implement`
-- [CYR:[TRANSLATED]]to toод уwith[TRANSLATED]] and not [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]
+**:]:**
+- VIBEE for]and:] genotrand:] with] toaboutd (for]andraboutin:] andmeon :]totsandy)
+- Engine filey with] :]toabout :]toand `// TODO: implement`
+- :]to toaboutd atwith] and not :]from:]
 
-**[CYR:[TRANSLATED]]:**
-- Иwith[TRANSLATED]]inandть VIBEE codegen (with[TRANSLATED]] notдоwith[TRANSLATED]]andе `codegen/` [CYR:[TRANSLATED]]and)
-- [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] inwithе дinandжtoand (autonomous_universe, formula_discovery, sacred_economy, self_improver, nft_marketplace)
-- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toand, onпandwith[TRANSLATED]] [CYR:[TRANSLATED]] toод
-- [CYR:[TRANSLATED]]inandть [CYR:[TRANSLATED]]toand for аfor[TRANSLATED]] Zig API
-- [CYR:[TRANSLATED]]inнandть v3.6 with v3.5 and v3.4
+**:]:**
+- Iwith]inandt VIBEE codegen (with] notdaboutwith]ande `codegen/` :]and)
+- :]andzaboutin:] inwithe dinandzhtoand (autonomous_universe, formula_discovery, sacred_economy, self_improver, nft_marketplace)
+- :] :]toand, onpandwith] :] toaboutd
+- :]inandt :]toand for afor] Zig API
+- :]innandt v3.6 with v3.5 and v3.4
 
-## Крand[CYR:[TRANSLATED]]and прandёмtoand
+## Krand:]and prandyomtoand
 
-- [ ] VIBEE for[TRANSLATED]]and[CYR:[TRANSLATED]] andwith[TRANSLATED]]in[CYR:[TRANSLATED]] and [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]
-- [ ] Вwithе engine fileы withгеnotрandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] `tri gen`
-- [ ]  engine fileах notт [CYR:[TRANSLATED]]to `// TODO: implement`
-- [ ] Вwithе теwithты [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]: 100%)
-- [ ] [CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withть v3.6 > v3.5 мandнand[CYR:[TRANSLATED]] on 10% по inwithем [CYR:[TRANSLATED]]andtoам
-- [ ] [CYR:[TRANSLATED]]onя and[CYR:[TRANSLATED]]andя: CLI + API + Frontend
-- [ ] i18n for 5 [CYR:[TRANSLATED]]toоin (en, ru, de, zh, es)
-- [ ] Доfor[TRANSLATED]]andя по with[TRANSLATED]] [CYR:[TRANSLATED]]
-- [ ] Тоtowithand[CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]andtoт in for[TRANSLATED]]
+- [ ] VIBEE for]and:] andwith]in:] and :]from:]
+- [ ] Vwithe engine filey withgenotrandraboutin:] :] `tri gen`
+- [ ]  engine fileakh nott :]to `// TODO: implement`
+- [ ] Vwithe thosewithty :] (:]: 100%)
+- [ ] :]andzinaboutdand:]witht v3.6 > v3.5 mandnand:] on 10% by inwithem :]Versionm
+- [ ] :]onya and:]andya: CLI + API + Frontend
+- [ ] i18n for 5 :]toaboutin (en, ru, de, zh, es)
+- [ ] Daboutfor]andya by with] :]
+- [ ] Tabouttowithand:] in:]andtot in for]
 
-## [CYR:[TRANSLATED]]and
+## :]and
 
 ### Phase A: Fix VIBEE Compiler
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with | Опandwithанandе |
+| :] | :]with | Opandwithanande |
 |---------|----------|-----------|
-| A1 | TODO | [CYR:[TRANSLATED]] `trinity-nexus/lang/src/codegen/types.zig` |
-| A2 | TODO | [CYR:[TRANSLATED]] `trinity-nexus/lang/src/codegen/builder.zig` |
-| A3 | TODO | [CYR:[TRANSLATED]] `trinity-nexus/lang/src/codegen/utils.zig` |
-| A4 | TODO | [CYR:[TRANSLATED]] `trinity-nexus/lang/src/codegen/patterns.zig` |
-| A5 | TODO | [CYR:[TRANSLATED]] `trinity-nexus/lang/src/codegen/tests_gen.zig` |
-| A6 | TODO | [CYR:[TRANSLATED]] `trinity-nexus/lang/src/codegen/emitter.zig` |
-| A7 | TODO | [CYR:[TRANSLATED]] `trinity-nexus/lang/src/codegen/mod.zig` |
-| A8 | TODO | Иwith[TRANSLATED]]inandть zig_codegen.zig andмport [CYR:[TRANSLATED]] |
-| A9 | TODO | Прfromеwithтandроin[CYR:[TRANSLATED]] VIBEE withо inwithемand spec fileамand |
+| A1 | TODO | :] `trinity-nexus/lang/src/codegen/types.zig` |
+| A2 | TODO | :] `trinity-nexus/lang/src/codegen/builder.zig` |
+| A3 | TODO | :] `trinity-nexus/lang/src/codegen/utils.zig` |
+| A4 | TODO | :] `trinity-nexus/lang/src/codegen/patterns.zig` |
+| A5 | TODO | :] `trinity-nexus/lang/src/codegen/tests_gen.zig` |
+| A6 | TODO | :] `trinity-nexus/lang/src/codegen/emitter.zig` |
+| A7 | TODO | :] `trinity-nexus/lang/src/codegen/mod.zig` |
+| A8 | TODO | Iwith]inandt zig_codegen.zig andmport :] |
+| A9 | TODO | Prfromewithtandraboutin:] VIBEE withabout inwithemand spec fileamand |
 
 ### Phase B: Create .tri Specs (Source of Truth)
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with | Опandwithанandе |
+| :] | :]with | Opandwithanande |
 |---------|----------|-----------|
-| B1 | TODO | [CYR:[TRANSLATED]]inandть autonomous_universe.tri |
-| B2 | TODO | [CYR:[TRANSLATED]]inandть formula_discovery.tri ([CYR:[TRANSLATED]]inandть hybrid modes) |
-| B3 | TODO | [CYR:[TRANSLATED]]inandть sacred_economy.tri ([CYR:[TRANSLATED]]inandть global modes) |
-| B4 | TODO | [CYR:[TRANSLATED]]inandть self_improver_v2.tri ([CYR:[TRANSLATED]]inandть Adam/EWC++ modes) |
-| B5 | TODO | [CYR:[TRANSLATED]]inandть nft_marketplace.tri |
-| B6 | TODO | [CYR:[TRANSLATED]] self_improving_formula_discovery.tri |
-| B7 | TODO | [CYR:[TRANSLATED]] sacred_economy_global.tri |
+| B1 | TODO | :]inandt autonomous_universe.tri |
+| B2 | TODO | :]inandt formula_discovery.tri (:]inandt hybrid modes) |
+| B3 | TODO | :]inandt sacred_economy.tri (:]inandt global modes) |
+| B4 | TODO | :]inandt self_improver_v2.tri (:]inandt Adam/EWC++ modes) |
+| B5 | TODO | :]inandt nft_marketplace.tri |
+| B6 | TODO | :] self_improving_formula_discovery.tri |
+| B7 | TODO | :] sacred_economy_global.tri |
 
 ### Phase C: Real Implementation (NO STUBS)
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with | Опandwithанandе |
+| :] | :]with | Opandwithanande |
 |---------|----------|-----------|
-| C1 | TODO | autonomous_universe: [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] inwithе 7 modes |
-| C2 | TODO | formula_discovery: [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] hybrid symbolic+numeric |
-| C3 | TODO | sacred_economy: [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] global oracle, staking, marketplace |
-| C4 | TODO | self_improver_v2: [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] Adam optimizer with EWC++ |
-| C5 | TODO | nft_marketplace: [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] inwithе 6 modes |
-| C6 | TODO | self_improving_formula_discovery: [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя |
-| C7 | TODO | sacred_economy_global: [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя |
+| C1 | TODO | autonomous_universe: :]andzaboutin:] inwithe 7 modes |
+| C2 | TODO | formula_discovery: :]andzaboutin:] hybrid symbolic+numeric |
+| C3 | TODO | sacred_economy: :]andzaboutin:] global oracle, staking, marketplace |
+| C4 | TODO | self_improver_v2: :]andzaboutin:] Adam optimizer with EWC++ |
+| C5 | TODO | nft_marketplace: :]andzaboutin:] inwithe 6 modes |
+| C6 | TODO | self_improving_formula_discovery: :]onya :]and:]andya |
+| C7 | TODO | sacred_economy_global: :]onya :]and:]andya |
 
 ### Phase D: Testing
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with | Опandwithанandе |
+| :] | :]with | Opandwithanande |
 |---------|----------|-----------|
-| D1 | TODO | `zig test` for inwithех engine fileоin — [CYR:[TRANSLATED]] 100% pass |
-| D2 | TODO | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] теwithты for inwithех дinandжtoоin |
+| D1 | TODO | `zig test` for inwithekh engine fileaboutin — :] 100% pass |
+| D2 | TODO | :]and:] thosewithty for inwithekh dinandzhtoaboutin |
 
 ### Phase E: Benchmarks
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with | Опandwithанandе |
+| :] | :]with | Opandwithanande |
 |---------|----------|-----------|
-| E1 | TODO | [CYR:[TRANSLATED]]inandть bench_core.zig for аfor[TRANSLATED]] Zig API |
-| E2 | TODO | [CYR:[TRANSLATED]]inнandть v3.6 vs v3.5 |
-| E3 | TODO | [CYR:[TRANSLATED]]inнandть v3.6 vs v3.4 |
-| E4 | TODO | [CYR:[TRANSLATED]] from[CYR:[TRANSLATED]] with [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]andtoамand |
+| E1 | TODO | :]inandt bench_core.zig for afor] Zig API |
+| E2 | TODO | :]innandt v3.6 vs v3.5 |
+| E3 | TODO | :]innandt v3.6 vs v3.4 |
+| E4 | TODO | :] from:] with :]and :]Versionmand |
 
 ### Phase F: Frontend
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with | Опandwithанandе |
+| :] | :]with | Opandwithanande |
 |---------|----------|-----------|
-| F1 | TODO | [CYR:[TRANSLATED]]inandть chatApi.ts for ноinых endpoints |
-| F2 | TODO | [CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]] SelfImprovingFormulaDiscoverySection.tsx |
-| F3 | TODO | [CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]] SacredEconomyGlobalSection.tsx |
-| F4 | TODO | [CYR:[TRANSLATED]]inandть [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] in i18n for ноinых [CYR:[TRANSLATED]]andмоin |
-| F5 | TODO | [CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] in TrinityCanvas.tsx |
+| F1 | TODO | :]inandt chatApi.ts for naboutinykh endpoints |
+| F2 | TODO | :] inand:] SelfImprovingFormulaDiscoverySection.tsx |
+| F3 | TODO | :] inand:] SacredEconomyGlobalSection.tsx |
+| F4 | TODO | :]inandt :]in:] in i18n for naboutinykh :]andmaboutin |
+| F5 | TODO | :]andraboutin:] in TrinityCanvas.tsx |
 
 ### Phase G: Documentation
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with | Опandwithанandе |
+| :] | :]with | Opandwithanande |
 |---------|----------|-----------|
-| G1 | TODO | [CYR:[TRANSLATED]]inandть docs/tri/tri-math-v4.0.md |
-| G2 | TODO | [CYR:[TRANSLATED]] docs/research/tri-math-v4.0-architecture.md |
-| G3 | TODO | [CYR:[TRANSLATED]]inandть TECHNOLOGY_TREE.md ([CYR:[TRANSLATED]]inandть Cycle 91) |
-| G4 | TODO | [CYR:[TRANSLATED]]inandть entry in sidebars.ts |
+| G1 | TODO | :]inandt docs/tri/tri-math-v4.0.md |
+| G2 | TODO | :] docs/research/tri-math-v4.0-architecture.md |
+| G3 | TODO | :]inandt TECHNOLOGY_TREE.md (:]inandt Cycle 91) |
+| G4 | TODO | :]inandt entry in sidebars.ts |
 
 ### Phase H: Git
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with | Опandwithанandе |
+| :] | :]with | Opandwithanande |
 |---------|----------|-----------|
 | H1 | TODO | git pull origin ralph/nexus-src |
 | H2 | TODO | git checkout -b ralph/cycle-91-fix-vibee-full-implementation |
@@ -118,111 +118,111 @@ Cycle 91 andwith[TRANSLATED]]in[CYR:[TRANSLATED]] toрandтandчеwithtoandе [C
 | H4 | TODO | git commit -m "plan: Cycle 91 - Fix VIBEE + real implementation" |
 | H5 | TODO | git push origin ralph/cycle-91-fix-vibee-full-implementation |
 
-## [CYR:[TRANSLATED]]andtoand for withраinnotнandя
+## :]andtoand for withrainnotnandya
 
-| [CYR:[TRANSLATED]]andtoа | v3.5 ([CYR:[TRANSLATED]]) | v3.6 (мandнand[CYR:[TRANSLATED]]) | [CYR:[TRANSLATED]]andе |
+| :]Version | v3.5 (:]) | v3.6 (mandnand:]) | :]ande |
 |----------|---------------|-------------------|-----------|
-| VIBEE [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]andй | ❌ [CYR:[TRANSLATED]] | ✅ Иwith[TRANSLATED]]in[CYR:[TRANSLATED]] |
-| Real engine toод | ❌ [CYR:[TRANSLATED]]toand | ✅ [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя |
-| Теwithты | 99.7% | 100% | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] |
-| Аin[CYR:[TRANSLATED]]withть | [CYR:[TRANSLATED]]toand | [CYR:[TRANSLATED]] toод | Жandinая withandwith[TRANSLATED]] |
+| VIBEE :]from:]andy | ❌ :] | ✅ Iwith]in:] |
+| Real engine toaboutd | ❌ :]toand | ✅ :]and:]andya |
+| Tewithty | 99.7% | 100% | :]and:] |
+| Author:]witht | :]toand | :] toaboutd | Zhandinaya withandwith] |
 | Compliance | 33% | 100% | +67% |
 
-## [CYR:[TRANSLATED]]andчеwithtoandе [CYR:[TRANSLATED]]and
+## :]andchewithtoande :]and
 
 ### VIBEE Compiler Fix
 
-**Problem:** `trinity-nexus/lang/src/zig_codegen.zig` andмportand[CYR:[TRANSLATED]] andз notwith[TRANSLATED]]withтin[CYR:[TRANSLATED]] `codegen/mod.zig`
+**Problem:** `trinity-nexus/lang/src/zig_codegen.zig` andmportand:] andz notwith]withtin:] `codegen/mod.zig`
 
-**[CYR:[TRANSLATED]]andе:**
+**:]ande:**
 ```zig
-// [CYR:[TRANSLATED]] notдоwith[TRANSLATED]]andе fileы in trinity-nexus/lang/src/codegen/
-// - types.zig (тandпы: ZigCodeGen, CodeBuilder, PatternMatcher, TestGenerator)
-// - builder.zig (CodeBuilder for геnot[CYR:[TRANSLATED]]and for[TRANSLATED]])
-// - utils.zig (mapType and [CYR:[TRANSLATED]]andе утorты)
+// :] notdaboutwith]ande filey in trinity-nexus/lang/src/codegen/
+// - types.zig (tandpy: ZigCodeGen, CodeBuilder, PatternMatcher, TestGenerator)
+// - builder.zig (CodeBuilder for genot:]and for])
+// - utils.zig (mapType and :]ande attorty)
 // - patterns.zig (pattern matching for DSL, VSA, Metal)
-// - tests_gen.zig (геnot[CYR:[TRANSLATED]]andя теwithтоin)
-// - emitter.zig ([CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] ZigCodeGen дinandжоto)
+// - tests_gen.zig (genot:]andya thosewiththatin)
+// - emitter.zig (:]in:] ZigCodeGen dinandzhaboutto)
 // - mod.zig (module re-exports)
 
-// Иwith[TRANSLATED]]inandть andмport in zig_codegen.zig:
+// Iwith]inandt andmport in zig_codegen.zig:
 // pub const codegen = @import("codegen/mod.zig");
 ```
 
 ### Real Implementation Requirements
 
 **autonomous_universe_engine.zig:**
-- Аin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and (autonomous_bubbles)
-- Аinто-[CYR:[TRANSLATED]]andроinанandе parameterоin (auto_tune_parameters)
-- Эin[CYR:[TRANSLATED]]andя inwith[TRANSLATED]] (universe_evolution)
-- [CYR:[TRANSLATED]]andя fromfor[TRANSLATED]]andя (discovery_integration)
-- [CYR:[TRANSLATED]]from withоwith[TRANSLATED]]andя (state_snapshot)
-- Check with[TRANSLATED]]andмоwithтand (convergence_check)
-- [CYR:[TRANSLATED]]with inwith[TRANSLATED]] (reset_universe)
+- Author:] :]and (autonomous_bubbles)
+- Authorthat-:]andraboutinanande parameteraboutin (auto_tune_parameters)
+- Ein:]andya inwith] (universe_evolution)
+- :]andya fromfor]andya (discovery_integration)
+- :]from withaboutwith]andya (state_snapshot)
+- Check with]andmaboutwithtand (convergence_check)
+- :]with inwith] (reset_universe)
 
 **formula_discovery_engine.zig (hybrid):**
-- Гandбрand[CYR:[TRANSLATED]] поandwithto: symbolic + numeric approximation
-- AST [CYR:[TRANSLATED]]withandнг (parse_ast)
-- Сandмinолandчеwithtoая [CYR:[TRANSLATED]]andе (symbolic_simplify)
-- Чandwithлоinая [CYR:[TRANSLATED]]towithand[CYR:[TRANSLATED]]andя (numeric_approximate)
-- [CYR:[TRANSLATED]] раwith[TRANSLATED]] (evaluate_exact)
-- Check эtoinandin[CYR:[TRANSLATED]]withтand (find_equivalence)
-- [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя with[TRANSLATED]]withтand (optimize_complexity)
+- Gandbrand:] byandwithto: symbolic + numeric approximation
+- AST :]withandng (parse_ast)
+- Sandminaboutlandchewithtoaya :]ande (symbolic_simplify)
+- Chandwithlaboutinaya :]towithand:]andya (numeric_approximate)
+- :] rawith] (evaluate_exact)
+- Check etoinandin:]withtand (find_equivalence)
+- :]andmand:]andya with]withtand (optimize_complexity)
 
 **sacred_economy_engine.zig (global):**
-- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toул (global_oracle)
-- [CYR:[TRANSLATED]] with[TRANSLATED]]toandнг (global_staking)
-- [CYR:[TRANSLATED]]with[TRANSLATED]]toandнг (unstake_global)
-- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]for[TRANSLATED]]with (global_marketplace)
-- [CYR:[TRANSLATED]]intoand (place_global_bid)
-- Прand[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]in (accept_global_offer)
+- :] :]toatl (global_oracle)
+- :] with]toandng (global_staking)
+- :]with]toandng (unstake_global)
+- :] :]for]with (global_marketplace)
+- :]intoand (place_global_bid)
+- Prand:]ande :]in (accept_global_offer)
 - Yield farming (get_yield_pool, claim_yield_rewards)
-- DAO [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе (create_proposal, vote, execute_proposal)
+- DAO :]in:]ande (create_proposal, vote, execute_proposal)
 - Cross-chain bridge (bridge_assets, confirm_bridge_transfer)
 
 **self_improver_v2_engine.zig:**
 - Adam optimizer (adam_step) — beta1=0.9, beta2=0.999, epsilon=1e-8
-- EWC withandonпwithы (ewc_synapse) — lambda=0.5, decay=0.99
-- [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] withпуwithto (gradient_descent)
-- Momentum [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andя (momentum_update)
-- [CYR:[TRANSLATED]]toandнг [CYR:[TRANSLATED]]for[TRANSLATED]]and (trajectory)
-- Клandпandроinанandе [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]in (clip_gradients)
-- [CYR:[TRANSLATED]]withолand[CYR:[TRANSLATED]]andя (consolidate)
+- EWC withandonpwithy (ewc_synapse) — lambda=0.5, decay=0.99
+- :]and:] withpatwithto (gradient_descent)
+- Momentum :]in:]andya (momentum_update)
+- :]toandng :]for]and (trajectory)
+- Klandpandraboutinanande :]and:]in (clip_gradients)
+- :]withaboutland:]andya (consolidate)
 
 **nft_marketplace_engine.zig:**
-- [CYR:[TRANSLATED]]withмfromр лandwithтand[CYR:[TRANSLATED]]in (browse)
-- Creation withтаintoand (bid)
-- Creation лandwithтand[CYR:[TRANSLATED]] (create_listing)
-- Прand[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]] (accept_offer)
-- [CYR:[TRANSLATED]]on лandwithтand[CYR:[TRANSLATED]] (cancel_listing)
-- [CYR:[TRANSLATED]]inля (trade)
-- Иwith[TRANSLATED]]andя [CYR:[TRANSLATED]] (sales_history)
+- :]withmfromr landwithtand:]in (browse)
+- Creation withthatintoand (bid)
+- Creation landwithtand:] (create_listing)
+- Prand:]ande :] (accept_offer)
+- :]on landwithtand:] (cancel_listing)
+- :]inlya (trade)
+- Iwith]andya :] (sales_history)
 
 **self_improving_formula_discovery_engine.zig:**
-- Вwithе [CYR:[TRANSLATED]]andмы formula_discovery + self-improvement
+- Vwithe :]andmy formula_discovery + self-improvement
 - Adam optimize (adam_optimize)
-- [CYR:[TRANSLATED]]toandнг [CYR:[TRANSLATED]]for[TRANSLATED]]and (track_trajectory)
-- [CYR:[TRANSLATED]]andнг бandблandfromеtoand (prune_library)
-- Слandянandе for[TRANSLATED]]in (merge_concepts)
-- Сin[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]inерtoа (verify_sacred)
-- [CYR:[TRANSLATED]]andtoand with[TRANSLATED]]andя (get_self_improving_metrics)
-- [CYR:[TRANSLATED]]with withоwith[TRANSLATED]]andя (reset_learning_state)
+- :]toandng :]for]and (track_trajectory)
+- :]andng bandblandfrometoand (prune_library)
+- Slandyanande for]in (merge_concepts)
+- Sin:]onya :]inertoa (verify_sacred)
+- :]andtoand with]andya (get_self_improving_metrics)
+- :]with withaboutwith]andya (reset_learning_state)
 
-### [CYR:[TRANSLATED]]to Requirements
+### :]to Requirements
 
-**[CYR:[TRANSLATED]]inandть for Zig 0.15.x:**
-- [CYR:[TRANSLATED]]andть `std.io.getStdOut()` on аfor[TRANSLATED]] API
-- Иwith[TRANSLATED]]in[CYR:[TRANSLATED]] `std.debug.print()` for inыin[CYR:[TRANSLATED]]
-- [CYR:[TRANSLATED]]with[TRANSLATED]]andть withоinмеwithтandмоwithть with new Zig with[TRANSLATED]]and
+**:]inandt for Zig 0.15.x:**
+- :]andt `std.io.getStdOut()` on afor] API
+- Iwith]in:] `std.debug.print()` for inyin:]
+- :]with]andt withaboutinmewithtandmaboutwitht with new Zig with]and
 
-**[CYR:[TRANSLATED]]inнand[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]andtoа:**
+**:]innand:]onya :]Version:**
 ```
-Formula Discovery Speed: v3.6 / v3.5 ([CYR:[TRANSLATED]]: +50%)
-Convergence Rate: v3.6 / v3.5 ([CYR:[TRANSLATED]]: +40%)
-APY Calculation Speed: v3.6 / v3.5 ([CYR:[TRANSLATED]]: +100%)
+Formula Discovery Speed: v3.6 / v3.5 (:]: +50%)
+Convergence Rate: v3.6 / v3.5 (:]: +40%)
+APY Calculation Speed: v3.6 / v3.5 (:]: +100%)
 ```
 
-## [CYR:[TRANSLATED]] уwithлоinandя (EXIT_SIGNAL)
+## :] atwithlaboutinandya (EXIT_SIGNAL)
 
 ```
 EXIT_SIGNAL = (
@@ -239,24 +239,24 @@ EXIT_SIGNAL = (
 )
 ```
 
-## Прand[CYR:[TRANSLATED]]andя
+## Prand:]andya
 
-**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] №1:** Нandtoаtoandх [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inоto `.zig`. Веwithь toод геnotрand[CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] `tri gen` andз `.tri` with[TRANSLATED]]andфandtoацandй.
+**:] :] №1:** NVersiontoandkh :] :]inaboutto `.zig`. Vewith toaboutd genotrand:]withya :] :] `tri gen` andz `.tri` with]andfVersiontsandy.
 
-**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] №2:** Нandtoаtoandх [CYR:[TRANSLATED]]to `// TODO: implement`. Вwithе дinandжtoand and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andю.
+**:] :] №2:** NVersiontoandkh :]to `// TODO: implement`. Vwithe dinandzhtoand and:] :] :]and:]andyu.
 
-**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] №3:** Еwithлand VIBEE for[TRANSLATED]]and[CYR:[TRANSLATED]] withноinа with[TRANSLATED]]withя — [CYR:[TRANSLATED]]onя оwith[TRANSLATED]]intoа цandtoла до andwith[TRANSLATED]]in[CYR:[TRANSLATED]]andя.
+**:] :] №3:** Ewithland VIBEE for]and:] withnaboutina with]withya — :]onya aboutwith]intoa tsandtola dabout andwith]in:]andya.
 
-**[CYR:[TRANSLATED]] Cycle 91:**
-Доinеwithтand TRI MATH v3.5 до withоwith[TRANSLATED]]andя **аin[CYR:[TRANSLATED]] жandinой [CYR:[TRANSLATED]]andчеwithtoой inwith[TRANSLATED]]** with:
-- [CYR:[TRANSLATED]] VIBEE геnot[CYR:[TRANSLATED]]andей
-- [CYR:[TRANSLATED]]and дinandжtoамand ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]]to)
-- [CYR:[TRANSLATED]]and теwith[TRANSLATED]]and (100% pass rate)
-- [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]toамand
-- Вand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andей (inand[CYR:[TRANSLATED]])
+**:] Cycle 91:**
+Daboutinewithtand TRI MATH v3.5 dabout withaboutwith]andya **ain:] zhandinabouty :]andchewithtoabouty inwith]** with:
+- :] VIBEE genot:]andey
+- :]and dinandzhtoamand (:] :]to)
+- :]and thosewith]and (100% pass rate)
+- :]in:]and :]toamand
+- Vand:]and:]andey (inand:])
 
 ---
 
-**[CYR:[TRANSLATED]]:** 2026-02-25 (Ko Samui, Cycle 91 Planning)
+**:]:** 2026-02-25 (Ko Samui, Cycle 91 Planning)
 
 Golden Chain eternal. 🔥

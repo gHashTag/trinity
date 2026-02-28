@@ -1,58 +1,58 @@
 # iGLA KOSHEY v2 ETERNAL
 
-**[CYR:[TRANSLATED]] беwith[TRANSLATED]]andе [CYR:[TRANSLATED]] Swarm + Multimodal + Quantum**
+**:] bewith]ande :] Swarm + Multimodal + Quantum**
 
-## [CYR:[TRANSLATED]]andwithтandtoа
+## :]andwithtVersion
 
-| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе |
+| :]Version | Zon:]ande |
 |---------|----------|
-| v2 [CYR:[TRANSLATED]]and | 11 |
-| v2 теwithты | 72 |
+| v2 :]and | 11 |
+| v2 thosewithty | 72 |
 | Unified test | 1824ms |
 
-## [CYR:[TRANSLATED]]and v2 ETERNAL
+## :]and v2 ETERNAL
 
 ### Swarm Intelligence
 
-| [CYR:[TRANSLATED]] | Опandwithанandе | Иwith[TRANSLATED]]andto |
+| :] | Opandwithanande | Iwith]andto |
 |--------|----------|----------|
-| `igla_koshey_swarm_core` | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] | arXiv:2308.08155 AutoGen |
-| `igla_koshey_swarm_agent` | [CYR:[TRANSLATED]]andinand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] | Multi-Agent RL |
-| `igla_koshey_swarm_consensus` | [CYR:[TRANSLATED]]withенwithуwith [CYR:[TRANSLATED]] | Byzantine Fault Tolerance |
+| `igla_koshey_swarm_core` | :] :] | arXiv:2308.08155 AutoGen |
+| `igla_koshey_swarm_agent` | :]andinand:] :] | Multi-Agent RL |
+| `igla_koshey_swarm_consensus` | :]withenwithatwith :] | Byzantine Fault Tolerance |
 
 ### Multimodal
 
-| [CYR:[TRANSLATED]] | Опandwithанandе | Иwith[TRANSLATED]]andto |
+| :] | Opandwithanande | Iwith]andto |
 |--------|----------|----------|
-| `igla_koshey_multimodal_vision` | [CYR:[TRANSLATED]]andе | arXiv:2304.08485 LLaVA |
-| `igla_koshey_multimodal_audio` | [CYR:[TRANSLATED]] | Whisper/AudioLM |
-| `igla_koshey_multimodal_fusion` | Слandянandе [CYR:[TRANSLATED]]with[TRANSLATED]] | GPT-4V style |
+| `igla_koshey_multimodal_vision` | :]ande | arXiv:2304.08485 LLaVA |
+| `igla_koshey_multimodal_audio` | :] | Whisper/AudioLM |
+| `igla_koshey_multimodal_fusion` | Slandyanande :]with] | GPT-4V style |
 
 ### Quantum
 
-| [CYR:[TRANSLATED]] | Опandwithанandе | Иwith[TRANSLATED]]andto |
+| :] | Opandwithanande | Iwith]andto |
 |--------|----------|----------|
-| `igla_koshey_quantum_circuit` | Кin[CYR:[TRANSLATED]]inые with[TRANSLATED]] | Qiskit/Cirq |
-| `igla_koshey_quantum_error` | [CYR:[TRANSLATED]]toцandя ошandбоto | Surface Code |
+| `igla_koshey_quantum_circuit` | Kin:]inye with] | Qiskit/Cirq |
+| `igla_koshey_quantum_error` | :]totsandya aboutshandbaboutto | Surface Code |
 
 ### Neuromorphic & Emergence
 
-| [CYR:[TRANSLATED]] | Опandwithанandе | Иwith[TRANSLATED]]andto |
+| :] | Opandwithanande | Iwith]andto |
 |--------|----------|----------|
-| `igla_koshey_neuromorphic` | [CYR:[TRANSLATED]] чandпы | Intel Loihi |
-| `igla_koshey_emergent` | [CYR:[TRANSLATED]] поin[CYR:[TRANSLATED]]andе | Complexity Theory |
-| `igla_koshey_eternal_fusion` | Слandянandе v2 | Full Integration |
+| `igla_koshey_neuromorphic` | :] chandpy | Intel Loihi |
+| `igla_koshey_emergent` | :] byin:]ande | Complexity Theory |
+| `igla_koshey_eternal_fusion` | Slandyanande v2 | Full Integration |
 
-## [CYR:[TRANSLATED]] andwith[TRANSLATED]]andtoand
+## :] andwith]andtoand
 
-| [CYR:[TRANSLATED]]andя | arXiv | [CYR:[TRANSLATED]] |
+| :]andya | arXiv | :] |
 |------------|-------|-----|
 | AutoGen | 2308.08155 | 2023 |
 | LLaVA | 2304.08485 | 2023 |
 | MiniGPT-4 | 2304.10592 | 2023 |
 | Quantum ML | 2307.06435 | 2023 |
 
-## [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] v2
+## :]andthosefor] v2
 
 ```
                     SWARM INTELLIGENCE
@@ -83,10 +83,10 @@
                     └─────────────────┘
 ```
 
-## [CYR:[TRANSLATED]]inые in[CYR:[TRANSLATED]]withтand
+## :]inye in:]withtand
 
 ### 1. Swarm Intelligence
-- [CYR:[TRANSLATED]]toтandin[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]toт andз [CYR:[TRANSLATED]]withтinа [CYR:[TRANSLATED]]in
+- :]totandin:] and:]tot andz :]withtina :]in
 - Byzantine fault tolerance
 - Emergent decision making
 

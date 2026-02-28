@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 WebArena Benchmark Runner for VIBEE Agent
-Запуск 812 задач WebArena с оценкой результатов
+Zapatwithto 812 zadach WebArena with abouttsentoabouty resultaboutin
 φ² + 1/φ² = 3 | PHOENIX = 999
 """
 
@@ -12,7 +12,7 @@ import time
 from pathlib import Path
 from datetime import datetime
 
-# Конфигурация WebArena окружения
+# Configuration WebArena abouttoratzhenandya
 WEBARENA_CONFIG = {
     "SHOPPING": os.getenv("SHOPPING", "localhost:7770"),
     "SHOPPING_ADMIN": os.getenv("SHOPPING_ADMIN", "localhost:7780/admin"),
@@ -24,20 +24,20 @@ WEBARENA_CONFIG = {
 }
 
 def load_tasks(tasks_file: str) -> list:
-    """Загрузка 812 задач из JSON файла"""
+    """Loading 812 zadach from JSON filea"""
     with open(tasks_file, 'r') as f:
         tasks = json.load(f)
-    print(f"✓ Загружено {len(tasks)} задач")
+    print(f"✓ Zagratzhenabout {len(tasks)} zadach")
     return tasks
 
 def check_environment() -> dict:
-    """Проверка доступности всех сервисов WebArena"""
+    """Check accessnaboutwithtand allkh serviceaboutin WebArena"""
     import subprocess
     
     results = {}
     for name, url in WEBARENA_CONFIG.items():
         try:
-            # Убираем путь для проверки
+            # Ubandraem path for praboutinertoand
             host = url.split('/')[0]
             result = subprocess.run(
                 ['curl', '-s', '-o', '/dev/null', '-w', '%{http_code}', f'http://{host}', '--max-time', '5'],
@@ -54,7 +54,7 @@ def check_environment() -> dict:
     return results
 
 def run_single_task(task: dict, task_id: int) -> dict:
-    """Запуск одной задачи WebArena"""
+    """Zapatwithto aboutdnabouty zadachand WebArena"""
     start_time = time.time()
     
     result = {
@@ -69,10 +69,10 @@ def run_single_task(task: dict, task_id: int) -> dict:
     }
     
     try:
-        # TODO: Интеграция с VIBEE агентом
-        # Здесь будет вызов агента для выполнения задачи
+        # TODO: Inthosegratsandya with VIBEE agenthatm
+        # Zdewith batdet inyzaboutin agenthat for inybylnenandya zadachand
         
-        # Пока заглушка
+        # Pabouttoa zaglatshtoa
         result["error"] = "Agent not implemented yet"
         
     except Exception as e:
@@ -82,7 +82,7 @@ def run_single_task(task: dict, task_id: int) -> dict:
     return result
 
 def run_benchmark(tasks: list, start_idx: int = 0, end_idx: int = None) -> dict:
-    """Запуск бенчмарка на диапазоне задач"""
+    """Zapatwithto benchmartoa on dandapazaboutne zadach"""
     if end_idx is None:
         end_idx = len(tasks)
     
@@ -104,7 +104,7 @@ def run_benchmark(tasks: list, start_idx: int = 0, end_idx: int = None) -> dict:
     total_time = 0
     
     for i, task in enumerate(tasks[start_idx:end_idx], start=start_idx):
-        print(f"\n[{i+1}/{end_idx}] Задача {task.get('task_id', i)}: {task.get('intent', '')[:50]}...")
+        print(f"\n[{i+1}/{end_idx}] Task {task.get('task_id', i)}: {task.get('intent', '')[:50]}...")
         
         task_result = run_single_task(task, task.get('task_id', i))
         results["task_results"].append(task_result)
@@ -117,7 +117,7 @@ def run_benchmark(tasks: list, start_idx: int = 0, end_idx: int = None) -> dict:
         
         total_time += task_result["execution_time_ms"]
         
-        # Промежуточная статистика
+        # Praboutmezhatthatchonya withthattandwithtandtoa
         results["success_rate"] = (results["successful"] / results["completed"]) * 100
         results["avg_time_ms"] = total_time / results["completed"]
         
@@ -127,13 +127,13 @@ def run_benchmark(tasks: list, start_idx: int = 0, end_idx: int = None) -> dict:
     return results
 
 def save_results(results: dict, output_file: str):
-    """Сохранение результатов в JSON"""
+    """Saving resultaboutin in JSON"""
     with open(output_file, 'w') as f:
         json.dump(results, f, indent=2)
-    print(f"\n✓ Результаты сохранены в {output_file}")
+    print(f"\n✓ Resulty withaboutkhraneny in {output_file}")
 
 def print_summary(results: dict):
-    """Вывод итоговой статистики"""
+    """Output andthatgaboutinabouty withthattandwithtandtoand"""
     print("\n" + "="*60)
     print("  WEBARENA BENCHMARK RESULTS")
     print("="*60)
@@ -146,7 +146,7 @@ def print_summary(results: dict):
     print(f"  Avg Time: {results['avg_time_ms']:.0f}ms")
     print("="*60)
     
-    # Сравнение с лидербордом
+    # Srainnenande with landderbaboutrdaboutm
     print("\n  LEADERBOARD COMPARISON:")
     print(f"  Current: {results['success_rate']:.1f}%")
     print(f"  #1 OAgent: 71.6%")
@@ -160,31 +160,31 @@ def main():
     print("  φ² + 1/φ² = 3 | PHOENIX = 999")
     print("="*60)
     
-    # Проверка окружения
-    print("\nПроверка WebArena окружения...")
+    # Check abouttoratzhenandya
+    print("\nCheck WebArena abouttoratzhenandya...")
     env_status = check_environment()
     
     available = sum(env_status.values())
     if available == 0:
-        print("\n❌ Ни один сервис WebArena недоступен!")
-        print("   Запустите: ./scripts/webarena_setup.sh <hostname>")
+        print("\n❌ Nand aboutdandn service WebArena neaccessen!")
+        print("   Zapatwithtandthose: ./scripts/webarena_setup.sh <hostname>")
         sys.exit(1)
     
-    print(f"\n✓ Доступно {available}/{len(env_status)} сервисов")
+    print(f"\n✓ Accessnabout {available}/{len(env_status)} serviceaboutin")
     
-    # Загрузка задач
+    # Loading zadach
     tasks_file = "/workspaces/webarena-benchmark/config_files/test.raw.json"
     if not Path(tasks_file).exists():
-        print(f"\n❌ Файл задач не найден: {tasks_file}")
+        print(f"\n❌ File zadach ne onyden: {tasks_file}")
         sys.exit(1)
     
     tasks = load_tasks(tasks_file)
     
-    # Запуск бенчмарка (первые 10 задач для теста)
-    print("\nЗапуск бенчмарка (первые 10 задач)...")
+    # Zapatwithto benchmartoa (perinye 10 zadach for testa)
+    print("\nZapatwithto benchmartoa (perinye 10 zadach)...")
     results = run_benchmark(tasks, start_idx=0, end_idx=10)
     
-    # Сохранение и вывод результатов
+    # Saving and output resultaboutin
     output_file = f"/workspaces/vibee-lang/benchmark/webarena_results_{results['run_id']}.json"
     Path(output_file).parent.mkdir(parents=True, exist_ok=True)
     save_results(results, output_file)

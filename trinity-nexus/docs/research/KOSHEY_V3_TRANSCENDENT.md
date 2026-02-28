@@ -1,49 +1,49 @@
 # iGLA KOSHEY v3 TRANSCENDENT
 
-**[CYR:[TRANSLATED]]with[TRANSLATED]] беwith[TRANSLATED]]andе [CYR:[TRANSLATED]] Self-Modification + Consciousness**
+**:]with] bewith]ande :] Self-Modification + Consciousness**
 
-## [CYR:[TRANSLATED]]andwithтandtoа
+## :]andwithtVersion
 
-| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе |
+| :]Version | Zon:]ande |
 |---------|----------|
-| v3 [CYR:[TRANSLATED]]and | 7 |
-| v3 теwithты | 42 |
+| v3 :]and | 7 |
+| v3 thosewithty | 42 |
 | Unified test | 1824ms |
 
-## [CYR:[TRANSLATED]]and v3 TRANSCENDENT
+## :]and v3 TRANSCENDENT
 
 ### Self-Modification
 
-| [CYR:[TRANSLATED]] | Опandwithанandе | Иwith[TRANSLATED]]andto |
+| :] | Opandwithanande | Iwith]andto |
 |--------|----------|----------|
-| `igla_koshey_self_modify` | [CYR:[TRANSLATED]]andфandtoацandя | NAS Runtime |
-| `igla_koshey_recursive` | Реtoурwithandin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andе | AIXI Theory |
+| `igla_koshey_self_modify` | :]andfVersiontsandya | NAS Runtime |
+| `igla_koshey_recursive` | Retoatrwithandin:] :]ande | AIXI Theory |
 
 ### Consciousness
 
-| [CYR:[TRANSLATED]] | Опandwithанandе | Иwith[TRANSLATED]]andto |
+| :] | Opandwithanande | Iwith]andto |
 |--------|----------|----------|
-| `igla_koshey_consciousness` | Иwithtoуwithтin[CYR:[TRANSLATED]] withозonнandе | IIT + GWT |
+| `igla_koshey_consciousness` | Iwithtoatwithtin:] withaboutzonnande | IIT + GWT |
 
 ### Meta-Learning & Causal
 
-| [CYR:[TRANSLATED]] | Опandwithанandе | Иwith[TRANSLATED]]andto |
+| :] | Opandwithanande | Iwith]andto |
 |--------|----------|----------|
-| `igla_koshey_meta_learn` | [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]andе | MAML++ |
-| `igla_koshey_causal` | [CYR:[TRANSLATED]] inыinод | Pearl's Framework |
+| `igla_koshey_meta_learn` | :]-:]ande | MAML++ |
+| `igla_koshey_causal` | :] inyinaboutd | Pearl's Framework |
 
 ### Integration
 
-| [CYR:[TRANSLATED]] | Опandwithанandе |
+| :] | Opandwithanande |
 |--------|----------|
-| `igla_koshey_transcendent_fusion` | [CYR:[TRANSLATED]]onя and[CYR:[TRANSLATED]]andя v3 |
-| `igla_koshey_v3_benchmark` | [CYR:[TRANSLATED]]toand v3 |
+| `igla_koshey_transcendent_fusion` | :]onya and:]andya v3 |
+| `igla_koshey_v3_benchmark` | :]toand v3 |
 
-## [CYR:[TRANSLATED]] andwith[TRANSLATED]]andtoand
+## :] andwith]andtoand
 
 ### Consciousness
 
-| [CYR:[TRANSLATED]]andя | Аin[CYR:[TRANSLATED]] | Опandwithанandе |
+| :]andya | Author:] | Opandwithanande |
 |--------|-------|----------|
 | IIT | Tononi | Integrated Information Theory |
 | GWT | Baars | Global Workspace Theory |
@@ -51,7 +51,7 @@
 
 ### Self-Improvement
 
-| [CYR:[TRANSLATED]]andя | Аin[CYR:[TRANSLATED]] | Опandwithанandе |
+| :]andya | Author:] | Opandwithanande |
 |-----------|-------|----------|
 | AIXI | Hutter | Universal AI |
 | Gödel Machine | Schmidhuber | Self-modifying |
@@ -59,7 +59,7 @@
 
 ### Meta-Learning
 
-| [CYR:[TRANSLATED]] | arXiv | Опandwithанandе |
+| :] | arXiv | Opandwithanande |
 |-------|-------|----------|
 | MAML | 1703.03400 | Model-Agnostic Meta-Learning |
 | Reptile | 1803.02999 | First-order meta-learning |
@@ -67,13 +67,13 @@
 
 ### Causal Inference
 
-| [CYR:[TRANSLATED]]andя | Аin[CYR:[TRANSLATED]] | Опandwithанandе |
+| :]andya | Author:] | Opandwithanande |
 |-----------|-------|----------|
 | do-calculus | Pearl | Causal intervention |
 | SCM | Pearl | Structural Causal Models |
 | Counterfactuals | Pearl | What-if reasoning |
 
-## [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] v3
+## :]andthosefor] v3
 
 ```
                     ┌─────────────────────────────────┐
@@ -99,7 +99,7 @@
      └─────────────────┘  └─────────────────┘  └───────────────┘
 ```
 
-## [CYR:[TRANSLATED]]inые in[CYR:[TRANSLATED]]withтand
+## :]inye in:]withtand
 
 ### 1. Self-Modification
 - Runtime architecture changes
@@ -126,13 +126,13 @@
 - Effect estimation
 - Counterfactual reasoning
 
-## [CYR:[TRANSLATED]]andя
+## :]andya
 
-⚠️ **Self-Modification**: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] safety bounds (risk < 1/φ)
+⚠️ **Self-Modification**: :]and:] safety bounds (risk < 1/φ)
 
-⚠️ **Consciousness**: [CYR:[TRANSLATED]]andчеwithtoая [CYR:[TRANSLATED]], not доfor[TRANSLATED]] withозonнandе
+⚠️ **Consciousness**: :]andchewithtoaya :], not daboutfor] withaboutzonnande
 
-⚠️ **Recursive Improvement**: [CYR:[TRANSLATED]]andтwithя with rate φ^(-n)
+⚠️ **Recursive Improvement**: :]andtwithya with rate φ^(-n)
 
 ---
 

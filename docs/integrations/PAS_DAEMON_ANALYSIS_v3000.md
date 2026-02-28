@@ -6,9 +6,9 @@
 
 ## Executive Summary
 
-PAS DAEMON аonлandз inыяinandл with[TRANSLATED]]andе in[CYR:[TRANSLATED]]withтand [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and:
+PAS DAEMON aonlandz inyyainandl with]ande in:]withtand :]andmand:]and:
 
-| [CYR:[TRANSLATED]]notнт | Теfor[TRANSLATED]] with[TRANSLATED]]withть | [CYR:[TRANSLATED]]withfor[TRANSLATED]]onя | Уin[CYR:[TRANSLATED]]withть | [CYR:[TRANSLATED]] |
+| :]notnt | Tefor] with]witht | :]withfor]onya | Uin:]witht | :] |
 |-----------|-------------------|---------------|-------------|----------|
 | Tensor matmul | O(n³) | O(n^2.37) | 75% | D&C, ALG |
 | Attention | O(n²) | O(n) | 85% | PRE, FDT |
@@ -22,25 +22,25 @@ PAS DAEMON аonлandз inыяinandл with[TRANSLATED]]andе in[CYR:[TRANSLATED]]
 
 ### 1. Divide-and-Conquer (D&C) - 31% success rate
 
-**Прand[CYR:[TRANSLATED]]andмо to:**
+**Prand:]andmabout to:**
 - Matrix multiplication (Strassen-like)
 - Attention computation (block-wise)
 - Tokenization (parallel chunks)
 
-**[CYR:[TRANSLATED]]withfor[TRANSLATED]]andе:**
+**:]withfor]ande:**
 ```
 matmul: O(n³) → O(n^2.81) via Strassen
-         → O(n^2.37) via Coppersmith-Winograd ([CYR:[TRANSLATED]]andчеwithtoand)
+         → O(n^2.37) via Coppersmith-Winograd (:]andchewithtoand)
 ```
 
 ### 2. Algebraic Reorganization (ALG) - 22% success rate
 
-**Прand[CYR:[TRANSLATED]]andмо to:**
+**Prand:]andmabout to:**
 - Softmax computation
 - Layer normalization
 - Gradient accumulation
 
-**[CYR:[TRANSLATED]]withfor[TRANSLATED]]andе:**
+**:]withfor]ande:**
 ```
 softmax: 2 passes → 1 pass (online algorithm)
 layernorm: 2 passes → 1 pass (Welford's algorithm)
@@ -48,12 +48,12 @@ layernorm: 2 passes → 1 pass (Welford's algorithm)
 
 ### 3. Precomputation (PRE) - 16% success rate
 
-**Прand[CYR:[TRANSLATED]]andмо to:**
+**Prand:]andmabout to:**
 - Embedding lookup
 - Position encodings
 - Activation functions (LUT)
 
-**[CYR:[TRANSLATED]]withfor[TRANSLATED]]andе:**
+**:]withfor]ande:**
 ```
 GELU: exp() calls → lookup table (10x speedup)
 sin/cos: compute → precomputed table
@@ -61,11 +61,11 @@ sin/cos: compute → precomputed table
 
 ### 4. Frequency Domain Transform (FDT) - 13% success rate
 
-**Прand[CYR:[TRANSLATED]]andмо to:**
+**Prand:]andmabout to:**
 - Convolution operations
 - Long-range attention
 
-**[CYR:[TRANSLATED]]withfor[TRANSLATED]]andе:**
+**:]withfor]ande:**
 ```
 attention: O(n²) → O(n log n) via FFT-based
 ```
@@ -76,15 +76,15 @@ attention: O(n²) → O(n log n) via FFT-based
 
 ### V = n × 3^k × π^m × φ^p × e^q
 
-**Прandмеnotнandе in [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and:**
+**Prandmenotnande in :]andmand:]and:**
 
-1. **Block sizes**: Иwith[TRANSLATED]] with[TRANSLATED]]and 3 (3, 9, 27, 81)
-2. **Learning rates**: Маwith[TRANSLATED]]and[CYR:[TRANSLATED]] по φ (1/φ, 1/φ², 1/φ³)
-3. **Batch sizes**: [CYR:[TRANSLATED]] PHOENIX/3 = 333
+1. **Block sizes**: Iwith] with]and 3 (3, 9, 27, 81)
+2. **Learning rates**: Mawith]and:] by φ (1/φ, 1/φ², 1/φ³)
+3. **Batch sizes**: :] PHOENIX/3 = 333
 
 ### Golden Identity: φ² + 1/φ² = 3
 
-**Прandмеnotнandе:**
+**Prandmenotnande:**
 - Momentum coefficients: β₁ = 1/φ ≈ 0.618, β₂ = 1/φ² ≈ 0.382
 - Weight initialization: scale = 1/√(φ × n)
 
@@ -98,7 +98,7 @@ attention: O(n²) → O(n log n) via FFT-based
 P(accept) = exp(-ΔE / (kT × φ))
 ```
 
-Иwith[TRANSLATED]]inанandе φ toаto toin[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] уwithor[CYR:[TRANSLATED]] уinелandчandin[CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]withть in[CYR:[TRANSLATED]] andз лоfor[TRANSLATED]] мandнand[CYR:[TRANSLATED]]in.
+Iwith]inanande φ toato toin:]in:] atwithor:] atinelandchandin:] in:]witht in:] andz laboutfor] mandnand:]in.
 
 ### 2. Grover Amplification
 
@@ -106,11 +106,11 @@ P(accept) = exp(-ΔE / (kT × φ))
 amplified_prob[good] = prob[good] × φ
 ```
 
-Уwithand[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]andх [CYR:[TRANSLATED]]andй in φ [CYR:[TRANSLATED]].
+Uwithand:]ande :]andkh :]andy in φ :].
 
 ### 3. Superposition Sampling
 
-[CYR:[TRANSLATED]]withandчеwithtoая withand[CYR:[TRANSLATED]]andя toin[CYR:[TRANSLATED]]inой with[TRANSLATED]]andцand for [CYR:[TRANSLATED]] поandwithtoа.
+:]withandchewithtoaya withand:]andya toin:]inabouty with]andtsand for :] byandwithtoa.
 
 ---
 
@@ -149,13 +149,13 @@ where:
 
 ## Conclusion
 
-PAS DAEMON аonлandз поfor[TRANSLATED]]in[CYR:[TRANSLATED]]:
+PAS DAEMON aonlandz byfor]in:]:
 
-1. **Выwithоtoandй пfrom[CYR:[TRANSLATED]]andал** for SIMD [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andй (90-95% уin[CYR:[TRANSLATED]]withть)
-2. **[CYR:[TRANSLATED]]andй пfrom[CYR:[TRANSLATED]]andал** for [CYR:[TRANSLATED]]andтмandчеwithtoandх [CYR:[TRANSLATED]]andй (75-85%)
-3. **Иwith[TRANSLATED]]in[CYR:[TRANSLATED]]withtoandй пfrom[CYR:[TRANSLATED]]andал** for toin[CYR:[TRANSLATED]]inых methodоin (60-70%)
+1. **Vywithabouttoandy pfrom:]andal** for SIMD :]andmand:]andy (90-95% atin:]witht)
+2. **:]andy pfrom:]andal** for :]andtmandchewithtoandkh :]andy (75-85%)
+3. **Iwith]in:]withtoandy pfrom:]andal** for toin:]inykh methodaboutin (60-70%)
 
-**Реfor[TRANSLATED]]andя**: [CYR:[TRANSLATED]] with SIMD [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andй, [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andть to [CYR:[TRANSLATED]]andтмandчеwithtoandм [CYR:[TRANSLATED]]andям.
+**Refor]andya**: :] with SIMD :]andmand:]andy, :] :]andt to :]andtmandchewithtoandm :]andyam.
 
 ---
 

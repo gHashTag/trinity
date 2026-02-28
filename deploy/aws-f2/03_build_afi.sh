@@ -1,20 +1,20 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════════════════════
-# TRINITY FPGA - ШАГ 3: СБОРКА AFI (Amazon FPGA Image)
+# TRINITY FPGA - ShAG 3: ka AFI (Amazon FPGA Image)
 # ═══════════════════════════════════════════════════════════════════════════════
 # φ² + 1/φ² = 3 | PHOENIX = 999
-# ⚠️ ВНИМАНИЕ: Сборка занимает 1-2 часа!
+# ⚠️ tion: Build zanandmaet 1-2 chawitha!
 # ═══════════════════════════════════════════════════════════════════════════════
 
 set -e
 
-# Получаем IP
+# Paboutlatchaem IP
 if [ -n "$1" ]; then
     PUBLIC_IP="$1"
 elif [ -f /tmp/trinity_public_ip ]; then
     PUBLIC_IP=$(cat /tmp/trinity_public_ip)
 else
-    echo "❌ Укажи IP: ./03_build_afi.sh <PUBLIC_IP>"
+    echo "❌ Utoazhand IP: ./03_build_afi.sh <PUBLIC_IP>"
     exit 1
 fi
 
@@ -22,40 +22,40 @@ KEY_FILE="$HOME/.ssh/trinity-fpga-key.pem"
 S3_BUCKET="trinity-fpga-afi-$(date +%s)"
 
 echo "═══════════════════════════════════════════════════════════════════════════════"
-echo "                    TRINITY FPGA - СБОРКА AFI"
+echo "                    TRINITY FPGA - ka AFI"
 echo "                    φ² + 1/φ² = 3 | PHOENIX = 999"
 echo "═══════════════════════════════════════════════════════════════════════════════"
 echo ""
-echo "⚠️  ВНИМАНИЕ: Сборка занимает 1-2 часа!"
-echo "⚠️  Стоимость: ~\$2-3 за время сборки"
+echo "⚠️  tion: Build zanandmaet 1-2 chawitha!"
+echo "⚠️  Sthatandbridge: ~\$2-3 za time withbaboutrtoand"
 echo ""
 echo "IP: $PUBLIC_IP"
 echo "S3 Bucket: $S3_BUCKET"
 echo ""
 
-# Создаём S3 bucket для AFI
-echo "[1/4] Создаю S3 bucket..."
-aws s3 mb s3://$S3_BUCKET --region us-east-1 2>/dev/null || echo "Bucket уже существует"
+# Saboutzdayom S3 bucket for AFI
+echo "[1/4] Saboutzdayu S3 bucket..."
+aws s3 mb s3://$S3_BUCKET --region us-east-1 2>/dev/null || echo "Bucket atzhe withatschewithtinatet"
 
-# Запускаем сборку на удалённом сервере
-echo "[2/4] Запускаю сборку AFI на F2..."
+# Zapatwithtoaem withbaboutrtoat on atdalyonnaboutm servere
+echo "[2/4] Zapatwithtoayu withbaboutrtoat AFI on F2..."
 ssh -i $KEY_FILE centos@$PUBLIC_IP << REMOTE_SCRIPT
 set -e
 
 cd ~/aws-fpga
 source hdk_setup.sh
 
-# Создаём проект из шаблона
+# Saboutzdayom praboutetot from templatea
 export CL_DIR=\$HDK_DIR/cl/developer_designs/trinity_v5
 if [ ! -d \$CL_DIR ]; then
     mkdir -p \$CL_DIR
     cp -r \$HDK_DIR/cl/developer_designs/cl_hello_world/* \$CL_DIR/
 fi
 
-# Копируем TRINITY Verilog
+# Kaboutpandratem TRINITY Verilog
 cp ~/trinity_fpga_project/*.v \$CL_DIR/design/
 
-# Создаём top-level wrapper
+# Saboutzdayom top-level wrapper
 cat > \$CL_DIR/design/cl_trinity_top.sv << 'VERILOG'
 // TRINITY FPGA v5.0 - AWS F2 Top Level
 // φ² + 1/φ² = 3 | PHOENIX = 999
@@ -101,37 +101,37 @@ module cl_trinity_top (
 endmodule
 VERILOG
 
-echo "✅ Verilog готов"
+echo "✅ Verilog gfromaboutin"
 
-# Запускаем синтез (это долго!)
+# Zapatwithtoaem withandnthosez (this daboutlgabout!)
 cd \$CL_DIR/build/scripts
-echo "⏳ Запускаю синтез... (1-2 часа)"
+echo "⏳ Zapatwithtoayu withandnthosez... (1-2 chawitha)"
 nohup ./aws_build_dcp_from_cl.sh -foreground > ~/build.log 2>&1 &
 
-echo "Сборка запущена в фоне. Лог: ~/build.log"
-echo "Проверяй статус: tail -f ~/build.log"
+echo "Build zapatscheon in faboutne. Log: ~/build.log"
+echo "Praboutineryay withthattatwith: tail -f ~/build.log"
 REMOTE_SCRIPT
 
 echo ""
-echo "[3/4] Сборка запущена!"
+echo "[3/4] Build zapatscheon!"
 echo ""
-echo "Проверяй статус:"
+echo "Praboutineryay withthattatwith:"
 echo "  ssh -i $KEY_FILE centos@$PUBLIC_IP 'tail -f ~/build.log'"
 echo ""
-echo "Когда сборка завершится, выполни:"
+echo "Kaboutgda build zainershandtwithya, inybylnand:"
 echo "  ./04_test_trinity.sh $PUBLIC_IP"
 echo ""
 
-# Сохраняем bucket
+# Saboutkhranyaem bucket
 echo "$S3_BUCKET" > /tmp/trinity_s3_bucket
 
 echo "═══════════════════════════════════════════════════════════════════════════════"
-echo "                    ⏳ СБОРКА AFI ЗАПУЩЕНА"
+echo "                    ⏳ ka AFI ZAPUSchENA"
 echo "═══════════════════════════════════════════════════════════════════════════════"
 echo ""
-echo "Время сборки: 1-2 часа"
-echo "Лог: ssh -i $KEY_FILE centos@$PUBLIC_IP 'tail -f ~/build.log'"
+echo "Time withbaboutrtoand: 1-2 chawitha"
+echo "Log: ssh -i $KEY_FILE centos@$PUBLIC_IP 'tail -f ~/build.log'"
 echo ""
-echo "⚠️  Инстанс работает и тарифицируется (\$1.65/час)!"
+echo "⚠️  Inwiththatnwith rabfromaet and thatrandfandtsandratetwithya (\$1.65/chawith)!"
 echo ""
 echo "═══════════════════════════════════════════════════════════════════════════════"

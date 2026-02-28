@@ -1,35 +1,35 @@
 # iGLA KOSHEY v4 OMNIPOTENT + OMNIPRESENT
 
-**Вwith[TRANSLATED]]withтinо + [CYR:[TRANSLATED]]with[TRANSLATED]]withть**
+**Vwith]withtinabout + :]with]witht**
 
-## [CYR:[TRANSLATED]]andwithтandtoа
+## :]andwithtVersion
 
-| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе |
+| :]Version | Zon:]ande |
 |---------|----------|
-| v4 [CYR:[TRANSLATED]]and | 18 |
-| v4 теwithты | ~108 |
+| v4 :]and | 18 |
+| v4 thosewithty | ~108 |
 
 ## v4 OMNIPOTENT - World Models + Tool Creation + Planning
 
 ### World Models
 
-| [CYR:[TRANSLATED]] | Опandwithанandе | Иwith[TRANSLATED]]andto |
+| :] | Opandwithanande | Iwith]andto |
 |--------|----------|----------|
-| `igla_koshey_world_model` | [CYR:[TRANSLATED]] мandроinой [CYR:[TRANSLATED]]and | arXiv:2402.08268 |
-| `igla_koshey_world_sim` | Фandзandчеwithtoая withand[CYR:[TRANSLATED]]andя | Physics Engines |
-| `igla_koshey_world_predict` | [CYR:[TRANSLATED]]withfor[TRANSLATED]]andе [CYR:[TRANSLATED]] | Trajectory Prediction |
+| `igla_koshey_world_model` | :] mandraboutinabouty :]and | arXiv:2402.08268 |
+| `igla_koshey_world_sim` | Fandzandchewithtoaya withand:]andya | Physics Engines |
+| `igla_koshey_world_predict` | :]withfor]ande :] | Trajectory Prediction |
 
 ### Tool Creation
 
-| [CYR:[TRANSLATED]] | Опandwithанandе |
+| :] | Opandwithanande |
 |--------|----------|
-| `igla_koshey_tool_create` | Creation ноinых andнwith[TRANSLATED]]in |
-| `igla_koshey_tool_compose` | [CYR:[TRANSLATED]]andцandя andнwith[TRANSLATED]]in |
-| `igla_koshey_tool_evolve` | Эin[CYR:[TRANSLATED]]andя andнwith[TRANSLATED]]in |
+| `igla_koshey_tool_create` | Creation naboutinykh andnwith]in |
+| `igla_koshey_tool_compose` | :]andtsandya andnwith]in |
+| `igla_koshey_tool_evolve` | Ein:]andya andnwith]in |
 
 ### Planning & Reasoning
 
-| [CYR:[TRANSLATED]] | Опandwithанandе | Иwith[TRANSLATED]]andto |
+| :] | Opandwithanande | Iwith]andto |
 |--------|----------|----------|
 | `igla_koshey_planning_tot` | Tree of Thoughts | arXiv:2305.10601 |
 | `igla_koshey_planning_got` | Graph of Thoughts | arXiv:2308.09687 |
@@ -39,29 +39,29 @@
 
 ### Edge AI
 
-| [CYR:[TRANSLATED]] | Опandwithанandе |
+| :] | Opandwithanande |
 |--------|----------|
-| `igla_koshey_edge_core` | [CYR:[TRANSLATED]] Edge AI |
-| `igla_koshey_edge_quantize` | Кin[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]] |
-| `igla_koshey_edge_deploy` | [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]inанandе on уwith[TRANSLATED]]withтinа |
+| `igla_koshey_edge_core` | :] Edge AI |
+| `igla_koshey_edge_quantize` | Kin:]and:]andya :] |
+| `igla_koshey_edge_deploy` | :]in:]inanande on atwith]withtina |
 
 ### Federated Learning
 
-| [CYR:[TRANSLATED]] | Опandwithанandе |
+| :] | Opandwithanande |
 |--------|----------|
-| `igla_koshey_federated_core` | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andя |
-| `igla_koshey_federated_aggregate` | [CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andй |
-| `igla_koshey_federated_privacy` | Дand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]onя прandin[CYR:[TRANSLATED]]withть |
+| `igla_koshey_federated_core` | :] :]andin:] :]andya |
+| `igla_koshey_federated_aggregate` | :]andya :]in:]andy |
+| `igla_koshey_federated_privacy` | Dand:]and:]onya prandin:]witht |
 
 ### Fusion
 
-| [CYR:[TRANSLATED]] | Опandwithанandе |
+| :] | Opandwithanande |
 |--------|----------|
-| `igla_koshey_omnipotent_fusion` | Слandянandе OMNIPOTENT |
-| `igla_koshey_omnipresent_fusion` | Слandянandе OMNIPRESENT |
-| `igla_koshey_v4_benchmark` | [CYR:[TRANSLATED]]toand v4 |
+| `igla_koshey_omnipotent_fusion` | Slandyanande OMNIPOTENT |
+| `igla_koshey_omnipresent_fusion` | Slandyanande OMNIPRESENT |
+| `igla_koshey_v4_benchmark` | :]toand v4 |
 
-## [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] v4
+## :]andthosefor] v4
 
 ```
                     ┌─────────────────────────────────────┐

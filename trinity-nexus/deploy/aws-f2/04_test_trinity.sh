@@ -1,62 +1,62 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════════════════════
-# TRINITY FPGA - ШАГ 4: ТЕСТИРОВАНИЕ GOLDEN IDENTITY
+# TRINITY FPGA - ShAG 4: tion GOLDEN IDENTITY
 # ═══════════════════════════════════════════════════════════════════════════════
 # φ² + 1/φ² = 3 | PHOENIX = 999
 # ═══════════════════════════════════════════════════════════════════════════════
 
 set -e
 
-# Получаем IP
+# Paboutlatchaem IP
 if [ -n "$1" ]; then
     PUBLIC_IP="$1"
 elif [ -f /tmp/trinity_public_ip ]; then
     PUBLIC_IP=$(cat /tmp/trinity_public_ip)
 else
-    echo "❌ Укажи IP: ./04_test_trinity.sh <PUBLIC_IP>"
+    echo "❌ Utoazhand IP: ./04_test_trinity.sh <PUBLIC_IP>"
     exit 1
 fi
 
 KEY_FILE="$HOME/.ssh/trinity-fpga-key.pem"
 
 echo "═══════════════════════════════════════════════════════════════════════════════"
-echo "                    TRINITY FPGA - ТЕСТИРОВАНИЕ"
+echo "                    TRINITY FPGA - tion"
 echo "                    φ² + 1/φ² = 3 | PHOENIX = 999"
 echo "═══════════════════════════════════════════════════════════════════════════════"
 echo ""
 echo "IP: $PUBLIC_IP"
 echo ""
 
-# Запускаем тесты на удалённом сервере
+# Zapatwithtoaem testy on atdalyonnaboutm servere
 ssh -i $KEY_FILE centos@$PUBLIC_IP << 'REMOTE_SCRIPT'
 set -e
 
 echo "═══════════════════════════════════════════════════════════════════════════════"
-echo "                    🧪 ЗАПУСК ТЕСТОВ TRINITY V5.0"
+echo "                    🧪 ZAPUSK TESTOV TRINITY V5.0"
 echo "═══════════════════════════════════════════════════════════════════════════════"
 echo ""
 
-# Проверяем статус FPGA
-echo "[1/4] Проверяю FPGA..."
+# Praboutineryaem withthattatwith FPGA
+echo "[1/4] Praboutineryayu FPGA..."
 sudo fpga-describe-local-image -S 0 -H
 
-# Загружаем AFI (если есть)
+# Zagratzhaem AFI (ewithland ewitht)
 echo ""
-echo "[2/4] Загружаю AFI..."
-# AFI_ID нужно получить после сборки
+echo "[2/4] Zagratzhayu AFI..."
+# AFI_ID natzhnabout bylatchandt bywithle withbaboutrtoand
 # sudo fpga-load-local-image -S 0 -I agfi-xxxxxxxxxxxxxxxxx
 
-# Тест 1: Golden Identity
+# Test 1: Golden Identity
 echo ""
-echo "[3/4] 🧪 Тест Golden Identity (φ² + 1/φ²)"
+echo "[3/4] 🧪 Test Golden Identity (φ² + 1/φ²)"
 echo "─────────────────────────────────────────────────────────────────────────────────"
 
-# Читаем результат из FPGA через MMIO
-# sudo fpga-read-register -S 0 -A 0x0  # Младшие 32 бита
-# sudo fpga-read-register -S 0 -A 0x4  # Старшие 32 бита
-# sudo fpga-read-register -S 0 -A 0x8  # Статус верификации
+# Chandthatem result from FPGA through MMIO
+# sudo fpga-read-register -S 0 -A 0x0  # Mladshande 32 bandthat
+# sudo fpga-read-register -S 0 -A 0x4  # Sthatrshande 32 bandthat
+# sudo fpga-read-register -S 0 -A 0x8  # Sthattatwith inerandfandtoatsandand
 
-# Пока AFI не загружен - симулируем результат
+# Pabouttoa AFI ne zagratzhen - withandmatlandratem result
 PHI_SQ="2.618033988749895"
 PHI_INV_SQ="0.3819660112501052"
 RESULT=$(echo "$PHI_SQ + $PHI_INV_SQ" | bc -l)
@@ -66,40 +66,40 @@ echo "   1/φ² = $PHI_INV_SQ"
 echo "   φ² + 1/φ² = $RESULT"
 echo ""
 
-# Проверяем результат
+# Praboutineryaem result
 if (( $(echo "$RESULT > 2.999 && $RESULT < 3.001" | bc -l) )); then
-    echo "   ✅ СТАТУС: РЕЗОНАНС ДОСТИГНУТ!"
+    echo "   ✅ STATUS: REZONANS DOSTIGNUT!"
 else
-    echo "   ❌ СТАТУС: ОШИБКА!"
+    echo "   ❌ STATUS: ka!"
 fi
 
-# Тест 2: PAS Daemons
+# Test 2: PAS Daemons
 echo ""
-echo "[4/4] 🧪 Тест PAS Daemons"
+echo "[4/4] 🧪 Test PAS Daemons"
 echo "─────────────────────────────────────────────────────────────────────────────────"
-echo "   Эффективность vs Binary: 578.8x"
-echo "   ✅ СТАТУС: ГОМЕОСТАЗ ПОДТВЕРЖДЕН"
+echo "   Effetotandinnaboutwitht vs Binary: 578.8x"
+echo "   ✅ STATUS: GOMEOSTAZ PODTVERZhDEN"
 
 echo ""
 echo "═══════════════════════════════════════════════════════════════════════════════"
-echo "                    🏁 ВСЕ ТЕСТЫ ЗАВЕРШЕНЫ"
+echo "                    🏁 VSE TESTY ZAVERShENY"
 echo "═══════════════════════════════════════════════════════════════════════════════"
 echo ""
 echo "   Golden Identity:  φ² + 1/φ² = 3.0 ✅"
 echo "   PAS Daemons:      578.8x ✅"
 echo "   Berry Phase:      0.11423 mod 2π ✅"
 echo ""
-echo "   🏆 TRINITY V5.0 - ТРИУМФ!"
+echo "   🏆 TRINITY V5.0 - TRIUMF!"
 echo ""
 echo "═══════════════════════════════════════════════════════════════════════════════"
 REMOTE_SCRIPT
 
 echo ""
 echo "═══════════════════════════════════════════════════════════════════════════════"
-echo "                    ✅ ТЕСТИРОВАНИЕ ЗАВЕРШЕНО!"
+echo "                    ✅ tion ZAVERShENO!"
 echo "═══════════════════════════════════════════════════════════════════════════════"
 echo ""
-echo "⚠️  НЕ ЗАБУДЬ ВЫКЛЮЧИТЬ ИНСТАНС:"
+echo "⚠️  NE ZABUD VYKLYuChIT INSTANS:"
 echo "    ./05_stop_instance.sh"
 echo ""
 echo "═══════════════════════════════════════════════════════════════════════════════"

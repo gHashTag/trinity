@@ -80,7 +80,7 @@ gh release view v1.1.0
 # Download and test
 curl -L -o fluent https://github.com/gHashTag/trinity/releases/download/v1.1.0/fluent-aarch64-macos
 chmod +x fluent
-echo -e "прandinет\nhello\n/stats\n/quit" | ./fluent --no-llm
+echo -e "prandinet\nhello\n/stats\n/quit" | ./fluent --no-llm
 ```
 
 ## Community Announce Template
@@ -108,13 +108,13 @@ phi^2 + 1/phi^2 = 3
 ```
 IGLA Fluent CLI v1.1.0 - Koschei Fluent
 
-100% лоfor[TRANSLATED]] AI-[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toа!
-- 60,000 [CYR:[TRANSLATED]]withоin/withеto
-- 508KB бandonрнandto
-- TinyLlama for fluent fromin[CYR:[TRANSLATED]]in
-- Руwithtoandй/[CYR:[TRANSLATED]]andйwithtoandй/Кand[CYR:[TRANSLATED]]withtoandй
+100% laboutfor] AI-:] :] :]toa!
+- 60,000 :]withaboutin/witheto
+- 508KB bandonrnandto
+- TinyLlama for fluent fromin:]in
+- Ratwithtoandy/:]andywithtoandy/Kand:]withtoandy
 
-Сfor[TRANSLATED]]: github.com/gHashTag/trinity/releases/tag/v1.1.0
+Sfor]: github.com/gHashTag/trinity/releases/tag/v1.1.0
 
 phi^2 + 1/phi^2 = 3 = TRINITY
 ```

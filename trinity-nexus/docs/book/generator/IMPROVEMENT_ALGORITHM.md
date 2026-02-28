@@ -1,226 +1,226 @@
-# [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] 999
+# :] :] :] 999
 
-## [CYR:[TRANSLATED]] теfor[TRANSLATED]] геnot[CYR:[TRANSLATED]]and
+## :] thosefor] genot:]and
 
-1. **[CYR:[TRANSLATED]]toand inмеwithто for[TRANSLATED]]** — "...", "[CYR:[TRANSLATED]]inый аwithпеtoт: ..."
-2. **[CYR:[TRANSLATED]] toод** — одandн and тfrom же `fn прand[CYR:[TRANSLATED]]_N()`
-3. **[CYR:[TRANSLATED]] withinязand [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inамand** — for[TRANSLATED]] [CYR:[TRANSLATED]]inа and[CYR:[TRANSLATED]]andроinаon
-4. **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andны** — поin[CYR:[TRANSLATED]]with[TRANSLATED]] [CYR:[TRANSLATED]]
-5. **[CYR:[TRANSLATED]]andчеwithtoandе ошandбtoand** — "inwith[TRANSLATED]]andл" inмеwithто "inwith[TRANSLATED]]andла" for Ваwithorwithы
+1. **:]toand inmewiththat for]** — "...", ":]inyy awithpetot: ..."
+2. **:] toaboutd** — aboutdandn and tfrom zhe `fn prand:]_N()`
+3. **:] withinyazand :] :]inamand** — for] :]ina and:]andraboutinaon
+4. **:] :]andny** — byin:]with] :]
+5. **:]andchewithtoande aboutshandbtoand** — "inwith]andl" inmewiththat "inwith]andla" for Vawithorwithy
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: TRINITY REFINEMENT
+## :] :]: TRINITY REFINEMENT
 
 ```
 ╔═══════════════════════════════════════════════════════════════╗
 ║                                                               ║
 ║   TRINITY REFINEMENT ALGORITHM                                ║
 ║                                                               ║
-║   Трand [CYR:[TRANSLATED]]inня [CYR:[TRANSLATED]]andя × Трand and[CYR:[TRANSLATED]]and = 9 [CYR:[TRANSLATED]]in           ║
-║   [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] for[TRANSLATED]]withтinо on φ ([CYR:[TRANSLATED]]fromое with[TRANSLATED]]andе)     ║
+║   Trand :]innya :]andya × Trand and:]and = 9 :]in           ║
+║   :] :] :] for]withtinabout on φ (:]fromaboute with]ande)     ║
 ║                                                               ║
-║   [CYR:[TRANSLATED]]withтinо(n) = [CYR:[TRANSLATED]]withтinо(0) × φ^n                            ║
+║   :]withtinabout(n) = :]withtinabout(0) × φ^n                            ║
 ║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
 ```
 
-### [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] 1: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]] — Сandла)
+### :]in:] 1: :] :] (:] :] — Sandla)
 
 ```
-[CYR:[TRANSLATED]]andя 1.1: [CYR:[TRANSLATED]]andя with[TRANSLATED]]withтin[CYR:[TRANSLATED]] for[TRANSLATED]]
-  - [CYR:[TRANSLATED]] onпandwith[TRANSLATED]] [CYR:[TRANSLATED]]inы andз book/chapters/
-  - Раwith[TRANSLATED]]andть по 999 withлfromам
-  - [CYR:[TRANSLATED]]andть ~20 [CYR:[TRANSLATED]]in [CYR:[TRANSLATED]] for[TRANSLATED]]
+:]andya 1.1: :]andya with]withtin:] for]
+  - :] onpandwith] :]iny andz book/chapters/
+  - Rawith]andt by 999 withlfromam
+  - :]andt ~20 :]in :] for]
 
-[CYR:[TRANSLATED]]andя 1.2: Creation [CYR:[TRANSLATED]] зonнandй
-  - Изin[CYR:[TRANSLATED]] inwithе фаtoты  чandwithле 3 andз with[TRANSLATED]]withтin[CYR:[TRANSLATED]]andх [CYR:[TRANSLATED]]in
-  - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] within[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] for[TRANSLATED]]andямand
-  - Поwith[TRANSLATED]]andть [CYR:[TRANSLATED]]andцу [CYR:[TRANSLATED]] 27×37
+:]andya 1.2: Creation :] zonnandy
+  - Izin:] inwithe fatoty  chandwithle 3 andz with]withtin:]andkh :]in
+  - :] :] within:] :] for]andyamand
+  - Paboutwith]andt :]andtsat :] 27×37
 
-[CYR:[TRANSLATED]]andя 1.3: Геnot[CYR:[TRANSLATED]]andя withfor[TRANSLATED]]
-  - [CYR:[TRANSLATED]] for[TRANSLATED]] [CYR:[TRANSLATED]]inы [CYR:[TRANSLATED]]andть:
-    • [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (andз [CYR:[TRANSLATED]]andцы)
-    • Сin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (andз [CYR:[TRANSLATED]])
-    • Тandп for[TRANSLATED]] ([CYR:[TRANSLATED]]andя/toод/withtoазtoа)
+:]andya 1.3: Genot:]andya withfor]
+  - :] for] :]iny :]andt:
+    • :]in:] :] (andz :]andtsy)
+    • Sin:] :] (andz :])
+    • Tandp for] (:]andya/toaboutd/withtoaztoa)
 ```
 
-### [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] 2: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]] Нandtoandтandч — [CYR:[TRANSLATED]]withть)
+### :]in:] 2: :] :] (:] Nandtoandtandch — :]witht)
 
 ```
-[CYR:[TRANSLATED]]andя 2.1: [CYR:[TRANSLATED]]andе for[TRANSLATED]]
-  - [CYR:[TRANSLATED]] for[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inandть:
-    • 3 фаtoта (andз [CYR:[TRANSLATED]] зonнandй)
-    • 3 прand[CYR:[TRANSLATED]] for[TRANSLATED]] (унandfor[TRANSLATED]])
-    • 3 [CYR:[TRANSLATED]] (andз withfor[TRANSLATED]]to)
+:]andya 2.1: :]ande for]
+  - :] for] :] :]inandt:
+    • 3 fatothat (andz :] zonnandy)
+    • 3 prand:] for] (atnandfor])
+    • 3 :] (andz withfor]to)
 
-[CYR:[TRANSLATED]]andя 2.2: Creation within[CYR:[TRANSLATED]]
-  - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inа with[TRANSLATED]]withя on:
-    • [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inу (continuity)
-    • Сin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inу in [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (cross-reference)
-    • [CYR:[TRANSLATED]]inу with прfromandin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (contrast)
+:]andya 2.2: Creation within:]
+  - :] :]ina with]withya on:
+    • :] :]inat (continuity)
+    • Sin:] :]inat in :] :] (cross-reference)
+    • :]inat with prfromandin:] :] (contrast)
 
-[CYR:[TRANSLATED]]andя 2.3: Check [CYR:[TRANSLATED]]fromы
-  - [CYR:[TRANSLATED]] for[TRANSLATED]]andя [CYR:[TRANSLATED]]on [CYR:[TRANSLATED]]:
-    • Вin[CYR:[TRANSLATED]]on (in [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinе)
-    • Прandмеnoton (in [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinе)
-    • [CYR:[TRANSLATED]]inandта (in [CYR:[TRANSLATED]]fromом [CYR:[TRANSLATED]]withтinе)
+:]andya 2.3: Check :]fromy
+  - :] for]andya :]on :]:
+    • Vin:]on (in :] :]withtine)
+    • Prandmenoton (in :] :]withtine)
+    • :]inandthat (in :]fromaboutm :]withtine)
 ```
 
-### [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] 3: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inandч — Хand[CYR:[TRANSLATED]]withть)
+### :]in:] 3: :] :] (:] :]inandch — Khand:]witht)
 
 ```
-[CYR:[TRANSLATED]]andя 3.1: [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя по [CYR:[TRANSLATED]] n × 3^k × π^m
-  - Длandon [CYR:[TRANSLATED]]inы = [CYR:[TRANSLATED]]inая × 3^([CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]_in[CYR:[TRANSLATED]]withтand)
-  - [CYR:[TRANSLATED]]andчеwithтinо прand[CYR:[TRANSLATED]]in = 3^k where k = [CYR:[TRANSLATED]]_toнandгand mod 3
-  - [CYR:[TRANSLATED]]andon [CYR:[TRANSLATED]]withnotнandя = π^m where m = [CYR:[TRANSLATED]]_[CYR:[TRANSLATED]]
+:]andya 3.1: :]andmand:]andya by :] n × 3^k × π^m
+  - Dlandon :]iny = :]inaya × 3^(:]in:]_in:]withtand)
+  - :]andchewithtinabout prand:]in = 3^k where k = :]_tonandgand mod 3
+  - :]andon :]withnotnandya = π^m where m = :]_:]
 
-[CYR:[TRANSLATED]]andя 3.2: [CYR:[TRANSLATED]]withandроintoа
-  - [CYR:[TRANSLATED]]andя : [CYR:[TRANSLATED]]toтandtoа : Сtoазtoа = 1 : φ : φ²
-  - [CYR:[TRANSLATED]] : Теtowithт : Дand[CYR:[TRANSLATED]] = 1 : 3 : 1
-  - [CYR:[TRANSLATED]]with[TRANSLATED]] : [CYR:[TRANSLATED]]notе : [CYR:[TRANSLATED]] = 3 : 2 : 1
+:]andya 3.2: :]withandraboutintoa
+  - :]andya : :]totVersion : Stoaztoa = 1 : φ : φ²
+  - :] : Tetowitht : Dand:] = 1 : 3 : 1
+  - :]with] : :]note : :] = 3 : 2 : 1
 
-[CYR:[TRANSLATED]]andя 3.3: Фandonльonя [CYR:[TRANSLATED]]andроintoа
-  - Check [CYR:[TRANSLATED]]andtoand
-  - Унandфandtoацandя withтandля
-  - [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]in [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inамand
+:]andya 3.3: Fandonlonya :]andraboutintoa
+  - Check :]andtoand
+  - UnandfVersiontsandya withtandlya
+  - :]in:]ande :]in :] :]inamand
 ```
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
 ```
-         │ [CYR:[TRANSLATED]]fromа │ [CYR:[TRANSLATED]]andon │ Сin[CYR:[TRANSLATED]]withть │
+         │ :]froma │ :]andon │ Sin:]witht │
 ─────────┼─────────┼─────────┼───────────┤
-[CYR:[TRANSLATED]]andя   │   T₁₁   │   T₁₂   │    T₁₃    │
+:]andya   │   T₁₁   │   T₁₂   │    T₁₃    │
 ─────────┼─────────┼─────────┼───────────┤
-[CYR:[TRANSLATED]]toтandtoа │   T₂₁   │   T₂₂   │    T₂₃    │
+:]totVersion │   T₂₁   │   T₂₂   │    T₂₃    │
 ─────────┼─────────┼─────────┼───────────┤
-Сtoазtoа   │   T₃₁   │   T₃₂   │    T₃₃    │
+Stoaztoa   │   T₃₁   │   T₃₂   │    T₃₃    │
 ─────────┴─────────┴─────────┴───────────┘
 
-[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toа [CYR:[TRANSLATED]]andin[CYR:[TRANSLATED]]withя from 0 до 1
-[CYR:[TRANSLATED]] for[TRANSLATED]]withтinо = det(T) / 27
-[CYR:[TRANSLATED]]: for[TRANSLATED]]withтinо ≥ 0.81 (= 3⁴/100)
+:] :]toa :]andin:]withya from 0 dabout 1
+:] for]withtinabout = det(T) / 27
+:]: for]withtinabout ≥ 0.81 (= 3⁴/100)
 ```
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
-### 1. [CYR:[TRANSLATED]]withтin[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]inы (inыwithшandй прandорand[CYR:[TRANSLATED]])
+### 1. :]withtin:]ande :]iny (inywithshandy prandaboutrand:])
 
 ```
 book/chapters/
-├── 01_number_three.md      → Кнandга 1, [CYR:[TRANSLATED]]inы 1-37
-├── 02_physics_algorithms.md → Кнandга 2, [CYR:[TRANSLATED]]inы 38-74
-├── 03_constants.md         → Кнandга 2, [CYR:[TRANSLATED]]inы 38-74
-├── 04_trinity_sort.md      → Кнandга 10, [CYR:[TRANSLATED]]inы 334-370
-├── 05_trinity_structures.md → Кнandга 11, [CYR:[TRANSLATED]]inы 371-407
-├── 11_vibee_language.md    → Кнandга 14, [CYR:[TRANSLATED]]inы 482-518
-├── 11a_vibee_deep.md       → Кнandга 14, [CYR:[TRANSLATED]]inы 482-518
-├── 11b_koschei.md          → Кнandга 9, [CYR:[TRANSLATED]]inы 297-333
-├── 16a_vibee_os.md         → Кнandга 16, [CYR:[TRANSLATED]]inы 556-592 ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]]!)
+├── 01_number_three.md      → Knandga 1, :]iny 1-37
+├── 02_physics_algorithms.md → Knandga 2, :]iny 38-74
+├── 03_constants.md         → Knandga 2, :]iny 38-74
+├── 04_trinity_sort.md      → Knandga 10, :]iny 334-370
+├── 05_trinity_structures.md → Knandga 11, :]iny 371-407
+├── 11_vibee_language.md    → Knandga 14, :]iny 482-518
+├── 11a_vibee_deep.md       → Knandga 14, :]iny 482-518
+├── 11b_koschei.md          → Knandga 9, :]iny 297-333
+├── 16a_vibee_os.md         → Knandga 16, :]iny 556-592 (:] :]!)
 └── ...
 
-vibee_os/                   → [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] andwith[TRANSLATED]]andto for Кнandгand 16
-├── kernel/                 → [CYR:[TRANSLATED]] withandwith[TRANSLATED]]
-├── services/               → [CYR:[TRANSLATED]]inandwithы
-├── shell/                  → [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]toа
-├── docs/ARCHITECTURE_V4.md → Пandtowith[TRANSLATED]]onя [CYR:[TRANSLATED]]andтеfor[TRANSLATED]]
+vibee_os/                   → :]and:] andwith]andto for Knandgand 16
+├── kernel/                 → :] withandwith]
+├── services/               → :]inandwithy
+├── shell/                  → :]onya :]toa
+├── docs/ARCHITECTURE_V4.md → Pandtowith]onya :]andthosefor]
 └── ...
 ```
 
-### 2. [CYR:[TRANSLATED]] зonнandй  чandwithле 3
+### 2. :] zonnandy  chandwithle 3
 
 ```python
-[CYR:[TRANSLATED]]_О_[CYR:[TRANSLATED]] = {
-    "фandзandtoа": [
-        "3 and[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]with[TRANSLATED]]withтinа",
-        "3 поfor[TRANSLATED]]andя чаwithтandц ([CYR:[TRANSLATED]]for[TRANSLATED]], [CYR:[TRANSLATED]], [CYR:[TRANSLATED]])",
-        "3 цin[CYR:[TRANSLATED]] toinарtoоin (toраwith[TRANSLATED]], [CYR:[TRANSLATED]], withandнandй)",
-        "3 тandпа not[CYR:[TRANSLATED]]andно",
-        "3 withоwith[TRANSLATED]]andя in[CYR:[TRANSLATED]]withтinа",
+:]_O_:] = {
+    "fandzVersion": [
+        "3 and:]andya :]with]withtina",
+        "3 byfor]andya chawithtandts (:]for], :], :])",
+        "3 tsin:] toinartoaboutin (torawith], :], withandnandy)",
+        "3 tandpa not:]andnabout",
+        "3 withaboutwith]andya in:]withtina",
         "m_p/m_e = 6π⁵ = 2×3×π⁵",
     ],
-    "[CYR:[TRANSLATED]]andtoа": [
-        "[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] оwithноinанandе ≈ e ≈ 2.718 ≈ 3",
+    ":]Version": [
+        ":]and:] aboutwithnaboutinanande ≈ e ≈ 2.718 ≈ 3",
         "Golden ratio φ = (1+√5)/2 ≈ 1.618",
-        "3-SAT — [CYR:[TRANSLATED]]inая NP-[CYR:[TRANSLATED]]onя task",
-        "[CYR:[TRANSLATED]]andчonя withandwith[TRANSLATED]] withчandwith[TRANSLATED]]andя",
-        "[CYR:[TRANSLATED]]withandроinанonя [CYR:[TRANSLATED]]andчonя {-1, 0, +1}",
+        "3-SAT — :]inaya NP-:]onya task",
+        ":]andchonya withandwith] withchandwith]andya",
+        ":]withandraboutinanonya :]andchonya {-1, 0, +1}",
     ],
-    "[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]": [
+    ":]and:]": [
         "3-way partitioning (Dutch National Flag)",
-        "[CYR:[TRANSLATED]] 27 = 3³ for insertion sort",
+        ":] 27 = 3³ for insertion sort",
         "Karatsuba: O(n^log₂3)",
         "Ternary Search Tree",
         "3-way merge sort",
     ],
-    "withtoазtoand": [
-        "Трand [CYR:[TRANSLATED]]",
-        "Трand [CYR:[TRANSLATED]]and on toамnot",
-        "Трand andwith[TRANSLATED]]andя [CYR:[TRANSLATED]]",
-        "Трandдеin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinо (27 = 3³)",
-        "Трand [CYR:[TRANSLATED]]inы [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]",
-        "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] in and[CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]toа уfor[TRANSLATED]])",
+    "withtoaztoand": [
+        "Trand :]",
+        "Trand :]and on toamnot",
+        "Trand andwith]andya :]",
+        "Tranddein:] :]withtinabout (27 = 3³)",
+        "Trand :]iny :] :]",
+        ":] :] in and:] (:]toa atfor])",
     ],
     "vibee_os": [
-        "[CYR:[TRANSLATED]] пandtowith[TRANSLATED]] — [CYR:[TRANSLATED]]with (2М [CYR:[TRANSLATED]]withоin!)",
-        "Трand [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]], [CYR:[TRANSLATED]]inandwithы, UI)",
-        "Трand [CYR:[TRANSLATED]] (WASM, Native, Hosted)",
-        "Сfromы [CYR:[TRANSLATED]]andноin (геtowith[TRANSLATED]]onльonя раwithfor[TRANSLATED]]toа)",
-        "[CYR:[TRANSLATED]]-[CYR:[TRANSLATED]] (AI in[CYR:[TRANSLATED]]and ОС)",
-        "Эin[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] дinandжоto (UI эin[CYR:[TRANSLATED]]andонand[CYR:[TRANSLATED]])",
-        "[CYR:[TRANSLATED]]inая дand[CYR:[TRANSLATED]]andя ([CYR:[TRANSLATED]]and → цin[CYR:[TRANSLATED]])",
-        "Let it crash (фandлоwithофandя BEAM)",
+        ":] pandtowith] — :]with (2M :]withaboutin!)",
+        "Trand :] :] (:], :]inandwithy, UI)",
+        "Trand :] (WASM, Native, Hosted)",
+        "Sfromy :]andnaboutin (getowith]onlonya rawithfor]toa)",
+        ":]-:] (AI in:]and OS)",
+        "Ein:]and:] dinandzhaboutto (UI ein:]andaboutnand:])",
+        ":]inaya dand:]andya (:]and → tsin:])",
+        "Let it crash (fandlaboutwithaboutfandya BEAM)",
     ],
 }
 ```
 
-### 3. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in по тand[CYR:[TRANSLATED]]
+### 3. :] :]in by tand:]
 
 ```python
-[CYR:[TRANSLATED]] = {
-    "[CYR:[TRANSLATED]]andя": """
-## {onзinанandе}
+:] = {
+    ":]andya": """
+## {onzinanande}
 
-### [CYR:[TRANSLATED]]
+### :]
 
-{оwithноinonя_and[CYR:[TRANSLATED]]}
+{aboutwithnaboutinonya_and:]}
 
-### Трand аwithпеtoта
+### Trand awithpetothat
 
-1. **{аwithпеtoт_1}**: {опandwithанandе_1}
-2. **{аwithпеtoт_2}**: {опandwithанandе_2}
-3. **{аwithпеtoт_3}**: {опandwithанandе_3}
+1. **{awithpetot_1}**: {aboutpandwithanande_1}
+2. **{awithpetot_2}**: {aboutpandwithanande_2}
+3. **{awithpetot_3}**: {aboutpandwithanande_3}
 
-### Сin[CYR:[TRANSLATED]] with Trinity
+### Sin:] with Trinity
 
-{within[CYR:[TRANSLATED]]_with_[CYR:[TRANSLATED]]toой}
+{within:]_with_:]toabouty}
 
-### [CYR:[TRANSLATED]]
+### :]
 
 ```
-{[CYR:[TRANSLATED]]}
+{:]}
 ```
 """,
 
-    "[CYR:[TRANSLATED]]toтandtoа": """
-## {onзinанandе}
+    ":]totVersion": """
+## {onzinanande}
 
-### [CYR:[TRANSLATED]]
+### :]
 
-{поwith[TRANSLATED]]intoа_[CYR:[TRANSLATED]]and}
+{bywith]intoa_:]and}
 
-### [CYR:[TRANSLATED]]andе
+### :]ande
 
 ```vibee
-{toод}
+{toaboutd}
 ```
 
-### Трand stepа
+### Trand stepa
 
 1. {step_1}
 2. {step_2}
@@ -231,136 +231,136 @@ vibee_os/                   → [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] andwith[
 {result}
 """,
 
-    "withtoазtoа": """
-## {onзinанandе}
+    "withtoaztoa": """
+## {onzinanande}
 
-*«{эпand[CYR:[TRANSLATED]]}»*
+*«{epand:]}»*
 
 ---
 
-{[CYR:[TRANSLATED]]withоonж} from[CYR:[TRANSLATED]]inandлwithя in path...
+{:]withaboutonzh} from:]inandlwithya in path...
 
-### [CYR:[TRANSLATED]]inое andwith[TRANSLATED]]andе
+### :]inaboute andwith]ande
 
-{andwith[TRANSLATED]]andе_1}
+{andwith]ande_1}
 
-### [CYR:[TRANSLATED]] andwith[TRANSLATED]]andе
+### :] andwith]ande
 
-{andwith[TRANSLATED]]andе_2}
+{andwith]ande_2}
 
-### [CYR:[TRANSLATED]] andwith[TRANSLATED]]andе
+### :] andwith]ande
 
-{andwith[TRANSLATED]]andе_3}
+{andwith]ande_3}
 
-### [CYR:[TRANSLATED]]withть
+### :]witht
 
-> *{[CYR:[TRANSLATED]]}*
+> *{:]}*
 """,
 }
 ```
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :] :] :]
 
 ```python
-def [CYR:[TRANSLATED]]andть_[CYR:[TRANSLATED]]inу([CYR:[TRANSLATED]]: int) -> str:
-    [CYR:[TRANSLATED]], toнandга, [CYR:[TRANSLATED]]inа = for[TRANSLATED]]andonты([CYR:[TRANSLATED]])
+def :]andt_:]inat(:]: int) -> str:
+    :], tonandga, :]ina = for]andonty(:])
     
-    # 1. [CYR:[TRANSLATED]] тandп [CYR:[TRANSLATED]]inы
-    тandп = [CYR:[TRANSLATED]]andть_тandп([CYR:[TRANSLATED]], toнandга, [CYR:[TRANSLATED]]inа)
+    # 1. :] tandp :]iny
+    tandp = :]andt_tandp(:], tonandga, :]ina)
     
-    # 2. [CYR:[TRANSLATED]] with[TRANSLATED]]withтin[CYR:[TRANSLATED]]andй for[TRANSLATED]]
-    with[TRANSLATED]]withтin[CYR:[TRANSLATED]]andй = onйтand_with[TRANSLATED]]withтin[CYR:[TRANSLATED]]andй_for[TRANSLATED]]([CYR:[TRANSLATED]])
-    if with[TRANSLATED]]withтin[CYR:[TRANSLATED]]andй:
-        return [CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]](with[TRANSLATED]]withтin[CYR:[TRANSLATED]]andй, [CYR:[TRANSLATED]])
+    # 2. :] with]withtin:]andy for]
+    with]withtin:]andy = onytand_with]withtin:]andy_for](:])
+    if with]withtin:]andy:
+        return :]andraboutin:](with]withtin:]andy, :])
     
-    # 3. [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] andз [CYR:[TRANSLATED]]andцы
-    [CYR:[TRANSLATED]] = [CYR:[TRANSLATED]]_[CYR:[TRANSLATED]][toнandга][[CYR:[TRANSLATED]]inа]
+    # 3. :]and:] :] andz :]andtsy
+    :] = :]_:][tonandga][:]ina]
     
-    # 4. [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] фаtoты andз [CYR:[TRANSLATED]] зonнandй
-    фаtoты = with[TRANSLATED]]_фаtoты([CYR:[TRANSLATED]], toолandчеwithтinо=3)
+    # 4. :]and:] fatoty andz :] zonnandy
+    fatoty = with]_fatoty(:], toaboutlandchewithtinabout=3)
     
-    # 5. Геnotрand[CYR:[TRANSLATED]] toод
-    toод = withгеnotрandроin[CYR:[TRANSLATED]]_toод([CYR:[TRANSLATED]], toнandга)
+    # 5. Genotrand:] toaboutd
+    toaboutd = withgenotrandraboutin:]_toaboutd(:], tonandga)
     
-    # 6. [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] withfor[TRANSLATED]] [CYR:[TRANSLATED]]
-    [CYR:[TRANSLATED]] = in[CYR:[TRANSLATED]]_[CYR:[TRANSLATED]]([CYR:[TRANSLATED]], [CYR:[TRANSLATED]])
+    # 6. :]and:] withfor] :]
+    :] = in:]_:](:], :])
     
-    # 7. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
-    for[TRANSLATED]] = [CYR:[TRANSLATED]][тandп].format(
-        onзinанandе=[CYR:[TRANSLATED]],
-        фаtoты=фаtoты,
-        toод=toод,
-        [CYR:[TRANSLATED]]=[CYR:[TRANSLATED]],
+    # 7. :] :]
+    for] = :][tandp].format(
+        onzinanande=:],
+        fatoty=fatoty,
+        toaboutd=toaboutd,
+        :]=:],
         ...
     )
     
-    # 8. [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] withinязand
-    for[TRANSLATED]] = [CYR:[TRANSLATED]]inandть_withinязand(for[TRANSLATED]], [CYR:[TRANSLATED]])
+    # 8. :]in:] withinyazand
+    for] = :]inandt_withinyazand(for], :])
     
-    return for[TRANSLATED]]
+    return for]
 ```
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                                        │
+│  :] :] :]                                        │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  1. [CYR:[TRANSLATED]] (0-1)                                              │
-│     • Еwithть лand inwithе 3 аwithпеtoта?                                   │
-│     • Еwithть лand toод?                                             │
-│     • Еwithть лand [CYR:[TRANSLATED]]?                                        │
+│  1. :] (0-1)                                              │
+│     • Ewitht land inwithe 3 awithpetothat?                                   │
+│     • Ewitht land toaboutd?                                             │
+│     • Ewitht land :]?                                        │
 │                                                                 │
-│  2. [CYR:[TRANSLATED]] (0-1)                                              │
-│     • Длandon > 500 withлоin?                                        │
-│     • Еwithть лand [CYR:[TRANSLATED]]?                                         │
-│     • Еwithть лand дand[CYR:[TRANSLATED]]?                                       │
+│  2. :] (0-1)                                              │
+│     • Dlandon > 500 withlaboutin?                                        │
+│     • Ewitht land :]?                                         │
+│     • Ewitht land dand:]?                                       │
 │                                                                 │
-│  3. [CYR:[TRANSLATED]] (0-1)                                            │
-│     • Сwithылtoа on [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inу?                              │
-│     • Сwithылtoа on within[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]?                                │
-│     • Сwithылtoа on [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]?                                    │
+│  3. :] (0-1)                                            │
+│     • Swithyltoa on :] :]inat?                              │
+│     • Swithyltoa on within:] :]?                                │
+│     • Swithyltoa on :] :]?                                    │
 │                                                                 │
-│  [CYR:[TRANSLATED]]: Q = ( ×  × )^(1/3)                                  │
-│  [CYR:[TRANSLATED]]: Q ≥ 0.9                                                 │
+│  :]: Q = ( ×  × )^(1/3)                                  │
+│  :]: Q ≥ 0.9                                                 │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
-### [CYR:[TRANSLATED]] 1: [CYR:[TRANSLATED]]fromоintoа (1 [CYR:[TRANSLATED]])
-- [ ] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] зonнandй andз with[TRANSLATED]]withтin[CYR:[TRANSLATED]]andх [CYR:[TRANSLATED]]in
-- [ ] Поwith[TRANSLATED]]andть [CYR:[TRANSLATED]]andцу [CYR:[TRANSLATED]] 27×37
-- [ ] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] within[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] for[TRANSLATED]]andямand
+### :] 1: :]fromaboutintoa (1 :])
+- [ ] :] :] zonnandy andz with]withtin:]andkh :]in
+- [ ] Paboutwith]andt :]andtsat :] 27×37
+- [ ] :] :] within:] :] for]andyamand
 
-### [CYR:[TRANSLATED]] 2: Геnot[CYR:[TRANSLATED]]andя (3 [CYR:[TRANSLATED]])
-- [ ] [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] геnot[CYR:[TRANSLATED]]
-- [ ] [CYR:[TRANSLATED]]notрandроin[CYR:[TRANSLATED]] inwithе 999 [CYR:[TRANSLATED]]in
-- [ ] [CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] with[TRANSLATED]]withтin[CYR:[TRANSLATED]]andй for[TRANSLATED]]
+### :] 2: Genot:]andya (3 :])
+- [ ] :]andzaboutin:] :] genot:]
+- [ ] :]notrandraboutin:] inwithe 999 :]in
+- [ ] :]andraboutin:] with]withtin:]andy for]
 
-### [CYR:[TRANSLATED]] 3: [CYR:[TRANSLATED]]andе (3 [CYR:[TRANSLATED]])
-- [ ] [CYR:[TRANSLATED]]withтandть 9 and[CYR:[TRANSLATED]]andй Trinity Refinement
-- [ ] [CYR:[TRANSLATED]]inерandть [CYR:[TRANSLATED]]andtoand for[TRANSLATED]]withтinа
-- [ ] Иwith[TRANSLATED]]inandть [CYR:[TRANSLATED]]
+### :] 3: :]ande (3 :])
+- [ ] :]withtandt 9 and:]andy Trinity Refinement
+- [ ] :]inerandt :]andtoand for]withtina
+- [ ] Iwith]inandt :]
 
-### [CYR:[TRANSLATED]] 4: Фandonлand[CYR:[TRANSLATED]]andя (1 [CYR:[TRANSLATED]])
-- [ ] Фandonльonя [CYR:[TRANSLATED]]inерtoа
-- [ ] Геnot[CYR:[TRANSLATED]]andя PDF/EPUB
-- [ ] [CYR:[TRANSLATED]]andtoацandя
+### :] 4: Fandonland:]andya (1 :])
+- [ ] Fandonlonya :]inertoa
+- [ ] Genot:]andya PDF/EPUB
+- [ ] :]Versiontsandya
 
 ---
 
-## [CYR:[TRANSLATED]]
+## :]
 
-> *Кнandга 999 [CYR:[TRANSLATED]] with[TRANSLATED]]withтin[CYR:[TRANSLATED]] in [CYR:[TRANSLATED]]with[TRANSLATED]]withтinе and[CYR:[TRANSLATED]].*
-> *[CYR:[TRANSLATED]]andтм [CYR:[TRANSLATED]]andя — this not with[TRANSLATED]]andе,  [CYR:[TRANSLATED]].*
-> *[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]andя прandблand[CYR:[TRANSLATED]] onwith to andwithтand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] toнandгand.*
-> *[CYR:[TRANSLATED]]withтinо раwith[TRANSLATED]] по [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] with[TRANSLATED]]andю: Q(n) = Q(0) × φ^n*
+> *Knandga 999 :] with]withtin:] in :]with]withtine and:].*
+> *:]andtm :]andya — this not with]ande,  :].*
+> *:] and:]andya prandbland:] onwith to andwithtand:] :] tonandgand.*
+> *:]withtinabout rawith] by :]from:] with]andyu: Q(n) = Q(0) × φ^n*

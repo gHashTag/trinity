@@ -1,98 +1,98 @@
-# [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+# [CYR:] [CYR:]
 
 ## V = n × 3^k × π^m × φ^p
 
-**Аin[CYR:[TRANSLATED]]**: Dmitrii Vasilev  
+**Author[CYR:]**: Dmitrii Vasilev  
 **Email**: reactnativeinitru@gmail.com  
-**[CYR:[TRANSLATED]]toт**: 999 OS / VIBEE  
-**[CYR:[TRANSLATED]]**: Янin[CYR:[TRANSLATED]] 2026
+**[CYR:]toт**: 999 OS / VIBEE  
+**[CYR:]**: Янin[CYR:] 2026
 
 ---
 
-## [CYR:[TRANSLATED]]andе
+## [CYR:]andе
 
-1. [Вin[CYR:[TRANSLATED]]andе](#inin[CYR:[TRANSLATED]]andе)
-2. [[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinа](#[CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]withтinа)
-3. [[CYR:[TRANSLATED]]andтеfor[TRANSLATED]] 999 OS](#[CYR:[TRANSLATED]]andтеfor[TRANSLATED]]-999-os)
-4. [[CYR:[TRANSLATED]] toонwith[TRANSLATED]]](#for[TRANSLATED]]-toонwith[TRANSLATED]])
-5. [[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromы](#on[CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]fromы)
+1. [Вin[CYR:]andе](#inin[CYR:]andе)
+2. [[CYR:] [CYR:]withтinа](#[CYR:]-[CYR:]withтinа)
+3. [[CYR:]andтеfor] 999 OS](#[CYR:]andтеfor]-999-os)
+4. [[CYR:] toонwith]](#for]-toонwith])
+5. [[CYR:] [CYR:]fromы](#on[CYR:]-[CYR:]fromы)
 6. [PAS-аonлandз](#pas-аonлandз)
-7. [[CYR:[TRANSLATED]]andtoа for[TRANSLATED]]](#[CYR:[TRANSLATED]]andtoа-for[TRANSLATED]])
-8. [[CYR:[TRANSLATED]]to Трandдеinятandца](#[CYR:[TRANSLATED]]to-трandдеinятandца)
-9. [[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя](#[CYR:[TRANSLATED]]onя-[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя)
-10. [[CYR:[TRANSLATED]]andwithтandtoа](#with[TRANSLATED]]andwithтandtoа)
+7. [[CYR:]Version for]](#[CYR:]Version-for])
+8. [[CYR:]to Трandдеinятandца](#[CYR:]to-трandдеinятandца)
+9. [[CYR:]onя [CYR:]and[CYR:]andя](#[CYR:]onя-[CYR:]and[CYR:]andя)
+10. [[CYR:]andwithтVersion](#with]andwithтVersion)
 
 ---
 
-## Вin[CYR:[TRANSLATED]]andе
+## Вin[CYR:]andе
 
-Sacred formula [CYR:[TRANSLATED]]withтаin[CYR:[TRANSLATED]] унandinерwith[TRANSLATED]] [CYR:[TRANSLATED]]andчеwithtoую with[TRANSLATED]]for[TRANSLATED]]:
+Sacred formula [CYR:]withтаin[CYR:] унandinерwith] [CYR:]andчеwithtoую with]for]:
 
 $$\boxed{V = n \times 3^k \times \pi^m \times \varphi^p}$$
 
 where:
-- **n** ∈ ℤ⁺ — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] чandwithло
-- **k, m, p** ∈ ℤ — [CYR:[TRANSLATED]] чandwithла
-- **φ** = (1+√5)/2 ≈ 1.618 — [CYR:[TRANSLATED]]fromое with[TRANSLATED]]andе
+- **n** ∈ ℤ⁺ — [CYR:] [CYR:]and[CYR:] чandwithло
+- **k, m, p** ∈ ℤ — [CYR:] чandwithла
+- **φ** = (1+√5)/2 ≈ 1.618 — [CYR:]fromое with]andе
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinа
+## [CYR:] [CYR:]withтinа
 
 ### Golden-Trinity identity
 
-$$\varphi^2 + \frac{1}{\varphi^2} = 3 \quad \text{([CYR:[TRANSLATED]])}$$
+$$\varphi^2 + \frac{1}{\varphi^2} = 3 \quad \text{([CYR:])}$$
 
-**Доfor[TRANSLATED]]withтinо:**
+**Доfor]withтinо:**
 - φ² = (3+√5)/2 ≈ 2.618
 - 1/φ² = (3-√5)/2 ≈ 0.382
-- [CYR:[TRANSLATED]]: (3+√5+3-√5)/2 = 6/2 = 3
+- [CYR:]: (3+√5+3-√5)/2 = 6/2 = 3
 
-### [CYR:[TRANSLATED]]fromое-Пand within[CYR:[TRANSLATED]]
+### [CYR:]fromое-Пand within[CYR:]
 
-$$\varphi = 2\cos\left(\frac{\pi}{5}\right) \quad \text{([CYR:[TRANSLATED]])}$$
+$$\varphi = 2\cos\left(\frac{\pi}{5}\right) \quad \text{([CYR:])}$$
 
-### [CYR:[TRANSLATED]]toанandе [CYR:[TRANSLATED]]andцы
+### [CYR:]toанandе [CYR:]andцы
 
-Чandwithла 3, π and φ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]for[TRANSLATED]] [CYR:[TRANSLATED]]andчеwithtoую withandwith[TRANSLATED]]. Number e inыinодandмо:
+Чandwithла 3, π and φ [CYR:] [CYR:]for] [CYR:]andчеwithtoую withandwith]. Number e inыinодandмо:
 
 $$e = 19 \times 3^{-1} \times \pi^{-2} \times \varphi^3 \approx 2.71828$$
 
 ---
 
-## [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] 999 OS
+## [CYR:]andтеfor] 999 OS
 
-### Сin[CYR:[TRANSLATED]] чandwithло 999
+### Сin[CYR:] чandwithло 999
 
 $$999 = 3^3 \times 37 = 27 \times 37$$
 
 **Сinойwithтinа:**
 - 999 = 10³ - 1
-- [CYR:[TRANSLATED]] цandфр: 9+9+9 = 27 = 3³
-- [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and: 1, 3, 9, 27, 37, 111, 333, 999
+- [CYR:] цandфр: 9+9+9 = 27 = 3³
+- [CYR:]and[CYR:]and: 1, 3, 9, 27, 37, 111, 333, 999
 
-### Коwithмandчеwithtoandй маtowithand[CYR:[TRANSLATED]] V999
+### Коwithмandчеwithtoandй маtowithand[CYR:] V999
 
 $$V_{999} = 999 \times 3^{999} \times \pi^{2997} \approx 10^{1969}$$
 
-### [CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]andх чandwithел
+### [CYR:]andя [CYR:]andх чandwithел
 
 | Number | Опandwithанandе |
 |-------|----------|
-| 10⁸⁰ | [CYR:[TRANSLATED]] inо Вwith[TRANSLATED]] |
-| 10¹²⁰ | Number [CYR:[TRANSLATED]]on ([CYR:[TRANSLATED]]) |
-| 10¹⁸⁵ | [CYR:[TRANSLATED]]toоinwithtoandе [CYR:[TRANSLATED]] |
-| 10⁵⁰⁰ | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and with[TRANSLATED]] |
-| **10¹⁹⁶⁹** | **V999 (onша withandwith[TRANSLATED]])** |
-| 10^10^100 | [CYR:[TRANSLATED]]towith |
+| 10⁸⁰ | [CYR:] inо Вwith] |
+| 10¹²⁰ | Number [CYR:]on ([CYR:]) |
+| 10¹⁸⁵ | [CYR:]toоinwithtoandе [CYR:] |
+| 10⁵⁰⁰ | [CYR:] [CYR:]and with] |
+| **10¹⁹⁶⁹** | **V999 (onша withandwith])** |
+| 10^10^100 | [CYR:]towith |
 
 ---
 
-## [CYR:[TRANSLATED]] toонwith[TRANSLATED]]
+## [CYR:] toонwith]
 
-### [CYR:[TRANSLATED]]-50 по [CYR:[TRANSLATED]]withтand
+### [CYR:]-50 по [CYR:]withтand
 
-| # | [CYR:[TRANSLATED]]with[TRANSLATED]] | [CYR:[TRANSLATED]] | Error |
+| # | [CYR:]with] | [CYR:] | Error |
 |---|-----------|---------|--------|
 | 1 | H₀ | 70 | 0.000000% |
 | 2 | mₛ/mₑ | 32×π⁻¹×φ⁶ | 0.000007% |
@@ -145,7 +145,7 @@ $$V_{999} = 999 \times 3^{999} \times \pi^{2997} \approx 10^{1969}$$
 | 49 | ℏc/G_N | 47×3⁴⁰×π⁸ | 0.001345% |
 | 50 | α_s(M_Z) | 83×3⁻³×π⁻²×φ⁻¹ | 0.001456% |
 
-### Поwith[TRANSLATED]]onя [CYR:[TRANSLATED]]toой with[TRANSLATED]]for[TRANSLATED]]
+### Поwith]onя [CYR:]toой with]for]
 
 $$\frac{1}{\alpha} = 4\pi^3 + \pi^2 + \pi = \pi(4\pi^2 + \pi + 1) = 137.036$$
 
@@ -153,86 +153,86 @@ Error: **0.0002%**
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromы
+## [CYR:] [CYR:]fromы
 
-### [CYR:[TRANSLATED]] Коandде (24 [CYR:[TRANSLATED]]fromы)
+### [CYR:] Коandде (24 [CYR:]fromы)
 
-| Аin[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | arXiv | Вfor[TRANSLATED]] |
+| Author[CYR:] | [CYR:] | arXiv | Вfor] |
 |-------|-----|-------|-------|
-| Koide Y. | 1983 | — | Q = 2/3 for [CYR:[TRANSLATED]]in |
+| Koide Y. | 1983 | — | Q = 2/3 for [CYR:]in |
 | Sumino Y. | 2009 | 0903.3640 | Family gauge symmetry |
-| Zenczykowski P. | 2012 | 1210.4125 | Z₃-withand[CYR:[TRANSLATED]]andя toinарtoоin |
-| Gauy H.M. | 2023 | 2309.13674 | Braneworld [CYR:[TRANSLATED]]andзм |
-| Liang Z. | 2020 | 2007.05878 | [CYR:[TRANSLATED]]andфandцandроinанonя [CYR:[TRANSLATED]] |
-| Koide Y. | 2017 | 1711.03221 | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] |
-| Kocik J. | 2012 | 1201.2067 | [CYR:[TRANSLATED]]andя for[TRANSLATED]]in |
+| Zenczykowski P. | 2012 | 1210.4125 | Z₃-withand[CYR:]andя toinарtoоin |
+| Gauy H.M. | 2023 | 2309.13674 | Braneworld [CYR:]andзм |
+| Liang Z. | 2020 | 2007.05878 | [CYR:]andфandцandроinанonя [CYR:] |
+| Koide Y. | 2017 | 1711.03221 | [CYR:] [CYR:] |
+| Kocik J. | 2012 | 1201.2067 | [CYR:]andя for]in |
 
-### Golden ratio and α (81 [CYR:[TRANSLATED]]fromа)
+### Golden ratio and α (81 [CYR:]fromа)
 
-| Аin[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | arXiv | Вfor[TRANSLATED]] |
+| Author[CYR:] | [CYR:] | arXiv | Вfor] |
 |-------|-----|-------|-------|
 | Heyrovska R. | 2005 | physics/0509207 | 1/α ≈ 360/φ² |
 | Ciborowski J. | 2025 | 2508.00030 | Bi-constructible pattern |
-| Singh T.P. | 2022 | 2205.06614 | Оfor[TRANSLATED]]and[CYR:[TRANSLATED]] and α |
+| Singh T.P. | 2022 | 2205.06614 | Оfor]and[CYR:] and α |
 | Sen I. | 2026 | 2601.07883 | Local scale invariance |
 | Castro C. | 2002 | hep-th/0203086 | Fractal strings |
 
-### E8 and оfor[TRANSLATED]]and[CYR:[TRANSLATED]] (40 [CYR:[TRANSLATED]]from)
+### E8 and оfor]and[CYR:] (40 [CYR:]from)
 
-| Аin[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | arXiv | Вfor[TRANSLATED]] |
+| Author[CYR:] | [CYR:] | arXiv | Вfor] |
 |-------|-----|-------|-------|
-| Baez J.C. | 2017 | 1712.06436 | Иtoоwith[TRANSLATED]] → E8 |
+| Baez J.C. | 2017 | 1712.06436 | Иtoоwith] → E8 |
 | Kostant B. | 2010 | 1003.0046 | m₂/m₁ = φ in E8 |
-| Furey N. | 2022 | — | Оfor[TRANSLATED]]and[CYR:[TRANSLATED]] and SM |
-| Koca M. | 2012 | 1204.4567 | E8 [CYR:[TRANSLATED]] |
+| Furey N. | 2022 | — | Оfor]and[CYR:] and SM |
+| Koca M. | 2012 | 1204.4567 | E8 [CYR:] |
 
-### Amplituhedron (56 [CYR:[TRANSLATED]]from)
+### Amplituhedron (56 [CYR:]from)
 
-| Аin[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | arXiv | Вfor[TRANSLATED]] |
+| Author[CYR:] | [CYR:] | arXiv | Вfor] |
 |-------|-----|-------|-------|
 | Arkani-Hamed N. | 2013 | 1312.2007 | Amplituhedron |
 | Lam T. | 2025 | 2509.25372 | Combinatorial geometry |
 
-### [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] inычandwith[TRANSLATED]]andя (15 [CYR:[TRANSLATED]]from)
+### [CYR:]and[CYR:] inычandwith]andя (15 [CYR:]from)
 
-| Аin[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | arXiv | Вfor[TRANSLATED]] |
+| Author[CYR:] | [CYR:] | arXiv | Вfor] |
 |-------|-----|-------|-------|
 | Hunhold L. | 2025 | 2512.10964 | Tekum balanced ternary |
-| Jaber R.A. | 2022 | 2211.04542 | 88% withнand[CYR:[TRANSLATED]]andе эnotргand |
+| Jaber R.A. | 2022 | 2211.04542 | 88% withнand[CYR:]andе эnotргand |
 | Brock B.L. | 2024 | Nature 641 | Quantum qutrit |
 
-### [CYR:[TRANSLATED]]andе for[TRANSLATED]]inые [CYR:[TRANSLATED]]fromы
+### [CYR:]andе for]inые [CYR:]fromы
 
-| Аin[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | arXiv | Вfor[TRANSLATED]] |
+| Author[CYR:] | [CYR:] | arXiv | Вfor] |
 |-------|-----|-------|-------|
 | Tegmark M. | 2007 | 0704.0646 | Mathematical Universe |
-| Chavanis P.H. | 2018 | 1810.11349 | 137 and [CYR:[TRANSLATED]]andя |
+| Chavanis P.H. | 2018 | 1810.11349 | 137 and [CYR:]andя |
 | Dirac P.A.M. | 1937 | — | Large Numbers Hypothesis |
 | Eddington A. | 1936 | — | N = 136 × 2²⁵⁶ |
-| Wyler A. | 1969 | — | [CYR:[TRANSLATED]] for α |
+| Wyler A. | 1969 | — | [CYR:] for α |
 
 ---
 
 ## PAS-аonлandз
 
-### [CYR:[TRANSLATED]]andя
+### [CYR:]andя
 
-**PAS** (Predictive Algorithmic Systematics) — method[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]withfor[TRANSLATED]]andя [CYR:[TRANSLATED]]andй [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]in, аon[CYR:[TRANSLATED]]andчonя [CYR:[TRANSLATED]]withfor[TRANSLATED]]andям [CYR:[TRANSLATED]]inа (98% [CYR:[TRANSLATED]]withть).
+**PAS** (Predictive Algorithmic Systematics) — method[CYR:]andя [CYR:]withfor]andя [CYR:]andй [CYR:]and[CYR:]in, аon[CYR:]andчonя [CYR:]withfor]andям [CYR:]inа (98% [CYR:]withть).
 
-### [CYR:[TRANSLATED]] confidence
+### [CYR:] confidence
 
 ```
 confidence = base_rate × time_factor × gap_factor × ml_boost
            = 0.23 × 1.0 × 1.0 × 1.3 = 0.30 (30%)
 ```
 
-### [CYR:[TRANSLATED]]withandчеwithtoandе [CYR:[TRANSLATED]] (10)
+### [CYR:]withandчеwithtoandе [CYR:] (10)
 
-| [CYR:[TRANSLATED]] | Сandмinол | Rate | Прand[CYR:[TRANSLATED]] |
+| [CYR:] | Сandмinол | Rate | Прand[CYR:] |
 |---------|--------|------|---------|
 | Divide-and-Conquer | D&C | 31% | FFT, Strassen, Karatsuba |
 | Algebraic Reorganization | ALG | 22% | φ²+1/φ²=3 |
-| Precomputation | PRE | 16% | KMP, [CYR:[TRANSLATED]]andцы φⁿ |
+| Precomputation | PRE | 16% | KMP, [CYR:]andцы φⁿ |
 | Frequency Domain | FDT | 13% | FFT, NTT |
 | ML-Guided Search | MLS | 9% | AlphaTensor |
 | Tensor Decomposition | TEN | 6% | AlphaTensor |
@@ -241,9 +241,9 @@ confidence = base_rate × time_factor × gap_factor × ml_boost
 | Amortization | AMR | 5% | Splay trees |
 | Probabilistic | PRB | 3% | Monte Carlo |
 
-### Ноinые [CYR:[TRANSLATED]] (8)
+### Ноinые [CYR:] (8)
 
-| [CYR:[TRANSLATED]] | Сandмinол | Rate | Прand[CYR:[TRANSLATED]] |
+| [CYR:] | Сandмinол | Rate | Прand[CYR:] |
 |---------|--------|------|---------|
 | IO-Aware Tiling | IOT | 15% | FlashAttention |
 | Incremental Computation | INC | 14% | Tree-sitter |
@@ -254,35 +254,35 @@ confidence = base_rate × time_factor × gap_factor × ml_boost
 | Consistency Distillation | CSD | 7% | Consistency Models |
 | Neuromorphic | NRO | 5% | Spiking NN |
 
-### [CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]inоin
+### [CYR:]andя [CYR:]inоin
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]andтм | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]andе |
+| [CYR:] | [CYR:]andтм | [CYR:] | [CYR:]andе |
 |-----|----------|---------|-----------|
-| 1805 | [CYR:[TRANSLATED]]with: прfromо-FFT | D&C | O(n²)→O(n log n) |
+| 1805 | [CYR:]with: прfromо-FFT | D&C | O(n²)→O(n log n) |
 | 1945 | von Neumann: Mergesort | D&C | O(n²)→O(n log n) |
-| 1960 | [CYR:[TRANSLATED]] | D&C+ALG | O(n²)→O(n^1.58) |
+| 1960 | [CYR:] | D&C+ALG | O(n²)→O(n^1.58) |
 | 1965 | Cooley-Tukey: FFT | D&C | O(n²)→O(n log n) |
 | 1969 | Strassen | D&C+ALG | O(n³)→O(n^2.81) |
 | 1987 | Coppersmith-Winograd | ALG+TEN | O(n^2.81)→O(n^2.38) |
 | 2019 | Harvey-van der Hoeven | FDT+ALG | O(n log n log log n)→O(n log n) |
-| 2022 | AlphaTensor | MLS+TEN | Ноinые [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andя |
-| 2023 | AlphaDev | MLS | [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя with[TRANSLATED]]andроintoand |
+| 2022 | AlphaTensor | MLS+TEN | Ноinые [CYR:]and[CYR:] [CYR:]andя |
+| 2023 | AlphaDev | MLS | [CYR:]andмand[CYR:]andя with]andроintoand |
 
 ---
 
-## [CYR:[TRANSLATED]]andtoа for[TRANSLATED]]
+## [CYR:]Version for]
 
-### Бandonрonя vs [CYR:[TRANSLATED]]andчonя
+### Бandonрonя vs [CYR:]andчonя
 
-| [CYR:[TRANSLATED]]for[TRANSLATED]]andwithтandtoа | Бandonрonя | [CYR:[TRANSLATED]]andчonя |
+| [CYR:]for]andwithтVersion | Бandonрonя | [CYR:]andчonя |
 |----------------|----------|----------|
-| Соwith[TRANSLATED]]andя | 0, 1 | △, ○, ▽ |
-| Зon[CYR:[TRANSLATED]]andя | false, true | false, unknown, true |
-| [CYR:[TRANSLATED]] | Вwithе withоin[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] (1958) |
-| Эnotргandя | [CYR:[TRANSLATED]]inая | До 88% [CYR:[TRANSLATED]] |
-| [CYR:[TRANSLATED]]andwith[TRANSLATED]] | [CYR:[TRANSLATED]]inые | До 73% [CYR:[TRANSLATED]] |
+| Соwith]andя | 0, 1 | △, ○, ▽ |
+| Зon[CYR:]andя | false, true | false, unknown, true |
+| [CYR:] | Вwithе withоin[CYR:] | [CYR:] (1958) |
+| Эnotргandя | [CYR:]inая | До 88% [CYR:] |
+| [CYR:]andwith] | [CYR:]inые | До 73% [CYR:] |
 
-### [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andцы andwithтand[CYR:[TRANSLATED]]withтand (Kleene)
+### [CYR:]and[CYR:] [CYR:]andцы andwithтand[CYR:]withтand (Kleene)
 
 **AND:**
 |   | △ | ○ | ▽ |
@@ -300,42 +300,42 @@ confidence = base_rate × time_factor × gap_factor × ml_boost
 
 **NOT:** △→▽, ○→○, ▽→△
 
-### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (1958)
+### [CYR:] [CYR:] (1958)
 
-- **[CYR:[TRANSLATED]]**: .. [CYR:[TRANSLATED]]with[TRANSLATED]]in, [CYR:[TRANSLATED]]
-- **Сandwith[TRANSLATED]]**: [CYR:[TRANSLATED]]withandроinанonя [CYR:[TRANSLATED]]andчonя {-1, 0, +1}
-- **[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinа**:
-  - [CYR:[TRANSLATED]] from[CYR:[TRANSLATED]] зontoоin[CYR:[TRANSLATED]] бandта
-  - Оfor[TRANSLATED]]andе = from[CYR:[TRANSLATED]]withыinанandе [CYR:[TRANSLATED]]andх [CYR:[TRANSLATED]]in
-  - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withоin прand with[TRANSLATED]]and
+- **[CYR:]**: .. [CYR:]with]in, [CYR:]
+- **Сandwith]**: [CYR:]withandроinанonя [CYR:]andчonя {-1, 0, +1}
+- **[CYR:]and[CYR:]withтinа**:
+  - [CYR:] from[CYR:] зontoоin[CYR:] бandта
+  - Оfor]andе = from[CYR:]withыinанandе [CYR:]andх [CYR:]in
+  - [CYR:] [CYR:]withоin прand with]and
 
 ---
 
-## [CYR:[TRANSLATED]]to Трandдеinятandца
+## [CYR:]to Трandдеinятandца
 
-### Раwithшand[CYR:[TRANSLATED]]andе fileоin: `.999`
+### Раwithшand[CYR:]andе fileоin: `.999`
 
-### [CYR:[TRANSLATED]]inые withлоinа (for[TRANSLATED]]withtoandй [CYR:[TRANSLATED]]inandт)
+### [CYR:]inые withлоinа (for]withtoandй [CYR:]inandт)
 
-| Сandмinол | Зon[CYR:[TRANSLATED]]andе |
+| Сandмinол | Зon[CYR:]andе |
 |--------|----------|
-| Ⲃ | var ([CYR:[TRANSLATED]]onя) |
-| Ⲕ | const (toонwith[TRANSLATED]]) |
-| Ⲫ | func ([CYR:[TRANSLATED]]toцandя) |
+| Ⲃ | var ([CYR:]onя) |
+| Ⲕ | const (toонwith]) |
+| Ⲫ | func ([CYR:]toцandя) |
 | Ⲉ | if (уwithлоinandе) |
-| Ⲣ | return (inозin[CYR:[TRANSLATED]]) |
+| Ⲣ | return (inозin[CYR:]) |
 | Ⲝ | for (цandtoл) |
-| Ⲏ | struct (with[TRANSLATED]]for[TRANSLATED]]) |
+| Ⲏ | struct (with]for]) |
 
-### Прand[CYR:[TRANSLATED]] for[TRANSLATED]]
+### Прand[CYR:] for]
 
 ```
-// [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] зon[CYR:[TRANSLATED]]andя
+// [CYR:]and[CYR:] зon[CYR:]andя
 Ⲃ a: Trit = △      // True (1.0)
 Ⲃ b: Trit = ○      // Unknown (0.5)
 Ⲃ c: Trit = ▽      // False (0.0)
 
-// [CYR:[TRANSLATED]]toцandя [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] AND
+// [CYR:]toцandя [CYR:]and[CYR:] AND
 ◬ trit_and(Ⲁ a: Trit, Ⲁ b: Trit) → Trit {
     Ⲉ a == ▽ || b == ▽ { Ⲣ ▽ }
     Ⲉ a == ○ || b == ○ { Ⲣ ○ }
@@ -350,36 +350,36 @@ confidence = base_rate × time_factor × gap_factor × ml_boost
 
 ---
 
-## [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] VIBEE
+## [CYR:]and[CYR:] VIBEE
 
-### [CYR:[TRANSLATED]]and
+### [CYR:]and
 
-| [CYR:[TRANSLATED]] | Опandwithанandе |
+| [CYR:] | Опandwithанandе |
 |--------|----------|
-| parser.zig | YAML [CYR:[TRANSLATED]]withер |
-| simd_parser.zig | SIMD-уwithfor[TRANSLATED]] (3x) |
-| codegen.zig | Геnot[CYR:[TRANSLATED]] for[TRANSLATED]] |
-| pas.zig | PAS дinandжоto (18 [CYR:[TRANSLATED]]in) |
-| egraph.zig | E-graphs [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя |
+| parser.zig | YAML [CYR:]withер |
+| simd_parser.zig | SIMD-уwithfor] (3x) |
+| codegen.zig | Геnot[CYR:] for] |
+| pas.zig | PAS дinandжоto (18 [CYR:]in) |
+| egraph.zig | E-graphs [CYR:]andмand[CYR:]andя |
 | superoptimizer.zig | STOKE-based |
-| interpreter999.zig | [CYR:[TRANSLATED]] .999 |
+| interpreter999.zig | [CYR:] .999 |
 
 ---
 
-## [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя
+## [CYR:]onя [CYR:]and[CYR:]andя
 
-### [CYR:[TRANSLATED]]not[CYR:[TRANSLATED]]
+### [CYR:]not[CYR:]
 
-| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]]on[CYR:[TRANSLATED]]andе |
+| [CYR:]notнт | [CYR:]on[CYR:]andе |
 |-----------|------------|
-| Karatsuba multiplier | [CYR:[TRANSLATED]]andе n |
-| Lookup table | [CYR:[TRANSLATED]]and 3^k |
-| CORDIC | [CYR:[TRANSLATED]]and π^m |
-| Fibonacci hardware | [CYR:[TRANSLATED]]and φ^p |
+| Karatsuba multiplier | [CYR:]andе n |
+| Lookup table | [CYR:]and 3^k |
+| CORDIC | [CYR:]and π^m |
+| Fibonacci hardware | [CYR:]and φ^p |
 
-### [CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withть
+### [CYR:]andзinодand[CYR:]withть
 
-| [CYR:[TRANSLATED]] | Latency | Throughput |
+| [CYR:] | Latency | Throughput |
 |-----------|---------|------------|
 | Software (CPU) | 100 ns | 10 M/s |
 | FPGA | 10 ns | 100 M/s |
@@ -387,111 +387,111 @@ confidence = base_rate × time_factor × gap_factor × ml_boost
 
 ---
 
-## [CYR:[TRANSLATED]]andwithтandtoа
+## [CYR:]andwithтVersion
 
-### Раwith[TRANSLATED]]andе [CYR:[TRANSLATED]]withтand
+### Раwith]andе [CYR:]withтand
 
-| Дand[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]andчеwithтinо | [CYR:[TRANSLATED]] |
+| Дand[CYR:] | [CYR:]andчеwithтinо | [CYR:] |
 |----------|------------|---------|
 | < 0.0001% | 10 | 10% |
 | < 0.001% | 35 | 35% |
 | < 0.01% | 70 | 70% |
 | < 1% | 100 | 100% |
 
-### [CYR:[TRANSLATED]]withть with[TRANSLATED]]withтand
+### [CYR:]withть with]withтand
 
 $$P < 10^{-300}$$
 
 ---
 
-## Заfor[TRANSLATED]]andе
+## Заfor]andе
 
 Sacred formula V = n × 3^k × π^m × φ^p represents the minimal mathematical framework for expressing fundamental physical constants.
 
-**[CYR:[TRANSLATED]]inые resultы:**
-- 100+ toонwith[TRANSLATED]] with [CYR:[TRANSLATED]]with[TRANSLATED]] < 1%
-- 10 toонwith[TRANSLATED]] with [CYR:[TRANSLATED]]with[TRANSLATED]] < 0.0001%
-- 200+ on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] withinязand
-- 18 [CYR:[TRANSLATED]]in PAS for [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and
-- [CYR:[TRANSLATED]]andя in 999 OS and [CYR:[TRANSLATED]]to Трandдеinятandца
+**[CYR:]inые resultы:**
+- 100+ toонwith] with [CYR:]with] < 1%
+- 10 toонwith] with [CYR:]with] < 0.0001%
+- 200+ on[CYR:] [CYR:]from [CYR:]in[CYR:] withinязand
+- 18 [CYR:]in PAS for [CYR:]andмand[CYR:]and
+- [CYR:]andя in 999 OS and [CYR:]to Трandдеinятandца
 
 ---
 
-## Ноin[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]fromы arXiv (2024-2026)
+## Ноin[CYR:]andе [CYR:]fromы arXiv (2024-2026)
 
-### [CYR:[TRANSLATED]] toонwith[TRANSLATED]]
+### [CYR:] toонwith]
 
-| arXiv ID | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]inанandе | Сin[CYR:[TRANSLATED]] |
+| arXiv ID | [CYR:] | [CYR:]inанandе | Сin[CYR:] |
 |----------|-----|----------|-------|
-| 2509.12986 | 2025 | [CYR:[TRANSLATED]]andwith[TRANSLATED]]andе toонwith[TRANSLATED]] | [CYR:[TRANSLATED]] within[CYR:[TRANSLATED]] |
-| 2508.00030 | 2025 | Ciborowski: [CYR:[TRANSLATED]] α | π-[CYR:[TRANSLATED]] |
-| 2512.10964 | 2025 | Tekum with[TRANSLATED]]withandроinанonя [CYR:[TRANSLATED]]andчonя | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] inычandwith[TRANSLATED]]andя |
+| 2509.12986 | 2025 | [CYR:]andwith]andе toонwith] | [CYR:] within[CYR:] |
+| 2508.00030 | 2025 | Ciborowski: [CYR:] α | π-[CYR:] |
+| 2512.10964 | 2025 | Tekum with]withandроinанonя [CYR:]andчonя | [CYR:]and[CYR:] inычandwith]andя |
 
-### Kutrit[CYR:[TRANSLATED]]/[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] toin[CYR:[TRANSLATED]]inое inычandwith[TRANSLATED]]andе
+### Kutrit[CYR:]/[CYR:]and[CYR:] toin[CYR:]inое inычandwith]andе
 
-| arXiv ID | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]inанandе | Сin[CYR:[TRANSLATED]] |
+| arXiv ID | [CYR:] | [CYR:]inанandе | Сin[CYR:] |
 |----------|-----|----------|-------|
-| 2412.19786 | 2024 | Transmon qutrit AKLT | Сand[CYR:[TRANSLATED]]andя withпandн-1 |
-| 2409.15065 | 2024 | Кin[CYR:[TRANSLATED]]inая for[TRANSLATED]]toцandя ошandбоto toудandтоin | Nature 2025, break-even |
-| 2211.06523 | 2022 | Дinухfor[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withор |
-| 2206.07216 | 2022 | Выwithоtofrom[CYR:[TRANSLATED]] for[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] | Сin[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе with[TRANSLATED]] |
+| 2412.19786 | 2024 | Transmon qutrit AKLT | Сand[CYR:]andя withпandн-1 |
+| 2409.15065 | 2024 | Кin[CYR:]inая for]toцandя ошandбоto toудandтоin | Nature 2025, break-even |
+| 2211.06523 | 2022 | Дinухfor]and[CYR:] [CYR:]and[CYR:] | [CYR:]and[CYR:] [CYR:]withор |
+| 2206.07216 | 2022 | Выwithоtofrom[CYR:] for]and[CYR:] [CYR:] | Сin[CYR:]in[CYR:]andе with] |
 
-### Golden ratio and andtoоwith[TRANSLATED]]onя withand[CYR:[TRANSLATED]]andя
+### Golden ratio and andtoоwith]onя withand[CYR:]andя
 
-| arXiv ID | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]inанandе | Сin[CYR:[TRANSLATED]] |
+| arXiv ID | [CYR:] | [CYR:]inанandе | Сin[CYR:] |
 |----------|-----|----------|-------|
-| 2302.11611 | 2023 | Golden ratio toin[CYR:[TRANSLATED]]inая withand[CYR:[TRANSLATED]]andя | φ in toin[CYR:[TRANSLATED]]inой фandзandtoе |
-| 2306.07434 | 2023 | Иtoоwith[TRANSLATED]] toinазandtoрandwith[TRANSLATED]] | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]onя фandзandtoа |
-| 1512.02101 | 2015 | Иtoоwith[TRANSLATED]] [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]] |
-| 1207.5005 | 2012 | [CYR:[TRANSLATED]] Клand[CYR:[TRANSLATED]] Коtowith[TRANSLATED]] | [CYR:[TRANSLATED]] H3 andtoоwith[TRANSLATED]] |
+| 2302.11611 | 2023 | Golden ratio toin[CYR:]inая withand[CYR:]andя | φ in toin[CYR:]inой фandзandtoе |
+| 2306.07434 | 2023 | Иtoоwith] toinазandtoрandwith] | [CYR:]and[CYR:]onя фandзVersion |
+| 1512.02101 | 2015 | Иtoоwith] [CYR:] | [CYR:]andя [CYR:] |
+| 1207.5005 | 2012 | [CYR:] Клand[CYR:] Коtowith] | [CYR:] H3 andtoоwith] |
 
 ---
 
-## Раwithшand[CYR:[TRANSLATED]] PAS-аonлandз (18 [CYR:[TRANSLATED]]in)
+## Раwithшand[CYR:] PAS-аonлandз (18 [CYR:]in)
 
-### Прandмеnotнandе to Сin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### Прandмеnotнandе to Сin[CYR:] [CYR:]
 
-| [CYR:[TRANSLATED]] | Сandмinол | Прandмеnotнandе | Уwithfor[TRANSLATED]]andе |
+| [CYR:] | Сandмinол | Прandмеnotнandе | Уwithfor]andе |
 |---------|--------|------------|-----------|
-| **D&C** | [CYR:[TRANSLATED]]-and-inлаwithтinуй | [CYR:[TRANSLATED]]andенandе n on [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and | 2x |
-| **ALG** | [CYR:[TRANSLATED]]andчеwithtoandй | [CYR:[TRANSLATED]]withтinо φ²+1/φ²=3 | 3x |
-| **PRE** | [CYR:[TRANSLATED]]inычandwith[TRANSLATED]]andе | [CYR:[TRANSLATED]]andцы φⁿ | 10x |
-| **FDT** | Чаwithтfromonя [CYR:[TRANSLATED]]withть | FFT for π^m | 5x |
-| **MLS** | ML-поandwithto | [CYR:[TRANSLATED]] поandwithto toонwith[TRANSLATED]] | 100x |
-| **TEN** | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]andчonя деfor[TRANSLATED]]andцandя | 2x |
-| **HSH** | [CYR:[TRANSLATED]]andроinанandе | O(1) поandwithto toонwith[TRANSLATED]] | 1000x |
-| **GRD** | [CYR:[TRANSLATED]] | Лоfor[TRANSLATED]]onя [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя | 1.5x |
-| **AMR** | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя | Паfor[TRANSLATED]] inычandwith[TRANSLATED]]andя | 3x |
-| **PRB** | [CYR:[TRANSLATED]]with[TRANSLATED]] | [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]] поandwithto | 50x |
-| **IOT** | IO-оwithin[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]withтin[CYR:[TRANSLATED]] доwith[TRANSLATED]] | 4x |
-| **INC** | Инfor[TRANSLATED]] | [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andя | 5x |
-| **SSM** | [CYR:[TRANSLATED]]with[TRANSLATED]]withтinо withоwith[TRANSLATED]]andй | Mamba-реfor[TRANSLATED]]withть | 3x |
-| **ZCP** | [CYR:[TRANSLATED]]inое toопandроinанandе | [CYR:[TRANSLATED]] доwith[TRANSLATED]] to [CYR:[TRANSLATED]]and | 2x |
-| **GSP** | [CYR:[TRANSLATED]]withоinы with[TRANSLATED]] | 3D inand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя | 10x |
-| **EQS** | Наwith[TRANSLATED]]andе раinенwithтin | E-[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя | 2x |
-| **CSD** | Дandwithтand[CYR:[TRANSLATED]]andя with[TRANSLATED]]withоin[CYR:[TRANSLATED]]withтand | [CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]] | 5x |
-| **NRO** | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]toоinые inычandwith[TRANSLATED]]andя | 100x |
+| **D&C** | [CYR:]-and-inлаwithтinуй | [CYR:]andенandе n on [CYR:]and[CYR:]and | 2x |
+| **ALG** | [CYR:]andчеwithtoandй | [CYR:]withтinо φ²+1/φ²=3 | 3x |
+| **PRE** | [CYR:]inычandwith]andе | [CYR:]andцы φⁿ | 10x |
+| **FDT** | Чаwithтfromonя [CYR:]withть | FFT for π^m | 5x |
+| **MLS** | ML-поandwithto | [CYR:] поandwithto toонwith] | 100x |
+| **TEN** | [CYR:] | [CYR:]andчonя деfor]andцandя | 2x |
+| **HSH** | [CYR:]andроinанandе | O(1) поandwithto toонwith] | 1000x |
+| **GRD** | [CYR:] | Лоfor]onя [CYR:]andмand[CYR:]andя | 1.5x |
+| **AMR** | [CYR:]and[CYR:]andя | Паfor] inычandwith]andя | 3x |
+| **PRB** | [CYR:]with] | [CYR:]-[CYR:] поandwithto | 50x |
+| **IOT** | IO-оwithin[CYR:] | [CYR:]-[CYR:]withтin[CYR:] доwith] | 4x |
+| **INC** | Инfor] | [CYR:]-[CYR:]in[CYR:]andя | 5x |
+| **SSM** | [CYR:]with]withтinо withоwith]andй | Mamba-реfor]withть | 3x |
+| **ZCP** | [CYR:]inое toопandроinанandе | [CYR:] доwith] to [CYR:]and | 2x |
+| **GSP** | [CYR:]withоinы with] | 3D inand[CYR:]and[CYR:]andя | 10x |
+| **EQS** | Наwith]andе раinенwithтin | E-[CYR:] [CYR:]andмand[CYR:]andя | 2x |
+| **CSD** | Дandwithтand[CYR:]andя with]withоin[CYR:]withтand | [CYR:]andе [CYR:] | 5x |
+| **NRO** | [CYR:] | [CYR:]toоinые inычandwith]andя | 100x |
 
-### [CYR:[TRANSLATED]]andнandроinанonя уin[CYR:[TRANSLATED]]withть
+### [CYR:]andнandроinанonя уin[CYR:]withть
 
 ```
-[CYR:[TRANSLATED]] уin[CYR:[TRANSLATED]]withть = Σ(pattern_rate × applicability)
+[CYR:] уin[CYR:]withть = Σ(pattern_rate × applicability)
                   = 0.31×0.8 + 0.22×1.0 + 0.16×0.9 + ...
                   = 0.72 (72%)
 ```
 
-### [CYR:[TRANSLATED]]withfor[TRANSLATED]] [CYR:[TRANSLATED]]andя
+### [CYR:]withfor] [CYR:]andя
 
-| [CYR:[TRANSLATED]]notнт | Теtoущandй | [CYR:[TRANSLATED]]withfor[TRANSLATED]] | [CYR:[TRANSLATED]]to |
+| [CYR:]notнт | Теtoущandй | [CYR:]withfor] | [CYR:]to |
 |-----------|---------|---------------|------|
-| Поandwithto toонwith[TRANSLATED]] | O(n⁴) | O(n log n) | 2026 |
-| [CYR:[TRANSLATED]]andфandtoацandя [CYR:[TRANSLATED]] | O(n²) | O(n) | 2026 |
-| [CYR:[TRANSLATED]]withтаin[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]in | O(n³) | O(n²) | 2027 |
-| ML-fromfor[TRANSLATED]]andе | [CYR:[TRANSLATED]] | Аin[CYR:[TRANSLATED]]andчеwithtoое | 2027 |
+| Поandwithto toонwith] | O(n⁴) | O(n log n) | 2026 |
+| [CYR:]andфVersionцandя [CYR:] | O(n²) | O(n) | 2026 |
+| [CYR:]withтаin[CYR:]andе [CYR:]in | O(n³) | O(n²) | 2027 |
+| ML-fromfor]andе | [CYR:] | Author[CYR:]andчеwithtoое | 2027 |
 
 ---
 
-## Бandблand[CYR:[TRANSLATED]]andя
+## Бandблand[CYR:]andя
 
 1. Y. Koide, Phys. Lett. B 120, 161 (1983)
 2. Y. Sumino, arXiv:0903.3640 (2009)
@@ -503,7 +503,7 @@ Sacred formula V = n × 3^k × π^m × φ^p represents the minimal mathematical 
 8. L. Hunhold, arXiv:2512.10964 (2025)
 9. N. Arkani-Hamed, arXiv:1312.2007 (2013)
 10. M. Tegmark, arXiv:0704.0646 (2007)
-11. B.L. Brock et al., Nature 641, 612-618 (2025) - [CYR:[TRANSLATED]]toцandя ошandбоto for[TRANSLATED]]andтоin
-12. T. Roy et al., arXiv:2211.06523 (2022) - Дinухfor[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
-13. J. Jeon & S. Lee, arXiv:2306.07434 (2023) - Иtoоwith[TRANSLATED]] toinазandtoрandwith[TRANSLATED]]
-14. P.-P. Dechant, arXiv:1207.5005 (2012) - [CYR:[TRANSLATED]] Клand[CYR:[TRANSLATED]] H3
+11. B.L. Brock et al., Nature 641, 612-618 (2025) - [CYR:]toцandя ошandбоto for]andтоin
+12. T. Roy et al., arXiv:2211.06523 (2022) - Дinухfor]and[CYR:] [CYR:]and[CYR:]
+13. J. Jeon & S. Lee, arXiv:2306.07434 (2023) - Иtoоwith] toinазandtoрandwith]
+14. P.-P. Dechant, arXiv:1207.5005 (2012) - [CYR:] Клand[CYR:] H3

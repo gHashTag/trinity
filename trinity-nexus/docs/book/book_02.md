@@ -1,1450 +1,1450 @@
-# [CYRILLIC]a[CYRILLIC] 2: [CYRILLIC]u[CYRILLIC] Мa[CYRILLIC]aя
+# ILLIC]aILLIC] 2: ILLIC]uILLIC] MaILLIC]aya
 
-**[CYRILLIC] [CYRILLIC]uтttо, [CYRILLIC] 1**
+**ILLIC] ILLIC]utttabout, ILLIC] 1**
 
-Chapterы 38-74
-
----
-
-## Chapter 38: [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+Chaptery 38-74
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC] [CYRILLIC]uu[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+## Chapter 38: ILLIC] ILLIC] (SaILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC] ILLIC]uuILLIC] ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] ILLIC] (SaILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 38
-ft [CYRILLIC]a[CYRILLIC]_38() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_38() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC] [CYRILLIC]uu[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 39: [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC] ILLIC]uuILLIC], ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC]-[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 39: ILLIC] Nakatach (ILLIC]uILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC]-ILLIC] ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] Nakatach (ILLIC]uILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 39
-ft [CYRILLIC]a[CYRILLIC]_39() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_39() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC]-[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 40: [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC]-ILLIC], ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC] [CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 40: ILLIC] ILLIC]ttach (KhaILLIC]uILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC] ILLIC] ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] ILLIC]ttach (KhaILLIC]uILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 40
-ft [CYRILLIC]a[CYRILLIC]_40() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_40() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC] [CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 41: [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC] ILLIC], ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC]-[CYRILLIC]a[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 41: ILLIC] ILLIC] (SaILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC]-ILLIC]aILLIC] ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] ILLIC] (SaILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 41
-ft [CYRILLIC]a[CYRILLIC]_41() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_41() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC]-[CYRILLIC]a[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 42: [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC]-ILLIC]aILLIC], ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC] [CYRILLIC]k ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 42: ILLIC] Nakatach (ILLIC]uILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC] ILLIC]k ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] Nakatach (ILLIC]uILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 42
-ft [CYRILLIC]a[CYRILLIC]_42() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_42() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC] [CYRILLIC]k, [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 43: [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC] ILLIC]k, ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC]tton-[CYRILLIC]kа ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 43: ILLIC] ILLIC]ttach (KhaILLIC]uILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC]tton-ILLIC]ka ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] ILLIC]ttach (KhaILLIC]uILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 43
-ft [CYRILLIC]a[CYRILLIC]_43() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_43() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC]tton-[CYRILLIC]kа, [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 44: [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC]tton-ILLIC]ka, ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*Фaнauт Яu[CYRILLIC] [CYRILLIC]k[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 44: ILLIC] ILLIC] (SaILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*Fanaut YauILLIC] ILLIC]kILLIC] ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] ILLIC] (SaILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 44
-ft [CYRILLIC]a[CYRILLIC]_44() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_44() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] Фaнauт Яu[CYRILLIC] [CYRILLIC]k[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 45: [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] Fanaut YauILLIC] ILLIC]kILLIC], ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*Иtt[CYRILLIC]-[CYRILLIC]ttaч ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 45: ILLIC] Nakatach (ILLIC]uILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*IttILLIC]-ILLIC]ttach ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] Nakatach (ILLIC]uILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 45
-ft [CYRILLIC]a[CYRILLIC]_45() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_45() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] Иtt[CYRILLIC]-[CYRILLIC]ttaч, [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 46: [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] IttILLIC]-ILLIC]ttach, ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC]uoruа [CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 46: ILLIC] ILLIC]ttach (KhaILLIC]uILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC]uorua ILLIC] ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] ILLIC]ttach (KhaILLIC]uILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 46
-ft [CYRILLIC]a[CYRILLIC]_46() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_46() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC]uoruа [CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 47: [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC]uorua ILLIC], ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC] [CYRILLIC]uu[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 47: ILLIC] ILLIC] (SaILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC] ILLIC]uuILLIC] ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] ILLIC] (SaILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 47
-ft [CYRILLIC]a[CYRILLIC]_47() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_47() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC] [CYRILLIC]uu[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 48: [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC] ILLIC]uuILLIC], ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC]-[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 48: ILLIC] Nakatach (ILLIC]uILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC]-ILLIC] ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] Nakatach (ILLIC]uILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 48
-ft [CYRILLIC]a[CYRILLIC]_48() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_48() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC]-[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 49: [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC]-ILLIC], ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC] [CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 49: ILLIC] ILLIC]ttach (KhaILLIC]uILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC] ILLIC] ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] ILLIC]ttach (KhaILLIC]uILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 49
-ft [CYRILLIC]a[CYRILLIC]_49() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_49() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC] [CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 50: [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC] ILLIC], ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC]-[CYRILLIC]a[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 50: ILLIC] ILLIC] (SaILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC]-ILLIC]aILLIC] ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] ILLIC] (SaILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 50
-ft [CYRILLIC]a[CYRILLIC]_50() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_50() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC]-[CYRILLIC]a[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 51: [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC]-ILLIC]aILLIC], ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC] [CYRILLIC]k ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 51: ILLIC] Nakatach (ILLIC]uILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC] ILLIC]k ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] Nakatach (ILLIC]uILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 51
-ft [CYRILLIC]a[CYRILLIC]_51() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_51() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC] [CYRILLIC]k, [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 52: [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC] ILLIC]k, ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC]tton-[CYRILLIC]kа ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 52: ILLIC] ILLIC]ttach (KhaILLIC]uILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC]tton-ILLIC]ka ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] ILLIC]ttach (KhaILLIC]uILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 52
-ft [CYRILLIC]a[CYRILLIC]_52() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_52() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC]tton-[CYRILLIC]kа, [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 53: [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC]tton-ILLIC]ka, ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*Фaнauт Яu[CYRILLIC] [CYRILLIC]k[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 53: ILLIC] ILLIC] (SaILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*Fanaut YauILLIC] ILLIC]kILLIC] ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] ILLIC] (SaILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 53
-ft [CYRILLIC]a[CYRILLIC]_53() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_53() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] Фaнauт Яu[CYRILLIC] [CYRILLIC]k[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 54: [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] Fanaut YauILLIC] ILLIC]kILLIC], ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*Иtt[CYRILLIC]-[CYRILLIC]ttaч ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 54: ILLIC] Nakatach (ILLIC]uILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*IttILLIC]-ILLIC]ttach ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] Nakatach (ILLIC]uILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 54
-ft [CYRILLIC]a[CYRILLIC]_54() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_54() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] Иtt[CYRILLIC]-[CYRILLIC]ttaч, [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 55: [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] IttILLIC]-ILLIC]ttach, ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC]uoruа [CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 55: ILLIC] ILLIC]ttach (KhaILLIC]uILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC]uorua ILLIC] ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] ILLIC]ttach (KhaILLIC]uILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 55
-ft [CYRILLIC]a[CYRILLIC]_55() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_55() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC]uoruа [CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 56: [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC]uorua ILLIC], ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC] [CYRILLIC]uu[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 56: ILLIC] ILLIC] (SaILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC] ILLIC]uuILLIC] ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] ILLIC] (SaILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 56
-ft [CYRILLIC]a[CYRILLIC]_56() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_56() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC] [CYRILLIC]uu[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 57: [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC] ILLIC]uuILLIC], ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC]-[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 57: ILLIC] Nakatach (ILLIC]uILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC]-ILLIC] ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] Nakatach (ILLIC]uILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 57
-ft [CYRILLIC]a[CYRILLIC]_57() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_57() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC]-[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 58: [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC]-ILLIC], ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC] [CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 58: ILLIC] ILLIC]ttach (KhaILLIC]uILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC] ILLIC] ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] ILLIC]ttach (KhaILLIC]uILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 58
-ft [CYRILLIC]a[CYRILLIC]_58() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_58() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC] [CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 59: [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC] ILLIC], ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC]-[CYRILLIC]a[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 59: ILLIC] ILLIC] (SaILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC]-ILLIC]aILLIC] ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] ILLIC] (SaILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 59
-ft [CYRILLIC]a[CYRILLIC]_59() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_59() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC]-[CYRILLIC]a[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 60: [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC]-ILLIC]aILLIC], ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC] [CYRILLIC]k ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 60: ILLIC] Nakatach (ILLIC]uILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC] ILLIC]k ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] Nakatach (ILLIC]uILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 60
-ft [CYRILLIC]a[CYRILLIC]_60() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_60() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC] [CYRILLIC]k, [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 61: [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC] ILLIC]k, ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC]tton-[CYRILLIC]kа ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 61: ILLIC] ILLIC]ttach (KhaILLIC]uILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC]tton-ILLIC]ka ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] ILLIC]ttach (KhaILLIC]uILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 61
-ft [CYRILLIC]a[CYRILLIC]_61() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_61() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC]tton-[CYRILLIC]kа, [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 62: [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC]tton-ILLIC]ka, ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*Фaнauт Яu[CYRILLIC] [CYRILLIC]k[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 62: ILLIC] ILLIC] (SaILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*Fanaut YauILLIC] ILLIC]kILLIC] ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] ILLIC] (SaILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 62
-ft [CYRILLIC]a[CYRILLIC]_62() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_62() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] Фaнauт Яu[CYRILLIC] [CYRILLIC]k[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 63: [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] Fanaut YauILLIC] ILLIC]kILLIC], ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*Иtt[CYRILLIC]-[CYRILLIC]ttaч ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 63: ILLIC] Nakatach (ILLIC]uILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*IttILLIC]-ILLIC]ttach ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] Nakatach (ILLIC]uILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 63
-ft [CYRILLIC]a[CYRILLIC]_63() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_63() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] Иtt[CYRILLIC]-[CYRILLIC]ttaч, [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 64: [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] IttILLIC]-ILLIC]ttach, ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC]uoruа [CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 64: ILLIC] ILLIC]ttach (KhaILLIC]uILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC]uorua ILLIC] ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] ILLIC]ttach (KhaILLIC]uILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 64
-ft [CYRILLIC]a[CYRILLIC]_64() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_64() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC]uoruа [CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 65: [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC]uorua ILLIC], ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC] [CYRILLIC]uu[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 65: ILLIC] ILLIC] (SaILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC] ILLIC]uuILLIC] ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] ILLIC] (SaILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 65
-ft [CYRILLIC]a[CYRILLIC]_65() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_65() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC] [CYRILLIC]uu[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 66: [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC] ILLIC]uuILLIC], ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC]-[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 66: ILLIC] Nakatach (ILLIC]uILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC]-ILLIC] ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] Nakatach (ILLIC]uILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 66
-ft [CYRILLIC]a[CYRILLIC]_66() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_66() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC]-[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 67: [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC]-ILLIC], ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC] [CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 67: ILLIC] ILLIC]ttach (KhaILLIC]uILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC] ILLIC] ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] ILLIC]ttach (KhaILLIC]uILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 67
-ft [CYRILLIC]a[CYRILLIC]_67() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_67() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC] [CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 68: [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC] ILLIC], ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC]-[CYRILLIC]a[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 68: ILLIC] ILLIC] (SaILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC]-ILLIC]aILLIC] ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] ILLIC] (SaILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 68
-ft [CYRILLIC]a[CYRILLIC]_68() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_68() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC]-[CYRILLIC]a[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 69: [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC]-ILLIC]aILLIC], ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC] [CYRILLIC]k ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 69: ILLIC] Nakatach (ILLIC]uILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC] ILLIC]k ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] Nakatach (ILLIC]uILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 69
-ft [CYRILLIC]a[CYRILLIC]_69() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_69() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC] [CYRILLIC]k, [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 70: [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC] ILLIC]k, ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC]tton-[CYRILLIC]kа ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 70: ILLIC] ILLIC]ttach (KhaILLIC]uILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC]tton-ILLIC]ka ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] ILLIC]ttach (KhaILLIC]uILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 70
-ft [CYRILLIC]a[CYRILLIC]_70() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_70() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC]tton-[CYRILLIC]kа, [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 71: [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC]tton-ILLIC]ka, ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*Фaнauт Яu[CYRILLIC] [CYRILLIC]k[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 71: ILLIC] ILLIC] (SaILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*Fanaut YauILLIC] ILLIC]kILLIC] ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] ILLIC] (SaILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 71
-ft [CYRILLIC]a[CYRILLIC]_71() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_71() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] Фaнauт Яu[CYRILLIC] [CYRILLIC]k[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 72: [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] Fanaut YauILLIC] ILLIC]kILLIC], ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*Иtt[CYRILLIC]-[CYRILLIC]ttaч ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 72: ILLIC] Nakatach (ILLIC]uILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] Нakaтaч ([CYRILLIC]u[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*IttILLIC]-ILLIC]ttach ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] Nakatach (ILLIC]uILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 72
-ft [CYRILLIC]a[CYRILLIC]_72() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_72() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] Иtt[CYRILLIC]-[CYRILLIC]ttaч, [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 73: [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] IttILLIC]-ILLIC]ttach, ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC]uoruа [CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 73: ILLIC] ILLIC]ttach (KhaILLIC]uILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] [CYRILLIC]ttaч (Хa[CYRILLIC]u[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC]uorua ILLIC] ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] ILLIC]ttach (KhaILLIC]uILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 73
-ft [CYRILLIC]a[CYRILLIC]_73() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_73() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC]uoruа [CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
-
----
-
-
-## Chapter 74: [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC]) a[CYRILLIC] [CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
-
+> * ILLIC] ILLIC]uorua ILLIC], ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 
-*« [CYRILLIC] [CYRILLIC]uтttе, tt booksе 2-,*
-*[CYRILLIC] [CYRILLIC]uu[CYRILLIC] ttu[CYRILLIC]aл [CYRILLIC]tt[CYRILLIC] au[CYRILLIC]aе...»*
+
+## Chapter 74: ILLIC] ILLIC] (SaILLIC]) aILLIC] ILLIC] (ILLIC]ay ILLIC])
+
 
 ---
 
-## [CYRILLIC] [CYRILLIC] (Сa[CYRILLIC])
+*« ILLIC] ILLIC]uttte, tt bookse 2-,*
+*ILLIC] ILLIC]uuILLIC] ttuILLIC]al ILLIC]ttILLIC] auILLIC]ae...»*
 
-[CYRILLIC] ([CYRILLIC]aй [CYRILLIC])
+---
 
-### Three аu[CYRILLIC]k[CYRILLIC]
+## ILLIC] ILLIC] (SaILLIC])
 
-1. **[CYRILLIC]tt[CYRILLIC] аu[CYRILLIC]kт**: ...
-2. **[CYRILLIC] аu[CYRILLIC]kт**: ...
-3. **[CYRILLIC]aй аu[CYRILLIC]kт**: ...
+ILLIC] (ILLIC]ay ILLIC])
 
-### [CYRILLIC]
+### Three auILLIC]kILLIC]
+
+1. **ILLIC]ttILLIC] auILLIC]kt**: ...
+2. **ILLIC] auILLIC]kt**: ...
+3. **ILLIC]ay auILLIC]kt**: ...
+
+### ILLIC]
 
 ```vtbee
 // Chapter 74
-ft [CYRILLIC]a[CYRILLIC]_74() {
-    let [CYRILLIC]a = 3;
-    let [CYRILLIC] = [CYRILLIC]a * [CYRILLIC]a * [CYRILLIC]a;  // 27
-    returt [CYRILLIC];
+ft ILLIC]aILLIC]_74() {
+    let ILLIC]a = 3;
+    let ILLIC] = ILLIC]a * ILLIC]a * ILLIC]a;  // 27
+    returt ILLIC];
 }
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-> * [CYRILLIC] [CYRILLIC] [CYRILLIC]uu[CYRILLIC], [CYRILLIC] чau[CYRILLIC] Three —*
-> *[CYRILLIC] k[CYRILLIC] k [CYRILLIC] [CYRILLIC]uтttу.*
+> * ILLIC] ILLIC] ILLIC]uuILLIC], ILLIC] chauILLIC] Three —*
+> *ILLIC] kILLIC] k ILLIC] ILLIC]utttat.*
 
 ---
 

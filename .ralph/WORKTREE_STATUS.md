@@ -1,10 +1,10 @@
 # Ralph Worktree Status Integration
 
-Аin[CYR:[TRANSLATED]]andчеwithtoandй from[CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]fromе **[CYR:[TRANSLATED]] worktrees** in Telegram [CYR:[TRANSLATED]] TRINITY DEV.
+Author:]andchewithtoandy from:]  :]frome **:] worktrees** in Telegram :] TRINITY DEV.
 
 ---
 
-## 🌲 [CYR:[TRANSLATED]]for[TRANSLATED]] Worktrees
+## 🌲 :]for] Worktrees
 
 ```
 /Users/playra/trinity      → main repo (ralph/math-framework)
@@ -15,56 +15,56 @@
 
 ---
 
-## 📊 [CYR:[TRANSLATED]] from[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]withя for[TRANSLATED]] 10 мand[CYR:[TRANSLATED]]
+## 📊 :] from:]in:]withya for] 10 mand:]
 
-1. **Circuit Breaker** — withоwith[TRANSLATED]]andе [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] circuit breaker
-2. **Worktree Status** — for[TRANSLATED]] worktree:
-   - [CYR:[TRANSLATED]]toа
-   - Поwith[TRANSLATED]]andй for[TRANSLATED]]andт
+1. **Circuit Breaker** — withaboutwith]ande :]in:] circuit breaker
+2. **Worktree Status** — for] worktree:
+   - :]toa
+   - Paboutwith]andy for]andt
    - CB state / Loop / Calls
-   - [CYR:[TRANSLATED]]andчеwithтinо and[CYR:[TRANSLATED]] fileоin
-3. **Orchestrator** — теfor[TRANSLATED]] phase орtoеwith[TRANSLATED]]and
-4. **Recent Commits** — поwith[TRANSLATED]]andе 3 for[TRANSLATED]]andта in main
+   - :]andchewithtinabout and:] fileaboutin
+3. **Orchestrator** — thosefor] phase aboutrtoewith]and
+4. **Recent Commits** — bywith]ande 3 for]andthat in main
 
 ---
 
-## 🚀 Сtoрand[CYR:[TRANSLATED]]
+## 🚀 Storand:]
 
-### Оwithноin[CYR:[TRANSLATED]] withtoрandпт
+### Owithnaboutin:] withtorandpt
 ```bash
 .ralph/scripts/send_worktree_status.sh
 ```
 
-Геnotрand[CYR:[TRANSLATED]] from[CYR:[TRANSLATED]] по inwithем worktrees.
+Genotrand:] from:] by inwithem worktrees.
 
-### [CYR:[TRANSLATED]]with[TRANSLATED]] with[TRANSLATED]]with
+### :]with] with]with
 ```bash
 .ralph/scripts/send_ralph_status.sh
 ```
 
-[CYR:[TRANSLATED]]toо with[TRANSLATED]]with [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя.
+:]toabout with]with :]in:] :]and:]andya.
 
 ---
 
 ## ⏰ Cron Job
 
 **Job ID:** `eeca8582-e5a0-46c2-8eda-90b231fb7671`
-**[CYR:[TRANSLATED]]inал:** 10 мand[CYR:[TRANSLATED]] (600,000 ms)
-**[CYR:[TRANSLATED]]:** 2026-02-17
-**[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]:** 2026-02-18
+**:]inal:** 10 mand:] (600,000 ms)
+**:]:** 2026-02-17
+**:]in:]:** 2026-02-18
 
-### [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе
+### :]in:]ande
 ```bash
-# Поwithмfrom[CYR:[TRANSLATED]]
+# Paboutwithmfrom:]
 openclaw cron list
 
-# Отfor[TRANSLATED]]andть
+# Otfor]andt
 openclaw cron update --id eeca8582-e5a0-46c2-8eda-90b231fb7671 --patch '{"enabled": false}'
 
-# [CYR:[TRANSLATED]]andть and[CYR:[TRANSLATED]]inал on 5 мand[CYR:[TRANSLATED]]
+# :]andt and:]inal on 5 mand:]
 openclaw cron update --id eeca8582-e5a0-46c2-8eda-90b231fb7671 --patch '{"schedule": {"kind": "every", "everyMs": 300000}}'
 
-# [CYR:[TRANSLATED]]withтandть with[TRANSLATED]]with
+# :]withtandt with]with
 openclaw cron run --id eeca8582-e5a0-46c2-8eda-90b231fb7671
 ```
 
@@ -72,14 +72,14 @@ openclaw cron run --id eeca8582-e5a0-46c2-8eda-90b231fb7671
 
 ## 🎭 Orchestrator
 
-Орtoеwith[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] 3 worktrees [CYR:[TRANSLATED]]:
-- [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] with[TRANSLATED]]with for[TRANSLATED]] 15 мand[CYR:[TRANSLATED]]
-- [CYR:[TRANSLATED]]withfor[TRANSLATED]] заinandwithшandе worktrees
-- [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] in `.ralph/logs/orchestrator.log`
+Ortoewith] :]in:] 3 worktrees :]:
+- :]in:] with]with for] 15 mand:]
+- :]withfor] zainandwithshande worktrees
+- :]and:] in `.ralph/logs/orchestrator.log`
 
 ---
 
-## 📝 Прand[CYR:[TRANSLATED]] with[TRANSLATED]]andя
+## 📝 Prand:] with]andya
 
 ```
 🌲 Trinity Worktree Status Report
@@ -116,6 +116,6 @@ Generated at 2026-02-18 11:16
 
 ---
 
-**[CYR:[TRANSLATED]]:** 2026-02-18
-**[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]:** 2026-02-18
-**[CYR:[TRANSLATED]]withandя:** 2.0 (worktree support)
+**:]:** 2026-02-18
+**:]in:]:** 2026-02-18
+**:]Author:** 2.0 (worktree support)

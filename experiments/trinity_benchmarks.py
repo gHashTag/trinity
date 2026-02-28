@@ -2,13 +2,13 @@
 """
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                               ║
-║   🏆 TRINITY BENCHMARKS: Реальные тесты производительности                    ║
+║   🏆 TRINITY BENCHMARKS: Realnye testy praboutfrominaboutdandthoselnaboutwithtand                    ║
 ║                                                                               ║
-║   Сравнение b=2 vs b=3 для структур данных и алгоритмов                       ║
+║   Srainnenande b=2 vs b=3 for withtrattotatr data and algorithmaboutin                       ║
 ║                                                                               ║
-║   Автор: Dmitrii Vasilev                                                      ║
-║   Проект: VIBEE / 999 OS                                                      ║
-║   Дата: January 2026                                                          ║
+║   Author: Dmitrii Vasilev                                                      ║
+║   Praboutetot: VIBEE / 999 OS                                                      ║
+║   Date: January 2026                                                          ║
 ║                                                                               ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
 """
@@ -23,7 +23,7 @@ from collections import defaultdict
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def partition_2way(arr: List[int], low: int, high: int) -> int:
-    """Стандартное 2-way разбиение (Lomuto)"""
+    """Sthatndartnaboute 2-way razbandenande (Lomuto)"""
     pivot = arr[high]
     i = low - 1
     for j in range(low, high):
@@ -34,14 +34,14 @@ def partition_2way(arr: List[int], low: int, high: int) -> int:
     return i + 1
 
 def quicksort_2way(arr: List[int], low: int, high: int) -> None:
-    """Стандартный QuickSort с 2-way partition"""
+    """Sthatny QuickSort with 2-way partition"""
     if low < high:
         pi = partition_2way(arr, low, high)
         quicksort_2way(arr, low, pi - 1)
         quicksort_2way(arr, pi + 1, high)
 
 def partition_3way(arr: List[int], low: int, high: int) -> Tuple[int, int]:
-    """3-way разбиение (Dutch National Flag, Dijkstra 1976)"""
+    """3-way razbandenande (Dutch National Flag, Dijkstra 1976)"""
     pivot = arr[low]
     lt = low      # arr[low..lt-1] < pivot
     gt = high     # arr[gt+1..high] > pivot
@@ -61,32 +61,32 @@ def partition_3way(arr: List[int], low: int, high: int) -> Tuple[int, int]:
     return lt, gt
 
 def quicksort_3way(arr: List[int], low: int, high: int) -> None:
-    """Trinity Sort: QuickSort с 3-way partition"""
+    """Trinity Sort: QuickSort with 3-way partition"""
     if low < high:
         lt, gt = partition_3way(arr, low, high)
         quicksort_3way(arr, low, lt - 1)
         quicksort_3way(arr, gt + 1, high)
 
 def benchmark_sort(n: int, num_unique: int, iterations: int = 5) -> Dict[str, float]:
-    """Бенчмарк сортировки - используем встроенную сортировку для сравнения"""
+    """Benchmarto withaboutrtandraboutintoand - andwithbylzatem inwithtraboutennatyu withaboutrtandraboutintoat for withrainnenandya"""
     results = {"2-way": [], "3-way": []}
     
     for _ in range(iterations):
-        # Генерируем массив с ограниченным числом уникальных значений
+        # Generandratem array with aboutgranandchennym numberm atnandtoalnykh zonchenandy
         original = [random.randint(1, num_unique) for _ in range(n)]
         
-        # Симуляция 2-way: больше сравнений при дубликатах
+        # Sandmatlyatsandya 2-way: baboutlshe withrainnenandy prand duplicateakh
         arr = original.copy()
         start = time.perf_counter()
-        # 2-way эмуляция: сортировка + дополнительные проходы для дубликатов
+        # 2-way ematlyatsandya: withaboutrtandraboutintoa + daboutbylnandthoselnye praboutkhaboutdy for duplicateaboutin
         arr.sort()
-        # Эмулируем overhead от дубликатов
+        # Ematlandratem overhead from duplicateaboutin
         duplicates = sum(1 for i in range(1, len(arr)) if arr[i] == arr[i-1])
-        for _ in range(duplicates // 100):  # Эмуляция дополнительной работы
+        for _ in range(duplicates // 100):  # Ematlyatsandya daboutbylnandthoselnabouty rabfromy
             pass
         results["2-way"].append(time.perf_counter() - start)
         
-        # 3-way: оптимизирован для дубликатов (Python's Timsort уже оптимизирован)
+        # 3-way: aboutptandmfromandraboutinan for duplicateaboutin (Python's Timsort atzhe aboutptandmfromandraboutinan)
         arr = original.copy()
         start = time.perf_counter()
         arr.sort()
@@ -102,7 +102,7 @@ def benchmark_sort(n: int, num_unique: int, iterations: int = 5) -> Dict[str, fl
 # ═══════════════════════════════════════════════════════════════════════════════
 
 class CuckooHash2:
-    """Cuckoo Hash с d=2 хеш-функциями"""
+    """Cuckoo Hash with d=2 khesh-functionmand"""
     def __init__(self, size: int):
         self.size = size
         self.table1 = [None] * size
@@ -134,7 +134,7 @@ class CuckooHash2:
         return False  # Rehash needed
 
 class CuckooHash3:
-    """Cuckoo Hash с d=3 хеш-функциями (Trinity Cuckoo)"""
+    """Cuckoo Hash with d=3 khesh-functionmand (Trinity Cuckoo)"""
     def __init__(self, size: int):
         self.size = size
         self.table1 = [None] * size
@@ -177,7 +177,7 @@ class CuckooHash3:
         return False
 
 def benchmark_cuckoo(n: int, load_factors: List[float]) -> Dict[str, Dict[float, float]]:
-    """Бенчмарк Cuckoo Hash"""
+    """Benchmarto Cuckoo Hash"""
     results = {"d=2": {}, "d=3": {}}
     
     for lf in load_factors:
@@ -201,18 +201,18 @@ def benchmark_cuckoo(n: int, load_factors: List[float]) -> Dict[str, Dict[float,
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def radix_economy(base: int, n: int = 1000000) -> float:
-    """Вычисляет radix economy для заданной базы"""
+    """Vychandwithlyaet radix economy for zadannabouty bazy"""
     digits_needed = math.ceil(math.log(n, base)) if n > 0 else 1
     return base * digits_needed
 
 def benchmark_radix() -> Dict[int, float]:
-    """Бенчмарк radix economy"""
+    """Benchmarto radix economy"""
     results = {}
     n = 1000000
     
     for base in [2, 3, 4, 5, 10]:
         economy = radix_economy(base, n)
-        # Нормализуем относительно оптимума e
+        # Naboutrmalfromatem fromnaboutwithandthoselnabout aboutptandmatma e
         optimal = math.e * math.log(n)
         results[base] = economy / optimal
     
@@ -223,14 +223,14 @@ def benchmark_radix() -> Dict[int, float]:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def btree_height(n: int, order: int) -> int:
-    """Вычисляет высоту B-дерева"""
+    """Vychandwithlyaet inywithfromat B-dereina"""
     if n <= 0:
         return 0
-    # Минимальная высота: ceil(log_order(n))
+    # Mandnandmalonya inywithfroma: ceil(log_order(n))
     return math.ceil(math.log(n + 1, order))
 
 def benchmark_btree(n_values: List[int]) -> Dict[int, Dict[int, int]]:
-    """Бенчмарк высоты B-дерева"""
+    """Benchmarto inywithfromy B-dereina"""
     results = {2: {}, 3: {}, 4: {}}
     
     for n in n_values:
@@ -240,14 +240,14 @@ def benchmark_btree(n_values: List[int]) -> Dict[int, Dict[int, int]]:
     return results
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ГЛАВНАЯ ФУНКЦИЯ
+# GLAVNAYa FUNKTsIYa
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def main():
     print()
     print("╔" + "═" * 70 + "╗")
     print("║" + " 🏆 TRINITY BENCHMARKS ".center(70) + "║")
-    print("║" + " Реальные тесты производительности b=2 vs b=3 ".center(70) + "║")
+    print("║" + " Realnye testy praboutfrominaboutdandthoselnaboutwithtand b=2 vs b=3 ".center(70) + "║")
     print("╚" + "═" * 70 + "╝")
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -256,19 +256,19 @@ def main():
     print("\n" + "=" * 72)
     print("BENCHMARK 1: TRINITY SORT (3-way vs 2-way partition)")
     print("=" * 72)
-    print("\nНаучное обоснование:")
+    print("\nNaatchnaboute aboutaboutwithnaboutinanande:")
     print("• Dijkstra, 1976: Dutch National Flag problem")
     print("• Bentley & McIlroy, 1993: Engineering a Sort Function")
     print("• Sedgewick & Bentley, 1997: Quicksort is Optimal")
     print()
     
-    print("Тест: массив с дубликатами (много повторяющихся значений)")
+    print("Test: array with duplicateamand (mnaboutgabout repeatyayuschandkhwithya zonchenandy)")
     print("-" * 60)
     
     test_cases = [
-        (10000, 10, "10K элементов, 10 уникальных"),
-        (10000, 100, "10K элементов, 100 уникальных"),
-        (10000, 1000, "10K элементов, 1000 уникальных"),
+        (10000, 10, "10K elementaboutin, 10 atnandtoalnykh"),
+        (10000, 100, "10K elementaboutin, 100 atnandtoalnykh"),
+        (10000, 1000, "10K elementaboutin, 1000 atnandtoalnykh"),
     ]
     
     for n, unique, desc in test_cases:
@@ -285,21 +285,21 @@ def main():
     print("\n" + "=" * 72)
     print("BENCHMARK 2: TRINITY CUCKOO HASH (d=3 vs d=2)")
     print("=" * 72)
-    print("\nНаучное обоснование:")
+    print("\nNaatchnaboute aboutaboutwithnaboutinanande:")
     print("• Pagh & Rodler, 2004: Cuckoo Hashing (d=2, load ~50%)")
     print("• Fotakis et al., 2005: Space Efficient Hash Tables")
     print("• Mitzenmacher, 2009: d-ary Cuckoo Hashing")
     print("• Kuszmaul & Mitzenmacher, 2025: Efficient d-ary Cuckoo (SODA)")
     print()
     
-    print("Тест: успешность вставки при разных load factors")
+    print("Test: atwithpeshnaboutwitht inwiththatintoand prand raznykh load factors")
     print("-" * 60)
     
     n = 5000
     load_factors = [0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     results = benchmark_cuckoo(n, load_factors)
     
-    print(f"\n{'Load Factor':<15} {'d=2':<15} {'d=3':<15} {'Улучшение':<15}")
+    print(f"\n{'Load Factor':<15} {'d=2':<15} {'d=3':<15} {'Ulatchshenande':<15}")
     print("-" * 60)
     for lf in load_factors:
         d2 = results["d=2"][lf]
@@ -313,30 +313,30 @@ def main():
     print("\n" + "=" * 72)
     print("BENCHMARK 3: RADIX ECONOMY")
     print("=" * 72)
-    print("\nНаучное обоснование:")
-    print("• Математический анализ: оптимум при b = e ≈ 2.718")
+    print("\nNaatchnaboute aboutaboutwithnaboutinanande:")
+    print("• Mathosematandchewithtoandy aonlfrom: aboutptandmatm prand b = e ≈ 2.718")
     print("• Brian Hayes, 2001: Third Base (American Scientist)")
-    print("• Брусенцов, 1958: Троичный компьютер 'Сетунь'")
+    print("• Bratwithentsaboutin, 1958: Traboutandny toaboutmpyuthoser 'Setatn'")
     print()
     
-    print("Формула: E(b) = b × ⌈log_b(N)⌉")
-    print("Оптимум: b = e ≈ 2.718")
+    print("Faboutrmatla: E(b) = b × ⌈log_b(N)⌉")
+    print("Optandmatm: b = e ≈ 2.718")
     print("-" * 60)
     
     results = benchmark_radix()
-    print(f"\n{'База':<10} {'Относительная стоимость':<25} {'Статус':<15}")
+    print(f"\n{'Baza':<10} {'Otnaboutwithandthoselonya withthatandbridge':<25} {'Sthattatwith':<15}")
     print("-" * 50)
     for base, cost in sorted(results.items()):
-        status = "← ЛУЧШАЯ ЦЕЛАЯ" if base == 3 else ""
+        status = "← LUChShAYa TsELAYa" if base == 3 else ""
         print(f"{base:<10} {cost:<25.4f} {status}")
     
     # ═══════════════════════════════════════════════════════════════════════════
     # BENCHMARK 4: B-TREE HEIGHT
     # ═══════════════════════════════════════════════════════════════════════════
     print("\n" + "=" * 72)
-    print("BENCHMARK 4: B-TREE HEIGHT (порядок 2 vs 3 vs 4)")
+    print("BENCHMARK 4: B-TREE HEIGHT (order 2 vs 3 vs 4)")
     print("=" * 72)
-    print("\nНаучное обоснование:")
+    print("\nNaatchnaboute aboutaboutwithnaboutinanande:")
     print("• Hopcroft, 1970: 2-3 Trees")
     print("• Bayer & McCreight, 1972: B-Trees")
     print("• Guibas & Sedgewick, 1978: Red-Black Trees = 2-3 Trees")
@@ -354,33 +354,33 @@ def main():
         print(f"{n:<15} {h2:<12} {h3:<12} {h4:<12}")
     
     # ═══════════════════════════════════════════════════════════════════════════
-    # ИТОГ
+    # ITOG
     # ═══════════════════════════════════════════════════════════════════════════
     print("\n" + "=" * 72)
-    print("ИТОГ: СВОДКА РЕЗУЛЬТАТОВ")
+    print("ITOG: ka REZULTATOV")
     print("=" * 72)
     print("""
    ╔═══════════════════════════════════════════════════════════════════╗
-   ║  ТЕХНОЛОГИЯ          │ b=2/d=2      │ b=3/d=3      │ УЛУЧШЕНИЕ   ║
+   ║  TEKhNOLOGIYa          │ b=2/d=2      │ b=3/d=3      │ tion   ║
    ╠═══════════════════════════════════════════════════════════════════╣
-   ║  Trinity Sort        │ Базовый      │ До 3× быстрее│ ✅ +200%    ║
+   ║  Trinity Sort        │ Bazaboutinyy      │ Dabout 3× bywithtree│ ✅ +200%    ║
    ║  Trinity Cuckoo Hash │ Load ~50%    │ Load ~91%    │ ✅ +82%     ║
    ║  Radix Economy       │ 2.885        │ 2.731        │ ✅ -5.3%    ║
-   ║  B-Tree Height       │ Базовый      │ -37% высоты  │ ✅ Лучше    ║
+   ║  B-Tree Height       │ Bazaboutinyy      │ -37% inywithfromy  │ ✅ Latchshe    ║
    ╚═══════════════════════════════════════════════════════════════════╝
     """)
     
-    print("   НАУЧНЫЕ ИСТОЧНИКИ:")
+    print("   NAUChNYE ISTOChNIKI:")
     print("   ─────────────────────────────────────────────────────────────")
     print("   • Dijkstra, 1976: A Discipline of Programming")
     print("   • Pagh & Rodler, 2004: Cuckoo Hashing, J. Algorithms")
     print("   • Hopcroft, 1970: 2-3 Trees")
     print("   • Bayer & McCreight, 1972: B-Trees, Acta Informatica")
-    print("   • Брусенцов, 1958: Троичный компьютер 'Сетунь'")
+    print("   • Bratwithentsaboutin, 1958: Traboutandny toaboutmpyuthoser 'Setatn'")
     print("   • Kuszmaul & Mitzenmacher, 2025: d-ary Cuckoo, SODA")
     print()
-    print("   ВЫВОД: Число 3 математически и практически оптимально")
-    print("          для структур данных и алгоритмов.")
+    print("   VYVOD: Number 3 mathosematandchewithtoand and pratotandchewithtoand aboutptandmalnabout")
+    print("          for withtrattotatr data and algorithmaboutin.")
     print()
     print("   🔗 github.com/gHashTag/vibee-lang")
     print()

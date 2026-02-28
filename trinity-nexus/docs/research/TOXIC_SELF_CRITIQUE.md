@@ -1,29 +1,29 @@
-# ☠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] VIBEE VM
+# ☠️ :] :] VIBEE VM
 
-**[CYR:[TRANSLATED]]**: 2026-01-17  
-**[CYR:[TRANSLATED]]with**: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+**:]**: 2026-01-17  
+**:]with**: :] :]
 
 ---
 
-## 🔥 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🔥 :] :] :]
 
-### 1. [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]
+### 1. :]  :]
 
 ```zig
-// [CYR:[TRANSLATED]]:
-// 1. Computed goto [CYR:[TRANSLATED]] dispatch table (O(1) dispatch)  ← [CYR:[TRANSLATED]]
-// 2. Direct threaded code                                 ← [CYR:[TRANSLATED]]
-// 3. SIMD inеfor[TRANSLATED]] [CYR:[TRANSLATED]]and                              ← [CYR:[TRANSLATED]]
-// 4. Inline caching for hot paths                         ← [CYR:[TRANSLATED]]
+// :]:
+// 1. Computed goto :] dispatch table (O(1) dispatch)  ← :]
+// 2. Direct threaded code                                 ← :]
+// 3. SIMD inefor] :]and                              ← :]
+// 4. Inline caching for hot paths                         ← :]
 ```
 
-**[CYR:[TRANSLATED]]:**
-- ❌ **Computed goto** - [CYR:[TRANSLATED]]! Zig not [CYR:[TRANSLATED]]andin[CYR:[TRANSLATED]] computed goto. Иwith[TRANSLATED]]withя [CYR:[TRANSLATED]] switch.
-- ❌ **Direct threaded code** - [CYR:[TRANSLATED]]! [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withто switch-based interpreter.
-- ⚠️ **SIMD** - Еwithть with[TRANSLATED]]for[TRANSLATED]], но НЕ [CYR:[TRANSLATED]] in [CYR:[TRANSLATED]] inычandwith[TRANSLATED]]andях.
-- ❌ **Inline caching** - [CYR:[TRANSLATED]]! [CYR:[TRANSLATED]] нandtoаfor[TRANSLATED]] toэшandроinанandя тandпоin.
+**:]:**
+- ❌ **Computed goto** - :]! Zig not :]andin:] computed goto. Iwith]withya :] switch.
+- ❌ **Direct threaded code** - :]! :] :]withthat switch-based interpreter.
+- ⚠️ **SIMD** - Ewitht with]for], nabout NE :] in :] inychandwith]andyakh.
+- ❌ **Inline caching** - :]! :] nVersionfor] toeshandraboutinanandya tandbyin.
 
-### 2. [CYR:[TRANSLATED]] "[CYR:[TRANSLATED]]"
+### 2. :] ":]"
 
 ```zig
 pub fn runFast(self: *VM) !Value {
@@ -31,80 +31,80 @@ pub fn runFast(self: *VM) !Value {
     // but Zig doesn't support computed goto directly
 ```
 
-**[CYR:[TRANSLATED]]:** [CYR:[TRANSLATED]]toцandя onзыin[CYR:[TRANSLATED]]withя `runFast`, но оon НЕ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] `run()`. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]], not toод.
+**:]:** :]totsandya onzyin:]withya `runFast`, nabout abouton NE :] :] `run()`. :] :], not toaboutd.
 
-### 3. [CYR:[TRANSLATED]] HOTSPOT TRACKING
+### 3. :] HOTSPOT TRACKING
 
 ```zig
 self.hotspot_counters[opcode] +%= 1;
 ```
 
-**[CYR:[TRANSLATED]]:** [CYR:[TRANSLATED]]andtoand withобand[CYR:[TRANSLATED]]withя, но [CYR:[TRANSLATED]] НЕ [CYR:[TRANSLATED]]. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inый toод.
+**:]:** :]andtoand withaboutand:]withya, nabout :] NE :]. :] :]inyy toaboutd.
 
-### 4. SIMD - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### 4. SIMD - :] :]
 
 ```zig
 pub const Vec4 = @Vector(4, f64);
 simd_regs: [4]Vec4,
 ```
 
-**[CYR:[TRANSLATED]]:** SIMD [CYR:[TRANSLATED]]andwith[TRANSLATED]] andнandцandалandзand[CYR:[TRANSLATED]]withя, но:
-- [CYR:[TRANSLATED]] bytecode for [CYR:[TRANSLATED]]toand [CYR:[TRANSLATED]] in SIMD
-- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] SIMD [CYR:[TRANSLATED]]andй in Fibonacci
-- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]], not [CYR:[TRANSLATED]]toцandоonл
+**:]:** SIMD :]andwith] andnandtsandalandzand:]withya, nabout:
+- :] bytecode for :]toand :] in SIMD
+- :] :] SIMD :]andy in Fibonacci
+- :] :], not :]totsandaboutonl
 
-### 5. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] - [CYR:[TRANSLATED]]
+### 5. :] :] - :]
 
 ```zig
 GOLDEN_IDENTITY = 0x93,
 SACRED_FORMULA = 0x94,
 ```
 
-**[CYR:[TRANSLATED]]:** Этand opcodes:
-- Не and[CYR:[TRANSLATED]] on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withноinанandя
-- Не [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withть
-- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]], not computer science
+**:]:** Etand opcodes:
+- Ne and:] on:] :]withnaboutinanandya
+- Ne :] :]andzinaboutdand:]witht
+- :] :], not computer science
 
 ---
 
-## 📊 [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]] VM
+## 📊 :]  :] VM
 
 ### LuaJIT (Mike Pall)
 
-| [CYR:[TRANSLATED]]andtoа | LuaJIT | VIBEE | [CYR:[TRANSLATED]]andца |
+| :]Version | LuaJIT | VIBEE | :]andtsa |
 |---------|--------|-------|---------|
-| Trace compilation | ✅ | ❌ | LuaJIT 50-100x быwith[TRANSLATED]] |
-| SSA IR | ✅ | ❌ | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andй |
-| Register allocation | ✅ | ❌ | Stack-based = [CYR:[TRANSLATED]] |
-| Inline caching | ✅ | ❌ | [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]in = lookup |
-| Dead code elimination | ✅ | ❌ | Вwithё in[CYR:[TRANSLATED]]withя |
-| Loop unrolling | ✅ | ❌ | [CYR:[TRANSLATED]] |
-| Constant folding | ✅ | ❌ | [CYR:[TRANSLATED]] |
+| Trace compilation | ✅ | ❌ | LuaJIT 50-100x bywith] |
+| SSA IR | ✅ | ❌ | :] :]andmand:]andy |
+| Register allocation | ✅ | ❌ | Stack-based = :] |
+| Inline caching | ✅ | ❌ | :] in:]in = lookup |
+| Dead code elimination | ✅ | ❌ | Vwithyo in:]withya |
+| Loop unrolling | ✅ | ❌ | :] |
+| Constant folding | ✅ | ❌ | :] |
 
 ### V8 (Google)
 
-| [CYR:[TRANSLATED]]andtoа | V8 | VIBEE | [CYR:[TRANSLATED]]andца |
+| :]Version | V8 | VIBEE | :]andtsa |
 |---------|-----|-------|---------|
-| Hidden classes | ✅ | ❌ | V8 100-200x быwith[TRANSLATED]] |
-| Tiered compilation | ✅ | ❌ | [CYR:[TRANSLATED]] JIT in[CYR:[TRANSLATED]] |
-| Deoptimization | ✅ | ❌ | [CYR:[TRANSLATED]] |
+| Hidden classes | ✅ | ❌ | V8 100-200x bywith] |
+| Tiered compilation | ✅ | ❌ | :] JIT in:] |
+| Deoptimization | ✅ | ❌ | :] |
 | Garbage collection | ✅ | ❌ | Memory leak |
-| Inline caches | ✅ | ❌ | [CYR:[TRANSLATED]] |
+| Inline caches | ✅ | ❌ | :] |
 
 ### PyPy
 
-| [CYR:[TRANSLATED]]andtoа | PyPy | VIBEE | [CYR:[TRANSLATED]]andца |
+| :]Version | PyPy | VIBEE | :]andtsa |
 |---------|------|-------|---------|
-| Meta-tracing JIT | ✅ | ❌ | PyPy 10-50x быwith[TRANSLATED]] |
-| RPython | ✅ | ❌ | [CYR:[TRANSLATED]] meta-level |
-| Escape analysis | ✅ | ❌ | [CYR:[TRANSLATED]] |
-| Virtualization | ✅ | ❌ | [CYR:[TRANSLATED]] |
+| Meta-tracing JIT | ✅ | ❌ | PyPy 10-50x bywith] |
+| RPython | ✅ | ❌ | :] meta-level |
+| Escape analysis | ✅ | ❌ | :] |
+| Virtualization | ✅ | ❌ | :] |
 
 ---
 
-## 🎭 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🎭 :] :] :]
 
-### [CYR:[TRANSLATED]] мы and[CYR:[TRANSLATED]]or
+### :] my and:]or
 
 ```
 VIBEE fib(30): 92.8 ms
@@ -112,33 +112,33 @@ Python fib(30): 103.2 ms
 Ratio: 1.11x
 ```
 
-### [CYR:[TRANSLATED]] this [CYR:[TRANSLATED]] зonчandт
+### :] this :] zonchandt
 
-- VIBEE **едinа быwith[TRANSLATED]]** and[CYR:[TRANSLATED]] Python
-- Python - this **with[TRANSLATED]] [CYR:[TRANSLATED]]** mainstream [CYR:[TRANSLATED]]to
-- [CYR:[TRANSLATED]] on 11% быwith[TRANSLATED]] Python - this **[CYR:[TRANSLATED]]**
+- VIBEE **edina bywith]** and:] Python
+- Python - this **with] :]** mainstream :]to
+- :] on 11% bywith] Python - this **:]**
 
-### [CYR:[TRANSLATED]] цand[CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]toа)
+### :] tsand:] (:]toa)
 
 | VM | fib(30) | vs VIBEE |
 |----|---------|----------|
 | VIBEE | 92.8 ms | 1x |
 | CPython | 103.2 ms | 0.9x |
-| PyPy | ~5-10 ms | 10-20x быwith[TRANSLATED]] |
-| LuaJIT | ~1-2 ms | 50-100x быwith[TRANSLATED]] |
-| V8 | ~0.5-1 ms | 100-200x быwith[TRANSLATED]] |
-| Native C | ~0.1 ms | 1000x быwith[TRANSLATED]] |
+| PyPy | ~5-10 ms | 10-20x bywith] |
+| LuaJIT | ~1-2 ms | 50-100x bywith] |
+| V8 | ~0.5-1 ms | 100-200x bywith] |
+| Native C | ~0.1 ms | 1000x bywith] |
 
 ---
 
-## 🧬 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🧬 :] :]
 
 ### 1. Stack-based vs Register-based
 
-**VIBEE:** Stack-based (toаto JVM, Python)
+**VIBEE:** Stack-based (toato JVM, Python)
 **LuaJIT:** Register-based
 
-**Problem:** Stack-based [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andй:
+**Problem:** Stack-based :] :] :]andy:
 ```
 # Stack-based (VIBEE)
 PUSH a
@@ -150,9 +150,9 @@ POP result
 ADD r1, r2, r3
 ```
 
-Stack-based = **2-3x [CYR:[TRANSLATED]] andнwith[TRANSLATED]]toцandй**
+Stack-based = **2-3x :] andnwith]totsandy**
 
-### 2. Отwithутwithтinandе Type Specialization
+### 2. Otwithattwithtinande Type Specialization
 
 ```zig
 if (a.tag == .INT and b.tag == .INT) {
@@ -162,33 +162,33 @@ if (a.tag == .INT and b.tag == .INT) {
 }
 ```
 
-**Problem:** Check тandпа НА [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and.  JIT this [CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]] [CYR:[TRANSLATED]].
+**Problem:** Check tandpa NA :] :]and.  JIT this :]withya :] :].
 
-### 3. Отwithутwithтinandе Inline Caching
+### 3. Otwithattwithtinande Inline Caching
 
-[CYR:[TRANSLATED]] CALL:
-1. Lookup [CYR:[TRANSLATED]]withа
+:] CALL:
+1. Lookup :]witha
 2. Push frame
 3. Jump
 
  V8/LuaJIT:
-1. Check for[TRANSLATED]] (1 andнwith[TRANSLATED]]toцandя)
-2. Direct jump (еwithлand hit)
+1. Check for] (1 andnwith]totsandya)
+2. Direct jump (ewithland hit)
 
 ---
 
-## 📚 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 📚 :] :] :]
 
-### [CYR:[TRANSLATED]] papers
+### :] papers
 
 1. **"Trace-based Just-in-Time Type Specialization for Dynamic Languages"** (Gal et al., PLDI 2009)
-   - Каto TraceMonkey доwithтandг 10x уwithfor[TRANSLATED]]andя
+   - Kato TraceMonkey daboutwithtandg 10x atwithfor]andya
 
 2. **"An Efficient Implementation of SELF"** (Chambers, Ungar, 1989)
-   - Polymorphic inline caches - оwithноinа V8
+   - Polymorphic inline caches - aboutwithnaboutina V8
 
 3. **"The Implementation of Lua 5.0"** (Ierusalimschy et al., 2005)
-   - [CYR:[TRANSLATED]] register-based быwith[TRANSLATED]]
+   - :] register-based bywith]
 
 4. **"One VM to Rule Them All"** (Würthinger et al., 2013)
    - Truffle/Graal partial evaluation
@@ -198,46 +198,46 @@ if (a.tag == .INT and b.tag == .INT) {
 
 ---
 
-## 🎯 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🎯 :] :]
 
-### [CYR:[TRANSLATED]] 1: Чеwith[TRANSLATED]]withть ([CYR:[TRANSLATED]])
-- [x] [CYR:[TRANSLATED]]andть [CYR:[TRANSLATED]] for[TRANSLATED]]and
-- [x] Доfor[TRANSLATED]]andроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя
-- [ ] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] `runFast` in `run` (notт [CYR:[TRANSLATED]]andцы)
+### :] 1: Chewith]witht (:])
+- [x] :]andt :] for]and
+- [x] Daboutfor]andraboutin:] :] :]and:]andya
+- [ ] :]and:]in:] `runFast` in `run` (nott :]andtsy)
 
-### [CYR:[TRANSLATED]] 2: [CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and (1 меwithяц)
+### :] 2: :]inye :]andmand:]and (1 mewithyats)
 - [ ] Inline caching for CALL
 - [ ] Type feedback collection
 - [ ] Constant folding in compile-time
 
-### [CYR:[TRANSLATED]] 3: JIT (3-6 меwith[TRANSLATED]]in)
+### :] 3: JIT (3-6 mewith]in)
 - [ ] Trace recording
 - [ ] SSA IR generation
 - [ ] Native code emission
 
-### [CYR:[TRANSLATED]] 4: Production (1-2 [CYR:[TRANSLATED]])
+### :] 4: Production (1-2 :])
 - [ ] Garbage collection
 - [ ] Escape analysis
 - [ ] Deoptimization
 
 ---
 
-## 💀 [CYR:[TRANSLATED]]
+## 💀 :]
 
 **VIBEE VM v0.1.0 - this:**
 
-1. ❌ НЕ production-ready
-2. ❌ НЕ быwith[TRANSLATED]] (едinа быwith[TRANSLATED]] Python)
-3. ❌ НЕ [CYR:[TRANSLATED]]andмandзandроin[CYR:[TRANSLATED]] ([CYR:[TRANSLATED]] for[TRANSLATED]]and)
-4. ❌ НЕ on[CYR:[TRANSLATED]] (эзfromерandtoа inмеwithто CS)
-5. ⚠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toт with [CYR:[TRANSLATED]]andцandямand
+1. ❌ NE production-ready
+2. ❌ NE bywith] (edina bywith] Python)
+3. ❌ NE :]andmandzandraboutin:] (:] for]and)
+4. ❌ NE on:] (ezfromerVersion inmewiththat CS)
+5. ⚠️ :] :]tot with :]andtsandyamand
 
-**[CYR:[TRANSLATED]] with[TRANSLATED]] with[TRANSLATED]]:**
-- [CYR:[TRANSLATED]]andть 50+ papers по VM
-- [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] хfromя бы [CYR:[TRANSLATED]]inый JIT
-- [CYR:[TRANSLATED]]andть inwithю эзfromерandtoу
-- Чеwith[TRANSLATED]] [CYR:[TRANSLATED]]toand прfromandin LuaJIT
+**:] with] with]:**
+- :]andt 50+ papers by VM
+- :]andzaboutin:] khfromya by :]inyy JIT
+- :]andt inwithyu ezfromerandtoat
+- Chewith] :]toand prfromandin LuaJIT
 
 ---
 
-*"[CYR:[TRANSLATED]]inый step to [CYR:[TRANSLATED]]withтand - прandзonнandе withобwithтin[CYR:[TRANSLATED]] notin[CYR:[TRANSLATED]]withтinа."*
+*":]inyy step to :]withtand - prandzonnande withaboutwithtin:] notin:]withtina."*

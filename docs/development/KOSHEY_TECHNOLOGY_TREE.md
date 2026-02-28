@@ -1,10 +1,10 @@
-# KOSHEY Technology Tree - [CYR:[TRANSLATED]]inо [CYR:[TRANSLATED]]andй беwith[TRANSLATED]]andя
+# KOSHEY Technology Tree - :]inabout :]andy bewith]andya
 
-## Теtoущandй [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]: KOSHEY v6.0 INFINITE
+## Tetoatschandy :]in:]: KOSHEY v6.0 INFINITE
 
-### [CYR:[TRANSLATED]]andwithтandtoа
+### :]andwithtVersion
 
-| [CYR:[TRANSLATED]]withandя | [CYR:[TRANSLATED]]and | Теwithты | [CYR:[TRANSLATED]]with |
+| :]Author | :]and | Tewithty | :]with |
 |--------|--------|-------|--------|
 | v1 IMMORTAL | 18 | 110 | ✅ Complete |
 | v2 ETERNAL | 12 | 72 | ✅ Complete |
@@ -47,7 +47,7 @@
                     └────────────────────────┼────────────────────────┘
                                              │
                               ┌──────────────▼──────────────────────┐
-                              │         KOSHEY v1.0                 │ ← [CYR:[TRANSLATED]]
+                              │         KOSHEY v1.0                 │ ← :]
                               │         IMMORTAL                    │
                               │   Ring + EWC + Self-Heal + Dist     │
                               └──────────────┬──────────────────────┘
@@ -77,11 +77,11 @@
                               └─────────────────────────────────────┘
 ```
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inо [CYR:[TRANSLATED]]andй
+## :] :]inabout :]andy
 
 ### TIER 1: FOUNDATION (v3-v6)
 
-| [CYR:[TRANSLATED]]andя | Иwith[TRANSLATED]]andto | [CYR:[TRANSLATED]]with |
+| :]andya | Iwith]andto | :]with |
 |------------|----------|--------|
 | Mixture of Depths | arXiv:2404.02258 | ✅ Implemented |
 | Medusa Decoding | arXiv:2401.10774 | ✅ Implemented |
@@ -91,7 +91,7 @@
 
 ### TIER 2: OMNISCIENT (v7-v8)
 
-| [CYR:[TRANSLATED]]andя | Иwith[TRANSLATED]]andto | [CYR:[TRANSLATED]]with |
+| :]andya | Iwith]andto | :]with |
 |------------|----------|--------|
 | Gemma 2 | Google 2024 | ✅ Implemented |
 | Llama 3.1 | Meta 2024 | ✅ Implemented |
@@ -102,7 +102,7 @@
 
 ### TIER 3: IMMORTAL (KOSHEY v1.0) ✅ COMPLETE
 
-| [CYR:[TRANSLATED]]andя | Иwith[TRANSLATED]]andto | [CYR:[TRANSLATED]]with |
+| :]andya | Iwith]andto | :]with |
 |------------|----------|--------|
 | Ring Attention | arXiv:2310.01889 | ✅ Implemented |
 | EWC++ | arXiv:1612.00796 | ✅ Implemented |
@@ -113,7 +113,7 @@
 
 ### TIER 4: ETERNAL (KOSHEY v2.0) ✅ COMPLETE
 
-| [CYR:[TRANSLATED]]andя | Иwith[TRANSLATED]]andto | [CYR:[TRANSLATED]]with |
+| :]andya | Iwith]andto | :]with |
 |------------|----------|--------|
 | Swarm Intelligence | arXiv:2308.08155 AutoGen | ✅ Implemented |
 | Multimodal Vision | arXiv:2304.08485 LLaVA | ✅ Implemented |
@@ -125,7 +125,7 @@
 
 ### TIER 5: TRANSCENDENT (KOSHEY v3.0) ✅ COMPLETE
 
-| [CYR:[TRANSLATED]]andя | Иwith[TRANSLATED]]andto | [CYR:[TRANSLATED]]with |
+| :]andya | Iwith]andto | :]with |
 |------------|----------|--------|
 | Self-Modification | NAS Runtime | ✅ Implemented |
 | Artificial Consciousness | IIT + GWT | ✅ Implemented |
@@ -135,7 +135,7 @@
 
 ### TIER 6: OMNIPOTENT (KOSHEY v4.0) ✅ COMPLETE
 
-| [CYR:[TRANSLATED]]andя | Иwith[TRANSLATED]]andto | [CYR:[TRANSLATED]]with |
+| :]andya | Iwith]andto | :]with |
 |------------|----------|--------|
 | World Models | arXiv:2402.08268 | ✅ Implemented |
 | World Simulation | Physics Engines | ✅ Implemented |
@@ -149,7 +149,7 @@
 
 ### TIER 6: OMNIPRESENT (KOSHEY v4.0) ✅ COMPLETE
 
-| [CYR:[TRANSLATED]]andя | Иwith[TRANSLATED]]andto | [CYR:[TRANSLATED]]with |
+| :]andya | Iwith]andto | :]with |
 |------------|----------|--------|
 | Edge AI Core | TinyML | ✅ Implemented |
 | Edge Quantization | INT8/INT4 | ✅ Implemented |
@@ -160,15 +160,15 @@
 
 ### TIER 7: ABSOLUTE (KOSHEY v5.0) ✅ COMPLETE
 
-| [CYR:[TRANSLATED]]andя | Иwith[TRANSLATED]]andto | [CYR:[TRANSLATED]]with |
+| :]andya | Iwith]andto | :]with |
 |------------|----------|--------|
 | Absolute Core | Full Integration | ✅ Implemented |
 | Cross-Version Integration | Unified Memory | ✅ Implemented |
 | Absolute Benchmark | Final Tests | ✅ Implemented |
 
-### TIER 8: INFINITE (KOSHEY v6.0) ✅ COMPLETE ← [CYR:[TRANSLATED]]
+### TIER 8: INFINITE (KOSHEY v6.0) ✅ COMPLETE ← :]
 
-| [CYR:[TRANSLATED]]andя | Иwith[TRANSLATED]]andto | [CYR:[TRANSLATED]]with |
+| :]andya | Iwith]andto | :]with |
 |------------|----------|--------|
 | Infinite Compute | Scaling Laws | ✅ Implemented |
 | Scaling Laws | arXiv:2203.15556 Chinchilla | ✅ Implemented |
@@ -186,7 +186,7 @@
 
 ### TIER 9: UNIVERSAL (KOSHEY v7.0) - RESEARCH
 
-| [CYR:[TRANSLATED]]andя | Иwith[TRANSLATED]]andto | [CYR:[TRANSLATED]]with |
+| :]andya | Iwith]andto | :]with |
 |------------|----------|--------|
 | Universal Task Solver | AGI | 🔬 Research |
 | Zero-shot Everything | Transfer Learning | 🔬 Research |
@@ -195,12 +195,12 @@
 
 ### TIER 10: SINGULARITY (KOSHEY v8.0) - THEORETICAL
 
-| [CYR:[TRANSLATED]]andя | Иwith[TRANSLATED]]andto | [CYR:[TRANSLATED]]with |
+| :]andya | Iwith]andto | :]with |
 |------------|----------|--------|
 | Self-improving AGI | Recursive Enhancement | 🔮 Theoretical |
 | Technological Singularity | Kurzweil | 🔮 Theoretical |
 
-## Заinandwithandмоwithтand [CYR:[TRANSLATED]]andй
+## Zainandwithandmaboutwithtand :]andy
 
 ```
 Ring Attention ──────┬──► Infinite Context
@@ -233,9 +233,9 @@ Distributed Soul ────┼──► Redundancy
                                                 KOSHEY v3.0 TRANSCENDENT
 ```
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]onлы for and[CYR:[TRANSLATED]]andя
+## :] :]only for and:]andya
 
-### Tier 4 (ETERNAL) - Реfor[TRANSLATED]] andwith[TRANSLATED]]andtoand
+### Tier 4 (ETERNAL) - Refor] andwith]andtoand
 
 1. **Swarm Intelligence**
    - arXiv:2303.17760 - Multi-Agent Collaboration
@@ -252,7 +252,7 @@ Distributed Soul ────┼──► Redundancy
    - arXiv:2308.00676 - Quantum LLM
    - Nature Physics - Quantum Advantage
 
-### Tier 5 (TRANSCENDENT) - Иwith[TRANSLATED]]in[CYR:[TRANSLATED]]withtoandе on[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andя
+### Tier 5 (TRANSCENDENT) - Iwith]in:]withtoande on:]in:]andya
 
 1. **Self-Modification**
    - arXiv:2305.10601 - Self-Instruct

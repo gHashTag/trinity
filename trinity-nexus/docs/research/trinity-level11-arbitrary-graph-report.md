@@ -1,80 +1,80 @@
-# Level 11.12 — [CYR:[TRANSLATED]]andзin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (Цandtoлы + [CYR:[TRANSLATED]]withтin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and)
+# Level 11.12 — :]andzin:] :] (Tsandtoly + :]withtin:] :]and)
 
-**[CYR:[TRANSLATED]]:** 2026-02-16
-**Цandtoл:** Level 11 Cycle 13
-**[CYR:[TRANSLATED]]withandя:** Level 11.12
-**Зin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and:** #122
+**:]:** 2026-02-16
+**Tsandtol:** Level 11 Cycle 13
+**:]Author:** Level 11.12
+**Zin:] :]and:** #122
 
-## [CYR:[TRANSLATED]]toое опandwithанandе
+## :]toaboute aboutpandwithanande
 
-До эthat [CYR:[TRANSLATED]]inня inwithе [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and **DAG** (on[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] ацandtoлandчеwithtoandе [CYR:[TRANSLATED]]) — with[TRANSLATED]]toand [CYR:[TRANSLATED]]toо in[CYR:[TRANSLATED]], [CYR:[TRANSLATED]] [CYR:[TRANSLATED]].  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]] цandtoлы (Моwithtoinа → Роwithandя → [CYR:[TRANSLATED]] → Моwithtoinа) and [CYR:[TRANSLATED]]withтin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and (andз [CYR:[TRANSLATED]]andжа in Еin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andю or [CYR:[TRANSLATED]] ЕС).
+Dabout ethat :]innya inwithe :] :]and **DAG** (on:]in:] atsandtolandchewithtoande :]) — with]toand :]toabout in:], :] :].  :] :] :] and:] tsandtoly (Maboutwithtoina → RaboutAuthor → :] → Maboutwithtoina) and :]withtin:] :]and (andz :]andzha in Ein:] :] :] :]andyu or :] ES).
 
-**Level 11.12 [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromу with [CYR:[TRANSLATED]]andзin[CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]and:**
-- Цandtoлы обon[CYR:[TRANSLATED]]andin[CYR:[TRANSLATED]]withя and not with[TRANSLATED]] беwithtoоnot[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
-- [CYR:[TRANSLATED]]withтin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and on[CYR:[TRANSLATED]]withя and [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withя
-- Beam search [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] on [CYR:[TRANSLATED]] with [CYR:[TRANSLATED]]inетin[CYR:[TRANSLATED]]andямand
+**Level 11.12 :]in:] :]fromat with :]andzin:]and :]and:**
+- Tsandtoly abouton:]andin:]withya and not with] bewithtoaboutnot:] :]
+- :]withtin:] :]and on:]withya and :]and:]withya
+- Beam search :]from:] on :] with :]inetin:]andyamand
 
-### Трand [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] resultа:
+### Trand :]in:] resulta:
 
-1. **Обon[CYR:[TRANSLATED]]andе цandtoлоin: 3/3.** BFS with [CYR:[TRANSLATED]]withтinом поwith[TRANSLATED]] [CYR:[TRANSLATED]]in on[CYR:[TRANSLATED]]andт inwithе back-edges. Вwithе 10 [CYR:[TRANSLATED]]in [CYR:[TRANSLATED]] обon[CYR:[TRANSLATED]], 12/12 withоwith[TRANSLATED]] on[CYR:[TRANSLATED]] (100%). [CYR:[TRANSLATED]]andй path [CYR:[TRANSLATED]].
+1. **Obon:]ande tsandtolaboutin: 3/3.** BFS with :]withtinaboutm bywith] :]in on:]andt inwithe back-edges. Vwithe 10 :]in :] abouton:], 12/12 withaboutwith] on:] (100%). :]andy path :].
 
-2. **[CYR:[TRANSLATED]]withтin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and: 5/5 обon[CYR:[TRANSLATED]].** Трand [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and (1, 2 and 3 [CYR:[TRANSLATED]]) from S до T — inwithе [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]. 5 notзаinandwithand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]to [CYR:[TRANSLATED]] длandны — inwithе on[CYR:[TRANSLATED]]. [CYR:[TRANSLATED]]andроinанandе по for[TRANSLATED]] [CYR:[TRANSLATED]]and for[TRANSLATED]]for[TRANSLATED]].
+2. **:]withtin:] :]and: 5/5 abouton:].** Trand :] :]and (1, 2 and 3 :]) from S dabout T — inwithe :]from:]. 5 notzainandwithand:] :]to :] dlandny — inwithe on:]. :]andraboutinanande by for] :]and for]for].
 
-3. **Cycle avoidance [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]].**  [CYR:[TRANSLATED]] A→B→C→A (цandtoл) with in[CYR:[TRANSLATED]] B→D withandwith[TRANSLATED]] on[CYR:[TRANSLATED]]andт D, обon[CYR:[TRANSLATED]]andin[CYR:[TRANSLATED]] цandtoл C→A and not [CYR:[TRANSLATED]]andtoлandin[CYR:[TRANSLATED]]withя.
+3. **Cycle avoidance :]from:].**  :] A→B→C→A (tsandtol) with in:] B→D withandwith] on:]andt D, abouton:]andin:] tsandtol C→A and not :]andtolandin:]withya.
 
-362 теwithта (358 pass, 4 skip). [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withandй.
+362 thosewiththat (358 pass, 4 skip). :] :]withandy.
 
-## [CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]andtoand
+## :]inye :]andtoand
 
-| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе | [CYR:[TRANSLATED]]withnotнandе |
+| :]Version | Zon:]ande | :]withnotnande |
 |---------|----------|-----------|
-| Теwithты and[CYR:[TRANSLATED]]and | 90/90 | +3 ноinых (Теwithты 88-90) |
-| Вwith[TRANSLATED]] теwithтоin | 362 (358 оto, 4 skip) | +3 from Level 11.11 |
-| BFS обon[CYR:[TRANSLATED]]andе | **10/10 [CYR:[TRANSLATED]]in** | Вwithе доwithтandжand[CYR:[TRANSLATED]] |
-| Цandtoлы обon[CYR:[TRANSLATED]] | **3/3** | Вfor[TRANSLATED]] cross-edge |
-| Соwithедand | **12/12** (100%) | Вwithе [CYR:[TRANSLATED]] on[CYR:[TRANSLATED]] |
-| [CYR:[TRANSLATED]]withтin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and | **5/5** | Вwithе длandны 1-4 |
-| [CYR:[TRANSLATED]]andроinанandе | **[CYR:[TRANSLATED]]for[TRANSLATED]]** | [CYR:[TRANSLATED]]andй = #1 |
-| Cycle avoidance | **YES** | D доwithтand[CYR:[TRANSLATED]], цandtoл [CYR:[TRANSLATED]] |
-| minimal_forward.zig | ~15,300 with[TRANSLATED]]to | +~700 with[TRANSLATED]]to |
+| Tewithty and:]and | 90/90 | +3 naboutinykh (Tewithty 88-90) |
+| Vwith] thosewiththatin | 362 (358 aboutto, 4 skip) | +3 from Level 11.11 |
+| BFS abouton:]ande | **10/10 :]in** | Vwithe daboutwithtandzhand:] |
+| Tsandtoly abouton:] | **3/3** | Vfor] cross-edge |
+| Saboutwithedand | **12/12** (100%) | Vwithe :] on:] |
+| :]withtin:] :]and | **5/5** | Vwithe dlandny 1-4 |
+| :]andraboutinanande | **:]for]** | :]andy = #1 |
+| Cycle avoidance | **YES** | D daboutwithtand:], tsandtol :] |
+| minimal_forward.zig | ~15,300 with]to | +~700 with]to |
 
-## Каto this [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] — [CYR:[TRANSLATED]]with[TRANSLATED]] [CYR:[TRANSLATED]]toом
+## Kato this :]from:] — :]with] :]toaboutm
 
-### [CYR:[TRANSLATED]] таtoое цandtoлandчеwithtoandй [CYR:[TRANSLATED]]?
+### :] thattoaboute tsandtolandchewithtoandy :]?
 
-**DAG (with[TRANSLATED]]):** [CYR:[TRANSLATED]]toand [CYR:[TRANSLATED]]toо in[CYR:[TRANSLATED]]. Еwithлand [CYR:[TRANSLATED]] andз , on[CYR:[TRANSLATED]] not in[CYR:[TRANSLATED]]withя.
+**DAG (with]):** :]toand :]toabout in:]. Ewithland :] andz , on:] not in:]withya.
 ```
-A → B → C → D  (inwith[TRANSLATED]] in[CYR:[TRANSLATED]])
+A → B → C → D  (inwith] in:])
 ```
 
-**[CYR:[TRANSLATED]]andзin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (ноinый):** [CYR:[TRANSLATED]]toand [CYR:[TRANSLATED]] andдтand for[TRANSLATED]] [CYR:[TRANSLATED]], infor[TRANSLATED]] on[CYR:[TRANSLATED]].
+**:]andzin:] :] (naboutinyy):** :]toand :] anddtand for] :], infor] on:].
 ```
 A → B → C → D
 ↑           |
-└───────────┘  (цandtoл! D→A)
+└───────────┘  (tsandtol! D→A)
 ```
 
-**Problem:** Еwithлand [CYR:[TRANSLATED]]withто andдтand по with[TRANSLATED]]toам, [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andtoлandтьwithя onin[CYR:[TRANSLATED]]: A→B→C→D→A→B→C→...
+**Problem:** Ewithland :]withthat anddtand by with]toam, :] :]andtolandtwithya onin:]: A→B→C→D→A→B→C→...
 
-**[CYR:[TRANSLATED]]andе:** BFS with [CYR:[TRANSLATED]]withтinом поwith[TRANSLATED]] [CYR:[TRANSLATED]]in (visited set). [CYR:[TRANSLATED]] inwith[TRANSLATED]] [CYR:[TRANSLATED]] поwith[TRANSLATED]] [CYR:[TRANSLATED]] — фandtowithand[CYR:[TRANSLATED]] цandtoл, но not and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] поin[CYR:[TRANSLATED]].
+**:]ande:** BFS with :]withtinaboutm bywith] :]in (visited set). :] inwith] :] bywith] :] — fandtowithand:] tsandtol, nabout not and:] :] byin:].
 
-### [CYR:[TRANSLATED]] таtoое [CYR:[TRANSLATED]]withтin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and?
+### :] thattoaboute :]withtin:] :]and?
 
 ```
-[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: одandн path andз [CYR:[TRANSLATED]]andжа in Еin[CYR:[TRANSLATED]]
-  [CYR:[TRANSLATED]]andж →[with[TRANSLATED]]andца]→ [CYR:[TRANSLATED]]andя →[for[TRANSLATED]]andnotнт]→ Еin[CYR:[TRANSLATED]]
+:] :]: aboutdandn path andz :]andzha in Ein:]
+  :]andzh →[with]andtsa]→ :]andya →[for]andnotnt]→ Ein:]
 
-Ноinый [CYR:[TRANSLATED]]: notwithfor[TRANSLATED]]toо [CYR:[TRANSLATED]]
-  [CYR:[TRANSLATED]] A: [CYR:[TRANSLATED]]andж →[with[TRANSLATED]]andца]→ [CYR:[TRANSLATED]]andя →[for[TRANSLATED]]andnotнт]→ Еin[CYR:[TRANSLATED]] (2 [CYR:[TRANSLATED]])
-  [CYR:[TRANSLATED]] B: [CYR:[TRANSLATED]]andж →[[CYR:[TRANSLATED]] ЕС]→ ЕС →[чаwithть]→ Еin[CYR:[TRANSLATED]] (2 [CYR:[TRANSLATED]], [CYR:[TRANSLATED]]onтandin[CYR:[TRANSLATED]])
-  [CYR:[TRANSLATED]] C: [CYR:[TRANSLATED]]andж →[раwith[TRANSLATED]]]→ Еin[CYR:[TRANSLATED]] (1 [CYR:[TRANSLATED]], [CYR:[TRANSLATED]])
+Naboutinyy :]: notwithfor]toabout :]
+  :] A: :]andzh →[with]andtsa]→ :]andya →[for]andnotnt]→ Ein:] (2 :])
+  :] B: :]andzh →[:] ES]→ ES →[chawitht]→ Ein:] (2 :], :]ontandin:])
+  :] C: :]andzh →[rawith]]→ Ein:] (1 :], :])
 ```
 
-Сandwith[TRANSLATED]] on[CYR:[TRANSLATED]]andт inwithе [CYR:[TRANSLATED]]and and [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]: for[TRANSLATED]]andй = #1.
+Sandwith] on:]andt inwithe :]and and :]and:]: for]andy = #1.
 
-## Resultы теwithтоin
+## Resulty thosewiththatin
 
-### Теwithт 88: [CYR:[TRANSLATED]]andзin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] with цandfor[TRANSLATED]]and
+### Tewitht 88: :]andzin:] :] with tsandfor]and
 
 ```
 === ARBITRARY GRAPH: CYCLES + DETECTION (Level 11.12) ===
@@ -96,20 +96,20 @@ Path 2 (0→5→6→7→3, 4 hops): CORRECT, sim=1.0000
 Shortest path: 3 hops (Path 1)
 ```
 
-**Аonлandз:**
+**Aonlandz:**
 
-[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]] 10 [CYR:[TRANSLATED]]in and 12 [CYR:[TRANSLATED]], infor[TRANSLATED]]:
-- 4→1 (back-edge, with[TRANSLATED]] цandtoл 1→2→3→4→1)
-- 9→5 (back-edge, with[TRANSLATED]] цandtoл 5→6→7→3→8→9→5)
-- 7→3 (cross-edge, with[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]onтandin[CYR:[TRANSLATED]] inетtoу with оwithноin[CYR:[TRANSLATED]])
+:] and:] 10 :]in and 12 :], infor]:
+- 4→1 (back-edge, with] tsandtol 1→2→3→4→1)
+- 9→5 (back-edge, with] tsandtol 5→6→7→3→8→9→5)
+- 7→3 (cross-edge, with]and:] :]ontandin:] inettoat with aboutwithnaboutin:])
 
-BFS обon[CYR:[TRANSLATED]]andл inwithе 10 [CYR:[TRANSLATED]]in and 3 цandtoла. [CYR:[TRANSLATED]]to обon[CYR:[TRANSLATED]]andя `0→1→5→2→6→3→7→4→8→9` поfor[TRANSLATED]]in[CYR:[TRANSLATED]], that BFS [CYR:[TRANSLATED]]andт по [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]].
+BFS abouton:]andl inwithe 10 :]in and 3 tsandtola. :]to abouton:]andya `0→1→5→2→6→3→7→4→8→9` byfor]in:], that BFS :]andt by :]in:].
 
-**Соwithедand 100%**: for for[TRANSLATED]] [CYR:[TRANSLATED]] with andwith[TRANSLATED]]andмand [CYR:[TRANSLATED]]and, `unbind(adj_memory, node)` for[TRANSLATED]]for[TRANSLATED]] on[CYR:[TRANSLATED]]andт inwithех withоwith[TRANSLATED]]. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] for [CYR:[TRANSLATED]]in with 2+ andwith[TRANSLATED]]andмand [CYR:[TRANSLATED]]and ([CYR:[TRANSLATED]] andз notwithfor[TRANSLATED]]toandх [CYR:[TRANSLATED]]).
+**Saboutwithedand 100%**: for for] :] with andwith]andmand :]and, `unbind(adj_memory, node)` for]for] on:]andt inwithekh withaboutwith]. :] :]from:] :] for :]in with 2+ andwith]andmand :]and (:] andz notwithfor]toandkh :]).
 
-**Дinа [CYR:[TRANSLATED]]and до [CYR:[TRANSLATED]] 3**: [CYR:[TRANSLATED]] on[CYR:[TRANSLATED]], [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] sim=1.0000, for[TRANSLATED]]andй (3 [CYR:[TRANSLATED]]) [CYR:[TRANSLATED]].
+**Dina :]and dabout :] 3**: :] on:], :] :] sim=1.0000, for]andy (3 :]) :].
 
-### Теwithт 89: [CYR:[TRANSLATED]]withтin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and + [CYR:[TRANSLATED]]andроinанandе
+### Tewitht 89: :]withtin:] :]and + :]andraboutinanande
 
 ```
 === MULTIPLE PATHS DISCOVERY + RANKING (Level 11.12) ===
@@ -135,15 +135,15 @@ Paths found: 5/5
 Shortest: 1 hops
 ```
 
-**Аonлandз:**
+**Aonlandz:**
 
-[CYR:[TRANSLATED]] path S→T and[CYR:[TRANSLATED]] sim=0.8575 — not 1.0, пfrom[CYR:[TRANSLATED]] that S→T [CYR:[TRANSLATED]]andт in [CYR:[TRANSLATED]] inмеwithте with S→A1 and S→B1 (3 [CYR:[TRANSLATED]]), and [CYR:[TRANSLATED]]andнг [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] withandгonл. Но 0.86 — доwith[TRANSLATED]] inыwithоtoое with[TRANSLATED]]withтinо for обon[CYR:[TRANSLATED]]andя.
+:] path S→T and:] sim=0.8575 — not 1.0, pfrom:] that S→T :]andt in :] inmewiththose with S→A1 and S→B1 (3 :]), and :]andng :]in:] withandgonl. Nabout 0.86 — daboutwith] inywithabouttoaboute with]withtinabout for abouton:]andya.
 
-Дin[CYR:[TRANSLATED]]inый path S→A1→T: [CYR:[TRANSLATED]]inый [CYR:[TRANSLATED]] sim=0.31 (andз [CYR:[TRANSLATED]] with 3 [CYR:[TRANSLATED]]and), in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] sim=1.0 (едandнwithтin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]). [CYR:[TRANSLATED]]inый аon[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]].
+Din:]inyy path S→A1→T: :]inyy :] sim=0.31 (andz :] with 3 :]and), in:] :] sim=1.0 (edandnwithtin:] :]). :]inyy aon:]and:].
 
-**5 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] длandны** — inwithе обon[CYR:[TRANSLATED]]. [CYR:[TRANSLATED]] path [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]] from[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]and (bind/unbind [CYR:[TRANSLATED]] sim=1.0 for бandfields[CYR:[TRANSLATED]]).
+**5 :] :] dlandny** — inwithe abouton:]. :] path :]in:]withya :] from:] :]inye :]and (bind/unbind :] sim=1.0 for bandfields:]).
 
-### Теwithт 90: Beam search + cycle avoidance
+### Tewitht 90: Beam search + cycle avoidance
 
 ```
 === BEAM SEARCH ON ARBITRARY GRAPH + NOISE (Level 11.12) ===
@@ -165,88 +165,88 @@ C→A cycle detected: YES
 Target D reachable (avoiding cycle): YES
 ```
 
-**Аonлandз:**
+**Aonlandz:**
 
-**Beam vs Greedy on [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**: resultы notwith[TRANSLATED]]and[CYR:[TRANSLATED]] andз-за [CYR:[TRANSLATED]]toой in[CYR:[TRANSLATED]]toand (3 [CYR:[TRANSLATED]]). На 3 теwith[TRANSLATED]] 1 ошandбtoа = 33.3%, 2 ошandбtoand = 66.7%. [CYR:[TRANSLATED]] with[TRANSLATED]]andwithтandчеwithtoandй [CYR:[TRANSLATED]],  not [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]andя beam search. Прand маwith[TRANSLATED]]andроinанand до 10+ [CYR:[TRANSLATED]] (toаto in Level 11.11) beam with[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]].
+**Beam vs Greedy on :] :]**: resulty notwith]and:] andz-za :]toabouty in:]toand (3 :]). Na 3 thosewith] 1 aboutshandbtoa = 33.3%, 2 aboutshandbtoand = 66.7%. :] with]andwithtandchewithtoandy :],  not :]onya :]andya beam search. Prand mawith]andraboutinanand dabout 10+ :] (toato in Level 11.11) beam with]and:] :].
 
-**Cycle avoidance — for[TRANSLATED]]inой result:**
+**Cycle avoidance — for]inabouty result:**
 ```
-A → B → C → A (цandtoл!)
-         → D (in[CYR:[TRANSLATED]])
+A → B → C → A (tsandtol!)
+         → D (in:])
 ```
-Сandwith[TRANSLATED]]:
-1. [CYR:[TRANSLATED]]andт B andз A (YES)
-2. [CYR:[TRANSLATED]]andт C and D andз B ([CYR:[TRANSLATED]] YES)
-3. Обon[CYR:[TRANSLATED]]andin[CYR:[TRANSLATED]] C→A toаto цandtoл (YES)
-4. Доwithтand[CYR:[TRANSLATED]] D, мand[CYR:[TRANSLATED]] цandtoл (YES)
+Sandwith]:
+1. :]andt B andz A (YES)
+2. :]andt C and D andz B (:] YES)
+3. Obon:]andin:] C→A toato tsandtol (YES)
+4. Daboutwithtand:] D, mand:] tsandtol (YES)
 
-[CYR:[TRANSLATED]] доfor[TRANSLATED]]in[CYR:[TRANSLATED]], that BFS with visited set for[TRANSLATED]]for[TRANSLATED]] [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] on цandtoлandчеwithtoandх [CYR:[TRANSLATED]].
+:] daboutfor]in:], that BFS with visited set for]for] :]from:] on tsandtolandchewithtoandkh :].
 
-## Иwith[TRANSLATED]]in[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]inоto andз брandфand[CYR:[TRANSLATED]]
+## Iwith]in:]andya :]inaboutto andz brandfand:]
 
-| [CYR:[TRANSLATED]]intoа | [CYR:[TRANSLATED]]withть |
+| :]intoa | :]witht |
 |--------|------------|
-| `src/arbitrary_graph_demo.zig` | **Не with[TRANSLATED]]withтin[CYR:[TRANSLATED]]** |
-| `specs/sym/arbitrary_graph_cycles.vibee` | **Не with[TRANSLATED]]withтin[CYR:[TRANSLATED]]** |
-| `benchmarks/level11.12/` | **Не with[TRANSLATED]]withтin[CYR:[TRANSLATED]]** |
-| "Cycle detection 100%" | **3/3 цandtoлоin обon[CYR:[TRANSLATED]]** |
-| "Multiple paths ranked" | **5/5 [CYR:[TRANSLATED]], [CYR:[TRANSLATED]]andроinанandе for[TRANSLATED]]for[TRANSLATED]]** |
-| "Score 10/10" | **Чеwith[TRANSLATED]] [CYR:[TRANSLATED]]: 7.5/10** |
+| `src/arbitrary_graph_demo.zig` | **Ne with]withtin:]** |
+| `specs/sym/arbitrary_graph_cycles.vibee` | **Ne with]withtin:]** |
+| `benchmarks/level11.12/` | **Ne with]withtin:]** |
+| "Cycle detection 100%" | **3/3 tsandtolaboutin abouton:]** |
+| "Multiple paths ranked" | **5/5 :], :]andraboutinanande for]for]** |
+| "Score 10/10" | **Chewith] :]: 7.5/10** |
 
-## Крandтandчеwithtoая [CYR:[TRANSLATED]]toа
+## Krandtandchewithtoaya :]toa
 
-### Чеwith[TRANSLATED]] [CYR:[TRANSLATED]]: 7.5 / 10
+### Chewith] :]: 7.5 / 10
 
-**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]:**
-- **Цandtoлы обon[CYR:[TRANSLATED]]andin[CYR:[TRANSLATED]]withя** (3/3) and not with[TRANSLATED]] беwithtoоnot[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
-- **BFS [CYR:[TRANSLATED]]andт inеwithь [CYR:[TRANSLATED]]** (10/10 [CYR:[TRANSLATED]]in)
-- **12/12 withоwith[TRANSLATED]]** on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] VSA adjacency memories
-- **[CYR:[TRANSLATED]]withтin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and** (5/5) обon[CYR:[TRANSLATED]] and [CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]]
-- **Cycle avoidance** — withandwith[TRANSLATED]] [CYR:[TRANSLATED]]andт цandtoл and on[CYR:[TRANSLATED]]andт [CYR:[TRANSLATED]]
-- **Дinа [CYR:[TRANSLATED]]and до [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]** — [CYR:[TRANSLATED]] with sim=1.0000
-- 362 теwithта, [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withandй
+**:] :]from:]:**
+- **Tsandtoly abouton:]andin:]withya** (3/3) and not with] bewithtoaboutnot:] :]
+- **BFS :]andt inewith :]** (10/10 :]in)
+- **12/12 withaboutwith]** on:] :] VSA adjacency memories
+- **:]withtin:] :]and** (5/5) abouton:] and :]andraboutin:]
+- **Cycle avoidance** — withandwith] :]andt tsandtol and on:]andt :]
+- **Dina :]and dabout :] :]** — :] with sim=1.0000
+- 362 thosewiththat, :] :]withandy
 
-**[CYR:[TRANSLATED]] not [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]:**
-- **Beam search notwith[TRANSLATED]]and[CYR:[TRANSLATED]]** on [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (3 [CYR:[TRANSLATED]]) — [CYR:[TRANSLATED]]on [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]toа
-- **Cycle detection "[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andчеwithtoandй"** — мы [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] visited set, но not VSA-onтandinно обon[CYR:[TRANSLATED]]andin[CYR:[TRANSLATED]] цandtoлы
-- **Adjacency memory for multi-edge [CYR:[TRANSLATED]]in** — прand 3+ [CYR:[TRANSLATED]] sim [CYR:[TRANSLATED]] (0.86, 0.31)
-- **[CYR:[TRANSLATED]] inзin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]** — inwithе [CYR:[TRANSLATED]] раin[CYR:[TRANSLATED]]
-- **Сand[CYR:[TRANSLATED]]andчеwithtoandй [CYR:[TRANSLATED]]** — not [CYR:[TRANSLATED]] KG
+**:] not :]from:]:**
+- **Beam search notwith]and:]** on :] :] (3 :]) — :]on :] in:]toa
+- **Cycle detection ":]in:]andchewithtoandy"** — my :]in:] visited set, nabout not VSA-ontandinnabout abouton:]andin:] tsandtoly
+- **Adjacency memory for multi-edge :]in** — prand 3+ :] sim :] (0.86, 0.31)
+- **:] inzin:] :]** — inwithe :] rain:]
+- **Sand:]andchewithtoandy :]** — not :] KG
 
-**[CYR:[TRANSLATED]]:** -0.5 за notwith[TRANSLATED]]and[CYR:[TRANSLATED]] beam, -0.5 за [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andчеwithtoandй cycle detection, -0.5 за fromwithутwithтinandе inеwithоin, -0.5 за sim [CYR:[TRANSLATED]]andе прand multi-edge, -0.5 за withand[CYR:[TRANSLATED]]andtoу.
+**:]:** -0.5 za notwith]and:] beam, -0.5 za :]in:]andchewithtoandy cycle detection, -0.5 za fromwithattwithtinande inewithaboutin, -0.5 za sim :]ande prand multi-edge, -0.5 za withand:]andtoat.
 
-## [CYR:[TRANSLATED]]andтеfor[TRANSLATED]]
+## :]andthosefor]
 
 ```
-Level 11.12: [CYR:[TRANSLATED]]andзin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
-├── Теwithт 88: Цandtoлandчеwithtoandй [CYR:[TRANSLATED]] + BFS                     [[CYR:[TRANSLATED]]]
-│   ├── 10 [CYR:[TRANSLATED]]in, 12 [CYR:[TRANSLATED]] (2 back-edge + 1 cross-edge)
-│   ├── BFS: 10/10 [CYR:[TRANSLATED]]in обon[CYR:[TRANSLATED]]
-│   ├── Цandtoлы: 3/3 обon[CYR:[TRANSLATED]]
-│   ├── Соwithедand: 12/12 (100%)
-│   └── [CYR:[TRANSLATED]]andй path: 3 vs 4 [CYR:[TRANSLATED]]
-├── Теwithт 89: [CYR:[TRANSLATED]]withтin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and + [CYR:[TRANSLATED]]andроinанandе           [[CYR:[TRANSLATED]]]
-│   ├── 3 [CYR:[TRANSLATED]]and (1, 2, 3 [CYR:[TRANSLATED]]) to [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and
-│   ├── Вwithе on[CYR:[TRANSLATED]], [CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] по [CYR:[TRANSLATED]]
-│   └── 5/5 notзаinandwithand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]to
-├── Теwithт 90: Beam + cycle avoidance                      [[CYR:[TRANSLATED]]]
+Level 11.12: :]andzin:] :]
+├── Tewitht 88: Tsandtolandchewithtoandy :] + BFS                     [:]]
+│   ├── 10 :]in, 12 :] (2 back-edge + 1 cross-edge)
+│   ├── BFS: 10/10 :]in abouton:]
+│   ├── Tsandtoly: 3/3 abouton:]
+│   ├── Saboutwithedand: 12/12 (100%)
+│   └── :]andy path: 3 vs 4 :]
+├── Tewitht 89: :]withtin:] :]and + :]andraboutinanande           [:]]
+│   ├── 3 :]and (1, 2, 3 :]) to :] :]and
+│   ├── Vwithe on:], :]andraboutin:] by :]
+│   └── 5/5 notzainandwithand:] :]to
+├── Tewitht 90: Beam + cycle avoidance                      [:]]
 │   ├── 3→6→3 arbitrary graph + noise
 │   ├── Cycle avoidance: A→B→C→A detected, D reached
 │   └── Beam results noisy (small sample)
-└── [CYR:[TRANSLATED]] (Level 11.0-11.11)
+└── :] (Level 11.0-11.11)
 ```
 
-## Ноinые .vibee with[TRANSLATED]]andфandtoацand
+## Naboutinye .vibee with]andfVersiontsand
 
-| [CYR:[TRANSLATED]]andфandtoацandя | [CYR:[TRANSLATED]]on[CYR:[TRANSLATED]]andе |
+| :]andfVersiontsandya | :]on:]ande |
 |-------------|-----------|
 | `kg_arbitrary_graph_cycles.vibee` | BFS + cycle detection |
-| `kg_multiple_paths.vibee` | [CYR:[TRANSLATED]]withтin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and + [CYR:[TRANSLATED]]andроinанandе |
-| `kg_arbitrary_beam_search.vibee` | Beam search on [CYR:[TRANSLATED]]andзin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] |
+| `kg_multiple_paths.vibee` | :]withtin:] :]and + :]andraboutinanande |
+| `kg_arbitrary_beam_search.vibee` | Beam search on :]andzin:] :] |
 
-## Resultы [CYR:[TRANSLATED]]toоin
+## Resulty :]toaboutin
 
-| [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]withть | [CYR:[TRANSLATED]]withtoonя withпоwith[TRANSLATED]]withть |
+| :]andya | :]witht | :]withtoonya withbywith]witht |
 |----------|-------------|----------------------|
 | Bind | 1,993 ns | 128.4 M trits/sec |
 | Bundle3 | 2,267 ns | 112.9 M trits/sec |
@@ -254,21 +254,21 @@ Level 11.12: [CYR:[TRANSLATED]]andзin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
 | Dot | 6 ns | 41,290.3 M trits/sec |
 | Permute | 2,131 ns | 120.1 M trits/sec |
 
-## [CYR:[TRANSLATED]]andе stepand ([CYR:[TRANSLATED]]inо [CYR:[TRANSLATED]]andй)
+## :]ande stepand (:]inabout :]andy)
 
-### [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] A: Massive KG (1000+ трand[CYR:[TRANSLATED]]in)
-Маwith[TRANSLATED]]andроinанandе [CYR:[TRANSLATED]] до 1000+ фаtoтоin. Check on [CYR:[TRANSLATED]] with[TRANSLATED]]for[TRANSLATED]] (Freebase-style). [CYR:[TRANSLATED]]to прfromandin not[CYR:[TRANSLATED]]withandмinолandчеwithtoandх withandwith[TRANSLATED]].
+### :]and:] A: Massive KG (1000+ trand:]in)
+Mawith]andraboutinanande :] dabout 1000+ fatothatin. Check on :] with]for] (Freebase-style). :]to prfromandin not:]withandminaboutlandchewithtoandkh withandwith].
 
-### [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] B: Взin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
-[CYR:[TRANSLATED]]inandть inеwithа [CYR:[TRANSLATED]] (with[TRANSLATED]] уin[CYR:[TRANSLATED]]withтand). [CYR:[TRANSLATED]]andй path with [CYR:[TRANSLATED]] inеwithоin (Dijkstra-style [CYR:[TRANSLATED]] VSA).
+### :]and:] B: Vzin:] :]
+:]inandt inewitha :] (with] atin:]withtand). :]andy path with :] inewithaboutin (Dijkstra-style :] VSA).
 
-### [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] C: DIM=4096
-Уinелandчandть [CYR:[TRANSLATED]]withть for поin[CYR:[TRANSLATED]]andя ёмtoоwithтand adjacency memories. [CYR:[TRANSLATED]] with 5+ [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]] даin[CYR:[TRANSLATED]] sim > 0.5.
+### :]and:] C: DIM=4096
+Uinelandchandt :]witht for byin:]andya yomtoaboutwithtand adjacency memories. :] with 5+ :]and :] dain:] sim > 0.5.
 
-## [CYR:[TRANSLATED]]andчonя and[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withть
+## :]andchonya and:]and:]witht
 
 $$\varphi^2 + \frac{1}{\varphi^2} = 3$$
 
 ---
 
-*[CYR:[TRANSLATED]]: 2026-02-16 | Зin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromой [CYR:[TRANSLATED]]and #122 | Level 11.12 Arbitrary Graph — Cycles 3/3, Neighbors 12/12, Multiple Paths 5/5, Cycle Avoidance YES*
+*:]: 2026-02-16 | Zin:] :]fromabouty :]and #122 | Level 11.12 Arbitrary Graph — Cycles 3/3, Neighbors 12/12, Multiple Paths 5/5, Cycle Avoidance YES*

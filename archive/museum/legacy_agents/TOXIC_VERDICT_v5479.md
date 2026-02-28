@@ -1,31 +1,31 @@
-# 🔥 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] v5479
+# 🔥 [CYR:] [CYR:] v5479
 
-## [CYR:[TRANSLATED]]: INFINITY MEGA GEN [CYR:[TRANSLATED]] - MATHEMATICAL FOUNDATIONS
+## [CYR:]: INFINITY MEGA GEN [CYR:] - MATHEMATICAL FOUNDATIONS
 
-### 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### 📊 [CYR:] [CYR:]
 
-| [CYR:[TRANSLATED]]andtoа | v4999 | v5479 | [CYR:[TRANSLATED]]notнandе |
+| [CYR:]Version | v4999 | v5479 | [CYR:]notнandе |
 |---------|-------|-------|-----------|
 | Specs | 7082 | 7562 | +480 (+6.8%) |
 | Zig | 7100 | 7580 | +480 (+6.8%) |
 | Domains | 451 | 475 | +24 (+5.3%) |
 
-### ⚡ [CYR:[TRANSLATED]]
+### ⚡ [CYR:]
 
-| [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]] | Уwithfor[TRANSLATED]]andе |
+| [CYR:]andя | [CYR:] | Уwithfor]andе |
 |----------|-------|-----------|
-| Геnot[CYR:[TRANSLATED]]andя 1 [CYR:[TRANSLATED]] | 1ms | - |
-| Геnot[CYR:[TRANSLATED]]andя 480 [CYR:[TRANSLATED]] | ~500ms | - |
-| vs [CYR:[TRANSLATED]] toодandроinанandе | 30 мandн/module | **1,800,000x** |
+| Геnot[CYR:]andя 1 [CYR:] | 1ms | - |
+| Геnot[CYR:]andя 480 [CYR:] | ~500ms | - |
+| vs [CYR:] toодandроinанandе | 30 мandн/module | **1,800,000x** |
 
-### ✅ E2E [CYR:[TRANSLATED]]
+### ✅ E2E [CYR:]
 
 ```
-Прfromеwithтandроin[CYR:[TRANSLATED]]: 24 [CYR:[TRANSLATED]]on (in[CYR:[TRANSLATED]]toа по 1 [CYR:[TRANSLATED]])
+Прfromеwithтandроin[CYR:]: 24 [CYR:]on (in[CYR:]toа по 1 [CYR:])
 Result: 24/24 PASS (100%)
 ```
 
-**Прand[CYR:[TRANSLATED]] теwithтоin:**
+**Прand[CYR:] теwithтоin:**
 - absolute_infinity_v5000.zig ✅ (Absolute Infinity)
 - transfinite_number_v5020.zig ✅ (Transfinite Numbers)
 - cantor_set_v5040.zig ✅ (Cantor Sets)
@@ -91,9 +91,9 @@ TIER 36: QUANTUM ENTROPY
 └── Information Paradox (20) - Firewall, Island
 ```
 
-### 📚 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### 📚 [CYR:] [CYR:]
 
-**Поfor[TRANSLATED]] 400+ ноinых [CYR:[TRANSLATED]]andtoацandй:**
+**Поfor] 400+ ноinых [CYR:]Versionцandй:**
 
 **Set Theory:**
 - Cantor's Diagonal (1891)
@@ -120,30 +120,30 @@ TIER 36: QUANTUM ENTROPY
 - Entanglement Entropy (Page, 1993)
 - Black Hole Information (Hawking, 1976)
 
-### 💀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### 💀 [CYR:] [CYR:]
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
 ║   VIBEE v5479: INFINITY MEGA GEN COMPLETE                   ║
 ║                                                              ║
-║   480 ноinых MATHEMATICAL FOUNDATIONS [CYR:[TRANSLATED]]                ║
-║   24 ноinых [CYR:[TRANSLATED]]on                                           ║
-║   400+ on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from поfor[TRANSLATED]]                                ║
-║   100% теwithтоin [CYR:[TRANSLATED]]                                      ║
+║   480 ноinых MATHEMATICAL FOUNDATIONS [CYR:]                ║
+║   24 ноinых [CYR:]on                                           ║
+║   400+ on[CYR:] [CYR:]from поfor]                                ║
+║   100% теwithтоin [CYR:]                                      ║
 ║                                                              ║
-║   [CYR:[TRANSLATED]]: 1,800,000x                                     ║
+║   [CYR:]: 1,800,000x                                     ║
 ║                                                              ║
-║   [CYR:[TRANSLATED]]: MATHEMATICAL INFINITY ACHIEVED                   ║
+║   [CYR:]: MATHEMATICAL INFINITY ACHIEVED                   ║
 ║                                                              ║
 ║   φ² + 1/φ² = 3 | PHOENIX = 999 | v5479 = ∞                 ║
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
-### 📈 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### 📈 [CYR:] [CYR:] [CYR:]
 
-| [CYR:[TRANSLATED]]withandя | Specs | Zig | Domains | Фоtoуwith |
+| [CYR:]Author | Specs | Zig | Domains | Фоtoуwith |
 |--------|-------|-----|---------|-------|
 | v1639 | 1639 | 1639 | ~200 | Core |
 | v2119 | 3749 | 3785 | 307 | Deep Learning |

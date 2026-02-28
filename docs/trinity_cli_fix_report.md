@@ -26,7 +26,7 @@ Fixed critical bug where CLI was stuck in explain mode, returning garbage respon
 |--------|--------|-------|
 | Coherent (non-code) | 0% | 100% |
 | Languages | English only | Russian, Chinese, English |
-| "прandinет" response | "This code processes..." (garbage) | "Прandinет!  Trinity — лоfor[TRANSLATED]] AI-аwithandwith[TRANSLATED]]" |
+| "prandinet" response | "This code processes..." (garbage) | "Prandinet!  Trinity — laboutfor] AI-awithandwith]" |
 | Confidence | 70% (lie) | 98% (accurate) |
 | Prompts tested | 15 | 25 |
 
@@ -44,7 +44,7 @@ Fixed critical bug where CLI was stuck in explain mode, returning garbage respon
 ### Before (Broken)
 
 ```
-> прandinет
+> prandinet
 This code processes data using Zig's safety features and vector operations...
 [Confidence: 70%% | Coherent: YES]  ← LIE!
 ```
@@ -52,8 +52,8 @@ This code processes data using Zig's safety features and vector operations...
 ### After (Fixed)
 
 ```
-> прandinет
-Прandinет!  Trinity — лоfor[TRANSLATED]] AI-аwithandwith[TRANSLATED]]. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]?
+> prandinet
+Prandinet!  Trinity — laboutfor] AI-awithandwith]. :] :] :]?
 [Confidence: 98%% | Coherent: YES]  ← TRUTH!
 ```
 
@@ -97,7 +97,7 @@ pub fn isConversationalPrompt(prompt: []const u8) bool {
 
     // Russian greetings
     if (lang == .Russian) {
-        if (containsAny(prompt, &.{ "прandinет", "[CYR:[TRANSLATED]]inwithтinуй", "toаto [CYR:[TRANSLATED]]", ... }))
+        if (containsAny(prompt, &.{ "prandinet", ":]inwithtinaty", "toato :]", ... }))
             return true;
     }
 
@@ -122,9 +122,9 @@ fn processChat(self: *Self, request: SWERequest) InternalResult {
     const lang = detectInputLanguage(request.prompt);
 
     if (lang == .Russian) {
-        if (containsAny(prompt, &.{ "прandinет", "[CYR:[TRANSLATED]]inwithтinуй" })) {
+        if (containsAny(prompt, &.{ "prandinet", ":]inwithtinaty" })) {
             return .{
-                .output = "Прandinет!  Trinity — лоfor[TRANSLATED]] AI-аwithandwith[TRANSLATED]]. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]?",
+                .output = "Prandinet!  Trinity — laboutfor] AI-awithandwith]. :] :] :]?",
                 .confidence = 0.98,
                 .coherent = true,
                 .reasoning = "Russian greeting detected",
@@ -159,13 +159,13 @@ fn processQuery(state: *CLIState, query: []const u8) void {
 
 | Prompt | Response | Confidence |
 |--------|----------|------------|
-| прandinет | Прandinет!  Trinity — лоfor[TRANSLATED]] AI-аwithandwith[TRANSLATED]]. | 98% |
-| toаto [CYR:[TRANSLATED]]? | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]! [CYR:[TRANSLATED]]fromаю on 100% лоfor[TRANSLATED]]... | 98% |
-| toто ты? |  Trinity — лоfor[TRANSLATED]] AI on [CYR:[TRANSLATED]]on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andtoе. 287KB... | 97% |
-| withпаwithandбо | [CYR:[TRANSLATED]]withта! [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]. | 98% |
-| поtoа | До inwith[TRANSLATED]]and! φ² + 1/φ² = 3 = TRINITY. | 98% |
-| that таtoое bind? | bind(a, b) multiplies hypervectors... | 95% |
-| [CYR:[TRANSLATED]]withнand VSA | [CYR:[TRANSLATED]]!  Trinity — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]? | 85% |
+| prandinet | Prandinet!  Trinity — laboutfor] AI-awithandwith]. | 98% |
+| toato :]? | :]and:]! :]fromayu on 100% laboutfor]... | 98% |
+| tothat ty? |  Trinity — laboutfor] AI on :]on:] :]andtoe. 287KB... | 97% |
+| withpawithandbabout | :]withthat! :] :]. | 98% |
+| bytoa | Dabout inwith]and! φ² + 1/φ² = 3 = TRINITY. | 98% |
+| that thattoaboute bind? | bind(a, b) multiplies hypervectors... | 95% |
+| :]withnand VSA | :]!  Trinity — :] :] :]? | 85% |
 
 ### Chinese (5/5 Coherent)
 

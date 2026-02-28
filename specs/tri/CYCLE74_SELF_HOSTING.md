@@ -1,61 +1,61 @@
 # Cycle 74 — SELF-HOSTING BOOTSTRAP
 
-**[CYR:[TRANSLATED]]:** 2026-02-22
-**[CYR:[TRANSLATED]]with:** Заin[CYR:[TRANSLATED]] (for[TRANSLATED]] доfor[TRANSLATED]])
-**[CYR:[TRANSLATED]]andй:** Cycle 75
+**:]:** 2026-02-22
+**:]with:** Zain:] (for] daboutfor])
+**:]andy:** Cycle 75
 
 ---
 
-## [CYR:[TRANSLATED]]
+## :]
 
-[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[TRANSLATED]] self-hosting VIBEE codegen, where for[TRANSLATED]] [CYR:[TRANSLATED]] геnotрandроin[CYR:[TRANSLATED]] withам with[TRANSLATED]] andз .vibee with[TRANSLATED]]andфandtoацand.
+:] :]with] self-hosting VIBEE codegen, where for] :] genotrandraboutin:] witham with] andz .vibee with]andfVersiontsand.
 
-**[CYR:[TRANSLATED]]:** V0 → V1 → V2, where V1 == V2 (бandт-эtoinandin[CYR:[TRANSLATED]])
-
----
-
-## [CYR:[TRANSLATED]]
-
-### ✅ Доwithтand[CYR:[TRANSLATED]]
-
-1. **[CYR:[TRANSLATED]]on [CYR:[TRANSLATED]]onя with[TRANSLATED]]andфandtoацandя**: `specs/tri/vibee_self_hosting_v1.vibee`
-   - Опandwithыin[CYR:[TRANSLATED]] inwithе тandпы [CYR:[TRANSLATED]]with[TRANSLATED]] (VibeeSpec, Behavior, TypeDef, Field, etc.)
-   - Опandwithыin[CYR:[TRANSLATED]] inwithе тandпы for[TRANSLATED]]on (ZigCodeGen, CodeBuilder)
-   - Опandwithыin[CYR:[TRANSLATED]] 17 behaviors:
-     - `parseVibeeSpec` — [CYR:[TRANSLATED]]withandнг .vibee fileоin
-     - `parseTypeDef` — [CYR:[TRANSLATED]]withandнг [CYR:[TRANSLATED]]andй тandпоin
-     - `parseBehavior` — [CYR:[TRANSLATED]]withandнг поin[CYR:[TRANSLATED]]andй
-     - `mapType` — [CYR:[TRANSLATED]]inанandе тandпоin VIBEE → Zig
-     - `extractInnerType` — andзin[CYR:[TRANSLATED]]andе in[CYR:[TRANSLATED]]andх тandпоin [CYR:[TRANSLATED]]notрandtoоin
-     - `findMatchingBracket` — поandwithto [CYR:[TRANSLATED]] withfor[TRANSLATED]]to
-     - `generateZigCode` — [CYR:[TRANSLATED]]inonя [CYR:[TRANSLATED]]toцandя геnot[CYR:[TRANSLATED]]and
-     - `writeHeader` — [CYR:[TRANSLATED]]andwithь [CYR:[TRANSLATED]]intoа
-     - `writeImports` — [CYR:[TRANSLATED]]andwithь andмportоin
-     - `writeConstants` — [CYR:[TRANSLATED]]andwithь toонwith[TRANSLATED]]
-     - `writeTypes` — [CYR:[TRANSLATED]]andwithь тandпоin
-     - `writeCreationPatterns` — [CYR:[TRANSLATED]]andwithь [CYR:[TRANSLATED]]in
-     - `writeBehaviorFunctions` — [CYR:[TRANSLATED]]andwithь [CYR:[TRANSLATED]]toцandй
-     - `writeMemoryBuffers` — [CYR:[TRANSLATED]]andwithь WASM [CYR:[TRANSLATED]]and
-     - `generateTests` — геnot[CYR:[TRANSLATED]]andя теwithтоin
-     -  [CYR:[TRANSLATED]]andе...
-
-2. **V1 withгеnotрandроinан**: `trinity/output/vibee_self_hosting_v1.zig`
-   - [CYR:[TRANSLATED]] withгеnotрandроinан andз with[TRANSLATED]]andфandtoацand
-   - Вfor[TRANSLATED]] inwithе тandпы and with[TRANSLATED]]for[TRANSLATED]]
-   - Вfor[TRANSLATED]] inwithе [CYR:[TRANSLATED]]toцand (toаto [CYR:[TRANSLATED]]toand)
-
-3. **[CYR:[TRANSLATED]] доfor[TRANSLATED]]**:
-   - V0 [CYR:[TRANSLATED]] чand[CYR:[TRANSLATED]] with[TRANSLATED]]andфandtoацandю
-   - V0 геnotрand[CYR:[TRANSLATED]] toод V1 andз with[TRANSLATED]]andфandtoацand
-   - [CYR:[TRANSLATED]]andй step: on[CYR:[TRANSLATED]]andть [CYR:[TRANSLATED]]toand [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andямand
+**:]:** V0 → V1 → V2, where V1 == V2 (bandt-etoinandin:])
 
 ---
 
-## [CYR:[TRANSLATED]]
+## :]
 
-### V1 with[TRANSLATED]]andт [CYR:[TRANSLATED]]toand
+### ✅ Daboutwithtand:]
 
-[CYR:[TRANSLATED]]notрandроin[CYR:[TRANSLATED]] toод V1 with[TRANSLATED]]andт [CYR:[TRANSLATED]]toand inмеwithто [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andй:
+1. **:]on :]onya with]andfVersiontsandya**: `specs/tri/vibee_self_hosting_v1.vibee`
+   - Opandwithyin:] inwithe tandpy :]with] (VibeeSpec, Behavior, TypeDef, Field, etc.)
+   - Opandwithyin:] inwithe tandpy for]on (ZigCodeGen, CodeBuilder)
+   - Opandwithyin:] 17 behaviors:
+     - `parseVibeeSpec` — :]withandng .vibee fileaboutin
+     - `parseTypeDef` — :]withandng :]andy tandbyin
+     - `parseBehavior` — :]withandng byin:]andy
+     - `mapType` — :]inanande tandbyin VIBEE → Zig
+     - `extractInnerType` — andzin:]ande in:]andkh tandbyin :]notrandtoaboutin
+     - `findMatchingBracket` — byandwithto :] withfor]to
+     - `generateZigCode` — :]inonya :]totsandya genot:]and
+     - `writeHeader` — :]andwith :]intoa
+     - `writeImports` — :]andwith andmportaboutin
+     - `writeConstants` — :]andwith toaboutnwith]
+     - `writeTypes` — :]andwith tandbyin
+     - `writeCreationPatterns` — :]andwith :]in
+     - `writeBehaviorFunctions` — :]andwith :]totsandy
+     - `writeMemoryBuffers` — :]andwith WASM :]and
+     - `generateTests` — genot:]andya thosewiththatin
+     -  :]ande...
+
+2. **V1 withgenotrandraboutinan**: `trinity/output/vibee_self_hosting_v1.zig`
+   - :] withgenotrandraboutinan andz with]andfVersiontsand
+   - Vfor] inwithe tandpy and with]for]
+   - Vfor] inwithe :]totsand (toato :]toand)
+
+3. **:] daboutfor]**:
+   - V0 :] chand:] with]andfVersiontsandyu
+   - V0 genotrand:] toaboutd V1 andz with]andfVersiontsand
+   - :]andy step: on:]andt :]toand :]and:]andyamand
+
+---
+
+## :]
+
+### V1 with]andt :]toand
+
+:]notrandraboutin:] toaboutd V1 with]andt :]toand inmewiththat :] :]and:]andy:
 
 ```zig
 pub fn mapType(type_name: []const u8) []const u8 {
@@ -64,52 +64,52 @@ pub fn mapType(type_name: []const u8) []const u8 {
 }
 ```
 
-[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] self-hosting [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andть этand [CYR:[TRANSLATED]]toand.
+:] :] self-hosting :] :]andt etand :]toand.
 
-### [CYR:[TRANSLATED]] оwith[TRANSLATED]]withя for V1 == V2:
+### :] aboutwith]withya for V1 == V2:
 
-1. **[CYR:[TRANSLATED]]andть [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and behaviours**:
-   - `mapType` — [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]andtoа [CYR:[TRANSLATED]]inанandя тandпоin
-   - `extractInnerType` — [CYR:[TRANSLATED]]andтм andзin[CYR:[TRANSLATED]]andя
-   - `findMatchingBracket` — [CYR:[TRANSLATED]]andтм поandwithtoа withfor[TRANSLATED]]to
-   - `parseVibeeSpec` — [CYR:[TRANSLATED]] YAML-[CYR:[TRANSLATED]]withер
-   -  inwithе оwith[TRANSLATED]] behaviours
+1. **:]andt :]and:]and behaviours**:
+   - `mapType` — :]onya :]Version :]inanandya tandbyin
+   - `extractInnerType` — :]andtm andzin:]andya
+   - `findMatchingBracket` — :]andtm byandwithtoa withfor]to
+   - `parseVibeeSpec` — :] YAML-:]wither
+   -  inwithe aboutwith] behaviours
 
-2. **[CYR:[TRANSLATED]]inandть [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and toаto `implementation` fields** in spec:
+2. **:]inandt :]and:]and toato `implementation` fields** in spec:
    ```yaml
    - name: mapType
      implementation: |
-       // [CYR:[TRANSLATED]] toод [CYR:[TRANSLATED]]toцand mapType
+       // :] toaboutd :]totsand mapType
        pub fn mapType(type_name: []const u8) []const u8 {
            if (std.mem.eql(u8, type_name, "String")) return "[]const u8";
            // ... and ..
        }
    ```
 
-3. **[CYR:[TRANSLATED]]andфandцandроin[CYR:[TRANSLATED]] геnot[CYR:[TRANSLATED]]** for [CYR:[TRANSLATED]]andя and emit- [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andй
+3. **:]andfandtsandraboutin:] genot:]** for :]andya and emit- :]and:]andy
 
 ---
 
-## [CYR:[TRANSLATED]]
+## :]
 
-### Трand with[TRANSLATED]] VIBEE-first:
+### Trand with] VIBEE-first:
 
 ```
-Layer 0: .vibee [CYR:[TRANSLATED]]andфandtoацand
-├── vibee_self_hosting_v1.vibee  # [CYR:[TRANSLATED]] for[TRANSLATED]] spec
+Layer 0: .vibee :]andfVersiontsand
+├── vibee_self_hosting_v1.vibee  # :] for] spec
 
 Layer 1: Codegen Engine (hand-written)
-├── vibee_parser.zig              # [CYR:[TRANSLATED]]withер .vibee
-├── codegen/emitter.zig             # [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] геnot[CYR:[TRANSLATED]]
+├── vibee_parser.zig              # :]wither .vibee
+├── codegen/emitter.zig             # :]in:] genot:]
 ├── codegen/utils.zig               # Type mapping
 └── codegen/builder.zig             # CodeBuilder
 
 Layer 2: Generated Code (from .vibee)
-├── vibee_self_hosting_v1.zig      # V1 andз spec
-└── (702 [CYR:[TRANSLATED]]andх fileоin)
+├── vibee_self_hosting_v1.zig      # V1 andz spec
+└── (702 :]andkh fileaboutin)
 ```
 
-### Bootstrap [CYR:[TRANSLATED]]with:
+### Bootstrap :]with:
 
 ```
 V0 (hand-written)
@@ -125,54 +125,54 @@ V1 == V2 ? → SUCCESS
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
-### Cycle 75: [CYR:[TRANSLATED]]notнandе [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andй
+### Cycle 75: :]notnande :]and:]andy
 
-1. [CYR:[TRANSLATED]]inandть `implementation` fields in `vibee_self_hosting_v1.vibee`
-2. [CYR:[TRANSLATED]]andфandцandроin[CYR:[TRANSLATED]] emitter for [CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andй
-3. [CYR:[TRANSLATED]]notрandроin[CYR:[TRANSLATED]] V1 with [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andямand
-4. [CYR:[TRANSLATED]]inнandть V1 with орandгandon[CYR:[TRANSLATED]]
+1. :]inandt `implementation` fields in `vibee_self_hosting_v1.vibee`
+2. :]andfandtsandraboutin:] emitter for :]andya :]and:]andy
+3. :]notrandraboutin:] V1 with :]and :]and:]andyamand
+4. :]innandt V1 with aboutrandgandon:]
 
-### Cycle 76-80: [CYR:[TRANSLATED]]onя мand[CYR:[TRANSLATED]]andя
+### Cycle 76-80: :]onya mand:]andya
 
-1. Вfor[TRANSLATED]]andть VibeeParser in геnot[CYR:[TRANSLATED]]andю
-2. Вfor[TRANSLATED]]andть CodeBuilder in геnot[CYR:[TRANSLATED]]andю
-3. Вfor[TRANSLATED]]andть inwithе [CYR:[TRANSLATED]]and codegen
-4. Доwithтandчь V1 == V2
-
----
-
-## [CYR:[TRANSLATED]]
-
-### [CYR:[TRANSLATED]]:
-- `specs/tri/vibee_self_hosting_v1.vibee` — [CYR:[TRANSLATED]]onя with[TRANSLATED]]andфandtoацandя
-- `specs/tri/CYCLE74_SELF_HOSTING.md` — этfrom доfor[TRANSLATED]]
-
-### [CYR:[TRANSLATED]]notрandроin[CYR:[TRANSLATED]]:
-- `trinity/output/vibee_self_hosting_v1.zig` — V1 (with [CYR:[TRANSLATED]]toамand)
+1. Vfor]andt VibeeParser in genot:]andyu
+2. Vfor]andt CodeBuilder in genot:]andyu
+3. Vfor]andt inwithe :]and codegen
+4. Daboutwithtandch V1 == V2
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :]
 
-[CYR:[TRANSLATED]] self-hosting (V1 == V2) [CYR:[TRANSLATED]] **4-6 not[CYR:[TRANSLATED]]** [CYR:[TRANSLATED]]fromы:
+### :]:
+- `specs/tri/vibee_self_hosting_v1.vibee` — :]onya with]andfVersiontsandya
+- `specs/tri/CYCLE74_SELF_HOSTING.md` — etfrom daboutfor]
 
-- Week 1-2: [CYR:[TRANSLATED]]notнandе behaviours [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andямand
-- Week 3-4: Вfor[TRANSLATED]]andе parser and builder in геnot[CYR:[TRANSLATED]]andю
-- Week 5-6: [CYR:[TRANSLATED]]and for доwithтand[CYR:[TRANSLATED]]andя V1 == V2
+### :]notrandraboutin:]:
+- `trinity/output/vibee_self_hosting_v1.zig` — V1 (with :]toamand)
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
-| Крand[CYR:[TRANSLATED]]andй | [CYR:[TRANSLATED]]with |
+:] self-hosting (V1 == V2) :] **4-6 not:]** :]fromy:
+
+- Week 1-2: :]notnande behaviours :]and:]andyamand
+- Week 3-4: Vfor]ande parser and builder in genot:]andyu
+- Week 5-6: :]and for daboutwithtand:]andya V1 == V2
+
+---
+
+## :] :]
+
+| Krand:]andy | :]with |
 |----------|--------|
-| [CYR:[TRANSLATED]]on [CYR:[TRANSLATED]]onя with[TRANSLATED]]andфandtoацandя | ✅ |
-| V1 withгеnotрandроinан andз spec | ✅ |
-| V1 for[TRANSLATED]]or[CYR:[TRANSLATED]]withя | ⚠️ ([CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]]fromtoand) |
-| V1 [CYR:[TRANSLATED]] геnotрandроin[CYR:[TRANSLATED]] toод | ⚠️ ([CYR:[TRANSLATED]]toand [CYR:[TRANSLATED]] on[CYR:[TRANSLATED]]andть) |
-| V1 == V2 | ❌ ([CYR:[TRANSLATED]] 4-6 not[CYR:[TRANSLATED]]) |
+| :]on :]onya with]andfVersiontsandya | ✅ |
+| V1 withgenotrandraboutinan andz spec | ✅ |
+| V1 for]or:]withya | ⚠️ (:]withya :]fromtoand) |
+| V1 :] genotrandraboutin:] toaboutd | ⚠️ (:]toand :] on:]andt) |
+| V1 == V2 | ❌ (:] 4-6 not:]) |
 
 ---
 

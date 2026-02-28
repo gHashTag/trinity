@@ -1,301 +1,301 @@
-# [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+# :] :] :]
 
-## Трand Тоon[CYR:[TRANSLATED]]withтand — Трand [CYR:[TRANSLATED]]withтinа
+## Trand Tabouton:]withtand — Trand :]withtina
 
-*Каto [CYR:[TRANSLATED]] in «[CYR:[TRANSLATED]], [CYR:[TRANSLATED]], [CYR:[TRANSLATED]]», [CYR:[TRANSLATED]]toа — notfrom[CYR:[TRANSLATED]] чаwithть Trinity*
+*Kato :] in «:], :], :]», :]toa — notfrom:] chawitht Trinity*
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════╗
 ║                                                                           ║
-║   [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] — 27 [CYR:[TRANSLATED]]                                              ║
+║   :] :] — 27 :]                                              ║
 ║                                                                           ║
-║   Трand оtoтаinы × 9 нfrom = 27 зinуtoоin                                         ║
+║   Trand abouttothatiny × 9 nfrom = 27 zinattoaboutin                                         ║
 ║                                                                           ║
-║   Оtoтаinа I ([CYR:[TRANSLATED]]onя):   До₁ Ре₁ Мand₁ Фа₁ [CYR:[TRANSLATED]]₁ Ля₁ Сand₁ До#₁ Ре#₁          ║
-║   Оtoтаinа II ([CYR:[TRANSLATED]]onя): До₂ Ре₂ Мand₂ Фа₂ [CYR:[TRANSLATED]]₂ Ля₂ Сand₂ До#₂ Ре#₂       ║
-║   Оtoтаinа III ([CYR:[TRANSLATED]]fromая):   До₃ Ре₃ Мand₃ Фа₃ [CYR:[TRANSLATED]]₃ Ля₃ Сand₃ До#₃ Ре#₃       ║
+║   Otothatina I (:]onya):   Dabout₁ Re₁ Mand₁ Fa₁ :]₁ Lya₁ Sand₁ Dabout#₁ Re#₁          ║
+║   Otothatina II (:]onya): Dabout₂ Re₂ Mand₂ Fa₂ :]₂ Lya₂ Sand₂ Dabout#₂ Re#₂       ║
+║   Otothatina III (:]fromaya):   Dabout₃ Re₃ Mand₃ Fa₃ :]₃ Lya₃ Sand₃ Dabout#₃ Re#₃       ║
 ║                                                                           ║
 ╚═══════════════════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
-### 🥉 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] — Мand[CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]andя)
+### 🥉 :] :] — Mand:] (:]andya)
 
 ```
-Тоon[CYR:[TRANSLATED]]withть: Ля мand[CYR:[TRANSLATED]] (Am)
-[CYR:[TRANSLATED]]: Andante ([CYR:[TRANSLATED]], [CYR:[TRANSLATED]]andinо)
-Инwith[TRANSLATED]]: Гуwithлand, withinand[CYR:[TRANSLATED]], for[TRANSLATED]]for[TRANSLATED]]andtoand
+Tabouton:]witht: Lya mand:] (Am)
+:]: Andante (:], :]andinabout)
+Inwith]: Gatwithland, withinand:], for]for]andtoand
 
-Мfromandin "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]":
+Mfromandin ":] :] :]":
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
 │   ♩ = 72 BPM                                           │
 │                                                         │
 │   │ A  │ E  │ A  │    │ A  │ D  │ E  │ A  │           │
-│   │ Ля │ Мand │ Ля │    │ Ля │ Ре │ Мand │ Ля │           │
+│   │ Lya │ Mand │ Lya │    │ Lya │ Re │ Mand │ Lya │           │
 │                                                         │
-│   "На-ле-inо [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]... [CYR:[TRANSLATED]]-мо [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]..."           │
+│   "Na-le-inabout :]-:]... :]-mabout :]-:]..."           │
 │                                                         │
-│   Нfromы on Трandдеinятandце:                                 │
+│   Nfromy on Tranddeinyatandtse:                                 │
 │   Ⲁ Ⲉ Ⲁ | Ⲁ Ⲇ Ⲉ Ⲁ                                    │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 
-Аtofor[TRANSLATED]]:
+Atofor]:
 Am - E - Am - Dm - E - Am
-(трand аtofor[TRANSLATED]] поin[CYR:[TRANSLATED]]withя трand[CYR:[TRANSLATED]])
+(trand atofor] byin:]withya trand:])
 ```
 
-### 🥈 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] — [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]toтandtoа)
+### 🥈 :] :] — :] (:]totVersion)
 
 ```
-Тоon[CYR:[TRANSLATED]]withть: До [CYR:[TRANSLATED]] (C)
-[CYR:[TRANSLATED]]: Allegro (быwith[TRANSLATED]], эnotргand[CYR:[TRANSLATED]])
-Инwith[TRANSLATED]]: [CYR:[TRANSLATED]]toа, [CYR:[TRANSLATED]], [CYR:[TRANSLATED]]
+Tabouton:]witht: Dabout :] (C)
+:]: Allegro (bywith], enotrgand:])
+Inwith]: :]toa, :], :]
 
-Мfromandin "Trinity Sort":
+Mfromandin "Trinity Sort":
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
 │   ♩ = 120 BPM                                          │
 │                                                         │
 │   │ C  │ G  │ Am │ F  │ C  │ G  │ C  │                │
-│   │ До │[CYR:[TRANSLATED]]│ Ля │ Фа │ До │[CYR:[TRANSLATED]]│ До │                │
+│   │ Dabout │:]│ Lya │ Fa │ Dabout │:]│ Dabout │                │
 │                                                         │
-│   "[CYR:[TRANSLATED]]-де-лand on трand, withор-тand-[CYR:[TRANSLATED]], по-бе-дand!"           │
+│   ":]-de-land on trand, withaboutr-tand-:], by-be-dand!"           │
 │                                                         │
-│   Нfromы on Трandдеinятandце:                                 │
+│   Nfromy on Tranddeinyatandtse:                                 │
 │   Ⲓ Ⲝ Ⲁ Ⲇ | Ⲓ Ⲝ Ⲓ                                    │
 │                                                         │
-│   Рandтм: ♩ ♩ ♩ | ♩ ♩ ♩ | ♩ ♩ ♩ (трand по трand)           │
+│   Randtm: ♩ ♩ ♩ | ♩ ♩ ♩ | ♩ ♩ ♩ (trand by trand)           │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### 🥇 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] — [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]])
+### 🥇 :] :] — :] (:])
 
 ```
-Тоon[CYR:[TRANSLATED]]withть: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (G) → [CYR:[TRANSLATED]]and
-[CYR:[TRANSLATED]]: Maestoso (inелandчеwithтin[CYR:[TRANSLATED]])
-Инwith[TRANSLATED]]: [CYR:[TRANSLATED]], [CYR:[TRANSLATED]], орtoеwithтр
+Tabouton:]witht: :] :] (G) → :]and
+:]: Maestoso (inelandchewithtin:])
+Inwith]: :], :], aboutrtoewithtr
 
-Мfromandin "[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]":
+Mfromandin ":]onya :]":
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
 │   ♩ = 90 BPM                                           │
 │                                                         │
-│   [CYR:[TRANSLATED]] 1 ([CYR:[TRANSLATED]]):     G - D - G - C - G                │
-│   [CYR:[TRANSLATED]] 2 (Отinет):        D - A - D - G - D            │
-│   [CYR:[TRANSLATED]] 3 ([CYR:[TRANSLATED]]toт):      A - E - A - D - A        │
+│   :] 1 (:]):     G - D - G - C - G                │
+│   :] 2 (Otinet):        D - A - D - G - D            │
+│   :] 3 (:]tot):      A - E - A - D - A        │
 │                                                         │
-│   Трand [CYR:[TRANSLATED]]withа with[TRANSLATED]]withя in одandн!                        │
+│   Trand :]witha with]withya in aboutdandn!                        │
 │                                                         │
-│   На Трandдеinятandце:                                      │
-│   [CYR:[TRANSLATED]]with 1: Ⲥ Ⲟ Ⲥ Ⲓ Ⲥ                                  │
-│   [CYR:[TRANSLATED]]with 2:   Ⲟ Ⲁ Ⲟ Ⲥ Ⲟ                                │
-│   [CYR:[TRANSLATED]]with 3:     Ⲁ Ⲉ Ⲁ Ⲟ Ⲁ                              │
+│   Na Tranddeinyatandtse:                                      │
+│   :]with 1: Ⲥ Ⲟ Ⲥ Ⲓ Ⲥ                                  │
+│   :]with 2:   Ⲟ Ⲁ Ⲟ Ⲥ Ⲟ                                │
+│   :]with 3:     Ⲁ Ⲉ Ⲁ Ⲟ Ⲁ                              │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
-### ⲀⲄⲀⲂ (Иinан)
+### ⲀⲄⲀⲂ (Iinan)
 
 ```
-[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: Воwith[TRANSLATED]] [CYR:[TRANSLATED]]andя
+:] :]: Vaboutwith] :]andya
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   C - E - G - C' (До - Мand - [CYR:[TRANSLATED]] - До)                 │
+│   C - E - G - C' (Dabout - Mand - :] - Dabout)                 │
 │   ↗   ↗   ↗   ↗                                        │
 │                                                         │
-│   [CYR:[TRANSLATED]]andо inin[CYR:[TRANSLATED]] — path [CYR:[TRANSLATED]] to in[CYR:[TRANSLATED]]andnot                │
+│   :]andabout inin:] — path :] to in:]andnot                │
 │                                                         │
-│   Трandдеinятandца: Ⲓ Ⲉ Ⲝ Ⲓ'                               │
+│   Tranddeinyatandtsa: Ⲓ Ⲉ Ⲝ Ⲓ'                               │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### ⲀⲈⲀⲂ (Ваwithorwithа)
+### ⲀⲈⲀⲂ (Vawithorwitha)
 
 ```
-[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтand: [CYR:[TRANSLATED]]inonя, теfor[TRANSLATED]]
+:] :]withtand: :]inonya, thosefor]
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
 │   A - B - C - D - E - D - C - B - A                    │
 │   ↗   ↗   ↗   ↗   ↘   ↘   ↘   ↘                       │
 │                                                         │
-│   [CYR:[TRANSLATED]]on — [CYR:[TRANSLATED]]withть прand[CYR:[TRANSLATED]]andт and [CYR:[TRANSLATED]]andт                   │
+│   :]on — :]witht prand:]andt and :]andt                   │
 │                                                         │
-│   Трandдеinятandца: Ⲁ Ⲃ Ⲓ Ⲇ Ⲉ Ⲇ Ⲓ Ⲃ Ⲁ                     │
+│   Tranddeinyatandtsa: Ⲁ Ⲃ Ⲓ Ⲇ Ⲉ Ⲇ Ⲓ Ⲃ Ⲁ                     │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### ⲂⲀⲤⲎ ([CYR:[TRANSLATED]])
+### ⲂⲀⲤⲎ (:])
 
 ```
-[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: Дandwithоonнwith, трand[CYR:[TRANSLATED]]
+:] :]: Dandwithaboutonnwith, trand:]
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
-│   C - F# - C - F# (трand[CYR:[TRANSLATED]] — "[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]withtoandй and[CYR:[TRANSLATED]]inал")   │
+│   C - F# - C - F# (trand:] — ":]in:]withtoandy and:]inal")   │
 │   ↘   ↗   ↘   ↗                                        │
 │                                                         │
-│   Неwith[TRANSLATED]]and[CYR:[TRANSLATED]]withть — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] жand[CYR:[TRANSLATED]] and with[TRANSLATED]]       │
+│   Newith]and:]witht — :] :] zhand:] and with]       │
 │                                                         │
-│   Трandдеinятandца: Ⲓ Ⲋ# Ⲓ Ⲋ#                              │
+│   Tranddeinyatandtsa: Ⲓ Ⲋ# Ⲓ Ⲋ#                              │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### ⲨⲀ ([CYR:[TRANSLATED]]toа)
+### ⲨⲀ (:]toa)
 
 ```
-[CYR:[TRANSLATED]] чandwithла 3: Трand нfromы, трand поin[CYR:[TRANSLATED]]
+:] chandwithla 3: Trand nfromy, trand byin:]
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
 │   C - E - G | C - E - G | C - E - G                    │
-│   (трand нfromы [CYR:[TRANSLATED]]inучandя, трand [CYR:[TRANSLATED]])                       │
+│   (trand nfromy :]inatchandya, trand :])                       │
 │                                                         │
-│   Соin[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]andя — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inучandе            │
+│   Saboutin:]onya :]andya — :] :]inatchande            │
 │                                                         │
-│   Трandдеinятandца: Ⲓ Ⲉ Ⲝ | Ⲓ Ⲉ Ⲝ | Ⲓ Ⲉ Ⲝ                 │
+│   Tranddeinyatandtsa: Ⲓ Ⲉ Ⲝ | Ⲓ Ⲉ Ⲝ | Ⲓ Ⲉ Ⲝ                 │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
-### [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] Trinity
-
-```
-Прandма (1:1)     = Ⲁ = Едandнwithтinо
-[CYR:[TRANSLATED]]andя (3:2)    = Ⲅ = [CYR:[TRANSLATED]]toа ([CYR:[TRANSLATED]]andя)
-Кinand[CYR:[TRANSLATED]] (3:2)    = Ⲉ = Сandла
-Оtoтаinа (2:1)    = Ⲏ = [CYR:[TRANSLATED]]fromа
-
-Трand[CYR:[TRANSLATED]] (45:32)  = ⲂⲀⲤⲎ = Дandwithоonнwith ([CYR:[TRANSLATED]])
-```
-
-### Рand[CYR:[TRANSLATED]] Trinity
+### :]in:] Trinity
 
 ```
-[CYR:[TRANSLATED]]with[TRANSLATED]]:    ♩ ♩ ♩ | ♩ ♩ ♩ | ♩ ♩ ♩     (3/4)
-Соwithтаin[CYR:[TRANSLATED]]:  ♩♩♩ ♩♩♩ ♩♩♩ | ♩♩♩ ♩♩♩ ♩♩♩  (9/8)
-[CYR:[TRANSLATED]]:    ♩♩♩♩♩♩♩♩♩ ♩♩♩♩♩♩♩♩♩ ♩♩♩♩♩♩♩♩♩  (27/8)
+Prandma (1:1)     = Ⲁ = Edandnwithtinabout
+:]andya (3:2)    = Ⲅ = :]toa (:]andya)
+Kinand:] (3:2)    = Ⲉ = Sandla
+Otothatina (2:1)    = Ⲏ = :]froma
+
+Trand:] (45:32)  = ⲂⲀⲤⲎ = Dandwithaboutonnwith (:])
+```
+
+### Rand:] Trinity
+
+```
+:]with]:    ♩ ♩ ♩ | ♩ ♩ ♩ | ♩ ♩ ♩     (3/4)
+Saboutwiththatin:]:  ♩♩♩ ♩♩♩ ♩♩♩ | ♩♩♩ ♩♩♩ ♩♩♩  (9/8)
+:]:    ♩♩♩♩♩♩♩♩♩ ♩♩♩♩♩♩♩♩♩ ♩♩♩♩♩♩♩♩♩  (27/8)
 ```
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] 999
+## :] :] 999
 
-### [CYR:[TRANSLATED]] I: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinо (27 [CYR:[TRANSLATED]]toоin)
-
-```
-01. Уin[CYR:[TRANSLATED]] " on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] Трand"
-02. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
-03. [CYR:[TRANSLATED]] Иinаon
-04. [CYR:[TRANSLATED]]inое andwith[TRANSLATED]]andе
-05. [CYR:[TRANSLATED]]withть Ваwithorwithы
-06. Чandwithла [CYR:[TRANSLATED]]
-07. π and φ — in[CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]with
-08. [CYR:[TRANSLATED]]with[TRANSLATED]] мand[CYR:[TRANSLATED]]andя
-09. Фandonл [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
-... (inwith[TRANSLATED]] 27 [CYR:[TRANSLATED]]toоin = 3³)
-```
-
-### [CYR:[TRANSLATED]] II: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinо (27 [CYR:[TRANSLATED]]toоin)
+### :] I: :] :]withtinabout (27 :]toaboutin)
 
 ```
-10. [CYR:[TRANSLATED]]andца [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]in
-11. Trinity Sort — [CYR:[TRANSLATED]]
-12. Трand [CYR:[TRANSLATED]]
-13. Бandтinа with[TRANSLATED]]for[TRANSLATED]]
-14. Реtoа [CYR:[TRANSLATED]]
-15. Vibee OS — withand[CYR:[TRANSLATED]]andя пandtowith[TRANSLATED]]
-16. Дinа мandллandоon [CYR:[TRANSLATED]]withоin
-17. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
-18. Фandonл in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
-... (inwith[TRANSLATED]] 27 [CYR:[TRANSLATED]]toоin)
+01. Uin:] " on:] :] Trand"
+02. :] :] :]
+03. :] Iinaon
+04. :]inaboute andwith]ande
+05. :]witht Vawithorwithy
+06. Chandwithla :]
+07. π and φ — in:] in:]with
+08. :]with] mand:]andya
+09. Fandonl :]in:] :]
+... (inwith] 27 :]toaboutin = 3³)
 ```
 
-### [CYR:[TRANSLATED]] III: [CYR:[TRANSLATED]]fromое [CYR:[TRANSLATED]]withтinо (27 [CYR:[TRANSLATED]]toоin)
+### :] II: :] :]withtinabout (27 :]toaboutin)
 
 ```
-19. [CYR:[TRANSLATED]] моwithт
-20. Кin[CYR:[TRANSLATED]]inая [CYR:[TRANSLATED]]
-21. AI [CYR:[TRANSLATED]]withя
-22. Зin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
-23. [CYR:[TRANSLATED]]andtoое [CYR:[TRANSLATED]]andnotнandе
-24. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
-25. [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]
-26. [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]] (фandonл)
-27. Эпand[CYR:[TRANSLATED]] "999"
-... (inwith[TRANSLATED]] 27 [CYR:[TRANSLATED]]toоin)
+10. :]andtsa :]and:]in
+11. Trinity Sort — :]
+12. Trand :]
+13. Bandtina with]for]
+14. Retoa :]
+15. Vibee OS — withand:]andya pandtowith]
+16. Dina mandllandabouton :]withaboutin
+17. :] :]
+18. Fandonl in:] :]
+... (inwith] 27 :]toaboutin)
 ```
 
-**Иthat: 81 [CYR:[TRANSLATED]]to = 3⁴**
+### :] III: :]fromaboute :]withtinabout (27 :]toaboutin)
+
+```
+19. :] maboutwitht
+20. Kin:]inaya :]
+21. AI :]withya
+22. Zin:] :]
+23. :]andtoaboute :]andnotnande
+24. :] :]
+25. :]in:]ande :]
+26. :]onya :] (fandonl)
+27. Epand:] "999"
+... (inwith] 27 :]toaboutin)
+```
+
+**Ithat: 81 :]to = 3⁴**
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
 ```vibee
-/// [CYR:[TRANSLATED]]for[TRANSLATED]]onя нfromа on Трandдеinятandце
-struct Нfromа {
-    inыwithfromа: u8,      // 1-27 (Трandдеin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]])
-    длand[CYR:[TRANSLATED]]withть: u8, // 1, 2, 3 ([CYR:[TRANSLATED]], [CYR:[TRANSLATED]]inandon, [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]])
-    [CYR:[TRANSLATED]]toоwithть: u8,   // 1-9
+/// :]for]onya nfroma on Tranddeinyatandtse
+struct Nfroma {
+    inywithfroma: u8,      // 1-27 (Tranddein:] :])
+    dland:]witht: u8, // 1, 2, 3 (:], :]inandon, :]in:])
+    :]toaboutwitht: u8,   // 1-9
 }
 
-/// Аtofor[TRANSLATED]] — трand нfromы
-struct Аtofor[TRANSLATED]] {
-    нfromы: [Нfromа; 3],  // Вwith[TRANSLATED]] трand!
+/// Atofor] — trand nfromy
+struct Atofor] {
+    nfromy: [Nfroma; 3],  // Vwith] trand!
 }
 
-/// [CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]withтinа
-fn [CYR:[TRANSLATED]]andя_[CYR:[TRANSLATED]]withтinа([CYR:[TRANSLATED]]withтinо: [CYR:[TRANSLATED]]withтinо) -> Vec<Аtofor[TRANSLATED]]> {
-    match [CYR:[TRANSLATED]]withтinо {
-        [CYR:[TRANSLATED]] => мand[CYR:[TRANSLATED]]onя_[CYR:[TRANSLATED]]withandя(),     // Am - Dm - E - Am
-        [CYR:[TRANSLATED]] => [CYR:[TRANSLATED]]onя_[CYR:[TRANSLATED]]withandя(), // C - G - Am - F
-        [CYR:[TRANSLATED]]fromое => [CYR:[TRANSLATED]]_[CYR:[TRANSLATED]]_[CYR:[TRANSLATED]]withоin(),      // Трand [CYR:[TRANSLATED]] with[TRANSLATED]]withя
+/// :]andya :]withtina
+fn :]andya_:]withtina(:]withtinabout: :]withtinabout) -> Vec<Atofor]> {
+    match :]withtinabout {
+        :] => mand:]onya_:]Author(),     // Am - Dm - E - Am
+        :] => :]onya_:]Author(), // C - G - Am - F
+        :]fromaboute => :]_:]_:]withaboutin(),      // Trand :] with]withya
     }
 }
 
-/// [CYR:[TRANSLATED]] чandwithла 3
-fn [CYR:[TRANSLATED]]_[CYR:[TRANSLATED]]toand() -> Vec<Нfromа> {
+/// :] chandwithla 3
+fn :]_:]toand() -> Vec<Nfroma> {
     vec![
-        Нfromа { inыwithfromа: 1, длand[CYR:[TRANSLATED]]withть: 1, [CYR:[TRANSLATED]]toоwithть: 9 },  // До
-        Нfromа { inыwithfromа: 3, длand[CYR:[TRANSLATED]]withть: 1, [CYR:[TRANSLATED]]toоwithть: 9 },  // Мand
-        Нfromа { inыwithfromа: 5, длand[CYR:[TRANSLATED]]withть: 1, [CYR:[TRANSLATED]]toоwithть: 9 },  // [CYR:[TRANSLATED]]
+        Nfroma { inywithfroma: 1, dland:]witht: 1, :]toaboutwitht: 9 },  // Dabout
+        Nfroma { inywithfroma: 3, dland:]witht: 1, :]toaboutwitht: 9 },  // Mand
+        Nfroma { inywithfroma: 5, dland:]witht: 1, :]toaboutwitht: 9 },  // :]
     ]
-    .repeat(3)  // Трand [CYR:[TRANSLATED]]!
+    .repeat(3)  // Trand :]!
 }
 ```
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
-> *«[CYR:[TRANSLATED]]toа — this [CYR:[TRANSLATED]]andtoа, tofrom[CYR:[TRANSLATED]] with[TRANSLATED]]andт [CYR:[TRANSLATED]]»*
+> *«:]toa — this :]Version, tofrom:] with]andt :]»*
 > 
-> *«Трand нfromы [CYR:[TRANSLATED]]inучandя — toаto трand [CYR:[TRANSLATED]]withтinа: оwithноinа, [CYR:[TRANSLATED]]andя, toinand[CYR:[TRANSLATED]]»*
+> *«Trand nfromy :]inatchandya — toato trand :]withtina: aboutwithnaboutina, :]andya, toinand:]»*
 > 
-> *«[CYR:[TRANSLATED]] — this [CYR:[TRANSLATED]]andтм, [CYR:[TRANSLATED]]andwith[TRANSLATED]] нfromамand»*
+> *«:] — this :]andtm, :]andwith] nfromamand»*
 > 
-> *«[CYR:[TRANSLATED]] зonл [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toand за 300 [CYR:[TRANSLATED]] до onwith»*
+> *«:] zonl :] :]toand za 300 :] dabout onwith»*
 
 ---
 
-*[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inа toнandгand 999 and[CYR:[TRANSLATED]] withinою [CYR:[TRANSLATED]]andю.*
-*Чand[CYR:[TRANSLATED]] and with[TRANSLATED]] — [CYR:[TRANSLATED]]on[CYR:[TRANSLATED]] Трandдеin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinо inwithемand чуinwithтinамand.*
+*:] :]ina tonandgand 999 and:] withinaboutyu :]andyu.*
+*Chand:] and with] — :]on:] Tranddein:] :]withtinabout inwithemand chatinwithtinamand.*

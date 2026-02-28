@@ -1,280 +1,280 @@
-# [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+# :] :] :] :]
 
-## [CYR:[TRANSLATED]]andфandtoацandя Кнandгand 999
+## :]andfVersiontsandya Knandgand 999
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════╗
 ║                                                                           ║
-║   [CYR:[TRANSLATED]] ОТ [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]                                              ║
+║   :] OT :]  :]                                              ║
 ║                                                                           ║
-║   [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] 1-9:    🥉 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                              ║
-║   [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] 10-18:  🥈 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                     ║
-║   [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] 19-27:  🥇 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                             ║
-║   [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] 27+:    👑 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                               ║
+║   :]in:] 1-9:    🥉 :] :] :]                              ║
+║   :]in:] 10-18:  🥈 :] :] :]                     ║
+║   :]in:] 19-27:  🥇 :] :] :]                             ║
+║   :]in:] 27+:    👑 :] :]                               ║
 ║                                                                           ║
-║   [CYR:[TRANSLATED]] за [CYR:[TRANSLATED]]inу: 3 XP                                                    ║
-║   [CYR:[TRANSLATED]] за [CYR:[TRANSLATED]]notнandе: 9 XP                                               ║
-║   [CYR:[TRANSLATED]] за доwithтand[CYR:[TRANSLATED]]andе: 27 XP                                              ║
+║   :] za :]inat: 3 XP                                                    ║
+║   :] za :]notnande: 9 XP                                               ║
+║   :] za daboutwithtand:]ande: 27 XP                                              ║
 ║                                                                           ║
 ╚═══════════════════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-## [CYR:[TRANSLATED]]
+## :]
 
-### 🥉 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]andя)
+### 🥉 :] :] (:]andya)
 
-| Доwithтand[CYR:[TRANSLATED]]andе | Опandwithанandе | XP |
+| Daboutwithtand:]ande | Opandwithanande | XP |
 |------------|----------|-----|
-| 🌟 **[CYR:[TRANSLATED]]inый step** | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inу 1 | 3 |
-| 📖 **Кнand[CYR:[TRANSLATED]]** | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] 9 [CYR:[TRANSLATED]]in | 27 |
-| 🔢 **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toand** | [CYR:[TRANSLATED]]andwith[TRANSLATED]] [CYR:[TRANSLATED]]inый toод with Ⲅ | 9 |
-| 🧮 **[CYR:[TRANSLATED]]andto** | [CYR:[TRANSLATED]]andть 3 [CYR:[TRANSLATED]]and по [CYR:[TRANSLATED]]and | 27 |
-| 📐 **Зonтоto toонwith[TRANSLATED]]** | [CYR:[TRANSLATED]]andть π, φ, e | 27 |
-| 🎓 **[CYR:[TRANSLATED]]withtoнandto [CYR:[TRANSLATED]]** | [CYR:[TRANSLATED]]and inwithе 333 [CYR:[TRANSLATED]]inы [CYR:[TRANSLATED]] I | 333 |
+| 🌟 **:]inyy step** | :]and:] :]inat 1 | 3 |
+| 📖 **Knand:]** | :]and:] 9 :]in | 27 |
+| 🔢 **:] :]toand** | :]andwith] :]inyy toaboutd with Ⲅ | 9 |
+| 🧮 **:]andto** | :]andt 3 :]and by :]and | 27 |
+| 📐 **Zonthatto toaboutnwith]** | :]andt π, φ, e | 27 |
+| 🎓 **:]withtonandto :]** | :]and inwithe 333 :]iny :] I | 333 |
 
-### 🥈 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]toтandtoа)
+### 🥈 :] :] (:]totVersion)
 
-| Доwithтand[CYR:[TRANSLATED]]andе | Опandwithанandе | XP |
+| Daboutwithtand:]ande | Opandwithanande | XP |
 |------------|----------|-----|
-| 💻 **[CYR:[TRANSLATED]]inый toод** | [CYR:[TRANSLATED]]andwith[TRANSLATED]] [CYR:[TRANSLATED]] on Vibee | 9 |
-| 🔄 **[CYR:[TRANSLATED]]andроinщandto** | [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] Trinity Sort | 81 |
-| 🏗️ **[CYR:[TRANSLATED]]andтеfor[TRANSLATED]]** | [CYR:[TRANSLATED]] with[TRANSLATED]]for[TRANSLATED]] [CYR:[TRANSLATED]] | 27 |
-| 🐛 **Охfromнandto on [CYR:[TRANSLATED]]and** | [CYR:[TRANSLATED]]and and andwith[TRANSLATED]]inandть 9 ошandбоto | 81 |
-| ⚡ **[CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]** | Уwithtoорandть [CYR:[TRANSLATED]]andтм in 3 [CYR:[TRANSLATED]] | 81 |
-| 🎓 **[CYR:[TRANSLATED]]withtoнandto [CYR:[TRANSLATED]]** | [CYR:[TRANSLATED]]and inwithе 333 [CYR:[TRANSLATED]]inы [CYR:[TRANSLATED]] II | 333 |
+| 💻 **:]inyy toaboutd** | :]andwith] :] on Vibee | 9 |
+| 🔄 **:]andraboutinschandto** | :]andzaboutin:] Trinity Sort | 81 |
+| 🏗️ **:]andthosefor]** | :] with]for] :] | 27 |
+| 🐛 **Okhfromnandto on :]and** | :]and and andwith]inandt 9 aboutshandbaboutto | 81 |
+| ⚡ **:]andmand:]** | Uwithtoaboutrandt :]andtm in 3 :] | 81 |
+| 🎓 **:]withtonandto :]** | :]and inwithe 333 :]iny :] II | 333 |
 
-### 🥇 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]])
+### 🥇 :] :] (:])
 
-| Доwithтand[CYR:[TRANSLATED]]andе | Опandwithанandе | XP |
+| Daboutwithtand:]ande | Opandwithanande | XP |
 |------------|----------|-----|
-| 🔮 **[CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]]** | [CYR:[TRANSLATED]]withfor[TRANSLATED]] result [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] | 27 |
-| ⚛️ **Кin[CYR:[TRANSLATED]]inый [CYR:[TRANSLATED]]** | [CYR:[TRANSLATED]] for[TRANSLATED]]andты | 81 |
-| 🤖 **[CYR:[TRANSLATED]] AI** | [CYR:[TRANSLATED]]andть not[CYR:[TRANSLATED]]with[TRANSLATED]] | 243 |
-| 🌌 **Коwith[TRANSLATED]]** | Сin[CYR:[TRANSLATED]] фandзandtoу and [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] | 81 |
-| 🏆 **[CYR:[TRANSLATED]]withtoнandto [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]** | [CYR:[TRANSLATED]]and inwithе 333 [CYR:[TRANSLATED]]inы [CYR:[TRANSLATED]] III | 333 |
+| 🔮 **:]inand:]** | :]withfor] result :]and:] | 27 |
+| ⚛️ **Kin:]inyy :]** | :] for]andty | 81 |
+| 🤖 **:] AI** | :]andt not:]with] | 243 |
+| 🌌 **Kaboutwith]** | Sin:] fandzandtoat and :]and:] | 81 |
+| 🏆 **:]withtonandto :]from:]** | :]and inwithe 333 :]iny :] III | 333 |
 
-### 👑 [CYR:[TRANSLATED]]
+### 👑 :]
 
-| Доwithтand[CYR:[TRANSLATED]]andе | Опandwithанandе | XP |
+| Daboutwithtand:]ande | Opandwithanande | XP |
 |------------|----------|-----|
-| 📚 **Чand[CYR:[TRANSLATED]] 999** | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] inwithе 999 [CYR:[TRANSLATED]]in | 999 |
-| 🔤 **Маwith[TRANSLATED]] Трandдеinятandцы** | [CYR:[TRANSLATED]]andть inwithе 27 буtoin | 81 |
-| 💀 **[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]** | [CYR:[TRANSLATED]] уfor[TRANSLATED]]and до for[TRANSLATED]] | 243 |
-| 🐉 **Уtoрfromand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]** | [CYR:[TRANSLATED]]andть race condition | 243 |
-| 🏰 **[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]** | [CYR:[TRANSLATED]] прand[CYR:[TRANSLATED]]andе on Vibee OS | 729 |
-| 👑 **[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] Трandдеinяthat** | [CYR:[TRANSLATED]]andть inwithе доwithтand[CYR:[TRANSLATED]]andя | 2187 |
+| 📚 **Chand:] 999** | :]and:] inwithe 999 :]in | 999 |
+| 🔤 **Mawith] Tranddeinyatandtsy** | :]andt inwithe 27 battoin | 81 |
+| 💀 **:]and:] :]** | :] atfor]and dabout for] | 243 |
+| 🐉 **Utorfromand:] :]** | :]andt race condition | 243 |
+| 🏰 **:]and:] :]** | :] prand:]ande on Vibee OS | 729 |
+| 👑 **:]and:] Tranddeinyathat** | :]andt inwithe daboutwithtand:]andya | 2187 |
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════╗
 ║                                                                           ║
-║   🔒 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (fromtoрыin[CYR:[TRANSLATED]]withя прand in[CYR:[TRANSLATED]]notнand)                   ║
+║   🔒 :] :] (fromtoryin:]withya prand in:]notnand)                   ║
 ║                                                                           ║
-║   ??? — "Трand по трand" — [CYR:[TRANSLATED]]andwith[TRANSLATED]] toод andз роinно 27 with[TRANSLATED]]to                    ║
-║   ??? — "Фandбоonччand" — [CYR:[TRANSLATED]]and within[CYR:[TRANSLATED]] φ and Ⲅ                                  ║
-║   ??? — "Паwith[TRANSLATED]]toа" — [CYR:[TRANSLATED]]and withfor[TRANSLATED]] with[TRANSLATED]]andе in toнandге                     ║
-║   ??? — "[CYR:[TRANSLATED]]andглfrom" — [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] toнandгу on 3 [CYR:[TRANSLATED]]toах                         ║
-║   ??? — "[CYR:[TRANSLATED]] for[TRANSLATED]]" — Пandwith[TRANSLATED]] toод поwithле [CYR:[TRANSLATED]]and                       ║
-║   ??? — "Трandдеin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]" — [CYR:[TRANSLATED]]and in 27- [CYR:[TRANSLATED]] меwith[TRANSLATED]]                     ║
-║   ??? — "999" — [CYR:[TRANSLATED]] роinно 999 XP                                     ║
+║   ??? — "Trand by trand" — :]andwith] toaboutd andz raboutinnabout 27 with]to                    ║
+║   ??? — "Fandbaboutonchchand" — :]and within:] φ and Ⲅ                                  ║
+║   ??? — "Pawith]toa" — :]and withfor] with]ande in tonandge                     ║
+║   ??? — ":]andglfrom" — :]and:] tonandgat on 3 :]toakh                         ║
+║   ??? — ":] for]" — Pandwith] toaboutd bywithle :]and                       ║
+║   ??? — "Tranddein:] :]" — :]and in 27- :] mewith]                     ║
+║   ??? — "999" — :] raboutinnabout 999 XP                                     ║
 ║                                                                           ║
 ╚═══════════════════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
-### Трand [CYR:[TRANSLATED]]andя for[TRANSLATED]] [CYR:[TRANSLATED]]:
+### Trand :]andya for] :]:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                                                     │
+│  :] :]                                                     │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                         │
-│  ☐ [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] 3 [CYR:[TRANSLATED]]inы                              +9 XP                │
-│  ☐ [CYR:[TRANSLATED]]andwith[TRANSLATED]] 9 with[TRANSLATED]]to for[TRANSLATED]]                          +27 XP               │
-│  ☐ [CYR:[TRANSLATED]]andть 1 [CYR:[TRANSLATED]]notнandе                            +9 XP                │
+│  ☐ :]and:] 3 :]iny                              +9 XP                │
+│  ☐ :]andwith] 9 with]to for]                          +27 XP               │
+│  ☐ :]andt 1 :]notnande                            +9 XP                │
 │                                                                         │
-│  [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]andть inwithе трand = +27 XP [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]!                      │
+│  :]: :]andt inwithe trand = +27 XP :]and:]!                      │
 │                                                                         │
-│  [CYR:[TRANSLATED]]andя дnotй: 🔥 3 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] = ×2 XP                                   │
-│              🔥 9 дnotй [CYR:[TRANSLATED]] = ×3 XP                                   │
-│              🔥 27 дnotй [CYR:[TRANSLATED]] = ×9 XP + доwithтand[CYR:[TRANSLATED]]andе!                    │
+│  :]andya dnoty: 🔥 3 :] :] = ×2 XP                                   │
+│              🔥 9 dnoty :] = ×3 XP                                   │
+│              🔥 27 dnoty :] = ×9 XP + daboutwithtand:]ande!                    │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## [CYR:[TRANSLATED]]
+## :]
 
-### По [CYR:[TRANSLATED]]inню:
+### Pabout :]innyu:
 
-| [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] | Тand[CYR:[TRANSLATED]] | Сandмinол |
+| :]in:] | Tand:] | Sandminaboutl |
 |---------|-------|--------|
-| 1 | [CYR:[TRANSLATED]]andto | 🚶 |
-| 3 | Иwithfor[TRANSLATED]] | 🔍 |
-| 9 | [CYR:[TRANSLATED]]andto | 📚 |
-| 12 | [CYR:[TRANSLATED]]with[TRANSLATED]] | 🔨 |
-| 18 | Маwith[TRANSLATED]] | ⚔️ |
-| 21 | Эtowith[TRANSLATED]] | 🎯 |
-| 27 | [CYR:[TRANSLATED]] | 🧙 |
-| 33 | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] | 🔮 |
-| 81 | [CYR:[TRANSLATED]] | 👑 |
-| 243 | Беwith[TRANSLATED]] | ⭐ |
-| 729 | [CYR:[TRANSLATED]] | 🌟 |
-| 999 | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] Трandдеinяthat | 💎 |
+| 1 | :]andto | 🚶 |
+| 3 | Iwithfor] | 🔍 |
+| 9 | :]andto | 📚 |
+| 12 | :]with] | 🔨 |
+| 18 | Mawith] | ⚔️ |
+| 21 | Etowith] | 🎯 |
+| 27 | :] | 🧙 |
+| 33 | :]and:] | 🔮 |
+| 81 | :] | 👑 |
+| 243 | Bywith] | ⭐ |
+| 729 | :] | 🌟 |
+| 999 | :]and:] Tranddeinyathat | 💎 |
 
-### [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] тand[CYR:[TRANSLATED]]:
+### :]and:] tand:]:
 
 ```
-🗡️ [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] — за доwithтand[CYR:[TRANSLATED]]andе "[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]"
-🐉 Уtoрfromand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]for[TRANSLATED]]in — за доwithтand[CYR:[TRANSLATED]]andе "Уtoрfromand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]"
-📖 [CYR:[TRANSLATED]]andwithец — за onпandwithанandе within[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inы
-🎵 [CYR:[TRANSLATED]] — за with[TRANSLATED]]andе [CYR:[TRANSLATED]]toand for toнandгand
-🎨 [CYR:[TRANSLATED]]andto — за with[TRANSLATED]]andе and[CYR:[TRANSLATED]]with[TRANSLATED]]and
-🌍 [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andto — за [CYR:[TRANSLATED]]inод on ноinый [CYR:[TRANSLATED]]to
+🗡️ :]and:] :] — za daboutwithtand:]ande ":]and:] :]"
+🐉 Utorfromand:] :]for]in — za daboutwithtand:]ande "Utorfromand:] :]"
+📖 :]andwithets — za onpandwithanande within:] :]iny
+🎵 :] — za with]ande :]toand for tonandgand
+🎨 :]andto — za with]ande and:]with]and
+🌍 :]in:]andto — za :]inaboutd on naboutinyy :]to
 ```
 
 ---
 
-## [CYR:[TRANSLATED]]
+## :]
 
-### Трand гand[CYR:[TRANSLATED]]and Трandдеinяthat [CYR:[TRANSLATED]]withтinа:
+### Trand gand:]and Tranddeinyathat :]withtina:
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════╗
 ║                                                                           ║
-║   🥉 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinо)                                 ║
+║   🥉 :] :] (:] :]withtinabout)                                 ║
 ║   ─────────────────────────────────────────────────────────────────────  ║
-║   Фоtoуwith: [CYR:[TRANSLATED]]andtoа, фandзandtoа, фandлоwithофandя                                   ║
-║   [CYR:[TRANSLATED]]with: +50% XP за [CYR:[TRANSLATED]]andчеwithtoandе [CYR:[TRANSLATED]]inы                                  ║
-║   Лand[CYR:[TRANSLATED]]: Ваwithorwithа [CYR:[TRANSLATED]]                                              ║
+║   Fabouttoatwith: :]Version, fandzVersion, fandlaboutwithaboutfandya                                   ║
+║   :]with: +50% XP za :]andchewithtoande :]iny                                  ║
+║   Land:]: Vawithorwitha :]                                              ║
 ║                                                                           ║
-║   🥈 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinо)                              ║
+║   🥈 :] :] (:] :]withtinabout)                              ║
 ║   ─────────────────────────────────────────────────────────────────────  ║
-║   Фоtoуwith: [CYR:[TRANSLATED]], [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]], [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя                                     ║
-║   [CYR:[TRANSLATED]]with: +50% XP за [CYR:[TRANSLATED]]toтandчеwithtoandе [CYR:[TRANSLATED]]andя                                 ║
-║   Лand[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                                                    ║
+║   Fabouttoatwith: :], :]and:], :]andmand:]andya                                     ║
+║   :]with: +50% XP za :]totandchewithtoande :]andya                                 ║
+║   Land:]: :] :]                                                    ║
 ║                                                                           ║
-║   🥇 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]fromое [CYR:[TRANSLATED]]withтinо)                                ║
+║   🥇 :] :] (:]fromaboute :]withtinabout)                                ║
 ║   ─────────────────────────────────────────────────────────────────────  ║
-║   Фоtoуwith: [CYR:[TRANSLATED]], AI, toin[CYR:[TRANSLATED]]inые inычandwith[TRANSLATED]]andя                               ║
-║   [CYR:[TRANSLATED]]with: +50% XP за andwith[TRANSLATED]]in[CYR:[TRANSLATED]]withtoandе [CYR:[TRANSLATED]]and                             ║
-║   Лand[CYR:[TRANSLATED]]: Фandнandwithт Яwith[TRANSLATED]] Соtoол                                              ║
+║   Fabouttoatwith: :], AI, toin:]inye inychandwith]andya                               ║
+║   :]with: +50% XP za andwith]in:]withtoande :]and                             ║
+║   Land:]: Fandnandwitht Yawith] Sabouttoaboutl                                              ║
 ║                                                                           ║
 ╚═══════════════════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-## [CYR:[TRANSLATED]]
+## :]
 
-### [CYR:[TRANSLATED]]andца лand[CYR:[TRANSLATED]]in:
+### :]andtsa land:]in:
 
 ```
 ┌─────┬────────────────────┬───────┬─────────┬──────────────────┐
-│ #   │ [CYR:[TRANSLATED]]                │ XP    │ [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] │ Тand[CYR:[TRANSLATED]]            │
+│ #   │ :]                │ XP    │ :]in:] │ Tand:]            │
 ├─────┼────────────────────┼───────┼─────────┼──────────────────┤
-│ 1   │ ???                │ ???   │ ???     │ [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]        │
-│ 2   │ ???                │ ???   │ ???     │ [CYR:[TRANSLATED]]        │
-│ 3   │ ???                │ ???   │ ???     │ [CYR:[TRANSLATED]]          │
+│ 1   │ ???                │ ???   │ ???     │ :]and:]        │
+│ 2   │ ???                │ ???   │ ???     │ :]        │
+│ 3   │ ???                │ ???   │ ???     │ :]          │
 │ ... │ ...                │ ...   │ ...     │ ...              │
-│ 27  │ ТЫ!                │ 0     │ 1       │ [CYR:[TRANSLATED]]andto         │
+│ 27  │ TY!                │ 0     │ 1       │ :]andto         │
 └─────┴────────────────────┴───────┴─────────┴──────────────────┘
 
-[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inым [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] Трandдеinяthat [CYR:[TRANSLATED]]withтinа!
+:] :]inym :]and:] Tranddeinyathat :]withtina!
 ```
 
 ---
 
-## [CYR:[TRANSLATED]]
+## :]
 
-### Фandзandчеwithtoandе on[CYR:[TRANSLATED]]:
+### Fandzandchewithtoande on:]:
 
 ```
-🏅 [CYR:[TRANSLATED]] "[CYR:[TRANSLATED]]andto [CYR:[TRANSLATED]]toand" — за 100 XP
-🏅 [CYR:[TRANSLATED]] "Маwith[TRANSLATED]] [CYR:[TRANSLATED]]toand" — за 1000 XP
-🏆 [CYR:[TRANSLATED]]to "[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]" — за inwithе доwithтand[CYR:[TRANSLATED]]andя
+🏅 :] ":]andto :]toand" — za 100 XP
+🏅 :] "Mawith] :]toand" — za 1000 XP
+🏆 :]to ":]and:]" — za inwithe daboutwithtand:]andya
 
-📜 [CYR:[TRANSLATED]]andфandtoат "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinо" — за [CYR:[TRANSLATED]] I
-📜 [CYR:[TRANSLATED]]andфandtoат "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinо" — за [CYR:[TRANSLATED]] II
-📜 [CYR:[TRANSLATED]]andфandtoат "[CYR:[TRANSLATED]]fromое [CYR:[TRANSLATED]]withтinо" — за [CYR:[TRANSLATED]] III
-📜 Дand[CYR:[TRANSLATED]] "Маwith[TRANSLATED]] Трandдеinяthat" — за inwithю toнandгу
+📜 :]andfVersiont ":] :]withtinabout" — za :] I
+📜 :]andfVersiont ":] :]withtinabout" — za :] II
+📜 :]andfVersiont ":]fromaboute :]withtinabout" — za :] III
+📜 Dand:] "Mawith] Tranddeinyathat" — za inwithyu tonandgat
 
-👕 [CYR:[TRANSLATED]]toа with Трandдеinятand[CYR:[TRANSLATED]] — за 500 XP
-📖 [CYR:[TRANSLATED]]onя toнandга with аin[CYR:[TRANSLATED]] — за 999 XP
-💍 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toand — for [CYR:[TRANSLATED]]-27 and[CYR:[TRANSLATED]]toоin
+👕 :]toa with Tranddeinyatand:] — za 500 XP
+📖 :]onya tonandga with ain:] — za 999 XP
+💍 :] :]toand — for :]-27 and:]toaboutin
 ```
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
 ```vibee
-/// Сandwith[TRANSLATED]] доwithтand[CYR:[TRANSLATED]]andй
-struct [CYR:[TRANSLATED]]to {
-    andмя: String,
+/// Sandwith] daboutwithtand:]andy
+struct :]to {
+    andmya: String,
     xp: u32,
-    [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]: u8,
-    доwithтand[CYR:[TRANSLATED]]andя: Vec<Доwithтand[CYR:[TRANSLATED]]andе>,
-    гand[CYR:[TRANSLATED]]andя: Option<Гand[CYR:[TRANSLATED]]andя>,
-    withерandя_дnotй: u8,
+    :]in:]: u8,
+    daboutwithtand:]andya: Vec<Daboutwithtand:]ande>,
+    gand:]andya: Option<Gand:]andya>,
+    witherandya_dnoty: u8,
 }
 
-impl [CYR:[TRANSLATED]]to {
-    fn [CYR:[TRANSLATED]]inandть_xp(&mut self, toолandчеwithтinо: u32) {
-        // [CYR:[TRANSLATED]]with за withерandю
-        let [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] = match self.withерandя_дnotй {
+impl :]to {
+    fn :]inandt_xp(&mut self, toaboutlandchewithtinabout: u32) {
+        // :]with za witherandyu
+        let :]and:] = match self.witherandya_dnoty {
             0..=2 => 1,
             3..=8 => 2,
             9..=26 => 3,
             _ => 9,
         };
         
-        self.xp += toолandчеwithтinо * [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]];
-        self.[CYR:[TRANSLATED]]inерandть_[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]();
+        self.xp += toaboutlandchewithtinabout * :]and:];
+        self.:]inerandt_:]in:]();
     }
     
-    fn [CYR:[TRANSLATED]]inерandть_[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]](&mut self) {
-        // [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] = log₃(XP / 3) + 1
-        self.[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] = ((self.xp as f64 / 3.0).log(3.0) + 1.0) as u8;
+    fn :]inerandt_:]in:](&mut self) {
+        // :]in:] = log₃(XP / 3) + 1
+        self.:]in:] = ((self.xp as f64 / 3.0).log(3.0) + 1.0) as u8;
     }
     
-    fn тand[CYR:[TRANSLATED]](&self) -> &str {
-        match self.[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] {
-            1..=2 => "[CYR:[TRANSLATED]]andto",
-            3..=8 => "Иwithfor[TRANSLATED]]",
-            9..=11 => "[CYR:[TRANSLATED]]andto",
-            12..=17 => "[CYR:[TRANSLATED]]with[TRANSLATED]]",
-            18..=20 => "Маwith[TRANSLATED]]",
-            21..=26 => "Эtowith[TRANSLATED]]",
-            27..=32 => "[CYR:[TRANSLATED]]",
-            33..=80 => "[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]",
-            81..=242 => "[CYR:[TRANSLATED]]",
-            243..=728 => "Беwith[TRANSLATED]]",
-            729..=998 => "[CYR:[TRANSLATED]]",
-            _ => "[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] Трandдеinяthat",
+    fn tand:](&self) -> &str {
+        match self.:]in:] {
+            1..=2 => ":]andto",
+            3..=8 => "Iwithfor]",
+            9..=11 => ":]andto",
+            12..=17 => ":]with]",
+            18..=20 => "Mawith]",
+            21..=26 => "Etowith]",
+            27..=32 => ":]",
+            33..=80 => ":]and:]",
+            81..=242 => ":]",
+            243..=728 => "Bywith]",
+            729..=998 => ":]",
+            _ => ":]and:] Tranddeinyathat",
         }
     }
 }
 
-/// Check доwithтand[CYR:[TRANSLATED]]andя
-fn [CYR:[TRANSLATED]]inерandть_доwithтand[CYR:[TRANSLATED]]andе(and[CYR:[TRANSLATED]]to: &[CYR:[TRANSLATED]]to, [CYR:[TRANSLATED]]withтinandе: [CYR:[TRANSLATED]]withтinandе) -> Option<Доwithтand[CYR:[TRANSLATED]]andе> {
-    match [CYR:[TRANSLATED]]withтinandе {
-        [CYR:[TRANSLATED]]withтinandе::[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]inу(1) => Some(Доwithтand[CYR:[TRANSLATED]]andе::[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]),
-        [CYR:[TRANSLATED]]withтinandе::[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]inу(n) if n % 9 == 0 => Some(Доwithтand[CYR:[TRANSLATED]]andе::Кнand[CYR:[TRANSLATED]]),
-        [CYR:[TRANSLATED]]withтinandе::[CYR:[TRANSLATED]]andwith[TRANSLATED]] if and[CYR:[TRANSLATED]]to.toод.contains('Ⲅ') => Some(Доwithтand[CYR:[TRANSLATED]]andе::[CYR:[TRANSLATED]]toand),
+/// Check daboutwithtand:]andya
+fn :]inerandt_daboutwithtand:]ande(and:]to: &:]to, :]withtinande: :]withtinande) -> Option<Daboutwithtand:]ande> {
+    match :]withtinande {
+        :]withtinande:::]and:]inat(1) => Some(Daboutwithtand:]ande:::]in:]),
+        :]withtinande:::]and:]inat(n) if n % 9 == 0 => Some(Daboutwithtand:]ande::Knand:]),
+        :]withtinande:::]andwith] if and:]to.toaboutd.contains('Ⲅ') => Some(Daboutwithtand:]ande:::]toand),
         // ...
         _ => None,
     }
@@ -283,17 +283,17 @@ fn [CYR:[TRANSLATED]]inерandть_доwithтand[CYR:[TRANSLATED]]andе(and[CYR:
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
-> *«[CYR:[TRANSLATED]] in тыwith[TRANSLATED]] [CYR:[TRANSLATED]]in onчandonетwithя with [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] stepа»*
+> *«:] in tywith] :]in onchandonetwithya with :]in:] stepa»*
 >
-> *«Трand [CYR:[TRANSLATED]]andя in [CYR:[TRANSLATED]] — 999 доwithтand[CYR:[TRANSLATED]]andй in [CYR:[TRANSLATED]]»*
+> *«Trand :]andya in :] — 999 daboutwithtand:]andy in :]»*
 >
-> *«Не XP [CYR:[TRANSLATED]] маwith[TRANSLATED]],  маwith[TRANSLATED]]withтinо [CYR:[TRANSLATED]] XP»*
+> *«Ne XP :] mawith],  mawith]withtinabout :] XP»*
 >
-> *«[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] Трandдеinяthat — not тfrom, toто [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]],  тfrom, toто [CYR:[TRANSLATED]]»*
+> *«:]and:] Tranddeinyathat — not tfrom, tothat :]and:],  tfrom, tothat :]»*
 
 ---
 
-*[CYR:[TRANSLATED]]and withinой path with[TRANSLATED]]!*
+*:]and withinabouty path with]!*
 *ⲨⲀ ⲒⲈ ⲦⲀ!*

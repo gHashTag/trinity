@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 VIBEE WebArena Agent Server
-API сервер для выполнения задач WebArena
+API server for inybylnenandya zadach WebArena
 φ² + 1/φ² = 3 | PHOENIX = 999
 """
 
@@ -13,7 +13,7 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-# Конфигурация WebArena окружения (из переменных среды)
+# Configuration WebArena abouttoratzhenandya (from peremennykh withredy)
 WEBARENA_CONFIG = {
     "SHOPPING": os.getenv("WEBARENA_SHOPPING", ""),
     "SHOPPING_ADMIN": os.getenv("WEBARENA_SHOPPING_ADMIN", ""),
@@ -23,19 +23,19 @@ WEBARENA_CONFIG = {
     "MAP": os.getenv("WEBARENA_MAP", ""),
 }
 
-# Anthropic API ключ
+# Anthropic API key
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 
 
 class VibeeAgent:
-    """VIBEE Agent для WebArena задач"""
+    """VIBEE Agent for WebArena zadach"""
     
     def __init__(self):
         self.config = WEBARENA_CONFIG
         self.trajectory = []
         
     def observe(self, page_content: str) -> dict:
-        """Наблюдение за состоянием страницы"""
+        """Nablyudenande za statem withtranandtsy"""
         return {
             "timestamp": datetime.now().isoformat(),
             "content_length": len(page_content),
@@ -43,12 +43,12 @@ class VibeeAgent:
         }
     
     def think(self, observation: dict, intent: str) -> str:
-        """Размышление о следующем действии (LLM)"""
-        # TODO: Интеграция с Claude API
-        return "click"  # Заглушка
+        """Razmyshlenande about withledatyuschem deywithtinandand (LLM)"""
+        # TODO: Inthosegratsandya with Claude API
+        return "click"  # Zaglatshtoa
     
     def act(self, action: str, params: dict) -> dict:
-        """Выполнение действия"""
+        """Vybylnenande deywithtinandya"""
         return {
             "action": action,
             "params": params,
@@ -57,7 +57,7 @@ class VibeeAgent:
         }
     
     def execute_task(self, task: dict) -> dict:
-        """Выполнение одной задачи WebArena"""
+        """Vybylnenande aboutdnabouty zadachand WebArena"""
         start_time = time.time()
         
         result = {
@@ -76,7 +76,7 @@ class VibeeAgent:
             max_steps = 10
             for step in range(max_steps):
                 # Observe
-                obs = self.observe("")  # TODO: реальный контент страницы
+                obs = self.observe("")  # TODO: ny toaboutnthosent withtranandtsy
                 
                 # Think
                 action = self.think(obs, task.get("intent", ""))
@@ -91,12 +91,12 @@ class VibeeAgent:
                     "result": act_result
                 })
                 
-                # Проверка завершения
+                # Check zainershenandya
                 if action == "stop":
                     break
             
             result["success"] = True
-            result["score"] = 0.5  # TODO: реальная оценка
+            result["score"] = 0.5  # TODO: realonya abouttsentoa
             
         except Exception as e:
             result["error"] = str(e)
@@ -120,8 +120,8 @@ def health():
 
 @app.route("/config", methods=["GET"])
 def get_config():
-    """Получение конфигурации"""
-    # Скрываем чувствительные данные
+    """Paboutlatchenande toaboutnfandgatratsandand"""
+    # Storyinaem chatinwithtinandthoselnye data
     safe_config = {k: bool(v) for k, v in WEBARENA_CONFIG.items()}
     return jsonify({
         "webarena_configured": safe_config,
@@ -131,7 +131,7 @@ def get_config():
 
 @app.route("/task", methods=["POST"])
 def execute_task():
-    """Выполнение одной задачи"""
+    """Vybylnenande aboutdnabouty zadachand"""
     task = request.json
     if not task:
         return jsonify({"error": "No task provided"}), 400
@@ -144,7 +144,7 @@ def execute_task():
 
 @app.route("/benchmark", methods=["POST"])
 def run_benchmark():
-    """Запуск бенчмарка на списке задач"""
+    """Zapatwithto benchmartoa on withpandwithtoe zadach"""
     data = request.json
     tasks = data.get("tasks", [])
     
@@ -175,7 +175,7 @@ def run_benchmark():
 
 @app.route("/", methods=["GET"])
 def index():
-    """Главная страница"""
+    """Glainonya page"""
     return jsonify({
         "name": "VIBEE WebArena Agent",
         "version": "23.51.0",

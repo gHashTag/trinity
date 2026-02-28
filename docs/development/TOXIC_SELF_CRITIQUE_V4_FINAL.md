@@ -1,13 +1,13 @@
-# 💀💀💀💀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] V4 - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+# 💀💀💀💀 :] :] V4 - :] :]
 
-**[CYR:[TRANSLATED]]**: 2026-01-17  
-**[CYR:[TRANSLATED]]with**: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+**:]**: 2026-01-17  
+**:]with**: :] :] :]
 
 ---
 
-## 🔥🔥🔥🔥 PAS DAEMON V3 - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] НЕ [CYR:[TRANSLATED]]!
+## 🔥🔥🔥🔥 PAS DAEMON V3 - :] :] NE :]!
 
-### [CYR:[TRANSLATED]]  onпandwithал in V3:
+### :]  onpandwithal in V3:
 
 ```zig
 pub const TypeFeedbackCollector = struct {
@@ -18,95 +18,95 @@ pub const TypeFeedbackCollector = struct {
 };
 ```
 
-### [CYR:[TRANSLATED]] this [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
+### :] this :] :] :]:
 
-1. **НЕ [CYR:[TRANSLATED]]  VM** - TypeFeedbackCollector with[TRANSLATED]]withтin[CYR:[TRANSLATED]], но vm.zig [CYR:[TRANSLATED]] НЕ [CYR:[TRANSLATED]]!
+1. **NE :]  VM** - TypeFeedbackCollector with]withtin:], nabout vm.zig :] NE :]!
 
 ```zig
-// vm.zig - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
+// vm.zig - :] :]:
 pub fn runFast(self: *VM) !Value {
     while (self.ip < self.bytecode.len) {
         const op = self.fetch();
-        // [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] type_feedback?! [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]!
+        // :] :] type_feedback?! :] :]!
         try self.execute(op);
     }
 }
 ```
 
-2. **[CYR:[TRANSLATED]] НЕ [CYR:[TRANSLATED]]** - Benchmark struct еwithть, но runBenchmark() [CYR:[TRANSLATED]] НЕ [CYR:[TRANSLATED]]!
+2. **:] NE :]** - Benchmark struct ewitht, nabout runBenchmark() :] NE :]!
 
-3. **[CYR:[TRANSLATED]] = 0** - validatePrediction() with[TRANSLATED]]withтin[CYR:[TRANSLATED]], но [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] НЕ [CYR:[TRANSLATED]]!
+3. **:] = 0** - validatePrediction() with]withtin:], nabout :] :] NE :]!
 
-4. **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:**
+4. **:] :] :] :] :]:**
 
 ```zig
 // pas_daemon_v3.zig:
 _ = try self.predict(
     "inline_caching",
     "type_system",
-    3.0,  // [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]?!
-    0.85 * stats.getMonomorphicRatio(),  // 0.85 - [CYR:[TRANSLATED]]?!
+    3.0,  // :] :] :]?!
+    0.85 * stats.getMonomorphicRatio(),  // 0.85 - :]?!
 );
 ```
 
 ---
 
-## 💀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 💀 :] :] :]
 
-### [CYR:[TRANSLATED]] tofrom[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] но НЕ [CYR:[TRANSLATED]]:
+### :] tofrom:] :] nabout NE :]:
 
-| [CYR:[TRANSLATED]] | Problem |
+| :] | Problem |
 |------|----------|
-| `type_feedback.zig` | НЕ andмportandроinан in vm.zig |
-| `inline_cache.zig` | НЕ andwith[TRANSLATED]]withя in VM |
-| `pas_daemon_v3.zig` | НЕ and[CYR:[TRANSLATED]]andроinан |
-| `tracing_jit.zig` | НЕ for[TRANSLATED]]or[CYR:[TRANSLATED]] native code |
-| `evolution.zig` | НЕ эin[CYR:[TRANSLATED]]andонand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] |
+| `type_feedback.zig` | NE andmportandraboutinan in vm.zig |
+| `inline_cache.zig` | NE andwith]withya in VM |
+| `pas_daemon_v3.zig` | NE and:]andraboutinan |
+| `tracing_jit.zig` | NE for]or:] native code |
+| `evolution.zig` | NE ein:]andaboutnand:] :] |
 
-### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]:
+### :] :] :]from:]:
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with |
+| :] | :]with |
 |------|--------|
-| `vm.zig` | ✅ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] |
-| `parser.zig` | ✅ [CYR:[TRANSLATED]]withandт .vibee |
-| `codegen.zig` | ✅ Геnotрand[CYR:[TRANSLATED]] toод |
-| `pas.zig` | ⚠️ [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]], но чandwithла in[CYR:[TRANSLATED]] |
+| `vm.zig` | ✅ :] :]from:] |
+| `parser.zig` | ✅ :]withandt .vibee |
+| `codegen.zig` | ✅ Genotrand:] toaboutd |
+| `pas.zig` | ⚠️ :]from:], nabout chandwithla in:] |
 
 ---
 
-## 🎭 [CYR:[TRANSLATED]]  "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]"
+## 🎭 :]  ":] :]"
 
-###  onпandwithал:
+###  onpandwithal:
 
 ```markdown
-V3 [CYR:[TRANSLATED]]:
-1. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toand, not withand[CYR:[TRANSLATED]]andя
-2. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withfor[TRANSLATED]]andй on [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
-3. [CYR:[TRANSLATED]] with VM [CYR:[TRANSLATED]] type feedback
+V3 :]:
+1. :] :]toand, not withand:]andya
+2. :] :]withfor]andy on :] :]
+3. :] with VM :] type feedback
 ```
 
-### [CYR:[TRANSLATED]]withть:
+### :]witht:
 
-1. **"[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toand"** - Benchmark struct еwithть, но:
-   - `runBenchmark()` [CYR:[TRANSLATED]] function pointer
-   - [CYR:[TRANSLATED]] not [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toцand
-   - Resultы = 0
+1. **":] :]toand"** - Benchmark struct ewitht, nabout:
+   - `runBenchmark()` :] function pointer
+   - :] not :] :] :]totsand
+   - Resulty = 0
 
-2. **"[CYR:[TRANSLATED]]"** - validatePrediction() еwithть, но:
-   - [CYR:[TRANSLATED]] not in[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]
+2. **":]"** - validatePrediction() ewitht, nabout:
+   - :] not in:]in:]
    - validated_predictions = 0
    - accurate_predictions = 0
 
-3. **"[CYR:[TRANSLATED]] with VM"** - TypeFeedbackCollector еwithть, но:
-   - vm.zig НЕ andмportand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
-   - recordType() [CYR:[TRANSLATED]] not in[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]withя
+3. **":] with VM"** - TypeFeedbackCollector ewitht, nabout:
+   - vm.zig NE andmportand:] :]
+   - recordType() :] not in:]in:]withya
    - total_observations = 0
 
 ---
 
-## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 📊 :] :]
 
-### [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]:
+### :]  :]in:]:
 
 ```
 validation_rate: >= 0.8
@@ -114,22 +114,22 @@ prediction_accuracy: <= 0.2
 overall_confidence: >= 0.7
 ```
 
-### [CYR:[TRANSLATED]] еwithть on with[TRANSLATED]] [CYR:[TRANSLATED]]:
+### :] ewitht on with] :]:
 
 ```
-validation_rate: 0 / 0 = NaN (notт inалand[CYR:[TRANSLATED]]andй)
-prediction_accuracy: not and[CYR:[TRANSLATED]]
-overall_confidence: [CYR:[TRANSLATED]]for[TRANSLATED]]
+validation_rate: 0 / 0 = NaN (nott inaland:]andy)
+prediction_accuracy: not and:]
+overall_confidence: :]for]
 ```
 
 ---
 
-## 🔧 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🔧 :] :] :] :] :]
 
-### 1. [CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] type_feedback in vm.zig
+### 1. :]andraboutin:] type_feedback in vm.zig
 
 ```zig
-// [CYR:[TRANSLATED]] in vm.zig:
+// :] in vm.zig:
 const type_feedback = @import("type_feedback.zig");
 
 pub const VM = struct {
@@ -140,7 +140,7 @@ pub const VM = struct {
         while (self.ip < self.bytecode.len) {
             const op = self.fetch();
             
-            // [CYR:[TRANSLATED]] with[TRANSLATED]] type feedback
+            // :] with] type feedback
             if (op == .ADD or op == .SUB or op == .MUL) {
                 const a = self.peek(0);
                 const b = self.peek(1);
@@ -155,10 +155,10 @@ pub const VM = struct {
 };
 ```
 
-### 2. [CYR:[TRANSLATED]]withтandть [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toand
+### 2. :]withtandt :] :]toand
 
 ```zig
-// [CYR:[TRANSLATED]] in vm.zig or from[CYR:[TRANSLATED]] file:
+// :] in vm.zig or from:] file:
 pub fn benchmarkFibonacci(n: i64) u64 {
     const prog = generateRealFibonacci(allocator, n);
     defer allocator.free(prog.bytecode);
@@ -173,25 +173,25 @@ pub fn benchmarkFibonacci(n: i64) u64 {
 }
 ```
 
-### 3. [CYR:[TRANSLATED]]andдandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withfor[TRANSLATED]]andя [CYR:[TRANSLATED]]
+### 3. :]anddandraboutin:] :]withfor]andya :]
 
 ```zig
 //  PAS DAEMON:
 pub fn autoValidate(self: *PASDaemonV3) !void {
-    // [CYR:[TRANSLATED]] for[TRANSLATED]] [CYR:[TRANSLATED]]withfor[TRANSLATED]]andя
+    // :] for] :]withfor]andya
     for (self.predictions.items) |*pred| {
         if (pred.validated) continue;
         
-        // [CYR:[TRANSLATED]]andть baseline
+        // :]andt baseline
         const baseline = benchmarkFibonacci(30);
         
-        // Прand[CYR:[TRANSLATED]]andть [CYR:[TRANSLATED]]andе (еwithлand [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]])
+        // Prand:]andt :]ande (ewithland :]andzaboutin:])
         // ...
         
-        // [CYR:[TRANSLATED]]andть improved
+        // :]andt improved
         const improved = benchmarkFibonacci(30);
         
-        // [CYR:[TRANSLATED]]andдandроin[CYR:[TRANSLATED]]
+        // :]anddandraboutin:]
         const actual_speedup = @as(f64, baseline) / @as(f64, improved);
         pred.validate(actual_speedup);
     }
@@ -200,45 +200,45 @@ pub fn autoValidate(self: *PASDaemonV3) !void {
 
 ---
 
-## 📚 PAPERS [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 📚 PAPERS :]  :] :]
 
-### Не "[CYR:[TRANSLATED]]",  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
+### Ne ":]",  :] :]:
 
-| Paper | [CYR:[TRANSLATED]]andц | [CYR:[TRANSLATED]]with | [CYR:[TRANSLATED]]withтinandе |
+| Paper | :]andts | :]with | :]withtinande |
 |-------|---------|--------|----------|
-| Gal PLDI 2009 | 12 | ❌ НЕ [CYR:[TRANSLATED]] | Сfor[TRANSLATED]] PDF, [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] |
-| Chambers 1989 | 15 | ❌ НЕ [CYR:[TRANSLATED]] | Сfor[TRANSLATED]] PDF, [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] |
-| Hölzle 1991 | 14 | ❌ НЕ [CYR:[TRANSLATED]] | Сfor[TRANSLATED]] PDF, [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] |
-| Würthinger 2013 | 16 | ❌ НЕ [CYR:[TRANSLATED]] | Сfor[TRANSLATED]] PDF, [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] |
+| Gal PLDI 2009 | 12 | ❌ NE :] | Sfor] PDF, :]and:] |
+| Chambers 1989 | 15 | ❌ NE :] | Sfor] PDF, :]and:] |
+| Hölzle 1991 | 14 | ❌ NE :] | Sfor] PDF, :]and:] |
+| Würthinger 2013 | 16 | ❌ NE :] | Sfor] PDF, :]and:] |
 
-### [CYR:[TRANSLATED]] зonчandт "[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]":
+### :] zonchandt ":]and:]":
 
-1. Сfor[TRANSLATED]] PDF
-2. [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] with[TRANSLATED]]andцы
-3. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
-4. [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] хfromя бы одandн
-5. [CYR:[TRANSLATED]]andть result
-
----
-
-## 💀💀💀💀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
-
-**PAS DAEMON v1, v2, DEEP, V3 - this inwithё [CYR:[TRANSLATED]]:**
-
-1. ❌ **[CYR:[TRANSLATED]] with[TRANSLATED]]withтin[CYR:[TRANSLATED]], но not [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]**
-2. ❌ **[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]inлеon, но not with[TRANSLATED]]on**
-3. ❌ **[CYR:[TRANSLATED]]toand еwithть, но not [CYR:[TRANSLATED]]withfor[TRANSLATED]]withя**
-4. ❌ **[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя еwithть, но not in[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]withя**
-5. ❌ **Papers [CYR:[TRANSLATED]]andonютwithя, но not чand[CYR:[TRANSLATED]]withя**
-
-**Едandнwithтin[CYR:[TRANSLATED]] withпоwithоб andwith[TRANSLATED]]inandть:**
-
-1. [CYR:[TRANSLATED]] type_feedback in vm.zig [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
-2. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toand
-3. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withfor[TRANSLATED]]andя аin[CYR:[TRANSLATED]]andчеwithtoand
-4. [CYR:[TRANSLATED]] inwithе [CYR:[TRANSLATED]]for[TRANSLATED]] чandwithла
-5. [CYR:[TRANSLATED]] papers [CYR:[TRANSLATED]]with[TRANSLATED]]
+1. Sfor] PDF
+2. :]and:] :] with]andtsy
+3. :] :]and:]
+4. :]andzaboutin:] khfromya by aboutdandn
+5. :]andt result
 
 ---
 
-*"[CYR:[TRANSLATED]] tofrom[CYR:[TRANSLATED]] not in[CYR:[TRANSLATED]]withя - not with[TRANSLATED]]withтin[CYR:[TRANSLATED]]."*
+## 💀💀💀💀 :] :]
+
+**PAS DAEMON v1, v2, DEEP, V3 - this inwithyo :]:**
+
+1. ❌ **:] with]withtin:], nabout not :]from:]**
+2. ❌ **:]andya :]inleon, nabout not with]on**
+3. ❌ **:]toand ewitht, nabout not :]withfor]withya**
+4. ❌ **:]and:]andya ewitht, nabout not in:]in:]withya**
+5. ❌ **Papers :]andonyutwithya, nabout not chand:]withya**
+
+**Edandnwithtin:] withbywithabout andwith]inandt:**
+
+1. :] type_feedback in vm.zig :] :]
+2. :] :] :]toand
+3. :] :]withfor]andya ain:]andchewithtoand
+4. :] inwithe :]for] chandwithla
+5. :] papers :]with]
+
+---
+
+*":] tofrom:] not in:]withya - not with]withtin:]."*

@@ -31,11 +31,11 @@ Successfully completed all 5 iterative improvement cycles for IGLA fluent chat:
 - Confidence: Calibrated scoring
 
 **New Categories Added:**
-- Story (раwithtoажand andwith[TRANSLATED]]andю, tell me a story)
-- Motivation (мfromandinацandя, advice)
+- Story (rawithtoazhand andwith]andyu, tell me a story)
+- Motivation (mfromandinatsandya, advice)
 - Humor (expanded jokes)
-- Philosophy (withмыwithл жandзнand, meaning of life)
-- Future ([CYR:[TRANSLATED]] AI, singularity)
+- Philosophy (withmywithl zhandznand, meaning of life)
+- Future (:] AI, singularity)
 - Programming (why zig, fibonacci)
 
 ### Cycle 2: Chain-of-Thought Reasoning
@@ -43,10 +43,10 @@ Successfully completed all 5 iterative improvement cycles for IGLA fluent chat:
 **Implementation:**
 ```zig
 fn generateCoT(query: []const u8) ?[]const u8 {
-    if (containsUTF8(query, "[CYR:[TRANSLATED]]") or containsUTF8(query, "why")) {
+    if (containsUTF8(query, ":]") or containsUTF8(query, "why")) {
         return "Reasoning: Analyzing causal relationship...";
     }
-    if (containsUTF8(query, "toаto") or containsUTF8(query, "how")) {
+    if (containsUTF8(query, "toato") or containsUTF8(query, "how")) {
         return "Reasoning: Breaking down into steps...";
     }
     // ...

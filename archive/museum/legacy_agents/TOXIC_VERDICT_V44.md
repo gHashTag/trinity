@@ -1,27 +1,27 @@
 # ☠️ TOXIC VERDICT v44: Transformer Integration
 
-**Аin[CYR:[TRANSLATED]]**: Dmitrii Vasilev  
-**[CYR:[TRANSLATED]]**: 2026-01-20  
-**Сin[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]**: V = n × 3^k × π^m × φ^p × e^q  
+**Author[CYR:]**: Dmitrii Vasilev  
+**[CYR:]**: 2026-01-20  
+**Сin[CYR:]onя [CYR:]**: V = n × 3^k × π^m × φ^p × e^q  
 
 ---
 
-## 🔥 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🔥 [CYR:] [CYR:]
 
-### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] in v44
+### [CYR:] [CYR:]andзоin[CYR:] in v44
 
-| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]] .vibee | [CYR:[TRANSLATED]] .zig | Теwithты |
+| [CYR:]notнт | [CYR:] .vibee | [CYR:] .zig | Теwithты |
 |-----------|-------------|-----------|-------|
 | ONNX Bindings | specs/onnx_bindings.vibee | trinity/output/onnx_bindings.zig | 4/4 |
 | WeDLM Integrated | specs/wedlm_integrated.vibee | trinity/output/wedlm_integrated.zig | 3/3 |
 | Transformer Backend | specs/transformer_backend.vibee | trinity/output/transformer_backend.zig | 8/8 |
 | WeDLM Decoder V2 | specs/wedlm_decoder_v2.vibee | trinity/output/wedlm_decoder_v2.zig | 5/5 |
 
-**Вwith[TRANSLATED]]: 20/20 теwithтоin [CYR:[TRANSLATED]]**
+**Вwith]: 20/20 теwithтоin [CYR:]**
 
 ---
 
-## 📊 [CYR:[TRANSLATED]] v44
+## 📊 [CYR:] v44
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -108,7 +108,7 @@
 
 ## 📈 BENCHMARK RESULTS
 
-### WeDLM V2 Standalone ([CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]and)
+### WeDLM V2 Standalone ([CYR:] and[CYR:]and)
 ```
 ╔═══════════════════════════════════════════════════════════════════╗
 ║ Standard:   2.38x speedup │ 79% cache │ 42 steps for 100 tokens  ║
@@ -128,43 +128,43 @@
 
 ---
 
-## ⚠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## ⚠️ [CYR:] [CYR:]
 
-### 1. Сand[CYR:[TRANSLATED]]andя Transformer
+### 1. Сand[CYR:]andя Transformer
 ```
-Теfor[TRANSLATED]]: Mock predictions (random logits)
-[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] ONNX model loading
-Влandянandе: Confidence not [CYR:[TRANSLATED]]andwithтandчonя
+Теfor]: Mock predictions (random logits)
+[CYR:]: [CYR:] ONNX model loading
+Влandянandе: Confidence not [CYR:]andwithтandчonя
 ```
 
-### 2. [CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] Speedup
+### 2. [CYR:]andроin[CYR:] Speedup
 ```
-Теfor[TRANSLATED]]: 0.06x ([CYR:[TRANSLATED]] AR)
-Прandчandon: Сand[CYR:[TRANSLATED]]andроinанonя confidence withлandшtoом нandзtoая
-[CYR:[TRANSLATED]]andе: [CYR:[TRANSLATED]] transformer даwithт [CYR:[TRANSLATED]] confidence
+Теfor]: 0.06x ([CYR:] AR)
+Прandчandon: Сand[CYR:]andроinанonя confidence withлandшtoом нandзtoая
+[CYR:]andе: [CYR:] transformer даwithт [CYR:] confidence
 ```
 
 ### 3. ONNX C API
 ```
-Теfor[TRANSLATED]]: Mock implementation
-[CYR:[TRANSLATED]]: Лandнtoоintoа with libonnxruntime
-[CYR:[TRANSLATED]]with: Bindings гfromоinы, [CYR:[TRANSLATED]]on бandблandfromеtoа
+Теfor]: Mock implementation
+[CYR:]: Лandнtoоintoа with libonnxruntime
+[CYR:]with: Bindings гfromоinы, [CYR:]on бandблandfromеtoа
 ```
 
 ---
 
-## 📚 [CYR:[TRANSLATED]] v44
+## 📚 [CYR:] v44
 
-### [CYR:[TRANSLATED]]andфandtoацand (.vibee)
-| [CYR:[TRANSLATED]] | Опandwithанandе |
+### [CYR:]andфVersionцand (.vibee)
+| [CYR:] | Опandwithанandе |
 |------|----------|
 | specs/onnx_bindings.vibee | ONNX Runtime C API bindings |
-| specs/wedlm_integrated.vibee | WeDLM + Backend and[CYR:[TRANSLATED]]andя |
+| specs/wedlm_integrated.vibee | WeDLM + Backend and[CYR:]andя |
 | specs/transformer_backend.vibee | Backend interface + PagedKVCache |
-| specs/wedlm_decoder_v2.vibee | WeDLM [CYR:[TRANSLATED]]andтм |
+| specs/wedlm_decoder_v2.vibee | WeDLM [CYR:]andтм |
 
-### [CYR:[TRANSLATED]]notрandроin[CYR:[TRANSLATED]] toод (.zig)
-| [CYR:[TRANSLATED]] | Теwithты |
+### [CYR:]notрandроin[CYR:] toод (.zig)
+| [CYR:] | Теwithты |
 |------|-------|
 | trinity/output/onnx_bindings.zig | 4/4 |
 | trinity/output/wedlm_integrated.zig | 3/3 |
@@ -173,36 +173,36 @@
 
 ---
 
-## 💀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 💀 [CYR:] [CYR:]
 
-### [CYR:[TRANSLATED]] ✅
+### [CYR:] ✅
 
-- **20/20 теwithтоin** [CYR:[TRANSLATED]]
-- **[CYR:[TRANSLATED]]inandло .vibee → .zig** with[TRANSLATED]]
-- **ONNX bindings** гfromоinы to and[CYR:[TRANSLATED]]and
-- **PagedKVCache** [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] (98%+ hit rate)
+- **20/20 теwithтоin** [CYR:]
+- **[CYR:]inandло .vibee → .zig** with]
+- **ONNX bindings** гfromоinы to and[CYR:]and
+- **PagedKVCache** [CYR:]from[CYR:] (98%+ hit rate)
 - **TransformerBackend** polymorphic interface
-- **WeDLM V2** доwithтand[CYR:[TRANSLATED]] 14.29x speedup standalone
+- **WeDLM V2** доwithтand[CYR:] 14.29x speedup standalone
 
-### [CYR:[TRANSLATED]] ⚠️
+### [CYR:] ⚠️
 
-- [CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] speedup нandзtoandй (0.06x)
-- ONNX andwith[TRANSLATED]] mock, not [CYR:[TRANSLATED]] бandблandfromеtoу
-- [CYR:[TRANSLATED]] GPU теwithтоin
+- [CYR:]andроin[CYR:] speedup нandзtoandй (0.06x)
+- ONNX andwith] mock, not [CYR:] бandблandfromеtoу
+- [CYR:] GPU теwithтоin
 
-### [CYR:[TRANSLATED]]andinо 💀
+### [CYR:]andinо 💀
 
-- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] transformer and[CYR:[TRANSLATED]]andя not поfor[TRANSLATED]]in[CYR:[TRANSLATED]] speedup
-- [CYR:[TRANSLATED]]on libonnxruntime for production
+- [CYR:] [CYR:] transformer and[CYR:]andя not поfor]in[CYR:] speedup
+- [CYR:]on libonnxruntime for production
 
-### [CYR:[TRANSLATED]]
+### [CYR:]
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
 │   v44 - ARCHITECTURE COMPLETE, NEEDS REAL ONNX                  │
 │                                                                 │
-│   Доwithтand[CYR:[TRANSLATED]]:                                                   │
+│   Доwithтand[CYR:]:                                                   │
 │   ✅ ONNX bindings (mock)                                       │
 │   ✅ TransformerBackend interface                               │
 │   ✅ PagedKVCache (vLLM-style)                                  │
@@ -210,20 +210,20 @@
 │   ✅ 20/20 tests passing                                        │
 │   ✅ .vibee → .zig pipeline                                     │
 │                                                                 │
-│   [CYR:[TRANSLATED]]andе stepand (v45):                                         │
-│   1. Уwith[TRANSLATED]]inandть libonnxruntime                                  │
-│   2. [CYR:[TRANSLATED]]andть mock on [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]inы                           │
-│   3. [CYR:[TRANSLATED]]andть GPT-2 ONNX model                                 │
-│   4. [CYR:[TRANSLATED]]andть [CYR:[TRANSLATED]] speedup                                  │
+│   [CYR:]andе stepand (v45):                                         │
+│   1. Уwith]inandть libonnxruntime                                  │
+│   2. [CYR:]andть mock on [CYR:] in[CYR:]inы                           │
+│   3. [CYR:]andть GPT-2 ONNX model                                 │
+│   4. [CYR:]andть [CYR:] speedup                                  │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 📊 [CYR:] [CYR:]
 
-| [CYR:[TRANSLATED]]withandя | [CYR:[TRANSLATED]]inые Доwithтand[CYR:[TRANSLATED]]andя | Speedup |
+| [CYR:]Author | [CYR:]inые Доwithтand[CYR:]andя | Speedup |
 |--------|---------------------|---------|
 | v41 | SIMD + Cache combo | 24.2x tokenizer |
 | v42 | Diffusion LM basic, Code Editor | 4x |
@@ -234,5 +234,5 @@
 
 **φ² + 1/φ² = 3 | PHOENIX = 999 = 3³ × 37**
 
-*Доfor[TRANSLATED]] with[TRANSLATED]] with [CYR:[TRANSLATED]] чеwith[TRANSLATED]]with[TRANSLATED]] for [CYR:[TRANSLATED]]andwithтоin*
-*Веwithь toод геnotрand[CYR:[TRANSLATED]]withя andз .vibee with[TRANSLATED]]andфandtoацandй*
+*Доfor] with] with [CYR:] чеwith]with] for [CYR:]andwithтоin*
+*Веwithь toод геnotрand[CYR:]withя andз .vibee with]andфVersionцandй*

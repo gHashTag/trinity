@@ -45,7 +45,7 @@
 ║    - Команда: zig build                                          ║
 ║    - Результат: Exit code: 0 (успешно)                        ║
 ║                                                                  ║
-║ 2. Бенчмарки implementations/zig:                                ║
+║ 2. Byнчмарки implementations/zig:                                ║
 ║    - Команда: zig build bench                                  ║
 ║    - Результат: Exit code: 0 (успешно)                        ║
 ║    - Lion optimizer step: 623 ns/op, 1602820.96 ops/sec       ║

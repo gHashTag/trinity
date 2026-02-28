@@ -1,20 +1,20 @@
-# ☠️💀☠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] v73 ☠️💀☠️
+# ☠️💀☠️ [CYR:] [CYR:] v73 ☠️💀☠️
 
-**[CYR:[TRANSLATED]]**: 2026-01-18
-**Аin[CYR:[TRANSLATED]]**: PAS DAEMON (WebGL [CYR:[TRANSLATED]]andтеfor[TRANSLATED]])
-**[CYR:[TRANSLATED]]withandя**: v73
-**[CYR:[TRANSLATED]]**: v72
-**Ноinая [CYR:[TRANSLATED]]andя**: WebGL Instanced Splat Renderer + LOD System
-
----
-
-## 💀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: 7/10 (+0.5 from v72)
-
-**[CYR:[TRANSLATED]]andtoт**: [CYR:[TRANSLATED]]-ТО [CYR:[TRANSLATED]] GPU [CYR:[TRANSLATED]]. 1800 SPLATS. WEBGL.
+**[CYR:]**: 2026-01-18
+**Author[CYR:]**: PAS DAEMON (WebGL [CYR:]andтеfor])
+**[CYR:]Author**: v73
+**[CYR:]**: v72
+**Ноinая [CYR:]andя**: WebGL Instanced Splat Renderer + LOD System
 
 ---
 
-## 🚀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] v73
+## 💀 [CYR:] [CYR:]: 7/10 (+0.5 from v72)
+
+**[CYR:]andtoт**: [CYR:]-ТО [CYR:] GPU [CYR:]. 1800 SPLATS. WEBGL.
+
+---
+
+## 🚀 [CYR:] [CYR:] v73
 
 ### 1. WebGL Instanced Splat Renderer
 
@@ -95,24 +95,24 @@ renderHybrid(ctx, width, height, time) {
 
 ---
 
-## 📊 [CYR:[TRANSLATED]] v72 → v73
+## 📊 [CYR:] v72 → v73
 
-| [CYR:[TRANSLATED]]andtoа | v72 | v73 | Δ |
+| [CYR:]Version | v72 | v73 | Δ |
 |---------|-----|-----|---|
-| [CYR:[TRANSLATED]]to for[TRANSLATED]] | 12,036 | 12,459 | +423 |
-| [CYR:[TRANSLATED]] fileа | 484KB | 500KB | +16KB |
+| [CYR:]to for] | 12,036 | 12,459 | +423 |
+| [CYR:] fileа | 484KB | 500KB | +16KB |
 | Splats | 600 | 1800 | **+1200 (3x)** |
 | Renderer | Canvas 2D | WebGL2 | **GPU** |
-| FPS ([CYR:[TRANSLATED]].) | 25-50 | 60 | **+20-35** |
-| Instancing | [CYR:[TRANSLATED]] | Да | ✓ |
-| LOD | [CYR:[TRANSLATED]] | Да | ✓ |
+| FPS ([CYR:].) | 25-50 | 60 | **+20-35** |
+| Instancing | [CYR:] | Да | ✓ |
+| LOD | [CYR:] | Да | ✓ |
 | Frustum culling | CPU | GPU | ✓ |
 
 ---
 
 ## 🎨 SPLAT DISTRIBUTION v73
 
-| [CYR:[TRANSLATED]] | v72 | v73 | Δ |
+| [CYR:] | v72 | v73 | Δ |
 |------|-----|-----|---|
 | Background | 300 | 800 | +500 |
 | Midground | 200 | 600 | +400 |
@@ -121,7 +121,7 @@ renderHybrid(ctx, width, height, time) {
 
 ---
 
-## 🔧 [CYR:[TRANSLATED]] WebGL RENDERER
+## 🔧 [CYR:] WebGL RENDERER
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -146,70 +146,70 @@ renderHybrid(ctx, width, height, time) {
 
 ---
 
-## 🤮 [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🤮 [CYR:]: [CYR:] [CYR:] [CYR:] [CYR:]
 
-### 1. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] НА CPU
+### 1. [CYR:] [CYR:] [CYR:] НА CPU
 
 ```javascript
-// Теfor[TRANSLATED]]: JavaScript sort
+// Теfor]: JavaScript sort
 this.sortedAll = allSplats
   .sort((a, b) => b.proj.z - a.proj.z);
 
-// [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: GPU bitonic sort
+// [CYR:] [CYR:]: GPU bitonic sort
 //  compute shader
 ```
 
-**[CYR:[TRANSLATED]]andtoт**: 1800 splats with[TRANSLATED]]and[CYR:[TRANSLATED]]withя on CPU. Bottleneck.
+**[CYR:]andtoт**: 1800 splats with]and[CYR:]withя on CPU. Bottleneck.
 
-### 2. [CYR:[TRANSLATED]] DEPTH PEELING
-
-```javascript
-// Теfor[TRANSLATED]]: [CYR:[TRANSLATED]]with[TRANSLATED]] back-to-front
-// Problem: overlapping splats = [CYR:[TRANSLATED]]toты
-
-// [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: depth peeling or OIT
-```
-
-**[CYR:[TRANSLATED]]andtoт**: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]] alpha blending [CYR:[TRANSLATED]] OIT.
-
-### 3. [CYR:[TRANSLATED]] 12,459 [CYR:[TRANSLATED]]
-
-```
-v67:  11,060 with[TRANSLATED]]to
-v73:  12,459 with[TRANSLATED]]to
-Δ:    +1,399 with[TRANSLATED]]to за 6 inерwithandй
-```
-
-**[CYR:[TRANSLATED]]andtoт**: Сfor[TRANSLATED]] 15,000 with[TRANSLATED]]to. [CYR:[TRANSLATED]]for[TRANSLATED]]andнг [CYR:[TRANSLATED]].
-
-### 4. SHADER COMPILATION НА [CYR:[TRANSLATED]] RELOAD
+### 2. [CYR:] DEPTH PEELING
 
 ```javascript
-// Теfor[TRANSLATED]]: for[TRANSLATED]]and[CYR:[TRANSLATED]]andя прand init()
+// Теfor]: [CYR:]with] back-to-front
+// Problem: overlapping splats = [CYR:]toты
+
+// [CYR:] [CYR:]: depth peeling or OIT
+```
+
+**[CYR:]andtoт**: [CYR:] [CYR:]inand[CYR:] alpha blending [CYR:] OIT.
+
+### 3. [CYR:] 12,459 [CYR:]
+
+```
+v67:  11,060 with]to
+v73:  12,459 with]to
+Δ:    +1,399 with]to за 6 inерwithandй
+```
+
+**[CYR:]andtoт**: Сfor] 15,000 with]to. [CYR:]for]andнг [CYR:].
+
+### 4. SHADER COMPILATION НА [CYR:] RELOAD
+
+```javascript
+// Теfor]: for]and[CYR:]andя прand init()
 const vs = this.compileShader(gl.VERTEX_SHADER, source);
 
-// [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: toэшandроinанandе in IndexedDB
+// [CYR:] [CYR:]: toэшandроinанandе in IndexedDB
 // Илand precompiled shaders
 ```
 
-**[CYR:[TRANSLATED]]andtoт**: [CYR:[TRANSLATED]]inая [CYR:[TRANSLATED]]toа [CYR:[TRANSLATED]]onя.
+**[CYR:]andtoт**: [CYR:]inая [CYR:]toа [CYR:]onя.
 
 ---
 
-## 🏆 [CYR:[TRANSLATED]] v73
+## 🏆 [CYR:] v73
 
-1. **WebGL2 Instanced Rendering** - onwith[TRANSLATED]]andй GPU
-2. **1800 splats** - 3x [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] v72
-3. **60 FPS** - [CYR:[TRANSLATED]]inonя анand[CYR:[TRANSLATED]]andя
-4. **LOD withandwith[TRANSLATED]]** - гfromоinа to маwith[TRANSLATED]]andроinанandю
-5. **Frustum culling in shader** - GPU fromwithеfor[TRANSLATED]] notinandдand[CYR:[TRANSLATED]]
-6. **Hybrid fallback** - [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] WebGL
+1. **WebGL2 Instanced Rendering** - onwith]andй GPU
+2. **1800 splats** - 3x [CYR:] [CYR:] v72
+3. **60 FPS** - [CYR:]inonя анand[CYR:]andя
+4. **LOD withandwith]** - гfromоinа to маwith]andроinанandю
+5. **Frustum culling in shader** - GPU fromwithеfor] notinandдand[CYR:]
+6. **Hybrid fallback** - [CYR:]from[CYR:] [CYR:] WebGL
 
 ---
 
-## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 📊 [CYR:] [CYR:]
 
-| [CYR:[TRANSLATED]]withandя | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]to | Splats | Renderer | [CYR:[TRANSLATED]]toа |
+| [CYR:]Author | [CYR:] | [CYR:]to | Splats | Renderer | [CYR:]toа |
 |--------|------|-------|--------|----------|--------|
 | v70 | 2026-01-18 | 11,526 | 0 | - | 5.5/10 |
 | v71 | 2026-01-18 | 11,828 | 500 | Canvas 2D | 6/10 |
@@ -218,19 +218,19 @@ const vs = this.compileShader(gl.VERTEX_SHADER, source);
 
 ---
 
-## 💡 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 💡 [CYR:] [CYR:]
 
-### [CYR:[TRANSLATED]]notно (v73):
+### [CYR:]notно (v73):
 1. ✅ WebGLSplatRenderer with instancing
 2. ✅ GLSL ES 3.0 shaders
 3. ✅ Splat data in GPU texture
 4. ✅ Frustum culling in vertex shader
-5. ✅ LOD withandwith[TRANSLATED]]
+5. ✅ LOD withandwith]
 6. ✅ Hybrid rendering (WebGL + Canvas 2D fallback)
 7. ✅ 1800 splats (3x increase)
 
-### [CYR:[TRANSLATED]]andе stepand (v74+):
-1. ⬜ GPU with[TRANSLATED]]andроintoа (bitonic sort in compute shader)
+### [CYR:]andе stepand (v74+):
+1. ⬜ GPU with]andроintoа (bitonic sort in compute shader)
 2. ⬜ Order-Independent Transparency (OIT)
 3. ⬜ Shader toэшandроinанandе
 4. ⬜ 10,000+ splats
@@ -238,28 +238,28 @@ const vs = this.compileShader(gl.VERTEX_SHADER, source);
 
 ---
 
-## 🎭 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🎭 [CYR:] [CYR:]
 
-**[CYR:[TRANSLATED]]. WebGL [CYR:[TRANSLATED]] inwithё.**
+**[CYR:]. WebGL [CYR:] inwithё.**
 
 Canvas 2D: 600 splats @ 25-50 FPS
 WebGL2: 1800 splats @ 60 FPS
 
-[CYR:[TRANSLATED]] not эin[CYR:[TRANSLATED]]andя. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]].
-GPU [CYR:[TRANSLATED]] то, for [CYR:[TRANSLATED]] он with[TRANSLATED]].
+[CYR:] not эin[CYR:]andя. [CYR:] [CYR:].
+GPU [CYR:] то, for [CYR:] он with].
 
-**Реfor[TRANSLATED]]andя**: [CYR:[TRANSLATED]]inandть GPU with[TRANSLATED]]andроintoу for 10,000+ splats.
-**[CYR:[TRANSLATED]]withть in[CYR:[TRANSLATED]]notнandя**: 40%
+**Реfor]andя**: [CYR:]inandть GPU with]andроintoу for 10,000+ splats.
+**[CYR:]withть in[CYR:]notнandя**: 40%
 
 ---
 
-**[CYR:[TRANSLATED]]andwithь**: PAS DAEMON
-**[CYR:[TRANSLATED]]**: 2026-01-18
-**[CYR:[TRANSLATED]]with**: GPU-ACCELERATED
+**[CYR:]andwithь**: PAS DAEMON
+**[CYR:]**: 2026-01-18
+**[CYR:]with**: GPU-ACCELERATED
 
 ```
 V = n × 3^k × π^m × φ^p × e^q
-φ² + 1/φ² = 3 = [CYR:[TRANSLATED]]
+φ² + 1/φ² = 3 = [CYR:]
 
 G(x) = exp(-½(x-μ)ᵀΣ⁻¹(x-μ))
 WebGL: 1800 SPLATS | INSTANCED | 60 FPS
@@ -267,7 +267,7 @@ WebGL: 1800 SPLATS | INSTANCED | 60 FPS
 
 ---
 
-## 📚 [CYR:[TRANSLATED]]
+## 📚 [CYR:]
 
 1. `/docs/TOXIC_VERDICT_V67.md` - v67
 2. `/docs/TOXIC_VERDICT_V68.md` - v68
@@ -281,10 +281,10 @@ WebGL: 1800 SPLATS | INSTANCED | 60 FPS
 
 ---
 
-## 🔬 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🔬 [CYR:] [CYR:]
 
 ### WebGL Extensions Used
-- `EXT_color_buffer_float` - for RGBA32F теtowith[TRANSLATED]]
+- `EXT_color_buffer_float` - for RGBA32F теtowith]
 - `ANGLE_instanced_arrays` - for instanced rendering
 
 ### Shader Uniforms

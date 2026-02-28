@@ -1,35 +1,35 @@
-# ☠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] v35 - VIBEE Terminal Agent
+# ☠️ [CYR:] [CYR:] v35 - VIBEE Terminal Agent
 
-**[CYR:[TRANSLATED]]:** 2026-01-19  
-**[CYR:[TRANSLATED]]withandя:** v35  
-**[CYR:[TRANSLATED]]with:** PRODUCTION READY ✅
+**[CYR:]:** 2026-01-19  
+**[CYR:]Author:** v35  
+**[CYR:]with:** PRODUCTION READY ✅
 
 ---
 
-## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 📊 [CYR:] [CYR:]
 
-| [CYR:[TRANSLATED]]andtoа | v28 | v33 | v35 | Роwithт |
+| [CYR:]Version | v28 | v33 | v35 | Роwithт |
 |---------|-----|-----|-----|------|
-| **[CYR:[TRANSLATED]]and** | 14 | 23 | **27** | +93% |
+| **[CYR:]and** | 14 | 23 | **27** | +93% |
 | **Теwithты** | 94 | 154 | **195** | +107% |
-| **[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]** | 1 | 4 | **9** | +800% |
-| **[CYR:[TRANSLATED]]toand геnot[CYR:[TRANSLATED]]and** | 1 | 1 | **10** | +900% |
-| **UI [CYR:[TRANSLATED]]toand** | 1 | 1 | **10** | +900% |
+| **[CYR:]in[CYR:]** | 1 | 4 | **9** | +800% |
+| **[CYR:]toand геnot[CYR:]and** | 1 | 1 | **10** | +900% |
+| **UI [CYR:]toand** | 1 | 1 | **10** | +900% |
 
 ---
 
-## 🔬 PAS DAEMONS - [CYR:[TRANSLATED]] Аonлandз
+## 🔬 PAS DAEMONS - [CYR:] Аonлandз
 
-### Прand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### Прand[CYR:] [CYR:]
 
-| [CYR:[TRANSLATED]] | Сandмinол | [CYR:[TRANSLATED]]and | [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]] |
+| [CYR:] | Сandмinол | [CYR:]and | [CYR:]onя [CYR:] |
 |---------|--------|--------|--------------|
 | **Divide-and-Conquer** | D&C | 8 | FFT, Strassen |
 | **Precomputation** | PRE | 12 | KMP, LSP |
 | **Hashing** | HSH | 4 | FNV-1a, Robin-Hood |
 | **ML-Guided Search** | MLS | 3 | AlphaTensor |
 
-### [CYR:[TRANSLATED]] with[TRANSLATED]]and (12 papers, 150K+ citations)
+### [CYR:] with]and (12 papers, 150K+ citations)
 
 | Paper | Year | Journal | DOI | Citations |
 |-------|------|---------|-----|-----------|
@@ -40,7 +40,7 @@
 | AlphaDev | 2023 | Nature | 10.1038/s41586-023-06004-9 | 1,500+ |
 | simdjson | 2019 | VLDB J. | 10.1007/s00778-019-00578-5 | 800+ |
 
-### UX/UI [CYR:[TRANSLATED]] оwithноinы
+### UX/UI [CYR:] оwithноinы
 
 | Reference | Author | Year | Application |
 |-----------|--------|------|-------------|
@@ -96,7 +96,7 @@
 
 ---
 
-## ⚡ [CYR:[TRANSLATED]]
+## ⚡ [CYR:]
 
 ### Zig vs Python vs Go
 
@@ -178,7 +178,7 @@
 
 ---
 
-## 📁 [CYR:[TRANSLATED]] v35 (27 total)
+## 📁 [CYR:] v35 (27 total)
 
 ### Core (8)
 - agent_reasoning.zig (8 tests)
@@ -221,26 +221,26 @@
 
 ---
 
-## 💀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 💀 [CYR:] [CYR:]
 
-### [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinа VIBEE v35:
+### [CYR:]and[CYR:]withтinа VIBEE v35:
 
-1. **Strict Pipeline** - notin[CYR:[TRANSLATED]] on[CYR:[TRANSLATED]]andть workflow
+1. **Strict Pipeline** - notin[CYR:] on[CYR:]andть workflow
 2. **195 теwithтоin** - 100% coverage
-3. **27 [CYR:[TRANSLATED]]** - [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]toцandоon[CYR:[TRANSLATED]]withть
-4. **9 [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]in** - infor[TRANSLATED]] DeepSeek ($0.14/1M)
-5. **10 [CYR:[TRANSLATED]]toоin геnot[CYR:[TRANSLATED]]and** - Zig, Python, Go, Rust, TS...
-6. **10 UI [CYR:[TRANSLATED]]toоin** - EN, RU, ZH, JA, ES, DE, FR...
-7. **[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]** - 12 papers, 150K+ citations
+3. **27 [CYR:]** - [CYR:]onя [CYR:]toцandоon[CYR:]withть
+4. **9 [CYR:]in[CYR:]in** - infor] DeepSeek ($0.14/1M)
+5. **10 [CYR:]toоin геnot[CYR:]and** - Zig, Python, Go, Rust, TS...
+6. **10 UI [CYR:]toоin** - EN, RU, ZH, JA, ES, DE, FR...
+7. **[CYR:]onя [CYR:]** - 12 papers, 150K+ citations
 8. **UX principles** - Don Norman + clig.dev
 
-### [CYR:[TRANSLATED]]with[TRANSLATED]]toand:
+### [CYR:]with]toand:
 
 1. Terminal only (no GUI)
 2. No Windows native (bash)
 3. Limited LSP features
 
-### [CYR:[TRANSLATED]]andtoт:
+### [CYR:]andtoт:
 
 ```
 VIBEE v35: 9.5/10
@@ -255,7 +255,7 @@ Best for: Developers who value:
 
 ---
 
-## 🚀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🚀 [CYR:] [CYR:]
 
 ### Week 1
 - [ ] Windows PowerShell support
@@ -274,7 +274,7 @@ Best for: Developers who value:
 
 ---
 
-## 📜 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 📜 [CYR:] [CYR:]
 
 ```
 V = n × 3^k × π^m × φ^p × e^q

@@ -12,7 +12,7 @@ import urllib.error
 from datetime import datetime
 from urllib.parse import urlparse
 
-# Конфигурация
+# Configuration
 WEBARENA_CONFIG = {
     "SHOPPING": os.getenv("WEBARENA_SHOPPING", ""),
     "SHOPPING_ADMIN": os.getenv("WEBARENA_SHOPPING_ADMIN", ""),
@@ -62,7 +62,7 @@ MODELS = {
 
 DEFAULT_MODEL = os.getenv("LLM_MODEL", "qwen")
 
-# Browserless.io (облачный браузер)
+# Browserless.io (aboutny browser)
 BROWSERLESS_API_KEY = os.getenv("BROWSERLESS_API_KEY", "")
 
 # Ollama fallback (local)
@@ -191,7 +191,7 @@ class LLMClient:
 
 
 class BrowserlessClient:
-    """Browserless.io клиент с полными действиями браузера"""
+    """Browserless.io client with bylnymand deywithtinandyamand browsera"""
     
     def __init__(self):
         self.api_key = os.getenv("BROWSERLESS_API_KEY", "")
@@ -199,7 +199,7 @@ class BrowserlessClient:
         self.current_url = ""
     
     def execute_function(self, js_code: str) -> dict:
-        """Выполнение JavaScript функции через Browserless /function API"""
+        """Vybylnenande JavaScript fatntotsandand through Browserless /function API"""
         if not self.enabled:
             return {"error": "Browserless not configured"}
         
@@ -225,13 +225,13 @@ class BrowserlessClient:
             return {"error": str(e)}
     
     def goto(self, url: str) -> dict:
-        """Навигация на URL с извлечением интерактивных элементов"""
+        """Nainandgatsandya on URL with frominlechenandem andnthoseratotandinnykh elementaboutin"""
         js_code = f'''export default async function ({{ page }}) {{
   await page.goto("{url}", {{ waitUntil: "domcontentloaded", timeout: 30000 }});
   const title = await page.title();
   const content = await page.evaluate(() => document.body.innerText.substring(0, 1500));
   
-  // Извлекаем интерактивные элементы
+  // Izinletoaem andnthoseratotandinnye elementy
   const elements = await page.evaluate(() => {{
     const items = [];
     document.querySelectorAll('a, button, input, textarea, select').forEach((el, i) => {{
@@ -258,12 +258,12 @@ class BrowserlessClient:
         return result
     
     def click(self, selector: str) -> dict:
-        """Клик по элементу с auto-retry"""
+        """Klandto by elementat with auto-retry"""
         selector_escaped = selector.replace('"', '\\"').replace("'", "\\'")
         js_code = f'''export default async function ({{ page }}) {{
   await page.goto("{self.current_url}", {{ waitUntil: "domcontentloaded", timeout: 30000 }});
   
-  // Список селекторов для попытки
+  // List withelewhoraboutin for pexperiencetoand
   const selectors = [
     "{selector_escaped}",
     "a",
@@ -304,8 +304,8 @@ class BrowserlessClient:
         return result
     
     def type_text(self, selector: str, text: str) -> dict:
-        """Ввод текста в элемент"""
-        # Экранируем кавычки в тексте
+        """Input texta in element"""
+        # Etoranandratem toainychtoand in texte
         text_escaped = text.replace('"', '\\"')
         js_code = f'''export default async function ({{ page }}) {{
   await page.goto("{self.current_url}", {{ waitUntil: "domcontentloaded", timeout: 30000 }});
@@ -325,7 +325,7 @@ class BrowserlessClient:
         return result
     
     def press_enter(self) -> dict:
-        """Нажатие Enter"""
+        """Nazhatande Enter"""
         js_code = f'''export default async function ({{ page }}) {{
   await page.goto("{self.current_url}", {{ waitUntil: "domcontentloaded", timeout: 30000 }});
   await page.keyboard.press("Enter");
@@ -340,15 +340,15 @@ class BrowserlessClient:
         return result
     
     def search(self, selector: str, text: str) -> dict:
-        """Ввод текста и нажатие Enter с автоматическим retry"""
+        """Input texta and onzhatande Enter with ainthatmatandchewithtoandm retry"""
         selector_escaped = selector.replace('"', '\\"').replace("'", "\\'")
         text_escaped = text.replace('"', '\\"')
         
-        # Список альтернативных селекторов для поиска
+        # List althoserontandinnykh withelewhoraboutin for byandwithtoa
         js_code = f'''export default async function ({{ page }}) {{
   await page.goto("{self.current_url}", {{ waitUntil: "domcontentloaded", timeout: 30000 }});
   
-  // Список селекторов для попытки (от специфичного к общему)
+  // List withelewhoraboutin for pexperiencetoand (from withpetsandfandchnaboutgabout to aboutschemat)
   const selectors = [
     "{selector_escaped}",
     "input[name='q']",
@@ -392,13 +392,13 @@ class BrowserlessClient:
         return result
     
     def get_page_content(self, url: str) -> dict:
-        """Получение контента страницы"""
+        """Paboutlatchenande toaboutnthosenthat withtranandtsy"""
         self.current_url = url
         return self.goto(url)
 
 
 class VibeeAgent:
-    """VIBEE Agent с Qwen/Gemma + Browserless для WebArena"""
+    """VIBEE Agent with Qwen/Gemma + Browserless for WebArena"""
     
     def __init__(self, model: str = None):
         self.llm = LLMClient(model)
@@ -406,7 +406,7 @@ class VibeeAgent:
         self.trajectory = []
     
     def get_observation(self, url: str) -> str:
-        """Получение состояния страницы с интерактивными элементами"""
+        """Paboutlatchenande withaboutwiththatyanandya withtranandtsy with andnthoseratotandinnymand elementamand"""
         result = self.browser.get_page_content(url)
         if "error" not in result and result.get("content"):
             title = result.get("title", "Unknown")
@@ -420,7 +420,7 @@ class VibeeAgent:
         return f"URL: {url}\n\nPage Content: [Browser error: {error_msg}]"
     
     def think(self, observation: str, intent: str) -> dict:
-        """Размышление о следующем действии через Qwen"""
+        """Razmyshlenande about withledatyuschem deywithtinandand through Qwen"""
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": f"GOAL: {intent}\n\nCURRENT PAGE:\n{observation}\n\nWhat action should I take?"}
@@ -456,7 +456,7 @@ class VibeeAgent:
         return result
     
     def execute_action(self, action: str, action_input: str) -> dict:
-        """Выполнение действия в браузере"""
+        """Vybylnenande deywithtinandya in browsere"""
         if action == "goto":
             url = action_input
             if not url.startswith("http"):
@@ -467,7 +467,7 @@ class VibeeAgent:
             return self.browser.click(action_input)
         
         elif action == "type":
-            # Формат: "selector text"
+            # Faboutrmat: "selector text"
             parts = action_input.split(" ", 1)
             if len(parts) >= 2:
                 selector, text = parts[0], parts[1]
@@ -475,7 +475,7 @@ class VibeeAgent:
             return {"error": "type requires 'selector text'"}
         
         elif action == "search":
-            # Комбинированное действие: type + enter
+            # Kaboutmbandnandraboutinannaboute action: type + enter
             parts = action_input.split(" ", 1)
             if len(parts) >= 2:
                 selector, text = parts[0], parts[1]
@@ -491,7 +491,7 @@ class VibeeAgent:
         return {"error": f"Unknown action: {action}"}
     
     def execute_task(self, task: dict) -> dict:
-        """Выполнение задачи WebArena с реальными действиями"""
+        """Vybylnenande zadachand WebArena with realnymand deywithtinandyamand"""
         import time
         start = time.time()
         
@@ -512,14 +512,14 @@ class VibeeAgent:
         
         intent = task.get("intent", "")
         start_url = task.get("start_url", "https://en.wikipedia.org")
-        max_steps = task.get("max_steps", 8)  # Увеличено с 5 до 8
+        max_steps = task.get("max_steps", 8)  # Uinelandchenabout with 5 dabout 8
         
         try:
-            # Начальная навигация
+            # Nachalonya oninandgatsandya
             page_state = self.browser.goto(start_url)
             
             for step in range(max_steps):
-                # Формируем observation из текущего состояния
+                # Faboutrmandratem observation from thosetoatschegabout withaboutwiththatyanandya
                 title = page_state.get("title", "Unknown")
                 url = page_state.get("url", start_url)
                 content = page_state.get("content", "")[:1000]

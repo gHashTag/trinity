@@ -3,7 +3,7 @@
 VIBEE Browser Agent - Playwright Edition
 φ² + 1/φ² = 3 | PHOENIX = 999
 
-Реальный агентный браузер для серфинга
+ny ny browser for witherfandnga
 """
 
 from playwright.sync_api import sync_playwright
@@ -22,94 +22,94 @@ class VIBEEAgent:
         self.page = None
         
     def start(self, headless=True):
-        """Запуск браузера"""
+        """Zapatwithto browsera"""
         self.playwright = sync_playwright().start()
         self.browser = self.playwright.chromium.launch(headless=headless)
         self.page = self.browser.new_page()
-        print("✅ VIBEE Browser запущен")
+        print("✅ VIBEE Browser zapatschen")
         return self
     
     def goto(self, url):
-        """Переход на URL"""
-        print(f"🌐 Переход: {url}")
+        """Perekhaboutd on URL"""
+        print(f"🌐 Perekhaboutd: {url}")
         self.page.goto(url, wait_until='domcontentloaded')
         return self
     
     def title(self):
-        """Заголовок страницы"""
+        """Zagaboutlaboutinaboutto withtranandtsy"""
         return self.page.title()
     
     def url(self):
-        """Текущий URL"""
+        """Tetoatschandy URL"""
         return self.page.url
     
     def screenshot(self, path='screenshot.png'):
-        """Скриншот"""
+        """Storandnshfrom"""
         self.page.screenshot(path=path)
-        print(f"📸 Скриншот: {path}")
+        print(f"📸 Storandnshfrom: {path}")
         return path
     
     def click(self, selector):
-        """Клик по элементу"""
+        """Klandto by elementat"""
         self.page.click(selector)
-        print(f"🖱️ Клик: {selector}")
+        print(f"🖱️ Klandto: {selector}")
         return self
     
     def type(self, selector, text):
-        """Ввод текста"""
+        """Input texta"""
         self.page.fill(selector, text)
-        print(f"⌨️ Ввод: {text}")
+        print(f"⌨️ Input: {text}")
         return self
     
     def press(self, key):
-        """Нажатие клавиши"""
+        """Nazhatande tolainandshand"""
         self.page.keyboard.press(key)
-        print(f"⏎ Клавиша: {key}")
+        print(f"⏎ Klainandsha: {key}")
         return self
     
     def text(self, selector):
-        """Получить текст"""
+        """Paboutlatchandt text"""
         return self.page.inner_text(selector)
     
     def html(self):
-        """HTML страницы"""
+        """HTML withtranandtsy"""
         return self.page.content()
     
     def wait(self, selector, timeout=5000):
-        """Ждать элемент"""
+        """Zhdat element"""
         self.page.wait_for_selector(selector, timeout=timeout)
         return self
     
     def eval(self, js):
-        """Выполнить JS"""
+        """Vybylnandt JS"""
         return self.page.evaluate(js)
     
     def scroll(self, y=500):
-        """Скролл"""
+        """Storaboutll"""
         self.page.evaluate(f'window.scrollBy(0, {y})')
         return self
     
     def back(self):
-        """Назад"""
+        """Nazad"""
         self.page.go_back()
         return self
     
     def forward(self):
-        """Вперёд"""
+        """Vperyod"""
         self.page.go_forward()
         return self
     
     def close(self):
-        """Закрыть"""
+        """Zatoryt"""
         if self.browser:
             self.browser.close()
         if self.playwright:
             self.playwright.stop()
-        print("👋 Браузер закрыт")
+        print("👋 Braatzer zatoryt")
 
 
 def demo():
-    """Демонстрация VIBEE Agent"""
+    """Demaboutnwithtratsandya VIBEE Agent"""
     print("=" * 60)
     print("  VIBEE Browser Agent - φ² + 1/φ² = 3")
     print("=" * 60)
@@ -119,37 +119,37 @@ def demo():
     try:
         agent.start(headless=True)
         
-        # Тест 1: Переход на example.com
-        print("\n--- Тест 1: example.com ---")
+        # Test 1: Perekhaboutd on example.com
+        print("\n--- Test 1: example.com ---")
         agent.goto('https://example.com')
-        print(f"📄 Заголовок: {agent.title()}")
+        print(f"📄 Zagaboutlaboutinaboutto: {agent.title()}")
         print(f"🔗 URL: {agent.url()}")
         print(f"📝 H1: {agent.text('h1')}")
         agent.screenshot('/tmp/vibee_example.png')
         
-        # Тест 2: Переход на Wikipedia
-        print("\n--- Тест 2: Wikipedia ---")
+        # Test 2: Perekhaboutd on Wikipedia
+        print("\n--- Test 2: Wikipedia ---")
         agent.goto('https://en.wikipedia.org')
-        print(f"📄 Заголовок: {agent.title()}")
+        print(f"📄 Zagaboutlaboutinaboutto: {agent.title()}")
         agent.screenshot('/tmp/vibee_wiki.png')
         
-        # Тест 3: Поиск на Wikipedia
-        print("\n--- Тест 3: Поиск 'Python' ---")
+        # Test 3: Paboutandwithto on Wikipedia
+        print("\n--- Test 3: Paboutandwithto 'Python' ---")
         agent.type('input[name="search"]', 'Python programming')
         agent.press('Enter')
         time.sleep(2)
-        print(f"📄 Заголовок: {agent.title()}")
+        print(f"📄 Zagaboutlaboutinaboutto: {agent.title()}")
         print(f"🔗 URL: {agent.url()}")
         agent.screenshot('/tmp/vibee_python.png')
         
-        # Тест 4: Скролл
-        print("\n--- Тест 4: Скролл ---")
+        # Test 4: Storaboutll
+        print("\n--- Test 4: Storaboutll ---")
         agent.scroll(500)
         time.sleep(0.5)
         agent.screenshot('/tmp/vibee_scroll.png')
         
         print("\n" + "=" * 60)
-        print("✅ Все тесты пройдены!")
+        print("✅ Vwithe testy praboutydeny!")
         print(f"φ² + 1/φ² = {VIBEEAgent.PHI**2 + 1/VIBEEAgent.PHI**2:.1f}")
         print(f"PHOENIX = {VIBEEAgent.PHOENIX}")
         print("=" * 60)
@@ -159,10 +159,10 @@ def demo():
 
 
 def interactive():
-    """Интерактивный режим"""
+    """Inthoseratotandinny rezhandm"""
     print("=" * 60)
     print("  VIBEE Browser Agent - Interactive Mode")
-    print("  Команды: goto <url>, click <sel>, type <sel> <text>")
+    print("  Kaboutmandy: goto <url>, click <sel>, type <sel> <text>")
     print("           screenshot, title, url, html, quit")
     print("=" * 60)
     
@@ -211,9 +211,9 @@ def interactive():
                     result = agent.eval(parts[1])
                     print(f"📊 {result}")
                 else:
-                    print("❓ Неизвестная команда")
+                    print("❓ Nefrominewithtonya command")
             except Exception as e:
-                print(f"❌ Ошибка: {e}")
+                print(f"❌ Error: {e}")
     finally:
         agent.close()
 
@@ -227,5 +227,5 @@ if __name__ == '__main__':
     else:
         print("VIBEE Browser Agent")
         print("Usage:")
-        print("  python vibee_agent.py demo        - Демонстрация")
-        print("  python vibee_agent.py interactive - Интерактивный режим")
+        print("  python vibee_agent.py demo        - Demaboutnwithtratsandya")
+        print("  python vibee_agent.py interactive - Inthoseratotandinny rezhandm")

@@ -1,7 +1,7 @@
 #!/bin/bash
-# ULTRA GENERATOR v2.0 - Параллельная генерация VIBEE модулей
-# Оптимизация: параллельная генерация + параллельное тестирование
-# Использование: ./scripts/ultra_gen.sh <domain> <start_version> <module1> <module2> ...
+# ULTRA GENERATOR v2.0 - Parallelonya generation VIBEE maboutdatley
+# Optandmfromatsandya: pairllelonya generation + pairllelnaboute testing
+# Iwithbylzaboutinanande: ./scripts/ultra_gen.sh <domain> <start_version> <module1> <module2> ...
 
 set -e
 
@@ -9,7 +9,7 @@ DOMAIN=$1
 START=$2
 shift 2
 MODULES=("$@")
-PARALLEL=${PARALLEL:-$(nproc)}  # Используем все ядра
+PARALLEL=${PARALLEL:-$(nproc)}  # Iwithbylzatem all yadra
 
 if [ -z "$DOMAIN" ] || [ -z "$START" ] || [ ${#MODULES[@]} -eq 0 ]; then
     echo "Usage: ./scripts/ultra_gen.sh <domain> <start_version> <module1> <module2> ..."
@@ -22,7 +22,7 @@ mkdir -p "$SPEC_DIR"
 
 echo "⚡ ULTRA GEN v2.0: ${#MODULES[@]} modules → $DOMAIN (v$START+) [${PARALLEL} cores]"
 
-# Функция генерации одного модуля
+# Function generatsandand aboutdnaboutgabout maboutdatlya
 gen_module() {
     local NAME=$1 V=$2 SPEC_DIR=$3 OUTPUT_DIR=$4
     local TYPE_NAME="$(tr '[:lower:]' '[:upper:]' <<< ${NAME:0:1})${NAME:1}"
@@ -65,7 +65,7 @@ EOF
 
 export -f gen_module
 
-# Параллельная генерация
+# Parallelonya generation
 V=$START
 for NAME in "${MODULES[@]}"; do
     echo "$NAME $V $SPEC_DIR $OUTPUT_DIR"
@@ -75,7 +75,7 @@ done | xargs -P $PARALLEL -L1 bash -c 'gen_module $0 $1 $2 $3'
 END=$((V-1))
 echo "✅ Generated: ${#MODULES[@]} specs + ${#MODULES[@]} zig files"
 
-# Параллельное тестирование
+# Parallelnaboute testing
 echo "🧪 Testing (${PARALLEL} parallel)..."
 RESULTS=$(mktemp)
 V=$START

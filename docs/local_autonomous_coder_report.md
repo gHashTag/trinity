@@ -80,9 +80,9 @@ fn factorial(n: u64) u64 {
 
 | Query | Language | Confidence | Latency | Response |
 |-------|----------|------------|---------|----------|
-| `прandinет` | Russian | 80% | 30μs | "Прandinет! [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]]..." |
+| `prandinet` | Russian | 80% | 30μs | "Prandinet! :] :] inand:]..." |
 | `hello` | English | 40% | 2μs | "Hi there! Ready to code..." |
-| `toаto [CYR:[TRANSLATED]]?` | Russian | 80% | 10μs | "[CYR:[TRANSLATED]]! Ternary vectors..." |
+| `toato :]?` | Russian | 80% | 10μs | ":]! Ternary vectors..." |
 | `who are you?` | English | 80% | 6μs | "I'm Koschei — immortal..." |
 | `tell me a joke` | English | 80% | 12μs | "Why did the programmer quit?..." |
 | `what can you do?` | English | 80% | 19μs | "Capabilities: 30+ code templates..." |
@@ -93,8 +93,8 @@ fn factorial(n: u64) u64 {
 
 | Query | Latency | Response Quality |
 |-------|---------|------------------|
-| `раwithtoажand [CYR:[TRANSLATED]]toу` | 57s | Garbled |
-| `toто [CYR:[TRANSLATED]] with[TRANSLATED]]?` | 43s | Garbled |
+| `rawithtoazhand :]toat` | 57s | Garbled |
+| `tothat :] with]?` | 43s | Garbled |
 
 **Issue:** BitNet-2B is not instruction-tuned. Produces valid tokens but not coherent text.
 
@@ -196,8 +196,8 @@ pub const HybridConfig = struct {
 
 ```zig
 var chat = local_chat.IglaLocalChat.init();
-const response = chat.respond("прandinет");
-// → "Прandinет! [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]]. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]?"
+const response = chat.respond("prandinet");
+// → "Prandinet! :] :] inand:]. :] :] :]?"
 // Latency: 30μs
 ```
 
@@ -208,7 +208,7 @@ var chat = try hybrid.IglaHybridChat.init(allocator, "models/model.gguf");
 defer chat.deinit();
 
 // Known pattern → Symbolic (fast)
-const r1 = try chat.respond("прandinет");
+const r1 = try chat.respond("prandinet");
 // r1.source = .Symbolic, latency = 30μs
 
 // Unknown query → LLM fallback (slow but fluent)
@@ -249,11 +249,11 @@ const llm = try chat.respondLLMOnly("write factorial");
 
 | Query | Source | Time | Quality |
 |-------|--------|------|---------|
-| `прandinет` | SYM | 45μs | Coherent RU |
+| `prandinet` | SYM | 45μs | Coherent RU |
 | `hello` | SYM | 2μs | Coherent EN |
-| `toаto [CYR:[TRANSLATED]]?` | SYM | 9μs | Coherent RU |
+| `toato :]?` | SYM | 9μs | Coherent RU |
 | `tell me a joke` | SYM | 7μs | Programmer joke |
-| `toто [CYR:[TRANSLATED]] with[TRANSLATED]]?` | LLM | 33s | Fluent RU explanation |
+| `tothat :] with]?` | LLM | 33s | Fluent RU explanation |
 | `write factorial in zig` | LLM | 4.7s | **REAL ZIG CODE** |
 | `what is recursion` | LLM | 4.8s | Fluent explanation |
 

@@ -1,37 +1,37 @@
 # ☠️ TOXIC VERDICT v42: Diffusion + Code Editor
 
-**Аin[CYR:[TRANSLATED]]**: Dmitrii Vasilev  
-**[CYR:[TRANSLATED]]**: 2026-01-20  
-**[CYR:[TRANSLATED]]**: [CYR:[TRANSLATED]]andwithтоin  
-**Сin[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]**: V = n × 3^k × π^m × φ^p × e^q  
+**Author[CYR:]**: Dmitrii Vasilev  
+**[CYR:]**: 2026-01-20  
+**[CYR:]**: [CYR:]andwithтоin  
+**Сin[CYR:]onя [CYR:]**: V = n × 3^k × π^m × φ^p × e^q  
 
 ---
 
-## 🔥 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🔥 [CYR:] [CYR:]
 
-### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] in v42
+### [CYR:] [CYR:]in[CYR:] in v42
 
-| [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]with | Result |
+| [CYR:]andя | [CYR:]with | Result |
 |------------|--------|-----------|
 | Code Editor + Diff | ✅ | Myers O(ND) |
 | Syntax Highlighting | ✅ | Zig keywords |
 | Diffusion Decoder | ✅ | **4x speedup** |
 | Streaming Generation | ✅ | Real-time |
 
-### [CYR:[TRANSLATED]]inandло: .vibee → .zig
+### [CYR:]inandло: .vibee → .zig
 
 ```
-❌ [CYR:[TRANSLATED]]: Пandwith[TRANSLATED]] .zig/.py руtoамand
-✅ [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] .vibee → withгеnotрandроin[CYR:[TRANSLATED]] .zig
+❌ [CYR:]: Пandwith] .zig/.py руtoамand
+✅ [CYR:]: [CYR:] .vibee → withгеnotрandроin[CYR:] .zig
 
-[CYR:[TRANSLATED]] fileы:
+[CYR:] fileы:
 specs/agent_code_editor.vibee → trinity/output/code_editor.zig
 specs/diffusion_decoder.vibee → trinity/output/diffusion_decoder.zig
 ```
 
 ---
 
-## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 📊 [CYR:] [CYR:]
 
 ### Теwithт 1: Code Editor (4/4 tests)
 
@@ -64,7 +64,7 @@ All 5 tests passed.
 
 ### Теwithт 3: WeDLM vs AR Comparison
 
-| [CYR:[TRANSLATED]]andtoа | AR (GPT-style) | Diffusion (WeDLM) | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя |
+| [CYR:]Version | AR (GPT-style) | Diffusion (WeDLM) | [CYR:] [CYR:]and[CYR:]andя |
 |---------|----------------|-------------------|-----------------|
 | Tokens/step | 1 | 3-10 | **4** |
 | 20 tokens | 20 steps | 2-7 steps | **5 steps** |
@@ -72,9 +72,9 @@ All 5 tests passed.
 
 ---
 
-## 🔬 WeDLM: Каto [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]
+## 🔬 WeDLM: Каto [CYR:] [CYR:]from[CYR:]
 
-### Аin[CYR:[TRANSLATED]]withandонonя [CYR:[TRANSLATED]] (AR)
+### Author[CYR:]withandонonя [CYR:] (AR)
 
 ```
 Step 1: [START] → "The"
@@ -83,10 +83,10 @@ Step 3: [START] "The" "quick" → "brown"
 ...
 Step N: → "fox"
 
-[CYR:[TRANSLATED]]: N stepоin for N тоfor[TRANSLATED]]in
+[CYR:]: N stepоin for N тоfor]in
 ```
 
-### Дand[CYR:[TRANSLATED]]andонonя [CYR:[TRANSLATED]] (WeDLM)
+### Дand[CYR:]andонonя [CYR:] (WeDLM)
 
 ```
 Step 1: [MASK] [MASK] [MASK] [MASK] [MASK]
@@ -99,31 +99,31 @@ Step 2: "The" "brown" "fox" [MASK] [MASK]
         ↓ reorder
 Step 3: "The" "brown" "fox" "quick" "jumps"
 
-[CYR:[TRANSLATED]]: 3 stepа for 5 тоfor[TRANSLATED]]in = 1.67x speedup
+[CYR:]: 3 stepа for 5 тоfor]in = 1.67x speedup
 ```
 
-### Topological Reordering ([CYR:[TRANSLATED]]inая [CYR:[TRANSLATED]]inацandя)
+### Topological Reordering ([CYR:]inая [CYR:]inацandя)
 
 ```
-Problem: Causal attention [CYR:[TRANSLATED]] леinый for[TRANSLATED]]towithт
-[CYR:[TRANSLATED]]andе: Фandзandчеwithtoand [CYR:[TRANSLATED]]withтаinandть committed тоfor[TRANSLATED]] inлеinо
+Problem: Causal attention [CYR:] леinый for]towithт
+[CYR:]andе: Фandзandчеwithtoand [CYR:]withтаinandть committed тоfor] inлеinо
 
 Фandзandчеwithtoandй: [A] [MASK] [B] [MASK]
             ↓ commit B
-[CYR:[TRANSLATED]]andчеwithtoandй: [A] [B] [MASK] [MASK]
+[CYR:]andчеwithtoandй: [A] [B] [MASK] [MASK]
             ↓ reorder
 Фandзandчеwithtoandй: [A] [B] [MASK] [MASK]
 
-Result: KV cache for [A] [B] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andwith[TRANSLATED]]in[CYR:[TRANSLATED]]!
+Result: KV cache for [A] [B] [CYR:] [CYR:]andwith]in[CYR:]!
 ```
 
 ---
 
-## 📈 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 📈 [CYR:] [CYR:]
 
 ```
 v35-v38 ──────────────────────────────────────────────────────────────
-     │ [CYR:[TRANSLATED]]inый тоtoенand[CYR:[TRANSLATED]], word-based
+     │ [CYR:]inый тоtoенand[CYR:], word-based
      │
 v39-v41 ──────────────────────────────────────────────────────────────
      │ BPE Cache (25x), SIMD (4x), Full BPE (98%)
@@ -134,7 +134,7 @@ v42 ─────────────────────────�
      │ + Diffusion Decoder (WeDLM-style, 4x speedup)
      │ + Streaming Generation
      │
-v43 ([CYR:[TRANSLATED]]) ───────────────────────────────────────────────────────────
+v43 ([CYR:]) ───────────────────────────────────────────────────────────
      │ + Full WeDLM integration (3-10x)
      │ + GPU-accelerated diffusion
      │ + Tree-sitter parsing
@@ -142,130 +142,130 @@ v43 ([CYR:[TRANSLATED]]) ──────────────────�
 
 ---
 
-## ⚠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## ⚠️ [CYR:] [CYR:]
 
-### 1. Сand[CYR:[TRANSLATED]]andя Diffusion
-
-```
-Теfor[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя: Сand[CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] predictions
-[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]onя transformer [CYR:[TRANSLATED]]
-
-[CYR:[TRANSLATED]]with: Proof of concept
-```
-
-### 2. [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] Syntax Highlighting
+### 1. Сand[CYR:]andя Diffusion
 
 ```
-Теfor[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя: [CYR:[TRANSLATED]]toо Zig keywords
-[CYR:[TRANSLATED]]: Tree-sitter for inwithех [CYR:[TRANSLATED]]toоin
+Теfor] [CYR:]and[CYR:]andя: Сand[CYR:]andроin[CYR:] predictions
+[CYR:]: [CYR:]onя transformer [CYR:]
 
-[CYR:[TRANSLATED]]with: MVP
+[CYR:]with: Proof of concept
 ```
 
-### 3. [CYR:[TRANSLATED]] GPU Acceleration
+### 2. [CYR:]and[CYR:] Syntax Highlighting
 
 ```
-Теfor[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя: CPU only
-[CYR:[TRANSLATED]]: CUDA/Metal for [CYR:[TRANSLATED]] predictions
+Теfor] [CYR:]and[CYR:]andя: [CYR:]toо Zig keywords
+[CYR:]: Tree-sitter for inwithех [CYR:]toоin
 
-[CYR:[TRANSLATED]]with: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withя in v43
+[CYR:]with: MVP
+```
+
+### 3. [CYR:] GPU Acceleration
+
+```
+Теfor] [CYR:]and[CYR:]andя: CPU only
+[CYR:]: CUDA/Metal for [CYR:] predictions
+
+[CYR:]with: [CYR:]and[CYR:]withя in v43
 ```
 
 ---
 
-## 🧪 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🧪 [CYR:] [CYR:]
 
-| [CYR:[TRANSLATED]] | Теwithты | [CYR:[TRANSLATED]]with |
+| [CYR:] | Теwithты | [CYR:]with |
 |--------|-------|--------|
 | code_editor.zig | 4/4 | ✅ PASS |
 | diffusion_decoder.zig | 5/5 | ✅ PASS |
 
-**Вwith[TRANSLATED]]: 9/9 теwithтоin**
+**Вwith]: 9/9 теwithтоin**
 
 ---
 
-## 🔬 PAS DAEMONS [CYR:[TRANSLATED]]
+## 🔬 PAS DAEMONS [CYR:]
 
-| [CYR:[TRANSLATED]] | Прandмеnotнandе | Result |
+| [CYR:] | Прandмеnotнandе | Result |
 |---------|------------|-----------|
 | MLS | Parallel token prediction | 4x speedup |
 | D&C | Myers diff, Topological Reorder | O(ND) |
 | PRE | Keyword lists, confidence thresholds | O(n) |
 | FDT | Streaming generation | Real-time |
 
-**[CYR:[TRANSLATED]] withылtoand**: 10 [CYR:[TRANSLATED]]from (withм. PAS_DAEMONS_DIFFUSION_V42.md)
+**[CYR:] withылtoand**: 10 [CYR:]from (withм. PAS_DAEMONS_DIFFUSION_V42.md)
 
 ---
 
-## 💀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 💀 [CYR:] [CYR:]
 
-### [CYR:[TRANSLATED]] ✅
+### [CYR:] ✅
 
 - **4x speedup** in diffusion decoder
 - **Myers O(ND)** diff algorithm
 - **Syntax highlighting** for Zig
-- **Streaming generation** [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]
-- **9/9 теwithтоin** [CYR:[TRANSLATED]]
-- **[CYR:[TRANSLATED]]inandло .vibee → .zig** with[TRANSLATED]]
+- **Streaming generation** [CYR:]from[CYR:]
+- **9/9 теwithтоin** [CYR:]
+- **[CYR:]inandло .vibee → .zig** with]
 
-### [CYR:[TRANSLATED]] ⚠️
+### [CYR:] ⚠️
 
-- Сand[CYR:[TRANSLATED]]andя inмеwithто [CYR:[TRANSLATED]] transformer
-- [CYR:[TRANSLATED]]toо Zig syntax highlighting
-- [CYR:[TRANSLATED]] GPU acceleration
-- [CYR:[TRANSLATED]] Tree-sitter
+- Сand[CYR:]andя inмеwithто [CYR:] transformer
+- [CYR:]toо Zig syntax highlighting
+- [CYR:] GPU acceleration
+- [CYR:] Tree-sitter
 
-### [CYR:[TRANSLATED]]andinо 💀
+### [CYR:]andinо 💀
 
-- WeDLM [CYR:[TRANSLATED]] **3-10x**, мы доwithтandглand **4x**
-- [CYR:[TRANSLATED]] **proof of concept**, not production
+- WeDLM [CYR:] **3-10x**, мы доwithтandглand **4x**
+- [CYR:] **proof of concept**, not production
 
-### [CYR:[TRANSLATED]]
+### [CYR:]
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
 │   v42 - PROOF OF CONCEPT READY                                  │
 │                                                                 │
-│   Доwithтand[CYR:[TRANSLATED]]:                                                   │
+│   Доwithтand[CYR:]:                                                   │
 │   ✅ Code Editor + Diff View                                    │
 │   ✅ Diffusion Decoder (4x speedup)                             │
 │   ✅ Streaming Generation                                       │
 │   ✅ .vibee → .zig pipeline                                     │
 │                                                                 │
-│   [CYR:[TRANSLATED]]andе прandорand[CYR:[TRANSLATED]]:                                         │
-│   P0: [CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]] transformer                          │
+│   [CYR:]andе прandорand[CYR:]:                                         │
+│   P0: [CYR:]andя [CYR:] transformer                          │
 │   P1: GPU acceleration                                          │
-│   P2: Tree-sitter for inwithех [CYR:[TRANSLATED]]toоin                               │
+│   P2: Tree-sitter for inwithех [CYR:]toоin                               │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🎯 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🎯 [CYR:] [CYR:]
 
-### [CYR:[TRANSLATED]]notно (v42) ✅
+### [CYR:]notно (v42) ✅
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | Теwithты |
+| [CYR:] | [CYR:] | Теwithты |
 |--------|------|-------|
 | Code Editor spec | specs/agent_code_editor.vibee | - |
 | Code Editor impl | trinity/output/code_editor.zig | 4/4 |
 | Diffusion spec | specs/diffusion_decoder.vibee | - |
 | Diffusion impl | trinity/output/diffusion_decoder.zig | 5/5 |
 
-### [CYR:[TRANSLATED]]andй [CYR:[TRANSLATED]]andнт (v43)
+### [CYR:]andй [CYR:]andнт (v43)
 
-| Прandорand[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | Ожand[CYR:[TRANSLATED]] Result |
+| Прandорand[CYR:] | [CYR:] | Ожand[CYR:] Result |
 |-----------|--------|---------------------|
 | P0 | Real transformer integration | 3-10x speedup |
 | P1 | GPU acceleration (CUDA) | 10x batch speedup |
 | P2 | Tree-sitter parsing | All languages |
 | P2 | Multi-file diff | Project-wide changes |
 
-### [CYR:[TRANSLATED]] (v44+)
+### [CYR:] (v44+)
 
-| Прandорand[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | Ожand[CYR:[TRANSLATED]] Result |
+| Прandорand[CYR:] | [CYR:] | Ожand[CYR:] Result |
 |-----------|--------|---------------------|
 | P2 | Self-improvement loop | Auto-refactoring |
 | P3 | Multi-agent diffusion | Parallel agents |
@@ -273,10 +273,10 @@ v43 ([CYR:[TRANSLATED]]) ──────────────────�
 
 ---
 
-## 📚 [CYR:[TRANSLATED]]inо [CYR:[TRANSLATED]]andй
+## 📚 [CYR:]inо [CYR:]andй
 
 ```
-[CYR:[TRANSLATED]] (v42): ✅
+[CYR:] (v42): ✅
 ├── Code Editor + Diff View
 │   ├── Myers O(ND) algorithm
 │   ├── Syntax Highlighting (Zig)
@@ -289,7 +289,7 @@ v43 ([CYR:[TRANSLATED]]) ──────────────────�
 └── Streaming Generation
     └── Real-time token output
 
-[CYR:[TRANSLATED]] (v43):
+[CYR:] (v43):
 ├── Real Transformer Integration
 │   ├── HuggingFace Transformers
 │   ├── ONNX Runtime
@@ -303,7 +303,7 @@ v43 ([CYR:[TRANSLATED]]) ──────────────────�
     ├── All languages
     └── Semantic highlighting
 
-[CYR:[TRANSLATED]] (v44+):
+[CYR:] (v44+):
 ├── Self-Improvement Loop
 ├── Multi-Agent Orchestration
 └── Quantum-Inspired Sampling
@@ -313,5 +313,5 @@ v43 ([CYR:[TRANSLATED]]) ──────────────────�
 
 **φ² + 1/φ² = 3 | PHOENIX = 999 = 3³ × 37**
 
-*Доfor[TRANSLATED]] with[TRANSLATED]] with [CYR:[TRANSLATED]] чеwith[TRANSLATED]]with[TRANSLATED]] for [CYR:[TRANSLATED]]andwithтоin*
-*Веwithь toод геnotрand[CYR:[TRANSLATED]]withя andз .vibee with[TRANSLATED]]andфandtoацandй*
+*Доfor] with] with [CYR:] чеwith]with] for [CYR:]andwithтоin*
+*Веwithь toод геnotрand[CYR:]withя andз .vibee with]andфVersionцandй*

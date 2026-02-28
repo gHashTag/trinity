@@ -1,30 +1,30 @@
-# 🌳 [CYR:[TRANSLATED]]inо [CYR:[TRANSLATED]]fromtoand .999 Language
+# 🌳 :]inabout :]fromtoand .999 Language
 
-**Аin[CYR:[TRANSLATED]]**: Dmitrii Vasilev  
-**[CYR:[TRANSLATED]]**: Янin[CYR:[TRANSLATED]] 2026  
-**[CYR:[TRANSLATED]]withandя**: 5.1 (Updated)
+**Author:]**: Dmitrii Vasilev  
+**:]**: Yanin:] 2026  
+**:]Author**: 5.1 (Updated)
 
 ---
 
-## ✅ [CYR:[TRANSLATED]]with [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## ✅ :]with :]and:]and - :] :] :]
 
-### [CYR:[TRANSLATED]] 1 (Q1) - ✅ [CYR:[TRANSLATED]]
-| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with | [CYR:[TRANSLATED]] |
+### :] 1 (Q1) - ✅ :]
+| :]notnt | :] | :]with | :] |
 |-----------|------|--------|-------|
 | **Compiler** | 100% | ✅ 100% | `simd_lexer.999`, `inkrement.999`, `wasm_ⲃⲁⲕⲉⲛⲇ.999` |
 | **Stdlib** | 80% | ✅ 85% | `collections.999`, `async.999`, `testing.999` |
 | **Crypto** | 70% | ✅ 75% | `post_quantum.999` (Kyber, TritHash) |
 
-### [CYR:[TRANSLATED]] 2 (Q2) - ✅ [CYR:[TRANSLATED]]
-| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with | [CYR:[TRANSLATED]] |
+### :] 2 (Q2) - ✅ :]
+| :]notnt | :] | :]with | :] |
 |-----------|------|--------|-------|
 | **AGI Agent** | 80% | ✅ 85% | `ⲥⲱⲉ_ⲁⲅⲉⲛⲧ.999` (SWE Agent) |
 | **TNN** | 80% | ✅ 90% | `tnn_full.999` (Ternary Neural Network) |
 | **Parallel** | 80% | ✅ 85% | `gpu_full.999` (GPU + Work-stealing) |
 | **Evolution** | 90% | ✅ 90% | `evolution_engine.999` (GA + NEAT) |
 
-### [CYR:[TRANSLATED]] 3 (Q3-Q4) - ✅ [CYR:[TRANSLATED]]
-| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with | [CYR:[TRANSLATED]] |
+### :] 3 (Q3-Q4) - ✅ :]
+| :]notnt | :] | :]with | :] |
 |-----------|------|--------|-------|
 | **Quantum Trinity** | 60% | ✅ 70% | `quantum_trinity.999` (Qutrit, HHL, 3-adic) |
 | **Full OS** | 90% | ✅ 90% | `kernel_full.999` (Gorynych, HAL, Syscalls) |
@@ -32,35 +32,35 @@
 
 ---
 
-## 📊 Теfor[TRANSLATED]] Соwith[TRANSLATED]]andе [CYR:[TRANSLATED]]
+## 📊 Tefor] Saboutwith]ande :]
 
 ```
 999/
-├── ⲁⲥⲫⲁⲗⲉⲓⲁ/     [40%]  [CYR:[TRANSLATED]]withноwithть (escape, gigiena)
-├── ⲃⲓⲃⲗⲓⲁ/        [85%]  Доfor[TRANSLATED]]andя/Кнandга (30+ [CYR:[TRANSLATED]]in)
-├── ⲃⲓⲃⲗⲓⲟⲑⲏⲕⲏ/    [30%]  [CYR:[TRANSLATED]]onя бandблandfromеtoа
-├── ⲉⲛⲱⲥⲓⲥ/        [50%]  FFI/[CYR:[TRANSLATED]]and
-├── ⲉⲡⲓⲧⲏⲣⲏⲥⲓⲥ/    [60%]  [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andнг withandwith[TRANSLATED]]
+├── ⲁⲥⲫⲁⲗⲉⲓⲁ/     [40%]  :]withnaboutwitht (escape, gigiena)
+├── ⲃⲓⲃⲗⲓⲁ/        [85%]  Daboutfor]andya/Knandga (30+ :]in)
+├── ⲃⲓⲃⲗⲓⲟⲑⲏⲕⲏ/    [30%]  :]onya bandblandfrometoa
+├── ⲉⲛⲱⲥⲓⲥ/        [50%]  FFI/:]and
+├── ⲉⲡⲓⲧⲏⲣⲏⲥⲓⲥ/    [60%]  :]and:]andng withandwith]
 ├── ⲉⲡⲓⲫⲁⲛⲉⲓⲁ/     [45%]  UI/Console
-├── ⲉⲣⲅⲁⲗⲉⲓⲁ/      [70%]  Инwith[TRANSLATED]] (30+ утorт)
-├── ⲕⲉⲣⲛⲉⲗ/        [65%]  [CYR:[TRANSLATED]] ОС
-├── ⲕⲣⲩⲡⲧⲟⲥ/       [35%]  Крand[CYR:[TRANSLATED]]andя
-├── ⲙⲛⲧⲥⲃⲱ/        [55%]  [CYR:[TRANSLATED]]/[CYR:[TRANSLATED]]for[TRANSLATED]]
-├── ⲛⲟⲏⲧⲓⲥ/        [60%]  [CYR:[TRANSLATED]]andтandin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toцand
-├── ⲟⲡⲧⲓⲙⲁⲗ/       [50%]  [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and
-├── ⲡⲁⲣⲁⲗⲗⲏⲗ/      [45%]  [CYR:[TRANSLATED]]andзм
-├── ⲡⲣⲁⲝⲓⲥ/        [40%]  SWE [CYR:[TRANSLATED]]
+├── ⲉⲣⲅⲁⲗⲉⲓⲁ/      [70%]  Inwith] (30+ attort)
+├── ⲕⲉⲣⲛⲉⲗ/        [65%]  :] OS
+├── ⲕⲣⲩⲡⲧⲟⲥ/       [35%]  Krand:]andya
+├── ⲙⲛⲧⲥⲃⲱ/        [55%]  :]/:]for]
+├── ⲛⲟⲏⲧⲓⲥ/        [60%]  :]andtandin:] :]totsand
+├── ⲟⲡⲧⲓⲙⲁⲗ/       [50%]  :]andmand:]and
+├── ⲡⲁⲣⲁⲗⲗⲏⲗ/      [45%]  :]andzm
+├── ⲡⲣⲁⲝⲓⲥ/        [40%]  SWE :]
 ├── ⲣⲁⲛⲧⲁⲓⲙ/       [55%]  Runtime
-├── ⲥⲃⲱ/           [65%]  [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andя
-├── ⲥⲩⲛⲧⲁⲝⲓⲥ/      [70%]  [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
-├── ⲥⲭⲉⲇⲓⲁ/        [35%]  [CYR:[TRANSLATED]]andроinанandе/Cognition
-├── ⲧⲉⲭⲛⲏ/         [45%]  AGI/ML [CYR:[TRANSLATED]]and
-└── ⲫⲩⲥⲓⲥ/         [25%]  Фandзandtoа/Polyhedral
+├── ⲥⲃⲱ/           [65%]  :]in:]andya
+├── ⲥⲩⲛⲧⲁⲝⲓⲥ/      [70%]  :]and:]
+├── ⲥⲭⲉⲇⲓⲁ/        [35%]  :]andraboutinanande/Cognition
+├── ⲧⲉⲭⲛⲏ/         [45%]  AGI/ML :]and
+└── ⲫⲩⲥⲓⲥ/         [25%]  FandzVersion/Polyhedral
 ```
 
 ---
 
-## 🎯 [CYR:[TRANSLATED]]inо [CYR:[TRANSLATED]]fromtoand
+## 🎯 :]inabout :]fromtoand
 
 ```
                             ┌─────────────────────────────────────┐
@@ -72,7 +72,7 @@
               │                               │                               │
               ▼                               ▼                               ▼
     ┌─────────────────┐             ┌─────────────────┐             ┌─────────────────┐
-    │   [CYR:[TRANSLATED]] 1 (Q1)   │             │   [CYR:[TRANSLATED]] 2 (Q2)   │             │   [CYR:[TRANSLATED]] 3 (Q3)   │
+    │   :] 1 (Q1)   │             │   :] 2 (Q2)   │             │   :] 3 (Q3)   │
     │   FOUNDATION    │             │   EXPANSION     │             │   AUTONOMY      │
     │   ══════════    │             │   ═════════     │             │   ════════      │
     └────────┬────────┘             └────────┬────────┘             └────────┬────────┘
@@ -94,11 +94,11 @@
 
 ---
 
-## 📅 [CYR:[TRANSLATED]] 1: FOUNDATION (Q1 2026)
+## 📅 :] 1: FOUNDATION (Q1 2026)
 
-### 1.1 [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] (ⲥⲩⲛⲧⲁⲝⲓⲥ/) → 100%
+### 1.1 :]and:] (ⲥⲩⲛⲧⲁⲝⲓⲥ/) → 100%
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with | Прandорand[CYR:[TRANSLATED]] |
+| :] | :] | :]with | Prandaboutrand:] |
 |--------|------|--------|-----------|
 | SIMD Lexer | `simd_lexer.999` | 70% | 🔴 HIGH |
 | Incremental Compilation | `inkrement.999` | 60% | 🔴 HIGH |
@@ -108,15 +108,15 @@
 | Procedural Macros | `proc_makrosy.999` | 55% | 🟡 MED |
 | Type System | `tipy.999` | 70% | 🔴 HIGH |
 
-**[CYR:[TRANSLATED]]and:**
-- [ ] SIMD-уwithfor[TRANSLATED]] леtowithер (3x speedup)
-- [ ] Инfor[TRANSLATED]]onя for[TRANSLATED]]and[CYR:[TRANSLATED]]andя (5x for [CYR:[TRANSLATED]]andх [CYR:[TRANSLATED]]toтоin)
-- [ ] [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]toа WASM
-- [ ] [CYR:[TRANSLATED]] маtoроwithы for [CYR:[TRANSLATED]]andроinанandя
+**:]and:**
+- [ ] SIMD-atwithfor] letowither (3x speedup)
+- [ ] Infor]onya for]and:]andya (5x for :]andkh :]tothatin)
+- [ ] :]onya :]toa WASM
+- [ ] :] matoraboutwithy for :]andraboutinanandya
 
-### 1.2 [CYR:[TRANSLATED]]onя Бandблandfromеtoа (ⲃⲓⲃⲗⲓⲟⲑⲏⲕⲏ/) → 80%
+### 1.2 :]onya Bandblandfrometoa (ⲃⲓⲃⲗⲓⲟⲑⲏⲕⲏ/) → 80%
 
-| [CYR:[TRANSLATED]] | Опandwithанandе | [CYR:[TRANSLATED]]with |
+| :] | Opandwithanande | :]with |
 |--------|----------|--------|
 | `ⲕⲟⲣⲉ` | Core types, I/O | 80% |
 | `ⲧⲣⲓⲛⲓⲧⲩ` | Ternary logic | 90% |
@@ -127,32 +127,32 @@
 | `ⲙⲁⲑ` | Math functions | 65% |
 | `ⲧⲉⲥⲧ` | Testing framework | 75% |
 
-**[CYR:[TRANSLATED]]and:**
-- [ ] [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя Collections API
-- [ ] Async I/O for fileоin and withетand
+**:]and:**
+- [ ] :]onya :]and:]andya Collections API
+- [ ] Async I/O for fileaboutin and withetand
 - [ ] Property-based testing
 
-### 1.3 Крand[CYR:[TRANSLATED]]andя (ⲕⲣⲩⲡⲧⲟⲥ/) → 70%
+### 1.3 Krand:]andya (ⲕⲣⲩⲡⲧⲟⲥ/) → 70%
 
-| [CYR:[TRANSLATED]]andтм | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with |
+| :]andtm | :] | :]with |
 |----------|------|--------|
 | Lattice-based | `ⲕⲃⲁⲛⲧ_ⲕⲣⲓⲡⲧⲟ.999` | 35% |
 | XMSS Signatures | - | 0% |
 | BB84 Key Exchange | - | 0% |
 | Ternary Hash | - | 40% |
 
-**[CYR:[TRANSLATED]]and:**
-- [ ] Post-quantum toрand[CYR:[TRANSLATED]]andя
-- [ ] Ternary-native hashandроinанandе
+**:]and:**
+- [ ] Post-quantum torand:]andya
+- [ ] Ternary-native hashandraboutinanande
 - [ ] Secure key management
 
 ---
 
-## 📅 [CYR:[TRANSLATED]] 2: EXPANSION (Q2 2026)
+## 📅 :] 2: EXPANSION (Q2 2026)
 
-### 2.1 AGI [CYR:[TRANSLATED]] (ⲡⲣⲁⲝⲓⲥ/ + ⲧⲉⲭⲛⲏ/) → 80%
+### 2.1 AGI :] (ⲡⲣⲁⲝⲓⲥ/ + ⲧⲉⲭⲛⲏ/) → 80%
 
-| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with |
+| :]notnt | :] | :]with |
 |-----------|------|--------|
 | SWE Agent Core | `ⲥⲱⲉ_ⲁⲅⲉⲛⲧ.999` | 40% |
 | Agent Expansion | `ⲥⲱⲉ_ⲁⲅⲉⲛⲧ_ⲣⲁⲥⲱⲓⲣ.999` | 35% |
@@ -161,149 +161,149 @@
 | Universal Intellect | `ⲩⲛⲓⲃⲉⲣⲥⲁⲗ_ⲓⲛⲧⲉⲗⲗⲉⲕⲧ.999` | 25% |
 | TNN (Ternary NN) | `ⲧⲛⲛ.999` | 40% |
 
-**[CYR:[TRANSLATED]]and:**
-- [ ] Аin[CYR:[TRANSLATED]] SWE [CYR:[TRANSLATED]]
-- [ ] Federated learning [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and
+**:]and:**
+- [ ] Author:] SWE :]
+- [ ] Federated learning :] :]and
 - [ ] Ternary Neural Networks
-- [ ] Self-improvement [CYR:[TRANSLATED]] PAS
+- [ ] Self-improvement :] PAS
 
-### 2.2 [CYR:[TRANSLATED]]andзм (ⲡⲁⲣⲁⲗⲗⲏⲗ/) → 80%
+### 2.2 :]andzm (ⲡⲁⲣⲁⲗⲗⲏⲗ/) → 80%
 
-| [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with |
+| :]andya | :] | :]with |
 |------------|------|--------|
 | Auto-vectorization | `autovectorize.999` | 45% |
 | GPU Compute | `gpu.999` | 40% |
 | Parallel Primitives | `parallel.999` | 50% |
 
-**[CYR:[TRANSLATED]]and:**
-- [ ] Аin[CYR:[TRANSLATED]]andчеwithtoая inеfor[TRANSLATED]]and[CYR:[TRANSLATED]]andя цandtoлоin
+**:]and:**
+- [ ] Author:]andchewithtoaya inefor]and:]andya tsandtolaboutin
 - [ ] GPU backend (CUDA/Metal/Vulkan)
 - [ ] Work-stealing scheduler
 
-### 2.3 [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andя (ⲥⲃⲱ/) → 90%
+### 2.3 :]in:]andya (ⲥⲃⲱ/) → 90%
 
-| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with |
+| :]notnt | :] | :]with |
 |-----------|------|--------|
 | Evolution Engine | `evolution_engine.999` | 65% |
 | Self-Evolution | `ⲥⲁⲙⲟ_ⲉⲃⲟⲗⲩⲧⲥⲓⲩ.999` | 60% |
 | Diagnostic Tools | `diagnostic_tools.999` | 70% |
 | Evolution Tests | `evolution_test.999` | 75% |
 
-**[CYR:[TRANSLATED]]and:**
-- [ ] Аin[CYR:[TRANSLATED]]andчеwithtoая [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя for[TRANSLATED]]
-- [ ] Genetic algorithms for parameterоin
-- [ ] Formal verification and[CYR:[TRANSLATED]]andя
+**:]and:**
+- [ ] Author:]andchewithtoaya :]andmand:]andya for]
+- [ ] Genetic algorithms for parameteraboutin
+- [ ] Formal verification and:]andya
 
 ---
 
-## 📅 [CYR:[TRANSLATED]] 3: AUTONOMY (Q3-Q4 2026)
+## 📅 :] 3: AUTONOMY (Q3-Q4 2026)
 
 ### 3.1 Quantum Trinity (ⲧⲉⲭⲛⲏ/) → 60%
 
-| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with |
+| :]notnt | :] | :]with |
 |-----------|------|--------|
 | HHL Algorithm | `ⲦⲎⲖ_ⲀⲖⲄⲞⲢⲒⲦⲘ.999` | 30% |
 | 3-adic Computing | - | 0% |
 | Quantum Simulation | - | 10% |
 
-**[CYR:[TRANSLATED]]and:**
-- [ ] Кin[CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] on toлаwithandчеwithtoом [CYR:[TRANSLATED]]
-- [ ] 3-adic чandwithла for toрand[CYR:[TRANSLATED]]and
-- [ ] Qutrit withand[CYR:[TRANSLATED]]andя
+**:]and:**
+- [ ] Kin:]inye :]and:] on tolawithandchewithtoaboutm :]
+- [ ] 3-adic chandwithla for torand:]and
+- [ ] Qutrit withand:]andya
 
-### 3.2 [CYR:[TRANSLATED]]onя ОС (ⲕⲉⲣⲛⲉⲗ/) → 90%
+### 3.2 :]onya OS (ⲕⲉⲣⲛⲉⲗ/) → 90%
 
-| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with |
+| :]notnt | :] | :]with |
 |-----------|------|--------|
 | Core Kernel | `core.999` | 65% |
 | Gorynych (Multi-head) | `gorynych.999` | 50% |
 | HAL | `hal.999` | 55% |
 | Memory Manager | `yadro.999` | 60% |
 
-**[CYR:[TRANSLATED]]and:**
-- [ ] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ОС
-- [ ] Multi-head [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]])
+**:]and:**
+- [ ] :] :] OS
+- [ ] Multi-head :]andthosefor] (:] :])
 - [ ] Hardware abstraction layer
 
-### 3.3 P2P [CYR:[TRANSLATED]] (ⲧⲉⲭⲛⲏ/) → 70%
+### 3.3 P2P :] (ⲧⲉⲭⲛⲏ/) → 70%
 
-| [CYR:[TRANSLATED]]notнт | Опandwithанandе | [CYR:[TRANSLATED]]with |
+| :]notnt | Opandwithanande | :]with |
 |-----------|----------|--------|
 | Peer Discovery | DHT-based | 40% |
 | Consensus | Proof-of-Learning | 30% |
 | Knowledge Sharing | Federated | 35% |
 
-**[CYR:[TRANSLATED]]and:**
-- [ ] Деcenterалandзоinанonя AGI with[TRANSLATED]]
+**:]and:**
+- [ ] Decenteralandzaboutinanonya AGI with]
 - [ ] Byzantine fault tolerance
-- [ ] Knowledge graph раwith[TRANSLATED]]andе
+- [ ] Knowledge graph rawith]ande
 
 ---
 
-## 🛠️ Инwith[TRANSLATED]] (ⲉⲣⲅⲁⲗⲉⲓⲁ/) - Прandорand[CYR:[TRANSLATED]]
+## 🛠️ Inwith] (ⲉⲣⲅⲁⲗⲉⲓⲁ/) - Prandaboutrand:]
 
-### Крandтandчеwithtoandе (🔴)
+### Krandtandchewithtoande (🔴)
 
-| Инwith[TRANSLATED]] | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with | Опandwithанandе |
+| Inwith] | :] | :]with | Opandwithanande |
 |------------|------|--------|----------|
-| LSP Server | `lsp.999` | 60% | IDE and[CYR:[TRANSLATED]]andя |
-| Debugger | `debugger.999` | 50% | [CYR:[TRANSLATED]]toа |
-| Test Runner | `test.999` | 75% | Теwithтandроinанandе |
-| Package Manager | `pkg.999` | 55% | Заinandwithandмоwithтand |
+| LSP Server | `lsp.999` | 60% | IDE and:]andya |
+| Debugger | `debugger.999` | 50% | :]toa |
+| Test Runner | `test.999` | 75% | Tewithtandraboutinanande |
+| Package Manager | `pkg.999` | 55% | Zainandwithandmaboutwithtand |
 
-### [CYR:[TRANSLATED]] (🟡)
+### :] (🟡)
 
-| Инwith[TRANSLATED]] | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with | Опandwithанandе |
+| Inwith] | :] | :]with | Opandwithanande |
 |------------|------|--------|----------|
-| Formatter | `formatter.999` | 65% | [CYR:[TRANSLATED]]andроinанandе |
-| Linter | `ⲗⲓⲛⲧ.999` | 60% | [CYR:[TRANSLATED]]andчеwithtoandй аonлandз |
-| Profiler | `profiler.999` | 45% | [CYR:[TRANSLATED]]orроinанandе |
-| REPL | `repl.999` | 70% | [CYR:[TRANSLATED]]toтandin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andм |
+| Formatter | `formatter.999` | 65% | :]andraboutinanande |
+| Linter | `ⲗⲓⲛⲧ.999` | 60% | :]andchewithtoandy aonlandz |
+| Profiler | `profiler.999` | 45% | :]orraboutinanande |
+| REPL | `repl.999` | 70% | :]totandin:] :]andm |
 
-### Эtowith[TRANSLATED]]and[CYR:[TRANSLATED]] (🟢)
+### Etowith]and:] (🟢)
 
-| Инwith[TRANSLATED]] | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with | Опandwithанandе |
+| Inwith] | :] | :]with | Opandwithanande |
 |------------|------|--------|----------|
-| Evolver | `evolver.999` | 65% | Аin[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andя |
+| Evolver | `evolver.999` | 65% | Author:]in:]andya |
 | Trit VCS | `ⲧⲣⲓⲧ_ⲃⲕⲥ.999` | 40% | Ternary VCS |
-| Auto-fix | `auto_fix.999` | 50% | Аinтоandwith[TRANSLATED]]in[CYR:[TRANSLATED]]andе |
+| Auto-fix | `auto_fix.999` | 50% | Authorthatandwith]in:]ande |
 
 ---
 
-## 📚 Доfor[TRANSLATED]]andя (ⲃⲓⲃⲗⲓⲁ/) - Кнandга
+## 📚 Daboutfor]andya (ⲃⲓⲃⲗⲓⲁ/) - Knandga
 
-### Заin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inы ✅
+### Zain:] :]iny ✅
 
-- [x] [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]toа Трandдеinяthat [CYR:[TRANSLATED]]withтinа
-- [x] [CYR:[TRANSLATED]]inа 1-3: [CYR:[TRANSLATED]]andя (Чandwithло Трand, Фandзandtoа, [CYR:[TRANSLATED]]with[TRANSLATED]])
-- [x] [CYR:[TRANSLATED]]inа 4-7: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] (Sort, Structures, Compression, Neural)
-- [x] [CYR:[TRANSLATED]]inа 8-10: Иwith[TRANSLATED]]andя (Benchmarks, Lessons, NP)
-- [x] [CYR:[TRANSLATED]]inа 11-13: Vibee (Language, Compiler, Architecture)
-- [x] [CYR:[TRANSLATED]]inа 14-16: [CYR:[TRANSLATED]] (Parallel, Quantum, Beyond)
-- [x] Эпand[CYR:[TRANSLATED]]
+- [x] :]: :]toa Tranddeinyathat :]withtina
+- [x] :]ina 1-3: :]andya (Chandwithlabout Trand, FandzVersion, :]with])
+- [x] :]ina 4-7: :]and:] (Sort, Structures, Compression, Neural)
+- [x] :]ina 8-10: Iwith]andya (Benchmarks, Lessons, NP)
+- [x] :]ina 11-13: Vibee (Language, Compiler, Architecture)
+- [x] :]ina 14-16: :] (Parallel, Quantum, Beyond)
+- [x] Epand:]
 
-### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromtoand 🔄
+### :] :]fromtoand 🔄
 
-- [ ] [CYR:[TRANSLATED]]toтandin[CYR:[TRANSLATED]] прand[CYR:[TRANSLATED]] (`interactive/`)
-- [ ] [CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] (`games/`)
-- [ ] Геnot[CYR:[TRANSLATED]] доfor[TRANSLATED]]and (`generator/`)
+- [ ] :]totandin:] prand:] (`interactive/`)
+- [ ] :]inye :]and:] (`games/`)
+- [ ] Genot:] daboutfor]and (`generator/`)
 
 ---
 
-## 🎯 [CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]andtoand
+## 🎯 :]inye :]andtoand
 
-### [CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withть
+### :]andzinaboutdand:]witht
 
-| [CYR:[TRANSLATED]]andtoа | Теfor[TRANSLATED]] | [CYR:[TRANSLATED]] Q2 | [CYR:[TRANSLATED]] Q4 |
+| :]Version | Tefor] | :] Q2 | :] Q4 |
 |---------|---------|---------|---------|
 | Compile Speed | 1x | 3x | 5x |
 | Runtime Speed | 1x | 2x | 3x |
 | Memory Usage | 100% | 80% | 60% |
 | WASM Size | 100% | 70% | 50% |
 
-### [CYR:[TRANSLATED]]withтinо
+### :]withtinabout
 
-| [CYR:[TRANSLATED]]andtoа | Теfor[TRANSLATED]] | [CYR:[TRANSLATED]] |
+| :]Version | Tefor] | :] |
 |---------|---------|------|
 | Test Coverage | 60% | 90% |
 | Doc Coverage | 70% | 95% |
@@ -311,7 +311,7 @@
 
 ---
 
-## 🔗 Заinandwithandмоwithтand [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and
+## 🔗 Zainandwithandmaboutwithtand :] :]and
 
 ```
 ⲥⲩⲛⲧⲁⲝⲓⲥ (Compiler)
@@ -345,19 +345,19 @@
 
 ---
 
-## 📋 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinandя (Next Sprint)
+## 📋 :] :]withtinandya (Next Sprint)
 
-### [CYR:[TRANSLATED]] 1-2
-1. [ ] Заin[CYR:[TRANSLATED]]andть SIMD lexer (`ⲥⲩⲛⲧⲁⲝⲓⲥ/simd_lexer.999`)
-2. [ ] Раwithшandрandть stdlib collections (`ⲃⲓⲃⲗⲓⲟⲑⲏⲕⲏ/stdlib.999`)
-3. [ ] [CYR:[TRANSLATED]]andть LSP server (`ⲉⲣⲅⲁⲗⲉⲓⲁ/lsp.999`)
+### :] 1-2
+1. [ ] Zain:]andt SIMD lexer (`ⲥⲩⲛⲧⲁⲝⲓⲥ/simd_lexer.999`)
+2. [ ] Rawithshandrandt stdlib collections (`ⲃⲓⲃⲗⲓⲟⲑⲏⲕⲏ/stdlib.999`)
+3. [ ] :]andt LSP server (`ⲉⲣⲅⲁⲗⲉⲓⲁ/lsp.999`)
 
-### [CYR:[TRANSLATED]] 3-4
-4. [ ] [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] incremental compilation
-5. [ ] [CYR:[TRANSLATED]]inandть GPU backend prototype
-6. [ ] [CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] formal verifier
+### :] 3-4
+4. [ ] :]andzaboutin:] incremental compilation
+5. [ ] :]inandt GPU backend prototype
+6. [ ] :]andraboutin:] formal verifier
 
-### [CYR:[TRANSLATED]] 5-6
+### :] 5-6
 7. [ ] SWE Agent MVP
 8. [ ] Ternary Neural Network prototype
 9. [ ] P2P network foundation
@@ -366,7 +366,7 @@
 
 ## 🏆 Milestones
 
-| Milestone | [CYR:[TRANSLATED]] | Крand[CYR:[TRANSLATED]]and |
+| Milestone | :] | Krand:]and |
 |-----------|------|----------|
 | **v1.0 Alpha** | Feb 2026 | Compiler 100%, Stdlib 80% |
 | **v1.0 Beta** | Apr 2026 | Tools 90%, AGI Agent MVP |
@@ -375,13 +375,13 @@
 
 ---
 
-*«Из [CYR:[TRANSLATED]]withтinа in[CYR:[TRANSLATED]]andfor[TRANSLATED]] едandнwithтinо, andз [CYR:[TRANSLATED]]withа [CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]]to, andз [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]in emerges withозonнandе.»*
+*«Iz :]withtina in:]andfor] edandnwithtinabout, andz :]witha :]withya :]to, andz :]and:]in emerges withaboutzonnande.»*
 
 ---
 
 **Creation Pattern:**
 ```
-Source: Теtoущandе [CYR:[TRANSLATED]]and .999
-Transformer: Аonлandз + PAS method[CYR:[TRANSLATED]]andя
+Source: Tetoatschande :]and .999
+Transformer: Aonlandz + PAS method:]andya
 Result: Roadmap v5.0
 ```

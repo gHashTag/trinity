@@ -14,8 +14,8 @@ Fixed and verified **Full Local Fluent Coder** with two-tier architecture:
 
 | Metric | Before Fix | After Fix |
 |--------|------------|-----------|
-| "раwithtoажand [CYR:[TRANSLATED]]toу" | LLM (13s) | **Symbolic (22μs)** |
-| "toто [CYR:[TRANSLATED]] with[TRANSLATED]]" | LLM (4.8s) | **Symbolic (54μs)** |
+| "rawithtoazhand :]toat" | LLM (13s) | **Symbolic (22μs)** |
+| "tothat :] with]" | LLM (4.8s) | **Symbolic (54μs)** |
 | Code generation | LLM | LLM (fluent) |
 | Coverage | ~70% | **~95%** |
 
@@ -27,12 +27,12 @@ Fixed and verified **Full Local Fluent Coder** with two-tier architecture:
 
 | Query | Mode | Latency | Response |
 |-------|------|---------|----------|
-| прandinет | Symbolic | 126μs | "Прandinет! [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]]..." |
-| toаto [CYR:[TRANSLATED]] | Symbolic | 11μs | "[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]! [CYR:[TRANSLATED]]fromаю on 73K ops/s..." |
-| toаto [CYR:[TRANSLATED]] | Symbolic | 16μs | " лоfor[TRANSLATED]] [CYR:[TRANSLATED]] —  [CYR:[TRANSLATED]] notт доwith[TRANSLATED]] to [CYR:[TRANSLATED]]..." |
-| where ты жandin[CYR:[TRANSLATED]] | Symbolic | 19μs | "Жandinу on тin[CYR:[TRANSLATED]] M1 Pro — in ternary vectors..." |
-| раwithtoажand [CYR:[TRANSLATED]]toу | Symbolic | 22μs | "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andwithт [CYR:[TRANSLATED]] with [CYR:[TRANSLATED]]fromы?..." |
-| toто [CYR:[TRANSLATED]] with[TRANSLATED]] | Symbolic | 54μs | "[CYR:[TRANSLATED]] for[TRANSLATED]] Trinity on Koh Samui..." |
+| prandinet | Symbolic | 126μs | "Prandinet! :] :] inand:]..." |
+| toato :] | Symbolic | 11μs | ":]and:]! :]fromayu on 73K ops/s..." |
+| toato :] | Symbolic | 16μs | " laboutfor] :] —  :] nott daboutwith] to :]..." |
+| where ty zhandin:] | Symbolic | 19μs | "Zhandinat on tin:] M1 Pro — in ternary vectors..." |
+| rawithtoazhand :]toat | Symbolic | 22μs | ":] :]andwitht :] with :]fromy?..." |
+| tothat :] with] | Symbolic | 54μs | ":] for] Trinity on Koh Samui..." |
 
 ### English (Symbolic 100%)
 
@@ -54,7 +54,7 @@ Fixed and verified **Full Local Fluent Coder** with two-tier architecture:
 
 | Query | Mode | Latency | Quality |
 |-------|------|---------|---------|
-| onпandшand toод fibonacci | LLM | 21.6s | **Real Python code** |
+| onpandshand toaboutd fibonacci | LLM | 21.6s | **Real Python code** |
 | create quicksort function | LLM | 18.3s | **Real Python code** |
 | write fibonacci in zig | LLM | 18.8s | **Real Zig code** |
 
@@ -62,18 +62,18 @@ Fixed and verified **Full Local Fluent Coder** with two-tier architecture:
 
 ## Fixes Applied
 
-### 1. Added "раwithtoажand" keyword for jokes
+### 1. Added "rawithtoazhand" keyword for jokes
 
 ```diff
-- .keywords = &.{ "[CYR:[TRANSLATED]]toа", "аnottoдfrom", "with[TRANSLATED]]", "раwith[TRANSLATED]]and", "[CYR:[TRANSLATED]]", "поwith[TRANSLATED]]withя" },
-+ .keywords = &.{ "[CYR:[TRANSLATED]]toа", "аnottoдfrom", "with[TRANSLATED]]", "раwith[TRANSLATED]]and", "[CYR:[TRANSLATED]]", "поwith[TRANSLATED]]withя", "раwithtoажand" },
+- .keywords = &.{ ":]toa", "anottodfrom", "with]", "rawith]and", ":]", "bywith]withya" },
++ .keywords = &.{ ":]toa", "anottodfrom", "with]", "rawith]and", ":]", "bywith]withya", "rawithtoazhand" },
 ```
 
 ### 2. Added creator variations
 
 ```diff
-- .keywords = &.{ "toто with[TRANSLATED]]", "with[TRANSLATED]]", "toто onпandwithал", "аin[CYR:[TRANSLATED]]" },
-+ .keywords = &.{ "toто with[TRANSLATED]]", "with[TRANSLATED]]", "toто onпandwithал", "аin[CYR:[TRANSLATED]]", "[CYR:[TRANSLATED]] with[TRANSLATED]]", "with[TRANSLATED]]and" },
+- .keywords = &.{ "tothat with]", "with]", "tothat onpandwithal", "ain:]" },
++ .keywords = &.{ "tothat with]", "with]", "tothat onpandwithal", "ain:]", ":] with]", "with]and" },
 ```
 
 ---
@@ -162,7 +162,7 @@ Fixed and verified **Full Local Fluent Coder** with two-tier architecture:
 
 ### WHAT WORKED
 - **Symbolic coverage ~95%** — most queries instant
-- **Keyword fixes** — "раwithtoажand [CYR:[TRANSLATED]]toу" now instant
+- **Keyword fixes** — "rawithtoazhand :]toat" now instant
 - **LLM fallback fluent** — real code generation
 - **Multilingual** — RU/EN/CN all working
 

@@ -1,6 +1,6 @@
 #!/bin/bash
-# ULTRA MATRYOSHKA v8.0 - Генерация 16 уровней × 20 модулей = 320 модулей
-# Использование: ./scripts/ultra_matryoshka.sh <start_level> <start_version>
+# ULTRA MATRYOSHKA v8.0 - Generatsandya 16 atraboutinney × 20 maboutdatley = 320 maboutdatley
+# Iwithbylzaboutinanande: ./scripts/ultra_matryoshka.sh <start_level> <start_version>
 
 START_LEVEL=$1
 START_VERSION=$2
@@ -12,7 +12,7 @@ START_VERSION=$2
 
 echo "⚡⚡ ULTRA MATRYOSHKA v8.0: 16 levels × 20 modules = 320 modules"
 
-# 16 доменов
+# 16 domainaboutin
 DOMAINS=(
     "context:ctx_window ctx_extend ctx_compress ctx_chunk ctx_overlap ctx_sliding ctx_hierarchical ctx_recursive ctx_summary ctx_selective ctx_adaptive ctx_dynamic ctx_infinite ctx_streaming ctx_cached ctx_sparse ctx_dense ctx_hybrid ctx_multi ctx_cross"
     "tokenization:tok_bpe tok_wordpiece tok_sentencepiece tok_unigram tok_char tok_byte tok_tiktoken tok_llama tok_mistral tok_gpt tok_bert tok_t5 tok_custom tok_multilingual tok_code tok_math tok_scientific tok_domain tok_adaptive tok_dynamic"

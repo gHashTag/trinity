@@ -1,8 +1,8 @@
 #!/bin/bash
-# TURBO GENERATOR v6.0 - Оптимальный баланс скорости и тестирования
-# Генерация: параллельная через subshells
-# Тестирование: выборочное (первый + последний)
-# Использование: ./scripts/turbo_gen.sh <domain> <start_version> <module1> <module2> ...
+# TURBO GENERATOR v6.0 - Optandny balanwith withtoaboutraboutwithtand and testandraboutinanandya
+# Generatsandya: pairllelonya through subshells
+# Testing: inybaboutraboutchnaboute (first + last)
+# Iwithbylzaboutinanande: ./scripts/turbo_gen.sh <domain> <start_version> <module1> <module2> ...
 
 DOMAIN=$1
 START=$2
@@ -20,7 +20,7 @@ mkdir -p "$SD"
 
 echo "⚡ TURBO GEN v6.0: ${#MODULES[@]} modules → $DOMAIN"
 
-# PHASE 1: Мгновенная параллельная генерация
+# PHASE 1: Mgnaboutinenonya pairllelonya generation
 V=$START
 for N in "${MODULES[@]}"; do
     T="${N^}"
@@ -57,7 +57,7 @@ wait
 END=$((V-1))
 echo "✅ Generated: v$START-v$END (${#MODULES[@]} modules)"
 
-# PHASE 2: Выборочное тестирование (первый и последний модуль)
+# PHASE 2: Vybaboutraboutchnaboute testing (first and last module)
 echo "🧪 Quick validation..."
 FIRST="${MODULES[0]}"
 LAST="${MODULES[-1]}"

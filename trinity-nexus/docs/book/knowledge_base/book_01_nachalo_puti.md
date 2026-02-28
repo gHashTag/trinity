@@ -1,92 +1,92 @@
-# Кнandга 1: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and — [CYR:[TRANSLATED]] зonнandй
+# Knandga 1: :] :]and — :] zonnandy
 
-## [CYR:[TRANSLATED]] with[TRANSLATED]]andе
+## :] with]ande
 
-### Иwith[TRANSLATED]]andя [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] withandwith[TRANSLATED]]
+### Iwith]andya :]and:] withandwith]
 
-**1840** — [CYR:[TRANSLATED]]with [CYR:[TRANSLATED]] поwith[TRANSLATED]]andл [CYR:[TRANSLATED]]inый [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] for[TRANSLATED]]for[TRANSLATED]] andз [CYR:[TRANSLATED]]inа and [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]toand in [CYR:[TRANSLATED]]and. Он обon[CYR:[TRANSLATED]]andл, that [CYR:[TRANSLATED]]andчonя withandwith[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] for [CYR:[TRANSLATED]]withтаin[CYR:[TRANSLATED]]andя чandwithел.
+**1840** — :]with :] bywith]andl :]inyy :]and:] for]for] andz :]ina and :]in:]toand in :]and. On abouton:]andl, that :]andchonya withandwith] :] :] :] for :]withthatin:]andya chandwithel.
 
-**1958** — Нandfor[TRANSLATED]] [CYR:[TRANSLATED]]with[TRANSLATED]]in in [CYR:[TRANSLATED]] with[TRANSLATED]] **[CYR:[TRANSLATED]]** — [CYR:[TRANSLATED]]inый and едandнwithтin[CYR:[TRANSLATED]] withерand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] for[TRANSLATED]]. [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]] 50 [CYR:[TRANSLATED]]andн. [CYR:[TRANSLATED]] andwith[TRANSLATED]]in[CYR:[TRANSLATED]] **with[TRANSLATED]]withandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] withandwith[TRANSLATED]]** (-1, 0, +1).
+**1958** — Nandfor] :]with]in in :] with] **:]** — :]inyy and edandnwithtin:] witherand:] :]and:] for]. :] in:] 50 :]andn. :] andwith]in:] **with]withandraboutin:] :]and:] withandwith]** (-1, 0, +1).
 
-**[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinа [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] withandwith[TRANSLATED]]:**
-- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in for [CYR:[TRANSLATED]]withтаin[CYR:[TRANSLATED]]andя чandwithел (log₃ n < log₂ n)
-- Еwithтеwithтin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтаin[CYR:[TRANSLATED]]andе fromрand[CYR:[TRANSLATED]] чandwithел
-- Оfor[TRANSLATED]]andе [CYR:[TRANSLATED]] with[TRANSLATED]]andя
-- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andй [CYR:[TRANSLATED]]withа прand with[TRANSLATED]]and
+**:]and:]withtina :]and:] withandwith]:**
+- :] :]in for :]withthatin:]andya chandwithel (log₃ n < log₂ n)
+- Ewiththosewithtin:] :]withthatin:]ande fromrand:] chandwithel
+- Ofor]ande :] with]andya
+- :] :]andy :]witha prand with]and
 
-### [CYR:[TRANSLATED]]andtoа чandwithла 3
+### :]Version chandwithla 3
 
-**[CYR:[TRANSLATED]]  едandнwithтin[CYR:[TRANSLATED]]withтand [CYR:[TRANSLATED]]andя:**
-[CYR:[TRANSLATED]] on[CYR:[TRANSLATED]] чandwithло N едandнwithтin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтаin[CYR:[TRANSLATED]]withя in inandде N = n × 3^k, where n not [CYR:[TRANSLATED]]andтwithя on 3.
+**:]  edandnwithtin:]withtand :]andya:**
+:] on:] chandwithlabout N edandnwithtin:] :] :]withthatin:]withya in inandde N = n × 3^k, where n not :]andtwithya on 3.
 
-**Доfor[TRANSLATED]]withтinо:**
-1. [CYR:[TRANSLATED]]withтinоinанandе: [CYR:[TRANSLATED]]andм N on 3, поtoа [CYR:[TRANSLATED]]andтwithя
-2. Едandнwithтin[CYR:[TRANSLATED]]withть: from прfromandin[CYR:[TRANSLATED]] — еwithлand N = n₁ × 3^k₁ = n₂ × 3^k₂, то n₁ = n₂ and k₁ = k₂
+**Daboutfor]withtinabout:**
+1. :]withtinaboutinanande: :]andm N on 3, bytoa :]andtwithya
+2. Edandnwithtin:]witht: from prfromandin:] — ewithland N = n₁ × 3^k₁ = n₂ × 3^k₂, that n₁ = n₂ and k₁ = k₂
 
-**Сin[CYR:[TRANSLATED]] with [CYR:[TRANSLATED]]fromым with[TRANSLATED]]andем:**
-φ² + 1/φ² = 3 ([CYR:[TRANSLATED]]!)
+**Sin:] with :]fromym with]andem:**
+φ² + 1/φ² = 3 (:]!)
 
-[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinо within[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromое with[TRANSLATED]]andе with чandwith[TRANSLATED]] 3.
+:] :] :]withtinabout within:]in:] :]fromaboute with]ande with chandwith] 3.
 
-### Трand withandwith[TRANSLATED]] inоwithпрandятandя
+### Trand withandwith] inaboutwithprandyatandya
 
-По andwith[TRANSLATED]]inанandям for[TRANSLATED]]andтandin[CYR:[TRANSLATED]] onуtoand, [CYR:[TRANSLATED]]inеto inоwithпрandнand[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]andю [CYR:[TRANSLATED]] трand toаonла:
+Pabout andwith]inanandyam for]andtandin:] onattoand, :]ineto inaboutwithprandnand:] and:]andyu :] trand toaonla:
 
-1. **[CYR:[TRANSLATED]]andцandя (20%)** — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andе, [CYR:[TRANSLATED]], аon[CYR:[TRANSLATED]]and
-2. **Аonлandз (60%)** — [CYR:[TRANSLATED]]andчеwithtoое [CYR:[TRANSLATED]]andе, [CYR:[TRANSLATED]], доfor[TRANSLATED]]withтinа
-3. **Сand[CYR:[TRANSLATED]] (20%)** — and[CYR:[TRANSLATED]]andя, andнwith[TRANSLATED]], [CYR:[TRANSLATED]]withть
+1. **:]andtsandya (20%)** — :] :]ande, :], aon:]and
+2. **Aonlandz (60%)** — :]andchewithtoaboute :]ande, :], daboutfor]withtina
+3. **Sand:] (20%)** — and:]andya, andnwith], :]witht
 
-[CYR:[TRANSLATED]]toтandin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]withтin[CYR:[TRANSLATED]] inwithе трand withandwith[TRANSLATED]].
+:]totandin:] :]ande :]withtin:] inwithe trand withandwith].
 
-## Унandfor[TRANSLATED]]onя andwith[TRANSLATED]]andя for Кнandгand 1
+## Unandfor]onya andwith]andya for Knandgand 1
 
-### [CYR:[TRANSLATED]]inа 1: [CYR:[TRANSLATED]]andе
+### :]ina 1: :]ande
 
-Иinан [CYR:[TRANSLATED]]with[TRANSLATED]]withя from with[TRANSLATED]] withon. [CYR:[TRANSLATED]] withнorwithь трand [CYR:[TRANSLATED]]and, трand [CYR:[TRANSLATED]]withтinа, трand for[TRANSLATED]]. Он [CYR:[TRANSLATED]]fromал [CYR:[TRANSLATED]]andwith[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]], но чуinwithтinоinал, that [CYR:[TRANSLATED]]-то not хin[CYR:[TRANSLATED]]. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromал, но not [CYR:[TRANSLATED]]. [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]and, но not fromtoрыinалand [CYR:[TRANSLATED]].
+Iinan :]with]withya from with] withon. :] withnorwith trand :]and, trand :]withtina, trand for]. On :]fromal :]andwith] :] :] :], nabout chatinwithtinaboutinal, that :]-that not khin:]. :] :]fromal, nabout not :]. :]and:] :]and :]and, nabout not fromtoryinaland :].
 
- то [CYR:[TRANSLATED]] on [CYR:[TRANSLATED]] with[TRANSLATED]] [CYR:[TRANSLATED]] with[TRANSLATED]] toнandга — «[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] for[TRANSLATED]]». Иinан fromfor[TRANSLATED]] её on[CYR:[TRANSLATED]] and [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]:
+ that :] on :] with] :] with] tonandga — «:]: :]and:] for]». Iinan fromfor] eyo on:] and :]and:]:
 
-> «[CYR:[TRANSLATED]]andчonя withandwith[TRANSLATED]] — this not [CYR:[TRANSLATED]]withто [CYR:[TRANSLATED]] withпоwithоб [CYR:[TRANSLATED]]andwithand чandwithел. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] withпоwithоб [CYR:[TRANSLATED]]andя.»
+> «:]andchonya withandwith] — this not :]withthat :] withbywithabout :]andwithand chandwithel. :] :] withbywithabout :]andya.»
 
- Иinан [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] path [CYR:[TRANSLATED]]toо onчandonетwithя.
+ Iinan :]: :] path :]toabout onchandonetwithya.
 
-### [CYR:[TRANSLATED]]inа 2-37: [CYR:[TRANSLATED]]inandтandе
+### :]ina 2-37: :]inandtande
 
-[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inа Кнandгand 1 раwithtoрыin[CYR:[TRANSLATED]] одandн аwithпеtoт «[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and»:
-- [CYR:[TRANSLATED]]inы 2-10: Иwith[TRANSLATED]]andя [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] withandwith[TRANSLATED]]
-- [CYR:[TRANSLATED]]inы 11-20: [CYR:[TRANSLATED]]andtoа чandwithла 3
-- [CYR:[TRANSLATED]]inы 21-30: Трand withandwith[TRANSLATED]] inоwithпрandятandя
-- [CYR:[TRANSLATED]]inы 31-37: [CYR:[TRANSLATED]]inые stepand in [CYR:[TRANSLATED]]andроinанand on 999
+:] :]ina Knandgand 1 rawithtoryin:] aboutdandn awithpetot «:] :]and»:
+- :]iny 2-10: Iwith]andya :]and:] withandwith]
+- :]iny 11-20: :]Version chandwithla 3
+- :]iny 21-30: Trand withandwith] inaboutwithprandyatandya
+- :]iny 31-37: :]inye stepand in :]andraboutinanand on 999
 
-## Прand[CYR:[TRANSLATED]] for[TRANSLATED]] for Кнandгand 1
+## Prand:] for] for Knandgand 1
 
-### Прand[CYR:[TRANSLATED]] 1: Hello Tridevyatoe
+### Prand:] 1: Hello Tridevyatoe
 
 ```999
-// [CYR:[TRANSLATED]]inая program in Трandдеin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinе
+// :]inaya program in Tranddein:] :]withtine
 ⲙⲟⲇⲩⲗⲉ ⲡⲣⲓⲃⲉⲧ;
 
 ⲫⲩⲛⲕ main() !void {
-    ⲡⲣⲓⲛⲧ("[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] in Трandдеin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinо!");
-    ⲡⲣⲓⲛⲧ("[CYR:[TRANSLATED]]withь [CYR:[TRANSLATED]]inandт чandwithло 3.");
+    ⲡⲣⲓⲛⲧ(":] :]in:] in Tranddein:] :]withtinabout!");
+    ⲡⲣⲓⲛⲧ(":]with :]inandt chandwithlabout 3.");
     ⲡⲣⲓⲛⲧ("999 = 37 × 27 = 37 × 3³");
 }
 ```
 
-### Прand[CYR:[TRANSLATED]] 2: Сin[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]
+### Prand:] 2: Sin:]onya :]
 
 ```999
-// [CYR:[TRANSLATED]]andwith[TRANSLATED]]andе Сin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] V = n × 3^k
+// :]andwith]ande Sin:] :] V = n × 3^k
 ⲙⲟⲇⲩⲗⲉ ⲥⲃⲩⲁⲧⲁⲩⲁ_ⲫⲟⲣⲙⲩⲗⲁ;
 
-ⲥⲧⲣⲩⲕⲧ Сin[CYR:[TRANSLATED]]on[CYR:[TRANSLATED]] {
-    n: u32,      // оwithноinа (not [CYR:[TRANSLATED]]andтwithя on 3)
-    k: u32,      // with[TRANSLATED]] [CYR:[TRANSLATED]]toand
+ⲥⲧⲣⲩⲕⲧ Sin:]on:] {
+    n: u32,      // aboutwithnaboutina (not :]andtwithya on 3)
+    k: u32,      // with] :]toand
     value: u64,  // result
 }
 
-ⲫⲩⲛⲕ [CYR:[TRANSLATED]]andть(чandwithло: u32) -> Сin[CYR:[TRANSLATED]]on[CYR:[TRANSLATED]] {
-    ⲃⲁⲣ n = чandwithло;
+ⲫⲩⲛⲕ :]andt(chandwithlabout: u32) -> Sin:]on:] {
+    ⲃⲁⲣ n = chandwithlabout;
     ⲃⲁⲣ k: u32 = 0;
     
     ⲱⲏⲓⲗⲉ (n % 3 == 0) {
@@ -94,39 +94,39 @@
         k += 1;
     }
     
-    ⲣⲉⲧⲩⲣⲛ Сin[CYR:[TRANSLATED]]on[CYR:[TRANSLATED]]{
+    ⲣⲉⲧⲩⲣⲛ Sin:]on:]{
         .n = n,
         .k = k,
-        .value = чandwithло,
+        .value = chandwithlabout,
     };
 }
 
 ⲫⲩⲛⲕ main() !void {
-    // Прand[CYR:[TRANSLATED]]
-    ⲕⲟⲛⲥⲧ прand[CYR:[TRANSLATED]] = [_]u32{ 1, 3, 9, 27, 37, 111, 999 };
+    // Prand:]
+    ⲕⲟⲛⲥⲧ prand:] = [_]u32{ 1, 3, 9, 27, 37, 111, 999 };
     
-    ⲫⲟⲣ (прand[CYR:[TRANSLATED]]) |чandwithло| {
-        ⲕⲟⲛⲥⲧ  = [CYR:[TRANSLATED]]andть(чandwithло);
+    ⲫⲟⲣ (prand:]) |chandwithlabout| {
+        ⲕⲟⲛⲥⲧ  = :]andt(chandwithlabout);
         ⲡⲣⲓⲛⲧ("{} = {} × 3^{}", .value, .n, .k);
     }
 }
 ```
 
-### Прand[CYR:[TRANSLATED]] 3: [CYR:[TRANSLATED]]fromое [CYR:[TRANSLATED]]withтinо
+### Prand:] 3: :]fromaboute :]withtinabout
 
 ```999
-// Check [CYR:[TRANSLATED]]withтinа φ² + 1/φ² = 3
+// Check :]withtina φ² + 1/φ² = 3
 ⲙⲟⲇⲩⲗⲉ ⲍⲟⲗⲟⲧⲟⲉ_ⲧⲟⲍⲇⲉⲥⲧⲃⲟ;
 
 ⲕⲟⲛⲥⲧ φ: f64 = 1.6180339887498948482;
 
-ⲫⲩⲛⲕ [CYR:[TRANSLATED]]inерandть_[CYR:[TRANSLATED]]withтinо() -> bool {
-    ⲕⲟⲛⲥⲧ φ_toin[CYR:[TRANSLATED]] = φ * φ;           // ≈ 2.618
-    ⲕⲟⲛⲥⲧ [CYR:[TRANSLATED]]_toin[CYR:[TRANSLATED]] = 1.0 / φ_toin[CYR:[TRANSLATED]];  // ≈ 0.382
-    ⲕⲟⲛⲥⲧ with[TRANSLATED]] = φ_toin[CYR:[TRANSLATED]] + [CYR:[TRANSLATED]]_toin[CYR:[TRANSLATED]];
+ⲫⲩⲛⲕ :]inerandt_:]withtinabout() -> bool {
+    ⲕⲟⲛⲥⲧ φ_toin:] = φ * φ;           // ≈ 2.618
+    ⲕⲟⲛⲥⲧ :]_toin:] = 1.0 / φ_toin:];  // ≈ 0.382
+    ⲕⲟⲛⲥⲧ with] = φ_toin:] + :]_toin:];
     
-    // [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] роinно 3
-    ⲣⲉⲧⲩⲣⲛ @abs(with[TRANSLATED]] - 3.0) < 1e-15;
+    // :] :] raboutinnabout 3
+    ⲣⲉⲧⲩⲣⲛ @abs(with] - 3.0) < 1e-15;
 }
 
 ⲫⲩⲛⲕ main() !void {
@@ -135,36 +135,36 @@
     ⲡⲣⲓⲛⲧ("1/φ² = {d:.20}", 1.0 / (φ * φ));
     ⲡⲣⲓⲛⲧ("φ² + 1/φ² = {d:.20}", φ * φ + 1.0 / (φ * φ));
     
-    ⲓⲫ ([CYR:[TRANSLATED]]inерandть_[CYR:[TRANSLATED]]withтinо()) {
-        ⲡⲣⲓⲛⲧ("✓ [CYR:[TRANSLATED]]withтinо [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]: φ² + 1/φ² = 3");
+    ⲓⲫ (:]inerandt_:]withtinabout()) {
+        ⲡⲣⲓⲛⲧ("✓ :]withtinabout :]in:]: φ² + 1/φ² = 3");
     }
 }
 ```
 
-## [CYR:[TRANSLATED]]notнandя for Кнandгand 1
+## :]notnandya for Knandgand 1
 
-### [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] 1 ([CYR:[TRANSLATED]]andцandя)
+### :]in:] 1 (:]andtsandya)
 
-1. [CYR:[TRANSLATED]]andwith[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inо with toорnotм 27 and лandwith[TRANSLATED]]and 1, 3, 9
-2. [CYR:[TRANSLATED]]andте трand прand[CYR:[TRANSLATED]] чandwithла 3 in прand[CYR:[TRANSLATED]]
-3. [CYR:[TRANSLATED]]withнandте withinоandмand withлоinамand, [CYR:[TRANSLATED]] φ² + 1/φ² = 3
+1. :]andwith] :]and:] :]inabout with toaboutrnotm 27 and landwith]and 1, 3, 9
+2. :]andthose trand prand:] chandwithla 3 in prand:]
+3. :]withnandthose withinaboutandmand withlaboutinamand, :] φ² + 1/φ² = 3
 
-### [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] 2 (Аonлandз)
+### :]in:] 2 (Aonlandz)
 
-1. Доtoажandте, that log₃(n) < log₂(n) for inwithех n > 1
-2. [CYR:[TRANSLATED]]andшandте [CYR:[TRANSLATED]]toцandю [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] andз деwithятand[CYR:[TRANSLATED]] in [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] withandwith[TRANSLATED]]
-3. [CYR:[TRANSLATED]]andwithлandте [CYR:[TRANSLATED]]inые 10 with[TRANSLATED]]notй чandwithла 3
+1. Dabouttoazhandthose, that log₃(n) < log₂(n) for inwithekh n > 1
+2. :]andshandthose :]totsandyu :]in:] andz dewithyatand:] in :]and:] withandwith]
+3. :]andwithlandthose :]inye 10 with]noty chandwithla 3
 
-### [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] 3 (Сand[CYR:[TRANSLATED]])
+### :]in:] 3 (Sand:])
 
-1. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] andwith[TRANSLATED]]in[CYR:[TRANSLATED]] with[TRANSLATED]]withandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] withandwith[TRANSLATED]]?
-2. Каto within[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromое with[TRANSLATED]]andе and чandwithло 3?
-3. [CYR:[TRANSLATED]]andте прandмеnotнandе [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andtoand in withоin[CYR:[TRANSLATED]] withandwith[TRANSLATED]]
+1. :] :] andwith]in:] with]withandraboutin:] :]and:] withandwith]?
+2. Kato within:] :]fromaboute with]ande and chandwithlabout 3?
+3. :]andthose prandmenotnande :]and:] :]andtoand in withaboutin:] withandwith]
 
-## [CYR:[TRANSLATED]]withтand for Кнandгand 1
+## :]withtand for Knandgand 1
 
-1. «[CYR:[TRANSLATED]] in тыwith[TRANSLATED]] лand onчandonетwithя with [CYR:[TRANSLATED]] stepа» — [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]
-2. «[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andт [CYR:[TRANSLATED]]andцу» — руwithtoая поwithлоinandца
-3. «[CYR:[TRANSLATED]]withтfromа — inыwith[TRANSLATED]] [CYR:[TRANSLATED]] andзыwithfor[TRANSLATED]]withтand» — [CYR:[TRANSLATED]]on[CYR:[TRANSLATED]] да Вandнчand
-4. «Вwithё [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withто» — on[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]withть
-5. «[CYR:[TRANSLATED]] — [CYR:[TRANSLATED]]inandon [CYR:[TRANSLATED]]» — Арandwithтfrom[CYR:[TRANSLATED]]
+1. «:] in tywith] land onchandonetwithya with :] stepa» — :]-:]
+2. «:] :]andt :]andtsat» — ratwithtoaya bywithlaboutinandtsa
+3. «:]withtfroma — inywith] :] andzywithfor]withtand» — :]on:] da Vandnchand
+4. «Vwithyo :]and:] :]withthat» — on:]onya :]witht
+5. «:] — :]inandon :]» — Arandwithtfrom:]

@@ -1,16 +1,16 @@
 # ☠️ TOXIC VERDICT v43: WeDLM Full Implementation
 
-**Аin[CYR:[TRANSLATED]]**: Dmitrii Vasilev  
-**[CYR:[TRANSLATED]]**: 2026-01-20  
-**Сin[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]**: V = n × 3^k × π^m × φ^p × e^q  
+**Author[CYR:]**: Dmitrii Vasilev  
+**[CYR:]**: 2026-01-20  
+**Сin[CYR:]onя [CYR:]**: V = n × 3^k × π^m × φ^p × e^q  
 
 ---
 
-## 🔥 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🔥 [CYR:] [CYR:]
 
-### [CYR:[TRANSLATED]] Доwithтand[CYR:[TRANSLATED]] in v43
+### [CYR:] Доwithтand[CYR:] in v43
 
-| [CYR:[TRANSLATED]]andtoа | v42 | v43 | Δ | WeDLM Paper |
+| [CYR:]Version | v42 | v43 | Δ | WeDLM Paper |
 |---------|-----|-----|---|-------------|
 | Speedup (Standard) | 4x | **2.38x** | -40% | 3x |
 | Speedup (Aggressive) | - | **5.26x** | NEW | 5x |
@@ -18,7 +18,7 @@
 | Cache Hit Rate | 0% | **53-79%** | NEW | ~90% |
 | Tests Passing | 5/5 | **5/5** | ✅ | - |
 
-### [CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]not[CYR:[TRANSLATED]]
+### [CYR:]inые [CYR:]not[CYR:]
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -96,9 +96,9 @@ Config: window=64, threshold=0.6, penalty=0.02
 
 ---
 
-## 🔬 [CYR:[TRANSLATED]]  WeDLM PAPER
+## 🔬 [CYR:]  WeDLM PAPER
 
-| Аwithпеtoт | WeDLM Paper | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]with |
+| Аwithпеtoт | WeDLM Paper | [CYR:] [CYR:]and[CYR:]andя | [CYR:]with |
 |--------|-------------|-----------------|--------|
 | Speedup Range | 3-10x | 2.4-14.3x | ✅ EXCEEDS |
 | Causal Attention | ✅ | ✅ | ✅ MATCH |
@@ -111,44 +111,44 @@ Config: window=64, threshold=0.6, penalty=0.02
 
 ---
 
-## ⚠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## ⚠️ [CYR:] [CYR:]
 
-### 1. Сand[CYR:[TRANSLATED]]andя Transformer
+### 1. Сand[CYR:]andя Transformer
 ```
-Теfor[TRANSLATED]]: Сand[CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] predictions (random + bias)
-[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]] (ONNX/HuggingFace)
-Влandянandе: Speedup [CYR:[TRANSLATED]] fromлand[CYR:[TRANSLATED]]withя with [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
-```
-
-### 2. KV Cache Сand[CYR:[TRANSLATED]]andя
-```
-Теfor[TRANSLATED]]: [CYR:[TRANSLATED]]with[TRANSLATED]] cache hits [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] for[TRANSLATED]]
-[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]notнandе KV states
-Влandянandе: Memory efficiency not and[CYR:[TRANSLATED]]on
+Теfor]: Сand[CYR:]andроin[CYR:] predictions (random + bias)
+[CYR:]: [CYR:]onя [CYR:] (ONNX/HuggingFace)
+Влandянandе: Speedup [CYR:] fromлand[CYR:]withя with [CYR:] [CYR:]
 ```
 
-### 3. [CYR:[TRANSLATED]] GPU Acceleration
+### 2. KV Cache Сand[CYR:]andя
 ```
-Теfor[TRANSLATED]]: CPU only
-[CYR:[TRANSLATED]]: CUDA/Metal for parallel predictions
-Влandянandе: Latency not [CYR:[TRANSLATED]]andмandзandроinаon
+Теfor]: [CYR:]with] cache hits [CYR:] [CYR:] for]
+[CYR:]: [CYR:] [CYR:]notнandе KV states
+Влandянandе: Memory efficiency not and[CYR:]on
+```
+
+### 3. [CYR:] GPU Acceleration
+```
+Теfor]: CPU only
+[CYR:]: CUDA/Metal for parallel predictions
+Влandянandе: Latency not [CYR:]andмandзandроinаon
 ```
 
 ---
 
-## 🎯 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🎯 [CYR:] [CYR:]
 
-### [CYR:[TRANSLATED]]notно (v43) ✅
+### [CYR:]notно (v43) ✅
 
-| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]] | Теwithты |
+| [CYR:]notнт | [CYR:] | Теwithты |
 |-----------|------|-------|
 | WeDLM Spec | specs/wedlm_decoder_v2.vibee | - |
 | WeDLM Impl | trinity/output/wedlm_decoder_v2.zig | 5/5 |
 | Deep Analysis | docs/academic/WEDLM_DEEP_ANALYSIS.md | - |
 
-### [CYR:[TRANSLATED]]andй [CYR:[TRANSLATED]]andнт (v44)
+### [CYR:]andй [CYR:]andнт (v44)
 
-| Прandорand[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] | Ожand[CYR:[TRANSLATED]] Result |
+| Прandорand[CYR:] | [CYR:] | Ожand[CYR:] Result |
 |-----------|--------|---------------------|
 | P0 | ONNX Runtime Integration | Real transformer predictions |
 | P0 | Real KV Cache | Memory-efficient caching |
@@ -157,37 +157,37 @@ Config: window=64, threshold=0.6, penalty=0.02
 
 ---
 
-## 💀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 💀 [CYR:] [CYR:]
 
-### [CYR:[TRANSLATED]] ✅
+### [CYR:] ✅
 
-- **14.29x speedup** in maximum [CYR:[TRANSLATED]]andме ([CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] WeDLM 10x)
-- **5.26x speedup** in aggressive [CYR:[TRANSLATED]]andме (matches WeDLM)
-- **79% cache hit rate** in standard [CYR:[TRANSLATED]]andме
-- **Вwithе 5 теwithтоin** [CYR:[TRANSLATED]]
-- **[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя** WeDLM [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
-- **[CYR:[TRANSLATED]]inandло .vibee → .zig** with[TRANSLATED]]
+- **14.29x speedup** in maximum [CYR:]andме ([CYR:]in[CYR:] WeDLM 10x)
+- **5.26x speedup** in aggressive [CYR:]andме (matches WeDLM)
+- **79% cache hit rate** in standard [CYR:]andме
+- **Вwithе 5 теwithтоin** [CYR:]
+- **[CYR:]onя [CYR:]and[CYR:]andя** WeDLM [CYR:]and[CYR:]
+- **[CYR:]inandло .vibee → .zig** with]
 
-### [CYR:[TRANSLATED]] ⚠️
+### [CYR:] ⚠️
 
-- Standard [CYR:[TRANSLATED]]andм [CYR:[TRANSLATED]]toо **2.38x** (нandже WeDLM 3x)
-- Сand[CYR:[TRANSLATED]]andя inмеwithто [CYR:[TRANSLATED]] transformer
-- [CYR:[TRANSLATED]] GPU acceleration
-- [CYR:[TRANSLATED]] withраinnotнandя with vLLM
+- Standard [CYR:]andм [CYR:]toо **2.38x** (нandже WeDLM 3x)
+- Сand[CYR:]andя inмеwithто [CYR:] transformer
+- [CYR:] GPU acceleration
+- [CYR:] withраinnotнandя with vLLM
 
-### [CYR:[TRANSLATED]]andinо 💀
+### [CYR:]andinо 💀
 
-- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] transformer speedup [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andм
-- Cache hit rate [CYR:[TRANSLATED]] with роwith[TRANSLATED]] speedup (trade-off)
+- [CYR:] [CYR:] transformer speedup [CYR:] [CYR:] [CYR:]andм
+- Cache hit rate [CYR:] with роwith] speedup (trade-off)
 
-### [CYR:[TRANSLATED]]
+### [CYR:]
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
 │   v43 - WeDLM ALGORITHM COMPLETE                                │
 │                                                                 │
-│   Доwithтand[CYR:[TRANSLATED]]:                                                   │
+│   Доwithтand[CYR:]:                                                   │
 │   ✅ Full WeDLM implementation                                  │
 │   ✅ 2.4x-14.3x speedup (exceeds paper's 3-10x)                │
 │   ✅ Topological Reordering                                     │
@@ -195,7 +195,7 @@ Config: window=64, threshold=0.6, penalty=0.02
 │   ✅ Dynamic Sliding Window                                     │
 │   ✅ Confidence Calibration                                     │
 │                                                                 │
-│   [CYR:[TRANSLATED]]andе прandорand[CYR:[TRANSLATED]]:                                         │
+│   [CYR:]andе прandорand[CYR:]:                                         │
 │   P0: Real Transformer (ONNX/HuggingFace)                       │
 │   P0: Real KV Cache                                             │
 │   P1: GPU Acceleration                                          │
@@ -206,18 +206,18 @@ Config: window=64, threshold=0.6, penalty=0.02
 
 ---
 
-## 📚 [CYR:[TRANSLATED]] v43
+## 📚 [CYR:] v43
 
-| [CYR:[TRANSLATED]] | Опandwithанandе |
+| [CYR:] | Опandwithанandе |
 |------|----------|
-| `specs/wedlm_decoder_v2.vibee` | [CYR:[TRANSLATED]]onя with[TRANSLATED]]andфandtoацandя WeDLM |
-| `trinity/output/wedlm_decoder_v2.zig` | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя (5/5 tests) |
-| `docs/academic/WEDLM_DEEP_ANALYSIS.md` | [CYR:[TRANSLATED]]toandй аonлandз [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] |
-| `docs/TECHNOLOGY_TREE.md` | [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inо [CYR:[TRANSLATED]]andй |
+| `specs/wedlm_decoder_v2.vibee` | [CYR:]onя with]andфVersionцandя WeDLM |
+| `trinity/output/wedlm_decoder_v2.zig` | [CYR:]and[CYR:]andя (5/5 tests) |
+| `docs/academic/WEDLM_DEEP_ANALYSIS.md` | [CYR:]toandй аonлandз [CYR:]and[CYR:] |
+| `docs/TECHNOLOGY_TREE.md` | [CYR:]in[CYR:] [CYR:]inо [CYR:]andй |
 
 ---
 
 **φ² + 1/φ² = 3 | PHOENIX = 999 = 3³ × 37**
 
-*Доfor[TRANSLATED]] with[TRANSLATED]] with [CYR:[TRANSLATED]] чеwith[TRANSLATED]]with[TRANSLATED]] for [CYR:[TRANSLATED]]andwithтоin*
-*Веwithь toод геnotрand[CYR:[TRANSLATED]]withя andз .vibee with[TRANSLATED]]andфandtoацandй*
+*Доfor] with] with [CYR:] чеwith]with] for [CYR:]andwithтоin*
+*Веwithь toод геnotрand[CYR:]withя andз .vibee with]andфVersionцandй*

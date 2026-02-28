@@ -1,30 +1,30 @@
-# PAS-аonлandз геnot[CYR:[TRANSLATED]] toнandгand 999
+# PAS-aonlandz genot:] tonandgand 999
 
-## Теfor[TRANSLATED]] withоwith[TRANSLATED]]andе
+## Tefor] withaboutwith]ande
 
-**[CYR:[TRANSLATED]]andтм:** Template-based generation
-**[CYR:[TRANSLATED]]withть:** O(n) where n = 999 [CYR:[TRANSLATED]]in
-**[CYR:[TRANSLATED]]withтinо:** 97.6/100 (with[TRANSLATED]]andй [CYR:[TRANSLATED]])
+**:]andtm:** Template-based generation
+**:]witht:** O(n) where n = 999 :]in
+**:]withtinabout:** 97.6/100 (with]andy :])
 
-## [CYR:[TRANSLATED]] теfor[TRANSLATED]] геnot[CYR:[TRANSLATED]]
+## :] thosefor] genot:]
 
-1. **Поin[CYR:[TRANSLATED]]andйwithя for[TRANSLATED]]** — [CYR:[TRANSLATED]]inы in[CYR:[TRANSLATED]]and [CYR:[TRANSLATED]] toнandгand and[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
-2. **Отwithутwithтinandе [CYR:[TRANSLATED]]withand** — notт [CYR:[TRANSLATED]]inandтandя with[TRANSLATED]] from [CYR:[TRANSLATED]]inы to [CYR:[TRANSLATED]]inе
-3. **[CYR:[TRANSLATED]]withть** — 22 andз 27 toнandг andwith[TRANSLATED]] placeholder-for[TRANSLATED]]
-4. **[CYR:[TRANSLATED]] унandfor[TRANSLATED]] andwith[TRANSLATED]]andй** — одon andwith[TRANSLATED]]andя on inwithю toнandгу
+1. **Paboutin:]andywithya for]** — :]iny in:]and :] tonandgand and:]and:]
+2. **Otwithattwithtinande :]withand** — nott :]inandtandya with] from :]iny to :]ine
+3. **:]witht** — 22 andz 27 tonandg andwith] placeholder-for]
+4. **:] atnandfor] andwith]andy** — aboutdon andwith]andya on inwithyu tonandgat
 
-## PAS-аonлandз
+## PAS-aonlandz
 
-### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andя
+### :] :]andya
 
-| [CYR:[TRANSLATED]] | Прand[CYR:[TRANSLATED]]andмоwithть | Ожand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toт |
+| :] | Prand:]andmaboutwitht | Ozhand:] :]tot |
 |---------|--------------|------------------|
-| PRE (Precomputation) | 90% | [CYR:[TRANSLATED]] зonнandй for for[TRANSLATED]] [CYR:[TRANSLATED]]inы |
-| D&C (Divide-and-Conquer) | 85% | [CYR:[TRANSLATED]]andенandе toнandгand on арtoand |
-| ALG (Algebraic) | 70% | [CYR:[TRANSLATED]] for геnot[CYR:[TRANSLATED]]and inарandацandй |
-| MLS (ML-Guided) | 60% | Геnot[CYR:[TRANSLATED]]andя унandfor[TRANSLATED]] теtowithта |
+| PRE (Precomputation) | 90% | :] zonnandy for for] :]iny |
+| D&C (Divide-and-Conquer) | 85% | :]andenande tonandgand on artoand |
+| ALG (Algebraic) | 70% | :] for genot:]and inarandatsandy |
+| MLS (ML-Guided) | 60% | Genot:]andya atnandfor] thosetowiththat |
 
-### [CYR:[TRANSLATED]]withfor[TRANSLATED]]andе [CYR:[TRANSLATED]]andя
+### :]withfor]ande :]andya
 
 ```
 Source: Template-based generator (97.6/100)
@@ -35,43 +35,43 @@ Confidence: 80%
 Timeline: Immediate
 ```
 
-## [CYR:[TRANSLATED]]for[TRANSLATED]] [CYR:[TRANSLATED]] геnot[CYR:[TRANSLATED]]
+## :]for] :] genot:]
 
-### 1. [CYR:[TRANSLATED]]andя for[TRANSLATED]] (D&C)
+### 1. :]andya for] (D&C)
 
 ```
-Кнandга (37 [CYR:[TRANSLATED]]in)
-├── Арtoа 1: Вin[CYR:[TRANSLATED]]andе ([CYR:[TRANSLATED]]inы 1-9)
-│   ├── Заinязtoа (1-3)
-│   ├── [CYR:[TRANSLATED]]inandтandе (4-6)
-│   └── [CYR:[TRANSLATED]]inый поinорfrom (7-9)
-├── Арtoа 2: [CYR:[TRANSLATED]]inandтandе ([CYR:[TRANSLATED]]inы 10-27)
-│   ├── [CYR:[TRANSLATED]]andе (10-18)
-│   └── [CYR:[TRANSLATED]]andonцandя (19-27)
-└── Арtoа 3: Заin[CYR:[TRANSLATED]]andе ([CYR:[TRANSLATED]]inы 28-37)
-    ├── [CYR:[TRANSLATED]]inязtoа (28-33)
-    └── Эпand[CYR:[TRANSLATED]] (34-37)
+Knandga (37 :]in)
+├── Artoa 1: Vin:]ande (:]iny 1-9)
+│   ├── Zainyaztoa (1-3)
+│   ├── :]inandtande (4-6)
+│   └── :]inyy byinaboutrfrom (7-9)
+├── Artoa 2: :]inandtande (:]iny 10-27)
+│   ├── :]ande (10-18)
+│   └── :]andontsandya (19-27)
+└── Artoa 3: Zain:]ande (:]iny 28-37)
+    ├── :]inyaztoa (28-33)
+    └── Epand:] (34-37)
 ```
 
-### 2. [CYR:[TRANSLATED]] зonнandй (PRE)
+### 2. :] zonnandy (PRE)
 
-[CYR:[TRANSLATED]] for[TRANSLATED]] andз 27 toнandг:
-- 5+ on[CYR:[TRANSLATED]] фаtoтоin
-- 3+ прand[CYR:[TRANSLATED]]in for[TRANSLATED]]
-- 37 унandfor[TRANSLATED]] andwith[TRANSLATED]]andй (по [CYR:[TRANSLATED]] on [CYR:[TRANSLATED]]inу)
-- 10+ [CYR:[TRANSLATED]]with[TRANSLATED]]
+:] for] andz 27 tonandg:
+- 5+ on:] fatothatin
+- 3+ prand:]in for]
+- 37 atnandfor] andwith]andy (by :] on :]inat)
+- 10+ :]with]
 
-### 3. [CYR:[TRANSLATED]] inарandацand (ALG)
+### 3. :] inarandatsand (ALG)
 
 ```python
 def generate_chapter_content(book, chapter):
     arc = get_arc(chapter)  # 1, 2, or 3
-    position = get_position_in_arc(chapter)  # on[CYR:[TRANSLATED]]/with[TRANSLATED]]andon/toоnotц
+    position = get_position_in_arc(chapter)  # on:]/with]andon/toaboutnotts
     
-    # Sacred formula [CYR:[TRANSLATED]] with[TRANSLATED]]for[TRANSLATED]]
+    # Sacred formula :] with]for]
     n, k = sacred_formula(book * 37 + chapter)
     
-    # [CYR:[TRANSLATED]] заinandwithandт from [CYR:[TRANSLATED]]andцand in арtoе
+    # :] zainandwithandt from :]andtsand in artoe
     if arc == 1:
         return intro_template(book, chapter, n, k)
     elif arc == 2:
@@ -80,68 +80,68 @@ def generate_chapter_content(book, chapter):
         return conclusion_template(book, chapter, n, k)
 ```
 
-## Унandfor[TRANSLATED]] for[TRANSLATED]] for inwithех 27 toнandг
+## Unandfor] for] for inwithekh 27 tonandg
 
-### [CYR:[TRANSLATED]] 1: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinо ([CYR:[TRANSLATED]]andя)
+### :] 1: :] :]withtinabout (:]andya)
 
-| Кнandга | [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]inое fromfor[TRANSLATED]]andе |
+| Knandga | :]onya :] | :]inaboute fromfor]ande |
 |-------|--------------|-------------------|
-| 1 | [CYR:[TRANSLATED]] (1958) | [CYR:[TRANSLATED]]andчonя withandwith[TRANSLATED]] [CYR:[TRANSLATED]]toтandinnotе |
-| 2 | Чandwithло 3 | φ² + 1/φ² = 3 |
-| 3 | [CYR:[TRANSLATED]]with[TRANSLATED]] | φ = 2cos(π/5) |
-| 4 | [CYR:[TRANSLATED]]andtoа Луtoаwithеinandча | [CYR:[TRANSLATED]] зon[CYR:[TRANSLATED]]andе |
-| 5 | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inья | log₃(n) inыwithfromа |
-| 6 | [CYR:[TRANSLATED]]andты | |ψ⟩ = α|0⟩ + β|1⟩ + γ|2⟩ |
-| 7 | TNN | Веwithа {-1, 0, +1} |
-| 8 | Крand[CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] XOR |
-| 9 | Сand[CYR:[TRANSLATED]] | 333 = 9 × 37 |
+| 1 | :] (1958) | :]andchonya withandwith] :]totandinnote |
+| 2 | Chandwithlabout 3 | φ² + 1/φ² = 3 |
+| 3 | :]with] | φ = 2cos(π/5) |
+| 4 | :]Version Lattoawitheinandcha | :] zon:]ande |
+| 5 | :]and:] :]inya | log₃(n) inywithfroma |
+| 6 | :]andty | |ψ⟩ = α|0⟩ + β|1⟩ + γ|2⟩ |
+| 7 | TNN | Vewitha {-1, 0, +1} |
+| 8 | Krand:]andya | :]and:] XOR |
+| 9 | Sand:] | 333 = 9 × 37 |
 
-### [CYR:[TRANSLATED]] 2: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтinо ([CYR:[TRANSLATED]]toтandtoа)
+### :] 2: :] :]withtinabout (:]totVersion)
 
-| Кнandга | [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]inое fromfor[TRANSLATED]]andе |
+| Knandga | :]onya :] | :]inaboute fromfor]ande |
 |-------|--------------|-------------------|
 | 10 | Dual-Pivot QuickSort | O(n log₃ n) |
-| 11 | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] поandwithto | Унand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toцand |
+| 11 | :]and:] byandwithto | Unand:] :]totsand |
 | 12 | Huffman-3 | H₃ = -Σ pᵢ log₃(pᵢ) |
-| 13 | [CYR:[TRANSLATED]]to 999 | .vibee → .999 |
-| 14 | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] | Source → AST → IR |
-| 15 | Runtime | Едand[CYR:[TRANSLATED]] HTML |
-| 16 | PAS | [CYR:[TRANSLATED]]andца [CYR:[TRANSLATED]]inа |
-| 17 | [CYR:[TRANSLATED]]toand | speedup = T_old/T_new |
-| 18 | Сand[CYR:[TRANSLATED]] | 666 = 2 × 333 |
+| 13 | :]to 999 | .vibee → .999 |
+| 14 | :]and:] | Source → AST → IR |
+| 15 | Runtime | Edand:] HTML |
+| 16 | PAS | :]andtsa :]ina |
+| 17 | :]toand | speedup = T_old/T_new |
+| 18 | Sand:] | 666 = 2 × 333 |
 
-### [CYR:[TRANSLATED]] 3: [CYR:[TRANSLATED]]fromое [CYR:[TRANSLATED]]withтinо ([CYR:[TRANSLATED]])
+### :] 3: :]fromaboute :]withtinabout (:])
 
-| Кнandга | [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]inое fromfor[TRANSLATED]]andе |
+| Knandga | :]onya :] | :]inaboute fromfor]ande |
 |-------|--------------|-------------------|
-| 19 | 999 OS | Трand for[TRANSLATED]] [CYR:[TRANSLATED]]andты |
-| 20 | [CYR:[TRANSLATED]]-птandца | [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andя |
-| 21 | 50 [CYR:[TRANSLATED]]toоin | Унandinерwith[TRANSLATED]] AST |
-| 22 | Кin[CYR:[TRANSLATED]]inое | Grover on for[TRANSLATED]]and[CYR:[TRANSLATED]] |
-| 23 | [CYR:[TRANSLATED]]for[TRANSLATED]] | D = log(N)/log(1/r) |
-| 24 | [CYR:[TRANSLATED]]onнandе | I = f(I) |
-| 25 | [CYR:[TRANSLATED]]-эin[CYR:[TRANSLATED]]andя | meta_fitness |
-| 26 | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]fromа |
+| 19 | 999 OS | Trand for] :]andty |
+| 20 | :]-ptandtsa | :]in:]andya |
+| 21 | 50 :]toaboutin | Unandinerwith] AST |
+| 22 | Kin:]inaboute | Grover on for]and:] |
+| 23 | :]for] | D = log(N)/log(1/r) |
+| 24 | :]onnande | I = f(I) |
+| 25 | :]-ein:]andya | meta_fitness |
+| 26 | :] | :]froma |
 | 27 | OMEGA | 999 = 37 × 3³ |
 
-## [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя
+## :]and:]andya
 
-### [CYR:[TRANSLATED]] 1: Раwithшandрandть [CYR:[TRANSLATED]] зonнandй
+### :] 1: Rawithshandrandt :] zonnandy
 
-[CYR:[TRANSLATED]] fileы `book/knowledge_base/book_XX_*.md` for inwithех 27 toнandг.
+:] filey `book/knowledge_base/book_XX_*.md` for inwithekh 27 tonandg.
 
-### [CYR:[TRANSLATED]] 2: [CYR:[TRANSLATED]] геnot[CYR:[TRANSLATED]] v3
+### :] 2: :] genot:] v3
 
 ```python
 # book_generator_v3.py
-# - Унandfor[TRANSLATED]] for[TRANSLATED]] for for[TRANSLATED]] [CYR:[TRANSLATED]]inы
-# - [CYR:[TRANSLATED]]withandя with[TRANSLATED]] in[CYR:[TRANSLATED]]and toнandгand
-# - [CYR:[TRANSLATED]] фаtoты andз [CYR:[TRANSLATED]] зonнandй
-# - [CYR:[TRANSLATED]] with inарandацandямand
+# - Unandfor] for] for for] :]iny
+# - :]Author with] in:]and tonandgand
+# - :] fatoty andz :] zonnandy
+# - :] with inarandatsandyamand
 ```
 
-### [CYR:[TRANSLATED]] 3: [CYR:[TRANSLATED]]andфandtoацandя
+### :] 3: :]andfVersiontsandya
 
-- [CYR:[TRANSLATED]]inерandть унandfor[TRANSLATED]]withть for[TRANSLATED]] [CYR:[TRANSLATED]]inы
-- [CYR:[TRANSLATED]]inерandть [CYR:[TRANSLATED]]withandю with[TRANSLATED]]
-- [CYR:[TRANSLATED]]inерandть on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withть
+- :]inerandt atnandfor]witht for] :]iny
+- :]inerandt :]withandyu with]
+- :]inerandt on:] :]witht
