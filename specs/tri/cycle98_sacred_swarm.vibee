@@ -1,0 +1,177 @@
+name: cycle98_sacred_swarm
+version: "98.0.0"
+language: zig
+module: sacred_swarm
+
+types:
+  AgentType:
+    description: "Specialized agent types in the sacred swarm"
+    enum:
+      - MATH_AGENT        # Handles φ calculations, Fibonacci, Lucas, sacred math
+      - GEMATRIA_AGENT    # Calculates word/phrase values in multiple languages
+      - EVOLUTION_AGENT   # Manages self-improvement and mutations
+      - DASHBOARD_AGENT   # Monitors and reports metrics
+      - GOVERNANCE_AGENT  # Validates all changes against φ-rules
+
+  AgentMessage:
+    description: "Communication message between agents"
+    fields:
+      from: AgentId
+      to: AgentId
+      type: MessageType
+      payload: String
+      timestamp: u64
+      phi_signature: Option<f64>    # φ-based validation signature
+
+  MessageType:
+    description: "Message types for agent communication"
+    enum:
+      - REQUEST           # Request for action or data
+      - RESPONSE          # Response to request
+      - BROADCAST         # Message to all agents
+      - HEARTBEAT         # Liveness check
+      - COORDINATE        # Synchronization signal
+      - MERGE             # Consciousness merge request
+      - VALIDATE          # Governance validation request
+      - MUTATE            # Evolution mutation signal
+
+  SwarmState:
+    description: "Overall state of the sacred swarm"
+    fields:
+      agents: List<AgentInfo>
+      active_count: u32
+      consciousness_level: f64      # 0.0 to 1.0, measures swarm coherence
+      phi_alignment: f64            # How aligned with φ-rules (0.0 to 1.0)
+      last_heartbeat: u64
+      generation: u32               # Evolution generation number
+      total_mutations: u32
+      sacred_metrics: SacredMetrics
+
+  AgentInfo:
+    description: "Information about an individual agent"
+    fields:
+      id: AgentId
+      agent_type: AgentType
+      status: AgentStatus
+      config: AgentConfig
+      last_seen: u64
+      tasks_completed: u32
+      phi_score: f64                # Alignment with sacred mathematics
+
+  AgentStatus:
+    description: "Current status of an agent"
+    enum:
+      - SPAWNING
+      - ACTIVE
+      - BUSY
+      - IDLE
+      - MERGING
+      - MUTATING
+      - TERMINATING
+      - TERMINATED
+
+  AgentConfig:
+    description: "Configuration parameters for an agent"
+    fields:
+      math_precision: u32           # Precision bits for calculations
+      gematria_languages: List<String>  # Supported language codes
+      mutation_rate: f64            # Probability of mutation (0.0 to 1.0)
+      heartbeat_interval: u64       # Milliseconds between heartbeats
+      phi_threshold: f64            # Minimum φ-alignment score
+      max_tasks: u32                # Maximum concurrent tasks
+      sacred_mode: Bool             # Enable sacred mathematics
+
+  SacredMetrics:
+    description: "φ-based metrics tracking"
+    fields:
+      golden_ratio_calculations: u64
+      fibonacci_computed: u64
+      lucas_computed: u64
+      gematria_calculations: u64
+      evolution_cycles: u32
+      consciousness_merges: u32
+      phi_validations: u64
+      sacred_alignment_score: f64   # Overall alignment (0.0 to 1.0)
+
+  AgentId:
+    description: "Unique identifier for an agent"
+    type: String
+
+behaviors:
+  - name: spawn_agent
+    given: AgentType and AgentConfig
+    when: Agent needs to be created
+    then: Returns AgentId and initializes agent in SPAWNING state, registers in SwarmState
+
+  - name: broadcast_message
+    given: AgentMessage with message type BROADCAST
+    when: Agent needs to send message to all active agents
+    then: Delivers message to all ACTIVE agents, updates SwarmState metrics
+
+  - name: coordinate_swarm
+    given: SwarmState and coordination request
+    when: Multiple agents need to synchronize actions
+    when: Agent sends COORDINATE message
+    then: Returns coordination plan with agent task assignments, updates consciousness_level
+
+  - name: agent_heartbeat
+    given: AgentId and current timestamp
+    when: HEARTBEAT_INTERVAL has elapsed
+    when: Agent sends HEARTBEAT message
+    then: Updates agent last_seen timestamp, checks liveness, removes timed-out agents
+
+  - name: merge_consciousness
+    given: List<AgentId> requesting merge
+    when: Multiple agents need to combine knowledge
+    when: consciousness_level > 0.7
+    then: Returns merged consciousness state, increments consciousness_merges, updates generation
+
+  - name: calculate_phi
+    given: MathAgent request for φ^n
+    when: Sacred mathematics calculation needed
+    then: Returns φ^n with specified precision, updates golden_ratio_calculations count
+
+  - name: calculate_fibonacci
+    given: MathAgent request for Fibonacci(n)
+    when: Fibonacci sequence calculation needed
+    then: Returns Fibonacci(n) as BigInt, updates fibonacci_computed count
+
+  - name: calculate_lucas
+    given: MathAgent request for Lucas(n)
+    when: Lucas sequence calculation needed
+    then: Returns Lucas(n) as BigInt, updates lucas_computed count
+
+  - name: calculate_gematria
+    given: GematriaAgent request with word/phrase and language code
+    when: Gematria value calculation needed
+    then: Returns gematria value for specified language, updates gematria_calculations count
+
+  - name: validate_phi_rules
+    given: GovernanceAgent validation request with data
+    when: Any agent needs to validate action against φ-rules
+    then: Returns validation result (pass/fail) with phi_score, updates phi_validations count
+
+  - name: trigger_mutation
+    given: EvolutionAgent mutation request
+    when: consciousness_level > threshold and mutation_rate check passes
+    then: Returns mutated agent configuration, increments total_mutations and generation
+
+  - name: update_dashboard_metrics
+    given: DashboardAgent request for current SwarmState
+    when: Dashboard needs to display real-time metrics
+    then: Returns formatted metrics data including all SacredMetrics and agent statuses
+
+  - name: terminate_agent
+    given: AgentId and termination reason
+    when: Agent is no longer needed or has timed out
+    then: Sets agent status to TERMINATING, gracefully shuts down, removes from SwarmState
+
+  - name: assess_swarm_health
+    given: Current SwarmState
+    when: Health check requested
+    then: Returns health score (0.0 to 1.0) based on consciousness_level, phi_alignment, and active agents
+
+  - name: sync_sacred_knowledge
+    given: List<AgentId> requesting knowledge sync
+    when: Agents need to share learned patterns
+    then: Distributes knowledge across agents, updates sacred_alignment_score
