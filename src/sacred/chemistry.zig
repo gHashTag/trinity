@@ -269,7 +269,7 @@ pub fn parseFormula(allocator: std.mem.Allocator, formula: []const u8) !std.Stri
 
 /// Calculate molar mass from chemical formula
 pub fn molarMass(allocator: std.mem.Allocator, formula: []const u8) !f64 {
-    const counts = try parseFormula(allocator, formula);
+    var counts = try parseFormula(allocator, formula);
     defer counts.deinit();
 
     var total: f64 = 0;
@@ -283,7 +283,7 @@ pub fn molarMass(allocator: std.mem.Allocator, formula: []const u8) !f64 {
 
 /// Calculate percent composition of each element in formula
 pub fn percentComposition(allocator: std.mem.Allocator, formula: []const u8) !std.StringHashMap(f64) {
-    const counts = try parseFormula(allocator, formula);
+    var counts = try parseFormula(allocator, formula);
     defer counts.deinit();
 
     const total_mass = try molarMass(allocator, formula);
