@@ -240,6 +240,9 @@ pub fn main() !void {
         .identity => try commands.runIdentityCommand(allocator, cmd_args),
         .swarm => try commands.runSwarmCommand(allocator, cmd_args),
         .govern => try commands.runGovernCommand(allocator, cmd_args),
+        .dashboard => try commands.runDashboardCommand(allocator, cmd_args),
+        .omega => try commands.runOmegaCommand(allocator, cmd_args),
+        .math_agent => try commands.runMathAgentCommand(allocator, cmd_args),
         // Codebase Context (Cycle 92)
         .analyze => tri_context.runAnalyzeCommand(&state),
         .search_cmd => tri_context.runSearchCommand(&state, cmd_args),
