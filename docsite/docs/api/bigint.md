@@ -219,7 +219,11 @@ const abs_a = a.abs();  // 999
 
 ## SIMD Operations
 
-### simdAddTrits(a, b) → { sum, overflow }
+### simdAddTrits
+
+```text
+simdAddTrits(a, b) → { sum, overflow }
+```
 
 SIMD addition of 32 trits in parallel. Returns sum and overflow vectors.
 
@@ -243,7 +247,11 @@ const cmp = simdCompareTrits(a_vec, b_vec);
 // cmp[i] = +1 if a[i] > b[i]
 ```
 
-### simdNormalize(v) → { normalized, carry }
+### simdNormalize
+
+```text
+simdNormalize(v) → { normalized, carry }
+```
 
 Brings SIMD vector values to -1..+1 range with carry propagation.
 
@@ -365,7 +373,7 @@ const result = a.divNewton(&b);
 
 **Algorithm:**
 1. Initial guess: x ≈ 3^(precision - len(b) + 1)
-2. Iterate: x_{n+1} = x_n * (2 - b * x_n / 3^precision)
+2. Iterate: `x_{n+1} = x_n * (2 - b * x_n / 3^precision)`
 3. Max 10 iterations (typically converges in 3-5)
 4. Adjust remainder if out of range
 

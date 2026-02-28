@@ -298,16 +298,16 @@ Clear branch names help us understand the purpose of changes at a glance.
 
 | Type | Usage | Examples |
 |------|-------|----------|
-| `feature/` | New features or specifications | `feature/sparse-vsa-ops`<br>`feature/vibee-python-backend` |
-| `fix/` | Bug fixes | `fix/trit-bundling-off-by-one`<br>`fix/memory-leak-in-hypervector` |
-| `docs/` | Documentation changes | `docs/api-reference-update`<br>`docs/contributing-guide` |
-| `refactor/` | Code restructuring (compiler only) | `refactor/codegen-pipeline`<br>`refactor/vm-instruction-set` |
-| `perf/` | Performance improvements | `perf/simd-vsa-bind`<br>`perf/cache-friendly-layout` |
-| `test/` | Test additions or improvements | `test/property-based-vsa`<br>`test/fuzz-vibee-parser` |
-| `chore/` | Build, CI, tooling | `chore/zig-0.15.0-upgrade`<br>`chore/github-actions-fix` |
-| `release/` | Release preparation | `release/v2.0.0`<br>`release/patch-v2.1.3` |
+| `feature/` | New features or specifications | `feature/sparse-vsa-ops`, `feature/vibee-python-backend` |
+| `fix/` | Bug fixes | `fix/trit-bundling-off-by-one`, `fix/memory-leak-in-hypervector` |
+| `docs/` | Documentation changes | `docs/api-reference-update`, `docs/contributing-guide` |
+| `refactor/` | Code restructuring (compiler only) | `refactor/codegen-pipeline`, `refactor/vm-instruction-set` |
+| `perf/` | Performance improvements | `perf/simd-vsa-bind`, `perf/cache-friendly-layout` |
+| `test/` | Test additions or improvements | `test/property-based-vsa`, `test/fuzz-vibee-parser` |
+| `chore/` | Build, CI, tooling | `chore/zig-0.15.0-upgrade`, `chore/github-actions-fix` |
+| `release/` | Release preparation | `release/v2.0.0`, `release/patch-v2.1.3` |
 | `revert/` | Revert previous commit | `revert-fix-1234` |
-| `experiment/` | Experimental features | `experiment/quantum-vsa`<br>`experiment/alternative-encoding` |
+| `experiment/` | Experimental features | `experiment/quantum-vsa`, `experiment/alternative-encoding` |
 
 ### Examples
 
