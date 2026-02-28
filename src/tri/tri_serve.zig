@@ -283,7 +283,7 @@ pub const UnifiedApiServer = struct {
     }
 
     fn graphqlPlaygroundResponse(self: *const UnifiedApiServer) ![]const u8 {
-        // GraphQL Playground - standalone version with embedded JS
+        // GraphQL Playground - simple version without subscriptions
         var buffer = std.ArrayList(u8).initCapacity(self.allocator, 8192) catch return error.OutOfMemory;
         try buffer.appendSlice(self.allocator,
             \\HTTP/1.1 200 OK
@@ -291,40 +291,99 @@ pub const UnifiedApiServer = struct {
             \\Access-Control-Allow-Origin: *
             \\
             \\<!DOCTYPE html>
-            \\<html lang="en">
+            \\<html>
             \\<head>
             \\  <meta charset="utf-8"/>
-            \\  <title>GraphQL Playground</title>
+            \\  <title>GraphQL Playground - TRINITY</title>
             \\  <style>
-            \\    body { height: 100vh; margin: 0; width: 100%; overflow: hidden; }
-            \\    #playground { height: 100vh; width: 100%; }
+            \\    * { box-sizing: border-box; }
+            \\    body { height: 100vh; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #1e1e1e; color: #fff; }
+            \\    .container { display: flex; height: 100vh; }
+            \\    .left, .right { flex: 1; display: flex; flex-direction: column; }
+            \\    .left { border-right: 1px solid #333; }
+            \\    .header { padding: 10px; background: #252526; border-bottom: 1px solid #333; }
+            \\    .header h1 { margin: 0; font-size: 16px; color: #ffd700; }
+            \\    .editor { flex: 1; display: flex; flex-direction: column; }
+            \\    textarea { flex: 1; background: #1e1e1e; color: #d4d4d4; border: none; padding: 15px; font-family: 'Monaco', 'Menlo', monospace; font-size: 13px; resize: none; }
+            \\    textarea:focus { outline: none; }
+            \\    .button-bar { padding: 10px; background: #252526; border-top: 1px solid #333; }
+            \\    button { background: #0e639c; color: white; border: none; padding: 8px 16px; cursor: pointer; border-radius: 3px; font-size: 13px; }
+            \\    button:hover { background: #1177bb; }
+            \\    .result { flex: 1; padding: 15px; overflow: auto; font-family: 'Monaco', 'Menlo', monospace; font-size: 12px; white-space: pre-wrap; }
+            \\    .result.error { color: #f48771; }
+            \\    .result.success { color: #89d185; }
             \\  </style>
-            \\  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/graphql-playground-react@1.7.26/build/static/css/index.css" />
             \\</head>
             \\<body>
-            \\  <div id="playground"></div>
-            \\  <script crossorigin src="https://cdn.jsdelivr.net/npm/react@16/umd/react.production.min.js"></script>
-            \\  <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@16/umd/react-dom.production.min.js"></script>
-            \\  <script src="https://cdn.jsdelivr.net/npm/graphql-playground-react@1.7.26/build/static/js/middleware.js"></script>
+            \\  <div class="container">
+            \\    <div class="left">
+            \\      <div class="header"><h1>🔥 TRINITY GraphQL</h1></div>
+            \\      <div class="editor">
+            \\        <textarea id="query" placeholder="Enter GraphQL query...">
+            \\# Example queries:
+            \\{ commands { name category description } }
+            \\
+            \\{ status { healthy connections uptime } }
+            \\
+            \\{ __schema { queryType { name } types { name } } }
+            \\        </textarea>
+            \\      </div>
+            \\      <div class="button-bar">
+            \\        <button onclick="executeQuery()">▶ Run Query</button>
+            \\        <button onclick="clearResult()">Clear</button>
+            \\      </div>
+            \\    </div>
+            \\    <div class="right">
+            \\      <div class="header"><h1>Result</h1></div>
+            \\      <div id="result" class="result"></div>
+            \\    </div>
+            \\  </div>
             \\  <script>
-            \\    window.addEventListener('load', function (event) {
-            \\      GraphQLPlayground.init(document.getElementById('playground'), {
-            \\        endpoint: '/graphql',
-            \\        subscriptionEndpoint: null,
-            \\        headers: {},
-            \\        workspaceName: 'TRINITY GraphQL',
-            \\        settings: {
-            \\          'request.credentials': 'include',
-            \\          'schema.polling.enable': false,
-            \\        },
-            \\        defaultQuery: `{
-            \\  commands {
-            \\    name
-            \\    category
-            \\    description
-            \\  }
-            \\}`,
-            \\      });
+            \\    async function executeQuery() {
+            \\      const query = document.getElementById('query').value.trim();
+            \\      const resultEl = document.getElementById('result');
+            \\
+            \\      if (!query) {
+            \\        resultEl.className = 'result error';
+            \\        resultEl.textContent = 'Error: Please enter a query';
+            \\        return;
+            \\      }
+            \\
+            \\      resultEl.className = 'result';
+            \\      resultEl.textContent = 'Loading...';
+            \\
+            \\      try {
+            \\        const response = await fetch('/graphql', {
+            \\          method: 'POST',
+            \\          headers: { 'Content-Type': 'application/json' },
+            \\          body: JSON.stringify({ query })
+            \\        });
+            \\
+            \\        const text = await response.text();
+            \\        const jsonMatch = text.match(/\{.*\}/s);
+            \\
+            \\        if (jsonMatch) {
+            \\          const data = JSON.parse(jsonMatch[0]);
+            \\          resultEl.className = 'result success';
+            \\          resultEl.textContent = JSON.stringify(data, null, 2);
+            \\        } else {
+            \\          resultEl.className = 'result error';
+            \\          resultEl.textContent = 'Invalid response: ' + text.substring(0, 500);
+            \\        }
+            \\      } catch (err) {
+            \\        resultEl.className = 'result error';
+            \\        resultEl.textContent = 'Error: ' + err.message;
+            \\      }
+            \\    }
+            \\
+            \\    function clearResult() {
+            \\      document.getElementById('result').textContent = '';
+            \\      document.getElementById('result').className = 'result';
+            \\    }
+            \\
+            \\    // Allow Ctrl+Enter to execute
+            \\    document.getElementById('query').addEventListener('keydown', (e) => {
+            \\      if (e.ctrlKey && e.key === 'Enter') executeQuery();
             \\    });
             \\  </script>
             \\</body>

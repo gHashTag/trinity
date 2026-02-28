@@ -1,15 +1,10 @@
 // Trinity Benchmarks - Core Operations
 // Measures throughput, latency, and memory efficiency
 //
-// Run: zig build-exe benchmarks/bench_core.zig -O ReleaseFast && ./bench_core
-// Or:  zig run benchmarks/bench_core.zig -O ReleaseFast
+// Run: zig build bench
 
 const std = @import("std");
 const vsa = @import("vsa");
-const trinity = vsa;
-
-const Hypervector = trinity.Hypervector;
-const HybridBigInt = trinity.HybridBigInt;
 
 // Benchmark configuration
 const WARMUP_ITERATIONS = 100;
@@ -17,44 +12,42 @@ const BENCHMARK_ITERATIONS = 10000;
 const DIMENSIONS = [_]usize{ 1000, 4000, 10000 };
 
 pub fn main() !void {
-    const stdout = std.io.getStdOut().writer();
-
-    try stdout.print("\n", .{});
-    try stdout.print("╔══════════════════════════════════════════════════════════════════╗\n", .{});
-    try stdout.print("║              TRINITY BENCHMARK SUITE v0.2.0                      ║\n", .{});
-    try stdout.print("║                                                                  ║\n", .{});
-    try stdout.print("║  Measuring: Throughput, Latency, Memory Efficiency               ║\n", .{});
-    try stdout.print("║  φ² + 1/φ² = 3                                                   ║\n", .{});
-    try stdout.print("╚══════════════════════════════════════════════════════════════════╝\n\n", .{});
+    std.debug.print("\n", .{});
+    std.debug.print("╔══════════════════════════════════════════════════════════════════╗\n", .{});
+    std.debug.print("║              TRINITY BENCHMARK SUITE v0.2.0                      ║\n", .{});
+    std.debug.print("║                                                                  ║\n", .{});
+    std.debug.print("║  Measuring: Throughput, Latency, Memory Efficiency               ║\n", .{});
+    std.debug.print("║  φ² + 1/φ² = 3                                                   ║\n", .{});
+    std.debug.print("╚══════════════════════════════════════════════════════════════════╝\n\n", .{});
 
     // System info
-    try stdout.print("SYSTEM INFO:\n", .{});
-    try stdout.print("─────────────────────────────────────────────────────────────────────\n", .{});
-    try stdout.print("  Warmup iterations:    {d}\n", .{WARMUP_ITERATIONS});
-    try stdout.print("  Benchmark iterations: {d}\n", .{BENCHMARK_ITERATIONS});
-    try stdout.print("  Dimensions tested:    {d}, {d}, {d}\n\n", .{ DIMENSIONS[0], DIMENSIONS[1], DIMENSIONS[2] });
+    std.debug.print("SYSTEM INFO:\n", .{});
+    std.debug.print("─────────────────────────────────────────────────────────────────────\n", .{});
+    std.debug.print("  Warmup iterations:    {d}\n", .{WARMUP_ITERATIONS});
+    std.debug.print("  Benchmark iterations: {d}\n", .{BENCHMARK_ITERATIONS});
+    std.debug.print("  Dimensions tested:    {d}, {d}, {d}\n\n", .{ DIMENSIONS[0], DIMENSIONS[1], DIMENSIONS[2] });
 
     // Run benchmarks for each dimension
     for (DIMENSIONS) |dim| {
-        try stdout.print("═══════════════════════════════════════════════════════════════════\n", .{});
-        try stdout.print("  DIMENSION: {d}\n", .{dim});
-        try stdout.print("═══════════════════════════════════════════════════════════════════\n\n", .{});
+        std.debug.print("═══════════════════════════════════════════════════════════════════\n", .{});
+        std.debug.print("  DIMENSION: {d}\n", .{dim});
+        std.debug.print("═══════════════════════════════════════════════════════════════════\n\n", .{});
 
-        try benchmarkBind(stdout, dim);
-        try benchmarkBundle(stdout, dim);
-        try benchmarkPermute(stdout, dim);
-        try benchmarkSimilarity(stdout, dim);
-        try benchmarkMemory(stdout, dim);
-        try stdout.print("\n", .{});
+        try benchmarkBind(dim);
+        try benchmarkBundle(dim);
+        try benchmarkPermute(dim);
+        try benchmarkSimilarity(dim);
+        try benchmarkMemory(dim);
+        std.debug.print("\n", .{});
     }
 
     // Summary
-    try stdout.print("═══════════════════════════════════════════════════════════════════\n", .{});
-    try stdout.print("  BENCHMARK COMPLETE\n", .{});
-    try stdout.print("═══════════════════════════════════════════════════════════════════\n", .{});
+    std.debug.print("═══════════════════════════════════════════════════════════════════\n", .{});
+    std.debug.print("  BENCHMARK COMPLETE\n", .{});
+    std.debug.print("═══════════════════════════════════════════════════════════════════\n", .{});
 }
 
-fn benchmarkBind(writer: anytype, dim: usize) !void {
+fn benchmarkBind(dim: usize) !void {
     var a = vsa.randomVector(dim, 12345);
     var b = vsa.randomVector(dim, 67890);
 
@@ -73,13 +66,13 @@ fn benchmarkBind(writer: anytype, dim: usize) !void {
     const ops_per_sec = @as(f64, @floatFromInt(BENCHMARK_ITERATIONS)) / (@as(f64, @floatFromInt(elapsed_ns)) / 1_000_000_000.0);
     const ns_per_op = @as(f64, @floatFromInt(elapsed_ns)) / @as(f64, @floatFromInt(BENCHMARK_ITERATIONS));
 
-    try writer.print("  BIND:\n", .{});
-    try writer.print("    Throughput: {d:.2} ops/sec\n", .{ops_per_sec});
-    try writer.print("    Latency:    {d:.2} ns/op\n", .{ns_per_op});
-    try writer.print("    Total time: {d:.2} ms\n\n", .{@as(f64, @floatFromInt(elapsed_ns)) / 1_000_000.0});
+    std.debug.print("  BIND:\n", .{});
+    std.debug.print("    Throughput: {d:.2} ops/sec\n", .{ops_per_sec});
+    std.debug.print("    Latency:    {d:.2} ns/op\n", .{ns_per_op});
+    std.debug.print("    Total time: {d:.2} ms\n\n", .{@as(f64, @floatFromInt(elapsed_ns)) / 1_000_000.0});
 }
 
-fn benchmarkBundle(writer: anytype, dim: usize) !void {
+fn benchmarkBundle(dim: usize) !void {
     var a = vsa.randomVector(dim, 11111);
     var b = vsa.randomVector(dim, 22222);
 
@@ -98,13 +91,13 @@ fn benchmarkBundle(writer: anytype, dim: usize) !void {
     const ops_per_sec = @as(f64, @floatFromInt(BENCHMARK_ITERATIONS)) / (@as(f64, @floatFromInt(elapsed_ns)) / 1_000_000_000.0);
     const ns_per_op = @as(f64, @floatFromInt(elapsed_ns)) / @as(f64, @floatFromInt(BENCHMARK_ITERATIONS));
 
-    try writer.print("  BUNDLE:\n", .{});
-    try writer.print("    Throughput: {d:.2} ops/sec\n", .{ops_per_sec});
-    try writer.print("    Latency:    {d:.2} ns/op\n", .{ns_per_op});
-    try writer.print("    Total time: {d:.2} ms\n\n", .{@as(f64, @floatFromInt(elapsed_ns)) / 1_000_000.0});
+    std.debug.print("  BUNDLE:\n", .{});
+    std.debug.print("    Throughput: {d:.2} ops/sec\n", .{ops_per_sec});
+    std.debug.print("    Latency:    {d:.2} ns/op\n", .{ns_per_op});
+    std.debug.print("    Total time: {d:.2} ms\n\n", .{@as(f64, @floatFromInt(elapsed_ns)) / 1_000_000.0});
 }
 
-fn benchmarkPermute(writer: anytype, dim: usize) !void {
+fn benchmarkPermute(dim: usize) !void {
     var a = vsa.randomVector(dim, 33333);
 
     // Warmup
@@ -122,13 +115,13 @@ fn benchmarkPermute(writer: anytype, dim: usize) !void {
     const ops_per_sec = @as(f64, @floatFromInt(BENCHMARK_ITERATIONS)) / (@as(f64, @floatFromInt(elapsed_ns)) / 1_000_000_000.0);
     const ns_per_op = @as(f64, @floatFromInt(elapsed_ns)) / @as(f64, @floatFromInt(BENCHMARK_ITERATIONS));
 
-    try writer.print("  PERMUTE:\n", .{});
-    try writer.print("    Throughput: {d:.2} ops/sec\n", .{ops_per_sec});
-    try writer.print("    Latency:    {d:.2} ns/op\n", .{ns_per_op});
-    try writer.print("    Total time: {d:.2} ms\n\n", .{@as(f64, @floatFromInt(elapsed_ns)) / 1_000_000.0});
+    std.debug.print("  PERMUTE:\n", .{});
+    std.debug.print("    Throughput: {d:.2} ops/sec\n", .{ops_per_sec});
+    std.debug.print("    Latency:    {d:.2} ns/op\n", .{ns_per_op});
+    std.debug.print("    Total time: {d:.2} ms\n\n", .{@as(f64, @floatFromInt(elapsed_ns)) / 1_000_000.0});
 }
 
-fn benchmarkSimilarity(writer: anytype, dim: usize) !void {
+fn benchmarkSimilarity(dim: usize) !void {
     var a = vsa.randomVector(dim, 44444);
     var b = vsa.randomVector(dim, 55555);
 
@@ -147,13 +140,13 @@ fn benchmarkSimilarity(writer: anytype, dim: usize) !void {
     const ops_per_sec = @as(f64, @floatFromInt(BENCHMARK_ITERATIONS)) / (@as(f64, @floatFromInt(elapsed_ns)) / 1_000_000_000.0);
     const ns_per_op = @as(f64, @floatFromInt(elapsed_ns)) / @as(f64, @floatFromInt(BENCHMARK_ITERATIONS));
 
-    try writer.print("  SIMILARITY:\n", .{});
-    try writer.print("    Throughput: {d:.2} ops/sec\n", .{ops_per_sec});
-    try writer.print("    Latency:    {d:.2} ns/op\n", .{ns_per_op});
-    try writer.print("    Total time: {d:.2} ms\n\n", .{@as(f64, @floatFromInt(elapsed_ns)) / 1_000_000.0});
+    std.debug.print("  SIMILARITY:\n", .{});
+    std.debug.print("    Throughput: {d:.2} ops/sec\n", .{ops_per_sec});
+    std.debug.print("    Latency:    {d:.2} ns/op\n", .{ns_per_op});
+    std.debug.print("    Total time: {d:.2} ms\n\n", .{@as(f64, @floatFromInt(elapsed_ns)) / 1_000_000.0});
 }
 
-fn benchmarkMemory(writer: anytype, dim: usize) !void {
+fn benchmarkMemory(dim: usize) !void {
     // Memory efficiency comparison
     const naive_bytes = dim * 1; // 1 byte per trit (naive)
     const packed_bytes = (dim + 4) / 5; // 5 trits per byte (packed)
@@ -163,10 +156,10 @@ fn benchmarkMemory(writer: anytype, dim: usize) !void {
     const compression_ratio = @as(f64, @floatFromInt(naive_bytes)) / @as(f64, @floatFromInt(packed_bytes));
     const efficiency = @as(f64, @floatFromInt(theoretical_bytes)) / @as(f64, @floatFromInt(packed_bytes)) * 100.0;
 
-    try writer.print("  MEMORY:\n", .{});
-    try writer.print("    Naive (1 byte/trit):     {d} bytes\n", .{naive_bytes});
-    try writer.print("    Packed (5 trits/byte):   {d} bytes\n", .{packed_bytes});
-    try writer.print("    Theoretical minimum:     {d} bytes\n", .{theoretical_bytes});
-    try writer.print("    Compression ratio:       {d:.2}x\n", .{compression_ratio});
-    try writer.print("    Packing efficiency:      {d:.1}%\n\n", .{efficiency});
+    std.debug.print("  MEMORY:\n", .{});
+    std.debug.print("    Naive (1 byte/trit):     {d} bytes\n", .{naive_bytes});
+    std.debug.print("    Packed (5 trits/byte):   {d} bytes\n", .{packed_bytes});
+    std.debug.print("    Theoretical minimum:     {d} bytes\n", .{theoretical_bytes});
+    std.debug.print("    Compression ratio:       {d:.2}x\n", .{compression_ratio});
+    std.debug.print("    Packing efficiency:      {d:.1}%\n\n", .{efficiency});
 }
