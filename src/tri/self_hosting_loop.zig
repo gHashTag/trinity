@@ -103,6 +103,9 @@ pub const ImprovementMetrics = struct {
     session_duration_ms: i64 = 0,
     lines_changed: u32 = 0,
     files_modified: u32 = 0,
+    // Cycle 101: REPL validation metrics
+    repl_validations_run: u32 = 0,
+    repl_validations_passed: u32 = 0,
 };
 
 /// Result of running a self-hosting session
@@ -564,6 +567,100 @@ pub fn testSelfPatch(allocator: Allocator, session: *SelfHostingSession, patch: 
         .tests_failed = tests_failed,
         .duration_ms = duration_ms,
     };
+}
+
+// ============================================================================
+// CYCLE 101: Continuous REPL Validation
+// ============================================================================
+
+/// Run REPL test suite as validation before applying self-patches
+/// This ensures the sacred testing infrastructure continues to work
+pub fn runReplValidation(allocator: Allocator, session: *SelfHostingSession) !ReplValidationResult {
+    session.log("Running REPL test validation...", .{});
+
+    const start_ms = std.time.milliTimestamp();
+
+    // Run the tri test --repl command
+    const result = try process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{
+            "./zig-out/bin/tri",
+            "test",
+            "--repl",
+        },
+        .max_output_bytes = 10 * 1024 * 1024,
+    });
+
+    defer {
+        allocator.free(result.stdout);
+        allocator.free(result.stderr);
+    }
+
+    const duration_ms = std.time.milliTimestamp() - start_ms;
+
+    // Check if validation passed
+    const passed = result.term.Exited == 0 and
+        mem.indexOf(u8, result.stdout, "✓ Test suite complete") != null;
+
+    session.metrics.repl_validations_run += 1;
+    if (passed) {
+        session.metrics.repl_validations_passed += 1;
+    }
+
+    session.log("REPL validation: {s} ({d}ms)", .{
+        if (passed) "PASSED" else "FAILED",
+        duration_ms,
+    });
+
+    return ReplValidationResult{
+        .passed = passed,
+        .duration_ms = duration_ms,
+        .output = try allocator.dupe(u8, result.stdout),
+    };
+}
+
+/// Result of REPL validation
+pub const ReplValidationResult = struct {
+    passed: bool,
+    duration_ms: i64,
+    output: []const u8,
+};
+
+/// Apply self-patch with REPL validation (Cycle 101)
+/// Runs REPL tests before and after patch for continuous validation
+pub fn applySelfPatchWithValidation(allocator: Allocator, session: *SelfHostingSession, patch: *SelfPatch) !bool {
+    session.log("Apply with validation: {s}...", .{patch.file_path});
+
+    // Step 1: Run REPL validation BEFORE patch
+    const pre_validation = try runReplValidation(allocator, session);
+    if (!pre_validation.passed) {
+        session.log("FAILED: Pre-patch REPL validation - aborting", .{});
+        return false;
+    }
+
+    // Step 2: Apply the patch
+    try applySelfPatch(allocator, session, patch);
+
+    // Step 3: Run REPL validation AFTER patch
+    const post_validation = try runReplValidation(allocator, session);
+    if (!post_validation.passed) {
+        session.log("FAILED: Post-patch REPL validation - rolling back", .{});
+        try rollbackSelfPatch(allocator, session, patch);
+        return false;
+    }
+
+    // Step 4: Run full test suite
+    const test_result = try testSelfPatch(allocator, session, patch);
+    if (!test_result.passed) {
+        session.log("FAILED: Full test suite - rolling back", .{});
+        try rollbackSelfPatch(allocator, session, patch);
+        return false;
+    }
+
+    session.metrics.patches_successful += 1;
+    session.log("SUCCESS: Patch validated with REPL + full tests", .{});
+
+    return true;
 }
 
 pub fn rollbackSelfPatch(allocator: Allocator, session: *SelfHostingSession, patch: *SelfPatch) !void {

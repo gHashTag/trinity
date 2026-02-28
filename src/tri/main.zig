@@ -52,6 +52,15 @@ pub fn main() !void {
         return;
     }
 
+    // Special handling for "test --repl" command (Cycle 100)
+    if (args.len >= 3 and std.mem.eql(u8, args[1], "test")) {
+        if (std.mem.eql(u8, args[2], "--repl") or std.mem.eql(u8, args[2], "-r")) {
+            const cmd_args = if (args.len > 3) args[3..] else &[_][]const u8{};
+            try commands.runReplTestCommand(allocator, cmd_args);
+            return;
+        }
+    }
+
     const cmd = utils.parseCommand(args[1]);
     const cmd_args = if (args.len > 2) args[2..] else &[_][]const u8{};
 
@@ -85,6 +94,8 @@ pub fn main() !void {
         .multi_cluster => try commands.runMultiClusterCommand(allocator, cmd_args),
         .verify => pipeline.runVerifyCommand(allocator),
         .verdict => pipeline.runVerdictCommand(allocator),
+        // Test REPL (Cycle 101)
+        .test_repl => try commands.runReplTestCommand(allocator, cmd_args),
         // Spec & Loop (v8.27)
         .spec_create => pipeline.runSpecCreateCommand(allocator, cmd_args),
         .loop_decide => pipeline.runLoopDecideCommand(allocator, cmd_args),
