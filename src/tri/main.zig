@@ -31,6 +31,7 @@ const pipeline = @import("tri_pipeline.zig");
 const demos = @import("tri_demos.zig");
 const math_commands = @import("math/commands.zig");
 const tri_context = @import("tri_context.zig");
+const orchestrator = @import("orchestrator_v2_full.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN
@@ -52,10 +53,26 @@ pub fn main() !void {
         return;
     }
 
-    // Special handling for "test --repl" command (Cycle 100)
+    // Special handling for "test --repl" command (Cycle 100/101)
     if (args.len >= 3 and std.mem.eql(u8, args[1], "test")) {
-        if (std.mem.eql(u8, args[2], "--repl") or std.mem.eql(u8, args[2], "-r")) {
-            const cmd_args = if (args.len > 3) args[3..] else &[_][]const u8{};
+        const flag = args[2];
+        // Handle all test-related flags
+        if (std.mem.eql(u8, flag, "--repl") or
+            std.mem.eql(u8, flag, "-r") or
+            std.mem.eql(u8, flag, "--generate") or
+            std.mem.eql(u8, flag, "-g") or
+            std.mem.eql(u8, flag, "--coverage") or
+            std.mem.eql(u8, flag, "--full") or
+            std.mem.eql(u8, flag, "-f") or
+            std.mem.eql(u8, flag, "--category") or
+            std.mem.eql(u8, flag, "-c") or
+            std.mem.eql(u8, flag, "--verbose") or
+            std.mem.eql(u8, flag, "-v") or
+            std.mem.eql(u8, flag, "--help") or
+            std.mem.eql(u8, flag, "-h"))
+        {
+            // Include the flag in cmd_args so runReplTestCommand can process it
+            const cmd_args = if (args.len > 3) args[2..] else &[_][]const u8{args[2]};
             try commands.runReplTestCommand(allocator, cmd_args);
             return;
         }
@@ -282,32 +299,76 @@ pub fn main() !void {
         .version => utils.printVersion(),
         .help => utils.printHelp(),
         .orchestrate_v2 => {
-            const CYAN = "\x1b[36m";
-            const GREEN = "\x1b[32m";
-            const GOLDEN = "\x1b[33m";
-            const RESET = "\x1b[0m";
-            std.debug.print("\n{s}╔══════════════════════════════════════════════════════════════════╗{s}\n", .{ CYAN, RESET });
-            std.debug.print("{s}║  TRINITY ORCHESTRATOR v2.0 — Universal Intelligent Command System    ║{s}\n", .{ CYAN, RESET });
-            std.debug.print("{s}╚══════════════════════════════════════════════════════════════════╝{s}\n\n", .{ CYAN, RESET });
-            std.debug.print("{s}Features:{s}\n", .{ GREEN, RESET });
-            std.debug.print("  • Sequential/parallel/conditional execution strategies\n", .{});
-            std.debug.print("  • Sacred Intelligence integration (φ-weighted scoring)\n", .{});
-            std.debug.print("  • Rollback capabilities (git-based snapshots)\n", .{});
-            std.debug.print("  • Workflow YAML/JSON file support\n", .{});
-            std.debug.print("  • Universal command registry (147+ commands)\n\n", .{});
-            std.debug.print("{s}Usage:{s}\n", .{ GREEN, RESET });
-            std.debug.print("  tri flow <workflow-file>     Execute workflow from file\n", .{});
-            std.debug.print("  tri orchestrator <cmd>        Intelligent command routing\n", .{});
-            std.debug.print("  tri orchestrate-v2 <args>     Direct orchestration\n\n", .{});
-            std.debug.print("{s}Example workflow:{s}\n", .{ GREEN, RESET });
-            std.debug.print("  steps:\n", .{});
-            std.debug.print("    - command: spec_create\n", .{});
-            std.debug.print("      args: {{ name: my_feature }}\n", .{});
-            std.debug.print("    - command: gen\n", .{});
-            std.debug.print("      depends_on: [spec_create]\n", .{});
-            std.debug.print("    - command: verify\n", .{});
-            std.debug.print("      depends_on: [gen]\n\n", .{});
-            std.debug.print("{s}Status: {s}Core generated, ready for integration{s}\n\n", .{ GOLDEN, GREEN, RESET });
+            // TRI Orchestrator v2.0 - Universal command orchestration
+            if (cmd_args.len == 0) {
+                // Show registry statistics
+                var registry = orchestrator.registerAllCommands(allocator) catch |err| {
+                    std.debug.print("Failed to initialize registry: {}\n", .{err});
+                    std.process.exit(1);
+                };
+                defer registry.deinit();
+
+                const CYAN = "\x1b[36m";
+                const GREEN = "\x1b[32m";
+                const RESET = "\x1b[0m";
+                std.debug.print("\n{s}╔══════════════════════════════════════════════════════════════════╗{s}\n", .{ CYAN, RESET });
+                std.debug.print("{s}║  TRINITY ORCHESTRATOR v2.0 — {d} Commands Registered        ║{s}\n", .{ CYAN, registry.total_count, RESET });
+                std.debug.print("{s}╚══════════════════════════════════════════════════════════════════╝{s}\n\n", .{ CYAN, RESET });
+                std.debug.print("{s}Usage:{s}\n", .{ GREEN, RESET });
+                std.debug.print("  tri orchestrate_v2 <workflow.yaml>  Execute workflow file\n", .{});
+                std.debug.print("  tri orchestrate_v2 <cmd> [args...]   Execute command via registry\n\n", .{});
+                std.debug.print("{s}Strategies:{s}\n", .{ GREEN, RESET });
+                std.debug.print("  sequential  - Execute in dependency order (default)\n", .{});
+                std.debug.print("  parallel    - Execute independent commands concurrently\n", .{});
+                std.debug.print("  conditional - If/then/else branching\n", .{});
+                std.debug.print("  adaptive    - Auto-select based on analysis\n", .{});
+
+                registry.printStats();
+            } else {
+                // Execute command via registry
+                const cmd_name = cmd_args[0];
+                var exec_args_copy = try std.ArrayList([]const u8).initCapacity(allocator, 16);
+                defer exec_args_copy.deinit(allocator);
+                if (cmd_args.len > 1) {
+                    for (cmd_args[1..]) |arg| {
+                        try exec_args_copy.append(allocator, arg);
+                    }
+                }
+                const cmd_exec_args = exec_args_copy.items;
+
+                var registry = orchestrator.registerAllCommands(allocator) catch |err| {
+                    std.debug.print("Failed to initialize registry: {}\n", .{err});
+                    std.process.exit(1);
+                };
+                defer registry.deinit();
+
+                const cmd_metadata = registry.getCommand(cmd_name) orelse {
+                    std.debug.print("Error: Command '{s}' not found in registry\n", .{cmd_name});
+                    std.debug.print("Total commands registered: {d}\n", .{registry.total_count});
+                    std.process.exit(1);
+                };
+
+                std.debug.print("Executing: {s} (category: {s}, realm: {s})\n", .{
+                    cmd_metadata.name,
+                    @tagName(cmd_metadata.category),
+                    @tagName(cmd_metadata.realm),
+                });
+
+                const result = try cmd_metadata.executor(allocator, cmd_exec_args);
+                std.debug.print("Success: {}, Steps: {d}/{d}, Duration: {d}ms, Sacred Score: {d:.4}\n", .{
+                    result.success,
+                    result.steps_completed,
+                    result.steps_total,
+                    result.duration_ms,
+                    result.sacred_score,
+                });
+                if (result.output.len > 0) {
+                    std.debug.print("Output: {s}\n", .{result.output});
+                }
+                if (result.@"error") |err_msg| {
+                    std.debug.print("Error: {s}\n", .{err_msg});
+                }
+            }
         },
     }
 }
