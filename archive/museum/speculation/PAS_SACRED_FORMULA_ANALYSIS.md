@@ -239,7 +239,7 @@ P(15 формул с ошибкой < 0.01% | случайно) < 10⁻³⁰
 
 ```python
 def chapter_signature(N):
-    """Вычисляет сигнатуру главы"""
+    """Computes chapter signature"""
     n, k = sacred_decomposition(N)  # N = n × 3^k
     m = 0  # π не участвует в номерах
     p = 0  # φ не участвует в номерах

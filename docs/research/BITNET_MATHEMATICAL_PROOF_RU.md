@@ -67,7 +67,7 @@ y = Σ(wᵢ × xᵢ), где wᵢ ∈ {-1, 0, +1}
 ```
 E_FP16 / E_BitNet = 1 pJ / 0.05 pJ = 20x
 
-Источник: "The Era of 1-bit LLMs" (Microsoft, 2024)
+Source: "The Era of 1-bit LLMs" (Microsoft, 2024)
 - FP16 multiplication: 0.9 pJ (45nm)
 - INT8 addition: 0.03 pJ (45nm)
 - BitNet использует только addition → 20-30x экономия энергии
