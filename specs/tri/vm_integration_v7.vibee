@@ -1,0 +1,119 @@
+name: vm_integration_v7
+version: "7.0.0"
+language: zig
+module: vm_integration_v7
+
+description: |
+  KOSCHEI AWAKENS v7.0 Phase 2 — Sacred Opcodes Integration into VSA VM
+  Extends existing src/vm.zig with sacred opcode dispatch (0x80-0xFF range)
+
+types:
+  ExtendedOpcode:
+    description: Unified opcode enum including sacred range
+    fields:
+      base: String  # VSAOpcode or SacredOpcode
+      code: UInt8
+      category: String
+
+  SacredVMFrame:
+    description: VM frame with sacred state
+    fields:
+      vsa_regs: VSARegisters
+      sacred_ctx: SacredContext
+      cycle_count: UInt64
+
+behaviors:
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # VM EXTENSION
+  # ═══════════════════════════════════════════════════════════════════════════════
+
+  - name: vm_init_v7
+    given: VM instance
+    when: Initialize called
+    then: Setup VSA registers + Sacred context + Opcode dispatch table (0x00-0xFF)
+
+  - name: vm_dispatch_sacred
+    given: Opcode byte >= 0x80
+    when: Instruction decode
+    then: Route to sacred_opcodes.executeSacred() with SacredContext
+
+  - name: vm_execute_instruction_v7
+    given: VM frame, bytecode program
+    when: Execute loop
+    then: Check opcode range, dispatch to VSA or Sacred handler, update cycles
+
+  - name: vm_add_sacred_test
+    given: VM with sacred opcodes
+    when: Test mode requested
+    then: Run phi_pow(10), verify sacred_identity, check element lookup
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # OPCODE TABLE EXPANSION
+  # ═══════════════════════════════════════════════════════════════════════════════
+
+  - name: opcode_table_init
+    given: Empty dispatch table
+    when: VM init
+    then: Populate 0x00-0x7F with VSA handlers, 0x80-0xFF with Sacred handlers
+
+  - name: opcode_table_dispatch
+    given: Opcode byte
+    when: Runtime dispatch
+    then: Jump to handler via function pointer table (O(1) lookup)
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # REGISTER FILE FUSION
+  # ═══════════════════════════════════════════════════════════════════════════════
+
+  - name: regs_get_sacred_field
+    given: Register name (v0-v3, s0-s1, f0-f1)
+    when: Sacred opcode needs value
+    then: Return register value, update access statistics
+
+  - name: regs_set_sacred_field
+    given: Register name, value
+    when: Sacred opcode writes result
+    then: Store value, mark register dirty
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # CYCLE COUNTING
+  # ═══════════════════════════════════════════════════════════════════════════════
+
+  - name: cycles_count_vsa
+    given: VSA opcode executed
+    when: Operation complete
+    then: Add base_cycles to counter (v_bind=1, v_dot=2, v_bundle3=3)
+
+  - name: cycles_count_sacred
+    given: Sacred opcode executed
+    when: Operation complete
+    then: Add sacred_cycles (phi_pow=5, fib=10, element=3, etc.)
+
+  - name: cycles_report
+    given: VM after execution
+    when: Stats requested
+    then: Return breakdown: VSA ops, Sacred ops, Total, Efficiency ratio
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  // INTEGRATION TESTS
+  # ═══════════════════════════════════════════════════════════════════════════════
+
+  - name: test_sacred_vm_init
+    given: Fresh VM v7
+    when: Init called
+    then: Verify sacred context initialized, opcode table populated
+
+  - name: test_sacred_dispatch
+    given: VM with phi_pow opcode
+    when: 0x81 executed
+    then: f0 = φ^regs.s0, cycles incremented
+
+  - name: test_sacred_chemistry
+    given: VM with element opcode
+    when: "Au" symbol processed
+    then: f0 = 196.967, element cache populated
+
+  - name: test_sacred_identity_verification
+    given: VM with sacred_identity opcode
+    when: 0x8C executed
+    then: cc_zero = true (φ² + 1/φ² = 3 verified)
