@@ -214,6 +214,8 @@ pub const Command = enum {
     info,
     version,
     help,
+    // Cycle 101: Orchestrator v2.0
+    orchestrate_v2,
 };
 
 pub const CLIState = struct {
@@ -803,6 +805,8 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "info")) return .info;
     if (std.mem.eql(u8, arg, "version") or std.mem.eql(u8, arg, "--version") or std.mem.eql(u8, arg, "-v")) return .version;
     if (std.mem.eql(u8, arg, "help") or std.mem.eql(u8, arg, "--help") or std.mem.eql(u8, arg, "-h")) return .help;
+    // Cycle 101: Orchestrator v2.0
+    if (std.mem.eql(u8, arg, "orchestrate-v2") or std.mem.eql(u8, arg, "orchestrator") or std.mem.eql(u8, arg, "flow")) return .orchestrate_v2;
     return .none;
 }
 
