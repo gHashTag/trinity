@@ -402,6 +402,10 @@ const sidebars: SidebarsConfig = {
         'research/trinity-golden-chain-v2-32-koschei-mode-report',
         // Cycle 95: Sacred Intelligence Core
         'research/cycle-95-sacred-intelligence-core',
+        // Cycle 97: Full Autonomous Sacred Evolution
+        'research/cycle-97-full-autonomous-sacred-evolution',
+        // Production Releases
+        'research/tri-production-dashboard-release',
       ],
     },
     'faq',

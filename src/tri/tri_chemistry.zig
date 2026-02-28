@@ -3,7 +3,7 @@
 
 const std = @import("std");
 const math = std.math;
-const chem = @import("sacred/chemistry.zig");
+const chem = @import("sacred"); // Import via build.zig module
 
 /// Main chemistry command dispatcher
 pub fn runCommand(args: []const []const u8) !void {

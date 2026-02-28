@@ -195,7 +195,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .description = "Create .vibee spec template (Link 6)",
     });
     try registry.commands.append(allocator, .{
-        .name = "loop-decide",
+        .name = "loop_decide",
         .category = .evolution,
         .priority = .critical,
         .example_args = &[_][]const u8{"auto"},
@@ -355,7 +355,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .description = "Sacred formula decomposition",
     });
     try registry.commands.append(allocator, .{
-        .name = "constants",
+        .name = "constants_cmd",
         .category = .math,
         .priority = .critical,
         .example_args = &[_][]const u8{},
@@ -383,7 +383,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .description = "Explain code or concept",
     });
     try registry.commands.append(allocator, .{
-        .name = "test",
+        .name = "test_cmd",
         .category = .swe_agent,
         .priority = .high,
         .example_args = &[_][]const u8{"src/file.zig"},
@@ -512,7 +512,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
     });
 
     // ========================================================================
-    // Evolution Commands (5)
+    // Evolution Commands (Cycle 97)
     // ========================================================================
     try registry.commands.append(allocator, .{
         .name = "evolve",
@@ -520,39 +520,7 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .priority = .high,
         .example_args = &[_][]const u8{},
         .expected_patterns = &[_][]const u8{"evolution"},
-        .description = "Trigger evolution cycle",
-    });
-    try registry.commands.append(allocator, .{
-        .name = "patch",
-        .category = .evolution,
-        .priority = .high,
-        .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{"patch"},
-        .description = "Apply self-patch",
-    });
-    try registry.commands.append(allocator, .{
-        .name = "analyze",
-        .category = .evolution,
-        .priority = .high,
-        .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{"analyze"},
-        .description = "Analyze codebase",
-    });
-    try registry.commands.append(allocator, .{
-        .name = "learn",
-        .category = .evolution,
-        .priority = .medium,
-        .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{"learn"},
-        .description = "Learn from patterns",
-    });
-    try registry.commands.append(allocator, .{
-        .name = "improve",
-        .category = .evolution,
-        .priority = .medium,
-        .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{"improve"},
-        .description = "Self-improvement",
+        .description = "Evolve fingerprint (Firebird)",
     });
     try registry.commands.append(allocator, .{
         .name = "auto_commit",
@@ -604,46 +572,26 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
     });
 
     // ========================================================================
-    // Code Analysis Commands (3)
+    // Core Commands (Convert, Serve)
     // ========================================================================
     try registry.commands.append(allocator, .{
-        .name = "analyze-code",
-        .category = .code_analysis,
-        .priority = .medium,
-        .example_args = &[_][]const u8{"src/file.zig"},
-        .expected_patterns = &[_][]const u8{"analysis"},
-        .description = "Analyze code quality",
-    });
-    try registry.commands.append(allocator, .{
-        .name = "find-bugs",
-        .category = .code_analysis,
-        .priority = .medium,
-        .example_args = &[_][]const u8{"src/"},
-        .expected_patterns = &[_][]const u8{"bugs"},
-        .description = "Find potential bugs",
-    });
-    try registry.commands.append(allocator, .{
-        .name = "metrics",
-        .category = .code_analysis,
-        .priority = .low,
-        .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{"metrics"},
-        .description = "Code metrics",
-    });
-
-    // ========================================================================
-    // TVC Commands (2)
-    // ========================================================================
-    try registry.commands.append(allocator, .{
-        .name = "tvc-demo",
-        .category = .demo,
+        .name = "convert",
+        .category = .golden_chain,
         .priority = .medium,
         .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{"TVC", "demo"},
-        .description = "Run TVC chat demo",
+        .expected_patterns = &[_][]const u8{"convert"},
+        .description = "Format conversion",
     });
     try registry.commands.append(allocator, .{
-        .name = "tvc-stats",
+        .name = "serve",
+        .category = .golden_chain,
+        .priority = .high,
+        .example_args = &[_][]const u8{},
+        .expected_patterns = &[_][]const u8{"serve", "server"},
+        .description = "Unified API server (Golden Chain #102)",
+    });
+    try registry.commands.append(allocator, .{
+        .name = "tvc_stats",
         .category = .info,
         .priority = .low,
         .example_args = &[_][]const u8{},
@@ -769,14 +717,6 @@ pub fn initRegistry(allocator: std.mem.Allocator) !CommandRegistry {
         .example_args = &[_][]const u8{},
         .expected_patterns = &[_][]const u8{"monitor"},
         .description = "Eternal monitor",
-    });
-    try registry.commands.append(allocator, .{
-        .name = "orchestrate_v2",
-        .category = .misc,
-        .priority = .medium,
-        .example_args = &[_][]const u8{},
-        .expected_patterns = &[_][]const u8{"orchestrator"},
-        .description = "Orchestrator v2.0 (Cycle 101)",
     });
     try registry.commands.append(allocator, .{
         .name = "math_agent",

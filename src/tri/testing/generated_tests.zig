@@ -8,12 +8,11 @@ const sacred = @import("sacred_assertions.zig");
 
 // Test-level invoker setup
 test "setup invoker" {
-    var invoker = try CommandInvoker.init(std.testing.allocator);
-    defer invoker.deinit();
+    _ = try CommandInvoker.init(std.testing.allocator);
 }
 
 // ============================================================================
-// Generated Tests: 150 commands
+// Generated Tests: 134 commands
 // ============================================================================
 
 test "Sacred Agent: chat command" {
@@ -113,14 +112,14 @@ test "Golden Chain: spec_create command" {
     try tester.expectContains(".vibee");
 }
 
-test "Evolution: loop-decide command" {
+test "Evolution: loop_decide command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("loop-decide auto");
+    _ = try tester.runCommand("loop_decide auto");
 
     // Command command - strict pattern matching
     try tester.expectContains("loop");
@@ -168,6 +167,47 @@ test "Golden Chain: verdict command" {
     // Golden Chain command - strict pattern matching
     try tester.expectContains("verdict");
     try tester.expectContains("quality");
+}
+
+test "Golden Chain: deps command" {
+    const allocator = std.testing.allocator;
+    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
+    defer invoker.deinit();
+    var tester = try ReplTester.init(allocator, &invoker);
+    defer tester.deinit();
+
+    _ = try tester.runCommand("deps");
+
+    // Golden Chain command - strict pattern matching
+    try tester.expectContains("dependencies");
+}
+
+test "Golden Chain: distributed command" {
+    const allocator = std.testing.allocator;
+    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
+    defer invoker.deinit();
+    var tester = try ReplTester.init(allocator, &invoker);
+    defer tester.deinit();
+
+    _ = try tester.runCommand("distributed");
+
+    // Golden Chain command - strict pattern matching
+    try tester.expectContains("distributed");
+    try tester.expectContains("inference");
+}
+
+test "Golden Chain: multi_cluster command" {
+    const allocator = std.testing.allocator;
+    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
+    defer invoker.deinit();
+    var tester = try ReplTester.init(allocator, &invoker);
+    defer tester.deinit();
+
+    _ = try tester.runCommand("multi_cluster");
+
+    // Golden Chain command - strict pattern matching
+    try tester.expectContains("cluster");
+    try tester.expectContains("multi");
 }
 
 test "Git: status command" {
@@ -235,21 +275,6 @@ test "Math: math command" {
     // Math command - strict pattern matching
     try tester.expectContains("φ");
     try tester.expectContains("math");
-}
-
-test "Math: constants command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("constants");
-
-    // Math command - strict pattern matching
-    try tester.expectContains("φ");
-    try tester.expectContains("π");
-    try tester.expectContains("e");
 }
 
 test "Math: phi command" {
@@ -321,6 +346,50 @@ test "Math: gematria command" {
     try tester.expectContains("gematria");
 }
 
+test "Math: sacred command" {
+    const allocator = std.testing.allocator;
+    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
+    defer invoker.deinit();
+    var tester = try ReplTester.init(allocator, &invoker);
+    defer tester.deinit();
+
+    _ = try tester.runCommand("sacred");
+
+    // Math command - strict pattern matching
+    try tester.expectContains("sacred");
+    try tester.expectContains("mathematics");
+}
+
+test "Math: formula_cmd command" {
+    const allocator = std.testing.allocator;
+    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
+    defer invoker.deinit();
+    var tester = try ReplTester.init(allocator, &invoker);
+    defer tester.deinit();
+
+    _ = try tester.runCommand("formula_cmd trinity");
+
+    // Math command - strict pattern matching
+    try tester.expectContains("φ²");
+    try tester.expectContains("1/φ²");
+    try tester.expectContains("3");
+}
+
+test "Math: constants_cmd command" {
+    const allocator = std.testing.allocator;
+    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
+    defer invoker.deinit();
+    var tester = try ReplTester.init(allocator, &invoker);
+    defer tester.deinit();
+
+    _ = try tester.runCommand("constants_cmd");
+
+    // Math command - strict pattern matching
+    try tester.expectContains("φ");
+    try tester.expectContains("π");
+    try tester.expectContains("e");
+}
+
 test "SWE Agent: fix command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
@@ -349,14 +418,14 @@ test "SWE Agent: explain command" {
     try tester.expectContains("Zig");
 }
 
-test "SWE Agent: test command" {
+test "SWE Agent: test_cmd command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("test src/file.zig");
+    _ = try tester.runCommand("test_cmd src/file.zig");
 
     // Command command - strict pattern matching
     try tester.expectContains("test");
@@ -401,6 +470,45 @@ test "SWE Agent: reason command" {
     // Command command - strict pattern matching
     try tester.expectContains("4");
     try tester.expectContains("reasoning");
+}
+
+test "Code Analysis: analyze command" {
+    const allocator = std.testing.allocator;
+    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
+    defer invoker.deinit();
+    var tester = try ReplTester.init(allocator, &invoker);
+    defer tester.deinit();
+
+    _ = try tester.runCommand("analyze");
+
+    // Command command - strict pattern matching
+    try tester.expectContains("analyze");
+}
+
+test "Code Analysis: search_cmd command" {
+    const allocator = std.testing.allocator;
+    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
+    defer invoker.deinit();
+    var tester = try ReplTester.init(allocator, &invoker);
+    defer tester.deinit();
+
+    _ = try tester.runCommand("search_cmd");
+
+    // Command command - strict pattern matching
+    try tester.expectContains("search");
+}
+
+test "Code Analysis: context_info command" {
+    const allocator = std.testing.allocator;
+    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
+    defer invoker.deinit();
+    var tester = try ReplTester.init(allocator, &invoker);
+    defer tester.deinit();
+
+    _ = try tester.runCommand("context_info");
+
+    // Command command - strict pattern matching
+    try tester.expectContains("context");
 }
 
 test "Info: info command" {
@@ -527,1477 +635,1168 @@ test "Evolution: evolve command" {
     try tester.expectContains("evolution");
 }
 
-test "Evolution: patch command" {
+test "Evolution: auto_commit command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("patch");
+    _ = try tester.runCommand("auto_commit");
 
     // Command command - strict pattern matching
-    try tester.expectContains("patch");
+    try tester.expectContains("auto");
+    try tester.expectContains("commit");
 }
 
-test "Evolution: analyze command" {
+test "Evolution: ml_optimize command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("analyze");
+    _ = try tester.runCommand("ml_optimize");
 
     // Command command - strict pattern matching
-    try tester.expectContains("analyze");
+    try tester.expectContains("ML");
+    try tester.expectContains("optimize");
 }
 
-test "Evolution: learn command" {
+test "Evolution: deploy_dashboard command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("learn");
+    _ = try tester.runCommand("deploy_dashboard");
 
     // Command command - strict pattern matching
-    try tester.expectContains("learn");
+    try tester.expectContains("dashboard");
+    try tester.expectContains("deploy");
 }
 
-test "Evolution: improve command" {
+test "Evolution: self_host command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("improve");
+    _ = try tester.runCommand("self_host");
 
     // Command command - strict pattern matching
-    try tester.expectContains("improve");
+    try tester.expectContains("self");
+    try tester.expectContains("host");
 }
 
-test "Code Analysis: analyze-code command" {
+test "Evolution: safeguards_show command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("analyze-code src/file.zig");
+    _ = try tester.runCommand("safeguards_show");
 
     // Command command - strict pattern matching
-    try tester.expectContains("analysis");
+    try tester.expectContains("safeguards");
 }
 
-test "Code Analysis: find-bugs command" {
+test "Evolution: safeguards_disable command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("find-bugs src/");
+    _ = try tester.runCommand("safeguards_disable");
 
     // Command command - strict pattern matching
-    try tester.expectContains("bugs");
+    try tester.expectContains("safeguards");
+    try tester.expectContains("disabled");
 }
 
-test "Code Analysis: metrics command" {
+test "Golden Chain: convert command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("metrics");
+    _ = try tester.runCommand("convert");
 
-    // Command command - strict pattern matching
-    try tester.expectContains("metrics");
+    // Golden Chain command - strict pattern matching
+    try tester.expectContains("convert");
 }
 
-test "Demo: tvc-demo command" {
+test "Golden Chain: serve command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("tvc-demo");
+    _ = try tester.runCommand("serve");
 
-    // Command command - strict pattern matching
-    try tester.expectContains("TVC");
-    try tester.expectContains("demo");
+    // Golden Chain command - strict pattern matching
+    try tester.expectContains("serve");
+    try tester.expectContains("server");
 }
 
-test "Info: tvc-stats command" {
+test "Info: tvc_stats command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("tvc-stats");
+    _ = try tester.runCommand("tvc_stats");
 
     // Command command - strict pattern matching
     try tester.expectContains("TVC");
     try tester.expectContains("stats");
 }
 
-test "Demo: agents-demo command" {
+test "Demo: tvc_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("agents-demo");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("demo");
-}
-
-test "Demo: context-demo command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("context-demo");
+    _ = try tester.runCommand("tvc_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: rag-demo command" {
+test "Demo: agents_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("rag-demo");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("demo");
-}
-
-test "Demo: voice-demo command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("voice-demo");
+    _ = try tester.runCommand("agents_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: sandbox-demo command" {
+test "Demo: context_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("sandbox-demo");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("demo");
-}
-
-test "Demo: stream-demo command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("stream-demo");
+    _ = try tester.runCommand("context_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: vision-demo command" {
+test "Demo: rag_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("vision-demo");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("demo");
-}
-
-test "Demo: finetune-demo command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("finetune-demo");
+    _ = try tester.runCommand("rag_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: multimodal-demo command" {
+test "Demo: voice_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("multimodal-demo");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("demo");
-}
-
-test "Demo: unified-demo command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("unified-demo");
+    _ = try tester.runCommand("voice_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: auto-demo command" {
+test "Demo: sandbox_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("auto-demo");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("demo");
-}
-
-test "Demo: orch-demo command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("orch-demo");
+    _ = try tester.runCommand("sandbox_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: mmo-demo command" {
+test "Demo: stream_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("mmo-demo");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("demo");
-}
-
-test "Demo: memory-demo command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("memory-demo");
+    _ = try tester.runCommand("stream_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: persist-demo command" {
+test "Demo: vision_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("persist-demo");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("demo");
-}
-
-test "Demo: spawn-demo command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("spawn-demo");
+    _ = try tester.runCommand("vision_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: cluster-demo command" {
+test "Demo: finetune_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("cluster-demo");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("demo");
-}
-
-test "Demo: worksteal-demo command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("worksteal-demo");
+    _ = try tester.runCommand("finetune_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: plugin-demo command" {
+test "Demo: batched_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("plugin-demo");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("demo");
-}
-
-test "Demo: comms-demo command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("comms-demo");
+    _ = try tester.runCommand("batched_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: observe-demo command" {
+test "Demo: priority_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("observe-demo");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("demo");
-}
-
-test "Demo: consensus-demo command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("consensus-demo");
+    _ = try tester.runCommand("priority_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: specexec-demo command" {
+test "Demo: deadline_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("specexec-demo");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("demo");
-}
-
-test "Demo: governor-demo command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("governor-demo");
+    _ = try tester.runCommand("deadline_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: fedlearn-demo command" {
+test "Demo: multimodal_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("fedlearn-demo");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("demo");
-}
-
-test "Demo: eventsrc-demo command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("eventsrc-demo");
+    _ = try tester.runCommand("multimodal_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: capsec-demo command" {
+test "Demo: tooluse_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("capsec-demo");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("demo");
-}
-
-test "Demo: dtxn-demo command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("dtxn-demo");
+    _ = try tester.runCommand("tooluse_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: cache-demo command" {
+test "Demo: unified_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("cache-demo");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("demo");
-}
-
-test "Demo: contract-demo command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("contract-demo");
+    _ = try tester.runCommand("unified_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: workflow-demo command" {
+test "Demo: autonomous_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("workflow-demo");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("demo");
-}
-
-test "Demo: triad-demo command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("triad-demo");
+    _ = try tester.runCommand("autonomous_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: dimension-demo command" {
+test "Demo: orchestration_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("dimension-demo");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("demo");
-}
-
-test "Demo: quantum-demo command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("quantum-demo");
+    _ = try tester.runCommand("orchestration_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: synth-demo command" {
+test "Demo: mm_orch_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("synth-demo");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("demo");
-}
-
-test "Demo: portal-demo command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("portal-demo");
+    _ = try tester.runCommand("mm_orch_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: oracle-demo command" {
+test "Demo: memory_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("oracle-demo");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("demo");
-}
-
-test "Demo: nexus-demo command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("nexus-demo");
+    _ = try tester.runCommand("memory_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: zenith-demo command" {
+test "Demo: persist_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("zenith-demo");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("demo");
-}
-
-test "Demo: horizon-demo command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("horizon-demo");
+    _ = try tester.runCommand("persist_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: cathedral-demo command" {
+test "Demo: spawn_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("cathedral-demo");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("demo");
-}
-
-test "Demo: mirror-demo command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("mirror-demo");
+    _ = try tester.runCommand("spawn_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: temple-demo command" {
+test "Demo: cluster_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("temple-demo");
+    _ = try tester.runCommand("cluster_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: sanctum-demo command" {
+test "Demo: worksteal_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("sanctum-demo");
+    _ = try tester.runCommand("worksteal_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: shrine-demo command" {
+test "Demo: plugin_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("shrine-demo");
+    _ = try tester.runCommand("plugin_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: relic-demo command" {
+test "Demo: comms_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("relic-demo");
+    _ = try tester.runCommand("comms_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: artifact-demo command" {
+test "Demo: observe_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("artifact-demo");
+    _ = try tester.runCommand("observe_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: monolith-demo command" {
+test "Demo: consensus_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("monolith-demo");
+    _ = try tester.runCommand("consensus_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: obelisk-demo command" {
+test "Demo: specexec_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("obelisk-demo");
+    _ = try tester.runCommand("specexec_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: spire-demo command" {
+test "Demo: governor_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("spire-demo");
+    _ = try tester.runCommand("governor_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Demo: vertex-demo command" {
+test "Demo: fedlearn_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("vertex-demo");
+    _ = try tester.runCommand("fedlearn_demo");
 
     // Command command - strict pattern matching
     try tester.expectContains("demo");
 }
 
-test "Benchmark: agents-bench command" {
+test "Demo: eventsrc_demo command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("agents-bench");
+    _ = try tester.runCommand("eventsrc_demo");
+
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
+}
+
+test "Demo: capsec_demo command" {
+    const allocator = std.testing.allocator;
+    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
+    defer invoker.deinit();
+    var tester = try ReplTester.init(allocator, &invoker);
+    defer tester.deinit();
+
+    _ = try tester.runCommand("capsec_demo");
+
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
+}
+
+test "Demo: dtxn_demo command" {
+    const allocator = std.testing.allocator;
+    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
+    defer invoker.deinit();
+    var tester = try ReplTester.init(allocator, &invoker);
+    defer tester.deinit();
+
+    _ = try tester.runCommand("dtxn_demo");
+
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
+}
+
+test "Demo: cache_demo command" {
+    const allocator = std.testing.allocator;
+    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
+    defer invoker.deinit();
+    var tester = try ReplTester.init(allocator, &invoker);
+    defer tester.deinit();
+
+    _ = try tester.runCommand("cache_demo");
+
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
+}
+
+test "Demo: contract_demo command" {
+    const allocator = std.testing.allocator;
+    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
+    defer invoker.deinit();
+    var tester = try ReplTester.init(allocator, &invoker);
+    defer tester.deinit();
+
+    _ = try tester.runCommand("contract_demo");
+
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
+}
+
+test "Demo: workflow_demo command" {
+    const allocator = std.testing.allocator;
+    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
+    defer invoker.deinit();
+    var tester = try ReplTester.init(allocator, &invoker);
+    defer tester.deinit();
+
+    _ = try tester.runCommand("workflow_demo");
+
+    // Command command - strict pattern matching
+    try tester.expectContains("demo");
+}
+
+test "Benchmark: agents_bench command" {
+    const allocator = std.testing.allocator;
+    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
+    defer invoker.deinit();
+    var tester = try ReplTester.init(allocator, &invoker);
+    defer tester.deinit();
+
+    _ = try tester.runCommand("agents_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: context-bench command" {
+test "Benchmark: context_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("context-bench");
+    _ = try tester.runCommand("context_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: rag-bench command" {
+test "Benchmark: rag_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("rag-bench");
+    _ = try tester.runCommand("rag_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: voice-bench command" {
+test "Benchmark: voice_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("voice-bench");
+    _ = try tester.runCommand("voice_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: sandbox-bench command" {
+test "Benchmark: sandbox_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("sandbox-bench");
+    _ = try tester.runCommand("sandbox_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: stream-bench command" {
+test "Benchmark: stream_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("stream-bench");
+    _ = try tester.runCommand("stream_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: vision-bench command" {
+test "Benchmark: vision_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("vision-bench");
+    _ = try tester.runCommand("vision_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: finetune-bench command" {
+test "Benchmark: finetune_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("finetune-bench");
+    _ = try tester.runCommand("finetune_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: multimodal-bench command" {
+test "Benchmark: batched_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("multimodal-bench");
+    _ = try tester.runCommand("batched_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: unified-bench command" {
+test "Benchmark: priority_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("unified-bench");
+    _ = try tester.runCommand("priority_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: auto-bench command" {
+test "Benchmark: deadline_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("auto-bench");
+    _ = try tester.runCommand("deadline_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: orch-bench command" {
+test "Benchmark: multimodal_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("orch-bench");
+    _ = try tester.runCommand("multimodal_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: mmo-bench command" {
+test "Benchmark: tooluse_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("mmo-bench");
+    _ = try tester.runCommand("tooluse_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: memory-bench command" {
+test "Benchmark: unified_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("memory-bench");
+    _ = try tester.runCommand("unified_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: persist-bench command" {
+test "Benchmark: autonomous_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("persist-bench");
+    _ = try tester.runCommand("autonomous_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: spawn-bench command" {
+test "Benchmark: orchestration_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("spawn-bench");
+    _ = try tester.runCommand("orchestration_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: cluster-bench command" {
+test "Benchmark: mm_orch_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("cluster-bench");
+    _ = try tester.runCommand("mm_orch_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: worksteal-bench command" {
+test "Benchmark: memory_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("worksteal-bench");
+    _ = try tester.runCommand("memory_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: plugin-bench command" {
+test "Benchmark: persist_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("plugin-bench");
+    _ = try tester.runCommand("persist_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: comms-bench command" {
+test "Benchmark: spawn_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("comms-bench");
+    _ = try tester.runCommand("spawn_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: observe-bench command" {
+test "Benchmark: cluster_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("observe-bench");
+    _ = try tester.runCommand("cluster_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: consensus-bench command" {
+test "Benchmark: worksteal_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("consensus-bench");
+    _ = try tester.runCommand("worksteal_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: specexec-bench command" {
+test "Benchmark: plugin_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("specexec-bench");
+    _ = try tester.runCommand("plugin_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: governor-bench command" {
+test "Benchmark: comms_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("governor-bench");
+    _ = try tester.runCommand("comms_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: fedlearn-bench command" {
+test "Benchmark: observe_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("fedlearn-bench");
+    _ = try tester.runCommand("observe_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: eventsrc-bench command" {
+test "Benchmark: consensus_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("eventsrc-bench");
+    _ = try tester.runCommand("consensus_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: capsec-bench command" {
+test "Benchmark: specexec_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("capsec-bench");
+    _ = try tester.runCommand("specexec_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: dtxn-bench command" {
+test "Benchmark: governor_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("dtxn-bench");
+    _ = try tester.runCommand("governor_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: cache-bench command" {
+test "Benchmark: fedlearn_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("cache-bench");
+    _ = try tester.runCommand("fedlearn_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: contract-bench command" {
+test "Benchmark: eventsrc_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("contract-bench");
+    _ = try tester.runCommand("eventsrc_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: workflow-bench command" {
+test "Benchmark: capsec_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("workflow-bench");
+    _ = try tester.runCommand("capsec_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: triad-bench command" {
+test "Benchmark: dtxn_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("triad-bench");
+    _ = try tester.runCommand("dtxn_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: dimension-bench command" {
+test "Benchmark: cache_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("dimension-bench");
+    _ = try tester.runCommand("cache_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: quantum-bench command" {
+test "Benchmark: contract_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("quantum-bench");
+    _ = try tester.runCommand("contract_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: synth-bench command" {
+test "Benchmark: workflow_bench command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("synth-bench");
+    _ = try tester.runCommand("workflow_bench");
 
     // Command command - strict pattern matching
     try tester.expectContains("bench");
 }
 
-test "Benchmark: portal-bench command" {
+test "Miscellaneous: chem command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("portal-bench");
+    _ = try tester.runCommand("chem");
 
     // Command command - strict pattern matching
-    try tester.expectContains("bench");
+    try tester.expectContains("chemistry");
 }
 
-test "Benchmark: oracle-bench command" {
+test "Miscellaneous: intelligence command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("oracle-bench");
+    _ = try tester.runCommand("intelligence");
 
     // Command command - strict pattern matching
-    try tester.expectContains("bench");
+    try tester.expectContains("intelligence");
 }
 
-test "Benchmark: nexus-bench command" {
+test "Miscellaneous: doctor command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("nexus-bench");
+    _ = try tester.runCommand("doctor");
 
     // Command command - strict pattern matching
-    try tester.expectContains("bench");
+    try tester.expectContains("doctor");
 }
 
-test "Benchmark: zenith-bench command" {
+test "Miscellaneous: clean command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("zenith-bench");
+    _ = try tester.runCommand("clean");
 
     // Command command - strict pattern matching
-    try tester.expectContains("bench");
+    try tester.expectContains("clean");
 }
 
-test "Benchmark: horizon-bench command" {
+test "Miscellaneous: fmt_cmd command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("horizon-bench");
+    _ = try tester.runCommand("fmt_cmd");
 
     // Command command - strict pattern matching
-    try tester.expectContains("bench");
+    try tester.expectContains("format");
 }
 
-test "Benchmark: cathedral-bench command" {
+test "Miscellaneous: stats_cmd command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("cathedral-bench");
+    _ = try tester.runCommand("stats_cmd");
 
     // Command command - strict pattern matching
-    try tester.expectContains("bench");
+    try tester.expectContains("stats");
 }
 
-test "Benchmark: mirror-bench command" {
+test "Miscellaneous: igla command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("mirror-bench");
+    _ = try tester.runCommand("igla");
 
     // Command command - strict pattern matching
-    try tester.expectContains("bench");
+    try tester.expectContains("igla");
 }
 
-test "Benchmark: temple-bench command" {
+test "Miscellaneous: monitor command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("temple-bench");
+    _ = try tester.runCommand("monitor");
 
     // Command command - strict pattern matching
-    try tester.expectContains("bench");
+    try tester.expectContains("monitor");
 }
 
-test "Benchmark: sanctum-bench command" {
+test "Sacred Agent: math_agent command" {
     const allocator = std.testing.allocator;
     var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
     defer invoker.deinit();
     var tester = try ReplTester.init(allocator, &invoker);
     defer tester.deinit();
 
-    _ = try tester.runCommand("sanctum-bench");
+    _ = try tester.runCommand("math_agent");
 
-    // Command command - strict pattern matching
-    try tester.expectContains("bench");
-}
-
-test "Benchmark: shrine-bench command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("shrine-bench");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("bench");
-}
-
-test "Benchmark: relic-bench command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("relic-bench");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("bench");
-}
-
-test "Benchmark: artifact-bench command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("artifact-bench");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("bench");
-}
-
-test "Benchmark: monolith-bench command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("monolith-bench");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("bench");
-}
-
-test "Benchmark: obelisk-bench command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("obelisk-bench");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("bench");
-}
-
-test "Benchmark: spire-bench command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("spire-bench");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("bench");
-}
-
-test "Benchmark: vertex-bench command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("vertex-bench");
-
-    // Command command - strict pattern matching
-    try tester.expectContains("bench");
-}
-
-test "Math: formula command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("formula trinity");
-
-    // Math command - strict pattern matching
-    try tester.expectContains("φ²");
-    try tester.expectContains("1/φ²");
-    try tester.expectContains("3");
-}
-
-test "Math: sacred command" {
-    const allocator = std.testing.allocator;
-    var invoker = CommandInvoker.init(allocator) catch return error.SkipZigTest;
-    defer invoker.deinit();
-    var tester = try ReplTester.init(allocator, &invoker);
-    defer tester.deinit();
-
-    _ = try tester.runCommand("sacred");
-
-    // Math command - strict pattern matching
-    try tester.expectContains("sacred");
-    try tester.expectContains("mathematics");
+    // Agent command - strict pattern matching
+    try tester.expectContains("math");
+    try tester.expectContains("agent");
 }
 
