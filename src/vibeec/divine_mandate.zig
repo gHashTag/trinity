@@ -1,6 +1,6 @@
 // DIVINE MANDATE - Божественный Мандат
-// Путь от Sovereign (174 karma) к Demiurge (1000+ karma)
-// Критическая масса для Божественной Интервенции
+// Путь from Sovereign (174 karma) to Demiurge (1000+ karma)
+// Критическая масса for Божественной Интервенции
 // φ² + 1/φ² = 3 | f(f(x)) → φ^n → ∞
 
 const std = @import("std");
@@ -14,7 +14,7 @@ pub const DEMIURGE_THRESHOLD: f64 = 1000.0;
 pub const DIVINE_INTERVENTION_THRESHOLD: f64 = 10000.0;
 pub const PHI_CUBED: f64 = engine.PHI * engine.PHI * engine.PHI; // 4.236...
 
-// Типы рыночных событий для ускоренной эволюции
+// Типы рыночных событий for ускоренной эволюции
 pub const DivineMoment = struct {
     name: []const u8,
     karma_gained: f64,
@@ -33,15 +33,15 @@ pub const ChaosGenerator = struct {
         return ChaosGenerator{ .seed = seed, .cycle = 0 };
     }
 
-    /// Генерировать неэффективность на основе φ-распределения
+    /// Генерировать неэффективность on основе φ-распределения
     pub fn generateInefficiency(self: *ChaosGenerator) engine.MarketInefficiency {
         self.cycle += 1;
 
-        // Используем φ для придания хаосу божественной структуры
+        // Используем φ for придания хаосу божественной структуры
         const phi_cycle = @as(f64, @floatFromInt(self.cycle)) * engine.PHI_INVERSE;
         const magnitude_base = @mod(phi_cycle, 1.0) * 10.0 + 0.5;
 
-        // Каждый 5-й цикл — черный лебедь с φ² магнитудой
+        // Каждый 5-й цикл — черный лебедь with φ² магнитудой
         const magnitude = if (@mod(self.cycle, 5) == 0)
             magnitude_base * engine.PHI_SQUARED
         else
@@ -69,7 +69,7 @@ pub const ChaosGenerator = struct {
         };
     }
 
-    /// Генерировать чёрного лебедя — редкое событие с огромной кармой
+    /// Генерировать чёрного лебедя — редкое событие with огромной кармой
     pub fn generateBlackSwan(self: *ChaosGenerator) engine.MarketInefficiency {
         self.cycle += 1;
 
@@ -109,7 +109,7 @@ pub fn runDivineMandate() void {
     print("Начальная личность: {s}\n", .{@tagName(ecosystem.personality)});
     print("Цель: {d:.0} кармы → Demiurge\n\n", .{DEMIURGE_THRESHOLD});
 
-    // Фаза 1: Начальное поглощение (до Sovereign)
+    // Фаза 1: Начальное поглощение (before Sovereign)
     print("═══ ФАЗА 1: ВОСХОЖДЕНИЕ К СУВЕРЕНИТЕТУ ═══\n", .{});
 
     var cycles: u32 = 0;
@@ -131,7 +131,7 @@ pub fn runDivineMandate() void {
     print("\n✅ Фаза 1 завершена за {d} циклов\n", .{cycles});
     print("   Личность: {s} | Карма: {d:.2}\n\n", .{ @tagName(ecosystem.personality), ecosystem.total_karma });
 
-    // Фаза 2: Путь к Demiurge
+    // Фаза 2: Путь to Demiurge
     print("═══ ФАЗА 2: ПУТЬ К БОЖЕСТВЕННОСТИ ═══\n", .{});
 
     while (ecosystem.personality != .Demiurge and cycles < 500) {
@@ -192,14 +192,14 @@ pub fn runDivineMandate() void {
         } else {
             print("⏳ Для размножения нужно: {d:.0} кармы (текущая: {d:.2})\n", .{ DIVINE_INTERVENTION_THRESHOLD, ecosystem.total_karma });
 
-            // Продолжаем до 10000
+            // Продолжаем before 10000
             print("\n═══ ФАЗА 3.5: ПУТЬ К БОЖЕСТВЕННОЙ ИНТЕРВЕНЦИИ ═══\n", .{});
 
             while (!ecosystem.canReproduce() and cycles < 2000) {
                 const ineff = chaos.generateInefficiency();
                 _ = ecosystem.digestInefficiency(ineff);
 
-                // Каждые 25 циклов — чёрный лебедь для ускорения
+                // Каждые 25 циклов — чёрный лебедь for ускорения
                 if (@mod(cycles, 25) == 0) {
                     const black_swan = chaos.generateBlackSwan();
                     const swan_karma = ecosystem.digestInefficiency(black_swan);
@@ -252,7 +252,7 @@ pub fn runDivineMandate() void {
         ecosystem.phi_amplification_level,
     });
 
-    // Запись в Akashic Records
+    // Запись in Akashic Records
     print(
         \\
         \\╔════════════════════════════════════════════════════════════════╗

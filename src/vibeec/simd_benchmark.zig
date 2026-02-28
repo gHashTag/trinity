@@ -1,5 +1,5 @@
 // SIMD BENCHMARK - Измерение скорости троичных операций
-// Сравнение скалярной и SIMD реализаций
+// Сравнение скалярной and SIMD реализаций
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");
@@ -15,7 +15,7 @@ pub const PHI: f64 = 1.618033988749895;
 const WARMUP_ITERATIONS = 10;
 const BENCHMARK_ITERATIONS = 100;
 
-// Размеры для бенчмарка (типичные для LLM)
+// Размеры для бенчмарка (типичные for LLM)
 const BATCH_SIZE = 1;
 const IN_FEATURES = 4096; // hidden_size
 const OUT_FEATURES = 4096; // hidden_size
@@ -24,7 +24,7 @@ const OUT_FEATURES = 4096; // hidden_size
 // SCALAR IMPLEMENTATION (BASELINE)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Скалярная реализация - базовая линия для сравнения
+/// Скалярная реализация - базовая линия for сравнения
 pub fn scalarMatmul(
     output: []f32,
     input: []const f32,
@@ -57,13 +57,13 @@ pub fn scalarMatmul(
 // SIMD IMPLEMENTATION - AVX2 (256-bit vectors)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// SIMD вектор 8 x f32 = 256 бит (AVX2)
+/// SIMD vector 8 x f32 = 256 бит (AVX2)
 const Vec8f = @Vector(8, f32);
 
-/// SIMD вектор 32 x i8 = 256 бит (для тритов)
+/// SIMD vector 32 x i8 = 256 бит (for тритов)
 const Vec32i8 = @Vector(32, i8);
 
-/// Конвертация тритов в i8 массив для SIMD
+/// Конвертация тритов in i8 array for SIMD
 fn tritsToI8(trits: []const prometheus.TritWeight, out: []i8) void {
     for (trits, 0..) |t, i| {
         out[i] = t.toInt();
@@ -82,7 +82,7 @@ pub fn simdMatmul(
 ) void {
     @memset(output, 0.0);
 
-    // Конвертируем триты в i8 один раз
+    // Конвертируем триты in i8 один раз
     for (weights, 0..) |w, i| {
         trit_buffer[i] = w.toInt();
     }
@@ -92,13 +92,13 @@ pub fn simdMatmul(
         var sum_scalar: f32 = 0.0;
         const weight_offset = o * in_features;
 
-        // Обрабатываем по 8 элементов за раз
+        // Обрабатываем by 8 элементов за раз
         var i: usize = 0;
         while (i + 8 <= in_features) : (i += 8) {
             // Загружаем 8 входных значений
             const input_vec: Vec8f = input[i..][0..8].*;
 
-            // Загружаем 8 тритов и конвертируем в f32
+            // Загружаем 8 тритов and конвертируем in f32
             const t0: f32 = @floatFromInt(trit_buffer[weight_offset + i + 0]);
             const t1: f32 = @floatFromInt(trit_buffer[weight_offset + i + 1]);
             const t2: f32 = @floatFromInt(trit_buffer[weight_offset + i + 2]);
@@ -110,8 +110,8 @@ pub fn simdMatmul(
 
             const trit_vec: Vec8f = .{ t0, t1, t2, t3, t4, t5, t6, t7 };
 
-            // SIMD умножение и накопление
-            // Для тритов {-1, 0, +1} это эквивалентно:
+            // SIMD умножение and накопление
+            // Для тритов {-1, 0, +1} this эквивалентно:
             // +1: добавить x
             // -1: вычесть x
             //  0: ничего
@@ -135,7 +135,7 @@ pub fn simdMatmul(
     }
 }
 
-/// SIMD без умножения - только сложение/вычитание через маски
+/// SIMD без умножения - только сложение/вычитание via маски
 pub fn simdMatmulNoMul(
     output: []f32,
     input: []const f32,
@@ -146,7 +146,7 @@ pub fn simdMatmulNoMul(
 ) void {
     @memset(output, 0.0);
 
-    // Конвертируем триты в i8
+    // Конвертируем триты in i8
     for (weights, 0..) |w, i| {
         trit_buffer[i] = w.toInt();
     }
@@ -162,7 +162,7 @@ pub fn simdMatmulNoMul(
         while (i + 8 <= in_features) : (i += 8) {
             const input_vec: Vec8f = input[i..][0..8].*;
 
-            // Создаём маски для положительных и отрицательных тритов
+            // Создаём маски for положительных and отрицательных тритов
             const t = trit_buffer[weight_offset + i ..][0..8];
 
             // Маска положительных (t == 1)

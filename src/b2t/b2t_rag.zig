@@ -1,6 +1,6 @@
 // 🤖 TRINITY v0.11.0: Suborbital Order
-// B2T RAG - Retrieval-Augmented Generation для декомпиляции
-// Использует троичные эмбеддинги (VSA) для поиска похожего кода
+// B2T RAG - Retrieval-Augmented Generation for decompilation
+// Uses ternary embeddings (VSA) for finding similar code
 // V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3 = TRINITY
 
@@ -11,7 +11,7 @@ const std = @import("std");
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const DEFAULT_DIMENSION: usize = 10000;
-pub const DEFAULT_SPARSITY: f32 = 0.33; // 1/3 нулей (троичная гармония)
+pub const DEFAULT_SPARSITY: f32 = 0.33; // 1/3 zeros (ternary harmony)
 pub const MIN_SIMILARITY_THRESHOLD: f32 = 0.7;
 pub const MAX_RETRIEVAL_RESULTS: usize = 10;
 
@@ -25,7 +25,7 @@ pub const TRINITY: f64 = 3.0;
 pub const TernaryEmbedding = struct {
     allocator: std.mem.Allocator,
     dimension: usize,
-    trits: []i8, // Значения {-1, 0, +1}
+    trits: []i8, // Values {-1, 0, +1}
     source_hash: [32]u8,
 
     pub fn init(allocator: std.mem.Allocator, dim: usize) !TernaryEmbedding {
@@ -44,7 +44,7 @@ pub const TernaryEmbedding = struct {
         self.allocator.free(self.trits);
     }
 
-    /// Генерация случайного троичного вектора
+    /// Generate random ternary vector
     pub fn randomize(self: *TernaryEmbedding, seed: u64) void {
         var rng = std.rand.DefaultPrng.init(seed);
         const random = rng.random();
@@ -61,7 +61,7 @@ pub const TernaryEmbedding = struct {
         }
     }
 
-    /// Вычисление косинусного сходства
+    /// Compute cosine similarity
     pub fn cosineSimilarity(self: *const TernaryEmbedding, other: *const TernaryEmbedding) f32 {
         if (self.dimension != other.dimension) return 0.0;
 
@@ -81,7 +81,7 @@ pub const TernaryEmbedding = struct {
         return @floatCast(@as(f64, @floatFromInt(dot_product)) / norm);
     }
 
-    /// Расстояние Хэмминга
+    /// Hamming distance
     pub fn hammingDistance(self: *const TernaryEmbedding, other: *const TernaryEmbedding) usize {
         if (self.dimension != other.dimension) return self.dimension;
 
@@ -92,7 +92,7 @@ pub const TernaryEmbedding = struct {
         return distance;
     }
 
-    /// Bundling (мажоритарное голосование)
+    /// Bundling (majority voting)
     pub fn bundle(allocator: std.mem.Allocator, embeddings: []const *const TernaryEmbedding) !TernaryEmbedding {
         if (embeddings.len == 0) return error.EmptyInput;
 
@@ -105,7 +105,7 @@ pub const TernaryEmbedding = struct {
                 sum += emb.trits[i];
             }
 
-            // Мажоритарное голосование
+            // Majority vote
             if (sum > 0) {
                 result.trits[i] = 1;
             } else if (sum < 0) {
@@ -118,14 +118,14 @@ pub const TernaryEmbedding = struct {
         return result;
     }
 
-    /// Binding (троичный XOR)
+    /// Binding (ternary XOR)
     pub fn bind(self: *const TernaryEmbedding, other: *const TernaryEmbedding, allocator: std.mem.Allocator) !TernaryEmbedding {
         if (self.dimension != other.dimension) return error.DimensionMismatch;
 
         var result = try TernaryEmbedding.init(allocator, self.dimension);
 
         for (self.trits, other.trits, 0..) |a, b, i| {
-            // Троичный XOR: (a * b) mod 3
+            // Ternary XOR: (a * b) mod 3
             const product = @as(i32, a) * @as(i32, b);
             result.trits[i] = @intCast(@mod(product + 3, 3) - 1);
         }
@@ -192,11 +192,11 @@ pub const SimilarityResult = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const KnowledgeSource = enum {
-    decompiled_verified, // Проверенный декомпилированный код
-    original_source, // Оригинальный исходный код
-    documentation, // Документация API
-    pattern_library, // Библиотека паттернов
-    user_corrections, // Исправления пользователей
+    decompiled_verified, // Verified decompiled code
+    original_source, // Original source code
+    documentation, // API documentation
+    pattern_library, // Pattern library
+    user_corrections, // User corrections
 };
 
 pub const KnowledgeEntry = struct {
@@ -231,7 +231,7 @@ pub const KnowledgeBase = struct {
         self.entries.deinit();
     }
 
-    /// Добавление записи в базу знаний
+    /// Add entry to knowledge base
     pub fn addEntry(self: *KnowledgeBase, source: KnowledgeSource, code: []const u8, description: []const u8) !u64 {
         const id = self.next_id;
         self.next_id += 1;
@@ -249,7 +249,7 @@ pub const KnowledgeBase = struct {
         return id;
     }
 
-    /// Поиск похожих записей
+    /// Search for similar entries
     pub fn searchSimilar(self: *KnowledgeBase, query_embedding: *const TernaryEmbedding, max_results: usize) !std.ArrayList(SimilarityResult) {
         var results = std.ArrayList(SimilarityResult).init(self.allocator);
 
@@ -257,9 +257,9 @@ pub const KnowledgeBase = struct {
             if (entry.embedding) |*emb| {
                 const similarity = query_embedding.cosineSimilarity(emb);
                 if (similarity >= MIN_SIMILARITY_THRESHOLD) {
-                    // Простая вставка (можно оптимизировать с heap)
+                    // Simple insertion (can optimize with heap)
                     try results.append(SimilarityResult{
-                        .chunk = undefined, // TODO: связать с chunk
+                        .chunk = undefined, // TODO: link with chunk
                         .similarity = similarity,
                         .source = entry.code,
                     });
@@ -267,14 +267,14 @@ pub const KnowledgeBase = struct {
             }
         }
 
-        // Сортировка по убыванию similarity
+        // Sort by similarity descending
         std.mem.sort(SimilarityResult, results.items, {}, struct {
             fn lessThan(_: void, a: SimilarityResult, b: SimilarityResult) bool {
                 return a.similarity > b.similarity;
             }
         }.lessThan);
 
-        // Ограничение результатов
+        // Limit results
         if (results.items.len > max_results) {
             results.shrinkRetainingCapacity(max_results);
         }
@@ -304,18 +304,18 @@ pub const RAGEngine = struct {
         self.knowledge_base.deinit();
     }
 
-    /// Генерация эмбеддинга из кода
+    /// Generate embedding from code
     pub fn embedCode(self: *RAGEngine, code: []const u8) !TernaryEmbedding {
         var embedding = try TernaryEmbedding.init(self.allocator, self.dimension);
 
-        // Простой хеш-based эмбеддинг
+        // Simple hash-based embedding
         var hasher = std.hash.Wyhash.init(0);
         hasher.update(code);
         const hash = hasher.final();
 
         embedding.randomize(hash);
 
-        // Вычисление хеша исходного кода
+        // Compute source code hash
         var sha = std.crypto.hash.sha2.Sha256.init(.{});
         sha.update(code);
         sha.final(&embedding.source_hash);
@@ -323,7 +323,7 @@ pub const RAGEngine = struct {
         return embedding;
     }
 
-    /// Поиск похожего кода для ICL
+    /// Find similar code for ICL
     pub fn retrieveExamples(self: *RAGEngine, code: []const u8, max_examples: usize) !std.ArrayList(SimilarityResult) {
         var query_embedding = try self.embedCode(code);
         defer query_embedding.deinit();
@@ -331,11 +331,11 @@ pub const RAGEngine = struct {
         return self.knowledge_base.searchSimilar(&query_embedding, max_examples);
     }
 
-    /// Добавление примера в базу знаний
+    /// Add example to knowledge base
     pub fn addExample(self: *RAGEngine, source: KnowledgeSource, code: []const u8, description: []const u8) !u64 {
         const id = try self.knowledge_base.addEntry(source, code, description);
 
-        // Генерация эмбеддинга для новой записи
+        // Generate embedding for new entry
         const idx = self.knowledge_base.entries.items.len - 1;
         self.knowledge_base.entries.items[idx].embedding = try self.embedCode(code);
 
@@ -361,10 +361,10 @@ test "ternary embedding cosine similarity" {
     defer emb2.deinit();
 
     emb1.randomize(12345);
-    emb2.randomize(12345); // Одинаковый seed = одинаковые векторы
+    emb2.randomize(12345); // Same seed = same vectors
 
     const similarity = emb1.cosineSimilarity(&emb2);
-    try std.testing.expect(similarity > 0.99); // Должны быть почти идентичны
+    try std.testing.expect(similarity > 0.99); // Should be almost identical
 }
 
 test "ternary embedding hamming distance" {
@@ -377,7 +377,7 @@ test "ternary embedding hamming distance" {
     emb2.randomize(12345);
 
     const distance = emb1.hammingDistance(&emb2);
-    try std.testing.expectEqual(@as(usize, 0), distance); // Одинаковые векторы
+    try std.testing.expectEqual(@as(usize, 0), distance); // Same vectors
 }
 
 test "knowledge base add and search" {

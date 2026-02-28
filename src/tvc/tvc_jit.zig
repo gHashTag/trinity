@@ -5,8 +5,8 @@ const builtin = @import("builtin");
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TVC JIT COMPILER
-// Компилирует TVC IR в нативный машинный код для x86_64
-// С поддержкой executable memory через mmap
+// Компилирует TVC IR in нативный машинный code for x86_64
+// С поддержкой executable memory via mmap
 // ═══════════════════════════════════════════════════════════════════════════
 
 pub const JITError = error{
@@ -21,7 +21,7 @@ pub const JITError = error{
 
 // ═══════════════════════════════════════════════════════════════════════════
 // EXECUTABLE MEMORY ALLOCATOR
-// Выделяет память с правами на выполнение (PROT_EXEC)
+// Выделяет memory with правами on execution (PROT_EXEC)
 // ═══════════════════════════════════════════════════════════════════════════
 
 pub const ExecutableMemory = struct {
@@ -29,13 +29,13 @@ pub const ExecutableMemory = struct {
     len: usize,
 
     pub fn alloc(size: usize) !ExecutableMemory {
-        // Выравниваем размер до страницы
+        // Выравниваем размер before страницы
         const page_size = std.mem.page_size;
         const mask: usize = page_size - 1;
         const aligned_size = (size + mask) & ~mask;
 
         if (builtin.os.tag == .linux or builtin.os.tag == .macos) {
-            // Используем posix mmap для выделения executable памяти
+            // Используем posix mmap for выделения executable памяти
             const result = try std.posix.mmap(
                 null,
                 aligned_size,
@@ -50,7 +50,7 @@ pub const ExecutableMemory = struct {
                 .len = aligned_size,
             };
         } else {
-            // Fallback для других ОС - обычная память (не будет работать)
+            // Fallback for других ОС - обычная memory (не будет работать)
             return JITError.MmapFailed;
         }
     }
@@ -93,7 +93,7 @@ pub const ProfileStats = struct {
         self.total_cycles += cycles;
         self.last_cycles = cycles;
 
-        // Функция считается "горячей" после 100 вызовов
+        // Функция считается "горячей" after 100 вызовов
         if (self.call_count >= 100) {
             self.is_hot = true;
         }
@@ -129,7 +129,7 @@ pub const ICacheEntry = struct {
 // Тип функции JIT
 pub const JITFunctionType = *const fn () callconv(.C) i64;
 
-// Скомпилированная функция
+// Скомпилированная function
 pub const CompiledFunction = struct {
     name: []const u8,
     exec_mem: ExecutableMemory,
@@ -150,7 +150,7 @@ pub const CompiledFunction = struct {
     }
 };
 
-// Читаем TSC для профилирования (используем std.time как fallback)
+// Читаем TSC for профилирования (используем std.time how fallback)
 fn rdtsc() u64 {
     return @intCast(std.time.nanoTimestamp());
 }
@@ -163,9 +163,9 @@ pub const TVCJit = struct {
     allocator: std.mem.Allocator,
     compiled_functions: std.StringHashMap(CompiledFunction),
     profile_data: std.StringHashMap(ProfileStats),
-    icache: [64]ICacheEntry, // Inline cache с 64 слотами
+    icache: [64]ICacheEntry, // Inline cache with 64 слотами
     code_buffer: std.ArrayList(u8),
-    hot_threshold: u64, // Порог для JIT компиляции
+    hot_threshold: u64, // Порог for JIT компиляции
 
     pub fn init(allocator: std.mem.Allocator) TVCJit {
         var icache: [64]ICacheEntry = undefined;
@@ -184,7 +184,7 @@ pub const TVCJit = struct {
     }
 
     pub fn deinit(self: *TVCJit) void {
-        // Освобождаем скомпилированный код
+        // Освобождаем скомпилированный code
         var iter = self.compiled_functions.iterator();
         while (iter.next()) |entry| {
             entry.value_ptr.deinit();
@@ -205,7 +205,7 @@ pub const TVCJit = struct {
         }
     }
 
-    // Проверка, нужна ли JIT компиляция
+    // Проверка, нужна ли JIT compilation
     pub fn shouldCompile(self: *TVCJit, func_name: []const u8) bool {
         if (self.compiled_functions.contains(func_name)) {
             return false; // Уже скомпилировано
@@ -218,14 +218,14 @@ pub const TVCJit = struct {
         return false;
     }
 
-    // Компиляция функции в машинный код
+    // Компиляция функции in машинный code
     pub fn compile(self: *TVCJit, func: *const tvc_ir.TVCFunction) !*CompiledFunction {
         self.code_buffer.clearRetainingCapacity();
 
         // Пролог функции (x86_64 System V ABI)
         try self.emitPrologue();
 
-        // Компилируем каждый блок
+        // Компилируем each блок
         var block_iter = func.blocks.iterator();
         while (block_iter.next()) |block_entry| {
             try self.compileBlock(&block_entry.value_ptr.*);
@@ -234,10 +234,10 @@ pub const TVCJit = struct {
         // Эпилог функции
         try self.emitEpilogue();
 
-        // Выделяем executable память
+        // Выделяем executable memory
         var exec_mem = try ExecutableMemory.alloc(self.code_buffer.items.len);
 
-        // Копируем код в executable память
+        // Копируем code in executable memory
         exec_mem.write(0, self.code_buffer.items);
 
         // Создаём CompiledFunction
@@ -259,7 +259,7 @@ pub const TVCJit = struct {
         try self.code_buffer.append(0x55);
         // mov rbp, rsp
         try self.code_buffer.appendSlice(&[_]u8{ 0x48, 0x89, 0xE5 });
-        // sub rsp, 64 (резервируем место для локальных переменных)
+        // sub rsp, 64 (резервируем место for локальных переменных)
         try self.code_buffer.appendSlice(&[_]u8{ 0x48, 0x83, 0xEC, 0x40 });
         // Сохраняем callee-saved регистры
         // push rbx
@@ -331,21 +331,21 @@ pub const TVCJit = struct {
                 try self.code_buffer.appendSlice(&[_]u8{ 0x48, 0xF7, 0xFB }); // idiv rbx
             },
             .t_not => {
-                // Trinary NOT: neg rax (для balanced ternary)
+                // Trinary NOT: neg rax (for balanced ternary)
                 try self.code_buffer.appendSlice(&[_]u8{ 0x48, 0xF7, 0xD8 });
             },
             .t_and => {
                 // Trinary AND: min(rax, rbx)
                 // cmp rax, rbx
                 try self.code_buffer.appendSlice(&[_]u8{ 0x48, 0x39, 0xD8 });
-                // cmovg rax, rbx (если rax > rbx, то rax = rbx)
+                // cmovg rax, rbx (if rax > rbx, that rax = rbx)
                 try self.code_buffer.appendSlice(&[_]u8{ 0x48, 0x0F, 0x4F, 0xC3 });
             },
             .t_or => {
                 // Trinary OR: max(rax, rbx)
                 // cmp rax, rbx
                 try self.code_buffer.appendSlice(&[_]u8{ 0x48, 0x39, 0xD8 });
-                // cmovl rax, rbx (если rax < rbx, то rax = rbx)
+                // cmovl rax, rbx (if rax < rbx, that rax = rbx)
                 try self.code_buffer.appendSlice(&[_]u8{ 0x48, 0x0F, 0x4C, 0xC3 });
             },
             .t_xor => {
@@ -375,7 +375,7 @@ pub const TVCJit = struct {
                 try self.code_buffer.appendSlice(&[_]u8{ 0x48, 0x0F, 0x4C, 0xC1 });
             },
             .ret => {
-                // Возврат уже в эпилоге
+                // Возврат уже in эпилоге
             },
             .jump => {
                 // jmp rel32 (заглушка)
@@ -710,7 +710,7 @@ pub fn runBenchmark(
     }
     const jit_end = rdtsc();
 
-    // VM замер (симуляция - в реальности нужно вызывать VM)
+    // VM замер (симуляция - in реальности нужно вызывать VM)
     const vm_cycles = (jit_end - jit_start) * 5; // Предполагаем 5x медленнее
 
     return Benchmark{

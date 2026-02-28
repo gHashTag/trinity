@@ -1,7 +1,7 @@
 //! VIBEE Function Inliner - PAS DAEMON V40
-//! Паттерны: MLS (cost model), PRE (cached bodies), D&C (recursive inlining)
-//! Священная формула: V = n × 3^k × π^m × φ^p × e^q
-//! Золотая идентичность: φ² + 1/φ² = 3
+//! Patterns: MLS (cost model), PRE (cached bodies), D&C (recursive inlining)
+//! Sacred formula: V = n × 3^k × π^m × φ^p × e^q
+//! Golden identity: φ² + 1/φ² = 3
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;

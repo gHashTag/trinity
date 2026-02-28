@@ -1,5 +1,5 @@
 // TRINITY PAS DAEMONS V5.0 - MINING TEST
-// φ² + 1/φ² = 3 = КУТРИТ = ТРОИЦА
+// φ² + 1/φ² = 3 = КУТРИТ = TRINITY
 
 const std = @import("std");
 const print = std.debug.print;
@@ -53,7 +53,7 @@ pub fn main() void {
     print("🧪 Тест 4: PAS-SHA256 Симуляция\n", .{});
     var state: u32 = 0x6a09e667;
     for (0..64) |i| {
-        // φ-модуляция каждый 3-й раунд
+        // φ-модуляция each 3-й раунд
         if (i % 3 == 0) {
             state = state +% @as(u32, @truncate(@as(u64, @intFromFloat(PHI * 1000.0))));
         }

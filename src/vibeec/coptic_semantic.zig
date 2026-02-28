@@ -148,7 +148,7 @@ pub const SemanticAnalyzer = struct {
     fn visitNode(self: *SemanticAnalyzer, node: *const AstNode) AnalyzeError!void {
         switch (node.kind) {
             .program => try self.visitProgram(node),
-            .module_decl => {}, // Ничего не делаем для объявлений модулей в семантике пока что
+            .module_decl => {}, // Ничего не делаем for объявлений модулей in семантике while what
             .const_decl => try self.visitConstDecl(node),
             .var_decl => try self.visitVarDecl(node),
             .func_decl => try self.visitFuncDecl(node),

@@ -573,11 +573,11 @@ git push origin gh-pages --force
 | Deploying docsite alone without website | **Deletes website** from gh-pages |
 
 **IMPORTANT:**
-- НЕ использовать Vercel — сайт на GitHub Pages
-- НИКОГДА не деплоить website или docsite по отдельности — ТОЛЬКО вместе
-- После деплоя GitHub Pages обновляется через 1-2 минуты
-- Для проверки: Cmd+Shift+R (хард-рефреш) в браузере
-- MDX файлы: экранировать `<Tag>` → `\<Tag\>`, `{expr}` → `\{expr\}` вне блоков кода
+- DO NOT use Vercel — website is on GitHub Pages
+- NEVER deploy website or docsite separately — ONLY together
+- GitHub Pages updates 1-2 minutes after deployment
+- To verify: Cmd+Shift+R (hard refresh) in browser
+- MDX files: escape `<Tag>` → `\<Tag\>`, `{expr}` → `\{expr\}` outside code blocks
 
 ---
 

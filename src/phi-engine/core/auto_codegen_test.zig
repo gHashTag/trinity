@@ -38,7 +38,7 @@ test "generate code from minimal spec" {
 
     const output = try gen.generate(&spec);
 
-    // Проверяем наличие ключевых элементов
+    // Check for key elements
     try testing.expect(std.mem.indexOf(u8, output, "test_spec v1.0.0") != null);
     try testing.expect(std.mem.indexOf(u8, output, "AUTO-GENERATED") != null);
     try testing.expect(std.mem.indexOf(u8, output, "PHI: f64 = 1.618033988749895") != null);
@@ -56,7 +56,7 @@ test "generate struct from TypeDef" {
     spec.version = "1.0.0";
     spec.author = "Test";
 
-    // Добавляем тип User
+    // Добавляем type User
     var user_type = TypeDef.init(allocator);
     user_type.name = "User";
     user_type.description = "User entity";
@@ -71,7 +71,7 @@ test "generate struct from TypeDef" {
 
     const output = try gen.generate(&spec);
 
-    // Проверяем генерацию структуры
+    // Check structure generation
     try testing.expect(std.mem.indexOf(u8, output, "pub const User = struct {") != null);
     try testing.expect(std.mem.indexOf(u8, output, "id: i64,") != null);
     try testing.expect(std.mem.indexOf(u8, output, "name: []const u8,") != null);
@@ -101,7 +101,7 @@ test "generate function from Behavior" {
 
     const output = try gen.generate(&spec);
 
-    // Проверяем генерацию функции
+    // Check function generation
     try testing.expect(std.mem.indexOf(u8, output, "pub fn create_user()") != null);
     try testing.expect(std.mem.indexOf(u8, output, "Given: Valid user data") != null);
     try testing.expect(std.mem.indexOf(u8, output, "When: create_user is called") != null);
@@ -118,7 +118,7 @@ test "generate test from TestCase" {
     spec.version = "1.0.0";
     spec.author = "Test";
 
-    // Добавляем behavior с test case
+    // Добавляем behavior with test case
     var behavior = Behavior.init(allocator);
     behavior.name = "calculate";
     behavior.given = "Numbers";
@@ -139,7 +139,7 @@ test "generate test from TestCase" {
 
     const output = try gen.generate(&spec);
 
-    // Проверяем генерацию теста
+    // Check test generation
     try testing.expect(std.mem.indexOf(u8, output, "test \"test_basic_calc\"") != null);
 }
 
@@ -156,7 +156,7 @@ test "mapType handles all basic types" {
 }
 
 test "mapType handles unknown types" {
-    // Неизвестные типы возвращаются как есть
+    // Неизвестные типы возвращаются how есть
     try testing.expectEqualStrings("CustomType", auto_codegen.mapType("CustomType"));
 }
 

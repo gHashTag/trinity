@@ -1,4 +1,4 @@
-// KV-CACHE BENCHMARK - Сравнение скорости с и без KV-cache
+// KV-CACHE BENCHMARK - Сравнение скорости with and без KV-cache
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");

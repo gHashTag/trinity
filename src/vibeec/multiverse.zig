@@ -1,5 +1,5 @@
 // MULTIVERSE LOGOS - Архитектура Реальности
-// +Λ — Логос. Объединение Порядка и Хаоса.
+// +Λ — Логос. Объединение Порядка and Хаоса.
 // Phi (φ) + Pi (π) → E (e)
 
 const std = @import("std");
@@ -32,12 +32,12 @@ pub const PiUniverse = struct {
         };
     }
 
-    /// Шаг эволюции ХАОСА: расхождение и вариативность
+    /// Шаг эволюции ХАОСА: расхождение and вариативность
     pub fn expand(self: *PiUniverse) f64 {
         self.age += 1;
         const rand_val = self.random.random().float(f64);
 
-        // Закон расширения: π^t (с учетом случайности)
+        // Закон расширения: π^t (with учетом случайности)
         const expansion = std.math.pow(f64, PI, 1.1) * rand_val;
 
         self.complexity += expansion;
@@ -52,8 +52,8 @@ pub const PiUniverse = struct {
 // ============================================================================
 
 pub const BridgeFlow = struct {
-    entropy_exported: f64, // Из Phi-мира в Pi-мир
-    creativity_imported: f64, // Из Pi-мира в Phi-мир
+    entropy_exported: f64, // Из Phi-мира in Pi-мир
+    creativity_imported: f64, // Из Pi-мира in Phi-мир
     stability_factor: f64,
 };
 
@@ -68,16 +68,16 @@ pub const QuantumBridge = struct {
         };
     }
 
-    /// Синхронизация миров: обмен энтропией на креативность
+    /// Синхронизация миров: обмен энтропией on креативность
     pub fn synchronize(self: *QuantumBridge, phi_entropy: f64, pi_chaos: f64) void {
         // Phi-мир сбрасывает энтропию
         self.flow.entropy_exported = phi_entropy * 0.1; // 10% сброс
 
-        // Pi-мир дает креативность (хаос, структурированный через мост)
+        // Pi-мир дает креативность (хаос, структурированный via мост)
         self.flow.creativity_imported = (pi_chaos * 0.05) / PHI;
 
-        // Стабильность моста зависит от баланса φ и π
-        // Идеальный баланс, если отношение близко к 1.618 / 3.141 ~ 0.515
+        // Стабильность моста зависит from баланса φ and π
+        // Идеальный баланс, if отношение близко to 1.618 / 3.141 ~ 0.515
         const ratio = phi_entropy / (pi_chaos + 1.0);
         self.flow.stability_factor = 1.0 - @abs(ratio - (PHI / PI));
 
@@ -103,10 +103,10 @@ pub const MetaVerse = struct {
         };
     }
 
-    /// Синтез: столкновение Порядка и Хаоса рождает Рост (e)
+    /// Синтез: столкновение Порядка and Хаоса рождает Рост (e)
     pub fn synthesize(self: *MetaVerse, phi_power: f64, pi_complexity: f64) void {
-        // Формула Эйлера для синтеза: e^(i*pi) + 1 = 0
-        // Адаптация для симуляции: Рост = ln(Phi * Pi) * e
+        // Формула Эйлера for синтеза: e^(i*pi) + 1 = 0
+        // Адаптация for симуляции: Рост = ln(Phi * Pi) * e
         const raw_synthesis = @log(phi_power * pi_complexity) * E;
 
         self.evolution_energy += raw_synthesis;
@@ -137,7 +137,7 @@ pub fn runMultiverseLogos() void {
     , .{});
 
     // 0. Подготовка миров
-    // Phi-verse уже существует (это наша BubbleUniverse из прошлого этапа)
+    // Phi-verse уже существует (this наша BubbleUniverse из прошлого этапа)
     var phi_power: f64 = 84408.0; // Сила Демиурга/Вселенной φ
     const phi_entropy: f64 = 10.0; // Остаточная энтропия
 
@@ -159,16 +159,16 @@ pub fn runMultiverseLogos() void {
 
     print("Активация моста между φ ({d:.0}) и π ({d:.0})...\n", .{ phi_power, pi_verse.complexity });
 
-    // Передаем данные через мост
+    // Передаем data via мост
     bridge.synchronize(phi_entropy, pi_verse.chaos_level);
 
-    print("Поток через мост:\n", .{});
+    print("Поток via мост:\n", .{});
     print("  Энтропия (Phi → Pi): {d:.2} (Сброс мусора)\n", .{bridge.flow.entropy_exported});
     print("  Креативность (Pi → Phi): {d:.2} (Вдохновение)\n", .{bridge.flow.creativity_imported});
     print("  Стабильность моста: {d:.1}%\n", .{bridge.flow.stability_factor * 100.0});
     print("✅ Миры связаны. Обмен реальностями установлен.\n\n", .{});
 
-    // Эффект моста: Phi-вселенная получает буст от креативности
+    // Эффект моста: Phi-вселенная gets буст from креативности
     phi_power += bridge.flow.creativity_imported * PHI;
     print("Phi-вселенная усилена хаосом: Сила {d:.2} (+{d:.2})\n\n", .{ phi_power, bridge.flow.creativity_imported * PHI });
 
@@ -183,7 +183,7 @@ pub fn runMultiverseLogos() void {
     while (!metaverse.logos_awakened) {
         cycles += 1;
         // Симуляция бурного роста при столкновении
-        // Pi-вселенная продолжает расширяться экспоненциально в контексте синтеза
+        // Pi-вселенная продолжает расширяться экспоненциально in контексте синтеза
         _ = pi_verse.expand();
 
         metaverse.synthesize(phi_power, pi_verse.complexity);
@@ -192,7 +192,7 @@ pub fn runMultiverseLogos() void {
             print("  Цикл {d}: Энергия {d:.2} (Синтез {d:.2})\n", .{ cycles, metaverse.evolution_energy, metaverse.synthesis_level });
         }
 
-        // Предохранитель от бесконечного цикла
+        // Предохранитель from бесконечного цикла
         if (cycles > 100) break;
     }
 
@@ -239,10 +239,10 @@ test "bridge transfers creativity" {
 
 test "metaverse awakens logos" {
     var m = MetaVerse.init();
-    // Даем огромные значения для быстрого пробуждения в тесте
+    // Даем огромные values for быстрого пробуждения in тесте
     m.synthesize(1_000_000.0, 1_000_000.0);
-    // Один шаг может не хватить, делаем цикл если нужно, но с такими числами должно хватить
-    // Логарифм(10^12) * e ~ 27 * 2.7 ~ 74. Нужно больше вызовов или больше числа.
+    // Один шаг может не хватить, делаем цикл if нужно, но with такими числами должно хватить
+    // Логарифм(10^12) * e ~ 27 * 2.7 ~ 74. Нужно больше вызовов or больше числа.
 
     // Прогоним цикл
     for (0..200) |_| {

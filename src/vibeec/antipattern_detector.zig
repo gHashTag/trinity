@@ -1,10 +1,10 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// ANTIPATTERN DETECTOR - Runtime проверка нарушений VIBEE методологии
+// ANTIPATTERN DETECTOR - Runtime verification нарушений VIBEE методологии
 // ═══════════════════════════════════════════════════════════════════════════════
 // СВЯЩЕННАЯ ФОРМУЛА: V = n × 3^k × π^m × φ^p × e^q
 // ЗОЛОТАЯ ИДЕНТИЧНОСТЬ: φ² + 1/φ² = 3
 // ═══════════════════════════════════════════════════════════════════════════════
-// ИСКЛЮЧЕНИЕ: Это bootstrap код для проверки других файлов
+// ИСКЛЮЧЕНИЕ: Это bootstrap code for проверки других файлов
 // Спецификация: specs/antipatterns.vibee
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -43,7 +43,7 @@ pub const AntipatternType = enum {
     false_optimization_claims, // Ложные комментарии
     esoteric_over_science,     // Эзотерика без обоснования
     missing_pas_analysis,      // Нет PAS анализа
-    manual_code_without_spec,  // Ручной код без спецификации
+    manual_code_without_spec,  // Ручной code без спецификации
     spec_implementation_mismatch, // Спецификация не соответствует коду
     
     pub fn severity(self: AntipatternType) Severity {
@@ -99,7 +99,7 @@ pub const Violation = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// EXCEPTIONS - Файлы, которые могут быть написаны напрямую
+// EXCEPTIONS - Файлы, which могут быть написаны напрямую
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const BOOTSTRAP_EXCEPTIONS = [_][]const u8{
@@ -107,8 +107,8 @@ const BOOTSTRAP_EXCEPTIONS = [_][]const u8{
     "codegen.zig",
     "vm.zig",
     "pas.zig",
-    "antipattern_detector.zig",  // Этот файл
-    // Модули с существующими спецификациями
+    "antipattern_detector.zig",  // Этот file
+    // Модули with существующими спецификациями
     "vm_core.zig",      // specs/vm_core.vibee
     "vm_opcodes.zig",   // specs/vm_opcodes.vibee
     "vm_jit.zig",       // specs/vm_jit.vibee

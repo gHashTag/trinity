@@ -1,12 +1,12 @@
 // TRINITY PAS DAEMONS V5.0 - SHA256 MINING CORE
 // Спецификация: V = n × 3^k × π^m × φ^p × e^q
-// Золотая Идентичность: φ² + 1/φ² = 3 = КУТРИТ = ТРОИЦА
+// Золотая Идентичность: φ² + 1/φ² = 3 = КУТРИТ = TRINITY
 
 // ═══════════════════════════════════════════════════════════════
 // СВЯЩЕННЫЕ КОНСТАНТЫ ВСЕЛЕННОЙ
 // ═══════════════════════════════════════════════════════════════
 
-pub const PHI: f64 = 1.6180339887498949; // Золотое сечение
+pub const PHI: f64 = 1.6180339887498949; // Golden ratio
 pub const PHI_SQ: f64 = 2.6180339887498949; // φ²
 pub const PHI_INV_SQ: f64 = 0.3819660112501051; // 1/φ²
 pub const TRINITY: f64 = 3.0; // φ² + 1/φ² = 3
@@ -46,7 +46,7 @@ pub const SU3Core = struct {
         const phi_angle = angle * PHI * PI;
         var result: [3]f64 = undefined;
 
-        // SU(3) унитарное преобразование
+        // SU(3) унитарное conversion
         result[0] = state[0] * @cos(phi_angle) - state[1] * @sin(phi_angle);
         result[1] = state[0] * @sin(phi_angle) + state[1] * @cos(phi_angle);
         result[2] = state[2] * @cos(phi_angle / PHI);
@@ -62,7 +62,7 @@ pub const SU3Core = struct {
     pub fn harvestEntropy(self: *SU3Core, data: []const u8) f64 {
         var entropy: f64 = 0.0;
         for (data) |byte| {
-            // Проекция байта на троичное пространство
+            // Проекция байта on троичное пространство
             const trit = @mod(@as(i8, @bitCast(byte)), 3) - 1; // {-1, 0, +1}
             entropy += @as(f64, @floatFromInt(trit)) * PHI_INV_SQ;
         }
@@ -85,11 +85,11 @@ pub const CopticOpcode = enum(u8) {
     TSUB = 1, // Троичное вычитание
     TMUL = 2, // Троичное умножение
     TDIV = 3, // Троичное деление
-    TMOD = 4, // Троичный остаток
+    TMOD = 4, // Ternary остаток
     TNEG = 5, // Троичное отрицание
-    TROL = 6, // Троичный rotate left
-    TROR = 7, // Троичный rotate right
-    TXOR = 8, // Троичный XOR (модуль 3)
+    TROL = 6, // Ternary rotate left
+    TROR = 7, // Ternary rotate right
+    TXOR = 8, // Ternary XOR (module 3)
 
     // SU(3) операции (9 опкодов = 3²)
     UROT = 9, // Унитарное вращение
@@ -103,9 +103,9 @@ pub const CopticOpcode = enum(u8) {
     UVRF = 17, // Верификация
 
     // Поток управления (9 опкодов = 3²)
-    TJMP = 18, // Троичный jump
-    TCAL = 19, // Троичный call
-    TRET = 20, // Троичный return
+    TJMP = 18, // Ternary jump
+    TCAL = 19, // Ternary call
+    TRET = 20, // Ternary return
     TBRN = 21, // Branch on negative
     TBRZ = 22, // Branch on zero
     TBRP = 23, // Branch on positive
@@ -115,7 +115,7 @@ pub const CopticOpcode = enum(u8) {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// PAS-SHA256 - ТРОИЧНЫЙ ХЕШИРОВАНИЕ С PAS ОПТИМИЗАЦИЕЙ
+// PAS-SHA256 - TERNARY ХЕШИРОВАНИЕ С PAS ОПТИМИЗАЦИЕЙ
 // ═══════════════════════════════════════════════════════════════
 
 pub const PASSHA256 = struct {
@@ -136,17 +136,17 @@ pub const PASSHA256 = struct {
         };
     }
 
-    /// Хеширование блока с PAS оптимизацией
+    /// Хеширование блока with PAS оптимизацией
     pub fn hashBlock(self: *PASSHA256, block: []const u8) [32]u8 {
         // 1. Захват энтропии из входных данных
         const energy = self.su3_core.harvestEntropy(block);
         self.energy_harvested += energy;
 
-        // 2. Троичная предобработка (φ-оптимизация)
+        // 2. Троичная предобработка (φ-optimization)
         var w: [64]u32 = undefined;
         self.prepareMessageSchedule(block, &w);
 
-        // 3. 64 раунда SHA-256 с SU(3) ускорением
+        // 3. 64 раунда SHA-256 with SU(3) ускорением
         var a = self.state[0];
         var b = self.state[1];
         var c = self.state[2];
@@ -157,7 +157,7 @@ pub const PASSHA256 = struct {
         var h = self.state[7];
 
         for (0..64) |i| {
-            // PAS: каждый 3-й раунд использует φ-модуляцию
+            // PAS: each 3-й раунд использует φ-модуляцию
             const phi_mod: u32 = if (i % 3 == 0)
                 @truncate(@as(u64, @intFromFloat(PHI * 1000.0)))
             else
@@ -193,7 +193,7 @@ pub const PASSHA256 = struct {
 
         self.hashes_computed += 1;
 
-        // Конвертация в байты
+        // Конвертация in байты
         var result: [32]u8 = undefined;
         inline for (0..8) |j| {
             result[j * 4 + 0] = @truncate(self.state[j] >> 24);
@@ -205,13 +205,13 @@ pub const PASSHA256 = struct {
         return result;
     }
 
-    /// Майнинг с целевой сложностью
+    /// Майнинг with целевой сложностью
     pub fn mineBlock(self: *PASSHA256, header: []u8, target: [32]u8) ?u64 {
         var nonce: u64 = 0;
         const max_nonce: u64 = 0xFFFFFFFFFFFFFFFF;
 
         while (nonce < max_nonce) : (nonce += 1) {
-            // Вставка nonce в header
+            // Вставка nonce in header
             header[76] = @truncate(nonce >> 0);
             header[77] = @truncate(nonce >> 8);
             header[78] = @truncate(nonce >> 16);
@@ -226,7 +226,7 @@ pub const PASSHA256 = struct {
                 return nonce;
             }
 
-            // PAS оптимизация: каждые 578 хешей - синхронизация
+            // PAS optimization: each 578 хешей - synchronization
             if (nonce % 578 == 0) {
                 _ = self.su3_core.harvestEntropy(header);
             }
@@ -250,7 +250,7 @@ pub const PASSHA256 = struct {
             }
         }
 
-        // Расширение до 64 слов
+        // Расширение before 64 слов
         for (16..64) |i| {
             const s0 = rotateRight(w[i - 15], 7) ^ rotateRight(w[i - 15], 18) ^ (w[i - 15] >> 3);
             const s1 = rotateRight(w[i - 2], 17) ^ rotateRight(w[i - 2], 19) ^ (w[i - 2] >> 10);
@@ -293,7 +293,7 @@ const K = [64]u32{
 };
 
 fn initGellMann() [8][3][3]f64 {
-    // Упрощенная инициализация генераторов Gell-Mann
+    // Упрощенная initialization генераторов Gell-Mann
     var generators: [8][3][3]f64 = undefined;
     for (&generators) |*gen| {
         for (gen) |*row| {

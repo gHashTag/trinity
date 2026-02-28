@@ -213,7 +213,7 @@ pub const Compiler = struct {
                 }) catch {};
             };
 
-            // В будущем здесь будет bridge.extractBest(class_id) для обновления AST
+            // Future bridge will be here.extractBest(class_id) for обновления AST
         }
 
         // Phase 4: Code Generation

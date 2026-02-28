@@ -14,7 +14,7 @@
 //         parser_sections ← vibee_parser (functions only)
 //         (clean DAG, no cycles)
 //
-// IGLA (Игла) — укол, убивающий ручной код
+// IGLA (Игла) — укол, убивающий ручной code
 //
 // φ² + 1/φ² = 3
 //

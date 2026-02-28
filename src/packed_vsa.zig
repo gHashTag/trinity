@@ -1,6 +1,6 @@
 // Trinity Packed VSA Operations
-// VSA операции на упакованных тритах (5 тритов/байт)
-// Использует lookup tables для быстрых операций без распаковки
+// VSA операции on упакованных тритах (5 тритов/байт)
+// Использует lookup tables for быстрых операций без распаковки
 //
 // ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ: V = n × 3^k × π^m × φ^p × e^q
 // φ² + 1/φ² = 3
@@ -17,10 +17,10 @@ const TRITS_PER_BYTE = packed_trit.TRITS_PER_BYTE;
 const MAX_PACKED_BYTES = packed_trit.MAX_PACKED_BYTES;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// LOOKUP TABLES для операций на упакованных байтах
+// LOOKUP TABLES for операций on упакованных байтах
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Lookup table для bind: BIND_LUT[a][b] = packed(bind(unpack(a), unpack(b)))
+/// Lookup table for bind: BIND_LUT[a][b] = packed(bind(unpack(a), unpack(b)))
 /// Размер: 243 * 243 = 59049 байт (~58KB)
 const BIND_LUT: [243][243]u8 = blk: {
     @setEvalBranchQuota(1000000);
@@ -43,7 +43,7 @@ const BIND_LUT: [243][243]u8 = blk: {
     break :blk lut;
 };
 
-/// Lookup table для bundle2: BUNDLE_LUT[a][b] = packed(bundle(unpack(a), unpack(b)))
+/// Lookup table for bundle2: BUNDLE_LUT[a][b] = packed(bundle(unpack(a), unpack(b)))
 const BUNDLE_LUT: [243][243]u8 = blk: {
     @setEvalBranchQuota(1000000);
     var lut: [243][243]u8 = undefined;
@@ -68,8 +68,8 @@ const BUNDLE_LUT: [243][243]u8 = blk: {
     break :blk lut;
 };
 
-/// Lookup table для dot product: DOT_LUT[a][b] = sum of element-wise products
-/// Диапазон: -5 до +5, храним как u8 со смещением +5
+/// Lookup table for dot product: DOT_LUT[a][b] = sum of element-wise products
+/// Диапазон: -5 before +5, храним how u8 со смещением +5
 const DOT_LUT: [243][243]u8 = blk: {
     @setEvalBranchQuota(1000000);
     var lut: [243][243]u8 = undefined;
@@ -81,7 +81,7 @@ const DOT_LUT: [243][243]u8 = blk: {
             for (0..5) |i| {
                 sum += @as(i16, trits_a[i]) * @as(i16, trits_b[i]);
             }
-            // Смещение +5 чтобы хранить в u8 (диапазон 0-10)
+            // Смещение +5 чтобы хранить in u8 (диапазон 0-10)
             lut[a][b] = @intCast(@as(i16, sum) + 5);
         }
     }
@@ -140,7 +140,7 @@ pub fn packedDot(a: *const PackedBigInt, b: *const PackedBigInt) i64 {
         const a_byte = a.data[i];
         const b_byte = b.data[i];
 
-        // Lookup возвращает значение со смещением +5
+        // Lookup returns value со смещением +5
         const dot_shifted = DOT_LUT[a_byte][b_byte];
         total += @as(i64, dot_shifted) - 5;
     }
@@ -148,13 +148,13 @@ pub fn packedDot(a: *const PackedBigInt, b: *const PackedBigInt) i64 {
     return total;
 }
 
-/// Packed unbind - для тритов unbind = bind (самообратная операция)
+/// Packed unbind - for тритов unbind = bind (самообратная operation)
 /// unbind(bind(a, b), b) = a
 pub fn packedUnbind(a: *const PackedBigInt, b: *const PackedBigInt) PackedBigInt {
-    // Для тритов: unbind = bind, потому что:
+    // Для тритов: unbind = bind, потому what:
     // bind(a, b) = a * b
     // unbind(a*b, b) = (a*b) * b = a * (b*b) = a * 1 = a
-    // (для b ∈ {-1, 1}, b*b = 1)
+    // (for b ∈ {-1, 1}, b*b = 1)
     return packedBind(a, b);
 }
 
@@ -215,7 +215,7 @@ pub fn toHybrid(p: *const PackedBigInt) HybridBigInt {
     return result;
 }
 
-/// Создать случайный упакованный вектор
+/// Создать случайный упакованный vector
 pub fn randomPackedVector(size: usize, seed: u64) PackedBigInt {
     var result = PackedBigInt.zero();
     result.trit_len = size;
@@ -238,14 +238,14 @@ pub fn randomPackedVector(size: usize, seed: u64) PackedBigInt {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "packed bind correctness" {
-    // Создаём тестовые векторы через HybridBigInt
+    // Создаём тестовые векторы via HybridBigInt
     var h_a = vsa.randomVector(100, 12345);
     var h_b = vsa.randomVector(100, 67890);
 
-    // Референсный результат (unpacked)
+    // Референсный result (unpacked)
     const ref_result = vsa.bind(&h_a, &h_b);
 
-    // Packed версия
+    // Packed version
     const p_a = fromHybrid(&h_a);
     const p_b = fromHybrid(&h_b);
     const packed_result = packedBind(&p_a, &p_b);
@@ -309,20 +309,20 @@ test "packed unbind correctness" {
     // bind(a, b)
     const bound = packedBind(&p_a, &p_b);
 
-    // unbind(bind(a, b), b) должен дать вектор похожий на a
+    // unbind(bind(a, b), b) должен дать vector похожий on a
     const unbound = packedUnbind(&bound, &p_b);
 
-    // Проверяем сходство с оригиналом
+    // Проверяем сходство with оригиналом
     const sim = packedCosineSimilarity(&unbound, &p_a);
 
     // Для тритов без нулей сходство должно быть высоким
-    // Но из-за нулей в векторах может быть потеря информации
+    // Но из-за нулей in векторах может быть потеря информации
     std.debug.print("\nUnbind similarity: {d:.3}\n", .{sim});
     try std.testing.expect(sim > 0.5); // Должно быть значительное сходство
 }
 
 test "packed unbind retrieval" {
-    // Симуляция запроса к графу знаний
+    // Симуляция запроса to графу знаний
     // Факт: bind(Paris, bind(capital_of, France))
     // Запрос: unbind(fact, bind(Paris, capital_of)) → France
 
@@ -334,12 +334,12 @@ test "packed unbind retrieval" {
     const pred_obj = packedBind(&capital_of, &france);
     const fact = packedBind(&paris, &pred_obj);
 
-    // Запрос: что является столицей Франции?
+    // Запрос: what является столицей Франции?
     // unbind(fact, bind(capital_of, France)) → Paris
     const query_pattern = packedBind(&capital_of, &france);
     const result = packedUnbind(&fact, &query_pattern);
 
-    // Результат должен быть похож на Paris
+    // Результат должен быть похож on Paris
     const sim_paris = packedCosineSimilarity(&result, &paris);
     const sim_france = packedCosineSimilarity(&result, &france);
 
@@ -362,7 +362,7 @@ test "large vector bind correctness (1000 trits)" {
     const p_b = fromHybrid(&h_b);
     const packed_result = packedBind(&p_a, &p_b);
 
-    // Проверяем каждый 100-й трит для скорости
+    // Проверяем each 100-й трит for скорости
     var i: usize = 0;
     while (i < 1000) : (i += 100) {
         try std.testing.expectEqual(ref_result.unpacked_cache[i], packed_result.getTrit(i));
@@ -379,7 +379,7 @@ test "large vector bind correctness (5000 trits)" {
     const p_b = fromHybrid(&h_b);
     const packed_result = packedBind(&p_a, &p_b);
 
-    // Проверяем каждый 500-й трит
+    // Проверяем each 500-й трит
     var i: usize = 0;
     while (i < 5000) : (i += 500) {
         try std.testing.expectEqual(ref_result.unpacked_cache[i], packed_result.getTrit(i));
@@ -396,7 +396,7 @@ test "large vector bind correctness (10000 trits)" {
     const p_b = fromHybrid(&h_b);
     const packed_result = packedBind(&p_a, &p_b);
 
-    // Проверяем каждый 1000-й трит
+    // Проверяем each 1000-й трит
     var i: usize = 0;
     while (i < 10000) : (i += 1000) {
         try std.testing.expectEqual(ref_result.unpacked_cache[i], packed_result.getTrit(i));
@@ -421,7 +421,7 @@ test "large vector dot correctness (10000 trits)" {
 }
 
 test "benchmark Packed vs Unpacked" {
-    // PackedBigInt теперь поддерживает до 12000 тритов
+    // PackedBigInt теперь supports before 12000 тритов
     const sizes = [_]usize{ 100, 500, 1000, 2000, 5000, 10000 };
     const iterations = 1000;
 

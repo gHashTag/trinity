@@ -1,10 +1,10 @@
-//! GridWorld - Классическая среда для тестирования RL агентов
+//! GridWorld - Классическая среда for тестирования RL агентов
 //!
-//! Сетка NxN с:
+//! Сетка NxN with:
 //! - Стартовая позиция (0,0)
-//! - Цель (N-1, N-1) с наградой +10
+//! - Цель (N-1, N-1) with наградой +10
 //! - Стены (опционально)
-//! - Награда -0.1 за каждый шаг
+//! - Награда -0.1 за each шаг
 //!
 //! Действия: UP=0, RIGHT=1, DOWN=2, LEFT=3
 //!
@@ -38,7 +38,7 @@ pub const NUM_ACTIONS: usize = 4;
 // ТИПЫ
 // ═══════════════════════════════════════════════════════════════
 
-/// Позиция на сетке
+/// Позиция on сетке
 pub const Position = struct {
     x: usize,
     y: usize,
@@ -112,7 +112,7 @@ pub const GridWorld = struct {
         return self.getState();
     }
 
-    /// Получить текущее состояние (индекс)
+    /// Получить текущее состояние (index)
     pub fn getState(self: *const GridWorld) usize {
         return self.agent_pos.toIndex(self.width);
     }
@@ -149,14 +149,14 @@ pub const GridWorld = struct {
         var info: []const u8 = "step";
 
         if (self.walls[new_idx]) {
-            // Врезались в стену - остаёмся на месте
+            // Врезались in стену - остаёмся on месте
             reward = self.config.wall_reward;
             info = "wall";
         } else {
             self.agent_pos = new_pos;
         }
 
-        // Проверяем цель
+        // Проверяем goal
         var done = false;
         if (self.agent_pos.eql(self.goal_pos)) {
             reward = self.config.goal_reward;
@@ -188,7 +188,7 @@ pub const GridWorld = struct {
         }
     }
 
-    /// Визуализация в ASCII
+    /// Визуализация in ASCII
     pub fn render(self: *const GridWorld) void {
         std.debug.print("\n", .{});
         for (0..self.height) |y| {
@@ -211,7 +211,7 @@ pub const GridWorld = struct {
         std.debug.print("Steps: {d}, Reward: {d:.2}\n", .{ self.steps, self.total_reward });
     }
 
-    /// Получить оптимальное расстояние до цели (Manhattan)
+    /// Получить оптимальное расстояние before цели (Manhattan)
     pub fn distanceToGoal(self: *const GridWorld) usize {
         const dx = if (self.agent_pos.x > self.goal_pos.x)
             self.agent_pos.x - self.goal_pos.x
@@ -274,10 +274,10 @@ test "gridworld wall collision" {
     env.addWall(1, 0);
     _ = env.reset();
 
-    // Пытаемся пойти в стену
+    // Пытаемся пойти in стену
     const result = env.step(@intFromEnum(Action.RIGHT));
 
-    try std.testing.expectEqual(@as(usize, 0), result.next_state); // Остались на месте
+    try std.testing.expectEqual(@as(usize, 0), result.next_state); // Остались on месте
     try std.testing.expectEqual(@as(f64, -1.0), result.reward);
 }
 
@@ -290,5 +290,5 @@ test "gridworld boundary" {
     // Пытаемся выйти за границу
     const result = env.step(@intFromEnum(Action.UP));
 
-    try std.testing.expectEqual(@as(usize, 0), result.next_state); // Остались на месте
+    try std.testing.expectEqual(@as(usize, 0), result.next_state); // Остались on месте
 }

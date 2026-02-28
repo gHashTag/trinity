@@ -60,14 +60,14 @@ pub const ChromeLauncher = struct {
         // Registry деинициализируется снаружи
     }
 
-    /// Запуск Chrome с предварительной валидацией
+    /// Запуск Chrome with предварительной валидацией
     pub fn launchWithValidation(self: *Self) !ChromeProcess {
-        // Валидация перед запуском (если включено)
+        // Валидация перед запуском (if включено)
         if (self.config.validate_spec_before_launch and self.config.spec_path != null) {
             const source = self.allocator.alloc(u8, 2048) catch return ChromeLauncherError.OutOfMemory;
             defer self.allocator.free(source);
 
-            // Читаем .vibee файл
+            // Читаем .vibee file
             const spec_source = std.fs.cwd().readFileAlloc(self.allocator, self.config.spec_path.?, 4096) catch |err| {
                 _ = err;
                 return ChromeLauncherError.ValidationFailed;
@@ -80,7 +80,7 @@ pub const ChromeLauncher = struct {
                 .warning_as_error = false,
                 .cache_enabled = true,
                 .parallel_enabled = false, // Сначала последовательно
-                .timeout_ms = @min(self.config.timeout_ms / 2, 1000), // Меньше timeout для валидации
+                .timeout_ms = @min(self.config.timeout_ms / 2, 1000), // Меньше timeout for валидации
             };
 
             const validation_context = registry_mod.ValidationContext{
@@ -92,7 +92,7 @@ pub const ChromeLauncher = struct {
                 .symbol_table = null,
             };
 
-            // Запускаем все богатыри
+            // Запускаем all богатыри
             const plugin_count = self.registry.pluginCount();
             var errors_found: usize = 0;
 
@@ -126,7 +126,7 @@ pub const ChromeLauncher = struct {
                 return ChromeLauncherError.ValidationFailed;
             }
 
-            // Если валидация прошла - продолжаем
+            // Если validation прошла - продолжаем
             std.debug.print("✅ All {} bogatyrs passed validation\n", .{plugin_count});
         }
 
@@ -161,7 +161,7 @@ pub const ChromeLauncher = struct {
             return ChromeLauncherError.PortInUse;
         }
 
-        // Формируем аргументы для запуска
+        // Формируем arguments for запуска
         const allocator = self.allocator;
         var args = std.ArrayList([]const u8).init(allocator);
         defer {
@@ -238,7 +238,7 @@ pub const ChromeLauncher = struct {
             };
         }
 
-        // URL to navigate to (или пустой для чистой запуска)
+        // URL to navigate to (or пустой for чистой запуска)
         const url = std.os.getenv("VIBEE_LAUNCH_URL") orelse "about:blank";
 
         const url_buf = try std.fmt.allocPrint(allocator, "{s}", .{url}) catch return ChromeLauncherError.OutOfMemory;
@@ -251,7 +251,7 @@ pub const ChromeLauncher = struct {
             return ChromeLauncherError.LaunchFailed;
         };
 
-        // SPAWN процесс (запуск без блокировки)
+        // SPAWN process (startup без блокировки)
         try process.spawn() catch |err| {
             std.debug.print("❌ Failed to spawn Chrome: {}\n", .{err});
             return ChromeLauncherError.LaunchFailed;
@@ -259,7 +259,7 @@ pub const ChromeLauncher = struct {
 
         const pid = process.id;
 
-        // Проверяем что Chrome запустился (ждем когда порт станет занят)
+        // Проверяем what Chrome запустился (ждем when порт станет занят)
         var tries: u32 = 0;
         const max_tries = self.config.timeout_ms / 100; // 100мс интервал
 
@@ -311,7 +311,7 @@ pub const ChromeLauncher = struct {
         return ChromeLauncherError.ChromeNotFound;
     }
 
-    /// Создание временной директории для пользовательских данных
+    /// Создание временной директории for пользовательских данных
     fn createTempUserDataDir(self: *Self) ![]const u8 {
         const temp_dir = std.fs.getenv("TMPDIR") orelse "/tmp";
 
@@ -335,7 +335,7 @@ pub const ChromeLauncher = struct {
     pub fn terminate(self: *Self, chrome_process: *ChromeProcess) void {
         if (!chrome_process.is_running) return;
 
-        // Убиваем процесс
+        // Убиваем process
         if (std.process.kill(chrome_process.process_id)) |_| {
             chrome_process.is_running = false;
             std.debug.print("✓ Chrome terminated: pid={}\n", .{chrome_process.process_id});
@@ -401,7 +401,7 @@ test "port availability" {
     };
     defer registry.deinit();
 
-    // Проверяем что порт 9222 свободен (Chrome не запущен)
+    // Проверяем what порт 9222 свободен (Chrome не запущен)
     const config = ChromeLauncherConfig{};
     var launcher = try ChromeLauncher.init(allocator, config, &registry) catch |err| {
         _ = err;

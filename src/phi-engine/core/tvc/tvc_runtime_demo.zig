@@ -34,7 +34,7 @@ pub fn main() !void {
     std.debug.print("\n═══ [4] ТЕСТ BALANCED TERNARY ═══\n", .{});
     try testBalancedTernary(allocator);
 
-    // 5. Создание и выполнение модуля
+    // 5. Создание and execution модуля
     std.debug.print("\n═══ [5] ВЫПОЛНЕНИЕ TVC МОДУЛЯ ═══\n", .{});
     try testModuleExecution(&runtime, allocator);
 
@@ -265,7 +265,7 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
         if (ok) passed += 1 else failed += 1;
     }
 
-    // Тест возведения в степень
+    // Тест возведения in степень
     std.debug.print("  СТЕПЕНЬ:\n", .{});
     const pow_tests = [_]struct { base: i64, exp: u32, expected: i64 }{
         .{ .base = 2, .exp = 0, .expected = 1 },   // 2^0 = 1
@@ -294,7 +294,7 @@ fn testBalancedTernary(allocator: std.mem.Allocator) !void {
 }
 
 fn testModuleExecution(runtime: *tvc_runtime.TVCRuntime, allocator: std.mem.Allocator) !void {
-    // Создаём тестовый модуль
+    // Создаём тестовый module
     var module = tvc_ir.TVCModule.init(allocator, "test_runtime_module");
 
     // Добавляем функцию trinary_logic
@@ -344,7 +344,7 @@ fn testModuleExecution(runtime: *tvc_runtime.TVCRuntime, allocator: std.mem.Allo
     try func.blocks.put("entry", block);
     func.returns = .i64_trit;
 
-    // Загружаем и выполняем
+    // Загружаем and выполняем
     try runtime.loadModule(&module);
     std.debug.print("✓ Модуль загружен: {s}\n", .{module.name});
 

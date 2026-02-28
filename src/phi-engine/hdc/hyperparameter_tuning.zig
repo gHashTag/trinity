@@ -1,4 +1,4 @@
-//! Hyperparameter Tuning - Поиск оптимальных параметров для 100% win rate
+//! Hyperparameter Tuning - Поиск оптимальных параметров for 100% win rate
 //!
 //! Перебор:
 //! - learning_rate: [0.05, 0.1, 0.2, 0.3, 0.5]
@@ -123,7 +123,7 @@ pub fn runGridSearch(allocator: std.mem.Allocator) !void {
     const epsilon_decays = [_]f64{ 0.99, 0.995, 0.999 };
 
     const num_episodes: usize = 2000;
-    const num_runs: usize = 3; // Среднее по 3 запускам
+    const num_runs: usize = 3; // Среднее by 3 запускам
 
     print("Параметры поиска:\n", .{});
     print("  learning_rate: {any}\n", .{learning_rates});
@@ -225,7 +225,7 @@ pub fn runGridSearch(allocator: std.mem.Allocator) !void {
     print("ТОП-5 КОНФИГУРАЦИЙ:\n", .{});
     print("─────────────────────────────────────────────────────────────\n", .{});
 
-    // Сортируем по win_rate
+    // Сортируем by win_rate
     std.mem.sort(ExperimentResult, results.items, {}, struct {
         fn lessThan(_: void, a: ExperimentResult, b: ExperimentResult) bool {
             if (a.win_rate != b.win_rate) return a.win_rate > b.win_rate;

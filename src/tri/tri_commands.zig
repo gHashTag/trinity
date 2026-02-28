@@ -1816,11 +1816,11 @@ fn printReplTestHelp() void {
 // ═══════════════════════════════════════════════════════════════════════════════
 // CHEMISTRY COMMAND
 // ═══════════════════════════════════════════════════════════════════════════════
-
-pub fn runChemCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    const chemistry = @import("tri_chemistry.zig");
-    try chemistry.runChemCommand(allocator, args);
-}
+// TODO: Fix sacred module exports (AVOGADRO, etc.)
+// pub fn runChemCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+//     const chemistry = @import("tri_chemistry.zig");
+//     try chemistry.runChemCommand(allocator, args);
+// }
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // BUILTIN REFERENCE
