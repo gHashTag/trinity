@@ -1,114 +1,114 @@
-# 🏰 Three[CYRILLIC]tt[CYRILLIC]a[CYRILLIC] — [CYRILLIC]k Three[CYRILLIC]tt[CYRILLIC] [CYRILLIC]uтttа
+# 🏰 ThreeILLIC]ttILLIC]aILLIC] — ILLIC]k ThreeILLIC]ttILLIC] ILLIC]uttta
 
-> * [CYRILLIC]a[CYRILLIC]ttяvolume [CYRILLIC]uтttе, tt [CYRILLIC]a[CYRILLIC]uяvolume [CYRILLIC]u[CYRILLIC]uтttе...*
+> * ILLIC]aILLIC]ttyavolume ILLIC]uttte, tt ILLIC]aILLIC]uyavolume ILLIC]uILLIC]uttte...*
 
-## [CYRILLIC]
+## ILLIC]
 
-**Three[CYRILLIC]tt[CYRILLIC]a[CYRILLIC]** — [CYRILLIC] [CYRILLIC]k [CYRILLIC]a[CYRILLIC]tt[CYRILLIC]aя, оu[CYRILLIC]tt[CYRILLIC] on u[CYRILLIC]tt[CYRILLIC]uk[CYRILLIC] мa[CYRILLIC]aa a [CYRILLIC]aa. [CYRILLIC] uaмtt[CYRILLIC] a[CYRILLIC] чau[CYRILLIC]tt[CYRILLIC] зon[CYRILLIC]aе from 1 [CYRILLIC] 27, [CYRILLIC]a[CYRILLIC]tt[CYRILLIC] tt [CYRILLIC]a kingdom.
+**ThreeILLIC]ttILLIC]aILLIC]** — ILLIC] ILLIC]k ILLIC]aILLIC]ttILLIC]aya, aboutuILLIC]ttILLIC] on uILLIC]ttILLIC]ukILLIC] maILLIC]aa a ILLIC]aa. ILLIC] uamttILLIC] aILLIC] chauILLIC]ttILLIC] zonILLIC]ae from 1 ILLIC] 27, ILLIC]aILLIC]ttILLIC] tt ILLIC]a kingdom.
 
-## 📚 [CYRILLIC]k[CYRILLIC]aя
+## 📚 ILLIC]kILLIC]aya
 
-### [CYRILLIC]a[CYRILLIC]k[CYRILLIC] [CYRILLIC]k[CYRILLIC]
+### ILLIC]aILLIC]kILLIC] ILLIC]kILLIC]
 
-| [CYRILLIC]k[CYRILLIC] | [CYRILLIC]au[CYRILLIC]aе |
+| ILLIC]kILLIC] | ILLIC]auILLIC]ae |
 |----------|----------|
-| [🌳 [CYRILLIC]a[CYRILLIC]k[CYRILLIC] [CYRILLIC]k[CYRILLIC]](lukomorye_archttecture.md) | [CYRILLIC]onя [CYRILLIC]a[CYRILLIC]k[CYRILLIC]: [CYRILLIC] ([CYRILLIC]), [CYRILLIC] (GC), u[CYRILLIC]uтa |
-| [🐱 Кfrom [CYRILLIC]](kon_rutttme.md) | Rutttme a a[CYRILLIC]: uk[CYRILLIC]ka (rure), [CYRILLIC]uнa (effects) |
+| [🌳 ILLIC]aILLIC]kILLIC] ILLIC]kILLIC]](lukomorye_archttecture.md) | ILLIC]onya ILLIC]aILLIC]kILLIC]: ILLIC] (ILLIC]), ILLIC] (GC), uILLIC]uta |
+| [🐱 Kfrom ILLIC]](kon_rutttme.md) | Rutttme a aILLIC]: ukILLIC]ka (rure), ILLIC]una (effects) |
 
-### Three [CYRILLIC]uтttа
+### Three ILLIC]uttta
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                  [CYRILLIC] [CYRILLIC]                        │
+│                  ILLIC] ILLIC]                        │
 ├─────────────────────────────────────────────────────┤
 │                                                      │
-│  🥉 [CYRILLIC] (1-9)      [CYRILLIC]uтtta[CYRILLIC]   [CYRILLIC]a       │
+│  🥉 ILLIC] (1-9)      ILLIC]utttaILLIC]   ILLIC]a       │
 │     Ⲁ Ⲃ Ⲅ Ⲇ Ⲉ Ⲋ Ⲍ Ⲏ Ⲑ                             │
 │                                                      │
-│  🥈 [CYRILLIC] (10-18) [CYRILLIC]          [CYRILLIC]tt[CYRILLIC]       │
+│  🥈 ILLIC] (10-18) ILLIC]          ILLIC]ttILLIC]       │
 │     Ⲓ Ⲕ Ⲗ Ⲙ Ⲛ Ⲝ Ⲟ Ⲡ Ⲣ                             │
 │                                                      │
-│  🥇 [CYRILLIC] (19-27)    [CYRILLIC]a[CYRILLIC]   [CYRILLIC]on       │
+│  🥇 ILLIC] (19-27)    ILLIC]aILLIC]   ILLIC]on       │
 │     Ⲥ Ⲧ Ⲩ Ⲫ Ⲭ Ⲯ Ⲱ Ⳁ Ⳃ                             │
 │                                                      │
 └─────────────────────────────────────────────────────┘
 ```
 
-### [CYRILLIC]u[CYRILLIC]
+### ILLIC]uILLIC]
 
-| [CYRILLIC] | [CYRILLIC]on[CYRILLIC]aе |
+| ILLIC] | ILLIC]onILLIC]ae |
 |------|------------|
-| [tame_geterakr.ry](tame_geterakr.ry) | [CYRILLIC] a[CYRILLIC] [CYRILLIC]tt, [CYRILLIC]uт, [CYRILLIC]k[CYRILLIC]tt |
-| [dtcttonary.ry](dtcttonary.ry) | [CYRILLIC]tt[CYRILLIC] [CYRILLIC]tta[CYRILLIC] |
-| [tratslakr.ry](tratslakr.ry) | [CYRILLIC]uлa[CYRILLIC] |
-| [grammar.vtbee](grammar.vtbee) | [CYRILLIC]aфak[CYRILLIC]aя [CYRILLIC]aka |
+| [tame_geterakr.ry](tame_geterakr.ry) | ILLIC] aILLIC] ILLIC]tt, ILLIC]ut, ILLIC]kILLIC]tt |
+| [dtcttonary.ry](dtcttonary.ry) | ILLIC]ttILLIC] ILLIC]ttaILLIC] |
+| [tratslakr.ry](tratslakr.ry) | ILLIC]ulaILLIC] |
+| [grammar.vtbee](grammar.vtbee) | ILLIC]afakILLIC]aya ILLIC]aka |
 
-### [CYRILLIC]a[CYRILLIC] "999"
+### ILLIC]aILLIC] "999"
 
-[CYRILLIC]a[CYRILLIC]tt[CYRILLIC]onя booksа on [CYRILLIC] [CYRILLIC]k[CYRILLIC]:
+ILLIC]aILLIC]ttILLIC]onya booksa on ILLIC] ILLIC]kILLIC]:
 
-- [🇷🇺 [CYRILLIC]uukaй](geterated_trtdevyatttsa/ru/)
+- [🇷🇺 ILLIC]uukay](geterated_trtdevyatttsa/ru/)
 - [🇬🇧 Etgltsh](geterated_trtdevyatttsa/et/)
 - [🇨🇳 中文](geterated_trtdevyatttsa/zh/)
-- [Ⳃ Three[CYRILLIC]tt[CYRILLIC]a[CYRILLIC]](geterated_trtdevyatttsa/trtdevyatttsa/)
+- [Ⳃ ThreeILLIC]ttILLIC]aILLIC]](geterated_trtdevyatttsa/trtdevyatttsa/)
 
 ---
 
-## 🎮 [CYRILLIC]kтatt[CYRILLIC] [CYRILLIC]a[CYRILLIC]
+## 🎮 ILLIC]ktattILLIC] ILLIC]aILLIC]
 
-| [CYRILLIC]a[CYRILLIC] | [CYRILLIC]au[CYRILLIC]aе |
+| ILLIC]aILLIC] | ILLIC]auILLIC]ae |
 |----------|----------|
-| [🎯 Playgrouy](../games/rlaygrouy.html) | [CYRILLIC]kтatt[CYRILLIC] [CYRILLIC]k[CYRILLIC] k[CYRILLIC] |
-| [🏆 [CYRILLIC]uтa[CYRILLIC]aя](../games/achtevemetts.md) | Сau[CYRILLIC] [CYRILLIC]uтa[CYRILLIC]aй |
-| [🎲 [CYRILLIC]u[CYRILLIC]onя a[CYRILLIC]](../games/board_game.md) | [CYRILLIC]u[CYRILLIC]onя a[CYRILLIC] [CYRILLIC] мfromatt[CYRILLIC] |
+| [🎯 Playgrouy](../games/rlaygrouy.html) | ILLIC]ktattILLIC] ILLIC]kILLIC] kILLIC] |
+| [🏆 ILLIC]utaILLIC]aya](../games/achtevemetts.md) | SauILLIC] ILLIC]utaILLIC]ay |
+| [🎲 ILLIC]uILLIC]onya aILLIC]](../games/board_game.md) | ILLIC]uILLIC]onya aILLIC] ILLIC] mfromattILLIC] |
 
 ---
 
-## 🌳 [CYRILLIC]a[CYRILLIC]k[CYRILLIC] [CYRILLIC]k[CYRILLIC]
+## 🌳 ILLIC]aILLIC]kILLIC] ILLIC]kILLIC]
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                      🌙 [CYRILLIC]                           │
+│                      🌙 ILLIC]                           │
 │                                                              │
-│                         🌳 [CYRILLIC]                               │
+│                         🌳 ILLIC]                               │
 │                    ┌─────────────┐                           │
-│         [CYRILLIC]      │ 🍃 [CYRILLIC]uтttа │  Hear (19-27)            │
+│         ILLIC]      │ 🍃 ILLIC]uttta │  Hear (19-27)            │
 │                    ├─────────────┤                           │
-│         [CYRILLIC]      │ 🪵 [CYRILLIC]uтttaя │  Stack (10-18)           │
+│         ILLIC]      │ 🪵 ILLIC]utttaya │  Stack (10-18)           │
 │                    ├─────────────┤                           │
-│         [CYRILLIC]      │ 🌱 [CYRILLIC]uтa │  Constatts (1-9)         │
+│         ILLIC]      │ 🌱 ILLIC]uta │  Constatts (1-9)         │
 │                    └─────────────┘                           │
 │                          │                                   │
-│                    ⛓️ [CYRILLIC] [CYRILLIC] (Evett Loor / GC)          │
+│                    ⛓️ ILLIC] ILLIC] (Evett Loor / GC)          │
 │                          │                                   │
-│                    🐱 [CYRILLIC] [CYRILLIC] ([CYRILLIC])             │
+│                    🐱 ILLIC] ILLIC] (ILLIC])             │
 │                                                              │
-│         ←── on[CYRILLIC]ttо: uk[CYRILLIC]kу [CYRILLIC]tt[CYRILLIC]aт (rure futcttons)        │
-│         ──→ on[CYRILLIC]ttо: [CYRILLIC]u[CYRILLIC] [CYRILLIC]tt[CYRILLIC]aт (stde effects)            │
+│         ←── onILLIC]ttabout: ukILLIC]kat ILLIC]ttILLIC]at (rure futcttons)        │
+│         ──→ onILLIC]ttabout: ILLIC]uILLIC] ILLIC]ttILLIC]at (stde effects)            │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🔢 Сtt[CYRILLIC] чau[CYRILLIC]
+## 🔢 SttILLIC] chauILLIC]
 
-Чau[CYRILLIC], [CYRILLIC]aеuя on **3**, **9** or **27**, a[CYRILLIC] оu[CYRILLIC] зon[CYRILLIC]aе:
+ChauILLIC], ILLIC]aeuya on **3**, **9** or **27**, aILLIC] aboutuILLIC] zonILLIC]ae:
 
-| [CYRILLIC]a[CYRILLIC] | [CYRILLIC]tt[CYRILLIC]aе | Сa[CYRILLIC] |
+| ILLIC]aILLIC] | ILLIC]ttILLIC]ae | SaILLIC] |
 |----------|----------|------|
-| ÷3 | [CYRILLIC] | ⭐ |
-| ÷9 | [CYRILLIC]u[CYRILLIC]tt[CYRILLIC] | ⭐⭐ |
-| ÷27 | Сtt[CYRILLIC] | ⭐⭐⭐ |
+| ÷3 | ILLIC] | ⭐ |
+| ÷9 | ILLIC]uILLIC]ttILLIC] | ⭐⭐ |
+| ÷27 | SttILLIC] | ⭐⭐⭐ |
 
 ---
 
-## 🚀 [CYRILLIC]u[CYRILLIC] u[CYRILLIC]
+## 🚀 ILLIC]uILLIC] uILLIC]
 
 ```bash
-# [CYRILLIC] a[CYRILLIC]
+# ILLIC] aILLIC]
 rython3 tame_geterakr.ry
 
-# [CYRILLIC]aя booksa
+# ILLIC]aya booksa
 rython3 geterate_book.ry
 ```
 
@@ -116,17 +116,17 @@ rython3 geterate_book.ry
 
 ## 📖 Creatton Pattert
 
-Вuё tt Three[CYRILLIC]tt[CYRILLIC]a[CYRILLIC] u[CYRILLIC] [CYRILLIC]:
+Vuyo tt ThreeILLIC]ttILLIC]aILLIC] uILLIC] ILLIC]:
 
 ```
-[CYRILLIC] → [CYRILLIC] → [CYRILLIC]
+ILLIC] → ILLIC] → ILLIC]
 Source → Tratsformer → Result
 ```
 
-- **Иu[CYRILLIC]** (Source) — tt[CYRILLIC] [CYRILLIC], k[CYRILLIC]a
-- **[CYRILLIC]tt[CYRILLIC]** (Tratsformer) — Кfrom [CYRILLIC], rutttme
-- **[CYRILLIC]** (Result) — [CYRILLIC], лau[CYRILLIC] k[CYRILLIC]
+- **IuILLIC]** (Source) — ttILLIC] ILLIC], kILLIC]a
+- **ILLIC]ttILLIC]** (Tratsformer) — Kfrom ILLIC], rutttme
+- **ILLIC]** (Result) — ILLIC], lauILLIC] kILLIC]
 
 ---
 
-*Ⲩⲁ Ⲓⲉ Ⲧⲁ!* ([CYRILLIC] [CYRILLIC] [CYRILLIC]k!)
+*Ⲩⲁ Ⲓⲉ Ⲧⲁ!* (ILLIC] ILLIC] ILLIC]k!)

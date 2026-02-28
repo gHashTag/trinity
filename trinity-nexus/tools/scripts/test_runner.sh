@@ -26,7 +26,7 @@ find "$CODE_DIR" -name "*.999" -type f | sort | while read file; do
     filename=$(basename "$file")
     
     # Test 1: Has generation marker
-    if grep -q "Сгенерировано из:" "$file"; then
+    if grep -q "Sgenerandraboutinanabout from:" "$file"; then
         marker="✅"
     else
         marker="❌"

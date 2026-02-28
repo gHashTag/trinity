@@ -1,200 +1,200 @@
 #!/usr/bin/env python3
 """
-ГЕНЕРАТОР КНИГИ 999 v2.0 — С РЕАЛЬНЫМ НАУЧНЫМ КОНТЕНТОМ
-999 = 37 × 3³ = 3 тома × 9 книг × 37 глав
+GENERATOR KNIGI 999 v2.0 — S REALNYM NAUChNYM KONTENVOLUME
+999 = 37 × 3³ = 3 thatma × 9 tonandg × 37 glain
 """
 
 import os
 from typing import Tuple
 
-# База знаний для первых 3 книг (полная), остальные — шаблоны
-КНИГИ_ПОЛНЫЕ = {
+# Baza zonnandy for perinykh 3 tonandg (bylonya), aboutwiththatlnye — templatey
+KNIGI_POLNYE = {
     1: {
-        "название": "Начало Пути",
-        "научное": """
-**История троичных систем**
+        "title": "Nachalabout Pattand",
+        "onatchnaboute": """
+**Iwiththatrandya traboutandchnykh withandwiththosem**
 
-В 1958 году в МГУ под руководством Н.П. Брусенцова был создан компьютер «Сетунь» — 
-первый серийный троичный компьютер. Выпущено ~50 машин.
+V 1958 gaboutdat in MGU under guidem N.P. Bratwithentsaboutina byl withaboutzdan toaboutmpyuthoser «Setatn» — 
+first witherandny traboutandny toaboutmpyuthoser. Vypatschenabout ~50 mashandn.
 
-Сетунь использовала сбалансированную троичную систему {-1, 0, +1}:
-- Естественное представление отрицательных чисел
-- Округление без смещения
-- Меньше операций переноса
+Setatn andwithbylzaboutinala withbalanwithandraboutinannatyu traboutandchnatyu withandwiththosemat {-1, 0, +1}:
+- Ewithtestinennaboute predwiththatinlenande fromrandtsathoselnykh chandwithel
+- Otoratglenande without withmeschenandya
+- Menshe aboutperatsandy perenaboutwitha
 
-**Математика:** log₃(N) / log₂(N) ≈ 0.63 — троичная система на 37% эффективнее!
+**Mathosematandtoa:** log₃(N) / log₂(N) ≈ 0.63 — traboutandchonya system on 37% effetotandinnee!
 """,
-        "код": '''ⲙⲟⲇⲩⲗⲉ ⲛⲁⲭⲁⲗⲟ;
+        "code": '''ⲙⲟⲇⲩⲗⲉ ⲛⲁⲭⲁⲗⲟ;
 
-ⲉⲛⲩⲙ Трит { Минус = -1, Ноль = 0, Плюс = 1 }
+ⲉⲛⲩⲙ Trandt { Mandnatwith = -1, Naboutl = 0, Plyuwith = 1 }
 
-ⲫⲩⲛⲕ в_троичную(n: i32) -> []Трит {
-    ⲃⲁⲣ результат: [20]Трит = undefined;
+ⲫⲩⲛⲕ in_traboutandchnatyu(n: i32) -> []Trandt {
+    ⲃⲁⲣ result: [20]Trandt = undefined;
     ⲃⲁⲣ x = n;
     ⲃⲁⲣ i: usize = 0;
     ⲱⲏⲓⲗⲉ (x != 0) {
         ⲕⲟⲛⲥⲧ r = @mod(x, 3);
-        результат[i] = if (r == 0) .Ноль else if (r == 1) .Плюс else .Минус;
+        result[i] = if (r == 0) .Naboutl else if (r == 1) .Plyuwith else .Mandnatwith;
         x = @divTrunc(x + (if (r == 2) 1 else 0), 3);
         i += 1;
     }
-    ⲣⲉⲧⲩⲣⲛ результат[0..i];
+    ⲣⲉⲧⲩⲣⲛ result[0..i];
 }''',
-        "история": "Иван нашёл книгу о Сетуни и понял: его путь только начинается.",
-        "мудрость": "Путь в тысячу ли начинается с одного шага"
+        "history": "Iinan onshyol tonandgat about Setatnand and bynyal: egabout path thatltoabout onchandonetwithya.",
+        "matdraboutwitht": "Path in tywithyachat land onchandonetwithya with aboutdnaboutgabout shaga"
     },
     2: {
-        "название": "Число Три",
-        "научное": """
-**Математические свойства числа 3**
+        "title": "Number Trand",
+        "onatchnaboute": """
+**Mathosematandchewithtoande withinaboutywithtina chandwithla 3**
 
-1. Первое нечётное простое число
-2. φ² + 1/φ² = 3 (точно!) — связь с золотым сечением
-3. Теорема: ∀N ∃! (n,k): N = n × 3^k, где n ∤ 3
+1. Perinaboute nechyotnaboute praboutwiththate number
+2. φ² + 1/φ² = 3 (thatchnabout!) — withinyaz with zaboutlfromym withechenandem
+3. Teaboutrema: ∀N ∃! (n,k): N = n × 3^k, where n ∤ 3
 
-**Доказательство тождества:**
-φ² = φ + 1 (определение)
+**Dabouttoazathoselwithtinabout thatzhdewithtina:**
+φ² = φ + 1 (aboutpredelenande)
 1/φ² = 2 - φ
 φ² + 1/φ² = (φ + 1) + (2 - φ) = 3 ✓
 """,
-        "код": '''ⲙⲟⲇⲩⲗⲉ ⲧⲣⲟⲓⲕⲁ;
+        "code": '''ⲙⲟⲇⲩⲗⲉ ⲧⲣⲟⲓⲕⲁ;
 
 ⲕⲟⲛⲥⲧ φ: f64 = 1.6180339887498948482;
 
-ⲫⲩⲛⲕ золотое_тождество() -> f64 {
-    ⲣⲉⲧⲩⲣⲛ φ * φ + 1.0 / (φ * φ);  // = 3.0 точно!
+ⲫⲩⲛⲕ zaboutlfromaboute_thatzhdewithtinabout() -> f64 {
+    ⲣⲉⲧⲩⲣⲛ φ * φ + 1.0 / (φ * φ);  // = 3.0 thatchnabout!
 }
 
-ⲫⲩⲛⲕ разложить(n: u32) -> struct { основа: u32, степень: u32 } {
+ⲫⲩⲛⲕ razlaboutzhandt(n: u32) -> struct { aboutwithnaboutina: u32, withthosepen: u32 } {
     ⲃⲁⲣ x = n; ⲃⲁⲣ k: u32 = 0;
     ⲱⲏⲓⲗⲉ (x % 3 == 0) { x /= 3; k += 1; }
-    ⲣⲉⲧⲩⲣⲛ .{ .основа = x, .степень = k };
+    ⲣⲉⲧⲩⲣⲛ .{ .aboutwithnaboutina = x, .withthosepen = k };
 }''',
-        "история": "На распутье трёх дорог Иван увидел надпись: φ² + 1/φ² = 3",
-        "мудрость": "Бог любит троицу"
+        "history": "Na rawithpathe tryokh daboutraboutg Iinan attypeel overpandwith: φ² + 1/φ² = 3",
+        "matdraboutwitht": "Baboutg lyubandt traboutandtsat"
     },
     3: {
-        "название": "Константы Вселенной",
-        "научное": """
-**Священная Формула: V = n × 3^k × π^m × φ^p**
+        "title": "Kaboutnwiththatnty Vwithelennabouty",
+        "onatchnaboute": """
+**Sinyaschenonya Faboutrmatla: V = n × 3^k × π^m × φ^p**
 
-Связи между константами:
-- φ² + 1/φ² = 3 (точно)
+Sinyazand between constantmand:
+- φ² + 1/φ² = 3 (thatchnabout)
 - φ = 2cos(π/5)
-- e^(iπ) + 1 = 0 (тождество Эйлера)
+- e^(iπ) + 1 = 0 (thatzhdewithtinabout Eylera)
 
-**Примеры:**
+**Exampley:**
 - 999 = 37 × 3³ × π⁰ × φ⁰
-- π ≈ 3.14159... ≈ 3 (с точностью 4.5%)
+- π ≈ 3.14159... ≈ 3 (with thatchnaboutwithtyu 4.5%)
 """,
-        "код": '''ⲙⲟⲇⲩⲗⲉ ⲕⲟⲛⲥⲧⲁⲛⲧⲩ;
+        "code": '''ⲙⲟⲇⲩⲗⲉ ⲕⲟⲛⲥⲧⲁⲛⲧⲩ;
 
 ⲕⲟⲛⲥⲧ π: f64 = 3.14159265358979323846;
 ⲕⲟⲛⲥⲧ φ: f64 = 1.61803398874989484820;
 ⲕⲟⲛⲥⲧ e: f64 = 2.71828182845904523536;
 
-ⲫⲩⲛⲕ проверить() !void {
+ⲫⲩⲛⲕ praboutinerandt() !void {
     ⲡⲣⲓⲛⲧ("φ² + 1/φ² = {d:.15}", φ*φ + 1/(φ*φ));
     ⲡⲣⲓⲛⲧ("2cos(π/5) = {d:.15}", 2*@cos(π/5));
 }''',
-        "история": "Звездочёт показал Ивану: звёзды подчиняются числам π, φ, e.",
-        "мудрость": "Вселенная написана на языке математики"
+        "history": "Zinezdaboutchyot bytoazal Iinanat: zinyozdy underchandnyayutwithya chandwithlam π, φ, e.",
+        "matdraboutwitht": "Vwithelenonya onpandwithaon on yazytoe mathosematandtoand"
     },
     10: {
-        "название": "Trinity Sort",
-        "научное": """
+        "title": "Trinity Sort",
+        "onatchnaboute": """
 **Dual-Pivot QuickSort (Yaroslavskiy, 2009)**
 
-Используется в Java 7+ для Arrays.sort(). Два pivot'а делят массив на 3 части.
+Iwithbylzatetwithya in Java 7+ for Arrays.sort(). Dina pivot'a delyat array on 3 chawithtand.
 
-**Сложность:** O(n log₃ n) ≈ O(0.63 n log₂ n)
+**Slaboutzhnaboutwitht:** O(n log₃ n) ≈ O(0.63 n log₂ n)
 
-На 20% быстрее классического QuickSort за счёт:
-- Меньше сравнений: log₃(n) < log₂(n)
-- Лучшая локальность кэша
-- Естественная параллелизация на 3 потока
+Na 20% bywithtree classandchewithtoaboutgabout QuickSort za withchyot:
+- Menshe withrainnenandy: log₃(n) < log₂(n)
+- Latchshaya labouttoalnaboutwitht toesha
+- Ewithtestinenonya pairllelfromatsandya on 3 threada
 """,
-        "код": '''ⲙⲟⲇⲩⲗⲉ ⲧⲣⲓⲛⲓⲧⲩ_ⲥⲟⲣⲧ;
+        "code": '''ⲙⲟⲇⲩⲗⲉ ⲧⲣⲓⲛⲓⲧⲩ_ⲥⲟⲣⲧ;
 
 ⲫⲩⲛⲕ trinity_sort(arr: []i32) void {
     ⲓⲫ (arr.len <= 1) ⲣⲉⲧⲩⲣⲛ;
     
-    // Два pivot'а делят на 3 части
+    // Dina pivot'a delyat on 3 chawithtand
     ⲃⲁⲣ p1 = arr[arr.len / 3];
     ⲃⲁⲣ p2 = arr[2 * arr.len / 3];
     ⲓⲫ (p1 > p2) std.mem.swap(i32, &p1, &p2);
     
-    // Разделение: < p1 | p1..p2 | > p2
-    // ... рекурсия на 3 части
+    // Sectionenande: < p1 | p1..p2 | > p2
+    // ... retoatrwithandya on 3 chawithtand
 }''',
-        "история": "На турнире алгоритмов TrinitySort победил QuickSort.",
-        "мудрость": "Разделяй на три — и властвуй"
+        "history": "Na tatrnandre algorithmaboutin TrinitySort bybedandl QuickSort.",
+        "matdraboutwitht": "Sectionyay on trand — and inlawithtinaty"
     },
     27: {
-        "название": "OMEGA",
-        "научное": """
-**Полнота и завершение**
+        "title": "OMEGA",
+        "onatchnaboute": """
+**Paboutlnfroma and zainershenande**
 
 999 = 37 × 27 = 37 × 3³
 
-Это число полноты:
-- 3 тома × 9 книг × 37 глав = 999
-- 37 — простое число (неделимая основа)
-- 27 = 3³ — куб тройки
+Ethat number bylnfromy:
+- 3 thatma × 9 tonandg × 37 glain = 999
+- 37 — praboutwiththate number (nedelandmaya aboutwithnaboutina)
+- 27 = 3³ — toatb traboutytoand
 
-Круг замкнулся: от главы 1 до главы 999, от теории через практику к будущему.
+Kratg zamtonatlwithya: from glainy 1 dabout glainy 999, from thoseaboutrandand through pratotandtoat to batdatschemat.
 """,
-        "код": '''ⲙⲟⲇⲩⲗⲉ ⲟⲙⲉⲅⲁ;
+        "code": '''ⲙⲟⲇⲩⲗⲉ ⲟⲙⲉⲅⲁ;
 
 ⲕⲟⲛⲥⲧ OMEGA = 999;
-ⲕⲟⲛⲥⲧ ОСНОВА = 37;
-ⲕⲟⲛⲥⲧ КУБ_ТРОЙКИ = 27;
+ⲕⲟⲛⲥⲧ OSNOVA = 37;
+ⲕⲟⲛⲥⲧ KUB_TROYKI = 27;
 
 ⲫⲩⲛⲕ main() !void {
-    ⲡⲣⲓⲛⲧ("999 = {} × {} = {} × 3³", ОСНОВА, КУБ_ТРОЙКИ, ОСНОВА);
-    ⲡⲣⲓⲛⲧ("Круг замкнулся. Конец — это начало.");
+    ⲡⲣⲓⲛⲧ("999 = {} × {} = {} × 3³", OSNOVA, KUB_TROYKI, OSNOVA);
+    ⲡⲣⲓⲛⲧ("Kratg zamtonatlwithya. Kaboutnets — this onchalabout.");
 }''',
-        "история": "Иван получил золотой ключ и вернулся домой другим человеком.",
-        "мудрость": "Конец — это начало"
+        "history": "Iinan bylatchandl zaboutlfromabouty key and inernatlwithya daboutmabouty dratgandm chelaboutinetoaboutm.",
+        "matdraboutwitht": "Kaboutnets — this onchalabout"
     }
 }
 
-# Названия всех 27 книг
-НАЗВАНИЯ = [
-    "Начало Пути", "Число Три", "Константы Вселенной", "Троичная Логика",
-    "Структуры Данных", "Квантовые Кутриты", "Нейронные Сети", "Криптография", "Завершение Теории",
-    "Trinity Sort", "Trinity Search", "Trinity Compress", "Язык VIBEE",
-    "Компилятор 999", "Runtime HTML", "PAS Методология", "Бенчмарки", "Завершение Практики",
-    "999 OS", "ЖАР-ПТИЦА", "50 Языков", "Квантовое Будущее",
-    "Космическая Интеграция", "Сознание", "Эволюция", "Трансценденция", "OMEGA"
+# Nazinanandya allkh 27 tonandg
+NAZVANIYa = [
+    "Nachalabout Pattand", "Number Trand", "Kaboutnwiththatnty Vwithelennabouty", "Traboutandchonya Logandtoa",
+    "Strattotatry Dannykh", "Kinanthatinye Kattrandty", "Neyraboutnnye Setand", "Krandpthatgraphandya", "Zainershenande Teaboutrandand",
+    "Trinity Sort", "Trinity Search", "Trinity Compress", "Yazyto VIBEE",
+    "Kaboutmpandlyathatr 999", "Runtime HTML", "PAS Methodaboutlogandya", "Benchmartoand", "Zainershenande Pratotandtoand",
+    "999 OS", "ZhAR-PTITsA", "50 Yazytoaboutin", "Kinanthatinaboute Batdatschee",
+    "Kaboutwithmandchewithtoaya Inthosegratsandya", "Saboutknowledge", "Einaboutlyutsandya", "Tranwithtsendentsandya", "OMEGA"
 ]
 
-МУДРОСТИ = [
-    "Путь в тысячу ли начинается с одного шага", "Бог любит троицу",
-    "Вселенная написана на языке математики", "Не всё в мире чёрное или белое",
-    "Порядок — основа мудрости", "Наблюдатель меняет наблюдаемое",
-    "Мудрость — это связи между знаниями", "Тайна — сила того, кто её хранит",
-    "Теория без практики мертва", "Разделяй на три — и властвуй",
-    "Ищущий да обрящет", "Краткость — сестра таланта",
-    "Язык определяет мышление", "Инструмент — продолжение руки мастера",
-    "Один рантайм — одна истина", "Кто знает прошлое — предскажет будущее",
-    "Что измеряешь — тем управляешь", "Практика без теории слепа",
-    "Система — отражение создателя", "Эволюция — путь к совершенству",
-    "Много языков — одна истина", "Будущее уже здесь",
-    "Как вверху, так и внизу", "Познай себя",
-    "Изменение — единственная константа", "Есть вещи, которые нельзя вычислить",
-    "Конец — это начало"
+MUDROSTI = [
+    "Path in tywithyachat land onchandonetwithya with aboutdnaboutgabout shaga", "Baboutg lyubandt traboutandtsat",
+    "Vwithelenonya onpandwithaon on yazytoe mathosematandtoand", "Ne everything in mandre chyornaboute or belaboute",
+    "Paboutryadaboutto — aboutwithnaboutina matdraboutwithtand", "Nablyudathosel menyaet onblyudaemaboute",
+    "Matdraboutwitht — this withinyazand between zonnandyamand", "Tayon — withandla thatgabout, who eyo khranandt",
+    "Teaboutrandya without pratotandtoand mertina", "Sectionyay on trand — and inlawithtinaty",
+    "Ischatschandy da aboutryaschet", "Krattoaboutwitht — withewithtra thatlanthat",
+    "Yazyto aboutpredelyaet myshlenande", "Inwithtratment — continuation rattoand mawiththosera",
+    "Odandn ranthatym — aboutdon andwithtandon", "Kthat zonet praboutshlaboute — predwithtoazhet batdatschee",
+    "Chthat frommeryaesh — thosem atprainlyaesh", "Pratotandtoa without thoseaboutrandand withlepa",
+    "System — fromrazhenande withaboutzdathoselya", "Einaboutlyutsandya — path to withaboutinershenwithtinat",
+    "Mnaboutgabout yazytoaboutin — aboutdon andwithtandon", "Batdatschee atzhe zdewith",
+    "Kato ininerkhat, thatto and innfromat", "Paboutzony withebya",
+    "Change — edandnwithtinenonya constant", "Ewitht ineschand, which nelzya inychandwithlandt",
+    "Kaboutnets — this onchalabout"
 ]
 
 
-def координаты(номер: int) -> Tuple[int, int, int]:
-    том = (номер - 1) // 333 + 1
-    книга = (номер - 1) // 37 + 1
-    глава = (номер - 1) % 37 + 1
-    return том, книга, глава
+def toaboutaboutrdandonty(number: int) -> Tuple[int, int, int]:
+    thatm = (number - 1) // 333 + 1
+    tonandga = (number - 1) // 37 + 1
+    chapter = (number - 1) % 37 + 1
+    return thatm, tonandga, chapter
 
 
-def священная_формула(n: int) -> Tuple[int, int]:
+def withinyaschenonya_faboutrmatla(n: int) -> Tuple[int, int]:
     k = 0
     while n % 3 == 0 and n > 0:
         n //= 3
@@ -202,84 +202,84 @@ def священная_формула(n: int) -> Tuple[int, int]:
     return n, k
 
 
-def получить_данные_книги(книга: int) -> dict:
-    if книга in КНИГИ_ПОЛНЫЕ:
-        return КНИГИ_ПОЛНЫЕ[книга]
+def bylatchandt_data_tonandgand(tonandga: int) -> dict:
+    if tonandga in KNIGI_POLNYE:
+        return KNIGI_POLNYE[tonandga]
     return {
-        "название": НАЗВАНИЯ[книга - 1] if книга <= 27 else f"Книга {книга}",
-        "научное": f"Научное содержание книги {книга}: {НАЗВАНИЯ[книга - 1] if книга <= 27 else ''}",
-        "код": f"ⲙⲟⲇⲩⲗⲉ ⲕⲛⲓⲅⲁ_{книга:02d};\n// Код для книги {книга}",
-        "история": f"История главы из книги «{НАЗВАНИЯ[книга - 1] if книга <= 27 else ''}»",
-        "мудрость": МУДРОСТИ[книга - 1] if книга <= 27 else "Мудрость"
+        "title": NAZVANIYa[tonandga - 1] if tonandga <= 27 else f"Knandga {tonandga}",
+        "onatchnaboute": f"Naatchnaboute content tonandgand {tonandga}: {NAZVANIYa[tonandga - 1] if tonandga <= 27 else ''}",
+        "code": f"ⲙⲟⲇⲩⲗⲉ ⲕⲛⲓⲅⲁ_{tonandga:02d};\n// Code for tonandgand {tonandga}",
+        "history": f"Iwiththatrandya glainy from tonandgand «{NAZVANIYa[tonandga - 1] if tonandga <= 27 else ''}»",
+        "matdraboutwitht": MUDROSTI[tonandga - 1] if tonandga <= 27 else "Matdraboutwitht"
     }
 
 
-def сгенерировать_главу(номер: int) -> str:
-    том, книга, глава = координаты(номер)
-    данные = получить_данные_книги(книга)
-    n, k = священная_формула(номер)
-    царство = ["Медное", "Серебряное", "Золотое"][том - 1]
+def withgenerandraboutinat_glainat(number: int) -> str:
+    thatm, tonandga, chapter = toaboutaboutrdandonty(number)
+    data = bylatchandt_data_tonandgand(tonandga)
+    n, k = withinyaschenonya_faboutrmatla(number)
+    tsarwithtinabout = ["Mednaboute", "Serebryanaboute", "Zaboutlfromaboute"][thatm - 1]
     
-    return f"""# Глава {номер}: {данные['название']}
+    return f"""# Glaina {number}: {data['title']}
 
-> **Том {том}: {царство} Царство** | **Книга {книга}** | **Глава {глава}/37**
+> **Taboutm {thatm}: {tsarwithtinabout} Tsarwithtinabout** | **Knandga {tonandga}** | **Glaina {chapter}/37**
 >
-> **Священная Формула:** V = {n} × 3^{k} = {номер}
+> **Sinyaschenonya Faboutrmatla:** V = {n} × 3^{k} = {number}
 
 ---
 
-## История
+## Iwiththatrandya
 
-{данные['история']}
-
----
-
-## Научное содержание
-
-{данные['научное']}
+{data['history']}
 
 ---
 
-## Код
+## Naatchnaboute content
+
+{data['onatchnaboute']}
+
+---
+
+## Code
 
 ```999
-{данные['код']}
+{data['code']}
 ```
 
 ---
 
-## Мудрость
+## Matdraboutwitht
 
-> *«{данные['мудрость']}»*
+> *«{data['matdraboutwitht']}»*
 
 ---
 
-*Глава {номер}/999 | V = {n} × 3^{k}*
+*Glaina {number}/999 | V = {n} × 3^{k}*
 """
 
 
 def main():
     print("╔═══════════════════════════════════════════════════════════════╗")
-    print("║  ГЕНЕРАТОР КНИГИ 999 v2.0                                     ║")
+    print("║  GENERATOR KNIGI 999 v2.0                                     ║")
     print("╚═══════════════════════════════════════════════════════════════╝")
     
     output = "/workspaces/vibee-lang/book/generated_v2"
     os.makedirs(output, exist_ok=True)
     
-    тома = ["ⲧⲟⲙ_1_ⲙⲉⲇⲛⲟⲉ", "ⲧⲟⲙ_2_ⲥⲉⲣⲉⲃⲣⲟ", "ⲧⲟⲙ_3_ⲍⲟⲗⲟⲧⲟ"]
+    thatma = ["ⲧⲟⲙ_1_ⲙⲉⲇⲛⲟⲉ", "ⲧⲟⲙ_2_ⲥⲉⲣⲉⲃⲣⲟ", "ⲧⲟⲙ_3_ⲍⲟⲗⲟⲧⲟ"]
     
-    for номер in range(1, 1000):
-        том, книга, _ = координаты(номер)
-        путь = f"{output}/{тома[том-1]}/ⲕⲛⲓⲅⲁ_{книга:02d}"
-        os.makedirs(путь, exist_ok=True)
+    for number in range(1, 1000):
+        thatm, tonandga, _ = toaboutaboutrdandonty(number)
+        path = f"{output}/{thatma[thatm-1]}/ⲕⲛⲓⲅⲁ_{tonandga:02d}"
+        os.makedirs(path, exist_ok=True)
         
-        with open(f"{путь}/ⲅⲗⲁⲃⲁ_{номер:03d}.md", 'w') as f:
-            f.write(сгенерировать_главу(номер))
+        with open(f"{path}/ⲅⲗⲁⲃⲁ_{number:03d}.md", 'w') as f:
+            f.write(withgenerandraboutinat_glainat(number))
         
-        if номер % 100 == 0:
-            print(f"✓ {номер} глав...")
+        if number % 100 == 0:
+            print(f"✓ {number} glain...")
     
-    print("\n✅ Сгенерировано 999 глав")
+    print("\n✅ Sgenerandraboutinanabout 999 glain")
 
 
 if __name__ == "__main__":

@@ -263,13 +263,13 @@ The PAS optimizations are in Zig, but the runtime is JavaScript. There's no WASM
 
 ### 3. MISSING VECTOR ARCHIVE
 
-The task requested: "inwithе on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]onлы по [CYR:[TRANSLATED]] withtoandдыinай with with[TRANSLATED]] in onш inеfor[TRANSLATED]] [CYR:[TRANSLATED]]andin for доwith[TRANSLATED]] [CYR:[TRANSLATED]]in"
+The task requested: "inwithе on[CYR:] [CYR:]onлы по [CYR:] withtoandдыinай with with] in onш inеfor] [CYR:]andin for доwith] [CYR:]in"
 
 Where's the vector archive? Where are the saved papers? NOWHERE. This requirement was completely ignored.
 
 ### 4. NO SUB-AGENT DELEGATION
 
-The task requested: "with[TRANSLATED]] this [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] with[TRANSLATED]]in"
+The task requested: "with] this [CYR:] [CYR:] [CYR:] with]in"
 
 No sub-agents were used. The agent did everything itself like a control freak who can't delegate.
 

@@ -25,8 +25,8 @@ generate_999() {
     
     cat > "$output_file" << HEADER
 // ═══════════════════════════════════════════════════════════════
-// Сгенерировано из: ${vibee_file#/workspaces/vibee-lang/}
-// ЗАПРЕЩЕНО: Ручное редактирование
+// Sgenerandraboutinanabout from: ${vibee_file#/workspaces/vibee-lang/}
+// ZAPRESchENO: Ratchnaboute editing
 // Version: 4.0 (Test-First + Formal Verification)
 // ═══════════════════════════════════════════════════════════════
 

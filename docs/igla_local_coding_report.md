@@ -163,7 +163,7 @@ test "quickSort" {
 | Language | Keywords | Example |
 |----------|----------|---------|
 | English | hello, world, fibonacci, sort | `"hello world"` → hello_world_simple |
-| Russian | прandinет, мandр, фandбоonччand, with[TRANSLATED]]andроintoа | `"прandinет мandр"` → hello_world_simple |
+| Russian | prandinet, mandr, fandbaboutonchchand, with]andraboutintoa | `"prandinet mandr"` → hello_world_simple |
 | Chinese | 你好, 世界 | `"你好"` → hello_world_simple |
 
 ---

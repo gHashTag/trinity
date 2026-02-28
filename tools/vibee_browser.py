@@ -3,7 +3,7 @@
 VIBEE Browser Agent - Real CDP Client
 φ² + 1/φ² = 3 | PHOENIX = 999
 
-Реальный агентный браузер для серфинга через Chrome DevTools Protocol
+ny ny browser for witherfandnga through Chrome DevTools Protocol
 """
 
 import json
@@ -16,7 +16,7 @@ import os
 import sys
 
 class VIBEEBrowser:
-    """VIBEE Browser Agent с CDP"""
+    """VIBEE Browser Agent with CDP"""
     
     PHI = 1.618033988749895
     PHOENIX = 999
@@ -28,7 +28,7 @@ class VIBEEBrowser:
         self.chrome_process = None
         
     def start_chrome(self, headless=True):
-        """Запуск Chrome с отладкой"""
+        """Zapatwithto Chrome with fromladtoabouty"""
         cmd = [
             'chromium-browser',
             f'--remote-debugging-port={self.port}',
@@ -46,7 +46,7 @@ class VIBEEBrowser:
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL
         )
-        # Ждём запуска Chrome
+        # Zhdyom launcha Chrome
         for i in range(10):
             time.sleep(1)
             try:
@@ -54,17 +54,17 @@ class VIBEEBrowser:
                 break
             except:
                 pass
-        print(f"✅ Chrome запущен на порту {self.port}")
+        print(f"✅ Chrome zapatschen on portat {self.port}")
         return True
         
     def connect(self):
-        """Подключение к Chrome по CDP"""
+        """Paboutdkeyenande to Chrome by CDP"""
         try:
-            # Получаем список целей
+            # Paboutlatchaem list tseley
             resp = requests.get(f'http://localhost:{self.port}/json')
             targets = resp.json()
             
-            # Находим страницу
+            # Nakhaboutdandm withtranandtsat
             page_target = None
             for t in targets:
                 if t.get('type') == 'page':
@@ -72,15 +72,15 @@ class VIBEEBrowser:
                     break
             
             if not page_target:
-                # Создаём новую страницу
+                # Saboutzdayom naboutinatyu withtranandtsat
                 resp = requests.put(f'http://localhost:{self.port}/json/new')
                 page_target = resp.json()
             
             ws_url = page_target['webSocketDebuggerUrl']
             self.ws = websocket.create_connection(ws_url)
-            print(f"✅ Подключено к CDP: {ws_url[:50]}...")
+            print(f"✅ Paboutdkeyenabout to CDP: {ws_url[:50]}...")
             
-            # Включаем домены
+            # Vkeyaem domainy
             self._send('Page.enable')
             self._send('DOM.enable')
             self._send('Runtime.enable')
@@ -88,11 +88,11 @@ class VIBEEBrowser:
             
             return True
         except Exception as e:
-            print(f"❌ Ошибка подключения: {e}")
+            print(f"❌ Error underkeyenandya: {e}")
             return False
     
     def _send(self, method, params=None):
-        """Отправка CDP команды"""
+        """Otpraintoa CDP toaboutmandy"""
         self.msg_id += 1
         msg = {
             'id': self.msg_id,
@@ -101,49 +101,49 @@ class VIBEEBrowser:
         }
         self.ws.send(json.dumps(msg))
         
-        # Ждём ответ
+        # Zhdyom answer
         while True:
             resp = json.loads(self.ws.recv())
             if resp.get('id') == self.msg_id:
                 if 'error' in resp:
                     print(f"⚠️ CDP Error: {resp['error']}")
                 return resp.get('result', {})
-            # Пропускаем события
+            # Praboutpatwithtoaem withaboutytandya
     
     def goto(self, url):
-        """Переход на URL"""
-        print(f"🌐 Переход на: {url}")
+        """Perekhaboutd on URL"""
+        print(f"🌐 Perekhaboutd on: {url}")
         result = self._send('Page.navigate', {'url': url})
-        time.sleep(2)  # Ждём загрузки
+        time.sleep(2)  # Zhdyom zagratztoand
         return result
     
     def get_title(self):
-        """Получить заголовок страницы"""
+        """Paboutlatchandt zagaboutlaboutinaboutto withtranandtsy"""
         result = self._send('Runtime.evaluate', {
             'expression': 'document.title'
         })
         return result.get('result', {}).get('value', '')
     
     def get_url(self):
-        """Получить текущий URL"""
+        """Paboutlatchandt thosetoatschandy URL"""
         result = self._send('Runtime.evaluate', {
             'expression': 'window.location.href'
         })
         return result.get('result', {}).get('value', '')
     
     def screenshot(self, path='screenshot.png'):
-        """Сделать скриншот"""
+        """Sdelat withtorandnshfrom"""
         result = self._send('Page.captureScreenshot', {'format': 'png'})
         if 'data' in result:
             with open(path, 'wb') as f:
                 f.write(base64.b64decode(result['data']))
-            print(f"📸 Скриншот сохранён: {path}")
+            print(f"📸 Storandnshfrom withaboutkhranyon: {path}")
             return path
         return None
     
     def click(self, selector):
-        """Клик по селектору"""
-        # Находим элемент
+        """Klandto by withelewhorat"""
+        # Nakhaboutdandm element
         doc = self._send('DOM.getDocument')
         root_id = doc['root']['nodeId']
         
@@ -154,20 +154,20 @@ class VIBEEBrowser:
         
         node_id = result.get('nodeId')
         if not node_id:
-            print(f"❌ Элемент не найден: {selector}")
+            print(f"❌ Element ne onyden: {selector}")
             return False
         
-        # Получаем координаты
+        # Paboutlatchaem toaboutaboutrdandonty
         box = self._send('DOM.getBoxModel', {'nodeId': node_id})
         if 'model' not in box:
-            print(f"❌ Не удалось получить координаты: {selector}")
+            print(f"❌ Ne atdalaboutwith bylatchandt toaboutaboutrdandonty: {selector}")
             return False
         
         content = box['model']['content']
         x = (content[0] + content[2]) / 2
         y = (content[1] + content[5]) / 2
         
-        # Кликаем
+        # Klandtoaem
         self._send('Input.dispatchMouseEvent', {
             'type': 'mousePressed',
             'x': x, 'y': y,
@@ -181,16 +181,16 @@ class VIBEEBrowser:
             'clickCount': 1
         })
         
-        print(f"🖱️ Клик по: {selector} ({x:.0f}, {y:.0f})")
+        print(f"🖱️ Klandto by: {selector} ({x:.0f}, {y:.0f})")
         return True
     
     def type_text(self, selector, text):
-        """Ввод текста в поле"""
-        # Кликаем для фокуса
+        """Input texta in field"""
+        # Klandtoaem for fabouttoatwitha
         self.click(selector)
         time.sleep(0.3)
         
-        # Вводим текст
+        # Inputandm text
         for char in text:
             self._send('Input.dispatchKeyEvent', {
                 'type': 'keyDown',
@@ -201,11 +201,11 @@ class VIBEEBrowser:
                 'text': char
             })
         
-        print(f"⌨️ Введено: {text}")
+        print(f"⌨️ Vinedenabout: {text}")
         return True
     
     def press_enter(self):
-        """Нажать Enter"""
+        """Nazhat Enter"""
         self._send('Input.dispatchKeyEvent', {
             'type': 'keyDown',
             'key': 'Enter',
@@ -222,21 +222,21 @@ class VIBEEBrowser:
         return True
     
     def get_text(self, selector):
-        """Получить текст элемента"""
+        """Paboutlatchandt text elementa"""
         result = self._send('Runtime.evaluate', {
             'expression': f'document.querySelector("{selector}")?.innerText || ""'
         })
         return result.get('result', {}).get('value', '')
     
     def get_html(self):
-        """Получить HTML страницы"""
+        """Paboutlatchandt HTML withtranandtsy"""
         result = self._send('Runtime.evaluate', {
             'expression': 'document.documentElement.outerHTML'
         })
         return result.get('result', {}).get('value', '')
     
     def execute_js(self, script):
-        """Выполнить JavaScript"""
+        """Vybylnandt JavaScript"""
         result = self._send('Runtime.evaluate', {
             'expression': script,
             'returnByValue': True
@@ -244,16 +244,16 @@ class VIBEEBrowser:
         return result.get('result', {}).get('value')
     
     def close(self):
-        """Закрыть браузер"""
+        """Zatoryt browser"""
         if self.ws:
             self.ws.close()
         if self.chrome_process:
             self.chrome_process.terminate()
-        print("👋 Браузер закрыт")
+        print("👋 Braatzer zatoryt")
 
 
 def demo():
-    """Демонстрация работы VIBEE Browser"""
+    """Demaboutnwithtratsandya rabfromy VIBEE Browser"""
     print("=" * 60)
     print("  VIBEE Browser Agent - φ² + 1/φ² = 3")
     print("=" * 60)
@@ -261,31 +261,31 @@ def demo():
     browser = VIBEEBrowser()
     
     try:
-        # Запускаем Chrome
+        # Zapatwithtoaem Chrome
         browser.start_chrome(headless=True)
         
-        # Подключаемся
+        # Paboutdkeyaemwithya
         if not browser.connect():
             return
         
-        # Переходим на страницу
+        # Perekhaboutdandm on withtranandtsat
         browser.goto('https://example.com')
         
-        # Получаем информацию
+        # Paboutlatchaem andnformtsandyu
         title = browser.get_title()
         url = browser.get_url()
         
-        print(f"\n📄 Заголовок: {title}")
+        print(f"\n📄 Zagaboutlaboutinaboutto: {title}")
         print(f"🔗 URL: {url}")
         
-        # Скриншот
+        # Storandnshfrom
         browser.screenshot('/tmp/vibee_screenshot.png')
         
-        # Получаем текст
+        # Paboutlatchaem text
         text = browser.get_text('h1')
         print(f"📝 H1: {text}")
         
-        print("\n✅ VIBEE Browser работает!")
+        print("\n✅ VIBEE Browser rabfromaet!")
         print(f"φ² + 1/φ² = {VIBEEBrowser.PHI**2 + 1/VIBEEBrowser.PHI**2:.1f}")
         
     finally:

@@ -19,11 +19,11 @@ Created `igla_hybrid_chat.zig` - a hybrid chat system that combines:
 
 | Query | Source | Confidence | Latency | Response |
 |-------|--------|------------|---------|----------|
-| "прandinет" | SYM | 80% | 30μs | "Прandinет! [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]]. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]..." |
-| "toаto [CYR:[TRANSLATED]]?" | SYM | 80% | 10μs | "[CYR:[TRANSLATED]]! Ternary vectors in [CYR:[TRANSLATED]]..." |
+| "prandinet" | SYM | 80% | 30μs | "Prandinet! :] :] inand:]. :] :]..." |
+| "toato :]?" | SYM | 80% | 10μs | ":]! Ternary vectors in :]..." |
 | "who are you?" | SYM | 80% | 6μs | "I'm Koschei — the immortal local agent..." |
 | "tell me a joke" | SYM | 80% | 7μs | "How many programmers to change a lightbulb?..." |
-| "раwithtoажand [CYR:[TRANSLATED]]toу" | SYM | 80% | 20μs | "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andwithт [CYR:[TRANSLATED]] with [CYR:[TRANSLATED]]fromы..." |
+| "rawithtoazhand :]toat" | SYM | 80% | 20μs | ":] :]andwitht :] with :]fromy..." |
 
 ### LLM (BitNet-2B) = GARBAGE OUTPUT
 
@@ -109,7 +109,7 @@ var chat = try hybrid.IglaHybridChat.init(allocator, "models/tinyllama.gguf");
 defer chat.deinit();
 
 // Symbolic hit (fast)
-const r1 = try chat.respond("прandinет");
+const r1 = try chat.respond("prandinet");
 // r1.source == .Symbolic, latency < 1ms
 
 // LLM fallback (fluent)
@@ -255,15 +255,15 @@ Files fixed:
    var chat = try IglaHybridChat.init(allocator, "tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf");
 
    // Symbolic (fast)
-   _ = try chat.respond("прandinет");
+   _ = try chat.respond("prandinet");
 
    // LLM fallback (fluent)
    _ = try chat.respond("explain quantum computing");
    ```
 
 3. **Demo prompts:**
-   - "прandinет" → Symbolic hit
-   - "toаto [CYR:[TRANSLATED]]?" → Symbolic hit
+   - "prandinet" → Symbolic hit
+   - "toato :]?" → Symbolic hit
    - "hello world Zig" → LLM fallback (code gen)
    - "prove phi" → LLM fallback (math reasoning)
 
@@ -284,9 +284,9 @@ Files fixed:
 ## Conclusion
 
 **Symbolic chat is EXCELLENT** for:
-- Greetings: "прandinет", "hello", "你好"
+- Greetings: "prandinet", "hello", "你好"
 - FAQ: "who are you?", "what can you do?"
-- Jokes: "tell me a joke", "раwithtoажand [CYR:[TRANSLATED]]toу"
+- Jokes: "tell me a joke", "rawithtoazhand :]toat"
 - Philosophy: "phi", "golden ratio"
 
 **LLM fallback is BROKEN** for:
@@ -301,15 +301,15 @@ Files fixed:
 ## Before/After Comparison
 
 ### BEFORE (Pattern Matcher Only - igla_local_chat.zig)
-- "прandinет" → "Прandinет! [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]]..." ✓
-- "explain quantum computing" → "Unknown query - [CYR:[TRANSLATED]] with[TRANSLATED]]withandть andonче" ✗ (generic)
+- "prandinet" → "Prandinet! :] :] inand:]..." ✓
+- "explain quantum computing" → "Unknown query - :] with]withandt andonche" ✗ (generic)
 
 ### NOW (Hybrid with BitNet-2B)
-- "прandinет" → "Прandinет! [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]]..." ✓ (30μs)
+- "prandinet" → "Prandinet! :] :] inand:]..." ✓ (30μs)
 - "explain quantum computing" → "ĩ_RECORDogogiv:UIControlState..." ✗ (GARBAGE!)
 
 ### TARGET (Hybrid with TinyLlama)
-- "прandinет" → "Прandinет! [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]]..." ✓ (30μs, symbolic)
+- "prandinet" → "Prandinet! :] :] inand:]..." ✓ (30μs, symbolic)
 - "explain quantum computing" → "Quantum computing uses qubits..." ✓ (~2s, LLM)
 
 ---

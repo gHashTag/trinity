@@ -1,77 +1,77 @@
-# Level 11.10 — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]towithandроinанandе for [CYR:[TRANSLATED]]in Зonнandй
+# Level 11.10 — :] :]towithandraboutinanande for :]in Zonnandy
 
-**[CYR:[TRANSLATED]]:** 2026-02-16
-**Цandtoл:** Level 11 Cycle 11
-**[CYR:[TRANSLATED]]withandя:** Level 11.10
-**Зin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and:** #120
+**:]:** 2026-02-16
+**Tsandtol:** Level 11 Cycle 11
+**:]Author:** Level 11.10
+**Zin:] :]and:** #120
 
-## [CYR:[TRANSLATED]]toое опandwithанandе
+## :]toaboute aboutpandwithanande
 
- Level 11.9 мы обon[CYR:[TRANSLATED]]or **with[TRANSLATED]] ёмtoоwithтand** — прand 75 трand[CYR:[TRANSLATED]] on domain and[CYR:[TRANSLATED]]andчеwithtoая with[TRANSLATED]]andцandя даin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toо 34.7% [CYR:[TRANSLATED]]withтand. Прandчandon [CYR:[TRANSLATED]]withта: еwithлand [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] 75 elementоin in одandн [CYR:[TRANSLATED]],  ёмtoоwithть [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ~sqrt(1024) = ~32 elementа, withandгonл тоnotт in [CYR:[TRANSLATED]].
+ Level 11.9 my abouton:]or **with] yomtoaboutwithtand** — prand 75 trand:] on domain and:]andchewithtoaya with]andtsandya dain:] :]toabout 34.7% :]withtand. Prandchandon :]withthat: ewithland :]and:] 75 elementaboutin in aboutdandn :],  yomtoaboutwitht :] :] ~sqrt(1024) = ~32 elementa, withandgonl thatnott in :].
 
-**[CYR:[TRANSLATED]]andе: [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towithandроinанandе.** [CYR:[TRANSLATED]]withто [CYR:[TRANSLATED]] гand[CYR:[TRANSLATED]]withfor[TRANSLATED]] [CYR:[TRANSLATED]] on domain — [CYR:[TRANSLATED]]andм from[CYR:[TRANSLATED]] аwithоцandатandin[CYR:[TRANSLATED]] [CYR:memory] on for[TRANSLATED]] from[CYR:[TRANSLATED]]andе (relation). [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]-[CYR:memory] with[TRANSLATED]]andт маtowithand[CYR:[TRANSLATED]] 30 [CYR:[TRANSLATED]] (for[TRANSLATED]]→зon[CYR:[TRANSLATED]]andе), that уfor[TRANSLATED]]in[CYR:[TRANSLATED]]withя in ёмtoоwithть sqrt(1024).
+**:]ande: :] and:]towithandraboutinanande.** :]withthat :] gand:]withfor] :] on domain — :]andm from:] awithabouttsandatandin:] :memory] on for] from:]ande (relation). :] :]-:memory] with]andt matowithand:] 30 :] (for]→zon:]ande), that atfor]in:]withya in yomtoaboutwitht sqrt(1024).
 
-### Трand [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] resultа:
+### Trand :]in:] resulta:
 
-1. **450 трand[CYR:[TRANSLATED]]in, 98.7% [CYR:[TRANSLATED]]withть** (444/450) [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] vs 75.3% [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withtoandй [CYR:[TRANSLATED]]. [CYR:[TRANSLATED]]on ёмtoоwithтand [CYR:[TRANSLATED]]on — inыand[CYR:[TRANSLATED]] +23.4%.
+1. **450 trand:]in, 98.7% :]witht** (444/450) :] and:]towithandraboutin:] :] vs 75.3% :] :]withtoandy :]. :]on yomtoaboutwithtand :]on — inyand:] +23.4%.
 
-2. **[CYR:[TRANSLATED]]stepоinое [CYR:[TRANSLATED]]andроinанandе [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: 100%** on inwithех [CYR:[TRANSLATED]]andonх 1-4. 20 with[TRANSLATED]]with[TRANSLATED]] on with[TRANSLATED]], 4 with[TRANSLATED]], поwith[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]and.
+2. **:]stepaboutinaboute :]andraboutinanande :] and:]towithandraboutin:] :]: 100%** on inwithekh :]andonkh 1-4. 20 with]with] on with], 4 with], bywith]in:] :] :] :]-:]and.
 
-3. **[CYR:[TRANSLATED]]to ёмtoоwithтand** — прand [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (5-20 with[TRANSLATED]]with[TRANSLATED]]) [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] 100%. [CYR:[TRANSLATED]]andца [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]withя прand 25+ with[TRANSLATED]]with[TRANSLATED]], for[TRANSLATED]] [CYR:[TRANSLATED]]withtoandй [CYR:[TRANSLATED]] onчandonет [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withть.
+3. **:]to yomtoaboutwithtand** — prand :] :] (5-20 with]with]) :] :] :] 100%. :]andtsa :]in:]withya prand 25+ with]with], for] :]withtoandy :] onchandonet :] :]witht.
 
-356 теwithтоin (352 [CYR:[TRANSLATED]]and, 4 [CYR:[TRANSLATED]]). [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withandй.
+356 thosewiththatin (352 :]and, 4 :]). :] :]withandy.
 
-## [CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]andtoand
+## :]inye :]andtoand
 
-| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе | [CYR:[TRANSLATED]]withnotнandе |
+| :]Version | Zon:]ande | :]withnotnande |
 |---------|----------|-----------|
-| Теwithты and[CYR:[TRANSLATED]]and | 84/84 | +3 ноinых (Теwithты 82-84) |
-| Вwith[TRANSLATED]] теwithтоin | 356 (352 оto, 4 skip) | +3 from Level 11.9 |
-| Трand[CYR:[TRANSLATED]] in KG | **450** | 3 [CYR:[TRANSLATED]]on × 5 fromн. × 30 with[TRANSLATED]]. |
-| [CYR:[TRANSLATED]]towithandроinанonя [CYR:[TRANSLATED]]withть | **98.7%** (444/450) | Per-relation [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]and |
-| [CYR:[TRANSLATED]]withtoая [CYR:[TRANSLATED]]withть | **75.3%** (113/150) | Одandн [CYR:[TRANSLATED]] on domain |
-| [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinо and[CYR:[TRANSLATED]]towithоin | **+23.4%** | [CYR:[TRANSLATED]]towithы > [CYR:[TRANSLATED]]withtoandй |
-| [CYR:[TRANSLATED]]andроinанandе 1-4 [CYR:[TRANSLATED]] | **100.0%** (60/60) | Поwith[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] |
-| [CYR:[TRANSLATED]]inая [CYR:[TRANSLATED]]withть | **100.0%** (80/80) | 4 with[TRANSLATED]] × 20 with[TRANSLATED]]. |
-| [CYR:[TRANSLATED]]inой 2-hop | 100%→80%→20%→7%→7% | [CYR:[TRANSLATED]] onfor[TRANSLATED]]andin[CYR:[TRANSLATED]]withя |
-| minimal_forward.zig | ~14,000 with[TRANSLATED]]to | +~400 with[TRANSLATED]]to |
+| Tewithty and:]and | 84/84 | +3 naboutinykh (Tewithty 82-84) |
+| Vwith] thosewiththatin | 356 (352 aboutto, 4 skip) | +3 from Level 11.9 |
+| Trand:] in KG | **450** | 3 :]on × 5 fromn. × 30 with]. |
+| :]towithandraboutinanonya :]witht | **98.7%** (444/450) | Per-relation :]-:]and |
+| :]withtoaya :]witht | **75.3%** (113/150) | Odandn :] on domain |
+| :]and:]withtinabout and:]towithaboutin | **+23.4%** | :]towithy > :]withtoandy |
+| :]andraboutinanande 1-4 :] | **100.0%** (60/60) | Paboutwith]in:] :] |
+| :]inaya :]witht | **100.0%** (80/80) | 4 with] × 20 with]. |
+| :]inabouty 2-hop | 100%→80%→20%→7%→7% | :] onfor]andin:]withya |
+| minimal_forward.zig | ~14,000 with]to | +~400 with]to |
 
-## Каto this [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] — [CYR:[TRANSLATED]]with[TRANSLATED]] [CYR:[TRANSLATED]]toом
+## Kato this :]from:] — :]with] :]toaboutm
 
 ### Problem (Level 11.9)
 
-[CYR:[TRANSLATED]]withтаin[CYR:[TRANSLATED]] бandблandfromеtoу with 225 toнand[CYR:[TRANSLATED]]and. Еwithлand withinалandть inwithе in [CYR:[TRANSLATED]] for[TRANSLATED]], onйтand [CYR:[TRANSLATED]] with[TRANSLATED]] — inы [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andе toнandгand. [CYR:[TRANSLATED]]withть поandwithtoа: 34.7%.
+:]withthatin:] bandblandfrometoat with 225 tonand:]and. Ewithland withinalandt inwithe in :] for], onytand :] with] — iny :] :] :]ande tonandgand. :]witht byandwithtoa: 34.7%.
 
-### [CYR:[TRANSLATED]]andе (Level 11.10)
+### :]ande (Level 11.10)
 
-[CYR:[TRANSLATED]]andте toнandгand по [CYR:[TRANSLATED]]toам: одon [CYR:[TRANSLATED]]toа for [CYR:[TRANSLATED]]withтandtoand, [CYR:[TRANSLATED]] for andwith[TRANSLATED]]and, [CYR:[TRANSLATED]] for onуtoand. На for[TRANSLATED]] [CYR:[TRANSLATED]]toе маtowithand[CYR:[TRANSLATED]] 30 toнandг — [CYR:[TRANSLATED]]toо onйтand [CYR:[TRANSLATED]]. [CYR:[TRANSLATED]]withть: 98.7%.
+:]andthose tonandgand by :]toam: aboutdon :]toa for :]withtandtoand, :] for andwith]and, :] for onattoand. Na for] :]toe matowithand:] 30 tonandg — :]toabout onytand :]. :]witht: 98.7%.
 
- [CYR:[TRANSLATED]]andonх VSA:
-- **[CYR:[TRANSLATED]]withtoandй [CYR:[TRANSLATED]]**: `domain = bundle(inwithе_трand[CYR:[TRANSLATED]])` → 75+ elementоin → [CYR:[TRANSLATED]]notнandе ёмtoоwithтand
-- **[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]]**: `domain[from[CYR:[TRANSLATED]]andе_R] = bundle([CYR:[TRANSLATED]]_for_R)` → 30 elementоin on [CYR:[TRANSLATED]]-[CYR:memory] → in [CYR:[TRANSLATED]] ёмtoоwithтand
+ :]andonkh VSA:
+- **:]withtoandy :]**: `domain = bundle(inwithe_trand:])` → 75+ elementaboutin → :]notnande yomtoaboutwithtand
+- **:]towithandraboutin:]**: `domain[from:]ande_R] = bundle(:]_for_R)` → 30 elementaboutin on :]-:memory] → in :] yomtoaboutwithtand
 
 ```
-[CYR:[TRANSLATED]]withtoandй:     domain → [75 трand[CYR:[TRANSLATED]]in in [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]] → 34.7%
-[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]]: domain → from[CYR:[TRANSLATED]]andе₁ → [30 [CYR:[TRANSLATED]]] → 100%
-                       → from[CYR:[TRANSLATED]]andе₂ → [30 [CYR:[TRANSLATED]]] → 100%
-                       → from[CYR:[TRANSLATED]]andе₃ → [30 [CYR:[TRANSLATED]]] → 100%
-                       → from[CYR:[TRANSLATED]]andе₄ → [30 [CYR:[TRANSLATED]]] → 100%
-                       → from[CYR:[TRANSLATED]]andе₅ → [30 [CYR:[TRANSLATED]]] → 100%
-                       Иthat: 150 [CYR:[TRANSLATED]], [CYR:[TRANSLATED]]withть 98.7%
+:]withtoandy:     domain → [75 trand:]in in :] :]] → 34.7%
+:]towithandraboutin:]: domain → from:]ande₁ → [30 :]] → 100%
+                       → from:]ande₂ → [30 :]] → 100%
+                       → from:]ande₃ → [30 :]] → 100%
+                       → from:]ande₄ → [30 :]] → 100%
+                       → from:]ande₅ → [30 :]] → 100%
+                       Ithat: 150 :], :]witht 98.7%
 ```
 
-### [CYR:[TRANSLATED]] ёмtoоwithтand
+### :] yomtoaboutwithtand
 
-| [CYR:[TRANSLATED]] | Ёмtoоwithть | [CYR:[TRANSLATED]] |
+| :] | Yomtoaboutwitht | :] |
 |--------|---------|---------|
-| [CYR:[TRANSLATED]]withtoandй | ~32 | sqrt(DIM) |
-| [CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] | ~32 × R | R × sqrt(DIM) |
+| :]withtoandy | ~32 | sqrt(DIM) |
+| :]towithandraboutin:] | ~32 × R | R × sqrt(DIM) |
 
-[CYR:[TRANSLATED]] DIM=1024, R=5: [CYR:[TRANSLATED]]withtoandй [CYR:[TRANSLATED]]andт ~32 трand[CYR:[TRANSLATED]], and[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] — ~160. Прand R=10 — до 320 трand[CYR:[TRANSLATED]]in.
+:] DIM=1024, R=5: :]withtoandy :]andt ~32 trand:], and:]towithandraboutin:] — ~160. Prand R=10 — dabout 320 trand:]in.
 
-## Resultы теwithтоin
+## Resulty thosewiththatin
 
-### Теwithт 82: [CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] KG — 450 трand[CYR:[TRANSLATED]]in
+### Tewitht 82: :]towithandraboutin:] KG — 450 trand:]in
 
 ```
 === INTERMEDIATE INDEXING: CAPACITY FIX (Level 11.10) ===
@@ -108,13 +108,13 @@ Flat total: 113/150 (75.3%)
 >>> INDEXED: 98.7% vs FLAT: 75.3% <<<
 ```
 
-**Аonлandз:**
+**Aonlandz:**
 
-[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] inыand[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] 23.4%. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]-[CYR:memory] [CYR:[TRANSLATED]]andт 30 [CYR:[TRANSLATED]] (for[TRANSLATED]]→зon[CYR:[TRANSLATED]]andе) — this ~94% from [CYR:[TRANSLATED]]andчеwithtoой ёмtoоwithтand sqrt(1024) = 32. Неwithfor[TRANSLATED]]toо ошandбоto (6 andз 450) — this [CYR:[TRANSLATED]]: мы on [CYR:[TRANSLATED]]andце ёмtoоwithтand.
+:]towithandraboutin:] :] inyand:]in:] 23.4%. :] :]-:memory] :]andt 30 :] (for]→zon:]ande) — this ~94% from :]andchewithtoabouty yomtoaboutwithtand sqrt(1024) = 32. Newithfor]toabout aboutshandbaboutto (6 andz 450) — this :]: my on :]andtse yomtoaboutwithtand.
 
-[CYR:[TRANSLATED]]withtoandй [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] 50 [CYR:[TRANSLATED]] in одandн [CYR:[TRANSLATED]] — this ~156% from ёмtoоwithтand, therefore 75.3% [CYR:[TRANSLATED]]withтand.
+:]withtoandy :] :]withya :]and:] 50 :] in aboutdandn :] — this ~156% from yomtoaboutwithtand, therefore 75.3% :]withtand.
 
-### Теwithт 83: [CYR:[TRANSLATED]]andроinанandе [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### Tewitht 83: :]andraboutinanande :] and:]towithandraboutin:] :]
 
 ```
 === INDEXED PLANNING: MULTI-HOP ON INDEXED KG (Level 11.10) ===
@@ -146,17 +146,17 @@ Noise | Correct | Total | Accuracy
     5 |       1 |    15 |   6.7%
 ```
 
-**Аonлandз:**
+**Aonlandz:**
 
-**[CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]withы: 100%** по inwithем 4 with[TRANSLATED]]. 20 with[TRANSLATED]]with[TRANSLATED]] on with[TRANSLATED]] — this ~62% from ёмtoоwithтand, [CYR:[TRANSLATED]]onя зоon.
+**:]inye :]withy: 100%** by inwithem 4 with]. 20 with]with] on with] — this ~62% from yomtoaboutwithtand, :]onya zabouton.
 
-**[CYR:[TRANSLATED]]stepоinое [CYR:[TRANSLATED]]andроinанandе: 100%** on inwithех [CYR:[TRANSLATED]]andonх 1-4. [CYR:[TRANSLATED]] step — this from[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with to within[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]and. Ошandбtoand not onfor[TRANSLATED]]andin[CYR:[TRANSLATED]]withя, пfrom[CYR:[TRANSLATED]] that for[TRANSLATED]] step on[CYR:[TRANSLATED]]andт [CYR:[TRANSLATED]] withоin[CYR:[TRANSLATED]]andе in within[CYR:[TRANSLATED]] with[TRANSLATED]].
+**:]stepaboutinaboute :]andraboutinanande: 100%** on inwithekh :]andonkh 1-4. :] step — this from:] :]with to within:] :]-:]and. Oshandbtoand not onfor]andin:]withya, pfrom:] that for] step on:]andt :] withaboutin:]ande in within:] with].
 
-**[CYR:[TRANSLATED]] прand 2 [CYR:[TRANSLATED]]** [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] быwith[TRANSLATED]], [CYR:[TRANSLATED]] прand 1 [CYR:[TRANSLATED]]: ошandбtoand on [CYR:[TRANSLATED]]inом stepе onfor[TRANSLATED]]andin[CYR:[TRANSLATED]]withя on in[CYR:[TRANSLATED]]. Прand noise=1 [CYR:[TRANSLATED]] 80%, прand noise=2 [CYR:[TRANSLATED]]andе до 20%. [CYR:[TRANSLATED]] ожand[CYR:[TRANSLATED]] — еwithлand [CYR:[TRANSLATED]]inый [CYR:[TRANSLATED]] ошandбwithя, in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] ошand[CYR:[TRANSLATED]]withя.
+**:] prand 2 :]** :]and:] bywith], :] prand 1 :]: aboutshandbtoand on :]inaboutm stepe onfor]andin:]withya on in:]. Prand noise=1 :] 80%, prand noise=2 :]ande dabout 20%. :] aboutzhand:] — ewithland :]inyy :] aboutshandbwithya, in:] :] aboutshand:]withya.
 
-**Выinод:** [CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andроinанandе [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]] in чandwith[TRANSLATED]] уwithлоinandях. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[TRANSLATED]]andinоwithтand [CYR:[TRANSLATED]]on for[TRANSLATED]]toтandроintoа on for[TRANSLATED]] stepе (beam search or [CYR:[TRANSLATED]]withоinанandе).
+**Vyinaboutd:** :]towithandraboutin:] :]andraboutinanande :]from:] and:] in chandwith] atwithlaboutinandyakh. :] :]with]andinaboutwithtand :]on for]totandraboutintoa on for] stepe (beam search or :]withaboutinanande).
 
-### Теwithт 84: [CYR:[TRANSLATED]]to ёмtoоwithтand — [CYR:[TRANSLATED]]towithы vs [CYR:[TRANSLATED]]withtoandй
+### Tewitht 84: :]to yomtoaboutwithtand — :]towithy vs :]withtoandy
 
 ```
 === INDEXED vs FLAT: CAPACITY BENCHMARK (Level 11.10) ===
@@ -170,81 +170,81 @@ Entities | Indexed | Flat (3R) | Advantage
       30 |  97.8%  |    96.7%  | +  1.1%
 ```
 
-**Аonлandз:**
+**Aonlandz:**
 
-Прand 3 from[CYR:[TRANSLATED]]andях [CYR:[TRANSLATED]]withtoandй [CYR:[TRANSLATED]] with[TRANSLATED]]andт 3×N elementоin. До N=20 ([CYR:[TRANSLATED]]withtoandй = 60 elementоin, 187% ёмtoоwithтand) [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] поfor[TRANSLATED]]in[CYR:[TRANSLATED]] 100% — [CYR:[TRANSLATED]] with[TRANSLATED]]on with[TRANSLATED]] доwith[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]].
+Prand 3 from:]andyakh :]withtoandy :] with]andt 3×N elementaboutin. Dabout N=20 (:]withtoandy = 60 elementaboutin, 187% yomtoaboutwithtand) :] :] byfor]in:] 100% — :] with]on with] daboutwith] :] :].
 
-[CYR:[TRANSLATED]]andя прand N=25: and[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] (93.3%) < [CYR:[TRANSLATED]]withtoandй (100%). [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toт toонfor[TRANSLATED]] with[TRANSLATED]] — прand 25 with[TRANSLATED]]with[TRANSLATED]] on [CYR:[TRANSLATED]]-[CYR:memory] мы on 78% from ёмtoоwithтand, with[TRANSLATED]]andwithтandчеwithtoandй [CYR:[TRANSLATED]].
+:]andya prand N=25: and:]towithandraboutin:] (93.3%) < :]withtoandy (100%). :] :]tot toaboutnfor] with] — prand 25 with]with] on :]-:memory] my on 78% from yomtoaboutwithtand, with]andwithtandchewithtoandy :].
 
-Прand N=30: and[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] inозin[CYR:[TRANSLATED]]withя to 97.8%, [CYR:[TRANSLATED]]withtoandй [CYR:[TRANSLATED]] до 96.7%.
+Prand N=30: and:]towithandraboutin:] inaboutzin:]withya to 97.8%, :]withtoandy :] dabout 96.7%.
 
-**[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] inыinод andз Теwithта 82**: onwith[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinо and[CYR:[TRANSLATED]]towithandроinанandя [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]withя прand [CYR:[TRANSLATED]] toолandчеwithтinе from[CYR:[TRANSLATED]]andй (R=5+), for[TRANSLATED]] [CYR:[TRANSLATED]]withtoandй [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andть R×N elementоin,  and[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] — [CYR:[TRANSLATED]]toо N on [CYR:[TRANSLATED]]-[CYR:memory].
+**:]in:] inyinaboutd andz Tewiththat 82**: onwith] :]and:]withtinabout and:]towithandraboutinanandya :]in:]withya prand :] toaboutlandchewithtine from:]andy (R=5+), for] :]withtoandy :] in:] :]andt R×N elementaboutin,  and:]towithandraboutin:] — :]toabout N on :]-:memory].
 
-## Иwith[TRANSLATED]]in[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]inоto andз брandфand[CYR:[TRANSLATED]]
+## Iwith]in:]andya :]inaboutto andz brandfand:]
 
-| [CYR:[TRANSLATED]]intoа | [CYR:[TRANSLATED]]withть |
+| :]intoa | :]witht |
 |--------|------------|
-| `src/indexed_kg.zig` | **Не with[TRANSLATED]]withтin[CYR:[TRANSLATED]]** |
-| `benchmarks/level11.10/` | **Не with[TRANSLATED]]withтin[CYR:[TRANSLATED]]** |
-| `specs/sym/intermediate_index.vibee` | **Не with[TRANSLATED]]withтin[CYR:[TRANSLATED]]** |
-| "Ёмtoоwithть >150 with[TRANSLATED]]with[TRANSLATED]]" | **450 трand[CYR:[TRANSLATED]]in, 98.7%** |
-| "[CYR:[TRANSLATED]]towithы [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withfor[TRANSLATED]]" | **+23.4% on 450 трand[CYR:[TRANSLATED]]** |
-| "[CYR:[TRANSLATED]]andроinанandе [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towithы" | **100% on 4 [CYR:[TRANSLATED]]** |
+| `src/indexed_kg.zig` | **Ne with]withtin:]** |
+| `benchmarks/level11.10/` | **Ne with]withtin:]** |
+| `specs/sym/intermediate_index.vibee` | **Ne with]withtin:]** |
+| "Yomtoaboutwitht >150 with]with]" | **450 trand:]in, 98.7%** |
+| ":]towithy :] :]withfor]" | **+23.4% on 450 trand:]** |
+| ":]andraboutinanande :] and:]towithy" | **100% on 4 :]** |
 
-## Крandтandчеwithtoая [CYR:[TRANSLATED]]toа
+## Krandtandchewithtoaya :]toa
 
-### Чеwith[TRANSLATED]] [CYR:[TRANSLATED]]: 8.0 / 10
+### Chewith] :]: 8.0 / 10
 
-**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]:**
-- **450 трand[CYR:[TRANSLATED]]in, 98.7%** — удin[CYR:[TRANSLATED]]andе from Level 11.9 (225 трand[CYR:[TRANSLATED]]in)
-- **[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towithandроinанandе** доfor[TRANSLATED]]in[CYR:[TRANSLATED]] прandнцandп: sectionяй and inлаwithтinуй
-- **+23.4% [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinо** onд [CYR:[TRANSLATED]]withtoandм on [CYR:[TRANSLATED]]andwithтand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
-- **[CYR:[TRANSLATED]]andроinанandе 100%** [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] on inwithех [CYR:[TRANSLATED]]andonх
-- **[CYR:[TRANSLATED]] ёмtoоwithтand** R × sqrt(DIM) inмеwithто sqrt(DIM)
-- 356 теwithтоin, [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withandй
-- 3 .vibee with[TRANSLATED]]andфandtoацand withfor[TRANSLATED]]orроin[CYR:[TRANSLATED]]
+**:] :]from:]:**
+- **450 trand:]in, 98.7%** — atdin:]ande from Level 11.9 (225 trand:]in)
+- **:] and:]towithandraboutinanande** daboutfor]in:] prandntsandp: sectionyay and inlawithtinaty
+- **+23.4% :]and:]withtinabout** ond :]withtoandm on :]andwithtand:] :]
+- **:]andraboutinanande 100%** :] and:]towithandraboutin:] :] on inwithekh :]andonkh
+- **:] yomtoaboutwithtand** R × sqrt(DIM) inmewiththat sqrt(DIM)
+- 356 thosewiththatin, :] :]withandy
+- 3 .vibee with]andfVersiontsand withfor]orraboutin:]
 
-**[CYR:[TRANSLATED]] not [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]:**
-- **[CYR:[TRANSLATED]]to (Теwithт 84) not[CYR:[TRANSLATED]]on[CYR:[TRANSLATED]]** — прand 3 from[CYR:[TRANSLATED]]andях [CYR:[TRANSLATED]]andца мandнand[CYR:[TRANSLATED]]on; [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinо inand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toо прand 5+ from[CYR:[TRANSLATED]]andях
-- **[CYR:[TRANSLATED]] onfor[TRANSLATED]]andin[CYR:[TRANSLATED]]withя** прand [CYR:[TRANSLATED]]stepоinом [CYR:[TRANSLATED]] (80% → 20% за 2 [CYR:[TRANSLATED]] прand noise=1→2)
-- **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] поandwithtoа** — [CYR:[TRANSLATED]]andроinанandе по-[CYR:[TRANSLATED]]notму andwith[TRANSLATED]] andзinеwith[TRANSLATED]] [CYR:[TRANSLATED]]and
-- **Сand[CYR:[TRANSLATED]]andчеwithtoandе [CYR:[TRANSLATED]]** — not [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] зonнandй
-- **30 with[TRANSLATED]]with[TRANSLATED]] on [CYR:[TRANSLATED]]-[CYR:memory]** — this пfrom[CYR:[TRANSLATED]]to; [CYR:[TRANSLATED]] KG [CYR:[TRANSLATED]] тыwithячand
+**:] not :]from:]:**
+- **:]to (Tewitht 84) not:]on:]** — prand 3 from:]andyakh :]andtsa mandnand:]on; :]and:]withtinabout inand:] :]toabout prand 5+ from:]andyakh
+- **:] onfor]andin:]withya** prand :]stepaboutinaboutm :] (80% → 20% za 2 :] prand noise=1→2)
+- **:] :] byandwithtoa** — :]andraboutinanande by-:]notmat andwith] andzinewith] :]and
+- **Sand:]andchewithtoande :]** — not :] :] zonnandy
+- **30 with]with] on :]-:memory]** — this pfrom:]to; :] KG :] tywithyachand
 
-**[CYR:[TRANSLATED]]:** -0.5 за not[CYR:[TRANSLATED]]on[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]to, -0.5 за onfor[TRANSLATED]]andе [CYR:[TRANSLATED]], -0.5 за fromwithутwithтinandе поandwithtoа [CYR:[TRANSLATED]], -0.5 за [CYR:[TRANSLATED]] маwith[TRANSLATED]].
+**:]:** -0.5 za not:]on:] :]to, -0.5 za onfor]ande :], -0.5 za fromwithattwithtinande byandwithtoa :], -0.5 za :] mawith].
 
-## [CYR:[TRANSLATED]]andтеfor[TRANSLATED]]
+## :]andthosefor]
 
 ```
-Level 11.10: [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towithandроinанandе
-├── Теwithт 82: [CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] KG (450 трand[CYR:[TRANSLATED]]in)           [[CYR:[TRANSLATED]]]
-│   ├── 3 [CYR:[TRANSLATED]]on × 5 from[CYR:[TRANSLATED]]andй × 30 with[TRANSLATED]]with[TRANSLATED]] = 450 трand[CYR:[TRANSLATED]]in
-│   ├── [CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]]: 444/450 (98.7%)
-│   ├── [CYR:[TRANSLATED]]withtoandй: 113/150 (75.3%)
-│   └── [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinо: +23.4%
-├── Теwithт 83: [CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andроinанandе                  [[CYR:[TRANSLATED]]]
-│   ├── 4 with[TRANSLATED]] × 20 with[TRANSLATED]]with[TRANSLATED]] = 80 [CYR:[TRANSLATED]]andwithей in and[CYR:[TRANSLATED]]towithе
-│   ├── [CYR:[TRANSLATED]]: 80/80 (100%)
-│   ├── [CYR:[TRANSLATED]] 1-4: 60/60 (100%)
-│   └── [CYR:[TRANSLATED]] 2-hop: 100%→80%→20%→7%→7%
-├── Теwithт 84: [CYR:[TRANSLATED]]to [CYR:[TRANSLATED]]towithы vs [CYR:[TRANSLATED]]withtoandй                  [[CYR:[TRANSLATED]]]
-│   ├── [CYR:[TRANSLATED]]: 5, 10, 15, 20, 25, 30
-│   ├── 3 from[CYR:[TRANSLATED]]andя — [CYR:[TRANSLATED]]andца мandнand[CYR:[TRANSLATED]]on
-│   └── 5+ from[CYR:[TRANSLATED]]andй — and[CYR:[TRANSLATED]]towithы inыand[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] зonчand[CYR:[TRANSLATED]]
-└── [CYR:[TRANSLATED]] (Level 11.0-11.9)
+Level 11.10: :] and:]towithandraboutinanande
+├── Tewitht 82: :]towithandraboutin:] KG (450 trand:]in)           [:]]
+│   ├── 3 :]on × 5 from:]andy × 30 with]with] = 450 trand:]in
+│   ├── :]towithandraboutin:]: 444/450 (98.7%)
+│   ├── :]withtoandy: 113/150 (75.3%)
+│   └── :]and:]withtinabout: +23.4%
+├── Tewitht 83: :]towithandraboutin:] :]andraboutinanande                  [:]]
+│   ├── 4 with] × 20 with]with] = 80 :]andwithey in and:]towithe
+│   ├── :]: 80/80 (100%)
+│   ├── :] 1-4: 60/60 (100%)
+│   └── :] 2-hop: 100%→80%→20%→7%→7%
+├── Tewitht 84: :]to :]towithy vs :]withtoandy                  [:]]
+│   ├── :]: 5, 10, 15, 20, 25, 30
+│   ├── 3 from:]andya — :]andtsa mandnand:]on
+│   └── 5+ from:]andy — and:]towithy inyand:]in:] zonchand:]
+└── :] (Level 11.0-11.9)
 ```
 
-## Ноinые .vibee with[TRANSLATED]]andфandtoацand
+## Naboutinye .vibee with]andfVersiontsand
 
-| [CYR:[TRANSLATED]]andфandtoацandя | [CYR:[TRANSLATED]]on[CYR:[TRANSLATED]]andе |
+| :]andfVersiontsandya | :]on:]ande |
 |-------------|-----------|
-| `kg_intermediate_indexing.vibee` | [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towithandроinанandе — 450 трand[CYR:[TRANSLATED]]in |
-| `kg_indexed_planning.vibee` | [CYR:[TRANSLATED]]andроinанandе [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towithandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] |
-| `kg_indexed_vs_flat_benchmark.vibee` | [CYR:[TRANSLATED]]to ёмtoоwithтand: and[CYR:[TRANSLATED]]towithы vs [CYR:[TRANSLATED]]withtoandй |
+| `kg_intermediate_indexing.vibee` | :] and:]towithandraboutinanande — 450 trand:]in |
+| `kg_indexed_planning.vibee` | :]andraboutinanande :] and:]towithandraboutin:] :] |
+| `kg_indexed_vs_flat_benchmark.vibee` | :]to yomtoaboutwithtand: and:]towithy vs :]withtoandy |
 
-## Resultы [CYR:[TRANSLATED]]toоin
+## Resulty :]toaboutin
 
-| [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]]withть | [CYR:[TRANSLATED]]withtoonя withпоwith[TRANSLATED]]withть |
+| :]andya | :]witht | :]withtoonya withbywith]witht |
 |----------|-------------|----------------------|
 | Bind | 2,232 ns | 114.7 M trits/sec |
 | Bundle3 | 2,415 ns | 106.0 M trits/sec |
@@ -252,21 +252,21 @@ Level 11.10: [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towithandроinанandе
 | Dot | 6 ns | 40,000.0 M trits/sec |
 | Permute | 2,082 ns | 122.9 M trits/sec |
 
-## [CYR:[TRANSLATED]]andе stepand ([CYR:[TRANSLATED]]inо [CYR:[TRANSLATED]]andй)
+## :]ande stepand (:]inabout :]andy)
 
-### [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] A: Обon[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]] (Path Discovery)
-[CYR:[TRANSLATED]]withто [CYR:[TRANSLATED]] по andзinеwith[TRANSLATED]] [CYR:[TRANSLATED]] — поandwithto within[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andзin[CYR:[TRANSLATED]]and with[TRANSLATED]]with[TRANSLATED]]and. BFS/DFS [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]and and[CYR:[TRANSLATED]]towithа.
+### :]and:] A: Obon:]ande :] (Path Discovery)
+:]withthat :] by andzinewith] :] — byandwithto within:] :] :]andzin:]and with]with]and. BFS/DFS :] :]-:]and and:]towitha.
 
-### [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] B: Маwith[TRANSLATED]]andроinанandе [CYR:[TRANSLATED]]withтand
-Теwithт прand DIM=4096 for уinелand[CYR:[TRANSLATED]]andя ёмtoоwithтand до ~64 on [CYR:[TRANSLATED]]-[CYR:memory]. [CYR:[TRANSLATED]]inолandт [CYR:[TRANSLATED]]andть ~320 трand[CYR:[TRANSLATED]]in on from[CYR:[TRANSLATED]]andе.
+### :]and:] B: Mawith]andraboutinanande :]withtand
+Tewitht prand DIM=4096 for atineland:]andya yomtoaboutwithtand dabout ~64 on :]-:memory]. :]inaboutlandt :]andt ~320 trand:]in on from:]ande.
 
-### [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] C: Beam Search for [CYR:[TRANSLATED]]with[TRANSLATED]]andinоwithтand
-[CYR:[TRANSLATED]]withто [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]] on for[TRANSLATED]] stepе — [CYR:[TRANSLATED]]andть top-K for[TRANSLATED]]and[CYR:[TRANSLATED]]in and inыбand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andй path по with[TRANSLATED]] with[TRANSLATED]]withтinу.
+### :]and:] C: Beam Search for :]with]andinaboutwithtand
+:]withthat :] in:] on for] stepe — :]andt top-K for]and:]in and inyband:] :]andy path by with] with]withtinat.
 
-## [CYR:[TRANSLATED]]andчonя and[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withть
+## :]andchonya and:]and:]witht
 
 $$\varphi^2 + \frac{1}{\varphi^2} = 3$$
 
 ---
 
-*[CYR:[TRANSLATED]]: 2026-02-16 | Зin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromой [CYR:[TRANSLATED]]and #120 | Level 11.10 [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]towithandроinанandе — 450 трand[CYR:[TRANSLATED]]in 98.7%, [CYR:[TRANSLATED]]andроinанandе 100%, [CYR:[TRANSLATED]]towithы +23.4% vs [CYR:[TRANSLATED]]withtoandй*
+*:]: 2026-02-16 | Zin:] :]fromabouty :]and #120 | Level 11.10 :] and:]towithandraboutinanande — 450 trand:]in 98.7%, :]andraboutinanande 100%, :]towithy +23.4% vs :]withtoandy*

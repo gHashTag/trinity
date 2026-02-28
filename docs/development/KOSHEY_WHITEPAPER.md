@@ -8,7 +8,7 @@
 
 ## Abstract
 
-KOSHEY ([CYR:[TRANSLATED]] Беwith[TRANSLATED]] - "Koschei the Immortal") is a specification-first AI architecture that implements a 12-tier technology tree from basic immortality mechanisms to theoretical absolute infinity. The system comprises 114 modules with 766 tests, all generated from VIBEE specifications. This paper presents the architecture, theoretical foundations, and implementation details.
+KOSHEY ([CYR:[TRANSLATED]] Bywith[TRANSLATED]] - "Koschei the Immortal") is a specification-first AI architecture that implements a 12-tier technology tree from basic immortality mechanisms to theoretical absolute infinity. The system comprises 114 modules with 766 tests, all generated from VIBEE specifications. This paper presents the architecture, theoretical foundations, and implementation details.
 
 ---
 

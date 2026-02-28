@@ -1,12 +1,12 @@
-# [CYR:[TRANSLATED]] V5: CRUSH EXTENDED MODULES
+# :] V5: CRUSH EXTENDED MODULES
 
-**[CYR:[TRANSLATED]]**: 2026-01-19
-**Аin[CYR:[TRANSLATED]]**: IGLA System
-**[CYR:[TRANSLATED]]with**: ✅ PASSED
+**:]**: 2026-01-19
+**Author:]**: IGLA System
+**:]with**: ✅ PASSED
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
 ```
 V = n × 3^k × π^m × φ^p × e^q
@@ -16,18 +16,18 @@ PHOENIX = 999
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
-### Ноinые [CYR:[TRANSLATED]]and V5
+### Naboutinye :]and V5
 
-| [CYR:[TRANSLATED]] | .vibee | .tri | .zig | Теwithты | [CYR:[TRANSLATED]]with |
+| :] | .vibee | .tri | .zig | Tewithty | :]with |
 |--------|--------|------|------|-------|--------|
 | csync | ✅ | ✅ | ✅ | 11/11 | PASSED |
 | stringext | ✅ | ✅ | ✅ | 17/17 | PASSED |
 
-### Вwithе [CYR:[TRANSLATED]]and Crush (V4 + V5)
+### Vwithe :]and Crush (V4 + V5)
 
-| [CYR:[TRANSLATED]] | Теwithты | Опandwithанandе |
+| :] | Tewithty | Opandwithanande |
 |--------|-------|----------|
 | ansiext | 8 | Control character escaping |
 | format | 6 | Spinner animation |
@@ -35,7 +35,7 @@ PHOENIX = 999
 | csync | 11 | Concurrent collections |
 | stringext | 17 | String manipulation |
 
-**Вwith[TRANSLATED]] теwithтоin**: 50/50 ✅
+**Vwith] thosewiththatin**: 50/50 ✅
 
 ---
 
@@ -90,7 +90,7 @@ PHOENIX = 999
 
 ## PAS ANALYSIS
 
-| [CYR:[TRANSLATED]]notнт | Теtoущandй | [CYR:[TRANSLATED]]withfor[TRANSLATED]] | Уin[CYR:[TRANSLATED]]withть |
+| :]notnt | Tetoatschandy | :]withfor] | Uin:]witht |
 |-----------|---------|---------------|-------------|
 | csync.Map | RWMutex O(1) | Lock-free O(1) | 55% |
 | stringext.containsAny | O(n*m) | O(n+m) Aho-Corasick | 75% |
@@ -98,46 +98,46 @@ PHOENIX = 999
 
 ---
 
-## [CYR:[TRANSLATED]]
+## :]
 
 ```
-[CYR:[TRANSLATED]]andфandtoацand:     5 .vibee fileоin (crush/)
-TRI fileы:        5 withгеnotрandроin[CYR:[TRANSLATED]]
-Zig [CYR:[TRANSLATED]]and:       5 withгеnotрandроin[CYR:[TRANSLATED]]
-[CYR:[TRANSLATED]]to for[TRANSLATED]]:       ~900 with[TRANSLATED]]to Zig
-Теwithтоin:           50 теwithтоin
-Поfor[TRANSLATED]]andе:         ~90% [CYR:[TRANSLATED]]toцandй
+:]andfVersiontsand:     5 .vibee fileaboutin (crush/)
+TRI filey:        5 withgenotrandraboutin:]
+Zig :]and:       5 withgenotrandraboutin:]
+:]to for]:       ~900 with]to Zig
+Tewiththatin:           50 thosewiththatin
+Paboutfor]ande:         ~90% :]totsandy
 Trinity Score:    1.0
 ```
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
-### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
+### :] :]:
 
-1. **csync** - [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]withпand[CYR:[TRANSLATED]]andя concurrent primitives:
-   - Map with RwLock [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
-   - Slice with thread-safe [CYR:[TRANSLATED]]andямand
-   - Value wrapper for прandмandтandinоin
-   - 11 теwithтоin поtoрыin[CYR:[TRANSLATED]] inwithе [CYR:[TRANSLATED]]and
+1. **csync** - :]onya :]withpand:]andya concurrent primitives:
+   - Map with RwLock :]and:]
+   - Slice with thread-safe :]andyamand
+   - Value wrapper for prandmandtandinaboutin
+   - 11 thosewiththatin bytoryin:] inwithe :]and
 
 2. **stringext** - string utilities:
    - capitalize with title case
    - containsAny for multi-pattern search
-   - [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] утorты (trim, toLower, toUpper)
-   - 17 теwithтоin with edge cases
+   - :]and:] attorty (trim, toLower, toUpper)
+   - 17 thosewiththatin with edge cases
 
-### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
+### :] :] :] :]:
 
-1. [CYR:[TRANSLATED]]inandть LazySlice with async loading
-2. [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] Aho-Corasick for containsAny
-3. [CYR:[TRANSLATED]]inandть JSON serialization for csync.Map
-4. Property-based теwithты for concurrent access
+1. :]inandt LazySlice with async loading
+2. :]andzaboutin:] Aho-Corasick for containsAny
+3. :]inandt JSON serialization for csync.Map
+4. Property-based thosewithty for concurrent access
 
 ---
 
-## [CYR:[TRANSLATED]]
+## :]
 
 ```
 ╔═══════════════════════════════════════════════════════════════╗
@@ -157,5 +157,5 @@ Trinity Score:    1.0
 
 ---
 
-**[CYR:[TRANSLATED]]andwithь**: IGLA VERDICT V5 CRUSH EXTENDED
-**[CYR:[TRANSLATED]]**: SHA256(csync + stringext) = TRINITY_VERIFIED
+**:]andwith**: IGLA VERDICT V5 CRUSH EXTENDED
+**:]**: SHA256(csync + stringext) = TRINITY_VERIFIED

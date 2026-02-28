@@ -84,7 +84,7 @@ Successfully integrated TinyLlama GGUF local fallback and fixed long context han
 ### Integration Test
 
 ```
-Input: прandinет, toаto [CYR:[TRANSLATED]], hello, what is phi, /stats, /quit
+Input: prandinet, toato :], hello, what is phi, /stats, /quit
 
 Output:
   Queries: 4
@@ -100,10 +100,10 @@ Output:
 
 ### Before (Old CLI - Hang on Long Context)
 ```
-[Explain] > прandinет
-Прandinет! Trinity on withinязand...
-[Explain] > toаto [CYR:[TRANSLATED]]
-[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]! 73K ops/s...
+[Explain] > prandinet
+Prandinet! Trinity on withinyazand...
+[Explain] > toato :]
+:]and:]! 73K ops/s...
 ... (20+ messages) ...
 [Explain] > hello
 [HANG - no response, memory growing]
@@ -111,17 +111,17 @@ Output:
 
 ### After (Fluent CLI - No Hang)
 ```
-[0/20] > прandinет
-Прandinет! [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]]. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]?
+[0/20] > prandinet
+Prandinet! :] :] inand:]. :] :] :]?
 
-[2/20] > toаto [CYR:[TRANSLATED]]
-[CYR:[TRANSLATED]]! Гfromоin пandwith[TRANSLATED]] toод and [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withя?
+[2/20] > toato :]
+:]! Gfromaboutin pandwith] toaboutd and :] :]and. :] :]withya?
 
 [4/20] > hello
 Hey! Trinity Local Agent here. What are we building?
 
 [6/20] > what is phi
-3^21 = 10,460,353,203 — чandwithло Trinity. phi^2 + 1/phi^2 = 3. Koschei!
+3^21 = 10,460,353,203 — chandwithlabout Trinity. phi^2 + 1/phi^2 = 3. Koschei!
 
 [8/20] > /stats
 ═══ Conversation Statistics ═══

@@ -140,8 +140,8 @@ act() {
             ;;
         extract)
             log "Extract action: $input"
-            # В реальности здесь был бы CDP запрос к DOM
-            # Пока возвращаем title как пример извлечённых данных
+            # V realnaboutwithtand zdewith byl by CDP zapraboutwith to DOM
+            # Pabouttoa inaboutzinraschaem title how example frominlechyonnykh data
             local page_data=$(curl -s "http://${CDP_HOST}:${CDP_PORT}/json/list" 2>/dev/null | \
                 python3 -c "
 import json, sys

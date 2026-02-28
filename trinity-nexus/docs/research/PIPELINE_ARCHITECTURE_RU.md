@@ -1,40 +1,40 @@
 # VIBEE Pipeline Architecture
 
-## [CYR:[TRANSLATED]] мы this [CYR:[TRANSLATED]]?
+## :] my this :]?
 
-### Problem [CYR:[TRANSLATED]]andцand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
-
-```
-[CYR:[TRANSLATED]]andцand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:
-[CYR:[TRANSLATED]]andwithт → пand[CYR:[TRANSLATED]] toод → теwithты → [CYR:[TRANSLATED]]and → фandtowithы → поin[CYR:[TRANSLATED]]andть
-
-[CYR:[TRANSLATED]]:
-1. [CYR:[TRANSLATED]] пand[CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] with[TRANSLATED]]andфandtoацand
-2. Теwithты пand[CYR:[TRANSLATED]]withя поwithле for[TRANSLATED]] (or not пand[CYR:[TRANSLATED]]withя)
-3. [CYR:[TRANSLATED]] едand[CYR:[TRANSLATED]] andwith[TRANSLATED]]andtoа [CYR:[TRANSLATED]]inды
-4. [CYR:[TRANSLATED]] геnotрandроin[CYR:[TRANSLATED]] toод for [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toоin
-5. [CYR:[TRANSLATED]] on[CYR:[TRANSLATED]] оwithноinы for [CYR:[TRANSLATED]]andй
-```
-
-### [CYR:[TRANSLATED]]andе: Specification-First Development
+### Problem :]andtsand:] :]
 
 ```
-VIBEE [CYR:[TRANSLATED]]:
-[CYR:[TRANSLATED]]andфandtoацandя → [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] → [CYR:[TRANSLATED]] + Теwithты (аin[CYR:[TRANSLATED]]andчеwithtoand)
+:]andtsand:] :]:
+:]andwitht → pand:] toaboutd → thosewithty → :]and → fandtowithy → byin:]andt
 
-[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinа:
-1. [CYR:[TRANSLATED]]andфandtoацandя = едand[CYR:[TRANSLATED]] andwith[TRANSLATED]]andto [CYR:[TRANSLATED]]inды
-2. Теwithты геnotрand[CYR:[TRANSLATED]]withя andз behaviors
-3. [CYR:[TRANSLATED]] геnotрand[CYR:[TRANSLATED]]withя for [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toа
-4. PAS DAEMONS [CYR:[TRANSLATED]]withfor[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andя
-5. [CYR:[TRANSLATED]]onя оwithноinа (12 papers, 150K citations)
+:]:
+1. :] pand:]withya :] :] with]andfVersiontsand
+2. Tewithty pand:]withya bywithle for] (or not pand:]withya)
+3. :] edand:] andwith]Version :]indy
+4. :] genotrandraboutin:] toaboutd for :] :]toaboutin
+5. :] on:] aboutwithnaboutiny for :]andy
+```
+
+### :]ande: Specification-First Development
+
+```
+VIBEE :]:
+:]andfVersiontsandya → :]and:] → :] + Tewithty (ain:]andchewithtoand)
+
+:]and:]withtina:
+1. :]andfVersiontsandya = edand:] andwith]andto :]indy
+2. Tewithty genotrand:]withya andz behaviors
+3. :] genotrand:]withya for :] :]toa
+4. PAS DAEMONS :]withfor]in:] :]andya
+5. :]onya aboutwithnaboutina (12 papers, 150K citations)
 ```
 
 ---
 
-## Теtoущandй Pipeline (v35)
+## Tetoatschandy Pipeline (v35)
 
-### Problem: [CYR:[TRANSLATED]] toод in ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ
+### Problem: :] toaboutd in ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ
 
 ```yaml
 # specs/tri/example.vibee
@@ -46,26 +46,26 @@ types:
       - name: id
         type: Int
 
-# [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] пand[CYR:[TRANSLATED]]withя in[CYR:[TRANSLATED]]!
+# :]: :] pand:]withya in:]!
 ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ: """
 pub const User = struct {
-    id: i64,  // ← [CYR:[TRANSLATED]] onпandwith[TRANSLATED]] руtoамand
+    id: i64,  // ← :] onpandwith] rattoamand
 };
 """
 ```
 
-### [CYR:[TRANSLATED]] this [CYR:[TRANSLATED]]:
+### :] this :]:
 
-1. **[CYR:[TRANSLATED]]andроinанandе** - types опandwith[TRANSLATED]] дin[CYR:[TRANSLATED]] (in spec and in for[TRANSLATED]])
-2. **Раwithand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя** - spec and toод [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andwithь
-3. **[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]fromа** - on[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]] аin[CYR:[TRANSLATED]]not[CYR:[TRANSLATED]]and
-4. **Ошandбtoand** - [CYR:[TRANSLATED]]inеto [CYR:[TRANSLATED]] ошandбandтьwithя in for[TRANSLATED]]
+1. **:]andraboutinanande** - types aboutpandwith] din:] (in spec and in for])
+2. **Rawithand:]and:]andya** - spec and toaboutd :] :]andwith
+3. **:]onya :]froma** - on:] and:] ain:]not:]and
+4. **Oshandbtoand** - :]ineto :] aboutshandbandtwithya in for]
 
 ---
 
-## [CYR:[TRANSLATED]]inой Pipeline (v36+)
+## :]inabouty Pipeline (v36+)
 
-### [CYR:[TRANSLATED]]andе: Аin[CYR:[TRANSLATED]]andчеwithtoая геnot[CYR:[TRANSLATED]]andя
+### :]ande: Author:]andchewithtoaya genot:]andya
 
 ```yaml
 # specs/tri/example.vibee
@@ -94,26 +94,26 @@ behaviors:
         input: '{"id": 1, "name": "John"}'
         expected: '{"id": 1}'
 
-# [CYR:[TRANSLATED]] ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ - toод геnotрand[CYR:[TRANSLATED]]withя аin[CYR:[TRANSLATED]]andчеwithtoand!
+# :] ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ - toaboutd genotrand:]withya ain:]andchewithtoand!
 ```
 
-### [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] геnotрand[CYR:[TRANSLATED]]:
+### :]and:] genotrand:]:
 
 ```zig
-// [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] andз example.vibee
+// :] :] andz example.vibee
 
 const std = @import("std");
 
 pub const PHI: f64 = 1.618033988749895;
 
-// Из types:
+// Iz types:
 pub const User = struct {
     id: i64,
     name: []const u8,
     email: []const u8,
 };
 
-// Из behaviors:
+// Iz behaviors:
 pub fn create_user(id: i64, name: []const u8, email: []const u8) User {
     return User{
         .id = id,
@@ -122,7 +122,7 @@ pub fn create_user(id: i64, name: []const u8, email: []const u8) User {
     };
 }
 
-// Из test_cases:
+// Iz test_cases:
 test "test_create_valid" {
     const user = create_user(1, "John", "john@example.com");
     try std.testing.expectEqual(@as(i64, 1), user.id);
@@ -136,7 +136,7 @@ test "golden identity" {
 
 ---
 
-## [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] for[TRANSLATED]]and[CYR:[TRANSLATED]]
+## :]andthosefor] for]and:]
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -159,11 +159,11 @@ test "golden identity" {
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### [CYR:[TRANSLATED]] for[TRANSLATED]]and[CYR:[TRANSLATED]]and:
+### :] for]and:]and:
 
-1. **Parser** - чand[CYR:[TRANSLATED]] .vibee, with[TRANSLATED]]andт AST
-2. **Analyzer** - [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] тandпы, inалandдand[CYR:[TRANSLATED]]
-3. **CodeGen** - геnotрand[CYR:[TRANSLATED]] toод for [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toа
+1. **Parser** - chand:] .vibee, with]andt AST
+2. **Analyzer** - :]in:] tandpy, inalanddand:]
+3. **CodeGen** - genotrand:] toaboutd for :]in:] :]toa
 
 ---
 
@@ -183,7 +183,7 @@ test "golden identity" {
 ## Behavior → Function Mapping
 
 ```yaml
-# [CYR:[TRANSLATED]]andфandtoацandя
+# :]andfVersiontsandya
 behaviors:
   - name: calculate_total
     given: "List of prices"
@@ -195,7 +195,7 @@ behaviors:
     returns: Float
 ```
 
-### Геnotрand[CYR:[TRANSLATED]]withя:
+### Genotrand:]withya:
 
 **Zig:**
 ```zig
@@ -230,7 +230,7 @@ func CalculateTotal(prices []float64) float64 {
 ## Test Generation
 
 ```yaml
-# [CYR:[TRANSLATED]]andфandtoацandя
+# :]andfVersiontsandya
 test_cases:
   - name: test_empty_list
     input: '{"prices": []}'
@@ -245,7 +245,7 @@ test_cases:
     expected: '60.0'
 ```
 
-### Геnotрand[CYR:[TRANSLATED]]withя:
+### Genotrand:]withya:
 
 ```zig
 test "test_empty_list" {
@@ -268,7 +268,7 @@ test "test_multiple_items" {
 
 ## PAS DAEMONS Integration
 
-### Аin[CYR:[TRANSLATED]]andчеwithtoandй аonлandз [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]in:
+### Author:]andchewithtoandy aonlandz :]and:]in:
 
 ```yaml
 behaviors:
@@ -277,13 +277,13 @@ behaviors:
     when: "search_item is called"
     then: "Return index or -1"
     
-    # PAS аin[CYR:[TRANSLATED]]andчеwithtoand [CYR:[TRANSLATED]]:
+    # PAS ain:]andchewithtoand :]:
     pas_analysis:
-      current_complexity: O(n)      # Лandnot[CYR:[TRANSLATED]] поandwithto
-      optimal_complexity: O(log n)  # Бandon[CYR:[TRANSLATED]] поandwithto
+      current_complexity: O(n)      # Landnot:] byandwithto
+      optimal_complexity: O(log n)  # Bandon:] byandwithto
       applicable_patterns:
-        - D&C: 0.85  # Divide-and-Conquer [CYR:[TRANSLATED]]andт
-        - PRE: 0.20  # Precomputation меnotе прand[CYR:[TRANSLATED]]andм
+        - D&C: 0.85  # Divide-and-Conquer :]andt
+        - PRE: 0.20  # Precomputation menote prand:]andm
       recommendation: "Use binary search (D&C pattern)"
 ```
 
@@ -292,9 +292,9 @@ behaviors:
 ## Roadmap
 
 ### v36: Basic Auto-Generation
-- [ ] Геnot[CYR:[TRANSLATED]]andя with[TRANSLATED]]for[TRANSLATED]] andз types
-- [ ] Геnot[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]toцandй andз behaviors
-- [ ] Геnot[CYR:[TRANSLATED]]andя теwithтоin andз test_cases
+- [ ] Genot:]andya with]for] andz types
+- [ ] Genot:]andya :]totsandy andz behaviors
+- [ ] Genot:]andya thosewiththatin andz test_cases
 
 ### v37: Multi-Language
 - [ ] Python codegen
@@ -302,24 +302,24 @@ behaviors:
 - [ ] Rust codegen
 
 ### v38: PAS Integration
-- [ ] Аin[CYR:[TRANSLATED]]andчеwithtoandй аonлandз with[TRANSLATED]]withтand
-- [ ] Реfor[TRANSLATED]]and по [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and
-- [ ] Прandмеnotнandе [CYR:[TRANSLATED]]in
+- [ ] Author:]andchewithtoandy aonlandz with]withtand
+- [ ] Refor]and by :]andmand:]and
+- [ ] Prandmenotnande :]in
 
 ### v39: Full Pipeline
-- [ ] IDE and[CYR:[TRANSLATED]]andя
+- [ ] IDE and:]andya
 - [ ] Hot reload
 - [ ] Incremental compilation
 
 ---
 
-## [CYR:[TRANSLATED]]
+## :]
 
 ```bash
-# Теtoущandй ([CYR:[TRANSLATED]])
+# Tetoatschandy (:])
 ./bin/tri-extract specs/tri/example.vibee
 
-# [CYR:[TRANSLATED]]inой (аin[CYR:[TRANSLATED]]andчеwithtoandй)
+# :]inabouty (ain:]andchewithtoandy)
 vibeec compile specs/tri/example.vibee --target zig
 vibeec compile specs/tri/example.vibee --target python
 vibeec compile specs/tri/example.vibee --target go
@@ -327,15 +327,15 @@ vibeec compile specs/tri/example.vibee --target go
 
 ---
 
-## Заfor[TRANSLATED]]andе
+## Zafor]ande
 
-**[CYR:[TRANSLATED]] this in[CYR:[TRANSLATED]]:**
+**:] this in:]:**
 
-1. **Едand[CYR:[TRANSLATED]] andwith[TRANSLATED]]andto [CYR:[TRANSLATED]]inды** - with[TRANSLATED]]andфandtoацandя [CYR:[TRANSLATED]] inwithё
-2. **Аin[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя** - toод геnotрand[CYR:[TRANSLATED]]withя, not пand[CYR:[TRANSLATED]]withя
-3. **[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withть** - одandн spec → [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toоin
-4. **Теwithтand[CYR:[TRANSLATED]]withть** - теwithты andз with[TRANSLATED]]andфandtoацand
-5. **[CYR:[TRANSLATED]]onя оwithноinа** - PAS [CYR:[TRANSLATED]]withfor[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andя
+1. **Edand:] andwith]andto :]indy** - with]andfVersiontsandya :] inwithyo
+2. **Author:]and:]andya** - toaboutd genotrand:]withya, not pand:]withya
+3. **:]and:]witht** - aboutdandn spec → :] :]toaboutin
+4. **Tewithtand:]witht** - thosewithty andz with]andfVersiontsand
+5. **:]onya aboutwithnaboutina** - PAS :]withfor]in:] :]andya
 
 ```
 φ² + 1/φ² = 3

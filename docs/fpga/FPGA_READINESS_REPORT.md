@@ -1,28 +1,28 @@
-# FPGA READINESS REPORT - [CYR:[TRANSLATED]] "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]"
+# FPGA READINESS REPORT - :] ":] :]"
 
-**[CYR:[TRANSLATED]]:** Янin[CYR:[TRANSLATED]] 2026  
-**[CYR:[TRANSLATED]]with:** ✅ [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]  
+**:]:** Yanin:] 2026  
+**:]with:** ✅ :]  :] :]  
 **Sacred formula:** `V = n × 3^k × π^m × φ^p × e^q`
 
 ---
 
 ## EXECUTIVE SUMMARY
 
-Вwithе [CYR:[TRANSLATED]] for[TRANSLATED]]not[CYR:[TRANSLATED]] гfromоinы. [CYR:[TRANSLATED]] заin[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]and "[CYR:[TRANSLATED]] Заinет" [CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]]toо фandзandчеwithtoое [CYR:[TRANSLATED]]inанandе.
+Vwithe :] for]not:] gfromaboutiny. :] zain:]andya :]and ":] Zainet" :]withya :]toabout fandzandchewithtoaboute :]inanande.
 
-| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]]with | Прand[CYR:[TRANSLATED]]andе |
+| :]notnt | :]with | Prand:]ande |
 |-----------|--------|------------|
-| vibeec compiler | ✅ [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] | Иwith[TRANSLATED]]in[CYR:[TRANSLATED]] for Zig 0.13 |
-| Verilog codegen | ✅ [CYR:[TRANSLATED]]andроinан | Аin[CYR:[TRANSLATED]]andчеwithtoая геnot[CYR:[TRANSLATED]]andя .v |
-| Сand[CYR:[TRANSLATED]]andя | ✅ 100% PASS | Icarus Verilog + Verilator |
-| Constraints | ✅ Гfromоinы | arty_a7.xdc |
-| Vivado scripts | ✅ Гfromоinы | build_all.tcl |
-| Доfor[TRANSLATED]]andя | ✅ [CYR:[TRANSLATED]]onя | 3 руtoоinодwithтinа |
-| **[CYR:[TRANSLATED]]inанandе** | ⏳ [CYR:[TRANSLATED]]withя | Arty A7-35T (~$150) |
+| vibeec compiler | ✅ :]from:] | Iwith]in:] for Zig 0.13 |
+| Verilog codegen | ✅ :]andraboutinan | Author:]andchewithtoaya genot:]andya .v |
+| Sand:]andya | ✅ 100% PASS | Icarus Verilog + Verilator |
+| Constraints | ✅ Gfromaboutiny | arty_a7.xdc |
+| Vivado scripts | ✅ Gfromaboutiny | build_all.tcl |
+| Daboutfor]andya | ✅ :]onya | 3 rattoaboutinaboutdwithtina |
+| **:]inanande** | ⏳ :]withya | Arty A7-35T (~$150) |
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -53,14 +53,14 @@
 │  FPGA: Arty A7-35T  ⏳ REQUIRES HARDWARE                        │
 │           │                                                     │
 │           ▼                                                     │
-│  🎉 [CYR:[TRANSLATED]] LED = [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                     │
+│  🎉 :] LED = :] :]                     │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
 ### hello_fpga_led.v
 ```
@@ -94,13 +94,13 @@ $ verilator --lint-only --top-module hello_fpga_led_top hello_fpga_led.v
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
-### Иwith[TRANSLATED]] toод
-- `specs/fpga/hello_fpga_led.vibee` - with[TRANSLATED]]andфandtoацandя LED blinker
-- `specs/fpga/trinity_fpga_mvp.vibee` - with[TRANSLATED]]andфandtoацandя Trinity MVP
+### Iwith] toaboutd
+- `specs/fpga/hello_fpga_led.vibee` - with]andfVersiontsandya LED blinker
+- `specs/fpga/trinity_fpga_mvp.vibee` - with]andfVersiontsandya Trinity MVP
 
-### [CYR:[TRANSLATED]]notрandроin[CYR:[TRANSLATED]] Verilog
+### :]notrandraboutin:] Verilog
 - `trinity/output/fpga/hello_fpga_led.v` (6.8 KB)
 - `trinity/output/fpga/trinity_fpga_mvp.v` (6.8 KB)
 
@@ -113,100 +113,100 @@ $ verilator --lint-only --top-module hello_fpga_led_top hello_fpga_led.v
 - `trinity/output/fpga/scripts/impl.tcl`
 - `trinity/output/fpga/scripts/program.tcl`
 
-### Доfor[TRANSLATED]]andя
+### Daboutfor]andya
 - `docs/FPGA_DEPLOYMENT_GUIDE.md`
 - `docs/FPGA_QUICKSTART.md`
 - `docs/IRON_COVENANT_REPORT.md`
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :] :]
 
-### [CYR:[TRANSLATED]]inанandе
+### :]inanande
 
-| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]] | Цеon | Сwithылtoа |
+| :]notnt | :] | Tseon | Swithyltoa |
 |-----------|--------|------|--------|
 | FPGA Board | Digilent Arty A7-35T | $129 | [digilent.com](https://digilent.com/shop/arty-a7-artix-7-fpga-development-board/) |
-| USB Cable | Micro-B | $5 |  for[TRANSLATED]]toте |
-| **[CYR:[TRANSLATED]]** | | **~$150** | |
+| USB Cable | Micro-B | $5 |  for]tothose |
+| **:]** | | **~$150** | |
 
-### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with[TRANSLATED]]andе
+### :] :]with]ande
 
-| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]]withandя | Цеon | [CYR:[TRANSLATED]] уwith[TRANSLATED]]intoand |
+| :]notnt | :]Author | Tseon | :] atwith]intoand |
 |-----------|--------|------|-----------------|
-| Vivado ML Standard | 2023.2+ | Беwith[TRANSLATED]] | 1 чаwith |
-| Digilent Board Files | Latest | Беwith[TRANSLATED]] | 5 мand[CYR:[TRANSLATED]] |
+| Vivado ML Standard | 2023.2+ | Bywith] | 1 chawith |
+| Digilent Board Files | Latest | Bywith] | 5 mand:] |
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :]
 
-### Поwithле поtoупtoand and onwith[TRANSLATED]]toand:
+### Paboutwithle bytoatptoand and onwith]toand:
 
-1. **Мand[CYR:[TRANSLATED]]andй LED** - inand[CYR:[TRANSLATED]] доfor[TRANSLATED]]withтinо [CYR:[TRANSLATED]]fromы
-2. **[CYR:[TRANSLATED]] реwithурwithы** - [CYR:[TRANSLATED]] andwith[TRANSLATED]]inанandе LUTs/FFs
-3. **Timing report** - [CYR:[TRANSLATED]]onя Fmax
-4. **Фfromо/inand[CYR:[TRANSLATED]]** - [CYR:[TRANSLATED]]andал for andнinеwith[TRANSLATED]]in
+1. **Mand:]andy LED** - inand:] daboutfor]withtinabout :]fromy
+2. **:] rewithatrwithy** - :] andwith]inanande LUTs/FFs
+3. **Timing report** - :]onya Fmax
+4. **Ffromabout/inand:]** - :]andal for andninewith]in
 
-### Ожand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andtoand:
+### Ozhand:] :]andtoand:
 
-| [CYR:[TRANSLATED]]andtoа | Ожand[CYR:[TRANSLATED]]andе | Прand[CYR:[TRANSLATED]]andе |
+| :]Version | Ozhand:]ande | Prand:]ande |
 |---------|----------|------------|
-| LUTs | <100 | [CYR:[TRANSLATED]] hello_fpga_led |
-| FFs | <50 | [CYR:[TRANSLATED]] hello_fpga_led |
-| Fmax | >200 MHz | Прand target 100 MHz |
-| Power | <0.5W | [CYR:[TRANSLATED]]andчеwithtoая + дandonмandчеwithtoая |
+| LUTs | <100 | :] hello_fpga_led |
+| FFs | <50 | :] hello_fpga_led |
+| Fmax | >200 MHz | Prand target 100 MHz |
+| Power | <0.5W | :]andchewithtoaya + dandonmandchewithtoaya |
 
 ---
 
-## ROI [CYR:[TRANSLATED]]
+## ROI :]
 
-### Инinеwithтandцandя: $150
+### Ininewithtandtsandya: $150
 
-### [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]:
-- **Доfor[TRANSLATED]]withтinо for[TRANSLATED]]and** - беwith[TRANSLATED]] for andнinеwith[TRANSLATED]]in
-- **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andtoand** - not withand[CYR:[TRANSLATED]]andя,  фаtoты
-- **[CYR:[TRANSLATED]]-with[TRANSLATED]]** - [CYR:[TRANSLATED]] поfor[TRANSLATED]] фandзandчеwithtoand
-- **[CYR:[TRANSLATED]]** - [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]fromа with FPGA
+### :]in:]:
+- **Daboutfor]withtinabout for]and** - bewith] for andninewith]in
+- **:] :]andtoand** - not withand:]andya,  fatoty
+- **:]-with]** - :] byfor] fandzandchewithtoand
+- **:]** - :]onya :]froma with FPGA
 
-### [CYR:[TRANSLATED]]onтandinы:
-- Cloud FPGA (AWS F1): ~$1.65/чаwith = $40/[CYR:[TRANSLATED]]
-- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inанandя: notдоwith[TRANSLATED]]
-- Сand[CYR:[TRANSLATED]]andя: [CYR:[TRANSLATED]] with[TRANSLATED]], но this not доfor[TRANSLATED]]withтinо
+### :]ontandiny:
+- Cloud FPGA (AWS F1): ~$1.65/chawith = $40/:]
+- :] :]inanandya: notdaboutwith]
+- Sand:]andya: :] with], nabout this not daboutfor]withtinabout
 
-**Выinод:** $150 - мandнand[CYR:[TRANSLATED]]onя andнinеwithтandцandя for маtowithand[CYR:[TRANSLATED]] resultа.
-
----
-
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
-
-### [CYR:[TRANSLATED]] (поwithле [CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]):
-
-1. [ ] Заfor[TRANSLATED]] Arty A7-35T on digilent.com
-2. [ ] Сfor[TRANSLATED]] and уwith[TRANSLATED]]inandть Vivado ML Standard
-3. [ ] Уwith[TRANSLATED]]inandть Digilent board files
-
-### Поwithле [CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]inанandя:
-
-4. [ ] [CYR:[TRANSLATED]]for[TRANSLATED]]andть [CYR:[TRANSLATED]]
-5. [ ] [CYR:[TRANSLATED]]withтandть build_all.tcl
-6. [ ] [CYR:[TRANSLATED]]andть bitstream
-7. [ ] [CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]] мand[CYR:[TRANSLATED]] LED
-8. [ ] [CYR:[TRANSLATED]]andть реwithурwithы and timing
-9. [ ] [CYR:[TRANSLATED]]inandть доfor[TRANSLATED]]andю with [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]and
-
-### Фandonл:
-
-10. [ ] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andю for andнinеwith[TRANSLATED]]in
-11. [ ] [CYR:[TRANSLATED]]andtoоin[CYR:[TRANSLATED]] resultы
+**Vyinaboutd:** $150 - mandnand:]onya andninewithtandtsandya for matowithand:] resulta.
 
 ---
 
-## [CYR:[TRANSLATED]]
+## :] :]
 
-**Вwithё гfromоinо. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toо $150 and 3-7 дnotй on доwithтаintoу.**
+### :] (bywithle :]andya :]):
 
-[CYR:[TRANSLATED]] not [CYR:[TRANSLATED]]withто поtoупtoа [CYR:[TRANSLATED]]. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]], for[TRANSLATED]] onш [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]andт in фandзandчеwithtoом мandре. [CYR:[TRANSLATED]] доfor[TRANSLATED]]withтinо, tofrom[CYR:[TRANSLATED]] not[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]. [CYR:[TRANSLATED]] for[TRANSLATED]] to with[TRANSLATED]] [CYR:[TRANSLATED]]inню.
+1. [ ] Zafor] Arty A7-35T on digilent.com
+2. [ ] Sfor] and atwith]inandt Vivado ML Standard
+3. [ ] Uwith]inandt Digilent board files
+
+### Paboutwithle :]andya :]inanandya:
+
+4. [ ] :]for]andt :]
+5. [ ] :]withtandt build_all.tcl
+6. [ ] :]andt bitstream
+7. [ ] :] inand:] mand:] LED
+8. [ ] :]andt rewithatrwithy and timing
+9. [ ] :]inandt daboutfor]andyu with :]and :]and
+
+### Fandonl:
+
+10. [ ] :] :]andyu for andninewith]in
+11. [ ] :]andtoaboutin:] resulty
+
+---
+
+## :]
+
+**Vwithyo gfromaboutinabout. :] :]toabout $150 and 3-7 dnoty on daboutwiththatintoat.**
+
+:] not :]withthat bytoatptoa :]. :] :], for] onsh :] in:]inye :]andt in fandzandchewithtoaboutm mandre. :] daboutfor]withtinabout, tofrom:] not:] :]in:]. :] for] to with] :]innyu.
 
 ---
 

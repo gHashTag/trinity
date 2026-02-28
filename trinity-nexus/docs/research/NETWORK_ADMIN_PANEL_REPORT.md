@@ -1,23 +1,23 @@
-# Network Admin Panel — [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromе
+# Network Admin Panel — :]  :] :]frome
 
-**[CYR:[TRANSLATED]]:** 2026-02-12
-**[CYR:[TRANSLATED]]notнт:** Trinity Canvas → World #16 (NETWORK ADMIN)
-**[CYR:[TRANSLATED]] toлаinandша:** Ctrl+8
-**[CYR:[TRANSLATED]]:** `src/vsa/photon_trinity_canvas.zig` (5547 with[TRANSLATED]]to), `src/vsa/world_dots.zig` (207 with[TRANSLATED]]to)
-**[CYR:[TRANSLATED]]notнandя:** +2037 with[TRANSLATED]]to, -285 with[TRANSLATED]]to (not[CYR:[TRANSLATED]] +1752 with[TRANSLATED]]toand ноin[CYR:[TRANSLATED]] for[TRANSLATED]])
+**:]:** 2026-02-12
+**:]notnt:** Trinity Canvas → World #16 (NETWORK ADMIN)
+**:] tolainandsha:** Ctrl+8
+**:]:** `src/vsa/photon_trinity_canvas.zig` (5547 with]to), `src/vsa/world_dots.zig` (207 with]to)
+**:]notnandya:** +2037 with]to, -285 with]to (not:] +1752 with]toand naboutin:] for])
 
 ---
 
-## 1. [CYR:[TRANSLATED]] with[TRANSLATED]]
+## 1. :] with]
 
 ### 1.1 Aceternity-style 3D Globe
 
-[CYR:[TRANSLATED]]andзоinан and[CYR:[TRANSLATED]]toтandin[CYR:[TRANSLATED]] 3D-[CYR:[TRANSLATED]]with in withтandле [Aceternity GitHub Globe](https://ui.aceternity.com/components/3d-globe) with[TRANSLATED]]withтinамand raylib ([CYR:[TRANSLATED]] WebGL/Three.js):
+:]andzaboutinan and:]totandin:] 3D-:]with in withtandle [Aceternity GitHub Globe](https://ui.aceternity.com/components/3d-globe) with]withtinamand raylib (:] WebGL/Three.js):
 
-| [CYR:[TRANSLATED]] | Aceternity (орandгandonл) | Trinity ([CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя) |
+| :] | Aceternity (aboutrandgandonl) | Trinity (:]and:]andya) |
 |----------|----------------------|---------------------|
-| `globeColor` | `#062056` | `0x06, 0x20, 0x56` — [CYR:[TRANSLATED]] withоin[CYR:[TRANSLATED]]andе |
-| `polygonColor` | `rgba(255,255,255,0.7)` | `0xFF, 0xFF, 0xFF, 0xB3` — [CYR:[TRANSLATED]] withоin[CYR:[TRANSLATED]]andе |
+| `globeColor` | `#062056` | `0x06, 0x20, 0x56` — :] withaboutin:]ande |
+| `polygonColor` | `rgba(255,255,255,0.7)` | `0xFF, 0xFF, 0xFF, 0xB3` — :] withaboutin:]ande |
 | `atmosphereColor` | `#FFFFFF` | 20-ring white glow, quadratic falloff |
 | `ambientLight` | `#38bdf8` | 6-ring blue inner tint |
 | `shininess: 0.9` | CSS material | Lat/lon grid lines (30°) + emissive inner glow |
@@ -27,61 +27,61 @@
 | `arcTime: 1000` | Animation speed | Animated arcs between nodes |
 | Rim light | — | Double rim: white + blue |
 
-**[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]:**
-- [CYR:[TRANSLATED]]andчеwithtoая [CYR:[TRANSLATED]]toцandя lat/lon → 3D with[TRANSLATED]]andчеwithtoandе for[TRANSLATED]]andonты → 2D эfor[TRANSLATED]]
-- Отwith[TRANSLATED]]andе [CYR:[TRANSLATED]]notй [CYR:[TRANSLATED]]with[TRANSLATED]] (z > -0.05) for [CYR:[TRANSLATED]]andwithтand[CYR:[TRANSLATED]] inandда
-- Аinто-in[CYR:[TRANSLATED]]andе with [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]fieldsцandей
-- ~4000 [CYR:[TRANSLATED]]to withушand (2° [CYR:[TRANSLATED]]andе) andз bitmap
+**:]andya :]and:]:**
+- :]andchewithtoaya :]totsandya lat/lon → 3D with]andchewithtoande for]andonty → 2D efor]
+- Otwith]ande :]noty :]with] (z > -0.05) for :]andwithtand:] inandda
+- Authorthat-in:]ande with :]in:] and:]fieldstsandey
+- ~4000 :]to withatshand (2° :]ande) andz bitmap
 
 ### 1.2 World Dots Bitmap (`world_dots.zig`)
 
-[CYR:[TRANSLATED]] бandon[CYR:[TRANSLATED]] bitmap for[TRANSLATED]] мandра 180×90 (2° [CYR:[TRANSLATED]]andе):
-- 207 with[TRANSLATED]]to Zig, ~2KB [CYR:[TRANSLATED]]
-- 90 with[TRANSLATED]]to hex-[CYR:[TRANSLATED]]in, for[TRANSLATED]] бandт = with[TRANSLATED]]/in[CYR:[TRANSLATED]]
+:] bandon:] bitmap for] mandra 180×90 (2° :]ande):
+- 207 with]to Zig, ~2KB :]
+- 90 with]to hex-:]in, for] bandt = with]/in:]
 - `isLand(row, col)` — O(1) lookup
-- `geoToGrid(lat, lon)` — toонin[CYR:[TRANSLATED]]andя for[TRANSLATED]]andonт
-- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andwithоin[CYR:[TRANSLATED]] for[TRANSLATED]] inwithех for[TRANSLATED]]andnot[CYR:[TRANSLATED]]in
+- `geoToGrid(lat, lon)` — toaboutnin:]andya for]andont
+- :] :]andwithaboutin:] for] inwithekh for]andnot:]in
 
 ### 1.3 Dual Geolocation System
 
-Дin[CYR:[TRANSLATED]]innotinая withandwith[TRANSLATED]] [CYR:[TRANSLATED]]andя меwith[TRANSLATED]]andя [CYR:[TRANSLATED]]:
+Din:]innotinaya withandwith] :]andya mewith]andya :]:
 
-**[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] 1 — [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] (timezone-based):**
-- [CYR:[TRANSLATED]]andе `/etc/localtime` symlink → andзin[CYR:[TRANSLATED]]andе TZ name
-- [CYR:[TRANSLATED]]andца `TZ_MAP` — 33 timezone→lat/lon/city [CYR:[TRANSLATED]]andwithand
-- [CYR:[TRANSLATED]]withть: ~with[TRANSLATED]]on/for[TRANSLATED]] [CYR:[TRANSLATED]]
-- [CYR:[TRANSLATED]]: 0ms (withand[CYR:[TRANSLATED]] прand with[TRANSLATED]])
+**:]in:] 1 — :]in:] (timezone-based):**
+- :]ande `/etc/localtime` symlink → andzin:]ande TZ name
+- :]andtsa `TZ_MAP` — 33 timezone→lat/lon/city :]andwithand
+- :]witht: ~with]on/for] :]
+- :]: 0ms (withand:] prand with])
 
-**[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] 2 — [CYR:[TRANSLATED]] (IP API):**
-- `curl -s -m 3 http://ip-api.com/json/{ip}` [CYR:[TRANSLATED]] `std.process.Child`
-- [CYR:[TRANSLATED]] JSON-[CYR:[TRANSLATED]]withandнг (`parseIpApiJson`, `parseJsonFloat`, `extractJsonString`)
-- [CYR:[TRANSLATED]]withть: [CYR:[TRANSLATED]]
-- [CYR:[TRANSLATED]]: 1-3 withеto ([CYR:[TRANSLATED]]inый пfromоto)
+**:]in:] 2 — :] (IP API):**
+- `curl -s -m 3 http://ip-api.com/json/{ip}` :] `std.process.Child`
+- :] JSON-:]withandng (`parseIpApiJson`, `parseJsonFloat`, `extractJsonString`)
+- :]witht: :]
+- :]: 1-3 witheto (:]inyy pfromaboutto)
 
 ### 1.4 Dynamic Node Detection
 
-[CYR:[TRANSLATED]]on with[TRANSLATED]]andчеwithtoandх [CYR:[TRANSLATED]] on [CYR:[TRANSLATED]] обon[CYR:[TRANSLATED]]andе:
+:]on with]andchewithtoandkh :] on :] abouton:]ande:
 
-| [CYR:[TRANSLATED]] | Иwith[TRANSLATED]]andto |
+| :] | Iwith]andto |
 |--------|----------|
 | Hostname | `std.posix.gethostname()` |
-| RAM | [CYR:[TRANSLATED]]andе `/proc/meminfo` (Linux) / `sysctl hw.memsize` (macOS) |
-| TCP probe | `connect()` to andзinеwith[TRANSLATED]] endpoints with 2s timeout |
-| [CYR:[TRANSLATED]]toацandя | Timezone (instant) + IP API (background) |
-| [CYR:[TRANSLATED]]with | `online` / `offline` по resultу TCP probe |
+| RAM | :]ande `/proc/meminfo` (Linux) / `sysctl hw.memsize` (macOS) |
+| TCP probe | `connect()` to andzinewith] endpoints with 2s timeout |
+| :]toatsandya | Timezone (instant) + IP API (background) |
+| :]with | `online` / `offline` by resultat TCP probe |
 
-[CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]: `199.68.196.38:9335` (VPS Buffalo, US) + лоfor[TRANSLATED]] withерinandwithы.
+:]inye :]: `199.68.196.38:9335` (VPS Buffalo, US) + laboutfor] witherinandwithy.
 
 ### 1.5 Scroll System
 
-[CYR:[TRANSLATED]]andзоinаon [CYR:[TRANSLATED]]onя withandwith[TRANSLATED]] withfor[TRANSLATED]] (по [CYR:[TRANSLATED]] Chat panel):
+:]andzaboutinaon :]onya withandwith] withfor] (by :] Chat panel):
 
-- `BeginScissorMode()` / `EndScissorMode()` — [CYR:[TRANSLATED]]toа for[TRANSLATED]]
-- `g_net_scroll_y` / `g_net_scroll_target` — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (draw [CYR:[TRANSLATED]] const self)
+- `BeginScissorMode()` / `EndScissorMode()` — :]toa for]
+- `g_net_scroll_y` / `g_net_scroll_target` — :] :] (draw :] const self)
 - Smooth lerp: `scroll_y += (target - scroll_y) * min(1.0, 8.0 * dt)`
-- Mouse wheel: `GetMouseWheelMove() * 40.0 * fs` with [CYR:[TRANSLATED]]inерtoой bounds
+- Mouse wheel: `GetMouseWheelMove() * 40.0 * fs` with :]inertoabouty bounds
 - Scroll bounds clamping: `max(0, total_content - visible_area + padding)`
-- Scrollbar thumb with [CYR:[TRANSLATED]]andоon[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+- Scrollbar thumb with :]andabouton:] :]
 
 ### 1.6 UI Layout (scrollable)
 
@@ -116,108 +116,108 @@
 
 ---
 
-## 2. [CYR:[TRANSLATED]]andчеwithtoandе [CYR:[TRANSLATED]]andtoand
+## 2. :]andchewithtoande :]andtoand
 
-| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе |
+| :]Version | Zon:]ande |
 |---------|----------|
-| Ноinый toод | +2037 with[TRANSLATED]]to |
-| [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] | 2 (canvas + world_dots) |
-| [CYR:[TRANSLATED]] bitmap | ~2KB (180×90 бandт) |
-| [CYR:[TRANSLATED]]toand withушand on [CYR:[TRANSLATED]]withе | ~4000 |
+| Naboutinyy toaboutd | +2037 with]to |
+| :] :] | 2 (canvas + world_dots) |
+| :] bitmap | ~2KB (180×90 bandt) |
+| :]toand withatshand on :]withe | ~4000 |
 | Atmosphere rings | 20 (white) + 6 (blue) |
-| Grid lines | for[TRANSLATED]] 30° lat/lon |
+| Grid lines | for] 30° lat/lon |
 | Timezone entries | 33 |
 | Max nodes | 8 |
 | Scroll lerp | 8.0 * dt |
-| TCP timeout | 2 withеto |
-| IP API timeout | 3 withеto |
+| TCP timeout | 2 witheto |
+| IP API timeout | 3 witheto |
 
 ---
 
-## 3. [CYR:[TRANSLATED]]and дand[CYR:[TRANSLATED]]on
+## 3. :]and dand:]on
 
-1. **v1 — Flat dot-matrix map** → Отtoлоnotно ("[CYR:[TRANSLATED]]inо withмfromрandтwithя")
-2. **v2 — Round globe, [CYR:[TRANSLATED]]inые цin[CYR:[TRANSLATED]]** → Отtoлоnotно ("not [CYR:[TRANSLATED]] on Aceternity, notт withfor[TRANSLATED]]")
-3. **v3 — Aceternity exact palette + scroll + cards** → Прand[CYR:[TRANSLATED]] ✓
+1. **v1 — Flat dot-matrix map** → Ottolaboutnotnabout (":]inabout withmfromrandtwithya")
+2. **v2 — Round globe, :]inye tsin:]** → Ottolaboutnotnabout ("not :] on Aceternity, nott withfor]")
+3. **v3 — Aceternity exact palette + scroll + cards** → Prand:] ✓
 
 ---
 
-## 4. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inandтandя
+## 4. :] :]inandtandya
 
-### 4.1 Блand[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]and (Short-term)
+### 4.1 Bland:]ande :]and (Short-term)
 
-#### A. [CYR:[TRANSLATED]] P2P прfromоtoол
-- [CYR:[TRANSLATED]]andть TCP probe on [CYR:[TRANSLATED]] Trinity Wire Protocol
-- Handshake with [CYR:[TRANSLATED]] capabilities (GPU, RAM, [CYR:[TRANSLATED]])
-- Heartbeat for[TRANSLATED]] 30 withеto for live-with[TRANSLATED]]withа
-- Аin[CYR:[TRANSLATED]]andчеwithtoое [CYR:[TRANSLATED]]for[TRANSLATED]]andе прand [CYR:[TRANSLATED]]inе
+#### A. :] P2P prfromabouttoaboutl
+- :]andt TCP probe on :] Trinity Wire Protocol
+- Handshake with :] capabilities (GPU, RAM, :])
+- Heartbeat for] 30 witheto for live-with]witha
+- Author:]andchewithtoaboute :]for]ande prand :]ine
 
-#### B. Model Sharding inand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя
-- Анandмandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and on [CYR:[TRANSLATED]]withе поfor[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] with[TRANSLATED]]in [CYR:[TRANSLATED]]and
-- Цinет [CYR:[TRANSLATED]]and = тandп [CYR:[TRANSLATED]]and (forward pass / gradient / sync)
-- Tooltip прand onin[CYR:[TRANSLATED]]and on [CYR:[TRANSLATED]]: latency, bandwidth, layer range
-- Progress bar [CYR:[TRANSLATED]]toand [CYR:[TRANSLATED]]and по [CYR:[TRANSLATED]]
+#### B. Model Sharding inand:]and:]andya
+- Anandmandraboutin:] :]and on :]withe byfor]in:] :] with]in :]and
+- Tsinet :]and = tandp :]and (forward pass / gradient / sync)
+- Tooltip prand onin:]and on :]: latency, bandwidth, layer range
+- Progress bar :]toand :]and by :]
 
-#### C. [CYR:[TRANSLATED]]andtoand in [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]and
-- Tokens/sec on for[TRANSLATED]] [CYR:[TRANSLATED]] (from[CYR:[TRANSLATED]]andе on for[TRANSLATED]]toах)
+#### C. :]andtoand in :] in:]and
+- Tokens/sec on for] :] (from:]ande on for]toakh)
 - GPU utilization % (VRAM usage bar)
-- Network bandwidth [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and
-- Latency heatmap on [CYR:[TRANSLATED]]withе (цinет [CYR:[TRANSLATED]]and = latency)
+- Network bandwidth :] :]and
+- Latency heatmap on :]withe (tsinet :]and = latency)
 
-### 4.2 [CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]and (Mid-term)
+### 4.2 :]ande :]and (Mid-term)
 
 #### D. Auto-Shard Engine
-- [CYR:[TRANSLATED]]andя `src/trinity_node/auto_shard.zig` with inand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andей
-- Drag-and-drop onзon[CYR:[TRANSLATED]]andе with[TRANSLATED]]in on [CYR:[TRANSLATED]]
-- Automatic optimal partitioning по RAM/bandwidth
-- Вand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя pipeline parallelism
+- :]andya `src/trinity_node/auto_shard.zig` with inand:]and:]andey
+- Drag-and-drop onzon:]ande with]in on :]
+- Automatic optimal partitioning by RAM/bandwidth
+- Vand:]and:]andya pipeline parallelism
 
 #### E. Node Discovery
-- mDNS/Bonjour for LAN-обon[CYR:[TRANSLATED]]andя
-- DHT (Kademlia) for WAN-обon[CYR:[TRANSLATED]]andя
-- QR-toод for быwith[TRANSLATED]] [CYR:[TRANSLATED]]for[TRANSLATED]]andя [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+- mDNS/Bonjour for LAN-abouton:]andya
+- DHT (Kademlia) for WAN-abouton:]andya
+- QR-toaboutd for bywith] :]for]andya :]and:] :]
 - Invite link: `trinity://join/{cluster_id}`
 
-#### F. [CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]withа
-- [CYR:[TRANSLATED]]withand[CYR:[TRANSLATED]]andе rings inоfor[TRANSLATED]] аtoтandin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (toаto in Aceternity: `maxRings: 3`)
-- Day/night terminator line on [CYR:[TRANSLATED]]withе
-- Zoom in/out по scroll with [CYR:[TRANSLATED]] Ctrl
-- Клandfor[TRANSLATED]] [CYR:[TRANSLATED]] — fromtoрыin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] паnotль
+#### F. :]andya :]witha
+- :]withand:]ande rings inaboutfor] atotandin:] :] (toato in Aceternity: `maxRings: 3`)
+- Day/night terminator line on :]withe
+- Zoom in/out by scroll with :] Ctrl
+- Klandfor] :] — fromtoryin:] :] panotl
 
-### 4.3 [CYR:[TRANSLATED]]with[TRANSLATED]] [CYR:[TRANSLATED]]and (Long-term)
+### 4.3 :]with] :]and (Long-term)
 
 #### G. Multi-model Dashboard
-- Неwithfor[TRANSLATED]]toо [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] on toлаwith[TRANSLATED]]
-- [CYR:[TRANSLATED]]andца: [CYR:[TRANSLATED]] → [CYR:[TRANSLATED]] → throughput → status
-- Load balancing inand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя
+- Newithfor]toabout :] :]in:] on tolawith]
+- :]andtsa: :] → :] → throughput → status
+- Load balancing inand:]and:]andya
 
 #### H. Economic Layer (DePIN)
-- [CYR:[TRANSLATED]]andя with `src/firebird/depin.zig`
-- Earnings per node on for[TRANSLATED]]toах
-- Token flow анand[CYR:[TRANSLATED]]andя on [CYR:[TRANSLATED]]withе
+- :]andya with `src/firebird/depin.zig`
+- Earnings per node on for]toakh
+- Token flow anand:]andya on :]withe
 - Staking/unstaking UI
 
 #### I. Mobile Companion
-- [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andнг toлаwith[TRANSLATED]] with [CYR:[TRANSLATED]]on
-- Push-уin[CYR:[TRANSLATED]]andя прand [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]
+- :]and:]andng tolawith] with :]on
+- Push-atin:]andya prand :]and :]
 - Remote start/stop worker
-- [CYR:[TRANSLATED]]andя with Telegram Bot
+- :]andya with Telegram Bot
 
 ---
 
 ## 5. Tech Tree Options
 
 ### Option A: "Live Wire" — Real-time Protocol
-Фоtoуwith on [CYR:[TRANSLATED]] P2P прfromоfor[TRANSLATED]] with live-[CYR:[TRANSLATED]]andtoамand. [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] inand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andю andз dashboard in [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] andнwith[TRANSLATED]].
-**[CYR:[TRANSLATED]]inые fileы:** `src/trinity_node/distributed.zig`, `auto_shard.zig`
+Fabouttoatwith on :] P2P prfromaboutfor] with live-:]Versionmand. :]in:] inand:]and:]andyu andz dashboard in :]and:] andnwith].
+**:]inye filey:** `src/trinity_node/distributed.zig`, `auto_shard.zig`
 
 ### Option B: "Globe Interactive" — Rich Visualization
-Фоtoуwith on and[CYR:[TRANSLATED]]toтandinноwithтand [CYR:[TRANSLATED]]withа: zoom, click-to-inspect, animated rings, day/night. Маtowithand[CYR:[TRANSLATED]] wow-[CYR:[TRANSLATED]]toт for demo.
-**[CYR:[TRANSLATED]]inые fileы:** `src/vsa/photon_trinity_canvas.zig`, `world_dots.zig`
+Fabouttoatwith on and:]totandinnaboutwithtand :]witha: zoom, click-to-inspect, animated rings, day/night. Matowithand:] wow-:]tot for demo.
+**:]inye filey:** `src/vsa/photon_trinity_canvas.zig`, `world_dots.zig`
 
 ### Option C: "Cluster Scale" — Multi-node Production
-Фоtoуwith on маwith[TRANSLATED]]andроinанand: auto-discovery, auto-sharding, failover. [CYR:[TRANSLATED]] production-toлаwith[TRANSLATED]] on 8+ [CYR:[TRANSLATED]].
-**[CYR:[TRANSLATED]]inые fileы:** `src/trinity_node/auto_shard.zig`, `distributed.zig`, `depin.zig`
+Fabouttoatwith on mawith]andraboutinanand: auto-discovery, auto-sharding, failover. :] production-tolawith] on 8+ :].
+**:]inye filey:** `src/trinity_node/auto_shard.zig`, `distributed.zig`, `depin.zig`
 
 ---
 

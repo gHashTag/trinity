@@ -1,30 +1,30 @@
-# 🔬 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] φ  VIBEE
+# 🔬 [CYR:] [CYR:]: [CYR:] [CYR:] [CYR:] φ  VIBEE
 
-**[CYR:[TRANSLATED]] аonлandза**: 2026-01-30
+**[CYR:] аonлandза**: 2026-01-30
 **Аonлandтandto**: OpenCode
-**[CYR:[TRANSLATED]]andя**: [CYR:[TRANSLATED]]toandй аonлandз 176 fileоin in src/vibeec/
+**[CYR:]andя**: [CYR:]toandй аonлandз 176 fileоin in src/vibeec/
 
 ---
 
-## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 📊 [CYR:] [CYR:]
 
-| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе |
+| [CYR:]Version | Зon[CYR:]andе |
 |---------|----------|
-| Вwith[TRANSLATED]] [CYR:[TRANSLATED]]onлandзandроin[CYR:[TRANSLATED]] fileоin | **176** fileоin .zig |
-| [CYR:[TRANSLATED]]in with φ/Golden references | **139** fileоin (79%) |
-| [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]not[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andй | **12** for[TRANSLATED]]andй |
-| [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withноin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andй | **10** (83%) |
-| [CYR:[TRANSLATED]]toетand[CYR:[TRANSLATED]]inых/withпеfor[TRANSLATED]]andin[CYR:[TRANSLATED]] | **2** (17%) |
+| Вwith] [CYR:]onлandзandроin[CYR:] fileоin | **176** fileоin .zig |
+| [CYR:]in with φ/Golden references | **139** fileоin (79%) |
+| [CYR:] and[CYR:]not[CYR:] [CYR:]andй | **12** for]andй |
+| [CYR:] [CYR:]withноin[CYR:] [CYR:]andй | **10** (83%) |
+| [CYR:]toетand[CYR:]inых/withпеfor]andin[CYR:] | **2** (17%) |
 
 ---
 
-## 🏆 [CYR:[TRANSLATED]]-12 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] φ
+## 🏆 [CYR:]-12 [CYR:] [CYR:] φ
 
-### ✅ 1. AMR (Amortized Multiplicative Resize) — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### ✅ 1. AMR (Amortized Multiplicative Resize) — [CYR:] [CYR:]
 
-**[CYR:[TRANSLATED]]**: `src/vibeec/codegen_v4.zig:78-85`
+**[CYR:]**: `src/vibeec/codegen_v4.zig:78-85`
 
-**[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя**:
+**[CYR:]and[CYR:]andя**:
 ```zig
 /// Grow using φ factor for optimal amortization (AMR pattern)
 fn grow(self: *Self, min_additional: usize) !void {
@@ -36,30 +36,30 @@ fn grow(self: *Self, min_additional: usize) !void {
 }
 ```
 
-**[CYR:[TRANSLATED]]onя оwithноinа**:
+**[CYR:]onя оwithноinа**:
 - **AMR pattern** — Cormen, Leiserson, Rivest, Stein (CLRS, Chapter 17)
-- **[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]**: φ ≈ 1.618
-- **[CYR:[TRANSLATED]]andзandроinанonя with[TRANSLATED]]withть**: O(1)
+- **[CYR:]and[CYR:] [CYR:]and[CYR:]**: φ ≈ 1.618
+- **[CYR:]andзandроinанonя with]withть**: O(1)
 
-**Доfor[TRANSLATED]]withтinо**:
-- Прand роwithте on 61.8% (φ-1) доwithтand[CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]]with [CYR:[TRANSLATED]]:
-  - **Min overhead** ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and) — мandнand[CYR:[TRANSLATED]]
-  - **Max throughput** ([CYR:[TRANSLATED]]withtoonя withпоwith[TRANSLATED]]withть) — [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
-- [CYR:[TRANSLATED]]andчеwithtoand: 1/φ = 0.618, 1/(1-1/φ) = 1.618
+**Доfor]withтinо**:
+- Прand роwithте on 61.8% (φ-1) доwithтand[CYR:]withя [CYR:]with [CYR:]:
+  - **Min overhead** ([CYR:] [CYR:]and) — мandнand[CYR:]
+  - **Max throughput** ([CYR:]withtoonя withпоwith]withть) — [CYR:]and[CYR:]
+- [CYR:]andчеwithtoand: 1/φ = 0.618, 1/(1-1/φ) = 1.618
 
 **Прandмеnotнandе**:
 - CodeBuilder grow (codegen_v4.zig)
 - Memory pool growth (memory_pool.zig:19)
 
-**[CYR:[TRANSLATED]]with**: ✅ **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**
+**[CYR:]with**: ✅ **[CYR:] [CYR:] [CYR:]**
 
 ---
 
-### ✅ 2. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] (LUCAS NUMBERS) — O(log n) [CYR:[TRANSLATED]]
+### ✅ 2. [CYR:] [CYR:] (LUCAS NUMBERS) — O(log n) [CYR:]
 
-**[CYR:[TRANSLATED]]**: `src/vibeec/sacred_math.zig:60-96`
+**[CYR:]**: `src/vibeec/sacred_math.zig:60-96`
 
-**[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя**:
+**[CYR:]and[CYR:]andя**:
 ```zig
 /// First 20 Lucas numbers (precomputed for speed)
 pub const LUCAS_TABLE: [20]i64 = .{
@@ -102,30 +102,30 @@ pub inline fn lucas(n: u32) i64 {
 }
 ```
 
-**[CYR:[TRANSLATED]]onя оwithноinа**:
-- **[CYR:[TRANSLATED]] Луtoаwithа**: L(n) = φⁿ + 1/φⁿ
-- **[CYR:[TRANSLATED]]fromой for[TRANSLATED]]**: L(2) = 3 = φ² + 1/φ²
-- **Сin[CYR:[TRANSLATED]] with [CYR:[TRANSLATED]]withтin[CYR:[TRANSLATED]]with[TRANSLATED]]**: L(2) = TRINITY
+**[CYR:]onя оwithноinа**:
+- **[CYR:] Луtoаwithа**: L(n) = φⁿ + 1/φⁿ
+- **[CYR:]fromой for]**: L(2) = 3 = φ² + 1/φ²
+- **Сin[CYR:] with [CYR:]withтin[CYR:]with]**: L(2) = TRINITY
 
-**[CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя**:
+**[CYR:]andмand[CYR:]andя**:
 - **O(1)**: Lookup table for n < 20
-- **O(n)**: Реtoурwithandя for n ≥ 20
-- vs **O(n)**: Наandinonя [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]] lookup
-- **Выand[CYR:[TRANSLATED]]**: ~10× for n < 100
+- **O(n)**: РеtoурAuthor for n ≥ 20
+- vs **O(n)**: Наandinonя [CYR:]and[CYR:]andя [CYR:] lookup
+- **Выand[CYR:]**: ~10× for n < 100
 
 **Прandмеnotнandе**:
 - lucas() tests (sacred_math.zig)
 - VM native functions (vm_runtime.zig:2676)
 
-**[CYR:[TRANSLATED]]with**: ✅ **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**
+**[CYR:]with**: ✅ **[CYR:] [CYR:]**
 
 ---
 
-### ✅ 3. QUANTUM SCHEDULING — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] НА φ
+### ✅ 3. QUANTUM SCHEDULING — [CYR:] [CYR:] НА φ
 
-**[CYR:[TRANSLATED]]**: `src/vibeec/vm_trinity.zig:59-64`
+**[CYR:]**: `src/vibeec/vm_trinity.zig:59-64`
 
-**[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя**:
+**[CYR:]and[CYR:]andя**:
 ```zig
 /// Quantum based on φ: base × φ^(2 - level)
 pub fn baseQuantum(priority: u8) u64 {
@@ -135,14 +135,14 @@ pub fn baseQuantum(priority: u8) u64 {
 }
 ```
 
-**[CYR:[TRANSLATED]]onя оwithноinа**:
+**[CYR:]onя оwithноinа**:
 - **Priority scheduling** — Blumofe & Leiserson (1999), "Scheduling Multithreaded Computations by Work Stealing"
-- **Прandорand[CYR:[TRANSLATED]]**: 0 (нandзtoandй) → 255 (inыwithоtoandй)
-- **Quantum** (in[CYR:[TRANSLATED]] toin[CYR:[TRANSLATED]]):
+- **Прandорand[CYR:]**: 0 (нandзtoandй) → 255 (inыwithоtoandй)
+- **Quantum** (in[CYR:] toin[CYR:]):
   - High priority (255): ~618 μs
   - Low priority (0): ~2618 μs
 
-**[CYR:[TRANSLATED]]andtoа**:
+**[CYR:]Version**:
 - factor = φ^(2 - priority/64)
 - priority=0: φ² = 2.618 → 2618 μs
 - priority=255: φ^(2-4) = φ^(-2) = 0.382 → 382 μs
@@ -151,15 +151,15 @@ pub fn baseQuantum(priority: u8) u64 {
 - ProcessState baseQuantum (vm_trinity.zig)
 - VM scheduler quantum allocation
 
-**[CYR:[TRANSLATED]]with**: ✅ **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] SCHEDULING**
+**[CYR:]with**: ✅ **[CYR:] [CYR:] SCHEDULING**
 
 ---
 
-### ✅ 4. FIBONACCI HASH — [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]] HASHING
+### ✅ 4. FIBONACCI HASH — [CYR:]-[CYR:] HASHING
 
-**[CYR:[TRANSLATED]]**: `src/vibeec/sacred_math.zig:147-159`
+**[CYR:]**: `src/vibeec/sacred_math.zig:147-159`
 
-**[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя**:
+**[CYR:]and[CYR:]andя**:
 ```zig
 /// Golden ratio multiplier for 64-bit hashing
 /// φ × 2^64 ≈ 11400714819323198485
@@ -177,29 +177,29 @@ pub inline fn phiHashMod(key: u64, table_bits: u6) usize {
 }
 ```
 
-**[CYR:[TRANSLATED]]onя оwithноinа**:
+**[CYR:]onя оwithноinа**:
 - **Fibonacci hashing** — Donald Knuth (1973), "The Art of Computer Programming, Vol. 3"
-- **[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]onя раwith[TRANSLATED]]andе**: hash = key × φ × 2^64
+- **[CYR:]and[CYR:]onя раwith]andе**: hash = key × φ × 2^64
 - **Cache-friendly**: Uniform distribution
 
-**[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinа**:
-- **O(1)**: [CYR:[TRANSLATED]]andе + shift
-- **Cache-friendly**: Маtowithand[CYR:[TRANSLATED]] раin[CYR:[TRANSLATED]] раwith[TRANSLATED]]andе
-- **Collision-free**: [CYR:[TRANSLATED]] power-of-2 [CYR:[TRANSLATED]]andц
+**[CYR:]and[CYR:]withтinа**:
+- **O(1)**: [CYR:]andе + shift
+- **Cache-friendly**: Маtowithand[CYR:] раin[CYR:] раwith]andе
+- **Collision-free**: [CYR:] power-of-2 [CYR:]andц
 
 **Прandмеnotнandе**:
 - VM runtime (vm_runtime.zig:2692)
-- Hash tables in for[TRANSLATED]]and[CYR:[TRANSLATED]]
+- Hash tables in for]and[CYR:]
 
-**[CYR:[TRANSLATED]]with**: ✅ **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] HASHTABLES**
+**[CYR:]with**: ✅ **[CYR:] [CYR:] HASHTABLES**
 
 ---
 
-### ✅ 5. GOLDEN WRAP — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### ✅ 5. GOLDEN WRAP — [CYR:] [CYR:] [CYR:]
 
-**[CYR:[TRANSLATED]]**: `src/vibeec/sacred_math.zig:192-218`
+**[CYR:]**: `src/vibeec/sacred_math.zig:192-218`
 
-**[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя**:
+**[CYR:]and[CYR:]andя**:
 ```zig
 /// Golden wrap lookup table for tryte range (-26..+26 → -13..+13)
 /// Uses identity: φ² + 1/φ² = 3, so 27 = 3³
@@ -231,29 +231,29 @@ pub inline fn goldenWrap(sum: i16) i8 {
 }
 ```
 
-**[CYR:[TRANSLATED]]onя оwithноinа**:
-- **[CYR:[TRANSLATED]]andчonя арand[CYR:[TRANSLATED]]andtoа**: Balanced ternary ({-1, 0, +1})
+**[CYR:]onя оwithноinа**:
+- **[CYR:]andчonя арand[CYR:]Version**: Balanced ternary ({-1, 0, +1})
 - **Wrap-around**: sum ∈ (-26..+26) → wrapped ∈ (-13..+13)
-- **Сin[CYR:[TRANSLATED]] with φ**: 27 = 3³ = (φ² + 1/φ²)³
+- **Сin[CYR:] with φ**: 27 = 3³ = (φ² + 1/φ²)³
 
-**[CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя**:
+**[CYR:]andмand[CYR:]andя**:
 - **O(1)**: Lookup table inмеwithто if-else
-- **Branchless**: [CYR:[TRANSLATED]] in-range зon[CYR:[TRANSLATED]]andй
+- **Branchless**: [CYR:] in-range зon[CYR:]andй
 - **Cache-friendly**: 53×1 = 53 bytes
 
 **Прandмеnotнandе**:
 - VM runtime (vm_runtime.zig:2699)
 - Benchmarking (benchmark_ternary_vs_binary.zig)
 
-**[CYR:[TRANSLATED]]with**: ✅ **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**
+**[CYR:]with**: ✅ **[CYR:] [CYR:] [CYR:] [CYR:]**
 
 ---
 
-### ✅ 6. MEMORY POOL GROWTH — AMR [CYR:[TRANSLATED]]
+### ✅ 6. MEMORY POOL GROWTH — AMR [CYR:]
 
-**[CYR:[TRANSLATED]]**: `src/vibeec/memory_pool.zig:19,101-106`
+**[CYR:]**: `src/vibeec/memory_pool.zig:19,101-106`
 
-**[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя**:
+**[CYR:]and[CYR:]andя**:
 ```zig
 pub const PoolConfig = struct {
     initial_block_count: usize = 64,
@@ -278,29 +278,29 @@ fn growPool(self: *Self) !void {
 }
 ```
 
-**[CYR:[TRANSLATED]]onя оwithноinа**:
+**[CYR:]onя оwithноinа**:
 - **AMR pattern** — CLRS, Chapter 17
 - **Growth factor**: φ = 1.618
 - **O(1)** amortized alloc/free
 
-**[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinа**:
-- **Min overhead**: Не раwith[TRANSLATED]] withлandшtoом быwith[TRANSLATED]]
-- **Max throughput**: Не [CYR:[TRANSLATED]]with[TRANSLATED]] withлandшtoом чаwithто
-- **Cache-friendly**: Лоfor[TRANSLATED]]withть [CYR:[TRANSLATED]]and
+**[CYR:]and[CYR:]withтinа**:
+- **Min overhead**: Не раwith] withлandшtoом быwith]
+- **Max throughput**: Не [CYR:]with] withлandшtoом чаwithто
+- **Cache-friendly**: Лоfor]withть [CYR:]and
 
 **Прandмеnotнandе**:
 - Fixed-size object pools
 - GC Immix allocator (gc_immix.zig)
 
-**[CYR:[TRANSLATED]]with**: ✅ **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**
+**[CYR:]with**: ✅ **[CYR:] [CYR:] [CYR:]**
 
 ---
 
-### ✅ 7. INLINE COST MODEL — [CYR:[TRANSLATED]] НА φ
+### ✅ 7. INLINE COST MODEL — [CYR:] НА φ
 
-**[CYR:[TRANSLATED]]**: `src/vibeec/inliner.zig:30`
+**[CYR:]**: `src/vibeec/inliner.zig:30`
 
-**[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя**:
+**[CYR:]and[CYR:]andя**:
 ```zig
 pub const InlineConfig = struct {
     // Cost thresholds
@@ -320,24 +320,24 @@ pub const InlineConfig = struct {
 };
 ```
 
-**[CYR:[TRANSLATED]]onя оwithноinа**:
+**[CYR:]onя оwithноinа**:
 - **Inlining heuristics** — LLVM, GCC optimization passes
-- **[CYR:[TRANSLATED]]**: [CYR:[TRANSLATED]]with [CYR:[TRANSLATED]] code size and speed
-- **Фаfor[TRANSLATED]] φ**: 1.618 for threshold scaling
+- **[CYR:]**: [CYR:]with [CYR:] code size and speed
+- **Фаfor] φ**: 1.618 for threshold scaling
 
 **Прandмеnotнandе**:
 - InlineCostModel (inliner.zig:114-150)
 - JIT inlining (jit_v2.zig)
 
-**[CYR:[TRANSLATED]]with**: ✅ **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**
+**[CYR:]with**: ✅ **[CYR:] [CYR:] [CYR:]**
 
 ---
 
 ### ✅ 8. IR [CYR:TYPES] — NATIVE φ  INTERMEDIATE REPRESENTATION
 
-**[CYR:[TRANSLATED]]**: `src/vibeec/ir.zig:26,38,54`, `src/vibeec/type_system.zig:32`
+**[CYR:]**: `src/vibeec/ir.zig:26,38,54`, `src/vibeec/type_system.zig:32`
 
-**[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя**:
+**[CYR:]and[CYR:]andя**:
 ```zig
 pub const IRType = enum(u8) {
     void_ir,
@@ -372,25 +372,25 @@ pub const ValueKind = enum(u8) {
 };
 ```
 
-**[CYR:[TRANSLATED]]onя оwithноinа**:
+**[CYR:]onя оwithноinа**:
 - **IR design** — LLVM IR, WebAssembly IR
-- **Тandп phi_ir**: Native [CYR:[TRANSLATED]]toа φ in IR
-- **Зon[CYR:[TRANSLATED]]andе const_phi**: Сandмinолandчеwithtoая toонwith[TRANSLATED]]
+- **Тandп phi_ir**: Native [CYR:]toа φ in IR
+- **Зon[CYR:]andе const_phi**: Сandмinолandчеwithtoая toонwith]
 
 **Прandмеnotнandе**:
-- IR toонwith[TRANSLATED]] (ir.zig:393,647)
+- IR toонwith] (ir.zig:393,647)
 - Type system (type_system.zig:395,430)
 - E-graph patterns (egraph.zig:97,466,597)
 
-**[CYR:[TRANSLATED]]with**: ✅ **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]  IR**
+**[CYR:]with**: ✅ **[CYR:] [CYR:]  IR**
 
 ---
 
-### ✅ 9. SIMD [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] — GOLDEN WRAP SIMD
+### ✅ 9. SIMD [CYR:] [CYR:] — GOLDEN WRAP SIMD
 
-**[CYR:[TRANSLATED]]**: `src/vibeec/simd_ternary.zig:29-97`, `src/vibeec/sacred_math.zig:267-298`
+**[CYR:]**: `src/vibeec/simd_ternary.zig:29-97`, `src/vibeec/sacred_math.zig:267-298`
 
-**[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя**:
+**[CYR:]and[CYR:]andя**:
 ```zig
 /// SIMD golden wrap for 32 trytes
 pub fn simdGoldenWrap32(values: Vec32i16) Vec32i8 {
@@ -426,54 +426,54 @@ pub fn simdTryteAddGolden(a: Vec32i8, b: Vec32i8) Vec32i8 {
 }
 ```
 
-**[CYR:[TRANSLATED]]onя оwithноinа**:
+**[CYR:]onя оwithноinа**:
 - **SIMD vectorization** — SSE, AVX2 instructions
-- **Branchless**: Иwith[TRANSLATED]]inанandе select inмеwithто if
-- **[CYR:[TRANSLATED]]andчonя арand[CYR:[TRANSLATED]]andtoа**: Balanced ternary wrap
+- **Branchless**: Иwith]inанandе select inмеwithто if
+- **[CYR:]andчonя арand[CYR:]Version**: Balanced ternary wrap
 
-**[CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя**:
-- **32× [CYR:[TRANSLATED]]andзм**: [CYR:[TRANSLATED]]fromtoа 32 trytes [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]
-- **O(1)**: Инwith[TRANSLATED]]toцandя add + select
-- **Cache-friendly**: Лоfor[TRANSLATED]]withть [CYR:[TRANSLATED]]
+**[CYR:]andмand[CYR:]andя**:
+- **32× [CYR:]andзм**: [CYR:]fromtoа 32 trytes [CYR:]in[CYR:]
+- **O(1)**: Инwith]toцandя add + select
+- **Cache-friendly**: Лоfor]withть [CYR:]
 
 **Прandмеnotнandе**:
 - Benchmarking (benchmark_ternary_vs_binary.zig:388-396)
 - SIMD ternary operations (simd_ternary_optimized.zig)
 
-**[CYR:[TRANSLATED]]with**: ✅ **[CYR:[TRANSLATED]] SIMD [CYR:[TRANSLATED]]**
+**[CYR:]with**: ✅ **[CYR:] SIMD [CYR:]**
 
 ---
 
-### ✅ 10. φ-[CYR:[TRANSLATED]] (PHI LERP) — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### ✅ 10. φ-[CYR:] (PHI LERP) — [CYR:] [CYR:]
 
-**[CYR:[TRANSLATED]]**: `src/vibeec/zig_codegen.zig:2354-2357`
+**[CYR:]**: `src/vibeec/zig_codegen.zig:2354-2357`
 
-**[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя**:
+**[CYR:]and[CYR:]andя**:
 ```zig
-/// φ-and[CYR:[TRANSLATED]]fieldsцandя
+/// φ-and[CYR:]fieldsцandя
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
 }
 ```
 
-**[CYR:[TRANSLATED]]onя оwithноinа**:
-- **Лandnotйonя and[CYR:[TRANSLATED]]fieldsцandя**: lerp(a, b, t) = a + (b-a) × t
-- **φ-and[CYR:[TRANSLATED]]fieldsцandя**: [CYR:[TRANSLATED]]andnotйonя and[CYR:[TRANSLATED]]fieldsцandя with φ^(-1) = 0.618
-- **Прandмеnotнandе**: [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]], анand[CYR:[TRANSLATED]]and
+**[CYR:]onя оwithноinа**:
+- **Лandnotйonя and[CYR:]fieldsцandя**: lerp(a, b, t) = a + (b-a) × t
+- **φ-and[CYR:]fieldsцandя**: [CYR:]andnotйonя and[CYR:]fieldsцandя with φ^(-1) = 0.618
+- **Прandмеnotнandе**: [CYR:]in[CYR:] [CYR:], анand[CYR:]and
 
 **Прandмеnotнandе**:
 - Code generation (zig_codegen.zig, codegen_wasm.zig)
 
-**[CYR:[TRANSLATED]]with**: ✅ **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**
+**[CYR:]with**: ✅ **[CYR:] [CYR:]**
 
 ---
 
-### ✅ 11. φ-[CYR:[TRANSLATED]] (PHI SPIRAL) — [CYR:[TRANSLATED]]
+### ✅ 11. φ-[CYR:] (PHI SPIRAL) — [CYR:]
 
-**[CYR:[TRANSLATED]]**: `src/vibeec/sacred_math.zig:167-184`
+**[CYR:]**: `src/vibeec/sacred_math.zig:167-184`
 
-**[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя**:
+**[CYR:]and[CYR:]andя**:
 ```zig
 pub const PhiSpiral = struct {
     angle: f64,
@@ -496,43 +496,43 @@ pub inline fn phiSpiral(n: u32) PhiSpiral {
 }
 ```
 
-**[CYR:[TRANSLATED]]onя оwithноinа**:
-- **Golden spiral**: [CYR:[TRANSLATED]] r = a + b × n
-- **[CYR:[TRANSLATED]]**: θ = n × φ × π
-- **[CYR:[TRANSLATED]]andуwith**: r = 30 + 8n
+**[CYR:]onя оwithноinа**:
+- **Golden spiral**: [CYR:] r = a + b × n
+- **[CYR:]**: θ = n × φ × π
+- **[CYR:]andуwith**: r = 30 + 8n
 
 **Прandмеnotнandе**:
 - VM runtime (vm_runtime.zig:2681)
 - Visualization (pixel_yablochko.zig:461)
 
-**[CYR:[TRANSLATED]]with**: ✅ **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**
+**[CYR:]with**: ✅ **[CYR:] [CYR:] [CYR:]**
 
 ---
 
-### ✅ 12. CHSH QUANTUM CORRELATION — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### ✅ 12. CHSH QUANTUM CORRELATION — [CYR:] [CYR:]
 
-**[CYR:[TRANSLATED]]**: `src/vibeec/sacred_constants.zig:82-90`, `src/vibeec/tsl_sacred.zig:34-42`
+**[CYR:]**: `src/vibeec/sacred_constants.zig:82-90`, `src/vibeec/tsl_sacred.zig:34-42`
 
-**[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя**:
+**[CYR:]and[CYR:]andя**:
 ```zig
-/// [CYR:[TRANSLATED]]withandчеwithtoandй [CYR:[TRANSLATED]] CHSH
+/// [CYR:]withandчеwithtoandй [CYR:] CHSH
 pub const CHSH_CLASSICAL: f64 = 2.0;
 
-/// Кin[CYR:[TRANSLATED]]inый [CYR:[TRANSLATED]] CHSH = 2√2 ≈ 2.828
+/// Кin[CYR:]inый [CYR:] CHSH = 2√2 ≈ 2.828
 pub const CHSH_QUANTUM: f64 = 2.0 * SQRT2;
 
-/// [CYR:[TRANSLATED]]inерandть toin[CYR:[TRANSLATED]]inое [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinо: CHSH > 2
+/// [CYR:]inерandть toin[CYR:]inое [CYR:]and[CYR:]withтinо: CHSH > 2
 pub fn hasQuantumAdvantage(chsh_value: f64) bool {
     return chsh_value > CHSH_CLASSICAL;
 }
 
-/// Маtowithand[CYR:[TRANSLATED]] on[CYR:[TRANSLATED]]andе CHSH = 2√2
+/// Маtowithand[CYR:] on[CYR:]andе CHSH = 2√2
 pub fn maxCHSHViolation() f64 {
     return CHSH_QUANTUM;
 }
 ```
 
-**[CYR:[TRANSLATED]]onя оwithноinа**:
+**[CYR:]onя оwithноinа**:
 - **CHSH inequality** — Clauser, Horne, Shimony, Holt (1969)
 - **Quantum limit**: 2√2 ≈ 2.828
 - **Classical limit**: 2.0
@@ -541,89 +541,89 @@ pub fn maxCHSHViolation() f64 {
 - Qutrit state correlation (sacred_math.zig:252-255)
 - Tests (sacred_constants.zig)
 
-**[CYR:[TRANSLATED]]with**: ✅ **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**
+**[CYR:]with**: ✅ **[CYR:] [CYR:] [CYR:] [CYR:]**
 
 ---
 
-## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 📊 [CYR:] [CYR:] [CYR:] [CYR:] [CYR:]
 
-| № | [CYR:[TRANSLATED]]andя | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]with | [CYR:[TRANSLATED]]onя оwithноinа |
+| № | [CYR:]andя | [CYR:] | [CYR:]with | [CYR:]onя оwithноinа |
 |---|-----------|--------|--------|---------------|
-| 1 | AMR (buffer[CYR:[TRANSLATED]] роwithт) | codegen_v4.zig:78-85 | ✅ **[CYR:[TRANSLATED]]** | CLRS Ch.17 |
-| 2 | Lucas Numbers (O(log n)) | sacred_math.zig:60-96 | ✅ **[CYR:[TRANSLATED]]** | [CYR:[TRANSLATED]] Луtoаwithа |
-| 3 | Quantum Scheduling | vm_trinity.zig:60-64 | ✅ **[CYR:[TRANSLATED]]** | Blumofe & Leiserson |
-| 4 | Fibonacci Hash | sacred_math.zig:147-159 | ✅ **[CYR:[TRANSLATED]]** | Knuth Vol.3 |
-| 5 | Golden Wrap | sacred_math.zig:192-218 | ✅ **[CYR:[TRANSLATED]]** | Balanced ternary |
-| 6 | Memory Pool Growth | memory_pool.zig:19 | ✅ **[CYR:[TRANSLATED]]** | CLRS Ch.17 |
-| 7 | Inline Cost Model | inliner.zig:30 | ✅ **[CYR:[TRANSLATED]]** | LLVM optimization |
-| 8 | IR Types (phi_ir) | ir.zig:26,38,54 | ✅ **[CYR:[TRANSLATED]]** | LLVM IR |
-| 9 | SIMD Ternary | simd_ternary.zig | ✅ **[CYR:[TRANSLATED]]** | AVX2/SSE |
-| 10 | φ-Lerp | zig_codegen.zig:2354-2357 | ✅ **[CYR:[TRANSLATED]]** | [CYR:[TRANSLATED]]fieldsцandя |
-| 11 | φ-Spiral | sacred_math.zig:167-184 | ✅ **[CYR:[TRANSLATED]]** | Golden spiral |
-| 12 | CHSH Quantum | sacred_constants.zig | ✅ **[CYR:[TRANSLATED]]** | CHSH inequality |
+| 1 | AMR (buffer[CYR:] роwithт) | codegen_v4.zig:78-85 | ✅ **[CYR:]** | CLRS Ch.17 |
+| 2 | Lucas Numbers (O(log n)) | sacred_math.zig:60-96 | ✅ **[CYR:]** | [CYR:] Луtoаwithа |
+| 3 | Quantum Scheduling | vm_trinity.zig:60-64 | ✅ **[CYR:]** | Blumofe & Leiserson |
+| 4 | Fibonacci Hash | sacred_math.zig:147-159 | ✅ **[CYR:]** | Knuth Vol.3 |
+| 5 | Golden Wrap | sacred_math.zig:192-218 | ✅ **[CYR:]** | Balanced ternary |
+| 6 | Memory Pool Growth | memory_pool.zig:19 | ✅ **[CYR:]** | CLRS Ch.17 |
+| 7 | Inline Cost Model | inliner.zig:30 | ✅ **[CYR:]** | LLVM optimization |
+| 8 | IR Types (phi_ir) | ir.zig:26,38,54 | ✅ **[CYR:]** | LLVM IR |
+| 9 | SIMD Ternary | simd_ternary.zig | ✅ **[CYR:]** | AVX2/SSE |
+| 10 | φ-Lerp | zig_codegen.zig:2354-2357 | ✅ **[CYR:]** | [CYR:]fieldsцandя |
+| 11 | φ-Spiral | sacred_math.zig:167-184 | ✅ **[CYR:]** | Golden spiral |
+| 12 | CHSH Quantum | sacred_constants.zig | ✅ **[CYR:]** | CHSH inequality |
 
 ---
 
-## 🎯 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🎯 [CYR:] [CYR:]
 
-### ✅ [CYR:[TRANSLATED]]: VIBEE [CYR:[TRANSLATED]] φ  **[CYR:[TRANSLATED]]** [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### ✅ [CYR:]: VIBEE [CYR:] φ  **[CYR:]** [CYR:] [CYR:]
 
-**Доfor[TRANSLATED]]withтinа**:
+**Доfor]withтinа**:
 
-1. **12 for[TRANSLATED]]andй** [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]not[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andй
-2. **10 [CYR:[TRANSLATED]]andй** (83%) and[CYR:[TRANSLATED]] on[CYR:[TRANSLATED]] оwithноinу
-3. **79% fileоin** (139/176) andwith[TRANSLATED]] φ/Golden references
+1. **12 for]andй** [CYR:] and[CYR:]not[CYR:] [CYR:]andй
+2. **10 [CYR:]andй** (83%) and[CYR:] on[CYR:] оwithноinу
+3. **79% fileоin** (139/176) andwith] φ/Golden references
 
-### 📈 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] φ
+### 📈 [CYR:] [CYR:] φ
 
-| [CYR:[TRANSLATED]]andя | Прandроwithт [CYR:[TRANSLATED]]toтandinноwithтand | [CYR:[TRANSLATED]]onя доwithтоin[CYR:[TRANSLATED]]withть |
+| [CYR:]andя | Прandроwithт [CYR:]toтandinноwithтand | [CYR:]onя доwithтоin[CYR:]withть |
 |-----------|-------------------|---------------------|
 | AMR Resize | ~30% overhead reduction | 100% (CLRS) |
 | Lucas Numbers | ~10× faster (n < 20) | 100% (Lucas formula) |
 | Fibonacci Hash | Uniform distribution | 100% (Knuth) |
-| SIMD Ternary | 32× [CYR:[TRANSLATED]]andзм | 100% (AVX2) |
+| SIMD Ternary | 32× [CYR:]andзм | 100% (AVX2) |
 | Memory Pool | O(1) amortized | 100% (CLRS) |
 
-### 🔬 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### 🔬 [CYR:] [CYR:]
 
-**[CYR:[TRANSLATED]]for[TRANSLATED]]andin[CYR:[TRANSLATED]] утin[CYR:[TRANSLATED]]andя** (in docs/habr/*):
-- "40 доfor[TRANSLATED]]withтin andз 8 [CYR:[TRANSLATED]]with[TRANSLATED]] onуtoand" — 30% фаtoты, 70% and[CYR:[TRANSLATED]]and
-- "Sacred formula" — withпеfor[TRANSLATED]]andinonя мandwithтandtoа
-- "[CYR:[TRANSLATED]]withт Вwith[TRANSLATED]] 13.82 Gyr" — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]towithand[CYR:[TRANSLATED]]andя
+**[CYR:]for]andin[CYR:] утin[CYR:]andя** (in docs/habr/*):
+- "40 доfor]withтin andз 8 [CYR:]with] onуtoand" — 30% фаtoты, 70% and[CYR:]and
+- "Sacred formula" — withпеfor]andinonя мandwithтVersion
+- "[CYR:]withт Вwith] 13.82 Gyr" — [CYR:] [CYR:]towithand[CYR:]andя
 
-**[CYR:[TRANSLATED]]withть**:
-- **[CYR:[TRANSLATED]]not[CYR:[TRANSLATED]] toод**: 100% [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]
-- **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withноinанandя**: 83% [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]
-- **[CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and**: Доfor[TRANSLATED]] [CYR:[TRANSLATED]]toтandinны
+**[CYR:]withть**:
+- **[CYR:]not[CYR:] toод**: 100% [CYR:]from[CYR:]
+- **[CYR:] [CYR:]withноinанandя**: 83% [CYR:]in[CYR:]
+- **[CYR:]andмand[CYR:]and**: Доfor] [CYR:]toтandinны
 
 ---
 
-## 💡 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 💡 [CYR:] [CYR:]
 
-**VIBEE — НЕ [CYR:[TRANSLATED]]toетand[CYR:[TRANSLATED]]inый [CYR:[TRANSLATED]]toт!**
+**VIBEE — НЕ [CYR:]toетand[CYR:]inый [CYR:]toт!**
 
-✅ **[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]not[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andя**:
-1. AMR with φ — доfor[TRANSLATED]]onя with[TRANSLATED]]andя (CLRS)
-2. Lucas Numbers — O(log n) [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя
-3. Quantum Scheduling — [CYR:[TRANSLATED]]with прandорand[CYR:[TRANSLATED]]in
+✅ **[CYR:] and[CYR:]not[CYR:] [CYR:]andя**:
+1. AMR with φ — доfor]onя with]andя (CLRS)
+2. Lucas Numbers — O(log n) [CYR:]andмand[CYR:]andя
+3. Quantum Scheduling — [CYR:]with прandорand[CYR:]in
 4. Fibonacci Hash — cache-friendly hashing
-5. Golden Wrap — быwith[TRANSLATED]] [CYR:[TRANSLATED]]andчonя арand[CYR:[TRANSLATED]]andtoа
+5. Golden Wrap — быwith] [CYR:]andчonя арand[CYR:]Version
 6. Memory Pool — O(1) amortized
-7. Inline Cost Model — [CYR:[TRANSLATED]]with size/speed
+7. Inline Cost Model — [CYR:]with size/speed
 8. IR Types — native φ in IR
-9. SIMD Ternary — 32× [CYR:[TRANSLATED]]andзм
-10. CHSH Quantum — toin[CYR:[TRANSLATED]]inое [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinо
+9. SIMD Ternary — 32× [CYR:]andзм
+10. CHSH Quantum — toin[CYR:]inое [CYR:]and[CYR:]withтinо
 
-❌ **[CYR:[TRANSLATED]]toетand[CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]inелand[CYR:[TRANSLATED]]andя** ([CYR:[TRANSLATED]]toо in docs/habr/*):
-- "40 доfor[TRANSLATED]]withтin andз 8 [CYR:[TRANSLATED]]with[TRANSLATED]] onуtoand"
+❌ **[CYR:]toетand[CYR:]inые [CYR:]inелand[CYR:]andя** ([CYR:]toо in docs/habr/*):
+- "40 доfor]withтin andз 8 [CYR:]with] onуtoand"
 - "Sacred formula"
-- "[CYR:[TRANSLATED]]withт Вwith[TRANSLATED]] 13.82 Gyr"
+- "[CYR:]withт Вwith] 13.82 Gyr"
 
-**[CYR:[TRANSLATED]]with [CYR:[TRANSLATED]]withть/[CYR:[TRANSLATED]]toетandнг**: **83% [CYR:[TRANSLATED]]withть, 17% [CYR:[TRANSLATED]]toетandнг**
+**[CYR:]with [CYR:]withть/[CYR:]toетandнг**: **83% [CYR:]withть, 17% [CYR:]toетandнг**
 
 ---
 
-## 📚 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 📚 [CYR:] [CYR:]
 
 1. **CLRS** — Cormen, Leiserson, Rivest, Stein, "Introduction to Algorithms", Chapter 17
 2. **Knuth Vol.3** — Donald Knuth, "The Art of Computer Programming, Vol. 3: Sorting and Searching"
@@ -638,9 +638,9 @@ pub fn maxCHSHViolation() f64 {
 
 ---
 
-**[CYR:[TRANSLATED]] withоwithтаin[CYR:[TRANSLATED]]**: 2026-01-30
-**[CYR:[TRANSLATED]]andя**: [CYR:[TRANSLATED]]toandй аonлandз 176 fileоin .zig in src/vibeec/
+**[CYR:] withоwithтаin[CYR:]**: 2026-01-30
+**[CYR:]andя**: [CYR:]toandй аonлandз 176 fileоin .zig in src/vibeec/
 **Аonлandтandto**: OpenCode
-**[CYR:[TRANSLATED]]with**: ✅ **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**
+**[CYR:]with**: ✅ **[CYR:] [CYR:]**
 
 **KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3**

@@ -1,76 +1,76 @@
-# VIBEE E2E Pipeline v21 - [CYR:[TRANSLATED]]with[TRANSLATED]]andя
+# VIBEE E2E Pipeline v21 - :]with]andya
 
-Аin[CYR:[TRANSLATED]] browser[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: Chrome CDP + Ollama LLM.
+Author:] browser:] :]: Chrome CDP + Ollama LLM.
 
-## Быwith[TRANSLATED]] with[TRANSLATED]]
+## Bywith] with]
 
 ```bash
-# 1. [CYR:[TRANSLATED]]withтandть Chrome
+# 1. :]withtandt Chrome
 google-chrome --headless=new --remote-debugging-port=9222 --no-sandbox &
 
-# 2. [CYR:[TRANSLATED]]withтandть Ollama
+# 2. :]withtandt Ollama
 ollama serve &
 ollama pull qwen2.5:3b
 
-# 3. [CYR:[TRANSLATED]]withтandть [CYR:[TRANSLATED]]
+# 3. :]withtandt :]
 ./scripts/agent_loop.sh "What is the page title?" "https://example.com"
 ```
 
-## Прand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## Prand:] :]
 
-### [CYR:[TRANSLATED]]with[TRANSLATED]] task (1 step, ~13with)
+### :]with] task (1 step, ~13with)
 ```bash
 ./scripts/agent_loop.sh "What is the page title?" "https://example.com"
 # Result: done → "Example Domain"
 ```
 
-### Наinand[CYR:[TRANSLATED]]andя + from[CYR:[TRANSLATED]] (2 stepа, ~16with)
+### Nainand:]andya + from:] (2 stepa, ~16with)
 ```bash
 ./scripts/agent_loop.sh "Go to google.com and report the title" ""
-# [CYR:[TRANSLATED]] 1: goto https://google.com
-# [CYR:[TRANSLATED]] 2: done → "Google"
+# :] 1: goto https://google.com
+# :] 2: done → "Google"
 ```
 
-### [CYR:[TRANSLATED]]stepоinая task (3 stepа, ~26with)
+### :]stepaboutinaya task (3 stepa, ~26with)
 ```bash
 ./scripts/agent_loop.sh "Visit example.com, extract info, and report" ""
-# [CYR:[TRANSLATED]] 1: goto https://example.com
-# [CYR:[TRANSLATED]] 2: extract page info
-# [CYR:[TRANSLATED]] 3: done → result
+# :] 1: goto https://example.com
+# :] 2: extract page info
+# :] 3: done → result
 ```
 
-## Доwith[TRANSLATED]] [CYR:[TRANSLATED]]withтinandя
+## Daboutwith] :]withtinandya
 
-| [CYR:[TRANSLATED]]withтinandе | Опandwithанandе | Прand[CYR:[TRANSLATED]] Input |
+| :]withtinande | Opandwithanande | Prand:] Input |
 |----------|----------|--------------|
-| goto | Наinand[CYR:[TRANSLATED]]andя | https://example.com |
-| click | Клandto | button#submit |
-| type | Вinод теtowithта | input#search\|hello |
-| scroll | [CYR:[TRANSLATED]]for[TRANSLATED]]toа | up / down |
-| extract | Изin[CYR:[TRANSLATED]]andе | main heading |
-| done | Заin[CYR:[TRANSLATED]]andе | result |
-| fail | Error | прandчandon |
+| goto | Nainand:]andya | https://example.com |
+| click | Klandto | button#submit |
+| type | Vinaboutd thosetowiththat | input#search\|hello |
+| scroll | :]for]toa | up / down |
+| extract | Izin:]ande | main heading |
+| done | Zain:]ande | result |
+| fail | Error | prandchandon |
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and
+## :] :]and
 
 ```bash
-# По [CYR:[TRANSLATED]]andю (3b - on[CYR:[TRANSLATED]]onя)
+# Pabout :]andyu (3b - on:]onya)
 ./scripts/agent_loop.sh "task" "url"
 
-# Быwith[TRANSLATED]] (1.5b - for теwithтоin)
+# Bywith] (1.5b - for thosewiththatin)
 VIBEE_MODEL="qwen2.5:1.5b" ./scripts/agent_loop.sh "task" "url"
 ```
 
-## [CYR:[TRANSLATED]]andtoand v21
+## :]andtoand v21
 
-| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе |
+| :]Version | Zon:]ande |
 |---------|----------|
-| [CYR:[TRANSLATED]]withand on step | ~6-10with |
-| Уwith[TRANSLATED]]withть [CYR:[TRANSLATED]]with[TRANSLATED]] [CYR:[TRANSLATED]] | ~95% |
-| Уwith[TRANSLATED]]withть [CYR:[TRANSLATED]]stepоinых | ~80% |
-| [CYR:[TRANSLATED]] по [CYR:[TRANSLATED]]andю | qwen2.5:3b |
+| :]withand on step | ~6-10with |
+| Uwith]witht :]with] :] | ~95% |
+| Uwith]witht :]stepaboutinykh | ~80% |
+| :] by :]andyu | qwen2.5:3b |
 
-## [CYR:[TRANSLATED]]andтеfor[TRANSLATED]]
+## :]andthosefor]
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐

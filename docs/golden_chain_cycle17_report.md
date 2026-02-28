@@ -94,12 +94,12 @@ Key components:
 
 | Intent | Detection Pattern |
 |--------|-------------------|
-| Greeting | hello, hi, hey, прandinет, 你好 |
-| Farewell | goodbye, bye, поtoа, 再见 |
+| Greeting | hello, hi, hey, prandinet, 你好 |
+| Farewell | goodbye, bye, bytoa, 再见 |
 | Question | what, why, how, when, where, ? |
 | Request | please, help me, i need |
-| Opinion | i think, i believe, по-[CYR:[TRANSLATED]] |
-| Acknowledgment | thank, ok, yes, no, withпаwithandбо |
+| Opinion | i think, i believe, by-:] |
+| Acknowledgment | thank, ok, yes, no, withpawithandbabout |
 | Emotion | happy, sad, angry, excited |
 | Statement | Default for other input |
 
@@ -108,7 +108,7 @@ Key components:
 | Language | Detection | Greeting | Farewell |
 |----------|-----------|----------|----------|
 | English | Default | Hello! | Goodbye! |
-| Russian | Cyrillic | Прandinет! | До withinand[CYR:[TRANSLATED]]andя! |
+| Russian | Cyrillic | Prandinet! | Dabout withinand:]andya! |
 | Chinese | Han chars | 你好！ | 再见！ |
 | Spanish | ñ, ¿, ¡ | ¡Hola! | ¡Adiós! |
 | French | ç, œ | Bonjour! | Au revoir! |

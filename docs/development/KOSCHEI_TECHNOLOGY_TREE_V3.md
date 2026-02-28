@@ -1,5 +1,5 @@
 # KOSCHEI MODE Technology Tree v3.0
-# Беwith[TRANSLATED]] цandtoл with[TRANSLATED]]andя
+# Bywith] tsandtol with]andya
 # φ² + 1/φ² = 3 | PHOENIX = 999
 
 ## KOSCHEI CYCLE
@@ -12,53 +12,53 @@
 │                                                                             │
 │    ┌──────────────┐                                                         │
 │    │ PAS_ANALYZE  │◀────────────────────────────────────────────────┐      │
-│    │ [CYR:[TRANSLATED]]      │                                                  │      │
-│    │ [CYR:[TRANSLATED]]fromы       │                                                  │      │
+│    │ :]      │                                                  │      │
+│    │ :]fromy       │                                                  │      │
 │    └──────┬───────┘                                                  │      │
 │           │                                                          │      │
 │           ▼                                                          │      │
 │    ┌──────────────┐                                                  │      │
 │    │ TECH_TREE    │                                                  │      │
-│    │ [CYR:[TRANSLATED]]inо       │                                                  │      │
-│    │ [CYR:[TRANSLATED]]andй   │                                                  │      │
+│    │ :]inabout       │                                                  │      │
+│    │ :]andy   │                                                  │      │
 │    └──────┬───────┘                                                  │      │
 │           │                                                          │      │
 │           ▼                                                          │      │
 │    ┌──────────────┐                                                  │      │
 │    │ SPEC_CREATE  │                                                  │      │
 │    │ .vibee       │                                                  │      │
-│    │ with[TRANSLATED]]andфandtoацand │                                                  │      │
+│    │ with]andfVersiontsand │                                                  │      │
 │    └──────┬───────┘                                                  │      │
 │           │                                                          │      │
 │           ▼                                                          │      │
 │    ┌──────────────┐                                                  │      │
 │    │ CODE_GENERATE│                                                  │      │
-│    │ .zig toод     │                                                  │      │
+│    │ .zig toaboutd     │                                                  │      │
 │    └──────┬───────┘                                                  │      │
 │           │                                                          │      │
 │           ▼                                                          │      │
 │    ┌──────────────┐                                                  │      │
 │    │ TEST_RUN     │                                                  │      │
-│    │ Теwithты        │                                                  │      │
+│    │ Tewithty        │                                                  │      │
 │    └──────┬───────┘                                                  │      │
 │           │                                                          │      │
 │           ▼                                                          │      │
 │    ┌──────────────┐                                                  │      │
 │    │ BENCHMARK    │                                                  │      │
-│    │ [CYR:[TRANSLATED]]innotнandе    │                                                  │      │
+│    │ :]innotnande    │                                                  │      │
 │    └──────┬───────┘                                                  │      │
 │           │                                                          │      │
 │           ▼                                                          │      │
 │    ┌──────────────┐                                                  │      │
 │    │ GIT_COMMIT   │                                                  │      │
-│    │ [CYR:[TRANSLATED]]andт       │                                                  │      │
+│    │ :]andt       │                                                  │      │
 │    └──────┬───────┘                                                  │      │
 │           │                                                          │      │
 │           ▼                                                          │      │
 │    ┌──────────────┐                                                  │      │
 │    │ LOOP         │──────────────────────────────────────────────────┘      │
 │    │ cycle_count++│                                                         │
-│    │ [CYR:[TRANSLATED]]   │                                                         │
+│    │ :]   │                                                         │
 │    └──────────────┘                                                         │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -153,9 +153,9 @@ IMMORTAL SPEEDUP = lim(n→∞) φ^n = ∞
 
 ```
 if improvement_rate > PHI_INV (0.618):
-    continue_cycle = true  # [CYR:[TRANSLATED]]
+    continue_cycle = true  # :]
 else:
-    continue_cycle = false # [CYR:[TRANSLATED]] (in[CYR:[TRANSLATED]]onя)
+    continue_cycle = false # :] (in:]onya)
 ```
 
 ## SACRED CONSTANTS
@@ -178,4 +178,4 @@ Trinity Logic:
 
 ---
 
-**φ² + 1/φ² = 3 | PHOENIX = 999 | KOSCHEI = [CYR:[TRANSLATED]]**
+**φ² + 1/φ² = 3 | PHOENIX = 999 | KOSCHEI = :]**

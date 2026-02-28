@@ -43,7 +43,7 @@ total_tests=$(grep -rh "^⊡ test" "$CODE_DIR" --include="*.999" 2>/dev/null | w
 total_consts=$(grep -rh "^◇ \|^Ⲕ " "$CODE_DIR" --include="*.999" 2>/dev/null | wc -l)
 
 # ULTRA-STRICT compliance
-with_marker=$(grep -rl 'Сгенерировано из:' "$CODE_DIR" --include='*.999' 2>/dev/null | wc -l)
+with_marker=$(grep -rl 'Sgenerandraboutinanabout from:' "$CODE_DIR" --include='*.999' 2>/dev/null | wc -l)
 with_evolution=$(grep -rl 'SelfEvolution' "$CODE_DIR" --include='*.999' 2>/dev/null | wc -l)
 with_true=$(grep -rl '△' "$CODE_DIR" --include='*.999' 2>/dev/null | wc -l)
 with_false=$(grep -rl '▽' "$CODE_DIR" --include='*.999' 2>/dev/null | wc -l)

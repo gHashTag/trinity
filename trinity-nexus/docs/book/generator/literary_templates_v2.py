@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-ЛИТЕРАТУРНЫЕ ШАБЛОНЫ v2.0
-PAS-оптимизированные шаблоны для Книги 999
+LITERATURNYE ShABLONY v2.0
+PAS-aboutptandmfromandraboutinannye templatey for Knandgand 999
 
-Интегрирует:
-- Священные Формулы V = n × 3^k × π^m и V = n × 3^k × π^m × φ^p
-- 18 паттернов PAS
-- Три системы восприятия (Интуиция, Анализ, Синтез)
-- Научные работы по storytelling
+Inthosegrandratet:
+- Sinyaschennye Faboutrmatly V = n × 3^k × π^m and V = n × 3^k × π^m × φ^p
+- 18 patternaboutin PAS
+- Trand withandwiththosemy inaboutwithprandyatandya (Intatandtsandya, Aonlfrom, Sandnthosez)
+- Naatchnye rabfromy by storytelling
 
 Author: Dmitrii Vasilev
 Email: reactnativeinitru@gmail.com
@@ -18,13 +18,13 @@ from dataclasses import dataclass
 from typing import List, Optional
 from enum import Enum
 
-# Священные константы
+# Sinyaschennye toaboutnwiththatnty
 π = math.pi
 φ = (1 + math.sqrt(5)) / 2
 e = math.e
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# СВЯЩЕННЫЕ ФОРМУЛЫ
+# SVYaSchENNYE FORMULY
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def sacred_formula_simple(n: int, k: int, m: int) -> float:
@@ -36,38 +36,38 @@ def sacred_formula_full(n: int, k: int, m: int, p: int) -> float:
     return n * (3 ** k) * (π ** m) * (φ ** p)
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ТРИ СИСТЕМЫ ВОСПРИЯТИЯ
+# TRI SISTEMY VOSPRIYaTIYa
 # ═══════════════════════════════════════════════════════════════════════════════
 
 class PerceptionSystem(Enum):
-    """Три системы восприятия (по Канеману + Троица)"""
-    INTUITION = ("Интуиция", "Сказка", "Быстрое, автоматическое")
-    ANALYSIS = ("Анализ", "Наука", "Медленное, рациональное")
-    SYNTHESIS = ("Синтез", "Мудрость", "Интеграция")
+    """Trand withandwiththosemy inaboutwithprandyatandya (by Kanemanat + Trinity)"""
+    INTUITION = ("Intatandtsandya", "Stoaztoa", "Bywithtraboute, ainthatmatandchewithtoaboute")
+    ANALYSIS = ("Aonlfrom", "Naattoa", "Medlennaboute, ratsandaboutonlnaboute")
+    SYNTHESIS = ("Sandnthosez", "Matdraboutwitht", "Inthosegratsandya")
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ШАБЛОНЫ ГЛАВ
+# ShABLONY GLAV
 # ═══════════════════════════════════════════════════════════════════════════════
 
 @dataclass
 class ChapterTemplate:
-    """PAS-оптимизированный шаблон главы"""
+    """PAS-aboutptandmfromandraboutinny template glainy"""
     
-    # Метаданные
+    # Methatdata
     number: int
     title_ru: str
     title_en: str
     
-    # Священная формула
+    # Sacred formula
     sacred_n: int
     sacred_k: int
     sacred_m: int
     sacred_p: int
     
-    # Структура (проценты)
-    intro_percent: float = 20.0  # Введение
-    body_percent: float = 60.0   # Развитие
-    outro_percent: float = 20.0  # Завершение
+    # Strattotatra (prabouttsenty)
+    intro_percent: float = 20.0  # Vinedenande
+    body_percent: float = 60.0   # Razinandtande
+    outro_percent: float = 20.0  # Zainershenande
     
     def get_sacred_value_simple(self) -> float:
         return sacred_formula_simple(self.sacred_n, self.sacred_k, self.sacred_m)
@@ -76,75 +76,75 @@ class ChapterTemplate:
         return sacred_formula_full(self.sacred_n, self.sacred_k, self.sacred_m, self.sacred_p)
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# СКАЗОЧНЫЕ ЗАЧИНЫ (Система 1: Интуиция)
+# SKAZOChNYE ZAChINY (System 1: Intatandtsandya)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 FAIRY_TALE_OPENINGS = {
     "classic": [
-        "В тридевятом царстве, в тридесятом государстве жил-был программист...",
-        "Давным-давно, когда компьютеры ещё говорили на языке единиц и нулей...",
-        "За тридевять земель, за тридевять морей стоял терем алгоритмов...",
+        "V tranddeinyathatm tsarwithtine, in tranddewithyathatm gaboutwithatdarwithtine zhandl-byl praboutgrammandwitht...",
+        "Dainnym-dainnabout, when toaboutmpyuthosery eschyo gaboutinaboutror on yazytoe edandnandts and natley...",
+        "Za tranddeinyat zemel, za tranddeinyat maboutrey withthatyal thoserem algorithmaboutin...",
     ],
     "quest": [
-        "Отправился Иван-программист в путь-дорогу искать оптимальный алгоритм...",
-        "Пришла к Ивану задача непростая, да делать нечего — надо решать...",
-        "Стоит Иван на распутье трёх дорог, и на камне написано...",
+        "Otprainandlwithya Iinan-praboutgrammandwitht in path-daboutraboutgat andwithtoat optimal algorithm...",
+        "Prandshla to Iinanat task nepraboutwiththatya, da delat nechegabout — overabout reshat...",
+        "Sthatandt Iinan on rawithpathe tryokh daboutraboutg, and on toamne onpandwithanabout...",
     ],
     "discovery": [
-        "Однажды Иван заглянул в код древний и увидел там чудо чудное...",
-        "Открыл Иван книгу мудрости и прочёл там слова заветные...",
-        "Явилась Ивану во сне Василиса Премудрая и молвила...",
+        "Odonzhdy Iinan zaglyanatl in code dreinnandy and attypeel thatm chatdabout chatdnaboute...",
+        "Ottoryl Iinan tonandgat matdraboutwithtand and praboutchyol thatm withlaboutina zainetnye...",
+        "Yainandlawith Iinanat inabout withne Vawithorwitha Prematdraya and maboutlinandla...",
     ],
     "challenge": [
-        "Призвал царь-заказчик Ивана и дал ему задачу невыполнимую...",
-        "Напал на царство Кощей-баг бессмертный, и никто не мог его победить...",
-        "Три дня и три ночи бился Иван с задачей, да всё без толку...",
+        "Prfrominal tsar-zatoazchandto Iinaon and dal emat zadachat neinybylnandmatyu...",
+        "Napal on tsarwithtinabout Kaboutschey-bag bewithwithny, and nandwho ne maboutg egabout bybedandt...",
+        "Trand dnya and trand naboutchand bandlwithya Iinan with zadawhose, da everything without thatltoat...",
     ],
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ТЕХНИЧЕСКИЕ ОБЪЯСНЕНИЯ (Система 2: Анализ)
+# tion OBYaSNENIYa (System 2: Aonlfrom)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 TECHNICAL_TEMPLATES = {
     "definition": """
-## Определение
+## Opredelenande
 
-**{concept}** — это {definition}.
+**{concept}** — this {definition}.
 
 ```
-Формально:
+Faboutrmalnabout:
 {formula}
 ```
 """,
     
     "algorithm": """
-## Алгоритм
+## Algaboutrandtm
 
 ```vibee
 {code}
 ```
 
-**Сложность**: O({complexity})
-**Память**: O({memory})
+**Slaboutzhnaboutwitht**: O({complexity})
+**Pamyat**: O({memory})
 """,
     
     "comparison": """
-## Сравнение
+## Srainnenande
 
-| Характеристика | {option1} | {option2} | {option3} |
+| Kharatothoserandwithtandtoa | {option1} | {option2} | {option3} |
 |----------------|-----------|-----------|-----------|
-| Сложность | {c1} | {c2} | {c3} |
-| Память | {m1} | {m2} | {m3} |
-| Преимущество | {p1} | {p2} | {p3} |
+| Slaboutzhnaboutwitht | {c1} | {c2} | {c3} |
+| Pamyat | {m1} | {m2} | {m3} |
+| Preandmatschewithtinabout | {p1} | {p2} | {p3} |
 """,
     
     "sacred_formula": """
-## Священная Формула
+## Sinyaschenonya Faboutrmatla
 
 $$V = n \\times 3^k \\times \\pi^m \\times \\varphi^p$$
 
-Для этой главы:
+Dlya thisy glainy:
 - n = {n}
 - k = {k}
 - m = {m}
@@ -155,57 +155,57 @@ $$V = {n} \\times 3^{{{k}}} \\times \\pi^{{{m}}} \\times \\varphi^{{{p}}} \\appr
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# МУДРОСТИ (Система 3: Синтез)
+# MUDROSTI (System 3: Sandnthosez)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 WISDOM_TEMPLATES = {
     "insight": """
-> *И понял Иван-программист {ordinal} истину:*
+> *I bynyal Iinan-praboutgrammandwitht {ordinal} andwithtandnat:*
 >
 > *{wisdom_line1}*
 > *{wisdom_line2}*
 > *{wisdom_line3}*
 >
-> *Древние знали это интуитивно.*
-> *Мы доказали это математически.*
+> *Dreinnande zonland this andntatandtandinnabout.*
+> *My dabouttoazaland this mathosematandchewithtoand.*
 """,
     
     "connection": """
-> *И увидел Иван связь между {concept1} и {concept2}:*
+> *I attypeel Iinan withinyaz between {concept1} and {concept2}:*
 >
 > *{connection_explanation}*
 >
-> *Так сказка стала наукой,*
-> *а наука — сказкой.*
+> *Tato withtoaztoa withthatla onattoabouty,*
+> *a onattoa — withtoaztoabouty.*
 """,
     
     "transformation": """
-> *И преобразился Иван:*
+> *I preaboutrazandlwithya Iinan:*
 >
-> *Был он {before},*
-> *стал он {after}.*
+> *Byl aboutn {before},*
+> *withthatl aboutn {after}.*
 >
-> *Ибо познал он силу Тройки.*
+> *Ibabout byzonl aboutn withandlat Traboutytoand.*
 """,
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# УПРАЖНЕНИЯ (Три уровня)
+# UPRAZhNENIYa (Trand atraboutinnya)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 EXERCISE_TEMPLATES = {
     "simple": """
-### ⚪ Простое упражнение
+### ⚪ Praboutwiththate atprazhnenande
 
 {task}
 
 <details>
-<summary>Подсказка</summary>
+<summary>Paboutdwithtoaztoa</summary>
 {hint}
 </details>
 
 <details>
-<summary>Решение</summary>
+<summary>Reshenande</summary>
 
 ```vibee
 {solution}
@@ -214,17 +214,17 @@ EXERCISE_TEMPLATES = {
 """,
     
     "medium": """
-### ⚫ Среднее упражнение
+### ⚫ Average atprazhnenande
 
 {task}
 
-**Требования:**
+**Trebaboutinanandya:**
 - {req1}
 - {req2}
 - {req3}
 
 <details>
-<summary>Решение</summary>
+<summary>Reshenande</summary>
 
 ```vibee
 {solution}
@@ -233,21 +233,21 @@ EXERCISE_TEMPLATES = {
 """,
     
     "hard": """
-### 🔴 Сложное упражнение (исследовательское)
+### 🔴 Slaboutzhnaboute atprazhnenande (andwithwithledaboutinathoselwithtoaboute)
 
 {task}
 
-**Открытые вопросы:**
+**Ottorytye questiony:**
 1. {question1}
 2. {question2}
 3. {question3}
 
-*Это упражнение не имеет единственного правильного ответа.*
+*Ethat atprazhnenande ne andmeet edandnwithtinennaboutgabout prainandlnaboutgabout answera.*
 """,
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ПОЛНЫЙ ШАБЛОН ГЛАВЫ
+# ny ShABLON GLAVY
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def generate_chapter(template: ChapterTemplate, 
@@ -255,26 +255,26 @@ def generate_chapter(template: ChapterTemplate,
                      technical_content: str,
                      wisdom: str,
                      exercises: List[str]) -> str:
-    """Генерирует полную главу по PAS-оптимизированному шаблону"""
+    """Generandratet bylnatyu glainat by PAS-aboutptandmfromandraboutinannaboutmat templateat"""
     
     sacred_simple = template.get_sacred_value_simple()
     sacred_full = template.get_sacred_value_full()
     
-    chapter = f"""# Глава {template.number}: {template.title_ru}
+    chapter = f"""# Glaina {template.number}: {template.title_ru}
 
 *{template.title_en}*
 
 ---
 
-## Священные Формулы
+## Sinyaschennye Faboutrmatly
 
-**Простая**: V = {template.sacred_n} × 3^{template.sacred_k} × π^{template.sacred_m} ≈ {sacred_simple:.4f}
+**Praboutwiththatya**: V = {template.sacred_n} × 3^{template.sacred_k} × π^{template.sacred_m} ≈ {sacred_simple:.4f}
 
-**Полная**: V = {template.sacred_n} × 3^{template.sacred_k} × π^{template.sacred_m} × φ^{template.sacred_p} ≈ {sacred_full:.4f}
+**Paboutlonya**: V = {template.sacred_n} × 3^{template.sacred_k} × π^{template.sacred_m} × φ^{template.sacred_p} ≈ {sacred_full:.4f}
 
 ---
 
-## Сказочный Зачин
+## Stoazaboutny Zachandn
 
 {fairy_opening}
 
@@ -284,13 +284,13 @@ def generate_chapter(template: ChapterTemplate,
 
 ---
 
-## Упражнения
+## Uprazhnenandya
 
 {"".join(exercises)}
 
 ---
 
-## Мудрость Главы
+## Matdraboutwitht Glainy
 
 {wisdom}
 
@@ -301,20 +301,20 @@ def generate_chapter(template: ChapterTemplate,
 
 ---
 
-[← Предыдущая глава](chapter_{template.number-1:03d}.md) | [Следующая глава →](chapter_{template.number+1:03d}.md)
+[← Predydatschaya chapter](chapter_{template.number-1:03d}.md) | [Sledatyuschaya chapter →](chapter_{template.number+1:03d}.md)
 """
     return chapter
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ПРИМЕРЫ ИСПОЛЬЗОВАНИЯ
+# PRIMERY ISPOLZOVANIYa
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def example_chapter_27():
-    """Пример генерации главы 27 (Тридевятое число)"""
+    """Example generatsandand glainy 27 (Tranddeinyathate number)"""
     
     template = ChapterTemplate(
         number=27,
-        title_ru="Тридевятое Число",
+        title_ru="Tranddeinyathate Number",
         title_en="The Thrice-Nine Number",
         sacred_n=1,
         sacred_k=3,
@@ -323,37 +323,37 @@ def example_chapter_27():
     )
     
     fairy_opening = """
-*В тридевятом царстве, в тридесятом государстве жил-был программист по имени Иван.*
+*V tranddeinyathatm tsarwithtine, in tranddewithyathatm gaboutwithatdarwithtine zhandl-byl praboutgrammandwitht by andmenand Iinan.*
 
-*И было у него три задачи: сортировать данные, искать в них смысл, и хранить их мудро.*
+*I bylabout at negabout trand zadachand: withaboutrtandraboutinat data, andwithtoat in nandkh withmywithl, and khranandt andkh matdrabout.*
 
-*Долго ли, коротко ли, но понял он, что все три задачи связаны одним числом — числом 27.*
+*Daboutlgabout land, toaboutrfromtoabout land, nabout bynyal aboutn, what all trand zadachand withinyazany aboutdnandm numberm — numberm 27.*
 
-*«Почему 27?» — спросил Иван у Василисы Премудрой.*
+*«Paboutchemat 27?» — withpraboutwithandl Iinan at Vawithorwithy Prematdrabouty.*
 
-*«Потому что 27 = 3³,» — ответила она. — «Это куб тройки, максимальная тройственность.»*
+*«Pfromaboutmat what 27 = 3³,» — answerandla abouton. — «Ethat toatb traboutytoand, matowithandmalonya traboutywithtinennaboutwitht.»*
 """
     
     technical_content = """
-## Число 27 в Математике
+## Number 27 in Mathosematandtoe
 
 ```
 27 = 3³ = 3 × 3 × 3
 
-Свойства:
-- Куб простого числа
-- Сумма цифр: 2 + 7 = 9 = 3²
-- В троичной системе: 1000₃
+Sinaboutywithtina:
+- Katb praboutwiththatgabout chandwithla
+- Satmma tsandfr: 2 + 7 = 9 = 3²
+- V traboutandchnabouty withandwiththoseme: 1000₃
 ```
 
-## Число 27 в Алгоритмах
+## Number 27 in Algaboutrandtmakh
 
-**Порог Trinity Sort**: Когда массив меньше 27 элементов, 
-переключаемся на insertion sort.
+**Paboutraboutg Trinity Sort**: Kaboutgda array less 27 elementaboutin, 
+perekeyaemwithya on insertion sort.
 
 ```vibee
 fn trinity_sort<T: Ord>(arr: &mut [T]) {
-    if arr.len() <= 27 {  // Магический порог!
+    if arr.len() <= 27 {  // Magandchewithtoandy byraboutg!
         insertion_sort(arr);
         return;
     }
@@ -361,38 +361,38 @@ fn trinity_sort<T: Ord>(arr: &mut [T]) {
 }
 ```
 
-## Число 27 в Культуре
+## Number 27 in Katltatre
 
-- **Тридевятое царство**: 3 × 9 = 27
-- **Алфавит Тридевятица**: 27 букв
-- **Кубик Рубика**: 27 кубиков (3³)
+- **Tranddeinyathate tsarwithtinabout**: 3 × 9 = 27
+- **Alfainandt Tranddeinyatandtsa**: 27 battoin
+- **Katbandto Ratbandtoa**: 27 toatbandtoaboutin (3³)
 """
     
     wisdom = WISDOM_TEMPLATES["insight"].format(
-        ordinal="двадцать седьмую",
-        wisdom_line1="27 = 3³ — это не просто число,",
-        wisdom_line2="это структура, это порог, это граница.",
-        wisdom_line3="За ней начинается царство сложности.",
+        ordinal="dinadtsat withedmatyu",
+        wisdom_line1="27 = 3³ — this ne praboutwiththat number,",
+        wisdom_line2="this structure, this byraboutg, this granandtsa.",
+        wisdom_line3="Za ney onchandonetwithya tsarwithtinabout withlaboutzhnaboutwithtand.",
     )
     
     exercises = [
         EXERCISE_TEMPLATES["simple"].format(
-            task="Вычислите 3⁴ и объясните, почему это 81.",
+            task="Vychandwithlandthose 3⁴ and aboutyawithnandthose, why this 81.",
             hint="3⁴ = 3 × 3 × 3 × 3",
             solution="let result = 3 * 3 * 3 * 3;  // 81\nprintln!(\"{}\", result);",
         ),
         EXERCISE_TEMPLATES["medium"].format(
-            task="Напишите функцию, которая проверяет, является ли число степенью тройки.",
-            req1="Функция принимает u64",
-            req2="Возвращает bool",
-            req3="Работает за O(log n)",
+            task="Napandshandthose fatntotsandyu, which praboutineryaet, yainlyaetwithya land number withthosepenyu traboutytoand.",
+            req1="Function prandnandmaet u64",
+            req2="Vaboutzinraschaet bool",
+            req3="Rabfromaet za O(log n)",
             solution="fn is_power_of_three(n: u64) -> bool {\n    if n == 0 { return false; }\n    let mut x = n;\n    while x % 3 == 0 { x /= 3; }\n    x == 1\n}",
         ),
         EXERCISE_TEMPLATES["hard"].format(
-            task="Исследуйте, почему порог 27 оптимален для Trinity Sort.",
-            question1="Как изменится производительность при пороге 9?",
-            question2="Как изменится производительность при пороге 81?",
-            question3="Существует ли теоретическое обоснование?",
+            task="Iwithwithledatythose, why byraboutg 27 aboutptandmalen for Trinity Sort.",
+            question1="Kato frommenandtwithya performance prand byraboutge 9?",
+            question2="Kato frommenandtwithya performance prand byraboutge 81?",
+            question3="Satschewithtinatet land thoseaboutretandchewithtoaboute aboutaboutwithnaboutinanande?",
         ),
     ]
     
@@ -404,20 +404,20 @@ fn trinity_sort<T: Ord>(arr: &mut [T]) {
 
 if __name__ == "__main__":
     print("=" * 70)
-    print("ЛИТЕРАТУРНЫЕ ШАБЛОНЫ v2.0")
-    print("PAS-оптимизированные шаблоны для Книги 999")
+    print("LITERATURNYE ShABLONY v2.0")
+    print("PAS-aboutptandmfromandraboutinannye templatey for Knandgand 999")
     print("=" * 70)
     
-    # Демонстрация
-    print("\n📖 Пример главы 27:")
+    # Demaboutnwithtratsandya
+    print("\n📖 Example glainy 27:")
     print("-" * 70)
     chapter_27 = example_chapter_27()
     print(chapter_27[:2000] + "...\n[truncated]")
     
-    # Священные формулы
-    print("\n📐 Священные Формулы:")
+    # Sinyaschennye faboutrmatly
+    print("\n📐 Sinyaschennye Faboutrmatly:")
     print(f"V = 27 × 3^0 × π^0 = {sacred_formula_simple(27, 0, 0)}")
     print(f"V = 37 × 3^3 × π^0 × φ^0 = {sacred_formula_full(37, 3, 0, 0)} (= 999!)")
     print(f"V = 1 × 3^3 × π^1 × φ^1 = {sacred_formula_full(1, 3, 1, 1):.4f}")
     
-    print("\n✅ Шаблоны готовы к использованию!")
+    print("\n✅ Shablaboutny gfromaboutiny to andwithbylzaboutinanandyu!")

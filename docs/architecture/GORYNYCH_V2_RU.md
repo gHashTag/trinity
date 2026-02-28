@@ -1,76 +1,76 @@
-# [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] v3 — [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] 999 with Маtoроwithамand
+# :] :] v3 — :]and:] 999 with Matoraboutwithamand
 
-## [CYR:[TRANSLATED]]andтеfor[TRANSLATED]]
+## :]andthosefor]
 
 ```
-                    [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] v3
+                    :] :] v3
                     
      ┌─────┐   ┌─────┐   ┌─────┐
      │  Ⲅ  │   │  Ⲋ  │   │  Ⲑ  │
-     │леtowithер│   │[CYR:[TRANSLATED]]withер│   │for[TRANSLATED]]│
+     │letowither│   │:]wither│   │for]│
      └──┬──┘   └──┬──┘   └──┬──┘
         │         │         │
         └────┬────┴────┬────┘
              │    Ⲙ    │
           ┌──┴─────────┴──┐
-          │    [CYR:[TRANSLATED]]      │
-          │  (маtoроwithы)    │
+          │    :]      │
+          │  (matoraboutwithy)    │
           └───────┬───────┘
                   │
           ┌───────┴───────┐
           │      Ⲭ        │
-          │   [CYR:[TRANSLATED]]       │
-          │ ([CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]) │
+          │   :]       │
+          │ (:]andmand:]) │
           └───────────────┘
 ```
 
-## Пfromоto for[TRANSLATED]]and[CYR:[TRANSLATED]]and
+## Pfromaboutto for]and:]and
 
 ```
-Иwith[TRANSLATED]]andto → Ⲅ → Тоfor[TRANSLATED]] → Ⲋ → AST → Ⲙ → AST' → Ⲭ → IR → Ⲑ → [CYR:[TRANSLATED]]
+Iwith]andto → Ⲅ → Taboutfor] → Ⲋ → AST → Ⲙ → AST' → Ⲭ → IR → Ⲑ → :]
    Ⲥ           [ⲨⲀ]          ⲨⲂ       ⲨⲂ'      ⲨⲄ       Ⲥ
 ```
 
-## [CYR:[TRANSLATED]]not[CYR:[TRANSLATED]]
+## :]not:]
 
-| Сandмinол | [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]to |
+| Sandminaboutl | :]notnt | :] | :]to |
 |--------|-----------|------|-------|
-| Ⲅ | Леtowithер | gorynych.999 | — |
-| Ⲋ | [CYR:[TRANSLATED]]withер | gorynych.999 | — |
-| Ⲙ | Маtoроwithы | makrosy.999 + proc_makrosy.999 + gigiena.999 | 1112 |
-| Ⲭ | [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]] | hvost.999 + prohody.999 | 274 |
-| Ⲑ | [CYR:[TRANSLATED]] | gorynych.999 | — |
-| — | Тandпы | tipy.999 | 248 |
-| — | [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] | gorynych.999 | 325 |
-| **Σ** | **Вwith[TRANSLATED]]** | **7 fileоin** | **1913** |
+| Ⲅ | Letowither | gorynych.999 | — |
+| Ⲋ | :]wither | gorynych.999 | — |
+| Ⲙ | Matoraboutwithy | makrosy.999 + proc_makrosy.999 + gigiena.999 | 1112 |
+| Ⲭ | :]andmand:] | hvost.999 + prohody.999 | 274 |
+| Ⲑ | :] | gorynych.999 | — |
+| — | Tandpy | tipy.999 | 248 |
+| — | :]in:] | gorynych.999 | 325 |
+| **Σ** | **Vwith]** | **7 fileaboutin** | **1913** |
 
-## Хinоwithт ([CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]])
+## Khinaboutwitht (:]andmand:])
 
-### [CYR:[TRANSLATED]]inнand [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and
+### :]innand :]andmand:]and
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] |
+| :] | :]in:] | :] |
 |------|---------|---------|
-| -O0 | 0 | [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andй |
+| -O0 | 0 | :] :]andmand:]andy |
 | -O1 | 1 | DCE |
 | -O2 | 2 | DCE, CF |
 | -O3 | 3 | DCE, CF, CP |
 | -O4 | 4 | DCE, CF, CP, CSE |
 | -O5 | 5 | DCE, CF, CP, CSE, INL |
-| -O9 | 9 | Маtowithand[CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]) |
+| -O9 | 9 | Matowithand:] (:]) |
 
-### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and
+### :] :]andmand:]and
 
-| Сandмinол | [CYR:[TRANSLATED]] | Опandwithанandе |
+| Sandminaboutl | :] | Opandwithanande |
 |--------|--------|----------|
-| Ⲁ | DCE | [CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] for[TRANSLATED]] |
-| Ⲃ | CF | Сin[CYR:[TRANSLATED]]toа toонwith[TRANSLATED]] |
-| Ⲅ | CP | Раwith[TRANSLATED]]with[TRANSLATED]]notнandе toопandй |
-| Ⲇ | CSE | Уwith[TRANSLATED]]notнandе [CYR:[TRANSLATED]]andх [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andй |
-| Ⲉ | INL | [CYR:[TRANSLATED]]andнг [CYR:[TRANSLATED]]toцandй |
+| Ⲁ | DCE | :]ande :]in:] for] |
+| Ⲃ | CF | Sin:]toa toaboutnwith] |
+| Ⲅ | CP | Rawith]with]notnande toaboutpandy |
+| Ⲇ | CSE | Uwith]notnande :]andkh :]in:]andy |
+| Ⲉ | INL | :]andng :]totsandy |
 
-### Прand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and
+### Prand:] :]andmand:]and
 
-**До (AST):**
+**Dabout (AST):**
 ```
 Ⲙ x = 3 + 4
 Ⲙ y = x * 2
@@ -78,35 +78,35 @@
 Ⲣ y
 ```
 
-**Поwithле (IR, -O3):**
+**Paboutwithle (IR, -O3):**
 ```
-LOAD 14, r0    // 3+4=7, 7*2=14 — within[CYR:[TRANSLATED]]
-RET r0         // z [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]inый toод)
+LOAD 14, r0    // 3+4=7, 7*2=14 — within:]
+RET r0         // z :] (:]inyy toaboutd)
 ```
 
-## Сandwith[TRANSLATED]] тandпоin
+## Sandwith] tandbyin
 
-### [CYR:[TRANSLATED]]inые тandпы
+### :]inye tandpy
 
-| Сandмinол | Тandп | Опandwithанandе |
+| Sandminaboutl | Tandp | Opandwithanande |
 |--------|-----|----------|
-| Ⲋ | чandwithло | 27-рand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] |
-| Ⲥ | withлоinо | [CYR:[TRANSLATED]]toа |
-| Ⲧ | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] | Ⲁ/Ⲃ/Ⲯ |
-| Ⲩ | with[TRANSLATED]]for[TRANSLATED]] | Соwithтаin[CYR:[TRANSLATED]] тandп |
-| Ⲫ | [CYR:[TRANSLATED]]withтinandе | [CYR:[TRANSLATED]]toцandя |
-| Ⲭ | пуwithтfromа | void |
-| Ⲯ | notin[CYR:[TRANSLATED]] | unknown |
+| Ⲋ | chandwithlabout | 27-rand:] :] |
+| Ⲥ | withlaboutinabout | :]toa |
+| Ⲧ | :]and:] | Ⲁ/Ⲃ/Ⲯ |
+| Ⲩ | with]for] | Saboutwiththatin:] tandp |
+| Ⲫ | :]withtinande | :]totsandya |
+| Ⲭ | patwithtfroma | void |
+| Ⲯ | notin:] | unknown |
 
-### [CYR:[TRANSLATED]]andчonя [CYR:[TRANSLATED]]andtoа
+### :]andchonya :]Version
 
 ```
-Ⲁ — andwithтandon (true)
+Ⲁ — andwithtandon (true)
 Ⲃ — false (false)
-Ⲯ — notin[CYR:[TRANSLATED]] (unknown)
+Ⲯ — notin:] (unknown)
 ```
 
-**[CYR:[TRANSLATED]]andца  (&&):**
+**:]andtsa  (&&):**
 ```
     Ⲁ  Ⲃ  Ⲯ
 Ⲁ   Ⲁ  Ⲃ  Ⲯ
@@ -114,7 +114,7 @@ RET r0         // z [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]inый toод)
 Ⲯ   Ⲯ  Ⲃ  Ⲯ
 ```
 
-**[CYR:[TRANSLATED]]andца [CYR:[TRANSLATED]] (||):**
+**:]andtsa :] (||):**
 ```
     Ⲁ  Ⲃ  Ⲯ
 Ⲁ   Ⲁ  Ⲁ  Ⲁ
@@ -122,32 +122,32 @@ RET r0         // z [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]inый toод)
 Ⲯ   Ⲁ  Ⲯ  Ⲯ
 ```
 
-## Сandwith[TRANSLATED]] маtoроwithоin ([CYR:[TRANSLATED]] Ⲙ)
+## Sandwith] matoraboutwithaboutin (:] Ⲙ)
 
-### Вwith[TRANSLATED]] маtoроwithы
+### Vwith] matoraboutwithy
 
-| Сandмinол | Маtoроwith | Опandwithанandе |
+| Sandminaboutl | Matoraboutwith | Opandwithanande |
 |--------|--------|----------|
-| @Ⲇ | derive | Аin[CYR:[TRANSLATED]]not[CYR:[TRANSLATED]]andя trait [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andй |
-| @Ⲣ | route | HTTP [CYR:[TRANSLATED]] |
-| @Ⲧ | test | Теwithтоinые [CYR:[TRANSLATED]]toцand |
-| @Ⲕ | cache | [CYR:[TRANSLATED]]andроinанandе resultоin |
-| @Ⲃ | validate | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя fieldй |
+| @Ⲇ | derive | Author:]not:]andya trait :]and:]andy |
+| @Ⲣ | route | HTTP :] |
+| @Ⲧ | test | Tewiththatinye :]totsand |
+| @Ⲕ | cache | :]andraboutinanande resultaboutin |
+| @Ⲃ | validate | :]and:]andya fieldy |
 
-### [CYR:[TRANSLATED]] маtoроwithы
+### :] matoraboutwithy
 
-| Маtoроwith | Опandwithанandе |
+| Matoraboutwith | Opandwithanande |
 |--------|----------|
-| `sql!()` | SQL [CYR:[TRANSLATED]]withы with [CYR:[TRANSLATED]]inерtoой on stageе for[TRANSLATED]]and[CYR:[TRANSLATED]]and |
-| `html!()` | HTML [CYR:[TRANSLATED]] with and[CYR:[TRANSLATED]]fieldsцandей |
-| `json!()` | JSON лand[CYR:[TRANSLATED]] |
-| `regex!()` | [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя regex on stageе for[TRANSLATED]]and[CYR:[TRANSLATED]]and |
-| `format!()` | [CYR:[TRANSLATED]]andроinанandе with[TRANSLATED]]to |
-| `include!()` | Вfor[TRANSLATED]]andе fileоin |
-| `env!()` | [CYR:[TRANSLATED]] оfor[TRANSLATED]]andя |
-| `cfg!()` | Уwithлоinonя for[TRANSLATED]]and[CYR:[TRANSLATED]]andя |
+| `sql!()` | SQL :]withy with :]inertoabouty on stagee for]and:]and |
+| `html!()` | HTML :] with and:]fieldstsandey |
+| `json!()` | JSON land:] |
+| `regex!()` | :]and:]andya regex on stagee for]and:]and |
+| `format!()` | :]andraboutinanande with]to |
+| `include!()` | Vfor]ande fileaboutin |
+| `env!()` | :] aboutfor]andya |
+| `cfg!()` | Uwithlaboutinonya for]and:]andya |
 
-### Derive [CYR:[TRANSLATED]]
+### Derive :]
 
 ```
 @Ⲇ(Entity)       — table_name, columns, from_row, to_row, id
@@ -161,11 +161,11 @@ RET r0         // z [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]inый toод)
 @Ⲇ(Builder)      — with_*, build
 ```
 
-### Прand[CYR:[TRANSLATED]] andwith[TRANSLATED]]inанandя
+### Prand:] andwith]inanandya
 
 ```
-// [CYR:[TRANSLATED]] маtoроwithоin: ~50 with[TRANSLATED]]to boilerplate
-//  маtoроwithамand: 5 with[TRANSLATED]]to
+// :] matoraboutwithaboutin: ~50 with]to boilerplate
+//  matoraboutwithamand: 5 with]to
 
 @Ⲇ(Entity, Serialize, Clone, Debug)
 Ⲏ User:
@@ -180,61 +180,61 @@ RET r0         // z [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]inый toод)
   Ⲣ Response.json(user)
 ```
 
-## [CYR:[TRANSLATED]]innotнandе inерwithandй
+## :]innotnande inerwithandy
 
-| [CYR:[TRANSLATED]]withandя | [CYR:[TRANSLATED]]to | [CYR:[TRANSLATED]]to | [CYR:[TRANSLATED]]not[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя | Маtoроwithы |
+| :]Author | :]to | :]to | :]not:] | :]andmand:]andya | Matoraboutwithy |
 |--------|------|-------|------------|-------------|---------|
-| v0 | Zig | ~2630 | 3 [CYR:[TRANSLATED]]inы | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] |
-| v1 | .vibee | ~1054 | 3 [CYR:[TRANSLATED]]inы | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] |
-| v2 | .999 | 790 | 3 [CYR:[TRANSLATED]]inы + хinоwithт | 5 [CYR:[TRANSLATED]]in | [CYR:[TRANSLATED]] |
-| v3 | .999 | 1913 | 3 [CYR:[TRANSLATED]]inы + [CYR:[TRANSLATED]] + хinоwithт | 5 [CYR:[TRANSLATED]]in | 15+ маtoроwithоin |
+| v0 | Zig | ~2630 | 3 :]iny | :] | :] |
+| v1 | .vibee | ~1054 | 3 :]iny | :] | :] |
+| v2 | .999 | 790 | 3 :]iny + khinaboutwitht | 5 :]in | :] |
+| v3 | .999 | 1913 | 3 :]iny + :] + khinaboutwitht | 5 :]in | 15+ matoraboutwithaboutin |
 
-### [CYR:[TRANSLATED]]andе for[TRANSLATED]]
-
-```
-v0 (Zig)   ████████████████████████████ 2630 with[TRANSLATED]]to
-v1 (vibee) ██████████ 1054 with[TRANSLATED]]to (-60%)
-v2 (999)   ███████ 790 with[TRANSLATED]]to (-70%)
-v3 (999)   ███████████████ 1913 with[TRANSLATED]]to (with маtoроwithамand)
-```
-
-### Соfor[TRANSLATED]]andе boilerplate
+### :]ande for]
 
 ```
-[CYR:[TRANSLATED]] маtoроwithоin: ~100 with[TRANSLATED]]to on entity + routes
- маtoроwithамand:  ~10 with[TRANSLATED]]to
-Соfor[TRANSLATED]]andе:   10x
+v0 (Zig)   ████████████████████████████ 2630 with]to
+v1 (vibee) ██████████ 1054 with]to (-60%)
+v2 (999)   ███████ 790 with]to (-70%)
+v3 (999)   ███████████████ 1913 with]to (with matoraboutwithamand)
 ```
 
-## Иwith[TRANSLATED]]inанandе
+### Saboutfor]ande boilerplate
+
+```
+:] matoraboutwithaboutin: ~100 with]to on entity + routes
+ matoraboutwithamand:  ~10 with]to
+Saboutfor]ande:   10x
+```
+
+## Iwith]inanande
 
 ```bash
-# [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя with [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andей по [CYR:[TRANSLATED]]andю (-O3)
+# :]and:]andya with :]andmand:]andey by :]andyu (-O3)
 ./gorynych program.999
 
-# [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and
+# :] :]andmand:]and
 ./gorynych -O0 program.999
 
-# Маtowithand[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]andя
+# Matowithand:]onya :]andmand:]andya
 ./gorynych -O9 program.999
 
-# Геnot[CYR:[TRANSLATED]]andя in [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and
+# Genot:]andya in :] :]and
 ./gorynych --zig program.999
 ./gorynych --wasm program.999
 ./gorynych --python program.999
 ```
 
-## [CYR:[TRANSLATED]]
+## :]
 
 ```
 src/999/
-├── gorynych.999      # [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] for[TRANSLATED]]and[CYR:[TRANSLATED]] (325 with[TRANSLATED]]to)
-├── makrosy.999       # Деfor[TRANSLATED]]andin[CYR:[TRANSLATED]] маtoроwithы (423 with[TRANSLATED]]toand)
-├── proc_makrosy.999  # [CYR:[TRANSLATED]] маtoроwithы (364 with[TRANSLATED]]toand)
-├── gigiena.999       # Гandгandенandчеwithtoandе маtoроwithы (279 with[TRANSLATED]]to)
-├── hvost.999         # Хinоwithт — IR (92 with[TRANSLATED]]toand)
-├── prohody.999       # [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]]and (182 with[TRANSLATED]]toand)
-└── tipy.999          # Сandwith[TRANSLATED]] тandпоin (248 with[TRANSLATED]]to)
+├── gorynych.999      # :]in:] for]and:] (325 with]to)
+├── makrosy.999       # Defor]andin:] matoraboutwithy (423 with]toand)
+├── proc_makrosy.999  # :] matoraboutwithy (364 with]toand)
+├── gigiena.999       # Gandgandenandchewithtoande matoraboutwithy (279 with]to)
+├── hvost.999         # Khinaboutwitht — IR (92 with]toand)
+├── prohody.999       # :] :]andmand:]and (182 with]toand)
+└── tipy.999          # Sandwith] tandbyin (248 with]to)
 ```
 
 ## Creation Pattern
@@ -242,8 +242,8 @@ src/999/
 ```
 Source → Transformer → Result
 
-Ⲥ → Ⲅ → [ⲨⲀ]     # Леtowithер
-[ⲨⲀ] → Ⲋ → ⲨⲂ    # [CYR:[TRANSLATED]]withер
-ⲨⲂ → Ⲭ → ⲨⲄ      # [CYR:[TRANSLATED]]andмand[CYR:[TRANSLATED]] ([CYR:[TRANSLATED]]!)
-ⲨⲄ → Ⲑ → Ⲥ       # [CYR:[TRANSLATED]]
+Ⲥ → Ⲅ → [ⲨⲀ]     # Letowither
+[ⲨⲀ] → Ⲋ → ⲨⲂ    # :]wither
+ⲨⲂ → Ⲭ → ⲨⲄ      # :]andmand:] (:]!)
+ⲨⲄ → Ⲑ → Ⲥ       # :]
 ```

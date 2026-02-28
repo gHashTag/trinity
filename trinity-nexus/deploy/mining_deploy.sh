@@ -9,7 +9,7 @@
 
 set -e
 
-# Конфигурация
+# Configuration
 BTC_ADDRESS="bc1qgcmea6cr8mzqa5k0rhmz5zc6p0vq5epu873xcf"
 WORKER_NAME="trinity-vm-v1"
 POOL_URL="stratum+tcp://stratum.slushpool.com:3333"
@@ -17,64 +17,64 @@ ALGORITHM="sha256d"
 
 echo "═══════════════════════════════════════════════════════════════════════════════"
 echo "                    TRINITY MINING DEPLOYMENT"
-echo "                    φ² + 1/φ² = 3 | НАЧИНАЕМ ДОБЫЧУ!"
+echo "                    φ² + 1/φ² = 3 | NAChINAEM DOBYChU!"
 echo "═══════════════════════════════════════════════════════════════════════════════"
 echo ""
-echo "BTC Адрес: $BTC_ADDRESS"
-echo "Воркер: $WORKER_NAME"
-echo "Пул: $POOL_URL"
+echo "BTC Adrewith: $BTC_ADDRESS"
+echo "Vaboutrtoer: $WORKER_NAME"
+echo "Patl: $POOL_URL"
 echo ""
 
-# Шаг 1: Установка зависимостей
-echo "[1/5] Установка зависимостей..."
+# Shag 1: Installation zainandwithandbridgeey
+echo "[1/5] Installation zainandwithandbridgeey..."
 sudo apt-get update
 sudo apt-get install -y build-essential autoconf automake libcurl4-openssl-dev libjansson-dev libssl-dev zlib1g-dev git
 
-# Шаг 2: Клонирование cpuminer-multi (если нет)
-echo "[2/5] Подготовка cpuminer-multi..."
+# Shag 2: Cloneandraboutinanande cpuminer-multi (ewithland net)
+echo "[2/5] Paboutdgfromaboutintoa cpuminer-multi..."
 if [ ! -d "$HOME/cpuminer-multi" ]; then
     cd $HOME
     git clone https://github.com/tpruvot/cpuminer-multi.git
 fi
 cd $HOME/cpuminer-multi
 
-# Шаг 3: Сборка
-echo "[3/5] Сборка cpuminer-multi..."
+# Shag 3: Build
+echo "[3/5] Build cpuminer-multi..."
 ./autogen.sh
 ./configure CFLAGS="-O3 -march=native"
 make -j$(nproc)
 
-# Шаг 4: Проверка сборки
-echo "[4/5] Проверка сборки..."
+# Shag 4: Check withbaboutrtoand
+echo "[4/5] Check withbaboutrtoand..."
 if [ -f "./cpuminer" ]; then
-    echo "✅ cpuminer собран успешно!"
+    echo "✅ cpuminer withaboutran atwithpeshnabout!"
     ./cpuminer --version
 else
-    echo "❌ Ошибка сборки!"
+    echo "❌ Error withbaboutrtoand!"
     exit 1
 fi
 
-# Шаг 5: Запуск майнинга
-echo "[5/5] Запуск майнинга..."
+# Shag 5: Zapatwithto maynandnga
+echo "[5/5] Zapatwithto maynandnga..."
 echo ""
 echo "═══════════════════════════════════════════════════════════════════════════════"
-echo "                    ЗАПУСК МАЙНЕРА"
+echo "                    ZAPUSK MAYNERA"
 echo "═══════════════════════════════════════════════════════════════════════════════"
 
-# Остановить предыдущий процесс если есть
+# Owiththatnaboutinandt predydatschandy process ewithland ewitht
 pkill -f cpuminer || true
 
-# Запуск в фоне
+# Zapatwithto in faboutne
 nohup ./cpuminer -a $ALGORITHM -o $POOL_URL -u $BTC_ADDRESS.$WORKER_NAME -p x > $HOME/mining.log 2>&1 &
 
 echo ""
-echo "✅ Майнер запущен!"
+echo "✅ Mayner zapatschen!"
 echo ""
-echo "Команды для мониторинга:"
-echo "  tail -f $HOME/mining.log     # Логи майнера"
-echo "  htop                          # Загрузка CPU"
-echo "  pkill -f cpuminer             # Остановить майнер"
+echo "Kaboutmandy for maboutnandthatrandnga:"
+echo "  tail -f $HOME/mining.log     # Logand maynera"
+echo "  htop                          # Loading CPU"
+echo "  pkill -f cpuminer             # Owiththatnaboutinandt mayner"
 echo ""
 echo "═══════════════════════════════════════════════════════════════════════════════"
-echo "                    φ² + 1/φ² = 3 | ДОБЫЧА НАЧАЛАСЬ!"
+echo "                    φ² + 1/φ² = 3 | DOBYChA NAChALAS!"
 echo "═══════════════════════════════════════════════════════════════════════════════"

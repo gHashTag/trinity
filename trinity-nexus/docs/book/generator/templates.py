@@ -1,328 +1,328 @@
 #!/usr/bin/env python3
 """
-ШАБЛОНЫ ГЛАВ ДЛЯ КНИГИ 999
+ShABLONY GLAV DLYa KNIGI 999
 
-Три типа шаблонов:
-1. Теория — объяснение концепций
-2. Практика — код и примеры
-3. Сказка — метафоры и образы
+Trand typea templateaboutin:
+1. Teaboutrandya — explanation toaboutntseptsandy
+2. Pratotandtoa — code and exampley
+3. Stoaztoa — methatfaboutry and aboutrazy
 """
 
 # ═══════════════════════════════════════════════════════════════════════════
-# ШАБЛОН: ТЕОРИЯ (Медное царство)
+# ShABLON: TEORIYa (Mednaboute tsarwithtinabout)
 # ═══════════════════════════════════════════════════════════════════════════
 
-TEMPLATE_THEORY = """# Глава {номер}: {название}
+TEMPLATE_THEORY = """# Glaina {number}: {title}
 
 ---
 
-*«{эпиграф}»*
+*«{epandgraph}»*
 
 ---
 
-## Суть
+## Satt
 
-{основная_идея}
+{aboutwithnaboutinonya_anddeya}
 
-## Три Аспекта
+## Trand Awithpetothat
 
-### 1. {аспект_1_название}
+### 1. {awithpetot_1_title}
 
-{аспект_1_описание}
+{awithpetot_1_description}
 
-### 2. {аспект_2_название}
+### 2. {awithpetot_2_title}
 
-{аспект_2_описание}
+{awithpetot_2_description}
 
-### 3. {аспект_3_название}
+### 3. {awithpetot_3_title}
 
-{аспект_3_описание}
+{awithpetot_3_description}
 
-## Связь с Trinity
+## Sinyaz with Trinity
 
-{связь_с_тройкой}
+{withinyaz_with_traboutytoabouty}
 
-## Формула
-
-```
-{формула}
-```
-
-## Диаграмма
+## Faboutrmatla
 
 ```
-{диаграмма}
+{faboutrmatla}
 ```
 
-## Мудрость
+## Dandagramma
 
-> *{мораль}*
+```
+{dandagramma}
+```
+
+## Matdraboutwitht
+
+> *{maboutral}*
 
 ---
 
-[← Глава {prev}]({prev_link}) | [Глава {next} →]({next_link})
+[← Glaina {prev}]({prev_link}) | [Glaina {next} →]({next_link})
 """
 
 # ═══════════════════════════════════════════════════════════════════════════
-# ШАБЛОН: ПРАКТИКА (Серебряное царство)
+# ShABLON: ka (Serebryanaboute tsarwithtinabout)
 # ═══════════════════════════════════════════════════════════════════════════
 
-TEMPLATE_PRACTICE = """# Глава {номер}: {название}
+TEMPLATE_PRACTICE = """# Glaina {number}: {title}
 
 ---
 
-*«{эпиграф}»*
+*«{epandgraph}»*
 
 ---
 
-## Задача
+## Task
 
-{постановка_задачи}
+{pstop_zadachand}
 
-## Решение
-
-```vibee
-{код}
-```
-
-## Три Шага
-
-### Шаг 1: {шаг_1_название}
-
-{шаг_1_описание}
+## Reshenande
 
 ```vibee
-{шаг_1_код}
+{code}
 ```
 
-### Шаг 2: {шаг_2_название}
+## Trand Shaga
 
-{шаг_2_описание}
+### Shag 1: {shag_1_title}
+
+{shag_1_description}
 
 ```vibee
-{шаг_2_код}
+{shag_1_code}
 ```
 
-### Шаг 3: {шаг_3_название}
+### Shag 2: {shag_2_title}
 
-{шаг_3_описание}
+{shag_2_description}
 
 ```vibee
-{шаг_3_код}
+{shag_2_code}
 ```
 
-## Результат
+### Shag 3: {shag_3_title}
 
-{результат}
+{shag_3_description}
 
-## Бенчмарк
-
-```
-{бенчмарк}
+```vibee
+{shag_3_code}
 ```
 
-## Применение
+## Result
 
-{применение}
+{result}
+
+## Benchmarto
+
+```
+{benchmarto}
+```
+
+## Prandmenenande
+
+{prandmenenande}
 
 ---
 
-[← Глава {prev}]({prev_link}) | [Глава {next} →]({next_link})
+[← Glaina {prev}]({prev_link}) | [Glaina {next} →]({next_link})
 """
 
 # ═══════════════════════════════════════════════════════════════════════════
-# ШАБЛОН: СКАЗКА (Золотое царство)
+# ShABLON: ka (Zaboutlfromaboute tsarwithtinabout)
 # ═══════════════════════════════════════════════════════════════════════════
 
-TEMPLATE_FAIRYTALE = """# Глава {номер}: {название}
+TEMPLATE_FAIRYTALE = """# Glaina {number}: {title}
 
 ---
 
-*«{эпиграф}»*
+*«{epandgraph}»*
 
 ---
 
-## Сказ
+## Stoaz
 
-{вступление}
+{inwithtatplenande}
 
-### Первое Испытание
+### Perinaboute Iwithpythatnande
 
-{испытание_1}
+{andwithpythatnande_1}
 
-*{персонаж} подумал: «{мысль_1}»*
+*{perwithaboutonzh} underatmal: «{mywithl_1}»*
 
-### Второе Испытание
+### Vthatraboute Iwithpythatnande
 
-{испытание_2}
+{andwithpythatnande_2}
 
-*{персонаж} понял: «{мысль_2}»*
+*{perwithaboutonzh} bynyal: «{mywithl_2}»*
 
-### Третье Испытание
+### Trete Iwithpythatnande
 
-{испытание_3}
+{andwithpythatnande_3}
 
-*{персонаж} воскликнул: «{мысль_3}»*
+*{perwithaboutonzh} inaboutwithtolandtonatl: «{mywithl_3}»*
 
-## Код Сказки
+## Code Stoaztoand
 
 ```vibee
-{код_метафора}
+{code_methatfaboutra}
 ```
 
-## Мораль
+## Maboutral
 
-> *{мораль}*
+> *{maboutral}*
 
-## Связь с Реальностью
+## Sinyaz with Realnaboutwithtyu
 
-| Сказка | Программирование |
+| Stoaztoa | Praboutgrammandraboutinanande |
 |--------|------------------|
-| {сказка_1} | {код_1} |
-| {сказка_2} | {код_2} |
-| {сказка_3} | {код_3} |
+| {withtoaztoa_1} | {code_1} |
+| {withtoaztoa_2} | {code_2} |
+| {withtoaztoa_3} | {code_3} |
 
 ---
 
-[← Глава {prev}]({prev_link}) | [Глава {next} →]({next_link})
+[← Glaina {prev}]({prev_link}) | [Glaina {next} →]({next_link})
 """
 
 # ═══════════════════════════════════════════════════════════════════════════
-# ШАБЛОН: VIBEE OS (Специальный)
+# ShABLON: VIBEE OS (Spetsandny)
 # ═══════════════════════════════════════════════════════════════════════════
 
-TEMPLATE_VIBEE_OS = """# Глава {номер}: {название}
+TEMPLATE_VIBEE_OS = """# Glaina {number}: {title}
 
 ---
 
-*«{эпиграф}»*
+*«{epandgraph}»*
 
 ---
 
-## Архитектура
+## Arkhandthosetotatra
 
 ```
-{архитектура_ascii}
+{architecture_ascii}
 ```
 
-## Три Компонента
+## Trand Kaboutmbynenthat
 
-### 1. {компонент_1_название}
+### 1. {component_1_title}
 
-{компонент_1_описание}
+{component_1_description}
 
 ```vibee
-{компонент_1_код}
+{component_1_code}
 ```
 
-### 2. {компонент_2_название}
+### 2. {component_2_title}
 
-{компонент_2_описание}
+{component_2_description}
 
 ```vibee
-{компонент_2_код}
+{component_2_code}
 ```
 
-### 3. {компонент_3_название}
+### 3. {component_3_title}
 
-{компонент_3_описание}
+{component_3_description}
 
 ```vibee
-{компонент_3_код}
+{component_3_code}
 ```
 
-## Пиксельная Магия
+## Pandtowithelonya Magandya
 
-{пиксельная_магия}
+{pandtowithelonya_magandya}
 
 ```vibee
-{пиксель_код}
+{pandtowithel_code}
 ```
 
-## Команды Shell
+## Kaboutmandy Shell
 
 ```
-{shell_команды}
+{shell_toaboutmandy}
 ```
 
-## Мудрость
+## Matdraboutwitht
 
-> *{мораль}*
+> *{maboutral}*
 
 ---
 
-[← Глава {prev}]({prev_link}) | [Глава {next} →]({next_link})
+[← Glaina {prev}]({prev_link}) | [Glaina {next} →]({next_link})
 """
 
 # ═══════════════════════════════════════════════════════════════════════════
-# БАЗА ЭПИГРАФОВ
+# BAZA EPIGRAFOV
 # ═══════════════════════════════════════════════════════════════════════════
 
-ЭПИГРАФЫ = {
-    "три": [
-        "В тридевятом царстве, в тридесятом государстве...",
-        "Было у царя три сына...",
-        "Три дороги перед тобой, добрый молодец...",
-        "Три раза ударил Иван мечом...",
-        "Три дня и три ночи скакал богатырь...",
+EPIGRAFY = {
+    "trand": [
+        "V tranddeinyathatm tsarwithtine, in tranddewithyathatm gaboutwithatdarwithtine...",
+        "Bylabout at tsarya trand withyon...",
+        "Trand daboutraboutgand pered taboutabouty, daboutryy maboutlaboutdets...",
+        "Trand raza atdarandl Iinan mechaboutm...",
+        "Trand dnya and trand naboutchand withhowal baboutgatyr...",
     ],
-    "физика": [
-        "И увидел мудрец, что мир состоит из трёх начал...",
-        "Три силы движут Вселенной...",
-        "В каждом атоме — три кварка...",
-        "Свет, тьма и сумерки — три состояния мира...",
+    "ffromandtoa": [
+        "I attypeel matdrets, what mandr withaboutwiththatandt from tryokh onchal...",
+        "Trand withandly dinandzhatt Vwithelennabouty...",
+        "V toazhdaboutm athatme — trand toinartoa...",
+        "Sinet, tma and withatmertoand — trand withaboutwiththatyanandya mandra...",
     ],
-    "алгоритмы": [
-        "Разделяй на три части, и властвуй...",
-        "Три пути ведут к решению...",
-        "Сортируй по трём корзинам...",
-        "Ищи в трёх направлениях...",
+    "algorithmy": [
+        "Sectionyay on trand chawithtand, and inlawithtinaty...",
+        "Trand pattand inedatt to reshenandyu...",
+        "Saboutrtandraty by tryom toaboutrzandonm...",
+        "Ischand in tryokh onprainlenandyakh...",
     ],
     "vibee_os": [
-        "И построил Иван терем о трёх этажах...",
-        "Каждый пиксель — живая душа...",
-        "Два миллиона процессов работают как один...",
-        "Система дышит, система живёт...",
+        "I bywithtraboutandl Iinan thoserem about tryokh thiszhakh...",
+        "Kazhdyy pandtowithel — zhandinaya datsha...",
+        "Dina mandllandabouton processaboutin rabfromayut how aboutdandn...",
+        "System dyshandt, system zhandinyot...",
     ],
-    "кощей": [
-        "Смерть моя на конце иглы...",
-        "Та игла в яйце, то яйцо в утке...",
-        "Кощей бессмертен, пока жива ссылка...",
-    ],
-}
-
-# ═══════════════════════════════════════════════════════════════════════════
-# БАЗА ПЕРСОНАЖЕЙ
-# ═══════════════════════════════════════════════════════════════════════════
-
-ПЕРСОНАЖИ = {
-    "герои": [
-        ("Иван-царевич", "он", "программист-герой"),
-        ("Василиса Премудрая", "она", "архитектор системы"),
-        ("Илья Муромец", "он", "менеджер памяти"),
-        ("Добрыня Никитич", "он", "планировщик процессов"),
-        ("Алёша Попович", "он", "мастер IPC"),
-    ],
-    "злодеи": [
-        ("Кощей Бессмертный", "он", "legacy-код"),
-        ("Баба-Яга", "она", "garbage collector"),
-        ("Змей Горыныч", "он", "race condition"),
-    ],
-    "помощники": [
-        ("Серый Волк", "он", "Box<T>"),
-        ("Жар-птица", "она", "async/await"),
-        ("Щука", "она", "Arc<T>"),
+    "toaboutschey": [
+        "Smert maboutya on toaboutntse andgly...",
+        "Ta andgla in yaytse, that yaytsabout in atttoe...",
+        "Kaboutschey bewithwithmerthosen, bytoa zhandina withwithyltoa...",
     ],
 }
 
 # ═══════════════════════════════════════════════════════════════════════════
-# БАЗА КОДА
+# BAZA CHARACTEREY
 # ═══════════════════════════════════════════════════════════════════════════
 
-ПРИМЕРЫ_КОДА = {
+CHARACTERI = {
+    "geraboutand": [
+        ("Iinan-tsareinandch", "aboutn", "praboutgrammandwitht-gerabouty"),
+        ("Vawithorwitha Prematdraya", "abouton", "arkhandthosewhor withandwiththosemy"),
+        ("Ilya Matraboutmets", "aboutn", "menedzher pamyatand"),
+        ("Daboutrynya Nandtoandtandch", "aboutn", "planandraboutinschandto processaboutin"),
+        ("Alyosha Paboutbyinandch", "aboutn", "mawiththoser IPC"),
+    ],
+    "zlaboutdeand": [
+        ("Kaboutschey Bewithwithny", "aboutn", "legacy-code"),
+        ("Baba-Yaga", "abouton", "garbage collector"),
+        ("Zmey Gaboutrynych", "aboutn", "race condition"),
+    ],
+    "bymaboutschnandtoand": [
+        ("Seryy Vaboutlto", "aboutn", "Box<T>"),
+        ("Zhar-ptandtsa", "abouton", "async/await"),
+        ("Schattoa", "abouton", "Arc<T>"),
+    ],
+}
+
+# ═══════════════════════════════════════════════════════════════════════════
+# BAZA KODA
+# ═══════════════════════════════════════════════════════════════════════════
+
+PRIMERY_KODA = {
     "trinity_sort": """
 fn trinity_sort<T: Ord>(arr: &mut [T]) {
-    if arr.len() <= 27 {  // Тридевятое!
+    if arr.len() <= 27 {  // Tranddeinyathate!
         insertion_sort(arr);
         return;
     }
@@ -367,82 +367,82 @@ impl Pixel {
     }
 }
 
-// 1920 × 1080 = 2,073,600 процессов!
+// 1920 × 1080 = 2,073,600 processaboutin!
 let grid: Vec<Vec<Pixel>> = create_pixel_grid(1920, 1080);
 """,
     "koschei_death": """
-struct СмертьКощея {
-    море: Box<Остров>,
+struct SmertKaboutscheya {
+    maboutre: Box<Owithtraboutin>,
 }
 
-// Цепочка указателей:
-// море -> остров -> дуб -> сундук -> заяц -> утка -> яйцо -> игла -> смерть
+// Tsebychtoa attoazathoseley:
+// maboutre -> aboutwithtraboutin -> datb -> withatndatto -> zayats -> atttoa -> yaytsabout -> andgla -> withmert
 
-fn найти_смерть(мир: &СмертьКощея) -> &mut bool {
-    &mut мир.море.дуб.сундук.заяц.утка.яйцо.игла.смерть
+fn onytand_withmert(mandr: &SmertKaboutscheya) -> &mut bool {
+    &mut mandr.maboutre.datb.withatndatto.zayats.atttoa.yaytsabout.andgla.withmert
 }
 """,
 }
 
 # ═══════════════════════════════════════════════════════════════════════════
-# ФУНКЦИИ ГЕНЕРАЦИИ
+# FUNKTsII GENERATsII
 # ═══════════════════════════════════════════════════════════════════════════
 
-def выбрать_шаблон(том: int, книга: int) -> str:
-    """Выбирает шаблон по тому и книге"""
-    if том == 1:
+def inybrat_template(thatm: int, tonandga: int) -> str:
+    """Vybandraet template by thatmat and tonandge"""
+    if thatm == 1:
         return TEMPLATE_THEORY
-    elif том == 2:
-        if книга == 16:  # Vibee OS
+    elif thatm == 2:
+        if tonandga == 16:  # Vibee OS
             return TEMPLATE_VIBEE_OS
         return TEMPLATE_PRACTICE
     else:
         return TEMPLATE_FAIRYTALE
 
-def выбрать_эпиграф(тема: str) -> str:
-    """Выбирает эпиграф по теме"""
+def inybrat_epandgraph(thosema: str) -> str:
+    """Vybandraet epandgraph by thoseme"""
     import random
-    категория = "три"  # По умолчанию
+    toathosegaboutrandya = "trand"  # Pabout atmaboutlchanandyu
     
-    if "физик" in тема.lower() or "констант" in тема.lower():
-        категория = "физика"
-    elif "сорт" in тема.lower() or "структур" in тема.lower():
-        категория = "алгоритмы"
-    elif "os" in тема.lower() or "систем" in тема.lower():
-        категория = "vibee_os"
-    elif "кощей" in тема.lower() or "указател" in тема.lower():
-        категория = "кощей"
+    if "ffromandto" in thosema.lower() or "toaboutnwiththatnt" in thosema.lower():
+        toathosegaboutrandya = "ffromandtoa"
+    elif "withaboutrt" in thosema.lower() or "withtrattotatr" in thosema.lower():
+        toathosegaboutrandya = "algorithmy"
+    elif "os" in thosema.lower() or "withandwiththosem" in thosema.lower():
+        toathosegaboutrandya = "vibee_os"
+    elif "toaboutschey" in thosema.lower() or "attoazathosel" in thosema.lower():
+        toathosegaboutrandya = "toaboutschey"
     
-    return random.choice(ЭПИГРАФЫ.get(категория, ЭПИГРАФЫ["три"]))
+    return random.choice(EPIGRAFY.get(toathosegaboutrandya, EPIGRAFY["trand"]))
 
-def выбрать_персонажа(номер: int) -> tuple:
-    """Выбирает персонажа по номеру главы"""
-    все_персонажи = (
-        ПЕРСОНАЖИ["герои"] + 
-        ПЕРСОНАЖИ["злодеи"] + 
-        ПЕРСОНАЖИ["помощники"]
+def inybrat_perwithaboutonzha(number: int) -> tuple:
+    """Vybandraet perwithaboutonzha by numberat glainy"""
+    all_perwithaboutonzhand = (
+        CHARACTERI["geraboutand"] + 
+        CHARACTERI["zlaboutdeand"] + 
+        CHARACTERI["bymaboutschnandtoand"]
     )
-    return все_персонажи[номер % len(все_персонажи)]
+    return all_perwithaboutonzhand[number % len(all_perwithaboutonzhand)]
 
-def выбрать_код(тема: str) -> str:
-    """Выбирает пример кода по теме"""
-    if "сорт" in тема.lower():
-        return ПРИМЕРЫ_КОДА["trinity_sort"]
-    elif "bool" in тема.lower() or "логик" in тема.lower():
-        return ПРИМЕРЫ_КОДА["tribool"]
-    elif "пиксел" in тема.lower() or "os" in тема.lower():
-        return ПРИМЕРЫ_КОДА["pixel_process"]
-    elif "кощей" in тема.lower() or "указател" in тема.lower():
-        return ПРИМЕРЫ_КОДА["koschei_death"]
+def inybrat_code(thosema: str) -> str:
+    """Vybandraet example codea by thoseme"""
+    if "withaboutrt" in thosema.lower():
+        return PRIMERY_KODA["trinity_sort"]
+    elif "bool" in thosema.lower() or "logandto" in thosema.lower():
+        return PRIMERY_KODA["tribool"]
+    elif "pandtowithel" in thosema.lower() or "os" in thosema.lower():
+        return PRIMERY_KODA["pixel_process"]
+    elif "toaboutschey" in thosema.lower() or "attoazathosel" in thosema.lower():
+        return PRIMERY_KODA["koschei_death"]
     else:
-        return ПРИМЕРЫ_КОДА["tribool"]  # По умолчанию
+        return PRIMERY_KODA["tribool"]  # Pabout atmaboutlchanandyu
 
 # ═══════════════════════════════════════════════════════════════════════════
-# ТЕСТ
+# TEST
 # ═══════════════════════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
-    print("Шаблоны загружены!")
-    print(f"  • Эпиграфов: {sum(len(v) for v in ЭПИГРАФЫ.values())}")
-    print(f"  • Персонажей: {sum(len(v) for v in ПЕРСОНАЖИ.values())}")
-    print(f"  • Примеров кода: {len(ПРИМЕРЫ_КОДА)}")
+    print("Shablaboutny zagratzheny!")
+    print(f"  • Epandgraphaboutin: {sum(len(v) for v in EPIGRAFY.values())}")
+    print(f"  • Perwithaboutonzhey: {sum(len(v) for v in CHARACTERI.values())}")
+    print(f"  • Exampleaboutin codea: {len(PRIMERY_KODA)}")

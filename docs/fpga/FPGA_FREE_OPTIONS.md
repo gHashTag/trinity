@@ -1,32 +1,32 @@
-# FPGA: Беwith[TRANSLATED]] and [CYR:[TRANSLATED]]inые inарand[CYR:[TRANSLATED]] теwithтandроinанandя
+# FPGA: Bywith] and :]inye inarand:] thosewithtandraboutinanandya
 
-## [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] withand[CYR:[TRANSLATED]]
+## :]: :] withand:]
 
-### 1. EDA Playground ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]]) ⭐
+### 1. EDA Playground (:] :]) ⭐
 
 **URL:** https://www.edaplayground.com
 
-**[CYR:[TRANSLATED]] this:** Беwith[TRANSLATED]] [CYR:[TRANSLATED]] withand[CYR:[TRANSLATED]] Verilog/VHDL
+**:] this:** Bywith] :] withand:] Verilog/VHDL
 
-**[CYR:[TRANSLATED]]withтand:**
-- ✅ Icarus Verilog (беwith[TRANSLATED]])
-- ✅ Verilator (беwith[TRANSLATED]])
-- ✅ ModelSim ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andwith[TRANSLATED]]andю)
-- ✅ Synopsys VCS ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andwith[TRANSLATED]]andю)
+**:]withtand:**
+- ✅ Icarus Verilog (bewith])
+- ✅ Verilator (bewith])
+- ✅ ModelSim (:] :]andwith]andyu)
+- ✅ Synopsys VCS (:] :]andwith]andyu)
 - ✅ Waveform viewer (EPWave)
-- ✅ [CYR:[TRANSLATED]]notнandе [CYR:[TRANSLATED]]toтоin
-- ✅ Sharing [CYR:[TRANSLATED]]toтоin
+- ✅ :]notnande :]tothatin
+- ✅ Sharing :]tothatin
 
-**Каto andwith[TRANSLATED]]in[CYR:[TRANSLATED]]:**
-1. [CYR:[TRANSLATED]]and on https://www.edaplayground.com
-2. [CYR:[TRANSLATED]]andwithтрandроin[CYR:[TRANSLATED]]withя (беwith[TRANSLATED]])
-3. [CYR:[TRANSLATED]] "Icarus Verilog" toаto withand[CYR:[TRANSLATED]]
-4. Вwithтаinandть toод andз `trinity/output/fpga/hello_fpga_led.v`
-5. [CYR:[TRANSLATED]] "Run"
+**Kato andwith]in:]:**
+1. :]and on https://www.edaplayground.com
+2. :]andwithtrandraboutin:]withya (bewith])
+3. :] "Icarus Verilog" toato withand:]
+4. Vwiththatinandt toaboutd andz `trinity/output/fpga/hello_fpga_led.v`
+5. :] "Run"
 
-**[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя:**
-- [CYR:[TRANSLATED]]toо withand[CYR:[TRANSLATED]]andя, not [CYR:[TRANSLATED]] FPGA
-- [CYR:[TRANSLATED]] withand[CYR:[TRANSLATED]]
+**:]and:]andya:**
+- :]toabout withand:]andya, not :] FPGA
+- :] withand:]
 
 ---
 
@@ -34,79 +34,79 @@
 
 **URL:** https://8bitworkshop.com
 
-**[CYR:[TRANSLATED]] this:** [CYR:[TRANSLATED]] IDE for [CYR:[TRANSLATED]]-[CYR:[TRANSLATED]]fromtoand with Verilog
+**:] this:** :] IDE for :]-:]fromtoand with Verilog
 
-**[CYR:[TRANSLATED]]withтand:**
-- ✅ Verilog withand[CYR:[TRANSLATED]]andя
-- ✅ Вand[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя in browserе
-- ✅ Прand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toтоin
+**:]withtand:**
+- ✅ Verilog withand:]andya
+- ✅ Vand:]and:]andya in browsere
+- ✅ Prand:] :]tothatin
 
-**Каto andwith[TRANSLATED]]in[CYR:[TRANSLATED]]:**
-1. [CYR:[TRANSLATED]]and on https://8bitworkshop.com
-2. [CYR:[TRANSLATED]] "Verilog" [CYR:[TRANSLATED]]
-3. Пandwith[TRANSLATED]] and теwithтandроin[CYR:[TRANSLATED]] toод
+**Kato andwith]in:]:**
+1. :]and on https://8bitworkshop.com
+2. :] "Verilog" :]
+3. Pandwith] and thosewithtandraboutin:] toaboutd
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] FPGA
+## :] :]: :] FPGA
 
 ### AWS F2 Instances
 
-**Цеon:** ~$1.65/чаwith (f2.6xlarge - 1 FPGA)
+**Tseon:** ~$1.65/chawith (f2.6xlarge - 1 FPGA)
 
-**[CYR:[TRANSLATED]] this:** [CYR:[TRANSLATED]] FPGA (AMD Virtex UltraScale+) in [CYR:[TRANSLATED]]toе
+**:] this:** :] FPGA (AMD Virtex UltraScale+) in :]toe
 
-**Раwith[TRANSLATED]]:**
-- 1 чаwith = $1.65
-- 10 чаwithоin = $16.50
-- [CYR:[TRANSLATED]] теwithта доwith[TRANSLATED]] 2-3 чаwithа = **~$5**
+**Rawith]:**
+- 1 chawith = $1.65
+- 10 chawithaboutin = $16.50
+- :] thosewiththat daboutwith] 2-3 chawitha = **~$5**
 
-**Каto andwith[TRANSLATED]]in[CYR:[TRANSLATED]]:**
+**Kato andwith]in:]:**
 ```bash
-# 1. [CYR:[TRANSLATED]] AWS аtofor[TRANSLATED]]
-# 2. [CYR:[TRANSLATED]]withandть toinfromу on F2 instances
-# 3. [CYR:[TRANSLATED]]withтandть FPGA Developer AMI
-# 4. [CYR:[TRANSLATED]]andть Verilog toод
-# 5. Сand[CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] and прfromеwithтandроin[CYR:[TRANSLATED]]
+# 1. :] AWS atofor]
+# 2. :]withandt toinfromat on F2 instances
+# 3. :]withtandt FPGA Developer AMI
+# 4. :]andt Verilog toaboutd
+# 5. Sand:]andraboutin:] and prfromewithtandraboutin:]
 ```
 
-**[CYR:[TRANSLATED]]withы:**
-- [CYR:[TRANSLATED]] FPGA
-- Vivado infor[TRANSLATED]]
-- [CYR:[TRANSLATED]]andшь [CYR:[TRANSLATED]]toо за andwith[TRANSLATED]]inанandе
+**:]withy:**
+- :] FPGA
+- Vivado infor]
+- :]andsh :]toabout za andwith]inanande
 
-**Мandнуwithы:**
-- [CYR:[TRANSLATED]]onя onwith[TRANSLATED]]toа
-- [CYR:[TRANSLATED]]on for[TRANSLATED]]andтonя for[TRANSLATED]]
-- Кinfromа [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] fromtoлоnoton
+**Mandnatwithy:**
+- :]onya onwith]toa
+- :]on for]andtonya for]
+- Kinfroma :] :] fromtolaboutnoton
 
 ---
 
-## [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :] :] :]
 
-| [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] | Цеon | [CYR:[TRANSLATED]] FPGA? | [CYR:[TRANSLATED]]withть |
+| :]and:] | Tseon | :] FPGA? | :]witht |
 |---------|------|----------------|-----------|
-| **EDA Playground** | $0 | ❌ Сand[CYR:[TRANSLATED]]andя | ⭐ [CYR:[TRANSLATED]]toо |
-| **8bitworkshop** | $0 | ❌ Сand[CYR:[TRANSLATED]]andя | ⭐ [CYR:[TRANSLATED]]toо |
-| **Google Colab + iverilog** | $0 | ❌ Сand[CYR:[TRANSLATED]]andя | ⭐⭐ [CYR:[TRANSLATED]]not |
-| **AWS F2 (2-3 чаwithа)** | ~$5 | ✅ Да | ⭐⭐⭐ [CYR:[TRANSLATED]] |
-| **TinyFPGA BX** | $38 | ✅ Да | ⭐⭐ [CYR:[TRANSLATED]]not |
-| **Arty A7-35T** | $150 | ✅ Да | ⭐⭐ [CYR:[TRANSLATED]]not |
+| **EDA Playground** | $0 | ❌ Sand:]andya | ⭐ :]toabout |
+| **8bitworkshop** | $0 | ❌ Sand:]andya | ⭐ :]toabout |
+| **Google Colab + iverilog** | $0 | ❌ Sand:]andya | ⭐⭐ :]not |
+| **AWS F2 (2-3 chawitha)** | ~$5 | ✅ Da | ⭐⭐⭐ :] |
+| **TinyFPGA BX** | $38 | ✅ Da | ⭐⭐ :]not |
+| **Arty A7-35T** | $150 | ✅ Da | ⭐⭐ :]not |
 
 ---
 
-## [CYR:[TRANSLATED]]: EDA Playground
+## :]: EDA Playground
 
-**[CYR:[TRANSLATED]] not[CYR:[TRANSLATED]] теwithтandроinанandя [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]:**
+**:] not:] thosewithtandraboutinanandya :] :]:**
 
-### [CYR:[TRANSLATED]] 1: [CYR:[TRANSLATED]]andwith[TRANSLATED]]andя
-1. [CYR:[TRANSLATED]]and on https://www.edaplayground.com
-2. [CYR:[TRANSLATED]] "Log In" → "Sign Up"
-3. Вinеwithтand email and password
+### :] 1: :]andwith]andya
+1. :]and on https://www.edaplayground.com
+2. :] "Log In" → "Sign Up"
+3. Vinewithtand email and password
 
-### [CYR:[TRANSLATED]] 2: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toт
-1. [CYR:[TRANSLATED]] "New"
-2.  леinой паnotлand (testbench) inwithтаinandть:
+### :] 2: :] :]tot
+1. :] "New"
+2.  leinabouty panotland (testbench) inwiththatinandt:
 
 ```verilog
 // Testbench
@@ -139,51 +139,51 @@ module tb;
 endmodule
 ```
 
-3.  [CYR:[TRANSLATED]]inой паnotлand (design) inwithтаinandть toод andз `hello_fpga_led.v`
+3.  :]inabouty panotland (design) inwiththatinandt toaboutd andz `hello_fpga_led.v`
 
-### [CYR:[TRANSLATED]] 3: [CYR:[TRANSLATED]]withтandть
-1. [CYR:[TRANSLATED]] "Icarus Verilog 12.0"
-2. Вfor[TRANSLATED]]andть "Open EPWave after run"
-3. [CYR:[TRANSLATED]] "Run"
+### :] 3: :]withtandt
+1. :] "Icarus Verilog 12.0"
+2. Vfor]andt "Open EPWave after run"
+3. :] "Run"
 
-### [CYR:[TRANSLATED]] 4: Result
-- Уinandдandте waveforms
-- Уinandдandте "Test PASS!"
-- [CYR:[TRANSLATED]] доfor[TRANSLATED]]withтinо [CYR:[TRANSLATED]]fromы for[TRANSLATED]]!
+### :] 4: Result
+- Uinanddandthose waveforms
+- Uinanddandthose "Test PASS!"
+- :] daboutfor]withtinabout :]fromy for]!
 
 ---
 
-## [CYR:[TRANSLATED]]: TinyFPGA BX ($38)
+## :]: TinyFPGA BX ($38)
 
-Еwithлand [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] FPGA [CYR:[TRANSLATED]]inле $150:
+Ewithland :] :] FPGA :]inle $150:
 
 **TinyFPGA BX** - $38
 - Lattice iCE40LP8K FPGA
-- USB [CYR:[TRANSLATED]]andроinанandе
+- USB :]andraboutinanande
 - Open-source toolchain (IceStorm)
 - 7680 logic cells
 
-**[CYR:[TRANSLATED]] toупandть:**
+**:] toatpandt:**
 - https://www.crowdsupply.com/tinyfpga/tinyfpga-bx
 - https://tinyfpga.com
 
-**[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя:**
-- [CYR:[TRANSLATED]] реwithурwithоin [CYR:[TRANSLATED]] Arty A7
-- [CYR:[TRANSLATED]] toolchain (not Vivado)
-- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] constraints
+**:]and:]andya:**
+- :] rewithatrwithaboutin :] Arty A7
+- :] toolchain (not Vivado)
+- :] :]andraboutin:] constraints
 
 ---
 
-## [CYR:[TRANSLATED]]
+## :]
 
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]andй inарand[CYR:[TRANSLATED]] | Цеon |
+| :] | :]andy inarand:] | Tseon |
 |------|----------------|------|
-| Быwith[TRANSLATED]] теwithт | EDA Playground | $0 |
-| [CYR:[TRANSLATED]] FPGA [CYR:[TRANSLATED]]inо | TinyFPGA BX | $38 |
-| [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]fromtoа | Arty A7-35T | $150 |
-| [CYR:[TRANSLATED]] FPGA | AWS F2 | ~$5/теwithт |
+| Bywith] thosewitht | EDA Playground | $0 |
+| :] FPGA :]inabout | TinyFPGA BX | $38 |
+| :]onya :]fromtoa | Arty A7-35T | $150 |
+| :] FPGA | AWS F2 | ~$5/thosewitht |
 
-**Реfor[TRANSLATED]]andя:** [CYR:[TRANSLATED]] with EDA Playground (беwith[TRANSLATED]]), [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andть [CYR:[TRANSLATED]] лand [CYR:[TRANSLATED]] FPGA.
+**Refor]andya:** :] with EDA Playground (bewith]), :] :]andt :] land :] FPGA.
 
 ---
 

@@ -7,21 +7,21 @@
 
 ---
 
-## ⚠️ VERDICT: CURRENT UI = [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## ⚠️ VERDICT: CURRENT UI = [CYR:] [CYR:]
 
-### [CYR:[TRANSLATED]] теfor[TRANSLATED]] inерwithand (v47):
+### [CYR:] теfor] inерwithand (v47):
 
 | Problem | Severity | Impact |
 |----------|----------|--------|
-| Naive O(n²) diff | 🔴 CRITICAL | 14,435 µs on 500 with[TRANSLATED]]to |
-| O(n²) [CYR:memory] | 🔴 CRITICAL | 976 KB on 500 with[TRANSLATED]]to |
-| [CYR:[TRANSLATED]] SIMD | 🟡 HIGH | Пfrom[CYR:[TRANSLATED]] 16x [CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withтand |
-| Прandмandтandin[CYR:[TRANSLATED]] UI | 🟡 HIGH | [CYR:[TRANSLATED]]withandоon[CYR:[TRANSLATED]] inandд |
-| [CYR:[TRANSLATED]] vim keybindings | 🟠 MEDIUM | [CYR:[TRANSLATED]]withтinо for [CYR:[TRANSLATED]]fromчandtoоin |
+| Naive O(n²) diff | 🔴 CRITICAL | 14,435 µs on 500 with]to |
+| O(n²) [CYR:memory] | 🔴 CRITICAL | 976 KB on 500 with]to |
+| [CYR:] SIMD | 🟡 HIGH | Пfrom[CYR:] 16x [CYR:]andзinодand[CYR:]withтand |
+| Прandмandтandin[CYR:] UI | 🟡 HIGH | [CYR:]withandоon[CYR:] inandд |
+| [CYR:] vim keybindings | 🟠 MEDIUM | [CYR:]withтinо for [CYR:]fromчandtoоin |
 
 ---
 
-## ✅ [CYR:[TRANSLATED]]: v48 Pro Code Editor
+## ✅ [CYR:]: v48 Pro Code Editor
 
 ### Benchmark Results (PROOF)
 
@@ -215,9 +215,9 @@ PHOENIX = 999 = 3³ × 37 = 27 × 37 ✅
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                               ║
-║   v47 UI: ☠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] - O(n²), 976KB [CYR:memory], прandмandтandin[CYR:[TRANSLATED]] inandд          ║
+║   v47 UI: ☠️ [CYR:] [CYR:] - O(n²), 976KB [CYR:memory], прandмandтandin[CYR:] inandд          ║
 ║                                                                               ║
-║   v48 UI: ✅ PROFESSIONAL - Myers O(ND), 7.8KB [CYR:memory], 20.7x быwith[TRANSLATED]]         ║
+║   v48 UI: ✅ PROFESSIONAL - Myers O(ND), 7.8KB [CYR:memory], 20.7x быwith]         ║
 ║                                                                               ║
 ║   VERDICT: APPROVED ✅                                                        ║
 ║                                                                               ║

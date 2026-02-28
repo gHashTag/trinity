@@ -63,8 +63,8 @@ Conversion Time: 3.0 seconds
 ```
 GENERATED TEXT:
 <s>Hello,  Trinity!  What  is  the  meaning  of cent Context Za Hunter 
-involvesistory話ноinоTri `< U Er locńskiego footballer inі Urbannamed:} 
-commence horse rain knockungsseiteową [CYR:[TRANSLATED]]in faithful ChicagoOWtwobjects weiter
+involvesistory話naboutinaboutTri `< U Er locńskiego footballer inі Urbannamed:} 
+commence horse rain knockungsseiteową :]in faithful ChicagoOWtwobjects weiter
 
 STATISTICS:
   Prompt tokens:     18
@@ -79,7 +79,7 @@ STATISTICS:
 ```
 GENERATED TEXT:
 <s>The  future  of AI  is hence Breférés that放 Encyclopisticytu 
-translationvancedliest?"disk[CYR:[TRANSLATED]] Associationumerate[CYR:[TRANSLATED]]READbrázky 
+translationvancedliest?"disk:] Associationumerate:]READbrázky 
 appliedaciones driverlocated En Franklin carsativasnáometbereich detpolit
 
 STATISTICS:
@@ -95,8 +95,8 @@ STATISTICS:
 ```
 GENERATED TEXT:
 <s>What  is  machine  learning?ians magnific tierzeta YouTubelagen 
-crisisцо folgenden resort Gastldern blesshd Maisüller and[CYR:[TRANSLATED]]ówn 
-Chileség estad Instit Уandрandstell\<amentos describing appel Once Lord
+crisistsabout folgenden resort Gastldern blesshd Maisüller and:]ówn 
+Chileség estad Instit Uandrandstell\<amentos describing appel Once Lord
 
 STATISTICS:
   Prompt tokens:     9
@@ -110,9 +110,9 @@ STATISTICS:
 
 ```
 GENERATED TEXT:
-<s>Explain  quantum  computing Status pacwithtoаяynapathлandя Zw tématu 
+<s>Explain  quantum  computing Status pacwithtoayaynapathlandya Zw tématu 
 José cette reversefunctions initialization hang quelque untilwh 
-Cha pelos[CYR:[TRANSLATED]] casostudlotű cold  ogsårid ORDER Sub prisonersAudio
+Cha pelos:] casostudlotű cold  ogsårid ORDER Sub prisonersAudio
 
 STATISTICS:
   Prompt tokens:     7
@@ -126,9 +126,9 @@ STATISTICS:
 
 ```
 GENERATED TEXT:
-<s>Write  a  poem  aboutlahomaorious instal continеin relief Pamlait 
-Südenwithтinand bâtuniversité activation feed<>();onymAR ba мandраJan." 
-widely effectsagram concedistica⍵ [CYR:[TRANSLATED]]lage vesc [CYR:[TRANSLATED]]HA
+<s>Write  a  poem  aboutlahomaorious instal continein relief Pamlait 
+Südenwithtinand bâtuniversité activation feed<>();onymAR ba mandraJan." 
+widely effectsagram concedistica⍵ :]lage vesc :]HA
 
 STATISTICS:
   Prompt tokens:     8

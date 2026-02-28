@@ -8,7 +8,7 @@
 // Supported languages
 export const LANGUAGES = {
   en: 'English',
-  ru: 'Русский',
+  ru: 'Russkiy',
   zh: '中文',
   ja: '日本語',
   de: 'Deutsch',
@@ -67,46 +67,46 @@ const translations = {
   
   ru: {
     // Hero
-    'hero.title': 'ТРОИЦА',
-    'hero.subtitle': 'Структуры данных, оптимизированные золотым сечением',
+    'hero.title': 'TROITsA',
+    'hero.subtitle': 'Struktury dannykh, optimizirovannye zolotym secheniem',
     'hero.formula': 'φ² + 1/φ² = 3',
-    'hero.author': 'Дмитрий Васильев',
+    'hero.author': 'Dmitriy Vasilev',
     
     // Abstract
-    'abstract.title': 'Аннотация',
-    'abstract.intro': 'Trinity: унифицированные структуры данных на основе φ = 1.618033988749895',
-    'abstract.btree': 'Trinity B-Tree: O(log_φ n) поиск → -30.6% сравнений',
-    'abstract.cuckoo': 'φ-Cuckoo Hash: O(1) поиск → 95.1% коэффициент заполнения',
-    'abstract.radix': 'φ-Radix Sort: O(n) распределение → -22.6% времени',
+    'abstract.title': 'Annotatsiya',
+    'abstract.intro': 'Trinity: unifitsirovannye struktury dannykh na osnove φ = 1.618033988749895',
+    'abstract.btree': 'Trinity B-Tree: O(log_φ n) poisk → -30.6% sravneniy',
+    'abstract.cuckoo': 'φ-Cuckoo Hash: O(1) poisk → 95.1% koeffitsient zapolneniya',
+    'abstract.radix': 'φ-Radix Sort: O(n) raspredelenie → -22.6% vremeni',
     
     // Sections
-    'section.btree': 'Trinity B-дерево',
-    'section.cuckoo': 'φ-Кукушкин хеш',
-    'section.radix': 'φ-Поразрядная сортировка',
-    'section.benchmarks': 'Результаты тестов',
-    'section.summary': 'Итоги',
-    'section.architecture': 'Архитектура',
-    'section.code': 'Код тестов (Zig)',
-    'section.conclusion': 'Заключение',
-    'section.references': 'Литература',
+    'section.btree': 'Trinity B-derevo',
+    'section.cuckoo': 'φ-Kukushkin khesh',
+    'section.radix': 'φ-Porazryadnaya sortirovka',
+    'section.benchmarks': 'Rezultaty testov',
+    'section.summary': 'Itogi',
+    'section.architecture': 'Arkhitektura',
+    'section.code': 'Kod testov (Zig)',
+    'section.conclusion': 'Zaklyuchenie',
+    'section.references': 'Literatura',
     
     // Navigation
-    'nav.article': 'Статья',
-    'nav.selftest': 'Самотест',
-    'nav.modules': 'Модули',
+    'nav.article': 'Statya',
+    'nav.selftest': 'Samotest',
+    'nav.modules': 'Moduli',
     
     // UI
-    'ui.scroll': 'Прокрутка',
-    'ui.theme.light': 'Светлая',
-    'ui.theme.dark': 'Тёмная',
-    'ui.loading': 'Загрузка',
-    'ui.error': 'Ошибка',
+    'ui.scroll': 'Prokrutka',
+    'ui.theme.light': 'Svetlaya',
+    'ui.theme.dark': 'Tyomnaya',
+    'ui.loading': 'Zagruzka',
+    'ui.error': 'Oshibka',
     
     // Benchmarks
-    'bench.comparisons': 'сравнений',
-    'bench.loadFactor': 'заполнение',
-    'bench.time': 'время',
-    'bench.improvement': 'улучшение'
+    'bench.comparisons': 'sravneniy',
+    'bench.loadFactor': 'zapolnenie',
+    'bench.time': 'vremya',
+    'bench.improvement': 'uluchshenie'
   },
   
   zh: {

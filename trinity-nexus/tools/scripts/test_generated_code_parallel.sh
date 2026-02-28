@@ -3,7 +3,7 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 # VIBEE GENERATED CODE TESTER (PARALLEL)
 # ═══════════════════════════════════════════════════════════════════════════════
-# Параллельное тестирование всех .zig файлов с GNU parallel
+# Parallelnaboute testing allkh .zig fileaboutin with GNU parallel
 # φ² + 1/φ² = 3
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -13,13 +13,13 @@ OUTPUT_DIR="trinity/output"
 REPORT_FILE="generated_code_test_report_parallel.txt"
 JSON_REPORT="generated_code_test_report_parallel.json"
 
-# Количество параллельных процессов (по умолчанию = кол-во ядер)
+# Kaboutlandchewithtinabout pairllelnykh processaboutin (by atmaboutlchanandyu = toaboutl-inabout yader)
 PARALLEL_JOBS=${1:-$(nproc)}
 if [ -z "$PARALLEL_JOBS" ] || [ "$PARALLEL_JOBS" -lt 1 ]; then
     PARALLEL_JOBS=4
 fi
 
-# Цвета
+# Tsinethat
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -29,7 +29,7 @@ CYAN='\033[0;36m'
 BOLD='\033[1m'
 NC='\033[0m' # No Color
 
-# Эмодзи
+# Emaboutdzand
 EMOJI_SUCCESS="✅"
 EMOJI_ERROR="❌"
 EMOJI_WARNING="⚠️"
@@ -40,58 +40,58 @@ EMOJI_TIME="⏱️"
 EMOJI_FILE="📁"
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ПРОВЕРКА GNU PARALLEL
+# ka GNU PARALLEL
 # ═══════════════════════════════════════════════════════════════════════════════
 
 if ! command -v parallel &> /dev/null; then
-    echo -e "${RED}❌ Ошибка: GNU parallel не найден${NC}"
-    echo -e "${YELLOW}   Установите:${NC}"
+    echo -e "${RED}❌ Error: GNU parallel ne onyden${NC}"
+    echo -e "${YELLOW}   Uwiththatnaboutinandthose:${NC}"
     echo -e "${YELLOW}   brew install parallel  (macOS)${NC}"
     echo -e "${YELLOW}   apt install parallel  (Ubuntu/Debian)${NC}"
     exit 1
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ПРОВЕРКА ДИРЕКТОРИИ
+# ka DIREKTORII
 # ═══════════════════════════════════════════════════════════════════════════════
 
 if [ ! -d "$OUTPUT_DIR" ]; then
-    echo -e "${RED}❌ Ошибка: Директория $OUTPUT_DIR не найдена${NC}"
+    echo -e "${RED}❌ Error: Dandrewhorandya $OUTPUT_DIR ne onydeon${NC}"
     exit 1
 fi
 
 echo -e "${CYAN}╔══════════════════════════════════════════════════════════════════╗${NC}"
 echo -e "${CYAN}${BOLD}║  🚀 VIBEE GENERATED CODE TESTER (PARALLEL)               ║${NC}"
-echo -e "${CYAN}║  Параллельное тестирование с ${BOLD}$PARALLEL_JOBS${NC}${CYAN} потоками              ║${NC}"
+echo -e "${CYAN}║  Parallelnaboute testing with ${BOLD}$PARALLEL_JOBS${NC}${CYAN} threadamand              ║${NC}"
 echo -e "${CYAN}║  φ² + 1/φ² = 3                                               ║${NC}"
 echo -e "${CYAN}╚══════════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# СБОР ФАЙЛОВ
+# SBOR FAYLOV
 # ═══════════════════════════════════════════════════════════════════════════════
 
 ZIG_FILES=($(ls -1 "$OUTPUT_DIR"/*.zig 2>/dev/null | sort))
 TOTAL_FILES=${#ZIG_FILES[@]}
 
 if [ $TOTAL_FILES -eq 0 ]; then
-    echo -e "${RED}${EMOJI_ERROR} ${BOLD}Ошибка: Не найдено .zig файлов в $OUTPUT_DIR${NC}"
+    echo -e "${RED}${EMOJI_ERROR} ${BOLD}Error: Ne onydenabout .zig fileaboutin in $OUTPUT_DIR${NC}"
     exit 1
 fi
 
-echo -e "${GREEN}${EMOJI_SUCCESS} ${BOLD}Найдено $TOTAL_FILES .zig файлов${NC}"
-echo -e "${CYAN}${EMOJI_ROCKET} ${BOLD}Запуск параллельного тестирования ($PARALLEL_JOBS потоков)${NC}"
+echo -e "${GREEN}${EMOJI_SUCCESS} ${BOLD}Naydenabout $TOTAL_FILES .zig fileaboutin${NC}"
+echo -e "${CYAN}${EMOJI_ROCKET} ${BOLD}Zapatwithto pairllelnaboutgabout testandraboutinanandya ($PARALLEL_JOBS threadaboutin)${NC}"
 echo ""
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ПАРАЛЛЕЛЬНОЕ ТЕСТИРОВАНИЕ
+# PARALLELNOE tion
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Создаём временную директорию для результатов
+# Saboutzdayom inremennatyu dandrewhorandyu for resultaboutin
 TMP_DIR=$(mktemp -d)
 trap "rm -rf $TMP_DIR" EXIT
 
-# Запускаем тестирование параллельно
+# Zapatwithtoaem testing pairllelnabout
 start_time=$(python3 -c "import time; print(int(time.time() * 1000))")
 
 ls -1 "$OUTPUT_DIR"/*.zig 2>/dev/null | parallel \
@@ -104,11 +104,11 @@ end_time=$(python3 -c "import time; print(int(time.time() * 1000))")
 total_time_ms=$((end_time - start_time))
 
 echo ""
-echo -e "${GREEN}${EMOJI_ROCKET} ${BOLD}Все тесты завершены за $((total_time_ms / 1000)) сек${NC}"
+echo -e "${GREEN}${EMOJI_ROCKET} ${BOLD}Vwithe testy zainersheny za $((total_time_ms / 1000)) witheto${NC}"
 echo ""
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# СБОР РЕЗУЛЬТАТОВ
+# SBOR REZULTATOV
 # ═══════════════════════════════════════════════════════════════════════════════
 
 PASSED_FILES=0
@@ -127,12 +127,12 @@ for zig_file in "${ZIG_FILES[@]}"; do
     if [ -f "$result_file" ]; then
         result=$(cat "$result_file")
 
-        # Проверяем на успех - ищем "All X tests passed"
+        # Praboutineryaem on atwithpekh - andschem "All X tests passed"
         if echo "$result" | grep -q "All [0-9]\+ tests passed"; then
             PASSED_FILES=$((PASSED_FILES + 1))
             PASSED_FILES_LIST+=("$filename")
 
-            # Извлекаем количество тестов
+            # Izinletoaem quantity testaboutin
             test_count=$(echo "$result" | grep -oE "All [0-9]+ tests passed" | grep -oE "[0-9]+")
             TOTAL_TESTS=$((TOTAL_TESTS + test_count))
             PASSED_TESTS=$((PASSED_TESTS + test_count))
@@ -140,23 +140,23 @@ for zig_file in "${ZIG_FILES[@]}"; do
             FAILED_FILES=$((FAILED_FILES + 1))
             FAILED_FILES_LIST+=("$filename")
 
-            # Извлекаем ошибку - берём первые непустые строки
+            # Izinletoaem aboutshandbtoat - beryom perinye nepatwithtye withtrabouttoand
             error_line=$(echo "$result" | grep -v "^[[:space:]]*$" | head -3 | tail -1)
             if [ -z "$error_line" ]; then
-                error_line="Неизвестная ошибка"
+                error_line="Nefrominewithtonya error"
             fi
             FAILED_ERRORS+=("$error_line")
         fi
     else
-        # Файл результата не найден = ошибка
+        # File resulta ne onyden = error
         FAILED_FILES=$((FAILED_FILES + 1))
         FAILED_FILES_LIST+=("$filename")
-        FAILED_ERRORS+=("Результат не найден")
+        FAILED_ERRORS+=("Result ne onyden")
     fi
 done
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ГЕНЕРАЦИЯ ОТЧЁТА
+# GENERATsIYa OTChYoTA
 # ═══════════════════════════════════════════════════════════════════════════════
 
 DATE=$(date "+%Y-%m-%d %H:%M:%S")
@@ -166,18 +166,18 @@ FAILED_TESTS=$((TOTAL_TESTS - PASSED_TESTS))
 TOTAL_TIME_S=$((total_time_ms / 1000))
 AVG_TIME_MS=$((total_time_ms / TOTAL_FILES))
 
-# Определение качества
+# Opredelenande toachewithtina
 if [ $SUCCESS_RATE -eq 100 ]; then
-    QUALITY="✓ ОТЛИЧНО (все файлы генерируют валидный код)"
+    QUALITY="✓ OTLIChNO (all filey generandratyut inalandny code)"
 elif [ $SUCCESS_RATE -ge 90 ]; then
-    QUALITY="▲ ХОРОШО (большинство файлов валидны)"
+    QUALITY="▲ KhOROShO (baboutlshandnwithtinabout fileaboutin inalanddny)"
 elif [ $SUCCESS_RATE -ge 70 ]; then
-    QUALITY="○ УДОВЛЕТВОРИТЕЛЬНО (некоторые файлы имеют ошибки)"
+    QUALITY="○ UDOVLETVORITELNO (some filey andmeyut aboutshandbtoand)"
 else
-    QUALITY="▼ ПЛОХО (многие файлы генерируют сломанный код)"
+    QUALITY="▼ PLOKhO (mnaboutgande filey generandratyut withlaboutny code)"
 fi
 
-# Текстовый отчёт
+# Tetowiththatinyy fromchyot
 cat > "$REPORT_FILE" << EOF
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                    VIBEE GENERATED CODE TEST REPORT                         ║
@@ -188,45 +188,45 @@ cat > "$REPORT_FILE" << EOF
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
 ═══════════════════════════════════════════════════════════════════════════════
-ОБЩИЕ МЕТРИКИ
+tion METRIKI
 ═══════════════════════════════════════════════════════════════════════════════
 
-Всего файлов:             $TOTAL_FILES
-Успешно протестировано:   $PASSED_FILES ($SUCCESS_RATE%)
-Неудачно:                  $FAILED_FILES ($FAILURE_RATE%)
+Vwithegabout fileaboutin:             $TOTAL_FILES
+Uwithpeshnabout prabouttestandraboutinanabout:   $PASSED_FILES ($SUCCESS_RATE%)
+Neatdachnabout:                  $FAILED_FILES ($FAILURE_RATE%)
 
-Всего тестов:             $TOTAL_TESTS
-Прошло:                   $PASSED_TESTS
-Не прошло:                $FAILED_TESTS
+Vwithegabout testaboutin:             $TOTAL_TESTS
+Praboutshlabout:                   $PASSED_TESTS
+Ne praboutshlabout:                $FAILED_TESTS
 
-Общее время:              ${TOTAL_TIME_S} сек
-Среднее время на файл:    ${AVG_TIME_MS} мс
-Параллельных потоков:     $PARALLEL_JOBS
+Obschee time:              ${TOTAL_TIME_S} witheto
+Srednee time on file:    ${AVG_TIME_MS} mwith
+Parallelnykh threadaboutin:     $PARALLEL_JOBS
 
 ═══════════════════════════════════════════════════════════════════════════════
-УСПЕШНО ПРОТЕСТИРОВАННЫЕ ФАЙЛЫ ($PASSED_FILES)
+USPEShNO PROTESTIROVANNYE FAYLY ($PASSED_FILES)
 ═══════════════════════════════════════════════════════════════════════════════
 $(for file in "${PASSED_FILES_LIST[@]}"; do echo "  ✓ $file"; done)
 
 ═══════════════════════════════════════════════════════════════════════════════
-НЕУДАЧНЫЕ ФАЙЛЫ ($FAILED_FILES)
+NEUDAChNYE FAYLY ($FAILED_FILES)
 ═══════════════════════════════════════════════════════════════════════════════
 $(for i in "${!FAILED_FILES_LIST[@]}"; do
     file="${FAILED_FILES_LIST[$i]}"
     error="${FAILED_ERRORS[$i]}"
     echo "  ✗ $file"
-    echo "     Ошибка: $error"
+    echo "     Error: $error"
 done)
 
 ═══════════════════════════════════════════════════════════════════════════════
-РЕЗЮМЕ
+REZYuME
 ═══════════════════════════════════════════════════════════════════════════════
 
-Качество генерации кода: $QUALITY
+Kachewithtinabout generatsandand codea: $QUALITY
 
 EOF
 
-# JSON отчёт
+# JSON fromchyot
 cat > "$JSON_REPORT" << EOF
 {
   "date": "$DATE",
@@ -264,12 +264,12 @@ done | head -n -1)
 EOF
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ВЫВОД РЕЗУЛЬТАТОВ
+# VYVOD REZULTATOV
 # ═══════════════════════════════════════════════════════════════════════════════
 
 echo ""
 echo -e "${CYAN}╔══════════════════════════════════════════════════════════════════╗${NC}"
-echo -e "${CYAN}${BOLD}║           📊 РЕЗУЛЬТАТЫ ТЕСТИРОВАНИЯ                            ║${NC}"
+echo -e "${CYAN}${BOLD}║           📊 REZULTATY TESTIROVANIYa                            ║${NC}"
 echo -e "${CYAN}╚══════════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
@@ -289,53 +289,53 @@ for ((i=0; i<FILLED; i++)); do BAR+="█"; done
 for ((i=0; i<EMPTY; i++)); do BAR+="░"; done
 BAR+="${NC}]"
 
-echo -e "${BOLD}${CYAN}Прогресс тестирования:${NC} $BAR ${SUCCESS_RATE}%"
+echo -e "${BOLD}${CYAN}Praboutgrewithwith testandraboutinanandya:${NC} $BAR ${SUCCESS_RATE}%"
 echo ""
 
-# Основные метрики с эмодзи
+# Owithnaboutinnye metrandtoand with emaboutdzand
 echo -e "${MAGENTA}┌────────────────────────────────────────────────────────────┐${NC}"
-echo -e "${MAGENTA}${BOLD}│  📁 ФАЙЛЫ                                                  │${NC}"
+echo -e "${MAGENTA}${BOLD}│  📁 FAYLY                                                  │${NC}"
 echo -e "${MAGENTA}├────────────────────────────────────────────────────────────┤${NC}"
-echo -e "${MAGENTA}│  Всего файлов:${NC}        ${BOLD}${BLUE}$TOTAL_FILES${NC}"
-echo -e "${MAGENTA}│  Успешно:${NC}             ${BOLD}${GREEN}$PASSED_FILES${NC} ${EMOJI_SUCCESS}"
-echo -e "${MAGENTA}│  Неудачно:${NC}            ${BOLD}${RED}$FAILED_FILES${NC} ${EMOJI_ERROR}"
+echo -e "${MAGENTA}│  Vwithegabout fileaboutin:${NC}        ${BOLD}${BLUE}$TOTAL_FILES${NC}"
+echo -e "${MAGENTA}│  Uwithpeshnabout:${NC}             ${BOLD}${GREEN}$PASSED_FILES${NC} ${EMOJI_SUCCESS}"
+echo -e "${MAGENTA}│  Neatdachnabout:${NC}            ${BOLD}${RED}$FAILED_FILES${NC} ${EMOJI_ERROR}"
 echo -e "${MAGENTA}└────────────────────────────────────────────────────────────┘${NC}"
 echo ""
 
 echo -e "${MAGENTA}┌────────────────────────────────────────────────────────────┐${NC}"
-echo -e "${MAGENTA}${BOLD}│  🧪 ТЕСТЫ                                                  │${NC}"
+echo -e "${MAGENTA}${BOLD}│  🧪 TESTY                                                  │${NC}"
 echo -e "${MAGENTA}├────────────────────────────────────────────────────────────┤${NC}"
-echo -e "${MAGENTA}│  Всего тестов:${NC}        ${BOLD}${BLUE}$TOTAL_TESTS${NC}"
-echo -e "${MAGENTA}│  Прошло:${NC}               ${BOLD}${GREEN}$PASSED_TESTS${NC} ${EMOJI_SUCCESS}"
-echo -e "${MAGENTA}│  Не прошло:${NC}            ${BOLD}${RED}$FAILED_TESTS${NC} ${EMOJI_ERROR}"
+echo -e "${MAGENTA}│  Vwithegabout testaboutin:${NC}        ${BOLD}${BLUE}$TOTAL_TESTS${NC}"
+echo -e "${MAGENTA}│  Praboutshlabout:${NC}               ${BOLD}${GREEN}$PASSED_TESTS${NC} ${EMOJI_SUCCESS}"
+echo -e "${MAGENTA}│  Ne praboutshlabout:${NC}            ${BOLD}${RED}$FAILED_TESTS${NC} ${EMOJI_ERROR}"
 echo -e "${MAGENTA}└────────────────────────────────────────────────────────────┘${NC}"
 echo ""
 
 echo -e "${MAGENTA}┌────────────────────────────────────────────────────────────┐${NC}"
-echo -e "${MAGENTA}${BOLD}│  ⏱️  ПРОИЗВОДИТЕЛЬНОСТЬ                                      │${NC}"
+echo -e "${MAGENTA}${BOLD}│  ⏱️  ness                                      │${NC}"
 echo -e "${MAGENTA}├────────────────────────────────────────────────────────────┤${NC}"
-echo -e "${MAGENTA}│  Общее время:${NC}          ${BOLD}${CYAN}${TOTAL_TIME_S} сек${NC} ${EMOJI_TIME}"
-echo -e "${MAGENTA}│  Среднее время/файл:${NC}   ${BOLD}${CYAN}${AVG_TIME_MS} мс${NC}"
-echo -e "${MAGENTA}│  Параллельных потоков:${NC}  ${BOLD}${YELLOW}$PARALLEL_JOBS${NC} 🚀"
+echo -e "${MAGENTA}│  Obschee time:${NC}          ${BOLD}${CYAN}${TOTAL_TIME_S} witheto${NC} ${EMOJI_TIME}"
+echo -e "${MAGENTA}│  Srednee time/file:${NC}   ${BOLD}${CYAN}${AVG_TIME_MS} mwith${NC}"
+echo -e "${MAGENTA}│  Parallelnykh threadaboutin:${NC}  ${BOLD}${YELLOW}$PARALLEL_JOBS${NC} 🚀"
 echo -e "${MAGENTA}└────────────────────────────────────────────────────────────┘${NC}"
 echo ""
 
-# Качество с цветовой кодировкой
+# Kachewithtinabout with tsinethatinabouty codeandraboutintoabouty
 if [ $SUCCESS_RATE -eq 100 ]; then
     echo -e "${BOLD}${GREEN}╔══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${BOLD}${GREEN}║  🎉 ОТЛИЧНО! Все файлы генерируют валидный код!           ║${NC}"
+    echo -e "${BOLD}${GREEN}║  🎉 OTLIChNO! Vwithe filey generandratyut inalandny code!           ║${NC}"
     echo -e "${BOLD}${GREEN}╚══════════════════════════════════════════════════════════════╝${NC}"
 elif [ $SUCCESS_RATE -ge 90 ]; then
     echo -e "${BOLD}${YELLOW}╔══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${BOLD}${YELLOW}║  👍 ХОРОШО! Большинство файлов валидны                     ║${NC}"
+    echo -e "${BOLD}${YELLOW}║  👍 KhOROShO! Baboutlshandnwithtinabout fileaboutin inalanddny                     ║${NC}"
     echo -e "${BOLD}${YELLOW}╚══════════════════════════════════════════════════════════════╝${NC}"
 elif [ $SUCCESS_RATE -ge 70 ]; then
     echo -e "${BOLD}${RED}╔══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${BOLD}${RED}║  ⚠️  УДОВЛЕТВОРИТЕЛЬНО - Некоторые файлы имеют ошибки        ║${NC}"
+    echo -e "${BOLD}${RED}║  ⚠️  UDOVLETVORITELNO - Newhich filey andmeyut aboutshandbtoand        ║${NC}"
     echo -e "${BOLD}${RED}╚══════════════════════════════════════════════════════════════╝${NC}"
 else
     echo -e "${BOLD}${RED}╔══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${BOLD}${RED}║  ❌ ПЛОХО - Многие файлы генерируют сломанный код           ║${NC}"
+    echo -e "${BOLD}${RED}║  ❌ PLOKhO - Mnaboutgande filey generandratyut withlaboutny code           ║${NC}"
     echo -e "${BOLD}${RED}╚══════════════════════════════════════════════════════════════╝${NC}"
 fi
 
@@ -343,26 +343,26 @@ echo ""
 
 if [ $FAILED_FILES -gt 0 ]; then
     echo -e "${BOLD}${RED}══════════════════════════════════════════════════════════════════${NC}"
-    echo -e "${BOLD}${RED}❌ НЕУДАЧНЫЕ ФАЙЛЫ ($FAILED_FILES)${NC}"
+    echo -e "${BOLD}${RED}❌ NEUDAChNYE FAYLY ($FAILED_FILES)${NC}"
     echo -e "${BOLD}${RED}══════════════════════════════════════════════════════════════════${NC}"
     echo ""
     for i in "${!FAILED_FILES_LIST[@]}"; do
         file="${FAILED_FILES_LIST[$i]}"
         error="${FAILED_ERRORS[$i]}"
         echo -e "  ${RED}${EMOJI_ERROR} ${BOLD}${file}${NC}"
-        echo -e "     ${YELLOW}▸ Ошибка:${NC} ${error}"
+        echo -e "     ${YELLOW}▸ Error:${NC} ${error}"
         echo ""
     done
 fi
 
 echo -e "${CYAN}══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}${EMOJI_SUCCESS} ${BOLD}Отчёты сохранены:${NC}"
+echo -e "${GREEN}${EMOJI_SUCCESS} ${BOLD}Otchyoty withaboutkhraneny:${NC}"
 echo -e "${CYAN}  📄 $REPORT_FILE${NC}"
 echo -e "${CYAN}  📊 $JSON_REPORT${NC}"
 echo -e "${CYAN}══════════════════════════════════════════════════════════════════${NC}"
 echo ""
 
-# Выход с кодом ошибки, если есть неудачные файлы
+# Vykhaboutd with codeaboutm aboutshandbtoand, ewithland ewitht neatdachnye filey
 if [ $FAILED_FILES -gt 0 ]; then
     exit 1
 else

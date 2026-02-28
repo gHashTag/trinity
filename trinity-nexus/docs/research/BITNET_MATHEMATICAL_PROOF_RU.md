@@ -1,143 +1,143 @@
-# BitNet FPGA - [CYR:[TRANSLATED]]andчеwithtoandе Доfor[TRANSLATED]]withтinа for Бandзnotwith-[CYR:[TRANSLATED]]and
+# BitNet FPGA - :]andchewithtoande Daboutfor]withtina for Bandznotwith-:]and
 
-**Доfor[TRANSLATED]] for andнinеwith[TRANSLATED]]in and [CYR:[TRANSLATED]]in**  
-**[CYR:[TRANSLATED]]withandя:** 1.0  
-**[CYR:[TRANSLATED]]:** Янin[CYR:[TRANSLATED]] 2026
+**Daboutfor] for andninewith]in and :]in**  
+**:]Author:** 1.0  
+**:]:** Yanin:] 2026
 
 ---
 
 ## Executive Summary
 
-BitNet on FPGA [CYR:[TRANSLATED]]with[TRANSLATED]]andin[CYR:[TRANSLATED]] **10-20x [CYR:[TRANSLATED]] эnot[CYR:[TRANSLATED]]toтandinноwithть** and **10x [CYR:[TRANSLATED]] пfrom[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]and** по withраinnotнandю with GPU for LLM inference. [CYR:[TRANSLATED]] not [CYR:[TRANSLATED]]toетandнг - this [CYR:[TRANSLATED]]andtoа.
+BitNet on FPGA :]with]andin:] **10-20x :] enot:]totandinnaboutwitht** and **10x :] pfrom:]ande :]and** by withrainnotnandyu with GPU for LLM inference. :] not :]toetandng - this :]Version.
 
 ---
 
-## 1. [CYR:[TRANSLATED]] BITNET
+## 1. :] BITNET
 
-### 1.1 Кin[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя inеwithоin
+### 1.1 Kin:]and:]andya inewithaboutin
 
-**[CYR:[TRANSLATED]]onя LLM (FP16):**
+**:]onya LLM (FP16):**
 ```
-Веwith w ∈ ℝ, [CYR:[TRANSLATED]]andтwithя toаto 16 бandт
-[CYR:[TRANSLATED]] on 1B parameterоin = 1B × 16 бandт = 2 GB
+Vewith w ∈ ℝ, :]andtwithya toato 16 bandt
+:] on 1B parameteraboutin = 1B × 16 bandt = 2 GB
 ```
 
 **BitNet b1.58:**
 ```
-Веwith w ∈ {-1, 0, +1}, [CYR:[TRANSLATED]]andтwithя toаto 1.58 бandт
-[CYR:[TRANSLATED]] on 1B parameterоin = 1B × 1.58 бandт = 0.2 GB
+Vewith w ∈ {-1, 0, +1}, :]andtwithya toato 1.58 bandt
+:] on 1B parameteraboutin = 1B × 1.58 bandt = 0.2 GB
 
-Эfor[TRANSLATED]]andя [CYR:[TRANSLATED]]and = 16 / 1.58 = 10.1x
+Efor]andya :]and = 16 / 1.58 = 10.1x
 ```
 
-### 1.2 [CYR:[TRANSLATED]] 1.58 бandт?
+### 1.2 :] 1.58 bandt?
 
 ```
-Ternary encoding: 3 in[CYR:[TRANSLATED]] зon[CYR:[TRANSLATED]]andя {-1, 0, +1}
-[CYR:[TRANSLATED]]andонonя [CYR:[TRANSLATED]]andя: log₂(3) = 1.585 бandт
+Ternary encoding: 3 in:] zon:]andya {-1, 0, +1}
+:]andaboutnonya :]andya: log₂(3) = 1.585 bandt
 
-[CYR:[TRANSLATED]]toтandчеwithtoая [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя:
-- 5 ternary inеwithоin [CYR:[TRANSLATED]]toоinыin[CYR:[TRANSLATED]]withя in 8 бandт
-- 3⁵ = 243 for[TRANSLATED]]andonцand < 2⁸ = 256
-- [CYR:[TRANSLATED]]toтandinноwithть: 5 × 1.585 / 8 = 0.99 (99% [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]])
+:]totandchewithtoaya :]and:]andya:
+- 5 ternary inewithaboutin :]toaboutinyin:]withya in 8 bandt
+- 3⁵ = 243 for]andontsand < 2⁸ = 256
+- :]totandinnaboutwitht: 5 × 1.585 / 8 = 0.99 (99% :]and:])
 ```
 
-### 1.3 [CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]andя → with[TRANSLATED]]andе
+### 1.3 :]andya :]andya → with]ande
 
 **FP16 MAC (Multiply-Accumulate):**
 ```
 y = Σ(wᵢ × xᵢ)
-[CYR:[TRANSLATED]]: FP16 [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] + FP16 with[TRANSLATED]]
-Эnotргandя: ~1 pJ on [CYR:[TRANSLATED]]andю ([CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]andнand[CYR:[TRANSLATED]])
+:]: FP16 :]and:] + FP16 with]
+Enotrgandya: ~1 pJ on :]andyu (:]ande :]andnand:])
 ```
 
 **BitNet MAC:**
 ```
 y = Σ(wᵢ × xᵢ), where wᵢ ∈ {-1, 0, +1}
 
-Еwithлand wᵢ = +1: y += xᵢ     (with[TRANSLATED]]andе)
-Еwithлand wᵢ = -1: y += (-xᵢ)  (with[TRANSLATED]]andе with [CYR:[TRANSLATED]]inычandwith[TRANSLATED]] -x)
-Еwithлand wᵢ =  0: y += 0      (нand[CYR:[TRANSLATED]])
+Ewithland wᵢ = +1: y += xᵢ     (with]ande)
+Ewithland wᵢ = -1: y += (-xᵢ)  (with]ande with :]inychandwith] -x)
+Ewithland wᵢ =  0: y += 0      (nand:])
 
-[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] with[TRANSLATED]], [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]!
-Эnotргandя: ~0.05 pJ on [CYR:[TRANSLATED]]andю
+:]: :] with], :] :]and:]!
+Enotrgandya: ~0.05 pJ on :]andyu
 ```
 
-**Доfor[TRANSLATED]]withтinо эnot[CYR:[TRANSLATED]]toтandinноwithтand:**
+**Daboutfor]withtinabout enot:]totandinnaboutwithtand:**
 ```
 E_FP16 / E_BitNet = 1 pJ / 0.05 pJ = 20x
 
-Иwith[TRANSLATED]]andto: "The Era of 1-bit LLMs" (Microsoft, 2024)
+Iwith]andto: "The Era of 1-bit LLMs" (Microsoft, 2024)
 - FP16 multiplication: 0.9 pJ (45nm)
 - INT8 addition: 0.03 pJ (45nm)
-- BitNet andwith[TRANSLATED]] [CYR:[TRANSLATED]]toо addition → 20-30x эfor[TRANSLATED]]andя эnotргand
+- BitNet andwith] :]toabout addition → 20-30x efor]andya enotrgand
 ```
 
 ---
 
-## 2. [CYR:[TRANSLATED]] FPGA vs GPU
+## 2. :] FPGA vs GPU
 
-### 2.1 [CYR:[TRANSLATED]] GPU not[CYR:[TRANSLATED]]toтandinны for BitNet
+### 2.1 :] GPU not:]totandinny for BitNet
 
 **NVIDIA Tensor Core:**
 ```
-[CYR:[TRANSLATED]]andя: FP16 × FP16 → FP32
-[CYR:[TRANSLATED]]: 4×4 [CYR:[TRANSLATED]]andца за таtoт
-[CYR:[TRANSLATED]]andмandзandроinан for: Dense FP16/INT8 [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and
+:]andya: FP16 × FP16 → FP32
+:]: 4×4 :]andtsa za thattot
+:]andmandzandraboutinan for: Dense FP16/INT8 :]and:] :]and
 
-[CYR:[TRANSLATED]] BitNet {-1, 0, +1}:
-- Tensor Core inwithё раinно [CYR:[TRANSLATED]] FP16 [CYR:[TRANSLATED]]andе
-- 99% inычandwithлand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтand [CYR:[TRANSLATED]]andтwithя inпуwith[TRANSLATED]]
-- [CYR:[TRANSLATED]] onтandin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toand ternary [CYR:[TRANSLATED]]andй
+:] BitNet {-1, 0, +1}:
+- Tensor Core inwithyo rainnabout :] FP16 :]ande
+- 99% inychandwithland:] :]withtand :]andtwithya inpatwith]
+- :] ontandin:] :]toand ternary :]andy
 ```
 
 **FPGA Ternary MAC:**
 ```
-[CYR:[TRANSLATED]]andя: MUX + ADD ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andя)
-Реwithурwithы: ~50 LUTs on 1 MAC
-[CYR:[TRANSLATED]]andмandзandроinан for: [CYR:[TRANSLATED]] ternary [CYR:[TRANSLATED]]and
+:]andya: MUX + ADD (:] :]andya)
+Rewithatrwithy: ~50 LUTs on 1 MAC
+:]andmandzandraboutinan for: :] ternary :]and
 
-[CYR:[TRANSLATED]] BitNet:
-- 100% [CYR:[TRANSLATED]]toтandinноwithть
-- Каwith[TRANSLATED]]onя [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
-- [CYR:[TRANSLATED]] overhead from унandinерwith[TRANSLATED]]withтand
+:] BitNet:
+- 100% :]totandinnaboutwitht
+- Kawith]onya :]andthosefor] :] :]
+- :] overhead from atnandinerwith]withtand
 ```
 
-### 2.2 Раwith[TRANSLATED]] реwithурwithоin FPGA
+### 2.2 Rawith] rewithatrwithaboutin FPGA
 
 **Alveo U55C:**
 ```
 LUTs: 1,304,000
-Ternary MAC: ~50 LUTs for[TRANSLATED]]
-Маtowithand[CYR:[TRANSLATED]] MACs: 1,304,000 / 50 = 26,080 [CYR:[TRANSLATED]] MAC
+Ternary MAC: ~50 LUTs for]
+Matowithand:] MACs: 1,304,000 / 50 = 26,080 :] MAC
 
-Прand 300 MHz:
+Prand 300 MHz:
 Throughput = 26,080 × 300M = 7.8 TOPS (ternary operations)
 ```
 
-**[CYR:[TRANSLATED]]innotнandе with GPU:**
+**:]innotnande with GPU:**
 ```
 H100 Tensor Cores: 989 TFLOPS (FP16)
-Но for BitNet [CYR:[TRANSLATED]]toтandinноwithть ~10%: 989 × 0.1 = 99 TOPS effective
+Nabout for BitNet :]totandinnaboutwitht ~10%: 989 × 0.1 = 99 TOPS effective
 
-FPGA [CYR:[TRANSLATED]]toтandinноwithть for BitNet: 100%
+FPGA :]totandinnaboutwitht for BitNet: 100%
 7.8 TOPS × 100% = 7.8 TOPS effective
 
 H100 / Alveo U55C = 99 / 7.8 = 12.7x
-Но H100 withтоandт $30,000, Alveo U55C withтоandт $5,000
-Cost-efficiency: (12.7 × $5,000) / $30,000 = 2.1x in [CYR:[TRANSLATED]] FPGA
+Nabout H100 withthatandt $30,000, Alveo U55C withthatandt $5,000
+Cost-efficiency: (12.7 × $5,000) / $30,000 = 2.1x in :] FPGA
 ```
 
-### 2.3 Эnot[CYR:[TRANSLATED]]toтandinноwithть
+### 2.3 Enot:]totandinnaboutwitht
 
-**[CYR:[TRANSLATED]]:**
+**:]:**
 ```
 Efficiency = Throughput / Power (TOPS/W)
 ```
 
 **H100:**
 ```
-Throughput: 989 TFLOPS (но ~99 TOPS for BitNet)
+Throughput: 989 TFLOPS (nabout ~99 TOPS for BitNet)
 Power: 700W
 Efficiency: 99 / 700 = 0.14 TOPS/W
 ```
@@ -148,10 +148,10 @@ Throughput: 7.8 TOPS
 Power: 150W
 Efficiency: 7.8 / 150 = 0.052 TOPS/W
 
-[CYR:[TRANSLATED]]andте, this [CYR:[TRANSLATED]]?
+:]andthose, this :]?
 ```
 
-**[CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]] раwith[TRANSLATED]] with [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] TerEffic:**
+**:]inand:] rawith] with :] :] :] TerEffic:**
 ```
 TerEffic paper (arXiv:2502.16473):
 - 370M model: 16,300 tokens/sec @ 36W
@@ -161,7 +161,7 @@ NVIDIA Jetson Orin Nano:
 - 370M model: 85 tokens/sec @ 15W  
 - Efficiency: 5.7 tokens/sec/W
 
-FPGA / Jetson = 453 / 5.7 = 79x [CYR:[TRANSLATED]]!
+FPGA / Jetson = 453 / 5.7 = 79x :]!
 
 NVIDIA A100:
 - 2.7B model: 242 tokens/sec @ 400W
@@ -171,16 +171,16 @@ TerEffic FPGA:
 - 2.7B model: 727 tokens/sec @ 46W
 - Efficiency: 15.8 tokens/sec/W
 
-FPGA / A100 = 15.8 / 0.6 = 26x [CYR:[TRANSLATED]]!
+FPGA / A100 = 15.8 / 0.6 = 26x :]!
 ```
 
 ---
 
-## 3. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 3. :] :]
 
-### 3.1 Total Cost of Ownership (TCO) - 3 [CYR:[TRANSLATED]]
+### 3.1 Total Cost of Ownership (TCO) - 3 :]
 
-**[CYR:[TRANSLATED]]onрandй: LLM Inference Service, 3B [CYR:[TRANSLATED]], 24/7**
+**:]onrandy: LLM Inference Service, 3B :], 24/7**
 
 **GPU Setup (H100):**
 ```
@@ -216,23 +216,23 @@ Cooling (30% of power):
 Total TCO: $8,000 + $1,182 + $355 = $9,537
 ```
 
-**Эfor[TRANSLATED]]andя:**
+**Efor]andya:**
 ```
 TCO_GPU / TCO_FPGA = $42,176 / $9,537 = 4.4x
 
-Эfor[TRANSLATED]]andя за 3 [CYR:[TRANSLATED]]: $42,176 - $9,537 = $32,639
+Efor]andya za 3 :]: $42,176 - $9,537 = $32,639
 ```
 
 ### 3.2 ROI for Inference Service
 
-**[CYR:[TRANSLATED]]andя:**
+**:]andya:**
 ```
-- Цеon: $0.001 / 1K tokens (10x [CYR:[TRANSLATED]]inле OpenAI)
-- Throughput: 700 tokens/sec (andз TerEffic [CYR:[TRANSLATED]])
+- Tseon: $0.001 / 1K tokens (10x :]inle OpenAI)
+- Throughput: 700 tokens/sec (andz TerEffic :])
 - Uptime: 90%
 ```
 
-**Раwith[TRANSLATED]]:**
+**Rawith]:**
 ```
 Tokens/day = 700 × 3600 × 24 × 0.9 = 54,432,000
 Revenue/day = 54,432 × $0.001 = $54.43
@@ -246,36 +246,36 @@ ROI (Year 1): ($19,596 - $8,000) / $8,000 = 145%
 ROI (Year 3): ($19,596 × 3 - $8,000) / $8,000 = 635%
 ```
 
-### 3.3 [CYR:[TRANSLATED]]innotнandе with toонfor[TRANSLATED]]and
+### 3.3 :]innotnande with toaboutnfor]and
 
-| [CYR:[TRANSLATED]]andtoа | OpenAI API | GPU Self-host | FPGA BitNet |
+| :]Version | OpenAI API | GPU Self-host | FPGA BitNet |
 |---------|------------|---------------|-------------|
-| Цеon/1K tokens | $0.01 | $0.003 | $0.001 |
+| Tseon/1K tokens | $0.01 | $0.003 | $0.001 |
 | Latency | 500ms | 100ms | 50ms |
 | Privacy | ❌ Cloud | ✅ On-prem | ✅ On-prem |
-| TCO (3 [CYR:[TRANSLATED]]) | $300K+ | $42K | $9.5K |
+| TCO (3 :]) | $300K+ | $42K | $9.5K |
 | Energy/token | Unknown | ~3 mJ | ~0.15 mJ |
 
 ---
 
-## 4. [CYR:[TRANSLATED]] ИЗ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 4. :] IZ :] :]
 
 ### 4.1 Microsoft BitNet (arXiv:2402.17764)
 
 **"The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits"**
 
-[CYR:[TRANSLATED]]inые resultы:
+:]inye resulty:
 ```
-| Model Size | BitNet Perplexity | FP16 Perplexity | [CYR:[TRANSLATED]]andца |
+| Model Size | BitNet Perplexity | FP16 Perplexity | :]andtsa |
 |------------|-------------------|-----------------|---------|
 | 700M       | 12.87             | 12.89           | -0.2%   |
 | 1.3B       | 11.29             | 11.25           | +0.4%   |
 | 3B         | 10.04             | 9.91            | +1.3%   |
 
-Выinод: BitNet with[TRANSLATED]] for[TRANSLATED]]withтinо [CYR:[TRANSLATED]]and прand 10x [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and
+Vyinaboutd: BitNet with] for]withtinabout :]and prand 10x :] :]and
 ```
 
-Эnot[CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]andе (Table 3 in with[TRANSLATED]]):
+Enot:]from:]ande (Table 3 in with]):
 ```
 | Operation      | Energy (pJ) | BitNet vs FP16 |
 |----------------|-------------|----------------|
@@ -290,7 +290,7 @@ ROI (Year 3): ($19,596 × 3 - $8,000) / $8,000 = 635%
 
 **"TerEffic: Highly Efficient Ternary LLM Inference on FPGA"**
 
-[CYR:[TRANSLATED]]inые resultы:
+:]inye resulty:
 ```
 Configuration 1: Fully On-Chip (multiple FPGAs)
 - Model: 370M parameters
@@ -307,7 +307,7 @@ Configuration 2: HBM-Assisted (single FPGA)
 - vs NVIDIA A100: 3x faster, 8x more efficient
 ```
 
-[CYR:[TRANSLATED]]andтеfor[TRANSLATED]] and[CYR:[TRANSLATED]]inацand:
+:]andthosefor] and:]inatsand:
 ```
 1. 1.6-bit weight compression (5 weights per 8 bits)
 2. Pre-computed negation (store both x and -x)
@@ -317,7 +317,7 @@ Configuration 2: HBM-Assisted (single FPGA)
 
 ### 4.3 Ternary-NanoCore (GitHub)
 
-**[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя on Artix-7:**
+**:]onya :]from:] :]and:]andya on Artix-7:**
 ```
 - FPGA: Xilinx Artix-7 XC7A35T
 - Application: MNIST digit recognition
@@ -328,61 +328,61 @@ Configuration 2: HBM-Assisted (single FPGA)
 
 ---
 
-## 5. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 5. :] :]
 
-### 5.1 [CYR:[TRANSLATED]]andчеwithtoandе [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinа
+### 5.1 :]andchewithtoande :]and:]withtina
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════╗
-║                    VIBEE BitNet FPGA - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                ║
+║                    VIBEE BitNet FPGA - :] :]                ║
 ╠═══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                               ║
-║  1. [CYR:[TRANSLATED]]: 20-80x [CYR:[TRANSLATED]] GPU                                     ║
-║     Доfor[TRANSLATED]]withтinо: TerEffic paper, Table 2                                   ║
+║  1. :]: 20-80x :] GPU                                     ║
+║     Daboutfor]withtinabout: TerEffic paper, Table 2                                   ║
 ║     453 tok/s/W (FPGA) vs 5.7 tok/s/W (Jetson) = 79x                          ║
 ║                                                                               ║
-║  2. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: 4.4x [CYR:[TRANSLATED]]inле GPU                                      ║
-║     Доfor[TRANSLATED]]withтinо: TCO раwith[TRANSLATED]] in[CYR:[TRANSLATED]]                                           ║
-║     $9,537 (FPGA) vs $42,176 (GPU) за 3 [CYR:[TRANSLATED]]                                  ║
+║  2. :] :]: 4.4x :]inle GPU                                      ║
+║     Daboutfor]withtinabout: TCO rawith] in:]                                           ║
+║     $9,537 (FPGA) vs $42,176 (GPU) za 3 :]                                  ║
 ║                                                                               ║
-║  3. [CYR:MEMORY]: 10x [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inанandй                                             ║
-║     Доfor[TRANSLATED]]withтinо: BitNet paper, Section 3                                   ║
-║     1.58 бandт/inеwith vs 16 бandт/inеwith = 10.1x                                        ║
+║  3. :MEMORY]: 10x :] :]inanandy                                             ║
+║     Daboutfor]withtinabout: BitNet paper, Section 3                                   ║
+║     1.58 bandt/inewith vs 16 bandt/inewith = 10.1x                                        ║
 ║                                                                               ║
-║  4. LATENCY: [CYR:[TRANSLATED]]andнandроinанonя, нandзtoая                                        ║
-║     FPGA: streaming architecture, [CYR:[TRANSLATED]]withfor[TRANSLATED]] latency                       ║
-║     GPU: batch-optimized, inыwithоtoая latency for single inference                ║
+║  4. LATENCY: :]andnandraboutinanonya, nandztoaya                                        ║
+║     FPGA: streaming architecture, :]withfor] latency                       ║
+║     GPU: batch-optimized, inywithabouttoaya latency for single inference                ║
 ║                                                                               ║
 ║  5. EDGE DEPLOYMENT: 150W vs 700W                                             ║
-║     [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] where [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] with[TRANSLATED]]and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andя                   ║
+║     :] :]in:] where :] :] with]and:] :]andya                   ║
 ║                                                                               ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
 ```
 
-### 5.2 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinа
+### 5.2 :] :]and:]withtina
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════╗
-║                         [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                                      ║
+║                         :] :]                                      ║
 ╠═══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                               ║
-║  BLUE OCEAN: [CYR:[TRANSLATED]]to BitNet FPGA [CYR:[TRANSLATED]]toтandчеwithtoand пуwithт                               ║
+║  BLUE OCEAN: :]to BitNet FPGA :]totandchewithtoand patwitht                               ║
 ║                                                                               ║
-║  [CYR:[TRANSLATED]]for[TRANSLATED]]:                                                                  ║
-║  ├── TerEffic (аfor[TRANSLATED]]andчеwithtoandй [CYR:[TRANSLATED]]toт, not for[TRANSLATED]]withtoandй)                         ║
-║  ├── Ternary-NanoCore (hobby [CYR:[TRANSLATED]]toт, [CYR:[TRANSLATED]]toо MNIST)                            ║
-║  └── [CYR:[TRANSLATED]] for[TRANSLATED]]withtoandх [CYR:[TRANSLATED]]andй!                                                ║
+║  :]for]:                                                                  ║
+║  ├── TerEffic (afor]andchewithtoandy :]tot, not for]withtoandy)                         ║
+║  ├── Ternary-NanoCore (hobby :]tot, :]toabout MNIST)                            ║
+║  └── :] for]withtoandkh :]andy!                                                ║
 ║                                                                               ║
-║  [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]] for toонfor[TRANSLATED]]in:                                               ║
-║  ├── FPGA expertise ([CYR:[TRANSLATED]]toandй oninыto)                                            ║
-║  ├── BitNet [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andе (ноinая [CYR:[TRANSLATED]]andя)                                      ║
+║  :] in:] for toaboutnfor]in:                                               ║
+║  ├── FPGA expertise (:]toandy oninyto)                                            ║
+║  ├── BitNet :]and:]ande (naboutinaya :]andya)                                      ║
 ║  ├── Hardware investment ($5K-50K)                                            ║
-║  └── Time to market (6-12 меwith[TRANSLATED]]in)                                            ║
+║  └── Time to market (6-12 mewith]in)                                            ║
 ║                                                                               ║
-║  [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]withтinо:                                                           ║
-║  ├── VIBEE: аin[CYR:[TRANSLATED]]andчеwithtoая геnot[CYR:[TRANSLATED]]andя Verilog andз with[TRANSLATED]]andфandtoацandй                  ║
-║  ├── [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]andй прfromfromandп BitNet MAC (100% теwithты [CYR:[TRANSLATED]])                     ║
-║  ├── Доfor[TRANSLATED]]andя and know-how                                                  ║
+║  :] :]and:]withtinabout:                                                           ║
+║  ├── VIBEE: ain:]andchewithtoaya genot:]andya Verilog andz with]andfVersiontsandy                  ║
+║  ├── :]from:]andy prfromfromandp BitNet MAC (100% thosewithty :])                     ║
+║  ├── Daboutfor]andya and know-how                                                  ║
 ║  └── First-mover advantage                                                    ║
 ║                                                                               ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
@@ -390,33 +390,33 @@ Configuration 2: HBM-Assisted (single FPGA)
 
 ---
 
-## 6. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] PITCH DECK
+## 6. :] :] PITCH DECK
 
-### [CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]andtoand:
+### :]inye :]andtoand:
 
 ```
-[CYR:[TRANSLATED]]:
+:]:
 η = Throughput / Power = 453 tok/s/W (FPGA) vs 5.7 tok/s/W (GPU)
-[CYR:[TRANSLATED]]andе: 79x
+:]ande: 79x
 
-[CYR:MEMORY]:
+:MEMORY]:
 M_BitNet = M_FP16 / 10.1
-[CYR:[TRANSLATED]] 7B [CYR:[TRANSLATED]]and: 14 GB → 1.4 GB
+:] 7B :]and: 14 GB → 1.4 GB
 
-TCO (3 [CYR:[TRANSLATED]]):
+TCO (3 :]):
 TCO_FPGA = $9,537
 TCO_GPU = $42,176
-Эfor[TRANSLATED]]andя: 77%
+Efor]andya: 77%
 
 ROI:
 Year 1: 145%
 Year 3: 635%
 
 PAYBACK:
-4.9 меwith[TRANSLATED]]in
+4.9 mewith]in
 ```
 
-### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withтand:
+### :] :]withtand:
 
 ```
 Value = (Energy_Saved + Memory_Saved + TCO_Saved) × Market_Size
@@ -431,35 +431,35 @@ Addressable Market (Edge/Efficient) = $5B
 
 ---
 
-## 7. [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]
+## 7. :]  :]
 
-| Рandwithto | [CYR:[TRANSLATED]]withть | Влandянandе | Мandтand[CYR:[TRANSLATED]]andя |
+| Randwithto | :]witht | Vlandyanande | Mandtand:]andya |
 |------|-------------|---------|-----------|
-| BitNet not withтаnotт with[TRANSLATED]] | [CYR:[TRANSLATED]] | Выwithоtoое | [CYR:[TRANSLATED]]toа [CYR:[TRANSLATED]]andх quantization (INT4, INT8) |
-| GPU with[TRANSLATED]] [CYR:[TRANSLATED]]toтandinnotе | Нandзtoая | [CYR:[TRANSLATED]]notе | FPGA inwith[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toтandinnotе for with[TRANSLATED]]andалandзandроin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] |
-| [CYR:[TRANSLATED]]withть [CYR:[TRANSLATED]]fromtoand | Выwithоtoая | [CYR:[TRANSLATED]]notе | VIBEE аin[CYR:[TRANSLATED]]andзand[CYR:[TRANSLATED]] геnot[CYR:[TRANSLATED]]andю for[TRANSLATED]] |
-| [CYR:[TRANSLATED]]for[TRANSLATED]]andя from NVIDIA | [CYR:[TRANSLATED]] | Выwithоtoое | Focus on edge/privacy use cases |
+| BitNet not withthatnott with] | :] | Vywithabouttoaboute | :]toa :]andkh quantization (INT4, INT8) |
+| GPU with] :]totandinnote | Nandztoaya | :]note | FPGA inwith] :] :]totandinnote for with]andalandzandraboutin:] :] |
+| :]witht :]fromtoand | Vywithabouttoaya | :]note | VIBEE ain:]andzand:] genot:]andyu for] |
+| :]for]andya from NVIDIA | :] | Vywithabouttoaboute | Focus on edge/privacy use cases |
 
 ---
 
-## 8. [CYR:[TRANSLATED]]
+## 8. :]
 
-**[CYR:[TRANSLATED]]andчеwithtoand доfor[TRANSLATED]]:**
+**:]andchewithtoand daboutfor]:**
 
-1. **BitNet эfor[TRANSLATED]]andт 10x [CYR:[TRANSLATED]]and** (1.58 бandт vs 16 бandт)
-2. **FPGA эfor[TRANSLATED]]andт 20x эnotргand** (notт [CYR:[TRANSLATED]]andй)
-3. **TCO in 4.4x нandже** [CYR:[TRANSLATED]] GPU
-4. **ROI 145%** in [CYR:[TRANSLATED]]inый [CYR:[TRANSLATED]]
-5. **Оfor[TRANSLATED]]withть 4.9 меwith[TRANSLATED]]**
+1. **BitNet efor]andt 10x :]and** (1.58 bandt vs 16 bandt)
+2. **FPGA efor]andt 20x enotrgand** (nott :]andy)
+3. **TCO in 4.4x nandzhe** :] GPU
+4. **ROI 145%** in :]inyy :]
+5. **Ofor]witht 4.9 mewith]**
 
-**[CYR:[TRANSLATED]] not [CYR:[TRANSLATED]]andя - this [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andtoа, [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]onя:**
+**:] not :]andya - this :]from:] :]Version, :]in:]onya:**
 - Microsoft Research (BitNet paper)
 - National University of Singapore (TerEffic paper)
-- [CYR:[TRANSLATED]]andм [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]andм прfromfromand[CYR:[TRANSLATED]] (7/7 теwithтоin [CYR:[TRANSLATED]])
+- :]andm :]from:]andm prfromfromand:] (7/7 thosewiththatin :])
 
 ---
 
-## Сwithылtoand
+## Swithyltoand
 
 1. Microsoft BitNet: https://arxiv.org/abs/2402.17764
 2. TerEffic FPGA: https://arxiv.org/abs/2502.16473

@@ -49,7 +49,7 @@ echo ""
 # Rule 3: Every .999 file has generation marker
 echo "=== Rule 3: Generation marker in .999 files ==="
 total999=$(find 999 -name "*.999" -type f | wc -l)
-with_marker=$(grep -rl 'Сгенерировано из:' 999 --include='*.999' 2>/dev/null | wc -l)
+with_marker=$(grep -rl 'Sgenerandraboutinanabout from:' 999 --include='*.999' 2>/dev/null | wc -l)
 if [ "$with_marker" -eq "$total999" ]; then
     echo "✅ PASS: All $total999 .999 files have generation marker"
 else

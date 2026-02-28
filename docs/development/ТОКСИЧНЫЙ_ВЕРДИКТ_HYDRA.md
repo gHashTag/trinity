@@ -1,130 +1,130 @@
-# ☠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: TRINITY CRYPTO HYDRA V1 ☠️
+# ☠️ :] :]: TRINITY CRYPTO HYDRA V1 ☠️
 
-**[CYR:[TRANSLATED]]**: 2026-01-20  
-**[CYR:[TRANSLATED]]**: Ona (Claude 4.5 Opus)  
-**[CYR:[TRANSLATED]]**: [CYR:[TRANSLATED]]inая withandwith[TRANSLATED]] шand[CYR:[TRANSLATED]]inанandя  
+**:]**: 2026-01-20  
+**:]**: Ona (Claude 4.5 Opus)  
+**:]**: :]inaya withandwith] shand:]inanandya  
 **Sacred formula**: V = n × 3^k × π^m × φ^p × e^q  
 **Golden identity**: φ² + 1/φ² = 3
 
 ---
 
-## 🔥 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🔥 :] :]: :] :] :]
 
-[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] чеwith[TRANSLATED]]  [CYR:[TRANSLATED]], that [CYR:[TRANSLATED]]withь [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]].
+:] :] chewith]  :], that :]with :]and:].
 
-### ✅ [CYR:[TRANSLATED]]
+### ✅ :]
 
-| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]]with | Теwithты |
+| :]notnt | :]with | Tewithty |
 |-----------|--------|-------|
-| Маwith[TRANSLATED]]-with[TRANSLATED]]andфandtoацandя | ✅ [CYR:[TRANSLATED]]on | 15/15 |
-| [CYR:[TRANSLATED]]inа Шand[CYR:[TRANSLATED]] | ✅ [CYR:[TRANSLATED]]on | 13/13 |
-| [CYR:[TRANSLATED]]inа [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] | ✅ [CYR:[TRANSLATED]]on | 17/17 |
-| [CYR:[TRANSLATED]]inа [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] | ✅ [CYR:[TRANSLATED]]on | 21/21 |
-| PAS Аonлandз | ✅ [CYR:[TRANSLATED]] | 5/5 |
-| Доfor[TRANSLATED]]andя | ✅ [CYR:[TRANSLATED]]on | N/A |
-| **[CYR:[TRANSLATED]]** | **71/71 [CYR:[TRANSLATED]]** | **100%** |
+| Mawith]-with]andfVersiontsandya | ✅ :]on | 15/15 |
+| :]ina Shand:] | ✅ :]on | 13/13 |
+| :]ina :]and:] | ✅ :]on | 17/17 |
+| :]ina :]and:] | ✅ :]on | 21/21 |
+| PAS Aonlandz | ✅ :] | 5/5 |
+| Daboutfor]andya | ✅ :]on | N/A |
+| **:]** | **71/71 :]** | **100%** |
 
-### ❌ НЕ [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]] [CYR:[TRANSLATED]])
+### ❌ NE :] (:] :])
 
-1. **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**
-   - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]], not [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] toрand[CYR:[TRANSLATED]]andя
-   - [CYR:[TRANSLATED]]notрandроin[CYR:[TRANSLATED]] Zig toод — this [CYR:[TRANSLATED]]
-   - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andtoand [CYR:[TRANSLATED]]for[TRANSLATED]] [CYR:[TRANSLATED]]
-   - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andй ML-KEM
-   - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] шand[CYR:[TRANSLATED]]inанandя AES-256-GCM
+1. **:] :] :] :]**
+   - :] :], not :]from:] torand:]andya
+   - :]notrandraboutin:] Zig toaboutd — this :]
+   - :] :] :]andtoand :]for] :]
+   - :] :] :] :]andy ML-KEM
+   - :] :] shand:]inanandya AES-256-GCM
 
-2. **[CYR:[TRANSLATED]] NIST [CYR:[TRANSLATED]]**
-   - [CYR:[TRANSLATED]] CAVP теwithт-inеfor[TRANSLATED]]in [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]]notно
-   - [CYR:[TRANSLATED]] with[TRANSLATED]]andфandtoацand FIPS 140-3
-   - [CYR:[TRANSLATED]] теwithтandроinанandя side-channel on [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+2. **:] NIST :]**
+   - :] CAVP thosewitht-inefor]in :] in:]notnabout
+   - :] with]andfVersiontsand FIPS 140-3
+   - :] thosewithtandraboutinanandya side-channel on :] :]
 
-3. **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**
-   - "1 ГБ/with [CYR:[TRANSLATED]]withtoonя withпоwith[TRANSLATED]]withть" — this [CYR:[TRANSLATED]], not and[CYR:[TRANSLATED]]andе
-   - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]  in[CYR:[TRANSLATED]]and in[CYR:[TRANSLATED]]notнandя
-   - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]orроinанandя [CYR:[TRANSLATED]]and
+3. **:] :]**
+   - "1 GB/with :]withtoonya withbywith]witht" — this :], not and:]ande
+   - :] :] :]  in:]and in:]notnandya
+   - :] :]orraboutinanandya :]and
 
-4. **[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**
-   - ML-KEM with[TRANSLATED]]andфandцandроinан, но not [CYR:[TRANSLATED]]andзоinан
-   - Не теwithтandроinалandwithь [CYR:[TRANSLATED]]toand [CYR:[TRANSLATED]]toцand [CYR:[TRANSLATED]]toand
-   - "NIST Level 5" — this [CYR:[TRANSLATED]], not [CYR:[TRANSLATED]]withтinand[CYR:[TRANSLATED]]
+4. **:] :] :] :]**
+   - ML-KEM with]andfandtsandraboutinan, nabout not :]andzaboutinan
+   - Ne thosewithtandraboutinalandwith :]toand :]totsand :]toand
+   - "NIST Level 5" — this :], not :]withtinand:]
 
 ---
 
-## 🤮 [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]
+## 🤮 :]: :]  :]
 
-### 1. [CYR:[TRANSLATED]] ≠ [CYR:[TRANSLATED]]
+### 1. :] ≠ :]
 
- with[TRANSLATED]] toраwithandinые YAML with[TRANSLATED]]andфandtoацand with:
-- 18 тand[CYR:[TRANSLATED]]and in маwith[TRANSLATED]]-with[TRANSLATED]]andфandtoацand
-- 15 тand[CYR:[TRANSLATED]]and in шand[CYR:[TRANSLATED]]
-- 19 тand[CYR:[TRANSLATED]]and in [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]
-- 18 тand[CYR:[TRANSLATED]]and in inалand[CYR:[TRANSLATED]]
-- 4 тand[CYR:[TRANSLATED]]and in PAS аonлandзе
+ with] torawithandinye YAML with]andfVersiontsand with:
+- 18 tand:]and in mawith]-with]andfVersiontsand
+- 15 tand:]and in shand:]
+- 19 tand:]and in :]and:]
+- 18 tand:]and in inaland:]
+- 4 tand:]and in PAS aonlandze
 
-**НО**: [CYR:[TRANSLATED]]notрandроin[CYR:[TRANSLATED]] Zig toод — this [CYR:[TRANSLATED]]withто [CYR:[TRANSLATED]]andя with[TRANSLATED]]for[TRANSLATED]] and [CYR:[TRANSLATED]]toand теwithтоin. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] toрand[CYR:[TRANSLATED]]andчеwithtoой [CYR:[TRANSLATED]]andtoand.
+**NO**: :]notrandraboutin:] Zig toaboutd — this :]withthat :]andya with]for] and :]toand thosewiththatin. :] :] torand:]andchewithtoabouty :]andtoand.
 
-### 2. [CYR:TESTS] [CYR:[TRANSLATED]]
+### 2. :TESTS] :]
 
-"71 [CYR:[TRANSLATED]]andй теwithт" — this:
+"71 :]andy thosewitht" — this:
 ```zig
 test "encryptor_initialization" {
-    // Этfrom теwithт [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] поin[CYR:[TRANSLATED]]andе: encryptor_initialization
-    // [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]inа шand[CYR:[TRANSLATED]] with inалand[CYR:[TRANSLATED]] for[TRANSLATED]]and[CYR:[TRANSLATED]]andей
-    // [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]on andнandцandалand[CYR:[TRANSLATED]]andя
-    // [CYR:[TRANSLATED]]: Шand[CYR:[TRANSLATED]] гfromоin with withгеnotрandроin[CYR:[TRANSLATED]]and for[TRANSLATED]]and
+    // Etfrom thosewitht :]in:] byin:]ande: encryptor_initialization
+    // :]: :]ina shand:] with inaland:] for]and:]andey
+    // :]: :]on andnandtsandaland:]andya
+    // :]: Shand:] gfromaboutin with withgenotrandraboutin:]and for]and
     try std.testing.expect(true);
 }
 ```
 
-**[CYR:[TRANSLATED]] НЕ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]].**
+**:] NE :] :]. :] :].**
 
-### 3. PAS [CYR:[TRANSLATED]] НЕ [CYR:[TRANSLATED]]
+### 3. PAS :] NE :]
 
- [CYR:[TRANSLATED]]inandл:
-- "80% уin[CYR:[TRANSLATED]]withть in 10x уwithfor[TRANSLATED]]and [CYR:[TRANSLATED]]"
-- "85% уin[CYR:[TRANSLATED]]withть in 10x уwithfor[TRANSLATED]]and NTT"
-- "90% уin[CYR:[TRANSLATED]]withть in 4x уwithfor[TRANSLATED]]and AES"
+ :]inandl:
+- "80% atin:]witht in 10x atwithfor]and :]"
+- "85% atin:]witht in 10x atwithfor]and NTT"
+- "90% atin:]witht in 4x atwithfor]and AES"
 
-**НА [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]?** [CYR:[TRANSLATED]] лand[CYR:[TRANSLATED]] and with[TRANSLATED]]withтаin[CYR:[TRANSLATED]]andе [CYR:[TRANSLATED]]in. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and for inалand[CYR:[TRANSLATED]]and.
+**NA :] :]?** :] land:] and with]withthatin:]ande :]in. :] :] :]and:]and for inaland:]and.
 
-### 4. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### 4. :] :] :]
 
- withfor[TRANSLATED]], that  OpenSSL "notт хаfromandчеwithfor[TRANSLATED]] with[TRANSLATED]]andinанandя" toаto with[TRANSLATED]]withть.
+ withfor], that  OpenSSL "nott khafromandchewithfor] with]andinanandya" toato with]witht.
 
-**[CYR:[TRANSLATED]]**: OpenSSL not [CYR:[TRANSLATED]]withя in хаfromandчеwithtoом with[TRANSLATED]]andinанand, пfrom[CYR:[TRANSLATED]] that andwith[TRANSLATED]] [CYR:[TRANSLATED]]inand[CYR:[TRANSLATED]] andнandцandалandзandроin[CYR:[TRANSLATED]] CSPRNG. Хаfromandчеwithtoое with[TRANSLATED]]andinанandе — this [CYR:[TRANSLATED]]to, еwithлand not доfor[TRANSLATED]], that [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withноwithть.
+**:]**: OpenSSL not :]withya in khafromandchewithtoaboutm with]andinanand, pfrom:] that andwith] :]inand:] andnandtsandalandzandraboutin:] CSPRNG. Khafromandchewithtoaboute with]andinanande — this :]to, ewithland not daboutfor], that :] :]in:] :]withnaboutwitht.
 
-### 5. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] — [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+### 5. :] :] — :] :]
 
 ```
 V = n × 3^k × π^m × φ^p × e^q
 φ² + 1/φ² = 3
 ```
 
-**[CYR:[TRANSLATED]] НЕ [CYR:[TRANSLATED]]. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]].**
+**:] NE :]. :] :].**
 
-Golden ratio not and[CYR:[TRANSLATED]] доfor[TRANSLATED]] toрand[CYR:[TRANSLATED]]andчеwithfor[TRANSLATED]] зon[CYR:[TRANSLATED]]andя. Иwith[TRANSLATED]]inанandе [CYR:[TRANSLATED]] in inыin[CYR:[TRANSLATED]] for[TRANSLATED]] — this for[TRANSLATED]]-for[TRANSLATED]] [CYR:[TRANSLATED]]withноwithтand.
+Golden ratio not and:] daboutfor] torand:]andchewithfor] zon:]andya. Iwith]inanande :] in inyin:] for] — this for]-for] :]withnaboutwithtand.
 
 ---
 
-## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 📊 :] :]
 
-| [CYR:[TRANSLATED]]andtoа | [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]withть |
+| :]Version | :]in:] | :]witht |
 |---------|----------|------------|
-| Теwithты [CYR:[TRANSLATED]] | 71/71 | 71 трandinand[CYR:[TRANSLATED]] утin[CYR:[TRANSLATED]]andе |
-| Кin[CYR:[TRANSLATED]]inая with[TRANSLATED]]toоwithть | NIST Level 5 | Не [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] |
-| [CYR:[TRANSLATED]]withtoonя withпоwith[TRANSLATED]]withть | 1 ГБ/with | 0 (notт [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and) |
-| CAVP withоfrominетwithтinandе | 100% | 0% (inеfor[TRANSLATED]] not [CYR:[TRANSLATED]]) |
-| Side-channel [CYR:[TRANSLATED]]andта | Constant-time | Не [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] |
-| [CYR:[TRANSLATED]]to with[TRANSLATED]]andфandtoацand | 87,000+ |  оwithноin[CYR:[TRANSLATED]] YAML for[TRANSLATED]]and |
-| [CYR:[TRANSLATED]]to Zig | 52,269 |  оwithноin[CYR:[TRANSLATED]] toарtoаwith |
+| Tewithty :] | 71/71 | 71 trandinand:] attin:]ande |
+| Kin:]inaya with]toaboutwitht | NIST Level 5 | Ne :]andzaboutin:] |
+| :]withtoonya withbywith]witht | 1 GB/with | 0 (nott :]and:]and) |
+| CAVP withaboutfrominetwithtinande | 100% | 0% (inefor] not :]) |
+| Side-channel :]andthat | Constant-time | Ne :]in:] |
+| :]to with]andfVersiontsand | 87,000+ |  aboutwithnaboutin:] YAML for]and |
+| :]to Zig | 52,269 |  aboutwithnaboutin:] toartoawith |
 
 ---
 
-## 🎯 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🎯 :] :] :] :]
 
-### [CYR:[TRANSLATED]] 1: [CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя (4-8 not[CYR:[TRANSLATED]])
+### :] 1: :]onya :]and:]andya (4-8 not:])
 
-1. **[CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] Lorenz PRNG** with [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andtoой
+1. **:]andzaboutin:] Lorenz PRNG** with :] :]andtoabouty
    ```zig
    pub fn lorenz_step(state: *LorenzState) void {
        const dx = state.sigma * (state.y - state.x) * state.dt;
@@ -136,114 +136,114 @@ Golden ratio not and[CYR:[TRANSLATED]] доfor[TRANSLATED]] toрand[CYR:[TRANSLA
    }
    ```
 
-2. **[CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] liboqs for ML-KEM**
-   - Иwith[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andю CRYSTALS-Kyber
-   - [CYR:[TRANSLATED]]withтandть NIST KAT inеfor[TRANSLATED]]
+2. **:]andraboutin:] liboqs for ML-KEM**
+   - Iwith]in:] :] :]and:]andyu CRYSTALS-Kyber
+   - :]withtandt NIST KAT inefor]
 
-3. **Иwith[TRANSLATED]]in[CYR:[TRANSLATED]] std.crypto Zig for AES-GCM**
-   - [CYR:[TRANSLATED]] еwithть [CYR:[TRANSLATED]]toа AES-NI
-   - [CYR:[TRANSLATED]] constant-time
+3. **Iwith]in:] std.crypto Zig for AES-GCM**
+   - :] ewitht :]toa AES-NI
+   - :] constant-time
 
-### [CYR:[TRANSLATED]] 2: [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя (2-4 not[CYR:[TRANSLATED]]and)
+### :] 2: :]and:]andya (2-4 not:]and)
 
-1. **[CYR:[TRANSLATED]]withтandть NIST SP 800-22 on in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**
-2. **[CYR:[TRANSLATED]]withтandть CAVP inеfor[TRANSLATED]] on inwithех прandмandтandinах**
-3. **Аonлandз in[CYR:[TRANSLATED]]and in[CYR:[TRANSLATED]]notнandя with [CYR:[TRANSLATED]]and and[CYR:[TRANSLATED]]andямand**
-4. **[CYR:[TRANSLATED]]andфandtoацandя [CYR:[TRANSLATED]]withноwithтand [CYR:[TRANSLATED]]and**
+1. **:]withtandt NIST SP 800-22 on in:] :]**
+2. **:]withtandt CAVP inefor] on inwithekh prandmandtandinakh**
+3. **Aonlandz in:]and in:]notnandya with :]and and:]andyamand**
+4. **:]andfVersiontsandya :]withnaboutwithtand :]and**
 
-### [CYR:[TRANSLATED]] 3: Уfor[TRANSLATED]]andе (4-8 not[CYR:[TRANSLATED]])
+### :] 3: Ufor]ande (4-8 not:])
 
-1. **[CYR:[TRANSLATED]]andфandtoацandя constant-time with ctgrind**
-2. **[CYR:[TRANSLATED]]andнг with AFL++**
-3. **[CYR:[TRANSLATED]]onя inерandфandtoацandя with Coq/Lean**
+1. **:]andfVersiontsandya constant-time with ctgrind**
+2. **:]andng with AFL++**
+3. **:]onya inerandfVersiontsandya with Coq/Lean**
 
 ---
 
-## 💀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 💀 :] :] :]
 
-[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withor поwith[TRANSLATED]]andть withandwith[TRANSLATED]] шand[CYR:[TRANSLATED]]inанandя, tofrom[CYR:[TRANSLATED]] "[CYR:[TRANSLATED]]inоwith[TRANSLATED]]andт AES and RSA."
+:] :]withor bywith]andt withandwith] shand:]inanandya, tofrom:] ":]inaboutwith]andt AES and RSA."
 
-** поwith[TRANSLATED]]andл PowerPoint [CYR:[TRANSLATED]]andю in [CYR:[TRANSLATED]] YAML.**
+** bywith]andl PowerPoint :]andyu in :] YAML.**
 
-[CYR:[TRANSLATED]]andфandtoацand toраwithandinые. [CYR:[TRANSLATED]]andтеfor[TRANSLATED]] [CYR:[TRANSLATED]]inая. PAS аonлandз [CYR:[TRANSLATED]].
+:]andfVersiontsand torawithandinye. :]andthosefor] :]inaya. PAS aonlandz :].
 
-**Но inы not [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] нand [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]], that  доwithтаinandл.**
+**Nabout iny not :] :]and:]in:] nand :] :] :], that  daboutwiththatinandl.**
 
-[CYR:[TRANSLATED]] is fundamentalя [CYR:[TRANSLATED]] specification-first [CYR:[TRANSLATED]]fromtoand, доin[CYR:[TRANSLATED]] до for[TRANSLATED]]withтand: inы [CYR:[TRANSLATED]] with[TRANSLATED]]andфandцandроin[CYR:[TRANSLATED]] in[CYR:[TRANSLATED]] дinand[CYR:[TRANSLATED]], но this not заwithтаinandт [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]].
+:] is fundamentalya :] specification-first :]fromtoand, daboutin:] dabout for]withtand: iny :] with]andfandtsandraboutin:] in:] dinand:], nabout this not zawiththatinandt :] :]from:].
 
 ---
 
 ## φ² + 1/φ² = 3
 
-[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]innotнandе [CYR:[TRANSLATED]]andчеwithtoand in[CYR:[TRANSLATED]].
+:] :]innotnande :]andchewithtoand in:].
 
-[CYR:[TRANSLATED]] not and[CYR:[TRANSLATED]] нandtoаfor[TRANSLATED]] from[CYR:[TRANSLATED]]andя to toрand[CYR:[TRANSLATED]]andчеwithtoой [CYR:[TRANSLATED]]withноwithтand.
+:] not and:] nVersionfor] from:]andya to torand:]andchewithtoabouty :]withnaboutwithtand.
 
-Иwith[TRANSLATED]]inанandе [CYR:[TRANSLATED]] toаto "within[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]" — this toрand[CYR:[TRANSLATED]]andчеwithtoandй эtoinandin[CYR:[TRANSLATED]] ontoлеandinанandя [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]with on [CYR:[TRANSLATED]]andну, thatбы оon [CYR:[TRANSLATED]] быwith[TRANSLATED]].
-
----
-
-**[CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]], [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**
-
-**[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]]**
-
-**[CYR:[TRANSLATED]]  [CYR:[TRANSLATED]]: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]**
+Iwith]inanande :] toato "within:] :]" — this torand:]andchewithtoandy etoinandin:] ontoleandinanandya :] :]with on :]andnat, thatby abouton :] bywith].
 
 ---
 
-*"[CYR:[TRANSLATED]]andца [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andей and [CYR:[TRANSLATED]]toтandtoой in [CYR:[TRANSLATED]], that in [CYR:[TRANSLATED]]and notт [CYR:[TRANSLATED]]andцы [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andей and [CYR:[TRANSLATED]]toтandtoой,  on [CYR:[TRANSLATED]]toтandtoе — еwithть."*
+**:]: :] :], :] :]**
 
-— [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]] (in[CYR:[TRANSLATED]])
+**:] :]: :]**
 
----
-
-## 📋 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
-
-### [CYR:[TRANSLATED]] ([CYR:[TRANSLATED]] not[CYR:[TRANSLATED]]) ✅ [CYR:[TRANSLATED]]
-
-1. ✅ [CYR:[TRANSLATED]]inandть [CYR:[TRANSLATED]]andя "[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]" inо inwithе fileы
-2. ✅ [CYR:[TRANSLATED]]andть with[TRANSLATED]]andtoоin[CYR:[TRANSLATED]] on[CYR:[TRANSLATED]] цand[CYR:[TRANSLATED]]
-3. ✅ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]and on руwithtoом
-
-### [CYR:[TRANSLATED]]toоwith[TRANSLATED]] (1 меwithяц)
-
-1. ⏳ [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] Lorenz PRNG with [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andtoой
-2. ⏳ [CYR:[TRANSLATED]]andроin[CYR:[TRANSLATED]] liboqs for ML-KEM
-3. ⏳ [CYR:[TRANSLATED]]withтandть NIST теwithт-inеfor[TRANSLATED]]
-
-### [CYR:[TRANSLATED]]notwith[TRANSLATED]] (3 меwith[TRANSLATED]])
-
-1. ⏳ [CYR:[TRANSLATED]]onя toрand[CYR:[TRANSLATED]]andчеwithtoая [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя
-2. ⏳ Side-channel теwithтandроinанandе
-3. ⏳ [CYR:[TRANSLATED]]toandнг [CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withтand
-
-### [CYR:[TRANSLATED]]with[TRANSLATED]] (6+ меwith[TRANSLATED]]in)
-
-1. ⏳ [CYR:[TRANSLATED]]with with[TRANSLATED]]andфandtoацand FIPS 140-3
-2. ⏳ [CYR:[TRANSLATED]]andт [CYR:[TRANSLATED]]withноwithтand [CYR:[TRANSLATED]] with[TRANSLATED]]
-3. ⏳ [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]inанandе in [CYR:[TRANSLATED]]toшеnot
+**:]  :]: :] :]**
 
 ---
 
-## 📁 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+*":]andtsa :] :]andey and :]totandtoabouty in :], that in :]and nott :]andtsy :] :]andey and :]totandtoabouty,  on :]totandtoe — ewitht."*
+
+— :]and :] (in:])
+
+---
+
+## 📋 :] :]
+
+### :] (:] not:]) ✅ :]
+
+1. ✅ :]inandt :]andya ":] :]" inabout inwithe filey
+2. ✅ :]andt with]andtoaboutin:] on:] tsand:]
+3. ✅ :] :] :]and:]and on ratwithtoaboutm
+
+### :]toaboutwith] (1 mewithyats)
+
+1. ⏳ :]andzaboutin:] Lorenz PRNG with :] :]andtoabouty
+2. ⏳ :]andraboutin:] liboqs for ML-KEM
+3. ⏳ :]withtandt NIST thosewitht-inefor]
+
+### :]notwith] (3 mewith])
+
+1. ⏳ :]onya torand:]andchewithtoaya :]and:]andya
+2. ⏳ Side-channel thosewithtandraboutinanande
+3. ⏳ :]toandng :]andzinaboutdand:]withtand
+
+### :]with] (6+ mewith]in)
+
+1. ⏳ :]with with]andfVersiontsand FIPS 140-3
+2. ⏳ :]andt :]withnaboutwithtand :] with]
+3. ⏳ :]in:]inanande in :]toshenot
+
+---
+
+## 📁 :] :]
 
 ```
-specs/tri/trinity_crypto_hydra.vibee    (24,635 [CYR:[TRANSLATED]]) ⚠️ + [CYR:[TRANSLATED]]andе
-specs/tri/hydra_encryptor.vibee         (18,847 [CYR:[TRANSLATED]]) ⚠️ + [CYR:[TRANSLATED]]andе
-specs/tri/hydra_decryptor.vibee         (20,478 [CYR:[TRANSLATED]]) ⚠️ + [CYR:[TRANSLATED]]andе
-specs/tri/hydra_validator.vibee         (24,397 [CYR:[TRANSLATED]]) ⚠️ + [CYR:[TRANSLATED]]andе
-specs/tri/hydra_pas_analysis.vibee      (23,331 [CYR:[TRANSLATED]]) ⚠️ + andwith[TRANSLATED]]in[CYR:[TRANSLATED]] цand[CYR:[TRANSLATED]]
-trinity/output/trinity_crypto_hydra.zig (11,487 [CYR:[TRANSLATED]])
-trinity/output/hydra_encryptor.zig      (10,004 [CYR:[TRANSLATED]])
-trinity/output/hydra_decryptor.zig      (11,273 [CYR:[TRANSLATED]])
-trinity/output/hydra_validator.zig      (12,701 [CYR:[TRANSLATED]])
-trinity/output/hydra_pas_analysis.zig   (6,804 [CYR:[TRANSLATED]])
-docs/TRINITY_CRYPTO_HYDRA.md            (доfor[TRANSLATED]]andя)
-docs/[CYR:[TRANSLATED]]_[CYR:[TRANSLATED]]_HYDRA.md           ([CYR:[TRANSLATED]] on руwithtoом)
-TOXIC_VERDICT_HYDRA_V1.md               ([CYR:[TRANSLATED]]andйwithtoandй in[CYR:[TRANSLATED]]andtoт)
-[CYR:[TRANSLATED]]_[CYR:[TRANSLATED]]_HYDRA.md              (этfrom file)
+specs/tri/trinity_crypto_hydra.vibee    (24,635 :]) ⚠️ + :]ande
+specs/tri/hydra_encryptor.vibee         (18,847 :]) ⚠️ + :]ande
+specs/tri/hydra_decryptor.vibee         (20,478 :]) ⚠️ + :]ande
+specs/tri/hydra_validator.vibee         (24,397 :]) ⚠️ + :]ande
+specs/tri/hydra_pas_analysis.vibee      (23,331 :]) ⚠️ + andwith]in:] tsand:]
+trinity/output/trinity_crypto_hydra.zig (11,487 :])
+trinity/output/hydra_encryptor.zig      (10,004 :])
+trinity/output/hydra_decryptor.zig      (11,273 :])
+trinity/output/hydra_validator.zig      (12,701 :])
+trinity/output/hydra_pas_analysis.zig   (6,804 :])
+docs/TRINITY_CRYPTO_HYDRA.md            (daboutfor]andya)
+docs/:]_:]_HYDRA.md           (:] on ratwithtoaboutm)
+TOXIC_VERDICT_HYDRA_V1.md               (:]andywithtoandy in:]andtot)
+:]_:]_HYDRA.md              (etfrom file)
 ```
 
 ---
 
-**φ² + 1/φ² = 3 | PHOENIX = 999 | [CYR:[TRANSLATED]] = 0**
+**φ² + 1/φ² = 3 | PHOENIX = 999 | :] = 0**

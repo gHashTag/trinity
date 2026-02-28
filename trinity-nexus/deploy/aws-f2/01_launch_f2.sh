@@ -1,59 +1,59 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════════════════════
-# TRINITY FPGA - ШАГ 1: ЗАПУСК AWS F2 ИНСТАНСА
+# TRINITY FPGA - ShAG 1: ZAPUSK AWS F2 INSTANSA
 # ═══════════════════════════════════════════════════════════════════════════════
 # φ² + 1/φ² = 3 | PHOENIX = 999
 # ═══════════════════════════════════════════════════════════════════════════════
 
 set -e
 
-# Конфигурация
+# Configuration
 INSTANCE_TYPE="f2.6xlarge"
 REGION="us-east-1"
-AMI_ID="ami-0123456789abcdef0"  # FPGA Developer AMI - обновить!
+AMI_ID="ami-0123456789abcdef0"  # FPGA Developer AMI - aboutnaboutinandt!
 KEY_NAME="trinity-fpga-key"
 SECURITY_GROUP="trinity-fpga-sg"
 
 echo "═══════════════════════════════════════════════════════════════════════════════"
-echo "                    TRINITY FPGA - ЗАПУСК AWS F2"
+echo "                    TRINITY FPGA - ZAPUSK AWS F2"
 echo "                    φ² + 1/φ² = 3 | PHOENIX = 999"
 echo "═══════════════════════════════════════════════════════════════════════════════"
 echo ""
 
-# Проверка AWS CLI
+# Check AWS CLI
 if ! command -v aws &> /dev/null; then
-    echo "❌ AWS CLI не установлен!"
-    echo "Установи: pip install awscli"
+    echo "❌ AWS CLI ne atwiththatnaboutinlen!"
+    echo "Uwiththatnaboutinand: pip install awscli"
     exit 1
 fi
 
-# Проверка credentials
+# Check credentials
 if ! aws sts get-caller-identity &> /dev/null; then
-    echo "❌ AWS credentials не настроены!"
-    echo "Выполни: aws configure"
+    echo "❌ AWS credentials ne onwithtrabouteny!"
+    echo "Vybylnand: aws configure"
     exit 1
 fi
 
-echo "✅ AWS CLI настроен"
+echo "✅ AWS CLI onwithtrabouten"
 echo ""
 
-# Создание ключа если нет
+# Creation keya ewithland net
 if ! aws ec2 describe-key-pairs --key-names $KEY_NAME --region $REGION &> /dev/null; then
-    echo "[1/4] Создаю SSH ключ..."
+    echo "[1/4] Saboutzdayu SSH key..."
     aws ec2 create-key-pair \
         --key-name $KEY_NAME \
         --region $REGION \
         --query 'KeyMaterial' \
         --output text > ~/.ssh/${KEY_NAME}.pem
     chmod 400 ~/.ssh/${KEY_NAME}.pem
-    echo "✅ Ключ создан: ~/.ssh/${KEY_NAME}.pem"
+    echo "✅ Key withaboutzdan: ~/.ssh/${KEY_NAME}.pem"
 else
-    echo "✅ SSH ключ уже существует"
+    echo "✅ SSH key atzhe withatschewithtinatet"
 fi
 
-# Создание Security Group если нет
+# Creation Security Group ewithland net
 if ! aws ec2 describe-security-groups --group-names $SECURITY_GROUP --region $REGION &> /dev/null 2>&1; then
-    echo "[2/4] Создаю Security Group..."
+    echo "[2/4] Saboutzdayu Security Group..."
     SG_ID=$(aws ec2 create-security-group \
         --group-name $SECURITY_GROUP \
         --description "Trinity FPGA Security Group" \
@@ -61,7 +61,7 @@ if ! aws ec2 describe-security-groups --group-names $SECURITY_GROUP --region $RE
         --query 'GroupId' \
         --output text)
     
-    # Разрешить SSH
+    # Razreshandt SSH
     aws ec2 authorize-security-group-ingress \
         --group-id $SG_ID \
         --protocol tcp \
@@ -69,18 +69,18 @@ if ! aws ec2 describe-security-groups --group-names $SECURITY_GROUP --region $RE
         --cidr 0.0.0.0/0 \
         --region $REGION
     
-    echo "✅ Security Group создан: $SG_ID"
+    echo "✅ Security Group withaboutzdan: $SG_ID"
 else
     SG_ID=$(aws ec2 describe-security-groups \
         --group-names $SECURITY_GROUP \
         --region $REGION \
         --query 'SecurityGroups[0].GroupId' \
         --output text)
-    echo "✅ Security Group уже существует: $SG_ID"
+    echo "✅ Security Group atzhe withatschewithtinatet: $SG_ID"
 fi
 
-# Получить актуальный FPGA AMI
-echo "[3/4] Ищу FPGA Developer AMI..."
+# Paboutlatchandt atotatny FPGA AMI
+echo "[3/4] Ischat FPGA Developer AMI..."
 AMI_ID=$(aws ec2 describe-images \
     --owners amazon \
     --filters "Name=name,Values=*FPGA*Developer*" \
@@ -89,14 +89,14 @@ AMI_ID=$(aws ec2 describe-images \
     --output text 2>/dev/null || echo "")
 
 if [ -z "$AMI_ID" ] || [ "$AMI_ID" == "None" ]; then
-    # Fallback на известный AMI
+    # Fallback on frominewithny AMI
     AMI_ID="ami-0a0c8eebcdd6dcbd0"  # FPGA Developer AMI us-east-1
 fi
 echo "✅ AMI: $AMI_ID"
 
-# Запуск инстанса
-echo "[4/4] Запускаю F2 инстанс..."
-echo "⚠️  Стоимость: \$1.65/час"
+# Zapatwithto andnwiththatnwitha
+echo "[4/4] Zapatwithtoayu F2 andnwiththatnwith..."
+echo "⚠️  Sthatandbridge: \$1.65/chawith"
 echo ""
 
 INSTANCE_ID=$(aws ec2 run-instances \
@@ -110,14 +110,14 @@ INSTANCE_ID=$(aws ec2 run-instances \
     --query 'Instances[0].InstanceId' \
     --output text)
 
-echo "✅ Инстанс запущен: $INSTANCE_ID"
+echo "✅ Inwiththatnwith zapatschen: $INSTANCE_ID"
 echo ""
 
-# Ждём запуска
-echo "⏳ Ожидаю запуска инстанса..."
+# Zhdyom launcha
+echo "⏳ Ozhanddayu launcha andnwiththatnwitha..."
 aws ec2 wait instance-running --instance-ids $INSTANCE_ID --region $REGION
 
-# Получаем IP
+# Paboutlatchaem IP
 PUBLIC_IP=$(aws ec2 describe-instances \
     --instance-ids $INSTANCE_ID \
     --region $REGION \
@@ -126,20 +126,20 @@ PUBLIC_IP=$(aws ec2 describe-instances \
 
 echo ""
 echo "═══════════════════════════════════════════════════════════════════════════════"
-echo "                    ✅ F2 ИНСТАНС ЗАПУЩЕН!"
+echo "                    ✅ F2 INSTANS ZAPUSchEN!"
 echo "═══════════════════════════════════════════════════════════════════════════════"
 echo ""
 echo "Instance ID: $INSTANCE_ID"
 echo "Public IP:   $PUBLIC_IP"
 echo "SSH:         ssh -i ~/.ssh/${KEY_NAME}.pem centos@$PUBLIC_IP"
 echo ""
-echo "Следующий шаг:"
+echo "Sledatyuschandy shag:"
 echo "  ./02_setup_fpga.sh $PUBLIC_IP"
 echo ""
-echo "⚠️  НЕ ЗАБУДЬ ВЫКЛЮЧИТЬ: ./05_stop_instance.sh $INSTANCE_ID"
+echo "⚠️  NE ZABUD VYKLYuChIT: ./05_stop_instance.sh $INSTANCE_ID"
 echo ""
 echo "═══════════════════════════════════════════════════════════════════════════════"
 
-# Сохраняем данные для других скриптов
+# Saboutkhranyaem data for dratgandkh scriptaboutin
 echo "$INSTANCE_ID" > /tmp/trinity_instance_id
 echo "$PUBLIC_IP" > /tmp/trinity_public_ip

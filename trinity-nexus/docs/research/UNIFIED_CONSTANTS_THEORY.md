@@ -1,88 +1,88 @@
-# Едandonя [CYR:[TRANSLATED]]andя withinязand [CYR:[TRANSLATED]] toонwith[TRANSLATED]]
+# Edandonya :]andya withinyazand :] toaboutnwith]
 
-## [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] fromfor[TRANSLATED]]andе
+## :]in:] fromfor]ande
 
-### Сin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]] чandwithло 3
+### Sin:] :] chandwithlabout 3
 
 $$\boxed{3! \times \frac{\varphi - \frac{1}{\varphi}}{2} = 6 \times \frac{1}{2} = 3}$$
 
-Чandwithло **3** — [CYR:[TRANSLATED]] within[CYR:[TRANSLATED]]andй element [CYR:[TRANSLATED]]:
-- [CYR:[TRANSLATED]] H₀ (for[TRANSLATED]]andцand[CYR:[TRANSLATED]] 1/2)
-- [CYR:[TRANSLATED]] m_p/m_e (for[TRANSLATED]]andцand[CYR:[TRANSLATED]] 6)
+Chandwithlabout **3** — :] within:]andy element :]:
+- :] H₀ (for]andtsand:] 1/2)
+- :] m_p/m_e (for]andtsand:] 6)
 
 ---
 
-## [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## :]in:] :]
 
-| [CYR:[TRANSLATED]] | Зon[CYR:[TRANSLATED]]andе | [CYR:[TRANSLATED]]withть | [CYR:[TRANSLATED]]with |
+| :] | Zon:]ande | :]witht | :]with |
 |---------|----------|----------|--------|
-| H₀ = c·G·mₑ·mₚ²/(2ℏ²) | 70.74 toм/with/Мпto | ~1% | ✅ |
+| H₀ = c·G·mₑ·mₚ²/(2ℏ²) | 70.74 tom/with/Mpto | ~1% | ✅ |
 | m_p/m_e = 6π⁵ | 1836.12 | 0.002% | ✅ |
 | m_τ/m_e = 36π⁴ | 3506.73 | 0.85% | ✅ |
-| 1/2 = (φ - 1/φ)/2 | [CYR:[TRANSLATED]] | — | ✅ |
-| 6 × 1/2 = 3 | [CYR:[TRANSLATED]] | — | ✅ |
+| 1/2 = (φ - 1/φ)/2 | :] | — | ✅ |
+| 6 × 1/2 = 3 | :] | — | ✅ |
 
 ---
 
-## Едandonя with[TRANSLATED]]for[TRANSLATED]]
+## Edandonya with]for]
 
-### [CYR:[TRANSLATED]] with[TRANSLATED]]andя: S → T → R
+### :] with]andya: S → T → R
 
 ```
-Аwithand[CYR:[TRANSLATED]]andя:           A = (φ - 1/φ)/2 = 1/2
-[CYR:[TRANSLATED]] чandwithло: N = 3
-Фаfor[TRANSLATED]]andал:            F = N! = 6
+Awithand:]andya:           A = (φ - 1/φ)/2 = 1/2
+:] chandwithlabout: N = 3
+Fafor]andal:            F = N! = 6
 
-Сin[CYR:[TRANSLATED]]: F × A = N
+Sin:]: F × A = N
        6 × 1/2 = 3 ✓
 ```
 
-### [CYR:[TRANSLATED]] маwith [CYR:[TRANSLATED]] N = 3
+### :] mawith :] N = 3
 
-| Чаwithтandца | [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]]for[TRANSLATED]] |
+| Chawithtandtsa | :] | :]for] |
 |---------|---------|-----------|
-| Прfromон/[CYR:[TRANSLATED]]for[TRANSLATED]] | 6π⁵ = 2×3×π⁵ | 2N × π^(N+2) |
-| [CYR:[TRANSLATED]]/[CYR:[TRANSLATED]]for[TRANSLATED]] | 36π⁴ = 4×9×π⁴ | 4×N² × π^(N+1) |
+| Prfromaboutn/:]for] | 6π⁵ = 2×3×π⁵ | 2N × π^(N+2) |
+| :]/:]for] | 36π⁴ = 4×9×π⁴ | 4×N² × π^(N+1) |
 
 ---
 
-## Чandwithло 3 in фandзandtoе
+## Chandwithlabout 3 in fandzandtoe
 
 ```
-[CYR:[TRANSLATED]]:     3 and[CYR:[TRANSLATED]]andя (x, y, z)
-[CYR:[TRANSLATED]]:           3 цin[CYR:[TRANSLATED]] (r, g, b)
-[CYR:[TRANSLATED]]:           3 toinарtoа (uud)
-[CYR:[TRANSLATED]]:        3 with[TRANSLATED]]withтinа чаwithтandц
-[CYR:[TRANSLATED]]:           SU(3) × SU(2) × U(1)
-[CYR:[TRANSLATED]]:       3! = 6 (withоin[CYR:[TRANSLATED]] чandwithло)
+:]:     3 and:]andya (x, y, z)
+:]:           3 tsin:] (r, g, b)
+:]:           3 toinartoa (uud)
+:]:        3 with]withtina chawithtandts
+:]:           SU(3) × SU(2) × U(1)
+:]:       3! = 6 (withaboutin:] chandwithlabout)
 ```
 
 ---
 
-## [CYR:[TRANSLATED]]andя
+## :]andya
 
-Вwith[TRANSLATED]]onя поwith[TRANSLATED]]on on чandwithле 3:
+Vwith]onya bywith]on on chandwithle 3:
 
-1. **3 and[CYR:[TRANSLATED]]andя** → [CYR:[TRANSLATED]]with[TRANSLATED]]withтinо
-2. **3 toinарtoа** → прfromон
-3. **3 поfor[TRANSLATED]]andя** → [CYR:[TRANSLATED]]andя
-4. **3! = 6** → for[TRANSLATED]]andцand[CYR:[TRANSLATED]] m_p/m_e
-5. **6 × 1/2 = 3** → [CYR:[TRANSLATED]]toанandе for[TRANSLATED]]
+1. **3 and:]andya** → :]with]withtinabout
+2. **3 toinartoa** → prfromaboutn
+3. **3 byfor]andya** → :]andya
+4. **3! = 6** → for]andtsand:] m_p/m_e
+5. **6 × 1/2 = 3** → :]toanande for]
 
-Аwithand[CYR:[TRANSLATED]]andя [CYR:[TRANSLATED]]on with[TRANSLATED]]andя (φ - 1/φ)/2 = 1/2 [CYR:[TRANSLATED]]:
-- Раwithшand[CYR:[TRANSLATED]]andе Вwith[TRANSLATED]] (H₀)
-- Сin[CYR:[TRANSLATED]] with toinарtoоinой with[TRANSLATED]]for[TRANSLATED]] ([CYR:[TRANSLATED]] 6 × 1/2 = 3)
+Awithand:]andya :]on with]andya (φ - 1/φ)/2 = 1/2 :]:
+- Rawithshand:]ande Vwith] (H₀)
+- Sin:] with toinartoaboutinabouty with]for] (:] 6 × 1/2 = 3)
 
 ---
 
-## [CYR:[TRANSLATED]]with
+## :]with
 
-| Аwithпеtoт | [CYR:[TRANSLATED]]with |
+| Awithpetot | :]with |
 |--------|--------|
-| [CYR:[TRANSLATED]]andчеwithtoandе [CYR:[TRANSLATED]]withтinа | ✅ Доfor[TRANSLATED]] |
-| Чandwith[TRANSLATED]] withоin[CYR:[TRANSLATED]]andя | ✅ [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] |
-| [CYR:[TRANSLATED]]andчеwithtoandй inыinод | ⚠️ Гandпfrom[CYR:[TRANSLATED]] |
-| Сin[CYR:[TRANSLATED]] with фandзandtoой | ⚠️ [CYR:[TRANSLATED]]andя |
+| :]andchewithtoande :]withtina | ✅ Daboutfor] |
+| Chandwith] withaboutin:]andya | ✅ :]in:] |
+| :]andchewithtoandy inyinaboutd | ⚠️ Gandpfrom:] |
+| Sin:] with fandzandtoabouty | ⚠️ :]andya |
 
 ---
 

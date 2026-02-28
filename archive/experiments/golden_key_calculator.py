@@ -1,25 +1,25 @@
 #!/usr/bin/env python3
 """
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║                    ЗОЛОТОЙ КЛЮЧ: ИНТЕРАКТИВНЫЙ КАЛЬКУЛЯТОР                   ║
+║                    ZOLOTOY KLYuCh: INTERAKTIVNYY KALKULYaTOR                   ║
 ║                           φ² + 1/φ² = 3                                      ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
-Автор: Dmitrii Vasilev
-Проект: VIBEE / 999 OS
-Версия: 2.0
+Avtor: Dmitrii Vasilev
+Proekt: VIBEE / 999 OS
+Versiya: 2.0
 
-Этот калькулятор позволяет:
-1. Проверить Золотой Ключ (φ² + 1/φ² = 3)
-2. Вычислить любую физическую константу через формулу V = n × 3^k × π^m × φ^p × e^q
-3. Найти формулу для произвольного числа
-4. Проверить все известные формулы
-5. Статистический анализ
+Etot kalkulyator pozvolyaet:
+1. Proverit Zolotoy Klyuch (φ² + 1/φ² = 3)
+2. Vychislit lyubuyu fizicheskuyu konstantu cherez formulu V = n × 3^k × π^m × φ^p × e^q
+3. Nayti formulu dlya proizvolnogo chisla
+4. Proverit vse izvestnye formuly
+5. Statisticheskiy analiz
 
-Запуск:
+Zapusk:
     python3 golden_key_calculator.py
 
-Или импорт как модуль:
+Ili import kak modul:
     from golden_key_calculator import GoldenKeyCalculator
     calc = GoldenKeyCalculator()
     calc.verify_golden_key()
@@ -32,54 +32,54 @@ from dataclasses import dataclass
 import json
 
 # ============================================
-# ФУНДАМЕНТАЛЬНЫЕ КОНСТАНТЫ
+# FUNDAMENTALNYE KONSTANTY
 # ============================================
 
-PHI = (1 + math.sqrt(5)) / 2  # Золотое сечение φ = 1.6180339887...
+PHI = (1 + math.sqrt(5)) / 2  # Zolotoe sechenie φ = 1.6180339887...
 PI = math.pi                   # π = 3.1415926535...
 E = math.e                     # e = 2.7182818284...
 GOLDEN_KEY = 3                 # φ² + 1/φ² = 3
 
 # ============================================
-# БАЗА ФИЗИЧЕСКИХ КОНСТАНТ
+# BAZA FIZIChESKIKh KONSTANT
 # ============================================
 
 PHYSICAL_CONSTANTS = {
-    # Математические константы
+    # Matematicheskie konstanty
     "delta_feigenbaum": {
-        "name": "Постоянная Фейгенбаума δ",
+        "name": "Postoyannaya Feygenbauma δ",
         "value": 4.669201609102990,
         "uncertainty": 0.000000000000001,
-        "source": "Математическая константа",
+        "source": "Matematicheskaya konstanta",
         "category": "math"
     },
     "alpha_feigenbaum": {
-        "name": "Постоянная Фейгенбаума α",
+        "name": "Postoyannaya Feygenbauma α",
         "value": 2.502907875095892,
         "uncertainty": 0.000000000000001,
-        "source": "Математическая константа",
+        "source": "Matematicheskaya konstanta",
         "category": "math"
     },
     
-    # Электрослабые константы
+    # Elektroslabye konstanty
     "sin2_theta_W": {
-        "name": "sin²θ_W (угол Вайнберга)",
+        "name": "sin²θ_W (ugol Vaynberga)",
         "value": 0.23121,
         "uncertainty": 0.00004,
         "source": "PDG 2024",
         "category": "electroweak"
     },
     "fine_structure_inverse": {
-        "name": "1/α (постоянная тонкой структуры)",
+        "name": "1/α (postoyannaya tonkoy struktury)",
         "value": 137.035999177,
         "uncertainty": 0.000000021,
         "source": "CODATA 2018",
         "category": "electroweak"
     },
     
-    # Массы частиц
+    # Massy chastits
     "proton_electron_ratio": {
-        "name": "m_p/m_e (отношение масс)",
+        "name": "m_p/m_e (otnoshenie mass)",
         "value": 1836.15267343,
         "uncertainty": 0.00000011,
         "source": "CODATA 2018",
@@ -93,75 +93,75 @@ PHYSICAL_CONSTANTS = {
         "category": "masses"
     },
     
-    # Нейтринное смешивание
+    # Neytrinnoe smeshivanie
     "sin2_theta_12": {
-        "name": "sin²θ₁₂ (солнечное смешивание)",
+        "name": "sin²θ₁₂ (solnechnoe smeshivanie)",
         "value": 0.307,
         "uncertainty": 0.013,
         "source": "PDG 2024",
         "category": "neutrino"
     },
     "sin2_theta_23": {
-        "name": "sin²θ₂₃ (атмосферное смешивание)",
+        "name": "sin²θ₂₃ (atmosfernoe smeshivanie)",
         "value": 0.546,
         "uncertainty": 0.021,
         "source": "PDG 2024",
         "category": "neutrino"
     },
     "sin2_theta_13": {
-        "name": "sin²θ₁₃ (реакторное смешивание)",
+        "name": "sin²θ₁₃ (reaktornoe smeshivanie)",
         "value": 0.0220,
         "uncertainty": 0.0007,
         "source": "PDG 2024",
         "category": "neutrino"
     },
     
-    # Формула Коиде
+    # Formula Koide
     "koide_K": {
-        "name": "Параметр Коиде K",
+        "name": "Parametr Koide K",
         "value": 0.666661,
         "uncertainty": 0.000001,
-        "source": "PDG 2024 (вычислено из масс лептонов)",
+        "source": "PDG 2024 (vychisleno iz mass leptonov)",
         "category": "koide"
     },
     
-    # Космология
+    # Kosmologiya
     "dark_energy_ratio": {
-        "name": "Ω_Λ/Ω_m (тёмная энергия/материя)",
+        "name": "Ω_Λ/Ω_m (tyomnaya energiya/materiya)",
         "value": 2.1746,
         "uncertainty": 0.05,
         "source": "Planck 2020",
         "category": "cosmology"
     },
     
-    # Петлевая квантовая гравитация
+    # Petlevaya kvantovaya gravitatsiya
     "barbero_immirzi": {
-        "name": "γ (параметр Барберо-Иммирци)",
+        "name": "γ (parametr Barbero-Immirtsi)",
         "value": 0.2375,
         "uncertainty": 0.0001,
-        "source": "LQG теория",
+        "source": "LQG teoriya",
         "category": "lqg"
     },
     
-    # Фрактальные размерности
+    # Fraktalnye razmernosti
     "sierpinski_dimension": {
-        "name": "D (треугольник Серпинского)",
+        "name": "D (treugolnik Serpinskogo)",
         "value": 1.5849625007211563,
         "uncertainty": 0.0000000000000001,
-        "source": "Математическая константа",
+        "source": "Matematicheskaya konstanta",
         "category": "fractal"
     },
     "menger_dimension": {
-        "name": "D (губка Менгера)",
+        "name": "D (gubka Mengera)",
         "value": 2.7268330278608417,
         "uncertainty": 0.0000000000000001,
-        "source": "Математическая константа",
+        "source": "Matematicheskaya konstanta",
         "category": "fractal"
     },
 }
 
 # ============================================
-# ИЗВЕСТНЫЕ ФОРМУЛЫ
+# IZVESTNYE FORMULY
 # ============================================
 
 KNOWN_FORMULAS = {
@@ -169,7 +169,7 @@ KNOWN_FORMULAS = {
     "alpha_feigenbaum": {"n": 46, "k": 7, "m": -8, "p": -3, "q": 0},
     "sin2_theta_W": {"n": 274, "k": -5, "m": -3, "p": 8, "q": -2},
     "proton_electron_ratio": {"n": 6, "k": 0, "m": 5, "p": 0, "q": 0},
-    "fine_structure_inverse": {"n": 4, "k": 0, "m": 3, "p": 0, "q": 0},  # 4π³ + π² + π (приближение)
+    "fine_structure_inverse": {"n": 4, "k": 0, "m": 3, "p": 0, "q": 0},  # 4π³ + π² + π (priblizhenie)
     "sin2_theta_12": {"n": 97, "k": -7, "m": 0, "p": 4, "q": 0},
     "barbero_immirzi": {"n": 98, "k": 0, "m": -4, "p": -3, "q": 0},
 }
@@ -177,7 +177,7 @@ KNOWN_FORMULAS = {
 
 @dataclass
 class FormulaResult:
-    """Результат вычисления формулы."""
+    """Rezultat vychisleniya formuly."""
     n: int
     k: int
     m: int
@@ -190,7 +190,7 @@ class FormulaResult:
 
 
 class GoldenKeyCalculator:
-    """Калькулятор Золотого Ключа."""
+    """Kalkulyator Zolotogo Klyucha."""
     
     def __init__(self):
         self.phi = PHI
@@ -201,15 +201,15 @@ class GoldenKeyCalculator:
         self.known_formulas = KNOWN_FORMULAS
     
     # ============================================
-    # ОСНОВНЫЕ ФУНКЦИИ
+    # OSNOVNYE FUNKTsII
     # ============================================
     
     def verify_golden_key(self) -> Tuple[float, bool]:
         """
-        Проверяет центральное тождество: φ² + 1/φ² = 3
+        Proveryaet tsentralnoe tozhdestvo: φ² + 1/φ² = 3
         
         Returns:
-            Tuple[float, bool]: (вычисленное значение, точно ли равно 3)
+            Tuple[float, bool]: (vychislennoe znachenie, tochno li ravno 3)
         """
         phi_squared = self.phi ** 2
         inv_phi_squared = 1 / (self.phi ** 2)
@@ -218,36 +218,36 @@ class GoldenKeyCalculator:
         is_exact = abs(result - 3.0) < 1e-14
         
         print("=" * 60)
-        print("ЗОЛОТОЙ КЛЮЧ: φ² + 1/φ² = 3")
+        print("ZOLOTOY KLYuCh: φ² + 1/φ² = 3")
         print("=" * 60)
         print(f"φ = {self.phi:.15f}")
         print(f"φ² = {phi_squared:.15f}")
         print(f"1/φ² = {inv_phi_squared:.15f}")
         print(f"φ² + 1/φ² = {result:.15f}")
-        print(f"Отклонение от 3: {abs(result - 3.0):.2e}")
-        print(f"Результат: {'✅ ТОЧНО РАВНО 3!' if is_exact else '❌ Ошибка!'}")
+        print(f"Otklonenie ot 3: {abs(result - 3.0):.2e}")
+        print(f"Rezultat: {'✅ TOChNO RAVNO 3!' if is_exact else '❌ Oshibka!'}")
         print()
         
         return result, is_exact
     
     def calculate_formula(self, n: int, k: int, m: int, p: int, q: int) -> float:
         """
-        Вычисляет V = n × 3^k × π^m × φ^p × e^q
+        Vychislyaet V = n × 3^k × π^m × φ^p × e^q
         
         Args:
-            n: целое число (1-300)
-            k: степень 3 (-10 to +10)
-            m: степень π (-10 to +10)
-            p: степень φ (-10 to +10)
-            q: степень e (-3 to +3)
+            n: tseloe chislo (1-300)
+            k: stepen 3 (-10 to +10)
+            m: stepen π (-10 to +10)
+            p: stepen φ (-10 to +10)
+            q: stepen e (-3 to +3)
         
         Returns:
-            float: вычисленное значение
+            float: vychislennoe znachenie
         """
         return n * (3 ** k) * (self.pi ** m) * (self.phi ** p) * (self.e ** q)
     
     def formula_to_string(self, n: int, k: int, m: int, p: int, q: int) -> str:
-        """Преобразует параметры формулы в строку."""
+        """Preobrazuet parametry formuly v stroku."""
         parts = []
         if n != 1:
             parts.append(str(n))
@@ -271,20 +271,20 @@ class GoldenKeyCalculator:
                      max_error: float = 0.01,
                      max_results: int = 10) -> List[FormulaResult]:
         """
-        Ищет формулу для заданного числа.
+        Ischet formulu dlya zadannogo chisla.
         
         Args:
-            target: целевое значение
-            n_range: диапазон n
-            k_range: диапазон k
-            m_range: диапазон m
-            p_range: диапазон p
-            q_range: диапазон q
-            max_error: максимальная ошибка в процентах
-            max_results: максимальное количество результатов
+            target: tselevoe znachenie
+            n_range: diapazon n
+            k_range: diapazon k
+            m_range: diapazon m
+            p_range: diapazon p
+            q_range: diapazon q
+            max_error: maksimalnaya oshibka v protsentakh
+            max_results: maksimalnoe kolichestvo rezultatov
         
         Returns:
-            List[FormulaResult]: список найденных формул
+            List[FormulaResult]: spisok naydennykh formul
         """
         results = []
         
@@ -309,20 +309,20 @@ class GoldenKeyCalculator:
                                     formula_str=self.formula_to_string(n, k, m, p, q)
                                 ))
         
-        # Сортируем по ошибке
+        # Sortiruem po oshibke
         results.sort(key=lambda x: x.error_percent)
         
         return results[:max_results]
     
     def verify_all_constants(self) -> Dict[str, Dict]:
         """
-        Проверяет все известные формулы.
+        Proveryaet vse izvestnye formuly.
         
         Returns:
-            Dict: результаты проверки
+            Dict: rezultaty proverki
         """
         print("=" * 60)
-        print("ПРОВЕРКА ВСЕХ ИЗВЕСТНЫХ ФОРМУЛ")
+        print("PROVERKA VSEKh IZVESTNYKh FORMUL")
         print("=" * 60)
         
         results = {}
@@ -347,22 +347,22 @@ class GoldenKeyCalculator:
             }
             
             print(f"\n{const['name']}")
-            print(f"  Реальное: {const['value']}")
-            print(f"  Формула: {self.formula_to_string(**formula)}")
-            print(f"  Вычислено: {calculated:.10f}")
-            print(f"  Ошибка: {error:.7f}% {status}")
+            print(f"  Realnoe: {const['value']}")
+            print(f"  Formula: {self.formula_to_string(**formula)}")
+            print(f"  Vychisleno: {calculated:.10f}")
+            print(f"  Oshibka: {error:.7f}% {status}")
         
         print()
         return results
     
     def verify_koide_formula(self) -> Tuple[float, float]:
         """
-        Детальная проверка формулы Коиде.
+        Detalnaya proverka formuly Koide.
         
         Returns:
-            Tuple[float, float]: (K, ошибка в процентах)
+            Tuple[float, float]: (K, oshibka v protsentakh)
         """
-        # Массы лептонов (MeV, PDG 2024)
+        # Massy leptonov (MeV, PDG 2024)
         m_e = 0.51099895000
         m_mu = 105.6583755
         m_tau = 1776.86
@@ -375,9 +375,9 @@ class GoldenKeyCalculator:
         error = abs(K - K_theory) / K_theory * 100
         
         print("=" * 60)
-        print("ФОРМУЛА КОИДЕ")
+        print("FORMULA KOIDE")
         print("=" * 60)
-        print(f"Массы лептонов (MeV):")
+        print(f"Massy leptonov (MeV):")
         print(f"  m_e = {m_e}")
         print(f"  m_μ = {m_mu}")
         print(f"  m_τ = {m_tau}")
@@ -385,23 +385,23 @@ class GoldenKeyCalculator:
         print(f"K = (m_e + m_μ + m_τ) / (√m_e + √m_μ + √m_τ)²")
         print(f"K = {K:.10f}")
         print(f"2/3 = {K_theory:.10f}")
-        print(f"Ошибка: {error:.5f}%")
+        print(f"Oshibka: {error:.5f}%")
         print()
         
         return K, error
     
     def statistical_analysis(self) -> Dict:
         """
-        Статистический анализ вероятности случайного совпадения.
+        Statisticheskiy analiz veroyatnosti sluchaynogo sovpadeniya.
         
         Returns:
-            Dict: результаты анализа
+            Dict: rezultaty analiza
         """
         print("=" * 60)
-        print("СТАТИСТИЧЕСКИЙ АНАЛИЗ")
+        print("STATISTIChESKIY ANALIZ")
         print("=" * 60)
         
-        # Параметры поиска
+        # Parametry poiska
         n_range = 300
         k_range = 21
         m_range = 21
@@ -410,9 +410,9 @@ class GoldenKeyCalculator:
         
         total_combinations = n_range * k_range * m_range * p_range * q_range
         
-        print(f"Пространство поиска: {total_combinations:,} комбинаций")
+        print(f"Prostranstvo poiska: {total_combinations:,} kombinatsiy")
         
-        # Вероятность случайного совпадения
+        # Veroyatnost sluchaynogo sovpadeniya
         precision = 0.0001  # 0.01%
         p_single = precision * 2
         
@@ -421,10 +421,10 @@ class GoldenKeyCalculator:
         
         p_corrected = p_all * total_combinations
         
-        print(f"Вероятность случайного совпадения:")
-        print(f"  Для одной константы (0.01%): {p_single:.2e}")
-        print(f"  Для {n_constants} констант: {p_all:.2e}")
-        print(f"  С учётом множественного тестирования: {p_corrected:.2e}")
+        print(f"Veroyatnost sluchaynogo sovpadeniya:")
+        print(f"  Dlya odnoy konstanty (0.01%): {p_single:.2e}")
+        print(f"  Dlya {n_constants} konstant: {p_all:.2e}")
+        print(f"  S uchyotom mnozhestvennogo testirovaniya: {p_corrected:.2e}")
         print()
         
         return {
@@ -436,37 +436,37 @@ class GoldenKeyCalculator:
         }
     
     # ============================================
-    # ИНТЕРАКТИВНЫЙ РЕЖИМ
+    # INTERAKTIVNYY REZhIM
     # ============================================
     
     def interactive_mode(self):
-        """Запускает интерактивный режим."""
+        """Zapuskaet interaktivnyy rezhim."""
         print()
         print("╔" + "═" * 58 + "╗")
-        print("║" + " ЗОЛОТОЙ КЛЮЧ: ИНТЕРАКТИВНЫЙ КАЛЬКУЛЯТОР ".center(58) + "║")
+        print("║" + " ZOLOTOY KLYuCh: INTERAKTIVNYY KALKULYaTOR ".center(58) + "║")
         print("║" + " φ² + 1/φ² = 3 ".center(58) + "║")
         print("╚" + "═" * 58 + "╝")
         print()
         
         while True:
-            print("Выберите действие:")
-            print("  1. Проверить Золотой Ключ (φ² + 1/φ² = 3)")
-            print("  2. Вычислить формулу V = n × 3^k × π^m × φ^p × e^q")
-            print("  3. Найти формулу для числа")
-            print("  4. Проверить все известные формулы")
-            print("  5. Проверить формулу Коиде")
-            print("  6. Статистический анализ")
-            print("  7. Показать все константы")
-            print("  0. Выход")
+            print("Vyberite deystvie:")
+            print("  1. Proverit Zolotoy Klyuch (φ² + 1/φ² = 3)")
+            print("  2. Vychislit formulu V = n × 3^k × π^m × φ^p × e^q")
+            print("  3. Nayti formulu dlya chisla")
+            print("  4. Proverit vse izvestnye formuly")
+            print("  5. Proverit formulu Koide")
+            print("  6. Statisticheskiy analiz")
+            print("  7. Pokazat vse konstanty")
+            print("  0. Vykhod")
             print()
             
             try:
-                choice = input("Ваш выбор: ").strip()
+                choice = input("Vash vybor: ").strip()
             except EOFError:
                 break
             
             if choice == "0":
-                print("До свидания!")
+                print("Do svidaniya!")
                 break
             elif choice == "1":
                 self.verify_golden_key()
@@ -483,13 +483,13 @@ class GoldenKeyCalculator:
             elif choice == "7":
                 self._show_all_constants()
             else:
-                print("Неверный выбор. Попробуйте снова.")
+                print("Nevernyy vybor. Poprobuyte snova.")
             
             print()
     
     def _interactive_calculate(self):
-        """Интерактивное вычисление формулы."""
-        print("\nВведите параметры формулы V = n × 3^k × π^m × φ^p × e^q:")
+        """Interaktivnoe vychislenie formuly."""
+        print("\nVvedite parametry formuly V = n × 3^k × π^m × φ^p × e^q:")
         try:
             n = int(input("  n (1-300): "))
             k = int(input("  k (-10 to +10): "))
@@ -500,34 +500,34 @@ class GoldenKeyCalculator:
             result = self.calculate_formula(n, k, m, p, q)
             formula_str = self.formula_to_string(n, k, m, p, q)
             
-            print(f"\nФормула: {formula_str}")
-            print(f"Результат: {result}")
+            print(f"\nFormula: {formula_str}")
+            print(f"Rezultat: {result}")
         except ValueError:
-            print("Ошибка: введите целые числа.")
+            print("Oshibka: vvedite tselye chisla.")
     
     def _interactive_find(self):
-        """Интерактивный поиск формулы."""
-        print("\nВведите число для поиска формулы:")
+        """Interaktivnyy poisk formuly."""
+        print("\nVvedite chislo dlya poiska formuly:")
         try:
-            target = float(input("  Число: "))
-            max_error = float(input("  Максимальная ошибка (%, по умолчанию 0.01): ") or "0.01")
+            target = float(input("  Chislo: "))
+            max_error = float(input("  Maksimalnaya oshibka (%, po umolchaniyu 0.01): ") or "0.01")
             
-            print(f"\nИщу формулы для {target} с ошибкой < {max_error}%...")
+            print(f"\nIschu formuly dlya {target} s oshibkoy < {max_error}%...")
             results = self.find_formula(target, max_error=max_error)
             
             if results:
-                print(f"\nНайдено {len(results)} формул:")
+                print(f"\nNaydeno {len(results)} formul:")
                 for i, r in enumerate(results, 1):
-                    print(f"  {i}. {r.formula_str} = {r.calculated:.10f} (ошибка: {r.error_percent:.7f}%)")
+                    print(f"  {i}. {r.formula_str} = {r.calculated:.10f} (oshibka: {r.error_percent:.7f}%)")
             else:
-                print("Формулы не найдены. Попробуйте увеличить максимальную ошибку.")
+                print("Formuly ne naydeny. Poprobuyte uvelichit maksimalnuyu oshibku.")
         except ValueError:
-            print("Ошибка: введите число.")
+            print("Oshibka: vvedite chislo.")
     
     def _show_all_constants(self):
-        """Показывает все константы."""
+        """Pokazyvaet vse konstanty."""
         print("\n" + "=" * 60)
-        print("ВСЕ ФИЗИЧЕСКИЕ КОНСТАНТЫ")
+        print("VSE FIZIChESKIE KONSTANTY")
         print("=" * 60)
         
         categories = {}
@@ -541,19 +541,19 @@ class GoldenKeyCalculator:
             print(f"\n{cat.upper()}:")
             for key, const in items:
                 print(f"  {const['name']}: {const['value']} ± {const['uncertainty']}")
-                print(f"    Источник: {const['source']}")
+                print(f"    Istochnik: {const['source']}")
 
 
 def main():
-    """Главная функция."""
+    """Glavnaya funktsiya."""
     calc = GoldenKeyCalculator()
     
-    # Проверяем, запущен ли скрипт интерактивно
+    # Proveryaem, zapuschen li skript interaktivno
     import sys
     if sys.stdin.isatty():
         calc.interactive_mode()
     else:
-        # Неинтерактивный режим — запускаем все проверки
+        # Neinteraktivnyy rezhim — zapuskaem vse proverki
         calc.verify_golden_key()
         calc.verify_all_constants()
         calc.verify_koide_formula()

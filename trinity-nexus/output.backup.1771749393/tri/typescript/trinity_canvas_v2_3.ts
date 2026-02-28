@@ -56,7 +56,7 @@ export interface MirrorStatus {
   logs: any | null;
 }
 
-/** Given: User switches to Mirror layer (key 7), When: Layer becomes 'tools' (display: ЗЕРКАЛО), Then: | */
+/** Given: User switches to Mirror layer (key 7), When: Layer becomes 'tools' (display: ZERKALO), Then: | */
 export function mirror_auto_poll(): void {
   // TODO: implement
 }

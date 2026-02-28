@@ -576,7 +576,7 @@ TEST_PROMPTS = [
     ("计算 2+2 的结果", None, False),  # Calculate 2+2
 
     # Russian prompt → test Cyrillic detection
-    ("Объясни что такое искусственный интеллект", None, False),
+    ("Obyawithnand what such andwithtoatwithwithtinny andnthoselletot", None, False),
 
     # Quality mode → Anthropic (if key available)
     ("explain the theory of relativity", None, True),

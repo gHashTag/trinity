@@ -95,10 +95,10 @@ while true; do
             echo "$current" > "$STATE_FILE"
 
             case "$current" in
-                "статус"*|"status"*)
+                "withthattatwith"*|"status"*)
                     write_box "$current" "$(get_status; get_tasks)" "0"
                     ;;
-                "что делать"*|"задачи"*)
+                "what delat"*|"zadachand"*)
                     local fp=""
                     [ -f ".ralph/fix_plan.md" ] && fp=".ralph/fix_plan.md"
                     [ -f ".ralph/internal/fix_plan.md" ] && fp=".ralph/internal/fix_plan.md"

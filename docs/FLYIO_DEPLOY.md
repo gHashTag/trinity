@@ -1,45 +1,45 @@
-# [CYR:[TRANSLATED]] Trinity on Fly.io
+# :] Trinity on Fly.io
 
 ## φ² + 1/φ² = 3 = TRINITY
 
-Инwith[TRANSLATED]]toцandя по [CYR:[TRANSLATED]] Trinity LLM inference on Fly.io with маtowithand[CYR:[TRANSLATED]]and реwithурwithамand (16 CPU cores).
+Inwith]totsandya by :] Trinity LLM inference on Fly.io with matowithand:]and rewithatrwithamand (16 CPU cores).
 
 ---
 
-## [CYR:[TRANSLATED]]inарand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inанandя
+## :]inarand:] :]inanandya
 
-1. Аtofor[TRANSLATED]] on [Fly.io](https://fly.io)
-2. Уwith[TRANSLATED]]in[CYR:[TRANSLATED]] `flyctl` CLI
+1. Atofor] on [Fly.io](https://fly.io)
+2. Uwith]in:] `flyctl` CLI
 
 ---
 
-## [CYR:[TRANSLATED]] 1: Уwith[TRANSLATED]]intoа flyctl
+## :] 1: Uwith]intoa flyctl
 
 ```bash
 # Linux/macOS
 curl -L https://fly.io/install.sh | sh
 
-# [CYR:[TRANSLATED]]inandть in PATH
+# :]inandt in PATH
 export FLYCTL_INSTALL="$HOME/.fly"
 export PATH="$FLYCTL_INSTALL/bin:$PATH"
 
-# [CYR:[TRANSLATED]]inерandть уwith[TRANSLATED]]intoу
+# :]inerandt atwith]intoat
 flyctl version
 ```
 
 ---
 
-## [CYR:[TRANSLATED]] 2: Аin[CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя
+## :] 2: Author:]and:]andya
 
 ```bash
 flyctl auth login
 ```
 
-Отfor[TRANSLATED]]withя browser for in[CYR:[TRANSLATED]] in аtofor[TRANSLATED]] Fly.io.
+Otfor]withya browser for in:] in atofor] Fly.io.
 
 ---
 
-## [CYR:[TRANSLATED]] 3: [CYR:[TRANSLATED]]andроinанandе [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя
+## :] 3: :]andraboutinanande :]and:]andya
 
 ```bash
 git clone https://github.com/gHashTag/trinity.git
@@ -48,7 +48,7 @@ cd trinity
 
 ---
 
-## [CYR:[TRANSLATED]] 4: Creation прand[CYR:[TRANSLATED]]andя
+## :] 4: Creation prand:]andya
 
 ```bash
 flyctl apps create trinity-inference
@@ -56,11 +56,11 @@ flyctl apps create trinity-inference
 
 ---
 
-## [CYR:[TRANSLATED]] 5: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andны
+## :] 5: :] :] :]andny
 
-Доwith[TRANSLATED]] [CYR:[TRANSLATED]] in `fly.toml`:
+Daboutwith] :] in `fly.toml`:
 
-| Size | CPU | RAM | Цеon/чаwith |
+| Size | CPU | RAM | Tseon/chawith |
 |------|-----|-----|----------|
 | shared-cpu-1x | 1 shared | 256MB-2GB | ~$0.0035 |
 | shared-cpu-2x | 2 shared | 512MB-4GB | ~$0.007 |
@@ -72,7 +72,7 @@ flyctl apps create trinity-inference
 | performance-8x | 8 dedicated | 16GB-64GB | ~$0.456 |
 | **performance-16x** | **16 dedicated** | **32GB-128GB** | ~$0.912 |
 
-Теfor[TRANSLATED]] for[TRANSLATED]]and[CYR:[TRANSLATED]]andя in `fly.toml`:
+Tefor] for]and:]andya in `fly.toml`:
 
 ```toml
 [[vm]]
@@ -81,78 +81,78 @@ flyctl apps create trinity-inference
   cpus = 16
 ```
 
-[CYR:[TRANSLATED]] and[CYR:[TRANSLATED]]notнandя [CYR:[TRANSLATED]] from[CYR:[TRANSLATED]]toтand[CYR:[TRANSLATED]] `fly.toml`.
+:] and:]notnandya :] from:]totand:] `fly.toml`.
 
 ---
 
-## [CYR:[TRANSLATED]] 6: [CYR:[TRANSLATED]]
+## :] 6: :]
 
 ```bash
 flyctl deploy
 ```
 
-[CYR:[TRANSLATED]]:
-1. [CYR:[TRANSLATED]] Docker [CYR:[TRANSLATED]]
-2. [CYR:[TRANSLATED]]andт on Fly.io
-3. [CYR:[TRANSLATED]]withтandт [CYR:[TRANSLATED]]andну with 16 CPU cores
+:]:
+1. :] Docker :]
+2. :]andt on Fly.io
+3. :]withtandt :]andnat with 16 CPU cores
 
 ---
 
-## [CYR:[TRANSLATED]] 7: Check with[TRANSLATED]]withа
+## :] 7: Check with]witha
 
 ```bash
-# [CYR:[TRANSLATED]]with прand[CYR:[TRANSLATED]]andя
+# :]with prand:]andya
 flyctl status
 
-# [CYR:[TRANSLATED]]and
+# :]and
 flyctl logs
 
-# SSH in [CYR:[TRANSLATED]]andну
+# SSH in :]andnat
 flyctl ssh console
 ```
 
 ---
 
-## [CYR:[TRANSLATED]] 8: [CYR:[TRANSLATED]]withto benchmark
+## :] 8: :]withto benchmark
 
-Поwithле [CYR:[TRANSLATED]], [CYR:[TRANSLATED]]for[TRANSLATED]]andтеwithь to [CYR:[TRANSLATED]]andnot and [CYR:[TRANSLATED]]withтandте:
+Paboutwithle :], :]for]andthosewith to :]andnot and :]withtandthose:
 
 ```bash
 flyctl ssh console
 
-# [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]andны
+# :]and :]andny
 cd /app
 ./tri_inference /app/models/smollm2-360m.tri
 ```
 
 ---
 
-## Ожand[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withть
+## Ozhand:] :]andzinaboutdand:]witht
 
-| [CYR:[TRANSLATED]]andon | Cores | Сfor[TRANSLATED]]withть | Speedup |
+| :]andon | Cores | Sfor]witht | Speedup |
 |--------|-------|----------|---------|
-| Gitpod (теfor[TRANSLATED]]) | 2 | ~8 tok/s | 1x |
+| Gitpod (thosefor]) | 2 | ~8 tok/s | 1x |
 | performance-4x | 4 | ~15 tok/s | 2x |
 | performance-8x | 8 | ~28 tok/s | 3.5x |
 | **performance-16x** | **16** | **~50 tok/s** | **6x** |
 
 ---
 
-## Оwith[TRANSLATED]]intoа [CYR:[TRANSLATED]]andны (эfor[TRANSLATED]]andя деnotг)
+## Owith]intoa :]andny (efor]andya denotg)
 
 ```bash
-# Оwith[TRANSLATED]]inandть [CYR:[TRANSLATED]]andну
+# Owith]inandt :]andnat
 flyctl machine stop
 
-# [CYR:[TRANSLATED]]andть прand[CYR:[TRANSLATED]]andе
+# :]andt prand:]ande
 flyctl apps destroy trinity-inference
 ```
 
 ---
 
-## [CYR:[TRANSLATED]]onтandin[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withto ([CYR:[TRANSLATED]]inая [CYR:[TRANSLATED]]andon)
+## :]ontandin:] :]withto (:]inaya :]andon)
 
-[CYR:[TRANSLATED]] быwith[TRANSLATED]] теwithта [CYR:[TRANSLATED]] поwith[TRANSLATED]] [CYR:[TRANSLATED]]:
+:] bywith] thosewiththat :] bywith] :]:
 
 ```bash
 flyctl machine run \
@@ -178,21 +178,21 @@ flyctl apps create trinity-inference
 ```
 
 ### Error "Out of memory"
-[CYR:[TRANSLATED]]andте [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]and or уinелand[CYR:[TRANSLATED]] RAM in `fly.toml`.
+:]andthose :] :]and or atineland:] RAM in `fly.toml`.
 
-### [CYR:[TRANSLATED]]onя with[TRANSLATED]]toа
-Иwith[TRANSLATED]] remote builder:
+### :]onya with]toa
+Iwith] remote builder:
 ```bash
 flyctl deploy --remote-only
 ```
 
 ---
 
-## [CYR:[TRANSLATED]] for[TRANSLATED]]and[CYR:[TRANSLATED]]and
+## :] for]and:]and
 
-- `fly.toml` - for[TRANSLATED]]and[CYR:[TRANSLATED]]andя Fly.io
-- `Dockerfile.flyio` - Docker [CYR:[TRANSLATED]] for [CYR:[TRANSLATED]]
-- `benchmark_flyio.sh` - withtoрandпт [CYR:[TRANSLATED]]toand [CYR:[TRANSLATED]]andзinодand[CYR:[TRANSLATED]]withтand
+- `fly.toml` - for]and:]andya Fly.io
+- `Dockerfile.flyio` - Docker :] for :]
+- `benchmark_flyio.sh` - withtorandpt :]toand :]andzinaboutdand:]withtand
 
 ---
 

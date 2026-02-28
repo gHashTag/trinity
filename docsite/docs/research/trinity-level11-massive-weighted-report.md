@@ -1,18 +1,18 @@
-# Level 11.15 — Massive Weighted KG: 625 трand[CYR:[TRANSLATED]]in with прandорand[CYR:[TRANSLATED]]and
+# Level 11.15 — Massive Weighted KG: 625 trand:]in with prandaboutrand:]and
 
-**[CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]**: 11.15 — Massive Weighted KG
-**[CYR:[TRANSLATED]]with**: [CYR:[TRANSLATED]]
-**Теwithты**: 97-99 (371 inwith[TRANSLATED]], 367 pass, 4 skip)
+**:]in:]**: 11.15 — Massive Weighted KG
+**:]with**: :]
+**Tewithty**: 97-99 (371 inwith], 367 pass, 4 skip)
 
 ---
 
-## [CYR:[TRANSLATED]]inые [CYR:[TRANSLATED]]andtoand
+## :]inye :]andtoand
 
-| [CYR:[TRANSLATED]]andtoа | Зon[CYR:[TRANSLATED]]andе | [CYR:[TRANSLATED]]with |
+| :]Version | Zon:]ande | :]with |
 |---------|----------|--------|
-| [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]withть | **625/625 (100%)** | ✅ |
-| Weight correlation | **[CYR:[TRANSLATED]]fromонonя** (0.35→0.27→0.21→0.18) | ✅ |
-| Multi-hop (4 stepа) | **100%** | ✅ |
+| :] :]witht | **625/625 (100%)** | ✅ |
+| Weight correlation | **:]fromaboutnonya** (0.35→0.27→0.21→0.18) | ✅ |
+| Multi-hop (4 stepa) | **100%** | ✅ |
 | Strong vs Normal sim | **0.35 vs 0.21** | ✅ |
 | Strong at noise=5 | **83.2%** | ✅ |
 | Weak at noise=5 | **41.0%** | ✅ |
@@ -20,61 +20,61 @@
 
 ---
 
-## [CYR:[TRANSLATED]] this зonчandт
+## :] this zonchandt
 
-### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inа
-Мы [CYR:[TRANSLATED]]andнor **маwith[TRANSLATED]]** (Level 11.13: 1000 трand[CYR:[TRANSLATED]]in) with **inеwithамand** (Level 11.14: capacity-based priority). Result: **625 трand[CYR:[TRANSLATED]]in with 4 toлаwithамand inеwithоin, 100% [CYR:[TRANSLATED]]withть, weight-for[TRANSLATED]]andя [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]on on маwith[TRANSLATED]]**.
+### :] :]ina
+My :]andnor **mawith]** (Level 11.13: 1000 trand:]in) with **inewithamand** (Level 11.14: capacity-based priority). Result: **625 trand:]in with 4 tolawithamand inewithaboutin, 100% :]witht, weight-for]andya :]in:]on on mawith]**.
 
-### [CYR:[TRANSLATED]] andwith[TRANSLATED]]in[CYR:[TRANSLATED]]
-Capacity-based weight mechanism [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] on маwith[TRANSLATED]] 5 domainоin × 10 within[CYR:[TRANSLATED]]. Similarity **[CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]** [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] with ёмtoоwith[TRANSLATED]]: strong(5)=0.3452, medium(10)=0.2722, normal(15)=0.2121, weak(20)=0.1797. [CYR:[TRANSLATED]] not with[TRANSLATED]]withть — this **[CYR:[TRANSLATED]] withinойwithтinо with[TRANSLATED]]andцand**, inоwith[TRANSLATED]]andзinодand[CYR:[TRANSLATED]] on [CYR:[TRANSLATED]] маwith[TRANSLATED]].
+### :] andwith]in:]
+Capacity-based weight mechanism :]in:] on mawith] 5 domainaboutin × 10 within:]. Similarity **:]from:]** :]in:] with yomtoaboutwith]: strong(5)=0.3452, medium(10)=0.2722, normal(15)=0.2121, weak(20)=0.1797. :] not with]witht — this **:] withinaboutywithtinabout with]andtsand**, inaboutwith]andzinaboutdand:] on :] mawith].
 
-### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]fromчandtoоin
-Multi-hop [CYR:[TRANSLATED]] 4 with[TRANSLATED]] with [CYR:[TRANSLATED]]andмandwithя inеwithамand (strong↔normal) — **100% [CYR:[TRANSLATED]]withть** on inwithех [CYR:[TRANSLATED]]andonх. Сand[CYR:[TRANSLATED]] withлоand (cap=5, sim=0.35) and [CYR:[TRANSLATED]] (cap=15, sim=0.21) [CYR:[TRANSLATED]]withя, но [CYR:[TRANSLATED]]toа not [CYR:[TRANSLATED]] withandгonл.
+### :] :]fromchandtoaboutin
+Multi-hop :] 4 with] with :]andmandwithya inewithamand (strong↔normal) — **100% :]witht** on inwithekh :]andonkh. Sand:] withlaboutand (cap=5, sim=0.35) and :] (cap=15, sim=0.21) :]withya, nabout :]toa not :] withandgonl.
 
-### [CYR:[TRANSLATED]] andнinеwith[TRANSLATED]]in
-Маwithandin[CYR:[TRANSLATED]] weighted KG with прandорand[CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]]. Сand[CYR:[TRANSLATED]] withinязand (cap=5) прand noise=5 with[TRANSLATED]] **83.2%**, with[TRANSLATED]] (cap=20) [CYR:[TRANSLATED]] до **41%**. [CYR:[TRANSLATED]]andца in 42 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toта — this [CYR:[TRANSLATED]]toтandчеwithtoand зonчand[CYR:[TRANSLATED]] result for real-world KG with [CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]and доinерandя to фаfor[TRANSLATED]].
+### :] andninewith]in
+Mawithandin:] weighted KG with prandaboutrand:]and :]from:]. Sand:] withinyazand (cap=5) prand noise=5 with] **83.2%**, with] (cap=20) :] dabout **41%**. :]andtsa in 42 :] :]tothat — this :]totandchewithtoand zonchand:] result for real-world KG with :]and :]in:]and daboutinerandya to fafor].
 
 ---
 
-## Теwithт 97: Massive Weighted KG — 625 трand[CYR:[TRANSLATED]]in
+## Tewitht 97: Massive Weighted KG — 625 trand:]in
 
-5 domainоin × 4 toлаwithа inеwithоin:
+5 domainaboutin × 4 tolawitha inewithaboutin:
 
-| [CYR:[TRANSLATED]]with | Cap | Rels/Domain | Triples/Domain | Accuracy | Avg Sim | VSA Weight |
+| :]with | Cap | Rels/Domain | Triples/Domain | Accuracy | Avg Sim | VSA Weight |
 |-------|-----|-------------|----------------|----------|---------|------------|
 | Strong | 5 | 2 | 10 | **100%** | **0.3452** | 0.200 |
 | Medium | 10 | 3 | 30 | **100%** | **0.2722** | 0.100 |
 | Normal | 15 | 3 | 45 | **100%** | **0.2121** | 0.067 |
 | Weak | 20 | 2 | 40 | **100%** | **0.1797** | 0.050 |
 
-Вwithе 5 domainоin (Geo, People, Events, Science, Culture): **125/125 for[TRANSLATED]]**.
+Vwithe 5 domainaboutin (Geo, People, Events, Science, Culture): **125/125 for]**.
 
 **Grand total: 625/625 (100.0%)**
 
-Weight-for[TRANSLATED]]andя and[CYR:[TRANSLATED]]on: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] in [CYR:[TRANSLATED]]and (withandльnotе inеwith), [CYR:[TRANSLATED]] in[CYR:[TRANSLATED]] similarity прand andзin[CYR:[TRANSLATED]]and. [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] одandontoоinо [CYR:[TRANSLATED]] on inwithех 5 [CYR:[TRANSLATED]]onх.
+Weight-for]andya and:]on: :] :] :] in :]and (withandlnote inewith), :] in:] similarity prand andzin:]and. :] :]from:] aboutdandontoaboutinabout :] on inwithekh 5 :]onkh.
 
 ---
 
-## Теwithт 98: Priority Multi-Hop
+## Tewitht 98: Priority Multi-Hop
 
-5-with[TRANSLATED]] [CYR:[TRANSLATED]] with [CYR:[TRANSLATED]]andмandwithя inеwithамand:
+5-with] :] with :]andmandwithya inewithamand:
 
-| [CYR:[TRANSLATED]] | Cap | Accuracy | Avg Sim |
+| :] | Cap | Accuracy | Avg Sim |
 |------|-----|----------|---------|
 | L0→L1 (strong) | 5 | 100% | **0.3388** |
 | L1→L2 (normal) | 15 | 100% | 0.2021 |
 | L2→L3 (strong) | 5 | 100% | **0.3709** |
 | L3→L4 (normal) | 15 | 100% | 0.2132 |
 
-Multi-hop по [CYR:[TRANSLATED]]andonм 1-4: **inwithе 100%**.
+Multi-hop by :]andonm 1-4: **inwithe 100%**.
 
-**Weight correlation**: strong layers avg sim **0.3548** > normal layers avg sim **0.2077** — [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]].
+**Weight correlation**: strong layers avg sim **0.3548** > normal layers avg sim **0.2077** — :]in:].
 
 ---
 
-## Теwithт 99: Noise Benchmark on маwith[TRANSLATED]]
+## Tewitht 99: Noise Benchmark on mawith]
 
-625 трand[CYR:[TRANSLATED]]in (125 strong + 500 weak) × 5 [CYR:[TRANSLATED]]innotй [CYR:[TRANSLATED]]:
+625 trand:]in (125 strong + 500 weak) × 5 :]innoty :]:
 
 | Noise | Strong (cap=5) | Weak (cap=20) | Advantage |
 |-------|---------------|---------------|-----------|
@@ -84,42 +84,42 @@ Multi-hop по [CYR:[TRANSLATED]]andonм 1-4: **inwithе 100%**.
 | 3 | 83.2% | 38.6% | **45pp** |
 | 5 | **83.2%** | **41.0%** | **42pp** |
 
-**[CYR:[TRANSLATED]]inой result**: прand noise=5 withand[CYR:[TRANSLATED]] withinязand (cap=5) with[TRANSLATED]] **83.2%**, with[TRANSLATED]] (cap=20) — лandшь **41.0%**. [CYR:[TRANSLATED]]andца **42 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]toта** on маwith[TRANSLATED]] 625 трand[CYR:[TRANSLATED]]in [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]], that capacity-based weight [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] toаto noise buffer.
+**:]inabouty result**: prand noise=5 withand:] withinyazand (cap=5) with] **83.2%**, with] (cap=20) — landsh **41.0%**. :]andtsa **42 :] :]tothat** on mawith] 625 trand:]in :]in:], that capacity-based weight :]from:] toato noise buffer.
 
-[CYR:[TRANSLATED]]innotнandе with Level 11.14 ([CYR:[TRANSLATED]] маwith[TRANSLATED]]):
-- Level 11.14: cap=5 93% vs cap=25 21% → 72pp (on 15+75 = 90 трand[CYR:[TRANSLATED]])
-- Level 11.15: cap=5 83% vs cap=20 41% → 42pp (on 125+500 = 625 трand[CYR:[TRANSLATED]])
+:]innotnande with Level 11.14 (:] mawith]):
+- Level 11.14: cap=5 93% vs cap=25 21% → 72pp (on 15+75 = 90 trand:])
+- Level 11.15: cap=5 83% vs cap=20 41% → 42pp (on 125+500 = 625 trand:])
 
-[CYR:[TRANSLATED]]andца [CYR:[TRANSLATED]]withнandма: cap=20 withandльnotе cap=25 ([CYR:[TRANSLATED]] toонfor[TRANSLATED]]andя),  маwith[TRANSLATED]] 625 vs 90 [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]] with[TRANSLATED]]andwithтandчеwithtoой with[TRANSLATED]]and[CYR:[TRANSLATED]]withтand.
+:]andtsa :]withnandma: cap=20 withandlnote cap=25 (:] toaboutnfor]andya),  mawith] 625 vs 90 :]in:] with]andwithtandchewithtoabouty with]and:]withtand.
 
 ---
 
-## Крandтandчеwithtoая [CYR:[TRANSLATED]]toа
+## Krandtandchewithtoaya :]toa
 
-### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]from[CYR:[TRANSLATED]] fromлand[CYR:[TRANSLATED]]
-1. **100% [CYR:[TRANSLATED]]withть** on 625 трand[CYR:[TRANSLATED]] with 4 toлаwithамand inеwithоin — and[CYR:[TRANSLATED]]
-2. **Weight correlation** [CYR:[TRANSLATED]]fromонon on маwith[TRANSLATED]] 5 domainоin
-3. **Multi-hop 100%** [CYR:[TRANSLATED]] 4 with[TRANSLATED]] with [CYR:[TRANSLATED]]andмandwithя inеwithамand
-4. **Noise advantage** 42pp on 625 трand[CYR:[TRANSLATED]] — with[TRANSLATED]]andwithтandчеwithtoand зonчandмо
+### :] :]from:] fromland:]
+1. **100% :]witht** on 625 trand:] with 4 tolawithamand inewithaboutin — and:]
+2. **Weight correlation** :]fromaboutnon on mawith] 5 domainaboutin
+3. **Multi-hop 100%** :] 4 with] with :]andmandwithya inewithamand
+4. **Noise advantage** 42pp on 625 trand:] — with]andwithtandchewithtoand zonchandmabout
 
-### [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя
-1. 625 трand[CYR:[TRANSLATED]]in, not 1000+ — раwithшandрandть [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andем domainоin/within[CYR:[TRANSLATED]]
+### :]and:]andya
+1. 625 trand:]in, not 1000+ — rawithshandrandt :] :]in:]andem domainaboutin/within:]
 2. Greedy multi-hop (not beam search + weights combined)
-3. [CYR:[TRANSLATED]] дandonмandчеwithfor[TRANSLATED]] [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andя inеwithоin (inwithе [CYR:[TRANSLATED]] прand поwith[TRANSLATED]]and)
+3. :] dandonmandchewithfor] :]in:]andya inewithaboutin (inwithe :] prand bywith]and)
 
 ---
 
-## Tech Tree: [CYR:[TRANSLATED]]andе stepand
+## Tech Tree: :]ande stepand
 
-| [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]] | Опandwithанandе |
+| :]and:] | Opandwithanande |
 |---------|----------|
-| **A: Temporal KG** | Фаtoты with in[CYR:[TRANSLATED]]and [CYR:[TRANSLATED]]toамand, reasoning  [CYR:[TRANSLATED]]toе with[TRANSLATED]]andй |
+| **A: Temporal KG** | Fatoty with in:]and :]toamand, reasoning  :]toe with]andy |
 | **B: Beam + Weighted** | Beam search with weighted scoring for noise-robust priority paths |
-| **C: Dynamic weight update** | [CYR:[TRANSLATED]]in[CYR:[TRANSLATED]]andе inеwithоin on [CYR:[TRANSLATED]] прand [CYR:[TRANSLATED]]and ноinых evidence |
+| **C: Dynamic weight update** | :]in:]ande inewithaboutin on :] prand :]and naboutinykh evidence |
 
 ---
 
-## [CYR:[TRANSLATED]]with Level 11
+## :]with Level 11
 
 | Level | Feature | Triples | Key Result |
 |-------|---------|---------|------------|

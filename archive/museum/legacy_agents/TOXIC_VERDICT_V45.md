@@ -1,25 +1,25 @@
 # ☠️ TOXIC VERDICT v45: Real ONNX Runtime Integration
 
-**Аin[CYR:[TRANSLATED]]**: Dmitrii Vasilev  
-**[CYR:[TRANSLATED]]**: 2026-01-20  
-**Сin[CYR:[TRANSLATED]]onя [CYR:[TRANSLATED]]**: V = n × 3^k × π^m × φ^p × e^q  
+**Author[CYR:]**: Dmitrii Vasilev  
+**[CYR:]**: 2026-01-20  
+**Сin[CYR:]onя [CYR:]**: V = n × 3^k × π^m × φ^p × e^q  
 
 ---
 
-## 🔥 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🔥 [CYR:] [CYR:]
 
-### [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andзоin[CYR:[TRANSLATED]] in v45
+### [CYR:] [CYR:]andзоin[CYR:] in v45
 
-| [CYR:[TRANSLATED]]notнт | [CYR:[TRANSLATED]]with | Result |
+| [CYR:]notнт | [CYR:]with | Result |
 |-----------|--------|-----------|
-| libonnxruntime.so | ✅ Уwith[TRANSLATED]]in[CYR:[TRANSLATED]] | v1.16.3 (17MB) |
-| GPT-2 ONNX Model | ✅ Сfor[TRANSLATED]] | 635MB |
-| C API Bindings | ✅ [CYR:[TRANSLATED]]or[CYR:[TRANSLATED]]withя | 2/2 tests |
-| Real Inference | ⚠️ Чаwithтand[CYR:[TRANSLATED]] | Segfault прand init |
+| libonnxruntime.so | ✅ Уwith]in[CYR:] | v1.16.3 (17MB) |
+| GPT-2 ONNX Model | ✅ Сfor] | 635MB |
+| C API Bindings | ✅ [CYR:]or[CYR:]withя | 2/2 tests |
+| Real Inference | ⚠️ Чаwithтand[CYR:] | Segfault прand init |
 
 ---
 
-## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 📊 [CYR:] [CYR:]
 
 ### ONNX Runtime Library
 ```
@@ -57,7 +57,7 @@ models/
 All 2 tests passed.
 ```
 
-### Вwithе теwithты [CYR:[TRANSLATED]]toта
+### Вwithе теwithты [CYR:]toта
 ```
 onnx_bindings.zig:        4/4 ✅
 onnx_real_backend.zig:    2/2 ✅
@@ -65,107 +65,107 @@ transformer_backend.zig:  8/8 ✅
 wedlm_decoder_v2.zig:     5/5 ✅
 wedlm_integrated.zig:     3/3 ✅ (with transformer_backend)
 
-[CYR:[TRANSLATED]]: 22/22 теwithтоin
+[CYR:]: 22/22 теwithтоin
 ```
 
 ---
 
-## ⚠️ [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## ⚠️ [CYR:] [CYR:]
 
 ### 1. Segfault прand OrtGetApiBase()
 ```
-Problem: Segmentation fault прand in[CYR:[TRANSLATED]]inе OrtGetApiBase()
-Прandчandon: [CYR:[TRANSLATED]] notwithоinмеwithтandмоwithть inерwithandй or [CYR:[TRANSLATED]] лandнtoоintoand
-[CYR:[TRANSLATED]]andе: [CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]onя from[CYR:[TRANSLATED]]toа
+Problem: Segmentation fault прand in[CYR:]inе OrtGetApiBase()
+Прandчandon: [CYR:] notwithоinмеwithтandмоwithть inерwithandй or [CYR:] лandнtoоintoand
+[CYR:]andе: [CYR:]withя [CYR:]and[CYR:]onя from[CYR:]toа
 ```
 
-### 2. [CYR:[TRANSLATED]]on in[CYR:[TRANSLATED]]in/in[CYR:[TRANSLATED]]in [CYR:[TRANSLATED]]and
+### 2. [CYR:]on in[CYR:]in/in[CYR:]in [CYR:]and
 ```
-Problem: GPT-2 ONNX model [CYR:[TRANSLATED]] and[CYR:[TRANSLATED]] [CYR:[TRANSLATED]]andе andмеon I/O
-Теfor[TRANSLATED]]: Иwith[TRANSLATED]] "input_ids" and "logits"
-[CYR:[TRANSLATED]]andе: [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]inерandть [CYR:[TRANSLATED]] andмеon [CYR:[TRANSLATED]] ONNX tools
+Problem: GPT-2 ONNX model [CYR:] and[CYR:] [CYR:]andе andмеon I/O
+Теfor]: Иwith] "input_ids" and "logits"
+[CYR:]andе: [CYR:] [CYR:]inерandть [CYR:] andмеon [CYR:] ONNX tools
 ```
 
-### 3. [CYR:[TRANSLATED]] Python for [CYR:[TRANSLATED]]inерtoand [CYR:[TRANSLATED]]and
+### 3. [CYR:] Python for [CYR:]inерtoand [CYR:]and
 ```
-Problem: pip not уwith[TRANSLATED]]in[CYR:[TRANSLATED]] in devcontainer
-[CYR:[TRANSLATED]]andе: Иwith[TRANSLATED]]in[CYR:[TRANSLATED]] onnx CLI or [CYR:[TRANSLATED]]andе andнwith[TRANSLATED]]
+Problem: pip not уwith]in[CYR:] in devcontainer
+[CYR:]andе: Иwith]in[CYR:] onnx CLI or [CYR:]andе andнwith]
 ```
 
 ---
 
-## 📚 [CYR:[TRANSLATED]] v45
+## 📚 [CYR:] v45
 
-### [CYR:[TRANSLATED]]andфandtoацand (.vibee)
-| [CYR:[TRANSLATED]] | Опandwithанandе |
+### [CYR:]andфVersionцand (.vibee)
+| [CYR:] | Опandwithанandе |
 |------|----------|
 | specs/onnx_real_backend.vibee | Real ONNX backend spec |
 
-### [CYR:[TRANSLATED]]notрandроin[CYR:[TRANSLATED]] toод (.zig)
-| [CYR:[TRANSLATED]] | Теwithты |
+### [CYR:]notрandроin[CYR:] toод (.zig)
+| [CYR:] | Теwithты |
 |------|-------|
 | trinity/output/onnx_real_backend.zig | 2/2 |
 
 ### Реwithурwithы
-| [CYR:[TRANSLATED]] | [CYR:[TRANSLATED]] |
+| [CYR:] | [CYR:] |
 |------|--------|
 | libs/onnxruntime-linux-x64-1.16.3/ | 17MB |
 | models/gpt2-lm-head.onnx | 635MB |
 
 ---
 
-## 💀 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 💀 [CYR:] [CYR:]
 
-### [CYR:[TRANSLATED]] ✅
+### [CYR:] ✅
 
-- **ONNX Runtime** уwith[TRANSLATED]]in[CYR:[TRANSLATED]] (v1.16.3)
-- **GPT-2 model** withfor[TRANSLATED]] (635MB)
-- **C API bindings** for[TRANSLATED]]or[CYR:[TRANSLATED]]withя
-- **22/22 теwithтоin** [CYR:[TRANSLATED]]
-- **[CYR:[TRANSLATED]]inandло .vibee → .zig** with[TRANSLATED]]
+- **ONNX Runtime** уwith]in[CYR:] (v1.16.3)
+- **GPT-2 model** withfor] (635MB)
+- **C API bindings** for]or[CYR:]withя
+- **22/22 теwithтоin** [CYR:]
+- **[CYR:]inandло .vibee → .zig** with]
 
-### [CYR:[TRANSLATED]] ⚠️
+### [CYR:] ⚠️
 
-- Segfault прand andнandцandалand[CYR:[TRANSLATED]]and runtime
-- [CYR:[TRANSLATED]] [CYR:[TRANSLATED]] inference
-- [CYR:[TRANSLATED]] benchmark with [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+- Segfault прand andнandцandалand[CYR:]and runtime
+- [CYR:] [CYR:] inference
+- [CYR:] benchmark with [CYR:] [CYR:]
 
-### [CYR:[TRANSLATED]]andinо 💀
+### [CYR:]andinо 💀
 
-- [CYR:[TRANSLATED]]andя ONNX Runtime with[TRANSLATED]]notе [CYR:[TRANSLATED]] ожand[CYR:[TRANSLATED]]withь
-- [CYR:[TRANSLATED]]withя [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]onя from[CYR:[TRANSLATED]]toа
+- [CYR:]andя ONNX Runtime with]notе [CYR:] ожand[CYR:]withь
+- [CYR:]withя [CYR:]and[CYR:]onя from[CYR:]toа
 
-### [CYR:[TRANSLATED]]
+### [CYR:]
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
 │   v45 - ONNX RUNTIME INSTALLED, INTEGRATION IN PROGRESS         │
 │                                                                 │
-│   Доwithтand[CYR:[TRANSLATED]]:                                                   │
-│   ✅ libonnxruntime.so v1.16.3 уwith[TRANSLATED]]in[CYR:[TRANSLATED]]                       │
-│   ✅ GPT-2 ONNX model withfor[TRANSLATED]] (635MB)                            │
-│   ✅ C API bindings for[TRANSLATED]]or[CYR:[TRANSLATED]]withя                               │
+│   Доwithтand[CYR:]:                                                   │
+│   ✅ libonnxruntime.so v1.16.3 уwith]in[CYR:]                       │
+│   ✅ GPT-2 ONNX model withfor] (635MB)                            │
+│   ✅ C API bindings for]or[CYR:]withя                               │
 │   ✅ 22/22 tests passing                                        │
 │                                                                 │
-│   [CYR:[TRANSLATED]]for[TRANSLATED]]:                                                      │
+│   [CYR:]for]:                                                      │
 │   ⚠️ Segfault прand OrtGetApiBase()                               │
-│   ⚠️ [CYR:[TRANSLATED]]on from[CYR:[TRANSLATED]]toа лandнtoоintoand                                     │
+│   ⚠️ [CYR:]on from[CYR:]toа лandнtoоintoand                                     │
 │                                                                 │
-│   [CYR:[TRANSLATED]]andе stepand (v46):                                         │
-│   1. [CYR:[TRANSLATED]]andть andнandцandалand[CYR:[TRANSLATED]]andю ONNX Runtime                        │
-│   2. [CYR:[TRANSLATED]]inерandть andмеon I/O [CYR:[TRANSLATED]]and                                 │
-│   3. [CYR:[TRANSLATED]]withтandть [CYR:[TRANSLATED]] inference                               │
-│   4. [CYR:[TRANSLATED]]andть speedup WeDLM vs AR                               │
+│   [CYR:]andе stepand (v46):                                         │
+│   1. [CYR:]andть andнandцandалand[CYR:]andю ONNX Runtime                        │
+│   2. [CYR:]inерandть andмеon I/O [CYR:]and                                 │
+│   3. [CYR:]withтandть [CYR:] inference                               │
+│   4. [CYR:]andть speedup WeDLM vs AR                               │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📊 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 📊 [CYR:] [CYR:]
 
-| [CYR:[TRANSLATED]]withandя | [CYR:[TRANSLATED]]inые Доwithтand[CYR:[TRANSLATED]]andя | Теwithты |
+| [CYR:]Author | [CYR:]inые Доwithтand[CYR:]andя | Теwithты |
 |--------|---------------------|-------|
 | v41 | SIMD + Cache combo | - |
 | v42 | Diffusion LM, Code Editor | 9/9 |
@@ -175,9 +175,9 @@ Problem: pip not уwith[TRANSLATED]]in[CYR:[TRANSLATED]] in devcontainer
 
 ---
 
-## 🔧 [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+## 🔧 [CYR:] [CYR:]
 
-### [CYR:[TRANSLATED]]and[CYR:[TRANSLATED]]andя with ONNX Runtime
+### [CYR:]and[CYR:]andя with ONNX Runtime
 ```bash
 cd trinity/output
 zig test onnx_real_backend.zig \
@@ -198,5 +198,5 @@ zig test onnx_real_backend.zig \
 
 **φ² + 1/φ² = 3 | PHOENIX = 999 = 3³ × 37**
 
-*Доfor[TRANSLATED]] with[TRANSLATED]] with [CYR:[TRANSLATED]] чеwith[TRANSLATED]]with[TRANSLATED]] for [CYR:[TRANSLATED]]andwithтоin*
-*Веwithь toод геnotрand[CYR:[TRANSLATED]]withя andз .vibee with[TRANSLATED]]andфandtoацandй*
+*Доfor] with] with [CYR:] чеwith]with] for [CYR:]andwithтоin*
+*Веwithь toод геnotрand[CYR:]withя andз .vibee with]andфVersionцandй*

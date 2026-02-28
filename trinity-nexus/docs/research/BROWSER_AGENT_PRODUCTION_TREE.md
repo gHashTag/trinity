@@ -1,12 +1,12 @@
 # Browser Agent Production Technology Tree
-# KOSCHEI CYCLE #2 - [CYR:[TRANSLATED]]fromая [CYR:[TRANSLATED]] on [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]
+# KOSCHEI CYCLE #2 - :]fromaya :] on :] :]
 # φ² + 1/φ² = 3 | PHOENIX = 999
 
 ## KOSCHEI IMMORTAL CYCLE #2
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                    KOSCHEI CYCLE #2 - [CYR:[TRANSLATED]] [CYR:[TRANSLATED]]                          │
+│                    KOSCHEI CYCLE #2 - :] :]                          │
 │                    Target: Production Ready 98%                             │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
@@ -143,4 +143,4 @@ NEEDLE THRESHOLD = φ⁻¹ = 0.618
 
 ---
 
-**φ² + 1/φ² = 3 | PHOENIX = 999 | KOSCHEI = [CYR:[TRANSLATED]]**
+**φ² + 1/φ² = 3 | PHOENIX = 999 | KOSCHEI = :]**
