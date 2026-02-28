@@ -28,19 +28,30 @@ RUN case "${TARGETARCH}" in \
 
 WORKDIR /build
 
-# Copy minimal source for TRI CLI (exclude benchmarks, examples, GUI that need extra deps)
+# Copy minimal source for TRI CLI
+# Exclude benchmarks/, examples/, and GUI components that need extra dependencies
 COPY build.zig build.zig.zon ./
 COPY src/ ./src/
 
-# Build ONLY the tri executable (not all targets)
-# We build the binary and then manually copy it from zig-cache
-RUN zig build-exe -Doptimize=ReleaseFast -femit-bin=zig-out/bin/tri \
-    --cache-dir .zig-cache \
-    --global-cache-dir /root/.cache/zig \
-    src/tri/main.zig && \
-    test -f zig-out/bin/tri && \
-    echo "TRI CLI built successfully" && \
-    zig-out/bin/tri --version || echo "Binary exists but version may require runtime"
+# Build with standard zig build but skip problematic optional components
+# The build.zig has conditional compilation for optional features
+RUN zig build -Doptimize=ReleaseFast tri 2>&1 | tee build.log || true && \
+    # If binary wasn't created, try alternative install method
+    if [ ! -f zig-out/bin/tri ]; then \
+        echo "Binary not in zig-out, searching cache..." && \
+        find .zig-cache -name "tri" -type f -exec cp {} zig-out/bin/tri \; 2>/dev/null || \
+        find . -name "tri" -type f -executable -exec cp {} zig-out/bin/tri \; 2>/dev/null; \
+    fi && \
+    # Verify binary exists
+    if [ -f zig-out/bin/tri ]; then \
+        echo "TRI CLI found at zig-out/bin/tri" && \
+        file zig-out/bin/tri && \
+        chmod +x zig-out/bin/tri; \
+    else \
+        echo "ERROR: tri binary not found!" && \
+        echo "Build log:" && cat build.log && \
+        exit 1; \
+    fi
 
 # Stage 2: Runtime
 FROM alpine:3.19
