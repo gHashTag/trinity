@@ -50,7 +50,7 @@ jobs:
         run: |
           cat > Dockerfile.ci << 'EOF'
           FROM alpine:3.19
-          RUN apk add --no-cache ca-certificates curl
+          RUN apk add --no-cache ca-certificates curl file
           COPY docker-artifacts/tri /usr/local/bin/tri
           RUN tri --version && file /usr/local/bin/tri
           LABEL org.opencontainers.image.title="Trinity CLI"
