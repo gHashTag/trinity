@@ -1,37 +1,30 @@
 #!/usr/bin/expect -f
-# Vivado AuthTokenGen + Install + Synthesis automation
+# Vivado AuthTokenGen automation (auth only)
 set timeout 300
 
-# Step 1: Generate Auth Token
-puts "=== STEP 1: Generating Auth Token ==="
+# Generate Auth Token (interactive - requires expect)
+puts "=== Generating Auth Token ==="
 spawn /vivado/installer/xsetup -b AuthTokenGen
 expect "E-mail Address:"
 send "999aigents@gmail.com\r"
 expect "Password:"
 send "TNzL7xAn0GpbwUcHsDwLYsVD4DReIQDm4d!\r"
 expect {
-    "Authentication token has been generated successfully" {
+    "Saved authentication token file successfully" {
         puts "\n=== AUTH TOKEN GENERATED ==="
+    }
+    "token file already exists" {
+        puts "\n=== AUTH TOKEN ALREADY EXISTS ==="
     }
     "ERROR" {
         puts "\n=== AUTH TOKEN ERROR ==="
+        exit 1
+    }
+    timeout {
+        puts "\n=== AUTH TOKEN TIMEOUT ==="
+        exit 1
     }
     eof {}
 }
 wait
-
-# Step 2: Install Vivado
-puts "=== STEP 2: Installing Vivado WebPACK ==="
-spawn /vivado/installer/xsetup -a XilinxEULA,3rdPartyEULA -b Install -p Vivado -e "Vivado ML Standard" -l /vivado/Vivado/2025.2
-expect {
-    "successfully" {
-        puts "\n=== VIVADO INSTALLED ==="
-    }
-    "ERROR" {
-        puts "\n=== INSTALL ERROR ==="
-    }
-    eof {}
-}
-wait
-
-puts "=== SETUP COMPLETE ==="
+puts "=== AUTH COMPLETE ==="
