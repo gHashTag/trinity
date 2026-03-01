@@ -265,6 +265,11 @@ pub const Net = struct {
 
     pub fn deinit(self: *Net, gpa: Allocator) void {
         self.sinks.deinit(gpa);
+        for (self.route_pips.items) |pip| {
+            if (pip.tile_name_owned) {
+                gpa.free(@constCast(pip.tile_name));
+            }
+        }
         self.route_pips.deinit(gpa);
     }
 };
@@ -274,6 +279,7 @@ pub const RoutingPip = struct {
     tile_name: []const u8,
     wire_from: []const u8,
     wire_to: []const u8,
+    tile_name_owned: bool = false, // true if tile_name was heap-allocated
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
