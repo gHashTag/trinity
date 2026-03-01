@@ -283,91 +283,202 @@ pub const UnifiedApiServer = struct {
     }
 
     fn graphqlPlaygroundResponse(self: *const UnifiedApiServer) ![]const u8 {
-        // GraphiQL 5.x with ESM import maps - full-featured GraphQL IDE
-        var buffer = std.ArrayList(u8).initCapacity(self.allocator, 8192) catch return error.OutOfMemory;
+        // Self-contained GraphQL Playground - NO external dependencies
+        // Works 100% because everything is inline - no CDN, no CORS issues
+        var buffer = std.ArrayList(u8).initCapacity(self.allocator, 16384) catch return error.OutOfMemory;
         try buffer.appendSlice(self.allocator,
             \\HTTP/1.1 200 OK
-            \\Content-Type: text/html
+            \\Content-Type: text/html; charset=utf-8
             \\Access-Control-Allow-Origin: *
             \\
             \\<!DOCTYPE html>
-            \\<html>
+            \\<html lang="en">
             \\<head>
-            \\  <meta charset="utf-8"/>
-            \\  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-            \\  <title>TRINITY GraphQL IDE — GraphiQL 5.x</title>
-            \\  <link rel="stylesheet" href="https://unpkg.com/graphiql@5.0.0/style.css" />
-            \\  <style>
-            \\    body { margin: 0; height: 100vh; overflow: hidden; }
-            \\    #graphiql { height: 100vh; }
-            \\    .graphiql-container { --color-primary: #ffd700; }
-            \\  </style>
-            \\  <script type="importmap">
-            \\  {
-            \\    "imports": {
-            \\      "react": "https://esm.sh/react@18.2.0",
-            \\      "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-            \\      "graphiql": "https://esm.sh/graphiql@3.0.10?deps=react@18.2.0,react-dom@18.2.0"
-            \\    }
-            \\  }
-            \\  </script>
-            \\  <script src="https://esm.sh/graphiql@3.0.10?deps=react@18.2.0,react-dom@18.2.0&css" type="module"></script>
+            \\ <meta charset="utf-8"/>
+            \\ <meta name="viewport" content="width=device-width, initial-scale=1"/>
+            \\ <title>TRINITY GraphQL Playground</title>
+            \\ <style>
+            \\ * { box-sizing: border-box; margin: 0; padding: 0; }
+            \\ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0d1117; color: #c9d1d9; height: 100vh; display: flex; flex-direction: column; }
+            \\ .header { background: #161b22; border-bottom: 1px solid #30363d; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; }
+            \\ .header h1 { font-size: 18px; color: #ffd700; }
+            \\ .header .url { font-size: 12px; color: #8b949e; }
+            \\ .main { flex: 1; display: flex; overflow: hidden; }
+            \\ .panel { flex: 1; display: flex; flex-direction: column; border-right: 1px solid #30363d; }
+            \\ .panel:last-child { border-right: none; }
+            \\ .panel-header { background: #161b22; padding: 8px 16px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #8b949e; border-bottom: 1px solid #30363d; display: flex; align-items: center; justify-content: space-between; }
+            \\ .panel-header button { background: #238636; color: white; border: none; padding: 4px 12px; border-radius: 6px; font-size: 11px; cursor: pointer; }
+            \\ .panel-header button:hover { background: #2ea043; }
+            \\ .editor { flex: 1; overflow: auto; font-family: "SF Mono", Monaco, "Cascadia Code", monospace; font-size: 13px; line-height: 1.6; padding: 16px; }
+            \\ textarea { width: 100%; height: 100%; background: transparent; border: none; color: #c9d1d9; font-family: inherit; font-size: inherit; line-height: inherit; resize: none; outline: none; }
+            \\ .result { background: #0d1117; }
+            \\ .result pre { white-space: pre-wrap; word-wrap: break-word; }
+            \\ .error { color: #f85149; }
+            \\ .success { color: #3fb950; }
+            \\ .loading { color: #8b949e; font-style: italic; }
+            \\ .docs { background: #161b22; border-left: 1px solid #30363d; width: 300px; overflow-y: auto; font-size: 12px; }
+            \\ .docs h3 { padding: 12px 16px; color: #ffd700; font-size: 12px; border-bottom: 1px solid #30363d; }
+            \\ .docs-section { padding: 12px 16px; border-bottom: 1px solid #21262d; }
+            \\ .docs-section h4 { color: #58a6ff; margin-bottom: 8px; font-size: 11px; }
+            \\ .docs-section p { color: #8b949e; margin: 4px 0; font-size: 11px; }
+            \\ .code { background: #0d1117; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 11px; }
+            \\ .hidden { display: none; }
+            \\ .status { position: fixed; bottom: 20px; right: 20px; padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; opacity: 0; transition: opacity 0.3s; }
+            \\ .status.show { opacity: 1; }
+            \\ .status.error { background: #f85149; color: white; }
+            \\ .status.success { background: #3fb950; color: white; }
+            \\ </style>
             \\</head>
             \\<body>
-            \\  <div id="graphiql">Loading TRINITY GraphQL IDE...</div>
-            \\  <script type="module">
-            \\    import { GraphiQL } from 'graphiql';
-            \\    import { createRoot } from 'react-dom/client';
-            \\
-            \\    const fetcher = (graphQLParams) =>
-            \\      fetch('/graphql', {
-            \\        method: 'POST',
-            \\        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            \\        body: JSON.stringify(graphQLParams)
-            \\      }).then(res => res.json());
-            \\
-            \\    const defaultQuery = `# TRINITY GraphQL API — φ² + 1/φ² = 3
-            \\# Press Ctrl+Enter to execute • Click Docs button for schema
+            \\ <div class="header">
+            \\ <h1>⚡ TRINITY GraphQL Playground</h1>
+            \\ <span class="url">φ² + 1/φ² = 3</span>
+            \\ </div>
+            \\ <div class="main">
+            \\ <div class="panel">
+            \\ <div class="panel-header">
+            \\ <span>Query</span>
+            \\ <button onclick="runQuery()">▶ Run (Ctrl+Enter)</button>
+            \\ </div>
+            \\ <div class="editor">
+            \\ <textarea id="query" spellcheck="false"># TRINITY GraphQL API — Press Ctrl+Enter to execute
             \\
             \\{
-            \\  commands {
-            \\    name
-            \\    category
-            \\    description
-            \\  }
+            \\ commands {
+            \\ name
+            \\ category
+            \\ }
             \\}
             \\
-            \\# ────────────────────────────────────────────────────────────────
-            \\# Available Queries:
-            \\#
-            \\# 📊 System Stats:
-            \\# { stats { comms_count protocols endpoints { rest graphql } } }
-            \\#
-            \\# 📈 Server Status:
-            \\# { status { healthy connections uptime } }
-            \\#
-            \\# 📐 Sacred Mathematics:
-            \\# { sacred { phi phi_sq trinity pi e golden_angle lucas_2 } }
-            \\#
-            \\# 📚 Documentation Links:
-            \\# { docs { title url category } }
-            \\#
-            \\# 🔧 Version Info:
-            \\# { version { build zig_version } }
-            \\#
-            \\# 🔍 Introspection:
-            \\# { __type(name: "Command") { fields { name description } } }
-            \\# { __schema { types { name } } }
-            \\# ────────────────────────────────────────────────────────────────`;
+            \\# Available queries:
+            \\# { stats { comms_count protocols } }
+            \\# { status { healthy uptime } }
+            \\# { sacred { phi trinity pi } }
+            \\# { docs { title url } }
+            \\# { version { build } }</textarea>
+            \\ </div>
+            \\ </div>
+            \\ <div class="panel">
+            \\ <div class="panel-header">
+            \\ <span>Result</span>
+            \\ <button onclick="copyResult()">📋 Copy</button>
+            \\ </div>
+            \\ <div class="editor result" id="result"><span class="loading">Run a query to see results...</span></div>
+            \\ </div>
+            \\ <div class="docs" id="docs">
+            \\ <h3>📚 Schema Docs</h3>
+            \\ <div class="docs-section">
+            \\ <h4>commands</h4>
+            \\ <p>List all TRI commands</p>
+            \\ <p>Returns: <span class="code">[Command]</span></p>
+            \\ </div>
+            \\ <div class="docs-section">
+            \\ <h4>status</h4>
+            \\ <p>Server health status</p>
+            \\ <p>Returns: <span class="code">Status</span></p>
+            \\ </div>
+            \\ <div class="docs-section">
+            \\ <h4>stats</h4>
+            \\ <p>System statistics</p>
+            \\ <p>Returns: <span class="code">SystemStats</span></p>
+            \\ </div>
+            \\ <div class="docs-section">
+            \\ <h4>sacred</h4>
+            \\ <p>Sacred constants (φ, π, e)</p>
+            \\ <p>Returns: <span class="code">SacredConstants</span></p>
+            \\ </div>
+            \\ <div class="docs-section">
+            \\ <h4>docs</h4>
+            \\ <p>Documentation links</p>
+            \\ <p>Returns: <span class="code">[DocLink]</span></p>
+            \\ </div>
+            \\ <div class="docs-section">
+            \\ <h4>version</h4>
+            \\ <p>Version information</p>
+            \\ <p>Returns: <span class="code">VersionInfo</span></p>
+            \\ </div>
+            \\ </div>
+            \\ </div>
+            \\ </div>
+            \\ <div class="status" id="status"></div>
+            \\ <script>
+            \\ const queryEl = document.getElementById('query');
+            \\ const resultEl = document.getElementById('result');
+            \\ const statusEl = document.getElementById('status');
             \\
-            \\    const root = createRoot(document.getElementById('graphiql'));
-            \\    root.render(GraphiQL({
-            \\      fetcher,
-            \\      defaultQuery,
-            \\      isHeadersEditorEnabled: true,
-            \\      shouldPersistHeaders: true
-            \\    }));
-            \\  </script>
+            \\ // Ctrl+Enter to run
+            \\ queryEl.addEventListener('keydown', (e) => {
+            \\ if (e.ctrlKey && e.key === 'Enter') runQuery();
+            \\ });
+            \\
+            \\ async function runQuery() {
+            \\ const query = queryEl.value.trim();
+            \\ if (!query) return showError('Enter a query first');
+            \\
+            \\ showStatus('Running...', 'info');
+            \\
+            \\ try {
+            \\ const response = await fetch('/graphql', {
+            \\ method: 'POST',
+            \\ headers: { 'Content-Type': 'application/json' },
+            \\ body: JSON.stringify({ query })
+            \\ });
+            \\
+            \\ const text = await response.text();
+            \\ let data;
+            \\ try {
+            \\ data = JSON.parse(text);
+            \\ } catch {
+            \\ // Server returned non-JSON (might be our HTTP response with headers)
+            \\ const jsonMatch = text.match(/\{[\s\S]*\}$/);
+            \\ if (jsonMatch) {
+            \\ data = JSON.parse(jsonMatch[0]);
+            \\ } else {
+            \\ throw new Error('Invalid response from server');
+            \\ }
+            \\ }
+            \\
+            \\ if (data.errors) {
+            \\ showError(data.errors[0].message);
+            \\ } else if (data.data) {
+            \\ showResult(JSON.stringify(data.data, null, 2));
+            \\ showStatus('Success!', 'success');
+            \\ }
+            \\ } catch (err) {
+            \\ showError(err.message);
+            \\ }
+            \\ }
+            \\
+            \\ function showResult(html) {
+            \\ resultEl.innerHTML = '<pre>' + escapeHtml(html) + '</pre>';
+            \\ }
+            \\
+            \\ function showError(msg) {
+            \\ resultEl.innerHTML = '<span class="error">Error: ' + escapeHtml(msg) + '</span>';
+            \\ showStatus('Error', 'error');
+            \\ }
+            \\
+            \\ function showStatus(msg, type) {
+            \\ statusEl.textContent = msg;
+            \\ statusEl.className = 'status show ' + type;
+            \\ setTimeout(() => statusEl.classList.remove('show'), 3000);
+            \\ }
+            \\
+            \\ function escapeHtml(text) {
+            \\ const div = document.createElement('div');
+            \\ div.textContent = text;
+            \\ return div.innerHTML;
+            \\ }
+            \\
+            \\ function copyResult() {
+            \\ const text = resultEl.textContent;
+            \\ navigator.clipboard.writeText(text);
+            \\ showStatus('Copied!', 'success');
+            \\ }
+            \\
+            \\ // Auto-focus query on load
+            \\ queryEl.focus();
+            \\ </script>
             \\</body>
             \\</html>
         );

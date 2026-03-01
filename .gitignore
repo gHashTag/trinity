@@ -170,3 +170,17 @@ debug_test.zig
 # Old build files
 build_zig13_old.zig
 /tri
+
+# Test artifacts in root (should use zig-out/ for binaries)
+test_*
+!test/**/*.zig
+!test/**/*.sh
+*.vcd
+*.tvc
+
+# Invalid filenames (shell artifact)
+--
+-language
+-output
+-output-dir
+-o
