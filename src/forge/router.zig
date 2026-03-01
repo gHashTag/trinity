@@ -137,28 +137,72 @@ fn routeSignalNet(allocator: Allocator, db: *ForgeDB, net: *Net, present_cost: f
 
 fn generateManhattanPath(allocator: Allocator, net: *Net, sx: i32, sy: i32, dx: i32, dy: i32) !void {
     // Move horizontally first, then vertically
+    // Generate PIPs with prjxray-compatible tile names and wire indices
     var cx = sx;
     var cy = sy;
 
     // Horizontal steps
     while (cx != dx) {
-        const next_x = if (cx < dx) cx + 1 else cx - 1;
-        try net.route_pips.append(allocator, RoutingPip{
-            .tile_name = "INT",
-            .wire_from = "EE2BEG",
-            .wire_to = "EE2END",
-        });
+        const direction_east = cx < dx;
+        const next_x = if (direction_east) cx + 1 else cx - 1;
+
+        // prjxray INT tile: INT_L_X{x}Y{y} (left) or INT_R_X{x}Y{y} (right)
+        // Use INT_L for even x, INT_R for odd x (simplified heuristic)
+        var tile_buf: [64]u8 = undefined;
+        const side: []const u8 = if (@mod(cx, 2) == 0) "L" else "R";
+        const tile_name = std.fmt.bufPrint(&tile_buf, "INT_{s}_X{d}Y{d}", .{
+            side, @abs(cx), @abs(cy),
+        }) catch "INT_L_X0Y0";
+
+        const duped_tile = allocator.dupe(u8, tile_name) catch continue;
+
+        // Wire names with index 0 — prjxray uses EE2BEG0.EE2END0 etc.
+        if (direction_east) {
+            try net.route_pips.append(allocator, RoutingPip{
+                .tile_name = duped_tile,
+                .wire_from = "EE2BEG0",
+                .wire_to = "EE2END0",
+                .tile_name_owned = true,
+            });
+        } else {
+            try net.route_pips.append(allocator, RoutingPip{
+                .tile_name = duped_tile,
+                .wire_from = "WW2BEG0",
+                .wire_to = "WW2END0",
+                .tile_name_owned = true,
+            });
+        }
         cx = next_x;
     }
 
     // Vertical steps
     while (cy != dy) {
-        const next_y = if (cy < dy) cy + 1 else cy - 1;
-        try net.route_pips.append(allocator, RoutingPip{
-            .tile_name = "INT",
-            .wire_from = "NN2BEG",
-            .wire_to = "NN2END",
-        });
+        const direction_north = cy < dy;
+        const next_y = if (direction_north) cy + 1 else cy - 1;
+
+        var tile_buf: [64]u8 = undefined;
+        const side: []const u8 = if (@mod(cx, 2) == 0) "L" else "R";
+        const tile_name = std.fmt.bufPrint(&tile_buf, "INT_{s}_X{d}Y{d}", .{
+            side, @abs(cx), @abs(cy),
+        }) catch "INT_L_X0Y0";
+
+        const duped_tile = allocator.dupe(u8, tile_name) catch continue;
+
+        if (direction_north) {
+            try net.route_pips.append(allocator, RoutingPip{
+                .tile_name = duped_tile,
+                .wire_from = "NN2BEG0",
+                .wire_to = "NN2END0",
+                .tile_name_owned = true,
+            });
+        } else {
+            try net.route_pips.append(allocator, RoutingPip{
+                .tile_name = duped_tile,
+                .wire_from = "SS2BEG0",
+                .wire_to = "SS2END0",
+                .tile_name_owned = true,
+            });
+        }
         cy = next_y;
     }
 }
