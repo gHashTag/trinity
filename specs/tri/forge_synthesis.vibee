@@ -1,0 +1,249 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# FORGE OF KOSCHEI — Ternary Synthesis Engine
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS THE FORGE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: forge_synthesis
+version: "1.0.0"
+language: zig
+module: forge.synthesis
+
+description: |
+  Ternary-aware synthesis engine for FORGE toolchain.
+  Reads Yosys JSON netlist and maps to target FPGA primitives.
+  Key innovation: trit_fusion — detects 2-bit ternary encoding patterns
+  and collapses them into fewer LUTs, achieving 30%+ area savings.
+  Input: fpga/sim/build/trinity.json (existing Yosys output)
+  Target: Xilinx Artix-7 XC7A35T primitives (LUT6, FDRE, CARRY4, RAMB36E1, DSP48E1)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  YosysCell:
+    description: "Cell from Yosys JSON netlist"
+    fields:
+      type_name: String
+      hide_name: Bool
+      port_directions: List<String>
+      connections: List<String>
+      attributes: List<String>
+
+  YosysModule:
+    description: "Module from Yosys JSON netlist"
+    fields:
+      name: String
+      ports: List<String>
+      cells: List<String>
+      netnames: List<String>
+
+  SynthConfig:
+    description: "Synthesis configuration"
+    fields:
+      target_device: String
+      optimize_for: String
+      flatten_hierarchy: Bool
+      use_carry_chains: Bool
+      use_dsp_for_multiply: Bool
+      trit_encoding: String
+      enable_trit_fusion: Bool
+      enable_sacred_constants: Bool
+
+  SynthPass:
+    description: "Named synthesis optimization pass"
+    fields:
+      name: String
+      enabled: Bool
+      priority: Int
+      cells_before: Int
+      cells_after: Int
+
+  SynthResult:
+    description: "Synthesis output metrics"
+    fields:
+      luts_used: Int
+      ffs_used: Int
+      carry_chains: Int
+      brams_used: Int
+      dsps_used: Int
+      ios_used: Int
+      critical_path_estimate_ns: Float
+      trit_ops_fused: Int
+      passes_run: Int
+      total_cells: Int
+
+  TritPattern:
+    description: "Detected trit encoding pattern (2-bit signal pair)"
+    fields:
+      signal_hi: String
+      signal_lo: String
+      encoding: String
+      used_by_cells: List<Int>
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONSTANTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  PHI: 1.618033988749895
+  TRINITY: 3.0
+  TRIT_NEG: -1
+  TRIT_ZERO: 0
+  TRIT_POS: 1
+  TRIT_ENCODING_00: -1
+  TRIT_ENCODING_01: 0
+  TRIT_ENCODING_10: 1
+  TRIT_ENCODING_11: -999
+  LUT6_INPUTS: 6
+  LUT4_INPUTS: 4
+  CARRY4_WIDTH: 4
+  DSP48E1_WIDTH: 25
+  BRAM_DEPTH: 1024
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Input parsing
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: parse_yosys_json
+    given: "Path to Yosys JSON netlist file (e.g., fpga/sim/build/trinity.json)"
+    when: "Starting synthesis from Yosys output"
+    then: "Parse JSON, create YosysModule with all cells, ports, nets. Populate ForgeDB with generic cells."
+
+  - name: parse_blif
+    given: "Path to BLIF netlist file (e.g., fpga/sim/build/trinity.blif)"
+    when: "Starting synthesis from BLIF output"
+    then: "Parse BLIF format, extract .model, .inputs, .outputs, .names, .latch. Populate ForgeDB."
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Technology mapping — Artix-7
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: technology_map_artix7
+    given: "ForgeDB with generic cells ($add, $mux, $dff, $eq, $pmux, $logic_not)"
+    when: "Mapping to Xilinx Artix-7 primitives"
+    then: "Replace generic cells with LUT6, FDRE, CARRY4, RAMB36E1, DSP48E1, IBUF, OBUF"
+
+  - name: map_lut
+    given: "Generic combinational logic with up to 6 inputs"
+    when: "Implementing Boolean function"
+    then: "Create LUT6 cell with INIT string encoding the truth table"
+
+  - name: map_flipflop
+    given: "Generic register ($dff, $adff, $sdff, $adffe)"
+    when: "Implementing sequential element"
+    then: "Create FDRE (with reset) or FDCE (with clear) cell"
+
+  - name: map_carry_chain
+    given: "Arithmetic addition cells ($add)"
+    when: "Implementing addition"
+    then: "Create CARRY4 chain for fast carry propagation"
+
+  - name: map_bram
+    given: "Memory array larger than 64 entries"
+    when: "Implementing ternary memory"
+    then: "Create RAMB36E1 (36Kb) or RAMB18E1 (18Kb) block RAM"
+
+  - name: map_dsp
+    given: "Multiplication cells ($mul)"
+    when: "Implementing multiplication"
+    then: "Create DSP48E1 cell for hardware multiply-accumulate"
+
+  - name: map_io
+    given: "Top-level port"
+    when: "Implementing I/O pad"
+    then: "Create IBUF for inputs, OBUF for outputs with IOSTANDARD from XDC"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Optimization passes
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: constant_propagation
+    given: "ForgeDB with cells"
+    when: "Optimizing — first pass"
+    then: "Identify constant-driven nets, propagate values, simplify LUT INIT strings"
+
+  - name: dead_code_elimination
+    given: "ForgeDB after constant propagation"
+    when: "Optimizing — second pass"
+    then: "Remove cells with no fanout, remove orphaned nets"
+
+  - name: trit_fusion
+    given: "ForgeDB with mapped cells"
+    when: "Sacred ternary optimization"
+    then: "Detect 2-bit pairs representing trits (00=-1, 01=0, 10=+1), fuse correlated logic into single LUT6. A 6-LUT can implement any 3-input trit function."
+    notes: |
+      This is the key FORGE innovation. Binary tools waste LUTs because they
+      treat both bits of a trit independently. FORGE knows they are correlated
+      (only 3 of 4 states are valid) and exploits this for 30%+ area savings.
+
+  - name: carry_chain_inference
+    given: "ForgeDB with trit addition patterns"
+    when: "Ternary arithmetic optimization"
+    then: "Pack trit addition chains into CARRY4 primitives. One CARRY4 handles 2 trit additions."
+
+  - name: optimize_sacred_constants
+    given: "ForgeDB with constant assignments for phi, trinity, phoenix"
+    when: "Sacred constant optimization"
+    then: "Replace LUT-based constant generation with BRAM ROM lookup. Saves ~20 LUTs per constant."
+
+  - name: bram_inference
+    given: "ForgeDB with large memory arrays"
+    when: "Memory optimization"
+    then: "Identify arrays > 64 entries and pack into RAMB36E1 blocks"
+
+  - name: dsp_inference
+    given: "ForgeDB with multiplication patterns"
+    when: "DSP optimization"
+    then: "Map trit multiplication to DSP48E1 slices"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Pipeline orchestration
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: run_synthesis
+    given: "Input file path, SynthConfig, ForgeDB"
+    when: "Running complete synthesis flow"
+    then: "Execute: parse → flatten → const_prop → dead_code → tech_map → trit_fusion → carry_chain → bram → dsp → sacred_constants. Return SynthResult."
+
+  - name: report_synthesis
+    given: "SynthResult"
+    when: "User requests synthesis report"
+    then: "Print table: LUTs, FFs, CARRY4, BRAM, DSP, IO, critical path estimate, trit ops fused"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TESTING
+# ═══════════════════════════════════════════════════════════════════════════════
+
+testing:
+  - name: test_parse_yosys_json
+    description: "Parse existing trinity.json from Yosys"
+    cases:
+      - assert: "parse_yosys_json(fpga/sim/build/trinity.json) returns valid module"
+      - assert: "Module has cells: $add, $adffe, $pmux, $eq, $mux, $logic_not"
+      - assert: "Module has ports: clk, rst_n, valid_in, data_in, data_out, valid_out, ready, led, gpio"
+
+  - name: test_technology_map
+    description: "Map generic cells to Artix-7 primitives"
+    cases:
+      - assert: "$add maps to CARRY4 chain"
+      - assert: "$adffe maps to FDRE with async reset"
+      - assert: "$mux maps to LUT6"
+      - assert: "Top ports get IBUF/OBUF"
+
+  - name: test_trit_fusion
+    description: "Trit fusion reduces LUT count"
+    cases:
+      - assert: "trit_fusion on ternary design reduces LUTs by >= 30%"
+      - assert: "trit_fusion preserves functional correctness"
+
+  - name: test_full_synthesis
+    description: "End-to-end synthesis of trinity_simple"
+    cases:
+      - assert: "run_synthesis produces SynthResult with luts_used < 80"
+      - assert: "run_synthesis produces SynthResult with critical_path_estimate_ns < 10.0"

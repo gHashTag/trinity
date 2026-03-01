@@ -1,0 +1,245 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# FORGE OF KOSCHEI — Bitstream Generator
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS THE FORGE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: forge_bitstream
+version: "1.0.0"
+language: zig
+module: forge.bitstream
+
+description: |
+  Bitstream generator for FORGE toolchain.
+  Converts placed-and-routed design (FASM) into binary bitstream
+  that can be loaded onto the target FPGA.
+  Primary target: Xilinx Artix-7 XC7A35T (.bit format)
+  Secondary target: Lattice iCE40 (.bin format)
+  Uses prjxray database for Artix-7 frame/bit mapping.
+  Uses icestorm chipdb for iCE40 CRAM mapping.
+  Includes OpenOCD/JTAG flash support.
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  BitstreamConfig:
+    description: "Bitstream generation configuration"
+    fields:
+      target_family: String
+      part_name: String
+      output_format: String
+      compress: Bool
+      include_debug: Bool
+
+  FASMFeature:
+    description: "Single FASM feature to configure"
+    fields:
+      tile_name: String
+      site_name: String
+      feature_path: String
+      value: Int
+      width: Int
+
+  ConfigFrame:
+    description: "Xilinx configuration frame (101 words for Artix-7)"
+    fields:
+      frame_address: Int
+      frame_data: List<Int>
+      word_count: Int
+
+  FrameAddress:
+    description: "Xilinx frame address decomposition"
+    fields:
+      block_type: Int
+      top_bottom: Int
+      row: Int
+      column: Int
+      minor: Int
+
+  BitstreamHeader:
+    description: "Xilinx .bit file header"
+    fields:
+      design_name: String
+      part_name: String
+      date: String
+      time: String
+      bitstream_length: Int
+
+  CRAMPage:
+    description: "iCE40 CRAM configuration page"
+    fields:
+      bank: Int
+      page: Int
+      data: List<Int>
+
+  BitstreamResult:
+    description: "Bitstream generation result"
+    fields:
+      output_path: String
+      size_bytes: Int
+      frames_written: Int
+      format: String
+      crc32: Int
+      target: String
+
+  FlashConfig:
+    description: "FPGA programming configuration"
+    fields:
+      method: String
+      interface_config: String
+      target_config: String
+      verify: Bool
+      speed_khz: Int
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONSTANTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  PHI: 1.618033988749895
+  TRINITY: 3.0
+  XILINX_SYNC_WORD: 0xAA995566
+  XILINX_NOOP: 0x20000000
+  XILINX_WRITE_CMD: 0x30008001
+  ARTIX7_FRAME_WORDS: 101
+  ARTIX7_FRAME_BYTES: 404
+  ARTIX7_IDCODE_XC7A35T: 0x0362D093
+  ICE40_CRAM_BANK_SIZE: 256
+  ICE40_MAGIC: 0x7EAA997E
+  CRC32_POLYNOMIAL: 0xEDB88320
+  JTAG_TCK_DEFAULT_KHZ: 6000
+  OPENOCD_ARTIX7_CFG: "target/xilinx/artix7.cfg"
+  OPENOCD_FTDI_CFG: "interface/ftdi/digilent-hs1.cfg"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # FASM processing
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: parse_fasm
+    given: "Path to FASM file"
+    when: "Loading FASM features from routing output"
+    then: "Parse each line as tile.site.feature = value. Return list of FASMFeature."
+
+  - name: validate_fasm
+    given: "List of FASMFeatures, device database"
+    when: "Checking FASM correctness before bitstream generation"
+    then: "Verify all features reference valid tiles/sites/BELs. Report unknown features."
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Artix-7 bitstream generation
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: fasm_to_frames_artix7
+    given: "List of FASMFeatures, prjxray tile/segment database for xc7a35t"
+    when: "Converting FASM to Artix-7 bitstream frames"
+    then: "Map each FASM feature to frame_address + bit_offset using prjxray segbits database. Collect all frame modifications. Return list of ConfigFrames."
+
+  - name: build_frame_address
+    given: "Block type, top/bottom, row, column, minor frame"
+    when: "Constructing Xilinx frame address"
+    then: "Pack fields into 32-bit frame address: [25:23]=block_type, [22]=top_bottom, [21:17]=row, [16:7]=column, [6:0]=minor"
+
+  - name: write_bitstream_xilinx
+    given: "List of ConfigFrames, BitstreamConfig, BitstreamHeader"
+    when: "Generating final .bit file"
+    then: "Write Xilinx .bit format: (1) header section, (2) sync word 0xAA995566, (3) IDCODE check, (4) FDRI write with frame data, (5) CRC, (6) DESYNC command."
+
+  - name: write_bitstream_bin
+    given: "List of ConfigFrames, BitstreamConfig"
+    when: "Generating raw .bin file (no header)"
+    then: "Write raw configuration data without .bit header. Suitable for SPI flash."
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # iCE40 bitstream generation
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: fasm_to_cram_ice40
+    given: "List of FASMFeatures, icestorm chipdb"
+    when: "Converting FASM to iCE40 CRAM data"
+    then: "Map features to CRAM bank/page/bit using icestorm tile database. Return list of CRAMPages."
+
+  - name: write_bitstream_ice40
+    given: "List of CRAMPages, BitstreamConfig"
+    when: "Generating iCE40 .bin file"
+    then: "Write icepack-compatible binary: magic, CRAM bank data, BRAM data, CRC."
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Verification
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: compute_crc32
+    given: "Byte buffer"
+    when: "Computing bitstream integrity checksum"
+    then: "Calculate CRC32 using standard polynomial 0xEDB88320"
+
+  - name: verify_bitstream
+    given: "Path to bitstream file, expected CRC32"
+    when: "Validating bitstream integrity"
+    then: "Read bitstream, compute CRC32, compare against expected. Report pass/fail."
+
+  - name: compare_with_reference
+    given: "FORGE bitstream, reference bitstream (from Vivado or icepack)"
+    when: "Validating FORGE output against known-good bitstream"
+    then: "Compare frame-by-frame. Report differences with frame address and bit positions."
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # FPGA programming
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: program_fpga_openocd
+    given: "Bitstream path, FlashConfig with OpenOCD interface/target configs"
+    when: "Flashing Arty A7 via JTAG (Platform Cable USB II)"
+    then: "Execute OpenOCD: init, halt, pld load <bitstream>, verify, resume. Report success/failure."
+
+  - name: program_fpga_iceprog
+    given: "Bitstream path (.bin)"
+    when: "Flashing iCE40 via iceprog"
+    then: "Execute iceprog <bitstream.bin>. Verify CRC after flash."
+
+  - name: report_bitstream
+    given: "BitstreamResult"
+    when: "User requests bitstream report"
+    then: "Print target, size, frames, format, CRC, output path"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TESTING
+# ═══════════════════════════════════════════════════════════════════════════════
+
+testing:
+  - name: test_fasm_parse
+    description: "Parse FASM file correctly"
+    cases:
+      - assert: "parse_fasm handles tile.site.feature = value format"
+      - assert: "parse_fasm handles multi-bit features (INIT[63:0])"
+
+  - name: test_frame_address
+    description: "Frame address encoding correct"
+    cases:
+      - assert: "build_frame_address(0, 0, 0, 0, 0) == 0x00000000"
+      - assert: "block_type field at bits [25:23]"
+
+  - name: test_xilinx_bitstream_structure
+    description: "Generated .bit file has valid structure"
+    cases:
+      - assert: "Bitstream starts with valid header"
+      - assert: "Sync word 0xAA995566 present"
+      - assert: "IDCODE matches XC7A35T (0x0362D093)"
+      - assert: "CRC32 at end is correct"
+
+  - name: test_crc32
+    description: "CRC32 computation correct"
+    cases:
+      - assert: "CRC32 of empty buffer == 0x00000000"
+      - assert: "CRC32 of known test vector matches reference"
+
+  - name: test_bitstream_size
+    description: "Bitstream size matches device expectations"
+    cases:
+      - assert: "XC7A35T bitstream approximately 2MB"
+      - assert: "iCE40-HX1K bitstream approximately 32KB"

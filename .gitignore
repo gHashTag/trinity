@@ -91,6 +91,12 @@ check_ssh.py
 # BitNet upstream repo (large, cloned locally)
 bitnet-cpp/
 
+# Large FPGA installer binaries (>100MB)
+fpga/fly-vivado/*.bin
+
+# Forge build artifacts
+build/forge_*.bit
+
 # Microsoft model weights
 models/microsoft-bitnet-2b/
 models/microsoft-bitnet-2b-bf16/

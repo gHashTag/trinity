@@ -1197,6 +1197,27 @@ pub fn build(b: *std.Build) void {
     phi_loop_step.dependOn(&run_phi_loop.step);
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // FORGE OF KOSCHEI v1.0 — Independent Ternary FPGA Toolchain
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    const forge = b.addExecutable(.{
+        .name = "forge",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/forge/main.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+        }),
+    });
+    b.installArtifact(forge);
+
+    const run_forge = b.addRunArtifact(forge);
+    if (b.args) |run_args| {
+        run_forge.addArgs(run_args);
+    }
+    const forge_step = b.step("forge", "Run FORGE OF KOSCHEI — Independent Ternary FPGA Toolchain");
+    forge_step.dependOn(&run_forge.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // Trinity Orchestrator — REMOVED (generated.old/ deleted)
     // ═══════════════════════════════════════════════════════════════════════════
 
