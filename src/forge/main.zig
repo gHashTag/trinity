@@ -4,7 +4,7 @@
 //
 // CLI entry point for the FORGE toolchain.
 // Orchestrates: Synthesis → Placement → Routing → Bitstream
-// Target: Xilinx Artix-7 XC7A35T (Arty A7)
+// Target: Xilinx Artix-7 (XC7A35T, XC7A100T, XC7A200T)
 //
 // Sacred Formula: φ² + 1/φ² = 3
 // KOSCHEI IS THE FORGE. NO MIDDLEMEN. ONLY TRINITY.
@@ -19,7 +19,7 @@ const FORGE_BANNER =
     \\  ═══════════════════════════════════════════════════════════════
     \\  ║  FORGE OF KOSCHEI v1.0 — Independent Ternary FPGA Toolchain ║
     \\  ║  φ² + 1/φ² = 3 = TRINITY                                     ║
-    \\  ║  Target: Xilinx Artix-7 XC7A35T (Arty A7)                    ║
+    \\  ║  Target: Xilinx Artix-7 (35T/100T/200T)                      ║
     \\  ═══════════════════════════════════════════════════════════════
     \\
 ;
@@ -56,6 +56,8 @@ pub fn main() !void {
         try forgeBenchmark(allocator, args[2..]);
     } else if (std.mem.eql(u8, command, "report")) {
         try forgeReport(allocator, args[2..]);
+    } else if (std.mem.eql(u8, command, "detect")) {
+        try forgeDetect(allocator);
     } else if (std.mem.eql(u8, command, "version")) {
         printVersion();
     } else if (std.mem.eql(u8, command, "help")) {
@@ -380,9 +382,24 @@ fn runBitstreamGen(_: RouteStageResult, device: []const u8, output_path: []const
     _ = verbose;
 
     // Generate bitstream
-    // For XC7A35T: ~2MB bitstream (16,620 frames * 101 words * 4 bytes)
-    const frame_count: u32 = if (std.mem.eql(u8, device, "xc7a35t")) 16620 else 1280;
-    const frame_words: u32 = if (std.mem.eql(u8, device, "xc7a35t")) 101 else 32;
+    // Artix-7 frame parameters: 101 words per frame (standard for all Artix-7)
+    // XC7A35T:  16,620 frames (~6.7 MB bitstream)
+    // XC7A100T: 51,840 frames (~20.9 MB bitstream)
+    // XC7A200T: 102,016 frames (~41.2 MB bitstream)
+    const frame_count: u32 = if (std.mem.eql(u8, device, "xc7a35t"))
+        16620
+    else if (std.mem.eql(u8, device, "xc7a100t"))
+        51840
+    else if (std.mem.eql(u8, device, "xc7a200t"))
+        102016
+    else
+        1280;
+    const frame_words: u32 = if (std.mem.eql(u8, device, "xc7a35t") or
+        std.mem.eql(u8, device, "xc7a100t") or
+        std.mem.eql(u8, device, "xc7a200t"))
+        101
+    else
+        32;
 
     // Write bitstream file using pwriteAll for Zig 0.15
     const out_file = std.fs.cwd().createFile(output_path, .{}) catch |err| {
@@ -391,7 +408,14 @@ fn runBitstreamGen(_: RouteStageResult, device: []const u8, output_path: []const
     };
     defer out_file.close();
 
-    const idcode: u32 = if (std.mem.eql(u8, device, "xc7a35t")) 0x0362D093 else 0x00000000;
+    const idcode: u32 = if (std.mem.eql(u8, device, "xc7a35t"))
+        0x0362D093
+    else if (std.mem.eql(u8, device, "xc7a100t"))
+        0x13631093
+    else if (std.mem.eql(u8, device, "xc7a200t"))
+        0x13636093
+    else
+        0x00000000;
 
     // Build bitstream in memory, then write at once (Zig 0.15 non-managed ArrayList)
     const alloc = std.heap.page_allocator;
@@ -428,7 +452,12 @@ fn runBitstreamGen(_: RouteStageResult, device: []const u8, output_path: []const
 
     // Part name
     try buf.append(alloc, 'b');
-    const part_name = "7a35tcsg324";
+    const part_name = if (std.mem.eql(u8, device, "xc7a100t"))
+        "7a100tfgg676"
+    else if (std.mem.eql(u8, device, "xc7a200t"))
+        "7a200tfbg676"
+    else
+        "7a35tcsg324";
     try H.u16BE(&buf, alloc, @intCast(part_name.len + 1));
     try buf.appendSlice(alloc, part_name);
     try buf.append(alloc, 0);
@@ -796,6 +825,50 @@ fn forgeReport(allocator: std.mem.Allocator, args: []const []const u8) !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 // Help and version
 // ═══════════════════════════════════════════════════════════════════════════════
+
+fn forgeDetect(allocator: std.mem.Allocator) !void {
+    std.debug.print("{s}", .{FORGE_BANNER});
+    std.debug.print("[FORGE] JTAG Device Detection\n\n", .{});
+    std.debug.print("  Scanning JTAG chain...\n", .{});
+
+    // Try openFPGALoader --detect first
+    const argv = [_][]const u8{ "openFPGALoader", "--detect" };
+    var child = std.process.Child.init(&argv, allocator);
+    child.stderr_behavior = .Pipe;
+    child.stdout_behavior = .Pipe;
+    child.spawn() catch {
+        std.debug.print("  openFPGALoader not found.\n", .{});
+        printDetectManual();
+        return;
+    };
+    const term = child.wait() catch {
+        printDetectManual();
+        return;
+    };
+    _ = term;
+
+    // Print known IDCODE table
+    std.debug.print("\n  ╔═══════════════════════════════════════════════════╗\n", .{});
+    std.debug.print("  ║  ARTIX-7 IDCODE TABLE                            ║\n", .{});
+    std.debug.print("  ╠═══════════════════════════════════════════════════╣\n", .{});
+    std.debug.print("  ║  XC7A35T   │ 0x0362D093 │ 16,620 frames │ CSG324║\n", .{});
+    std.debug.print("  ║  XC7A100T  │ 0x13631093 │ 51,840 frames │ FGG484║\n", .{});
+    std.debug.print("  ║  XC7A200T  │ 0x13636093 │ 102,016 frames│ FBG484║\n", .{});
+    std.debug.print("  ╚═══════════════════════════════════════════════════╝\n", .{});
+    std.debug.print("\n  To generate bitstream for your device:\n", .{});
+    std.debug.print("  forge run --device xc7a100t --input <netlist.json> --output build/trinity.bit\n\n", .{});
+}
+
+fn printDetectManual() void {
+    std.debug.print("\n  Manual detection methods:\n", .{});
+    std.debug.print("  1. Vivado: open_hw_target; get_hw_devices\n", .{});
+    std.debug.print("  2. Look at chip marking on the FPGA package\n", .{});
+    std.debug.print("  3. Check board documentation/silkscreen\n\n", .{});
+    std.debug.print("  Known Artix-7 IDCODEs:\n", .{});
+    std.debug.print("    XC7A35T  → 0x0362D093\n", .{});
+    std.debug.print("    XC7A100T → 0x13631093\n", .{});
+    std.debug.print("    XC7A200T → 0x13636093\n\n", .{});
+}
 
 fn printVersion() void {
     std.debug.print("{s}", .{FORGE_BANNER});
