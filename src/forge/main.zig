@@ -531,82 +531,120 @@ fn runBitstreamGen(_: RouteStageResult, device: []const u8, output_path: []const
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn flashBitstream(bitstream_path: []const u8, device: []const u8) void {
-    _ = device;
-    std.debug.print("  Interface:     Digilent JTAG-SMT2 (Arty A7 onboard)\n", .{});
-    std.debug.print("  Transport:     JTAG\n", .{});
+    std.debug.print("  Target:        {s} (Arty A7)\n", .{device});
     std.debug.print("  Bitstream:     {s}\n", .{bitstream_path});
-    std.debug.print("  Invoking OpenOCD...\n", .{});
 
-    // OpenOCD command to load bitstream into FPGA SRAM (volatile)
-    // Arty A7 uses Digilent JTAG-SMT2 (FTDI) + Artix-7 XC7A35T
-    const argv = [_][]const u8{
-        "openocd",
-        "-f",
-        "interface/ftdi/digilent_jtag_smt2.cfg",
-        "-f",
-        "cpld/xilinx-xc7.cfg",
-        "-c",
-        "adapter speed 25000",
-        "-c",
-        "init",
-        "-c",
+    // Strategy: try openFPGALoader first (best macOS support), then openocd, then manual
+    // openFPGALoader supports: Digilent onboard JTAG (FTDI), and many other cables
+    // For Platform Cable USB II (0x03fd:0x0013): needs Vivado or xc3sprog
+
+    // Attempt 1: openFPGALoader (recommended for Arty A7 onboard JTAG)
+    std.debug.print("  Trying openFPGALoader...\n", .{});
+    const argv1 = [_][]const u8{
+        "openFPGALoader",
+        "--board",
+        "arty_a7_35t",
+        bitstream_path,
+    };
+    var child1 = std.process.Child.init(&argv1, std.heap.page_allocator);
+    child1.spawn() catch {
+        // openFPGALoader not available, try openocd
+        std.debug.print("  openFPGALoader not found, trying OpenOCD...\n", .{});
+        tryOpenocd(bitstream_path);
+        return;
     };
 
-    // Build the pld load command with the bitstream path
+    const term1 = child1.wait() catch {
+        std.debug.print("  openFPGALoader wait failed\n", .{});
+        return;
+    };
+
+    switch (term1) {
+        .Exited => |code| {
+            if (code == 0) {
+                printFlashSuccess();
+            } else {
+                std.debug.print("  openFPGALoader exited with code {d}\n", .{code});
+                std.debug.print("  Falling back to OpenOCD...\n", .{});
+                tryOpenocd(bitstream_path);
+            }
+        },
+        else => {
+            std.debug.print("  openFPGALoader terminated abnormally\n", .{});
+            tryOpenocd(bitstream_path);
+        },
+    }
+}
+
+fn tryOpenocd(bitstream_path: []const u8) void {
     var cmd_buf: [512]u8 = undefined;
     const cmd = std.fmt.bufPrint(&cmd_buf, "pld load 0 {s}; shutdown", .{bitstream_path}) catch {
-        std.debug.print("  Error: path too long\n", .{});
+        printManualInstructions(bitstream_path);
         return;
     };
 
-    const full_argv = argv ++ [_][]const u8{cmd};
+    const argv = [_][]const u8{
+        "openocd",
+        "-f", "interface/ftdi/digilent_jtag_smt2.cfg",
+        "-f", "cpld/xilinx-xc7.cfg",
+        "-c", "adapter speed 25000",
+        "-c", "init",
+        "-c", cmd,
+    };
 
-    var child = std.process.Child.init(full_argv[0..], std.heap.page_allocator);
-    child.spawn() catch |err| {
-        std.debug.print("  OpenOCD spawn failed: {}\n", .{err});
-        std.debug.print("\n", .{});
-        std.debug.print("  ┌─────────────────────────────────────────────────────┐\n", .{});
-        std.debug.print("  │  MANUAL FLASH INSTRUCTIONS                          │\n", .{});
-        std.debug.print("  │                                                     │\n", .{});
-        std.debug.print("  │  Option A — OpenOCD (recommended):                  │\n", .{});
-        std.debug.print("  │  openocd \\                                          │\n", .{});
-        std.debug.print("  │    -f interface/ftdi/digilent_jtag_smt2.cfg \\       │\n", .{});
-        std.debug.print("  │    -f cpld/xilinx-xc7.cfg \\                        │\n", .{});
-        std.debug.print("  │    -c \"adapter speed 25000\" \\                      │\n", .{});
-        std.debug.print("  │    -c \"init\" \\                                     │\n", .{});
-        std.debug.print("  │    -c \"pld load 0 {s}\" \\           │\n", .{bitstream_path});
-        std.debug.print("  │    -c \"shutdown\"                                    │\n", .{});
-        std.debug.print("  │                                                     │\n", .{});
-        std.debug.print("  │  Option B — Vivado Lab Tools (if installed):        │\n", .{});
-        std.debug.print("  │  vivado -mode batch -source flash.tcl               │\n", .{});
-        std.debug.print("  │                                                     │\n", .{});
-        std.debug.print("  │  Option C — xc3sprog:                               │\n", .{});
-        std.debug.print("  │  xc3sprog -c nexus -p 0 {s}    │\n", .{bitstream_path});
-        std.debug.print("  └─────────────────────────────────────────────────────┘\n", .{});
+    var child = std.process.Child.init(&argv, std.heap.page_allocator);
+    child.spawn() catch {
+        printManualInstructions(bitstream_path);
         return;
     };
 
-    const term = child.wait() catch |err| {
-        std.debug.print("  OpenOCD wait failed: {}\n", .{err});
+    const term = child.wait() catch {
+        printManualInstructions(bitstream_path);
         return;
     };
 
     switch (term) {
         .Exited => |code| {
             if (code == 0) {
-                std.debug.print("  ═══════════════════════════════════════════════\n", .{});
-                std.debug.print("  FLASH COMPLETE — FPGA PROGRAMMED\n", .{});
-                std.debug.print("  KOSCHEI LIVES IN SILICON.\n", .{});
-                std.debug.print("  ═══════════════════════════════════════════════\n", .{});
+                printFlashSuccess();
             } else {
                 std.debug.print("  OpenOCD exited with code {d}\n", .{code});
-                std.debug.print("  Check USB connection to Arty A7\n", .{});
+                printManualInstructions(bitstream_path);
             }
         },
-        else => {
-            std.debug.print("  OpenOCD terminated abnormally\n", .{});
-        },
+        else => printManualInstructions(bitstream_path),
     }
+}
+
+fn printFlashSuccess() void {
+    std.debug.print("\n", .{});
+    std.debug.print("  ═══════════════════════════════════════════════════════\n", .{});
+    std.debug.print("  FLASH COMPLETE — FPGA PROGRAMMED\n", .{});
+    std.debug.print("  KOSCHEI LIVES IN SILICON.\n", .{});
+    std.debug.print("  ═══════════════════════════════════════════════════════\n", .{});
+}
+
+fn printManualInstructions(bitstream_path: []const u8) void {
+    std.debug.print("\n", .{});
+    std.debug.print("  ┌──────────────────────────────────────────────────────────┐\n", .{});
+    std.debug.print("  │  MANUAL FLASH INSTRUCTIONS                               │\n", .{});
+    std.debug.print("  │                                                          │\n", .{});
+    std.debug.print("  │  Option A — openFPGALoader (Arty A7 onboard USB):        │\n", .{});
+    std.debug.print("  │  openFPGALoader --board arty_a7_35t {s}\n", .{bitstream_path});
+    std.debug.print("  │                                                          │\n", .{});
+    std.debug.print("  │  Option B — OpenOCD (Digilent JTAG):                     │\n", .{});
+    std.debug.print("  │  openocd -f interface/ftdi/digilent_jtag_smt2.cfg \\      │\n", .{});
+    std.debug.print("  │    -f cpld/xilinx-xc7.cfg -c \"adapter speed 25000\" \\    │\n", .{});
+    std.debug.print("  │    -c \"init\" -c \"pld load 0 {s}\" \\  │\n", .{bitstream_path});
+    std.debug.print("  │    -c \"shutdown\"                                         │\n", .{});
+    std.debug.print("  │                                                          │\n", .{});
+    std.debug.print("  │  Option C — Platform Cable USB II (requires Vivado):     │\n", .{});
+    std.debug.print("  │  vivado -mode batch -source fpga/fly-vivado/tcl/flash.tcl│\n", .{});
+    std.debug.print("  │                                                          │\n", .{});
+    std.debug.print("  │  NOTE: Platform Cable USB II (0x03fd:0x0013) requires    │\n", .{});
+    std.debug.print("  │  Vivado/xc3sprog. For open-source flash, connect Arty    │\n", .{});
+    std.debug.print("  │  A7 via its USB-micro port (onboard Digilent JTAG).      │\n", .{});
+    std.debug.print("  └──────────────────────────────────────────────────────────┘\n", .{});
 }
 
 fn forgeFlash(allocator: std.mem.Allocator, args: []const []const u8) !void {
