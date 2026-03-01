@@ -60,7 +60,7 @@ jobs:
           cd ../..
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: trinity-linux-amd64
           path: release/trinity-*-linux-amd64.tar.gz
@@ -105,7 +105,7 @@ jobs:
           cd ../..
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: trinity-linux-arm64
           path: release/trinity-*-linux-arm64.tar.gz
@@ -150,7 +150,7 @@ jobs:
           cd ../..
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: trinity-macos-amd64
           path: release/trinity-*-macos-amd64.zip
@@ -195,7 +195,7 @@ jobs:
           cd ../..
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: trinity-macos-arm64
           path: release/trinity-*-macos-arm64.zip
@@ -237,7 +237,7 @@ jobs:
           cd ../..
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: trinity-windows-amd64
           path: release/trinity-*-windows-amd64.zip
@@ -259,7 +259,7 @@ jobs:
           cat SHA256SUMS.txt
 
       - name: Upload checksums
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: checksums
           path: release/SHA256SUMS.txt
