@@ -1,0 +1,249 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# FORGE OF KOSCHEI — Sacred Physical Design Database
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS THE FORGE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: forge_database
+version: "1.0.0"
+language: zig
+module: forge.database
+
+description: |
+  Unified physical design database for the FORGE toolchain.
+  Analogous to Xilinx DCP (Design Checkpoint) but ternary-native.
+  Holds the complete design state from RTL through placed-and-routed netlist.
+  Graph-based representation with prjxray/icestorm device model loading.
+  Target: Xilinx Artix-7 XC7A35T (Arty A7)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES — Netlist primitives + Device model + Unified database
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  CellType:
+    description: "FPGA primitive cell type"
+    fields:
+      name: String
+      family: String
+      num_inputs: Int
+      num_outputs: Int
+      is_sequential: Bool
+
+  Cell:
+    description: "Instance of a primitive cell in the netlist"
+    fields:
+      id: Int
+      cell_type: String
+      name: String
+      properties: List<String>
+      placed: Bool
+      tile_x: Int
+      tile_y: Int
+      bel: String
+
+  Net:
+    description: "Electrical connection between cell pins"
+    fields:
+      id: Int
+      name: String
+      driver_cell_id: Int
+      driver_pin: String
+      sink_cell_ids: List<Int>
+      sink_pins: List<String>
+      routed: Bool
+      timing_slack_ns: Float
+
+  Pin:
+    description: "Connection point on a cell"
+    fields:
+      name: String
+      direction: String
+      net_id: Int
+      cell_id: Int
+
+  Tile:
+    description: "Physical tile on FPGA grid"
+    fields:
+      x: Int
+      y: Int
+      tile_type: String
+      sites: List<String>
+      occupied_cell_ids: List<Int>
+
+  DeviceModel:
+    description: "Complete FPGA device representation"
+    fields:
+      name: String
+      family: String
+      width: Int
+      height: Int
+      num_luts: Int
+      num_ffs: Int
+      num_bram: Int
+      num_dsp: Int
+      num_io: Int
+
+  TimingConstraint:
+    description: "Timing constraint from XDC/SDC"
+    fields:
+      name: String
+      constraint_type: String
+      clock_period_ns: Float
+      source_pin: String
+      dest_pin: String
+
+  PlacementConstraint:
+    description: "Placement constraint from XDC"
+    fields:
+      port_name: String
+      package_pin: String
+      iostandard: String
+
+  ForgeDB:
+    description: "Complete design state — unified checkpoint"
+    fields:
+      device_name: String
+      device_family: String
+      device_width: Int
+      device_height: Int
+      num_cells: Int
+      num_nets: Int
+      phase: String
+      utilization_lut_pct: Float
+      utilization_ff_pct: Float
+      utilization_bram_pct: Float
+      timing_met: Bool
+      worst_slack_ns: Float
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONSTANTS — Sacred parameters for the database
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  PHI: 1.618033988749895
+  TRINITY: 3.0
+  PHOENIX: 999
+  CHECKPOINT_MAGIC: 0x464F5247
+  CHECKPOINT_VERSION: 1
+  MAX_CELLS: 1000000
+  MAX_NETS: 2000000
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS — Database operations
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: create_database
+    given: "Device name (xc7a35t or ice40hx1k) and family"
+    when: "Initializing a new FORGE design flow"
+    then: "Return empty ForgeDB with device model loaded, phase set to rtl"
+
+  - name: add_cell
+    given: "Cell type name, instance name, and properties"
+    when: "Synthesis adds a new primitive to the netlist"
+    then: "Insert cell into ForgeDB, assign unique ID, return cell ID"
+
+  - name: add_net
+    given: "Net name, driver cell ID and pin, list of sink cell IDs and pins"
+    when: "Synthesis creates a connection between cells"
+    then: "Insert net into ForgeDB, assign unique ID, return net ID"
+
+  - name: remove_cell
+    given: "Cell ID to remove"
+    when: "Optimization eliminates a cell (dead code, constant prop)"
+    then: "Remove cell and all connected nets, clean up references"
+
+  - name: merge_nets
+    given: "Two net IDs to merge"
+    when: "Constant propagation or optimization combines signals"
+    then: "Combine sinks into one net, remove the other, update cell refs"
+
+  - name: save_checkpoint
+    given: "File path for checkpoint output"
+    when: "User requests checkpoint or between pipeline stages"
+    then: "Serialize entire ForgeDB to binary file with magic header and CRC"
+
+  - name: load_checkpoint
+    given: "File path to checkpoint"
+    when: "Resuming from a previous pipeline stage"
+    then: "Deserialize ForgeDB from file, verify magic and CRC, return DB"
+
+  - name: load_device_artix7
+    given: "Path to prjxray-db directory for xc7a35t"
+    when: "Targeting Xilinx Artix-7"
+    then: "Parse tile grid, routing resources, and timing data from prjxray JSON"
+
+  - name: load_device_ice40
+    given: "Path to icestorm chipdb file"
+    when: "Targeting Lattice iCE40"
+    then: "Parse tile grid, routing resources from icestorm chipdb format"
+
+  - name: report_utilization
+    given: "ForgeDB with cells placed"
+    when: "User requests utilization report"
+    then: "Print LUT, FF, BRAM, DSP, IO usage counts and percentages"
+
+  - name: report_timing
+    given: "ForgeDB with nets routed and timing analyzed"
+    when: "User requests timing summary"
+    then: "Print worst slack, critical path, setup/hold violations"
+
+  - name: validate_database
+    given: "ForgeDB at any stage"
+    when: "Sanity check requested"
+    then: "Verify no dangling nets, valid cell types, consistent IDs, return error list"
+
+  - name: query_cells_by_type
+    given: "Cell type name (LUT6, FDRE, CARRY4, etc.)"
+    when: "Looking up specific primitives"
+    then: "Return list of cell IDs matching the type"
+
+  - name: query_nets_by_slack
+    given: "Slack threshold in nanoseconds"
+    when: "Finding timing-critical nets"
+    then: "Return list of nets with slack below threshold, sorted worst-first"
+
+  - name: get_cell_connectivity
+    given: "Cell ID"
+    when: "Analyzing cell neighborhood"
+    then: "Return all nets connected to this cell, with fan-in and fan-out counts"
+
+  - name: export_json
+    given: "ForgeDB and output file path"
+    when: "Debug or interoperability needed"
+    then: "Write ForgeDB as human-readable JSON"
+
+  - name: import_json
+    given: "JSON file path"
+    when: "Loading design from JSON format"
+    then: "Parse JSON and construct ForgeDB"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TESTING
+# ═══════════════════════════════════════════════════════════════════════════════
+
+testing:
+  - name: test_create_and_populate
+    description: "Create DB, add cells and nets, verify counts"
+    cases:
+      - assert: "create_database(xc7a35t) returns valid ForgeDB"
+      - assert: "add_cell(LUT6, inst_0) returns ID 0"
+      - assert: "add_net(net_0, driver=0, sinks=[1,2]) returns ID 0"
+      - assert: "ForgeDB.num_cells == 1, num_nets == 1"
+
+  - name: test_checkpoint_roundtrip
+    description: "Save and load checkpoint, verify identical state"
+    cases:
+      - assert: "save_checkpoint then load_checkpoint produces identical ForgeDB"
+
+  - name: test_device_model
+    description: "Load Artix-7 device model and verify grid"
+    cases:
+      - assert: "load_device_artix7 returns DeviceModel with num_luts > 20000"
+      - assert: "DeviceModel.width > 0 and height > 0"
+
+  - name: test_validation
+    description: "Validation catches structural errors"
+    cases:
+      - assert: "validate_database catches dangling net references"
+      - assert: "validate_database passes on well-formed DB"

@@ -1,0 +1,212 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# FORGE OF KOSCHEI — Placement Engine
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS THE FORGE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: forge_placement
+version: "1.0.0"
+language: zig
+module: forge.placement
+
+description: |
+  Ternary-aware FPGA placement engine for FORGE toolchain.
+  Assigns synthesized cells to physical tile locations on the FPGA grid.
+  Uses simulated annealing with sacred phi-based cooling schedule.
+  Minimizes wirelength while meeting timing constraints.
+  Key innovation: trit unit clustering — groups correlated trit ALU
+  components into adjacent tiles for minimal routing overhead.
+  Target: Xilinx Artix-7 XC7A35T grid
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  PlacementConfig:
+    description: "Placement engine configuration"
+    fields:
+      algorithm: String
+      random_seed: Int
+      temperature_start: Float
+      cooling_rate: Float
+      effort_level: String
+      timing_driven: Bool
+      max_iterations: Int
+      inner_loop_factor: Float
+
+  PlacementCost:
+    description: "Cost function components"
+    fields:
+      wirelength_hpwl: Float
+      timing_cost: Float
+      congestion_cost: Float
+      trit_cluster_bonus: Float
+      total_weighted: Float
+
+  PlacementMove:
+    description: "Proposed cell swap or move"
+    fields:
+      cell_id: Int
+      from_x: Int
+      from_y: Int
+      from_bel: String
+      to_x: Int
+      to_y: Int
+      to_bel: String
+      delta_cost: Float
+      accepted: Bool
+
+  PlacementResult:
+    description: "Placement output metrics"
+    fields:
+      total_hpwl: Int
+      estimated_critical_path_ns: Float
+      iterations_total: Int
+      moves_accepted: Int
+      moves_rejected: Int
+      runtime_ms: Int
+      cells_placed: Int
+      utilization_pct: Float
+      trit_clusters_formed: Int
+
+  IOConstraint:
+    description: "I/O pin constraint from XDC"
+    fields:
+      port_name: String
+      package_pin: String
+      iostandard: String
+      tile_x: Int
+      tile_y: Int
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONSTANTS — Sacred placement parameters
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  PHI: 1.618033988749895
+  PHI_INV: 0.618033988749895
+  TRINITY: 3.0
+  SA_COOLING_RATE: 0.618033988749895
+  SA_INITIAL_TEMP: 1618.033988749895
+  SA_FROZEN_THRESHOLD: 0.001
+  WIRELENGTH_WEIGHT: 1.0
+  TIMING_WEIGHT: 0.618
+  CONGESTION_WEIGHT: 0.382
+  TRIT_CLUSTER_WEIGHT: 0.5
+  CARRY_CHAIN_MAX_HEIGHT: 32
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Initial placement
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: initial_placement
+    given: "ForgeDB with synthesized cells, DeviceModel with tile grid"
+    when: "Starting placement (no prior placement exists)"
+    then: "Assign each cell to a random valid BEL site. Group connected cells near each other. Lock I/O cells to constrained locations."
+
+  - name: constrain_io
+    given: "List of IOConstraints from XDC, ForgeDB"
+    when: "Applying pin constraints before placement"
+    then: "Lock IBUF/OBUF cells to specific package pin locations. Mark these cells as immovable."
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Simulated annealing placement
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: simulated_annealing
+    given: "ForgeDB with initial placement, PlacementConfig"
+    when: "Running main placement optimization"
+    then: "Execute SA loop: propose swap, evaluate delta cost, accept/reject by Boltzmann criterion. Cool temperature by phi ratio (T *= 0.618). Stop when frozen."
+    notes: |
+      Sacred cooling schedule: T_new = T_old * 0.618 (golden ratio)
+      This provides an optimal balance between exploration and exploitation.
+      Inner loop: N^(4/3) swaps per temperature (VPR-style)
+      Acceptance: exp(-delta_cost / T) > random()
+
+  - name: propose_swap
+    given: "ForgeDB, current temperature"
+    when: "SA inner loop iteration"
+    then: "Select random cell and random target BEL. If target occupied, propose swap. If empty, propose move. Respect type constraints (LUT goes to LUT site only)."
+
+  - name: evaluate_cost
+    given: "ForgeDB with current placement"
+    when: "Computing placement quality"
+    then: "Calculate HPWL (half-perimeter wirelength) for all nets. Add timing cost for critical nets. Add congestion estimate. Subtract trit cluster bonus."
+
+  - name: evaluate_delta_cost
+    given: "Proposed PlacementMove"
+    when: "Evaluating a swap incrementally"
+    then: "Compute cost change for only affected nets (not full recalculation). Return delta_cost."
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Sacred ternary clustering
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: cluster_trit_units
+    given: "ForgeDB with trit ALU cells identified"
+    when: "Pre-placement optimization"
+    then: "Group pairs of LUTs that implement trit operations (hi/lo bit of same trit) into same CLB. This reduces intra-CLB routing by 50%."
+
+  - name: place_carry_chains
+    given: "ForgeDB with CARRY4 chains"
+    when: "Placing arithmetic chains"
+    then: "Place CARRY4 cells vertically in same column (Artix-7 carry chains go north). Lock chain ordering."
+
+  - name: place_brams
+    given: "ForgeDB with RAMB36E1 cells"
+    when: "Placing block RAM"
+    then: "Place BRAM cells in BRAM column tiles. Minimize distance to connected logic."
+
+  - name: place_dsps
+    given: "ForgeDB with DSP48E1 cells"
+    when: "Placing DSP blocks"
+    then: "Place DSP cells in DSP column tiles. Cascade adjacent DSPs when chained."
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Legalization and reporting
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - name: legalize
+    given: "ForgeDB after SA with approximate positions"
+    when: "Snapping cells to exact BEL sites"
+    then: "Resolve overlaps, snap to nearest valid BEL, maintain relative ordering"
+
+  - name: report_placement
+    given: "PlacementResult"
+    when: "User requests placement report"
+    then: "Print HPWL, critical path estimate, utilization, trit clusters, runtime"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TESTING
+# ═══════════════════════════════════════════════════════════════════════════════
+
+testing:
+  - name: test_initial_placement
+    description: "All cells get valid BEL assignments"
+    cases:
+      - assert: "initial_placement assigns every cell to a valid site"
+      - assert: "No two cells occupy the same BEL"
+
+  - name: test_io_constraints
+    description: "IO cells locked to XDC pin locations"
+    cases:
+      - assert: "constrain_io locks clk to pin E3"
+      - assert: "constrain_io locks rst_n to pin C12"
+      - assert: "Constrained cells are immovable during SA"
+
+  - name: test_sa_improves_cost
+    description: "SA reduces placement cost"
+    cases:
+      - assert: "Final HPWL < initial HPWL"
+      - assert: "SA converges within max_iterations"
+
+  - name: test_carry_chain_vertical
+    description: "CARRY4 chains placed vertically"
+    cases:
+      - assert: "All CARRY4 cells in same chain have same X coordinate"
+      - assert: "Y coordinates are consecutive"
