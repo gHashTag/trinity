@@ -1,119 +1,156 @@
 #!/bin/bash
 # ═════════════════════════════════════════════════════════════════════════
-# TRINITY FPGA — OpenOCD Flash Script for Digilent Arty A7 35T
+# TRINITY FPGA — Flash Script for Digilent Arty A7 35T
 # ═════════════════════════════════════════════════════════════════════════
+# Uses openFPGALoader (handles macOS USB drivers properly)
+# Falls back to OpenOCD if openFPGALoader is not available
+#
+# Usage:  sudo bash fpga/flash_arty_vivado.sh
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR"/.. && pwd)"
-BUILD_DIR="$PROJECT_ROOT/sim/build"
-BIT_FILE="$BUILD_DIR/trinity.bit"
+BIT_FILE="$SCRIPT_DIR/fly-vivado/output/trinity.bit"
 
-echo "╔══════════════════════════════════════════════════════════════════════╗"
-echo "║  TRINITY FPGA — FLASH TO ARTY A7                                    ║"
-echo "╚══════════════════════════════════════════════════════════════════════╝"
+echo ""
+echo "  TRINITY FPGA — FLASH TO ARTY A7 35T"
+echo "  ====================================="
 echo ""
 
-# Check if bitstream exists
-if [ ! -f "$BIT_FILE" ]; then
-    echo "ERROR: Bitstream file not found: $BIT_FILE"
-    echo ""
-    echo "Please generate bitstream first:"
-    echo "  bash fpga/generate_bitstream_vivado.sh"
+# Check root
+if [ "$(id -u)" -ne 0 ]; then
+    echo "ERROR: Must run as root."
+    echo "  sudo bash $0"
     exit 1
 fi
 
-echo "Bitstream: $BIT_FILE"
-echo "Size: $(ls -lh "$BIT_FILE" | awk '{print $5}')"
+# Check bitstream
+if [ ! -f "$BIT_FILE" ]; then
+    echo "ERROR: Bitstream not found: $BIT_FILE"
+    exit 1
+fi
+
+echo "  Bitstream: $BIT_FILE"
+echo "  Size:      $(ls -lh "$BIT_FILE" | awk '{print $5}')"
 echo ""
 
-# Check FPGA connection
-echo "Checking FPGA connection..."
-if system_profiler SPUSBDataType 2>/dev/null | grep -q "Xilinx"; then
-    echo "✅ FPGA detected via USB"
+# macOS: unload Apple FTDI kext if loaded
+if [ "$(uname)" = "Darwin" ]; then
+    echo "  macOS: unloading Apple FTDI driver..."
+    kextunload -b com.apple.driver.AppleUSBFTDI 2>/dev/null || true
+    kextunload -b com.apple.driver.usb.serial 2>/dev/null || true
+    sleep 1
+fi
+
+# Check connection
+echo "  Checking FPGA connection..."
+if system_profiler SPUSBDataType 2>/dev/null | grep -q "0x03fd"; then
+    echo "  FPGA detected (Xilinx VID 0x03fd)"
+elif system_profiler SPUSBDataType 2>/dev/null | grep -q "Digilent"; then
+    echo "  FPGA detected (Digilent)"
 else
-    echo "⚠️  FPGA not detected via USB"
-    echo "   Please ensure:"
-    echo "   • Arty A7 is connected via USB"
-    echo "   • Jumper is set to JTAG mode (not SW)"
+    echo "  WARNING: FPGA may not be connected."
+    echo "  Continuing anyway..."
 fi
 echo ""
 
-# Create OpenOCD configuration
-cat > /tmp/trinity_flash.cfg << 'EOF'
-# OpenOCD configuration for Digilent Arty A7 35T
-# Target: xc7a35tcsg324-1 (Artix-7 35T)
+# Method 1: openFPGALoader (preferred — handles macOS USB natively)
+if command -v openFPGALoader >/dev/null 2>&1; then
+    echo "  Using openFPGALoader (native FPGA programmer)..."
+    echo "  Board: arty_a7_35t (xc7a35tcsg324)"
+    echo ""
 
-# Interface: FTDI (Digilent USB)
+    # Try with Xilinx VID first (0x03fd:0x0013), then default
+    if openFPGALoader -b arty_a7_35t --vid 0x03fd --pid 0x0013 "$BIT_FILE" 2>&1; then
+        echo ""
+        echo "  ================================================"
+        echo "  TRINITY FLASHED TO ARTY A7!"
+        echo "  PHI=0x19E38  PHI_SQ=0x29E1F  TRINITY=0x30000"
+        echo "  ================================================"
+        echo ""
+        exit 0
+    fi
+
+    echo ""
+    echo "  Xilinx VID failed. Trying with digilent cable..."
+    if openFPGALoader -b arty_a7_35t -c digilent "$BIT_FILE" 2>&1; then
+        echo ""
+        echo "  ================================================"
+        echo "  TRINITY FLASHED TO ARTY A7!"
+        echo "  PHI=0x19E38  PHI_SQ=0x29E1F  TRINITY=0x30000"
+        echo "  ================================================"
+        echo ""
+        exit 0
+    fi
+
+    echo ""
+    echo "  Trying ft2232 cable with Xilinx VID..."
+    if openFPGALoader -b arty_a7_35t -c ft2232 --vid 0x03fd --pid 0x0013 "$BIT_FILE" 2>&1; then
+        echo ""
+        echo "  ================================================"
+        echo "  TRINITY FLASHED TO ARTY A7!"
+        echo "  PHI=0x19E38  PHI_SQ=0x29E1F  TRINITY=0x30000"
+        echo "  ================================================"
+        echo ""
+        exit 0
+    fi
+
+    echo ""
+    echo "  Trying digilent_hs2 cable with Xilinx VID..."
+    if openFPGALoader -b arty_a7_35t -c digilent_hs2 --vid 0x03fd --pid 0x0013 "$BIT_FILE" 2>&1; then
+        echo ""
+        echo "  ================================================"
+        echo "  TRINITY FLASHED TO ARTY A7!"
+        echo "  PHI=0x19E38  PHI_SQ=0x29E1F  TRINITY=0x30000"
+        echo "  ================================================"
+        echo ""
+        exit 0
+    fi
+
+    echo ""
+    echo "  All openFPGALoader methods failed."
+fi
+
+# Method 2: OpenOCD fallback
+if command -v openocd >/dev/null 2>&1; then
+    echo "  openFPGALoader not found. Falling back to OpenOCD..."
+    echo ""
+
+    cat > /tmp/trinity_flash.cfg << OPENOCD_EOF
 adapter driver ftdi
-adapter speed 1000
+ftdi vid_pid 0x03fd 0x0013 0x0403 0x6010 0x0403 0x6014
+ftdi channel 0
+ftdi layout_init 0x00e8 0x60eb
+reset_config none
 
-# Target
+adapter speed 10000
 transport select jtag
-# Target Xilinx 7-series
-set CHIP_FAMILY xc7
-set CHIP_NAME xc7a35t
-set CPLD_JTAG_CHAIN_LENGTH 4
-set CABLE_BUS_WIDTH 12
 
-# JTAG chain for Artix A7 35T:
-# 0: xc7a35t (FPGA)
-# 1: xc7s50 (unused)
-# 2: unknown (unused)
-# 3: unknown (unused)
+source [find cpld/xilinx-xc7.cfg]
 
-target create xc7.chain tap -expected-id 0x0372e093
-
-# Target settings for Xilinx 7-series
-xc7.chain tap -irlen 6 -ircount 8
-
-# FPGA device
-target create xc7a35t.device testee -chain-position 0
-
-# Initialize
 init
 
-# Program FPGA
-puts "INFO: Programming FPGA with trinity.bit..."
-xc7_program xc7a35t.device
-
-# Load bitstream and program
-pld load 0 trinity.bit
-
+puts "Programming FPGA with trinity.bit..."
+pld load 0 ${BIT_FILE}
+puts ""
 puts "SUCCESS: Trinity FPGA programmed!"
+puts "PHI=0x19E38 | PHI_SQ=0x29E1F | TRINITY=0x30000"
 
-# Exit
 shutdown
-EOF
+OPENOCD_EOF
 
-# Run OpenOCD
-echo "Starting OpenOCD programming..."
-echo ""
-
-# Try to use system OpenOCD or Docker OpenOCD
-if command -v openocd &>/dev/null; then
-    cd "$BUILD_DIR"
     openocd -f /tmp/trinity_flash.cfg
-else
-    echo "Using OpenOCD from Docker..."
-    docker run --rm \
-        -v "$BUILD_DIR:/workspace" \
-        --device-read \
-        --device-write \
-        f4pga-artix7:mini \
-        bash -c "
-            cd /workspace
-            openocd -f /tmp/trinity_flash.cfg
-        "
+
+    echo ""
+    echo "  ================================================"
+    echo "  TRINITY FLASHED TO ARTY A7!"
+    echo "  PHI=0x19E38  PHI_SQ=0x29E1F  TRINITY=0x30000"
+    echo "  ================================================"
+    echo ""
+    exit 0
 fi
 
-echo ""
-echo "╔══════════════════════════════════════════════════════════════════════╗"
-echo "║  TRINITY FLASHED TO ARTY A7!                                       ║"
-echo "║                                                                      ║
-echo "║  Your Trinity design is now running on the FPGA!                    ║
-echo "║                                                                      ║
-echo "║  φ² + 1/φ² = 3  (Trinity Heartbeat)                                ║
-echo "║                                                                      ║
-echo "╚══════════════════════════════════════════════════════════════════════╝"
+echo "ERROR: No FPGA programmer found."
+echo "  Install: brew install openfpgaloader"
+echo "  Or:      brew install openocd"
+exit 1

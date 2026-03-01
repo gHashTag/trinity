@@ -3,7 +3,7 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
 
-# Install dependencies for Vivado + expect for auth
+# Install dependencies for Vivado (including pixman and other runtime libs)
 RUN apt-get update && apt-get install -y \
     bash \
     curl \
@@ -20,33 +20,38 @@ RUN apt-get update && apt-get install -y \
     fontconfig \
     locales \
     python3 \
-    openssh-server \
-    sudo \
-    net-tools \
     expect \
+    libpixman-1-0 \
+    libglib2.0-0 \
+    libsm6 \
+    libice6 \
+    libxft2 \
+    libxrandr2 \
+    libxcursor1 \
+    libxinerama1 \
+    libfontconfig1 \
+    libcairo2 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libgtk2.0-0 \
+    libnss3 \
+    libatk1.0-0 \
+    libdbus-1-3 \
     && rm -rf /var/lib/apt/lists/*
 
 # Set locale
 RUN locale-gen en_US.UTF-8
 ENV LANG=en_US.UTF-8
 
-# Generate SSH host keys and configure
-RUN mkdir -p /run/sshd && \
-    ssh-keygen -A && \
-    echo 'root:vivado' | chpasswd && \
-    sed -i 's/#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config && \
-    sed -i 's/#PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
-
 # Create workspace
 RUN mkdir -p /workspace/verilog /workspace/output /vivado
 
-# Copy Vivado web installer
-COPY FPGAs_AdaptiveSoCs_Unified_SDI_2025.2_1114_2157_Lin64.bin /opt/vivado_install.bin
-RUN chmod +x /opt/vivado_install.bin
-
-# Copy expect automation script
+# Copy expect automation script (for auth token gen only)
 COPY setup_and_synth.exp /opt/setup_and_synth.exp
 RUN chmod +x /opt/setup_and_synth.exp
+
+# Copy install config
+COPY install_config.txt /opt/install_config.txt
 
 # Copy startup script
 COPY startup.sh /opt/startup.sh
