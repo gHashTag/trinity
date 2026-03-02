@@ -41,8 +41,8 @@
 - [x] `tri chem half-life` — Radioactive decay
 - [x] `tri chem search` — Element search
 - [x] `tri chem group/period/block` — Filters
-- [ ] `tri chem redox` — Redox analysis (IN PROGRESS — oxidation states working)
-- [ ] `tri chem oxidation` — Oxidation number calculator (PARTIAL)
+- [x] `tri chem redox` — Redox analysis (WORKING — Fe+O2→Fe2O3 tested)
+- [x] `tri chem oxidation` — Oxidation number calculator (WORKING — H2SO4 tested)
 - [ ] `tri chem limiting` — Limiting reagent (NEEDS TEST)
 - [ ] `tri chem titration` — Titration curves (NEEDS TEST)
 - [ ] `tri chem buffer` — Buffer calculations (NEEDS TEST)
@@ -56,9 +56,9 @@
 
 **Quarks:**
 - [ ] [P1] Fix build errors (manifest_create FileNotFound)
-- [ ] [P1] Complete redox analysis — electron transfer, half-reactions
+- [x] [P1] Complete redox analysis — electron transfer, half-reactions ✓
 - [ ] [P2] Add tests for limiting/titration/buffer/ksp
-- [ ] [P2] Improve oxidation state algorithm for complex compounds
+- [ ] [P2] Improve oxidation state algorithm for complex compounds (parentheses parsing)
 
 ---
 
