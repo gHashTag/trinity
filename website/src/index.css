@@ -376,7 +376,7 @@ section {
   border: 1px solid rgba(0, 255, 136, 0.3);
   border-radius: 8px;
   overflow: hidden;
-  z-index: 1000;
+  z-index: 1200;
   min-width: 100%;
 }
 

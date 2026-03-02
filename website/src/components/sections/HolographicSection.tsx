@@ -291,7 +291,7 @@ export default function HolographicSection() {
                 minHeight: 280,
               }}>
                 {/* Axes labels */}
-                <div style={{ position: 'absolute', bottom: 4, left: '50%', transform: 'translateX(-50)', fontSize: 9, color: 'rgba(255,255,255,0.3)', fontFamily: 'JetBrains Mono, monospace' }}>
+                <div style={{ position: 'absolute', bottom: 4, left: '50%', transform: 'translateX(-50%)', fontSize: 9, color: 'rgba(255,255,255,0.3)', fontFamily: 'JetBrains Mono, monospace' }}>
                   modulus_x
                 </div>
                 <div style={{ position: 'absolute', left: 4, top: '50%', transform: 'translateY(-50%) rotate(-90deg)', fontSize: 9, color: 'rgba(255,255,255,0.3)', fontFamily: 'JetBrains Mono, monospace' }}>

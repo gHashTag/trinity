@@ -757,8 +757,8 @@ export default function InteractiveEvolutionTree({
           animate={{ opacity: 1, scale: 1 }}
           style={{
             position: 'fixed',
-            left: tooltipPos.x + 15,
-            top: tooltipPos.y + 15,
+            left: Math.min(tooltipPos.x + 15, window.innerWidth - 200),
+            top: Math.min(tooltipPos.y + 15, window.innerHeight - 100),
             ...glassStyle('rgba(255,215,0,0.3)'),
             padding: '8px 12px',
             fontFamily: FONT,
