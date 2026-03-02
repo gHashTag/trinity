@@ -1,6 +1,6 @@
 `default_nettype none
 
-// DYNAMIC TERNARY DOT PRODUCT — FORGE OF KOSCHEI v2.0
+// DYNAMIC TERNARY DOT PRODUCT — FORGE OF KOSCHEI v2.1
 // 16-trit dot product with LFSR-generated dynamic inputs
 // Proves REAL ternary {-1, 0, +1} computation on silicon
 //
@@ -15,6 +15,9 @@
 //     LED blinks fast  = dot > 0
 //     LED off          = dot == 0
 //     LED on solid     = dot < 0
+//
+// v2.1: Pipeline register after L1 adder tree fixes timing violation
+//       Critical path split: multiply+L1 (clk1) | L2+L3+final (clk2)
 //
 // phi^2 + 1/phi^2 = 3 = TRINITY
 
@@ -88,13 +91,28 @@ module ternary_dot_top (
     endgenerate
 
     // === ADDER TREE: sum 16 signed products ===
-    // Level 1: 8 sums (3-bit signed)
-    wire signed [2:0] sum_l1 [0:7];
+    // Level 1: 8 sums (3-bit signed) — combinational
+    wire signed [2:0] sum_l1_comb [0:7];
     generate
         for (i = 0; i < 8; i = i + 1) begin : add_l1
-            assign sum_l1[i] = prod[i*2] + prod[i*2+1];
+            assign sum_l1_comb[i] = prod[i*2] + prod[i*2+1];
         end
     endgenerate
+
+    // === PIPELINE REGISTER after L1 (timing fix v2.1) ===
+    // Splits critical path: multiply+L1 | L2+L3+final
+    reg signed [2:0] sum_l1 [0:7];
+    generate
+        for (i = 0; i < 8; i = i + 1) begin : pipe_l1
+            always @(posedge clk)
+                sum_l1[i] <= sum_l1_comb[i];
+        end
+    endgenerate
+
+    // Delay sample_tick by 1 clock to match pipeline
+    reg sample_tick_d1 = 0;
+    always @(posedge clk)
+        sample_tick_d1 <= sample_tick;
 
     // Level 2: 4 sums (4-bit signed)
     wire signed [3:0] sum_l2 [0:3];
@@ -118,7 +136,7 @@ module ternary_dot_top (
     // === RESULT REGISTER: latch dot product ===
     reg signed [5:0] dot_latched = 0;
     always @(posedge clk)
-        if (sample_tick)
+        if (sample_tick_d1)
             dot_latched <= dot_result;
 
     // === LED OUTPUT ===
