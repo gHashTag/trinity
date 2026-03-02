@@ -8,7 +8,7 @@
 
 name: multilingual_gen_fluent
 version: "4.0.0"
-language: zig
+language: [zig, python, rust, typescript, go]
 module: multilingual_gen_fluent
 
 description: |
