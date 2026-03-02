@@ -33,7 +33,7 @@ export default function TheoremsSection() {
     <Section id="theorems">
       <div className="radial-glow" style={{ opacity: 0.2 }} />
       <div className="tight fade">
-        <div className="badge" style={{ marginBottom: '1rem' }}>MATHEMATICAL FOUNDATION</div>
+        <div className="badge" style={{ marginBottom: '1rem' }}>{theorems.badge || 'MATHEMATICAL FOUNDATION'}</div>
         <h2 dangerouslySetInnerHTML={{ __html: theorems.title }} />
         <p style={{ maxWidth: '700px', margin: '0 auto', opacity: 0.9 }}>{theorems.sub}</p>
       </div>
@@ -94,7 +94,7 @@ export default function TheoremsSection() {
                 color: 'var(--text)',
                 fontWeight: 600,
                 flex: 1,
-                minWidth: '150px'
+                minWidth: 'min(150px, 100%)'
               }}>
                 {card.title}
               </h3>

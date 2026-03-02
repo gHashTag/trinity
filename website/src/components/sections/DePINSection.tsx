@@ -120,7 +120,7 @@ export default function DePINSection() {
       {/* Stats Cards */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
         gap: '1rem',
         maxWidth: '900px',
         margin: '0 auto 4rem',

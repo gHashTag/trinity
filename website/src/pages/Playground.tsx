@@ -248,7 +248,7 @@ export default function Playground() {
     <div style={{
       display: 'flex',
       flexDirection: 'column',
-      height: '100vh',
+      height: '100dvh',
       background: '#0d1117',
       color: '#c9d1d9',
       fontFamily: "'JetBrains Mono', monospace",
@@ -289,10 +289,10 @@ export default function Playground() {
       </header>
 
       {/* MAIN: 3 PANELS */}
-      <main style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+      <main style={{ display: 'flex', flex: 1, overflow: 'hidden', flexWrap: 'wrap' }}>
         
         {/* LEFT: Source Code */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRight: '1px solid #30363d' }}>
+        <div style={{ flex: '1 1 300px', minWidth: 0, display: 'flex', flexDirection: 'column', borderRight: '1px solid #30363d' }}>
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '8px 12px', background: '#161b22', borderBottom: '1px solid #30363d'
@@ -327,7 +327,7 @@ export default function Playground() {
         </div>
 
         {/* CENTER: Logs */}
-        <div style={{ width: 280, display: 'flex', flexDirection: 'column', background: '#0d1117', borderRight: '1px solid #30363d' }}>
+        <div style={{ flex: '1 1 280px', maxWidth: 400, minWidth: 0, display: 'flex', flexDirection: 'column', background: '#0d1117', borderRight: '1px solid #30363d' }}>
           <div style={{
             padding: '8px 12px', background: '#161b22', borderBottom: '1px solid #30363d'
           }}>
@@ -355,7 +355,7 @@ export default function Playground() {
         </div>
 
         {/* RIGHT: Output */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: '1 1 300px', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '8px 12px', background: '#161b22', borderBottom: '1px solid #30363d'

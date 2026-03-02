@@ -11,15 +11,15 @@ export default function Footer() {
       background: 'rgba(0,0,0,0.95)',
       borderTop: '1px solid var(--border)',
       padding: 'clamp(3rem, 8vw, 5rem) clamp(1rem, 5vw, 3rem)',
-      marginTop: '4rem'
+      marginTop: 'clamp(2rem, 6vw, 4rem)'
     }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* Main Footer Content */}
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-          gap: '3rem',
-          marginBottom: '3rem'
+          gridTemplateColumns: 'repeat(auto-fit, minmax(clamp(120px, 30vw, 150px), 1fr))',
+          gap: 'clamp(1rem, 5vw, 3rem)',
+          marginBottom: 'clamp(1.5rem, 5vw, 3rem)'
         }}>
           {/* Brand */}
           <div>
@@ -27,7 +27,7 @@ export default function Footer() {
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}
+              style={{ fontSize: 'clamp(1.2rem, 4vw, 1.5rem)', fontWeight: 700, marginBottom: '1rem' }}
             >
               TRINITY
             </motion.div>
@@ -50,13 +50,13 @@ export default function Footer() {
               {t.footer?.linksTitle || 'Links'}
             </h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <li><a href="#problem" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }}>{t.nav?.problem || 'Problem'}</a></li>
-              <li><a href="#solution" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }}>{t.nav?.solution || 'Solution'}</a></li>
-              <li><a href="#technology" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }}>{t.nav?.technology || 'Technology'}</a></li>
-              <li><a href="#invest" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }}>{t.nav?.invest || 'Invest'}</a></li>
+              <li><a href="#theorems" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }}>{t.nav?.[1] || 'Theorems'}</a></li>
+              <li><a href="#solution" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }}>{t.nav?.[2] || 'Solution'}</a></li>
+              <li><a href="#benchmarks" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }}>{t.nav?.[3] || 'Benchmarks'}</a></li>
+              <li><a href="#invest" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }}>{t.nav?.[9] || 'Invest'}</a></li>
               <li>
                 <a href="/trinity/docs/" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600, transition: 'opacity 0.2s' }}>
-                  Documentation
+                  {t.footer?.docs || 'Documentation'}
                 </a>
               </li>
             </ul>
@@ -82,13 +82,13 @@ export default function Footer() {
                   marginBottom: '1rem'
                 }}
               >
-                <span style={{ fontSize: '2rem' }}>🔮</span>
+                <span style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)' }}>🔮</span>
                 <div>
                   <div style={{ color: 'var(--accent)', fontWeight: 600, fontSize: '1rem' }}>
-                    Launch Quantum Lab
+                    {t.footer?.vizLaunch || 'Launch Quantum Lab'}
                   </div>
                   <div style={{ color: 'var(--muted)', fontSize: '0.75rem' }}>
-                    29 interactive visualizations
+                    {t.footer?.vizDesc || '29 interactive visualizations'}
                   </div>
                 </div>
               </Link>

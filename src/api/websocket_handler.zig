@@ -1,5 +1,8 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WEBSOCKET HANDLER — Real-time bi-directional messaging
+// STATUS: PLANNED — WebSocket handshake and framing not yet implemented
+// TODO: Implement SHA-1 + Sec-WebSocket-Accept handshake
+// TODO: Implement frame encoding/decoding with masking
 // φ² + 1/φ² = 3 = TRINITY | Golden Chain #101
 // ═══════════════════════════════════════════════════════════════════════════════
 

@@ -89,9 +89,9 @@ function MetallicLogo() {
     const svg = svgRef.current;
     if (!svg) return;
     const rect = svg.getBoundingClientRect();
-    // Map pixel → SVG viewBox coords (full 1080x1080)
-    const vbX = (e.clientX - rect.left) / rect.width * 1080;
-    const vbY = (e.clientY - rect.top) / rect.height * 1080;
+    // Map pixel → SVG viewBox coords (viewBox="100 280 880 680")
+    const vbX = 100 + (e.clientX - rect.left) / rect.width * 880;
+    const vbY = 280 + (e.clientY - rect.top) / rect.height * 680;
     setCursor({ x: vbX, y: vbY });
   }, []);
 
@@ -103,7 +103,7 @@ function MetallicLogo() {
   return (
     <svg
       ref={svgRef}
-      viewBox="0 0 1080 1080"
+      viewBox="100 280 880 680"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       role="img"
@@ -111,7 +111,7 @@ function MetallicLogo() {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{
-        height: 'clamp(144px, 30vw, 384px)',
+        height: 'clamp(100px, 21vw, 269px)',
         width: 'auto',
         filter: 'brightness(1.2)',
         cursor: 'pointer',
@@ -140,9 +140,11 @@ function AnimatedEquation() {
     <motion.div
       className="fade"
       style={{
-        fontSize: 'clamp(1.6rem, 6vw, 2.8rem)',
+        fontSize: 'clamp(1.1rem, 4.2vw, 2rem)',
         marginBottom: '1.5rem',
         fontFamily: '"Times New Roman", Times, serif',
+        fontStyle: 'italic',
+        color: '#00ff88',
         position: 'relative',
         display: 'inline-block'
       }}
@@ -152,14 +154,13 @@ function AnimatedEquation() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5, duration: 0.8 }}
       >
-        <span style={{ fontStyle: 'italic', fontFamily: 'inherit' }}>φ</span>
-        <sup style={{ fontStyle: 'normal' }}>2</sup>
-        <span style={{ margin: '0 0.1em' }}>+</span>
-        <span style={{ fontStyle: 'normal', fontFamily: 'inherit' }}>1/</span>
-        <span style={{ fontStyle: 'italic', fontFamily: 'inherit' }}>φ</span>
-        <sup style={{ fontStyle: 'normal' }}>2</sup>
-        <span style={{ margin: '0 0.1em' }}>=</span>
-        <span style={{ fontStyle: 'normal', fontWeight: 500 }}>3</span>
+        <span style={{ fontFamily: 'inherit' }}>φ</span>
+        <sup>2</sup>
+        <span style={{ margin: '0 0.1em' }}> + </span>
+        <span style={{ fontFamily: 'inherit' }}>1/φ</span>
+        <sup>2</sup>
+        <span style={{ margin: '0 0.1em' }}> = </span>
+        <span style={{ fontWeight: 500 }}>3</span>
       </motion.span>
     </motion.div>
   );
@@ -177,7 +178,7 @@ export default function HeroSection() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        style={{ color: 'var(--accent)', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: '0' }}
+        style={{ color: 'var(--accent)', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: 'clamp(0.1em, 2vw, 0.3em)', marginBottom: '0' }}
       >
         {t.tag}
       </motion.div>
@@ -226,7 +227,7 @@ export default function HeroSection() {
         <motion.a 
           href="#theorems" 
           className="btn" 
-          style={{ minWidth: '200px' }}
+          style={{ minWidth: 'clamp(140px, 40vw, 200px)' }}
           whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(218,165,32,0.3)' }}
           whileTap={{ scale: 0.95 }}
         >
@@ -234,8 +235,8 @@ export default function HeroSection() {
         </motion.a>
         <motion.a 
           href="#calculator" 
-          className="btn secondary" 
-          style={{ minWidth: '200px' }}
+          className="btn secondary"
+          style={{ minWidth: 'clamp(140px, 40vw, 200px)' }}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >

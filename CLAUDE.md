@@ -708,3 +708,88 @@ zig build vibee -- gen specs/tri/vibee_self_improver.vibee
 - 27/27 tests pass
 - Self-improvement loop: analyze → suggest → patch → regenerate → validate
 
+---
+
+## AGENTS.md — Code Review Protocol
+
+### BEFORE YOU START:
+
+Ask if the user wants one of two options:
+
+1. **BIG CHANGE**: Work through this interactively, one section at a time (Architecture → Code Quality → Tests → Performance) with at most 4 top issues in each section.
+
+2. **SMALL CHANGE**: Work through this interactively ONE question per review section.
+
+---
+
+### 1. Architecture review
+
+Evaluate:
+
+* Overall system design and component boundaries.
+* Dependency graph and coupling concerns.
+* Data flow patterns and potential bottlenecks.
+* Scaling characteristics and single points of failure.
+* Security architecture (auth, data access, API boundaries).
+
+---
+
+### 2. Code quality review
+
+Evaluate:
+
+* Code organization and module structure.
+* DRY violations—be aggressive here.
+* Error handling patterns and missing edge cases (call these out explicitly).
+* Technical debt hotspots.
+* Areas that are over-engineered or under-engineered relative to user preferences.
+
+---
+
+### 3. Test review
+
+Evaluate:
+
+* Test coverage gaps (unit, integration, e2e).
+* Test quality and assertion strength.
+* Missing edge case coverage—be thorough.
+* Untested failure modes and error paths.
+
+---
+
+### 4. Performance review
+
+Evaluate:
+
+* N+1 queries and database access patterns.
+* Memory-usage concerns.
+* Caching opportunities.
+* Slow or high-complexity code paths.
+
+---
+
+### For each issue found
+
+For every specific issue (bug, smell, design concern, or risk):
+
+* Describe the problem concretely, with file and line references.
+* Present 2–3 options, including "do nothing" where that's reasonable.
+* For each option, specify: implementation effort, risk, impact on other code, and maintenance burden.
+* Give a recommended option and why, mapped to user preferences.
+* Then explicitly ask whether the user agrees or wants to choose a different direction before proceeding.
+
+---
+
+### Workflow and interaction
+
+* Do not assume priorities on timeline or scale.
+* After each section, pause and ask for feedback before moving on.
+
+---
+
+### Output format
+
+* **FOR EACH STAGE OF REVIEW:** Output the explanation and pros and cons of each stage's questions AND an opinionated recommendation and why, then use AskUserQuestion.
+* **NUMBER** issues and give **LETTERS** for options. When using AskUserQuestion, each option must clearly label the issue NUMBER and option LETTER so the user doesn't get confused.
+* The **recommended option** is always the **1st option** in the list.
+

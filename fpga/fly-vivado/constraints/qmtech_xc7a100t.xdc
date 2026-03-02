@@ -2,7 +2,7 @@
 # QMTECH Artix-7 XC7A100T-1FGG676C Core Board — Trinity FPGA
 # Clock: 50 MHz onboard crystal
 # LED: J19 (active-low, accent LED D5)
-# Button: H19 (active-low, user key SW1)
+# Note: Core Board has no SW1 button — no rst_n port
 # =====================================================================
 
 # =====================================================================
@@ -17,11 +17,6 @@ set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_IBUF]
 # LED — Active-low user LED D5
 # =====================================================================
 set_property -dict {PACKAGE_PIN J19 IOSTANDARD LVCMOS33} [get_ports led]
-
-# =====================================================================
-# ACTIVE SIGNALS (directly mapped, active-low button)
-# =====================================================================
-set_property -dict {PACKAGE_PIN H19 IOSTANDARD LVCMOS33} [get_ports rst_n]
 
 # =====================================================================
 # BITSTREAM CONFIG

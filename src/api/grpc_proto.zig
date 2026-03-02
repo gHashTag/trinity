@@ -1,5 +1,8 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // gRPC SERVICE — Proto definitions and handler
+// STATUS: PLANNED — No HTTP/2 or protobuf support yet
+// TODO: Implement HTTP/2 framing
+// TODO: Implement protobuf serialization
 // φ² + 1/φ² = 3 = TRINITY | Golden Chain #101
 // ═══════════════════════════════════════════════════════════════════════════════
 

@@ -42,7 +42,7 @@ export default memo(function Navigation() {
         href="/trinity/dashboard"
         style={{ color: '#00ccff', fontWeight: 600 }}
       >
-        Dashboard
+        {t.navExtra?.dashboard || 'Dashboard'}
       </a>
       <a
         href="/trinity/docs/"
@@ -50,7 +50,7 @@ export default memo(function Navigation() {
         rel="noopener noreferrer"
         style={{ color: 'var(--accent)', fontWeight: 600 }}
       >
-        Docs
+        {t.navExtra?.docs || 'Docs'}
       </a>
       <LanguageSwitcher />
     </nav>

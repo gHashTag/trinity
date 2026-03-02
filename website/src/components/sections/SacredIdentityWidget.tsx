@@ -70,7 +70,7 @@ export default function SacredIdentityWidget() {
         style={{
           ...GLASS_STYLE,
           padding: '1.5rem',
-          maxWidth: '600px',
+          maxWidth: 'min(600px, 90vw)',
           margin: '0 auto',
         }}
       >

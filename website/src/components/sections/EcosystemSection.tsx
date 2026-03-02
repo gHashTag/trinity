@@ -52,7 +52,7 @@ export default function EcosystemSection() {
         ))}
       </div>
 
-      <div className="tight" style={{ marginTop: '6rem' }}>
+      <div className="tight" style={{ marginTop: 'clamp(3rem, 10vw, 6rem)' }}>
         <motion.p 
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}

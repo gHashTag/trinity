@@ -16,7 +16,7 @@ export default function VisionSection() {
         <p style={{ fontSize: '1.3rem', fontStyle: 'italic', color: 'var(--text)', marginTop: '2rem' }}>{v.quote}</p>
       </div>
       
-      <div className="fade" style={{ marginTop: '3rem', display: 'flex', gap: '4rem', justifyContent: 'center', flexWrap: 'wrap', textAlign: 'left' }}>
+      <div className="fade" style={{ marginTop: '3rem', display: 'flex', gap: 'clamp(1.5rem, 6vw, 4rem)', justifyContent: 'center', flexWrap: 'wrap', textAlign: 'left' }}>
         <div>
           <h4 style={{ color: 'var(--accent)', marginBottom: '1rem', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{v.goalsTitle}</h4>
           {v.goals?.map((g: string, i: number) => (

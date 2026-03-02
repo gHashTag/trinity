@@ -36,8 +36,8 @@ export default function BitNetProofSection() {
             border: '1px solid rgba(0,255,136,0.2)'
           }}>
             <div style={{ 
-              fontSize: '2.5rem', 
-              fontWeight: 700, 
+              fontSize: 'clamp(1.75rem, 6vw, 2.5rem)',
+              fontWeight: 700,
               color: 'var(--accent)', 
               marginBottom: '0.5rem',
               textShadow: '0 0 20px rgba(0,255,136,0.3)'
@@ -53,7 +53,7 @@ export default function BitNetProofSection() {
         <h3 style={{ textAlign: 'center', marginBottom: '2rem', color: '#fff' }}>{s.mathTitle}</h3>
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', 
           gap: '2rem',
           maxWidth: '1100px',
           margin: '0 auto'
@@ -128,7 +128,7 @@ export default function BitNetProofSection() {
       <div className="fade" style={{ 
         background: 'linear-gradient(135deg, rgba(0,255,136,0.1) 0%, rgba(0,136,255,0.1) 100%)',
         borderRadius: '16px',
-        padding: '3rem',
+        padding: 'clamp(1.5rem, 5vw, 3rem)',
         maxWidth: '900px',
         margin: '0 auto 4rem',
         border: '1px solid rgba(0,255,136,0.2)'
@@ -138,7 +138,7 @@ export default function BitNetProofSection() {
         <div style={{ display: 'flex', justifyContent: 'center', gap: '3rem', flexWrap: 'wrap' }}>
           {s.roiMetrics?.map((metric: { label: string; value: string }, i: number) => (
             <div key={i} style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--accent)' }}>{metric.value}</div>
+              <div style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', fontWeight: 700, color: 'var(--accent)' }}>{metric.value}</div>
               <div style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>{metric.label}</div>
             </div>
           ))}

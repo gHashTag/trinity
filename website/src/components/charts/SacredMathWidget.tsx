@@ -405,7 +405,7 @@ export default function SacredMathWidget({ width = 340, height = 200 }: Props) {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))',
               gap: '8px',
               marginTop: '10px',
               paddingTop: '10px',

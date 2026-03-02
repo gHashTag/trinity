@@ -130,9 +130,9 @@ export default function BenchmarksSection() {
               }}>
                 <div style={{ fontWeight: 600, color: 'var(--accent)', marginBottom: '0.5rem' }}>{gpu.name}</div>
                 <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text)' }}>{gpu.tokens}</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>tokens/s</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{b.tokensUnit || 'tokens/s'}</div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginTop: '0.5rem' }}>
-                  Noise: {gpu.noise} | {gpu.power}
+                  {b.noiseLabel || 'Noise:'} {gpu.noise} | {gpu.power}
                 </div>
               </div>
             ))}
@@ -144,7 +144,7 @@ export default function BenchmarksSection() {
         marginTop: '3rem', 
         marginBottom: '4rem',
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
         gap: '1rem',
         maxWidth: '1000px',
         margin: '3rem auto 4rem'

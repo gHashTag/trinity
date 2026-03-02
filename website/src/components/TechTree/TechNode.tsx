@@ -52,8 +52,8 @@ const TechNode = memo(function TechNode({ node, branchColor, isSelected, onClick
       whileTap={isActive ? { scale: 0.98 } : undefined}
       transition={{ duration: 0.3, type: 'spring', stiffness: 200 }}
       style={{
-        width: '130px',
-        height: '130px',
+        width: 'clamp(100px, 28vw, 130px)',
+        height: 'clamp(100px, 28vw, 130px)',
         padding: '1rem',
         background: config.bg,
         border: `2px solid ${isSelected ? branchColor : isActive ? `${branchColor}66` : 'rgba(255, 255, 255, 0.1)'}`,

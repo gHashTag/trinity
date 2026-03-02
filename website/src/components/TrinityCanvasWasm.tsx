@@ -34,7 +34,7 @@ export default function TrinityCanvasWasm({ onFallback }: Props) {
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
         fontFamily: 'monospace', color: '#888',
       }}>
-        <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.3 }}>&#x26A0;</div>
+        <div style={{ fontSize: 'clamp(32px, 10vw, 48px)', marginBottom: 16, opacity: 0.3 }}>&#x26A0;</div>
         <div style={{ fontSize: 14, marginBottom: 8 }}>WASM build not available</div>
         <div style={{ fontSize: 11, color: '#555', marginBottom: 24 }}>
           Run: zig build trinity-canvas-wasm -Dtarget=wasm32-emscripten

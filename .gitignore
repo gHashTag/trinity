@@ -187,6 +187,42 @@ test_*
 *.vcd
 *.tvc
 
+# Core dumps
+core
+
+# Misplaced binaries in root
+/root
+/ralph
+/main
+*.pdb
+
+# Provider binaries
+*_provider
+
+# CLI binaries (root)
+*_cli
+*_search
+*_codegen
+*_chat
+*_repl
+*_mvp
+competitive_repl
+photon_trinity_canvas
+
+# VIBEE binaries
+vibee_gen
+vibee_st
+
+# Benchmark binaries
+benchmark_large
+benchmark_massive
+bench_core
+
+# Media test artifacts
+*.ppm
+*.wav
+*.trit
+
 # Invalid filenames (shell artifact)
 --
 -language

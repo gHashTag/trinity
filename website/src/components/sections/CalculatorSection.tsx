@@ -82,7 +82,7 @@ export default function CalculatorSection() {
           <div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.75rem', textTransform: 'uppercase' }}>
             {c?.selectGPU || 'Select GPU Type'}
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.5rem' }}>
             {GPU_OPTIONS.map((gpu) => (
               <motion.button
                 key={gpu.id}

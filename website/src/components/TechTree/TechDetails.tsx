@@ -66,7 +66,7 @@ export default function TechDetails({ node, onClose }: TechDetailsProps) {
               boxShadow: `-10px 0 40px rgba(0, 0, 0, 0.6)`,
               zIndex: 101,
               overflowY: 'auto',
-              padding: '80px 2rem 100px 2rem', // Added top and bottom padding
+              padding: 'clamp(40px, 10vh, 80px) clamp(1rem, 4vw, 2rem) clamp(50px, 12vh, 100px)',
               scrollbarWidth: 'thin',
               scrollbarColor: `${branch?.color}44 transparent`
             }}
@@ -372,7 +372,7 @@ export default function TechDetails({ node, onClose }: TechDetailsProps) {
                 fontSize: '0.6rem',
                 color: 'rgba(255, 255, 255, 0.2)',
                 textTransform: 'uppercase',
-                letterSpacing: '0.3em',
+                letterSpacing: 'clamp(0.1em, 2vw, 0.3em)',
                 marginBottom: '0.5rem',
                 fontWeight: 700
               }}>

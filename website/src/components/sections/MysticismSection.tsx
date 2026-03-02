@@ -50,7 +50,7 @@ export default function MysticismSection() {
       
       <div className="fade" style={{ 
         display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', 
         gap: '1.5rem',
         maxWidth: '1200px',
         margin: '0 auto'

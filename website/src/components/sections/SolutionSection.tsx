@@ -47,7 +47,7 @@ export default function SolutionSection() {
             </motion.text>
           </svg>
         </div>
-        <div style={{ textAlign: 'left', minWidth: '280px' }}>
+        <div style={{ textAlign: 'left', minWidth: 'min(280px, 85vw)' }}>
           {s.legend?.map((item: string, i: number) => (
             <motion.div 
                key={i} 

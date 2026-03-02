@@ -45,7 +45,7 @@ export default function AgentMuDashboard() {
       >
         <h1
           style={{
-            fontSize: '24px',
+            fontSize: 'clamp(18px, 5vw, 24px)',
             fontWeight: 'bold',
             marginBottom: '8px',
             textShadow: '0 0 20px rgba(255,215,0,0.3)',
@@ -67,7 +67,7 @@ export default function AgentMuDashboard() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(340px, 100%), 1fr))',
           gap: '20px',
           maxWidth: '1200px',
           margin: '0 auto',

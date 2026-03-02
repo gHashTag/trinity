@@ -207,7 +207,7 @@ export default function AgentMuWidget() {
             {/* Metrics grid */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))',
               gap: '0.5rem',
               marginBottom: '0.75rem',
             }}>

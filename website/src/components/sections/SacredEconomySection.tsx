@@ -58,7 +58,7 @@ export default function SacredEconomySection() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h3 style={{ color: DUKH_COLOR, fontSize: 28, fontFamily: 'Outfit, sans-serif', textAlign: 'center', marginBottom: 24 }}>
+          <h3 style={{ color: DUKH_COLOR, fontSize: 'clamp(20px, 6vw, 28px)', fontFamily: 'Outfit, sans-serif', textAlign: 'center', marginBottom: 24 }}>
             {t('sacredEconomy.title')}
           </h3>
           <p style={{ color: 'rgba(255, 255, 255, 0.7)', textAlign: 'center', fontSize: 12, marginBottom: 16 }}>
@@ -106,7 +106,7 @@ export default function SacredEconomySection() {
                   <h4 style={{ color: '#aa66ff', fontSize: 14, marginBottom: 16, marginTop: 24 }}>
                     {t('sacredEconomy.wallet')}
                   </h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12}}>
                     <div style={{ background: glass.background, border: glass.border, borderRadius: glass.borderRadius, padding: 12 }}>
                       <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.7)' }}>
                         {t('sacredEconomy.address')}
@@ -140,7 +140,7 @@ export default function SacredEconomySection() {
                       ${data.data.phi_price.toFixed(6)}
                     </div>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 12}}>
                     <div style={{ background: glass.background, border: glass.border, borderRadius: glass.borderRadius, padding: 12 }}>
                       <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.7)' }}>
                         {t('sacredEconomy.gas')}
@@ -182,7 +182,7 @@ export default function SacredEconomySection() {
                       {data.data.proposal_description}
                     </div>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12}}>
                     <div style={{ background: glass.background, border: glass.border, borderRadius: glass.borderRadius, padding: 12 }}>
                       <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.7)' }}>
                         {t('sacredEconomy.votesFor')}
@@ -208,7 +208,7 @@ export default function SacredEconomySection() {
                   <h4 style={{ color: '#aa66ff', fontSize: 14, marginBottom: 16, marginTop: 24 }}>
                     {t('sacredEconomy.stake')}
                   </h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12}}>
                     <div style={{ background: glass.background, border: glass.border, borderRadius: glass.borderRadius, padding: 12 }}>
                       <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.7)' }}>
                         {t('sacredEconomy.staked')}
@@ -258,7 +258,7 @@ export default function SacredEconomySection() {
                   <h4 style={{ color: '#aa66ff', fontSize: 14, marginBottom: 16, marginTop: 24 }}>
                     {t('sacredEconomy.metrics')}
                   </h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 12}}>
                     <div style={{ background: glass.background, border: glass.border, borderRadius: glass.borderRadius, padding: 12 }}>
                       <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.7)' }}>
                         {t('sacredEconomy.tvl')}

@@ -137,7 +137,7 @@ export default function GovernanceRulesWidget() {
         style={{
           ...GLASS_STYLE,
           padding: '1.5rem',
-          maxWidth: '800px',
+          maxWidth: 'min(800px, 90vw)',
           margin: '0 auto',
         }}
       >
@@ -185,7 +185,7 @@ export default function GovernanceRulesWidget() {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))',
                 gap: '1rem',
                 marginBottom: '1.5rem',
               }}

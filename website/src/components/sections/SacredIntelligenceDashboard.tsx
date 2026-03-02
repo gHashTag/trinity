@@ -688,8 +688,8 @@ export default function SacredIntelligenceDashboard() {
   if (loading) {
     return (
       <Section id="sacred-intelligence-dashboard">
-        <div style={{ textAlign: 'center', padding: '3rem' }}>
-          <div style={{ color: GOLDEN, fontSize: '1.5rem', marginBottom: '1rem' }}>Loading Sacred Intelligence...</div>
+        <div style={{ textAlign: 'center', padding: 'clamp(1.5rem, 5vw, 3rem)' }}>
+          <div style={{ color: GOLDEN, fontSize: 'clamp(1.2rem, 4vw, 1.5rem)', marginBottom: '1rem' }}>Loading Sacred Intelligence...</div>
           <div style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.9rem' }}>Connecting to quantum field...</div>
         </div>
       </Section>
@@ -750,7 +750,7 @@ export default function SacredIntelligenceDashboard() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(320px, 100%), 1fr))',
             gap: '1.5rem',
           }}
         >
