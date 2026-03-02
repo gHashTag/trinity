@@ -96,6 +96,9 @@ fpga/fly-vivado/*.bin
 
 # Forge build artifacts
 build/forge_*.bit
+fpga/openxc7-synth/chipdb/
+fpga/openxc7-synth/forge_ref.bit
+fpga/fly-vivado/output/
 
 # Microsoft model weights
 models/microsoft-bitnet-2b/
