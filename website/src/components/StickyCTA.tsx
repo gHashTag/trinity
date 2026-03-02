@@ -56,17 +56,17 @@ export default function StickyCTA() {
             className="btn"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            style={{ minWidth: 'clamp(100px, 35vw, 160px)', textAlign: 'center' }}
+            style={{ flex: '0 0 auto', width: 'clamp(120px, 40vw, 180px)', textAlign: 'center' }}
           >
             💎 {t.stickyCta?.invest || 'Invest Now'}
           </motion.a>
-          
+
           <motion.a
             href="#calculator"
             className="btn secondary"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            style={{ minWidth: 'clamp(100px, 35vw, 160px)', textAlign: 'center' }}
+            style={{ flex: '0 0 auto', width: 'clamp(120px, 40vw, 180px)', textAlign: 'center' }}
           >
             💰 {t.stickyCta?.calculator || 'Savings Calculator'}
           </motion.a>
