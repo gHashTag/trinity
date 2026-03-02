@@ -4,7 +4,14 @@
   "description": "Sacred Intelligence CLI — Self-aware, multi-agent, eternally evolving",
   "author": "General Grok + Sacred Swarm",
   "license": "MIT",
-  "homepage": "https://github.com/gHashTag/trinity",
+  "keywords": ["ternary", "vsa", "fpga", "zig", "llm", "ai", "trinity", "depin"],
+  "homepage": "https://ghashtag.github.io/trinity/",
+  "bugs": {
+    "url": "https://github.com/gHashTag/trinity/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/gHashTag/trinity.git"
