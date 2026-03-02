@@ -667,6 +667,134 @@ Repository: https://github.com/frankbria/ralph-claude-code
 
 ---
 
+## FORGE OF KOSCHEI — FPGA Synthesis & Flash Pipeline
+
+### Overview
+
+FORGE is a 100% native Zig FPGA toolchain for Xilinx 7-series (Artix-7).
+Full pipeline: **Verilog → Yosys → JSON → FORGE → Bitstream → JTAG → FPGA**
+
+### Prerequisites
+
+```bash
+# Required tools
+brew install yosys           # Verilog synthesis
+# Zig 0.15.x                # Already required for project
+
+# One-time: generate segbits data (7MB, from prjxray-db)
+python3 tools/gen_segbits.py --part xc7a100t --keep
+# Output: src/forge/segbits_data.zig (gitignored)
+
+# Build FORGE
+zig build forge
+```
+
+### Full Pipeline (5 steps)
+
+```bash
+# Step 1: Write/edit Verilog
+#   fpga/openxc7-synth/ternary_dot.v (or any .v file)
+
+# Step 2: Synthesize with Yosys (Verilog → JSON netlist)
+cd fpga/openxc7-synth
+yosys -p "synth_xilinx -flatten -abc9 -arch xc7 -top ternary_dot_top; \
+          write_json ternary_dot.json" ternary_dot.v
+
+# Step 3: Generate bitstream with FORGE (JSON → .bit)
+./zig-out/bin/forge run \
+    --input fpga/openxc7-synth/ternary_dot.json \
+    --device xc7a100t \
+    --constraints fpga/openxc7-synth/qmtech_fgg676.xdc \
+    --output /tmp/ternary_dot.bit \
+    --verbose
+
+# Step 4: Flash to QMTECH board (Platform Cable USB II)
+fpga/tools/jtag_program /tmp/ternary_dot.bit
+# OR with openFPGALoader (if using FTDI cable):
+# openFPGALoader --board qmtechKintex7 /tmp/ternary_dot.bit
+
+# Step 5: Verify LED behavior on hardware
+```
+
+### Quick Reference (copy-paste)
+
+```bash
+# ONE-LINER: Synthesize + generate bitstream + flash
+cd fpga/openxc7-synth && \
+yosys -p "synth_xilinx -flatten -abc9 -arch xc7 -top ternary_dot_top; \
+          write_json ternary_dot.json" ternary_dot.v && \
+cd ../.. && \
+./zig-out/bin/forge run \
+    --input fpga/openxc7-synth/ternary_dot.json \
+    --device xc7a100t \
+    --constraints fpga/openxc7-synth/qmtech_fgg676.xdc \
+    --output /tmp/ternary_dot.bit --verbose && \
+fpga/tools/jtag_program /tmp/ternary_dot.bit
+```
+
+### FORGE Phases
+
+| Phase | Name | Description |
+|-------|------|-------------|
+| 1 | Parse Netlist | Read Yosys JSON, count cells/ports |
+| 2 | Technology Mapping | Map to Xilinx primitives (LUT, FF, CARRY4, IO, BUFG) |
+| 3 | Parse Constraints | Read XDC file (pin assignments, clocks) |
+| 4 | Placement | Simulated annealing with phi-cooling |
+| 5 | Routing | Pathfinder + Manhattan A* |
+| 6 | Timing Analysis | Static timing, critical path |
+| 7 | FASM Generation | Feature list for bitstream |
+| 8 | Bitstream Generation | FASM → .bit file with frames + CRC |
+
+### FORGE Supported Primitives
+
+| Primitive | Status |
+|-----------|--------|
+| LUT1-LUT6 | Supported |
+| FDRE/FDSE/FDCE/FDPE | Supported |
+| CARRY4 | Supported |
+| IBUF/OBUF | Supported |
+| BUFG | Supported |
+| INV | Supported |
+| MUXF7/MUXF8 | Supported |
+| SRL16E | Supported |
+| BRAM | NOT supported (recognized, no placement/routing) |
+| DSP48E1 | NOT supported (recognized, no placement/routing) |
+
+### XDC Constraints (QMTECH xc7a100t FGG676)
+
+```tcl
+# fpga/openxc7-synth/qmtech_fgg676.xdc
+set_property PACKAGE_PIN U22 [get_ports clk]       # 50 MHz oscillator
+set_property PACKAGE_PIN T23 [get_ports led]       # LED D6
+set_property IOSTANDARD LVCMOS33 [get_ports clk]
+set_property IOSTANDARD LVCMOS33 [get_ports led]
+```
+
+### Quantum-to-FPGA Integration
+
+```
+Quantum VM (seed=137) → measure qutrits → trit weights {-1,0,+1}
+  → encode as localparam in Verilog
+  → Yosys → FORGE → bitstream → FPGA
+  → LED behavior reflects dot product result
+```
+
+CGLMP I3 = 2.4277 > 2.0 classical bound — Bell inequality violated.
+LED modes: chaotic (|dot|>2, violation), fast blink (+), slow blink (0), solid (-).
+
+### Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| `segbits_data.zig: FileNotFound` | Run `python3 tools/gen_segbits.py --part xc7a100t` |
+| `findTileInstance not found` | Regenerate with `--part xc7a100t` (needs tilegrid.json) |
+| FORGE timing violation | Safe if critical path < 20ns (50 MHz clock) |
+| `unable to open ftdi device` | Use `jtag_program` for Platform Cable USB II |
+| `unknown features skipped` | Normal, some PIPs not in segbits DB |
+| JTAG needs sudo | Run `fpga/tools/jtag_program` without sudo, or add USB rules |
+
+---
+
 ## Mathematical Foundation
 
 Ternary {-1, 0, +1} provides:
