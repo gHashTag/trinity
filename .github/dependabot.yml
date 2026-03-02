@@ -14,9 +14,9 @@ updates:
       - "dependencies"
       - "github-actions"
 
-  # npm - trinity
+  # npm - root
   - package-ecosystem: "npm"
-    directory: "/trinity"
+    directory: "/"
     schedule:
       interval: "weekly"
     commit-message:
@@ -26,9 +26,9 @@ updates:
       - "npm"
     open-pull-requests-limit: 5
 
-  # npm - vibee-electron
+  # npm - website
   - package-ecosystem: "npm"
-    directory: "/vibee-electron"
+    directory: "/website"
     schedule:
       interval: "weekly"
     commit-message:
@@ -38,33 +38,21 @@ updates:
       - "npm"
     open-pull-requests-limit: 5
 
-  # npm - vscode-vib
+  # npm - docsite
+  - package-ecosystem: "npm"
+    directory: "/docsite"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "deps"
+    labels:
+      - "dependencies"
+      - "npm"
+    open-pull-requests-limit: 5
+
+  # npm - vscode-vib extension
   - package-ecosystem: "npm"
     directory: "/src/tooling/vscode-vib"
-    schedule:
-      interval: "weekly"
-    commit-message:
-      prefix: "deps"
-    labels:
-      - "dependencies"
-      - "npm"
-    open-pull-requests-limit: 5
-
-  # npm - vibee-browser
-  - package-ecosystem: "npm"
-    directory: "/vibee-browser"
-    schedule:
-      interval: "weekly"
-    commit-message:
-      prefix: "deps"
-    labels:
-      - "dependencies"
-      - "npm"
-    open-pull-requests-limit: 5
-
-  # npm - vscode-999
-  - package-ecosystem: "npm"
-    directory: "/vscode-999"
     schedule:
       interval: "weekly"
     commit-message:
