@@ -40,9 +40,17 @@ pub fn parseXdc(allocator: Allocator, file_path: []const u8) !Constraints {
 }
 
 /// Parse XDC content from a string.
+/// Supports both dict format: set_property -dict {PACKAGE_PIN X IOSTANDARD Y} [get_ports name]
+/// and individual format: set_property LOC X [get_ports name] / set_property IOSTANDARD Y [get_ports name]
 pub fn parseXdcFromSlice(allocator: Allocator, content: []const u8) !Constraints {
     var constraints: Constraints = .{};
     errdefer constraints.deinit(allocator);
+
+    // Accumulate individual set_property LOC/IOSTANDARD per port
+    var loc_map = std.StringHashMap([]const u8).init(allocator);
+    defer loc_map.deinit();
+    var iostd_map = std.StringHashMap([]const u8).init(allocator);
+    defer iostd_map.deinit();
 
     var lines = std.mem.splitScalar(u8, content, '\n');
     while (lines.next()) |raw_line| {
@@ -52,8 +60,19 @@ pub fn parseXdcFromSlice(allocator: Allocator, content: []const u8) !Constraints
         if (line[0] == '#') continue;
 
         if (std.mem.startsWith(u8, line, "set_property")) {
+            // Try dict format first
             if (tryParseSetPropertyDict(line)) |io| {
                 try constraints.io.append(allocator, io);
+                continue;
+            }
+            // Try individual: set_property LOC <pin> [get_ports <name>]
+            if (tryParseSetPropertyIndividual(line, "LOC")) |kv| {
+                try loc_map.put(kv.port_name, kv.value);
+                continue;
+            }
+            // Try individual: set_property IOSTANDARD <std> [get_ports <name>]
+            if (tryParseSetPropertyIndividual(line, "IOSTANDARD")) |kv| {
+                try iostd_map.put(kv.port_name, kv.value);
                 continue;
             }
         }
@@ -73,7 +92,64 @@ pub fn parseXdcFromSlice(allocator: Allocator, content: []const u8) !Constraints
         }
     }
 
+    // Merge individual LOC + IOSTANDARD into IOConstraints
+    var loc_iter = loc_map.iterator();
+    while (loc_iter.next()) |entry| {
+        const port_name = entry.key_ptr.*;
+        const package_pin = entry.value_ptr.*;
+        const iostd = iostd_map.get(port_name) orelse "LVCMOS33";
+        try constraints.io.append(allocator, IOConstraint{
+            .port_name = port_name,
+            .package_pin = package_pin,
+            .iostandard = iostd,
+        });
+    }
+
     return constraints;
+}
+
+const KeyValue = struct {
+    port_name: []const u8,
+    value: []const u8,
+};
+
+/// Parse: set_property LOC <value> [get_ports <name>]
+/// or:   set_property IOSTANDARD <value> [get_ports <name>]
+fn tryParseSetPropertyIndividual(line: []const u8, prop_name: []const u8) ?KeyValue {
+    // Skip "set_property "
+    const after_sp = "set_property ";
+    if (!std.mem.startsWith(u8, line, after_sp)) return null;
+    var pos: usize = after_sp.len;
+
+    // Skip whitespace
+    while (pos < line.len and (line[pos] == ' ' or line[pos] == '\t')) : (pos += 1) {}
+    if (pos >= line.len) return null;
+
+    // Check property name matches
+    if (pos + prop_name.len > line.len) return null;
+    if (!std.mem.eql(u8, line[pos .. pos + prop_name.len], prop_name)) return null;
+    pos += prop_name.len;
+
+    // Must be followed by whitespace
+    if (pos >= line.len or (line[pos] != ' ' and line[pos] != '\t')) return null;
+
+    // Skip whitespace
+    while (pos < line.len and (line[pos] == ' ' or line[pos] == '\t')) : (pos += 1) {}
+    if (pos >= line.len) return null;
+
+    // Extract value (until whitespace or '[')
+    const val_start = pos;
+    while (pos < line.len and line[pos] != ' ' and line[pos] != '\t' and line[pos] != '[') : (pos += 1) {}
+    if (pos == val_start) return null;
+    const value = line[val_start..pos];
+
+    // Extract port name
+    const port_name = extractPortName(line[pos..]) orelse return null;
+
+    return KeyValue{
+        .port_name = port_name,
+        .value = value,
+    };
 }
 
 /// Parse: set_property -dict {PACKAGE_PIN <pin> IOSTANDARD <std>} [get_ports <name>]
@@ -303,4 +379,65 @@ test "extractPortName simple" {
 
 test "extractPortName bus" {
     try std.testing.expectEqualStrings("led[0]", extractPortName("[get_ports {led[0]}]").?);
+}
+
+test "parse individual set_property LOC + IOSTANDARD" {
+    const allocator = std.testing.allocator;
+
+    const xdc_content =
+        \\# QMTECH XDC with individual set_property lines
+        \\set_property LOC U22 [get_ports clk]
+        \\set_property IOSTANDARD LVCMOS33 [get_ports clk]
+        \\
+        \\set_property LOC T23 [get_ports led]
+        \\set_property IOSTANDARD LVCMOS33 [get_ports led]
+    ;
+
+    var constraints = try parseXdcFromSlice(allocator, xdc_content);
+    defer constraints.deinit(allocator);
+
+    try std.testing.expectEqual(@as(usize, 2), constraints.io.items.len);
+
+    // Verify both pins parsed (order may vary due to HashMap)
+    var found_clk = false;
+    var found_led = false;
+    for (constraints.io.items) |io| {
+        if (std.mem.eql(u8, io.port_name, "clk")) {
+            try std.testing.expectEqualStrings("U22", io.package_pin);
+            try std.testing.expectEqualStrings("LVCMOS33", io.iostandard);
+            found_clk = true;
+        }
+        if (std.mem.eql(u8, io.port_name, "led")) {
+            try std.testing.expectEqualStrings("T23", io.package_pin);
+            try std.testing.expectEqualStrings("LVCMOS33", io.iostandard);
+            found_led = true;
+        }
+    }
+    try std.testing.expect(found_clk);
+    try std.testing.expect(found_led);
+}
+
+test "parse tryParseSetPropertyIndividual" {
+    const result = tryParseSetPropertyIndividual(
+        "set_property LOC U22 [get_ports clk]",
+        "LOC",
+    );
+    try std.testing.expect(result != null);
+    try std.testing.expectEqualStrings("clk", result.?.port_name);
+    try std.testing.expectEqualStrings("U22", result.?.value);
+
+    const result2 = tryParseSetPropertyIndividual(
+        "set_property IOSTANDARD LVCMOS33 [get_ports clk]",
+        "IOSTANDARD",
+    );
+    try std.testing.expect(result2 != null);
+    try std.testing.expectEqualStrings("clk", result2.?.port_name);
+    try std.testing.expectEqualStrings("LVCMOS33", result2.?.value);
+
+    // Should not match wrong property
+    const result3 = tryParseSetPropertyIndividual(
+        "set_property LOC U22 [get_ports clk]",
+        "IOSTANDARD",
+    );
+    try std.testing.expect(result3 == null);
 }

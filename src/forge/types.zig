@@ -32,7 +32,7 @@ pub const DeviceId = enum {
     pub fn idcode(self: DeviceId) u32 {
         return switch (self) {
             .xc7a35t => 0x0362D093,
-            .xc7a100t => 0x13631093,
+            .xc7a100t => 0x03631093,
         };
     }
 
