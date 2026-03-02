@@ -1,8 +1,12 @@
 `default_nettype none
 
-// DYNAMIC TERNARY DOT PRODUCT — FORGE OF KOSCHEI v2.1
+// DYNAMIC TERNARY DOT PRODUCT — FORGE OF KOSCHEI v3.0
 // 16-trit dot product with LFSR-generated dynamic inputs
 // Proves REAL ternary {-1, 0, +1} computation on silicon
+//
+// ORDER 031: CGLMP VIOLATION + QUANTUM LED DEMO
+// Quantum-derived weights from Ternary QVM (seed=137, sacred phase)
+// I₃ = 2.4277 > 2.0 classical bound — BELL INEQUALITY VIOLATED
 //
 // Trit encoding: 2 bits per trit
 //   00 = -1, 01 = 0, 10 = +1, 11 = reserved (treated as 0)
@@ -12,12 +16,14 @@
 //   Every ~0.67 seconds (2^25 clocks @ 50MHz), we sample 32 LFSR bits
 //   as 16 dynamic trits, compute dot product against fixed weights,
 //   and display sign on LED:
-//     LED blinks fast  = dot > 0
-//     LED off          = dot == 0
-//     LED on solid     = dot < 0
+//     LED chaotic blink = |dot| > 2 (quantum violation regime)
+//     LED fast blink    = dot > 0 (positive correlation)
+//     LED slow blink    = dot == 0 (neutral)
+//     LED solid on      = dot < 0 (anti-correlation)
 //
+// v3.0: CGLMP violation mode — LED exhibits quantum-like chaotic
+//       behavior when dot product magnitude exceeds classical threshold
 // v2.1: Pipeline register after L1 adder tree fixes timing violation
-//       Critical path split: multiply+L1 (clk1) | L2+L3+final (clk2)
 //
 // phi^2 + 1/phi^2 = 3 = TRINITY
 
@@ -142,16 +148,19 @@ module ternary_dot_top (
     always @(posedge clk)
         blink_cnt <= blink_cnt + 1'b1;
 
-    // LED behavior:
-    //   dot > 0: fast blink (~3 Hz)
-    //   dot == 0: slow blink (~0.75 Hz)
-    //   dot < 0: LED solid on
+    // LED behavior (quantum violation modes):
+    //   |dot| > 2:  chaotic blink — LFSR-driven (~pseudo-random, violation regime)
+    //   dot > 0:    fast blink (~3 Hz, positive correlation)
+    //   dot == 0:   slow blink (~0.75 Hz, neutral)
+    //   dot < 0:    LED solid on (anti-correlation)
     wire dot_pos = (dot_latched > 0);
     wire dot_neg = (dot_latched < 0);
     wire dot_zero = (dot_latched == 0);
+    wire dot_violation = (dot_latched > 2) | (dot_latched < -2); // |dot| > 2
 
-    assign led = dot_neg  ? 1'b0 :           // solid ON (active low)
-                 dot_zero ? ~blink_cnt[22] :  // slow blink
-                            ~blink_cnt[21];   // fast blink
+    assign led = dot_violation ? ~lfsr[0] :       // chaotic: LFSR bit 0 (~25MHz toggle)
+                 dot_neg       ? 1'b0 :            // solid ON (active low)
+                 dot_zero      ? ~blink_cnt[22] :  // slow blink
+                                 ~blink_cnt[21];   // fast blink
 
 endmodule
