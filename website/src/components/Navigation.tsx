@@ -3,6 +3,7 @@ import { useI18n } from '../i18n/context'
 import LanguageSwitcher from './LanguageSwitcher'
 
 const sectionIds = ['hero', 'theorems', 'solution', 'benchmarks', 'calculator', 'depin', 'tech-tree', 'team', 'science', 'invest']
+const BASE = import.meta.env.BASE_URL
 
 export default memo(function Navigation() {
   const { t } = useI18n()
@@ -55,13 +56,13 @@ export default memo(function Navigation() {
           </a>
         ))}
         <a
-          href="/trinity/dashboard"
+          href={`${BASE}dashboard`}
           style={{ color: '#00ccff', fontWeight: 600 }}
         >
           {t.navExtra?.dashboard || 'Dashboard'}
         </a>
         <a
-          href="/trinity/docs/"
+          href={`${BASE}docs/`}
           target="_blank"
           rel="noopener noreferrer"
           style={{ color: 'var(--accent)', fontWeight: 600 }}
@@ -98,14 +99,14 @@ export default memo(function Navigation() {
                 </a>
               ))}
               <a
-                href="/trinity/dashboard"
+                href={`${BASE}dashboard`}
                 style={{ color: '#00ccff' }}
                 onClick={() => setMenuOpen(false)}
               >
                 {t.navExtra?.dashboard || 'Dashboard'}
               </a>
               <a
-                href="/trinity/docs/"
+                href={`${BASE}docs/`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ color: 'var(--accent)' }}
