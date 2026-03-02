@@ -40,7 +40,7 @@ export default function StickyCTA() {
             alignItems: 'center',
             gap: '0.75rem',
             flexWrap: 'wrap' as const,
-            zIndex: 1000
+            zIndex: 999
           }}
         >
           <span style={{ 
