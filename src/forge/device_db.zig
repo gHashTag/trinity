@@ -17,6 +17,7 @@
 
 const std = @import("std");
 const types = @import("types.zig");
+const tiles = @import("xc7a100t_tiles.zig");
 
 const DeviceId = types.DeviceId;
 const TileType = types.TileType;
@@ -64,12 +65,12 @@ pub fn getDeviceParams(device: DeviceId) DeviceParams {
             .num_bufg = 32,
         },
         .xc7a100t => .{
-            .idcode = 0x13631093,
-            .frame_count = 51840,
+            .idcode = 0x03631093,
+            .frame_count = 9448,
             .frame_words = 101,
-            .num_rows = 300,
-            .num_cols = 115,
-            .num_clb_cols = 60,
+            .num_rows = 200, // Y range 0..199
+            .num_cols = 131, // grid columns (from tilegrid)
+            .num_clb_cols = 45, // real CLB X columns
             .num_io_cols = 6,
             .num_bram_cols = 10,
             .num_dsp_cols = 6,
@@ -97,14 +98,25 @@ pub const PinLocation = struct {
 
 /// Get the tile location for a package pin on the given device.
 pub fn getPinLocation(device: DeviceId, pin: []const u8) ?PinLocation {
-    const table = switch (device) {
-        .xc7a35t => &arty_a7_pins,
-        .xc7a100t => &qmtech_pins,
-    };
-    for (table) |entry| {
-        if (std.mem.eql(u8, entry.pin, pin)) {
-            return entry;
-        }
+    switch (device) {
+        .xc7a35t => {
+            for (&arty_a7_pins) |entry| {
+                if (std.mem.eql(u8, entry.pin, pin)) {
+                    return entry;
+                }
+            }
+        },
+        .xc7a100t => {
+            // Use real package pin data from prjxray-db
+            const pp = tiles.findPackagePin(pin) orelse return null;
+            return PinLocation{
+                .pin = pp.pin,
+                .tile_x = pp.tile_x,
+                .tile_y = pp.tile_y,
+                .bel_index = if (pp.iob_site_y % 2 == 0) 0 else 1,
+                .iob_site = pp.pin, // We'll format properly in FASM gen
+            };
+        },
     }
     return null;
 }
@@ -141,15 +153,10 @@ const arty_a7_pins = [_]PinLocation{
     .{ .pin = "N1", .tile_x = 64, .tile_y = 6, .bel_index = 0, .iob_site = "IOB_X1Y6" },
 };
 
-// QMTECH XC7A100T (FGG676) pin -> tile mapping
-const qmtech_pins = [_]PinLocation{
-    // Clock (50MHz)
-    .{ .pin = "M22", .tile_x = 0, .tile_y = 150, .bel_index = 0, .iob_site = "IOB_X0Y150" },
-    // LED
-    .{ .pin = "J19", .tile_x = 0, .tile_y = 130, .bel_index = 0, .iob_site = "IOB_X0Y130" },
-    // Reset
-    .{ .pin = "H19", .tile_x = 0, .tile_y = 128, .bel_index = 0, .iob_site = "IOB_X0Y128" },
-};
+// QMTECH XC7A100T (FGG676) — pin table no longer used for xc7a100t.
+// getPinLocation() uses xc7a100t_tiles.findPackagePin() instead.
+// Keeping as fallback for reference only.
+const qmtech_pins = [_]PinLocation{};
 
 // =============================================================================
 // CLB Tile BEL Definitions
@@ -229,15 +236,42 @@ const xc7a35t_bufg_locations = [_]BufgLocation{
     .{ .tile_x = 32, .tile_y = 100, .bufg_index = 15 },
 };
 
+// XC7A100T BUFG locations — real values from prjxray-db tilegrid.json
+// CLK_BUFG_BOT_R_X78Y100 has 16 BUFGs (0-15)
+// CLK_BUFG_TOP_R_X78Y105 has 16 BUFGs (16-31)
 const xc7a100t_bufg_locations = [_]BufgLocation{
-    .{ .tile_x = 57, .tile_y = 0, .bufg_index = 0 },
-    .{ .tile_x = 57, .tile_y = 0, .bufg_index = 1 },
-    .{ .tile_x = 57, .tile_y = 0, .bufg_index = 2 },
-    .{ .tile_x = 57, .tile_y = 0, .bufg_index = 3 },
-    .{ .tile_x = 57, .tile_y = 150, .bufg_index = 8 },
-    .{ .tile_x = 57, .tile_y = 150, .bufg_index = 9 },
-    .{ .tile_x = 57, .tile_y = 150, .bufg_index = 10 },
-    .{ .tile_x = 57, .tile_y = 150, .bufg_index = 11 },
+    .{ .tile_x = 78, .tile_y = 100, .bufg_index = 0 },
+    .{ .tile_x = 78, .tile_y = 100, .bufg_index = 1 },
+    .{ .tile_x = 78, .tile_y = 100, .bufg_index = 2 },
+    .{ .tile_x = 78, .tile_y = 100, .bufg_index = 3 },
+    .{ .tile_x = 78, .tile_y = 100, .bufg_index = 4 },
+    .{ .tile_x = 78, .tile_y = 100, .bufg_index = 5 },
+    .{ .tile_x = 78, .tile_y = 100, .bufg_index = 6 },
+    .{ .tile_x = 78, .tile_y = 100, .bufg_index = 7 },
+    .{ .tile_x = 78, .tile_y = 100, .bufg_index = 8 },
+    .{ .tile_x = 78, .tile_y = 100, .bufg_index = 9 },
+    .{ .tile_x = 78, .tile_y = 100, .bufg_index = 10 },
+    .{ .tile_x = 78, .tile_y = 100, .bufg_index = 11 },
+    .{ .tile_x = 78, .tile_y = 100, .bufg_index = 12 },
+    .{ .tile_x = 78, .tile_y = 100, .bufg_index = 13 },
+    .{ .tile_x = 78, .tile_y = 100, .bufg_index = 14 },
+    .{ .tile_x = 78, .tile_y = 100, .bufg_index = 15 },
+    .{ .tile_x = 78, .tile_y = 105, .bufg_index = 16 },
+    .{ .tile_x = 78, .tile_y = 105, .bufg_index = 17 },
+    .{ .tile_x = 78, .tile_y = 105, .bufg_index = 18 },
+    .{ .tile_x = 78, .tile_y = 105, .bufg_index = 19 },
+    .{ .tile_x = 78, .tile_y = 105, .bufg_index = 20 },
+    .{ .tile_x = 78, .tile_y = 105, .bufg_index = 21 },
+    .{ .tile_x = 78, .tile_y = 105, .bufg_index = 22 },
+    .{ .tile_x = 78, .tile_y = 105, .bufg_index = 23 },
+    .{ .tile_x = 78, .tile_y = 105, .bufg_index = 24 },
+    .{ .tile_x = 78, .tile_y = 105, .bufg_index = 25 },
+    .{ .tile_x = 78, .tile_y = 105, .bufg_index = 26 },
+    .{ .tile_x = 78, .tile_y = 105, .bufg_index = 27 },
+    .{ .tile_x = 78, .tile_y = 105, .bufg_index = 28 },
+    .{ .tile_x = 78, .tile_y = 105, .bufg_index = 29 },
+    .{ .tile_x = 78, .tile_y = 105, .bufg_index = 30 },
+    .{ .tile_x = 78, .tile_y = 105, .bufg_index = 31 },
 };
 
 // =============================================================================
@@ -312,11 +346,12 @@ const xc7a35t_clb_cols = [_]u16{
     50, 52, 54, 56, 58, 60,
 };
 
+// XC7A100T CLB column X coordinates — real values from prjxray-db tilegrid.json
 const xc7a100t_clb_cols = [_]u16{
-    2,  4,  6,  8,  10, 12, 14, 16,  18,  20,  22,  24,  26,  28,  30,
-    32, 34, 36, 38, 40, 42, 44, 46,  48,  50,  52,  54,  56,
-    60, 62, 64, 66, 68, 70, 72, 74,  76,  78,  80,  82,  84,  86,  88,
-    90, 92, 94, 96, 98, 100, 102, 104, 106, 108, 110, 112,
+    2, 3, 4, 5, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17,
+    19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+    32, 33, 34, 36, 37, 39, 40, 41, 42, 43,
+    45, 46, 47, 49, 50, 52, 53, 54, 55,
 };
 
 // =============================================================================
@@ -376,8 +411,8 @@ test "device params XC7A35T" {
 
 test "device params XC7A100T" {
     const params = getDeviceParams(.xc7a100t);
-    try std.testing.expectEqual(@as(u32, 0x13631093), params.idcode);
-    try std.testing.expectEqual(@as(u32, 51840), params.frame_count);
+    try std.testing.expectEqual(@as(u32, 0x03631093), params.idcode);
+    try std.testing.expectEqual(@as(u32, 9448), params.frame_count);
 }
 
 test "pin lookup Arty A7" {
@@ -398,11 +433,27 @@ test "pin lookup Arty A7" {
 }
 
 test "pin lookup QMTECH" {
-    const clk_pin = getPinLocation(.xc7a100t, "M22");
+    // U22 = clock 50MHz → LIOB33_X0Y25, IOB_X0Y26
+    const clk_pin = getPinLocation(.xc7a100t, "U22");
     try std.testing.expect(clk_pin != null);
+    try std.testing.expectEqual(@as(u16, 0), clk_pin.?.tile_x);
+    try std.testing.expectEqual(@as(u16, 25), clk_pin.?.tile_y);
 
-    const led = getPinLocation(.xc7a100t, "J19");
+    // T23 = LED D6 → LIOB33_X0Y51, IOB_X0Y52
+    const led = getPinLocation(.xc7a100t, "T23");
     try std.testing.expect(led != null);
+    try std.testing.expectEqual(@as(u16, 0), led.?.tile_x);
+    try std.testing.expectEqual(@as(u16, 51), led.?.tile_y);
+
+    // M22 = old LED
+    const m22 = getPinLocation(.xc7a100t, "M22");
+    try std.testing.expect(m22 != null);
+    try std.testing.expectEqual(@as(u16, 0), m22.?.tile_x);
+    try std.testing.expectEqual(@as(u16, 75), m22.?.tile_y);
+
+    // Unknown pin
+    const unknown = getPinLocation(.xc7a100t, "ZZ99");
+    try std.testing.expect(unknown == null);
 }
 
 test "frame address encoding" {
@@ -448,7 +499,10 @@ test "CLB columns exist" {
     try std.testing.expectEqual(@as(usize, 28), cols.len);
 
     const cols100 = getClbColumns(.xc7a100t);
-    try std.testing.expect(cols100.len > cols.len);
+    try std.testing.expectEqual(@as(usize, 45), cols100.len);
+    // First columns should be 2,3,4,5 (real from tilegrid)
+    try std.testing.expectEqual(@as(u16, 2), cols100[0]);
+    try std.testing.expectEqual(@as(u16, 3), cols100[1]);
 }
 
 test "BUFG locations" {
