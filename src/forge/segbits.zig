@@ -27,6 +27,7 @@ const Allocator = std.mem.Allocator;
 const types = @import("types.zig");
 const device_db = @import("device_db.zig");
 const segbits_data = @import("segbits_data.zig");
+const far_table = @import("far_table.zig");
 
 const DeviceId = types.DeviceId;
 const FasmFeature = types.FasmFeature;
@@ -153,14 +154,19 @@ pub fn lookupFeature(tile_type: []const u8, feature: []const u8) ?[]const segbit
 }
 
 /// Apply FASM features to a frame array.
-/// Resolves tile instances to frame addresses using device_db,
-/// looks up segbits for each feature, and sets/clears bits.
+/// Resolves tile instances to frame addresses using tilegrid data from
+/// segbits_data (generated from prjxray-db tilegrid.json).
+/// Uses far_table for FAR-to-linear-index mapping.
+/// Looks up segbits for each feature, and sets/clears bits.
+///
+/// Handles bit-vector features like ALUT.INIT[63:0] = 64'b... by expanding
+/// them into individual bit lookups (ALUT.INIT[00], ALUT.INIT[01], etc.)
 pub fn applyFeatures(
     features: []const FasmFeature,
     frames: []u32,
     device: DeviceId,
 ) ApplyStats {
-    _ = device; // Frame base addresses come from tile coordinates
+    _ = device; // Frame base addresses come from tilegrid lookup
 
     var stats = ApplyStats{
         .features_applied = 0,
@@ -171,60 +177,192 @@ pub fn applyFeatures(
         .unknown_features = 0,
     };
 
+    const frame_words: u32 = 101;
+
     for (features) |fasm| {
         const parsed = parseFasmLine(fasm.line) orelse {
             stats.features_skipped += 1;
             continue;
         };
 
-        // Look up segbits for this feature
+        // Check if this is a bit-vector feature (e.g., ALUT.INIT[63:0] = 64'b...)
+        if (parseBitVector(parsed.feature)) |bv| {
+            // Look up tile instance
+            const tile = segbits_data.findTileInstance(parsed.tile_type, parsed.tile_name) orelse {
+                stats.features_skipped += 1;
+                continue;
+            };
+
+            // Expand bit-vector into individual bit features
+            var any_applied = false;
+            var bit_idx: u7 = 0;
+            while (bit_idx <= bv.hi) : (bit_idx += 1) {
+                // Check if this bit is set in the value
+                if ((bv.value >> @as(u6, @intCast(bit_idx))) & 1 == 0) continue;
+
+                // Build feature name: e.g., "SLICEL_X0.ALUT.INIT[05]"
+                var feat_buf: [128]u8 = undefined;
+                const feat_name = formatBitFeature(&feat_buf, bv.base_feature, bit_idx) orelse continue;
+
+                // Look up segbits for this individual bit
+                const bits = lookupFeature(parsed.tile_type, feat_name) orelse continue;
+
+                // Apply each config bit
+                for (bits) |bit| {
+                    applyBit(frames, tile, bit, frame_words, &stats);
+                }
+                any_applied = true;
+            }
+            if (any_applied) {
+                stats.features_applied += 1;
+            } else {
+                stats.unknown_features += 1;
+            }
+            continue;
+        }
+
+        // Standard feature lookup (non-bit-vector)
         const bits = lookupFeature(parsed.tile_type, parsed.feature) orelse {
             stats.unknown_features += 1;
             continue;
         };
 
-        // Parse tile coordinates for frame address
-        const coords = parseTileCoords(parsed.tile_name) orelse {
-            stats.features_skipped += 1;
-            continue;
-        };
-
-        // Compute base frame address from tile coordinates
-        // For now use a simplified mapping — the real mapping requires
-        // the full tilegrid from prjxray-db
-        const base_frame = computeBaseFrame(parsed.tile_type, coords.x, coords.y) orelse {
+        // Look up tile instance in tilegrid for real frame base address AND word offset
+        const tile = segbits_data.findTileInstance(parsed.tile_type, parsed.tile_name) orelse {
             stats.features_skipped += 1;
             continue;
         };
 
         // Apply each bit
         for (bits) |bit| {
-            const frame_addr = base_frame + @as(u32, bit.frame_offset);
-            // bit_index encodes: word_index * 32 + bit_within_word
-            // Actually in prjxray: frame_offset is the minor frame number,
-            // bit_index is the absolute bit position within the frame (0..3231 for 101 words)
-            const word_idx = @as(u32, bit.bit_index) / 32;
-            const bit_in_word = @as(u5, @intCast(@as(u32, bit.bit_index) % 32));
-
-            // Compute absolute position in frame array
-            const abs_word = frame_addr * 101 + word_idx;
-            if (abs_word >= frames.len) continue;
-
-            if (bit.inverted) {
-                // Inverted bit: clear it (should be 0)
-                frames[abs_word] &= ~(@as(u32, 1) << bit_in_word);
-                stats.bits_cleared += 1;
-            } else {
-                // Normal bit: set it (should be 1)
-                frames[abs_word] |= @as(u32, 1) << bit_in_word;
-                stats.bits_set += 1;
-            }
+            applyBit(frames, tile, bit, frame_words, &stats);
         }
 
         stats.features_applied += 1;
     }
 
     return stats;
+}
+
+/// Apply a single segbit to the frame array.
+fn applyBit(
+    frames: []u32,
+    tile: *const segbits_data.TileInstance,
+    bit: segbits_data.SegBit,
+    frame_words: u32,
+    stats: *ApplyStats,
+) void {
+    const frame_far = tile.baseaddr + @as(u32, bit.frame_offset);
+    const linear_idx = far_table.farToLinear(frame_far) orelse return;
+    const word_in_frame = @as(u32, tile.offset) + @as(u32, bit.bit_index) / 32;
+    const bit_in_word = @as(u5, @intCast(@as(u32, bit.bit_index) % 32));
+    const abs_word = linear_idx * frame_words + word_in_frame;
+    if (abs_word >= frames.len) return;
+
+    if (bit.inverted) {
+        frames[abs_word] &= ~(@as(u32, 1) << bit_in_word);
+        stats.bits_cleared += 1;
+    } else {
+        frames[abs_word] |= @as(u32, 1) << bit_in_word;
+        stats.bits_set += 1;
+    }
+}
+
+/// Parse a bit-vector FASM feature like "SLICEL_X0.ALUT.INIT[63:0] = 64'b0101..."
+/// Returns the base feature name (before [), the bit range, and the parsed value.
+fn parseBitVector(feature: []const u8) ?struct {
+    base_feature: []const u8,
+    hi: u7,
+    value: u64,
+} {
+    // Find '[' in feature
+    const bracket_pos = std.mem.indexOfScalar(u8, feature, '[') orelse return null;
+
+    // Find ':' for range (must be [HI:LO])
+    const rest_after_bracket = feature[bracket_pos + 1 ..];
+    const colon_pos = std.mem.indexOfScalar(u8, rest_after_bracket, ':') orelse return null;
+
+    // Find closing ']'
+    const close_bracket = std.mem.indexOfScalar(u8, rest_after_bracket, ']') orelse return null;
+    if (colon_pos >= close_bracket) return null;
+
+    // Parse HI:LO
+    const hi_str = rest_after_bracket[0..colon_pos];
+    const lo_str = rest_after_bracket[colon_pos + 1 .. close_bracket];
+    const hi = std.fmt.parseInt(u7, hi_str, 10) catch return null;
+    const lo = std.fmt.parseInt(u7, lo_str, 10) catch return null;
+    if (lo != 0 or hi > 63) return null; // Only support [63:0] style ranges
+
+    // Find "= " followed by value
+    const after_bracket = feature[bracket_pos + close_bracket + 2 ..]; // after ']'
+    const eq_pos = std.mem.indexOf(u8, after_bracket, "= ") orelse return null;
+    const value_str = std.mem.trimLeft(u8, after_bracket[eq_pos + 2 ..], " ");
+
+    // Parse value: N'bBBBBBBBBBBBBBBBBBBBB or N'hHHHH
+    const value = parseFasmValue(value_str, hi + 1) orelse return null;
+
+    return .{
+        .base_feature = feature[0..bracket_pos],
+        .hi = hi,
+        .value = value,
+    };
+}
+
+/// Parse a FASM value like "64'b010101..." or "64'hABCD..."
+fn parseFasmValue(value_str: []const u8, expected_bits: u8) ?u64 {
+    _ = expected_bits;
+    // Find the tick mark
+    const tick_pos = std.mem.indexOfScalar(u8, value_str, '\'') orelse return null;
+    if (tick_pos + 1 >= value_str.len) return null;
+
+    const radix_char = value_str[tick_pos + 1];
+    const digits = value_str[tick_pos + 2 ..];
+
+    switch (radix_char) {
+        'b' => {
+            // Binary: MSB first, parse to u64
+            var result: u64 = 0;
+            for (digits) |ch| {
+                if (ch == '0') {
+                    result = result << 1;
+                } else if (ch == '1') {
+                    result = (result << 1) | 1;
+                } else {
+                    break; // stop at whitespace/newline
+                }
+            }
+            return result;
+        },
+        'h' => {
+            // Hex: parse directly
+            var result: u64 = 0;
+            for (digits) |ch| {
+                const nibble: u64 = if (ch >= '0' and ch <= '9')
+                    ch - '0'
+                else if (ch >= 'a' and ch <= 'f')
+                    ch - 'a' + 10
+                else if (ch >= 'A' and ch <= 'F')
+                    ch - 'A' + 10
+                else
+                    break;
+                result = (result << 4) | nibble;
+            }
+            return result;
+        },
+        else => return null,
+    }
+}
+
+/// Format a bit index into a feature name like "SLICEL_X0.ALUT.INIT[05]"
+fn formatBitFeature(buf: []u8, base: []const u8, bit_idx: u7) ?[]const u8 {
+    // base = "SLICEL_X0.ALUT.INIT", bit_idx = 5 → "SLICEL_X0.ALUT.INIT[05]"
+    if (base.len + 5 > buf.len) return null; // [XX]\0
+    @memcpy(buf[0..base.len], base);
+    buf[base.len] = '[';
+    buf[base.len + 1] = '0' + bit_idx / 10;
+    buf[base.len + 2] = '0' + bit_idx % 10;
+    buf[base.len + 3] = ']';
+    return buf[0 .. base.len + 4];
 }
 
 // =============================================================================
@@ -260,41 +398,13 @@ fn parseTileCoords(tile_name: []const u8) ?struct { x: u16, y: u16 } {
     return null;
 }
 
-/// Compute base frame address from tile type and coordinates.
-/// This is a simplified mapping for Artix-7 devices.
-/// The real mapping comes from tilegrid.json — for now we use
-/// the column-based frame address encoding from UG470:
-///   [25:23] = block_type (0=CLB/IO/CLK, 1=BRAM content, 2=BRAM reg)
-///   [22]    = top/bottom half
-///   [21:17] = row address
-///   [16:7]  = column address (major)
-///   [6:0]   = minor address (within tile's frame range)
-fn computeBaseFrame(tile_type: []const u8, x: u16, y: u16) ?u32 {
-    // Determine block type and column from tile type
-    const block_type: u3 = if (std.mem.startsWith(u8, tile_type, "BRAM"))
-        1
-    else
-        0;
-
-    // Determine top/bottom half (Artix-7 has 2 half-rows)
-    // For XC7A35T: rows 0-99 are bottom, 100+ are top
-    const half: u1 = if (y >= 100) 1 else 0;
-
-    // Row address within half
-    const rows_per_region: u16 = 50;
-    const row_in_half = if (y >= 100) (y - 100) / rows_per_region else y / rows_per_region;
-
-    // Column address = x coordinate (simplified)
-    const col: u10 = @intCast(x & 0x3FF);
-
-    // Build frame address (minor = 0, will be added by frame_offset from segbits)
-    const frame_addr: u32 = (@as(u32, block_type) << 23) |
-        (@as(u32, half) << 22) |
-        (@as(u32, @as(u5, @intCast(row_in_half & 0x1F))) << 17) |
-        (@as(u32, col) << 7) |
-        0; // minor = 0
-
-    return frame_addr;
+/// Compute base frame address from tile type and tile instance name.
+/// Uses the real tilegrid data from prjxray-db (via segbits_data.zig).
+/// The tilegrid maps each tile instance (e.g., "CLBLL_L_X2Y148") to its
+/// actual frame base address, which encodes block_type, half, row, and column.
+fn computeBaseFrame(tile_type: []const u8, tile_name: []const u8) ?u32 {
+    const tile = segbits_data.findTileInstance(tile_type, tile_name) orelse return null;
+    return tile.baseaddr;
 }
 
 // =============================================================================
@@ -398,7 +508,81 @@ test "parse INT routing FASM line" {
     try std.testing.expectEqualStrings("EE2BEG0.EE2END0", r.feature);
 }
 
+test "tilegrid lookup for reference tiles" {
+    // These are the tiles from trinity.fasm (reference passthrough design)
+    // Verify that computeBaseFrame returns correct tilegrid addresses
+
+    // LIOB33_X0Y75 → baseaddr 0x00400000
+    const liob75 = computeBaseFrame("LIOB33", "LIOB33_X0Y75");
+    try std.testing.expect(liob75 != null);
+    try std.testing.expectEqual(@as(u32, 0x00400000), liob75.?);
+
+    // LIOB33_X0Y135 → baseaddr 0x00000000
+    const liob135 = computeBaseFrame("LIOB33", "LIOB33_X0Y135");
+    try std.testing.expect(liob135 != null);
+    try std.testing.expectEqual(@as(u32, 0x00000000), liob135.?);
+
+    // INT_L_X0Y136 → baseaddr 0x00000000
+    const int136 = computeBaseFrame("INT_L", "INT_L_X0Y136");
+    try std.testing.expect(int136 != null);
+    try std.testing.expectEqual(@as(u32, 0x00000000), int136.?);
+
+    // LIOI3_X0Y135 → baseaddr 0x00000000
+    const lioi135 = computeBaseFrame("LIOI3", "LIOI3_X0Y135");
+    try std.testing.expect(lioi135 != null);
+    try std.testing.expectEqual(@as(u32, 0x00000000), lioi135.?);
+}
+
+test "unknown tile returns null" {
+    const result = computeBaseFrame("CLBLL_L", "CLBLL_L_X999Y999");
+    try std.testing.expect(result == null);
+}
+
 test "empty line returns null" {
     try std.testing.expect(parseFasmLine("") == null);
     try std.testing.expect(parseFasmLine("#comment") == null);
+}
+
+test "parseBitVector binary" {
+    const bv = parseBitVector("SLICEL_X0.ALUT.INIT[63:0] = 64'b0000111100001111000011110000111100001111000011110000111100001111");
+    try std.testing.expect(bv != null);
+    const r = bv.?;
+    try std.testing.expectEqualStrings("SLICEL_X0.ALUT.INIT", r.base_feature);
+    try std.testing.expectEqual(@as(u7, 63), r.hi);
+    // Binary: 0x0F0F0F0F0F0F0F0F (MSB first)
+    try std.testing.expectEqual(@as(u64, 0x0F0F0F0F0F0F0F0F), r.value);
+}
+
+test "parseBitVector non-vector returns null" {
+    // Standard feature without bit range
+    try std.testing.expect(parseBitVector("SLICEL_X0.AFF.ZINI") == null);
+    // Single bit (no colon in range)
+    try std.testing.expect(parseBitVector("SLICEL_X0.ALUT.INIT[0]") == null);
+}
+
+test "formatBitFeature" {
+    var buf: [128]u8 = undefined;
+    const r0 = formatBitFeature(&buf, "SLICEL_X0.ALUT.INIT", 0).?;
+    try std.testing.expectEqualStrings("SLICEL_X0.ALUT.INIT[00]", r0);
+
+    const r42 = formatBitFeature(&buf, "SLICEL_X0.ALUT.INIT", 42).?;
+    try std.testing.expectEqualStrings("SLICEL_X0.ALUT.INIT[42]", r42);
+
+    const r63 = formatBitFeature(&buf, "SLICEL_X0.ALUT.INIT", 63).?;
+    try std.testing.expectEqualStrings("SLICEL_X0.ALUT.INIT[63]", r63);
+}
+
+test "LUT INIT expansion applies bits" {
+    // Test that a full FASM line with INIT value gets expanded correctly
+    const line = "CLBLL_L_X2Y142.SLICEL_X0.ALUT.INIT[63:0] = 64'b0000111100001111000011110000111100001111000011110000111100001111";
+    const parsed = parseFasmLine(line);
+    try std.testing.expect(parsed != null);
+    const p = parsed.?;
+    try std.testing.expectEqualStrings("CLBLL_L", p.tile_type);
+
+    // The feature should contain the full INIT value
+    const bv = parseBitVector(p.feature);
+    try std.testing.expect(bv != null);
+    try std.testing.expectEqualStrings("SLICEL_X0.ALUT.INIT", bv.?.base_feature);
+    try std.testing.expectEqual(@as(u64, 0x0F0F0F0F0F0F0F0F), bv.?.value);
 }

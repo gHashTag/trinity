@@ -23,6 +23,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const types = @import("types.zig");
 const device_db = @import("device_db.zig");
+const tiles = @import("xc7a100t_tiles.zig");
 const json_parser = @import("json_parser.zig");
 
 const MappedCell = types.MappedCell;
@@ -89,17 +90,24 @@ fn placeIOCells(db: *ForgeDB) !void {
 
 fn findIOPin(db: *const ForgeDB, cell: *const MappedCell) ?device_db.PinLocation {
     // Find which port this IO cell connects to
+    // Check all nets this cell is connected to — return first constraint match
     for (db.nets.items) |net| {
         // Check if this cell drives or sinks this net
+        var cell_on_net = false;
         if (net.driver) |driver| {
-            if (driver.cell_id == cell.id) {
-                // This cell drives this net — find which port it connects to
-                return findPinForNet(db, &net);
+            if (driver.cell_id == cell.id) cell_on_net = true;
+        }
+        if (!cell_on_net) {
+            for (net.sinks.items) |sink| {
+                if (sink.cell_id == cell.id) {
+                    cell_on_net = true;
+                    break;
+                }
             }
         }
-        for (net.sinks.items) |sink| {
-            if (sink.cell_id == cell.id) {
-                return findPinForNet(db, &net);
+        if (cell_on_net) {
+            if (findPinForNet(db, &net)) |pin_loc| {
+                return pin_loc;
             }
         }
     }
@@ -133,14 +141,29 @@ fn containsPortRef(net: *const Net, port_name: []const u8, db: *const ForgeDB) b
 
 fn placeBufgCells(db: *ForgeDB) void {
     const bufg_locs = device_db.getBufgLocations(db.device);
-    var bufg_idx: usize = 0;
+    if (bufg_locs.len == 0) return;
+
+    // Find the last BOT BUFG location (highest index in the BOT tile)
+    // Reference: bank 13 clock → BUFGCTRL15 in CLK_BUFG_BOT_R
+    // BOT tile has bufg_index 0..15, TOP has 16..31
+    // Allocate from BOT tile's highest first: 15, 14, 13...
+    var bot_end: usize = 0;
+    for (bufg_locs, 0..) |loc, i| {
+        if (loc.bufg_index <= 15) {
+            bot_end = i + 1;
+        }
+    }
+    if (bot_end == 0) bot_end = bufg_locs.len;
+
+    var next_idx: usize = bot_end;
 
     for (db.cells.items) |*cell| {
         if (!cell.cell_type.isClock()) continue;
         if (cell.locked) continue;
 
-        if (bufg_idx < bufg_locs.len) {
-            const loc = bufg_locs[bufg_idx];
+        if (next_idx > 0) {
+            next_idx -= 1;
+            const loc = bufg_locs[next_idx];
             cell.tile_x = loc.tile_x;
             cell.tile_y = loc.tile_y;
             cell.bel = types.BelId{
@@ -149,7 +172,6 @@ fn placeBufgCells(db: *ForgeDB) void {
                 .bel_index = loc.bufg_index,
             };
             cell.locked = true;
-            bufg_idx += 1;
         }
     }
 }
@@ -159,12 +181,14 @@ fn placeBufgCells(db: *ForgeDB) void {
 // =============================================================================
 
 fn placeCarryChains(db: *ForgeDB) void {
-    const clb_cols = device_db.getClbColumns(db.device);
-    if (clb_cols.len == 0) return;
-
-    // Place CARRY4 cells vertically in the first available CLB column
-    const carry_col = clb_cols[clb_cols.len / 2]; // Use middle column
-    var carry_y: u16 = 10; // Start Y offset
+    // For XC7A100T, use real CLB tile positions
+    // Reference blinker uses CLBLL_L_X2Y63..X2Y69 for CARRY4 chain
+    const carry_col: u16 = if (db.device == .xc7a100t) 2 else blk: {
+        const clb_cols = device_db.getClbColumns(db.device);
+        if (clb_cols.len == 0) return;
+        break :blk clb_cols[clb_cols.len / 2];
+    };
+    var carry_y: u16 = if (db.device == .xc7a100t) 63 else 10;
 
     for (db.cells.items) |*cell| {
         if (cell.cell_type != .CARRY4) continue;
@@ -177,8 +201,8 @@ fn placeCarryChains(db: *ForgeDB) void {
             .tile_y = carry_y,
             .bel_index = 12, // CARRY4 BEL index in slice
         };
-        cell.locked = true; // CARRY4 chains must stay vertical
-        carry_y += 1; // Next row for chain continuity
+        cell.locked = true;
+        carry_y += 1;
     }
 }
 
@@ -187,36 +211,80 @@ fn placeCarryChains(db: *ForgeDB) void {
 // =============================================================================
 
 fn placeRemainingCells(db: *ForgeDB) void {
-    const clb_cols = device_db.getClbColumns(db.device);
-    if (clb_cols.len == 0) return;
+    if (db.device == .xc7a100t) {
+        // Use real CLB tile positions from xc7a100t_tiles
+        var tile_idx: usize = 0;
+        var bel_idx: u16 = 0;
 
-    var col_idx: usize = 0;
-    var row_y: u16 = 20;
-    var bel_idx: u16 = 0;
+        for (db.cells.items) |*cell| {
+            if (cell.locked) continue;
+            if (cell.tile_x != null) continue;
 
-    for (db.cells.items) |*cell| {
-        if (cell.locked) continue;
-        if (cell.tile_x != null) continue;
+            // Find next valid CLB tile
+            while (tile_idx < tiles.clb_count) {
+                const t = tiles.clb_tiles[tile_idx];
+                // Skip tiles already used by CARRY4 chains
+                if (!isTileOccupied(db, t.x, t.y)) break;
+                tile_idx += 1;
+            }
+            if (tile_idx >= tiles.clb_count) break;
 
-        const col_x = clb_cols[col_idx % clb_cols.len];
-        cell.tile_x = col_x;
-        cell.tile_y = row_y;
-        cell.bel = types.BelId{
-            .tile_x = col_x,
-            .tile_y = row_y,
-            .bel_index = bel_idx,
-        };
+            const t = tiles.clb_tiles[tile_idx];
+            cell.tile_x = t.x;
+            cell.tile_y = t.y;
+            cell.bel = types.BelId{
+                .tile_x = t.x,
+                .tile_y = t.y,
+                .bel_index = bel_idx,
+            };
 
-        bel_idx += 1;
-        if (bel_idx >= 8) { // 8 BELs per CLB tile (4 LUT + 4 FF per slice, 2 slices)
-            bel_idx = 0;
-            row_y += 1;
-            if (row_y >= 190) {
-                row_y = 20;
-                col_idx += 1;
+            bel_idx += 1;
+            if (bel_idx >= 8) {
+                bel_idx = 0;
+                tile_idx += 1;
+            }
+        }
+    } else {
+        const clb_cols = device_db.getClbColumns(db.device);
+        if (clb_cols.len == 0) return;
+
+        var col_idx: usize = 0;
+        var row_y: u16 = 20;
+        var bel_idx: u16 = 0;
+
+        for (db.cells.items) |*cell| {
+            if (cell.locked) continue;
+            if (cell.tile_x != null) continue;
+
+            const col_x = clb_cols[col_idx % clb_cols.len];
+            cell.tile_x = col_x;
+            cell.tile_y = row_y;
+            cell.bel = types.BelId{
+                .tile_x = col_x,
+                .tile_y = row_y,
+                .bel_index = bel_idx,
+            };
+
+            bel_idx += 1;
+            if (bel_idx >= 8) {
+                bel_idx = 0;
+                row_y += 1;
+                if (row_y >= 190) {
+                    row_y = 20;
+                    col_idx += 1;
+                }
             }
         }
     }
+}
+
+fn isTileOccupied(db: *const ForgeDB, x: u8, y: u8) bool {
+    for (db.cells.items) |cell| {
+        if (cell.tile_x) |cx| {
+            if (cx == x and (cell.tile_y orelse 0) == y) return true;
+        }
+    }
+    return false;
 }
 
 // =============================================================================
@@ -253,19 +321,27 @@ fn saOptimize(db: *ForgeDB) !void {
             const old_x = cell.tile_x;
             const old_y = cell.tile_y;
 
-            // Generate random move
-            rng_state = xorshift(rng_state);
-            const dx: i32 = @as(i32, @intCast(rng_state % 11)) - 5;
-            rng_state = xorshift(rng_state);
-            const dy: i32 = @as(i32, @intCast(rng_state % 11)) - 5;
+            if (db.device == .xc7a100t) {
+                // Move to a random valid CLB tile
+                rng_state = xorshift(rng_state);
+                const tile_idx = rng_state % tiles.clb_count;
+                const t = tiles.clb_tiles[tile_idx];
+                cell.tile_x = t.x;
+                cell.tile_y = t.y;
+            } else {
+                // Generate random move
+                rng_state = xorshift(rng_state);
+                const dx: i32 = @as(i32, @intCast(rng_state % 11)) - 5;
+                rng_state = xorshift(rng_state);
+                const dy: i32 = @as(i32, @intCast(rng_state % 11)) - 5;
 
-            const new_x = @as(i32, @intCast(cell.tile_x orelse 30)) + dx;
-            const new_y = @as(i32, @intCast(cell.tile_y orelse 30)) + dy;
+                const new_x = @as(i32, @intCast(cell.tile_x orelse 30)) + dx;
+                const new_y = @as(i32, @intCast(cell.tile_y orelse 30)) + dy;
 
-            // Clamp to device bounds
-            const params = device_db.getDeviceParams(db.device);
-            cell.tile_x = @intCast(@max(1, @min(new_x, @as(i32, params.num_cols) - 2)));
-            cell.tile_y = @intCast(@max(1, @min(new_y, @as(i32, params.num_rows) - 2)));
+                const params = device_db.getDeviceParams(db.device);
+                cell.tile_x = @intCast(@max(1, @min(new_x, @as(i32, params.num_cols) - 2)));
+                cell.tile_y = @intCast(@max(1, @min(new_y, @as(i32, params.num_rows) - 2)));
+            }
 
             const new_cost = computeTotalHPWL(db);
             const delta = new_cost - current_cost;

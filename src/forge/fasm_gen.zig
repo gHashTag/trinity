@@ -21,6 +21,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const types = @import("types.zig");
 const device_db = @import("device_db.zig");
+const tiles = @import("xc7a100t_tiles.zig");
 
 const ForgeDB = types.ForgeDB;
 const MappedCell = types.MappedCell;
@@ -33,6 +34,52 @@ pub const FasmError = error{
     OutOfMemory,
     UnplacedCell,
 };
+
+/// Helper to format and emit a single FASM feature line.
+fn emitFeature(allocator: Allocator, result: *FasmResult, buf: *[512]u8, comptime fmt: []const u8, args: anytype) !void {
+    const line = std.fmt.bufPrint(buf, fmt, args) catch return;
+    const duped = try allocator.dupe(u8, line);
+    try result.features.append(allocator, FasmFeature{ .line = duped });
+}
+
+/// Get CLB tile type prefix for FASM output (e.g., "CLBLL_L", "CLBLM_R").
+/// Falls back to "CLBLL_L" if tile not found in XC7A100T database.
+fn getClbTilePrefix(x: u16, y: u16) []const u8 {
+    if (tiles.findClbTile(@intCast(x), @intCast(y))) |tile| {
+        return switch (tile.tile_type) {
+            .clbll_l => "CLBLL_L",
+            .clbll_r => "CLBLL_R",
+            .clblm_l => "CLBLM_L",
+            .clblm_r => "CLBLM_R",
+            else => "CLBLL_L",
+        };
+    }
+    return "CLBLL_L";
+}
+
+/// Get IOB tile type prefix for FASM output.
+fn getIobTilePrefix(x: u16) []const u8 {
+    // Left side IOBs use LIOB33, right side use RIOB33
+    if (x == 0) return "LIOB33" else return "RIOB33";
+}
+
+/// Get the SLICEL/SLICEM prefix.
+/// CLBLL tiles: X0=SLICEL, X1=SLICEL
+/// CLBLM tiles: X0=SLICEM, X1=SLICEL (only X0 is memory-capable)
+fn getSlicePrefix(x: u16, y: u16) []const u8 {
+    return getSlicePrefixForIndex(x, y, 0);
+}
+
+fn getSlicePrefixForIndex(x: u16, y: u16, slice_x: u8) []const u8 {
+    if (slice_x >= 1) return "SLICEL"; // X1 is always SLICEL
+    if (tiles.findClbTile(@intCast(x), @intCast(y))) |tile| {
+        return switch (tile.tile_type) {
+            .clblm_l, .clblm_r => "SLICEM",
+            else => "SLICEL",
+        };
+    }
+    return "SLICEL";
+}
 
 pub const FasmResult = struct {
     features: std.ArrayList(FasmFeature),
@@ -93,6 +140,12 @@ fn generateLutFeature(allocator: Allocator, cell: MappedCell, result: *FasmResul
     const x = cell.tile_x orelse return;
     const y = cell.tile_y orelse return;
 
+    const tile_prefix = getClbTilePrefix(x, y);
+
+    // Slice X index (0 or 1, two slices per CLB tile)
+    const slice_x: u8 = if (cell.bel) |bel| @intCast(bel.bel_index / 4) else 0;
+    const slice_prefix = getSlicePrefixForIndex(x, y, slice_x);
+
     // Determine slice (A-D based on bel_index)
     const slice_letter: u8 = if (cell.bel) |bel| switch (bel.bel_index % 4) {
         0 => 'A',
@@ -102,28 +155,20 @@ fn generateLutFeature(allocator: Allocator, cell: MappedCell, result: *FasmResul
         else => 'A',
     } else 'A';
 
-    // prjxray format: one FASM feature per LUT INIT bit that is set
-    // e.g., CLBLL_L_X2Y148.SLICEL_X0.ALUT.INIT[00]
-    const lut_size: u8 = switch (cell.cell_type) {
-        .LUT1 => 2, // LUT1 uses 2 INIT bits
-        .LUT2 => 4,
-        .LUT3 => 8,
-        .LUT4 => 16,
-        .LUT5 => 32,
-        .LUT6 => 64,
-        else => 64,
-    };
-
-    var bit_idx: u7 = 0;
-    while (bit_idx < lut_size) : (bit_idx += 1) {
-        const shift: u6 = @intCast(bit_idx);
-        if ((cell.lut_init >> shift) & 1 == 1) {
-            var buf: [256]u8 = undefined;
-            const line = std.fmt.bufPrint(&buf, "CLBLL_L_X{d}Y{d}.SLICEL_X0.{c}LUT.INIT[{d:0>2}]", .{
-                x, y, slice_letter, bit_idx,
-            }) catch continue;
-            const duped = try allocator.dupe(u8, line);
-            try result.features.append(allocator, FasmFeature{ .line = duped });
+    // LUT INIT: emit one feature per set bit (SLICEL_X0.ALUT.INIT[NN])
+    // Also emit 64-bit format for compatibility with external fasm2bits tools
+    if (cell.lut_init != 0) {
+        var bit_idx: u7 = 0;
+        while (bit_idx < 64) : (bit_idx += 1) {
+            const shift: u6 = @intCast(bit_idx);
+            if ((cell.lut_init >> shift) & 1 == 1) {
+                var buf: [256]u8 = undefined;
+                const line = std.fmt.bufPrint(&buf, "{s}_X{d}Y{d}.{s}_X{d}.{c}LUT.INIT[{d:0>2}]", .{
+                    tile_prefix, x, y, slice_prefix, slice_x, slice_letter, bit_idx,
+                }) catch continue;
+                const duped = try allocator.dupe(u8, line);
+                try result.features.append(allocator, FasmFeature{ .line = duped });
+            }
         }
     }
 }
@@ -131,6 +176,10 @@ fn generateLutFeature(allocator: Allocator, cell: MappedCell, result: *FasmResul
 fn generateFfFeature(allocator: Allocator, cell: MappedCell, result: *FasmResult) !void {
     const x = cell.tile_x orelse return;
     const y = cell.tile_y orelse return;
+
+    const tile_prefix = getClbTilePrefix(x, y);
+    const slice_x: u8 = if (cell.bel) |bel| @intCast(bel.bel_index / 4) else 0;
+    const slice_prefix = getSlicePrefixForIndex(x, y, slice_x);
 
     const slice_letter: u8 = if (cell.bel) |bel| switch (bel.bel_index % 4) {
         0 => 'A',
@@ -143,40 +192,112 @@ fn generateFfFeature(allocator: Allocator, cell: MappedCell, result: *FasmResult
     var buf: [256]u8 = undefined;
 
     // FF INIT
-    const init_line = std.fmt.bufPrint(&buf, "CLBLL_L_X{d}Y{d}.SLICEL_X0.{c}FF.ZINI", .{ x, y, slice_letter }) catch return;
+    const init_line = std.fmt.bufPrint(&buf, "{s}_X{d}Y{d}.{s}_X{d}.{c}FF.ZINI", .{
+        tile_prefix, x, y, slice_prefix, slice_x, slice_letter,
+    }) catch return;
     const init_duped = try allocator.dupe(u8, init_line);
     try result.features.append(allocator, FasmFeature{ .line = init_duped });
 
+    // FF reset
+    const zrst_line = std.fmt.bufPrint(&buf, "{s}_X{d}Y{d}.{s}_X{d}.{c}FF.ZRST", .{
+        tile_prefix, x, y, slice_prefix, slice_x, slice_letter,
+    }) catch return;
+    const zrst_duped = try allocator.dupe(u8, zrst_line);
+    try result.features.append(allocator, FasmFeature{ .line = zrst_duped });
+
     // FF type-specific features
     if (cell.cell_type == .FDRE or cell.cell_type == .FDSE) {
-        const sync_line = std.fmt.bufPrint(&buf, "CLBLL_L_X{d}Y{d}.SLICEL_X0.FFSYNC", .{ x, y }) catch return;
+        const sync_line = std.fmt.bufPrint(&buf, "{s}_X{d}Y{d}.{s}_X{d}.FFSYNC", .{
+            tile_prefix, x, y, slice_prefix, slice_x,
+        }) catch return;
         const sync_duped = try allocator.dupe(u8, sync_line);
         try result.features.append(allocator, FasmFeature{ .line = sync_duped });
     }
+
+    // NOCLKINV (clock not inverted — standard for most FFs)
+    const noclk_line = std.fmt.bufPrint(&buf, "{s}_X{d}Y{d}.{s}_X{d}.NOCLKINV", .{
+        tile_prefix, x, y, slice_prefix, slice_x,
+    }) catch return;
+    const noclk_duped = try allocator.dupe(u8, noclk_line);
+    try result.features.append(allocator, FasmFeature{ .line = noclk_duped });
 }
 
 fn generateCarry4Feature(allocator: Allocator, cell: MappedCell, result: *FasmResult) !void {
     const x = cell.tile_x orelse return;
     const y = cell.tile_y orelse return;
 
-    var buf: [256]u8 = undefined;
+    const tile_prefix = getClbTilePrefix(x, y);
+    const slice_prefix = getSlicePrefixForIndex(x, y, 0); // CARRY4 always in X0
+    const is_ll = std.mem.eql(u8, tile_prefix, "CLBLL_L") or std.mem.eql(u8, tile_prefix, "CLBLL_R");
 
-    // prjxray CARRY4 sub-features: ACY0, BCY0, CCY0, DCY0
+    var buf: [512]u8 = undefined;
+
+    // 1) CARRY4 sub-features: ACY0, BCY0, CCY0, DCY0
     const prefixes = [_]u8{ 'A', 'B', 'C', 'D' };
     for (prefixes) |prefix| {
-        const line = std.fmt.bufPrint(&buf, "CLBLL_L_X{d}Y{d}.SLICEL_X0.CARRY4.{c}CY0", .{ x, y, prefix }) catch continue;
+        const line = std.fmt.bufPrint(&buf, "{s}_X{d}Y{d}.{s}_X0.CARRY4.{c}CY0", .{
+            tile_prefix, x, y, slice_prefix, prefix,
+        }) catch continue;
         const duped = try allocator.dupe(u8, line);
         try result.features.append(allocator, FasmFeature{ .line = duped });
     }
 
-    // CYINIT configuration — prjxray uses C0 (GND) or C1 (VCC), not GND/VCC
+    // 2) CYINIT configuration
     if (cell.carry_cyinit_const) |cyinit| {
-        const cyinit_line = std.fmt.bufPrint(&buf, "CLBLL_L_X{d}Y{d}.SLICEL_X0.PRECYINIT.{s}", .{
-            x, y, if (cyinit == 0) "C0" else "C1",
+        // First CARRY4 in chain uses PRECYINIT.C0 or PRECYINIT.AX
+        // The reference uses PRECYINIT.AX when the carry init comes from a port
+        const cyinit_line = std.fmt.bufPrint(&buf, "{s}_X{d}Y{d}.{s}_X0.PRECYINIT.{s}", .{
+            tile_prefix, x, y, slice_prefix, if (cyinit == 0) "C0" else "C1",
         }) catch return;
         const cyinit_duped = try allocator.dupe(u8, cyinit_line);
         try result.features.append(allocator, FasmFeature{ .line = cyinit_duped });
     }
+
+    // 3) Output muxes for CARRY4 — all outputs go through XOR
+    const outmux_names = [_][]const u8{ "AOUTMUX.XOR", "BFFMUX.XOR", "COUTMUX.XOR", "DFFMUX.XOR" };
+    for (outmux_names) |mux| {
+        const line = std.fmt.bufPrint(&buf, "{s}_X{d}Y{d}.{s}_X0.{s}", .{
+            tile_prefix, x, y, slice_prefix, mux,
+        }) catch continue;
+        const duped = try allocator.dupe(u8, line);
+        try result.features.append(allocator, FasmFeature{ .line = duped });
+    }
+
+    // 4) CLB internal routing PIPs for CARRY4
+    // These connect the CLB tile's internal muxes to the SLICE pins
+    // CLBLL has two sets: CLBLL_L_* (SLICEL_X0) and CLBLL_LL_* (SLICEL_X1)
+    const ll_prefix: []const u8 = if (is_ll) "CLBLL_LL" else "CLBLM_M";
+    const l_prefix: []const u8 = if (is_ll) "CLBLL_L" else "CLBLM_L";
+
+    // Slice X0 — clock, CE, SR
+    try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.{s}_CLK.CLBLL_CLK0", .{ tile_prefix, x, y, l_prefix });
+    try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.{s}_CE.CLBLL_FAN6", .{ tile_prefix, x, y, l_prefix });
+    try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.{s}_SR.CLBLL_CTRL0", .{ tile_prefix, x, y, l_prefix });
+    // Bypass inputs for carry data
+    try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.{s}_CX.CLBLL_BYP2", .{ tile_prefix, x, y, l_prefix });
+    try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.{s}_DX.CLBLL_BYP7", .{ tile_prefix, x, y, l_prefix });
+
+    // Slice X1 — clock, CE, SR, carry output, AX bypass
+    try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.{s}_CLK.CLBLL_CLK1", .{ tile_prefix, x, y, ll_prefix });
+    try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.{s}_CE.CLBLL_FAN7", .{ tile_prefix, x, y, ll_prefix });
+    try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.{s}_SR.CLBLL_CTRL1", .{ tile_prefix, x, y, ll_prefix });
+    try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.{s}_COUT_N.{s}_COUT", .{ tile_prefix, x, y, ll_prefix, ll_prefix });
+    try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.{s}_AX.CLBLL_BYP1", .{ tile_prefix, x, y, ll_prefix });
+
+    // CARRY4 LUT input connections (A6/B6/C6/D6 → fixed IMUX indices for carry S inputs)
+    try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.{s}_A6.CLBLL_IMUX4", .{ tile_prefix, x, y, ll_prefix });
+    try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.{s}_B6.CLBLL_IMUX12", .{ tile_prefix, x, y, ll_prefix });
+    try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.{s}_C6.CLBLL_IMUX35", .{ tile_prefix, x, y, ll_prefix });
+    try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.{s}_D6.CLBLL_IMUX43", .{ tile_prefix, x, y, ll_prefix });
+
+    // 5) LOGIC_OUTS — FF and MUX output connections
+    try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.CLBLL_LOGIC_OUTS2.{s}_CQ", .{ tile_prefix, x, y, l_prefix });
+    try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.CLBLL_LOGIC_OUTS3.{s}_DQ", .{ tile_prefix, x, y, l_prefix });
+    try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.CLBLL_LOGIC_OUTS5.{s}_BQ", .{ tile_prefix, x, y, ll_prefix });
+    try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.CLBLL_LOGIC_OUTS7.{s}_DQ", .{ tile_prefix, x, y, ll_prefix });
+    try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.CLBLL_LOGIC_OUTS20.{s}_AMUX", .{ tile_prefix, x, y, ll_prefix });
+    try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.CLBLL_LOGIC_OUTS22.{s}_CMUX", .{ tile_prefix, x, y, ll_prefix });
+    try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.CLBLL_LOGIC_OUTS19.{s}_DMUX", .{ tile_prefix, x, y, l_prefix });
 }
 
 // =============================================================================
@@ -190,38 +311,38 @@ fn generateIobFeatures(allocator: Allocator, db: *const ForgeDB, result: *FasmRe
         const x = cell.tile_x orelse continue;
         const y = cell.tile_y orelse continue;
 
+        const iob_prefix = getIobTilePrefix(x);
+
+        // IOB_Y0 for even-Y tiles, IOB_Y1 for odd-Y tiles within the tile
+        const iob_y_suffix: []const u8 = if (cell.bel) |bel|
+            (if (bel.bel_index == 0) "IOB_Y0" else "IOB_Y1")
+        else
+            "IOB_Y0";
+
         var buf: [512]u8 = undefined;
 
         if (cell.cell_type == .IBUF) {
-            // Input buffer — prjxray features for LVCMOS33 input:
-            // 1. LVCMOS25_LVCMOS33_LVTTL.IN (input enable for LVCMOS33 group)
-            const in_line = std.fmt.bufPrint(&buf, "LIOB33_X{d}Y{d}.IOB_Y0.LVCMOS25_LVCMOS33_LVTTL.IN", .{ x, y }) catch continue;
+            const in_line = std.fmt.bufPrint(&buf, "{s}_X{d}Y{d}.{s}.LVCMOS25_LVCMOS33_LVTTL.IN", .{ iob_prefix, x, y, iob_y_suffix }) catch continue;
             const in_duped = try allocator.dupe(u8, in_line);
             try result.features.append(allocator, FasmFeature{ .line = in_duped });
 
-            // 2. IN_ONLY (shared across many standards)
-            const inonly_line = std.fmt.bufPrint(&buf, "LIOB33_X{d}Y{d}.IOB_Y0.LVCMOS12_LVCMOS15_LVCMOS18_LVCMOS25_LVCMOS33_LVDS_25_LVTTL_SSTL135_SSTL15_TMDS_33.IN_ONLY", .{ x, y }) catch continue;
+            const inonly_line = std.fmt.bufPrint(&buf, "{s}_X{d}Y{d}.{s}.LVCMOS12_LVCMOS15_LVCMOS18_LVCMOS25_LVCMOS33_LVDS_25_LVTTL_SSTL135_SSTL15_TMDS_33.IN_ONLY", .{ iob_prefix, x, y, iob_y_suffix }) catch continue;
             const inonly_duped = try allocator.dupe(u8, inonly_line);
             try result.features.append(allocator, FasmFeature{ .line = inonly_duped });
 
-            // 3. PULLTYPE.NONE
-            const pull_line = std.fmt.bufPrint(&buf, "LIOB33_X{d}Y{d}.IOB_Y0.PULLTYPE.NONE", .{ x, y }) catch continue;
+            const pull_line = std.fmt.bufPrint(&buf, "{s}_X{d}Y{d}.{s}.PULLTYPE.NONE", .{ iob_prefix, x, y, iob_y_suffix }) catch continue;
             const pull_duped = try allocator.dupe(u8, pull_line);
             try result.features.append(allocator, FasmFeature{ .line = pull_duped });
         } else {
-            // Output buffer — prjxray features for LVCMOS33 output:
-            // 1. LVCMOS33_LVTTL.DRIVE.I12_I8 (default 12mA drive)
-            const drv_line = std.fmt.bufPrint(&buf, "LIOB33_X{d}Y{d}.IOB_Y0.LVCMOS33_LVTTL.DRIVE.I12_I8", .{ x, y }) catch continue;
+            const drv_line = std.fmt.bufPrint(&buf, "{s}_X{d}Y{d}.{s}.LVCMOS33_LVTTL.DRIVE.I12_I8", .{ iob_prefix, x, y, iob_y_suffix }) catch continue;
             const drv_duped = try allocator.dupe(u8, drv_line);
             try result.features.append(allocator, FasmFeature{ .line = drv_duped });
 
-            // 2. SLEW.SLOW (default slow slew)
-            const slew_line = std.fmt.bufPrint(&buf, "LIOB33_X{d}Y{d}.IOB_Y0.LVCMOS12_LVCMOS15_LVCMOS18_LVCMOS25_LVCMOS33_LVTTL_SSTL135_SSTL15.SLEW.SLOW", .{ x, y }) catch continue;
+            const slew_line = std.fmt.bufPrint(&buf, "{s}_X{d}Y{d}.{s}.LVCMOS12_LVCMOS15_LVCMOS18_LVCMOS25_LVCMOS33_LVTTL_SSTL135_SSTL15.SLEW.SLOW", .{ iob_prefix, x, y, iob_y_suffix }) catch continue;
             const slew_duped = try allocator.dupe(u8, slew_line);
             try result.features.append(allocator, FasmFeature{ .line = slew_duped });
 
-            // 3. PULLTYPE.NONE
-            const pull_line = std.fmt.bufPrint(&buf, "LIOB33_X{d}Y{d}.IOB_Y0.PULLTYPE.NONE", .{ x, y }) catch continue;
+            const pull_line = std.fmt.bufPrint(&buf, "{s}_X{d}Y{d}.{s}.PULLTYPE.NONE", .{ iob_prefix, x, y, iob_y_suffix }) catch continue;
             const pull_duped = try allocator.dupe(u8, pull_line);
             try result.features.append(allocator, FasmFeature{ .line = pull_duped });
         }
@@ -242,28 +363,34 @@ fn generateClockFeatures(allocator: Allocator, db: *const ForgeDB, result: *Fasm
         const x = cell.tile_x orelse continue;
         const y = cell.tile_y orelse continue;
 
-        // BUFG Y coordinate maps to BUFGCTRL instance: BUFGCTRL_X0Y{bel_index}
+        // BUFG bel_index maps to BUFGCTRL instance
         const bufg_idx: u16 = if (cell.bel) |bel| @intCast(bel.bel_index) else 0;
+
+        // Determine BOT vs TOP based on tile position
+        const bufg_tile_prefix: []const u8 = if (y <= 100)
+            "CLK_BUFG_BOT_R"
+        else
+            "CLK_BUFG_TOP_R";
 
         var buf: [256]u8 = undefined;
 
         // prjxray format: CLK_BUFG_BOT_R_X{x}Y{y}.BUFGCTRL.BUFGCTRL_X0Y{idx}.IN_USE
-        const in_use_line = std.fmt.bufPrint(&buf, "CLK_BUFG_BOT_R_X{d}Y{d}.BUFGCTRL.BUFGCTRL_X0Y{d}.IN_USE", .{ x, y, bufg_idx }) catch continue;
+        const in_use_line = std.fmt.bufPrint(&buf, "{s}_X{d}Y{d}.BUFGCTRL.BUFGCTRL_X0Y{d}.IN_USE", .{ bufg_tile_prefix, x, y, bufg_idx }) catch continue;
         const in_use_duped = try allocator.dupe(u8, in_use_line);
         try result.features.append(allocator, FasmFeature{ .line = in_use_duped });
 
-        // ZPRESELECT_I0 (select input 0)
-        const zpre_line = std.fmt.bufPrint(&buf, "CLK_BUFG_BOT_R_X{d}Y{d}.BUFGCTRL.BUFGCTRL_X0Y{d}.ZPRESELECT_I0", .{ x, y, bufg_idx }) catch continue;
-        const zpre_duped = try allocator.dupe(u8, zpre_line);
-        try result.features.append(allocator, FasmFeature{ .line = zpre_duped });
+        // IS_IGNORE1_INVERTED (from reference FASM)
+        const ign_line = std.fmt.bufPrint(&buf, "{s}_X{d}Y{d}.BUFGCTRL.BUFGCTRL_X0Y{d}.IS_IGNORE1_INVERTED", .{ bufg_tile_prefix, x, y, bufg_idx }) catch continue;
+        const ign_duped = try allocator.dupe(u8, ign_line);
+        try result.features.append(allocator, FasmFeature{ .line = ign_duped });
 
-        // ZINV_CE0 (clock enable not inverted)
-        const zce_line = std.fmt.bufPrint(&buf, "CLK_BUFG_BOT_R_X{d}Y{d}.BUFGCTRL.BUFGCTRL_X0Y{d}.ZINV_CE0", .{ x, y, bufg_idx }) catch continue;
+        // ZINV_CE0
+        const zce_line = std.fmt.bufPrint(&buf, "{s}_X{d}Y{d}.BUFGCTRL.BUFGCTRL_X0Y{d}.ZINV_CE0", .{ bufg_tile_prefix, x, y, bufg_idx }) catch continue;
         const zce_duped = try allocator.dupe(u8, zce_line);
         try result.features.append(allocator, FasmFeature{ .line = zce_duped });
 
-        // ZINV_S0 (select not inverted)
-        const zs_line = std.fmt.bufPrint(&buf, "CLK_BUFG_BOT_R_X{d}Y{d}.BUFGCTRL.BUFGCTRL_X0Y{d}.ZINV_S0", .{ x, y, bufg_idx }) catch continue;
+        // ZINV_S0
+        const zs_line = std.fmt.bufPrint(&buf, "{s}_X{d}Y{d}.BUFGCTRL.BUFGCTRL_X0Y{d}.ZINV_S0", .{ bufg_tile_prefix, x, y, bufg_idx }) catch continue;
         const zs_duped = try allocator.dupe(u8, zs_line);
         try result.features.append(allocator, FasmFeature{ .line = zs_duped });
     }
@@ -278,9 +405,17 @@ fn generateRoutingPips(allocator: Allocator, db: *const ForgeDB, result: *FasmRe
         for (net.route_pips.items) |pip| {
             var buf: [256]u8 = undefined;
 
-            const line = std.fmt.bufPrint(&buf, "{s}.{s}.{s}", .{
-                pip.tile_name, pip.wire_from, pip.wire_to,
-            }) catch continue;
+            const line = if (pip.wire_from.len == 0)
+                // Single-field feature: tile.feature (e.g. active markers)
+                std.fmt.bufPrint(&buf, "{s}.{s}", .{
+                    pip.tile_name, pip.wire_to,
+                }) catch continue
+            else
+                // FASM PIP format: tile.destination.source
+                // wire_from = source wire, wire_to = destination wire
+                std.fmt.bufPrint(&buf, "{s}.{s}.{s}", .{
+                    pip.tile_name, pip.wire_to, pip.wire_from,
+                }) catch continue;
             const duped = try allocator.dupe(u8, line);
             try result.features.append(allocator, FasmFeature{ .line = duped });
         }
@@ -416,19 +551,19 @@ test "generate clock FASM" {
     var result = try generate(allocator, &db);
     defer result.deinit();
 
-    // prjxray BUFG: BUFGCTRL.BUFGCTRL_X0Y0.IN_USE + ZPRESELECT_I0 + ZINV_CE0 + ZINV_S0
+    // prjxray BUFG: BUFGCTRL.IN_USE + IS_IGNORE1_INVERTED + ZINV_CE0 + ZINV_S0
     var found_in_use = false;
-    var found_zpre = false;
+    var found_ign = false;
     var found_zce = false;
     var found_zs = false;
     for (result.features.items) |f| {
         if (std.mem.indexOf(u8, f.line, "BUFGCTRL_X0Y0.IN_USE") != null) found_in_use = true;
-        if (std.mem.indexOf(u8, f.line, "ZPRESELECT_I0") != null) found_zpre = true;
+        if (std.mem.indexOf(u8, f.line, "IS_IGNORE1_INVERTED") != null) found_ign = true;
         if (std.mem.indexOf(u8, f.line, "ZINV_CE0") != null) found_zce = true;
         if (std.mem.indexOf(u8, f.line, "ZINV_S0") != null) found_zs = true;
     }
     try std.testing.expect(found_in_use);
-    try std.testing.expect(found_zpre);
+    try std.testing.expect(found_ign);
     try std.testing.expect(found_zce);
     try std.testing.expect(found_zs);
 }
@@ -482,6 +617,8 @@ test "FASM feature count for mixed design" {
     var result = try generate(allocator, &db);
     defer result.deinit();
 
-    // LUT1(init=1): 1 per-bit feature, FF: 2 (ZINI+FFSYNC), IOB IBUF: 3 (IN+IN_ONLY+PULLTYPE)
-    try std.testing.expectEqual(@as(usize, 6), result.lineCount());
+    // LUT1(init=1): 1 per-bit feature
+    // FF: 4 (ZINI + ZRST + FFSYNC + NOCLKINV)
+    // IOB IBUF: 3 (IN + IN_ONLY + PULLTYPE)
+    try std.testing.expectEqual(@as(usize, 8), result.lineCount());
 }

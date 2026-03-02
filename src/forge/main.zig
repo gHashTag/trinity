@@ -24,6 +24,7 @@ const router = @import("router.zig");
 const timing = @import("timing.zig");
 const fasm_gen = @import("fasm_gen.zig");
 const bitstream = @import("bitstream.zig");
+const segbits = @import("segbits.zig");
 const forge_db = @import("forge_db.zig");
 
 const DeviceId = types.DeviceId;
@@ -59,6 +60,8 @@ pub fn main() !void {
 
     if (std.mem.eql(u8, command, "run")) {
         try forgeRun(allocator, args[2..]);
+    } else if (std.mem.eql(u8, command, "fasm2bit")) {
+        try forgeFasm2Bit(allocator, args[2..]);
     } else if (std.mem.eql(u8, command, "flash")) {
         forgeFlash(args[2..]);
     } else if (std.mem.eql(u8, command, "detect")) {
@@ -377,6 +380,138 @@ fn forgeRun(allocator: std.mem.Allocator, args: []const []const u8) !void {
 }
 
 // =============================================================================
+// FASM2BIT — Direct FASM to Bitstream (bypasses synth/place/route)
+// =============================================================================
+
+fn forgeFasm2Bit(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    std.debug.print("{s}", .{FORGE_BANNER});
+    std.debug.print("[FORGE] FASM → Bitstream (direct conversion)\n", .{});
+
+    var input_path: ?[]const u8 = null;
+    var device_str: []const u8 = "xc7a100t";
+    var output_path: []const u8 = "build/fasm2bit.bit";
+    var do_flash = false;
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--input") and i + 1 < args.len) {
+            i += 1;
+            input_path = args[i];
+        } else if (std.mem.eql(u8, args[i], "--device") and i + 1 < args.len) {
+            i += 1;
+            device_str = args[i];
+        } else if (std.mem.eql(u8, args[i], "--output") and i + 1 < args.len) {
+            i += 1;
+            output_path = args[i];
+        } else if (std.mem.eql(u8, args[i], "--flash")) {
+            do_flash = true;
+        }
+    }
+
+    if (input_path == null) {
+        std.debug.print("  Error: --input <file.fasm> is required\n", .{});
+        std.debug.print("  Usage: forge fasm2bit --input <file.fasm> --device xc7a100t --output <file.bit>\n", .{});
+        return;
+    }
+
+    const device: DeviceId = if (std.mem.eql(u8, device_str, "xc7a100t"))
+        .xc7a100t
+    else
+        .xc7a35t;
+
+    std.debug.print("  Input:   {s}\n", .{input_path.?});
+    std.debug.print("  Device:  {s} (IDCODE 0x{X:0>8})\n", .{ device.name(), device.idcode() });
+    std.debug.print("  Output:  {s}\n", .{output_path});
+
+    // Read FASM file
+    const fasm_content = std.fs.cwd().readFileAlloc(allocator, input_path.?, 10 * 1024 * 1024) catch |err| {
+        std.debug.print("  Error: Failed to read {s}: {}\n", .{ input_path.?, err });
+        return;
+    };
+    defer allocator.free(fasm_content);
+
+    // Parse FASM lines into features
+    var features: std.ArrayList(types.FasmFeature) = .{};
+    defer features.deinit(allocator);
+
+    var line_count: u32 = 0;
+    var comment_count: u32 = 0;
+
+    var lines = std.mem.splitScalar(u8, fasm_content, '\n');
+    while (lines.next()) |line| {
+        // Trim whitespace
+        const trimmed = std.mem.trim(u8, line, " \t\r");
+        if (trimmed.len == 0) continue;
+        if (trimmed[0] == '#') {
+            comment_count += 1;
+            continue;
+        }
+
+        // Strip trailing comments and value assignments for the feature line
+        // FASM format: TILE.FEATURE [= value]
+        // For now, we take the whole line before any trailing comment
+        var feature_line = trimmed;
+        if (std.mem.indexOfScalar(u8, trimmed, '#')) |hash_pos| {
+            feature_line = std.mem.trim(u8, trimmed[0..hash_pos], " \t");
+        }
+
+        if (feature_line.len == 0) continue;
+
+        // Validate it looks like a FASM feature (has a dot)
+        if (segbits.parseFasmLine(feature_line) != null) {
+            try features.append(allocator, .{ .line = feature_line });
+            line_count += 1;
+        }
+    }
+
+    std.debug.print("  Lines:   {d} features, {d} comments\n", .{ line_count, comment_count });
+
+    if (line_count == 0) {
+        std.debug.print("  Warning: No valid FASM features found!\n", .{});
+    }
+
+    // Generate bitstream
+    std.debug.print("\n[FORGE] Generating bitstream...\n", .{});
+
+    const stats = bitstream.generateBitstreamFromFasm(
+        allocator,
+        device,
+        features.items,
+        output_path,
+    ) catch |err| {
+        std.debug.print("  Error: Bitstream generation failed: {}\n", .{err});
+        return;
+    };
+
+    const params = device_db.getDeviceParams(device);
+    const bit_size: u64 = @as(u64, params.frame_count) * @as(u64, params.frame_words) * 4 + 1024;
+
+    std.debug.print("  Applied: {d}/{d} features\n", .{ stats.features_applied, line_count });
+    std.debug.print("  Bits:    {d} set, {d} cleared\n", .{ stats.bits_set, stats.bits_cleared });
+    if (stats.unknown_features > 0) {
+        std.debug.print("  Unknown: {d} features not in segbits DB\n", .{stats.unknown_features});
+    }
+    if (stats.features_skipped > 0) {
+        std.debug.print("  Skipped: {d} features (no tilegrid entry)\n", .{stats.features_skipped});
+    }
+    std.debug.print("  Size:    ~{d:.1} MB\n", .{@as(f64, @floatFromInt(bit_size)) / 1048576.0});
+
+    std.debug.print("\n  ═══════════════════════════════════════════════════════\n", .{});
+    std.debug.print("  FASM2BIT COMPLETE — {s}\n", .{output_path});
+    std.debug.print("  {d}/{d} features → {d} bits set\n", .{
+        stats.features_applied, line_count, stats.bits_set,
+    });
+    std.debug.print("  phi^2 + 1/phi^2 = 3 = TRINITY\n", .{});
+    std.debug.print("  ═══════════════════════════════════════════════════════\n", .{});
+
+    // Flash (optional)
+    if (do_flash) {
+        std.debug.print("\n[FORGE] Flashing...\n", .{});
+        flashBitstream(output_path, device_str);
+    }
+}
+
+// =============================================================================
 // Helper: count cell types
 // =============================================================================
 
@@ -508,7 +643,7 @@ fn forgeDetect(allocator: std.mem.Allocator) !void {
 fn printIdcodeTable() void {
     std.debug.print("\n  Artix-7 IDCODE Table:\n", .{});
     std.debug.print("    XC7A35T  | 0x0362D093 | 16,620 frames | CSG324\n", .{});
-    std.debug.print("    XC7A100T | 0x13631093 | 51,840 frames | FGG676\n", .{});
+    std.debug.print("    XC7A100T | 0x03631093 |  9,448 frames | FGG676\n", .{});
     std.debug.print("\n  Usage:\n", .{});
     std.debug.print("  forge run --device xc7a35t --input <netlist.json> --output build/trinity.bit\n\n", .{});
 }
@@ -555,13 +690,14 @@ fn printUsage() void {
         \\
         \\Commands:
         \\  run          Full pipeline: parse -> map -> place -> route -> bitstream
+        \\  fasm2bit     Direct FASM to bitstream (bypasses synth/place/route)
         \\  flash        Program FPGA via openFPGALoader
         \\  detect       Scan JTAG chain for devices
         \\  benchmark    Show FORGE vs Vivado comparison
         \\  version      Show version info
         \\  help         Show this help
         \\
-        \\Options:
+        \\Options (run):
         \\  --input <path>        Input file (Yosys JSON netlist)
         \\  --device <name>       Target device (xc7a35t, xc7a100t)
         \\  --constraints <path>  XDC constraints file
@@ -571,11 +707,19 @@ fn printUsage() void {
         \\  --flash               Flash FPGA after bitstream generation
         \\  --verbose             Verbose output
         \\
-        \\Example:
+        \\Options (fasm2bit):
+        \\  --input <path>        Input FASM file
+        \\  --device <name>       Target device (default: xc7a100t)
+        \\  --output <path>       Output bitstream (default: build/fasm2bit.bit)
+        \\  --flash               Flash FPGA after generation
+        \\
+        \\Examples:
         \\  forge run --input fpga/sim/build/trinity.json \
         \\            --device xc7a35t \
         \\            --constraints fpga/fly-vivado/constraints/arty_a7.xdc \
         \\            --output build/forge_trinity.bit --flash
+        \\
+        \\  forge fasm2bit --input design.fasm --device xc7a100t --output design.bit
         \\
     , .{});
 }

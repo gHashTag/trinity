@@ -169,10 +169,14 @@ fn buildNetGraph(allocator: Allocator, module: YosysModule, db: *ForgeDB) !void 
     }
 
     // Also handle port-level signals (top-level module IO)
+    // Port names are the user-visible names that match XDC constraints (e.g. "clk", "led")
     for (module.ports) |port| {
         for (port.bits) |bit| {
             const sig_id = bit.signalId() orelse continue;
-            if (!sig_to_net.contains(sig_id)) {
+            if (sig_to_net.get(sig_id)) |existing_net_idx| {
+                // Net already exists — rename to port name (port names match XDC constraints)
+                db.nets.items[existing_net_idx].name = port.name;
+            } else {
                 const net_id: u32 = @intCast(db.nets.items.len);
                 try sig_to_net.put(sig_id, net_id);
                 try db.nets.append(allocator, Net{
