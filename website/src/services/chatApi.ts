@@ -1346,6 +1346,23 @@ export async function fetchSacredFormula(): Promise<SacredFormulaResponse> {
       // Dimensionless Ratios
       { name: 'm_\u03C4/m_\u03BC', symbol: 'TAU_MUON_RATIO', target: '16.818', category: 'ratios', fit: { n: 7, k: 5, m: -4, p: 2, q: -1 }, computed: 16.81844, error_pct: 0.0080 },
       { name: 'm_\u03BC/m_e', symbol: 'MUON_ELECTRON_RATIO', target: '206.77', category: 'ratios', fit: { n: 4, k: 4, m: 1, p: 5, q: -4 }, computed: 206.7546, error_pct: 0.0061 },
+
+      // Sacred Geometry (v2.0)
+      { name: 'Sierpinski dim', symbol: 'SIERPINSKI_DIM', target: '1.584963', category: 'sacred_geometry', fit: { n: 8, k: 3, m: -3, p: -1, q: -1 }, computed: 1.583878, error_pct: 0.0684 },
+      { name: 'Koch dim', symbol: 'KOCH_DIM', target: '1.261860', category: 'sacred_geometry', fit: { n: 9, k: 4, m: -3, p: -4, q: -1 }, computed: 1.261797, error_pct: 0.0050 },
+      { name: 'Cantor dim', symbol: 'CANTOR_DIM', target: '0.630930', category: 'sacred_geometry', fit: { n: 5, k: 0, m: -1, p: -4, q: 1 }, computed: 0.630664, error_pct: 0.0422 },
+      { name: '\u03C6 (Golden Ratio)', symbol: 'PHI', target: '1.618034', category: 'sacred_geometry', fit: { n: 1, k: 0, m: 0, p: 1, q: 0 }, computed: 1.618034, error_pct: 0.0000 },
+      { name: '\u03C6\u00B2', symbol: 'PHI_SQ', target: '2.618034', category: 'sacred_geometry', fit: { n: 1, k: 0, m: 0, p: 2, q: 0 }, computed: 2.618034, error_pct: 0.0000 },
+      { name: '1/\u03C6', symbol: 'INV_PHI', target: '0.618034', category: 'sacred_geometry', fit: { n: 1, k: 0, m: 0, p: -1, q: 0 }, computed: 0.618034, error_pct: 0.0000 },
+      { name: '\u221A2', symbol: 'SQRT2', target: '1.414214', category: 'sacred_geometry', fit: { n: 4, k: 4, m: -3, p: 0, q: -2 }, computed: 1.414186, error_pct: 0.0020 },
+      { name: '\u221A3', symbol: 'SQRT3', target: '1.732051', category: 'sacred_geometry', fit: { n: 7, k: 0, m: -3, p: -2, q: 3 }, computed: 1.732035, error_pct: 0.0009 },
+      { name: '\u221A5', symbol: 'SQRT5', target: '2.236068', category: 'sacred_geometry', fit: { n: 8, k: 2, m: -3, p: 2, q: -1 }, computed: 2.235663, error_pct: 0.0181 },
+      { name: 'Golden spiral b', symbol: 'GOLDEN_SPIRAL_B', target: '0.306349', category: 'sacred_geometry', fit: { n: 2, k: -4, m: 0, p: -1, q: 3 }, computed: 0.306190, error_pct: 0.0517 },
+      { name: 'Tetra dihedral (\u00B0)', symbol: 'TETRA_DIHEDRAL', target: '70.52878', category: 'sacred_geometry', fit: { n: 4, k: 2, m: -2, p: 2, q: 2 }, computed: 70.496, error_pct: 0.0462 },
+      { name: 'Cube dihedral (\u00B0)', symbol: 'CUBE_DIHEDRAL', target: '90.0', category: 'sacred_geometry', fit: { n: 4, k: 3, m: -1, p: 2, q: 0 }, computed: 89.986, error_pct: 0.0015 },
+      { name: 'Octa dihedral (\u00B0)', symbol: 'OCTA_DIHEDRAL', target: '109.4712', category: 'sacred_geometry', fit: { n: 8, k: 1, m: 0, p: -1, q: 2 }, computed: 109.342, error_pct: 0.1181 },
+      { name: 'Dodeca dihedral (\u00B0)', symbol: 'DODECA_DIHEDRAL', target: '116.5651', category: 'sacred_geometry', fit: { n: 8, k: 2, m: 0, p: 1, q: 0 }, computed: 116.498, error_pct: 0.0571 },
+      { name: 'Icosa dihedral (\u00B0)', symbol: 'ICOSA_DIHEDRAL', target: '138.1897', category: 'sacred_geometry', fit: { n: 4, k: 1, m: 0, p: 3, q: 1 }, computed: 138.178, error_pct: 0.0085 },
     ],
     predictions: [
       { name: 'Neutrino mass hint', formula: '1\u00D73\u207B\u00B9\u00D7\u03C0\u207B\u00B9\u00D7\u03C6\u207B\u2074\u00D7e\u207B\u00B9', value: 0.005695, unit: 'eV', n: 1, k: -1, m: -1, p: -4, q: -1 },

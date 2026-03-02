@@ -611,14 +611,21 @@ fn generateRoutingPips(allocator: Allocator, db: *const ForgeDB, result: *FasmRe
 // FASM Output
 // =============================================================================
 
-/// Write FASM features to a file.
-pub fn writeFasm(result: *const FasmResult, file_path: []const u8) !void {
+/// Write FASM features to a file, deduplicating identical lines.
+pub fn writeFasm(allocator: Allocator, result: *const FasmResult, file_path: []const u8) !void {
     const file = try std.fs.cwd().createFile(file_path, .{});
     defer file.close();
 
+    // Deduplicate: track which feature strings have been written
+    var seen = std.StringHashMap(void).init(allocator);
+    defer seen.deinit();
+
     for (result.features.items) |feature| {
-        try file.writeAll(feature.line);
-        try file.writeAll("\n");
+        const gop = try seen.getOrPut(feature.line);
+        if (!gop.found_existing) {
+            try file.writeAll(feature.line);
+            try file.writeAll("\n");
+        }
     }
 }
 

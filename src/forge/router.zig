@@ -113,9 +113,111 @@ fn routeXc7a100t(allocator: Allocator, db: *ForgeDB) !RouteStats {
         stats.routed_nets += 1;
     }
 
+    // 5) Deduplicate routing PIPs across all nets
+    //    Multiple nets may generate PIPs targeting the same (tile, wire_to),
+    //    which results in ORed config bits → illegal MUX state.
+    //    Also removes exact duplicate PIPs within the same net.
+    try deduplicateRoutingPips(allocator, db);
+
     stats.iterations = 0;
     db.phase = .routed;
     return stats;
+}
+
+/// Remove duplicate and conflicting routing PIPs across all nets.
+///
+/// Two types of duplicates:
+///   1. Exact duplicate: same (tile, wire_to, wire_from) in same or different net
+///   2. MUX conflict: same (tile, wire_to) but different wire_from → two drivers
+///
+/// Both are dangerous: duplicate FASM features OR bits in the same MUX frame,
+/// producing illegal MUX states in the bitstream.
+///
+/// Strategy: priority-based dedup in two passes:
+///   Pass 1: Signal nets claim routing resources (highest priority)
+///   Pass 2: Infrastructure/feedback nets keep only unclaimed resources
+fn deduplicateRoutingPips(allocator: Allocator, db: *ForgeDB) !void {
+    // Map: "tile\x00wire_to" → index of claiming net
+    var claimed = std.StringHashMap(usize).init(allocator);
+    defer {
+        var kit = claimed.iterator();
+        while (kit.next()) |entry| {
+            allocator.free(entry.key_ptr.*);
+        }
+        claimed.deinit();
+    }
+
+    var total_removed: u32 = 0;
+
+    // Pass 1: Signal nets claim resources first (all nets except __infra__ and __carry_feedback__)
+    for (db.nets.items, 0..) |*net, net_idx| {
+        const is_infra = std.mem.eql(u8, net.name, "__infra__") or
+            std.mem.eql(u8, net.name, "__carry_feedback__");
+        if (is_infra) continue;
+
+        var i: usize = 0;
+        while (i < net.route_pips.items.len) {
+            const pip = net.route_pips.items[i];
+            const key = std.fmt.allocPrint(allocator, "{s}\x00{s}", .{
+                pip.tile_name, pip.wire_to,
+            }) catch {
+                i += 1;
+                continue;
+            };
+
+            const gop = claimed.getOrPut(key) catch {
+                allocator.free(key);
+                i += 1;
+                continue;
+            };
+            if (gop.found_existing) {
+                // Another signal net already claimed this — remove duplicate
+                allocator.free(key);
+                _ = net.route_pips.orderedRemove(i);
+                total_removed += 1;
+            } else {
+                gop.value_ptr.* = net_idx;
+                i += 1;
+            }
+        }
+    }
+
+    // Pass 2: Infrastructure nets — keep only PIPs not claimed by signals
+    for (db.nets.items) |*net| {
+        const is_infra = std.mem.eql(u8, net.name, "__infra__") or
+            std.mem.eql(u8, net.name, "__carry_feedback__");
+        if (!is_infra) continue;
+
+        var i: usize = 0;
+        while (i < net.route_pips.items.len) {
+            const pip = net.route_pips.items[i];
+            const key = std.fmt.allocPrint(allocator, "{s}\x00{s}", .{
+                pip.tile_name, pip.wire_to,
+            }) catch {
+                i += 1;
+                continue;
+            };
+
+            const gop = claimed.getOrPut(key) catch {
+                allocator.free(key);
+                i += 1;
+                continue;
+            };
+            if (gop.found_existing) {
+                // Signal or prior infra already claimed — remove infra PIP
+                allocator.free(key);
+                _ = net.route_pips.orderedRemove(i);
+                total_removed += 1;
+            } else {
+                gop.value_ptr.* = std.math.maxInt(usize); // infra marker
+                i += 1;
+            }
+        }
+    }
+
+    if (total_removed > 0) {
+        std.debug.print("[DEDUP] Removed {d} duplicate/conflicting routing PIPs (signals have priority)\n", .{total_removed});
+    }
 }
 
 // =============================================================================
@@ -699,11 +801,19 @@ fn routeSignalNetReal(allocator: Allocator, db: *ForgeDB, net: *Net) !void {
         const dst_cell = db.cells.items[sink.cell_id];
         // Skip clock cell sinks — clock input routing handled by routeClockNetReal
         if (dst_cell.cell_type.isClock()) continue;
-        const dst_x: i32 = @intCast(dst_cell.tile_x orelse continue);
-        const dst_y: i32 = @intCast(dst_cell.tile_y orelse continue);
 
-        // Determine input wire index based on sink pin
-        const in_wire_idx = getInputWireIndex(sink.pin_name, dst_cell.bel);
+        const dst_x: i32 = @intCast(dst_cell.tile_x orelse continue);
+        var dst_y: i32 = @intCast(dst_cell.tile_y orelse continue);
+        var in_wire_idx: u8 = undefined;
+
+        if (dst_cell.cell_type == .OBUF) {
+            // OBUF: signal must reach INT tile at (tile_x, tile_y + 1)
+            // via IMUX_L34 (connects to IOI_IMUX34_1 → OLOGIC0_D1)
+            dst_y = dst_y + 1; // INT tile is one row above IOB
+            in_wire_idx = 34; // IMUX_L34 feeds IOI_OLOGIC0_D1
+        } else {
+            in_wire_idx = getInputWireIndex(sink.pin_name, dst_cell.bel);
+        }
 
         // Same tile? Direct connection via IMUX
         if (src_x == dst_x and src_y == dst_y) {
@@ -981,12 +1091,6 @@ fn generateInterTileRoute(allocator: Allocator, net: *Net, sx: i32, sy: i32, dx:
     // The END wire index must be compatible with the destination IMUX_L.
     const src_side: []const u8 = if (@mod(sx, 2) == 0) "L" else "R";
 
-    // Step 1: Source CLB output → first hop wire
-    var tile_buf: [64]u8 = undefined;
-    const src_tile = std.fmt.bufPrint(&tile_buf, "INT_{s}_X{d}Y{d}", .{
-        src_side, @abs(sx), @abs(sy),
-    }) catch return;
-
     const delta_x = dx - sx;
     const delta_y = dy - sy;
 
@@ -1004,108 +1108,9 @@ fn generateInterTileRoute(allocator: Allocator, net: *Net, sx: i32, sy: i32, dx:
     } else if (delta_y == 0) {
         try emitHorizontalRoute(allocator, net, sx, sy, dx, out_idx, in_idx, src_side);
     } else {
-        // L-shaped: vertical first, then horizontal
-        var src_buf: [64]u8 = undefined;
-        const src_from = std.fmt.bufPrint(&src_buf, "LOGIC_OUTS_{s}{d}", .{
-            src_side, out_idx,
-        }) catch return;
-
-        // Choose BEG wire compatible with source LOGIC_OUTS, using proper wire category
-        if (delta_y > 0) {
-            // Going north: NL1 (nl_type) for short, NN6 (standard) for long
-            var beg_buf: [32]u8 = undefined;
-            const beg_wire = if (@abs(delta_y) > 4) blk: {
-                const idx = logicOutsToBegIndexForWireType(out_idx, .standard);
-                break :blk formatBegWire(&beg_buf, "NN6BEG", idx, .standard);
-            } else blk: {
-                const idx = logicOutsToBegIndexForWireType(out_idx, .nl_type);
-                break :blk formatBegWire(&beg_buf, "NL1BEG", idx, .nl_type);
-            };
-            try net.route_pips.append(allocator, RoutingPip{
-                .tile_name = try allocator.dupe(u8, src_tile),
-                .wire_from = try allocator.dupe(u8, src_from),
-                .wire_to = try allocator.dupe(u8, beg_wire),
-                .tile_name_owned = true,
-            });
-        } else {
-            // Going south: SL1 (standard) for short, SS6 (standard) for long
-            const std_beg_idx = logicOutsToBegIndexForWireType(out_idx, .standard);
-            var beg_buf: [32]u8 = undefined;
-            const beg_wire = if (@abs(delta_y) > 4)
-                formatBegWire(&beg_buf, "SS6BEG", std_beg_idx, .standard)
-            else
-                formatBegWire(&beg_buf, "SL1BEG", std_beg_idx, .standard);
-
-            try net.route_pips.append(allocator, RoutingPip{
-                .tile_name = try allocator.dupe(u8, src_tile),
-                .wire_from = try allocator.dupe(u8, src_from),
-                .wire_to = try allocator.dupe(u8, beg_wire),
-                .tile_name_owned = true,
-            });
-        }
-
-        // Destination input: END wire → IMUX
-        const dst_side: []const u8 = if (@mod(dx, 2) == 0) "L" else "R";
-        const dst_imux_prefix: []const u8 = if (@mod(dx, 2) == 0) "IMUX_L" else "IMUX";
-        var dst_buf: [64]u8 = undefined;
-        const dst_tile = std.fmt.bufPrint(&dst_buf, "INT_{s}_X{d}Y{d}", .{
-            dst_side, @abs(dx), @abs(dy),
-        }) catch return;
-
-        var to_buf: [32]u8 = undefined;
-        const to_wire = std.fmt.bufPrint(&to_buf, "{s}{d}", .{
-            dst_imux_prefix, in_idx,
-        }) catch return;
-
-        if (@abs(delta_y) > 4) {
-            // Long hop: NN6END/SS6END can't drive IMUX, need SL1 bridge
-            const std_beg_idx = logicOutsToBegIndexForWireType(out_idx, .standard);
-            var end6_buf: [32]u8 = undefined;
-            const end6_wire = if (delta_y > 0)
-                std.fmt.bufPrint(&end6_buf, "NN6END{d}", .{std_beg_idx}) catch "NN6END0"
-            else
-                std.fmt.bufPrint(&end6_buf, "SS6END{d}", .{std_beg_idx}) catch "SS6END0";
-
-            // Bridge: SS6END{n} → SL1BEG{n}
-            var bridge_buf: [32]u8 = undefined;
-            const bridge_wire = std.fmt.bufPrint(&bridge_buf, "SL1BEG{d}", .{std_beg_idx}) catch "SL1BEG0";
-
-            try net.route_pips.append(allocator, RoutingPip{
-                .tile_name = try allocator.dupe(u8, dst_tile),
-                .wire_from = try allocator.dupe(u8, end6_wire),
-                .wire_to = try allocator.dupe(u8, bridge_wire),
-                .tile_name_owned = true,
-            });
-
-            // SL1END → IMUX
-            const sl1_idx = imuxToSl1EndIndex(in_idx);
-            var final_end_buf: [32]u8 = undefined;
-            const final_end = std.fmt.bufPrint(&final_end_buf, "SL1END{d}", .{sl1_idx}) catch "SL1END0";
-
-            try net.route_pips.append(allocator, RoutingPip{
-                .tile_name = try allocator.dupe(u8, dst_tile),
-                .wire_from = try allocator.dupe(u8, final_end),
-                .wire_to = try allocator.dupe(u8, to_wire),
-                .tile_name_owned = true,
-            });
-        } else {
-            // Short hop: NL1END/SL1END can directly drive IMUX
-            const sl1_idx = imuxToSl1EndIndex(in_idx);
-            var end_buf: [32]u8 = undefined;
-            const end_wire = if (delta_y > 0) blk: {
-                // Use NL1END for northbound
-                break :blk imuxToNl1EndWire(&end_buf, in_idx);
-            } else blk: {
-                break :blk std.fmt.bufPrint(&end_buf, "SL1END{d}", .{sl1_idx}) catch "SL1END0";
-            };
-
-            try net.route_pips.append(allocator, RoutingPip{
-                .tile_name = try allocator.dupe(u8, dst_tile),
-                .wire_from = try allocator.dupe(u8, end_wire),
-                .wire_to = try allocator.dupe(u8, to_wire),
-                .tile_name_owned = true,
-            });
-        }
+        // Diagonal route: use SW6/NE6 for south-west/north-east when possible,
+        // or vertical-first + horizontal for other combinations
+        try emitDiagonalRoute(allocator, net, sx, sy, dx, dy, out_idx, in_idx, src_side);
     }
 }
 
@@ -1399,6 +1404,120 @@ fn emitVerticalRouteChain(allocator: Allocator, net: *Net, x: i32, sy: i32, dy: 
     try net.route_pips.append(allocator, RoutingPip{
         .tile_name = try allocator.dupe(u8, dst_tile),
         .wire_from = try allocator.dupe(u8, final_end),
+        .wire_to = try allocator.dupe(u8, to_wire),
+        .tile_name_owned = true,
+    });
+}
+
+fn emitDiagonalRoute(allocator: Allocator, net: *Net, sx: i32, sy: i32, dx: i32, dy: i32, out_idx: u8, in_idx: u8, src_side: []const u8) !void {
+    // Diagonal route using SW6/NE6/SE6/NW6 wires for combined X+Y movement.
+    // These 6-span diagonal wires are ideal for cross-column routes.
+    //
+    // Reference pattern (Y55 → Y51, X2 → X0):
+    //   INT_L_X2Y55.SW6BEG1.LOGIC_OUTS_L19   (source: diagonal hop)
+    //   INT_L_X0Y51.NL1BEG1.SW6END1            (landing: END → NL1 bridge)
+    //   INT_L_X0Y52.IMUX_L34.NL1END1            (dest: NL1END → IMUX)
+
+    const delta_x = dx - sx;
+    const delta_y = dy - sy;
+    const beg_idx = logicOutsToBegIndexForWireType(out_idx, .standard);
+
+    // Step 1: Source LOGIC_OUTS → diagonal BEG wire
+    var tile_buf: [64]u8 = undefined;
+    const src_tile = std.fmt.bufPrint(&tile_buf, "INT_{s}_X{d}Y{d}", .{
+        src_side, @abs(sx), @abs(sy),
+    }) catch return;
+
+    var from_buf: [32]u8 = undefined;
+    const src_wire = std.fmt.bufPrint(&from_buf, "LOGIC_OUTS_{s}{d}", .{
+        src_side, out_idx,
+    }) catch return;
+
+    // Choose diagonal wire based on direction
+    var beg_buf: [32]u8 = undefined;
+    const diag_wire = if (delta_y < 0 and delta_x < 0)
+        // South-West: SW6
+        std.fmt.bufPrint(&beg_buf, "SW6BEG{d}", .{beg_idx}) catch "SW6BEG0"
+    else if (delta_y > 0 and delta_x > 0)
+        // North-East: NE6 (not commonly used but exists)
+        std.fmt.bufPrint(&beg_buf, "NE2BEG{d}", .{beg_idx}) catch "NE2BEG0"
+    else if (delta_y < 0 and delta_x > 0)
+        // South-East: SE6 / SE2
+        std.fmt.bufPrint(&beg_buf, "SE2BEG{d}", .{beg_idx}) catch "SE2BEG0"
+    else
+        // North-West: NW6 / NW2
+        std.fmt.bufPrint(&beg_buf, "NW2BEG{d}", .{beg_idx}) catch "NW2BEG0";
+
+    try net.route_pips.append(allocator, RoutingPip{
+        .tile_name = try allocator.dupe(u8, src_tile),
+        .wire_from = try allocator.dupe(u8, src_wire),
+        .wire_to = try allocator.dupe(u8, diag_wire),
+        .tile_name_owned = true,
+    });
+
+    // Step 2: At landing tile, diagonal END → NL1BEG bridge
+    // SW6 from (X2,Y55) lands approximately at (X0, Y55-4=Y51)
+    // Landing tile for SW6: ~4 tiles south, ~2 tiles west
+    const dst_side: []const u8 = if (@mod(dx, 2) == 0) "L" else "R";
+    const dst_imux_prefix: []const u8 = if (std.mem.eql(u8, dst_side, "L")) "IMUX_L" else "IMUX";
+
+    // The END wire arrives ~1 tile before destination, need short hop bridge
+    // For SW6: landing ~1 tile south of destination → NL1BEG goes north to dest
+    const landing_y = dy - 1; // SW6 typically lands 1 tile before target
+    var land_buf: [64]u8 = undefined;
+    const land_tile = std.fmt.bufPrint(&land_buf, "INT_{s}_X{d}Y{d}", .{
+        dst_side, @abs(dx), @abs(landing_y),
+    }) catch return;
+
+    var end_buf: [32]u8 = undefined;
+    const end_wire = if (delta_y < 0 and delta_x < 0)
+        std.fmt.bufPrint(&end_buf, "SW6END{d}", .{beg_idx}) catch "SW6END0"
+    else if (delta_y > 0 and delta_x > 0)
+        std.fmt.bufPrint(&end_buf, "NE2END{d}", .{beg_idx}) catch "NE2END0"
+    else if (delta_y < 0 and delta_x > 0)
+        std.fmt.bufPrint(&end_buf, "SE2END{d}", .{beg_idx}) catch "SE2END0"
+    else
+        std.fmt.bufPrint(&end_buf, "NW2END{d}", .{beg_idx}) catch "NW2END0";
+
+    // Bridge: SW6END → NL1BEG (short hop north to reach IMUX)
+    // NL1BEG index must match the NL1END that can drive the destination IMUX.
+    // NL1END pattern: END0→col0, END1→col1/2, END2→col3/4, _S3_0→col7
+    // NL1BEG index = NL1END index (they match 1:1)
+    const imux_col = in_idx % 8;
+    const nl1_beg_idx: u2 = switch (imux_col) {
+        0 => 0,
+        1, 2 => 1,
+        3, 4 => 2,
+        7 => 3, // NL1BEG_N3
+        else => 0, // fallback
+    };
+    var bridge_buf: [32]u8 = undefined;
+    const bridge_wire = formatBegWire(&bridge_buf, "NL1BEG", nl1_beg_idx, .nl_type);
+
+    try net.route_pips.append(allocator, RoutingPip{
+        .tile_name = try allocator.dupe(u8, land_tile),
+        .wire_from = try allocator.dupe(u8, end_wire),
+        .wire_to = try allocator.dupe(u8, bridge_wire),
+        .tile_name_owned = true,
+    });
+
+    // Step 3: NL1END → IMUX at destination
+    var dst_buf: [64]u8 = undefined;
+    const dst_tile = std.fmt.bufPrint(&dst_buf, "INT_{s}_X{d}Y{d}", .{
+        dst_side, @abs(dx), @abs(dy),
+    }) catch return;
+
+    var nl1_end_buf: [32]u8 = undefined;
+    const nl1_end = imuxToNl1EndWire(&nl1_end_buf, in_idx);
+
+    var to_buf: [32]u8 = undefined;
+    const to_wire = std.fmt.bufPrint(&to_buf, "{s}{d}", .{
+        dst_imux_prefix, in_idx,
+    }) catch return;
+
+    try net.route_pips.append(allocator, RoutingPip{
+        .tile_name = try allocator.dupe(u8, dst_tile),
+        .wire_from = try allocator.dupe(u8, nl1_end),
         .wire_to = try allocator.dupe(u8, to_wire),
         .tile_name_owned = true,
     });

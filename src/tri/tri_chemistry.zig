@@ -1,9 +1,12 @@
-//! TRI CHEMISTRY CLI v7.0
-//! tri chem commands for chemical calculations and periodic table
+//! TRI CHEMISTRY CLI v8.0
+//! tri chem commands for chemical calculations, periodic table, and sacred chemistry
 
 const std = @import("std");
 const math = std.math;
 const chem = @import("sacred"); // Import via build.zig module
+const sacred_formula = @import("math/sacred_formula.zig");
+const gematria_mod = @import("gematria.zig");
+const math_mod = @import("math/mod.zig");
 
 /// Main chemistry command dispatcher
 pub fn runChemCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
@@ -69,6 +72,14 @@ pub fn runChemCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         try cmdBuffer(args);
     } else if (std.mem.eql(u8, command, "ksp")) {
         try cmdKsp(args);
+    } else if (std.mem.eql(u8, command, "sacred")) {
+        try cmdSacred(allocator, args);
+    } else if (std.mem.eql(u8, command, "trinity")) {
+        try cmdTrinity(allocator, args);
+    } else if (std.mem.eql(u8, command, "phi")) {
+        try cmdPhiPatterns(allocator, args);
+    } else if (std.mem.eql(u8, command, "bonds")) {
+        try cmdBonds(allocator, args);
     } else if (std.mem.eql(u8, command, "help")) {
         try showHelp();
     } else {
@@ -809,6 +820,11 @@ fn cmdYield(args: []const []const u8) !void {
 
 /// Assign oxidation state for a target element in a compound
 fn assignOxidationState(target: []const u8, formula: *const std.StringHashMap(u32)) i8 {
+    return assignOxidationStateDepth(target, formula, 0);
+}
+
+/// Inner oxidation state solver with recursion depth limit
+fn assignOxidationStateDepth(target: []const u8, formula: *const std.StringHashMap(u32), depth: u8) i8 {
     // Count elements
     var n_elements: u32 = 0;
     var it = formula.iterator();
@@ -838,10 +854,17 @@ fn assignOxidationState(target: []const u8, formula: *const std.StringHashMap(u3
         if (k) |ox| {
             known_sum += ox * @as(i32, @intCast(cnt));
         } else {
-            // Try polyatomic patterns
             const poly = polyatomicOxState(sym, formula);
             if (poly) |pox| {
                 known_sum += pox * @as(i32, @intCast(cnt));
+            } else if (depth < 1) {
+                // Try resolving the unknown element recursively (1 level deep)
+                const resolved = assignOxidationStateDepth(sym, formula, depth + 1);
+                if (resolved != 0) {
+                    known_sum += @as(i32, resolved) * @as(i32, @intCast(cnt));
+                } else {
+                    unknown_count += 1;
+                }
             } else {
                 unknown_count += 1;
             }
@@ -885,33 +908,95 @@ fn knownOxState(sym: []const u8, formula: *const std.StringHashMap(u32)) ?i32 {
     return null;
 }
 
+/// Strip leading stoichiometric coefficient from a formula string (e.g. "2Fe" -> "Fe")
+fn stripCoefficient(formula: []const u8) []const u8 {
+    var i: usize = 0;
+    while (i < formula.len and formula[i] >= '0' and formula[i] <= '9') : (i += 1) {}
+    // Only strip if there's an uppercase letter after the digits (actual formula start)
+    if (i > 0 and i < formula.len and formula[i] >= 'A' and formula[i] <= 'Z') {
+        return formula[i..];
+    }
+    return formula;
+}
+
+/// Count elements in a formula map
+fn countFormulaElements(formula: *const std.StringHashMap(u32)) u32 {
+    var count: u32 = 0;
+    var iter = formula.iterator();
+    while (iter.next()) |_| count += 1;
+    return count;
+}
+
 /// Pattern-based oxidation state for transition metals and non-metals
 fn polyatomicOxState(sym: []const u8, formula: *const std.StringHashMap(u32)) ?i32 {
-    // Common patterns based on compound context
     // Halogens (Cl, Br, I) in binary compounds with metals: -1
     if (std.mem.eql(u8, sym, "Cl") or std.mem.eql(u8, sym, "Br") or std.mem.eql(u8, sym, "I")) {
-        // If O is not present, likely -1 (binary salt)
         if (formula.get("O") == null) return -1;
-        return null; // could be various in oxoacids
+        return null;
     }
-    // Common transition metal defaults
-    if (std.mem.eql(u8, sym, "Fe")) {
-        // Check context: FeCl3 vs FeCl2 vs Fe2O3
+
+    const n_elems = countFormulaElements(formula);
+
+    // Sulfur in oxy-compounds with other elements (metal sulfates/sulfites)
+    if (std.mem.eql(u8, sym, "S")) {
         if (formula.get("O")) |o_cnt| {
-            if (formula.get("Fe")) |fe_cnt| {
-                // Fe2O3: 2*x + 3*(-2) = 0, x = +3
-                const ox = @divTrunc(@as(i32, @intCast(o_cnt)) * 2, @as(i32, @intCast(fe_cnt)));
-                if (ox >= 2 and ox <= 3) return ox;
+            if (formula.get("S")) |s_cnt| {
+                if (n_elems > 2) {
+                    // Ratio of O to S determines sulfate/sulfite pattern
+                    const ratio = @divTrunc(@as(i32, @intCast(o_cnt)), @as(i32, @intCast(s_cnt)));
+                    if (ratio >= 4) return 6; // sulfate (SO4²⁻)
+                    if (ratio == 3) return 4; // sulfite (SO3²⁻)
+                    if (ratio == 2) return 4; // thionyl-like
+                }
             }
         }
         return null;
     }
-    if (std.mem.eql(u8, sym, "Cu")) return 2; // most common
-    if (std.mem.eql(u8, sym, "Mn")) return null; // varies widely
-    if (std.mem.eql(u8, sym, "N")) return null; // varies
-    if (std.mem.eql(u8, sym, "S")) return null; // varies
-    if (std.mem.eql(u8, sym, "C")) return null; // varies
-    if (std.mem.eql(u8, sym, "P")) return null; // varies
+
+    // Nitrogen in oxy-compounds (metal nitrates/nitrites)
+    if (std.mem.eql(u8, sym, "N")) {
+        if (formula.get("O")) |o_cnt| {
+            if (formula.get("N")) |n_cnt| {
+                if (n_elems > 2) {
+                    const ratio = @divTrunc(@as(i32, @intCast(o_cnt)), @as(i32, @intCast(n_cnt)));
+                    if (ratio >= 3) return 5; // nitrate (NO3⁻)
+                    if (ratio == 2) return 3; // nitrite (NO2⁻)
+                }
+            }
+        }
+        return null;
+    }
+
+    // Carbon in oxy-compounds (metal carbonates)
+    if (std.mem.eql(u8, sym, "C")) {
+        if (formula.get("O")) |o_cnt| {
+            if (formula.get("C")) |c_cnt| {
+                if (n_elems > 2) {
+                    const ratio = @divTrunc(@as(i32, @intCast(o_cnt)), @as(i32, @intCast(c_cnt)));
+                    if (ratio >= 3) return 4; // carbonate (CO3²⁻)
+                }
+            }
+        }
+        return null;
+    }
+
+    // Phosphorus in oxy-compounds (metal phosphates)
+    if (std.mem.eql(u8, sym, "P")) {
+        if (formula.get("O")) |o_cnt| {
+            if (formula.get("P")) |p_cnt| {
+                if (n_elems > 2) {
+                    const ratio = @divTrunc(@as(i32, @intCast(o_cnt)), @as(i32, @intCast(p_cnt)));
+                    if (ratio >= 4) return 5; // phosphate (PO4³⁻)
+                }
+            }
+        }
+        return null;
+    }
+
+    // Transition metals: common defaults when in compounds
+    if (std.mem.eql(u8, sym, "Cu")) return 2;
+    if (std.mem.eql(u8, sym, "Fe")) return null; // varies (+2/+3), solved via charge neutrality
+    if (std.mem.eql(u8, sym, "Mn")) return null;
 
     return null;
 }
@@ -960,12 +1045,12 @@ fn cmdRedox(allocator: std.mem.Allocator, args: []const []const u8) !void {
     var r_iter = std.mem.splitScalar(u8, reactant_str, '+');
     while (r_iter.next()) |part| {
         const trimmed = std.mem.trim(u8, part, " ");
-        if (trimmed.len > 0) try reactant_formulas.append(alloc, trimmed);
+        if (trimmed.len > 0) try reactant_formulas.append(alloc, stripCoefficient(trimmed));
     }
     var p_iter = std.mem.splitScalar(u8, product_str, '+');
     while (p_iter.next()) |part| {
         const trimmed = std.mem.trim(u8, part, " ");
-        if (trimmed.len > 0) try product_formulas.append(alloc, trimmed);
+        if (trimmed.len > 0) try product_formulas.append(alloc, stripCoefficient(trimmed));
     }
 
     // Parse all compositions
@@ -1023,6 +1108,22 @@ fn cmdRedox(allocator: std.mem.Allocator, args: []const []const u8) !void {
     // Compare oxidation states to find changes
     std.debug.print("\nElectron Transfer:\n", .{});
     var found_change = false;
+    var total_e_transferred: i32 = 0;
+
+    // Track oxidized/reduced elements for half-reactions
+    const max_changes = 8;
+    var oxidized_elems: [max_changes][]const u8 = undefined;
+    var oxidized_from: [max_changes]i32 = undefined;
+    var oxidized_to: [max_changes]i32 = undefined;
+    var oxidized_e: [max_changes]i32 = undefined;
+    var n_oxidized: usize = 0;
+
+    var reduced_elems: [max_changes][]const u8 = undefined;
+    var reduced_from: [max_changes]i32 = undefined;
+    var reduced_to: [max_changes]i32 = undefined;
+    var reduced_e: [max_changes]i32 = undefined;
+    var n_reduced: usize = 0;
+
     var r_ox_iter = reactant_ox.iterator();
     while (r_ox_iter.next()) |entry| {
         const elem = entry.key_ptr.*;
@@ -1034,11 +1135,26 @@ fn cmdRedox(allocator: std.mem.Allocator, args: []const []const u8) !void {
                 const p_i: i32 = p_val;
                 const diff = p_i - r_i;
                 if (diff > 0) {
-                    std.debug.print("  {s}: {d} -> {d} (lost {d} e-, OXIDIZED)\n", .{ elem, r_i, p_i, diff });
-                    std.debug.print("  {s} is the REDUCING AGENT\n", .{elem});
+                    std.debug.print("  {s}: {d} -> {d} (lost {d} e⁻, OXIDIZED)\n", .{ elem, r_i, p_i, diff });
+                    std.debug.print("    → {s} is the REDUCING AGENT\n", .{elem});
+                    total_e_transferred += diff;
+                    if (n_oxidized < max_changes) {
+                        oxidized_elems[n_oxidized] = elem;
+                        oxidized_from[n_oxidized] = r_i;
+                        oxidized_to[n_oxidized] = p_i;
+                        oxidized_e[n_oxidized] = diff;
+                        n_oxidized += 1;
+                    }
                 } else {
-                    std.debug.print("  {s}: {d} -> {d} (gained {d} e-, REDUCED)\n", .{ elem, r_i, p_i, -diff });
-                    std.debug.print("  {s} is the OXIDIZING AGENT\n", .{elem});
+                    std.debug.print("  {s}: {d} -> {d} (gained {d} e⁻, REDUCED)\n", .{ elem, r_i, p_i, -diff });
+                    std.debug.print("    → {s} is the OXIDIZING AGENT\n", .{elem});
+                    if (n_reduced < max_changes) {
+                        reduced_elems[n_reduced] = elem;
+                        reduced_from[n_reduced] = r_i;
+                        reduced_to[n_reduced] = p_i;
+                        reduced_e[n_reduced] = -diff;
+                        n_reduced += 1;
+                    }
                 }
             }
         }
@@ -1047,6 +1163,42 @@ fn cmdRedox(allocator: std.mem.Allocator, args: []const []const u8) !void {
     if (!found_change) {
         std.debug.print("  No oxidation state changes detected.\n", .{});
         std.debug.print("  This may not be a redox reaction.\n", .{});
+    } else {
+        // Half-reactions
+        std.debug.print("\nHalf-Reactions:\n", .{});
+        for (0..n_oxidized) |i| {
+            const sign_from: u8 = if (oxidized_from[i] >= 0) '+' else '-';
+            const abs_from: u32 = @intCast(if (oxidized_from[i] < 0) -oxidized_from[i] else oxidized_from[i]);
+            const sign_to: u8 = if (oxidized_to[i] >= 0) '+' else '-';
+            const abs_to: u32 = @intCast(if (oxidized_to[i] < 0) -oxidized_to[i] else oxidized_to[i]);
+            if (abs_from == 0) {
+                std.debug.print("  Oxidation: {s} → {s}({c}{d}) + {d}e⁻\n", .{
+                    oxidized_elems[i], oxidized_elems[i], sign_to, abs_to, @as(u32, @intCast(oxidized_e[i])),
+                });
+            } else {
+                std.debug.print("  Oxidation: {s}({c}{d}) → {s}({c}{d}) + {d}e⁻\n", .{
+                    oxidized_elems[i], sign_from, abs_from, oxidized_elems[i], sign_to, abs_to, @as(u32, @intCast(oxidized_e[i])),
+                });
+            }
+        }
+        for (0..n_reduced) |i| {
+            const sign_from: u8 = if (reduced_from[i] >= 0) '+' else '-';
+            const abs_from: u32 = @intCast(if (reduced_from[i] < 0) -reduced_from[i] else reduced_from[i]);
+            const sign_to: u8 = if (reduced_to[i] >= 0) '+' else '-';
+            const abs_to: u32 = @intCast(if (reduced_to[i] < 0) -reduced_to[i] else reduced_to[i]);
+            if (abs_to == 0) {
+                std.debug.print("  Reduction: {s}({c}{d}) + {d}e⁻ → {s}\n", .{
+                    reduced_elems[i], sign_from, abs_from, @as(u32, @intCast(reduced_e[i])), reduced_elems[i],
+                });
+            } else {
+                std.debug.print("  Reduction: {s}({c}{d}) + {d}e⁻ → {s}({c}{d})\n", .{
+                    reduced_elems[i], sign_from, abs_from, @as(u32, @intCast(reduced_e[i])), reduced_elems[i], sign_to, abs_to,
+                });
+            }
+        }
+
+        // Electron balance summary
+        std.debug.print("\n  Total electrons transferred: {d}\n", .{@as(u32, @intCast(total_e_transferred))});
     }
 
     // Also balance the equation
@@ -1537,10 +1689,504 @@ fn cmdKsp(args: []const []const u8) !void {
 // HELP
 // ============================================
 
+// ============================================
+// SACRED CHEMISTRY v8.0
+// ============================================
+
+/// Encode UTF-8 codepoint into buffer, return bytes written
+fn encodeUtf8(cp: u21, buf: *[4]u8) u3 {
+    if (cp < 0x80) {
+        buf[0] = @intCast(cp);
+        return 1;
+    } else if (cp < 0x800) {
+        buf[0] = @intCast(0xC0 | (cp >> 6));
+        buf[1] = @intCast(0x80 | (cp & 0x3F));
+        return 2;
+    } else if (cp < 0x10000) {
+        buf[0] = @intCast(0xE0 | (cp >> 12));
+        buf[1] = @intCast(0x80 | ((cp >> 6) & 0x3F));
+        buf[2] = @intCast(0x80 | (cp & 0x3F));
+        return 3;
+    } else {
+        buf[0] = @intCast(0xF0 | (cp >> 18));
+        buf[1] = @intCast(0x80 | ((cp >> 12) & 0x3F));
+        buf[2] = @intCast(0x80 | ((cp >> 6) & 0x3F));
+        buf[3] = @intCast(0x80 | (cp & 0x3F));
+        return 4;
+    }
+}
+
+/// Convert number to balanced ternary representation
+fn toBalancedTernary(z: u32, buf: *[20]i8) u8 {
+    var n: i32 = @intCast(z);
+    var len: u8 = 0;
+    if (n == 0) {
+        buf[0] = 0;
+        return 1;
+    }
+    while (n != 0 and len < 20) {
+        var rem = @mod(n, @as(i32, 3));
+        n = @divFloor(n, @as(i32, 3));
+        if (rem == 2) {
+            rem = -1;
+            n += 1;
+        }
+        buf[len] = @intCast(rem);
+        len += 1;
+    }
+    // Reverse in place
+    var i: u8 = 0;
+    while (i < len / 2) : (i += 1) {
+        const tmp = buf[i];
+        buf[i] = buf[len - 1 - i];
+        buf[len - 1 - i] = tmp;
+    }
+    return len;
+}
+
+/// tri chem sacred <formula> — Sacred formula decomposition of molecular properties
+fn cmdSacred(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    if (args.len < 2) {
+        std.debug.print("Usage: tri chem sacred <formula>\nExample: tri chem sacred H2O\n", .{});
+        return;
+    }
+
+    const GOLDEN = "\x1b[33m";
+    const CYAN = "\x1b[36m";
+    const GREEN = "\x1b[32m";
+    const GRAY = "\x1b[90m";
+    const MAGENTA = "\x1b[35m";
+    const RESET = "\x1b[0m";
+
+    const formula = args[1];
+    const mass_result = chem.molarMass(allocator, formula);
+    const molar_mass = mass_result catch {
+        std.debug.print("Error: Cannot parse formula '{s}'\n", .{formula});
+        return;
+    };
+
+    std.debug.print("\n{s}SACRED CHEMISTRY: {s}{s}\n", .{ GOLDEN, formula, RESET });
+    std.debug.print("{s}═══════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+
+    // Sacred formula decomposition of molar mass
+    const fit = sacred_formula.fitSacredFormula(molar_mass);
+    var formula_buf: [128]u8 = undefined;
+    const formula_str = sacred_formula.formatFormulaString(&formula_buf, fit);
+    std.debug.print("Molar Mass: {d:.3} g/mol\n", .{molar_mass});
+    std.debug.print("{s}Sacred:{s}     {s}  = {d:.3}  ({d:.4}%)\n\n", .{ MAGENTA, RESET, formula_str, fit.computed, fit.error_pct });
+
+    // Element decomposition
+    const composition = chem.parseFormula(allocator, formula) catch {
+        return;
+    };
+
+    std.debug.print("{s}Element Sacred Decomposition:{s}\n", .{ CYAN, RESET });
+    var total_en: f64 = 0;
+    var en_count: f64 = 0;
+
+    var it = composition.iterator();
+    while (it.next()) |entry| {
+        const sym = entry.key_ptr.*;
+        const count = entry.value_ptr.*;
+        const el = chem.getElement(sym) orelse continue;
+
+        // Mass fit
+        const mass_fit = sacred_formula.fitSacredFormula(el.mass);
+        var mbuf: [128]u8 = undefined;
+        const mstr = sacred_formula.formatFormulaString(&mbuf, mass_fit);
+        std.debug.print("  {s}{s:<3}{s} mass={d:>8.3}  {s}{s}{s}  ({d:.3}%)\n", .{ GREEN, sym, RESET, el.mass, GRAY, mstr, RESET, mass_fit.error_pct });
+
+        // Ionization energy fit
+        if (el.ionization_energy) |ie| {
+            const ie_fit = sacred_formula.fitSacredFormula(ie);
+            var ibuf: [128]u8 = undefined;
+            const istr = sacred_formula.formatFormulaString(&ibuf, ie_fit);
+            std.debug.print("  {s:<3} IE  ={d:>8.3}  {s}{s}{s}  ({d:.3}%)\n", .{ "", ie, GRAY, istr, RESET, ie_fit.error_pct });
+        }
+
+        // Accumulate electronegativity
+        if (el.electronegativity) |en| {
+            total_en += en * @as(f64, @floatFromInt(count));
+            en_count += @as(f64, @floatFromInt(count));
+        }
+    }
+
+    // Average electronegativity
+    if (en_count > 0) {
+        const avg_en = total_en / en_count;
+        const en_fit = sacred_formula.fitSacredFormula(avg_en);
+        var ebuf: [128]u8 = undefined;
+        const estr = sacred_formula.formatFormulaString(&ebuf, en_fit);
+        std.debug.print("\n{s}Avg Electronegativity:{s} {d:.3}\n", .{ CYAN, RESET, avg_en });
+        std.debug.print("  {s}Sacred:{s} {s}  ({d:.3}%)\n", .{ MAGENTA, RESET, estr, en_fit.error_pct });
+    }
+
+    std.debug.print("\n{s}V = n x 3^k x pi^m x phi^p x e^q{s}\n", .{ GRAY, RESET });
+    std.debug.print("{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+}
+
+/// tri chem trinity <element> — Element's Trinity connections
+fn cmdTrinity(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    if (args.len < 2) {
+        std.debug.print("Usage: tri chem trinity <element>\nExample: tri chem trinity Au\n", .{});
+        return;
+    }
+
+    const GOLDEN = "\x1b[33m";
+    const CYAN = "\x1b[36m";
+    const GREEN = "\x1b[32m";
+    const MAGENTA = "\x1b[35m";
+    const RESET = "\x1b[0m";
+
+    const input = args[1];
+    const el = chem.getElement(input) orelse {
+        std.debug.print("Error: Element '{s}' not found\n", .{input});
+        return;
+    };
+
+    const z: u32 = @intCast(el.number);
+
+    std.debug.print("\n{s}TRINITY ANALYSIS: {s} ({s}){s}\n", .{ GOLDEN, el.symbol, el.name, RESET });
+    std.debug.print("{s}═══════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("Atomic Number: {d}\n\n", .{el.number});
+
+    // 1. Balanced ternary encoding
+    var trit_buf: [20]i8 = undefined;
+    const trit_len = toBalancedTernary(z, &trit_buf);
+    std.debug.print("{s}Balanced Ternary:{s} ", .{ CYAN, RESET });
+    for (0..trit_len) |i| {
+        const t = trit_buf[i];
+        if (t == 1) {
+            std.debug.print("{s}+1{s} ", .{ GREEN, RESET });
+        } else if (t == -1) {
+            std.debug.print("{s}-1{s} ", .{ MAGENTA, RESET });
+        } else {
+            std.debug.print(" 0 ", .{});
+        }
+    }
+    std.debug.print("\nTrit Count: {d} trits\n\n", .{trit_len});
+
+    // 2. Sacred formula fits
+    std.debug.print("{s}Sacred Formula:{s}\n", .{ CYAN, RESET });
+    {
+        const mass_fit = sacred_formula.fitSacredFormula(el.mass);
+        var mbuf: [128]u8 = undefined;
+        const mstr = sacred_formula.formatFormulaString(&mbuf, mass_fit);
+        std.debug.print("  Mass ({d:.3}):  {s}  ({d:.3}%)\n", .{ el.mass, mstr, mass_fit.error_pct });
+    }
+    if (el.ionization_energy) |ie| {
+        const ie_fit = sacred_formula.fitSacredFormula(ie);
+        var ibuf: [128]u8 = undefined;
+        const istr = sacred_formula.formatFormulaString(&ibuf, ie_fit);
+        std.debug.print("  IE ({d:.3} eV): {s}  ({d:.3}%)\n", .{ ie, istr, ie_fit.error_pct });
+    }
+    if (el.electronegativity) |en| {
+        const en_fit = sacred_formula.fitSacredFormula(en);
+        var ebuf: [128]u8 = undefined;
+        const estr = sacred_formula.formatFormulaString(&ebuf, en_fit);
+        std.debug.print("  EN ({d:.2}):     {s}  ({d:.3}%)\n", .{ en, estr, en_fit.error_pct });
+    }
+
+    // 3. Fibonacci/Lucas check
+    std.debug.print("\n{s}Sequence Check:{s}\n", .{ CYAN, RESET });
+    var is_fib = false;
+    var is_lucas = false;
+    var fib_idx: u32 = 0;
+    var lucas_idx: u32 = 0;
+    for (0..25) |i| {
+        const idx: u32 = @intCast(i);
+        const f = math_mod.fibonacci(idx);
+        if (f == @as(i64, z)) {
+            is_fib = true;
+            fib_idx = idx;
+        }
+        const l = math_mod.lucas(idx);
+        if (l == @as(i64, z)) {
+            is_lucas = true;
+            lucas_idx = idx;
+        }
+    }
+    if (is_fib) {
+        std.debug.print("  {s}Fibonacci:{s} YES — F({d}) = {d}\n", .{ GREEN, RESET, fib_idx, z });
+    } else {
+        std.debug.print("  Fibonacci: No\n", .{});
+    }
+    if (is_lucas) {
+        std.debug.print("  {s}Lucas:{s}     YES — L({d}) = {d}\n", .{ GREEN, RESET, lucas_idx, z });
+    } else {
+        std.debug.print("  Lucas:     No\n", .{});
+    }
+
+    // 4. Golden angle
+    const golden_angle = chem.math.GOLDEN_ANGLE_DEG;
+    const angle = @mod(@as(f64, @floatFromInt(z)) * golden_angle, 360.0);
+    const sector: u32 = @intFromFloat(angle / 45.0);
+    std.debug.print("\n{s}Golden Angle:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {d} x 137.508 = {d:.1} deg (sector {d}/8)\n", .{ z, angle, sector });
+
+    // 5. Coptic glyph
+    const glyph_idx = z % 27;
+    const glyph = gematria_mod.COPTIC_TABLE[glyph_idx];
+    var utf8_buf: [4]u8 = undefined;
+    const utf8_len = encodeUtf8(glyph.codepoint, &utf8_buf);
+    const kingdom: []const u8 = if (glyph_idx < 9) "Matter" else if (glyph_idx < 18) "Energy" else "Info";
+
+    std.debug.print("\n{s}Coptic Glyph:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}{s}{s} (value={d}, kingdom={s})\n", .{ GOLDEN, utf8_buf[0..utf8_len], RESET, glyph.value, kingdom });
+    std.debug.print("  {d} mod 27 = {d} -> glyph index {d}\n", .{ z, glyph_idx, glyph_idx });
+
+    std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+}
+
+/// tri chem phi [ratios|fibonacci|spiral|fits] — Golden ratio patterns
+fn cmdPhiPatterns(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+
+    const GOLDEN = "\x1b[33m";
+    const CYAN = "\x1b[36m";
+    const GREEN = "\x1b[32m";
+    const GRAY = "\x1b[90m";
+    const MAGENTA = "\x1b[35m";
+    const RESET = "\x1b[0m";
+
+    const phi = chem.math.PHI;
+    const filter: ?[]const u8 = if (args.len >= 2) args[1] else null;
+    const show_all = filter == null;
+
+    std.debug.print("\n{s}GOLDEN RATIO IN THE PERIODIC TABLE{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}phi = {d:.10}{s}\n\n", .{ GRAY, phi, RESET });
+
+    // a) Consecutive mass ratios near phi
+    if (show_all or (filter != null and std.mem.eql(u8, filter.?, "ratios"))) {
+        std.debug.print("{s}Mass Ratios Near phi (|ratio - phi| < 0.05):{s}\n", .{ CYAN, RESET });
+        var found: u32 = 0;
+        for (0..117) |i| {
+            const m1 = chem.PERIODIC_TABLE[i].mass;
+            const m2 = chem.PERIODIC_TABLE[i + 1].mass;
+            if (m1 > 0) {
+                const ratio = m2 / m1;
+                const diff = @abs(ratio - phi);
+                if (diff < 0.05) {
+                    std.debug.print("  {s}{s:<3}{s}/{s:<3} = {d:.6} / {d:.6} = {s}{d:.6}{s} (delta={d:.4})\n", .{
+                        GREEN,
+                        chem.PERIODIC_TABLE[i + 1].symbol,
+                        RESET,
+                        chem.PERIODIC_TABLE[i].symbol,
+                        m2,
+                        m1,
+                        GOLDEN,
+                        ratio,
+                        RESET,
+                        diff,
+                    });
+                    found += 1;
+                }
+            }
+        }
+        if (found == 0) std.debug.print("  (none within threshold)\n", .{});
+        std.debug.print("  Found {d} ratio(s)\n\n", .{found});
+    }
+
+    // b) Fibonacci / noble gas / magic numbers
+    if (show_all or (filter != null and std.mem.eql(u8, filter.?, "fibonacci"))) {
+        std.debug.print("{s}Fibonacci & Noble Gas Numbers:{s}\n", .{ CYAN, RESET });
+        const noble_gases = [_]u8{ 2, 10, 18, 36, 54, 86 };
+        for (noble_gases) |ng| {
+            var fib_match: ?u32 = null;
+            for (0..25) |j| {
+                const idx: u32 = @intCast(j);
+                if (math_mod.fibonacci(idx) == @as(i64, ng)) {
+                    fib_match = idx;
+                    break;
+                }
+            }
+            const el = chem.getElement(@as(u8, ng));
+            const sym: []const u8 = if (el) |e| e.symbol else "??";
+            const name: []const u8 = if (el) |e| e.name else "Unknown";
+            if (fib_match) |fi| {
+                std.debug.print("  Z={d:>3} {s:<3} {s:<12} {s}= F({d}) FIBONACCI!{s}\n", .{ ng, sym, name, GREEN, fi, RESET });
+            } else {
+                std.debug.print("  Z={d:>3} {s:<3} {s:<12}\n", .{ ng, sym, name });
+            }
+        }
+
+        // Nuclear magic numbers
+        std.debug.print("\n  {s}Nuclear Magic Numbers:{s}\n", .{ MAGENTA, RESET });
+        const magic = [_]u8{ 2, 8, 20, 28, 50, 82, 126 };
+        for (magic) |mn| {
+            var fib_match: ?u32 = null;
+            var lucas_match: ?u32 = null;
+            for (0..25) |j| {
+                const idx: u32 = @intCast(j);
+                if (math_mod.fibonacci(idx) == @as(i64, mn)) fib_match = idx;
+                if (math_mod.lucas(idx) == @as(i64, mn)) lucas_match = idx;
+            }
+            var tag_buf: [32]u8 = undefined;
+            var tag_len: usize = 0;
+            if (fib_match) |fi| {
+                const s = std.fmt.bufPrint(tag_buf[tag_len..], "F({d}) ", .{fi}) catch "";
+                tag_len += s.len;
+            }
+            if (lucas_match) |li| {
+                const s = std.fmt.bufPrint(tag_buf[tag_len..], "L({d}) ", .{li}) catch "";
+                tag_len += s.len;
+            }
+            if (tag_len > 0) {
+                std.debug.print("  {d:>3}  {s}{s}{s}\n", .{ mn, GREEN, tag_buf[0..tag_len], RESET });
+            } else {
+                std.debug.print("  {d:>3}\n", .{mn});
+            }
+        }
+        std.debug.print("\n", .{});
+    }
+
+    // c) Golden angle spiral
+    if (show_all or (filter != null and std.mem.eql(u8, filter.?, "spiral"))) {
+        std.debug.print("{s}Golden Angle Spiral (first 30 elements):{s}\n", .{ CYAN, RESET });
+        const golden_angle = chem.math.GOLDEN_ANGLE_DEG;
+        for (1..31) |z| {
+            const angle = @mod(@as(f64, @floatFromInt(z)) * golden_angle, 360.0);
+            const bar_len: u32 = @intFromFloat(angle / 10.0);
+            const el = chem.getElement(@as(u8, @intCast(z)));
+            const sym: []const u8 = if (el) |e| e.symbol else "??";
+            std.debug.print("  {d:>3} {s:<3} {d:>6.1} |", .{ z, sym, angle });
+            for (0..bar_len) |_| {
+                std.debug.print("{s}#{s}", .{ GOLDEN, RESET });
+            }
+            std.debug.print("\n", .{});
+        }
+        std.debug.print("\n", .{});
+    }
+
+    // d) Best sacred formula fits
+    if (show_all or (filter != null and std.mem.eql(u8, filter.?, "fits"))) {
+        std.debug.print("{s}Best Sacred Formula Fits (error < 0.5%%):{s}\n", .{ CYAN, RESET });
+        // Collect and display (no dynamic sort needed — just iterate and print low-error ones)
+        var count: u32 = 0;
+        for (&chem.PERIODIC_TABLE) |*el_ptr| {
+            const fit = sacred_formula.fitSacredFormula(el_ptr.mass);
+            if (fit.error_pct < 0.5) {
+                var fbuf: [128]u8 = undefined;
+                const fstr = sacred_formula.formatFormulaString(&fbuf, fit);
+                std.debug.print("  {d:>3} {s:<3} {s:<15} {d:>10.3} -> {s}  {s}({d:.4}%%){s}\n", .{
+                    el_ptr.number, el_ptr.symbol, el_ptr.name, el_ptr.mass, fstr, GREEN, fit.error_pct, RESET,
+                });
+                count += 1;
+            }
+        }
+        std.debug.print("  {s}Total: {d} element(s) with < 0.5%% error{s}\n\n", .{ GRAY, count, RESET });
+    }
+
+    std.debug.print("{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+}
+
+/// tri chem bonds <formula> — Sacred bond analysis
+fn cmdBonds(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    if (args.len < 2) {
+        std.debug.print("Usage: tri chem bonds <formula>\nExample: tri chem bonds H2O\n", .{});
+        return;
+    }
+
+    const GOLDEN = "\x1b[33m";
+    const CYAN = "\x1b[36m";
+    const GREEN = "\x1b[32m";
+    const MAGENTA = "\x1b[35m";
+    const RESET = "\x1b[0m";
+
+    const formula = args[1];
+    const composition = chem.parseFormula(allocator, formula) catch {
+        std.debug.print("Error: Cannot parse formula '{s}'\n", .{formula});
+        return;
+    };
+
+    // Count total atoms, electrons, estimate bonds
+    var total_atoms: u32 = 0;
+    var total_electrons: u32 = 0;
+    var total_valence: u32 = 0;
+
+    var it = composition.iterator();
+    while (it.next()) |entry| {
+        const count: u32 = entry.value_ptr.*;
+        const el = chem.getElement(entry.key_ptr.*) orelse continue;
+        total_atoms += count;
+        total_electrons += @as(u32, el.number) * count;
+        total_valence += @as(u32, el.valence) * count;
+    }
+
+    const est_bonds = total_valence / 2;
+
+    // Average bond energy estimate (kJ/mol)
+    const avg_bond_energy: f64 = 350.0; // Reasonable average for organic/inorganic
+    // Known bond energies for common pairs
+    const bond_energy: f64 = blk: {
+        // Simple heuristic: check for common molecules
+        if (std.mem.eql(u8, formula, "H2O")) break :blk 926.0; // 2 x O-H (463)
+        if (std.mem.eql(u8, formula, "CO2")) break :blk 1598.0; // 2 x C=O (799)
+        if (std.mem.eql(u8, formula, "CH4")) break :blk 1652.0; // 4 x C-H (413)
+        if (std.mem.eql(u8, formula, "NH3")) break :blk 1173.0; // 3 x N-H (391)
+        if (std.mem.eql(u8, formula, "NaCl")) break :blk 411.0; // ionic
+        if (std.mem.eql(u8, formula, "H2")) break :blk 436.0;
+        if (std.mem.eql(u8, formula, "O2")) break :blk 498.0;
+        if (std.mem.eql(u8, formula, "N2")) break :blk 945.0;
+        break :blk avg_bond_energy * @as(f64, @floatFromInt(est_bonds));
+    };
+
+    std.debug.print("\n{s}SACRED BOND ANALYSIS: {s}{s}\n", .{ GOLDEN, formula, RESET });
+    std.debug.print("{s}═══════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+
+    // Atom counts
+    std.debug.print("Atoms: ", .{});
+    var it2 = composition.iterator();
+    var first = true;
+    while (it2.next()) |entry| {
+        if (!first) std.debug.print(", ", .{});
+        std.debug.print("{s}={d}", .{ entry.key_ptr.*, entry.value_ptr.* });
+        first = false;
+    }
+    std.debug.print("  (total: {d})\n", .{total_atoms});
+    std.debug.print("Total electrons: {d}\n", .{total_electrons});
+    std.debug.print("Estimated bonds: {d}\n", .{est_bonds});
+    std.debug.print("Bond energy (est): {d:.0} kJ/mol\n\n", .{bond_energy});
+
+    // Sacred formula of bond energy
+    const fit = sacred_formula.fitSacredFormula(bond_energy);
+    var fbuf: [128]u8 = undefined;
+    const fstr = sacred_formula.formatFormulaString(&fbuf, fit);
+    std.debug.print("{s}Sacred Formula:{s} {s}  ({d:.3}%)\n\n", .{ MAGENTA, RESET, fstr, fit.error_pct });
+
+    // Ternary molecular signature
+    const trit_atoms: i8 = @intCast(@as(i32, @intCast(total_atoms % 3)));
+    const trit_electrons: i8 = @intCast(@as(i32, @intCast(total_electrons % 3)));
+    const trit_bonds: i8 = @intCast(@as(i32, @intCast(est_bonds % 3)));
+
+    const trit_sym = [_][]const u8{ "0 (●)", "+1 (▲)", "-1 (▼)" };
+
+    std.debug.print("{s}Ternary Molecular Signature:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  Atoms:     {d} mod 3 = {s}\n", .{ total_atoms, trit_sym[@intCast(trit_atoms)] });
+    std.debug.print("  Electrons: {d} mod 3 = {s}\n", .{ total_electrons, trit_sym[@intCast(trit_electrons)] });
+    std.debug.print("  Bonds:     {d} mod 3 = {s}\n", .{ est_bonds, trit_sym[@intCast(trit_bonds)] });
+
+    const trit_sum: i8 = trit_atoms + trit_electrons + trit_bonds;
+    const balance_str: []const u8 = if (@mod(trit_sum, 3) == 0) "TRINITY BALANCED" else if (trit_sum > 0) "CREATIVE" else "ENTROPIC";
+    std.debug.print("  Sum: {d} -> {s}{s}{s}\n\n", .{ trit_sum, GREEN, balance_str, RESET });
+
+    // Coptic glyph
+    const glyph_idx = total_atoms % 27;
+    const glyph = gematria_mod.COPTIC_TABLE[glyph_idx];
+    var utf8_buf: [4]u8 = undefined;
+    const utf8_len = encodeUtf8(glyph.codepoint, &utf8_buf);
+    const kingdom: []const u8 = if (glyph_idx < 9) "Matter" else if (glyph_idx < 18) "Energy" else "Info";
+
+    std.debug.print("{s}Coptic Glyph:{s} {s}{s}{s} (value={d}, kingdom={s})\n", .{ CYAN, RESET, GOLDEN, utf8_buf[0..utf8_len], RESET, glyph.value, kingdom });
+    std.debug.print("{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+}
+
 fn showHelp() !void {
     std.debug.print(
         \\
-        \\  TRI CHEMISTRY v7.0
+        \\  TRI CHEMISTRY v8.0
         \\  ═══════════════════════════════════════════════════════
         \\
         \\  CORE
@@ -1588,7 +2234,109 @@ fn showHelp() !void {
         \\  SOLUBILITY
         \\    tri chem ksp <salt> <Ksp>         Molar solubility
         \\
+        \\  SACRED CHEMISTRY (v8.0)
+        \\    tri chem sacred <formula>         Sacred formula decomposition
+        \\    tri chem trinity <element>        Element's Trinity connections
+        \\    tri chem phi [property]           Golden ratio patterns
+        \\    tri chem bonds <formula>          Sacred bond analysis
+        \\
         \\  tri chem help                       This message
         \\
     , .{});
+}
+
+// ============================================
+// TESTS
+// ============================================
+
+test "stripCoefficient removes leading digits" {
+    try std.testing.expectEqualStrings("Fe", stripCoefficient("2Fe"));
+    try std.testing.expectEqualStrings("FeCl3", stripCoefficient("2FeCl3"));
+    try std.testing.expectEqualStrings("Cl2", stripCoefficient("3Cl2"));
+    // No coefficient — unchanged
+    try std.testing.expectEqualStrings("NaCl", stripCoefficient("NaCl"));
+    try std.testing.expectEqualStrings("H2O", stripCoefficient("H2O"));
+}
+
+test "oxidation state: pure element = 0" {
+    const alloc = std.testing.allocator;
+    var m = std.StringHashMap(u32).init(alloc);
+    defer m.deinit();
+    try m.put("Fe", 1);
+    try std.testing.expectEqual(@as(i8, 0), assignOxidationState("Fe", &m));
+}
+
+test "oxidation state: H2O" {
+    const alloc = std.testing.allocator;
+    var m = std.StringHashMap(u32).init(alloc);
+    defer m.deinit();
+    try m.put("H", 2);
+    try m.put("O", 1);
+    try std.testing.expectEqual(@as(i8, 1), assignOxidationState("H", &m));
+    try std.testing.expectEqual(@as(i8, -2), assignOxidationState("O", &m));
+}
+
+test "oxidation state: CuSO4" {
+    const alloc = std.testing.allocator;
+    var m = std.StringHashMap(u32).init(alloc);
+    defer m.deinit();
+    try m.put("Cu", 1);
+    try m.put("S", 1);
+    try m.put("O", 4);
+    try std.testing.expectEqual(@as(i8, 2), assignOxidationState("Cu", &m));
+    try std.testing.expectEqual(@as(i8, 6), assignOxidationState("S", &m));
+    try std.testing.expectEqual(@as(i8, -2), assignOxidationState("O", &m));
+}
+
+test "oxidation state: FeSO4" {
+    const alloc = std.testing.allocator;
+    var m = std.StringHashMap(u32).init(alloc);
+    defer m.deinit();
+    try m.put("Fe", 1);
+    try m.put("S", 1);
+    try m.put("O", 4);
+    try std.testing.expectEqual(@as(i8, 2), assignOxidationState("Fe", &m));
+    try std.testing.expectEqual(@as(i8, 6), assignOxidationState("S", &m));
+}
+
+test "oxidation state: NaCl" {
+    const alloc = std.testing.allocator;
+    var m = std.StringHashMap(u32).init(alloc);
+    defer m.deinit();
+    try m.put("Na", 1);
+    try m.put("Cl", 1);
+    try std.testing.expectEqual(@as(i8, 1), assignOxidationState("Na", &m));
+    try std.testing.expectEqual(@as(i8, -1), assignOxidationState("Cl", &m));
+}
+
+test "oxidation state: Fe2O3" {
+    const alloc = std.testing.allocator;
+    var m = std.StringHashMap(u32).init(alloc);
+    defer m.deinit();
+    try m.put("Fe", 2);
+    try m.put("O", 3);
+    try std.testing.expectEqual(@as(i8, 3), assignOxidationState("Fe", &m));
+    try std.testing.expectEqual(@as(i8, -2), assignOxidationState("O", &m));
+}
+
+test "oxidation state: H2SO4" {
+    const alloc = std.testing.allocator;
+    var m = std.StringHashMap(u32).init(alloc);
+    defer m.deinit();
+    try m.put("H", 2);
+    try m.put("S", 1);
+    try m.put("O", 4);
+    try std.testing.expectEqual(@as(i8, 1), assignOxidationState("H", &m));
+    try std.testing.expectEqual(@as(i8, 6), assignOxidationState("S", &m));
+    try std.testing.expectEqual(@as(i8, -2), assignOxidationState("O", &m));
+}
+
+test "countFormulaElements" {
+    const alloc = std.testing.allocator;
+    var m = std.StringHashMap(u32).init(alloc);
+    defer m.deinit();
+    try m.put("Fe", 1);
+    try m.put("S", 1);
+    try m.put("O", 4);
+    try std.testing.expectEqual(@as(u32, 3), countFormulaElements(&m));
 }

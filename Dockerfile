@@ -1,18 +1,11 @@
-# TRINITY OMEGA — Multi-arch Docker Image
-FROM ziglang/zig:ubuntu-latest AS builder
-RUN apt-get update && apt-get install -y git pkg-config
-WORKDIR /src
-COPY . .
-RUN zig build tri
-RUN zig build vibee
-
+# TRINITY OMEGA — Pre-compiled statically-linked binary
 FROM ubuntu:22.04
-RUN apt-get update && apt-get install -y ca-certificates libglib2.0-0 && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 RUN useradd -m -u 1000 trinity
 WORKDIR /home/trinity/.trinity
-COPY --from=builder /src/zig-out/bin/tri /usr/local/bin/tri
-COPY --from=builder /src/zig-out/bin/vibee /usr/local/bin/vibee
+COPY zig-out/bin/tri /usr/local/bin/tri
+COPY zig-out/bin/vibee /usr/local/bin/vibee
 USER trinity
 EXPOSE 8080
 ENTRYPOINT ["/usr/local/bin/tri"]
-CMD ["--help"]
+CMD ["serve", "--port", "8080"]
