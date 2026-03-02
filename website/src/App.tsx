@@ -3,7 +3,6 @@ import { HeroSection } from './components/sections'
 import Navigation from './components/Navigation'
 import QuantumBackground from './components/QuantumBackground'
 import Footer from './components/Footer'
-import StickyCTA from './components/StickyCTA'
 
 // OPTIMIZED: 8 sections only (was 29)
 // Target: +40% conversion through focused flow
@@ -83,7 +82,6 @@ export default function App() {
       </Suspense>
       
       <Footer />
-      <StickyCTA />
     </main>
   )
 }

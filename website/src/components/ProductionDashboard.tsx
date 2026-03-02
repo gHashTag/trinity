@@ -427,7 +427,7 @@ export default function ProductionDashboard() {
         display: 'flex',
         gap: 8,
       }}>
-        <a href="/trinity/" style={{
+        <a href={import.meta.env.BASE_URL} style={{
           color: '#888',
           fontSize: 12,
           textDecoration: 'none',
@@ -444,7 +444,7 @@ export default function ProductionDashboard() {
           background: `${GOLD}15`,
           border: `1px solid ${GOLD}33`,
         }}>Dashboard</span>
-        <a href="/trinity/docs/" style={{
+        <a href={`${import.meta.env.BASE_URL}docs/`} style={{
           color: '#888',
           fontSize: 12,
           textDecoration: 'none',
