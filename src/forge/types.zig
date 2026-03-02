@@ -234,6 +234,7 @@ pub const MappedCell = struct {
     ff_init: u1 = 0,
     ff_sync_reset: bool = true,
     carry_cyinit_const: ?u1 = null,
+    carry_chain_pos: ?u16 = null, // 0 = first in chain, 1+ = subsequent
 };
 
 /// Unique BEL identifier within the device
