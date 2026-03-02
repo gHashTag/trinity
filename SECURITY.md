@@ -14,7 +14,7 @@ We take security seriously. If you discover a security vulnerability, please rep
 ### How to Report
 
 1. **DO NOT** create a public GitHub issue for security vulnerabilities
-2. Email security concerns to: **reactnativeinitru@gmail.com** (or create private advisory)
+2. Email security concerns to: **security@trinity-cli.dev** (or create a [private security advisory](https://github.com/gHashTag/trinity/security/advisories/new))
 3. Include:
    - Description of the vulnerability
    - Steps to reproduce
@@ -69,7 +69,7 @@ VIBEE includes:
 
 ## Contact
 
-For security concerns: **security@vibee-lang.dev**
+For security concerns: **security@trinity-cli.dev**
 
 ---
 

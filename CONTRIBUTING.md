@@ -18,7 +18,7 @@ Thank you for your interest in contributing to Trinity!
 
 ### Prerequisites
 
-- **Zig 0.13.0** (required version)
+- **Zig 0.15.x** (required version)
 - **Git** for version control
 - **Make** (optional, for convenience scripts)
 
@@ -30,7 +30,7 @@ git clone https://github.com/gHashTag/trinity.git
 cd trinity
 
 # Verify Zig version
-zig version  # Should show 0.13.0
+zig version  # Should show 0.15.x
 
 # Build
 zig build
