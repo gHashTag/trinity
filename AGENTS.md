@@ -587,4 +587,89 @@ The agent should call `phi_loop_status` at start of each session to understand c
 
 ---
 
+## FORGE OF KOSCHEI — FPGA Synthesis & Flash Pipeline
+
+### Full Flow: Verilog → Silicon
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│               FORGE PIPELINE (Verilog → FPGA)                        │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  1. VERILOG ──→ Write/edit .v file                                   │
+│        ↓        fpga/openxc7-synth/ternary_dot.v                     │
+│                                                                      │
+│  2. YOSYS ───→ Synthesize to JSON netlist                            │
+│        ↓        yosys -p "synth_xilinx -flatten -abc9 -arch xc7      │
+│        ↓               -top <module>; write_json <out>.json" <in>.v  │
+│                                                                      │
+│  3. FORGE ───→ Place + Route + Generate bitstream                    │
+│        ↓        ./zig-out/bin/forge run --input <json>                │
+│        ↓               --device xc7a100t --constraints <xdc>         │
+│        ↓               --output <out>.bit --verbose                  │
+│                                                                      │
+│  4. FLASH ───→ Program FPGA via JTAG                                 │
+│        ↓        fpga/tools/jtag_program <bitstream>.bit              │
+│                                                                      │
+│  5. VERIFY ──→ Check LED behavior / hardware output                  │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### Prerequisites
+
+```bash
+# One-time setup (generate segbits database from prjxray-db)
+python3 tools/gen_segbits.py --part xc7a100t --keep
+
+# Build FORGE
+zig build forge
+```
+
+### Quick Copy-Paste
+
+```bash
+# Full pipeline in one command:
+cd fpga/openxc7-synth && \
+yosys -p "synth_xilinx -flatten -abc9 -arch xc7 -top ternary_dot_top; \
+          write_json ternary_dot.json" ternary_dot.v && \
+cd ../.. && \
+./zig-out/bin/forge run \
+    --input fpga/openxc7-synth/ternary_dot.json \
+    --device xc7a100t \
+    --constraints fpga/openxc7-synth/qmtech_fgg676.xdc \
+    --output /tmp/ternary_dot.bit --verbose && \
+fpga/tools/jtag_program /tmp/ternary_dot.bit
+```
+
+### FORGE Supported Primitives
+
+```
+Supported: LUT1-LUT6, FDRE/FDSE/FDCE/FDPE, CARRY4, IBUF/OBUF,
+           BUFG, INV, MUXF7/MUXF8, SRL16E
+NOT supported: BRAM, DSP48E1, multi-clock
+Max design: ~200 cells (routing congestion limit)
+```
+
+### Hardware: QMTECH XC7A100T FGG676
+
+```
+Clock:  U22 (50 MHz oscillator)
+LED:    T23 (LED D6, active low)
+JTAG:   Platform Cable USB II (VID 0x03fd, PID 0x0008)
+IDCODE: 0x13631093
+```
+
+### Troubleshooting
+
+```
+segbits_data.zig not found → python3 tools/gen_segbits.py --part xc7a100t
+findTileInstance missing   → regenerate with --part xc7a100t (tilegrid needed)
+FORGE timing violation     → OK if critical path < 20ns (50 MHz = 20ns budget)
+ftdi device not found      → use jtag_program (not openFPGALoader) for Platform Cable
+unknown features skipped   → normal, some PIPs not in segbits DB
+```
+
+---
+
 **KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3 | PHI LOOP: Link N/999**
