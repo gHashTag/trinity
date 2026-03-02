@@ -39,7 +39,7 @@ pub fn runPipelineCommand(allocator: std.mem.Allocator, args: []const []const u8
     } else if (std.mem.eql(u8, subcmd, "status")) {
         runPipelineStatus(allocator);
     } else if (std.mem.eql(u8, subcmd, "resume")) {
-        std.debug.print("{s}Pipeline resume - coming soon{s}\n", .{ GOLDEN, RESET });
+        runPipelineResume(allocator);
     } else {
         std.debug.print("{s}Unknown pipeline subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printPipelineHelp();
@@ -96,6 +96,41 @@ pub fn runPipelineStatus(allocator: std.mem.Allocator) void {
     var executor = pipeline_executor.PipelineExecutor.init(allocator, 1, "status check");
     defer executor.deinit();
     executor.printStatus();
+}
+
+fn runPipelineResume(allocator: std.mem.Allocator) void {
+    const tri_state = @import("tri_state.zig");
+
+    const checkpoint_opt = tri_state.loadPipelineCheckpoint(allocator);
+    if (checkpoint_opt) |checkpoint| {
+        defer {
+            if (checkpoint.task.len > 0) allocator.free(checkpoint.task);
+            if (checkpoint.status.len > 0) allocator.free(checkpoint.status);
+        }
+
+        std.debug.print("\n{s}Pipeline Checkpoint Found{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GRAY, RESET });
+        std.debug.print("  {s}Last Link:{s}  {d}/16\n", .{ CYAN, RESET, checkpoint.last_link });
+        std.debug.print("  {s}Task:{s}       {s}\n", .{ CYAN, RESET, checkpoint.task });
+        std.debug.print("  {s}Status:{s}     {s}\n", .{ CYAN, RESET, checkpoint.status });
+
+        if (std.mem.eql(u8, checkpoint.status, "completed")) {
+            std.debug.print("\n{s}Pipeline already completed. Use 'tri pipeline run <task>' for a new run.{s}\n\n", .{ GREEN, RESET });
+        } else if (std.mem.eql(u8, checkpoint.status, "failed")) {
+            std.debug.print("\n{s}Pipeline failed at link {d}. Restarting from beginning...{s}\n\n", .{ RED, checkpoint.last_link, RESET });
+            if (checkpoint.task.len > 0) {
+                runPipelineRun(allocator, &[_][]const u8{checkpoint.task});
+            }
+        } else {
+            std.debug.print("\n{s}Resuming pipeline from link {d}...{s}\n\n", .{ GREEN, checkpoint.last_link, RESET });
+            if (checkpoint.task.len > 0) {
+                runPipelineRun(allocator, &[_][]const u8{checkpoint.task});
+            }
+        }
+    } else {
+        std.debug.print("{s}No saved pipeline state found.{s}\n", .{ GRAY, RESET });
+        std.debug.print("Run 'tri pipeline run <task>' to start a new pipeline.\n", .{});
+    }
 }
 
 pub fn runDecomposeCommand(allocator: std.mem.Allocator, args: []const []const u8) void {

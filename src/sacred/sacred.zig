@@ -30,6 +30,10 @@ pub const bohrEnergy = chem.bohrEnergy;
 pub const bohrRadius = chem.bohrRadius;
 pub const hydrogenWavelength = chem.hydrogenWavelength;
 pub const hydrogenSeries = chem.hydrogenSeries;
+pub const AVOGADRO = chem.AVOGADRO;
+pub const GAS_CONSTANT = chem.GAS_CONSTANT;
+pub const FARADAY = chem.FARADAY;
+pub const PERIODIC_TABLE = chem.PERIODIC_TABLE;
 
 // Export temporal theory - TEMPORAL TRINITY THEOREM v1.0
 const temporal_theory = @import("temporal_engine.zig");
