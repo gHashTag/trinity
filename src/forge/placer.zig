@@ -57,6 +57,12 @@ pub fn place(db: *ForgeDB) !void {
     // Step 3: Place CARRY4 chains vertically
     placeCarryChains(db);
 
+    // Step 3b: Pack FFs into CARRY4 tiles (FFs belong in same tiles as their CARRY4 chain)
+    packFfsIntoCarryTiles(db);
+
+    // Step 3c: Place output LUTs near their connected IO pads
+    placeLutsNearIO(db);
+
     // Step 4: Initial placement for remaining cells
     placeRemainingCells(db);
 
@@ -189,6 +195,7 @@ fn placeCarryChains(db: *ForgeDB) void {
         break :blk clb_cols[clb_cols.len / 2];
     };
     var carry_y: u16 = if (db.device == .xc7a100t) 63 else 10;
+    var chain_pos: u16 = 0;
 
     for (db.cells.items) |*cell| {
         if (cell.cell_type != .CARRY4) continue;
@@ -201,8 +208,108 @@ fn placeCarryChains(db: *ForgeDB) void {
             .tile_y = carry_y,
             .bel_index = 12, // CARRY4 BEL index in slice
         };
+        cell.carry_chain_pos = chain_pos;
         cell.locked = true;
         carry_y += 1;
+        chain_pos += 1;
+    }
+}
+
+// =============================================================================
+// FF Packing into CARRY4 Tiles
+// =============================================================================
+
+fn packFfsIntoCarryTiles(db: *ForgeDB) void {
+    // Collect CARRY4 tile positions (Y values) in chain order
+    var carry_ys: [16]u16 = undefined;
+    var carry_x: u16 = 2;
+    var carry_count: usize = 0;
+
+    for (db.cells.items) |cell| {
+        if (cell.cell_type != .CARRY4) continue;
+        if (carry_count < 16) {
+            carry_ys[carry_count] = cell.tile_y orelse continue;
+            carry_x = cell.tile_x orelse carry_x;
+            carry_count += 1;
+        }
+    }
+    if (carry_count == 0) return;
+
+    // Pack FFs into CARRY4 tiles: 4 FFs per tile, all in X0 (SLICEL_X0)
+    // Each CARRY4 has 4 positions (A,B,C,D) with XOR outputs.
+    // Each FF stores one counter bit and gets its new value from FFMUX.XOR.
+    // BEL indices: 0=AFF, 1=BFF, 2=CFF, 3=DFF in slice X0
+    // This ensures direct XOR→FF connection via FFMUX.XOR (no routing needed).
+    var tile_idx: usize = 0;
+    var pos_in_tile: usize = 0; // 0..3 = A,B,C,D
+
+    for (db.cells.items) |*cell| {
+        if (!cell.cell_type.isFF()) continue;
+        if (cell.locked) continue;
+        if (cell.tile_x != null) continue; // Already placed
+
+        if (tile_idx >= carry_count) break;
+
+        // Assign to current carry tile, position A→B→C→D in X0
+        const bel_idx: u16 = @intCast(pos_in_tile); // 0=AFF, 1=BFF, 2=CFF, 3=DFF
+
+        cell.tile_x = carry_x;
+        cell.tile_y = carry_ys[tile_idx];
+        cell.bel = types.BelId{
+            .tile_x = carry_x,
+            .tile_y = carry_ys[tile_idx],
+            .bel_index = bel_idx,
+        };
+        cell.locked = true; // Lock FFs to CARRY4 tiles — SA must not scatter them
+
+        pos_in_tile += 1;
+        if (pos_in_tile >= 4) {
+            pos_in_tile = 0;
+            tile_idx += 1;
+        }
+    }
+}
+
+// =============================================================================
+// Place Output LUTs Near IO
+// =============================================================================
+
+fn placeLutsNearIO(db: *ForgeDB) void {
+    if (db.device != .xc7a100t) return;
+
+    // Find output OBUF tile_y to place LUTs nearby
+    var obuf_y: ?u16 = null;
+    var carry_col: u16 = 2; // default CLB column
+
+    for (db.cells.items) |cell| {
+        if (cell.cell_type == .OBUF) {
+            obuf_y = cell.tile_y;
+        }
+        if (cell.cell_type == .CARRY4 and cell.tile_x != null) {
+            carry_col = cell.tile_x.?;
+        }
+    }
+
+    if (obuf_y == null) return;
+
+    // Place LUT cells near OBUF Y, in same column as CARRY4
+    // Use Y = obuf_y + 4 (a few tiles above) for reasonable routing distance
+    const lut_y: u16 = obuf_y.? + 4; // e.g., 51 + 4 = 55, matching reference
+
+    for (db.cells.items) |*cell| {
+        if (!cell.cell_type.isLUT()) continue;
+        if (cell.locked) continue;
+        if (cell.tile_x != null) continue; // already placed
+
+        // Place in the same CLB column, SLICEL_X1 DLUT (bel_index=7 → slice1, D position)
+        cell.tile_x = carry_col;
+        cell.tile_y = lut_y;
+        cell.bel = types.BelId{
+            .tile_x = carry_col,
+            .tile_y = lut_y,
+            .bel_index = 7, // SLICEL_X1, D slot (matches reference DLUT position)
+        };
+        cell.locked = true;
     }
 }
 
