@@ -526,33 +526,55 @@ gh-pages branch structure:
 └── ...
 ```
 
-| Site | URL | Source | Framework | baseUrl |
-|------|-----|--------|-----------|---------|
-| Website | `gHashTag.github.io/trinity/` | `website/` | Vite (React SPA) | `/trinity/` |
-| Docsite | `gHashTag.github.io/trinity/docs/` | `docsite/` | Docusaurus 3.x | `/trinity/docs/` |
+| Site | URL | Repo | Framework | baseUrl |
+|------|-----|------|-----------|---------|
+| **Root Landing** | `gHashTag.github.io/` | `gHashTag/ghashtag.github.io` (main) | Vite (React SPA) | `/` |
+| **Website** | `gHashTag.github.io/trinity/` | `gHashTag/trinity` (gh-pages) | Vite (React SPA) | `/trinity/` |
+| **Docsite** | `gHashTag.github.io/trinity/docs/` | `gHashTag/trinity` (gh-pages) | Docusaurus 3.x | `/trinity/docs/` |
+
+**CRITICAL: There are TWO deployments of the website. ALWAYS deploy to BOTH repos.**
 
 ### Deploy Process (ALWAYS use this)
 
 ```bash
-# 1. Build website
+# ===== STEP 1: Deploy to gHashTag.github.io/trinity/ (with docsite) =====
+
+# 1a. Build website (base=/trinity/)
 cd website && npx vite build
 
-# 2. Build docsite
+# 1b. Build docsite
 cd docsite && npm run build
 
-# 3. Assemble gh-pages: website root + docsite in docs/
+# 1c. Assemble gh-pages: website root + docsite in docs/
 rm -rf /tmp/gh-pages-deploy
 mkdir /tmp/gh-pages-deploy
 cp -r website/dist/* /tmp/gh-pages-deploy/
 mkdir -p /tmp/gh-pages-deploy/docs
 cp -r docsite/build/* /tmp/gh-pages-deploy/docs/
 
-# 4. Force push to gh-pages
+# 1d. Force push to gh-pages
 cd /tmp/gh-pages-deploy
 git init && git checkout -b gh-pages
 git add -A && git commit -m "Deploy: <description>"
 git remote add origin git@github.com:gHashTag/trinity.git
 git push origin gh-pages --force
+
+# ===== STEP 2: Deploy to gHashTag.github.io/ (root domain) =====
+
+# 2a. Rebuild website with base=/ (root domain needs different base!)
+cd website && npx vite build --base '/'
+
+# 2b. Clone root repo, replace contents, push
+cd /tmp && rm -rf ghashtag.github.io
+git clone git@github.com:gHashTag/ghashtag.github.io.git
+cd ghashtag.github.io
+git rm -rf . 2>/dev/null
+cp -r <trinity-repo>/website/dist/* .
+git add -A && git commit -m "Deploy: <description>"
+git push
+
+# 2c. Rebuild with base=/trinity/ to restore dist/ for future deploys
+cd website && npx vite build
 ```
 
 ### Docsite Configuration Rules
@@ -571,10 +593,14 @@ git push origin gh-pages --force
 | `npx gh-pages -d dist` | Unreliable, often fails silently |
 | Deploying website alone without docsite | **Deletes docs/** from gh-pages |
 | Deploying docsite alone without website | **Deletes website** from gh-pages |
+| Deploying to `/trinity/` without deploying to root `/` | **Root site gets out of sync** |
+| Using `base: '/trinity/'` for root domain build | **Asset paths break on ghashtag.github.io/** |
 
 **IMPORTANT:**
 - DO NOT use Vercel — website is on GitHub Pages
 - NEVER deploy website or docsite separately — ONLY together
+- ALWAYS deploy to BOTH repos: `gHashTag/trinity` (gh-pages) AND `gHashTag/ghashtag.github.io` (main)
+- Root domain build MUST use `--base '/'`, trinity build uses default `base: '/trinity/'`
 - GitHub Pages updates 1-2 minutes after deployment
 - To verify: Cmd+Shift+R (hard refresh) in browser
 - MDX files: escape `<Tag>` → `\<Tag\>`, `{expr}` → `\{expr\}` outside code blocks
