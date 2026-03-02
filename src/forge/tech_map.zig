@@ -112,6 +112,9 @@ fn mapCellType(type_str: []const u8) ?CellType {
     if (std.mem.eql(u8, type_str, "MUXF7")) return .LUT3;
     // MUXF8 is a 2:1 mux between two MUXF7 outputs, map to LUT3
     if (std.mem.eql(u8, type_str, "MUXF8")) return .LUT3;
+    // SRL16E is a 16-bit shift register implemented in a LUT
+    // Map to FDRE for placement/routing (uses same CLB resources)
+    if (std.mem.eql(u8, type_str, "SRL16E")) return .FDRE;
     return CellType.fromString(type_str);
 }
 
@@ -121,6 +124,10 @@ fn isInvCell(type_str: []const u8) bool {
 
 fn isMuxF7Cell(type_str: []const u8) bool {
     return std.mem.eql(u8, type_str, "MUXF7") or std.mem.eql(u8, type_str, "MUXF8");
+}
+
+fn isSRL16ECell(type_str: []const u8) bool {
+    return std.mem.eql(u8, type_str, "SRL16E");
 }
 
 fn parseLutInit(cell: YosysCell) u64 {

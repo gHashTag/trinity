@@ -1,8 +1,9 @@
 // TERNARY QUANTUM VM — CLI Runner
-// Usage: quantum chsh [--trials N] [--sacred]
+// Usage: quantum chsh [--trials N] [--sacred] [--entangled]
+//        quantum cglmp [--trials N]
 //        quantum demo
 //        quantum bench
-//        quantum weights
+//        quantum weights [--entangled]
 //
 // phi^2 + 1/phi^2 = 3 = TRINITY
 
@@ -22,21 +23,29 @@ pub fn main() !void {
 
     if (std.mem.eql(u8, cmd, "chsh")) {
         run_chsh(args);
+    } else if (std.mem.eql(u8, cmd, "cglmp")) {
+        run_cglmp(args);
     } else if (std.mem.eql(u8, cmd, "demo")) {
         run_demo();
     } else if (std.mem.eql(u8, cmd, "bench")) {
         run_bench();
     } else if (std.mem.eql(u8, cmd, "weights")) {
-        run_weight_gen();
+        run_weight_gen(args);
     } else {
         print(
             \\TERNARY QUANTUM VM — FORGE OF KOSCHEI
             \\
             \\Commands:
             \\  chsh    Run CHSH-like correlation test on qutrits
+            \\  cglmp   Run CGLMP inequality test with entangled pairs
             \\  demo    Demonstrate qutrit gates and measurement
             \\  bench   Benchmark gate operations
             \\  weights Generate quantum-derived weights for FPGA dot product
+            \\
+            \\Options:
+            \\  --trials N     Number of trials (default: 10000)
+            \\  --sacred       Use sacred golden angle phase
+            \\  --entangled    Use entangled qutrit pairs
             \\
             \\phi^2 + 1/phi^2 = 3 = TRINITY
             \\
@@ -47,6 +56,7 @@ pub fn main() !void {
 fn run_chsh(args: []const []const u8) void {
     var trials: u32 = 10000;
     var sacred = false;
+    var entangled = false;
 
     var i: usize = 2;
     while (i < args.len) : (i += 1) {
@@ -55,7 +65,15 @@ fn run_chsh(args: []const []const u8) void {
             i += 1;
         } else if (std.mem.eql(u8, args[i], "--sacred")) {
             sacred = true;
+        } else if (std.mem.eql(u8, args[i], "--entangled")) {
+            entangled = true;
         }
+    }
+
+    // If --entangled, redirect to CGLMP test
+    if (entangled) {
+        run_cglmp(args);
+        return;
     }
 
     print(
@@ -169,6 +187,101 @@ fn run_chsh(args: []const []const u8) void {
         \\  =============================================
         \\
     , .{});
+}
+
+fn run_cglmp(args: []const []const u8) void {
+    var trials: u32 = 10000;
+
+    var i: usize = 2;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--trials") and i + 1 < args.len) {
+            trials = std.fmt.parseInt(u32, args[i + 1], 10) catch 10000;
+            i += 1;
+        }
+    }
+
+    print(
+        \\
+        \\  =============================================
+        \\  |  CGLMP INEQUALITY TEST — ENTANGLED QUTRITS |
+        \\  |  phi^2 + 1/phi^2 = 3 = TRINITY             |
+        \\  =============================================
+        \\
+        \\  Trials: {d}
+        \\
+        \\
+    , .{trials});
+
+    // Test 1: Entangled pair (should violate)
+    print("  1. ENTANGLED Bell state (1/sqrt3)(|--,-->+|0,0>+|+,+>):\n", .{});
+    const ent = qvm.run_cglmp_test(trials, true);
+    print(
+        \\     I3 value:        {d:.6}
+        \\     Classical bound: {d:.6}
+        \\     Quantum max:     {d:.6}
+        \\     VIOLATION:       {s}
+        \\     Corr (same):     {d:.6}
+        \\     Corr (diff):     {d:.6}
+        \\
+    , .{
+        ent.i3_value,
+        ent.classical_bound,
+        ent.quantum_max,
+        if (ent.violation) "YES — QUANTUM ADVANTAGE DETECTED" else "NO",
+        ent.correlation_same_basis,
+        ent.correlation_diff_basis,
+    });
+
+    // Test 2: Separable pair (should NOT violate)
+    print("\n  2. SEPARABLE product state H|0> x H|0>:\n", .{});
+    const sep = qvm.run_cglmp_test(trials, false);
+    print(
+        \\     I3 value:        {d:.6}
+        \\     Classical bound: {d:.6}
+        \\     VIOLATION:       {s}
+        \\     Corr (same):     {d:.6}
+        \\     Corr (diff):     {d:.6}
+        \\
+    , .{
+        sep.i3_value,
+        sep.classical_bound,
+        if (sep.violation) "YES (unexpected!)" else "NO — as expected",
+        sep.correlation_same_basis,
+        sep.correlation_diff_basis,
+    });
+
+    // Entanglement-derived trit signature
+    print("\n  3. Entanglement-Derived Trit Signature:\n     ", .{});
+    var prng = std.Random.DefaultPrng.init(137);
+    for (0..16) |_| {
+        var pair = qvm.EntangledPair.BELL;
+        // Apply sacred phase to qutrit A
+        pair = pair.apply_gate_a(qvm.Gate3.sacred_phase());
+        const trit = pair.measure_a(prng.random());
+        const sym: u8 = if (trit < 0) '-' else if (trit == 0) '0' else '+';
+        print("{c}", .{sym});
+    }
+
+    print(
+        \\
+        \\
+        \\  Comparison:
+        \\     Entangled I3: {d:.6} {s} classical bound 2.0
+        \\     Separable I3: {d:.6} {s} classical bound 2.0
+        \\     Quantum gap:  {d:.6}
+        \\
+        \\  =============================================
+        \\  CGLMP TEST COMPLETE
+        \\  phi^2 + 1/phi^2 = 3 = TRINITY
+        \\  =============================================
+        \\
+    , .{
+        ent.i3_value,
+        if (ent.i3_value > 2.0) ">" else "<=",
+        sep.i3_value,
+        if (sep.i3_value > 2.0) ">" else "<=",
+        ent.i3_value - sep.i3_value,
+    });
 }
 
 fn run_demo() void {
@@ -335,7 +448,24 @@ fn run_bench() void {
 }
 
 /// Generate quantum-derived weights for FPGA ternary dot product
-fn run_weight_gen() void {
+fn run_weight_gen(args: []const []const u8) void {
+    var entangled = false;
+
+    var i: usize = 2;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--entangled")) {
+            entangled = true;
+        }
+    }
+
+    if (entangled) {
+        run_entangled_weight_gen();
+    } else {
+        run_single_weight_gen();
+    }
+}
+
+fn run_single_weight_gen() void {
     print(
         \\
         \\  =============================================
@@ -391,6 +521,84 @@ fn run_weight_gen() void {
         \\
         \\  =============================================
         \\  WEIGHT GENERATION COMPLETE
+        \\  =============================================
+        \\
+    , .{});
+}
+
+/// Generate weights from entangled qutrit pairs
+/// Each weight comes from measuring one half of a Bell state
+/// after applying sacred phase rotation — correlations from entanglement
+fn run_entangled_weight_gen() void {
+    print(
+        \\
+        \\  =============================================
+        \\  |  ENTANGLED WEIGHT GENERATOR FOR FPGA      |
+        \\  =============================================
+        \\
+        \\  Circuit: Bell(|0,0>) -> SP(A) -> Measure(A)
+        \\  Source: Entangled qutrit pairs with sacred phase
+        \\
+        \\
+    , .{});
+
+    var prng = std.Random.DefaultPrng.init(137); // sacred seed
+    const sp = qvm.Gate3.sacred_phase();
+    const z = qvm.Gate3.z3();
+
+    var weights: [16]i2 = undefined;
+    var weight_bits: u32 = 0;
+
+    for (0..16) |idx| {
+        // Create fresh entangled pair
+        var pair = qvm.EntangledPair.BELL;
+
+        // Apply sacred phase + position-dependent gates to qutrit A
+        pair = pair.apply_gate_a(sp);
+        if (idx % 3 == 0) pair = pair.apply_gate_a(z);
+        if (idx % 5 == 0) pair = pair.apply_gate_a(qvm.Gate3.X3);
+
+        // Measure qutrit A — entanglement ensures non-classical distribution
+        const trit = pair.measure_a(prng.random());
+        weights[idx] = trit;
+
+        const encoding: u2 = if (trit < 0) 0b00 else if (trit == 0) 0b01 else 0b10;
+        weight_bits |= @as(u32, encoding) << @intCast(idx * 2);
+
+        const sym: u8 = if (trit < 0) '-' else if (trit == 0) '0' else '+';
+        print("  w[{d:2}] = {c}1  (entangled, encoded: {b:0>2})\n", .{ idx, sym, encoding });
+    }
+
+    // Run CGLMP to show violation alongside weights
+    const cglmp = qvm.run_cglmp_test(10000, true);
+
+    print(
+        \\
+        \\  CGLMP I3 = {d:.6} (classical bound: 2.0, quantum max: 2.9149)
+        \\  Violation: {s}
+        \\
+        \\  Verilog Parameter (copy to ternary_dot.v):
+        \\    localparam [31:0] WEIGHTS = 32'h{X:0>8};
+        \\
+        \\  Weight vector: [
+    , .{
+        cglmp.i3_value,
+        if (cglmp.violation) "YES — QUANTUM ADVANTAGE" else "NO",
+        weight_bits,
+    });
+
+    for (0..16) |idx| {
+        if (idx > 0) print(", ", .{});
+        const sym: u8 = if (weights[idx] < 0) '-' else if (weights[idx] == 0) ' ' else '+';
+        print("{c}1", .{sym});
+    }
+
+    print(
+        \\]
+        \\
+        \\  =============================================
+        \\  ENTANGLED WEIGHT GENERATION COMPLETE
+        \\  phi^2 + 1/phi^2 = 3 = TRINITY
         \\  =============================================
         \\
     , .{});
