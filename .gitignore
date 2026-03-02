@@ -98,7 +98,11 @@ fpga/fly-vivado/*.bin
 build/forge_*.bit
 fpga/openxc7-synth/chipdb/
 fpga/openxc7-synth/forge_ref.bit
+fpga/openxc7-synth/*.json
 fpga/fly-vivado/output/
+
+# Generated segbits data (7MB+, regenerate with: python3 tools/gen_segbits.py)
+src/forge/segbits_data.zig
 
 # Microsoft model weights
 models/microsoft-bitnet-2b/

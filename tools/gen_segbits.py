@@ -62,8 +62,8 @@ REQUIRED_TILE_TYPES = [
     "dsp_r",
 ]
 
-# XC7A35T CSG324 package for Arty A7-35T
-TARGET_PART = "xc7a35tcsg324-1"
+# XC7A100T FGG676 for QMTECH board (also covers xc7a35t via shared tilegrid)
+TARGET_PART = "xc7a100t"
 TARGET_FAMILY = "artix7"
 
 
