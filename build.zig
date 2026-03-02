@@ -1218,6 +1218,27 @@ pub fn build(b: *std.Build) void {
     forge_step.dependOn(&run_forge.step);
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // TERNARY QUANTUM VM — Qutrit-based Quantum Virtual Machine
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    const quantum = b.addExecutable(.{
+        .name = "quantum",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/quantum/main.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+        }),
+    });
+    b.installArtifact(quantum);
+
+    const run_quantum = b.addRunArtifact(quantum);
+    if (b.args) |run_args| {
+        run_quantum.addArgs(run_args);
+    }
+    const quantum_step = b.step("quantum", "Run Ternary Quantum VM — Qutrit computation");
+    quantum_step.dependOn(&run_quantum.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // Trinity Orchestrator — REMOVED (generated.old/ deleted)
     // ═══════════════════════════════════════════════════════════════════════════
 
