@@ -47,7 +47,7 @@ export default function HLSCompetitionSection() {
           padding: '1.5rem 2.5rem',
           textAlign: 'center'
         }}>
-          <div style={{ fontSize: '2.5rem', fontWeight: 700, color: '#FFA500' }}>{c.marketSize}</div>
+          <div style={{ fontSize: 'clamp(1.5rem, 6vw, 2.5rem)', fontWeight: 700, color: '#FFA500' }}>{c.marketSize}</div>
           <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>{c.marketGrowth}</div>
         </div>
       </div>
@@ -62,7 +62,7 @@ export default function HLSCompetitionSection() {
           background: 'rgba(255,255,255,0.02)',
           margin: '0 -10px'
         }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'clamp(0.65rem, 2.5vw, 0.85rem)', minWidth: '650px' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'clamp(0.65rem, 2.5vw, 0.85rem)', minWidth: '450px' }}>
             <thead>
               <tr>
                 {c.headers?.map((h: string, i: number) => (
@@ -148,7 +148,7 @@ export default function HLSCompetitionSection() {
             textAlign: 'center',
             transition: 'transform 0.2s, border-color 0.2s'
           }}>
-            <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>{adv.icon}</div>
+            <div style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', marginBottom: '0.75rem' }}>{adv.icon}</div>
             <div style={{ fontWeight: 600, color: 'var(--text)', marginBottom: '0.5rem' }}>{adv.title}</div>
             <div style={{ fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.5 }}>{adv.desc}</div>
           </div>

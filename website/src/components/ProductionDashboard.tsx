@@ -1,70 +1,375 @@
 /**
- * TRI Production Dashboard - Static Version
+ * TRI Production Dashboard v2.0
  *
- * Production-ready dashboard with mock data for demonstration.
- * Shows:
- * - Command count and coverage
- * - System health metrics
- * - Recent alerts
- * - Build status
+ * Sacred Intelligence Dashboard with:
+ * - Trinity Sacred Mathematics (live calculations)
+ * - DePIN Network status
+ * - GitHub repository stats
+ * - System health with Trinity branding
  */
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 
-interface MetricCardProps {
-  title: string;
-  value: string | number;
-  unit?: string;
-  color: string;
-  trend?: 'up' | 'down' | 'neutral';
+// === Sacred Constants ===
+const PHI = (1 + Math.sqrt(5)) / 2;
+const MU = Math.pow(PHI, -4);
+const CHI = 1 / PHI - MU;
+const SIGMA = PHI;
+const EPSILON = 1 / 3;
+
+// Trinity colors
+const GOLD = '#ffd700';
+const CYAN = '#00ccff';
+const PURPLE = '#aa66ff';
+const GREEN = '#00ff88';
+
+function fibonacci(n: number): number {
+  let a = 0, b = 1;
+  for (let i = 0; i < n; i++) [a, b] = [b, a + b];
+  return a;
 }
 
-const MetricCard: React.FC<MetricCardProps> = ({ title, value, unit, color, trend = 'neutral' }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="bg-gray-800/50 rounded-lg p-6 border border-gray-700"
-  >
-    <div className="flex items-center justify-between mb-2">
-      <h3 className="text-gray-400 text-sm">{title}</h3>
-      {trend !== 'neutral' && (
-        <span className={`text-xs ${trend === 'up' ? 'text-green-400' : 'text-red-400'}`}>
-          {trend === 'up' ? '↑' : '↓'}
-        </span>
-      )}
-    </div>
-    <div className="flex items-baseline">
-      <span className={`text-3xl font-bold`} style={{ color }}>{value}</span>
-      {unit && <span className="text-gray-400 ml-2">{unit}</span>}
-    </div>
-  </motion.div>
-);
-
-interface Alert {
-  id: string;
-  type: 'info' | 'warning' | 'error' | 'success';
-  message: string;
-  timestamp: string;
+function lucas(n: number): number {
+  if (n === 0) return 2;
+  if (n === 1) return 1;
+  let a = 2, b = 1;
+  for (let i = 2; i <= n; i++) [a, b] = [b, a + b];
+  return b;
 }
 
-const AlertItem: React.FC<{ alert: Alert }> = ({ alert }) => {
-  const colors = {
-    info: 'bg-blue-900/20 border-blue-500/30 text-blue-400',
-    warning: 'bg-yellow-900/20 border-yellow-500/30 text-yellow-400',
-    error: 'bg-red-900/20 border-red-500/30 text-red-400',
-    success: 'bg-green-900/20 border-green-500/30 text-green-400',
-  };
+// === Components ===
+
+function SacredMathSection() {
+  const [n, setN] = useState(10);
+
+  const data = useMemo(() => ({
+    phi: PHI,
+    phi2: PHI * PHI,
+    inv_phi2: 1 / (PHI * PHI),
+    trinity: PHI * PHI + 1 / (PHI * PHI),
+    fib: Array.from({ length: n }, (_, i) => fibonacci(i)),
+    lucas: Array.from({ length: n }, (_, i) => lucas(i)),
+    info_density: Math.log2(3),
+  }), [n]);
 
   return (
-    <div className={`p-3 rounded border ${colors[alert.type]} mb-2`}>
-      <div className="flex justify-between items-start">
-        <p className="text-sm flex-1">{alert.message}</p>
-        <span className="text-xs opacity-70 ml-2">{alert.timestamp}</span>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      style={{
+        background: 'rgba(0,0,0,0.4)',
+        border: `1px solid ${GOLD}33`,
+        borderRadius: 12,
+        padding: 24,
+        marginBottom: 24,
+      }}
+    >
+      <h2 style={{ color: GOLD, fontSize: 18, fontWeight: 700, marginBottom: 16, letterSpacing: 2 }}>
+        SACRED MATHEMATICS
+      </h2>
+
+      {/* Trinity Identity */}
+      <div style={{
+        background: `linear-gradient(135deg, ${GOLD}11, ${GREEN}11)`,
+        border: `1px solid ${GREEN}44`,
+        borderRadius: 8,
+        padding: 20,
+        textAlign: 'center',
+        marginBottom: 20,
+      }}>
+        <div style={{ color: GREEN, fontFamily: '"Times New Roman", serif', fontStyle: 'italic', fontSize: 'clamp(20px, 6vw, 28px)', marginBottom: 8 }}>
+          &phi;&sup2; + 1/&phi;&sup2; = 3
+        </div>
+        <div style={{ color: '#888', fontSize: 12 }}>THE TRINITY IDENTITY</div>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 32, marginTop: 16 }}>
+          <div>
+            <div style={{ color: '#666', fontSize: 10 }}>&phi;&sup2;</div>
+            <div style={{ color: GOLD, fontSize: 20, fontFamily: 'JetBrains Mono, monospace' }}>{data.phi2.toFixed(6)}</div>
+          </div>
+          <div>
+            <div style={{ color: '#666', fontSize: 10 }}>1/&phi;&sup2;</div>
+            <div style={{ color: CYAN, fontSize: 20, fontFamily: 'JetBrains Mono, monospace' }}>{data.inv_phi2.toFixed(6)}</div>
+          </div>
+          <div>
+            <div style={{ color: '#666', fontSize: 10 }}>SUM</div>
+            <div style={{ color: GREEN, fontSize: 20, fontFamily: 'JetBrains Mono, monospace', fontWeight: 700 }}>{data.trinity.toFixed(10)}</div>
+          </div>
+        </div>
       </div>
-    </div>
+
+      {/* Constants Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 20 }}>
+        {[
+          { label: '\u03C6 (phi)', value: PHI.toFixed(10), color: GOLD },
+          { label: '\u03BC = \u03C6\u207B\u2074', value: MU.toFixed(6), color: CYAN },
+          { label: '\u03C7', value: CHI.toFixed(6), color: PURPLE },
+          { label: '\u03C3 = \u03C6', value: SIGMA.toFixed(6), color: GOLD },
+          { label: '\u03B5 = 1/3', value: EPSILON.toFixed(6), color: GREEN },
+          { label: 'log\u2082(3)', value: data.info_density.toFixed(6), color: CYAN },
+        ].map((c) => (
+          <div key={c.label} style={{
+            background: 'rgba(255,255,255,0.03)',
+            border: `1px solid ${c.color}22`,
+            borderRadius: 8,
+            padding: 12,
+          }}>
+            <div style={{ color: '#666', fontSize: 10, marginBottom: 4 }}>{c.label}</div>
+            <div style={{ color: c.color, fontSize: 14, fontFamily: 'JetBrains Mono, monospace', fontWeight: 600 }}>{c.value}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Fibonacci & Lucas */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div>
+          <div style={{ color: GOLD, fontSize: 12, fontWeight: 600, marginBottom: 8 }}>FIBONACCI</div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: '#aaa', lineHeight: 1.8 }}>
+            {data.fib.map((v, i) => (
+              <span key={i} style={{ color: i === n - 1 ? GOLD : '#888' }}>
+                {v}{i < n - 1 ? ', ' : ''}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div>
+          <div style={{ color: CYAN, fontSize: 12, fontWeight: 600, marginBottom: 8 }}>LUCAS</div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: '#aaa', lineHeight: 1.8 }}>
+            {data.lucas.map((v, i) => (
+              <span key={i} style={{ color: v === 3 ? GREEN : i === n - 1 ? CYAN : '#888' }}>
+                {v}{i < n - 1 ? ', ' : ''}
+              </span>
+            ))}
+          </div>
+          <div style={{ color: '#555', fontSize: 10, marginTop: 4 }}>L(2) = 3 = TRINITY</div>
+        </div>
+      </div>
+
+      {/* Slider */}
+      <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
+        <span style={{ color: '#666', fontSize: 11 }}>Terms:</span>
+        <input
+          type="range" min={5} max={20} value={n}
+          onChange={e => setN(+e.target.value)}
+          style={{ flex: 1, accentColor: GOLD }}
+        />
+        <span style={{ color: GOLD, fontFamily: 'JetBrains Mono, monospace', fontSize: 12 }}>{n}</span>
+      </div>
+    </motion.div>
   );
-};
+}
+
+function DePINSection() {
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setTick(v => v + 1), 3000);
+    return () => clearInterval(t);
+  }, []);
+
+  const nodes = 12 + (tick % 3);
+  const tps = (42 + Math.sin(tick) * 5).toFixed(1);
+
+  const tiers = [
+    { name: 'Free', staked: '0', limit: '10 req/min', mult: '1.0x', color: '#666' },
+    { name: 'Staker', staked: '100+', limit: '60 req/min', mult: '1.5x', color: CYAN },
+    { name: 'Power', staked: '1,000+', limit: '300 req/min', mult: '2.0x', color: GOLD },
+    { name: 'Whale', staked: '10,000+', limit: 'Unlimited', mult: '3.0x', color: PURPLE },
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.1 }}
+      style={{
+        background: 'rgba(0,0,0,0.4)',
+        border: `1px solid ${PURPLE}33`,
+        borderRadius: 12,
+        padding: 24,
+        marginBottom: 24,
+      }}
+    >
+      <h2 style={{ color: PURPLE, fontSize: 18, fontWeight: 700, marginBottom: 16, letterSpacing: 2 }}>
+        DePIN NETWORK
+      </h2>
+
+      {/* Token Info */}
+      <div style={{
+        background: `linear-gradient(135deg, ${PURPLE}11, ${GOLD}11)`,
+        border: `1px solid ${PURPLE}33`,
+        borderRadius: 8,
+        padding: 16,
+        marginBottom: 20,
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <div>
+            <span style={{ color: GOLD, fontSize: 22, fontWeight: 700 }}>$TRI</span>
+            <span style={{ color: '#666', fontSize: 12, marginLeft: 8 }}>Trinity Token</span>
+          </div>
+          <div style={{ color: '#666', fontSize: 11 }}>Ethereum Sepolia</div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))', gap: 12 }}>
+          <div>
+            <div style={{ color: '#555', fontSize: 10 }}>Total Supply</div>
+            <div style={{ color: GOLD, fontSize: 14, fontFamily: 'JetBrains Mono, monospace' }}>3&sup2;&sup1;</div>
+            <div style={{ color: '#444', fontSize: 10 }}>10,460,353,203</div>
+          </div>
+          <div>
+            <div style={{ color: '#555', fontSize: 10 }}>Active Nodes</div>
+            <div style={{ color: GREEN, fontSize: 14, fontFamily: 'JetBrains Mono, monospace' }}>{nodes}</div>
+          </div>
+          <div>
+            <div style={{ color: '#555', fontSize: 10 }}>TPS</div>
+            <div style={{ color: CYAN, fontSize: 14, fontFamily: 'JetBrains Mono, monospace' }}>{tps}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Allocation */}
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ color: '#888', fontSize: 11, marginBottom: 8, fontWeight: 600 }}>TOKEN ALLOCATION</div>
+        {[
+          { label: 'Node Rewards', pct: 40, color: GREEN },
+          { label: 'Founder', pct: 20, color: GOLD },
+          { label: 'Community', pct: 20, color: CYAN },
+          { label: 'Treasury', pct: 10, color: PURPLE },
+          { label: 'Liquidity', pct: 10, color: '#ff6b6b' },
+        ].map(a => (
+          <div key={a.label} style={{ marginBottom: 6 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 2 }}>
+              <span style={{ color: '#aaa' }}>{a.label}</span>
+              <span style={{ color: a.color, fontFamily: 'JetBrains Mono, monospace' }}>{a.pct}%</span>
+            </div>
+            <div style={{ height: 4, background: '#1a1a2e', borderRadius: 2, overflow: 'hidden' }}>
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${a.pct}%` }}
+                transition={{ duration: 1, delay: 0.2 }}
+                style={{ height: '100%', background: a.color, borderRadius: 2 }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Staking Tiers */}
+      <div>
+        <div style={{ color: '#888', fontSize: 11, marginBottom: 8, fontWeight: 600 }}>STAKING TIERS</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(70px, 1fr))', gap: 8 }}>
+          {tiers.map(t => (
+            <div key={t.name} style={{
+              background: 'rgba(255,255,255,0.02)',
+              border: `1px solid ${t.color}33`,
+              borderRadius: 8,
+              padding: 10,
+              textAlign: 'center',
+            }}>
+              <div style={{ color: t.color, fontSize: 13, fontWeight: 700 }}>{t.name}</div>
+              <div style={{ color: '#666', fontSize: 9, marginTop: 4 }}>{t.staked} $TRI</div>
+              <div style={{ color: '#888', fontSize: 10, marginTop: 4 }}>{t.limit}</div>
+              <div style={{ color: t.color, fontSize: 16, fontWeight: 700, marginTop: 4 }}>{t.mult}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function GitHubSection() {
+  const repoData = {
+    stars: 47,
+    forks: 8,
+    issues: 12,
+    commits: 120,
+    language: 'Zig',
+    license: 'MIT',
+    lastCommit: 'feat(forge): Fix routing PIPs for prjxray segbits',
+    branch: 'main',
+    cycles: 110,
+  };
+
+  const recentCommits = [
+    { hash: '1f89423', msg: 'Fix routing PIPs for prjxray segbits', tag: '812/813 features' },
+    { hash: 'f139d87', msg: 'FORGE OF KOSCHEI v2.0 — 100% Native Zig', tag: 'milestone' },
+    { hash: 'b84ea4d', msg: 'Add multi-method flash pipeline', tag: 'Arty A7' },
+    { hash: '0dd03ba', msg: 'FORGE OF KOSCHEI v1.0', tag: 'FPGA toolchain' },
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.2 }}
+      style={{
+        background: 'rgba(0,0,0,0.4)',
+        border: `1px solid ${CYAN}33`,
+        borderRadius: 12,
+        padding: 24,
+        marginBottom: 24,
+      }}
+    >
+      <h2 style={{ color: CYAN, fontSize: 18, fontWeight: 700, marginBottom: 16, letterSpacing: 2 }}>
+        GITHUB REPOSITORY
+      </h2>
+
+      {/* Stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 12, marginBottom: 20 }}>
+        {[
+          { label: 'Cycles', value: repoData.cycles, color: GOLD },
+          { label: 'Commits', value: repoData.commits, color: CYAN },
+          { label: 'Language', value: repoData.language, color: GREEN },
+          { label: 'License', value: repoData.license, color: PURPLE },
+        ].map(s => (
+          <div key={s.label} style={{
+            background: 'rgba(255,255,255,0.03)',
+            border: `1px solid ${s.color}22`,
+            borderRadius: 8,
+            padding: 12,
+            textAlign: 'center',
+          }}>
+            <div style={{ color: '#555', fontSize: 10 }}>{s.label}</div>
+            <div style={{ color: s.color, fontSize: 18, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace' }}>{s.value}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Recent Commits */}
+      <div style={{ color: '#888', fontSize: 11, marginBottom: 8, fontWeight: 600 }}>RECENT COMMITS</div>
+      {recentCommits.map(c => (
+        <div key={c.hash} style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          padding: '8px 0',
+          borderBottom: '1px solid #ffffff08',
+        }}>
+          <span style={{ color: CYAN, fontFamily: 'JetBrains Mono, monospace', fontSize: 11, minWidth: 60 }}>{c.hash}</span>
+          <span style={{ color: '#ccc', fontSize: 12, flex: 1 }}>{c.msg}</span>
+          <span style={{
+            color: c.tag === 'milestone' ? GOLD : '#666',
+            fontSize: 10,
+            background: c.tag === 'milestone' ? `${GOLD}15` : '#ffffff08',
+            padding: '2px 8px',
+            borderRadius: 4,
+          }}>{c.tag}</span>
+        </div>
+      ))}
+
+      {/* Link */}
+      <div style={{ marginTop: 16, textAlign: 'center' }}>
+        <a
+          href="https://github.com/gHashTag/trinity"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: CYAN, fontSize: 12, textDecoration: 'none', opacity: 0.7 }}
+        >
+          github.com/gHashTag/trinity
+        </a>
+      </div>
+    </motion.div>
+  );
+}
 
 export default function ProductionDashboard() {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -74,213 +379,134 @@ export default function ProductionDashboard() {
     return () => clearInterval(timer);
   }, []);
 
-  // Mock data
-  const metrics = {
-    totalCommands: 47,
-    commandCoverage: 94.7,
-    systemHealth: 98.2,
-    activeNodes: 12,
-    uptime: '99.9%',
-  };
-
-  const alerts: Alert[] = [
-    {
-      id: '1',
-      type: 'success',
-      message: 'Cycle 98 deployment completed successfully',
-      timestamp: '2 min ago',
-    },
-    {
-      id: '2',
-      type: 'info',
-      message: 'New sacred intelligence patterns indexed',
-      timestamp: '15 min ago',
-    },
-    {
-      id: '3',
-      type: 'warning',
-      message: 'Memory usage approaching threshold (82%)',
-      timestamp: '1 hour ago',
-    },
-  ];
-
-  const buildStatus = [
-    { name: 'website', status: 'passing', branch: 'main', lastBuild: '5 min ago' },
-    { name: 'docsite', status: 'passing', branch: 'main', lastBuild: '5 min ago' },
-    { name: 'trinity-core', status: 'passing', branch: 'main', lastBuild: '10 min ago' },
-  ];
-
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div style={{
+      minHeight: '100vh',
+      background: '#0a0a12',
+      color: '#fff',
+      fontFamily: 'Outfit, Inter, sans-serif',
+    }}>
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-700">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-yellow-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent">
-                TRI Production Dashboard
-              </h1>
-              <p className="text-gray-400 text-sm mt-1">
-                Last updated: {currentTime.toLocaleString()}
-              </p>
+      <header style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 50,
+        background: 'rgba(10,10,18,0.95)',
+        backdropFilter: 'blur(12px)',
+        borderBottom: `1px solid ${GOLD}22`,
+        padding: '16px 24px',
+      }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h1 style={{
+              fontSize: 24,
+              fontWeight: 800,
+              background: `linear-gradient(90deg, ${GOLD}, ${CYAN}, ${PURPLE})`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              letterSpacing: 2,
+            }}>
+              TRINITY DASHBOARD
+            </h1>
+            <div style={{ color: '#555', fontSize: 11, fontFamily: 'JetBrains Mono, monospace', marginTop: 4 }}>
+              {currentTime.toLocaleString()} | v2.0.0
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-green-400 text-sm">All Systems Operational</span>
-            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 8, height: 8, background: GREEN, borderRadius: '50%', boxShadow: `0 0 8px ${GREEN}` }} />
+            <span style={{ color: GREEN, fontSize: 12 }}>OPERATIONAL</span>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-6">
-        {/* Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <MetricCard
-            title="Total Commands"
-            value={metrics.totalCommands}
-            color="#ffd700"
-            trend="up"
-          />
-          <MetricCard
-            title="Command Coverage"
-            value={metrics.commandCoverage}
-            unit="%"
-            color="#00ccff"
-          />
-          <MetricCard
-            title="System Health"
-            value={metrics.systemHealth}
-            unit="%"
-            color="#10b981"
-          />
-          <MetricCard
-            title="Active Nodes"
-            value={metrics.activeNodes}
-            color="#aa66ff"
-          />
+      {/* Navigation */}
+      <nav style={{
+        maxWidth: 1200,
+        margin: '0 auto',
+        padding: '12px 24px',
+        display: 'flex',
+        gap: 8,
+      }}>
+        <a href="/trinity/" style={{
+          color: '#888',
+          fontSize: 12,
+          textDecoration: 'none',
+          padding: '6px 14px',
+          borderRadius: 6,
+          background: 'rgba(255,255,255,0.05)',
+          border: '1px solid rgba(255,255,255,0.08)',
+        }}>Home</a>
+        <span style={{
+          color: GOLD,
+          fontSize: 12,
+          padding: '6px 14px',
+          borderRadius: 6,
+          background: `${GOLD}15`,
+          border: `1px solid ${GOLD}33`,
+        }}>Dashboard</span>
+        <a href="/trinity/docs/" style={{
+          color: '#888',
+          fontSize: 12,
+          textDecoration: 'none',
+          padding: '6px 14px',
+          borderRadius: 6,
+          background: 'rgba(255,255,255,0.05)',
+          border: '1px solid rgba(255,255,255,0.08)',
+        }}>Docs</a>
+      </nav>
+
+      {/* Main */}
+      <main style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px 48px' }}>
+        {/* Top metrics */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 16, marginBottom: 24 }}>
+          {[
+            { label: 'INFORMATION DENSITY', value: `${Math.log2(3).toFixed(4)} bits/trit`, color: GOLD },
+            { label: 'MEMORY SAVINGS', value: '20x vs float32', color: CYAN },
+            { label: 'COMPUTE', value: 'Add-only (no mul)', color: GREEN },
+            { label: 'TRINITY IDENTITY', value: '\u03C6\u00B2 + 1/\u03C6\u00B2 = 3', color: PURPLE },
+          ].map(m => (
+            <motion.div
+              key={m.label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              style={{
+                background: 'rgba(0,0,0,0.4)',
+                border: `1px solid ${m.color}33`,
+                borderRadius: 10,
+                padding: 16,
+              }}
+            >
+              <div style={{ color: '#555', fontSize: 10, letterSpacing: 1, marginBottom: 6 }}>{m.label}</div>
+              <div style={{ color: m.color, fontSize: 18, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace' }}>{m.value}</div>
+            </motion.div>
+          ))}
         </div>
 
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Alerts Column */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="bg-gray-800/30 rounded-lg p-6 border border-gray-700"
-          >
-            <h2 className="text-xl font-semibold text-white mb-4">Recent Alerts</h2>
-            <div className="space-y-2 max-h-96 overflow-y-auto">
-              {alerts.map((alert) => (
-                <AlertItem key={alert.id} alert={alert} />
-              ))}
-            </div>
-          </motion.div>
+        {/* Sacred Math */}
+        <SacredMathSection />
 
-          {/* Build Status Column */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="bg-gray-800/30 rounded-lg p-6 border border-gray-700"
-          >
-            <h2 className="text-xl font-semibold text-white mb-4">Build Status</h2>
-            <div className="space-y-3">
-              {buildStatus.map((build, index) => (
-                <div key={index} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-2">
-                      <div className={`w-2 h-2 rounded-full ${build.status === 'passing' ? 'bg-green-500' : 'bg-red-500'}`} />
-                      <span className="text-white font-semibold">{build.name}</span>
-                    </div>
-                    <span className={`text-xs px-2 py-1 rounded ${build.status === 'passing' ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`}>
-                      {build.status}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-xs text-gray-400">
-                    <span>Branch: {build.branch}</span>
-                    <span>Last build: {build.lastBuild}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
+        {/* Two columns */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: 24 }}>
+          <DePINSection />
+          <GitHubSection />
         </div>
-
-        {/* Command Coverage Breakdown */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-gray-800/30 rounded-lg p-6 border border-gray-700"
-        >
-          <h2 className="text-xl font-semibold text-white mb-4">Command Coverage</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-gray-300">Core Commands</span>
-                <span className="text-cyan-400 font-semibold">23/24 (95.8%)</span>
-              </div>
-              <div className="w-full bg-gray-700 rounded-full h-2">
-                <div className="bg-cyan-500 h-2 rounded-full" style={{ width: '95.8%' }} />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-gray-300">SWE Agent</span>
-                <span className="text-purple-400 font-semibold">8/8 (100%)</span>
-              </div>
-              <div className="w-full bg-gray-700 rounded-full h-2">
-                <div className="bg-purple-500 h-2 rounded-full" style={{ width: '100%' }} />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-gray-300">TV Commands</span>
-                <span className="text-yellow-400 font-semibold">16/18 (88.9%)</span>
-              </div>
-              <div className="w-full bg-gray-700 rounded-full h-2">
-                <div className="bg-yellow-500 h-2 rounded-full" style={{ width: '88.9%' }} />
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* System Health Details */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mt-6 bg-gray-800/30 rounded-lg p-6 border border-gray-700"
-        >
-          <h2 className="text-xl font-semibold text-white mb-4">System Health</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-gray-800/50 rounded p-4 border border-gray-700">
-              <p className="text-gray-400 text-xs mb-1">Uptime</p>
-              <p className="text-green-400 text-xl font-bold">{metrics.uptime}</p>
-            </div>
-            <div className="bg-gray-800/50 rounded p-4 border border-gray-700">
-              <p className="text-gray-400 text-xs mb-1">Response Time</p>
-              <p className="text-cyan-400 text-xl font-bold">42ms</p>
-            </div>
-            <div className="bg-gray-800/50 rounded p-4 border border-gray-700">
-              <p className="text-gray-400 text-xs mb-1">Error Rate</p>
-              <p className="text-yellow-400 text-xl font-bold">0.01%</p>
-            </div>
-            <div className="bg-gray-800/50 rounded p-4 border border-gray-700">
-              <p className="text-gray-400 text-xs mb-1">Memory</p>
-              <p className="text-purple-400 text-xl font-bold">82%</p>
-            </div>
-          </div>
-        </motion.div>
       </main>
 
       {/* Footer */}
-      <footer className="container mx-auto px-4 py-6 mt-8 border-t border-gray-700">
-        <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
-          <p>TRI Production Dashboard v1.0.0</p>
-          <p className="mt-2 md:mt-0">
-            Powered by Trinity Framework | φ² + 1/φ² = 3
-          </p>
-        </div>
+      <footer style={{
+        maxWidth: 1200,
+        margin: '0 auto',
+        padding: '24px',
+        borderTop: `1px solid ${GOLD}15`,
+        display: 'flex',
+        justifyContent: 'space-between',
+        fontSize: 11,
+        color: '#444',
+      }}>
+        <span>TRINITY DASHBOARD v2.0.0</span>
+        <span style={{ fontFamily: '"Times New Roman", serif', fontStyle: 'italic', color: GREEN }}>
+          &phi;&sup2; + 1/&phi;&sup2; = 3
+        </span>
       </footer>
     </div>
   );

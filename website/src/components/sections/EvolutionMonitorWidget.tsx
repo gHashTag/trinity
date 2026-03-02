@@ -132,7 +132,7 @@ export default function EvolutionMonitorWidget() {
         style={{
           ...GLASS_STYLE,
           padding: '1.5rem',
-          maxWidth: '700px',
+          maxWidth: 'min(700px, 90vw)',
           margin: '0 auto',
         }}
       >
@@ -180,7 +180,7 @@ export default function EvolutionMonitorWidget() {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))',
                 gap: '1rem',
                 marginBottom: '1.5rem',
               }}
@@ -210,7 +210,7 @@ export default function EvolutionMonitorWidget() {
                   initial={{ scale: 1.2 }}
                   animate={{ scale: 1 }}
                   style={{
-                    fontSize: '1.8rem',
+                    fontSize: 'clamp(1.4rem, 5vw, 1.8rem)',
                     fontWeight: 700,
                     color: PURPLE,
                     fontFamily: 'JetBrains Mono, monospace',
@@ -242,7 +242,7 @@ export default function EvolutionMonitorWidget() {
                 </div>
                 <div
                   style={{
-                    fontSize: '1.5rem',
+                    fontSize: 'clamp(1.2rem, 4vw, 1.5rem)',
                     fontWeight: 700,
                     color: CYAN,
                     fontFamily: 'JetBrains Mono, monospace',
@@ -274,7 +274,7 @@ export default function EvolutionMonitorWidget() {
                 </div>
                 <div
                   style={{
-                    fontSize: '1.5rem',
+                    fontSize: 'clamp(1.2rem, 4vw, 1.5rem)',
                     fontWeight: 700,
                     color: GOLDEN,
                     fontFamily: 'JetBrains Mono, monospace',
@@ -306,7 +306,7 @@ export default function EvolutionMonitorWidget() {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(2, 1fr)',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(130px, 100%), 1fr))',
                 gap: '1rem',
               }}
             >

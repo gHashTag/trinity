@@ -22,7 +22,7 @@ export default function WhyNowSection() {
         ))}
       </div>
 
-      <div style={{ marginTop: '6rem', width: '100%' }}>
+      <div style={{ marginTop: 'clamp(3rem, 10vw, 6rem)', width: '100%' }}>
         <h2 className="fade" dangerouslySetInnerHTML={{ __html: uc?.title }} style={{ marginBottom: '3rem' }} />
         <div className="grid fade">
           {uc?.items?.map((item: { title: string; desc: string }, i: number) => (

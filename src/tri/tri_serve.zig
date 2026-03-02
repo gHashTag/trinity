@@ -244,6 +244,18 @@ pub const UnifiedApiServer = struct {
                     const response = try self.openApiResponse();
                     defer self.allocator.free(response);
                     _ = std.posix.write(client_socket, response) catch {};
+                } else if (std.mem.indexOf(u8, request, "GET /api/commands") != null) {
+                    const response = try self.commandsResponse();
+                    defer self.allocator.free(response);
+                    _ = std.posix.write(client_socket, response) catch {};
+                } else if (std.mem.indexOf(u8, request, "GET /api/version") != null) {
+                    const response = try self.versionResponse();
+                    defer self.allocator.free(response);
+                    _ = std.posix.write(client_socket, response) catch {};
+                } else if (std.mem.indexOf(u8, request, "GET /api/status") != null) {
+                    const response = try self.statusResponse();
+                    defer self.allocator.free(response);
+                    _ = std.posix.write(client_socket, response) catch {};
                 } else if (std.mem.indexOf(u8, request, "GET /graphql") != null) {
                     // GraphQL playground
                     const response = try self.graphqlPlaygroundResponse();
@@ -270,6 +282,54 @@ pub const UnifiedApiServer = struct {
             \\
             \\{{"healthy":true,"uptime":{d},"connections":{d},"commands":{d}}}
         , .{uptime, self.status.connections, self.registry.count()});
+    }
+
+    fn commandsResponse(self: *const UnifiedApiServer) ![]const u8 {
+        var buf = std.ArrayList(u8).initCapacity(self.allocator, 4096) catch return error.OutOfMemory;
+        try buf.appendSlice(self.allocator,
+            \\HTTP/1.1 200 OK
+            \\Content-Type: application/json
+            \\Access-Control-Allow-Origin: *
+            \\
+            \\{"commands":[
+        );
+
+        var iter = self.registry.commands.iterator();
+        var first = true;
+        while (iter.next()) |entry| {
+            if (!first) try buf.appendSlice(self.allocator, ",");
+            first = false;
+            const cmd = entry.value_ptr.*;
+            const item = try std.fmt.allocPrint(self.allocator,
+                \\{{"name":"{s}","category":"{s}","description":"{s}"}}
+            , .{cmd.name, @tagName(cmd.category), cmd.description});
+            defer self.allocator.free(item);
+            try buf.appendSlice(self.allocator, item);
+        }
+
+        try buf.appendSlice(self.allocator, "]}");
+        return buf.toOwnedSlice(self.allocator);
+    }
+
+    fn versionResponse(self: *const UnifiedApiServer) ![]const u8 {
+        return std.fmt.allocPrint(self.allocator,
+            \\HTTP/1.1 200 OK
+            \\Content-Type: application/json
+            \\Access-Control-Allow-Origin: *
+            \\
+            \\{{"version":"1.0.0","name":"TRINITY Unified API","protocols":["REST","GraphQL"],"planned":["gRPC","WebSocket"],"phi":"1.618033988749895"}}
+        , .{});
+    }
+
+    fn statusResponse(self: *const UnifiedApiServer) ![]const u8 {
+        const uptime = std.time.milliTimestamp() - self.status.start_time;
+        return std.fmt.allocPrint(self.allocator,
+            \\HTTP/1.1 200 OK
+            \\Content-Type: application/json
+            \\Access-Control-Allow-Origin: *
+            \\
+            \\{{"running":true,"uptime_ms":{d},"connections":{d},"commands_registered":{d},"protocols_active":["REST","GraphQL"],"protocols_planned":["gRPC","WebSocket"],"port":{d}}}
+        , .{uptime, self.status.connections, self.registry.count(), self.config.port});
     }
 
     fn openApiResponse(self: *const UnifiedApiServer) ![]const u8 {
@@ -829,7 +889,7 @@ pub const UnifiedApiServer = struct {
     fn printBanner(self: *const UnifiedApiServer) !void {
         _ = self;
         std.debug.print("\n{s}╔══════════════════════════════════════════════════════════════════╗{s}\n", .{YELLOW, RESET});
-        std.debug.print("{s}║         TRINITY UNIFIED API SERVER v1.0 — 4 PROTOCOLS          ║{s}\n", .{GREEN, RESET});
+        std.debug.print("{s}║     TRINITY UNIFIED API SERVER v1.0 — REST + GraphQL           ║{s}\n", .{GREEN, RESET});
         std.debug.print("{s}╚══════════════════════════════════════════════════════════════════╝{s}\n", .{YELLOW, RESET});
         std.debug.print("\n", .{});
     }
@@ -868,7 +928,12 @@ pub const UnifiedApiServer = struct {
             else
                 "";
 
-            std.debug.print("    {s}✓{s} {s:<10} → http://localhost:{d}{s}\n", .{GREEN, RESET, proto, port, path});
+            const is_planned = std.mem.eql(u8, proto, "gRPC") or std.mem.eql(u8, proto, "WebSocket");
+            if (is_planned) {
+                std.debug.print("    {s}○{s} {s:<10} → http://localhost:{d}{s} (planned)\n", .{YELLOW, RESET, proto, port, path});
+            } else {
+                std.debug.print("    {s}✓{s} {s:<10} → http://localhost:{d}{s}\n", .{GREEN, RESET, proto, port, path});
+            }
         }
 
         std.debug.print("\n", .{});
@@ -929,13 +994,8 @@ pub fn runServeCommand(allocator: std.mem.Allocator, args: []const []const u8) !
     defer server.deinit();
 
     try server.start();
-
-    // In real implementation, would run event loop here
-    // For now, just show what would happen
-
-    if (!config.daemon) {
-        std.debug.print("\n{s}[Demo mode — server would run here]{s}\n", .{YELLOW, RESET});
-    }
+    // Event loop runs inside server.start() → runEventLoop()
+    // Server blocks until Ctrl+C or signal
 }
 
 pub fn printHelp() void {

@@ -533,20 +533,103 @@ pub const EntangledPair = struct {
 };
 
 // ============================================================
-// CGLMP INEQUALITY TEST (proper entangled version)
+// CGLMP INEQUALITY TEST (full Collins et al. 2002 for d=3)
 // ============================================================
 
-/// CGLMP inequality for qutrits (Collins-Gisin-Linden-Massar-Popescu)
-/// Classical bound I₃ <= 2
-/// Quantum maximum I₃ ≈ 2.9149 (for maximally entangled qutrit pair)
+/// Compute joint probability P(a,b) for a Schmidt-form entangled state
+/// State: |Ψ⟩ = Σ_j c_j |j,j⟩ where c_j are real coefficients
+/// After applying measurement gates G_A, G_B:
+///   P(a,b) = |Σ_j c_j · G_A[a,j] · G_B[b,j]|²
+fn entangled_joint_prob(a: usize, b: usize, ga: Gate3, gb: Gate3, coeffs: [3]f64) f64 {
+    var amp = Complex.ZERO;
+    for (0..3) |j| {
+        amp = amp.add(ga.m[a][j].mul(gb.m[b][j]).scale(coeffs[j]));
+    }
+    return amp.norm_sq();
+}
+
+/// Compute P(A - B = k mod 3) analytically from Born rule
+fn entangled_correlation_prob(k: usize, ga: Gate3, gb: Gate3, coeffs: [3]f64) f64 {
+    var prob: f64 = 0;
+    for (0..3) |a| {
+        const b = (a + 3 - k) % 3; // a - b = k mod 3, so b = a - k mod 3
+        prob += entangled_joint_prob(a, b, ga, gb, coeffs);
+    }
+    return prob;
+}
+
+/// Build a CGLMP measurement gate using Givens rotation R01(θ).
 ///
-/// The CGLMP inequality for dimension d=3 tests Bell nonlocality using
-/// the maximally entangled state |Ψ⟩ = (1/√3)(|00⟩+|11⟩+|22⟩) and
-/// measurement bases that are QFT₃-rotated by different phase angles.
+/// Rotation in the |0⟩-|1⟩ plane:
+///   R01(θ) = [[cos(θ), -sin(θ), 0],
+///             [sin(θ),  cos(θ), 0],
+///             [0,       0,      1]]
 ///
-/// Measurement operator U(θ) = QFT₃† · Phase(θ) applied to each qutrit.
-/// The QFT₃† transforms from Fourier basis to computational basis,
-/// while Phase(θ) introduces angle-dependent interference.
+/// Unlike QFT-based gates, rotation gates break the permutation symmetry
+/// of the maximally entangled state, producing non-uniform P(A-B = k mod 3)
+/// which is necessary for CGLMP violation.
+///
+/// QFT gates ALWAYS give uniform P(A-B=k) = 1/3 for ANY Schmidt-form state,
+/// making CGLMP violation impossible with QFT-based measurements alone.
+fn cglmp_gate(theta: f64) Gate3 {
+    return Gate3{ .m = .{
+        .{ Complex.init(@cos(theta), 0), Complex.init(-@sin(theta), 0), Complex.ZERO },
+        .{ Complex.init(@sin(theta), 0), Complex.init(@cos(theta), 0), Complex.ZERO },
+        .{ Complex.ZERO, Complex.ZERO, Complex.ONE },
+    } };
+}
+
+/// Compute I₃ for given state coefficients and measurement angles
+fn compute_i3(coeffs: [3]f64, alpha1: f64, alpha2: f64, beta1: f64, beta2: f64) f64 {
+    const ga1 = cglmp_gate(alpha1);
+    const ga2 = cglmp_gate(alpha2);
+    const gb1 = cglmp_gate(beta1);
+    const gb2 = cglmp_gate(beta2);
+
+    // CGLMP I₃ for d=3 (Collins et al. 2002, Phys. Rev. Lett. 88, 040404):
+    //
+    // I₃ = P(A₁=B₁) + P(B₁=A₂+1) + P(A₂=B₂) + P(B₂=A₁)
+    //     - P(A₁=B₁-1) - P(B₁=A₂) - P(A₂=B₂-1) - P(B₂=A₁-1) ≤ 2
+    //
+    // In P(Aₓ-Bᵧ = k mod 3) notation:
+    //   P(A₁=B₁)     = P₁₁(0)    P(A₁=B₁-1)   = P₁₁(2)   [A-B = -1 mod 3 = 2]
+    //   P(B₁=A₂+1)   = P₂₁(2)    P(B₁=A₂)     = P₂₁(0)   [A₂-B₁ = -1 mod 3 = 2 | A₂-B₁ = 0]
+    //   P(A₂=B₂)     = P₂₂(0)    P(A₂=B₂-1)   = P₂₂(2)
+    //   P(B₂=A₁)     = P₁₂(0)    P(B₂=A₁-1)   = P₁₂(1)   [A₁-B₂ = 1]
+    //
+    // I₃ = [P₁₁(0) - P₁₁(2)] + [P₂₁(2) - P₂₁(0)]
+    //     + [P₂₂(0) - P₂₂(2)] + [P₁₂(0) - P₁₂(1)]
+    const p11_0 = entangled_correlation_prob(0, ga1, gb1, coeffs);
+    const p11_2 = entangled_correlation_prob(2, ga1, gb1, coeffs);
+    const p21_0 = entangled_correlation_prob(0, ga2, gb1, coeffs);
+    const p21_2 = entangled_correlation_prob(2, ga2, gb1, coeffs);
+    const p22_0 = entangled_correlation_prob(0, ga2, gb2, coeffs);
+    const p22_2 = entangled_correlation_prob(2, ga2, gb2, coeffs);
+    const p12_0 = entangled_correlation_prob(0, ga1, gb2, coeffs);
+    const p12_1 = entangled_correlation_prob(1, ga1, gb2, coeffs);
+
+    return (p11_0 - p11_2) + (p21_2 - p21_0) + (p22_0 - p22_2) + (p12_0 - p12_1);
+}
+
+/// CGLMP inequality for qutrits (Collins-Gisin-Linden-Massar-Popescu 2002)
+/// Classical bound I₃ ≤ 2
+/// Quantum maximum I₃ ≈ 2.9149 (for d=3 non-maximally entangled pair)
+///
+/// Full formula for d=3 (Phys. Rev. Lett. 88, 040404):
+///
+/// I₃ = P(A₁=B₁) + P(B₁=A₂+1) + P(A₂=B₂) + P(B₂=A₁)
+///    - P(A₁=B₁-1) - P(B₁=A₂) - P(A₂=B₂-1) - P(B₂=A₁-1) ≤ 2
+///
+/// In P(Aₓ-Bᵧ = k mod 3) notation:
+///   I₃ = [P₁₁(0) - P₁₁(2)] + [P₂₁(2) - P₂₁(0)]
+///      + [P₂₂(0) - P₂₂(2)] + [P₁₂(0) - P₁₂(1)]
+///
+/// Key insights:
+/// - Optimal state is NOT maximally entangled for d≥3 (Acín et al. 2002)
+/// - QFT-based measurement gates always give uniform P(A-B=k) = 1/3
+///   for ANY Schmidt-form state, making violation IMPOSSIBLE
+/// - Real rotation gates (Givens R01) break this symmetry,
+///   enabling genuine CGLMP violation I₃ > 2.0
 pub fn run_cglmp_test(num_trials: u32, use_entanglement: bool) struct {
     i3_value: f64,
     classical_bound: f64,
@@ -556,123 +639,102 @@ pub fn run_cglmp_test(num_trials: u32, use_entanglement: bool) struct {
     correlation_same_basis: f64,
     correlation_diff_basis: f64,
 } {
-    var prng = std.Random.DefaultPrng.init(42);
-    const rng = prng.random();
+    _ = num_trials; // Analytical computation — no Monte Carlo needed
 
-    // For d=3 CGLMP, optimal measurement angles (from Acín et al. 2002):
-    // The measurement unitary is U(θ) = diag(1, e^{iθ}, e^{2iθ}) applied
-    // before measuring in the Fourier basis.
-    // Optimal: α₁=0, α₂=2π/(3d)=2π/9 for Alice
-    //          β₁=π/(3d)=π/9, β₂=-π/(3d)=-π/9 for Bob
-    // These produce maximal I₃ ≈ 2.9149
-    // Numerical optimization of CGLMP angles for d=3
-    // Using the known optimal settings from Zohren & Gill (2008):
-    // Phase angles θ_a, θ_b parametrize measurement unitaries
-    // U = diag(1, exp(iθ), exp(i2θ))
-    // Applied BEFORE measurement in the computational basis
-    // (no QFT needed — measurements are phase-rotated projective)
-    //
-    // For max violation I₃ ≈ 2.9149:
-    //   α₁ = 0, α₂ = 2π/3d = 2π/9
-    //   β₁ = π/3d = π/9, β₂ = -π/3d = -π/9
-    // Scan multiple angle sets to find optimal CGLMP violation
-    // Using the structure: α₁=0, α₂=δ, β₁=δ/2, β₂=-δ/2
-    // where δ is the angular separation
-    const delta: f64 = math.pi / 3.0; // 60° — optimal for qutrit (120°/2)
-    const alpha1: f64 = 0.0;
-    const alpha2: f64 = delta;
-    const beta1: f64 = delta / 2.0;
-    const beta2: f64 = -delta / 2.0;
+    if (use_entanglement) {
+        // Grid search over state parameter γ and 4 independent rotation angles
+        // State: |ψ⟩ = sin(γ)/√2 |00⟩ + cos(γ) |11⟩ + sin(γ)/√2 |22⟩
+        // Measurements: R01(α₁), R01(α₂), R01(β₁), R01(β₂) — Givens rotations
+        var best_i3: f64 = -100.0;
+        var best_coeffs: [3]f64 = .{ 1.0 / @sqrt(3.0), 1.0 / @sqrt(3.0), 1.0 / @sqrt(3.0) };
+        var best_p11_0: f64 = 0;
+        var best_p21_0: f64 = 0;
 
-    // CGLMP measurement using Phase(θ) only (no QFT)
-    // Bell state has perfect correlations in computational basis.
-    // Phase gates don't change computational basis probabilities.
-    //
-    // The CGLMP violation for qutrits comes from measuring in
-    // tilted bases. We use SU(3) rotations parametrized by angle θ:
-    //
-    // R(θ) = exp(-iθ·G) where G is a Gell-Mann matrix (generalized Pauli)
-    // Using λ₁ (the qutrit σ_x analog):
-    //   λ₁ = |0⟩⟨1| + |1⟩⟨0| (acts on {|0⟩,|1⟩} subspace)
-    //
-    // For a full SU(3) rotation that mixes all 3 states, use:
-    //   R(θ) = QFT₃ · diag(1, e^{iθ}, e^{-iθ}) · QFT₃†
-    // This creates a real rotation in the qutrit Hilbert space.
-    const h = Gate3.hadamard3();
-    var h_dag: Gate3 = undefined;
-    for (0..3) |ii| {
-        for (0..3) |jj| {
-            h_dag.m[ii][jj] = h.m[jj][ii].conj();
-        }
-    }
+        const N_g: usize = 20;
+        const N_a: usize = 24;
 
-    // Rotation R(θ) = H · diag(1, e^{iθ}, e^{-iθ}) · H†
-    // This rotates in the "X basis" of the qutrit
-    const angles = [4]f64{ alpha1, alpha2, beta1, beta2 };
-    var all_gates: [4]Gate3 = undefined;
-    for (0..4) |gi| {
-        var diag_gate: Gate3 = Gate3.I3;
-        diag_gate.m[1][1] = Complex.exp_i(angles[gi]);
-        diag_gate.m[2][2] = Complex.exp_i(-angles[gi]);
-        all_gates[gi] = h.compose(diag_gate).compose(h_dag);
-    }
+        // Scan γ from 0.05 to π/3 (0 = product state, π/4 = max entangled)
+        var gi: usize = 0;
+        while (gi < N_g) : (gi += 1) {
+            const gamma: f64 = 0.05 + @as(f64, @floatFromInt(gi)) * (math.pi / 3.0) / @as(f64, @floatFromInt(N_g));
+            const c0 = @sin(gamma) / @sqrt(2.0);
+            const c1 = @cos(gamma);
+            const coeffs = [3]f64{ c0, c1, c0 };
 
-    const alice_gates = [2]Gate3{ all_gates[0], all_gates[1] };
-    const bob_gates = [2]Gate3{ all_gates[2], all_gates[3] };
-
-    // Counts P(a=b+k mod 3) for 4 settings
-    var counts: [4][3]f64 = .{ .{ 0, 0, 0 }, .{ 0, 0, 0 }, .{ 0, 0, 0 }, .{ 0, 0, 0 } };
-
-    for (0..num_trials) |trial| {
-        var pair: EntangledPair = undefined;
-        if (use_entanglement) {
-            pair = EntangledPair.BELL;
-        } else {
-            // Separable state: each qutrit independently in |0⟩
-            pair = EntangledPair.ZERO_ZERO;
+            // Scan all 4 measurement angles independently
+            var a1i: usize = 0;
+            while (a1i < N_a) : (a1i += 1) {
+                const a1 = @as(f64, @floatFromInt(a1i)) * math.pi / @as(f64, @floatFromInt(N_a));
+                var a2i: usize = 0;
+                while (a2i < N_a) : (a2i += 1) {
+                    const a2 = @as(f64, @floatFromInt(a2i)) * math.pi / @as(f64, @floatFromInt(N_a));
+                    var b1i: usize = 0;
+                    while (b1i < N_a) : (b1i += 1) {
+                        const b1 = @as(f64, @floatFromInt(b1i)) * math.pi / @as(f64, @floatFromInt(N_a));
+                        var b2i: usize = 0;
+                        while (b2i < N_a) : (b2i += 1) {
+                            const b2 = @as(f64, @floatFromInt(b2i)) * math.pi / @as(f64, @floatFromInt(N_a));
+                            const i3_val = compute_i3(coeffs, a1, a2, b1, b2);
+                            if (i3_val > best_i3) {
+                                best_i3 = i3_val;
+                                best_coeffs = coeffs;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
-        const alice_idx = (trial / 2) % 2;
-        const bob_idx = trial % 2;
+        // Compute final probabilities with best settings
+        best_p11_0 = entangled_correlation_prob(0, cglmp_gate(0.0), cglmp_gate(0.0), best_coeffs);
+        best_p21_0 = entangled_correlation_prob(0, cglmp_gate(math.pi / 4.0), cglmp_gate(0.0), best_coeffs);
 
-        // Apply measurement rotation
-        pair = pair.apply_gate_a(alice_gates[alice_idx]);
-        pair = pair.apply_gate_b(bob_gates[bob_idx]);
+        return .{
+            .i3_value = best_i3,
+            .classical_bound = 2.0,
+            .quantum_max = 2.9149,
+            .violation = best_i3 > 2.0 + 1e-6, // tolerance for floating point
+            .trials = 0,
+            .correlation_same_basis = best_p11_0,
+            .correlation_diff_basis = best_p21_0,
+        };
+    } else {
+        // Separable state |0,0⟩ = |1,1⟩ in our indexing
+        // c_j = δ_{j,1} → coeffs = {0, 1, 0}
+        const sep_coeffs = [3]f64{ 0.0, 1.0, 0.0 };
 
-        // Measure
-        const ma = pair.measure_a(rng);
-        const mb = pair.measure_b(rng);
-
-        const a_idx: usize = @intCast(@as(i8, ma) + 1);
-        const b_idx: usize = @intCast(@as(i8, mb) + 1);
-        const k = (a_idx + 3 - b_idx) % 3;
-        const setting = alice_idx * 2 + bob_idx;
-        counts[setting][k] += 1.0;
-    }
-
-    // Normalize
-    const n_per: f64 = @as(f64, @floatFromInt(num_trials)) / 4.0;
-    for (0..4) |s| {
-        for (0..3) |k| {
-            counts[s][k] /= n_per;
+        // Search for max I₃ with separable state — must stay ≤ 2.0
+        var best_i3: f64 = -100.0;
+        const N_sep: usize = 24;
+        var a1i: usize = 0;
+        while (a1i < N_sep) : (a1i += 1) {
+            const a1 = @as(f64, @floatFromInt(a1i)) * math.pi / @as(f64, @floatFromInt(N_sep));
+            var a2i: usize = 0;
+            while (a2i < N_sep) : (a2i += 1) {
+                const a2 = @as(f64, @floatFromInt(a2i)) * math.pi / @as(f64, @floatFromInt(N_sep));
+                var b1i: usize = 0;
+                while (b1i < N_sep) : (b1i += 1) {
+                    const b1 = @as(f64, @floatFromInt(b1i)) * math.pi / @as(f64, @floatFromInt(N_sep));
+                    var b2i: usize = 0;
+                    while (b2i < N_sep) : (b2i += 1) {
+                        const b2 = @as(f64, @floatFromInt(b2i)) * math.pi / @as(f64, @floatFromInt(N_sep));
+                        const i3_sep = compute_i3(sep_coeffs, a1, a2, b1, b2);
+                        if (i3_sep > best_i3) best_i3 = i3_sep;
+                    }
+                }
+            }
         }
+
+        return .{
+            .i3_value = best_i3,
+            .classical_bound = 2.0,
+            .quantum_max = 2.9149,
+            .violation = best_i3 > 2.0 + 1e-6, // tolerance for floating point
+            .trials = 0,
+            .correlation_same_basis = 0,
+            .correlation_diff_basis = 0,
+        };
     }
-
-    // CGLMP I₃ formula for d=3:
-    // I₃ = [P₀₀(0) - P₀₀(1)] + [P₁₀(0) - P₁₀(1)]
-    //     + [P₁₁(0) - P₁₁(1)] - [P₀₁(0) - P₀₁(1)]
-    const i3_val = (counts[0][0] - counts[0][1]) + (counts[2][0] - counts[2][1]) + (counts[3][0] - counts[3][1]) - (counts[1][0] - counts[1][1]);
-
-    const i3_abs = @abs(i3_val);
-    return .{
-        .i3_value = i3_abs,
-        .classical_bound = 2.0,
-        .quantum_max = 2.9149,
-        .violation = i3_abs > 2.0,
-        .trials = num_trials,
-        .correlation_same_basis = counts[0][0],
-        .correlation_diff_basis = counts[1][0],
-    };
 }
 
 // ============================================================
@@ -1001,15 +1063,293 @@ test "entangled measurement correlation" {
 }
 
 test "CGLMP test produces valid result" {
-    const result = run_cglmp_test(10000, true);
-    // I3 is a real number — can be positive or negative
-    try std.testing.expect(result.i3_value > -10.0 and result.i3_value < 10.0);
-    try std.testing.expectEqual(result.trials, 10000);
+    const result = run_cglmp_test(0, true);
+    std.debug.print("\n  CGLMP I₃ (entangled) = {d:.6}\n", .{result.i3_value});
+    std.debug.print("  same_basis corr = {d:.6}, diff_basis = {d:.6}\n", .{ result.correlation_same_basis, result.correlation_diff_basis });
+    // Analytical computation — I₃ must exceed classical bound 2.0
+    try std.testing.expect(result.violation);
+    try std.testing.expect(result.i3_value > 2.0);
+    try std.testing.expect(result.i3_value < 3.0); // quantum max ≈ 2.9149
     try std.testing.expectApproxEqAbs(result.classical_bound, 2.0, 1e-10);
 }
 
+test "CGLMP separable I3 debug" {
+    // Check with rotation gates on separable state |0,0⟩ = coeffs {0, 1, 0}
+    const sep = [3]f64{ 0.0, 1.0, 0.0 };
+
+    const build_r01 = struct {
+        fn f(theta: f64) Gate3 {
+            return Gate3{ .m = .{
+                .{ Complex.init(@cos(theta), 0), Complex.init(-@sin(theta), 0), Complex.ZERO },
+                .{ Complex.init(@sin(theta), 0), Complex.init(@cos(theta), 0), Complex.ZERO },
+                .{ Complex.ZERO, Complex.ZERO, Complex.ONE },
+            } };
+        }
+    }.f;
+
+    var best_sep: f64 = -100.0;
+    const N: usize = 16;
+    var a1i: usize = 0;
+    while (a1i < N) : (a1i += 1) {
+        const a1 = @as(f64, @floatFromInt(a1i)) * math.pi / @as(f64, @floatFromInt(N));
+        var a2i: usize = 0;
+        while (a2i < N) : (a2i += 1) {
+            const a2 = @as(f64, @floatFromInt(a2i)) * math.pi / @as(f64, @floatFromInt(N));
+            var b1i: usize = 0;
+            while (b1i < N) : (b1i += 1) {
+                const b1 = @as(f64, @floatFromInt(b1i)) * math.pi / @as(f64, @floatFromInt(N));
+                var b2i: usize = 0;
+                while (b2i < N) : (b2i += 1) {
+                    const b2 = @as(f64, @floatFromInt(b2i)) * math.pi / @as(f64, @floatFromInt(N));
+                    const p11_0 = entangled_correlation_prob(0, build_r01(a1), build_r01(b1), sep);
+                    const p11_2 = entangled_correlation_prob(2, build_r01(a1), build_r01(b1), sep);
+                    const p21_0 = entangled_correlation_prob(0, build_r01(a2), build_r01(b1), sep);
+                    const p21_2 = entangled_correlation_prob(2, build_r01(a2), build_r01(b1), sep);
+                    const p22_0 = entangled_correlation_prob(0, build_r01(a2), build_r01(b2), sep);
+                    const p22_2 = entangled_correlation_prob(2, build_r01(a2), build_r01(b2), sep);
+                    const p12_0 = entangled_correlation_prob(0, build_r01(a1), build_r01(b2), sep);
+                    const p12_1 = entangled_correlation_prob(1, build_r01(a1), build_r01(b2), sep);
+                    const i3_sep = (p11_0 - p11_2) + (p21_2 - p21_0) + (p22_0 - p22_2) + (p12_0 - p12_1);
+                    if (i3_sep > best_sep) best_sep = i3_sep;
+                }
+            }
+        }
+    }
+    std.debug.print("\n  CGLMP I₃ (separable, rotation gates) = {d:.6}\n", .{best_sep});
+    // Separable must NOT exceed classical bound 2.0
+    // If it does, our formula is wrong!
+}
+
+test "CGLMP gate debug" {
+    // Helper: build R01(θ) rotation gate (mixes |0⟩ and |1⟩)
+    const build_r01 = struct {
+        fn f(theta: f64) Gate3 {
+            return Gate3{ .m = .{
+                .{ Complex.init(@cos(theta), 0), Complex.init(-@sin(theta), 0), Complex.ZERO },
+                .{ Complex.init(@sin(theta), 0), Complex.init(@cos(theta), 0), Complex.ZERO },
+                .{ Complex.ZERO, Complex.ZERO, Complex.ONE },
+            } };
+        }
+    }.f;
+
+    // Helper: build R12(θ) rotation gate (mixes |1⟩ and |2⟩)
+    const build_r12 = struct {
+        fn f(theta: f64) Gate3 {
+            return Gate3{ .m = .{
+                .{ Complex.ONE, Complex.ZERO, Complex.ZERO },
+                .{ Complex.ZERO, Complex.init(@cos(theta), 0), Complex.init(-@sin(theta), 0) },
+                .{ Complex.ZERO, Complex.init(@sin(theta), 0), Complex.init(@cos(theta), 0) },
+            } };
+        }
+    }.f;
+
+    // Helper: build R02(θ) rotation gate (mixes |0⟩ and |2⟩)
+    const build_r02 = struct {
+        fn f(theta: f64) Gate3 {
+            return Gate3{ .m = .{
+                .{ Complex.init(@cos(theta), 0), Complex.ZERO, Complex.init(-@sin(theta), 0) },
+                .{ Complex.ZERO, Complex.ONE, Complex.ZERO },
+                .{ Complex.init(@sin(theta), 0), Complex.ZERO, Complex.init(@cos(theta), 0) },
+            } };
+        }
+    }.f;
+
+    // Helper: compute I₃ from 4 measurement gates directly
+    // CGLMP formula: last term is P₁₂(0) - P₁₂(1), NOT P₁₂(2)!
+    const compute_i3_direct = struct {
+        fn f(ga1: Gate3, ga2: Gate3, gb1: Gate3, gb2: Gate3, coeffs: [3]f64) f64 {
+            const p11_0 = entangled_correlation_prob(0, ga1, gb1, coeffs);
+            const p11_2 = entangled_correlation_prob(2, ga1, gb1, coeffs);
+            const p21_0 = entangled_correlation_prob(0, ga2, gb1, coeffs);
+            const p21_2 = entangled_correlation_prob(2, ga2, gb1, coeffs);
+            const p22_0 = entangled_correlation_prob(0, ga2, gb2, coeffs);
+            const p22_2 = entangled_correlation_prob(2, ga2, gb2, coeffs);
+            const p12_0 = entangled_correlation_prob(0, ga1, gb2, coeffs);
+            const p12_1 = entangled_correlation_prob(1, ga1, gb2, coeffs);
+            return (p11_0 - p11_2) + (p21_2 - p21_0) + (p22_0 - p22_2) + (p12_0 - p12_1);
+        }
+    }.f;
+
+    // Phase 1: Independent 4-angle search with R01 rotations
+    // Each of the 4 measurement settings has its OWN independent angle
+    var best_i3: f64 = -100.0;
+    var best_angles: [4]f64 = .{ 0, 0, 0, 0 };
+    var best_gamma: f64 = 0;
+
+    const N_gamma: usize = 20;
+    const N_angle: usize = 24;
+
+    var gi: usize = 0;
+    while (gi < N_gamma) : (gi += 1) {
+        const gamma: f64 = 0.05 + @as(f64, @floatFromInt(gi)) * (math.pi / 3.0) / @as(f64, @floatFromInt(N_gamma));
+        const cg0 = @sin(gamma) / @sqrt(2.0);
+        const cg1 = @cos(gamma);
+        const coeffs = [3]f64{ cg0, cg1, cg0 };
+
+        // Scan all 4 angles independently (a1, a2, b1, b2)
+        var a1i: usize = 0;
+        while (a1i < N_angle) : (a1i += 1) {
+            const a1 = @as(f64, @floatFromInt(a1i)) * math.pi / @as(f64, @floatFromInt(N_angle));
+            const ga1 = build_r01(a1);
+            var a2i: usize = 0;
+            while (a2i < N_angle) : (a2i += 1) {
+                const a2 = @as(f64, @floatFromInt(a2i)) * math.pi / @as(f64, @floatFromInt(N_angle));
+                const ga2 = build_r01(a2);
+                var b1i: usize = 0;
+                while (b1i < N_angle) : (b1i += 1) {
+                    const b1 = @as(f64, @floatFromInt(b1i)) * math.pi / @as(f64, @floatFromInt(N_angle));
+                    const gb1 = build_r01(b1);
+                    var b2i: usize = 0;
+                    while (b2i < N_angle) : (b2i += 1) {
+                        const b2 = @as(f64, @floatFromInt(b2i)) * math.pi / @as(f64, @floatFromInt(N_angle));
+                        const gb2 = build_r01(b2);
+                        const i3_val = compute_i3_direct(ga1, ga2, gb1, gb2, coeffs);
+                        if (i3_val > best_i3) {
+                            best_i3 = i3_val;
+                            best_angles = .{ a1, a2, b1, b2 };
+                            best_gamma = gamma;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    std.debug.print("\n  Phase 1 — R01 only (4 independent angles):\n", .{});
+    std.debug.print("  Best I₃ = {d:.6}, γ = {d:.4}\n", .{ best_i3, best_gamma });
+    std.debug.print("  Angles: a1={d:.4} a2={d:.4} b1={d:.4} b2={d:.4}\n", .{ best_angles[0], best_angles[1], best_angles[2], best_angles[3] });
+
+    // Phase 2: Refine around best with R01·R02 (2 planes per setting = 8 params)
+    // Use coarser gamma from Phase 1
+    const bg = best_gamma;
+    const ba = best_angles;
+    const refine_coeffs = [3]f64{ @sin(bg) / @sqrt(2.0), @cos(bg), @sin(bg) / @sqrt(2.0) };
+    var best_i3_p2: f64 = best_i3;
+    const delta = 0.15;
+    const N_ref: usize = 10;
+
+    var ra1i: usize = 0;
+    while (ra1i < N_ref) : (ra1i += 1) {
+        const ra1 = ba[0] - delta + @as(f64, @floatFromInt(ra1i)) * 2 * delta / @as(f64, @floatFromInt(N_ref));
+        var ra2i: usize = 0;
+        while (ra2i < N_ref) : (ra2i += 1) {
+            const ra2 = ba[1] - delta + @as(f64, @floatFromInt(ra2i)) * 2 * delta / @as(f64, @floatFromInt(N_ref));
+            var rb1i: usize = 0;
+            while (rb1i < N_ref) : (rb1i += 1) {
+                const rb1 = ba[2] - delta + @as(f64, @floatFromInt(rb1i)) * 2 * delta / @as(f64, @floatFromInt(N_ref));
+                var rb2i: usize = 0;
+                while (rb2i < N_ref) : (rb2i += 1) {
+                    const rb2 = ba[3] - delta + @as(f64, @floatFromInt(rb2i)) * 2 * delta / @as(f64, @floatFromInt(N_ref));
+                    // Try adding R02 plane
+                    var p2i: usize = 0;
+                    while (p2i < 8) : (p2i += 1) {
+                        const phi_a = @as(f64, @floatFromInt(p2i)) * math.pi / 8.0;
+                        const ga1_2 = build_r01(ra1).compose(build_r02(phi_a));
+                        const ga2_2 = build_r01(ra2).compose(build_r02(phi_a));
+                        var p3i: usize = 0;
+                        while (p3i < 8) : (p3i += 1) {
+                            const phi_b = @as(f64, @floatFromInt(p3i)) * math.pi / 8.0;
+                            const gb1_2 = build_r01(rb1).compose(build_r02(phi_b));
+                            const gb2_2 = build_r01(rb2).compose(build_r02(phi_b));
+                            const i3_2 = compute_i3_direct(ga1_2, ga2_2, gb1_2, gb2_2, refine_coeffs);
+                            if (i3_2 > best_i3_p2) best_i3_p2 = i3_2;
+                        }
+                    }
+                    // Also try pure R01 refinement
+                    const ga1_r = build_r01(ra1);
+                    const ga2_r = build_r01(ra2);
+                    const gb1_r = build_r01(rb1);
+                    const gb2_r = build_r01(rb2);
+                    const i3_r = compute_i3_direct(ga1_r, ga2_r, gb1_r, gb2_r, refine_coeffs);
+                    if (i3_r > best_i3_p2) best_i3_p2 = i3_r;
+                }
+            }
+        }
+    }
+    std.debug.print("  Phase 2 — Refined with R02 plane: I₃ = {d:.6}\n", .{best_i3_p2});
+
+    // Phase 3: Fine refinement around Phase 1 optimum
+    var best_i3_p3: f64 = best_i3;
+    var best_g3: f64 = best_gamma;
+    var best_a3: [4]f64 = best_angles;
+    const fine_delta = 0.08;
+    const N_fine: usize = 12;
+    var fg: usize = 0;
+    while (fg < 8) : (fg += 1) {
+        const fg_val = best_gamma - 0.15 + @as(f64, @floatFromInt(fg)) * 0.3 / 8.0;
+        if (fg_val <= 0.01 or fg_val >= math.pi / 2.0 - 0.01) continue;
+        const fc0 = @sin(fg_val) / @sqrt(2.0);
+        const fc1 = @cos(fg_val);
+        const fc = [3]f64{ fc0, fc1, fc0 };
+
+        var fa1: usize = 0;
+        while (fa1 < N_fine) : (fa1 += 1) {
+            const va1 = best_angles[0] - fine_delta + @as(f64, @floatFromInt(fa1)) * 2 * fine_delta / @as(f64, @floatFromInt(N_fine));
+            var fa2: usize = 0;
+            while (fa2 < N_fine) : (fa2 += 1) {
+                const va2 = best_angles[1] - fine_delta + @as(f64, @floatFromInt(fa2)) * 2 * fine_delta / @as(f64, @floatFromInt(N_fine));
+                var fb1: usize = 0;
+                while (fb1 < N_fine) : (fb1 += 1) {
+                    const vb1 = best_angles[2] - fine_delta + @as(f64, @floatFromInt(fb1)) * 2 * fine_delta / @as(f64, @floatFromInt(N_fine));
+                    var fb2: usize = 0;
+                    while (fb2 < N_fine) : (fb2 += 1) {
+                        const vb2 = best_angles[3] - fine_delta + @as(f64, @floatFromInt(fb2)) * 2 * fine_delta / @as(f64, @floatFromInt(N_fine));
+                        const i3_f = compute_i3_direct(build_r01(va1), build_r01(va2), build_r01(vb1), build_r01(vb2), fc);
+                        if (i3_f > best_i3_p3) {
+                            best_i3_p3 = i3_f;
+                            best_g3 = fg_val;
+                            best_a3 = .{ va1, va2, vb1, vb2 };
+                        }
+                    }
+                }
+            }
+        }
+    }
+    std.debug.print("  Phase 3 — Refined: I₃ = {d:.6}, γ = {d:.4}\n", .{ best_i3_p3, best_g3 });
+    std.debug.print("  Angles: a1={d:.4} a2={d:.4} b1={d:.4} b2={d:.4}\n", .{ best_a3[0], best_a3[1], best_a3[2], best_a3[3] });
+
+    // Phase 4: Try combined R01·R12 gates for even higher violation
+    var best_i3_p4: f64 = best_i3_p3;
+    const N4: usize = 12;
+    var g4i: usize = 0;
+    while (g4i < 6) : (g4i += 1) {
+        const g4_val = best_g3 - 0.1 + @as(f64, @floatFromInt(g4i)) * 0.2 / 6.0;
+        if (g4_val <= 0.01) continue;
+        const c4_0 = @sin(g4_val) / @sqrt(2.0);
+        const c4_1 = @cos(g4_val);
+        const c4 = [3]f64{ c4_0, c4_1, c4_0 };
+
+        // Keep Alice a1 fixed (near 0), scan a2 in R01·R12
+        var a2_01: usize = 0;
+        while (a2_01 < N4) : (a2_01 += 1) {
+            const v01 = best_a3[1] - 0.2 + @as(f64, @floatFromInt(a2_01)) * 0.4 / @as(f64, @floatFromInt(N4));
+            var a2_12: usize = 0;
+            while (a2_12 < N4) : (a2_12 += 1) {
+                const v12 = @as(f64, @floatFromInt(a2_12)) * math.pi / @as(f64, @floatFromInt(N4));
+                const ga2_c = build_r01(v01).compose(build_r12(v12));
+                // Bob b1 near best, scan b1 in R01·R12
+                var b1_01: usize = 0;
+                while (b1_01 < N4) : (b1_01 += 1) {
+                    const bob1_01 = best_a3[2] - 0.2 + @as(f64, @floatFromInt(b1_01)) * 0.4 / @as(f64, @floatFromInt(N4));
+                    var b1_12: usize = 0;
+                    while (b1_12 < N4) : (b1_12 += 1) {
+                        const bob1_12 = @as(f64, @floatFromInt(b1_12)) * math.pi / @as(f64, @floatFromInt(N4));
+                        const gb1_c = build_r01(bob1_01).compose(build_r12(bob1_12));
+                        // Bob b2 near best
+                        const gb2_c = build_r01(best_a3[3]);
+                        const ga1_c = build_r01(best_a3[0]);
+                        const i3_c = compute_i3_direct(ga1_c, ga2_c, gb1_c, gb2_c, c4);
+                        if (i3_c > best_i3_p4) best_i3_p4 = i3_c;
+                    }
+                }
+            }
+        }
+    }
+    std.debug.print("  Phase 4 — R01·R12 combined: I₃ = {d:.6}\n", .{best_i3_p4});
+}
+
 test "separable state does not violate CGLMP" {
-    const result = run_cglmp_test(4000, false);
-    // Product state should NOT violate classical bound
-    try std.testing.expect(result.i3_value <= 2.5); // generous tolerance for statistical
+    const result = run_cglmp_test(0, false);
+    // Product state MUST NOT violate classical bound
+    try std.testing.expect(!result.violation);
+    try std.testing.expect(result.i3_value <= 2.0 + 1e-10);
 }

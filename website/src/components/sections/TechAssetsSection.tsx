@@ -18,7 +18,7 @@ export default function TechAssetsSection() {
       <div className="grid-row fade" style={{ marginTop: '3rem' }}>
         {ta.items?.map((item: { value: string; label: string; desc: string }, i: number) => (
           <div key={i} className="premium-card compact" style={{ textAlign: 'left', minHeight: '140px' }}>
-            <div style={{ fontSize: '2rem', fontWeight: 600, color: 'var(--accent)', marginBottom: '0.2rem' }}>{item.value}</div>
+            <div style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', fontWeight: 600, color: 'var(--accent)', marginBottom: '0.2rem' }}>{item.value}</div>
             <div style={{ fontSize: '0.9rem', fontWeight: 500, color: 'var(--text)', marginBottom: '0.5rem' }}>{item.label}</div>
             <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>{item.desc}</div>
           </div>

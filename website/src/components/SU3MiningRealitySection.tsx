@@ -148,8 +148,8 @@ export default function SU3MiningRealitySection() {
 
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: '1fr auto 1fr', 
-          gap: '2rem', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(200px, 100%), 1fr))',
+          gap: '1.5rem',
           alignItems: 'center'
         }}>
           {/* Wallet Info (REAL DATA) */}
@@ -175,7 +175,7 @@ export default function SU3MiningRealitySection() {
           </div>
 
           {/* Large Central SU(3) Core Resonance */}
-          <div style={{ position: 'relative', width: '180px', height: '180px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ position: 'relative', width: 'clamp(120px, 40vw, 180px)', height: 'clamp(120px, 40vw, 180px)', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '0 auto' }}>
             <motion.div
               animate={{ opacity: [0.1, 0.3, 0.1], scale: [1, 1.15, 1] }}
               transition={{ duration: 4, repeat: Infinity }}
@@ -206,7 +206,7 @@ export default function SU3MiningRealitySection() {
               }}
             >
               <div style={{ fontSize: '0.5rem', fontWeight: '800', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.15em', marginBottom: '0.4rem' }}>{reality.coreLabel}</div>
-              <div style={{ fontSize: '3rem', fontWeight: '900', color: '#00FF88', lineHeight: 1, filter: 'drop-shadow(0 0 15px rgba(0, 255, 136, 0.5))' }}>SU(3)</div>
+              <div style={{ fontSize: 'clamp(2rem, 8vw, 3rem)', fontWeight: '900', color: '#00FF88', lineHeight: 1, filter: 'drop-shadow(0 0 15px rgba(0, 255, 136, 0.5))' }}>SU(3)</div>
               <div style={{ fontSize: '0.45rem', color: 'var(--accent)', marginTop: '0.8rem', opacity: 0.7, letterSpacing: '0.05em' }}>{reality.phaseLocked}</div>
             </motion.div>
           </div>
@@ -236,8 +236,8 @@ export default function SU3MiningRealitySection() {
         {/* Combined Terminal & Performance Metrics */}
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: 'minmax(140px, 1fr) 2fr minmax(140px, 1fr)', 
-          gap: '1rem', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(140px, 100%), 1fr))',
+          gap: '1rem',
           alignItems: 'stretch' 
         }}>
           {/* Efficiency Metric */}

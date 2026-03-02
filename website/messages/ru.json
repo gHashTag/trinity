@@ -26,7 +26,12 @@
     "cta": "Смотреть доказательства",
     "ctaSecondary": "Запустить ноду"
   },
+  "navExtra": {
+    "dashboard": "Панель",
+    "docs": "Документация"
+  },
   "theorems": {
+    "badge": "МАТЕМАТИЧЕСКИЙ ФУНДАМЕНТ",
     "title": "4 Теоремы + <span class=\"grad\">Верифицированные Результаты</span>",
     "sub": "Математические доказательства подкреплены реальными бенчмарками. Каждое утверждение доказано И протестировано.",
     "cards": [
@@ -185,6 +190,8 @@
   "benchmarks": {
     "title": "GPU-Верифицированные <span class=\"grad\">Бенчмарки</span>",
     "sub": "✓ = Проверено на реальных GPU (RunPod) | RTX 3090 & A100 протестированы. Без симуляции.",
+    "tokensUnit": "токенов/с",
+    "noiseLabel": "Шум:",
     "gpuVerified": {
       "badge": "🔥 ПРОВЕРЕНО НА РЕАЛЬНЫХ GPU",
       "note": "Реальные бенчмарки RunPod - Pod ID: bhhnrrdothqm54 (RTX 3090), ydk41ymp8uoeyp (A100). Без симуляции.",
@@ -685,9 +692,9 @@
     "title": "<span class=\"grad\">Инвестиции</span>",
     "useTitle": "Масштабирование Сингулярности V5.0",
     "uses": [
-      "60% — Инженерия (SU(3) Core, PAS)",
-      "20% — Оптимизация базы .TRI",
-      "20% — Маркетинг Сингулярности"
+      { "percent": "60%", "title": "Инженерия", "desc": "SU(3) Core, PAS-демоны" },
+      { "percent": "20%", "title": "База знаний", "desc": "Оптимизация 20k+ .TRI файлов" },
+      { "percent": "20%", "title": "Операции", "desc": "Маркетинг Сингулярности" }
     ],
     "cards": [
       { "value": "$3M", "label": "за 1% equity" },
@@ -1024,5 +1031,165 @@
   "stickyCta": {
     "invest": "Инвестировать",
     "calculator": "Калькулятор Экономии"
+  },
+  "footer": {
+    "tagline": "Революция Тернарных Вычислений",
+    "linksTitle": "Ссылки",
+    "vizTitle": "Квантовая Лаборатория",
+    "vizLaunch": "Запустить Квантовую Лабораторию",
+    "vizDesc": "29 интерактивных визуализаций",
+    "contactTitle": "Контакты",
+    "rights": "Все права защищены.",
+    "docs": "Документация"
+  },
+  "science": {
+    "title": "Научная <span class=\"grad\">Верификация</span>",
+    "sub": "Рецензируемая математика. Каждая формула проверена независимо.",
+    "stats": [
+      { "value": "27/27", "label": "Тестов Пройдено" },
+      { "value": "4", "label": "Теоремы Доказаны" },
+      { "value": "<0.01%", "label": "Макс. Погрешность" }
+    ],
+    "evidenceTitle": "Покрытие Тестами",
+    "sections": [
+      { "name": "VSA Операции", "passed": 7, "total": 7 },
+      { "name": "Тернарная ВМ", "passed": 5, "total": 5 },
+      { "name": "Шумоустойчивость", "passed": 4, "total": 4 },
+      { "name": "BitNet MAC", "passed": 7, "total": 7 },
+      { "name": "Священные Константы", "passed": 4, "total": 4 }
+    ],
+    "formulasTitle": "Основные Формулы",
+    "formulas": [
+      { "formula": "φ² + 1/φ² = 3", "desc": "Тождество Тринити", "error": "0.0%" },
+      { "formula": "I(r) = (B/r) × log₂(r)", "desc": "Оптимальная Система Счисления", "error": "0.0%" },
+      { "formula": "log₂(3) = 1.585 бит/трит", "desc": "Плотность Информации", "error": "0.0%" },
+      { "formula": "3²¹ = 10,460,353,203", "desc": "Объём Токенов", "error": "0.0%" }
+    ],
+    "sources": [
+      { "title": "Кнут Том 3", "desc": "Доказательство оптимальной системы счисления" },
+      { "title": "Microsoft BitNet", "desc": "arXiv:2402.17764" },
+      { "title": "TerEffic FPGA", "desc": "arXiv:2502.16473" }
+    ]
+  },
+  "autonomousUniverse": {
+    "title": "Автономная Вселенная",
+    "description": "Самоэволюционирующая математическая вселенная с автономными пузырями и авто-настройкой",
+    "bubblesTitle": "Автономные Пузыри",
+    "mutationRate": "Частота Мутаций",
+    "crossoverCount": "Число Кроссоверов",
+    "novelDiscoveries": "Новые Открытия",
+    "convergenceScore": "Оценка Сходимости",
+    "autoTune": "Авто-Настройка",
+    "muAdjusted": "μ Скорректировано",
+    "evolution": "Эволюция",
+    "generation": "Поколение",
+    "fitness": "Приспособленность",
+    "discovery": "Открытие",
+    "snapshot": "Снимок",
+    "snapshotTs": "Метка Времени Снимка",
+    "phiAlignment": "φ Выравнивание",
+    "convergeStatus": "Статус Сходимости",
+    "reset": "Сброс",
+    "resetConfirm": "Вселенная будет сброшена в начальное состояние",
+    "trinity": "TRINITY: ✓"
+  },
+  "formulaDiscovery": {
+    "title": "Гибридное Открытие Формул",
+    "description": "Гибридный символьно-числовой метод с AST-разбором",
+    "hybridDiscovery": "Гибридное Открытие",
+    "symbolic": "Символьные Формулы",
+    "numeric": "Числовое Приближение",
+    "confidence": "Достоверность",
+    "astParse": "AST-Разбор",
+    "symbolicSimplify": "Символьное Упрощение",
+    "numericApprox": "Числовая Аппроксимация",
+    "error": "Погрешность Аппроксимации",
+    "exactEval": "Точное Вычисление",
+    "exactValue": "Точное Значение",
+    "decimal": "Десятичное",
+    "equivalence": "Поиск Эквивалентности",
+    "optimize": "Оптимизация Сложности",
+    "before": "До",
+    "after": "После",
+    "complexityBefore": "Сложность До",
+    "complexityAfter": "Сложность После",
+    "sacred": "Священное: ✓",
+    "hybrid": "Гибрид"
+  },
+  "nftMarketplace": {
+    "title": "NFT Маркетплейс",
+    "description": "Священный NFT маркетплейс с аукционами и роялти",
+    "listings": "Активные Листинги",
+    "placeBid": "Сделать Ставку",
+    "bidAmount": "Текущая Ставка",
+    "minIncrement": "Мин. Шаг",
+    "createListing": "Создать Листинг",
+    "listingFee": "Комиссия Площадки",
+    "royaltyRate": "Ставка Роялти",
+    "acceptOffer": "Принять Предложение",
+    "offerAmount": "Сумма Предложения",
+    "buyer": "Адрес Покупателя",
+    "cancelListing": "Отменить Листинг",
+    "tradeHistory": "История Сделок",
+    "totalVolume": "Общий Объём",
+    "totalTrades": "Всего Сделок",
+    "recentTrades": "Последние Сделки",
+    "creator": "Создатель",
+    "ask_price": "Цена Продажи",
+    "royalty": "Роялти"
+  },
+  "sacredEconomy": {
+    "title": "Священная Экономика Web3",
+    "description": "Web3-мост священной экономики со стейкингом и управлением",
+    "wallet": "Подключить Кошелёк",
+    "address": "Адрес Кошелька",
+    "balance": "Баланс $TRI",
+    "oracle": "Оракул On-Chain",
+    "phiPrice": "Цена φ",
+    "gas": "Цена Gas",
+    "block": "Номер Блока",
+    "timestamp": "Метка Времени",
+    "proposal": "Предложение Управления",
+    "votesFor": "Голоса За",
+    "votesAgainst": "Голоса Против",
+    "stake": "Стейкинг",
+    "staked": "В Стейкинге",
+    "apy": "Годовая Доходность",
+    "rewards": "Ожидающие Награды",
+    "listing": "Создать Листинг",
+    "listingId": "ID Листинга",
+    "metrics": "Метрики On-Chain",
+    "tvl": "Общая Заблокированная Стоимость",
+    "volume24h": "Объём за 24ч",
+    "transactions": "Транзакции за 24ч",
+    "web3": "WEB3: Подключено"
+  },
+  "selfImprover": {
+    "title": "Самосовершенствование Adam",
+    "description": "Самосовершенствующийся ИИ с оптимизатором Adam и EWC-консолидацией",
+    "adamOptimizer": "Оптимизатор Adam",
+    "learningRate": "Скорость Обучения",
+    "iteration": "Итерация",
+    "gradient": "Градиентный Спуск",
+    "gradientNorm": "Норма Градиента",
+    "loss": "Потери",
+    "momentum": "Обновление Импульса",
+    "velocity": "Скорость",
+    "decay": "Скорость Затухания",
+    "trajectory": "Траектория Обучения",
+    "trajectoryId": "ID Траектории",
+    "steps": "Завершённые Шаги",
+    "successRate": "Процент Успеха",
+    "gradientClip": "Обрезка Градиента",
+    "clipThreshold": "Порог Обрезки",
+    "clipped": "Градиент Обрезан",
+    "consolidate": "Консолидация EWC",
+    "ewcConsolidation": "Консолидация EWC++",
+    "fisherInfo": "Информация Фишера",
+    "lambda": "Параметр λ",
+    "ewcLoss": "Потери EWC",
+    "parameters": "Консолидированные Параметры",
+    "optimizer": "Оптимизатор",
+    "adam": "ADAM"
   }
 }

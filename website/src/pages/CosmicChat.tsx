@@ -118,7 +118,7 @@ export default function CosmicChat() {
       {/* Header */}
       <div style={{
         position: 'absolute', top: 0, left: 0, right: 0,
-        padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8,
         background: 'linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 100%)',
         zIndex: 10,
       }}>
@@ -161,7 +161,7 @@ export default function CosmicChat() {
               display: 'flex', flexDirection: 'column', alignItems: 'center',
               justifyContent: 'center', height: '100%', opacity: 0.3,
             }}>
-              <div style={{ fontSize: 64, color: '#ffd700', fontFamily: 'serif' }}>&phi;</div>
+              <div style={{ fontSize: 'clamp(36px, 15vw, 64px)', color: '#ffd700', fontFamily: 'serif' }}>&phi;</div>
               <div style={{ color: '#666', fontFamily: 'monospace', fontSize: 12, marginTop: 8 }}>
                 Trinity Chat v2.4 - Self-Reflection + Multi-Modal + Context
               </div>
@@ -206,7 +206,7 @@ export default function CosmicChat() {
         background: 'linear-gradient(0deg, rgba(0,0,0,0.6) 0%, transparent 100%)',
         zIndex: 10,
       }}>
-        <div style={{ maxWidth: 800, margin: '0 auto' }}>
+        <div style={{ maxWidth: 800, width: '100%', margin: '0 auto' }}>
           <ChatInput onSend={handleSend} disabled={loading} />
         </div>
       </div>

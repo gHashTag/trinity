@@ -26,7 +26,7 @@ export default function FinancialsSection() {
           background: 'rgba(255,255,255,0.02)',
           margin: '0 -10px'
         }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'clamp(0.65rem, 2.5vw, 0.85rem)', minWidth: '500px' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'clamp(0.65rem, 2.5vw, 0.85rem)', minWidth: '400px' }}>
             <thead>
               <tr>
                 {f.headers?.map((h: string, i: number) => (

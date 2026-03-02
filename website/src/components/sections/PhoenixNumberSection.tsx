@@ -32,7 +32,7 @@ export default function PhoenixNumberSection() {
           {p.supply.label}
         </div>
         <div style={{ 
-          fontSize: '1.5rem', 
+          fontSize: 'clamp(1.2rem, 4vw, 1.5rem)',
           fontFamily: 'monospace',
           color: 'var(--text)',
           marginTop: '1rem',
@@ -55,7 +55,7 @@ export default function PhoenixNumberSection() {
         textAlign: 'center'
       }}>
         <h3 style={{ color: 'gold', marginBottom: '0.5rem' }}>{p.identity.title}</h3>
-        <div style={{ fontSize: '2rem', fontFamily: 'monospace', color: 'var(--text)' }}>
+        <div style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', fontFamily: 'monospace', color: 'var(--text)' }}>
           {p.identity.formula}
         </div>
         <div style={{ color: 'var(--muted)', marginTop: '0.5rem' }}>{p.identity.desc}</div>
@@ -109,7 +109,7 @@ export default function PhoenixNumberSection() {
               textAlign: 'center',
               minWidth: '120px'
             }}>
-              <div style={{ fontSize: '2rem', color: 'var(--accent)' }}>{c.symbol}</div>
+              <div style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', color: 'var(--accent)' }}>{c.symbol}</div>
               <div style={{ fontSize: '0.9rem', fontFamily: 'monospace', color: 'var(--text)' }}>{c.value}</div>
               <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{c.name}</div>
             </div>
@@ -133,7 +133,7 @@ export default function PhoenixNumberSection() {
               border: '1px solid rgba(0, 255, 136, 0.2)',
               textAlign: 'center'
             }}>
-              <div style={{ fontSize: '1.5rem', color: '#00FF88' }}>{g.symbol}</div>
+              <div style={{ fontSize: 'clamp(1.2rem, 4vw, 1.5rem)', color: '#00FF88' }}>{g.symbol}</div>
               <div style={{ fontSize: '0.9rem', fontFamily: 'monospace', color: 'var(--text)' }}>{g.formula}</div>
               <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{g.name}</div>
             </div>

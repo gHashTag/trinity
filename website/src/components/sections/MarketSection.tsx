@@ -28,7 +28,7 @@ export default function MarketSection() {
           background: 'rgba(255,255,255,0.02)',
           margin: '0 -10px' // Slight negative margin to take more space on mobile
         }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'clamp(0.65rem, 2.5vw, 0.85rem)', minWidth: '450px' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'clamp(0.65rem, 2.5vw, 0.85rem)', minWidth: '360px' }}>
             <thead>
               <tr>
                 {m.headers?.map((h: string, i: number) => (

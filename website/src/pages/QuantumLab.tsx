@@ -210,10 +210,10 @@ export default function QuantumLab() {
           gap: '0.75rem',
           marginBottom: '0.25rem'
         }}>
-          <span style={{ fontSize: '2rem', filter: `drop-shadow(0 0 15px ${current.color})` }}>
+          <span style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', filter: `drop-shadow(0 0 15px ${current.color})` }}>
             {current.icon}
           </span>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 600, color: '#fff', margin: 0 }}>
+          <h1 style={{ fontSize: 'clamp(1.2rem, 3.5vw, 1.5rem)', fontWeight: 600, color: '#fff', margin: 0 }}>
             {current.title}
           </h1>
         </div>

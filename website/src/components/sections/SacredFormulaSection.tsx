@@ -170,7 +170,7 @@ export default function SacredFormulaSection() {
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
         style={{
-          maxWidth: '500px', margin: '0 auto 1rem',
+          maxWidth: 'min(500px, 90vw)', margin: '0 auto 1rem',
           background: 'rgba(255,215,0,0.04)',
           border: '1px solid rgba(255,215,0,0.12)',
           borderRadius: '12px', padding: '1rem 1.5rem',
@@ -255,7 +255,8 @@ export default function SacredFormulaSection() {
                 padding: '0.6rem 1rem',
                 color: 'var(--text)',
                 fontSize: '1rem',
-                width: '220px',
+                width: '100%',
+                maxWidth: '220px',
                 fontFamily: 'monospace',
                 outline: 'none',
               }}
@@ -296,7 +297,7 @@ export default function SacredFormulaSection() {
               const bounds = PARAM_BOUNDS[key];
               const error = paramErrors[key];
               return (
-                <div key={key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '80px' }}>
+                <div key={key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: '1 1 60px', maxWidth: '80px' }}>
                   <label style={{
                     color: '#ffd700', fontSize: '0.8rem', fontFamily: 'monospace',
                     marginBottom: '0.25rem', textAlign: 'center',
@@ -382,7 +383,8 @@ export default function SacredFormulaSection() {
               padding: '0.6rem 1rem',
               color: 'var(--text)',
               fontSize: '1rem',
-              width: '220px',
+              width: '100%',
+              maxWidth: '220px',
               fontFamily: 'monospace',
               outline: 'none',
             }}
@@ -413,7 +415,7 @@ export default function SacredFormulaSection() {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           style={{
-            maxWidth: '500px', margin: '0 auto 0.5rem',
+            maxWidth: 'min(500px, 90vw)', margin: '0 auto 0.5rem',
             background: 'rgba(0,229,153,0.04)',
             border: '1px solid rgba(0,229,153,0.15)',
             borderRadius: '12px', padding: '1rem 1.5rem',
@@ -483,7 +485,7 @@ export default function SacredFormulaSection() {
       {/* Constants grid */}
       <div className="fade" style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))',
         gap: '1rem',
         maxWidth: '1200px',
         margin: '0 auto 3rem',

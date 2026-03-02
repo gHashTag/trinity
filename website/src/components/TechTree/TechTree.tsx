@@ -250,7 +250,7 @@ export default function TechTree() {
         marginTop: '1.5rem',
         display: 'flex',
         justifyContent: 'center',
-        gap: '2rem',
+        gap: 'clamp(0.5rem, 3vw, 2rem)',
         flexWrap: 'wrap'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

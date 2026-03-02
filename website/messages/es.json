@@ -26,7 +26,12 @@
     "cta": "Ver las Pruebas",
     "ctaSecondary": "Ejecutar un Nodo"
   },
+  "navExtra": {
+    "dashboard": "Panel",
+    "docs": "Docs"
+  },
   "theorems": {
+    "badge": "FUNDAMENTO MATEMÁTICO",
     "title": "4 Teoremas + <span class=\"grad\">Resultados Verificados</span>",
     "sub": "Pruebas matematicas respaldadas por benchmarks reales. Cada afirmacion esta probada Y verificada.",
     "cards": [
@@ -242,6 +247,8 @@
   "benchmarks": {
     "title": "Benchmarks Verificados por <span class=\"grad\">GPU</span>",
     "sub": "✓ = Verificado en GPUs Reales (RunPod) | RTX 3090 y A100 probadas. Sin simulacion.",
+    "tokensUnit": "tokens/s",
+    "noiseLabel": "Ruido:",
     "gpuVerified": {
       "badge": "🔥 VERIFICADO EN GPUs REALES",
       "note": "Benchmarks reales de RunPod - Pod IDs: bhhnrrdothqm54 (RTX 3090), ydk41ymp8uoeyp (A100). Sin simulacion.",
@@ -1114,5 +1121,44 @@
     "creator": "Creador",
     "ask_price": "Precio de Venta",
     "royalty": "Regalía"
+  },
+  "footer": {
+    "tagline": "Revolución de la Computación Ternaria",
+    "linksTitle": "Enlaces",
+    "vizTitle": "Laboratorio Cuántico",
+    "vizLaunch": "Iniciar Laboratorio Cuántico",
+    "vizDesc": "29 visualizaciones interactivas",
+    "contactTitle": "Contacto",
+    "rights": "Todos los derechos reservados.",
+    "docs": "Documentación"
+  },
+  "science": {
+    "title": "Verificación <span class=\"grad\">Científica</span>",
+    "sub": "Matemáticas revisadas por pares. Cada fórmula verificada independientemente.",
+    "stats": [
+      { "value": "27/27", "label": "Pruebas Aprobadas" },
+      { "value": "4", "label": "Teoremas Demostrados" },
+      { "value": "<0.01%", "label": "Error Máximo" }
+    ],
+    "evidenceTitle": "Cobertura de Pruebas",
+    "sections": [
+      { "name": "Operaciones VSA", "passed": 7, "total": 7 },
+      { "name": "VM Ternaria", "passed": 5, "total": 5 },
+      { "name": "Robustez al Ruido", "passed": 4, "total": 4 },
+      { "name": "BitNet MAC", "passed": 7, "total": 7 },
+      { "name": "Constantes Sagradas", "passed": 4, "total": 4 }
+    ],
+    "formulasTitle": "Fórmulas Fundamentales",
+    "formulas": [
+      { "formula": "φ² + 1/φ² = 3", "desc": "Identidad Trinidad", "error": "0.0%" },
+      { "formula": "I(r) = (B/r) × log₂(r)", "desc": "Base Óptima", "error": "0.0%" },
+      { "formula": "log₂(3) = 1.585 bits/trit", "desc": "Densidad de Información", "error": "0.0%" },
+      { "formula": "3²¹ = 10,460,353,203", "desc": "Suministro de Tokens", "error": "0.0%" }
+    ],
+    "sources": [
+      { "title": "Knuth Vol. 3", "desc": "Prueba de base óptima" },
+      { "title": "Microsoft BitNet", "desc": "arXiv:2402.17764" },
+      { "title": "TerEffic FPGA", "desc": "arXiv:2502.16473" }
+    ]
   }
 }

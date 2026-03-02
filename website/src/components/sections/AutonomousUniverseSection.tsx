@@ -58,7 +58,7 @@ export default function AutonomousUniverseSection() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          style={{ color: MATERIYA_COLOR, fontSize: 28, fontFamily: 'Outfit, sans-serif', textAlign: 'center', marginBottom: 24 }}
+          style={{ color: MATERIYA_COLOR, fontSize: 'clamp(20px, 6vw, 28px)', fontFamily: 'Outfit, sans-serif', textAlign: 'center', marginBottom: 24 }}
         >
           {t('autonomousUniverse.title')}
         </motion.h2>
@@ -139,7 +139,7 @@ export default function AutonomousUniverseSection() {
                 </div>
 
                 {/* Metrics Grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginTop: 20 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 12, marginTop: 20 }}>
                   <div style={{ background: glass.background, border: glass.border, borderRadius: glass.borderRadius, padding: 12 }}>
                     <div style={{ fontSize: 12, color: '#00ccff' }}>
                       {t('autonomousUniverse.mutationRate')}
@@ -201,7 +201,7 @@ export default function AutonomousUniverseSection() {
                 <h4 style={{ color: '#00ccff', fontSize: 14, marginBottom: 16, marginTop: 24 }}>
                   {t('autonomousUniverse.evolution')}
                 </h4>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginTop: 16 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginTop: 16 }}>
                   <div style={{ background: glass.background, border: glass.border, borderRadius: glass.borderRadius, padding: 12 }}>
                     <div style={{ fontSize: 12, color: '#00ccff' }}>
                       {t('autonomousUniverse.generation')}

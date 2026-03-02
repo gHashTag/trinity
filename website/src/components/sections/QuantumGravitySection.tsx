@@ -48,12 +48,12 @@ export default function QuantumGravitySection() {
 
   return (
     <Section id="quantum-gravity">
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 20px' }}>
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: 'clamp(16px, 5vw, 40px) clamp(12px, 4vw, 20px)' }}>
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          style={{ color: '#00ccff', fontSize: 28, fontFamily: 'Outfit, sans-serif', textAlign: 'center', marginBottom: 8 }}
+          style={{ color: '#00ccff', fontSize: 'clamp(20px, 6vw, 28px)', fontFamily: 'Outfit, sans-serif', textAlign: 'center', marginBottom: 8 }}
         >
           {msg.title || 'Quantum Gravity Simulation v3.1'}
         </motion.h2>

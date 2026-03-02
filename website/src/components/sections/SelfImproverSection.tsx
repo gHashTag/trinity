@@ -59,7 +59,7 @@ export default function SelfImproverSection() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h3 style={{ color: RAZUM_COLOR, fontSize: 28, fontFamily: 'Outfit, sans-serif', textAlign: 'center', marginBottom: 24 }}>
+          <h3 style={{ color: RAZUM_COLOR, fontSize: 'clamp(20px, 6vw, 28px)', fontFamily: 'Outfit, sans-serif', textAlign: 'center', marginBottom: 24 }}>
             {t('selfImprover.title')}
           </h3>
           <p style={{ color: 'rgba(255, 255, 255, 0.7)', textAlign: 'center', fontSize: 12, marginBottom: 16 }}>
@@ -107,7 +107,7 @@ export default function SelfImproverSection() {
                   <h4 style={{ color: '#ffd700', fontSize: 14, marginBottom: 16, marginTop: 24 }}>
                     {t('selfImprover.adamOptimizer')}
                   </h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12}}>
                     <div style={{ background: glass.background, border: glass.border, borderRadius: glass.borderRadius, padding: 12 }}>
                       <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.7)' }}>
                         {t('selfImprover.learningRate')}
@@ -125,7 +125,7 @@ export default function SelfImproverSection() {
                       </div>
                     </div>
                   </div>
-                  <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+                  <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12}}>
                     <div style={{ background: glass.background, border: glass.border, borderRadius: glass.borderRadius, padding: 12 }}>
                       <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.7)' }}>
                         β₁
@@ -151,7 +151,7 @@ export default function SelfImproverSection() {
                   <h4 style={{ color: '#ffd700', fontSize: 14, marginBottom: 16, marginTop: 24 }}>
                     {t('selfImprover.ewcConsolidation')}
                   </h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12}}>
                     <div style={{ background: glass.background, border: glass.border, borderRadius: glass.borderRadius, padding: 12 }}>
                       <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.7)' }}>
                         {t('selfImprover.fisherInfo')}
@@ -177,7 +177,7 @@ export default function SelfImproverSection() {
                   <h4 style={{ color: '#ffd700', fontSize: 14, marginBottom: 16, marginTop: 24 }}>
                     {t('selfImprover.gradient')}
                   </h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12}}>
                     <div style={{ background: glass.background, border: glass.border, borderRadius: glass.borderRadius, padding: 12 }}>
                       <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.7)' }}>
                         {t('selfImprover.gradientNorm')}
@@ -203,7 +203,7 @@ export default function SelfImproverSection() {
                   <h4 style={{ color: '#ffd700', fontSize: 14, marginBottom: 16, marginTop: 24 }}>
                     {t('selfImprover.momentum')}
                   </h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12}}>
                     <div style={{ background: glass.background, border: glass.border, borderRadius: glass.borderRadius, padding: 12 }}>
                       <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.7)' }}>
                         {t('selfImprover.velocity')}
@@ -237,7 +237,7 @@ export default function SelfImproverSection() {
                       {data.data.trajectory_id}
                     </div>
                   </div>
-                  <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+                  <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12}}>
                     <div style={{ background: glass.background, border: glass.border, borderRadius: glass.borderRadius, padding: 12 }}>
                       <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.7)' }}>
                         {t('selfImprover.steps')}
@@ -263,7 +263,7 @@ export default function SelfImproverSection() {
                   <h4 style={{ color: '#ffd700', fontSize: 14, marginBottom: 16, marginTop: 24 }}>
                     {t('selfImprover.gradientClip')}
                   </h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12}}>
                     <div style={{ background: glass.background, border: glass.border, borderRadius: glass.borderRadius, padding: 12 }}>
                       <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.7)' }}>
                         {t('selfImprover.clipThreshold')}

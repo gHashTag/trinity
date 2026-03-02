@@ -50,12 +50,12 @@ export default function MarketplaceSection() {
 
   return (
     <Section id="marketplace">
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 20px' }}>
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: 'clamp(16px, 5vw, 40px) clamp(12px, 4vw, 20px)' }}>
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          style={{ color: '#aa66ff', fontSize: 28, fontFamily: 'Outfit, sans-serif', textAlign: 'center', marginBottom: 8 }}
+          style={{ color: '#aa66ff', fontSize: 'clamp(20px, 6vw, 28px)', fontFamily: 'Outfit, sans-serif', textAlign: 'center', marginBottom: 8 }}
         >
           {msg.title || '$TRI Sacred Computation Marketplace'}
         </motion.h2>
@@ -357,7 +357,7 @@ export default function MarketplaceSection() {
                 {'AMM invariant: x \u00B7 y = k'}
               </p>
               <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', fontSize: 10, fontFamily: 'JetBrains Mono, monospace', borderCollapse: 'collapse', minWidth: 640 }}>
+                <table style={{ width: '100%', fontSize: 10, fontFamily: 'JetBrains Mono, monospace', borderCollapse: 'collapse', minWidth: 450 }}>
                   <thead>
                     <tr style={{ color: '#ffd700' }}>
                       <th style={{ textAlign: 'left', padding: '4px 6px' }}>Pool</th>

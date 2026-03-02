@@ -1331,7 +1331,7 @@ export default function TrinityCanvas() {
             exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.35, type: 'spring', damping: 20 }}
             style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 200, textAlign: 'center', pointerEvents: 'none' }}
           >
-            <div style={{ fontSize: 48, color: `hsl(${info.hue}, 80%, 60%)`, fontWeight: 700, fontFamily: FONT, textShadow: `0 0 40px hsla(${info.hue}, 80%, 60%, 0.3)` }}>{info.label}</div>
+            <div style={{ fontSize: 'clamp(28px, 8vw, 48px)', color: `hsl(${info.hue}, 80%, 60%)`, fontWeight: 700, fontFamily: FONT, textShadow: `0 0 40px hsla(${info.hue}, 80%, 60%, 0.3)` }}>{info.label}</div>
             <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)', marginTop: 8, fontFamily: FONT }}>{info.hint}</div>
           </motion.div>
         )}
@@ -1450,7 +1450,7 @@ export default function TrinityCanvas() {
           <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '12px 24px', maxWidth: 720, width: '100%', margin: '0 auto' }}>
             {messages.length === 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '55vh', opacity: 0.15 }}>
-                <div style={{ fontSize: 64, color: '#ffd700', fontFamily: 'serif' }}>&phi;</div>
+                <div style={{ fontSize: 'clamp(40px, 12vw, 64px)', color: '#ffd700', fontFamily: 'serif' }}>&phi;</div>
                 <div style={{ color: '#888', fontFamily: FONT, fontSize: 13, marginTop: 10 }}>Введите сообщение в волновое поле</div>
               </div>
             )}
@@ -1654,7 +1654,7 @@ export default function TrinityCanvas() {
                 <img src={visionPreviewSrc} alt="Preview" style={{ maxWidth: '100%', maxHeight: 250, borderRadius: 10, objectFit: 'contain' }} />
               ) : (
                 <>
-                  <div style={{ fontSize: 48, opacity: isDragOver ? 0.5 : 0.2, marginBottom: 12, transition: 'opacity 0.3s' }}>👁️</div>
+                  <div style={{ fontSize: 'clamp(32px, 10vw, 48px)', opacity: isDragOver ? 0.5 : 0.2, marginBottom: 12, transition: 'opacity 0.3s' }}>👁️</div>
                   <div style={{ color: isDragOver ? '#ff66aa' : 'rgba(255,255,255,0.2)', fontSize: 13, fontFamily: FONT, transition: 'color 0.3s' }}>
                     {isDragOver ? 'Отпустите изображение' : 'Drag & drop, Ctrl+V, или введите URL'}
                   </div>
@@ -1786,7 +1786,7 @@ export default function TrinityCanvas() {
             </div>
 
             {/* Three columns */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, flex: 1, minHeight: 0 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 10, flex: 1, minHeight: 0 }}>
 
               {/* ═══ RAZUM (Mind) — Multi-turn Chat + Reflection + Logs (v2.6) ═══ */}
               <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}

@@ -59,7 +59,7 @@ export default function FormulaDiscoverySection() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h3 style={{ color: RAZUM_COLOR, fontSize: 28, fontFamily: 'Outfit, sans-serif', textAlign: 'center', marginBottom: 24 }}>
+          <h3 style={{ color: RAZUM_COLOR, fontSize: 'clamp(20px, 6vw, 28px)', fontFamily: 'Outfit, sans-serif', textAlign: 'center', marginBottom: 24 }}>
             {t('formulaDiscovery.title')}
           </h3>
           <p style={{ color: 'rgba(255, 255, 255, 0.7)', textAlign: 'center', fontSize: 12, marginBottom: 16 }}>
@@ -181,7 +181,7 @@ export default function FormulaDiscoverySection() {
                   <h4 style={{ color: '#ffd700', fontSize: 14, marginBottom: 16, marginTop: 24 }}>
                     {t('formulaDiscovery.exactEval')}
                   </h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12}}>
                     <div style={{ background: glass.background, border: glass.border, borderRadius: glass.borderRadius, padding: 12 }}>
                       <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.7)' }}>
                         {t('formulaDiscovery.exactValue')}
@@ -220,7 +220,7 @@ export default function FormulaDiscoverySection() {
                   <h4 style={{ color: '#ffd700', fontSize: 14, marginBottom: 16, marginTop: 24 }}>
                     {t('formulaDiscovery.optimize')}
                   </h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12}}>
                     <div style={{ background: glass.background, border: glass.border, borderRadius: glass.borderRadius, padding: 12 }}>
                       <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.7)' }}>
                         {t('formulaDiscovery.before')}
@@ -238,7 +238,7 @@ export default function FormulaDiscoverySection() {
                       </div>
                     </div>
                   </div>
-                  <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+                  <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12}}>
                     <div style={{ background: glass.background, border: glass.border, borderRadius: glass.borderRadius, padding: 12 }}>
                       <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.7)' }}>
                         {t('formulaDiscovery.complexityBefore')}

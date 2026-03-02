@@ -34,11 +34,12 @@ export default function StickyCTA() {
             background: 'rgba(10, 10, 15, 0.95)',
             backdropFilter: 'blur(10px)',
             borderTop: '1px solid var(--border)',
-            padding: '1rem 2rem',
+            padding: '0.8rem clamp(0.8rem, 3vw, 2rem)',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            gap: '1rem',
+            gap: '0.75rem',
+            flexWrap: 'wrap' as const,
             zIndex: 1000
           }}
         >
@@ -55,7 +56,7 @@ export default function StickyCTA() {
             className="btn"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            style={{ minWidth: '160px', textAlign: 'center' }}
+            style={{ minWidth: 'clamp(100px, 35vw, 160px)', textAlign: 'center' }}
           >
             💎 {t.stickyCta?.invest || 'Invest Now'}
           </motion.a>
@@ -65,7 +66,7 @@ export default function StickyCTA() {
             className="btn secondary"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            style={{ minWidth: '160px', textAlign: 'center' }}
+            style={{ minWidth: 'clamp(100px, 35vw, 160px)', textAlign: 'center' }}
           >
             💰 {t.stickyCta?.calculator || 'Savings Calculator'}
           </motion.a>

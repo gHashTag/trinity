@@ -26,7 +26,12 @@
     "cta": "查看证明",
     "ctaSecondary": "运行节点"
   },
+  "navExtra": {
+    "dashboard": "仪表板",
+    "docs": "文档"
+  },
   "theorems": {
+    "badge": "数学基础",
     "title": "4大定理 + <span class=\"grad\">验证结果</span>",
     "sub": "数学证明辅以真实基准测试。每项主张均经证明且已测试。",
     "cards": [
@@ -242,6 +247,8 @@
   "benchmarks": {
     "title": "GPU验证<span class=\"grad\">基准测试</span>",
     "sub": "✓ = 在真实GPU上验证（RunPod）| 已测试RTX 3090和A100。非模拟。",
+    "tokensUnit": "令牌/秒",
+    "noiseLabel": "噪声：",
     "gpuVerified": {
       "badge": "🔥 在真实GPU上验证",
       "note": "真实RunPod基准测试 - Pod ID：bhhnrrdothqm54（RTX 3090），ydk41ymp8uoeyp（A100）。非模拟。",
@@ -1114,5 +1121,44 @@
     "creator": "创建者",
     "ask_price": "卖价",
     "royalty": "版税"
+  },
+  "footer": {
+    "tagline": "三进制计算革命",
+    "linksTitle": "链接",
+    "vizTitle": "量子实验室",
+    "vizLaunch": "启动量子实验室",
+    "vizDesc": "29个互动可视化",
+    "contactTitle": "联系方式",
+    "rights": "保留所有权利。",
+    "docs": "文档"
+  },
+  "science": {
+    "title": "科学<span class=\"grad\">验证</span>",
+    "sub": "经同行评审的数学。每个公式都经过独立验证。",
+    "stats": [
+      { "value": "27/27", "label": "测试通过" },
+      { "value": "4", "label": "定理已证明" },
+      { "value": "<0.01%", "label": "最大误差" }
+    ],
+    "evidenceTitle": "测试覆盖率",
+    "sections": [
+      { "name": "VSA操作", "passed": 7, "total": 7 },
+      { "name": "三进制虚拟机", "passed": 5, "total": 5 },
+      { "name": "噪声鲁棒性", "passed": 4, "total": 4 },
+      { "name": "BitNet MAC", "passed": 7, "total": 7 },
+      { "name": "神圣常数", "passed": 4, "total": 4 }
+    ],
+    "formulasTitle": "核心公式",
+    "formulas": [
+      { "formula": "φ² + 1/φ² = 3", "desc": "三位一体恒等式", "error": "0.0%" },
+      { "formula": "I(r) = (B/r) × log₂(r)", "desc": "最优基数", "error": "0.0%" },
+      { "formula": "log₂(3) = 1.585 比特/三进制位", "desc": "信息密度", "error": "0.0%" },
+      { "formula": "3²¹ = 10,460,353,203", "desc": "代币总量", "error": "0.0%" }
+    ],
+    "sources": [
+      { "title": "Knuth 第3卷", "desc": "最优基数证明" },
+      { "title": "Microsoft BitNet", "desc": "arXiv:2402.17764" },
+      { "title": "TerEffic FPGA", "desc": "arXiv:2502.16473" }
+    ]
   }
 }

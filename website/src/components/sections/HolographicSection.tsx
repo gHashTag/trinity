@@ -46,12 +46,12 @@ export default function HolographicSection() {
 
   return (
     <Section id="holographic">
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 20px' }}>
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: 'clamp(16px, 5vw, 40px) clamp(12px, 4vw, 20px)' }}>
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          style={{ color: '#ffd700', fontSize: 28, fontFamily: 'Outfit, sans-serif', textAlign: 'center', marginBottom: 8 }}
+          style={{ color: '#ffd700', fontSize: 'clamp(20px, 6vw, 28px)', fontFamily: 'Outfit, sans-serif', textAlign: 'center', marginBottom: 8 }}
         >
           {msg.title || 'Holographic Renderer v3.1'}
         </motion.h2>
@@ -107,7 +107,7 @@ export default function HolographicSection() {
                       <span style={{ color: '#888', width: 50 }}>z={layer.z.toFixed(2)}</span>
                       <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
                         <div style={{
-                          width: `${barLen * 3}px`,
+                          width: `min(${barLen * 3}px, 100%)`,
                           height: 8,
                           background: `linear-gradient(90deg, transparent, ${regionColor}40, transparent)`,
                           borderLeft: `2px solid ${regionColor}`,
@@ -390,7 +390,7 @@ export default function HolographicSection() {
                         </span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                        <span style={{ color: '#00ccff', minWidth: 120 }}>
+                        <span style={{ color: '#00ccff', minWidth: 'min(120px, 35%)' }}>
                           S_ent = {geo.entanglement_entropy.toFixed(3)}
                         </span>
                         <div style={{ flex: 1, height: 6, background: 'rgba(0,204,255,0.1)', borderRadius: 3, overflow: 'hidden' }}>

@@ -58,7 +58,7 @@ export default function NFTMarketplaceSection() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h3 style={{ color: DUKH_COLOR, fontSize: 28, fontFamily: 'Outfit, sans-serif', textAlign: 'center', marginBottom: 24 }}>
+          <h3 style={{ color: DUKH_COLOR, fontSize: 'clamp(20px, 6vw, 28px)', fontFamily: 'Outfit, sans-serif', textAlign: 'center', marginBottom: 24 }}>
             {t('nftMarketplace.title')}
           </h3>
           <p style={{ color: 'rgba(255, 255, 255, 0.7)', textAlign: 'center', fontSize: 12, marginBottom: 16 }}>
@@ -150,7 +150,7 @@ export default function NFTMarketplaceSection() {
                   <h4 style={{ color: '#aa66ff', fontSize: 14, marginBottom: 16, marginTop: 24 }}>
                     {t('nftMarketplace.placeBid')}
                   </h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12}}>
                     <div style={{ background: glass.background, border: glass.border, borderRadius: glass.borderRadius, padding: 12 }}>
                       <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.7)' }}>
                         {t('nftMarketplace.bidAmount')}
@@ -176,7 +176,7 @@ export default function NFTMarketplaceSection() {
                   <h4 style={{ color: '#aa66ff', fontSize: 14, marginBottom: 16, marginTop: 24 }}>
                     {t('nftMarketplace.createListing')}
                   </h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12}}>
                     <div style={{ background: glass.background, border: glass.border, borderRadius: glass.borderRadius, padding: 12 }}>
                       <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.7)' }}>
                         {t('nftMarketplace.listingFee')}
@@ -210,7 +210,7 @@ export default function NFTMarketplaceSection() {
                   <h4 style={{ color: '#aa66ff', fontSize: 14, marginBottom: 16, marginTop: 24 }}>
                     {t('nftMarketplace.acceptOffer')}
                   </h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12}}>
                     <div style={{ background: glass.background, border: glass.border, borderRadius: glass.borderRadius, padding: 12 }}>
                       <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.7)' }}>
                         {t('nftMarketplace.offerAmount')}
@@ -252,7 +252,7 @@ export default function NFTMarketplaceSection() {
                   <h4 style={{ color: '#aa66ff', fontSize: 14, marginBottom: 16, marginTop: 24 }}>
                     {t('nftMarketplace.tradeHistory')}
                   </h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 16 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(140px, 100%), 1fr))', gap: 12, marginBottom: 16 }}>
                     <div style={{ background: glass.background, border: glass.border, borderRadius: glass.borderRadius, padding: 12 }}>
                       <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.7)' }}>
                         {t('nftMarketplace.totalVolume')}

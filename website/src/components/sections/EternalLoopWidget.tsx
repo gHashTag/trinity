@@ -125,7 +125,7 @@ export default function EternalLoopWidget() {
         style={{
           ...GLASS_STYLE,
           padding: '1.5rem',
-          maxWidth: '700px',
+          maxWidth: 'min(700px, 90vw)',
           margin: '0 auto',
         }}
       >
@@ -231,7 +231,7 @@ export default function EternalLoopWidget() {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(2, 1fr)',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
                 gap: '1rem',
                 marginBottom: '1.5rem',
               }}

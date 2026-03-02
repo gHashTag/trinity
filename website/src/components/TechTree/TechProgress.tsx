@@ -33,7 +33,7 @@ export default function TechProgress() {
               {t.techTree.labels.progress}
             </div>
             <div style={{
-              fontSize: '2rem',
+              fontSize: 'clamp(1.5rem, 5vw, 2rem)',
               fontWeight: 700,
               color: '#00FF88',
               textShadow: '0 0 20px rgba(0, 255, 136, 0.3)'

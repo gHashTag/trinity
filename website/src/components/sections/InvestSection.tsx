@@ -13,7 +13,7 @@ export default function InvestSection() {
       <h2 className="fade" dangerouslySetInnerHTML={{ __html: inv.title }} />
       
       <div className="grid" style={{ 
-        gridTemplateColumns: 'repeat(3, 1fr)', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
         gap: '1.5rem',
         maxWidth: '900px',
         margin: '0 auto'
