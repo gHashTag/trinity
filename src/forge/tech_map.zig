@@ -86,7 +86,12 @@ fn mapSingleCell(cell: YosysCell, id: u32) !MappedCell {
             }
         },
         .LUT2, .LUT3, .LUT4, .LUT5, .LUT6 => {
-            mapped.lut_init = parseLutInit(cell);
+            if (isMuxF7Cell(cell.cell_type)) {
+                // MUXF7/MUXF8 -> LUT3 with INIT = 0xCA (S ? I1 : I0)
+                mapped.lut_init = 0xCA;
+            } else {
+                mapped.lut_init = parseLutInit(cell);
+            }
         },
         .FDRE, .FDSE, .FDCE, .FDPE => {
             mapped.ff_init = parseFFInit(cell);
@@ -103,11 +108,19 @@ fn mapSingleCell(cell: YosysCell, id: u32) !MappedCell {
 fn mapCellType(type_str: []const u8) ?CellType {
     // INV is mapped to LUT1 in Xilinx architecture
     if (std.mem.eql(u8, type_str, "INV")) return .LUT1;
+    // MUXF7 is a 2:1 mux (S ? I1 : I0), map to LUT3
+    if (std.mem.eql(u8, type_str, "MUXF7")) return .LUT3;
+    // MUXF8 is a 2:1 mux between two MUXF7 outputs, map to LUT3
+    if (std.mem.eql(u8, type_str, "MUXF8")) return .LUT3;
     return CellType.fromString(type_str);
 }
 
 fn isInvCell(type_str: []const u8) bool {
     return std.mem.eql(u8, type_str, "INV");
+}
+
+fn isMuxF7Cell(type_str: []const u8) bool {
+    return std.mem.eql(u8, type_str, "MUXF7") or std.mem.eql(u8, type_str, "MUXF8");
 }
 
 fn parseLutInit(cell: YosysCell) u64 {
