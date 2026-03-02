@@ -151,7 +151,7 @@ pub const UnifiedApiServer = struct {
             return err;
         };
 
-        const addr = std.net.Address.initIp4(.{ 127, 0, 0, 1 }, self.config.port);
+        const addr = std.net.Address.initIp4(.{ 0, 0, 0, 0 }, self.config.port);
         try std.posix.bind(server_socket, &addr.any, addr.getOsSockLen());
         try std.posix.listen(server_socket, 128);
 

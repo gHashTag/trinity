@@ -1423,6 +1423,22 @@ pub fn build(b: *std.Build) void {
     const tri_testing_step = b.step("test-repl", "Run TRI REPL Tests (Cycle 100)");
     tri_testing_step.dependOn(&run_tri_testing.step);
 
+    // Chemistry unit tests (Cycle 43: oxidation states, redox helpers)
+    const chem_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/tri_chemistry.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "sacred", .module = sacred_mod },
+            },
+        }),
+    });
+    const run_chem_tests = b.addRunArtifact(chem_tests);
+    const chem_test_step = b.step("test-chem", "Run Chemistry unit tests");
+    chem_test_step.dependOn(&run_chem_tests.step);
+    test_step.dependOn(&run_chem_tests.step);
+
     // Trinity Hybrid Local Coder (IGLA + Ollama)
     const hybrid_local = b.addExecutable(.{
         .name = "trinity-hybrid",

@@ -1,9 +1,9 @@
-# CHEMISTRY CLI — TRI Commands v7.0
+# CHEMISTRY CLI — TRI Commands v8.0
 # All `tri chem` commands specification
-# Status: 26 commands implemented, tested, verified
+# Status: 30 commands implemented, tested, verified
 
 name: chemistry_cli
-version: "7.0.0"
+version: "8.0.0"
 language: zig
 module: tri.chemistry
 
@@ -251,5 +251,43 @@ behaviors:
     status: implemented
     given: "No parameters or specific command"
     when: "User runs 'tri chem help'"
-    then: "Display help text for all 26 chemistry commands"
+    then: "Display help text for all 30 chemistry commands"
     output: "Command list organized by category with usage examples"
+
+  # === Sacred Chemistry (v8.0) ===
+
+  - name: chemSacred
+    status: implemented
+    given: "Chemical formula (e.g., H2O, C6H12O6)"
+    when: "User runs 'tri chem sacred H2O'"
+    then: "Decompose molecular properties via V = n × 3^k × π^m × φ^p × e^q"
+    output: "Sacred formula decomposition of molar mass, per-element mass and ionization energy, average electronegativity"
+    example: "H2O → Molar Mass 18.015, Sacred: 7×3^2×π^-2×φ^-2×e^2 = 18.016 (0.005%)"
+    notes: "Uses fitSacredFormula() with 20,412 parameter combinations for best fit"
+
+  - name: chemTrinity
+    status: implemented
+    given: "Element symbol or atomic number"
+    when: "User runs 'tri chem trinity Au'"
+    then: "Show element's connections to Trinity mathematics"
+    output: "Balanced ternary of Z, sacred formula fits for mass/IE/EN, Fibonacci/Lucas check, golden angle position, Coptic glyph"
+    example: "Au → Balanced Ternary: +1 0 0 -1 +1 (5 trits), Coptic: Ϣ (value=800, kingdom=Info)"
+    notes: "Bridges chemistry with ternary math, Coptic gematria, and golden ratio"
+
+  - name: chemPhi
+    status: implemented
+    given: "Optional sub-analysis filter: ratios, fibonacci, spiral, fits"
+    when: "User runs 'tri chem phi' or 'tri chem phi fits'"
+    then: "Discover golden ratio patterns across the periodic table"
+    output: "4 analyses: consecutive mass ratios near phi, noble gas Fibonacci check, golden angle spiral visualization, best sacred formula fits for all 118 elements"
+    example: "tri chem phi fits → sorted list of all elements with sacred formula error < 0.5%"
+    notes: "Shows how phi (1.618...) and golden angle (137.508°) manifest in atomic properties"
+
+  - name: chemBonds
+    status: implemented
+    given: "Chemical formula"
+    when: "User runs 'tri chem bonds H2O'"
+    then: "Analyze bonds through sacred lens"
+    output: "Atom counts, estimated bonds, bond energy, sacred formula of energy, ternary molecular signature (atoms/electrons/bonds mod 3), Coptic glyph"
+    example: "H2O → 2 bonds, 926 kJ/mol, Trit Triple: (0, +1, +1) = CREATIVE, Coptic: Ⲇ"
+    notes: "Bond energy from lookup table (O-H=463, C-H=413, etc.), ternary signature classifies molecule"
