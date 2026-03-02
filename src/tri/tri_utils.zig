@@ -184,9 +184,10 @@ pub const Command = enum {
     gematria,
     formula_cmd,
     sacred,
-    // Chemistry (v6.0)
-    // TODO: Fix sacred module exports (AVOGADRO, etc.)
-    // chem,
+    // Chemistry (v7.0)
+    chem,
+    // Sacred Geometry (v1.0)
+    geom,
     // Intelligence System
     intelligence,
     // Dev Utilities
@@ -568,6 +569,14 @@ pub fn printHelp() void {
     std.debug.print("  {s}sacred{s}                      32 constants + 9 predictions table\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
+    std.debug.print("{s}SACRED GEOMETRY (v1.0):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}geom{s} platonic [name] [edge]  5 Platonic solids (V-E+F=2)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}geom{s} sierpinski [depth]      Sierpinski triangle (dim=bits/trit!)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}geom{s} mandelbrot              ASCII Mandelbrot set\n", .{ GREEN, RESET });
+    std.debug.print("  {s}geom{s} hull <x,y> ...          Convex hull (orientation=ternary)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}geom{s} help                    Full geometry command list\n", .{ GREEN, RESET });
+    std.debug.print("\n", .{});
+
     std.debug.print("{s}SACRED INTELLIGENCE:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}intelligence{s} [<symbol>.]   Sacred formula + gematria analysis\n", .{ GREEN, RESET });
     std.debug.print("  {s}intel{s} [<symbol>.]          Alias for intelligence\n", .{ GREEN, RESET });
@@ -795,9 +804,10 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "gematria") or std.mem.eql(u8, arg, "gem")) return .gematria;
     if (std.mem.eql(u8, arg, "formula")) return .formula_cmd;
     if (std.mem.eql(u8, arg, "sacred")) return .sacred;
-    // Chemistry (v6.0)
-    // TODO: Fix sacred module exports (AVOGADRO, etc.)
-    // if (std.mem.eql(u8, arg, "chem") or std.mem.eql(u8, arg, "chemistry")) return .chem;
+    // Chemistry (v7.0)
+    if (std.mem.eql(u8, arg, "chem") or std.mem.eql(u8, arg, "chemistry")) return .chem;
+    // Sacred Geometry (v1.0)
+    if (std.mem.eql(u8, arg, "geom") or std.mem.eql(u8, arg, "geometry") or std.mem.eql(u8, arg, "geo")) return .geom;
     // Intelligence System
     if (std.mem.eql(u8, arg, "intelligence") or std.mem.eql(u8, arg, "intel")) return .intelligence;
     // Dev Utilities
@@ -822,7 +832,7 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "ml-optimize") or std.mem.eql(u8, arg, "mlopt")) return .ml_optimize;
     if (std.mem.eql(u8, arg, "deploy-dashboard") or std.mem.eql(u8, arg, "deploy")) return .deploy_dashboard;
     if (std.mem.eql(u8, arg, "self-host") or std.mem.eql(u8, arg, "selfhost")) return .self_host;
-    if (std.mem.eql(u8, arg, "safeguards") or std.mem.eql(u8, arg, "sg")) return .safeguards_show;
+    if (std.mem.eql(u8, arg, "safeguards") or std.mem.eql(u8, arg, "safeguards-show") or std.mem.eql(u8, arg, "sg")) return .safeguards_show;
     if (std.mem.eql(u8, arg, "safeguards-disable")) return .safeguards_disable;
     // Info
     if (std.mem.eql(u8, arg, "info")) return .info;
@@ -1800,56 +1810,111 @@ pub fn runSelfHostCommand(state: *CLIState, args: []const []const u8) !void {
 }
 
 pub fn runSafeguardsShowCommand(state: *CLIState, args: []const []const u8) !void {
-    _ = state; // Mark as intentionally unused for now
-    _ = args; // Mark as intentionally unused for now
+    _ = state;
+    _ = args;
+    const tri_state = @import("tri_state.zig");
+    const allocator = std.heap.page_allocator;
+    const config = tri_state.loadSafeguards(allocator);
+
     std.debug.print("\n{s}╔══════════════════════════════════════════════════════════════╗{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("{s}║              SAFEGUARD STATUS - Cycle 97                    ║{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}║              SAFEGUARD STATUS                               ║{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}╚══════════════════════════════════════════════════════════════╝{s}\n\n", .{ GOLDEN, RESET });
 
+    const features = [_]struct { name: []const u8, enabled: bool }{
+        .{ .name = "Auto-commit dry-run", .enabled = config.auto_commit_dryrun },
+        .{ .name = "ML optimization validation", .enabled = config.ml_validation },
+        .{ .name = "Dashboard deployment confirmation", .enabled = config.deploy_confirm },
+        .{ .name = "Self-host rate limiting", .enabled = config.selfhost_ratelimit },
+        .{ .name = "Sacred formula validation", .enabled = config.sacred_validation },
+    };
+
     std.debug.print("{s}Active Safeguards:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  {s}✓{s} Auto-commit dry-run (DEFAULT: ON)\n", .{ GREEN, RESET });
-    std.debug.print("  {s}✓{s} ML optimization validation (DEFAULT: ON)\n", .{ GREEN, RESET });
-    std.debug.print("  {s}✓{s} Dashboard deployment confirmation (DEFAULT: ON)\n", .{ GREEN, RESET });
-    std.debug.print("  {s}✓{s} Self-host rate limiting (DEFAULT: ON)\n", .{ GREEN, RESET });
-    std.debug.print("  {s}✓{s} Sacred formula validation (DEFAULT: ON)\n\n", .{ GREEN, RESET });
+    var disabled_count: usize = 0;
+    for (features) |f| {
+        if (f.enabled) {
+            std.debug.print("  {s}✓{s} {s}\n", .{ GREEN, RESET, f.name });
+        } else {
+            disabled_count += 1;
+        }
+    }
 
-    std.debug.print("{s}Disabled Safeguards:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  {s}○{s} None (all safeguards active)\n\n", .{ GRAY, RESET });
+    std.debug.print("\n{s}Disabled Safeguards:{s}\n", .{ CYAN, RESET });
+    if (disabled_count == 0) {
+        std.debug.print("  {s}○{s} None (all safeguards active)\n", .{ GRAY, RESET });
+    } else {
+        for (features) |f| {
+            if (!f.enabled) {
+                std.debug.print("  {s}✗{s} {s}\n", .{ RED, RESET, f.name });
+            }
+        }
+    }
 
-    std.debug.print("{s}To disable a safeguard:{s}\n", .{ GRAY, RESET });
+    std.debug.print("\n{s}To disable a safeguard:{s}\n", .{ GRAY, RESET });
     std.debug.print("  tri safeguards-disable <feature>\n\n", .{});
+    std.debug.print("{s}Features:{s} auto-commit-dryrun, ml-validation, deploy-confirm, selfhost-ratelimit, sacred-validation\n\n", .{ GRAY, RESET });
 
     std.debug.print("{s}WARNING:{s} Disabling safeguards allows autonomous actions without confirmation.\n", .{ RED, RESET });
     std.debug.print("{s}Use at your own risk. phi^2 + 1/phi^2 = 3 = TRINITY.{s}\n\n", .{ GOLDEN, RESET });
 }
 
 pub fn runSafeguardsDisableCommand(state: *CLIState, args: []const []const u8) !void {
-    _ = state; // Mark as intentionally unused for now
+    _ = state;
     if (args.len < 1) {
         std.debug.print("{s}Usage: tri safeguards-disable <feature>{s}\n", .{ RED, RESET });
         std.debug.print("\n{s}Available features:{s}\n", .{ CYAN, RESET });
         std.debug.print("  auto-commit-dryrun    Disable dry-run for auto-commit\n", .{});
         std.debug.print("  ml-validation         Skip ML optimization validation\n", .{});
         std.debug.print("  deploy-confirm        Skip deployment confirmation\n", .{});
-        std.debug.print("  selfhost-ratelimit    Disable self-host rate limiting\n\n", .{});
+        std.debug.print("  selfhost-ratelimit    Disable self-host rate limiting\n", .{});
+        std.debug.print("  sacred-validation     Disable sacred formula validation\n\n", .{});
         std.debug.print("{s}WARNING:{s} Disabling safeguards is dangerous!\n", .{ RED, RESET });
         return error.MissingArgument;
     }
 
+    const tri_state = @import("tri_state.zig");
+    const allocator = std.heap.page_allocator;
+    var config = tri_state.loadSafeguards(allocator);
     const feature = args[0];
 
+    // Match feature name and disable it
+    var found = false;
+    if (std.mem.eql(u8, feature, "auto-commit-dryrun")) {
+        config.auto_commit_dryrun = false;
+        found = true;
+    } else if (std.mem.eql(u8, feature, "ml-validation")) {
+        config.ml_validation = false;
+        found = true;
+    } else if (std.mem.eql(u8, feature, "deploy-confirm")) {
+        config.deploy_confirm = false;
+        found = true;
+    } else if (std.mem.eql(u8, feature, "selfhost-ratelimit")) {
+        config.selfhost_ratelimit = false;
+        found = true;
+    } else if (std.mem.eql(u8, feature, "sacred-validation")) {
+        config.sacred_validation = false;
+        found = true;
+    }
+
+    if (!found) {
+        std.debug.print("{s}Error:{s} Unknown feature: {s}\n", .{ RED, RESET, feature });
+        std.debug.print("Run 'tri safeguards-show' to see available features.\n", .{});
+        return error.InvalidArgument;
+    }
+
+    // Save updated config
+    tri_state.saveSafeguards(allocator, config) catch {
+        std.debug.print("{s}Error:{s} Failed to save safeguards config.\n", .{ RED, RESET });
+        return;
+    };
+
     std.debug.print("\n{s}╔══════════════════════════════════════════════════════════════╗{s}\n", .{ RED, RESET });
-    std.debug.print("{s}║            ⚠️  SAFEGUARD DISABLE WARNING  ⚠️                  ║{s}\n", .{ RED, RESET });
+    std.debug.print("{s}║            SAFEGUARD DISABLED                               ║{s}\n", .{ RED, RESET });
     std.debug.print("{s}╚══════════════════════════════════════════════════════════════╝{s}\n\n", .{ RED, RESET });
 
     std.debug.print("{s}Feature:{s} {s}\n", .{ CYAN, RESET, feature });
-    std.debug.print("{s}Status:{s} DISABLED\n\n", .{ RED, RESET });
+    std.debug.print("{s}Status:{s} {s}DISABLED{s}\n\n", .{ CYAN, RESET, RED, RESET });
+    std.debug.print("{s}Saved to:{s} .trinity/safeguards.json\n\n", .{ GRAY, RESET });
 
-    std.debug.print("{s}⚠️  SAFEGUARD DISABLED - Autonomous actions will proceed without confirmation!{s}\n\n", .{ RED, RESET });
-    std.debug.print("{s}To re-enable:{s} Remove feature from safeguard config\n\n", .{ GRAY, RESET });
-
+    std.debug.print("{s}To re-enable:{s} Edit .trinity/safeguards.json or delete it to reset defaults.\n\n", .{ GRAY, RESET });
     std.debug.print("{s}phi^2 + 1/phi^2 = 3 = TRINITY | Proceed with caution{s}\n\n", .{ GOLDEN, RESET });
-
-    // TODO: Implement actual safeguard state management
-    // This would update a config file that tracks which safeguards are disabled
 }

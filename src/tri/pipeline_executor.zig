@@ -7,6 +7,7 @@ const std = @import("std");
 const golden_chain = @import("golden_chain.zig");
 const tvc_gate_mod = @import("tvc_gate.zig");
 const tvc_corpus = @import("tvc_corpus");
+const tri_state = @import("tri_state.zig");
 
 const ChainLink = golden_chain.ChainLink;
 const PipelineState = golden_chain.PipelineState;
@@ -152,9 +153,13 @@ pub const PipelineExecutor = struct {
 
             self.state.setResult(link, result);
 
+            // Save checkpoint after each link
+            self.saveCheckpoint(current_link, "running");
+
             // Check if we can continue
             if (!self.state.canContinue()) {
                 self.state.status = .failed;
+                self.saveCheckpoint(current_link, "failed");
                 return ChainError.CriticalLinkFailed;
             }
         }
@@ -163,7 +168,19 @@ pub const PipelineExecutor = struct {
         self.storeToTVC();
 
         self.state.status = .completed;
+        self.saveCheckpoint(16, "completed");
         self.printFooter();
+    }
+
+    /// Save pipeline checkpoint to .trinity/pipeline_state.json
+    fn saveCheckpoint(self: *PipelineExecutor, link_num: u8, status: []const u8) void {
+        const checkpoint = tri_state.PipelineCheckpoint{
+            .last_link = link_num,
+            .task = self.state.task_description,
+            .status = status,
+            .timestamp = std.time.timestamp(),
+        };
+        tri_state.savePipelineCheckpoint(self.allocator, checkpoint) catch {};
     }
 
     /// Store generated response to TVC (post-pipeline)

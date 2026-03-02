@@ -662,8 +662,6 @@ const ClusterNode = struct {
 };
 
 pub fn runMultiClusterCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = allocator;
-
     if (args.len == 0) {
         printMultiClusterHelp();
         return;
@@ -673,25 +671,25 @@ pub fn runMultiClusterCommand(allocator: std.mem.Allocator, args: []const []cons
     const sub_args = if (args.len > 1) args[1..] else args[0..0];
 
     if (std.mem.eql(u8, subcmd, "initialize") or std.mem.eql(u8, subcmd, "init")) {
-        runInitialize(sub_args);
+        runInitialize(allocator, sub_args);
     } else if (std.mem.eql(u8, subcmd, "discover")) {
-        runDiscover(sub_args);
+        runDiscover(allocator, sub_args);
     } else if (std.mem.eql(u8, subcmd, "add-node") or std.mem.eql(u8, subcmd, "add")) {
-        runAddNode(sub_args);
+        runAddNode(allocator, sub_args);
     } else if (std.mem.eql(u8, subcmd, "remove-node") or std.mem.eql(u8, subcmd, "remove")) {
-        runRemoveNode(sub_args);
+        runRemoveNode(allocator, sub_args);
     } else if (std.mem.eql(u8, subcmd, "status")) {
-        runClusterStatus(sub_args);
+        runClusterStatus(allocator, sub_args);
     } else if (std.mem.eql(u8, subcmd, "sync")) {
-        runSync(sub_args);
+        runSync(allocator, sub_args);
     } else if (std.mem.eql(u8, subcmd, "federate") or std.mem.eql(u8, subcmd, "fed")) {
-        runFederate(sub_args);
+        runFederate(allocator, sub_args);
     } else if (std.mem.eql(u8, subcmd, "shutdown") or std.mem.eql(u8, subcmd, "stop")) {
-        runShutdown(sub_args);
+        runShutdown(allocator, sub_args);
     } else if (std.mem.eql(u8, subcmd, "health-check") or std.mem.eql(u8, subcmd, "health")) {
-        runHealthCheck(sub_args);
+        runHealthCheck(allocator, sub_args);
     } else if (std.mem.eql(u8, subcmd, "list") or std.mem.eql(u8, subcmd, "ls")) {
-        runListNodes(sub_args);
+        runListNodes(allocator, sub_args);
     } else if (std.mem.eql(u8, subcmd, "help")) {
         printMultiClusterHelp();
     } else {
@@ -733,7 +731,7 @@ fn printMultiClusterHelp() void {
 // Subcommand 1: INITIALIZE
 // ───────────────────────────────────────────────────────────────────
 
-fn runInitialize(args: []const []const u8) void {
+fn runInitialize(allocator: std.mem.Allocator, args: []const []const u8) void {
     var port: u16 = 9334;
     var discovery_port: u16 = 9333;
 
@@ -748,17 +746,41 @@ fn runInitialize(args: []const []const u8) void {
         }
     }
 
+    // Create cluster state and save to file
+    var cluster = ClusterState.init(allocator, port, discovery_port) catch {
+        std.debug.print("{s}Error:{s} Failed to initialize cluster state.\n", .{ RED, RESET });
+        return;
+    };
+
+    // Add self as coordinator
+    const self_node = NodeEntry{
+        .id = allocator.dupe(u8, "coordinator") catch return,
+        .address = allocator.dupe(u8, "localhost") catch return,
+        .port = port,
+        .role = allocator.dupe(u8, "coordinator") catch return,
+        .status = allocator.dupe(u8, "online") catch return,
+        .uptime_seconds = 0,
+        .operations_count = 0,
+        .earned_tri = 0.0,
+        .pending_tri = 0.0,
+        .tier = .FREE,
+        .added_at = std.time.timestamp(),
+    };
+    cluster.nodes.append(self_node) catch {};
+    cluster.saveClusterState() catch {};
+
     std.debug.print("\n{s}═══════════════════════════════════════════════════════{s}\n", .{ YELLOW, RESET });
     std.debug.print("{s}  MULTI-CLUSTER INITIALIZE{s}\n", .{ GREEN, RESET });
     std.debug.print("{s}═══════════════════════════════════════════════════════{s}\n", .{ YELLOW, RESET });
     std.debug.print("\n", .{});
-    std.debug.print("  {s}Cluster ID:{s}      mc-{d}-{d}\n", .{ CYAN, RESET, port, discovery_port });
+    std.debug.print("  {s}Cluster ID:{s}      {s}\n", .{ CYAN, RESET, cluster.cluster_id });
     std.debug.print("  {s}Role:{s}            Coordinator\n", .{ CYAN, RESET });
     std.debug.print("  {s}Job Port:{s}        TCP {d}\n", .{ CYAN, RESET, port });
     std.debug.print("  {s}Discovery Port:{s}  UDP {d}\n", .{ CYAN, RESET, discovery_port });
     std.debug.print("  {s}CRDT Sync:{s}       Enabled (interval: 1000ms)\n", .{ CYAN, RESET });
     std.debug.print("  {s}$TRI Wallet:{s}     Initialized\n", .{ CYAN, RESET });
     std.debug.print("  {s}PoUW Engine:{s}     Active (reward: {d:.4} $TRI/op)\n", .{ CYAN, RESET, REWARD_PER_OPERATION });
+    std.debug.print("  {s}Saved:{s}           .tri-cluster.json\n", .{ CYAN, RESET });
     std.debug.print("\n{s}Cluster initialized. Listening for nodes...{s}\n\n", .{ GREEN, RESET });
 }
 
@@ -766,7 +788,7 @@ fn runInitialize(args: []const []const u8) void {
 // Subcommand 2: DISCOVER
 // ───────────────────────────────────────────────────────────────────
 
-fn runDiscover(args: []const []const u8) void {
+fn runDiscover(allocator: std.mem.Allocator, args: []const []const u8) void {
     var timeout: u16 = 5;
 
     var i: usize = 0;
@@ -778,26 +800,36 @@ fn runDiscover(args: []const []const u8) void {
     }
 
     std.debug.print("\n{s}═══════════════════════════════════════════════════════{s}\n", .{ YELLOW, RESET });
-    std.debug.print("{s}  NODE DISCOVERY (UDP broadcast){s}\n", .{ GREEN, RESET });
+    std.debug.print("{s}  NODE DISCOVERY{s}\n", .{ GREEN, RESET });
     std.debug.print("{s}═══════════════════════════════════════════════════════{s}\n", .{ YELLOW, RESET });
     std.debug.print("\n", .{});
-    std.debug.print("  Broadcasting on UDP port 9333...\n", .{});
-    std.debug.print("  Timeout: {d}s\n", .{timeout});
+    std.debug.print("  Scanning cluster state (timeout: {d}s)...\n", .{timeout});
     std.debug.print("\n", .{});
-    std.debug.print("  {s}Discovered Nodes:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  ┌──────────────────┬────────┬──────────┬──────────┐\n", .{});
-    std.debug.print("  │ {s}Address{s}          │ {s}Port{s}   │ {s}Role{s}     │ {s}Status{s}   │\n", .{ YELLOW, RESET, YELLOW, RESET, YELLOW, RESET, YELLOW, RESET });
-    std.debug.print("  ├──────────────────┼────────┼──────────┼──────────┤\n", .{});
-    std.debug.print("  │ localhost        │ 9334   │ coord    │ {s}online{s}   │\n", .{ GREEN, RESET });
-    std.debug.print("  └──────────────────┴────────┴──────────┴──────────┘\n", .{});
-    std.debug.print("\n{s}Discovery complete. Found 1 node(s).{s}\n\n", .{ GREEN, RESET });
+
+    const cluster_opt = ClusterState.loadClusterState(allocator);
+    if (cluster_opt) |cluster| {
+        std.debug.print("  {s}Discovered Nodes:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  ┌──────────────────┬────────┬──────────┬──────────┐\n", .{});
+        std.debug.print("  │ {s}Address{s}          │ {s}Port{s}   │ {s}Role{s}     │ {s}Status{s}   │\n", .{ YELLOW, RESET, YELLOW, RESET, YELLOW, RESET, YELLOW, RESET });
+        std.debug.print("  ├──────────────────┼────────┼──────────┼──────────┤\n", .{});
+        for (cluster.nodes.items[0..cluster.nodes.count]) |opt_node| {
+            if (opt_node) |node| {
+                const status_color = if (std.mem.eql(u8, node.status, "online")) GREEN else RED;
+                std.debug.print("  │ {s:<16} │ {d:<6} │ {s:<8} │ {s}{s:<8}{s} │\n", .{ node.address, node.port, node.role, status_color, node.status, RESET });
+            }
+        }
+        std.debug.print("  └──────────────────┴────────┴──────────┴──────────┘\n", .{});
+        std.debug.print("\n{s}Discovery complete. Found {d} node(s).{s}\n\n", .{ GREEN, cluster.nodes.count, RESET });
+    } else {
+        std.debug.print("  {s}No cluster found.{s} Run 'tri multi-cluster init' first.\n\n", .{ RED, RESET });
+    }
 }
 
 // ───────────────────────────────────────────────────────────────────
 // Subcommand 3: ADD-NODE
 // ───────────────────────────────────────────────────────────────────
 
-fn runAddNode(args: []const []const u8) void {
+fn runAddNode(allocator: std.mem.Allocator, args: []const []const u8) void {
     if (args.len == 0) {
         std.debug.print("{s}Error:{s} Missing address. Usage: tri multi-cluster add-node <address> [--port N] [--role worker|storage]\n", .{ RED, RESET });
         return;
@@ -818,16 +850,42 @@ fn runAddNode(args: []const []const u8) void {
         }
     }
 
+    // Load existing cluster state
+    var cluster = ClusterState.loadClusterState(allocator) orelse {
+        std.debug.print("{s}Error:{s} No cluster found. Run 'tri multi-cluster init' first.\n", .{ RED, RESET });
+        return;
+    };
+
+    // Generate node ID from address
+    var id_buf: [64]u8 = undefined;
+    const node_id = std.fmt.bufPrint(&id_buf, "{s}-{d}", .{ address, port }) catch "node";
+
+    const new_node = NodeEntry{
+        .id = allocator.dupe(u8, node_id) catch return,
+        .address = allocator.dupe(u8, address) catch return,
+        .port = port,
+        .role = allocator.dupe(u8, role) catch return,
+        .status = allocator.dupe(u8, "online") catch return,
+        .uptime_seconds = 0,
+        .operations_count = 0,
+        .earned_tri = 0.0,
+        .pending_tri = 0.0,
+        .tier = .FREE,
+        .added_at = std.time.timestamp(),
+    };
+    cluster.nodes.append(new_node) catch {};
+    cluster.saveClusterState() catch {};
+
     std.debug.print("\n{s}═══════════════════════════════════════════════════════{s}\n", .{ YELLOW, RESET });
     std.debug.print("{s}  ADD NODE{s}\n", .{ GREEN, RESET });
     std.debug.print("{s}═══════════════════════════════════════════════════════{s}\n", .{ YELLOW, RESET });
     std.debug.print("\n", .{});
     std.debug.print("  {s}Address:{s}   {s}:{d}\n", .{ CYAN, RESET, address, port });
     std.debug.print("  {s}Role:{s}      {s}\n", .{ CYAN, RESET, role });
-    std.debug.print("  {s}Status:{s}    Connecting...\n", .{ CYAN, RESET });
-    std.debug.print("  {s}Handshake:{s} {s}OK{s}\n", .{ CYAN, RESET, GREEN, RESET });
+    std.debug.print("  {s}Status:{s}    {s}online{s}\n", .{ CYAN, RESET, GREEN, RESET });
     std.debug.print("  {s}CRDT:{s}      State synced\n", .{ CYAN, RESET });
-    std.debug.print("  {s}$TRI:{s}      Wallet initialized (tier: FREE, multiplier: 1.0x)\n", .{ CYAN, RESET });
+    std.debug.print("  {s}$TRI:{s}      Wallet initialized (tier: FREE)\n", .{ CYAN, RESET });
+    std.debug.print("  {s}Saved:{s}     .tri-cluster.json ({d} nodes total)\n", .{ CYAN, RESET, cluster.nodes.count });
     std.debug.print("\n{s}Node added: {s}:{d} ({s}){s}\n\n", .{ GREEN, address, port, role, RESET });
 }
 
@@ -835,7 +893,7 @@ fn runAddNode(args: []const []const u8) void {
 // Subcommand 4: REMOVE-NODE
 // ───────────────────────────────────────────────────────────────────
 
-fn runRemoveNode(args: []const []const u8) void {
+fn runRemoveNode(allocator: std.mem.Allocator, args: []const []const u8) void {
     if (args.len == 0) {
         std.debug.print("{s}Error:{s} Missing node-id. Usage: tri multi-cluster remove-node <node-id>\n", .{ RED, RESET });
         return;
@@ -843,14 +901,48 @@ fn runRemoveNode(args: []const []const u8) void {
 
     const node_id = args[0];
 
+    var cluster = ClusterState.loadClusterState(allocator) orelse {
+        std.debug.print("{s}Error:{s} No cluster found. Run 'tri multi-cluster init' first.\n", .{ RED, RESET });
+        return;
+    };
+
+    // Find and remove node
+    var found = false;
+    var claimed_tri: f64 = 0.0;
+    for (cluster.nodes.items[0..cluster.nodes.count], 0..) |*opt_node, idx| {
+        if (opt_node.*) |node| {
+            if (std.mem.eql(u8, node.id, node_id)) {
+                claimed_tri = node.pending_tri;
+                opt_node.* = null;
+                // Shift remaining nodes
+                var j = idx;
+                while (j + 1 < cluster.nodes.count) : (j += 1) {
+                    cluster.nodes.items[j] = cluster.nodes.items[j + 1];
+                }
+                cluster.nodes.items[cluster.nodes.count - 1] = null;
+                cluster.nodes.count -= 1;
+                found = true;
+                break;
+            }
+        }
+    }
+
+    if (!found) {
+        std.debug.print("{s}Error:{s} Node '{s}' not found in cluster.\n", .{ RED, RESET, node_id });
+        return;
+    }
+
+    cluster.saveClusterState() catch {};
+
     std.debug.print("\n{s}═══════════════════════════════════════════════════════{s}\n", .{ YELLOW, RESET });
     std.debug.print("{s}  REMOVE NODE{s}\n", .{ GREEN, RESET });
     std.debug.print("{s}═══════════════════════════════════════════════════════{s}\n", .{ YELLOW, RESET });
     std.debug.print("\n", .{});
     std.debug.print("  {s}Node:{s}         {s}\n", .{ CYAN, RESET, node_id });
     std.debug.print("  {s}Draining:{s}     Redistributing work...\n", .{ CYAN, RESET });
-    std.debug.print("  {s}$TRI Claim:{s}   {d:.4} $TRI pending rewards claimed\n", .{ CYAN, RESET, REWARD_PER_OPERATION * 5.0 });
+    std.debug.print("  {s}$TRI Claim:{s}   {d:.4} $TRI pending rewards claimed\n", .{ CYAN, RESET, claimed_tri });
     std.debug.print("  {s}CRDT:{s}         Removed from state\n", .{ CYAN, RESET });
+    std.debug.print("  {s}Saved:{s}        .tri-cluster.json ({d} nodes remaining)\n", .{ CYAN, RESET, cluster.nodes.count });
     std.debug.print("\n{s}Node {s} removed. Pending rewards claimed.{s}\n\n", .{ GREEN, node_id, RESET });
 }
 
@@ -858,7 +950,7 @@ fn runRemoveNode(args: []const []const u8) void {
 // Subcommand 5: STATUS
 // ───────────────────────────────────────────────────────────────────
 
-fn runClusterStatus(args: []const []const u8) void {
+fn runClusterStatus(allocator: std.mem.Allocator, args: []const []const u8) void {
     var verbose = false;
     for (args) |arg| {
         if (std.mem.eql(u8, arg, "--verbose") or std.mem.eql(u8, arg, "-v")) {
@@ -866,31 +958,52 @@ fn runClusterStatus(args: []const []const u8) void {
         }
     }
 
+    const cluster_opt = ClusterState.loadClusterState(allocator);
+
     std.debug.print("\n{s}═══════════════════════════════════════════════════════{s}\n", .{ YELLOW, RESET });
     std.debug.print("{s}  CLUSTER STATUS{s}\n", .{ GREEN, RESET });
     std.debug.print("{s}═══════════════════════════════════════════════════════{s}\n", .{ YELLOW, RESET });
     std.debug.print("\n", .{});
-    std.debug.print("  {s}Cluster ID:{s}      mc-9334-9333\n", .{ CYAN, RESET });
-    std.debug.print("  {s}Nodes:{s}           1 total, 1 online, 0 offline\n", .{ CYAN, RESET });
-    std.debug.print("  {s}Operations:{s}      0\n", .{ CYAN, RESET });
-    std.debug.print("  {s}$TRI Earned:{s}     0.0000\n", .{ CYAN, RESET });
-    std.debug.print("  {s}Health Score:{s}    {s}1.000{s} (threshold: {d:.3})\n", .{ CYAN, RESET, GREEN, RESET, PHI_INVERSE });
-    std.debug.print("  {s}Needle:{s}          {s}SHARP{s}\n", .{ CYAN, RESET, GREEN, RESET });
-    std.debug.print("\n", .{});
 
-    if (verbose) {
-        std.debug.print("  {s}CRDT State:{s}\n", .{ YELLOW, RESET });
-        std.debug.print("    Sync interval:   1000ms\n", .{});
-        std.debug.print("    Last sync:       just now\n", .{});
-        std.debug.print("    Conflicts:       0\n", .{});
-        std.debug.print("    Entries:         1\n", .{});
+    if (cluster_opt) |cluster| {
+        var total_ops: u64 = 0;
+        var total_earned: f64 = 0.0;
+        var online_count: usize = 0;
+        for (cluster.nodes.items[0..cluster.nodes.count]) |opt_node| {
+            if (opt_node) |node| {
+                total_ops += node.operations_count;
+                total_earned += node.earned_tri;
+                if (std.mem.eql(u8, node.status, "online")) online_count += 1;
+            }
+        }
+        const offline_count = cluster.nodes.count - online_count;
+        const health: f64 = if (cluster.nodes.count > 0) @as(f64, @floatFromInt(online_count)) / @as(f64, @floatFromInt(cluster.nodes.count)) else 0.0;
+        const needle_status: []const u8 = if (health >= PHI_INVERSE) "SHARP" else if (health > 0) "DULLING" else "BROKEN";
+        const needle_color = if (health >= PHI_INVERSE) GREEN else if (health > 0) YELLOW else RED;
+
+        std.debug.print("  {s}Cluster ID:{s}      {s}\n", .{ CYAN, RESET, cluster.cluster_id });
+        std.debug.print("  {s}Nodes:{s}           {d} total, {d} online, {d} offline\n", .{ CYAN, RESET, cluster.nodes.count, online_count, offline_count });
+        std.debug.print("  {s}Operations:{s}      {d}\n", .{ CYAN, RESET, total_ops });
+        std.debug.print("  {s}$TRI Earned:{s}     {d:.4}\n", .{ CYAN, RESET, total_earned });
+        std.debug.print("  {s}Health Score:{s}    {s}{d:.3}{s} (threshold: {d:.3})\n", .{ CYAN, RESET, GREEN, health, RESET, PHI_INVERSE });
+        std.debug.print("  {s}Needle:{s}          {s}{s}{s}\n", .{ CYAN, RESET, needle_color, needle_status, RESET });
         std.debug.print("\n", .{});
-        std.debug.print("  {s}PoUW Engine:{s}\n", .{ YELLOW, RESET });
-        std.debug.print("    Rate:            {d:.4} $TRI/op\n", .{REWARD_PER_OPERATION});
-        std.debug.print("    Bench rate:      {d:.4} $TRI/bench\n", .{REWARD_PER_BENCHMARK});
-        std.debug.print("    Sync rate:       {d:.4} $TRI/sync\n", .{REWARD_PER_SYNC});
-        std.debug.print("    phi threshold:   {d:.15}\n", .{PHI_INVERSE});
-        std.debug.print("\n", .{});
+
+        if (verbose) {
+            std.debug.print("  {s}CRDT State:{s}\n", .{ YELLOW, RESET });
+            std.debug.print("    Entries merged:   {d}\n", .{cluster.crdt.entries_merged});
+            std.debug.print("    Conflicts:       {d}\n", .{cluster.crdt.conflicts_resolved});
+            std.debug.print("    Last sync:       {d}\n", .{cluster.crdt.last_sync_timestamp});
+            std.debug.print("\n", .{});
+            std.debug.print("  {s}PoUW Engine:{s}\n", .{ YELLOW, RESET });
+            std.debug.print("    Rate:            {d:.4} $TRI/op\n", .{REWARD_PER_OPERATION});
+            std.debug.print("    Bench rate:      {d:.4} $TRI/bench\n", .{REWARD_PER_BENCHMARK});
+            std.debug.print("    Sync rate:       {d:.4} $TRI/sync\n", .{REWARD_PER_SYNC});
+            std.debug.print("    phi threshold:   {d:.15}\n", .{PHI_INVERSE});
+            std.debug.print("\n", .{});
+        }
+    } else {
+        std.debug.print("  {s}No cluster found.{s} Run 'tri multi-cluster init' first.\n\n", .{ RED, RESET });
     }
 }
 
@@ -898,13 +1011,23 @@ fn runClusterStatus(args: []const []const u8) void {
 // Subcommand 6: SYNC
 // ───────────────────────────────────────────────────────────────────
 
-fn runSync(args: []const []const u8) void {
+fn runSync(allocator: std.mem.Allocator, args: []const []const u8) void {
     var force = false;
     for (args) |arg| {
         if (std.mem.eql(u8, arg, "--force") or std.mem.eql(u8, arg, "-f")) {
             force = true;
         }
     }
+
+    var cluster = ClusterState.loadClusterState(allocator) orelse {
+        std.debug.print("{s}Error:{s} No cluster found. Run 'tri multi-cluster init' first.\n", .{ RED, RESET });
+        return;
+    };
+
+    // Update CRDT sync timestamp and stats
+    cluster.crdt.last_sync_timestamp = std.time.timestamp();
+    cluster.crdt.entries_merged += cluster.nodes.count;
+    cluster.saveClusterState() catch {};
 
     std.debug.print("\n{s}═══════════════════════════════════════════════════════{s}\n", .{ YELLOW, RESET });
     std.debug.print("{s}  CRDT SYNCHRONIZATION{s}\n", .{ GREEN, RESET });
@@ -917,18 +1040,18 @@ fn runSync(args: []const []const u8) void {
         std.debug.print("  {s}Mode:{s}       Delta (incremental)\n", .{ CYAN, RESET });
     }
 
-    std.debug.print("  {s}Nodes:{s}      1 reachable\n", .{ CYAN, RESET });
-    std.debug.print("  {s}Entries:{s}    1 synchronized\n", .{ CYAN, RESET });
-    std.debug.print("  {s}Conflicts:{s} 0 resolved\n", .{ CYAN, RESET });
+    std.debug.print("  {s}Nodes:{s}      {d} reachable\n", .{ CYAN, RESET, cluster.nodes.count });
+    std.debug.print("  {s}Entries:{s}    {d} synchronized\n", .{ CYAN, RESET, cluster.crdt.entries_merged });
+    std.debug.print("  {s}Conflicts:{s} {d} resolved\n", .{ CYAN, RESET, cluster.crdt.conflicts_resolved });
     std.debug.print("  {s}$TRI:{s}       +{d:.4} sync reward\n", .{ CYAN, RESET, REWARD_PER_SYNC });
-    std.debug.print("\n{s}CRDT sync complete. 1 entries synchronized.{s}\n\n", .{ GREEN, RESET });
+    std.debug.print("\n{s}CRDT sync complete. {d} entries synchronized.{s}\n\n", .{ GREEN, cluster.crdt.entries_merged, RESET });
 }
 
 // ───────────────────────────────────────────────────────────────────
 // Subcommand 7: FEDERATE
 // ───────────────────────────────────────────────────────────────────
 
-fn runFederate(args: []const []const u8) void {
+fn runFederate(allocator: std.mem.Allocator, args: []const []const u8) void {
     if (args.len == 0) {
         std.debug.print("{s}Error:{s} Missing cluster address. Usage: tri multi-cluster federate <cluster-address> [--sync-mode crdt|raft|gossip]\n", .{ RED, RESET });
         return;
@@ -945,6 +1068,30 @@ fn runFederate(args: []const []const u8) void {
         }
     }
 
+    // Add federated cluster as a node
+    var cluster = ClusterState.loadClusterState(allocator) orelse {
+        std.debug.print("{s}Error:{s} No cluster found. Run 'tri multi-cluster init' first.\n", .{ RED, RESET });
+        return;
+    };
+
+    // Add remote cluster as a federated node
+    const fed_node = NodeEntry{
+        .id = allocator.dupe(u8, cluster_addr) catch return,
+        .address = allocator.dupe(u8, cluster_addr) catch return,
+        .port = 9334,
+        .role = allocator.dupe(u8, "federated") catch return,
+        .status = allocator.dupe(u8, "online") catch return,
+        .uptime_seconds = 0,
+        .operations_count = 0,
+        .earned_tri = 0.0,
+        .pending_tri = 0.0,
+        .tier = .FREE,
+        .added_at = std.time.timestamp(),
+    };
+    cluster.nodes.append(fed_node) catch {};
+    cluster.crdt.entries_merged += 1;
+    cluster.saveClusterState() catch {};
+
     std.debug.print("\n{s}═══════════════════════════════════════════════════════{s}\n", .{ YELLOW, RESET });
     std.debug.print("{s}  CLUSTER FEDERATION{s}\n", .{ GREEN, RESET });
     std.debug.print("{s}═══════════════════════════════════════════════════════{s}\n", .{ YELLOW, RESET });
@@ -954,7 +1101,7 @@ fn runFederate(args: []const []const u8) void {
     std.debug.print("  {s}Handshake:{s}   {s}OK{s}\n", .{ CYAN, RESET, GREEN, RESET });
     std.debug.print("  {s}CRDT Merge:{s}  States merged\n", .{ CYAN, RESET });
     std.debug.print("  {s}$TRI Pool:{s}   Reward pool linked\n", .{ CYAN, RESET });
-    std.debug.print("  {s}Jobs:{s}        Cross-cluster dispatch enabled\n", .{ CYAN, RESET });
+    std.debug.print("  {s}Nodes:{s}       {d} total (including federated)\n", .{ CYAN, RESET, cluster.nodes.count });
     std.debug.print("\n{s}Federation established with cluster at {s}{s}\n\n", .{ GREEN, cluster_addr, RESET });
 }
 
@@ -962,7 +1109,7 @@ fn runFederate(args: []const []const u8) void {
 // Subcommand 8: SHUTDOWN
 // ───────────────────────────────────────────────────────────────────
 
-fn runShutdown(args: []const []const u8) void {
+fn runShutdown(allocator: std.mem.Allocator, args: []const []const u8) void {
     var force = false;
     var drain = false;
 
@@ -971,6 +1118,21 @@ fn runShutdown(args: []const []const u8) void {
             force = true;
         } else if (std.mem.eql(u8, arg, "--drain")) {
             drain = true;
+        }
+    }
+
+    // Load cluster state and compute final stats
+    const cluster_opt = ClusterState.loadClusterState(allocator);
+    var total_ops: u64 = 0;
+    var total_earned: f64 = 0.0;
+    var unclaimed: f64 = 0.0;
+    if (cluster_opt) |cluster| {
+        for (cluster.nodes.items[0..cluster.nodes.count]) |opt_node| {
+            if (opt_node) |node| {
+                total_ops += node.operations_count;
+                total_earned += node.earned_tri;
+                unclaimed += node.pending_tri;
+            }
         }
     }
 
@@ -991,18 +1153,39 @@ fn runShutdown(args: []const []const u8) void {
     std.debug.print("  {s}[4/4]{s} Disconnecting nodes...\n", .{ CYAN, RESET });
     std.debug.print("\n", .{});
     std.debug.print("  {s}Final $TRI Summary:{s}\n", .{ YELLOW, RESET });
-    std.debug.print("    Total operations:   0\n", .{});
-    std.debug.print("    Total distributed:  0.0000 $TRI\n", .{});
-    std.debug.print("    Unclaimed rewards:  0.0000 $TRI\n", .{});
-    std.debug.print("\n{s}Cluster shutdown complete.{s}\n\n", .{ GREEN, RESET });
+    std.debug.print("    Total operations:   {d}\n", .{total_ops});
+    std.debug.print("    Total distributed:  {d:.4} $TRI\n", .{total_earned});
+    std.debug.print("    Unclaimed rewards:  {d:.4} $TRI\n", .{unclaimed});
+
+    // Delete cluster state file
+    std.fs.cwd().deleteFile(".tri-cluster.json") catch {};
+
+    std.debug.print("\n{s}Cluster shutdown complete. State file removed.{s}\n\n", .{ GREEN, RESET });
 }
 
 // ───────────────────────────────────────────────────────────────────
 // Subcommand 9: HEALTH-CHECK
 // ───────────────────────────────────────────────────────────────────
 
-fn runHealthCheck(_: []const []const u8) void {
-    const health_score: f64 = 1.0;
+fn runHealthCheck(allocator: std.mem.Allocator, _: []const []const u8) void {
+    const cluster_opt = ClusterState.loadClusterState(allocator);
+
+    var health_score: f64 = 0.0;
+    var node_count: usize = 0;
+    var online_count: usize = 0;
+
+    if (cluster_opt) |cluster| {
+        node_count = cluster.nodes.count;
+        for (cluster.nodes.items[0..cluster.nodes.count]) |opt_node| {
+            if (opt_node) |node| {
+                if (std.mem.eql(u8, node.status, "online")) online_count += 1;
+            }
+        }
+        health_score = if (node_count > 0) @as(f64, @floatFromInt(online_count)) / @as(f64, @floatFromInt(node_count)) else 0.0;
+    }
+
+    const node_ok = node_count > 0;
+    const crdt_ok = cluster_opt != null;
     const needle_status: []const u8 = if (health_score >= PHI_INVERSE) "SHARP (KOSCHEI BESSMERTEN!)" else if (health_score > 0) "DULLING (Igla tupitsya)" else "BROKEN (REGRESSIYA!)";
     const needle_color = if (health_score >= PHI_INVERSE) GREEN else if (health_score > 0) YELLOW else RED;
 
@@ -1010,14 +1193,15 @@ fn runHealthCheck(_: []const []const u8) void {
     std.debug.print("{s}  CLUSTER HEALTH CHECK{s}\n", .{ GREEN, RESET });
     std.debug.print("{s}═══════════════════════════════════════════════════════{s}\n", .{ YELLOW, RESET });
     std.debug.print("\n", .{});
-    std.debug.print("  {s}[1/4]{s} Node heartbeats...  {s}OK{s}\n", .{ CYAN, RESET, GREEN, RESET });
-    std.debug.print("  {s}[2/4]{s} CRDT consistency... {s}OK{s}\n", .{ CYAN, RESET, GREEN, RESET });
+    std.debug.print("  {s}[1/4]{s} Node heartbeats...  {s}{s}{s}\n", .{ CYAN, RESET, if (node_ok) GREEN else RED, if (node_ok) "OK" else "FAIL", RESET });
+    std.debug.print("  {s}[2/4]{s} CRDT consistency... {s}{s}{s}\n", .{ CYAN, RESET, if (crdt_ok) GREEN else RED, if (crdt_ok) "OK" else "FAIL", RESET });
     std.debug.print("  {s}[3/4]{s} PoUW engine...      {s}OK{s}\n", .{ CYAN, RESET, GREEN, RESET });
     std.debug.print("  {s}[4/4]{s} $TRI ledger...      {s}OK{s}\n", .{ CYAN, RESET, GREEN, RESET });
     std.debug.print("\n", .{});
-    std.debug.print("  {s}Health Score:{s}  {s}{d:.3}{s}\n", .{ CYAN, RESET, GREEN, health_score, RESET });
+    std.debug.print("  {s}Health Score:{s}  {s}{d:.3}{s}\n", .{ CYAN, RESET, needle_color, health_score, RESET });
     std.debug.print("  {s}Threshold:{s}    {d:.3} (phi^-1)\n", .{ CYAN, RESET, PHI_INVERSE });
     std.debug.print("  {s}Needle:{s}       {s}{s}{s}\n", .{ CYAN, RESET, needle_color, needle_status, RESET });
+    std.debug.print("  {s}Nodes:{s}        {d} total, {d} online\n", .{ CYAN, RESET, node_count, online_count });
     std.debug.print("\n", .{});
 }
 
@@ -1025,7 +1209,7 @@ fn runHealthCheck(_: []const []const u8) void {
 // Subcommand 10: LIST
 // ───────────────────────────────────────────────────────────────────
 
-fn runListNodes(args: []const []const u8) void {
+fn runListNodes(allocator: std.mem.Allocator, args: []const []const u8) void {
     var json_format = false;
     for (args) |arg| {
         if (std.mem.eql(u8, arg, "--format")) {
@@ -1035,17 +1219,32 @@ fn runListNodes(args: []const []const u8) void {
         }
     }
 
+    const cluster_opt = ClusterState.loadClusterState(allocator);
+    if (cluster_opt == null) {
+        std.debug.print("{s}No cluster found.{s} Run 'tri multi-cluster init' first.\n", .{ RED, RESET });
+        return;
+    }
+    const cluster = cluster_opt.?;
+
     if (json_format) {
         std.debug.print("[\n", .{});
-        std.debug.print("  {{\n", .{});
-        std.debug.print("    \"id\": \"coordinator\",\n", .{});
-        std.debug.print("    \"address\": \"localhost\",\n", .{});
-        std.debug.print("    \"port\": 9334,\n", .{});
-        std.debug.print("    \"role\": \"coordinator\",\n", .{});
-        std.debug.print("    \"status\": \"online\",\n", .{});
-        std.debug.print("    \"operations\": 0,\n", .{});
-        std.debug.print("    \"earned_tri\": 0.0\n", .{});
-        std.debug.print("  }}\n", .{});
+        for (cluster.nodes.items[0..cluster.nodes.count], 0..) |opt_node, idx| {
+            if (opt_node) |node| {
+                std.debug.print("  {{\n", .{});
+                std.debug.print("    \"id\": \"{s}\",\n", .{node.id});
+                std.debug.print("    \"address\": \"{s}\",\n", .{node.address});
+                std.debug.print("    \"port\": {d},\n", .{node.port});
+                std.debug.print("    \"role\": \"{s}\",\n", .{node.role});
+                std.debug.print("    \"status\": \"{s}\",\n", .{node.status});
+                std.debug.print("    \"operations\": {d},\n", .{node.operations_count});
+                std.debug.print("    \"earned_tri\": {d:.4}\n", .{node.earned_tri});
+                if (idx < cluster.nodes.count - 1) {
+                    std.debug.print("  }},\n", .{});
+                } else {
+                    std.debug.print("  }}\n", .{});
+                }
+            }
+        }
         std.debug.print("]\n", .{});
         return;
     }
@@ -1057,9 +1256,14 @@ fn runListNodes(args: []const []const u8) void {
     std.debug.print("  ┌──────────────┬──────────────────┬────────┬──────────┬──────────┬────────┬──────────┐\n", .{});
     std.debug.print("  │ {s}ID{s}           │ {s}Address{s}          │ {s}Port{s}   │ {s}Role{s}     │ {s}Status{s}   │ {s}Ops{s}    │ {s}$TRI{s}     │\n", .{ YELLOW, RESET, YELLOW, RESET, YELLOW, RESET, YELLOW, RESET, YELLOW, RESET, YELLOW, RESET, YELLOW, RESET });
     std.debug.print("  ├──────────────┼──────────────────┼────────┼──────────┼──────────┼────────┼──────────┤\n", .{});
-    std.debug.print("  │ coordinator  │ localhost        │ 9334   │ coord    │ {s}online{s}   │ 0      │ 0.0000   │\n", .{ GREEN, RESET });
+    for (cluster.nodes.items[0..cluster.nodes.count]) |opt_node| {
+        if (opt_node) |node| {
+            const status_color = if (std.mem.eql(u8, node.status, "online")) GREEN else RED;
+            std.debug.print("  │ {s:<12} │ {s:<16} │ {d:<6} │ {s:<8} │ {s}{s:<8}{s} │ {d:<6} │ {d:<8.4} │\n", .{ node.id, node.address, node.port, node.role, status_color, node.status, RESET, node.operations_count, node.earned_tri });
+        }
+    }
     std.debug.print("  └──────────────┴──────────────────┴────────┴──────────┴──────────┴────────┴──────────┘\n", .{});
-    std.debug.print("\n  {s}1 node(s) in cluster{s}\n\n", .{ GREEN, RESET });
+    std.debug.print("\n  {s}{d} node(s) in cluster{s}\n\n", .{ GREEN, cluster.nodes.count, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

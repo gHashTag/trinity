@@ -31,6 +31,7 @@ const pipeline = @import("tri_pipeline.zig");
 const demos = @import("tri_demos.zig");
 const math_commands = @import("math/commands.zig");
 const chemistry_commands = @import("tri_chemistry.zig");
+const geometry_commands = @import("geometry/commands.zig");
 const tri_context = @import("tri_context.zig");
 const orchestrator = @import("orchestrator_v2_full.zig");
 
@@ -255,9 +256,15 @@ pub fn main() !void {
         .sacred => math_commands.runSacredCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Sacred error: {}\n", .{err});
         },
-        // Chemistry (v6.0) - TODO: complete element data (missing optional fields)
-        // TODO: Fix sacred module exports (AVOGADRO, etc.)
-        // .chem => try commands.runChemCommand(allocator, cmd_args),
+        .chem => chemistry_commands.runChemCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Chemistry error: {}\n", .{err});
+        },
+        // Sacred Geometry (v1.0)
+        .geom => {
+            geometry_commands.runGeometryCommand(allocator, cmd_args) catch |err| {
+                std.debug.print("Geometry error: {}\n", .{err});
+            };
+        },
         // Intelligence System
         .intelligence => tri_context.runIntelligenceCommand(allocator, &state, cmd_args) catch |err| {
             std.debug.print("Intelligence error: {}\n", .{err});
