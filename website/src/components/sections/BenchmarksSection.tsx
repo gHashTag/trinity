@@ -140,19 +140,16 @@ export default function BenchmarksSection() {
         </motion.div>
       )}
       
-      <div className="fade" style={{ 
-        marginTop: '3rem', 
-        marginBottom: '4rem',
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-        gap: '1rem',
+      <div className="grid-row fade" style={{
         maxWidth: '1000px',
-        margin: '3rem auto 4rem'
+        margin: '3rem auto 4rem',
+        padding: '0 1rem',
+        gap: '1rem'
       }}>
         {b.metrics?.map((item: { value: string; label: string; desc: string }, i: number) => (
-          <motion.div 
-            key={i} 
-            className="premium-card" 
+          <motion.div
+            key={i}
+            className="premium-card"
             style={{ textAlign: 'center', padding: '1.5rem 1rem' }}
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
