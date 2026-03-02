@@ -190,31 +190,26 @@ fn run_chsh(args: []const []const u8) void {
 }
 
 fn run_cglmp(args: []const []const u8) void {
-    var trials: u32 = 10000;
-
-    var i: usize = 2;
-    while (i < args.len) : (i += 1) {
-        if (std.mem.eql(u8, args[i], "--trials") and i + 1 < args.len) {
-            trials = std.fmt.parseInt(u32, args[i + 1], 10) catch 10000;
-            i += 1;
-        }
-    }
+    _ = args;
 
     print(
         \\
-        \\  =============================================
-        \\  |  CGLMP INEQUALITY TEST — ENTANGLED QUTRITS |
-        \\  |  phi^2 + 1/phi^2 = 3 = TRINITY             |
-        \\  =============================================
+        \\  ==========================================================
+        \\  |  CGLMP INEQUALITY TEST — ENTANGLED QUTRITS (d=3)        |
+        \\  |  Collins-Gisin-Linden-Massar-Popescu 2002               |
+        \\  |  Measurement: R01(theta) Givens rotation gates          |
+        \\  |  phi^2 + 1/phi^2 = 3 = TRINITY                         |
+        \\  ==========================================================
         \\
-        \\  Trials: {d}
+        \\  Method: Analytical Born rule (exact probabilities)
+        \\  Search: 2-phase grid optimization (coarse + refined)
         \\
         \\
-    , .{trials});
+    , .{});
 
     // Test 1: Entangled pair (should violate)
-    print("  1. ENTANGLED Bell state (1/sqrt3)(|--,-->+|0,0>+|+,+>):\n", .{});
-    const ent = qvm.run_cglmp_test(trials, true);
+    print("  1. ENTANGLED non-maximally entangled pair:\n", .{});
+    const ent = qvm.run_cglmp_test(0, true);
     print(
         \\     I3 value:        {d:.6}
         \\     Classical bound: {d:.6}
@@ -234,7 +229,7 @@ fn run_cglmp(args: []const []const u8) void {
 
     // Test 2: Separable pair (should NOT violate)
     print("\n  2. SEPARABLE product state H|0> x H|0>:\n", .{});
-    const sep = qvm.run_cglmp_test(trials, false);
+    const sep = qvm.run_cglmp_test(0, false);
     print(
         \\     I3 value:        {d:.6}
         \\     Classical bound: {d:.6}
@@ -262,25 +257,32 @@ fn run_cglmp(args: []const []const u8) void {
         print("{c}", .{sym});
     }
 
+    const violation_pct = (ent.i3_value - 2.0) / 2.0 * 100.0;
     print(
         \\
         \\
-        \\  Comparison:
-        \\     Entangled I3: {d:.6} {s} classical bound 2.0
-        \\     Separable I3: {d:.6} {s} classical bound 2.0
-        \\     Quantum gap:  {d:.6}
+        \\  ==========================================================
+        \\  RESULTS SUMMARY
+        \\  ==========================================================
+        \\     Entangled I3:    {d:.6} {s} classical bound 2.0
+        \\     Separable I3:    {d:.6} {s} classical bound 2.0
+        \\     Quantum gap:     {d:.6}
+        \\     Violation:       {d:.1}% above classical bound
+        \\     Quantum max:     2.9149 (theoretical for d=3)
         \\
-        \\  =============================================
-        \\  CGLMP TEST COMPLETE
+        \\  VERDICT: {s}
+        \\  ==========================================================
         \\  phi^2 + 1/phi^2 = 3 = TRINITY
-        \\  =============================================
+        \\  ==========================================================
         \\
     , .{
         ent.i3_value,
-        if (ent.i3_value > 2.0) ">" else "<=",
+        if (ent.i3_value > 2.0 + 1e-6) ">" else "<=",
         sep.i3_value,
-        if (sep.i3_value > 2.0) ">" else "<=",
+        if (sep.i3_value > 2.0 + 1e-6) ">" else "<=",
         ent.i3_value - sep.i3_value,
+        violation_pct,
+        if (ent.violation) "BELL INEQUALITY VIOLATED — QUANTUM NONLOCALITY CONFIRMED" else "No violation detected",
     });
 }
 
