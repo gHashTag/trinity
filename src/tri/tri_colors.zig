@@ -27,37 +27,55 @@ pub const VERSION = "1.0.1";
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn printGold(comptime fmt: []const u8, args: anytype) void {
-    std.debug.print("{s}" ++ fmt ++ "{s}", .{ GOLDEN } ++ args ++ .{RESET});
+    std.debug.print("{s}", .{GOLDEN});
+    std.debug.print(fmt, args);
+    std.debug.print("{s}", .{RESET});
 }
 
 pub fn printGreen(comptime fmt: []const u8, args: anytype) void {
-    std.debug.print("{s}" ++ fmt ++ "{s}", .{ GREEN } ++ args ++ .{RESET});
+    std.debug.print("{s}", .{GREEN});
+    std.debug.print(fmt, args);
+    std.debug.print("{s}", .{RESET});
 }
 
 pub fn printWhite(comptime fmt: []const u8, args: anytype) void {
-    std.debug.print("{s}" ++ fmt ++ "{s}", .{ WHITE } ++ args ++ .{RESET});
+    std.debug.print("{s}", .{WHITE});
+    std.debug.print(fmt, args);
+    std.debug.print("{s}", .{RESET});
 }
 
 pub fn printGray(comptime fmt: []const u8, args: anytype) void {
-    std.debug.print("{s}" ++ fmt ++ "{s}", .{ GRAY } ++ args ++ .{RESET});
+    std.debug.print("{s}", .{GRAY});
+    std.debug.print(fmt, args);
+    std.debug.print("{s}", .{RESET});
 }
 
 pub fn printRed(comptime fmt: []const u8, args: anytype) void {
-    std.debug.print("{s}" ++ fmt ++ "{s}", .{ RED } ++ args ++ .{RESET});
+    std.debug.print("{s}", .{RED});
+    std.debug.print(fmt, args);
+    std.debug.print("{s}", .{RESET});
 }
 
 pub fn printCyan(comptime fmt: []const u8, args: anytype) void {
-    std.debug.print("{s}" ++ fmt ++ "{s}", .{ CYAN } ++ args ++ .{RESET});
+    std.debug.print("{s}", .{CYAN});
+    std.debug.print(fmt, args);
+    std.debug.print("{s}", .{RESET});
 }
 
 pub fn printPurple(comptime fmt: []const u8, args: anytype) void {
-    std.debug.print("{s}" ++ fmt ++ "{s}", .{ PURPLE } ++ args ++ .{RESET});
+    std.debug.print("{s}", .{PURPLE});
+    std.debug.print(fmt, args);
+    std.debug.print("{s}", .{RESET});
 }
 
 pub fn printMagenta(comptime fmt: []const u8, args: anytype) void {
-    std.debug.print("{s}" ++ fmt ++ "{s}", .{ MAGENTA } ++ args ++ .{RESET});
+    std.debug.print("{s}", .{MAGENTA});
+    std.debug.print(fmt, args);
+    std.debug.print("{s}", .{RESET});
 }
 
 pub fn printYellow(comptime fmt: []const u8, args: anytype) void {
-    std.debug.print("{s}" ++ fmt ++ "{s}", .{ YELLOW } ++ args ++ .{RESET});
+    std.debug.print("{s}", .{YELLOW});
+    std.debug.print(fmt, args);
+    std.debug.print("{s}", .{RESET});
 }
