@@ -106,7 +106,9 @@ pub const TestGenerator = struct {
         for (test_cases) |tc| {
             if (tc.name.len == 0) continue;
 
-            try self.builder.writeFmt("test \"{s}\" {{\n", .{sanitizeIdent(tc.name)});
+            try self.builder.write("test \"");
+            try self.writeSanitizedIdent(tc.name);
+            try self.builder.writeLine("\" {");
             self.builder.incIndent();
             try self.builder.writeFmt("// Given: {s}\n", .{tc.input});
             try self.builder.writeFmt("// Expected: {s}\n", .{tc.expected});

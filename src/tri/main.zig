@@ -249,6 +249,12 @@ pub fn main() !void {
         // Quantum Trinity v1.4 (Order #032)
         .quantum => commands.runQuantumCommand(allocator, cmd_args),
         .release_cosmic => commands.runReleaseCosmicCommand(allocator),
+        // Omega Phase v2.0 (Order #033)
+        .omega_cmd => commands.runOmegaPhaseCommand(allocator, cmd_args),
+        .all_cmd => commands.runAllCommand(allocator, cmd_args),
+        .holo_cmd => commands.runHoloCommand(allocator, cmd_args),
+        .release_absolute => commands.runReleaseAbsoluteCommand(allocator),
+        .omega_evolve => commands.runOmegaEvolveCommand(allocator),
         .deps => utils.printInfo(),
         .info => utils.printInfo(),
         .version => utils.printVersion(),

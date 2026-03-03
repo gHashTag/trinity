@@ -376,9 +376,9 @@ pub const ContextManager = struct {
             const sym = self.symbols.items[hit.symbol_idx];
             const analysis = self.analyzeSacredSymbol(sym.name);
             if (analysis) |sacred| {
-                writer.writeAll("//   {s}: gematria={d}\n", .{ sym.name, sacred.gematria_value });
+                std.fmt.format(writer, "//   {s}: gematria={d}\n", .{ sym.name, sacred.gematria_value }) catch {};
                 if (sacred.recognized_constant) |rc| {
-                    writer.writeAll("//   {s}: recognized as {s}\n", .{ sym.name, rc });
+                    std.fmt.format(writer, "//   {s}: recognized as {s}\n", .{ sym.name, rc }) catch {};
                 }
             }
             std.fmt.format(writer, "//   {s}\n", .{sym.snippet}) catch break;
@@ -416,31 +416,35 @@ pub const ContextManager = struct {
                 .gematria_value = gem_value,
                 .gematria_glyphs = "",
                 .formula_fit = maybe_fit,
+                .formula_string = "",
                 .recognized_constant = null,
             };
         };
         defer self.allocator.free(glyphs);
         var glyph_len: usize = 0;
         for (glyphs) |g| {
-            @memcpy(&glyphs_buf[glyph_len], g.glyph[0..g.glyph_len]);
+            const src = g.glyph[0..g.glyph_len];
+            @memcpy(glyphs_buf[glyph_len..][0..src.len], src);
             glyph_len += g.glyph_len;
         }
 
-        // Format formula string (not used, kept for sacred display)
+        // Format formula string (kept for sacred display)
         var formula_buf: [128]u8 = undefined;
-        const formula_str = if (maybe_fit) |sf|
+        _ = if (maybe_fit) |sf|
             sacred_formula.formatFormulaString(&formula_buf, sf)
         else
-            "none";
+            @as([]const u8, "none");
 
         // Check for constant recognition
         var recognized: ?[]const u8 = null;
         if (maybe_fit) |sf| {
             for (SACRED_CONSTANTS) |c| {
-                const err_pct = @abs(sf.computed - c.value) / c.value * 100.0;
-                if (err_pct <= c.tolerance_pct) {
-                    recognized = c.name;
-                    break;
+                if (c.target != 0) {
+                    const err_pct = @abs(sf.computed - c.target) / @abs(c.target) * 100.0;
+                    if (err_pct <= 1.0) {
+                        recognized = c.name;
+                        break;
+                    }
                 }
             }
         }
@@ -450,6 +454,7 @@ pub const ContextManager = struct {
             .gematria_value = gem_value,
             .gematria_glyphs = glyphs_buf[0..glyph_len],
             .formula_fit = maybe_fit,
+            .formula_string = "",
             .recognized_constant = recognized,
         };
     }
@@ -457,9 +462,11 @@ pub const ContextManager = struct {
     /// Recognize a value as sacred constant (returns name or null)
     pub fn recognizeSacredConstant(value: f64) ?[]const u8 {
         for (SACRED_CONSTANTS) |c| {
-            const err_pct = @abs(c.value - value) / c.value * 100.0;
-            if (err_pct <= c.tolerance_pct) {
-                return c.name;
+            if (c.target != 0) {
+                const err_pct = @abs(c.target - value) / @abs(c.target) * 100.0;
+                if (err_pct <= 1.0) {
+                    return c.name;
+                }
             }
         }
         return null;
@@ -836,7 +843,7 @@ pub fn runContextInfoCommand(state: anytype) void {
 
 /// Run sacred intelligence analysis on codebase
 pub fn runIntelligenceCommand(allocator_: std.mem.Allocator, state: anytype, args: []const []const u8) !void {
-    const allocator = allocator_;
+    _ = allocator_;
     std.debug.print("\n{s}=== SACRED INTELLIGENCE ANALYSIS ==={s}\n", .{ colors.GOLDEN, colors.RESET });
     std.debug.print("{s}V = n × 3^k × π^m × φ^p × e^q{s}\n", .{ colors.GRAY, colors.RESET });
     std.debug.print("{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ colors.GOLDEN, colors.RESET });
@@ -860,7 +867,7 @@ pub fn runIntelligenceCommand(allocator_: std.mem.Allocator, state: anytype, arg
             const analysis = mgr.analyzeSacredSymbol(q);
             if (analysis) |sacred| {
                 // Print gematria value
-                std.debug.print("  {s}Symbol:{s}      {s}\n", .{ colors.GRAY, colors.RESET, colors.WHITE, sacred.name, colors.RESET });
+                std.debug.print("  {s}Symbol:{s}      {s}{s}{s}\n", .{ colors.GRAY, colors.RESET, colors.WHITE, sacred.name, colors.RESET });
                 std.debug.print("  {s}Gematria Value:{s} {s}{d}{s}\n", .{ colors.GRAY, colors.RESET, colors.GOLDEN, sacred.gematria_value, colors.RESET });
 
                 // Print glyphs
@@ -878,9 +885,9 @@ pub fn runIntelligenceCommand(allocator_: std.mem.Allocator, state: anytype, arg
                     std.debug.print("  {s}Computed:{s}    {s}{d:.6}{s}\n", .{ colors.GRAY, colors.RESET, colors.WHITE, fit.computed, colors.RESET });
                     std.debug.print("  {s}Error:{s}        {s}{d:.4}%{s}\n", .{ colors.GRAY, colors.RESET, if (fit.error_pct < 1.0) colors.GREEN else if (fit.error_pct < 5.0) colors.CYAN else colors.RED, fit.error_pct, colors.RESET });
                     std.debug.print("  {s}Parameters:{s}    n={d} k={d} m={d} p={d} q={d}\n", .{
-                        colors.GRAY, colors.RESET, colors.WHITE,
+                        colors.GRAY, colors.RESET,
                         fit.n,       fit.k,        fit.m,
-                        fit.p,       fit.q,        colors.RESET,
+                        fit.p,       fit.q,
                     });
                 } else {
                     std.debug.print("  {s}Formula Fit:{s}  {s}none (value=0){s}\n", .{ colors.GRAY, colors.RESET, colors.GRAY, colors.RESET });
@@ -947,12 +954,12 @@ pub fn runIntelligenceCommand(allocator_: std.mem.Allocator, state: anytype, arg
             }
 
             const sacred_ratio = if (mgr.symbols.items.len > 0)
-                @as(f64, sacred_count) / @as(f64, mgr.symbols.items.len) * 100.0
+                @as(f64, @floatFromInt(sacred_count)) / @as(f64, @floatFromInt(mgr.symbols.items.len)) * 100.0
             else
                 0.0;
 
             const avg_gematria = if (sacred_count > 0)
-                @as(f64, total_gematria) / @as(f64, sacred_count)
+                @as(f64, @floatFromInt(total_gematria)) / @as(f64, @floatFromInt(sacred_count))
             else
                 0.0;
 
@@ -966,25 +973,24 @@ pub fn runIntelligenceCommand(allocator_: std.mem.Allocator, state: anytype, arg
             for (0..top_count) |i| {
                 const ts = top_symbols[i];
                 const analysis = mgr.analyzeSacredSymbol(ts.name);
-                std.debug.print("    {s}{d}{s}. {s}<32>{s} {s}{s}{s}\n", .{
-                    colors.WHITE, colors.RESET,
-                    i + 1,        colors.GRAY,
-                    colors.RESET, ts.value,
-                    colors.CYAN,  colors.RESET,
-                    ts.name,
+                std.debug.print("    {s}{d}{s}. {d} {s}{s}{s}\n", .{
+                    colors.WHITE,
+                    i + 1, colors.RESET,
+                    ts.value,
+                    colors.CYAN, ts.name, colors.RESET,
                 });
 
                 if (analysis) |sacred| {
                     if (sacred.recognized_constant) |rc| {
-                        std.debug.print("      {s}({s} {s}{s}\n", .{
-                            colors.GRAY, colors.RESET, colors.GREEN, rc, colors.RESET,
+                        std.debug.print("      {s}({s}{s}{s})\n", .{
+                            colors.GRAY, colors.GREEN, rc, colors.RESET,
                         });
                     }
                     if (sacred.formula_fit) |fit| {
                         var formula_buf: [128]u8 = undefined;
                         const formula_str = sacred_formula.formatFormulaString(&formula_buf, fit);
                         std.debug.print("      {s}{s}{s}\n", .{
-                            colors.GRAY, colors.RESET, formula_str,
+                            colors.GRAY, formula_str, colors.RESET,
                         });
                     }
                 }
@@ -1011,10 +1017,10 @@ fn printIntelligenceHelp() void {
     std.debug.print("  {s}symbol-name{s}  Analyze specific symbol for sacred properties\n", .{ colors.GRAY, colors.RESET });
     std.debug.print("  {s}--help{s}       Show this help message\n\n", .{ colors.GRAY, colors.RESET });
     std.debug.print("  {s}Analysis includes:{s}\n", .{ colors.CYAN, colors.RESET });
-    std.debug.print("    - Coptic gematria value\n", .{ colors.GRAY, colors.RESET });
-    std.debug.print("    - Coptic glyph decomposition\n", .{ colors.GRAY, colors.RESET });
-    std.debug.print("    - Sacred formula V = n × 3^k × π^m × φ^p × e^q\n", .{ colors.GRAY, colors.RESET });
-    std.debug.print("    - Recognition against 75 sacred constants\n\n", .{ colors.GRAY, colors.RESET });
+    std.debug.print("    {s}- Coptic gematria value{s}\n", .{ colors.GRAY, colors.RESET });
+    std.debug.print("    {s}- Coptic glyph decomposition{s}\n", .{ colors.GRAY, colors.RESET });
+    std.debug.print("    {s}- Sacred formula V = n x 3^k x pi^m x phi^p x e^q{s}\n", .{ colors.GRAY, colors.RESET });
+    std.debug.print("    {s}- Recognition against 75 sacred constants{s}\n\n", .{ colors.GRAY, colors.RESET });
     std.debug.print("{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ colors.GOLDEN, colors.RESET });
 }
 
