@@ -33,6 +33,12 @@ pub const refactor = @import("refactor.zig");
 // Semantic VSA (Tier 3)
 pub const vsa = @import("vsa.zig");
 
+// Safe Cross-File (Tier 4)
+pub const safe_cross = @import("safe_cross.zig");
+
+// Omega Autonomy (Tier 5)
+pub const omega = @import("omega.zig");
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // PUBLIC API - Core Types
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -152,3 +158,44 @@ pub const unbind = vsa.unbind;
 pub const bundle = vsa.bundle;
 pub const buildSemanticIndex = vsa.buildSemanticIndex;
 pub const semanticSearch = vsa.semanticSearch;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC API - Safe Cross-File (Tier 4)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const SafeVSARule = safe_cross.SafeVSARule;
+pub const CrossFileEdit = safe_cross.CrossFileEdit;
+pub const CrossFileImpact = safe_cross.CrossFileImpact;
+pub const SafetyGate = safe_cross.SafetyGate;
+pub const CrossFileResult = safe_cross.CrossFileResult;
+pub const SafetyResult = safe_cross.SafetyResult;
+pub const UnifiedPreview = safe_cross.UnifiedPreview;
+pub const RuleValidation = safe_cross.RuleValidation;
+
+// Safe cross-file functions
+pub const validateWithVSARules = safe_cross.validateWithVSARules;
+pub const runSafetyGates = safe_cross.runSafetyGates;
+pub const computeCrossImpact = safe_cross.computeCrossImpact;
+pub const applySafeCrossRefactor = safe_cross.applySafeCrossRefactor;
+pub const rollbackAll = safe_cross.rollbackAll;
+pub const crossPreview = safe_cross.crossPreview;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC API - Omega Autonomy (Tier 5)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const AgentState = omega.AgentState;
+pub const AutonomyLevel = omega.AutonomyLevel;
+pub const RiskLevel = omega.RiskLevel;
+pub const RefactorHistory = omega.RefactorHistory;
+pub const RefactorStep = omega.RefactorStep;
+pub const StepOperation = omega.StepOperation;
+pub const RefactorPlan = omega.RefactorPlan;
+pub const ImprovementSuggestion = omega.ImprovementSuggestion;
+pub const AutonomousResult = omega.AutonomousResult;
+pub const HealthReport = omega.HealthReport;
+pub const OmegaAgent = omega.OmegaAgent;
+
+// Omega functions
+pub const omegaInit = omega.omegaInit;
+pub const omegaHealthCheck = omega.omegaHealthCheck;

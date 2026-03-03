@@ -483,6 +483,134 @@ mcp_tools:
         default: 384
 
   # ─────────────────────────────────────────────────────────────────────────────
+  # NEEDLE TIER 4 — Safe Cross-File + VSA Rules
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: needle_safe_cross_refactor
+    description: "Safe cross-file semantic refactor with VSA rules and 100% rollback"
+    category: needle
+    safety_level: needle
+    args_schema:
+      intent:
+        type: string
+        description: "Intent description of refactor"
+        required: true
+      new_intent:
+        type: string
+        description: "New intent/description"
+        required: true
+      semantic_threshold:
+        type: number
+        description: "Minimum VSA similarity"
+        default: 0.85
+      preview:
+        type: boolean
+        description: "Preview only, don't apply"
+        default: true
+
+  - name: needle_vsa_rule_apply
+    description: "Apply VSA rules to validate proposed refactor"
+    category: needle
+    safety_level: low
+    args_schema:
+      transformation:
+        type: string
+        description: "Transformation to validate"
+        required: true
+      rules_file:
+        type: string
+        description: "Path to VSA rules config"
+
+  - name: needle_cross_preview
+    description: "Preview cross-file refactor impact with safety assessment"
+    category: needle
+    safety_level: low
+    args_schema:
+      symbol:
+        type: string
+        description: "Symbol to analyze"
+        required: true
+      new_name:
+        type: string
+        description: "New name for rename"
+      include_vsa:
+        type: boolean
+        description: "Include VSA confidence scores"
+        default: true
+
+  - name: needle_rollback_all
+    description: "Rollback all changes from failed refactor"
+    category: needle
+    safety_level: low
+    args_schema:
+      refactor_id:
+        type: string
+        description: "Refactor session ID to rollback"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # NEEDLE TIER 5 — Omega (Full Autonomy)
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: needle_omega_init
+    description: "Initialize Omega autonomous agent for project"
+    category: needle
+    safety_level: low
+    args_schema:
+      root_dir:
+        type: string
+        description: "Project root directory"
+        default: "."
+      autonomy_level:
+        type: string
+        enum: [assisted, semi_auto, full_auto]
+        description: "Autonomy level"
+        default: "assisted"
+
+  - name: needle_omega_analyze
+    description: "Omega analyzes codebase and suggests improvements"
+    category: needle
+    safety_level: low
+    args_schema:
+      intent:
+        type: string
+        description: "Analysis intent or leave empty for auto-detect"
+      auto_detect:
+        type: boolean
+        description: "Auto-detect improvements"
+        default: true
+
+  - name: needle_omega_execute
+    description: "Execute refactor plan with full autonomy"
+    category: needle
+    safety_level: needle
+    args_schema:
+      plan_id:
+        type: string
+        description: "Plan ID from omega_analyze"
+      confirm:
+        type: boolean
+        description: "Require confirmation before applying"
+        default: true
+
+  - name: needle_omega_detect
+    description: "Auto-detect code improvements and optimizations"
+    category: needle
+    safety_level: low
+    args_schema:
+      min_confidence:
+        type: number
+        description: "Minimum confidence for suggestions"
+        default: 0.8
+      max_results:
+        type: integer
+        description: "Maximum suggestions to return"
+        default: 10
+
+  - name: needle_omega_status
+    description: "Get Omega agent status and health"
+    category: needle
+    safety_level: low
+    args_schema: {}
+
+  # ─────────────────────────────────────────────────────────────────────────────
   # SACRED MATHEMATICS
   # ─────────────────────────────────────────────────────────────────────────────
   - name: tri_constants
