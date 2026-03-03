@@ -47,15 +47,15 @@ pub const CliPatcher = struct {
         const content = try std.fs.cwd().readFileAlloc(self.allocator, self.tri_utils_path, 10_000_000);
         defer self.allocator.free(content);
 
-        var lines = ArrayList([]const u8).init(self.allocator);
+        var lines = ArrayList([]const u8){};
         defer {
             for (lines.items) |line| self.allocator.free(line);
             lines.deinit(self.allocator);
         }
 
-        var iter = std.mem.tokenizeScalar(u8, content);
+        var iter = std.mem.tokenizeScalar(u8, content, '\n');
         while (iter.next()) |line| {
-            try lines.append(try self.allocator.dupe(u8, line));
+            try lines.append(self.allocator, try self.allocator.dupe(u8, line));
         }
 
         // Find Command enum and add variants
@@ -85,7 +85,7 @@ pub const CliPatcher = struct {
         // Insert enum variants before closing brace
         for (commands) |cmd| {
             const variant_line = try std.fmt.allocPrint(self.allocator, "    {s},", .{cmd.enum_name});
-            try lines.insert(enum_end_line, variant_line);
+            try lines.insert(self.allocator, enum_end_line, variant_line);
             enum_end_line += 1;
         }
         enum_end_line += 1;
@@ -123,7 +123,7 @@ pub const CliPatcher = struct {
             const parse_case = try std.fmt.allocPrint(self.allocator,
                 "    if (std.mem.eql(u8, arg, \"{s}\")) return .{s};",
                 .{ cmd.name, cmd.enum_name });
-            try lines.insert(parse_end_line, parse_case);
+            try lines.insert(self.allocator, parse_end_line, parse_case);
             parse_end_line += 1;
 
             // Add aliases
@@ -131,7 +131,7 @@ pub const CliPatcher = struct {
                 const alias_case = try std.fmt.allocPrint(self.allocator,
                     "    if (std.mem.eql(u8, arg, \"{s}\")) return .{s};",
                     .{ alias, cmd.enum_name });
-                try lines.insert(parse_end_line, alias_case);
+                try lines.insert(self.allocator, parse_end_line, alias_case);
                 parse_end_line += 1;
             }
         }
@@ -150,15 +150,15 @@ pub const CliPatcher = struct {
         const content = try std.fs.cwd().readFileAlloc(self.allocator, self.main_zig_path, 10_000_000);
         defer self.allocator.free(content);
 
-        var lines = ArrayList([]const u8).init(self.allocator);
+        var lines = ArrayList([]const u8){};
         defer {
             for (lines.items) |line| self.allocator.free(line);
             lines.deinit(self.allocator);
         }
 
-        var iter = std.mem.tokenizeScalar(u8, content);
+        var iter = std.mem.tokenizeScalar(u8, content, '\n');
         while (iter.next()) |line| {
-            try lines.append(try self.allocator.dupe(u8, line));
+            try lines.append(self.allocator, try self.allocator.dupe(u8, line));
         }
 
         // Find the switch statement for Command enum
@@ -166,7 +166,7 @@ pub const CliPatcher = struct {
         var switch_end_line: usize = 0;
         var i: usize = 0;
         while (i < lines.items.len) : (i += 1) {
-            if (std.mem.indexOf(u8, lines.items[i], "switch (cmd)") |_| {
+            if (std.mem.indexOf(u8, lines.items[i], "switch (cmd)")) |_| {
                 switch_found = true;
                 // Find switch end
                 var j = i + 1;
@@ -205,7 +205,7 @@ pub const CliPatcher = struct {
             const dispatch_case = try std.fmt.allocPrint(self.allocator,
                 "        .{s} => commands.run{s}Command(allocator, cmd_args),",
                 .{ cmd.enum_name, capitalize(cmd.name) });
-            try lines.insert(insert_line, dispatch_case);
+            try lines.insert(self.allocator, insert_line, dispatch_case);
             insert_line += 1;
         }
 

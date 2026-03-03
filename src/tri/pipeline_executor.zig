@@ -1135,7 +1135,7 @@ pub const PipelineExecutor = struct {
         std.debug.print("================================================================\n", .{});
         std.debug.print("              GOLDEN CHAIN CLOSED\n", .{});
         std.debug.print("================================================================{s}\n", .{RESET});
-        std.debug.print("\nCompleted: {d}/17 links\n", .{self.state.getCompletedCount()});
+        std.debug.print("\nCompleted: {d}/22 links\n", .{self.state.getCompletedCount()});
 
         // Show TVC status
         if (self.state.tvc_hit) {

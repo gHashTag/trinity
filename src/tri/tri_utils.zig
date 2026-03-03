@@ -396,7 +396,7 @@ pub fn printHelp() void {
     std.debug.print("\n", .{});
 
     std.debug.print("{s}GOLDEN CHAIN:{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  {s}pipeline run{s} <task>         Execute 17-link development cycle (incl TVC)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}pipeline run{s} <task>         Execute 22-link Golden Chain v4.0 (incl TVC)\n", .{ GREEN, RESET });
     std.debug.print("  {s}pipeline status{s}             Show pipeline state\n", .{ GREEN, RESET });
     std.debug.print("  {s}decompose{s} <task>            Break task into sub-tasks\n", .{ GREEN, RESET });
     std.debug.print("  {s}verify{s}                      Run tests + benchmarks (Links 7-11)\n", .{ GREEN, RESET });
@@ -909,7 +909,7 @@ pub fn getMCPMetadata(cmd: Command) MCPCommandMetadata {
         .diff => .{ .name = "diff", .description = "Git diff", .category = "git" },
         .status => .{ .name = "status", .description = "Git status --short", .category = "git" },
         .log => .{ .name = "log", .description = "Git log --oneline", .category = "git" },
-        .pipeline => .{ .name = "pipeline", .description = "Execute 17-link Golden Chain", .category = "pipeline" },
+        .pipeline => .{ .name = "pipeline", .description = "Execute 22-link Golden Chain v4.0", .category = "pipeline" },
         .decompose => .{ .name = "decompose", .description = "Break task into sub-tasks (Link 4)", .category = "pipeline" },
         .plan => .{ .name = "plan", .description = "Generate implementation plan (Link 5)", .category = "pipeline" },
         .verify => .{ .name = "verify", .description = "Run tests + benchmarks (Links 7-11)", .category = "pipeline" },

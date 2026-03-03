@@ -1023,9 +1023,10 @@ fn readMCPMessage(allocator: std.mem.Allocator, buffer: []u8, buffer_used: *usiz
 
     // Find the end of headers (double newline)
     const headers_end = blk: {
-        const idx1 = std.mem.indexOf(u8, buffer[header_start..buffer_used.*], "\r\n\r\n");
-        const idx2 = std.mem.indexOf(u8, buffer[header_start..buffer_used.*], "\n\n");
-        break :blk if (idx1) |i| header_start + i + 4 else if (idx2) |i| header_start + i + 2 else null;
+        // Search from the start of buffer, not from header_start
+        const idx1 = std.mem.indexOf(u8, buffer[0..buffer_used.*], "\r\n\r\n");
+        const idx2 = std.mem.indexOf(u8, buffer[0..buffer_used.*], "\n\n");
+        break :blk if (idx1) |i| i + 4 else if (idx2) |i| i + 2 else null;
     } orelse {
         _ = posix.write(2, "DEBUG: No double newline\n") catch {};
         return null;
