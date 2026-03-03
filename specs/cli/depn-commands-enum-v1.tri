@@ -1,0 +1,112 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# DEPIN COMMANDS ENUM v1.0 — Command Enum Extension for DePIN
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Purpose: Extend Command enum with mesh, wallet, reputation, hardware
+# Usage: Generated code imported into tri_utils.zig
+#
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: depn_commands_enum
+version: "1.0.0"
+language: zig
+module: depn_commands_enum
+
+types:
+  DePINCommand:
+    fields:
+      name: String
+      category: String
+      has_subcommands: Bool
+
+behaviors:
+  - name: getDePINCommands
+    given: DePIN module loaded
+    when: Called from tri_utils
+    then: Return list of all DePIN commands
+
+  - name: parseDePINCommand
+    given: User input arg
+    when: Command might be DePIN-related
+    then: Return matching Command enum value or .none
+
+test_cases:
+  - name: parse_mesh_command
+    given:
+      arg: "mesh"
+    expected:
+      returns: Command.mesh
+      not_none: true
+
+  - name: parse_wallet_command
+    given:
+      arg: "wallet"
+    expected:
+      returns: Command.wallet
+      not_none: true
+
+  - name: parse_reputation_command
+    given:
+      arg: "reputation"
+    expected:
+      returns: Command.reputation
+      not_none: true
+
+  - name: parse_hardware_command
+    given:
+      arg: "hardware"
+    expected:
+      returns: Command.hardware
+      not_none: true
+
+  - name: parse_rep_alias
+    given:
+      arg: "rep"
+    expected:
+      returns: Command.reputation
+      not_none: true
+
+implementation: |
+  const std = @import("std");
+
+  /// DePIN Command Extension Enum
+  /// These values extend the base Command enum
+  pub const DePINCommandValue = enum {
+      mesh,
+      wallet,
+      reputation,
+      hardware,
+  };
+
+  /// Parse DePIN-specific commands
+  /// Returns null if not a DePIN command
+  pub fn parseDePINCommand(arg: []const u8) ?DePINCommandValue {
+      if (std.mem.eql(u8, arg, "mesh")) return .mesh;
+      if (std.mem.eql(u8, arg, "wallet")) return .wallet;
+      if (std.mem.eql(u8, arg, "reputation") or std.mem.eql(u8, arg, "rep")) return .reputation;
+      if (std.mem.eql(u8, arg, "hardware")) return .hardware;
+      return null;
+  }
+
+  /// Get all DePIN command names for help display
+  pub fn getDePINCommandNames() []const []const u8 {
+      return &[_][]const u8{
+          "mesh",
+          "wallet",
+          "reputation",
+          "rep",
+          "hardware",
+      };
+  }
+
+  /// Get category for a DePIN command
+  pub fn getDePINCategory(cmd: DePINCommandValue) []const u8 {
+      return switch (cmd) {
+          .mesh => "Global Mesh Management",
+          .wallet => "Wallet & Rewards",
+          .reputation => "Reputation System",
+          .hardware => "Hardware Deployment",
+      };
+  }

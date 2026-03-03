@@ -15,7 +15,7 @@ pub const PHI_INVERSE: f64 = 0.618033988749895; // Needle threshold
 pub const TRINITY: f64 = 3.0;
 
 // ============================================================================
-// CHAIN LINK ENUM (16 Links)
+// CHAIN LINK ENUM (22 Links) — GOLDEN CHAIN v4.0
 // ============================================================================
 
 pub const ChainLink = enum(u8) {
@@ -24,18 +24,23 @@ pub const ChainLink = enum(u8) {
     metrics = 2, // LINK 2: Collect v(n-1) metrics
     pas_analyze = 3, // LINK 3: Research patterns (PAS)
     tech_tree = 4, // LINK 4: Build dependency graph
-    spec_create = 5, // LINK 5: Create .vibee specs
-    code_generate = 6, // LINK 6: vibee gen -> .zig
-    test_run = 7, // LINK 7: zig build test
-    benchmark_prev = 8, // LINK 8: CRITICAL - Compare to v(n-1)
-    benchmark_external = 9, // LINK 9: Compare to llama.cpp/vLLM
-    benchmark_theoretical = 10, // LINK 10: Gap to optimal
-    delta_report = 11, // LINK 11: Improvement report
-    optimize = 12, // LINK 12: Fix if needed (OPTIONAL)
-    docs = 13, // LINK 13: Documentation with proofs
-    toxic_verdict = 14, // LINK 14: Russian assessment
-    git = 15, // LINK 15: Commit + push
-    loop_decision = 16, // LINK 16: Decide next version
+    strict_check = 5, // LINK 5: VIBEE-first compliance check
+    spec_create = 6, // LINK 6: Create .vibee specs
+    code_generate = 7, // LINK 7: vibee gen -> .zig
+    sacred_analyze = 8, // LINK 8: Sacred Intelligence analysis
+    test_run = 9, // LINK 9: zig build test
+    benchmark_prev = 10, // LINK 10: CRITICAL - Compare to v(n-1)
+    swe_fix = 11, // LINK 11: SWE Agent error fixing
+    benchmark_external = 12, // LINK 12: Compare to llama.cpp/vLLM
+    benchmark_theoretical = 13, // LINK 13: Gap to optimal
+    delta_report = 14, // LINK 14: Improvement report
+    optimize = 15, // LINK 15: Fix if needed (OPTIONAL)
+    docs = 16, // LINK 16: Documentation with proofs
+    toxic_verdict = 17, // LINK 17: Russian assessment
+    git = 18, // LINK 18: Commit + push (with auto-commit)
+    loop_decision = 19, // LINK 19: Decide next version
+    fly_deploy = 20, // LINK 20: Auto-deploy to Fly.io
+    eternal_self_evolution = 21, // LINK 21: [v4.0] Pipeline improves itself
 
     pub fn getName(self: ChainLink) []const u8 {
         return switch (self) {
@@ -44,10 +49,13 @@ pub const ChainLink = enum(u8) {
             .metrics => "METRICS",
             .pas_analyze => "PAS_ANALYZE",
             .tech_tree => "TECH_TREE",
+            .strict_check => "STRICT_CHECK",
             .spec_create => "SPEC_CREATE",
             .code_generate => "CODE_GENERATE",
+            .sacred_analyze => "SACRED_ANALYZE",
             .test_run => "TEST_RUN",
             .benchmark_prev => "BENCHMARK_PREV",
+            .swe_fix => "SWE_FIX",
             .benchmark_external => "BENCHMARK_EXTERNAL",
             .benchmark_theoretical => "BENCHMARK_THEORETICAL",
             .delta_report => "DELTA_REPORT",
@@ -56,6 +64,8 @@ pub const ChainLink = enum(u8) {
             .toxic_verdict => "TOXIC_VERDICT",
             .git => "GIT",
             .loop_decision => "LOOP",
+            .fly_deploy => "FLY_DEPLOY",
+            .eternal_self_evolution => "ETERNAL_SELF_EVOLUTION",
         };
     }
 
@@ -66,10 +76,13 @@ pub const ChainLink = enum(u8) {
             .metrics => "Collect performance metrics",
             .pas_analyze => "Research patterns and science",
             .tech_tree => "Build technology tree",
+            .strict_check => "VIBEE-first compliance check",
             .spec_create => "Create .vibee specifications",
             .code_generate => "Generate code from specs",
+            .sacred_analyze => "Sacred Intelligence code analysis",
             .test_run => "Run test suite",
             .benchmark_prev => "CRITICAL: Compare to baseline",
+            .swe_fix => "SWE Agent error fixing",
             .benchmark_external => "Compare to external tools",
             .benchmark_theoretical => "Gap to theoretical maximum",
             .delta_report => "Generate improvement report",
@@ -78,23 +91,25 @@ pub const ChainLink = enum(u8) {
             .toxic_verdict => "Critical self-assessment",
             .git => "Commit and push changes",
             .loop_decision => "Decide next iteration",
+            .fly_deploy => "Auto-deploy to Fly.io cloud",
+            .eternal_self_evolution => "ETERNAL: Pipeline improves itself",
         };
     }
 
     pub fn isCritical(self: ChainLink) bool {
         return switch (self) {
-            .tvc_gate, .benchmark_prev, .test_run, .loop_decision => true,
+            .tvc_gate, .benchmark_prev, .test_run, .loop_decision, .code_generate, .eternal_self_evolution => true,
             else => false,
         };
     }
 
     pub fn isMandatory(self: ChainLink) bool {
-        return self != .optimize; // Only optimize is optional
+        return self != .optimize and self != .swe_fix and self != .fly_deploy;
     }
 
     pub fn next(self: ChainLink) ?ChainLink {
         const val = @intFromEnum(self);
-        if (val >= 16) return null;
+        if (val >= 21) return null;
         return @enumFromInt(val + 1);
     }
 
@@ -221,7 +236,7 @@ pub const PipelineState = struct {
     phase: ChainLink,
     status: PipelineStatus,
     started_at: i64,
-    results: [17]LinkResult, // Links 0-16 (TVC_GATE + 16 original)
+    results: [22]LinkResult, // Links 0-21 (22 links total)
     improvement_rate: f64,
     task_description: []const u8,
     verbose: bool,
@@ -229,10 +244,12 @@ pub const PipelineState = struct {
     cached_response: ?[]const u8,
     /// TVC Gate skipped pipeline (cache hit)
     tvc_hit: bool,
+    /// Self-evolution: pipeline can add new links
+    self_evolution_enabled: bool,
 
     pub fn init(allocator: std.mem.Allocator, version: u32, task: []const u8) PipelineState {
-        var results: [17]LinkResult = undefined;
-        inline for (0..17) |i| {
+        var results: [22]LinkResult = undefined;
+        inline for (0..22) |i| {
             results[i] = LinkResult.init(@enumFromInt(i));
         }
 
@@ -248,6 +265,7 @@ pub const PipelineState = struct {
             .verbose = false,
             .cached_response = null,
             .tvc_hit = false,
+            .self_evolution_enabled = true,
         };
     }
 
@@ -295,7 +313,7 @@ pub const PipelineState = struct {
     }
 
     pub fn getProgressPercent(self: *const PipelineState) f64 {
-        return @as(f64, @floatFromInt(self.getCompletedCount())) / 17.0 * 100.0;
+        return @as(f64, @floatFromInt(self.getCompletedCount())) / 22.0 * 100.0;
     }
 
     pub fn getMetricsFilePath(self: *const PipelineState, buf: []u8) ![]const u8 {

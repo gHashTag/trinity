@@ -10,9 +10,6 @@ const needle = @import("needle");
 const auto_discovery = @import("auto_discovery.zig");
 const resources = @import("resources.zig");
 const prompts = @import("prompts.zig");
-const direct_executor = @import("direct_executor.zig");
-const streaming = @import("streaming.zig");
-const cancellation = @import("cancellation.zig");
 
 // Sacred constants
 const PHI: f64 = 1.618033988749895;
@@ -43,15 +40,10 @@ const TrinityMCPServer = struct {
 
     fn writeInitializeResponse(self: *TrinityMCPServer, writer: anytype) !void {
         _ = self;
-        // Updated capabilities to include resources and prompts
-        const response =
-            \\{"jsonrpc":"2.0","result":{
-            \\  "protocolVersion":"2024-11-05",
-            \\  "capabilities":{"tools":{},"resources":{},"prompts":{}},
-            \\  "serverInfo":{"name":"trinity-mcp","version":"2.0.0","description":"TRINITY MCP Server with auto-discovery"}}
-            \\}}
-        ;
-        try writer.writeAll(response);
+        // MCP initialize response - must be valid JSON-RPC 2.0
+        try writer.writeAll(
+            \\{"jsonrpc":"2.0","result":{"protocolVersion":"2024-11-05","capabilities":{"tools":{},"resources":{},"prompts":{}},"serverInfo":{"name":"trinity-mcp","version":"2.0.0","description":"TRINITY MCP Server"}}}
+        );
     }
 
     fn writeToolsList(self: *TrinityMCPServer, writer: anytype) !void {
@@ -974,113 +966,153 @@ pub fn main() !void {
 
     var server = TrinityMCPServer.init(allocator);
 
-    // Debug to stderr
-    const stderr_fd: posix.fd_t = 2;
-    var debug_buffer: [512]u8 = undefined;
-    const debug_msg = std.fmt.bufPrint(&debug_buffer, "TRINITY MCP Server v{s} started (auto-discovery)\n", .{SERVER_VERSION}) catch "";
-    _ = try posix.write(stderr_fd, debug_msg);
-    const debug_msg2 = std.fmt.bufPrint(&debug_buffer, "φ² + 1/φ² = {d:.3} = TRINITY\n", .{TRINITY_SUM}) catch "";
-    _ = try posix.write(stderr_fd, debug_msg2);
-    const tool_count = auto_discovery.countTools();
-    const debug_msg3 = std.fmt.bufPrint(&debug_buffer, "{d} tools auto-discovered from Command enum\n\n", .{tool_count}) catch "";
-    _ = try posix.write(stderr_fd, debug_msg3);
-
     var stdout_writer = StdoutWriter{};
     var read_buffer: [65536]u8 = undefined;
+    var buffer_start: usize = 0;
 
     while (true) {
-        const bytes_read = posix.read(0, &read_buffer) catch |err| {
-            if (err == error.EndOfStream) break;
-            continue;
-        };
+        // Read more data if buffer is nearly empty
+        const bytes_read = if (buffer_start < 1024) blk: {
+            // Shift remaining data to start of buffer
+            if (buffer_start > 0 and buffer_start < read_buffer.len) {
+                std.mem.copyForwards(u8, read_buffer[0..], read_buffer[buffer_start..]);
+            }
+            const write_pos = if (buffer_start > 0) buffer_start else 0;
+            const bytes = posix.read(0, read_buffer[write_pos..]) catch |err| {
+                if (err == error.EndOfStream) break;
+                continue;
+            };
+            if (bytes == 0) break;
+            break :blk bytes + write_pos;
+        } else buffer_start;
 
         if (bytes_read == 0) break;
 
-        const line = read_buffer[0..bytes_read];
-        const newline_idx = std.mem.indexOfScalar(u8, line, '\n') orelse line.len;
-        const request = line[0..newline_idx];
+        const available = read_buffer[0..bytes_read];
+        var pos: usize = 0;
 
-        if (request.len == 0) continue;
+        // Process all complete requests in buffer
+        while (pos < available.len) {
+            // Find the end of the current request (newline or closing brace)
+            var request_end: usize = 0;
+            var has_newline = false;
 
-        // Simple JSON-RPC parsing
-        if (std.mem.indexOf(u8, request, "\"initialize\"") != null) {
-            try server.writeInitializeResponse(&stdout_writer);
-        } else if (std.mem.indexOf(u8, request, "\"tools/list\"") != null) {
-            try server.writeToolsList(&stdout_writer);
-        } else if (std.mem.indexOf(u8, request, "\"resources/list\"") != null) {
-            const list = try resources.generateResourcesList(server.allocator);
-            defer server.allocator.free(list);
-            try stdout_writer.writeAll(list);
-        } else if (std.mem.indexOf(u8, request, "\"resources/read\"") != null) {
-            // Extract URI from request - simpler approach using extractStringField
-            const uri = extractStringField(request, "uri") orelse {
-                try writeJsonError(&server, &stdout_writer, "Missing URI parameter");
-                continue;
-            };
-
-            if (resources.hasResource(uri)) {
-                const content = try resources.loadResource(server.allocator, uri);
-                defer server.allocator.free(content);
-                try writeJsonResponse(&server, &stdout_writer, content, false);
+            if (std.mem.indexOfScalar(u8, available[pos..], '\n')) |nl_idx| {
+                request_end = pos + nl_idx;
+                has_newline = true;
             } else {
-                try writeJsonError(&server, &stdout_writer, "Resource not found");
-            }
-        } else if (std.mem.indexOf(u8, request, "\"prompts/list\"") != null) {
-            const list = try prompts.generatePromptsList(server.allocator);
-            defer server.allocator.free(list);
-            try stdout_writer.writeAll(list);
-        } else if (std.mem.indexOf(u8, request, "\"prompts/get\"") != null) {
-            // Extract prompt name from request
-            const name = extractStringField(request, "name") orelse {
-                try writeJsonError(&server, &stdout_writer, "Missing name parameter");
-                continue;
-            };
+                // No newline - check if we have a complete JSON object
+                const open_brace = std.mem.indexOfScalar(u8, available[pos..], '{');
+                const close_brace = if (open_brace != null) std.mem.lastIndexOfScalar(u8, available[pos..], '}') else null;
 
-            if (prompts.hasPrompt(name)) {
-                // For now, return prompt without arguments (simple version)
-                // A full implementation would parse and pass args_map
-                const response = try prompts.generatePromptGetResponse(server.allocator, name, null);
-                defer server.allocator.free(response);
-                try stdout_writer.writeAll(response);
-            } else {
-                try writeJsonError(&server, &stdout_writer, "Prompt not found");
-            }
-        } else if (std.mem.indexOf(u8, request, "\"tools/call\"") != null) {
-            const params_idx = std.mem.indexOf(u8, request, "\"params\":") orelse continue;
-            const name_after_params = std.mem.indexOf(u8, request[params_idx..], "\"name\":") orelse continue;
-            const name_idx = params_idx + name_after_params;
-            const name_start = name_idx + 8;
-            const name_end = std.mem.indexOfScalarPos(u8, request, name_start, '"') orelse continue;
-            const tool_name = request[name_start..name_end];
-
-            const arguments_idx = std.mem.indexOf(u8, request[params_idx..], "\"arguments\":") orelse continue;
-            const args_absolute_idx = params_idx + arguments_idx;
-            var args_search_start = args_absolute_idx + 13;
-            while (args_search_start < request.len and std.ascii.isWhitespace(request[args_search_start])) {
-                args_search_start += 1;
-            }
-            if (args_search_start >= request.len or (request[args_search_start] != '{' and request[args_search_start] != '"')) {
-                continue;
-            }
-            const args_start = args_search_start;
-            var brace_count: usize = if (request[args_start] == '{') 1 else 0;
-            if (request[args_start] == '"') {
-                // Stringified JSON - find end quote
-                var args_end = args_start + 1;
-                while (args_end < request.len and request[args_end] != '"') {
-                    args_end += 1;
+                if (open_brace != null and close_brace != null and close_brace.? > open_brace.?) {
+                    // Have complete JSON object without newline
+                    request_end = pos + close_brace.?;
+                } else {
+                    // Incomplete data, wait for more
+                    buffer_start = available.len - pos;
+                    if (buffer_start > 0) {
+                        std.mem.copyForwards(u8, read_buffer[0..], available[pos..]);
+                    }
+                    break;
                 }
-                const arguments_json = request[args_start + 1 .. args_end];
-                try server.handleToolsCall(tool_name, arguments_json, &stdout_writer);
-            } else {
-                var args_end = args_start + 1;
-                while (args_end < request.len and brace_count > 0) {
-                    if (request[args_end] == '{') brace_count += 1;
-                    if (request[args_end] == '}') brace_count -= 1;
-                    args_end += 1;
+            }
+
+            const request = available[pos..request_end];
+            pos = request_end + 1;
+            // Skip whitespace after request
+            while (pos < available.len and std.ascii.isWhitespace(available[pos])) {
+                pos += 1;
+            }
+
+            if (request.len == 0) continue;
+
+            // Simple JSON-RPC parsing
+            if (std.mem.indexOf(u8, request, "\"initialize\"") != null) {
+                try server.writeInitializeResponse(&stdout_writer);
+            } else if (std.mem.indexOf(u8, request, "\"tools/list\"") != null) {
+                try server.writeToolsList(&stdout_writer);
+            } else if (std.mem.indexOf(u8, request, "\"resources/list\"") != null) {
+                const list = try resources.generateResourcesList(server.allocator);
+                defer server.allocator.free(list);
+                try stdout_writer.writeAll(list);
+            } else if (std.mem.indexOf(u8, request, "\"resources/read\"") != null) {
+                // Extract URI from request - simpler approach using extractStringField
+                const uri = extractStringField(request, "uri") orelse {
+                    try writeJsonError(&server, &stdout_writer, "Missing URI parameter");
+                    continue;
+                };
+
+                if (resources.hasResource(uri)) {
+                    const content = try resources.loadResource(server.allocator, uri);
+                    defer server.allocator.free(content);
+                    try writeJsonResponse(&server, &stdout_writer, content, false);
+                } else {
+                    try writeJsonError(&server, &stdout_writer, "Resource not found");
                 }
-                const arguments_json = request[args_start..args_end];
-                try server.handleToolsCall(tool_name, arguments_json, &stdout_writer);
+            } else if (std.mem.indexOf(u8, request, "\"prompts/list\"") != null) {
+                const list = try prompts.generatePromptsList(server.allocator);
+                defer server.allocator.free(list);
+                try stdout_writer.writeAll(list);
+            } else if (std.mem.indexOf(u8, request, "\"prompts/get\"") != null) {
+                // Extract prompt name from request
+                const name = extractStringField(request, "name") orelse {
+                    try writeJsonError(&server, &stdout_writer, "Missing name parameter");
+                    continue;
+                };
+
+                if (prompts.hasPrompt(name)) {
+                    // For now, return prompt without arguments (simple version)
+                    // A full implementation would parse and pass args_map
+                    const response = try prompts.generatePromptGetResponse(server.allocator, name, null);
+                    defer server.allocator.free(response);
+                    try stdout_writer.writeAll(response);
+                } else {
+                    try writeJsonError(&server, &stdout_writer, "Prompt not found");
+                }
+            } else if (std.mem.indexOf(u8, request, "\"tools/call\"") != null) {
+                const params_idx = std.mem.indexOf(u8, request, "\"params\":") orelse continue;
+                const name_after_params = std.mem.indexOf(u8, request[params_idx..], "\"name\":") orelse continue;
+                const name_idx = params_idx + name_after_params;
+                const name_start = name_idx + 8;
+                const name_end = std.mem.indexOfScalarPos(u8, request, name_start, '"') orelse continue;
+                const tool_name = request[name_start..name_end];
+
+                const arguments_idx = std.mem.indexOf(u8, request[params_idx..], "\"arguments\":") orelse continue;
+                const args_absolute_idx = params_idx + arguments_idx;
+                var args_search_start = args_absolute_idx + 13;
+                while (args_search_start < request.len and std.ascii.isWhitespace(request[args_search_start])) {
+                    args_search_start += 1;
+                }
+                if (args_search_start >= request.len or (request[args_search_start] != '{' and request[args_search_start] != '"')) {
+                    continue;
+                }
+                const args_start = args_search_start;
+                var brace_count: usize = if (request[args_start] == '{') 1 else 0;
+                if (request[args_start] == '"') {
+                    // Stringified JSON - find end quote
+                    var args_end = args_start + 1;
+                    while (args_end < request.len and request[args_end] != '"') {
+                        args_end += 1;
+                    }
+                    const arguments_json = request[args_start + 1 .. args_end];
+                    try server.handleToolsCall(tool_name, arguments_json, &stdout_writer);
+                } else {
+                    var args_end = args_start + 1;
+                    while (args_end < request.len and brace_count > 0) {
+                        if (request[args_end] == '{') brace_count += 1;
+                        if (request[args_end] == '}') brace_count -= 1;
+                        args_end += 1;
+                    }
+                    const arguments_json = request[args_start..args_end];
+                    try server.handleToolsCall(tool_name, arguments_json, &stdout_writer);
+                }
+            }
+
+            // Update buffer_start after processing newline-terminated request
+            buffer_start = available.len - pos;
+            if (buffer_start > 0) {
+                std.mem.copyForwards(u8, read_buffer[0..], available[pos..]);
             }
         }
     }
