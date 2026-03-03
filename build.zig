@@ -1207,6 +1207,21 @@ pub fn build(b: *std.Build) void {
     const needle_test_step = b.step("needle-test", "Run NEEDLE tests");
     needle_test_step.dependOn(&run_needle_tests.step);
 
+    // NEEDLE E2E MCP tests — 28 tests for Model Context Protocol tools
+    const needle_e2e_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("tests/needle/e2e_mcp_test.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "needle", .module = needle_mod },
+            },
+        }),
+    });
+    const run_needle_e2e_tests = b.addRunArtifact(needle_e2e_tests);
+    const needle_e2e_step = b.step("needle-e2e-test", "Run NEEDLE E2E MCP tests (28 tests)");
+    needle_e2e_step.dependOn(&run_needle_e2e_tests.step);
+
     // ═══════════════════════════════════════════════════════════════════════════
     // NEEDLE-MCP — Model Context Protocol Server
     // ═══════════════════════════════════════════════════════════════════════════
