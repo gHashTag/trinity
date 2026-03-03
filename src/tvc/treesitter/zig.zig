@@ -184,17 +184,17 @@ pub const Node = struct {
 
     /// Check if node is named
     pub fn isNamed(self: Node) bool {
-        return c.ts_node_is_named(self.ptr) != 0;
+        return c.ts_node_is_named(self.ptr);
     }
 
     /// Check if node is extra
     pub fn isExtra(self: Node) bool {
-        return c.ts_node_is_extra(self.ptr) != 0;
+        return c.ts_node_is_extra(self.ptr);
     }
 
     /// Check if node has error
     pub fn hasError(self: Node) bool {
-        return c.ts_node_has_error(self.ptr) != 0;
+        return c.ts_node_has_error(self.ptr);
     }
 
     /// Extract node text from source
@@ -265,7 +265,7 @@ pub const Query = struct {
         const query = c.ts_query_new(
             language,
             source.ptr,
-            source.len,
+            @intCast(source.len),
             &error_offset,
             &error_type,
         ) orelse return error.QueryError;
@@ -279,14 +279,32 @@ pub const Query = struct {
     }
 };
 
+/// Query capture (match result)
+pub const QueryCapture = struct {
+    node: Node,
+    index: u32,
+};
+
+/// Query match (all captures for one pattern match)
+pub const QueryMatch = struct {
+    id: u32,
+    pattern_index: u16,
+    captures: []QueryCapture,
+};
+
 /// Query cursor for executing queries
 pub const QueryCursor = struct {
     ptr: *c.TSQueryCursor,
+    capture_buffer: std.ArrayList(QueryCapture),
+    allocator: Allocator,
 
     /// Create a new query cursor
-    pub fn init() QueryCursor {
+    pub fn init(allocator: Allocator) QueryCursor {
+        const ptr = c.ts_query_cursor_new() orelse unreachable;
         return QueryCursor{
-            .ptr = c.ts_query_cursor_new(),
+            .ptr = ptr,
+            .capture_buffer = .{ .items = &.{}, .capacity = 0 },
+            .allocator = allocator,
         };
     }
 
@@ -295,8 +313,36 @@ pub const QueryCursor = struct {
         c.ts_query_cursor_exec(self.ptr, query.ptr, node.ptr);
     }
 
+    /// Get next match from the query cursor
+    /// Returns null when no more matches
+    pub fn nextMatch(self: *QueryCursor) !?QueryMatch {
+        self.capture_buffer.clearRetainingCapacity();
+
+        var match: c.TSQueryMatch = undefined;
+        var capture_index: u32 = undefined;
+        const has_match = c.ts_query_cursor_next_capture(self.ptr, &match, &capture_index);
+
+        if (!has_match) return null;
+
+        // Copy captures into buffer
+        for (0..@intCast(match.capture_count)) |i| {
+            const capture = match.captures[i];
+            try self.capture_buffer.append(self.allocator, QueryCapture{
+                .node = Node{ .ptr = capture.node },
+                .index = @intCast(capture.index),
+            });
+        }
+
+        return QueryMatch{
+            .id = match.id,
+            .pattern_index = match.pattern_index,
+            .captures = self.capture_buffer.items,
+        };
+    }
+
     /// Destroy the cursor
     pub fn deinit(self: *QueryCursor) void {
+        self.capture_buffer.deinit(self.allocator);
         c.ts_query_cursor_delete(self.ptr);
     }
 };
