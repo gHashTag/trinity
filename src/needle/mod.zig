@@ -21,6 +21,15 @@ pub const edit = @import("edit.zig");
 // Quality gates and safety checks
 pub const check = @import("check.zig");
 
+// Graph multi-file refactoring (Tier 2)
+pub const graph = @import("graph.zig");
+
+// Symbol extraction (Tier 2)
+pub const symbols = @import("symbols.zig");
+
+// Safe multi-file refactoring (Tier 2)
+pub const refactor = @import("refactor.zig");
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // PUBLIC API - Core Types
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -68,3 +77,52 @@ pub const NeedleChecker = check.NeedleChecker;
 // Convenience functions
 pub const checkSource = check.checkSource;
 pub const checkFile = check.checkFile;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC API - Graph (Tier 2)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const CallGraph = graph.CallGraph;
+pub const GraphNode = graph.GraphNode;
+pub const Symbol = graph.Symbol;
+pub const SymbolKind = graph.SymbolKind;
+pub const Edge = graph.Edge;
+pub const EdgeType = graph.EdgeType;
+pub const EditPlan = graph.EditPlan;
+pub const UsageLocation = graph.UsageLocation;
+pub const UsageList = graph.UsageList;
+pub const MultiFileEditResult = graph.MultiFileEditResult;
+
+// Graph algorithms
+pub const computeEditOrder = graph.computeEditOrder;
+pub const detectCycles = graph.detectCycles;
+pub const computeImpactZone = graph.computeImpactZone;
+pub const previewMultiFileEdit = graph.previewMultiFileEdit;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC API - Symbol Extraction (Tier 2)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const ExtractionResult = symbols.ExtractionResult;
+pub const ZigSymbolExtractor = symbols.ZigSymbolExtractor;
+
+// Symbol extraction functions
+pub const buildCallGraph = symbols.buildCallGraph;
+pub const buildCallGraphSingleFile = symbols.buildCallGraphSingleFile;
+pub const findUsages = symbols.findUsages;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC API - Safe Refactoring (Tier 2)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const RefactorKind = refactor.RefactorKind;
+pub const RefactorConfig = refactor.RefactorConfig;
+pub const FileBackup = refactor.FileBackup;
+pub const RefactorContext = refactor.RefactorContext;
+
+// Refactor functions
+pub const planRename = refactor.planRename;
+pub const previewRename = refactor.previewRename;
+pub const applyRename = refactor.applyRename;
+pub const extractFunction = refactor.extractFunction;
+pub const generateDiffPreview = refactor.generateDiffPreview;
