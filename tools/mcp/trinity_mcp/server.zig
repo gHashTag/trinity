@@ -1076,20 +1076,33 @@ pub fn main() !void {
 
     var read_buffer: [65536]u8 = undefined;
     var buffer_used: usize = 0;
+    var eof_reached = false;
 
     while (true) {
-        // Read more data if buffer has space
-        if (buffer_used < read_buffer.len) {
-            const bytes_read = posix.read(0, read_buffer[buffer_used..]) catch |err| {
-                if (err == error.EndOfStream) break;
-                continue;
-            };
-            if (bytes_read == 0) break;
-            buffer_used += bytes_read;
+        // Read more data if buffer has space and we haven't reached EOF
+        if (!eof_reached and buffer_used < read_buffer.len) {
+            const read_result = posix.read(0, read_buffer[buffer_used..]);
+
+            if (read_result) |bytes_read| {
+                if (bytes_read == 0) {
+                    eof_reached = true;
+                } else {
+                    buffer_used += bytes_read;
+                }
+            } else |err| {
+                if (err == error.EndOfStream) {
+                    eof_reached = true;
+                }
+            }
         }
 
         // Try to read a complete MCP message
-        const msg = (try readMCPMessage(allocator, &read_buffer, &buffer_used)) orelse continue;
+        const msg = (try readMCPMessage(allocator, &read_buffer, &buffer_used)) orelse {
+            // If no complete message and we've reached EOF with empty buffer, exit
+            if (eof_reached and buffer_used == 0) break;
+            // Otherwise, try to read more data (if not EOF) or continue processing
+            continue;
+        };
         defer msg.deinit(allocator);
 
         const request = msg.content;
