@@ -868,6 +868,16 @@ fn routeSignalNetReal(allocator: Allocator, db: *ForgeDB, net: *Net) !void {
             // via IMUX_L34 (connects to IOI_IMUX34_1 → OLOGIC0_D1)
             dst_y = dst_y + 1; // INT tile is one row above IOB
             in_wire_idx = 34; // IMUX_L34 feeds IOI_OLOGIC0_D1
+        } else if (dst_cell.cell_type == .CARRY4 and std.mem.eql(u8, sink.pin_name, "S")) {
+            // CARRY4.S input: the signal feeds the LUT at the corresponding carry position.
+            // In 7-series, CARRY4.S[n] is driven internally by the LUT O6 output at position n.
+            // The LUT acts as identity pass-through, so we route to the LUT input pin.
+            // Use the source FF's bel position to determine which carry position (A/B/C/D).
+            // d_imux = {1, 18, 29, 38} maps to I3(A), I2(B), I2(C), I3(D).
+            const carry_d_imux = [4]u8{ 1, 18, 29, 38 };
+            const src_bel_idx: u8 = if (src_cell.bel) |b| @intCast(b.bel_index) else 0;
+            const carry_pos: u8 = src_bel_idx % 4;
+            in_wire_idx = carry_d_imux[carry_pos];
         } else {
             in_wire_idx = getInputWireIndex(sink.pin_name, dst_cell.bel);
         }
@@ -963,6 +973,8 @@ fn getInputWireIndex(pin_name: []const u8, bel: ?types.BelId) u8 {
         std.mem.eql(u8, pin_name, "S") or std.mem.eql(u8, pin_name, "C"))
     {
         // CE/SR/CLK — handled by infrastructure PIPs (FAN/CTRL/CLK), not signal routing
+        // Note: CARRY4 "S" (sum input) is handled by special case in routeSignalNetReal
+        // before this function is called, so this only matches FDSE.S (synchronous set)
         return 0; // Marker: not routed as IMUX
     }
     // Default: use I1 mapping
