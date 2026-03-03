@@ -209,10 +209,16 @@ pub const Command = enum {
     holo_cmd,
     release_absolute,
     omega_evolve,
+    // TRINITY OS v1.0 (Order #034)
+    launch,
     // Info
     info,
     version,
     help,
+    // NEEDLE - Structural Editor Core
+    needle,
+    needle_search,
+    needle_check,
 };
 
 pub const CLIState = struct {
@@ -780,10 +786,16 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "holo") or std.mem.eql(u8, arg, "holographic")) return .holo_cmd;
     if (std.mem.eql(u8, arg, "release") or std.mem.eql(u8, arg, "release-absolute")) return .release_absolute;
     if (std.mem.eql(u8, arg, "omega-evolve") or std.mem.eql(u8, arg, "evolve-omega")) return .omega_evolve;
+    // TRINITY OS v1.0 (Order #034)
+    if (std.mem.eql(u8, arg, "launch")) return .launch;
     // Info
     if (std.mem.eql(u8, arg, "info")) return .info;
     if (std.mem.eql(u8, arg, "version") or std.mem.eql(u8, arg, "--version") or std.mem.eql(u8, arg, "-v")) return .version;
     if (std.mem.eql(u8, arg, "help") or std.mem.eql(u8, arg, "--help") or std.mem.eql(u8, arg, "-h")) return .help;
+    // NEEDLE - Structural Editor Core
+    if (std.mem.eql(u8, arg, "needle") or std.mem.eql(u8, arg, "nedl")) return .needle;
+    if (std.mem.eql(u8, arg, "needle-search") or std.mem.eql(u8, arg, "needle-search") or std.mem.eql(u8, arg, "ns")) return .needle_search;
+    if (std.mem.eql(u8, arg, "needle-check") or std.mem.eql(u8, arg, "nc")) return .needle_check;
     return .none;
 }
 

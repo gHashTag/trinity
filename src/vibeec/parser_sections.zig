@@ -171,11 +171,19 @@ pub fn parseConstants(source: []const u8, pos: usize, line: usize, allocator: Al
         var constant = Constant{
             .name = kr.key,
             .value = 0,
+            .string_value = "",
+            .is_string = false,
             .description = "",
         };
 
         if (inline_vr.value.len > 0) {
-            constant.value = std.fmt.parseFloat(f64, inline_vr.value) catch 0;
+            // Check if value is a quoted string
+            if (inline_vr.value.len >= 2 and inline_vr.value[0] == '"' and inline_vr.value[inline_vr.value.len - 1] == '"') {
+                constant.string_value = inline_vr.value[1 .. inline_vr.value.len - 1];
+                constant.is_string = true;
+            } else {
+                constant.value = std.fmt.parseFloat(f64, inline_vr.value) catch 0;
+            }
             const ns = pu.skipToNextLine(source, s.pos, s.line);
             s = ns;
         } else {
@@ -198,7 +206,12 @@ pub fn parseConstants(source: []const u8, pos: usize, line: usize, allocator: Al
 
                 if (std.mem.eql(u8, fkr.key, "value")) {
                     const fvr = pu.readValue(source, s.pos);
-                    constant.value = std.fmt.parseFloat(f64, fvr.value) catch 0;
+                    if (fvr.value.len >= 2 and fvr.value[0] == '"' and fvr.value[fvr.value.len - 1] == '"') {
+                        constant.string_value = fvr.value[1 .. fvr.value.len - 1];
+                        constant.is_string = true;
+                    } else {
+                        constant.value = std.fmt.parseFloat(f64, fvr.value) catch 0;
+                    }
                     s.pos = fvr.new_pos;
                 } else if (std.mem.eql(u8, fkr.key, "description")) {
                     const fvr = pu.readQuotedValue(source, s.pos);

@@ -603,12 +603,20 @@ pub const VibeeParser = struct {
             var constant = Constant{
                 .name = name,
                 .value = 0,
+                .string_value = "",
+                .is_string = false,
                 .description = "",
             };
 
             if (inline_value.len > 0) {
-                // Inline формат: PHI: 1.618
-                constant.value = std.fmt.parseFloat(f64, inline_value) catch 0;
+                // Check if value is a quoted string
+                if (inline_value.len >= 2 and inline_value[0] == '"' and inline_value[inline_value.len - 1] == '"') {
+                    constant.string_value = inline_value[1 .. inline_value.len - 1];
+                    constant.is_string = true;
+                } else {
+                    // Inline формат: PHI: 1.618
+                    constant.value = std.fmt.parseFloat(f64, inline_value) catch 0;
+                }
                 self.skipToNextLine();
             } else {
                 // Nested формат
@@ -629,7 +637,12 @@ pub const VibeeParser = struct {
 
                     if (std.mem.eql(u8, field_key, "value")) {
                         const value_str = self.readValue();
-                        constant.value = std.fmt.parseFloat(f64, value_str) catch 0;
+                        if (value_str.len >= 2 and value_str[0] == '"' and value_str[value_str.len - 1] == '"') {
+                            constant.string_value = value_str[1 .. value_str.len - 1];
+                            constant.is_string = true;
+                        } else {
+                            constant.value = std.fmt.parseFloat(f64, value_str) catch 0;
+                        }
                     } else if (std.mem.eql(u8, field_key, "description")) {
                         constant.description = self.readQuotedValue();
                     }

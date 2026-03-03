@@ -426,3 +426,55 @@ test "phi_constants" {
     try std.testing.expectApproxEqAbs(PHI * PHI_INV, 1.0, 1e-10);
     try std.testing.expectApproxEqAbs(PHI_SQ - PHI, 1.0, 1e-10);
 }
+// ═══════════════════════════════════════════════════════════════════════════════
+// SPEC-LEVEL TESTS - Integration tests from test_cases:
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "parse_default_flags" {
+// Given: empty args
+// Expected: port 8080
+// Test: parse_default_flags
+    // (Test setup and assertions to be implemented)
+    _ = @as(usize, 0); // Compile-time check
+}
+
+test "parse_port_flag" {
+// Given: --port 9090
+// Expected: port 9090
+// Test: parse_port_flag
+    // (Test setup and assertions to be implemented)
+    _ = @as(usize, 0); // Compile-time check
+}
+
+test "parse_help_flag" {
+// Given: --help
+// Expected: show_help true
+// Test: parse_help_flag
+    // (Test setup and assertions to be implemented)
+    _ = @as(usize, 0); // Compile-time check
+}
+
+test "validate_port_valid" {
+// Given: port 8080
+// Expected: true
+// Test: validate_port_valid
+    // (Test setup and assertions to be implemented)
+    _ = @as(usize, 0); // Compile-time check
+}
+
+test "validate_port_zero" {
+// Given: port 0
+// Expected: false
+// Test: validate_port_zero
+    // (Test setup and assertions to be implemented)
+    _ = @as(usize, 0); // Compile-time check
+}
+
+test "content_length_parse" {
+// Given: Content-Length 1024
+// Expected: 1024
+// Test: content_length_parse
+    // (Test setup and assertions to be implemented)
+    _ = @as(usize, 0); // Compile-time check
+}
+

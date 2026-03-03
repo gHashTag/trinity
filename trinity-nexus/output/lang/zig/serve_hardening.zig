@@ -2,8 +2,8 @@
 // serve_hardening_integration v1.0.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Sacred formula: V = n × 3^k × π^m × φ^p × e^q
-// Golden identity: φ² + 1/φ² = 3
+// Священная формула: V = n × 3^k × π^m × φ^p × e^q
+// Золотая идентичность: φ² + 1/φ² = 3
 //
 // Author: 
 // DO NOT EDIT - This file is auto-generated
@@ -15,12 +15,12 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// CONSTANTS
+// КОНСТАНТЫ
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const CHAT_MAX_BODY: f64 = 65536;
 
-pub const CLUSTER_STATE_FILE: f64 = 0;
+pub const CLUSTER_STATE_FILE: []const u8 = ".tri-cluster.json";
 
 pub const MAX_NODES: f64 = 64;
 
@@ -28,7 +28,7 @@ pub const MAX_FEDERATIONS: f64 = 16;
 
 pub const WRITE_TIMEOUT_MS: f64 = 5000;
 
-// Basic φ-constants (Sacred Formula)
+// Базовые φ-константы (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
 pub const PHI_INV: f64 = 0.618033988749895;
 pub const PHI_SQ: f64 = 2.618033988749895;
@@ -40,7 +40,7 @@ pub const E: f64 = 2.718281828459045;
 pub const PHOENIX: i64 = 999;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TYPES
+// ТИПЫ
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Serializable view of NodeEntry for safe JSON output
@@ -114,12 +114,12 @@ pub const Trit = enum(i8) {
     }
 };
 
-/// Check TRINITY identity: φ² + 1/φ² = 3
+/// Проверка TRINITY identity: φ² + 1/φ² = 3
 fn verify_trinity() f64 {
     return PHI * PHI + 1.0 / (PHI * PHI);
 }
 
-/// φ-interpolation
+/// φ-интерполяция
 fn phi_lerp(a: f64, b: f64, t: f64) f64 {
     const phi_t = math.pow(f64, t, PHI_INV);
     return a + (b - a) * phi_t;
