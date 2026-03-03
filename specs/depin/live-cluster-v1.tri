@@ -200,3 +200,48 @@ implementation: |
       if (std.mem.eql(u8, role, "secondary")) return 1.2;
       return 1.0;
   }
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# WALLET + DASHBOARD EXTENSION — Cycle #113
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# WALLET INTEGRATION TYPES
+types:
+  WalletProvider:
+    fields:
+      name: String  # metamask, phantom, walletconnect
+      chain_id: Int
+      rpc_url: String
+
+  ClaimButton:
+    fields:
+      wallet_address: String
+      amount: Float
+      disabled: Bool
+      last_claim: Int
+
+# WALLET BEHAVIORS
+behaviors:
+  - name: connectWalletProvider
+    given: WalletProvider config
+    when: User clicks "Connect Wallet" in dashboard
+    then: Initiate Web3 provider, request account access
+
+  - name: renderClaimButton
+    given: Dashboard with connected wallet
+    when: Page renders
+    then: Show claim button with pending amount, enable if > threshold
+
+  - name: handleClaimClick
+    given: User clicks claim button
+    when: ClaimButton clicked
+    then: Sign transaction via wallet, broadcast, show confirmation
+
+test_cases:
+  - name: wallet_connect_metamask
+    given:
+      provider: "metamask"
+      chain_id: 1
+    expected:
+      connection_succeeds: true
+      account_returned: true
