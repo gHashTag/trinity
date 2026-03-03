@@ -193,7 +193,7 @@ pub const SemanticIndex = struct {
 
     /// Search for similar vectors
     pub fn search(self: *SemanticIndex, query: []const f32, top_k: usize, min_similarity: f32) !std.ArrayList(VSAMatch) {
-        var results = std.ArrayList(VSAMatch).init(self.allocator);
+        var results = std.ArrayList(VSAMatch).empty;
         errdefer {
             for (results.items) |*r| {
                 r.deinit();
@@ -215,7 +215,7 @@ pub const SemanticIndex = struct {
                 match.similarity = similarity;
                 match.context_match = similarity; // Simplified for now
                 match.computeConfidence();
-                try results.append(match);
+                try results.append(self.allocator, match);
             }
         }
 
@@ -228,7 +228,7 @@ pub const SemanticIndex = struct {
             for (results.items[top_k..]) |*r| {
                 r.deinit();
             }
-            try results.resize(top_k);
+            try results.resize(self.allocator, top_k);
         }
 
         return results;
@@ -397,10 +397,10 @@ pub fn buildSemanticIndex(
     var file_iter = graph.files.iterator();
     while (file_iter.next()) |file_entry| {
         const file_path = file_entry.key_ptr.*;
-        const ast_node = file_entry.value_ptr.*;
+        const ast_node_ptr = file_entry.value_ptr;
 
         // Generate embeddings for all top-level symbols in this file
-        try indexASTNode(allocator, &index, ast_node, file_path, embedding_dim);
+        try indexASTNode(allocator, &index, ast_node_ptr, file_path, embedding_dim);
     }
 
     return index;
@@ -492,7 +492,7 @@ pub fn semanticSearch(
     return index.search(query_embedding, top_k, min_similarity);
 }
 
-/// semanticFind - Fast semantic search using HNSW index (Tier 3.5)
+/// semanticFind - Fast semantic search using SemanticIndex + HNSW (Tier 3.5)
 /// This is the primary API for semantic code search with <100ms performance
 pub fn semanticFind(
     graph: *const zig_parser.ASTGraph,
@@ -500,14 +500,22 @@ pub fn semanticFind(
     top_k: usize,
     allocator: std.mem.Allocator,
 ) ![]VSAMatch {
-    _ = graph;
-    _ = query;
-    _ = top_k;
-    _ = allocator;
+    // Build semantic index from graph
+    var index = try buildSemanticIndex(allocator, graph, DEFAULT_EMBEDDING_DIM);
+    defer index.deinit();
 
-    // TODO: Implement full HNSW-backed semantic search
-    // For now, return empty slice
-    return &.{};
+    // Use semantic search with HNSW backend
+    const min_similarity: f32 = 0.6; // Lower threshold for broader results
+    var results = try semanticSearch(&index, query, top_k, min_similarity, allocator);
+
+    // Convert ArrayList to slice (caller owns the memory)
+    const slice = try allocator.alloc(VSAMatch, results.items.len);
+    for (results.items, 0..) |item, i| {
+        slice[i] = item;
+    }
+    results.deinit(allocator);
+
+    return slice;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

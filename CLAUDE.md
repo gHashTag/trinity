@@ -267,6 +267,67 @@ zig build vibee -- help                     # Show all commands
 
 ---
 
+## GOLDEN CHAIN v4.0 — 22 Links Autonomous Pipeline
+
+**The Golden Chain is Trinity's self-improving development pipeline.**
+
+```bash
+tri pipeline run "task description"
+```
+
+### All 22 Links:
+
+| # | Link | Description | Critical |
+|---|-------|-------------|----------|
+| 0 | TVC_GATE | Distributed cache with φ⁻¹ threshold | ✅ |
+| 1 | BASELINE | Analyze v(n-1) via git history | - |
+| 2 | METRICS | Load metrics/v{n-1}.json | - |
+| 3 | PAS_ANALYZE | SUCCESS_HISTORY.md pattern analysis | - |
+| 4 | TECH_TREE | Scan src/ for .zig modules | - |
+| 5 | STRICT_CHECK | VIBEE-first compliance | - |
+| 6 | SPEC_CREATE | Generate .vibee spec | - |
+| 7 | CODE_GENERATE | vibee gen → .zig code | ✅ |
+| 8 | SACRED_ANALYZE | Sacred Intelligence analysis | - |
+| 9 | TEST_RUN | zig build test + parsing | ✅ |
+| 10 | BENCHMARK_PREV | Compare to v(n-1) | ✅ |
+| 11 | SWE_FIX | Auto-fix errors via SWE Agent | - |
+| 12 | BENCHMARK_EXTERNAL | llama.cpp/vLLM comparison | - |
+| 13 | BENCHMARK_THEORETICAL | Gap to φ-optimal | - |
+| 14 | DELTA_REPORT | Improvement report | - |
+| 15 | OPTIMIZE | Auto-optimization (optional) | - |
+| 16 | DOCS | npm run build | - |
+| 17 | TOXIC_VERDICT | Russian self-assessment | - |
+| 18 | GIT | Auto-commit (if tests pass) | - |
+| 19 | LOOP_DECISION | Continue to v(n+1) or exit | ✅ |
+| 20 | FLY_DEPLOY | Auto-deploy to Fly.io | - |
+| 21 | **ETERNAL_SELF_EVOLUTION** | **Pipeline improves itself** | ✅ |
+
+### Key Constants:
+- **PHI** (φ) = 1.618033988749895
+- **PHI_INVERSE** (φ⁻¹) = 0.618033988749895 — **Immortality Threshold**
+- **TRINITY** = 3.0 (φ² + 1/φ²)
+
+### Needle Status:
+- `immortal` — improvement > φ⁻¹ (61.8%) → **KOSHCHEY IMMORTAL**
+- `mortal_improving` — 0% < improvement < φ⁻¹
+- `regression` — improvement ≤ 0 → **Rollback required**
+
+### Exit Criteria (Needle Sharp):
+```
+EXIT_SIGNAL = (
+    tests_pass AND
+    spec_complete AND
+    critical_assessment_written AND
+    tech_tree_options_proposed AND
+    achievement_documented AND
+    committed AND
+    deployed AND
+    immortal  // improvement > φ⁻¹
+)
+```
+
+---
+
 ## TRI CLI Commands (v8.27 - STRICT MODE)
 
 **TRI** is the Unified Trinity Command Line Interface — the primary orchestrator for all development workflows.
@@ -279,26 +340,26 @@ zig build tri                    # Build TRI binary
 ./zig-out/bin/tri help           # Show all commands
 ```
 
-### Core Commands (Link 1-6)
+### Core Commands (Golden Chain Links 0-21)
 
 | Command | Description | Link |
 |---------|-------------|------|
 | `tri chat [--stream] <msg>` | Interactive chat (vision + voice + tools) | - |
 | `tri code [--stream] <prompt>` | Generate code with typing effect | - |
 | `tri gen <spec.vibee>` | Compile VIBEE spec to Zig/Verilog | - |
-| `tri pipeline run <task>` | Execute 17-link Golden Chain (incl TVC) | 0-17 |
-| `tri decompose <task>` | Break task into sub-tasks (Link 4) | 4 |
-| `tri plan <task>` | Generate implementation plan (Link 5) | 5 |
-| `tri spec_create <name>` | Create .vibee spec template (Link 6) | 6 |
-| `tri loop-decide [mode]` | Loop decision: CONTINUE/EXIT (Link 17) | 17 |
+| `tri pipeline run <task>` | **Execute 22-link Golden Chain v4.0** | 0-21 |
+| `tri decompose <task>` | Break task into sub-tasks | 4 |
+| `tri plan <task>` | Generate implementation plan | 5 |
+| `tri spec_create <name>` | Create .vibee spec template | 6 |
+| `tri loop-decide [mode]` | Loop decision: CONTINUE/EXIT | 19 |
 
-### Verification Commands (Link 7-13)
+### Verification Commands (Link 7-16)
 
 | Command | Description |
 |---------|-------------|
-| `tri verify` | Run tests + benchmarks (Links 7-11) |
+| `tri verify` | Run tests + benchmarks (Links 7-13) |
 | `tri bench` | Run performance benchmarks |
-| `tri verdict` | Generate toxic verdict (Link 14) |
+| `tri verdict` | Generate toxic verdict (Link 17) |
 
 ### SWE Agent Commands
 

@@ -231,6 +231,8 @@ pub const Command = enum {
     omega_evolve,
     // TRINITY OS v1.0 (Order #034)
     launch,
+    // CLI Integration (Cycle #118)
+    integrate,
     // Info
     info,
     version,
@@ -861,6 +863,8 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "omega-evolve") or std.mem.eql(u8, arg, "evolve-omega")) return .omega_evolve;
     // TRINITY OS v1.0 (Order #034)
     if (std.mem.eql(u8, arg, "launch")) return .launch;
+    // CLI Integration (Cycle #118)
+    if (std.mem.eql(u8, arg, "integrate") or std.mem.eql(u8, arg, "int")) return .integrate;
     // Info
     if (std.mem.eql(u8, arg, "info")) return .info;
     if (std.mem.eql(u8, arg, "version") or std.mem.eql(u8, arg, "--version") or std.mem.eql(u8, arg, "-v")) return .version;

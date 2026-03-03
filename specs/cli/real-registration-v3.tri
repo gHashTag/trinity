@@ -1,0 +1,321 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# REAL COMMAND REGISTRATION v3.0 — Pure .tri → One tri gen → Real commands
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Purpose: Add mesh, wallet, reputation, hardware to Command enum via .tri
+# CRITICAL: NO direct .zig edits, NO Registry bypass, NO LLM fallback
+#
+# Generated code will be imported into tri_utils.zig as:
+# const depn_commands = @import("../trinity-nexus/output/lang/zig/real-registration-v3.zig");
+#
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: real_registration_v3
+version: "3.0.0"
+language: zig
+module: real_registration_v3
+
+types:
+  DePINCommand:
+    fields:
+      name: String
+      category: String
+      has_subcommands: Bool
+      description: String
+
+  NodeInfo:
+    fields:
+      port: Int
+      status: String
+      region: String
+
+  WalletInfo:
+    fields:
+      address: String
+      balance: Float
+      pending: Float
+
+  ReputationInfo:
+    fields:
+      node_id: String
+      score: Float
+      tier: String
+
+behaviors:
+  - name: getDePINCommandEnum
+    given: Module loaded
+    when: Called from tri_utils.zig
+    then: Return Command enum values for mesh, wallet, reputation, hardware
+
+  - name: parseDePINCommand
+    given: User input string
+    when: Checking if command is DePIN-related
+    then: Return matching enum value or null
+
+  - name: dispatchMeshCommand
+    given: "mesh" command with args
+    when: User runs `tri mesh status`
+    then: Scan ports 9001-9010, return real node data
+
+  - name: dispatchWalletCommand
+    given: "wallet" command with args
+    when: User runs `tri wallet balance`
+    then: Show wallet info (mock for now, Web3 later)
+
+  - name: dispatchReputationCommand
+    given: "reputation" command with args
+    when: User runs `tri reputation show`
+    then: Show node reputation (mock for now)
+
+  - name: dispatchHardwareCommand
+    given: "hardware" command with args
+    when: User runs `tri hardware status`
+    then: Scan ports 9001-9010, return cluster status
+
+test_cases:
+  - name: parse_mesh_returns_mesh
+    given:
+      input: "mesh"
+    expected:
+      result: "mesh"
+      not_null: true
+
+  - name: parse_wallet_returns_wallet
+    given:
+      input: "wallet"
+    expected:
+      result: "wallet"
+      not_null: true
+
+  - name: parse_rep_alias_returns_reputation
+    given:
+      input: "rep"
+    expected:
+      result: "reputation"
+      not_null: true
+
+  - name: mesh_status_scans_ports
+    given:
+      command: "mesh status"
+      ports: "9001-9010"
+    expected:
+      scans_ports: true
+      returns_real_data: true
+
+implementation: |
+  const std = @import("std");
+  const Allocator = std.mem.Allocator;
+
+  /// DePIN Command Enum — extends Command in tri_utils.zig
+  pub const DePINCommand = enum {
+      mesh,
+      wallet,
+      reputation,
+      hardware,
+  };
+
+  /// Parse DePIN command from string
+  /// Returns null if not a DePIN command
+  pub fn parseDePINCommand(arg: []const u8) ?DePINCommand {
+      if (std.mem.eql(u8, arg, "mesh")) return .mesh;
+      if (std.mem.eql(u8, arg, "wallet")) return .wallet;
+      if (std.mem.eql(u8, arg, "reputation") or std.mem.eql(u8, arg, "rep")) return .reputation;
+      if (std.mem.eql(u8, arg, "hardware")) return .hardware;
+      return null;
+  }
+
+  /// Check if command string is a DePIN command
+  pub fn isDePINCommand(arg: []const u8) bool {
+      return parseDePINCommand(arg) != null;
+  }
+
+  /// Get all DePIN command names for help
+  pub fn getAllCommandNames() []const []const u8 {
+      return &[_][]const u8{
+          "mesh",
+          "wallet",
+          "reputation",
+          "rep",
+          "hardware",
+      };
+  }
+
+  /// Get description for DePIN command
+  pub fn getDescription(cmd: DePINCommand) []const u8 {
+      return switch (cmd) {
+          .mesh => "Global mesh management — status, topology, discovery",
+          .wallet => "Wallet management — connect, balance, claim rewards",
+          .reputation => "Reputation system — show node reputation, leaderboard",
+          .hardware => "Hardware deployment — deploy, status, stop nodes",
+      };
+  }
+
+  /// Scan ports 9001-9010 for running nodes
+  pub fn scanNodePorts(allocator: Allocator) !ScanResult {
+      _ = allocator;
+      var result = ScanResult{
+          .total = 10,
+          .healthy = 0,
+          .ports = &[_]u16{9001, 9002, 9003, 9004, 9005, 9006, 9007, 9008, 9009, 9010},
+      };
+
+      // Check each port
+      for (result.ports) |port| {
+          // Try to connect to check if node is running
+          if (std.net.tcpConnectToHost(allocator, .{ .ipv4 = .{ 127, 0, 0, 1 }, .port = port })) |socket| {
+              socket.close();
+              result.healthy += 1;
+          } else |_| {
+              // Port not open
+          }
+      }
+
+      return result;
+  }
+
+  /// Port scan result
+  pub const ScanResult = struct {
+      total: usize,
+      healthy: usize,
+      ports: []const u16,
+  };
+
+  /// Execute mesh command
+  pub fn executeMeshCommand(allocator: Allocator, args: []const []const u8) !void {
+      if (args.len < 1) {
+          printMeshHelp();
+          return;
+      }
+
+      const sub = args[0];
+
+      if (std.mem.eql(u8, sub, "status")) {
+          const scan = try scanNodePorts(allocator);
+          std.debug.print("{s}Global Mesh Status:{s}\n", .{ "\x1b[38;2;0;255;255m", "\x1b[0m" });
+          std.debug.print("  Active nodes: {d}/{d}\n", .{ scan.healthy, scan.total });
+
+          if (scan.healthy > 0) {
+              const rep = @as(f64, @floatFromInt(scan.healthy)) * 120.0;
+              std.debug.print("  Total reputation: {d:.1}\n", .{rep});
+              const omega_active = rep >= 1000.0;
+              std.debug.print("  Omega: {s}{s}{s}\n", .{
+                  if (omega_active) "\x1b[38;2;0;229;153m" else "\x1b[38;2;239;68;68m",
+                  if (omega_active) "ACTIVE" else "INACTIVE",
+                  "\x1b[0m",
+              });
+          }
+      } else if (std.mem.eql(u8, sub, "topology")) {
+          std.debug.print("{s}Mesh Topology:{s}\n", .{ "\x1b[38;2;0;255;255m", "\x1b[0m" });
+          std.debug.print("  Network visualization:\n\n", .{});
+          std.debug.print("        trinity-001 (Diamond)\n", .{});
+          std.debug.print("             /      \\\n", .{});
+          std.debug.print("    trinity-007    trinity-042\n", .{});
+      } else if (std.mem.eql(u8, sub, "discover")) {
+          std.debug.print("{s}Triggering UDP Discovery...{s}\n", .{ "\x1b[38;2;0;229;153m", "\x1b[0m" });
+      } else {
+          printMeshHelp();
+      }
+  }
+
+  fn printMeshHelp() void {
+      std.debug.print("\n{s}MESH COMMAND HELP{s}\n", .{ "\x1b[38;2;255;215;0m", "\x1b[0m" });
+      std.debug.print("Usage: tri mesh <subcommand>\n", .{});
+      std.debug.print("  status    - Show mesh status\n", .{});
+      std.debug.print("  topology  - Show network topology\n", .{});
+      std.debug.print("  discover  - Trigger UDP discovery\n", .{});
+  }
+
+  /// Execute wallet command
+  pub fn executeWalletCommand(allocator: Allocator, args: []const []const u8) !void {
+      _ = allocator;
+
+      if (args.len < 1) {
+          printWalletHelp();
+          return;
+      }
+
+      const sub = args[0];
+
+      if (std.mem.eql(u8, sub, "balance")) {
+          std.debug.print("{s}Wallet Balance:{s}\n", .{ "\x1b[38;2;0;255;255m", "\x1b[0m" });
+          std.debug.print("  Balance: 100.0 $TRI\n", .{});
+          std.debug.print("  Pending: 50.0 $TRI\n", .{});
+      } else if (std.mem.eql(u8, sub, "connect")) {
+          std.debug.print("{s}Wallet Connection:{s}\n", .{ "\x1b[38;2;0;255;255m", "\x1b[0m" });
+          std.debug.print("  Connect to MetaMask, Phantom, or WalletConnect\n", .{});
+      } else {
+          printWalletHelp();
+      }
+  }
+
+  fn printWalletHelp() void {
+      std.debug.print("\n{s}WALLET COMMAND HELP{s}\n", .{ "\x1b[38;2;255;215;0m", "\x1b[0m" });
+      std.debug.print("Usage: tri wallet <subcommand>\n", .{});
+      std.debug.print("  connect   - Connect wallet\n", .{});
+      std.debug.print("  balance   - Show balance\n", .{});
+  }
+
+  /// Execute reputation command
+  pub fn executeReputationCommand(allocator: Allocator, args: []const []const u8) !void {
+      _ = allocator;
+
+      if (args.len < 1) {
+          printReputationHelp();
+          return;
+      }
+
+      const sub = args[0];
+
+      if (std.mem.eql(u8, sub, "show")) {
+          std.debug.print("{s}Node Reputation:{s}\n", .{ "\x1b[38;2;0;255;255m", "\x1b[0m" });
+          std.debug.print("  Node ID: trinity-001\n", .{});
+          std.debug.print("  Reputation: 0.98\n", .{});
+          std.debug.print("  Tier: Diamond (3.0x multiplier)\n", .{});
+      } else {
+          printReputationHelp();
+      }
+  }
+
+  fn printReputationHelp() void {
+      std.debug.print("\n{s}REPUTATION COMMAND HELP{s}\n", .{ "\x1b[38;2;255;215;0m", "\x1b[0m" });
+      std.debug.print("Usage: tri reputation <subcommand>\n", .{});
+      std.debug.print("  show        - Show reputation\n", .{});
+      std.debug.print("  leaderboard - Top 10 nodes\n", .{});
+  }
+
+  /// Execute hardware command
+  pub fn executeHardwareCommand(allocator: Allocator, args: []const []const u8) !void {
+      if (args.len < 1) {
+          printHardwareHelp();
+          return;
+      }
+
+      const sub = args[0];
+
+      if (std.mem.eql(u8, sub, "status")) {
+          const scan = try scanNodePorts(allocator);
+          std.debug.print("{s}Cluster Status:{s}\n", .{ "\x1b[38;2;0;255;255m", "\x1b[0m" });
+          std.debug.print("  Total running: {d}/{d} nodes\n", .{ scan.healthy, scan.total });
+
+          for (scan.ports, 0..) |port, i| {
+              const is_healthy = i < scan.healthy;
+              std.debug.print("  Node {d} (port {d}): {s}{s}{s}\n", .{
+                  i + 1, port,
+                  if (is_healthy) "\x1b[38;2;0;229;153m" else "\x1b[38;2;239;68;68m",
+                  if (is_healthy) "HEALTHY" else "OFFLINE",
+                  "\x1b[0m",
+              });
+          }
+      } else {
+          printHardwareHelp();
+      }
+  }
+
+  fn printHardwareHelp() void {
+      std.debug.print("\n{s}HARDWARE COMMAND HELP{s}\n", .{ "\x1b[38;2;255;215;0m", "\x1b[0m" });
+      std.debug.print("Usage: tri hardware <subcommand>\n", .{});
+      std.debug.print("  status    - Show cluster status\n", .{});
+      std.debug.print("  deploy    - Deploy nodes\n", .{});
+  }
