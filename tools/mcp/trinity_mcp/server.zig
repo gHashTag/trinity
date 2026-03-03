@@ -975,21 +975,11 @@ const MCPMessage = struct {
 
 /// Read a complete MCP message from stdin using Content-Length framing
 fn readMCPMessage(allocator: std.mem.Allocator, buffer: []u8, buffer_used: *usize) !?MCPMessage {
-    if (buffer_used.* == 0) {
-        _ = posix.write(2, "DEBUG: buffer_used == 0\n") catch {};
-        return null;
-    }
-
-    _ = posix.write(2, "DEBUG: Reading from buffer...\n") catch {};
+    if (buffer_used.* == 0) return null;
 
     // Find Content-Length header
-    const header_start = std.mem.indexOf(u8, buffer[0..buffer_used.*], "Content-Length:") orelse {
-        _ = posix.write(2, "DEBUG: No Content-Length header\n") catch {};
-        return null;
-    };
+    const header_start = std.mem.indexOf(u8, buffer[0..buffer_used.*], "Content-Length:") orelse return null;
     const value_start = header_start + "Content-Length:".len;
-
-    _ = posix.write(2, "DEBUG: Found Content-Length header\n") catch {};
 
     // Find the end of the header line (first \r or \n after the header name)
     const header_line_end = blk: {
@@ -997,10 +987,7 @@ fn readMCPMessage(allocator: std.mem.Allocator, buffer: []u8, buffer_used: *usiz
         const idx1 = std.mem.indexOfScalar(u8, search_from, '\r');
         const idx2 = std.mem.indexOfScalar(u8, search_from, '\n');
         break :blk if (idx1) |i| value_start + i else if (idx2) |i| value_start + i else null;
-    } orelse {
-        _ = posix.write(2, "DEBUG: No header line end\n") catch {};
-        return null;
-    };
+    } orelse return null;
 
     // Skip whitespace before the number
     var val_start: usize = value_start;
@@ -1010,40 +997,27 @@ fn readMCPMessage(allocator: std.mem.Allocator, buffer: []u8, buffer_used: *usiz
     var val_end: usize = val_start;
     while (val_end < header_line_end and (buffer[val_end] >= '0' and buffer[val_end] <= '9')) : (val_end += 1) {}
 
-    if (val_start >= val_end) {
-        _ = posix.write(2, "DEBUG: No number found\n") catch {};
-        return null;
-    }
+    if (val_start >= val_end) return null;
 
     const length_str = buffer[val_start..val_end];
-    const content_length = std.fmt.parseInt(usize, length_str, 10) catch {
-        _ = posix.write(2, "DEBUG: Failed to parse length\n") catch {};
-        return null;
-    };
+    const content_length = std.fmt.parseInt(usize, length_str, 10) catch return null;
 
     // Find the end of headers (double newline)
     const headers_end = blk: {
-        // Search from the start of buffer, not from header_start
         const idx1 = std.mem.indexOf(u8, buffer[0..buffer_used.*], "\r\n\r\n");
         const idx2 = std.mem.indexOf(u8, buffer[0..buffer_used.*], "\n\n");
         break :blk if (idx1) |i| i + 4 else if (idx2) |i| i + 2 else null;
-    } orelse {
-        _ = posix.write(2, "DEBUG: No double newline\n") catch {};
-        return null;
-    };
+    } orelse return null;
 
     const body_start = headers_end;
 
     // Check if we have the complete message body
     if (body_start + content_length > buffer_used.*) {
-        _ = posix.write(2, "DEBUG: Incomplete message\n") catch {};
         return null; // Need more data
     }
 
     const body_end = body_start + content_length;
     const content = buffer[body_start..body_end];
-
-    _ = posix.write(2, "DEBUG: Message parsed successfully\n") catch {};
 
     // Extract request ID if present
     var id: ?[]const u8 = null;
@@ -1070,7 +1044,8 @@ fn readMCPMessage(allocator: std.mem.Allocator, buffer: []u8, buffer_used: *usiz
     // Shift remaining data to start of buffer
     const remaining = buffer_used.* - body_end;
     if (remaining > 0) {
-        @memcpy(buffer[0..remaining], buffer[body_end..]);
+        const src = buffer[body_end..buffer_used.*];
+        @memcpy(buffer[0..src.len], src);
     }
     buffer_used.* = remaining;
 
@@ -1118,9 +1093,6 @@ pub fn main() !void {
         defer msg.deinit(allocator);
 
         const request = msg.content;
-
-        // DEBUG: Write to stderr to avoid messing up stdout protocol
-        _ = posix.write(2, "DEBUG: Processing request\n") catch {};
 
         // Process JSON-RPC request
         if (std.mem.indexOf(u8, request, "\"initialize\"") != null) {
