@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.trinity.fpga-monitor</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/playra/trinity-w1/fpga/tools/fpga_monitor_daemon.sh</string>
+        <string>--daemon-loop</string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+        <key>Crashed</key>
+        <true/>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/playra/.trinity/fpga/monitor.stdout.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/playra/.trinity/fpga/monitor.stderr.log</string>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/playra/trinity-w1/fpga/tools</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
+
+    <key>ProcessType</key>
+    <string>Interactive</string>
+</dict>
+</plist>

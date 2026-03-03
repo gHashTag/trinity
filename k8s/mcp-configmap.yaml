@@ -1,0 +1,53 @@
+# Trinity MCP Server - ConfigMap
+# φ² + 1/φ² = 3 = TRINITY
+#
+# Configuration for MCP server behavior
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trinity-mcp-config
+  namespace: default
+  labels:
+    app: trinity-mcp
+data:
+  # Server configuration
+  TRINITY_MCP_PORT: "8899"
+  TRINITY_MCP_HOST: "0.0.0.0"
+
+  # Logging
+  RUST_LOG: "info"
+  TRINITY_LOG_LEVEL: "info"
+
+  # Performance
+  TRINITY_CACHE_SIZE: "100"
+  TRINITY_MAX_CONNECTIONS: "1000"
+  TRINITY_REQUEST_TIMEOUT: "5000"
+
+  # Security
+  TRINITY_ENABLE_SANITIZATION: "true"
+  TRINITY_RATE_LIMIT_PER_MINUTE: "60"
+  TRINITY_MAX_INPUT_SIZE: "1000000"
+
+  # Metrics
+  TRINITY_ENABLE_METRICS: "true"
+  TRINITY_METRICS_PORT: "9090"
+
+---
+# Prometheus ServiceMonitor for metrics scraping
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: trinity-mcp
+  namespace: default
+  labels:
+    app: trinity-mcp
+spec:
+  selector:
+    matchLabels:
+      app: trinity-mcp
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 30s
+    scrapeTimeout: 10s
