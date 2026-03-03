@@ -208,3 +208,45 @@ implementation: |
       
       _ = state;
   }
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# LIVE REWARDS EXTENSION — Cycle #112
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# LIVE REWARDS BEHAVIORS (NEW)
+behaviors:
+  - name: startLiveRewardsAccumulator
+    given: Node started and joined cluster
+    when: Rewards tick every 60 seconds
+    then: Calculate $TRI based on live uptime, update balance
+
+  - name: enableAutoClaim
+    given: RewardClaim with auto_claim enabled
+    when: tri_earned reaches threshold (default 100 $TRI)
+    then: Automatically transfer to wallet
+
+  - name: rewardsObservability
+    given: GET /rewards request
+    when: Monitoring query
+    then: Return live balance, claim history, pending amount
+
+# LIVE REWARDS TEST CASES
+test_cases:
+  - name: live_rewards_10_minutes
+    given:
+      uptime_seconds: 600
+      role: "worker"
+      live_cluster: true
+    expected:
+      tri_earned: 0.6
+      balance_updated: true
+
+  - name: auto_claim_threshold
+    given:
+      tri_earned: 100.0
+      auto_claim: true
+      wallet: "0x1234567890abcdef"
+    expected:
+      auto_claimed: true
+      wallet_received: 100.0
+      pending_reset: 0
