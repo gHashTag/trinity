@@ -192,6 +192,17 @@ pub const Command = enum {
     context_info,
     // Sacred Intelligence (Cycle 94)
     intelligence,
+    // Temporal Engine v1.2 (Order #030)
+    time,
+    install,
+    build_cmd,
+    // Temporal Engine v1.3 (Order #031)
+    deck_generate,
+    fpga_demo,
+    sacred_full_cycle,
+    // Quantum Trinity v1.4 (Order #032)
+    quantum,
+    release_cosmic,
     // Info
     info,
     version,
@@ -746,6 +757,17 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "context") or std.mem.eql(u8, arg, "ctx")) return .context_info;
     // Sacred Intelligence (Cycle 94)
     if (std.mem.eql(u8, arg, "intelligence")) return .intelligence;
+    // Temporal Engine v1.2 (Order #030)
+    if (std.mem.eql(u8, arg, "time") or std.mem.eql(u8, arg, "temporal")) return .time;
+    if (std.mem.eql(u8, arg, "install") or std.mem.eql(u8, arg, "self-update")) return .install;
+    if (std.mem.eql(u8, arg, "build")) return .build_cmd;
+    // Temporal Engine v1.3 (Order #031)
+    if (std.mem.eql(u8, arg, "deck") or std.mem.eql(u8, arg, "deck-generate")) return .deck_generate;
+    if (std.mem.eql(u8, arg, "fpga") or std.mem.eql(u8, arg, "fpga-demo")) return .fpga_demo;
+    if (std.mem.eql(u8, arg, "full-cycle") or std.mem.eql(u8, arg, "sacred-full-cycle")) return .sacred_full_cycle;
+    // Quantum Trinity v1.4 (Order #032)
+    if (std.mem.eql(u8, arg, "quantum")) return .quantum;
+    if (std.mem.eql(u8, arg, "release") or std.mem.eql(u8, arg, "release-cosmic")) return .release_cosmic;
     // Info
     if (std.mem.eql(u8, arg, "info")) return .info;
     if (std.mem.eql(u8, arg, "version") or std.mem.eql(u8, arg, "--version") or std.mem.eql(u8, arg, "-v")) return .version;
