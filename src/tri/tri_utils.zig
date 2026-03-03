@@ -184,6 +184,8 @@ pub const Command = enum {
     gematria,
     formula_cmd,
     sacred,
+    // Biology (v14.0)
+    bio,
     // Chemistry (v6.0)
     // TODO: Fix sacred module exports (AVOGADRO, etc.)
     // chem,
@@ -208,8 +210,6 @@ pub const Command = enum {
     deps,
     // Codebase Context (Cycle 92)
     context_info,
-    // Sacred Intelligence (Cycle 94)
-    intelligence,
     // Temporal Engine v1.2 (Order #030)
     time,
     install,
@@ -576,6 +576,14 @@ pub fn printHelp() void {
     std.debug.print("  {s}sacred{s}                      32 constants + 9 predictions table\n", .{ GREEN, RESET });
     std.debug.print("\n", .{});
 
+    std.debug.print("{s}SACRED BIOLOGY (v14.0):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}bio{s} dna <sequence>           DNA analysis with sacred mathematics\n", .{ GREEN, RESET });
+    std.debug.print("  {s}bio{s} rna <sequence>           RNA analysis with sacred mathematics\n", .{ GREEN, RESET });
+    std.debug.print("  {s}bio{s} protein <sequence>       Protein analysis (1-letter codes)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}bio{s} phi-genome               Sacred genome patterns\n", .{ GREEN, RESET });
+    std.debug.print("  {s}bio{s} codon <codon>            Codon → amino acid lookup\n", .{ GREEN, RESET });
+    std.debug.print("\n", .{});
+
     std.debug.print("{s}SACRED INTELLIGENCE:{s}\n", .{ GOLDEN, RESET });
     std.debug.print("  {s}intelligence{s} [<symbol>.]   Sacred formula + gematria analysis\n", .{ GREEN, RESET });
     std.debug.print("  {s}intel{s} [<symbol>.]          Alias for intelligence\n", .{ GREEN, RESET });
@@ -803,6 +811,8 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "gematria") or std.mem.eql(u8, arg, "gem")) return .gematria;
     if (std.mem.eql(u8, arg, "formula")) return .formula_cmd;
     if (std.mem.eql(u8, arg, "sacred")) return .sacred;
+    // Biology (v14.0)
+    if (std.mem.eql(u8, arg, "bio") or std.mem.eql(u8, arg, "biology")) return .bio;
     // Chemistry (v6.0)
     // TODO: Fix sacred module exports (AVOGADRO, etc.)
     // if (std.mem.eql(u8, arg, "chem") or std.mem.eql(u8, arg, "chemistry")) return .chem;
