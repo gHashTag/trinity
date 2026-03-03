@@ -65,6 +65,7 @@ export default function AutonomousUniverseSection() {
           <p style={{ color: 'rgba(255, 255, 255, 0.7)', textAlign: 'center', fontSize: 12, marginBottom: 16 }}>
             {t('autonomousUniverse.description')}
           </p>
+        </motion.h2>
 
         {/* Mode Switcher */}
         <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 24, flexWrap: 'wrap' }}>
@@ -296,7 +297,7 @@ export default function AutonomousUniverseSection() {
             {data?.status || 'ready'}
           </span>
         </div>
-      </motion.h2>
+      </div>
 
       {/* Footer */}
       <div style={{ marginTop: 16, borderTop: '1px solid rgba(0, 204, 255, 0.1)', paddingTop: 12 }}>
