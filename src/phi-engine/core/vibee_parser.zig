@@ -103,6 +103,8 @@ pub const VibeeSpec = struct {
 pub const Constant = struct {
     name: []const u8,
     value: f64,
+    string_value: []const u8,
+    is_string: bool,
     description: []const u8,
 };
 
@@ -522,12 +524,19 @@ pub const VibeeParser = struct {
             var constant = Constant{
                 .name = name,
                 .value = 0,
+                .string_value = "",
+                .is_string = false,
                 .description = "",
             };
 
             if (inline_value.len > 0) {
-                // Inline формат: PHI: 1.618
-                constant.value = std.fmt.parseFloat(f64, inline_value) catch 0;
+                // Inline формат: PHI: 1.618 or STRING: "value"
+                if (inline_value.len >= 2 and inline_value[0] == '"' and inline_value[inline_value.len - 1] == '"') {
+                    constant.string_value = inline_value[1 .. inline_value.len - 1];
+                    constant.is_string = true;
+                } else {
+                    constant.value = std.fmt.parseFloat(f64, inline_value) catch 0;
+                }
                 self.skipToNextLine();
             } else {
                 // Nested формат

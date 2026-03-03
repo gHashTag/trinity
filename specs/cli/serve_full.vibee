@@ -309,3 +309,22 @@ behaviors:
           std.debug.print("  ====================================================\n\n", .{});
       }
 
+test_cases:
+  - name: parse_default_flags
+    given: empty args
+    expected: port 8080
+  - name: parse_port_flag
+    given: --port 9090
+    expected: port 9090
+  - name: parse_help_flag
+    given: --help
+    expected: show_help true
+  - name: validate_port_valid
+    given: port 8080
+    expected: true
+  - name: validate_port_zero
+    given: port 0
+    expected: false
+  - name: content_length_parse
+    given: Content-Length 1024
+    expected: 1024

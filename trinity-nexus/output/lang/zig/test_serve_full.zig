@@ -108,3 +108,107 @@ test "formatServerBanner: compiles and runs" {
 test "removePidFile: no crash on missing file" {
     serve.removePidFile();
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STRESS TESTS — 64KB POST + daemon mode (Cycle #107)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "stress: parseContentLengthHeader with 64KB value" {
+    const headers = "POST /chat HTTP/1.1\r\nContent-Length: 65536\r\nHost: localhost\r\n\r\n";
+    const cl = serve.parseContentLengthHeader(headers);
+    try std.testing.expect(cl != null);
+    try std.testing.expect(cl.? == 65536);
+}
+
+test "stress: parseContentLengthHeader with exact max" {
+    const headers = "POST /api/compile HTTP/1.1\r\nContent-Length: 65536\r\nContent-Type: application/json\r\n\r\n";
+    const cl = serve.parseContentLengthHeader(headers);
+    try std.testing.expect(cl.? == 65536);
+}
+
+test "stress: parseContentLengthHeader with over-max (100KB)" {
+    const headers = "POST /chat HTTP/1.1\r\nContent-Length: 102400\r\n\r\n";
+    const cl = serve.parseContentLengthHeader(headers);
+    try std.testing.expect(cl != null);
+    try std.testing.expect(cl.? == 102400); // Parsing succeeds; server rejects with 413
+}
+
+test "stress: parseContentLengthHeader with zero" {
+    const headers = "POST /chat HTTP/1.1\r\nContent-Length: 0\r\n\r\n";
+    const cl = serve.parseContentLengthHeader(headers);
+    try std.testing.expect(cl != null);
+    try std.testing.expect(cl.? == 0);
+}
+
+test "stress: parseContentLengthHeader with many headers" {
+    const headers = "POST /chat HTTP/1.1\r\nHost: example.com\r\nAccept: */*\r\nAuthorization: Bearer token123\r\nX-Custom: value\r\nContent-Type: application/json\r\nContent-Length: 32768\r\nConnection: keep-alive\r\n\r\n";
+    const cl = serve.parseContentLengthHeader(headers);
+    try std.testing.expect(cl != null);
+    try std.testing.expect(cl.? == 32768);
+}
+
+test "stress: daemon mode PID file lifecycle" {
+    // Write PID file
+    const wrote = serve.writePidFile();
+    try std.testing.expect(wrote == true);
+
+    // Verify file exists
+    const file = std.fs.cwd().openFile(".tri-serve.pid", .{}) catch |err| {
+        std.debug.print("PID file not found: {}\n", .{err});
+        return error.TestFailed;
+    };
+    var buf: [64]u8 = undefined;
+    const n = file.readAll(&buf) catch 0;
+    file.close();
+    try std.testing.expect(n > 0); // PID was written
+
+    // Remove PID file
+    serve.removePidFile();
+
+    // Verify file is gone
+    _ = std.fs.cwd().openFile(".tri-serve.pid", .{}) catch {
+        return; // Expected: file deleted
+    };
+    return error.TestFailed; // File should not exist
+}
+
+test "stress: validatePort boundary values" {
+    try std.testing.expect(serve.validatePort(1) == true);
+    try std.testing.expect(serve.validatePort(80) == true);
+    try std.testing.expect(serve.validatePort(443) == true);
+    try std.testing.expect(serve.validatePort(8080) == true);
+    try std.testing.expect(serve.validatePort(9090) == true);
+    try std.testing.expect(serve.validatePort(65535) == true);
+    try std.testing.expect(serve.validatePort(0) == false);
+}
+
+test "stress: parseServeFlags all combinations" {
+    // Port + daemon + verbose + host
+    const args1 = [_][]const u8{ "--port", "3000", "--daemon", "--verbose", "--host", "192.168.1.1" };
+    const f1 = serve.parseServeFlags(&args1);
+    try std.testing.expect(f1.port == 3000);
+    try std.testing.expect(f1.daemon == true);
+    try std.testing.expect(f1.verbose == true);
+    try std.testing.expectEqualStrings("192.168.1.1", f1.host);
+
+    // Short flags
+    const args2 = [_][]const u8{ "-p", "4000", "-h" };
+    const f2 = serve.parseServeFlags(&args2);
+    try std.testing.expect(f2.port == 4000);
+    try std.testing.expect(f2.help == true);
+
+    // Invalid port (non-numeric)
+    const args3 = [_][]const u8{ "--port", "abc" };
+    const f3 = serve.parseServeFlags(&args3);
+    try std.testing.expect(f3.port == 8080); // Default on parse failure
+}
+
+test "stress: constants have correct values" {
+    try std.testing.expect(serve.DEFAULT_PORT == 8080);
+    try std.testing.expect(serve.MAX_PORT == 65535);
+    try std.testing.expect(serve.MIN_PORT == 1);
+    try std.testing.expect(serve.MAX_POST_BODY == 65536);
+    try std.testing.expect(serve.MAX_READ_RETRIES == 100);
+    try std.testing.expect(serve.READ_SLEEP_NS == 1000000);
+    try std.testing.expect(serve.ROUTES_COUNT == 16);
+}

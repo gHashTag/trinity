@@ -255,6 +255,12 @@ pub fn main() !void {
         .holo_cmd => commands.runHoloCommand(allocator, cmd_args),
         .release_absolute => commands.runReleaseAbsoluteCommand(allocator),
         .omega_evolve => commands.runOmegaEvolveCommand(allocator),
+        // TRINITY OS v1.0 (Order #034)
+        .launch => commands.runLaunchCommand(allocator, cmd_args),
+        // NEEDLE - Structural Editor Core
+        .needle => try commands.runNeedleCommand(allocator, cmd_args),
+        .needle_search => try commands.runNeedleSearchCommand(allocator, cmd_args),
+        .needle_check => try commands.runNeedleCheckCommand(allocator, cmd_args),
         .deps => utils.printInfo(),
         .info => utils.printInfo(),
         .version => utils.printVersion(),

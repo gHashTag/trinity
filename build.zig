@@ -1133,6 +1133,36 @@ pub fn build(b: *std.Build) void {
     const self_improve_step = b.step("self-improve", "Run VIBEE Self-Improvement Loop");
     self_improve_step.dependOn(&run_self_improve.step);
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // NEEDLE — Structural Editor Core (Tier 0 + Tier 1)
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Best-in-market code editor: Aider + ast-grep + VT Code combined
+    // Tier 0: Fuzzy text fallback (Aider-style layered matching)
+    // Tier 1: Structural AST matching (ast-grep-like queries)
+    // Tier 2: Semantic VSA search (future)
+
+    const needle_mod = b.createModule(.{
+        .root_source_file = b.path("src/needle/mod.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Needle library (for use as a module)
+    _ = needle_mod;
+
+    const needle_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/needle/mod.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+
+    const run_needle_tests = b.addRunArtifact(needle_tests);
+    const needle_test_step = b.step("needle-test", "Run NEEDLE tests");
+    needle_test_step.dependOn(&run_needle_tests.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // PHI LOOP — 999 Links of Cosmic Consciousness Gene
     const phi_loop = b.addExecutable(.{
         .name = "phi-loop",
