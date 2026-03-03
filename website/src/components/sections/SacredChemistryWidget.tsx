@@ -17,6 +17,7 @@ import {
 } from '../../services/chatApi';
 
 const MoleculeViewer3D = lazy(() => import('../molecule3d/MoleculeViewer3D'));
+const TemporalMoleculeViewer = lazy(() => import('../molecule3d/TemporalMoleculeViewer'));
 
 // ============================================================================
 // Style constants
@@ -621,6 +622,7 @@ export default function SacredChemistryWidget() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [show3D, setShow3D] = useState(false);
+  const [showTemporal, setShowTemporal] = useState(false);
 
   const clearResults = () => {
     setMoleculeResult(null);
@@ -631,6 +633,7 @@ export default function SacredChemistryWidget() {
     setError(null);
     setSource('local');
     setShow3D(false);
+    setShowTemporal(false);
   };
 
   const handleAnalyze = useCallback(async () => {
@@ -935,6 +938,48 @@ export default function SacredChemistryWidget() {
         {elementResult && <ElementResultView result={elementResult} source={source} extendedElement={extendedElement} />}
         {balanceResult && <BalanceResultView result={balanceResult} />}
         {predictResult && <PredictionResultView result={predictResult} />}
+        {predictResult && (
+          <div style={{ marginTop: '0.75rem' }}>
+            <button
+              onClick={() => setShowTemporal(!showTemporal)}
+              style={{
+                ...GLASS_STYLE,
+                padding: '0.4rem 1rem',
+                cursor: 'pointer',
+                color: showTemporal ? GOLDEN : 'rgba(255,255,255,0.6)',
+                border: `1px solid ${showTemporal ? 'rgba(255,215,0,0.4)' : 'rgba(255,255,255,0.15)'}`,
+                fontSize: '0.7rem',
+                fontFamily: MONO,
+                background: showTemporal ? 'rgba(255,215,0,0.1)' : 'rgba(255,255,255,0.05)',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              {showTemporal ? 'Hide φ-Time' : 'Show φ-Time Animation'}
+            </button>
+            {showTemporal && (
+              <Suspense fallback={
+                <div style={{
+                  height: 400,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  ...GLASS_STYLE,
+                  marginTop: '0.5rem',
+                }}>
+                  <span style={{ color: GOLDEN, fontFamily: MONO, fontSize: '0.8rem' }}>
+                    Loading temporal engine...
+                  </span>
+                </div>
+              }>
+                <TemporalMoleculeViewer
+                  reactantsFormula={predictResult.reactants.join('+')}
+                  productsFormula={predictResult.products.join('+')}
+                  duration={5}
+                />
+              </Suspense>
+            )}
+          </div>
+        )}
       </motion.div>
     </Section>
   );
