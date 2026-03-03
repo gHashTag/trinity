@@ -472,20 +472,20 @@ fn generateCarry4Feature(allocator: Allocator, db: *const ForgeDB, cell: MappedC
 
     // 8) LOGIC_OUTS — emit based on actual FF placement
     // Q outputs: connect FF output to tile's routing interconnect
-    // LOGIC_OUTS indices: X0: AQ=0,BQ=1,CQ=2,DQ=3; X1: AQ=4,BQ=5,CQ=6,DQ=7
-    const x0_q_indices = [_]u8{ 0, 1, 2, 3 }; // AQ, BQ, CQ, DQ
-    const x1_q_indices = [_]u8{ 4, 5, 6, 7 };
+    // From prjxray: X0 (LL slice) uses LOGIC_OUTS 4-7, X1 (L slice) uses LOGIC_OUTS 0-3
+    const x0_q_indices = [_]u8{ 4, 5, 6, 7 }; // X0(LL): AQ=4, BQ=5, CQ=6, DQ=7
+    const x1_q_indices = [_]u8{ 0, 1, 2, 3 }; // X1(L):  AQ=0, BQ=1, CQ=2, DQ=3
     for (0..4) |pos| {
         if (ff_x0[pos]) {
             try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.CLBLL_LOGIC_OUTS{d}.{s}_{c}Q", .{
-                tile_prefix, x, y, x0_q_indices[pos], l_prefix, letters[pos],
+                tile_prefix, x, y, x0_q_indices[pos], ll_prefix, letters[pos],
             });
         }
     }
     for (0..4) |pos| {
         if (ff_x1[pos]) {
             try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.CLBLL_LOGIC_OUTS{d}.{s}_{c}Q", .{
-                tile_prefix, x, y, x1_q_indices[pos], ll_prefix, letters[pos],
+                tile_prefix, x, y, x1_q_indices[pos], l_prefix, letters[pos],
             });
         }
     }
@@ -833,8 +833,9 @@ test "FASM feature count for mixed design" {
     var result = try generate(allocator, &db);
     defer result.deinit();
 
-    // LUT1(init=1): 1 per-bit feature
+    // LUT1(init=1): 1 per-bit feature + OUTMUX.O6 + NOCLKINV = 3
     // FF: 4 (ZINI + ZRST + FFSYNC + NOCLKINV)
-    // IOB IBUF: 3 (IN + IN_ONLY + PULLTYPE)
-    try std.testing.expectEqual(@as(usize, 8), result.lineCount());
+    // IOB IBUF: 5 (IN + IN_ONLY + PULLTYPE + IDELAY_TYPE_FIXED + ILOGIC ZINV_D)
+    // Total: 3 + 4 + 5 = 12
+    try std.testing.expectEqual(@as(usize, 12), result.lineCount());
 }
