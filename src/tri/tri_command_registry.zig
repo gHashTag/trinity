@@ -32,6 +32,7 @@ pub const CommandCategory = enum {
     demo,
     benchmark,
     advanced,
+    depn,  // DePIN - Decentralized Physical Infrastructure Network
 };
 
 /// Command metadata for self-documenting CLI
