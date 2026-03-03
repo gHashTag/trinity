@@ -1,0 +1,176 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# HARDWARE COMMAND v1.0 — CLI Hardware Deployment Integration
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Purpose: CLI interface for hardware deployment (integrates hardware-deploy.sh)
+# Usage: tri hardware <subcommand> [args]
+#
+# Subcommands:
+#   deploy [multi] [count] - Deploy node(s)
+#   status                - Show cluster status
+#   stop-all              - Stop all nodes
+#   info                  - Hardware detection info
+#
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: hardware_command
+version: "1.0.0"
+language: zig
+module: hardware_command
+
+types:
+  HardwareInfo:
+    fields:
+      platform: String      # raspberry_pi, macos, linux
+      arch: String          # arm64, x86_64
+      cpu_cores: Int
+      memory_mb: Int
+      hostname: String
+
+  NodeStatus:
+    fields:
+      node_id: String
+      port: Int
+      pid: Int
+      status: String        # running, stopped, error
+      uptime_seconds: Int
+      tri_earned: Float
+
+  ClusterStatus:
+    fields:
+      total_nodes: Int
+      running_nodes: Int
+      ports: List<Int>
+      pids: List<Int>
+
+  DeployResult:
+    fields:
+      success: Bool
+      nodes_started: Int
+      nodes_failed: Int
+      port_range: String
+
+behaviors:
+  - name: deploySingleNode
+    given: Hardware available
+    when: User runs `tri hardware deploy`
+    then: Detect hardware, start single node on port 9001
+
+  - name: deployMultiCluster
+    given: Hardware available
+    when: User runs `tri hardware deploy multi [count]`
+    then: Start N nodes on ports 9001-N
+
+  - name: showClusterStatus
+    given: Running or stopped cluster
+    when: User runs `tri hardware status`
+    then: Show all nodes with PID, port, status
+
+  - name: stopAllNodes
+    given: Running cluster
+    when: User runs `tri hardware stop-all`
+    then: Stop all running nodes, clean PID files
+
+  - name: showHardwareInfo
+    given: Any system
+    when: User runs `tri hardware info`
+    then: Display platform, arch, CPU, memory detection
+
+test_cases:
+  - name: hardware_deploy_single
+    given:
+      platform: "macos"
+      arch: "arm64"
+    expected:
+      detects_hardware: true
+      starts_node: true
+      port: 9001
+
+  - name: hardware_deploy_multi_5
+    given:
+      count: 5
+    expected:
+      nodes_started: 5
+      port_range: "9001-9005"
+      all_healthy: true
+
+  - name: hardware_status_display
+    given:
+      running_nodes: 3
+      ports: [9001, 9002, 9003]
+    expected:
+      shows_all_nodes: true
+      includes_pids: true
+      includes_status: true
+
+implementation: |
+  const std = @import("std");
+  const Allocator = std.mem.Allocator;
+
+  pub fn detectHardware(allocator: Allocator) !HardwareInfo {
+      _ = allocator;
+
+      // TODO: Implement actual hardware detection
+      // Query: uname, /proc/cpuinfo, sysctl, etc.
+      return HardwareInfo{
+          .platform = "macos",
+          .arch = "arm64",
+          .cpu_cores = 8,
+          .memory_mb = 16384,
+          .hostname = "trinity-node",
+      };
+  }
+
+  pub fn deploySingleNode(allocator: Allocator, port: u16) !DeployResult {
+      _ = allocator;
+      _ = port;
+
+      // TODO: Execute: tri serve --port {port} --daemon
+      return DeployResult{
+          .success = true,
+          .nodes_started = 1,
+          .nodes_failed = 0,
+          .port_range = "9001",
+      };
+  }
+
+  pub fn deployMultiCluster(allocator: Allocator, count: usize) !DeployResult {
+      _ = allocator;
+      _ = count;
+
+      // TODO: Execute N instances of tri serve on ports 9001-N
+      // Or call: ./scripts/hardware-deploy.sh multi {count}
+      return DeployResult{
+          .success = true,
+          .nodes_started = @intCast(count),
+          .nodes_failed = 0,
+          .port_range = "9001-",
+      };
+  }
+
+  pub fn showClusterStatus(allocator: Allocator) !ClusterStatus {
+      _ = allocator;
+
+      // TODO: Read .tri-multi/*.pid files
+      // Check if processes are running
+      return ClusterStatus{
+          .total_nodes = 10,
+          .running_nodes = 8,
+          .ports = &[_]Int{9001, 9002, 9003, 9004, 9005, 9006, 9007, 9008},
+          .pids = &[_]Int{12345, 12346, 12347, 12348, 12349, 12350, 12351, 12352},
+      };
+  }
+
+  pub fn stopAllNodes(allocator: Allocator) !void {
+      _ = allocator;
+
+      // TODO: Kill all processes in .tri-multi/*.pid
+      // Remove PID files
+      std.debug.print("Stopping all nodes...\n", .{});
+  }
+
+  pub fn showHardwareInfo(allocator: Allocator) !HardwareInfo {
+      return detectHardware(allocator);
+  }
