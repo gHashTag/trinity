@@ -1195,9 +1195,6 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    // Needle library (for use as a module)
-    _ = needle_mod;
-
     const needle_tests = b.addTest(.{
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/needle/mod.zig"),
@@ -1209,6 +1206,30 @@ pub fn build(b: *std.Build) void {
     const run_needle_tests = b.addRunArtifact(needle_tests);
     const needle_test_step = b.step("needle-test", "Run NEEDLE tests");
     needle_test_step.dependOn(&run_needle_tests.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // NEEDLE-MCP — Model Context Protocol Server
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Native Zig MCP server exposing NEEDLE as Claude Code tool
+
+    const needle_mcp = b.addExecutable(.{
+        .name = "needle-mcp",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("tools/mcp/needle_mcp/server.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "needle", .module = needle_mod },
+            },
+        }),
+    });
+    b.installArtifact(needle_mcp);
+
+    // Don't auto-run the MCP server - it's an interactive stdio service
+    // Users run it via Claude Code mcp.json or manually
+    // const run_needle_mcp = b.addRunArtifact(needle_mcp);
+    // const needle_mcp_step = b.step("needle-mcp", "Run NEEDLE MCP Server (stdio transport)");
+    // needle_mcp_step.dependOn(&run_needle_mcp.step);
 
     // ═══════════════════════════════════════════════════════════════════════════
     // PHI LOOP — 999 Links of Cosmic Consciousness Gene

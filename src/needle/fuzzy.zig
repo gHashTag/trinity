@@ -25,15 +25,22 @@ const MatchKind = needle.MatchKind;
 pub const FuzzyMatcher = struct {
     allocator: std.mem.Allocator,
     source: []const u8,
-    lines: std.ArrayList([]const u8),
+    lines: std.ArrayListAligned([]const u8, null),
 
     pub fn init(allocator: std.mem.Allocator, source: []const u8) !FuzzyMatcher {
-        var lines = std.ArrayList([]const u8).init(allocator);
-        errdefer lines.deinit();
+        var lines = std.ArrayListAligned([]const u8, null){
+            .items = &.{},
+            .capacity = 0,
+        };
+        errdefer {
+            if (lines.capacity > 0) {
+                allocator.free(lines.allocatedSlice());
+            }
+        }
 
         var iter = std.mem.splitScalar(u8, source, '\n');
         while (iter.next()) |line| {
-            try lines.append(line);
+            try lines.append(allocator, line);
         }
 
         return .{
@@ -44,7 +51,7 @@ pub const FuzzyMatcher = struct {
     }
 
     pub fn deinit(self: *FuzzyMatcher) void {
-        self.lines.deinit();
+        self.lines.deinit(self.allocator);
     }
 
     /// Find all matches using three-layer approach
@@ -112,19 +119,25 @@ pub const FuzzyMatcher = struct {
     /// Layer 2: Word-level match (order-agnostic)
     fn wordLevelMatch(self: *FuzzyMatcher, line: []const u8, query: []const u8) ?f32 {
         // Tokenize query into words
-        var query_words = std.ArrayList([]const u8).init(self.allocator);
+        var query_words = std.ArrayListAligned([]const u8, null){
+            .items = &.{},
+            .capacity = 0,
+        };
         defer {
             for (query_words.items) |w| {
                 self.allocator.free(w);
             }
-            query_words.deinit();
+            if (query_words.capacity > 0) {
+                self.allocator.free(query_words.allocatedSlice());
+            }
         }
 
         var query_iter = std.mem.tokenizeScalar(u8, query, ' ');
         while (query_iter.next()) |word| {
             const trimmed = std.mem.trim(u8, word, " \t");
             if (trimmed.len > 0) {
-                try query_words.append(try self.allocator.dupe(u8, trimmed));
+                const duped = self.allocator.dupe(u8, trimmed) catch return null;
+                query_words.append(self.allocator, duped) catch return null;
             }
         }
 
@@ -175,27 +188,34 @@ pub const FuzzyMatcher = struct {
 
         // Use simple character-level matching
         // Similar to Python's difflib.SequenceMatcher.ratio()
-        const hits = self.countHits(line, query);
+        const hits = self.countHits(line, query) catch return null;
         const total = line.len + query.len;
 
         if (total == 0) return null;
 
-        const ratio = @as(f32, @floatFromInt(2 * hits)) / @as(f32, @floatFromInt(total));
+        const ratio = @as(f32, @floatFromInt(hits)) * 2.0 / @as(f32, @floatFromInt(total));
         return ratio * 0.6; // Scale for fuzzy layer
     }
 
     /// Count matching character pairs (simplified longest common subsequence)
-    fn countHits(self: *FuzzyMatcher, s1: []const u8, s2: []const u8) usize {
+    fn countHits(self: *FuzzyMatcher, s1: []const u8, s2: []const u8) !usize {
         if (s1.len == 0 or s2.len == 0) return 0;
 
         // Use a simple LCS approximation
-        var matrix = std.ArrayList(usize).init(self.allocator);
-        defer matrix.deinit();
+        var matrix = std.ArrayListAligned(usize, null){
+            .items = &.{},
+            .capacity = 0,
+        };
+        defer {
+            if (matrix.capacity > 0) {
+                self.allocator.free(matrix.allocatedSlice());
+            }
+        }
 
         const rows = s1.len + 1;
         const cols = s2.len + 1;
 
-        try matrix.resize(rows * cols);
+        try matrix.resize(self.allocator, rows * cols);
 
         // Fill DP table
         for (0..s1.len) |i| {

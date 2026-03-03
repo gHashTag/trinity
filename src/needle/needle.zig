@@ -194,12 +194,12 @@ pub const MatchResult = struct {
 
 /// List of match results with filtering/sorting
 pub const MatchResultList = struct {
-    items: std.ArrayList(MatchResult),
+    items: std.ArrayListAligned(MatchResult, null),
     allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator) MatchResultList {
         return .{
-            .items = std.ArrayList(MatchResult).init(allocator),
+            .items = .{ .items = &.{}, .capacity = 0 },
             .allocator = allocator,
         };
     }
@@ -208,18 +208,16 @@ pub const MatchResultList = struct {
         for (self.items.items) |*item| {
             self.allocator.free(item.matched_text);
         }
-        self.items.deinit();
+        // Shrink the list to free capacity
+        if (self.items.capacity > 0) {
+            self.allocator.free(self.items.allocatedSlice());
+        }
     }
 
     /// Filter results by confidence threshold
     pub fn filter(self: *MatchResultList, threshold: f32) !void {
-        var filtered = std.ArrayList(MatchResult).init(self.allocator);
-        errdefer {
-            for (filtered.items) |*item| {
-                self.allocator.free(item.matched_text);
-            }
-            filtered.deinit();
-        }
+        var filtered = MatchResultList.init(self.allocator);
+        errdefer filtered.deinit();
 
         for (self.items.items) |item| {
             if (item.meetsThreshold(threshold)) {
@@ -233,7 +231,8 @@ pub const MatchResultList = struct {
                     .confidence = item.confidence,
                     .kind = item.kind,
                 };
-                try filtered.append(copied);
+                // In Zig 0.15, ArrayList.append requires allocator
+                try filtered.items.append(self.allocator, copied);
             }
         }
 
@@ -241,13 +240,15 @@ pub const MatchResultList = struct {
         for (self.items.items) |*item| {
             self.allocator.free(item.matched_text);
         }
-        self.items.deinit();
-        self.items = filtered;
+        if (self.items.capacity > 0) {
+            self.allocator.free(self.items.allocatedSlice());
+        }
+        self.items = filtered.items;
     }
 
     /// Sort by confidence descending
     pub fn sortByConfidence(self: *MatchResultList) void {
-        std.sort.insertion(f32, self.items.items, {}, struct {
+        std.sort.insertion(MatchResult, self.items.items, {}, struct {
             fn lessThan(_: void, a: MatchResult, b: MatchResult) bool {
                 return a.confidence > b.confidence;
             }
@@ -267,7 +268,7 @@ pub const MatchResultList = struct {
 
     /// Append a match result
     pub fn append(self: *MatchResultList, item: MatchResult) !void {
-        try self.items.append(item);
+        try self.items.append(self.allocator, item);
     }
 
     /// Get length
@@ -314,13 +315,13 @@ pub const EditReport = struct {
     tests_passed: bool = false,
     parse_ok: bool = false,
     compile_ok: bool = false,
-    violations: std.ArrayList(Violation),
+    violations: std.ArrayListAligned(Violation, null),
     duration_ms: u64 = 0,
     allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator) EditReport {
         return .{
-            .violations = std.ArrayList(Violation).init(allocator),
+            .violations = .{ .items = &.{}, .capacity = 0 },
             .allocator = allocator,
         };
     }
@@ -329,7 +330,10 @@ pub const EditReport = struct {
         for (self.violations.items) |*v| {
             v.deinit(self.allocator);
         }
-        self.violations.deinit();
+        // Shrink the list to free capacity
+        if (self.violations.capacity > 0) {
+            self.allocator.free(self.violations.allocatedSlice());
+        }
     }
 
     /// Check if edit was successful
@@ -353,7 +357,7 @@ pub const EditReport = struct {
 
     /// Add a violation
     pub fn addViolation(self: *EditReport, violation: Violation) !void {
-        try self.violations.append(violation);
+        try self.violations.append(self.allocator, violation);
     }
 
     /// Check if has critical violations
