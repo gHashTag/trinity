@@ -34,6 +34,43 @@ zig fmt src/                 # Format Zig code
 
 ---
 
+## FPGA Development
+
+**⚠️ CRITICAL: Use openXC7 Docker toolchain for Xilinx 7-series!**
+
+**FORGE (Zig) has 4+ critical bugs for complex designs!**
+
+| Toolchain | Status | Issues |
+|-----------|--------|--------|
+| **openXC7** (Docker) | ✅ **WORKING** | None — use this! |
+| FORGE (Zig) | ❌ BROKEN | LUT INIT, FFMUX, OUTMUX, routing bugs |
+
+### openXC7 Toolchain
+
+```bash
+# Pull image
+docker pull regymm/openxc7
+
+# Synthesize Verilog → bitstream
+cd fpga/openxc7-synth
+docker run --rm --platform linux/amd64 \
+    -v "$(pwd):/work" -w /work \
+    regymm/openxc7 \
+    yosys -p "synth_xilinx -flatten -abc9 -nobram -arch xc7 -top top; \
+              write_json top.json" \
+    design.v
+```
+
+**Full build process:** Yosys → nextpnr-xilinx → fasm2frames → xc7frames2bit
+
+### Hardware
+
+- **FPGA:** QMTECH Artix-7 XC7A100T-1FGG676C
+- **JTAG:** Xilinx Platform Cable USB II (VID:0x03fd, PID:0x0013→0x0008 after fxload)
+- **Documentation:** `fpga/README.md`
+
+---
+
 ## TRI COMMANDER
 
 TRI COMMANDER is the primary human-AI interface for Trinity development — a tmux-based chat dashboard with sacred mathematics.
@@ -354,6 +391,62 @@ Each cycle has `-demo` and `-bench` variants:
 | `tri chem ideal-gas <P>=<V>=<n>=<T>` | Solve PV=nRT |
 | `tri chem ph <conc\|acid> <M>` | Calculate pH |
 | `tri chem redox <reaction>` | Balance redox equation |
+
+### DePIN Hardware Commands (Cycle #114)
+
+| Command | Description |
+|---------|-------------|
+| `tri hardware info` | Hardware detection info |
+| `tri hardware deploy [multi N]` | Deploy node(s) |
+| `tri hardware status` | Show cluster status |
+| `tri hardware stop-all` | Stop all nodes |
+
+### Global Mesh Commands (Cycle #114)
+
+| Command | Description |
+|---------|-------------|
+| `tri mesh status` | Show global mesh status |
+| `tri mesh topology` | Display network topology |
+| `tri mesh discover` | Trigger UDP discovery |
+| `tri mesh regions` | Show regional distribution |
+| `tri mesh health` | Mesh health check |
+
+### Omega Economy Commands (Cycle #114)
+
+| Command | Description |
+|---------|-------------|
+| `tri omega activate` | Check Omega activation (1000 reputation) |
+| `tri omega rewards` | Show reward multipliers |
+| `tri omega premium` | Show premium pool status |
+| `tri omega govern` | Governance (Platinum+ only) |
+
+### Reputation Commands (Cycle #114)
+
+| Command | Description |
+|---------|-------------|
+| `tri reputation show` | Show node reputation |
+| `tri reputation leaderboard` | Top 10 nodes by reputation |
+| `tri reputation omega-status` | Check Omega activation progress |
+| `tri reputation history` | Reputation change history |
+
+### Wallet Commands (Cycle #114)
+
+| Command | Description |
+|---------|-------------|
+| `tri wallet connect <provider>` | Connect wallet (metamask, phantom, walletconnect) |
+| `tri wallet balance` | Show $TRI balance |
+| `tri wallet claim [amount]` | Claim rewards to wallet |
+| `tri wallet address` | Show wallet address |
+| `tri wallet history` | Show claim history |
+
+### Dashboard Commands (Cycle #114)
+
+| Command | Description |
+|---------|-------------|
+| `tri dashboard serve` | Start dashboard server |
+| `tri dashboard metrics` | Show dashboard metrics |
+| `tri dashboard nodes` | Show node status |
+| `tri dashboard economy` | Show economy overview |
 
 ### Info Commands
 

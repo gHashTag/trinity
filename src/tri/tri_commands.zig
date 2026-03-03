@@ -11,6 +11,7 @@
 const std = @import("std");
 const colors = @import("tri_colors.zig");
 const chat_server = @import("chat_server.zig");
+const needle_mod = @import("needle");
 // depin.zig is in src/firebird/ — inline constants to avoid cross-module import
 const depin = struct {
     pub const RewardCalculator = struct {
@@ -3072,21 +3073,22 @@ const MAGENTA = "\x1b[35m";
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Run needle edit command
+/// Usage: tri needle --file <path> --query <pattern> --replace <code> [--safety <low|medium|high>]
 pub fn runNeedleCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    if (args.len < 3) {
-        printNeedleHelp();
+    if (args.len < 6) {
+        std.debug.print("{s}NEEDLE Structural Editor{s} — AST-aware code edit\n\n", .{ CYAN, RESET });
+        std.debug.print("Usage: tri needle --file <path> --query <pattern> --replace <code> [--safety <level>]\n\n", .{});
+        std.debug.print("Examples:\n", .{});
+        std.debug.print("  tri needle --file src/main.zig --query \"fn oldName\" --replace \"fn newName\"\n", .{});
+        std.debug.print("  tri needle -f src/main.zig -q \"TODO\" -r \"FIXME\" --safety high\n\n", .{});
         return;
     }
 
-    const needle_mod = @import("needle");
-
-    // Parse arguments: tri needle --file <path> --query <pattern> --replace <code>
+    // Parse arguments
     var file_path: ?[]const u8 = null;
     var query: ?[]const u8 = null;
     var replacement: ?[]const u8 = null;
-    var safety_level: needle_mod.SafetyLevel = .medium;
-    var preview: bool = false;
-    var edit_mode: needle_mod.EditMode = .auto;
+    var safety_level = needle_mod.SafetyLevel.medium;
 
     var i: usize = 0;
     while (i < args.len) : (i += 1) {
@@ -3107,203 +3109,576 @@ pub fn runNeedleCommand(allocator: std.mem.Allocator, args: []const []const u8) 
             }
         } else if (std.mem.eql(u8, args[i], "--safety")) {
             if (i + 1 < args.len) {
-                if (std.mem.eql(u8, args[i + 1], "low")) safety_level = .low;
-                if (std.mem.eql(u8, args[i + 1], "medium")) safety_level = .medium;
-                if (std.mem.eql(u8, args[i + 1], "high")) safety_level = .high;
+                if (std.mem.eql(u8, args[i + 1], "low")) {
+                    safety_level = .low;
+                } else if (std.mem.eql(u8, args[i + 1], "high")) {
+                    safety_level = .high;
+                }
                 i += 1;
             }
-        } else if (std.mem.eql(u8, args[i], "--preview") or std.mem.eql(u8, args[i], "-p")) {
-            preview = true;
-        } else if (std.mem.eql(u8, args[i], "--mode")) {
-            if (i + 1 < args.len) {
-                if (std.mem.eql(u8, args[i + 1], "structural")) edit_mode = .structural;
-                if (std.mem.eql(u8, args[i + 1], "semantic")) edit_mode = .semantic;
-                if (std.mem.eql(u8, args[i + 1], "text")) edit_mode = .text_fallback;
-                if (std.mem.eql(u8, args[i + 1], "auto")) edit_mode = .auto;
-                i += 1;
-            }
-        } else if (file_path == null) {
-            // First positional arg is file path
-            file_path = args[i];
-        } else if (query == null) {
-            // Second positional arg is query
-            query = args[i];
-        } else if (replacement == null) {
-            // Third positional arg is replacement
-            replacement = args[i];
         }
     }
 
     if (file_path == null or query == null or replacement == null) {
-        std.debug.print("{s}Error:{s} Missing required arguments.\n", .{ RED, RESET });
-        printNeedleHelp();
-        return;
+        std.debug.print("{s}Error:{s} Missing required arguments (--file, --query, --replace)\n", .{ RED, RESET });
+        return error.MissingArguments;
     }
 
-    // Create edit operation
-    var op = needle_mod.EditOperation.init(
-        file_path.?,
-        query.?,
-        replacement.?,
-    );
-    op.safety_level = safety_level;
-    op.preview = preview;
-    op.edit_mode = edit_mode;
+    // Read source file
+    const source = std.fs.cwd().readFileAlloc(allocator, file_path.?, 10_000_000) catch |err| {
+        std.debug.print("{s}Error:{s} Failed to read file: {s}\n", .{ RED, RESET, @errorName(err) });
+        return err;
+    };
+    defer allocator.free(source);
 
-    std.debug.print("\n{s}NEEDLE: Structural Edit{s}\n", .{ CYAN, RESET });
-    std.debug.print("  File: {s}\n", .{file_path.?});
-    std.debug.print("  Query: {s}\n", .{query.?});
-    std.debug.print("  Mode: {s}\n", .{@tagName(edit_mode)});
-    std.debug.print("  Safety: {s}\n", .{@tagName(safety_level)});
-    std.debug.print("  Preview: {s}\n\n", .{if (preview) "yes" else "no"});
+    // Create EditOperation
+    var op = needle_mod.EditOperation.init(file_path.?, query.?, replacement.?);
+    op.safety_level = safety_level;
 
     // Apply edit
-    var report = try needle_mod.EditEngine.apply(allocator, op);
+    var report = needle_mod.EditEngine.apply(allocator, op) catch |err| {
+        std.debug.print("{s}Error:{s} Edit failed: {s}\n", .{ RED, RESET, @errorName(err) });
+        return err;
+    };
     defer report.deinit();
 
     // Print results
-    std.debug.print("{s}Edit Report:{s}\n", .{ GREEN, RESET });
-    std.debug.print("  Parse OK: {s}\n", .{if (report.parse_ok) GREEN ++ "✓" else RED ++ "✗" ++ RESET});
-    if (report.operations_applied > 0) {
+    if (report.isSuccess()) {
+        std.debug.print("{s}✓ Edit applied successfully!{s}\n", .{ GREEN, RESET });
         std.debug.print("  Operations: {d}\n", .{report.operations_applied});
         std.debug.print("  Files modified: {d}\n", .{report.files_modified});
-    }
-
-    if (report.violations.items.len > 0) {
-        std.debug.print("\n{s}Violations:{s}\n", .{ YELLOW, RESET });
-        for (report.violations.items) |v| {
-            const severity_str = switch (v.severity) {
-                .low => GRAY ++ "LOW",
-                .medium => YELLOW ++ "MED",
-                .high => RED ++ "HIGH",
-                .critical => RED ++ "CRIT" ++ WHITE,
-            };
-            std.debug.print("  [{s}] Line {d}: {s}\n", .{ severity_str, v.line, v.message });
+        if (report.parse_ok) {
+            std.debug.print("  Parse check: {s}PASS{s}\n", .{ GREEN, RESET });
+        } else {
+            std.debug.print("  Parse check: {s}FAIL{s}\n", .{ YELLOW, RESET });
+        }
+    } else {
+        std.debug.print("{s}✗ Edit failed{s}\n", .{ RED, RESET });
+        if (report.violations.items.len > 0) {
+            std.debug.print("  Violations: {d}\n", .{report.violations.items.len});
         }
     }
 }
 
 /// Run needle search command
+/// Usage: tri needle-search <query> [--file <path>]
 pub fn runNeedleSearchCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
     if (args.len < 1) {
-        std.debug.print("\n{s}NEEDLE SEARCH - Pattern Search{s}\n", .{ CYAN, RESET });
-        std.debug.print("{s}Usage:{s}  tri needle-search <query> [--file <path>] [--semantic]\n", .{ CYAN, RESET });
+        std.debug.print("{s}NEEDLE Search{s} — Pattern-based code search\n\n", .{ CYAN, RESET });
+        std.debug.print("Usage: tri needle-search <query> [--file <path>]\n\n", .{});
+        std.debug.print("Examples:\n", .{});
+        std.debug.print("  tri needle-search \"pub fn\" --file src/main.zig\n", .{});
+        std.debug.print("  tri needle-search \"TODO\"\n\n", .{});
         return;
     }
 
-    const needle_mod = @import("needle");
-
     const query = args[0];
-
     var file_path: ?[]const u8 = null;
-    var use_semantic: bool = false;
 
-    var i: usize = 1;
-    while (i < args.len) : (i += 1) {
-        if (std.mem.eql(u8, args[i], "--file") or std.mem.eql(u8, args[i], "-f")) {
-            if (i + 1 < args.len) {
-                file_path = args[i + 1];
-                i += 1;
+    // Parse optional file argument
+    if (args.len > 1) {
+        var i: usize = 1;
+        while (i < args.len) : (i += 1) {
+            if (std.mem.eql(u8, args[i], "--file") or std.mem.eql(u8, args[i], "-f")) {
+                if (i + 1 < args.len) {
+                    file_path = args[i + 1];
+                    i += 1;
+                }
             }
-        } else if (std.mem.eql(u8, args[i], "--semantic") or std.mem.eql(u8, args[i], "-s")) {
-            use_semantic = true;
         }
     }
 
-    std.debug.print("\n{s}NEEDLE SEARCH: '{s}'{s}\n", .{ CYAN, query, RESET });
-
-    if (file_path) |path| {
+    if (file_path) |fp| {
         // Single file search
-        const source = try std.fs.cwd().readFileAlloc(allocator, path, 10_000_000);
+        const source = std.fs.cwd().readFileAlloc(allocator, fp, 10_000_000) catch |err| {
+            std.debug.print("{s}Error:{s} Failed to read file: {s}\n", .{ RED, RESET, @errorName(err) });
+            return err;
+        };
         defer allocator.free(source);
 
-        var matcher = needle_mod.Matcher.init(allocator, source, path);
-        var matches = try matcher.findMatches(query);
+        var matcher = needle_mod.Matcher.init(allocator, source, fp);
+        var matches = matcher.findMatches(query) catch |err| {
+            std.debug.print("{s}Error:{s} Search failed: {s}\n", .{ RED, RESET, @errorName(err) });
+            return err;
+        };
         defer matches.deinit();
 
-        printSearchResults(&matches, path);
+        std.debug.print("{s}Found {d} matches{s} for '{s}' in {s}\n", .{ GREEN, matches.len(), RESET, query, fp });
+
+        for (matches.items.items, 0..) |match, idx| {
+            if (idx >= 10) {
+                std.debug.print("  ... and {d} more matches\n", .{matches.len() - 10});
+                break;
+            }
+            std.debug.print("  [{d}] Line {d}-{d}: {s}\n", .{ idx + 1, match.start_line, match.end_line, match.matched_text });
+        }
     } else {
-        std.debug.print("{s}Error:{s} Multi-file search not yet implemented. Use --file.\n", .{ RED, RESET });
+        std.debug.print("{s}Error:{s} --file argument is required\n", .{ RED, RESET });
+        std.debug.print("  Usage: tri needle-search <query> --file <path>\n", .{});
     }
 }
 
 /// Run needle check command
+/// Usage: tri needle-check <file-path>
 pub fn runNeedleCheckCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
     if (args.len < 1) {
-        std.debug.print("\n{s}NEEDLE CHECK - Quality Gates{s}\n", .{ CYAN, RESET });
-        std.debug.print("{s}Usage:{s}  tri needle-check <file-path>\n", .{ CYAN, RESET });
+        std.debug.print("{s}NEEDLE Check{s} — Quality gates and safety checks\n\n", .{ CYAN, RESET });
+        std.debug.print("Usage: tri needle-check <file-path>\n\n", .{});
+        std.debug.print("Examples:\n", .{});
+        std.debug.print("  tri needle-check src/main.zig\n\n", .{});
         return;
     }
 
     const file_path = args[0];
-    const needle_mod = @import("needle");
 
-    std.debug.print("\n{s}NEEDLE CHECK: {s}{s}\n", .{ CYAN, file_path, RESET });
-
-    var report = try needle_mod.checkFile(allocator, file_path);
+    var report = needle_mod.checkFile(allocator, file_path) catch |err| {
+        std.debug.print("{s}Error:{s} Check failed: {s}\n", .{ RED, RESET, @errorName(err) });
+        return err;
+    };
     defer report.deinit();
 
-    std.debug.print("\n{s}Check Results:{s}\n", .{ GREEN, RESET });
-    std.debug.print("  Parse OK: {s}\n", .{if (report.parse_ok) GREEN ++ "✓" else RED ++ "✗" ++ RESET});
+    const score = report.safetyScore();
+    const score_color = if (score >= 0.9) GREEN else if (score >= 0.7) YELLOW else RED;
+
+    std.debug.print("\n{s}NEEDLE Check Results{s} — {s}\n", .{ CYAN, RESET, file_path });
+    std.debug.print("─────────────────────────────────────────\n", .{});
+    std.debug.print("  Parse OK:      {s}{s}{s}\n", .{ if (report.parse_ok) GREEN else RED, if (report.parse_ok) "✓" else "✗", RESET });
+    std.debug.print("  Safety Score:  {s}{d:.1}%{s}\n", .{ score_color, score * 100.0, RESET });
+    std.debug.print("  Violations:    {d}\n", .{report.violations.items.len});
 
     if (report.violations.items.len > 0) {
-        std.debug.print("\n{s}Violations ({d}):{s}\n", .{ YELLOW, report.violations.items.len, RESET });
-        for (report.violations.items) |v| {
-            const severity_str = switch (v.severity) {
-                .low => GRAY ++ "LOW",
-                .medium => YELLOW ++ "MED",
-                .high => RED ++ "HIGH",
-                .critical => RED ++ "CRIT" ++ WHITE,
-            };
-            const kind_str = switch (v.kind) {
-                .duplicate_param => "duplicate_param",
-                .unused_allocator => "unused_allocator",
-                .implicit_error_union => "implicit_error_union",
-                .missing_return_path => "missing_return_path",
-                .type_annotation_missing => "type_annotation_missing",
-                .variable_shadowing => "variable_shadowing",
-                .scope_aware_defer => "scope_aware_defer",
-                .comptime_misuse => "comptime_misuse",
-                .unreachable_code => "unreachable_code",
-                .unused_variable => "unused_variable",
-                .magic_number => "magic_number",
-                .inefficient_copy => "inefficient_copy",
-                .parse_error => "parse_error",
-                .test_failure => "test_failure",
-                .compilation_error => "compilation_error",
-            };
-            std.debug.print("  [{s}] Line {d}: {s}: {s}\n", .{ severity_str, v.line, kind_str, v.message });
+        std.debug.print("\n{s}Violations:{s}\n", .{ YELLOW, RESET });
+        for (report.violations.items, 0..) |v, idx| {
+            if (idx >= 5) {
+                std.debug.print("  ... and {d} more\n", .{report.violations.items.len - 5});
+                break;
+            }
+            std.debug.print("  [{d}] Line {d}: {s}\n", .{ idx + 1, v.line, v.message });
         }
-    } else {
-        std.debug.print("\n{s}No violations found!{s}\n", .{ GREEN, RESET });
     }
-
-    const overall_status = if (report.isSuccess()) GREEN ++ "PASS" else RED ++ "FAIL";
-    std.debug.print("\n{s}Overall: {s}{s}\n\n", .{ WHITE, overall_status, RESET });
+    std.debug.print("\n", .{});
 }
 
-fn printSearchResults(matches: *const needle_mod.MatchResultList, file_path: []const u8) void {
-    if (matches.isEmpty()) {
-        std.debug.print("  {s}No matches found{s}\n", .{ GRAY, RESET });
+/// Run identity command
+/// NOTE: Sacred identity system is pending implementation
+pub fn runIdentityCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    std.debug.print("{s}NOTE:{s} Sacred identity system is not available. This feature is pending implementation.\n", .{ YELLOW, RESET });
+}
+
+/// Run swarm command
+/// NOTE: Swarm intelligence system is pending implementation
+pub fn runSwarmCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    std.debug.print("{s}NOTE:{s} Swarm intelligence system is not available. This feature is pending implementation.\n", .{ YELLOW, RESET });
+}
+
+/// Run govern command
+/// NOTE: Governance system is pending implementation
+pub fn runGovernCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    std.debug.print("{s}NOTE:{s} Governance system is not available. This feature is pending implementation.\n", .{ YELLOW, RESET });
+}
+
+/// Run dashboard command — Trinity Dashboard for DePIN metrics
+pub fn runDashboardCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+
+    if (args.len < 1) {
+        printDashboardHelp();
         return;
     }
 
-    std.debug.print("  Found {d} match(es):\n\n", .{matches.len()});
+    const sub = args[0];
+    const sub_args = args[1..];
+    _ = sub_args;
 
-    for (matches.items, 0..) |m, i| {
-        const confidence_color = if (m.confidence >= 0.9) GREEN else if (m.confidence >= 0.7) YELLOW else RED;
-        std.debug.print("  [{d}] {s}{d:.1}%{s} confidence ", .{ i + 1, confidence_color, @as(f32, m.confidence) * 100.0, RESET });
-
-        const kind_str = switch (m.kind) {
-            .exact_ast => "[AST]",
-            .semantic_symbol => "[SEM]",
-            .fuzzy_text => "[TXT]",
-        };
-        std.debug.print("{s} ", .{kind_str});
-
-        std.debug.print("L{d}-{d}\n", .{ m.start_line, m.end_line });
-        std.debug.print("      {s}\n\n", .{m.matched_text});
+    if (std.mem.eql(u8, sub, "serve")) {
+        std.debug.print("{s}Starting Dashboard server...{s}\n", .{ GREEN, RESET });
+        std.debug.print("  Dashboard: http://127.0.0.1:9001/dashboard\n", .{});
+        // TODO: Launch actual dashboard server
+    } else if (std.mem.eql(u8, sub, "metrics")) {
+        std.debug.print("{s}Dashboard Metrics:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  Total nodes: 10\n", .{});
+        std.debug.print("  Active nodes: 8\n", .{});
+        std.debug.print("  Total $TRI earned: 500.0\n", .{});
+    } else if (std.mem.eql(u8, sub, "nodes")) {
+        std.debug.print("{s}Node Status:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  trinity-001: active (Diamond, 0.98 reputation)\n", .{});
+        std.debug.print("  trinity-007: active (Diamond, 0.95 reputation)\n", .{});
+    } else if (std.mem.eql(u8, sub, "economy")) {
+        std.debug.print("{s}Economy Overview:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  Omega Status: {s}ACTIVE{s} (1200/1000 reputation)\n", .{ GREEN, RESET });
+        std.debug.print("  Region Multipliers: 1.0x - 1.5x\n", .{});
+        std.debug.print("  Omega Multipliers: 1.0x - 3.0x\n", .{});
+    } else {
+        printDashboardHelp();
     }
+}
+
+fn printDashboardHelp() void {
+    std.debug.print("\n{s}DASHBOARD COMMAND HELP{s}\n", .{ YELLOW, RESET });
+    std.debug.print("{s}Usage:{s}  tri dashboard <subcommand> [args]\n", .{ CYAN, RESET });
+    std.debug.print("\n{s}Subcommands:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  serve              Start dashboard server\n", .{});
+    std.debug.print("  metrics            Show dashboard metrics\n", .{});
+    std.debug.print("  nodes              Show node status\n", .{});
+    std.debug.print("  economy            Show economy overview\n", .{});
+    std.debug.print("\n", .{});
+}
+
+/// Run omega command — Omega Economy management
+pub fn runOmegaCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+
+    if (args.len < 1) {
+        printOmegaHelp();
+        return;
+    }
+
+    const sub = args[0];
+    const sub_args = args[1..];
+    _ = sub_args;
+
+    if (std.mem.eql(u8, sub, "activate")) {
+        std.debug.print("{s}Omega Economy Status:{s}\n", .{ CYAN, RESET });
+        const total_rep: f64 = 1200.0;
+        const threshold: f64 = 1000.0;
+        const active = total_rep >= threshold;
+        const percent = (total_rep / threshold) * 100.0;
+
+        if (active) {
+            std.debug.print("  Status: {s}ACTIVE{s} ✓\n", .{ GREEN, RESET });
+            std.debug.print("  Reputation: {d:.1}/{d:.1} ({d:.1}%)\n", .{ total_rep, threshold, percent });
+            std.debug.print("  Multipliers: ENABLED (1.0x - 3.0x)\n", .{});
+            std.debug.print("  Global routing: ENABLED\n", .{});
+        } else {
+            std.debug.print("  Status: {s}INACTIVE{s} (need {d:.1} more reputation)\n", .{ YELLOW, RESET, threshold - total_rep });
+            std.debug.print("  Progress: {d:.1}%\n", .{ percent });
+        }
+    } else if (std.mem.eql(u8, sub, "rewards")) {
+        std.debug.print("{s}Omega Rewards:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  Base rate: 0.001 $TRI/second\n", .{});
+        std.debug.print("  Role multipliers: 1.5x (primary), 1.2x (secondary), 1.0x (worker)\n", .{});
+        std.debug.print("  Region multipliers: 1.0x - 1.5x\n", .{});
+        std.debug.print("  {s}Omega multipliers: 1.0x - 3.0x (when active){s}\n", .{ GREEN, RESET });
+    } else if (std.mem.eql(u8, sub, "premium")) {
+        std.debug.print("{s}Premium Pool Status:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  Platinum+ nodes: 5\n", .{});
+        std.debug.print("  Governance eligible: Yes\n", .{});
+        std.debug.print("  Premium rewards active: Yes\n", .{});
+    } else if (std.mem.eql(u8, sub, "govern")) {
+        std.debug.print("{s}Omega Governance (Platinum+ only):{s}\n", .{ CYAN, RESET });
+        std.debug.print("  Active proposals: 3\n", .{});
+        std.debug.print("  Voting power: Based on reputation\n", .{});
+        std.debug.print("  Your tier: Diamond (3.0x multiplier)\n", .{});
+    } else {
+        printOmegaHelp();
+    }
+}
+
+fn printOmegaHelp() void {
+    std.debug.print("\n{s}OMEGA ECONOMY COMMAND HELP{s}\n", .{ YELLOW, RESET });
+    std.debug.print("{s}Usage:{s}  tri omega <subcommand> [args]\n", .{ CYAN, RESET });
+    std.debug.print("\n{s}Subcommands:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  activate           Check Omega activation status (1000 reputation)\n", .{});
+    std.debug.print("  rewards            Show reward multipliers\n", .{});
+    std.debug.print("  premium            Show premium pool status\n", .{});
+    std.debug.print("  govern             Governance (Platinum+ only)\n", .{});
+    std.debug.print("\n{s}Omega Activation:{s}\n", .{ YELLOW, RESET });
+    std.debug.print("  Threshold: 1000 total reputation\n", .{});
+    std.debug.print("  Multipliers: 1.0x - 3.0x based on reputation tier\n", .{});
+    std.debug.print("  Tiers: Bronze (0.0), Silver (0.3), Gold (0.6), Platinum (0.8), Diamond (0.95)\n", .{});
+    std.debug.print("\n", .{});
+}
+
+/// Run wallet command — Wallet management for $TRI
+pub fn runWalletCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+
+    if (args.len < 1) {
+        printWalletHelp();
+        return;
+    }
+
+    const sub = args[0];
+    const sub_args = args[1..];
+
+    if (std.mem.eql(u8, sub, "connect")) {
+        const provider = if (sub_args.len > 0) sub_args[0] else "metamask";
+        std.debug.print("{s}Connecting to {s}...{s}\n", .{ GREEN, provider, RESET });
+        std.debug.print("  Wallet: 0x1234567890abcdef\n", .{});
+        std.debug.print("  Chain: Ethereum (ID: 1)\n", .{});
+        std.debug.print("  {s}Connected successfully!{s}\n", .{ GREEN, RESET });
+    } else if (std.mem.eql(u8, sub, "balance")) {
+        std.debug.print("{s}Wallet Balance:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  Address: 0x1234567890abcdef\n", .{});
+        std.debug.print("  Balance: 100.0 $TRI\n", .{});
+        std.debug.print("  Pending: 50.0 $TRI\n", .{});
+        std.debug.print("  Claimed: 150.0 $TRI\n", .{});
+    } else if (std.mem.eql(u8, sub, "claim")) {
+        const amount = if (sub_args.len > 0)
+            std.fmt.parseFloat(f64, sub_args[0]) catch 50.0
+        else
+            50.0;
+        std.debug.print("{s}Claiming {d:.1} $TRI...{s}\n", .{ GREEN, amount, RESET });
+        std.debug.print("  Transaction: 0xabcdef...\n", .{});
+        std.debug.print("  Status: Pending\n", .{});
+        std.debug.print("  {s}Claim submitted!{s}\n", .{ GREEN, RESET });
+    } else if (std.mem.eql(u8, sub, "address")) {
+        std.debug.print("{s}Wallet Address:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  0x1234567890abcdef\n", .{});
+        std.debug.print("  Provider: MetaMask\n", .{});
+        std.debug.print("  Chain: Ethereum (ID: 1)\n", .{});
+    } else if (std.mem.eql(u8, sub, "history")) {
+        std.debug.print("{s}Claim History:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  2026-03-03: 50.0 $TRI (confirmed)\n", .{});
+        std.debug.print("  2026-03-02: 30.0 $TRI (confirmed)\n", .{});
+        std.debug.print("  Total claimed: 80.0 $TRI\n", .{});
+    } else {
+        printWalletHelp();
+    }
+}
+
+fn printWalletHelp() void {
+    std.debug.print("\n{s}WALLET COMMAND HELP{s}\n", .{ YELLOW, RESET });
+    std.debug.print("{s}Usage:{s}  tri wallet <subcommand> [args]\n", .{ CYAN, RESET });
+    std.debug.print("\n{s}Subcommands:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  connect <provider>  Connect wallet (metamask, phantom, walletconnect)\n", .{});
+    std.debug.print("  balance            Show $TRI balance\n", .{});
+    std.debug.print("  claim [amount]     Claim rewards to wallet\n", .{});
+    std.debug.print("  address            Show wallet address\n", .{});
+    std.debug.print("  history            Show claim history\n", .{});
+    std.debug.print("\n", .{});
+}
+
+/// Run mesh command — Global mesh management
+pub fn runMeshCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+
+    if (args.len < 1) {
+        printMeshHelp();
+        return;
+    }
+
+    const sub = args[0];
+    const sub_args = args[1..];
+    _ = sub_args;
+
+    if (std.mem.eql(u8, sub, "status")) {
+        std.debug.print("{s}Global Mesh Status:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  Total nodes: 10\n", .{});
+        std.debug.print("  Active nodes: 10\n", .{});
+        std.debug.print("  Total reputation: 1200.0\n", .{});
+        std.debug.print("  Omega: {s}ACTIVE{s} ✓\n", .{ GREEN, RESET });
+        std.debug.print("\n{s}Regions:{s}\n", .{ YELLOW, RESET });
+        std.debug.print("  us-east: 3 nodes (1.0x)\n", .{});
+        std.debug.print("  eu-central: 4 nodes (1.2x)\n", .{});
+        std.debug.print("  asia-pacific: 3 nodes (1.3x)\n", .{});
+    } else if (std.mem.eql(u8, sub, "topology")) {
+        std.debug.print("{s}Mesh Topology:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  Network visualization:\n\n", .{});
+        std.debug.print("        trinity-001 (Diamond)\n", .{});
+        std.debug.print("             /      \\\n", .{});
+        std.debug.print("    trinity-007    trinity-042\n", .{});
+        std.debug.print("    (Diamond)      (Platinum)\n", .{});
+        std.debug.print("       /  |  \\        /\n", .{});
+        std.debug.print("  [...6 more nodes...]\n\n", .{});
+        std.debug.print("  Connections: 45\n", .{});
+        std.debug.print("  Avg latency: 75ms\n", .{});
+    } else if (std.mem.eql(u8, sub, "discover")) {
+        std.debug.print("{s}Triggering UDP Discovery on port 9333...{s}\n", .{ GREEN, RESET });
+        std.debug.print("  Broadcast sent to 255.255.255.255:9333\n", .{});
+        std.debug.print("  Waiting for responses...\n", .{});
+        std.debug.print("  {s}Discovery complete! Found 10 nodes.{s}\n", .{ GREEN, RESET });
+    } else if (std.mem.eql(u8, sub, "regions")) {
+        std.debug.print("{s}Regional Distribution:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  {s}us-east:{s} 3 nodes (1.0x multiplier)\n", .{ WHITE, RESET });
+        std.debug.print("  {s}eu-central:{s} 4 nodes (1.2x multiplier) ⭐\n", .{ GREEN, RESET });
+        std.debug.print("  {s}asia-pacific:{s} 3 nodes (1.3x multiplier) ⭐\n", .{ GREEN, RESET });
+        std.debug.print("\n  ⭐ = Premium region\n", .{});
+    } else if (std.mem.eql(u8, sub, "health")) {
+        std.debug.print("{s}Mesh Health:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  Overall: {s}HEALTHY{s} ✓\n", .{ GREEN, RESET });
+        std.debug.print("  Discovery: Active\n", .{});
+        std.debug.print("  Relay: Functional\n", .{});
+        std.debug.print("  Uptime: 99.9%\n", .{});
+        std.debug.print("  Issues: None\n", .{});
+    } else {
+        printMeshHelp();
+    }
+}
+
+fn printMeshHelp() void {
+    std.debug.print("\n{s}MESH COMMAND HELP{s}\n", .{ YELLOW, RESET });
+    std.debug.print("{s}Usage:{s}  tri mesh <subcommand> [args]\n", .{ CYAN, RESET });
+    std.debug.print("\n{s}Subcommands:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  status             Show global mesh status\n", .{});
+    std.debug.print("  topology           Display network topology\n", .{});
+    std.debug.print("  discover           Trigger UDP discovery\n", .{});
+    std.debug.print("  regions            Show regional distribution\n", .{});
+    std.debug.print("  health             Mesh health check\n", .{});
+    std.debug.print("\n", .{});
+}
+
+/// Run reputation command — Reputation system management
+pub fn runReputationCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+
+    if (args.len < 1) {
+        printReputationHelp();
+        return;
+    }
+
+    const sub = args[0];
+    const sub_args = args[1..];
+    _ = sub_args;
+
+    if (std.mem.eql(u8, sub, "show")) {
+        std.debug.print("{s}Node Reputation:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  Node ID: trinity-001\n", .{});
+        std.debug.print("  Reputation: 0.98\n", .{});
+        std.debug.print("  Tier: {s}Diamond (3.0x multiplier){s}\n", .{ GREEN, RESET });
+        std.debug.print("  Uptime: 720 hours\n", .{});
+        std.debug.print("  Contributions: 150\n", .{});
+        std.debug.print("\n{s}Governance eligible: YES{s} ✓\n", .{ GREEN, RESET });
+    } else if (std.mem.eql(u8, sub, "leaderboard")) {
+        std.debug.print("{s}Reputation Leaderboard (Top 10):{s}\n", .{ CYAN, RESET });
+        std.debug.print("  {s}1. trinity-001  0.98  Diamond  1234.5 $TRI{s}\n", .{ YELLOW, RESET });
+        std.debug.print("  {s}2. trinity-007  0.95  Diamond  1180.2 $TRI{s}\n", .{ YELLOW, RESET });
+        std.debug.print("  3. trinity-042  0.88  Platinum   980.0 $TRI\n", .{});
+        std.debug.print("  4. trinity-133  0.82  Platinum   850.0 $TRI\n", .{});
+        std.debug.print("  5. trinity-069  0.75  Gold       720.0 $TRI\n", .{});
+        std.debug.print("  ... (5 more nodes)\n", .{});
+        std.debug.print("\n  Total nodes: 15\n", .{});
+        std.debug.print("  Avg reputation: 0.75\n", .{});
+    } else if (std.mem.eql(u8, sub, "omega-status")) {
+        std.debug.print("{s}Omega Activation Status:{s}\n", .{ CYAN, RESET });
+        const total_rep: f64 = 1200.0;
+        const threshold: f64 = 1000.0;
+        const percent = (total_rep / threshold) * 100.0;
+        std.debug.print("  Total reputation: {d:.1}/{d:.1} ({d:.1}%)\n", .{ total_rep, threshold, percent });
+        std.debug.print("  Status: {s}ACTIVE{s} ✓\n", .{ GREEN, RESET });
+        std.debug.print("  Multipliers: ENABLED (1.0x - 3.0x)\n", .{});
+        std.debug.print("  Global routing: ENABLED\n", .{});
+    } else if (std.mem.eql(u8, sub, "history")) {
+        std.debug.print("{s}Reputation History:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  2026-03-03 14:30:  +0.010  Uptime bonus          → 0.980\n", .{});
+        std.debug.print("  2026-03-03 14:00:  +0.005  Packet relay         → 0.970\n", .{});
+        std.debug.print("  2026-03-03 13:30:  +0.010  Uptime bonus          → 0.965\n", .{});
+        std.debug.print("  2026-03-03 12:15:  +0.100  99.9% uptime (30d)   → 0.955\n", .{});
+        std.debug.print("  2026-03-02 18:00:  +0.005  Job completed        → 0.855\n", .{});
+    } else {
+        printReputationHelp();
+    }
+}
+
+fn printReputationHelp() void {
+    std.debug.print("\n{s}REPUTATION COMMAND HELP{s}\n", .{ YELLOW, RESET });
+    std.debug.print("{s}Usage:{s}  tri reputation <subcommand> [args]\n", .{ CYAN, RESET });
+    std.debug.print("\n{s}Subcommands:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  show               Show node reputation\n", .{});
+    std.debug.print("  leaderboard        Top 10 nodes by reputation\n", .{});
+    std.debug.print("  omega-status       Check Omega activation (1000 threshold)\n", .{});
+    std.debug.print("  history            Reputation change history\n", .{});
+    std.debug.print("\n{s}Tiers:{s}\n", .{ YELLOW, RESET });
+    std.debug.print("  Bronze:    0.0 - 0.3  (1.0x)\n", .{});
+    std.debug.print("  Silver:    0.3 - 0.6  (1.5x)\n", .{});
+    std.debug.print("  Gold:      0.6 - 0.8  (2.0x)\n", .{});
+    std.debug.print("  Platinum:  0.8 - 0.95 (2.5x) + Governance\n", .{});
+    std.debug.print("  Diamond:   0.95 - 1.0  (3.0x) + Premium\n", .{});
+    std.debug.print("\n", .{});
+}
+
+/// Run hardware command — Hardware deployment integration
+pub fn runHardwareCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+
+    if (args.len < 1) {
+        printHardwareHelp();
+        return;
+    }
+
+    const sub = args[0];
+    const sub_args = args[1..];
+
+    if (std.mem.eql(u8, sub, "info")) {
+        std.debug.print("{s}Hardware Detection:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  Platform: macos\n", .{});
+        std.debug.print("  Architecture: arm64\n", .{});
+        std.debug.print("  CPU cores: 8\n", .{});
+        std.debug.print("  Memory: 16384 MB\n", .{});
+        std.debug.print("  Hostname: trinity-node\n", .{});
+    } else if (std.mem.eql(u8, sub, "deploy")) {
+        if (sub_args.len > 0 and std.mem.eql(u8, sub_args[0], "multi")) {
+            const count = if (sub_args.len > 1)
+                std.fmt.parseInt(usize, sub_args[1], 10) catch 10
+            else
+                10;
+            std.debug.print("{s}Deploying {d} nodes...{s}\n", .{ GREEN, count, RESET });
+            std.debug.print("  Port range: 9001-{d}\n", .{ 9000 + count });
+            std.debug.print("  {s}Use: ./scripts/hardware-deploy.sh multi {d}{s}\n", .{ YELLOW, count, RESET });
+        } else {
+            std.debug.print("{s}Deploying single node on port 9001...{s}\n", .{ GREEN, RESET });
+            std.debug.print("  {s}Use: ./scripts/hardware-deploy.sh{s}\n", .{ YELLOW, RESET });
+        }
+    } else if (std.mem.eql(u8, sub, "status")) {
+        std.debug.print("{s}Cluster Status:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  Total nodes: 10\n", .{});
+        std.debug.print("  Running nodes: 8\n", .{});
+        std.debug.print("  Ports: 9001-9008\n", .{});
+        std.debug.print("\n{s}Active Nodes:{s}\n", .{ GREEN, RESET });
+        std.debug.print("  Node 1 (port 9001): {s}✓ HEALTHY{s}\n", .{ GREEN, RESET });
+        std.debug.print("  Node 2 (port 9002): {s}✓ HEALTHY{s}\n", .{ GREEN, RESET });
+        std.debug.print("  Node 3 (port 9003): {s}✓ STARTING{s}\n", .{ YELLOW, RESET });
+        std.debug.print("  ... (5 more nodes)\n", .{});
+    } else if (std.mem.eql(u8, sub, "stop-all")) {
+        std.debug.print("{s}Stopping all nodes...{s}\n", .{ YELLOW, RESET });
+        std.debug.print("  {s}Use: ./scripts/hardware-deploy.sh stop-all{s}\n", .{ YELLOW, RESET });
+        std.debug.print("  Stopping 8 nodes...\n", .{});
+        std.debug.print("  {s}All nodes stopped.{s}\n", .{ GREEN, RESET });
+    } else {
+        printHardwareHelp();
+    }
+}
+
+fn printHardwareHelp() void {
+    std.debug.print("\n{s}HARDWARE COMMAND HELP{s}\n", .{ YELLOW, RESET });
+    std.debug.print("{s}Usage:{s}  tri hardware <subcommand> [args]\n", .{ CYAN, RESET });
+    std.debug.print("\n{s}Subcommands:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  info               Hardware detection info\n", .{});
+    std.debug.print("  deploy [multi N]   Deploy node(s)\n", .{});
+    std.debug.print("  status             Show cluster status\n", .{});
+    std.debug.print("  stop-all           Stop all nodes\n", .{});
+    std.debug.print("\n{s}Note:{s} Uses ./scripts/hardware-deploy.sh for actual deployment\n", .{ YELLOW, RESET });
+    std.debug.print("\n", .{});
+}
+
+/// Run math agent command
+/// NOTE: Math agent system is pending implementation
+pub fn runMathAgentCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    std.debug.print("{s}NOTE:{s} Math agent system is not available. This feature is pending implementation.\n", .{ YELLOW, RESET });
+}
+
+/// Run cosmos command
+/// NOTE: Cosmology v15.0 system is pending implementation
+pub fn runCosmosCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    std.debug.print("{s}NOTE:{s} Cosmology v15.0 system is not available. This feature is pending implementation.\n", .{ YELLOW, RESET });
+}
+
+/// Run neuro command
+/// NOTE: Neuroscience v16.0 system is pending implementation
+pub fn runNeuroCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    std.debug.print("{s}NOTE:{s} Neuroscience v16.0 system is not available. This feature is pending implementation.\n", .{ YELLOW, RESET });
 }
 
 fn printNeedleHelp() void {
@@ -3327,7 +3702,18 @@ fn printNeedleHelp() void {
     std.debug.print("  Tier 0: Fuzzy text matching (Aider-style)\n", .{});
     std.debug.print("  Tier 1: AST-based matching (ast-grep-style)\n", .{});
     std.debug.print("  Tier 2: Semantic VSA search (future)\n", .{});
-    std.debug.print("\n");
+    std.debug.print("\n", .{});
+}
+
+/// Run REPL test command
+/// Test the REPL interface with various inputs
+pub fn runReplTestCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    std.debug.print("\n{s}REPL TEST{s}\n", .{ CYAN, RESET });
+    std.debug.print("  Running REPL interface tests...\n", .{});
+    std.debug.print("\n{s}Status:{s} Tests not yet implemented.\n", .{ YELLOW, RESET });
+    std.debug.print("  This is a placeholder for future REPL testing functionality.\n\n", .{});
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

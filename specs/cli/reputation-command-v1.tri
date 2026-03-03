@@ -1,0 +1,184 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# REPUTATION COMMAND v1.0 — CLI Reputation System
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Purpose: CLI interface for reputation system and Omega economy
+# Usage: tri reputation <subcommand> [args]
+#
+# Subcommands:
+#   show                  - Show node reputation
+#   leaderboard           - Top 10 nodes by reputation
+#   omega-status          - Check Omega activation (1000 threshold)
+#   history               - Reputation change history
+#
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: reputation_command
+version: "1.0.0"
+language: zig
+module: reputation_command
+
+types:
+  ReputationScore:
+    fields:
+      node_id: String
+      reputation: Float      # 0.0 to 1.0
+      tier: String           # Bronze, Silver, Gold, Platinum, Diamond
+      uptime_hours: Float
+      contributions: Int
+      last_updated: Int
+
+  LeaderboardEntry:
+    fields:
+      rank: Int
+      node_id: String
+      reputation: Float
+      tier: String
+      tri_earned: Float
+
+  OmegaStatus:
+    fields:
+      active: Bool
+      total_reputation: Float
+      threshold: Float
+      percent_complete: Float
+      estimated_activation: Int
+
+  ReputationHistory:
+    fields:
+      node_id: String
+      changes: List<ReputationChange>
+
+  ReputationChange:
+    fields:
+      timestamp: Int
+      delta: Float
+      reason: String
+      new_value: Float
+
+behaviors:
+  - name: showReputation
+    given: Node in cluster
+    when: User runs `tri reputation show`
+    then: Display reputation score, tier, uptime, contributions
+
+  - name: showLeaderboard
+    given: Cluster with multiple nodes
+    when: User runs `tri reputation leaderboard`
+    then: Display top 10 nodes sorted by reputation
+
+  - name: checkOmegaStatus
+    given: Running cluster
+    when: User runs `tri reputation omega-status`
+    then: Display Omega activation status, progress to 1000 threshold
+
+  - name: showHistory
+    given: Node with reputation history
+    when: User runs `tri reputation history`
+    then: Display list of reputation changes with reasons
+
+test_cases:
+  - name: reputation_show_diamond
+    given:
+      reputation: 0.98
+      tier: "Diamond"
+      uptime_hours: 720.0
+    expected:
+      displays_tier: true
+      multiplier_shown: 3.0
+      governance_eligible: true
+
+  - name: reputation_leaderboard_top10
+    given:
+      cluster_nodes: 15
+    expected:
+      returns_10_entries: true
+      sorted_descending: true
+      includes_tier: true
+
+  - name: omega_status_near_activation
+    given:
+      total_reputation: 950.0
+      threshold: 1000.0
+    expected:
+      active: false
+      percent_complete: 95.0
+      eta_shown: true
+
+implementation: |
+  const std = @import("std");
+  const Allocator = std.mem.Allocator;
+
+  pub fn getTier(reputation: f64) []const u8 {
+      if (reputation >= 0.95) return "Diamond (3.0x)";
+      if (reputation >= 0.80) return "Platinum (2.5x)";
+      if (reputation >= 0.60) return "Gold (2.0x)";
+      if (reputation >= 0.30) return "Silver (1.5x)";
+      return "Bronze (1.0x)";
+  }
+
+  pub fn getMultiplier(reputation: f64) f64 {
+      if (reputation >= 0.95) return 3.0;
+      if (reputation >= 0.80) return 2.5;
+      if (reputation >= 0.60) return 2.0;
+      if (reputation >= 0.30) return 1.5;
+      return 1.0;
+  }
+
+  pub fn showReputation(allocator: Allocator, node_id: []const u8) !ReputationScore {
+      _ = allocator;
+      _ = node_id;
+
+      // TODO: Query actual reputation from cluster state
+      const reputation: f64 = 0.75;
+      return ReputationScore{
+          .node_id = "trinity-node-1",
+          .reputation = reputation,
+          .tier = getTier(reputation),
+          .uptime_hours = 120.0,
+          .contributions = 50,
+          .last_updated = 0,
+      };
+  }
+
+  pub fn showLeaderboard(allocator: Allocator) ![]const LeaderboardEntry {
+      _ = allocator;
+
+      // TODO: Query actual leaderboard from cluster
+      return &[_]LeaderboardEntry{
+          .{ .rank = 1, .node_id = "trinity-001", .reputation = 0.98, .tier = "Diamond", .tri_earned = 1234.5 },
+          .{ .rank = 2, .node_id = "trinity-007", .reputation = 0.95, .tier = "Diamond", .tri_earned = 1180.2 },
+          .{ .rank = 3, .node_id = "trinity-042", .reputation = 0.88, .tier = "Platinum", .tri_earned = 980.0 },
+      };
+  }
+
+  pub fn checkOmegaStatus(allocator: Allocator) !OmegaStatus {
+      _ = allocator;
+
+      // TODO: Query actual Omega status from cluster
+      const total_reputation: f64 = 650.0;
+      const threshold: f64 = 1000.0;
+      return OmegaStatus{
+          .active = total_reputation >= threshold,
+          .total_reputation = total_reputation,
+          .threshold = threshold,
+          .percent_complete = (total_reputation / threshold) * 100.0,
+          .estimated_activation = 0,
+      };
+  }
+
+  pub fn showHistory(allocator: Allocator, node_id: []const u8) !ReputationHistory {
+      _ = allocator;
+      _ = node_id;
+
+      // TODO: Query actual history from cluster
+      return ReputationHistory{
+          .node_id = node_id,
+          .changes = &[_]ReputationChange{
+          .{ .timestamp = 0, .delta = 0.01, .reason = "Uptime bonus", .new_value = 0.75 },
+          .{ .timestamp = 0, .delta = 0.005, .reason = "Packet relay", .new_value = 0.76 },
+      },
+  };
+  }

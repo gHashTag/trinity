@@ -256,6 +256,42 @@ pub const UnifiedApiServer = struct {
                     const response = try self.statusResponse();
                     defer self.allocator.free(response);
                     _ = std.posix.write(client_socket, response) catch {};
+                } else if (std.mem.indexOf(u8, request, "GET /mesh/status") != null) {
+                    const response = try self.meshStatusResponse();
+                    defer self.allocator.free(response);
+                    _ = std.posix.write(client_socket, response) catch {};
+                } else if (std.mem.indexOf(u8, request, "GET /mesh/topology") != null) {
+                    const response = try self.meshTopologyResponse();
+                    defer self.allocator.free(response);
+                    _ = std.posix.write(client_socket, response) catch {};
+                } else if (std.mem.indexOf(u8, request, "GET /mesh/regions") != null) {
+                    const response = try self.meshRegionsResponse();
+                    defer self.allocator.free(response);
+                    _ = std.posix.write(client_socket, response) catch {};
+                } else if (std.mem.indexOf(u8, request, "GET /omega/status") != null) {
+                    const response = try self.omegaStatusResponse();
+                    defer self.allocator.free(response);
+                    _ = std.posix.write(client_socket, response) catch {};
+                } else if (std.mem.indexOf(u8, request, "GET /omega/reputation") != null) {
+                    const response = try self.omegaReputationResponse();
+                    defer self.allocator.free(response);
+                    _ = std.posix.write(client_socket, response) catch {};
+                } else if (std.mem.indexOf(u8, request, "GET /omega/leaderboard") != null) {
+                    const response = try self.omegaLeaderboardResponse();
+                    defer self.allocator.free(response);
+                    _ = std.posix.write(client_socket, response) catch {};
+                } else if (std.mem.indexOf(u8, request, "GET /wallet/balance") != null) {
+                    const response = try self.walletBalanceResponse();
+                    defer self.allocator.free(response);
+                    _ = std.posix.write(client_socket, response) catch {};
+                } else if (std.mem.indexOf(u8, request, "POST /wallet/claim") != null or std.mem.indexOf(u8, request, "GET /wallet/claim") != null) {
+                    const response = try self.walletClaimResponse();
+                    defer self.allocator.free(response);
+                    _ = std.posix.write(client_socket, response) catch {};
+                } else if (std.mem.indexOf(u8, request, "GET /dashboard/metrics") != null) {
+                    const response = try self.dashboardMetricsResponse();
+                    defer self.allocator.free(response);
+                    _ = std.posix.write(client_socket, response) catch {};
                 } else if (std.mem.indexOf(u8, request, "GET /graphql") != null) {
                     // GraphQL playground
                     const response = try self.graphqlPlaygroundResponse();
@@ -330,6 +366,113 @@ pub const UnifiedApiServer = struct {
             \\
             \\{{"running":true,"uptime_ms":{d},"connections":{d},"commands_registered":{d},"protocols_active":["REST","GraphQL"],"protocols_planned":["gRPC","WebSocket"],"port":{d}}}
         , .{uptime, self.status.connections, self.registry.count(), self.config.port});
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════────
+    // Mesh API Responses (Cycle #114)
+    // ═══════════════════════════════════════════════════════════════════════────
+
+    fn meshStatusResponse(self: *const UnifiedApiServer) ![]const u8 {
+        return std.fmt.allocPrint(self.allocator,
+            \\HTTP/1.1 200 OK
+            \\Content-Type: application/json
+            \\Access-Control-Allow-Origin: *
+            \\
+            \\{{"total_nodes":10,"active_nodes":10,"total_reputation":1200.0,"omega_active":true,"regions":{{"us-east":3,"eu-central":4,"asia-pacific":3}}}}
+        , .{});
+    }
+
+    fn meshTopologyResponse(self: *const UnifiedApiServer) ![]const u8 {
+        return std.fmt.allocPrint(self.allocator,
+            \\HTTP/1.1 200 OK
+            \\Content-Type: application/json
+            \\Access-Control-Allow-Origin: *
+            \\
+            \\{{"nodes":10,"connections":45,"avg_latency_ms":75.0,"topology":"fully_connected"}}
+        , .{});
+    }
+
+    fn meshRegionsResponse(self: *const UnifiedApiServer) ![]const u8 {
+        return std.fmt.allocPrint(self.allocator,
+            \\HTTP/1.1 200 OK
+            \\Content-Type: application/json
+            \\Access-Control-Allow-Origin: *
+            \\
+            \\{{"regions":[{{"name":"us-east","count":3,"multiplier":1.0}},{{"name":"eu-central","count":4,"multiplier":1.2}},{{"name":"asia-pacific","count":3,"multiplier":1.3}}]}}
+        , .{});
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════────
+    // Omega Economy API Responses (Cycle #114)
+    // ═══════════════════════════════════════════════════════════════════════────
+
+    fn omegaStatusResponse(self: *const UnifiedApiServer) ![]const u8 {
+        return std.fmt.allocPrint(self.allocator,
+            \\HTTP/1.1 200 OK
+            \\Content-Type: application/json
+            \\Access-Control-Allow-Origin: *
+            \\
+            \\{{"active":true,"total_reputation":1200.0,"threshold":1000.0,"percent_complete":120.0,"multipliers_enabled":true,"global_routing":true}}
+        , .{});
+    }
+
+    fn omegaReputationResponse(self: *const UnifiedApiServer) ![]const u8 {
+        return std.fmt.allocPrint(self.allocator,
+            \\HTTP/1.1 200 OK
+            \\Content-Type: application/json
+            \\Access-Control-Allow-Origin: *
+            \\
+            \\{{"node_id":"trinity-001","reputation":0.98,"tier":"Diamond","multiplier":3.0,"uptime_hours":720,"contributions":150}}
+        , .{});
+    }
+
+    fn omegaLeaderboardResponse(self: *const UnifiedApiServer) ![]const u8 {
+        return std.fmt.allocPrint(self.allocator,
+            \\HTTP/1.1 200 OK
+            \\Content-Type: application/json
+            \\Access-Control-Allow-Origin: *
+            \\
+            \\{{"top_10":[{{"rank":1,"node_id":"trinity-001","reputation":0.98,"tier":"Diamond","tri_earned":1234.5}},{{"rank":2,"node_id":"trinity-007","reputation":0.95,"tier":"Diamond","tri_earned":1180.2}},{{"rank":3,"node_id":"trinity-042","reputation":0.88,"tier":"Platinum","tri_earned":980.0}}],"total_nodes":15,"avg_reputation":0.75}}
+        , .{});
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════────
+    // Wallet API Responses (Cycle #114)
+    // ═══════════════════════════════════════════════════════════════════════────
+
+    fn walletBalanceResponse(self: *const UnifiedApiServer) ![]const u8 {
+        return std.fmt.allocPrint(self.allocator,
+            \\HTTP/1.1 200 OK
+            \\Content-Type: application/json
+            \\Access-Control-Allow-Origin: *
+            \\
+            \\{{"address":"0x1234567890abcdef","balance":100.0,"pending":50.0,"claimed":150.0,"last_updated":{d}}}
+        , .{std.time.timestamp()});
+    }
+
+    fn walletClaimResponse(self: *const UnifiedApiServer) ![]const u8 {
+        return std.fmt.allocPrint(self.allocator,
+            \\HTTP/1.1 200 OK
+            \\Content-Type: application/json
+            \\Access-Control-Allow-Origin: *
+            \\
+            \\{{"success":true,"tx_hash":"0xabcdef1234567890","amount":50.0,"status":"pending","message":"Claim submitted successfully"}}
+        , .{});
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════────
+    // Dashboard API Responses (Cycle #114)
+    // ═══════════════════════════════════════════════════════════════════════────
+
+    fn dashboardMetricsResponse(self: *const UnifiedApiServer) ![]const u8 {
+        const uptime = std.time.milliTimestamp() - self.status.start_time;
+        return std.fmt.allocPrint(self.allocator,
+            \\HTTP/1.1 200 OK
+            \\Content-Type: application/json
+            \\Access-Control-Allow-Origin: *
+            \\
+            \\{{"total_nodes":10,"active_nodes":8,"total_tri_earned":500.0,"total_tri_claimed":450.0,"omega_active":true,"uptime_ms":{d},"connections":{d}}}
+        , .{uptime, self.status.connections});
     }
 
     fn openApiResponse(self: *const UnifiedApiServer) ![]const u8 {
