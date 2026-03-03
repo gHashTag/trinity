@@ -208,27 +208,35 @@ pub const Command = enum {
     deps,
     // Codebase Context (Cycle 92)
     context_info,
-    // Autonomous Evolution (Cycle 97)
-    auto_commit,
-    ml_optimize,
-    deploy_dashboard,
-    self_host,
-    safeguards_show,
-    safeguards_disable,
+    // Sacred Intelligence (Cycle 94)
+    intelligence,
+    // Temporal Engine v1.2 (Order #030)
+    time,
+    install,
+    build_cmd,
+    // Temporal Engine v1.3 (Order #031)
+    deck_generate,
+    fpga_demo,
+    sacred_full_cycle,
+    // Quantum Trinity v1.4 (Order #032)
+    quantum,
+    release_cosmic,
+    // Omega Phase v2.0 (Order #033)
+    omega_cmd,
+    all_cmd,
+    holo_cmd,
+    release_absolute,
+    omega_evolve,
+    // TRINITY OS v1.0 (Order #034)
+    launch,
     // Info
     info,
     version,
     help,
-    // Cycle 101: Orchestrator v2.0
-    orchestrate_v2,
-    // Eternal Monitor
-    monitor,
-    // Temporal Trinity v1.0 (Order #020, #021) — ACTIVE
-    time,
-    os_boot,
-    // ABSOLUTE INFINITY v2.0 + OMEGA PHASE (Order #024)
-    infinity,
-    omega_phase,
+    // NEEDLE - Structural Editor Core
+    needle,
+    needle_search,
+    needle_check,
 };
 
 pub const CLIState = struct {
@@ -817,27 +825,35 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "analyze") or std.mem.eql(u8, arg, "scan")) return .analyze;
     if (std.mem.eql(u8, arg, "search")) return .search_cmd;
     if (std.mem.eql(u8, arg, "context") or std.mem.eql(u8, arg, "ctx")) return .context_info;
-    // Autonomous Evolution (Cycle 97)
-    if (std.mem.eql(u8, arg, "auto-commit") or std.mem.eql(u8, arg, "ac")) return .auto_commit;
-    if (std.mem.eql(u8, arg, "ml-optimize") or std.mem.eql(u8, arg, "mlopt")) return .ml_optimize;
-    if (std.mem.eql(u8, arg, "deploy-dashboard") or std.mem.eql(u8, arg, "deploy")) return .deploy_dashboard;
-    if (std.mem.eql(u8, arg, "self-host") or std.mem.eql(u8, arg, "selfhost")) return .self_host;
-    if (std.mem.eql(u8, arg, "safeguards") or std.mem.eql(u8, arg, "sg")) return .safeguards_show;
-    if (std.mem.eql(u8, arg, "safeguards-disable")) return .safeguards_disable;
+    // Sacred Intelligence (Cycle 94)
+    if (std.mem.eql(u8, arg, "intelligence")) return .intelligence;
+    // Temporal Engine v1.2 (Order #030)
+    if (std.mem.eql(u8, arg, "time") or std.mem.eql(u8, arg, "temporal")) return .time;
+    if (std.mem.eql(u8, arg, "install") or std.mem.eql(u8, arg, "self-update")) return .install;
+    if (std.mem.eql(u8, arg, "build")) return .build_cmd;
+    // Temporal Engine v1.3 (Order #031)
+    if (std.mem.eql(u8, arg, "deck") or std.mem.eql(u8, arg, "deck-generate")) return .deck_generate;
+    if (std.mem.eql(u8, arg, "fpga") or std.mem.eql(u8, arg, "fpga-demo")) return .fpga_demo;
+    if (std.mem.eql(u8, arg, "full-cycle") or std.mem.eql(u8, arg, "sacred-full-cycle")) return .sacred_full_cycle;
+    // Quantum Trinity v1.4 (Order #032)
+    if (std.mem.eql(u8, arg, "quantum")) return .quantum;
+    if (std.mem.eql(u8, arg, "release-cosmic")) return .release_cosmic;
+    // Omega Phase v2.0 (Order #033)
+    if (std.mem.eql(u8, arg, "omega") or std.mem.eql(u8, arg, "omega-phase")) return .omega_cmd;
+    if (std.mem.eql(u8, arg, "all")) return .all_cmd;
+    if (std.mem.eql(u8, arg, "holo") or std.mem.eql(u8, arg, "holographic")) return .holo_cmd;
+    if (std.mem.eql(u8, arg, "release") or std.mem.eql(u8, arg, "release-absolute")) return .release_absolute;
+    if (std.mem.eql(u8, arg, "omega-evolve") or std.mem.eql(u8, arg, "evolve-omega")) return .omega_evolve;
+    // TRINITY OS v1.0 (Order #034)
+    if (std.mem.eql(u8, arg, "launch")) return .launch;
     // Info
     if (std.mem.eql(u8, arg, "info")) return .info;
     if (std.mem.eql(u8, arg, "version") or std.mem.eql(u8, arg, "--version") or std.mem.eql(u8, arg, "-v")) return .version;
     if (std.mem.eql(u8, arg, "help") or std.mem.eql(u8, arg, "--help") or std.mem.eql(u8, arg, "-h")) return .help;
-    // Cycle 101: Orchestrator v2.0
-    if (std.mem.eql(u8, arg, "orchestrate-v2") or std.mem.eql(u8, arg, "orchestrator") or std.mem.eql(u8, arg, "flow")) return .orchestrate_v2;
-    // Eternal Monitor
-    if (std.mem.eql(u8, arg, "monitor")) return .monitor;
-    // Temporal Trinity v1.0 (Order #020, #021) — ACTIVE
-    if (std.mem.eql(u8, arg, "time")) return .time;
-    if (std.mem.eql(u8, arg, "os") or std.mem.eql(u8, arg, "boot")) return .os_boot;
-    // ABSOLUTE INFINITY v2.0 + OMEGA PHASE (Order #024)
-    if (std.mem.eql(u8, arg, "infinity")) return .infinity;
-    if (std.mem.eql(u8, arg, "omega-phase") or std.mem.eql(u8, arg, "omega_phase")) return .omega_phase;
+    // NEEDLE - Structural Editor Core
+    if (std.mem.eql(u8, arg, "needle") or std.mem.eql(u8, arg, "nedl")) return .needle;
+    if (std.mem.eql(u8, arg, "needle-search") or std.mem.eql(u8, arg, "needle-search") or std.mem.eql(u8, arg, "ns")) return .needle_search;
+    if (std.mem.eql(u8, arg, "needle-check") or std.mem.eql(u8, arg, "nc")) return .needle_check;
     return .none;
 }
 

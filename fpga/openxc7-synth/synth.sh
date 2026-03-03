@@ -1,56 +1,103 @@
 #!/bin/bash
+# synth.sh — OpenXC7 FPGA Synthesis Pipeline
+# Usage: ./synth.sh <design.v> [top_module_name]
+#
+# Prerequisites:
+#   - Docker image regymm/openxc7:latest
+#   - Pin constraints in <design>.xdc
+
 set -e
 
-PART="xc7a100tfgg676-1"
-DBPART="xc7a100tfgg676"
-FAMILY="artix7"
-PROJECT="trinity"
-TOP="trinity_top"
-XDC="trinity.xdc"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+WORK_DIR="${SCRIPT_DIR}"
 
-PRJXRAY_DB="/nextpnr-xilinx/xilinx/external/prjxray-db"
-BBAEXPORT="/nextpnr-xilinx/xilinx/python/bbaexport.py"
-CHIPDB="/workspace/chipdb"
+# Check arguments
+if [ -z "$1" ]; then
+    echo "Usage: $0 <design.v> [top_module_name]"
+    echo ""
+    echo "Example:"
+    echo "  $0 temporal_heartbeat.v temporal_heartbeat_top"
+    exit 1
+fi
 
-echo "=== TRINITY OPEN-SOURCE SYNTHESIS ==="
-echo "Part: $PART"
-echo "Family: $FAMILY"
+VERILOG="$1"
+TOP="${2:-$(basename -s .v "$VERILOG")_top}"
+BASE="$(basename -s .v "$VERILOG")"
+
+# Check files exist
+if [ ! -f "$VERILOG" ]; then
+    echo "Error: Verilog file not found: $VERILOG"
+    exit 1
+fi
+
+XDC="${BASE}.xdc"
+if [ ! -f "$XDC" ]; then
+    echo "Error: XDC file not found: $XDC"
+    exit 1
+fi
+
+echo "═══════════════════════════════════════════════"
+echo " OPENXC7 SYNTHESIS PIPELINE"
+echo " Design: $VERILOG"
+echo " Top:   $TOP"
+echo "═══════════════════════════════════════════════"
 echo ""
 
 # Step 1: Yosys synthesis
-echo "[1/5] Yosys synthesis..."
-yosys -p "synth_xilinx -flatten -abc9 -arch xc7 -top $TOP; write_json ${PROJECT}.json" ${PROJECT}.v
-echo "  Netlist: ${PROJECT}.json"
+echo "[1/4] Yosys synthesis..."
+docker run --rm --platform linux/amd64 \
+  -v "$WORK_DIR:/work" -w /work \
+  regymm/openxc7 \
+  yosys -p "synth_xilinx -flatten -abc9 -nobram -arch xc7 -top $TOP; write_json ${BASE}.json" \
+  "$VERILOG"
 
-# Step 2: Generate chipdb (if not cached)
-if [ ! -f "${CHIPDB}/${DBPART}.bin" ]; then
-    echo "[2/5] Generating chipdb for ${DBPART} (this takes a while)..."
-    mkdir -p ${CHIPDB}
-    pypy3 ${BBAEXPORT} --device ${PART} --bba ${DBPART}.bba || \
-    python3 ${BBAEXPORT} --device ${PART} --bba ${DBPART}.bba
-    bbasm -l ${DBPART}.bba ${CHIPDB}/${DBPART}.bin
-    rm -f ${DBPART}.bba
-    echo "  Chipdb: ${CHIPDB}/${DBPART}.bin"
-else
-    echo "[2/5] Chipdb cached: ${CHIPDB}/${DBPART}.bin"
-fi
+echo "  → ${BASE}.json"
 
-# Step 3: Place and route
-echo "[3/5] Place and route (nextpnr-xilinx)..."
-nextpnr-xilinx --chipdb ${CHIPDB}/${DBPART}.bin --xdc ${XDC} --json ${PROJECT}.json --fasm ${PROJECT}.fasm
-echo "  FASM: ${PROJECT}.fasm"
+# Step 2: nextpnr-xilinx place & route
+echo "[2/4] nextpnr-xilinx place & route..."
+docker run --rm --platform linux/amd64 \
+  -v "$WORK_DIR:/work" -w /work \
+  regymm/openxc7 \
+  nextpnr-xilinx \
+    --chipdb /work/chipdb/xc7a100tfgg676.bin \
+    --xdc /work/"$XDC" \
+    --json /work/"${BASE}.json" \
+    --write /work/"${BASE}_routed.json" \
+    --fasm /work/"${BASE}.fasm" \
+    --freq 50 --seed 1
 
-# Step 4: FASM to frames
-echo "[4/5] Converting FASM to frames..."
-fasm2frames --part ${PART} --db-root ${PRJXRAY_DB}/${FAMILY} ${PROJECT}.fasm > ${PROJECT}.frames
-echo "  Frames: ${PROJECT}.frames"
+echo "  → ${BASE}.fasm"
 
-# Step 5: Generate bitstream
-echo "[5/5] Generating bitstream..."
-xc7frames2bit --part_file ${PRJXRAY_DB}/${FAMILY}/${PART}/part.yaml --part_name ${PART} --frm_file ${PROJECT}.frames --output_file ${PROJECT}.bit
-echo "  Bitstream: ${PROJECT}.bit"
+# Step 3: FASM → Frames
+echo "[3/4] FASM to frames conversion..."
+docker run --rm --platform linux/amd64 \
+  -v "$WORK_DIR:/work" -w /work \
+  regymm/openxc7 \
+  fasm2frames \
+    --db-root /nextpnr-xilinx/xilinx/external/prjxray-db/artix7 \
+    --part xc7a100tfgg676-1 \
+    /work/"${BASE}.fasm" \
+    /work/"${BASE}.frames"
 
-ls -lh ${PROJECT}.bit
+echo "  → ${BASE}.frames"
+
+# Step 4: Frames → Bitstream
+echo "[4/4] Frames to bitstream..."
+docker run --rm --platform linux/amd64 \
+  -v "$WORK_DIR:/work" -w /work \
+  regymm/openxc7 \
+  /prjxray/build/tools/xc7frames2bit \
+    --part_file /nextpnr-xilinx/xilinx/external/prjxray-db/artix7/xc7a100tfgg676-1/part.yaml \
+    --part_name xc7a100tfgg676-1 \
+    --frm_file /work/"${BASE}.frames" \
+    --output_file /work/"${BASE}.bit"
+
+echo "  → ${BASE}.bit"
 echo ""
-echo "=== SYNTHESIS COMPLETE ==="
-echo "TRINITY LIVES IN SILICON. phi^2 + 1/phi^2 = 3"
+echo "═══════════════════════════════════════════════"
+echo " SYNTHESIS COMPLETE"
+echo " Bitstream: ${BASE}.bit"
+echo ""
+echo " To flash:"
+echo "   sudo ../tools/jtag_program ${BASE}.bit"
+echo "═══════════════════════════════════════════════"

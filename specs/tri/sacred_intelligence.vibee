@@ -1,208 +1,154 @@
-# ═══════════════════════════════════════════════════════════════════════════════
-# VIBEE Specification — Sacred Intelligence Core
-# ═══════════════════════════════════════════════════════════════════════════════
-# φ² + 1/φ² = 3 = TRINITY
-# ═══════════════════════════════════════════════════════════════════════════════
+# ═════════════════════════════════════════════════════════════════════════════
+# SACRED INTELLIGENCE CORE (Cycle 94)
+# ═════════════════════════════════════════════════════════════════════════════
+#
+# V = n × 3^k × π^m × φ^p × e^q  |  φ² + 1/φ² = 3 = TRINITY
+#
+# Goal: Enhance Codebase Context System so that every SWE command automatically
+# includes sacred analysis — gematria of symbol names + formula decomposition
+# of numbers + recognition of sacred constants. Add `tri intelligence` command
+# for codebase-wide sacred analysis.
+# ═════════════════════════════════════════════════════════════════════════════
 
 name: sacred_intelligence
 version: "1.0.0"
 language: zig
 module: sacred_intelligence
 
-description: |
-  Sacred Intelligence Core integrates sacred mathematics into the codebase context system.
-  Every symbol is analyzed for:
-  - Coptic Gematria value (27 glyphs, 3³ = 27)
-  - Sacred Formula decomposition: V = n × 3^k × π^m × φ^p × e^q
-  - Recognition of 42 sacred constants (physics, quantum, cosmology)
-  - Sacred scoring with φ-weighted similarity
+# ═════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═════════════════════════════════════════════════════════════════════════════
 
 types:
   SacredSymbolAnalysis:
+    description: "Sacred analysis of a code symbol"
     fields:
       name: String
       gematria_value: Int
       gematria_glyphs: String
-      formula_fit: SacredFormulaFit
-      formula_string: String
-      recognized_constant: SacredConstantMatch
+      formula_fit: FormulaFit?
+      recognized_constant: String?
 
-  SacredFormulaFit:
+  FormulaFit:
+    description: "Sacred formula decomposition parameters"
     fields:
       n: Int
       k: Int
       m: Int
       p: Int
       q: Int
-      computed_value: Float
+      computed: Float
       error_pct: Float
-      quality_score: Float
 
-  SacredConstantMatch:
+  SacredConstant:
+    description: "Sacred constant entry"
+    fields:
+      value: Float
+      name: String
+      symbol: String
+      tolerance_pct: Float
+
+  ConstantMatch:
+    description: "Matched sacred constant result"
     fields:
       constant_name: String
       target_value: Float
       actual_value: Float
       error_pct: Float
 
-  SacredConstant:
-    fields:
-      name: String
-      symbol: String
-      value: Float
-      category: String
-      description: String
-      formula_n: Int
-      formula_k: Int
-      formula_m: Int
-      formula_p: Int
-      formula_q: Int
-      formula_error: Float
-
-  GematriaEntry:
-    fields:
-      glyph: String
-      codepoint: Int
-      value: Int
-      category: String
-
   CodebaseIntelligence:
+    description: "Intelligence report for entire codebase"
     fields:
       total_symbols: Int
-      sacred_symbols_found: Int
-      top_gematria_values: SacredSymbolEntry
-      sacred_constants_found: ConstantMatch
-      phi_scored_symbols: Int
-      trinity_numbers: Int
+      sacred_symbols: Int
+      top_gematria: List<SacredSymbolEntry>
+      sacred_constants_found: List<ConstantMatch>
 
   SacredSymbolEntry:
+    description: "Symbol entry with gematria analysis"
     fields:
-      name: String
+      symbol_name: String
       gematria_value: Int
-      sacred_formula: String
+      glyphs: String
 
-  SelfEvolutionConfig:
-    fields:
-      enabled: Bool
-      mutation_rate: Float
-      crossover_rate: Float
-      selection_pressure: Float
-      elitism_rate: Float
-      max_iterations: Int
-      convergence_threshold: Float
-
-  EvolutionResult:
-    fields:
-      iteration: Int
-      best_error: Float
-      best_params: SacredFormulaFit
-      improved: Bool
-      learning_rate: Float
-
-constants:
-  SACRED_CONSTANTS_COUNT: Int = 42
-  SACRED_PREDICTIONS_COUNT: Int = 15
-  DEFAULT_TOLERANCE_PCT: Float = 5.0
-  MAX_SYMBOLS_TO_ANALYZE: Int = 100
-  PHI: Float = 1.6180339887498948
-  PI: Float = 3.14159265358979323
-  E: Float = 2.71828182845904523
-  TRINITY: Float = 3.0
+# ═════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═════════════════════════════════════════════════════════════════════════════
 
 behaviors:
   - name: analyzeSacredSymbol
-    given: symbol_name, allocator
-    when: symbol is indexed
-    then: SacredSymbolAnalysis with gematria + formula + constant match
-
-  - name: computeGematriaValue
-    given: text
-    when: text needs sacred analysis
-    then: gematria_value with Coptic glyphs
-
-  - name: fitSacredFormula
-    given: target_value
-    when: number needs decomposition
-    then: SacredFormulaFit with n, k, m, p, q parameters
+    given: A symbol name and its code snippet
+    when: Computing sacred analysis including Coptic gematria and formula decomposition
+    then: Returns SacredSymbolAnalysis with gematria value, glyphs, formula fit, and recognized constant
 
   - name: recognizeSacredConstant
-    given: value, tolerance_pct
-    when: constant matching needed
-    then: SacredConstantMatch or null
+    given: A numeric value to check against sacred constants database
+    when: Comparing the value against 75+ sacred constants with tolerance
+    then: Returns constant name if found within tolerance, null otherwise
 
   - name: formatFormulaString
-    given: formula_fit
-    when: display needed
-    then: formatted string "V = n×3^k×π^m×φ^p×e^q"
+    given: A SacredFormulaFit result
+    when: Formatting as readable formula string "V = n × 3^k × π^m × φ^p × e^q"
+    then: Returns formatted string with proper Unicode superscripts
 
   - name: getContextWithSacredAnalysis
-    given: context_manager, prompt
-    when: AI context requested
-    then: context with sacred analysis appended
+    given: A prompt and codebase context
+    when: Generating context for SWE commands (fix, explain, test, doc, refactor, reason)
+    then: Returns prompt context string with sacred symbol analysis for relevant code
 
   - name: analyzeCodebaseIntelligence
-    given: context_manager, allocator
-    when: full codebase analysis requested
-    then: CodebaseIntelligence with sacred statistics
+    given: A codebase scan result with symbols
+    when: Computing intelligence report across all indexed symbols
+    then: Returns CodebaseIntelligence with top gematria values and found constants
 
   - name: printSacredIntelligenceReport
-    given: intelligence, allocator
-    when: report requested
-    then: formatted sacred analysis output
+    given: A CodebaseIntelligence report
+    when: Displaying the report in formatted output with colors
+    then: Prints report showing sacred statistics, top symbols, and constant matches
 
   - name: runIntelligenceCommand
-    given: state, args, allocator
-    when: "tri intelligence" invoked
-    then: sacred analysis displayed
+    given: User CLI invocation with optional query or file path
+    when: Executing `tri intelligence` command
+    then: Displays codebase-wide sacred analysis report or targeted symbol analysis
 
-  - name: initializeSelfEvolution
-    given: config
-    when: self-evolution engine starts
-    then: initialized evolution state
+# ═════════════════════════════════════════════════════════════════════════════
+# CONSTANTS
+# ═════════════════════════════════════════════════════════════════════════════
 
-  - name: evolveFormulaParameters
-    given: target_value, current_params, config
-    when: improving formula fit
-    then: EvolutionResult with improved parameters
+constants:
+  SACRED_CONSTANTS_COUNT:
+    value: 75
+    description: "Number of sacred constants in database"
 
-  - name: computeEvolutionMetrics
-    given: population, iteration
-    when: evolution step complete
-    then: metrics for convergence analysis
+  SACRED_PREDICTIONS_COUNT:
+    value: 21
+    description: "Number of sacred predictions"
 
-  - name: applyEvolutionaryPressure
-    given: formula_fit, sacred_constraints
-    when: optimizing formulas
-    then: pressure-adjusted formula with trinity alignment
+  DEFAULT_TOLERANCE_PCT:
+    value: 5.0
+    description: "Default tolerance for constant matching (5%)"
+
+  MAX_SYMBOLS_TO_ANALYZE:
+    value: 100
+    description: "Maximum number of symbols to analyze in one report"
+
+# ═════════════════════════════════════════════════════════════════════════════
+# INTEGRATION POINTS
+# ═════════════════════════════════════════════════════════════════════════════
 
 integration:
   context_manager:
-    module: tri_context
-    functions:
-      - getContextForPrompt
-      - sacredScore
-      - addSymbol
+    module: "tri_context"
+    description: "Integration with ContextManager for codebase scanning"
 
   sacred_formula:
-    module: math/sacred_formula
-    functions:
-      - computeSacredFormula
-      - fitSacredFormula
-      - formatFormulaString
+    module: "math/sacred_formula"
+    description: "Sacred formula V = n × 3^k × π^m × φ^p × e^q engine"
 
-  gematria:
-    module: math/gematria
-    functions:
-      - textToGematriaValue
-      - numberToGlyphs
-      - glyphToValue
+  gematria_engine:
+    module: "gematria"
+    description: "Coptic gematria engine for symbol name analysis"
 
   tri_commands:
-    module: tri_commands
-    functions:
-      - runChatCommand
-      - runSWECommand
-      - runCodeCommand
-
-# End of Sacred Intelligence specification
-# Use 'tri gen specs/tri/sacred_intelligence.vibee' to generate code
+    module: "tri_commands"
+    description: "CLI command dispatcher for `tri intelligence`"

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import Section from '../Section';
 import StargateDrum from '../StargateDrum';
 import { useI18n } from '../../i18n/context';
-import { fetchSacredFormula, fitSingleValue, fetchGematria, computeFromParams, PARAM_BOUNDS, type SacredFormulaResponse, type SacredConstantResult, type SingleFitResponse, type GematriaResponse } from '../../services/chatApi';
+import { fetchSacredFormula, fitSingleValue, fetchGematria, computeFromParams, findBestMatch, generateRandomFormula, PARAM_BOUNDS, type SacredFormulaResponse, type SacredConstantResult, type SingleFitResponse, type GematriaResponse } from '../../services/chatApi';
 
 type Category = 'all' | 'particle_physics' | 'quantum' | 'cosmology' | 'quantum_gravity';
 const CATEGORY_KEYS: Category[] = ['all', 'particle_physics', 'quantum', 'cosmology', 'quantum_gravity'];
@@ -229,6 +229,88 @@ export default function SacredFormulaSection() {
                 : (msg.modeGematria || 'Gematria')}
           </button>
         ))}
+      </div>
+
+      {/* Action buttons: Random, Reset, Find Best */}
+      <div className="fade" style={{
+        display: 'flex', gap: '0.5rem', justifyContent: 'center',
+        marginBottom: '1rem',
+      }}>
+        <button
+          onClick={() => {
+            const random = generateRandomFormula();
+            setParams({ n: String(random.n), k: String(random.k), m: String(random.m), p: String(random.p), q: String(random.q) });
+            setInputMode('manual');
+            setCustomResult({ fit: { n: random.n, k: random.k, m: random.m, p: random.p, q: random.q }, computed: random.value, error_pct: 0 });
+            setCustomValue('');
+            setGematriaResult(null);
+            setHighlightedGlyphs([]);
+            setFormulaError(null);
+            setParamErrors({ n: null, k: null, m: null, p: null, q: null });
+            setHighlightedConstant(null);
+          }}
+          style={{
+            background: 'rgba(0,229,153,0.1)',
+            border: '1px solid rgba(0,229,153,0.3)',
+            borderRadius: '20px',
+            padding: '0.35rem 1.2rem',
+            color: '#00e599',
+            fontSize: '0.8rem',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            fontFamily: 'monospace',
+          }}
+        >
+          {msg.random || 'Random'}
+        </button>
+        <button
+          onClick={() => {
+            setParams({ n: '1', k: '0', m: '0', p: '0', q: '0' });
+            setCustomResult(null);
+            setCustomValue('');
+            setGematriaResult(null);
+            setHighlightedGlyphs([]);
+            setFormulaError(null);
+            setParamErrors({ n: null, k: null, m: null, p: null, q: null });
+            setHighlightedConstant(null);
+          }}
+          style={{
+            background: 'rgba(255,107,107,0.1)',
+            border: '1px solid rgba(255,107,107,0.3)',
+            borderRadius: '20px',
+            padding: '0.35rem 1.2rem',
+            color: '#ff6b6b',
+            fontSize: '0.8rem',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            fontFamily: 'monospace',
+          }}
+        >
+          {msg.reset || 'Reset'}
+        </button>
+        {customResult && customResult.computed > 0 && (
+          <button
+            onClick={() => {
+              const match = findBestMatch(customResult.computed);
+              if (match) {
+                setHighlightedConstant(match.symbol);
+              }
+            }}
+            style={{
+              background: 'rgba(255,215,0,0.1)',
+              border: '1px solid rgba(255,215,0,0.3)',
+              borderRadius: '20px',
+              padding: '0.35rem 1.2rem',
+              color: '#ffd700',
+              fontSize: '0.8rem',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              fontFamily: 'monospace',
+            }}
+          >
+            {msg.findBest || 'Find Best'}
+          </button>
+        )}
       </div>
 
       {/* Input area — formula mode */}
