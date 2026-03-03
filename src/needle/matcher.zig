@@ -64,7 +64,7 @@ pub const Matcher = struct {
         if (self.config.enable_tier1_structural and query.kind == .sexpr) {
             if (try self.tryAstMatch(query, &all_results)) {
                 // Got good AST results, use them
-                return self.finalizeResults(all_results);
+                return self.finalizeResults(&all_results);
             }
         }
 
@@ -79,7 +79,7 @@ pub const Matcher = struct {
             try self.tryFuzzyMatch(pattern_query, &all_results);
         }
 
-        return self.finalizeResults(all_results);
+        return self.finalizeResults(&all_results);
     }
 
     /// Try AST-based matching (Tier 1)
@@ -111,13 +111,24 @@ pub const Matcher = struct {
         defer fuzzy_results.deinit();
 
         // Add fuzzy results to combined results
-        for (fuzzy_results.items) |item| {
-            try results.append(item);
+        for (fuzzy_results.items.items) |item| {
+            // Clone the item since fuzzy_results will be freed
+            const cloned = MatchResult{
+                .node_id = item.node_id,
+                .start_line = item.start_line,
+                .end_line = item.end_line,
+                .start_column = item.start_column,
+                .end_column = item.end_column,
+                .matched_text = try self.allocator.dupe(u8, item.matched_text),
+                .confidence = item.confidence,
+                .kind = item.kind,
+            };
+            try results.append(cloned);
         }
     }
 
     /// Finalize and process results
-    fn finalizeResults(self: *Matcher, results: MatchResultList) !MatchResultList {
+    fn finalizeResults(self: *Matcher, results: *MatchResultList) !MatchResultList {
         var final = MatchResultList.init(self.allocator);
 
         // Filter by confidence threshold
@@ -130,11 +141,11 @@ pub const Matcher = struct {
         results.limit(self.config.max_matches);
 
         // Assign node IDs
-        for (results.items, 0..) |*item, i| {
+        for (results.items.items, 0..) |*item, i| {
             item.node_id = @intCast(i + 1);
         }
 
-        final = results;
+        final = results.*;
         return final;
     }
 
@@ -168,13 +179,13 @@ pub const Matcher = struct {
 pub const Searcher = struct {
     allocator: std.mem.Allocator,
     config: NeedleConfig,
-    file_paths: std.ArrayList([]const u8),
+    file_paths: std.ArrayListAligned([]const u8, null),
 
     pub fn init(allocator: std.mem.Allocator) Searcher {
         return .{
             .allocator = allocator,
             .config = NeedleConfig.default(),
-            .file_paths = std.ArrayList([]const u8).init(allocator),
+            .file_paths = .{ .items = &.{}, .capacity = 0 },
         };
     }
 

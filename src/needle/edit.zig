@@ -12,6 +12,7 @@
 const std = @import("std");
 const needle = @import("needle.zig");
 const matcher = @import("matcher.zig");
+const check = @import("check.zig");
 
 const MatchResult = needle.MatchResult;
 const EditOperation = needle.EditOperation;
@@ -55,10 +56,17 @@ pub const TextEditor = struct {
 
     /// Compute diff for a match
     pub fn computeDiff(self: *TextEditor, match_result: MatchResult, replacement: []const u8) !EditDiff {
-        const lines = std.mem.splitScalar(u8, self.source, '\n');
+        var lines = std.mem.splitScalar(u8, self.source, '\n');
 
-        var old_text = std.ArrayList(u8).init(self.allocator);
-        errdefer old_text.deinit();
+        var old_text = std.ArrayListAligned(u8, null){
+            .items = &.{},
+            .capacity = 0,
+        };
+        errdefer {
+            if (old_text.capacity > 0) {
+                self.allocator.free(old_text.allocatedSlice());
+            }
+        }
 
         // Extract the matched lines
         var line_idx: u32 = 1;
@@ -68,12 +76,12 @@ pub const TextEditor = struct {
 
         for (0..(match_result.end_line - match_result.start_line + 1)) |_| {
             if (lines.next()) |line| {
-                try old_text.appendSlice(line);
-                try old_text.append('\n');
+                try old_text.appendSlice(self.allocator, line);
+                try old_text.append(self.allocator, '\n');
             }
         }
 
-        const old_dupe = try old_text.toOwnedSlice();
+        const old_dupe = try old_text.toOwnedSlice(self.allocator);
         errdefer self.allocator.free(old_dupe);
 
         const new_dupe = try self.allocator.dupe(u8, replacement);
@@ -96,17 +104,24 @@ pub const TextEditor = struct {
 
     /// Apply diff to source
     pub fn applyDiff(self: *TextEditor, diff: EditDiff) ![]const u8 {
-        var result = std.ArrayList(u8).init(self.allocator);
-        errdefer result.deinit();
+        var result = std.ArrayListAligned(u8, null){
+            .items = &.{},
+            .capacity = 0,
+        };
+        errdefer {
+            if (result.capacity > 0) {
+                self.allocator.free(result.allocatedSlice());
+            }
+        }
 
-        const lines = std.mem.splitScalar(u8, self.source, '\n');
+        var lines = std.mem.splitScalar(u8, self.source, '\n');
 
         // Copy lines before the edit
         var line_idx: u32 = 1;
         while (line_idx < diff.start_line) : (line_idx += 1) {
             if (lines.next()) |line| {
-                try result.appendSlice(line);
-                try result.append('\n');
+                try result.appendSlice(self.allocator, line);
+                try result.append(self.allocator, '\n');
             }
         }
 
@@ -116,49 +131,62 @@ pub const TextEditor = struct {
         }
 
         // Insert new content
-        try result.appendSlice(diff.new_text);
+        try result.appendSlice(self.allocator, diff.new_text);
 
         // Ensure trailing newline
         if (result.items.len > 0 and result.items[result.items.len - 1] != '\n') {
-            try result.append('\n');
+            try result.append(self.allocator, '\n');
         }
 
         // Copy remaining lines
         while (lines.next()) |line| {
-            try result.appendSlice(line);
-            try result.append('\n');
+            try result.appendSlice(self.allocator, line);
+            try result.append(self.allocator, '\n');
         }
 
-        return result.toOwnedSlice();
+        return result.toOwnedSlice(self.allocator);
     }
 
     /// Generate unified diff hunk
     fn generateHunk(self: *TextEditor, old_text: []const u8, new_text: []const u8, start_line: u32) ![]const u8 {
-        var hunk = std.ArrayList(u8).init(self.allocator);
-        try hunk.writer().print("@@ -{d},0 +{d},0 @@\n", .{ start_line, start_line });
+        var hunk = std.ArrayListAligned(u8, null){
+            .items = &.{},
+            .capacity = 0,
+        };
+
+        try hunk.writer(self.allocator).print("@@ -{d},0 +{d},0 @@\n", .{ start_line, start_line });
 
         var old_lines = std.mem.splitScalar(u8, old_text, '\n');
         while (old_lines.next()) |line| {
-            try hunk.writer().print("-{s}\n", .{line});
+            try hunk.writer(self.allocator).print("-{s}\n", .{line});
         }
 
         var new_lines = std.mem.splitScalar(u8, new_text, '\n');
         while (new_lines.next()) |line| {
             if (line.len > 0) {
-                try hunk.writer().print("+{s}\n", .{line});
+                try hunk.writer(self.allocator).print("+{s}\n", .{line});
             }
         }
 
-        return hunk.toOwnedSlice();
+        return hunk.toOwnedSlice(self.allocator);
     }
 
     /// Preview diff as string
     pub fn previewDiff(self: *TextEditor, match_result: MatchResult, replacement: []const u8) ![]const u8 {
         var diff = try self.computeDiff(match_result, replacement);
-        defer diff.deinit();
+        defer diff.deinit(self.allocator);
 
-        var output = std.ArrayList(u8).init(self.allocator);
-        try output.writer().print(
+        var output = std.ArrayListAligned(u8, null){
+            .items = &.{},
+            .capacity = 0,
+        };
+        defer {
+            if (output.capacity > 0) {
+                self.allocator.free(output.allocatedSlice());
+            }
+        }
+
+        try output.writer(self.allocator).print(
             \\=== EDIT PREVIEW ===
             \\File: {s}
             \\Lines {d}-{d}
@@ -176,7 +204,7 @@ pub const TextEditor = struct {
             diff.hunk,
         });
 
-        return output.toOwnedSlice();
+        return output.toOwnedSlice(self.allocator);
     }
 };
 
@@ -214,12 +242,12 @@ pub const EditEngine = struct {
         }
 
         // Use best match
-        const best_match = matches.items[0];
+        const best_match = matches.items.items[0];
 
         // Compute diff
         var editor = TextEditor.init(allocator, source, op.file_path);
-        const diff = try editor.computeDiff(best_match, op.replacement);
-        defer diff.deinit();
+        var diff = try editor.computeDiff(best_match, op.replacement);
+        defer diff.deinit(allocator);
 
         // Preview if requested
         if (op.preview) {
@@ -233,17 +261,19 @@ pub const EditEngine = struct {
         defer allocator.free(modified);
 
         // Run safety checks
-        const checker = @import("check.zig").NeedleChecker;
-        const check_report = try checker.checkSource(allocator, modified, op.file_path);
+        var checker = check.NeedleChecker.init(allocator, modified, op.file_path);
+        const check_report = try checker.check();
         report.tests_passed = check_report.tests_passed;
         report.parse_ok = check_report.parse_ok;
         report.compile_ok = check_report.compile_ok;
         report.violations = check_report.violations;
-        report.violations.allocator = allocator;
 
         // If checks pass, write file
         if (report.isSuccess()) {
-            try std.fs.cwd().writeFile(op.file_path, modified);
+            try std.fs.cwd().writeFile(.{
+                .sub_path = op.file_path,
+                .data = modified,
+            });
             report.operations_applied = 1;
             report.files_modified = 1;
         }

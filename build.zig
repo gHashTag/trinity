@@ -1147,9 +1147,6 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    // Needle library (for use as a module)
-    _ = needle_mod;
-
     const needle_tests = b.addTest(.{
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/needle/mod.zig"),
