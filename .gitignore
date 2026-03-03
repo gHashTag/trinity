@@ -119,6 +119,9 @@ test_mmap_ret
 test_page_size*
 debug_test
 
+# FPGA chipdb (>100MB, exceeds GitHub limit)
+fpga/openxc7-synth/chipdb/*.bin
+
 # Debug symbols
 *.dSYM/
 

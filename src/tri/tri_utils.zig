@@ -203,6 +203,12 @@ pub const Command = enum {
     // Quantum Trinity v1.4 (Order #032)
     quantum,
     release_cosmic,
+    // Omega Phase v2.0 (Order #033)
+    omega_cmd,
+    all_cmd,
+    holo_cmd,
+    release_absolute,
+    omega_evolve,
     // Info
     info,
     version,
@@ -767,7 +773,13 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "full-cycle") or std.mem.eql(u8, arg, "sacred-full-cycle")) return .sacred_full_cycle;
     // Quantum Trinity v1.4 (Order #032)
     if (std.mem.eql(u8, arg, "quantum")) return .quantum;
-    if (std.mem.eql(u8, arg, "release") or std.mem.eql(u8, arg, "release-cosmic")) return .release_cosmic;
+    if (std.mem.eql(u8, arg, "release-cosmic")) return .release_cosmic;
+    // Omega Phase v2.0 (Order #033)
+    if (std.mem.eql(u8, arg, "omega") or std.mem.eql(u8, arg, "omega-phase")) return .omega_cmd;
+    if (std.mem.eql(u8, arg, "all")) return .all_cmd;
+    if (std.mem.eql(u8, arg, "holo") or std.mem.eql(u8, arg, "holographic")) return .holo_cmd;
+    if (std.mem.eql(u8, arg, "release") or std.mem.eql(u8, arg, "release-absolute")) return .release_absolute;
+    if (std.mem.eql(u8, arg, "omega-evolve") or std.mem.eql(u8, arg, "evolve-omega")) return .omega_evolve;
     // Info
     if (std.mem.eql(u8, arg, "info")) return .info;
     if (std.mem.eql(u8, arg, "version") or std.mem.eql(u8, arg, "--version") or std.mem.eql(u8, arg, "-v")) return .version;
