@@ -1141,10 +1141,26 @@ pub fn build(b: *std.Build) void {
     // Tier 1: Structural AST matching (ast-grep-like queries)
     // Tier 2: Semantic VSA search (future)
 
+    // Tree-sitter module for Tier 1 AST matching
+    const ts_zig_mod = b.createModule(.{
+        .root_source_file = b.path("src/tvc/treesitter/zig.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    ts_zig_mod.linkSystemLibrary("tree-sitter", .{});
+    ts_zig_mod.link_libc = true;
+    // Stub: tree_sitter_zig() returns NULL until real grammar is compiled
+    ts_zig_mod.addCSourceFile(.{
+        .file = b.path("src/tvc/treesitter/zig_lang_stub.c"),
+    });
+
     const needle_mod = b.createModule(.{
         .root_source_file = b.path("src/needle/mod.zig"),
         .target = target,
         .optimize = optimize,
+        .imports = &.{
+            .{ .name = "treesitter_zig", .module = ts_zig_mod },
+        },
     });
 
     const needle_tests = b.addTest(.{

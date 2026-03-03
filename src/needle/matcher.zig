@@ -15,6 +15,9 @@ const std = @import("std");
 const needle = @import("needle.zig");
 const fuzzy = @import("fuzzy.zig");
 
+// Tree-sitter integration (Tier 1)
+const ts_zig = @import("treesitter_zig");
+
 const MatchResult = needle.MatchResult;
 const MatchResultList = needle.MatchResultList;
 const MatchKind = needle.MatchKind;
@@ -84,22 +87,117 @@ pub const Matcher = struct {
 
     /// Try AST-based matching (Tier 1)
     fn tryAstMatch(self: *Matcher, query: Query, results: *MatchResultList) !bool {
-        _ = self;
-        _ = query;
-        _ = results;
-        // Check if tree-sitter is available
-        const ts_available = comptime blk: {
-            // This will be true when tree-sitter is linked
-            break :blk false;
+        // Try to create Zig parser - returns error.LanguageNotFound if not available
+        var parser = ts_zig.createZigParser() catch |err| {
+            if (err == error.LanguageNotFound) {
+                // Tree-sitter Zig grammar not linked, fallback to Tier 0
+                return false;
+            }
+            return err;
         };
+        defer parser.deinit();
 
-        if (!ts_available) return false;
+        // Parse source code
+        const raw_tree = try parser.parseString(self.source);
+        var tree_wrapper = ts_zig.Tree{ .ptr = raw_tree };
+        defer tree_wrapper.deinit();
 
-        // TODO: Implement actual tree-sitter query
-        // For now, return false to fallback to Tier 0
-        _ = query;
-        _ = results;
-        return false;
+        const root = tree_wrapper.root();
+        if (root.isNull()) return false;
+
+        // For S-expression queries, use tree-sitter Query API
+        if (query.kind == .sexpr) {
+            return try self.tryTsQuery(root, query.raw, results);
+        }
+
+        // For plain text, find nodes by type matching
+        return try self.tryNodeTypeSearch(root, query.raw, results);
+    }
+
+    /// Try tree-sitter query matching
+    fn tryTsQuery(self: *Matcher, root: ts_zig.Node, pattern: []const u8, results: *MatchResultList) !bool {
+        const lang = ts_zig.loadZigLanguage() orelse return false;
+
+        var ts_query = ts_zig.Query.init(self.allocator, lang, pattern) catch {
+            // Invalid query syntax, fallback to Tier 0
+            return false;
+        };
+        defer ts_query.deinit();
+
+        var cursor = ts_zig.QueryCursor.init(self.allocator);
+        defer cursor.deinit();
+
+        cursor.exec(ts_query, root);
+
+        var found = false;
+        while (try cursor.nextMatch()) |match_| {
+            found = true;
+            for (match_.captures) |capture| {
+                const node = capture.node;
+                const start_pt = node.startPoint();
+                const end_pt = node.endPoint();
+
+                const result = MatchResult{
+                    .node_id = @intCast(results.items.items.len + 1),
+                    .start_line = @intCast(start_pt.row + 1),
+                    .end_line = @intCast(end_pt.row + 1),
+                    .start_column = @intCast(start_pt.column),
+                    .end_column = @intCast(end_pt.column),
+                    .start_byte = @intCast(node.startByte()),
+                    .end_byte = @intCast(node.endByte()),
+                    .matched_text = try self.allocator.dupe(u8, node.text(self.source)),
+                    .confidence = 1.0, // AST match = perfect confidence
+                    .kind = .exact_ast,
+                };
+                try results.append(result);
+            }
+        }
+
+        return found;
+    }
+
+    /// Try node type search for non-S-expression queries
+    fn tryNodeTypeSearch(self: *Matcher, root: ts_zig.Node, pattern: []const u8, results: *MatchResultList) !bool {
+        // Simple heuristic: if pattern looks like a function name, search for function declarations
+        var found = false;
+
+        var iter = root.iterateChildren();
+        while (iter.next()) |child| {
+            if (child.isNamed()) {
+                const node_type = child.getType();
+                const text = child.text(self.source);
+
+                // Check if this node matches our pattern
+                if (std.mem.indexOf(u8, text, pattern) != null or
+                    std.mem.indexOf(u8, node_type, pattern) != null)
+                {
+                    found = true;
+                    const start_pt = child.startPoint();
+                    const end_pt = child.endPoint();
+
+                    const result = MatchResult{
+                        .node_id = @intCast(results.items.items.len + 1),
+                        .start_line = @intCast(start_pt.row + 1),
+                        .end_line = @intCast(end_pt.row + 1),
+                        .start_column = @intCast(start_pt.column),
+                        .end_column = @intCast(end_pt.column),
+                        .start_byte = @intCast(child.startByte()),
+                        .end_byte = @intCast(child.endByte()),
+                        .matched_text = try self.allocator.dupe(u8, text),
+                        .confidence = 0.95, // High confidence for AST-based search
+                        .kind = .exact_ast,
+                    };
+                    try results.append(result);
+                }
+
+                // Recurse into children
+                if (try self.tryNodeTypeSearch(child, pattern, results)) {
+                    found = true;
+                }
+            }
+        }
+
+        return found;
     }
 
     /// Try fuzzy text matching (Tier 0)
@@ -119,6 +217,8 @@ pub const Matcher = struct {
                 .end_line = item.end_line,
                 .start_column = item.start_column,
                 .end_column = item.end_column,
+                .start_byte = item.start_byte,
+                .end_byte = item.end_byte,
                 .matched_text = try self.allocator.dupe(u8, item.matched_text),
                 .confidence = item.confidence,
                 .kind = item.kind,
@@ -164,6 +264,8 @@ pub const Matcher = struct {
             .end_line = best.end_line,
             .start_column = best.start_column,
             .end_column = best.end_column,
+            .start_byte = best.start_byte,
+            .end_byte = best.end_byte,
             .matched_text = try self.allocator.dupe(u8, best.matched_text),
             .confidence = best.confidence,
             .kind = best.kind,

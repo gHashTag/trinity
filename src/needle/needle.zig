@@ -153,6 +153,8 @@ pub const MatchResult = struct {
     end_line: u32,
     start_column: u32,
     end_column: u32,
+    start_byte: usize = 0,   // AST byte offset (Tier 1)
+    end_byte: usize = 0,     // AST byte offset (Tier 1)
     matched_text: []const u8,
     confidence: f32,
     kind: MatchKind,
@@ -227,6 +229,8 @@ pub const MatchResultList = struct {
                     .end_line = item.end_line,
                     .start_column = item.start_column,
                     .end_column = item.end_column,
+                    .start_byte = item.start_byte,
+                    .end_byte = item.end_byte,
                     .matched_text = try self.allocator.dupe(u8, item.matched_text),
                     .confidence = item.confidence,
                     .kind = item.kind,
