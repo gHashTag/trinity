@@ -21,9 +21,7 @@
 //
 // φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
 // ═══════════════════════════════════════════════════════════════════════════════
-
 const std = @import("std");
-
 // Decomposed modules
 const utils = @import("tri_utils.zig");
 const commands = @import("tri_commands.zig");
@@ -37,29 +35,24 @@ const neuro_commands = @import("tri_neuro.zig");
 const chemistry_commands = @import("tri_chemistry.zig");
 const tri_context = @import("tri_context.zig");
 const orchestrator = @import("orchestrator_v2_full.zig");
-
 // New v2.0 Registry System (gradual migration)
 const CommandRegistry = @import("tri_command_registry.zig").CommandRegistry;
 const register = @import("tri_register.zig");
 const tri_error = @import("tri_error.zig");
 const tri_colors = @import("tri_colors.zig");
-
 // ═══════════════════════════════════════════════════════════════════════════════
 // NEW REGISTRY DISPATCH (v2.0)
 // ═══════════════════════════════════════════════════════════════════════════════
-
 /// Try to dispatch command via new registry system
 /// Returns true if command was found and executed, false otherwise
 fn tryRegistryDispatch(allocator: std.mem.Allocator, state: *utils.CLIState, cmd_name: []const u8, cmd_args: []const []const u8) bool {
     var registry = CommandRegistry.init(allocator) catch return false;
     defer registry.deinit();
-
     // Register all commands with state reference
     register.registerAllCommands(&registry, state) catch |err| {
         std.debug.print("Registry init error: {}\n", .{err});
         return false;
     };
-
     // Try to find and execute command
     if (registry.find(cmd_name)) |metadata| {
         metadata.execute(allocator, cmd_args) catch |err| {
@@ -67,31 +60,24 @@ fn tryRegistryDispatch(allocator: std.mem.Allocator, state: *utils.CLIState, cmd
         };
         return true;
     }
-
     return false;
 }
-
 /// Handle unknown command with "did you mean?" suggestions
 fn handleUnknownCommand(allocator: std.mem.Allocator, cmd_name: []const u8) !void {
     var registry = CommandRegistry.init(allocator) catch return;
     defer registry.deinit();
-
     // Create minimal state for registry (not used for error handling)
     var dummy_state = try utils.CLIState.init(allocator);
     defer dummy_state.deinit();
-
     try register.registerAllCommands(&registry, &dummy_state);
-
     const similar = try registry.findSimilar(cmd_name, 3);
     defer allocator.free(similar);
-
     var details_buf: [256]u8 = undefined;
     const details = std.fmt.bufPrint(
         &details_buf,
         "Type 'tri help' to see all available commands",
         .{}
     ) catch "Use 'tri help' for available commands";
-
     tri_error.printError(.command_not_found, .{
         .command = cmd_name,
         .suggestion = "Check your spelling",
@@ -99,27 +85,21 @@ fn handleUnknownCommand(allocator: std.mem.Allocator, cmd_name: []const u8) !voi
         .details = details,
     });
 }
-
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN
 // ═══════════════════════════════════════════════════════════════════════════════
-
 pub fn main() !void {
     // Use page_allocator to avoid leak-check spam from GGUF reader metadata strings
     const allocator = std.heap.page_allocator;
-
     const args = try std.process.argsAlloc(allocator);
     defer std.process.argsFree(allocator, args);
-
     var state = try utils.CLIState.init(allocator);
     defer state.deinit();
-
     // No arguments = interactive mode
     if (args.len < 2) {
         try utils.runInteractiveMode(&state);
         return;
     }
-
     // Special handling for "test --repl" command (Cycle 100/101)
     if (args.len >= 3 and std.mem.eql(u8, args[1], "test")) {
         const flag = args[2];
@@ -144,21 +124,17 @@ pub fn main() !void {
             return;
         }
     }
-
     // ═══════════════════════════════════════════════════════════════════════════
     // NEW REGISTRY DISPATCH (v2.0) - Try first, fall back to old system
     // ═══════════════════════════════════════════════════════════════════════════
     const cmd_name = args[1];
     const cmd_args = if (args.len > 2) args[2..] else &[_][]const u8{};
-
     // Try new registry dispatch first (for all registered commands)
     if (tryRegistryDispatch(allocator, &state, cmd_name, cmd_args)) {
         return; // Command was found and executed via registry
     }
-
     // Fall back to old Command enum system (for backward compatibility)
     const cmd = utils.parseCommand(cmd_name);
-
     switch (cmd) {
         .none => {
             // Treat as chat message
@@ -584,6 +560,10 @@ pub fn main() !void {
         //     }
         // },
         // CLI Integration (Cycle #118)
+        .mesh => commands.runMeshCommand(allocator, cmd_args),
+        .wallet => commands.runWalletCommand(allocator, cmd_args),
+        .reputation => commands.runReputationCommand(allocator, cmd_args),
+        .hardware => commands.runHardwareCommand(allocator, cmd_args),
         .integrate => try cli_integration.runIntegrateCommand(allocator, cmd_args),
     }
 }

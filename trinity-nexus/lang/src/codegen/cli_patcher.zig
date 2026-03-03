@@ -202,9 +202,11 @@ pub const CliPatcher = struct {
 
         // Insert dispatch cases
         for (commands) |cmd| {
+            const cmd_name_cap = try capitalizeAlloc(self.allocator, cmd.name);
             const dispatch_case = try std.fmt.allocPrint(self.allocator,
                 "        .{s} => commands.run{s}Command(allocator, cmd_args),",
-                .{ cmd.enum_name, capitalize(cmd.name) });
+                .{ cmd.enum_name, cmd_name_cap });
+            self.allocator.free(cmd_name_cap);
             try lines.insert(self.allocator, insert_line, dispatch_case);
             insert_line += 1;
         }
@@ -224,6 +226,20 @@ pub const CliCommand = struct {
     enum_name: []const u8,
     aliases: []const []const u8,
 };
+
+/// Capitalize first character using allocator
+fn capitalizeAlloc(allocator: Allocator, s: []const u8) ![]const u8 {
+    if (s.len == 0) return s;
+
+    var result = try allocator.alloc(u8, s.len);
+    @memcpy(result, s);
+
+    if (result[0] >= 'a' and result[0] <= 'z') {
+        result[0] -= 32;
+    }
+
+    return result;
+}
 
 fn capitalize(s: []const u8) []const u8 {
     if (s.len == 0) return s;
