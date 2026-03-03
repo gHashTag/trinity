@@ -1,8 +1,17 @@
 {
   "mcpServers": {
+    "trinity": {
+      "command": "/Users/playra/trinity-w1/zig-out/bin/trinity-mcp",
+      "args": [],
+      "env": {}
+    },
     "needle": {
       "command": "/Users/playra/trinity-w1/zig-out/bin/needle-mcp",
-      "args": []
+      "args": [],
+      "env": {},
+      "disabled": true,
+      "note": "Integrated into trinity-mcp - use trinity server instead"
     }
-  }
+  },
+  "documentation": "TRI-MCP exposes 35+ native Trinity tools to Claude Code. See specs/integrations/trinity-mcp.tri for complete tool list."
 }

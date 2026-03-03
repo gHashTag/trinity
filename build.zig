@@ -1232,6 +1232,29 @@ pub fn build(b: *std.Build) void {
     // needle_mcp_step.dependOn(&run_needle_mcp.step);
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // TRINITY-MCP — Full Trinity MCP Server (35+ tools)
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Native Zig MCP server exposing ALL Trinity CLI commands as Claude Code tools
+
+    const trinity_mcp = b.addExecutable(.{
+        .name = "trinity-mcp",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("tools/mcp/trinity_mcp/server.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "needle", .module = needle_mod },
+            },
+        }),
+    });
+    b.installArtifact(trinity_mcp);
+
+    // Don't auto-run the MCP server - it's an interactive stdio service
+    // const run_trinity_mcp = b.addRunArtifact(trinity_mcp);
+    // const trinity_mcp_step = b.step("trinity-mcp", "Run TRINITY MCP Server (35+ tools)");
+    // trinity_mcp_step.dependOn(&run_trinity_mcp.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // PHI LOOP — 999 Links of Cosmic Consciousness Gene
     const phi_loop = b.addExecutable(.{
         .name = "phi-loop",
