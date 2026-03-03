@@ -1294,3 +1294,119 @@ export function generateRandomFormula(): { n: number; k: number; m: number; p: n
   const value = computeSacredFormula(n, k, m, p, q);
   return { n, k, m, p, q, value };
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CHEMISTRY API (v11.0) — Sacred Chemistry Widget endpoints
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SacredFit {
+  n: number; k: number; m: number; p: number; q: number;
+}
+
+export interface ExtendedElement {
+  symbol: string;
+  name: string;
+  number: number;
+  mass: number;
+  block?: string;
+  category?: string;
+  valence: number;
+  electron_config?: string;
+  electron_affinity?: number;
+  atomic_radius?: number;
+  density?: number;
+  melting_point?: number;
+  boiling_point?: number;
+  discoverer?: string;
+  etymology?: string;
+}
+
+export interface ChemSacredResponse {
+  formula: string;
+  mass: number;
+  sacred_fit: SacredFit;
+  computed: number;
+  error_pct: number;
+  source: 'live';
+}
+
+export interface ChemElementResponse {
+  element: ExtendedElement;
+  source: 'live';
+}
+
+export interface ChemBalanceResponse {
+  balanced: string;
+  coefficients: {
+    reactants: { formula: string; coefficient: number }[];
+    products: { formula: string; coefficient: number }[];
+  };
+  verification: {
+    elements: { element: string; left: number; right: number; ok: boolean }[];
+    balanced: boolean;
+  };
+  source: 'live';
+}
+
+export interface PredictedProduct {
+  formula: string;
+  mass: number;
+  sacred_fit: SacredFit;
+  computed: number;
+  error_pct: number;
+}
+
+export interface ChemPredictResponse {
+  reactants: string[];
+  reaction_type: string;
+  products: string[];
+  balanced: string;
+  confidence: number;
+  explanation: string;
+  product_details: PredictedProduct[];
+  source: 'live';
+}
+
+export async function fetchChemSacred(formula: string): Promise<ChemSacredResponse | null> {
+  try {
+    const res = await fetch(
+      `${BASE_URL}/api/chem/sacred?formula=${encodeURIComponent(formula)}`,
+      { signal: AbortSignal.timeout(5000) },
+    );
+    if (!res.ok) return null;
+    return await res.json();
+  } catch { return null; }
+}
+
+export async function fetchChemElement(query: string): Promise<ChemElementResponse | null> {
+  try {
+    const res = await fetch(
+      `${BASE_URL}/api/chem/element?q=${encodeURIComponent(query)}`,
+      { signal: AbortSignal.timeout(5000) },
+    );
+    if (!res.ok) return null;
+    return await res.json();
+  } catch { return null; }
+}
+
+export async function fetchChemBalance(equation: string): Promise<ChemBalanceResponse | null> {
+  try {
+    const res = await fetch(
+      `${BASE_URL}/api/chem/balance?eq=${encodeURIComponent(equation)}`,
+      { signal: AbortSignal.timeout(5000) },
+    );
+    if (!res.ok) return null;
+    return await res.json();
+  } catch { return null; }
+}
+
+export async function fetchChemPredict(reactants: string): Promise<ChemPredictResponse | null> {
+  try {
+    const res = await fetch(
+      `${BASE_URL}/api/chem/predict?reactants=${encodeURIComponent(reactants)}`,
+      { signal: AbortSignal.timeout(5000) },
+    );
+    if (!res.ok) return null;
+    return await res.json();
+  } catch { return null; }
+}

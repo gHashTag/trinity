@@ -239,6 +239,16 @@ pub fn main() !void {
         .intelligence => tri_context.runIntelligenceCommand(allocator, &state, cmd_args) catch |err| {
             std.debug.print("Intelligence error: {}\n", .{err});
         },
+        // Temporal Engine v1.2-v1.3 (Orders #030-031)
+        .time => commands.runTimeCommand(allocator, cmd_args),
+        .install => commands.runInstallCommand(allocator),
+        .build_cmd => commands.runBuildCommand(allocator),
+        .deck_generate => commands.runDeckCommand(allocator),
+        .fpga_demo => commands.runFpgaDemoCommand(allocator, cmd_args),
+        .sacred_full_cycle => commands.runSacredFullCycleCommand(allocator),
+        // Quantum Trinity v1.4 (Order #032)
+        .quantum => commands.runQuantumCommand(allocator, cmd_args),
+        .release_cosmic => commands.runReleaseCosmicCommand(allocator),
         .deps => utils.printInfo(),
         .info => utils.printInfo(),
         .version => utils.printVersion(),
