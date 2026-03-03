@@ -184,8 +184,10 @@ pub const Command = enum {
     gematria,
     formula_cmd,
     sacred,
-    // Biology (v14.0)
-    bio,
+    // Sacred Science (v14-v16)
+    bio,        // Biology v14.0
+    cosmos,     // Cosmology v15.0
+    neuro,      // Neuroscience v16.0
     // Chemistry (v6.0)
     // TODO: Fix sacred module exports (AVOGADRO, etc.)
     // chem,
@@ -813,6 +815,9 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "sacred")) return .sacred;
     // Biology (v14.0)
     if (std.mem.eql(u8, arg, "bio") or std.mem.eql(u8, arg, "biology")) return .bio;
+    // Sacred Science (v15-v16)
+    if (std.mem.eql(u8, arg, "cosmos") or std.mem.eql(u8, arg, "cosmology")) return .cosmos;
+    if (std.mem.eql(u8, arg, "neuro") or std.mem.eql(u8, arg, "neuroscience")) return .neuro;
     // Chemistry (v6.0)
     // TODO: Fix sacred module exports (AVOGADRO, etc.)
     // if (std.mem.eql(u8, arg, "chem") or std.mem.eql(u8, arg, "chemistry")) return .chem;
@@ -865,6 +870,68 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "needle-search") or std.mem.eql(u8, arg, "needle-search") or std.mem.eql(u8, arg, "ns")) return .needle_search;
     if (std.mem.eql(u8, arg, "needle-check") or std.mem.eql(u8, arg, "nc")) return .needle_check;
     return .none;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MCP Command Metadata (for auto-discovery)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Command metadata for MCP auto-discovery
+pub const MCPCommandMetadata = struct {
+    name: []const u8,
+    description: []const u8,
+    category: []const u8,
+    mcp_enabled: bool = true,
+};
+
+/// Get MCP metadata for a command
+pub fn getMCPMetadata(cmd: Command) MCPCommandMetadata {
+    return switch (cmd) {
+        .none => .{ .name = "none", .description = "Interactive REPL mode", .category = "core", .mcp_enabled = false },
+        .chat => .{ .name = "chat", .description = "Interactive chat (vision + voice + tools)", .category = "core" },
+        .code => .{ .name = "code", .description = "Generate code with typing effect", .category = "core" },
+        .gen => .{ .name = "gen", .description = "Compile VIBEE spec to Zig/Verilog", .category = "vibee" },
+        .fix => .{ .name = "fix", .description = "Detect and fix bugs", .category = "core" },
+        .explain => .{ .name = "explain", .description = "Explain code or concept", .category = "core" },
+        .test_cmd => .{ .name = "test_cmd", .description = "Generate tests for code", .category = "core" },
+        .doc => .{ .name = "doc", .description = "Generate documentation", .category = "core" },
+        .refactor => .{ .name = "refactor", .description = "Suggest refactoring", .category = "core" },
+        .reason => .{ .name = "reason", .description = "Chain-of-thought reasoning", .category = "core" },
+        .convert => .{ .name = "convert", .description = "Convert VIBEE spec to another format", .category = "vibee" },
+        .serve => .{ .name = "serve", .description = "Start TRI API server", .category = "vibee" },
+        .bench => .{ .name = "bench", .description = "Run performance benchmarks", .category = "vibee" },
+        .evolve => .{ .name = "evolve", .description = "Evolve VIBEE specification", .category = "vibee" },
+        .commit => .{ .name = "commit", .description = "Git commit (add -A && commit)", .category = "git" },
+        .diff => .{ .name = "diff", .description = "Git diff", .category = "git" },
+        .status => .{ .name = "status", .description = "Git status --short", .category = "git" },
+        .log => .{ .name = "log", .description = "Git log --oneline", .category = "git" },
+        .pipeline => .{ .name = "pipeline", .description = "Execute 17-link Golden Chain", .category = "pipeline" },
+        .decompose => .{ .name = "decompose", .description = "Break task into sub-tasks (Link 4)", .category = "pipeline" },
+        .plan => .{ .name = "plan", .description = "Generate implementation plan (Link 5)", .category = "pipeline" },
+        .verify => .{ .name = "verify", .description = "Run tests + benchmarks (Links 7-11)", .category = "pipeline" },
+        .verdict => .{ .name = "verdict", .description = "Generate toxic verdict (Link 14)", .category = "pipeline" },
+        .spec_create => .{ .name = "spec_create", .description = "Create new .vibee specification template", .category = "vibee" },
+        .loop_decide => .{ .name = "loop_decide", .description = "Loop decision: CONTINUE/EXIT (Link 17)", .category = "pipeline" },
+        .tvc_demo => .{ .name = "tvc_demo", .description = "Run TVC chat demo", .category = "demo" },
+        .tvc_stats => .{ .name = "tvc_stats", .description = "Show TVC corpus statistics", .category = "demo" },
+        .constants_cmd => .{ .name = "constants_cmd", .description = "Show sacred constants (φ, π, e, μ, χ, σ, ε...)", .category = "math" },
+        .phi => .{ .name = "phi", .description = "Compute φⁿ (golden ratio power)", .category = "math" },
+        .fib => .{ .name = "fib", .description = "Fibonacci with BigInt", .category = "math" },
+        .lucas => .{ .name = "lucas", .description = "Lucas L(n) — L(2)=3=TRINITY", .category = "math" },
+        .spiral => .{ .name = "spiral", .description = "φ-spiral coordinates", .category = "math" },
+        .gematria => .{ .name = "gematria", .description = "Gematria analysis (word → number)", .category = "math" },
+        .bio => .{ .name = "bio", .description = "Biology v14.0 — DNA/RNA/Protein analysis", .category = "science" },
+        .cosmos => .{ .name = "cosmos", .description = "Cosmology v15.0 — Hubble, dark energy, expansion", .category = "science" },
+        .neuro => .{ .name = "neuro", .description = "Neuroscience v16.0 — Brain waves, consciousness", .category = "science" },
+        .doctor => .{ .name = "doctor", .description = "System diagnostics", .category = "dev" },
+        .clean => .{ .name = "clean", .description = "Clean build artifacts", .category = "dev" },
+        .fmt_cmd => .{ .name = "fmt_cmd", .description = "Format code", .category = "dev" },
+        .stats_cmd => .{ .name = "stats_cmd", .description = "Show project statistics", .category = "dev" },
+        .info => .{ .name = "info", .description = "System information", .category = "info" },
+        .version => .{ .name = "version", .description = "Show version", .category = "info" },
+        .help => .{ .name = "help", .description = "Show help", .category = "info" },
+        else => .{ .name = @tagName(cmd), .description = "Execute TRI command", .category = "general" },
+    };
 }
 
 pub fn printPrompt(state: *CLIState) void {
