@@ -15,7 +15,7 @@ pub const chemistry = sacred_const.chemistry;
 // Export chemistry types and functions
 const chem = @import("chemistry.zig");
 pub const Element = chem.Element;
-pub const MolarMass = chem.MolarMass;
+// MolarMass type removed — use molarMass() function instead
 pub const getElement = chem.getElement;
 pub const parseFormula = chem.parseFormula;
 pub const molarMass = chem.molarMass;

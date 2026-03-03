@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// TRINITY CHAT API SERVICE v2.9
+// TRINITY CHAT API SERVICE v3.0
 // Connects Cosmic UI to Zig HTTP backend
 // v2.5: + /api/files (Finder) + /api/compile (Editor)
 // v2.7: + /api/storage-metrics (Storage Network Dashboard)
@@ -1522,4 +1522,131 @@ export async function fetchGematria(input: string): Promise<GematriaResponse> {
     sacred_computed: sacredResult.computed,
     sacred_error_pct: sacredResult.error_pct,
   };
+}
+
+// ─── v3.0: Sacred Chemistry Backend API ────────────────────────────────────────
+
+export interface SacredFit {
+  n: number; k: number; m: number; p: number; q: number;
+  computed: number; error_pct: number;
+}
+
+export interface ChemMassResponse {
+  formula: string;
+  molar_mass: number;
+  breakdown: { symbol: string; count: number; element_mass: number; total: number }[];
+  source: 'live' | 'local';
+}
+
+export interface ChemSacredElement {
+  symbol: string; count: number; mass: number; mass_contrib: number; pct: number;
+  mass_fit: SacredFit;
+  ie?: number; ie_fit?: SacredFit;
+}
+
+export interface ChemSacredResponse {
+  formula: string;
+  molar_mass: number;
+  sacred_fit: SacredFit;
+  elements: ChemSacredElement[];
+  total_atoms: number;
+  total_electrons: number;
+  avg_electronegativity?: number;
+  en_fit?: SacredFit;
+  source: 'live' | 'local';
+}
+
+export interface ExtendedElement {
+  number: number; symbol: string; name: string; mass: number;
+  group: number; period: number;
+  electronegativity: number | null;
+  ionization_energy: number | null;
+  electron_config: string;
+  block: string;
+  category: string;
+  valence: number;
+  electron_affinity: number | null;
+  atomic_radius: number | null;
+  melting_point: number | null;
+  boiling_point: number | null;
+  density: number | null;
+  discoverer: string;
+  etymology: string;
+}
+
+export interface ChemElementResponse {
+  element: ExtendedElement;
+  sacred: { mass_fit: SacredFit; ie_fit: SacredFit | null; en_fit: SacredFit | null };
+  ternary: { balanced_ternary: number[]; trit_count: number };
+  sequences: { fibonacci: boolean; fibonacci_index: number | null; lucas: boolean; lucas_index: number | null };
+  golden: { angle: number; sector: number };
+  coptic: { glyph: string; value: number; kingdom: string };
+  source: 'live' | 'local';
+}
+
+export interface BalanceVerification {
+  element: string; left: number; right: number; ok: boolean;
+}
+
+export interface ChemBalanceResponse {
+  input: string;
+  balanced: string;
+  coefficients: {
+    reactants: { formula: string; coefficient: number }[];
+    products: { formula: string; coefficient: number }[];
+  };
+  verification: { elements: BalanceVerification[]; balanced: boolean };
+  source: 'live';
+}
+
+/** GET /api/chem/mass?formula=H2O */
+export async function fetchChemMass(formula: string): Promise<ChemMassResponse | null> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/chem/mass?formula=${encodeURIComponent(formula)}`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+/** GET /api/chem/sacred?formula=C6H12O6 */
+export async function fetchChemSacred(formula: string): Promise<ChemSacredResponse | null> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/chem/sacred?formula=${encodeURIComponent(formula)}`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+/** GET /api/chem/element?q=Au */
+export async function fetchChemElement(query: string): Promise<ChemElementResponse | null> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/chem/element?q=${encodeURIComponent(query)}`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+/** GET /api/chem/balance?eq=H2+O2->H2O */
+export async function fetchChemBalance(equation: string): Promise<ChemBalanceResponse | null> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/chem/balance?eq=${encodeURIComponent(equation)}`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
 }

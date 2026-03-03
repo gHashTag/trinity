@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import Section from '../Section';
 import {
@@ -10,6 +10,11 @@ import {
   analyzeMolecule, analyzeElement,
 } from '../../utils/chemistry';
 import { getElement } from '../../data/elements';
+import {
+  fetchChemSacred, fetchChemElement, fetchChemBalance,
+  type ChemSacredResponse, type ChemElementResponse, type ChemBalanceResponse,
+  type ExtendedElement,
+} from '../../services/chatApi';
 
 // ============================================================================
 // Style constants
@@ -30,6 +35,31 @@ const GLASS_STYLE: React.CSSProperties = {
 
 const MONO = 'JetBrains Mono, monospace';
 const SANS = 'Outfit, sans-serif';
+
+// ============================================================================
+// SourceBadge — indicates live backend vs local computation
+// ============================================================================
+
+function SourceBadge({ source }: { source: 'live' | 'local' }) {
+  const isLive = source === 'live';
+  return (
+    <div style={{
+      display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+      padding: '0.2rem 0.6rem', borderRadius: '999px',
+      background: isLive ? 'rgba(0, 229, 153, 0.1)' : 'rgba(255, 215, 0, 0.1)',
+      border: `1px solid ${isLive ? 'rgba(0, 229, 153, 0.3)' : 'rgba(255, 215, 0, 0.3)'}`,
+      fontSize: '0.65rem', fontFamily: MONO, fontWeight: 600,
+      color: isLive ? GREEN : GOLDEN,
+    }}>
+      <div style={{
+        width: '6px', height: '6px', borderRadius: '50%',
+        background: isLive ? GREEN : GOLDEN,
+        boxShadow: isLive ? `0 0 6px ${GREEN}` : `0 0 6px ${GOLDEN}`,
+      }} />
+      {isLive ? 'Live' : 'Local'}
+    </div>
+  );
+}
 
 // ============================================================================
 // Sub-components
@@ -143,7 +173,6 @@ function GoldenAngleSVG({ angle, sector }: { angle: number; sector: number }) {
       </div>
       <svg width="110" height="110" viewBox="0 0 110 110">
         <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-        {/* 8 sector lines */}
         {[0, 45, 90, 135, 180, 225, 270, 315].map(deg => {
           const rr = (deg * Math.PI) / 180;
           return (
@@ -155,7 +184,6 @@ function GoldenAngleSVG({ angle, sector }: { angle: number; sector: number }) {
             />
           );
         })}
-        {/* Arc */}
         <path
           d={`M ${cx} ${cy - r} A ${r} ${r} 0 ${largeArc} 1 ${ex} ${ey}`}
           fill="none"
@@ -163,9 +191,7 @@ function GoldenAngleSVG({ angle, sector }: { angle: number; sector: number }) {
           strokeWidth="2"
           opacity="0.8"
         />
-        {/* Endpoint dot */}
         <circle cx={ex} cy={ey} r="4" fill={GOLDEN} />
-        {/* Center dot */}
         <circle cx={cx} cy={cy} r="2" fill="rgba(255,255,255,0.3)" />
       </svg>
       <div style={{ fontSize: '0.8rem', fontFamily: MONO, color: GOLDEN, marginTop: '0.25rem' }}>
@@ -179,14 +205,53 @@ function GoldenAngleSVG({ angle, sector }: { angle: number; sector: number }) {
 }
 
 // ============================================================================
+// Extended Element Panel (shown when source === 'live')
+// ============================================================================
+
+function ExtendedElementPanel({ el }: { el: ExtendedElement }) {
+  const rows: [string, string | null][] = [
+    ['Electron Config', el.electron_config || null],
+    ['Block', el.block || null],
+    ['Category', el.category || null],
+    ['Valence', String(el.valence)],
+    ['Electron Affinity', el.electron_affinity != null ? `${el.electron_affinity.toFixed(2)} kJ/mol` : null],
+    ['Atomic Radius', el.atomic_radius != null ? `${el.atomic_radius.toFixed(1)} pm` : null],
+    ['Density', el.density != null ? `${el.density.toFixed(4)} g/cm\u00B3` : null],
+    ['Melting Point', el.melting_point != null ? `${el.melting_point.toFixed(2)} K` : null],
+    ['Boiling Point', el.boiling_point != null ? `${el.boiling_point.toFixed(2)} K` : null],
+    ['Discoverer', el.discoverer || null],
+    ['Etymology', el.etymology || null],
+  ];
+  const visible = rows.filter(([, v]) => v != null && v !== 'null' && v !== '');
+  if (visible.length === 0) return null;
+
+  return (
+    <div style={{ ...GLASS_STYLE, padding: '0.75rem', marginTop: '0.75rem' }}>
+      <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontFamily: SANS, marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        Extended Data <span style={{ color: GREEN, fontSize: '0.6rem' }}>(backend)</span>
+      </div>
+      {visible.map(([label, val]) => (
+        <div key={label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
+          <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontFamily: SANS }}>{label}</span>
+          <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.8)', fontFamily: MONO, maxWidth: '60%', textAlign: 'right', wordBreak: 'break-all' }}>{val}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ============================================================================
 // Molecule Result Display
 // ============================================================================
 
-function MoleculeResultView({ result }: { result: MoleculeResult }) {
+function MoleculeResultView({ result, source }: { result: MoleculeResult; source: 'live' | 'local' }) {
   return (
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
       {/* Header: Mass + Sacred Fit */}
-      <div style={{ textAlign: 'center', marginBottom: '1rem', padding: '1rem', background: 'rgba(255, 215, 0, 0.08)', border: '1px solid rgba(255, 215, 0, 0.25)', borderRadius: '8px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '1rem', padding: '1rem', background: 'rgba(255, 215, 0, 0.08)', border: '1px solid rgba(255, 215, 0, 0.25)', borderRadius: '8px', position: 'relative' }}>
+        <div style={{ position: 'absolute', top: '0.5rem', right: '0.5rem' }}>
+          <SourceBadge source={source} />
+        </div>
         <div style={{ fontSize: '1.5rem', fontWeight: 700, color: GOLDEN, fontFamily: MONO }}>
           {result.molarMass.toFixed(4)} <span style={{ fontSize: '0.8rem', fontWeight: 400, color: 'rgba(255,255,255,0.5)' }}>g/mol</span>
         </div>
@@ -258,11 +323,14 @@ function MoleculeResultView({ result }: { result: MoleculeResult }) {
 // Element Result Display
 // ============================================================================
 
-function ElementResultView({ result }: { result: ElementResult }) {
+function ElementResultView({ result, source, extendedElement }: { result: ElementResult; source: 'live' | 'local'; extendedElement?: ExtendedElement }) {
   return (
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
       {/* Element Card */}
-      <div style={{ textAlign: 'center', marginBottom: '1rem', padding: '1rem', background: 'rgba(255, 215, 0, 0.08)', border: '1px solid rgba(255, 215, 0, 0.25)', borderRadius: '8px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '1rem', padding: '1rem', background: 'rgba(255, 215, 0, 0.08)', border: '1px solid rgba(255, 215, 0, 0.25)', borderRadius: '8px', position: 'relative' }}>
+        <div style={{ position: 'absolute', top: '0.5rem', right: '0.5rem' }}>
+          <SourceBadge source={source} />
+        </div>
         <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', fontFamily: MONO }}>{result.element.number}</div>
         <div style={{ fontSize: '2rem', fontWeight: 700, color: GOLDEN, fontFamily: SANS }}>{result.element.symbol}</div>
         <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)', fontFamily: SANS }}>{result.element.name}</div>
@@ -274,6 +342,9 @@ function ElementResultView({ result }: { result: ElementResult }) {
           <span>Period {result.element.period}</span>
         </div>
       </div>
+
+      {/* Extended Element Panel (backend only) */}
+      {extendedElement && <ExtendedElementPanel el={extendedElement} />}
 
       {/* Balanced Ternary */}
       <div style={{ ...GLASS_STYLE, padding: '0.75rem', marginBottom: '0.75rem' }}>
@@ -338,41 +409,167 @@ function ElementResultView({ result }: { result: ElementResult }) {
 }
 
 // ============================================================================
+// Balance Result Display (backend-only feature)
+// ============================================================================
+
+function BalanceResultView({ result }: { result: ChemBalanceResponse }) {
+  return (
+    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+      {/* Balanced Equation Header */}
+      <div style={{ textAlign: 'center', marginBottom: '1rem', padding: '1rem', background: 'rgba(255, 215, 0, 0.08)', border: '1px solid rgba(255, 215, 0, 0.25)', borderRadius: '8px', position: 'relative' }}>
+        <div style={{ position: 'absolute', top: '0.5rem', right: '0.5rem' }}>
+          <SourceBadge source="live" />
+        </div>
+        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontFamily: SANS, marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          Balanced Equation
+        </div>
+        <div style={{ fontSize: '1.1rem', fontWeight: 700, color: GOLDEN, fontFamily: MONO, wordBreak: 'break-all' }}>
+          {result.balanced}
+        </div>
+      </div>
+
+      {/* Coefficients */}
+      <div style={{ ...GLASS_STYLE, padding: '0.75rem', marginBottom: '0.75rem' }}>
+        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontFamily: SANS, marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          Coefficients
+        </div>
+        <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+          <div>
+            <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', fontFamily: SANS, marginBottom: '0.25rem' }}>Reactants</div>
+            {result.coefficients.reactants.map((r, i) => (
+              <div key={i} style={{ fontSize: '0.8rem', fontFamily: MONO, color: CYAN }}>
+                <span style={{ color: GOLDEN, fontWeight: 600 }}>{r.coefficient}</span> {r.formula}
+              </div>
+            ))}
+          </div>
+          <div style={{ color: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', fontSize: '1.2rem' }}>\u2192</div>
+          <div>
+            <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', fontFamily: SANS, marginBottom: '0.25rem' }}>Products</div>
+            {result.coefficients.products.map((p, i) => (
+              <div key={i} style={{ fontSize: '0.8rem', fontFamily: MONO, color: CYAN }}>
+                <span style={{ color: GOLDEN, fontWeight: 600 }}>{p.coefficient}</span> {p.formula}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Atom Conservation */}
+      <div style={{ ...GLASS_STYLE, padding: '0.75rem' }}>
+        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', fontFamily: SANS, marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          Atom Conservation
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '60px 60px 60px 40px', gap: '0.2rem 0.5rem', fontSize: '0.75rem', fontFamily: MONO }}>
+          <span style={{ color: 'rgba(255,255,255,0.4)' }}>Element</span>
+          <span style={{ color: 'rgba(255,255,255,0.4)' }}>Left</span>
+          <span style={{ color: 'rgba(255,255,255,0.4)' }}>Right</span>
+          <span style={{ color: 'rgba(255,255,255,0.4)' }}>OK</span>
+          {result.verification.elements.map((v, i) => (
+            <React.Fragment key={i}>
+              <span style={{ color: GOLDEN, fontWeight: 600 }}>{v.element}</span>
+              <span style={{ color: 'rgba(255,255,255,0.8)' }}>{v.left}</span>
+              <span style={{ color: 'rgba(255,255,255,0.8)' }}>{v.right}</span>
+              <span style={{ color: v.ok ? GREEN : '#ff5050' }}>{v.ok ? '\u2713' : '\u2717'}</span>
+            </React.Fragment>
+          ))}
+        </div>
+        <div style={{ marginTop: '0.5rem', padding: '0.3rem 0.6rem', background: result.verification.balanced ? 'rgba(0,229,153,0.1)' : 'rgba(255,80,80,0.1)', borderRadius: '4px', display: 'inline-block' }}>
+          <span style={{ fontSize: '0.7rem', fontFamily: MONO, color: result.verification.balanced ? GREEN : '#ff5050', fontWeight: 600 }}>
+            {result.verification.balanced ? '\u2713 BALANCED' : '\u2717 NOT BALANCED'}
+          </span>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ============================================================================
 // Main Widget
 // ============================================================================
 
-import React from 'react';
+type WidgetMode = 'molecule' | 'element' | 'balance';
 
 export default function SacredChemistryWidget() {
-  const [mode, setMode] = useState<'molecule' | 'element'>('molecule');
+  const [mode, setMode] = useState<WidgetMode>('molecule');
   const [input, setInput] = useState('');
   const [moleculeResult, setMoleculeResult] = useState<MoleculeResult | null>(null);
   const [elementResult, setElementResult] = useState<ElementResult | null>(null);
+  const [balanceResult, setBalanceResult] = useState<ChemBalanceResponse | null>(null);
+  const [extendedElement, setExtendedElement] = useState<ExtendedElement | undefined>(undefined);
+  const [source, setSource] = useState<'live' | 'local'>('local');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const clearResults = () => {
+    setMoleculeResult(null);
+    setElementResult(null);
+    setBalanceResult(null);
+    setExtendedElement(undefined);
+    setError(null);
+    setSource('local');
+  };
 
   const handleAnalyze = useCallback(async () => {
     const query = input.trim();
     if (!query) return;
-    setError(null);
-    setMoleculeResult(null);
-    setElementResult(null);
+    clearResults();
     setLoading(true);
 
     try {
       if (mode === 'molecule') {
-        const result = await analyzeMolecule(query);
-        if (result.elements.length === 0) {
-          setError(`No known elements found in "${query}"`);
+        // Try backend first
+        const live = await fetchChemSacred(query);
+        if (live) {
+          // Backend responded — still compute local for full MoleculeResult shape
+          const result = await analyzeMolecule(query);
+          if (result.elements.length === 0) {
+            setError(`No known elements found in "${query}"`);
+          } else {
+            setMoleculeResult(result);
+            setSource('live');
+          }
         } else {
-          setMoleculeResult(result);
+          // Fallback to client-side
+          const result = await analyzeMolecule(query);
+          if (result.elements.length === 0) {
+            setError(`No known elements found in "${query}"`);
+          } else {
+            setMoleculeResult(result);
+            setSource('local');
+          }
+        }
+      } else if (mode === 'element') {
+        // Try backend first
+        const live = await fetchChemElement(query);
+        if (live) {
+          // Use backend element data for extended panel
+          setExtendedElement(live.element);
+          // Still compute local ElementResult for consistent display
+          const result = await analyzeElement(query);
+          if (!result) {
+            setError(`Element "${query}" not found. Try a symbol (Au) or number (79).`);
+          } else {
+            setElementResult(result);
+            setSource('live');
+          }
+        } else {
+          // Fallback to client-side
+          const result = await analyzeElement(query);
+          if (!result) {
+            setError(`Element "${query}" not found. Try a symbol (Au) or number (79).`);
+          } else {
+            setElementResult(result);
+            setSource('local');
+          }
         }
       } else {
-        const result = await analyzeElement(query);
-        if (!result) {
-          setError(`Element "${query}" not found. Try a symbol (Au) or number (79).`);
+        // Balance mode — backend only
+        const result = await fetchChemBalance(query);
+        if (result) {
+          setBalanceResult(result);
+          setSource('live');
         } else {
-          setElementResult(result);
+          setError('Equation balancing requires the backend. Start: zig build tri -- serve');
         }
       }
     } catch (e: any) {
@@ -386,9 +583,17 @@ export default function SacredChemistryWidget() {
     if (e.key === 'Enter') handleAnalyze();
   }, [handleAnalyze]);
 
-  const examples = mode === 'molecule'
-    ? ['H2O', 'C6H12O6', 'NaCl', 'Ca(OH)2', 'C2H5OH']
-    : ['Au', 'Fe', 'U', 'C', 'H'];
+  const examples: Record<WidgetMode, string[]> = {
+    molecule: ['H2O', 'C6H12O6', 'NaCl', 'Ca(OH)2', 'C2H5OH'],
+    element: ['Au', 'Fe', 'U', 'C', 'H'],
+    balance: ['H2+O2->H2O', 'Fe+O2->Fe2O3', 'CH4+O2->CO2+H2O'],
+  };
+
+  const placeholders: Record<WidgetMode, string> = {
+    molecule: 'Enter formula (H2O, C6H12O6...)',
+    element: 'Enter symbol or number (Au, 79...)',
+    balance: 'Enter equation (H2+O2->H2O)',
+  };
 
   return (
     <Section id="sacred-chemistry">
@@ -421,14 +626,14 @@ export default function SacredChemistryWidget() {
           </div>
         </div>
 
-        {/* Mode Toggle */}
+        {/* Mode Toggle (3 modes) */}
         <div style={{ display: 'flex', gap: '0', marginBottom: '1rem', justifyContent: 'center' }}>
-          {(['molecule', 'element'] as const).map(m => (
+          {(['molecule', 'element', 'balance'] as const).map((m, idx) => (
             <button
               key={m}
-              onClick={() => { setMode(m); setMoleculeResult(null); setElementResult(null); setError(null); }}
+              onClick={() => { setMode(m); clearResults(); }}
               style={{
-                padding: '0.4rem 1.2rem',
+                padding: '0.4rem 1rem',
                 fontSize: '0.75rem',
                 fontFamily: SANS,
                 fontWeight: 600,
@@ -438,7 +643,7 @@ export default function SacredChemistryWidget() {
                 background: mode === m ? 'rgba(255,215,0,0.15)' : 'rgba(255,255,255,0.03)',
                 color: mode === m ? GOLDEN : 'rgba(255,255,255,0.5)',
                 cursor: 'pointer',
-                borderRadius: m === 'molecule' ? '6px 0 0 6px' : '0 6px 6px 0',
+                borderRadius: idx === 0 ? '6px 0 0 6px' : idx === 2 ? '0 6px 6px 0' : '0',
                 transition: 'all 0.2s ease',
               }}
             >
@@ -454,7 +659,7 @@ export default function SacredChemistryWidget() {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={mode === 'molecule' ? 'Enter formula (H2O, C6H12O6...)' : 'Enter symbol or number (Au, 79...)'}
+            placeholder={placeholders[mode]}
             style={{
               flex: 1,
               padding: '0.5rem 0.75rem',
@@ -484,13 +689,13 @@ export default function SacredChemistryWidget() {
               transition: 'all 0.2s ease',
             }}
           >
-            {loading ? '\u23F3' : 'Analyze'}
+            {loading ? '\u23F3' : mode === 'balance' ? 'Balance' : 'Analyze'}
           </button>
         </div>
 
         {/* Quick Examples */}
         <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
-          {examples.map(ex => (
+          {examples[mode].map(ex => (
             <button
               key={ex}
               onClick={() => { setInput(ex); }}
@@ -547,14 +752,15 @@ export default function SacredChemistryWidget() {
               }}
             />
             <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', fontFamily: MONO, marginTop: '0.5rem' }}>
-              Computing sacred decomposition...
+              {mode === 'balance' ? 'Balancing equation...' : 'Computing sacred decomposition...'}
             </div>
           </div>
         )}
 
         {/* Results */}
-        {moleculeResult && <MoleculeResultView result={moleculeResult} />}
-        {elementResult && <ElementResultView result={elementResult} />}
+        {moleculeResult && <MoleculeResultView result={moleculeResult} source={source} />}
+        {elementResult && <ElementResultView result={elementResult} source={source} extendedElement={extendedElement} />}
+        {balanceResult && <BalanceResultView result={balanceResult} />}
       </motion.div>
     </Section>
   );
