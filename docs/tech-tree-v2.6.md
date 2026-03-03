@@ -27,6 +27,16 @@ ROOT: Zig 0.15.2 + Ternary VSA + ENFORCED GOLDEN CHAIN
     ├── /hardware — Hardware info endpoint
     ├── /rewards — $TRI balance and claim
     └── /cluster — Multi-cluster status
+
+└── L7: GLOBAL MESH + OMEGA ECONOMY ★ v1.0 (CYCLE #113)
+    ├── 10+ devices distributed across regions
+    ├── Wallet integration (MetaMask, Phantom, WalletConnect)
+    ├── Claim dashboard with live $TRI balance
+    ├── Reputation system (0.0 to 1.0)
+    ├── Region-aware rewards (1.0x to 1.5x multiplier)
+    ├── Omega activation at 1000 total reputation
+    ├── Global mesh relay routing
+    └── KPI: 10+ nodes, wallet claims active, Omega enabled
 ```
 
 ## Hardware Platforms
@@ -131,6 +141,9 @@ Packet Format:
 | /rewards/claim | POST | Claim pending $TRI to wallet |
 | /cluster/nodes | GET | List all cluster nodes with roles |
 | /cluster/elect | POST | Trigger primary election |
+| /dashboard | GET | Dashboard data with live metrics |
+| /omega/status | GET | Omega economy status |
+| /wallet/connect | POST | Connect wallet (MetaMask/Phantom) |
 
 ## Build & Deploy
 
@@ -148,6 +161,79 @@ zig build -Dtarget=aarch64-linux-musl tri
 # Deploy to hardware
 scp zig-out/bin/tri pi@192.168.1.10:~/
 ssh pi@192.168.1.10 "./tri serve --port 9001 --daemon"
+```
+
+## Global Mesh + Omega Economy (Cycle #113)
+
+### Region Multipliers
+
+| Region | Multiplier | Rationale |
+|--------|------------|-----------|
+| us-east | 1.0x | Base region |
+| us-west | 1.0x | Abundant nodes |
+| eu-central | 1.2x | Premium for latency |
+| asia-pacific | 1.3x | Highest demand |
+| south-america | 1.4x | Emerging market |
+| africa | 1.5x | Underserved region |
+
+### Reputation System
+
+| Action | Reputation Change |
+|--------|------------------|
+| Hour of uptime | +0.001 |
+| Successful job | +0.01 |
+| Packet relay | +0.005 |
+| Detecting malicious node | +0.1 |
+| 99.9% uptime (30 days) | +0.5 |
+| Downtime > 1 hour | -0.01 |
+| Failed job | -0.02 |
+| Malicious behavior | -1.0 (ban) |
+
+### Omega Activation Condition
+
+```
+TOTAL_REPUTATION >= 1000
+```
+
+When activated:
+```
+OMEGA_MULTIPLIER = 1.0 + (node_reputation × 2.0)
+$TRI/sec = base × role × region × omega
+```
+
+### Wallet Integration
+
+Supported wallets:
+- MetaMask (browser extension)
+- Phantom (Solana ecosystem)
+- WalletConnect (mobile wallets)
+
+Claim flow:
+1. Connect wallet via dashboard
+2. View pending $TRI balance
+3. Click "Claim" button
+4. Sign transaction with wallet
+5. Receive $TRI on-chain within 24 hours
+
+### Dashboard Data
+
+```json
+{
+  "total_nodes": 15,
+  "active_nodes": 14,
+  "total_tri_earned": 5432.1,
+  "total_tri_claimed": 4200.0,
+  "avg_reputation": 0.82,
+  "regions": {
+    "us-east": 5,
+    "eu-central": 4,
+    "asia-pacific": 6
+  },
+  "top_earners": [
+    {"node_id": "trinity-001", "tri_earned": 1234.5},
+    {"node_id": "trinity-007", "tri_earned": 1180.2}
+  ]
+}
 ```
 
 ## φ² + 1/φ² = 3 = TRINITY
