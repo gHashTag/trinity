@@ -34,7 +34,7 @@ pub const CliCommandSpec = struct {
     // Arguments (subcommands, options)
     arguments: ArrayList(Argument),
 
-    pub fn init(allocator: Allocator) CliCommandSpec {
+    pub fn init(_: Allocator) CliCommandSpec {
         return .{
             .name = "",
             .aliases = .{},
@@ -89,7 +89,7 @@ pub const CliCommandCode = struct {
     // Handler function stub
     handler_stub: []const u8,
 
-    pub fn init(allocator: Allocator) CliCommandCode {
+    pub fn init(_: Allocator) CliCommandCode {
         return .{
             .enum_variant = "",
             .parse_case = "",

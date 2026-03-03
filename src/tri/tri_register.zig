@@ -591,7 +591,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
     try registry.register(.{
         .name = "pipeline",
         .aliases = &.{},
-        .description = "Execute 17-link Golden Chain",
+        .description = "Execute 22-link Golden Chain v4.0",
         .long_help = "Run the full development pipeline from spec to deployment.",
         .category = .advanced,
         .examples = &.{ "tri pipeline run mytask" },

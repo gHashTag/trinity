@@ -142,7 +142,7 @@ pub fn registerCoreCommands(registry: *CommandRegistry, allocator: Allocator) !v
         .{ .name = "fix", .category = .swe_agent, .realm = .razum, .sacred_weight = 1.0, .risk_level = .medium, .min_args = 1, .max_args = 1, .description = "Detect and fix bugs" },
         .{ .name = "explain", .category = .swe_agent, .realm = .razum, .sacred_weight = 1.618, .risk_level = .safe, .min_args = 1, .max_args = 1, .description = "Explain code or concept" },
         .{ .name = "test_cmd", .category = .swe_agent, .realm = .dukh, .sacred_weight = 0.618, .risk_level = .low, .min_args = 1, .max_args = 1, .description = "Generate and run tests" },
-        .{ .name = "pipeline", .category = .golden_chain, .realm = .universal, .sacred_weight = 1.0, .risk_level = .low, .min_args = 1, .max_args = 1, .description = "Execute 17-link Golden Chain" },
+        .{ .name = "pipeline", .category = .golden_chain, .realm = .universal, .sacred_weight = 1.0, .risk_level = .low, .min_args = 1, .max_args = 1, .description = "Execute 22-link Golden Chain v4.0" },
         .{ .name = "decompose", .category = .golden_chain, .realm = .razum, .sacred_weight = 1.618, .risk_level = .safe, .min_args = 1, .max_args = 1, .description = "Break task into sub-tasks" },
         .{ .name = "plan", .category = .golden_chain, .realm = .razum, .sacred_weight = 1.618, .risk_level = .safe, .min_args = 1, .max_args = 1, .description = "Generate implementation plan" },
         .{ .name = "verify", .category = .golden_chain, .realm = .dukh, .sacred_weight = 0.618, .risk_level = .low, .min_args = 0, .max_args = 0, .description = "Run tests and benchmarks" },
