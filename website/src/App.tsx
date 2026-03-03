@@ -26,6 +26,8 @@ const EternalLoopWidget = lazy(() => import('./components/sections/EternalLoopWi
 const MysticismSection = lazy(() => import('./components/sections/MysticismSection'))
 // Sacred Formula Engine — V = n * 3^k * pi^m * phi^p * e^q
 const SacredFormulaSection = lazy(() => import('./components/sections/SacredFormulaSection'))
+// Sacred Chemistry Widget — Molecule/Element sacred analysis
+const SacredChemistryWidget = lazy(() => import('./components/sections/SacredChemistryWidget'))
 
 const SectionFallback = () => (
   <div style={{ minHeight: '50vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -77,7 +79,10 @@ export default function App() {
         {/* 11. SACRED FORMULA - Integer relation engine */}
         <SacredFormulaSection />
 
-        {/* 12. INVEST - Final CTA */}
+        {/* 12. SACRED CHEMISTRY - Molecule/Element sacred analysis */}
+        <SacredChemistryWidget />
+
+        {/* 13. INVEST - Final CTA */}
         <InvestSection />
       </Suspense>
       
