@@ -28,6 +28,7 @@ const std = @import("std");
 const utils = @import("tri_utils.zig");
 const commands = @import("tri_commands.zig");
 const pipeline = @import("tri_pipeline.zig");
+const cli_integration = @import("tri_cli_integration.zig");
 const demos = @import("tri_demos.zig");
 const math_commands = @import("math/commands.zig");
 const bio_commands = @import("tri_biology.zig");
@@ -582,5 +583,7 @@ pub fn main() !void {
         //         std.debug.print("Unknown subcommand: {s}\n", .{cmd_args[0]});
         //     }
         // },
+        // CLI Integration (Cycle #118)
+        .integrate => try cli_integration.runIntegrateCommand(allocator, cmd_args),
     }
 }

@@ -1,41 +1,123 @@
 # AGENTS.md - AI Agent Guidelines for VIBEE Development
 
 **Author**: Dmitrii Vasilev
+**Version**: 4.0 — Golden Chain Autonomous Pipeline
 
 ## Overview
 
-This document provides guidelines for AI agents working on the VIBEE project. All agents must follow the **Golden Chain** workflow.
+This document provides guidelines for AI agents working on the VIBEE project. All agents must follow the **Golden Chain v4.0** workflow — a 22-link autonomous self-improving pipeline.
 
 ---
 
-## 🚨 AUTONOMOUS DEVELOPMENT LOOP (KOSCHEI PATTERN)
+## 🚀 GOLDEN CHAIN v4.0 — 22 Links Autonomous Pipeline
+
+### Quick Start
+
+```bash
+# Run the full autonomous pipeline
+tri pipeline run "your task description"
+```
+
+### Pipeline Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│              GOLDEN CHAIN PIPELINE v4.0 — 22 Links                       │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+ Link 0:  TVC_GATE              *    [CRITICAL]  Distributed cache (φ⁻¹ threshold)
+ Link 1:  BASELINE                 Analyze v(n-1)
+ Link 2:  METRICS                  Load v(n-1) metrics from JSON
+ Link 3:  PAS_ANALYZE              SUCCESS_HISTORY.md patterns
+ Link 4:  TECH_TREE                Scan src/ for .zig modules
+ Link 5:  STRICT_CHECK            *    VIBEE-first compliance check
+ Link 6:  SPEC_CREATE             Generate .vibee specification
+ Link 7:  CODE_GENERATE          *    vibee gen → .zig code
+ Link 8:  SACRED_ANALYZE              Sacred Intelligence analysis
+ Link 9:  TEST_RUN               *    zig build test + parsing
+ Link 10: BENCHMARK_PREV         *    Compare to v(n-1)
+ Link 11: SWE_FIX                     Auto-fix via SWE Agent
+ Link 12: BENCHMARK_EXTERNAL          Compare to llama.cpp/vLLM
+ Link 13: BENCHMARK_THEORETICAL       Gap to φ-optimal
+ Link 14: DELTA_REPORT                 Improvement report
+ Link 15: OPTIMIZE                    (optional) Auto-optimization
+ Link 16: DOCS                        npm run build
+ Link 17: TOXIC_VERDICT               Russian self-assessment
+ Link 18: GIT                         Auto-commit (if tests pass)
+ Link 19: LOOP_DECISION          *    Continue to v(n+1) or exit
+ Link 20: FLY_DEPLOY                   Auto-deploy to Fly.io
+ Link 21: ETERNAL_SELF_EVOLUTION *    Pipeline improves itself
+```
+
+### Critical Links (Fail-Fast)
+- **Link 0**: TVC_GATE — Distributed learning cache
+- **Link 7**: CODE_GENERATE — Code generation
+- **Link 9**: TEST_RUN — Tests must pass
+- **Link 10**: BENCHMARK_PREV — Must not regress
+- **Link 19**: LOOP_DECISION — Loop control
+- **Link 21**: ETERNAL_SELF_EVOLUTION — Self-improvement
+
+---
+
+## 🚨 AUTONOMOUS DEVELOPMENT LOOP (KOSCHEI PATTERN v4.0)
 
 ### Core Principles:
 
-1. **Specification-First**: NEVER write implementation code directly
-2. **Auto-Generation**: Code is GENERATED from specs, not written manually
-3. **Continuous Improvement**: Loop until EXIT_SIGNAL or completion
-4. **Self-Validation**: Run tests after each generation
+1. **Pipeline-First**: Use `tri pipeline run` for all development
+2. **Specification-First**: NEVER write implementation code directly
+3. **Auto-Generation**: Code is GENERATED from specs, not written manually
+4. **Continuous Improvement**: Loop until immortal (φ⁻¹ threshold)
+5. **Self-Validation**: Auto-commit only when tests pass
 
-### Development Loop:
+### Development Loop (AUTOMATED):
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    KOSCHEI DEVELOPMENT LOOP                     │
+│                  KOSCHEI DEVELOPMENT LOOP v4.0                   │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  1. ANALYZE task requirements                                   │
-│           ↓                                                     │
-│  2. CREATE .vibee specification in specs/tri/                   │
-│           ↓                                                     │
-│  3. RUN: ./bin/vibee gen specs/tri/feature.vibee                │
-│           ↓                                                     │
-│  4. TEST: zig test trinity/output/feature.zig                   │
-│           ↓                                                     │
-│  5. CHECK: All tests passing?                                   │
-│           ↓                                                     │
-│     YES → Write TOXIC VERDICT + TECH TREE SELECT → EXIT         │
-│     NO  → ITERATE (go to step 2)                                │
+│  0. TVC_GATE: Check corpus for similar tasks (skip if hit)      │
+│         ↓                                                     │
+│  1-3. ANALYZE: v(n-1), METRICS, PAS_ANALYZE                     │
+│         ↓                                                     │
+│  4. TECH_TREE: Scan dependencies                               │
+│         ↓                                                     │
+│  5. STRICT_CHECK: Verify VIBEE-first compliance               │
+│         ↓                                                     │
+│  6. SPEC_CREATE: Auto-generate .vibee specification          │
+│         ↓                                                     │
+│  7. CODE_GENERATE: vibee gen → .zig code                     │
+│         ↓                                                     │
+│  8. SACRED_ANALYZE: Sacred Intelligence analysis             │
+│         ↓                                                     │
+│  9. TEST_RUN: zig build test + parse output                   │
+│         ↓                                                     │
+│  10. BENCHMARK_PREV: Compare to v(n-1) (CRITICAL)            │
+│         ↓                                                     │
+│  11. SWE_FIX: Auto-fix if tests failed                        │
+│         ↓                                                     │
+│  12-13. BENCHMARKS: External + Theoretical comparison           │
+│         ↓                                                     │
+│  14. DELTA_REPORT: Improvement metrics                        │
+│         ↓                                                     │
+│  15. OPTIMIZE: (skip if already good)                         │
+│         ↓                                                     │
+│  16. DOCS: Auto-generate documentation                        │
+│         ↓                                                     │
+│  17. TOXIC_VERDICT: Honest self-assessment                    │
+│         ↓                                                     │
+│  18. GIT: Auto-commit (if tests passed + no regression)       │
+│         ↓                                                     │
+│  19. LOOP_DECISION:                                          │
+│     immortal (> φ⁻¹) → Continue to v(n+1)                     │
+│     improving (0% < rate < φ⁻¹) → More work needed            │
+│     regression (≤ 0%) → Rollback required                    │
+│         ↓                                                     │
+│  20. FLY_DEPLOY: Auto-deploy to Fly.io (if immortal)          │
+│         ↓                                                     │
+│  21. ETERNAL_SELF_EVOLUTION: Generate next improvement task   │
+│         ↓                                                     │
+│  RESTART at Link 0 with new task                              │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```

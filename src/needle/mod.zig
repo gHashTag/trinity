@@ -6,6 +6,9 @@
 //
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// Tier 4 Autonomous Refactoring Engine
+pub const autonomous_refactor = @import("autonomous_refactor.zig");
+
 // HNSW Index (Tier 3.5)
 pub const hnsw = @import("hnsw.zig");
 
@@ -148,7 +151,6 @@ pub const findUsages = symbols.findUsages;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const RefactorKind = refactor.RefactorKind;
-pub const RefactorConfig = refactor.RefactorConfig;
 pub const FileBackup = refactor.FileBackup;
 pub const RefactorContext = refactor.RefactorContext;
 
@@ -225,7 +227,6 @@ pub const RiskLevel = omega.RiskLevel;
 pub const RefactorHistory = omega.RefactorHistory;
 pub const RefactorStep = omega.RefactorStep;
 pub const StepOperation = omega.StepOperation;
-pub const RefactorPlan = omega.RefactorPlan;
 pub const ImprovementSuggestion = omega.ImprovementSuggestion;
 pub const AutonomousResult = omega.AutonomousResult;
 pub const HealthReport = omega.HealthReport;
@@ -234,6 +235,22 @@ pub const OmegaAgent = omega.OmegaAgent;
 // Omega functions
 pub const omegaInit = omega.omegaInit;
 pub const omegaHealthCheck = omega.omegaHealthCheck;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC API - Tier 4 Autonomous Refactoring Engine
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const AutonomousRefactorEngine = autonomous_refactor.AutonomousRefactorEngine;
+pub const RefactorIntent = autonomous_refactor.RefactorIntent;
+pub const RefactorPlan = autonomous_refactor.RefactorPlan;
+pub const RefactorResult = autonomous_refactor.RefactorResult;
+pub const RefactorScope = autonomous_refactor.RefactorScope;
+pub const TransformType = autonomous_refactor.TransformType;
+pub const Transformation = autonomous_refactor.Transformation;
+pub const SymbolLocation = autonomous_refactor.SymbolLocation;
+pub const RollbackPlan = autonomous_refactor.RollbackPlan;
+pub const RalphLoop = autonomous_refactor.RalphLoop;
+pub const RefactorConfig = autonomous_refactor.RefactorConfig;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MCP AST Query Tool (Tier 2.4)

@@ -959,6 +959,138 @@ const StdoutWriter = struct {
 // Main Entry Point
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// MCP Stdio Protocol Handler
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const MCPMessage = struct {
+    content: []const u8,
+    id: ?[]const u8,
+
+    fn deinit(self: MCPMessage, allocator: std.mem.Allocator) void {
+        if (self.id) |id| allocator.free(id);
+        allocator.free(self.content);
+    }
+};
+
+/// Read a complete MCP message from stdin using Content-Length framing
+fn readMCPMessage(allocator: std.mem.Allocator, buffer: []u8, buffer_used: *usize) !?MCPMessage {
+    if (buffer_used.* == 0) {
+        _ = posix.write(2, "DEBUG: buffer_used == 0\n") catch {};
+        return null;
+    }
+
+    _ = posix.write(2, "DEBUG: Reading from buffer...\n") catch {};
+
+    // Find Content-Length header
+    const header_start = std.mem.indexOf(u8, buffer[0..buffer_used.*], "Content-Length:") orelse {
+        _ = posix.write(2, "DEBUG: No Content-Length header\n") catch {};
+        return null;
+    };
+    const value_start = header_start + "Content-Length:".len;
+
+    _ = posix.write(2, "DEBUG: Found Content-Length header\n") catch {};
+
+    // Find the end of the header line (first \r or \n after the header name)
+    const header_line_end = blk: {
+        const search_from = buffer[value_start..buffer_used.*];
+        const idx1 = std.mem.indexOfScalar(u8, search_from, '\r');
+        const idx2 = std.mem.indexOfScalar(u8, search_from, '\n');
+        break :blk if (idx1) |i| value_start + i else if (idx2) |i| value_start + i else null;
+    } orelse {
+        _ = posix.write(2, "DEBUG: No header line end\n") catch {};
+        return null;
+    };
+
+    // Skip whitespace before the number
+    var val_start: usize = value_start;
+    while (val_start < header_line_end and std.ascii.isWhitespace(buffer[val_start])) : (val_start += 1) {}
+
+    // Find end of number (first non-digit, whitespace)
+    var val_end: usize = val_start;
+    while (val_end < header_line_end and (buffer[val_end] >= '0' and buffer[val_end] <= '9')) : (val_end += 1) {}
+
+    if (val_start >= val_end) {
+        _ = posix.write(2, "DEBUG: No number found\n") catch {};
+        return null;
+    }
+
+    const length_str = buffer[val_start..val_end];
+    const content_length = std.fmt.parseInt(usize, length_str, 10) catch {
+        _ = posix.write(2, "DEBUG: Failed to parse length\n") catch {};
+        return null;
+    };
+
+    // Find the end of headers (double newline)
+    const headers_end = blk: {
+        const idx1 = std.mem.indexOf(u8, buffer[header_start..buffer_used.*], "\r\n\r\n");
+        const idx2 = std.mem.indexOf(u8, buffer[header_start..buffer_used.*], "\n\n");
+        break :blk if (idx1) |i| header_start + i + 4 else if (idx2) |i| header_start + i + 2 else null;
+    } orelse {
+        _ = posix.write(2, "DEBUG: No double newline\n") catch {};
+        return null;
+    };
+
+    const body_start = headers_end;
+
+    // Check if we have the complete message body
+    if (body_start + content_length > buffer_used.*) {
+        _ = posix.write(2, "DEBUG: Incomplete message\n") catch {};
+        return null; // Need more data
+    }
+
+    const body_end = body_start + content_length;
+    const content = buffer[body_start..body_end];
+
+    _ = posix.write(2, "DEBUG: Message parsed successfully\n") catch {};
+
+    // Extract request ID if present
+    var id: ?[]const u8 = null;
+    if (std.mem.indexOf(u8, content, "\"id\":")) |id_idx| {
+        const id_val_start = id_idx + 5;
+        // Skip whitespace
+        var scan = id_val_start;
+        while (scan < content.len and std.ascii.isWhitespace(content[scan])) : (scan += 1) {}
+
+        if (scan < content.len) {
+            const id_val_end = if (content[scan] == '"')
+                std.mem.indexOfScalar(u8, content[scan + 1 ..], '"') orelse content.len
+            else
+                std.mem.indexOf(u8, content[scan ..], ",") orelse content.len;
+            const final_id_end = scan + 1 + id_val_end;
+            const id_content = content[scan + 1 .. final_id_end];
+            id = allocator.dupe(u8, id_content) catch null;
+        }
+    }
+
+    // Copy the content
+    const content_copy = try allocator.dupe(u8, content);
+
+    // Shift remaining data to start of buffer
+    const remaining = buffer_used.* - body_end;
+    if (remaining > 0) {
+        @memcpy(buffer[0..remaining], buffer[body_end..]);
+    }
+    buffer_used.* = remaining;
+
+    return MCPMessage{
+        .content = content_copy,
+        .id = id,
+    };
+}
+
+/// Write an MCP response with proper Content-Length framing
+fn writeMCPResponse(response: []const u8) !void {
+    var header_buf: [128]u8 = undefined;
+    const header = std.fmt.bufPrint(&header_buf, "Content-Length: {d}\r\n\r\n", .{response.len}) catch unreachable;
+    _ = try posix.write(1, header);
+    _ = try posix.write(1, response);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Main Entry Point
+// ═══════════════════════════════════════════════════════════════════════════════
+
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
@@ -966,154 +1098,132 @@ pub fn main() !void {
 
     var server = TrinityMCPServer.init(allocator);
 
-    var stdout_writer = StdoutWriter{};
     var read_buffer: [65536]u8 = undefined;
-    var buffer_start: usize = 0;
+    var buffer_used: usize = 0;
 
     while (true) {
-        // Read more data if buffer is nearly empty
-        const bytes_read = if (buffer_start < 1024) blk: {
-            // Shift remaining data to start of buffer
-            if (buffer_start > 0 and buffer_start < read_buffer.len) {
-                std.mem.copyForwards(u8, read_buffer[0..], read_buffer[buffer_start..]);
-            }
-            const write_pos = if (buffer_start > 0) buffer_start else 0;
-            const bytes = posix.read(0, read_buffer[write_pos..]) catch |err| {
+        // Read more data if buffer has space
+        if (buffer_used < read_buffer.len) {
+            const bytes_read = posix.read(0, read_buffer[buffer_used..]) catch |err| {
                 if (err == error.EndOfStream) break;
                 continue;
             };
-            if (bytes == 0) break;
-            break :blk bytes + write_pos;
-        } else buffer_start;
+            if (bytes_read == 0) break;
+            buffer_used += bytes_read;
+        }
 
-        if (bytes_read == 0) break;
+        // Try to read a complete MCP message
+        const msg = (try readMCPMessage(allocator, &read_buffer, &buffer_used)) orelse continue;
+        defer msg.deinit(allocator);
 
-        const available = read_buffer[0..bytes_read];
-        var pos: usize = 0;
+        const request = msg.content;
 
-        // Process all complete requests in buffer
-        while (pos < available.len) {
-            // Find the end of the current request (newline or closing brace)
-            var request_end: usize = 0;
-            var has_newline = false;
+        // DEBUG: Write to stderr to avoid messing up stdout protocol
+        _ = posix.write(2, "DEBUG: Processing request\n") catch {};
 
-            if (std.mem.indexOfScalar(u8, available[pos..], '\n')) |nl_idx| {
-                request_end = pos + nl_idx;
-                has_newline = true;
+        // Process JSON-RPC request
+        if (std.mem.indexOf(u8, request, "\"initialize\"") != null) {
+            const response = "{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{\"tools\":{},\"resources\":{},\"prompts\":{}}},\"serverInfo\":{\"name\":\"trinity-mcp\",\"version\":\"2.0.0\"}}";
+            try writeMCPResponse(response);
+        } else if (std.mem.indexOf(u8, request, "\"tools/list\"") != null) {
+            const tools_json = try auto_discovery.generateToolsList(server.allocator);
+            defer server.allocator.free(tools_json);
+            // Wrap in proper JSON-RPC response
+            const response = try std.fmt.allocPrint(allocator, "{{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{s}}}", .{tools_json});
+            defer allocator.free(response);
+            try writeMCPResponse(response);
+        } else if (std.mem.indexOf(u8, request, "\"resources/list\"") != null) {
+            const list = try resources.generateResourcesList(server.allocator);
+            defer server.allocator.free(list);
+            const response = try std.fmt.allocPrint(allocator, "{{\"jsonrpc\":\"2.0\",\"id\":3,\"result\":{s}}}", .{list});
+            defer allocator.free(response);
+            try writeMCPResponse(response);
+        } else if (std.mem.indexOf(u8, request, "\"resources/read\"") != null) {
+            const uri = extractStringField(request, "uri") orelse {
+                const err = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32602,\"message\":\"Missing URI parameter\"}}";
+                try writeMCPResponse(err);
+                continue;
+            };
+
+            if (resources.hasResource(uri)) {
+                const content = try resources.loadResource(server.allocator, uri);
+                defer server.allocator.free(content);
+                var response_buffer: [8192]u8 = undefined;
+                const response = std.fmt.bufPrint(&response_buffer,
+                    "{{\"jsonrpc\":\"2.0\",\"result\":{{\"contents\":[{{\"uri\":\"{s}\",\"text\":\"{s}\"}}]}}}}"
+                , .{ uri, content }) catch continue;
+                try writeMCPResponse(response);
             } else {
-                // No newline - check if we have a complete JSON object
-                const open_brace = std.mem.indexOfScalar(u8, available[pos..], '{');
-                const close_brace = if (open_brace != null) std.mem.lastIndexOfScalar(u8, available[pos..], '}') else null;
-
-                if (open_brace != null and close_brace != null and close_brace.? > open_brace.?) {
-                    // Have complete JSON object without newline
-                    request_end = pos + close_brace.?;
-                } else {
-                    // Incomplete data, wait for more
-                    buffer_start = available.len - pos;
-                    if (buffer_start > 0) {
-                        std.mem.copyForwards(u8, read_buffer[0..], available[pos..]);
-                    }
-                    break;
-                }
+                const err = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32602,\"message\":\"Resource not found\"}}";
+                try writeMCPResponse(err);
             }
+        } else if (std.mem.indexOf(u8, request, "\"prompts/list\"") != null) {
+            const list = try prompts.generatePromptsList(server.allocator);
+            defer server.allocator.free(list);
+            const response = try std.fmt.allocPrint(allocator, "{{\"jsonrpc\":\"2.0\",\"id\":4,\"result\":{s}}}", .{list});
+            defer allocator.free(response);
+            try writeMCPResponse(response);
+        } else if (std.mem.indexOf(u8, request, "\"prompts/get\"") != null) {
+            const name = extractStringField(request, "name") orelse {
+                const err = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32602,\"message\":\"Missing name parameter\"}}";
+                try writeMCPResponse(err);
+                continue;
+            };
 
-            const request = available[pos..request_end];
-            pos = request_end + 1;
-            // Skip whitespace after request
-            while (pos < available.len and std.ascii.isWhitespace(available[pos])) {
-                pos += 1;
+            if (prompts.hasPrompt(name)) {
+                const response = try prompts.generatePromptGetResponse(server.allocator, name, null);
+                defer server.allocator.free(response);
+                try writeMCPResponse(response);
+            } else {
+                const err = "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32602,\"message\":\"Prompt not found\"}}";
+                try writeMCPResponse(err);
             }
+        } else if (std.mem.indexOf(u8, request, "\"tools/call\"") != null) {
+            const params_idx = std.mem.indexOf(u8, request, "\"params\":") orelse continue;
+            const name_after_params = std.mem.indexOf(u8, request[params_idx..], "\"name\":") orelse continue;
+            const name_idx = params_idx + name_after_params;
+            const name_start = name_idx + 8;
+            const name_end = std.mem.indexOfScalarPos(u8, request, name_start, '"') orelse continue;
+            const tool_name = request[name_start..name_end];
 
-            if (request.len == 0) continue;
-
-            // Simple JSON-RPC parsing
-            if (std.mem.indexOf(u8, request, "\"initialize\"") != null) {
-                try server.writeInitializeResponse(&stdout_writer);
-            } else if (std.mem.indexOf(u8, request, "\"tools/list\"") != null) {
-                try server.writeToolsList(&stdout_writer);
-            } else if (std.mem.indexOf(u8, request, "\"resources/list\"") != null) {
-                const list = try resources.generateResourcesList(server.allocator);
-                defer server.allocator.free(list);
-                try stdout_writer.writeAll(list);
-            } else if (std.mem.indexOf(u8, request, "\"resources/read\"") != null) {
-                // Extract URI from request - simpler approach using extractStringField
-                const uri = extractStringField(request, "uri") orelse {
-                    try writeJsonError(&server, &stdout_writer, "Missing URI parameter");
-                    continue;
-                };
-
-                if (resources.hasResource(uri)) {
-                    const content = try resources.loadResource(server.allocator, uri);
-                    defer server.allocator.free(content);
-                    try writeJsonResponse(&server, &stdout_writer, content, false);
-                } else {
-                    try writeJsonError(&server, &stdout_writer, "Resource not found");
-                }
-            } else if (std.mem.indexOf(u8, request, "\"prompts/list\"") != null) {
-                const list = try prompts.generatePromptsList(server.allocator);
-                defer server.allocator.free(list);
-                try stdout_writer.writeAll(list);
-            } else if (std.mem.indexOf(u8, request, "\"prompts/get\"") != null) {
-                // Extract prompt name from request
-                const name = extractStringField(request, "name") orelse {
-                    try writeJsonError(&server, &stdout_writer, "Missing name parameter");
-                    continue;
-                };
-
-                if (prompts.hasPrompt(name)) {
-                    // For now, return prompt without arguments (simple version)
-                    // A full implementation would parse and pass args_map
-                    const response = try prompts.generatePromptGetResponse(server.allocator, name, null);
-                    defer server.allocator.free(response);
-                    try stdout_writer.writeAll(response);
-                } else {
-                    try writeJsonError(&server, &stdout_writer, "Prompt not found");
-                }
-            } else if (std.mem.indexOf(u8, request, "\"tools/call\"") != null) {
-                const params_idx = std.mem.indexOf(u8, request, "\"params\":") orelse continue;
-                const name_after_params = std.mem.indexOf(u8, request[params_idx..], "\"name\":") orelse continue;
-                const name_idx = params_idx + name_after_params;
-                const name_start = name_idx + 8;
-                const name_end = std.mem.indexOfScalarPos(u8, request, name_start, '"') orelse continue;
-                const tool_name = request[name_start..name_end];
-
-                const arguments_idx = std.mem.indexOf(u8, request[params_idx..], "\"arguments\":") orelse continue;
-                const args_absolute_idx = params_idx + arguments_idx;
-                var args_search_start = args_absolute_idx + 13;
-                while (args_search_start < request.len and std.ascii.isWhitespace(request[args_search_start])) {
-                    args_search_start += 1;
-                }
-                if (args_search_start >= request.len or (request[args_search_start] != '{' and request[args_search_start] != '"')) {
-                    continue;
-                }
-                const args_start = args_search_start;
-                var brace_count: usize = if (request[args_start] == '{') 1 else 0;
+            const arguments_idx = std.mem.indexOf(u8, request[params_idx..], "\"arguments\":") orelse continue;
+            const args_absolute_idx = params_idx + arguments_idx;
+            var args_search_start = args_absolute_idx + 13;
+            while (args_search_start < request.len and std.ascii.isWhitespace(request[args_search_start])) {
+                args_search_start += 1;
+            }
+            if (args_search_start >= request.len or (request[args_search_start] != '{' and request[args_search_start] != '"')) {
+                continue;
+            }
+            const args_start = args_search_start;
+            const arguments_json = blk: {
                 if (request[args_start] == '"') {
                     // Stringified JSON - find end quote
                     var args_end = args_start + 1;
                     while (args_end < request.len and request[args_end] != '"') {
                         args_end += 1;
                     }
-                    const arguments_json = request[args_start + 1 .. args_end];
-                    try server.handleToolsCall(tool_name, arguments_json, &stdout_writer);
+                    break :blk request[args_start + 1 .. args_end];
                 } else {
+                    var brace_count: usize = 1;
                     var args_end = args_start + 1;
                     while (args_end < request.len and brace_count > 0) {
                         if (request[args_end] == '{') brace_count += 1;
                         if (request[args_end] == '}') brace_count -= 1;
                         args_end += 1;
                     }
-                    const arguments_json = request[args_start..args_end];
-                    try server.handleToolsCall(tool_name, arguments_json, &stdout_writer);
+                    break :blk request[args_start..args_end];
                 }
-            }
+            };
 
-            // Update buffer_start after processing newline-terminated request
-            buffer_start = available.len - pos;
-            if (buffer_start > 0) {
-                std.mem.copyForwards(u8, read_buffer[0..], available[pos..]);
-            }
+            // Execute tool and capture response
+            var response_buffer: [16384]u8 = undefined;
+            var fbs = std.io.fixedBufferStream(&response_buffer);
+            const writer = fbs.writer();
+
+            try server.handleToolsCall(tool_name, arguments_json, writer);
+            const tool_response = fbs.getWritten();
+            try writeMCPResponse(tool_response);
         }
     }
 }

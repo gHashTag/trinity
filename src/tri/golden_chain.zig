@@ -444,7 +444,7 @@ test "ChainLink enumeration" {
     try std.testing.expect(baseline.isMandatory());
 
     const benchmark = ChainLink.benchmark_prev;
-    try std.testing.expectEqual(@as(u8, 8), @intFromEnum(benchmark));
+    try std.testing.expectEqual(@as(u8, 10), @intFromEnum(benchmark)); // v4.0: link 10
     try std.testing.expect(benchmark.isCritical());
 
     const optimize = ChainLink.optimize;
@@ -460,9 +460,19 @@ test "ChainLink navigation" {
     try std.testing.expectEqual(ChainLink.metrics, baseline.next().?);
     try std.testing.expectEqual(ChainLink.tvc_gate, baseline.prev().?);
 
+    const git = ChainLink.git;
+    try std.testing.expectEqual(ChainLink.loop_decision, git.next().?);
+    try std.testing.expectEqual(ChainLink.toxic_verdict, git.prev().?);
+
     const loop = ChainLink.loop_decision;
-    try std.testing.expectEqual(@as(?ChainLink, null), loop.next());
-    try std.testing.expectEqual(ChainLink.git, loop.prev().?);
+    try std.testing.expectEqual(ChainLink.fly_deploy, loop.next().?); // v4.0: next is fly_deploy
+    try std.testing.expectEqual(ChainLink.git, loop.prev().?); // v4.0: prev is git
+
+    const fly_deploy = ChainLink.fly_deploy;
+    try std.testing.expectEqual(ChainLink.eternal_self_evolution, fly_deploy.next().?);
+
+    const eternal = ChainLink.eternal_self_evolution;
+    try std.testing.expectEqual(@as(?ChainLink, null), eternal.next()); // v4.0: last link
 }
 
 test "Needle threshold" {

@@ -1286,6 +1286,27 @@ pub fn build(b: *std.Build) void {
     hnsw_bench_step.dependOn(&run_hnsw_bench.step);
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // VSA Benchmark — Tier 3 Semantic Search Benchmarks
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    const vsa_bench = b.addExecutable(.{
+        .name = "vsa-bench",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/needle/vsa_bench.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+            .imports = &.{
+                .{ .name = "needle", .module = needle_mod },
+            },
+        }),
+    });
+    b.installArtifact(vsa_bench);
+
+    const run_vsa_bench = b.addRunArtifact(vsa_bench);
+    const vsa_bench_step = b.step("vsa-bench", "Run VSA semanticFind benchmarks");
+    vsa_bench_step.dependOn(&run_vsa_bench.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // TRINITY-MCP — Full Trinity MCP Server (35+ tools)
     // ═══════════════════════════════════════════════════════════════════════════
     // Native Zig MCP server exposing ALL Trinity CLI commands as Claude Code tools
@@ -1512,6 +1533,8 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "sacred", .module = sacred_mod },
                 // OS Boot module (Temporal Trinity v1.0 — Order #021)
                 .{ .name = "os", .module = os_mod },
+                // VIBEE compiler (CLI Command Pattern support - Cycle #118)
+                .{ .name = "trinity-lang", .module = trinity_lang_mod },
             },
         }),
     });

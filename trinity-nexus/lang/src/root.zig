@@ -39,6 +39,10 @@ pub const multi_lang_codegen = @import("multi_lang_codegen.zig");
 pub const multilingual_engine = @import("multilingual_engine.zig");
 pub const lang_generators = @import("lang_generators.zig");
 
+// ─── CLI Command Pattern (Cycle #118) ───────────────────────────────────────────────
+pub const cli_patcher = @import("codegen/cli_patcher.zig");
+pub const cli_command = @import("codegen/cli_command.zig");
+
 // ─── Runtime / Support ──────────────────────────────────────────────────────────
 pub const coptic_parser_real = @import("coptic_parser_real.zig");
 pub const coptic_lexer = @import("coptic_lexer.zig");
