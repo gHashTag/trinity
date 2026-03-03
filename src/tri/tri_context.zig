@@ -22,7 +22,6 @@ const PHI_SQ: f64 = 2.618033988749895;
 const PHI_INV_SQ: f64 = 0.381966011250105;
 
 const gematria_engine = @import("gematria.zig");
-const sacred_formula = @import("math/sacred_formula.zig");
 
 // Sacred constants for recognition (42 constants from sacred_formula.zig)
 pub const SACRED_CONSTANTS = sacred_formula.sacred_constants;
@@ -193,6 +192,21 @@ pub const ContextManager = struct {
         self.symbols.deinit(self.allocator);
         self.embeddings.deinit(self.allocator);
         self.arena.deinit();
+    }
+
+    /// Get sacred metrics snapshot
+    pub fn getSacredMetrics(self: *Self) SacredMetrics {
+        return SacredMetrics{
+            .total_symbols_analyzed = self.sacred_metrics.total_symbols_analyzed,
+            .patch_candidates_found = self.sacred_metrics.patch_candidates_found,
+            .sacred_constant_matches = self.sacred_metrics.sacred_constant_matches,
+            .avg_confidence_score = if (self.sacred_metrics.total_symbols_analyzed > 0)
+                @as(f64, @floatFromInt(self.sacred_metrics.sacred_constant_matches)) / @as(f64, @floatFromInt(self.sacred_metrics.total_symbols_analyzed))
+            else
+                0.0,
+            .top_sacred_symbols = 0,
+            .evolution_progress = self.sacred_metrics.evolution_progress,
+        };
     }
 
     // =========================================================================
@@ -1147,6 +1161,71 @@ fn printIntelligenceHelp() void {
     std.debug.print("    {s}- Sacred formula V = n x 3^k x pi^m x phi^p x e^q{s}\n", .{ colors.GRAY, colors.RESET });
     std.debug.print("    {s}- Recognition against 75 sacred constants{s}\n\n", .{ colors.GRAY, colors.RESET });
     std.debug.print("{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ colors.GOLDEN, colors.RESET });
+}
+
+// =============================================================================
+// HELPER FUNCTIONS (Sacred Intelligence)
+// =============================================================================
+
+/// Multi-language gematria calculation
+fn computeMultiLanguageGematria(name: []const u8) MultiLanguageGematria {
+    const sacred_val = gematria_engine.textToGematriaValue(name);
+    var hebrew_val: u32 = 0;
+    var greek_val: u32 = 0;
+    var arabic_val: u32 = 0;
+
+    for (name) |c| {
+        hebrew_val += c;
+        greek_val += @as(u32, @intCast(c)) * 2;
+        arabic_val += @as(u32, @intCast(c)) * 3;
+    }
+
+    return MultiLanguageGematria{
+        .sacred = sacred_val,
+        .hebrew = hebrew_val,
+        .greek = greek_val,
+        .arabic = arabic_val,
+    };
+}
+
+/// Find sacred constant match for a value
+fn findSacredConstantMatch(value: u32) ?[]const u8 {
+    for (SACRED_CONSTANTS) |constant| {
+        if (@as(usize, @intCast(value)) == @as(usize, @intFromFloat(constant.target))) {
+            return constant.name;
+        }
+    }
+    // 1% tolerance check
+    const target_val = @as(f64, @floatFromInt(value));
+    for (SACRED_CONSTANTS) |constant| {
+        const tolerance = 1.0; // Default 1% tolerance
+        const diff = @abs(constant.target - target_val);
+        if (diff <= constant.target * tolerance / 100.0) {
+            return constant.name;
+        }
+    }
+    return null;
+}
+
+/// Compute sacred formula fit for a symbol name
+fn computeSacredFormulaForSymbol(name: []const u8) sacred_formula.SacredFormulaFit {
+    const gem_value = gematria_engine.textToGematriaValue(name);
+    const target: f64 = @floatFromInt(gem_value);
+    return sacred_formula.fitSacredFormula(target);
+}
+
+/// Format sacred formula result to string
+fn formatSacredFormula(buf: []u8, fit: sacred_formula.SacredFormulaFit) []const u8 {
+    return sacred_formula.formatFormulaString(buf, fit);
+}
+
+/// Compute sacred score for a symbol
+fn computeSymbolSacredScoreImpl(multi_gem: MultiLanguageGematria, sacred_fit: sacred_formula.SacredFormulaFit, constant_match: ?[]const u8) f64 {
+    var score: f64 = 0.0;
+    if (multi_gem.sacred > 0) score += 0.2;
+    if (sacred_fit.error_pct < 10.0) score += 0.3;
+    if (constant_match != null) score += 0.3;
+    return @min(score, 1.0);
 }
 
 // =============================================================================
