@@ -288,7 +288,7 @@ fn forgeRun(allocator: std.mem.Allocator, args: []const []const u8) !void {
         std.debug.print("  Features:  {d}\n", .{result.lineCount()});
 
         if (fasm_path) |fp| {
-            fasm_gen.writeFasm(result, fp) catch |err| {
+            fasm_gen.writeFasm(allocator, result, fp) catch |err| {
                 std.debug.print("  Warning: Failed to write FASM to {s}: {}\n", .{ fp, err });
             };
             std.debug.print("  Output:    {s}\n", .{fp});

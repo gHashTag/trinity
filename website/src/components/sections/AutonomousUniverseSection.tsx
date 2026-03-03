@@ -60,11 +60,13 @@ export default function AutonomousUniverseSection() {
           transition={{ duration: 0.6 }}
           style={{ color: MATERIYA_COLOR, fontSize: 'clamp(20px, 6vw, 28px)', fontFamily: 'Outfit, sans-serif', textAlign: 'center', marginBottom: 24 }}
         >
-          {t('autonomousUniverse.title')}
+          <h3 style={{ color: MATERIYA_COLOR, fontSize: 28, fontFamily: 'Outfit, sans-serif', textAlign: 'center', marginBottom: 24 }}>
+            {t('autonomousUniverse.title')}
+          </h3>
+          <p style={{ color: 'rgba(255, 255, 255, 0.7)', textAlign: 'center', fontSize: 12, marginBottom: 16 }}>
+            {t('autonomousUniverse.description')}
+          </p>
         </motion.h2>
-        <p style={{ color: 'rgba(255, 255, 255, 0.7)', textAlign: 'center', fontSize: 12, marginBottom: 16 }}>
-          {t('autonomousUniverse.description')}
-        </p>
 
         {/* Mode Switcher */}
         <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 24, flexWrap: 'wrap' }}>
@@ -296,6 +298,7 @@ export default function AutonomousUniverseSection() {
             {data?.status || 'ready'}
           </span>
         </div>
+      </div>
 
       {/* Footer */}
       <div style={{ marginTop: 16, borderTop: '1px solid rgba(0, 204, 255, 0.1)', paddingTop: 12 }}>

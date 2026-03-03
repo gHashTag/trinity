@@ -41,6 +41,8 @@ pub const AllocatorStrategy = enum { none, param, arena, gpa };
 pub const Constant = struct {
     name: []const u8,
     value: f64,
+    string_value: []const u8,
+    is_string: bool,
     description: []const u8,
 };
 

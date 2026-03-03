@@ -1052,7 +1052,11 @@ pub const ZigCodeGen = struct {
             if (c.description.len > 0) {
                 try self.builder.writeFmt("/// {s}\n", .{c.description});
             }
-            try self.builder.writeFmt("pub const {s}: f64 = {d};\n", .{ c.name, c.value });
+            if (c.is_string) {
+                try self.builder.writeFmt("pub const {s}: []const u8 = \"{s}\";\n", .{ c.name, c.string_value });
+            } else {
+                try self.builder.writeFmt("pub const {s}: f64 = {d};\n", .{ c.name, c.value });
+            }
             try self.builder.newline();
         }
 

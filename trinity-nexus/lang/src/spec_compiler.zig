@@ -274,7 +274,7 @@ pub const SpecCompiler = struct {
 
         for (behaviors) |b| {
             for (b.test_cases.items) |tc| {
-                try self.writeTest(&tc, sanitizeIdent(b.name));
+                try self.writeTest(&tc, b.name);
                 self.tests_generated += 1;
             }
         }

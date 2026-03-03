@@ -319,19 +319,43 @@ fn generateCarry4Feature(allocator: Allocator, db: *const ForgeDB, cell: MappedC
     }
 
     // 2c) LUT INIT values for CARRY4 positions
+    // Each LUT computes O6 = identity(feedback_Q) for the carry chain S input.
+    // The carry feedback routes Q output back to specific LUT input pins:
+    //   A: IMUX_L1 = LUT I3 → identity on I3 = upper 0xF0F0F0F0
+    //   B: IMUX_L18 = LUT I2 → identity on I2 = upper 0xCCCCCCCC
+    //   C: IMUX_L29 = LUT I2 → identity on I2 = upper 0xCCCCCCCC
+    //   D: IMUX_L38 = LUT I3 → identity on I3 = upper 0xF0F0F0F0
+    // First tile position A uses NOT(I3) for counter increment with CIN=0.
+    // Format: range notation INIT[63:0] = 64'b... (matches fasm2frames expectation)
     {
         const lut_letters = [_]u8{ 'A', 'B', 'C', 'D' };
+        // Per-position INIT values: {upper_32_when_I6=1, lower_32_when_I6=0}
+        const carry_inits = [4]u64{
+            0xF0F0F0F0CCCCCCCC, // A: I3 identity (upper), I2 (lower)
+            0xCCCCCCCCF0F0F0F0, // B: I2 identity (upper), I3 (lower)
+            0xCCCCCCCCAAAAAAAA, // C: I2 identity (upper), I1 (lower)
+            0xF0F0F0F0AAAAAAAA, // D: I3 identity (upper), I1 (lower)
+        };
+        // First tile A: NOT(I3) for +1 counter with CIN=0
+        const first_a_init: u64 = 0x0F0F0F0FCCCCCCCC;
+
         for (lut_letters, 0..) |letter, pos| {
-            const init: u64 = if (is_first and pos == 0) 0x00000000FFFFFFFF else 0xFFFFFFFF00000000;
-            var bit_idx: u7 = 0;
-            while (bit_idx < 64) : (bit_idx += 1) {
-                const shift: u6 = @intCast(bit_idx);
-                if ((init >> shift) & 1 == 1) {
-                    try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.{s}_X0.{c}LUT.INIT[{d:0>2}]", .{
-                        tile_prefix, x, y, slice_prefix, letter, bit_idx,
-                    });
-                }
+            const init: u64 = if (is_first and pos == 0) first_a_init else carry_inits[pos];
+
+            // Emit as range: ALUT.INIT[63:0] = 64'b<binary>
+            var init_buf: [160]u8 = undefined;
+            var init_str: [64]u8 = undefined;
+            // Convert to binary string MSB-first (bit63 first)
+            var bit_pos: u7 = 0;
+            while (bit_pos < 64) : (bit_pos += 1) {
+                const shift: u6 = @intCast(63 - bit_pos);
+                init_str[bit_pos] = if ((init >> shift) & 1 == 1) '1' else '0';
             }
+            const init_line = std.fmt.bufPrint(&init_buf, "{s}_X{d}Y{d}.{s}_X0.{c}LUT.INIT[63:0] = 64'b{s}", .{
+                tile_prefix, x, y, slice_prefix, letter, &init_str,
+            }) catch continue;
+            const duped = try allocator.dupe(u8, init_line);
+            try result.features.append(allocator, FasmFeature{ .line = duped });
         }
     }
 
@@ -448,20 +472,20 @@ fn generateCarry4Feature(allocator: Allocator, db: *const ForgeDB, cell: MappedC
 
     // 8) LOGIC_OUTS — emit based on actual FF placement
     // Q outputs: connect FF output to tile's routing interconnect
-    // LOGIC_OUTS indices: X0: AQ=0,BQ=1,CQ=2,DQ=3; X1: AQ=4,BQ=5,CQ=6,DQ=7
-    const x0_q_indices = [_]u8{ 0, 1, 2, 3 }; // AQ, BQ, CQ, DQ
-    const x1_q_indices = [_]u8{ 4, 5, 6, 7 };
+    // From prjxray: X0 (LL slice) uses LOGIC_OUTS 4-7, X1 (L slice) uses LOGIC_OUTS 0-3
+    const x0_q_indices = [_]u8{ 4, 5, 6, 7 }; // X0(LL): AQ=4, BQ=5, CQ=6, DQ=7
+    const x1_q_indices = [_]u8{ 0, 1, 2, 3 }; // X1(L):  AQ=0, BQ=1, CQ=2, DQ=3
     for (0..4) |pos| {
         if (ff_x0[pos]) {
             try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.CLBLL_LOGIC_OUTS{d}.{s}_{c}Q", .{
-                tile_prefix, x, y, x0_q_indices[pos], l_prefix, letters[pos],
+                tile_prefix, x, y, x0_q_indices[pos], ll_prefix, letters[pos],
             });
         }
     }
     for (0..4) |pos| {
         if (ff_x1[pos]) {
             try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.CLBLL_LOGIC_OUTS{d}.{s}_{c}Q", .{
-                tile_prefix, x, y, x1_q_indices[pos], ll_prefix, letters[pos],
+                tile_prefix, x, y, x1_q_indices[pos], l_prefix, letters[pos],
             });
         }
     }
@@ -611,14 +635,21 @@ fn generateRoutingPips(allocator: Allocator, db: *const ForgeDB, result: *FasmRe
 // FASM Output
 // =============================================================================
 
-/// Write FASM features to a file.
-pub fn writeFasm(result: *const FasmResult, file_path: []const u8) !void {
+/// Write FASM features to a file, deduplicating identical lines.
+pub fn writeFasm(allocator: Allocator, result: *const FasmResult, file_path: []const u8) !void {
     const file = try std.fs.cwd().createFile(file_path, .{});
     defer file.close();
 
+    // Deduplicate: track which feature strings have been written
+    var seen = std.StringHashMap(void).init(allocator);
+    defer seen.deinit();
+
     for (result.features.items) |feature| {
-        try file.writeAll(feature.line);
-        try file.writeAll("\n");
+        const gop = try seen.getOrPut(feature.line);
+        if (!gop.found_existing) {
+            try file.writeAll(feature.line);
+            try file.writeAll("\n");
+        }
     }
 }
 
@@ -802,8 +833,9 @@ test "FASM feature count for mixed design" {
     var result = try generate(allocator, &db);
     defer result.deinit();
 
-    // LUT1(init=1): 1 per-bit feature
+    // LUT1(init=1): 1 per-bit feature + OUTMUX.O6 + NOCLKINV = 3
     // FF: 4 (ZINI + ZRST + FFSYNC + NOCLKINV)
-    // IOB IBUF: 3 (IN + IN_ONLY + PULLTYPE)
-    try std.testing.expectEqual(@as(usize, 8), result.lineCount());
+    // IOB IBUF: 5 (IN + IN_ONLY + PULLTYPE + IDELAY_TYPE_FIXED + ILOGIC ZINV_D)
+    // Total: 3 + 4 + 5 = 12
+    try std.testing.expectEqual(@as(usize, 12), result.lineCount());
 }

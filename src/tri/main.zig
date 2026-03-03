@@ -279,25 +279,31 @@ pub fn main() !void {
         .analyze => tri_context.runAnalyzeCommand(&state),
         .search_cmd => tri_context.runSearchCommand(&state, cmd_args),
         .context_info => tri_context.runContextInfoCommand(&state),
-        // Autonomous Evolution (Cycle 97)
-        .auto_commit => utils.runAutoCommitCommand(&state, cmd_args) catch |err| {
-            std.debug.print("Auto-commit error: {}\n", .{err});
+        .intelligence => tri_context.runIntelligenceCommand(allocator, &state, cmd_args) catch |err| {
+            std.debug.print("Intelligence error: {}\n", .{err});
         },
-        .ml_optimize => utils.runMLOptimizeCommand(&state, cmd_args) catch |err| {
-            std.debug.print("ML optimize error: {}\n", .{err});
-        },
-        .deploy_dashboard => utils.runDeployDashboardCommand(&state, cmd_args) catch |err| {
-            std.debug.print("Deploy dashboard error: {}\n", .{err});
-        },
-        .self_host => utils.runSelfHostCommand(&state, cmd_args) catch |err| {
-            std.debug.print("Self-host error: {}\n", .{err});
-        },
-        .safeguards_show => utils.runSafeguardsShowCommand(&state, cmd_args) catch |err| {
-            std.debug.print("Safeguards show error: {}\n", .{err});
-        },
-        .safeguards_disable => utils.runSafeguardsDisableCommand(&state, cmd_args) catch |err| {
-            std.debug.print("Safeguards disable error: {}\n", .{err});
-        },
+        // Temporal Engine v1.2-v1.3 (Orders #030-031)
+        .time => commands.runTimeCommand(allocator, cmd_args),
+        .install => commands.runInstallCommand(allocator),
+        .build_cmd => commands.runBuildCommand(allocator),
+        .deck_generate => commands.runDeckCommand(allocator),
+        .fpga_demo => commands.runFpgaDemoCommand(allocator, cmd_args),
+        .sacred_full_cycle => commands.runSacredFullCycleCommand(allocator),
+        // Quantum Trinity v1.4 (Order #032)
+        .quantum => commands.runQuantumCommand(allocator, cmd_args),
+        .release_cosmic => commands.runReleaseCosmicCommand(allocator),
+        // Omega Phase v2.0 (Order #033)
+        .omega_cmd => commands.runOmegaPhaseCommand(allocator, cmd_args),
+        .all_cmd => commands.runAllCommand(allocator, cmd_args),
+        .holo_cmd => commands.runHoloCommand(allocator, cmd_args),
+        .release_absolute => commands.runReleaseAbsoluteCommand(allocator),
+        .omega_evolve => commands.runOmegaEvolveCommand(allocator),
+        // TRINITY OS v1.0 (Order #034)
+        .launch => commands.runLaunchCommand(allocator, cmd_args),
+        // NEEDLE - Structural Editor Core
+        .needle => try commands.runNeedleCommand(allocator, cmd_args),
+        .needle_search => try commands.runNeedleSearchCommand(allocator, cmd_args),
+        .needle_check => try commands.runNeedleCheckCommand(allocator, cmd_args),
         .deps => utils.printInfo(),
         .info => utils.printInfo(),
         .version => utils.printVersion(),
