@@ -17,6 +17,7 @@ const CommandFn = @import("tri_command_registry.zig").CommandFn;
 const bio_commands = @import("tri_biology.zig");
 const cosmos_commands = @import("tri_cosmology.zig");
 const neuro_commands = @import("tri_neuro.zig");
+const music_commands = @import("tri_music.zig");
 const tri_context = @import("tri_context.zig");
 const commands = @import("tri_commands.zig");
 const pipeline = @import("tri_pipeline.zig");
@@ -230,6 +231,107 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
         .examples = &.{ "tri sacred", "tri sacred trinity" },
         .execute = struct { fn exec (a: std.mem.Allocator, args: []const []const u8) !void {
             return math_commands.runSacredCommand(a, args);
+        } }.exec,
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // MUSIC v1.0 - Sacred Acoustics
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    try registry.register(.{
+        .name = "music",
+        .aliases = &.{ "audio", "sound" },
+        .description = "Sacred Music v1.0 — φ-based acoustics",
+        .long_help = "Sacred acoustics with golden ratio harmonics, Solfeggio frequencies, and resonance patterns.",
+        .category = .sacred,
+        .examples = &.{ "tri music" },
+        .has_subcommands = true,
+        .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
+            return music_commands.cmdShowSacredFrequencies(a, args);
+        } }.exec,
+    });
+
+    try registry.register(.{
+        .name = "frequency",
+        .aliases = &.{ "freq", "note-freq" },
+        .description = "Calculate frequency from note",
+        .long_help = "Convert musical note to frequency (Hz). Supports standard (440Hz) and sacred (432Hz) tuning.",
+        .category = .sacred,
+        .examples = &.{ "tri frequency A4", "tri freq C5 --sacred" },
+        .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
+            return music_commands.cmdNoteToFrequency(a, args);
+        } }.exec,
+    });
+
+    try registry.register(.{
+        .name = "scale",
+        .aliases = &.{},
+        .description = "Display musical scale notes and frequencies",
+        .long_help = "Show scale notes with frequencies. Supports major, minor, pentatonic, blues, φ-scale, and Solfeggio.",
+        .category = .sacred,
+        .examples = &.{ "tri scale C major", "tri scale D phi", "tri scale A pentatonic-minor" },
+        .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
+            return music_commands.cmdShowScale(a, args);
+        } }.exec,
+    });
+
+    try registry.register(.{
+        .name = "chord",
+        .aliases = &.{},
+        .description = "Analyze chord harmonics",
+        .long_help = "Display chord notes with frequencies and φ-harmonic analysis.",
+        .category = .sacred,
+        .examples = &.{ "tri chord C major", "tri chord A phi", "tri chord D seventh" },
+        .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
+            return music_commands.cmdAnalyzeChord(a, args);
+        } }.exec,
+    });
+
+    try registry.register(.{
+        .name = "resonance",
+        .aliases = &.{ "res" },
+        .description = "Calculate resonance patterns",
+        .long_help = "Show harmonics and φ-harmonics for a given frequency.",
+        .category = .sacred,
+        .examples = &.{ "tri resonance 432", "tri resonance 528 10" },
+        .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
+            return music_commands.cmdCalculateResonance(a, args);
+        } }.exec,
+    });
+
+    try registry.register(.{
+        .name = "waveform",
+        .aliases = &.{ "wave", "osc" },
+        .description = "Generate waveform samples",
+        .long_help = "Visualize waveform patterns: sine, square, triangle, sawtooth, φ-spiral, sacred-pulse.",
+        .category = .sacred,
+        .examples = &.{ "tri waveform phi-spiral", "tri wave sine 32" },
+        .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
+            return music_commands.cmdGenerateWaveform(a, args);
+        } }.exec,
+    });
+
+    try registry.register(.{
+        .name = "harmony",
+        .aliases = &.{},
+        .description = "Analyze harmonic relationship between frequencies",
+        .long_help = "Calculate consonance scores, φ-ratios, and sacred frequency matches.",
+        .category = .sacred,
+        .examples = &.{ "tri harmony 432 528", "tri harmony 396 417 528 639 741 852" },
+        .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
+            return music_commands.cmdAnalyzeHarmony(a, args);
+        } }.exec,
+    });
+
+    try registry.register(.{
+        .name = "phi-series",
+        .aliases = &.{ "phi-freq", "phi-frequencies" },
+        .description = "Show φ frequency series",
+        .long_help = "Generate frequency series based on φ^n multiplier.",
+        .category = .sacred,
+        .examples = &.{ "tri phi-series 432", "tri phi-series 1 12" },
+        .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
+            return music_commands.cmdPhiSeries(a, args);
         } }.exec,
     });
 
@@ -1600,6 +1702,81 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
         .category = .sacred,
         .execute = struct { fn exec (a: std.mem.Allocator, args: []const []const u8) !void {
             return commands.runOmegaCommand(a, args);
+        } }.exec,
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // DEPIN - Global Mesh + Omega Economy (Cycle #114)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    try registry.register(.{
+        .name = "wallet",
+        .aliases = &.{},
+        .description = "Wallet management — connect, balance, claim rewards",
+        .long_help = "Manage your DePIN wallet.\nSubcommands: connect <provider>, balance, claim [amount], address, history",
+        .category = .depn,
+        .examples = &.{
+            "tri wallet connect metamask",
+            "tri wallet balance",
+            "tri wallet claim 50.0",
+            "tri wallet address",
+            "tri wallet history",
+        },
+        .execute = struct { fn exec (a: std.mem.Allocator, args: []const []const u8) !void {
+            return commands.runWalletCommand(a, args);
+        } }.exec,
+    });
+
+    try registry.register(.{
+        .name = "mesh",
+        .aliases = &.{},
+        .description = "Global mesh management — status, topology, discovery",
+        .long_help = "Manage the Global Mesh network.\nSubcommands: status, topology, discover, regions, health",
+        .category = .depn,
+        .examples = &.{
+            "tri mesh status",
+            "tri mesh topology",
+            "tri mesh discover",
+            "tri mesh regions",
+            "tri mesh health",
+        },
+        .execute = struct { fn exec (a: std.mem.Allocator, args: []const []const u8) !void {
+            return commands.runMeshCommand(a, args);
+        } }.exec,
+    });
+
+    try registry.register(.{
+        .name = "reputation",
+        .aliases = &.{ "rep" },
+        .description = "Reputation system — show node reputation, leaderboard",
+        .long_help = "Check node reputation and Omega status.\nSubcommands: show, leaderboard, omega-status, history",
+        .category = .depn,
+        .examples = &.{
+            "tri reputation show",
+            "tri reputation leaderboard",
+            "tri reputation omega-status",
+            "tri reputation history",
+        },
+        .execute = struct { fn exec (a: std.mem.Allocator, args: []const []const u8) !void {
+            return commands.runReputationCommand(a, args);
+        } }.exec,
+    });
+
+    try registry.register(.{
+        .name = "hardware",
+        .aliases = &.{},
+        .description = "Hardware deployment — deploy, status, stop nodes",
+        .long_help = "Manage hardware node deployment.\nSubcommands: deploy [multi] [count], status, stop-all, info",
+        .category = .depn,
+        .examples = &.{
+            "tri hardware deploy",
+            "tri hardware deploy multi 10",
+            "tri hardware status",
+            "tri hardware stop-all",
+            "tri hardware info",
+        },
+        .execute = struct { fn exec (a: std.mem.Allocator, args: []const []const u8) !void {
+            return commands.runHardwareCommand(a, args);
         } }.exec,
     });
 
