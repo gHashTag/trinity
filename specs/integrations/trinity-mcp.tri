@@ -334,6 +334,155 @@ mcp_tools:
             replacement: { type: string }
 
   # ─────────────────────────────────────────────────────────────────────────────
+  # NEEDLE TIER 2 — Graph Multi-File Refactoring
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: needle_graph_build
+    description: "Build complete call graph with VSA embeddings for project"
+    category: needle
+    safety_level: low
+    args_schema:
+      root_dir:
+        type: string
+        description: "Project root directory"
+        default: "."
+      enable_vsa:
+        type: boolean
+        description: "Enable VSA embedding generation"
+        default: true
+
+  - name: needle_graph_refactor
+    description: "Rename symbol across entire project with semantic awareness"
+    category: needle
+    safety_level: needle
+    args_schema:
+      symbol:
+        type: string
+        description: "Current symbol name"
+        required: true
+      new_name:
+        type: string
+        description: "New symbol name"
+        required: true
+      semantic_aware:
+        type: boolean
+        description: "Use VSA to find semantically similar symbols"
+        default: true
+      similarity_threshold:
+        type: number
+        description: "Minimum similarity for semantic matches"
+        default: 0.85
+      scope:
+        type: string
+        enum: [file, project]
+        description: "Refactor scope"
+      preview:
+        type: boolean
+        description: "Only preview changes"
+
+  - name: needle_graph_extract
+    description: "Extract function/method from code block"
+    category: needle
+    safety_level: needle
+    args_schema:
+      file:
+        type: string
+        required: true
+      start_line:
+        type: integer
+      end_line:
+        type: integer
+      function_name:
+        type: string
+        required: true
+
+  - name: needle_graph_visualize
+    description: "Generate graph visualization (DOT/JSON) with VSA clustering"
+    category: needle
+    safety_level: low
+    args_schema:
+      format:
+        type: string
+        enum: [dot, json, json_html]
+      focus:
+        type: string
+        description: "Symbol or file to focus on"
+      show_vsa:
+        type: boolean
+        description: "Show VSA similarity clusters"
+
+  - name: needle_graph_affected
+    description: "Find all files affected by symbol change (with semantic impact)"
+    category: needle
+    safety_level: low
+    args_schema:
+      symbol:
+        type: string
+        required: true
+      include_transitive:
+        type: boolean
+        default: true
+      semantic_impact:
+        type: boolean
+        description: "Include semantically related symbols"
+        default: true
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # NEEDLE TIER 3 — Semantic VSA
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: needle_graph_vsa_search
+    description: "Search for semantically similar symbols by code or intent"
+    category: needle
+    safety_level: low
+    args_schema:
+      query:
+        type: string
+        description: "Code snippet or intent description"
+        required: true
+      top_k:
+        type: integer
+        description: "Number of results to return"
+        default: 10
+      min_similarity:
+        type: number
+        description: "Minimum similarity threshold"
+        default: 0.75
+
+  - name: needle_semantic_replace
+    description: "Replace code by semantic meaning (not just pattern)"
+    category: needle
+    safety_level: needle
+    args_schema:
+      intent:
+        type: string
+        description: "Intent description of what to replace"
+        required: true
+      replacement_intent:
+        type: string
+        description: "Intent description of replacement"
+        required: true
+      file:
+        type: string
+        description: "File to apply replacement"
+      preview:
+        type: boolean
+        description: "Preview changes only"
+        default: true
+
+  - name: needle_vsa_index
+    description: "Build semantic VSA index for codebase"
+    category: needle
+    safety_level: low
+    args_schema:
+      root_dir:
+        type: string
+        description: "Project root directory"
+        default: "."
+      embedding_dim:
+        type: integer
+        description: "Embedding dimension (384 or 768)"
+        default: 384
+
+  # ─────────────────────────────────────────────────────────────────────────────
   # SACRED MATHEMATICS
   # ─────────────────────────────────────────────────────────────────────────────
   - name: tri_constants

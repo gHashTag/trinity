@@ -30,6 +30,9 @@ pub const symbols = @import("symbols.zig");
 // Safe multi-file refactoring (Tier 2)
 pub const refactor = @import("refactor.zig");
 
+// Semantic VSA (Tier 3)
+pub const vsa = @import("vsa.zig");
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // PUBLIC API - Core Types
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -126,3 +129,26 @@ pub const previewRename = refactor.previewRename;
 pub const applyRename = refactor.applyRename;
 pub const extractFunction = refactor.extractFunction;
 pub const generateDiffPreview = refactor.generateDiffPreview;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC API - Semantic VSA (Tier 3)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const SemanticVector = vsa.SemanticVector;
+pub const VSARule = vsa.VSARule;
+pub const VSAMatch = vsa.VSAMatch;
+pub const VSASafetyLevel = vsa.SafetyLevel;
+pub const SemanticIndex = vsa.SemanticIndex;
+pub const IndexType = vsa.IndexType;
+
+// VSA functions
+pub const generateHashEmbedding = vsa.generateHashEmbedding;
+pub const generateVSAEmbedding = vsa.generateVSAEmbedding;
+pub const cosineSimilarity = vsa.cosineSimilarity;
+pub const l2Norm = vsa.l2Norm;
+pub const euclideanDistance = vsa.euclideanDistance;
+pub const bind = vsa.bind;
+pub const unbind = vsa.unbind;
+pub const bundle = vsa.bundle;
+pub const buildSemanticIndex = vsa.buildSemanticIndex;
+pub const semanticSearch = vsa.semanticSearch;
