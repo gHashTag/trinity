@@ -18,6 +18,7 @@ const bio_commands = @import("tri_biology.zig");
 const cosmos_commands = @import("tri_cosmology.zig");
 const neuro_commands = @import("tri_neuro.zig");
 const music_commands = @import("tri_music.zig");
+const quantum_commands = @import("tri_quantum.zig");
 const tri_context = @import("tri_context.zig");
 const commands = @import("tri_commands.zig");
 const pipeline = @import("tri_pipeline.zig");
@@ -332,6 +333,95 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
         .examples = &.{ "tri phi-series 432", "tri phi-series 1 12" },
         .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
             return music_commands.cmdPhiSeries(a, args);
+        } }.exec,
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SACRED QUANTUM v18.0 - Divine Layer
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    try registry.register(.{
+        .name = "quantum",
+        .aliases = &.{ "q", "sacred-quantum" },
+        .description = "Sacred Quantum v18.0 — Consciousness + Entanglement",
+        .long_help = "Quantum consciousness metrics, entanglement visualization, and sacred superposition states.",
+        .category = .sacred,
+        .examples = &.{ "tri quantum", "tri quantum consciousness 528 10" },
+        .has_subcommands = true,
+        .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
+            return quantum_commands.cmdQuantumHelp(a, args);
+        } }.exec,
+    });
+
+    try registry.register(.{
+        .name = "q-states",
+        .aliases = &.{ "quantum-states", "states" },
+        .description = "Show quantum states (|0⟩, |1⟩, |+⟩, |−⟩, |φ⟩)",
+        .long_help = "Display all quantum states with probabilities and entropy.",
+        .category = .sacred,
+        .examples = &.{ "tri q-states" },
+        .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
+            return quantum_commands.cmdQuantumStates(a, args);
+        } }.exec,
+    });
+
+    try registry.register(.{
+        .name = "bell",
+        .aliases = &.{ "bell-states", "entanglement" },
+        .description = "Show Bell states (maximally entangled)",
+        .long_help = "Display the four Bell states used in quantum entanglement.",
+        .category = .sacred,
+        .examples = &.{ "tri bell" },
+        .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
+            return quantum_commands.cmdBellStates(a, args);
+        } }.exec,
+    });
+
+    try registry.register(.{
+        .name = "consciousness",
+        .aliases = &.{ "quantum-consciousness", "qc" },
+        .description = "Calculate quantum consciousness metrics",
+        .long_help = "Analyze quantum coherence, entanglement, and φ-resonance between frequency and brain waves.",
+        .category = .sacred,
+        .examples = &.{ "tri consciousness 528 10", "tri qc 432 7.83" },
+        .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
+            return quantum_commands.cmdConsciousness(a, args);
+        } }.exec,
+    });
+
+    try registry.register(.{
+        .name = "q-music",
+        .aliases = &.{ "quantum-music", "qm" },
+        .description = "Quantum music resonance analysis",
+        .long_help = "Calculate quantum entanglement matrix and φ-coherence for musical frequencies.",
+        .category = .sacred,
+        .examples = &.{ "tri q-music 396 528 852", "tri quantum music 432 528" },
+        .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
+            return quantum_commands.cmdQuantumMusic(a, args);
+        } }.exec,
+    });
+
+    try registry.register(.{
+        .name = "q-viz",
+        .aliases = &.{ "quantum-viz", "qviz" },
+        .description = "Quantum visualization data (Bloch sphere)",
+        .long_help = "Generate visualization data for quantum states: Bloch angles, probabilities, entropy, RGB color.",
+        .category = .sacred,
+        .examples = &.{ "tri q-viz phi", "tri q-viz plus" },
+        .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
+            return quantum_commands.cmdQuantumViz(a, args);
+        } }.exec,
+    });
+
+    try registry.register(.{
+        .name = "q-constants",
+        .aliases = &.{ "quantum-constants", "qconst" },
+        .description = "Show sacred quantum constants",
+        .long_help = "Display Planck constant, fine structure constant, φ-quantum, and sacred coherence time.",
+        .category = .sacred,
+        .examples = &.{ "tri q-constants" },
+        .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
+            return quantum_commands.cmdQuantumConstants(a, args);
         } }.exec,
     });
 
