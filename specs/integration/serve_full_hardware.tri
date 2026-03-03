@@ -1,0 +1,163 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# SERVE FULL HARDWARE v1.0 — DePIN Hardware Bootstrap Integration
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Purpose: Extend serve_full with hardware discovery, multi-cluster, and DePIN bootstrap
+# Extends: full-serve-v1.tri (HTTP server + API Gateway)
+# New: UDP discovery, hardware node registration, cluster orchestration
+#
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: serve_full_hardware
+version: "1.0.0"
+extends: full-serve-v1
+language: zig
+module: serve_full_hardware
+
+types:
+  HardwareNode:
+    fields:
+      node_id: String
+      host: String
+      port: Int
+      role: String  # primary, secondary, worker
+      capabilities: List<String>
+      status: String  # online, offline, degraded
+      last_seen: Int  # unix timestamp
+
+  DiscoveryPacket:
+    fields:
+      node_id: String
+      port: Int
+      role: String
+      capabilities: List<String>
+      timestamp: Int
+
+  ClusterState:
+    fields:
+      nodes: List<HardwareNode>
+      primary: String
+      epoch: Int
+      quorum: Int
+
+  ServeConfigWithHardware:
+    fields:
+      port: Int
+      host: String
+      daemon: Bool
+      verbose: Bool
+      help: Bool
+      bind_address: String
+      # Hardware extensions
+      enable_discovery: Bool
+      discovery_port: Int
+      cluster_role: String
+      node_id: String
+
+behaviors:
+  - name: startServeWithHardware
+    given: ServeConfigWithHardware with discovery enabled
+    when: Server starts, UDP discovery broadcast on discovery_port
+    then: Joins cluster, registers node, begins accepting HTTP/API traffic
+
+  - name: handleDiscoveryPacket
+    given: DiscoveryPacket from remote node
+    when: UDP packet received on discovery_port
+    then: Update ClusterState, respond with own node info
+
+  - name: electPrimary
+    given: ClusterState with no primary or primary failed
+    when: Quorum check triggers election
+    then: Select highest node_id as primary, broadcast new state
+
+  - name: syncClusterState
+    given: ClusterState and local node list
+    when: State sync interval elapsed or node joined/left
+    then: Gossip updated state to all nodes
+
+  - name: handleHealthCheck
+    given: GET /health request
+    when: Health check from client or cluster node
+    then: Return 200 OK with cluster status, node count, role
+
+test_cases:
+  - name: hardware_bootstrap_3_nodes
+    given:
+      node_1: { port: 9001, role: "primary", discovery: true }
+      node_2: { port: 9002, role: "secondary", discovery: true }
+      node_3: { port: 9003, role: "worker", discovery: true }
+    expected:
+      cluster_formed: true
+      primary_elected: true
+      all_nodes_discovered: true
+      health_ok: true
+
+  - name: discovery_response_time
+    given:
+      discovery_port: 7999
+      expected_nodes: 3
+    expected:
+      discovery_time_ms: < 5000
+      response_rate: 1.0
+
+implementation: |
+  const std = @import("std");
+  const Allocator = std.mem.Allocator;
+  
+  pub fn startServeWithHardware(allocator: Allocator, config: ServeConfigWithHardware) !void {
+      _ = allocator;
+      
+      // Import base serve functionality
+      // const base_serve = @import("full-serve-v1");
+      // try base_serve.executeServeCommand(allocator, config);
+      
+      if (config.enable_discovery) {
+          // Start UDP discovery on config.discovery_port
+          // Spawn discovery listener thread
+          // Broadcast presence packet
+          // Handle incoming discovery packets
+      }
+      
+      // HTTP server continues running
+      // Additional routes for hardware:
+      // - GET /cluster - Return cluster state
+      // - POST /cluster/join - Manual node join
+      // - GET /cluster/nodes - List all nodes
+  }
+  
+  pub fn handleDiscoveryPacket(allocator: Allocator, packet: DiscoveryPacket, state: *ClusterState) !void {
+      _ = allocator;
+      
+      // Validate packet timestamp (reject stale packets)
+      // Check if node already in state.nodes
+      // If new: add to state.nodes
+      // If existing: update last_seen
+      // If primary: update state.primary
+      
+      // Respond with own node info
+  }
+  
+  pub fn electPrimary(state: *ClusterState) !void {
+      // If state.primary is in state.nodes and online: no action
+      // Else: find node with highest node_id
+      // Set state.primary
+      // Broadcast new state to all nodes
+  }
+  
+  pub fn syncClusterState(allocator: Allocator, state: ClusterState) !void {
+      _ = allocator;
+      // Serialize state to JSON
+      // Send to all nodes in state.nodes
+      // Wait for acknowledgments
+  }
+  
+  pub fn handleHealthCheck(state: ClusterState) ![]const u8 {
+      // Return JSON with:
+      // - status: "ok"
+      // - cluster_size: state.nodes.len
+      // - primary: state.primary
+      // - role: local_node.role
+      // - uptime: seconds since start
+  }
