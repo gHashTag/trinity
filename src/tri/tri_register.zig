@@ -18,7 +18,8 @@ const bio_commands = @import("tri_biology.zig");
 const cosmos_commands = @import("tri_cosmology.zig");
 const neuro_commands = @import("tri_neuro.zig");
 const music_commands = @import("tri_music.zig");
-const quantum_commands = @import("tri_quantum.zig");
+// TODO: quantum_commands - tri_quantum.zig not found
+// const quantum_commands = @import("tri_quantum.zig");
 const tri_context = @import("tri_context.zig");
 const commands = @import("tri_commands.zig");
 const pipeline = @import("tri_pipeline.zig");
@@ -228,7 +229,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
         .aliases = &.{},
         .description = "Sacred mathematics utilities",
         .long_help = "Various sacred mathematics operations and visualizations.",
-        .category = .sacred,
+        .category = .science,
         .examples = &.{ "tri sacred", "tri sacred trinity" },
         .execute = struct { fn exec (a: std.mem.Allocator, args: []const []const u8) !void {
             return math_commands.runSacredCommand(a, args);
@@ -244,7 +245,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
         .aliases = &.{ "audio", "sound" },
         .description = "Sacred Music v1.0 — φ-based acoustics",
         .long_help = "Sacred acoustics with golden ratio harmonics, Solfeggio frequencies, and resonance patterns.",
-        .category = .sacred,
+        .category = .science,
         .examples = &.{ "tri music" },
         .has_subcommands = true,
         .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
@@ -257,7 +258,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
         .aliases = &.{ "freq", "note-freq" },
         .description = "Calculate frequency from note",
         .long_help = "Convert musical note to frequency (Hz). Supports standard (440Hz) and sacred (432Hz) tuning.",
-        .category = .sacred,
+        .category = .science,
         .examples = &.{ "tri frequency A4", "tri freq C5 --sacred" },
         .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
             return music_commands.cmdNoteToFrequency(a, args);
@@ -269,7 +270,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
         .aliases = &.{},
         .description = "Display musical scale notes and frequencies",
         .long_help = "Show scale notes with frequencies. Supports major, minor, pentatonic, blues, φ-scale, and Solfeggio.",
-        .category = .sacred,
+        .category = .science,
         .examples = &.{ "tri scale C major", "tri scale D phi", "tri scale A pentatonic-minor" },
         .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
             return music_commands.cmdShowScale(a, args);
@@ -281,7 +282,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
         .aliases = &.{},
         .description = "Analyze chord harmonics",
         .long_help = "Display chord notes with frequencies and φ-harmonic analysis.",
-        .category = .sacred,
+        .category = .science,
         .examples = &.{ "tri chord C major", "tri chord A phi", "tri chord D seventh" },
         .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
             return music_commands.cmdAnalyzeChord(a, args);
@@ -293,7 +294,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
         .aliases = &.{ "res" },
         .description = "Calculate resonance patterns",
         .long_help = "Show harmonics and φ-harmonics for a given frequency.",
-        .category = .sacred,
+        .category = .science,
         .examples = &.{ "tri resonance 432", "tri resonance 528 10" },
         .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
             return music_commands.cmdCalculateResonance(a, args);
@@ -305,7 +306,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
         .aliases = &.{ "wave", "osc" },
         .description = "Generate waveform samples",
         .long_help = "Visualize waveform patterns: sine, square, triangle, sawtooth, φ-spiral, sacred-pulse.",
-        .category = .sacred,
+        .category = .science,
         .examples = &.{ "tri waveform phi-spiral", "tri wave sine 32" },
         .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
             return music_commands.cmdGenerateWaveform(a, args);
@@ -317,7 +318,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
         .aliases = &.{},
         .description = "Analyze harmonic relationship between frequencies",
         .long_help = "Calculate consonance scores, φ-ratios, and sacred frequency matches.",
-        .category = .sacred,
+        .category = .science,
         .examples = &.{ "tri harmony 432 528", "tri harmony 396 417 528 639 741 852" },
         .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
             return music_commands.cmdAnalyzeHarmony(a, args);
@@ -329,7 +330,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
         .aliases = &.{ "phi-freq", "phi-frequencies" },
         .description = "Show φ frequency series",
         .long_help = "Generate frequency series based on φ^n multiplier.",
-        .category = .sacred,
+        .category = .science,
         .examples = &.{ "tri phi-series 432", "tri phi-series 1 12" },
         .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
             return music_commands.cmdPhiSeries(a, args);
@@ -339,91 +340,93 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
     // ═══════════════════════════════════════════════════════════════════════════
     // SACRED QUANTUM v18.0 - Divine Layer
     // ═══════════════════════════════════════════════════════════════════════════
+    // TODO: Commented out due to missing tri_quantum.zig file
+    // Re-enable when quantum_commands module is available
 
-    try registry.register(.{
-        .name = "quantum",
-        .aliases = &.{ "q", "sacred-quantum" },
-        .description = "Sacred Quantum v18.0 — Consciousness + Entanglement",
-        .long_help = "Quantum consciousness metrics, entanglement visualization, and sacred superposition states.",
-        .category = .sacred,
-        .examples = &.{ "tri quantum", "tri quantum consciousness 528 10" },
-        .has_subcommands = true,
-        .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
-            return quantum_commands.cmdQuantumHelp(a, args);
-        } }.exec,
-    });
+    // try registry.register(.{
+    //     .name = "quantum",
+    //     .aliases = &.{ "q", "sacred-quantum" },
+    //     .description = "Sacred Quantum v18.0 — Consciousness + Entanglement",
+    //     .long_help = "Quantum consciousness metrics, entanglement visualization, and sacred superposition states.",
+    //     .category = .science,
+    //     .examples = &.{ "tri quantum", "tri quantum consciousness 528 10" },
+    //     .has_subcommands = true,
+    //     .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
+    //         return quantum_commands.cmdQuantumHelp(a, args);
+    //     } }.exec,
+    // });
 
-    try registry.register(.{
-        .name = "q-states",
-        .aliases = &.{ "quantum-states", "states" },
-        .description = "Show quantum states (|0⟩, |1⟩, |+⟩, |−⟩, |φ⟩)",
-        .long_help = "Display all quantum states with probabilities and entropy.",
-        .category = .sacred,
-        .examples = &.{ "tri q-states" },
-        .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
-            return quantum_commands.cmdQuantumStates(a, args);
-        } }.exec,
-    });
+    // try registry.register(.{
+    //     .name = "q-states",
+    //     .aliases = &.{ "quantum-states", "states" },
+    //     .description = "Show quantum states (|0⟩, |1⟩, |+⟩, |−⟩, |φ⟩)",
+    //     .long_help = "Display all quantum states with probabilities and entropy.",
+    //     .category = .science,
+    //     .examples = &.{ "tri q-states" },
+    //     .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
+    //         return quantum_commands.cmdQuantumStates(a, args);
+    //     } }.exec,
+    // });
 
-    try registry.register(.{
-        .name = "bell",
-        .aliases = &.{ "bell-states", "entanglement" },
-        .description = "Show Bell states (maximally entangled)",
-        .long_help = "Display the four Bell states used in quantum entanglement.",
-        .category = .sacred,
-        .examples = &.{ "tri bell" },
-        .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
-            return quantum_commands.cmdBellStates(a, args);
-        } }.exec,
-    });
+    // try registry.register(.{
+    //     .name = "bell",
+    //     .aliases = &.{ "bell-states", "entanglement" },
+    //     .description = "Show Bell states (maximally entangled)",
+    //     .long_help = "Display the four Bell states used in quantum entanglement.",
+    //     .category = .science,
+    //     .examples = &.{ "tri bell" },
+    //     .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
+    //         return quantum_commands.cmdBellStates(a, args);
+    //     } }.exec,
+    // });
 
-    try registry.register(.{
-        .name = "consciousness",
-        .aliases = &.{ "quantum-consciousness", "qc" },
-        .description = "Calculate quantum consciousness metrics",
-        .long_help = "Analyze quantum coherence, entanglement, and φ-resonance between frequency and brain waves.",
-        .category = .sacred,
-        .examples = &.{ "tri consciousness 528 10", "tri qc 432 7.83" },
-        .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
-            return quantum_commands.cmdConsciousness(a, args);
-        } }.exec,
-    });
+    // try registry.register(.{
+    //     .name = "consciousness",
+    //     .aliases = &.{ "quantum-consciousness", "qc" },
+    //     .description = "Calculate quantum consciousness metrics",
+    //     .long_help = "Analyze quantum coherence, entanglement, and φ-resonance between frequency and brain waves.",
+    //     .category = .science,
+    //     .examples = &.{ "tri consciousness 528 10", "tri qc 432 7.83" },
+    //     .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
+    //         return quantum_commands.cmdConsciousness(a, args);
+    //     } }.exec,
+    // });
 
-    try registry.register(.{
-        .name = "q-music",
-        .aliases = &.{ "quantum-music", "qm" },
-        .description = "Quantum music resonance analysis",
-        .long_help = "Calculate quantum entanglement matrix and φ-coherence for musical frequencies.",
-        .category = .sacred,
-        .examples = &.{ "tri q-music 396 528 852", "tri quantum music 432 528" },
-        .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
-            return quantum_commands.cmdQuantumMusic(a, args);
-        } }.exec,
-    });
+    // try registry.register(.{
+    //     .name = "q-music",
+    //     .aliases = &.{ "quantum-music", "qm" },
+    //     .description = "Quantum music resonance analysis",
+    //     .long_help = "Calculate quantum entanglement matrix and φ-coherence for musical frequencies.",
+    //     .category = .science,
+    //     .examples = &.{ "tri q-music 396 528 852", "tri quantum music 432 528" },
+    //     .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
+    //         return quantum_commands.cmdQuantumMusic(a, args);
+    //     } }.exec,
+    // });
 
-    try registry.register(.{
-        .name = "q-viz",
-        .aliases = &.{ "quantum-viz", "qviz" },
-        .description = "Quantum visualization data (Bloch sphere)",
-        .long_help = "Generate visualization data for quantum states: Bloch angles, probabilities, entropy, RGB color.",
-        .category = .sacred,
-        .examples = &.{ "tri q-viz phi", "tri q-viz plus" },
-        .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
-            return quantum_commands.cmdQuantumViz(a, args);
-        } }.exec,
-    });
+    // try registry.register(.{
+    //     .name = "q-viz",
+    //     .aliases = &.{ "quantum-viz", "qviz" },
+    //     .description = "Quantum visualization data (Bloch sphere)",
+    //     .long_help = "Generate visualization data for quantum states: Bloch angles, probabilities, entropy, RGB color.",
+    //     .category = .science,
+    //     .examples = &.{ "tri q-viz phi", "tri q-viz plus" },
+    //     .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
+    //         return quantum_commands.cmdQuantumViz(a, args);
+    //     } }.exec,
+    // });
 
-    try registry.register(.{
-        .name = "q-constants",
-        .aliases = &.{ "quantum-constants", "qconst" },
-        .description = "Show sacred quantum constants",
-        .long_help = "Display Planck constant, fine structure constant, φ-quantum, and sacred coherence time.",
-        .category = .sacred,
-        .examples = &.{ "tri q-constants" },
-        .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
-            return quantum_commands.cmdQuantumConstants(a, args);
-        } }.exec,
-    });
+    // try registry.register(.{
+    //     .name = "q-constants",
+    //     .aliases = &.{ "quantum-constants", "qconst" },
+    //     .description = "Show sacred quantum constants",
+    //     .long_help = "Display Planck constant, fine structure constant, φ-quantum, and sacred coherence time.",
+    //     .category = .science,
+    //     .examples = &.{ "tri q-constants" },
+    //     .execute = struct { fn exec(a: std.mem.Allocator, args: []const []const u8) !void {
+    //         return quantum_commands.cmdQuantumConstants(a, args);
+    //     } }.exec,
+    // });
 
     // ═══════════════════════════════════════════════════════════════════════════
     // AI & CHAT
@@ -1674,7 +1677,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
         .name = "intelligence",
         .aliases = &.{},
         .description = "Sacred Intelligence system",
-        .category = .sacred,
+        .category = .science,
         .execute = struct { fn exec (a: std.mem.Allocator, args: []const []const u8) !void {
             if (g_state) |s| tri_context.runIntelligenceCommand(a, s, args) catch |err| {
                 std.debug.print("Error: {}\n", .{err});
@@ -1749,7 +1752,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
         .name = "identity",
         .aliases = &.{},
         .description = "Sacred identity",
-        .category = .sacred,
+        .category = .science,
         .execute = struct { fn exec (a: std.mem.Allocator, args: []const []const u8) !void {
             return commands.runIdentityCommand(a, args);
         } }.exec,
@@ -1759,7 +1762,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
         .name = "swarm",
         .aliases = &.{},
         .description = "Sacred swarm intelligence",
-        .category = .sacred,
+        .category = .science,
         .execute = struct { fn exec (a: std.mem.Allocator, args: []const []const u8) !void {
             return commands.runSwarmCommand(a, args);
         } }.exec,
@@ -1769,7 +1772,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
         .name = "govern",
         .aliases = &.{},
         .description = "Sacred governance",
-        .category = .sacred,
+        .category = .science,
         .execute = struct { fn exec (a: std.mem.Allocator, args: []const []const u8) !void {
             return commands.runGovernCommand(a, args);
         } }.exec,
@@ -1789,7 +1792,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
         .name = "omega",
         .aliases = &.{},
         .description = "Omega phase",
-        .category = .sacred,
+        .category = .science,
         .execute = struct { fn exec (a: std.mem.Allocator, args: []const []const u8) !void {
             return commands.runOmegaCommand(a, args);
         } }.exec,
@@ -1940,7 +1943,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
         .name = "sacred-full-cycle",
         .aliases = &.{ "sacred_full_cycle" },
         .description = "Sacred full cycle",
-        .category = .sacred,
+        .category = .science,
         .execute = struct { fn exec (a: std.mem.Allocator, args: []const []const u8) !void {
             _ = args;
             return commands.runSacredFullCycleCommand(a);
@@ -1955,7 +1958,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
         .name = "quantum",
         .aliases = &.{},
         .description = "Quantum Trinity",
-        .category = .sacred,
+        .category = .science,
         .execute = struct { fn exec (a: std.mem.Allocator, args: []const []const u8) !void {
             return commands.runQuantumCommand(a, args);
         } }.exec,
@@ -1965,7 +1968,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
         .name = "release-cosmic",
         .aliases = &.{ "release_cosmic" },
         .description = "Release cosmic energy",
-        .category = .sacred,
+        .category = .science,
         .execute = struct { fn exec (a: std.mem.Allocator, args: []const []const u8) !void {
             _ = args;
             return commands.runReleaseCosmicCommand(a);
@@ -1980,7 +1983,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
         .name = "omega-cmd",
         .aliases = &.{ "omega_cmd" },
         .description = "Omega command",
-        .category = .sacred,
+        .category = .science,
         .execute = struct { fn exec (a: std.mem.Allocator, args: []const []const u8) !void {
             return commands.runOmegaPhaseCommand(a, args);
         } }.exec,
@@ -1990,7 +1993,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
         .name = "all-cmd",
         .aliases = &.{ "all_cmd" },
         .description = "All command",
-        .category = .sacred,
+        .category = .science,
         .execute = struct { fn exec (a: std.mem.Allocator, args: []const []const u8) !void {
             return commands.runAllCommand(a, args);
         } }.exec,
@@ -2000,7 +2003,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
         .name = "holo-cmd",
         .aliases = &.{ "holo_cmd" },
         .description = "Holo command",
-        .category = .sacred,
+        .category = .science,
         .execute = struct { fn exec (a: std.mem.Allocator, args: []const []const u8) !void {
             return commands.runHoloCommand(a, args);
         } }.exec,
@@ -2010,7 +2013,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
         .name = "release-absolute",
         .aliases = &.{ "release_absolute" },
         .description = "Release absolute",
-        .category = .sacred,
+        .category = .science,
         .execute = struct { fn exec (a: std.mem.Allocator, args: []const []const u8) !void {
             _ = args;
             return commands.runReleaseAbsoluteCommand(a);
@@ -2021,7 +2024,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
         .name = "omega-evolve",
         .aliases = &.{ "omega_evolve" },
         .description = "Omega evolve",
-        .category = .sacred,
+        .category = .science,
         .execute = struct { fn exec (a: std.mem.Allocator, args: []const []const u8) !void {
             _ = args;
             return commands.runOmegaEvolveCommand(a);

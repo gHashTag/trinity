@@ -1,0 +1,57 @@
+# Trinity MCP Server v2.1 - Production Docker Image
+# φ² + 1/φ² = 3 = TRINITY
+
+# Stage 1: Build
+FROM ubuntu:24.04 AS builder
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    wget \
+    xz-utils \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Zig 0.15.2 and build in same RUN to preserve PATH
+RUN wget -O /tmp/zig.tar.xz https://ziglang.org/download/0.15.2/zig-linux-x86_64-linux-0.15.2.tar.xz \
+    && tar -x -C /usr/local -f /tmp/zig.tar.xz \
+    && rm /tmp/zig.tar.xz \
+    && /usr/local/zig-linux-x86_64-0.15.2/zig version
+
+# Copy repository
+WORKDIR /app
+COPY . .
+
+# Build Trinity MCP server using full path to zig
+RUN /usr/local/zig-linux-x86_64-0.15.2/zig build -Drelease-safe=true trinity-mcp
+
+# Stage 2: Runtime
+FROM ubuntu:24.04 AS runtime
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && update-ca-certificates
+
+# Create non-root user
+RUN useradd -m -u 1001 trinity
+
+# Copy built binary from builder stage
+COPY --from=builder /app/zig-out/bin/trinity-mcp /usr/local/bin/trinity-mcp
+
+# Set permissions
+RUN chmod +x /usr/local/bin/trinity-mcp
+
+USER trinity
+WORKDIR /app
+
+# Expose MCP port
+EXPOSE 8899
+
+# Default: run MCP server
+ENTRYPOINT ["/usr/local/bin/trinity-mcp"]
+
+# Labels for observability
+LABEL version="2.1.0" \
+      description="Trinity MCP Server" \
+      mcp.version="2025-06-18"
