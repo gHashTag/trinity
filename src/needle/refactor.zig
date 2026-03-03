@@ -8,17 +8,17 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const graph = @import("graph.zig");
+const graph_mod = @import("graph.zig");
 const symbols = @import("symbols.zig");
 const matcher = @import("matcher.zig");
 const edit = @import("edit.zig");
 const check = @import("check.zig");
 
-const CallGraph = graph.CallGraph;
-const EditPlan = graph.EditPlan;
-const MultiFileEditResult = graph.MultiFileEditResult;
-const UsageList = graph.UsageList;
-const UsageLocation = graph.UsageLocation;
+const CallGraph = graph_mod.CallGraph;
+const EditPlan = graph_mod.EditPlan;
+const MultiFileEditResult = graph_mod.MultiFileEditResult;
+const UsageList = graph_mod.UsageList;
+const UsageLocation = graph_mod.UsageLocation;
 const MatchResult = matcher.MatchResult;
 const MatchResultList = matcher.MatchResultList;
 
@@ -415,4 +415,167 @@ pub fn generateDiffPreview(
     }
 
     return result.toOwnedSlice();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ASTGRAPH-BASED REFACTORING (Tier 2.3)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const zig_parser = @import("zig_parser.zig");
+const ASTGraph = zig_parser.ASTGraph;
+
+/// Refactoring result using ASTGraph
+pub const RefactorResult = struct {
+    success: bool,
+    files_modified: usize,
+    total_changes: usize,
+    errors: std.ArrayList([]const u8),
+    diffs: std.ArrayList([]const u8),
+
+    pub fn init(allocator: std.mem.Allocator) RefactorResult {
+        return .{
+            .success = true,
+            .files_modified = 0,
+            .total_changes = 0,
+            .errors = std.ArrayList([]const u8).init(allocator),
+            .diffs = std.ArrayList([]const u8).init(allocator),
+        };
+    }
+
+    pub fn deinit(self: *RefactorResult, allocator: std.mem.Allocator) void {
+        for (self.errors.items) |msg| {
+            allocator.free(msg);
+        }
+        self.errors.deinit(allocator);
+
+        for (self.diffs.items) |diff| {
+            allocator.free(diff);
+        }
+        self.diffs.deinit(allocator);
+    }
+
+    pub fn addError(self: *RefactorResult, allocator: std.mem.Allocator, msg: []const u8) !void {
+        try self.errors.append(allocator, try allocator.dupe(u8, msg));
+        self.success = false;
+    }
+
+    pub fn addDiff(self: *RefactorResult, allocator: std.mem.Allocator, diff: []const u8) !void {
+        try self.diffs.append(allocator, diff);
+    }
+};
+
+/// Rename a symbol across all files in the AST graph
+pub fn renameSymbol(
+    allocator: std.mem.Allocator,
+    graph: *ASTGraph,
+    old_name: []const u8,
+    new_name: []const u8,
+    preview_only: bool,
+) !RefactorResult {
+    var result = RefactorResult.init(allocator);
+    errdefer result.deinit(allocator);
+
+    // Find all references to the symbol
+    const refs = try graph.findReferences(old_name);
+    defer allocator.free(refs);
+
+    // Track files that need modification
+    var files_to_modify = std.StringHashMap(void).init(allocator);
+    defer {
+        var iter = files_to_modify.iterator();
+        while (iter.next()) |entry| {
+            allocator.free(entry.key_ptr.*);
+        }
+        files_to_modify.deinit();
+    }
+
+    // Group references by file
+    for (refs) |ref| {
+        try files_to_modify.put(try allocator.dupe(u8, ref.file), {});
+    }
+
+    // Process each file
+    var file_iter = files_to_modify.iterator();
+    while (file_iter.next()) |entry| {
+        const file_path = entry.key_ptr.*;
+
+        const content = std.fs.cwd().readFileAlloc(allocator, file_path, 10 * 1024 * 1024) catch |err| {
+            try result.addError(allocator, try std.fmt.allocPrint(allocator, "Failed to read {s}: {}", .{file_path, err}));
+            continue;
+        };
+        defer allocator.free(content);
+
+        var new_content = std.ArrayList(u8).init(allocator);
+        defer new_content.deinit(allocator);
+
+        // Simple string replacement for now (can be improved with AST-based replacement)
+        var content_copy = content;
+        var replaced: bool = false;
+
+        while (std.mem.indexOf(u8, content_copy, old_name)) |idx| {
+            try new_content.appendSlice(content_copy[0..idx]);
+            try new_content.appendSlice(new_name);
+            content_copy = content_copy[idx + old_name.len..];
+            replaced = true;
+        }
+        try new_content.appendSlice(content_copy);
+
+        if (replaced) {
+            if (!preview_only) {
+                try std.fs.cwd().writeFile(.{ .sub_path = file_path }, new_content.items);
+            }
+
+            result.files_modified += 1;
+            result.total_changes += 1;
+
+            // Generate diff
+            const diff = try generateDiffPreview(allocator, file_path, content, new_content.items);
+            try result.addDiff(allocator, diff);
+        }
+    }
+
+    // Also rename the definition
+    if (graph.findSymbol(old_name)) |defs| {
+        for (defs) |def| {
+            const content = std.fs.cwd().readFileAlloc(allocator, def.file, 10 * 1024 * 1024) catch |err| {
+                try result.addError(allocator, try std.fmt.allocPrint(allocator, "Failed to read {s}: {}", .{def.file, err}));
+                continue;
+            };
+            defer allocator.free(content);
+
+            // Replace definition
+            var new_content = std.ArrayList(u8).init(allocator);
+            defer new_content.deinit(allocator);
+
+            var content_copy = content;
+            var replaced: bool = false;
+
+            while (std.mem.indexOf(u8, content_copy, old_name)) |idx| {
+                try new_content.appendSlice(content_copy[0..idx]);
+                try new_content.appendSlice(new_name);
+                content_copy = content_copy[idx + old_name.len..];
+                replaced = true;
+            }
+            try new_content.appendSlice(content_copy);
+
+            if (replaced and !preview_only) {
+                try std.fs.cwd().writeFile(.{ .sub_path = def.file }, new_content.items);
+                result.total_changes += 1;
+            }
+        }
+    }
+
+    return result;
+}
+
+/// Find all usages of a symbol across the project
+pub fn findUsages(
+    graph: *ASTGraph,
+    symbol_name: []const u8,
+) ![]const zig_parser.SymbolRef {
+    _ = graph;
+    _ = symbol_name;
+    // This is a placeholder - the actual implementation uses graph.findReferences
+    // The allocator parameter was removed since findReferences returns an owned slice
+    return &.{};
 }

@@ -1,0 +1,210 @@
+name: "needle-autonomous-refactor-engine"
+version: "1.0.0"
+tier: 4
+description: "Autonomous refactoring engine using semanticFind + HNSW + Ralph Loop"
+
+problem:
+  - Manual refactoring is error-prone and time-consuming
+  - Need intent-aware code transformation using semantic understanding
+  - Must guarantee safety with VSA validation before applying changes
+
+solution:
+  - AutonomousRefactorEngine: orchestrates semantic search, refactoring, and validation
+  - Uses semanticFind (HNSW) to locate code by intent, not patterns
+  - Applies Ralph Loop: Plan → Generate → Validate → Apply → Verify
+  - VSA safety gates prevent breaking changes
+
+types:
+  - RefactorIntent:
+      fields:
+        - description: String           # Natural language intent ("extract validation logic")
+        - confidence: Float             # Intent classification confidence
+        - scope: RefactorScope          # function/file/module/global
+        - safety_level: SafetyLevel     # low/medium/high/critical
+
+  - RefactorScope:
+      variants:
+        - function                       # Single function
+        - file                           # Entire file
+        - module                         # All files in module
+        - global                         # Cross-module
+
+  - RefactorPlan:
+      fields:
+        - intent: RefactorIntent
+        - targets: []SymbolLocation      # Locations to refactor
+        - transformations: []Transformation
+        - validation_rules: []VSARule
+        - rollback_plan: RollbackPlan
+
+  - Transformation:
+      fields:
+        - type: TransformType
+        - location: SymbolLocation
+        - old_code: String
+        - new_code: String
+        - vsa_score: Float               # Safety validation score
+
+  - TransformType:
+      variants:
+        - extract_function
+        - inline_function
+        - rename_symbol
+        - move_declaration
+        - simplify_logic
+        - add_type_annotation
+
+  - SymbolLocation:
+      fields:
+        - file: String
+        - symbol: String
+        - start_line: USize
+        - end_line: USize
+        - node_type: NodeType
+
+  - RefactorResult:
+      fields:
+        - success: Bool
+        - transformations_applied: USize
+        - files_modified: USize
+        - vsa_validation_passed: Bool
+        - tests_passed: Bool
+        - rollback_triggered: Bool
+        - errors: []String
+        - warnings: []String
+
+  - AutonomousRefactorEngine:
+      fields:
+        - config: RefactorConfig
+        - semantic_index: SemanticIndex
+        - hnsw_index: HNSWIndex
+        - vsa_rules: []VSARule
+        - ralph_loop: RalphLoop
+        - allocator: Allocator
+
+      functions:
+        - init(config) -> AutonomousRefactorEngine
+        - analyzeIntent(description) -> RefactorIntent
+        - planRefactor(intent) -> RefactorPlan
+        - executePlan(plan) -> RefactorResult
+        - validatePlan(plan) -> ValidationResult
+        - applyRefactor(plan) -> RefactorResult
+        - rollback(result) -> void
+
+  - RalphLoop:
+      description: "Autonomous development cycle with quality gates"
+
+      states:
+        - ANALYZE:    Understand intent + locate code
+        - PLAN:       Generate refactor plan
+        - VALIDATE:   VSA safety checks
+        - APPLY:      Apply transformations
+        - VERIFY:     Run tests + verify
+        - ROLLBACK:   Undo if validation fails
+
+      transitions:
+        - ANALYZE → PLAN    (intent understood)
+        - PLAN → VALIDATE   (plan generated)
+        - VALIDATE → APPLY  (VSA checks pass)
+        - VALIDATE → ROLLBACK (VSA checks fail)
+        - APPLY → VERIFY    (changes applied)
+        - VERIFY → COMPLETE (tests pass)
+        - VERIFY → ROLLBACK (tests fail)
+
+behaviors:
+  - name: analyze_intent
+    given: "User intent description"
+    when: "analyzeIntent() called"
+    then: "Classify intent + locate target symbols via semanticFind"
+
+  - name: plan_refactor
+    given: "RefactorIntent with located targets"
+    when: "planRefactor() called"
+    then: "Generate transformations with VSA validation rules"
+
+  - name: validate_plan
+    given: "RefactorPlan with transformations"
+    when: "validatePlan() called"
+    then: "Run VSA rules + return validation score"
+
+  - name: apply_refactor
+    given: "Validated RefactorPlan"
+    when: "applyRefactor() called"
+    then: "Apply transformations + run tests + report result"
+
+  - name: rollback_on_failure
+    given: "RefactorResult with validation_failed or tests_failed"
+    when: "rollback triggered"
+    then: "Restore all modified files from backups"
+
+acceptance_criteria:
+  - semanticFind locates code by intent in <100ms (for 1000 symbols)
+  - RefactorPlan generated with VSA validation score > 0.85
+  - Ralph Loop completes all 5 states without rollback
+  - zig build needle-autonomous-test shows 10/10 scenarios passed
+  - Rollback restores original state within 1 second
+
+benchmarks:
+  - name: analyze_intent
+    input: "Extract validation logic from parseZig"
+    target: "<50ms"
+
+  - name: plan_refactor
+    input: "Refactor with 5 transformations"
+    target: "<100ms"
+
+  - name: validate_plan
+    input: "RefactorPlan with 20 VSA rules"
+    target: "<200ms"
+
+  - name: full_ralph_loop
+    input: "Simple refactor (extract function)"
+    target: "<500ms"
+
+modules:
+  - autonomous_refactor.zig:
+      description: "AutonomousRefactorEngine + RalphLoop state machine"
+      exports:
+        - AutonomousRefactorEngine
+        - RefactorIntent
+        - RefactorPlan
+        - RefactorResult
+        - RalphLoop
+
+  - semantic_find.zig:
+      description: "HNSW-backed semantic code search"
+      functions:
+        - semanticFind(index, query, k) -> []SymbolLocation
+        - buildSemanticIndex(graph) -> SemanticIndex
+
+tests:
+  - name: intent_classification
+    given: "User provides refactor intent"
+    when: "analyzeIntent() called"
+    then: "Intent classified with confidence > 0.8"
+
+  - name: semantic_locate
+    given: "Intent 'extract validation logic'"
+    when: "semanticFind() called"
+    then: "Returns relevant code locations"
+
+  - name: vsa_validation
+    given: "RefactorPlan with transformations"
+    when: "validatePlan() called"
+    then: "VSA score computed + unsafe changes rejected"
+
+  - name: ralph_loop_success
+    given: "Valid refactor intent"
+    when: "Ralph Loop executed"
+    then: "All states complete → success"
+
+  - name: ralph_loop_rollback
+    given: "Invalid refactor (breaks tests)"
+    when: "Ralph Loop executed"
+    then: "Rollback triggered → original state restored"
+
+dependencies:
+  - Tier 3: semanticFind (HNSW-backed)
+  - Tier 3: VSA validation rules
+  - Tier 2: AST graph (ZigParser)
+  - Tier 1: TextEditor + EditEngine

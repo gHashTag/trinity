@@ -1208,6 +1208,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .imports = &.{
             .{ .name = "treesitter_zig", .module = ts_zig_mod },
+            .{ .name = "trinity_vsa", .module = vsa_tri },
         },
     });
 
@@ -1216,6 +1217,10 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/needle/mod.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "treesitter_zig", .module = ts_zig_mod },
+                .{ .name = "trinity_vsa", .module = vsa_tri },
+            },
         }),
     });
 
@@ -1261,6 +1266,24 @@ pub fn build(b: *std.Build) void {
     // const run_needle_mcp = b.addRunArtifact(needle_mcp);
     // const needle_mcp_step = b.step("needle-mcp", "Run NEEDLE MCP Server (stdio transport)");
     // needle_mcp_step.dependOn(&run_needle_mcp.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // HNSW Benchmark — Tier 3.5 Performance Benchmark
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    const hnsw_bench = b.addExecutable(.{
+        .name = "hnsw-bench",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/needle/hnsw_bench.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+        }),
+    });
+    b.installArtifact(hnsw_bench);
+
+    const run_hnsw_bench = b.addRunArtifact(hnsw_bench);
+    const hnsw_bench_step = b.step("hnsw-bench", "Run HNSW performance benchmarks");
+    hnsw_bench_step.dependOn(&run_hnsw_bench.step);
 
     // ═══════════════════════════════════════════════════════════════════════════
     // TRINITY-MCP — Full Trinity MCP Server (35+ tools)

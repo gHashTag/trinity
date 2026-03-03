@@ -6,6 +6,9 @@
 //
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// HNSW Index (Tier 3.5)
+pub const hnsw = @import("hnsw.zig");
+
 // Core types and configuration
 pub const needle = @import("needle.zig");
 
@@ -20,6 +23,9 @@ pub const edit = @import("edit.zig");
 
 // Quality gates and safety checks
 pub const check = @import("check.zig");
+
+// Zig parser (Tier 2)
+pub const zig_parser = @import("zig_parser.zig");
 
 // Graph multi-file refactoring (Tier 2)
 pub const graph = @import("graph.zig");
@@ -86,6 +92,23 @@ pub const NeedleChecker = check.NeedleChecker;
 // Convenience functions
 pub const checkSource = check.checkSource;
 pub const checkFile = check.checkFile;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC API - Zig Parser (Tier 2)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const ZigNode = zig_parser.ZigNode;
+pub const NodeType = zig_parser.NodeType;
+pub const ASTGraph = zig_parser.ASTGraph;
+pub const SymbolRef = zig_parser.SymbolRef;
+pub const SymbolDef = zig_parser.SymbolDef;
+pub const GraphStats = zig_parser.GraphStats;
+
+pub const ZigParser = zig_parser.ZigParser;
+
+// Zig parser functions
+pub const parseZig = zig_parser.parseZig;
+pub const buildASTGraph = zig_parser.buildASTGraph;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PUBLIC API - Graph (Tier 2)
@@ -158,6 +181,18 @@ pub const unbind = vsa.unbind;
 pub const bundle = vsa.bundle;
 pub const buildSemanticIndex = vsa.buildSemanticIndex;
 pub const semanticSearch = vsa.semanticSearch;
+pub const semanticFind = vsa.semanticFind;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC API - HNSW Index (Tier 3.5)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const HNSWIndex = hnsw.HNSWIndex;
+pub const HNSWConfig = hnsw.HNSWConfig;
+pub const SearchResult = hnsw.SearchResult;
+pub const DEFAULT_M = hnsw.DEFAULT_M;
+pub const DEFAULT_EF_CONSTRUCTION = hnsw.DEFAULT_EF_CONSTRUCTION;
+pub const DEFAULT_EF_SEARCH = hnsw.DEFAULT_EF_SEARCH;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PUBLIC API - Safe Cross-File (Tier 4)
@@ -199,3 +234,82 @@ pub const OmegaAgent = omega.OmegaAgent;
 // Omega functions
 pub const omegaInit = omega.omegaInit;
 pub const omegaHealthCheck = omega.omegaHealthCheck;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MCP AST Query Tool (Tier 2.4)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const mcp_ast = @import("mcp_ast.zig");
+pub const McpServer = mcp_ast.McpServer;
+pub const McpRequest = mcp_ast.McpRequest;
+pub const McpResponse = mcp_ast.McpResponse;
+pub const McpMethod = mcp_ast.McpMethod;
+pub const parseMcpRequest = mcp_ast.parseRequest;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Tier 3 VSA Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const std = @import("std");
+
+test "vsa.1: Hash-based embedding generation" {
+    const allocator = std.testing.allocator;
+    const embedding = try vsa.generateHashEmbedding(allocator, "test", "sig", "ctx", 64);
+    defer allocator.free(embedding);
+    try std.testing.expectEqual(@as(usize, 64), embedding.len);
+    const norm = vsa.l2Norm(embedding);
+    try std.testing.expectApproxEqAbs(@as(f32, 1.0), norm, 0.01);
+}
+
+test "vsa.2: SemanticVector init and deinit" {
+    const allocator = std.testing.allocator;
+    var vec = try vsa.SemanticVector.init(allocator, "testSymbol", 128);
+    defer vec.deinit();
+    try std.testing.expectEqual(@as(usize, 128), vec.embedding.len);
+    try std.testing.expectEqualStrings("testSymbol", vec.symbol_id);
+}
+
+test "vsa.3: SemanticIndex init" {
+    const allocator = std.testing.allocator;
+    var index = try vsa.SemanticIndex.init(allocator, 256);
+    defer index.deinit();
+    try std.testing.expectEqual(@as(usize, 256), index.embedding_dim);
+}
+
+test "vsa.4: Add vector to index" {
+    const allocator = std.testing.allocator;
+    var index = try vsa.SemanticIndex.init(allocator, 128);
+    defer index.deinit();
+    var vec = try vsa.SemanticVector.init(allocator, "add_test", 128);
+    defer vec.deinit();
+    try index.addVector(vec);
+    try std.testing.expectEqual(@as(usize, 1), index.vectors.count());
+}
+
+test "vsa.5: Cosine similarity of identical vectors" {
+    const vec = [_]f32{ 0.5, 0.5, 0.5, 0.5 };
+    const similarity = vsa.cosineSimilarity(&vec, &vec);
+    try std.testing.expectApproxEqAbs(@as(f32, 1.0), similarity, 0.001);
+}
+
+test "vsa.6: L2 norm calculation" {
+    const vec = [_]f32{ 3.0, 4.0 };
+    const norm = vsa.l2Norm(&vec);
+    try std.testing.expectApproxEqAbs(@as(f32, 5.0), norm, 0.01);
+}
+
+test "vsa.7: Euclidean distance" {
+    const vec1 = [_]f32{ 0.0, 0.0 };
+    const vec2 = [_]f32{ 3.0, 4.0 };
+    const dist = vsa.euclideanDistance(&vec1, &vec2);
+    try std.testing.expectApproxEqAbs(@as(f32, 5.0), dist, 0.01);
+}
+
+test "vsa.8: VSAMatch confidence computation" {
+    var match = vsa.VSAMatch.init(std.testing.allocator);
+    defer match.deinit();
+    match.similarity = 0.8;
+    match.context_match = 0.6;
+    match.computeConfidence();
+    try std.testing.expectApproxEqAbs(@as(f32, 0.74), match.confidence, 0.01);
+}
