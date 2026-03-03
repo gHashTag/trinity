@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import Section from '../Section';
 import {
@@ -15,6 +15,8 @@ import {
   type ChemSacredResponse, type ChemElementResponse, type ChemBalanceResponse,
   type ChemPredictResponse, type ExtendedElement,
 } from '../../services/chatApi';
+
+const MoleculeViewer3D = lazy(() => import('../molecule3d/MoleculeViewer3D'));
 
 // ============================================================================
 // Style constants
@@ -618,6 +620,7 @@ export default function SacredChemistryWidget() {
   const [source, setSource] = useState<'live' | 'local'>('local');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [show3D, setShow3D] = useState(false);
 
   const clearResults = () => {
     setMoleculeResult(null);
@@ -627,6 +630,7 @@ export default function SacredChemistryWidget() {
     setExtendedElement(undefined);
     setError(null);
     setSource('local');
+    setShow3D(false);
   };
 
   const handleAnalyze = useCallback(async () => {
@@ -890,6 +894,44 @@ export default function SacredChemistryWidget() {
 
         {/* Results */}
         {moleculeResult && <MoleculeResultView result={moleculeResult} source={source} />}
+        {moleculeResult && (
+          <div style={{ marginTop: '0.75rem' }}>
+            <button
+              onClick={() => setShow3D(!show3D)}
+              style={{
+                ...GLASS_STYLE,
+                padding: '0.4rem 1rem',
+                cursor: 'pointer',
+                color: show3D ? GOLDEN : 'rgba(255,255,255,0.6)',
+                border: `1px solid ${show3D ? 'rgba(255,215,0,0.4)' : 'rgba(255,255,255,0.15)'}`,
+                fontSize: '0.7rem',
+                fontFamily: MONO,
+                background: show3D ? 'rgba(255,215,0,0.1)' : 'rgba(255,255,255,0.05)',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              {show3D ? 'Hide 3D' : 'Show 3D'}
+            </button>
+            {show3D && (
+              <Suspense fallback={
+                <div style={{
+                  height: 300,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  ...GLASS_STYLE,
+                  marginTop: '0.5rem',
+                }}>
+                  <span style={{ color: GOLDEN, fontFamily: MONO, fontSize: '0.8rem' }}>
+                    Loading 3D viewer...
+                  </span>
+                </div>
+              }>
+                <MoleculeViewer3D formula={input} />
+              </Suspense>
+            )}
+          </div>
+        )}
         {elementResult && <ElementResultView result={elementResult} source={source} extendedElement={extendedElement} />}
         {balanceResult && <BalanceResultView result={balanceResult} />}
         {predictResult && <PredictionResultView result={predictResult} />}
