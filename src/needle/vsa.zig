@@ -12,6 +12,8 @@ const std = @import("std");
 const trinity_vsa = @import("trinity_vsa");
 const zig_parser = @import("zig_parser.zig");
 const hnsw = @import("hnsw.zig");
+const ivf = @import("ivf.zig");
+const brute_simd = @import("ann_brute_simd.zig");
 
 // Re-export core VSA operations (HybridBigInt-based)
 pub const HybridBigInt = trinity_vsa.HybridBigInt;
@@ -28,6 +30,12 @@ pub const cosineSimilarityVSA = trinity_vsa.cosineSimilarity;
 pub const DEFAULT_EMBEDDING_DIM: usize = 384;
 pub const DEFAULT_SIMILARITY_THRESHOLD: f32 = 0.85;
 pub const DEFAULT_TOP_K: usize = 10;
+
+// Threshold for using IVF instead of HNSW (IVF is better for 10k+ symbols)
+pub const IVF_THRESHOLD: usize = 5000;
+
+// Tier 4.2: Persistent cache file path
+pub const IVF_CACHE_PATH: []const u8 = "/tmp/needle_ivf_cache.bin";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -164,27 +172,34 @@ pub const SafetyLevel = enum {
 /// Semantic index for fast similarity search
 pub const SemanticIndex = struct {
     vectors: std.StringHashMap(SemanticVector),
-    // HNSW index for O(log N) search
+    // HNSW index for O(log N) search (small-medium scale)
     hnsw_index: ?*hnsw.HNSWIndex,
+    // IVF index for large-scale search (10k+ symbols)
+    ivf_index: ?*ivf.IVFIndex,
+    // Brute+SIMD index for exact search (<7k symbols) - WINNER from ann-bench
+    brute_index: ?*brute_simd.BruteIndex,
     // Simplified: removed vsa_rules ArrayList for Zig 0.15 compatibility
     embedding_dim: usize,
     index_type: IndexType,
     allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator, embedding_dim: usize) !SemanticIndex {
-        const hnsw_idx = try allocator.create(hnsw.HNSWIndex);
-        hnsw_idx.* = try hnsw.HNSWIndex.init(allocator, .{
+        // WINNER from ann-bench: Brute+SIMD for <7k symbols
+        // Instant build (0ms), 100% accuracy, competitive up to 5k
+        const brute_idx = try allocator.create(brute_simd.BruteIndex);
+        brute_idx.* = try brute_simd.BruteIndex.init(allocator, .{
             .dim = embedding_dim,
-            .M = 16,
-            .ef_construction = 200,
-            .ef_search = 50,
+            .distance_metric = .cosine,
+            .use_simd = true,
         });
 
         return .{
             .vectors = std.StringHashMap(SemanticVector).init(allocator),
-            .hnsw_index = hnsw_idx,
+            .hnsw_index = null, // HNSW no longer default
+            .ivf_index = null,
+            .brute_index = brute_idx, // Brute+SIMD is now default
             .embedding_dim = embedding_dim,
-            .index_type = .hnsw,
+            .index_type = .flat, // Using flat search via BruteIndex
             .allocator = allocator,
         };
     }
@@ -200,6 +215,16 @@ pub const SemanticIndex = struct {
             idx.deinit();
             self.allocator.destroy(idx);
         }
+
+        if (self.ivf_index) |idx| {
+            idx.deinit();
+            self.allocator.destroy(idx);
+        }
+
+        if (self.brute_index) |idx| {
+            idx.deinit();
+            self.allocator.destroy(idx);
+        }
     }
 
     /// Add a semantic vector to the index
@@ -207,13 +232,67 @@ pub const SemanticIndex = struct {
         const cloned = try vec.clone();
         try self.vectors.put(cloned.symbol_id, cloned);
 
-        // Also add to HNSW index
+        // Also add to BruteIndex (default)
+        if (self.brute_index) |idx| {
+            // Generate a numeric ID from symbol name (simple hash)
+            var hasher = std.hash.Wyhash.init(0);
+            hasher.update(cloned.symbol_id);
+            const id = hasher.final();
+
+            try idx.insert(id, cloned.symbol_id, cloned.embedding);
+        }
+
+        // Also add to HNSW index (if enabled)
         if (self.hnsw_index) |idx| {
             try idx.insert(cloned.symbol_id, cloned.embedding);
         }
+
+        // IVF requires building all vectors at once via buildIVFFromVectors()
     }
 
-    /// Search for similar vectors using HNSW for O(log N) complexity
+    /// Build IVF index from existing vectors (Tier 4.1)
+    pub fn buildIVFFromVectors(self: *SemanticIndex) !void {
+        const n_vectors = self.vectors.count();
+        if (n_vectors < IVF_THRESHOLD) return; // Not worth it for small datasets
+
+        // Create IVF config
+        var config = ivf.IVFConfig.init(n_vectors, self.embedding_dim);
+        config.nprobe = 16; // Search 16 nearest clusters
+
+        // Initialize IVF index
+        const ivf_idx = try self.allocator.create(ivf.IVFIndex);
+        ivf_idx.* = try ivf.IVFIndex.init(self.allocator, config);
+        self.ivf_index = ivf_idx;
+
+        // Build symbol list for IVF
+        var symbols = std.ArrayList(ivf.Symbol){ .items = &.{}, .capacity = 0 };
+        defer {
+            for (symbols.items) |*s| {
+                if (s.id.len > 0) self.allocator.free(s.id);
+                if (s.file.len > 0) self.allocator.free(s.file);
+            }
+            symbols.deinit(self.allocator);
+        }
+
+        var vec_iter = self.vectors.iterator();
+        while (vec_iter.next()) |entry| {
+            const vec = entry.value_ptr.*;
+            const id_copy = try self.allocator.dupe(u8, vec.symbol_id);
+            const file_copy = try self.allocator.dupe(u8, vec.file);
+            try symbols.append(self.allocator, .{
+                .id = id_copy,
+                .embedding = vec.embedding,
+                .file = file_copy,
+                .line = vec.line,
+            });
+        }
+
+        // Build IVF index
+        try ivf_idx.build(symbols);
+        self.index_type = .ivf;
+    }
+
+    /// Search for similar vectors using BruteSIMD/IVF/HNSW for best performance
     pub fn search(self: *SemanticIndex, query: []const f32, top_k: usize, min_similarity: f32) !std.ArrayList(VSAMatch) {
         var results = std.ArrayList(VSAMatch).empty;
         errdefer {
@@ -223,8 +302,69 @@ pub const SemanticIndex = struct {
             results.deinit(self.allocator);
         }
 
-        // Use HNSW index if available
-        if (self.hnsw_index) |idx| {
+        // WINNER from ann-bench: Prefer Brute+SIMD for <7k symbols (100% accuracy, instant build)
+        if (self.brute_index) |idx| {
+            // Brute+SIMD search - exact results with SIMD acceleration
+            const brute_results = try idx.search(query, top_k * 2, self.allocator);
+            defer {
+                for (brute_results) |*r| {
+                    self.allocator.free(r.symbol_id);
+                }
+                self.allocator.free(brute_results);
+            }
+
+            // Convert BruteIndex results to VSAMatch
+            for (brute_results) |sr| {
+                // Convert distance to similarity
+                const similarity = 1.0 - sr.distance; // Cosine distance to similarity
+                if (similarity < min_similarity) continue;
+
+                if (self.vectors.get(sr.symbol_id)) |vec| {
+                    var match = VSAMatch.init(self.allocator);
+                    match.symbol_id = try self.allocator.dupe(u8, vec.symbol_id);
+                    match.file = try self.allocator.dupe(u8, vec.file);
+                    match.line = vec.line;
+                    match.node_type = vec.node_type;
+                    match.similarity = similarity;
+                    match.context_match = similarity;
+                    match.computeConfidence();
+                    try results.append(self.allocator, match);
+
+                    if (results.items.len >= top_k) break;
+                }
+            }
+        } else if (self.ivf_index) |idx| {
+            // IVF search - uses squared Euclidean distance, convert to similarity
+            const ivf_results = try idx.search(query, top_k * 2, self.allocator);
+            defer {
+                for (ivf_results) |*r| {
+                    r.deinit(self.allocator);
+                }
+                self.allocator.free(ivf_results);
+            }
+
+            // Convert IVF results to VSAMatch
+            for (ivf_results) |sr| {
+                // Convert squared Euclidean distance to cosine-like similarity
+                const similarity = @max(0.0, 1.0 - sr.distance / 2.0);
+                if (similarity < min_similarity) continue;
+
+                if (self.vectors.get(sr.symbol_id)) |vec| {
+                    var match = VSAMatch.init(self.allocator);
+                    match.symbol_id = try self.allocator.dupe(u8, vec.symbol_id);
+                    match.file = try self.allocator.dupe(u8, vec.file);
+                    match.line = vec.line;
+                    match.node_type = vec.node_type;
+                    match.similarity = similarity;
+                    match.context_match = similarity;
+                    match.computeConfidence();
+                    try results.append(self.allocator, match);
+
+                    if (results.items.len >= top_k) break;
+                }
+            }
+        } else if (self.hnsw_index) |idx| {
+            // HNSW search
             const search_results = try idx.search(query, top_k * 2, self.allocator);
             defer {
                 for (search_results) |*r| {
@@ -456,6 +596,9 @@ pub fn buildSemanticIndex(
         try indexASTNode(allocator, &index, ast_node_ptr, file_path, embedding_dim);
     }
 
+    // Build IVF index if we have enough symbols (Tier 4.1 optimization)
+    try index.buildIVFFromVectors();
+
     return index;
 }
 
@@ -603,6 +746,9 @@ pub fn clearSemanticCache() void {
     cached_index = null;
     cached_graph_hash = 0;
     cached_allocator = null;
+
+    // Tier 4.2: Also remove persistent cache file
+    std.fs.cwd().deleteFile(IVF_CACHE_PATH) catch {};
 }
 
 pub fn semanticFindCached(
@@ -629,12 +775,32 @@ pub fn semanticFindCached(
         // Clear old cache
         clearSemanticCache();
 
-        // Build new index
-        const idx = try allocator.create(SemanticIndex);
-        idx.* = try buildSemanticIndex(allocator, graph, DEFAULT_EMBEDDING_DIM);
-        cached_index = idx;
-        cached_graph_hash = graph_hash;
-        cached_allocator = allocator;
+        // Tier 4.2: Try to load from persistent cache first
+        // Note: This is a simplified implementation - for production, you'd
+        // want to validate the cache against the current graph structure
+        const cached_idx = ivf.IVFIndex.loadFromFile(allocator, IVF_CACHE_PATH) catch null;
+        if (cached_idx) |loaded_idx| {
+            // Successfully loaded from cache - create SemanticIndex wrapper
+            const idx = try allocator.create(SemanticIndex);
+            idx.* = try SemanticIndex.init(allocator, DEFAULT_EMBEDDING_DIM);
+            idx.ivf_index = @constCast(&loaded_idx);
+            idx.index_type = .ivf;
+            cached_index = idx;
+            cached_graph_hash = graph_hash;
+            cached_allocator = allocator;
+        } else {
+            // Build new index
+            const idx = try allocator.create(SemanticIndex);
+            idx.* = try buildSemanticIndex(allocator, graph, DEFAULT_EMBEDDING_DIM);
+            cached_index = idx;
+            cached_graph_hash = graph_hash;
+            cached_allocator = allocator;
+
+            // Tier 4.2: Save to persistent cache if IVF was built
+            if (idx.ivf_index != null) {
+                idx.ivf_index.?.saveToFile(IVF_CACHE_PATH) catch {};
+            }
+        }
     }
 
     // Use cached index for search
