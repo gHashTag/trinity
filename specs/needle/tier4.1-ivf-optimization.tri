@@ -1,0 +1,49 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// NEEDLE Tier 4.1 — IVF Index Optimization
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// Target: 10000+ symbols with <50ms cached search time
+// Technique: IVF (Inverted File) + k-means clustering
+//
+// φ² + 1/φ² = 3
+//
+// ═══════════════════════════════════════════════════════════════════════════════
+
+tier: 4.1
+name: "IVF Index вместо flat-HNSW для 10k+ символов"
+description: "k-means clustering + nprobe search. Масштабируемая замена HNSW."
+
+modules:
+  - ivf.zig:
+      structs: [IVFIndex, Cluster, IVFConfig, IVFSearchResult]
+      functions: [init, build, search, nprobe: usize = 16]
+      uses: [vsa.zig, zig_parser.ASTGraph]
+
+  - vsa.zig:
+      changes:
+        - semanticFindCached → использует IVFIndex
+        - clearSemanticCache() + auto-rebuild
+
+benchmarks:
+  - name: "10000 symbols cached"
+    target: "< 50 ms"
+  - name: "10000 symbols first-call"
+    target: "< 800 ms"
+  - name: "memory reduction"
+    target: "> 3x"
+
+behaviors:
+  - name: build_ivf_index
+    given: ASTGraph с 10000+ символов
+    when: buildIVFIndex вызван с n_clusters=100
+    then: Индекс построен за <800ms, кластеры сбалансированы
+
+  - name: search_with_nprobe
+    given: Построенный IVFIndex
+    when: search вызван с nprobe=16
+    then: Топ-K результатов за <50ms, recall >95%
+
+  - name: cache_invalidation
+    given: Кэшированный IVFIndex
+    when: AST graph изменяется
+    then: clearSemanticCache() очищает индекс
