@@ -3,6 +3,23 @@ import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
 const sidebars: SidebarsConfig = {
   docsSidebar: [
     'intro',
+    // ═══════════════════════════════════════════════════════════════════════════
+    // DIATAXIS FRAMEWORK: Tutorials → How-to Guides → Reference → Explanation
+    // ═══════════════════════════════════════════════════════════════════════════
+    {
+      type: 'category',
+      label: '📚 Tutorials',
+      description: 'Step-by-step learning for newcomers',
+      items: [
+        'tutorials/quick-start',
+        'tutorials/first-project',
+        'tutorials/fpga-blink',
+        'tutorials/sacred-math',
+      ],
+    },
+    // ═══════════════════════════════════════════════════════════════════════════
+    // END DIATAXIS FRAMEWORK
+    // ═══════════════════════════════════════════════════════════════════════════
     {
       type: 'category',
       label: 'Overview',
@@ -16,7 +33,6 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'Getting Started',
       items: [
-        'getting-started/quick-start-v1',
         'getting-started/tutorial',
         'getting-started/installation',
         'getting-started/development-setup',
@@ -50,6 +66,7 @@ const sidebars: SidebarsConfig = {
         'cli/repl',
         'cli/tvc',
         'cli/constants',
+        'cli/visual-guide',
       ],
     },
     {
@@ -166,6 +183,16 @@ const sidebars: SidebarsConfig = {
         'math-foundations/formulas',
         'math-foundations/sacred-formulas',
         'math-foundations/proofs',
+        'math-foundations/poincare-conjecture',
+        'math-foundations/algebraic-structure',
+        'math-foundations/concentration-jl',
+        'math-foundations/special-functions',
+        'math-foundations/number-sequences',
+        'math-foundations/sacred-geometry',
+        'math-foundations/quantum-information',
+        'math-foundations/cosmology-constants',
+        'math-foundations/holographic-quantum-gravity',
+        'math-foundations/harmony-gematria',
       ],
     },
     {
@@ -409,6 +436,7 @@ const sidebars: SidebarsConfig = {
         'research/libtrinity-vsa-v0.2.0-report',
         // Math Framework (Level 11.39)
         'research/trinity-vsa-benchmark-suite-report',
+        'research/trinity-ann-benchmark-verdict-report',
         'research/trinity-multilingual-math-codegen-report',
         // PAS v8.21 Production Validation
         'research/pas-v8.21-production-validation-report',
