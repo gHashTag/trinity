@@ -56,7 +56,8 @@ const NeedleMCPServer = struct {
             \\{"name":"needle_search","description":"Search codebase for pattern matches with confidence scores","inputSchema":{"type":"object","properties":{"query":{"type":"string"},"file_path":{"type":"string"},"confidence_threshold":{"type":"number"}},"required":["query","file_path"]}},
             \\{"name":"needle_quality_gates","description":"Run quality gates: parse check, AST analysis, violation detection","inputSchema":{"type":"object","properties":{"file_path":{"type":"string"},"check_level":{"enum":["basic","full"]}},"required":["file_path"]}},
             \\{"name":"needle_preview","description":"Preview edit diff without applying changes","inputSchema":{"type":"object","properties":{"file_path":{"type":"string"},"pattern_query":{"type":"string"},"replacement":{"type":"string"}},"required":["file_path","pattern_query","replacement"]}},
-            \\{"name":"needle_batch_edit","description":"Apply multiple edits in a single operation","inputSchema":{"type":"object","properties":{"edits":{"type":"array","items":{"type":"object","properties":{"file_path":{"type":"string"},"pattern_query":{"type":"string"},"replacement":{"type":"string"}},"required":["file_path","pattern_query","replacement"]}}},"required":["edits"]}}
+            \\{"name":"needle_batch_edit","description":"Apply multiple edits in a single operation","inputSchema":{"type":"object","properties":{"edits":{"type":"array","items":{"type":"object","properties":{"file_path":{"type":"string"},"pattern_query":{"type":"string"},"replacement":{"type":"string"}},"required":["file_path","pattern_query","replacement"]}}},"required":["edits"]}},
+            \\{"name":"needle_autonomous_refactor","description":"Execute Ralph Loop: intent-aware refactoring using semantic search + HNSW + VSA validation","inputSchema":{"type":"object","properties":{"intent":{"type":"string","description":"Natural language refactor intent (e.g., 'extract validation logic')"},"confidence_threshold":{"type":"number","description":"Minimum intent confidence (default: 0.8)"},"safety_level":{"enum":["low","medium","high","critical"],"description":"Safety level for refactoring"}},"required":["intent"]}}
         \\]}}
         );
     }
@@ -72,6 +73,8 @@ const NeedleMCPServer = struct {
             try self.toolPreview(arguments_json, writer);
         } else if (std.mem.eql(u8, tool_name, "needle_batch_edit")) {
             try self.toolBatchEdit(arguments_json, writer);
+        } else if (std.mem.eql(u8, tool_name, "needle_autonomous_refactor")) {
+            try self.toolAutonomousRefactor(arguments_json, writer);
         } else {
             try writer.writeAll("{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32601,\"message\":\"Unknown tool\"}}");
         }
@@ -278,6 +281,127 @@ const NeedleMCPServer = struct {
         _ = self;
         _ = arguments_json;
         try writer.writeAll("{\"jsonrpc\":\"2.0\",\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"Batch edit: Not yet implemented\"}],\"isError\":false}}");
+    }
+
+    fn toolAutonomousRefactor(self: *NeedleMCPServer, arguments_json: []const u8, writer: anytype) !void {
+        const intent = extractStringField(arguments_json, "intent") orelse {
+            try writer.writeAll("{\"jsonrpc\":\"2.0\",\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"Error: Missing intent\"}],\"isError\":true}}");
+            return;
+        };
+
+        // Parse optional parameters
+        const confidence_threshold_str = extractStringField(arguments_json, "confidence_threshold");
+        const confidence_threshold = if (confidence_threshold_str) |s|
+            std.fmt.parseFloat(f32, s) catch 0.8
+        else
+            0.8;
+
+        const safety_level_str = extractStringField(arguments_json, "safety_level");
+        const safety_level: needle.autonomous_refactor.SafetyLevel = if (safety_level_str) |s| blk: {
+            if (std.mem.eql(u8, s, "low")) break :blk .low;
+            if (std.mem.eql(u8, s, "high")) break :blk .high;
+            if (std.mem.eql(u8, s, "critical")) break :blk .critical;
+            break :blk .medium;
+        } else .medium;
+
+        // Build AST graph from current directory
+        var graph = needle.zig_parser.ASTGraph.init(self.allocator);
+        defer graph.deinit();
+
+        // Parse all .zig files in current directory
+        var dir = std.fs.cwd().openDir(".", .{}) catch |err| {
+            const err_name = @errorName(err);
+            var buffer: [512]u8 = undefined;
+            const msg = std.fmt.bufPrint(&buffer, "Error opening directory: {s}", .{err_name}) catch "Error";
+            try writeJsonResponse(writer, msg, true);
+            return;
+        };
+        defer dir.close();
+
+        var walker = try dir.walk(self.allocator);
+        defer walker.deinit();
+
+        while (try walker.next()) |entry| {
+            if (entry.kind != .file) continue;
+            if (!std.mem.endsWith(u8, entry.path, ".zig")) continue;
+
+            const file_path = try self.allocator.dupe(u8, entry.path);
+            const source = dir.readFileAlloc(self.allocator, entry.path, 10_000_000) catch continue;
+            defer self.allocator.free(source);
+
+            var parser = needle.zig_parser.ZigParser.init(self.allocator, source);
+            const ast_node = try parser.parseSourceFile();
+
+            try graph.files.put(file_path, ast_node);
+        }
+
+        // Execute Ralph Loop with graph
+        var engine = try needle.autonomous_refactor.AutonomousRefactorEngine.init(
+            self.allocator,
+            .{
+                .confidence_threshold = confidence_threshold,
+                .default_safety_level = safety_level,
+            }
+        );
+        defer engine.deinit();
+
+        var result = engine.executeRalphLoopWithGraph(&graph, intent) catch |err| {
+            const err_name = @errorName(err);
+            var buffer: [512]u8 = undefined;
+            const msg = std.fmt.bufPrint(&buffer, "Ralph Loop error: {s}", .{err_name}) catch "Error";
+            try writeJsonResponse(writer, msg, true);
+            return;
+        };
+        defer {
+            result.deinit();
+        }
+
+        // Build response
+        const success_str = if (result.success) "✅ SUCCESS" else "❌ FAILED";
+        const vsa_str = if (result.vsa_validation_passed) "VSA: ✅" else "VSA: ❌";
+        const tests_str = if (result.tests_passed) "TESTS: ✅" else "TESTS: ❌";
+
+        var buffer: [2048]u8 = undefined;
+        var idx: usize = 0;
+
+        @memcpy(buffer[idx..], success_str);
+        idx += success_str.len;
+
+        const stats = std.fmt.bufPrint(buffer[idx..], "\nTargets: {d}\n{s}\n{s}\nTransformations: {d}\nFiles: {d}", .{
+            0, // TODO: get actual target count from plan
+            vsa_str,
+            tests_str,
+            result.transformations_applied,
+            result.files_modified,
+        }) catch "";
+
+        var response = std.ArrayList(u8).empty;
+        defer response.deinit(self.allocator);
+
+        // Append buffer content
+        for (buffer[0..idx]) |c| {
+            try response.append(self.allocator, c);
+        }
+        // Append stats
+        for (stats) |c| {
+            try response.append(self.allocator, c);
+        }
+
+        // Add errors if any
+        for (result.errors.items) |err| {
+            try response.append(self.allocator, '\n');
+            for ("❌ ") |c| try response.append(self.allocator, c);
+            for (err) |c| try response.append(self.allocator, c);
+        }
+
+        // Add warnings if any
+        for (result.warnings.items) |warn| {
+            try response.append(self.allocator, '\n');
+            for ("⚠️  ") |c| try response.append(self.allocator, c);
+            for (warn) |c| try response.append(self.allocator, c);
+        }
+
+        try writeJsonResponse(writer, response.items, !result.success);
     }
 };
 

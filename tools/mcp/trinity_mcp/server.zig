@@ -10,6 +10,7 @@ const needle = @import("needle");
 const auto_discovery = @import("auto_discovery.zig");
 const resources = @import("resources.zig");
 const prompts = @import("prompts.zig");
+const logger_mod = @import("logger.zig");
 
 // Sacred constants
 const PHI: f64 = 1.618033988749895;
@@ -974,12 +975,23 @@ const MCPMessage = struct {
 };
 
 /// Read a complete MCP message from stdin using Content-Length framing
-fn readMCPMessage(allocator: std.mem.Allocator, buffer: []u8, buffer_used: *usize) !?MCPMessage {
-    if (buffer_used.* == 0) return null;
+fn readMCPMessage(allocator: std.mem.Allocator, buffer: []u8, buffer_used: *usize, logger: *logger_mod.Logger) !?MCPMessage {
+    if (buffer_used.* == 0) {
+        logger.log(.debug, "readMCPMessage: buffer_empty", .{});
+        return null;
+    }
+
+    // Log raw buffer content (first 200 bytes)
+    logger.hexDump(buffer[0..buffer_used.*], 200);
 
     // Find Content-Length header
-    const header_start = std.mem.indexOf(u8, buffer[0..buffer_used.*], "Content-Length:") orelse return null;
+    const header_start = std.mem.indexOf(u8, buffer[0..buffer_used.*], "Content-Length:") orelse {
+        logger.log(.warn, "No 'Content-Length:' header found", .{});
+        return null;
+    };
     const value_start = header_start + "Content-Length:".len;
+
+    logger.log(.debug, "Found Content-Length at offset {d}", .{header_start});
 
     // Find the end of the header line (first \r or \n after the header name)
     const header_line_end = blk: {
@@ -987,7 +999,10 @@ fn readMCPMessage(allocator: std.mem.Allocator, buffer: []u8, buffer_used: *usiz
         const idx1 = std.mem.indexOfScalar(u8, search_from, '\r');
         const idx2 = std.mem.indexOfScalar(u8, search_from, '\n');
         break :blk if (idx1) |i| value_start + i else if (idx2) |i| value_start + i else null;
-    } orelse return null;
+    } orelse {
+        logger.log(.warn, "No header line end found", .{});
+        return null;
+    };
 
     // Skip whitespace before the number
     var val_start: usize = value_start;
@@ -997,27 +1012,41 @@ fn readMCPMessage(allocator: std.mem.Allocator, buffer: []u8, buffer_used: *usiz
     var val_end: usize = val_start;
     while (val_end < header_line_end and (buffer[val_end] >= '0' and buffer[val_end] <= '9')) : (val_end += 1) {}
 
-    if (val_start >= val_end) return null;
+    if (val_start >= val_end) {
+        logger.log(.warn, "No Content-Length value found", .{});
+        return null;
+    }
 
     const length_str = buffer[val_start..val_end];
-    const content_length = std.fmt.parseInt(usize, length_str, 10) catch return null;
+    const content_length = std.fmt.parseInt(usize, length_str, 10) catch {
+        logger.log(.warn, "Failed to parse Content-Length: '{s}'", .{length_str});
+        return null;
+    };
+
+    logger.log(.debug, "Content-Length parsed: {d}", .{content_length});
 
     // Find the end of headers (double newline)
     const headers_end = blk: {
         const idx1 = std.mem.indexOf(u8, buffer[0..buffer_used.*], "\r\n\r\n");
         const idx2 = std.mem.indexOf(u8, buffer[0..buffer_used.*], "\n\n");
         break :blk if (idx1) |i| i + 4 else if (idx2) |i| i + 2 else null;
-    } orelse return null;
+    } orelse {
+        logger.log(.warn, "No double newline (headers end) found", .{});
+        return null;
+    };
 
     const body_start = headers_end;
 
     // Check if we have the complete message body
     if (body_start + content_length > buffer_used.*) {
+        logger.log(.debug, "Incomplete message: need {d} bytes from offset {d}, have {d}", .{content_length, body_start, buffer_used.*});
         return null; // Need more data
     }
 
     const body_end = body_start + content_length;
     const content = buffer[body_start..body_end];
+
+    logger.log(.debug, "Complete message: body_start={d}, body_end={d}, content_len={d}", .{body_start, body_end, content.len});
 
     // Extract request ID if present
     var id: ?[]const u8 = null;
@@ -1049,6 +1078,8 @@ fn readMCPMessage(allocator: std.mem.Allocator, buffer: []u8, buffer_used: *usiz
     }
     buffer_used.* = remaining;
 
+    logger.log(.debug, "Message parsed successfully, remaining bytes: {d}", .{remaining});
+
     return MCPMessage{
         .content = content_copy,
         .id = id,
@@ -1072,24 +1103,47 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
+    // Initialize logger
+    var logger = try logger_mod.Logger.init("/tmp/trinity-mcp.log", .debug);
+    defer logger.deinit();
+
+    // Check if diagnostics are enabled
+    const diagnose_ptr = std.c.getenv("TRINITY_MCP_DIAGNOSE");
+    const diagnose_env = if (diagnose_ptr) |ptr| std.mem.sliceTo(ptr, 0) else "0";
+    const enable_logging = std.mem.eql(u8, diagnose_env, "1") or std.mem.eql(u8, diagnose_env, "true");
+
+    if (!enable_logging) {
+        logger.disable();
+    }
+
+    logger.log(.info, "=== TRINITY MCP SERVER STARTED ===", .{});
+    logger.log(.info, "Diagnostics: {s}", .{if (enable_logging) "ENABLED" else "DISABLED (set TRINITY_MCP_DIAGNOSE=1)"});
+
     var server = TrinityMCPServer.init(allocator);
 
     var read_buffer: [65536]u8 = undefined;
     var buffer_used: usize = 0;
     var eof_reached = false;
+    var message_count: usize = 0;
+
+    logger.log(.debug, "Entering main loop...", .{});
 
     while (true) {
         // Read more data if buffer has space and we haven't reached EOF
         if (!eof_reached and buffer_used < read_buffer.len) {
+            logger.log(.debug, "Reading from stdin (buffer_used={d})...", .{buffer_used});
             const read_result = posix.read(0, read_buffer[buffer_used..]);
 
             if (read_result) |bytes_read| {
                 if (bytes_read == 0) {
+                    logger.log(.info, "EOF reached (bytes_read=0)", .{});
                     eof_reached = true;
                 } else {
+                    logger.log(.debug, "Read {d} bytes", .{bytes_read});
                     buffer_used += bytes_read;
                 }
             } else |err| {
+                logger.log(.warn, "Read error: {}", .{err});
                 if (err == error.EndOfStream) {
                     eof_reached = true;
                 }
@@ -1097,20 +1151,49 @@ pub fn main() !void {
         }
 
         // Try to read a complete MCP message
-        const msg = (try readMCPMessage(allocator, &read_buffer, &buffer_used)) orelse {
+        logger.log(.debug, "Attempting to parse MCP message (buffer_used={d})...", .{buffer_used});
+        const msg = (try readMCPMessage(allocator, &read_buffer, &buffer_used, &logger)) orelse {
+            logger.log(.debug, "No complete message, eof_reached={}, buffer_used={d}", .{eof_reached, buffer_used});
             // If no complete message and we've reached EOF with empty buffer, exit
-            if (eof_reached and buffer_used == 0) break;
+            if (eof_reached and buffer_used == 0) {
+                logger.log(.info, "Exiting: EOF with empty buffer", .{});
+                break;
+            }
+            // If EOF reached and buffer has bytes but doesn't start with "Content-Length:", exit
+            if (eof_reached and buffer_used > 0) {
+                if (std.mem.indexOf(u8, read_buffer[0..buffer_used], "Content-Length:") == null) {
+                    logger.log(.warn, "Exiting: EOF with {d} leftover bytes (not a valid message)", .{buffer_used});
+                    break;
+                }
+            }
             // Otherwise, try to read more data (if not EOF) or continue processing
             continue;
         };
         defer msg.deinit(allocator);
 
+        message_count += 1;
+        logger.log(.info, "Message #{d} received ({d} bytes)", .{message_count, msg.content.len});
+
         const request = msg.content;
+
+        // Show method name
+        if (std.mem.indexOf(u8, request, "\"method\":")) |method_idx| {
+            const after_method = request[method_idx + 9 ..];
+            if (std.mem.indexOfScalar(u8, after_method, '"')) |first_quote| {
+                const after_first_quote = after_method[first_quote + 1 ..];
+                if (std.mem.indexOfScalar(u8, after_first_quote, '"')) |second_quote| {
+                    const method_name = after_first_quote[0..second_quote];
+                    logger.log(.info, "Method: {s}", .{method_name});
+                }
+            }
+        }
 
         // Process JSON-RPC request
         if (std.mem.indexOf(u8, request, "\"initialize\"") != null) {
+            logger.log(.debug, "Processing 'initialize' request", .{});
             const response = "{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{\"tools\":{},\"resources\":{},\"prompts\":{}}},\"serverInfo\":{\"name\":\"trinity-mcp\",\"version\":\"2.0.0\"}}";
             try writeMCPResponse(response);
+            logger.log(.info, "Response sent for message #{d}", .{message_count});
         } else if (std.mem.indexOf(u8, request, "\"tools/list\"") != null) {
             const tools_json = try auto_discovery.generateToolsList(server.allocator);
             defer server.allocator.free(tools_json);

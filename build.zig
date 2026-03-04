@@ -1307,6 +1307,27 @@ pub fn build(b: *std.Build) void {
     vsa_bench_step.dependOn(&run_vsa_bench.step);
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // VSA Cached Benchmark — Tier 3 Cached Performance
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    const vsa_cached_bench = b.addExecutable(.{
+        .name = "vsa-cached-bench",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/needle/vsa_cached_bench.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+            .imports = &.{
+                .{ .name = "needle", .module = needle_mod },
+            },
+        }),
+    });
+    b.installArtifact(vsa_cached_bench);
+
+    const run_vsa_cached_bench = b.addRunArtifact(vsa_cached_bench);
+    const vsa_cached_bench_step = b.step("vsa-cached-bench", "Run VSA cached semanticFind benchmarks");
+    vsa_cached_bench_step.dependOn(&run_vsa_cached_bench.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // TRINITY-MCP — Full Trinity MCP Server (35+ tools)
     // ═══════════════════════════════════════════════════════════════════════════
     // Native Zig MCP server exposing ALL Trinity CLI commands as Claude Code tools
@@ -1492,6 +1513,12 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    // Sacred constants (v1.0 - unified source of truth)
+    const sacred_constants_mod = b.createModule(.{
+        .root_source_file = b.path("src/sacred/constants.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
     const sacred_mod = b.createModule(.{
         .root_source_file = b.path("src/sacred/sacred.zig"),
         .target = target,
@@ -1531,6 +1558,7 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "api", .module = api_mod },
                 // Sacred modules (v6.0)
                 .{ .name = "sacred", .module = sacred_mod },
+                .{ .name = "sacred_constants", .module = sacred_constants_mod },
                 // OS Boot module (Temporal Trinity v1.0 — Order #021)
                 .{ .name = "os", .module = os_mod },
                 // VIBEE compiler (CLI Command Pattern support - Cycle #118)

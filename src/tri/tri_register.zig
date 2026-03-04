@@ -26,6 +26,7 @@ const pipeline = @import("tri_pipeline.zig");
 const demos = @import("tri_demos.zig");
 const math_commands = @import("math/commands.zig");
 const utils = @import("tri_utils.zig");
+const research_commands = @import("tri_research.zig");
 
 // Global state pointer (set by main before registration)
 var g_state: ?*utils.CLIState = null;
@@ -1741,6 +1742,27 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
         .execute = struct { fn exec (a: std.mem.Allocator, args: []const []const u8) !void {
             _ = args;
             return commands.runIglaCommand(a);
+        } }.exec,
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // RESEARCH - ETERNAL IDEMPOTENCY AUDIT (v1.0)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    try registry.register(.{
+        .name = "research",
+        .aliases = &.{ "audit", "analyze-code" },
+        .description = "Research: idempotency audit, duplication check",
+        .long_help = "Run research audits on codebase:\n- idempotency: Verify codegen produces identical output\n- duplication: Find duplicate code patterns\n- sacred: Verify sacred constants consistency",
+        .category = .dev,
+        .examples = &.{
+            "tri research idempotency",
+            "tri research duplication",
+            "tri research sacred",
+        },
+        .has_subcommands = true,
+        .execute = struct { fn exec (a: std.mem.Allocator, args: []const []const u8) !void {
+            return research_commands.runResearchCommand(a, args);
         } }.exec,
     });
 

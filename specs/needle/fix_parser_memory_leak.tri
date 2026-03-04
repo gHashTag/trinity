@@ -1,67 +1,27 @@
-name: "needle-fix-parser-memory-leak"
+name: fix_parser_memory_leak
 version: "1.0.0"
-tier: 2.5
-description: "Fix memory leak in zig_parser.buildASTGraph test"
-
-problem:
-  - zig_parser.test.buildASTGraph leaks memory
-  - Root cause: AST nodes stored in HashMap not properly deinitialized
-  - GPA.detectLeaks() reports leaked allocations from allocator.dupe(u8, path)
+language: zig
+module: zig_parser
 
 types:
-  - MemoryLeakReport:
-      fields:
-        - leaked_bytes: USize
-        - allocation_count: USize
-        - source_location: String
-        - fix_status: FixStatus
-
-  - FixStatus:
-      variants:
-        - pending
-        - in_progress
-        - fixed
-        - verified
-
-modules:
-  - zig_parser.zig:
-      description: "Fix ASTGraph deinit and ZigNode cleanup"
-      changes:
-        - Ensure ZigNode.deinit() recursively frees all children
-        - Fix ASTGraph.deinit() to iterate and free all nodes
-        - Use std.testing.allocator in tests for leak detection
+  MemoryLeakFix:
+    fields:
+      location: String
+      issue: String
+      fix: String
 
 behaviors:
-  - name: fix_zignode_deinit
-    given: "ZigNode with children"
-    when: "node.deinit() called"
-    then: "Recursively free all children's memory"
+  - name: fix_zignode_children_init
+    given: ZigNode.init() creates ArrayList with empty struct literal
+    when: Node is initialized and children are added
+    then: ArrayList must be properly initialized with allocator
 
-  - name: fix_astgraph_deinit
-    given: "ASTGraph with multiple files"
-    when: "graph.deinit() called"
-    then: "Free all file paths and nodes without leaks"
+  - name: fix_astgraph_arraylist_init
+    given: ASTGraph methods create ArrayLists with empty struct literal
+    when: addCrossRef, addSymbol, or addCall are called
+    then: ArrayLists must be initialized with allocator to prevent leaks
 
-  - name: verify_with_gpa
-    given: "GeneralPurposeAllocator with detectLeaks"
-    when: "All tests run"
-    then: "No memory leaks reported"
-
-acceptance_criteria:
-  - zig_parser.test.buildASTGraph passes with GPA.detectLeaks() ✅
-  - All Tier 2 tests (47+) pass without memory leaks ✅
-  - All Tier 3 VSA tests (11) continue to pass ✅
-  - zig build needle-test shows 0 leaked ✅
-
-fix_applied:
-  - File: src/needle/zig_parser.zig
-  - Function: ASTGraph.deinit()
-  - Change: Added self.allocator.free(entry.key_ptr.*) for file path keys
-  - Before: Only freed values (ZigNode), not keys (path strings)
-  - After: Both keys and values properly freed
-  - Lines: 153-159
-
-result:
-  - 11/11 needle tests passed
-  - 0 memory leaks
-  - Test time: 415ms MaxRSS: 2M
+  - name: verify_no_leaks
+    given: Fixed ZigNode and ASTGraph implementations
+    when: Tests run with detectLeaks enabled
+    then: All memory must be properly freed (zero leaks)

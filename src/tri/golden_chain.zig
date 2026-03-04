@@ -1,7 +1,8 @@
 // ============================================================================
-// GOLDEN CHAIN - 16-Link Development Pipeline State Machine
+// GOLDEN CHAIN - 23-Link Development Pipeline State Machine
 // Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
 // Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+// v4.1: Added Link 22 (Self-Referential Evolution) for circular bootstrapping
 // ============================================================================
 
 const std = @import("std");
@@ -15,7 +16,7 @@ pub const PHI_INVERSE: f64 = 0.618033988749895; // Needle threshold
 pub const TRINITY: f64 = 3.0;
 
 // ============================================================================
-// CHAIN LINK ENUM (22 Links) — GOLDEN CHAIN v4.0
+// CHAIN LINK ENUM (23 Links) — GOLDEN CHAIN v4.1
 // ============================================================================
 
 pub const ChainLink = enum(u8) {
@@ -40,7 +41,8 @@ pub const ChainLink = enum(u8) {
     git = 18, // LINK 18: Commit + push (with auto-commit)
     loop_decision = 19, // LINK 19: Decide next version
     fly_deploy = 20, // LINK 20: Auto-deploy to Fly.io
-    eternal_self_evolution = 21, // LINK 21: [v4.0] Pipeline improves itself
+    eternal_self_evolution = 21, // LINK 21: [v4.0] Pipeline analyzes itself
+    self_referential_evolution = 22, // LINK 22: [v4.1] Pipeline improves itself (circular bootstrapping)
 
     pub fn getName(self: ChainLink) []const u8 {
         return switch (self) {
@@ -66,6 +68,7 @@ pub const ChainLink = enum(u8) {
             .loop_decision => "LOOP",
             .fly_deploy => "FLY_DEPLOY",
             .eternal_self_evolution => "ETERNAL_SELF_EVOLUTION",
+            .self_referential_evolution => "SELF_REFERENTIAL_EVOLUTION",
         };
     }
 
@@ -92,13 +95,14 @@ pub const ChainLink = enum(u8) {
             .git => "Commit and push changes",
             .loop_decision => "Decide next iteration",
             .fly_deploy => "Auto-deploy to Fly.io cloud",
-            .eternal_self_evolution => "ETERNAL: Pipeline improves itself",
+            .eternal_self_evolution => "ETERNAL: Pipeline analyzes itself",
+            .self_referential_evolution => "SELF-REFERENTIAL: Pipeline improves itself (circular bootstrapping)",
         };
     }
 
     pub fn isCritical(self: ChainLink) bool {
         return switch (self) {
-            .tvc_gate, .benchmark_prev, .test_run, .loop_decision, .code_generate, .eternal_self_evolution => true,
+            .tvc_gate, .benchmark_prev, .test_run, .loop_decision, .code_generate, .eternal_self_evolution, .self_referential_evolution => true,
             else => false,
         };
     }
@@ -109,7 +113,7 @@ pub const ChainLink = enum(u8) {
 
     pub fn next(self: ChainLink) ?ChainLink {
         const val = @intFromEnum(self);
-        if (val >= 21) return null;
+        if (val >= 22) return null; // v4.1: 23 links (0-22)
         return @enumFromInt(val + 1);
     }
 
@@ -236,7 +240,7 @@ pub const PipelineState = struct {
     phase: ChainLink,
     status: PipelineStatus,
     started_at: i64,
-    results: [22]LinkResult, // Links 0-21 (22 links total)
+    results: [23]LinkResult, // Links 0-22 (23 links total) — v4.1
     improvement_rate: f64,
     task_description: []const u8,
     verbose: bool,
@@ -248,8 +252,8 @@ pub const PipelineState = struct {
     self_evolution_enabled: bool,
 
     pub fn init(allocator: std.mem.Allocator, version: u32, task: []const u8) PipelineState {
-        var results: [22]LinkResult = undefined;
-        inline for (0..22) |i| {
+        var results: [23]LinkResult = undefined;
+        inline for (0..23) |i| {
             results[i] = LinkResult.init(@enumFromInt(i));
         }
 
@@ -313,7 +317,7 @@ pub const PipelineState = struct {
     }
 
     pub fn getProgressPercent(self: *const PipelineState) f64 {
-        return @as(f64, @floatFromInt(self.getCompletedCount())) / 22.0 * 100.0;
+        return @as(f64, @floatFromInt(self.getCompletedCount())) / 23.0 * 100.0; // v4.1: 23 links
     }
 
     pub fn getMetricsFilePath(self: *const PipelineState, buf: []u8) ![]const u8 {
@@ -472,7 +476,10 @@ test "ChainLink navigation" {
     try std.testing.expectEqual(ChainLink.eternal_self_evolution, fly_deploy.next().?);
 
     const eternal = ChainLink.eternal_self_evolution;
-    try std.testing.expectEqual(@as(?ChainLink, null), eternal.next()); // v4.0: last link
+    try std.testing.expectEqual(ChainLink.self_referential_evolution, eternal.next().?); // v4.1
+
+    const self_referential = ChainLink.self_referential_evolution;
+    try std.testing.expectEqual(@as(?ChainLink, null), self_referential.next()); // v4.1: last link
 }
 
 test "Needle threshold" {
