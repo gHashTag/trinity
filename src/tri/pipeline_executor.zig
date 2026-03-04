@@ -1149,7 +1149,7 @@ pub const PipelineExecutor = struct {
         std.debug.print("  [SELF-REFERENTIAL] Generated {d} improvement suggestions\n", .{suggestions.len});
 
         // Step 3: Generate .vibee spec for improvements
-        const vibee_spec = engine.generateImprovementSpec(suggestions) catch |err| {
+        const vibee_spec = engine.generateImprovementSpec(self.allocator, suggestions) catch |err| {
             std.debug.print("  [SELF-REFERENTIAL] Spec generation failed: {}\n", .{err});
             return LinkMetrics{ .duration_ms = 150 };
         };
