@@ -26,6 +26,7 @@ zig test src/vm.zig          # VM tests only
 
 # Run
 zig build bench              # Run benchmarks
+zig build vsa-bench          # Run VSA semantic search benchmarks (Brute+SIMD)
 zig build examples           # Run all examples
 
 # Format
@@ -144,6 +145,26 @@ tmux attach -t ralph               # Attach to running session
 | `hybrid.zig` | HybridBigInt: packed (1.58 bits/trit) ↔ unpacked cache |
 | `packed_trit.zig` | Bit-packed ternary encoding |
 | `sdk.zig` | High-level API (Hypervector, Codebook) |
+
+### Needle Tier 3 — Semantic Search (NEW: Cycle #118)
+
+**Brute+SIMD is the default ANN backend for semantic search.**
+
+| Module | Purpose |
+|--------|---------|
+| `src/needle/ann_brute_simd.zig` | Brute+SIMD implementation (winner) |
+| `src/needle/ann_interface.zig` | Unified ANN interface (HNSW, IVF+PQ, LSH, Brute+SIMD) |
+| `src/needle/vsa.zig` | SemanticIndex with Brute+SIMD default |
+| `src/needle/autonomous_refactor.zig` | AI-powered refactoring |
+
+**Benchmark Results:**
+- Build: 0ms (instant, no training)
+- Search @ 5k: 113ms (competitive)
+- Memory: ~7.7KB
+- Accuracy: 100% (exact)
+
+**Specs:** `specs/needle/ann_verdict.tri`, `specs/needle/ann_integration.tri`
+**[Research Report](https://gHashTag.github.io/trinity/docs/research/trinity-ann-benchmark-verdict-report)**
 
 ### Key VSA Operations (src/vsa.zig)
 

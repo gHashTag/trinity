@@ -322,6 +322,27 @@ Include `X-Wallet: 0xYOUR_ADDRESS` in HTTP headers. See [Tokenomics docs](https:
 | `src/packed_trit.zig` | Bit-packed ternary encoding |
 | `src/sdk.zig` | High-level API (Hypervector, Codebook) |
 
+### Needle Tier 3 — Semantic Search (NEW: Cycle #118)
+
+**Brute+SIMD Winner — 100% Exact, Instant Build**
+
+| Metric | Value |
+|--------|-------|
+| Build Time | 0ms (instant, no training) |
+| Search @ 5k | 113ms (competitive) |
+| Memory | ~7.7KB |
+| Accuracy | 100% (exact) |
+
+| Module | Purpose |
+|--------|---------|
+| `src/needle/ann_brute_simd.zig` | Brute+SIMD implementation |
+| `src/needle/ann_interface.zig` | Unified ANN interface |
+| `src/needle/vsa.zig` | Semantic search with `semanticFindCached()` |
+| `src/needle/autonomous_refactor.zig` | AI-powered refactoring |
+
+**Specs:** `specs/needle/ann_verdict.tri`, `specs/needle/ann_integration.tri`
+**[Research Report](https://gHashTag.github.io/trinity/docs/research/trinity-ann-benchmark-verdict-report)**
+
 ### DePIN Node
 
 | Module | Purpose |
