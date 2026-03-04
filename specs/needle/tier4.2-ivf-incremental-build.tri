@@ -1,0 +1,53 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// NEEDLE Tier 4.2 — IVF Incremental Build + Persistent Cache
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// Incremental IVF rebuild — only reprocess changed symbols
+// Persistent cache — save/load index from file
+// Target: build time <15s for incremental updates
+//
+// φ² + 1/φ² = 3
+//
+// ═══════════════════════════════════════════════════════════════════════════════
+
+tier: 4.2
+name: "IVF Incremental Build + Persistent Cache"
+description: "k-means только для дельты изменений + saveToFile/loadFromFile"
+
+modules:
+  - ivf.zig:
+      changes:
+        - incrementalBuild(delta_symbols, removed_ids) — только новые/изменённые символы
+        - saveToFile(file_path) — сохранить индекс в файл
+        - loadFromFile(file_path) — загрузить индекс из файла
+      tests:
+        - ivf.5: incrementalBuild add symbols
+        - ivf.6: incrementalBuild remove symbols
+        - ivf.7: saveToFile and loadFromFile
+
+  - vsa.zig:
+      changes:
+        - semanticFindCached: проверять graph_hash → load cache или incremental rebuild
+        - clearSemanticCache(): инвалидация при изменении графа
+
+benchmarks:
+  - name: "10000 symbols incremental build < 15s"
+    target: "Incremental rebuild of changed symbols only"
+  - name: "Cache persistence"
+    target: "saveToFile/loadFromFile faster than full rebuild"
+
+behaviors:
+  - name: incremental_add
+    given: Построенный IVFIndex с 10000 символов
+    when: Добавлен 1 новый символ через incrementalBuild
+    then: Пересчёт только затронутых кластеров, время < 100ms
+
+  - name: cache_persistence
+    given: Построенный IVFIndex
+    when: saveToFile вызван, затем loadFromFile
+    then: Индекс восстановлен, структура совпадает
+
+  - name: cache_invalidation
+    given: Загруженный из файла IVFIndex
+    when: AST graph изменился (новый graph_hash)
+    then: clearSemanticCache() удаляет файл кэша

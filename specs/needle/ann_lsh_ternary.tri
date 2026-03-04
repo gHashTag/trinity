@@ -1,0 +1,167 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Track B: Ternary LSH (Locality-Sensitive Hashing)
+# ═══════════════════════════════════════════════════════════════════════════════
+# True ternary {-1,0,+1} VSA vectors with Hamming distance hashing
+#
+# Converts float32 embeddings to ternary VSA using HybridBigInt,
+# enabling ultra-fast Hamming distance search with 20x memory savings.
+#
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: ann_lsh_ternary
+version: "1.0.0"
+language: zig
+module: needle.ann_lsh_ternary
+
+description: |
+  Ternary Locality-Sensitive Hashing for VSA-based semantic search.
+  Converts float32 embeddings to ternary {-1,0,+1} using HybridBigInt
+  for ultra-fast Hamming distance computation.
+
+types:
+  HashFunction:
+    variants:
+      - random_projection    # Random projection + ternarize
+      - simhash              # SimHash algorithm
+      - minhash              # MinHash variant
+
+  LSHConfig:
+    fields:
+      dim: usize                    # Original float32 dimension (384)
+      n_tables: usize               # Number of hash tables
+      n_hashes: usize               # Hashes per table
+      hash_type: HashFunction
+      ternarization_threshold: Float  # Threshold for {-1,0,+1}
+      seed: u64
+
+  LSHHashTable:
+    fields:
+      hash_function: List<List<Float>>  # [n_hashes][dim] random matrix
+      buckets: Map<String, List<u64>>    # hash -> vector IDs
+
+  TernaryVector:
+    fields:
+      trits: HybridBigInt           # VSA ternary representation
+      original_dim: usize
+
+  LSHIndex:
+    fields:
+      config: LSHConfig
+      hash_tables: List<LSHHashTable>
+      ternary_vectors: Map<u64, TernaryVector]
+      float32_cache: Map<u64, List<Float>>  # Optional for re-ranking
+      allocator: Allocator
+      total_vectors: usize
+
+behaviors:
+  - name: lsh_ternary_init
+    given: LSHConfig with allocator
+    when: Creating new LSH index
+    then: |
+      1. Generate random hash functions for each table
+      2. Initialize empty buckets
+      3. Return ready index
+
+  - name: float32_to_ternary
+    given: Float32 vector and threshold
+    when: Converting to ternary VSA
+    then: |
+      For each dimension i:
+        if vec[i] > threshold: trit[i] = +1
+        else if vec[i] < -threshold: trit[i] = -1
+        else: trit[i] = 0
+      Return HybridBigInt with trits
+
+  - name: lsh_compute_hash
+    given: Vector and hash function
+    when: Computing LSH hash
+    then: |
+      1. Project vector onto random hyperplane
+      2. Ternarize result
+      3. Return hash key as string
+
+  - name: lsh_insert
+    given: Vector ID, symbol ID, float32 vector
+    when: Adding to index
+    then: |
+      1. Convert float32 to ternary VSA
+      2. For each hash table:
+         - Compute hash for each hash function
+         - Combine hashes to form bucket key
+         - Add vector ID to bucket
+      3. Store ternary vector
+
+  - name: lsh_search
+    given: Query vector and k results
+    when: Searching index
+    then: |
+      1. Convert query to ternary
+      2. For each hash table:
+         - Compute bucket key for query
+         - Collect all candidates from bucket
+      3. Deduplicate candidates
+      4. Re-rank by Hamming distance
+      5. Return top-k results
+
+  - name: hamming_distance_ternary
+    given: Two ternary vectors
+    when: Computing similarity
+    then: |
+      Return count of positions where trits differ
+      (Using HybridBigInt.hammingDistance())
+
+  - name: lsh_get_stats
+    given: LSH index
+    when: Querying status
+    then: Return stats with bucket distribution
+
+test_cases:
+  - name: lsh_ternary_basic_insert
+    given: Empty LSH index, one vector
+    when: Calling insert()
+    then: Vector added to all hash tables
+
+  - name: lsh_ternary_finds_similar
+    given: Index with 100 vectors, similar query
+    when: Searching with k=10
+    then: |
+      Returns 10 results
+      Hamming distance correlates with similarity
+
+  - name: ternary_conversion_is_correct
+    given: Float32 vector
+    when: Converting to ternary
+    then: |
+      All trits in {-1, 0, +1}
+      Can reconstruct approximately
+
+examples:
+  - description: "Initialize Ternary LSH for 384-dim vectors"
+    code: |
+      const config = LSHConfig{
+          .dim = 384,
+          .n_tables = 12,
+          .n_hashes = 12,
+          .hash_type = .random_projection,
+          .ternarization_threshold = 0.09,
+          .seed = 42,
+      };
+      var index = try LSHIndex.init(allocator, config);
+      defer index.deinit();
+
+exit_criteria:
+  lsh_ternary_init_works: true
+  float32_to_ternary_correct: true
+  lsh_hashes_distribute: true
+  lsh_insert_works: true
+  lsh_search_returns_results: true
+  hamming_distance_fast: true
+  ternary_memory_efficient: true
+  recall_at_10_gt_70_percent: true
+
+sacred:
+  phi: 1.618033988749895
+  n_tables_formula: "ceil(phi^4)"
+  n_hashes_formula: "ceil(phi^4)"
+  threshold_formula: "1/phi^5"
