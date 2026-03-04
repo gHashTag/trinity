@@ -225,6 +225,96 @@ pub fn bindCPU(a: FPGAVector, b: FPGAVector) FPGAVector {
     return result;
 }
 
+/// Pure CPU bundle operation (majority vote)
+pub fn bundleCPU(vectors: []const FPGAVector) FPGAVector {
+    var result = FPGAVector.init();
+    for (0..VSA_DIM) |i| {
+        var pos_votes: i32 = 0;
+        var neg_votes: i32 = 0;
+        var zero_votes: i32 = 0;
+
+        for (vectors) |v| {
+            const t = v.getTrit(i);
+            switch (t) {
+                .pos => pos_votes += 1,
+                .neg => neg_votes += 1,
+                .zero => zero_votes += 1,
+            }
+        }
+
+        const tr: Trit = if (pos_votes > neg_votes and pos_votes > zero_votes)
+            .pos
+        else if (neg_votes > pos_votes and neg_votes > zero_votes)
+            .neg
+        else
+            .zero;  // Tie or all zeros → zero
+
+        result.setTrit(i, tr);
+    }
+    return result;
+}
+
+/// Pure CPU similarity (cosine for ternary vectors)
+pub fn similarityCPU(a: FPGAVector, b: FPGAVector) f32 {
+    var agreed: i32 = 0;
+    var disagreed: i32 = 0;
+    var total: i32 = 0;
+
+    for (0..VSA_DIM) |i| {
+        const ta = a.getTrit(i);
+        const tb = b.getTrit(i);
+
+        if (ta != .zero and tb != .zero) {
+            total += 1;
+            if (ta == tb) {
+                agreed += 1;
+            } else {
+                disagreed += 1;
+            }
+        }
+    }
+
+    if (total == 0) return 0.5; // Neutral
+    const dot: f32 = @as(f32, @floatFromInt(agreed - disagreed));
+    const mag: f32 = @as(f32, @floatFromInt(total));
+    return (dot / mag + 1.0) / 2.0; // Scale to [0, 1]
+}
+
+/// KOSCHEI Week 3: Pipeline result type
+pub const PipelineResult = struct {
+    bound: FPGAVector,
+    bundled: FPGAVector,
+    similarity: f32,
+};
+
+/// KOSCHEI Week 3: Search result type
+pub const SearchResult = struct {
+    vector: *const FPGAVector,
+    similarity: f32,
+};
+
+/// KOSCHEI Week 3: Full VSA pipeline (bind + bundle + similarity)
+pub fn pipelineBindBundleSim(
+    a: FPGAVector,
+    b: FPGAVector,
+    c: FPGAVector,
+) !PipelineResult {
+    // Stage 1: Bind
+    const bound = bindCPU(a, b);
+
+    // Stage 2: Bundle (bind + a + c)
+    const bundled = bundleCPU(&[_]FPGAVector{ bound, a, c });
+
+    // Stage 3: Similarity
+    const similarity = similarityCPU(bundled, c);
+
+    return .{
+        .bound = bound,
+        .bundled = bundled,
+        .similarity = similarity,
+    };
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // HIGH-LEVEL API (with automatic fallback)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -272,6 +362,58 @@ pub const VSAFPGA = struct {
         for (vectors, 0..) |v, i| {
             results[i] = try self.bind(v, key);
         }
+        return results;
+    }
+
+    /// KOSCHEI Week 3: Full VSA pipeline with automatic fallback
+    pub fn runPipeline(
+        self: *VSAFPGA,
+        a: FPGAVector,
+        b: FPGAVector,
+        c: FPGAVector,
+    ) !PipelineResult {
+        _ = self; // TODO: Use FPGA pipeline when available
+        return pipelineBindBundleSim(a, b, c);
+    }
+
+    /// KOSCHEI Week 3: Pipeline search for multiple vectors
+    pub fn pipelineSearch(
+        self: *VSAFPGA,
+        vectors: []const FPGAVector,
+        query: FPGAVector,
+        top_k: usize,
+    ) ![]SearchResult {
+        const results = try self.allocator.alloc(SearchResult, @min(vectors.len, top_k));
+
+        // Calculate similarities and find top_k
+        var n_found: usize = 0;
+        for (vectors) |*v| {
+            const sim = similarityCPU(v.*, query);
+            if (n_found < top_k) {
+                results[n_found] = .{
+                    .vector = v,
+                    .similarity = sim,
+                };
+                n_found += 1;
+            } else {
+                // Check if this beats the minimum in results
+                var min_idx: usize = 0;
+                var min_sim: f32 = results[0].similarity;
+                for (1..@min(n_found, top_k)) |j| {
+                    if (results[j].similarity < min_sim) {
+                        min_sim = results[j].similarity;
+                        min_idx = j;
+                    }
+                }
+                if (sim > min_sim) {
+                    results[min_idx] = .{
+                        .vector = v,
+                        .similarity = sim,
+                    };
+                }
+            }
+        }
+
         return results;
     }
 };
@@ -403,6 +545,71 @@ test "vsa_fpga.5: FPGADevice open/close (CPU fallback)" {
     defer if (dev.isAvailable()) dev.close();
 
     // Should not crash - will use CPU fallback if no FPGA
+    try std.testing.expect(true);
+}
+
+test "vsa_fpga.6: bundleCPU correctness" {
+    // Test majority vote: {+1, +1, -1} → +1
+    var v1 = FPGAVector.init();
+    var v2 = FPGAVector.init();
+    var v3 = FPGAVector.init();
+
+    v1.setTrit(0, .pos);
+    v2.setTrit(0, .pos);
+    v3.setTrit(0, .neg);
+
+    const result = bundleCPU(&[_]FPGAVector{ v1, v2, v3 });
+    try std.testing.expectEqual(Trit.pos, result.getTrit(0));
+
+    // Test: {-1, -1, -1} → -1
+    v1.setTrit(1, .neg);
+    v2.setTrit(1, .neg);
+    v3.setTrit(1, .neg);
+
+    const result2 = bundleCPU(&[_]FPGAVector{ v1, v2, v3 });
+    try std.testing.expectEqual(Trit.neg, result2.getTrit(1));
+
+    // Test: {+1, -1, 0} → 0 (tie)
+    v1.setTrit(2, .pos);
+    v2.setTrit(2, .neg);
+    v3.setTrit(2, .zero);
+
+    const result3 = bundleCPU(&[_]FPGAVector{ v1, v2, v3 });
+    try std.testing.expectEqual(Trit.zero, result3.getTrit(2));
+}
+
+test "vsa_fpga.7: similarityCPU correctness" {
+    // Test: identical vectors → similarity = 1.0
+    var v1 = FPGAVector.init();
+    var v2 = FPGAVector.init();
+
+    for (0..10) |i| {
+        v1.setTrit(i, .pos);
+        v2.setTrit(i, .pos);
+    }
+
+    const sim1 = similarityCPU(v1, v2);
+    try std.testing.expectApproxEqAbs(@as(f32, 1.0), sim1, 0.01);
+
+    // Test: opposite vectors → similarity = 0.0
+    for (0..10) |i| {
+        v1.setTrit(i, .pos);
+        v2.setTrit(i, .neg);
+    }
+
+    const sim2 = similarityCPU(v1, v2);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.0), sim2, 0.01);
+}
+
+test "vsa_fpga.8: pipelineBindBundleSim" {
+    const result = try pipelineBindBundleSim(
+        FPGAVector.init(),
+        FPGAVector.init(),
+        FPGAVector.init(),
+    );
+
+    // Just verify it runs without error
+    _ = result;
     try std.testing.expect(true);
 }
 
