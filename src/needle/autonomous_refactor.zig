@@ -584,7 +584,8 @@ test "autonomous.8: semanticFind integration with AST graph" {
 
     // Add a simple file
     const file_path = "test.zig";
-    var ast_node = zig_parser.ZigNode.init(allocator, .source_file, "test");
+    var ast_node = zig_parser.ZigNode.init(allocator, .source_file, "");
+    allocator.free(ast_node.name); // Free the empty string from init
     ast_node.name = try allocator.dupe(u8, file_path);
     ast_node.start_line = 1;
     try graph.files.put(try allocator.dupe(u8, file_path), ast_node);
@@ -607,7 +608,8 @@ test "autonomous.9: executeRalphLoopWithGraph integration" {
     defer graph.deinit();
 
     const file_path = "test.zig";
-    var ast_node = zig_parser.ZigNode.init(allocator, .source_file, "test");
+    var ast_node = zig_parser.ZigNode.init(allocator, .source_file, "");
+    allocator.free(ast_node.name); // Free the empty string from init
     ast_node.name = try allocator.dupe(u8, file_path);
     try graph.files.put(try allocator.dupe(u8, file_path), ast_node);
 
