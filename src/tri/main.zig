@@ -148,25 +148,47 @@ pub fn main() !void {
         .doc => utils.runSWECommand(&state, .Document, cmd_args),
         .refactor => utils.runSWECommand(&state, .Refactor, cmd_args),
         .reason => utils.runSWECommand(&state, .Reason, cmd_args),
-        .gen => try commands.runGenCommand(allocator, cmd_args),
-        .convert => try commands.runConvertCommand(cmd_args),
-        .serve => try commands.runServeCommand(allocator, cmd_args),
-        .bench => try commands.runBenchCommand(allocator),
-        .evolve => try commands.runEvolveCommand(cmd_args),
+        .gen => commands.runGenCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Gen error: {}\n", .{err});
+        },
+        .convert => commands.runConvertCommand(cmd_args) catch |err| {
+            std.debug.print("Convert error: {}\n", .{err});
+        },
+        .serve => commands.runServeCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Serve error: {}\n", .{err});
+        },
+        .bench => commands.runBenchCommand(allocator) catch |err| {
+            std.debug.print("Bench error: {}\n", .{err});
+        },
+        .evolve => commands.runEvolveCommand(cmd_args) catch |err| {
+            std.debug.print("Evolve error: {}\n", .{err});
+        },
         // Git commands
-        .commit => try commands.runGitCommand(allocator, "commit", cmd_args),
-        .diff => try commands.runGitCommand(allocator, "diff", cmd_args),
-        .status => try commands.runGitCommand(allocator, "status", cmd_args),
-        .log => try commands.runGitCommand(allocator, "log", cmd_args),
+        .commit => commands.runGitCommand(allocator, "commit", cmd_args) catch |err| {
+            std.debug.print("Git commit error: {}\n", .{err});
+        },
+        .diff => commands.runGitCommand(allocator, "diff", cmd_args) catch |err| {
+            std.debug.print("Git diff error: {}\n", .{err});
+        },
+        .status => commands.runGitCommand(allocator, "status", cmd_args) catch |err| {
+            std.debug.print("Git status error: {}\n", .{err});
+        },
+        .log => commands.runGitCommand(allocator, "log", cmd_args) catch |err| {
+            std.debug.print("Git log error: {}\n", .{err});
+        },
         // Golden Chain Pipeline
         .pipeline => pipeline.runPipelineCommand(allocator, cmd_args),
         .decompose => pipeline.runDecomposeCommand(allocator, cmd_args),
         .plan => pipeline.runPlanCommand(allocator, cmd_args),
-        .multi_cluster => try commands.runMultiClusterCommand(allocator, cmd_args),
+        .multi_cluster => commands.runMultiClusterCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Multi-cluster error: {}\n", .{err});
+        },
         .verify => pipeline.runVerifyCommand(allocator),
         .verdict => pipeline.runVerdictCommand(allocator),
         // Test REPL (Cycle 101)
-        .test_repl => try commands.runReplTestCommand(allocator, cmd_args),
+        .test_repl => commands.runReplTestCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Test REPL error: {}\n", .{err});
+        },
         // Cosmology & Neuroscience
         .cosmos => cosmos_commands.runCosmosCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Cosmos error: {}\n", .{err});
@@ -286,7 +308,9 @@ pub fn main() !void {
         .workflow_demo => demos.runWorkflowDemo(),
         .workflow_bench => demos.runWorkflowBench(),
         // Distributed Inference
-        .distributed => try commands.runDistributedCommand(allocator, cmd_args),
+        .distributed => commands.runDistributedCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Distributed error: {}\n", .{err});
+        },
         // Sacred Mathematics (v3.6)
         .math => math_commands.runMathCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Math error: {}\n", .{err});
@@ -327,18 +351,40 @@ pub fn main() !void {
             std.debug.print("Intelligence error: {}\n", .{err});
         },
         // Dev Utilities
-        .doctor => try commands.runDoctorCommand(allocator),
-        .clean => try commands.runCleanCommand(allocator),
-        .fmt_cmd => try commands.runFmtCommand(allocator),
-        .stats_cmd => try commands.runStatsCommand(allocator),
-        .igla => try commands.runIglaCommand(allocator),
+        .doctor => commands.runDoctorCommand(allocator) catch |err| {
+            std.debug.print("Doctor error: {}\n", .{err});
+        },
+        .clean => commands.runCleanCommand(allocator) catch |err| {
+            std.debug.print("Clean error: {}\n", .{err});
+        },
+        .fmt_cmd => commands.runFmtCommand(allocator) catch |err| {
+            std.debug.print("Format error: {}\n", .{err});
+        },
+        .stats_cmd => commands.runStatsCommand(allocator) catch |err| {
+            std.debug.print("Stats error: {}\n", .{err});
+        },
+        .igla => commands.runIglaCommand(allocator) catch |err| {
+            std.debug.print("IGLA error: {}\n", .{err});
+        },
         // Cycle 98: Sacred Intelligence
-        .identity => try commands.runIdentityCommand(allocator, cmd_args),
-        .swarm => try commands.runSwarmCommand(allocator, cmd_args),
-        .govern => try commands.runGovernCommand(allocator, cmd_args),
-        .dashboard => try commands.runDashboardCommand(allocator, cmd_args),
-        .omega => try commands.runOmegaCommand(allocator, cmd_args),
-        .math_agent => try commands.runMathAgentCommand(allocator, cmd_args),
+        .identity => commands.runIdentityCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Identity error: {}\n", .{err});
+        },
+        .swarm => commands.runSwarmCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Swarm error: {}\n", .{err});
+        },
+        .govern => commands.runGovernCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Govern error: {}\n", .{err});
+        },
+        .dashboard => commands.runDashboardCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Dashboard error: {}\n", .{err});
+        },
+        .omega => commands.runOmegaCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Omega error: {}\n", .{err});
+        },
+        .math_agent => commands.runMathAgentCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Math agent error: {}\n", .{err});
+        },
         // Codebase Context (Cycle 92)
         .analyze => tri_context.runAnalyzeCommand(&state),
         .search_cmd => tri_context.runSearchCommand(&state, cmd_args),
@@ -362,9 +408,15 @@ pub fn main() !void {
         // TRINITY OS v1.0 (Order #034)
         .launch => commands.runLaunchCommand(allocator, cmd_args),
         // NEEDLE - Structural Editor Core
-        .needle => try commands.runNeedleCommand(allocator, cmd_args),
-        .needle_search => try commands.runNeedleSearchCommand(allocator, cmd_args),
-        .needle_check => try commands.runNeedleCheckCommand(allocator, cmd_args),
+        .needle => commands.runNeedleCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Needle error: {}\n", .{err});
+        },
+        .needle_search => commands.runNeedleSearchCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Needle search error: {}\n", .{err});
+        },
+        .needle_check => commands.runNeedleCheckCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Needle check error: {}\n", .{err});
+        },
         .deps => utils.printInfo(),
         .info => utils.printInfo(),
         .version => utils.printVersion(),
@@ -560,10 +612,20 @@ pub fn main() !void {
         //     }
         // },
         // CLI Integration (Cycle #118)
-        .mesh => commands.runMeshCommand(allocator, cmd_args),
-        .wallet => commands.runWalletCommand(allocator, cmd_args),
-        .reputation => commands.runReputationCommand(allocator, cmd_args),
-        .hardware => commands.runHardwareCommand(allocator, cmd_args),
-        .integrate => try cli_integration.runIntegrateCommand(allocator, cmd_args),
+        .mesh => commands.runMeshCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Mesh error: {}\n", .{err});
+        },
+        .wallet => commands.runWalletCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Wallet error: {}\n", .{err});
+        },
+        .reputation => commands.runReputationCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Reputation error: {}\n", .{err});
+        },
+        .hardware => commands.runHardwareCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Hardware error: {}\n", .{err});
+        },
+        .integrate => cli_integration.runIntegrateCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Integrate error: {}\n", .{err});
+        },
     }
 }

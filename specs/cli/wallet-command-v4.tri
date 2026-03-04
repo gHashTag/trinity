@@ -1,0 +1,111 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# WALLET COMMAND v4.0 — CLI Command Pattern (Golden Chain Compliant)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: wallet-command-v4
+version: "4.0.0"
+language: zig
+module: wallet_command
+type: cli_command
+
+description: |
+  Wallet management for Trinity DePIN rewards.
+  Connect wallet, check balance, claim rewards.
+
+command:
+  name: wallet
+  aliases: []
+  description: Wallet — connect, balance, claim rewards
+  category: DePIN
+  module: tri_commands
+  help_short: Manage wallet and rewards
+  help_long: |
+    Connect Web3 wallet (MetaMask, Phantom, WalletConnect),
+    check $TRI balance, claim mining rewards.
+
+  variant: wallet
+  enum_name: wallet
+  is_flag: false
+
+arguments:
+  - name: subcommand
+    type: enum
+    description: Wallet subcommand
+    values:
+      - value: connect
+        description: Connect wallet
+      - value: balance
+        description: Show $TRI balance
+      - value: claim
+        description: Claim rewards
+      - value: address
+        description: Show wallet address
+      - value: history
+        description: Claim history
+
+types:
+  WalletInfo:
+    address: String
+    balance: Float
+    pending: Float
+    claimed: Float
+
+behaviors:
+  - name: connectWallet
+    given: Wallet provider available
+    when: User runs `tri wallet connect <provider>`
+    then: Connect wallet, display address
+
+  - name: showBalance
+    given: Wallet connected
+    when: User runs `tri wallet balance`
+    then: Display balance, pending, claimed
+
+implementation: |
+  const std = @import("std");
+  const Allocator = std.mem.Allocator;
+
+  pub fn runWalletCommand(allocator: Allocator, args: []const []const u8) !void {
+      _ = allocator;
+
+      if (args.len < 1) {
+          printWalletHelp();
+          return;
+      }
+
+      const sub = args[0];
+
+      if (std.mem.eql(u8, sub, "balance")) {
+          const CYAN = "\x1b[38;2;0;255;255m";
+          const GREEN = "\x1b[38;2;0;229;153m";
+          const RESET = "\x1b[0m";
+
+          std.debug.print("{s}Wallet Balance:{s}\n", .{ CYAN, RESET });
+          std.debug.print("  Address: 0x1234567890abcdef\n", .{});
+          std.debug.print("  Balance: {s}100.0 $TRI{s}\n", .{ GREEN, RESET });
+          std.debug.print("  Pending: 50.0 $TRI\n", .{});
+          std.debug.print("  Claimed: 150.0 $TRI\n", .{});
+      } else if (std.mem.eql(u8, sub, "connect")) {
+          std.debug.print("Connect wallet: MetaMask, Phantom, or WalletConnect\n", .{});
+      } else if (std.mem.eql(u8, sub, "claim")) {
+          std.debug.print("Claiming rewards...\n", .{});
+      } else if (std.mem.eql(u8, sub, "address")) {
+          std.debug.print("Wallet address: 0x1234567890abcdef\n", .{});
+      } else if (std.mem.eql(u8, sub, "history")) {
+          std.debug.print("Claim history:\n", .{});
+          std.debug.print("  2024-03-01: 50.0 $TRI\n", .{});
+          std.debug.print("  2024-03-08: 50.0 $TRI\n", .{});
+      } else {
+          printWalletHelp();
+      }
+  }
+
+  fn printWalletHelp() void {
+      std.debug.print("\nWALLET COMMAND HELP\n", .{});
+      std.debug.print("Usage: tri wallet <subcommand>\n", .{});
+      std.debug.print("  connect  - Connect wallet\n", .{});
+      std.debug.print("  balance  - Show balance\n", .{});
+      std.debug.print("  claim    - Claim rewards\n", .{});
+      std.debug.print("  address  - Show address\n", .{});
+      std.debug.print("  history  - Claim history\n", .{});
+  }

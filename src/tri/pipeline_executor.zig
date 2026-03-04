@@ -1,12 +1,14 @@
 // ============================================================================
 // PIPELINE EXECUTOR - Golden Chain Orchestration
-// Executes 16 links sequentially with fail-fast on critical links
+// Executes 23 links sequentially with fail-fast on critical links
+// v4.1: Added Link 22 (Self-Referential Evolution)
 // ============================================================================
 
 const std = @import("std");
 const golden_chain = @import("golden_chain.zig");
 const tvc_gate_mod = @import("tvc_gate.zig");
 const tvc_corpus = @import("tvc_corpus");
+const self_improving = @import("self_improving_pipeline.zig");
 
 const ChainLink = golden_chain.ChainLink;
 const PipelineState = golden_chain.PipelineState;
@@ -86,7 +88,7 @@ pub const PipelineExecutor = struct {
 
         // Start from Link 0 (TVC Gate)
         var current_link: u8 = 0;
-        while (current_link <= 21) : (current_link += 1) {
+        while (current_link <= 22) : (current_link += 1) { // v4.1: 23 links (0-22)
             const link: ChainLink = @enumFromInt(current_link);
             self.state.phase = link;
 
@@ -212,6 +214,7 @@ pub const PipelineExecutor = struct {
             .loop_decision => self.executeLoopDecision(),
             .fly_deploy => self.executeFlyDeploy(),
             .eternal_self_evolution => self.executeEternalSelfEvolution(),
+            .self_referential_evolution => self.executeSelfReferentialEvolution(),
         };
     }
 
@@ -1105,6 +1108,79 @@ pub const PipelineExecutor = struct {
         };
     }
 
+    /// Execute Link 22: Self-Referential Evolution (v4.1)
+    /// This is the circular bootstrapping link - pipeline improves itself
+    fn executeSelfReferentialEvolution(self: *PipelineExecutor) ChainError!LinkMetrics {
+        std.debug.print("  [SELF-REFERENTIAL] Circular bootstrapping initiated...\n", .{});
+
+        // Only self-improve if immortal (improvement > φ⁻¹)
+        if (self.state.improvement_rate <= golden_chain.PHI_INVERSE) {
+            std.debug.print("  [SELF-REFERENTIAL] Not immortal yet (rate: {d:.3}), skipping\n", .{
+                self.state.improvement_rate,
+            });
+            return LinkMetrics{ .duration_ms = 10 };
+        }
+
+        std.debug.print("  [SELF-REFERENTIAL] {s}KOSCHEI IMMORTAL{s} — pipeline improving itself...\n", .{ GOLDEN, RESET });
+
+        // Use SelfImprovementEngine from self_improving_pipeline.zig
+        var engine = self_improving.SelfImprovementEngine.init(
+            self.allocator,
+            self_improving.default_config,
+        );
+
+        // Step 1: Analyze pipeline performance
+        std.debug.print("  [SELF-REFERENTIAL] Analyzing pipeline performance...\n", .{});
+        const analysis = engine.analyzePipeline(self) catch |err| {
+            std.debug.print("  [SELF-REFERENTIAL] Analysis failed: {}\n", .{err});
+            return LinkMetrics{ .duration_ms = 50 };
+        };
+
+        std.debug.print("  [SELF-REFERENTIAL] Performance score: {d:.3}\n", .{analysis.performance_score});
+        std.debug.print("  [SELF-REFERENTIAL] Slow links: {d}\n", .{analysis.optimizable_links});
+
+        // Step 2: Generate improvement suggestions
+        const suggestions = engine.generateSuggestions(&analysis) catch |err| {
+            std.debug.print("  [SELF-REFERENTIAL] Suggestion generation failed: {}\n", .{err});
+            return LinkMetrics{ .duration_ms = 100 };
+        };
+        defer self.allocator.free(suggestions);
+
+        std.debug.print("  [SELF-REFERENTIAL] Generated {d} improvement suggestions\n", .{suggestions.len});
+
+        // Step 3: Generate .vibee spec for improvements
+        const vibee_spec = engine.generateImprovementSpec(suggestions) catch |err| {
+            std.debug.print("  [SELF-REFERENTIAL] Spec generation failed: {}\n", .{err});
+            return LinkMetrics{ .duration_ms = 150 };
+        };
+        defer self.allocator.free(vibee_spec);
+
+        std.debug.print("  [SELF-REFERENTIAL] Generated .vibee spec ({d} bytes)\n", .{vibee_spec.len});
+
+        // Step 4: Validate improvement
+        const valid = engine.validateImprovement(vibee_spec) catch |err| {
+            std.debug.print("  [SELF-REFERENTIAL] Validation failed: {}\n", .{err});
+            return LinkMetrics{ .duration_ms = 200 };
+        };
+
+        if (valid) {
+            // Step 5: Apply improvement (non-destructive, logged only for now)
+            engine.applyPipelinePatch(self, vibee_spec) catch |err| {
+                std.debug.print("  [SELF-REFERENTIAL] Apply failed: {}\n", .{err});
+                return LinkMetrics{ .duration_ms = 250 };
+            };
+
+            std.debug.print("  [SELF-REFERENTIAL] {s}Self-evolution complete{s}\n", .{ GOLDEN, RESET });
+        } else {
+            std.debug.print("  [SELF-REFERENTIAL] Improvement validation failed, skipping\n", .{});
+        }
+
+        return LinkMetrics{
+            .duration_ms = 300,
+            .improvement_rate = self.state.improvement_rate,
+        };
+    }
+
     // ========================================================================
     // OUTPUT
     // ========================================================================
@@ -1113,7 +1189,7 @@ pub const PipelineExecutor = struct {
         std.debug.print("\n{s}", .{GOLDEN});
         std.debug.print("================================================================\n", .{});
         std.debug.print("              GOLDEN CHAIN PIPELINE v{d}\n", .{self.state.version});
-        std.debug.print("              22 Links | TVC Gate | Fail-Fast | Fly Deploy | ETERNAL | phi^-1\n", .{});
+        std.debug.print("              23 Links | TVC Gate | Fail-Fast | Fly Deploy | SELF-REFERENTIAL | phi^-1\n", .{});
         std.debug.print("================================================================{s}\n\n", .{RESET});
         std.debug.print("Task: {s}\n", .{self.state.task_description});
         if (self.tvc_gate != null) {
@@ -1135,7 +1211,7 @@ pub const PipelineExecutor = struct {
         std.debug.print("================================================================\n", .{});
         std.debug.print("              GOLDEN CHAIN CLOSED\n", .{});
         std.debug.print("================================================================{s}\n", .{RESET});
-        std.debug.print("\nCompleted: {d}/22 links\n", .{self.state.getCompletedCount()});
+        std.debug.print("\nCompleted: {d}/23 links\n", .{self.state.getCompletedCount()});
 
         // Show TVC status
         if (self.state.tvc_hit) {

@@ -194,7 +194,7 @@ pub const ASTGraph = struct {
     pub fn addCrossRef(self: *ASTGraph, from_file: []const u8, ref: SymbolRef) !void {
         const entry = try self.cross_refs.getOrPut(from_file);
         if (!entry.found_existing) {
-            entry.value_ptr.* = std.ArrayList(SymbolRef){};
+            entry.value_ptr.* = .{ .items = &.{}, .capacity = 0 };
         }
         try entry.value_ptr.*.append(self.allocator, ref);
     }
@@ -203,7 +203,7 @@ pub const ASTGraph = struct {
     pub fn addSymbol(self: *ASTGraph, symbol: SymbolDef) !void {
         const entry = try self.symbol_table.getOrPut(symbol.name);
         if (!entry.found_existing) {
-            entry.value_ptr.* = std.ArrayList(SymbolDef){};
+            entry.value_ptr.* = .{ .items = &.{}, .capacity = 0 };
         }
         try entry.value_ptr.*.append(self.allocator, symbol);
     }
@@ -218,7 +218,7 @@ pub const ASTGraph = struct {
 
     /// Find all references to a symbol across all files
     pub fn findReferences(self: *const ASTGraph, symbol_name: []const u8) ![]SymbolRef {
-        var refs = std.ArrayList(SymbolRef){};
+        var refs = std.ArrayList(SymbolRef){ .items = &.{}, .capacity = 0 };
 
         var iter = self.cross_refs.iterator();
         while (iter.next()) |entry| {
@@ -236,10 +236,14 @@ pub const ASTGraph = struct {
     pub fn findDefiningFiles(self: *const ASTGraph, symbol_name: []const u8) ?[]const []const u8 {
         if (self.symbol_table.get(symbol_name)) |defs| {
             const files = defs.items;
-            var result = std.ArrayList([]const u8){};
+            var result = std.ArrayList([]const u8){ .items = &.{}, .capacity = 0 };
             for (files) |def| {
                 const file_copy = self.allocator.dupe(u8, def.file) catch continue;
-                result.append(self.allocator, file_copy) catch {};
+                result.append(self.allocator, file_copy) catch |err| {
+                    _ = err;
+                    self.allocator.free(file_copy);
+                    continue;
+                };
             }
             return result.toOwnedSlice(self.allocator);
         }
@@ -247,7 +251,7 @@ pub const ASTGraph = struct {
     }
 
     pub fn findCallers(self: *const ASTGraph, symbol: []const u8) ![]const []const u8 {
-        var callers = std.ArrayList([]const u8){};
+        var callers = std.ArrayList([]const u8){ .items = &.{}, .capacity = 0 };
         var iter = self.call_graph.iterator();
         while (iter.next()) |entry| {
             for (entry.value_ptr.*.items) |callee| {
@@ -292,7 +296,7 @@ pub const ASTGraph = struct {
     pub fn addCall(self: *ASTGraph, from_file: []const u8, to_symbol: []const u8) !void {
         const entry = try self.call_graph.getOrPut(from_file);
         if (!entry.found_existing) {
-            entry.value_ptr.* = std.ArrayList([]const u8){};
+            entry.value_ptr.* = .{ .items = &.{}, .capacity = 0 };
         }
         try entry.value_ptr.*.append(self.allocator, to_symbol);
     }
@@ -863,7 +867,7 @@ fn extractSymbols(allocator: std.mem.Allocator, file_path: []const u8, ast: *Zig
     for (ast.children.items) |*child| {
         if (child.node_type == .fn_def) {
             // Extract function calls from this function
-            var calls = std.ArrayList([]const u8){};
+            var calls = std.ArrayList([]const u8){ .items = &.{}, .capacity = 0 };
             defer calls.deinit(allocator);
 
             try extractFunctionCalls(allocator, child, &calls);
@@ -871,7 +875,7 @@ fn extractSymbols(allocator: std.mem.Allocator, file_path: []const u8, ast: *Zig
             // Add to call graph
             const entry = try graph.call_graph.getOrPut(file_path);
             if (!entry.found_existing) {
-                entry.value_ptr.* = std.ArrayList([]const u8){};
+                entry.value_ptr.* = .{ .items = &.{}, .capacity = 0 };
             }
 
             for (calls.items) |call| {

@@ -294,9 +294,9 @@ pub const AutonomousRefactorEngine = struct {
         var plan = try RefactorPlan.init(allocator, intent);
         errdefer plan.deinit();
 
-        // Use semanticFind to locate target code
+        // Use semanticFindCached to locate target code (cached for performance)
         if (self.ast_graph) |graph| {
-            const matches = try vsa.semanticFind(
+            const matches = try vsa.semanticFindCached(
                 graph,
                 intent.description,
                 10, // top_k
@@ -394,6 +394,9 @@ pub const AutonomousRefactorEngine = struct {
 
         // Execute the loop
         var result = try self.executeRalphLoop(description);
+
+        // Clear semantic cache after execution
+        vsa.clearSemanticCache();
 
         // Add info about found targets
         if (result.success) {

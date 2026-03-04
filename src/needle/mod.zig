@@ -184,6 +184,8 @@ pub const bundle = vsa.bundle;
 pub const buildSemanticIndex = vsa.buildSemanticIndex;
 pub const semanticSearch = vsa.semanticSearch;
 pub const semanticFind = vsa.semanticFind;
+pub const semanticFindCached = vsa.semanticFindCached;
+pub const clearSemanticCache = vsa.clearSemanticCache;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PUBLIC API - HNSW Index (Tier 3.5)

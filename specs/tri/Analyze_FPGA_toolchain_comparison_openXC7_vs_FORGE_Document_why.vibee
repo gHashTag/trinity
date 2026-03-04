@@ -1,0 +1,16 @@
+# VIBEE Specification (auto-generated)
+name: Analyze_FPGA_toolchain_comparison_openXC7_vs_FORGE_Document_why
+version: "1.0.0"
+language: zig
+module: Analyze_FPGA_toolchain_comparison_openXC7_vs_FORGE_Document_why
+
+types:
+  GeneratedConfig:
+    fields:
+      task: String
+
+behaviors:
+  - name: execute
+    given: allocator
+    when: task description
+    then: implementation

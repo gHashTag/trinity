@@ -19,6 +19,7 @@ pub const HNSWConfig = struct {
     M: usize = DEFAULT_M,
     ef_construction: usize = DEFAULT_EF_CONSTRUCTION,
     ef_search: usize = DEFAULT_EF_SEARCH,
+    ml: f64 = 1.0 / @log(@as(f64, @floatFromInt(DEFAULT_M))),
 };
 
 pub const SearchResult = struct {
@@ -27,32 +28,61 @@ pub const SearchResult = struct {
     similarity: f32,
 };
 
+/// HNSW Node with connections at different layers
+const HNSWNode = struct {
+    id: usize,
+    symbol_id: []const u8,
+    vector: []f32,
+    // Each layer has a list of neighbor node IDs
+    layers: std.ArrayList(std.ArrayList(usize)),
+    level: usize,
+
+    fn deinit(self: *HNSWNode, allocator: std.mem.Allocator) void {
+        for (self.layers.items) |*layer| {
+            layer.deinit(allocator);
+        }
+        self.layers.deinit(allocator);
+    }
+};
+
+/// Candidate for priority queue during search
+const Candidate = struct {
+    node_id: usize,
+    distance: f32,
+
+    fn lessThan(_: void, a: Candidate, b: Candidate) bool {
+        return a.distance < b.distance; // Min-heap by distance
+    }
+};
+
 pub const HNSWIndex = struct {
     config: HNSWConfig,
-    // Simple flat storage for now (HNSW optimization later)
-    symbols: std.ArrayList([]const u8),
-    embeddings: std.ArrayList([]f32),
+    // All nodes indexed by ID
+    nodes: std.ArrayList(*HNSWNode),
+    // Entry point for search (top level node)
+    entry_point: ?*HNSWNode,
+    // Max level in the graph
+    max_level: usize,
     allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator, config: HNSWConfig) !HNSWIndex {
         return .{
             .config = config,
-            .symbols = std.ArrayList([]const u8).empty,
-            .embeddings = std.ArrayList([]f32).empty,
+            .nodes = std.ArrayList(*HNSWNode).empty,
+            .entry_point = null,
+            .max_level = 0,
             .allocator = allocator,
         };
     }
 
     pub fn deinit(self: *HNSWIndex) void {
-        for (self.symbols.items) |sym| {
-            self.allocator.free(sym);
+        for (self.nodes.items) |node| {
+            self.allocator.free(node.vector);
+            self.allocator.free(node.symbol_id);
+            node.deinit(self.allocator);
+            self.allocator.destroy(node);
         }
-        self.symbols.deinit(self.allocator);
-
-        for (self.embeddings.items) |emb| {
-            self.allocator.free(emb);
-        }
-        self.embeddings.deinit(self.allocator);
+        self.nodes.deinit(self.allocator);
     }
 
     fn distance(a: []const f32, b: []const f32) f32 {
@@ -65,59 +95,252 @@ pub const HNSWIndex = struct {
         return @sqrt(sum);
     }
 
-    pub fn insert(self: *HNSWIndex, symbol_id: []const u8, vector: []const f32) !void {
-        const sym_copy = try self.allocator.dupe(u8, symbol_id);
-        const emb_copy = try self.allocator.alloc(f32, vector.len);
-        @memcpy(emb_copy, vector);
+    fn getRandomLevel(self: *const HNSWIndex) usize {
+        const level = @as(usize, @intFromFloat(@floor(-@log(std.crypto.random.float(f64)) * self.config.ml)));
+        return level;
+    }
 
-        try self.symbols.append(self.allocator, sym_copy);
-        try self.embeddings.append(self.allocator, emb_copy);
+    /// Insert a vector into the HNSW index
+    pub fn insert(self: *HNSWIndex, symbol_id: []const u8, vector: []const f32) !void {
+        // Create new node
+        const node_id = self.nodes.items.len;
+        const level = self.getRandomLevel();
+        const new_node = try self.allocator.create(HNSWNode);
+        new_node.* = .{
+            .id = node_id,
+            .symbol_id = try self.allocator.dupe(u8, symbol_id),
+            .vector = try self.allocator.alloc(f32, vector.len),
+            .layers = std.ArrayList(std.ArrayList(usize)).empty,
+            .level = level,
+        };
+        @memcpy(new_node.vector, vector);
+
+        // Initialize layer lists
+        try new_node.layers.ensureTotalCapacity(self.allocator, level + 1);
+        for (0..level + 1) |_| {
+            new_node.layers.append(self.allocator, std.ArrayList(usize).empty) catch unreachable;
+        }
+
+        try self.nodes.append(self.allocator, new_node);
+
+        // Find entry point - first node becomes entry immediately
+        var curr = self.entry_point orelse {
+            // First node - set as entry point and done
+            self.entry_point = new_node;
+            self.max_level = level;
+            return;
+        };
+
+        // Set as entry point if highest level
+        if (level > self.max_level) {
+            self.entry_point = new_node;
+            self.max_level = level;
+        }
+
+        // Top layer: greedy search
+        var top_level = self.max_level;
+        while (top_level > level) : (top_level -= 1) {
+            curr = self.searchLayerOne(curr, new_node.vector, 1, top_level);
+        }
+
+        // Insert at each level
+        var layer_data = std.ArrayList(usize).empty;
+        defer {
+            layer_data.deinit(self.allocator);
+        }
+
+        var lc: usize = level + 1;
+        while (lc > 0) : (lc -= 1) {
+            const l = lc - 1;
+
+            // Find neighbors at this level
+            var candidates = try self.searchLayer(curr, new_node.vector, self.config.ef_construction, l);
+            defer {
+                candidates.deinit(self.allocator);
+            }
+
+            // Select M neighbors
+            var neighbors = try self.selectNeighbors(candidates, self.config.M);
+            defer {
+                for (neighbors.items) |n_id| {
+                    self.allocator.free(n_id);
+                }
+                neighbors.deinit(self.allocator);
+            }
+
+            // Add connections
+            for (neighbors.items) |neighbor_id| {
+                if (neighbor_id.len > 0) {
+                    const nid = std.fmt.parseInt(usize, neighbor_id, 10) catch 0;
+                    try new_node.layers.items[l].append(self.allocator, nid);
+
+                    // Add backward connection (bidirectional)
+                    const neighbor_node = self.nodes.items[nid];
+                    if (neighbor_node.layers.items.len > l) {
+                        try neighbor_node.layers.items[l].append(self.allocator, node_id);
+                    }
+                }
+            }
+
+            // Update curr for next level
+            if (candidates.items.len > 0) {
+                curr = self.nodes.items[candidates.items[0].node_id];
+            }
+        }
+    }
+
+    fn searchLayerOne(self: *HNSWIndex, entry: *HNSWNode, query: []const f32, _: usize, level: usize) *HNSWNode {
+        var curr = entry;
+        var min_dist = distance(query, curr.vector);
+
+        var visited = std.AutoHashMap(usize, void).init(self.allocator);
+        defer visited.deinit();
+        visited.put(curr.id, {}) catch {};
+
+        var changed = true;
+        while (changed) {
+            changed = false;
+
+            // Check neighbors
+            if (level < curr.layers.items.len) {
+                for (curr.layers.items[level].items) |neighbor_id| {
+                    if (visited.contains(neighbor_id)) continue;
+                    visited.put(neighbor_id, {}) catch {};
+
+                    const neighbor = self.nodes.items[neighbor_id];
+                    const dist = distance(query, neighbor.vector);
+
+                    if (dist < min_dist) {
+                        min_dist = dist;
+                        curr = neighbor;
+                        changed = true;
+                    }
+                }
+            }
+        }
+
+        return curr;
+    }
+
+    fn searchLayer(self: *HNSWIndex, entry: *HNSWNode, query: []const f32, ef: usize, level: usize) !std.ArrayList(Candidate) {
+        var candidates = std.ArrayList(Candidate).empty;
+        var visited = std.AutoHashMap(usize, void).init(self.allocator);
+        defer visited.deinit();
+
+        const entry_dist = distance(query, entry.vector);
+        try candidates.append(self.allocator, .{
+            .node_id = entry.id,
+            .distance = entry_dist,
+        });
+        visited.put(entry.id, {}) catch {};
+
+        var w = std.ArrayList(Candidate).empty;
+        try w.append(self.allocator, .{
+            .node_id = entry.id,
+            .distance = entry_dist,
+        });
+
+        while (candidates.items.len > 0) {
+            // Extract closest
+            std.sort.insertion(Candidate, candidates.items, {}, Candidate.lessThan);
+            const curr = candidates.orderedRemove(0);
+
+            // Check if we can stop
+            if (w.items.len >= ef and curr.distance > w.items[w.items.len - 1].distance) {
+                break;
+            }
+
+            // Explore neighbors
+            if (curr.node_id < self.nodes.items.len) {
+                const curr_node = self.nodes.items[curr.node_id];
+                if (level < curr_node.layers.items.len) {
+                    for (curr_node.layers.items[level].items) |neighbor_id| {
+                        if (visited.contains(neighbor_id)) continue;
+                        visited.put(neighbor_id, {}) catch {};
+
+                        const neighbor = self.nodes.items[neighbor_id];
+                        const dist = distance(query, neighbor.vector);
+
+                        if (w.items.len < ef or dist < w.items[w.items.len - 1].distance) {
+                            try candidates.append(self.allocator, .{
+                                .node_id = neighbor_id,
+                                .distance = dist,
+                            });
+
+                            try w.append(self.allocator, .{
+                                .node_id = neighbor_id,
+                                .distance = dist,
+                            });
+
+                            if (w.items.len > ef) {
+                                std.sort.insertion(Candidate, w.items, {}, Candidate.lessThan);
+                                _ = w.orderedRemove(w.items.len - 1);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        candidates.deinit(self.allocator);
+        return w;
+    }
+
+    fn selectNeighbors(self: *HNSWIndex, candidates: std.ArrayList(Candidate), m: usize) !std.ArrayList([]const u8) {
+        var result = std.ArrayList([]const u8).empty;
+
+        const k = @min(m, candidates.items.len);
+        for (0..k) |i| {
+            const node_id = candidates.items[i].node_id;
+            const id_str = try std.fmt.allocPrint(self.allocator, "{d}", .{node_id});
+            try result.append(self.allocator, id_str);
+        }
+
+        return result;
     }
 
     pub fn search(self: *HNSWIndex, query: []const f32, k: usize, result_allocator: std.mem.Allocator) ![]SearchResult {
-        if (self.symbols.items.len == 0) return &.{};
+        if (self.nodes.items.len == 0) return &.{};
 
-        var results = std.ArrayList(SearchResult).empty;
-        errdefer {
-            for (results.items) |*r| {
-                result_allocator.free(r.symbol_id);
-            }
-            results.deinit(result_allocator);
+        const entry = self.entry_point orelse return &.{};
+
+        // Search from top down
+        var curr = entry;
+        var level = self.max_level;
+
+        // Greedy descent
+        while (level > 0) : (level -= 1) {
+            curr = self.searchLayerOne(curr, query, 1, level);
         }
 
-        // Calculate distances to all nodes
-        for (self.symbols.items, 0..) |sym, i| {
-            const dist = distance(query, self.embeddings.items[i]);
-            const sim = 1.0 / (1.0 + dist);
+        // Search at bottom level
+        var candidates = try self.searchLayer(curr, query, @max(k, self.config.ef_search), 0);
 
-            try results.append(result_allocator, .{
-                .node_id = i,
-                .symbol_id = try result_allocator.dupe(u8, sym),
-                .similarity = sim,
-            });
+        // Convert to results
+        const result_count = @min(k, candidates.items.len);
+        const results = try result_allocator.alloc(SearchResult, result_count);
+
+        for (0..result_count) |i| {
+            const c = candidates.items[i];
+            const node = self.nodes.items[c.node_id];
+            const dist = c.distance;
+
+            // Convert distance to similarity (1/(1+d))
+            results[i] = .{
+                .node_id = c.node_id,
+                .symbol_id = try result_allocator.dupe(u8, node.symbol_id),
+                .similarity = 1.0 / (1.0 + dist),
+            };
         }
 
-        // Sort by similarity descending
-        std.sort.insertion(SearchResult, results.items, {}, struct {
-            fn lessThan(_: void, a: SearchResult, b: SearchResult) bool {
-                return a.similarity > b.similarity;
-            }
-        }.lessThan);
+        // Cleanup candidates
+        candidates.deinit(self.allocator);
 
-        // Return top k
-        const top_k = @min(k, results.items.len);
-        const result_slice = try result_allocator.alloc(SearchResult, top_k);
-        for (0..top_k) |i| {
-            result_slice[i] = results.items[i];
-        }
-        results.items.len = 0;
-        results.deinit(result_allocator);
-
-        return result_slice;
+        return results;
     }
 
     pub fn size(self: *const HNSWIndex) usize {
-        return self.symbols.items.len;
+        return self.nodes.items.len;
     }
 };
 

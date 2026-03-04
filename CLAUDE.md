@@ -43,9 +43,22 @@ zig fmt src/                 # Format Zig code
 | Toolchain | Status | Issues |
 |-----------|--------|--------|
 | **openXC7** (Docker) | ✅ **WORKING** | None — use this! |
-| FORGE (Zig) | ❌ BROKEN | LUT INIT, FFMUX, OUTMUX, routing bugs |
+| FORGE (Zig) | ❌ BROKEN | IOB placement, OLOGIC config, net-to-port matching |
 
-### openXC7 Toolchain
+**FORGE Bug Details:**
+- `src/forge/placer.zig:115-132` — net-to-port matching fails
+- `src/forge/fasm_gen.zig:557-560` — missing OLOGIC features (ZINV, TFF)
+- Result: LEDs stuck ON constantly, incorrect pin mapping
+
+### Quick Build with synth.sh
+
+```bash
+cd fpga/openxc7-synth
+./synth.sh <design.v> <top_module>
+# Example: ./synth.sh d6_blink.v trinity_top
+```
+
+### openXC7 Toolchain (manual)
 
 ```bash
 # Pull image

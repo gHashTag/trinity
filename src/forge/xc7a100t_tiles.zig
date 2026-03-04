@@ -19373,4 +19373,16 @@ pub fn isLeftTile(tt: TileType) bool {
     };
 }
 
+/// Find an IOB tile and get the absolute site Y for a given tile coordinate and site index.
+/// bel_index: 0 for site0 (lower), 1 for site1 (upper)
+/// Returns the absolute IOB site Y (e.g., 51 for IOB_X0Y51) or null if not found.
+pub fn findIobTile(tile_x: u16, tile_y: u16, bel_index: u16) ?u16 {
+    for (iob_tiles) |tile| {
+        if (tile.x == tile_x and tile.y == tile_y) {
+            return if (bel_index == 0) tile.site0 else tile.site1;
+        }
+    }
+    return null;
+}
+
 const std = @import("std");

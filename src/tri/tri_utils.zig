@@ -805,12 +805,12 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "needle") or std.mem.eql(u8, arg, "nedl")) return .needle;
     if (std.mem.eql(u8, arg, "needle-search") or std.mem.eql(u8, arg, "needle-search") or std.mem.eql(u8, arg, "ns")) return .needle_search;
     if (std.mem.eql(u8, arg, "needle-check") or std.mem.eql(u8, arg, "nc")) return .needle_check;
-    return .none;
     if (std.mem.eql(u8, arg, "mesh")) return .mesh;
     if (std.mem.eql(u8, arg, "wallet")) return .wallet;
     if (std.mem.eql(u8, arg, "reputation")) return .reputation;
     if (std.mem.eql(u8, arg, "rep")) return .reputation;
     if (std.mem.eql(u8, arg, "hardware")) return .hardware;
+    return .none;
 }
 // ═══════════════════════════════════════════════════════════════════════════════
 // MCP Command Metadata (for auto-discovery)

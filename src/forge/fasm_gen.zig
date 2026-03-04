@@ -111,6 +111,10 @@ pub fn generate(allocator: Allocator, db: *const ForgeDB) !FasmResult {
     // Generate IOB features
     try generateIobFeatures(allocator, db, &result);
 
+    // Generate safe configuration for UNUSED IOB pins (critical bug fix!)
+    // Without this, unused pins float or drive incorrectly, causing multiple LEDs to light up
+    try generateUnusedIobFeatures(allocator, db, &result);
+
     // Generate clock features
     try generateClockFeatures(allocator, db, &result);
 
@@ -554,6 +558,72 @@ fn generateIobFeatures(allocator: Allocator, db: *const ForgeDB, result: *FasmRe
             try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.OLOGIC_Y0.OMUX.D1", .{ ioi_prefix, x, y });
             try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.OLOGIC_Y0.OQUSED", .{ ioi_prefix, x, y });
             try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.OLOGIC_Y0.OSERDES.DATA_RATE_TQ.BUF", .{ ioi_prefix, x, y });
+        }
+    }
+}
+
+// =============================================================================
+// Unused IOB Feature Generation — CRITICAL BUG FIX
+// =============================================================================
+//
+// Generates safe configuration (IN_ONLY + PULLDOWN) for all IOB sites
+// that are NOT used by the design. Without this, unused pins float or
+// drive incorrectly, causing multiple LEDs to light up dimly.
+//
+// The bug: All frames initialize to 0, which leaves IOBs in an undefined
+// state. Unused pins need explicit FASM features to put them in a safe
+// input-only mode with pull-down resistors.
+//
+// =============================================================================
+
+fn generateUnusedIobFeatures(allocator: Allocator, db: *const ForgeDB, result: *FasmResult) !void {
+    var buf: [512]u8 = undefined;
+
+    // Only apply to xc7a100t for now (has iob_tiles data)
+    if (db.device != .xc7a100t) return;
+
+    // Build a set of used IOB sites: (tile_x << 16) | absolute_site_y
+    // For xc7a100t, bel.bel_index = 0 for site0, = 1 for site1 (relative to tile)
+    // We need to map (tile_x, tile_y, bel_index) → absolute site Y from iob_tiles
+    var used_sites = std.AutoHashMap(u32, void).init(allocator);
+    defer used_sites.deinit();
+
+    for (db.cells.items) |cell| {
+        if (!cell.cell_type.isIO()) continue;
+        const x = cell.tile_x orelse continue;
+        const y = cell.tile_y orelse continue;
+        if (cell.bel) |bel| {
+            // Find the IOB tile at this (x, y) coordinate and get the absolute site Y
+            const abs_site_y = tiles.findIobTile(x, y, bel.bel_index) orelse continue;
+            const key = (@as(u32, x) << 16) | abs_site_y;
+            try used_sites.put(key, {});
+        }
+    }
+
+    // Generate safe features for all unused IOB sites
+    for (tiles.iob_tiles) |iob_tile| {
+        const iob_prefix = if (iob_tile.x == 0) "LIOB33" else "RIOB33";
+
+        // Process site0 (always exists) - corresponds to bel_index = 0
+        if (iob_tile.site0) |site_y| {
+            const key = (@as(u32, iob_tile.x) << 16) | site_y;
+            if (!used_sites.contains(key)) {
+                // Site not used → generate IN_ONLY + PULLDOWN
+                const iob_y_suffix = "IOB_Y0"; // site0 is always Y0 within tile
+                try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.{s}.LVCMOS12_LVCMOS15_LVCMOS18_LVCMOS25_LVCMOS33_LVDS_25_LVTTL_SSTL135_SSTL15_TMDS_33.IN_ONLY", .{ iob_prefix, iob_tile.x, iob_tile.y, iob_y_suffix });
+                try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.{s}.PULLTYPE.PULLDOWN", .{ iob_prefix, iob_tile.x, iob_tile.y, iob_y_suffix });
+            }
+        }
+
+        // Process site1 (may be null for SING tiles) - corresponds to bel_index = 1
+        if (iob_tile.site1) |site_y| {
+            const key = (@as(u32, iob_tile.x) << 16) | site_y;
+            if (!used_sites.contains(key)) {
+                // Site not used → generate IN_ONLY + PULLDOWN
+                const iob_y_suffix = "IOB_Y1"; // site1 is always Y1 within tile
+                try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.{s}.LVCMOS12_LVCMOS15_LVCMOS18_LVCMOS25_LVCMOS33_LVDS_25_LVTTL_SSTL135_SSTL15_TMDS_33.IN_ONLY", .{ iob_prefix, iob_tile.x, iob_tile.y, iob_y_suffix });
+                try emitFeature(allocator, result, &buf, "{s}_X{d}Y{d}.{s}.PULLTYPE.PULLDOWN", .{ iob_prefix, iob_tile.x, iob_tile.y, iob_y_suffix });
+            }
         }
     }
 }
