@@ -14,6 +14,7 @@ const zig_parser = @import("zig_parser.zig");
 const hnsw = @import("hnsw.zig");
 const ivf = @import("ivf.zig");
 const brute_simd = @import("ann_brute_simd.zig");
+const vsa_fpga = @import("vsa_fpga.zig");
 
 // Re-export core VSA operations (HybridBigInt-based)
 pub const HybridBigInt = trinity_vsa.HybridBigInt;
@@ -736,6 +737,9 @@ var cached_index: ?*SemanticIndex = null;
 var cached_graph_hash: u64 = 0;
 var cached_allocator: ?std.mem.Allocator = null;
 
+// KOSCHEI Week 2: FPGA accelerator context (optional)
+var fpga_context: ?vsa_fpga.VSAFPGA = null;
+
 pub fn clearSemanticCache() void {
     if (cached_index) |idx| {
         if (cached_allocator) |alloc| {
@@ -747,8 +751,27 @@ pub fn clearSemanticCache() void {
     cached_graph_hash = 0;
     cached_allocator = null;
 
+    // KOSCHEI Week 2: Clean up FPGA context
+    if (fpga_context) |*ctx| {
+        ctx.deinit();
+        fpga_context = null;
+    }
+
     // Tier 4.2: Also remove persistent cache file
     std.fs.cwd().deleteFile(IVF_CACHE_PATH) catch {};
+}
+
+/// Initialize FPGA accelerator (call once at startup)
+pub fn initFPGA(allocator: std.mem.Allocator) !void {
+    if (fpga_context == null) {
+        fpga_context = try vsa_fpga.VSAFPGA.init(allocator);
+        std.log.info("VSA FPGA: Accelerator initialized", .{});
+    }
+}
+
+/// Check if FPGA accelerator is available
+pub fn isFPGAAvailable() bool {
+    return fpga_context != null;
 }
 
 pub fn semanticFindCached(
@@ -757,6 +780,11 @@ pub fn semanticFindCached(
     top_k: usize,
     allocator: std.mem.Allocator,
 ) ![]VSAMatch {
+    // KOSCHEI Week 2: Initialize FPGA accelerator on first use (silent failure if unavailable)
+    if (fpga_context == null) {
+        initFPGA(allocator) catch {};
+    }
+
     // Compute graph hash
     var graph_hasher = std.hash.Wyhash.init(0);
     var file_iter = graph.files.iterator();
