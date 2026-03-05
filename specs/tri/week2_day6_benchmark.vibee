@@ -1,0 +1,98 @@
+# ============================================================================
+# Week 2 Day 6 Benchmark — Day 5 vs Day 6 Comparison
+# ============================================================================
+
+name: week2_day6_benchmark
+version: "1.0.0"
+language: zig
+module: week2_benchmark
+
+description: |
+  Comprehensive comparison between Day 5 and Day 6 performance.
+  Tests UART, VSA, TQNN integration and measures improvements.
+
+types:
+  BenchmarkResult:
+    description: Single benchmark result
+    fields:
+      name: String
+      day5_value: Float64
+      day6_value: Float64
+      improvement: Float64
+      unit: String
+
+  ComparisonReport:
+    description: Full comparison report
+    fields:
+      timestamp: UInt64
+      total_benchmarks: UInt32
+      passed: UInt32
+      failed: UInt32
+      results: Array[BenchmarkResult][100]
+
+constants:
+  DIM_10K: 10000
+  ITERATIONS: 10000
+  TARGET_IMPROVEMENT: 1.618  # φ threshold
+
+behaviors:
+  - name: benchmark_vsa_bind_10k
+    given: 10K dimensional vectors
+    when: Running bind operation
+    then: Measure ops/sec, compare Day5 vs Day6
+
+  - name: benchmark_vsa_similarity_10k
+    given: 10K dimensional vectors
+    when: Running similarity
+    then: Measure ns/op, compare Day5 vs Day6
+
+  - name: benchmark_tqnn_forward_16
+    given: 16 float values
+    when: Running TQNN forward
+    then: Measure latency, compare Day5 vs Day6
+
+  - name: benchmark_uart_ping
+    given: UART connection
+    when: Sending CMD_PING
+    then: Measure roundtrip latency
+
+  - name: benchmark_jit_engine
+    given: JIT VSA engine
+    when: Running 10K iterations
+    then: Measure JIT speedup vs scalar
+
+  - name: benchmark_simd_neon
+    given: ARM64 NEON SIMD
+    when: Running dot product
+    then: Measure speedup vs scalar
+
+test_cases:
+  - name: day6_beats_day5
+    given: All benchmarks
+    when: Comparison complete
+    then: Day6 >= Day5 for all metrics
+
+  - name: immortal_threshold
+    given: Improvement metric
+    when: Compared to φ⁻¹ (0.618)
+    then: Pass if improvement > 61.8%
+
+algorithms:
+  - name: full_comparison_pipeline
+    description: Complete Day5 vs Day6 comparison
+    steps:
+      - Load Day5 baseline from metrics/v5.json
+      - Run Day6 benchmarks
+      - Calculate improvement percentages
+      - Generate comparison table
+      - Check immortal threshold (φ⁻¹)
+      - Save report to metrics/v6.json
+
+  - name: improvement_calculation
+    description: Calculate improvement percentage
+    steps:
+      - Get day5_value (baseline)
+      - Get day6_value (new)
+      - If lower is better: improvement = (day5 - day6) / day5
+      - If higher is better: improvement = (day6 - day5) / day5
+      - Return improvement * 100 (percentage)
