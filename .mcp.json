@@ -2,7 +2,7 @@
   "mcpServers": {
     "trinity": {
       "command": "/opt/homebrew/bin/python3",
-      "args": ["/Users/playra/trinity-w1/test-mcp.py"]
+      "args": ["/Users/playra/trinity-w1/trinity-mcp.py"]
     }
   }
 }

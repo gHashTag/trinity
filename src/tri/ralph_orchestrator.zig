@@ -420,8 +420,8 @@ pub const RalphOrchestrator = struct {
         const fib_n = fibonacci(self.status.total_cycles + 3);
         const interval_sec = (self.config.wake_interval_sec * fib_n) / 2;
 
-        self.status.wake_time = current_time + @min(interval_sec, 3600); // Cap at 1 hour
-        self.status.next_wake_interval = self.status.wake_time - current_time;
+        self.status.wake_time = current_time + @as(i64, @intCast(@min(interval_sec, 3600))); // Cap at 1 hour
+        self.status.next_wake_interval = @intCast(self.status.wake_time - current_time);
         self.status.total_cycles += 1;
         self.status.state = .sleeping;
     }
