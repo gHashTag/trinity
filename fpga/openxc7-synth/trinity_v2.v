@@ -145,12 +145,9 @@ module TQNN_Layer1 (
     always @(posedge clk) begin
         if (valid_in) begin
             count_neg <= 0; count_zero <= 0; count_pos <= 0;
-            integer j;
-            for (j = 0; j < 16; j = j + 1) begin
-                if (neuron_out[j] == 2'b00) count_neg <= count_neg + 1;
-                else if (neuron_out[j] == 2'b01) count_zero <= count_zero + 1;
-                else count_pos <= count_pos + 1;
-            end
+            count_neg <= (neuron_out[ 0] == 2'b00) + (neuron_out[ 1] == 2'b00) + (neuron_out[ 2] == 2'b00) + (neuron_out[ 3] == 2'b00) + (neuron_out[ 4] == 2'b00) + (neuron_out[ 5] == 2'b00) + (neuron_out[ 6] == 2'b00) + (neuron_out[ 7] == 2'b00) + (neuron_out[ 8] == 2'b00) + (neuron_out[ 9] == 2'b00) + (neuron_out[10] == 2'b00) + (neuron_out[11] == 2'b00) + (neuron_out[12] == 2'b00) + (neuron_out[13] == 2'b00) + (neuron_out[14] == 2'b00) + (neuron_out[15] == 2'b00);
+            count_zero <= (neuron_out[ 0] == 2'b01) + (neuron_out[ 1] == 2'b01) + (neuron_out[ 2] == 2'b01) + (neuron_out[ 3] == 2'b01) + (neuron_out[ 4] == 2'b01) + (neuron_out[ 5] == 2'b01) + (neuron_out[ 6] == 2'b01) + (neuron_out[ 7] == 2'b01) + (neuron_out[ 8] == 2'b01) + (neuron_out[ 9] == 2'b01) + (neuron_out[10] == 2'b01) + (neuron_out[11] == 2'b01) + (neuron_out[12] == 2'b01) + (neuron_out[13] == 2'b01) + (neuron_out[14] == 2'b01) + (neuron_out[15] == 2'b01);
+            count_pos <= (neuron_out[ 0] == 2'b10) + (neuron_out[ 1] == 2'b10) + (neuron_out[ 2] == 2'b10) + (neuron_out[ 3] == 2'b10) + (neuron_out[ 4] == 2'b10) + (neuron_out[ 5] == 2'b10) + (neuron_out[ 6] == 2'b10) + (neuron_out[ 7] == 2'b10) + (neuron_out[ 8] == 2'b10) + (neuron_out[ 9] == 2'b10) + (neuron_out[10] == 2'b10) + (neuron_out[11] == 2'b10) + (neuron_out[12] == 2'b10) + (neuron_out[13] == 2'b10) + (neuron_out[14] == 2'b10) + (neuron_out[15] == 2'b10);
         end
     end
 

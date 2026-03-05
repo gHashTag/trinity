@@ -1996,7 +1996,7 @@ pub fn build(b: *std.Build) void {
             .imports = &.{
                 .{ .name = "vsa", .module = trinity_mod },
                 .{ .name = "tri", .module = trinity_mod },
-                .{ .name = "tri/math/sacred_formula.zig", .module = tri_math_mod },
+                .{ .name = "sacred_formula", .module = tri_math_mod },
             },
         }),
     });
@@ -2004,6 +2004,36 @@ pub fn build(b: *std.Build) void {
     const hyperspace_step = b.step("test-hyperspace", "Test v9.2 HYPERSPACE VSA-Quantum Bridge");
     hyperspace_step.dependOn(&run_hyperspace.step);
     test_step.dependOn(&run_hyperspace.step);
+
+    // v9.3 E8-VSA UNIFIED THEORY — E8 Particle Assignment
+    const vsa_quantum_bridge_mod = b.createModule(.{
+        .root_source_file = b.path("src/hyperspace/vsa_quantum_bridge.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "vsa", .module = trinity_mod },
+            .{ .name = "tri", .module = trinity_mod },
+            .{ .name = "sacred_formula", .module = tri_math_mod },
+        },
+    });
+
+    const e8_particle_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/hyperspace/e8_particle_assignment.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = trinity_mod },
+                .{ .name = "tri", .module = trinity_mod },
+                .{ .name = "sacred_formula", .module = tri_math_mod },
+                .{ .name = "vsa_quantum_bridge", .module = vsa_quantum_bridge_mod },
+            },
+        }),
+    });
+    const run_e8_particle = b.addRunArtifact(e8_particle_tests);
+    const e8_particle_step = b.step("test-e8-particle", "Test v9.3 E8-VSA Particle Assignment");
+    e8_particle_step.dependOn(&run_e8_particle.step);
+    test_step.dependOn(&run_e8_particle.step);
 
     // VSA Math Benchmark executable (MATH-003) — REMOVED (generated.old/ deleted)
 

@@ -21,7 +21,7 @@ const math = std.math;
 // Import VSA core functions
 const vsa = @import("vsa");
 const tri = @import("tri");
-const sacred_formula = @import("tri/math/sacred_formula.zig");
+const sacred_formula = @import("sacred_formula");
 
 //===========================================================================
 // Constants
