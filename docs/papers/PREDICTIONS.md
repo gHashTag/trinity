@@ -34,7 +34,7 @@
 
 | Code | Prediction | Value | Comparison | Status |
 |------|------------|-------|------------|--------|
-| **P21** | **Barbero-Immirzi γ** | **0.23707** | **LQG: 0.2375** | **🔥 0.18%** |
+| **P21** | **Barbero-Immirzi γ** | **γ = φ⁻³ = 0.23607** | **LQG: 0.23753** | **🔥 0.617%** |
 | P22 | Cosmological constant | 1.1 × 10⁻⁵² m⁻² | Planck: 1.1056 × 10⁻⁵² | ✅ |
 | P23 | Graviton mass upper bound | < 10⁻⁵¹ eV | LIGO: < 10⁻²² eV | 🔄 |
 | P24 | Holographic entropy correction | δ_E8 ≈ 0.01 × A/4 | Standard: S = A/4 | 🔄 |
