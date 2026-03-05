@@ -1,0 +1,126 @@
+# ============================================================================
+# TQNN Benchmark — Performance Measurement Suite
+# Week 2 Day 5: Benchmark TQNN operations
+# φ² + 1/φ² = 3 = TRINITY
+# ============================================================================
+
+name: tqnn_benchmark
+version: "1.0.0"
+language: zig
+module: tqnn_bench
+
+description: |
+  Benchmark suite for TQNN operations. Measures throughput and latency
+  for Layer 1 only, TQNN+VSA integration, and scaling tests (8-128 dimensions).
+
+imports:
+  - models/tqnn/tqnn_inference
+  - vsa/10k_vsa
+
+types:
+  BenchmarkConfig:
+    description: Benchmark configuration
+    fields:
+      iterations: UInt = 1000
+      warmup: UInt = 10
+      input_dim: UInt = 16
+      vsa_dim: UInt = 10000
+
+  BenchmarkResult:
+    description: Single benchmark result
+    fields:
+      name: String
+      iterations: UInt
+      total_ns: UInt64
+      avg_ns: UInt64
+      throughput: Float
+      success: Bool
+
+  ScalingResult:
+    description: Scaling test result
+    fields:
+      dim: UInt
+      time_ns: UInt64
+      ops_per_sec: Float
+
+constants:
+  DEFAULT_ITERATIONS: 1000
+  DEFAULT_WARMUP: 10
+  SCALING_DIMS: [8, 16, 32, 64, 128]
+
+behaviors:
+  - name: BenchmarkConfig_default
+    given: Input dimension
+    when: Creating default config
+    then: Returns config with iterations=1000, warmup=10
+
+  - name: run_layer_benchmark
+    given: Allocator, config
+    when: Running Layer 1 benchmark
+    then: Returns {name, iterations, total_ns, avg_ns, throughput, success}
+
+  - name: run_hybrid_benchmark
+    given: Allocator, config
+    when: Running TQNN+VSA benchmark
+    then: Returns benchmark result with VSA operations
+
+  - name: run_scaling_benchmark
+    given: Allocator, base_dim, iterations
+    when: Running scaling test
+    then: Returns array of ScalingResult for each dimension
+
+  - name: measure_time
+    given: Function to measure, iterations
+    when: Executing benchmark
+    then: Returns elapsed nanoseconds using std.time.nanoTimestamp
+
+  - name: compute_throughput
+    given: Total operations, elapsed_ns
+    when: Computing throughput
+    then: Returns ops/sec as float
+
+  - name: print_benchmark_results
+    given: Array of BenchmarkResult
+    when: Displaying results
+    then: Prints formatted table to stdout
+
+  - name: print_scaling_results
+    given: Array of ScalingResult
+    when: Displaying scaling
+    then: Prints dimension vs time table
+
+  - name: verify_layer_output
+    given: Layer output
+    when: Verifying correctness
+    then: Returns true if output length matches input
+
+  - name: verify_hybrid_output
+    given: Hybrid result
+    when: Verifying correctness
+    then: Returns true if quantum_state sum equals input_dim
+
+test_cases:
+  - name: layer_benchmark_completes
+    given: Default config, 16 dimensions
+    when: Layer benchmark runs
+    then: Completes 1000 iterations without error
+
+  - name: hybrid_benchmark_completes
+    given: Default config, 16 dimensions
+    when: Hybrid benchmark runs
+    then: Completes 1000 iterations, returns valid similarity
+
+  - name: scaling_benchmark_completes
+    given: Dimensions [8, 16, 32, 64, 128]
+    when: Scaling benchmark runs
+    then: Returns result for each dimension
+
+  - name: throughput_calculation
+    given: 1000 ops in 1000000ns
+    when: Throughput computed
+    then: Returns ~1000000000 ops/sec
+
+  - name: output_verification
+    given: Valid layer result
+    when: Verification runs
+    then: Returns true
