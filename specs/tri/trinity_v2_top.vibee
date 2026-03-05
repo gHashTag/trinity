@@ -1,0 +1,207 @@
+# ============================================================================
+# Trinity V2 Top Module — Week 2 Day 6
+# ============================================================================
+
+name: trinity_v2_top
+version: "2.0.0"
+language: varlog
+module: trinity_v2_top
+
+description: |
+  Unified top module for Trinity V2 FPGA.
+  Integrates UART, VSA 10K, TQNN Layer 1, BitNet stub, and LED control.
+  Target: QMTECH XC7A100T-1FGG676C
+
+fpga_target: xilinx
+target_frequency: 50
+pipeline: stage1
+
+types:
+  TrinityConfig:
+    description: Configuration registers
+    fields:
+      led_mode: UInt2
+      uart_enabled: Bool
+      tqnn_enabled: Bool
+      vsa_enabled: Bool
+
+signals:
+  # Clock and Reset
+  - name: clk
+    type: Input
+    width: 1
+    description: 50 MHz oscillator (U22)
+
+  - name: rst_n
+    type: Input
+    width: 1
+    description: Reset button (active low)
+
+  # UART
+  - name: uart_rx
+    type: Input
+    width: 1
+    description: UART receive
+
+  - name: uart_tx
+    type: Output
+    width: 1
+    description: UART transmit
+
+  # LED
+  - name: led
+    type: Output
+    width: 1
+    description: Status LED (T23)
+
+  # Quantum State Outputs (for debugging)
+  - name: quantum_pos
+    type: Output
+    width: 16
+    description: Positive qutrit count
+
+  - name: quantum_neg
+    type: Output
+    width: 16
+    description: Negative qutrit count
+
+  - name: coherence
+    type: Output
+    width: 1
+    description: Quantum coherence flag
+
+  - name: similarity
+    type: Output
+    width: 16
+    description: VSA similarity score
+
+constants:
+  CLK_MHZ: 50
+  UART_DIV: 217  // 50MHz / 115200 ≈ 434 (half for TX/RX)
+  DIM_10K: 10000
+
+behaviors:
+  - name: uart_receive_command
+    given: uart_rx data
+    when: Packet received
+    then: Decodes command, dispatches to subsystem
+
+  - name: uart_send_response
+    given: Response ready
+    when: Sending
+    then: Serializes response over uart_tx
+
+  - name: vsa_bind_10k
+    given: CMD_VSA_BIND (0x02)
+    when: Command dispatched
+    then: Bind 10K trits, compute similarity
+
+  - name: tqnn_layer_forward
+    given: CMD_TQNN_FORWARD (0x04)
+    when: Command dispatched
+    then: Encode floats→qutrits, apply gates, return state
+
+  - name: quantum_state_read
+    given: CMD_READ_STATE (0x05)
+    when: Command dispatched
+    then: Return {pos, neg, zero, coherence, similarity}
+
+  - name: led_mode_update
+    given: CMD_LED_CONTROL (0x06)
+    when: Mode received
+    then: Update led_mode, apply to LED output
+
+  - name: led_blink_fast
+    given: led_mode=2
+    when: Always
+    then: Toggle at ~3 Hz (blink_counter[20])
+
+  - name: led_blink_slow
+    given: led_mode=3
+    when: Always
+    then: Toggle at ~0.75 Hz (blink_counter[23])
+
+  - name: led_show_coherence
+    given: tqnn processing complete
+    when: coherence detected
+    then: LED reflects quantum state
+
+  - name: system_reset
+    given: rst_n=0
+    when: Reset pressed
+    then: All state cleared, LED solid during reset
+
+test_cases:
+  - name: uart_ping
+    given: CMD_PING (0x01)
+    when: Sent
+    then: ACK with firmware version
+
+  - name: vsa_bind_command
+    given: CMD_VSA_BIND with 10K trits
+    when: Processed
+    then: similarity updated, response sent
+
+  - name: tqnn_forward_command
+    given: CMD_TQNN_FORWARD with 16 floats
+    when: Processed
+    then: quantum_state updated, response sent
+
+  - name: read_state_command
+    given: CMD_READ_STATE
+    when: Processed
+    then: Returns current state values
+
+  - name: led_off_command
+    given: CMD_LED_CONTROL mode=0
+    when: Processed
+    then: LED off
+
+  - name: led_on_command
+    given: CMD_LED_CONTROL mode=1
+    when: Processed
+    then: LED on
+
+fsms:
+  - name: trinity_main_fsm
+    states: [IDLE, RECEIVE, DECODE, EXECUTE, RESPOND, ERROR]
+    initial: IDLE
+    transitions:
+      - from: IDLE
+        to: RECEIVE
+        condition: uart_rx == 0
+        outputs: {uart_busy: 1}
+
+      - from: RECEIVE
+        to: DECODE
+        condition: packet_complete == 1
+        outputs: {rx_valid: 1}
+
+      - from: DECODE
+        to: EXECUTE
+        condition: cmd_valid == 1
+        outputs: {subsystem_start: 1}
+
+      - from: DECODE
+        to: ERROR
+        condition: cmd_invalid == 1
+        outputs: {error_code: cmd}
+
+      - from: EXECUTE
+        to: RESPOND
+        condition: execute_done == 1
+        outputs: {response_ready: 1}
+
+      - from: RESPOND
+        to: IDLE
+        condition: tx_complete == 1
+        outputs: {uart_busy: 0}
+
+      - from: ERROR
+        to: IDLE
+        condition: 1
+        outputs: {send_error: 1, uart_busy: 0}
+
+reset:
+  reset_type: async
+  level: low
