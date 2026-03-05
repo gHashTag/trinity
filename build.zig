@@ -2035,6 +2035,24 @@ pub fn build(b: *std.Build) void {
     e8_particle_step.dependOn(&run_e8_particle.step);
     test_step.dependOn(&run_e8_particle.step);
 
+    // v9.4 E8-COSMOLOGY Bridge tests
+    const e8_cosmology_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/hyperspace/e8_cosmology_bridge.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = trinity_mod },
+                .{ .name = "tri", .module = trinity_mod },
+                .{ .name = "sacred_formula", .module = tri_math_mod },
+            },
+        }),
+    });
+    const run_e8_cosmology = b.addRunArtifact(e8_cosmology_tests);
+    const e8_cosmology_step = b.step("test-e8-cosmology", "Test v9.4 E8-COSMOLOGY Bridge");
+    e8_cosmology_step.dependOn(&run_e8_cosmology.step);
+    test_step.dependOn(&run_e8_cosmology.step);
+
     // VSA Math Benchmark executable (MATH-003) — REMOVED (generated.old/ deleted)
 
     // Storage Init tests — REMOVED (generated.old/ deleted)
