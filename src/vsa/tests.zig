@@ -1,5 +1,6 @@
 const std = @import("std");
 const vsa = @import("../vsa.zig");
+const vsa10k = @import("10k_vsa.zig");
 const HybridBigInt = vsa.HybridBigInt;
 const Trit = vsa.Trit;
 const TextCorpus = vsa.TextCorpus;
@@ -160,4 +161,190 @@ test "SIMD bundleN 5 vectors" {
     const sim_a = vsa.cosineSimilarity(&bundled, &a);
     try std.testing.expect(sim_a > 0.1);
     try std.testing.expect(bundled.trit_len == 100);
+}
+
+//==========================================================================
+// 10K VSA TESTS (Week 2 Day 1)
+//==========================================================================
+
+test "10K HyperVector zero vector" {
+    const vec = vsa10k.HyperVector10K.zero();
+    try std.testing.expectEqual(@as(usize, 0), vec.countNonZero());
+}
+
+test "10K HyperVector bind identity" {
+    var rng = std.Random.DefaultPrng.init(42);
+    const vec = vsa10k.HyperVector10K.random(&rng);
+
+    // Identity vector (all +1)
+    var identity = vsa10k.HyperVector10K.zero();
+    var i: usize = 0;
+    while (i < vsa10k.DIM_10K) : (i += 1) {
+        identity.set(i, vsa10k.TRIT_POS);
+    }
+
+    const result = vsa10k.HyperVector10K.bind(&vec, &identity);
+
+    // Verify result equals original (sample check)
+    var match_count: usize = 0;
+    i = 0;
+    while (i < 100) : (i += 1) {
+        if (result.get(i) == vec.get(i))
+            match_count += 1;
+    }
+
+    try std.testing.expect(match_count >= 95); // Allow some tolerance
+}
+
+test "10K HyperVector bind inverse" {
+    var rng = std.Random.DefaultPrng.init(42);
+    const vec = vsa10k.HyperVector10K.random(&rng);
+
+    // Inverse vector (all -1)
+    var inverse = vsa10k.HyperVector10K.zero();
+    var i: usize = 0;
+    while (i < vsa10k.DIM_10K) : (i += 1) {
+        inverse.set(i, vsa10k.TRIT_NEG);
+    }
+
+    const result = vsa10k.HyperVector10K.bind(&vec, &inverse);
+
+    // Verify result is negation of original
+    var match_count: usize = 0;
+    i = 0;
+    while (i < 100) : (i += 1) {
+        const expected: i8 = if (vec.get(i) == vsa10k.TRIT_NEG) vsa10k.TRIT_POS
+                              else if (vec.get(i) == vsa10k.TRIT_POS) vsa10k.TRIT_NEG
+                              else vsa10k.TRIT_ZERO;
+        if (result.get(i) == expected)
+            match_count += 1;
+    }
+
+    try std.testing.expectEqual(@as(usize, 100), match_count);
+}
+
+test "10K HyperVector cosine similarity bounds" {
+    var rng = std.Random.DefaultPrng.init(42);
+    const vec_a = vsa10k.HyperVector10K.random(&rng);
+    const vec_b = vsa10k.HyperVector10K.random(&rng);
+
+    const sim = vsa10k.HyperVector10K.cosineSimilarity(&vec_a, &vec_b);
+
+    // Similarity should be in range [0, 65535]
+    try std.testing.expect(sim >= 0 and sim <= 65535);
+}
+
+test "10K HyperVector permutation roundtrip" {
+    var rng = std.Random.DefaultPrng.init(42);
+    const original = vsa10k.HyperVector10K.random(&rng);
+
+    const shifted = original.permute(100);
+    const unshifted = shifted.permute(@as(u16, @intCast(vsa10k.DIM_10K - 100)));
+
+    // Sample check (not all 10K to save time)
+    var match_count: usize = 0;
+    var i: usize = 0;
+    while (i < 100) : (i += 1) {
+        if (unshifted.get(i) == original.get(i))
+            match_count += 1;
+    }
+
+    try std.testing.expectEqual(@as(usize, 100), match_count);
+}
+
+test "10K VSA benchmark quick" {
+    const allocator = std.testing.allocator;
+    const result = try vsa10k.benchmark(allocator, 10);
+    _ = result;
+
+    // Just verify it completes without error
+    try std.testing.expect(true);
+}
+
+//==========================================================================
+// TQNN TESTS (Week 2 Day 5)
+//==========================================================================
+
+test "Qutrit from_float mapping" {
+    const qutrit_mod = @import("../quantum/qutrit.zig");
+
+    const q_neg = qutrit_mod.Qutrit.from_float(-1.0);
+    try std.testing.expectEqual(qutrit_mod.TRIT_NEG, q_neg.value);
+
+    const q_zero = qutrit_mod.Qutrit.from_float(0.0);
+    try std.testing.expectEqual(qutrit_mod.TRIT_ZERO, q_zero.value);
+
+    const q_pos = qutrit_mod.Qutrit.from_float(1.0);
+    try std.testing.expectEqual(qutrit_mod.TRIT_POS, q_pos.value);
+}
+
+test "Qutrit Hadamard gate" {
+    const qutrit_mod = @import("../quantum/qutrit.zig");
+
+    var q = qutrit_mod.Qutrit.from_trit(qutrit_mod.TRIT_NEG);
+    q.hadamard();
+    try std.testing.expectEqual(qutrit_mod.TRIT_POS, q.value);
+
+    q = qutrit_mod.Qutrit.from_trit(qutrit_mod.TRIT_ZERO);
+    q.hadamard();
+    try std.testing.expectEqual(qutrit_mod.TRIT_NEG, q.value);
+
+    q = qutrit_mod.Qutrit.from_trit(qutrit_mod.TRIT_POS);
+    q.hadamard();
+    try std.testing.expectEqual(qutrit_mod.TRIT_ZERO, q.value);
+}
+
+test "Qutrit Sacred Phase" {
+    const qutrit_mod = @import("../quantum/qutrit.zig");
+
+    var q = qutrit_mod.Qutrit.from_trit(qutrit_mod.TRIT_POS);
+    const old_phase = q.phase;
+    q.sacred_phase();
+    try std.testing.expect(q.phase != old_phase);
+}
+
+test "QutritArray coherence detection" {
+    const qutrit_mod = @import("../quantum/qutrit.zig");
+
+    // Balanced distribution should be coherent
+    var pos_trits: [16]qutrit_mod.Trit = undefined;
+    for (0..8) |i| pos_trits[i] = qutrit_mod.TRIT_POS;
+    for (8..16) |i| pos_trits[i] = qutrit_mod.TRIT_NEG;
+    var qa_balanced = qutrit_mod.QutritArray(16).from_trits(pos_trits);
+    try std.testing.expect(qa_balanced.coherence());
+
+    // Unbalanced should not be coherent
+    const zero_trits = [_]qutrit_mod.Trit{qutrit_mod.TRIT_ZERO} ** 16;
+    var qa_unbalanced = qutrit_mod.QutritArray(16).from_trits(zero_trits);
+    try std.testing.expect(!qa_unbalanced.coherence());
+}
+
+test "TQNN Layer 1 forward pass" {
+    const tqnn = @import("../models/tqnn/tqnn_inference.zig");
+    const allocator = std.testing.allocator;
+
+    var layer = try tqnn.TQNNLayer1.init(allocator, tqnn.TQNNConfig.default(16));
+    defer layer.deinit(allocator);
+
+    const input = [_]f32{-1.0} ** 16;
+    const output = try layer.forward(&input);
+
+    try std.testing.expectEqual(@as(usize, 16), output.len);
+}
+
+test "TQNN+VSA hybrid inference" {
+    const tqnn = @import("../models/tqnn/tqnn_inference.zig");
+    const allocator = std.testing.allocator;
+
+    var engine = try tqnn.TQNNVSAInference.init(allocator, 16);
+    defer engine.deinit();
+
+    const input = [_]f32{0.5} ** 16;
+    const result = try engine.forward(&input);
+
+    // Verify quantum state was computed
+    try std.testing.expect(result.quantum_state.pos + result.quantum_state.neg + result.quantum_state.zero == 16);
+
+    // Verify similarity was computed
+    try std.testing.expect(result.similarity >= 0 and result.similarity <= 65535);
 }

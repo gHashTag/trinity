@@ -1,0 +1,210 @@
+# ============================================================================
+# TQNN Quantum Primitives — Qutrit Operations
+# Week 2 Day 5: Ternary Quantum Neural Network primitives
+# φ² + 1/φ² = 3 = TRINITY
+# ============================================================================
+
+name: tqnn_quantum_primitives
+version: "1.0.0"
+language: zig
+module: qutrit
+
+description: |
+  Quantum primitives for Ternary Quantum Neural Network (TQNN).
+  Implements qutrit (ternary quantum bit) operations with sacred phase gates.
+  Qutrit states: |0⟩ = -1, |1⟩ = 0, |2⟩ = +1
+  Encoding: 2-bit packed (00→-1, 01→0, 10→+1, 11→reserved)
+
+types:
+  Trit:
+    description: Ternary logic value
+    fields:
+      value: Int2
+
+  Qutrit:
+    description: Ternary quantum bit with phase tracking
+    fields:
+      value: Trit = TRIT_ZERO
+      phase: UInt8 = 0
+      coherent: Bool = true
+
+  QuantumState:
+    description: Summary of quantum state distribution
+    fields:
+      pos: UInt
+      neg: UInt
+      zero: UInt
+
+  QutritArray:
+    description: Fixed-size array of qutrits (comptime)
+    fields:
+      data: Array[Qutrit]
+      size: UInt
+
+  PackedArray:
+    description: 2-bit packed qutrit storage (efficient memory)
+    fields:
+      data: Array[UInt8]
+      size: UInt
+
+constants:
+  TRIT_NEG: -1
+  TRIT_ZERO: 0
+  TRIT_POS: 1
+  PHI: 1.618033988749895
+  GOLDEN_ANGLE_DEG: 137.507764
+  GOLDEN_ANGLE_U8: 98
+  SACRED_PHASE: 2.618033988749895
+  TRINITY: 3.0
+
+behaviors:
+  - name: Qutrit_from_trit
+    given: Trit value (-1, 0, +1)
+    when: Creating qutrit
+    then: Returns Qutrit with value=trit, phase=0, coherent=true
+
+  - name: Qutrit_from_float
+    given: Float value
+    when: Creating qutrit from float
+    then: Maps: negative→-1, ~0→0, positive→+1 (threshold=0.5)
+
+  - name: Qutrit_from_packed
+    given: 2-bit packed encoding (u2)
+    when: Creating qutrit from packed
+    then: 00→-1, 01→0, 10→+1, 11→reserved (returns 0)
+
+  - name: Qutrit_to_float
+    given: Qutrit
+    when: Converting to float
+    then: Returns float representation of qutrit value
+
+  - name: Qutrit_to_packed
+    given: Qutrit
+    when: Converting to packed
+    then: Returns 2-bit encoding (00→-1, 01→0, 10→+1)
+
+  - name: hadamard
+    given: Qutrit
+    when: Applying Hadamard gate H|ψ⟩
+    then: Transforms: -1→+1, 0→-1, +1→0, adds π phase (+=128)
+
+  - name: pauli_x
+    given: Qutrit
+    when: Applying Pauli-X (NOT) gate
+    then: Flips: -1↔+1, 0 stays, adds 64 to phase
+
+  - name: rotate
+    given: Qutrit, angle (0-255)
+    when: Applying Rotation gate Rθ
+    then: Small (0-63): no change, Medium (64-127): rotate +1, Large (128+): flip
+
+  - name: sacred_phase
+    given: Qutrit
+    when: Applying Sacred Phase (Golden Angle 137.5°)
+    then: Adds GOLDEN_ANGLE_U8 (98) to phase, applies cyclic transform if wrap
+
+  - name: cphase
+    given: Qutrit, control qutrit, phase value
+    when: Applying Controlled Phase gate
+    then: If control=+1 and phase>128, flip qutrit; always add phase
+
+  - name: measure
+    given: Qutrit
+    when: Measuring (collapsing to classical)
+    then: Returns trit value (-1, 0, +1)
+
+  - name: inner_product
+    given: Two qutrits
+    when: Computing inner product
+    then: Returns i2 = a.value × b.value
+
+  - name: orthogonal
+    given: Two qutrits
+    when: Checking orthogonality
+    then: Returns true if values differ
+
+  - name: QutritArray_from_trits
+    given: Array of trits
+    when: Creating qutrit array
+    then: Returns QutritArray with qutrits from trits
+
+  - name: QutritArray_from_floats
+    given: Array of floats
+    when: Creating qutrit array
+    then: Returns QutritArray with qutrits from floats
+
+  - name: QutritArray_hadamard_all
+    given: QutritArray
+    when: Applying Hadamard to all
+    then: Applies hadamard() to every qutrit
+
+  - name: QutritArray_sacred_phase_all
+    given: QutritArray
+    when: Applying Sacred Phase to all
+    then: Applies sacred_phase() to every qutrit
+
+  - name: QutritArray_rotate_all
+    given: QutritArray, base_angle
+    when: Applying rotation with gradient
+    then: Applies rotate(base_angle + i×16) to each qutrit
+
+  - name: QutritArray_coherence
+    given: QutritArray
+    when: Checking quantum coherence
+    then: Returns true if pos>size/4 AND neg>size/4 (balanced)
+
+  - name: QutritArray_quantum_state
+    given: QutritArray
+    when: Getting state summary
+    then: Returns {pos, neg, zero} counts
+
+  - name: QutritArray_measure_all
+    given: QutritArray
+    when: Measuring all qutrits
+    then: Returns array of trit values
+
+  - name: QutritArray_to_packed
+    given: QutritArray
+    when: Converting to packed storage
+    then: Returns PackedArray with 2-bit encoding
+
+  - name: PackedArray_get
+    given: PackedArray, index
+    when: Getting qutrit at index
+    then: Returns 2-bit value at position
+
+  - name: PackedArray_set
+    given: PackedArray, index, 2-bit value
+    when: Setting qutrit at index
+    then: Sets 2 bits at correct position
+
+test_cases:
+  - name: qutrit_from_float_mapping
+    given: Float values -1.0, 0.0, 1.0
+    when: Converted to qutrits
+    then: Maps to TRIT_NEG, TRIT_ZERO, TRIT_POS respectively
+
+  - name: hadamard_transformations
+    given: Qutrits -1, 0, +1
+    when: Hadamard applied
+    then: Transforms to +1, -1, 0 respectively
+
+  - name: sacred_phase_rotation
+    given: Qutrit with phase=0
+    when: sacred_phase applied
+    then: Phase becomes 98, no wrap-around
+
+  - name: coherence_detection_balanced
+    given: 16 qutrits (8 positive, 8 negative)
+    when: coherence checked
+    then: Returns true (balanced distribution)
+
+  - name: coherence_detection_unbalanced
+    given: 16 qutrits (all zero)
+    when: coherence checked
+    then: Returns false (unbalanced)
+
+  - name: packed_array_get_set
+    given: PackedArray of 16 qutrits
+    when: Set and get operations
+    then: Values round-trip correctly
