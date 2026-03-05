@@ -1477,6 +1477,12 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    // Ralph Orchestrator module (FPGA Roadmap v1.0)
+    const ralph_orchestrator_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/ralph_orchestrator.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
     // Unified API Layer (Golden Chain #102)
     const api_mod = b.createModule(.{
         .root_source_file = b.path("src/api/unified_server.zig"),
@@ -1554,6 +1560,7 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "tvc_distributed", .module = tvc_distributed_mod },
                 .{ .name = "igla_tvc_chat", .module = igla_tvc_chat_mod },
                 .{ .name = "pas_orchestrator", .module = pas_orchestrator_mod },
+                .{ .name = "ralph_orchestrator", .module = ralph_orchestrator_mod },
                 // Unified API Layer (Golden Chain #102)
                 .{ .name = "api", .module = api_mod },
                 // Sacred modules (v6.0)

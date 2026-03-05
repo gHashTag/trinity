@@ -23,7 +23,7 @@
 
 | Prediction | Value | Match | Significance |
 |-------------|-------|-------|--------------|
-| **γ (Barbero-Immirzi)** | 0.23707 | 0.2375 | **0.18%** 🔥 |
+| **γ (Barbero-Immirzi)** | 0.23607 | 0.23753 | **0.617%** 🔥 |
 | **Hubble constant** | 70.1 km/s/Mpc | Planck↔SH0ES | **Bridging** ⚖️ |
 | **Cosmological constant** | 1.1×10⁻⁵² m⁻² | Planck 2018 | **Order match** ✅ |
 | **Ω_m** | 0.312 | DESI 2024 | **Consistent** ✅ |
@@ -45,7 +45,7 @@
 9. ✅ All tests passing → 70/70
 
 **Оценка предсказаний:**
-- P21 (γ = 0.23707) — **ПОТРЯСАЮЩЕЕ СОВПАДЕНИЕ** (0.18%)
+- P21 (γ = φ⁻³ = 0.23607) — **ПОТРЯСАЮЩЕЕ СОВПАДЕНИЕ** (0.617%)
 - P11 (H₀ = 70.1) — promising tension resolution
 - P22 (Λ = 1.1×10⁻⁵²) — correct order of magnitude
 - P1-P10, P23-P30 — awaiting experimental verification

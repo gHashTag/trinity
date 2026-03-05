@@ -1,0 +1,48 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# TRINITY RALPH ORCHESTRATOR — Systemd User Service
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Wakes up every 10 minutes to manage FPGA development autonomously
+#
+# Install:
+#   mkdir -p ~/.config/systemd/user
+#   cp trinity-ralph.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable trinity-ralph.service
+#   systemctl --user start trinity-ralph.service
+#
+# Usage:
+#   systemctl --user status trinity-ralph
+#   systemctl --user stop trinity-ralph
+#   journalctl --user -u trinity-ralph -f
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[Unit]
+Description=Trinity Ralph Orchestrator — FPGA Autonomous Development Manager
+Documentation=https://github.com/gHashTag/trinity
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/Users/playra/trinity-w1/fpga/tools/ralph-cron.sh start
+ExecStop=/Users/playra/trinity-w1/fpga/tools/ralph-cron.sh stop
+Restart=on-failure
+RestartSec=60
+
+# Environment
+Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+Environment="RALPH_REPORT_ENABLED=true"
+WorkingDirectory=/Users/playra/trinity-w1
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=trinity-ralph
+
+# Resource limits
+MemoryMax=512M
+CPUQuota=50%
+
+[Install]
+WantedBy=default.target

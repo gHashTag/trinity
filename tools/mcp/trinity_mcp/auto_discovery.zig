@@ -12,6 +12,37 @@ const TrinityTool = struct {
 
 /// List of all Trinity tools exposed via MCP
 const trinity_tools = [_]TrinityTool{
+    // === SACRED MATH (9 tools) ===
+    .{
+        .name = "tri_constants",
+        .display_name = "Sacred Constants",
+        .description = "Show φ, π, e, Lucas numbers, Fibonacci",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{}}
+    },
+    .{
+        .name = "tri_phi",
+        .display_name = "Phi Power",
+        .description = "Compute φⁿ for any integer n",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"n":{"type":"integer"}},"required":["n"]}
+    },
+    .{
+        .name = "tri_fib",
+        .display_name = "Fibonacci",
+        .description = "Calculate Fibonacci numbers with BigInt",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"n":{"type":"integer"}},"required":["n"]}
+    },
+    .{
+        .name = "tri_lucas",
+        .display_name = "Lucas Numbers",
+        .description = "Calculate Lucas L(n) — L(2)=3=TRINITY",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"n":{"type":"integer"}},"required":["n"]}
+    },
+    .{
+        .name = "tri_spiral",
+        .display_name = "Phi Spiral",
+        .description = "Generate φ-spiral coordinates",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"points":{"type":"integer"}},"required":["points"]}
+    },
     .{
         .name = "tri_quantum_constants",
         .display_name = "Quantum Constants",
@@ -31,39 +62,209 @@ const trinity_tools = [_]TrinityTool{
         .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{}}
     },
     .{
-        .name = "tri_consciousness",
-        .display_name = "Quantum Consciousness",
-        .description = "Calculate quantum consciousness metrics for frequency + brain wave",
-        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"frequency_hertz":{"type":"number"},"brain_wave_freq":{"type":"number"}},"required":["frequency_hertz","brain_wave_freq"]}
+        .name = "tri_gematria",
+        .display_name = "Gematria",
+        .description = "Multi-language gematria calculation",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"text":{"type":"string"},"language":{"type":"string"}},"required":["text"]}
+    },
+
+    // === CHEMISTRY (5 tools) ===
+    .{
+        .name = "tri_chem_periodic",
+        .display_name = "Periodic Table",
+        .description = "Display ASCII periodic table (118 elements)",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{}}
     },
     .{
-        .name = "tri_q_music",
-        .display_name = "Quantum Music Resonance",
-        .description = "Calculate φ-coherence for musical frequencies",
-        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"frequencies":{"type":"array","items":{"type":"number"}}},"required":["frequencies"]}
+        .name = "tri_chem_element",
+        .display_name = "Element Info",
+        .description = "Show element information card by symbol or atomic number",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"element":{"type":"string"}},"required":["element"]}
     },
     .{
-        .name = "tri_q_viz",
-        .display_name = "Quantum Visualization",
-        .description = "Generate Bloch sphere visualization data for quantum states",
-        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"state":{"type":"string","enum":["zero","one","plus","minus","phi"]}}}
+        .name = "tri_chem_mass",
+        .display_name = "Molar Mass",
+        .description = "Calculate molar mass of chemical formula (e.g., H2O = 18.015 g/mol)",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"formula":{"type":"string"}},"required":["formula"]}
+    },
+    .{
+        .name = "tri_chem_formula",
+        .display_name = "Formula Analysis",
+        .description = "Analyze chemical formula composition",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"formula":{"type":"string"}},"required":["formula"]}
+    },
+    .{
+        .name = "tri_chem_moles",
+        .display_name = "Mole Calculator",
+        .description = "Calculate moles, molecules, atoms from mass",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"mass":{"type":"number"},"formula":{"type":"string"}},"required":["mass","formula"]}
+    },
+
+    // === BIOLOGY (3 tools) ===
+    .{
+        .name = "tri_bio_dna",
+        .display_name = "DNA Analysis",
+        .description = "Analyze DNA sequence with sacred mathematics",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"sequence":{"type":"string"}},"required":["sequence"]}
     },
     .{
         .name = "tri_bio_codon",
-        .display_name = "Biology Codon Lookup",
+        .display_name = "Codon Lookup",
         .description = "Look up codon → amino acid translation",
         .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"codon":{"type":"string","minLength":3,"maxLength":3}},"required":["codon"]}
     },
     .{
+        .name = "tri_bio_protein",
+        .display_name = "Protein Analysis",
+        .description = "Analyze protein sequence with φ-spiral encoding",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"sequence":{"type":"string"}},"required":["sequence"]}
+    },
+
+    // === COSMOLOGY (2 tools) ===
+    .{
         .name = "tri_cosmos_hubble",
-        .display_name = "Cosmology Hubble",
+        .display_name = "Hubble Tension",
         .description = "Sacred cosmology: Hubble tension resolution via φ",
         .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{}}
     },
     .{
-        .name = "tri_constants",
-        .display_name = "Sacred Constants",
-        .description = "Show φ, π, e, Lucas numbers, Fibonacci",
+        .name = "tri_cosmos_dark",
+        .display_name = "Dark Energy",
+        .description = "Dark energy π-patterns in universe expansion",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{}}
+    },
+
+    // === SACRED INTELLIGENCE (3 tools) ===
+    .{
+        .name = "tri_identity",
+        .display_name = "Sacred Identity",
+        .description = "Sacred identity system: node, generate, verify, reputation",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"subcommand":{"type":"string"}}}
+    },
+    .{
+        .name = "tri_swarm",
+        .display_name = "Swarm Intelligence",
+        .description = "Swarm intelligence: status, coordinator, agents, tasks, converge",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"subcommand":{"type":"string"}}}
+    },
+    .{
+        .name = "tri_govern",
+        .display_name = "Governance System",
+        .description = "Governance: proposals, vote, treasury, rewards",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"subcommand":{"type":"string"}}}
+    },
+
+    // === NEEDLE (3 tools) ===
+    .{
+        .name = "tri_needle",
+        .display_name = "Needle Editor",
+        .description = "AST-aware structural code editing",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"file":{"type":"string"},"query":{"type":"string"}}}
+    },
+    .{
+        .name = "tri_needle_search",
+        .display_name = "Needle Search",
+        .description = "Search AST patterns in codebase",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"pattern":{"type":"string"}},"required":["pattern"]}
+    },
+    .{
+        .name = "tri_needle_check",
+        .display_name = "Needle Check",
+        .description = "Lint and validate code quality",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"file":{"type":"string"}}}
+    },
+
+    // === MESH (3 tools) ===
+    .{
+        .name = "tri_mesh_status",
+        .display_name = "Mesh Status",
+        .description = "Trinity mesh network status",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{}}
+    },
+    .{
+        .name = "tri_mesh_topology",
+        .display_name = "Mesh Topology",
+        .description = "Show mesh network topology",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{}}
+    },
+    .{
+        .name = "tri_mesh_regions",
+        .display_name = "Mesh Regions",
+        .description = "Show mesh regions and nodes",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{}}
+    },
+
+    // === OMEGA (3 tools) ===
+    .{
+        .name = "tri_omega_status",
+        .display_name = "Omega Status",
+        .description = "Omega economy engine status",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{}}
+    },
+    .{
+        .name = "tri_omega_rewards",
+        .display_name = "Omega Rewards",
+        .description = "View $TRI reward pool",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{}}
+    },
+    .{
+        .name = "tri_omega_reputation",
+        .display_name = "Reputation Leaderboard",
+        .description = "Show Omega reputation leaderboard",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{}}
+    },
+
+    // === WALLET (3 tools) ===
+    .{
+        .name = "tri_wallet_balance",
+        .display_name = "Wallet Balance",
+        .description = "View $TRI wallet balance",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"address":{"type":"string"}}}
+    },
+    .{
+        .name = "tri_wallet_claim",
+        .display_name = "Claim Rewards",
+        .description = "Claim $TRI rewards from Omega pool",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"amount":{"type":"number"}}}
+    },
+    .{
+        .name = "tri_wallet_history",
+        .display_name = "Claim History",
+        .description = "View $TRI claim history",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{}}
+    },
+
+    // === DASHBOARD (3 tools) ===
+    .{
+        .name = "tri_dashboard_serve",
+        .display_name = "Dashboard Server",
+        .description = "Start Trinity HTTP dashboard",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"port":{"type":"integer"}}}
+    },
+    .{
+        .name = "tri_dashboard_metrics",
+        .display_name = "Dashboard Metrics",
+        .description = "Get dashboard metrics",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{}}
+    },
+    .{
+        .name = "tri_dashboard_nodes",
+        .display_name = "Dashboard Nodes",
+        .description = "Show connected nodes",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{}}
+    },
+
+    // === HARDWARE (2 tools) ===
+    .{
+        .name = "tri_hardware_info",
+        .display_name = "Hardware Info",
+        .description = "Show system hardware information",
+        .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{}}
+    },
+    .{
+        .name = "tri_hardware_benchmark",
+        .display_name = "Hardware Benchmark",
+        .description = "Run hardware benchmarks",
         .input_schema = \\{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{}}
     },
 };

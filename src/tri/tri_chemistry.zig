@@ -296,7 +296,7 @@ fn cmdMoles(args: []const []const u8) !void {
     };
 
     const moles = mass / molar_mass;
-    const molecules = moles * chem.AVOGADRO;
+    const molecules = moles * chem.chemistry.AVOGADRO;
 
     std.debug.print("\n🧪 Mole Calculation: {d:.3} g of {s}\n", .{ mass, formula });
     std.debug.print("═══════════════════════════════════════\n", .{});
@@ -344,7 +344,7 @@ fn cmdAtoms(args: []const []const u8) !void {
 
     var iter = composition.iterator();
     while (iter.next()) |entry| {
-        const count = @as(f64, @floatFromInt(entry.value_ptr.*)) * moles * chem.AVOGADRO;
+        const count = @as(f64, @floatFromInt(entry.value_ptr.*)) * moles * chem.chemistry.AVOGADRO;
         std.debug.print("  {s}: {e:.4} atoms\n", .{ entry.key_ptr.*, count });
     }
 
@@ -383,7 +383,7 @@ fn cmdIdealGas(args: []const []const u8) !void {
 
     std.debug.print("\n🌡️  Ideal Gas Law (PV = nRT)\n", .{});
     std.debug.print("═══════════════════════════════════════\n", .{});
-    std.debug.print("R = {d:.3} J/(mol·K)\n\n", .{chem.GAS_CONSTANT});
+    std.debug.print("R = {d:.3} J/(mol·K)\n\n", .{chem.chemistry.GAS_CONSTANT});
 
     if (p) |val| {
         std.debug.print("P = {d:.3} Pa\n", .{val});

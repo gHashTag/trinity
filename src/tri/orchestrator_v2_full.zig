@@ -364,6 +364,22 @@ pub fn registerAllCommands(allocator: Allocator) !CommandRegistry {
         });
     }
 
+    // Ralph Orchestrator (FPGA Roadmap v1.0)
+    const ralph_names = [_][]const u8{ "ralph_orchestrator", "ralph-orchestrator", "ralph" };
+    for (ralph_names) |name| {
+        try registry.registerCommand(.{
+            .name = name,
+            .category = .autonomous,
+            .realm = .razum,
+            .sacred_weight = PHI_SQ,
+            .risk_level = .low,
+            .min_args = 0,
+            .max_args = 5,
+            .description = "Ralph Orchestrator — FPGA autonomous development manager",
+            .executor = noopExecutor,
+        });
+    }
+
     registry.trinity_verified = verifyTrinityIdentity();
     registry.sacred_score = try registry.calculateSacredScore();
 

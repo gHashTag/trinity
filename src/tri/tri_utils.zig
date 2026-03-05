@@ -185,8 +185,7 @@ pub const Command = enum {
     cosmos,     // Cosmology v15.0
     neuro,      // Neuroscience v16.0
     // Chemistry (v6.0)
-    // TODO: Fix sacred module exports (AVOGADRO, etc.)
-    // chem,
+    chem,       // FIXED: sacred module exports OK
     // Intelligence System
     intelligence,
     // Dev Utilities
@@ -753,8 +752,7 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "cosmos") or std.mem.eql(u8, arg, "cosmology")) return .cosmos;
     if (std.mem.eql(u8, arg, "neuro") or std.mem.eql(u8, arg, "neuroscience")) return .neuro;
     // Chemistry (v6.0)
-    // TODO: Fix sacred module exports (AVOGADRO, etc.)
-    // if (std.mem.eql(u8, arg, "chem") or std.mem.eql(u8, arg, "chemistry")) return .chem;
+    if (std.mem.eql(u8, arg, "chem") or std.mem.eql(u8, arg, "chemistry")) return .chem;
     // Intelligence System
     if (std.mem.eql(u8, arg, "intelligence") or std.mem.eql(u8, arg, "intel")) return .intelligence;
     // Dev Utilities

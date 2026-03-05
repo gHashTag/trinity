@@ -764,6 +764,8 @@ pub const UnifiedApiServer = struct {
             .ANALYZE => "ANALYZE",
             .ADVANCED => "ADVANCED",
             .INFO => "INFO",
+            .CHEMISTRY => "CHEMISTRY",
+            .NEEDLE => "NEEDLE",
         };
     }
 

@@ -2144,6 +2144,44 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
     });
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // RALPH ORCHESTRATOR - FPGA Autonomous Development Manager (v1.0)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    const ralph_orchestrator = @import("ralph_orchestrator");
+
+    try registry.register(.{
+        .name = "ralph-orchestrator",
+        .aliases = &.{ "ralph_orchestrator", "ralph" },
+        .description = "Ralph Orchestrator — FPGA autonomous development manager",
+        .long_help =
+            \\Wakes up periodically (default: 10 minutes) to:
+            \\1. Check Ralph loop status
+            \\2. Review fix_plan.md tasks
+            \\3. Execute highest-priority task
+            \\4. Report results via Telegram
+            \\5. Decide next action (continue/wait/exit)
+            \\
+            \\Commands:
+            \\  tri ralph-orchestrator start    - Start orchestrator in background
+            \\  tri ralph-orchestrator status   - Show current status
+            \\  tri ralph-orchestrator stop     - Stop running orchestrator
+            \\  tri ralph-orchestrator once     - Run single cycle and exit
+            \\  tri ralph-orchestrator fpga     - Run FPGA build pipeline
+            \\
+            \\φ² + 1/φ² = 3 = TRINITY
+        ,
+        .category = .advanced,
+        .examples = &.{
+            "tri ralph start",
+            "tri ralph once",
+            "tri ralph fpga",
+        },
+        .execute = struct { fn exec (a: std.mem.Allocator, args: []const []const u8) !void {
+            return ralph_orchestrator.runRalphOrchestratorCLI(a, args);
+        } }.exec,
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // COMPLETION - Shell completion generation
     // ═══════════════════════════════════════════════════════════════════════════
 
@@ -2207,7 +2245,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
                 const HelpSystem = @import("tri_help.zig").HelpSystem;
                 var registry_ = CommandRegistry.init(std.heap.page_allocator) catch return;
                 defer registry_.deinit();
-                const hs = HelpSystem{ .registry = &registry_ };
+                const hs = HelpSystem{ .registry = &registry_, .allocator = std.heap.page_allocator };
                 try hs.printCategorized();
             }
         } }.exec,
