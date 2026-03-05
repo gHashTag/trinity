@@ -2053,6 +2053,24 @@ pub fn build(b: *std.Build) void {
     e8_cosmology_step.dependOn(&run_e8_cosmology.step);
     test_step.dependOn(&run_e8_cosmology.step);
 
+    // v9.5 E8-QUANTUM GRAVITY tests
+    const e8_lqg_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/quantum_gravity/e8_lqg_bridge.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = trinity_mod },
+                .{ .name = "tri", .module = trinity_mod },
+                .{ .name = "sacred_formula", .module = tri_math_mod },
+            },
+        }),
+    });
+    const run_e8_lqg = b.addRunArtifact(e8_lqg_tests);
+    const e8_lqg_step = b.step("test-e8-lqg", "Test v9.5 E8-QUANTUM GRAVITY");
+    e8_lqg_step.dependOn(&run_e8_lqg.step);
+    test_step.dependOn(&run_e8_lqg.step);
+
     // VSA Math Benchmark executable (MATH-003) — REMOVED (generated.old/ deleted)
 
     // Storage Init tests — REMOVED (generated.old/ deleted)
