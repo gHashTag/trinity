@@ -1982,6 +1982,29 @@ pub fn build(b: *std.Build) void {
     prefix_cache_step.dependOn(&run_prefix_cache.step);
     test_step.dependOn(&run_prefix_cache.step);
 
+    // v9.2 HYPERSPACE VSA-Quantum Bridge
+    const tri_math_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/math/sacred_formula.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const hyperspace_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/hyperspace/vsa_quantum_bridge.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = trinity_mod },
+                .{ .name = "tri", .module = trinity_mod },
+                .{ .name = "tri/math/sacred_formula.zig", .module = tri_math_mod },
+            },
+        }),
+    });
+    const run_hyperspace = b.addRunArtifact(hyperspace_tests);
+    const hyperspace_step = b.step("test-hyperspace", "Test v9.2 HYPERSPACE VSA-Quantum Bridge");
+    hyperspace_step.dependOn(&run_hyperspace.step);
+    test_step.dependOn(&run_hyperspace.step);
+
     // VSA Math Benchmark executable (MATH-003) — REMOVED (generated.old/ deleted)
 
     // Storage Init tests — REMOVED (generated.old/ deleted)
