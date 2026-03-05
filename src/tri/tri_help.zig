@@ -21,6 +21,7 @@ pub const HelpOptions = struct {
 
 pub const HelpSystem = struct {
     registry: *const CommandRegistry,
+    allocator: std.mem.Allocator,
     terminal_width: usize = 80,
 
     pub fn printCommandList(self: *const HelpSystem, opts: HelpOptions) !void {
@@ -70,11 +71,19 @@ pub const HelpSystem = struct {
         tri_colors.printGray("     tri <command> --help for detailed help\n\n", .{});
     }
 
-    fn printCategory(self: *const HelpSystem, cat: CommandCategory) !void {
+    pub fn printCategory(self: *const HelpSystem, cat: CommandCategory) !void {
         const commands = try self.registry.getByCategory(cat);
         const cat_name = @tagName(cat);
 
-        tri_colors.printGold("\n╔═ {s} ═\n\n", .{std.ascii.upperString(cat_name)});
+        // Upper-case the category name
+        var upper_buf: [32]u8 = undefined;
+        const upper_len = @min(cat_name.len, upper_buf.len);
+        for (0..upper_len) |i| {
+            upper_buf[i] = std.ascii.toUpper(cat_name[i]);
+        }
+        const upper_name = upper_buf[0..upper_len];
+
+        tri_colors.printGold("\n╔═ {s} ═\n\n", .{upper_name});
         for (commands) |metadata| {
             tri_colors.printGreen("{s}", .{metadata.name});
             if (metadata.aliases.len > 0) {
@@ -90,23 +99,32 @@ pub const HelpSystem = struct {
         tri_colors.printWhite("\n", .{});
     }
 
-    fn searchCommands(self: *const HelpSystem, query: []const u8) !void {
-        const query_lower = toLower(query);
+    pub fn searchCommands(self: *const HelpSystem, query: []const u8) !void {
+        const query_lower = try toLower(self.allocator, query);
+        defer self.allocator.free(query_lower);
 
         tri_colors.printGold("\n╔═ Search: '{s}' ═\n\n", .{query});
 
         var found: usize = 0;
         for (self.registry.metadata_storage.items) |metadata| {
             // Search in name, aliases, and description
-            const name_match = contains(toLower(metadata.name), query_lower);
+            const name_lower = try toLower(self.allocator, metadata.name);
+            defer self.allocator.free(name_lower);
+            const name_match = contains(name_lower, query_lower);
+
             var alias_match = false;
             for (metadata.aliases) |alias| {
-                if (contains(toLower(alias), query_lower)) {
+                const alias_lower = try toLower(self.allocator, alias);
+                defer self.allocator.free(alias_lower);
+                if (contains(alias_lower, query_lower)) {
                     alias_match = true;
                     break;
                 }
             }
-            const desc_match = contains(toLower(metadata.description), query_lower);
+
+            const desc_lower = try toLower(self.allocator, metadata.description);
+            defer self.allocator.free(desc_lower);
+            const desc_match = contains(desc_lower, query_lower);
 
             if (name_match or alias_match or desc_match) {
                 found += 1;
@@ -122,7 +140,7 @@ pub const HelpSystem = struct {
         }
     }
 
-    fn printDetailedHelp(_: *const HelpSystem, metadata: *const CommandMetadata) !void {
+    pub fn printDetailedHelp(_: *const HelpSystem, metadata: *const CommandMetadata) !void {
         tri_colors.printGold("\n╔═ {s} ═\n\n", .{metadata.name});
         tri_colors.printCyan("{s}\n\n", .{metadata.description});
 
@@ -157,9 +175,11 @@ pub const HelpSystem = struct {
         return false;
     }
 
-    fn toLower(str: []const u8) []const u8 {
-        // Simple toLower - for full Unicode support would need more complex logic
-        _ = str;
-        return "lower"; // Placeholder - actual implementation would convert
+    fn toLower(allocator: std.mem.Allocator, str: []const u8) ![]const u8 {
+        var result = try allocator.alloc(u8, str.len);
+        for (str, 0..) |c, i| {
+            result[i] = if (c >= 'A' and c <= 'Z') c + 32 else c;
+        }
+        return result;
     }
 };

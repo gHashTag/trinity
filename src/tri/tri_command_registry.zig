@@ -104,50 +104,66 @@ pub const CommandRegistry = struct {
 
     /// Get all commands in a category
     pub fn getByCategory(self: *const Self, category: CommandCategory) ![]const *const CommandMetadata {
-        var result = std.ArrayList(*const CommandMetadata).init(self.allocator);
-        defer result.deinit();
+        // First pass: count matching commands
+        var count: usize = 0;
+        for (self.metadata_storage.items) |*meta| {
+            if (meta.category == category) count += 1;
+        }
+
+        // Allocate result array
+        const result = try self.allocator.alloc(*const CommandMetadata, count);
+
+        // Second pass: fill result array
+        var idx: usize = 0;
         for (self.metadata_storage.items) |*meta| {
             if (meta.category == category) {
-                try result.append(meta);
+                result[idx] = meta;
+                idx += 1;
             }
         }
-        return result.toOwnedSlice();
+
+        return result;
     }
 
     /// Get similar commands for "did you mean?" suggestions
     /// Using Levenshtein distance for fuzzy matching
     pub fn findSimilar(self: *const Self, name: []const u8, max_results: usize) ![]const []const u8 {
-        var distances = std.ArrayList(struct { cmd: []const u8, dist: usize }).init(self.allocator);
-        defer distances.deinit();
+        const DistEntry = struct { cmd: []const u8, dist: usize };
+
+        // Fixed-size buffer for distance entries
+        var buffer: [64]DistEntry = undefined;
+        var count: usize = 0;
 
         for (self.metadata_storage.items) |meta| {
             // Check primary name
             const dist = levenshtein(name, meta.name);
-            if (dist <= 3) { // Maximum edit distance of 3 for suggestions
-                try distances.append(.{ .cmd = meta.name, .dist = dist });
+            if (dist <= 3 and count < buffer.len) { // Maximum edit distance of 3 for suggestions
+                buffer[count] = .{ .cmd = meta.name, .dist = dist };
+                count += 1;
             }
 
             // Check aliases
             for (meta.aliases) |alias| {
                 const alias_dist = levenshtein(name, alias);
-                if (alias_dist <= 3) {
-                    try distances.append(.{ .cmd = alias, .dist = alias_dist });
+                if (alias_dist <= 3 and count < buffer.len) {
+                    buffer[count] = .{ .cmd = alias, .dist = alias_dist };
+                    count += 1;
                 }
             }
         }
 
         // Sort by distance
-        std.sort.insertion(struct { cmd: []const u8, dist: usize }, distances.items, {}, struct {
-            pub fn lessThan(_: void, a: @This(), b: @This()) bool {
+        std.sort.insertion(DistEntry, buffer[0..count], {}, struct {
+            pub fn lessThan(_: void, a: DistEntry, b: DistEntry) bool {
                 return a.dist < b.dist;
             }
-        });
+        }.lessThan);
 
         // Extract top results
-        const count = @min(max_results, distances.items.len);
-        var result = try self.allocator.alloc([]const u8, count);
-        for (0..count) |i| {
-            result[i] = distances.items[i].cmd;
+        const result_count = @min(max_results, count);
+        const result = try self.allocator.alloc([]const u8, result_count);
+        for (0..result_count) |i| {
+            result[i] = buffer[i].cmd;
         }
 
         return result;
@@ -180,16 +196,18 @@ pub fn levenshtein(a: []const u8, b: []const u8) usize {
     if (n == 0) return m;
 
     // Use a single row for space efficiency
-    var prev_row = try std.ArrayList(usize).init(std.heap.page_allocator);
+    var prev_row = std.ArrayList(usize).init(std.heap.page_allocator);
     defer prev_row.deinit();
-
+    prev_row.appendAssumeCapacity(n + 1);
     for (0..n + 1) |i| {
-        try prev_row.append(i);
+        prev_row.items[i] = i;
     }
 
     for (a, 0..) |ch_a, i| {
-        var curr_row = try std.ArrayList(usize).init(std.heap.page_allocator);
-        try curr_row.append(i + 1);
+        var curr_row = std.ArrayList(usize).init(std.heap.page_allocator);
+        defer curr_row.deinit();
+        curr_row.appendAssumeCapacity(n + 1);
+        curr_row.items[0] = i + 1;
 
         for (b, 0..) |ch_b, j| {
             const cost = if (ch_a == ch_b) 0 else 1;
@@ -198,11 +216,11 @@ pub fn levenshtein(a: []const u8, b: []const u8) usize {
             const substitute = prev_row.items[j] + cost;
 
             const min_val = @min(delete, @min(insert, substitute));
-            try curr_row.append(min_val);
+            curr_row.items[j + 1] = min_val;
         }
 
-        prev_row.deinit();
-        prev_row = curr_row;
+        prev_row.shrinkRetainingCapacity(0);
+        prev_row.appendSliceAssumeCapacity(curr_row.items);
     }
 
     return prev_row.items[n];

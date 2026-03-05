@@ -54,6 +54,8 @@ pub const CommandCategory = enum {
     ANALYZE,
     ADVANCED,
     INFO,
+    CHEMISTRY,
+    NEEDLE,
 };
 
 pub const CommandMetadata = struct {
@@ -226,6 +228,18 @@ pub const CommandRegistry = struct {
         registry.register("identity", .IDENTITY, "Identity proclamation", true, &.{.REST, .GRAPHQL}, 20, false);
         registry.register("swarm", .IDENTITY, "Swarm coordination", true, &.{.REST, .GRAPHQL, .WEBSOCKET}, 10, false);
         registry.register("govern", .IDENTITY, "Governance validation", true, &.{.REST, .GRAPHQL}, 10, false);
+
+        // Chemistry (v6.0) — 10 commands
+        registry.register("chem", .CHEMISTRY, "Chemistry dispatcher (periodic, element, mass, etc.)", true, &.{.REST, .GRAPHQL}, 50, false);
+        registry.register("chemistry", .CHEMISTRY, "Chemistry alias", true, &.{.REST, .GRAPHQL}, 50, false);
+        registry.register("bio", .CHEMISTRY, "Biology v14.0 — DNA/RNA/Protein analysis", true, &.{.REST, .GRAPHQL}, 30, false);
+        registry.register("cosmos", .CHEMISTRY, "Cosmology v15.0 — Universe through φ", true, &.{.REST, .GRAPHQL}, 20, false);
+        registry.register("neuro", .CHEMISTRY, "Neuroscience analysis", true, &.{.REST, .GRAPHQL}, 20, false);
+
+        // Needle (3) — Structural editor
+        registry.register("needle", .NEEDLE, "AST-aware structural code editing", true, &.{.REST, .GRAPHQL}, 10, false);
+        registry.register("needle-search", .NEEDLE, "Search AST patterns", true, &.{.REST, .GRAPHQL}, 30, false);
+        registry.register("needle-check", .NEEDLE, "Lint/validate code", true, &.{.REST, .GRAPHQL}, 20, false);
 
         // Analyze (3)
         registry.register("analyze", .ANALYZE, "Analyze codebase", true, &.{.REST, .GRAPHQL, .GRPC}, 10, false);

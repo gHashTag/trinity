@@ -337,6 +337,93 @@
 
 ---
 
+## 🚀 FPGA ROADMAP — Trinity Core RISC-V on Artix-7 (Level 11.50)
+
+> **STATUS:** LONG-TERM AUTONOMOUS IMPROVEMENT — Ralph Orchestrator managed
+> **Goal:** Evolve TRINITY CORE from V2 (shifts, MUL, UART, IRQ) to V100 (ternary AGI)
+> **Hardware:** QMTECH XC7A100T-1FGG676C (126,800 LUTs, 240 DSPs, 135 BRAMs)
+> **Current:** V2 @ 3047 LUTs (2%), 54 MHz
+
+- [x] [P1] FPGA-001: TRINITY CORE V1 — Basic RISC-V
+  - Acceptance: LED D5 blinks at ~3 Hz, 616 LUTs, RV32I subset (ADD, SUB, AND, OR, XOR, SLT, JAL, LW, SW, branches)
+  - Files: `fpga/openxc7-synth/trinity_core.v`, `trinity_core.xdc`
+  - Tech Tree: HW-001 (partial)
+  - DONE: Single-cycle RISC-V, 4KB BRAM, memory-mapped GPIO, LED blinking
+
+- [x] [P1] FPGA-002: TRINITY CORE V2 — Enhanced Instructions
+  - Acceptance: SLL/SRL/SRA shifts, MUL (32-bit), UART @ 115200, MIE/MIP/MRET interrupts
+  - Files: `fpga/openxc7-synth/trinity_core.v` (V2), `lut_mul.v`, `trinity_uart.v`
+  - Tech Tree: HW-002
+  - DONE: 3047 LUTs, 54 MHz, shifts + multiply + UART + interrupts
+
+- [ ] [P1] FPGA-003: TRINITY CORE V3 — Memory Management
+  - Acceptance: LB/LH/LBU/LHU/SB/SH byte/halfword ops, LWM/SWM load-store multiple, MPU
+  - Files: `fpga/openxc7-synth/trinity_core.v` (V3), add byte access logic
+  - Target: 4000 LUTs
+  - Blocked-by: FPGA-002
+
+- [ ] [P2] FPGA-004: TRINITY CORE V4 — DSP48E1 Multiplier
+  - Acceptance: Replace LUT mul with DSP48E1, add MULH/MULHSU/MULHU, DIV/REM
+  - Files: `fpga/openxc7-synth/dsp_mul.v`, integrate with trinity_core
+  - Target: 1 DSP, 3500 LUTs (net LUT reduction)
+  - Blocked-by: FPGA-003
+
+- [ ] [P2] FPGA-005: TRINITY CORE V5 — Cache System
+  - Acceptance: 4-way I-cache (2KB), 2-way D-cache (1KB), write-back, MESI protocol
+  - Files: `fpga/openxc7-synth/cache.v`, `trinity_core.v` (V5)
+  - Target: +2000 LUTs, 4 BRAMs
+  - Blocked-by: FPGA-004
+
+- [ ] [P3] FPGA-010: TRINITY CORE V10 — VSA Coprocessor
+  - Acceptance: Ternary vector ops, bind/unbind/bundle, cosine similarity in hardware
+  - Files: `fpga/openxc7-synth/vsa_engine.v`, `ternary_alu.v`
+  - Target: +5000 LUTs, 8 DSPs
+  - Blocked-by: FPGA-005
+
+- [ ] [P3] FPGA-020: TRINITY CORE V20 — Neural Acceleration
+  - Acceptance: Matrix multiply engine, int8 quantized inference, activation functions
+  - Files: `fpga/openxc7-synth/neural_engine.v`, `systolic_array.v`
+  - Target: +15000 LUTs, 32 DSPs
+  - Blocked-by: FPGA-010
+
+- [ ] [P3] FPGA-050: TRINITY CORE V50 — Ternary Computing
+  - Acceptance: Trit encoding {-1,0,+1}, ternary ALU, balanced ternary arithmetic
+  - Files: `fpga/openxc7-synth/ternary_core.v`, `trit_encoder.v`
+  - Target: +10000 LUTs
+  - Blocked-by: FPGA-020
+
+- [ ] [P3] FPGA-100: TRINITY CORE V100 — Singularity
+  - Acceptance: Full AGI inference on FPGA, no external CPU, standalone Trinity node
+  - Files: Complete system-on-FPGA with VSA + Neural + Ternary
+  - Target: 100000 LUTs (80% utilization), 240 DSPs, 135 BRAMs
+  - Blocked-by: FPGA-050
+
+---
+
+## Ralph Orchestrator Integration
+
+- [x] [P1] RALPH-ORCH-001: Create Ralph Orchestrator module
+  - Acceptance: `src/tri/ralph_orchestrator.zig` with periodic wake, task execution, reporting
+  - Files: `src/tri/ralph_orchestrator.zig`, `specs/tri/fpga_roadmap.vibee`
+  - DONE: 550+ lines, tick() loop, FPGAOrchestrator, CLI commands (start/status/stop/once/fpga)
+
+- [ ] [P2] RALPH-ORCH-002: Add orchestrator to build.zig
+  - Acceptance: `zig build ralph-orchestrator` compiles, commands work
+  - Files: `build.zig` (add ralph-orchestrator executable)
+  - Blocked-by: RALPH-ORCH-001
+
+- [ ] [P2] RALPH-ORCH-003: Create cron systemd service
+  - Acceptance: `~/.config/systemd/user/trinity-ralph.service` wakes every 10 min
+  - Files: `fpga/tools/ralph-cron.sh`, `trinity-ralph.service`
+  - Blocked-by: RALPH-ORCH-002
+
+- [ ] [P3] RALPH-ORCH-004: Telegram integration for reports
+  - Acceptance: Each cycle sends report to Telegram with status, task, result
+  - Files: `src/tri/ralph_telegram.zig`
+  - Blocked-by: RALPH-ORCH-003
+
+---
+
 ## Blocked
 
 (none)

@@ -43,6 +43,13 @@ const tri_colors = @import("tri_colors.zig");
 // ═══════════════════════════════════════════════════════════════════════════════
 // NEW REGISTRY DISPATCH (v2.0)
 // ═══════════════════════════════════════════════════════════════════════════════
+/// Check if command is a help command (help, h, ?)
+fn isHelpCommand(cmd: []const u8) bool {
+    return std.mem.eql(u8, cmd, "help") or
+           std.mem.eql(u8, cmd, "h") or
+           std.mem.eql(u8, cmd, "?");
+}
+
 /// Try to dispatch command via new registry system
 /// Returns true if command was found and executed, false otherwise
 fn tryRegistryDispatch(allocator: std.mem.Allocator, state: *utils.CLIState, cmd_name: []const u8, cmd_args: []const []const u8) bool {
@@ -124,11 +131,38 @@ pub fn main() !void {
             return;
         }
     }
+
     // ═══════════════════════════════════════════════════════════════════════════
-    // NEW REGISTRY DISPATCH (v2.0) - Try first, fall back to old system
+    // GLOBAL FLAGS: --help, -h (check BEFORE command parsing)
+    // ═══════════════════════════════════════════════════════════════════════════
+    for (args[1..]) |arg| {
+        if (std.mem.eql(u8, arg, "--help") or std.mem.eql(u8, arg, "-h")) {
+            var registry = CommandRegistry.init(allocator) catch return;
+            defer registry.deinit();
+            try register.registerAllCommands(&registry, &state);
+            try @import("tri_help_impl.zig").runHelp(allocator, &registry, &.{});
+            return;
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SPECIAL CASE: Help command - uses full registry with state
     // ═══════════════════════════════════════════════════════════════════════════
     const cmd_name = args[1];
     const cmd_args = if (args.len > 2) args[2..] else &[_][]const u8{};
+
+    // Check if this is a help command (help, h, ?)
+    if (isHelpCommand(cmd_name)) {
+        var registry = CommandRegistry.init(allocator) catch return;
+        defer registry.deinit();
+        try register.registerAllCommands(&registry, &state);
+        try @import("tri_help_impl.zig").runHelp(allocator, &registry, cmd_args);
+        return;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // NEW REGISTRY DISPATCH (v2.0) - Try first, fall back to old system
+    // ═══════════════════════════════════════════════════════════════════════════
     // Try new registry dispatch first (for all registered commands)
     if (tryRegistryDispatch(allocator, &state, cmd_name, cmd_args)) {
         return; // Command was found and executed via registry
@@ -343,9 +377,10 @@ pub fn main() !void {
         .bio => bio_commands.runBioCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Bio error: {}\n", .{err});
         },
-        // Chemistry (v6.0) - TODO: complete element data (missing optional fields)
-        // TODO: Fix sacred module exports (AVOGADRO, etc.)
-        // .chem => try commands.runChemCommand(allocator, cmd_args),
+        // Chemistry (v6.0)
+        .chem => chemistry_commands.runChemCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Chemistry error: {}\n", .{err});
+        },
         // Intelligence System
         .intelligence => tri_context.runIntelligenceCommand(allocator, &state, cmd_args) catch |err| {
             std.debug.print("Intelligence error: {}\n", .{err});
