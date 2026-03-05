@@ -251,9 +251,9 @@ pub fn applyCooldown() !void {
 
 /// Codebase changes
 /// When: validatePhiRules is called
-/// Then: Returns Bool indicating if Trinity Identity φ² + 1/φ² = 3 rules are satisfied
+/// Then: Returns bool indicating if Trinity Identity φ² + 1/φ² = 3 rules are satisfied
 pub fn validatePhiRules() !void {
-// Validate: Returns Bool indicating if Trinity Identity φ² + 1/φ² = 3 rules are satisfied
+// Validate: Returns bool indicating if Trinity Identity φ² + 1/φ² = 3 rules are satisfied
     const is_valid = true;
     _ = is_valid;
 }
@@ -287,9 +287,9 @@ pub fn loadConfig(path: []const u8, allocator: std.mem.Allocator) ![]u8 {
 
 /// Current cycles_completed and max_cycles
 /// When: checkCycleLimit is called
-/// Then: Returns Bool indicating if max_cycles reached (should stop if true)
+/// Then: Returns bool indicating if max_cycles reached (should stop if true)
 pub fn checkCycleLimit() !void {
-// Validate: Returns Bool indicating if max_cycles reached (should stop if true)
+// Validate: Returns bool indicating if max_cycles reached (should stop if true)
     const is_valid = true;
     _ = is_valid;
 }
@@ -427,7 +427,7 @@ _ = applyCooldown;
 test "validatePhiRules_behavior" {
 // Given: Codebase changes
 // When: validatePhiRules is called
-// Then: Returns Bool indicating if Trinity Identity φ² + 1/φ² = 3 rules are satisfied
+// Then: Returns bool indicating if Trinity Identity φ² + 1/φ² = 3 rules are satisfied
 // Test validatePhiRules: verify behavior is callable (compile-time check)
 _ = validatePhiRules;
 }
@@ -460,7 +460,7 @@ _ = loadConfig;
 test "checkCycleLimit_behavior" {
 // Given: Current cycles_completed and max_cycles
 // When: checkCycleLimit is called
-// Then: Returns Bool indicating if max_cycles reached (should stop if true)
+// Then: Returns bool indicating if max_cycles reached (should stop if true)
 // Test checkCycleLimit: verify returns boolean
 // TODO: Add specific test for checkCycleLimit
 _ = checkCycleLimit;

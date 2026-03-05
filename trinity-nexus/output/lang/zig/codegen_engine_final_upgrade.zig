@@ -209,15 +209,15 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
           if (eqlPrimitive(vibee_type, "int")) return allocator.dupe(u8, "i32");
           if (eqlPrimitive(vibee_type, "bool")) return allocator.dupe(u8, "bool");
 
-          // [CYR:worky]in Option<T> — optional type
-          if (std.mem.startsWith(u8, vibee_type, "Option<")) {
+          // [CYR:worky]in ?T — optional type
+          if (std.mem.startsWith(u8, vibee_type, "?")) {
               const inner = try extractGenericInner(vibee_type, allocator);
               const resolved_inner = try resolveTypeFull(inner, allocator, resolver);
               const result = try std.fmt.allocPrint(allocator, "?{s}", .{resolved_inner});
               return result;
           }
 
-          // [CYR:worky]in List<T> — slice
+          // [CYR:worky]in []const T — slice
           if (std.mem.startsWith(u8, vibee_type, "List<") or
               std.mem.startsWith(u8, vibee_type, "list<")) {
               const inner = try extractGenericInner(vibee_type, allocator);
@@ -226,7 +226,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
               return result;
           }
 
-          // [CYR:worky]in Map<K, V> — std.StringHashMap
+          // [CYR:worky]in Map<K, V — std.StringHashMap
           if (std.mem.startsWith(u8, vibee_type, "Map<") or
               std.mem.startsWith(u8, vibee_type, "map<")) {
               const params = try extractGenericParams(vibee_type, allocator);
@@ -421,8 +421,8 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 
 
       pub fn resolveNestedGeneric(vibee_type: []const u8, allocator: Allocator, resolver: *TypeResolver) ![]const u8 {
-          // List<List<T>> → [][]const T
-          // Map<String, Option<T>> → std.StringHashMap([]const u8, ?T)
+          // []const List<T> → [][]const T
+          // Map<[]const u8, ?T> → std.StringHashMap([]const u8, ?T)
 
           var result = std.ArrayList(u8).init(allocator);
 
@@ -431,7 +431,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
           defer allocator.free(remaining);
 
           while (true) {
-              // in[CYR:I] Option<T>
+              // in[CYR:I] ?T
               if (std.mem.endsWith(u8, remaining, ">")) {
                   const lt_pos = std.mem.lastIndexOfScalar(u8, remaining, '<') orelse break;
                   const prefix = remaining[0..lt_pos];
@@ -448,7 +448,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
                   break;
               }
 
-              // in[CYR:I] List<T> or list<T>
+              // in[CYR:I] []const T or list<T>
               if (std.mem.endsWith(u8, remaining, ">")) {
                   const lt_pos = std.mem.lastIndexOfScalar(u8, remaining, '<') orelse break;
                   const prefix = remaining[0..lt_pos];
@@ -486,7 +486,7 @@ _ = resolve_type_full;
 }
 
 test "extract_generic_inner_behavior" {
-// Given: Generic and and 'List<T>'
+// Given: Generic and and '[]const T'
 // When: extract_generic_inner in[CYR:yy]in[CYR:acts]withI
 // Then: 
 // Test extract_generic_inner: verify behavior is callable (compile-time check)
@@ -558,7 +558,7 @@ _ = auto_add_allocator_param;
 }
 
 test "resolve_nested_generic_behavior" {
-// Given: and and List<Map<String, Option<Int>>>
+// Given: and and []const Map<[]const u8, ?Int>
 // When: resolve_nested_generic in[CYR:yy]in[CYR:acts]withI
 // Then: 
 // Test resolve_nested_generic: verify behavior is callable (compile-time check)
@@ -598,7 +598,7 @@ test "simple_list" {
 }
 
 test "simple_option" {
-// Given: "Option<float>"
+// Given: "?float"
 // Expected: "?f32"
 // Test: simple_option
     // (Test setup and assertions to be implemented)
@@ -614,7 +614,7 @@ test "nested_list_list" {
 }
 
 test "nested_list_option" {
-// Given: "list<Option<int>>"
+// Given: "list<?int>"
 // Expected: "[]const ?i32"
 // Test: nested_list_option
     // (Test setup and assertions to be implemented)
@@ -630,7 +630,7 @@ test "map_string_int" {
 }
 
 test "complex_nested" {
-// Given: "map<string, list<Option<float>>>"
+// Given: "map<string, list<?float>>"
 // Expected: 
 // Test: complex_nested
     // (Test setup and assertions to be implemented)

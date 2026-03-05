@@ -51,7 +51,7 @@ pub const GovernanceAgent = struct {
     generation: i64,
     total_violations: i64,
     total_enforcements: i64,
-    last_check_timestamp: Int64,
+    last_check_timestamp: i64,
 };
 
 /// 
@@ -70,7 +70,7 @@ pub const Violation = struct {
     line_number: i64,
     severity: []const u8,
     penalty: f64,
-    timestamp: Int64,
+    timestamp: i64,
     commit_hash: []const u8,
     auto_rollback: bool,
     resolved: bool,
@@ -84,7 +84,7 @@ pub const SacredScore = struct {
     evolution_fitness: f64,
     test_safety: f64,
     overall_score: f64,
-    timestamp: Int64,
+    timestamp: i64,
 };
 
 /// 
@@ -98,7 +98,7 @@ pub const PatchRequest = struct {
     delta: f64,
     status: []const u8,
     approver: []const u8,
-    timestamp: Int64,
+    timestamp: i64,
 };
 
 /// 
@@ -117,13 +117,13 @@ pub const GovernanceWidget = struct {
     violations_today: i64,
     enforcements_today: i64,
     pending_patches: i64,
-    last_update: Int64,
+    last_update: i64,
 };
 
 /// 
 pub const AuditEntry = struct {
     id: []const u8,
-    timestamp: Int64,
+    timestamp: i64,
     action: []const u8,
     rule: []const u8,
     outcome: []const u8,

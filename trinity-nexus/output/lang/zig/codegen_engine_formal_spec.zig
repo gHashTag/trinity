@@ -123,9 +123,9 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 
 /// VIBEE spec with List(T) and Option(T) types
 /// When: Code is generated
-/// Then: - All List(String) → []const u8
+/// Then: - All List([]const u8) → []const u8
 pub fn type_mapping_test(config: anytype) []const u8 {
-// TODO: implement — - All List(String) → []const u8
+// TODO: implement — - All List([]const u8) → []const u8
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
@@ -147,7 +147,7 @@ pub fn bracket_parsing_test() !void {
 test "type_mapping_test_behavior" {
 // Given: VIBEE spec with List(T) and Option(T) types
 // When: Code is generated
-// Then: - All List(String) → []const u8
+// Then: - All List([]const u8) → []const u8
 // Test type_mapping_test: verify behavior is callable (compile-time check)
 _ = type_mapping_test;
 }

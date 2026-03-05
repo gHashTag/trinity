@@ -276,8 +276,8 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 
 
 
-      /// Extract inner type from generic type like "List<Float>" -> "Float"
-      /// Now supports nested generics like "List<List<T>>" -> "List<T>"
+      /// Extract inner type from generic type like "[]const Float" -> "Float"
+      /// Now supports nested generics like "[]const List<T>" -> "[]const T"
       pub fn extractInnerType(composite: []const u8, prefix: []const u8, suffix: []const u8) []const u8 {
           _ = suffix; // Not needed with bracket counting
           // Check if starts with prefix
@@ -306,10 +306,10 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
           if (std.mem.eql(u8, type_name, "bool")) return "bool";
 
           // VIBEE types -> Zig types
-          if (std.mem.eql(u8, type_name, "String")) return "[]const u8";
+          if (std.mem.eql(u8, type_name, "[]const u8")) return "[]const u8";
           if (std.mem.eql(u8, type_name, "Int")) return "i64";
           if (std.mem.eql(u8, type_name, "Float")) return "f64";
-          if (std.mem.eql(u8, type_name, "Bool")) return "bool";
+          if (std.mem.eql(u8, type_name, "bool")) return "bool";
           if (std.mem.eql(u8, type_name, "Bytes")) return "[]const u8";
           if (std.mem.eql(u8, type_name, "Timestamp")) return "i64";
           if (std.mem.eql(u8, type_name, "Duration")) return "i64";
@@ -332,26 +332,26 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
               return "*anyopaque";
           }
 
-          // Generic types List<T> -> []const T (FIXED: recursively parse inner type)
-          if (std.mem.startsWith(u8, type_name, "List<")) {
-              const inner = extractInnerType(type_name, "List<", ">");
+          // Generic types []const T -> []const T (FIXED: recursively parse inner type)
+          if (std.mem.startsWith(u8, type_name, "[]const ")) {
+              const inner = extractInnerType(type_name, "List<", "");
               // Check inner type FIRST before calling mapType recursively
-              // This avoids double-conversion (String -> []const u8 -> []const []const u8)
-              if (std.mem.eql(u8, inner, "String")) return "[]const u8";
+              // This avoids double-conversion ([]const u8 -> []const u8 -> []const []const u8)
+              if (std.mem.eql(u8, inner, "[]const u8")) return "[]const u8";
               if (std.mem.eql(u8, inner, "Int")) return "[]const i64";
               if (std.mem.eql(u8, inner, "Float")) return "[]const f64";
-              if (std.mem.eql(u8, inner, "Bool")) return "[]const bool";
+              if (std.mem.eql(u8, inner, "bool")) return "[]const bool";
               if (std.mem.eql(u8, inner, "usize")) return "[]const usize";
               if (std.mem.eql(u8, inner, "u8")) return "[]u8";
               // For complex inner types (generics, custom types), use mapType recursively
               const inner_zig = mapType(inner);
               // Nested generics support for already-converted types
-              if (std.mem.eql(u8, inner_zig, "[]const u8")) return "[]const []const u8"; // List<List<String>>
-              if (std.mem.eql(u8, inner_zig, "[]const i64")) return "[]const []const i64"; // List<List<Int>>
-              if (std.mem.eql(u8, inner_zig, "[]const f64")) return "[]const []const f64"; // List<List<Float>>
+              if (std.mem.eql(u8, inner_zig, "[]const u8")) return "[]const []const u8"; // []const List<[]const u8>
+              if (std.mem.eql(u8, inner_zig, "[]const i64")) return "[]const []const i64"; // []const List<Int>
+              if (std.mem.eql(u8, inner_zig, "[]const f64")) return "[]const []const f64"; // []const List<Float>
               if (std.mem.eql(u8, inner_zig, "[]i64")) return "[][]i64";
               if (std.mem.eql(u8, inner_zig, "[]f64")) return "[][]f64";
-              if (std.mem.eql(u8, inner_zig, "?i64")) return "[]?i64"; // List<Option<Int>>
+              if (std.mem.eql(u8, inner_zig, "?i64")) return "[]?i64"; // []const ?Int
               if (std.mem.eql(u8, inner_zig, "?f64")) return "[]?f64";
               return "[]const u8"; // fallback
           }
@@ -361,9 +361,9 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
               return "[]const u8";
           }
 
-          // Generic types Option<T> -> ?T (FIXED: parse inner type)
-          if (std.mem.startsWith(u8, type_name, "Option<")) {
-              const inner = extractInnerType(type_name, "Option<", ">");
+          // Generic types ?T -> ?T (FIXED: parse inner type)
+          if (std.mem.startsWith(u8, type_name, "?")) {
+              const inner = extractInnerType(type_name, "Option<", "");
               const inner_zig = mapType(inner);
               // Map common inner types to correct optional types
               if (std.mem.eql(u8, inner_zig, "f64")) return "?f64";
@@ -512,7 +512,7 @@ _ = findMatchingBracketPos;
 }
 
 test "extractInnerType_behavior" {
-// Given: A composite type string like "List<Float>" or "List<List<T>>"
+// Given: A composite type string like "[]const Float" or "[]const List<T>"
 // When: Need to extract the inner type from generic notation
 // Then: - Check if string starts with expected prefix
 // Test extractInnerType: verify behavior is callable (compile-time check)
@@ -624,16 +624,16 @@ test "escape_reserved_word_normal" {
 }
 
 test "clean_type_with_comment" {
-// Given: 'cleanTypeName("String
-// Expected: '"String"'
+// Given: 'cleanTypeName("[]const u8
+// Expected: '"[]const u8"'
 // Test: clean_type_with_comment
     // (Test setup and assertions to be implemented)
     _ = @as(usize, 0); // Compile-time check
 }
 
 test "clean_type_with_default" {
-// Given: 'cleanTypeName("String = \\"default\\"")'
-// Expected: '"String"'
+// Given: 'cleanTypeName("[]const u8 = \\"default\\"")'
+// Expected: '"[]const u8"'
 // Test: clean_type_with_default
     // (Test setup and assertions to be implemented)
     _ = @as(usize, 0); // Compile-time check
@@ -648,7 +648,7 @@ test "clean_type_union" {
 }
 
 test "extract_inner_type_simple" {
-// Given: 'extractInnerType("List<Float>", "List<", ">")'
+// Given: 'extractInnerType("[]const Float", "[]const ", "")'
 // Expected: '"Float"'
 // Test: extract_inner_type_simple
     // (Test setup and assertions to be implemented)
@@ -656,8 +656,8 @@ test "extract_inner_type_simple" {
 }
 
 test "extract_inner_type_nested" {
-// Given: 'extractInnerType("List<List<T>>", "List<", ">")'
-// Expected: '"List<T>"'
+// Given: 'extractInnerType("[]const List<T>", "[]const ", "")'
+// Expected: '"[]const T"'
 // Test: extract_inner_type_nested
     // (Test setup and assertions to be implemented)
     _ = @as(usize, 0); // Compile-time check

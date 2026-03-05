@@ -52,12 +52,12 @@ pub const SlideSection = struct {
 
 /// $TRI token economic model
 pub const Tokenomics = struct {
-    total_supply: UInt64,
-    node_rewards_percent: UInt8,
-    founder_percent: UInt8,
-    community_percent: UInt8,
-    treasury_percent: UInt8,
-    liquidity_percent: UInt8,
+    total_supply: u64,
+    node_rewards_percent: u8,
+    founder_percent: u8,
+    community_percent: u8,
+    treasury_percent: u8,
+    liquidity_percent: u8,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════

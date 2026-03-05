@@ -145,15 +145,15 @@ _ = config;
 }
 
 
-/// VIBEE type name (e.g., "String", "List(Int)", "Option<Float)")
+/// VIBEE type name (e.g., "[]const u8", "List(Int)", "?Float)")
 /// When: Need to map to Zig type
-/// Then: - Check for VIBEE primitives first (String → []const u8, Int → i64, Float → f64, Bool → bool)
+/// Then: - Check for VIBEE primitives first ([]const u8 → []const u8, Int → i64, Float → f64, bool → bool)
 pub fn resolveTypeName(config: anytype) []const u8 {
-// Resolve: - Check for VIBEE primitives first (String → []const u8, Int → i64, Float → f64, Bool → bool)
+// Resolve: - Check for VIBEE primitives first ([]const u8 → []const u8, Int → i64, Float → f64, bool → bool)
     // Pick highest confidence result
     const confidence_a: f64 = 0.85;
     const confidence_b: f64 = 0.72;
-    const winner = if (confidence_a >= confidence_b) @as([]const u8, "agent_a") else @as([]const u8, "agent_b");
+    const winner = if (confidence_a = confidence_b) @as([]const u8, "agent_a") else @as([]const u8, "agent_b");
     _ = winner;
 }
 
@@ -172,7 +172,7 @@ pub fn parseComplexTypeNoAlloc(input: []const u8) usize {
 }
 
 
-/// String and starting position of opening bracket
+/// []const u8 and starting position of opening bracket
 /// When: Need to find matching closing bracket
 /// Then: - Auto-detect bracket type: < >, ( ), [ ], { }
 pub fn findMatchingBracket(input: []const u8) !void {
@@ -204,9 +204,9 @@ _ = writeMemoryBuffers;
 }
 
 test "resolveTypeName_behavior" {
-// Given: VIBEE type name (e.g., "String", "List(Int)", "Option<Float)")
+// Given: VIBEE type name (e.g., "[]const u8", "List(Int)", "?Float)")
 // When: Need to map to Zig type
-// Then: - Check for VIBEE primitives first (String → []const u8, Int → i64, Float → f64, Bool → bool)
+// Then: - Check for VIBEE primitives first ([]const u8 → []const u8, Int → i64, Float → f64, bool → bool)
 // Test resolveTypeName: verify behavior is callable (compile-time check)
 _ = resolveTypeName;
 }
@@ -220,9 +220,9 @@ _ = parseComplexTypeNoAlloc;
 }
 
 test "findMatchingBracket_behavior" {
-// Given: String and starting position of opening bracket
+// Given: []const u8 and starting position of opening bracket
 // When: Need to find matching closing bracket
-// Then: - Auto-detect bracket type: < >, ( ), [ ], { }
+// Then: - Auto-detect bracket type: < , ( ), [ ], { }
 // Test findMatchingBracket: verify behavior is callable (compile-time check)
 _ = findMatchingBracket;
 }

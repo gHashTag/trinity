@@ -36,21 +36,21 @@ pub const PHOENIX: i64 = 999;
 /// 
 pub const DepNode = struct {
     module: []const u8,
-    imports: List[String],
-    imported_by: List[String],
+    imports: List[[]const u8],
+    imported_by: List[[]const u8],
 };
 
 /// 
 pub const DepGraph = struct {
     nodes: List[DepNode],
-    circular_deps: List[List[String]],
+    circular_deps: List[List[[]const u8]],
 };
 
 /// 
 pub const DepResult = struct {
     total_modules: i64,
     total_imports: i64,
-    external_deps: List[String],
+    external_deps: List[[]const u8],
     graph: DepGraph,
 };
 

@@ -45,10 +45,10 @@ pub const PHOENIX: i64 = 999;
 /// 
 pub const BatchResult = struct {
     name: []const u8,
-    v6_time_ns: UInt64,
-    v7_time_ns: UInt64,
-    v7_jit_time_ns: UInt64,
-    iterations: UInt64,
+    v6_time_ns: u64,
+    v7_time_ns: u64,
+    v7_jit_time_ns: u64,
+    iterations: u64,
     ops_per_sec_v6: Float64,
     ops_per_sec_v7: Float64,
     ops_per_sec_v7_jit: Float64,
@@ -61,22 +61,22 @@ pub const WorkloadSpec = struct {
     name: []const u8,
     description: []const u8,
     category: []const u8,
-    min_iterations: UInt64,
-    recommended_iterations: UInt64,
+    min_iterations: u64,
+    recommended_iterations: u64,
     memory_mb: Float64,
 };
 
 /// 
 pub const ProgressCallback = struct {
-    current: UInt64,
-    total: UInt64,
+    current: u64,
+    total: u64,
     percent: Float64,
 };
 
 /// 
 pub const BenchmarkConfig = struct {
-    warmup_iterations: UInt32,
-    measure_iterations: UInt64,
+    warmup_iterations: u32,
+    measure_iterations: u64,
     enable_jit: bool,
     enable_batch: bool,
     progress_callback: *anyopaque,

@@ -35,16 +35,16 @@ pub const PHOENIX: i64 = 999;
 
 /// Sacred opcode address space
 pub const OpcodeRange = struct {
-    start: UInt8,
-    end: UInt8,
-    count: UInt8,
+    start: u8,
+    end: u8,
+    count: u8,
 };
 
 /// Categories of sacred operations
 pub const SacredOpcodeCategory = struct {
     name: []const u8,
-    opcodes: List[UInt8],
-    cycles_base: UInt8,
+    opcodes: List[u8],
+    cycles_base: u8,
     description: []const u8,
 };
 

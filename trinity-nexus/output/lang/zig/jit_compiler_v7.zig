@@ -45,53 +45,53 @@ pub const PHOENIX: i64 = 999;
 /// 
 pub const JITFunction = struct {
     code_ptr: *anyopaque,
-    size: UInt32,
-    opcode: UInt8,
-    compile_time_ns: UInt64,
-    execution_count: UInt64,
+    size: u32,
+    opcode: u8,
+    compile_time_ns: u64,
+    execution_count: u64,
 };
 
 /// 
 pub const JITCacheEntry = struct {
-    opcode: UInt8,
-    bytecode_hash: UInt64,
+    opcode: u8,
+    bytecode_hash: u64,
     native_func: JITFunction,
     valid: bool,
-    hotness: UInt32,
+    hotness: u32,
 };
 
 /// 
 pub const JITContext = struct {
     allocator: *anyopaque,
     cache: std.AutoHashMap(usize, *anyopaque),
-    hot_threshold: UInt32,
-    total_compiled: UInt32,
-    cache_hits: UInt64,
-    cache_misses: UInt64,
+    hot_threshold: u32,
+    total_compiled: u32,
+    cache_hits: u64,
+    cache_misses: u64,
 };
 
 /// 
 pub const NativeBlock = struct {
     bytes: []const u8,
     entry_point: *anyopaque,
-    size: UInt32,
+    size: u32,
 };
 
 /// 
 pub const HotOpcode = struct {
-    opcode: UInt8,
-    execution_count: UInt32,
-    last_seen: UInt64,
+    opcode: u8,
+    execution_count: u32,
+    last_seen: u64,
     should_compile: bool,
 };
 
 /// 
 pub const JITStats = struct {
-    total_opcodes: UInt32,
-    compiled_opcodes: UInt32,
-    interpreted_opcodes: UInt64,
-    jitted_executions: UInt64,
-    avg_compile_ns: UInt64,
+    total_opcodes: u32,
+    compiled_opcodes: u32,
+    interpreted_opcodes: u64,
+    jitted_executions: u64,
+    avg_compile_ns: u64,
     speedup_factor: Float64,
 };
 

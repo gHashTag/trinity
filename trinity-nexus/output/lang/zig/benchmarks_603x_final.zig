@@ -36,8 +36,8 @@ pub const PHOENIX: i64 = 999;
 /// Benchmark configuration
 pub const BenchmarkConfig = struct {
     name: []const u8,
-    iterations: UInt64,
-    warmup: UInt64,
+    iterations: u64,
+    warmup: u64,
     workload: []const u8,
 };
 
@@ -45,7 +45,7 @@ pub const BenchmarkConfig = struct {
 pub const BenchmarkResult = struct {
     name: []const u8,
     version: []const u8,
-    total_ns: UInt64,
+    total_ns: u64,
     per_op_ns: f64,
     ops_per_sec: f64,
     speedup: f64,

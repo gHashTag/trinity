@@ -43,7 +43,7 @@ pub const PHOENIX: i64 = 999;
 pub const DocSection = struct {
     title: []const u8,
     content: []const u8,
-    order: UInt8,
+    order: u8,
 };
 
 /// Checklist item

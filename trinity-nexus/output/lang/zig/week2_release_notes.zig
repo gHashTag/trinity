@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// week2_day6_benchmark v1.0.0 - Generated from .tri specification
+// week2_release_notes v2.0.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
@@ -18,11 +18,13 @@ const Allocator = std.mem.Allocator;
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub const DIM_10K: f64 = 10000;
+pub const VERSION_MAJOR: f64 = 2;
 
-pub const ITERATIONS: f64 = 10000;
+pub const VERSION_MINOR: f64 = 0;
 
-pub const TARGET_IMPROVEMENT: f64 = 1.618;
+pub const VERSION_PATCH: f64 = 0;
+
+pub const RELEASE_DATE: []const u8 = "2026-03-05";
 
 // Basic φ-constants (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
@@ -39,22 +41,18 @@ pub const PHOENIX: i64 = 999;
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Single benchmark result
-pub const BenchmarkResult = struct {
-    name: []const u8,
-    day5_value: Float64,
-    day6_value: Float64,
-    improvement: Float64,
-    unit: []const u8,
+/// Release notes section
+pub const ReleaseSection = struct {
+    title: []const u8,
+    content: []const u8,
+    order: u8,
 };
 
-/// Full comparison report
-pub const ComparisonReport = struct {
-    timestamp: u64,
-    total_benchmarks: u32,
-    passed: u32,
-    failed: u32,
-    results: [100]BenchmarkResult,
+/// Single changelog entry
+pub const ChangelogEntry = struct {
+    @"type": []const u8,
+    component: []const u8,
+    description: []const u8,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -103,64 +101,37 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 // BEHAVIOR FUNCTIONS - Generated from behaviors
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// 10K dimensional vectors
-/// VSA ops: Running bind operation
-/// Result: Measure ops/sec, compare Day5 vs Day6
-pub fn benchmark_vsa_bind_10k() void {
-    // VSA operation detected from spec keywords.
-    // Available primitives: bind, unbind, bundle2, bundle3, permute, cosineSimilarity
-// Intent: Measure ops/sec, compare Day5 vs Day6
+/// Week 2 completion
+/// When: Generating README
+/// Then: Include architecture, usage, examples
+pub fn generate_readme_v2() !void {
+// Generate: Include architecture, usage, examples
+    const template = @as([]const u8, "generated_output");
+    _ = template;
 }
 
-/// 10K dimensional vectors
-/// When: Running similarity
-/// Then: Measure ns/op, compare Day5 vs Day6
-pub fn benchmark_vsa_similarity_10k(allocator: std.mem.Allocator, input: []const u8) !void {
+
+/// All Week 2 changes
+/// When: Generating changelog
+/// Then: List all changes by day and component
+pub fn generate_changelog(allocator: std.mem.Allocator) !void {
     // Idiomatic Zig: errdefer for error diagnostics
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Measure ns/op, compare Day5 vs Day6
-    // Add 'implementation:' field in .vibee spec to provide real code.
-_ = input;
+// Generate: List all changes by day and component
+    const template = @as([]const u8, "generated_output");
+    _ = template;
 }
 
 
-/// 16 float values
-/// When: Running TQNN forward
-/// Then: Measure latency, compare Day5 vs Day6
-pub fn benchmark_tqnn_forward_16(values: []const f32) !void {
-// TODO: implement — Measure latency, compare Day5 vs Day6
-    // Add 'implementation:' field in .vibee spec to provide real code.
-_ = values;
-}
-
-
-/// UART connection
-/// When: Sending CMD_PING
-/// Then: Measure roundtrip latency
-pub fn benchmark_uart_ping(request: anytype) !void {
-// TODO: implement — Measure roundtrip latency
-    // Add 'implementation:' field in .vibee spec to provide real code.
-_ = request;
-}
-
-
-/// JIT VSA engine
-/// When: Running 10K iterations
-/// Then: Measure JIT speedup vs scalar
-pub fn benchmark_jit_engine() !void {
-// TODO: implement — Measure JIT speedup vs scalar
-    // Add 'implementation:' field in .vibee spec to provide real code.
-}
-
-
-/// ARM64 NEON SIMD
-/// When: Running dot product
-/// Then: Measure speedup vs scalar
-pub fn benchmark_simd_neon() !void {
-// TODO: implement — Measure speedup vs scalar
-    // Add 'implementation:' field in .vibee spec to provide real code.
+/// v1.x → v2.0
+/// When: Generating migration guide
+/// Then: Document breaking changes and migration path
+pub fn generate_migration_guide() f32 {
+// Generate: Document breaking changes and migration path
+    const template = @as([]const u8, "generated_output");
+    _ = template;
 }
 
 
@@ -168,52 +139,28 @@ pub fn benchmark_simd_neon() !void {
 // TESTS - Generated from behaviors and test_cases
 // ═══════════════════════════════════════════════════════════════════════════════
 
-test "benchmark_vsa_bind_10k_behavior" {
-// Given: 10K dimensional vectors
-// When: Running bind operation
-// Then: Measure ops/sec, compare Day5 vs Day6
-// Test benchmark_vsa_bind_10k: verify behavior is callable (compile-time check)
-_ = benchmark_vsa_bind_10k;
+test "generate_readme_v2_behavior" {
+// Given: Week 2 completion
+// When: Generating README
+// Then: Include architecture, usage, examples
+// Test generate_readme_v2: verify behavior is callable (compile-time check)
+_ = generate_readme_v2;
 }
 
-test "benchmark_vsa_similarity_10k_behavior" {
-// Given: 10K dimensional vectors
-// When: Running similarity
-// Then: Measure ns/op, compare Day5 vs Day6
-// Test benchmark_vsa_similarity_10k: verify behavior is callable (compile-time check)
-_ = benchmark_vsa_similarity_10k;
+test "generate_changelog_behavior" {
+// Given: All Week 2 changes
+// When: Generating changelog
+// Then: List all changes by day and component
+// Test generate_changelog: verify behavior is callable (compile-time check)
+_ = generate_changelog;
 }
 
-test "benchmark_tqnn_forward_16_behavior" {
-// Given: 16 float values
-// When: Running TQNN forward
-// Then: Measure latency, compare Day5 vs Day6
-// Test benchmark_tqnn_forward_16: verify behavior is callable (compile-time check)
-_ = benchmark_tqnn_forward_16;
-}
-
-test "benchmark_uart_ping_behavior" {
-// Given: UART connection
-// When: Sending CMD_PING
-// Then: Measure roundtrip latency
-// Test benchmark_uart_ping: verify convergence
-    try std.testing.expect(consensus_rounds > 0);
-}
-
-test "benchmark_jit_engine_behavior" {
-// Given: JIT VSA engine
-// When: Running 10K iterations
-// Then: Measure JIT speedup vs scalar
-// Test benchmark_jit_engine: verify behavior is callable (compile-time check)
-_ = benchmark_jit_engine;
-}
-
-test "benchmark_simd_neon_behavior" {
-// Given: ARM64 NEON SIMD
-// When: Running dot product
-// Then: Measure speedup vs scalar
-// Test benchmark_simd_neon: verify behavior is callable (compile-time check)
-_ = benchmark_simd_neon;
+test "generate_migration_guide_behavior" {
+// Given: v1.x → v2.0
+// When: Generating migration guide
+// Then: Document breaking changes and migration path
+// Test generate_migration_guide: verify behavior is callable (compile-time check)
+_ = generate_migration_guide;
 }
 
 test "phi_constants" {
@@ -224,18 +171,18 @@ test "phi_constants" {
 // SPEC-LEVEL TESTS - Integration tests from test_cases:
 // ═══════════════════════════════════════════════════════════════════════════════
 
-test "day6_beats_day5" {
-// Given: All benchmarks
+test "readme_complete" {
+// Given: README v2
 // Expected: 
-// Test: day6_beats_day5
+// Test: readme_complete
     // (Test setup and assertions to be implemented)
     _ = @as(usize, 0); // Compile-time check
 }
 
-test "immortal_threshold" {
-// Given: Improvement metric
+test "changelog_accurate" {
+// Given: Changelog
 // Expected: 
-// Test: immortal_threshold
+// Test: changelog_accurate
     // (Test setup and assertions to be implemented)
     _ = @as(usize, 0); // Compile-time check
 }

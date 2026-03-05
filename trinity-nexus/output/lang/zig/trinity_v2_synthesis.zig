@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// week2_day6_benchmark v1.0.0 - Generated from .tri specification
+// trinity_v2_synthesis v1.0.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
@@ -18,11 +18,15 @@ const Allocator = std.mem.Allocator;
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub const DIM_10K: f64 = 10000;
+pub const TARGET_DEVICE: f64 = 0;
 
-pub const ITERATIONS: f64 = 10000;
+pub const TARGET_PACKAGE: f64 = 0;
 
-pub const TARGET_IMPROVEMENT: f64 = 1.618;
+pub const TARGET_SPEEDGRADE: f64 = -1;
+
+pub const CLK_FREQ_MHZ: f64 = 50;
+
+pub const CLK_PERIOD_NS: f64 = 20;
 
 // Basic φ-constants (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
@@ -39,22 +43,30 @@ pub const PHOENIX: i64 = 999;
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Single benchmark result
-pub const BenchmarkResult = struct {
+/// Synthesis stage
+pub const SynthesisStage = struct {
     name: []const u8,
-    day5_value: Float64,
-    day6_value: Float64,
-    improvement: Float64,
-    unit: []const u8,
+    tool: []const u8,
+    input: []const u8,
+    output: []const u8,
+    status: bool,
 };
 
-/// Full comparison report
-pub const ComparisonReport = struct {
-    timestamp: u64,
-    total_benchmarks: u32,
-    passed: u32,
-    failed: u32,
-    results: [100]BenchmarkResult,
+/// Synthesis result
+pub const SynthesisResult = struct {
+    stage: []const u8,
+    success: bool,
+    resources_used: ResourceUsage,
+    timing_met: bool,
+};
+
+/// FPGA resource usage
+pub const ResourceUsage = struct {
+    luts: u32,
+    ffs: u32,
+    carries: u32,
+    brams: u32,
+    dsps: u32,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -103,64 +115,59 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 // BEHAVIOR FUNCTIONS - Generated from behaviors
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// 10K dimensional vectors
-/// VSA ops: Running bind operation
-/// Result: Measure ops/sec, compare Day5 vs Day6
-pub fn benchmark_vsa_bind_10k() void {
-    // VSA operation detected from spec keywords.
-    // Available primitives: bind, unbind, bundle2, bundle3, permute, cosineSimilarity
-// Intent: Measure ops/sec, compare Day5 vs Day6
-}
-
-/// 10K dimensional vectors
-/// When: Running similarity
-/// Then: Measure ns/op, compare Day5 vs Day6
-pub fn benchmark_vsa_similarity_10k(allocator: std.mem.Allocator, input: []const u8) !void {
+/// Verilog top module
+/// When: Running Yosys
+/// Then: synth_xilinx → JSON netlist
+pub fn yosys_synth(allocator: std.mem.Allocator) !void {
     // Idiomatic Zig: errdefer for error diagnostics
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Measure ns/op, compare Day5 vs Day6
-    // Add 'implementation:' field in .vibee spec to provide real code.
-_ = input;
-}
-
-
-/// 16 float values
-/// When: Running TQNN forward
-/// Then: Measure latency, compare Day5 vs Day6
-pub fn benchmark_tqnn_forward_16(values: []const f32) !void {
-// TODO: implement — Measure latency, compare Day5 vs Day6
-    // Add 'implementation:' field in .vibee spec to provide real code.
-_ = values;
-}
-
-
-/// UART connection
-/// When: Sending CMD_PING
-/// Then: Measure roundtrip latency
-pub fn benchmark_uart_ping(request: anytype) !void {
-// TODO: implement — Measure roundtrip latency
-    // Add 'implementation:' field in .vibee spec to provide real code.
-_ = request;
-}
-
-
-/// JIT VSA engine
-/// When: Running 10K iterations
-/// Then: Measure JIT speedup vs scalar
-pub fn benchmark_jit_engine() !void {
-// TODO: implement — Measure JIT speedup vs scalar
+// TODO: implement — synth_xilinx → JSON netlist
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// ARM64 NEON SIMD
-/// When: Running dot product
-/// Then: Measure speedup vs scalar
-pub fn benchmark_simd_neon() !void {
-// TODO: implement — Measure speedup vs scalar
+/// JSON netlist
+/// When: Running nextpnr-xilinx
+/// Then: Place & route → FASM
+pub fn nextpnr_place_route(allocator: std.mem.Allocator) !void {
+    // Idiomatic Zig: errdefer for error diagnostics
+    errdefer |err| {
+        std.debug.print("Error in behavior: {}\n", .{err});
+    }
+// TODO: implement — Place & route → FASM
     // Add 'implementation:' field in .vibee spec to provide real code.
+}
+
+
+/// FASM file
+/// When: Running fasm2frames
+/// Then: Convert to frame format
+pub fn fasm_to_frames(path: []const u8) !void {
+// TODO: implement — Convert to frame format
+    // Add 'implementation:' field in .vibee spec to provide real code.
+_ = path;
+}
+
+
+/// Frames file
+/// When: Running xc7frames2bit
+/// Then: Generate .bit file
+pub fn frames_to_bitstream(path: []const u8) !void {
+// TODO: implement — Generate .bit file
+    // Add 'implementation:' field in .vibee spec to provide real code.
+_ = path;
+}
+
+
+/// .bit file
+/// When: Before flashing
+/// Then: Verify CRC and format
+pub fn validate_bitstream(path: []const u8) !void {
+// Validate: Verify CRC and format
+    const is_valid = true;
+    _ = is_valid;
 }
 
 
@@ -168,52 +175,44 @@ pub fn benchmark_simd_neon() !void {
 // TESTS - Generated from behaviors and test_cases
 // ═══════════════════════════════════════════════════════════════════════════════
 
-test "benchmark_vsa_bind_10k_behavior" {
-// Given: 10K dimensional vectors
-// When: Running bind operation
-// Then: Measure ops/sec, compare Day5 vs Day6
-// Test benchmark_vsa_bind_10k: verify behavior is callable (compile-time check)
-_ = benchmark_vsa_bind_10k;
+test "yosys_synth_behavior" {
+// Given: Verilog top module
+// When: Running Yosys
+// Then: synth_xilinx → JSON netlist
+// Test yosys_synth: verify behavior is callable (compile-time check)
+_ = yosys_synth;
 }
 
-test "benchmark_vsa_similarity_10k_behavior" {
-// Given: 10K dimensional vectors
-// When: Running similarity
-// Then: Measure ns/op, compare Day5 vs Day6
-// Test benchmark_vsa_similarity_10k: verify behavior is callable (compile-time check)
-_ = benchmark_vsa_similarity_10k;
+test "nextpnr_place_route_behavior" {
+// Given: JSON netlist
+// When: Running nextpnr-xilinx
+// Then: Place & route → FASM
+// Test nextpnr_place_route: verify behavior is callable (compile-time check)
+_ = nextpnr_place_route;
 }
 
-test "benchmark_tqnn_forward_16_behavior" {
-// Given: 16 float values
-// When: Running TQNN forward
-// Then: Measure latency, compare Day5 vs Day6
-// Test benchmark_tqnn_forward_16: verify behavior is callable (compile-time check)
-_ = benchmark_tqnn_forward_16;
+test "fasm_to_frames_behavior" {
+// Given: FASM file
+// When: Running fasm2frames
+// Then: Convert to frame format
+// Test fasm_to_frames: verify behavior is callable (compile-time check)
+_ = fasm_to_frames;
 }
 
-test "benchmark_uart_ping_behavior" {
-// Given: UART connection
-// When: Sending CMD_PING
-// Then: Measure roundtrip latency
-// Test benchmark_uart_ping: verify convergence
-    try std.testing.expect(consensus_rounds > 0);
+test "frames_to_bitstream_behavior" {
+// Given: Frames file
+// When: Running xc7frames2bit
+// Then: Generate .bit file
+// Test frames_to_bitstream: verify behavior is callable (compile-time check)
+_ = frames_to_bitstream;
 }
 
-test "benchmark_jit_engine_behavior" {
-// Given: JIT VSA engine
-// When: Running 10K iterations
-// Then: Measure JIT speedup vs scalar
-// Test benchmark_jit_engine: verify behavior is callable (compile-time check)
-_ = benchmark_jit_engine;
-}
-
-test "benchmark_simd_neon_behavior" {
-// Given: ARM64 NEON SIMD
-// When: Running dot product
-// Then: Measure speedup vs scalar
-// Test benchmark_simd_neon: verify behavior is callable (compile-time check)
-_ = benchmark_simd_neon;
+test "validate_bitstream_behavior" {
+// Given: .bit file
+// When: Before flashing
+// Then: Verify CRC and format
+// Test validate_bitstream: verify behavior is callable (compile-time check)
+_ = validate_bitstream;
 }
 
 test "phi_constants" {
@@ -224,18 +223,18 @@ test "phi_constants" {
 // SPEC-LEVEL TESTS - Integration tests from test_cases:
 // ═══════════════════════════════════════════════════════════════════════════════
 
-test "day6_beats_day5" {
-// Given: All benchmarks
+test "synthesis_complete" {
+// Given: All stages
 // Expected: 
-// Test: day6_beats_day5
+// Test: synthesis_complete
     // (Test setup and assertions to be implemented)
     _ = @as(usize, 0); // Compile-time check
 }
 
-test "immortal_threshold" {
-// Given: Improvement metric
+test "timing_met" {
+// Given: Synthesized design
 // Expected: 
-// Test: immortal_threshold
+// Test: timing_met
     // (Test setup and assertions to be implemented)
     _ = @as(usize, 0); // Compile-time check
 }

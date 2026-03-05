@@ -35,10 +35,10 @@ pub const PHOENIX: i64 = 999;
 
 /// Native sacred math opcodes (0x80-0xFF range)
 pub const SacredOpcode = struct {
-    code: UInt8,
+    code: u8,
     name: []const u8,
     category: []const u8,
-    cycles: UInt8,
+    cycles: u8,
 };
 
 /// Complete sacred instruction format
@@ -46,20 +46,20 @@ pub const SacredInstruction = struct {
     opcode: SacredOpcode,
     dest: []const u8,
     src1: []const u8,
-    src2: Option[String],
+    src2: Option[[]const u8],
     immediate: Option[Float64],
 };
 
 /// Balanced ternary value in packed format
 pub const TritPackedValue = struct {
-    raw: UInt64,
-    count: UInt8,
+    raw: u64,
+    count: u8,
     signed: bool,
 };
 
 /// Stack frame for sacred computations
 pub const VMFrame = struct {
-    return_pc: UInt32,
+    return_pc: u32,
     locals: List[TritPackedValue],
     sacred_state: Float64,
 };

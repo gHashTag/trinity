@@ -48,7 +48,7 @@ pub const PHOENIX: i64 = 999;
 /// 
 pub const X86Register = struct {
     name: []const u8,
-    number: UInt8,
+    number: u8,
     is_callee_saved: bool,
     is_argument: bool,
     is_return: bool,
@@ -57,7 +57,7 @@ pub const X86Register = struct {
 /// 
 pub const MachineCode = struct {
     bytes: []const u8,
-    size: UInt32,
+    size: u32,
     entry_point: *anyopaque,
     is_executable: bool,
 };
@@ -65,12 +65,12 @@ pub const MachineCode = struct {
 /// 
 pub const X86Function = struct {
     name: []const u8,
-    opcode: UInt8,
+    opcode: u8,
     machine_code: MachineCode,
-    prologue_size: UInt16,
-    epilogue_size: UInt16,
+    prologue_size: u16,
+    epilogue_size: u16,
     register_usage: []const u8,
-    stack_size: UInt32,
+    stack_size: u32,
 };
 
 /// 
@@ -78,16 +78,16 @@ pub const X86JITContext = struct {
     allocator: *anyopaque,
     compiled_functions: std.AutoHashMap(usize, *anyopaque),
     code_buffer: *anyopaque,
-    code_buffer_size: UInt32,
-    code_buffer_used: UInt32,
-    total_compiled: UInt32,
+    code_buffer_size: u32,
+    code_buffer_used: u32,
+    total_compiled: u32,
 };
 
 /// 
 pub const SacredOpcodeInfo = struct {
-    opcode: UInt8,
+    opcode: u8,
     name: []const u8,
-    operand_count: UInt8,
+    operand_count: u8,
     result_type: []const u8,
     has_side_effects: bool,
 };

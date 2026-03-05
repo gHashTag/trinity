@@ -1610,7 +1610,7 @@ _ = initializeSwarmCoordinator;
 test "getSelfDeclaration_behavior" {
 // Given: swarm_state
 // When: self-awareness queried
-// Then: String "I am SWARM_COORDINATOR of Sacred Intelligence"
+// Then: []const u8 "I am SWARM_COORDINATOR of Sacred Intelligence"
 // Test getSelfDeclaration: verify behavior is callable (compile-time check)
 _ = getSelfDeclaration;
 }
@@ -1715,7 +1715,7 @@ _ = executeAgentTask;
 test "executeMathTask_behavior" {
 // Given: agent, task, allocator
 // When: MATH_AGENT calculates sacred mathematics
-// Then: String with φ calculation or sacred formula
+// Then: []const u8 with φ calculation or sacred formula
 // Test executeMathTask: verify behavior is callable (compile-time check)
 _ = executeMathTask;
 }
@@ -1723,7 +1723,7 @@ _ = executeMathTask;
 test "executeEvolutionTask_behavior" {
 // Given: agent, task, allocator
 // When: EVOLUTION_AGENT runs self-improvement
-// Then: String with evolution iteration result
+// Then: []const u8 with evolution iteration result
 // Test executeEvolutionTask: verify behavior is callable (compile-time check)
 _ = executeEvolutionTask;
 }
@@ -1731,7 +1731,7 @@ _ = executeEvolutionTask;
 test "executeDashboardTask_behavior" {
 // Given: agent, task, allocator
 // When: DASHBOARD_AGENT broadcasts status
-// Then: String with formatted dashboard data
+// Then: []const u8 with formatted dashboard data
 // Test executeDashboardTask: verify behavior is callable (compile-time check)
 _ = executeDashboardTask;
 }
@@ -1739,7 +1739,7 @@ _ = executeDashboardTask;
 test "executeGovernanceTask_behavior" {
 // Given: agent, task, allocator
 // When: GOVERNANCE_AGENT enforces sacred rules
-// Then: String with compliance check result
+// Then: []const u8 with compliance check result
 // Test executeGovernanceTask: verify behavior is callable (compile-time check)
 _ = executeGovernanceTask;
 }
@@ -1747,7 +1747,7 @@ _ = executeGovernanceTask;
 test "executeGematriaTask_behavior" {
 // Given: agent, task, allocator
 // When: GEMATRIA_AGENT calculates gematria values
-// Then: String with gematria calculation
+// Then: []const u8 with gematria calculation
 // Test executeGematriaTask: verify behavior is callable (compile-time check)
 _ = executeGematriaTask;
 }
@@ -1755,7 +1755,7 @@ _ = executeGematriaTask;
 test "executeArchitectTask_behavior" {
 // Given: agent, task, allocator
 // When: ARCHITECT_AGENT analyzes sacred geometry
-// Then: String with geometry pattern analysis
+// Then: []const u8 with geometry pattern analysis
 // Test executeArchitectTask: verify behavior is callable (compile-time check)
 _ = executeArchitectTask;
 }
@@ -1763,7 +1763,7 @@ _ = executeArchitectTask;
 test "executeCodexTask_behavior" {
 // Given: agent, task, allocator
 // When: CODEX_AGENT retrieves sacred knowledge
-// Then: String with sacred formula reference
+// Then: []const u8 with sacred formula reference
 // Test executeCodexTask: verify behavior is callable (compile-time check)
 _ = executeCodexTask;
 }
@@ -1846,7 +1846,7 @@ _ = enforceSacredRules;
 test "checkPhiRule_behavior" {
 // Given: swarm
 // When: checking φ-Rule compliance
-// Then: Bool indicating if harmony increased
+// Then: bool indicating if harmony increased
 // Test checkPhiRule: verify behavior is callable (compile-time check)
 _ = checkPhiRule;
 }
@@ -1854,7 +1854,7 @@ _ = checkPhiRule;
 test "checkGematriaRule_behavior" {
 // Given: swarm
 // When: checking Gematria-Rule compliance
-// Then: Bool indicating sacred names are present
+// Then: bool indicating sacred names are present
 // Test checkGematriaRule: verify behavior is callable (compile-time check)
 _ = checkGematriaRule;
 }
@@ -1862,7 +1862,7 @@ _ = checkGematriaRule;
 test "checkEvolutionRule_behavior" {
 // Given: swarm
 // When: checking Evolution-Rule compliance
-// Then: Bool indicating fitness improved by φ%
+// Then: bool indicating fitness improved by φ%
 // Test checkEvolutionRule: verify behavior is callable (compile-time check)
 _ = checkEvolutionRule;
 }
@@ -1870,7 +1870,7 @@ _ = checkEvolutionRule;
 test "checkSafetyRule_behavior" {
 // Given: swarm
 // When: checking Safety-Rule compliance
-// Then: Bool indicating no critical failures
+// Then: bool indicating no critical failures
 // Test checkSafetyRule: verify failure handling
 }
 
@@ -1959,7 +1959,7 @@ _ = sendAgentMessage;
 test "checkSacredCompliance_behavior" {
 // Given: agent, result_content
 // When: validating sacred compliance
-// Then: Bool indicating compliance
+// Then: bool indicating compliance
 // Test checkSacredCompliance: verify behavior is callable (compile-time check)
 _ = checkSacredCompliance;
 }

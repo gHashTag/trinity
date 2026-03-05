@@ -218,9 +218,9 @@ pub fn computePAScore(data: []const u8) f32 {
 
 /// Directory path
 /// When: Batch validation needed
-/// Then: Returns List<ValidationResult>
+/// Then: Returns []const ValidationResult
 pub fn validateAllSpecs(path: []const u8) bool {
-// Validate: Returns List<ValidationResult>
+// Validate: Returns []const ValidationResult
     const is_valid = true;
     _ = is_valid;
 }
@@ -305,7 +305,7 @@ _ = computePAScore;
 test "validateAllSpecs_behavior" {
 // Given: Directory path
 // When: Batch validation needed
-// Then: Returns List<ValidationResult>
+// Then: Returns []const ValidationResult
 // Test validateAllSpecs: verify behavior is callable (compile-time check)
 _ = validateAllSpecs;
 }
