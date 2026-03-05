@@ -1,0 +1,68 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Multi-Service Docker Image for fly.io
+# Runs LLM service (port 8080) + MCP WebSocket server (port 8081)
+# Uses s6-overlay for process supervision
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+FROM ubuntu:24.04 AS builder
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    wget xz-utils \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Zig 0.15.2
+RUN wget -O /tmp/zig.tar.xz https://ziglang.org/download/0.15.2/zig-linux-x86_64-0.15.2.tar.xz \
+    && tar -xf /tmp/zig.tar.xz -C /opt \
+    && ln -s /opt/zig-linux-x86_64-0.15.2/zig /usr/local/bin/zig
+
+# Copy source code
+WORKDIR /src
+COPY . .
+
+# Build tri_inference and trinity-mcp
+RUN zig build -Doptimize=ReleaseFast tri_inference
+RUN zig build -Doptimize=ReleaseSmall trinity-mcp
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Runtime image with s6-overlay
+# ═══════════════════════════════════════════════════════════════════════════════
+
+FROM ubuntu:24.04
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install s6-overlay
+RUN wget -O /tmp/s6-overlay-amd64.tar.gz https://github.com/just-containers/s6-overlay/releases/download/v3.2.0.0/s6-overlay-amd64.tar.gz \
+    && tar -xz -f /tmp/s6-overlay-amd64.tar.gz -C /
+
+# Copy built binaries
+COPY --from=builder /src/zig-out/bin/tri_inference /usr/local/bin/tri_inference
+COPY --from=builder /src/zig-out/bin/trinity-mcp /usr/local/bin/trinity-mcp
+
+# Copy s6 service scripts
+COPY deploy/flyio/s6/llm/run /etc/s6-overlay/s6-rc.d/llm/run
+COPY deploy/flyio/s6/mcp/run /etc/s6-overlay/s6-rc.d/mcp/run
+
+# Make scripts executable
+RUN chmod +x /etc/s6-overlay/s6-rc.d/llm/run /etc/s6-overlay/s6-rc.d/mcp/run
+
+# Enable services
+RUN ln -s /etc/s6-overlay/s6-rc.d/llm/run /etc/s6-overlay/s6-rc.d/runlevels/default/10-llm
+RUN ln -s /etc/s6-overlay/s6-rc.d/mcp/run /etc/s6-overlay/s6-rc.d/runlevels/default/20-mcp
+
+# Create data directory for models
+RUN mkdir -p /data/models
+
+# Expose ports
+EXPOSE 8080 8081
+
+# Health check endpoint for MCP
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8081/mcp/health || exit 1
+
+ENTRYPOINT ["/init"]

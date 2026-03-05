@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "trinity": {
-      "command": "/Users/playra/trinity-w1/zig-out/bin/trinity-mcp",
+      "command": "/Users/playra/trinity-w1/zig-out/bin/simple-mcp",
       "args": []
     }
   }
