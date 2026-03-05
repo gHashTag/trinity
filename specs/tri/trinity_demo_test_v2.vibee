@@ -1,0 +1,171 @@
+# ============================================================================
+# Trinity Demo Test V2 — Full Test Suite
+# ============================================================================
+
+name: trinity_demo_test_v2
+version: "2.0.0"
+language: zig
+module: trinity_demo_test
+
+description: |
+  Full test suite for Trinity V2.
+  Tests UART, VSA, TQNN, LED, and FFI integration.
+
+types:
+  TestConfig:
+    description: Test configuration
+    fields:
+      uart_device: String
+      iterations: UInt = 100
+      verbose: Bool = true
+
+  TestResult:
+    description: Single test result
+    fields:
+      name: String
+      passed: Bool
+      duration_ns: UInt64
+      message: String
+
+  TestSuite:
+    description: Test suite results
+    fields:
+      results: Array[TestResult]
+      total: UInt
+      passed: UInt
+      failed: UInt
+
+constants:
+  TEST_ITERATIONS: 100
+  TIMEOUT_MS: 5000
+
+behaviors:
+  - name: test_uart_ping
+    given: UART connection
+    when: CMD_PING sent
+    then: ACK received, firmware_version parsed
+
+  - name: test_vsa_bind_basic
+    given: Random 10K trit vector
+    when: CMD_VSA_BIND sent
+    then: Similarity returned in [0, 65535]
+
+  - name: test_vsa_bind_identity
+    given: All-positive vector
+    when: CMD_VSA_BIND with identity
+    then: Similarity = 65535 (100%)
+
+  - name: test_vsa_bundle_two
+    given: Two random 10K vectors
+    when: CMD_VSA_BUNDLE sent
+    then: Result similar to both inputs
+
+  - name: test_tqnn_forward_basic
+    given: 16 float values (0.5)
+    when: CMD_TQNN_FORWARD sent
+    then: quantum_state.pos+neg+zero=16
+
+  - name: test_tqnn_forward_negative
+    given: 16 float values (-0.8)
+    when: CMD_TQNN_FORWARD sent
+    then: quantum_state.neg > 8 (dominant negative)
+
+  - name: test_tqnn_forward_positive
+    given: 16 float values (0.8)
+    when: CMD_TQNN_FORWARD sent
+    then: quantum_state.pos > 8 (dominant positive)
+
+  - name: test_read_state
+    given: No specific operation
+    when: CMD_READ_STATE sent
+    then: Returns current quantum state
+
+  - name: test_led_off
+    given: LED mode 0
+    when: CMD_LED_CONTROL sent
+    then: LED turns off
+
+  - name: test_led_on
+    given: LED mode 1
+    when: CMD_LED_CONTROL sent
+    then: LED turns on
+
+  - name: test_led_blink_fast
+    given: LED mode 2
+    when: CMD_LED_CONTROL sent
+    then: LED blinks fast (~3 Hz)
+
+  - name: test_crc_validation
+    given: Valid packet
+    when: CRC checked
+    then: Passes validation
+
+  - name: test_crc_error
+    given: Corrupted CRC
+    when: CRC checked
+    then: Error returned
+
+  - name: test_multi_packet
+    given: Large payload (>256 bytes)
+    when: Sending
+    then: Split into multiple packets
+
+  - name: test_ffi_autovsa_fallback
+    given: FFI call, no FPGA
+    when: AutoVSA requested
+    then: Falls back to software VSA
+
+  - name: benchmark_throughput
+    given: 100 iterations
+    when: Running benchmark
+    then: Returns ops/sec
+
+test_cases:
+  - name: all_tests_pass
+    given: Full test suite
+    when: All tests run
+    then: passed = total
+
+  - name: uart_tests_pass
+    given: UART tests
+    when: Run
+    then: All 6 tests pass
+
+  - name: vsa_tests_pass
+    given: VSA tests
+    when: Run
+    then: All 3 tests pass
+
+  - name: tqnn_tests_pass
+    given: TQNN tests
+    when: Run
+    then: All 3 tests pass
+
+  - name: benchmark_completes
+    given: Benchmark suite
+    when: Run
+    then: Returns throughput numbers
+
+algorithms:
+  - name: full_test_sequence
+    description: Complete test sequence
+    steps:
+      - Open UART connection
+      - Run UART ping test
+      - Run VSA bind test (3 variations)
+      - Run TQNN forward test (3 variations)
+      - Run LED control test (3 modes)
+      - Run CRC validation test
+      - Run multi-packet test
+      - Run FFI AutoVSA fallback test
+      - Run benchmark (100 iterations)
+      - Generate report
+
+  - name: day6_comparison
+    description: Compare Day 5 vs Day 6
+    steps:
+      - Run Day 5 benchmarks (reference)
+      - Run Day 6 benchmarks (with UART)
+      - Compare throughput
+      - Compare latency
+      - Generate comparison table
