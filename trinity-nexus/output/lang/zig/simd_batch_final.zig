@@ -54,21 +54,21 @@ pub const PHOENIX: i64 = 999;
 
 /// 
 pub const AVX2Vector = struct {
-    bytes: [32]UInt8,
-    alignment: UInt32,
+    bytes: [32]u8,
+    alignment: u32,
 };
 
 /// 
 pub const AVX512Vector = struct {
-    bytes: [64]UInt8,
-    alignment: UInt32,
+    bytes: [64]u8,
+    alignment: u32,
 };
 
 /// 
 pub const BatchResult = struct {
     name: []const u8,
-    elements_processed: UInt64,
-    total_ns: UInt64,
+    elements_processed: u64,
+    total_ns: u64,
     ns_per_element: f64,
     elements_per_sec: f64,
     speedup_vs_scalar: f64,
@@ -80,7 +80,7 @@ pub const SIMDCapabilities = struct {
     has_avx2: bool,
     has_avx512: bool,
     has_fma: bool,
-    vector_width_bits: UInt16,
+    vector_width_bits: u16,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -175,7 +175,7 @@ _ = data;
 }
 
 
-/// UInt64 iterations
+/// u64 iterations
 /// When: Batch sacred identity verification requested
 /// Then: Verify φ² + 1/φ² = 3 for 256 values simultaneously, return pass/fail count
 pub fn avx2_batch_sacred_identity() usize {
@@ -216,7 +216,7 @@ _ = n;
 }
 
 
-/// UInt64 iterations
+/// u64 iterations
 /// When: Maximum throughput identity verification requested
 /// Then: Verify 512 values per iteration, ~8x faster than scalar
 pub fn avx512_batch_sacred_identity() f32 {
@@ -367,7 +367,7 @@ _ = avx2_batch_fibonacci;
 }
 
 test "avx2_batch_sacred_identity_behavior" {
-// Given: UInt64 iterations
+// Given: u64 iterations
 // When: Batch sacred identity verification requested
 // Then: Verify φ² + 1/φ² = 3 for 256 values simultaneously, return pass/fail count
 // Test avx2_batch_sacred_identity: verify error handling
@@ -400,7 +400,7 @@ _ = avx512_batch_phi_pow;
 }
 
 test "avx512_batch_sacred_identity_behavior" {
-// Given: UInt64 iterations
+// Given: u64 iterations
 // When: Maximum throughput identity verification requested
 // Then: Verify 512 values per iteration, ~8x faster than scalar
 // Test avx512_batch_sacred_identity: verify behavior is callable (compile-time check)

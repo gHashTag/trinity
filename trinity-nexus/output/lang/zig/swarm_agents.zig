@@ -1065,7 +1065,7 @@ test "consensusVote_behavior" {
 test "evaluateProposal_behavior" {
 // Given: agent, proposal
 // When: agent evaluates consensus request
-// Then: Bool (approve/reject) based on sacred rules
+// Then: bool (approve/reject) based on sacred rules
 // Test evaluateProposal: verify behavior is callable (compile-time check)
 _ = evaluateProposal;
 }

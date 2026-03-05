@@ -136,7 +136,7 @@ pub fn check_treesitter_availability() bool {
 
 
 /// Source code text as input
-/// When: String-based idiom analyzer runs 4 checks (duplicate params, unused allocator, empty structs, missing errdefer)
+/// When: []const u8-based idiom analyzer runs 4 checks (duplicate params, unused allocator, empty structs, missing errdefer)
 /// Then: Returns list of violations with severity levels
 pub fn run_string_analysis(allocator: std.mem.Allocator, input: []const u8) !void {
     // Idiomatic Zig: errdefer for error diagnostics
@@ -167,7 +167,7 @@ pub fn run_ast_analysis(allocator: std.mem.Allocator, input: []const u8) !void {
 }
 
 
-/// String-based report and AST-based report
+/// []const u8-based report and AST-based report
 /// When: Unified analyzer merges both into single compliance report
 /// Then: Returns combined report with total compliance percentage
 pub fn merge_analysis_reports(allocator: std.mem.Allocator, input: []const u8) !void {
@@ -270,7 +270,7 @@ _ = check_treesitter_availability;
 
 test "run_string_analysis_behavior" {
 // Given: Source code text as input
-// When: String-based idiom analyzer runs 4 checks (duplicate params, unused allocator, empty structs, missing errdefer)
+// When: []const u8-based idiom analyzer runs 4 checks (duplicate params, unused allocator, empty structs, missing errdefer)
 // Then: Returns list of violations with severity levels
 // Test run_string_analysis: verify behavior is callable (compile-time check)
 _ = run_string_analysis;
@@ -285,7 +285,7 @@ _ = run_ast_analysis;
 }
 
 test "merge_analysis_reports_behavior" {
-// Given: String-based report and AST-based report
+// Given: []const u8-based report and AST-based report
 // When: Unified analyzer merges both into single compliance report
 // Then: Returns combined report with total compliance percentage
 // Test merge_analysis_reports: verify behavior is callable (compile-time check)

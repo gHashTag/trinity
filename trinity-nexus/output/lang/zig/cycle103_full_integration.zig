@@ -305,8 +305,8 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
           var registry = FullCommandRegistry{
               .commands = std.StringHashMap(CommandMetadata).init(allocator),
               .total_count = 0,
-              .categories = std.AutoHashMap(Category, std.ArrayList(String)).init(allocator),
-              .realms = std.AutoHashMap(Realm, std.ArrayList(String)).init(allocator),
+              .categories = std.AutoHashMap(Category, std.ArrayList([]const u8)).init(allocator),
+              .realms = std.AutoHashMap(Realm, std.ArrayList([]const u8)).init(allocator),
               .risk_distribution = std.AutoHashMap(RiskLevel, Int).init(allocator),
               .sacred_sum = 0.0,
               .average_sacred_weight = 0.0,
@@ -316,15 +316,15 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
           const core_commands = [_]CommandMetadata{
               .{
                   .name = "chat",
-                  .aliases = &[_]String{},
+                  .aliases = &[_][]const u8{},
                   .category = .core,
                   .risk_level = .medium,
-                  .dependencies = &[_]String{"model", "network"},
+                  .dependencies = &[_][]const u8{"model", "network"},
                   .estimated_cost_ms = 5000,
                   .sacred_weight = 1.0,
                   .realm = .universal,
                   .description = "Interactive chat with vision + voice + tools",
-                  .function_signature = "chat(msg: String, stream: Bool)",
+                  .function_signature = "chat(msg: []const u8, stream: bool)",
                   .link_id = null,
                   .cycle_version = "8.27",
                   .requires_streaming = true,
@@ -429,7 +429,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
           };
 
           // Validate
-          var errors = std.ArrayList(String).init(allocator);
+          var errors = std.ArrayList([]const u8).init(allocator);
           const is_valid = try validateWorkflow(parser, workflow, &errors);
 
           return WorkflowFileFormat{
@@ -481,7 +481,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
           };
 
           // Validate
-          var errors = std.ArrayList(String).init(allocator);
+          var errors = std.ArrayList([]const u8).init(allocator);
           const is_valid = try validateWorkflow(parser, workflow, &errors);
 
           return WorkflowFileFormat{
@@ -601,7 +601,7 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
               .coverage_by_category = std.AutoHashMap(Category, Float).init(allocator),
               .coverage_by_realm = std.AutoHashMap(Realm, Float).init(allocator),
               .regression_detected = false,
-              .regression_details = std.ArrayList(String).init(allocator),
+              .regression_details = std.ArrayList([]const u8).init(allocator),
           };
 
           var total_time: u64 = 0;

@@ -18,17 +18,17 @@ const Allocator = std.mem.Allocator;
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub const CMD_PING: f64 = 1;
+pub const CMD_PING: u8 = 1;
 
-pub const CMD_VSA_BIND: f64 = 2;
+pub const CMD_VSA_BIND: u8 = 2;
 
-pub const CMD_VSA_BUNDLE: f64 = 3;
+pub const CMD_VSA_BUNDLE: u8 = 3;
 
-pub const CMD_TQNN_FORWARD: f64 = 4;
+pub const CMD_TQNN_FORWARD: u8 = 4;
 
-pub const CMD_READ_STATE: f64 = 5;
+pub const CMD_READ_STATE: u8 = 5;
 
-pub const CMD_LED_CONTROL: f64 = 6;
+pub const CMD_LED_CONTROL: u8 = 6;
 
 pub const MAGIC_WORD: f64 = 42405;
 
@@ -49,29 +49,29 @@ pub const PHOENIX: i64 = 999;
 
 /// Opaque handle to Trinity device
 pub const TrinityHandle = struct {
-    fd: Int32,
+    fd: i32,
     uart_path: []const u8,
 };
 
 /// Device configuration
 pub const TrinityConfig = struct {
-    baudrate: UInt32,
-    timeout_ms: UInt32,
+    baudrate: u32,
+    timeout_ms: u32,
     auto_reconnect: bool,
 };
 
 /// Quantum state from FPGA
 pub const QuantumState = struct {
-    pos: UInt16,
-    neg: UInt16,
-    zero: UInt16,
+    pos: u16,
+    neg: u16,
+    zero: u16,
     coherence: bool,
-    similarity: UInt16,
+    similarity: u16,
 };
 
 /// 10K trit vector
 pub const TritVector10K = struct {
-    data: Array[Int8][10000],
+    data: [10000]i8,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════

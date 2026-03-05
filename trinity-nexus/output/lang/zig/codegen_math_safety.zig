@@ -67,7 +67,7 @@ export fn get_f64_buffer_ptr() [*]f64 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// safeStringCompare function generation
-/// Source: String comparison with empty/null guards -> Result: |
+/// Source: []const u8 comparison with empty/null guards -> Result: |
 
 /// safeMapType function generation
 /// Source: Type mapping with fallback -> Result: |
@@ -311,7 +311,7 @@ test "negative_log" {
 }
 
 test "doubly_nested_list" {
-// Given: 'parse("List<List<String>>")'
+// Given: 'parse("[]const List<[]const u8>")'
 // Expected: 'success, no crash'
 // Test: doubly_nested_list
     // (Test setup and assertions to be implemented)

@@ -63,7 +63,7 @@ pub const PHOENIX: i64 = 999;
 pub const TypeMapping = struct {
     from: []const u8,
     to: []const u8,
-    priority: UInt8,
+    priority: u8,
 };
 
 /// Type fix pattern
@@ -119,20 +119,20 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 // BEHAVIOR FUNCTIONS - Generated from behaviors
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// UInt type in spec
+/// usize type in spec
 /// When: Generating Zig code
-/// Then: Map to usize (not UInt)
+/// Then: Map to usize (not usize)
 pub fn fix_uint_to_usize() usize {
-// TODO: implement — Map to usize (not UInt)
+// TODO: implement — Map to usize (not usize)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// Int32 type in spec
+/// i32 type in spec
 /// When: Generating Zig code
-/// Then: Map to i32 (not Int32)
+/// Then: Map to i32 (not i32)
 pub fn fix_int32_to_i32() !void {
-// TODO: implement — Map to i32 (not Int32)
+// TODO: implement — Map to i32 (not i32)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -159,15 +159,15 @@ pub fn fix_command_int_to_u8() !void {
 }
 
 
-/// String type in spec
+/// []const u8 type in spec
 /// When: Generating Zig code
-/// Then: Map to []const u8 (not String)
+/// Then: Map to []const u8 (not []const u8)
 pub fn fix_string_to_slice(allocator: std.mem.Allocator, input: []const u8) error{OutOfMemory}![]const u8 {
     // Idiomatic Zig: errdefer for error diagnostics
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Map to []const u8 (not String)
+// TODO: implement — Map to []const u8 (not []const u8)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -175,28 +175,28 @@ _ = input;
 
 /// List[T] in spec
 /// When: Generating Zig code
-/// Then: Map to []const T (not List<T>)
+/// Then: Map to []const T (not []const T)
 pub fn fix_list_to_slice(allocator: std.mem.Allocator) !void {
     // Idiomatic Zig: errdefer for error diagnostics
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Map to []const T (not List<T>)
+// TODO: implement — Map to []const T (not []const T)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
 /// Option[T] in spec
 /// When: Generating Zig code
-/// Then: Map to ?T (not Option<T>)
+/// Then: Map to ?T (not ?T)
 pub fn fix_option_to_optional(config: anytype) !void {
-// TODO: implement — Map to ?T (not Option<T>)
+// TODO: implement — Map to ?T (not ?T)
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = config;
 }
 
 
-/// Bool type in spec
+/// bool type in spec
 /// When: Generating Zig code
 /// Then: Map to bool (lowercase)
 pub fn fix_bool_to_bool() !void {
@@ -210,17 +210,17 @@ pub fn fix_bool_to_bool() !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "fix_uint_to_usize_behavior" {
-// Given: UInt type in spec
+// Given: usize type in spec
 // When: Generating Zig code
-// Then: Map to usize (not UInt)
+// Then: Map to usize (not usize)
 // Test fix_uint_to_usize: verify behavior is callable (compile-time check)
 _ = fix_uint_to_usize;
 }
 
 test "fix_int32_to_i32_behavior" {
-// Given: Int32 type in spec
+// Given: i32 type in spec
 // When: Generating Zig code
-// Then: Map to i32 (not Int32)
+// Then: Map to i32 (not i32)
 // Test fix_int32_to_i32: verify behavior is callable (compile-time check)
 _ = fix_int32_to_i32;
 }
@@ -242,9 +242,9 @@ _ = fix_command_int_to_u8;
 }
 
 test "fix_string_to_slice_behavior" {
-// Given: String type in spec
+// Given: []const u8 type in spec
 // When: Generating Zig code
-// Then: Map to []const u8 (not String)
+// Then: Map to []const u8 (not []const u8)
 // Test fix_string_to_slice: verify behavior is callable (compile-time check)
 _ = fix_string_to_slice;
 }
@@ -252,7 +252,7 @@ _ = fix_string_to_slice;
 test "fix_list_to_slice_behavior" {
 // Given: List[T] in spec
 // When: Generating Zig code
-// Then: Map to []const T (not List<T>)
+// Then: Map to []const T (not []const T)
 // Test fix_list_to_slice: verify behavior is callable (compile-time check)
 _ = fix_list_to_slice;
 }
@@ -260,13 +260,13 @@ _ = fix_list_to_slice;
 test "fix_option_to_optional_behavior" {
 // Given: Option[T] in spec
 // When: Generating Zig code
-// Then: Map to ?T (not Option<T>)
+// Then: Map to ?T (not ?T)
 // Test fix_option_to_optional: verify behavior is callable (compile-time check)
 _ = fix_option_to_optional;
 }
 
 test "fix_bool_to_bool_behavior" {
-// Given: Bool type in spec
+// Given: bool type in spec
 // When: Generating Zig code
 // Then: Map to bool (lowercase)
 // Test fix_bool_to_bool: verify behavior is callable (compile-time check)
@@ -282,7 +282,7 @@ test "phi_constants" {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "uint_mapping" {
-// Given: UInt field in spec
+// Given: usize field in spec
 // Expected: 
 // Test: uint_mapping
     // (Test setup and assertions to be implemented)
@@ -290,7 +290,7 @@ test "uint_mapping" {
 }
 
 test "int32_mapping" {
-// Given: Int32 field in spec
+// Given: i32 field in spec
 // Expected: 
 // Test: int32_mapping
     // (Test setup and assertions to be implemented)
@@ -298,7 +298,7 @@ test "int32_mapping" {
 }
 
 test "array_mapping" {
-// Given: Array[UInt8][256] in spec
+// Given: [256]u8 in spec
 // Expected: 
 // Test: array_mapping
     // (Test setup and assertions to be implemented)

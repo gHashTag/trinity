@@ -43,34 +43,34 @@ pub const PHOENIX: i64 = 999;
 
 /// UART command byte
 pub const UARTCommand = struct {
-    cmd: UInt8,
+    cmd: u8,
 };
 
 /// Packet header with magic and command
 pub const PacketHeader = struct {
-    magic: UInt16,
-    cmd: UInt8,
-    length: UInt8,
+    magic: u16,
+    cmd: u8,
+    length: u8,
 };
 
 /// CRC16-CCITT checksum
 pub const PacketCRC = struct {
-    value: UInt16,
+    value: u16,
 };
 
 /// Complete UART packet
 pub const UARTPacket = struct {
     header: PacketHeader,
-    payload: Array[UInt8],
+    payload: Array[u8],
     crc: PacketCRC,
 };
 
 /// Response from FPGA
 pub const CommandResponse = struct {
-    status: UInt8,
-    length: UInt8,
-    data: Array[UInt8],
-    crc: UInt16,
+    status: u8,
+    length: u8,
+    data: Array[u8],
+    crc: u16,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════

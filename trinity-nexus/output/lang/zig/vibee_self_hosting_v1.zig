@@ -269,18 +269,18 @@ pub fn parseBehavior() []const u8 {
 
 pub fn mapType(config: anytype) anyerror!void {
           // Primitive types (direct mapping)
-      if (eql(type, "String")) return "[]const u8";
+      if (eql(type, "[]const u8")) return "[]const u8";
       if (eql(type, "Int")) return "i64";
       if (eql(type, "Float")) return "f64";
-      if (eql(type, "Bool")) return "bool";
+      if (eql(type, "bool")) return "bool";
       if (eql(type, "Void")) return "void";
       if (eql(type, "Any")) return "[]const u8";
 
       // Generic types List(T) and List(T) with parentheses
-      if (startsWith(type, "List<") or startsWith(type, "List(")) {
+      if (startsWith(type, "[]const ") or startsWith(type, "List(")) {
           const inner = extractInnerType(type);
           // Check primitives FIRST to avoid double-nesting
-          if (eql(inner, "String")) return "[]const u8";
+          if (eql(inner, "[]const u8")) return "[]const u8";
           if (eql(inner, "Int")) return "[]const i64";
           if (eql(inner, "Float")) return "[]const f64";
           // Recursive for complex types
@@ -291,7 +291,7 @@ pub fn mapType(config: anytype) anyerror!void {
       }
 
       // Generic types Option(T)
-      if (startsWith(type, "Option<") or startsWith(type, "Option(")) {
+      if (startsWith(type, "?") or startsWith(type, "Option(")) {
           const inner = extractInnerType(type);
           const inner_zig = mapType(inner);
           return "?" ++ inner_zig;
@@ -305,9 +305,9 @@ pub fn mapType(config: anytype) anyerror!void {
 pub fn extractInnerType(input: []const u8) usize {
           // Auto-detect bracket type from first character after prefix
       // For "List(...)", opening bracket is '('
-      // For "List<...>", opening bracket is '<'
+      // For "List<...", opening bracket is '<'
       // Uses findMatchingBracketPos with bracket counting
-      // Returns "List<String>" from "List<List<String>>"
+      // Returns "List<[]const u8" from "[]const List<[]const u8>"
 
 
 }
@@ -417,7 +417,7 @@ pub fn writeCreationPatterns(items: anytype) !void {
 
 pub fn inferSignatureFromSpec() []const u8 {
           // Parses natural language specs:
-      // "Given: List(String) names, Int count"
+      // "Given: List([]const u8) names, Int count"
       // -> "names: []const u8, count: i64"
       //
       // "Then: returns Float result"
@@ -427,11 +427,11 @@ pub fn inferSignatureFromSpec() []const u8 {
 }
 
 pub fn parseMultiParamGiven(items: anytype) !void {
-          // Example: "List(String) names, Int count, Bool flag"
+          // Example: "List([]const u8) names, Int count, bool flag"
       // Returns: [
-      //   ("names", "List(String)"),
+      //   ("names", "List([]const u8)"),
       //   ("count", "Int"),
-      //   ("flag", "Bool")
+      //   ("flag", "bool")
       // ]
 
 
@@ -491,7 +491,7 @@ _ = allocator;
 }
 
 
-/// String to write
+/// []const u8 to write
 /// When: appending line to buffer
 /// Then: Append string with newline, update position
 pub fn builderWriteLine(input: []const u8) !void {
@@ -558,7 +558,7 @@ _ = parseBehavior;
 }
 
 test "mapType_behavior" {
-// Given: VIBEE type name (e.g., "String", "List(Int)", "Option(Float)")
+// Given: VIBEE type name (e.g., "[]const u8", "List(Int)", "Option(Float)")
 // When: converting to Zig type
 // Then: - If primitive type: return direct mapping
 // Test mapType: verify behavior is callable (compile-time check)
@@ -566,7 +566,7 @@ _ = mapType;
 }
 
 test "extractInnerType_behavior" {
-// Given: Generic type like "List<List<String>>"
+// Given: Generic type like "[]const List<[]const u8>"
 // When: extracting the innermost type
 // Then: - Find matching bracket using bracket counting
 // Test extractInnerType: verify behavior is callable (compile-time check)
@@ -574,7 +574,7 @@ _ = extractInnerType;
 }
 
 test "findMatchingBracket_behavior" {
-// Given: String with nested brackets and starting position
+// Given: []const u8 with nested brackets and starting position
 // When: searching for matching closing bracket
 // Then: - Auto-detect bracket type: <>, (), [], {}
 // Test findMatchingBracket: verify behavior is callable (compile-time check)
@@ -694,7 +694,7 @@ _ = builderInit;
 }
 
 test "builderWriteLine_behavior" {
-// Given: String to write
+// Given: []const u8 to write
 // When: appending line to buffer
 // Then: Append string with newline, update position
 // Test builderWriteLine: verify behavior is callable (compile-time check)
@@ -735,7 +735,7 @@ test "phi_constants" {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "type_mapping_primitives" {
-// Given: 'mapType("String")'
+// Given: 'mapType("[]const u8")'
 // Expected: '"[]const u8"'
 // Test: type_mapping_primitives
     // (Test setup and assertions to be implemented)
@@ -743,7 +743,7 @@ test "type_mapping_primitives" {
 }
 
 test "type_mapping_nested_list" {
-// Given: 'mapType("List(List(String))")'
+// Given: 'mapType("List(List([]const u8))")'
 // Expected: '"[]const []const u8"'
 // Test: type_mapping_nested_list
     // (Test setup and assertions to be implemented)
@@ -751,7 +751,7 @@ test "type_mapping_nested_list" {
 }
 
 test "bracket_matching_simple" {
-// Given: 'findMatchingBracket("List<String>", 4)'
+// Given: 'findMatchingBracket("[]const []const u8", 4)'
 // Expected: '12'
 // Test: bracket_matching_simple
     // (Test setup and assertions to be implemented)
@@ -759,7 +759,7 @@ test "bracket_matching_simple" {
 }
 
 test "bracket_matching_nested" {
-// Given: 'findMatchingBracket("List<List<String>>", 4)'
+// Given: 'findMatchingBracket("[]const List<[]const u8>", 4)'
 // Expected: '17'
 // Test: bracket_matching_nested
     // (Test setup and assertions to be implemented)

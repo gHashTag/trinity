@@ -35,12 +35,12 @@ pub const PHOENIX: i64 = 999;
 
 /// Balanced ternary digit
 pub const Trit = struct {
-    value: Int8,
+    value: i8,
 };
 
 /// Byte containing 4 packed trits (2 bits per trit)
 pub const TritPackedByte = struct {
-    raw: UInt8,
+    raw: u8,
     t0: Trit,
     t1: Trit,
     t2: Trit,
@@ -49,29 +49,29 @@ pub const TritPackedByte = struct {
 
 /// Sacred bytecode file header
 pub const SacredBytecodeHeader = struct {
-    magic: [4]UInt8,
-    version: UInt8,
-    flags: UInt8,
-    code_size: UInt32,
-    data_size: UInt32,
-    entry_point: UInt32,
+    magic: [4]u8,
+    version: u8,
+    flags: u8,
+    code_size: u32,
+    data_size: u32,
+    entry_point: u32,
 };
 
 /// Complete sacred instruction (encoded)
 pub const SacredInstruction = struct {
-    opcode: UInt8,
+    opcode: u8,
     dest_reg: UInt4,
     src1_reg: UInt4,
     src2_reg: UInt4,
-    immediate: UInt64,
+    immediate: u64,
 };
 
 /// Complete serialized program
 pub const BytecodeProgram = struct {
     header: SacredBytecodeHeader,
-    code: List[UInt8],
-    data: List[UInt8],
-    metadata: List[UInt8],
+    code: List[u8],
+    data: List[u8],
+    metadata: List[u8],
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -113,19 +113,19 @@ pub fn trit_decode() !void {
 
 /// Array of 4 Trit values
 /// When: Pack requested
-/// Then: Return UInt8 with 2-bit encoding per trit
+/// Then: Return u8 with 2-bit encoding per trit
 pub fn pack_4_trits(allocator: std.mem.Allocator, items: anytype) !void {
     // Idiomatic Zig: errdefer for error diagnostics
     errdefer |err| {
         std.debug.print("Error in behavior: {}\n", .{err});
     }
-// TODO: implement — Return UInt8 with 2-bit encoding per trit
+// TODO: implement — Return u8 with 2-bit encoding per trit
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = items;
 }
 
 
-/// UInt8
+/// u8
 /// When: Unpack requested
 /// Then: Return array of 4 Trit values
 pub fn unpack_4_trits(allocator: std.mem.Allocator) !void {
@@ -428,13 +428,13 @@ _ = trit_decode;
 test "pack_4_trits_behavior" {
 // Given: Array of 4 Trit values
 // When: Pack requested
-// Then: Return UInt8 with 2-bit encoding per trit
+// Then: Return u8 with 2-bit encoding per trit
 // Test pack_4_trits: verify behavior is callable (compile-time check)
 _ = pack_4_trits;
 }
 
 test "unpack_4_trits_behavior" {
-// Given: UInt8
+// Given: u8
 // When: Unpack requested
 // Then: Return array of 4 Trit values
 // Test unpack_4_trits: verify behavior is callable (compile-time check)

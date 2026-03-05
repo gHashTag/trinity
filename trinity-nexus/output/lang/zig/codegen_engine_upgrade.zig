@@ -136,7 +136,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 // BEHAVIOR FUNCTIONS - Generated from behaviors
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// A generic type string like "List<List<String>>"
+/// A generic type string like "[]const List<[]const u8>"
 /// When: Scanning from opening '<' to find matching '>'
 /// Then: Returns position of matching '>' considering nested brackets
 pub fn countMatchingBracket(input: []const u8) !void {
@@ -146,11 +146,11 @@ _ = input;
 }
 
 
-/// Type string like "List<List<T>>" with prefix "List<"
+/// Type string like "[]const List<T>" with prefix "[]const "
 /// When: Using bracket counting instead of naive slicing
-/// Then: Returns "List<T>" without trailing '>' characters
+/// Then: Returns "List<T" without trailing '>' characters
 pub fn extractGenericInner(input: []const u8) !void {
-// Extract: Returns "List<T>" without trailing '>' characters
+// Extract: Returns "[]const T" without trailing '>' characters
     const input = @as([]const u8, "sample input");
     var found_count: usize = 0;
     for (input) |c| {
@@ -160,7 +160,7 @@ pub fn extractGenericInner(input: []const u8) !void {
 }
 
 
-/// Deeply nested type like "Map<String, List<Option<Int>>>>"
+/// Deeply nested type like "Map<[]const u8, []const ?Int>>"
 /// When: Recursively parsing each level
 /// Then: Returns proper Zig type like "std.StringHashMap([]const ?i64)"
 pub fn parseNestedGenerics(config: anytype) []const u8 {
@@ -174,7 +174,7 @@ pub fn parseNestedGenerics(config: anytype) []const u8 {
 }
 
 
-/// List<List<String>> from spec
+/// []const List<[]const u8> from spec
 /// When: Generating Zig code
 /// Then: Outputs "[]const []const u8" with proper slice syntax
 pub fn emitNestedListType(input: []const u8) !void {
@@ -184,7 +184,7 @@ _ = input;
 }
 
 
-/// Option<List<T>> from spec
+/// ?[]const T from spec
 /// When: Generating Zig code
 /// Then: Outputs "?[]const T" with optional wrapper
 pub fn emitNestedOptionType(config: anytype) !void {
@@ -194,7 +194,7 @@ _ = config;
 }
 
 
-/// Map<String, List<U>> from spec
+/// Map<[]const u8, []const U> from spec
 /// When: Generating Zig code
 /// Then: Outputs "std.StringHashMap([]const U)"
 pub fn emitNestedMapType(input: []const u8) []const u8 {
@@ -209,7 +209,7 @@ _ = input;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "countMatchingBracket_behavior" {
-// Given: A generic type string like "List<List<String>>"
+// Given: A generic type string like "[]const List<[]const u8>"
 // When: Scanning from opening '<' to find matching '>'
 // Then: Returns position of matching '>' considering nested brackets
 // Test countMatchingBracket: verify behavior is callable (compile-time check)
@@ -217,15 +217,15 @@ _ = countMatchingBracket;
 }
 
 test "extractGenericInner_behavior" {
-// Given: Type string like "List<List<T>>" with prefix "List<"
+// Given: Type string like "[]const List<T>" with prefix "[]const "
 // When: Using bracket counting instead of naive slicing
-// Then: Returns "List<T>" without trailing '>' characters
+// Then: Returns "List<T" without trailing '>' characters
 // Test extractGenericInner: verify behavior is callable (compile-time check)
 _ = extractGenericInner;
 }
 
 test "parseNestedGenerics_behavior" {
-// Given: Deeply nested type like "Map<String, List<Option<Int>>>>"
+// Given: Deeply nested type like "Map<[]const u8, []const ?Int>>"
 // When: Recursively parsing each level
 // Then: Returns proper Zig type like "std.StringHashMap([]const ?i64)"
 // Test parseNestedGenerics: verify behavior is callable (compile-time check)
@@ -233,7 +233,7 @@ _ = parseNestedGenerics;
 }
 
 test "emitNestedListType_behavior" {
-// Given: List<List<String>> from spec
+// Given: []const List<[]const u8> from spec
 // When: Generating Zig code
 // Then: Outputs "[]const []const u8" with proper slice syntax
 // Test emitNestedListType: verify behavior is callable (compile-time check)
@@ -241,7 +241,7 @@ _ = emitNestedListType;
 }
 
 test "emitNestedOptionType_behavior" {
-// Given: Option<List<T>> from spec
+// Given: ?[]const T from spec
 // When: Generating Zig code
 // Then: Outputs "?[]const T" with optional wrapper
 // Test emitNestedOptionType: verify behavior is callable (compile-time check)
@@ -249,7 +249,7 @@ _ = emitNestedOptionType;
 }
 
 test "emitNestedMapType_behavior" {
-// Given: Map<String, List<U>> from spec
+// Given: Map<[]const u8, []const U> from spec
 // When: Generating Zig code
 // Then: Outputs "std.StringHashMap([]const U)"
 // Test emitNestedMapType: verify behavior is callable (compile-time check)
@@ -265,7 +265,7 @@ test "phi_constants" {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "single_level_generic" {
-// Given: List<String>
+// Given: []const []const u8
 // Expected: 
 // Test: single_level_generic
     // (Test setup and assertions to be implemented)
@@ -273,7 +273,7 @@ test "single_level_generic" {
 }
 
 test "double_nested_list" {
-// Given: List<List<String>>
+// Given: []const List<[]const u8>
 // Expected: 
 // Test: double_nested_list
     // (Test setup and assertions to be implemented)
@@ -281,7 +281,7 @@ test "double_nested_list" {
 }
 
 test "triple_nested_list" {
-// Given: List<List<List<Int>>>
+// Given: []const List<List<Int>>
 // Expected: 
 // Test: triple_nested_list
     // (Test setup and assertions to be implemented)
@@ -289,7 +289,7 @@ test "triple_nested_list" {
 }
 
 test "option_of_list" {
-// Given: Option<List<Float>>
+// Given: ?[]const Float
 // Expected: 
 // Test: option_of_list
     // (Test setup and assertions to be implemented)
@@ -297,7 +297,7 @@ test "option_of_list" {
 }
 
 test "map_of_list" {
-// Given: Map<String, List<Int>>
+// Given: Map<[]const u8, []const Int>
 // Expected: 
 // Test: map_of_list
     // (Test setup and assertions to be implemented)
@@ -305,7 +305,7 @@ test "map_of_list" {
 }
 
 test "complex_nested" {
-// Given: List<Map<String, Option<T>>>
+// Given: []const Map<[]const u8, ?T>
 // Expected: 
 // Test: complex_nested
     // (Test setup and assertions to be implemented)

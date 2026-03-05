@@ -197,9 +197,9 @@ pub fn extractCount() !void {
 
 /// Given clause phrase
 /// When: Determining parameter type
-/// Then: - Look for type keywords: String, Int, Float, Bool, List, Option
+/// Then: - Look for type keywords: []const u8, Int, Float, bool, List, Option
 pub fn extractBaseType() []const u8 {
-// Extract: - Look for type keywords: String, Int, Float, Bool, List, Option
+// Extract: - Look for type keywords: []const u8, Int, Float, bool, List, Option
     const input = @as([]const u8, "sample input");
     var found_count: usize = 0;
     for (input) |c| {
@@ -223,11 +223,11 @@ pub fn extractParamNames() []const u8 {
 }
 
 
-/// String input
+/// []const u8 input
 /// When: Processing request
-/// Then: Return processed String
+/// Then: Return processed []const u8
 pub fn simple_behavior(input: []const u8) []const u8 {
-// TODO: implement — Return processed String
+// TODO: implement — Return processed []const u8
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -238,11 +238,11 @@ _ = input;
       }
 
 
-/// 3 String inputs
+/// 3 []const u8 inputs
 /// When: Combining data
-/// Then: Return combined String
+/// Then: Return combined []const u8
 pub fn multi_param_behavior(input: []const u8) []const u8 {
-// TODO: implement — Return combined String
+// TODO: implement — Return combined []const u8
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = input;
 }
@@ -312,7 +312,7 @@ _ = extractCount;
 test "extractBaseType_behavior" {
 // Given: Given clause phrase
 // When: Determining parameter type
-// Then: - Look for type keywords: String, Int, Float, Bool, List, Option
+// Then: - Look for type keywords: []const u8, Int, Float, bool, List, Option
 // Test extractBaseType: verify behavior is callable (compile-time check)
 _ = extractBaseType;
 }
@@ -326,9 +326,9 @@ _ = extractParamNames;
 }
 
 test "simple_behavior_behavior" {
-// Given: String input
+// Given: []const u8 input
 // When: Processing request
-// Then: Return processed String
+// Then: Return processed []const u8
 // Test simple_behavior: verify behavior is callable (compile-time check)
 _ = simple_behavior;
 }
@@ -342,9 +342,9 @@ _ = custom_implementation;
 }
 
 test "multi_param_behavior_behavior" {
-// Given: 3 String inputs
+// Given: 3 []const u8 inputs
 // When: Combining data
-// Then: Return combined String
+// Then: Return combined []const u8
 // Test multi_param_behavior: verify behavior is callable (compile-time check)
 _ = multi_param_behavior;
 }

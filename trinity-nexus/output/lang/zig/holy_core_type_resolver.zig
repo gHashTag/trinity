@@ -137,7 +137,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 
 
       pub fn parseComplexTypeNoAlloc(spec_types: []const TypeDef, type_str: []const u8) ?[]const u8 {
-          if (std.mem.startsWith(u8, type_str, "Option<")) {
+          if (std.mem.startsWith(u8, type_str, "?")) {
               const end_pos = findMatchingBracket(type_str, 8) orelse return null;
               const inner = type_str[8..end_pos];
               const resolved = parseComplexTypeNoAlloc(spec_types, inner) orelse return null;
@@ -150,7 +150,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
               return null;
           }
 
-          if (std.mem.startsWith(u8, type_str, "List<")) {
+          if (std.mem.startsWith(u8, type_str, "[]const ")) {
               const end_pos = findMatchingBracket(type_str, 5) orelse return null;
               const inner = type_str[5..end_pos];
               const resolved = parseComplexTypeNoAlloc(spec_types, inner) orelse return null;
@@ -167,10 +167,10 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
               return null;
           }
 
-          if (std.mem.eql(u8, type_str, "String")) return "[]const u8";
+          if (std.mem.eql(u8, type_str, "[]const u8")) return "[]const u8";
           if (std.mem.eql(u8, type_str, "Int")) return "i64";
           if (std.mem.eql(u8, type_str, "Float")) return "f64";
-          if (std.mem.eql(u8, type_str, "Bool")) return "bool";
+          if (std.mem.eql(u8, type_str, "bool")) return "bool";
           if (std.mem.eql(u8, type_str, "usize")) return "usize";
           if (std.mem.eql(u8, type_str, "u8")) return "u8";
           if (std.mem.eql(u8, type_str, "void")) return "void";
@@ -205,7 +205,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
               const comma_idx = std.mem.indexOf(u8, inner, ",") orelse return error.InvalidMapType;
               const key_type = try parseComplexType(allocator, spec_types, inner[0..comma_idx]);
               const value_type = try parseComplexType(allocator, spec_types, inner[comma_idx + 1 ..]);
-              if (std.mem.eql(u8, key_type, "[]const u8") or std.mem.eql(u8, key_type, "String")) {
+              if (std.mem.eql(u8, key_type, "[]const u8") or std.mem.eql(u8, key_type, "[]const u8")) {
                   return try std.fmt.allocPrint(allocator, "std.StringHashMap({s})", .{value_type});
               }
               return try std.fmt.allocPrint(allocator, "std.AutoHashMap({s}, {s})", .{ key_type, value_type });
@@ -221,9 +221,9 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
               return try std.fmt.allocPrint(allocator, "std.AutoHashMap({s}, {s})", .{ key_type, value_type });
           }
 
-          if (type_str.len > 0 and type_str[0] == '[' and type_str[type_str.len - 1] == ']') {
+          if (type_str.len  0 and type_str[0] == '[' and type_str[type_str.len - 1] == ']') {
               const inner = type_str[1 .. type_str.len - 1];
-              if (inner.len > 0) {
+              if (inner.len  0) {
                   const resolved = resolveTypeName(spec_types, inner);
                   return try std.fmt.allocPrint(allocator, "[{s}]", .{resolved});
               }
@@ -368,25 +368,25 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "resolveTypeName_behavior" {
-// Given: A VIBEE type name (String, Int, Float, Bool, etc.) and spec_types list
+// Given: A VIBEE type name ([]const u8, Int, Float, bool, etc.) and spec_types list
 // When: Mapping VIBEE type names to Zig types
-// Then: - Map String to "[]const u8"
+// Then: - Map []const u8 to "[]const u8"
 // Test resolveTypeName: verify behavior is callable (compile-time check)
 _ = resolveTypeName;
 }
 
 test "findMatchingBracket_behavior" {
 // Given: A string and start position after opening bracket
-// When: Finding the closing bracket for nested generics like List<Map<K,V>>
+// When: Finding the closing bracket for nested generics like []const Map<K,V>
 // Then: - Track bracket depth starting at 1
 // Test findMatchingBracket: verify behavior is callable (compile-time check)
 _ = findMatchingBracket;
 }
 
 test "parseComplexTypeNoAlloc_behavior" {
-// Given: A complex VIBEE type string (Option<T>, List<T>, etc.) and spec_types
+// Given: A complex VIBEE type string (?T, []const T, etc.) and spec_types
 // When: Resolving type without heap allocation (static string returns)
-// Then: - Handle Option<T> to optional for known primitives
+// Then: - Handle ?T to optional for known primitives
 // Test parseComplexTypeNoAlloc: verify behavior is callable (compile-time check)
 _ = parseComplexTypeNoAlloc;
 }
@@ -394,7 +394,7 @@ _ = parseComplexTypeNoAlloc;
 test "parseComplexType_behavior" {
 // Given: A complex VIBEE type string and allocator and spec_types
 // When: Resolving type with heap allocation for dynamic results
-// Then: - Handle Option<T> to optional (allocating)
+// Then: - Handle ?T to optional (allocating)
 // Test parseComplexType: verify behavior is callable (compile-time check)
 _ = parseComplexType;
 }

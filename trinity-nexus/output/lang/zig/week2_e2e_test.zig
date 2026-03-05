@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// trinity_demo_test_v2 v2.0.0 - Generated from .tri specification
+// week2_e2e_test v1.0.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
@@ -18,9 +18,9 @@ const Allocator = std.mem.Allocator;
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub const TEST_ITERATIONS: f64 = 100;
+pub const TEST_TIMEOUT_MS: f64 = 5000;
 
-pub const TIMEOUT_MS: f64 = 5000;
+pub const RETRY_COUNT: f64 = 3;
 
 // Basic φ-constants (Sacred Formula)
 pub const PHI: f64 = 1.618033988749895;
@@ -37,27 +37,21 @@ pub const PHOENIX: i64 = 999;
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Test configuration
-pub const TestConfig = struct {
-    uart_device: []const u8,
-    iterations: usize,
-    verbose: bool,
-};
-
-/// Single test result
-pub const TestResult = struct {
+/// Single E2E test result
+pub const E2ETestResult = struct {
     name: []const u8,
     passed: bool,
-    duration_ns: u64,
-    message: []const u8,
+    duration_ms: Float64,
+    error_message: []const u8,
 };
 
-/// Test suite results
-pub const TestSuite = struct {
-    results: Array[TestResult],
-    total: usize,
-    passed: usize,
-    failed: usize,
+/// Complete E2E test suite
+pub const E2ETestSuite = struct {
+    uart_tests: [10]TestResult,
+    vsa_tests: [10]TestResult,
+    tqnn_tests: [10]TestResult,
+    led_tests: [5]TestResult,
+    integration_tests: [10]TestResult,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -108,139 +102,114 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 
 /// UART connection
 /// When: CMD_PING sent
-/// Then: ACK received, firmware_version parsed
+/// Then: ACK received, firmware_version = 0x02 0x00
 pub fn test_uart_ping(request: anytype) !void {
-// TODO: implement — ACK received, firmware_version parsed
+// TODO: implement — ACK received, firmware_version = 0x02 0x00
     // Add 'implementation:' field in .vibee spec to provide real code.
 _ = request;
 }
 
 
-/// Random 10K trit vector
-/// When: CMD_VSA_BIND sent
-/// Then: Similarity returned in [0, 65535]
-pub fn test_vsa_bind_basic(allocator: std.mem.Allocator) error{OutOfMemory}!f32 {
-    // Idiomatic Zig: errdefer for error diagnostics
-    errdefer |err| {
-        std.debug.print("Error in behavior: {}\n", .{err});
-    }
-// TODO: implement — Similarity returned in [0, 65535]
+/// UART connection
+/// When: CMD_VSA_BIND sent with 10K trits
+/// Then: Similarity returned (0-65535)
+pub fn test_uart_vsa_bind(request: anytype) f32 {
+// TODO: implement — Similarity returned (0-65535)
     // Add 'implementation:' field in .vibee spec to provide real code.
+_ = request;
 }
 
 
-/// All-positive vector
-/// When: CMD_VSA_BIND with identity
-/// Then: Similarity = 65535 (100%)
-pub fn test_vsa_bind_identity(allocator: std.mem.Allocator) error{OutOfMemory}!f32 {
-    // Idiomatic Zig: errdefer for error diagnostics
-    errdefer |err| {
-        std.debug.print("Error in behavior: {}\n", .{err});
-    }
-// TODO: implement — Similarity = 65535 (100%)
+/// UART connection
+/// When: CMD_VSA_BUNDLE sent with 2 vectors
+/// Then: Bundled result returned
+pub fn test_uart_vsa_bundle(request: anytype) !void {
+// TODO: implement — Bundled result returned
     // Add 'implementation:' field in .vibee spec to provide real code.
+_ = request;
 }
 
 
-/// Two random 10K vectors
-/// When: CMD_VSA_BUNDLE sent
-/// Then: Result similar to both inputs
-pub fn test_vsa_bundle_two(allocator: std.mem.Allocator) !void {
-    // Idiomatic Zig: errdefer for error diagnostics
-    errdefer |err| {
-        std.debug.print("Error in behavior: {}\n", .{err});
-    }
-// TODO: implement — Result similar to both inputs
+/// UART connection
+/// When: CMD_TQNN_FORWARD sent with 16 floats
+/// Then: Quantum state returned (pos+neg+zero=16)
+pub fn test_uart_tqnn_forward(request: anytype) !void {
+// TODO: implement — Quantum state returned (pos+neg+zero=16)
     // Add 'implementation:' field in .vibee spec to provide real code.
+_ = request;
 }
 
 
-/// 16 float values (0.5)
-/// When: CMD_TQNN_FORWARD sent
-/// Then: quantum_state.pos+neg+zero=16
-pub fn test_tqnn_forward_basic(values: []const f32) !void {
-// TODO: implement — quantum_state.pos+neg+zero=16
-    // Add 'implementation:' field in .vibee spec to provide real code.
-_ = values;
-}
-
-
-/// 16 float values (-0.8)
-/// When: CMD_TQNN_FORWARD sent
-/// Then: quantum_state.neg > 8 (dominant negative)
-pub fn test_tqnn_forward_negative(values: []const f32) !void {
-// TODO: implement — quantum_state.neg > 8 (dominant negative)
-    // Add 'implementation:' field in .vibee spec to provide real code.
-_ = values;
-}
-
-
-/// 16 float values (0.8)
-/// When: CMD_TQNN_FORWARD sent
-/// Then: quantum_state.pos > 8 (dominant positive)
-pub fn test_tqnn_forward_positive(values: []const f32) !void {
-// TODO: implement — quantum_state.pos > 8 (dominant positive)
-    // Add 'implementation:' field in .vibee spec to provide real code.
-_ = values;
-}
-
-
-/// No specific operation
+/// UART connection
 /// When: CMD_READ_STATE sent
-/// Then: Returns current quantum state
-pub fn test_read_state() !void {
-// TODO: implement — Returns current quantum state
+/// Then: Current quantum state returned
+pub fn test_uart_read_state(request: anytype) !void {
+// TODO: implement — Current quantum state returned
     // Add 'implementation:' field in .vibee spec to provide real code.
+_ = request;
 }
 
 
-/// LED mode 0
-/// When: CMD_LED_CONTROL sent
+/// UART connection
+/// When: CMD_LED_CONTROL with mode=0
 /// Then: LED turns off
-pub fn test_led_off() !void {
+pub fn test_uart_led_off(request: anytype) !void {
 // TODO: implement — LED turns off
     // Add 'implementation:' field in .vibee spec to provide real code.
+_ = request;
 }
 
 
-/// LED mode 1
-/// When: CMD_LED_CONTROL sent
+/// UART connection
+/// When: CMD_LED_CONTROL with mode=1
 /// Then: LED turns on
-pub fn test_led_on() !void {
+pub fn test_uart_led_on(request: anytype) !void {
 // TODO: implement — LED turns on
     // Add 'implementation:' field in .vibee spec to provide real code.
+_ = request;
 }
 
 
-/// LED mode 2
-/// When: CMD_LED_CONTROL sent
-/// Then: LED blinks fast (~3 Hz)
-pub fn test_led_blink_fast() !void {
-// TODO: implement — LED blinks fast (~3 Hz)
+/// UART connection
+/// When: CMD_LED_CONTROL with mode=2
+/// Then: LED blinks at ~3Hz
+pub fn test_uart_led_blink_fast(request: anytype) !void {
+// TODO: implement — LED blinks at ~3Hz
     // Add 'implementation:' field in .vibee spec to provide real code.
+_ = request;
 }
 
 
-/// Valid packet
-/// When: CRC checked
-/// Then: Passes validation
-pub fn test_crc_validation() bool {
-// TODO: implement — Passes validation
+/// UART connection
+/// When: CMD_LED_CONTROL with mode=3
+/// Then: LED blinks at ~0.75Hz
+pub fn test_uart_led_blink_slow(request: anytype) !void {
+// TODO: implement — LED blinks at ~0.75Hz
+    // Add 'implementation:' field in .vibee spec to provide real code.
+_ = request;
+}
+
+
+/// Valid packet with CRC
+/// When: Sent
+/// Then: Packet accepted
+pub fn test_crc_validation() !void {
+// TODO: implement — Packet accepted
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
 /// Corrupted CRC
-/// When: CRC checked
-/// Then: Error returned
+/// When: Sent
+/// Then: Error returned, NAK sent
 pub fn test_crc_error() !void {
-// TODO: implement — Error returned
+// TODO: implement — Error returned, NAK sent
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
 /// Large payload (>256 bytes)
-/// When: Sending
+/// When: Sent
 /// Then: Split into multiple packets
 pub fn test_multi_packet(data: []const u8) !void {
 // TODO: implement — Split into multiple packets
@@ -249,21 +218,44 @@ _ = data;
 }
 
 
-/// FFI call, no FPGA
-/// When: AutoVSA requested
-/// Then: Falls back to software VSA
-pub fn test_ffi_autovsa_fallback() !void {
-// TODO: implement — Falls back to software VSA
+/// Same input 10 times
+/// VSA ops: VSA bind executed
+/// Result: All results identical
+pub fn test_vsa_bind_consistency() void {
+    // VSA operation detected from spec keywords.
+    // Available primitives: bind, unbind, bundle2, bundle3, permute, cosineSimilarity
+// Intent: All results identical
+}
+
+/// Random vectors
+/// When: Similarity computed
+/// Then: Result in [0, 65535]
+pub fn test_vsa_similarity_range(allocator: std.mem.Allocator) !void {
+    // Idiomatic Zig: errdefer for error diagnostics
+    errdefer |err| {
+        std.debug.print("Error in behavior: {}\n", .{err});
+    }
+// TODO: implement — Result in [0, 65535]
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
 
-/// 100 iterations
-/// When: Running benchmark
-/// Then: Returns ops/sec
-pub fn benchmark_throughput() !void {
-// TODO: implement — Returns ops/sec
+/// 16 floats
+/// When: TQNN forward executed
+/// Then: pos+neg+zero=16
+pub fn test_tqnn_quantum_conservation() !void {
+// TODO: implement — pos+neg+zero=16
     // Add 'implementation:' field in .vibee spec to provide real code.
+}
+
+
+/// Coherent input
+/// When: TQNN forward executed
+/// Then: coherence flag set correctly
+pub fn test_tqnn_coherence_check(input: []const u8) bool {
+// TODO: implement — coherence flag set correctly
+    // Add 'implementation:' field in .vibee spec to provide real code.
+_ = input;
 }
 
 
@@ -274,130 +266,129 @@ pub fn benchmark_throughput() !void {
 test "test_uart_ping_behavior" {
 // Given: UART connection
 // When: CMD_PING sent
-// Then: ACK received, firmware_version parsed
+// Then: ACK received, firmware_version = 0x02 0x00
 // Test test_uart_ping: verify behavior is callable (compile-time check)
 _ = test_uart_ping;
 }
 
-test "test_vsa_bind_basic_behavior" {
-// Given: Random 10K trit vector
-// When: CMD_VSA_BIND sent
-// Then: Similarity returned in [0, 65535]
-// Test test_vsa_bind_basic: verify behavior is callable (compile-time check)
-_ = test_vsa_bind_basic;
+test "test_uart_vsa_bind_behavior" {
+// Given: UART connection
+// When: CMD_VSA_BIND sent with 10K trits
+// Then: Similarity returned (0-65535)
+// Test test_uart_vsa_bind: verify behavior is callable (compile-time check)
+_ = test_uart_vsa_bind;
 }
 
-test "test_vsa_bind_identity_behavior" {
-// Given: All-positive vector
-// When: CMD_VSA_BIND with identity
-// Then: Similarity = 65535 (100%)
-// Test test_vsa_bind_identity: verify behavior is callable (compile-time check)
-_ = test_vsa_bind_identity;
+test "test_uart_vsa_bundle_behavior" {
+// Given: UART connection
+// When: CMD_VSA_BUNDLE sent with 2 vectors
+// Then: Bundled result returned
+// Test test_uart_vsa_bundle: verify behavior is callable (compile-time check)
+_ = test_uart_vsa_bundle;
 }
 
-test "test_vsa_bundle_two_behavior" {
-// Given: Two random 10K vectors
-// When: CMD_VSA_BUNDLE sent
-// Then: Result similar to both inputs
-// Test test_vsa_bundle_two: verify behavior is callable (compile-time check)
-_ = test_vsa_bundle_two;
+test "test_uart_tqnn_forward_behavior" {
+// Given: UART connection
+// When: CMD_TQNN_FORWARD sent with 16 floats
+// Then: Quantum state returned (pos+neg+zero=16)
+// Test test_uart_tqnn_forward: verify behavior is callable (compile-time check)
+_ = test_uart_tqnn_forward;
 }
 
-test "test_tqnn_forward_basic_behavior" {
-// Given: 16 float values (0.5)
-// When: CMD_TQNN_FORWARD sent
-// Then: quantum_state.pos+neg+zero=16
-// Test test_tqnn_forward_basic: verify behavior is callable (compile-time check)
-_ = test_tqnn_forward_basic;
-}
-
-test "test_tqnn_forward_negative_behavior" {
-// Given: 16 float values (-0.8)
-// When: CMD_TQNN_FORWARD sent
-// Then: quantum_state.neg > 8 (dominant negative)
-// Test test_tqnn_forward_negative: verify behavior is callable (compile-time check)
-_ = test_tqnn_forward_negative;
-}
-
-test "test_tqnn_forward_positive_behavior" {
-// Given: 16 float values (0.8)
-// When: CMD_TQNN_FORWARD sent
-// Then: quantum_state.pos > 8 (dominant positive)
-// Test test_tqnn_forward_positive: verify behavior is callable (compile-time check)
-_ = test_tqnn_forward_positive;
-}
-
-test "test_read_state_behavior" {
-// Given: No specific operation
+test "test_uart_read_state_behavior" {
+// Given: UART connection
 // When: CMD_READ_STATE sent
-// Then: Returns current quantum state
-// Test test_read_state: verify behavior is callable (compile-time check)
-_ = test_read_state;
+// Then: Current quantum state returned
+// Test test_uart_read_state: verify behavior is callable (compile-time check)
+_ = test_uart_read_state;
 }
 
-test "test_led_off_behavior" {
-// Given: LED mode 0
-// When: CMD_LED_CONTROL sent
+test "test_uart_led_off_behavior" {
+// Given: UART connection
+// When: CMD_LED_CONTROL with mode=0
 // Then: LED turns off
-// Test test_led_off: verify behavior is callable (compile-time check)
-_ = test_led_off;
+// Test test_uart_led_off: verify behavior is callable (compile-time check)
+_ = test_uart_led_off;
 }
 
-test "test_led_on_behavior" {
-// Given: LED mode 1
-// When: CMD_LED_CONTROL sent
+test "test_uart_led_on_behavior" {
+// Given: UART connection
+// When: CMD_LED_CONTROL with mode=1
 // Then: LED turns on
-// Test test_led_on: verify behavior is callable (compile-time check)
-_ = test_led_on;
+// Test test_uart_led_on: verify behavior is callable (compile-time check)
+_ = test_uart_led_on;
 }
 
-test "test_led_blink_fast_behavior" {
-// Given: LED mode 2
-// When: CMD_LED_CONTROL sent
-// Then: LED blinks fast (~3 Hz)
-// Test test_led_blink_fast: verify behavior is callable (compile-time check)
-_ = test_led_blink_fast;
+test "test_uart_led_blink_fast_behavior" {
+// Given: UART connection
+// When: CMD_LED_CONTROL with mode=2
+// Then: LED blinks at ~3Hz
+// Test test_uart_led_blink_fast: verify behavior is callable (compile-time check)
+_ = test_uart_led_blink_fast;
+}
+
+test "test_uart_led_blink_slow_behavior" {
+// Given: UART connection
+// When: CMD_LED_CONTROL with mode=3
+// Then: LED blinks at ~0.75Hz
+// Test test_uart_led_blink_slow: verify behavior is callable (compile-time check)
+_ = test_uart_led_blink_slow;
 }
 
 test "test_crc_validation_behavior" {
-// Given: Valid packet
-// When: CRC checked
-// Then: Passes validation
-// Test test_crc_validation: verify returns boolean
-// TODO: Add specific test for test_crc_validation
+// Given: Valid packet with CRC
+// When: Sent
+// Then: Packet accepted
+// Test test_crc_validation: verify behavior is callable (compile-time check)
 _ = test_crc_validation;
 }
 
 test "test_crc_error_behavior" {
 // Given: Corrupted CRC
-// When: CRC checked
-// Then: Error returned
+// When: Sent
+// Then: Error returned, NAK sent
 // Test test_crc_error: verify behavior is callable (compile-time check)
 _ = test_crc_error;
 }
 
 test "test_multi_packet_behavior" {
 // Given: Large payload (>256 bytes)
-// When: Sending
+// When: Sent
 // Then: Split into multiple packets
 // Test test_multi_packet: verify behavior is callable (compile-time check)
 _ = test_multi_packet;
 }
 
-test "test_ffi_autovsa_fallback_behavior" {
-// Given: FFI call, no FPGA
-// When: AutoVSA requested
-// Then: Falls back to software VSA
-// Test test_ffi_autovsa_fallback: verify behavior is callable (compile-time check)
-_ = test_ffi_autovsa_fallback;
+test "test_vsa_bind_consistency_behavior" {
+// Given: Same input 10 times
+// When: VSA bind executed
+// Then: All results identical
+// Test test_vsa_bind_consistency: verify behavior is callable (compile-time check)
+_ = test_vsa_bind_consistency;
 }
 
-test "benchmark_throughput_behavior" {
-// Given: 100 iterations
-// When: Running benchmark
-// Then: Returns ops/sec
-// Test benchmark_throughput: verify behavior is callable (compile-time check)
-_ = benchmark_throughput;
+test "test_vsa_similarity_range_behavior" {
+// Given: Random vectors
+// When: Similarity computed
+// Then: Result in [0, 65535]
+// Test test_vsa_similarity_range: verify behavior is callable (compile-time check)
+_ = test_vsa_similarity_range;
+}
+
+test "test_tqnn_quantum_conservation_behavior" {
+// Given: 16 floats
+// When: TQNN forward executed
+// Then: pos+neg+zero=16
+// Test test_tqnn_quantum_conservation: verify behavior is callable (compile-time check)
+_ = test_tqnn_quantum_conservation;
+}
+
+test "test_tqnn_coherence_check_behavior" {
+// Given: Coherent input
+// When: TQNN forward executed
+// Then: coherence flag set correctly
+// Test test_tqnn_coherence_check: verify behavior is callable (compile-time check)
+_ = test_tqnn_coherence_check;
 }
 
 test "phi_constants" {
@@ -408,42 +399,34 @@ test "phi_constants" {
 // SPEC-LEVEL TESTS - Integration tests from test_cases:
 // ═══════════════════════════════════════════════════════════════════════════════
 
-test "all_tests_pass" {
-// Given: Full test suite
+test "all_uart_commands_pass" {
+// Given: All UART tests
 // Expected: 
-// Test: all_tests_pass
+// Test: all_uart_commands_pass
     // (Test setup and assertions to be implemented)
     _ = @as(usize, 0); // Compile-time check
 }
 
-test "uart_tests_pass" {
-// Given: UART tests
+test "all_vsa_tests_pass" {
+// Given: All VSA tests
 // Expected: 
-// Test: uart_tests_pass
+// Test: all_vsa_tests_pass
     // (Test setup and assertions to be implemented)
     _ = @as(usize, 0); // Compile-time check
 }
 
-test "vsa_tests_pass" {
-// Given: VSA tests
+test "all_tqnn_tests_pass" {
+// Given: All TQNN tests
 // Expected: 
-// Test: vsa_tests_pass
+// Test: all_tqnn_tests_pass
     // (Test setup and assertions to be implemented)
     _ = @as(usize, 0); // Compile-time check
 }
 
-test "tqnn_tests_pass" {
-// Given: TQNN tests
+test "e2e_integration_pass" {
+// Given: Full integration test
 // Expected: 
-// Test: tqnn_tests_pass
-    // (Test setup and assertions to be implemented)
-    _ = @as(usize, 0); // Compile-time check
-}
-
-test "benchmark_completes" {
-// Given: Benchmark suite
-// Expected: 
-// Test: benchmark_completes
+// Test: e2e_integration_pass
     // (Test setup and assertions to be implemented)
     _ = @as(usize, 0); // Compile-time check
 }

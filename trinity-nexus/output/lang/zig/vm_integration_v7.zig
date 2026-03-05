@@ -36,7 +36,7 @@ pub const PHOENIX: i64 = 999;
 /// Unified opcode enum including sacred range
 pub const ExtendedOpcode = struct {
     base: []const u8,
-    code: UInt8,
+    code: u8,
     category: []const u8,
 };
 
@@ -44,7 +44,7 @@ pub const ExtendedOpcode = struct {
 pub const SacredVMFrame = struct {
     vsa_regs: VSARegisters,
     sacred_ctx: SacredContext,
-    cycle_count: UInt64,
+    cycle_count: u64,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════

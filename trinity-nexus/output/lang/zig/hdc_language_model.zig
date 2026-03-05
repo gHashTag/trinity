@@ -46,7 +46,7 @@ pub const HDCLanguageModel = struct {
     ngram_encoder: NGramEncoder,
     context_size: usize,
     dimension: usize,
-    char_models: Array<Option<Ptr<CharModel>>, 256>,
+    char_models: Array<?Ptr<CharModel>, 256>,
     char_count: Array<u32, 256>,
     jit_engine: ?[]const u8,
 };

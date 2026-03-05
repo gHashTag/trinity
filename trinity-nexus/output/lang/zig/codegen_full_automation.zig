@@ -164,8 +164,8 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
               return result;
           }
 
-          // Generic types: Option<T>
-          if (std.mem.startsWith(u8, vibee_type, "Option<")) {
+          // Generic types: ?T
+          if (std.mem.startsWith(u8, vibee_type, "?")) {
               const inner = vibee_type[7..vibee_type.len-1];
               const resolved_inner = try resolveVibeeType(inner, allocator);
               const result = try std.fmt.allocPrint(allocator, "?{s}", .{resolved_inner});
@@ -261,14 +261,14 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
               .is_optional = false,
           };
 
-          // Check for Optional<T>
+          // Check for Optional<T
           if (std.mem.startsWith(u8, type_str, "Optional<")) {
               result.is_optional = true;
               // Parse inner type...
           }
 
-          // Check for List<T>
-          if (std.mem.startsWith(u8, type_str, "List<")) {
+          // Check for []const T
+          if (std.mem.startsWith(u8, type_str, "[]const ")) {
               result.base = "list";
               // Extract T and parse recursively...
           }
@@ -283,7 +283,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "resolve_vibee_type_behavior" {
-// Given: VIBEE type string (e.g., 'string', 'float', 'list<T>')
+// Given: VIBEE type string (e.g., 'string', 'float', 'list<T')
 // When: resolve_vibee_type is called
 // Then: 
 // Test resolve_vibee_type: verify behavior is callable (compile-time check)
@@ -355,7 +355,7 @@ test "type_resolution_nested_list" {
 }
 
 test "type_resolution_option" {
-// Given: { type: "Option<float>" }
+// Given: { type: "?float" }
 // Expected: "?f32"
 // Test: type_resolution_option
     // (Test setup and assertions to be implemented)

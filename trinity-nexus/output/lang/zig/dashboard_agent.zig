@@ -78,7 +78,7 @@ pub const WidgetInfo = struct {
     widget_type: WidgetType,
     status: WidgetStatus,
     data: WidgetData,
-    last_update: Int64,
+    last_update: i64,
     expanded: bool,
 };
 
@@ -114,7 +114,7 @@ pub const SacredScoreData = struct {
     threshold: f64,
     trend: Trend,
     breakdown: ScoreBreakdown,
-    timestamp: Int64,
+    timestamp: i64,
 };
 
 /// 
@@ -160,7 +160,7 @@ pub const AgentSnapshot = struct {
     @"type": []const u8,
     status: AgentStatus,
     realm: Realm,
-    last_heartbeat: Int64,
+    last_heartbeat: i64,
     task_count: i64,
     health: f64,
 };
@@ -208,7 +208,7 @@ pub const SacredAlert = struct {
     severity: AlertSeverity,
     realm: Realm,
     message: []const u8,
-    timestamp: Int64,
+    timestamp: i64,
     acknowledged: bool,
 };
 
@@ -228,7 +228,7 @@ pub const LogData = struct {
 
 /// 
 pub const LogEntry = struct {
-    timestamp: Int64,
+    timestamp: i64,
     level: LogLevel,
     realm: Realm,
     message: []const u8,
@@ -281,7 +281,7 @@ pub const WidgetUpdate = struct {
     widget_id: []const u8,
     realm: Realm,
     data: WidgetData,
-    timestamp: Int64,
+    timestamp: i64,
 };
 
 /// 
@@ -295,7 +295,7 @@ pub const AgentStatusUpdate = struct {
     agent_id: []const u8,
     status: AgentStatus,
     health: f64,
-    timestamp: Int64,
+    timestamp: i64,
 };
 
 /// 
@@ -320,7 +320,7 @@ pub const Heartbeat = struct {
     agent_id: []const u8,
     generation: i64,
     sacred_score: f64,
-    timestamp: Int64,
+    timestamp: i64,
 };
 
 /// 
@@ -340,7 +340,7 @@ pub const DashboardState = struct {
     alerts: []const u8,
     stream_config: StreamConfig,
     connected_clients: i64,
-    last_update: Int64,
+    last_update: i64,
 };
 
 /// 

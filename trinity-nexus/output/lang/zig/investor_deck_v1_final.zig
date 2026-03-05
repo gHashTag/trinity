@@ -37,7 +37,7 @@ pub const PHOENIX: i64 = 999;
 pub const Slide = struct {
     title: []const u8,
     subtitle: []const u8,
-    content: List[String],
+    content: List[[]const u8],
     metrics: List[Metric],
 };
 
@@ -51,7 +51,7 @@ pub const Metric = struct {
 /// Token economic model
 pub const Tokenomics = struct {
     symbol: []const u8,
-    total_supply: UInt64,
+    total_supply: u64,
     utility_score: f64,
     burn_rate: f64,
 };

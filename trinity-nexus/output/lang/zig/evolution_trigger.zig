@@ -56,22 +56,22 @@ pub const TriggerResult = struct {
     reason: []const u8,
     phi_score: f64,
     timestamp: i64,
-    generation: UInt,
+    generation: usize,
 };
 
 /// 
 pub const EvolutionState = struct {
     last_trigger: i64,
-    generation: UInt,
+    generation: usize,
     fitness: f64,
-    total_triggers: UInt,
-    successful_evolutions: UInt,
+    total_triggers: usize,
+    successful_evolutions: usize,
 };
 
 /// 
 pub const TriggerConfig = struct {
     time_interval_minutes: f64,
-    commit_threshold: UInt,
+    commit_threshold: usize,
     fitness_threshold: f64,
     min_cooldown_seconds: f64,
     phi_growth_required: f64,

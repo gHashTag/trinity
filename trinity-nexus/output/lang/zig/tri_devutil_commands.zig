@@ -38,7 +38,7 @@ pub const SystemCheck = struct {
     component: []const u8,
     status: []const u8,
     message: []const u8,
-    version: Option[String],
+    version: Option[[]const u8],
 };
 
 /// 
@@ -49,14 +49,14 @@ pub const DoctorReport = struct {
     build_status: []const u8,
     system_checks: List[SystemCheck],
     overall_status: []const u8,
-    recommendations: List[String],
+    recommendations: List[[]const u8],
 };
 
 /// 
 pub const CleanStats = struct {
     files_removed: i64,
     bytes_freed: i64,
-    directories_cleaned: List[String],
+    directories_cleaned: List[[]const u8],
 };
 
 /// 
@@ -64,7 +64,7 @@ pub const FormatStats = struct {
     files_checked: i64,
     files_changed: i64,
     files_unchanged: i64,
-    errors: List[String],
+    errors: List[[]const u8],
 };
 
 /// 
@@ -79,9 +79,9 @@ pub const ProjectStats = struct {
     vibee_loc: i64,
     zig_loc: i64,
     tri_loc: i64,
-    modules: List[String],
-    build_targets: List[String],
-    test_files: List[String],
+    modules: List[[]const u8],
+    build_targets: List[[]const u8],
+    test_files: List[[]const u8],
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════

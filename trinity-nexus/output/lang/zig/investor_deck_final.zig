@@ -52,7 +52,7 @@ pub const Metric = struct {
 /// 
 pub const Tokenomics = struct {
     symbol: []const u8,
-    total_supply: UInt64,
+    total_supply: u64,
     initial_price: []const u8,
     utility_score: f64,
 };
