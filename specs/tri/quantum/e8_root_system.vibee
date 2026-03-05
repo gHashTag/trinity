@@ -1,0 +1,74 @@
+name: e8_root_system
+version: "1.0.0"
+language: zig
+module: quantum.e8
+
+types:
+  E8Root:
+    description: 8-dimensional root vector in E8 lattice
+    fields:
+      components: Array(8, Float64)
+
+  E8RootSystem:
+    description: Complete set of 240 E8 roots
+    fields:
+      roots: Array(240, E8Root)
+      phi: Float64  # Golden ratio constant
+
+  WeylGroup:
+    description: Weyl group of E8 (order 696729600)
+    fields:
+      generators: Array(8, E8Root)
+
+behaviors:
+  - name: generate_roots
+    description: Generate all 240 E8 roots with norm² = 2φ
+    given: E8RootSystem
+    when: Called
+    then:
+      - Returns all 240 roots
+      - Each root has norm² = 2φ ≈ 3.23607
+      - Roots are organized into 112 root pairs (±α)
+
+  - name: root_norm_squared
+    description: Calculate squared norm of E8 root
+    given: E8Root
+    when: Calculate ‖root‖²
+    then:
+      - Returns 2φ exactly
+      - Value ≈ 3.23606797749979
+
+  - name: weyl_group_reflection
+    description: Reflect vector across root hyperplane
+    given:
+      - root: E8Root (the reflection axis)
+      - target: E8Root (vector to reflect)
+    when: Compute reflection
+    then:
+      - Returns reflected E8Root
+      - Formula: v' = v - 2(v·α)/(α·α) α
+
+  - name: simple_roots
+    description: Get 8 simple roots of E8
+    given: E8RootSystem
+    when: Query simple roots
+    then:
+      - Returns Array(8, E8Root)
+      - Forms Dynkin diagram basis
+
+  - name: cartan_matrix
+    description: Compute Cartan matrix from simple roots
+    given: E8RootSystem
+    when: Calculate A_ij = 2(α_i·α_j)/(α_j·α_j)
+    then:
+      - Returns 8x8 matrix
+      - Matches E8 Cartan matrix
+
+  - name: verify_e8_dimensions
+    description: Verify E8 group properties
+    given: E8RootSystem
+    when: Check properties
+    then:
+      - dim(E8) = 248 = rank + |roots| = 8 + 240
+      - |roots| = 240 = 3^5 - 3
+      - All roots have same length (simply-laced)
