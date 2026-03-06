@@ -1,11 +1,11 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// neuromorphic_integration v1.0.0 - Generated from .tri specification
+// neuromorphic_integration v2.0.0 - Generated from .tri specification
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 // Golden identity: φ² + 1/φ² = 3
 //
-// Author:
+// Author: 
 // DO NOT EDIT - This file is auto-generated
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -52,11 +52,15 @@ pub const PHOENIX: i64 = 999;
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-///
-pub const NeuromorphicChip = struct {
+/// 
+pub const NeuromorphicChip = enum {
+    loihi3,
+    akida,
+    truenorth,
+    spinnaker2,
 };
 
-///
+/// 
 pub const SynapticWeight = struct {
     pre_neuron: i64,
     post_neuron: i64,
@@ -64,14 +68,14 @@ pub const SynapticWeight = struct {
     plasticity: f64,
 };
 
-///
+/// 
 pub const TernarySpike = struct {
     neuron_id: i64,
     timestamp: f64,
     trit_value: i64,
 };
 
-///
+/// 
 pub const NeuromorphicConfig = struct {
     chip: NeuromorphicChip,
     num_cores: i64,
@@ -79,21 +83,21 @@ pub const NeuromorphicConfig = struct {
     ternary_mode: bool,
 };
 
-///
+/// 
 pub const PhiResonance = struct {
     frequency: f64,
     coherence: f64,
     threshold: f64,
 };
 
-///
+/// 
 pub const SpikeTrainEncoding = struct {
     neuron_count: i64,
     time_window: f64,
     spikes: []const u8,
 };
 
-///
+/// 
 pub const ChipMetrics = struct {
     energy_per_trit_op_pj: f64,
     latency_us: f64,
@@ -148,144 +152,212 @@ fn phi_lerp(a: f64, b: f64, t: f64) f64 {
 // BEHAVIOR FUNCTIONS - Generated from behaviors
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Initialize neuromorphic layer with ternary VSA mapping (3 neurons per trit).
-pub fn initNeuromorphicLayer(config: anytype) !void {
-    // Configure layer: 3 neurons per trit, total_trits = cores * neurons_per_core / 3
-    _ = config;
-    return;
-}
+        pub fn initNeuromorphicLayer(num_cores: i64, neurons_per_core: i64) i64 {
+            const neurons_per_trit: i64 = 3;
+            if (neurons_per_core == 0) return 0;
+            return @divTrunc(num_cores * neurons_per_core, neurons_per_trit);
+        }
 
-/// Convert VSA hypervector to spike train for neuromorphic chip.
-/// Each trit maps to 3 neurons: spike on neuron 0 for -1, neuron 1 for 0, neuron 2 for +1.
-pub fn mapVSAToSpikes(input: []const i8) !void {
-    _ = input;
-    return;
-}
 
-/// Convert spike train back to VSA hypervector.
-/// Decode 3-neuron groups back to trits {-1, 0, +1}.
-pub fn mapSpikesToVSA() []i8 {
-    return &[_]i8{};
-}
 
-/// Apply ternary STDP: delta_w = PHI_INVERSE * sign(dt) * exp(-|dt| * GAMMA).
-/// Quantize weight to {-1, 0, +1}.
-pub fn ternarySTDP(items: anytype) usize {
-    _ = items;
-    // STDP modulated by golden ratio constants
-    return 0;
-}
+        pub fn mapVSAToSpikes(hypervector: []const i8, result: []i64) usize {
+            var count: usize = 0;
+            for (hypervector, 0..) |trit, idx| {
+                const trit_clamped: i64 = if (trit < -1) -1 else if (trit > 1) 1 else @as(i64, trit);
+                const neuron_id: i64 = @as(i64, @intCast(idx)) * 3 + (trit_clamped + 1);
+                if (count < result.len) {
+                    result[count] = neuron_id;
+                    count += 1;
+                }
+            }
+            return count;
+        }
 
-/// Detect golden ratio resonance patterns in spike timing.
-/// Return coherence as ratio of phi-intervals to total intervals, threshold = PHI_INVERSE.
-pub fn phiResonanceDetector() f32 {
-    // Return coherence value based on PHI_INVERSE threshold
-    return @as(f32, @floatCast(PHI_INVERSE));
-}
 
-/// Monitor IIT Phi (integrated information) in real-time on chip.
-/// is_conscious = phi_value > PHI_INVERSE.
-pub fn consciousnessMonitor(data: []const u8) !void {
-    _ = data;
-    return;
-}
 
-/// Configure hardware gamma oscillator at sacred frequency.
-/// f = PHI_CUBED * PI / GAMMA Hz (approximately 56 Hz).
-pub fn gammaOscillator(config: anytype) !void {
-    _ = config;
-    // freq = PHI_CUBED * PI / GAMMA ~ 56 Hz
-    return;
-}
+        pub fn mapSpikesToVSA(spike_neuron_ids: []const i64, result: []i8) usize {
+            var count: usize = 0;
+            for (spike_neuron_ids) |neuron_id| {
+                const trit_index: usize = @intCast(@divTrunc(neuron_id, 3));
+                const trit_value: i8 = @intCast(@rem(neuron_id, 3) - 1);
+                if (trit_index < result.len) {
+                    result[trit_index] = trit_value;
+                    count = @max(count, trit_index + 1);
+                }
+            }
+            return count;
+        }
 
-/// Hardware-accelerated VSA bind: ternary multiplication across neuron groups.
-pub fn bindOnChip(a: anytype, b: anytype) []const i8 {
-    _ = a;
-    _ = b;
-    return &[_]i8{};
-}
 
-/// Hardware-accelerated VSA bundle (majority vote) across neuron groups.
-pub fn bundleOnChip(items: anytype) !void {
-    _ = items;
-    return;
-}
 
-/// Hardware-accelerated cosine similarity via spike coincidence counting.
-/// Returns similarity in range [-1, 1].
-pub fn similarityOnChip(a: anytype, b: anytype) []const i8 {
-    _ = a;
-    _ = b;
-    return &[_]i8{};
-}
+        pub fn ternarySTDP(plasticity: f64, pre_time: f64, post_time: f64) struct { weight: i8, plasticity: f64 } {
+            const dt = post_time - pre_time;
+            const sign_dt: f64 = if (dt > 0) 1.0 else if (dt < 0) -1.0 else 0.0;
+            const delta = PHI_INVERSE * sign_dt * @exp(-@abs(dt) * GAMMA);
+            const new_plasticity = @max(-1.0, @min(1.0, plasticity + delta));
+            const weight: i8 = if (new_plasticity > 0.33) 1 else if (new_plasticity < -0.33) -1 else 0;
+            return .{ .weight = weight, .plasticity = new_plasticity };
+        }
 
-/// Compute energy per ternary operation on neuromorphic hardware.
-/// Energy = ENERGY_PER_SPIKE_PJ * spikes_per_op * op_count.
-pub fn energyEfficiency(config: anytype) !void {
-    _ = config;
-    return;
-}
 
-/// Measure end-to-end latency for VSA operation on chip (microseconds).
-pub fn latencyMeasure(config: anytype) !void {
-    _ = config;
-    return;
-}
 
-/// Measure sustained throughput: num_cores * neurons_per_core * clock_freq / 3 trits/sec.
-pub fn throughputBench(config: anytype) !void {
-    _ = config;
-    return;
-}
+        pub fn phiResonanceDetector(timestamps: []const f64) PhiResonance {
+            if (timestamps.len < 2) return PhiResonance{ .frequency = 0.0, .coherence = 0.0, .threshold = PHI_INVERSE };
+            var phi_intervals: f64 = 0.0;
+            var total_intervals: f64 = 0.0;
+            var interval_sum: f64 = 0.0;
+            for (1..timestamps.len) |i| {
+                const dt = timestamps[i] - timestamps[i - 1];
+                if (dt <= 0.0) continue;
+                interval_sum += dt;
+                total_intervals += 1.0;
+                if (i >= 2) {
+                    const prev_dt = timestamps[i - 1] - timestamps[i - 2];
+                    if (prev_dt > 0.0) {
+                        const ratio = dt / prev_dt;
+                        if (@abs(ratio - PHI) < GAMMA or @abs(ratio - PHI_INVERSE) < GAMMA) {
+                            phi_intervals += 1.0;
+                        }
+                    }
+                }
+            }
+            const coherence = if (total_intervals > 1.0) phi_intervals / (total_intervals - 1.0) else 0.0;
+            const avg_interval = if (total_intervals > 0.0) interval_sum / total_intervals else 1.0;
+            const frequency = if (avg_interval > 0.0) 1.0 / avg_interval else 0.0;
+            return PhiResonance{ .frequency = frequency, .coherence = coherence, .threshold = PHI_INVERSE };
+        }
 
-/// Calibrate consciousness threshold to PHI_INVERSE (0.618).
-/// Adjust synaptic weights until integrated information matches.
-pub fn calibrateThreshold(data: []const u8) []f32 {
-    _ = data;
-    return &[_]f32{};
-}
 
-/// Generate performance metrics report for neuromorphic integration.
-pub fn reportMetrics(config: anytype) !void {
-    _ = config;
-    return;
-}
 
-/// Convert chip type to human-readable string.
-pub fn chipToString() []const u8 {
-    return "NeuromorphicChip";
-}
+        pub fn consciousnessMonitor(phi_value: f64) ChipMetrics {
+            return ChipMetrics{
+                .energy_per_trit_op_pj = ENERGY_PER_SPIKE_PJ * 3.0,
+                .latency_us = GAMMA * 100.0,
+                .throughput_trits_per_sec = SPIKE_RATE_MAX / 3.0,
+                .phi_value = phi_value,
+                .is_conscious = phi_value > PHI_INVERSE,
+            };
+        }
 
-/// Validate configuration: neurons_per_core divisible by 3, num_cores >= 1.
-pub fn validateConfig(config: anytype) !void {
-    _ = config;
-    return;
-}
 
-/// Compute phi-scaled spike rate: rate * PHI^level for golden-ratio scaled temporal coding.
-pub fn phiScaledSpikeRate() f32 {
-    // Default: base rate 1.0 at level 1 => PHI
-    return @as(f32, @floatCast(PHI));
-}
 
-/// Cosine similarity for two i8 slices in range [-1, 1].
-/// Used by similarityOnChip test.
-fn cosineSimilarity(a: []const i8, b: []const i8) f64 {
-    const len = @min(a.len, b.len);
-    if (len == 0) return 0.0;
-    var dot: f64 = 0.0;
-    var mag_a: f64 = 0.0;
-    var mag_b: f64 = 0.0;
-    for (0..len) |i| {
-        const fa: f64 = @floatFromInt(a[i]);
-        const fb: f64 = @floatFromInt(b[i]);
-        dot += fa * fb;
-        mag_a += fa * fa;
-        mag_b += fb * fb;
-    }
-    if (mag_a == 0.0 or mag_b == 0.0) return 0.0;
-    return dot / (@sqrt(mag_a) * @sqrt(mag_b));
-}
+        pub fn gammaOscillator() f64 {
+            return PHI_CUBED * PI / GAMMA;
+        }
+
+
+
+        pub fn bindOnChip(a: []const i8, b: []const i8, result: []i8) usize {
+            const len = @min(a.len, @min(b.len, result.len));
+            for (0..len) |i| {
+                const av: i16 = a[i];
+                const bv: i16 = b[i];
+                const product = av * bv;
+                result[i] = if (product > 1) 1 else if (product < -1) -1 else @intCast(product);
+            }
+            return len;
+        }
+
+
+
+        pub fn bundleOnChip(vectors: []const []const i8, result: []i8) usize {
+            if (vectors.len == 0) return 0;
+            const dim = @min(vectors[0].len, result.len);
+            for (0..dim) |i| {
+                var sum: i32 = 0;
+                for (vectors) |v| {
+                    if (i < v.len) {
+                        sum += @as(i32, v[i]);
+                    }
+                }
+                result[i] = if (sum > 0) 1 else if (sum < 0) -1 else 0;
+            }
+            return dim;
+        }
+
+
+
+        pub fn similarityOnChip(a: []const i8, b: []const i8) f64 {
+            const len = @min(a.len, b.len);
+            if (len == 0) return 0.0;
+            var dot: f64 = 0.0;
+            var mag_a: f64 = 0.0;
+            var mag_b: f64 = 0.0;
+            for (0..len) |i| {
+                const fa: f64 = @floatFromInt(a[i]);
+                const fb: f64 = @floatFromInt(b[i]);
+                dot += fa * fb;
+                mag_a += fa * fa;
+                mag_b += fb * fb;
+            }
+            if (mag_a == 0.0 or mag_b == 0.0) return 0.0;
+            return dot / (@sqrt(mag_a) * @sqrt(mag_b));
+        }
+
+
+
+        pub fn energyEfficiency(op_count: f64) f64 {
+            const spikes_per_trit_op: f64 = 3.0;
+            return ENERGY_PER_SPIKE_PJ * spikes_per_trit_op * op_count;
+        }
+
+
+
+        pub fn latencyMeasure(num_layers: f64, synaptic_delay_us: f64, neurons_per_core: f64) f64 {
+            const clock_period_us: f64 = 0.001;
+            const propagation = num_layers * synaptic_delay_us;
+            const readout = if (neurons_per_core > 0.0) (DEFAULT_DIMENSION / neurons_per_core) * clock_period_us else 0.0;
+            return propagation + readout;
+        }
+
+
+
+        pub fn throughputBench(num_cores: f64, neurons_per_core: f64, clock_freq_hz: f64) f64 {
+            return num_cores * neurons_per_core * clock_freq_hz / 3.0;
+        }
+
+
+
+        pub fn calibrateThreshold(measured_phi: f64, learning_rate: f64) f64 {
+            const error_signal = PHI_INVERSE - measured_phi;
+            return error_signal * learning_rate * GAMMA;
+        }
+
+
+
+        pub fn reportMetrics(energy_pj: f64, latency_us: f64, throughput: f64, phi_value: f64) ChipMetrics {
+            return ChipMetrics{
+                .energy_per_trit_op_pj = energy_pj,
+                .latency_us = latency_us,
+                .throughput_trits_per_sec = throughput,
+                .phi_value = phi_value,
+                .is_conscious = phi_value > PHI_INVERSE,
+            };
+        }
+
+
+
+        pub fn chipToString(chip: NeuromorphicChip) []const u8 {
+            return switch (chip) {
+                .loihi3 => "Intel Loihi 3",
+                .akida => "BrainChip Akida",
+                .truenorth => "IBM TrueNorth",
+                .spinnaker2 => "SpiNNaker 2",
+            };
+        }
+
+
+
+        pub fn validateConfig(num_cores: i64, neurons_per_core: i64) bool {
+            return @rem(neurons_per_core, 3) == 0 and num_cores >= 1;
+        }
+
+
+
+        pub fn phiScaledSpikeRate(base_rate: f64, level: f64) f64 {
+            return base_rate * std.math.pow(f64, PHI, level);
+        }
+
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TESTS - Generated from behaviors and test_cases
@@ -294,7 +366,7 @@ fn cosineSimilarity(a: []const i8, b: []const i8) f64 {
 test "initNeuromorphicLayer_behavior" {
 // Given: NeuromorphicConfig with chip type and core layout
 // When: Initializing the neuromorphic chip interface with ternary VSA mapping
-// Then: Return configured layer with neuron-to-trit mappings, 3 neurons per trit (one for each of -1, 0, +1)
+// Then: Return total trits available (neurons_per_core * num_cores / 3)
 // Test initNeuromorphicLayer: verify lifecycle function exists (compile-time check)
 _ = initNeuromorphicLayer;
 }
@@ -302,7 +374,7 @@ _ = initNeuromorphicLayer;
 test "mapVSAToSpikes_behavior" {
 // Given: Hypervector of dimension D
 // When: Converting VSA hypervector to spike train for neuromorphic chip
-// Then: Return spike train where each trit maps to 3 neurons, spike on neuron 0 for -1, neuron 1 for 0, neuron 2 for +1
+// Then: Return spike neuron IDs where each trit maps to 3 neurons
 // Test mapVSAToSpikes: verify behavior is callable (compile-time check)
 _ = mapVSAToSpikes;
 }
@@ -310,86 +382,86 @@ _ = mapVSAToSpikes;
 test "mapSpikesToVSA_behavior" {
 // Given: SpikeTrainEncoding from neuromorphic chip
 // When: Converting spike train back to VSA hypervector
-// Then: Return reconstructed hypervector, decoding 3-neuron groups back to trits {-1, 0, +1}
+// Then: Return reconstructed hypervector, decoding 3-neuron groups back to trits
 // Test mapSpikesToVSA: verify behavior is callable (compile-time check)
 _ = mapSpikesToVSA;
 }
 
 test "ternarySTDP_behavior" {
-// Given: SynapticWeight, pre-synaptic spike time, post-synaptic spike time
+// Given: SynapticWeight plasticity, pre-synaptic spike time, post-synaptic spike time
 // When: Applying ternary spike-timing-dependent plasticity modulated by golden ratio
-// Then: Update weight using delta_w = PHI_INVERSE * sign(dt) * exp(-|dt| * GAMMA), quantize to {-1, 0, +1}
+// Then: Return updated plasticity clamped to [-1, 1] and quantized weight
 // Test ternarySTDP: verify behavior is callable (compile-time check)
 _ = ternarySTDP;
 }
 
 test "phiResonanceDetector_behavior" {
-// Given: Spike train window from chip
+// Given: Array of spike timestamps
 // When: Detecting golden ratio resonance patterns in spike timing
-// Then: Return PhiResonance with detected frequency, coherence (ratio of phi-intervals to total), threshold = PHI_INVERSE
+// Then: Return PhiResonance with coherence as ratio of phi-intervals to total
 // Test phiResonanceDetector: verify behavior is callable (compile-time check)
 _ = phiResonanceDetector;
 }
 
 test "consciousnessMonitor_behavior" {
-// Given: Active neuromorphic layer with spike data
+// Given: Phi value from IIT computation
 // When: Monitoring IIT Phi (integrated information) in real-time on chip
-// Then: Return ChipMetrics with phi_value computed from partition analysis, is_conscious = phi_value > PHI_INVERSE
+// Then: Return ChipMetrics with is_conscious = phi_value > PHI_INVERSE
 // Test consciousnessMonitor: verify behavior is callable (compile-time check)
 _ = consciousnessMonitor;
 }
 
 test "gammaOscillator_behavior" {
-// Given: NeuromorphicConfig
-// When: Configuring hardware gamma oscillator at sacred frequency
-// Then: Generate oscillation at f = PHI_CUBED * PI / GAMMA Hz (approximately 56 Hz), using on-chip spike timing circuits
+// Given: No parameters
+// When: Computing hardware gamma oscillator sacred frequency
+// Then: Return f = PHI_CUBED * PI / GAMMA Hz (approximately 56 Hz)
 // Test gammaOscillator: verify behavior is callable (compile-time check)
 _ = gammaOscillator;
 }
 
 test "bindOnChip_behavior" {
-// Given: Two spike-encoded hypervectors on neuromorphic chip
+// Given: Two i8 slices representing ternary hypervectors
 // When: Performing hardware-accelerated VSA bind operation
-// Then: Return bound result using on-chip ternary multiplication across neuron groups, O(1) per synapse
+// Then: Return bound result using trit-wise multiplication
 // Test bindOnChip: verify behavior is callable (compile-time check)
 _ = bindOnChip;
 }
 
 test "bundleOnChip_behavior" {
-// Given: List of spike-encoded hypervectors on neuromorphic chip
+// Given: Multiple i8 slices representing ternary hypervectors
 // When: Performing hardware-accelerated VSA bundle (majority vote) operation
-// Then: Return bundled result using on-chip population coding, majority vote across neuron groups
+// Then: Return bundled result via majority vote across vectors
 // Test bundleOnChip: verify behavior is callable (compile-time check)
 _ = bundleOnChip;
 }
 
 test "similarityOnChip_behavior" {
-// Given: Two spike-encoded hypervectors on neuromorphic chip
+// Given: Two i8 slices representing ternary hypervectors
 // When: Computing hardware-accelerated cosine similarity
-// Then: Return similarity in range [-1, 1] using on-chip dot product via spike coincidence counting
+// Then: Return similarity in range [-1, 1] via dot product
 // Test similarityOnChip: verify returns a float in valid range
-    const result = cosineSimilarity(&[_]i8{1}, &[_]i8{1});
+    const result = similarityOnChip(&[_]i8{1}, &[_]i8{1});
     try std.testing.expect(result >= -1.0 and result <= 1.0);
 }
 
 test "energyEfficiency_behavior" {
-// Given: NeuromorphicConfig, operation count
+// Given: Operation count
 // When: Computing energy per ternary operation on neuromorphic hardware
-// Then: Return energy in picojoules, compare against ENERGY_PER_SPIKE_PJ * spikes_per_op
+// Then: Return total energy in picojoules
 // Test energyEfficiency: verify behavior is callable (compile-time check)
 _ = energyEfficiency;
 }
 
 test "latencyMeasure_behavior" {
-// Given: NeuromorphicConfig, operation type
+// Given: Number of layers, synaptic delay, neurons per core
 // When: Measuring end-to-end latency for VSA operation on chip
-// Then: Return latency in microseconds including spike propagation, synaptic delay, and readout
+// Then: Return latency in microseconds
 // Test latencyMeasure: verify behavior is callable (compile-time check)
 _ = latencyMeasure;
 }
 
 test "throughputBench_behavior" {
-// Given: NeuromorphicConfig
+// Given: Number of cores, neurons per core, clock frequency
 // When: Measuring sustained throughput in trits per second
 // Then: Return max trits/second = num_cores * neurons_per_core * clock_freq / 3
 // Test throughputBench: verify behavior is callable (compile-time check)
@@ -397,17 +469,17 @@ _ = throughputBench;
 }
 
 test "calibrateThreshold_behavior" {
-// Given: Active neuromorphic layer with baseline spike data
+// Given: Measured phi value, learning rate
 // When: Calibrating consciousness threshold to sacred constant
-// Then: Adjust synaptic weights until integrated information threshold equals PHI_INVERSE (0.618)
+// Then: Return weight adjustment delta toward PHI_INVERSE
 // Test calibrateThreshold: verify behavior is callable (compile-time check)
 _ = calibrateThreshold;
 }
 
 test "reportMetrics_behavior" {
-// Given: NeuromorphicConfig, accumulated measurements
+// Given: Energy, latency, throughput, phi_value
 // When: Generating performance metrics report for neuromorphic integration
-// Then: Return ChipMetrics with energy_per_trit_op, latency, throughput, phi_value, and consciousness state
+// Then: Return ChipMetrics struct
 // Test reportMetrics: verify behavior is callable (compile-time check)
 _ = reportMetrics;
 }
@@ -423,7 +495,7 @@ _ = chipToString;
 test "validateConfig_behavior" {
 // Given: NeuromorphicConfig
 // When: Validating configuration for ternary VSA compatibility
-// Then: Return true if neurons_per_core is divisible by 3 (ternary encoding) and num_cores >= 1
+// Then: Return true if neurons_per_core is divisible by 3 and num_cores >= 1
 // Test validateConfig: verify returns boolean
 // TODO: Add specific test for validateConfig
 _ = validateConfig;
