@@ -1,6 +1,6 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# TRINITY LLM - Fly.io Configuration
-# Multi-threaded LLM inference with MAXIMUM CPU cores
+# TRINITY CLI - Fly.io Configuration
+# Downloads pre-built binary from GitHub Releases
 # φ² + 1/φ² = 3 = TRINITY
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -8,35 +8,14 @@ app = "trinity-llm"
 primary_region = "iad"
 
 [build]
-  dockerfile = "Dockerfile"
+  dockerfile = "Dockerfile.flyio"
 
-[env]
-  # Model selection: "360m" (fast) or "1.7b" (quality)
-  # 360M: 0.39GB, ~5x faster inference
-  # 1.7B: 1.7GB, better quality responses
-  MODEL_SIZE = "360m"
-  
-  # Model path on persistent volume (NVMe SSD - 43x faster than ephemeral)
-  MODEL_PATH = "/data/models/smollm2-360m-instruct-q8_0.gguf"
-  TEMPERATURE = "0.7"
-  TOP_P = "0.9"
-  NUM_THREADS = "16"
+# Build arguments for version selection
+[build.args]
+  VERSION = "v10.0.0"
+  ARCH = "linux-amd64"
 
-# SmolLM2-1.7B requires more RAM (~4GB for model + buffers)
-[[vm]]
-  size = "performance-16x"
-  memory = "32gb"
-  cpus = 16
-
-# Persistent volume for models (NVMe SSD)
-# Volume limits for performance-16x: 32,000 IOPs, 128 MiB/s
-# vs ephemeral disk: 2,000 IOPs, 8 MiB/s (16x slower!)
-[[mounts]]
-  source = "trinity_models"
-  destination = "/data/models"
-  initial_size = "3gb"
-
-# HTTP API service
+# TRI CLI HTTP API service
 [http_service]
   internal_port = 8080
   force_https = true
@@ -45,8 +24,13 @@ primary_region = "iad"
   min_machines_running = 1
 
 [[http_service.checks]]
-  grace_period = "180s"  # SmolLM2-1.7B needs ~30-60s to load
+  grace_period = "10s"
   interval = "30s"
   method = "GET"
-  path = "/health"
-  timeout = "30s"
+  path = "/api/health"
+  timeout = "10s"
+
+# Shared CPU - enough for HTTP server
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
