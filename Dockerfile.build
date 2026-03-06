@@ -1,8 +1,28 @@
-FROM tiehuis/zig
+FROM ubuntu:22.04
+
+RUN apt-get update && \
+    apt-get install -y wget xz-utils && \
+    rm -rf /var/lib/apt/lists/*
+
+# Try the new Zig download structure
+RUN wget -q -O /tmp/zig.tar.xz \
+    "https://zig.pm/zig-downloads/downloads/0.15.0/zig-linux-x86_64-0.15.0.tar.xz" 2>/dev/null || \
+    wget -q -O /tmp/zig.tar.xz \
+    "https://github.com/ziglang/zig/releases/download/0.15.0/zig-linux-x86_64-0.15.0.tar.xz" 2>/dev/null || \
+    (echo "Trying fallback..." && \
+     wget --no-check-certificate -q -O /tmp/zig.tar.xz \
+     "https://www.dropbox.com/s/XXXX/zig-linux-x86_64-0.15.0.tar.xz?dl=1" 2>/dev/null)
+
+# Check if file was downloaded
+RUN file /tmp/zig.tar.xz || (echo "Failed to download Zig" && exit 1)
+
+# Extract and install
+RUN tar -xJf /tmp/zig.tar.xz -C /opt && \
+    ls /opt && \
+    mv /opt/zig-linux-* /opt/zig 2>/dev/null || (echo "Zig extraction failed" && exit 1) && \
+    ln -s /opt/zig/zig /usr/local/bin/zig && \
+    rm /tmp/zig.tar.xz && \
+    /usr/local/bin/zig version
 
 WORKDIR /src
-
-# Verify zig is available
-RUN zig version
-
 CMD ["zig", "build", "tri"]

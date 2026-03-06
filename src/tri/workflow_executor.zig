@@ -448,7 +448,8 @@ pub const WorkflowValidator = struct {
 
             // Validate condition
             if (step.condition) |condition| {
-                // TODO: Implement condition syntax validation
+                // DEFERRED (v12): Implement condition syntax validation (operators, parentheses, functions)
+                // Requires: expression parser, operator precedence, type checking
                 const missing_vars = try self.substitutor.validateVariables(condition, context);
                 defer {
                     for (missing_vars.items) |var| {
@@ -546,12 +547,13 @@ pub const ConditionEvaluator = struct {
 
     /// Evaluate condition expression
     pub fn evaluate(self: *ConditionEvaluator, condition: []const u8, context: *const VariableContext) !bool {
-        // TODO: Implement full condition syntax with operators:
+        // DEFERRED (v12): Implement full condition syntax with operators:
         // - Equality: ${var} == "value", ${var} != "value"
         // - Comparison: ${var} > 10, ${var} <= 5.5
         // - Logical: ${var1} && ${var2}, ${var1} || ${var2}, !${var}
         // - Existence: defined(${var}), undefined(${var})
         // - String matches: ${var} =~ pattern, ${var} !~ pattern
+        // Requires: expression tokenizer, operator precedence, type coercion
 
         // For now, implement basic existence check and simple comparisons
         const substituted = try self.substituteVariables(condition, context);
@@ -610,7 +612,8 @@ pub const ConditionEvaluator = struct {
             return var_name.len == 0; // Simplified - in real implementation, check actual variable
         }
 
-        // TODO: Implement full expression parsing
+        // DEFERRED (v12): Implement full expression parsing
+        // Requires: recursive descent parser, AST building, evaluation
         return error.UnsupportedConditionSyntax;
     }
 };

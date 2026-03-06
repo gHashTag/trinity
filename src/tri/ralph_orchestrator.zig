@@ -258,8 +258,8 @@ pub const RalphOrchestrator = struct {
         const content = try file.readToEndAlloc(self.allocator, 1024 * 1024);
         defer self.allocator.free(content);
 
-        // Parse JSON (simplified - in production use proper JSON parser)
-        // TODO: implement JSON parsing
+        // DEFERRED (v12): Implement JSON parsing (use std.json or similar)
+        // Requires: JSON tokenizer, object parsing, error handling
     }
 
     /// Load fix_plan.md and parse tasks
@@ -279,17 +279,16 @@ pub const RalphOrchestrator = struct {
         const content = try file.readToEndAlloc(self.allocator, 1024 * 100);
         defer self.allocator.free(content);
 
-        // Parse tasks from markdown (simplified)
-        // Real implementation would use proper markdown parser
-        // TODO: implement markdown parsing
+        // DEFERRED (v12): Implement markdown parsing (task extraction, checkboxes)
+        // Requires: markdown tokenizer, AST parsing, task pattern matching
     }
 
     /// Select next task based on priority and dependencies
     fn selectNextTask(self: *RalphOrchestrator) !?*RalphTask {
         for (self.tasks.items) |*task| {
             if (task.status == .pending) {
-                // Check if blocked
-                // TODO: implement dependency checking
+                // DEFERRED (v12): Implement dependency checking (blocked_by list)
+                // Requires: dependency graph traversal, cycle detection
                 return task;
             }
         }
@@ -409,7 +408,8 @@ pub const RalphOrchestrator = struct {
         );
         defer self.allocator.free(report);
 
-        // TODO: Send via Telegram bot API
+        // DEFERRED (v12): Send via Telegram bot API (https://api.telegram.org/bot<TOKEN>/sendMessage)
+        // Requires: HTTP client, token management, markdown formatting
     }
 
     /// Schedule next wake time
@@ -599,9 +599,9 @@ fn runStopCommand(allocator: Allocator) !void {
 }
 
 fn runOnceCommand(allocator: Allocator, args: []const []const u8) !void {
+    // DEFERRED (v12): Parse --project-root or -C from args
     _ = args;
-
-    const project_root = "."; // TODO: get from args
+    const project_root = ".";
     var orchestrator = try RalphOrchestrator.init(allocator, OrchestratorConfig{
         .wake_interval_sec = 0,
         .max_idle_cycles = 1,

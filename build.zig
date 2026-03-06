@@ -2528,6 +2528,19 @@ pub fn build(b: *std.Build) void {
     conscious_simulate_step.dependOn(&run_conscious_simulate.step);
     test_step.dependOn(&run_conscious_simulate.step);
 
+    // Task 21b: Consciousness & Qualia v11.3 (Sacred Consciousness)
+    const qualia_sacred_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/consciousness/qualia_sacred.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_qualia_sacred = b.addRunArtifact(qualia_sacred_tests);
+    const qualia_sacred_step = b.step("test-qualia-sacred", "Test Consciousness & Qualia v11.3");
+    qualia_sacred_step.dependOn(&run_qualia_sacred.step);
+    test_step.dependOn(&run_qualia_sacred.step);
+
     // VSA Math Benchmark executable (MATH-003) — REMOVED (generated.old/ deleted)
 
     // Storage Init tests — REMOVED (generated.old/ deleted)

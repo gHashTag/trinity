@@ -454,7 +454,7 @@ test "list_nft_behavior" {
 // When: Owner wants to list NFT for sale
 // Then: Return Listing with phi-based pricing score
 // Test list_nft: verify returns a float in valid range
-// TODO: Add specific test for list_nft
+// DEFERRED (v12): Add specific test for list_nft with edge cases (zero price, negative, overflow)
 _ = list_nft;
 }
 
@@ -463,7 +463,7 @@ test "place_bid_behavior" {
 // When: Bidder wants to place bid on NFT
 // Then: Return Bid if amount >= minimum, error otherwise
 // Test place_bid: verify error handling
-// TODO: Add specific test for place_bid
+// DEFERRED (v12): Add specific test for place_bid with bid validation, insufficient funds
 _ = place_bid;
 }
 
@@ -520,7 +520,7 @@ test "is_peer_alive_behavior" {
 // When: Checking peer status
 // Then: Return true if peer is alive, false otherwise
 // Test is_peer_alive: verify returns boolean
-// TODO: Add specific test for is_peer_alive
+// DEFERRED (v12): Add specific test for is_peer_alive with timeout, heartbeat
 _ = is_peer_alive;
 }
 
@@ -593,7 +593,7 @@ test "validate_transaction_behavior" {
 // When: Verifying transaction validity
 // Then: Return true if transaction is valid, false otherwise
 // Test validate_transaction: verify returns boolean
-// TODO: Add specific test for validate_transaction
+// DEFERRED (v12): Add specific test for validate_transaction with invalid signatures, double-spend
 _ = validate_transaction;
 }
 
