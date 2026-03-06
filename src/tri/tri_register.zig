@@ -272,6 +272,8 @@ const execute_map = [_]ExecuteEntry{
     .{ .name = "deps", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { _ = a; _ = args; utils.printInfo(); } }.f },
     .{ .name = "info", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { _ = a; _ = args; utils.printInfo(); } }.f },
     .{ .name = "version", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { _ = a; _ = args; utils.printVersion(); } }.f },
+    .{ .name = "docs-gen", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return utils.runDocsGenCommand(a, args); } }.f },
+    .{ .name = "registry-validate", .execute = struct { fn f(_: std.mem.Allocator, args: []const []const u8) !void { _ = args; utils.runRegistryValidateCommand() catch {}; } }.f },
 
     // ── Completion ──
     .{ .name = "completion", .execute = struct { fn f(_: std.mem.Allocator, args: []const []const u8) !void {

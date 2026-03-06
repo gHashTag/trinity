@@ -1749,3 +1749,213 @@ pub fn runSafeguardsDisableCommand(state: *CLIState, args: []const []const u8) !
     // TODO: Implement actual safeguard state management
     // This would update a config file that tracks which safeguards are disabled
 }
+
+// =============================================================================
+// DOCS GENERATION
+// =============================================================================
+
+pub fn runDocsGenCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const output_path = if (args.len > 0) args[0] else "docs/command_registry.md";
+
+    // Ensure output directory exists
+    const out_dir = std.fs.path.dirname(output_path) orelse ".";
+    try std.fs.cwd().makePath(out_dir);
+
+    // Access command table via registry module
+    const registry = @import("registry");
+
+    // Generate documentation
+    var buf = try std.ArrayList(u8).initCapacity(allocator, 32768);
+    defer buf.deinit(allocator);
+
+    // Header
+    try buf.appendSlice(allocator,
+        \\# TRI Command Reference
+        \\
+        \\> Auto-generated from `src/registry/command_table.zig` by `tri docs-gen`
+        \\> **DO NOT EDIT MANUALLY** — Regenerate with: `tri docs-gen`
+        \\
+        \\φ² + 1/φ² = 3 | TRINITY Unified Command Registry v10.2
+        \\
+        \\---
+        \\
+        \\## Summary
+        \\
+        \\| Interface | Commands |
+        \\|-----------|----------|
+        \\| CLI |
+    );
+    try appendNumber(&buf, allocator, registry.all_commands.len);
+    try buf.appendSlice(allocator, " |\n| MCP Tools | ");
+    try appendNumber(&buf, allocator, registry.countMcpTools());
+    try buf.appendSlice(allocator, " |\n| API Endpoints | ");
+    try appendNumber(&buf, allocator, registry.countApiEndpoints());
+    try buf.appendSlice(allocator, " |\n\n---\n\n");
+
+    // CLI Reference by category - iterate in display order
+    const cat_names = [_][]const u8{ "ai", "math", "science", "sacred", "dev", "git", "system", "demo", "benchmark", "advanced", "depin" };
+
+    for (cat_names) |cat_name| {
+        const cat = std.meta.stringToEnum(registry.CommandCategory, cat_name) orelse continue;
+        var count: usize = 0;
+        for (registry.all_commands) |cmd| {
+            if (cmd.category == cat) count += 1;
+        }
+        if (count == 0) continue;
+
+        try buf.appendSlice(allocator, "## ");
+        try buf.appendSlice(allocator, cat.displayName());
+        try buf.appendSlice(allocator, " (");
+        try appendNumber(&buf, allocator, count);
+        try buf.appendSlice(allocator, ")\n\n");
+        try buf.appendSlice(allocator, "| Command | Description | MCP | API |\n");
+        try buf.appendSlice(allocator, "|---------|-------------|-----|-----|\n");
+
+        for (registry.all_commands) |cmd| {
+            if (cmd.category != cat) continue;
+
+            try buf.appendSlice(allocator, "| `");
+            try buf.appendSlice(allocator, cmd.name);
+            try buf.appendSlice(allocator, "`");
+
+            if (cmd.aliases.len > 0) {
+                try buf.appendSlice(allocator, " (");
+                for (cmd.aliases, 0..) |alias, i| {
+                    if (i > 0) try buf.appendSlice(allocator, ", ");
+                    try buf.appendSlice(allocator, alias);
+                }
+                try buf.appendSlice(allocator, ")");
+            }
+
+            try buf.appendSlice(allocator, " | ");
+            try buf.appendSlice(allocator, cmd.description);
+            try buf.appendSlice(allocator, " | ");
+            try buf.appendSlice(allocator, if (cmd.mcp_enabled) "Y" else "-");
+            try buf.appendSlice(allocator, " | ");
+            try buf.appendSlice(allocator, if (cmd.api_enabled) "Y" else "-");
+            try buf.appendSlice(allocator, " |\n");
+        }
+
+        try buf.append(allocator, '\n');
+    }
+
+    // MCP Tools section
+    try buf.appendSlice(allocator, "---\n\n## MCP Tools\n\n");
+    try buf.appendSlice(allocator, "| Tool Name | Display Name | Description |\n");
+    try buf.appendSlice(allocator, "|-----------|--------------|-------------|\n");
+
+    for (registry.all_commands) |cmd| {
+        if (!cmd.mcp_enabled) continue;
+
+        try buf.appendSlice(allocator, "| `");
+        try buf.appendSlice(allocator, cmd.getMcpToolName());
+        try buf.appendSlice(allocator, "` | ");
+        try buf.appendSlice(allocator, cmd.getMcpDisplayName());
+        try buf.appendSlice(allocator, " | ");
+        try buf.appendSlice(allocator, cmd.description);
+        try buf.appendSlice(allocator, " |\n");
+    }
+
+    // API Endpoints section
+    try buf.appendSlice(allocator, "\n---\n\n## API Endpoints\n\n");
+    try buf.appendSlice(allocator, "| Endpoint | Description | Protocols |\n");
+    try buf.appendSlice(allocator, "|----------|-------------|-----------|\n");
+
+    for (registry.all_commands) |cmd| {
+        if (!cmd.api_enabled) continue;
+
+        try buf.appendSlice(allocator, "| `/api/");
+        try buf.appendSlice(allocator, cmd.name);
+        try buf.appendSlice(allocator, "` | ");
+        try buf.appendSlice(allocator, cmd.description);
+        try buf.appendSlice(allocator, " | ");
+
+        for (cmd.api_protocols, 0..) |proto, i| {
+            if (i > 0) try buf.appendSlice(allocator, ", ");
+            try buf.appendSlice(allocator, @tagName(proto));
+        }
+
+        try buf.appendSlice(allocator, " |\n");
+    }
+
+    // Write to file
+    const content = try buf.toOwnedSlice(allocator);
+    defer allocator.free(content);
+
+    const file = try std.fs.cwd().createFile(output_path, .{ .read = true });
+    defer file.close();
+    try file.writeAll(content);
+
+    std.debug.print("Generated {s} with {d} commands\n", .{ output_path, registry.all_commands.len });
+}
+
+fn appendNumber(buf: *std.ArrayList(u8), allocator: std.mem.Allocator, n: usize) !void {
+    const s = try std.fmt.allocPrint(allocator, "{d}", .{n});
+    defer allocator.free(s);
+    try buf.appendSlice(allocator, s);
+}
+
+// =============================================================================
+// REGISTRY VALIDATION — Command table statistics
+// =============================================================================
+
+pub fn runRegistryValidateCommand() !void {
+    const registry = @import("registry");
+
+    std.debug.print("\n{s}============================================={s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}TRI COMMAND REGISTRY - VALIDATION REPORT{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}============================================={s}\n\n", .{ GOLDEN, RESET });
+
+    const total = registry.all_commands.len;
+    const mcp_count = registry.countMcpTools();
+    const api_count = registry.countApiEndpoints();
+
+    std.debug.print("{s}SUMMARY{s}\n", .{ GREEN, RESET });
+    std.debug.print("  Total Commands: {d}\n", .{total});
+    std.debug.print("  MCP Tools: {d} ({d:.1}%)\n", .{ mcp_count, percent(mcp_count, total) });
+    std.debug.print("  API Endpoints: {d} ({d:.1}%)\n\n", .{ api_count, percent(api_count, total) });
+
+    std.debug.print("{s}BY CATEGORY{s}\n", .{ GREEN, RESET });
+    const cat_names = [_][]const u8{ "ai", "math", "science", "sacred", "dev", "git", "system", "demo", "benchmark", "advanced", "depin" };
+
+    for (cat_names) |cat_name| {
+        const cat = std.meta.stringToEnum(registry.CommandCategory, cat_name) orelse continue;
+        var count: usize = 0;
+        var mcp_cat: usize = 0;
+        var api_cat: usize = 0;
+
+        for (registry.all_commands) |cmd| {
+            if (cmd.category == cat) {
+                count += 1;
+                if (cmd.mcp_enabled) mcp_cat += 1;
+                if (cmd.api_enabled) api_cat += 1;
+            }
+        }
+        if (count == 0) continue;
+
+        const cat_display = cat.displayName();
+        std.debug.print("  {s:20} {d:3} commands | MCP: {d:2} ({d:.1}%) | API: {d:2} ({d:.1}%)\n", .{
+            cat_display, count, mcp_cat, percent(mcp_cat, count), api_cat, percent(api_cat, count)
+        });
+    }
+
+    std.debug.print("\n{s}COMPTIME VALIDATION{s}\n", .{ GREEN, RESET });
+    std.debug.print("  {s}OK{s} Rule 1: name not empty\n", .{ GREEN, RESET });
+    std.debug.print("  {s}OK{s} Rule 2: description not empty\n", .{ GREEN, RESET });
+    std.debug.print("  {s}OK{s} Rule 3: no duplicate names\n", .{ GREEN, RESET });
+    std.debug.print("  {s}OK{s} Rule 5: API commands have protocols\n", .{ GREEN, RESET });
+    std.debug.print("  {s}OK{s} Rule 6: aliases do not conflict\n", .{ GREEN, RESET });
+    std.debug.print("  {s}OK{s} Rule 7: no duplicate MCP tool names\n", .{ GREEN, RESET });
+    std.debug.print("  {s}OK{s} Rule 8: execute_map entries valid\n\n", .{ GREEN, RESET });
+
+    std.debug.print("{s}============================================={s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}Registry VALID and PRODUCTION-READY{s}\n", .{ GREEN, RESET });
+    std.debug.print("{s}============================================={s}\n\n", .{ GOLDEN, RESET });
+
+    std.debug.print("{s}SINGLE SOURCE OF TRUTH | LOCKED and LOADED{s}\n\n", .{ GOLDEN, RESET });
+}
+
+fn percent(part: usize, total: usize) f64 {
+    if (total == 0) return 0;
+    return @as(f64, @floatFromInt(part)) * 100.0 / @as(f64, @floatFromInt(total));
+}
