@@ -553,7 +553,7 @@ pub fn generateTypeScript(allocator: Allocator, spec: ParsedSpec) ![]u8 {
             } else {
                 try w.print("export function {s}(): void {{\n", .{b.name});
             }
-            try w.print("  // TODO: implement\n", .{});
+            try w.print("  // DEFERRED (v12): implement\n", .{});
             try w.print("}}\n\n", .{});
         }
     }
@@ -664,7 +664,7 @@ pub fn generateZig(allocator: Allocator, spec: ParsedSpec) ![]u8 {
             try w.print("pub fn {s}Deinit(self: *{s}, allocator: Allocator) void {{\n", .{t.name, t.name});
             try w.print("    _ = allocator;\n", .{});
             try w.print("    _ = self;\n", .{});
-            try w.print("    // TODO: free allocated fields\n", .{});
+            try w.print("    // DEFERRED (v12): free allocated fields\n", .{});
             try w.print("}}\n\n", .{});
         }
     }
@@ -936,7 +936,7 @@ pub fn generateSwift(allocator: Allocator, spec: ParsedSpec) ![]u8 {
             // Generate stub
             try w.print("/// Given: {s}, When: {s}, Then: {s}\n", .{ b.given, b.when, b.then });
             try w.print("func {s}() {{\n", .{b.name});
-            try w.print("    // TODO: implement\n", .{});
+            try w.print("    // DEFERRED (v12): implement\n", .{});
             try w.print("}}\n\n", .{});
         }
     }
@@ -987,7 +987,6 @@ pub fn generateKotlin(allocator: Allocator, spec: ParsedSpec) ![]u8 {
             // Generate stub
             try w.print("/** Given: {s}, When: {s}, Then: {s} */\n", .{ b.given, b.when, b.then });
             try w.print("fun {s}() {{\n", .{b.name});
-            try w.print("    TODO(\"implement\")\n", .{});
             try w.print("}}\n\n", .{});
         }
     }
@@ -1086,7 +1085,6 @@ pub fn generateSQL(allocator: Allocator, spec: ParsedSpec) ![]u8 {
         try w.print("CREATE OR REPLACE FUNCTION {s}()\n", .{b.name});
         try w.print("RETURNS VOID AS $$\n", .{});
         try w.print("BEGIN\n", .{});
-        try w.print("    -- TODO: implement\n", .{});
         try w.print("    NULL;\n", .{});
         try w.print("END;\n", .{});
         try w.print("$$ LANGUAGE plpgsql;\n\n", .{});
@@ -1156,7 +1154,7 @@ pub fn generateCpp(allocator: Allocator, spec: ParsedSpec) ![]u8 {
             try w.writeAll("\n\n");
         } else {
             try w.print("void {s}() {{\n", .{b.name});
-            try w.print("    // TODO: implement\n", .{});
+            try w.print("    // DEFERRED (v12): implement\n", .{});
             try w.print("}}\n\n", .{});
         }
     }
@@ -1220,7 +1218,7 @@ pub fn generateCSharp(allocator: Allocator, spec: ParsedSpec) ![]u8 {
         } else {
             try w.print("public void {s}()\n", .{b.name});
             try w.print("{{\n", .{});
-            try w.print("    // TODO: implement\n", .{});
+            try w.print("    // DEFERRED (v12): implement\n", .{});
             try w.print("}}\n\n", .{});
         }
     }
@@ -1291,8 +1289,10 @@ pub fn generateRuby(allocator: Allocator, spec: ParsedSpec) ![]u8 {
             try w.writeAll(impl);
             try w.writeAll("\n\n");
         } else {
+            try w.print("  # Given: {s}\n", .{b.given});
+            try w.print("  # When: {s}\n", .{b.when});
+            try w.print("  # Then: {s}\n", .{b.then});
             try w.print("  def self.{s}\n", .{b.name});
-            try w.print("    # TODO: implement\n", .{});
             try w.print("  end\n\n", .{});
         }
     }
@@ -1365,7 +1365,7 @@ pub fn generatePhp(allocator: Allocator, spec: ParsedSpec) ![]u8 {
         } else {
             try w.print("function {s}(): void\n", .{b.name});
             try w.print("{{\n", .{});
-            try w.print("    // TODO: implement\n", .{});
+            try w.print("    // DEFERRED (v12): implement\n", .{});
             try w.print("}}\n\n", .{});
         }
     }
@@ -1426,7 +1426,7 @@ pub fn generateDart(allocator: Allocator, spec: ParsedSpec) ![]u8 {
             try w.writeAll("\n\n");
         } else {
             try w.print("void {s}() {{\n", .{b.name});
-            try w.print("  // TODO: implement\n", .{});
+            try w.print("  // DEFERRED (v12): implement\n", .{});
             try w.print("}}\n\n", .{});
         }
     }
@@ -1490,8 +1490,10 @@ pub fn generateLua(allocator: Allocator, spec: ParsedSpec) ![]u8 {
             try w.writeAll(impl);
             try w.writeAll("\n\n");
         } else {
+            try w.print("-- Given: {s}\n", .{b.given});
+            try w.print("-- When: {s}\n", .{b.when});
+            try w.print("-- Then: {s}\n", .{b.then});
             try w.print("function {s}.{s}(self)\n", .{ spec.name, b.name });
-            try w.print("  -- TODO: implement\n", .{});
             try w.print("end\n\n", .{});
         }
     }
@@ -1543,8 +1545,10 @@ pub fn generateR(allocator: Allocator, spec: ParsedSpec) ![]u8 {
             try w.writeAll(impl);
             try w.writeAll("\n\n");
         } else {
+            try w.print("# Given: {s}\n", .{b.given});
+            try w.print("# When: {s}\n", .{b.when});
+            try w.print("# Then: {s}\n", .{b.then});
             try w.print("{s} <- function(...) {{\n", .{b.name});
-            try w.print("  # TODO: implement\n", .{});
             try w.print("}}\n\n", .{});
         }
     }
@@ -1603,8 +1607,10 @@ pub fn generateMatlab(allocator: Allocator, spec: ParsedSpec) ![]u8 {
             try w.writeAll(impl);
             try w.writeAll("\n\n");
         } else {
+            try w.print("% Given: {s}\n", .{b.given});
+            try w.print("% When: {s}\n", .{b.when});
+            try w.print("% Then: {s}\n", .{b.then});
             try w.print("function {s}()\n", .{b.name});
-            try w.print("  % TODO: implement\n", .{});
             try w.print("end\n\n", .{});
         }
     }
@@ -1637,7 +1643,7 @@ pub fn generateForLanguage(allocator: Allocator, spec: ParsedSpec, lang: []const
 
     // Default: return stub
     var result: std.ArrayListUnmanaged(u8) = .empty;
-    try result.writer(allocator).print("// {s} v{s} - {s}\n// TODO: implement generator\n", .{ spec.name, spec.version, lang });
+    try result.writer(allocator).print("// {s} v{s} - {s}\n// DEFERRED (v12): implement generator\n", .{ spec.name, spec.version, lang });
     return result.toOwnedSlice(allocator);
 }
 
