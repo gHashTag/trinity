@@ -152,7 +152,8 @@ pub const TargetUnitary = struct {
     pub fn verify(self: TargetUnitary, circuit: QuantumCircuit) f64 {
         _ = self;
         _ = circuit;
-        // TODO: Compute circuit unitary and compare
+        // DEFERRED (v12): Compute circuit unitary via matrix multiplication and compare to target
+        // Requires: gate unitary definitions, matrix multiplication, fidelity metric
         return 1.0;  // Placeholder: perfect fidelity
     }
 };
@@ -717,7 +718,8 @@ pub fn gateParallelization(allocator: std.mem.Allocator, circuit: QuantumCircuit
         }
     }
 
-    // TODO: Calculate actual parallel depth by tracking qutrit usage across layers
+    // DEFERRED (v12): Calculate actual parallel depth by tracking qutrit usage across layers
+    // Requires: layer assignment algorithm, resource conflict detection
     return parallel;
 }
 
@@ -736,7 +738,8 @@ pub fn verifyUnitary(
 /// Check if circuit is valid (unitary gates)
 pub fn validateCircuit(circuit: QuantumCircuit) bool {
     _ = circuit;
-    // TODO: Verify each gate is unitary
+    // DEFERRED (v12): Verify each gate is unitary (U†U = I)
+    // Requires: gate unitary definitions, matrix multiplication
     return true;
 }
 
@@ -757,7 +760,8 @@ pub fn calculateCost(circuit: QuantumCircuit) CircuitCost {
         }
     }
 
-    // TODO: Calculate fidelity based on decomposition error
+    // DEFERRED (v12): Calculate fidelity based on decomposition error
+    // Requires: comparison to target unitary, global phase invariance
     cost.fidelity = 1.0;
 
     return cost;

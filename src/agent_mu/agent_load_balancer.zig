@@ -623,7 +623,9 @@ pub const AgentLoadBalancer = struct {
 
                 if (circuit_opened) {
                     // Task failed and circuit opened, reschedule if retries left
-                    _ = task_id; // TODO: Find and reschedule task
+                    // DEFERRED (v12): Find and reschedule task to different agent
+                    // Requires: retry queue, agent selection, task requeuing
+                    _ = task_id;
                 }
             }
         }

@@ -321,8 +321,8 @@ pub const MultiRalphCoordinator = struct {
         while (iter.next()) |entry| {
             if (std.mem.eql(u8, entry.key_ptr.*, self.config.node_id)) continue;
 
-            // Send heartbeat via HTTP/gRPC to peer
-            // TODO: Implement actual network send
+            // DEFERRED (v12): Implement actual network send via HTTP/gRPC
+            // Requires: HTTP client, serialization, error handling, retry logic
         }
 
         // Reset heartbeat timer
@@ -372,8 +372,8 @@ pub const MultiRalphCoordinator = struct {
         while (iter.next()) |entry| {
             if (std.mem.eql(u8, entry.key_ptr.*, self.config.node_id)) continue;
 
-            // Send RequestVote RPC
-            // TODO: Implement actual network send
+            // DEFERRED (v12): Implement actual network send for RequestVote RPC
+            // Requires: HTTP/gRPC client, vote serialization, response handling
         }
 
         // Reset election timer
@@ -481,8 +481,8 @@ pub const MultiRalphCoordinator = struct {
 
         if (best_node) |node_id| {
             std.log.info("Broadcasting task {s} to node {s} (load: {d:.2})\n", .{ task.id, node_id, min_load });
-            // Send task to node via HTTP/gRPC
-            // TODO: Implement actual network send
+            // DEFERRED (v12): Implement actual network send via HTTP/gRPC
+            // Requires: HTTP client, task serialization, response handling
         } else {
             return error.NoAvailableNodes;
         }
@@ -563,7 +563,8 @@ pub const MultiRalphCoordinator = struct {
             if (!node.isHealthy(timeout_ms, now_ms)) {
                 std.log.warn("Node {s} appears to have failed\n", .{entry.key_ptr.*});
                 // Handle node failure - redistribute tasks
-                // TODO: Implement task redistribution
+                // DEFERRED (v12): Implement task redistribution to healthy nodes
+                // Requires: task queue requeue, dead-letter queue, retry policy
             }
         }
     }

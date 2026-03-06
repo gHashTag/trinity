@@ -807,6 +807,7 @@ pub fn speciousPresent() f64 {
 
 /// Compute error percentage between computed and experimental values
 pub fn errorPercent(computed: f64, experimental: f64) f64 {
+    if (experimental == 0) return 0.0;
     return @abs(computed - experimental) / experimental * 100.0;
 }
 

@@ -83,7 +83,8 @@ fn extractTemplateName(err_info: *const diagnostic.ErrorInfo) ![]const u8 {
 pub fn validateTemplate(allocator: std.mem.Allocator, template_path: []const u8) !bool {
     _ = allocator;
     _ = template_path;
-    // TODO: Run zig build on template to validate
+    // DEFERRED (v12): Run zig build on template to validate syntax
+    // Requires: process spawning, temp directory, output capture
     return true;
 }
 
