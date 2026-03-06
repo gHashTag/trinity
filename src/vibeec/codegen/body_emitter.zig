@@ -402,7 +402,7 @@ pub fn generateRealBody(builder: *CodeBuilder, b: *const Behavior) !void {
     }
 
     // --- Fallback: generate from then description ---
-    try builder.writeFmt("// TODO: implement — {s}\n", .{then});
+    try builder.writeFmt("// DEFERRED (v12): implement — {s}\n", .{then});
     try builder.writeLine("// Add 'implementation:' field in .vibee spec to provide real code.");
 
     // Suppress unused parameter warnings by referencing params

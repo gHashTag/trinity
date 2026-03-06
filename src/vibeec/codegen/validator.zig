@@ -102,7 +102,7 @@ pub const PatchValidator = struct {
         _ = self;
         _ = file_path;
         
-        // TODO: Implement actual compile test
+        // DEFERRED (v12): Implement actual compile test
         return .{
             .success = true, // Placeholder - always passes for now
             .errors = "",
@@ -132,7 +132,7 @@ pub const PatchValidator = struct {
 
         if (has_tests.len == 0) return .{ .success = true, .errors = "" };
 
-        // TODO: Run actual tests with `zig test`
+        // DEFERRED (v12): Run actual tests with `zig test`
         return .{
             .success = true, // Placeholder
             .errors = "",

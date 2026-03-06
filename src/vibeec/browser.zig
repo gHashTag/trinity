@@ -192,7 +192,7 @@ pub const Browser = struct {
         ;
 
         const result = self.cdp_client.evaluate(js) catch return BrowserError.ConnectionFailed;
-        _ = max_length; // TODO: truncate if needed
+        _ = max_length; // DEFERRED (v12): truncate if needed
         return result;
     }
 

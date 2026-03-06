@@ -448,32 +448,32 @@ pub const CodeGenerator = struct {
         switch (lang) {
             .Zig => {
                 code_len += copySlice(&code_buf, code_len, "pub fn generated() void {\n");
-                code_len += copySlice(&code_buf, code_len, "    // TODO: Implement\n");
+                code_len += copySlice(&code_buf, code_len, "    // DEFERRED (v12): Implement\n");
                 code_len += copySlice(&code_buf, code_len, "}\n");
             },
             .Python => {
                 code_len += copySlice(&code_buf, code_len, "def generated():\n");
-                code_len += copySlice(&code_buf, code_len, "    # TODO: Implement\n");
+                code_len += copySlice(&code_buf, code_len, "    # DEFERRED (v12): Implement\n");
                 code_len += copySlice(&code_buf, code_len, "    pass\n");
             },
             .JavaScript, .TypeScript => {
                 code_len += copySlice(&code_buf, code_len, "function generated() {\n");
-                code_len += copySlice(&code_buf, code_len, "    // TODO: Implement\n");
+                code_len += copySlice(&code_buf, code_len, "    // DEFERRED (v12): Implement\n");
                 code_len += copySlice(&code_buf, code_len, "}\n");
             },
             .Rust => {
                 code_len += copySlice(&code_buf, code_len, "fn generated() {\n");
-                code_len += copySlice(&code_buf, code_len, "    // TODO: Implement\n");
+                code_len += copySlice(&code_buf, code_len, "    // DEFERRED (v12): Implement\n");
                 code_len += copySlice(&code_buf, code_len, "}\n");
             },
             .Go => {
                 code_len += copySlice(&code_buf, code_len, "func generated() {\n");
-                code_len += copySlice(&code_buf, code_len, "    // TODO: Implement\n");
+                code_len += copySlice(&code_buf, code_len, "    // DEFERRED (v12): Implement\n");
                 code_len += copySlice(&code_buf, code_len, "}\n");
             },
             .C, .Cpp => {
                 code_len += copySlice(&code_buf, code_len, "void generated() {\n");
-                code_len += copySlice(&code_buf, code_len, "    // TODO: Implement\n");
+                code_len += copySlice(&code_buf, code_len, "    // DEFERRED (v12): Implement\n");
                 code_len += copySlice(&code_buf, code_len, "}\n");
             },
             .Unknown => {

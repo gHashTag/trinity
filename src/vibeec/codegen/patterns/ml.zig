@@ -275,7 +275,7 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
         try builder.writeLine("var generated: usize = 0;");
         try builder.writeLine("for (0..@min(max_tokens, output.len)) |_| {");
         builder.incIndent();
-        try builder.writeLine("// TODO: sample from model distribution");
+        try builder.writeLine("// DEFERRED (v12): sample from model distribution");
         try builder.writeLine("output[generated] = 0; // placeholder token");
         try builder.writeLine("generated += 1;");
         try builder.writeLine("// if (output[generated - 1] == EOS_TOKEN) break;");

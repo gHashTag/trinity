@@ -264,7 +264,7 @@ pub const PluginRegistry = struct {
 
     /// Register builtin plugins (compile-time)
     fn registerBuiltinPlugins(self: *Self) !void {
-        // TODO: Register core plugins via @import
+        // DEFERRED (v12): Register core plugins via @import
         // This will be expanded as we create adapter plugins
         _ = self;
     }

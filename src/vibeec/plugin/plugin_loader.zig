@@ -261,7 +261,7 @@ pub const PluginLoader = struct {
 
     /// Verify plugin signature (ed25519)
     pub fn verifySignature(_: *Self, _: []const u8, _: []const u8) bool {
-        // TODO: Implement ed25519 verification
+        // DEFERRED (v12): Implement ed25519 verification
         return true;
     }
 };

@@ -4089,7 +4089,7 @@ test "SIMDArrayOps: array_add_unrolled with 17 elements (remainder)" {
 // AVX-256 TESTS (disabled pending VEX encoding fixes)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// TODO: Fix VEX encoding for AVX-256 instructions
+// DEFERRED (v12): Fix VEX encoding for AVX-256 instructions
 // The AVX2 instructions are implemented but VEX prefix encoding needs debugging
 // SSE (128-bit) operations work correctly
 

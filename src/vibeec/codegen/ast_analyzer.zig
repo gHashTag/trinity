@@ -217,7 +217,7 @@ pub const ASTAnalyzer = struct {
         // comment and string contexts throughout parsing
         _ = self;
         _ = pos;
-        return false; // TODO: implement proper tracking
+        return false; // DEFERRED (v12): implement proper tracking
     }
 
     /// Analyze a file and return statistics

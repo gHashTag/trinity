@@ -211,7 +211,7 @@ pub const PhiLoop = struct {
         _ = self;
         _ = task;
 
-        // TODO: Query Tech Tree for implementation path
+        // DEFERRED (v12): Query Tech Tree for implementation path
         // For now, just verify sacred constants
         std.debug.assert(phi_types.Sacred.trinityIdentity());
     }

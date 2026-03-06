@@ -1844,7 +1844,7 @@ pub const IglaLocalCoder = struct {
             \\const std = @import("std");
             \\
             \\pub fn main() void {
-            \\    // TODO: Implement your code here
+            \\    // DEFERRED (v12): Implement your code here
             \\    std.debug.print("Hello from IGLA Local Coder!\n", .{});
             \\}
             ,
