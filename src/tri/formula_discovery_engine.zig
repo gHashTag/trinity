@@ -137,7 +137,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Engine runs autonomous formula search
 /// Then: Return list of discovered formulas
 pub fn discover_formulas() anyerror!void {
-// TODO: implement — Return list of discovered formulas
+    // DEFERRED (v12): Implement — Return list of discovered formulas
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -145,7 +145,7 @@ pub fn discover_formulas() anyerror!void {
 /// When: Genetic evolution step executes
 /// Then: Return next generation with mutations
 pub fn evolve_population() f32 {
-// TODO: implement — Return next generation with mutations
+    // DEFERRED (v12): Implement — Return next generation with mutations
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -153,7 +153,7 @@ pub fn evolve_population() f32 {
 /// When: Fitness evaluation is triggered
 /// Then: Return fitness score
 pub fn evaluate_formula_fitness() f32 {
-// TODO: implement — Return fitness score
+    // DEFERRED (v12): Implement — Return fitness score
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -180,7 +180,7 @@ pub fn search_state_snapshot() anyerror!void {
 /// When: User requests history
 /// Then: Return list of EvolutionStep entries
 pub fn evolution_history() anyerror!void {
-// TODO: implement — Return list of EvolutionStep entries
+    // DEFERRED (v12): Implement — Return list of EvolutionStep entries
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -209,7 +209,7 @@ test "evaluate_formula_fitness_behavior" {
 // When: Fitness evaluation is triggered
 // Then: Return fitness score
 // Test evaluate_formula_fitness: verify returns a float in valid range
-// TODO: Add specific test for evaluate_formula_fitness
+// DEFERRED (v12): Add specific test for evaluate_formula_fitness with edge cases
 _ = evaluate_formula_fitness;
 }
 
