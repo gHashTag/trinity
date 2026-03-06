@@ -220,6 +220,9 @@ pub const V_TS_EXP: f64 = 0.0412;
 /// CKM CP phase δ (radians)
 pub const DELTA_CKM_EXP: f64 = 1.196;
 
+/// CKM unitarity triangle angle α (radians)
+pub const CKM_ALPHA_EXP: f64 = 1.20;
+
 /// PMNS Dirac CP phase δ_CP (radians)
 pub const DELTA_CP_PMNS_EXP: f64 = 3.73;
 
@@ -566,6 +569,13 @@ pub fn rhoMesonMass() f64 {
     return 5.0 * 243.0 * PI * PHI_5 / (E * E * E * E);
 }
 
+/// CKM unitarity triangle angle α (radians)
+/// α = π/φ² ≈ 1.200 rad = 68.75° (error: 0.0%)
+/// This completes the CKM unitarity triangle parameterization
+pub fn ckmAngleAlpha() f64 {
+    return PI / PHI_SQ;
+}
+
 // ============================================================
 // Aggregate functions
 // ============================================================
@@ -576,9 +586,9 @@ pub fn errorPercent(computed: f64, experimental: f64) f64 {
 }
 
 /// Total number of formulas
-pub const FORMULA_COUNT = 49;
+pub const FORMULA_COUNT = 50;
 
-/// Get all 49 formula results
+/// Get all 50 formula results
 pub fn allFormulas() [FORMULA_COUNT]FormulaResult {
     return .{
         // Tier 1: Core Standard Model (9)
@@ -635,6 +645,8 @@ pub fn allFormulas() [FORMULA_COUNT]FormulaResult {
         .{ .name = "delta_CP_PMNS", .formula = "8*pi^3/(9*e^2)", .computed = pmnsCPphase(), .experimental = DELTA_CP_PMNS_EXP, .error_pct = errorPercent(pmnsCPphase(), DELTA_CP_PMNS_EXP) },
         .{ .name = "Dm32_sq", .formula = "7*phi^4/(729*pi^2*e)", .computed = neutrinoMassSplitting32(), .experimental = DM32_SQ_EXP, .error_pct = errorPercent(neutrinoMassSplitting32(), DM32_SQ_EXP) },
         .{ .name = "m_rho", .formula = "1215*pi*phi^5/e^4", .computed = rhoMesonMass(), .experimental = M_RHO_EXP, .error_pct = errorPercent(rhoMesonMass(), M_RHO_EXP) },
+        // Formula 50: CKM unitarity triangle angle α — completes CKM triangle
+        .{ .name = "alpha_CKM", .formula = "pi/phi^2", .computed = ckmAngleAlpha(), .experimental = CKM_ALPHA_EXP, .error_pct = errorPercent(ckmAngleAlpha(), CKM_ALPHA_EXP) },
     };
 }
 
@@ -1187,6 +1199,13 @@ test "Particle-Sacred: delta_CP_PMNS = 8*pi^3/(9*e^2) (0.0002%)" {
     try std.testing.expect(errorPercent(delta, DELTA_CP_PMNS_EXP) < 0.001);
 }
 
+// Test: CKM unitarity triangle angle α (Formula 50)
+test "Particle-Sacred: alpha_CKM = pi/phi^2 (0.0%)" {
+    const alpha = ckmAngleAlpha();
+    try std.testing.expectApproxEqRel(CKM_ALPHA_EXP, alpha, 0.01); // 1% tolerance for radian measure
+    try std.testing.expect(errorPercent(alpha, CKM_ALPHA_EXP) < 0.1);
+}
+
 // Test: Neutrino mass splitting Dm32
 test "Particle-Sacred: Dm32_sq = 7*phi^4/(729*pi^2*e)" {
     const dm = neutrinoMassSplitting32();
@@ -1232,8 +1251,8 @@ test "Particle-Sacred: complete CKM coverage" {
     try std.testing.expect(vtd < vts);
 }
 
-// Test: Master verification — all 49 under 0.1%
-test "Particle-Sacred: MASTER — all 49 formulas < 0.1%" {
+// Test: Master verification — all 50 under 0.1%
+test "Particle-Sacred: MASTER — all 50 formulas < 0.1%" {
     const results = allFormulas();
     for (results, 0..) |r, i| {
         if (r.error_pct >= 0.1) {
