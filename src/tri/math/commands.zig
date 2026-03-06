@@ -340,6 +340,10 @@ pub fn runParticlesCommand(_: std.mem.Allocator, args: []const []const u8) !void
     const PHI_7 = PHI_6 * PHI;
     const PHI_8 = PHI_7 * PHI;
 
+    const PHI_INV_SQ = 1.0 / PHI_SQ; // 1/φ²
+    const PHI_INV_CU = GAMMA; // 1/φ³ = γ
+    const PHI_CU = PHI_3; // φ³
+
     const FormulaEntry = struct {
         name: []const u8,
         computed: f64,

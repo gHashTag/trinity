@@ -205,6 +205,7 @@ const sidebars: SidebarsConfig = {
         'research/strong-cp-problem-solved',
         'research/sacred-biology-v11-complete',
         'research/sacred-biology-blind-spot',
+        'research/sacred-quantum-biology-v11-complete',
         // Golden Chain Cycles (IGLA)
         'research/cycle26-multimodal-unified-report',
         'research/cycle27-tool-use-report',
