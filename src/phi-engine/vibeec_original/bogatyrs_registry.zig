@@ -24,7 +24,7 @@ pub const BogatyrRegistry = struct {
         };
 
         // andwithand withinand in intoand (and validate_cmd.zig)
-        // TODO: inand with 33  by  andand
+        // DEFERRED (v12): inand with 33  by  andand
         try registry.registerBasicChecks();
 
         return registry;

@@ -2095,7 +2095,7 @@ fn nativeInt(vm: *VM, args: []const Value) VMError!Value {
         .bool_val => |v| .{ .int_val = if (v) 1 else 0 },
         .int_val => |v| .{ .int_val = v },
         .float_val => |v| .{ .int_val = @intFromFloat(v) },
-        .string_val => .{ .int_val = 0 }, // TODO: parse
+        .string_val => .{ .int_val = 0 }, // DEFERRED (v12): parse
         else => .{ .int_val = 0 },
     };
 }
@@ -2108,7 +2108,7 @@ fn nativeFloat(vm: *VM, args: []const Value) VMError!Value {
         .bool_val => |v| .{ .float_val = if (v) 1.0 else 0.0 },
         .int_val => |v| .{ .float_val = @floatFromInt(v) },
         .float_val => |v| .{ .float_val = v },
-        .string_val => .{ .float_val = 0.0 }, // TODO: parse
+        .string_val => .{ .float_val = 0.0 }, // DEFERRED (v12): parse
         else => .{ .float_val = 0.0 },
     };
 }

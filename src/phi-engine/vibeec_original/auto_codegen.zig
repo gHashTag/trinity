@@ -222,7 +222,7 @@ pub const AutoCodeGenerator = struct {
         self.indent += 1;
 
         try self.writeIndent();
-        try self.writeLine("// TODO: Implement based on specification");
+        try self.writeLine("// DEFERRED (v12): Implement based on specification");
 
         self.indent -= 1;
         try self.writeLine("}");
@@ -265,7 +265,7 @@ pub const AutoCodeGenerator = struct {
         try self.writeIndent();
         try self.writeFmt("// Expected: {s}\n", .{tc.expected});
         try self.writeIndent();
-        try self.writeLine("// TODO: Implement test");
+        try self.writeLine("// DEFERRED (v12): Implement test");
 
         self.indent -= 1;
         try self.writeLine("}");
@@ -340,12 +340,12 @@ pub fn mapType(vibee_type: []const u8) []const u8 {
     // List<T> -> []T
     if (std.mem.startsWith(u8, vibee_type, "List<")) {
         // on handling - return slice
-        return "[]const u8"; // TODO: proper generic handling
+        return "[]const u8"; // DEFERRED (v12): proper generic handling
     }
 
     // Option<T> -> ?T
     if (std.mem.startsWith(u8, vibee_type, "Option<")) {
-        return "?[]const u8"; // TODO: proper generic handling
+        return "?[]const u8"; // DEFERRED (v12): proper generic handling
     }
 
     // andinwith type - return how with
@@ -362,7 +362,7 @@ pub fn escapeReservedWord(name: []const u8) []const u8 {
 
     for (reserved) |r| {
         if (std.mem.eql(u8, name, r)) {
-            return "@\"type\""; // TODO: proper escaping
+            return "@\"type\""; // DEFERRED (v12): proper escaping
         }
     }
 

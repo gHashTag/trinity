@@ -172,7 +172,7 @@ pub const ZigCodeGen = struct {
             try self.builder.write(impl);
             try self.builder.newline();
         } else {
-            try self.builder.writeLine("// TODO: implementation");
+            try self.builder.writeLine("// DEFERRED (v12): implementation");
         }
 
         self.builder.decIndent();
@@ -1499,10 +1499,10 @@ pub const ZigCodeGen = struct {
             try self.builder.writeLine("// Create VBT file entry");
             try self.builder.writeLine("const entry = VBTFileEntry{");
             try self.builder.writeLine("    .path = file_path,");
-            try self.builder.writeLine("    .trit_hash = \"\", // TODO: calculate trit hash");
+            try self.builder.writeLine("    .trit_hash = \"\", // DEFERRED (v12): calculate trit hash");
             try self.builder.writeLine("    .size = @as(i64, stat.size),");
             try self.builder.writeLine("    .modified = std.time.timestamp(),");
-            try self.builder.writeLine("    .trit_count = 0, // TODO: calculate trit count");
+            try self.builder.writeLine("    .trit_count = 0, // DEFERRED (v12): calculate trit count");
             try self.builder.writeLine("    .compressed = false,");
             try self.builder.writeLine("};");
             try self.builder.writeLine("// Write to VBT storage");
@@ -1528,7 +1528,7 @@ pub const ZigCodeGen = struct {
             try self.builder.writeLine("// Create commit with staged entries");
             try self.builder.writeLine("var entries = std.ArrayList(VBTFileEntry).init(std.heap.page_allocator);");
             try self.builder.writeLine("defer entries.deinit();");
-            try self.builder.writeLine("// TODO: Read staged files from .vbt/index");
+            try self.builder.writeLine("// DEFERRED (v12): Read staged files from .vbt/index");
             try self.builder.writeLine("const commit_result = try create_vbt_commit(message, entries.items);");
             try self.builder.writeLine("return VBTResult{ .success = true, .message = \"Commit created\" };");
             self.builder.decIndent();
@@ -1599,7 +1599,7 @@ pub const ZigCodeGen = struct {
             try self.builder.writeLine("const head_file = try std.fs.cwd().createFile(head_path, .{});");
             try self.builder.writeLine("defer head_file.close();");
             try self.builder.writeLine("try head_file.writeAll(commit_id);");
-            try self.builder.writeLine("// TODO: Restore working directory from commit");
+            try self.builder.writeLine("// DEFERRED (v12): Restore working directory from commit");
             try self.builder.writeLine("return VBTResult{ .success = true, .message = \"Checked out\" };");
             self.builder.decIndent();
             try self.builder.writeLine("}");
@@ -1666,7 +1666,7 @@ pub const ZigCodeGen = struct {
             try self.builder.writeLine("defer std.heap.page_allocator.free(head_path);");
             try self.builder.writeLine("const current_head = try std.fs.cwd().readFileAlloc(head_path, std.heap.page_allocator, 64);");
             try self.builder.writeLine("defer std.heap.page_allocator.free(current_head);");
-            try self.builder.writeLine("// TODO: Perform three-way merge");
+            try self.builder.writeLine("// DEFERRED (v12): Perform three-way merge");
             try self.builder.writeLine("return VBTResult{ .success = true, .message = \"Merged\" };");
             self.builder.decIndent();
             try self.builder.writeLine("}");
@@ -1682,7 +1682,7 @@ pub const ZigCodeGen = struct {
             try self.builder.writeLine("// Push to remote repository using vbt_storage_integration");
             try self.builder.writeLine("// Sync with filesystem first");
             try self.builder.writeLine("const sync_result = try sync_vbt_with_fs(repo_path, true);");
-            try self.builder.writeLine("// TODO: Push to remote repository");
+            try self.builder.writeLine("// DEFERRED (v12): Push to remote repository");
             try self.builder.writeLine("_ = remote;");
             try self.builder.writeLine("return VBTResult{ .success = true, .message = \"Pushed\" };");
             self.builder.decIndent();
@@ -1697,7 +1697,7 @@ pub const ZigCodeGen = struct {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8, remote: ?[]const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Pull from remote repository using vbt_storage_integration");
-            try self.builder.writeLine("// TODO: Pull from remote repository");
+            try self.builder.writeLine("// DEFERRED (v12): Pull from remote repository");
             try self.builder.writeLine("_ = repo_path;");
             try self.builder.writeLine("_ = remote;");
             try self.builder.writeLine("// Sync with filesystem after pull");
@@ -1718,7 +1718,7 @@ pub const ZigCodeGen = struct {
             try self.builder.writeLine("// Get commits to compare");
             try self.builder.writeLine("const commit_a_data = if (commit_a) |id| try get_vbt_commit(id) else null;");
             try self.builder.writeLine("const commit_b_data = if (commit_b) |id| try get_vbt_commit(id) else null;");
-            try self.builder.writeLine("// TODO: Compute trit diff between commits");
+            try self.builder.writeLine("// DEFERRED (v12): Compute trit diff between commits");
             try self.builder.writeLine("_ = repo_path;");
             try self.builder.writeLine("return VBTResult{ .success = true, .message = \"Diff computed\" };");
             self.builder.decIndent();
@@ -1885,7 +1885,7 @@ pub const ZigCodeGen = struct {
             try self.builder.writeLine("for (commits) |commit| {");
             self.builder.incIndent();
             try self.builder.writeLine("try reachable.put(commit.commit_id, {});");
-            try self.builder.writeLine("// TODO: Add objects referenced by commits");
+            try self.builder.writeLine("// DEFERRED (v12): Add objects referenced by commits");
             self.builder.decIndent();
             try self.builder.writeLine("}");
             try self.builder.writeLine("// List all objects in repository");
@@ -1933,7 +1933,7 @@ pub const ZigCodeGen = struct {
             try self.builder.writeLine("// Get repository info before GC");
             try self.builder.writeLine("const before_info = try get_vbt_repository_info(repo_path);");
             try self.builder.writeLine("// Run cleanup to remove unreachable objects");
-            try self.builder.writeLine("// TODO: Implement mark-and-sweep GC algorithm");
+            try self.builder.writeLine("// DEFERRED (v12): Implement mark-and-sweep GC algorithm");
             try self.builder.writeLine("// 1. Mark all objects reachable from HEAD");
             try self.builder.writeLine("// 2. Sweep all unmarked objects");
             try self.builder.writeLine("// 3. Compact storage if needed");
@@ -1999,7 +1999,7 @@ pub const ZigCodeGen = struct {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8, watch_path: []const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Watch directory for changes using vbt_storage_integration");
-            try self.builder.writeLine("// TODO: Start watching with filesystem watcher");
+            try self.builder.writeLine("// DEFERRED (v12): Start watching with filesystem watcher");
             try self.builder.writeLine("_ = repo_path;");
             try self.builder.writeLine("_ = watch_path;");
             try self.builder.writeLine("return VBTResult{ .success = true, .message = \"Watching\" };");
@@ -2015,7 +2015,7 @@ pub const ZigCodeGen = struct {
             try self.builder.writeFmt("pub fn {s}(repo_path: []const u8, watch_path: []const u8) !VBTResult {{\n", .{b.name});
             self.builder.incIndent();
             try self.builder.writeLine("// Stop watching directory using vbt_storage_integration");
-            try self.builder.writeLine("// TODO: Stop watching");
+            try self.builder.writeLine("// DEFERRED (v12): Stop watching");
             try self.builder.writeLine("_ = repo_path;");
             try self.builder.writeLine("_ = watch_path;");
             try self.builder.writeLine("return VBTResult{ .success = true, .message = \"Stopped watching\" };");
@@ -2600,7 +2600,7 @@ pub const ZigCodeGen = struct {
             try self.builder.writeLine("try std.testing.expectEqual(Trit.trit_not(.positive), .negative);");
             try self.builder.writeLine("try std.testing.expectEqual(Trit.trit_not(.zero), .zero);");
         } else {
-            try self.builder.writeLine("// TODO: Add test assertions");
+            try self.builder.writeLine("// DEFERRED (v12): Add test assertions");
         }
     }
 

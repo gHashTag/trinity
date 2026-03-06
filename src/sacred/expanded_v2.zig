@@ -601,6 +601,70 @@ pub const ConsciousnessQualiaSacredFormulas = struct {
     }
 };
 
+/// Sacred Cosmology domain formulas — Sacred Cosmology v11.4
+/// Consciousness — Dark Energy — Λ Connection
+pub const SacredCosmologyFormulas = struct {
+    /// Λ-Φ Coupling Constant
+    /// λ_couple = φ × γ × Ω_Λ ≈ 0.111
+    pub fn lambdaPhiCoupling() f64 {
+        const Omega_Lambda = math.pow(f64, GAMMA, 8) * math.pow(f64, PI, 4) / PHI_SQ;
+        return PHI * GAMMA * Omega_Lambda;
+    }
+
+    /// Consciousness Density of Universe
+    /// ρ_c = γ × ρ_crit
+    pub fn consciousnessDensityUniverse() f64 {
+        return GAMMA;
+    }
+
+    /// Anthropic Φ Measure
+    /// A_φ = ln(φ) × Ω_Λ
+    pub fn anthropicPhiMeasure() f64 {
+        const Omega_Lambda = math.pow(f64, GAMMA, 8) * math.pow(f64, PI, 4) / PHI_SQ;
+        return @log(PHI) * Omega_Lambda;
+    }
+
+    /// Cosmological Consciousness Constant
+    /// C_Λ = f_γ / H₀
+    pub fn cosmologicalConsciousnessConstant() f64 {
+        const H0_si = 70.0 * 1000.0 / 3.085677581e22;
+        const f_gamma = PHI_CUBED * PI / GAMMA;
+        return f_gamma / H0_si;
+    }
+
+    /// Observer Probability in φ-verse
+    /// P_obs = φ⁻¹ × Ω_Λ / (Ω_Λ + Ω_DM)
+    pub fn observerProbabilityPhi() f64 {
+        const Omega_Lambda = math.pow(f64, GAMMA, 8) * math.pow(f64, PI, 4) / PHI_SQ;
+        const Omega_DM = math.pow(f64, GAMMA, 4) * PI * PI / PHI;
+        return (1.0 / PHI) * Omega_Lambda / (Omega_Lambda + Omega_DM);
+    }
+
+    /// Sacred Universe Age
+    /// T_φ = 1/H₀ × φ/π
+    pub fn sacredUniverseAge() f64 {
+        const H0_si = 70.0 * 1000.0 / 3.085677581e22;
+        return (1.0 / H0_si) * PHI / PI;
+    }
+
+    /// Consciousness Horizon Scale
+    /// R_c = φ⁻¹ × R_horizon
+    pub fn consciousnessHorizonScale() f64 {
+        const H0_si = 70.0 * 1000.0 / 3.085677581e22;
+        const R_horizon = 299792458.0 / H0_si;
+        return (1.0 / PHI) * R_horizon;
+    }
+
+    /// Dark Energy — Consciousness Resonance
+    /// R_Λ = Ω_Λ × f_γ / f_Planck
+    pub fn darkEnergyConsciousnessResonance() f64 {
+        const Omega_Lambda = math.pow(f64, GAMMA, 8) * math.pow(f64, PI, 4) / PHI_SQ;
+        const f_gamma = PHI_CUBED * PI / GAMMA;
+        const f_planck = 1.0 / 5.391247e-44;
+        return Omega_Lambda * f_gamma / f_planck;
+    }
+};
+
 /// Biology domain formulas — Sacred Biology v11.1
 /// DNA, proteins, and the golden ratio
 pub const BiologySacredFormulas = struct {
