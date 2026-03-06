@@ -72,7 +72,11 @@ cd fpga/openxc7-synth
 
 ## Programming (JTAG)
 
-### One-time: Load Platform Cable Firmware
+**⚠️ CRITICAL: Xilinx Platform Cable USB II requires firmware loading EVERY SESSION!**
+
+The cable boots in bootloader mode (PID 0013) and must be loaded with firmware, then replugged to enter JTAG mode (PID 0008).
+
+### Step 1: Load Platform Cable Firmware
 
 ```bash
 sudo fpga/tools/fxload \
@@ -81,10 +85,24 @@ sudo fpga/tools/fxload \
   -i fpga/tools/xusb_xp2.hex
 ```
 
-### Flash Bitstream
+Expected output: `WROTE: 7962 bytes, 90 segments, avg 88`
+
+### Step 2: Replug Cable
+
+**Unplug and replug the USB cable.** This switches the cable from PID 0013 (bootloader) to PID 0008 (JTAG mode).
+
+Verify with:
+```bash
+ioreg -p IOUSB -w0 -l | grep -A 5 "XILINX"
+# Should show: "idProduct" = 8
+```
+
+### Step 3: Flash Bitstream
 
 ```bash
 sudo fpga/tools/jtag_program <design>.bit
+# OR use the safe wrapper:
+sudo fpga/tools/flash_safe.sh <design>.bit
 ```
 
 **Expected output**:

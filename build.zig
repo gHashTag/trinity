@@ -2387,6 +2387,19 @@ pub fn build(b: *std.Build) void {
     particle_physics_step.dependOn(&run_particle_physics.step);
     test_step.dependOn(&run_particle_physics.step);
 
+    // QCD Sacred Mathematics (Strong CP Problem)
+    const qcd_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/qcd/sacred.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_qcd = b.addRunArtifact(qcd_tests);
+    const qcd_step = b.step("test-qcd", "Test QCD Sacred Mathematics (Strong CP Problem)");
+    qcd_step.dependOn(&run_qcd.step);
+    test_step.dependOn(&run_qcd.step);
+
     // Task 16: IIT v4 (Consciousness domain — Integrated Information Theory 4.0)
     const iit_v4_tests = b.addTest(.{
         .root_module = b.createModule(.{

@@ -32,7 +32,7 @@ pub const CommandCategory = enum {
     demo,
     benchmark,
     advanced,
-    depn,  // DePIN - Decentralized Physical Infrastructure Network
+    depin,  // DePIN - Decentralized Physical Infrastructure Network
 };
 
 /// Command metadata for self-documenting CLI
@@ -170,9 +170,9 @@ pub const CommandRegistry = struct {
     }
 
     /// Count commands per category
-    pub fn countByCategory(self: *const Self) ![10]usize {
-        const counts = [_]CommandCategory{ .ai, .dev, .git, .math, .science, .sacred, .system, .demo, .benchmark, .advanced };
-        var result: [10]usize = undefined;
+    pub fn countByCategory(self: *const Self) ![11]usize {
+        const counts = [_]CommandCategory{ .ai, .dev, .git, .math, .science, .sacred, .system, .demo, .benchmark, .advanced, .depin };
+        var result: [11]usize = undefined;
 
         for (counts, 0..) |cat, i| {
             var count: usize = 0;

@@ -1,64 +1,51 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# TRINITY CLI - Fly.io Deployment
-# Downloads pre-built binary from GitHub Releases
-# φ² + 1/φ² = 3 | TRINITY
+# TRINITY Unified API Server - Fly.io Deployment
+# Multi-stage build: zig:0.15.0 → ubuntu:22.04
+# φ² + 1/φ² = 3 | TRINITY v10.2
 # ═══════════════════════════════════════════════════════════════════════════════
 
-FROM ubuntu:22.04 AS base
+# ────────────────────────────────────────────────────────────────────────────────
+# Builder stage: Compile TRI with Zig 0.15.0
+# ────────────────────────────────────────────────────────────────────────────────
+FROM zig:0.15.0 AS builder
 
-# Install dependencies
-RUN apt-get update && \
-    apt-get install -y ca-certificates curl jq python3 && \
-    useradd -m -u 1000 trinity && \
-    rm -rf /var/lib/apt/lists/*
+WORKDIR /src
 
-# Download TRI CLI from GitHub Releases
-ARG VERSION=v10.0.1
-ARG ARCH=linux-amd64
-ENV REPO=gHashTag/trinity
+# Copy source files
+COPY . .
 
-WORKDIR /tmp/download
-COPY scripts/download-release.sh .
+# Build TRI CLI in release mode
+RUN zig build -Drelease-safe=true tri
 
-# Download and install tri binary
-RUN set -e && \
-    echo "Downloading TRI CLI from GitHub Releases..." && \
-    DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${VERSION}/trinity-${VERSION}-${ARCH}.tar.gz" && \
-    echo "Downloading from: $DOWNLOAD_URL" && \
-    curl -sL "$DOWNLOAD_URL" -o release.tar.gz && \
-    tar xzf release.tar.gz && \
-    [ -f tri ] && { chmod +x tri; mv tri /usr/local/bin/tri; } || \
-    [ -f vibee ] && { chmod +x vibee; mv vibee /usr/local/bin/tri; } || \
-    { echo "Error: No tri or vibee binary found in archive"; ls -la; exit 1; } && \
-    /usr/local/bin/tri --version || echo "Binary installed"
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Runtime image
-# ═══════════════════════════════════════════════════════════════════════════════
-
+# ────────────────────────────────────────────────────────────────────────────────
+# Runtime stage: Minimal Ubuntu 22.04
+# ────────────────────────────────────────────────────────────────────────────────
 FROM ubuntu:22.04
 
+# Install runtime dependencies
 RUN apt-get update && \
     apt-get install -y ca-certificates python3 && \
     useradd -m -u 1000 trinity && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy tri binary from base stage
-COPY --from=base /usr/local/bin/tri /usr/local/bin/tri
+# Copy TRI binary from builder
+COPY --from=builder /src/zig-out/bin/tri /usr/local/bin/tri
 
 # Set up working directory
 WORKDIR /home/trinity/.trinity
 RUN chown -R trinity:trinity /home/trinity/.trinity
 
+# Run as non-root user
 USER trinity
 
-# Expose HTTP port
-EXPOSE 8080
+# Expose API ports
+# 8080: REST, GraphQL, WebSocket
+# 9335: gRPC
+EXPOSE 8080 9335
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD tri --version || exit 1
 
-# Keep container alive with sleep (tri serve requires --model argument)
-# TRI is available as a CLI tool - use `fly ssh console` to run commands
-CMD ["sh", "-c", "echo 'TRI CLI v10.0.1 - Ready. Use fly ssh console to run tri commands.' && sleep infinity"]
+# Start unified API server
+CMD ["tri", "serve"]

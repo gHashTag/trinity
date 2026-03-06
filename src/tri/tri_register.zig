@@ -250,6 +250,7 @@ const execute_map = [_]ExecuteEntry{
     .{ .name = "time", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runTimeCommand(a, args); } }.f },
     .{ .name = "install", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { _ = args; return commands.runInstallCommand(a); } }.f },
     .{ .name = "build", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { _ = args; return commands.runBuildCommand(a); } }.f },
+    .{ .name = "deploy", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { _ = args; return commands.runDeployCommand(a); } }.f },
     .{ .name = "deck", .execute = struct { fn f(a: std.mem.Allocator, _: []const []const u8) !void { return commands.runDeckCommand(a); } }.f },
     .{ .name = "fpga-demo", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { return commands.runFpgaDemoCommand(a, args); } }.f },
     .{ .name = "sacred-full-cycle", .execute = struct { fn f(a: std.mem.Allocator, args: []const []const u8) !void { _ = args; return commands.runSacredFullCycleCommand(a); } }.f },

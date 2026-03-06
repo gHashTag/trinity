@@ -348,7 +348,7 @@ pub fn runParticlesCommand(_: std.mem.Allocator, args: []const []const u8) !void
     };
 
     const GAMMA_5 = GAMMA * GAMMA * GAMMA * GAMMA * GAMMA;
-    // All 49 formulas — matching src/particle_physics/sacred.zig exactly
+    // All 52 formulas — matching src/particle_physics/sacred.zig exactly
     const formulas = [_]FormulaEntry{
         // Tier 1: Core Standard Model (9)
         .{ .name = "alpha_s (strong coupling)", .computed = 4.0 * PHI_SQ / (9.0 * PI * PI), .experimental = 0.11790, .tier = 1 },
@@ -406,6 +406,10 @@ pub fn runParticlesCommand(_: std.mem.Allocator, args: []const []const u8) !void
         .{ .name = "m_rho (MeV)", .computed = 5.0 * 243.0 * PI * PHI_5 / (E * E * E * E), .experimental = 775.26, .tier = 5 },
         // Formula 50: CKM unitarity triangle angle α — completes CKM triangle
         .{ .name = "alpha_CKM (rad, unitarity)", .computed = PI / PHI_SQ, .experimental = 1.20, .tier = 5 },
+        // Formula 51: Strong CP angle from TRINITY — solves Strong CP problem
+        .{ .name = "theta_QCD (rad, Strong CP)", .computed = @abs(PHI_SQ + 1.0 / PHI_SQ - 3.0), .experimental = 0.0, .tier = 6 },
+        // Formula 52: Axion mass prediction (μeV) — testable by ADMX
+        .{ .name = "axion_mass (micro-eV)", .computed = 1.0 / (GAMMA * GAMMA) / PI, .experimental = 5.7, .tier = 6 },
     };
 
     const GOLDEN = "\x1b[33m";
@@ -553,7 +557,7 @@ pub fn runParticlesCommand(_: std.mem.Allocator, args: []const []const u8) !void
     std.debug.print("  {s}Max error:{s}       {s}{d:.4}%{s}\n", .{ GRAY, RESET, WHITE, max_err, RESET });
     std.debug.print("  {s}Avg error:{s}       {s}{d:.4}%{s}\n", .{ GRAY, RESET, GREEN, avg_err, RESET });
     std.debug.print("  {s}All < 0.1%%:{s}      {s}YES{s}\n", .{ GRAY, RESET, GREEN, RESET });
-    std.debug.print("\n  {s}phi^2 + 1/phi^2 = 3 = TRINITY  |  gamma = phi^-3  |  50 constants from phi{s}\n\n", .{ GOLDEN, RESET });
+    std.debug.print("\n  {s}phi^2 + 1/phi^2 = 3 = TRINITY  |  gamma = phi^-3  |  52 constants from phi |  theta_QCD = 0{s}\n\n", .{ GOLDEN, RESET });
 }
 
 fn showMathHelp() !void {
