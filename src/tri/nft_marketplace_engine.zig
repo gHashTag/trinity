@@ -13,11 +13,14 @@
 const std = @import("std");
 const math = std.math;
 
+// Import canonical constants (NOT inline - anti-pattern!)
+const sacred_constants = @import("sacred_constants");
+
 // ═══════════════════════════════════════════════════════════════════════════════
-// CONSTANTS
+// CONSTANTS (from canonical source)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub const PHI: f64 = 1.618033988749895;
+pub const PHI = sacred_constants.SacredConstants.PHI;
 
 pub const MIN_BID_INCREMENT: f64 = 0.01;
 

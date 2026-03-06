@@ -196,7 +196,44 @@ trinity/output/fpga/*.v - Generated Verilog (will be overwritten)
 generated/*.zig - Generated code (will be overwritten)
 ```
 
-### 🚫 ANTI-PATTERN #2: FORGETTING FPGA JTAG FIRMWARE
+### 🚫 ANTI-PATTERN #2: INLINE CONSTANTS (ANTI-PATTERN)
+
+**NEVER define mathematical constants inline - ALWAYS import from canonical source!**
+
+```
+❌ NEVER write inline constants like:
+    const phi: f64 = 1.618033988749895;
+    const PHI: f64 = 1.6180339887498948482;
+    const pi: f64 = 3.141592653589793;
+
+✅ ALWAYS import from src/sacred/constants.zig:
+    const sacred = @import("sacred/constants.zig");
+    const PHI = sacred.SacredConstants.PHI;
+    const PI = sacred.SacredConstants.PI;
+```
+
+**WHY?**
+- Single source of truth prevents inconsistencies
+- Compile-time verification ensures mathematical identities hold
+- Changes propagate automatically to all modules
+- Centralized documentation of constant meanings
+
+**CANONICAL CONSTANTS LOCATION:**
+`src/sacred/constants.zig` - SacredConstants struct
+
+**AVAILABLE CONSTANTS:**
+```zig
+sacred.SacredConstants.PHI           // 1.618033988749895
+sacred.SacredConstants.PHI_INVERSE   // 0.618033988749895
+sacred.SacredConstants.PHI_SQ        // 2.618033988749895
+sacred.SacredConstants.TRINITY       // 3.0
+sacred.SacredConstants.PI            // 3.141592653589793
+sacred.SacredConstants.E             // 2.718281828459045
+sacred.SacredConstants.SQRT5         // 2.2360679774997896
+// ... and more derived constants
+```
+
+### 🚫 ANTI-PATTERN #3: FORGETTING FPGA JTAG FIRMWARE
 
 **Xilinx Platform Cable USB II requires firmware loading EVERY SESSION!**
 
