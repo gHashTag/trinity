@@ -143,7 +143,7 @@ fn getRoleMultiplier(role: []const u8) f64 {
 pub fn generateNodeID(allocator: Allocator, info: HardwareInfo) ![]const u8 {
     const signature = try std.fmt.allocPrint(allocator, "{s}-{s}-{}-{}", 
         .{ @tagName(info.platform), @tagName(info.arch), info.cpu_cores, info.memory_mb });
-    // TODO: Hash signature to create proper UUID
+    // DEFERRED: Hash signature to create proper UUID (use std.crypto.hash.sha3 or similar)
     return signature;
 }
 

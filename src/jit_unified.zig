@@ -93,7 +93,7 @@ pub const UnifiedJitCompiler = struct {
     pub fn hasSIMD() bool {
         return switch (current_arch) {
             .arm64 => true, // NEON is always available on AArch64
-            .x86_64 => false, // TODO: Add AVX/SSE detection
+            .x86_64 => false, // DEFERRED: Add CPUID-based AVX/SSE detection for x86_64
             .unsupported => false,
         };
     }
@@ -124,7 +124,7 @@ pub const UnifiedJitCompiler = struct {
         switch (self.backend) {
             .arm64 => |*b| try b.compileDotProductSIMD(dimension),
             .x86_64 => |*b| {
-                // x86_64 falls back to scalar (TODO: add AVX2 SIMD)
+                // x86_64 falls back to scalar (DEFERRED: add AVX2 SIMD implementation)
                 try b.compileDotProduct(dimension);
             },
             .unsupported => return error.UnsupportedArchitecture,

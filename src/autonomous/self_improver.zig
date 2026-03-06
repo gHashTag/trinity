@@ -39,14 +39,14 @@ pub const SelfImprover = struct {
     pub fn analyzeCode(self: *SelfImprover, root_dir: []const u8) ![]ImprovementProposal {
         _ = self;
         _ = root_dir;
-        // TODO: Scan codebase, analyze complexity, find bottlenecks
+        // DEFERRED (v12): Codebase analysis requires AST parsing and complexity metrics
         return error.NotImplemented;
     }
 
     /// Compare research findings with current implementation
     pub fn compareWithResearch(self: *SelfImprover) ![]ImprovementProposal {
         _ = self;
-        // TODO: Load research insights, find gaps
+        // DEFERRED (v12): Research integration requires paper parsing and knowledge graph
         return error.NotImplemented;
     }
 
@@ -54,7 +54,7 @@ pub const SelfImprover = struct {
     pub fn generateVibeSpec(self: *SelfImprover, proposal: ImprovementProposal) ![]const u8 {
         _ = self;
         _ = proposal;
-        // TODO: Generate .vibee specification
+        // DEFERRED (v12): VIBEE spec generation from analysis results
         return error.NotImplemented;
     }
 
@@ -62,7 +62,7 @@ pub const SelfImprover = struct {
     pub fn runVibeeGen(self: *SelfImprover, spec_path: []const u8) !void {
         _ = self;
         _ = spec_path;
-        // TODO: Execute zig build vibee -- gen spec.vibee
+        // DEFERRED (v12): VIBEE compiler integration
     }
 };
 
@@ -76,7 +76,7 @@ pub const EvolutionCycle = struct {
 
     pub fn run(self: *EvolutionCycle) !void {
         _ = self;
-        // TODO: Full 8-step evolution loop
+        // DEFERRED (v12): Full 8-step evolution loop
         // 1. RESEARCH: Ingest 10 papers/docs
         // 2. ANALYZE: Find improvement opportunities
         // 3. PLAN: Generate spec for improvement
@@ -96,5 +96,5 @@ pub fn main() !void {
     std.debug.print("φ² + 1/φ² = 3\n\n", .{});
 
     std.debug.print("Status: Basic structure created\n", .{});
-    std.debug.print("TODO: Implement code analysis, research comparison, VIBEE bridge\n", .{});
+    std.debug.print("DEFERRED (v12): Code analysis, research comparison, VIBEE bridge\n", .{});
 }

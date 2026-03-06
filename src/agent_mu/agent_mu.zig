@@ -434,7 +434,7 @@ pub fn logFeedbackToHistory(
         \\- **Priority:** {d}
         \\
     , .{
-        std.time.timestamp(), // TODO: format as date
+        std.time.timestamp(), // Unix timestamp (use `date` command for human-readable)
         feedback.template_name,
         feedback.issue_type,
         feedback.suggested_fix,

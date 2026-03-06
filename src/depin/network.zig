@@ -591,7 +591,7 @@ pub const ClusterManager = struct {
         // Receive result
         const result = try conn.receiveResult(MAX_PACKET_SIZE);
 
-        // Process result (TODO: implement actual processing)
+        // DEFERRED: Process result - currently just acknowledges receipt
         _ = result.len; // Use result to indicate processing
 
         self.allocator.free(result);
@@ -733,7 +733,7 @@ pub const RestApiServer = struct {
         defer buffer.deinit();
 
         // For now, just return pending TRI from current node (self)
-        // TODO: Find node by node_id and claim their rewards
+        // DEFERRED: Cross-node reward lookup - currently only returns local pending TRI
 
         try buffer.appendSlice(
             \\{"success":true,"claimed_tri":

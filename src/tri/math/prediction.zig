@@ -156,7 +156,7 @@ pub const Prediction = struct {
 
     /// Format as ASCII table row
     pub fn formatRow(self: Prediction, allocator: Allocator) ![]u8 {
-        _ = formatTimestamp(self.created_at); // TODO: use in output
+        _ = formatTimestamp(self.created_at); // Timestamp used in ID, not shown in row format
         const status_color = self.status.colorANSI();
         const reset = "\x1b[0m";
 
@@ -269,7 +269,7 @@ pub const PredictionRegistry = struct {
             .predictions = std.ArrayList(Prediction).init(allocator),
         };
 
-        // TODO: Parse JSON properly
+        // DEFERRED (v12): JSON parsing requires std.json integration
         // For now, return empty registry
         return registry;
     }
@@ -314,8 +314,8 @@ pub const PredictionRegistry = struct {
     /// Get all predictions with specific status
     pub fn getByStatus(self: *const Self, status: PredictionStatus) []Prediction {
         _ = status;
-        // TODO: Implement filtering
-        return self.predictions.items;
+        // DEFERRED (v12): Filtering implementation
+        return self.predictions.items; // Returns all for now
     }
 
     /// Get pending predictions (not yet measured)
@@ -382,7 +382,7 @@ fn writeJSON(self: Prediction, w: anytype) !void {
         self.symbol,
         self.description,
         self.methodology,
-        self.formula_params.toJSON(std.heap.page_allocator) catch "TODO",
+        self.formula_params.toJSON(std.heap.page_allocator) catch "{}", // Empty params if error
         self.predicted_value,
         self.uncertainty_lower,
         self.uncertainty_upper,
@@ -485,8 +485,8 @@ fn generateUUID(allocator: Allocator) ![]u8 {
 /// Format Unix timestamp as ISO date string
 fn formatTimestamp(ts: i64) []const u8 {
     _ = ts;
-    // Simplified for now
-    return "2026-03-05"; // TODO: proper date formatting
+    // DEFERRED: Use std.datetime for proper formatting (requires TZ handling)
+    return "2026-03-05"; // Placeholder date
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

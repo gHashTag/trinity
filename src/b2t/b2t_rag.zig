@@ -182,7 +182,7 @@ pub const CodeChunk = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const SimilarityResult = struct {
-    chunk: *const CodeChunk,
+    chunk: ?*const CodeChunk, // null when code comes from KnowledgeEntry (not CodeChunk)
     similarity: f32,
     source: []const u8,
 };
@@ -259,7 +259,7 @@ pub const KnowledgeBase = struct {
                 if (similarity >= MIN_SIMILARITY_THRESHOLD) {
                     // Simple insertion (can optimize with heap)
                     try results.append(SimilarityResult{
-                        .chunk = undefined, // TODO: link with chunk
+                        .chunk = null, // KnowledgeEntry stores code directly, not as CodeChunk
                         .similarity = similarity,
                         .source = entry.code,
                     });

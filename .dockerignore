@@ -1,18 +1,47 @@
-# Exclude directories that have missing dependencies in Docker build
-benchmarks/
-examples/
-# Exclude GUI components that need raylib
-src/trinity_node/
-src/photon/
-# Exclude test files
-test/
-*.test.zig
 # Git
-.git/
-.github/
+.git
+.gitignore
+
+# Zig build cache
+zig-cache
+zig-out
+
+# Node modules
+node_modules
+
+# Dependencies
+trinity-nexus
+
+# Documentation
+docsite
+website
+docs
+specs
+
+# FPGA files (large)
+fpga/openxc7-synth/prjxray-db
+
+# Test artifacts
+*.log
+*.tmp
+
 # CI/CD
-*.md
-LICENSE
-# Docker files themselves
+.github
+
+# Ralph state
+.ralph
+
+# Docker files (don't need during build)
 Dockerfile*
 .dockerignore
+
+# Fly.io
+fly.toml
+
+# IDE
+.vscode
+.idea
+
+# OS
+.DS_Store
+Thumbs.db

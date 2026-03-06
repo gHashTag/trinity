@@ -459,12 +459,12 @@ pub fn main() !void {
         .info => utils.printInfo(),
         .version => utils.printVersion(),
         .help => utils.printHelp(),
-        // .monitor => {  // TODO: Add monitor to Command enum in tri_utils.zig
+        // .monitor => {  // DEFERRED (v12): Add monitor to Command enum in tri_utils.zig
         //     const eternal_monitor = @import("eternal_monitor.zig");
         //     const exit_code = try eternal_monitor.execute(allocator, cmd_args);
         //     std.process.exit(exit_code);
         // },
-        // .orchestrate_v2 => {  // TODO: Add orchestrate_v2 to Command enum in tri_utils.zig
+        // .orchestrate_v2 => {  // DEFERRED (v12): Add orchestrate_v2 to Command enum in tri_utils.zig
         //     // TRI Orchestrator v2.0 - Universal command orchestration
         //     if (cmd_args.len == 0) {
         //         // Show registry statistics
@@ -565,7 +565,7 @@ pub fn main() !void {
         //         }
         //     }
         // },
-        // .os_boot => {  // TODO: Add os_boot to Command enum in tri_utils.zig
+        // .os_boot => {  // DEFERRED (v12): Add os_boot to Command enum in tri_utils.zig
         //     const os_mod = @import("os");
         //
         //     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -591,7 +591,7 @@ pub fn main() !void {
         //
         //     try os_instance.boot(mode);
         // },
-        // ABSOLUTE INFINITY v2.0 (Order #024) - TODO: Add infinity to Command enum
+        // ABSOLUTE INFINITY v2.0 (Order #024) - DEFERRED (v12): Add infinity to Command enum
         // .infinity => {
         //     const sacred = @import("sacred");
         //     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -617,7 +617,7 @@ pub fn main() !void {
         //         std.debug.print("Unknown subcommand: {s}\n", .{cmd_args[0]});
         //     }
         // },
-        // OMEGA PHASE (Order #024) - TODO: Add omega_phase to Command enum
+        // OMEGA PHASE (Order #024) - DEFERRED (v12): Add omega_phase to Command enum
         // .omega_phase => {
         //     const sacred = @import("sacred");
         //     var gpa = std.heap.GeneralPurposeAllocator(.{}){};

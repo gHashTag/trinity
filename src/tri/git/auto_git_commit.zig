@@ -123,7 +123,7 @@ pub const AutoGitCommit = struct {
         , .{
             self.commit_hash,
             self.author,
-            std.time.timestamp(), // TODO: format properly
+            std.time.timestamp(), // Unix timestamp (use `date -r @N` for human-readable)
             self.branch,
             self.confidence,
         });

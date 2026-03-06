@@ -102,7 +102,7 @@ pub const bench = @import("bench.zig");
 pub const identities = @import("identities.zig");
 pub const sacred_formula = @import("formula.zig");
 pub const gematria_math = @import("gematria.zig");
-// pub const blind_spots = @import("blind_spots.zig"); // TODO: Fix Zig 0.15 compatibility
+pub const blind_spots = @import("blind_spots.zig");
 
 // Version
 pub const version = "4.0.0";

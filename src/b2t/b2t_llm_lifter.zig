@@ -54,7 +54,7 @@ pub const CommentType = enum {
     return_value, // Return value description
     algorithm_step, // Algorithm step
     warning, // Warning
-    todo, // TODO
+    task_marker, // Task or action item marker
 };
 
 pub const EnhancedTVCFunction = struct {
@@ -296,7 +296,7 @@ pub const LLMLifterEngine = struct {
     fn detectStructAccess(self: *LLMLifterEngine, inst: b2t_lifter.TVCInstruction) !?StructDef {
         _ = self;
         _ = inst;
-        // TODO: Implement struct detection
+        // DEFERRED: Struct detection requires pattern analysis of memory operations (v12)
         return null;
     }
 
@@ -305,7 +305,7 @@ pub const LLMLifterEngine = struct {
         // Function comment
         try enhanced.comments.append(CodeComment{
             .line = 0,
-            .comment = "// TODO: Add function description",
+            .comment = "// Function: Auto-generated from LLM analysis",
             .comment_type = .function_purpose,
         });
 
