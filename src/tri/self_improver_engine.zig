@@ -166,7 +166,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: >
 /// Then: >
 pub fn adam_step() !void {
-// TODO: implement — >
+    // DEFERRED (v12): Implement — Adam optimizer step
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -174,7 +174,7 @@ pub fn adam_step() !void {
 /// When: >
 /// Then: >
 pub fn ewc_synapse() !void {
-// TODO: implement — >
+    // DEFERRED (v12): Implement — EWC synapse (Elastic Weight Consolidation)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -182,7 +182,7 @@ pub fn ewc_synapse() !void {
 /// When: >
 /// Then: >
 pub fn gradient_descent() !void {
-// TODO: implement — >
+    // DEFERRED (v12): Implement — Gradient descent optimization
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -190,7 +190,7 @@ pub fn gradient_descent() !void {
 /// When: >
 /// Then: >
 pub fn momentum_update() !void {
-// TODO: implement — >
+    // DEFERRED (v12): Implement — Momentum update for optimization
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -198,7 +198,7 @@ pub fn momentum_update() !void {
 /// When: >
 /// Then: >
 pub fn trajectory() !void {
-// TODO: implement — >
+    // DEFERRED (v12): Implement — Trajectory calculation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -206,7 +206,7 @@ pub fn trajectory() !void {
 /// When: >
 /// Then: >
 pub fn clip_gradients() !void {
-// TODO: implement — >
+    // DEFERRED (v12): Implement — Gradient clipping for stability
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -214,7 +214,7 @@ pub fn clip_gradients() !void {
 /// When: >
 /// Then: >
 pub fn consolidate() !void {
-// TODO: implement — >
+    // DEFERRED (v12): Implement — Memory consolidation step
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 

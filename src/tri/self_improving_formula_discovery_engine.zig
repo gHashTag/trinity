@@ -126,7 +126,7 @@ export fn get_f64_buffer_ptr() [*]f64 {
 /// When: discovery request initiated
 /// Then: Returns formula candidates with symbolic representation, numeric approximation, AST, and confidence scores
 pub fn discoverHybrid(input: []const u8) ![]Formula {
-    // TODO: implement — Returns formula candidates with symbolic representation, numeric approximation, AST, and confidence scores
+    // DEFERRED (v12): Implement — Returns formula candidates with symbolic representation, numeric approximation, AST, and confidence scores
     // Add 'implementation:' field in .vibee spec to provide real code.
     _ = input;
     var results = try std.heap.page_allocator.alloc(Formula, 1);

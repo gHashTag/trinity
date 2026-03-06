@@ -458,6 +458,8 @@ const sidebars: SidebarsConfig = {
         'research/cycle-97-full-autonomous-sacred-evolution',
         // Production Releases
         'research/tri-production-dashboard-release',
+        // v11.3: Consciousness & Qualia
+        'research/consciousness-qualia-v11-complete',
       ],
     },
     {
