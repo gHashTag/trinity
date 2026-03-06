@@ -166,7 +166,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: >
 /// Then: >
 pub fn connect_wallet() !void {
-// TODO: implement — >
+    // DEFERRED (v12): Implement — Wallet connection (Web3 provider, address extraction)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -174,7 +174,7 @@ pub fn connect_wallet() !void {
 /// When: >
 /// Then: >
 pub fn chain_oracle() !void {
-// TODO: implement — >
+    // DEFERRED (v12): Implement — Chain oracle (price feed, data verification)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -182,7 +182,7 @@ pub fn chain_oracle() !void {
 /// When: >
 /// Then: >
 pub fn submit_proposal() !void {
-// TODO: implement — >
+    // DEFERRED (v12): Implement — Proposal submission to governance
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -190,7 +190,7 @@ pub fn submit_proposal() !void {
 /// When: >
 /// Then: >
 pub fn stake_lock() !void {
-// TODO: implement — >
+    // DEFERRED (v12): Implement — Stake lock (staking contract, lock period)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -198,7 +198,7 @@ pub fn stake_lock() !void {
 /// When: >
 /// Then: >
 pub fn create_listing() !void {
-// TODO: implement — >
+    // DEFERRED (v12): Implement — Marketplace listing creation
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -206,7 +206,7 @@ pub fn create_listing() !void {
 /// When: >
 /// Then: >
 pub fn apy_lock() !void {
-// TODO: implement — >
+    // DEFERRED (v12): Implement — APY lock (yield calculation, lock period)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
@@ -214,7 +214,7 @@ pub fn apy_lock() !void {
 /// When: >
 /// Then: >
 pub fn chain_metrics() !void {
-// TODO: implement — >
+    // DEFERRED (v12): Implement — Chain metrics (TVL, volume, participants)
     // Add 'implementation:' field in .vibee spec to provide real code.
 }
 
