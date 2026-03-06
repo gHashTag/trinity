@@ -42,6 +42,9 @@
 //! 4. Consciousness threshold C_thr = phi^(-1) = 0.618 governs emergence
 
 const std = @import("std");
+
+// Import from canonical source (ANTI-PATTERN: no inline constants!)
+const sacred_constants = @import("sacred_constants");
 const math = std.math;
 
 /// Golden ratio phi = (1 + sqrt(5))/2

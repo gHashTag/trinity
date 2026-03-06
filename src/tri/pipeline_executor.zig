@@ -875,7 +875,12 @@ pub const PipelineExecutor = struct {
             self.allocator.free(build_result.stderr);
         }
 
-        if (build_result.term.Exited == 0) {
+        const success = switch (build_result.term) {
+            .Exited => |code| code == 0,
+            .Signal, .Stopped, .Unknown => false, // Process terminated or stopped
+        };
+
+        if (success) {
             std.debug.print("  [DOCS] Documentation built successfully\n", .{});
         } else {
             std.debug.print("  [DOCS] Build had issues (non-critical)\n", .{});

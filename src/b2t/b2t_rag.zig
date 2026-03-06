@@ -15,7 +15,7 @@ pub const DEFAULT_SPARSITY: f32 = 0.33; // 1/3 zeros (ternary harmony)
 pub const MIN_SIMILARITY_THRESHOLD: f32 = 0.7;
 pub const MAX_RETRIEVAL_RESULTS: usize = 10;
 
-pub const PHI: f64 = 1.618033988749895;
+pub const PHI = sacred_constants.PHI;
 pub const TRINITY: f64 = 3.0;
 
 // ═══════════════════════════════════════════════════════════════════════════════

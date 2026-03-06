@@ -20,6 +20,9 @@
 //! 4. Enzyme catalysis uses γ-scaled tunneling
 
 const std = @import("std");
+
+// Import from canonical source (ANTI-PATTERN: no inline constants!)
+const sacred_constants = @import("sacred_constants");
 const math = std.math;
 const mem = std.mem;
 

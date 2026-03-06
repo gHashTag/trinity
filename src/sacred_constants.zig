@@ -1,19 +1,22 @@
-//! Sacred Mathematical Constants v8.21
+//! Mathematical Constants v8.21
 //!
 //! Foundation of AGENT MU intelligence calculations
 //! Features:
-//! - Golden Ratio φ (Phi)
+//! - Golden Ratio φ (Phi) from canonical source
 //! - Trinity Identity: φ² + 1/φ² = 3
 //! - MU = 1/φ²/10 = 0.0382 (intelligence gain per fix)
 //! - Lucas numbers and Berry phase
 
 const std = @import("std");
 
+// Import from canonical source (ANTI-PATTERN: no inline constants!)
+const sacred = @import("sacred/constants.zig");
+
 /// Golden Ratio φ = (1 + √5) / 2 ≈ 1.618033988749895
-pub const PHI: f64 = 1.618033988749895;
+pub const PHI = sacred.SacredConstants.PHI;
 
 /// φ² = φ + 1 ≈ 2.618033988749895
-pub const PHI_SQUARED: f64 = PHI * PHI;
+pub const PHI_SQUARED = sacred.SacredConstants.PHI_SQ;
 
 /// 1/φ² ≈ 0.381966011250105
 pub const INVERSE_PHI_SQUARED: f64 = 1.0 / PHI_SQUARED;

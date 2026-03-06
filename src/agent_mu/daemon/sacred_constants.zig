@@ -1,32 +1,34 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// BY TOTHAT WITHIN TOWITHTHAT TOTHAT VIBEE
-// WITH and ALL beforetothatin tothat
+// Mathematical Constants for AGENT MU Daemon
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
 const math = std.math;
 
+// Import from canonical source (ANTI-PATTERN: no inline constants!)
+const sacred = @import("sacred/constants.zig");
+
 // ═══════════════════════════════════════════════════════════════════════════════
-// 1. THAT ANDWITHTOAND TOWITHTHAT
+// Mathematical Constants (from canonical source)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Golden ratio φ = (1 + √5) / 2
-pub const PHI: f64 = 1.6180339887498948482;
+pub const PHI = sacred.SacredConstants.PHI;
 
 /// φ² = φ + 1
-pub const PHI_SQ: f64 = 2.6180339887498948482;
+pub const PHI_SQ = sacred.SacredConstants.PHI_SQ;
 
 /// 1/φ = φ - 1
-pub const PHI_INV: f64 = 0.6180339887498948482;
+pub const PHI_INV = sacred.SacredConstants.PHI_INVERSE;
 
 /// 1/φ²
-pub const PHI_INV_SQ: f64 = 0.3819660112501051518;
+pub const PHI_INV_SQ: f64 = 1.0 / (PHI * PHI);
 
 /// π
-pub const PI: f64 = 3.1415926535897932385;
+pub const PI = sacred.SacredConstants.PI;
 
 /// e (number )
-pub const E: f64 = 2.7182818284590452354;
+pub const E = sacred.SacredConstants.E;
 
 /// √2
 pub const SQRT2: f64 = 1.4142135623730950488;

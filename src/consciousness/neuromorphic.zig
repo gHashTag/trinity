@@ -41,6 +41,9 @@
 //! Gamma oscillator frequency f_γ = φ³ × π / γ ≈ 56 Hz
 
 const std = @import("std");
+
+// Import from canonical source (ANTI-PATTERN: no inline constants!)
+const sacred_constants = @import("sacred_constants");
 const math = std.math;
 
 /// Golden ratio φ = (1 + √5)/2

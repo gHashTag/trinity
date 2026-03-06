@@ -16,11 +16,14 @@ const std = @import("std");
 const trit_vsa = @import("trit_vsa.zig");
 const vsa = @import("vsa.zig");
 
+// Import from canonical source (ANTI-PATTERN: no inline constants!)
+const sacred_constants = @import("sacred_constants");
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub const PHI: f64 = 1.6180339887498948482;
+pub const PHI = sacred_constants.PHI;
 pub const DEFAULT_CONSENSUS_THRESHOLD: f32 = 0.92;
 pub const DEFAULT_DIM: usize = 4096;
 pub const MAX_DELIBERATION_ROUNDS: u32 = 3;
