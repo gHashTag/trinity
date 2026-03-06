@@ -150,12 +150,13 @@ pub const SpecCompiler = struct {
 
     fn writeSacredConstants(self: *Self) !void {
         try self.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
-        try self.writeLine("// SACRED CONSTANTS");
+        try self.writeLine("// CONSTANTS (from canonical source - ANTI-PATTERN: no inline constants!)");
         try self.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.newline();
-        try self.writeLine("pub const PHI: f64 = 1.618033988749895;");
-        try self.writeLine("pub const TRINITY: f64 = 3.0;");
-        try self.writeLine("pub const PHOENIX: u32 = 999;");
+        try self.writeLine("const sacred_constants = @import(\"sacred_constants\");");
+        try self.writeLine("pub const PHI = sacred_constants.SacredConstants.PHI;");
+        try self.writeLine("pub const TRINITY = sacred_constants.SacredConstants.TRINITY;");
+        try self.writeLine("pub const PHOENIX = sacred_constants.SacredConstants.PHOENIX;");
         try self.newline();
     }
 
