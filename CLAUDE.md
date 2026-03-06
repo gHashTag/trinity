@@ -362,7 +362,7 @@ EXIT_SIGNAL = (
 
 ---
 
-## TRI CLI Commands (v8.27 - STRICT MODE)
+## TRI CLI Commands (v9.0 - 157 Commands via Registry)
 
 **TRI** is the Unified Trinity Command Line Interface — the primary orchestrator for all development workflows.
 
@@ -371,29 +371,39 @@ EXIT_SIGNAL = (
 zig build tri                    # Build TRI binary
 ./zig-out/bin/tri                # Interactive REPL mode
 ./zig-out/bin/tri <command>      # Run specific command
-./zig-out/bin/tri help           # Show all commands
+./zig-out/bin/tri help           # Show all commands (157)
+./zig-out/bin/tri --help         # Show all commands (157)
+./zig-out/bin/tri -h             # Show all commands (157)
 ```
 
-### Core Commands (Golden Chain Links 0-21)
+### Command Categories (157 total)
 
-| Command | Description | Link |
-|---------|-------------|------|
-| `tri chat [--stream] <msg>` | Interactive chat (vision + voice + tools) | - |
-| `tri code [--stream] <prompt>` | Generate code with typing effect | - |
-| `tri gen <spec.vibee>` | Compile VIBEE spec to Zig/Verilog | - |
-| `tri pipeline run <task>` | **Execute 22-link Golden Chain v4.0** | 0-21 |
-| `tri decompose <task>` | Break task into sub-tasks | 4 |
-| `tri plan <task>` | Generate implementation plan | 5 |
-| `tri spec_create <name>` | Create .vibee spec template | 6 |
-| `tri loop-decide [mode]` | Loop decision: CONTINUE/EXIT | 19 |
+| Category | Commands | Icon |
+|----------|----------|------|
+| AI & Chat | 5 | 🤖 |
+| Sacred Science | 25 | 🧬 |
+| Sacred Math | 8 | φ |
+| Git | 4 | 📦 |
+| Development | 20 | 🔧 |
+| System | 12 | ⚙ |
+| Demos | 37 | 🎬 |
+| Benchmarks | 36 | ⚡ |
+| Sacred Intelligence | 0 | ✨ |
+| Advanced | 10 | 🚀 |
 
-### Verification Commands (Link 7-16)
+### Core Commands
 
 | Command | Description |
 |---------|-------------|
-| `tri verify` | Run tests + benchmarks (Links 7-13) |
+| `tri chat [--stream] [--image <path>] [--voice <path>] <msg>` | Interactive chat (vision + voice + tools) |
+| `tri code [--stream] <prompt>` | Generate code with typing effect |
+| `tri gen <spec.vibee>` | Compile VIBEE spec to Zig/Verilog |
+| `tri decompose <task>` | Break task into sub-tasks (Golden Chain Link 4) |
+| `tri plan <task>` | Generate implementation plan (Golden Chain Link 5) |
+| `tri loop-decide [mode]` | Loop decision: CONTINUE/EXIT |
+| `tri verify` | Run tests + benchmarks (Golden Chain Links 7-11) |
 | `tri bench` | Run performance benchmarks |
-| `tri verdict` | Generate toxic verdict (Link 17) |
+| `tri verdict` | Generate toxic verdict (Golden Chain Link 14) |
 
 ### SWE Agent Commands
 
@@ -415,141 +425,130 @@ zig build tri                    # Build TRI binary
 | `tri log` | Git log --oneline -10 |
 | `tri commit <message>` | Git add -A && commit |
 
-### TVC (Distributed Learning)
+### Development Tools
 
 | Command | Description |
 |---------|-------------|
-| `tri tvc-demo` | Run TVC chat demo (distributed learning) |
-| `tri tvc-stats` | Show TVC corpus statistics |
+| `tri analyze` | Analyze codebase structure |
+| `tri search <query>` | Search codebase |
+| `tri fmt [path]` | Format code |
+| `tri build [target]` | Build project |
+| `tri convert <file>` | Convert between formats |
+| `tri serve [--model <path>]` | Start HTTP server |
+| `tri spec-create <name>` | Create .vibee spec template |
 
-### Demo & Benchmark Commands
-
-Each cycle has `-demo` and `-bench` variants:
-
-| Cycle | Commands | Description |
-|-------|----------|-------------|
-| Multi-Agent | `tri agents-demo`, `tri agents-bench` | Coordination |
-| Long Context | `tri context-demo`, `tri context-bench` | Sliding window |
-| RAG | `tri rag-demo`, `tri rag-bench` | Retrieval |
-| Voice I/O | `tri voice-demo`, `tri voice-bench` | STT+TTS |
-| Code Sandbox | `tri sandbox-demo`, `tri sandbox-bench` | Safe execution |
-| Streaming | `tri stream-demo`, `tri stream-bench` | Multi-modal pipeline |
-| Vision | `tri vision-demo`, `tri vision-bench` | Image analysis |
-| Fine-tuning | `tri finetune-demo`, `tri finetune-bench` | Model adaptation |
-| Multi-Modal | `tri multimodal-demo`, `tri multimodal-bench` | Unified |
-| Tool Use | `tri tooluse-demo`, `tri tooluse-bench` | Tools from any modality |
-| Unified Agent | `tri unified-demo`, `tri unified-bench` | All capabilities |
-| Autonomous | `tri auto-demo`, `tri auto-bench` | Self-directed |
-| Orchestration | `tri orch-demo`, `tri orch-bench` | Coordinator+specialists |
-| MM Orchestration | `tri mmo-demo`, `tri mmo-bench` | Multi-modal agents |
-| Memory | `tri memory-demo`, `tri memory-bench` | Cross-modal learning |
-| Persistent | `tri persist-demo`, `tri persist-bench` | Disk serialization |
-| Spawn | `tri spawn-demo`, `tri spawn-bench` | Dynamic agents |
-| Cluster | `tri cluster-demo`, `tri cluster-bench` | Multi-node |
-| Work-Stealing | `tri worksteal-demo`, `tri worksteal-bench` | Adaptive scheduler |
-| Plugin | `tri plugin-demo`, `tri plugin-bench` | Extension system |
-| Comms | `tri comms-demo`, `tri comms-bench` | Communication protocol |
-| Observe | `tri observe-demo`, `tri observe-bench` | Observability |
-| Consensus | `tri consensus-demo`, `tri consensus-bench` | Coordination |
-| Spec Exec | `tri specexec-demo`, `tri specexec-bench` | Speculative execution |
-| Governor | `tri governor-demo`, `tri governor-bench` | Resource governor |
-| Fed Learn | `tri fedlearn-demo`, `tri fedlearn-bench` | Federated learning |
-| Event Src | `tri eventsrc-demo`, `tri eventsrc-bench` | Event sourcing |
-| Cap Sec | `tri capsec-demo`, `tri capsec-bench` | Capability security |
-| DTXN | `tri dtxn-demo`, `tri dtxn-bench` | Distributed transactions |
-| Cache | `tri cache-demo`, `tri cache-bench` | Adaptive caching |
-| Contract | `tri contract-demo`, `tri contract-bench` | Agent negotiation |
-| Workflow | `tri workflow-demo`, `tri workflow-bench` | Temporal workflows |
-
-### Sacred Mathematics (v2.0)
+### Needle (Structural Editor)
 
 | Command | Description |
 |---------|-------------|
-| `tri math` | Sacred math dispatcher |
+| `tri needle` | Structural editor core |
+| `tri needle-search <pattern>` | Needle search |
+| `tri needle-check <file>` | Needle check |
+
+### Sacred Mathematics
+
+| Command | Description |
+|---------|-------------|
 | `tri constants` | Show φ, π, e, μ, χ, σ, ε... |
 | `tri phi <n>` | Compute φⁿ |
 | `tri fib <n>` | Fibonacci with BigInt |
 | `tri lucas <n>` | Lucas L(n) — L(2)=3=TRINITY |
 | `tri spiral <n>` | φ-spiral coordinates |
 
-### Chemistry (v6.0)
+### Sacred Science (25 commands)
 
 | Command | Description |
 |---------|-------------|
-| `tri chem periodic` | Display ASCII periodic table (118 elements) |
-| `tri chem element <sym\|num>` | Show element information card |
-| `tri chem mass <formula>` | Calculate molar mass (H2O = 18.015 g/mol) |
-| `tri chem formula <formula>` | Analyze formula composition |
-| `tri chem balance <eq>` | Balance chemical equation |
-| `tri chem moles <mass> <form>` | Calculate moles, molecules, atoms |
-| `tri chem atoms <moles> <form>` | Calculate atom counts |
-| `tri chem ideal-gas <P>=<V>=<n>=<T>` | Solve PV=nRT |
-| `tri chem ph <conc\|acid> <M>` | Calculate pH |
-| `tri chem redox <reaction>` | Balance redox equation |
+| `tri bio` / `tri biology` | Biology v14.0 — DNA/RNA/Protein sacred analysis |
+| `tri cosmos` / `tri cosmology` | Cosmology v15.0 — Universe through φ |
+| `tri neuro` / `tri neuroscience` | Neuroscience v16.0 — Brain as sacred computer |
+| `tri chem` / `tri chemistry` | Chemistry commands |
+| `tri sacred` | Sacred mathematics utilities |
+| `tri music` / `tri audio` | Sacred Music v1.0 — φ-based acoustics |
+| `tri frequency` / `tri freq` | Calculate frequency from note |
+| `tri scale` | Display musical scale notes and frequencies |
+| `tri chord` | Analyze chord harmonics |
+| `tri resonance` / `tri res` | Calculate resonance patterns |
+| `tri waveform` / `tri wave` / `tri osc` | Generate waveform samples |
+| `tri harmony` | Analyze harmonic relationship between frequencies |
+| `tri phi-series` / `tri phi-freq` | Show φ frequency series |
+| `tri intelligence` | Sacred Intelligence system |
+| `tri identity` | Sacred identity |
+| `tri swarm` | Sacred swarm intelligence |
+| `tri govern` | Sacred governance |
+| `tri omega` | Omega phase |
+| `tri quantum` | Quantum Trinity |
 
-### DePIN Hardware Commands (Cycle #114)
-
-| Command | Description |
-|---------|-------------|
-| `tri hardware info` | Hardware detection info |
-| `tri hardware deploy [multi N]` | Deploy node(s) |
-| `tri hardware status` | Show cluster status |
-| `tri hardware stop-all` | Stop all nodes |
-
-### Global Mesh Commands (Cycle #114)
-
-| Command | Description |
-|---------|-------------|
-| `tri mesh status` | Show global mesh status |
-| `tri mesh topology` | Display network topology |
-| `tri mesh discover` | Trigger UDP discovery |
-| `tri mesh regions` | Show regional distribution |
-| `tri mesh health` | Mesh health check |
-
-### Omega Economy Commands (Cycle #114)
-
-| Command | Description |
-|---------|-------------|
-| `tri omega activate` | Check Omega activation (1000 reputation) |
-| `tri omega rewards` | Show reward multipliers |
-| `tri omega premium` | Show premium pool status |
-| `tri omega govern` | Governance (Platinum+ only) |
-
-### Reputation Commands (Cycle #114)
-
-| Command | Description |
-|---------|-------------|
-| `tri reputation show` | Show node reputation |
-| `tri reputation leaderboard` | Top 10 nodes by reputation |
-| `tri reputation omega-status` | Check Omega activation progress |
-| `tri reputation history` | Reputation change history |
-
-### Wallet Commands (Cycle #114)
-
-| Command | Description |
-|---------|-------------|
-| `tri wallet connect <provider>` | Connect wallet (metamask, phantom, walletconnect) |
-| `tri wallet balance` | Show $TRI balance |
-| `tri wallet claim [amount]` | Claim rewards to wallet |
-| `tri wallet address` | Show wallet address |
-| `tri wallet history` | Show claim history |
-
-### Dashboard Commands (Cycle #114)
-
-| Command | Description |
-|---------|-------------|
-| `tri dashboard serve` | Start dashboard server |
-| `tri dashboard metrics` | Show dashboard metrics |
-| `tri dashboard nodes` | Show node status |
-| `tri dashboard economy` | Show economy overview |
-
-### Info Commands
+### System Commands
 
 | Command | Description |
 |---------|-------------|
 | `tri info` | System information |
 | `tri version` | Show version |
-| `tri help` | This help message |
+| `tri deps` | List dependencies |
+| `tri clean` | Clean build artifacts |
+| `tri env` | Show environment variables |
+
+### Demo & Benchmark Commands
+
+**Demo and Benchmark pairs (37 demos + 36 benchmarks):**
+
+| Cycle | Demo | Benchmark |
+|-------|------|------------|
+| Multi-Agent | `tri agents-demo` | `tri agents-bench` |
+| Long Context | `tri context-demo` | `tri context-bench` |
+| RAG | `tri rag-demo` | `tri rag-bench` |
+| Voice I/O | `tri voice-demo` | `tri voice-bench` |
+| Code Sandbox | `tri sandbox-demo` | `tri sandbox-bench` |
+| Streaming | `tri stream-demo` | `tri stream-bench` |
+| Vision | `tri vision-demo` | `tri vision-bench` |
+| Fine-tuning | `tri finetune-demo` | `tri finetune-bench` |
+| Multi-Modal | `tri multimodal-demo` | `tri multimodal-bench` |
+| Tool Use | `tri tooluse-demo` | `tri tooluse-bench` |
+| Unified Agent | `tri unified-demo` | `tri unified-bench` |
+| Autonomous | `tri auto-demo` | `tri auto-bench` |
+| Orchestration | `tri orch-demo` | `tri orch-bench` |
+| MM Orchestration | `tri mmo-demo` | `tri mmo-bench` |
+| Memory | `tri memory-demo` | `tri memory-bench` |
+| Persistent | `tri persist-demo` | `tri persist-bench` |
+| Spawn | `tri spawn-demo` | `tri spawn-bench` |
+| Cluster | `tri cluster-demo` | `tri cluster-bench` |
+| Work-Stealing | `tri worksteal-demo` | `tri worksteal-bench` |
+| Plugin | `tri plugin-demo` | `tri plugin-bench` |
+| Comms | `tri comms-demo` | `tri comms-bench` |
+| Observe | `tri observe-demo` | `tri observe-bench` |
+| Consensus | `tri consensus-demo` | `tri consensus-bench` |
+| Spec Exec | `tri specexec-demo` | `tri specexec-bench` |
+| Governor | `tri governor-demo` | `tri governor-bench` |
+| Fed Learn | `tri fedlearn-demo` | `tri fedlearn-bench` |
+| Event Src | `tri eventsrc-demo` | `tri eventsrc-bench` |
+| Cap Sec | `tri capsec-demo` | `tri capsec-bench` |
+| DTXN | `tri dtxn-demo` | `tri dtxn-bench` |
+| Cache | `tri cache-demo` | `tri cache-bench` |
+| Contract | `tri contract-demo` | `tri contract-bench` |
+| Workflow | `tri workflow-demo` | `tri workflow-bench` |
+| TVC | `tri tvc-demo` | N/A |
+| Pipeline | `tri pipeline-demo` | N/A |
+
+### Advanced Commands
+
+| Command | Description |
+|---------|-------------|
+| `tri deck <name>` | Generate flash deck |
+| `tri research <topic>` | Research mode |
+| `tri publish` | Publish results |
+| `tri deploy` | Deploy system |
+
+### Help System
+
+| Command | Description |
+|---------|-------------|
+| `tri help` | Show all 157 commands by category |
+| `tri help --category <name>` | Show commands in category |
+| `tri help --search <query>` | Search commands |
+| `tri help <command>` | Show detailed command help |
+| `tri --help` | Show all 157 commands |
+| `tri -h` | Show all 157 commands |
 
 ### Sacred Logging
 
