@@ -373,6 +373,9 @@ pub fn main() !void {
         .sacred => math_commands.runSacredCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Sacred error: {}\n", .{err});
         },
+        .particles => math_commands.runParticlesCommand(allocator, cmd_args) catch |err| {
+            std.debug.print("Particles error: {}\n", .{err});
+        },
         // Biology (v14.0)
         .bio => bio_commands.runBioCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Bio error: {}\n", .{err});

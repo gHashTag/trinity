@@ -133,6 +133,13 @@ pub fn build(b: *std.Build) void {
     const test_step = b.step("test", "Run library tests");
     test_step.dependOn(&run_main_tests.step);
 
+    // Unified Command Registry — Single Source of Truth for CLI, MCP, API, Docs
+    const registry_mod = b.createModule(.{
+        .root_source_file = b.path("src/registry/command_table.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // VSA tests
     const vsa_tests = b.addTest(.{
         .root_module = b.createModule(.{
@@ -527,6 +534,9 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/api/unified_server.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "registry", .module = registry_mod },
+            },
         }),
     });
     const run_api_tests = b.addRunArtifact(api_tests);
@@ -1368,6 +1378,7 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
             .imports = &.{
                 .{ .name = "needle", .module = needle_mod },
+                .{ .name = "registry", .module = registry_mod },
             },
         }),
     });
@@ -1518,6 +1529,9 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/api/unified_server.zig"),
         .target = target,
         .optimize = optimize,
+        .imports = &.{
+            .{ .name = "registry", .module = registry_mod },
+        },
     });
     // TRI Utils module (Cycle 100: for testing)
     const tri_colors_mod = b.createModule(.{
@@ -1593,6 +1607,8 @@ pub fn build(b: *std.Build) void {
                 //.{ .name = "ralph_orchestrator", .module = ralph_orchestrator_mod }, // TODO: fix compilation errors
                 // Unified API Layer (Golden Chain #102)
                 .{ .name = "api", .module = api_mod },
+                // Unified Command Registry
+                .{ .name = "registry", .module = registry_mod },
                 // Sacred modules (v6.0)
                 .{ .name = "sacred", .module = sacred_mod },
                 .{ .name = "sacred_constants", .module = sacred_constants_mod },
@@ -2357,6 +2373,97 @@ pub fn build(b: *std.Build) void {
     const sacred_expanded_v2_step = b.step("test-sacred-expanded-v2", "Test Sacred Formula Expanded v2");
     sacred_expanded_v2_step.dependOn(&run_sacred_expanded_v2.step);
     test_step.dependOn(&run_sacred_expanded_v2.step);
+
+    // Particle Physics Sacred tests
+    const particle_physics_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/particle_physics/sacred.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_particle_physics = b.addRunArtifact(particle_physics_tests);
+    const particle_physics_step = b.step("test-particle-physics", "Test Particle Physics Sacred Mathematics");
+    particle_physics_step.dependOn(&run_particle_physics.step);
+    test_step.dependOn(&run_particle_physics.step);
+
+    // Task 16: IIT v4 (Consciousness domain — Integrated Information Theory 4.0)
+    const iit_v4_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/consciousness/iit_v4.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_iit_v4 = b.addRunArtifact(iit_v4_tests);
+    const iit_v4_step = b.step("test-iit-v4", "Test IIT v4 (Consciousness)");
+    iit_v4_step.dependOn(&run_iit_v4.step);
+    test_step.dependOn(&run_iit_v4.step);
+
+    // Task 17: GWT Model (Consciousness domain — Global Workspace Theory)
+    const gwt_model_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/consciousness/gwt_model.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_gwt_model = b.addRunArtifact(gwt_model_tests);
+    const gwt_model_step = b.step("test-gwt-model", "Test GWT Model (Consciousness)");
+    gwt_model_step.dependOn(&run_gwt_model.step);
+    test_step.dependOn(&run_gwt_model.step);
+
+    // Task 18: Qutrit Consciousness (Consciousness domain — Posner molecules + ternary quantum)
+    const qutrit_consciousness_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/consciousness/qutrit_consciousness.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_qutrit_consciousness = b.addRunArtifact(qutrit_consciousness_tests);
+    const qutrit_consciousness_step = b.step("test-qutrit-consciousness", "Test Qutrit Consciousness (Posner molecules)");
+    qutrit_consciousness_step.dependOn(&run_qutrit_consciousness.step);
+    test_step.dependOn(&run_qutrit_consciousness.step);
+
+    // Task 19: Active Inference (Consciousness domain — Free Energy + Orch-OR)
+    const active_inference_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/consciousness/active_inference.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_active_inference = b.addRunArtifact(active_inference_tests);
+    const active_inference_step = b.step("test-active-inference", "Test Active Inference (Consciousness)");
+    active_inference_step.dependOn(&run_active_inference.step);
+    test_step.dependOn(&run_active_inference.step);
+
+    // Task 20: Neuromorphic (Consciousness domain — Neuromorphic hardware integration)
+    const neuromorphic_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/consciousness/neuromorphic.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_neuromorphic = b.addRunArtifact(neuromorphic_tests);
+    const neuromorphic_step = b.step("test-neuromorphic", "Test Neuromorphic (Consciousness)");
+    neuromorphic_step.dependOn(&run_neuromorphic.step);
+    test_step.dependOn(&run_neuromorphic.step);
+
+    // Task 21: Conscious Simulate (Consciousness domain — Unified awakening simulation)
+    const conscious_simulate_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/consciousness/conscious_simulate.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_conscious_simulate = b.addRunArtifact(conscious_simulate_tests);
+    const conscious_simulate_step = b.step("test-conscious-simulate", "Test Conscious Simulate (Consciousness)");
+    conscious_simulate_step.dependOn(&run_conscious_simulate.step);
+    test_step.dependOn(&run_conscious_simulate.step);
 
     // VSA Math Benchmark executable (MATH-003) — REMOVED (generated.old/ deleted)
 
