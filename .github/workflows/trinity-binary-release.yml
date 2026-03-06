@@ -36,20 +36,20 @@ jobs:
 
       - name: Build TRI CLI
         run: |
-          zig build tri -Dtarget=x86_64-linux-gnu.2.35 -Drelease-fast
+          zig build tri -Dtarget=x86_64-linux-gnu.2.35 -Doptimize=ReleaseFast
           mkdir -p release/linux-amd64
           cp zig-out/bin/tri release/linux-amd64/
           chmod +x release/linux-amd64/tri
 
       - name: Build VIBEE Compiler
         run: |
-          zig build vibee -Dtarget=x86_64-linux-gnu.2.35 -Drelease-fast
+          zig build vibee -Dtarget=x86_64-linux-gnu.2.35 -Doptimize=ReleaseFast
           cp zig-out/bin/vibee release/linux-amd64/
           chmod +x release/linux-amd64/vibee
 
       - name: Build Firebird
         run: |
-          zig build firebird -Dtarget=x86_64-linux-gnu.2.35 -Drelease-fast
+          zig build firebird -Dtarget=x86_64-linux-gnu.2.35 -Doptimize=ReleaseFast
           cp zig-out/bin/firebird release/linux-amd64/
           chmod +x release/linux-amd64/firebird
 
@@ -81,20 +81,20 @@ jobs:
 
       - name: Build TRI CLI
         run: |
-          zig build tri -Dtarget=aarch64-linux-gnu.2.35 -Drelease-fast
+          zig build tri -Dtarget=aarch64-linux-gnu.2.35 -Doptimize=ReleaseFast
           mkdir -p release/linux-arm64
           cp zig-out/bin/tri release/linux-arm64/
           chmod +x release/linux-arm64/tri
 
       - name: Build VIBEE Compiler
         run: |
-          zig build vibee -Dtarget=aarch64-linux-gnu.2.35 -Drelease-fast
+          zig build vibee -Dtarget=aarch64-linux-gnu.2.35 -Doptimize=ReleaseFast
           cp zig-out/bin/vibee release/linux-arm64/
           chmod +x release/linux-arm64/vibee
 
       - name: Build Firebird
         run: |
-          zig build firebird -Dtarget=aarch64-linux-gnu.2.35 -Drelease-fast
+          zig build firebird -Dtarget=aarch64-linux-gnu.2.35 -Doptimize=ReleaseFast
           cp zig-out/bin/firebird release/linux-arm64/
           chmod +x release/linux-arm64/firebird
 
@@ -126,20 +126,20 @@ jobs:
 
       - name: Build TRI CLI
         run: |
-          zig build tri -Dtarget=x86_64-macos-gnu -Drelease-fast
+          zig build tri -Dtarget=x86_64-macos-gnu -Doptimize=ReleaseFast
           mkdir -p release/macos-amd64
           cp zig-out/bin/tri release/macos-amd64/
           chmod +x release/macos-amd64/tri
 
       - name: Build VIBEE Compiler
         run: |
-          zig build vibee -Dtarget=x86_64-macos-gnu -Drelease-fast
+          zig build vibee -Dtarget=x86_64-macos-gnu -Doptimize=ReleaseFast
           cp zig-out/bin/vibee release/macos-amd64/
           chmod +x release/macos-amd64/vibee
 
       - name: Build Firebird
         run: |
-          zig build firebird -Dtarget=x86_64-macos-gnu -Drelease-fast
+          zig build firebird -Dtarget=x86_64-macos-gnu -Doptimize=ReleaseFast
           cp zig-out/bin/firebird release/macos-amd64/
           chmod +x release/macos-amd64/firebird
 
@@ -171,20 +171,20 @@ jobs:
 
       - name: Build TRI CLI
         run: |
-          zig build tri -Dtarget=aarch64-macos-gnu -Drelease-safe
+          zig build tri -Dtarget=aarch64-macos-gnu -Doptimize=ReleaseSafe
           mkdir -p release/macos-arm64
           cp zig-out/bin/tri release/macos-arm64/
           chmod +x release/macos-arm64/tri
 
       - name: Build VIBEE Compiler
         run: |
-          zig build vibee -Dtarget=aarch64-macos-gnu -Drelease-safe
+          zig build vibee -Dtarget=aarch64-macos-gnu -Doptimize=ReleaseSafe
           cp zig-out/bin/vibee release/macos-arm64/
           chmod +x release/macos-arm64/vibee
 
       - name: Build Firebird
         run: |
-          zig build firebird -Dtarget=aarch64-macos-gnu -Drelease-safe
+          zig build firebird -Dtarget=aarch64-macos-gnu -Doptimize=ReleaseSafe
           cp zig-out/bin/firebird release/macos-arm64/
           chmod +x release/macos-arm64/firebird
 
@@ -216,18 +216,18 @@ jobs:
 
       - name: Build TRI CLI
         run: |
-          zig build tri -Dtarget=x86_64-windows-gnu -Drelease-fast
+          zig build tri -Dtarget=x86_64-windows-gnu -Doptimize=ReleaseFast
           mkdir -p release/windows-amd64
           cp zig-out/bin/tri.exe release/windows-amd64/
 
       - name: Build VIBEE Compiler
         run: |
-          zig build vibee -Dtarget=x86_64-windows-gnu -Drelease-fast
+          zig build vibee -Dtarget=x86_64-windows-gnu -Doptimize=ReleaseFast
           cp zig-out/bin/vibee.exe release/windows-amd64/
 
       - name: Build Firebird
         run: |
-          zig build firebird -Dtarget=x86_64-windows-gnu -Drelease-fast
+          zig build firebird -Dtarget=x86_64-windows-gnu -Doptimize=ReleaseFast
           cp zig-out/bin/firebird.exe release/windows-amd64/
 
       - name: Create zip

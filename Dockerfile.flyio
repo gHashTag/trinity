@@ -1,57 +1,72 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# TRINITY INFERENCE - Fly.io Deployment
-# Multi-threaded LLM inference with 16 CPU cores
-# φ² + 1/φ² = 3 = TRINITY
+# TRINITY CLI - Fly.io Deployment
+# Downloads pre-built binary from GitHub Releases
+# φ² + 1/φ² = 3 | TRINITY
 # ═══════════════════════════════════════════════════════════════════════════════
 
-FROM debian:bookworm-slim AS builder
+FROM ubuntu:22.04 AS base
 
-# Install Zig
-RUN apt-get update && apt-get install -y \
-    curl \
-    xz-utils \
-    && rm -rf /var/lib/apt/lists/*
+# Install dependencies
+RUN apt-get update && \
+    apt-get install -y ca-certificates curl jq python3 && \
+    useradd -m -u 1000 trinity && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download and install Zig 0.13.0
-RUN curl -L https://ziglang.org/download/0.13.0/zig-linux-x86_64-0.13.0.tar.xz | tar -xJ -C /opt
-ENV PATH="/opt/zig-linux-x86_64-0.13.0:${PATH}"
+# Download TRI CLI from GitHub Releases
+ARG VERSION=v10.0.0
+ARG ARCH=linux-amd64
+ENV REPO=gHashTag/trinity
 
-# Copy source code
-WORKDIR /app
-COPY src/vibeec/*.zig ./src/vibeec/
+WORKDIR /tmp/download
+COPY scripts/download-release.sh .
 
-# Build with ReleaseFast optimization
-WORKDIR /app/src/vibeec
-RUN zig build-exe tri_inference.zig -O ReleaseFast -o /app/tri_inference
+# Download and install tri binary
+RUN set -e && \
+    RELEASE_API="https://api.github.com/repos/${REPO}/releases/tags/${VERSION}" && \
+    echo "Fetching release info from ${RELEASE_API}..." && \
+    RELEASE_INFO=$(curl -s "$RELEASE_API") && \
+    DOWNLOAD_URL=$(echo "$RELEASE_INFO" | jq -r ".assets[] | select(.name | contains(\"${ARCH}\")) | select(.name | endswith(\".tar.gz\")) | .browser_download_url" | head -1) && \
+    if [ -z "$DOWNLOAD_URL" ]; then \
+        echo "No pre-built binary found, checking for alternative releases..." && \
+        RELEASE_INFO=$(curl -s "https://api.github.com/repos/${REPO}/releases/latest") && \
+        DOWNLOAD_URL=$(echo "$RELEASE_INFO" | jq -r ".assets[] | select(.name | contains(\"linux\")) | select(.name | contains(\"x86_64\")) | .browser_download_url" | head -1); \
+    fi && \
+    if [ -z "$DOWNLOAD_URL" ]; then \
+        echo "Warning: No binary found in releases. Falling back to vibee binary..." && \
+        DOWNLOAD_URL=$(echo "$RELEASE_INFO" | jq -r ".assets[] | select(.name | contains(\"linux-x86_64\")) | .browser_download_url" | head -1); \
+    fi && \
+    echo "Downloading from: $DOWNLOAD_URL" && \
+    curl -sL -o release.bin "$DOWNLOAD_URL" && \
+    chmod +x release.bin && \
+    mv release.bin /usr/local/bin/tri && \
+    /usr/local/bin/tri --version || echo "Binary installed (version check optional)"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Runtime image
 # ═══════════════════════════════════════════════════════════════════════════════
 
-FROM debian:bookworm-slim
+FROM ubuntu:22.04
 
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get install -y ca-certificates python3 && \
+    useradd -m -u 1000 trinity && \
+    rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+# Copy tri binary from base stage
+COPY --from=base /usr/local/bin/tri /usr/local/bin/tri
 
-# Copy binary
-COPY --from=builder /app/tri_inference /app/tri_inference
+# Set up working directory
+WORKDIR /home/trinity/.trinity
+RUN chown -R trinity:trinity /home/trinity/.trinity
 
-# Copy models (will be downloaded at runtime if not present)
-# Models should be mounted as volumes or downloaded
+USER trinity
 
-# Create models directory
-RUN mkdir -p /app/models
+# Expose HTTP port
+EXPOSE 8080
 
-# Download SmolLM2 360M model
-RUN curl -L -o /app/models/smollm2-360m.tri \
-    "https://huggingface.co/bartowski/SmolLM2-360M-Instruct-GGUF/resolve/main/SmolLM2-360M-Instruct-Q8_0.gguf" || true
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD tri --version || exit 1
 
-# Set environment
-ENV NUM_THREADS=16
-
-# Run benchmark
-CMD ["/app/tri_inference", "/app/models/smollm2-360m.tri"]
+# Run TRI server
+CMD ["tri", "serve", "--port", "8080"]
