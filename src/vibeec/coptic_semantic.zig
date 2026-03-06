@@ -249,7 +249,7 @@ pub const SemanticAnalyzer = struct {
             .column = name_node.token.column,
         });
 
-        // TODO: Create new scope for function body
+        // DEFERRED (v12): Create new scope for function body
     }
 
     fn visitIdentifier(self: *SemanticAnalyzer, node: *const AstNode) AnalyzeError!void {

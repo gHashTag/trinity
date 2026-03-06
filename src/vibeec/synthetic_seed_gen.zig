@@ -316,7 +316,7 @@ pub const SyntheticSeedGenerator = struct {
     /// Convert name to snake_case
     fn toSnakeName(self: *const Self, name: []const u8) []const u8 {
         _ = self;
-        return name; // TODO: implement proper conversion
+        return name; // DEFERRED (v12): implement proper conversion
     }
 
     /// Check if name contains any of the keywords

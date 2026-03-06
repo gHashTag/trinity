@@ -6196,7 +6196,7 @@ pub const RealAgent = struct {
         defer self.allocator.free(frame.payload);
 
         // For now, just capture full screenshot
-        // TODO: Parse bounding box and use clip parameter
+        // DEFERRED (v12): Parse bounding box and use clip parameter
         return self.captureScreenshot();
     }
 

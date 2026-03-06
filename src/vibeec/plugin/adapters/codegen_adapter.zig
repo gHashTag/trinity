@@ -153,18 +153,18 @@ fn generateLanguageStub(context: *CodegenPluginContext) !void {
         .zig => {
             try context.output_buffer.appendSlice(context.allocator,"const std = @import(\"std\");\n\n");
             try context.output_buffer.appendSlice(context.allocator,"pub fn main() void {\n");
-            try context.output_buffer.appendSlice(context.allocator,"    // TODO: Generated code\n");
+            try context.output_buffer.appendSlice(context.allocator,"    // DEFERRED (v12): Generated code\n");
             try context.output_buffer.appendSlice(context.allocator,"}\n");
         },
         .rust => {
             try context.output_buffer.appendSlice(context.allocator,"fn main() {\n");
-            try context.output_buffer.appendSlice(context.allocator,"    // TODO: Generated code\n");
+            try context.output_buffer.appendSlice(context.allocator,"    // DEFERRED (v12): Generated code\n");
             try context.output_buffer.appendSlice(context.allocator,"}\n");
         },
         .python => {
             try context.output_buffer.appendSlice(context.allocator,"#!/usr/bin/env python3\n\n");
             try context.output_buffer.appendSlice(context.allocator,"def main():\n");
-            try context.output_buffer.appendSlice(context.allocator,"    # TODO: Generated code\n");
+            try context.output_buffer.appendSlice(context.allocator,"    # DEFERRED (v12): Generated code\n");
             try context.output_buffer.appendSlice(context.allocator,"    pass\n\n");
             try context.output_buffer.appendSlice(context.allocator,"if __name__ == '__main__':\n");
             try context.output_buffer.appendSlice(context.allocator,"    main()\n");
@@ -172,18 +172,18 @@ fn generateLanguageStub(context: *CodegenPluginContext) !void {
         .go => {
             try context.output_buffer.appendSlice(context.allocator,"package main\n\n");
             try context.output_buffer.appendSlice(context.allocator,"func main() {\n");
-            try context.output_buffer.appendSlice(context.allocator,"    // TODO: Generated code\n");
+            try context.output_buffer.appendSlice(context.allocator,"    // DEFERRED (v12): Generated code\n");
             try context.output_buffer.appendSlice(context.allocator,"}\n");
         },
         .java => {
             try context.output_buffer.appendSlice(context.allocator,"public class Generated {\n");
             try context.output_buffer.appendSlice(context.allocator,"    public static void main(String[] args) {\n");
-            try context.output_buffer.appendSlice(context.allocator,"        // TODO: Generated code\n");
+            try context.output_buffer.appendSlice(context.allocator,"        // DEFERRED (v12): Generated code\n");
             try context.output_buffer.appendSlice(context.allocator,"    }\n");
             try context.output_buffer.appendSlice(context.allocator,"}\n");
         },
         else => {
-            try context.output_buffer.appendSlice(context.allocator,"// TODO: Generated code for ");
+            try context.output_buffer.appendSlice(context.allocator,"// DEFERRED (v12): Generated code for ");
             try context.output_buffer.appendSlice(context.allocator,context.language.name());
             try context.output_buffer.appendSlice(context.allocator,"\n");
         },

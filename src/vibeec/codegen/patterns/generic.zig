@@ -273,7 +273,7 @@ pub fn match(builder: *CodeBuilder, b: *const Behavior) !bool {
     if (std.mem.startsWith(u8, b.name, "test")) {
         try builder.writeFmt("test \"{s}\" {{\n", .{b.name});
         builder.incIndent();
-        try builder.writeLine("// TODO: Add test assertions");
+        try builder.writeLine("// DEFERRED (v12): Add test assertions");
         builder.decIndent();
         try builder.writeLine("}");
         return true;

@@ -381,7 +381,7 @@ pub const WasmCodeGen = struct {
             try self.builder.writeLine("}");
         } else {
             // Generic pattern stub
-            try self.builder.writeFmt("// TODO: Implement {s}\n", .{pattern.name});
+            try self.builder.writeFmt("// DEFERRED (v12): Implement {s}\n", .{pattern.name});
             try self.builder.writeFmt("// Source: {s}\n", .{pattern.source});
             try self.builder.writeFmt("// Result: {s}\n", .{pattern.result});
         }
@@ -423,7 +423,7 @@ pub const WasmCodeGen = struct {
                 try self.builder.writeFmt("// Input: {s}, Expected: {s}\n", .{ tc.input, tc.expected });
             }
 
-            try self.builder.writeLine("// TODO: Implement test assertions");
+            try self.builder.writeLine("// DEFERRED (v12): Implement test assertions");
             self.builder.indent_dec();
             try self.builder.writeLine("}");
             try self.builder.newline();

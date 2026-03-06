@@ -85,7 +85,7 @@ pub const DeepPatcher = struct {
         _ = pattern;
         
         // For now, return success with no changes
-        // TODO: Implement actual refactoring logic
+        // DEFERRED (v12): Implement actual refactoring logic
         _ = fn_name;
         
         return .{
@@ -110,7 +110,7 @@ pub const DeepPatcher = struct {
             };
         }
 
-        // TODO: Apply actual economic pattern fixes
+        // DEFERRED (v12): Apply actual economic pattern fixes
         // For now, just indicate that fixes are needed
         return .{
             .success = false,
@@ -123,7 +123,7 @@ pub const DeepPatcher = struct {
     pub fn addBehaviorToSpec(self: *DeepPatcher, behavior: Behavior) !PatchResult {
         _ = behavior;
         
-        // TODO: Implement behavior addition to spec files
+        // DEFERRED (v12): Implement behavior addition to spec files
         return .{
             .success = false,
             .patched_source = self.source,

@@ -17,6 +17,32 @@ cd ..
 
 ---
 
+## ESP32 Integration (NEW!)
+
+Connect ESP32 DIYTZT board to FPGA via UART:
+
+```bash
+# Build and flash UART bridge
+./build_uart_bridge.sh all
+
+# Or manually:
+cd openxc7-synth
+./synth.sh uart_bridge.v uart_bridge
+```
+
+**Wiring:**
+| ESP32 | FPGA | Function |
+|-------|------|----------|
+| GPIO4 (TX) | L20 | ESP32 → FPGA |
+| GPIO5 (RX) | K20 | FPGA → ESP32 |
+| GND | GND | **Required!** |
+
+**ESP32 Code:** `esp32_fpga_uart/esp32_fpga_uart.ino`
+
+See [ESP32_CONNECTION_GUIDE.md](./ESP32_CONNECTION_GUIDE.md) for details.
+
+---
+
 ## Hardware
 
 **FPGA Board**: QMTECH Artix-7 XC7A100T-1FGG676C

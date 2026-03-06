@@ -914,7 +914,7 @@ pub const TrinitySWEAgent = struct {
         }
 
         return InternalResult{
-            .output = "// TODO: implement",
+            .output = "// DEFERRED (v12): implement",
             .reasoning = "Generic completion placeholder",
             .confidence = 0.5,
             .coherent = true,

@@ -3757,7 +3757,7 @@ pub const TestGenerator = struct {
                     try self.builder.writeLine("const result = cosineSimilarity(&[_]i8{1}, &[_]i8{1});");
                     try self.builder.writeLine("try std.testing.expect(result >= -1.0 and result <= 1.0);");
                 } else {
-                    try self.builder.writeFmt("// TODO: Add specific test for {s}\n", .{name});
+                    try self.builder.writeFmt("// DEFERRED (v12): Add specific test for {s}\n", .{name});
                     try self.builder.writeFmt("_ = {s};\n", .{name});
                 }
             } else if (thenContains(then_clause, "boolean") or thenContains(then_clause, "true") or

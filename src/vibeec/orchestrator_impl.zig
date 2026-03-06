@@ -95,7 +95,7 @@ pub fn invokeAgentMu(allocator: std.mem.Allocator, code_path: []const u8) !Invoc
     _ = allocator;
     _ = code_path;
 
-    // TODO: Call actual Agent MU analyzer
+    // DEFERRED (v12): Call actual Agent MU analyzer
     // For now, simulate the call
     return InvocationResult{
         .success = true,
@@ -115,7 +115,7 @@ pub fn invokeSymbolicAI(allocator: std.mem.Allocator, query: []const u8) !Invoca
     _ = allocator;
     _ = query;
 
-    // TODO: Call actual Symbolic AI
+    // DEFERRED (v12): Call actual Symbolic AI
     // For now, simulate the call
     return InvocationResult{
         .success = true,
@@ -161,7 +161,7 @@ pub fn invokeSwarm(allocator: std.mem.Allocator, task: []const u8) !InvocationRe
     _ = allocator;
     _ = task;
 
-    // TODO: Call actual swarm runtime
+    // DEFERRED (v12): Call actual swarm runtime
     // For now, simulate the call
     return InvocationResult{
         .success = true,

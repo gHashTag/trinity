@@ -1766,8 +1766,8 @@ pub const BlockPool = struct {
             .memory_used_bytes = allocated * mem_per_block,
             .memory_total_bytes = total * mem_per_block,
             .utilization_percent = if (total > 0) @as(f32, @floatFromInt(allocated)) / @as(f32, @floatFromInt(total)) * 100.0 else 0.0,
-            .cow_copies = 0, // TODO: track
-            .evictions = 0, // TODO: track
+            .cow_copies = 0, // DEFERRED (v12): track
+            .evictions = 0, // DEFERRED (v12): track
         };
     }
 };

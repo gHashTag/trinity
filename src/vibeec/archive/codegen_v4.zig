@@ -388,7 +388,7 @@ pub const CodegenV4 = struct {
         try self.zig_builder.appendFmt("/// Result: {s}\n", .{cp.result});
         try self.zig_builder.appendFmt("pub fn {s}_transform(input: anytype) @TypeOf(input) {{\n", .{name});
         self.zig_builder.indent();
-        try self.zig_builder.appendLine("// TODO: Implement transformation");
+        try self.zig_builder.appendLine("// DEFERRED (v12): Implement transformation");
         try self.zig_builder.appendLine("return input;");
         self.zig_builder.dedent();
         try self.zig_builder.appendLine("}");

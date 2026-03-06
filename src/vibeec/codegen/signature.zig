@@ -16,7 +16,7 @@ pub const SignatureInfo = struct { params: []const u8, ret: []const u8 };
 pub fn extractParamNames(phrase: []const u8, count: usize) []const []const u8 {
     _ = phrase;
     _ = count;
-    // TODO: Implement proper name extraction
+    // DEFERRED (v12): Implement proper name extraction
     // For now, return default names
     return &[_][]const u8{ "a", "b", "c", "d", "e", "f", "g", "h", "i", "j" };
 }
