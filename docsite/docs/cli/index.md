@@ -5,10 +5,10 @@ sidebar_label: Overview
 
 # TRI CLI Reference
 
-**TRI CLI** is the unified command-line interface for the entire Trinity ecosystem. One binary, **171+ commands** with **240+ aliases** (total 230+ unique triggers) across 96 development cycles — covering AI chat, code generation, SWE agent, sacred math, swarm orchestration, VIBEE compilation, and more.
+**TRI CLI** is the unified command-line interface for the entire Trinity ecosystem. One binary, **157 commands** across **10 categories** — covering AI chat, code generation, SWE agent, sacred mathematics, sacred science, swarm orchestration, VIBEE compilation, and more.
 
 ```
-phi^2 + 1/phi^2 = 3 = TRINITY
+φ² + 1/φ² = 3 = TRINITY
 ```
 
 ## Installation
@@ -30,21 +30,20 @@ zig build tri -- <command> [args]
 
 ## Quick Reference
 
-| Category | Commands | Description |
-|----------|----------|-------------|
-| [Core](/cli/core) | `chat`, `code`, `gen`, `fix`, `explain`, `test`, `doc`, `refactor`, `reason` | Chat, code generation, SWE agent |
-| [Dev Tools](/cli/devtools) | `doctor`, `clean`, `fmt`, `stats`, `test-all`, `lsp`, `autofix`, `lint`, `igla` | Project health, formatting, diagnostics |
-| [Analysis](/cli/analysis) | `analyze`, `search`, `deps` | Static analysis, code search, dependency graphs |
-| [Pipeline](/cli/pipeline) | `pipeline`, `decompose`, `plan`, `verify`, `verdict` | Golden Chain 17-link development cycle |
-| [Sacred Math](/cli/math) | `math`, `constants`, `phi`, `fib`, `lucas`, `spiral`, `math-verify`, `math-bench` | Mathematical foundations and verification |
-| [Git](/cli/git) | `commit`, `diff`, `status`, `log` | Built-in version control |
-| [VIBEE Tools](/cli/vibee-tools) | `improve`, `strict`, `validate`, `gguf-chat`, `metal`, `prometheus`, `serve`, `distributed`, `evolve`, `convert` | VIBEE compilation, model inference, distributed computing |
-| [Swarm](/cli/swarm) | `swarm`, `agents-auto`, `marketplace`, `omega`, `control`, `dashboard`, `rewards`, `eternity`, `infinity`, `apotheosis`, `omega-point`, `convergence`, `universal`, `absolute`, `final`, `end-of-cycles` | Agent orchestration, $TRI economy, Cycles 94-96 |
-| [Demos](/cli/demos) | `*-demo`, `*-bench` + short aliases | 36 demo/benchmark pairs across Cycles 20-52 |
-| [Autonomous](/cli/autonomous) | `full-autonomous` | Comprehensive 5-step system health report |
-| [Interactive REPL](/cli/repl) | `/chat`, `/code`, `/fix`, `/quit` | REPL mode, mode/language switching, session stats |
-| [TVC Learning](/cli/tvc) | `tvc-demo`, `tvc-stats` | Distributed learning corpus (10K entries, zero-forgetting) |
-| [Sacred Constants](/cli/constants) | `constants`, `math exotic`, `math physical` | 76+ mathematical and physics constants reference |
+| Category | Commands | Count |
+|----------|----------|-------|
+| **AI & Chat** | `chat`, `code` | 2 |
+| **Sacred Science** | `bio`, `cosmos`, `neuro`, `music`, `frequency`, `scale`, `chord`, `resonance`, `waveform`, `harmony`, `phi-series` | 11 |
+| **Sacred Math** | `math`, `constants`, `phi`, `fib`, `lucas`, `spiral`, `gematria`, `formula`, `sacred` | 8 |
+| **Git** | `status`, `diff`, `log`, `commit` | 4 |
+| **Development** | `fix`, `explain`, `test`, `doc`, `refactor`, `reason`, `analyze`, `search`, `doctor`, `clean`, `fmt`, `stats`, `igla`, `gen`, `convert`, `serve` | 16 |
+| **System** | `info`, `version`, `help`, `bench`, `tvc-stats`, `deps` | 6 |
+| **Demos** | `*-demo` (37 commands) | 37 |
+| **Benchmarks** | `*-bench` (36 commands) | 36 |
+| **Sacred Intelligence** | `identity`, `swarm`, `govern`, `dashboard`, `omega`, `intelligence`, `math-agent`, `wallet`, `mesh`, `reputation`, `quantum`, `release-cosmic` | 12 |
+| **Advanced** | `pipeline`, `decompose`, `plan`, `spec-create`, `loop-decide`, `verify`, `verdict`, `evolve`, `distributed`, `multi-cluster`, `context-info`, `hardware`, `time`, `install`, `build`, `deck`, `fpga-demo`, `sacred-full-cycle`, `research`, `launch`, `needle`, `needle-search`, `needle-check`, `monitor` | 25 |
+
+**Total: 157 commands**
 
 ## Interactive REPL
 

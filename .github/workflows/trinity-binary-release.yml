@@ -36,7 +36,8 @@ jobs:
 
       - name: Build TRI CLI
         run: |
-          zig build tri -Dtarget=x86_64-linux-gnu.2.35 -Doptimize=ReleaseFast
+          # Build only (don't run) - compile all artifacts including tri
+          zig build -Dtarget=x86_64-linux-gnu.2.35 -Doptimize=ReleaseFast
           mkdir -p release/linux-amd64
           cp zig-out/bin/tri release/linux-amd64/
           chmod +x release/linux-amd64/tri
@@ -81,7 +82,7 @@ jobs:
 
       - name: Build TRI CLI
         run: |
-          zig build tri -Dtarget=aarch64-linux-gnu.2.35 -Doptimize=ReleaseFast
+          zig build -Dtarget=aarch64-linux-gnu.2.35 -Doptimize=ReleaseFast
           mkdir -p release/linux-arm64
           cp zig-out/bin/tri release/linux-arm64/
           chmod +x release/linux-arm64/tri
@@ -126,7 +127,7 @@ jobs:
 
       - name: Build TRI CLI
         run: |
-          zig build tri -Dtarget=x86_64-macos-gnu -Doptimize=ReleaseFast
+          zig build -Dtarget=x86_64-macos-gnu -Doptimize=ReleaseFast
           mkdir -p release/macos-amd64
           cp zig-out/bin/tri release/macos-amd64/
           chmod +x release/macos-amd64/tri
@@ -171,7 +172,7 @@ jobs:
 
       - name: Build TRI CLI
         run: |
-          zig build tri -Dtarget=aarch64-macos-gnu -Doptimize=ReleaseSafe
+          zig build -Dtarget=aarch64-macos-gnu -Doptimize=ReleaseSafe
           mkdir -p release/macos-arm64
           cp zig-out/bin/tri release/macos-arm64/
           chmod +x release/macos-arm64/tri
@@ -216,7 +217,7 @@ jobs:
 
       - name: Build TRI CLI
         run: |
-          zig build tri -Dtarget=x86_64-windows-gnu -Doptimize=ReleaseFast
+          zig build -Dtarget=x86_64-windows-gnu -Doptimize=ReleaseFast
           mkdir -p release/windows-amd64
           cp zig-out/bin/tri.exe release/windows-amd64/
 
