@@ -34,7 +34,7 @@ fi
 
 # Step 1: Build TRI
 echo -e "${BLUE}[1/4] Building TRI CLI...${NC}"
-zig build -Drelease-safe=true tri
+zig build tri
 echo -e "${GREEN}✓ TRI built successfully${NC}"
 echo ""
 

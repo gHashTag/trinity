@@ -201,6 +201,9 @@ const sidebars: SidebarsConfig = {
       label: 'Research',
       items: [
         'research/index',
+        // Scientific Blind Spot Discoveries
+        'research/strong-cp-problem-solved',
+        'research/sacred-biology-blind-spot',
         // Golden Chain Cycles (IGLA)
         'research/cycle26-multimodal-unified-report',
         'research/cycle27-tool-use-report',

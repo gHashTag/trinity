@@ -1083,16 +1083,19 @@ pub const ZigCodeGen = struct {
             if (std.mem.eql(u8, c.name, "PHOENIX")) has_phoenix = true;
         }
 
-        try self.builder.writeLine("// iny φ-towithy] (Sacred Formula)");
-        if (!has_phi) try self.builder.writeLine("pub const PHI: f64 = 1.618033988749895;");
-        if (!has_phi_inv) try self.builder.writeLine("pub const PHI_INV: f64 = 0.618033988749895;");
-        if (!has_phi_sq) try self.builder.writeLine("pub const PHI_SQ: f64 = 2.618033988749895;");
-        if (!has_trinity) try self.builder.writeLine("pub const TRINITY: f64 = 3.0;");
-        if (!has_sqrt5) try self.builder.writeLine("pub const SQRT5: f64 = 2.2360679774997896;");
-        if (!has_tau) try self.builder.writeLine("pub const TAU: f64 = 6.283185307179586;");
-        if (!has_pi) try self.builder.writeLine("pub const PI: f64 = 3.141592653589793;");
-        if (!has_e) try self.builder.writeLine("pub const E: f64 = 2.718281828459045;");
-        if (!has_phoenix) try self.builder.writeLine("pub const PHOENIX: i64 = 999;");
+        // Import from canonical source (ANTI-PATTERN: no inline constants!)
+        try self.builder.writeLine("// Constants imported from canonical source");
+        try self.builder.writeLine("const sacred_constants = @import(\"sacred_constants\");");
+
+        if (!has_phi) try self.builder.writeLine("pub const PHI = sacred_constants.SacredConstants.PHI;");
+        if (!has_phi_inv) try self.builder.writeLine("pub const PHI_INV = sacred_constants.SacredConstants.PHI_INVERSE;");
+        if (!has_phi_sq) try self.builder.writeLine("pub const PHI_SQ = sacred_constants.SacredConstants.PHI_SQ;");
+        if (!has_trinity) try self.builder.writeLine("pub const TRINITY = sacred_constants.SacredConstants.TRINITY;");
+        if (!has_sqrt5) try self.builder.writeLine("pub const SQRT5 = sacred_constants.SacredConstants.SQRT5;");
+        if (!has_tau) try self.builder.writeLine("pub const TAU = sacred_constants.SacredConstants.TAU;");
+        if (!has_pi) try self.builder.writeLine("pub const PI = sacred_constants.SacredConstants.PI;");
+        if (!has_e) try self.builder.writeLine("pub const E = sacred_constants.SacredConstants.E;");
+        if (!has_phoenix) try self.builder.writeLine("pub const PHOENIX = sacred_constants.SacredConstants.PHOENIX;");
         try self.builder.newline();
     }
 

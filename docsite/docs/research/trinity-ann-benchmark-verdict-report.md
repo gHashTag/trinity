@@ -132,7 +132,7 @@ All BruteIndex tests passed (9/9)
 ## What This Means
 
 ### For Users
-- **`semanticFindCached()` now returns in <10ms** for typical projects
+- **`semanticFindCached()` now returns in \<10ms** for typical projects
 - **100% exact results** — no approximation errors
 - **Simpler code** — fewer bugs, easier to maintain
 
