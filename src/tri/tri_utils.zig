@@ -180,6 +180,7 @@ pub const Command = enum {
     gematria,
     formula_cmd,
     sacred,
+    particles, // Particle Physics Sacred (v2.0)
     // Sacred Science (v14-v16)
     bio,        // Biology v14.0
     cosmos,     // Cosmology v15.0
@@ -746,6 +747,7 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "gematria") or std.mem.eql(u8, arg, "gem")) return .gematria;
     if (std.mem.eql(u8, arg, "formula")) return .formula_cmd;
     if (std.mem.eql(u8, arg, "sacred")) return .sacred;
+    if (std.mem.eql(u8, arg, "particles") or std.mem.eql(u8, arg, "particle") or std.mem.eql(u8, arg, "pdg")) return .particles;
     // Biology (v14.0)
     if (std.mem.eql(u8, arg, "bio") or std.mem.eql(u8, arg, "biology")) return .bio;
     // Sacred Science (v15-v16)
