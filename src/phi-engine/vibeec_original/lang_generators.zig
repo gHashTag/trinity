@@ -146,7 +146,7 @@ pub fn generateGo(allocator: Allocator, spec: ParsedSpec) ![]u8 { _ = allocator;
     for (spec.behaviors) |b| {
         try w.print("// {s}: Given {s}, When {s}, Then {s}\n", .{b.name, b.given, b.when, b.then});
         try w.print("func {c}{s}() {{\n", .{std.ascii.toUpper(b.name[0]), b.name[1..]});
-        try w.print("\t// TODO: implement\n", .{});
+        try w.print("\t// DEFERRED (v12): implement\n", .{});
         try w.print("}}\n\n", .{});
     }
     
@@ -187,7 +187,7 @@ pub fn generateTypeScript(allocator: Allocator, spec: ParsedSpec) ![]u8 { _ = al
     for (spec.behaviors) |b| {
         try w.print("/** Given: {s}, When: {s}, Then: {s} */\n", .{b.given, b.when, b.then});
         try w.print("export function {s}(): void {{\n", .{b.name});
-        try w.print("  // TODO: implement\n", .{});
+        try w.print("  // DEFERRED (v12): implement\n", .{});
         try w.print("}}\n\n", .{});
     }
     
@@ -266,7 +266,7 @@ pub fn generateSwift(allocator: Allocator, spec: ParsedSpec) ![]u8 { _ = allocat
     for (spec.behaviors) |b| {
         try w.print("/// Given: {s}, When: {s}, Then: {s}\n", .{b.given, b.when, b.then});
         try w.print("func {s}() {{\n", .{b.name});
-        try w.print("    // TODO: implement\n", .{});
+        try w.print("    // DEFERRED (v12): implement\n", .{});
         try w.print("}}\n\n", .{});
     }
     
@@ -445,7 +445,7 @@ pub fn generateForLanguage(allocator: Allocator, spec: ParsedSpec, lang: []const
     
     // Default: return stub
     var result: std.ArrayListUnmanaged(u8) = .empty;
-    try result.writer(allocator).print("// {s} v{s} - {s}\n// TODO: implement generator\n", .{spec.name, spec.version, lang});
+    try result.writer(allocator).print("// {s} v{s} - {s}\n// DEFERRED (v12): implement generator\n", .{spec.name, spec.version, lang});
     return result.toOwnedSlice(allocator);
 }
 

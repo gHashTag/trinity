@@ -2541,6 +2541,19 @@ pub fn build(b: *std.Build) void {
     qualia_sacred_step.dependOn(&run_qualia_sacred.step);
     test_step.dependOn(&run_qualia_sacred.step);
 
+    // Task 21c: Sacred Cosmology v11.4 (Consciousness — Dark Energy — Λ)
+    const sacred_cosmology_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/cosmos/sacred_cosmology.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_sacred_cosmology = b.addRunArtifact(sacred_cosmology_tests);
+    const sacred_cosmology_step = b.step("test-sacred-cosmology", "Test Sacred Cosmology v11.4");
+    sacred_cosmology_step.dependOn(&run_sacred_cosmology.step);
+    test_step.dependOn(&run_sacred_cosmology.step);
+
     // VSA Math Benchmark executable (MATH-003) — REMOVED (generated.old/ deleted)
 
     // Storage Init tests — REMOVED (generated.old/ deleted)

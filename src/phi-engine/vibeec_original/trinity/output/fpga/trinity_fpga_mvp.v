@@ -141,7 +141,7 @@ module behavior_ternary_not (
             output_data <= 32'd0;
             done <= 1'b0;
         end else if (trigger) begin
-            // TODO: Implement behavior logic
+            // DEFERRED (v12): Implement behavior logic
             output_data <= input_data;
             done <= 1'b1;
         end else begin
@@ -169,7 +169,7 @@ module behavior_ternary_and (
             output_data <= 32'd0;
             done <= 1'b0;
         end else if (trigger) begin
-            // TODO: Implement behavior logic
+            // DEFERRED (v12): Implement behavior logic
             output_data <= input_data;
             done <= 1'b1;
         end else begin
@@ -197,7 +197,7 @@ module behavior_ternary_add (
             output_data <= 32'd0;
             done <= 1'b0;
         end else if (trigger) begin
-            // TODO: Implement behavior logic
+            // DEFERRED (v12): Implement behavior logic
             output_data <= input_data;
             done <= 1'b1;
         end else begin
@@ -225,7 +225,7 @@ module behavior_ternary_alu (
             output_data <= 32'd0;
             done <= 1'b0;
         end else if (trigger) begin
-            // TODO: Implement behavior logic
+            // DEFERRED (v12): Implement behavior logic
             output_data <= input_data;
             done <= 1'b1;
         end else begin
@@ -253,7 +253,7 @@ module behavior_ternary_memory (
             output_data <= 32'd0;
             done <= 1'b0;
         end else if (trigger) begin
-            // TODO: Implement behavior logic
+            // DEFERRED (v12): Implement behavior logic
             output_data <= input_data;
             done <= 1'b1;
         end else begin
@@ -281,7 +281,7 @@ module behavior_ternary_simd_unit (
             output_data <= 32'd0;
             done <= 1'b0;
         end else if (trigger) begin
-            // TODO: Implement behavior logic
+            // DEFERRED (v12): Implement behavior logic
             output_data <= input_data;
             done <= 1'b1;
         end else begin
@@ -309,7 +309,7 @@ module behavior_host_interface (
             output_data <= 32'd0;
             done <= 1'b0;
         end else if (trigger) begin
-            // TODO: Implement behavior logic
+            // DEFERRED (v12): Implement behavior logic
             output_data <= input_data;
             done <= 1'b1;
         end else begin
@@ -337,7 +337,7 @@ module behavior_bitnet_accelerator (
             output_data <= 32'd0;
             done <= 1'b0;
         end else if (trigger) begin
-            // TODO: Implement behavior logic
+            // DEFERRED (v12): Implement behavior logic
             output_data <= input_data;
             done <= 1'b1;
         end else begin

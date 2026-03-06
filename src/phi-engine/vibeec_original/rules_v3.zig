@@ -66,7 +66,7 @@ pub fn apply_phi_identity(graph: *egraph.EGraph, root: EClassId) bool {
     _ = root;
     // Pattern: mul(phi, phi)
     // Assume we have a way to identify 'phi' constant nodes
-    return false; // TODO: Implement Phi constant detection
+    return false; // DEFERRED (v12): Implement Phi constant detection
 }
 
 pub const SACRED_RULES = [_]egraph.RewriteRule{

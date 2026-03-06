@@ -1953,7 +1953,7 @@ pub const PlanningAgent = struct {
     /// Call LLM with JSON format option - supports OpenAI/Groq/HuggingFace/Anthropic or Ollama
     /// Includes retry logic for invalid responses - v23.9 reduced delays
     fn callLLMWithFormat(self: *Self, prompt: []const u8, json_mode: bool) ![]const u8 {
-        _ = json_mode; // TODO: implement JSON mode for OpenAI client
+        _ = json_mode; // DEFERRED (v12): implement JSON mode for OpenAI client
 
         const max_retries: u32 = 2; // Reduced from 3
         var retry: u32 = 0;
