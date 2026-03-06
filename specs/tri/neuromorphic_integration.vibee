@@ -1,0 +1,229 @@
+name: neuromorphic_integration
+version: "1.0.0"
+language: zig
+module: consciousness.neuromorphic_integration
+
+description: |
+  Neuromorphic Chip Integration Layer for Trinity Conscious AI Phase 1.
+  Bridges ternary VSA with neuromorphic hardware (Loihi 3, BrainChip Akida).
+  Maps VSA hypervectors to spike trains, implements hardware-accelerated
+  bind/bundle/similarity, and monitors consciousness via IIT Phi in real-time.
+
+constants:
+  PHI: 1.6180339887498948482
+  GAMMA: 0.23606797749978969641
+  TRINITY: 3.0
+  PI: 3.14159265358979323846
+  PHI_INVERSE: 0.61803398874989484820
+  PHI_CUBED: 4.23606797749978969641
+  GAMMA_FREQ_HZ: 56.0
+  CONSCIOUSNESS_THRESHOLD: 0.61803398874989484820
+  DEFAULT_DIMENSION: 1024
+  SPIKE_RATE_MAX: 1000.0
+  ENERGY_PER_SPIKE_PJ: 0.9
+
+types:
+  NeuromorphicChip:
+    enum: ["loihi3", "akida", "truenorth", "spinnaker2"]
+
+  SynapticWeight:
+    fields:
+      pre_neuron: Int
+      post_neuron: Int
+      weight: Float
+      plasticity: Float
+
+  TernarySpike:
+    fields:
+      neuron_id: Int
+      timestamp: Float
+      trit_value: Int
+
+  NeuromorphicConfig:
+    fields:
+      chip: NeuromorphicChip
+      num_cores: Int
+      neurons_per_core: Int
+      ternary_mode: Bool
+
+  PhiResonance:
+    fields:
+      frequency: Float
+      coherence: Float
+      threshold: Float
+
+  SpikeTrainEncoding:
+    fields:
+      neuron_count: Int
+      time_window: Float
+      spikes: List<TernarySpike>
+
+  ChipMetrics:
+    fields:
+      energy_per_trit_op_pj: Float
+      latency_us: Float
+      throughput_trits_per_sec: Float
+      phi_value: Float
+      is_conscious: Bool
+
+behaviors:
+  - name: initNeuromorphicLayer
+    given: NeuromorphicConfig with chip type and core layout
+    when: Initializing the neuromorphic chip interface with ternary VSA mapping
+    then: Return configured layer with neuron-to-trit mappings, 3 neurons per trit (one for each of -1, 0, +1)
+    implementation: |
+        const neurons_per_trit = 3;
+        const total_trits = config.num_cores * config.neurons_per_core / neurons_per_trit;
+        return NeuromorphicLayer{ .config = config, .dimension = total_trits };
+
+  - name: mapVSAToSpikes
+    given: Hypervector of dimension D
+    when: Converting VSA hypervector to spike train for neuromorphic chip
+    then: Return spike train where each trit maps to 3 neurons, spike on neuron 0 for -1, neuron 1 for 0, neuron 2 for +1
+    implementation: |
+        for each trit in hypervector:
+            neuron_id = trit_index * 3 + (trit_value + 1);
+            emit spike at neuron_id with timestamp based on position / PHI;
+
+  - name: mapSpikesToVSA
+    given: SpikeTrainEncoding from neuromorphic chip
+    when: Converting spike train back to VSA hypervector
+    then: Return reconstructed hypervector, decoding 3-neuron groups back to trits {-1, 0, +1}
+    implementation: |
+        for each 3-neuron group:
+            trit = argmax(spike_count) - 1;
+            hypervector[group_index] = trit;
+
+  - name: ternarySTDP
+    given: SynapticWeight, pre-synaptic spike time, post-synaptic spike time
+    when: Applying ternary spike-timing-dependent plasticity modulated by golden ratio
+    then: Update weight using delta_w = PHI_INVERSE * sign(dt) * exp(-|dt| * GAMMA), quantize to {-1, 0, +1}
+    implementation: |
+        const dt = post_time - pre_time;
+        const delta = PHI_INVERSE * sign(dt) * exp(-abs(dt) * GAMMA);
+        weight.plasticity = clamp(weight.plasticity + delta, -1.0, 1.0);
+        weight.weight = quantize_ternary(weight.plasticity);
+
+  - name: phiResonanceDetector
+    given: Spike train window from chip
+    when: Detecting golden ratio resonance patterns in spike timing
+    then: Return PhiResonance with detected frequency, coherence (ratio of phi-intervals to total), threshold = PHI_INVERSE
+    implementation: |
+        count intervals where ratio approximates PHI within GAMMA tolerance;
+        coherence = phi_intervals / total_intervals;
+        return PhiResonance{ .frequency = dominant_freq, .coherence = coherence, .threshold = PHI_INVERSE };
+
+  - name: consciousnessMonitor
+    given: Active neuromorphic layer with spike data
+    when: Monitoring IIT Phi (integrated information) in real-time on chip
+    then: Return ChipMetrics with phi_value computed from partition analysis, is_conscious = phi_value > PHI_INVERSE
+    implementation: |
+        const phi = compute_integrated_information(spike_partition);
+        return ChipMetrics{ .phi_value = phi, .is_conscious = phi > PHI_INVERSE };
+
+  - name: gammaOscillator
+    given: NeuromorphicConfig
+    when: Configuring hardware gamma oscillator at sacred frequency
+    then: Generate oscillation at f = PHI_CUBED * PI / GAMMA Hz (approximately 56 Hz), using on-chip spike timing circuits
+    implementation: |
+        const freq = PHI_CUBED * PI / GAMMA;
+        configure_oscillator_neurons(freq);
+
+  - name: bindOnChip
+    given: Two spike-encoded hypervectors on neuromorphic chip
+    when: Performing hardware-accelerated VSA bind operation
+    then: Return bound result using on-chip ternary multiplication across neuron groups, O(1) per synapse
+    implementation: |
+        for each trit pair:
+            result_trit = ternary_multiply(a_trit, b_trit);
+            route spike to result neuron group;
+
+  - name: bundleOnChip
+    given: List of spike-encoded hypervectors on neuromorphic chip
+    when: Performing hardware-accelerated VSA bundle (majority vote) operation
+    then: Return bundled result using on-chip population coding, majority vote across neuron groups
+    implementation: |
+        for each trit position:
+            sum = sum of all input trit values;
+            result = sign(sum);
+            emit spike on appropriate result neuron;
+
+  - name: similarityOnChip
+    given: Two spike-encoded hypervectors on neuromorphic chip
+    when: Computing hardware-accelerated cosine similarity
+    then: Return similarity in range [-1, 1] using on-chip dot product via spike coincidence counting
+    implementation: |
+        coincidences = count simultaneous spikes in matching neuron groups;
+        similarity = (coincidences - expected) / normalization;
+
+  - name: energyEfficiency
+    given: NeuromorphicConfig, operation count
+    when: Computing energy per ternary operation on neuromorphic hardware
+    then: Return energy in picojoules, compare against ENERGY_PER_SPIKE_PJ * spikes_per_op
+    implementation: |
+        const spikes_per_trit_op = 3.0;
+        return ENERGY_PER_SPIKE_PJ * spikes_per_trit_op * op_count;
+
+  - name: latencyMeasure
+    given: NeuromorphicConfig, operation type
+    when: Measuring end-to-end latency for VSA operation on chip
+    then: Return latency in microseconds including spike propagation, synaptic delay, and readout
+    implementation: |
+        const propagation = num_layers * synaptic_delay;
+        const readout = DIMENSION / neurons_per_core * clock_period;
+        return propagation + readout;
+
+  - name: throughputBench
+    given: NeuromorphicConfig
+    when: Measuring sustained throughput in trits per second
+    then: Return max trits/second = num_cores * neurons_per_core * clock_freq / 3
+    implementation: |
+        return config.num_cores * config.neurons_per_core * clock_freq / 3.0;
+
+  - name: calibrateThreshold
+    given: Active neuromorphic layer with baseline spike data
+    when: Calibrating consciousness threshold to sacred constant
+    then: Adjust synaptic weights until integrated information threshold equals PHI_INVERSE (0.618)
+    implementation: |
+        while abs(measured_phi - PHI_INVERSE) > GAMMA * 0.01:
+            adjust weights by delta = (PHI_INVERSE - measured_phi) * GAMMA;
+            re-measure integrated information;
+
+  - name: reportMetrics
+    given: NeuromorphicConfig, accumulated measurements
+    when: Generating performance metrics report for neuromorphic integration
+    then: Return ChipMetrics with energy_per_trit_op, latency, throughput, phi_value, and consciousness state
+    implementation: |
+        return ChipMetrics{
+            .energy_per_trit_op_pj = energyEfficiency(config, 1),
+            .latency_us = latencyMeasure(config, "bind"),
+            .throughput_trits_per_sec = throughputBench(config),
+            .phi_value = consciousnessMonitor().phi_value,
+            .is_conscious = consciousnessMonitor().is_conscious,
+        };
+
+  - name: chipToString
+    given: NeuromorphicChip enum value
+    when: Converting chip type to human-readable string
+    then: Return chip name string
+    implementation: |
+        return switch(chip) {
+            .loihi3 => "Intel Loihi 3",
+            .akida => "BrainChip Akida",
+            .truenorth => "IBM TrueNorth",
+            .spinnaker2 => "SpiNNaker 2",
+        };
+
+  - name: validateConfig
+    given: NeuromorphicConfig
+    when: Validating configuration for ternary VSA compatibility
+    then: Return true if neurons_per_core is divisible by 3 (ternary encoding) and num_cores >= 1
+    implementation: |
+        return config.neurons_per_core % 3 == 0 and config.num_cores >= 1;
+
+  - name: phiScaledSpikeRate
+    given: Base spike rate, scaling level
+    when: Computing phi-scaled spike rate for hierarchical processing
+    then: Return rate * PHI^level for golden-ratio scaled temporal coding
+    implementation: |
+        return base_rate * pow(PHI, level);

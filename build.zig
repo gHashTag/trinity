@@ -10,6 +10,9 @@ pub fn build(b: *std.Build) void {
     // Cycle 78: Optional tree-sitter integration for VIBEE AST analysis
     const enable_treesitter = b.option(bool, "treesitter", "Enable tree-sitter AST analysis for VIBEE (requires libtree-sitter)") orelse false;
 
+    // Optional raylib integration for GUI tools (node-gui, photon-demo, photon-immersive, trinity-canvas)
+    const enable_raylib = b.option(bool, "raylib", "Enable raylib-based GUI tools (requires libraylib-dev)") orelse false;
+
     // Library module for imports
     const trinity_mod = b.createModule(.{
         .root_source_file = b.path("src/trinity.zig"),
@@ -1189,26 +1192,39 @@ pub fn build(b: *std.Build) void {
     // Tier 1: Structural AST matching (ast-grep-like queries)
     // Tier 2: Semantic VSA search (future)
 
-    // Tree-sitter module for Tier 1 AST matching
-    const ts_zig_mod = b.createModule(.{
+    // Tree-sitter module for Tier 1 AST matching (conditional)
+    const ts_zig_mod = if (enable_treesitter) b.createModule(.{
         .root_source_file = b.path("src/tvc/treesitter/zig.zig"),
         .target = target,
         .optimize = optimize,
-    });
-    ts_zig_mod.linkSystemLibrary("tree-sitter", .{});
-    ts_zig_mod.link_libc = true;
-    // Stub: tree_sitter_zig() returns NULL until real grammar is compiled
-    ts_zig_mod.addCSourceFile(.{
-        .file = b.path("src/tvc/treesitter/zig_lang_stub.c"),
-    });
+    }) else null;
+
+    if (enable_treesitter and ts_zig_mod != null) {
+        ts_zig_mod.?.linkSystemLibrary("tree-sitter", .{});
+        ts_zig_mod.?.link_libc = true;
+        // Stub: tree_sitter_zig() returns NULL until real grammar is compiled
+        ts_zig_mod.?.addCSourceFile(.{
+            .file = b.path("src/tvc/treesitter/zig_lang_stub.c"),
+        });
+    }
 
     const needle_mod = b.createModule(.{
         .root_source_file = b.path("src/needle/mod.zig"),
         .target = target,
         .optimize = optimize,
-        .imports = &.{
-            .{ .name = "treesitter_zig", .module = ts_zig_mod },
-            .{ .name = "trinity_vsa", .module = vsa_tri },
+        .imports = blk: {
+            var imports = [_]std.Build.Module.Import{
+                .{ .name = "trinity_vsa", .module = vsa_tri },
+            };
+            if (enable_treesitter and ts_zig_mod != null) {
+                // Add treesitter import only when enabled
+                const full_imports: []const std.Build.Module.Import = &[_]std.Build.Module.Import{
+                    .{ .name = "trinity_vsa", .module = vsa_tri },
+                    .{ .name = "treesitter_zig", .module = ts_zig_mod.? },
+                };
+                break :blk full_imports;
+            }
+            break :blk &imports;
         },
     });
 
@@ -1217,9 +1233,18 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/needle/mod.zig"),
             .target = target,
             .optimize = optimize,
-            .imports = &.{
-                .{ .name = "treesitter_zig", .module = ts_zig_mod },
-                .{ .name = "trinity_vsa", .module = vsa_tri },
+            .imports = blk: {
+                var imports = [_]std.Build.Module.Import{
+                    .{ .name = "trinity_vsa", .module = vsa_tri },
+                };
+                if (enable_treesitter and ts_zig_mod != null) {
+                    const full_imports: []const std.Build.Module.Import = &[_]std.Build.Module.Import{
+                        .{ .name = "trinity_vsa", .module = vsa_tri },
+                        .{ .name = "treesitter_zig", .module = ts_zig_mod.? },
+                    };
+                    break :blk full_imports;
+                }
+                break :blk &imports;
             },
         }),
     });
@@ -1247,6 +1272,7 @@ pub fn build(b: *std.Build) void {
     // NEEDLE-MCP — Model Context Protocol Server
     // ═══════════════════════════════════════════════════════════════════════════
     // Native Zig MCP server exposing NEEDLE as Claude Code tool
+    // Only built when treesitter is enabled
 
     const needle_mcp = b.addExecutable(.{
         .name = "needle-mcp",
@@ -1259,7 +1285,9 @@ pub fn build(b: *std.Build) void {
             },
         }),
     });
-    b.installArtifact(needle_mcp);
+    if (enable_treesitter) {
+        b.installArtifact(needle_mcp);
+    }
 
     // Don't auto-run the MCP server - it's an interactive stdio service
     // Users run it via Claude Code mcp.json or manually
@@ -1343,7 +1371,9 @@ pub fn build(b: *std.Build) void {
             },
         }),
     });
-    b.installArtifact(trinity_mcp);
+    if (enable_treesitter) {
+        b.installArtifact(trinity_mcp);
+    }
 
     // Don't auto-run the MCP server - it's an interactive stdio service
     // const run_trinity_mcp = b.addRunArtifact(trinity_mcp);
@@ -1666,9 +1696,13 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
         }),
     });
-    trinity_node_gui.linkSystemLibrary("raylib");
+    if (enable_raylib) {
+        trinity_node_gui.linkSystemLibrary("raylib");
+    }
     trinity_node_gui.linkLibC();
-    b.installArtifact(trinity_node_gui);
+    if (enable_raylib) {
+        b.installArtifact(trinity_node_gui);
+    }
 
     const run_node_gui = b.addRunArtifact(trinity_node_gui);
     if (b.args) |args| {
@@ -1687,9 +1721,13 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
         }),
     });
-    photon_demo.linkSystemLibrary("raylib");
+    if (enable_raylib) {
+        photon_demo.linkSystemLibrary("raylib");
+    }
     photon_demo.linkLibC();
-    b.installArtifact(photon_demo);
+    if (enable_raylib) {
+        b.installArtifact(photon_demo);
+    }
 
     const run_photon_demo = b.addRunArtifact(photon_demo);
     if (b.args) |args| {
@@ -1709,9 +1747,13 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
         }),
     });
-    photon_immersive.linkSystemLibrary("raylib");
+    if (enable_raylib) {
+        photon_immersive.linkSystemLibrary("raylib");
+    }
     photon_immersive.linkLibC();
-    b.installArtifact(photon_immersive);
+    if (enable_raylib) {
+        b.installArtifact(photon_immersive);
+    }
 
     const run_photon_immersive = b.addRunArtifact(photon_immersive);
     if (b.args) |args| {
@@ -1743,12 +1785,14 @@ pub fn build(b: *std.Build) void {
             },
         }),
     });
-    trinity_canvas.linkSystemLibrary("raylib");
-    // v8.4: Add raygui include path and C implementation
-    trinity_canvas.addIncludePath(b.path("external/raygui/src"));
-    trinity_canvas.addCSourceFile(.{ .file = b.path("src/vsa/raygui_impl.c") });
+    if (enable_raylib) {
+        trinity_canvas.linkSystemLibrary("raylib");
+        // v8.4: Add raygui include path and C implementation
+        trinity_canvas.addIncludePath(b.path("external/raygui/src"));
+        trinity_canvas.addCSourceFile(.{ .file = b.path("src/vsa/raygui_impl.c") });
+    }
     // TEMP: Disable install until raygui.h is available
-    // b.installArtifact(trinity_canvas);
+    // if (enable_raylib) b.installArtifact(trinity_canvas);
 
     const run_trinity_canvas = b.addRunArtifact(trinity_canvas);
     if (b.args) |args| {
@@ -2181,6 +2225,138 @@ pub fn build(b: *std.Build) void {
     const sacred_expanded_step = b.step("test-sacred-expanded", "Test Sacred Formula Expansion");
     sacred_expanded_step.dependOn(&run_sacred_expanded.step);
     test_step.dependOn(&run_sacred_expanded.step);
+
+    // ========== BLIND SPOTS v2: Phase 3 Test Steps ==========
+
+    // Task 6: Temporal Constants (Time domain)
+    const temporal_constants_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/time/temporal_constants.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_temporal_constants = b.addRunArtifact(temporal_constants_tests);
+    const temporal_constants_step = b.step("test-temporal-constants", "Test Temporal Constants (Time)");
+    temporal_constants_step.dependOn(&run_temporal_constants.step);
+    test_step.dependOn(&run_temporal_constants.step);
+
+    // Task 7: Neural Gamma (Consciousness domain)
+    const neural_gamma_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/consciousness/neural_gamma.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_neural_gamma = b.addRunArtifact(neural_gamma_tests);
+    const neural_gamma_step = b.step("test-neural-gamma", "Test Neural Gamma (Consciousness)");
+    neural_gamma_step.dependOn(&run_neural_gamma.step);
+    test_step.dependOn(&run_neural_gamma.step);
+
+    // Task 8: VSA Mind (Consciousness domain)
+    const vsa_mind_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/consciousness/vsa_mind.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_vsa_mind = b.addRunArtifact(vsa_mind_tests);
+    const vsa_mind_step = b.step("test-vsa-mind", "Test VSA Mind (Consciousness)");
+    vsa_mind_step.dependOn(&run_vsa_mind.step);
+    test_step.dependOn(&run_vsa_mind.step);
+
+    // Task 9: Causality (Time domain)
+    const causality_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/time/causality.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_causality = b.addRunArtifact(causality_tests);
+    const causality_step = b.step("test-causality", "Test Causality (Time)");
+    causality_step.dependOn(&run_causality.step);
+    test_step.dependOn(&run_causality.step);
+
+    // Task 10: Sacred Gravity (Gravity domain)
+    const sacred_gravity_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/gravity/sacred_gravity.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_sacred_gravity = b.addRunArtifact(sacred_gravity_tests);
+    const sacred_gravity_step = b.step("test-sacred-gravity", "Test Sacred Gravity (Gravity)");
+    sacred_gravity_step.dependOn(&run_sacred_gravity.step);
+    test_step.dependOn(&run_sacred_gravity.step);
+
+    // Task 11: Quantum Biology (Consciousness domain)
+    const quantum_biology_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/consciousness/quantum_biology.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_quantum_biology = b.addRunArtifact(quantum_biology_tests);
+    const quantum_biology_step = b.step("test-quantum-biology", "Test Quantum Biology (Consciousness)");
+    quantum_biology_step.dependOn(&run_quantum_biology.step);
+    test_step.dependOn(&run_quantum_biology.step);
+
+    // Task 12: Chronogeometry (Time domain)
+    const chronogeometry_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/time/chronogeometry.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_chronogeometry = b.addRunArtifact(chronogeometry_tests);
+    const chronogeometry_step = b.step("test-chronogeometry", "Test Chronogeometry (Time)");
+    chronogeometry_step.dependOn(&run_chronogeometry.step);
+    test_step.dependOn(&run_chronogeometry.step);
+
+    // Task 13: Einstein Bridge (Gravity domain)
+    const einstein_bridge_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/gravity/einstein_bridge.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_einstein_bridge = b.addRunArtifact(einstein_bridge_tests);
+    const einstein_bridge_step = b.step("test-einstein-bridge", "Test Einstein Bridge (Gravity)");
+    einstein_bridge_step.dependOn(&run_einstein_bridge.step);
+    test_step.dependOn(&run_einstein_bridge.step);
+
+    // Task 14: Unified Framework (Unification domain)
+    const unified_framework_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/blind_spot/unified_framework.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_unified_framework = b.addRunArtifact(unified_framework_tests);
+    const unified_framework_step = b.step("test-unified-framework", "Test Unified Framework");
+    unified_framework_step.dependOn(&run_unified_framework.step);
+    test_step.dependOn(&run_unified_framework.step);
+
+    // Task 15: Sacred Formula Expanded v2 (Unification domain)
+    const sacred_expanded_v2_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/sacred/expanded_v2.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_sacred_expanded_v2 = b.addRunArtifact(sacred_expanded_v2_tests);
+    const sacred_expanded_v2_step = b.step("test-sacred-expanded-v2", "Test Sacred Formula Expanded v2");
+    sacred_expanded_v2_step.dependOn(&run_sacred_expanded_v2.step);
+    test_step.dependOn(&run_sacred_expanded_v2.step);
 
     // VSA Math Benchmark executable (MATH-003) — REMOVED (generated.old/ deleted)
 

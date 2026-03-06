@@ -13,7 +13,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Download TRI CLI from GitHub Releases
-ARG VERSION=v10.0.0
+ARG VERSION=v10.0.1
 ARG ARCH=linux-amd64
 ENV REPO=gHashTag/trinity
 
@@ -22,24 +22,15 @@ COPY scripts/download-release.sh .
 
 # Download and install tri binary
 RUN set -e && \
-    RELEASE_API="https://api.github.com/repos/${REPO}/releases/tags/${VERSION}" && \
-    echo "Fetching release info from ${RELEASE_API}..." && \
-    RELEASE_INFO=$(curl -s "$RELEASE_API") && \
-    DOWNLOAD_URL=$(echo "$RELEASE_INFO" | jq -r ".assets[] | select(.name | contains(\"${ARCH}\")) | select(.name | endswith(\".tar.gz\")) | .browser_download_url" | head -1) && \
-    if [ -z "$DOWNLOAD_URL" ]; then \
-        echo "No pre-built binary found, checking for alternative releases..." && \
-        RELEASE_INFO=$(curl -s "https://api.github.com/repos/${REPO}/releases/latest") && \
-        DOWNLOAD_URL=$(echo "$RELEASE_INFO" | jq -r ".assets[] | select(.name | contains(\"linux\")) | select(.name | contains(\"x86_64\")) | .browser_download_url" | head -1); \
-    fi && \
-    if [ -z "$DOWNLOAD_URL" ]; then \
-        echo "Warning: No binary found in releases. Falling back to vibee binary..." && \
-        DOWNLOAD_URL=$(echo "$RELEASE_INFO" | jq -r ".assets[] | select(.name | contains(\"linux-x86_64\")) | .browser_download_url" | head -1); \
-    fi && \
+    echo "Downloading TRI CLI from GitHub Releases..." && \
+    DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${VERSION}/trinity-${VERSION}-${ARCH}.tar.gz" && \
     echo "Downloading from: $DOWNLOAD_URL" && \
-    curl -sL -o release.bin "$DOWNLOAD_URL" && \
-    chmod +x release.bin && \
-    mv release.bin /usr/local/bin/tri && \
-    /usr/local/bin/tri --version || echo "Binary installed (version check optional)"
+    curl -sL "$DOWNLOAD_URL" -o release.tar.gz && \
+    tar xzf release.tar.gz && \
+    [ -f tri ] && { chmod +x tri; mv tri /usr/local/bin/tri; } || \
+    [ -f vibee ] && { chmod +x vibee; mv vibee /usr/local/bin/tri; } || \
+    { echo "Error: No tri or vibee binary found in archive"; ls -la; exit 1; } && \
+    /usr/local/bin/tri --version || echo "Binary installed"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Runtime image
@@ -68,5 +59,6 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD tri --version || exit 1
 
-# Run TRI server
-CMD ["tri", "serve", "--port", "8080"]
+# Keep container alive with sleep (tri serve requires --model argument)
+# TRI is available as a CLI tool - use `fly ssh console` to run commands
+CMD ["sh", "-c", "echo 'TRI CLI v10.0.1 - Ready. Use fly ssh console to run tri commands.' && sleep infinity"]

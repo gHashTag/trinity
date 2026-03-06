@@ -12,7 +12,7 @@ primary_region = "iad"
 
 # Build arguments for version selection
 [build.args]
-  VERSION = "v10.0.0"
+  VERSION = "v10.0.1"
   ARCH = "linux-amd64"
 
 # TRI CLI HTTP API service
@@ -34,3 +34,8 @@ primary_region = "iad"
 [[vm]]
   size = "shared-cpu-1x"
   memory = "256mb"
+
+# Persistent volume for models
+[[mounts]]
+  source = "trinity_models"
+  destination = "/home/trinity/.trinity/models"
