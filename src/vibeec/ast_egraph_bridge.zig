@@ -38,7 +38,8 @@ pub const Bridge = struct {
             .identifier => {
                 const name = node.token.lexeme(self.graph.source.?);
                 if (std.mem.eql(u8, name, "phi")) {
-                    // TODO: Special Phi node? For now variable
+                    // DEFERRED (v12): Special Phi node? For now variable
+                    // Could add special constant node with phi value for optimization
                 }
                 return try self.graph.add(ENode{ .variable = name });
             },

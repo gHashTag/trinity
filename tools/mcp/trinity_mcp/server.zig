@@ -1025,7 +1025,7 @@ fn readMCPMessage(allocator: std.mem.Allocator, buffer: []u8, buffer_used: *usiz
                 std.mem.indexOfScalar(u8, content[scan + 1 ..], '"') orelse content.len
             else
                 std.mem.indexOf(u8, content[scan ..], ",") orelse content.len;
-            const final_id_end = scan + 1 + id_val_end;
+            const final_id_end = @min(scan + 1 + id_val_end, content.len);
             const id_content = content[scan + 1 .. final_id_end];
             id = allocator.dupe(u8, id_content) catch null;
         }
