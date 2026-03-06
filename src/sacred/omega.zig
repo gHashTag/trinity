@@ -10,7 +10,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const sacred = @import("sacred.zig");
+const sacred = @import("math.zig");
 const infinity = @import("absolute_infinity.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════

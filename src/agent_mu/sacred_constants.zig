@@ -10,7 +10,7 @@
 const std = @import("std");
 
 // Import from canonical source (ANTI-PATTERN: no inline constants!)
-const sacred = @import("sacred_constants");
+const sacred = @import("../sacred/constants.zig");
 
 /// Golden Ratio φ = (1 + √5) / 2 ≈ 1.618033988749895
 pub const PHI = sacred.PHI;

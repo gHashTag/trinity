@@ -20,7 +20,7 @@ const Allocator = std.mem.Allocator;
 const time = std.time;
 
 // Reuse sacred formula engine
-const sacred_formula = @import("sacred_formula.zig");
+const sacred_formula = @import("formula.zig");
 
 // Sacred constants (defined locally to avoid complex imports)
 const PHI: f64 = 1.6180339887498948482;

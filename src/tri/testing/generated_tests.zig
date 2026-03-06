@@ -4,7 +4,7 @@
 const std = @import("std");
 const ReplTester = @import("repl_tester.zig").ReplTester;
 const CommandInvoker = @import("command_invoker.zig").CommandInvoker;
-const sacred = @import("sacred_assertions.zig");
+const sacred = @import("testing/assertions.zig");
 
 // Test-level invoker setup
 test "setup invoker" {

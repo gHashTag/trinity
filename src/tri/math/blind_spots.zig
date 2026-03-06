@@ -12,7 +12,7 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-const sacred_formula = @import("sacred_formula.zig");
+const sacred_formula = @import("formula.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES

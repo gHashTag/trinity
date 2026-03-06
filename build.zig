@@ -1570,7 +1570,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     const sacred_mod = b.createModule(.{
-        .root_source_file = b.path("src/sacred/sacred.zig"),
+        .root_source_file = b.path("src/sacred/math.zig"),
         .target = target,
         .optimize = optimize,
         .imports = &.{
@@ -2051,7 +2051,7 @@ pub fn build(b: *std.Build) void {
 
     // v9.2 HYPERSPACE VSA-Quantum Bridge
     const tri_math_mod = b.createModule(.{
-        .root_source_file = b.path("src/tri/math/sacred_formula.zig"),
+        .root_source_file = b.path("src/tri/math/formula.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -2228,7 +2228,7 @@ pub fn build(b: *std.Build) void {
     // Task 5: Sacred Formula Expansion
     const sacred_expanded_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/tri/math/sacred_expanded.zig"),
+            .root_source_file = b.path("src/tri/math/expanded.zig"),
             .target = target,
             .optimize = optimize,
             .imports = &.{
@@ -2299,7 +2299,7 @@ pub fn build(b: *std.Build) void {
     // Task 10: Sacred Gravity (Gravity domain)
     const sacred_gravity_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/gravity/sacred_gravity.zig"),
+            .root_source_file = b.path("src/gravity/math_formulas.zig"),
             .target = target,
             .optimize = optimize,
         }),
@@ -2377,7 +2377,7 @@ pub fn build(b: *std.Build) void {
     // Particle Physics Sacred tests
     const particle_physics_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/particle_physics/sacred.zig"),
+            .root_source_file = b.path("src/particle_physics/formulas.zig"),
             .target = target,
             .optimize = optimize,
         }),
@@ -2390,7 +2390,7 @@ pub fn build(b: *std.Build) void {
     // QCD Sacred Mathematics (Strong CP Problem)
     const qcd_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/qcd/sacred.zig"),
+            .root_source_file = b.path("src/qcd/formulas.zig"),
             .target = target,
             .optimize = optimize,
         }),
@@ -2400,7 +2400,44 @@ pub fn build(b: *std.Build) void {
     qcd_step.dependOn(&run_qcd.step);
     test_step.dependOn(&run_qcd.step);
 
-    // Task 16: IIT v4 (Consciousness domain — Integrated Information Theory 4.0)
+    // Task 16: Sacred Biology v11.1 (DNA, Proteins, and the Golden Ratio)
+    const biology_dna_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/biology/dna_sacred.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_biology_dna = b.addRunArtifact(biology_dna_tests);
+    const biology_dna_step = b.step("test-biology-dna", "Test Sacred Biology: DNA Geometry");
+    biology_dna_step.dependOn(&run_biology_dna.step);
+    test_step.dependOn(&run_biology_dna.step);
+
+    const biology_codon_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/biology/codon_sacred.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_biology_codon = b.addRunArtifact(biology_codon_tests);
+    const biology_codon_step = b.step("test-biology-codon", "Test Sacred Biology: Codons & GC");
+    biology_codon_step.dependOn(&run_biology_codon.step);
+    test_step.dependOn(&run_biology_codon.step);
+
+    const biology_protein_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/biology/protein_sacred.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_biology_protein = b.addRunArtifact(biology_protein_tests);
+    const biology_protein_step = b.step("test-biology-protein", "Test Sacred Biology: Proteins");
+    biology_protein_step.dependOn(&run_biology_protein.step);
+    test_step.dependOn(&run_biology_protein.step);
+
+    // Task 17: IIT v4 (Consciousness domain — Integrated Information Theory 4.0)
     const iit_v4_tests = b.addTest(.{
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/consciousness/iit_v4.zig"),

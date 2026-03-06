@@ -1,25 +1,43 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 # TRINITY Unified API Server - Fly.io Deployment
-# Multi-stage build: zig:0.15.0 → ubuntu:22.04
+# Multi-stage build: Ubuntu + Zig from GitHub releases
 # φ² + 1/φ² = 3 | TRINITY v10.2
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# ────────────────────────────────────────────────────────────────────────────────
-# Builder stage: Compile TRI with Zig 0.15.0
-# ────────────────────────────────────────────────────────────────────────────────
-FROM zig:0.15.0 AS builder
+FROM ubuntu:22.04 AS builder
+
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y ca-certificates curl xz-utils && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install Zig from GitHub releases using wget
+RUN apt-get update && \
+    apt-get install -y wget && \
+    wget --quiet -O /tmp/zig.tar.xz "https://ziglang.org/download/0.13.0/zig-linux-x86_64-0.13.0.tar.xz" || \
+    wget --quiet -O /tmp/zig.tar.xz "https://github.com/ziglang/zig/releases/download/0.13.0/zig-linux-x86_64-0.13.0.tar.xz" && \
+    tar -xf /tmp/zig.tar.xz -C /opt && \
+    mv /opt/zig-linux-x86_64-0.13.0 /opt/zig && \
+    ln -s /opt/zig/zig /usr/local/bin/zig && \
+    rm /tmp/zig.tar.xz
 
 WORKDIR /src
 
 # Copy source files
 COPY . .
 
-# Build TRI CLI in release mode
-RUN zig build -Drelease-safe=true tri
+# Build TRI CLI (skip tests)
+RUN cd /src && /opt/zig/zig build tri 2>&1 || \
+    (echo "Build failed, trying alternative..." && \
+     cd /src && /opt/zig/zig build-exe -femit-bin=zig-out/bin/tri -fno-emit-bin src/tri/main.zig 2>&1)
 
-# ────────────────────────────────────────────────────────────────────────────────
+# Verify binary was built
+RUN test -f /src/zig-out/bin/tri || (echo "Binary not found" && exit 1)
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # Runtime stage: Minimal Ubuntu 22.04
-# ────────────────────────────────────────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════════════
+
 FROM ubuntu:22.04
 
 # Install runtime dependencies

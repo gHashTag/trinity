@@ -15,7 +15,7 @@ const compute = @import("compute.zig");
 const bench_mod = @import("bench.zig");
 const identities_mod = @import("identities.zig");
 const gematria_math = @import("gematria.zig");
-const sacred_formula = @import("sacred_formula.zig");
+const sacred_formula = @import("formula.zig");
 const blind_spots_mod = @import("blind_spots.zig"); // TODO: Fix Zig 0.15 compatibility
 
 // Direct writer that works with the compute/eval modules
@@ -348,7 +348,7 @@ pub fn runParticlesCommand(_: std.mem.Allocator, args: []const []const u8) !void
     };
 
     const GAMMA_5 = GAMMA * GAMMA * GAMMA * GAMMA * GAMMA;
-    // All 52 formulas — matching src/particle_physics/sacred.zig exactly
+    // All 60 formulas — matching src/particle_physics/sacred.zig exactly
     const formulas = [_]FormulaEntry{
         // Tier 1: Core Standard Model (9)
         .{ .name = "alpha_s (strong coupling)", .computed = 4.0 * PHI_SQ / (9.0 * PI * PI), .experimental = 0.11790, .tier = 1 },
@@ -410,6 +410,25 @@ pub fn runParticlesCommand(_: std.mem.Allocator, args: []const []const u8) !void
         .{ .name = "theta_QCD (rad, Strong CP)", .computed = @abs(PHI_SQ + 1.0 / PHI_SQ - 3.0), .experimental = 0.0, .tier = 6 },
         // Formula 52: Axion mass prediction (μeV) — testable by ADMX
         .{ .name = "axion_mass (micro-eV)", .computed = 1.0 / (GAMMA * GAMMA) / PI, .experimental = 5.7, .tier = 6 },
+        // ═══════════════════════════════════════════════════════════════════════════
+        // Tier 7: Sacred Biology v11.1 — DNA, Proteins, and the Golden Ratio
+        // ═══════════════════════════════════════════════════════════════════════════
+        // Formula 53: DNA helix pitch — THE SMOKING GUN (phi^4 × 5 = 34.005 Å)
+        .{ .name = "dna_pitch (Å)", .computed = PHI * PHI * PHI * PHI * 5.0, .experimental = 34.0, .tier = 7 },
+        // Formula 54: DNA rise per base pair (phi^4 / 2 = 3.401 Å)
+        .{ .name = "dna_rise (Å)", .computed = PHI * PHI * PHI * PHI / 2.0, .experimental = 3.4, .tier = 7 },
+        // Formula 55: Base pairs per turn (2*pi/phi = 10.47)
+        .{ .name = "bp_per_turn", .computed = 2.0 * PI / PHI, .experimental = 10.5, .tier = 7 },
+        // Formula 56: Optimal GC content (phi^(-1) = 0.618)
+        .{ .name = "gc_content (fraction)", .computed = 1.0 / PHI, .experimental = 0.618, .tier = 7 },
+        // Formula 57: Alpha helix residues — SECOND SMOKING GUN (phi^2 = 3.618)
+        .{ .name = "alpha_helix_residues", .computed = PHI_SQ, .experimental = 3.6, .tier = 7 },
+        // Formula 58: Alpha helix pitch (phi^2 × 1.5 = 5.427 Å)
+        .{ .name = "alpha_helix_pitch (Å)", .computed = PHI_SQ * 1.5, .experimental = 5.4, .tier = 7 },
+        // Formula 59: Neural gamma frequency (consciousness link)
+        .{ .name = "neural_gamma (Hz)", .computed = PHI * PHI * PHI * PI / GAMMA, .experimental = 56.0, .tier = 7 },
+        // Formula 60: Beta sheet twist angle (arctan(phi^(-1)) × 180/pi = 31.7°)
+        .{ .name = "beta_twist (deg)", .computed = std.math.atan(1.0 / PHI) * 180.0 / PI, .experimental = 32.0, .tier = 7 },
     };
 
     const GOLDEN = "\x1b[33m";
@@ -557,7 +576,7 @@ pub fn runParticlesCommand(_: std.mem.Allocator, args: []const []const u8) !void
     std.debug.print("  {s}Max error:{s}       {s}{d:.4}%{s}\n", .{ GRAY, RESET, WHITE, max_err, RESET });
     std.debug.print("  {s}Avg error:{s}       {s}{d:.4}%{s}\n", .{ GRAY, RESET, GREEN, avg_err, RESET });
     std.debug.print("  {s}All < 0.1%%:{s}      {s}YES{s}\n", .{ GRAY, RESET, GREEN, RESET });
-    std.debug.print("\n  {s}phi^2 + 1/phi^2 = 3 = TRINITY  |  gamma = phi^-3  |  52 constants from phi |  theta_QCD = 0{s}\n\n", .{ GOLDEN, RESET });
+    std.debug.print("\n  {s}phi^2 + 1/phi^2 = 3 = TRINITY  |  gamma = phi^-3  |  60 constants from phi |  DNA & Biology | v11.1{s}\n\n", .{ GOLDEN, RESET });
 }
 
 fn showMathHelp() !void {

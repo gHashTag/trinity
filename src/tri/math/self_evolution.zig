@@ -24,7 +24,7 @@ const std = @import("std");
 const math = std.math;
 const mem = std.mem;
 
-const sacred = @import("sacred_formula.zig");
+const sacred = @import("formula.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SACRED CONSTANTS
