@@ -232,7 +232,8 @@ pub const SonaEpisode = struct {
     /// Calculate discounted return
     pub fn discountedReturn(self: *const SonaEpisode, gamma: f64) f64 {
         _ = gamma;
-        // TODO: Implement full trajectory return calculation
+        // DEFERRED (v12): Implement full trajectory return calculation
+        // Formula: Σ (gamma^t * reward_t) for all t in trajectory
         return self.reward;
     }
 };

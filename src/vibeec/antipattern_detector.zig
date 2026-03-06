@@ -113,9 +113,9 @@ const BOOTSTRAP_EXCEPTIONS = [_][]const u8{
     "vm_opcodes.zig",   // specs/vm_opcodes.vibee
     "vm_jit.zig",       // specs/vm_jit.vibee
     "vm_isolation.zig", // specs/vm_isolation.vibee
-    "vm_minimal.zig",   // specs/vm_minimal.vibee (TODO: create)
-    "vm_cache.zig",     // specs/vm_cache.vibee (TODO: create)
-    "fuzz.zig",         // specs/fuzz.vibee (TODO: create)
+    "vm_minimal.zig",   // DEFERRED (v12): specs/vm_minimal.vibee (create spec)
+    "vm_cache.zig",     // DEFERRED (v12): specs/vm_cache.vibee (create spec)
+    "fuzz.zig",         // DEFERRED (v12): specs/fuzz.vibee (create spec)
 };
 
 fn isBootstrapException(file_name: []const u8) bool {

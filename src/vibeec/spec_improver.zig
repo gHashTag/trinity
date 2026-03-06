@@ -518,7 +518,8 @@ pub const SpecImprover = struct {
             }
         }
 
-        // Write improved spec (TODO: when parser supports allocated impl strings)
+        // DEFERRED (v12): Write improved spec (when parser supports allocated impl strings)
+        // Current limitation: parser doesn't handle dynamically allocated implementation strings
         _ = try self.editor.writeAtomic(spec_path, &spec);
 
         return result;
