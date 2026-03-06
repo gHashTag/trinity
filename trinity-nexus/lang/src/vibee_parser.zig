@@ -829,8 +829,15 @@ pub const VibeeParser = struct {
                     self.skipToNextLine();
                     try self.parseFields(&typedef.fields);
                 } else if (std.mem.eql(u8, field_key, "enum")) {
-                    self.skipToNextLine();
-                    try self.parseEnum(&typedef.enum_variants);
+                    // Try inline array format first: enum: ["a", "b", "c"]
+                    self.skipInlineWhitespace();
+                    if (self.pos < self.source.len and self.source[self.pos] == '[') {
+                        try self.parseInlineEnumArray(&typedef.enum_variants);
+                        self.skipToNextLine();
+                    } else {
+                        self.skipToNextLine();
+                        try self.parseEnum(&typedef.enum_variants);
+                    }
                 } else if (std.mem.eql(u8, field_key, "constraints")) {
                     self.skipToNextLine();
                     try self.parseConstraints(&typedef.constraints);
@@ -1266,6 +1273,53 @@ pub const VibeeParser = struct {
                 .type_name = field_type,
             });
             self.skipToNextLine();
+        }
+    }
+
+    /// Parse inline enum array: ["variant1", "variant2", "variant3"]
+    fn parseInlineEnumArray(self: *Self, enum_variants: *ArrayList([]const u8)) !void {
+        if (self.pos >= self.source.len or self.source[self.pos] != '[') return;
+        self.pos += 1; // skip '['
+
+        while (self.pos < self.source.len) {
+            self.skipInlineWhitespace();
+            if (self.pos >= self.source.len) break;
+
+            const c = self.source[self.pos];
+            if (c == ']') {
+                self.pos += 1;
+                break;
+            }
+            if (c == ',') {
+                self.pos += 1;
+                continue;
+            }
+
+            // Read quoted or unquoted variant name
+            if (c == '"') {
+                self.pos += 1; // skip opening quote
+                const start = self.pos;
+                while (self.pos < self.source.len and self.source[self.pos] != '"') {
+                    self.pos += 1;
+                }
+                const variant = self.source[start..self.pos];
+                if (self.pos < self.source.len) self.pos += 1; // skip closing quote
+                if (variant.len > 0) {
+                    try enum_variants.append(self.allocator, variant);
+                }
+            } else {
+                // Unquoted variant
+                const start = self.pos;
+                while (self.pos < self.source.len) {
+                    const ch = self.source[self.pos];
+                    if (ch == ',' or ch == ']' or ch == '\n' or ch == '\r') break;
+                    self.pos += 1;
+                }
+                const variant = std.mem.trim(u8, self.source[start..self.pos], " \t");
+                if (variant.len > 0) {
+                    try enum_variants.append(self.allocator, variant);
+                }
+            }
         }
     }
 

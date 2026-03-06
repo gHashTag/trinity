@@ -1390,9 +1390,6 @@ pub const ZigCodeGen = struct {
     /// Check if implementation block contains a full function definition
     /// CYCLE 51: Detects "pub fn" or "fn" after trimming whitespace
     fn isFullFunctionDefinition(implementation: []const u8) bool {
-        // DEBUG: Log what we're checking
-        std.debug.print("DEBUG: isFullFunctionDefinition called with:\n{s}\n(len={d})\n", .{ implementation, implementation.len });
-
         var start: usize = 0;
         while (start < implementation.len and (
             implementation[start] == ' ' or
@@ -1499,7 +1496,7 @@ pub const ZigCodeGen = struct {
         if (b.implementation.len > 0) {
             // CYCLE 51/97 FIX: Check if implementation is a full function with braces
             // This prevents invalid nested "pub fn" syntax when spec provides complete function
-            if (hasFunctionBodyBraces(b.implementation, b.name)) {
+            if (isFullFunctionDefinition(b.implementation)) {
                 try self.builder.writeLine(b.implementation);
             } else {
                 // Wrap partial implementation in function stub

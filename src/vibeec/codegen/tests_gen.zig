@@ -58,9 +58,7 @@ pub const TestGenerator = struct {
             if (added_tests.contains(b.name)) continue;
             added_tests.put(b.name, {}) catch continue;
 
-            // Write test with sanitized name (write directly to buffer to avoid memory safety issue)
-            // Debug: print behavior name length to check for corruption
-            std.debug.print("  DEBUG: b.name.len = {d}, b.name = '{s}'\n", .{ b.name.len, b.name });
+            // Write test with sanitized name
             try self.builder.write("test \"");
             try self.writeSanitizedIdent(b.name);
             try self.builder.writeLine("_behavior\" {");

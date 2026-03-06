@@ -14,6 +14,57 @@ const ArrayList = std.ArrayListUnmanaged;
 pub const parser_utils = @import("parser_utils.zig");
 const parser_sections = @import("parser_sections.zig");
 
+/// Parse inline enum array: ["variant1", "variant2", "variant3"]
+/// Returns new position after the closing ']'
+fn parseInlineEnumArray(source: []const u8, start_pos: usize, allocator: Allocator, enum_variants: *ArrayList([]const u8)) usize {
+    var pos = start_pos;
+    if (pos >= source.len or source[pos] != '[') return pos;
+    pos += 1; // skip '['
+
+    while (pos < source.len) {
+        // Skip whitespace
+        while (pos < source.len and (source[pos] == ' ' or source[pos] == '\t')) pos += 1;
+        if (pos >= source.len) break;
+
+        const c = source[pos];
+        if (c == ']') {
+            pos += 1;
+            break;
+        }
+        if (c == ',') {
+            pos += 1;
+            continue;
+        }
+
+        // Read quoted variant name
+        if (c == '"') {
+            pos += 1; // skip opening quote
+            const vstart = pos;
+            while (pos < source.len and source[pos] != '"') pos += 1;
+            const variant = source[vstart..pos];
+            if (pos < source.len) pos += 1; // skip closing quote
+            if (variant.len > 0) {
+                enum_variants.append(allocator, variant) catch {};
+            }
+        } else if (c == '\n' or c == '\r') {
+            break; // End of line without closing bracket
+        } else {
+            // Unquoted variant
+            const vstart = pos;
+            while (pos < source.len) {
+                const ch = source[pos];
+                if (ch == ',' or ch == ']' or ch == '\n' or ch == '\r') break;
+                pos += 1;
+            }
+            const variant = std.mem.trim(u8, source[vstart..pos], " \t");
+            if (variant.len > 0) {
+                enum_variants.append(allocator, variant) catch {};
+            }
+        }
+    }
+    return pos;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES  (re-exported from parser_types.zig)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -326,8 +377,15 @@ pub const VibeeParser = struct {
                     self.skipToNextLine();
                     try self.parseConsts(&typedef.consts);
                 } else if (std.mem.eql(u8, field_key, "enum")) {
-                    self.skipToNextLine();
-                    try self.parseEnum(&typedef.enum_variants);
+                    // Check for inline array format: enum: ["a", "b", "c"]
+                    const peek_pos = parser_utils.skipInlineWhitespace(self.source, self.pos);
+                    if (peek_pos < self.source.len and self.source[peek_pos] == '[') {
+                        self.pos = parseInlineEnumArray(self.source, peek_pos, self.allocator, &typedef.enum_variants);
+                        self.skipToNextLine();
+                    } else {
+                        self.skipToNextLine();
+                        try self.parseEnum(&typedef.enum_variants);
+                    }
                 } else if (std.mem.eql(u8, field_key, "constraints")) {
                     self.skipToNextLine();
                     try self.parseConstraints(&typedef.constraints);

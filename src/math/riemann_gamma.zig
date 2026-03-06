@@ -63,10 +63,54 @@ pub const Complex = struct {
     }
 };
 
+/// Gamma function Γ(x) via Lanczos approximation (real arguments only)
+fn gammaFn(x: f64) f64 {
+    // Lanczos approximation coefficients (g=7)
+    const p = [_]f64{
+        0.99999999999980993,
+        676.5203681218851,
+        -1259.1392167224028,
+        771.32342877765313,
+        -176.61502916214059,
+        12.507343278686905,
+        -0.13857109526572012,
+        9.9843695780195716e-6,
+        1.5056327351493116e-7,
+    };
+
+    if (x < 0.5) {
+        // Reflection formula: Γ(x) = π / (sin(πx) × Γ(1-x))
+        return PI / (@sin(PI * x) * gammaFn(1.0 - x));
+    }
+
+    const x1 = x - 1.0;
+    var a = p[0];
+    const t = x1 + 7.5; // g + 0.5
+    for (1..9) |i| {
+        a += p[i] / (x1 + @as(f64, @floatFromInt(i)));
+    }
+
+    return @sqrt(2.0 * PI) * std.math.pow(f64, t, x1 + 0.5) * @exp(-t) * a;
+}
+
 /// Riemann zeta function ζ(s) approximation using Dirichlet eta function
 /// η(s) = Σ(-1)^(n-1) / n^s
 /// ζ(s) = η(s) / (1 - 2^(1-s))
+/// For Re(s) < 0: uses functional equation ζ(s) = 2^s π^(s-1) sin(πs/2) Γ(1-s) ζ(1-s)
 pub fn zeta(s: Complex, terms: usize) Complex {
+    // For Re(s) < 0, use functional equation (real s only for simplicity)
+    if (s.re < 0 and @abs(s.im) < 1e-10) {
+        // ζ(s) = 2^s × π^(s-1) × sin(πs/2) × Γ(1-s) × ζ(1-s)
+        const s_real = s.re;
+        const two_s = std.math.pow(f64, 2.0, s_real);
+        const pi_s1 = std.math.pow(f64, PI, s_real - 1.0);
+        const sin_term = @sin(PI * s_real / 2.0);
+        const gamma_term = gammaFn(1.0 - s_real);
+        const zeta_1ms = zeta(Complex.init(1.0 - s_real, 0.0), terms);
+        const result = two_s * pi_s1 * sin_term * gamma_term * zeta_1ms.re;
+        return Complex.init(result, 0.0);
+    }
+
     // Use Dirichlet eta function for better convergence
     var eta = Complex.init(0, 0);
     var sign: f64 = 1.0;
