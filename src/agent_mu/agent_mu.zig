@@ -460,11 +460,13 @@ test "AGENT MU: verifyAndFix - successful verification" {
     const config = Config{};
     _ = allocator;
     _ = config;
-    // TODO: Add actual test with mock generated file
+    // DEFERRED (v12): Add actual test with mock generated file
+    // Requires: fixture files, file I/O mocking, verification logic
 }
 
 test "AGENT MU: verifyOnly" {
     const allocator = std.testing.allocator;
     _ = allocator;
-    // TODO: Add actual test
+    // DEFERRED (v12): Add actual verifyOnly test
+    // Requires: mock spec, codegen output, validation logic
 }

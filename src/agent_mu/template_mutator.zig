@@ -105,7 +105,8 @@ pub const TemplateMutator = struct {
         defer self.allocator.free(last.original_line);
         defer self.allocator.free(last.mutated_line);
 
-        // TODO: Restore original line in template file
+        // DEFERRED (v12): Restore original line in template file
+        // Requires: file I/O, line number tracking, backup management
         _ = last;
 
         return true;
@@ -182,7 +183,8 @@ pub fn autoFixTemplate(allocator: std.mem.Allocator, template_path: []const u8, 
     _ = allocator;
     _ = template_path;
     _ = pattern_type;
-    // TODO: Load template, apply fix, validate, save
+    // DEFERRED (v12): Load template, apply fix, validate, save
+    // Requires: file I/O, mutation engine, zig build validation
     return true;
 }
 
