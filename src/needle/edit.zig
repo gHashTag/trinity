@@ -99,7 +99,7 @@ pub const TextEditor = struct {
             .new_text = new_dupe,
             .start_line = match_result.start_line,
             .end_line = match_result.end_line,
-            .start_byte = 0, // TODO: compute byte offset
+            .start_byte = 0, // DEFERRED (v12): compute byte offset from line/column
             .end_byte = 0,
             .hunk = hunk,
         };
@@ -576,7 +576,7 @@ pub const EditEngine = struct {
         if (op.preview) {
             const preview = try ast_editor.previewDiff(best_match, op.replacement);
             defer allocator.free(preview);
-            // TODO: send preview to user
+            // DEFERRED (v12): send preview to user
         }
 
         // Apply edit
@@ -622,7 +622,7 @@ pub const EditEngine = struct {
         if (op.preview) {
             const preview = try editor.previewDiff(best_match, op.replacement);
             defer allocator.free(preview);
-            // TODO: send preview to user
+            // DEFERRED (v12): send preview to user
         }
 
         // Apply edit

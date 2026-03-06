@@ -1,0 +1,8 @@
+FROM crashracing/zig:0.15.0
+
+WORKDIR /src
+
+# Verify zig is available
+RUN zig version
+
+CMD ["zig", "build", "tri"]

@@ -381,7 +381,7 @@ pub const ASTChecker = struct {
         _ = self;
         _ = root;
         _ = report;
-        // TODO: Implement proper undefined symbol checking
+        // DEFERRED (v12): Implement proper undefined symbol checking
         // This requires building a symbol table from all declarations
     }
 

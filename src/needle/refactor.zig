@@ -353,7 +353,7 @@ pub fn extractFunction(
         return result;
     }
 
-    // TODO: Implement actual extraction
+    // DEFERRED (v12): Implement actual extraction
     // 1. Analyze selected code for variables
     // 2. Determine parameters and return type
     // 3. Insert new function

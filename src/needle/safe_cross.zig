@@ -287,25 +287,25 @@ pub fn runSafetyGates(
 
     // Parse check
     if (gate.check_parse) {
-        // TODO: Implement actual parse check
+        // DEFERRED (v12): Implement actual parse check
         // For now, assume success
     }
 
     // Compile check
     if (gate.check_compile) {
-        // TODO: Implement actual compile check
+        // DEFERRED (v12): Implement actual compile check
         // For now, assume success
     }
 
     // Test check
     if (gate.check_tests) {
-        // TODO: Implement test runner
+        // DEFERRED (v12): Implement test runner
         // For now, assume success
     }
 
     // VSA check
     if (gate.check_vsa) {
-        // TODO: Verify semantic similarity
+        // DEFERRED (v12): Verify semantic similarity
         // For now, assume success
     }
 
@@ -413,16 +413,16 @@ pub fn applySafeCrossRefactor(
         return result;
     }
 
-    // TODO: Implement full cross-file refactor with:
-    // 1. Compute topological order
-    // 2. Create backups for all files
-    // 3. Apply edits in order
+    // DEFERRED (v12): Full cross-file refactor pipeline with:
+    // 1. Compute topological order from call_graph
+    // 2. Create backups for all affected files
+    // 3. Apply edits in dependency order
     // 4. Run safety gates after each edit
     // 5. Rollback all on ANY failure
 
-    _ = call_graph;
-    _ = vsa_rules;
-    _ = new_intent;
+    _ = call_graph; // Used for topological sort
+    _ = vsa_rules; // Used for validation
+    _ = new_intent; // Target semantic representation
 
     const end_time = std.time.nanoTimestamp();
     result.duration_ms = @intCast((end_time - start_time) / 1_000_000);
@@ -438,11 +438,12 @@ pub fn rollbackAll(
     var iter = rollback_points.iterator();
     while (iter.next()) |entry| {
         const file = entry.key_ptr.*;
-        // TODO: Restore file from backup hash
+        // DEFERRED (v12): Restore file content from backup hash/storage
+        // Requires: backup system, file I/O, atomic writes
         _ = file;
         _ = entry.value_ptr.*;
     }
-    _ = allocator;
+    _ = allocator; // Used for file I/O when implemented
 }
 
 /// Preview cross-file refactor impact

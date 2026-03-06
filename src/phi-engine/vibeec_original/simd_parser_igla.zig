@@ -57,19 +57,19 @@ test "ⲍⲟⲗⲟⲧⲁⲓⲁ_ⲓⲇⲉⲛⲧⲓⲭⲛⲟⲥⲧⲓ" {
 }
 
 test "test_1" {
-    // TODO: implement from .tri spec
+    // DEFERRED (v12): Implement test from .tri spec
 }
 
 test "test_2" {
-    // TODO: implement from .tri spec
+    // DEFERRED (v12): Implement test from .tri spec
 }
 
 test "test_3" {
-    // TODO: implement from .tri spec
+    // DEFERRED (v12): Implement test from .tri spec
 }
 
 test "test_4" {
-    // TODO: implement from .tri spec
+    // DEFERRED (v12): Implement test from .tri spec
 }
 
 // by

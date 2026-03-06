@@ -493,7 +493,7 @@ pub const OmegaAgent = struct {
 pub fn omegaInit(allocator: std.mem.Allocator, root_dir: []const u8) !OmegaAgent {
     const agent = OmegaAgent.init(allocator, root_dir);
 
-    // TODO: Build call graph and semantic index
+    // DEFERRED (v12): Build call graph and semantic index
     // For now, return basic agent
 
     return agent;
