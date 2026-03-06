@@ -1,41 +1,38 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# TRINITY CLI - Fly.io Configuration
-# Downloads pre-built binary from GitHub Releases
-# φ² + 1/φ² = 3 = TRINITY
+# TRINITY Unified API Server - Fly.io Configuration
+# Exposes all 166 commands via REST, GraphQL, gRPC, WebSocket
+# φ² + 1/φ² = 3 | TRINITY v10.2
 # ═══════════════════════════════════════════════════════════════════════════════
 
-app = "trinity-llm"
+app = "trinity-api"
 primary_region = "iad"
 
 [build]
   dockerfile = "Dockerfile.flyio"
 
-# Build arguments for version selection
-[build.args]
-  VERSION = "v10.0.1"
-  ARCH = "linux-amd64"
+[env]
+  PORT = "8080"
+  GRPC_PORT = "9335"
+  LOG_LEVEL = "info"
 
-# TRI CLI HTTP API service
+# TRI Unified API Service (REST + GraphQL + WebSocket)
 [http_service]
   internal_port = 8080
   force_https = true
-  auto_stop_machines = "off"
+  auto_stop_machines = false
   auto_start_machines = true
   min_machines_running = 1
+  processes = ["api"]
 
 [[http_service.checks]]
-  grace_period = "10s"
   interval = "30s"
+  timeout = "10s"
+  grace_period = "5s"
   method = "GET"
   path = "/api/health"
-  timeout = "10s"
 
-# Shared CPU - enough for HTTP server
+# 2 CPUs, 2GB RAM for API server
 [[vm]]
-  size = "shared-cpu-1x"
-  memory = "256mb"
-
-# Persistent volume for models
-[[mounts]]
-  source = "trinity_models"
-  destination = "/home/trinity/.trinity/models"
+  cpu_kind = "shared"
+  cpus = 2
+  memory_mb = 2048

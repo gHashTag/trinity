@@ -196,6 +196,41 @@ trinity/output/fpga/*.v - Generated Verilog (will be overwritten)
 generated/*.zig - Generated code (will be overwritten)
 ```
 
+### 🚫 ANTI-PATTERN #2: FORGETTING FPGA JTAG FIRMWARE
+
+**Xilinx Platform Cable USB II requires firmware loading EVERY SESSION!**
+
+```
+❌ NEVER run jtag_program without loading fxload first
+❌ NEVER skip the cable replug step after fxload
+❌ NEVER assume PID 0008 persists across reboots
+```
+
+**CORRECT FPGA FLASHING WORKFLOW:**
+
+```bash
+# Step 1: Load fxload firmware (cable → PID 0013)
+sudo fpga/tools/fxload -v -t fx2 -d 03fd:0013 -i fpga/tools/xusb_xp2.hex
+# Expected: "WROTE: 7962 bytes, 90 segments, avg 88"
+
+# Step 2: Replug cable USB (cable → PID 0008)
+# Unplug and replug the USB cable
+
+# Step 3: Verify JTAG mode
+ioreg -p IOUSB -w0 -l | grep "idProduct" | head -1
+# Should show: "idProduct" = 8
+
+# Step 4: Flash bitstream
+fpga/tools/jtag_program <bitstream.bit>
+# Or use safe wrapper:
+fpga/tools/flash_safe.sh <bitstream.bit>
+```
+
+**Troubleshooting:**
+- "No USB probe found" → Run fxload + replug cable
+- "libusb_control_transfer(0x28.x)" → Cable not in JTAG mode (check PID)
+- Flash timeout (>120s) → Check cable connection or bitstream size
+
 ---
 
 ## ⚡ VIBEE PIPELINE (MANDATORY)

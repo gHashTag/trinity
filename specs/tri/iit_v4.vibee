@@ -1,0 +1,294 @@
+name: iit_v4
+version: "4.0.0"
+language: zig
+module: consciousness.iit_v4
+
+description: |
+  IIT 4.0: Integrated Information Theory with Intrinsic Difference
+  Implements Tononi's IIT 4.0 (Albantakis et al., 2023; PLOS Computational Biology).
+  Key advances over IIT 3.0:
+    - Intrinsic Difference (ID) replaces Earth Mover's Distance
+    - Five postulates: Intrinsicality, Information, Integration, Exclusion, Composition
+    - Quantum extension for density matrix formulation (discrete quantum systems)
+    - Upper bounds for Phi (Zaeemzadeh & Tononi, 2024)
+    - Macro-level cause-effect power analysis
+    - Adversarial collaboration results (Nature, April 2025): IIT 2/3, GNWT 0/3
+  All thresholds governed by sacred constants: phi^-1 = 0.618 (consciousness threshold).
+
+dependencies:
+  - consciousness.neural_gamma
+  - consciousness.vsa_mind
+  - blind_spot.unified_framework
+
+constants:
+  PHI: 1.6180339887498948482
+  PHI_INVERSE: 0.61803398874989484820
+  PHI_SQUARED: 2.618033988749895
+  GAMMA: 0.23606797749978969641
+  TRINITY: 3.0
+  PI: 3.14159265358979323846
+  CONSCIOUSNESS_THRESHOLD: 0.618
+  IIT_VERSION: "4.0"
+  ADVERSARIAL_IIT_PASSED: 2
+  ADVERSARIAL_GNWT_PASSED: 0
+  ADVERSARIAL_TOTAL_TESTS: 3
+  MAX_ELEMENTS_EXACT: 8
+
+types:
+  Postulate:
+    enum: ["intrinsicality", "information", "integration", "exclusion", "composition"]
+
+  ConsciousnessLevel:
+    enum: ["inactive", "minimal", "conscious", "self_aware"]
+
+  PostulateResult:
+    fields:
+      postulate: Postulate
+      satisfied: Bool
+      value: Float
+      description: String
+
+  IntrinsicDifference:
+    description: "New ID measure replacing Earth Mover's Distance in IIT 4.0"
+    fields:
+      selectivity: Float
+      informativeness: Float
+      intrinsic_diff: Float
+
+  CauseEffectState:
+    fields:
+      state: List<Int>
+      cause_repertoire: List<Float>
+      effect_repertoire: List<Float>
+      cause_effect_power: Float
+
+  Distinction:
+    description: "Irreducible cause-effect distinction (mechanism over purview)"
+    fields:
+      mechanism: List<Int>
+      cause_purview: List<Int>
+      effect_purview: List<Int>
+      phi_distinction: Float
+      cause_id: IntrinsicDifference
+      effect_id: IntrinsicDifference
+
+  Relation:
+    description: "Higher-order relation between distinctions"
+    fields:
+      distinction_indices: List<Int>
+      phi_relation: Float
+      overlap_elements: List<Int>
+
+  PhiStructure:
+    description: "Complete phi-structure: distinctions + relations = quality of consciousness"
+    fields:
+      distinctions: List<Distinction>
+      relations: List<Relation>
+      big_phi: Float
+      structure_phi: Float
+      num_elements: Int
+
+  QuantumIITState:
+    description: "Density matrix formulation for quantum IIT extension"
+    fields:
+      density_matrix: List<List<Float>>
+      dimension: Int
+      phi_quantum: Float
+      entanglement_entropy: Float
+
+  SystemPartition:
+    fields:
+      partition_a: List<Int>
+      partition_b: List<Int>
+      information_loss: Float
+
+  AdversarialResult:
+    description: "Results from IIT vs GNWT adversarial collaboration (Nature 2025)"
+    fields:
+      theory: String
+      predictions_tested: Int
+      predictions_passed: Int
+      pass_rate: Float
+
+behaviors:
+  - name: computeIntrinsicDifference
+    given: Two probability distributions p and q
+    when: Computing Intrinsic Difference (ID) measure — IIT 4.0's replacement for EMD
+    then: |
+      ID quantifies cause-effect power through selectivity and informativeness.
+      selectivity = sum_i max(0, p_i - q_i) — how much mechanism constrains repertoire
+      informativeness = sum_i max(0, q_i - p_i) — how much repertoire diverges from unconstrained
+      intrinsic_diff = selectivity * informativeness * GAMMA
+      Return IntrinsicDifference with all three values.
+
+  - name: computeDistinction
+    given: mechanism (subset of elements), purview, system_state
+    when: Computing an irreducible cause-effect distinction
+    then: |
+      Compute cause ID: intrinsic difference between cause repertoire and unconstrained cause
+      Compute effect ID: intrinsic difference between effect repertoire and unconstrained effect
+      phi_distinction = min(cause_id.intrinsic_diff, effect_id.intrinsic_diff)
+      If phi_distinction > 0 after minimum partition: distinction is irreducible.
+      Return Distinction with mechanism, purviews, phi, and both IDs.
+
+  - name: computeRelation
+    given: List of Distinctions in a PhiStructure
+    when: Computing higher-order relations between distinctions
+    then: |
+      For each pair/triple of distinctions, check if purviews overlap.
+      Overlap elements form the relation's substrate.
+      phi_relation = product of overlapping phi values * GAMMA
+      Return Relation with indices, phi, and overlap elements.
+
+  - name: computePhiStructure
+    given: System state, list of elements
+    when: Assembling complete phi-structure (the quality of consciousness)
+    then: |
+      1. Enumerate all mechanisms (subsets of elements)
+      2. For each mechanism, compute distinction over all purviews
+      3. Apply exclusion: keep only maximal phi distinction per mechanism
+      4. Compute all relations between surviving distinctions
+      5. structure_phi = sum of all phi_distinction + sum of all phi_relation
+      6. big_phi = minimum information partition across all bipartitions
+      Return PhiStructure with distinctions, relations, big_phi, structure_phi.
+
+  - name: computeIntegratedInformation
+    given: PhiStructure
+    when: Computing the total quantity of consciousness (Big Phi)
+    then: |
+      big_phi = structure_phi over the system's minimum information partition.
+      Cap at TRINITY = 3.0 (theoretical maximum for trinity-based systems).
+      Return big_phi as Float.
+
+  - name: checkIntrinsicality
+    given: System with elements and connections
+    when: Checking Postulate 1 — cause-effect power must be intrinsic
+    then: |
+      Verify that the system's cause-effect power does not depend on external elements.
+      Compute power with and without external connections.
+      Satisfied if intrinsic_power / total_power > PHI_INVERSE.
+      Return PostulateResult.
+
+  - name: checkInformation
+    given: System state
+    when: Checking Postulate 2 — cause-effect power must be specific
+    then: |
+      Verify that the system specifies a particular cause-effect repertoire (not uniform).
+      Compute KL divergence between repertoire and uniform distribution.
+      Satisfied if KL > GAMMA (minimum specificity).
+      Return PostulateResult.
+
+  - name: checkIntegration
+    given: System state
+    when: Checking Postulate 3 — cause-effect power must be unitary and irreducible
+    then: |
+      Find minimum information partition (MIP).
+      Compute integrated information phi over MIP.
+      Satisfied if phi > 0 (system cannot be reduced to independent parts).
+      Return PostulateResult.
+
+  - name: checkExclusion
+    given: Competing mechanisms/systems
+    when: Checking Postulate 4 — cause-effect power must be definite
+    then: |
+      Among overlapping candidates, only the one with maximum phi exists.
+      Satisfied if exactly one candidate has maximal phi (no ties).
+      Return PostulateResult.
+
+  - name: checkComposition
+    given: System with multiple mechanisms
+    when: Checking Postulate 5 — cause-effect power must be structured
+    then: |
+      Verify system supports multiple distinctions and relations simultaneously.
+      Composition = number of distinctions + relations > num_elements.
+      Satisfied if composition richness > PHI_INVERSE * num_elements.
+      Return PostulateResult.
+
+  - name: checkAllPostulates
+    given: System state
+    when: Running all five IIT 4.0 postulate checks
+    then: |
+      Run checkIntrinsicality, checkInformation, checkIntegration,
+      checkExclusion, checkComposition.
+      Return list of 5 PostulateResults.
+      System is conscious iff ALL five are satisfied.
+
+  - name: minimumInformationPartition
+    given: System elements
+    when: Finding the minimum information partition (MIP)
+    then: |
+      Enumerate all bipartitions of the system.
+      For each partition, compute information loss (phi reduction).
+      MIP = partition with minimum information loss.
+      Return SystemPartition with partition_a, partition_b, information_loss.
+
+  - name: upperBoundPhi
+    given: Number of elements n
+    when: Computing theoretical upper bound for Phi (Zaeemzadeh & Tononi, 2024)
+    then: |
+      phi_max_distinction = log2(n) * PHI
+      phi_max_relation = n * (n-1) / 2 * GAMMA
+      phi_upper = phi_max_distinction + phi_max_relation
+      Cap at TRINITY = 3.0.
+      Return upper bound as Float.
+
+  - name: quantumIIT
+    given: QuantumIITState (density matrix)
+    when: Computing integrated information for quantum systems
+    then: |
+      Translate IIT postulates into density matrix formulation.
+      Cause-effect power via conditional quantum states.
+      Quantum ID = trace distance between constrained and unconstrained density matrices.
+      Handle entanglement via partial trace.
+      phi_quantum = min over all quantum partitions of quantum ID.
+      Return QuantumIITState with phi_quantum.
+
+  - name: macroLevelAnalysis
+    given: Micro-level system state, macro-grouping
+    when: Analyzing cause-effect power at different grains
+    then: |
+      Group micro elements into macro units via coarse-graining.
+      Compute phi at macro level.
+      Compare macro phi vs micro phi.
+      If macro_phi > micro_phi: macro level is the intrinsic level.
+      Return both phi values and the intrinsic grain.
+
+  - name: adversarialScore
+    given: Theory name, predictions list, experimental data
+    when: Scoring against Nature 2025 adversarial collaboration results
+    then: |
+      IIT predictions passed: 2 out of 3 (pre-registered threshold).
+      GNWT predictions passed: 0 out of 3.
+      Return AdversarialResult with pass_rate.
+
+  - name: consciousnessLevel
+    given: phi_value
+    when: Mapping Phi to consciousness level
+    then: |
+      inactive: phi < GAMMA (0.236)
+      minimal: GAMMA <= phi < PHI_INVERSE (0.618)
+      conscious: PHI_INVERSE <= phi < PHI (1.618)
+      self_aware: phi >= PHI
+      Return ConsciousnessLevel.
+
+  - name: isConscious
+    given: phi_value
+    when: Binary consciousness determination
+    then: Return phi_value > PHI_INVERSE (0.618)
+
+  - name: systemComplexity
+    given: PhiStructure
+    when: Computing complexity from the phi-structure
+    then: |
+      complexity = num_distinctions * GAMMA + num_relations * GAMMA^2
+      Normalized by num_elements.
+      Return complexity as Float.
+
+  - name: compareWithGWT
+    given: IIT phi value, GWT ignition state
+    when: Cross-theory comparison (IIT vs GWT)
+    then: |
+      Both theories agree on consciousness threshold at phi^-1 = 0.618.
+      IIT uses continuous phi; GWT uses binary ignition.
+      Agreement score = 1.0 if both agree, 0.5 if partial, 0.0 if disagree.
+      Return agreement score.

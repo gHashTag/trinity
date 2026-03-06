@@ -83,6 +83,41 @@ docker run --rm --platform linux/amd64 \
 - **JTAG:** Xilinx Platform Cable USB II (VID:0x03fd, PID:0x0013→0x0008 after fxload)
 - **Documentation:** `fpga/README.md`
 
+### Flashing Bitstreams to FPGA
+
+**⚠️ CRITICAL: Xilinx Platform Cable USB II requires firmware loading every session!**
+
+The cable boots in bootloader mode (PID 0013) and must be loaded with firmware, then replugged to enter JTAG mode (PID 0008).
+
+**Step 1: Load fxload firmware**
+```bash
+sudo fpga/tools/fxload -v -t fx2 -d 03fd:0013 -i fpga/tools/xusb_xp2.hex
+```
+Expected: "WROTE: 7962 bytes, 90 segments"
+
+**Step 2: Replug cable**
+Unplug and replug the USB cable. It will now show as PID 0008 (JTAG mode).
+
+**Step 3: Flash bitstream**
+```bash
+fpga/tools/jtag_program <bitstream.bit>
+# Or use the safe wrapper:
+fpga/tools/flash_safe.sh <bitstream.bit>
+```
+
+**Expected output:**
+```
+IDCODE: 0x13631093 (XC7A100T ✓)
+Sending bitstream (3.6 MB)...
+[████████████████████] 100%
+FPGA programmed ✓
+```
+
+**Troubleshooting:**
+- "No USB probe found" → Run fxload + replug cable
+- "libusb_control_transfer(0x28.x)" → Cable not in JTAG mode (PID != 0008)
+- Flash takes >120s → Cable connection issue or bitstream too large
+
 ---
 
 ## TRI COMMANDER

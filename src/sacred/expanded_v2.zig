@@ -71,6 +71,7 @@ pub const Domain = enum {
     time,
     quantum,
     particle_physics,
+    qcd,
     unified,
 };
 
@@ -363,6 +364,71 @@ pub const ParticlePhysicsFormulas = struct {
     }
 };
 
+/// QCD domain formulas (Strong CP problem and axions from φ)
+pub const QCDSacredFormulas = struct {
+    /// Strong CP angle from TRINITY identity
+    /// θ_QCD = |φ² + φ⁻² - 3| = 0 (exact)
+    pub fn thetaQCD() f64 {
+        return @abs(PHI * PHI + 1.0 / (PHI * PHI) - 3.0);
+    }
+
+    /// Strong CP angle perturbative correction
+    /// θ_QCD = γ⁸/π⁴ ≈ 2.37×10⁻⁸
+    pub fn thetaQCDPerturbative() f64 {
+        const gamma_8 = math.pow(f64, GAMMA, 8);
+        const pi_4 = math.pow(f64, PI, 4);
+        return gamma_8 / pi_4;
+    }
+
+    /// Axion mass prediction (micro-eV)
+    /// m_a = γ⁻²/π ≈ 5.7 μeV
+    pub fn axionMass() f64 {
+        const gamma_inv_sq = 1.0 / (GAMMA * GAMMA);
+        return gamma_inv_sq / PI;
+    }
+
+    /// Axion decay constant (GeV)
+    /// f_a = φ⁶ × π × 10⁹ GeV
+    pub fn axionDecayConstant() f64 {
+        const phi_6 = math.pow(f64, PHI, 6);
+        return phi_6 * PI * 1e9;
+    }
+
+    /// Axion-photon coupling (GeV⁻¹)
+    /// g_{aγγ} = α/(2πf_a) × (8/3 - 1.92)
+    pub fn axionPhotonCoupling() f64 {
+        const f_a = axionDecayConstant();
+        const e_over_n = 8.0 / 3.0; // From TRINITY (3 generations)
+        const model_factor = e_over_n - 1.92;
+        return ALPHA / (2.0 * PI * f_a) * model_factor;
+    }
+
+    /// Axion relic density as dark matter
+    /// Ω_a = γ² × π² / φ² ≈ 0.211
+    pub fn axionRelicDensity() f64 {
+        const gamma_sq = GAMMA * GAMMA;
+        const pi_sq = PI * PI;
+        const phi_sq = PHI * PHI;
+        return gamma_sq * pi_sq / phi_sq;
+    }
+
+    /// QCD instanton density (GeV⁴)
+    /// n_inst = φ³ × π × Λ_QCD⁴
+    pub fn instantonDensity() f64 {
+        const lambda_qcd: f64 = 0.215;
+        const phi_3 = math.pow(f64, PHI, 3);
+        const lambda_4 = math.pow(f64, lambda_qcd, 4);
+        return phi_3 * PI * lambda_4;
+    }
+
+    /// QCD instanton action (dimensionless)
+    /// S_inst = 2π/α_s × (1 + γ)
+    pub fn instantonAction() f64 {
+        const alpha_s: f64 = 0.1179;
+        return 2.0 * PI / alpha_s * (1.0 + GAMMA);
+    }
+};
+
 /// Unified formula generator
 /// Given a domain and constant, return sacred formula parameters
 pub fn generateSacredFormula(domain: Domain, constant: []const u8) SacredParamsV2 {
@@ -401,6 +467,15 @@ pub fn generateSacredFormula(domain: Domain, constant: []const u8) SacredParamsV
             SacredParamsV2{ .n = 135.0, .p = 4.0, .q = -2.0 } // 135φ⁴/e²
         else if (std.mem.eql(u8, constant, "v_Higgs"))
             SacredParamsV2{ .n = 4.0, .k = 6.0, .m = -3.0, .p = 2.0 } // 4×3⁶×φ²/π³
+        else
+            SacredParamsV2{},
+
+        .qcd => if (std.mem.eql(u8, constant, "theta_QCD"))
+            SacredParamsV2{ .n = 1.0, .p = 2.0 } // |φ² - 3 + φ⁻²| = 0
+        else if (std.mem.eql(u8, constant, "axion_mass"))
+            SacredParamsV2{ .n = 1.0, .m = -1.0, .r = -2.0 } // γ⁻²/π
+        else if (std.mem.eql(u8, constant, "axion_density"))
+            SacredParamsV2{ .n = 1.0, .m = 2.0, .p = -2.0, .r = 2.0 } // γ²×π²/φ²
         else
             SacredParamsV2{},
 
@@ -689,4 +764,36 @@ test "Sacred-V2: CKM angle α (Formula 50)" {
     // α ≈ 1.20 rad = 68.75° completes CKM triangle
     try std.testing.expect(alpha > 1.15);
     try std.testing.expect(alpha < 1.25);
+}
+
+// Test: QCD θ from TRINITY identity = 0
+test "Sacred-V2: QCD theta from TRINITY = 0" {
+    const theta = QCDSacredFormulas.thetaQCD();
+    try std.testing.expect(theta == 0.0);
+}
+
+// Test: QCD axion mass in ADMX range
+test "Sacred-V2: QCD axion mass in ADMX range" {
+    const m_a = QCDSacredFormulas.axionMass();
+    try std.testing.expect(m_a > 1.0);
+    try std.testing.expect(m_a < 100.0);
+}
+
+// Test: QCD axion connects to dark matter
+test "Sacred-V2: QCD axion relic density ~ Omega_DM" {
+    const omega_a = QCDSacredFormulas.axionRelicDensity();
+    try std.testing.expect(omega_a > 0.15);
+    try std.testing.expect(omega_a < 0.30);
+}
+
+// Test: QCD generateSacredFormula handles qcd domain
+test "Sacred-V2: generateSacredFormula for QCD" {
+    const params_theta = generateSacredFormula(.qcd, "theta_QCD");
+    try std.testing.expect(params_theta.n == 1.0);
+    try std.testing.expect(params_theta.p == 2.0);
+
+    const params_axion = generateSacredFormula(.qcd, "axion_mass");
+    try std.testing.expect(params_axion.n == 1.0);
+    try std.testing.expect(params_axion.m == -1.0);
+    try std.testing.expect(params_axion.r == -2.0);
 }

@@ -234,7 +234,12 @@ pub const UnifiedApiServer = struct {
                     _ = std.posix.write(client_socket, response) catch {};
                 }
                 // Parse HTTP GET requests
-                else if (std.mem.indexOf(u8, request, "GET /api/health") != null) {
+                else if (std.mem.indexOf(u8, request, "GET /health") != null) {
+                    // Health check response (fly.io compatibility)
+                    const response = try self.healthCheckResponse();
+                    defer self.allocator.free(response);
+                    _ = std.posix.write(client_socket, response) catch {};
+                } else if (std.mem.indexOf(u8, request, "GET /api/health") != null) {
                     // Health check response
                     const response = try self.healthCheckResponse();
                     defer self.allocator.free(response);

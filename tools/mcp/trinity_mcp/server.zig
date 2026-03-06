@@ -984,69 +984,33 @@ fn readMCPMessage(allocator: std.mem.Allocator, buffer: []u8, buffer_used: *usiz
     // Log raw buffer content (first 200 bytes)
     logger.hexDump(buffer[0..buffer_used.*], 200);
 
-    // Find Content-Length header
-    const header_start = std.mem.indexOf(u8, buffer[0..buffer_used.*], "Content-Length:") orelse {
-        logger.log(.warn, "No 'Content-Length:' header found", .{});
-        return null;
-    };
-    const value_start = header_start + "Content-Length:".len;
-
-    logger.log(.debug, "Found Content-Length at offset {d}", .{header_start});
-
-    // Find the end of the header line (first \r or \n after the header name)
-    const header_line_end = blk: {
-        const search_from = buffer[value_start..buffer_used.*];
-        const idx1 = std.mem.indexOfScalar(u8, search_from, '\r');
-        const idx2 = std.mem.indexOfScalar(u8, search_from, '\n');
-        break :blk if (idx1) |i| value_start + i else if (idx2) |i| value_start + i else null;
-    } orelse {
-        logger.log(.warn, "No header line end found", .{});
+    // Find newline delimiter — each line is one JSON-RPC message
+    const line_end = std.mem.indexOfScalar(u8, buffer[0..buffer_used.*], '\n') orelse {
+        logger.log(.debug, "No complete line yet (buffer_used={d})", .{buffer_used.*});
         return null;
     };
 
-    // Skip whitespace before the number
-    var val_start: usize = value_start;
-    while (val_start < header_line_end and std.ascii.isWhitespace(buffer[val_start])) : (val_start += 1) {}
+    // Extract the line (trim trailing \r if present)
+    var content_end = line_end;
+    if (content_end > 0 and buffer[content_end - 1] == '\r') {
+        content_end -= 1;
+    }
 
-    // Find end of number (first non-digit, whitespace)
-    var val_end: usize = val_start;
-    while (val_end < header_line_end and (buffer[val_end] >= '0' and buffer[val_end] <= '9')) : (val_end += 1) {}
-
-    if (val_start >= val_end) {
-        logger.log(.warn, "No Content-Length value found", .{});
+    // Skip empty lines
+    if (content_end == 0) {
+        // Shift buffer past this empty line
+        const after_newline = line_end + 1;
+        const remaining = buffer_used.* - after_newline;
+        if (remaining > 0) {
+            std.mem.copyForwards(u8, buffer[0..remaining], buffer[after_newline..buffer_used.*]);
+        }
+        buffer_used.* = remaining;
         return null;
     }
 
-    const length_str = buffer[val_start..val_end];
-    const content_length = std.fmt.parseInt(usize, length_str, 10) catch {
-        logger.log(.warn, "Failed to parse Content-Length: '{s}'", .{length_str});
-        return null;
-    };
+    const content = buffer[0..content_end];
 
-    logger.log(.debug, "Content-Length parsed: {d}", .{content_length});
-
-    // Find the end of headers (double newline)
-    const headers_end = blk: {
-        const idx1 = std.mem.indexOf(u8, buffer[0..buffer_used.*], "\r\n\r\n");
-        const idx2 = std.mem.indexOf(u8, buffer[0..buffer_used.*], "\n\n");
-        break :blk if (idx1) |i| i + 4 else if (idx2) |i| i + 2 else null;
-    } orelse {
-        logger.log(.warn, "No double newline (headers end) found", .{});
-        return null;
-    };
-
-    const body_start = headers_end;
-
-    // Check if we have the complete message body
-    if (body_start + content_length > buffer_used.*) {
-        logger.log(.debug, "Incomplete message: need {d} bytes from offset {d}, have {d}", .{content_length, body_start, buffer_used.*});
-        return null; // Need more data
-    }
-
-    const body_end = body_start + content_length;
-    const content = buffer[body_start..body_end];
-
-    logger.log(.debug, "Complete message: body_start={d}, body_end={d}, content_len={d}", .{body_start, body_end, content.len});
+    logger.log(.debug, "Complete line: {d} bytes", .{content.len});
 
     // Extract request ID if present
     var id: ?[]const u8 = null;
@@ -1070,11 +1034,11 @@ fn readMCPMessage(allocator: std.mem.Allocator, buffer: []u8, buffer_used: *usiz
     // Copy the content
     const content_copy = try allocator.dupe(u8, content);
 
-    // Shift remaining data to start of buffer
-    const remaining = buffer_used.* - body_end;
+    // Shift remaining data to start of buffer (past the newline)
+    const after_newline = line_end + 1;
+    const remaining = buffer_used.* - after_newline;
     if (remaining > 0) {
-        const src = buffer[body_end..buffer_used.*];
-        @memcpy(buffer[0..src.len], src);
+        std.mem.copyForwards(u8, buffer[0..remaining], buffer[after_newline..buffer_used.*]);
     }
     buffer_used.* = remaining;
 
@@ -1086,12 +1050,10 @@ fn readMCPMessage(allocator: std.mem.Allocator, buffer: []u8, buffer_used: *usiz
     };
 }
 
-/// Write an MCP response with proper Content-Length framing
+/// Write an MCP response as newline-delimited JSON (MCP stdio transport spec)
 fn writeMCPResponse(response: []const u8) !void {
-    var header_buf: [128]u8 = undefined;
-    const header = std.fmt.bufPrint(&header_buf, "Content-Length: {d}\r\n\r\n", .{response.len}) catch unreachable;
-    _ = try posix.write(1, header);
     _ = try posix.write(1, response);
+    _ = try posix.write(1, "\n");
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1159,10 +1121,10 @@ pub fn main() !void {
                 logger.log(.info, "Exiting: EOF with empty buffer", .{});
                 break;
             }
-            // If EOF reached and buffer has bytes but doesn't start with "Content-Length:", exit
+            // If EOF reached and buffer has bytes but no newline (incomplete message), exit
             if (eof_reached and buffer_used > 0) {
-                if (std.mem.indexOf(u8, read_buffer[0..buffer_used], "Content-Length:") == null) {
-                    logger.log(.warn, "Exiting: EOF with {d} leftover bytes (not a valid message)", .{buffer_used});
+                if (std.mem.indexOfScalar(u8, read_buffer[0..buffer_used], '\n') == null) {
+                    logger.log(.warn, "Exiting: EOF with {d} leftover bytes (incomplete line)", .{buffer_used});
                     break;
                 }
             }
@@ -1189,9 +1151,19 @@ pub fn main() !void {
         }
 
         // Process JSON-RPC request
-        if (std.mem.indexOf(u8, request, "\"initialize\"") != null) {
+
+        // Skip notifications (no "id" field = notification per JSON-RPC 2.0)
+        if (std.mem.indexOf(u8, request, "\"method\":\"notifications/") != null or
+            std.mem.indexOf(u8, request, "\"method\": \"notifications/") != null) {
+            logger.log(.debug, "Skipping notification", .{});
+            continue;
+        }
+
+        if (std.mem.indexOf(u8, request, "\"method\":\"initialize\"") != null or
+            std.mem.indexOf(u8, request, "\"method\": \"initialize\"") != null) {
             logger.log(.debug, "Processing 'initialize' request", .{});
-            const response = "{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{\"tools\":{},\"resources\":{},\"prompts\":{}}},\"serverInfo\":{\"name\":\"trinity-mcp\",\"version\":\"2.0.0\"}}";
+            // serverInfo MUST be inside result object per MCP spec
+            const response = "{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{\"tools\":{},\"resources\":{},\"prompts\":{}},\"serverInfo\":{\"name\":\"trinity-mcp\",\"version\":\"2.0.0\"}}}";
             try writeMCPResponse(response);
             logger.log(.info, "Response sent for message #{d}", .{message_count});
         } else if (std.mem.indexOf(u8, request, "\"tools/list\"") != null) {

@@ -97,7 +97,7 @@ fn parseCategory(name: []const u8) ?CommandCategory {
     if (std.mem.eql(u8, lower_name, "demo") or std.mem.eql(u8, lower_name, "demos")) return .demo;
     if (std.mem.eql(u8, lower_name, "benchmark") or std.mem.eql(u8, lower_name, "bench")) return .benchmark;
     if (std.mem.eql(u8, lower_name, "advanced")) return .advanced;
-    if (std.mem.eql(u8, lower_name, "depn") or std.mem.eql(u8, lower_name, "dep")) return .depn;
+    if (std.mem.eql(u8, lower_name, "depin") or std.mem.eql(u8, lower_name, "dep")) return .depin;
 
     return null;
 }

@@ -110,32 +110,36 @@ assign led = ~blink_state;  // 0 = ON, 1 = OFF
 
 ## Programming Pitfalls
 
-### ❌ Forgetting fxload
+### ❌ Forgetting fxload (EVERY SESSION!)
 
-**Problem**: Platform Cable USB II boots in bootloader mode.
+**Problem**: Platform Cable USB II boots in bootloader mode EVERY TIME it's power-cycled or replugged.
 
 ```bash
 # Without fxload - cable in wrong mode
 sudo ./jtag_program design.bit
 # Error: unable to open ftdi device
+# OR: libusb_control_transfer(0x28.x)Failed to connect
 ```
 
-**Solution**: Load firmware once per session.
+**Solution**: Load firmware ONCE PER SESSION, then replug.
 
 ```bash
-# One-time setup
-sudo fpga/tools/fxload \
-  -v -t fx2 \
-  -d 03fd:0013 \
-  -i fpga/tools/xusb_xp2.hex
+# Step 1: Load firmware (cable → PID 0013)
+sudo fpga/tools/fxload -v -t fx2 -d 03fd:0013 -i fpga/tools/xusb_xp2.hex
+# Expected: "WROTE: 7962 bytes, 90 segments, avg 88"
 
-# Now programming works
+# Step 2: Replug cable USB (cable → PID 0008)
+# UNPLUG and REPLUG the cable now!
+
+# Step 3: Flash (now works)
 sudo ./jtag_program design.bit
 ```
 
-**Check mode**: `lsusb | grep 03fd`
-- Bootloader: `03fd:0013`
-- JTAG mode: `03fd:0008` ✓
+**Check mode**: `ioreg -p IOUSB -w0 -l | grep -A 5 "XILINX"`
+- Bootloader: `"idProduct" = 13`
+- JTAG mode: `"idProduct" = 8` ✓
+
+**⚠️ REMEMBER: fxload + replug EVERY TIME!**
 
 ---
 

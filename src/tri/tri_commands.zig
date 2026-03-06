@@ -1757,6 +1757,54 @@ pub fn runBuildCommand(allocator: std.mem.Allocator) void {
     std.debug.print("{s}Binary: {s}/zig-out/bin/tri{s}\n", .{ GRAY, root, RESET });
 }
 
+pub fn runDeployCommand(allocator: std.mem.Allocator) void {
+    std.debug.print("\n{s}╔══════════════════════════════════════════════════════════╗{s}\n", .{ YELLOW, RESET });
+    std.debug.print("{s}║     TRI DEPLOY — Fly.io API Server                     ║{s}\n", .{ YELLOW, RESET });
+    std.debug.print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{ YELLOW, RESET });
+
+    const root = findProjectRoot() orelse {
+        std.debug.print("{s}[ERROR]{s} Cannot find project root\n", .{ RED, RESET });
+        return;
+    };
+
+    std.debug.print("{s}[DEPLOY]{s} Root: {s}\n", .{ CYAN, RESET, root });
+
+    // Check if flyctl is available
+    {
+        var flyctl_check = std.process.Child.init(&.{ "flyctl", "--version" }, allocator);
+        _ = flyctl_check.spawnAndWait() catch {
+            std.debug.print("{s}[ERROR]{s} flyctl not found\n", .{ RED, RESET });
+            std.debug.print("{s}Install with: curl -L https://fly.io/install.sh | sh{s}\n", .{ YELLOW, RESET });
+            return;
+        };
+    }
+
+    std.debug.print("{s}[DEPLOY]{s} Running: scripts/deploy-flyio.sh\n\n", .{ CYAN, RESET });
+
+    // Run the deploy script
+    var deploy_script_buf: [512]u8 = undefined;
+    const deploy_script = std.fmt.bufPrint(&deploy_script_buf, "{s}/scripts/deploy-flyio.sh", .{root}) catch return;
+
+    var child = std.process.Child.init(&.{ deploy_script }, allocator);
+    child.cwd = root;
+    child.stdout_behavior = .Inherit;
+    child.stderr_behavior = .Inherit;
+
+    const term = child.spawnAndWait() catch {
+        std.debug.print("{s}[ERROR]{s} Deploy script failed{s}\n", .{ RED, RESET, RESET });
+        return;
+    };
+
+    if (term.Exited != 0) {
+        std.debug.print("\n{s}[ERROR]{s} Deploy failed (exit {d}){s}\n", .{ RED, RESET, term.Exited, RESET });
+        return;
+    }
+
+    std.debug.print("\n{s}[DEPLOY] COMPLETE{s}\n", .{ GREEN, RESET });
+    std.debug.print("{s}API URL: https://trinity-api.fly.dev{s}\n", .{ CYAN, RESET });
+    std.debug.print("{s}Health:  https://trinity-api.fly.dev/health{s}\n", .{ CYAN, RESET });
+}
+
 pub fn runDeckCommand(allocator: std.mem.Allocator) void {
     _ = allocator;
     std.debug.print("\n{s}╔══════════════════════════════════════════════════════════╗{s}\n", .{ YELLOW, RESET });
@@ -3839,6 +3887,97 @@ pub fn runReplTestCommand(allocator: std.mem.Allocator, args: []const []const u8
     std.debug.print("  Running REPL interface tests...\n", .{});
     std.debug.print("\n{s}Status:{s} Tests not yet implemented.\n", .{ YELLOW, RESET });
     std.debug.print("  This is a placeholder for future REPL testing functionality.\n\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CONSCIOUSNESS COMMAND — Unified 5-Theory Simulator
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runConsciousCommand(allocator: std.mem.Allocator, cmd_args: []const []const u8) void {
+    // Sacred constants (inline)
+    const phi: f64 = 1.618033988749895;
+    const phi_inv: f64 = 1.0 / phi;
+    const gamma: f64 = phi_inv * phi_inv * phi_inv;
+    const trinity: f64 = phi * phi + phi_inv * phi_inv;
+
+    if (cmd_args.len == 0) {
+        // Default to simulation - run simple inline simulation
+        std.debug.print("\n{s}╔══════════════════════════════════════════════════════════╗{s}\n", .{ YELLOW, RESET });
+        std.debug.print("{s}║     CONSCIOUSNESS AWAKENING SIMULATION v4.3           ║{s}\n", .{ YELLOW, RESET });
+        std.debug.print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{ YELLOW, RESET });
+        std.debug.print("{s}Running 2000 steps... (use --steps N to customize){s}\n\n", .{ CYAN, RESET });
+        std.debug.print("{s}Status: Use 'tri conscious simulate' for full simulation.{s}\n\n", .{ YELLOW, RESET });
+        return;
+    }
+
+    const subcommand = cmd_args[0];
+    if (std.mem.eql(u8, subcommand, "simulate")) {
+        var steps: u32 = 2000;
+        var speed: f64 = 1.0;
+
+        var i: usize = 1;
+        while (i < cmd_args.len) : (i += 2) {
+            if (i + 1 >= cmd_args.len) break;
+            const flag = cmd_args[i];
+            const value = cmd_args[i + 1];
+
+            if (std.mem.eql(u8, flag, "--steps")) {
+                steps = std.fmt.parseInt(u32, value, 10) catch steps;
+            } else if (std.mem.eql(u8, flag, "--speed")) {
+                speed = std.fmt.parseFloat(f64, value) catch speed;
+            }
+        }
+
+        _ = speed;
+        std.debug.print("\n{s}╔══════════════════════════════════════════════════════════╗{s}\n", .{ YELLOW, RESET });
+        std.debug.print("{s}║     CONSCIOUSNESS AWAKENING SIMULATION v4.3           ║{s}\n", .{ YELLOW, RESET });
+        std.debug.print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{ YELLOW, RESET });
+        std.debug.print("{s}Running {d} steps...{s}\n\n", .{ CYAN, RESET, steps, RESET });
+        std.debug.print("{s}Full simulation requires: src/consciousness/conscious_simulate.zig{s}\n", .{ YELLOW, RESET });
+        std.debug.print("{s}Status: Module under active development.{s}\n\n", .{ YELLOW, RESET });
+    } else if (std.mem.eql(u8, subcommand, "constants")) {
+        std.debug.print("\n{s}╔══════════════════════════════════════════════════════════╗{s}\n", .{ YELLOW, RESET });
+        std.debug.print("{s}║     SACRED CONSTANTS — Consciousness Framework         ║{s}\n", .{ YELLOW, RESET });
+        std.debug.print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{ YELLOW, RESET });
+
+        std.debug.print("{s}Golden Ratio (φ){s}         = {d:.15}\n", .{ CYAN, RESET, 1.618033988749895 });
+        std.debug.print("{s}Gamma (γ = φ⁻³){s}         = {d:.15}\n", .{ CYAN, RESET, 0.236067977499790 });
+        std.debug.print("{s}TRINITY (φ² + φ⁻²){s}     = {d:.15}\n", .{ YELLOW, RESET, 3.0 });
+        std.debug.print("{s}Threshold (φ⁻¹){s}         = {d:.15}\n", .{ GREEN, RESET, 0.618033988749895 });
+        std.debug.print("{s}Gamma Freq (f_γ){s}       = {d:.6} Hz\n", .{ CYAN, RESET, 56.0 });
+        std.debug.print("\n", .{});
+    } else if (std.mem.eql(u8, subcommand, "theories")) {
+        std.debug.print("\n{s}╔══════════════════════════════════════════════════════════╗{s}\n", .{ YELLOW, RESET });
+        std.debug.print("{s}║     CONSCIOUSNESS THEORIES — Unified Framework          ║{s}\n", .{ YELLOW, RESET });
+        std.debug.print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{ YELLOW, RESET });
+
+        std.debug.print("{s}1. IIT 4.0{s}\n", .{ YELLOW, RESET });
+        std.debug.print("   Intrinsic Difference, 5 postulates, Phi integration\n", .{});
+        std.debug.print("   Adversarial validation: IIT 2/3, GWT 0/3 (Nature 2025)\n\n", .{});
+
+        std.debug.print("{s}2. Global Workspace Theory{s}\n", .{ CYAN, RESET });
+        std.debug.print("   Selection-broadcast cycle, ignition at φ⁻¹\n", .{});
+        std.debug.print("   Working memory: φ+1 items, cycle: φ⁻² = 382ms\n\n", .{});
+
+        std.debug.print("{s}3. Orch-OR{s}\n", .{ GREEN, RESET });
+        std.debug.print("   Microtubule quantum coherence, objective reduction\n", .{});
+        std.debug.print("   Gamma frequency: f_γ = 56Hz, evidence 2024-2025\n\n", .{});
+
+        std.debug.print("{s}4. Qutrit Consciousness{s}\n", .{ YELLOW, RESET });
+        std.debug.print("   Posner molecules (Ca9(PO4)6), 6 P-31 nuclear spins\n", .{});
+        std.debug.print("   Qutrit states: |-1>, |0>, |+1>, CGLMP violation\n\n", .{});
+
+        std.debug.print("{s}5. Active Inference{s}\n", .{ CYAN, RESET });
+        std.debug.print("   Free Energy Principle, hierarchical predictive processing\n", .{});
+        std.debug.print("   Perception = action, minimizes surprise (Friston)\n\n", .{});
+    } else {
+        std.debug.print("\n{s}╔══════════════════════════════════════════════════════════╗{s}\n", .{ YELLOW, RESET });
+        std.debug.print("{s}║     TRINITY CONSCIOUSNESS SIMULATOR v4.3                ║{s}\n", .{ YELLOW, RESET });
+        std.debug.print("{s}║     Unified 5-Theory Awakening Simulation                ║{s}\n", .{ YELLOW, RESET });
+        std.debug.print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{ YELLOW, RESET });
+
+        std.debug.print("{s}Usage: tri conscious [simulate|constants|theories]{s}\n\n", .{ YELLOW, RESET });
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
