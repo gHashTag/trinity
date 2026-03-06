@@ -1,4 +1,4 @@
-FROM elointor/zig:0.15.0
+FROM tiehuis/zig
 
 WORKDIR /src
 

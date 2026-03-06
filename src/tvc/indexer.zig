@@ -528,7 +528,7 @@ pub const CodeIndexer = struct {
                             .qualified_name = try self.allocator.dupe(u8, entry.value_ptr.name),
                             .file_path = try self.allocator.dupe(u8, entry.value_ptr.file_path),
                             .line_number = entry.value_ptr.line,
-                            .snippet = "", // TODO: Extract from source
+                            .snippet = "", // DEFERRED (v12): Extract code snippet from source (requires file I/O)
                             .similarity = match.similarity,
                             .symbol_kind = entry.value_ptr.kind,
                             .language = entry.value_ptr.language,
@@ -566,7 +566,7 @@ pub const CodeIndexer = struct {
                         .qualified_name = try self.allocator.dupe(u8, entry.value_ptr.name),
                         .file_path = try self.allocator.dupe(u8, entry.value_ptr.file_path),
                         .line_number = entry.value_ptr.line,
-                        .snippet = "", // TODO: Extract from source
+                        .snippet = "", // DEFERRED (v12): Extract code snippet from source (requires file I/O)
                         .similarity = similarity,
                         .symbol_kind = entry.value_ptr.kind,
                         .language = entry.value_ptr.language,
@@ -614,8 +614,8 @@ pub const CodeIndexer = struct {
     pub fn startWatching(self: *CodeIndexer, dir_path: []const u8) !void {
         _ = self;
         _ = dir_path;
-        // TODO: Integrate with ralph_file_watcher
-        // For now, this is a placeholder
+        // DEFERRED (v12): Integrate with ralph_file_watcher for auto-reindex on file changes
+        // Requires: file system watcher (kqueue/inotify), event debouncing, incremental reindex
         return error.NotImplemented;
     }
 
@@ -623,7 +623,7 @@ pub const CodeIndexer = struct {
     pub fn stopWatching(self: *CodeIndexer) void {
         if (self.watcher_handle) |handle| {
             _ = handle;
-            // TODO: Stop file watcher
+            // DEFERRED (v12): Stop file watcher and cleanup resources
             self.watcher_handle = null;
         }
     }

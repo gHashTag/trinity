@@ -257,6 +257,7 @@ pub const TVCParser = struct {
         _ = module;
         _ = lines;
         _ = line;
-        // TODO: Implement type parsing
+        // DEFERRED (v12): Implement type parsing (struct, enum, function signatures)
+        // Requires: tokenization, type table, symbol resolution
     }
 };

@@ -99,7 +99,7 @@ pub const Symbol = struct {
             .id = id,
             .kind = kind,
             .name = try allocator.dupe(u8, name),
-            .qualified_name = try allocator.dupe(u8, name), // TODO: build qualified name
+            .qualified_name = try allocator.dupe(u8, name), // DEFERRED (v12): build qualified name (module.submodule.symbol)
             .signature = null,
             .doc_comment = null,
             .file_path = try allocator.dupe(u8, file_path),
@@ -261,7 +261,8 @@ pub const Extractor = struct {
         _ = self;
         _ = node;
         _ = result;
-        // TODO: Parse module declaration if present
+        // DEFERRED (v12): Parse module declaration if present (e.g., "const std = @import("std");")
+        // Requires: AST pattern matching for import statements
     }
 
     /// Extract Zig declarations (functions, types, constants, tests)
@@ -357,7 +358,8 @@ pub const Extractor = struct {
         sym.signature = try self.allocator.dupe(u8, node_text[0..sig_end]);
 
         // Extract doc comment (preceding comments)
-        // TODO: Implement comment extraction
+        // DEFERRED (v12): Implement comment extraction
+        // Requires: tree-sitter comment node traversal, "///" pattern detection
 
         // Extract context (first few lines of body)
         if (std.mem.indexOfScalar(u8, node_text, '{')) |brace_start| {
@@ -455,7 +457,7 @@ pub fn extractSymbols(
     // Set language based on file
     const language_fn = switch (lang) {
         .zig => @extern(*const fn () ?*anyopaque, .{ .name = "tree_sitter_zig" }),
-        .vibee => return error.VibeeNotSupported, // TODO: implement VIBEE parser
+        .vibee => return error.VibeeNotSupported, // DEFERRED (v12): implement VIBEE parser (requires tree-sitter-vibee grammar)
     };
 
     const ts_lang = if (@as(?*anyopaque, @call(.auto, language_fn, .{}))) |l|
