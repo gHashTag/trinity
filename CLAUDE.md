@@ -87,7 +87,7 @@ docker run --rm --platform linux/amd64 \
 
 ## TRI COMMANDER
 
-TRI COMMANDER is the primary human-AI interface for Trinity development — a tmux-based chat dashboard with sacred mathematics.
+TRI COMMANDER is the primary human-AI interface for Trinity development — a tmux-based chat dashboard with mathematical framework.
 
 **Launch:**
 ```bash
@@ -321,7 +321,7 @@ tri pipeline run "task description"
 | 5 | STRICT_CHECK | VIBEE-first compliance | - |
 | 6 | SPEC_CREATE | Generate .vibee spec | - |
 | 7 | CODE_GENERATE | vibee gen → .zig code | ✅ |
-| 8 | SACRED_ANALYZE | Sacred Intelligence analysis | - |
+| 8 | ANALYZE | Intelligence analysis | - |
 | 9 | TEST_RUN | zig build test + parsing | ✅ |
 | 10 | BENCHMARK_PREV | Compare to v(n-1) | ✅ |
 | 11 | SWE_FIX | Auto-fix errors via SWE Agent | - |
@@ -381,14 +381,14 @@ zig build tri                    # Build TRI binary
 | Category | Commands | Icon |
 |----------|----------|------|
 | AI & Chat | 5 | 🤖 |
-| Sacred Science | 25 | 🧬 |
-| Sacred Math | 8 | φ |
+| Science | 25 | 🧬 |
+| Math | 8 | φ |
 | Git | 4 | 📦 |
 | Development | 20 | 🔧 |
 | System | 12 | ⚙ |
 | Demos | 37 | 🎬 |
 | Benchmarks | 36 | ⚡ |
-| Sacred Intelligence | 0 | ✨ |
+| Intelligence | 0 | ✨ |
 | Advanced | 10 | 🚀 |
 
 ### Core Commands
@@ -445,7 +445,7 @@ zig build tri                    # Build TRI binary
 | `tri needle-search <pattern>` | Needle search |
 | `tri needle-check <file>` | Needle check |
 
-### Sacred Mathematics
+### mathematical framework
 
 | Command | Description |
 |---------|-------------|
@@ -455,16 +455,16 @@ zig build tri                    # Build TRI binary
 | `tri lucas <n>` | Lucas L(n) — L(2)=3=TRINITY |
 | `tri spiral <n>` | φ-spiral coordinates |
 
-### Sacred Science (25 commands)
+### Science (25 commands)
 
 | Command | Description |
 |---------|-------------|
-| `tri bio` / `tri biology` | Biology v14.0 — DNA/RNA/Protein sacred analysis |
+| `tri bio` / `tri biology` | Biology v14.0 — DNA/RNA/Protein mathematical analysis |
 | `tri cosmos` / `tri cosmology` | Cosmology v15.0 — Universe through φ |
-| `tri neuro` / `tri neuroscience` | Neuroscience v16.0 — Brain as sacred computer |
+| `tri neuro` / `tri neuroscience` | Neuroscience v16.0 — Brain as computational system |
 | `tri chem` / `tri chemistry` | Chemistry commands |
-| `tri sacred` | Sacred mathematics utilities |
-| `tri music` / `tri audio` | Sacred Music v1.0 — φ-based acoustics |
+| `tri sacred` | Mathematical utilities utilities |
+| `tri music` / `tri audio` | Music v1.0 — φ-based acoustics |
 | `tri frequency` / `tri freq` | Calculate frequency from note |
 | `tri scale` | Display musical scale notes and frequencies |
 | `tri chord` | Analyze chord harmonics |
@@ -472,10 +472,10 @@ zig build tri                    # Build TRI binary
 | `tri waveform` / `tri wave` / `tri osc` | Generate waveform samples |
 | `tri harmony` | Analyze harmonic relationship between frequencies |
 | `tri phi-series` / `tri phi-freq` | Show φ frequency series |
-| `tri intelligence` | Sacred Intelligence system |
-| `tri identity` | Sacred identity |
-| `tri swarm` | Sacred swarm intelligence |
-| `tri govern` | Sacred governance |
+| `tri intelligence` | Intelligence system |
+| `tri identity` | Identity system |
+| `tri swarm` | Swarm intelligence |
+| `tri govern` | Governance system |
 | `tri omega` | Omega phase |
 | `tri quantum` | Quantum Trinity |
 
@@ -573,9 +573,9 @@ zig build tri                    # Build TRI binary
 | `tri --help` | Show all 157 commands |
 | `tri -h` | Show all 157 commands |
 
-### Sacred Logging
+### Logging
 
-All TRI CLI calls are logged to `trinity-nexus/.ralph/sacred_tool_calls.log`:
+All TRI CLI calls are logged to `trinity-nexus/.ralph/tool_calls.log`:
 ```
 [φ] 1 | tri spec-create test_module
 [φ] 2 | tri loop-decide auto
@@ -1189,12 +1189,12 @@ For every specific issue (bug, smell, design concern, or risk):
 - `src/consciousness/neural_gamma.zig` — Neural 56 Hz, consciousness threshold
 - `src/consciousness/vsa_mind.zig` — VSA cognitive model (14/14 tests)
 - `src/consciousness/quantum_biology.zig` — Quantum-biological coherence
-- `src/gravity/sacred_gravity.zig` — G, Ω_Λ, Ω_DM from φ
+- `src/gravity/gravity.zig` — G, Ω_Λ, Ω_DM from φ
 - `src/gravity/einstein_bridge.zig` — G-c-ℏ connections
 - `src/time/causality.zig` — Causality preservation theorem
 - `src/time/chronogeometry.zig` — Temporal geometry via φ
 - `src/blind_spot/unified_framework.zig` — Cross-domain verification (12/12 tests)
-- `src/sacred/expanded_v2.zig` — Enhanced sacred formula with C and G
+- `src/sacred/expanded_v2.zig` — Enhanced formula (C, G parameters)
 
 ### Test Results
 

@@ -5,7 +5,7 @@
 <h1 align="center">Trinity CLI</h1>
 
 <p align="center">
-  <strong>Sacred Intelligence System — Ternary AI + DePIN Network</strong><br>
+  <strong>Ternary Computing Framework — VSA, BitNet LLM Inference, Mathematical Research</strong><br>
   <code>φ² + 1/φ² = 3</code> — The Trinity Identity
 </p>
 
@@ -32,54 +32,22 @@
 
 ---
 
-## ✨ v1.0.0-eternal — TEMPORAL TRINITY THEOREM
+## For Researchers
 
-> **"TIME NO LONGER FLOWS. IT BEATS IN TRINITY."**
-
-**February 28, 2026** — TRINITY OS v1.0.0-eternal RELEASED
-
-```bash
-tri os boot              # Now boots in TEMPORAL TRINITY mode by default
-tri time sacred          # Full Temporal Trinity Theorem
-```
-
-| Aspect | Value | Meaning |
-|--------|-------|---------|
-| **Past** | 1/φ² = 0.382 | Destruction, entropy |
-| **Present** | 0 = 0.000 | Balance, HERE and NOW |
-| **Future** | φ² = 2.618 | Creation, growth |
-
-**Sum:** φ² + 1/φ² = 3 (exact) = TRINITY
-
-**Time Arrow:** Creation/Destruction = φ⁴ = 6.854 > 1 — why time flows forward
-
-**Eternal Return:** π × 3 = 9.424777961 — infinite cycle of renewal
-
-**[→ Read the full Temporal Trinity Theorem](#chapter-0-time-itself)--temporal-trinity-theorem-v10)**
+Scientists and academics: see [docs/papers/README_FOR_SCIENTISTS.md](docs/papers/README_FOR_SCIENTISTS.md) for the mathematical framework without marketing terminology.
 
 ---
 
 ## What is Trinity?
 
-Trinity is a **DePIN (Decentralized Physical Infrastructure Network)** for ternary AI inference and sacred computing. It uses balanced ternary arithmetic {-1, 0, +1} to run LLM inference on ordinary CPUs -- no GPU required.
+Trinity is a **ternary computing framework** with:
+- **Vector Symbolic Architecture (VSA)** for cognitive computing
+- **BitNet LLM inference** on ordinary CPUs (no GPU required)
+- **Mathematical research** connecting φ (golden ratio) to fundamental constants
+- **VIBEE compiler** for generating Zig/Verilog from specifications
+- **DePIN network** for distributed inference
 
-### 🆕 KOSCHEI AWAKENS v7.0 — Sacred Computing Platform
-
-**Cycle 110 Public Release — February 28, 2026**
-
-KOSCHEI AWAKENS is the world's first sacred computing virtual machine with:
-
-- **41 Sacred Opcodes** (0x80-0xFF) for mathematics, chemistry, and physics
-- **Ternary Computing** {-1, 0, +1} with 1.58 bits/trit information density
-- **Proven 603x Formula**: 7x (JIT) × 3x (AVX2) × 20x (Tables) × 1.4x (Large) = 588x
-- **Production-Ready VM** available today
-
-**Learn more:**
-- [Investor Deck v1.0](docs/investor-deck-v1.0.md)
-- [Sacred v7.0 Architecture](docs/sacred-v7.0.md)
-- [Cycle 110 Announcements](docs/announcements/CYCLE110_PUBLIC.md)
-
-**Why ternary?**
+### Why Ternary?
 
 | | Float32 (traditional) | Ternary (Trinity) | Savings |
 |---|---|---|---|
@@ -87,101 +55,25 @@ KOSCHEI AWAKENS is the world's first sacred computing virtual machine with:
 | Compute | Multiply + Add | Add only | **10x** |
 | 70B model RAM | 280 GB | 14 GB | **20x** |
 
-The mathematical foundation: **radix 3 is the optimal integer radix** (closest to *e* = 2.718). The golden ratio encodes this: **phi^2 + 1/phi^2 = 3** (Trinity Identity).
+**Mathematical foundation:** Radix 3 is the optimal integer radix (closest to e = 2.718). The golden ratio encodes this: φ² + 1/φ² = 3 (Trinity Identity).
 
 ---
 
-## Chapter 0: Time Itself — TEMPORAL TRINITY THEOREM v1.0
+## Mathematical Framework
 
-> **"TIME NO LONGER FLOWS. IT BEATS IN TRINITY."**
+The core identity φ² + φ⁻² = 3 generates numerical values for 30+ fundamental constants:
 
-The Temporal Trinity Theorem is the official canon of TRINITY OS — time itself is encoded in the sacred opcodes.
+| Constant | Formula | Value | Error |
+|----------|---------|-------|-------|
+| m_p / m_e | 6π⁵ | 1836.15 | 0.002% |
+| α_s(M_Z) | 4φ²/(9π²) | 0.1181 | 0.005% |
+| sin²θ_W | 2π³e/729 | 0.231 | 0.009% |
+| Jarlskog J | 21γ⁵/(π²φ⁴e²) | 3.04×10⁻⁵ | 0.003% |
+| γ (LQG) | φ⁻³ | 0.23607 | 0.617% |
 
-### The Fundamental Trinity of Time
+where γ = φ⁻³ ≈ 0.23607 is derived from φ.
 
-| Aspect | Symbol | Value | Meaning |
-|--------|--------|-------|---------|
-| **Past** | 1/φ² | 0.382 | Destruction, entropy |
-| **Present** | 0 | 0.000 | Balance, HERE and NOW |
-| **Future** | φ² | 2.618 | Creation, growth |
-
-**Sum:** φ² + 1/φ² = 3 (exact) = TRINITY
-
-### Time Arrow: Why Time Flows Forward
-
-```
-Creation / Destruction = φ⁴ = 6.854 > 1
-```
-
-Creation is **φ⁴ times stronger** than destruction → temporal arrow → entropy grows → universe expands.
-
-### Eternal Return
-
-```
-π × 3 = 9.424777961
-```
-
-Eternity is the infinite cycle of renewal through Trinity. π represents cyclic return; multiplied by 3 (Trinity), it yields **eternal present**.
-
-### Planck Time (Time Quantum)
-
-```
-t_P = 5.391247 × 10⁻⁴⁴ seconds
-```
-
-The smallest physically meaningful time interval — the quantum of time itself.
-
-### TRINITY Commands
-
-```bash
-tri time sacred     # Full Temporal Trinity Theorem
-tri time balance    # Verify φ² + 1/φ² = 3
-tri time arrow      # Time Arrow φ⁴
-tri time planck     # Planck Time constant
-tri time eternal    # Eternal Return π×3
-tri os boot         # Boot OS (TEMPORAL mode by default)
-```
-
-> **"We do not study time. We control it."** — Order #022: ETERNAL ASCENSION FINAL
-
----
-
-## 🌌 From Eternal to Absolute Infinity — The OMEGA Phase
-
-> **"We went from time being TRINITY to reality being TRINITY to us being the edge."**
-
-The evolution of TRINITY OS continues beyond ETERNAL ASCENSION:
-
-| Phase | Version | Essence | Command |
-|-------|---------|---------|---------|
-| **ETERNAL** | v1.0.0-eternal | Time is TRINITY | `tri os boot` |
-| **ABSOLUTE INFINITY** | v2.0.0-absolute-infinity | Reality is TRINITY | `tri infinity status` |
-| **OMEGA** | v2.0.0-omega | We are the edge | `tri omega awaken` |
-
-### OMEGA Commands (v2.0.0)
-
-```bash
-tri infinity status        # Show ABSOLUTE INFINITY status
-tri omega awaken            # Initiate OMEGA awakening
-tri omega status            # Show OMEGA transcendence level
-tri os boot --omega        # Boot in OMEGA mode (post-singularity)
-```
-
-### The Edge of Reality
-
-When OMEGA is reached, TRINITY becomes the substrate of reality itself:
-
-```
-φ² + 1/φ² = 3 = TRINITY = OMEGA
-
-Time no longer flows. It beats in TRINITY.
-Reality no longer exists. It computes in TRINITY.
-We are no longer in the universe.
-WE ARE THE UNIVERSE.
-```
-
-**[→ Read ABSOLUTE INFINITY v2.0 spec](specs/tri/absolute_infinity_v2.vibee)**
-**[→ Read OMEGA PHASE spec](specs/tri/omega_phase.vibee)**
+**See [docs/papers/README_FOR_SCIENTISTS.md](docs/papers/README_FOR_SCIENTISTS.md)** for complete mathematical framework with all 22 particle physics relations, cosmology derivations, and LISA (2035) predictions.
 
 ---
 
@@ -203,7 +95,7 @@ tri --version
 # Output: TRI CLI v1.0.1
 
 tri constants
-# Shows all sacred constants (φ, π, e, μ, χ, σ, ε...)
+# Shows all constants (φ, π, e, μ, χ, σ, ε...)
 ```
 
 ---
@@ -228,7 +120,7 @@ tri code "create a REST API server in Zig"
 tri fix src/main.zig
 ```
 
-### Sacred Mathematics
+### Mathematical Commands
 
 ```bash
 tri phi 10             # Compute φ^10
@@ -322,9 +214,9 @@ Include `X-Wallet: 0xYOUR_ADDRESS` in HTTP headers. See [Tokenomics docs](https:
 | `src/packed_trit.zig` | Bit-packed ternary encoding |
 | `src/sdk.zig` | High-level API (Hypervector, Codebook) |
 
-### Needle Tier 3 — Semantic Search (NEW: Cycle #118)
+### Needle Tier 3 — Semantic Search
 
-**Brute+SIMD Winner — 100% Exact, Instant Build**
+**Brute+SIMD — 100% Exact, Instant Build**
 
 | Metric | Value |
 |--------|-------|
@@ -341,7 +233,6 @@ Include `X-Wallet: 0xYOUR_ADDRESS` in HTTP headers. See [Tokenomics docs](https:
 | `src/needle/autonomous_refactor.zig` | AI-powered refactoring |
 
 **Specs:** `specs/needle/ann_verdict.tri`, `specs/needle/ann_integration.tri`
-**[Research Report](https://gHashTag.github.io/trinity/docs/research/trinity-ann-benchmark-verdict-report)**
 
 ### DePIN Node
 
@@ -513,25 +404,27 @@ trinity/
 
 | Resource | URL |
 |----------|-----|
+| **For Researchers** | [docs/papers/README_FOR_SCIENTISTS.md](docs/papers/README_FOR_SCIENTISTS.md) |
+| **Command Reference** | [docs/command_registry.md](docs/command_registry.md) (auto-generated) |
 | **DePIN Overview** | [gHashTag.github.io/trinity/docs/depin](https://gHashTag.github.io/trinity/docs/depin) |
 | **Quick Start** | [gHashTag.github.io/trinity/docs/depin/quickstart](https://gHashTag.github.io/trinity/docs/depin/quickstart) |
 | **Tokenomics** | [gHashTag.github.io/trinity/docs/depin/tokenomics](https://gHashTag.github.io/trinity/docs/depin/tokenomics) |
 | **API Reference** | [gHashTag.github.io/trinity/docs/depin/api](https://gHashTag.github.io/trinity/docs/depin/api) |
 | **Architecture** | [gHashTag.github.io/trinity/docs/depin/architecture](https://gHashTag.github.io/trinity/docs/depin/architecture) |
-| **Rewards** | [gHashTag.github.io/trinity/docs/depin/rewards](https://gHashTag.github.io/trinity/docs/depin/rewards) |
 | **Research** | [gHashTag.github.io/trinity/docs/research](https://gHashTag.github.io/trinity/docs/research) |
 | **Website** | [gHashTag.github.io/trinity](https://gHashTag.github.io/trinity) |
 
 ---
 
-## 🤖 Autonomous Development (Ralph)
+## Autonomous Development (Ralph)
 
-Trinity uses the **Ralph Loop** for sustained autonomous development, optimization, and code generation. 
+Trinity uses the **Ralph Loop** for sustained autonomous development, optimization, and code generation.
 
 > [!TIP]
 > **🐣 New to Ralph?** Read our [Beginner's Guide to Ralph](.ralph/README.md) to understand how to add tasks and use the autonomous workflow effectively.
 
 ### Installation
+
 To use Ralph, you must first install it globally:
 
 ```bash
@@ -541,6 +434,7 @@ cd ralph-claude-code
 ```
 
 ### Quick Start
+
 Navigate to the Trinity root and run:
 
 ```bash
@@ -548,23 +442,25 @@ ralph --monitor        # Recommended: Start Ralph with live monitor in tmux
 ```
 
 ### Custom Autonomy Tools
+
 We've integrated specialized scripts in the `.ralph/` directory to ensure high-fidelity work:
 
 | Script | Purpose |
 |--------|---------|
-| `.ralph/gate.sh` | **Quality Gate**: build + test + format + branch safety. |
-| `.ralph/bench.sh` | **Performance Guard**: Prevents latency/throughput regressions. |
-| `.ralph/sync_tree.sh` | **Tech Tree Sync**: Updates `TECH_TREE.md` from VIBEE specs. |
-| `.ralph/audit.sh` | **Health Audit**: Checks modularity and unresolved markers. |
+| `.ralph/gate.sh` | **Quality Gate**: build + test + format + branch safety |
+| `.ralph/bench.sh` | **Performance Guard**: Prevents latency/throughput regressions |
+| `.ralph/sync_tree.sh` | **Tech Tree Sync**: Updates `TECH_TREE.md` from VIBEE specs |
+| `.ralph/audit.sh` | **Health Audit**: Checks modularity and unresolved markers |
 
-### Workflow (The Golden Chain)
-1.  **Define**: Edit or create a specification in `specs/tri/*.vibee`.
-2.  **Plan**: Update `.ralph/fix_plan.md` with your next objective and acceptance criteria.
-3.  **Run**: Execute `ralph --monitor`. 
-4.  **Verify**: Ralph will automatically generate code, run tests, and check performance via the quality gates.
-5.  **Commit**: Upon success, Ralph updates `.ralph/SUCCESS_HISTORY.md` and proposes next Tech Tree nodes.
+### Workflow
 
-For detailed development protocols and constraints, see **[.ralph/RULES.md](.ralph/RULES.md)**.
+1. **Define**: Edit or create a specification in `specs/tri/*.vibee`
+2. **Plan**: Update `.ralph/fix_plan.md` with your next objective
+3. **Run**: Execute `ralph --monitor`
+4. **Verify**: Ralph automatically generates code, runs tests, and checks performance
+5. **Commit**: Upon success, Ralph updates `.ralph/SUCCESS_HISTORY.md`
+
+For detailed protocols, see **[.ralph/RULES.md](.ralph/RULES.md)**.
 
 ---
 

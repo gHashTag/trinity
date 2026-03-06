@@ -5,11 +5,11 @@
 
 ## Overview
 
-This document provides guidelines for AI agents working on the VIBEE project. All agents must follow the **Golden Chain v4.0** workflow — a 22-link autonomous self-improving pipeline.
+This document provides guidelines for AI agents working on the VIBEE project. All agents must follow the **Autonomous Development Pipeline v4.0** workflow — a 22-link autonomous self-improving pipeline.
 
 ---
 
-## 🚀 GOLDEN CHAIN v4.0 — 22 Links Autonomous Pipeline
+## 🚀 Autonomous Development Pipeline v4.0 — 22 Links Autonomous Pipeline
 
 ### Quick Start
 
@@ -22,7 +22,7 @@ tri pipeline run "your task description"
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│              GOLDEN CHAIN PIPELINE v4.0 — 22 Links                       │
+│              AUTONOMOUS PIPELINE v4.0 — 22 Links                       │
 └─────────────────────────────────────────────────────────────────────────────┘
 
  Link 0:  TVC_GATE              *    [CRITICAL]  Distributed cache (φ⁻¹ threshold)
@@ -33,7 +33,7 @@ tri pipeline run "your task description"
  Link 5:  STRICT_CHECK            *    VIBEE-first compliance check
  Link 6:  SPEC_CREATE             Generate .vibee specification
  Link 7:  CODE_GENERATE          *    vibee gen → .zig code
- Link 8:  SACRED_ANALYZE              Sacred Intelligence analysis
+ Link 8:  ANALYZE              Mathematical analysis
  Link 9:  TEST_RUN               *    zig build test + parsing
  Link 10: BENCHMARK_PREV         *    Compare to v(n-1)
  Link 11: SWE_FIX                     Auto-fix via SWE Agent
@@ -59,7 +59,7 @@ tri pipeline run "your task description"
 
 ---
 
-## 🚨 AUTONOMOUS DEVELOPMENT LOOP (KOSCHEI PATTERN v4.0)
+## 🚨 AUTONOMOUS DEVELOPMENT LOOP (DEVELOPMENT PATTERN v4.0)
 
 ### Core Principles:
 
@@ -73,7 +73,7 @@ tri pipeline run "your task description"
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                  KOSCHEI DEVELOPMENT LOOP v4.0                   │
+│                  AUTONOMOUS DEVELOPMENT LOOP v4.0                   │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  0. TVC_GATE: Check corpus for similar tasks (skip if hit)      │
@@ -88,7 +88,7 @@ tri pipeline run "your task description"
 │         ↓                                                     │
 │  7. CODE_GENERATE: vibee gen → .zig code                     │
 │         ↓                                                     │
-│  8. SACRED_ANALYZE: Sacred Intelligence analysis             │
+│  8. ANALYZE: Mathematical analysis             │
 │         ↓                                                     │
 │  9. TEST_RUN: zig build test + parse output                   │
 │         ↓                                                     │
@@ -412,7 +412,7 @@ for f in specs/tri/*.vibee; do ./bin/vibee gen "$f"; done  # Generate all
 zig test trinity/output/feature.zig            # Test single
 cd trinity/output && for f in *.zig; do zig test "$f"; done  # Test all
 
-# GOLDEN CHAIN
+# AUTONOMOUS PIPELINE
 ./bin/vibee koschei          # Show 16 links
 ./bin/vibee koschei chain    # Architecture
 ./bin/vibee koschei status   # Status
@@ -669,7 +669,7 @@ The agent should call `phi_loop_status` at start of each session to understand c
 
 ---
 
-## FORGE OF KOSCHEI — FPGA Synthesis & Flash Pipeline
+## FPGA Synthesis — FPGA Synthesis & Flash Pipeline
 
 ### Full Flow: Verilog → Silicon
 
@@ -754,4 +754,4 @@ unknown features skipped   → normal, some PIPs not in segbits DB
 
 ---
 
-**KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3 | PHI LOOP: Link N/999**
+**AUTONOMOUS DEVELOPMENT COMPLETE | PIPELINE COMPLETE | φ² + 1/φ² = 3 | PHI LOOP: Link N/999**
