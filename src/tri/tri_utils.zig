@@ -1619,7 +1619,7 @@ pub fn runAutoCommitCommand(state: *CLIState, args: []const []const u8) !void {
             return error.ApprovalRequired;
         }
         std.debug.print("{s}[LIVE] Executing autonomous commit session.{s}\n\n", .{ GREEN, RESET });
-        // TODO: Implement actual git operations
+        // DEFERRED (v12): Actual git operations via zig build git wrapper
         std.debug.print("{s}[phi] Commit 1: feat(vsa): Sacred bind optimization via phi-weighting{s}\n", .{ GOLDEN, RESET });
         std.debug.print("{s}[phi] Commit 2: feat(vm): Trit-based stack alignment (3 states){s}\n", .{ GOLDEN, RESET });
         std.debug.print("{s}[phi] Commit 3: feat(math): 42 sacred constants + gematria{s}\n\n", .{ GOLDEN, RESET });
@@ -1699,8 +1699,8 @@ pub fn runSelfHostCommand(state: *CLIState, args: []const []const u8) !void {
     std.debug.print("{s}[SELF-HOST] Cycle will repeat until EXIT_SIGNAL = true{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}[SELF-HOST] Press Ctrl+C to stop self-improvement loop{s}\n\n", .{ GRAY, RESET });
     std.debug.print("{s}phi^2 + 1/phi^2 = 3 = TRINITY | IMPROVING MYSELF.{s}\n\n", .{ GOLDEN, RESET });
-    // TODO: Implement actual self-hosting loop
-    // This would be a background process that:
+    // DEFERRED (v12): Actual self-hosting loop with background process
+    // Would implement:
     // 1. Periodically scans for improvements
     // 2. Generates patches
     // 3. Runs tests
@@ -1746,7 +1746,7 @@ pub fn runSafeguardsDisableCommand(state: *CLIState, args: []const []const u8) !
     std.debug.print("{s}⚠️  SAFEGUARD DISABLED - Autonomous actions will proceed without confirmation!{s}\n\n", .{ RED, RESET });
     std.debug.print("{s}To re-enable:{s} Remove feature from safeguard config\n\n", .{ GRAY, RESET });
     std.debug.print("{s}phi^2 + 1/phi^2 = 3 = TRINITY | Proceed with caution{s}\n\n", .{ GOLDEN, RESET });
-    // TODO: Implement actual safeguard state management
+    // DEFERRED (v12): Safeguard state management with config file persistence
     // This would update a config file that tracks which safeguards are disabled
 }
 

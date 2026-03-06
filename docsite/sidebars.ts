@@ -203,6 +203,7 @@ const sidebars: SidebarsConfig = {
         'research/index',
         // Scientific Blind Spot Discoveries
         'research/strong-cp-problem-solved',
+        'research/sacred-biology-v11-complete',
         'research/sacred-biology-blind-spot',
         // Golden Chain Cycles (IGLA)
         'research/cycle26-multimodal-unified-report',

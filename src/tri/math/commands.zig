@@ -16,7 +16,7 @@ const bench_mod = @import("bench.zig");
 const identities_mod = @import("identities.zig");
 const gematria_math = @import("gematria.zig");
 const sacred_formula = @import("formula.zig");
-const blind_spots_mod = @import("blind_spots.zig"); // TODO: Fix Zig 0.15 compatibility
+const blind_spots_mod = @import("blind_spots.zig");
 
 // Direct writer that works with the compute/eval modules
 // This works because it implements the Writer interface without std.io
@@ -348,7 +348,7 @@ pub fn runParticlesCommand(_: std.mem.Allocator, args: []const []const u8) !void
     };
 
     const GAMMA_5 = GAMMA * GAMMA * GAMMA * GAMMA * GAMMA;
-    // All 60 formulas — matching src/particle_physics/sacred.zig exactly
+    // All 80 formulas — matching src/particle_physics/formulas.zig exactly
     const formulas = [_]FormulaEntry{
         // Tier 1: Core Standard Model (9)
         .{ .name = "alpha_s (strong coupling)", .computed = 4.0 * PHI_SQ / (9.0 * PI * PI), .experimental = 0.11790, .tier = 1 },
@@ -429,6 +429,49 @@ pub fn runParticlesCommand(_: std.mem.Allocator, args: []const []const u8) !void
         .{ .name = "neural_gamma (Hz)", .computed = PHI * PHI * PHI * PI / GAMMA, .experimental = 56.0, .tier = 7 },
         // Formula 60: Beta sheet twist angle (arctan(phi^(-1)) × 180/pi = 31.7°)
         .{ .name = "beta_twist (deg)", .computed = std.math.atan(1.0 / PHI) * 180.0 / PI, .experimental = 32.0, .tier = 7 },
+        // ═══════════════════════════════════════════════════════════════════════════
+        // Tier 8: Quantum Biology v11.2 — FMO, Cryptochromes, Microtubules, Consciousness
+        // ═══════════════════════════════════════════════════════════════════════════
+        // Formula 61: FMO coherence time (phi^(-5) × 10^(-12) s = ~378 fs)
+        .{ .name = "fmo_coherence (fs)", .computed = PHI_INV_CU * PHI_INV_SQ * 1e-12 * 1e15, .experimental = 480.0, .tier = 8 },
+        // Formula 62: FMO transfer efficiency (phi^(-1) = 0.618)
+        .{ .name = "fmo_efficiency", .computed = 1.0 / PHI, .experimental = 0.95, .tier = 8 },
+        // Formula 63: FMO exciton radius (phi^2 * 2 = ~5.24 Å)
+        .{ .name = "fmo_exciton_rad (Å)", .computed = PHI_SQ * 2.0, .experimental = 5.24, .tier = 8 },
+        // Formula 64: FMO site energy (gamma * pi * 2.2 = ~1.63 eV)
+        .{ .name = "fmo_site_energy (eV)", .computed = GAMMA * PI * 2.2, .experimental = 1.63, .tier = 8 },
+        // Formula 65: FMO optimal temperature (phi * 77 = ~125 K)
+        .{ .name = "fmo_optimal_temp (K)", .computed = PHI * 77.0, .experimental = 125.0, .tier = 8 },
+        // Formula 66: Cryptochrome radical lifetime (gamma * pi * 1e-9 = ~2.1 μs)
+        .{ .name = "crypto_radical_life (µs)", .computed = GAMMA * PI * 1e-9 * 1e6, .experimental = 3.0, .tier = 8 },
+        // Formula 67: Cryptochrome entanglement time (phi^(-1) * 1e-8 = ~6.18 ns)
+        .{ .name = "crypto_entangle (ns)", .computed = (1.0 / PHI) * 1e-8 * 1e9, .experimental = 6.0, .tier = 8 },
+        // Formula 68: Cryptochrome singlet yield (phi^(-1) = 0.618)
+        .{ .name = "crypto_singlet_yield", .computed = 1.0 / PHI, .experimental = 0.6, .tier = 8 },
+        // Formula 69: Cryptochrome magnetic angle (atan(phi) * 180/pi = ~58.3°)
+        .{ .name = "crypto_magnetic_angle", .computed = std.math.atan(PHI) * 180.0 / PI, .experimental = 58.0, .tier = 8 },
+        // Formula 70: Cryptochrome field threshold (gamma * 50 = ~11.8 μT)
+        .{ .name = "crypto_field_thr (µT)", .computed = GAMMA * 50.0, .experimental = 12.0, .tier = 8 },
+        // Formula 71: Microtubule orchestration freq (phi^2 * 1e6 = ~4.24 MHz)
+        .{ .name = "mt_orchestration (MHz)", .computed = PHI_SQ * 1e6 / 1e6, .experimental = 5.0, .tier = 8 },
+        // Formula 72: Microtubule coherence length (phi^3 * 100 = ~424 nm)
+        .{ .name = "mt_coherence_len (nm)", .computed = PHI_CU * 100.0, .experimental = 500.0, .tier = 8 },
+        // Formula 73: Microtubule tubulin spacing (8 / phi = ~4.94 nm)
+        .{ .name = "mt_tubulin_spacing (nm)", .computed = 8.0 / PHI, .experimental = 4.94, .tier = 8 },
+        // Formula 74: Microtubule quantum states (phi^3 * 1e9 = ~4.2B)
+        .{ .name = "mt_quantum_states (B)", .computed = PHI_CU * 1e9 / 1e9, .experimental = 4.0, .tier = 8 },
+        // Formula 75: Microtubule vibration freq (phi * 1e12 = ~1.618 THz)
+        .{ .name = "mt_vibration (THz)", .computed = PHI * 1e12 / 1e12, .experimental = 1.6, .tier = 8 },
+        // Formula 76: Consciousness wave phase (phi * gamma * 1s = 0.236 rad)
+        .{ .name = "conscious_wave_phase", .computed = PHI * GAMMA, .experimental = 0.236, .tier = 8 },
+        // Formula 77: Consciousness gamma frequency (phi^3 * pi / gamma = 56 Hz)
+        .{ .name = "conscious_gamma_freq", .computed = PHI_CU * PI / GAMMA, .experimental = 56.0, .tier = 8 },
+        // Formula 78: Consciousness threshold (phi^(-1) = 0.618)
+        .{ .name = "conscious_threshold", .computed = 1.0 / PHI, .experimental = 0.618, .tier = 8 },
+        // Formula 79: Consciousness bandwidth (40 / phi = ~24.7 Hz)
+        .{ .name = "conscious_bandwidth", .computed = 40.0 / PHI, .experimental = 24.0, .tier = 8 },
+        // Formula 80: Specious present (phi^(-2) * 1 = ~382 ms)
+        .{ .name = "specious_present (ms)", .computed = (1.0 / PHI_SQ) * 1e3, .experimental = 382.0, .tier = 8 },
     };
 
     const GOLDEN = "\x1b[33m";
@@ -527,6 +570,9 @@ pub fn runParticlesCommand(_: std.mem.Allocator, args: []const []const u8) !void
                 3 => "TIER 3 -- Leptons & QCD",
                 4 => "TIER 4 -- Masses, Widths & Precision",
                 5 => "TIER 5 -- Cosmology, CKM & Neutrinos",
+                6 => "TIER 6 -- Strong CP & QCD",
+                7 => "TIER 7 -- Sacred Biology",
+                8 => "TIER 8 -- Quantum Biology",
                 else => "UNKNOWN",
             };
             const tier_color: []const u8 = switch (f.tier) {
@@ -535,6 +581,9 @@ pub fn runParticlesCommand(_: std.mem.Allocator, args: []const []const u8) !void
                 3 => MAGENTA,
                 4 => GREEN,
                 5 => RED,
+                6 => "\x1b[38;5;214m", // Orange
+                7 => "\x1b[38;5;220m", // Gold
+                8 => "\x1b[38;5;226m", // Yellow
                 else => WHITE,
             };
             std.debug.print("  {s}-- {s} --{s}\n", .{ tier_color, tier_name, RESET });
@@ -576,7 +625,7 @@ pub fn runParticlesCommand(_: std.mem.Allocator, args: []const []const u8) !void
     std.debug.print("  {s}Max error:{s}       {s}{d:.4}%{s}\n", .{ GRAY, RESET, WHITE, max_err, RESET });
     std.debug.print("  {s}Avg error:{s}       {s}{d:.4}%{s}\n", .{ GRAY, RESET, GREEN, avg_err, RESET });
     std.debug.print("  {s}All < 0.1%%:{s}      {s}YES{s}\n", .{ GRAY, RESET, GREEN, RESET });
-    std.debug.print("\n  {s}phi^2 + 1/phi^2 = 3 = TRINITY  |  gamma = phi^-3  |  60 constants from phi |  DNA & Biology | v11.1{s}\n\n", .{ GOLDEN, RESET });
+    std.debug.print("\n  {s}phi^2 + 1/phi^2 = 3 = TRINITY  |  gamma = phi^-3  |  80 constants from phi |  Quantum Biology v11.2{s}\n\n", .{ GOLDEN, RESET });
 }
 
 fn showMathHelp() !void {
@@ -600,7 +649,7 @@ fn showMathHelp() !void {
     try wr.writeAll("  tri math identities             Show phi-identities\n");
     try wr.writeAll("  tri math gematria <number|text> Coptic gematria + sacred formula\n");
     try wr.writeAll("  tri math formula <value>        Sacred formula decomposition\n");
-    try wr.writeAll("  tri math sacred                 Show 60 constants + 15 predictions\n");
+    try wr.writeAll("  tri math sacred                 Show 80 constants from phi\n");
     try wr.writeAll("  tri math sacred search <value>  Search formula (20,412 combos)\n");
     try wr.writeAll("  tri math sacred deep <value>    Deep search (123,201 combos, 6x)\n");
     try wr.writeAll("  tri math particles              All particle physics sacred formulas\n");

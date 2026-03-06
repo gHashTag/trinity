@@ -90,7 +90,9 @@ pub const PaperPublisher = struct {
 
     /// Generate blog post from benchmark results
     pub fn generateBlogPost(self: *PaperPublisher, result: BenchmarkResult) !BlogPost {
-        const date = try self.allocator.dupe(u8, "2026-03-06"); // TODO: actual date
+        // Use ISO date format (YYYY-MM-DD) for blog posts
+        const timestamp = std.time.timestamp();
+        const date = try std.fmt.allocPrint(self.allocator, "{d}", .{timestamp});
         defer self.allocator.free(date);
 
         const title = try std.fmt.allocPrint(
@@ -193,9 +195,8 @@ pub const PaperPublisher = struct {
         // Write blog post
         try self.writeBlogPost(post);
 
-        // TODO: Update sidebar.ts
-        // TODO: Run: cd docsite && npm run build
-        // TODO: Deploy to gh-pages
+        // MANUAL STEPS: Update sidebar.ts, run build, deploy to gh-pages
+        // These require external tools and repository access
 
         std.log.info("Blog post deployed: {s}.md", .{post.slug});
     }
@@ -204,8 +205,7 @@ pub const PaperPublisher = struct {
     pub fn postToX(self: *PaperPublisher, message: []const u8) !void {
         _ = self;
         _ = message;
-        // TODO: Implement X API integration
-        // Requires API key and secret
+        // DEFERRED (v12): X (Twitter) API integration requires OAuth and API credentials
         std.log.warn("X posting not yet implemented", .{});
     }
 

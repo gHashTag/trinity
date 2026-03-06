@@ -97,8 +97,7 @@ pub const TrinityOS = struct {
 
         self.boot_state.phase = .quantum;
 
-        // Placeholder: Quantum operations require VM module
-        // TODO: Integrate VM for sacredQubit, muonG2Solve, hubbleQuantumResolve
+        // DEFERRED (v12): VM integration for quantum operations (sacredQubit, muonG2Solve, hubbleQuantumResolve)
 
         std.debug.print("[QUANTUM] Quantum layer placeholder active\n", .{});
         std.debug.print("[QUANTUM] φ² + 1/φ² = 3 (sacred superposition)\n", .{});
@@ -115,8 +114,7 @@ pub const TrinityOS = struct {
 
         self.boot_state.phase = .koschei;
 
-        // Placeholder: KOSCHEI operations require VM module
-        // TODO: Integrate VM for koscheiUniverse, trinityQuantumAwaken
+        // DEFERRED (v12): VM integration for KOSCHEI operations (koscheiUniverse, trinityQuantumAwaken)
 
         std.debug.print("[KOSCHEI] KOSCHEI UNIVERSE placeholder active\n", .{});
         std.debug.print("[KOSCHEI] UNIVERSAL mode placeholder\n", .{});

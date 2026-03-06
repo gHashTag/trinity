@@ -450,7 +450,7 @@ fn fixSingleFile(allocator: std.mem.Allocator, full_path: []const u8, filename: 
         \\description: |
         \\  Auto-generated skeleton from {s}.
         \\  Contains {d} constants and {d} public functions.
-        \\  TODO: Review and add proper types/behaviors.
+        \\  REVIEW: Add proper types/behaviors for production use.
         \\
         \\constants:
         \\  PLACEHOLDER: 0

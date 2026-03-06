@@ -2437,6 +2437,19 @@ pub fn build(b: *std.Build) void {
     biology_protein_step.dependOn(&run_biology_protein.step);
     test_step.dependOn(&run_biology_protein.step);
 
+    // Task 16b: Sacred Quantum Biology v11.2 (FMO, Cryptochromes, Microtubules)
+    const biology_quantum_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/biology/quantum/quantum_sacred.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_biology_quantum = b.addRunArtifact(biology_quantum_tests);
+    const biology_quantum_step = b.step("test-biology-quantum", "Test Sacred Quantum Biology v11.2");
+    biology_quantum_step.dependOn(&run_biology_quantum.step);
+    test_step.dependOn(&run_biology_quantum.step);
+
     // Task 17: IIT v4 (Consciousness domain — Integrated Information Theory 4.0)
     const iit_v4_tests = b.addTest(.{
         .root_module = b.createModule(.{

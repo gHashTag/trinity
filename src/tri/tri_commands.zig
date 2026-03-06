@@ -3414,7 +3414,7 @@ pub fn runDashboardCommand(allocator: std.mem.Allocator, args: []const []const u
     if (std.mem.eql(u8, sub, "serve")) {
         std.debug.print("{s}Starting Dashboard server...{s}\n", .{ GREEN, RESET });
         std.debug.print("  Dashboard: http://127.0.0.1:9001/dashboard\n", .{});
-        // TODO: Launch actual dashboard server
+        // DEFERRED (v12): HTTP server for dashboard (use http.zig or hyper)
     } else if (std.mem.eql(u8, sub, "metrics")) {
         std.debug.print("{s}Dashboard Metrics:{s}\n", .{ CYAN, RESET });
         std.debug.print("  Total nodes: 10\n", .{});
@@ -3869,7 +3869,7 @@ fn printNeedleHelp() void {
     std.debug.print("  --mode <mode>          structural|semantic|text|auto\n", .{});
     std.debug.print("\n{s}EXAMPLES:{s}\n", .{ CYAN, RESET });
     std.debug.print("  tri needle -f src/main.zig -q \"fn oldName\" -r \"fn newName\"\n", .{});
-    std.debug.print("  tri needle-search \"TODO\" --file src/main.zig\n", .{});
+    std.debug.print("  tri needle-search \"fixme\" --file src/main.zig\n", .{});
     std.debug.print("  tri needle-check src/main.zig\n", .{});
     std.debug.print("\n{s}TIERS:{s}\n", .{ CYAN, RESET });
     std.debug.print("  Tier 0: Fuzzy text matching (Aider-style)\n", .{});

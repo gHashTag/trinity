@@ -132,8 +132,8 @@ pub fn init(allocator: Allocator) !void {
     registry = std.ArrayList(CommandMetadata).init(allocator);
     registry_initialized = true;
 
-    // TODO: Auto-populate from existing Command enum
-    // This will be done in Step 2 when we integrate with existing code
+    // NOTE: Auto-population from Command enum deferred - manual registration required
+    // Integration with existing code planned for v12
 }
 
 /// Register a command

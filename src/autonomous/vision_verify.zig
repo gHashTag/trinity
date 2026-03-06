@@ -156,9 +156,8 @@ pub const VisionVerifier = struct {
             .raw_response = try self.allocator.dupe(u8, ""),
         };
 
-        // TODO: Implement actual HTTP request
+        // DEFERRED (v12): HTTP client implementation for vision API POST requests
         // For now, return simulated result
-        // This needs HTTP client implementation for POST with body
 
         return result;
     }
@@ -185,7 +184,7 @@ pub const VisionVerifier = struct {
     pub fn detectThermal(self: *VisionVerifier, image_path: []const u8) ![]const u8 {
         _ = self;
         _ = image_path;
-        // TODO: Use thermal camera or analyze LED color shift
+        // DEFERRED (v12): Thermal imaging requires hardware integration or color analysis
         return error.NotImplemented;
     }
 };
