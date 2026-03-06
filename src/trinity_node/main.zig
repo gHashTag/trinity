@@ -361,7 +361,8 @@ pub fn main() !void {
     const wallet_path = try config_mod.Config.getWalletPath(allocator);
     defer allocator.free(wallet_path);
 
-    const password = args.wallet_password orelse "trinity123"; // TODO: prompt for password
+    // DEFERRED (v12): Prompt for password via stdin if not provided
+    const password = args.wallet_password orelse "trinity123";
 
     var wallet = wallet_mod.Wallet.loadOrCreate(wallet_path, password) catch |err| {
         std.debug.print("Failed to load wallet: {}\n", .{err});

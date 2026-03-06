@@ -325,7 +325,7 @@ pub fn iitConceptualStructure(statistical_complexity: f64) f64 {
 /// Neural complexity from φ
 /// C_N = γ × Σ × ln(φ × N)
 pub fn neuralComplexityPhi(statistical_complexity: f64, n_elements: usize) f64 {
-    return GAMMA * statistical_complexity * std.math.log_e(PHI * @as(f64, @floatFromInt(n_elements)));
+    return GAMMA * statistical_complexity * @log(PHI * @as(f64, @floatFromInt(n_elements)));
 }
 
 /// Global workspace ignition condition

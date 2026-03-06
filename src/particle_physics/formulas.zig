@@ -921,7 +921,7 @@ pub fn iitConceptualStructure() f64 {
 pub fn neuralComplexity() f64 {
     const sigma = 1.0;
     const n = 100;
-    return GAMMA * sigma * std.math.log_e(f64, PHI * @as(f64, @floatFromInt(n)));
+    return GAMMA * sigma * @log(PHI * @as(f64, @floatFromInt(n)));
 }
 
 /// Formula 98: Qualia freshness at t=τ
