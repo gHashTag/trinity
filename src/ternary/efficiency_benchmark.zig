@@ -251,7 +251,7 @@ test "Ternary: memory efficiency" {
     try std.testing.expectApproxEqRel(log2(3.0), ratio, 0.01);
 }
 
-/// Benchmark: Large number representation
+// Benchmark: Large number representation
 test "Ternary: large number representation" {
     const n = 1_000_000;
 

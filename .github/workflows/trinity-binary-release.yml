@@ -36,12 +36,12 @@ jobs:
 
       - name: Build TRI CLI
         run: |
-          # Build only (don't run) - compile all artifacts including tri
-          # Note: Some optional tools (photon, node-gui, mcp) require raylib/tree-sitter
-          # These will fail to build in CI, but tri should still be created
-          zig build -Dtarget=x86_64-linux-gnu.2.35 -Doptimize=ReleaseFast -Dtreesitter=false || true
+          # Build with optional dependencies disabled for CI
+          # raylib=false: GUI tools (node-gui, photon-demo, photon-immersive)
+          # treesitter=false: AST tools (needle-mcp, trinity-mcp)
+          zig build -Dtarget=x86_64-linux-gnu.2.35 -Doptimize=ReleaseFast -Draylib=false -Dtreesitter=false
           mkdir -p release/linux-amd64
-          # Only copy the binaries that were successfully built
+          # Copy binaries
           [ -f zig-out/bin/tri ] && cp zig-out/bin/tri release/linux-amd64/ || echo "tri binary not found"
           [ -f zig-out/bin/vibee ] && cp zig-out/bin/vibee release/linux-amd64/ || echo "vibee binary not found"
           [ -f zig-out/bin/firebird ] && cp zig-out/bin/firebird release/linux-amd64/ || echo "firebird binary not found"
@@ -75,7 +75,7 @@ jobs:
 
       - name: Build TRI CLI
         run: |
-          zig build -Dtarget=aarch64-linux-gnu.2.35 -Doptimize=ReleaseFast -Dtreesitter=false || true
+          zig build -Dtarget=aarch64-linux-gnu.2.35 -Doptimize=ReleaseFast -Draylib=false -Dtreesitter=false
           mkdir -p release/linux-arm64
           [ -f zig-out/bin/tri ] && cp zig-out/bin/tri release/linux-arm64/ || echo "tri binary not found"
           [ -f zig-out/bin/vibee ] && cp zig-out/bin/vibee release/linux-arm64/ || echo "vibee binary not found"
@@ -110,7 +110,7 @@ jobs:
 
       - name: Build TRI CLI
         run: |
-          zig build -Dtarget=x86_64-macos-gnu -Doptimize=ReleaseFast -Dtreesitter=false || true
+          zig build -Dtarget=x86_64-macos-gnu -Doptimize=ReleaseFast -Draylib=false -Dtreesitter=false
           mkdir -p release/macos-amd64
           [ -f zig-out/bin/tri ] && cp zig-out/bin/tri release/macos-amd64/ || echo "tri binary not found"
           [ -f zig-out/bin/vibee ] && cp zig-out/bin/vibee release/macos-amd64/ || echo "vibee binary not found"
@@ -145,7 +145,7 @@ jobs:
 
       - name: Build TRI CLI
         run: |
-          zig build -Dtarget=aarch64-macos-gnu -Doptimize=ReleaseSafe -Dtreesitter=false || true
+          zig build -Dtarget=aarch64-macos-gnu -Doptimize=ReleaseSafe -Draylib=false -Dtreesitter=false
           mkdir -p release/macos-arm64
           [ -f zig-out/bin/tri ] && cp zig-out/bin/tri release/macos-arm64/ || echo "tri binary not found"
           [ -f zig-out/bin/vibee ] && cp zig-out/bin/vibee release/macos-arm64/ || echo "vibee binary not found"
@@ -180,7 +180,7 @@ jobs:
 
       - name: Build TRI CLI
         run: |
-          zig build -Dtarget=x86_64-windows-gnu -Doptimize=ReleaseFast -Dtreesitter=false || true
+          zig build -Dtarget=x86_64-windows-gnu -Doptimize=ReleaseFast -Draylib=false -Dtreesitter=false
           mkdir -p release/windows-amd64
           [ -f zig-out/bin/tri.exe ] && cp zig-out/bin/tri.exe release/windows-amd64/ || echo "tri binary not found"
           [ -f zig-out/bin/vibee.exe ] && cp zig-out/bin/vibee.exe release/windows-amd64/ || echo "vibee binary not found"

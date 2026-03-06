@@ -1,0 +1,239 @@
+name: ralph_self_evolution_loop
+version: "1.0.0"
+language: zig
+module: ralph_self_evolution
+
+types:
+  EvolutionState:
+    description: Current state of the self-evolution loop
+    enum:
+      - IDLE
+      - ANALYZING
+      - SPEC_CREATING
+      - GENERATING
+      - TESTING
+      - BENCHMARKING
+      - ASSESSING
+      - COMMITTING
+      - DEPLOYING
+      - EVOLVING
+
+  EvolutionMetrics:
+    description: Metrics tracked across evolution cycles
+    fields:
+      cycle_number: Int
+      tests_total: Int
+      tests_passed: Int
+      benchmark_score: Float
+      improvement_ratio: Float      # must exceed phi_inverse for immortality
+      code_coverage: Float
+      spec_count: Int
+      modules_generated: Int
+
+  EvolutionConfig:
+    description: Configuration for the self-evolution loop
+    fields:
+      max_iterations: Int
+      immortality_threshold: Float   # phi^-1 = 0.618
+      auto_commit: Bool
+      auto_deploy: Bool
+      pulse_enabled: Bool
+      tech_tree_path: String
+      success_history_path: String
+      regression_patterns_path: String
+
+  NeedleStatus:
+    description: Needle sharpness assessment
+    enum:
+      - IMMORTAL          # improvement > phi^-1 (61.8%)
+      - MORTAL_IMPROVING  # 0 < improvement < phi^-1
+      - REGRESSION        # improvement <= 0 -> rollback
+
+  GoldenChainLink:
+    description: A single link in the 22-link Golden Chain pipeline
+    fields:
+      index: Int
+      name: String
+      status: LinkStatus
+      critical: Bool
+      output: Option<String>
+
+  LinkStatus:
+    description: Status of a Golden Chain link
+    enum:
+      - PENDING
+      - RUNNING
+      - PASSED
+      - FAILED
+      - SKIPPED
+
+  TechTreeNode:
+    description: A node in the technology tree
+    fields:
+      name: String
+      branch: String
+      status: NodeStatus
+      dependencies: List<String>
+      cycle_added: Int
+
+  NodeStatus:
+    description: Status of a tech tree node
+    enum:
+      - PLANNED
+      - IN_PROGRESS
+      - COMPLETED
+      - BLOCKED
+
+  EvolutionDecision:
+    description: Decision made by the loop at each iteration
+    fields:
+      action: DecisionAction
+      reason: String
+      confidence: Float
+      needle_status: NeedleStatus
+
+  DecisionAction:
+    description: Actions the evolution loop can take
+    enum:
+      - CONTINUE
+      - EXIT_IMMORTAL
+      - ROLLBACK
+      - BRANCH
+      - COOLDOWN
+
+behaviors:
+  - name: init_evolution_loop
+    given: EvolutionConfig with valid paths and thresholds
+    when: Ralph autonomous system starts self-evolution mode
+    then: Loop initializes with cycle_number=0, loads tech tree, success history, and regression patterns
+
+  - name: run_golden_chain
+    given: Initialized evolution loop with current cycle metrics
+    when: New evolution cycle begins
+    then: All 22 Golden Chain links execute in sequence, each reporting status via pulse
+
+  - name: analyze_baseline
+    given: Previous cycle metrics from git history
+    when: Golden Chain Link 1 (BASELINE) executes
+    then: Previous version metrics are loaded and stored for comparison
+
+  - name: check_vibee_compliance
+    given: Source files and spec files in specs/tri/
+    when: Golden Chain Link 5 (STRICT_CHECK) executes
+    then: All application code is verified to originate from .vibee specifications
+
+  - name: generate_from_spec
+    given: .vibee specification file
+    when: Golden Chain Link 7 (CODE_GENERATE) executes
+    then: Zig code is generated via vibee gen and placed in trinity/output/
+
+  - name: run_tests
+    given: Generated and existing source code
+    when: Golden Chain Link 9 (TEST_RUN) executes
+    then: zig build test runs, results parsed, pass/fail counts recorded
+
+  - name: compare_benchmarks
+    given: Current benchmark results and previous cycle metrics
+    when: Golden Chain Link 10 (BENCHMARK_PREV) executes
+    then: Improvement ratio calculated as (current - previous) / previous
+
+  - name: assess_needle_status
+    given: EvolutionMetrics with improvement_ratio
+    when: Benchmark comparison completes
+    then: NeedleStatus determined (IMMORTAL if ratio > 0.618, MORTAL_IMPROVING if > 0, REGRESSION otherwise)
+
+  - name: make_loop_decision
+    given: NeedleStatus and current EvolutionMetrics
+    when: Golden Chain Link 19 (LOOP_DECISION) executes
+    then: EvolutionDecision returned (CONTINUE, EXIT_IMMORTAL, ROLLBACK, or COOLDOWN)
+
+  - name: self_evolve
+    given: Current pipeline configuration and execution history
+    when: Golden Chain Link 21 (ETERNAL_SELF_EVOLUTION) executes
+    then: Pipeline analyzes own execution patterns and suggests improvements to its own code
+
+  - name: update_tech_tree
+    given: Completed cycle with new modules or improvements
+    when: Evolution cycle completes successfully
+    then: TECH_TREE.md updated with new nodes, status changes, and cycle references
+
+  - name: record_success_history
+    given: Successful cycle with passing tests and positive improvement
+    when: Cycle completes with NeedleStatus != REGRESSION
+    then: SUCCESS_HISTORY.md appended with commit hash, metrics, and working patterns
+
+  - name: record_regression_pattern
+    given: Failed cycle with regression detected
+    when: Cycle completes with NeedleStatus == REGRESSION
+    then: REGRESSION_PATTERNS.md appended with anti-pattern description and root cause
+
+  - name: emit_evolution_pulse
+    given: Active pulse integration and current evolution state
+    when: Any state transition occurs in the evolution loop
+    then: Telegram pulse emitted with state, metrics, and decision information
+
+  - name: circuit_breaker
+    given: Evolution loop with consecutive no-progress iterations
+    when: 3 consecutive cycles show no improvement (no-progress counter >= 3)
+    then: Loop enters COOLDOWN state, waits, then resets with different strategy
+
+  - name: branch_safety
+    given: Evolution loop running on a git branch
+    when: Auto-commit is triggered
+    then: Commit only to ralph/* branches, never to main or master
+
+  - name: exit_signal_check
+    given: All exit criteria variables
+    when: Loop decision point reached
+    then: EXIT_SIGNAL = tests_pass AND spec_complete AND critical_assessment_written AND tech_tree_options_proposed AND achievement_documented AND committed AND deployed AND immortal
+
+test_cases:
+  - name: init_loads_history
+    given: Valid EvolutionConfig with existing success_history_path
+    when: init_evolution_loop is called
+    then: SUCCESS_HISTORY.md is parsed and previous working patterns are available
+
+  - name: golden_chain_all_links_execute
+    given: Initialized evolution loop
+    when: run_golden_chain is called
+    then: All 22 links execute in order, critical links (0,7,9,10,19,21) must pass
+
+  - name: needle_immortal_threshold
+    given: EvolutionMetrics with improvement_ratio=0.7
+    when: assess_needle_status is called
+    then: NeedleStatus is IMMORTAL (0.7 > phi^-1 = 0.618)
+
+  - name: needle_mortal_improving
+    given: EvolutionMetrics with improvement_ratio=0.3
+    when: assess_needle_status is called
+    then: NeedleStatus is MORTAL_IMPROVING (0 < 0.3 < 0.618)
+
+  - name: needle_regression_rollback
+    given: EvolutionMetrics with improvement_ratio=-0.1
+    when: assess_needle_status is called
+    then: NeedleStatus is REGRESSION and EvolutionDecision.action is ROLLBACK
+
+  - name: circuit_breaker_activates
+    given: Evolution loop with 3 consecutive cycles of improvement_ratio=0
+    when: make_loop_decision is called on 4th cycle
+    then: DecisionAction is COOLDOWN and loop pauses before retrying
+
+  - name: branch_safety_enforced
+    given: Evolution loop on branch ralph/blind-spots-v2
+    when: Auto-commit is triggered
+    then: Commit succeeds on ralph/blind-spots-v2
+
+  - name: branch_safety_blocks_main
+    given: Evolution loop on branch main
+    when: Auto-commit is triggered
+    then: Commit is blocked with error "Cannot commit to main from evolution loop"
+
+  - name: exit_signal_all_conditions
+    given: tests_pass=true, spec_complete=true, assessment_written=true, tree_proposed=true, documented=true, committed=true, deployed=true, immortal=true
+    when: exit_signal_check is called
+    then: EXIT_SIGNAL is true and loop exits cleanly
+
+  - name: pulse_emitted_on_state_change
+    given: Active pulse integration
+    when: Evolution state transitions from TESTING to BENCHMARKING
+    then: Telegram pulse emitted with emoji and state transition details
