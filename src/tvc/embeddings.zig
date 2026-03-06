@@ -84,7 +84,8 @@ pub const TVCEmbedding = struct {
     /// Get the primary embedding vector based on mode
     pub fn getPrimary(self: *const TVCEmbedding) []const f32 {
         // For now, return float32 representation
-        // TODO: Convert ternary to float if in tvc_ternary mode
+        // DEFERRED (v12): Convert ternary to float if in tvc_ternary mode
+        // Requires: trit-to-float mapping (e.g., {-1,0,+1} → {-1.0, 0.0, 1.0})
         return self.float32[0..FLOAT32_DIM];
     }
 };
