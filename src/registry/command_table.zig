@@ -1,0 +1,1187 @@
+// =============================================================================
+// UNIFIED COMMAND TABLE — Master Registry
+// =============================================================================
+//
+// SINGLE SOURCE OF TRUTH for all TRI commands.
+// This file contains metadata ONLY (no execute function pointers).
+// Execute functions are wired in by CLI consumer (tri_register.zig).
+//
+// To add a new command: add an entry here. CLI, MCP, API, and docs
+// will all pick it up automatically.
+//
+// =============================================================================
+
+const std = @import("std");
+pub const def = @import("command_def.zig");
+const CommandDef = def.CommandDef;
+pub const CommandCategory = def.CommandCategory;
+const InputParam = def.InputParam;
+
+/// All REST + GraphQL + gRPC + WebSocket protocols
+const ALL_PROTOCOLS = &[_]def.ApiProtocol{ .REST, .GRAPHQL, .GRPC, .WEBSOCKET };
+const REST_GRAPHQL = &[_]def.ApiProtocol{ .REST, .GRAPHQL };
+const REST_ONLY = &[_]def.ApiProtocol{.REST};
+
+/// Master command table — every TRI command defined once
+pub const all_commands = [_]CommandDef{
+
+    // =========================================================================
+    // SACRED SCIENCE (v14-v16)
+    // =========================================================================
+
+    .{
+        .name = "bio",
+        .aliases = &.{"biology"},
+        .description = "Biology v14.0 — DNA/RNA/Protein sacred analysis",
+        .long_help = "Analyze DNA, RNA, and protein sequences with sacred mathematics.\nUses \xcf\x86-spiral encoding and Fibonacci patterns found in nature.",
+        .category = .science,
+        .examples = &.{ "tri bio dna ATGCGT", "tri bio rna AUGCCAUAA", "tri bio protein MVHLTPEEK", "tri bio codon ATG" },
+        .has_subcommands = true,
+        .mcp_enabled = true,
+        .mcp_name = "tri_bio_dna",
+        .mcp_display_name = "DNA Analysis",
+        .input_params = &.{
+            .{ .name = "sequence", .param_type = .string, .description = "DNA/RNA/Protein sequence", .required = true },
+        },
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+        .api_rate_limit = 30,
+    },
+
+    .{
+        .name = "cosmos",
+        .aliases = &.{"cosmology"},
+        .description = "Cosmology v15.0 — Universe through \xcf\x86",
+        .long_help = "Explore the universe through sacred mathematics.\nHubble tension resolution via \xcf\x86, dark energy \xcf\x80-patterns.",
+        .category = .science,
+        .examples = &.{ "tri cosmos hubble", "tri cosmos dark", "tri cosmos expand" },
+        .mcp_enabled = true,
+        .mcp_name = "tri_cosmos_hubble",
+        .mcp_display_name = "Hubble Tension",
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+        .api_rate_limit = 30,
+    },
+
+    .{
+        .name = "neuro",
+        .aliases = &.{"neuroscience"},
+        .description = "Neuroscience v16.0 — Brain as sacred computer",
+        .long_help = "The brain as a \xcf\x86-patterned sacred computer.\nBrain waves follow golden ratio patterns.",
+        .category = .science,
+        .examples = &.{ "tri neuro waves", "tri neuro consciousness", "tri neuro regions", "tri neuro network" },
+        .mcp_enabled = false,
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+        .api_rate_limit = 30,
+    },
+
+    // =========================================================================
+    // MATH — Sacred Mathematics
+    // =========================================================================
+
+    .{
+        .name = "math",
+        .aliases = &.{},
+        .description = "Sacred mathematics dispatcher",
+        .long_help = "Golden ratio \xcf\x86, Lucas numbers, sacred geometry.",
+        .category = .math,
+        .examples = &.{ "tri math", "tri constants", "tri phi 10", "tri fib 20" },
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    .{
+        .name = "constants",
+        .aliases = &.{ "const", "c" },
+        .description = "Display sacred constants (\xcf\x86, \xcf\x80, e, \xce\xbc, \xcf\x87, \xcf\x83, \xce\xb5)",
+        .long_help = "Show all sacred mathematics constants used in Trinity.",
+        .category = .math,
+        .examples = &.{"tri constants"},
+        .mcp_enabled = true,
+        .mcp_name = "tri_constants",
+        .mcp_display_name = "Sacred Constants",
+        .api_enabled = true,
+        .api_protocols = ALL_PROTOCOLS,
+        .api_rate_limit = 200,
+    },
+
+    .{
+        .name = "phi",
+        .aliases = &.{},
+        .description = "Compute \xcf\x86\xe2\x81\xbf (golden ratio power)",
+        .long_help = "Calculate the nth power of the golden ratio \xcf\x86 = (1+\xe2\x88\x9a5)/2.",
+        .category = .math,
+        .examples = &.{ "tri phi 10", "tri phi 100" },
+        .mcp_enabled = true,
+        .mcp_name = "tri_phi",
+        .mcp_display_name = "Phi Power",
+        .input_params = &.{
+            .{ .name = "n", .param_type = .integer, .description = "Power of phi", .required = true },
+        },
+        .api_enabled = true,
+        .api_protocols = ALL_PROTOCOLS,
+        .api_rate_limit = 200,
+    },
+
+    .{
+        .name = "fib",
+        .aliases = &.{"fibonacci"},
+        .description = "Fibonacci numbers with BigInt",
+        .long_help = "Calculate Fibonacci numbers F(n) using arbitrary precision.",
+        .category = .math,
+        .examples = &.{ "tri fib 10", "tri fib 100" },
+        .mcp_enabled = true,
+        .mcp_name = "tri_fib",
+        .mcp_display_name = "Fibonacci",
+        .input_params = &.{
+            .{ .name = "n", .param_type = .integer, .description = "Fibonacci index", .required = true },
+        },
+        .api_enabled = true,
+        .api_protocols = ALL_PROTOCOLS,
+        .api_rate_limit = 200,
+    },
+
+    .{
+        .name = "lucas",
+        .aliases = &.{},
+        .description = "Lucas numbers (L(2)=3=TRINITY)",
+        .long_help = "Calculate Lucas numbers L(n). L(2)=3 represents TRINITY.",
+        .category = .math,
+        .examples = &.{ "tri lucas 10", "tri lucas 20" },
+        .mcp_enabled = true,
+        .mcp_name = "tri_lucas",
+        .mcp_display_name = "Lucas Numbers",
+        .input_params = &.{
+            .{ .name = "n", .param_type = .integer, .description = "Lucas index", .required = true },
+        },
+        .api_enabled = true,
+        .api_protocols = ALL_PROTOCOLS,
+        .api_rate_limit = 200,
+    },
+
+    .{
+        .name = "spiral",
+        .aliases = &.{},
+        .description = "\xcf\x86-spiral coordinates",
+        .long_help = "Generate golden spiral coordinates for visualization.",
+        .category = .math,
+        .examples = &.{"tri spiral 10"},
+        .mcp_enabled = true,
+        .mcp_name = "tri_spiral",
+        .mcp_display_name = "Phi Spiral",
+        .input_params = &.{
+            .{ .name = "points", .param_type = .integer, .description = "Number of spiral points", .required = true },
+        },
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    .{
+        .name = "gematria",
+        .aliases = &.{},
+        .description = "Gematria word value calculator",
+        .long_help = "Calculate gematria values using Hebrew/English systems.",
+        .category = .math,
+        .examples = &.{"tri gematria hello"},
+        .mcp_enabled = true,
+        .mcp_name = "tri_gematria",
+        .mcp_display_name = "Gematria",
+        .input_params = &.{
+            .{ .name = "text", .param_type = .string, .description = "Text to analyze", .required = true },
+            .{ .name = "language", .param_type = .string, .description = "Language system" },
+        },
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    .{
+        .name = "formula",
+        .aliases = &.{},
+        .description = "Sacred formula evaluator",
+        .long_help = "Evaluate sacred mathematical formulas.",
+        .category = .math,
+        .examples = &.{"tri formula 'phi^2 + 1/phi^2'"},
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    .{
+        .name = "particles",
+        .aliases = &.{ "particle", "pdg" },
+        .description = "Particle physics sacred formulas (49 constants from \xcf\x86)",
+        .long_help = "Derive Standard Model constants from the golden ratio.\nAll formulas achieve sub-0.1% accuracy vs PDG 2024 data.\nCovers quarks, leptons, bosons, mixing angles, and cosmology.",
+        .category = .science,
+        .examples = &.{ "tri particles", "tri particles all", "tri particles tier1", "tri particles search alpha_s" },
+        .has_subcommands = true,
+        .mcp_enabled = true,
+        .mcp_name = "tri_particles",
+        .mcp_display_name = "Particle Physics Sacred",
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+        .api_rate_limit = 30,
+    },
+
+    .{
+        .name = "sacred",
+        .aliases = &.{},
+        .description = "Sacred mathematics utilities",
+        .long_help = "Various sacred mathematics operations and visualizations.",
+        .category = .science,
+        .examples = &.{ "tri sacred", "tri sacred trinity" },
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    // =========================================================================
+    // MUSIC v1.0 — Sacred Acoustics
+    // =========================================================================
+
+    .{
+        .name = "music",
+        .aliases = &.{ "audio", "sound" },
+        .description = "Sacred Music v1.0 — \xcf\x86-based acoustics",
+        .long_help = "Sacred acoustics with golden ratio harmonics, Solfeggio frequencies, and resonance patterns.",
+        .category = .science,
+        .examples = &.{"tri music"},
+        .has_subcommands = true,
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    .{
+        .name = "frequency",
+        .aliases = &.{ "freq", "note-freq" },
+        .description = "Calculate frequency from note",
+        .long_help = "Convert musical note to frequency (Hz).",
+        .category = .science,
+        .examples = &.{ "tri frequency A4", "tri freq C5 --sacred" },
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    .{
+        .name = "scale",
+        .aliases = &.{},
+        .description = "Display musical scale notes and frequencies",
+        .category = .science,
+        .examples = &.{ "tri scale C major", "tri scale D phi" },
+    },
+
+    .{
+        .name = "chord",
+        .aliases = &.{},
+        .description = "Analyze chord harmonics",
+        .category = .science,
+        .examples = &.{ "tri chord C major", "tri chord A phi" },
+    },
+
+    .{
+        .name = "resonance",
+        .aliases = &.{"res"},
+        .description = "Calculate resonance patterns",
+        .category = .science,
+        .examples = &.{ "tri resonance 432", "tri resonance 528 10" },
+    },
+
+    .{
+        .name = "waveform",
+        .aliases = &.{ "wave", "osc" },
+        .description = "Generate waveform samples",
+        .category = .science,
+        .examples = &.{ "tri waveform phi-spiral", "tri wave sine 32" },
+    },
+
+    .{
+        .name = "harmony",
+        .aliases = &.{},
+        .description = "Analyze harmonic relationship between frequencies",
+        .category = .science,
+        .examples = &.{ "tri harmony 432 528" },
+    },
+
+    .{
+        .name = "phi-series",
+        .aliases = &.{ "phi-freq", "phi-frequencies" },
+        .description = "Show \xcf\x86 frequency series",
+        .category = .science,
+        .examples = &.{ "tri phi-series 432", "tri phi-series 1 12" },
+    },
+
+    // =========================================================================
+    // AI & CHAT
+    // =========================================================================
+
+    .{
+        .name = "chat",
+        .aliases = &.{"c"},
+        .description = "Interactive chat (vision + voice + tools)",
+        .long_help = "Full-featured chat with multimodal input, streaming output, and tool use.",
+        .category = .ai,
+        .examples = &.{ "tri chat 'explain zig'", "tri chat --stream", "tri chat --image path.jpg 'describe this'" },
+        .api_enabled = true,
+        .api_protocols = ALL_PROTOCOLS,
+        .api_rate_limit = 10,
+    },
+
+    .{
+        .name = "code",
+        .aliases = &.{},
+        .description = "Generate code with typing effect",
+        .long_help = "AI code generation with typewriter animation.",
+        .category = .ai,
+        .examples = &.{"tri code 'create a web server'"},
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+        .api_rate_limit = 10,
+    },
+
+    // =========================================================================
+    // SWE AGENT (Software Engineering)
+    // =========================================================================
+
+    .{
+        .name = "fix",
+        .aliases = &.{},
+        .description = "Detect and fix bugs",
+        .long_help = "SWE agent: Analyze code, find bugs, and apply fixes.",
+        .category = .dev,
+        .examples = &.{"tri fix src/main.zig"},
+        .input_params = &.{
+            .{ .name = "file", .param_type = .string, .description = "File to fix", .required = true },
+        },
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+        .api_rate_limit = 10,
+    },
+
+    .{
+        .name = "explain",
+        .aliases = &.{"exp"},
+        .description = "Explain code or concept",
+        .long_help = "SWE agent: Provide detailed explanations of code.",
+        .category = .dev,
+        .examples = &.{"tri explain src/vsa.zig"},
+        .input_params = &.{
+            .{ .name = "file", .param_type = .string, .description = "File or prompt to explain", .required = true },
+        },
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+        .api_rate_limit = 10,
+    },
+
+    .{
+        .name = "test",
+        .aliases = &.{},
+        .description = "Generate tests",
+        .long_help = "SWE agent: Create comprehensive test suites.",
+        .category = .dev,
+        .examples = &.{"tri test src/vsa.zig"},
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+        .api_rate_limit = 10,
+    },
+
+    .{
+        .name = "doc",
+        .aliases = &.{"document"},
+        .description = "Generate documentation",
+        .long_help = "SWE agent: Create documentation from code.",
+        .category = .dev,
+        .examples = &.{"tri doc src/vsa.zig"},
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+        .api_rate_limit = 10,
+    },
+
+    .{
+        .name = "refactor",
+        .aliases = &.{},
+        .description = "Suggest refactoring",
+        .long_help = "SWE agent: Suggest and apply code improvements.",
+        .category = .dev,
+        .examples = &.{"tri refactor src/main.zig"},
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+        .api_rate_limit = 10,
+    },
+
+    .{
+        .name = "reason",
+        .aliases = &.{},
+        .description = "Chain-of-thought reasoning",
+        .long_help = "SWE agent: Step-by-step logical reasoning.",
+        .category = .ai,
+        .examples = &.{"tri reason 'how does VSA work'"},
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+        .api_rate_limit = 10,
+    },
+
+    // =========================================================================
+    // GIT COMMANDS
+    // =========================================================================
+
+    .{
+        .name = "commit",
+        .aliases = &.{},
+        .description = "Git add -A && commit",
+        .long_help = "Stage all changes and create a commit.",
+        .category = .git,
+        .examples = &.{"tri commit 'fix bug'"},
+        .api_enabled = true,
+        .api_protocols = REST_ONLY,
+        .api_auth_required = true,
+    },
+
+    .{
+        .name = "diff",
+        .aliases = &.{},
+        .description = "Git diff",
+        .long_help = "Show unstaged changes.",
+        .category = .git,
+        .examples = &.{"tri diff"},
+        .api_enabled = true,
+        .api_protocols = REST_ONLY,
+    },
+
+    .{
+        .name = "status",
+        .aliases = &.{"st"},
+        .description = "Git status --short",
+        .long_help = "Show working tree status.",
+        .category = .git,
+        .examples = &.{"tri status"},
+        .api_enabled = true,
+        .api_protocols = REST_ONLY,
+    },
+
+    .{
+        .name = "log",
+        .aliases = &.{},
+        .description = "Git log --oneline -10",
+        .long_help = "Show recent commit history.",
+        .category = .git,
+        .examples = &.{"tri log"},
+        .api_enabled = true,
+        .api_protocols = REST_ONLY,
+    },
+
+    // =========================================================================
+    // GOLDEN CHAIN PIPELINE
+    // =========================================================================
+
+    .{
+        .name = "pipeline",
+        .aliases = &.{},
+        .description = "Execute 22-link Golden Chain v4.0",
+        .long_help = "Run the full development pipeline from spec to deployment.",
+        .category = .advanced,
+        .examples = &.{"tri pipeline run mytask"},
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    .{
+        .name = "pipeline-demo",
+        .aliases = &.{},
+        .description = "Pipeline demo — show Golden Chain workflow",
+        .category = .demo,
+    },
+
+    .{
+        .name = "decompose",
+        .aliases = &.{},
+        .description = "Break task into sub-tasks (Link 4)",
+        .category = .advanced,
+        .examples = &.{"tri decompose 'build a web server'"},
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    .{
+        .name = "plan",
+        .aliases = &.{},
+        .description = "Generate implementation plan (Link 5)",
+        .category = .advanced,
+        .examples = &.{"tri plan 'add feature'"},
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    .{
+        .name = "spec-create",
+        .aliases = &.{"spec_create"},
+        .description = "Create .vibee spec template (Link 6)",
+        .category = .dev,
+        .examples = &.{"tri spec-create mymodule"},
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    .{
+        .name = "loop-decide",
+        .aliases = &.{"loop_decide"},
+        .description = "Loop decision: CONTINUE/EXIT (Link 17)",
+        .category = .advanced,
+        .examples = &.{ "tri loop-decide auto", "tri loop-decide" },
+    },
+
+    .{
+        .name = "verify",
+        .aliases = &.{},
+        .description = "Run tests + benchmarks (Links 7-11)",
+        .category = .dev,
+        .examples = &.{"tri verify"},
+        .api_enabled = true,
+        .api_protocols = REST_ONLY,
+    },
+
+    .{
+        .name = "verdict",
+        .aliases = &.{},
+        .description = "Generate toxic verdict (Link 14)",
+        .category = .advanced,
+        .examples = &.{"tri verdict"},
+    },
+
+    // =========================================================================
+    // VIBEE COMPILATION
+    // =========================================================================
+
+    .{
+        .name = "gen",
+        .aliases = &.{"generate"},
+        .description = "Compile VIBEE spec to Zig/Verilog",
+        .long_help = "Generate code from VIBEE specification files.",
+        .category = .dev,
+        .examples = &.{"tri gen specs/myfile.vibee"},
+        .input_params = &.{
+            .{ .name = "spec", .param_type = .string, .description = "Path to .vibee spec file", .required = true },
+        },
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+        .api_rate_limit = 10,
+    },
+
+    .{
+        .name = "convert",
+        .aliases = &.{},
+        .description = "Convert between formats",
+        .category = .dev,
+        .examples = &.{"tri convert model.gguf"},
+        .api_enabled = true,
+        .api_protocols = REST_ONLY,
+    },
+
+    .{
+        .name = "serve",
+        .aliases = &.{"server"},
+        .description = "Start HTTP server",
+        .long_help = "Launch HTTP API server.",
+        .category = .dev,
+        .examples = &.{"tri serve --port 8080"},
+        .api_enabled = true,
+        .api_protocols = REST_ONLY,
+    },
+
+    .{
+        .name = "bench",
+        .aliases = &.{"benchmark"},
+        .description = "Run performance benchmarks",
+        .category = .benchmark,
+        .examples = &.{"tri bench"},
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    .{
+        .name = "evolve",
+        .aliases = &.{},
+        .description = "Evolve system",
+        .category = .advanced,
+        .examples = &.{"tri evolve"},
+    },
+
+    // =========================================================================
+    // TVC (Distributed Learning)
+    // =========================================================================
+
+    .{ .name = "tvc-demo", .aliases = &.{}, .description = "Run TVC chat demo", .category = .demo, .examples = &.{"tri tvc-demo"} },
+    .{ .name = "tvc-stats", .aliases = &.{}, .description = "Show TVC corpus statistics", .category = .system },
+
+    // =========================================================================
+    // DEMO & BENCHMARK COMMANDS (Cycles 1-52)
+    // =========================================================================
+
+    .{ .name = "agents-demo", .aliases = &.{}, .description = "Multi-Agent coordination demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "agents-bench", .aliases = &.{}, .description = "Multi-Agent coordination benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "context-demo", .aliases = &.{}, .description = "Long context sliding window demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "context-bench", .aliases = &.{}, .description = "Long context benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "rag-demo", .aliases = &.{}, .description = "Retrieval-Augmented Generation demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "rag-bench", .aliases = &.{}, .description = "RAG benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "voice-demo", .aliases = &.{}, .description = "Voice I/O (STT+TTS) demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "voice-bench", .aliases = &.{}, .description = "Voice I/O benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "sandbox-demo", .aliases = &.{}, .description = "Code execution sandbox demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "sandbox-bench", .aliases = &.{}, .description = "Sandbox benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "stream-demo", .aliases = &.{}, .description = "Streaming multi-modal pipeline demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "stream-bench", .aliases = &.{}, .description = "Streaming benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "vision-demo", .aliases = &.{}, .description = "Local vision demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "vision-bench", .aliases = &.{}, .description = "Vision benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "finetune-demo", .aliases = &.{}, .description = "Fine-tuning engine demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "finetune-bench", .aliases = &.{}, .description = "Fine-tuning benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "batched-demo", .aliases = &.{}, .description = "Batched stealing demo", .category = .demo },
+    .{ .name = "batched-bench", .aliases = &.{}, .description = "Batched stealing benchmark", .category = .benchmark },
+    .{ .name = "priority-demo", .aliases = &.{}, .description = "Priority queue demo", .category = .demo },
+    .{ .name = "priority-bench", .aliases = &.{}, .description = "Priority queue benchmark", .category = .benchmark },
+    .{ .name = "deadline-demo", .aliases = &.{}, .description = "Deadline scheduling demo", .category = .demo },
+    .{ .name = "deadline-bench", .aliases = &.{}, .description = "Deadline scheduling benchmark", .category = .benchmark },
+    .{ .name = "multimodal-demo", .aliases = &.{}, .description = "Multi-modal unified demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "multimodal-bench", .aliases = &.{}, .description = "Multi-modal unified benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "tooluse-demo", .aliases = &.{}, .description = "Multi-modal tool use demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "tooluse-bench", .aliases = &.{}, .description = "Tool use benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "unified-demo", .aliases = &.{}, .description = "Unified multi-modal agent demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "unified-bench", .aliases = &.{}, .description = "Unified agent benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "autonomous-demo", .aliases = &.{}, .description = "Autonomous agent demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "autonomous-bench", .aliases = &.{}, .description = "Autonomous agent benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "orchestration-demo", .aliases = &.{}, .description = "Multi-agent orchestration demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "orchestration-bench", .aliases = &.{}, .description = "Orchestration benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "mm-orch-demo", .aliases = &.{}, .description = "MM multi-agent orchestration demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "mm-orch-bench", .aliases = &.{}, .description = "MM orchestration benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "memory-demo", .aliases = &.{}, .description = "Agent memory & cross-modal learning demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "memory-bench", .aliases = &.{}, .description = "Memory benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "persist-demo", .aliases = &.{}, .description = "Persistent memory & disk serialization demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "persist-bench", .aliases = &.{}, .description = "Persistent memory benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "spawn-demo", .aliases = &.{}, .description = "Dynamic agent spawning demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "spawn-bench", .aliases = &.{}, .description = "Spawn benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "cluster-demo", .aliases = &.{}, .description = "Distributed multi-node agents demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "cluster-bench", .aliases = &.{}, .description = "Cluster benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "worksteal-demo", .aliases = &.{}, .description = "Adaptive work-stealing scheduler demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "worksteal-bench", .aliases = &.{}, .description = "Work-stealing benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "plugin-demo", .aliases = &.{}, .description = "Plugin & extension system demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "plugin-bench", .aliases = &.{}, .description = "Plugin benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "comms-demo", .aliases = &.{}, .description = "Agent communication protocol demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "comms-bench", .aliases = &.{}, .description = "Communication benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "observe-demo", .aliases = &.{}, .description = "Observability & tracing demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "observe-bench", .aliases = &.{}, .description = "Observability benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "consensus-demo", .aliases = &.{}, .description = "Consensus & coordination demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "consensus-bench", .aliases = &.{}, .description = "Consensus benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "specexec-demo", .aliases = &.{}, .description = "Speculative execution engine demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "specexec-bench", .aliases = &.{}, .description = "Speculative execution benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "governor-demo", .aliases = &.{}, .description = "Adaptive resource governor demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "governor-bench", .aliases = &.{}, .description = "Governor benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "fedlearn-demo", .aliases = &.{}, .description = "Federated learning protocol demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "fedlearn-bench", .aliases = &.{}, .description = "Federated learning benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "eventsrc-demo", .aliases = &.{}, .description = "Event sourcing & CQRS engine demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "eventsrc-bench", .aliases = &.{}, .description = "Event sourcing benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "capsec-demo", .aliases = &.{}, .description = "Capability-based security demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "capsec-bench", .aliases = &.{}, .description = "Capability security benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "dtxn-demo", .aliases = &.{}, .description = "Distributed transaction coordinator demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "dtxn-bench", .aliases = &.{}, .description = "DTXN benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "cache-demo", .aliases = &.{}, .description = "Adaptive caching & memoization demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "cache-bench", .aliases = &.{}, .description = "Caching benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "contract-demo", .aliases = &.{}, .description = "Contract-based agent negotiation demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "contract-bench", .aliases = &.{}, .description = "Contract negotiation benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "workflow-demo", .aliases = &.{}, .description = "Temporal workflow engine demo", .category = .demo, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "workflow-bench", .aliases = &.{}, .description = "Workflow benchmark", .category = .benchmark, .api_enabled = true, .api_protocols = REST_ONLY },
+
+    // =========================================================================
+    // DISTRIBUTED INFERENCE
+    // =========================================================================
+
+    .{ .name = "distributed", .aliases = &.{}, .description = "Distributed inference", .category = .advanced, .api_enabled = true, .api_protocols = REST_GRAPHQL },
+    .{ .name = "multi-cluster", .aliases = &.{"multi_cluster"}, .description = "Multi-cluster orchestration", .category = .advanced, .api_enabled = true, .api_protocols = REST_GRAPHQL },
+
+    // =========================================================================
+    // CODEBASE CONTEXT
+    // =========================================================================
+
+    .{ .name = "analyze", .aliases = &.{}, .description = "Analyze codebase structure", .category = .dev, .api_enabled = true, .api_protocols = REST_GRAPHQL },
+    .{ .name = "search", .aliases = &.{"search-cmd"}, .description = "Search codebase", .category = .dev, .api_enabled = true, .api_protocols = REST_GRAPHQL },
+    .{ .name = "context-info", .aliases = &.{"context_info"}, .description = "Show codebase context info", .category = .system },
+
+    .{
+        .name = "intelligence",
+        .aliases = &.{},
+        .description = "Sacred Intelligence system",
+        .category = .sacred,
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    // =========================================================================
+    // DEV UTILITIES
+    // =========================================================================
+
+    .{ .name = "doctor", .aliases = &.{}, .description = "Check system health", .category = .system, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "clean", .aliases = &.{}, .description = "Clean build artifacts", .category = .system },
+    .{ .name = "fmt", .aliases = &.{"format"}, .description = "Format code", .category = .dev },
+    .{ .name = "stats", .aliases = &.{"stats-cmd"}, .description = "Show code statistics", .category = .system },
+    .{ .name = "igla", .aliases = &.{}, .description = "IGLA hybrid chat", .category = .ai },
+    .{
+        .name = "research",
+        .aliases = &.{ "audit", "analyze-code" },
+        .description = "Research: idempotency audit, duplication check",
+        .long_help = "Run research audits on codebase.",
+        .category = .dev,
+        .examples = &.{ "tri research idempotency", "tri research duplication", "tri research sacred" },
+        .has_subcommands = true,
+    },
+
+    // =========================================================================
+    // SACRED INTELLIGENCE
+    // =========================================================================
+
+    .{
+        .name = "identity",
+        .aliases = &.{},
+        .description = "Sacred identity",
+        .category = .sacred,
+        .mcp_enabled = true,
+        .mcp_name = "tri_identity",
+        .mcp_display_name = "Sacred Identity",
+        .input_params = &.{
+            .{ .name = "subcommand", .param_type = .string, .description = "node, generate, verify, reputation" },
+        },
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    .{
+        .name = "swarm",
+        .aliases = &.{},
+        .description = "Sacred swarm intelligence",
+        .category = .sacred,
+        .mcp_enabled = true,
+        .mcp_name = "tri_swarm",
+        .mcp_display_name = "Swarm Intelligence",
+        .input_params = &.{
+            .{ .name = "subcommand", .param_type = .string, .description = "status, coordinator, agents, tasks, converge" },
+        },
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    .{
+        .name = "govern",
+        .aliases = &.{},
+        .description = "Sacred governance",
+        .category = .sacred,
+        .mcp_enabled = true,
+        .mcp_name = "tri_govern",
+        .mcp_display_name = "Governance System",
+        .input_params = &.{
+            .{ .name = "subcommand", .param_type = .string, .description = "proposals, vote, treasury, rewards" },
+        },
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    .{ .name = "dashboard", .aliases = &.{}, .description = "Sacred dashboard", .category = .system,
+        .mcp_enabled = true,
+        .mcp_name = "tri_dashboard_serve",
+        .mcp_display_name = "Dashboard Server",
+        .input_params = &.{
+            .{ .name = "port", .param_type = .integer, .description = "Dashboard port" },
+        },
+    },
+    .{ .name = "omega", .aliases = &.{}, .description = "Omega phase", .category = .sacred,
+        .mcp_enabled = true,
+        .mcp_name = "tri_omega_status",
+        .mcp_display_name = "Omega Status",
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    // =========================================================================
+    // DEPIN — Global Mesh + Omega Economy
+    // =========================================================================
+
+    .{
+        .name = "wallet",
+        .aliases = &.{},
+        .description = "Wallet management — connect, balance, claim rewards",
+        .long_help = "Manage your DePIN wallet.",
+        .category = .depin,
+        .examples = &.{ "tri wallet connect metamask", "tri wallet balance", "tri wallet claim 50.0" },
+        .mcp_enabled = true,
+        .mcp_name = "tri_wallet_balance",
+        .mcp_display_name = "Wallet Balance",
+        .input_params = &.{
+            .{ .name = "address", .param_type = .string, .description = "Wallet address" },
+        },
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+        .api_auth_required = true,
+    },
+
+    .{
+        .name = "mesh",
+        .aliases = &.{},
+        .description = "Global mesh management — status, topology, discovery",
+        .long_help = "Manage the Global Mesh network.",
+        .category = .depin,
+        .examples = &.{ "tri mesh status", "tri mesh topology", "tri mesh discover" },
+        .mcp_enabled = true,
+        .mcp_name = "tri_mesh_status",
+        .mcp_display_name = "Mesh Status",
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    .{
+        .name = "reputation",
+        .aliases = &.{"rep"},
+        .description = "Reputation system — show node reputation, leaderboard",
+        .long_help = "Check node reputation and Omega status.",
+        .category = .depin,
+        .examples = &.{ "tri reputation show", "tri reputation leaderboard" },
+        .mcp_enabled = true,
+        .mcp_name = "tri_omega_reputation",
+        .mcp_display_name = "Reputation Leaderboard",
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    .{
+        .name = "hardware",
+        .aliases = &.{},
+        .description = "Hardware deployment — deploy, status, stop nodes",
+        .long_help = "Manage hardware node deployment.",
+        .category = .depin,
+        .examples = &.{ "tri hardware deploy", "tri hardware status" },
+        .mcp_enabled = true,
+        .mcp_name = "tri_hardware_info",
+        .mcp_display_name = "Hardware Info",
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    .{ .name = "math-agent", .aliases = &.{"math_agent"}, .description = "Math agent", .category = .ai },
+
+    // =========================================================================
+    // TEMPORAL ENGINE
+    // =========================================================================
+
+    .{ .name = "time", .aliases = &.{}, .description = "Temporal engine", .category = .advanced },
+    .{ .name = "install", .aliases = &.{}, .description = "Install dependencies", .category = .system },
+    .{ .name = "build", .aliases = &.{"build-cmd"}, .description = "Build project", .category = .dev },
+    .{ .name = "deck", .aliases = &.{"deck-generate"}, .description = "Generate flash deck", .category = .dev },
+    .{ .name = "fpga-demo", .aliases = &.{"fpga_demo"}, .description = "FPGA demo", .category = .demo },
+    .{ .name = "sacred-full-cycle", .aliases = &.{"sacred_full_cycle"}, .description = "Sacred full cycle", .category = .science },
+
+    // =========================================================================
+    // QUANTUM TRINITY + OMEGA PHASE
+    // =========================================================================
+
+    .{ .name = "quantum", .aliases = &.{}, .description = "Quantum Trinity", .category = .science,
+        .mcp_enabled = true,
+        .mcp_name = "tri_quantum_constants",
+        .mcp_display_name = "Quantum Constants",
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+    .{ .name = "release-cosmic", .aliases = &.{"release_cosmic"}, .description = "Release cosmic energy", .category = .science },
+    .{ .name = "omega-cmd", .aliases = &.{"omega_cmd"}, .description = "Omega command", .category = .science },
+    .{ .name = "all-cmd", .aliases = &.{"all_cmd"}, .description = "All command", .category = .science },
+    .{ .name = "holo-cmd", .aliases = &.{"holo_cmd"}, .description = "Holo command", .category = .science },
+    .{ .name = "release-absolute", .aliases = &.{"release_absolute"}, .description = "Release absolute", .category = .science },
+    .{ .name = "omega-evolve", .aliases = &.{"omega_evolve"}, .description = "Omega evolve", .category = .science },
+
+    // =========================================================================
+    // CONSCIOUSNESS — Unified Simulation (5 Theories)
+    // =========================================================================
+
+    .{ .name = "conscious", .aliases = &.{"consciousness"}, .description = "Consciousness awakening simulator (IIT+GWT+OrchOR+Qutrit+ActiveInf)", .category = .science,
+        .mcp_enabled = true,
+        .mcp_name = "tri_consciousness",
+        .mcp_display_name = "Consciousness Simulator",
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    // =========================================================================
+    // TRINITY OS
+    // =========================================================================
+
+    .{ .name = "launch", .aliases = &.{}, .description = "Launch TRINITY OS", .category = .advanced },
+
+    // =========================================================================
+    // NEEDLE — Structural Editor
+    // =========================================================================
+
+    .{
+        .name = "needle",
+        .aliases = &.{},
+        .description = "Structural editor core",
+        .category = .dev,
+        .mcp_enabled = true,
+        .mcp_name = "tri_needle",
+        .mcp_display_name = "Needle Editor",
+        .input_params = &.{
+            .{ .name = "file", .param_type = .string, .description = "File to edit" },
+            .{ .name = "query", .param_type = .string, .description = "Edit query" },
+        },
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    .{
+        .name = "needle-search",
+        .aliases = &.{"needle_search"},
+        .description = "Needle search",
+        .category = .dev,
+        .mcp_enabled = true,
+        .mcp_name = "tri_needle_search",
+        .mcp_display_name = "Needle Search",
+        .input_params = &.{
+            .{ .name = "pattern", .param_type = .string, .description = "Search pattern", .required = true },
+        },
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    .{
+        .name = "needle-check",
+        .aliases = &.{"needle_check"},
+        .description = "Needle check",
+        .category = .dev,
+        .mcp_enabled = true,
+        .mcp_name = "tri_needle_check",
+        .mcp_display_name = "Needle Check",
+        .input_params = &.{
+            .{ .name = "file", .param_type = .string, .description = "File to check" },
+        },
+        .api_enabled = true,
+        .api_protocols = REST_GRAPHQL,
+    },
+
+    // =========================================================================
+    // INFO COMMANDS
+    // =========================================================================
+
+    .{ .name = "deps", .aliases = &.{}, .description = "Show dependencies", .category = .system },
+    .{ .name = "info", .aliases = &.{}, .description = "System information", .category = .system, .examples = &.{"tri info"}, .api_enabled = true, .api_protocols = REST_ONLY },
+    .{ .name = "version", .aliases = &.{ "v", "--version" }, .description = "Show version", .category = .system, .examples = &.{"tri version"} },
+    .{
+        .name = "docs-gen",
+        .aliases = &.{"docs_gen", "docgen"},
+        .description = "Generate CLI reference documentation",
+        .long_help = "Auto-generates docs/command_registry.md from the unified command table.\nSingle source of truth: edits go to command_table.zig, not the markdown.",
+        .category = .system,
+        .examples = &.{ "tri docs-gen", "tri docs-gen docs/reference.md" },
+    },
+    .{
+        .name = "registry-validate",
+        .aliases = &.{"registry_validate", "regval"},
+        .description = "Validate command registry and show statistics",
+        .long_help = "Displays command table statistics, validates comptime rules, and shows coverage by category.",
+        .category = .system,
+        .examples = &.{ "tri registry-validate" },
+    },
+
+    // =========================================================================
+    // COMPLETION & HELP
+    // =========================================================================
+
+    .{
+        .name = "completion",
+        .aliases = &.{},
+        .description = "Generate shell completion scripts",
+        .long_help = "Generate bash/zsh/fish completion scripts for tab completion.",
+        .category = .system,
+        .examples = &.{ "tri completion --bash", "tri completion --zsh", "tri completion --install" },
+    },
+
+    .{
+        .name = "help",
+        .aliases = &.{ "h", "?" },
+        .description = "Show help information",
+        .long_help = "Display help for commands.",
+        .category = .system,
+        .examples = &.{ "tri help", "tri help --search dna", "tri help --category science" },
+    },
+
+    .{
+        .name = "test-repl",
+        .aliases = &.{"test_repl"},
+        .description = "Test REPL (Cycle 101)",
+        .long_help = "Interactive test REPL.",
+        .category = .dev,
+        .examples = &.{ "tri test --repl", "tri test -r" },
+    },
+};
+
+// =============================================================================
+// COMPTIME VALIDATION — catches errors at compile time, not runtime
+// =============================================================================
+
+comptime {
+    @setEvalBranchQuota(1_000_000);
+
+    // 1. Every command must have a non-empty name
+    for (all_commands) |cmd| {
+        if (cmd.name.len == 0) {
+            @compileError("Command has empty name");
+        }
+    }
+
+    // 2. Every command must have a description (len > 0)
+    for (all_commands) |cmd| {
+        if (cmd.description.len == 0) {
+            @compileError("Command '" ++ cmd.name ++ "' has empty description");
+        }
+    }
+
+    // 3. No duplicate command names
+    for (all_commands, 0..) |cmd, i| {
+        for (all_commands[i + 1 ..]) |other| {
+            if (std.mem.eql(u8, cmd.name, other.name)) {
+                @compileError("Duplicate command name: '" ++ cmd.name ++ "'");
+            }
+        }
+    }
+
+    // 4. MCP-enabled commands must have at least one input_param or be explicitly zero-arg
+    //    (no check needed — zero input_params is valid for commands like 'verify', 'status')
+
+    // 5. API-enabled commands must have at least one protocol
+    for (all_commands) |cmd| {
+        if (cmd.api_enabled and cmd.api_protocols.len == 0) {
+            @compileError("API-enabled command '" ++ cmd.name ++ "' has no protocols");
+        }
+    }
+
+    // 6. No alias collides with another command's name
+    for (all_commands) |cmd| {
+        for (cmd.aliases) |alias| {
+            if (alias.len == 0) {
+                @compileError("Command '" ++ cmd.name ++ "' has empty alias");
+            }
+            for (all_commands) |other| {
+                if (!std.mem.eql(u8, cmd.name, other.name) and std.mem.eql(u8, alias, other.name)) {
+                    @compileError("Alias '" ++ alias ++ "' of command '" ++ cmd.name ++ "' collides with command '" ++ other.name ++ "'");
+                }
+            }
+        }
+    }
+
+    // 7. No duplicate MCP tool names
+    for (all_commands, 0..) |cmd, i| {
+        if (!cmd.mcp_enabled) continue;
+        const name_a = cmd.getMcpToolName();
+        for (all_commands[i + 1 ..]) |other| {
+            if (!other.mcp_enabled) continue;
+            const name_b = other.getMcpToolName();
+            if (std.mem.eql(u8, name_a, name_b)) {
+                @compileError("Duplicate MCP tool name from commands '" ++ cmd.name ++ "' and '" ++ other.name ++ "'");
+            }
+        }
+    }
+}
+
+// =============================================================================
+// QUERY HELPERS
+// =============================================================================
+
+/// Count commands with MCP enabled
+pub fn countMcpTools() usize {
+    var count: usize = 0;
+    for (all_commands) |cmd| {
+        if (cmd.mcp_enabled) count += 1;
+    }
+    return count;
+}
+
+/// Count commands with API enabled
+pub fn countApiEndpoints() usize {
+    var count: usize = 0;
+    for (all_commands) |cmd| {
+        if (cmd.api_enabled) count += 1;
+    }
+    return count;
+}
+
+/// Count total commands
+pub fn countTotal() usize {
+    return all_commands.len;
+}
+
+/// Find command by name (linear scan — use CommandRegistry HashMap for hot path)
+pub fn findByName(name: []const u8) ?*const CommandDef {
+    for (&all_commands) |*cmd| {
+        if (std.mem.eql(u8, cmd.name, name)) return cmd;
+        for (cmd.aliases) |alias| {
+            if (std.mem.eql(u8, alias, name)) return cmd;
+        }
+    }
+    return null;
+}
+
+/// Find command by MCP tool name
+pub fn findByMcpName(mcp_name: []const u8) ?*const CommandDef {
+    for (&all_commands) |*cmd| {
+        if (!cmd.mcp_enabled) continue;
+        if (cmd.mcp_name) |name| {
+            if (std.mem.eql(u8, name, mcp_name)) return cmd;
+        }
+    }
+    return null;
+}
+
+// =============================================================================
+// TESTS
+// =============================================================================
+
+const testing = std.testing;
+
+test "command table has expected count" {
+    // Should match the number of entries above
+    try testing.expect(all_commands.len > 100);
+    try testing.expect(all_commands.len < 250);
+}
+
+test "countMcpTools returns nonzero" {
+    const mcp_count = countMcpTools();
+    try testing.expect(mcp_count > 10);
+    try testing.expect(mcp_count < all_commands.len);
+}
+
+test "countApiEndpoints returns nonzero" {
+    const api_count = countApiEndpoints();
+    try testing.expect(api_count > 50);
+    try testing.expect(api_count < all_commands.len);
+}
+
+test "findByName works" {
+    const bio = findByName("bio");
+    try testing.expect(bio != null);
+    try testing.expectEqualStrings("bio", bio.?.name);
+
+    // Alias lookup
+    const biology = findByName("biology");
+    try testing.expect(biology != null);
+    try testing.expectEqualStrings("bio", biology.?.name);
+
+    // Not found
+    try testing.expect(findByName("nonexistent-command-xyz") == null);
+}
+
+test "findByMcpName works" {
+    const phi = findByMcpName("tri_phi");
+    try testing.expect(phi != null);
+    try testing.expectEqualStrings("phi", phi.?.name);
+
+    try testing.expect(findByMcpName("nonexistent_mcp_tool") == null);
+}
+
+test "no duplicate command names" {
+    for (all_commands, 0..) |cmd, i| {
+        for (all_commands[i + 1 ..]) |other| {
+            if (std.mem.eql(u8, cmd.name, other.name)) {
+                std.debug.print("DUPLICATE: {s}\n", .{cmd.name});
+                try testing.expect(false);
+            }
+        }
+    }
+}
