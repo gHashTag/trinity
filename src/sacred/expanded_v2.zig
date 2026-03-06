@@ -487,6 +487,120 @@ pub const QuantumBiologySacredFormulas = struct {
     }
 };
 
+/// Consciousness & Qualia domain formulas — Sacred Consciousness v11.3
+/// Φ_γ wave functions, EEG correlations, IIT, and subjective experience
+pub const ConsciousnessQualiaSacredFormulas = struct {
+    /// Φ_γ Wave Function - fundamental consciousness oscillation
+    /// Φ_γ(t) = φ × γ × sin(2π × f_γ × t)
+    pub fn phiGammaWave(t: f64, phase: f64) f64 {
+        return PHI * GAMMA * math.sin(2 * PI * (PHI_CUBED * PI / GAMMA) * t + phase);
+    }
+
+    /// Qualia intensity from Φ_γ amplitude
+    /// Q = |Φ_γ| × C_thr where C_thr = φ⁻¹
+    pub fn qualiaIntensity(phase_gamma: f64) f64 {
+        return @abs(phase_gamma) * (1.0 / PHI);
+    }
+
+    /// Qualia valence (pleasure/displeasure) via φ
+    /// V = tanh(φ × (I - I_0))
+    pub fn qualiaValence(stimulus: f64, baseline: f64) f64 {
+        return math.tanh(PHI * (stimulus - baseline));
+    }
+
+    /// Consciousness gamma frequency (EXACT)
+    /// f_γ = φ³ × π / γ = 56 Hz
+    pub fn consciousnessGammaExact() f64 {
+        return PHI_CUBED * PI / GAMMA;
+    }
+
+    /// EEG γ-band correlation with φ
+    /// Correlates 40-60 Hz power with f_γ = 56 Hz prediction
+    pub fn eegGammaCorrelation(gamma_power: f64, center_freq: f64) f64 {
+        const f_gamma = PHI_CUBED * PI / GAMMA;
+        const freq_weight = 1.0 - @abs(center_freq - f_gamma) / 20.0;
+        return gamma_power * @max(0.0, freq_weight);
+    }
+
+    /// Stream of consciousness rate (qualia per second)
+    /// R = φ⁻¹ × f_γ ≈ 34.6 qualia/sec
+    pub fn streamOfConsciousnessRate() f64 {
+        return (1.0 / PHI) * (PHI_CUBED * PI / GAMMA);
+    }
+
+    /// Subjective time dilation
+    /// τ_subj = τ_obj / γ
+    pub fn subjectiveTimeDilation(objective_time: f64) f64 {
+        return objective_time / GAMMA;
+    }
+
+    /// Specious present duration (subjective "now")
+    /// T_present = φ⁻² seconds = 382 ms
+    pub fn speciousPresent() f64 {
+        return 1.0 / PHI_SQ;
+    }
+
+    /// Phenomenal field radius (visual consciousness extent)
+    /// R_φ = φ² × θ_v × D
+    pub fn phenomenalFieldRadius(visual_angle: f64, distance: f64) f64 {
+        return PHI_SQ * visual_angle * distance;
+    }
+
+    /// Attention spotlight magnification
+    /// A = φ × A_0
+    pub fn attentionSpotlight(base_area: f64) f64 {
+        return PHI * base_area;
+    }
+
+    /// Working memory capacity from φ
+    /// N_WM = φ² + 1 ≈ 4 items
+    pub fn workingMemoryCapacity() f64 {
+        return PHI_SQ + 1.0;
+    }
+
+    /// Perceptual binding window (temporal integration)
+    /// τ_bind = φ / f_γ ≈ 29 ms
+    pub fn perceptualBindingWindow() f64 {
+        return PHI / (PHI_CUBED * PI / GAMMA);
+    }
+
+    /// Consciousness threshold (IIT Φ threshold)
+    /// C_thr = φ⁻¹ = 0.618
+    pub fn consciousnessThreshold() f64 {
+        return 1.0 / PHI;
+    }
+
+    /// Conscious access time (P3 latency)
+    /// T_access = φ / f_γ ≈ 29 ms
+    pub fn consciousAccessTime() f64 {
+        return PHI / (PHI_CUBED * PI / GAMMA);
+    }
+
+    /// IIT Big Phi from TRINITY
+    /// Φ = min(TRINITY, EI × γ⁻¹)
+    pub fn iitBigPhi(effective_info: f64) f64 {
+        return @min(TRINITY, effective_info / GAMMA);
+    }
+
+    /// IIT conceptual structure measure
+    /// CS = φ × Σ / (1 + Σ)
+    pub fn iitConceptualStructure(statistical_complexity: f64) f64 {
+        return PHI * statistical_complexity / (1.0 + statistical_complexity);
+    }
+
+    /// Qualia freshness (memory decay)
+    /// F = exp(-t / (φ × τ_0))
+    pub fn qualiaFreshness(elapsed_time: f64, time_constant: f64) f64 {
+        return math.exp(-elapsed_time / (PHI * time_constant));
+    }
+
+    /// Phenomenal persistence (afterimage duration)
+    /// T_persist = φ⁻¹ × T_stim
+    pub fn phenomenalPersistence(stimulus_duration: f64) f64 {
+        return (1.0 / PHI) * stimulus_duration;
+    }
+};
+
 /// Biology domain formulas — Sacred Biology v11.1
 /// DNA, proteins, and the golden ratio
 pub const BiologySacredFormulas = struct {

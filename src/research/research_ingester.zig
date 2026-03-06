@@ -68,7 +68,8 @@ pub const ResearchIngestion = struct {
     pub fn fetchArxivPaper(self: *ResearchIngestion, arxiv_id: []const u8) !Paper {
         _ = self;
         _ = arxiv_id;
-        // TODO: Implement arXiv API fetch
+        // DEFERRED (v12): Implement arXiv API fetch (https://arxiv.org/api/query)
+        // Requires: HTTP client, XML parsing, error handling
         return error.NotImplemented;
     }
 
@@ -76,7 +77,8 @@ pub const ResearchIngestion = struct {
     pub fn parsePDF(self: *ResearchIngestion, pdf_path: []const u8) ![]const u8 {
         _ = self;
         _ = pdf_path;
-        // TODO: Implement PDF parsing (pdftotext or similar)
+        // DEFERRED (v12): Implement PDF parsing via pdftotext or poppler
+        // Requires: external process spawning, output capture, text extraction
         return error.NotImplemented;
     }
 
@@ -85,14 +87,16 @@ pub const ResearchIngestion = struct {
         _ = self;
         _ = paper;
         _ = text;
-        // TODO: Implement insight extraction using NLP
+        // DEFERRED (v12): Implement insight extraction using NLP/ML
+        // Requires: sentence parsing, keyword extraction, relevance scoring
         return error.NotImplemented;
     }
 
     /// Suggest improvements based on research gap analysis
     pub fn suggestImprovement(self: *ResearchIngestion) !?Insight {
         _ = self;
-        // TODO: Analyze current code vs research findings
+        // DEFERRED (v12): Analyze current code vs research findings
+        // Requires: AST analysis, literature comparison, gap detection
         return null;
     }
 };
@@ -105,5 +109,5 @@ pub fn main() !void {
     std.debug.print("φ² + 1/φ² = 3\n\n", .{});
 
     std.debug.print("Status: Basic structure created\n", .{});
-    std.debug.print("TODO: Implement arXiv fetch, PDF parse, insight extraction\n", .{});
+    std.debug.print("DEFERRED (v12): Implement arXiv fetch, PDF parse, insight extraction\n", .{});
 }

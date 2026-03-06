@@ -269,7 +269,11 @@ pub const EternalMonitor = struct {
         const sleep_ns = @as(u64, @intFromFloat(PHI * 500 * 1_000_000));
         std.posix.nanosleep(sleep_ns / 1_000_000_000, sleep_ns % 1_000_000_000); // φ/2 second wait
 
-        // TODO: Implement actual healing logic per component
+        // DEFERRED (v12): Implement actual healing logic per component
+        // - Restart services (systemctl, systemd, or process manager)
+        // - Reload configuration
+        // - Clear caches
+        // - Trigger recovery scripts
     }
 
     /// Run all health checks

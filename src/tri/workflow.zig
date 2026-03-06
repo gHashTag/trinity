@@ -152,7 +152,7 @@ pub const WorkflowVariable = struct {
                 .integer => try std.fmt.allocPrint(std.testing.allocator, "{}", .{std.fmt.parseInt(i64, value, 10) catch return error.InvalidInteger}),
                 .float => try std.fmt.allocPrint(std.testing.allocator, "{d}", .{std.fmt.parseFloat(f64, value) catch return error.InvalidFloat}),
                 .boolean => if (std.mem.eql(u8, value, "true") or std.mem.eql(u8, value, "1")) "true" else "false",
-                .json => value, // TODO: Validate JSON
+                .json => value, // DEFERRED (v12): Validate JSON syntax using std.json or similar
             };
         }
     };
