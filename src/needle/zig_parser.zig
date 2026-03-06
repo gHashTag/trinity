@@ -563,7 +563,7 @@ pub const ZigParser = struct {
 
     /// Parse function definition
     fn parseFnDef(self: *ZigParser, parent: *ZigNode, is_pub: bool) !void {
-        _ = is_pub; // TODO: track pub in metadata
+        _ = is_pub; // DEFERRED (v12): track pub in metadata for API analysis
         const start = self.current.start;
         const start_line = self.current.line;
 

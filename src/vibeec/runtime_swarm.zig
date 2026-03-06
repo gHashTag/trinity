@@ -95,7 +95,7 @@ pub const SwarmRuntime = struct {
             // Small sleep to prevent busy-waiting (simple busy-wait)
             const sleep_start = std.time.nanoTimestamp();
             while (std.time.nanoTimestamp() - sleep_start < 100_000_000) {
-                // Busy-wait 100ms (TODO: replace with proper sleep)
+                // DEFERRED (v12): Replace with std.Thread.sleep or nanosleep
             }
         }
 
@@ -207,7 +207,7 @@ pub const SwarmRuntime = struct {
 
 /// CLI entry point for production swarm runtime
 pub fn runSwarmRuntime(allocator: Allocator, args: []const []const u8) !u8 {
-    _ = args; // TODO: Parse CLI arguments
+    _ = args; // DEFERRED (v12): Parse CLI arguments (agent_count, seed, prometheus port)
     const config = SwarmRuntimeConfig{
         .agent_count = 32,
         .seed = 12345,
@@ -224,7 +224,8 @@ pub fn runSwarmRuntime(allocator: Allocator, args: []const []const u8) !u8 {
     var runtime = try SwarmRuntime.init(allocator, config);
     defer runtime.deinit();
 
-    // TODO: Signal handling for graceful shutdown (SIGINT, SIGTERM)
+    // DEFERRED (v12): Signal handling for graceful shutdown (SIGINT, SIGTERM)
+    // Requires: posix signal handlers, atomic flag, cleanup coordination
     try runtime.start();
     return 0;
 }

@@ -71,7 +71,7 @@ var gpa = std.heap.GeneralPurposeAllocator(.{}){};
 /// but was never finished. Use pooledBind/pooledBundle/pooledDot instead,
 /// which create their own pools per call.
 pub fn getPool() !*ThreadPool {
-    // TODO: Implement proper singleton pool with thread-safe initialization
+    // DEFERRED (v12): Implement proper singleton pool with thread-safe initialization
     // For now, use the pooled* functions which create pools per call
     return error.NotImplemented;
 }

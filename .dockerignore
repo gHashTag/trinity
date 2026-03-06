@@ -2,34 +2,41 @@
 .git
 .gitignore
 
-# Zig build cache
-zig-cache
+# Zig build cache and output
+.zig-cache
 zig-out
 
-# Node modules
+# Node modules and website/docsite
 node_modules
-
-# Dependencies
-trinity-nexus
-
-# Documentation
 docsite
 website
+
+# Dependencies - exclude most but keep source for build
+trinity-nexus
+.trinity-nexus/.git
+.trinity-nexus/node_modules
+.trinity-nexus/target
+.trinity-nexus/.zig-cache
+!.trinity-nexus/src
+
+# Documentation and specs
 docs
+docs.old.*
 specs
 
-# FPGA files (large)
-fpga/openxc7-synth/prjxray-db
+# FPGA files (very large)
+fpga
 
-# Test artifacts
-*.log
-*.tmp
-
-# CI/CD
-.github
+# Build artifacts
+build
+release
+archive
 
 # Ralph state
 .ralph
+
+# Telegram bridge
+telegram-bridge
 
 # Docker files (don't need during build)
 Dockerfile*
@@ -38,6 +45,9 @@ Dockerfile*
 # Fly.io
 fly.toml
 
+# CI/CD
+.github
+
 # IDE
 .vscode
 .idea
@@ -45,3 +55,10 @@ fly.toml
 # OS
 .DS_Store
 Thumbs.db
+
+# Test artifacts
+*.log
+*.tmp
+
+# Old docs
+docs.old.*

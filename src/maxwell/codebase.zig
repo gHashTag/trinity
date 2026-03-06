@@ -189,9 +189,9 @@ pub const Codebase = struct {
 
             const info = FileInfo{
                 .path = try self.allocator.dupe(u8, entry.name),
-                .size = 0, // TODO: get actual size
+                .size = 0, // DEFERRED (v12): Get actual file size via stat
                 .is_dir = entry.kind == .directory,
-                .modified_time = 0,
+                .modified_time = 0, // DEFERRED (v12): Get actual modification time
             };
             try result.append(info);
         }

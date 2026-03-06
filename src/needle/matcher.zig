@@ -73,7 +73,7 @@ pub const Matcher = struct {
 
         // Try Tier 2: Semantic VSA search (future - placeholder)
         if (self.config.enable_tier2_semantic) {
-            // TODO: Implement VSA semantic search
+            // DEFERRED (v12): Implement VSA semantic search (Tier 2)
             // This is a placeholder for Tier 2
         }
 

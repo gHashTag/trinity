@@ -378,14 +378,16 @@ pub const AgentLoop = struct {
         _ = self;
         _ = task;
         result.success = true;
-        // TODO: Implement bugfix logic
+        // DEFERRED (v12): Integrate with Agent MU for automated bugfix
+        // Requires: error analysis, patch generation, validation
     }
 
     fn executeRefactorTask(self: *AgentLoop, task: *Task, result: *TaskResult) !void {
         _ = self;
         _ = task;
         result.success = true;
-        // TODO: Implement refactor logic
+        // DEFERRED (v12): Integrate with Needle for AST-based refactoring
+        // Requires: pattern detection, safe transformation, rollback
     }
 
     fn executeTestTask(self: *AgentLoop, task: *Task, result: *TaskResult) !void {
@@ -399,14 +401,16 @@ pub const AgentLoop = struct {
         _ = self;
         _ = task;
         result.success = true;
-        // TODO: Implement optimize logic
+        // DEFERRED (v12): Integrate optimization passes (peephole, inlining, etc.)
+        // Requires: AST analysis, cost modeling, transformation rules
     }
 
     fn executeSelfImproveTask(self: *AgentLoop, task: *Task, result: *TaskResult) !void {
         _ = self;
         _ = task;
         result.success = true;
-        // TODO: Implement self-improvement logic
+        // DEFERRED (v12): Integrate with VIBEE self-improvement pipeline
+        // Requires: success history analysis, pattern extraction, spec generation
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -415,7 +419,8 @@ pub const AgentLoop = struct {
 
     fn generateSpec(self: *AgentLoop, task: *Task) ![]const u8 {
         _ = task;
-        // TODO: Use LLM to generate spec
+        // DEFERRED (v12): Use LLM to generate spec from natural language
+        // Requires: LLM integration, prompt engineering, validation
         const spec_content =
             \\name: generated_feature
             \\version: "1.0.0"

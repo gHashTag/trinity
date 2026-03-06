@@ -281,7 +281,7 @@ pub fn printCapabilities() void {
         std.debug.print("  x86-64 Features:\n", .{});
         std.debug.print("    • Scalar JIT implementation\n", .{});
         std.debug.print("    • System V ABI compatible\n", .{});
-        std.debug.print("    • TODO: AVX2/AVX-512 SIMD support\n", .{});
+        std.debug.print("    • DEFERRED (v12): AVX2/AVX-512 SIMD support\n", .{});
     }
 
     std.debug.print("═══════════════════════════════════════════════════════════════\n", .{});

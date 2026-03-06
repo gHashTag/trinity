@@ -11,13 +11,12 @@ RUN apt-get update && \
     apt-get install -y ca-certificates curl xz-utils && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Zig from GitHub releases using wget
+# Install Zig from GitHub releases using wget (using 0.15.0 to match local)
 RUN apt-get update && \
     apt-get install -y wget && \
-    wget --quiet -O /tmp/zig.tar.xz "https://ziglang.org/download/0.13.0/zig-linux-x86_64-0.13.0.tar.xz" || \
-    wget --quiet -O /tmp/zig.tar.xz "https://github.com/ziglang/zig/releases/download/0.13.0/zig-linux-x86_64-0.13.0.tar.xz" && \
+    wget --quiet -O /tmp/zig.tar.xz "https://ziglang.org/download/0.15.0/zig-linux-x86_64-0.15.0.tar.xz" && \
     tar -xf /tmp/zig.tar.xz -C /opt && \
-    mv /opt/zig-linux-x86_64-0.13.0 /opt/zig && \
+    mv /opt/zig-linux-x86_64-0.15.0 /opt/zig && \
     ln -s /opt/zig/zig /usr/local/bin/zig && \
     rm /tmp/zig.tar.xz
 

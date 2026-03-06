@@ -312,7 +312,7 @@ pub const ZigSymbolExtractor = struct {
         _ = result;
         _ = caller;
         _ = line;
-        // TODO: Implement full call extraction with AST
+        // DEFERRED (v12): Implement full call extraction with AST
     }
 };
 

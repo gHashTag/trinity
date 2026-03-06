@@ -310,7 +310,7 @@ pub const AutonomousRefactorEngine = struct {
                     .file = match.file,
                     .symbol = match.symbol_id,
                     .start_line = match.line,
-                    .end_line = match.line, // TODO: compute end_line from node
+                    .end_line = match.line, // DEFERRED (v12): compute end_line from AST node
                     .node_type = match.node_type,
                 };
                 try plan.targets.append(allocator, location);
@@ -325,7 +325,7 @@ pub const AutonomousRefactorEngine = struct {
         _ = self;
         _ = plan;
 
-        // TODO: Run VSA validation rules
+        // DEFERRED (v12): Run VSA validation rules
         // For now, return default score
         return 0.9;
     }
@@ -369,7 +369,7 @@ pub const AutonomousRefactorEngine = struct {
 
         // APPLY: Apply transformations
         result.transformations_applied = plan.transformations.items.len;
-        result.files_modified = 0; // TODO: Track actual files
+        result.files_modified = 0; // DEFERRED (v12): Track actual files modified
 
         state = .verify;
 

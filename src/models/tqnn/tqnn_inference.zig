@@ -350,7 +350,7 @@ pub fn tqnn_forward_batch(inputs: [][]const f32, gate_select: u2) !struct {
     avg_coherence: f32,
     avg_similarity: u16,
 } {
-    _ = gate_select; // TODO: use gate_select in layer config
+    _ = gate_select; // DEFERRED (v12): Use gate_select in layer config routing
     const allocator = std.heap.page_allocator;
 
     const batch_size = inputs.len;

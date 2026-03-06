@@ -178,7 +178,7 @@ pub fn benchmarkAlgorithm(
     queries: []const []const f32,
     ground_truth: []const GroundTruth,
 ) !BenchmarkResult {
-    _ = ground_truth; // TODO: Compute recall
+    _ = ground_truth; // DEFERRED (v12): Compute recall from ground_truth labels
 
     const dataset_size = vectors.len;
 
