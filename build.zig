@@ -2078,6 +2078,110 @@ pub fn build(b: *std.Build) void {
     e8_lqg_step.dependOn(&run_e8_lqg.step);
     test_step.dependOn(&run_e8_lqg.step);
 
+    // v10.1 E8-γ DEFORMATION tests — γ = φ⁻³ as E8 root system deformation parameter
+    const e8_gamma_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/quantum/e8_gamma_deformation.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = trinity_mod },
+                .{ .name = "tri", .module = trinity_mod },
+            },
+        }),
+    });
+    const run_e8_gamma = b.addRunArtifact(e8_gamma_tests);
+    const e8_gamma_step = b.step("test-e8-gamma", "Test v10.1 E8-γ Deformation (γ = φ⁻³)");
+    e8_gamma_step.dependOn(&run_e8_gamma.step);
+    test_step.dependOn(&run_e8_gamma.step);
+
+    // v10.1 BLIND SPOTS RESEARCH PROGRAM — 5 tasks in parallel
+
+    // Task 1: α-γ Bridge (Fine Structure Constant)
+    const alpha_gamma_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/quantum/alpha_gamma_bridge.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = trinity_mod },
+                .{ .name = "tri", .module = trinity_mod },
+            },
+        }),
+    });
+    const run_alpha_gamma = b.addRunArtifact(alpha_gamma_tests);
+    const alpha_gamma_step = b.step("test-alpha-gamma", "Test α-γ Bridge (Fine Structure Constant)");
+    alpha_gamma_step.dependOn(&run_alpha_gamma.step);
+    test_step.dependOn(&run_alpha_gamma.step);
+
+    // Task 2: Riemann-γ (Number Theory)
+    const riemann_gamma_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/math/riemann_gamma.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = trinity_mod },
+                .{ .name = "tri", .module = trinity_mod },
+            },
+        }),
+    });
+    const run_riemann_gamma = b.addRunArtifact(riemann_gamma_tests);
+    const riemann_gamma_step = b.step("test-riemann-gamma", "Test Riemann-γ (Number Theory)");
+    riemann_gamma_step.dependOn(&run_riemann_gamma.step);
+    test_step.dependOn(&run_riemann_gamma.step);
+
+    // Task 3: Ternary Efficiency Benchmark
+    const ternary_bench_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/ternary/efficiency_benchmark.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = trinity_mod },
+                .{ .name = "tri", .module = trinity_mod },
+            },
+        }),
+    });
+    const run_ternary_bench = b.addRunArtifact(ternary_bench_tests);
+    const ternary_bench_step = b.step("test-ternary-bench", "Test Ternary Efficiency Benchmark");
+    ternary_bench_step.dependOn(&run_ternary_bench.step);
+    test_step.dependOn(&run_ternary_bench.step);
+
+    // Task 4: VSA-Quantum Simulation
+    const vsa_quantum_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vsa/quantum_transition.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = trinity_mod },
+                .{ .name = "tri", .module = trinity_mod },
+            },
+        }),
+    });
+    const run_vsa_quantum = b.addRunArtifact(vsa_quantum_tests);
+    const vsa_quantum_step = b.step("test-vsa-quantum", "Test VSA-Quantum Transition");
+    vsa_quantum_step.dependOn(&run_vsa_quantum.step);
+    test_step.dependOn(&run_vsa_quantum.step);
+
+    // Task 5: Sacred Formula Expansion
+    const sacred_expanded_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/math/sacred_expanded.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = trinity_mod },
+                .{ .name = "tri", .module = trinity_mod },
+            },
+        }),
+    });
+    const run_sacred_expanded = b.addRunArtifact(sacred_expanded_tests);
+    const sacred_expanded_step = b.step("test-sacred-expanded", "Test Sacred Formula Expansion");
+    sacred_expanded_step.dependOn(&run_sacred_expanded.step);
+    test_step.dependOn(&run_sacred_expanded.step);
+
     // VSA Math Benchmark executable (MATH-003) — REMOVED (generated.old/ deleted)
 
     // Storage Init tests — REMOVED (generated.old/ deleted)

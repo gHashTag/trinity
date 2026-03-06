@@ -1,0 +1,83 @@
+name: ralph_queue_monitor
+version: "1.0.0"
+language: zig
+module: ralph_queue_monitor
+
+types:
+  QueueEventType:
+    enum:
+      - new_command
+      - new_response
+      - file_modified
+      - file_deleted
+
+  QueueEvent:
+    fields:
+      event_type: QueueEventType
+      file_path: String
+      content: String
+      timestamp: Int
+
+  MonitorState:
+    fields:
+      running: Bool
+      last_incoming_mod: Int
+      last_response_mod: Int
+      event_callback: Option<Callback>
+
+behaviors:
+  - name: init_queue_monitor
+    given: Queue directory exists at .ralph/queue with incoming.cmd and responses/ subdirectory
+    when: Initializing monitor state
+    then: MonitorState created with initial modification times for incoming.cmd and responses/ directory
+
+  - name: start_monitoring
+    given: Initialized MonitorState with event callback configured
+    when: Starting monitoring process
+    then: Monitor thread spawned, running flag set to true, returns success
+
+  - name: stop_monitoring
+    given: Monitor thread is running
+    when: Stopping monitoring process
+    then: Running flag set to false, thread joined, returns success
+
+  - name: monitor_loop
+    given: Monitor is running with check interval of 500ms
+    when: Monitoring loop executes
+    then: Checks incoming.cmd and responses/ for changes every 500ms until stopped
+
+  - name: check_incoming_command
+    given: MonitorState with last_incoming_mod timestamp
+    when: Checking .ralph/queue/incoming.cmd for changes
+    then: Returns new_command event if modification time changed, no event if unchanged
+
+  - name: check_responses
+    given: MonitorState with last_response_mod timestamp and responses/ directory
+    when: Checking .ralph/queue/responses/ for new response files
+    then: Returns new_response event if new files detected, file_modified if existing files changed
+
+  - name: read_file_content
+    given: Valid file path with readable content
+    when: Reading file as string
+    then: Returns file contents as String, error if file not readable
+
+  - name: get_file_mod_time
+    given: Valid file or directory path
+    when: Querying filesystem for modification time
+    then: Returns unix timestamp (Int) of last modification, error if path not found
+
+tests:
+  - name: init_monitor_reads_initial_times
+    given: Fresh queue directory with incoming.cmd and responses/
+    when: Calling init_queue_monitor
+    then: MonitorState contains current mod times for both incoming and responses
+
+  - name: detect_new_command
+    given: Monitor running with tracked incoming.cmd mod time
+    when: External process writes new command to incoming.cmd
+    then: QueueEvent emitted with event_type=new_command containing new content
+
+  - name: no_event_on_no_change
+    given: Monitor running with tracked mod times
+    when: Check interval elapses with no file changes
+    then: No events emitted, mod times unchanged

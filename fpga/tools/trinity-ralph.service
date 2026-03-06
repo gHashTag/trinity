@@ -1,8 +1,11 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# TRINITY RALPH ORCHESTRATOR — Systemd User Service
+# TRINITY RALPH ORCHESTRATOR v2.0 — 24/7 Autonomous AI Service
 # ═══════════════════════════════════════════════════════════════════════════════
 #
-# Wakes up every 10 minutes to manage FPGA development autonomously
+# Runs 24/7 autonomous self-improvement cycles:
+# - Every 10 min: Task processing (fix_plan.md)
+# - Every 30 min: Research ingestion (arXiv papers)
+# - Every 2 hours: Full evolution cycle (improve → test → flash → publish)
 #
 # Install:
 #   mkdir -p ~/.config/systemd/user
@@ -19,20 +22,22 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 
 [Unit]
-Description=Trinity Ralph Orchestrator — FPGA Autonomous Development Manager
+Description=Trinity Ralph Orchestrator — 24/7 Autonomous Self-Evolution AI
 Documentation=https://github.com/gHashTag/trinity
-After=network.target
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
 ExecStart=/Users/playra/trinity-w1/fpga/tools/ralph-cron.sh start
 ExecStop=/Users/playra/trinity-w1/fpga/tools/ralph-cron.sh stop
-Restart=on-failure
+Restart=always
 RestartSec=60
 
 # Environment
-Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+Environment="PATH=/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin"
 Environment="RALPH_REPORT_ENABLED=true"
+Environment="ANTHROPIC_API_KEY="  # Set via systemd credential
 WorkingDirectory=/Users/playra/trinity-w1
 
 # Logging
@@ -40,9 +45,13 @@ StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=trinity-ralph
 
-# Resource limits
-MemoryMax=512M
-CPUQuota=50%
+# Resource limits (increased for 24/7 operation)
+MemoryMax=1G
+CPUQuota=75%
+
+# Safety timeouts
+TimeoutStartSec=300
+TimeoutStopSec=60
 
 [Install]
 WantedBy=default.target

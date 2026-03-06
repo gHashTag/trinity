@@ -34,10 +34,10 @@ Interactive AI-powered chat and code generation.
 
 | Command | Description |
 |---------|-------------|
-| `chat [--stream] <msg>` | Interactive chat with vision + voice + tools |
-| `code [--stream] <prompt>` | Generate code with typing effect |
+| `chat [--stream]` | Interactive chat with vision + voice + tools |
+| `code [--stream]` | Generate code with typing effect |
 | `fix <file>` | Detect and fix bugs |
-| `explain <file|prompt>` | Explain code or concept |
+| `explain <file>` | Explain code or concept |
 | `reason <prompt>` | Chain-of-thought reasoning |
 
 ---
@@ -49,10 +49,10 @@ Explore the universe through sacred mathematics and natural patterns.
 ### Biology (v14.0)
 | Command | Description |
 |---------|-------------|
-| `tri bio dna <seq>` | DNA sequence sacred analysis |
-| `tri bio rna <seq>` | RNA sequence analysis |
-| `tri bio protein <seq>` | Protein structure analysis |
-| `tri bio codon <seq>` | Codon lookup |
+| `tri bio dna` | DNA sequence sacred analysis |
+| `tri bio rna` | RNA sequence analysis |
+| `tri bio protein` | Protein structure analysis |
+| `tri bio codon` | Codon lookup |
 
 ### Cosmology (v15.0)
 | Command | Description |
@@ -72,11 +72,11 @@ Explore the universe through sacred mathematics and natural patterns.
 ### Music (v5.0)
 | Command | Description |
 |---------|-------------|
-| `tri music <key>` | Music theory analysis |
-| `tri frequency <hz>` | Frequency to note |
-| `tri scale <key>` | Scale construction |
-| `tri chord <notes>` | Chord analysis |
-| `tri resonance <freq>` | Resonance patterns |
+| `tri music` | Music theory analysis |
+| `tri frequency` | Frequency to note |
+| `tri scale` | Scale construction |
+| `tri chord` | Chord analysis |
+| `tri resonance` | Resonance patterns |
 | `tri waveform` | Waveform visualization |
 | `tri harmony` | Harmonic analysis |
 | `tri phi-series` | φ-based music series |
@@ -91,11 +91,11 @@ Mathematical foundations based on the golden ratio φ.
 |---------|-------------|
 | `math` | Sacred math dispatcher |
 | `constants` | Show φ, π, e, μ, χ, σ, ε... |
-| `phi <n>` | Compute φⁿ |
-| `fib <n>` | Fibonacci with BigInt |
-| `lucas <n>` | Lucas L(n) — L(2)=3=TRINITY |
-| `spiral <n>` | φ-spiral coordinates |
-| `gematria <word>` | Calculate gematria value |
+| `phi` | Compute φⁿ |
+| `fib` | Fibonacci with BigInt |
+| `lucas` | Lucas L(n) — L(2)=3=TRINITY |
+| `spiral` | φ-spiral coordinates |
+| `gematria` | Calculate gematria value |
 | `sacred` | Sacred mathematics overview |
 
 ---
@@ -109,7 +109,7 @@ Built-in version control commands.
 | `status` | Git status --short |
 | `diff` | Git diff |
 | `log` | Git log --oneline -10 |
-| `commit <message>` | Git add -A && commit |
+| `commit` | Git add -A && commit |
 
 ---
 
@@ -120,9 +120,9 @@ Software engineering agent and development tools.
 ### SWE Agent
 | Command | Description |
 |---------|-------------|
-| `test <file>` | Generate tests |
-| `doc <file>` | Generate documentation |
-| `refactor <file>` | Suggest refactoring |
+| `test` | Generate tests |
+| `doc` | Generate documentation |
+| `refactor` | Suggest refactoring |
 
 ### Code Analysis
 | Command | Description |
@@ -134,7 +134,7 @@ Software engineering agent and development tools.
 ### VIBEE Compiler
 | Command | Description |
 |---------|-------------|
-| `gen <spec.vibee>` | Compile VIBEE spec to Zig/Verilog |
+| `gen` | Compile VIBEE spec to Zig/Verilog |
 | `convert` | Format conversion |
 | `serve` | Unified API server |
 
@@ -222,10 +222,10 @@ Advanced features including distributed computing and FPGA.
 | Command | Description |
 |---------|-------------|
 | `pipeline run <task>` | Execute 17-link Golden Chain |
-| `decompose <task>` | Break task into sub-tasks (Link 4) |
-| `plan <task>` | Generate implementation plan (Link 5) |
-| `spec_create <name>` | Create .vibee spec template (Link 6) |
-| `loop_decide [mode]` | Loop decision: CONTINUE/EXIT (Link 17) |
+| `decompose` | Break task into sub-tasks (Link 4) |
+| `plan` | Generate implementation plan (Link 5) |
+| `spec_create` | Create .vibee spec template (Link 6) |
+| `loop_decide` | Loop decision: CONTINUE/EXIT (Link 17) |
 | `verify` | Run tests + benchmarks (Links 7-11) |
 | `verdict` | Generate toxic verdict (Link 14) |
 | `evolve` | Evolve fingerprint (Firebird) |
