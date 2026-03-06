@@ -31,6 +31,9 @@
 //! - Frontiers in Computational Neuroscience (2025). Global Workspace Theory and phi-scaling
 
 const std = @import("std");
+
+// Import from canonical source (ANTI-PATTERN: no inline constants!)
+const sacred_constants = @import("sacred_constants");
 const math = std.math;
 
 // ============================================================

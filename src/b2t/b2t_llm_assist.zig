@@ -17,7 +17,7 @@ const b2t_lifter = @import("b2t_lifter.zig");
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub const PHI: f64 = 1.618033988749895;
+pub const PHI = sacred_constants.PHI;
 pub const PHI_SQ: f64 = 2.618033988749895;
 pub const TRINITY: f64 = 3.0;
 

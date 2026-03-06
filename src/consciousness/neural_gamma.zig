@@ -20,6 +20,9 @@
 //! 4. Gamma synchrony is fundamental to consciousness
 
 const std = @import("std");
+
+// Import from canonical source (ANTI-PATTERN: no inline constants!)
+const sacred_constants = @import("sacred_constants");
 const math = std.math;
 const mem = std.mem;
 

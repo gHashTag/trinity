@@ -23,8 +23,11 @@ const std = @import("std");
 const math = std.math;
 const mem = std.mem;
 
+// Import from canonical source (ANTI-PATTERN: no inline constants!)
+const sacred_constants = @import("sacred_constants");
+
 /// Golden ratio φ = (1 + √5)/2
-pub const PHI: f64 = 1.6180339887498948482;
+pub const PHI = sacred_constants.PHI;
 
 /// φ³ = 4.23606797749978969641...
 pub const PHI_CUBED: f64 = PHI * PHI * PHI;
@@ -36,7 +39,7 @@ pub const GAMMA: f64 = 1.0 / PHI_CUBED;
 pub const TRINITY: f64 = PHI * PHI + 1.0 / (PHI * PHI);
 
 /// π constant
-pub const PI: f64 = 3.14159265358979323846;
+pub const PI = sacred_constants.PI;
 
 /// Euler's number
 pub const E: f64 = 2.71828182845904523536;

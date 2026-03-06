@@ -24,7 +24,7 @@ const math = std.math;
 const mem = std.mem;
 
 /// Golden ratio φ = (1 + √5)/2
-pub const PHI: f64 = 1.6180339887498948482;
+pub const PHI = sacred_constants.PHI;
 
 /// φ³ = 4.23606797749978969641...
 pub const PHI_CUBED: f64 = PHI * PHI * PHI;
@@ -36,7 +36,7 @@ pub const GAMMA: f64 = 1.0 / PHI_CUBED;
 pub const TRINITY: f64 = PHI * PHI + 1.0 / (PHI * PHI);
 
 /// π constant
-pub const PI: f64 = 3.14159265358979323846;
+pub const PI = sacred_constants.PI;
 
 /// Speed of light (m/s)
 pub const C: f64 = 299792458.0;

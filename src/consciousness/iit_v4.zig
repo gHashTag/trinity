@@ -31,6 +31,9 @@
 //! Upper bound on Φ: Φ_max = log2(n) × φ, capped at TRINITY = 3
 
 const std = @import("std");
+
+// Import from canonical source (ANTI-PATTERN: no inline constants!)
+const sacred_constants = @import("sacred_constants");
 const math = std.math;
 
 /// Golden ratio φ = (1 + √5)/2

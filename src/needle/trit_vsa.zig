@@ -14,12 +14,15 @@ const std = @import("std");
 const math = std.math;
 const vsa = @import("vsa.zig");
 
+// Import from canonical source (ANTI-PATTERN: no inline constants!)
+const sacred_constants = @import("sacred_constants");
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Golden ratio φ for seeding
-pub const PHI: f64 = 1.6180339887498948482;
+pub const PHI = sacred_constants.PHI;
 
 /// Default VSA dimension
 pub const DEFAULT_DIM: usize = 4096;

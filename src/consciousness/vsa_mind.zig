@@ -20,6 +20,9 @@
 //! 4. Hypervector dimensionality relates to consciousness via φ
 
 const std = @import("std");
+
+// Import from canonical source (ANTI-PATTERN: no inline constants!)
+const sacred_constants = @import("sacred_constants");
 const math = std.math;
 const mem = std.mem;
 

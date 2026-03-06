@@ -16,6 +16,9 @@ const math = std.math;
 const vsa = @import("vsa.zig");
 const trit = @import("trit_vsa.zig");
 
+// Import from canonical source (ANTI-PATTERN: no inline constants!)
+const sacred_constants = @import("sacred_constants");
+
 pub const TritVSA = trit.TritVSA;
 pub const PackedTrit = trit.PackedTrit;
 pub const Trit = trit.Trit;
@@ -31,7 +34,7 @@ pub const NEURAL_DIM: usize = 768;
 pub const VSA_DIM: usize = 4096;
 
 /// Projection matrix uses φ-based initialization
-pub const PHI: f64 = 1.6180339887498948482;
+pub const PHI = sacred_constants.PHI;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // NEURAL ENCODER (CodeBERT Projection)

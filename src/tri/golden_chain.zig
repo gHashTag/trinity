@@ -1,19 +1,22 @@
 // ============================================================================
 // GOLDEN CHAIN - 23-Link Development Pipeline State Machine
-// Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+// Mathematical Formula: V = n x 3^k x pi^m x phi^p x e^q
 // Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
 // v4.1: Added Link 22 (Self-Referential Evolution) for circular bootstrapping
 // ============================================================================
 
 const std = @import("std");
 
+// Import from canonical source (ANTI-PATTERN: no inline constants!)
+const sacred_constants = @import("sacred_constants");
+
 // ============================================================================
-// CONSTANTS
+// CONSTANTS (from canonical source)
 // ============================================================================
 
-pub const PHI: f64 = 1.618033988749895;
-pub const PHI_INVERSE: f64 = 0.618033988749895; // Needle threshold
-pub const TRINITY: f64 = 3.0;
+pub const PHI = sacred_constants.PHI;
+pub const PHI_INVERSE = sacred_constants.PHI_INVERSE; // Needle threshold
+pub const TRINITY = sacred_constants.TRINITY_SUM;
 
 // ============================================================================
 // CHAIN LINK ENUM (23 Links) — GOLDEN CHAIN v4.1

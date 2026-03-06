@@ -12,6 +12,9 @@
 
 const std = @import("std");
 
+// Import from canonical source (ANTI-PATTERN: no inline constants!)
+const sacred_constants = @import("sacred_constants");
+
 /// Distance metrics supported across all ANN implementations
 pub const DistanceMetric = enum {
     /// Cosine similarity [-1, 1] -> distance [0, 2]
@@ -213,10 +216,10 @@ pub fn distanceToSimilarity(distance: f32, metric: DistanceMetric) f32 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Golden ratio φ = (1 + √5) / 2
-pub const PHI: f64 = 1.618033988749895;
+pub const PHI = sacred_constants.PHI;
 
 /// φ⁻¹ = φ - 1 = 0.618...
-pub const PHI_INVERSE: f64 = 0.618033988749895;
+pub const PHI_INVERSE = sacred_constants.PHI_INVERSE;
 
 /// φ⁴ ≈ 6.854 → ceil = 7 (but we use 12 for LSH tables)
 pub const PHI_POW_4: f64 = 6.854101966249685;

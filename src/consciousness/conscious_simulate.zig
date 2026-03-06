@@ -26,6 +26,9 @@
 //! Barbero-Immirzi: γ = φ⁻³ ≈ 0.236
 
 const std = @import("std");
+
+// Import from canonical source (ANTI-PATTERN: no inline constants!)
+const sacred_constants = @import("sacred_constants");
 const math = std.math;
 
 // ============================================================================
