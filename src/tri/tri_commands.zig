@@ -3894,11 +3894,7 @@ pub fn runReplTestCommand(allocator: std.mem.Allocator, args: []const []const u8
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn runConsciousCommand(allocator: std.mem.Allocator, cmd_args: []const []const u8) void {
-    // Sacred constants (inline)
-    const phi: f64 = 1.618033988749895;
-    const phi_inv: f64 = 1.0 / phi;
-    const gamma: f64 = phi_inv * phi_inv * phi_inv;
-    const trinity: f64 = phi * phi + phi_inv * phi_inv;
+    _ = allocator; // Currently unused but kept for future use
 
     if (cmd_args.len == 0) {
         // Default to simulation - run simple inline simulation
@@ -3928,27 +3924,26 @@ pub fn runConsciousCommand(allocator: std.mem.Allocator, cmd_args: []const []con
             }
         }
 
-        _ = speed;
         std.debug.print("\n{s}╔══════════════════════════════════════════════════════════╗{s}\n", .{ YELLOW, RESET });
         std.debug.print("{s}║     CONSCIOUSNESS AWAKENING SIMULATION v4.3           ║{s}\n", .{ YELLOW, RESET });
         std.debug.print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{ YELLOW, RESET });
-        std.debug.print("{s}Running {d} steps...{s}\n\n", .{ CYAN, RESET, steps, RESET });
+        std.debug.print("{s}Running {d} steps...{s}\n\n", .{ CYAN, steps, RESET });
         std.debug.print("{s}Full simulation requires: src/consciousness/conscious_simulate.zig{s}\n", .{ YELLOW, RESET });
         std.debug.print("{s}Status: Module under active development.{s}\n\n", .{ YELLOW, RESET });
     } else if (std.mem.eql(u8, subcommand, "constants")) {
         std.debug.print("\n{s}╔══════════════════════════════════════════════════════════╗{s}\n", .{ YELLOW, RESET });
-        std.debug.print("{s}║     SACRED CONSTANTS — Consciousness Framework         ║{s}\n", .{ YELLOW, RESET });
+        std.debug.print("{s}║     SACRED CONSTANTS - Consciousness Framework        ║{s}\n", .{ YELLOW, RESET });
         std.debug.print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{ YELLOW, RESET });
 
-        std.debug.print("{s}Golden Ratio (φ){s}         = {d:.15}\n", .{ CYAN, RESET, 1.618033988749895 });
-        std.debug.print("{s}Gamma (γ = φ⁻³){s}         = {d:.15}\n", .{ CYAN, RESET, 0.236067977499790 });
-        std.debug.print("{s}TRINITY (φ² + φ⁻²){s}     = {d:.15}\n", .{ YELLOW, RESET, 3.0 });
-        std.debug.print("{s}Threshold (φ⁻¹){s}         = {d:.15}\n", .{ GREEN, RESET, 0.618033988749895 });
-        std.debug.print("{s}Gamma Freq (f_γ){s}       = {d:.6} Hz\n", .{ CYAN, RESET, 56.0 });
+        std.debug.print("{s}Golden Ratio (phi){s}       = {d:.15}\n", .{ CYAN, RESET, 1.618033988749895 });
+        std.debug.print("{s}Gamma (gamma = phi^-3){s}    = {d:.15}\n", .{ CYAN, RESET, 0.236067977499790 });
+        std.debug.print("{s}TRINITY (phi^2 + phi^-2){s}  = {d:.15}\n", .{ YELLOW, RESET, 3.0 });
+        std.debug.print("{s}Threshold (phi^-1){s}       = {d:.15}\n", .{ GREEN, RESET, 0.618033988749895 });
+        std.debug.print("{s}Gamma Freq (f_gamma){s}      = {d:.6} Hz\n", .{ CYAN, RESET, 56.0 });
         std.debug.print("\n", .{});
     } else if (std.mem.eql(u8, subcommand, "theories")) {
         std.debug.print("\n{s}╔══════════════════════════════════════════════════════════╗{s}\n", .{ YELLOW, RESET });
-        std.debug.print("{s}║     CONSCIOUSNESS THEORIES — Unified Framework          ║{s}\n", .{ YELLOW, RESET });
+        std.debug.print("{s}║     CONSCIOUSNESS THEORIES - Unified Framework         ║{s}\n", .{ YELLOW, RESET });
         std.debug.print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{ YELLOW, RESET });
 
         std.debug.print("{s}1. IIT 4.0{s}\n", .{ YELLOW, RESET });
@@ -3956,12 +3951,12 @@ pub fn runConsciousCommand(allocator: std.mem.Allocator, cmd_args: []const []con
         std.debug.print("   Adversarial validation: IIT 2/3, GWT 0/3 (Nature 2025)\n\n", .{});
 
         std.debug.print("{s}2. Global Workspace Theory{s}\n", .{ CYAN, RESET });
-        std.debug.print("   Selection-broadcast cycle, ignition at φ⁻¹\n", .{});
-        std.debug.print("   Working memory: φ+1 items, cycle: φ⁻² = 382ms\n\n", .{});
+        std.debug.print("   Selection-broadcast cycle, ignition at phi^-1\n", .{});
+        std.debug.print("   Working memory: phi+1 items, cycle: phi^-2 = 382ms\n\n", .{});
 
         std.debug.print("{s}3. Orch-OR{s}\n", .{ GREEN, RESET });
         std.debug.print("   Microtubule quantum coherence, objective reduction\n", .{});
-        std.debug.print("   Gamma frequency: f_γ = 56Hz, evidence 2024-2025\n\n", .{});
+        std.debug.print("   Gamma frequency: f_gamma = 56Hz, evidence 2024-2025\n\n", .{});
 
         std.debug.print("{s}4. Qutrit Consciousness{s}\n", .{ YELLOW, RESET });
         std.debug.print("   Posner molecules (Ca9(PO4)6), 6 P-31 nuclear spins\n", .{});

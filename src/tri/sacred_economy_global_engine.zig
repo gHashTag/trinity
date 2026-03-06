@@ -13,17 +13,22 @@
 const std = @import("std");
 const math = std.math;
 
+// Import canonical constants (NOT inline - anti-pattern!)
+const sacred_constants = @import("sacred_constants");
+
 // ═════════════════════════════════════════════════════════════════════════════
-// CONSTANTS
+// CONSTANTS (export from canonical source + derived)
 // ═════════════════════════════════════════════════════════════════════════════
 
-// Trinity Constants
-pub const PHI: f64 = 1.618033988749895;
-pub const PHI_SQARED: f64 = 2.618033988749895;
-pub const THREE: f64 = 3;
-pub const PHI_SQUARED_PLUS_ONE: f64 = 4.618033988749895;
-pub const THREE_SQUARED_MINUS_ONE: f64 = 2.618033988749895;
-pub const FIBONACCI: f64 = 1.618033988749895;
+// Trinity Constants (from canonical source)
+pub const PHI = sacred_constants.SacredConstants.PHI;
+pub const PHI_SQARED = sacred_constants.SacredConstants.PHI_SQ;
+pub const THREE = sacred_constants.SacredConstants.TRINITY;
+
+// Derived constants
+pub const PHI_SQUARED_PLUS_ONE: f64 = PHI_SQARED + 1.0;
+pub const THREE_SQUARED_MINUS_ONE: f64 = THREE * THREE - 1.0;
+pub const FIBONACCI = PHI; // Fibonacci ratio converges to phi
 pub const TRINITY_IDENTITY: f64 = 0; // phi^2 + 1/phi^2 = 3
 
 // Math Constants

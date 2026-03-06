@@ -15,17 +15,20 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-// Constants
-const PHI: f64 = 1.6180339887498948482;
-const PHI_SQ: f64 = 2.6180339887498948482;
-const PHI_INV_SQ: f64 = 0.3819660112501051518;
+// Import canonical constants (NOT inline - anti-pattern!)
+const sacred_constants = @import("sacred_constants");
+const PHI = sacred_constants.SacredConstants.PHI;
+const PHI_SQ = sacred_constants.SacredConstants.PHI_SQ;
+const PI = sacred_constants.SacredConstants.PI;
+const E = sacred_constants.SacredConstants.E;
+
+// Derived constants (computed from canonical values)
+const PHI_INV_SQ: f64 = 1.0 / (PHI * PHI);
 const MU: f64 = 0.0382; // Inflation rate
 const CHI: f64 = 0.0618; // Deflation rate
 const BASE_YIELD_RATE: f64 = 0.1618;
 const ORACLE_CONFIDENCE_DECAY: f64 = 0.9382;
 const LP_FEE_RATE: f64 = 0.003;
-const PI: f64 = 3.14159265358979323846;
-const E: f64 = 2.71828182845904523536;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Types

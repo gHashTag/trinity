@@ -13,20 +13,20 @@
 const std = @import("std");
 const math = std.math;
 
+// Import canonical constants (NOT inline - anti-pattern!)
+const sacred_constants = @import("sacred_constants");
+
 // ═══════════════════════════════════════════════════════════════════════════════
-// CONSTANTS
+// CONSTANTS (export from canonical source)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub const PHI: f64 = 1.618033988749895;
+pub const PHI = sacred_constants.SacredConstants.PHI;
+pub const PI = sacred_constants.SacredConstants.PI;
+pub const E = sacred_constants.SacredConstants.E;
+pub const TRINITY = sacred_constants.SacredConstants.TRINITY;
 
-pub const PI: f64 = 3.141592653589793;
-
-pub const E: f64 = 2.718281828459045;
-
-pub const TRINITY: f64 = 3;
-
+// Economy-specific constants
 pub const APY_BASE: f64 = 1.01618;
-
 pub const STAKE_LOCK_PERIOD: f64 = 7776000;
 
 pub const WEB3_ENABLED: f64 = 0;

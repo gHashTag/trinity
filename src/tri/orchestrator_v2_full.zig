@@ -3,10 +3,12 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayListUnmanaged;
 
-pub const PHI: f64 = 1.618033988749895;
-pub const PHI_INV: f64 = 0.618033988749895;
-pub const PHI_SQ: f64 = 2.618033988749895;
-pub const TRINITY: f64 = 3.0;
+// Import constants from canonical source (NOT inline - anti-pattern!)
+const sacred_constants = @import("sacred_constants");
+pub const PHI = sacred_constants.SacredConstants.PHI;
+pub const PHI_INV = sacred_constants.SacredConstants.PHI_INVERSE;
+pub const PHI_SQ = sacred_constants.SacredConstants.PHI_SQ;
+pub const TRINITY = sacred_constants.SacredConstants.TRINITY;
 
 pub const CommandCategory = enum(u8) {
     core, swe_agent, golden_chain, sacred_math, git, demo, bench,
