@@ -1,0 +1,91 @@
+name: telegram_command_receiver
+version: "1.0.0"
+language: zig
+module: telegram_command_receiver
+
+constants:
+  POLL_INTERVAL: 1
+  UPDATE_OFFSET_FILE: ".ralph/telegram/.update_offset"
+
+types:
+  IncomingCommand:
+    fields:
+      command: String
+      args: String
+      message_id: Int
+      timestamp: Int
+
+  ReceiverState:
+    fields:
+      running: Bool
+      last_update_id: Int
+      command_queue: List<IncomingCommand>
+      queue_head: Int
+      queue_tail: Int
+
+behaviors:
+  - name: init_receiver
+    given: UPDATE_OFFSET_FILE exists or not
+    when: Calling init_receiver with queue_size
+    then: Initialize ReceiverState with loaded offset (or 0), empty circular buffer, running=false
+
+  - name: start_polling
+    given: Initialized ReceiverState
+    when: Calling start_polling with bot_token and timeout
+    then: Spawn polling thread, set running=true, begin long-poll loop
+
+  - name: stop_polling
+    given: Running ReceiverState with active polling thread
+    when: Calling stop_polling
+    then: Save current offset to file, set running=false, join thread
+
+  - name: poll_loop
+    given: Running ReceiverState and bot_token
+    when: Calling poll_loop with timeout parameter
+    then: Long-poll getUpdates with offset=last_update_id+1, parse commands, enqueue results
+
+  - name: parse_command
+    given: Telegram message text "/command arg1 arg2"
+    when: Calling parse_command with message text and message_id
+    then: Extract command="command", args="arg1 arg2", return IncomingCommand with timestamp
+
+  - name: enqueue_command
+    given: ReceiverState with circular buffer and queue positions
+    when: Calling enqueue_command with IncomingCommand
+    then: Add to buffer at queue_tail, increment tail with wraparound, assert not full
+
+  - name: dequeue_command
+    given: ReceiverState with non-empty command queue
+    when: Calling dequeue_command
+    then: Remove from buffer at queue_head, increment head with wraparound, return command
+
+  - name: save_offset
+    given: ReceiverState with last_update_id=N
+    when: Calling save_offset
+    then: Write N to UPDATE_OFFSET_FILE, create parent directories if needed
+
+  - name: load_offset
+    given: UPDATE_OFFSET_FILE exists with value N
+    when: Calling load_offset
+    then: Read and return N, return 0 if file not found
+
+test_cases:
+  - name: init_receiver_creates_state
+    given: No existing offset file
+    when: init_receiver(16)
+    then: state.last_update_id == 0 and state.queue_head == 0 and state.queue_tail == 0 and state.running == false
+
+  - name: parse_simple_command
+    given: Message text "/help"
+    when: parse_command("/help", 123)
+    then: command.command == "help" and command.args == "" and command.message_id == 123
+
+  - name: parse_command_with_args
+    given: Message text "/generate report --verbose"
+    when: parse_command("/generate report --verbose", 456)
+    then: command.command == "generate" and command.args == "report --verbose" and command.message_id == 456
+
+  - name: circular_queue_wraparound
+    given: Queue with size=4, tail=3, head=0
+    when: enqueue_command() then enqueue_command()
+    then: tail wraps to 1 and buffer contains commands at positions 0,1,2,3,0,1

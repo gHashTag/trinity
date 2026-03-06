@@ -14,7 +14,8 @@
 
 module trinity_core #(
     parameter BOOT_ADDR = 12'h000,    // Boot address in BRAM
-    parameter PC_WIDTH  = 12          // PC width (4KB address space)
+    parameter PC_WIDTH  = 12,         // PC width (4KB address space)
+    parameter USE_DSP    = 1          // Use DSP48E1 for multiplier (1=DSP, 0=LUT)
 )(
     input  wire        clk,
     input  wire        rst_n,
@@ -235,8 +236,10 @@ module trinity_core #(
     reg [1:0] mul_stall;
     wire mul_busy = |mul_stall;
 
-    // LUT-based multiplier instance
-    lut_mul multiplier (
+    // Universal multiplier (DSP48E1 or LUT based on USE_DSP parameter)
+    universal_mul #(
+        .USE_DSP(USE_DSP)
+    ) multiplier (
         .clk(clk),
         .rst_n(rst_n),
         .valid_in(is_mul),

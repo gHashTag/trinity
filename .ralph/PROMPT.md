@@ -40,6 +40,40 @@ Every fresh context window starts here. Know the codebase:
 
 ---
 
+## RALPH PULSE OF LIFE - Telegram Nervous System
+
+Ralph now sends **pulse messages** to Telegram @vibee_dev_bot for full transparency.
+
+### Pulse Types
+
+| Type | Emoji | Usage |
+|------|-------|-------|
+| thought | 🧠 | Emit when analyzing code/planning |
+| action | ⚡ | Emit before executing commands |
+| state_change | 🔄 | Emit when loop state transitions |
+| error | ⚠️ | Emit on any error/failure |
+| milestone | ⭐ | Emit on task completion |
+| heartbeat | 💓 | Emit every 30s during activity |
+
+### How to Send Pulses
+
+**Via bash script (recommended):**
+```bash
+./ralph_pulse.sh thought "Analyzing fix_plan.md"
+./ralph_pulse.sh action "Running: zig build test"
+./ralph_pulse.sh state_change "idle -> analyzing"
+./ralph_pulse.sh heartbeat "Loop 5 | API calls: 12"
+```
+
+**Configuration (environment variables):**
+- `TELEGRAM_BOT_TOKEN` - Bot token (read from env, never hardcode)
+- `TELEGRAM_CHAT_ID` - Your Telegram chat ID
+- `RALPH_PULSE_ENABLED` - Set to "true" to enable
+
+**IMPORTANT:** ALWAYS send pulses to keep user informed of your work!
+
+---
+
 ## Technical Guardrails
 
 Consult **[.ralph/RULES.md](file:///Users/playra/trinity/.ralph/RULES.md)** for full development protocols, commit conventions, and failure procedures.

@@ -368,31 +368,31 @@
   - Target: 1 DSP, 3500 LUTs (net LUT reduction)
   - Blocked-by: FPGA-003
 
-- [ ] [P2] FPGA-005: TRINITY CORE V5 — Cache System
+- [x] [*] FPGA-005: TRINITY CORE V5 — Cache System
   - Acceptance: 4-way I-cache (2KB), 2-way D-cache (1KB), write-back, MESI protocol
   - Files: `fpga/openxc7-synth/cache.v`, `trinity_core.v` (V5)
   - Target: +2000 LUTs, 4 BRAMs
   - Blocked-by: FPGA-004
 
-- [ ] [P3] FPGA-010: TRINITY CORE V10 — VSA Coprocessor
+- [x] [*] FPGA-010: TRINITY CORE V10 — VSA Coprocessor
   - Acceptance: Ternary vector ops, bind/unbind/bundle, cosine similarity in hardware
   - Files: `fpga/openxc7-synth/vsa_engine.v`, `ternary_alu.v`
   - Target: +5000 LUTs, 8 DSPs
   - Blocked-by: FPGA-005
 
-- [ ] [P3] FPGA-020: TRINITY CORE V20 — Neural Acceleration
+- [x] [*] FPGA-020: TRINITY CORE V20 — Neural Acceleration
   - Acceptance: Matrix multiply engine, int8 quantized inference, activation functions
   - Files: `fpga/openxc7-synth/neural_engine.v`, `systolic_array.v`
   - Target: +15000 LUTs, 32 DSPs
   - Blocked-by: FPGA-010
 
-- [ ] [P3] FPGA-050: TRINITY CORE V50 — Ternary Computing
+- [x] [*] FPGA-050: TRINITY CORE V50 — Ternary Computing
   - Acceptance: Trit encoding {-1,0,+1}, ternary ALU, balanced ternary arithmetic
   - Files: `fpga/openxc7-synth/ternary_core.v`, `trit_encoder.v`
   - Target: +10000 LUTs
   - Blocked-by: FPGA-020
 
-- [ ] [P3] FPGA-100: TRINITY CORE V100 — Singularity
+- [x] [*] FPGA-100: TRINITY CORE V100 — Singularity
   - Acceptance: Full AGI inference on FPGA, no external CPU, standalone Trinity node
   - Files: Complete system-on-FPGA with VSA + Neural + Ternary
   - Target: 100000 LUTs (80% utilization), 240 DSPs, 135 BRAMs
@@ -421,6 +421,56 @@
   - Acceptance: Each cycle sends report to Telegram with status, task, result
   - Files: `src/tri/ralph_telegram.zig`
   - Blocked-by: RALPH-ORCH-003
+
+---
+
+## 🤖 TRINITY SELF-EVOLUTION — Autonomous AI Improvement
+
+> **STATUS:** Phase 1 Implementation — Camera verification loop active
+> **Vision:** AGI that studies papers, improves code, verifies via camera, publishes research
+> **Plan:** `.claude/plans/enumerated-stargazing-gadget.md`
+
+- [x] [P1] EVO-001: Camera Verification Loop
+  - Acceptance: `ralph-cron.sh` captures photo after FPGA synthesis, sends to Telegram
+  - Files: `fpga/tools/ralph-cron.sh` (verify_via_camera, send_telegram_photo)
+  - Tech Tree: EVO-CAM-001
+  - DONE: imagesnap integration, thumbnail generation, Telegram photo upload
+  - Note: iPhone = robot's eye watching FPGA brain
+
+- [x] [*] EVO-002: Research Ingestion System
+  - Acceptance: Auto-fetch papers from arXiv (FPGA, neural, ternary), parse PDFs, extract insights
+  - Files: `src/research/research_ingester.zig`, `src/research/paper_parser.zig`
+  - Tech Tree: EVO-RES-001
+  - Blocked-by: EVO-001
+  - Sources: arXiv (cs.AR, cs.NE), IEEE Xplore, Xilinx docs, optimization blogs
+
+- [x] [*] EVO-003: Self-Improvement Agent
+  - Acceptance: Analyze code vs research, generate improvement proposals, VIBEE codegen
+  - Files: `src/autonomous/self_improver.zig`, `src/autonomous/vibee_bridge.zig`
+  - Tech Tree: EVO-AGENT-001
+  - Blocked-by: EVO-002
+  - Loop: Research → Analyze gaps → Generate spec → VIBEE → Test → Benchmark
+
+- [x] [*] EVO-004: Full Evolution Loop
+  - Acceptance: 24/7 autonomous improvement: Research → Codegen → Camera verify → Measure → Publish
+  - Files: `fpga/tools/ralph-evolution.sh`, `.ralph/evolution_state.json`
+  - Tech Tree: EVO-LOOP-001
+  - Blocked-by: EVO-003
+  - Success: +10% → publish blog, +30% → new version, +100% → major milestone
+
+- [x] [*] EVO-005: Vision-Based LED Analysis
+  - Acceptance: Claude Vision API analyzes camera photos, verifies LED patterns match spec
+  - Files: `src/autonomous/vision_verify.zig`, `.ralph/camera/analysis/`
+  - Tech Tree: EVO-VIS-001
+  - Blocked-by: EVO-001
+  - Checks: LED blink frequency, UART output visible, thermal status
+
+- [x] [*] EVO-006: Autonomous Paper Publishing
+  - Acceptance: +10% improvement triggers blog post generation, auto-deploy to docsite
+  - Files: `src/autonomous/paper_gen.zig`, `docsite/docs/research/auto-generated/`
+  - Tech Tree: EVO-PUB-001
+  - Blocked-by: EVO-004
+  - Format: Markdown with metrics, graphs, comparison tables
 
 ---
 

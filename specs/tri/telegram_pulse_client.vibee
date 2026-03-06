@@ -1,0 +1,244 @@
+# ============================================================================
+# TELEGRAM PULSE CLIENT - HTTP Client for Telegram Bot API
+# ============================================================================
+#
+# Purpose: HTTP client for Telegram Bot API with retry logic, rate limiting,
+#          and long-polling support for real-time updates.
+#
+# Features:
+#   - Configurable retry logic with exponential backoff
+#   - Rate limit detection and handling
+#   - Long-polling support for getUpdates
+#   - Pulse mode for filtered message broadcasting
+#   - Verbose logging for debugging
+#
+# Integration: Used by telegram_bot module for all API communications
+# ============================================================================
+
+name: telegram_pulse_client
+version: "1.0.0"
+language: zig
+module: telegram_pulse_client
+
+# ============================================================================
+# CONSTANTS
+# ============================================================================
+
+constants:
+  TELEGRAM_API_BASE:
+    value: "https://api.telegram.org/bot"
+    description: "Base URL for Telegram Bot API (bot token appended)"
+
+  DEFAULT_TIMEOUT:
+    value: 30000
+    description: "Default HTTP request timeout in milliseconds (30 seconds)"
+
+  MAX_RETRIES:
+    value: 3
+    description: "Maximum number of retry attempts for failed requests"
+
+  RETRY_DELAY_MS:
+    value: 1000
+    description: "Base delay between retries in milliseconds (exponential backoff)"
+
+  LONG_POLL_TIMEOUT:
+    value: 30
+    description: "Long-polling timeout in seconds for getUpdates"
+
+  RATE_LIMIT_ERROR_CODE:
+    value: 429
+    description: "HTTP status code for rate limit errors"
+
+  RATE_LIMIT_RETRY_AFTER_HEADER:
+    value: "retry-after"
+    description: "Header containing seconds to wait before retry"
+
+# ============================================================================
+# TYPES
+# ============================================================================
+
+types:
+  TelegramConfig:
+    description: "Configuration for Telegram Bot API client"
+    fields:
+      bot_token: String
+      chat_id: String
+      enabled: Bool
+      verbose: Bool
+      pulse_mode: PulseMode
+      timeout_ms: Int
+      max_retries: Int
+
+  PulseMode:
+    description: "Message filtering mode for pulse broadcasting"
+    enum:
+      - full       # Send all messages including system internals
+      - filtered   # Send only user-facing messages
+      - minimal    # Send only critical messages
+
+  TelegramResponse:
+    description: "Standard Telegram Bot API response wrapper"
+    fields:
+      ok: Bool
+      result: String?      # JSON string of result data
+      error_code: Int?
+      description: String?
+
+  Update:
+    description: "Telegram update object from long-polling"
+    fields:
+      update_id: Int
+      message: Message?
+      callback_query: CallbackQuery?
+
+  Message:
+    description: "Telegram message object"
+    fields:
+      message_id: Int
+      chat: Chat
+      text: String?
+      date: Int
+
+  CallbackQuery:
+    description: "Telegram callback query from button presses"
+    fields:
+      id: String
+      message: Message?
+      data: String?
+
+  Chat:
+    description: "Telegram chat information"
+    fields:
+      id: Int
+      type: String
+
+  RetryConfig:
+    description: "Retry strategy configuration"
+    fields:
+      max_attempts: Int
+      base_delay_ms: Int
+      max_delay_ms: Int
+      exponential_base: Float
+
+  RateLimitInfo:
+    description: "Rate limit detection and tracking"
+    fields:
+      is_rate_limited: Bool
+      retry_after_seconds: Int?
+      reset_time: Int?
+
+# ============================================================================
+# BEHAVIORS
+# ============================================================================
+
+behaviors:
+  - name: init_telegram_client
+    given: A bot token and optional configuration parameters
+    when: Initializing the Telegram HTTP client
+    then: Returns configured TelegramConfig with defaults applied
+
+  - name: send_message
+    given: TelegramConfig, target chat ID, message text, and optional parse mode
+    when: Sending a text message via HTTP POST to sendMessage endpoint
+    then: Returns TelegramResponse with ok=true on success, or error details on failure
+
+  - name: send_pulse
+    given: TelegramConfig, message text, and current pulse mode
+    when: Sending a message with filtering based on pulse_mode setting
+    then: Sends message if mode allows, or skips if filtered out; returns success status
+
+  - name: get_updates_long_poll
+    given: TelegramConfig, optional offset, and timeout
+    when: Polling for updates via getUpdates with long-polling timeout
+    then: Returns list of Update objects, blocking for up to timeout seconds
+
+  - name: handle_rate_limit
+    given: TelegramResponse with error_code=429 or HTTP 429 status
+    when: Detecting rate limit from API response
+    then: Returns RateLimitInfo with retry_after_seconds extracted from header or body
+
+  - name: exponential_backoff
+    given: RetryConfig and current attempt number
+    when: Calculating delay before next retry attempt
+    then: Returns delay in milliseconds using exponential backoff formula
+
+  - name: should_retry
+    given: TelegramResponse, current attempt count, and RetryConfig
+    when: Determining if request should be retried
+    then: Returns true if attempt < max_attempts AND error is retryable (5xx, 429, timeout)
+
+  - name: build_api_url
+    given: Bot token and API method name
+    when: Constructing full API endpoint URL
+    then: Returns complete URL with TELEGRAM_API_BASE + token + "/" + method
+
+  - name: parse_telegram_response
+    given: HTTP response body string
+    when: Parsing JSON response from Telegram API
+    then: Returns TelegramResponse with ok, result, error_code, and description fields
+
+# ============================================================================
+# TEST CASES
+# ============================================================================
+
+tests:
+  - name: client_init_default_config
+    given: A bot token string
+    when: Calling init_telegram_client with minimal parameters
+    then: Returns TelegramConfig with enabled=true, pulse_mode=filtered, max_retries=3
+
+  - name: send_message_success
+    given: Valid TelegramConfig, chat_id, and message text
+    when: Calling send_message with valid parameters
+    then: Returns TelegramResponse with ok=true and result containing message_id
+
+  - name: send_message_with_retry
+    given: TelegramConfig and API returning 5xx error
+    when: Calling send_message with retry logic enabled
+    then: Retries up to max_retries times with exponential backoff between attempts
+
+  - name: rate_limit_handling
+    given: API returning 429 status with retry-after=30 header
+    when: Calling send_message and receiving rate limit response
+    then: Detects rate limit, extracts retry-after, waits 30 seconds, then retries
+
+  - name: long_poll_timeout
+    given: TelegramConfig with timeout configured
+    when: Calling get_updates_long_poll with timeout=30
+    then: Blocks for up to 30 seconds, returns empty list if no updates arrive
+
+  - name: pulse_mode_filtering
+    given: TelegramConfig with pulse_mode=minimal and system debug message
+    when: Calling send_pulse with debug message
+    then: Skips sending message (returns success without API call)
+
+  - name: exponential_backoff_calculation
+    given: RetryConfig with base_delay_ms=1000, exponential_base=2.0
+    when: Calculating backoff for attempt 1, 2, 3
+    then: Returns delays of 1000ms, 2000ms, 4000ms respectively
+
+  - name: verbose_logging
+    given: TelegramConfig with verbose=true
+    when: Making API calls and receiving responses
+    then: Logs all request URLs, response bodies, and retry attempts to stdout
+
+# ============================================================================
+# INTEGRATION POINTS
+# ============================================================================
+
+integration:
+  http_client:
+    module: "http_client"
+    description: "Underlying HTTP client for making requests"
+
+  rate_limiter:
+    module: "rate_limiter"
+    description: "Rate limiting strategy for preventing API abuse"
+
+  telegram_bot:
+    module: "telegram_bot"
+    description: "Higher-level bot module using this client"
+
+  logging:
+    module: "logger"
+    description: "Verbose logging for debugging API interactions"

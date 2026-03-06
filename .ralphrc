@@ -12,3 +12,21 @@ CB_NO_PROGRESS_THRESHOLD=5
 CB_SAME_ERROR_THRESHOLD=7
 CLAUDE_MIN_VERSION="2.0.76"
 RALPH_VERBOSE=true
+
+# ============================================================================
+# RALPH PULSE OF LIFE - Telegram Nervous System v1.0
+# ============================================================================
+
+# Telegram Bot Configuration
+RALPH_TELEGRAM_BOT_TOKEN="8729158167:AAFUIozc36MOsj4bVH_g2Yt-xO6sX0AgVkk"
+RALPH_TELEGRAM_CHAT_ID="144022504"
+RALPH_TELEGRAM_BOT_USERNAME="vibee_dev_bot"
+
+# Pulse Mode Configuration
+# Options: full (все мысли), filtered (только важное), minimal (только критичное)
+RALPH_PULSE_MODE="full"
+RALPH_PULSE_ENABLED=true
+
+# Pulse Emission Settings
+RALPH_HEARTBEAT_INTERVAL_SECONDS=30
+RALPH_TELEGRAM_VERBOSE_LOGGING=true

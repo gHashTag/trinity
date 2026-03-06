@@ -20,6 +20,9 @@ const testing = std.testing;
 const Allocator = std.mem.Allocator;
 const circuit_breaker = @import("circuit_breaker.zig");
 
+// RALPH PULSE OF LIFE - Telegram Nervous System v1.0
+const ralph_pulse_integration = @import("ralph_pulse_integration");
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // SACRED CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -255,6 +258,9 @@ pub const RalphLoop = struct {
     total_duration_ms: u64,
     api_calls_this_hour: u32,
     hour_start: i64,
+    // RALPH PULSE OF LIFE - Telegram integration
+    pulse_enabled: bool,
+    pulse_mode: []const u8,
 
     const Self = @This();
 
@@ -274,6 +280,8 @@ pub const RalphLoop = struct {
             .total_duration_ms = 0,
             .api_calls_this_hour = 0,
             .hour_start = std.time.timestamp(),
+            .pulse_enabled = false, // Disabled by default, enabled via config
+            .pulse_mode = "full",
         };
     }
 
@@ -321,6 +329,7 @@ pub const RalphLoop = struct {
 
     /// Process iteration result
     pub fn processIteration(self: *Self, result: IterationResult) !void {
+        const old_state = self.state;
         self.iteration = result.iteration;
         self.state = result.state;
         self.total_files_changed += result.files_changed;
@@ -329,6 +338,14 @@ pub const RalphLoop = struct {
         self.total_errors += result.errors;
         self.total_duration_ms += result.duration_ms;
         self.api_calls_this_hour += 1;
+
+        // RALPH PULSE: Emit state change
+        if (self.pulse_enabled and old_state != self.state) {
+            var state_change_msg = std.ArrayList(u8).init(self.allocator);
+            defer state_change_msg.deinit();
+            try state_change_msg.writer().print("{s} -> {s}", .{ old_state.toString(), self.state.toString() });
+            _ = ralph_pulse_integration.emit_state_change_hook(state_change_msg.items) catch {};
+        }
 
         // Update circuit breaker
         if (self.config.enable_circuit_breaker) {
@@ -355,6 +372,14 @@ pub const RalphLoop = struct {
 
     /// Analyze output and determine if should exit
     pub fn analyzeOutput(self: *Self, output: []const u8) AnalysisResult {
+        // RALPH PULSE: Emit thought for AI analysis
+        if (self.pulse_enabled and output.len > 0) {
+            var thought_msg = std.ArrayList(u8).init(self.allocator);
+            defer thought_msg.deinit();
+            try thought_msg.writer().print("Analyzing output ({d} chars)", .{output.len});
+            _ = ralph_pulse_integration.emit_thought_hook(thought_msg.items) catch {};
+        }
+
         return self.analyzer.analyze(output);
     }
 
