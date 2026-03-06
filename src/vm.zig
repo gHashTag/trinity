@@ -11,7 +11,7 @@ pub const Trit = tvc_hybrid.Trit;
 pub const MAX_TRITS = tvc_hybrid.MAX_TRITS;
 
 // Sacred opcodes module (v7.0)
-const sacred_opcodes = @import("vm/sacred_opcodes.zig");
+const sacred_opcodes = @import("vm/opcodes.zig");
 const SacredOpcode = sacred_opcodes.SacredOpcode;
 const SacredContext = sacred_opcodes.SacredContext;
 const SacredOperands = sacred_opcodes.SacredOperands;

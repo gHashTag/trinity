@@ -14,7 +14,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 
 const gematria_engine = @import("../gematria.zig");
-const sacred_formula = @import("sacred_formula.zig");
+const sacred_formula = @import("formula.zig");
 
 // ANSI colors
 const GOLDEN = "\x1b[33m";

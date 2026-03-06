@@ -27,7 +27,7 @@ const math = std.math;
 const mem = std.mem;
 
 // Import from canonical source (ANTI-PATTERN: no inline constants!)
-const sacred_constants = @import("sacred_constants");
+const sacred_constants = @import("../sacred/constants.zig");
 
 /// Golden ratio φ = (1 + √5)/2
 pub const PHI = sacred_constants.PHI;

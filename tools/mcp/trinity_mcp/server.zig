@@ -1116,19 +1116,17 @@ pub fn main() !void {
         logger.log(.debug, "Attempting to parse MCP message (buffer_used={d})...", .{buffer_used});
         const msg = (try readMCPMessage(allocator, &read_buffer, &buffer_used, &logger)) orelse {
             logger.log(.debug, "No complete message, eof_reached={}, buffer_used={d}", .{eof_reached, buffer_used});
-            // If no complete message and we've reached EOF with empty buffer, exit
-            if (eof_reached and buffer_used == 0) {
-                logger.log(.info, "Exiting: EOF with empty buffer", .{});
+            // Exit if EOF reached and we've processed at least one message
+            if (eof_reached and buffer_used == 0 and message_count > 0) {
+                logger.log(.info, "Exiting: EOF after {d} messages", .{message_count});
                 break;
             }
-            // If EOF reached and buffer has bytes but no newline (incomplete message), exit
-            if (eof_reached and buffer_used > 0) {
-                if (std.mem.indexOfScalar(u8, read_buffer[0..buffer_used], '\n') == null) {
-                    logger.log(.warn, "Exiting: EOF with {d} leftover bytes (incomplete line)", .{buffer_used});
-                    break;
-                }
+            // Exit if EOF with no data and no messages processed (startup EOF)
+            if (eof_reached and buffer_used == 0) {
+                logger.log(.info, "Exiting: EOF at startup (no messages)", .{});
+                break;
             }
-            // Otherwise, try to read more data (if not EOF) or continue processing
+            // Otherwise keep waiting
             continue;
         };
         defer msg.deinit(allocator);

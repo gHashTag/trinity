@@ -89,13 +89,17 @@ Expected output: `WROTE: 7962 bytes, 90 segments, avg 88`
 
 ### Step 2: Replug Cable
 
-**Unplug and replug the USB cable.** This switches the cable from PID 0013 (bootloader) to PID 0008 (JTAG mode).
+**⚠️ CRITICAL DISCOVERY: Cable auto-switches to PID 0008 after fxload!**
+
+After running fxload, the cable **automatically** re-enumerates from PID 0013 → PID 0008 within ~1-2 seconds. **NO manual replug needed!**
 
 Verify with:
 ```bash
-ioreg -p IOUSB -w0 -l | grep -A 5 "XILINX"
-# Should show: "idProduct" = 8
+system_profiler SPUSBDataType | grep -A5 "0x03fd"
+# Should show: Product ID: 0x0008
 ```
+
+**NOTE:** If cable stays at PID 0013 after 10 seconds, THEN unplug and replug manually.
 
 ### Step 3: Flash Bitstream
 

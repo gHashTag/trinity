@@ -8,7 +8,7 @@
 const std = @import("std");
 const parent_mod = @import("mod.zig");
 const format = @import("format.zig");
-const sacred_formula = @import("sacred_formula.zig");
+const sacred_formula = @import("formula.zig");
 const gematria_engine = @import("../gematria.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
