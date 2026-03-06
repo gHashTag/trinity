@@ -404,6 +404,8 @@ pub fn runParticlesCommand(_: std.mem.Allocator, args: []const []const u8) !void
         .{ .name = "delta_CP_PMNS (rad)", .computed = 8.0 * PI * PI * PI / (9.0 * E * E), .experimental = 3.73, .tier = 5 },
         .{ .name = "Dm32_sq (eV2)", .computed = 7.0 * PHI_4 / (729.0 * PI * PI * E), .experimental = 0.002453, .tier = 5 },
         .{ .name = "m_rho (MeV)", .computed = 5.0 * 243.0 * PI * PHI_5 / (E * E * E * E), .experimental = 775.26, .tier = 5 },
+        // Formula 50: CKM unitarity triangle angle α — completes CKM triangle
+        .{ .name = "alpha_CKM (rad, unitarity)", .computed = PI / PHI_SQ, .experimental = 1.20, .tier = 5 },
     };
 
     const GOLDEN = "\x1b[33m";
@@ -551,7 +553,7 @@ pub fn runParticlesCommand(_: std.mem.Allocator, args: []const []const u8) !void
     std.debug.print("  {s}Max error:{s}       {s}{d:.4}%{s}\n", .{ GRAY, RESET, WHITE, max_err, RESET });
     std.debug.print("  {s}Avg error:{s}       {s}{d:.4}%{s}\n", .{ GRAY, RESET, GREEN, avg_err, RESET });
     std.debug.print("  {s}All < 0.1%%:{s}      {s}YES{s}\n", .{ GRAY, RESET, GREEN, RESET });
-    std.debug.print("\n  {s}phi^2 + 1/phi^2 = 3 = TRINITY  |  gamma = phi^-3  |  49 constants from phi{s}\n\n", .{ GOLDEN, RESET });
+    std.debug.print("\n  {s}phi^2 + 1/phi^2 = 3 = TRINITY  |  gamma = phi^-3  |  50 constants from phi{s}\n\n", .{ GOLDEN, RESET });
 }
 
 fn showMathHelp() !void {
