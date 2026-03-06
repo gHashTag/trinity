@@ -52,6 +52,7 @@ const sidebars: SidebarsConfig = {
       label: 'TRI CLI Reference',
       items: [
         'cli/index',
+        'cli/categories',
         'cli/core',
         'cli/devtools',
         'cli/analysis',
