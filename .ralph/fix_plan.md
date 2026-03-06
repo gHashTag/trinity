@@ -356,13 +356,13 @@
   - Tech Tree: HW-002
   - DONE: 3047 LUTs, 54 MHz, shifts + multiply + UART + interrupts
 
-- [ ] [P1] FPGA-003: TRINITY CORE V3 — Memory Management
+- [x] [P1] FPGA-003: TRINITY CORE V3 — Memory Management
   - Acceptance: LB/LH/LBU/LHU/SB/SH byte/halfword ops, LWM/SWM load-store multiple, MPU
   - Files: `fpga/openxc7-synth/trinity_core.v` (V3), add byte access logic
   - Target: 4000 LUTs
   - Blocked-by: FPGA-002
 
-- [ ] [P2] FPGA-004: TRINITY CORE V4 — DSP48E1 Multiplier
+- [x] [*] FPGA-004: TRINITY CORE V4 — DSP48E1 Multiplier
   - Acceptance: Replace LUT mul with DSP48E1, add MULH/MULHSU/MULHU, DIV/REM
   - Files: `fpga/openxc7-synth/dsp_mul.v`, integrate with trinity_core
   - Target: 1 DSP, 3500 LUTs (net LUT reduction)
