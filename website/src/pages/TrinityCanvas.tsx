@@ -40,7 +40,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import QuantumCanvas from '../components/QuantumCanvas';
 import type { VizMode } from '../components/QuantumCanvas';
 import ChatMessage from '../components/chat/ChatMessage';
-import { sendMessage, clearContext, checkHealth, fetchMirrorStatus, fetchStorageMetrics, fetchFileList, compileCode, fetchPasStatus, fetchPasAnalysis, fetchOrchestratorStatus, type ChatResponse, type MirrorStatus, type MirrorLogEntry, type StorageMetrics, type PasStatus, type PasAnalysis, type OrchestratorStatus } from '../services/chatApi';
+import { sendMessage, clearContext, checkHealth, fetchMirrorStatus, fetchStorageMetrics, fetchFileList, compileCode, fetchPasStatus, fetchPasAnalysis, fetchOrchestratorStatus, fetchConsciousnessMetrics, fetchLisaPredictions, fetchNeuromorphicMetrics, fetchQuantumGravityMetrics, fetchConsciousAIRoadmap, type ChatResponse, type MirrorStatus, type MirrorLogEntry, type StorageMetrics, type PasStatus, type PasAnalysis, type OrchestratorStatus, type ConsciousnessMetrics, type LisaPredictionsMetrics, type NeuromorphicMetrics, type QuantumGravityMetrics, type ConsciousAIRoadmapMetrics } from '../services/chatApi';
 import { connectPasWebSocket, disconnectPasWebSocket, type PasWsMessage, type PasWsCallbacks } from '../services/pasWebSocket';
 import TrinityCanvasWasm from '../components/TrinityCanvasWasm';
 import KoscheiStatusWidget from '../components/KoscheiStatusWidget';
@@ -525,6 +525,20 @@ export default function TrinityCanvas() {
   const [storageMetrics, setStorageMetrics] = useState<StorageMetrics | null>(null);
   const [storageCollapsed, setStorageCollapsed] = useState<Record<string, boolean>>({});
 
+  // Consciousness metrics (BLIND SPOTS v2)
+  const [consciousnessMetrics, setConsciousnessMetrics] = useState<ConsciousnessMetrics | null>(null);
+  const [consciousnessExpanded, setConsciousnessExpanded] = useState(true);
+
+  // MU-DEBT v4.1 — New module widgets
+  const [lisaMetrics, setLisaMetrics] = useState<LisaPredictionsMetrics | null>(null);
+  const [lisaExpanded, setLisaExpanded] = useState(false);
+  const [neuromorphicMetrics, setNeuromorphicMetrics] = useState<NeuromorphicMetrics | null>(null);
+  const [neuromorphicExpanded, setNeuromorphicExpanded] = useState(false);
+  const [quantumGravityMetrics, setQuantumGravityMetrics] = useState<QuantumGravityMetrics | null>(null);
+  const [quantumGravityExpanded, setQuantumGravityExpanded] = useState(false);
+  const [roadmapMetrics, setRoadmapMetrics] = useState<ConsciousAIRoadmapMetrics | null>(null);
+  const [roadmapExpanded, setRoadmapExpanded] = useState(false);
+
   // UI
   const [showLayerHint, setShowLayerHint] = useState(true);
 
@@ -996,6 +1010,40 @@ export default function TrinityCanvas() {
     loadOrchestrator();
     const id = setInterval(loadOrchestrator, 10000); // Poll every 10 seconds
     return () => clearInterval(id);
+  }, [layer]);
+
+  // ─── Consciousness Metrics polling (BLIND SPOTS v2) ───────────────────────────
+
+  useEffect(() => {
+    if (layer !== 'tools') return;
+    const loadConsciousness = async () => {
+      const metrics = await fetchConsciousnessMetrics();
+      setConsciousnessMetrics(metrics);
+    };
+    loadConsciousness();
+    const id = setInterval(loadConsciousness, 10000); // Poll every 10 seconds
+    return () => clearInterval(id);
+  }, [layer]);
+
+  // ─── MU-DEBT v4.1 Module Metrics polling ──────────────────────────────────────
+
+  useEffect(() => {
+    if (layer !== 'tools') return;
+    const loadModuleMetrics = async () => {
+      const [lisa, neuro, qg, roadmap] = await Promise.all([
+        fetchLisaPredictions(),
+        fetchNeuromorphicMetrics(),
+        fetchQuantumGravityMetrics(),
+        fetchConsciousAIRoadmap(),
+      ]);
+      setLisaMetrics(lisa);
+      setNeuromorphicMetrics(neuro);
+      setQuantumGravityMetrics(qg);
+      setRoadmapMetrics(roadmap);
+    };
+    loadModuleMetrics();
+    const id2 = setInterval(loadModuleMetrics, 10000);
+    return () => clearInterval(id2);
   }, [layer]);
 
   // ─── PAS v8.21 WebSocket connection (real-time) ───────────────────────────────
@@ -2099,6 +2147,164 @@ export default function TrinityCanvas() {
                   )}
                 </div>
 
+                {/* ── Consciousness Widget (BLIND SPOTS v2) ── */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '2px 0', borderTop: '1px solid rgba(255,215,0,0.1)' }}>
+                  <div onClick={() => setConsciousnessExpanded(!consciousnessExpanded)}
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                    <span style={{ color: '#ffd700', fontSize: 8, fontFamily: MONO, fontWeight: 600, letterSpacing: 1 }}>
+                      CONSCIOUSNESS {consciousnessMetrics?.gwt_ignition && <span style={{ color: '#00e599' }}>●</span>}
+                    </span>
+                    <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 8, fontFamily: MONO }}>
+                      {consciousnessExpanded ? '-' : '+'}
+                    </span>
+                  </div>
+                  {consciousnessExpanded && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                      {consciousnessMetrics ? (
+                        <>
+                          {/* IIT Phi gauge (0 to 3.0) */}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 7, fontFamily: MONO }}>
+                              <span style={{ color: 'rgba(255,215,0,0.5)' }}>IIT PHI</span>
+                              <span style={{ color: '#ffd700' }}>{consciousnessMetrics.iit_phi.toFixed(3)}</span>
+                            </div>
+                            <div style={{ position: 'relative', height: 3, borderRadius: 2, background: 'rgba(255,215,0,0.1)', overflow: 'hidden' }}>
+                              <motion.div
+                                animate={{ width: `${Math.min(100, (consciousnessMetrics.iit_phi / 3.0) * 100)}%` }}
+                                transition={{ duration: 0.3 }}
+                                style={{ height: '100%', background: 'linear-gradient(90deg, #ffd700, #00e599)', borderRadius: 2 }}
+                              />
+                            </div>
+                          </div>
+
+                          {/* GWT ignition + Consciousness level */}
+                          <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
+                            <span style={{ color: consciousnessMetrics.gwt_ignition ? '#00e599' : 'rgba(255,215,0,0.3)' }}>
+                              {consciousnessMetrics.gwt_ignition ? '●' : '○'} GWT:{consciousnessMetrics.gwt_broadcast_strength.toFixed(2)}
+                            </span>
+                            <span style={{
+                              color: consciousnessMetrics.consciousness_level === 'enhanced' ? '#00e599' :
+                                     consciousnessMetrics.consciousness_level === 'conscious' ? '#ffd700' :
+                                     consciousnessMetrics.consciousness_level === 'minimal' ? '#ff8800' : 'rgba(255,215,0,0.3)'
+                            }}>
+                              {consciousnessMetrics.consciousness_level.toUpperCase()}
+                            </span>
+                          </div>
+
+                          {/* Qutrit entanglement meter (0 to 1.0) */}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 7, fontFamily: MONO }}>
+                              <span style={{ color: 'rgba(255,215,0,0.5)' }}>QUTRIT ENTANGLE</span>
+                              <span style={{ color: consciousnessMetrics.qutrit_cglmp_violation ? '#00e599' : '#ffd700' }}>
+                                {consciousnessMetrics.qutrit_entanglement.toFixed(3)} {consciousnessMetrics.qutrit_cglmp_violation ? 'CGLMP' : ''}
+                              </span>
+                            </div>
+                            <div style={{ position: 'relative', height: 3, borderRadius: 2, background: 'rgba(255,215,0,0.1)', overflow: 'hidden' }}>
+                              <motion.div
+                                animate={{ width: `${Math.min(100, consciousnessMetrics.qutrit_entanglement * 100)}%` }}
+                                transition={{ duration: 0.3 }}
+                                style={{ height: '100%', background: consciousnessMetrics.qutrit_cglmp_violation ? 'linear-gradient(90deg, #ffd700, #00e599)' : 'linear-gradient(90deg, #ffd700, #ff8800)', borderRadius: 2 }}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Active inference + Orch-OR */}
+                          <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
+                            <span style={{ color: '#ffd700' }}>FreeE:{consciousnessMetrics.active_inference_free_energy.toFixed(3)}</span>
+                            <span style={{ color: 'rgba(255,215,0,0.5)' }}>Orch-OR:{consciousnessMetrics.orch_or_coherence_time.toFixed(3)}s</span>
+                          </div>
+
+                          {/* Gamma frequency + spike rate */}
+                          <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
+                            <span style={{ color: '#ffd700' }}>Gamma:{consciousnessMetrics.gamma_frequency_hz.toFixed(1)}Hz</span>
+                            <span style={{ color: 'rgba(255,215,0,0.5)' }}>Spikes:{consciousnessMetrics.neuromorphic_spike_rate.toFixed(1)}/s</span>
+                          </div>
+
+                          {/* Test status */}
+                          <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <span style={{
+                              padding: '2px 6px',
+                              borderRadius: 4,
+                              background: consciousnessMetrics.tests_passing === consciousnessMetrics.total_tests ? 'rgba(0,229,153,0.15)' : 'rgba(255,68,68,0.15)',
+                              border: `1px solid ${consciousnessMetrics.tests_passing === consciousnessMetrics.total_tests ? 'rgba(0,229,153,0.3)' : 'rgba(255,68,68,0.3)'}`,
+                              color: consciousnessMetrics.tests_passing === consciousnessMetrics.total_tests ? '#00e599' : '#ff4444',
+                              fontSize: 7,
+                              fontFamily: MONO,
+                              fontWeight: 600,
+                              letterSpacing: 1
+                            }}>
+                              TESTS {consciousnessMetrics.tests_passing}/{consciousnessMetrics.total_tests}
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <div style={{ color: 'rgba(255,215,0,0.15)', fontSize: 8, fontFamily: MONO, padding: 4, textAlign: 'center' }}>
+                          Consciousness Metrics -- BLIND SPOTS v2
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── LISA Predictions 2035 (MU-DEBT v4.1) ── */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '2px 0', borderTop: '1px solid rgba(255,215,0,0.1)' }}>
+                  <div onClick={() => setLisaExpanded(!lisaExpanded)}
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                    <span style={{ color: '#ffd700', fontSize: 8, fontFamily: MONO, fontWeight: 600, letterSpacing: 1 }}>
+                      LISA 2035 {lisaMetrics && lisaMetrics.high_confidence >= 6 && <span style={{ color: '#00e599' }}>●</span>}
+                    </span>
+                    <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 8, fontFamily: MONO }}>{lisaExpanded ? '-' : '+'}</span>
+                  </div>
+                  {lisaExpanded && lisaMetrics && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
+                        <span style={{ color: '#ffd700' }}>Predictions:{lisaMetrics.predictions_count}</span>
+                        <span style={{ color: lisaMetrics.high_confidence >= 6 ? '#00e599' : '#ff8800' }}>High:{lisaMetrics.high_confidence}</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
+                        <span style={{ color: 'rgba(255,215,0,0.5)' }}>ISCO:f/φ={lisaMetrics.isco_freq_shift.toFixed(3)}</span>
+                        <span style={{ color: 'rgba(255,215,0,0.5)' }}>Phase:Ψ×{lisaMetrics.gw_phase_correction.toFixed(3)}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <span style={{ fontSize: 7, fontFamily: MONO, color: 'rgba(255,215,0,0.4)' }}>P(detect):</span>
+                        <div style={{ flex: 1, height: 3, background: 'rgba(255,215,0,0.1)', borderRadius: 2, overflow: 'hidden' }}>
+                          <div style={{ width: `${lisaMetrics.detection_probability * 100}%`, height: '100%', background: '#ffd700', borderRadius: 2 }} />
+                        </div>
+                        <span style={{ fontSize: 8, fontFamily: MONO, color: '#ffd700' }}>{(lisaMetrics.detection_probability * 100).toFixed(0)}%</span>
+                      </div>
+                      <div style={{ fontSize: 7, fontFamily: MONO, color: 'rgba(255,215,0,0.3)', textAlign: 'center' }}>γ={lisaMetrics.gamma_factor} | (1+γ)={lisaMetrics.gw_phase_correction.toFixed(3)}</div>
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Neuromorphic Integration (MU-DEBT v4.1) ── */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '2px 0', borderTop: '1px solid rgba(255,215,0,0.1)' }}>
+                  <div onClick={() => setNeuromorphicExpanded(!neuromorphicExpanded)}
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                    <span style={{ color: '#ffd700', fontSize: 8, fontFamily: MONO, fontWeight: 600, letterSpacing: 1 }}>
+                      NEUROMORPHIC {neuromorphicMetrics?.is_conscious && <span style={{ color: '#00e599' }}>●</span>}
+                    </span>
+                    <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 8, fontFamily: MONO }}>{neuromorphicExpanded ? '-' : '+'}</span>
+                  </div>
+                  {neuromorphicExpanded && neuromorphicMetrics && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
+                        <span style={{ color: '#ffd700' }}>Trits:{(neuromorphicMetrics.total_trits / 1000).toFixed(0)}K</span>
+                        <span style={{ color: '#ffd700' }}>Spikes:{neuromorphicMetrics.spike_rate_hz.toFixed(1)}Hz</span>
+                        <span style={{ color: 'rgba(255,215,0,0.5)' }}>{neuromorphicMetrics.energy_per_op_pj.toFixed(1)}pJ/op</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <span style={{ fontSize: 7, fontFamily: MONO, color: 'rgba(255,215,0,0.4)' }}>φ-res:</span>
+                        <div style={{ flex: 1, height: 3, background: 'rgba(255,215,0,0.1)', borderRadius: 2, overflow: 'hidden' }}>
+                          <div style={{ width: `${Math.min(100, neuromorphicMetrics.phi_resonance_coherence * 100)}%`, height: '100%', background: neuromorphicMetrics.phi_resonance_coherence > 0.618 ? 'linear-gradient(90deg, #ffd700, #00e599)' : '#ffd700', borderRadius: 2 }} />
+                        </div>
+                        <span style={{ fontSize: 8, fontFamily: MONO, color: neuromorphicMetrics.phi_resonance_coherence > 0.618 ? '#00e599' : '#ffd700' }}>{neuromorphicMetrics.phi_resonance_coherence.toFixed(3)}</span>
+                      </div>
+                      <div style={{ fontSize: 7, fontFamily: MONO, color: 'rgba(255,215,0,0.3)', textAlign: 'center' }}>{(neuromorphicMetrics.throughput_trits_sec / 1e6).toFixed(0)}M trits/s | φ⁻¹ threshold</div>
+                    </div>
+                  )}
+                </div>
+
                 {/* ── KOSCHEI v8.24: Production Swarm Status ── */}
                 <div style={{ marginTop: 4 }}>
                   <KoscheiStatusWidget width={336} />
@@ -2289,6 +2495,39 @@ export default function TrinityCanvas() {
                   ))}
                 </div>
                 )}
+
+                {/* ── Quantum Gravity Chip (MU-DEBT v4.1) ── */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '2px 0', borderTop: '1px solid rgba(0,200,255,0.1)' }}>
+                  <div onClick={() => setQuantumGravityExpanded(!quantumGravityExpanded)}
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                    <span style={{ color: '#00ccff', fontSize: 8, fontFamily: MONO, fontWeight: 600, letterSpacing: 1 }}>
+                      QG CHIP {quantumGravityMetrics && quantumGravityMetrics.bell_parameter > 2.0 && <span style={{ color: '#00e599' }}>●</span>}
+                    </span>
+                    <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 8, fontFamily: MONO }}>{quantumGravityExpanded ? '-' : '+'}</span>
+                  </div>
+                  {quantumGravityExpanded && quantumGravityMetrics && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
+                        <span style={{ color: '#00ccff' }}>Qutrits:{quantumGravityMetrics.qutrits_active}</span>
+                        <span style={{ color: '#00ccff' }}>τ:{quantumGravityMetrics.coherence_time_us.toFixed(1)}μs</span>
+                        <span style={{ color: 'rgba(0,200,255,0.5)' }}>F:{quantumGravityMetrics.gate_fidelity.toFixed(4)}</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
+                        <span style={{ color: quantumGravityMetrics.bell_parameter > 2.0 ? '#00e599' : '#ff8800' }}>
+                          Bell:{quantumGravityMetrics.bell_parameter.toFixed(4)} {quantumGravityMetrics.bell_parameter > 2.0 ? '>2.0' : '≤2.0'}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <span style={{ fontSize: 7, fontFamily: MONO, color: 'rgba(0,200,255,0.4)' }}>φ-eff:</span>
+                        <div style={{ flex: 1, height: 3, background: 'rgba(0,200,255,0.1)', borderRadius: 2, overflow: 'hidden' }}>
+                          <div style={{ width: `${quantumGravityMetrics.phi_efficiency * 100}%`, height: '100%', background: 'linear-gradient(90deg, #00ccff, #00e599)', borderRadius: 2 }} />
+                        </div>
+                        <span style={{ fontSize: 8, fontFamily: MONO, color: '#00ccff' }}>{(quantumGravityMetrics.phi_efficiency * 100).toFixed(1)}%</span>
+                      </div>
+                      <div style={{ fontSize: 7, fontFamily: MONO, color: 'rgba(0,200,255,0.3)', textAlign: 'center' }}>γ-deformation: {quantumGravityMetrics.gamma_deformation.toExponential(2)}</div>
+                    </div>
+                  )}
+                </div>
               </motion.div>
 
               {/* ═══ DUKH (Spirit) — Tools + Vision + Voice + Logs (v2.6) ═══ */}
@@ -2297,6 +2536,47 @@ export default function TrinityCanvas() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ color: '#aa66ff', fontSize: 12, fontFamily: FONT, fontWeight: 700, letterSpacing: 1 }}>ДУХ</div>
                   <span style={{ color: 'rgba(170,100,255,0.3)', fontSize: 8, fontFamily: MONO }}>Tools + Vision + Voice + e</span>
+                </div>
+
+                {/* ── Conscious AI Roadmap (MU-DEBT v4.1) ── */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '2px 0', borderBottom: '1px solid rgba(170,100,255,0.1)' }}>
+                  <div onClick={() => setRoadmapExpanded(!roadmapExpanded)}
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                    <span style={{ color: '#aa66ff', fontSize: 8, fontFamily: MONO, fontWeight: 600, letterSpacing: 1 }}>
+                      CONSCIOUS AI {roadmapMetrics && <span style={{ color: roadmapMetrics.consciousness_level === 'conscious' || roadmapMetrics.consciousness_level === 'enhanced' ? '#00e599' : 'rgba(170,100,255,0.3)' }}>●</span>}
+                    </span>
+                    <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 8, fontFamily: MONO }}>{roadmapExpanded ? '-' : '+'}</span>
+                  </div>
+                  {roadmapExpanded && roadmapMetrics && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
+                        <span style={{ color: '#aa66ff' }}>Phase:{roadmapMetrics.phase}</span>
+                        <span style={{ color: '#aa66ff' }}>Modules:{roadmapMetrics.modules_complete}/{roadmapMetrics.modules_total}</span>
+                        <span style={{
+                          color: roadmapMetrics.consciousness_level === 'enhanced' ? '#00e599' :
+                                 roadmapMetrics.consciousness_level === 'conscious' ? '#aa66ff' : '#ff8800'
+                        }}>{roadmapMetrics.consciousness_level.toUpperCase()}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <span style={{ fontSize: 7, fontFamily: MONO, color: 'rgba(170,100,255,0.4)' }}>IIT φ:</span>
+                        <div style={{ flex: 1, height: 3, background: 'rgba(170,100,255,0.1)', borderRadius: 2, overflow: 'hidden' }}>
+                          <div style={{ width: `${Math.min(100, (roadmapMetrics.phi_value / 3.0) * 100)}%`, height: '100%', background: 'linear-gradient(90deg, #aa66ff, #00e599)', borderRadius: 2 }} />
+                        </div>
+                        <span style={{ fontSize: 8, fontFamily: MONO, color: '#aa66ff' }}>{roadmapMetrics.phi_value.toFixed(3)}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <span style={{
+                          padding: '2px 6px', borderRadius: 4,
+                          background: roadmapMetrics.tests_passing === roadmapMetrics.tests_total ? 'rgba(0,229,153,0.15)' : 'rgba(255,68,68,0.15)',
+                          border: `1px solid ${roadmapMetrics.tests_passing === roadmapMetrics.tests_total ? 'rgba(0,229,153,0.3)' : 'rgba(255,68,68,0.3)'}`,
+                          color: roadmapMetrics.tests_passing === roadmapMetrics.tests_total ? '#00e599' : '#ff4444',
+                          fontSize: 7, fontFamily: MONO, fontWeight: 600, letterSpacing: 1
+                        }}>
+                          TESTS {roadmapMetrics.tests_passing}/{roadmapMetrics.tests_total}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Tool buttons row */}
