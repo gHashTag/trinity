@@ -83,8 +83,9 @@ pub const QualiaState = struct {
 
     /// Create qualia state from stimulus
     pub fn fromStimulus(intensity: f64, valence_raw: f64) QualiaState {
+        const clamped = if (intensity < 0.0) 0.0 else if (intensity > 1.0) 1.0 else intensity;
         return .{
-            .intensity = @clamp(intensity, 0.0, 1.0),
+            .intensity = clamped,
             .valence = std.math.tanh(PHI * (valence_raw - 0.5) * 2.0),
             .arousal = PHI_INV * intensity,
             .duration = speciousPresent() * 1000,
@@ -184,7 +185,8 @@ pub fn qualiaValencePhi(stimulus_intensity: f64, baseline: f64) f64 {
 /// Qualia arousal level
 /// A = φ⁻¹ × I where I is input intensity
 pub fn qualiaArousal(intensity: f64) f64 {
-    return PHI_INV * @clamp(intensity, 0.0, 1.0);
+    const clamped = if (intensity < 0.0) 0.0 else if (intensity > 1.0) 1.0 else intensity;
+    return PHI_INV * clamped;
 }
 
 /// Qualia freshness (memory decay)
@@ -323,7 +325,7 @@ pub fn iitConceptualStructure(statistical_complexity: f64) f64 {
 /// Neural complexity from φ
 /// C_N = γ × Σ × ln(φ × N)
 pub fn neuralComplexityPhi(statistical_complexity: f64, n_elements: usize) f64 {
-    return GAMMA * statistical_complexity * std.math.log(PHI * @as(f64, @floatFromInt(n_elements)));
+    return GAMMA * statistical_complexity * std.math.log_e(PHI * @as(f64, @floatFromInt(n_elements)));
 }
 
 /// Global workspace ignition condition
@@ -559,7 +561,7 @@ pub fn verifyAll() bool {
     const threshold = 50.0; // 50% for consciousness (high variance)
 
     const results = blk: {
-        const arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+        var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
         defer arena.deinit();
         break :blk allFormulas(arena.allocator()) catch return false;
     };

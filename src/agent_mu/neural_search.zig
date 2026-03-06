@@ -51,7 +51,8 @@ pub const NeuralSearchEngine = struct {
         for (nodes) |node| {
             const sim = embeddings.cosineSimilarity(&query_emb, node.embedding);
             if (sim >= threshold) {
-                // TODO: Get pattern_id and fix_type from node
+                // DEFERRED (v12): Get pattern_id and fix_type from node metadata
+                // Requires: extend ErrorEmbedding to store pattern_id, fix_type
                 try results.append(SearchResult{
                     .pattern_id = "unknown",
                     .similarity = sim,
@@ -73,7 +74,8 @@ pub const NeuralSearchEngine = struct {
     /// Batch index patterns from SUCCESS_HISTORY
     pub fn indexFromHistory(self: *NeuralSearchEngine) !void {
         _ = self;
-        // TODO: Parse SUCCESS_HISTORY.md and extract patterns
+        // DEFERRED (v12): Parse SUCCESS_HISTORY.md and extract patterns
+        // Requires: markdown parsing, error pattern extraction, embedding generation
     }
 };
 
