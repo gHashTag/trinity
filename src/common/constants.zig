@@ -36,6 +36,14 @@ pub const PHI_INV_SQ: f64 = PHI_INV * PHI_INV;
 /// Gamma constant for quantum/gravity calculations
 pub const GAMMA: f64 = PHI_INV_SQ * PHI_INV;
 
+/// PHOENIX — The immortal number
+/// Represents rebirth, eternal cycles, 999 iterations
+pub const PHOENIX: i64 = 999;
+
+/// PHI_INVERSE — Alias for PHI_INV (backward compatibility)
+/// Some modules use PHI_INVERSE, some use PHI_INV
+pub const PHI_INVERSE = PHI_INV;
+
 /// ═══════════════════════════════════════════════════════════════════════════════
 /// TRINITY — The Sacred Three
 /// ═══════════════════════════════════════════════════════════════════════════════
