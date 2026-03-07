@@ -180,7 +180,7 @@ test "10K HyperVector bind identity" {
     var identity = vsa10k.HyperVector10K.zero();
     var i: usize = 0;
     while (i < vsa10k.DIM_10K) : (i += 1) {
-        identity.set(i, vsa10k.TRIT_POS);
+        identity.set(i, vsa10k.TRIT_POS) catch unreachable; // i < DIM_10K by construction
     }
 
     const result = vsa10k.HyperVector10K.bind(&vec, &identity);
@@ -189,7 +189,7 @@ test "10K HyperVector bind identity" {
     var match_count: usize = 0;
     i = 0;
     while (i < 100) : (i += 1) {
-        if (result.get(i) == vec.get(i))
+        if ((result.get(i) catch unreachable) == (vec.get(i) catch unreachable))
             match_count += 1;
     }
 
@@ -204,7 +204,7 @@ test "10K HyperVector bind inverse" {
     var inverse = vsa10k.HyperVector10K.zero();
     var i: usize = 0;
     while (i < vsa10k.DIM_10K) : (i += 1) {
-        inverse.set(i, vsa10k.TRIT_NEG);
+        inverse.set(i, vsa10k.TRIT_NEG) catch unreachable; // i < DIM_10K by construction
     }
 
     const result = vsa10k.HyperVector10K.bind(&vec, &inverse);
@@ -213,10 +213,11 @@ test "10K HyperVector bind inverse" {
     var match_count: usize = 0;
     i = 0;
     while (i < 100) : (i += 1) {
-        const expected: i8 = if (vec.get(i) == vsa10k.TRIT_NEG) vsa10k.TRIT_POS
-                              else if (vec.get(i) == vsa10k.TRIT_POS) vsa10k.TRIT_NEG
+        const vi = vec.get(i) catch unreachable;
+        const expected: i8 = if (vi == vsa10k.TRIT_NEG) vsa10k.TRIT_POS
+                              else if (vi == vsa10k.TRIT_POS) vsa10k.TRIT_NEG
                               else vsa10k.TRIT_ZERO;
-        if (result.get(i) == expected)
+        if ((result.get(i) catch unreachable) == expected)
             match_count += 1;
     }
 
@@ -245,7 +246,7 @@ test "10K HyperVector permutation roundtrip" {
     var match_count: usize = 0;
     var i: usize = 0;
     while (i < 100) : (i += 1) {
-        if (unshifted.get(i) == original.get(i))
+        if ((unshifted.get(i) catch unreachable) == (original.get(i) catch unreachable))
             match_count += 1;
     }
 

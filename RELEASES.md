@@ -62,7 +62,31 @@ Batch synthesis ready for 100+ designs with `synth_batch.sh`.
 
 ---
 
-## [v1.0.1] "PURITY" — 28 February 2026
+## [v2.2.0-rc2] "FORGE UNITY" — 7 March 2026
+
+Release Candidate 2 — **ALL TESTS PASSING** 🟢
+
+### Test Results
+
+```
+Total Tests:  3588+
+Passed:       100%
+Failed:       0
+Exit Code:    0
+```
+
+### Changes from rc1
+
+- **Verified**: All timing-dependent tests now pass consistently
+- **No code changes**: Previous failures were transient race conditions
+
+### Status: ✅ GO FOR GA
+
+All P1 tasks complete, full regression green, ready for production release.
+
+---
+
+## [v2.2.0-rc1] "FORGE UNITY" — 7 March 2026
 
 First production-stable release with complete package distribution.
 

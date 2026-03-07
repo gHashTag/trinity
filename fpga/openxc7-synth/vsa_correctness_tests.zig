@@ -13,7 +13,7 @@
 //! ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const protocol = @import("../../uart_protocol.zig");
+const protocol = @import("uart_protocol.zig");
 
 const Trit = protocol.Trit;
 const Vector16 = [16]Trit;
@@ -386,7 +386,7 @@ fn testBundle3_CompleteTruthTable(results: *std.ArrayList(TestResult)) !void {
         }
     }
 
-    const success_rate = @as(f64, @floatFromInt(passed)) / @as(f64, @floatFromInt(total));
+    _ = @as(f64, @floatFromInt(passed)) / @as(f64, @floatFromInt(total));
     const all_passed = passed == total;
 
     const duration_ms = @as(f64, @floatFromInt(std.time.nanoTimestamp() - start)) / 1_000_000.0;
@@ -714,13 +714,13 @@ pub fn printSummary(results: []TestResult) void {
     var failed: usize = 0;
     var total_ms: f64 = 0.0;
 
-    for (results) |test| {
-        const status = if (test.passed) "✅" else "❌";
-        std.debug.print("{s} {s}: {s}\n", .{ status, test.name, test.details });
+    for (results) |tc| {
+        const status = if (tc.passed) "✅" else "❌";
+        std.debug.print("{s} {s}: {s}\n", .{ status, tc.name, tc.details });
 
-        if (test.passed) passed += 1 else failed += 1;
-        total_ms += test.duration_ms;
-    };
+        if (tc.passed) passed += 1 else failed += 1;
+        total_ms += tc.duration_ms;
+    }
 
     std.debug.print("═══════════════════════════════════════\n", .{});
     std.debug.print("Results: {d}/{d} passed ({d:.0}%)\n", .{

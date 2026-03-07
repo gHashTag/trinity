@@ -12,7 +12,7 @@
 //! ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const protocol = @import("../../uart_protocol.zig");
+const protocol = @import("uart_protocol.zig");
 
 // ============================================================================
 // TEST RESULTS

@@ -398,7 +398,7 @@ pub const SemanticIndex = struct {
             var iter = self.vectors.iterator();
             while (iter.next()) |entry| {
                 const vec = entry.value_ptr.*;
-                const similarity = cosineSimilarity(query, vec.embedding);
+                const similarity = cosineSimilarity(query, vec.embedding) catch 0.0;
 
                 if (similarity >= min_similarity) {
                     var match = VSAMatch.init(self.allocator);
@@ -506,8 +506,8 @@ pub fn generateVSAEmbedding(
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Compute cosine similarity between two vectors
-pub fn cosineSimilarity(a: []const f32, b: []const f32) f32 {
-    std.debug.assert(a.len == b.len);
+pub fn cosineSimilarity(a: []const f32, b: []const f32) !f32 {
+    if (a.len != b.len) return error.VectorLengthMismatch;
 
     var dot_product: f32 = 0.0;
     var norm_a: f32 = 0.0;
@@ -539,8 +539,8 @@ pub fn l2Norm(vec: []const f32) f32 {
 }
 
 /// Compute Euclidean distance between two vectors
-pub fn euclideanDistance(a: []const f32, b: []const f32) f32 {
-    std.debug.assert(a.len == b.len);
+pub fn euclideanDistance(a: []const f32, b: []const f32) !f32 {
+    if (a.len != b.len) return error.VectorLengthMismatch;
 
     var sum: f32 = 0.0;
     for (0..a.len) |i| {

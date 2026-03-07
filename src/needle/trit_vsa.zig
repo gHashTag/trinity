@@ -332,7 +332,7 @@ pub const TritVSA = struct {
         }
 
         // Compute cosine similarity
-        return vsa.cosineSimilarity(fa32, fb32);
+        return vsa.cosineSimilarity(fa32, fb32) catch 0.0;
     }
 
     /// Convert packed trits to float vector for similarity computation

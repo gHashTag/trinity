@@ -57,7 +57,7 @@ pub const MockFpga = struct {
     // ========================================================================
 
     pub fn vsaBind(self: *MockFpga, a: []const Trit, b: []const Trit) ![]Trit {
-        std.debug.assert(a.len == b.len);
+        if (a.len != b.len) return error.VectorLengthMismatch;
         self.bind_count += 1;
 
         const result = try self.allocator.alloc(Trit, a.len);
@@ -115,7 +115,7 @@ pub const MockFpga = struct {
     // ========================================================================
 
     pub fn vsaSimilarity(self: *MockFpga, a: []const Trit, b: []const Trit) !u8 {
-        std.debug.assert(a.len == b.len);
+        if (a.len != b.len) return error.VectorLengthMismatch;
         self.similarity_count += 1;
 
         var dot: i32 = 0;
@@ -145,8 +145,8 @@ pub const MockFpga = struct {
     // HAMMING DISTANCE — Count differing trits
     // ========================================================================
 
-    pub fn hammingDistance(a: []const Trit, b: []const Trit) u32 {
-        std.debug.assert(a.len == b.len);
+    pub fn hammingDistance(a: []const Trit, b: []const Trit) !u32 {
+        if (a.len != b.len) return error.VectorLengthMismatch;
         var count: u32 = 0;
         for (0..a.len) |i| {
             if (a[i] != b[i]) count += 1;

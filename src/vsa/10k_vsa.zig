@@ -65,14 +65,14 @@ pub const HyperVector10K = struct {
                 2 => TRIT_NEG,
                 else => TRIT_POS,
             };
-            self.set(i, trit_val);
+            self.set(i, trit_val) catch unreachable; // i < DIM_10K by construction
         }
         return self;
     }
 
     /// Get trit at index (returns {-1, 0, +1})
-    pub inline fn get(self: *const Self, index: usize) Trit {
-        std.debug.assert(index < DIM_10K);
+    pub inline fn get(self: *const Self, index: usize) !Trit {
+        if (index >= DIM_10K) return error.IndexOutOfBounds;
         const bit_idx = index * 2;
         const byte_idx = bit_idx / 8;
         const shift: u3 = @intCast(bit_idx % 8);
@@ -87,8 +87,8 @@ pub const HyperVector10K = struct {
     }
 
     /// Set trit at index
-    pub inline fn set(self: *Self, index: usize, value: Trit) void {
-        std.debug.assert(index < DIM_10K);
+    pub inline fn set(self: *Self, index: usize, value: Trit) !void {
+        if (index >= DIM_10K) return error.IndexOutOfBounds;
         const bit_idx = index * 2;
         const byte_idx = bit_idx / 8;
         const shift: u3 = @intCast(bit_idx % 8);
@@ -148,11 +148,11 @@ pub const HyperVector10K = struct {
 
         var i: usize = 0;
         while (i < DIM_10K) : (i += 1) {
-            const a_trit = a.get(i);
-            const b_trit = b.get(i);
+            const a_trit = a.get(i) catch unreachable; // i < DIM_10K by construction
+            const b_trit = b.get(i) catch unreachable;
 
             const r_trit: Trit = tritBundle(a_trit, b_trit);
-            result.set(i, r_trit);
+            result.set(i, r_trit) catch unreachable;
         }
 
         return result;
@@ -166,8 +166,8 @@ pub const HyperVector10K = struct {
 
         var i: usize = 0;
         while (i < DIM_10K) : (i += 1) {
-            const a_trit = a.get(i);
-            const b_trit = b.get(i);
+            const a_trit = a.get(i) catch unreachable; // i < DIM_10K by construction
+            const b_trit = b.get(i) catch unreachable;
 
             dot_product += @as(i64, a_trit) * @as(i64, b_trit);
             norm_a += @as(i64, a_trit) * @as(i64, a_trit);
@@ -192,8 +192,8 @@ pub const HyperVector10K = struct {
         var i: usize = 0;
         while (i < DIM_10K) : (i += 1) {
             const src_idx = (i + DIM_10K - effective_shift) % DIM_10K;
-            const trit = self.get(src_idx);
-            result.set(i, trit);
+            const trit = self.get(src_idx) catch unreachable; // src_idx < DIM_10K by construction
+            result.set(i, trit) catch unreachable;
         }
 
         return result;
@@ -204,7 +204,7 @@ pub const HyperVector10K = struct {
         var count: usize = 0;
         var i: usize = 0;
         while (i < DIM_10K) : (i += 1) {
-            if (self.get(i) != TRIT_ZERO)
+            if (self.get(i) catch unreachable != TRIT_ZERO) // i < DIM_10K by construction
                 count += 1;
         }
         return count;
@@ -379,7 +379,7 @@ test "HyperVector10K: bind identity" {
     var identity = HyperVector10K.zero();
     var i: usize = 0;
     while (i < DIM_10K) : (i += 1) {
-        identity.set(i, TRIT_POS);
+        identity.set(i, TRIT_POS) catch unreachable; // i < DIM_10K by construction
     }
 
     const result = HyperVector10K.bind(&vec, &identity);
@@ -388,7 +388,7 @@ test "HyperVector10K: bind identity" {
     var match_count: usize = 0;
     i = 0;
     while (i < 100) : (i += 1) {
-        if (result.get(i) == vec.get(i))
+        if ((result.get(i) catch unreachable) == (vec.get(i) catch unreachable))
             match_count += 1;
     }
 
@@ -403,7 +403,7 @@ test "HyperVector10K: bind inverse" {
     var inverse = HyperVector10K.zero();
     var i: usize = 0;
     while (i < DIM_10K) : (i += 1) {
-        inverse.set(i, TRIT_NEG);
+        inverse.set(i, TRIT_NEG) catch unreachable; // i < DIM_10K by construction
     }
 
     const result = HyperVector10K.bind(&vec, &inverse);
@@ -412,10 +412,11 @@ test "HyperVector10K: bind inverse" {
     var match_count: usize = 0;
     i = 0;
     while (i < 100) : (i += 1) {
-        const expected: i8 = if (vec.get(i) == TRIT_NEG) TRIT_POS
-                              else if (vec.get(i) == TRIT_POS) TRIT_NEG
+        const vi = vec.get(i) catch unreachable;
+        const expected: i8 = if (vi == TRIT_NEG) TRIT_POS
+                              else if (vi == TRIT_POS) TRIT_NEG
                               else TRIT_ZERO;
-        if (result.get(i) == expected)
+        if ((result.get(i) catch unreachable) == expected)
             match_count += 1;
     }
 
@@ -444,7 +445,7 @@ test "HyperVector10K: permutation roundtrip" {
     var match_count: usize = 0;
     var i: usize = 0;
     while (i < 100) : (i += 1) {
-        if (unshifted.get(i) == original.get(i))
+        if ((unshifted.get(i) catch unreachable) == (original.get(i) catch unreachable))
             match_count += 1;
     }
 
