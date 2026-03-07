@@ -184,7 +184,10 @@ pub const UnifiedOutput = struct {
     pub fn finalize(self: *UnifiedOutput) void {
         self.end_time = std.time.timestamp();
         const duration_ms = @as(u64, @intCast((self.end_time - self.start_time) * 1000));
-        self.addMetric("duration_ms", duration_ms) catch {};
+        // Only add duration_ms if not already present
+        if (!self.metrics.contains("duration_ms")) {
+            self.addMetric("duration_ms", duration_ms) catch {};
+        }
     }
 
     /// Generate JSON output

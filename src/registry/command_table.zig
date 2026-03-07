@@ -541,6 +541,9 @@ pub const all_commands = [_]CommandDef{
         .required_artifacts = &.{"*_test.zig", "test_results.xml"},
         // NEW: Job timeout - 5 minutes for test generation
         .job_timeout = 300,
+        .mcp_enabled = true,
+        .mcp_name = "tri_test",
+        .mcp_display_name = "Test Generator",
         .input_params = &.{
             .{ .name = "file", .param_type = .string, .description = "Path to file to test", .required = true },
             .{ .name = "output", .param_type = .string, .description = "Output test file path" },
@@ -947,6 +950,9 @@ pub const all_commands = [_]CommandDef{
         .required_artifacts = &.{"metrics.json", "report.json"},
         // NEW: Job timeout - 10 minutes for benchmarks
         .job_timeout = 600,
+        .mcp_enabled = true,
+        .mcp_name = "tri_bench",
+        .mcp_display_name = "Performance Benchmarks",
         .input_params = &.{
             .{ .name = "filter", .param_type = .string, .description = "Filter benchmarks by pattern" },
             .{ .name = "output", .param_type = .string, .description = "Output report file" },
@@ -1588,6 +1594,9 @@ pub const all_commands = [_]CommandDef{
         .required_artifacts = &.{"*.bit", "routing_report.json"},
         // NEW: Job timeout - 30 minutes for FPGA synthesis
         .job_timeout = 1800,
+        .mcp_enabled = true,
+        .mcp_name = "tri_fpga",
+        .mcp_display_name = "FPGA Toolchain",
         .has_subcommands = true,
         .subcommands = &.{
             .{ .name = "bench", .description = "Run regression benchmark suite", .example = "tri fpga bench" },
